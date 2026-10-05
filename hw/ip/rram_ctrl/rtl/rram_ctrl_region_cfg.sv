@@ -138,12 +138,39 @@ module rram_ctrl_region_cfg
     assign window_deny_cfg[w].cfg.addr_xor_en = prim_mubi_pkg::MuBi4False;
   end
 
+  // All subregions rank above all window-deny entries, so a subregion of one window would win
+  // over the deny entry of another window it overlaps.
+  // Therefore, if two enabled windows overlap, the subregions of both windows are disabled, while
+  // both window-deny entries stay active.
+  // This fails closed regardless of which window was configured first.
+  logic [PageW:0]             window_end[EmulInfoRegions];
+  logic [EmulInfoRegions-1:0] window_overlap;
+  for (genvar w = 0; w < EmulInfoRegions; w++) begin : gen_emul_info_window_end
+    // Last page of the window, inclusive.
+    assign window_end[w] = {1'b0, PageW'(emul_info_region_i[w].base.q)} +
+                           PageW'(emul_info_region_i[w].size.q);
+  end
+
+  always_comb begin
+    window_overlap = '0;
+    for (int unsigned a = 0; a < EmulInfoRegions; a++) begin
+      for (int unsigned b = 0; b < EmulInfoRegions; b++) begin
+        if (a != b && window_en[a] && window_en[b] &&
+            {1'b0, PageW'(emul_info_region_i[a].base.q)} <= window_end[b] &&
+            {1'b0, PageW'(emul_info_region_i[b].base.q)} <= window_end[a]) begin
+          window_overlap[a] = 1'b1;
+        end
+      end
+    end
+  end
+
   // Emulated info page subregions.
   // Each stores an offset relative to its window's base, TOR-style, passed straight into size.
   // Every subregion's base is simply its window's base.
   // Lower indices win, so a subregion's effective range is the prior one's end up to its own.
   // A subregion is enabled only once its own placement, the whole lock chain back to index 0,
-  // and the window are all locked, the window is enabled, and its offset fits within the window.
+  // and the window are all locked, the window is enabled and does not overlap another enabled
+  // window, and its offset fits within the window.
   logic [EmulInfoSubregions-1:0] chain_locked;
   mp_region_cfg_t subregion_cfg[EmulInfoSubregions];
   for (genvar i = 0; i < EmulInfoSubregions; i++) begin : gen_subregion
@@ -170,7 +197,8 @@ module rram_ctrl_region_cfg
     assign overflow_ok = PageW'(emul_info_subregion_i[i].q) <= emul_info_region_i[WIdx].size.q;
 
     assign subregion_cfg[i].phase           = PhaseInvalid;
-    assign subregion_cfg[i].cfg.en          = mubi4_bool_to_mubi(chain_locked[i] & overflow_ok);
+    assign subregion_cfg[i].cfg.en          = mubi4_bool_to_mubi(chain_locked[i] & overflow_ok &
+                                                                 ~window_overlap[WIdx]);
     assign subregion_cfg[i].cfg.rd_en       = mubi4_t'(emul_info_subregion_cfg_i[i].rd_en.q);
     assign subregion_cfg[i].cfg.wr_en       = mubi4_t'(emul_info_subregion_cfg_i[i].wr_en.q);
     assign subregion_cfg[i].cfg.scramble_en = mubi4_t'(emul_info_subregion_cfg_i[i].scramble_en.q);

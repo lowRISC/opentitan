@@ -703,12 +703,24 @@ Enabling this and locking it via [`EMUL_INFO_REGWEN`](#emul_info_regwen) is a pr
 {"reg": [{"name": "BASE", "bits": 12, "attr": ["rw"], "rotate": 0}, {"name": "SIZE", "bits": 12, "attr": ["rw"], "rotate": 0}, {"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                        |
-|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:28  |        |         |        | Reserved                                                                                                                                                                                                           |
-| 27:24  |   rw   |   0x9   | EN     | Window enabled. If enabled, accesses to the window that are not covered by an enabled subregion are denied. If disabled, neither the window nor any of its subregions is matched against any incoming transaction. |
-| 23:12  |   rw   |   0x0   | SIZE   | Region size, encoded as (number of pages - 1).                                                                                                                                                                     |
-|  11:0  |   rw   |   0x0   | BASE   | Region base page. Note the granularity is page, not byte or word.                                                                                                                                                  |
+|  Bits  |  Type  |  Reset  | Name                            |
+|:------:|:------:|:-------:|:--------------------------------|
+| 31:28  |        |         | Reserved                        |
+| 27:24  |   rw   |   0x9   | [EN](#emul_info_region--en)     |
+| 23:12  |   rw   |   0x0   | [SIZE](#emul_info_region--size) |
+|  11:0  |   rw   |   0x0   | [BASE](#emul_info_region--base) |
+
+### EMUL_INFO_REGION . EN
+Window enabled.
+If enabled, accesses to the window that are not covered by an enabled subregion are denied.
+If two enabled windows overlap, the subregions of both windows are disabled and both windows are denied entirely.
+If disabled, neither the window nor any of its subregions is matched against any incoming transaction.
+
+### EMUL_INFO_REGION . SIZE
+Region size, encoded as (number of pages - 1).
+
+### EMUL_INFO_REGION . BASE
+Region base page. Note the granularity is page, not byte or word.
 
 ## EMUL_INFO_SUBREGION_REGWEN
 Emulated info subregion size registers configuration enable.
@@ -776,6 +788,7 @@ A subregion is enabled once all of the following hold.
 Its window is enabled via [`EMUL_INFO_REGION.EN`](#emul_info_region) and locked via [`EMUL_INFO_REGWEN.`](#emul_info_regwen)
 Its own placement and that of every lower-indexed subregion of its window are locked via [`EMUL_INFO_SUBREGION_REGWEN`](#emul_info_subregion_regwen), i.e., the whole lock chain back to the first subregion of its window.
 Its TOP does not exceed its window's SIZE.
+Its window does not overlap any other enabled window.
 - Reset default: `0x0`
 - Reset mask: `0xff`
 - Register enable: [`EMUL_INFO_SUBREGION_REGWEN`](#emul_info_subregion_regwen)

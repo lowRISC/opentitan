@@ -381,6 +381,9 @@ Each subregion has its own read, write, scramble, and ECC permissions ([`EMUL_IN
 Within `rram_ctrl_mp`'s priority scan, emulated info subregions rank above the configurable MP regions but below the fixed OTP exclusion, so a subregion can never grant access to the reserved OTP pages.
 Any address inside a window not covered by an enabled subregion is denied by a window-wide deny entry, once the window is enabled, so a gap can never fall through to the configurable regions or default region below.
 The deny entry depends only on the multi-bit `EN` field, not on `EMUL_INFO_REGWEN`, so a fault that flips the single-bit regwen back to 1 disables the subregions but keeps the whole window denied.
+All subregions rank above all window-deny entries, so a subregion of one window could otherwise override the deny entry of another window it overlaps.
+To prevent this, the subregions of both windows are disabled whenever two enabled windows overlap, while both deny entries stay active.
+This fails closed regardless of which window was configured and locked first.
 
 The hardware does not constrain where a window's base and size are placed within the data partition.
 For Earl Grey, the two windows are intended to be placed at the tail (highest addresses) of boot Slot A and Slot B respectively.
