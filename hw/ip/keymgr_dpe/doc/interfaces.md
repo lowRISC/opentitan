@@ -22,6 +22,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | creator_seed     | keymgr_dpe_pkg::keymgr_dpe_creator_seed     | uni     | rcv   | 1                  |               |
 | owner_seed       | keymgr_dpe_pkg::keymgr_dpe_owner_seed       | uni     | rcv   | 1                  |               |
 | device_id        | keymgr_dpe_pkg::keymgr_dpe_device_id        | uni     | rcv   | 1                  |               |
+| field_entropy    | keymgr_dpe_pkg::keymgr_dpe_field_entropy    | uni     | rcv   | 1                  |               |
 | lc_keymgr_en     | lc_ctrl_pkg::lc_tx                          | uni     | rcv   | 1                  |               |
 | lc_keymgr_div    | lc_ctrl_pkg::lc_keymgr_div                  | uni     | rcv   | 1                  |               |
 | rom_digest       | rom_ctrl_pkg::keymgr_data                   | uni     | rcv   | NumRomDigestInputs |               |
