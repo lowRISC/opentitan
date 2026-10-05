@@ -1241,7 +1241,7 @@ set_output_delay ${IO_DIV4_OUT_DEL} ${IO_BANKS} -clock IO_DIV4_CLK -add_delay
 ###########################################
 # Preferred sites for SPI HOST 1
 set SPI_HOST1_CLK_PORT IOB3
-set SPI_HOST1_DATA_PORTS "IOB0 IOB1 IOB2"
+set SPI_HOST1_DATA_PORTS "IOB0 IOB1 IOB2 IOB4 IOB6"
 
 set SPI_HOST1_SRC_CLK [get_pins top_earlgrey/earlgrey_pd_main/u_spi_host1/u_spi_core/u_fsm/u_sck_flop/*/clk_i]
 set SPI_HOST1_DIV_CLK [get_pins top_earlgrey/earlgrey_pd_main/u_spi_host1/u_spi_core/u_fsm/u_sck_flop/*/q_o[0]]
@@ -1327,8 +1327,12 @@ set_false_path -hold -fall_through [get_pins u_padring/gen_mio_pads_10__u_mio_pa
 set_false_path -hold -fall_through [get_pins u_padring/gen_mio_pads_11__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
 #IOB3
 set_false_path -hold -fall_through [get_pins u_padring/gen_mio_pads_12__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+#IOB4
+set_false_path -hold -fall_through [get_pins u_padring/gen_mio_pads_13__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
+#IOB6
+set_false_path -hold -fall_through [get_pins u_padring/gen_mio_pads_15__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/OE]
 
-# For SPI_HOST1, I/O timing is only closed on pads IOB0, IOB1, IOB2, and IOB3 (see below for details).
+# For SPI_HOST1, I/O timing is only closed on pads IOB0, IOB1, IOB2, IOB3, IOB4, and IOB6 (see below for details).
 set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA0
 set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA1
 set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOA2
@@ -1341,9 +1345,7 @@ set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_nam
 set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB10
 set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB11
 set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB12
-set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB4
 set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB5
-set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB6
 set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB7
 set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB8
 set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB9
@@ -1375,6 +1377,8 @@ set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_nam
 set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB0 -to IO_CLK
 set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB1 -to IO_CLK
 set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB2 -to IO_CLK
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB4 -to IO_CLK
+set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB6 -to IO_CLK
 set_false_path  -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOR1 -to IO_CLK
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOR1 -to IO_CLK
 
@@ -1403,6 +1407,23 @@ set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_10
 set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_10/q[5]
 set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_10/q[6]
 
+# IOB1 (MIO pad 10 -> mux sel 12) drives SPI_HOST1 SD0 (MioIn 38):
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_38/q[0]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_38/q[1]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_38/q[2]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_38/q[3]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_38/q[4]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_38/q[5]
+
+# SPI_HOST1 SD1 (MioOut 39 -> mux sel 42) drives IOB2 (MIO pad 11):
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_11/q[0]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_11/q[1]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_11/q[2]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_11/q[3]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_11/q[4]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_11/q[5]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_11/q[6]
+
 # IOB2 (MIO pad 11 -> mux sel 13) drives SPI_HOST1 SD1 (MioIn 39):
 set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_39/q[0]
 set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_39/q[1]
@@ -1411,8 +1432,39 @@ set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_in
 set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_39/q[4]
 set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_39/q[5]
 
-# SPI_HOST1 does not drive IOB2.
-set_false_path -from IO_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB2
+# SPI_HOST1 SD2 (MioOut 40 -> mux sel 43) drives IOB4 (MIO pad 13):
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_13/q[0]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_13/q[1]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_13/q[2]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_13/q[3]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_13/q[4]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_13/q[5]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_13/q[6]
+
+# IOB4 (MIO pad 13 -> mux sel 15) drives SPI_HOST1 SD2 (MioIn 40):
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_40/q[0]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_40/q[1]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_40/q[2]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_40/q[3]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_40/q[4]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_40/q[5]
+
+# SPI_HOST1 SD3 (MioOut 41 -> mux sel 44) drives IOB6 (MIO pad 15):
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_15/q[0]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_15/q[1]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_15/q[2]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_15/q[3]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_15/q[4]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_15/q[5]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_15/q[6]
+
+# IOB6 (MIO pad 15 -> mux sel 17) drives SPI_HOST1 SD3 (MioIn 41):
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_41/q[0]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_41/q[1]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_41/q[2]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_41/q[3]
+set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_41/q[4]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_insel_41/q[5]
 
 # SPI_HOST1 SCK (MioOut 46 -> mux 49) drives IOB3 (MIO pad 12):
 set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[0]
@@ -1426,6 +1478,8 @@ set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB0 -to IO_CLK
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB1 -to IO_CLK
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB2 -to IO_CLK
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB4 -to IO_CLK
+set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -through IOB6 -to IO_CLK
 
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOA0
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOA1
@@ -1439,9 +1493,7 @@ set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOA8
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB10
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB11
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB12
-set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB4
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB5
-set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB6
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB7
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB8
 set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOB9
