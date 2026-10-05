@@ -1391,10 +1391,10 @@ set_false_path  -from SPI_HOST1_INTERNAL_CLK -through [get_cells -hierarchical -
 ########################################
 # Note that these set_case_analysis and set_false_path constraints have not been used for synthesis but as PrimeTime waivers only.
 if { $synopsys_program_name eq "pt_shell"  } {
-# SPI_HOST1 CSB (MioOut 51 -> mux sel 54) drives IOB0 (MIO pad 9):
+# SPI_HOST1 CSB (MioOut 47 -> mux sel 50) drives IOB0 (MIO pad 9):
 set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_9/q[0]
 set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_9/q[1]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_9/q[2]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_9/q[2]
 set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_9/q[3]
 set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_9/q[4]
 set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_9/q[5]
@@ -1420,10 +1420,10 @@ set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_periph_in
 # SPI_HOST1 does not drive IOB2.
 set_false_path -from IO_DIV2_CLK -through [get_cells -hierarchical -filter "full_name =~ *u_spi_host1*"] -to IOB2
 
-# SPI_HOST1 SCK (MioOut 50 -> mux 53) drives IOB3 (MIO pad 12):
+# SPI_HOST1 SCK (MioOut 46 -> mux 49) drives IOB3 (MIO pad 12):
 set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[0]
 set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[1]
-set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[2]
+set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[2]
 set_case_analysis 0 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[3]
 set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[4]
 set_case_analysis 1 top_earlgrey/earlgrey_pd_main/u_pinmux/u_reg/u_mio_outsel_12/q[5]
