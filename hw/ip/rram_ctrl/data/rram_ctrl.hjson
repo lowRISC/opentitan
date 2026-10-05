@@ -1059,6 +1059,7 @@
               desc: '''
                     Window enabled.
                     If enabled, accesses to the window that are not covered by an enabled subregion are denied.
+                    If two enabled windows overlap, the subregions of both windows are disabled and both windows are denied entirely.
                     If disabled, neither the window nor any of its subregions is matched against any incoming transaction.
                     ''',
               resval: false
@@ -1117,6 +1118,7 @@
                 Its window is enabled via !!EMUL_INFO_REGION.EN and locked via !!EMUL_INFO_REGWEN.
                 Its own placement and that of every lower-indexed subregion of its window are locked via !!EMUL_INFO_SUBREGION_REGWEN, i.e., the whole lock chain back to the first subregion of its window.
                 Its TOP does not exceed its window's SIZE.
+                Its window does not overlap any other enabled window.
                 '''
           count: "NumEmulInfoSubregions",
           swaccess: "rw",

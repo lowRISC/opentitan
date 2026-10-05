@@ -195,6 +195,7 @@ Each subregion register stores only the offset (`TOP`) of its own last page rela
 Subregion 0 covers offsets `[0, TOP_0]`, subregion 1 covers `(TOP_0, TOP_1]`, and so on.
 Configure subregions with strictly increasing `TOP` values, and lock each one (via [`EMUL_INFO_SUBREGION_REGWEN_*`](registers.md#emul_info_subregion_regwen)) starting from the first subregion of the window.
 The hardware only enables a subregion once its window is enabled and locked, its own placement and every lower-indexed subregion's placement in the same window are locked, and its `TOP` does not exceed the window's `SIZE`.
+Windows must not overlap: if two enabled windows overlap, the hardware disables the subregions of both windows, so both windows are denied entirely.
 
 Configure each subregion's access attributes (`rd_en`, `wr_en`, `scramble_en`, `ecc_en`) via [`EMUL_INFO_SUBREGION_CFG_*`](registers.md#emul_info_subregion_cfg).
 Locking them via [`EMUL_INFO_SUBREGION_CFG_REGWEN_*`](registers.md#emul_info_subregion_cfg_regwen) is optional and independent from the placement lock chain above.
