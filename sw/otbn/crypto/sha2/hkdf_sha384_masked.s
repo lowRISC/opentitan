@@ -518,12 +518,14 @@ state_to_be_masked_sha384:
   jal      x1, reverse_and_bswap64_to_w0
   bn.sid   x3, 0(x12)
   bn.wsrr  w0, URND
+  bn.xor   w31, w31, w31
 
   la       x2, state_s1
   addi     x2, x2, 32
   jal      x1, reverse_and_bswap64_to_w0
   bn.sid   x3, 0(x13)
   bn.wsrr  w0, URND
+  bn.xor   w31, w31, w31
 
   /* WDR 1 of output (bytes 32..47: ef from state + 0; bytes 48..63: masked zero) */
   bn.wsrr  w25, URND            /* fresh mask R_hi for upper 128 bits */
@@ -534,6 +536,7 @@ state_to_be_masked_sha384:
   bn.rshi  w0,  w25, w0 >> 128
   bn.sid   x3, 32(x12)
   bn.wsrr  w0, URND
+  bn.xor   w31, w31, w31
 
   la       x2, state_s1
   jal      x1, reverse_and_bswap64_to_w0

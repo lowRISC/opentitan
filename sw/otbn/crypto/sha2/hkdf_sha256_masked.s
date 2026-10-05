@@ -460,11 +460,13 @@ state_to_be_masked:
   jal      x1, reverse_and_bswap_state
   bn.sid   x6, 0(x12)
   bn.wsrr  w24, URND
+  bn.xor   w31, w31, w31
 
   la       x2, state_s1
   jal      x1, reverse_and_bswap_state
   bn.sid   x6, 0(x13)
   bn.wsrr  w24, URND
+  bn.xor   w31, w31, w31
   ret
 
 reverse_and_bswap_state:
