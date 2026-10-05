@@ -1707,7 +1707,8 @@ typedef enum top_earlgrey_gateable_clocks {
   kTopEarlgreyGateableClocksIoDiv2Peri = 1, /**< Clock clk_io_div2_peri in group peri */
   kTopEarlgreyGateableClocksIoPeri = 2, /**< Clock clk_io_peri in group peri */
   kTopEarlgreyGateableClocksUsbPeri = 3, /**< Clock clk_usb_peri in group peri */
-  kTopEarlgreyGateableClocksLast = 3, /**< \internal Last Valid Gateable Clock */
+  kTopEarlgreyGateableClocksIoSpiHost1 = 4, /**< Clock clk_io_spi_host1 in group spi_host1 */
+  kTopEarlgreyGateableClocksLast = 4, /**< \internal Last Valid Gateable Clock */
 } top_earlgrey_gateable_clocks_t;
 
 /**

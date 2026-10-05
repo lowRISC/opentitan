@@ -88,9 +88,10 @@
       si_stage: SV3
       lc_states: ["PROD"]
       features: [
-        "CLKMGR.ENABLE.IO",
+        "CLKMGR.ENABLE.IO_PERI",
         "CLKMGR.ENABLE.IO_DIV4",
         "CLKMGR.ENABLE.USB",
+        "CLKMGR.ENABLE.IO_SPI_HOST1",
       ]
       tests: ["chip_sw_clkmgr_off_peri"]
       bazel: ["//sw/device/tests:clkmgr_off_peri_test"]

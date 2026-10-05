@@ -248,13 +248,17 @@
     //////////////////////////
     {
       name: cg_en_io_peri
-      desc: '''Verify clkmgr's cg_en_o.io_peri is connected to:
-            - alert_handler's lpg_cg_en[7]
-            - alert_handler's lpg_cg_en[8]
-            '''
+      desc: '''Verify clkmgr's cg_en_o.io_peri is connected to alert_handler's lpg_cg_en[7].'''
       stage: V2
-      tests: ["clkmgr_io_peri_alert_7_cg_en",
-              "clkmgr_io_peri_alert_8_cg_en"]
+      tests: ["clkmgr_io_peri_alert_7_cg_en"]
+      si_stage: NA
+      tags: ["conn"]
+    }
+    {
+      name: cg_en_io_spi_host1
+      desc: '''Verify clkmgr's cg_en_o.io_spi_host1 is connected to alert_handler's lpg_cg_en[8].'''
+      stage: V2
+      tests: ["clkmgr_io_spi_host1_alert_8_cg_en"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -486,13 +490,21 @@
     }
     {
       name: clkmgr_clk_io_peri
-      desc: '''Verify clkmgr's `clk_io_peri` is connected to the following blocks' clock inputs:
+      desc: '''Verify clkmgr's `clk_io_peri` is connected to the following block's clock input:
             - spi_host0's clk_i
+            '''
+      stage: V2
+      tests: ["clkmgr_peri_clk_spi_host0_clk"]
+      si_stage: NA
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_io_spi_host1
+      desc: '''Verify clkmgr's `clk_io_spi_host1` is connected to the following block's clock input:
             - spi_host1's clk_i
             '''
       stage: V2
-      tests: ["clkmgr_peri_clk_spi_host0_clk",
-              "clkmgr_peri_clk_spi_host1_clk"]
+      tests: ["clkmgr_peri_clk_spi_host1_clk"]
       si_stage: NA
       tags: ["conn"]
     }

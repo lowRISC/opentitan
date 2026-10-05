@@ -5,7 +5,7 @@
 
 import math
 from collections import OrderedDict
-from typing import List, NamedTuple
+from typing import Dict, List, NamedTuple
 
 from basegen.typing import ConfigT, ParamsT
 from topgen.clocks import Clocks, ClockSignal
@@ -105,6 +105,24 @@ def get_rg_srcs(typed_clocks: ConfigT) -> List[str]:
     return list(
         sorted({sig['src_name']
                 for sig in typed_clocks['rg_clks'].values()}))
+
+
+def get_sw_clk_keys(typed_clocks: ConfigT) -> Dict[str, str]:
+    """Returns a short, unique name for each software-gated clock.
+
+    The short name is the name of the clock's source, unless several
+    software-gated clocks share that source.  In that case, it is the name of
+    the clock without the "clk_" prefix.
+    """
+    srcs = [sig['src_name'] for sig in typed_clocks['sw_clks'].values()]
+    keys = {
+        clk: (sig['src_name'] if srcs.count(sig['src_name']) == 1 else
+              clk.removeprefix('clk_'))
+        for clk, sig in typed_clocks['sw_clks'].items()
+    }
+    assert len(set(keys.values())) == len(keys), \
+        f'Software-gated clocks have non-unique short names: {keys}'
+    return keys
 
 
 def get_hint_targets(typed_clocks: ConfigT) -> List[str]:

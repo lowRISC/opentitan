@@ -3166,6 +3166,8 @@ pub enum GateableClocks {
     IoPeri = 2,
     /// Clock clk_usb_peri in group peri
     UsbPeri = 3,
+    /// Clock clk_io_spi_host1 in group spi_host1
+    IoSpiHost1 = 4,
 }
 
 /// Clock Manager Software-Hinted Clocks.

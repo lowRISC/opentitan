@@ -172,6 +172,16 @@
         }
       }
       {
+        name: spi_host1
+        src: top
+        sw_cg: yes
+        unique: no
+        clocks:
+        {
+          clk_io_spi_host1: io
+        }
+      }
+      {
         name: timers
         src: top
         sw_cg: no
@@ -3009,7 +3019,7 @@
       {
         clk_i: io
       }
-      clock_group: peri
+      clock_group: spi_host1
       reset_connections:
       {
         rst_ni:
@@ -3021,7 +3031,7 @@
       domain: Main
       clock_connections:
       {
-        clk_i: clkmgr_clocks_i.clk_io_peri
+        clk_i: clkmgr_clocks_i.clk_io_spi_host1
       }
       param_decl: {}
       memory: {}
@@ -17633,7 +17643,7 @@
       handler: alert_handler
       module_name: spi_host1
       desc: spi_host1 fatal_fault alert
-      lpg_name: peri_spi_host1_Main
+      lpg_name: spi_host1_spi_host1_Main
       lpg_idx: 8
     }
     {
@@ -22050,23 +22060,19 @@
       }
     }
     {
-      name: peri_spi_host1_Main
+      name: spi_host1_spi_host1_Main
       clock_group:
       {
-        name: peri
+        name: spi_host1
         src: top
         sw_cg: yes
         unique: no
         clocks:
         {
-          clk_io_div4_peri: io_div4
-          clk_io_div2_peri: io_div2
-          clk_io_peri: io
-          clk_usb_peri: usb
-          clk_aon_peri: aon
+          clk_io_spi_host1: io
         }
       }
-      clock_connection: clkmgr_clocks_i.clk_io_peri
+      clock_connection: clkmgr_clocks_i.clk_io_spi_host1
       unmanaged_clock: false
       unmanaged_reset: false
       reset_connection:

@@ -308,6 +308,7 @@ abstract_port -ports "fla_alert_src_i[p]" -clock "clk_ast_tlul_i" -combo no -sta
 abstract_port -ports "otp_alert_src_i[n]" -clock "clk_ast_tlul_i" -combo no -start
 abstract_port -ports "otp_alert_src_i[p]" -clock "clk_ast_tlul_i" -combo no -start
 abstract_port -ports "sns_clks_i[clk_io_peri]" -ignore -comment "hanging path"
+abstract_port -ports "sns_clks_i[clk_io_spi_host1]" -ignore -comment "hanging path"
 abstract_port -ports "sns_clks_i[clk_usb_peri]" -ignore -comment "hanging path"
 abstract_port -ports "sns_clks_i[clk_io_div2_peri]" -ignore -comment "hanging path"
 abstract_port -ports "sns_clks_i[clk_io_div4_peri]" -ignore -comment "hanging path"

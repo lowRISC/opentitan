@@ -81,12 +81,12 @@ module tb;
         u_reg.u_fatal_err_code_reg_intg.qs
      }),
     .clk_enables({
-% for clk in [c for c in reversed(typed_clocks['sw_clks'].values())]:
+% for clk_name in list(reversed(typed_clocks['sw_clks'])):
 <% sep = "})," if loop.last else "," %>\
   % if len(typed_clocks['sw_clks']) == 1:
         reg2hw.clk_enables.q${sep}
   % else:
-        reg2hw.clk_enables.clk_${clk['src_name']}_peri_en.q${sep}
+        reg2hw.clk_enables.${clk_name}_en.q${sep}
   % endif
 % endfor
     .clk_hints({

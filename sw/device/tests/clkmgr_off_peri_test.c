@@ -34,6 +34,7 @@ static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
  * bit 1: clk_io_div2_peri: none (only clocks spi_device's scan clock)
  * bit 2: clk_io_peri: spi_host0
  * bit 3: clk_usb_peri: usbdev
+ * bit 4: clk_io_spi_host1: spi_host1
  *
  * Clocks without a peripheral are skipped, since no CSR access can show that
  * they are disabled.
@@ -55,6 +56,7 @@ enum { kPcSpread = 8 * 4 };
 
 static dif_aon_timer_t aon_timer;
 static dif_spi_host_t spi_host0;
+static dif_spi_host_t spi_host1;
 static dif_usbdev_t usbdev;
 static dif_uart_t uart0;
 
@@ -66,6 +68,11 @@ OT_NOINLINE static void uart0_csr_access(void) {
 OT_NOINLINE static void spi_host0_csr_access(void) {
   dif_spi_host_irq_state_snapshot_t snapshot;
   CHECK_DIF_OK(dif_spi_host_irq_get_state(&spi_host0, &snapshot));
+}
+
+OT_NOINLINE static void spi_host1_csr_access(void) {
+  dif_spi_host_irq_state_snapshot_t snapshot;
+  CHECK_DIF_OK(dif_spi_host_irq_get_state(&spi_host1, &snapshot));
 }
 
 OT_NOINLINE static void usbdev_csr_access(void) {
@@ -81,9 +88,12 @@ peri_context_t peri_context[kTopEarlgreyGateableClocksLast + 1] = {
     [kTopEarlgreyGateableClocksIoPeri] = {"spi_host0", spi_host0_csr_access,
                                           TOP_EARLGREY_SPI_HOST0_BASE_ADDR +
                                               SPI_HOST_INTR_STATE_REG_OFFSET},
-    [kTopEarlgreyGateableClocksUsbPeri] = {
-        "usbdev", usbdev_csr_access,
-        TOP_EARLGREY_USBDEV_BASE_ADDR + USBDEV_INTR_STATE_REG_OFFSET}};
+    [kTopEarlgreyGateableClocksUsbPeri] = {"usbdev", usbdev_csr_access,
+                                           TOP_EARLGREY_USBDEV_BASE_ADDR +
+                                               USBDEV_INTR_STATE_REG_OFFSET},
+    [kTopEarlgreyGateableClocksIoSpiHost1] = {
+        "spi_host1", spi_host1_csr_access,
+        TOP_EARLGREY_SPI_HOST1_BASE_ADDR + SPI_HOST_INTR_STATE_REG_OFFSET}};
 
 /**
  * Returns the next clock to test, starting from the clock stored in the
@@ -167,6 +177,8 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
   CHECK_DIF_OK(dif_spi_host_init(
       mmio_region_from_addr(TOP_EARLGREY_SPI_HOST0_BASE_ADDR), &spi_host0));
+  CHECK_DIF_OK(dif_spi_host_init(
+      mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR), &spi_host1));
   CHECK_DIF_OK(dif_usbdev_init(
       mmio_region_from_addr(TOP_EARLGREY_USBDEV_BASE_ADDR), &usbdev));
 

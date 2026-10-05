@@ -220,6 +220,11 @@
           src_name: usb
           endpoint_ip: usbdev
         }
+        clk_io_spi_host1:
+        {
+          src_name: io
+          endpoint_ip: spi_host1
+        }
       }
       hint_clks:
       {
@@ -270,7 +275,7 @@
       ]
     }
     exported_clks: {}
-    number_of_clock_groups: 7
+    number_of_clock_groups: 8
     with_alert_handler: true
     topname: earlgrey
     uniquified_modules: {}

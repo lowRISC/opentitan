@@ -70,6 +70,15 @@ module clkmgr_bind;
     .gated_clk(clocks_o.clk_usb_peri)
   );
 
+  bind clkmgr clkmgr_gated_clock_sva_if clkmgr_io_spi_host1_sva_if (
+    .clk(clocks_o.clk_io_powerup),
+    .rst_n(rst_io_ni),
+    .ip_clk_en(pwr_i.io_ip_clk_en),
+    .sw_clk_en(clk_io_spi_host1_sw_en),
+    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
+    .gated_clk(clocks_o.clk_io_spi_host1)
+  );
+
   // Assertions for transactional clocks.
   bind clkmgr clkmgr_trans_sva_if clkmgr_aes_trans_sva_if (
     .clk(clk_main_i),
@@ -280,6 +289,15 @@ module clkmgr_bind;
     .sw_clk_en(clk_usb_peri_sw_en),
     .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.usb_peri == prim_mubi_pkg::MuBi4True)
+  );
+
+  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_spi_host1 (
+    .clk(clk_io),
+    .rst_n(rst_io_ni),
+    .ip_clk_en(clk_io_en),
+    .sw_clk_en(clk_io_spi_host1_sw_en),
+    .scanmode(prim_mubi_pkg::MuBi4False),
+    .cg_en(cg_en_o.io_spi_host1 == prim_mubi_pkg::MuBi4True)
   );
 
   // Hint controlled gating enables.

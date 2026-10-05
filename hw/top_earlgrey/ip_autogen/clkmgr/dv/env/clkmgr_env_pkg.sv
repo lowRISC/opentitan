@@ -30,7 +30,7 @@ package clkmgr_env_pkg;
   typedef virtual clk_rst_if clk_rst_vif;
 
   // parameters
-  parameter int NUM_PERI = 4;
+  parameter int NUM_PERI = 5;
   parameter int NUM_TRANS = 4;
 
   typedef logic [NUM_PERI-1:0] peri_enables_t;
@@ -59,10 +59,12 @@ package clkmgr_env_pkg;
   typedef enum int {
     PeriIoDiv4,
     PeriIoDiv2,
-    PeriIo,
-    PeriUsb
+    PeriIoPeri,
+    PeriUsb,
+    PeriIoSpiHost1
   } peri_e;
   typedef struct packed {
+    logic io_spi_host1_en;
     logic usb_peri_en;
     logic io_peri_en;
     logic io_div2_peri_en;

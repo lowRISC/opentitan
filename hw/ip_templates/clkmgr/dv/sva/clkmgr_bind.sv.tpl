@@ -33,7 +33,7 @@ module clkmgr_bind;
 <%
   src_clk = derived_clks[attr['src_name']]['src'] if attr['src_name'] in derived_clks else src_clks[attr['src_name']]
 %>\
-  bind clkmgr clkmgr_gated_clock_sva_if clkmgr_${attr['src_name']}_peri_sva_if (
+  bind clkmgr clkmgr_gated_clock_sva_if clkmgr_${sw_clk.removeprefix('clk_')}_sva_if (
     .clk(clocks_o.clk_${attr['src_name']}_powerup),
     .rst_n(rst_${attr['src_name']}_ni),
     .ip_clk_en(pwr_i.${src_clk['name']}_ip_clk_en),

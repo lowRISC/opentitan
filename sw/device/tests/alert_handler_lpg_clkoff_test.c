@@ -252,7 +252,7 @@ static const test_t kPeripherals[] = {
         .fatal_alert_bit = 0,
         .alert_ids = spihost1_alerts,
         .num_alert_peri = num_spihost1_alerts,
-        .clk_index = kTopEarlgreyGateableClocksIoPeri,
+        .clk_index = kTopEarlgreyGateableClocksIoSpiHost1,
         .is_hintable = false,
     },
     {

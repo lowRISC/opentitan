@@ -163,6 +163,8 @@ module clkmgr_reg_top (
   logic clk_enables_clk_io_peri_en_wd;
   logic clk_enables_clk_usb_peri_en_qs;
   logic clk_enables_clk_usb_peri_en_wd;
+  logic clk_enables_clk_io_spi_host1_en_qs;
+  logic clk_enables_clk_io_spi_host1_en_wd;
   logic clk_hints_we;
   logic clk_hints_clk_main_aes_hint_qs;
   logic clk_hints_clk_main_aes_hint_wd;
@@ -939,6 +941,34 @@ module clkmgr_reg_top (
 
     // to register interface (read)
     .qs     (clk_enables_clk_usb_peri_en_qs)
+  );
+
+  //   F[clk_io_spi_host1_en]: 4:4
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_clk_enables_clk_io_spi_host1_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (clk_enables_we),
+    .wd     (clk_enables_clk_io_spi_host1_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.clk_enables.clk_io_spi_host1_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (clk_enables_clk_io_spi_host1_en_qs)
   );
 
 
@@ -2353,6 +2383,8 @@ module clkmgr_reg_top (
   assign clk_enables_clk_io_peri_en_wd = reg_wdata[2];
 
   assign clk_enables_clk_usb_peri_en_wd = reg_wdata[3];
+
+  assign clk_enables_clk_io_spi_host1_en_wd = reg_wdata[4];
   assign clk_hints_we = addr_hit[7] & reg_we & !reg_error;
 
   assign clk_hints_clk_main_aes_hint_wd = reg_wdata[0];
@@ -2469,6 +2501,7 @@ module clkmgr_reg_top (
         reg_rdata_next[1] = clk_enables_clk_io_div2_peri_en_qs;
         reg_rdata_next[2] = clk_enables_clk_io_peri_en_qs;
         reg_rdata_next[3] = clk_enables_clk_usb_peri_en_qs;
+        reg_rdata_next[4] = clk_enables_clk_io_spi_host1_en_qs;
       end
 
       addr_hit[7]: begin
