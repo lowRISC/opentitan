@@ -329,6 +329,21 @@ otp_json(
 )
 
 otp_json(
+    name = "otp_json_secret1_unlocked",
+    partitions = [
+        otp_partition(
+            name = "SECRET1",
+            items = {
+                "FLASH_ADDR_KEY_SEED": "<random>",
+                "FLASH_DATA_KEY_SEED": "<random>",
+                "SRAM_DATA_KEY_SEED": "<random>",
+            },
+            lock = False,
+        ),
+    ],
+)
+
+otp_json(
     name = "otp_json_secret2",
     partitions = [
         otp_partition(

@@ -14,6 +14,7 @@ load(
     "STD_OTP_OVERLAYS",
     "otp_hex",
     "otp_image",
+    "otp_json",
     "otp_json_immutable_rom_ext",
     "otp_partition",
 )
@@ -524,6 +525,60 @@ opentitan_test(
     fpga = fpga_params(),
     manifest = ":isfb_manifest",
     spx_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset": "app_prod_0"},
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+otp_json(
+    name = "otp_json_creator_sw_cfg_locked",
+    testonly = True,
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_DIGEST": "0x1122334455667788",
+            },
+        ),
+    ],
+    visibility = ["//visibility:private"],
+)
+
+otp_image(
+    name = "otp_img_creator_sw_cfg_locked_secret1_unlocked",
+    testonly = True,
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [
+        "//hw/ip/otp_ctrl/data:otp_json_secret1_unlocked",
+        "//sw/device/silicon_creator/rom_ext/e2e:otp_json_secret2_locked",
+        ":otp_json_creator_sw_cfg_locked",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+opentitan_test(
+    name = "unprovisioned_secret1_test",
+    srcs = [":boot_test"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
+    },
+    fpga = fpga_params(
+        exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
+        # Expect kErrorOtpSecretNotProvisioned (0x004f5009) when CREATOR_SW_CFG
+        # is locked but SECRET1 is unprovisioned (unlocked).
+        exit_success = "BFV:004f5009",
+        otp = ":otp_img_creator_sw_cfg_locked_secret1_unlocked",
+    ),
+    qemu = qemu_params(
+        exit_failure = "PASS|FAIL|FAULT|BFV:.{8}",
+        exit_success = "BFV:004f5009",
+        otp = ":otp_img_creator_sw_cfg_locked_secret1_unlocked",
+    ),
     deps = [
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:ottf_main",
