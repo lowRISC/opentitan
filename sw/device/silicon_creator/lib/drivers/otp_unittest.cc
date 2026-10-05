@@ -134,7 +134,82 @@ INSTANTIATE_TEST_SUITE_P(
         DigestReadTestCase{
             .partition = kOtpPartitionHwCfg1,
             .digest_offest = OTP_CTRL_HW_CFG1_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionSecret0,
+            .digest_offest = OTP_CTRL_SECRET0_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionSecret1,
+            .digest_offest = OTP_CTRL_SECRET1_DIGEST_0_REG_OFFSET,
+        },
+        DigestReadTestCase{
+            .partition = kOtpPartitionSecret2,
+            .digest_offest = OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET,
         }));
+
+class OtpSecretPartitionsCheckTest : public OtpTest {
+ protected:
+  void ExpectDigestRead(uint32_t digest_offset, uint64_t digest) {
+    EXPECT_SEC_READ32(base_ + digest_offset + sizeof(uint32_t),
+                      static_cast<uint32_t>(digest >> 32));
+    EXPECT_SEC_READ32(base_ + digest_offset, static_cast<uint32_t>(digest));
+  }
+};
+
+TEST_F(OtpSecretPartitionsCheckTest, TestStateCfgUnlocked) {
+  ExpectDigestRead(OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET, 0);
+  EXPECT_EQ(otp_secret_partitions_check(kLcStateTest), kErrorOk);
+}
+
+TEST_F(OtpSecretPartitionsCheckTest, TestStateCfgLockedOk) {
+  ExpectDigestRead(OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET,
+                   0x1234567800000000);
+  ExpectDigestRead(OTP_CTRL_SECRET1_DIGEST_0_REG_OFFSET, 0x0000000087654321);
+  ExpectDigestRead(OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET, 0x1111111111111111);
+  EXPECT_EQ(otp_secret_partitions_check(kLcStateTest), kErrorOk);
+}
+
+TEST_F(OtpSecretPartitionsCheckTest, ProdStateSecret0Unprovisioned) {
+  ExpectDigestRead(OTP_CTRL_SECRET0_DIGEST_0_REG_OFFSET, 0);
+  EXPECT_EQ(otp_secret_partitions_check(kLcStateProd),
+            kErrorOtpSecretNotProvisioned);
+}
+
+TEST_F(OtpSecretPartitionsCheckTest, ProdStateCfgUnlockedOk) {
+  ExpectDigestRead(OTP_CTRL_SECRET0_DIGEST_0_REG_OFFSET, 0x1234567887654321);
+  ExpectDigestRead(OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET, 0);
+  EXPECT_EQ(otp_secret_partitions_check(kLcStateProd), kErrorOk);
+}
+
+TEST_F(OtpSecretPartitionsCheckTest, ProdStateCfgLockedOk) {
+  ExpectDigestRead(OTP_CTRL_SECRET0_DIGEST_0_REG_OFFSET, 0x1234567887654321);
+  ExpectDigestRead(OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET,
+                   0x1122334455667788);
+  ExpectDigestRead(OTP_CTRL_SECRET1_DIGEST_0_REG_OFFSET, 0xabcdef0123456789);
+  ExpectDigestRead(OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET, 0x9876543210fedcba);
+  EXPECT_EQ(otp_secret_partitions_check(kLcStateProd), kErrorOk);
+}
+
+TEST_F(OtpSecretPartitionsCheckTest, ProdStateSecret1Unprovisioned) {
+  ExpectDigestRead(OTP_CTRL_SECRET0_DIGEST_0_REG_OFFSET, 0x1234567887654321);
+  ExpectDigestRead(OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET,
+                   0x1122334455667788);
+  ExpectDigestRead(OTP_CTRL_SECRET1_DIGEST_0_REG_OFFSET, 0);
+  ExpectDigestRead(OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET, 0x9876543210fedcba);
+  EXPECT_EQ(otp_secret_partitions_check(kLcStateProd),
+            kErrorOtpSecretNotProvisioned);
+}
+
+TEST_F(OtpSecretPartitionsCheckTest, ProdStateSecret2Unprovisioned) {
+  ExpectDigestRead(OTP_CTRL_SECRET0_DIGEST_0_REG_OFFSET, 0x1234567887654321);
+  ExpectDigestRead(OTP_CTRL_CREATOR_SW_CFG_DIGEST_0_REG_OFFSET,
+                   0x1122334455667788);
+  ExpectDigestRead(OTP_CTRL_SECRET1_DIGEST_0_REG_OFFSET, 0xabcdef0123456789);
+  ExpectDigestRead(OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET, 0);
+  EXPECT_EQ(otp_secret_partitions_check(kLcStateProd),
+            kErrorOtpSecretNotProvisioned);
+}
 
 class OtpDaiReadTest : public OtpReadTest,
                        public testing::WithParamInterface<int> {};
