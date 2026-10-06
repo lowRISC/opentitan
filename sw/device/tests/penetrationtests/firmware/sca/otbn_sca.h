@@ -176,6 +176,30 @@ status_t handle_otbn_sca_rsa512_decrypt(ujson_t *uj);
 status_t handle_otbn_sca_combi_operations_batch(ujson_t *uj);
 
 /**
+ * Runs a single OTBN MAI SCA operation (B2A/A2B/SecAdd).
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_sca_mai_single(ujson_t *uj);
+
+/**
+ * Runs a Fixed-vs-Random batch of OTBN MAI SCA operations for TVLA.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_sca_mai_batch_fvsr(ujson_t *uj);
+
+/**
+ * Runs a Random batch of OTBN MAI SCA operations.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_otbn_sca_mai_batch_random(ujson_t *uj);
+
+/**
  * OTBN SCA command handler.
  *
  * Command handler for the OTBN SCA command.

@@ -176,3 +176,64 @@ def hkdf_batch_random(
         )
         response = target.read_response()
     return response
+
+
+def mai_single(
+    target,
+    in0,
+    in1,
+    in2,
+    mode=0,
+    en_masks=True,
+    reset=False,
+):
+    otbnsca = OTOTBN(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    device_id, owner_page, boot_log, boot_measurements, version = otbnsca.init()
+    otbnsca.mai_single(in0, in1, in2, mode, en_masks)
+    return target.read_response()
+
+
+def mai_batch_fvsr(
+    target,
+    iterations,
+    num_traces,
+    in0,
+    in1,
+    in2,
+    mode=0,
+    en_masks=True,
+    reset=False,
+):
+    otbnsca = OTOTBN(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    device_id, owner_page, boot_log, boot_measurements, version = otbnsca.init()
+    response = None
+    for _ in range(iterations):
+        otbnsca.mai_batch_fvsr(num_traces, in0, in1, in2, mode, en_masks)
+        response = target.read_response()
+    return response
+
+
+def mai_batch_random(
+    target,
+    iterations,
+    num_traces,
+    mode=0,
+    en_masks=True,
+    reset=False,
+):
+    otbnsca = OTOTBN(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    device_id, owner_page, boot_log, boot_measurements, version = otbnsca.init()
+    response = None
+    for _ in range(iterations):
+        otbnsca.mai_batch_random(num_traces, mode, en_masks)
+        response = target.read_response()
+    return response
