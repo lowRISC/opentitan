@@ -2,19 +2,34 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  build_cmd:  "{job_prefix} xrun"
+  // `-elaborate` sits in the build command rather than in build_opts, which leaves build_opts a
+  // pure description of the design: sources, defines and elaboration controls. A GUI run reuses
+  // that description verbatim from the run step. See xcelium_snapshot_opts_1 below.
+  build_cmd:  "{job_prefix} xrun -elaborate"
   run_cmd:    "{job_prefix} xrun"
 
   build_db_dir: "{build_dir}/xcelium.d"
 
-  build_opts: ["-elaborate -64bit -sv",
+  // FuseSoC copies every source file into the build tree by default and points the file list at
+  // those copies. SimVision would then reinvoke the simulator on the copies, so an edit to the real
+  // source would never be picked up. Xcelium therefore asks FuseSoC to reference the sources where
+  // they live, overriding the default in hw/dv/tools/dvsim/fusesoc.hjson. This applies to batch
+  // builds too, so that a GUI run and a batch run key their object libraries to the same paths and
+  // can share a build directory. Every Xcelium `-I` therefore names the source tree rather than
+  // the export tree. No other tool needs this, so the default leaves the export alone for them.
+  fusesoc_export_opts: "--no-export"
+
+  build_opts: ["-64bit -sv",
                // Wait to acquire a license.
                "-licqueue",
                // TODO: duplicate primitives between OT and Ibex #1231
                "-ALLOWREDEFINITION",
                "-messages -errormax 50",
                "-timescale {timescale}",
-               "-f {sv_flist}",
+               // -F rather than -f: the paths inside the file list are relative to the file itself,
+               // not to the invocation directory. The build step happens to run from the file
+               // list's own directory, but a GUI run step does not.
+               "-F {sv_flist}",
                "-uvmhome CDNS-1.2",
                // Specify the library name for the run step to use.
                "-xmlibdirname {build_db_dir}",
@@ -45,8 +60,9 @@
                "-nowarn REVRNG",
                // Ignore warning "Include directory <path> given but not used". This is benign.
                "-nowarn SPDUSD",
-               // Needed for including "secded_enc.h".
-               "-I{build_dir}/fusesoc-work/src/lowrisc_dv_secded_enc_0",
+               // Needed for including "secded_enc.h". Xcelium compiles the sources where they
+               // live rather than the copies FuseSoC exports, see fusesoc_export_opts above.
+               "-I{proj_root}/hw/ip/prim/dv/prim_secded",
                // This warning is thrown when a scalar enum variable is assigned to an enum array.
                // Other tools (e.g., FPV) treat such assignments as an error, hence we bump it to
                // an error in simulation so that this can be caught early in CI.
@@ -62,14 +78,43 @@
   uvm_testname_plusarg: "{eval_cmd} echo {uvm_test} | sed -E 's/(.+)/+UVM_TESTNAME=\\1/'"
   uvm_testseq_plusarg: "{eval_cmd} echo {uvm_test_seq} | sed -E 's/(.+)/+UVM_TEST_SEQ=\\1/'"
 
+  // How the run step gets hold of a snapshot. Selected by {gui}, which is 1 for both --gui and
+  // --gui-debug.
+  //
+  // A batch run loads the snapshot that the build step already elaborated. `-r` skips compilation
+  // and elaboration entirely, which is what a regression wants, but it also leaves SimVision's
+  // "Reinvoke Simulator" with nothing to recompile: an RTL or DV edit could then only be picked up
+  // by quitting the session and running dvsim again.
+  //
+  // A GUI run therefore drops `-r` and hands the run step the option file that dvsim writes into
+  // the build directory for every build, making it a single-step xrun invocation that does its own
+  // dependency check. Reinvoking from SimVision then recompiles the changed design units,
+  // re-elaborates, and reloads the snapshot into the running session with the waveform, probes and
+  // breakpoints still in place.
+  //
+  // Reading the options back rather than listing them again is what keeps the two steps honest.
+  // Individual cfgs and build modes add their own defines, include paths and DPI libraries, and a
+  // run that compiled with a different set from the build would silently simulate a differently
+  // configured design. It also means --gui --run-only can attach to a build made without --gui,
+  // though that build carries none of the debug options the gui build modes add.
+  xcelium_snapshot_opts_0: ["-r {tb}"]
+  xcelium_snapshot_opts_1: ["-f {build_opts_file}"]
+
+  // Options a batch run needs besides the snapshot. A GUI run gets all of them from the build's
+  // option file instead (see xcelium_snapshot_opts_1 above), and xrun rejects a second
+  // -xmlibdirname with *E,OPTNOML, so the run step must not name them twice.
+  xcelium_run_common_opts_0: [// Suppress printing of the copyright banner.
+                              "-nocopyright",
+                              // Wait to acquire a license.
+                              "-licqueue",
+                              "-64bit -xmlibdirname {build_db_dir}"]
+  xcelium_run_common_opts_1: []
+
   run_opts:   ["-input {run_script}",
-               // Suppress printing of the copyright banner.
-               "-nocopyright",
-               // Wait to acquire a license.
-               "-licqueue",
-               "-64bit -xmlibdirname {build_db_dir}",
-               // Use the same snapshot name set during the build step.
-               "-r {tb}",
+               "{xcelium_run_common_opts_{gui}}",
+               // Use the same snapshot name set during the build step, unless this is a GUI run,
+               // where the run compiles and elaborates for itself.
+               "{xcelium_snapshot_opts_{gui}}",
                "+SVSEED={svseed}",
                "{uvm_testname_plusarg}",
                "{uvm_testseq_plusarg}",
@@ -99,6 +144,12 @@
     // Add an additional single quotation because `cov_merge_cmd` has an empty space, it will cause
     // trouble when exporting the entire command in the environment.
     {cov_merge_cmd: "{cov_merge_cmd}"}
+
+    // Keep the process that invoked xrun alive when SimVision reinvokes the simulator. Without
+    // this, the reinvoke takes down the make process that dvsim is waiting on. Documented in
+    // doc/RunningSimVision/controlsimulation.html of the Xcelium install (SimVision 24.03). The
+    // value follows {gui}, so it is 1 only for a GUI run.
+    { SIMVISION_REINVOKE_NO_TERMINATE_PARENT_PROCESS: "{gui}" },
 
     // job prefix
     {job_prefix: "{job_prefix}"}
