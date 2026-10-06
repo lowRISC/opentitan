@@ -434,7 +434,7 @@ cc_args(
         "@rules_cc//cc/toolchains/actions:compile_actions",
         "@rules_cc//cc/toolchains/actions:link_actions",
     ],
-    args = ["-march=rv32imc_zba_zbb_zbc_zbs"],
+    args = ["-march=rv32imc_zba_zbb_zbc_zbs_zcb_zcmp"],
     requires_any_of = [":constraint_bitmanip"],
 )
 
@@ -444,7 +444,7 @@ cc_args(
         "@rules_cc//cc/toolchains/actions:compile_actions",
         "@rules_cc//cc/toolchains/actions:link_actions",
     ],
-    args = ["-march=rv32imc"],
+    args = ["-march=rv32imc_zcb_zcmp"],
     requires_any_of = [":constraint_no_bitmanip"],
 )
 
@@ -461,8 +461,8 @@ cc_args(
     ],
 )
 
-# Mirrors `:arch_rv32imcb`; the only differences are the two the ISA requires,
-# `i` becoming `e` and `xcheriot` being added.
+# Mirrors `:arch_rv32imcb`, except that `i` becomes `e`, `xcheriot` is added
+# and Zcmp is dropped (not supported in CHERIoT mode).
 cc_args(
     name = "arch_cheriot",
     actions = [
@@ -471,7 +471,7 @@ cc_args(
     ],
     args = [
         "--target=riscv32-unknown-unknown",
-        "-march=rv32emc_zba_zbb_zbc_zbs_xcheriot",
+        "-march=rv32emc_zba_zbb_zbc_zbs_zcb_xcheriot",
     ],
     requires_any_of = [":constraint_bitmanip"],
 )
@@ -486,7 +486,7 @@ cc_args(
     ],
     args = [
         "--target=riscv32-unknown-unknown",
-        "-march=rv32emc_xcheriot",
+        "-march=rv32emc_zcb_xcheriot",
     ],
     requires_any_of = [":constraint_no_bitmanip"],
 )
