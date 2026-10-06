@@ -112,6 +112,9 @@ If the key manager revokes the key while an operation is running, that operation
 In all of these cases the error is signalled through [`INTR_STATE.hmac_err`](registers.md#intr_state), as for any other HMAC error.
 An aborted operation does not raise the `hmac_done` interrupt, so software waiting for a result has to react to [`INTR_STATE.hmac_err`](registers.md#intr_state).
 
+Software must read the digest before clearing the sideloaded key in the key manager.
+A key that becomes invalid after the operation has completed clears the digest, and no error is reported in this case, so the digest registers then silently read as zero.
+
 To recover from an abort, software has to:
 
 1. Clear [`INTR_STATE.hmac_err`](registers.md#intr_state).
