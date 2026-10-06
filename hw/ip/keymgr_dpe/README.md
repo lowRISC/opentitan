@@ -23,6 +23,7 @@ This document specifies the functionality of the OpenTitan key manager DPE which
 - Version controlled key generation, bounded by a per-slot maximum key version.
 - Key generation for both software consumption and hardware sideload (AES, KMAC, OTBN and HMAC).
 - Support for DICE open profile and for the DICE Protection Environment (DPE).
+- Two independent root secrets (_creator root key_ and _secondary root key_), each loadable into an empty slot by software and lockable until reset, so separate DICE hierarchies can be derived.
 
 ## Description
 
