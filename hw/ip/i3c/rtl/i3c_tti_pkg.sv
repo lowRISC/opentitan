@@ -28,9 +28,12 @@ package i3c_tti_pkg;
   // Description of a Pending Read Notification; single DWORD.
   typedef struct packed {
     logic        notify;  // Must be 1 -> Pending Read Notification.
+    logic        wroc;    // Write response even on successful completion.
     logic  [4:0] lsbs;    // The LSBs of the Pending Read Notification MDB.
-    logic  [1:0] len;     // Number of additional data bytes (0-3).
-    logic [23:0] data;    // Additional data bytes.
+    logic  [2:0] reserved;
+    logic  [1:0] len;     // Number of additional data bytes (0-2).
+    logic  [3:0] tid;     // Transaction ID.
+    logic [15:0] data;    // Additional data bytes.
   } i3c_tti_prn_t;
 
   // Description of data for a Controller-initiated Read Transfer; single DWORD.

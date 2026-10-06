@@ -333,8 +333,9 @@ module i3c_target_fsm
 
     // Reinterpret as a descriptor.
     assign tx_desc[t] = i3c_tti_tx_desc_t'(tx_desc_rdata_i[t]);
-    // Descriptor is valid if it is a pending read notification or contains data.
-    assign tx_desc_valid[t] = |{tx_desc[t].prn.notify, tx_desc[t].tx.data_length};
+    // Descriptor is valid if it is a pending read notification with valid length, or contains data.
+    assign tx_desc_valid[t] = tx_desc[t].prn.notify ? ~&tx_desc[t].prn.len :
+                                                       |tx_desc[t].tx.data_length;
     // TODO(#31337): Aborting is not yet implemented.
     assign tx_suspended = reg2hw_i.targ_pio_control.suspended.q[t];
     // TODO(#31337): Post response and/or raise error interrupt if not valid.
