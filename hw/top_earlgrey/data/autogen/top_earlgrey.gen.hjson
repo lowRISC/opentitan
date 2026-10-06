@@ -10132,11 +10132,11 @@
       }
       param_decl:
       {
-        MainSramBaseAddr: 32'h1000_0000
-        MainSramTopAddr: 32'h1003_0000
-        NvmBaseAddr: 32'h3000_0000
-        NvmTopAddr: 32'h3020_0000
-        MetaSramBaseAddr: 32'h1100_0000
+        MainSramBaseAddr: tl_main_pkg::ADDR_SPACE_SRAM_CTRL_MAIN__RAM
+        MainSramTopAddr: tl_main_pkg::ADDR_SPACE_SRAM_CTRL_SEC__RAM + tl_main_pkg::ADDR_MASK_SRAM_CTRL_SEC__RAM + 1
+        NvmBaseAddr: tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST
+        NvmTopAddr: tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST + tl_main_pkg::ADDR_MASK_RRAM_CTRL__HOST + 1
+        MetaSramBaseAddr: tl_main_pkg::ADDR_SPACE_CHERIOT__REVBM
       }
       base_addrs:
       {
@@ -10172,7 +10172,7 @@
           name: MainSramBaseAddr
           desc: Base address of the main SRAM region (inclusive).
           type: logic [top_pkg::TL_AW-1:0]
-          default: 32'h1000_0000
+          default: tl_main_pkg::ADDR_SPACE_SRAM_CTRL_MAIN__RAM
           local: "false"
           expose: "true"
           name_top: CheriotMainSramBaseAddr
@@ -10181,7 +10181,7 @@
           name: MainSramTopAddr
           desc: Top address of the main SRAM region (exclusive).
           type: logic [top_pkg::TL_AW-1:0]
-          default: 32'h1003_0000
+          default: tl_main_pkg::ADDR_SPACE_SRAM_CTRL_SEC__RAM + tl_main_pkg::ADDR_MASK_SRAM_CTRL_SEC__RAM + 1
           local: "false"
           expose: "true"
           name_top: CheriotMainSramTopAddr
@@ -10190,7 +10190,7 @@
           name: NvmBaseAddr
           desc: Base address of the NVM region (inclusive).
           type: logic [top_pkg::TL_AW-1:0]
-          default: 32'h3000_0000
+          default: tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST
           local: "false"
           expose: "true"
           name_top: CheriotNvmBaseAddr
@@ -10199,7 +10199,7 @@
           name: NvmTopAddr
           desc: Top address of the NVM region (exclusive).
           type: logic [top_pkg::TL_AW-1:0]
-          default: 32'h3020_0000
+          default: tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST + tl_main_pkg::ADDR_MASK_RRAM_CTRL__HOST + 1
           local: "false"
           expose: "true"
           name_top: CheriotNvmTopAddr
@@ -10208,7 +10208,7 @@
           name: MetaSramBaseAddr
           desc: Base address of the CHERIoT meta SRAM region.
           type: logic [top_pkg::TL_AW-1:0]
-          default: 32'h1100_0000
+          default: tl_main_pkg::ADDR_SPACE_CHERIOT__REVBM
           local: "false"
           expose: "true"
           name_top: CheriotMetaSramBaseAddr
