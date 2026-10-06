@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
+import json
 import sys
 import os
 import random
@@ -620,6 +621,11 @@ def main() -> int:
         default=[],
         help="Format: sym0,sym1:mode:size:hex_secret[:hex_modulus]",
     )
+    parser.add_argument(
+        "--dump-json",
+        action="store_true",
+        help="Dump TVLA accumulators to JSON",
+    )
 
     args = parser.parse_args()
 
@@ -654,7 +660,7 @@ def main() -> int:
     accumulator = TVLAAccumulator()
     max_threads = max(1, multiprocessing.cpu_count() - 2)
 
-    BATCH_SIZE = 100
+    BATCH_SIZE = min(100, max(1, args.num_experiments // 2))
     num_fixed_batches = (args.num_experiments // 2) // BATCH_SIZE
     num_random_batches = (args.num_experiments // 2) // BATCH_SIZE
 
@@ -745,6 +751,20 @@ def main() -> int:
         f"\nCampaign complete. Total leakages > {args.t_threshold}: {leakages_found}",
         flush=True,
     )
+
+    if args.dump_json:
+        out_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR", ".")
+        with open(os.path.join(out_dir, "tvla_accumulators.json"), "w") as f:
+            json.dump(
+                {
+                    "counts": accumulator.counts,
+                    "sums": accumulator.sums,
+                    "sum_sqs": accumulator.sum_sqs,
+                },
+                f,
+            )
+        return 0
+
     return 0 if leakages_found == 0 else 1
 
 

@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:otbn.bzl", "otbn_library", "otbn_sim_test", "otbn_tvla_sim_test")
+load("//rules:otbn.bzl", "otbn_library", "otbn_sim_test", "otbn_tvla_panopticon_test", "otbn_tvla_sim_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -275,4 +275,61 @@ otbn_tvla_sim_test(
     tvla_secrets = {
         "rsa_d0,rsa_d1": "boolean:64:0x322c127f274460106c92fed934f1c6d695dfc595227fd7a607c032cec45983351d0b0bc8f3dff3b6c9ad7832dd18d46d82a6173a921aaf8adaa5b31fa0d07f7d",
     },
+)
+
+# Project Panopticon CI wrappers (dumps accumulators JSON)
+otbn_tvla_panopticon_test(
+    name = "p256_ecdh_tvla_panopticon_test",
+    num_traces = 2,
+    tags = ["nightly"],
+    tvla_test = ":p256_ecdh_tvla_test",
+)
+
+otbn_tvla_panopticon_test(
+    name = "p256_ecdsa_sign_tvla_panopticon_test",
+    num_traces = 2,
+    tags = ["nightly"],
+    tvla_test = ":p256_ecdsa_sign_tvla_test",
+)
+
+otbn_tvla_panopticon_test(
+    name = "p384_ecdh_tvla_panopticon_test",
+    num_traces = 2,
+    tags = ["nightly"],
+    tvla_test = ":p384_ecdh_tvla_test",
+)
+
+otbn_tvla_panopticon_test(
+    name = "p384_ecdsa_sign_tvla_panopticon_test",
+    num_traces = 2,
+    tags = ["nightly"],
+    tvla_test = ":p384_ecdsa_sign_tvla_test",
+)
+
+otbn_tvla_panopticon_test(
+    name = "curve25519_ecdh_tvla_panopticon_test",
+    num_traces = 2,
+    tags = ["nightly"],
+    tvla_test = ":curve25519_ecdh_tvla_test",
+)
+
+otbn_tvla_panopticon_test(
+    name = "ed25519_sign_tvla_panopticon_test",
+    num_traces = 2,
+    tags = ["nightly"],
+    tvla_test = ":ed25519_sign_tvla_test",
+)
+
+otbn_tvla_panopticon_test(
+    name = "rsa_2048_tvla_panopticon_test",
+    num_traces = 2,
+    tags = ["nightly"],
+    tvla_test = ":rsa_2048_tvla_test",
+)
+
+otbn_tvla_panopticon_test(
+    name = "rsa_512_tvla_panopticon_test",
+    num_traces = 2,
+    tags = ["nightly"],
+    tvla_test = ":rsa_512_tvla_test",
 )

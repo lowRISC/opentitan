@@ -428,82 +428,141 @@ otbn_fi_panopticon_test(
     name = "p256_ecdsa_sign_fi_nonce_panopticon_test",
     fi_test = ":p256_ecdsa_sign_fi_nonce_test",
     num_skips = 2,
+    tags = ["nightly"],
 )
 
 otbn_fi_panopticon_test(
     name = "p256_ecdsa_verify_msg_fi_panopticon_test",
     fi_test = ":p256_ecdsa_verify_msg_fi_test",
     num_skips = 2,
+    tags = ["nightly"],
 )
 
 otbn_fi_panopticon_test(
     name = "p256_ecdsa_verify_pubkey_fi_panopticon_test",
     fi_test = ":p256_ecdsa_verify_pubkey_fi_test",
     num_skips = 2,
+    tags = ["nightly"],
 )
 
 otbn_fi_panopticon_test(
     name = "p256_ecdh_fi_panopticon_test",
     fi_test = ":p256_ecdh_fi_test",
     num_skips = 2,
+    tags = ["nightly"],
 )
 
 otbn_fi_panopticon_test(
     name = "p384_ecdsa_sign_fi_nonce_panopticon_test",
     fi_test = ":p384_ecdsa_sign_fi_nonce_test",
     num_skips = 2,
+    tags = ["nightly"],
 )
 
 otbn_fi_panopticon_test(
     name = "p384_ecdsa_verify_pubkey_fi_panopticon_test",
     fi_test = ":p384_ecdsa_verify_pubkey_fi_test",
     num_skips = 2,
+    tags = ["nightly"],
 )
 
 otbn_fi_panopticon_test(
     name = "curve25519_ecdh_fi_panopticon_test",
     fi_test = ":curve25519_ecdh_fi_test",
     num_skips = 2,
+    tags = ["nightly"],
 )
 
 otbn_fi_panopticon_test(
     name = "rsa_512_fi_panopticon_test",
     fi_test = ":rsa_512_fi_test",
     num_skips = 2,
+    tags = ["nightly"],
 )
 
 otbn_fi_panopticon_test(
     name = "rsa_512_fi_exp_panopticon_test",
     fi_test = ":rsa_512_fi_exp_test",
     num_skips = 2,
+    tags = ["nightly"],
 )
 
 otbn_fi_panopticon_test(
     name = "rsa_512_verify_fi_panopticon_test",
     fi_test = ":rsa_512_verify_fi_test",
     num_skips = 2,
+    tags = ["nightly"],
 )
 
 otbn_fi_panopticon_test(
     name = "rsa_512_verify_fi_pubkey_panopticon_test",
     fi_test = ":rsa_512_verify_fi_pubkey_test",
     num_skips = 2,
+    tags = ["nightly"],
 )
 
 otbn_fi_panopticon_test(
     name = "ed25519_sign_fi_nonce_panopticon_test",
     fi_test = ":ed25519_sign_fi_nonce_test",
     num_skips = 2,
+    tags = ["nightly"],
 )
 
 otbn_fi_panopticon_test(
     name = "ed25519_verify_fi_msg_collision_panopticon_test",
     fi_test = ":ed25519_verify_fi_msg_collision_test",
     num_skips = 2,
+    tags = ["nightly"],
 )
 
 otbn_fi_panopticon_test(
     name = "ed25519_verify_fi_pubkey_collision_panopticon_test",
     fi_test = ":ed25519_verify_fi_pubkey_collision_test",
     num_skips = 2,
+    tags = ["nightly"],
 )
+<<<<<<< HEAD
+=======
+
+otbn_fi_panopticon_test(
+    name = "mldsa87_verify_msg_fi_panopticon_test",
+    fi_test = ":mldsa87_verify_msg_fi_test",
+    num_skips = 2,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "mldsa87_sign_fi_nonce_panopticon_test",
+    fi_test = ":mldsa87_sign_fi_nonce_test",
+    num_skips = 2,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "mldsa87_verify_pubkey_fi_panopticon_test",
+    fi_test = ":mldsa87_verify_pubkey_fi_test",
+    num_skips = 2,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "mldsa87_sign_fi_z_panopticon_test",
+    fi_test = ":mldsa87_sign_fi_z_test",
+    num_skips = 2,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "mldsa87_verify_norm_bypass_fi_panopticon_test",
+    fi_test = ":mldsa87_verify_norm_bypass_fi_test",
+    num_skips = 2,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "mldsa87_verify_hint_bypass_fi_panopticon_test",
+    fi_test = ":mldsa87_verify_hint_bypass_fi_test",
+    num_skips = 2,
+    tags = ["nightly"],
+)
+>>>>>>> da93116199 ([pentest] Allow limited trace counts for OTBN tvla sim)
