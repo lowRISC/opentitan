@@ -9,7 +9,7 @@ All checklist items refer to the content in the [Checklist.](../../../../doc/pro
 
 Type          | Item                           | Resolution  | Note/Collaterals
 --------------|--------------------------------|-------------|------------------
-Documentation | [SPEC_COMPLETE][]              | Done        | [I3C Controller/Target](../README.md); TTI
+Documentation | [SPEC_COMPLETE][]              | Done        | [I3C Controller/Target](../README.md); [TTI](tti.md)
 Documentation | [CSR_DEFINED][]                | Done        |
 RTL           | [CLKRST_CONNECTED][]           | Done        |
 RTL           | [IP_TOP][]                     | In Progress |
