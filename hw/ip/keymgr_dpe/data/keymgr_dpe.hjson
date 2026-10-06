@@ -1338,12 +1338,17 @@
         { bits: "7",
           name: "INVALID_ROOT_KEY",
           resval: "0x0"
-          desc: "OTP root key was invalid during the first advance",
+          desc: "OTP root key was invalid during the first advance or during a `load root key` operation",
         },
         { bits: "8",
           name: "INACTIVE_LC_EN",
           resval: "0x0"
           desc: "Enable signal from LC ctrl is deactivated",
+        },
+        { bits: "9",
+          name: "INVALID_SECONDARY_ROOT_KEY",
+          resval: "0x0"
+          desc: "Secondary root key was invalid during a `load secondary root key` operation",
         },
       ]
     },
