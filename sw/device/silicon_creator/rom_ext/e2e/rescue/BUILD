@@ -21,6 +21,7 @@ load(
 )
 load(
     "//sw/device/silicon_creator/rom_ext:defs.bzl",
+    "ROM_EXT_VARIATIONS",
     "USBDFU_RESCUE_TIMEOUT_SECS",
 )
 
@@ -31,11 +32,13 @@ _POSITIONS = {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_a",
         "slot": "SlotA",
         "rom_ext_offset": "{rom_ext_slot_a}",
+        "bl0_slot": "AA__",
     },
     "slot_b": {
         "linker_script": "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_b",
         "slot": "SlotB",
         "rom_ext_offset": "{rom_ext_slot_b}",
+        "bl0_slot": "__BB",
     },
 }
 
@@ -121,6 +124,34 @@ _FAULT_CONFIG = {
     for name, position in _POSITIONS.items()
 ]
 
+[
+    opentitan_binary(
+        name = "boot_test_mldsa_{}".format(name),
+        testonly = True,
+        srcs = [
+            "//sw/device/silicon_creator/rom_ext/e2e/verified_boot:boot_test",
+        ],
+        defines = [
+            "WITH_MANIFEST=1",
+        ],
+        exec_env = [
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext",
+            "//hw/top_earlgrey:fpga_cw340_rom_ext",
+        ],
+        linker_script = position["linker_script"],
+        slot_spec = ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
+        deps = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:status",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib:boot_log",
+            "//sw/device/silicon_creator/lib:manifest",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        ],
+    )
+    for name, position in _POSITIONS.items()
+]
+
 # Important note: many of the tests in this file modify the owner
 # configuration and/or expect an empty owner configuration when
 # starting the test. Currently, the only way to clear this configuration
@@ -161,6 +192,40 @@ _FAULT_CONFIG = {
     )
     for name, position in _POSITIONS.items()
     for protocol, config in _CONFIGS.items()
+]
+
+[
+    opentitan_test(
+        name = "rescue_firmware_mldsa_{}_rom_ext_{}".format(name, rxslot),
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        },
+        fpga = fpga_params(
+            assemble = "{rom_ext}@{rom_ext_offset}",
+            binaries = {
+                ":boot_test_mldsa_{}".format(name): "payload",
+            },
+            exit_success = "bl0_slot = {}\r\n".format(position["bl0_slot"]),
+            rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_on_change_dice_mldsa",
+            rom_ext_offset = _POSITIONS[rxslot]["rom_ext_offset"],
+            slot = position["slot"],
+            test_cmd = """
+                # First make sure the ROM_EXT is faulting because there is no firmware
+                --exec="console --non-interactive --exit-success='BFV:' --exit-failure='PASS|FAIL'"
+                # Load firmware via rescue
+                --exec="rescue firmware --slot={slot} {payload:signed_bin}"
+                # Check for firmware execution
+                --exec="console --non-interactive --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
+                no-op
+            """,
+            testopt_clear_after_test = "True",  # See important note at the top
+            testopt_clear_before_test = "True",
+        ),
+        slot_spec = ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
+    )
+    for name, position in _POSITIONS.items()
+    for rxslot in _POSITIONS.keys()
 ]
 
 # This bad ROM_EXT image is an empty image that identifies as a ROM_EXT with

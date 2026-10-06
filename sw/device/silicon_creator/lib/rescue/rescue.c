@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/lib/rescue/rescue.h"
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/silicon_creator/lib/boot_data.h"
 #include "sw/device/silicon_creator/lib/boot_log.h"
@@ -367,11 +368,14 @@ void rescue_state_init(rescue_state_t *state, boot_data_t *bootdata,
     HARDENED_CHECK_EQ((hardened_bool_t)config, kHardenedBoolFalse);
     // If there is no rescue config, then the rescue region starts immediately
     // after the ROM_EXT and ends at the end of the flash bank.
-    state->flash_start = CHIP_ROM_EXT_SIZE_MAX;
+    state->flash_start = boot_log->rom_ext_size;
     state->flash_limit = kFlashBankSize;
     state->inactivity_deadline = 0;
   } else {
-    state->flash_start = (uint32_t)config->start * kFlashPageSize;
+    // Calculate the flash start as the maximum of the configured start and the
+    // size of the ROM_EXT.
+    state->flash_start =
+        MAX((uint32_t)config->start * kFlashPageSize, boot_log->rom_ext_size);
     state->flash_limit =
         (uint32_t)(config->start + config->size) * kFlashPageSize;
     state->erase_both_slots =

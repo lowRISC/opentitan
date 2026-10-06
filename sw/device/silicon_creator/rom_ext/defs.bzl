@@ -55,7 +55,10 @@ TEST_OWNER_CONFIGS = {
         "dice_variation": "dice_mldsa",
         "manifest": ":manifest",
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
-        "owner_defines": [],
+        "owner_defines": [
+            # 0x58 is 'X'modem.
+            "WITH_RESCUE_PROTOCOL=0x58",
+        ],
     },
     "on_demand_dice_mldsa": {
         "dice_variation": "dice_mldsa",
