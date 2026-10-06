@@ -10,6 +10,8 @@ import re
 import signal
 import socket
 
+from sw.host.penetrationtests.python.util.qemu import get_qemu_monitor, is_qemu_available
+
 
 class GDBController:
     """Enhanced GDB and OpenOCD controller for high-speed hardware fault injection.
@@ -45,6 +47,7 @@ class GDBController:
         self._observations = {}
         self._ocd_sock = None
         self.gdb_process = None
+        self._target_running = False
 
         # Standard GDB connection to OpenOCD gdb_port (3333)
         self.use_ocd_direct = False
@@ -75,14 +78,25 @@ class GDBController:
                 "set pagination off",
                 "-ex",
                 "set confirm off",
+                "-ex",
+                "set print frame-info location",
             ]
             if elf_file:
                 gdb_command.extend(["-ex", f"file {elf_file}"])
             gdb_command.extend(["-ex", f"target remote {remote_host}:{gdb_port}"])
 
+            gdb_env = os.environ.copy()
+            if "XDG_CACHE_HOME" not in gdb_env:
+                gdb_env["XDG_CACHE_HOME"] = gdb_env.get("TEST_TMPDIR", "/tmp")
+
             try:
                 self.gdb_process = Popen(
-                    gdb_command, stdin=PIPE, stdout=PIPE, stderr=PIPE, bufsize=0
+                    gdb_command,
+                    stdin=PIPE,
+                    stdout=PIPE,
+                    stderr=PIPE,
+                    bufsize=0,
+                    env=gdb_env,
                 )
 
                 # Wait for GDB startup, symbol loading, and connection to target
@@ -100,13 +114,14 @@ class GDBController:
                 # Start clean
                 self.send_command("delete breakpoints", timeout=5.0)
 
-                # Configure memory access on Ibex core
-                try:
-                    self.send_command(
-                        "monitor riscv set_mem_access progbuf sysbus", timeout=2.0
-                    )
-                except Exception:
-                    pass
+                # Configure memory access on Ibex core (OpenOCD only)
+                if not is_qemu_available():
+                    try:
+                        self.send_command(
+                            "monitor riscv set_mem_access progbuf sysbus", timeout=2.0
+                        )
+                    except Exception:
+                        pass
             except Exception:
                 self.close_gdb()
                 raise
@@ -208,6 +223,8 @@ class GDBController:
                 if fd == self.gdb_process.stdout.fileno():
                     data = os.read(fd, 4096).decode("utf-8", errors="ignore")
                     output += data
+                    if output.strip().endswith("(gdb)"):
+                        self._target_running = False
                 elif fd == self.gdb_process.stderr.fileno():
                     err_data = os.read(fd, 4096).decode("utf-8", errors="ignore")
                     if err_data.strip() and print_errors:
@@ -264,14 +281,16 @@ class GDBController:
         if not self.gdb_process or not self.gdb_process.stdin:
             raise RuntimeError("GDB process not started or stdin not available.")
 
+        cmd_body = mi_command.strip()
         if check_response:
             self.dump_output(timeout=0.01)
             self.cmd_seq = getattr(self, "cmd_seq", 0) + 1
             token = f"__SENTINEL_{self.cmd_seq}__"
-            cmd_body = mi_command.strip()
             command_line = f'{cmd_body}\nprintf "{token}\\n"\n'
         else:
-            command_line = mi_command.strip() + "\n"
+            command_line = cmd_body + "\n"
+            if cmd_body in ("c", "continue"):
+                self._target_running = True
 
         self.gdb_process.stdin.write(command_line.encode("utf-8"))
         self.gdb_process.stdin.flush()
@@ -291,6 +310,7 @@ class GDBController:
                         f"GDB timed out after {timeout}s. Output: {repr(response)}, {mi_command}"
                     )
 
+            self._target_running = False
             cleaned_response = response.split(token)[0]
             return cleaned_response
         else:
@@ -298,6 +318,22 @@ class GDBController:
 
     def reset_target(self, halt=True, reset_delay=0.005):
         """Resets the target device."""
+        if is_qemu_available():
+            self.interrupt(timeout=1.0)
+            try:
+                self.send_command("delete breakpoints", timeout=1.0)
+            except Exception:
+                pass
+            get_qemu_monitor().reset(halt=halt)
+            if halt:
+                try:
+                    self.send_command("flushregs", timeout=1.0)
+                except Exception:
+                    pass
+            time.sleep(reset_delay)
+            self.dump_output()
+            return
+
         if self.use_ocd_direct:
             if halt:
                 self._ocd_cmd("reset halt")
@@ -348,6 +384,12 @@ class GDBController:
             self.gdb_process.communicate()
         finally:
             self.gdb_process = None
+
+    def __del__(self):
+        try:
+            self.close_gdb(timeout=0.2)
+        except Exception:
+            pass
 
     def get_program_counter(self):
         """Reads current Program Counter (PC)."""
@@ -420,9 +462,13 @@ class GDBController:
         commands_definition = f"commands {brk_num}\ntraceloop\nend"
         self.send_command(commands_definition)
         self.n_brkp = brk_num + 1
+        if is_qemu_available():
+            get_qemu_monitor()._pc_tracing = True
 
     def parse_pc_trace_file(self, file_path):
         """Parses program counters recorded during trace."""
+        if is_qemu_available():
+            get_qemu_monitor()._pc_tracing = False
         pc_list = []
         pc_pattern = re.compile(r"PC: (0x[0-9a-fA-F]+)")
 
@@ -448,6 +494,8 @@ class GDBController:
 
         if not self.gdb_process or self.gdb_process.poll() is not None:
             return
+        if not self._target_running:
+            return
         self.gdb_process.send_signal(signal.SIGINT)
         start_t = time.time()
         buf = ""
@@ -457,6 +505,7 @@ class GDBController:
                 buf += chunk
                 if buf.strip().endswith("(gdb)"):
                     break
+        self._target_running = False
         self.dump_output(timeout=0.02)
 
     def apply_instruction_skip(self, pc_address, next_pc_address, count=1):
@@ -552,6 +601,8 @@ class GDBController:
 
     def cleanup_skip(self):
         """Cleans up armed skip breakpoint and event hook without closing connection."""
+        if is_qemu_available():
+            get_qemu_monitor()._pc_tracing = False
         if self.use_ocd_direct:
             try:
                 self._ocd_cmd("catch {rbp all}")
