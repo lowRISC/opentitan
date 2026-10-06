@@ -373,68 +373,67 @@ package kmac_pkg;
     SelSw     = 5'b01111
   } app_mux_sel_e ;
 
-  // Encoding generated at commit 6852a91493 using Python 3.12.13 with:
+  // Encoding generated at commit 7d1ca7e858 using Python 3.12.13 with:
   // $ ./util/design/sparse-fsm-encode.py --language=sv \
-  //     --seed 404110924 --distance 3 --states 19 --bits 10
+  //     --seed 1224720565 --distance 3 --states 18 --bits 10
   //
   // Hamming distance histogram:
   //
   //  0: --
   //  1: --
   //  2: --
-  //  3: ||||||||||| (14.04%)
-  //  4: ||||||||||||||||||| (22.81%)
-  //  5: ||||||||||||||||| (20.47%)
-  //  6: |||||||||||||||||||| (23.98%)
-  //  7: ||||||||||| (13.45%)
-  //  8: ||| (4.09%)
-  //  9:  (1.17%)
+  //  3: ||||||| (10.46%)
+  //  4: |||||||||||||| (21.57%)
+  //  5: |||||||||||||||||||| (29.41%)
+  //  6: |||||||||||||| (21.57%)
+  //  7: |||||| (9.15%)
+  //  8: ||| (4.58%)
+  //  9: || (3.27%)
   // 10: --
   //
   // Minimum Hamming distance: 3
   // Maximum Hamming distance: 9
-  // Minimum Hamming weight: 3
-  // Maximum Hamming weight: 8
+  // Minimum Hamming weight: 2
+  // Maximum Hamming weight: 7
   //
   localparam int AppStateWidth = 10;
   typedef enum logic [AppStateWidth-1:0] {
-    StIdle = 10'b1011100011,
+    StIdle = 10'b1001011000,
 
     // In StAppCfg state, it latches the cfg from AppCfg parameter to determine the kmac_mode,
     // sha3_mode, and keccak strength.
     // In StAppOutLen, the app interface pushes encoded output length into the core.
-    StAppCfg        = 10'b0111000011,
-    StAppMsg        = 10'b1110000000,
-    StAppOutLen     = 10'b0100110011,
-    StAppProcess    = 10'b1101111101,
-    StAppWait       = 10'b1111110000,
-    StAppPushDigest = 10'b0001011001,
-    StAppFinish     = 10'b1111101100,
+    StAppCfg        = 10'b0100000100,
+    StAppMsg        = 10'b0010101111,
+    StAppOutLen     = 10'b1100011110,
+    StAppProcess    = 10'b0010011101,
+    StAppWait       = 10'b1001010011,
+    StAppPushDigest = 10'b1011111010,
+    StAppFinish     = 10'b1010111001,
 
     // SW Controlled
     // If start request comes from SW first, until the operation ends, all
     // requests from apps will be stalled.
-    StSw = 10'b0000110110,
+    StSw = 10'b0100010011,
 
     // SW claimed the block to restore a previously saved Keccak state. Writes
     // to the state window are only accepted here. SW leaves this state with
     // the Continue command, or with the Done command to release the block
     // again.
-    StStateWrite = 10'b1101101011,
+    StStateWrite = 10'b1101110101,
 
     // Error KeyNotValid triggers if key is used but it is not valid at the time.
-    StErrorKeyNotValid = 10'b1000011011,
+    StErrorKeyNotValid = 10'b0111110011,
 
-    StErrorAwaitMsg         = 10'b1010001100,
-    StErrorNotify           = 10'b0010001011,
-    StErrorAwaitTermination = 10'b0011111000,
-    StErrorFinish           = 10'b0101100111,
-    StErrorAwaitSw          = 10'b0011010100,
-    StErrorAwaitAbsorbed    = 10'b0011101101,
-    StErrorPush             = 10'b1110010011,
+    StErrorAwaitMsg         = 10'b0111001001,
+    StErrorNotify           = 10'b0011000101,
+    StErrorAwaitTermination = 10'b1011100000,
+    StErrorFinish           = 10'b1111101100,
+    StErrorAwaitSw          = 10'b0110101000,
+    StErrorAwaitAbsorbed    = 10'b1100100010,
 
     // This state is used for terminal errors
-    StTerminalError = 10'b0110011101
+    StTerminalError = 10'b0100111111
   } st_e;
 
   // MsgWidth : 64
