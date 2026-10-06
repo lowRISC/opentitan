@@ -317,13 +317,15 @@ void dfu_protocol_handler(void *_ctx, uint8_t ep, usb_transfer_flags_t flags,
       rom_error_t error = rescue_recv_handler(&ctx->state);
       switch (error) {
         case kErrorOk:
+          // Back to DnLoadIdle state.
+          ctx->dfu_state = kDfuStateDnLoadIdle;
           ctx->dfu_error = kDfuErrOk;
           break;
         default:
+          // If there was an error, go to the Error state.
+          ctx->dfu_state = kDfuStateError;
           ctx->dfu_error = kDfuErrVendor;
       }
-      // Back to DnLoadIdle state.
-      ctx->dfu_state = kDfuStateDnLoadIdle;
     } else if (ctx->dfu_state == kDfuStateUpLoadIdle) {
       if (length < kDfuTransferSize) {
         ctx->dfu_state = kDfuStateIdle;
