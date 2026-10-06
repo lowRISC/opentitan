@@ -271,7 +271,40 @@
     },
   ],
 
-countermeasures: [
+  features: [
+    {
+      name: "KEYMGR_DPE.SIDELOAD.KMAC",
+      desc: '''Versioned key generation for KMAC. The key is only visible to hardware. This is
+            tracked in a feature called KMAC.KEY.SIDELOAD, which is located inside the KMAC.
+            '''
+    }
+    {
+      name: "KEYMGR_DPE.SIDELOAD.AES",
+      desc: '''Versioned key generation for AES. The key is only visible to hardware.
+            '''
+    }
+    {
+      name: "KEYMGR_DPE.SIDELOAD.OTBN",
+      desc: '''Versioned key generation for OTBN. The key is only visible to hardware and OTBN
+            code.
+            '''
+    }
+    {
+      name: "KEYMGR_DPE.SIDELOAD.HMAC",
+      desc: '''Versioned key generation for HMAC. The key is only visible to hardware.
+            '''
+    }
+    {
+      name: "KEYMGR_DPE.GENERATE.OUTPUT",
+      desc: '''Derivation of output keys with additional salt and version. Software provided
+            salt and version values are used as inputs in the key derivation function along with
+            the selected hw slot. The derived keys can be directed to software registers,
+            or sideloaded to hardware security blocks.
+            '''
+    }
+  ]
+
+  countermeasures: [
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
