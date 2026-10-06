@@ -9,14 +9,6 @@ inputs:
   service_account_json:
     description: Service account JSON for Google Cloud access
     default: ''
-  verilator-version:
-    description: Verilator version to install
-    required: true
-    default: '4.210'
-  verilator-path:
-    description: Path at which to install Veriltator
-    required: true
-    default: /tools/verilator
   verible-version:
     description: Verible version to install
     required: true
@@ -70,18 +62,6 @@ runs:
       shell: bash
       run: |
         uv pip install -r python-requirements.txt --require-hashes
-      working-directory: ${{ inputs.working-directory }}
-
-    - name: Install Verilator
-      run: |
-        VERILATOR_TAR="verilator-v${{ inputs.verilator-version }}.tar.gz"
-        VERILATOR_URL="https://storage.googleapis.com/verilator-builds/${VERILATOR_TAR}"
-        source ci/scripts/utils.sh
-        sudo mkdir -p "${{ inputs.verilator-path }}"
-        retry 5 2 2 curl -sSfL "$VERILATOR_URL" -o "${{ runner.temp }}/${VERILATOR_TAR}"
-        sudo tar -C "${{ inputs.verilator-path }}" -xvzf "${{ runner.temp }}/${VERILATOR_TAR}"
-        echo "${{ inputs.verilator-path }}/v${{ inputs.verilator-version }}/bin" >> "$GITHUB_PATH"
-      shell: bash
       working-directory: ${{ inputs.working-directory }}
 
     - name: Install Verible

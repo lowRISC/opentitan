@@ -5,7 +5,8 @@
 name: Prepare Nix
 description: >
   Install Nix (flakes enabled), restore the Nix store from the Actions cache,
-  and realise the lint devShell up front.
+  and realise the devShell up front.  The lint categories and the jobs that
+  need Verilator share the same shell.
 
 inputs:
   save-store:
@@ -36,15 +37,17 @@ runs:
           http-connections = 50
           max-substitution-jobs = 32
 
-    # The lint devShell closure only changes when flake.lock or flake.nix does,
-    # so keep it in the Actions cache instead of re-fetching in in all six lint
-    # jobs of every run.
+    # The devShell closure only changes when flake.lock or flake.nix does, so
+    # keep it in the Actions cache instead of re-fetching it in every job that
+    # uses the shell: the lint categories and the jobs that need Verilator.
+    # The cache key still says "lint" because that is what first used it;
+    # renaming it would throw the cache away for one run.
     #
     # Only master writes to the cache. GitHub scopes an entry created on a branch
     # to that branch, so one written by a PR is invisible to every other PR,
     # whereas default-branch entries are readable by all of them -- writing from
     # PRs would fill the quota with entries nothing else can use. The single
-    # writer is the nix-cache workflow; every lint job only restores.
+    # writer is the nix-cache workflow; every other job only restores.
     #
     # On a miss (a PR that does change the flake) the prefix restores master's
     # store, leaving Nix to fetch only the delta.
