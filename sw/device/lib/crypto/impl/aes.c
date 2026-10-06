@@ -681,9 +681,11 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
         otcrypto_const_byte_buf_t, cipher_output->data, cipher_output->len);
 
     aes_block_t checksum2 = {{0}};
+    // The first output is already whole blocks (it includes any padding), so
+    // the inverse operation must not pad it again.
     HARDENED_TRY(otcrypto_aes_impl(
         key, &iv_redundant, aes_mode, aes_operation_inverse,
-        &cipher_input_redundant, aes_padding, NULL, &checksum2));
+        &cipher_input_redundant, kOtcryptoAesPaddingNull, NULL, &checksum2));
 
     // Comparison.
     HARDENED_CHECK_EQ(
