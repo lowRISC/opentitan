@@ -12,13 +12,13 @@ Type          | Item                           | Resolution  | Note/Collaterals
 Documentation | [SPEC_COMPLETE][]              | Done        | [I3C Controller/Target](../README.md); TTI
 Documentation | [CSR_DEFINED][]                | Done        |
 RTL           | [CLKRST_CONNECTED][]           | Done        |
-RTL           | [IP_TOP][]                     | In Progress |
-RTL           | [IP_INSTANTIABLE][]            | In Progress |
+RTL           | [IP_TOP][]                     | Done        |
+RTL           | [IP_INSTANTIABLE][]            | In Progress | Top-level test instantiates I3C and reads/writes registers.
 RTL           | [PHYSICAL_MACROS_DEFINED_80][] | Done        |
-RTL           | [FUNC_IMPLEMENTED][]           | In Progress |
-RTL           | [ASSERT_KNOWN_ADDED][]         | In Progress |
-Code Quality  | [LINT_SETUP][]                 | In Progress |
-Security      | [SEC_CM_SCOPED][]              | Not Started |
+RTL           | [FUNC_IMPLEMENTED][]           | Done        |
+RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
+Code Quality  | [LINT_SETUP][]                 | Done        |
+Security      | [SEC_CM_SCOPED][]              | Done        | Open multi-drop bus; BUS.INTEGRITY only.
 
 [SPEC_COMPLETE]:              ../../../../doc/project_governance/checklist/README.md#spec_complete
 [CSR_DEFINED]:                ../../../../doc/project_governance/checklist/README.md#csr_defined
