@@ -86,6 +86,9 @@ module otbn_predecode
   alu_elen_e  alu_bignum_alu_elen;
   trn_elen_e  alu_bignum_trn_elen;
 
+  // Set for a vector instruction with an unsupported ELEN
+  logic bignum_vec_elen_illegal;
+
   assign alu_bignum_elen_raw = imem_rdata_i[26:25];
 
   // Modulo result selector control signal
@@ -108,7 +111,7 @@ module otbn_predecode
   logic [1:0]            mac_bignum_op_a_qw_sel;
   logic [2:0]            mac_bignum_op_b_elem0_sel;
   logic [2:0]            mac_bignum_op_b_elem1_sel;
-  logic                  mac_bignum_elen_raw;
+  logic [1:0]            mac_bignum_elen_raw;
   mac_elen_e             mac_bignum_elen;
   logic [VLEN/QWLEN-1:0] mac_bignum_adder_carry_sel;
 
@@ -182,7 +185,7 @@ module otbn_predecode
   assign flags_keep = ~(flags_adder_update | flags_logic_update | flags_mac_update | flags_ispr_wr);
 
   // BN MAC parsing
-  assign mac_bignum_elen_raw   = imem_rdata_i[25];
+  assign mac_bignum_elen_raw   = imem_rdata_i[26:25];
   assign mac_bignum_lane_index = imem_rdata_i[30:28];
 
   always_comb begin
@@ -252,6 +255,8 @@ module otbn_predecode
     sel_insn    = 1'b0;
 
     ctrl_flow_target_predec_o = '0;
+
+    bignum_vec_elen_illegal = 1'b0;
 
     if (imem_rvalid_i) begin
       unique case (imem_rdata_i[6:0])
@@ -445,7 +450,10 @@ module otbn_predecode
               // Predecode invalid choices as default ELEN.
               unique case (alu_bignum_elen_raw)
                 2'b00:   alu_bignum_alu_elen = AluElen32;
-                default: alu_bignum_alu_elen = AluElen256;
+                default: begin
+                  alu_bignum_alu_elen     = AluElen256;
+                  bignum_vec_elen_illegal = 1'b1;
+                end
               endcase
 
               if (imem_rdata_i[28]) begin // vectorized MOD operation
@@ -489,7 +497,10 @@ module otbn_predecode
                 2'b00:   alu_bignum_trn_elen = TrnElen32;
                 2'b01:   alu_bignum_trn_elen = TrnElen64;
                 2'b10:   alu_bignum_trn_elen = TrnElen128;
-                default: alu_bignum_trn_elen = TrnElen32;
+                default: begin
+                  alu_bignum_trn_elen     = TrnElen32;
+                  bignum_vec_elen_illegal = 1'b1;
+                end
               endcase
             end
             3'b111: begin
@@ -510,7 +521,10 @@ module otbn_predecode
               // Predecode invalid choices as default ELEN.
               unique case (alu_bignum_elen_raw)
                 2'b00:   alu_bignum_alu_elen = AluElen32;
-                default: alu_bignum_alu_elen = AluElen256;
+                default: begin
+                  alu_bignum_alu_elen     = AluElen256;
+                  bignum_vec_elen_illegal = 1'b1;
+                end
               endcase
             end
             3'b011,
@@ -527,8 +541,11 @@ module otbn_predecode
               // An invalid choice will raise an illegal insn error in the decoder.
               // Predecode invalid choices as default ELEN.
               unique case (mac_bignum_elen_raw)
-                1'b0:    mac_bignum_elen = MacElen32;
-                default: mac_bignum_elen = MacElen64;
+                2'b00:   mac_bignum_elen = MacElen32;
+                default: begin
+                  mac_bignum_elen         = MacElen64;
+                  bignum_vec_elen_illegal = 1'b1;
+                end
               endcase
             end
             3'b110: begin
@@ -748,6 +765,15 @@ module otbn_predecode
         default:   mac_bignum_adder_carry_sel = 4'b0000;
       endcase
 
+    end
+
+    // An unsupported ELEN is an illegal insn, for which the controller makes no register access.
+    // Disable the predecoded ones too, because a register access without a valid instruction is a
+    // fatal error (see rd_predec_error and rf_bignum_predec_error in otbn_core).
+    if (bignum_vec_elen_illegal) begin
+      rf_ren_a_bignum = 1'b0;
+      rf_ren_b_bignum = 1'b0;
+      rf_we_bignum    = 1'b0;
     end
   end
 
