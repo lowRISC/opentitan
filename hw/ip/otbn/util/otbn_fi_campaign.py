@@ -184,8 +184,9 @@ def run_test_and_get_dmem(
     except TimeoutError:
         return {"status": "TIMEOUT"}
     except Exception:
-        import traceback
-        traceback.print_exc()
+        if skip_pc is None:
+            import traceback
+            traceback.print_exc()
         return {"status": "ERROR"}
     finally:
         if trace_f:
@@ -231,7 +232,10 @@ def attack_worker(
     res_a = None
     res_b = None
 
-    max_insns = baseline_insn_count * 2 if baseline_insn_count else None
+    if fixed_instruction_count and baseline_insn_count:
+        max_insns = baseline_insn_count + 1
+    else:
+        max_insns = baseline_insn_count * 2 if baseline_insn_count else None
 
     if attack_mode in ["collision", "corruption"]:
         res_a = run_test_and_get_dmem(
@@ -495,6 +499,12 @@ def main() -> int:
         default=[],
         help="Format: sym[s]:mode:size:hex[:mod]",
     )
+    parser.add_argument(
+        "--num-skips",
+        type=int,
+        default=0,
+        help="Number of random instruction skips to perform (0 for exhaustive)",
+    )
     args = parser.parse_args()
 
     def parse_secret_args(arg_list: List[str]) -> List[Dict[str, Any]]:
@@ -544,42 +554,44 @@ def main() -> int:
 
     try:
         baseline_collision_val = None
-
-        print("--- Generating Baseline (Target A) ---")
+        baseline_insn_count = 0
         trace_file_a = "golden_trace_a.log"
-        absolute_trace_path = os.path.abspath(trace_file_a)
-        print(f"Trace file path: {absolute_trace_path}")
 
-        res_a = run_test_and_get_dmem(
-            args.elf,
-            offsets,
-            sizes,
-            dmem_json=dmem_a_path,
-            trace_file=trace_file_a,
-        )
-        if args.attack_mode in ["collision", "corruption"]:
-            if res_a["status"] != "SUCCESS" or res_a["regs"][args.ok_sym] != ok_val_int:
-                print(
-                    "ERROR: Target A did not return the expected OK value on a normal run."
-                )
-                return 1
+        if args.attack_mode != "bypass":
+            print("--- Generating Baseline (Target A) ---")
+            absolute_trace_path = os.path.abspath(trace_file_a)
+            print(f"Trace file path: {absolute_trace_path}")
 
-        annotate_trace_file(trace_file_a, dwarf_map)
-        baseline_collision_val = 0
-        if res_a["status"] == "SUCCESS":
-            baseline_collision_val = unmask_value(
-                res_a["regs"],
-                args.col_sym,
-                args.col_mode,
-                args.col_size,
-                args.col_modulus,
+            res_a = run_test_and_get_dmem(
+                args.elf,
+                offsets,
+                sizes,
+                dmem_json=dmem_a_path,
+                trace_file=trace_file_a,
             )
-        baseline_insn_count = len(parse_trace_for_pcs(trace_file_a))
+            if args.attack_mode in ["collision", "corruption"]:
+                if res_a["status"] != "SUCCESS" or res_a["regs"][args.ok_sym] != ok_val_int:
+                    print(
+                        "ERROR: Target A did not return the expected OK value on a normal run."
+                    )
+                    return 1
 
-        print(
-            f"Baseline collision target ({args.col_sym}): {hex(baseline_collision_val)}"
-        )
-        print(f"Baseline instruction count: {baseline_insn_count}")
+            annotate_trace_file(trace_file_a, dwarf_map)
+            baseline_collision_val = 0
+            if res_a["status"] == "SUCCESS":
+                baseline_collision_val = unmask_value(
+                    res_a["regs"],
+                    args.col_sym,
+                    args.col_mode,
+                    args.col_size,
+                    args.col_modulus,
+                )
+            baseline_insn_count = len(parse_trace_for_pcs(trace_file_a))
+
+            print(
+                f"Baseline collision target ({args.col_sym}): {hex(baseline_collision_val)}"
+            )
+            print(f"Baseline instruction count: {baseline_insn_count}")
 
         if args.attack_mode in ["collision", "bypass"]:
             print("--- Generating Trace (Target B) ---")
@@ -614,7 +626,25 @@ def main() -> int:
 
             annotate_trace_file(trace_file, dwarf_map)
 
-        pc_counts = Counter(parse_trace_for_pcs(trace_file_a))
+        active_trace = trace_file if args.attack_mode == "bypass" else trace_file_a
+        pc_counts = Counter(parse_trace_for_pcs(active_trace))
+        if args.attack_mode == "bypass":
+            baseline_insn_count = sum(pc_counts.values())
+
+        if args.num_skips > 0:
+            sampled_pcs = random.sample(
+                list(pc_counts.keys()), min(args.num_skips, len(pc_counts))
+            )
+            selected_points = [
+                (pc, random.randrange(pc_counts[pc])) for pc in sorted(sampled_pcs)
+            ]
+        else:
+            selected_points = [
+                (pc, occ)
+                for pc, total in pc_counts.items()
+                for occ in range(min(MAX_PC_DEPTH, total))
+            ]
+
         attack_queue = [
             (
                 pc,
@@ -628,14 +658,13 @@ def main() -> int:
                 dmem_b_path,
                 baseline_insn_count,
             )
-            for pc, total in pc_counts.items()
-            for occ in range(min(MAX_PC_DEPTH, total))
+            for pc, occ in selected_points
         ]
         total_attacks = len(attack_queue)
         completed_attacks = 0
         successful_attacks = 0
 
-        max_workers = max(1, multiprocessing.cpu_count() - 2)
+        max_workers = max(1, min(total_attacks, multiprocessing.cpu_count()))
         print(
             f"--- Starting fault simulation ({total_attacks} attacks, {max_workers} processes) ---"
         )
@@ -813,7 +842,7 @@ def main() -> int:
         print(
             f"Campaign Complete. Successful Attacks: {successful_attacks}", flush=True
         )
-        return 0 if successful_attacks == 0 else 1
+        return 0 if (successful_attacks == 0 or args.num_skips > 0) else 1
 
     finally:
         if os.path.exists(dmem_a_path):
