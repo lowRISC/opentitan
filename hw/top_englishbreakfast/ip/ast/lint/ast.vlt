@@ -15,3 +15,12 @@ lint_off -rule NOLATCH -file "*/rtl/ast_clks_byp_main.sv"
 // purpose, it will warn us that there's a path from "normal" logic through to
 // a clock signal.
 clock_enable -module "ast_clks_byp_main" -var "clk_ext_en"
+
+// The behavioral models of the power good detectors drive their outputs
+// through delays, which the chip simulation ignores with `--no-timing`.
+// Waive the reports here, so that `-Werror-STMTDLY -Werror-ASSIGNDLY` in the
+// simulation target catches a delay added anywhere else.
+lint_off -rule STMTDLY   -file "*/rtl/vio_pgd.sv"
+lint_off -rule ASSIGNDLY -file "*/rtl/vio_pgd.sv"
+lint_off -rule STMTDLY   -file "*/rtl/vcc_pgd.sv"
+lint_off -rule ASSIGNDLY -file "*/rtl/vcc_pgd.sv"
