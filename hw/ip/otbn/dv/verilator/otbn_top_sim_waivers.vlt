@@ -7,6 +7,12 @@
 lint_off -rule WIDTH -file "*/otbn_top_sim.sv" -match "*'ImemStartAddr' generates 32 bits*"
 lint_off -rule WIDTH -file "*/otbn_top_sim.sv" -match "*'stack_wr_ptr_q' generates 4 bits*"
 
+// Both signals are given a value at time zero and are driven procedurally
+// afterwards, which is intentional in a simulation model.  Verilator 5 points
+// out the combination in case a reset was meant instead.
+lint_off -rule PROCASSINIT -file "*/otbn_top_sim.sv" -match "*'otbn_start_done'*"
+lint_off -rule PROCASSINIT -file "*/otbn_core_model.sv" -match "*'model_state'*"
+
 // Mark some signals in the loop controller as public. These are used
 // by the OtbnTopApplyLoopWarp() function in otbn_top_sim.cc
 public -module "otbn_loop_controller" -var "insn_addr_i"

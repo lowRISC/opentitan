@@ -9,7 +9,7 @@ lint_off -rule DECLFILENAME -file "*/src/dm_pkg.sv" -match "Filename 'dm_pkg' do
 
 // Waive some unused bits warnings in dm_pkg.sv. These are in parameters to
 // functions used for encoding RISC-V instructions.
-lint_off -rule UNUSED -file "*/src/dm_pkg.sv" -match "Bits of signal are not used: 'imm'[0]"
+lint_off -rule UNUSED -file "*/src/dm_pkg.sv" -match "Bits of *are not used: 'imm'[0]"
 
 // The dm_sba package doesn't use its dmactive_i input directly: it uses the
 // input because that's used by an assertion that gets bound in to the dm_sba
