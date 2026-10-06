@@ -404,6 +404,7 @@
     - [Theory of Operation](./hw/ip/i3c/doc/theory_of_operation.md)
     - [Design Parameters](./hw/ip/i3c/doc/design_parameters.md)
     - [Integration Notes](./hw/ip/i3c/doc/integration_notes.md)
+    - [Target Transaction Interface](./hw/ip/i3c/doc/tti.md)
     - [Design Verification]()
       - [Testplan]()
     - [Programmer's Guide](./hw/ip/i3c/doc/programmers_guide.md)
