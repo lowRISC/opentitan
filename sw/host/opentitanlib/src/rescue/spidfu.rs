@@ -100,6 +100,10 @@ impl Rescue for SpiDfu {
         }
         flash.set_address_mode_auto(&*self.spi)?;
         self.flash.replace(flash);
+        let status = self.get_status()?;
+        if status.state() == DfuState::Error {
+            self.clear_status()?;
+        }
         Ok(())
     }
 
@@ -150,7 +154,11 @@ impl Rescue for SpiDfu {
             let status = loop {
                 let status = self.get_status()?;
                 match status.state() {
-                    DfuState::DnLoadIdle | DfuState::Error => {
+                    DfuState::DnLoadIdle => {
+                        break status;
+                    }
+                    DfuState::Error => {
+                        self.clear_status()?;
                         break status;
                     }
                     _ => {
