@@ -821,7 +821,7 @@ module chip_${top["name"]}_${target["name"]} #(
   assign es_rng_fips       = '0;
   assign ast_edn_rsp       = '0;
   assign ast_alert_rsp     = '0;
-  assign lc_dft_en         = '0;
+  assign lc_dft_en         = lc_ctrl_pkg::Off;
 
   logic unused_ast;
 
