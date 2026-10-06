@@ -64,6 +64,11 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
       string name = $sformatf("m_kmac_app_agent_cfg[%0d]", i);
       m_kmac_app_agent_cfg[i] = kmac_app_agent_cfg::type_id::create(name);
       m_kmac_app_agent_cfg[i].if_mode = dv_utils_pkg::Host;
+      // ovewrite default value to match the interface spec
+      // KeyMgr, LC_CTRL, ROM_CTRL unmasked and
+      // OTBN is masked
+      if (i == (kmac_env_pkg::NUM_APP_INTF -1)) m_kmac_app_agent_cfg[i].has_masking = 1'b1;
+      else m_kmac_app_agent_cfg[i].has_masking = 1'b0;
     end
     keymgr_sideload_agent_cfg = key_sideload_agent_cfg#(keymgr_dpe_pkg::hw_key_req_t)::type_id
                                 ::create("keymgr_sideload_agent_cfg");
