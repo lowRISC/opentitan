@@ -264,6 +264,7 @@ opentitan_binary(
     srcs = [":bl0_rom_ext_flash_rollback.c"],
     exec_env = [
         "//hw/top_earlgrey:fpga_cw340_rom_ext",
+        "//hw/top_earlgrey:sim_qemu_rom_ext",
     ],
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
     manifest = ":rom_ext_flash_rollback_slot_b_manifest",

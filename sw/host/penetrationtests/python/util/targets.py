@@ -7,6 +7,7 @@ from dataclasses import dataclass
 import time
 
 from sw.host.penetrationtests.python.util.hyperdebug import HyperDebug
+from sw.host.penetrationtests.python.util.qemu import Qemu, is_qemu_available
 
 
 @dataclass
@@ -35,8 +36,8 @@ class TargetConfig:
 class Target:
     """Target class.
 
-    Represents a SCA/FI target. Currently, ChipWhisperer FPGA boards
-    or the discrete OpenTitan chip are supported.
+    Represents a SCA/FI target. Currently, ChipWhisperer FPGA boards,
+    QEMU, or the discrete OpenTitan chip are supported.
     """
 
     # This is a fixed baudrate.
@@ -50,8 +51,9 @@ class Target:
         self.target_cfg = target_cfg
 
         self.target = None
-        # Currently, we only consider hyperdebug interfaces
-        if target_cfg.interface_type == "hyperdebug":
+        if target_cfg.interface_type == "qemu" or is_qemu_available():
+            self.target = Qemu(target_cfg.fw_bin)
+        elif target_cfg.interface_type == "hyperdebug":
             self.target = HyperDebug(
                 target_cfg.opentitantool,
                 target_cfg.fw_bin,
@@ -77,7 +79,7 @@ class Target:
 
     def write(self, data):
         """Write data to the target."""
-        if "fpga" in self.target_cfg.target_type:
+        if "fpga" in self.target_cfg.target_type and not isinstance(self.target, Qemu):
             # Sleep one uart character time after writing to the uart to pace characters into the
             # usb-serial device for CW340 so that we don't fill any device-internal buffers.
             for byte in data:
@@ -189,17 +191,17 @@ class Target:
         return ""
 
     def start_openocd(self, startup_delay=4, print_output=True):
-        if self.target_cfg.openocd:
+        if self.target_cfg.openocd or isinstance(self.target, Qemu):
             self.target.start_openocd(startup_delay=startup_delay, print_output=print_output)
 
     def read_openocd(self):
-        if self.target_cfg.openocd:
+        if self.target_cfg.openocd or isinstance(self.target, Qemu):
             return self.target.read_openocd()
 
     def close_openocd(self):
-        if self.target_cfg.openocd:
+        if self.target_cfg.openocd or isinstance(self.target, Qemu):
             self.target.close_openocd()
 
     def send_openocd_command(self, command):
-        if self.target_cfg.openocd:
+        if self.target_cfg.openocd or isinstance(self.target, Qemu):
             return self.target.send_openocd_command(command)

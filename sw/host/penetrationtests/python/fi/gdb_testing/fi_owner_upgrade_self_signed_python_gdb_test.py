@@ -402,7 +402,7 @@ if __name__ == "__main__":
     # Get the rom path.
     rom_path = r.Rlocation("lowrisc_opentitan/" + ROM)
     # Get the disassembly path.
-    rom_dis_path = rom_path.replace(".39.scr.vmem", ".dis")
+    rom_dis_path = rom_path.replace(".39.scr.vmem", ".dis").replace(".elf", ".dis")
     # And the path for the elf.
     rom_elf_path = rom_path.replace(".39.scr.vmem", ".elf")
     # Get the rom_ext path.
