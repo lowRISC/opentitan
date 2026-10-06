@@ -137,11 +137,16 @@ module earlgrey_pd_main #(
   parameter logic [31:0] RvCoreIbexCsrMvendorId = '0,
   parameter logic [31:0] RvCoreIbexCsrMimpId = '0,
   // parameters for cheriot
-  parameter logic [top_pkg::TL_AW-1:0] CheriotMainSramBaseAddr = 32'h1000_0000,
-  parameter logic [top_pkg::TL_AW-1:0] CheriotMainSramTopAddr = 32'h1003_0000,
-  parameter logic [top_pkg::TL_AW-1:0] CheriotNvmBaseAddr = 32'h3000_0000,
-  parameter logic [top_pkg::TL_AW-1:0] CheriotNvmTopAddr = 32'h3020_0000,
-  parameter logic [top_pkg::TL_AW-1:0] CheriotMetaSramBaseAddr = 32'h1100_0000,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMainSramBaseAddr =
+      tl_main_pkg::ADDR_SPACE_SRAM_CTRL_MAIN__RAM,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMainSramTopAddr =
+      tl_main_pkg::ADDR_SPACE_SRAM_CTRL_SEC__RAM + tl_main_pkg::ADDR_MASK_SRAM_CTRL_SEC__RAM + 1,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotNvmBaseAddr =
+      tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotNvmTopAddr =
+      tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST + tl_main_pkg::ADDR_MASK_RRAM_CTRL__HOST + 1,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMetaSramBaseAddr =
+      tl_main_pkg::ADDR_SPACE_CHERIOT__REVBM,
   // parameters for sram_ctrl_meta
   parameter int SramCtrlMetaInstSize = 38912,
   parameter int SramCtrlMetaNumRamInst = 1,
