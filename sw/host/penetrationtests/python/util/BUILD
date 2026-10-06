@@ -18,6 +18,7 @@ py_library(
     deps = [
         requirement("pyserial"),
         ":hyperdebug",
+        ":qemu",
     ],
 )
 
@@ -32,8 +33,19 @@ py_library(
 )
 
 py_library(
+    name = "qemu",
+    srcs = ["qemu.py"],
+    deps = [
+        requirement("pyserial"),
+    ],
+)
+
+py_library(
     name = "gdb_controller",
     srcs = ["gdb_controller.py"],
+    deps = [
+        ":qemu",
+    ],
 )
 
 py_library(
