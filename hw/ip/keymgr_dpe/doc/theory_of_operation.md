@@ -69,7 +69,7 @@ Both registers are replicated `NumMaxHwSlot` times but only indices below `NumIn
 The key manager working state represents the current working state of the key manager and it is decoupled from the DICE hierarchy.
 From SW point of view, keymgr_dpe's FSM can only be in the following states: {`Reset`, `Available`, `Disabled`, `Invalid`}.
 After reset, keymgr_dpe remains in `Reset` state until the first advance call that latches the OTP creator root key, which is also referred to as Unique Device Secret (UDS).
-After this advance call, the FSM remains in `Available` state, and it can serve the advance/generate/erase requests.
+After this advance call, the FSM remains in `Available` state, and it can serve the advance/generate/erase/load requests.
 Unless keymgr_dpe encounters a fault or is explicitly disabled, the FSM remains in `Available` state.
 Invalid states such as {`Reset`, `Invalid`}, on the other hand, are used to denote out-of-operation states.
 
@@ -88,7 +88,7 @@ During these transitions, keymgr_DPE's working state will be reported as `Reset`
 
 ### Disabled
 `Disabled` is reached through an explicit disable command invocation.
-In this state, keymgr_DPE is no longer operational and advance/generate/erase/disable commands return error.
+In this state, keymgr_DPE is no longer operational and advance/generate/erase/load/disable commands return error.
 Upon `Disabled` entry, the internal key slots are wiped.
 However, previously generated sideload key slots and the software key stored in registers are preserved.
 This allows the software to keep the last valid keys while preventing keymgr_DPE to compute further versioned keys.
@@ -110,10 +110,12 @@ If after entering `Disabled` life cycle is deactivated or a fault is encountered
 If multiple conditions happen to collide (a fault is detected at the same clock cycle SW issues disable command), the `Invalid` entry path always takes precedence.
 
 ## Accepted Commands
-During each state, there are 4 valid commands software can issue:
+During each state, there are 6 valid commands software can issue:
 * Advance state
 * Key generation (a.k.a versioned key generation)
 * Erase slot
+* Load root key
+* Load secondary root key
 * Disable
 
 The software is able to select a command and trigger the key manager FSM to process one of the commands.
@@ -131,8 +133,8 @@ The only relevant registers (or register fields) during the first advance call a
 
 In particular, the destination slot for the UDS is chosen by SW, and there is no designated special slot for it.
 Moreover, since the destination slot for this first advance call has no parent, its `boot_stage` value is not incremented but initialized to `0`.
-This initial latching can be repeated with the _Load Root Key_ operation unless locked with the `LOAD_ROOT_KEY_LOCK` register.
-If the OTP creator root key is not valid during the latching cycle, keymgr_dpe moves to `Invalid`state.
+This initial latching can be repeated with the [_Load Root Key_](#load-root-key-and-load-secondary-root-key) operation unless locked with the `LOAD_ROOT_KEY_LOCK` register.
+If the OTP creator root key is not valid during the latching cycle, keymgr_dpe moves to `Invalid` state.
 
 Further advance calls use the key stored in the specified `CONTROL_SHADOWED.SLOT_SRC_SEL` slot (equally referred to as _parent_ or _source_ slot) , and the result of the derivation updates the slot specified by `CONTROL_SHADOWED.SLOT_DST_SEL`  (referred to as _destination_ or _child_ slot).
 Assuming that `key_policy`, `boot_stage` or `valid` bits of the parent context permit, the child secret is derived from the parent secret through a key derivation function during advance operation.
@@ -218,11 +220,51 @@ Erase request is valid if the following conditions are satisfied:
 * The destination slot is valid (i.e. not empty).
 * keymgr_dpe FSM's working state is `Available`.
 
+### Load Root Key and Load Secondary Root Key
+
+keymgr_dpe can hold two independent root secrets, from which separate DICE hierarchies can be derived:
+* The creator root key, which is also latched by the [first advance call](#advance).
+* The secondary root key, which is only loaded on an explicit software request.
+
+See [Root Keys](#root-keys) for where these secrets come from.
+
+The _Load Root Key_ and _Load Secondary Root Key_ operations load the respective root key into the slot selected by `CONTROL_SHADOWED.SLOT_DST_SEL`.
+Apart from the secret that is loaded, both operations behave identically.
+They do not involve a KMAC transaction and complete within a single cycle.
+
+The root key is XORed on top of the current content of the destination slot.
+At the end of a successful load operation, the following updates are made for the destination slot:
+* `valid` bit is set to 1.
+* `boot_stage` is initialized to `0` (Creator).
+* `max_key_version` is updated with `MAX_KEY_VERSION`.
+* `key_policy` is set to the fixed default UDS policy (`allow_child = 1`, `retain_parent = 0`, `exportable = 0`), independent of `SLOT_POLICY`.
+* `key` is updated with the root key.
+
+A load request is valid if all of the following conditions are satisfied:
+* keymgr_dpe FSM's working state is `Available`.
+* The destination slot is not valid.
+* The respective root key is marked valid by its source.
+* The operation is not locked through `LOAD_ROOT_KEY_LOCK` or `LOAD_SECONDARY_ROOT_KEY_LOCK` respectively.
+
+`LOAD_ROOT_KEY_LOCK` and `LOAD_SECONDARY_ROOT_KEY_LOCK` are write-1-to-set registers that remain set until the next reset.
+Software is expected to set them once the respective root key is no longer needed in the current boot, so that later boot stages cannot reload it.
+
+If the respective root key is not valid when a load operation is started, `DEBUG.INVALID_ROOT_KEY` or `DEBUG.INVALID_SECONDARY_ROOT_KEY` is set.
+`DEBUG.INVALID_ROOT_KEY` is additionally updated when the creator root key is latched by the first advance call.
+
 ### Disable
 
 Disable operation simply moves the keymgr_DPE's FSM into `Disabled` state. This operation request is valid only if the FSM is in `Available` state.
 
 ## Peripheral Connections
+
+### Root Keys
+
+keymgr_dpe receives two 256-bit root secrets, each provided in two shares with a valid bit per share:
+* `creator_root_key` is the creator root key received from OTP.
+* `secondary_root_key` is the secondary root key received from OTP.
+
+The valid bits of both root keys are synchronized into the keymgr_dpe clock domain before use.
 
 ### KDF Details
 

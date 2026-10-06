@@ -85,6 +85,23 @@ SW needs to configure the following registers to erase a slot:
 
 At the end of a successful erase operation, the secret of the destination slot is removed and the slot is marked as invalid.
 
+## Load Root Key / Load Secondary Root Key
+
+Both operations are configured identically and only differ in the root secret that is loaded.
+The destination slot must be empty, so erase it first if it currently holds a DPE context.
+
+SW needs to configure the following registers to load a root key:
+*  Set `MAX_KEY_VER_SHADOWED`.
+*  Set `CONTROL_SHADOWED.OPERATION` to `Load root key` or `Load secondary root key`.
+*  Set `CONTROL_SHADOWED.SLOT_DST_SEL` to the empty slot that should store the root key.
+*  Set `START` to initiate the operation.
+
+At the end of a successful load operation, the destination slot holds the root key with `boot_stage = 0` and the default UDS policy.
+As `retain_parent = 0`, the first advance from this slot must be an in-place update (`SLOT_SRC_SEL = SLOT_DST_SEL`).
+
+Once a root key is no longer needed in the current boot, SW should write 1 to `LOAD_ROOT_KEY_LOCK` or `LOAD_SECONDARY_ROOT_KEY_LOCK` respectively.
+Any further load request of that root key is then rejected until the next reset.
+
 ## Read Slot Metadata
 
 Software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` fields at any time by reading the `METADATA_LOW` and `METADATA_HIGH` registers at the corresponding slot index:
