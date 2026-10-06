@@ -57,6 +57,7 @@ def write_test_data(inputs: Dict[str, bytes], data_file: TextIO) -> None:
         for i in range(0, length, 4):
             word = int.from_bytes(inputs[name][i:i + 4], byteorder='little')
             data_file.write(f'.word {word:#010x}\n')
+    data_file.flush()
 
 
 def write_test_exp(exp: Dict[str, bytes], exp_file: TextIO) -> None:
@@ -68,6 +69,7 @@ def write_test_exp(exp: Dict[str, bytes], exp_file: TextIO) -> None:
             exp_file.write(f'{name} = {itoa_wdr(exp[name])}\n')
         else:
             raise ValueError(f'Register name {name} not recognized.')
+    exp_file.flush()
 
 
 def testcase(gen: Callable[[Optional[int]], Dict]) -> None:
@@ -90,5 +92,6 @@ def testcase(gen: Callable[[Optional[int]], Dict]) -> None:
             random.seed(args.seed)
 
         json.dump(gen(), args.hjson)
+        args.hjson.flush()
 
     return generate

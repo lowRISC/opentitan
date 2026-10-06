@@ -12,21 +12,39 @@ py_library(
     srcs = [
         "__init__.py",
         "gen_top_docs.py",
-        "secure_prng.py",
         "validate.py",
     ],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
+        ":c",
+        ":lib",
         ":merge",
-        requirement("tabulate"),
+        ":rust",
+        ":secure_prng",
+        "//util/reggen:ip_block",
+        "//util/reggen:validate",
         requirement("pycryptodome"),
+        requirement("tabulate"),
     ],
 )
 
 py_library(
     name = "c_test",
     srcs = ["c_test.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
+        ":c",
         ":lib",
+        "//util/reggen:interrupt",
+        "//util/reggen:ip_block",
     ],
 )
 
@@ -36,43 +54,114 @@ py_library(
         "gen_dv.py",
         "top.py",
     ],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
     deps = [
         "//util/reggen:gen_dv",
         "//util/reggen:ip_block",
         "//util/reggen:params",
+        "//util/reggen:reg_block",
         "//util/reggen:window",
-        requirement("mako"),
         requirement("importlib_resources"),
+        requirement("mako"),
     ],
 )
 
 py_library(
     name = "lib",
     srcs = [
-        "c.py",
         "intermodule.py",
         "lib.py",
-        "resets.py",
-        "rust.py",
+    ],
+    imports = [
+        # //util:
+        #   util.reggen
+        #   util.topgen
+        "..",
     ],
     deps = [
-        "//util:version_file",
         "//util/reggen:inter_signal",
         "//util/reggen:ip_block",
         "//util/reggen:validate",
         requirement("hjson"),
+    ],
+)
+
+py_library(
+    name = "c",
+    srcs = ["c.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        "..",
+    ],
+    deps = [
+        ":lib",
+        "//util/reggen:ip_block",
         requirement("mako"),
     ],
 )
 
 py_library(
-    name = "merge",
-    srcs = [
-        "clocks.py",
-        "merge.py",
+    name = "rust",
+    srcs = ["rust.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        #   util.version_file
+        "..",
     ],
     deps = [
         ":lib",
+        "//util:version_file",
+        "//util/reggen:ip_block",
+        requirement("mako"),
+    ],
+)
+
+py_library(
+    name = "clocks",
+    srcs = ["clocks.py"],
+    deps = [
+        ":lib",
+    ],
+)
+
+py_library(
+    name = "resets",
+    srcs = ["resets.py"],
+    deps = [
+        ":clocks",
+    ],
+)
+
+py_library(
+    name = "secure_prng",
+    srcs = ["secure_prng.py"],
+    deps = [
+        requirement("pycryptodome"),
+    ],
+)
+
+py_library(
+    name = "merge",
+    srcs = ["merge.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        #   util.topgen
+        "..",
+    ],
+    deps = [
+        ":c",
+        ":clocks",
+        ":lib",
+        ":resets",
+        ":secure_prng",
+        "//util/reggen:ip_block",
         "//util/reggen:params",
     ],
 )

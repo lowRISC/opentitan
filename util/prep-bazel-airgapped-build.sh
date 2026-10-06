@@ -7,7 +7,7 @@ set -euo pipefail
 
 : "${REPO_TOP:=$(git rev-parse --show-toplevel)}"
 
-: "${BAZELISK:=${REPO_TOP}/bazelisk.sh --host_jvm_args=-Xmx8g}"
+: "${BAZELISK:=${REPO_TOP}/bazelisk.sh --host_jvm_args=-Xmx12g}"
 : "${BAZEL_VERSION:=$(cat "${REPO_TOP}/.bazelversion")}"
 
 : "${BAZEL_AIRGAPPED_DIR:=bazel-airgapped}"
@@ -86,15 +86,15 @@ if [[ -d ${BAZEL_AIRGAPPED_DIR} ]]; then
     while true; do
       read -p "Airgapped directory exists, rebuild? [Y/n]" yn
       case $yn in
-          "") rm -rf ${BAZEL_AIRGAPPED_DIR}; break;;
-          [Yy]*) rm -rf ${BAZEL_AIRGAPPED_DIR}; break;;
+          "") break;;
+          [Yy]*) break;;
           [Nn]*) exit;;
           *) echo "Please enter [Yy] or [Nn]."
       esac
     done
-  else
-    rm -rf ${BAZEL_AIRGAPPED_DIR}
   fi
+  chmod -R +w "${BAZEL_AIRGAPPED_DIR}"
+  rm -rf ${BAZEL_AIRGAPPED_DIR}
 fi
 
 ################################################################################
@@ -124,6 +124,7 @@ if [[ ${AIRGAPPED_DIR_CONTENTS} == "ALL" || \
     cp "${REPO_TOP}/.bazelversion" .
     bazel fetch --repository_cache="${BAZEL_AIRGAPPED_DIR}/${BAZEL_CACHEDIR}"
   popd
+  chmod -R +w "${BAZEL_AIRGAPPED_DIR}/empty_workspace"
   rm -rf "${BAZEL_AIRGAPPED_DIR}/empty_workspace"
 fi
 

@@ -12,19 +12,31 @@ exports_files(glob(["**"]))
 py_binary(
     name = "otbn_build",
     srcs = ["otbn_build.py"],
-    imports = ["../hw/ip/otbn/util/"],
+    imports = [
+        # //hw/ip/otbn/util:
+        #   hw.ip.otbn.util.otbn_as
+        #   hw.ip.otbn.util.otbn_ld
+        "../hw/ip/otbn/util",
+    ],
     deps = [
-        requirement("lz4"),
-        requirement("pyelftools"),
         "//hw/ip/otbn/util:otbn_as",
         "//hw/ip/otbn/util:otbn_ld",
+        requirement("lz4"),
+        requirement("pyelftools"),
     ],
 )
 
 py_binary(
     name = "build_info",
     srcs = ["build_info.py"],
-    deps = [":version_file"],
+    imports = [
+        # //util:
+        #   util.version_file
+        ".",
+    ],
+    deps = [
+        ":version_file",
+    ],
 )
 
 py_test(
@@ -33,13 +45,29 @@ py_test(
         "build_info.py",
         "build_info_test.py",
     ],
-    deps = [":version_file"],
+    imports = [
+        # //util:
+        #   util.build_info
+        #   util.version_file
+        ".",
+    ],
+    deps = [
+        ":build_info",
+        ":version_file",
+    ],
 )
 
 py_binary(
     name = "cryptolib_build_info",
     srcs = ["cryptolib_build_info.py"],
-    deps = [":version_file"],
+    imports = [
+        # //util:
+        #   util.version_file
+        ".",
+    ],
+    deps = [
+        ":version_file",
+    ],
 )
 
 py_library(
@@ -50,6 +78,12 @@ py_library(
 py_binary(
     name = "regtool",
     srcs = ["regtool.py"],
+    imports = [
+        # //util:
+        #   util.reggen
+        #   util.version_file
+        ".",
+    ],
     deps = [
         ":version_file",
         "//util/reggen:countermeasure",
@@ -76,6 +110,11 @@ py_test(
     srcs = [
         "generate_compilation_db.py",
         "generate_compilation_db_test.py",
+    ],
+    imports = [
+        # //util:
+        #   util.generate_compilation_db
+        ".",
     ],
 )
 
