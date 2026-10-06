@@ -187,14 +187,14 @@ module otbn_decoder
   logic                  mac_is_vec_bignum;
   logic                  mac_is_mod_bignum;
   logic                  mac_is_lane_bignum;
-  logic                  mac_vec_elen_raw_bignum;
+  logic [1:0]            mac_vec_elen_raw_bignum;
   logic [VLEN/QWLEN-1:0] mac_adder_carry_sel_bignum;
   logic [2:0]            mac_lane_index_bignum;
 
   assign mac_wr_hw_sel_upper_bignum = insn[29];
   assign mac_pre_acc_shift_bignum   = insn[14:13];
   assign mac_shift_out_bignum       = insn[30];
-  assign mac_vec_elen_raw_bignum    = insn[25];
+  assign mac_vec_elen_raw_bignum    = insn[26:25];
   assign mac_lane_index_bignum      = insn[30:28];
 
   logic d_inc_bignum;
@@ -635,7 +635,7 @@ module otbn_decoder
             mac_is_lane_bignum  = insn[27];
 
             unique case (mac_vec_elen_raw_bignum)
-              1'b0:    mac_elen_bignum = MacElen32;
+              2'b00:   mac_elen_bignum = MacElen32;
               default: illegal_insn    = 1'b1;
             endcase
           end
