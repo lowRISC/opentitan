@@ -368,3 +368,91 @@ class OTOTBN:
             "en_masks": en_masks,
         }
         self.target.write(json.dumps(cfg).encode("ascii"))
+
+    def mai_single(
+        self,
+        in0: list[int],
+        in1: list[int],
+        in2: list[int],
+        mode: int = 0,
+        en_masks: bool = True,
+    ):
+        """Runs a single OTBN MAI (B2A/A2B/SecAdd) operation.
+        Args:
+            in0: 8x32-bit input words for B2A/A2B (each reduced mod q = 0x007fe001).
+            in1: 8x32-bit input words for SecAdd operand A.
+            in2: 8x32-bit input words for SecAdd operand B.
+            mode: 0 for B2A->A2B + SecAdd, 1 for B2A only, 2 for A2B only, 3 for SecAdd only.
+            en_masks: Enable or disable input masking.
+        """
+        self._ujson_otbn_sca_cmd()
+        self.target.write(json.dumps("MaiSingle").encode("ascii"))
+        time.sleep(0.003)
+        cfg = {
+            "in0": list(in0),
+            "in1": list(in1),
+            "in2": list(in2),
+            "mode": mode,
+            "en_masks": en_masks,
+        }
+        self.target.write(json.dumps(cfg).encode("ascii"))
+
+    def mai_batch_fvsr(
+        self,
+        num_traces: int,
+        in0: list[int],
+        in1: list[int],
+        in2: list[int],
+        mode: int = 0,
+        en_masks: bool = True,
+    ):
+        """Runs OTBN MAI in Fixed-vs-Random batch mode for TVLA.
+        Args:
+            num_traces: Number of traces in the batch (up to 200).
+            in0: Fixed 8x32-bit input words for B2A/A2B.
+            in1: Fixed 8x32-bit input words for SecAdd operand A.
+            in2: Fixed 8x32-bit input words for SecAdd operand B.
+            mode: 0 for B2A->A2B + SecAdd, 1 for B2A only, 2 for A2B only, 3 for SecAdd only.
+            en_masks: Enable or disable input masking.
+        """
+        self._ujson_otbn_sca_cmd()
+        self.target.write(json.dumps("MaiBatchFvsr").encode("ascii"))
+        time.sleep(0.003)
+        self.target.write(
+            json.dumps({"num_traces": num_traces}).encode("ascii")
+        )
+        cfg = {
+            "in0": list(in0),
+            "in1": list(in1),
+            "in2": list(in2),
+            "mode": mode,
+            "en_masks": en_masks,
+        }
+        self.target.write(json.dumps(cfg).encode("ascii"))
+
+    def mai_batch_random(
+        self,
+        num_traces: int,
+        mode: int = 0,
+        en_masks: bool = True,
+    ):
+        """Runs OTBN MAI in Random batch mode.
+        Args:
+            num_traces: Number of traces in the batch (up to 200).
+            mode: 0 for B2A->A2B + SecAdd, 1 for B2A only, 2 for A2B only, 3 for SecAdd only.
+            en_masks: Enable or disable input masking.
+        """
+        self._ujson_otbn_sca_cmd()
+        self.target.write(json.dumps("MaiBatchRandom").encode("ascii"))
+        time.sleep(0.003)
+        self.target.write(
+            json.dumps({"num_traces": num_traces}).encode("ascii")
+        )
+        cfg = {
+            "in0": [0] * 8,
+            "in1": [0] * 8,
+            "in2": [0] * 8,
+            "mode": mode,
+            "en_masks": en_masks,
+        }
+        self.target.write(json.dumps(cfg).encode("ascii"))

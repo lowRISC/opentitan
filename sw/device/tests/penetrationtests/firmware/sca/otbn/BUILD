@@ -21,6 +21,16 @@ otbn_binary(
 )
 
 otbn_binary(
+    name = "otbn_mai_sca",
+    srcs = [
+        "otbn_mai_sca.s",
+    ],
+    deps = [
+        "//sw/otbn/crypto:mai_gadgets",
+    ],
+)
+
+otbn_binary(
     name = "otbn_insn_combi_ops",
     srcs = [
         "otbn_insn_combi_ops.s",

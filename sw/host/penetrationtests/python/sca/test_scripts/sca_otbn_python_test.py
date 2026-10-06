@@ -452,6 +452,64 @@ class OtbnScaTest(unittest.TestCase):
         )
         self.assertIn("okm", json.loads(resp_rand))
 
+    def test_mai_otbn(self):
+        q = 0x007FE001
+        in0 = [
+            0x000003E8,
+            0x000007D0,
+            0x00000BB8,
+            0x00000FA0,
+            0x00001388,
+            0x00001770,
+            0x00001B58,
+            0x00001F40,
+        ]
+        in1 = [
+            0x000003E8,
+            0x000007D0,
+            0x00000BB8,
+            0x00000FA0,
+            0x00001388,
+            0x00001770,
+            0x00001B58,
+            0x00001F40,
+        ]
+        in2 = [
+            0x00002710,
+            0x00004E20,
+            0x00007530,
+            0x00009C40,
+            0x0000C350,
+            0x0000EA60,
+            0x00011170,
+            0x00013880,
+        ]
+        expected_b2a_a2b = [x % q for x in in0]
+        expected_secadd = [(a + b) & 0xFFFFFFFF for a, b in zip(in1, in2)]
+
+        for mode in [0, 1, 2, 3]:
+            for en_masks in [False, True]:
+                resp = sca_otbn_functions.mai_single(
+                    target, in0, in1, in2, mode=mode, en_masks=en_masks
+                )
+                resp_json = json.loads(resp)
+                if mode in [0, 1, 2]:
+                    self.assertEqual(resp_json["res_b2a_a2b"], expected_b2a_a2b)
+                if mode in [0, 3]:
+                    self.assertEqual(resp_json["res_secadd"], expected_secadd)
+
+        resp_fvsr = sca_otbn_functions.mai_batch_fvsr(
+            target, 1, 4, in0, in1, in2, mode=0, en_masks=True
+        )
+        self.assertIn("res_b2a_a2b", json.loads(resp_fvsr))
+        self.assertIn("res_secadd", json.loads(resp_fvsr))
+
+        resp_rand = sca_otbn_functions.mai_batch_random(
+            target, 1, 4, mode=0, en_masks=True
+        )
+        self.assertIn("res_b2a_a2b", json.loads(resp_rand))
+        self.assertIn("res_secadd", json.loads(resp_rand))
+
 
 if __name__ == "__main__":
     r = Runfiles.Create()

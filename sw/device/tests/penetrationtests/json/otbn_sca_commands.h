@@ -42,7 +42,10 @@ extern "C" {
     value(_, Sha2BatchRandom) \
     value(_, HkdfSingle) \
     value(_, HkdfBatchFvsr) \
-    value(_, HkdfBatchRandom)
+    value(_, HkdfBatchRandom) \
+    value(_, MaiSingle) \
+    value(_, MaiBatchFvsr) \
+    value(_, MaiBatchRandom)
 C_ONLY(UJSON_SERDE_ENUM(OtbnScaSubcommand, otbn_sca_subcommand_t, OTBNSCA_SUBCOMMAND));
 RUST_ONLY(UJSON_SERDE_ENUM(OtbnScaSubcommand, otbn_sca_subcommand_t, OTBNSCA_SUBCOMMAND, RUST_DEFAULT_DERIVE, strum::EnumString));
 
@@ -150,6 +153,19 @@ UJSON_SERDE_STRUCT(PenetrationtestOtbnScaHkdfCfg, penetrationtest_otbn_sca_hkdf_
     field(prk, uint8_t, OTBNSCA_CMD_MAX_HKDF_OKM_BYTES) \
     field(okm, uint8_t, OTBNSCA_CMD_MAX_HKDF_OKM_BYTES)
 UJSON_SERDE_STRUCT(PenetrationtestOtbnScaHkdfOut, penetrationtest_otbn_sca_hkdf_out_t, OTBN_SCA_HKDF_OUT);
+
+#define OTBN_SCA_MAI_CFG(field, string) \
+    field(in0, uint32_t, 8) \
+    field(in1, uint32_t, 8) \
+    field(in2, uint32_t, 8) \
+    field(mode, uint32_t) \
+    field(en_masks, bool)
+UJSON_SERDE_STRUCT(PenetrationtestOtbnScaMaiCfg, penetrationtest_otbn_sca_mai_cfg_t, OTBN_SCA_MAI_CFG);
+
+#define OTBN_SCA_MAI_OUT(field, string) \
+    field(res_b2a_a2b, uint32_t, 8) \
+    field(res_secadd, uint32_t, 8)
+UJSON_SERDE_STRUCT(PenetrationtestOtbnScaMaiOut, penetrationtest_otbn_sca_mai_out_t, OTBN_SCA_MAI_OUT);
 
 // clang-format on
 

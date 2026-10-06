@@ -11,6 +11,8 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/dif/dif_otbn.h"
@@ -51,6 +53,9 @@ enum {
    * Max number of traces per batch.
    */
   kNumBatchOpsMax = 256,
+  kMaiWords = 8,
+  kMaiModQ = 0x007fe001,
+  kMaiScaMaxBatchSize = 200,
 };
 
 // Data structs for key sideloading test.
@@ -61,6 +66,20 @@ OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload_sca, k_s1_l);
 OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload_sca, k_s1_h);
 OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload_sca, k_l);
 OTBN_DECLARE_SYMBOL_ADDR(otbn_key_sideload_sca, k_h);
+
+// MAI SCA OTBN App.
+OTBN_DECLARE_APP_SYMBOLS(otbn_mai_sca);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_mai_sca, in0_s0);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_mai_sca, in0_s1);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_mai_sca, in1_s0);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_mai_sca, in1_s1);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_mai_sca, in2_s0);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_mai_sca, in2_s1);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_mai_sca, res_b2a_a2b_s0);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_mai_sca, res_b2a_a2b_s1);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_mai_sca, res_secadd_s0);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_mai_sca, res_secadd_s1);
+OTBN_DECLARE_SYMBOL_ADDR(otbn_mai_sca, mode);
 
 // RSA-512 OTBN App.
 OTBN_DECLARE_APP_SYMBOLS(run_rsa);
@@ -770,6 +789,209 @@ status_t handle_otbn_sca_rsa512_decrypt(ujson_t *uj) {
   return OK_STATUS();
 }
 
+static uint32_t mai_batch_in0[kMaiScaMaxBatchSize][kMaiWords];
+static uint32_t mai_batch_in1[kMaiScaMaxBatchSize][kMaiWords];
+static uint32_t mai_batch_in2[kMaiScaMaxBatchSize][kMaiWords];
+
+static status_t mai_otbn_sca_run(const uint32_t *in0, const uint32_t *in1,
+                                 const uint32_t *in2, uint32_t mode,
+                                 bool en_masks, uint32_t *res_b2a_a2b,
+                                 uint32_t *res_secadd) {
+  if (mode > 3) {
+    return INVALID_ARGUMENT();
+  }
+
+  const otbn_app_t kApp = OTBN_APP_T_INIT(otbn_mai_sca);
+  if (otbn_sca_loaded_app_imem != kApp.imem_compressed_start) {
+    TRY(otbn_load_app(kApp));
+    otbn_sca_loaded_app_imem = kApp.imem_compressed_start;
+  }
+
+  const otbn_addr_t kAddrIn0S0 = OTBN_ADDR_T_INIT(otbn_mai_sca, in0_s0);
+  const otbn_addr_t kAddrIn0S1 = OTBN_ADDR_T_INIT(otbn_mai_sca, in0_s1);
+  const otbn_addr_t kAddrIn1S0 = OTBN_ADDR_T_INIT(otbn_mai_sca, in1_s0);
+  const otbn_addr_t kAddrIn1S1 = OTBN_ADDR_T_INIT(otbn_mai_sca, in1_s1);
+  const otbn_addr_t kAddrIn2S0 = OTBN_ADDR_T_INIT(otbn_mai_sca, in2_s0);
+  const otbn_addr_t kAddrIn2S1 = OTBN_ADDR_T_INIT(otbn_mai_sca, in2_s1);
+  const otbn_addr_t kAddrResB2aS0 =
+      OTBN_ADDR_T_INIT(otbn_mai_sca, res_b2a_a2b_s0);
+  const otbn_addr_t kAddrResB2aS1 =
+      OTBN_ADDR_T_INIT(otbn_mai_sca, res_b2a_a2b_s1);
+  const otbn_addr_t kAddrResAddS0 =
+      OTBN_ADDR_T_INIT(otbn_mai_sca, res_secadd_s0);
+  const otbn_addr_t kAddrResAddS1 =
+      OTBN_ADDR_T_INIT(otbn_mai_sca, res_secadd_s1);
+  const otbn_addr_t kAddrMode = OTBN_ADDR_T_INIT(otbn_mai_sca, mode);
+
+  uint32_t in0_s0[kMaiWords];
+  uint32_t in0_s1[kMaiWords];
+  uint32_t in1_s0[kMaiWords];
+  uint32_t in1_s1[kMaiWords];
+  uint32_t in2_s0[kMaiWords];
+  uint32_t in2_s1[kMaiWords];
+
+  if (mode == 2) {
+    // Mode 2 (A2B only): in0 is arithmetically shared modulo q.
+    for (size_t i = 0; i < kMaiWords; ++i) {
+      uint32_t val = in0[i] % kMaiModQ;
+      uint32_t r = en_masks ? (ibex_rnd32_read() % kMaiModQ) : 0;
+      in0_s0[i] = (val + kMaiModQ - r) % kMaiModQ;
+      in0_s1[i] = r;
+    }
+  } else {
+    // Mode 0 (B2A->A2B + SecAdd), Mode 1 (B2A only), Mode 3 (SecAdd only):
+    // in0 is Boolean shared.
+    for (size_t i = 0; i < kMaiWords; ++i) {
+      uint32_t val = in0[i] % kMaiModQ;
+      uint32_t r = en_masks ? ibex_rnd32_read() : 0;
+      in0_s0[i] = val ^ r;
+      in0_s1[i] = r;
+    }
+  }
+
+  for (size_t i = 0; i < kMaiWords; ++i) {
+    uint32_t r1 = en_masks ? ibex_rnd32_read() : 0;
+    in1_s0[i] = in1[i] ^ r1;
+    in1_s1[i] = r1;
+    uint32_t r2 = en_masks ? ibex_rnd32_read() : 0;
+    in2_s0[i] = in2[i] ^ r2;
+    in2_s1[i] = r2;
+  }
+
+  TRY(otbn_dmem_write(1, &mode, kAddrMode));
+  TRY(otbn_dmem_write(kMaiWords, in0_s0, kAddrIn0S0));
+  TRY(otbn_dmem_write(kMaiWords, in0_s1, kAddrIn0S1));
+  TRY(otbn_dmem_write(kMaiWords, in1_s0, kAddrIn1S0));
+  TRY(otbn_dmem_write(kMaiWords, in1_s1, kAddrIn1S1));
+  TRY(otbn_dmem_write(kMaiWords, in2_s0, kAddrIn2S0));
+  TRY(otbn_dmem_write(kMaiWords, in2_s1, kAddrIn2S1));
+
+  pentest_set_trigger_high();
+  asm volatile(NOP30);
+  otbn_execute();
+  otbn_busy_wait_for_done();
+  pentest_set_trigger_low();
+
+  uint32_t b2a_s0[kMaiWords];
+  uint32_t b2a_s1[kMaiWords];
+  uint32_t add_s0[kMaiWords];
+  uint32_t add_s1[kMaiWords];
+  TRY(otbn_dmem_read(kMaiWords, kAddrResB2aS0, b2a_s0));
+  TRY(otbn_dmem_read(kMaiWords, kAddrResB2aS1, b2a_s1));
+  TRY(otbn_dmem_read(kMaiWords, kAddrResAddS0, add_s0));
+  TRY(otbn_dmem_read(kMaiWords, kAddrResAddS1, add_s1));
+
+  if (mode == 1) {
+    // Mode 1 (B2A only): output shares are arithmetic modulo q.
+    for (size_t i = 0; i < kMaiWords; ++i) {
+      res_b2a_a2b[i] = (b2a_s0[i] + b2a_s1[i]) % kMaiModQ;
+    }
+  } else {
+    for (size_t i = 0; i < kMaiWords; ++i) {
+      res_b2a_a2b[i] = b2a_s0[i] ^ b2a_s1[i];
+    }
+  }
+
+  for (size_t i = 0; i < kMaiWords; ++i) {
+    res_secadd[i] = add_s0[i] ^ add_s1[i];
+  }
+
+  return OK_STATUS();
+}
+
+status_t handle_otbn_sca_mai_single(ujson_t *uj) {
+  penetrationtest_otbn_sca_mai_cfg_t uj_cfg;
+  TRY(ujson_deserialize_penetrationtest_otbn_sca_mai_cfg_t(uj, &uj_cfg));
+
+  penetrationtest_otbn_sca_mai_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
+  TRY(mai_otbn_sca_run(uj_cfg.in0, uj_cfg.in1, uj_cfg.in2, uj_cfg.mode,
+                       uj_cfg.en_masks, uj_output.res_b2a_a2b,
+                       uj_output.res_secadd));
+
+  RESP_OK(ujson_serialize_penetrationtest_otbn_sca_mai_out_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_otbn_sca_mai_batch_fvsr(ujson_t *uj) {
+  penetrationtest_otbn_sca_num_traces_t uj_num_traces;
+  TRY(ujson_deserialize_penetrationtest_otbn_sca_num_traces_t(uj,
+                                                              &uj_num_traces));
+  penetrationtest_otbn_sca_mai_cfg_t uj_cfg;
+  TRY(ujson_deserialize_penetrationtest_otbn_sca_mai_cfg_t(uj, &uj_cfg));
+
+  if (uj_num_traces.num_traces == 0 ||
+      uj_num_traces.num_traces > kMaiScaMaxBatchSize || uj_cfg.mode > 3) {
+    return OUT_OF_RANGE();
+  }
+
+  bool sample_fixed = true;
+  for (size_t it = 0; it < uj_num_traces.num_traces; ++it) {
+    if (sample_fixed) {
+      for (size_t w = 0; w < kMaiWords; ++w) {
+        mai_batch_in0[it][w] = uj_cfg.in0[w] % kMaiModQ;
+        mai_batch_in1[it][w] = uj_cfg.in1[w];
+        mai_batch_in2[it][w] = uj_cfg.in2[w];
+      }
+    } else {
+      prng_rand_bytes((uint8_t *)mai_batch_in0[it],
+                      kMaiWords * sizeof(uint32_t));
+      prng_rand_bytes((uint8_t *)mai_batch_in1[it],
+                      kMaiWords * sizeof(uint32_t));
+      prng_rand_bytes((uint8_t *)mai_batch_in2[it],
+                      kMaiWords * sizeof(uint32_t));
+      for (size_t w = 0; w < kMaiWords; ++w) {
+        mai_batch_in0[it][w] %= kMaiModQ;
+      }
+    }
+    sample_fixed = prng_rand_byte() & 0x1;
+  }
+
+  penetrationtest_otbn_sca_mai_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
+  for (size_t it = 0; it < uj_num_traces.num_traces; ++it) {
+    TRY(mai_otbn_sca_run(mai_batch_in0[it], mai_batch_in1[it],
+                         mai_batch_in2[it], uj_cfg.mode, uj_cfg.en_masks,
+                         uj_output.res_b2a_a2b, uj_output.res_secadd));
+  }
+
+  RESP_OK(ujson_serialize_penetrationtest_otbn_sca_mai_out_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
+status_t handle_otbn_sca_mai_batch_random(ujson_t *uj) {
+  penetrationtest_otbn_sca_num_traces_t uj_num_traces;
+  TRY(ujson_deserialize_penetrationtest_otbn_sca_num_traces_t(uj,
+                                                              &uj_num_traces));
+  penetrationtest_otbn_sca_mai_cfg_t uj_cfg;
+  TRY(ujson_deserialize_penetrationtest_otbn_sca_mai_cfg_t(uj, &uj_cfg));
+
+  if (uj_num_traces.num_traces == 0 ||
+      uj_num_traces.num_traces > kMaiScaMaxBatchSize || uj_cfg.mode > 3) {
+    return OUT_OF_RANGE();
+  }
+
+  for (size_t it = 0; it < uj_num_traces.num_traces; ++it) {
+    prng_rand_bytes((uint8_t *)mai_batch_in0[it], kMaiWords * sizeof(uint32_t));
+    prng_rand_bytes((uint8_t *)mai_batch_in1[it], kMaiWords * sizeof(uint32_t));
+    prng_rand_bytes((uint8_t *)mai_batch_in2[it], kMaiWords * sizeof(uint32_t));
+    for (size_t w = 0; w < kMaiWords; ++w) {
+      mai_batch_in0[it][w] %= kMaiModQ;
+    }
+  }
+
+  penetrationtest_otbn_sca_mai_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
+  for (size_t it = 0; it < uj_num_traces.num_traces; ++it) {
+    TRY(mai_otbn_sca_run(mai_batch_in0[it], mai_batch_in1[it],
+                         mai_batch_in2[it], uj_cfg.mode, uj_cfg.en_masks,
+                         uj_output.res_b2a_a2b, uj_output.res_secadd));
+  }
+
+  RESP_OK(ujson_serialize_penetrationtest_otbn_sca_mai_out_t, uj, &uj_output);
+  return OK_STATUS();
+}
+
 status_t handle_otbn_sca(ujson_t *uj) {
   otbn_sca_subcommand_t cmd;
   TRY(ujson_deserialize_otbn_sca_subcommand_t(uj, &cmd));
@@ -786,6 +1008,12 @@ status_t handle_otbn_sca(ujson_t *uj) {
       return handle_otbn_sca_hkdf_batch_fvsr(uj);
     case kOtbnScaSubcommandHkdfBatchRandom:
       return handle_otbn_sca_hkdf_batch_random(uj);
+    case kOtbnScaSubcommandMaiSingle:
+      return handle_otbn_sca_mai_single(uj);
+    case kOtbnScaSubcommandMaiBatchFvsr:
+      return handle_otbn_sca_mai_batch_fvsr(uj);
+    case kOtbnScaSubcommandMaiBatchRandom:
+      return handle_otbn_sca_mai_batch_random(uj);
     default:
       otbn_sca_loaded_app_imem = NULL;
       break;
