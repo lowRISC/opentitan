@@ -122,9 +122,12 @@ module top_earlgrey #(
   parameter ibex_pkg::pmp_cfg_t RvCoreIbexPMPRstCfg[16] = ibex_pmp_reset_pkg::PmpCfgRst,
   parameter logic [33:0] RvCoreIbexPMPRstAddr[16] = ibex_pmp_reset_pkg::PmpAddrRst,
   parameter ibex_pkg::pmp_mseccfg_t RvCoreIbexPMPRstMsecCfg = ibex_pmp_reset_pkg::PmpMseccfgRst,
-  parameter int unsigned RvCoreIbexCheriotRevBitmapAddrWidth = 12,
-  parameter int unsigned RvCoreIbexCheriotRevBitmapBaseAddr = 32'h1100_0000,
-  parameter int unsigned RvCoreIbexCheriotTrvkHeapBaseAddr = 32'h1000_0000,
+  parameter int unsigned RvCoreIbexCheriotRevBitmapAddrWidth =
+      $clog2(tl_main_pkg::ADDR_SIZE_CHERIOT__REVBM),
+  parameter int unsigned RvCoreIbexCheriotRevBitmapBaseAddr =
+      tl_main_pkg::ADDR_SPACE_CHERIOT__REVBM,
+  parameter int unsigned RvCoreIbexCheriotTrvkHeapBaseAddr =
+      tl_main_pkg::ADDR_SPACE_SRAM_CTRL_MAIN__RAM,
   parameter bit RvCoreIbexRV32E = 0,
   parameter ibex_pkg::rv32m_e RvCoreIbexRV32M = ibex_pkg::RV32MSingleCycle,
   parameter ibex_pkg::rv32b_e RvCoreIbexRV32B = ibex_pkg::RV32BFull,
