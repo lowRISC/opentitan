@@ -200,7 +200,7 @@ There are also powerful repetition operators, see [here](https://www.systemveril
 ## Symbolic Variables
 
 When design has a set of modules or signals that share same properties, symbolic variables can be used to reduce duplicated assertions.
-For example, in the [rv_plic design](../ip_templates/rv_plic/README.md), the array of input `intr_src_i` are signals sharing the same properties.
+For example, in the [rv_plic design](../ip_templates/rv_plic/README.md.tpl), the array of input `intr_src_i` are signals sharing the same properties.
 Each `intr_src_i[index]` will trigger the interrupt pending (`ip`) signal depending on the corresponding level indicator (`le`) is set to level triggered or edge triggered.
 Without symbolic variables, the above assertions can be implemented as below:
 ```systemverilog
