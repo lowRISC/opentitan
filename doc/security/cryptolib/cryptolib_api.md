@@ -1076,4 +1076,4 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 [sha3-spec]: https://csrc.nist.gov/publications/detail/fips/202/final
 [sha3-derived-spec]: https://csrc.nist.gov/publications/detail/sp/800-185/final
 [crypto-tests]: https://github.com/lowRISC/opentitan/tree/earlgrey_1.0.0/sw/device/tests/crypto
-[dummy-instruction]: https://ibex-core.readthedocs.io/en/latest/03_reference/security.html#dummy-instruction-insertion
+[dummy-instruction]: https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/security.html#dummy-instruction-insertion

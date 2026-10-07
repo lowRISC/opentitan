@@ -40,7 +40,7 @@
    * - Vendor Interrupt Handlers (Entries 16-31)
    *
    * More information about Ibex's interrupts can be found here:
-   *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
+   *   https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/exception_interrupts.html
    */
   .balignl 256, 0xc0001073
   .global _rom_ext_interrupt_vector

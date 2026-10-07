@@ -105,7 +105,7 @@ When the device receives a low power entry request while flash activity is ongoi
 
 The main processor (`core_ibex`) is a small and efficient, 32-bit, in-order RISC-V core with a 2-stage pipeline that implements the RV32IMC instruction set architecture.
 It was initially developed as part of the [PULP platform](https://www.pulp-platform.org) under the name "Zero-riscy" [\[1\]](https://doi.org/10.1109/PATMOS.2017.8106976), and has been contributed to [lowRISC](https://www.lowrisc.org) who maintains it and develops it further.
-See the [core_ibex specification](https://ibex-core.readthedocs.io/en/latest/) for more details of the core.
+See the [core_ibex specification](https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/) for more details of the core.
 In addition to the standard RISC-V functionality, Ibex implements M (machine) and U (user) mode per the RISC-V standard.
 Attached to the Ibex core are a debug module (DM) and interrupt module (PLIC).
 
@@ -131,7 +131,7 @@ This number is close to the maximum achievable number for Ibex with an ideal sin
 When switching to GCC and combining the Ibex configuration used in OpenTitan Earl Grey with an idealistic single-cycle access Flash memory, a CoreMark/MHz number of 3.07 is achievable.
 To achieve this performance, CoreMark can be compiled with GCC 9.2.0 and with the following flags: `-march=rv32imc -mabi=ilp32 -mcmodel=medany -mtune=sifive-3-series -O3 -falign-functions=16 -funroll-all-loops -finline-functions -falign-jumps=4 -mstrict-align` .
 
-The Ibex documentation has more details on the current pipeline operation, including stall behaviour for each instruction in the [Pipeline Details](https://ibex-core.readthedocs.io/en/latest/03_reference/pipeline_details.html) section.
+The Ibex documentation has more details on the current pipeline operation, including stall behaviour for each instruction in the [Pipeline Details](https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/pipeline_details.html) section.
 
 ### Memory
 
