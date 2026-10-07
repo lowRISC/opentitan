@@ -212,15 +212,18 @@ impl TryFrom<&[u8]> for BootSvc {
     fn try_from(buf: &[u8]) -> std::result::Result<Self, Self::Error> {
         let header = Header::try_from(buf)?;
         let len = header.length as usize;
-        if buf.len() - Header::SIZE < len {
+        if len < Header::SIZE || buf.len() < len {
             return Err(ChipDataError::BadSize(len, buf.len()));
         }
-        let mut digest = Sha256::digest(&buf[Header::HASH_LEN..Header::SIZE]);
+        if header.identifier != Header::IDENTIFIER {
+            return Err(ChipDataError::BadIdentifier);
+        }
+        let mut digest = Sha256::digest(&buf[Header::HASH_LEN..len]);
         digest.reverse();
-        if digest[..] == buf[..Header::HASH_LEN] {
+        if digest[..] != buf[..Header::HASH_LEN] {
             return Err(ChipDataError::InvalidDigest);
         }
-        let buf = &buf[Header::SIZE..];
+        let buf = &buf[Header::SIZE..len];
         let message = match header.kind {
             BootSvcKind::EmptyRequest => Message::Empty(TryFrom::try_from(buf)?),
             BootSvcKind::EmptyResponse => Message::Empty(TryFrom::try_from(buf)?),
