@@ -20,38 +20,16 @@ enum {
    */
   kGhashBlockLog2NumBytes = 4,
   /**
-   * Number of windows for Galois field pre-computed tables.
+   * Low terms of the field modulus, x^7 + x^2 + x + 1, as a polynomial in the
+   * bit order of the carry-less multiplication.
    *
-   * We use 4-bit windows, so the number of windows is 2x the number of bytes
-   * in a block.
+   * The field modulus for GCM is x^128 + x^7 + x^2 + x + 1, so x^128 is
+   * congruent to these terms.
    */
-  kNumWindows = kGhashBlockNumBytes << 1,
+  kGhashReduceTerms = 0x87,
 };
 static_assert(kGhashBlockNumBytes == (1 << kGhashBlockLog2NumBytes),
               "kGhashBlockLog2NumBytes does not match kGhashBlockNumBytes");
-
-/**
- * Precomputed modular reduction constants for Galois field multiplication.
- *
- * This implementation uses 4-bit windows. The bytes here represent 12-bit
- * little-endian values.
- *
- * The entry with index i in this table is equal to i * 0xe1, where the bytes i
- * and 0xe1 are interpreted as polynomials in the GCM Galois field. For
- * example, 0xe1 = 0b1110_0001 is the degree-8 polynomial x^8 + x^2 + x + 1.
- *
- * The field modulus for GCM is 2^128 + x^8 + x^2 + x + 1. Therefore, if a
- * field element is shifted, it can be reduced by multiplying the high bits
- * (128 and above) by 0xe1 and adding them to the low bits.
- *
- * There is a size/speed tradeoff in window size. For 8-bit windows, GHASH
- * becomes significantly faster, but the overhead for computing the product
- * table of a given hash subkey becomes higher, so larger windows are slower
- * for smaller inputs but faster for large inputs.
- */
-static const uint16_t kGFReduceTable[16] = {
-    0x0000, 0x201c, 0x4038, 0x6024, 0x8070, 0xa06c, 0xc048, 0xe054,
-    0x00e1, 0x20fd, 0x40d9, 0x60c5, 0x8091, 0xa08d, 0xc0a9, 0xe0b5};
 
 /**
  * Performs a bitwise XOR of two blocks.
@@ -71,80 +49,107 @@ static inline void block_xor(const ghash_block_t *x, const ghash_block_t *y,
 }
 
 /**
- * Logical right shift of an AES block.
+ * Reverse the order of the bits within each byte of a word.
  *
- * NIST represents AES blocks as big-endian, and a "right shift" in that
- * representation means shifting out the LSB. However, the processor is
- * little-endian, so we need to reverse the bytes before shifting.
+ * GCM numbers the coefficients of a block from the most significant bit of
+ * its first byte. The carry-less multiplication numbers them from the least
+ * significant bit of a word. With the bits of each byte reversed, bit i of
+ * word j of a block is the coefficient of x^(32j + i).
  *
- * @param block Input AES block, modified in-place
- * @param nbits Number of bits to shift
+ * @param word Input word.
+ * @return Word with the bits of each byte reversed.
  */
-static inline void block_shiftr(ghash_block_t *block, size_t nbits) {
-  // To perform a "right shift" with respect to the big-endian block
-  // representation, we traverse the words of the block and, for each word,
-  // reverse the bytes, save the new LSB as `carry`, shift right, set the MSB
-  // to the last block's carry, and then reverse the bytes back.
-  uint32_t carry = 0;
+static uint32_t reverse_bits_in_bytes(uint32_t word) {
+  word = ((word >> 1) & 0x55555555) | ((word & 0x55555555) << 1);
+  word = ((word >> 2) & 0x33333333) | ((word & 0x33333333) << 2);
+  return ((word >> 4) & 0x0f0f0f0f) | ((word & 0x0f0f0f0f) << 4);
+}
+
+/**
+ * Reverse the order of the bits within each byte of a block.
+ *
+ * Converts a block between the bit order of GCM and the bit order of the
+ * carry-less multiplication, in either direction.
+ *
+ * @param[in,out] block Block to convert.
+ */
+static void block_reverse_bits_in_bytes(ghash_block_t *block) {
   for (size_t i = 0; i < kGhashBlockNumWords; ++i) {
-    uint32_t rev = __builtin_bswap32(block->data[i]);
-    uint32_t next_carry = rev & ((1 << nbits) - 1);
-    rev >>= nbits;
-    rev |= carry << (32 - nbits);
-    carry = next_carry;
-    block->data[i] = __builtin_bswap32(rev);
+    block->data[i] = reverse_bits_in_bytes(block->data[i]);
   }
 }
 
 /**
- * Retrieve the byte at a given index from the block.
+ * Add the carry-less product of two words to two words of an accumulator.
  *
- * @param block Input cipher block
- * @param index Index of byte to retrieve (must be < `kGhashBlockNumBytes`)
- * @return Value of block[index]
- */
-static inline uint8_t block_byte_get(const ghash_block_t *block, size_t index) {
-  return ((char *)block->data)[index];
-}
-
-/**
- * Multiply an element of the GCM Galois field by the polynomial `x`.
- *
- * This corresponds to a shift right in the bit representation, and then
- * reduction with the field modulus.
+ * The low word of the 64-bit product is added to `lo` and the high word to
+ * `hi`.
  *
  * Runs in constant time.
  *
- * @param p Polynomial to be multiplied
- * @param[out] out Buffer for output
+ * This function must be inlined, so that the accumulator words stay in
+ * registers. With Zbc, both multiplications and both additions are in one
+ * `volatile` block, so the compiler keeps the steps in program order and adds
+ * each product right away. Computing all products first would leave more
+ * values live than there are registers, and some would be spilled to the
+ * stack.
+ *
+ * @param lhs First operand.
+ * @param rhs Second operand.
+ * @param[in,out] lo Accumulator word for the low word of the product.
+ * @param[in,out] hi Accumulator word for the high word of the product.
  */
-static inline void galois_mulx(const ghash_block_t *p, ghash_block_t *out) {
-  // Get the very rightmost bit of the input block (coefficient of x^127).
-  uint8_t p127 = block_byte_get(p, kGhashBlockNumBytes - 1) & 1;
-  // Set the output to p >> 1.
-  randomized_bytecopy(out->data, p->data, kGhashBlockNumBytes);
-  block_shiftr(out, 1);
-  // If the highest coefficient was 1, then subtract the polynomial that
-  // corresponds to (modulus - 2^128).
-  uint32_t mask = 0 - p127;
-  out->data[0] ^= (0xe1 & mask);
+OT_ALWAYS_INLINE
+static void clmul_add(uint32_t lhs, uint32_t rhs, uint32_t *lo, uint32_t *hi) {
+#ifdef __riscv_zbc
+  uint32_t product;
+  asm volatile(
+      "clmul %[product], %[lhs], %[rhs]\n"
+      "xor %[lo], %[lo], %[product]\n"
+      "clmulh %[product], %[lhs], %[rhs]\n"
+      "xor %[hi], %[hi], %[product]"
+      : [lo] "+&r"(*lo), [hi] "+r"(*hi), [product] "=&r"(product)
+      : [lhs] "r"(lhs), [rhs] "r"(rhs));
+#else
+  for (size_t i = 0; i < 32; ++i) {
+    *lo ^= (lhs << i) & (0 - ((rhs >> i) & 1));
+  }
+  for (size_t i = 1; i < 32; ++i) {
+    *hi ^= (lhs >> (32 - i)) & (0 - ((rhs >> i) & 1));
+  }
+#endif
 }
 
 /**
- * Reverse the bits of a 4-bit number.
+ * Multiply an accumulator by x^32 and add the product of a word and the hash
+ * subkey.
  *
- * @param byte Input byte.
- * @return byte with lower 4 bits reversed and upper 4 unmodified.
+ * This is one step of Horner's rule over the words of the state. The word that
+ * moves above x^127 is reduced right away, so the accumulator never grows
+ * beyond four words. This leaves few enough live values that the compiler
+ * keeps all of them in registers, with or without Zbc.
+ *
+ * This function must be inlined, for the same reason as `clmul_add`.
+ *
+ * @param word State word, in the bit order of the carry-less multiplication.
+ * @param hash_subkey Masked hash subkey share, as set by `ghash_init_subkey`.
+ * @param[in,out] acc Accumulator, in the same bit order.
  */
-static uint8_t reverse_bits(uint8_t byte) {
-  /* TODO: replace with rev.n (from 0.93 draft of bitmanip) once bitmanip
-   * extension is enabled. */
-  uint8_t out = 0;
-  for (size_t i = 0; i < 4; ++i) {
-    out <<= 1;
-    out |= (byte >> i) & 1;
-  }
-  return out;
+OT_ALWAYS_INLINE
+static void mul_x32_add(uint32_t word, const ghash_block_t *hash_subkey,
+                        ghash_block_t *acc) {
+  uint32_t top = acc->data[3];
+  acc->data[3] = acc->data[2];
+  acc->data[2] = acc->data[1];
+  acc->data[1] = acc->data[0];
+  acc->data[0] = 0;
+  clmul_add(word, hash_subkey->data[0], &acc->data[0], &acc->data[1]);
+  clmul_add(word, hash_subkey->data[1], &acc->data[1], &acc->data[2]);
+  clmul_add(word, hash_subkey->data[2], &acc->data[2], &acc->data[3]);
+  clmul_add(word, hash_subkey->data[3], &acc->data[3], &top);
+  // x^128 is congruent to `kGhashReduceTerms`, so the top word is reduced by
+  // multiplying it with those terms. The product fits in the two low words.
+  clmul_add(top, kGhashReduceTerms, &acc->data[0], &acc->data[1]);
 }
 
 uint32_t ghash_context_integrity_checksum(const ghash_context_t *ghash_ctx) {
@@ -155,7 +160,8 @@ uint32_t ghash_context_integrity_checksum(const ghash_context_t *ghash_ctx) {
   // (a) manipulating the second share with FI has only limited use to an
   // adversary and (b) when manipulating the entire pointer to the key structure
   // the checksum check fails.
-  crc32_add(&ctx, (unsigned char *)ghash_ctx->tbl0, sizeof(ghash_ctx->tbl0));
+  crc32_add(&ctx, (unsigned char *)&ghash_ctx->hash_subkey0,
+            sizeof(ghash_ctx->hash_subkey0));
   crc32_add(&ctx, (unsigned char *)&ghash_ctx->correction_term0,
             sizeof(ghash_ctx->correction_term0));
   crc32_add(&ctx, (unsigned char *)&ghash_ctx->enc_initial_counter_block0,
@@ -173,27 +179,10 @@ hardened_bool_t ghash_context_integrity_checksum_check(
   return kHardenedBoolFalse;
 }
 
-status_t ghash_init_subkey(const uint32_t *hash_subkey, ghash_block_t *tbl) {
-  // Initialize 0 * H = 0.
-  memset(tbl[0].data, 0, kGhashBlockNumBytes);
-  // Initialize 1 * H = H.
-  HARDENED_TRY(
-      randomized_bytecopy(tbl[0x8].data, hash_subkey, kGhashBlockNumBytes));
-
-  // To get remaining entries, we use a variant of "shift and add"; in
-  // polynomial terms, a shift is a multiplication by x. Note that, because the
-  // processor represents bytes with the MSB on the left and NIST uses a fully
-  // little-endian polynomial representation with the MSB on the right, we have
-  // to reverse the bits of the indices.
-  for (uint8_t i = 2; i < 16; i += 2) {
-    // Find the product corresponding to (i >> 1) * H and multiply by x to
-    // shift 1; this will be i * H.
-    galois_mulx(&tbl[reverse_bits(i >> 1)], &tbl[reverse_bits(i)]);
-
-    // Add H to i * H to get (i + 1) * H.
-    block_xor(&tbl[reverse_bits(i)], &tbl[0x8], &tbl[reverse_bits(i + 1)]);
+status_t ghash_init_subkey(const uint32_t *hash_subkey, ghash_block_t *subkey) {
+  for (size_t i = 0; i < kGhashBlockNumWords; ++i) {
+    subkey->data[i] = reverse_bits_in_bytes(hash_subkey[i]);
   }
-
   return OTCRYPTO_OK;
 }
 
@@ -210,70 +199,43 @@ status_t ghash_init(ghash_context_t *ctx) {
 }
 
 /**
- * Multiply the GHASH state by the hash subkey.
+ * Multiply the GHASH state by a hash subkey share.
  *
  * See NIST SP800-38D, section 6.3.
  *
- * The NIST documentation shows a very slow double-and-add algorithm, which
- * iterates through the first operand bit-by-bit. However, since the second
- * operand is always the hash subkey H, we can speed things up significantly
- * with precomputed tables.
- *
  * This operation corresponds to multiplication in the Galois field with order
- * 2^128, modulo the polynomial x^128 +  x^8 + x^2 + x + 1
+ * 2^128, modulo the polynomial x^128 + x^7 + x^2 + x + 1. The state, the
+ * subkey and the result are in the bit order of the carry-less multiplication
+ * (see `reverse_bits_in_bytes`), so they need no conversion here.
  *
  * The product is written through `result` instead of being returned, so that
- * no unshredded copy of it is left in the caller's stack frame.
+ * no unshredded copy of it is left in the caller's stack frame. The register
+ * file is cleared before returning, so that no value derived from one subkey
+ * share is still in a register when the next multiplication loads the
+ * corresponding value of the other share.
  *
  * @param state GHASH state.
- * @param tbl Product table for the masked hash subkey.
- * @param[out] result Multiplication of the state and the hash subkey; must not
- * overlap `state` or `tbl`.
+ * @param hash_subkey Masked hash subkey share, as set by `ghash_init_subkey`.
+ * @param[out] result Multiplication of the state and the hash subkey. It must
+ * not overlap `state` or `hash_subkey`.
  */
 static void galois_mul_state_key(const ghash_block_t *state,
-                                 ghash_block_t tbl[16], ghash_block_t *result) {
-  // Initialize the multiplication result to 0.
-  memset(result->data, 0, kGhashBlockNumBytes);
+                                 const ghash_block_t *hash_subkey,
+                                 ghash_block_t *result) {
+  // Horner's rule over the state words a0 to a3, from the most significant:
+  // ((a3 * H * x^32 + a2 * H) * x^32 + a1 * H) * x^32 + a0 * H.
+  ghash_block_t acc = {.data = {0}};
+  mul_x32_add(state->data[3], hash_subkey, &acc);
+  mul_x32_add(state->data[2], hash_subkey, &acc);
+  mul_x32_add(state->data[1], hash_subkey, &acc);
+  mul_x32_add(state->data[0], hash_subkey, &acc);
 
-  // To compute the product, we iterate through the bytes of the input block,
-  // considering the most significant (in polynomial terms) first. For each
-  // byte b, we:
-  //   * multiply `result` by x^8 (shift all coefficients to the right)
-  //   * reduce the shifted `result` modulo the field modulus
-  //   * look up the product `b * H` and add it to `result`
-  //
-  // We can skip the shift and reduce steps on the first iteration, since
-  // `result` is 0.
-  for (size_t i = 0; i < kNumWindows; ++i) {
-    if (i != 0) {
-      // Save the most significant half-byte of `result` before shifting.
-      uint8_t overflow = block_byte_get(result, kGhashBlockNumBytes - 1) & 0x0f;
-      // Shift `result` to the right, discarding high bits.
-      block_shiftr(result, 4);
-      // Look up the product of `overflow` and the low terms of the modulus in
-      // the precomputed table.
-      uint16_t reduce_term = kGFReduceTable[overflow];
-      // Add (xor) this product to the low bits to complete modular reduction.
-      // This works because (low + x^128 * high) is equivalent to (low + (x^128
-      // - modulus) * high).
-      result->data[0] ^= reduce_term;
-    }
+  result->data[0] = acc.data[0];
+  result->data[1] = acc.data[1];
+  result->data[2] = acc.data[2];
+  result->data[3] = acc.data[3];
 
-    // Add the product of the next window and H to `result`. We process the
-    // windows starting with the most significant polynomial terms, which means
-    // starting from the last byte and proceeding to the first.
-    uint8_t tbl_index = block_byte_get(state, (kNumWindows - 1 - i) >> 1);
-
-    // Select the less significant 4 bits if i is even, or the more significant
-    // 4 bits if i is odd. This does not need to be constant time, since the
-    // values of i in this loop are constant.
-    if ((i & 1) == 1) {
-      tbl_index >>= 4;
-    } else {
-      tbl_index &= 0x0f;
-    }
-    block_xor(result, &tbl[tbl_index], result);
-  }
+  ibex_clear_rf();
 }
 
 /**
@@ -283,15 +245,6 @@ static void galois_mul_state_key(const ghash_block_t *state,
  */
 static void ghash_block_shred(ghash_block_t *block) {
   hardened_memshred(block->data, kGhashBlockNumWords);
-}
-
-/**
- * Overwrite a GHASH product table with random data; used as a cleanup guard.
- *
- * @param tbl GHASH product table to shred.
- */
-static void ghash_table_shred(ghash_block_t (*tbl)[16]) {
-  hardened_memshred((*tbl)[0].data, 16 * kGhashBlockNumWords);
 }
 
 /**
@@ -336,11 +289,10 @@ static void ghash_scratch_shred(ghash_scratch_t *scratch) {
 }
 
 /**
- * Refreshes the randomness used to mask the GHASH subkey tables (tbl0 and
- * tbl1).
+ * Refreshes the randomness used to mask the GHASH hash subkey shares.
  *
  * Shifts both subkey shares H0 and H1 by a fresh random delta mask, updating
- * the precomputed product tables and correction terms in-place.
+ * the correction terms in-place.
  */
 OT_WARN_UNUSED_RESULT
 static status_t ghash_refresh_subkey_mask(ghash_context_t *ctx) {
@@ -351,30 +303,30 @@ static status_t ghash_refresh_subkey_mask(ghash_context_t *ctx) {
   ghash_block_t delta_h __attribute__((cleanup(ghash_block_shred)));
   HARDENED_TRY(hardened_memshred(delta_h.data, kGhashBlockNumWords));
 
-  ghash_block_t tbl_delta[16] __attribute__((cleanup(ghash_table_shred)));
-  HARDENED_TRY(ghash_init_subkey(delta_h.data, tbl_delta));
+  ghash_block_t subkey_delta __attribute__((cleanup(ghash_block_shred)));
+  HARDENED_TRY(ghash_init_subkey(delta_h.data, &subkey_delta));
 
-  // Update tbl0 and tbl1 with tbl_delta.
-  for (size_t i = 0; i < 16; ++i) {
-    block_xor(&ctx->tbl0[i], &tbl_delta[i], &ctx->tbl0[i]);
-    block_xor(&ctx->tbl1[i], &tbl_delta[i], &ctx->tbl1[i]);
-  }
+  // Update both hash subkey shares with subkey_delta.
+  block_xor(&ctx->hash_subkey0, &subkey_delta, &ctx->hash_subkey0);
+  block_xor(&ctx->hash_subkey1, &subkey_delta, &ctx->hash_subkey1);
 
   // Update correction_term0 and correction_term1 (both shifted by S0 *
   // delta_h).
   ghash_block_t s0_delta __attribute__((cleanup(ghash_block_shred)));
-  galois_mul_state_key(&ctx->enc_initial_counter_block0, tbl_delta, &s0_delta);
+  galois_mul_state_key(&ctx->enc_initial_counter_block0, &subkey_delta,
+                       &s0_delta);
   block_xor(&ctx->correction_term0, &s0_delta, &ctx->correction_term0);
   block_xor(&ctx->correction_term1, &s0_delta, &ctx->correction_term1);
 
   // Update correction_term1_init (shifted by S1 * delta_h).
   ghash_block_t s1_delta __attribute__((cleanup(ghash_block_shred)));
-  galois_mul_state_key(&ctx->enc_initial_counter_block1, tbl_delta, &s1_delta);
+  galois_mul_state_key(&ctx->enc_initial_counter_block1, &subkey_delta,
+                       &s1_delta);
   block_xor(&ctx->correction_term1_init, &s1_delta,
             &ctx->correction_term1_init);
 
-  // Recompute the structure checksum after modifying tables and correction
-  // terms.
+  // Recompute the structure checksum after modifying the subkey shares and
+  // correction terms.
   ctx->checksum = ghash_context_integrity_checksum(ctx);
 
   return OTCRYPTO_OK;
@@ -389,7 +341,7 @@ static status_t ghash_refresh_subkey_mask(ghash_context_t *ctx) {
  */
 static status_t ghash_process_block(ghash_context_t *ctx, ghash_block_t *block,
                                     ghash_scratch_t *scratch) {
-  // Periodically refresh the subkey table mask every 64 blocks to limit
+  // Periodically refresh the subkey mask every 64 blocks to limit
   // side-channel DPA/CPA trace accumulation on long messages.
   if (ctx->ghash_block_cnt > 0 && (ctx->ghash_block_cnt % 64) == 0) {
     HARDENED_TRY(ghash_refresh_subkey_mask(ctx));
@@ -399,10 +351,11 @@ static status_t ghash_process_block(ghash_context_t *ctx, ghash_block_t *block,
     // Process share 0.
     // share0_tmp = (S0 + T0) * H0
     hardened_memcpy(scratch->s0_tmp.data, block->data, kGhashBlockNumWords);
+    block_reverse_bits_in_bytes(&scratch->s0_tmp);
     hardened_xor_in_place(scratch->s0_tmp.data,
                           ctx->enc_initial_counter_block0.data,
                           kGhashBlockNumWords);
-    galois_mul_state_key(&scratch->s0_tmp, ctx->tbl0, &ctx->state0);
+    galois_mul_state_key(&scratch->s0_tmp, &ctx->hash_subkey0, &ctx->state0);
 
     // Apply the correction terms for state share 0.
     // share0 = share0_tmp + (S0*(H0+1))
@@ -416,11 +369,12 @@ static status_t ghash_process_block(ghash_context_t *ctx, ghash_block_t *block,
     // Process share 1.
     // share1_tmp = (S1 + T0) * H1
     hardened_memcpy(scratch->s1_tmp.data, block->data, kGhashBlockNumWords);
+    block_reverse_bits_in_bytes(&scratch->s1_tmp);
     hardened_xor_in_place(scratch->s1_tmp.data,
                           ctx->enc_initial_counter_block1.data,
                           kGhashBlockNumWords);
     ibex_clear_rf();
-    galois_mul_state_key(&scratch->s1_tmp, ctx->tbl1, &ctx->state1);
+    galois_mul_state_key(&scratch->s1_tmp, &ctx->hash_subkey1, &ctx->state1);
 
     // Apply the correction terms for state share 1.
     // share1 = share1_tmp + correction_term1
@@ -430,13 +384,14 @@ static status_t ghash_process_block(ghash_context_t *ctx, ghash_block_t *block,
     // Process share 0.
     // tmp = (share0+TN-1)+share1
     hardened_memcpy(scratch->tmp.data, block->data, kGhashBlockNumWords);
+    block_reverse_bits_in_bytes(&scratch->tmp);
     hardened_xor_in_place(scratch->tmp.data, ctx->state0.data,
                           kGhashBlockNumWords);
     hardened_xor_in_place(scratch->tmp.data, ctx->state1.data,
                           kGhashBlockNumWords);
 
     // s0_tmp = tmp * H0
-    galois_mul_state_key(&scratch->tmp, ctx->tbl0, &scratch->s0_tmp);
+    galois_mul_state_key(&scratch->tmp, &ctx->hash_subkey0, &scratch->s0_tmp);
 
     // Apply the correction terms for state share 0.
     // share0 = share0_tmp + (S0*(H0+1))
@@ -449,7 +404,7 @@ static status_t ghash_process_block(ghash_context_t *ctx, ghash_block_t *block,
     // Process share 1.
     // share1_tmp = tmp * H1
     ibex_clear_rf();
-    galois_mul_state_key(&scratch->tmp, ctx->tbl1, &scratch->s1_tmp);
+    galois_mul_state_key(&scratch->tmp, &ctx->hash_subkey1, &scratch->s1_tmp);
 
     // Apply the correction terms for state share 1.
     // share1 = share1_tmp + (S0*H0)
@@ -574,24 +529,26 @@ status_t ghash_handle_enc_initial_counter_block(
   // correction_term0 = S0 * (H0 + 1).
   ghash_block_t s0 __attribute__((cleanup(ghash_block_shred)));
   hardened_memcpy(s0.data, enc_initial_counter_block0, kGhashBlockNumWords);
+  block_reverse_bits_in_bytes(&s0);
   ghash_block_t mul_tmp __attribute__((cleanup(ghash_block_shred)));
-  galois_mul_state_key(&s0, ctx->tbl0, &mul_tmp);
+  galois_mul_state_key(&s0, &ctx->hash_subkey0, &mul_tmp);
   block_xor(&mul_tmp, &s0, &ctx->correction_term0);
 
   // correction_term1 = S0 * H1.
-  galois_mul_state_key(&s0, ctx->tbl1, &ctx->correction_term1);
+  galois_mul_state_key(&s0, &ctx->hash_subkey1, &ctx->correction_term1);
 
   // correction_term1_init = S1 * H1.
   ghash_block_t s1 __attribute__((cleanup(ghash_block_shred)));
   hardened_memcpy(s1.data, enc_initial_counter_block1, kGhashBlockNumWords);
-  galois_mul_state_key(&s1, ctx->tbl1, &ctx->correction_term1_init);
+  block_reverse_bits_in_bytes(&s1);
+  galois_mul_state_key(&s1, &ctx->hash_subkey1, &ctx->correction_term1_init);
 
   // Save the encrypted initial counter blocks into the ghash context as we
   // need them throughout the ghash computations.
-  hardened_memcpy(ctx->enc_initial_counter_block0.data,
-                  enc_initial_counter_block0, kGhashBlockNumWords);
-  hardened_memcpy(ctx->enc_initial_counter_block1.data,
-                  enc_initial_counter_block1, kGhashBlockNumWords);
+  hardened_memcpy(ctx->enc_initial_counter_block0.data, s0.data,
+                  kGhashBlockNumWords);
+  hardened_memcpy(ctx->enc_initial_counter_block1.data, s1.data,
+                  kGhashBlockNumWords);
 
   // Update the checksum.
   ctx->checksum = ghash_context_integrity_checksum(ctx);
@@ -611,6 +568,7 @@ status_t ghash_final(ghash_context_t *ctx, uint32_t *result) {
                tmp_block.data);
   hardened_xor(tmp_block.data, ctx->enc_initial_counter_block1.data,
                kGhashBlockNumWords, final_block.data);
+  block_reverse_bits_in_bytes(&final_block);
 
   HARDENED_TRY(
       randomized_bytecopy(result, final_block.data, kGhashBlockNumBytes));
