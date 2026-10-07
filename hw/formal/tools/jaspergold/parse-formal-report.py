@@ -13,6 +13,42 @@ import sys
 import hjson
 
 
+# The engine this parser reports on. common_formal_cfg.hjson invokes
+# `{formal_root}/tools/{tool}/parse-formal-report.py`, so the directory holding this script is the
+# tool name by the flow's own contract, and an expected-failure file uses that name to scope a
+# waiver to one engine.
+TOOL = Path(__file__).resolve().parent.name
+
+# The engines that have a parser, which are the sibling directories holding one. A section named
+# anything else is a typo, and a typo in a section name is the one mistake in an expected-failure
+# file that nothing downstream would otherwise catch: the section simply never matches, so the
+# file waives nothing and says nothing.
+KNOWN_TOOLS = frozenset(
+    entry.name for entry in Path(__file__).resolve().parent.parent.iterdir()
+    if (entry / Path(__file__).name).is_file())
+
+# Every log.error below is the flow's failure signal, not just a note. Logging's default format
+# prefixes the line with `ERROR:`, and common_formal_cfg.hjson sets
+# `build_fail_patterns: ["^ERROR:.*$"]`, so dvsim fails the job on any one of them. That is what
+# lets this script report a bad expected-failure file and still exit 0. Keep new diagnostics at
+# error level unless they are genuinely advisory, and do not reformat them without checking that
+# pattern still matches.
+
+
+SUMMARY_PATTERNS = [("errors", r"^ERROR: .*"),
+                    ("errors", r"^\[ERROR.*"),
+                    ("warnings", r"^WARNING: .*"),
+                    ("warnings", r"^\[WARN.*"),
+                    ("proven", r"^\[\d+\].*proven.*"),
+                    ("cex", r"^\[\d+\].*cex.*"),
+                    ("covered", r"^\[\d+\].*covered.*"),
+                    ("undetermined", r"^\[\d+\].*undetermined.*"),
+                    ("unreachable", r"^\[\d+\].*unreachable.*")]
+
+# The categories a waiver may name, which are exactly the ones counted above.
+WAIVER_CATEGORIES = frozenset(key for key, _ in SUMMARY_PATTERNS)
+
+
 def extract_messages(str_buffer, patterns):
     '''Extract messages matching patterns from str_buffer as a dictionary.
 
@@ -27,37 +63,64 @@ def extract_messages(str_buffer, patterns):
     return results
 
 
+def drop_expected_messages(key, matched, exp_unproven_properties):
+    '''Drop one matched message per expected property, and flag the ones that do not apply.
+
+    Matching is by substring, so an expected property drops exactly one message rather than every
+    message it appears in: one entry in the expected-failure file waives one property. An entry
+    that matches nothing, and an entry that matches several messages, both waive nothing and are
+    reported. A waiver naming a property the run did not produce is stale or misspelled, and one
+    matching several properties is too short to say which of them it meant, so neither may pass
+    unnoticed.
+
+    The stand-ins for entries that matched nothing are held apart from the real messages until the
+    end, so that a later entry cannot match the text of an earlier entry's stand-in.
+    '''
+    remaining = list(matched)
+    unmatched = []
+    for unproven_property in exp_unproven_properties:
+        found = [item for item in remaining if unproven_property in item]
+        if not found:
+            log.error(
+                "Expected %s property '%s' is not in the report, so it is counted as a failure. "
+                "The expected-failure file is stale or the name is wrong.", key,
+                unproven_property)
+            unmatched.append("Fail to find this property: " + unproven_property)
+        elif len(found) > 1:
+            log.error(
+                "Expected %s property '%s' matches %d messages, so it is ambiguous and waives "
+                "none of them. Give the property name in full.", key, unproven_property,
+                len(found))
+        else:
+            remaining.remove(found[0])
+
+    return remaining + unmatched
+
+
 def extract_messages_count(str_buffer, patterns, exp_unproven_properties):
-    '''Extract messages matching patterns from full_file as a dictionary.
+    '''Extract messages matching patterns from str_buffer as a dictionary.
 
     The patterns argument is a list of pairs, (key, pattern). Each pattern is a regex
     and the total count of all matches in str_buffer are stored in a dictionary under
     the paired key.
-    If input argument `exp_unproven_properties` is not None, the total count will not
-    include the expected properties. However, if the expected are not found in its
-    category, will add the properties to the category.
+    If `exp_unproven_properties` is given, each property expected to fail under a key drops one
+    match from that key's count, and a property that is not there is counted as a failure instead.
+    See drop_expected_messages.
+    Several patterns may share one key, so the matches are gathered per key before the expected
+    properties are dropped. Dropping them per pattern would instead apply a waiver once for every
+    pattern under the key, and a waiver removing a message under one pattern while being reported
+    absent under the next leaves the count unchanged.
     '''
-    results = OrderedDict()
+    matched = OrderedDict()
     for key, pattern in patterns:
-        results.setdefault(key, 0)
+        matched.setdefault(key, [])
+        matched[key] += re.findall(pattern, str_buffer, flags=re.MULTILINE)
 
+    results = OrderedDict()
+    for key, messages in matched.items():
         if exp_unproven_properties and key in exp_unproven_properties:
-            matched_pattern = re.findall(pattern, str_buffer, flags=re.MULTILINE)
-            for unproven_property in exp_unproven_properties[key]:
-                unproven_property_found = 0
-                for item in matched_pattern:
-                    # If the expected unproven property is found, remove the item from the
-                    # list of matched_pattern.
-                    if unproven_property in item:
-                        matched_pattern.remove(item)
-                        unproven_property_found = 1
-                # If expected unproven property is not found, add the property to the
-                # list of matched pattern.
-                if not unproven_property_found:
-                    matched_pattern.append("Fail to find this property: " + unproven_property)
-            results[key] += len(matched_pattern)
-        else:
-            results[key] += len(re.findall(pattern, str_buffer, flags=re.MULTILINE))
+            messages = drop_expected_messages(key, messages, exp_unproven_properties[key])
+        results[key] = len(messages)
 
     return results
 
@@ -82,32 +145,101 @@ def parse_message(str_buffer):
     return extract_messages(str_buffer, err_warn_patterns)
 
 
-def get_expected_failures(exp_failure_path):
-    '''Get expected fail properties from a hjson file otherwise return None.'''
-    if exp_failure_path is None or exp_failure_path == "":
-        return {}
-    else:
-        try:
-            with open(exp_failure_path, 'r') as f:
-                exp_failures = hjson.load(f, use_decimal=True, object_pairs_hook=OrderedDict)
-                return exp_failures
-        except ValueError:
-            log.error("{} not found".format(exp_failure_path))
+def check_waiver_categories(waivers, exp_failure_path):
+    '''Return the waivers unchanged, or an empty dict if any category is unusable.
+
+    A category outside WAIVER_CATEGORIES is one get_summary never counts under, so it would waive
+    nothing however it is spelled. A category holding a bare string rather than a list would be
+    iterated one character at a time by drop_expected_messages, and most single characters match
+    some message, so the count would come out wrong. Neither is caught anywhere downstream.
+    '''
+    for category, properties in waivers.items():
+        if category not in WAIVER_CATEGORIES:
+            log.error(
+                "%s names category '%s', which is not one this parser counts. Expected one of "
+                "%s. No property is waived.", exp_failure_path, category,
+                ", ".join(sorted(WAIVER_CATEGORIES)))
             return {}
+
+        if not isinstance(properties, list) or not all(isinstance(p, str) for p in properties):
+            log.error(
+                "%s category '%s' must hold a list of property names. No property is waived.",
+                exp_failure_path, category)
+            return {}
+
+    return waivers
+
+
+def select_tool_waivers(exp_failures, tool, exp_failure_path):
+    '''Return the waivers in an expected-failure file that apply to one tool.
+
+    Two shapes are accepted. A file whose top-level values are lists is the flat form, which
+    applies to every engine and is what every file in the tree was before sections existed. A file
+    whose top-level values are mappings is keyed by tool name, and only the section naming this
+    engine applies.
+
+    Sections are what make a waiver correct across engines, because a property name is only
+    meaningful to the engine that emits it. The `:precondition1` cover items every file in the tree
+    waives are synthesised by JasperGold and have no VC Formal equivalent, so a flat file waiving
+    them has VC Formal count all three as failures for being absent.
+    '''
+    if not exp_failures:
+        return {}
+
+    values = list(exp_failures.values())
+    if all(isinstance(value, list) for value in values):
+        return check_waiver_categories(exp_failures, exp_failure_path)
+
+    if all(isinstance(value, dict) for value in values):
+        unknown = sorted(set(exp_failures) - KNOWN_TOOLS)
+        if unknown:
+            log.error(
+                "%s has section(s) %s, which name no engine with a parser. Expected one of %s. "
+                "No property is waived.", exp_failure_path, ", ".join(unknown),
+                ", ".join(sorted(KNOWN_TOOLS)))
+            return {}
+
+        waivers = exp_failures.get(tool)
+        if waivers is None:
+            log.info("%s has no %s section, so no property is waived for this engine.",
+                     exp_failure_path, tool)
+            return {}
+        return check_waiver_categories(waivers, exp_failure_path)
+
+    log.error("%s mixes per-tool sections with bare categories, so it cannot be read. "
+              "No property is waived.", exp_failure_path)
+    return {}
+
+
+def get_expected_failures(exp_failure_path, tool):
+    '''Return the expected failing properties that apply to one tool, or an empty dict if none.
+
+    An unreadable or malformed file yields an empty dict, so no property is waived and nothing the
+    run failed is hidden. It must not raise instead: the exception would escape into the caller's
+    own `except IOError`, which would report the log file as the one that could not be opened and
+    then leave main() to fail on a results dictionary that was never filled in.
+    '''
+    if not exp_failure_path:
+        return {}
+
+    try:
+        with Path(exp_failure_path).open() as f:
+            exp_failures = hjson.load(f, use_decimal=True, object_pairs_hook=OrderedDict)
+    except OSError as err:
+        log.error("Cannot read the expected-failure file %s: %s. No property is waived.",
+                  exp_failure_path, err)
+        return {}
+    except ValueError as err:
+        log.error("Cannot parse the expected-failure file %s: %s. No property is waived.",
+                  exp_failure_path, err)
+        return {}
+
+    return select_tool_waivers(exp_failures, tool, exp_failure_path)
 
 
 def get_summary(str_buffer, exp_failures):
     '''Count errors, warnings, and property status from the log file'''
-    message_patterns = [("errors", r"^ERROR: .*"),
-                        ("errors", r"^\[ERROR.*"),
-                        ("warnings", r"^WARNING: .*"),
-                        ("warnings", r"^\[WARN.*"),
-                        ("proven", r"^\[\d+\].*proven.*"),
-                        ("cex", r"^\[\d+\].*cex.*"),
-                        ("covered", r"^\[\d+\].*covered.*"),
-                        ("undetermined", r"^\[\d+\].*undetermined.*"),
-                        ("unreachable", r"^\[\d+\].*unreachable.*")]
-    summary = extract_messages_count(str_buffer, message_patterns, exp_failures)
+    summary = extract_messages_count(str_buffer, SUMMARY_PATTERNS, exp_failures)
 
     summary["pass_rate"] = format_percentage(summary["proven"],
                                              summary["cex"] + summary["undetermined"] +
@@ -125,7 +257,7 @@ def get_results(logpath, exp_failure_path):
             full_file = f.read()
             results["messages"] = parse_message(full_file)
 
-            results["exp_failures"] = get_expected_failures(exp_failure_path)
+            results["exp_failures"] = get_expected_failures(exp_failure_path, TOOL)
 
             results["summary"] = get_summary(full_file, results["exp_failures"])
             return results
@@ -227,7 +359,11 @@ def main():
                         help=('The path of a hjson file that contains expected failing properties.'
                               '''By default is empty, used only if there are properties that are
                                expected to fail. If input is an empty string, will treat it as not
-                               passing a file.'''))
+                               passing a file. The file groups properties by category under a
+                               section named after the engine that emits them, for example
+                               `{ jaspergold: { unreachable: [ prop1, prop2 ] } }`. A file whose
+                               categories sit at the top level with no section applies to every
+                               engine.'''))
 
     args = parser.parse_args()
 
