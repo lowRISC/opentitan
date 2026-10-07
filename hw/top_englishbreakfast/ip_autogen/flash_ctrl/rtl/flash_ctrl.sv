@@ -1466,27 +1466,28 @@ module flash_ctrl
 
   // Alert assertions for redundant counters.
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdRspFifo,
-                                               u_to_rd_fifo.u_rspfifo,
+                                               u_to_rd_fifo.gen_no_sec_u_rspfifo.u_rspfifo,
                                                alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdSramReqFifo,
-                                               u_to_rd_fifo.u_sramreqfifo,
+                                               u_to_rd_fifo.gen_no_sec_u_sramreqfifo.u_sramreqfifo,
                                                alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT1(RdReqFifo,
-                                               u_to_rd_fifo.u_reqfifo,
+                                               u_to_rd_fifo.gen_no_sec_u_reqfifo.u_reqfifo,
                                                alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(EflashRspFifo,
-                                              u_tl_adapter_eflash.u_rspfifo,
+                                              u_tl_adapter_eflash.gen_no_sec_u_rspfifo.u_rspfifo,
                                               alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(EflashSramReqFifo,
-                                              u_tl_adapter_eflash.u_sramreqfifo,
+                                              u_tl_adapter_eflash.gen_no_sec_u_sramreqfifo
+                                                .u_sramreqfifo,
                                               alert_tx_o[1])
 
   `ASSERT_PRIM_FIFO_SYNC_ERROR_TRIGGERS_ALERT(EflashReqFifo,
-                                              u_tl_adapter_eflash.u_reqfifo,
+                                              u_tl_adapter_eflash.gen_no_sec_u_reqfifo.u_reqfifo,
                                               alert_tx_o[1])
 
   // Alert assertions for reg_we onehot check

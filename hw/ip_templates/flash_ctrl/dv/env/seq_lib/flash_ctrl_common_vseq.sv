@@ -61,7 +61,7 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
               ".u_rd_storage.gen_normal_fifo.storage_rdata[74:0]"},
       {"tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd",
               ".u_rd_storage.gen_normal_fifo.storage_rdata[74:0]"},
-      "tb.dut.u_to_rd_fifo.u_rspfifo.gen_singleton_fifo.rdata_int[39:0]"
+      "tb.dut.u_to_rd_fifo.gen_no_sec_u_rspfifo.u_rspfifo.gen_singleton_fifo.rdata_int[39:0]"
     };
     if (common_seq_type == "") void'($value$plusargs("run_%0s", common_seq_type));
     if (common_seq_type == "sec_cm_fi") begin
@@ -208,7 +208,7 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
           $asserton(0, "tb.dut.u_eflash.gen_flash_cores[1].u_host_rsp_fifo");
           $asserton(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.u_rsp_order_fifo");
           $asserton(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd.u_rsp_order_fifo");
-          $asserton(0, "tb.dut.u_to_rd_fifo.u_rspfifo.DataKnown_A");
+          $asserton(0, "tb.dut.u_to_rd_fifo.gen_no_sec_u_rspfifo.u_rspfifo.DataKnown_A");
           $asserton(0, "tb.dut.tlul_assert_device.gen_device.gen_d2h.dDataKnown_A");
           $asserton(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.RdTxnCheck_A");
           $asserton(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.RdTxnCheck_A");
@@ -220,7 +220,7 @@ class flash_ctrl_common_vseq extends flash_ctrl_otf_base_vseq;
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[1].u_host_rsp_fifo");
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.u_rd.u_rsp_order_fifo");
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.u_rd.u_rsp_order_fifo");
-          $assertoff(0, "tb.dut.u_to_rd_fifo.u_rspfifo.DataKnown_A");
+          $assertoff(0, "tb.dut.u_to_rd_fifo.gen_no_sec_u_rspfifo.u_rspfifo.DataKnown_A");
           $assertoff(0, "tb.dut.tlul_assert_device.gen_device.gen_d2h.dDataKnown_A");
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[0].u_core.RdTxnCheck_A");
           $assertoff(0, "tb.dut.u_eflash.gen_flash_cores[1].u_core.RdTxnCheck_A");
