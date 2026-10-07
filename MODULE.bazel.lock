@@ -315,7 +315,7 @@
     },
     "//third_party/hsm:extensions.bzl%hsm": {
       "general": {
-        "bzlTransitiveDigest": "DS6qQiAFLt70vrQ3lRlVioHfL0Zo6l1MGnxnCCl50sE=",
+        "bzlTransitiveDigest": "kFI4cqoHnYj0sZtYJlhEEXlqaqqOa8m0wLM3SbNRCQM=",
         "usagesDigest": "uEk6dTktgdMfLQN5bAE4Sorkuuxcz3nEbPEKZLUjpak=",
         "recordedFileInputs": {},
         "recordedDirentsInputs": {},
@@ -330,7 +330,8 @@
               "sha256": "958acfc96b10bdd5f01f48fb6249b72884e2141b2139c3110c5f5a964ed635f3",
               "patches": [
                 "@@//third_party/hsm/patches:0001-Disable-filename-logging.patch",
-                "@@//third_party/hsm/patches:0002-slh-dsa.patch"
+                "@@//third_party/hsm/patches:0002-slh-dsa.patch",
+                "@@//third_party/hsm/patches:0003-ckm-hash-slh-dsa.patch"
               ],
               "patch_args": [
                 "-p1"
