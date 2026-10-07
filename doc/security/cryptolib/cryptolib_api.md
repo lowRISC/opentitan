@@ -495,7 +495,7 @@ These routines maintain both the message blocks and intermediate hash states in 
 
 ## Message Authentication
 
-OpenTitan supports two kinds of message authentication codes (MACs):
+OpenTitan supports three kinds of message authentication codes (MACs):
 - HMAC, a simple construction based on cryptographic hash functions
 - KMAC, a Keccak-based MAC
 - AES-CMAC, a block cipher-based MAC
