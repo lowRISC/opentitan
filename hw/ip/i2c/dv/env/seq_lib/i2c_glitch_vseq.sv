@@ -86,7 +86,7 @@ class i2c_glitch_vseq extends i2c_target_smoke_vseq;
   endtask
 
   virtual task body();
-    // Initialize DUT in device mode and agent in host mode based on if_mode set using run argument
+    // Initialize DUT in target mode and agent in host mode based on if_mode set using run argument
     if (cfg.m_i2c_agent_cfg.if_mode == Host) begin
       i2c_target_base_seq m_i2c_target_seq;
       i2c_item txn_q[$];
