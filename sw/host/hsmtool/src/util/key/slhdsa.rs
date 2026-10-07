@@ -5,13 +5,12 @@
 use anyhow::{Result, anyhow};
 use cryptoki::mechanism::dsa::{HashSignAdditionalContext, HedgeType, SignAdditionalContext};
 use cryptoki::mechanism::{Mechanism, MechanismType};
-use rsa::pkcs8;
-use rsa::pkcs8::spki;
-use rsa::pkcs8::{
-    DecodePrivateKey, DecodePublicKey, EncodePrivateKey, EncodePublicKey, Error, LineEnding,
+use pkcs8;
+use pkcs8::{
+    DecodePrivateKey, DecodePublicKey, EncodePrivateKey, EncodePublicKey, Error, LineEnding, spki,
 };
 use slh_dsa::{SigningKey, VerifyingKey};
-use sphincsplus::SpxDomain;
+use sphincsplus::SpxSignatureMode;
 use std::path::Path;
 
 use crate::error::HsmError;
@@ -553,21 +552,19 @@ pub trait SlhDsaMechanism {
     fn slh_dsa_mechanism(&self) -> Mechanism<'_>;
 }
 
-impl SlhDsaMechanism for SpxDomain {
+impl SlhDsaMechanism for SpxSignatureMode {
     fn slh_dsa_mechanism(&self) -> Mechanism<'_> {
         match self {
-            SpxDomain::None | SpxDomain::Pure => {
+            SpxSignatureMode::Pure => {
                 Mechanism::SlhDsa(SignAdditionalContext::new(HedgeType::Preferred, None))
             }
             // In PKCS#11, there are separate CKM_HASH_SLH_DSA and CKM_HASH_SLH_DSA_*
             // mechanisms, where the latter expect the full message and perform the hashing
             // on token. Since our data is pre-hashed for this domain, use the former
             // and specify SHA-256 as the hash already used.
-            SpxDomain::PreHashedSha256 => Mechanism::HashSlhDsa(HashSignAdditionalContext::new(
-                HedgeType::Preferred,
-                None,
-                MechanismType::SHA256,
-            )),
+            SpxSignatureMode::PreHashedSha256 => Mechanism::HashSlhDsa(
+                HashSignAdditionalContext::new(HedgeType::Preferred, None, MechanismType::SHA256),
+            ),
         }
     }
 }

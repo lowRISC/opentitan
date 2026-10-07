@@ -6,7 +6,7 @@ use acorn::{GenerateFlags, KeyEntry, KeyInfo, SpxInterface};
 use anyhow::Result;
 use cryptoki::session::Session;
 use sphincsplus::{DecodeKey, EncodeKey};
-use sphincsplus::{SphincsPlus, SpxDomain, SpxError, SpxPublicKey, SpxSecretKey};
+use sphincsplus::{SphincsPlus, SpxError, SpxPublicKey, SpxSecretKey, SpxSignatureMode};
 use std::rc::Rc;
 use std::str::FromStr;
 use zeroize::Zeroizing;
@@ -46,8 +46,8 @@ impl SpxEf {
         if let Some(app) = &ef.application {
             match app.split_once(':') {
                 Some((Self::APPLICATION, _algo)) => {
-                    let data = Zeroizing::new(String::from_utf8(ef.read(&self.session)?)?);
-                    return Ok(SpxSecretKey::from_pem(data.as_str())?);
+                    let data = Zeroizing::new(ef.read(&self.session)?);
+                    return Ok(SpxSecretKey::from_pem_bytes(data.as_ref())?);
                 }
                 Some((_, _)) | None => {
                     return Err(HsmError::UnknownApplication(app.into()).into());
@@ -101,7 +101,7 @@ impl SpxInterface for SpxEf {
         &self,
         alias: &str,
         algorithm: &str,
-        _domain: SpxDomain,
+        _domain: Option<SpxSignatureMode>,
         _token: &str,
         flags: GenerateFlags,
     ) -> Result<KeyEntry> {
@@ -147,7 +147,7 @@ impl SpxInterface for SpxEf {
         &self,
         alias: &str,
         algorithm: &str,
-        _domain: SpxDomain,
+        _domain: Option<SpxSignatureMode>,
         _token: &str,
         overwrite: bool,
         public_key: &[u8],
@@ -193,7 +193,7 @@ impl SpxInterface for SpxEf {
         &self,
         alias: Option<&str>,
         key_hash: Option<&str>,
-        domain: SpxDomain,
+        domain: SpxSignatureMode,
         message: &[u8],
     ) -> Result<Vec<u8>> {
         let alias = alias.ok_or(HsmError::NoSearchCriteria)?;
@@ -201,7 +201,7 @@ impl SpxInterface for SpxEf {
             log::warn!("ignored key_hash {key_hash:?}");
         }
         let sk = self.load_key(alias)?;
-        Ok(sk.sign(domain, message)?)
+        Ok(sk.sign(domain.into(), message)?)
     }
 
     /// Verify a message.
@@ -209,7 +209,7 @@ impl SpxInterface for SpxEf {
         &self,
         alias: Option<&str>,
         key_hash: Option<&str>,
-        domain: SpxDomain,
+        domain: SpxSignatureMode,
         message: &[u8],
         signature: &[u8],
     ) -> Result<bool> {
@@ -219,7 +219,7 @@ impl SpxInterface for SpxEf {
         }
         let sk = self.load_key(alias)?;
         let pk = SpxPublicKey::from(&sk);
-        match pk.verify(domain, signature, message) {
+        match pk.verify(domain.into(), signature, message) {
             Ok(()) => Ok(true),
             Err(SpxError::BadSignature) => Ok(false),
             Err(e) => Err(e.into()),
