@@ -90,6 +90,7 @@ py_binary(
     deps = [
         "//hw/ip/otbn/dv/otbnsim/sim:load_elf",
         "//hw/ip/otbn/dv/otbnsim/sim:standalonesim",
+        "//hw/ip/otbn/util/shared:toolchain",
         requirement("pyelftools"),
     ],
 )

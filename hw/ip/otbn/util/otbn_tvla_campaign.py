@@ -3,6 +3,8 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
+import hashlib
+import json
 import sys
 import os
 import random
@@ -271,6 +273,7 @@ def build_pc_to_line_map(elf_path: str) -> Dict[int, Tuple[str, int]]:
     """Extracts DWARF line info to map PCs to source code lines."""
     pc_map = {}
     try:
+        entries: List[List[Any]] = []
         with open(elf_path, "rb") as f:
             elffile = ELFFile(f)
             if not elffile.has_dwarf_info():
@@ -280,14 +283,31 @@ def build_pc_to_line_map(elf_path: str) -> Dict[int, Tuple[str, int]]:
                 line_program = dwarfinfo.line_program_for_CU(cu)
                 if line_program is None:
                     continue
+                inc_dirs = line_program["include_directory"]
                 for entry in line_program.get_entries():
-                    if entry.state is None or entry.state.file == 0:
+                    if (
+                        entry.state is None or
+                        entry.state.file == 0 or
+                        entry.state.end_sequence
+                    ):
                         continue
                     file_entry = line_program["file_entry"][entry.state.file - 1]
-                    pc_map[entry.state.address] = (
-                        file_entry.name.decode("utf-8"),
-                        entry.state.line,
+                    filepath = file_entry.name.decode("utf-8")
+                    if 0 < file_entry.dir_index <= len(inc_dirs):
+                        filepath = os.path.join(
+                            inc_dirs[file_entry.dir_index - 1].decode("utf-8"),
+                            filepath,
+                        )
+                    entries.append(
+                        [entry.state.address, filepath, entry.state.line]
                     )
+        # GNU as shifts .loc on raw .word instructions by +4 bytes, colliding
+        # with the next .insn/RV32I instruction; shift collided entries back.
+        for i in range(len(entries) - 2, -1, -1):
+            if entries[i][0] == entries[i + 1][0]:
+                entries[i][0] -= 4
+        for addr, filepath, line in entries:
+            pc_map[addr] = (filepath, line)
     except Exception as e:
         print(f"Failed to extract DWARF info: {e}")
     return pc_map
@@ -620,6 +640,11 @@ def main() -> int:
         default=[],
         help="Format: sym0,sym1:mode:size:hex_secret[:hex_modulus]",
     )
+    parser.add_argument(
+        "--dump-json",
+        action="store_true",
+        help="Dump TVLA accumulators to JSON",
+    )
 
     args = parser.parse_args()
 
@@ -654,7 +679,7 @@ def main() -> int:
     accumulator = TVLAAccumulator()
     max_threads = max(1, multiprocessing.cpu_count() - 2)
 
-    BATCH_SIZE = 100
+    BATCH_SIZE = min(100, max(1, args.num_experiments // 2))
     num_fixed_batches = (args.num_experiments // 2) // BATCH_SIZE
     num_random_batches = (args.num_experiments // 2) // BATCH_SIZE
 
@@ -745,6 +770,27 @@ def main() -> int:
         f"\nCampaign complete. Total leakages > {args.t_threshold}: {leakages_found}",
         flush=True,
     )
+
+    if args.dump_json:
+        with open(args.elf, "rb") as ef:
+            elf_sha256 = hashlib.sha256(ef.read()).hexdigest()
+        out_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR", ".")
+        with open(os.path.join(out_dir, "tvla_accumulators.json"), "w") as f:
+            json.dump(
+                {
+                    "target": os.environ.get("TEST_TARGET", ""),
+                    "elf": args.elf,
+                    "elf_sha256": elf_sha256,
+                    "t_threshold": args.t_threshold,
+                    "dwarf_map": dwarf_map,
+                    "counts": accumulator.counts,
+                    "sums": accumulator.sums,
+                    "sum_sqs": accumulator.sum_sqs,
+                },
+                f,
+            )
+        return 0
+
     return 0 if leakages_found == 0 else 1
 
 
