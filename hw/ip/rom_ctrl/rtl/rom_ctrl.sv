@@ -625,27 +625,29 @@ module rom_ctrl
 
   // Alert assertions for redundant counters.
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(RspFifoWptrCheck_A,
-                                            u_tl_adapter_rom.u_rspfifo.gen_normal_fifo.
-                                            u_fifo_cnt.gen_secure_ptrs.u_wptr,
+                                            u_tl_adapter_rom.gen_no_sec_u_rspfifo.u_rspfifo.
+                                            gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
                                             gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(RspFifoRptrCheck_A,
-                                            u_tl_adapter_rom.u_rspfifo.gen_normal_fifo.
-                                            u_fifo_cnt.gen_secure_ptrs.u_rptr,
+                                            u_tl_adapter_rom.gen_no_sec_u_rspfifo.u_rspfifo.
+                                            gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
                                             gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(SramReqFifoWptrCheck_A,
-                                            u_tl_adapter_rom.u_sramreqfifo.gen_normal_fifo.
-                                            u_fifo_cnt.gen_secure_ptrs.u_wptr,
+                                            u_tl_adapter_rom.gen_no_sec_u_sramreqfifo.
+                                            u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.
+                                            gen_secure_ptrs.u_wptr,
                                             gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(SramReqFifoRptrCheck_A,
-                                            u_tl_adapter_rom.u_sramreqfifo.gen_normal_fifo.
-                                            u_fifo_cnt.gen_secure_ptrs.u_rptr,
+                                            u_tl_adapter_rom.gen_no_sec_u_sramreqfifo.
+                                            u_sramreqfifo.gen_normal_fifo.u_fifo_cnt.
+                                            gen_secure_ptrs.u_rptr,
                                             gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(ReqFifoWptrCheck_A,
-                                            u_tl_adapter_rom.u_reqfifo.gen_normal_fifo.
-                                            u_fifo_cnt.gen_secure_ptrs.u_wptr,
+                                            u_tl_adapter_rom.gen_no_sec_u_reqfifo.u_reqfifo.
+                                            gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_wptr,
                                             gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
   `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT_IN(ReqFifoRptrCheck_A,
-                                            u_tl_adapter_rom.u_reqfifo.gen_normal_fifo.
-                                            u_fifo_cnt.gen_secure_ptrs.u_rptr,
+                                            u_tl_adapter_rom.gen_no_sec_u_reqfifo.u_reqfifo.
+                                            gen_normal_fifo.u_fifo_cnt.gen_secure_ptrs.u_rptr,
                                             gen_alert_tx[AlertFatalIdx].u_alert_sender.alert_req_i)
 endmodule
