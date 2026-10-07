@@ -1,0 +1,94 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: OTBN Panopticon Nightly
+on:
+  schedule:
+    - cron: "00 02 * * *"
+      timezone: "Europe/London"
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to run OTBN Panopticon nightly on"
+        required: false
+        type: string
+        default: "earlgrey_1.0.0"
+      bucket:
+        description: "GCS bucket for cumulative Panopticon state and viewer"
+        required: false
+        type: string
+        default: "opentitan-test-results"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  otbn_panopticon_nightly:
+    name: OTBN Panopticon Nightly (FI + TVLA)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.branch || github.ref_name }}
+
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: "${{ secrets.BAZEL_CACHE_CREDS }}"
+
+      - name: Run OTBN Panopticon FI and TVLA tests
+        shell: bash
+        run: |
+          ./bazelisk.sh test \
+            --cache_test_results=no \
+            --test_tag_filters=nightly \
+            //sw/otbn/crypto/tests/fi/... \
+            //sw/otbn/crypto/tests/tvla/...
+
+      - name: Download previous cumulative state from GCS
+        if: ${{ !cancelled() && inputs.bucket != '' }}
+        shell: bash
+        run: |
+          BUCKET="${{ inputs.bucket || 'opentitan-test-results' }}"
+          BRANCH="${{ inputs.branch || github.ref_name }}"
+          mkdir -p /tmp/panopticon_report
+          gcloud storage cp \
+            "gs://${BUCKET}/panopticon/branch/${BRANCH}/panopticon_state.json.gz" \
+            /tmp/panopticon_report/panopticon_state.json.gz || \
+            echo "No existing state found in GCS; starting fresh baseline."
+
+      - name: Update cumulative state and generate source dashboard
+        if: ${{ !cancelled() }}
+        shell: bash
+        run: |
+          chmod +x ci/scripts/update-panopticon-report.sh
+          ci/scripts/update-panopticon-report.sh \
+            bazel-testlogs \
+            /tmp/panopticon_report \
+            /tmp/panopticon_report/panopticon_state.json.gz
+
+      - name: Upload Panopticon report artifact
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: otbn-panopticon-report
+          path: /tmp/panopticon_report
+          overwrite: true
+
+      - name: Publish updated state and HTML viewer to Google Cloud
+        if: ${{ !cancelled() && github.event_name != 'pull_request' && inputs.bucket != '' }}
+        shell: bash
+        run: |
+          BUCKET="${{ inputs.bucket || 'opentitan-test-results' }}"
+          BRANCH="${{ inputs.branch || github.ref_name }}"
+          STATE_DEST="gs://${BUCKET}/panopticon/branch/${BRANCH}/panopticon_state.json.gz"
+          LATEST_DEST="gs://${BUCKET}/panopticon/branch/${BRANCH}/latest/index.html"
+          LATEST_URL="https://storage.googleapis.com/${BUCKET}/panopticon/branch/${BRANCH}/latest/index.html"
+
+          gcloud storage cp /tmp/panopticon_report/panopticon_state.json.gz "${STATE_DEST}"
+          gcloud storage cp --cache-control="no-cache, max-age=0" /tmp/panopticon_report/viewer/index.html "${LATEST_DEST}"
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          echo "### [Open Latest OTBN Panopticon Source Dashboard (${BRANCH})](${LATEST_URL})" >> "$GITHUB_STEP_SUMMARY"

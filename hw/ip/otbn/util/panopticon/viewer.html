@@ -1,0 +1,800 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OTBN Panopticon — Side-Channel &amp; Fault Injection Viewer</title>
+    <style>
+      :root {
+        --bg-main: #181a1f;
+        --bg-sidebar: #21252b;
+        --bg-header: #282c34;
+        --bg-card: #2c313a;
+        --bg-hover: #323842;
+        --border: #3b4048;
+        --text-main: #dcdfe4;
+        --text-dim: #9da5b4;
+        --text-muted: #6b717d;
+        --accent: #61afef;
+        --pass: #4caf50;
+        --fail: #ef5350;
+        --warn: #ffb300;
+        --line-pass-bg: #1c3121;
+        --line-pass-hover: #25422c;
+        --line-fail-bg: #421d21;
+        --line-fail-hover: #58262b;
+        --line-untested-bg: #252620;
+        --line-untested-hover: #32332a;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+        background: var(--bg-main);
+        color: var(--text-main);
+        display: flex;
+        flex-direction: column;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      header {
+        background: var(--bg-header);
+        border-bottom: 1px solid var(--border);
+        padding: 10px 18px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-shrink: 0;
+      }
+
+      .header-title {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+
+      .header-title h1 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #fff;
+      }
+
+      .nav-tabs {
+        display: flex;
+        gap: 6px;
+      }
+
+      .nav-tab {
+        background: var(--bg-card);
+        color: var(--text-dim);
+        border: 1px solid var(--border);
+        padding: 5px 12px;
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 13px;
+      }
+
+      .nav-tab.active {
+        background: var(--accent);
+        color: #111;
+        border-color: var(--accent);
+        font-weight: 600;
+      }
+
+      .header-meta {
+        font-size: 12px;
+        color: var(--text-dim);
+      }
+
+      .workspace {
+        display: flex;
+        flex: 1;
+        overflow: hidden;
+      }
+
+      .sidebar {
+        width: 390px;
+        background: var(--bg-sidebar);
+        border-right: 1px solid var(--border);
+        display: flex;
+        flex-direction: column;
+        flex-shrink: 0;
+      }
+
+      .kpi-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 8px;
+        padding: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .kpi-card {
+        background: var(--bg-card);
+        border-radius: 5px;
+        padding: 8px;
+        text-align: center;
+      }
+
+      .kpi-val {
+        font-size: 16px;
+        font-weight: 700;
+      }
+
+      .kpi-lbl {
+        font-size: 11px;
+        color: var(--text-dim);
+        margin-top: 2px;
+      }
+
+      .filter-bar {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        gap: 8px;
+      }
+
+      .filter-bar input,
+      .filter-bar select {
+        background: var(--bg-main);
+        color: var(--text-main);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 6px 8px;
+        font-size: 12px;
+      }
+
+      .filter-bar input {
+        flex: 1;
+      }
+
+      .file-list {
+        flex: 1;
+        overflow-y: auto;
+      }
+
+      .file-item {
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--border);
+        cursor: pointer;
+        transition: background 0.12s;
+      }
+
+      .file-item:hover {
+        background: var(--bg-hover);
+      }
+
+      .file-item.active {
+        background: #2c3849;
+        border-left: 3px solid var(--accent);
+      }
+
+      .file-item-top {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 4px;
+      }
+
+      .file-name {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 12.5px;
+        font-weight: 600;
+        word-break: break-all;
+      }
+
+      .badge {
+        font-size: 10px;
+        font-weight: 700;
+        padding: 2px 6px;
+        border-radius: 3px;
+        text-transform: uppercase;
+      }
+
+      .badge-pass {
+        background: rgba(76, 175, 80, 0.2);
+        color: #81c784;
+        border: 1px solid rgba(76, 175, 80, 0.4);
+      }
+
+      .badge-fail {
+        background: rgba(239, 83, 80, 0.25);
+        color: #ff8a80;
+        border: 1px solid rgba(239, 83, 80, 0.5);
+      }
+
+      .badge-untested {
+        background: rgba(157, 165, 180, 0.15);
+        color: var(--text-dim);
+        border: 1px solid var(--border);
+      }
+
+      .file-metrics {
+        display: flex;
+        justify-content: space-between;
+        font-size: 11px;
+        color: var(--text-dim);
+      }
+
+      .progress-bar {
+        height: 4px;
+        background: var(--bg-main);
+        border-radius: 2px;
+        margin-top: 5px;
+        overflow: hidden;
+      }
+
+      .progress-fill {
+        height: 100%;
+        background: var(--pass);
+      }
+
+      .progress-fill.fail {
+        background: var(--fail);
+      }
+
+      .main-pane {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+
+      .file-header {
+        padding: 10px 16px;
+        background: var(--bg-sidebar);
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 13px;
+      }
+
+      .file-header-path {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-weight: 600;
+        color: #fff;
+      }
+
+      .file-header-sha {
+        font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+        font-size: 11px;
+        color: var(--text-muted);
+        margin-left: 10px;
+      }
+
+      .code-container {
+        flex: 1;
+        overflow: auto;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+        font-size: 12.5px;
+        line-height: 1.5;
+      }
+
+      .code-row {
+        display: flex;
+        min-width: max-content;
+        border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+      }
+
+      .code-row.exec {
+        cursor: pointer;
+      }
+
+      .code-row.status-pass {
+        background: var(--line-pass-bg);
+      }
+      .code-row.status-pass:hover {
+        background: var(--line-pass-hover);
+      }
+
+      .code-row.status-fail {
+        background: var(--line-fail-bg);
+      }
+      .code-row.status-fail:hover {
+        background: var(--line-fail-hover);
+      }
+
+      .code-row.status-untested {
+        background: var(--line-untested-bg);
+      }
+      .code-row.status-untested:hover {
+        background: var(--line-untested-hover);
+      }
+
+      .code-row.selected {
+        outline: 1px solid var(--accent);
+      }
+
+      .col-ln {
+        width: 52px;
+        text-align: right;
+        padding: 0 8px;
+        color: var(--text-muted);
+        user-select: none;
+        border-right: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+
+      .col-fi {
+        width: 82px;
+        text-align: right;
+        padding: 0 8px;
+        font-size: 11px;
+        user-select: none;
+        border-right: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+
+      .col-tvla {
+        width: 86px;
+        text-align: right;
+        padding: 0 8px;
+        font-size: 11px;
+        user-select: none;
+        border-right: 1px solid var(--border);
+        flex-shrink: 0;
+      }
+
+      .col-src {
+        padding: 0 12px;
+        white-space: pre;
+        flex: 1;
+      }
+
+      .gutter-pass {
+        color: #81c784;
+      }
+
+      .gutter-fail {
+        color: #ff8a80;
+        font-weight: 700;
+      }
+
+      .gutter-dim {
+        color: var(--text-muted);
+      }
+
+      .inspector {
+        height: 230px;
+        background: var(--bg-sidebar);
+        border-top: 1px solid var(--border);
+        padding: 12px 16px;
+        overflow-y: auto;
+        display: none;
+      }
+
+      .inspector.open {
+        display: block;
+      }
+
+      .inspector-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 10px;
+      }
+
+      .inspector-title {
+        font-weight: 600;
+        font-size: 13px;
+      }
+
+      .close-btn {
+        background: transparent;
+        color: var(--text-dim);
+        border: 1px solid var(--border);
+        border-radius: 4px;
+        padding: 2px 8px;
+        cursor: pointer;
+      }
+
+      table.data-table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 12px;
+        margin-bottom: 12px;
+      }
+
+      table.data-table th,
+      table.data-table td {
+        border: 1px solid var(--border);
+        padding: 6px 8px;
+        text-align: left;
+      }
+
+      table.data-table th {
+        background: var(--bg-header);
+        color: var(--text-dim);
+      }
+
+      .targets-view {
+        display: none;
+        flex: 1;
+        padding: 20px;
+        overflow-y: auto;
+      }
+
+      .targets-view.active {
+        display: block;
+      }
+    </style>
+  </head>
+  <body>
+    <header>
+      <div class="header-title">
+        <h1>OTBN Panopticon Dashboard</h1>
+        <div class="nav-tabs">
+          <button class="nav-tab active" id="tab-code">Assembly Code View</button>
+          <button class="nav-tab" id="tab-targets">Targets &amp; Cache Status</button>
+        </div>
+      </div>
+      <div class="header-meta" id="header-meta">Loading...</div>
+    </header>
+
+    <div class="workspace" id="view-code">
+      <aside class="sidebar">
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-val" id="kpi-files">0</div>
+            <div class="kpi-lbl">.s Files</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-val" id="kpi-fi">0%</div>
+            <div class="kpi-lbl">FI Skips</div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-val" id="kpi-fails">0</div>
+            <div class="kpi-lbl">Failing Lines</div>
+          </div>
+        </div>
+        <div class="filter-bar">
+          <input type="text" id="file-search" placeholder="Filter .s files..." />
+        </div>
+        <div class="file-list" id="file-list"></div>
+      </aside>
+
+      <main class="main-pane">
+        <div class="file-header">
+          <div>
+            <span class="file-header-path" id="cur-file-path">Select a file</span>
+            <span class="file-header-sha" id="cur-file-sha"></span>
+          </div>
+          <div id="cur-file-stats" style="color: var(--text-dim); font-size: 12px"></div>
+        </div>
+        <div class="code-container" id="code-container"></div>
+        <div class="inspector" id="inspector">
+          <div class="inspector-header">
+            <div class="inspector-title" id="inspector-title">Line Details</div>
+            <button class="close-btn" id="inspector-close">Close</button>
+          </div>
+          <div id="inspector-body"></div>
+        </div>
+      </main>
+    </div>
+
+    <div class="targets-view" id="view-targets">
+      <h2>Cumulative Target State &amp; ELF/Source Cache Tracking</h2>
+      <p style="color: var(--text-dim); font-size: 13px">
+        Targets are automatically invalidated and reset whenever their linked
+        <code>.elf</code> binary or any DWARF-referenced <code>.s</code> source file changes.
+      </p>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Target</th>
+            <th>Type</th>
+            <th>ELF</th>
+            <th>ELF SHA-256</th>
+            <th>Runs Merged</th>
+            <th>Cumulative Progress</th>
+            <th>Findings</th>
+            <th>Last Reset</th>
+            <th>Reset Reason</th>
+          </tr>
+        </thead>
+        <tbody id="targets-tbody"></tbody>
+      </table>
+
+      <h3>Recent Cache Invalidations</h3>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Timestamp</th>
+            <th>Target</th>
+            <th>Invalidation Reason</th>
+          </tr>
+        </thead>
+        <tbody id="invalidations-tbody"></tbody>
+      </table>
+    </div>
+
+    <script>
+      /* == PANOPTICON_BUNDLED_DATA == */
+
+      async function decodeBundledData(b64) {
+        const binStr = atob(b64);
+        const bytes = new Uint8Array(binStr.length);
+        for (let i = 0; i < binStr.length; i++) {
+          bytes[i] = binStr.charCodeAt(i);
+        }
+        const ds = new DecompressionStream("gzip");
+        const stream = new Blob([bytes]).stream().pipeThrough(ds);
+        const text = await new Response(stream).text();
+        return JSON.parse(text);
+      }
+
+      function escapeHtml(str) {
+        return String(str)
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;");
+      }
+
+      (async function init() {
+        if (typeof BUNDLED_DATA_B64 === "undefined") {
+          document.getElementById("header-meta").textContent = "No bundled data found.";
+          return;
+        }
+
+        const data = await decodeBundledData(BUNDLED_DATA_B64);
+        const files = data.files || {};
+        const filePaths = Object.keys(files).sort();
+
+        // Header metadata
+        const meta = data.metadata || {};
+        const commitStr = meta.commit ? ` • Commit ${meta.commit.slice(0, 10)}` : "";
+        document.getElementById("header-meta").textContent =
+          `Updated ${meta.updated_at || "N/A"}${commitStr}`;
+
+        // Global KPIs
+        let totalFiTested = 0,
+          totalFiAll = 0,
+          totalFailLines = 0;
+        for (const p of filePaths) {
+          const s = files[p].summary;
+          totalFiTested += s.fi_tested;
+          totalFiAll += s.fi_total;
+          totalFailLines += s.fail_lines;
+        }
+        document.getElementById("kpi-files").textContent = filePaths.length;
+        document.getElementById("kpi-fi").textContent =
+          totalFiAll > 0 ? `${((100 * totalFiTested) / totalFiAll).toFixed(1)}%` : "0%";
+        const failEl = document.getElementById("kpi-fails");
+        failEl.textContent = totalFailLines;
+        failEl.style.color = totalFailLines > 0 ? "var(--fail)" : "var(--pass)";
+
+        let currentFile = filePaths[0] || null;
+
+        function renderFileList() {
+          const query = document.getElementById("file-search").value.toLowerCase();
+          const listEl = document.getElementById("file-list");
+          listEl.innerHTML = "";
+
+          for (const path of filePaths) {
+            if (query && !path.toLowerCase().includes(query)) continue;
+            const s = files[path].summary;
+
+            const item = document.createElement("div");
+            item.className = "file-item" + (path === currentFile ? " active" : "");
+
+            const pct = s.fi_total > 0 ? ((100 * s.fi_tested) / s.fi_total).toFixed(1) : "0.0";
+            const failBadge =
+              s.fail_lines > 0
+                ? `<span class="badge badge-fail">${s.fail_lines} FAIL</span>`
+                : "";
+
+            item.innerHTML = `
+              <div class="file-item-top">
+                <span class="file-name">${escapeHtml(path.replace(/^sw\/otbn\/crypto\//, ""))}</span>
+                ${failBadge}
+              </div>
+              <div class="file-metrics">
+                <span>FI: ${s.fi_tested}/${s.fi_total} (${pct}%)</span>
+                <span>TVLA: ${s.tvla_traces} tr (max |t|=${s.tvla_max_t.toFixed(2)})</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress-fill ${s.fail_lines > 0 ? "fail" : ""}" style="width: ${Math.min(100, pct)}%"></div>
+              </div>
+            `;
+            item.onclick = () => {
+              currentFile = path;
+              renderFileList();
+              renderCode(path);
+            };
+            listEl.appendChild(item);
+          }
+        }
+
+        function showLineInspector(path, lineno, lineData) {
+          const insp = document.getElementById("inspector");
+          insp.classList.add("open");
+          document.getElementById("inspector-title").textContent =
+            `${path}:${lineno} — Status: ${lineData.status.toUpperCase()}`;
+
+          let html = "";
+          if (lineData.fi_targets && lineData.fi_targets.length > 0) {
+            html += `
+              <div style="margin-bottom:4px;font-weight:600;font-size:12px;">Fault Injection (FI) Targets</div>
+              <table class="data-table">
+                <thead>
+                  <tr><th>Target</th><th>PC</th><th>Mode</th><th>Tested / Total Occurrences</th><th>Vulnerabilities</th></tr>
+                </thead>
+                <tbody>
+                  ${lineData.fi_targets
+                    .map(
+                      (t) => `
+                    <tr>
+                      <td><code>${escapeHtml(t.target)}</code></td>
+                      <td><code>${escapeHtml(t.pc)}</code></td>
+                      <td>${escapeHtml(t.attack_mode)}</td>
+                      <td>${t.tested} / ${t.total}</td>
+                      <td style="color:${t.vuln > 0 ? "var(--fail)" : "var(--pass)"};font-weight:600;">
+                        ${t.vuln > 0 ? `${t.vuln} FAULT(S)` : "0 (Caught)"}
+                      </td>
+                    </tr>`
+                    )
+                    .join("")}
+                </tbody>
+              </table>`;
+          }
+
+          if (lineData.tvla_targets && lineData.tvla_targets.length > 0) {
+            html += `
+              <div style="margin-bottom:4px;font-weight:600;font-size:12px;">TVLA Side-Channel Targets</div>
+              <table class="data-table">
+                <thead>
+                  <tr><th>Target</th><th>PC</th><th>Traces</th><th>Max |t| / Threshold</th><th>Worst Leakage Model</th></tr>
+                </thead>
+                <tbody>
+                  ${lineData.tvla_targets
+                    .map(
+                      (t) => `
+                    <tr>
+                      <td><code>${escapeHtml(t.target)}</code></td>
+                      <td><code>${escapeHtml(t.pc)}</code></td>
+                      <td>${t.traces}</td>
+                      <td style="color:${t.leaking ? "var(--fail)" : "var(--pass)"};font-weight:600;">
+                        ${t.max_t.toFixed(2)} / ${t.threshold.toFixed(1)}
+                      </td>
+                      <td>${escapeHtml(t.worst_model || "—")}</td>
+                    </tr>`
+                    )
+                    .join("")}
+                </tbody>
+              </table>`;
+          }
+          document.getElementById("inspector-body").innerHTML = html;
+        }
+
+        function renderCode(path) {
+          const fdata = files[path];
+          if (!fdata) return;
+          document.getElementById("cur-file-path").textContent = path;
+          document.getElementById("cur-file-sha").textContent = fdata.sha256
+            ? `SHA-256: ${fdata.sha256.slice(0, 12)}…`
+            : "";
+          const s = fdata.summary;
+          document.getElementById("cur-file-stats").textContent =
+            `Executable lines: ${s.exec_lines} • Failing: ${s.fail_lines} • Untested: ${s.untested_lines}`;
+
+          const container = document.getElementById("code-container");
+          container.innerHTML = "";
+          const srcLines = fdata.source_lines || [];
+          const lineMap = fdata.lines || {};
+
+          srcLines.forEach((text, idx) => {
+            const lineno = idx + 1;
+            const info = lineMap[String(lineno)];
+            const row = document.createElement("div");
+
+            let rowClass = "code-row";
+            let fiCell = `<span class="gutter-dim"></span>`;
+            let tvlaCell = `<span class="gutter-dim"></span>`;
+
+            if (info) {
+              rowClass += ` exec status-${info.status}`;
+              if (info.fi_total > 0) {
+                const cls =
+                  info.fi_vuln > 0
+                    ? "gutter-fail"
+                    : info.fi_tested > 0
+                      ? "gutter-pass"
+                      : "gutter-dim";
+                fiCell = `<span class="${cls}" title="FI tested/total skips">${info.fi_tested}/${info.fi_total}</span>`;
+              }
+              if (info.tvla_traces >= 4) {
+                const cls = info.tvla_leaking ? "gutter-fail" : "gutter-pass";
+                tvlaCell = `<span class="${cls}" title="TVLA max |t| (${info.tvla_traces} traces)">|t|=${info.tvla_max_t.toFixed(2)}</span>`;
+              } else if (info.tvla_traces > 0) {
+                tvlaCell = `<span class="gutter-dim" title="Need >= 4 traces for Welch's t-test (current: ${info.tvla_traces})">N&lt;4</span>`;
+              }
+              row.onclick = () => {
+                container
+                  .querySelectorAll(".code-row.selected")
+                  .forEach((el) => el.classList.remove("selected"));
+                row.classList.add("selected");
+                showLineInspector(path, lineno, info);
+              };
+            }
+
+            row.className = rowClass;
+            row.innerHTML = `
+              <div class="col-ln">${lineno}</div>
+              <div class="col-fi">${fiCell}</div>
+              <div class="col-tvla">${tvlaCell}</div>
+              <div class="col-src">${escapeHtml(text)}</div>
+            `;
+            container.appendChild(row);
+          });
+        }
+
+        // Populate Targets & Invalidations tab
+        const tBody = document.getElementById("targets-tbody");
+        (data.targets || []).forEach((t) => {
+          const tr = document.createElement("tr");
+          tr.innerHTML = `
+            <td><code>${escapeHtml(t.target)}</code></td>
+            <td>${escapeHtml(t.kind)}</td>
+            <td><code>${escapeHtml(t.elf)}</code></td>
+            <td><code>${escapeHtml(t.elf_sha256)}</code></td>
+            <td>${t.runs_merged}</td>
+            <td>${escapeHtml(t.progress)}</td>
+            <td>${escapeHtml(t.findings || "—")}</td>
+            <td>${escapeHtml(t.last_reset_at)}</td>
+            <td>${escapeHtml(t.last_reset_reason)}</td>
+          `;
+          tBody.appendChild(tr);
+        });
+
+        const invBody = document.getElementById("invalidations-tbody");
+        const invLog = (data.metadata && data.metadata.invalidation_log) || [];
+        if (invLog.length === 0) {
+          invBody.innerHTML = `<tr><td colspan="3" style="color:var(--text-dim);">No cache invalidations recorded yet.</td></tr>`;
+        } else {
+          invLog.forEach((entry) => {
+            const tr = document.createElement("tr");
+            tr.innerHTML = `
+              <td><code>${escapeHtml(entry.timestamp)}</code></td>
+              <td><code>${escapeHtml(entry.target)}</code></td>
+              <td>${escapeHtml(entry.reason)}</td>
+            `;
+            invBody.appendChild(tr);
+          });
+        }
+
+        // Event listeners
+        document.getElementById("file-search").oninput = renderFileList;
+        document.getElementById("inspector-close").onclick = () =>
+          document.getElementById("inspector").classList.remove("open");
+
+        const tabCode = document.getElementById("tab-code");
+        const tabTargets = document.getElementById("tab-targets");
+        const viewCode = document.getElementById("view-code");
+        const viewTargets = document.getElementById("view-targets");
+
+        tabCode.onclick = () => {
+          tabCode.classList.add("active");
+          tabTargets.classList.remove("active");
+          viewCode.style.display = "flex";
+          viewTargets.classList.remove("active");
+        };
+        tabTargets.onclick = () => {
+          tabTargets.classList.add("active");
+          tabCode.classList.remove("active");
+          viewCode.style.display = "none";
+          viewTargets.classList.add("active");
+        };
+
+        renderFileList();
+        if (currentFile) renderCode(currentFile);
+      })();
+    </script>
+  </body>
+</html>
