@@ -19,18 +19,37 @@ py_library(
 py_binary(
     name = "gen_vivado_mem_image",
     srcs = ["gen_vivado_mem_image.py"],
-    deps = [":mem"],
+    imports = [
+        # //hw/ip/rom_ctrl/util:
+        #   hw.ip.rom_ctrl.util.mem
+        ".",
+    ],
+    deps = [
+        ":mem",
+    ],
 )
 
 py_test(
     name = "gen_vivado_mem_image_test",
     srcs = ["gen_vivado_mem_image_test.py"],
-    deps = [":gen_vivado_mem_image"],
+    imports = [
+        # //hw/ip/rom_ctrl/util:
+        #   hw.ip.rom_ctrl.util.gen_vivado_mem_image
+        ".",
+    ],
+    deps = [
+        ":gen_vivado_mem_image",
+    ],
 )
 
 py_binary(
     name = "scramble_image",
     srcs = ["scramble_image.py"],
+    imports = [
+        # //hw/ip/rom_ctrl/util:
+        #   hw.ip.rom_ctrl.util.mem
+        ".",
+    ],
     deps = [
         ":mem",
         "//util/design:prince",

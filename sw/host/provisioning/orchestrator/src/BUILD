@@ -26,10 +26,17 @@ py_library(
 py_binary(
     name = "devid_header_gen",
     srcs = ["devid_header_gen.py"],
-    imports = ["."],
+    imports = [
+        # //sw/host/provisioning/orchestrator/src:
+        #   sw.host.provisioning.orchestrator.src.device_id
+        #   sw.host.provisioning.orchestrator.src.sku_config
+        #   sw.host.provisioning.orchestrator.src.util
+        ".",
+    ],
     deps = [
         ":device_id",
         ":sku_config",
+        ":util",
         requirement("hjson"),
         requirement("mako"),
     ],
@@ -38,6 +45,14 @@ py_binary(
 py_library(
     name = "ca_config",
     srcs = ["ca_config.py"],
+    imports = [
+        # //sw/host/provisioning/orchestrator/src:
+        #   sw.host.provisioning.orchestrator.src.util
+        ".",
+    ],
+    deps = [
+        ":util",
+    ],
 )
 
 py_library(
@@ -57,6 +72,12 @@ py_library(
         "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a1.hjson",
         "//sw/host/provisioning/orchestrator/data/packages:earlgrey_a2.hjson",
     ],
+    imports = [
+        # //sw/host/provisioning/orchestrator/src:
+        #   sw.host.provisioning.orchestrator.src.ca_config
+        #   sw.host.provisioning.orchestrator.src.util
+        ".",
+    ],
     deps = [
         ":ca_config",
         ":util",
@@ -67,21 +88,27 @@ py_library(
 py_library(
     name = "util",
     srcs = ["util.py"],
-    imports = ["."],
     deps = [
-        requirement("hjson"),
         "@rules_python//python/runfiles",
+        requirement("hjson"),
     ],
 )
 
 py_library(
     name = "ot_dut",
     srcs = ["ot_dut.py"],
-    imports = ["."],
+    imports = [
+        # //sw/host/provisioning/orchestrator/src:
+        #   sw.host.provisioning.orchestrator.src.device_id
+        #   sw.host.provisioning.orchestrator.src.sku_config
+        #   sw.host.provisioning.orchestrator.src.util
+        ".",
+    ],
     deps = [
         ":device_id",
         ":sku_config",
         ":util",
+        requirement("hjson"),
     ],
 )
 

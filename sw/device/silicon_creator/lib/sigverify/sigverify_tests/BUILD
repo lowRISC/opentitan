@@ -68,7 +68,6 @@ autogen_cryptotest_header(
 py_binary(
     name = "sigverify_set_testvectors",
     srcs = ["sigverify_set_testvectors.py"],
-    imports = ["."],
     deps = [
         "//util/design/lib:common",
         requirement("hjson"),
