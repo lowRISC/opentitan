@@ -15,6 +15,7 @@ use opentitanlib::chip::boot_svc::{Message, UnlockMode};
 use opentitanlib::chip::device_id::DeviceId;
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
 use opentitanlib::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey};
+use opentitanlib::crypto::spx;
 use opentitanlib::ownership::{
     ApplicationKeyDomain, CommandTag, FlashFlags, HybridRawPublicKey, KeyMaterial,
     OwnerApplicationKey, OwnerBlock, OwnerConfigItem, OwnerFlashConfig, OwnerFlashInfoConfig,
@@ -238,7 +239,7 @@ impl HybridPair {
     pub fn load(ecdsa: Option<&Path>, spx: Option<&Path>) -> Result<Self> {
         Ok(Self {
             ecdsa: ecdsa.map(EcdsaPrivateKey::load).transpose()?,
-            spx: spx.map(SpxSecretKey::read_pem_file).transpose()?,
+            spx: spx.map(spx::load_spx_secret_key).transpose()?,
         })
     }
 
