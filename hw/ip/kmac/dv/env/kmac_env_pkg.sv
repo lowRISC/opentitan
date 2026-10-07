@@ -123,6 +123,8 @@ package kmac_env_pkg;
     KmacStatusSha3Idle = 0,
     KmacStatusSha3Absorb = 1,
     KmacStatusSha3Squeeze = 2,
+    KmacStatusEntropyReady = 4,
+    KmacStatusEntropyReseeding = 5,
     KmacStatusFifoDepthLSB = 8,
     KmacStatusFifoDepthMSB = 12,
     KmacStatusFifoEmpty = 14,
