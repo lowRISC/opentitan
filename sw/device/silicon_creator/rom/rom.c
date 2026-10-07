@@ -615,7 +615,7 @@ static rom_error_t rom_boot(const manifest_t *manifest,
 
   boot_log_t *boot_log = &retention_sram_get()->creator.boot_log;
   boot_log->rom_ext_slot =
-      manifest == boot_policy_manifest_a_get() ? kBootSlotA : kBootSlotB;
+      manifest == boot_policy_get_image(kBootSlotA) ? kBootSlotA : kBootSlotB;
   boot_log_digest_update(boot_log);
 
   // The attestation measurement is either the OTP measurement or the binding
@@ -811,23 +811,26 @@ static rom_error_t rom_boot(const manifest_t *manifest,
      */
     kCfiRomTryBootManifest1Val = 14 * kCfiIncrement + kCfiRomTryBootVal0,
   };
-  const manifest_t *manifest_check = NULL;
+  boot_policy_t policy;
+  HARDENED_RETURN_IF_ERROR(boot_policy_choose_slot(&policy));
+  boot_slot_t boot_slot_check = kBootSlotUnspecified;
   switch (launder32(rom_counters[kCfiRomTryBoot])) {
     case kCfiRomTryBootManifest0Val:
       HARDENED_CHECK_EQ(rom_counters[kCfiRomTryBoot],
                         kCfiRomTryBootManifest0Val);
-      manifest_check = boot_policy_manifests_get().ordered[0];
+      boot_slot_check = boot_policy_get_first_choice(policy);
       break;
     case kCfiRomTryBootManifest1Val:
       HARDENED_CHECK_EQ(rom_counters[kCfiRomTryBoot],
                         kCfiRomTryBootManifest1Val);
-      manifest_check = boot_policy_manifests_get().ordered[1];
+      boot_slot_check = boot_policy_get_second_choice(policy);
       break;
     default:
       HARDENED_TRAP();
   }
-  HARDENED_CHECK_EQ(manifest, manifest_check);
 
+  const manifest_t *manifest_check = boot_policy_get_image(boot_slot_check);
+  HARDENED_CHECK_EQ(manifest, manifest_check);
 #if OT_BUILD_FOR_STATIC_ANALYZER
   assert(manifest_check != NULL);
 #endif
@@ -930,15 +933,22 @@ static rom_error_t rom_try_boot(void) {
   // Read boot data from flash
   HARDENED_RETURN_IF_ERROR(boot_data_read(lc_state, &boot_data));
 
-  boot_policy_manifests_t manifests = boot_policy_manifests_get();
+  boot_policy_t policy;
+  HARDENED_RETURN_IF_ERROR(boot_policy_choose_slot(&policy));
   uint32_t nvm_exec = 0;
   uintptr_t imm_section_entry_point = kHardenedBoolFalse;
 
+  const boot_slot_t slot1 = boot_policy_get_first_choice(policy);
+  const void *image1 = boot_policy_load_image(slot1);
+  // The ROM_EXT manifest is located at the beginning of the ROM_EXT image.
+  const manifest_t *manifest1 = (const manifest_t *)image1;
+  HARDENED_CHECK_NE(manifest1, NULL);
+
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 2, kCfiRomVerify);
-  rom_error_t error = rom_verify(manifests.ordered[0], &nvm_exec);
+  rom_error_t error = rom_verify(manifest1, &nvm_exec);
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 4, kCfiRomVerifyImm);
-  error = rom_verify_immutable_section(error, manifests.ordered[0],
-                                       &imm_section_entry_point);
+  error =
+      rom_verify_immutable_section(error, manifest1, &imm_section_entry_point);
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 6);
 
   if (launder32(error) == kErrorOk) {
@@ -948,21 +958,27 @@ static rom_error_t rom_try_boot(void) {
     CFI_FUNC_COUNTER_INIT(rom_counters, kCfiRomTryBoot);
     CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 1, kCfiRomBoot);
     HARDENED_RETURN_IF_ERROR(
-        rom_boot(manifests.ordered[0], imm_section_entry_point, nvm_exec));
+        rom_boot(manifest1, imm_section_entry_point, nvm_exec));
     return kErrorRomBootFailed;
   }
 
+  boot_policy_unload_image(slot1);
+  const boot_slot_t slot2 = boot_policy_get_second_choice(policy);
+  const void *image2 = boot_policy_load_image(slot2);
+  const manifest_t *manifest2 = (const manifest_t *)image2;
+  HARDENED_CHECK_NE(manifest2, NULL);
+
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 7, kCfiRomVerify);
-  error = rom_verify(manifests.ordered[1], &nvm_exec);
+  error = rom_verify(manifest2, &nvm_exec);
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 9, kCfiRomVerifyImm);
-  HARDENED_RETURN_IF_ERROR(rom_verify_immutable_section(
-      error, manifests.ordered[1], &imm_section_entry_point));
+  HARDENED_RETURN_IF_ERROR(
+      rom_verify_immutable_section(error, manifest2, &imm_section_entry_point));
   CFI_FUNC_COUNTER_INCREMENT(rom_counters, kCfiRomTryBoot, 11);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerify, 3);
   CFI_FUNC_COUNTER_CHECK(rom_counters, kCfiRomVerifyImm, 4);
   CFI_FUNC_COUNTER_PREPCALL(rom_counters, kCfiRomTryBoot, 12, kCfiRomBoot);
   HARDENED_RETURN_IF_ERROR(
-      rom_boot(manifests.ordered[1], imm_section_entry_point, nvm_exec));
+      rom_boot(manifest2, imm_section_entry_point, nvm_exec));
   return kErrorRomBootFailed;
 }
 
