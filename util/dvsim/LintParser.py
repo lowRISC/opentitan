@@ -88,6 +88,7 @@ class LintParser():
             num_messages[sev] += len(self.buckets[key])
         if num_messages['error'] == 0 and num_messages['warning'] == 0:
             self.buckets['flow_error'] = self.buckets['fusesoc-error']
+            num_messages['error'] = len(self.buckets['flow_error'])
         del self.buckets['fusesoc-error']
 
         return num_messages
