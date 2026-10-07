@@ -49,6 +49,9 @@ pub enum Oid {
     State,
     // Signature algorithms.
     EcdsaWithSha256,
+    Mldsa44,
+    Mldsa65,
+    Mldsa87,
     // Public key type.
     EcPublicKey,
     // Elliptic curve names.
@@ -113,6 +116,11 @@ impl Oid {
             // ecdsa-with-SHA256 OBJECT IDENTIFIER ::= { iso(1) member-body(2) us(840)
             //      ansi-X9-62(10045) signatures(4) ecdsa-with-SHA2(3) 2 }
             Oid::EcdsaWithSha256 => "1.2.840.10045.4.3.2",
+
+            // From FIPS 204 / RFC 9881 (Pure ML-DSA)
+            Oid::Mldsa44 => "2.16.840.1.101.3.4.3.17",
+            Oid::Mldsa65 => "2.16.840.1.101.3.4.3.18",
+            Oid::Mldsa87 => "2.16.840.1.101.3.4.3.19",
 
             // From https://datatracker.ietf.org/doc/html/rfc3279
             // ansi-X9-62  OBJECT IDENTIFIER ::= { iso(1) member-body(2) us(840) 10045 }
