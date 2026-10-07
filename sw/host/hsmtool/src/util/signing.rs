@@ -9,7 +9,7 @@ use serde::{Deserialize, Serialize};
 use sha2::Sha256;
 use sha2::digest::Digest;
 use sha2::digest::const_oid::AssociatedOid;
-use sphincsplus::SpxDomain;
+use sphincsplus::SpxSignatureMode;
 use std::str::FromStr;
 
 use crate::error::HsmError;
@@ -101,35 +101,39 @@ impl SignData {
         }
     }
 
-    pub fn spx_prepare(&self, domain: SpxDomain, input: &[u8]) -> Result<Vec<u8>> {
+    pub fn spx_prepare(&self, domain: SpxSignatureMode, input: &[u8]) -> Result<Vec<u8>> {
         match self {
             SignData::PlainText => {
                 match domain {
-                    // Plaintext in domain None or Pure: nothing to do.
-                    SpxDomain::None | SpxDomain::Pure => Ok(input.into()),
-                    // Plaintext in domain PreHashed: compute hash.
-                    SpxDomain::PreHashedSha256 => Ok(Sha256::digest(input).as_slice().to_vec()),
+                    // Plaintext in Pure mode: nothing to do.
+                    SpxSignatureMode::Pure => Ok(input.into()),
+                    // Plaintext in Pre-Hash mode: compute the hash.
+                    SpxSignatureMode::PreHashedSha256 => {
+                        Ok(Sha256::digest(input).as_slice().to_vec())
+                    }
                 }
             }
             SignData::Sha256Hash => {
-                // Sha256 input in any domain: nothing to do.
+                // Sha256 input in any mode: nothing to do.
                 Ok(input.into())
             }
             SignData::Sha256HashReversed => {
-                // Sha256 that requires reversal in any domain: reverse the input.
+                // Sha256 that requires reversal in any mode: reverse the input.
                 Self::data_raw(input, /*reverse=*/ true)
             }
             SignData::Raw => {
-                // Raw data in any domain: nothing to do.
+                // Raw data in any mode: nothing to do.
                 Ok(input.into())
             }
             SignData::Slice(a, b) => {
                 let input = &input[*a..*b];
                 match domain {
-                    // A slice of the input in domain None or Pure: nothing to do.
-                    SpxDomain::None | SpxDomain::Pure => Ok(input.into()),
-                    // A slice of the input in domain PreHashed: hash the input.
-                    SpxDomain::PreHashedSha256 => Ok(Sha256::digest(input).as_slice().to_vec()),
+                    // A slice of input data in Pure mode: nothing to do.
+                    SpxSignatureMode::Pure => Ok(input.into()),
+                    // A slice of input data in Pre-Hash mode: hash the input.
+                    SpxSignatureMode::PreHashedSha256 => {
+                        Ok(Sha256::digest(input).as_slice().to_vec())
+                    }
                 }
             }
         }
