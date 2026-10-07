@@ -7,16 +7,6 @@ load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 
 package(default_visibility = ["//visibility:public"])
 
-bool_flag(
-    name = "enable_mldsa_signing_for_test",
-    build_setting_default = False,
-)
-
-config_setting(
-    name = "mldsa_signing_for_test",
-    flag_values = {":enable_mldsa_signing_for_test": "True"},
-)
-
 rust_library(
     name = "cert_lib",
     srcs = ["src/lib.rs"],
