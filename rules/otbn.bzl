@@ -736,6 +736,8 @@ def _otbn_tvla_sim_test_impl(ctx):
     for syms, config in ctx.attr.random_background_secrets.items():
         script_content += ' --random-bg-secret "{}:{}"'.format(syms, config)
 
+    script_content += ' "$@"'
+
     ctx.actions.write(
         output = test_runner,
         content = script_content,
@@ -765,3 +767,57 @@ otbn_tvla_sim_test = rule(
         "_simulator": attr.label(default = "//hw/ip/otbn/dv/otbnsim:standalone", executable = True, cfg = "exec"),
     },
 )
+
+def _otbn_tvla_panopticon_test_impl(ctx):
+    tvla_runner = ctx.executable.tvla_test
+    test_runner = ctx.actions.declare_file(ctx.label.name + "_runner.sh")
+
+    script_content = "{} --num-experiments {} --dump-json \"$@\"".format(
+        tvla_runner.short_path,
+        ctx.attr.num_traces,
+    )
+
+    ctx.actions.write(
+        output = test_runner,
+        content = script_content,
+        is_executable = True,
+    )
+
+    runfiles = ctx.runfiles(files = [tvla_runner])
+    runfiles = runfiles.merge(ctx.attr.tvla_test[DefaultInfo].default_runfiles)
+
+    return [DefaultInfo(
+        executable = test_runner,
+        runfiles = runfiles,
+    )]
+
+_otbn_tvla_panopticon_test = rule(
+    implementation = _otbn_tvla_panopticon_test_impl,
+    test = True,
+    attrs = {
+        "tvla_test": attr.label(
+            mandatory = True,
+            executable = True,
+            cfg = "target",
+            doc = "The underlying otbn_tvla_sim_test target to wrap for Panopticon CI.",
+        ),
+        "num_traces": attr.int(
+            default = 2,
+            doc = "Number of traces to run (alternating fixed and random).",
+        ),
+    },
+)
+
+def otbn_tvla_panopticon_test(
+        name,
+        tvla_test,
+        num_traces = 2,
+        timeout = "eternal",
+        **kwargs):
+    _otbn_tvla_panopticon_test(
+        name = name,
+        tvla_test = tvla_test,
+        num_traces = num_traces,
+        timeout = timeout,
+        **kwargs
+    )
