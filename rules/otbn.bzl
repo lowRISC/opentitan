@@ -617,6 +617,8 @@ def _otbn_fi_sim_test_impl(ctx):
     for syms, config in ctx.attr.target_b_secrets.items():
         script_content += ' --target-b-secret "{}:{}"'.format(syms, config)
 
+    script_content += ' "$@"'
+
     ctx.actions.write(
         output = test_runner,
         content = script_content,
@@ -653,6 +655,60 @@ otbn_fi_sim_test = rule(
         "_simulator": attr.label(default = "//hw/ip/otbn/dv/otbnsim:standalone", executable = True, cfg = "exec"),
     },
 )
+
+def _otbn_fi_panopticon_test_impl(ctx):
+    fi_runner = ctx.executable.fi_test
+    test_runner = ctx.actions.declare_file(ctx.label.name + "_runner.sh")
+
+    script_content = "{} --num-skips {} --dump-json \"$@\"".format(
+        fi_runner.short_path,
+        ctx.attr.num_skips,
+    )
+
+    ctx.actions.write(
+        output = test_runner,
+        content = script_content,
+        is_executable = True,
+    )
+
+    runfiles = ctx.runfiles(files = [fi_runner])
+    runfiles = runfiles.merge(ctx.attr.fi_test[DefaultInfo].default_runfiles)
+
+    return [DefaultInfo(
+        executable = test_runner,
+        runfiles = runfiles,
+    )]
+
+_otbn_fi_panopticon_test = rule(
+    implementation = _otbn_fi_panopticon_test_impl,
+    test = True,
+    attrs = {
+        "fi_test": attr.label(
+            mandatory = True,
+            executable = True,
+            cfg = "target",
+            doc = "The underlying otbn_fi_sim_test target to wrap for Panopticon Monte-Carlo CI.",
+        ),
+        "num_skips": attr.int(
+            default = 2,
+            doc = "Number of random (unique_pc, occurrence) instruction skips to perform.",
+        ),
+    },
+)
+
+def otbn_fi_panopticon_test(
+        name,
+        fi_test,
+        num_skips = 2,
+        timeout = "eternal",
+        **kwargs):
+    _otbn_fi_panopticon_test(
+        name = name,
+        fi_test = fi_test,
+        num_skips = num_skips,
+        timeout = timeout,
+        **kwargs
+    )
 
 def _otbn_tvla_sim_test_impl(ctx):
     elf = ctx.attr.target[OutputGroupInfo].elf.to_list()[0]
