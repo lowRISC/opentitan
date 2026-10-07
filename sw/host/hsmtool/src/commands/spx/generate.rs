@@ -13,7 +13,7 @@ use crate::error::HsmError;
 use crate::module::Module;
 use crate::util::attribute::AttrData;
 use acorn::GenerateFlags;
-use sphincsplus::{EncodeKey, SphincsPlus, SpxDomain, SpxSecretKey};
+use sphincsplus::{EncodeKey, SphincsPlus, SpxSecretKey, SpxSignatureMode};
 
 #[derive(clap::Args, Debug, Serialize, Deserialize)]
 pub struct Generate {
@@ -24,10 +24,9 @@ pub struct Generate {
     #[arg(
         short,
         long,
-        default_value = "None",
-        help = "SLH-DSA domain (if the backend requires the domain to be associated with the key)"
+        help = "SLH-DSA signature mode (if the backend requires the domain to be associated with the key)"
     )]
-    domain: SpxDomain,
+    domain: Option<SpxSignatureMode>,
     #[arg(short, long, help = "Overwrite an existing key with the same label")]
     overwrite: bool,
     #[arg(short, long, help = "Export the private key material to a file")]
