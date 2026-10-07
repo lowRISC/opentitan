@@ -84,8 +84,9 @@
               single-bit error into the stored word.
             - Issue a rewrite on the affected address in both partitions, with random scrambling
               and ECC configuration of the targeted region or page.
-            - Also target pages that software cannot write: the OTP region, and `MP_REGION`s,
-              `DEFAULT_REGION` and info pages without `wr_en`.
+            - Also target pages that software cannot write: the OTP region, `MP_REGION`s,
+              `DEFAULT_REGION` and info pages without `wr_en`, and every page of an enabled
+              emulated info window, both inside and outside its active subregions.
 
             **Checks**:
             - After the rewrite the backdoor contents match the original stored word, with the
@@ -220,6 +221,152 @@
             **Checks**:
             - Reads are allowed only when `lc_iso_part_sw_rd_en` is `On`, and writes only when
               `lc_iso_part_sw_wr_en` is `On`, in both cases ANDed with the page config.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: emul_info_window
+      desc: '''
+            Verify the emulated info page windows (`EMUL_INFO_REGION`, `EMUL_INFO_REGWEN`) and how
+            windows and subregions rank against the other data partition regions.
+
+            **Stimulus**:
+            - Program both windows with random `BASE`/`SIZE` and random `EN`, including invalid
+              multi-bit values, and lock a random subset via `EMUL_INFO_REGWEN`.
+            - Include windows touching the start and the end of the data partition, single-page
+              windows, windows larger than the range `EMUL_INFO_SUBREGION.TOP` can reach (more
+              than 256 pages), and a window overlapping the OTP region.
+            - Program random, possibly overlapping, `MP_REGION`s and a random `DEFAULT_REGION`
+              that also cover the windows, including full access and permissions that differ
+              from the subregions'.
+            - Configure a random set of subregions with random permissions, leaving every window
+              with pages not covered by an active subregion. Include an active subregion that
+              grants full access to the OTP region.
+            - Issue software reads and writes, and host reads, across the whole data
+              partition: the first and last page of each window, the pages just outside it, and
+              random pages inside it, including multi-word operations that cross window and
+              subregion boundaries.
+
+            **Checks**:
+            - The fixed OTP exclusion ranks above everything: no subregion can grant software or
+              host access to the OTP region.
+            - A window whose `EN` is not `MuBi4True` has no effect: software and host accesses to
+              it are decided by the `MP_REGION`s and `DEFAULT_REGION` as if it did not exist.
+            - Inside a window whose `EN` is `MuBi4True`, the active subregion's permissions
+              apply, and every other page is denied to software, whether or not
+              `EMUL_INFO_REGWEN` is locked, regardless of any `MP_REGION` or `DEFAULT_REGION`
+              covering the same page. In particular, an enabled but unlocked window denies all
+              software accesses, since none of its subregions can be active.
+            - Host reads to any page of a window whose `EN` is `MuBi4True` return a TL-UL error
+              response, whatever its lock state and subregion configuration.
+            - Outside the enabled windows, software and host accesses follow `MP_REGION`s and
+              `DEFAULT_REGION` as checked in `memory_protection`.
+            - Pages of a window beyond what its subregions' 8-bit `TOP` can reach are always
+              denied.
+            - Disallowed software accesses set `ERR_CODE.mp_err` with the address of the first
+              failing word in `ERR_ADDR`, raise `recov_err`, and do not modify the RRAM. Words
+              before the first failing word complete normally.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: emul_info_subregion
+      desc: '''
+            Verify when an emulated info subregion becomes active and which pages it covers
+            (`EMUL_INFO_SUBREGION`, `EMUL_INFO_SUBREGION_REGWEN`).
+
+            **Stimulus**:
+            - Enable and lock both windows. Give every subregion `EMUL_INFO_SUBREGION_CFG` with
+              `rd_en` and `wr_en` set, so that whether it is active is visible through software
+              accesses rather than only through register readback.
+            - For each window, program `TOP` for a random number of its
+              `EmulInfoSubregionsPerRegion` subregions (none, one, a few, all) and lock their
+              placement in random order. Include:
+              - Strictly increasing `TOP` values within the window's `SIZE`, locked in index
+                order (the intended use).
+              - A subregion locked while a lower-indexed subregion of the same window is still
+                unlocked, and later locking that lower-indexed subregion.
+              - A subregion left at its reset `TOP` but locked.
+              - `TOP` equal to the window's `SIZE`, and `TOP` exceeding it.
+              - `TOP` values that are equal to or lower than an earlier subregion's `TOP`.
+            - Repeat with the window itself still unlocked while the subregions are locked, then
+              lock the window.
+            - Issue software reads and writes to the first and last page of every subregion's
+              expected range and of every remaining gap, including multi-word operations that
+              cross from one subregion into the next or into a gap.
+
+            **Checks**:
+            - A subregion is active only while its window's `EN` is `MuBi4True`, its window's
+              `EMUL_INFO_REGWEN` is locked, its own `EMUL_INFO_SUBREGION_REGWEN` and that of
+              every lower-indexed subregion of the same window are locked, and its `TOP` does
+              not exceed the window's `SIZE`. It becomes active as soon as the last of these
+              conditions is met.
+            - An active subregion covers window offsets from one past the highest `TOP` of the
+              active lower-indexed subregions in its window (from offset 0 if there is none) up
+              to its own `TOP`. A subregion whose `TOP` is not above that is fully shadowed and
+              grants nothing.
+            - A subregion with `TOP` exceeding the window's `SIZE` is inactive, but does not
+              break the lock chain of the higher-indexed subregions.
+            - Pages not covered by an active subregion are denied, as checked in
+              `emul_info_window`.
+            - Subregions of one window never affect accesses to the other window.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: emul_info_permissions
+      desc: '''
+            Verify the access attributes of active emulated info subregions
+            (`EMUL_INFO_SUBREGION_CFG`, `EMUL_INFO_SUBREGION_CFG_REGWEN`).
+
+            **Stimulus**:
+            - Fully configure and lock both windows and a random set of subregions.
+            - Program random `EMUL_INFO_SUBREGION_CFG` (`rd_en`, `wr_en`, `scramble_en`,
+              `ecc_en`), including invalid multi-bit values, before and after locking the
+              subregion's placement.
+            - Lock a random subset via `EMUL_INFO_SUBREGION_CFG_REGWEN`, and leave the rest
+              unlocked.
+            - Reprogram unlocked `EMUL_INFO_SUBREGION_CFG`s while their subregion is active.
+            - Issue software reads and writes to every active subregion, including multi-word
+              operations that cross into a neighboring subregion with different attributes.
+
+            **Checks**:
+            - Software reads are allowed only when `rd_en` is `MuBi4True`, and writes only when
+              `wr_en` is `MuBi4True`. Any other value denies the access.
+            - The data stored or read back uses the `scramble_en` and `ecc_en` of the subregion
+              each word falls into.
+            - A subregion is active whether or not its `EMUL_INFO_SUBREGION_CFG_REGWEN` is
+              locked, and changes to an unlocked `EMUL_INFO_SUBREGION_CFG` take effect on the
+              next access.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: emul_info_window_overlap
+      desc: '''
+            Verify that overlapping emulated info windows fail closed (see
+            `EMUL_INFO_REGION.EN`).
+
+            **Stimulus**:
+            - Program both windows so that they overlap by at least one page, with either both
+              windows enabled or only one of them (`EN` not `MuBi4True` on the other).
+            - Fully configure and lock subregions with full permissions in both windows.
+            - As a negative control, place two enabled windows exactly adjacent without
+              overlapping.
+            - Issue software reads and writes, and host reads, to the overlapping pages and to
+              the non-overlapping pages of each window.
+
+            **Checks**:
+            - While both windows are enabled and overlap, every subregion of both is inactive, so
+              every page of both windows (overlapping or not) is denied to software and host
+              accesses, and never falls through to `MP_REGION`s or `DEFAULT_REGION`.
+            - Overlap with a disabled window has no effect: the enabled window behaves as checked
+              in `emul_info_subregion`.
+            - Exactly adjacent windows behave as two independent windows.
             '''
       stage: V2
       tests: []
@@ -624,6 +771,49 @@
             Covers, for software and host accesses, which region matched (region index or
             default region) crossed with `rd_en`, `wr_en`, `scramble_en`, `ecc_en`, and whether
             the access was allowed.
+            '''
+    }
+    {
+      name: emul_info_window_cg
+      desc: '''
+            Covers, per window, `EN` (`MuBi4True`, `MuBi4False`, invalid) crossed with
+            `EMUL_INFO_REGWEN`, window position (start of the data partition, end of the data
+            partition, elsewhere), and window size (one page, up to 256 pages, more than 256
+            pages).
+            '''
+    }
+    {
+      name: emul_info_subregion_cg
+      desc: '''
+            Covers, per window, the number of active subregions (0, 1, a few, all
+            `EmulInfoSubregionsPerRegion`), and for every subregion the reason it is inactive
+            (window disabled, window unlocked, own placement unlocked, a lower-indexed
+            placement unlocked, `TOP` exceeding `SIZE`, window overlap) or, when active,
+            whether it is fully shadowed by a lower-indexed subregion and whether its `TOP`
+            equals the window's `SIZE`.
+            '''
+    }
+    {
+      name: emul_info_permissions_cg
+      desc: '''
+            Covers, for accesses that hit an active subregion, `rd_en`, `wr_en`, `scramble_en`
+            and `ecc_en` (each `MuBi4True`, `MuBi4False`, invalid) crossed with operation type
+            and whether `EMUL_INFO_SUBREGION_CFG_REGWEN` is locked.
+            '''
+    }
+    {
+      name: emul_info_priority_cg
+      desc: '''
+            Covers, for every software and host access to the data partition, which entry
+            decided it (OTP exclusion, subregion, window gap, `MP_REGION`, `DEFAULT_REGION`)
+            crossed with requester, operation type, and whether the access was allowed.
+            '''
+    }
+    {
+      name: emul_info_window_overlap_cg
+      desc: '''
+            Covers whether the two windows overlap or are exactly adjacent, crossed with both
+            windows' `EN`.
             '''
     }
     {
