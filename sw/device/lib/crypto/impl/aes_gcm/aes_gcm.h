@@ -303,9 +303,8 @@ status_t aes_gcm_decrypt_final(aes_gcm_context_t *ctx,
 /**
  * Overwrite an AES-GCM context with random data.
  *
- * The context holds the GHASH tables derived from the hash subkey shares, so
- * it must not outlive the operation. Meant to be used as a cleanup guard on
- * stack-allocated contexts.
+ * The context holds the hash subkey shares, so it must not outlive the
+ * operation. Meant to be used as a cleanup guard on stack-allocated contexts.
  *
  * @param ctx AES-GCM context object.
  */

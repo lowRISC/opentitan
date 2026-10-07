@@ -45,12 +45,12 @@ TEST(Ghash, McGrawViegaTestCase1) {
   // Compute GHASH(H, A, C).
   ghash_context_t ctx;
   rom_test::MockCrc32 crc32_;
-  EXPECT_OK(ghash_init_subkey(H.data(), ctx.tbl0));
-  EXPECT_OK(ghash_init_subkey(Zero.data(), ctx.tbl1));
+  EXPECT_OK(ghash_init_subkey(H.data(), &ctx.hash_subkey0));
+  EXPECT_OK(ghash_init_subkey(Zero.data(), &ctx.hash_subkey1));
 
   constexpr int kExpectedCrc32Cycles = 3;
   EXPECT_CALL(crc32_, Init(testing::NotNull())).Times(kExpectedCrc32Cycles);
-  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.tbl0, 256))
+  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.hash_subkey0.data, 16))
       .Times(kExpectedCrc32Cycles);
   EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.correction_term0.data, 16))
       .Times(kExpectedCrc32Cycles);
@@ -88,12 +88,12 @@ TEST(Ghash, ProcessFullBlocksOneByte) {
   // Initialize context.
   ghash_context_t ctx;
   rom_test::MockCrc32 crc32_;
-  EXPECT_OK(ghash_init_subkey(H.data(), ctx.tbl0));
-  EXPECT_OK(ghash_init_subkey(Zero.data(), ctx.tbl1));
+  EXPECT_OK(ghash_init_subkey(H.data(), &ctx.hash_subkey0));
+  EXPECT_OK(ghash_init_subkey(Zero.data(), &ctx.hash_subkey1));
 
   constexpr int kExpectedCrc32Cycles = 2;
   EXPECT_CALL(crc32_, Init(testing::NotNull())).Times(kExpectedCrc32Cycles);
-  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.tbl0, 256))
+  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.hash_subkey0.data, 16))
       .Times(kExpectedCrc32Cycles);
   EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.correction_term0.data, 16))
       .Times(kExpectedCrc32Cycles);
@@ -133,12 +133,12 @@ TEST(Ghash, Mul1) {
 
   ghash_context_t ctx;
   rom_test::MockCrc32 crc32_;
-  EXPECT_OK(ghash_init_subkey(H.data(), ctx.tbl0));
-  EXPECT_OK(ghash_init_subkey(Zero.data(), ctx.tbl1));
+  EXPECT_OK(ghash_init_subkey(H.data(), &ctx.hash_subkey0));
+  EXPECT_OK(ghash_init_subkey(Zero.data(), &ctx.hash_subkey1));
 
   constexpr int kExpectedCrc32Cycles = 4;
   EXPECT_CALL(crc32_, Init(testing::NotNull())).Times(kExpectedCrc32Cycles);
-  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.tbl0, 256))
+  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.hash_subkey0.data, 16))
       .Times(kExpectedCrc32Cycles);
   EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.correction_term0.data, 16))
       .Times(kExpectedCrc32Cycles);
@@ -169,7 +169,8 @@ TEST(Ghash, Mul1) {
   EXPECT_EQ(partial.data[0], one);
 
   EXPECT_OK(ghash_update(&ctx, &one_buf));
-  EXPECT_THAT(ctx.state0.data, testing::ElementsAreArray(H));
+  EXPECT_THAT(ctx.state0.data,
+              testing::ElementsAreArray(ctx.hash_subkey0.data));
   uint32_t result[kGhashBlockNumWords];
   EXPECT_OK(ghash_final(&ctx, result));
 
@@ -215,12 +216,12 @@ TEST(Ghash, McGrawViegaTestCase2) {
   // Compute GHASH(H, A, C).
   ghash_context_t ctx;
   rom_test::MockCrc32 crc32_;
-  EXPECT_OK(ghash_init_subkey(H.data(), ctx.tbl0));
-  EXPECT_OK(ghash_init_subkey(Zero.data(), ctx.tbl1));
+  EXPECT_OK(ghash_init_subkey(H.data(), &ctx.hash_subkey0));
+  EXPECT_OK(ghash_init_subkey(Zero.data(), &ctx.hash_subkey1));
 
   constexpr int kExpectedCrc32Cycles = 5;
   EXPECT_CALL(crc32_, Init(testing::NotNull())).Times(kExpectedCrc32Cycles);
-  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.tbl0, 256))
+  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.hash_subkey0.data, 16))
       .Times(kExpectedCrc32Cycles);
   EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.correction_term0.data, 16))
       .Times(kExpectedCrc32Cycles);
@@ -290,12 +291,12 @@ TEST(Ghash, ContextReset) {
   // Initialize the hash subkey (should only need to do this once).
   ghash_context_t ctx;
   rom_test::MockCrc32 crc32_;
-  EXPECT_OK(ghash_init_subkey(H.data(), ctx.tbl0));
-  EXPECT_OK(ghash_init_subkey(Zero.data(), ctx.tbl1));
+  EXPECT_OK(ghash_init_subkey(H.data(), &ctx.hash_subkey0));
+  EXPECT_OK(ghash_init_subkey(Zero.data(), &ctx.hash_subkey1));
 
   constexpr int kExpectedCrc32Cycles = 9;
   EXPECT_CALL(crc32_, Init(testing::NotNull())).Times(kExpectedCrc32Cycles);
-  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.tbl0, 256))
+  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.hash_subkey0.data, 16))
       .Times(kExpectedCrc32Cycles);
   EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.correction_term0.data, 16))
       .Times(kExpectedCrc32Cycles);
@@ -381,12 +382,12 @@ TEST(Ghash, McGrawViegaTestCase18) {
   // Compute GHASH(H, A, C).
   ghash_context_t ctx;
   rom_test::MockCrc32 crc32_;
-  EXPECT_OK(ghash_init_subkey(H.data(), ctx.tbl0));
-  EXPECT_OK(ghash_init_subkey(Zero.data(), ctx.tbl1));
+  EXPECT_OK(ghash_init_subkey(H.data(), &ctx.hash_subkey0));
+  EXPECT_OK(ghash_init_subkey(Zero.data(), &ctx.hash_subkey1));
 
   constexpr int kExpectedCrc32Cycles = 10;
   EXPECT_CALL(crc32_, Init(testing::NotNull())).Times(kExpectedCrc32Cycles);
-  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.tbl0, 256))
+  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.hash_subkey0.data, 16))
       .Times(kExpectedCrc32Cycles);
   EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.correction_term0.data, 16))
       .Times(kExpectedCrc32Cycles);
@@ -434,11 +435,11 @@ TEST(Ghash, RefreshSubkeyMaskAfter64Blocks) {
 
   ghash_context_t ctx;
   rom_test::MockCrc32 crc32_;
-  EXPECT_OK(ghash_init_subkey(H.data(), ctx.tbl0));
-  EXPECT_OK(ghash_init_subkey(Zero.data(), ctx.tbl1));
+  EXPECT_OK(ghash_init_subkey(H.data(), &ctx.hash_subkey0));
+  EXPECT_OK(ghash_init_subkey(Zero.data(), &ctx.hash_subkey1));
 
   EXPECT_CALL(crc32_, Init(testing::NotNull())).Times(testing::AtLeast(1));
-  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.tbl0, 256))
+  EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.hash_subkey0.data, 16))
       .Times(testing::AtLeast(1));
   EXPECT_CALL(crc32_, Add(testing::NotNull(), ctx.correction_term0.data, 16))
       .Times(testing::AtLeast(1));
