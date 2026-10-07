@@ -15,6 +15,7 @@ filesets:
       - lowrisc:opentitan:bus_params_pkg
     files:
       - jtag_dmi_agent_pkg.sv
+      - direct_predict_cb.svh: {is_include_file: true}
       - jtag_dmi_reg_block.sv: {is_include_file: true}
       - jtag_dmi_reg_frontdoor.sv: {is_include_file: true}
       - jtag_dmi_item.sv: {is_include_file: true}
