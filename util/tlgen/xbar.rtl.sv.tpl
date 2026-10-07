@@ -177,11 +177,18 @@ module xbar_${xbar.name} (
   prefix = "if (" if loop.first else "end else if ("
   start_addr = leaf.addr_ranges[asid][0][0]
   size_bytes = (leaf.addr_ranges[asid][0][1] - leaf.addr_ranges[asid][0][0]) + 1
+  # Split the upper bound check if it does not fit in 100 columns.
+  wrap_top = len(f"      ({addr_sig} < ({name_space} + {name_size})) &&") > 100
 %>\
   % if len(leaf.addr_ranges[asid]) == 1:
       % if checkBaseSizeOverlap(start_addr, size_bytes) or not lib.is_pow2(size_bytes):
     ${prefix}
+        % if wrap_top:
+      (${addr_sig} <
+       (${name_space} + ${name_size})) &&
+        % else:
       (${addr_sig} < (${name_space} + ${name_size})) &&
+        % endif
       (${addr_sig} >= ${name_space})) begin
       % else:
     ${prefix}(${addr_sig} &
