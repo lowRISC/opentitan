@@ -723,4 +723,10 @@ module rram_ctrl_otp
   `ASSERT(IllegalSize,      (otp_macro_req_i.valid |-> (otp_macro_req_i.size != 2'd2)),
                              clk_otp_i, !rst_otp_ni)
 
+  // OTP data must fit into OtpPages-1 pages, its integrity bytes into the first page.
+  `ASSERT_INIT(OtpDataFitsRramRegion_A,
+               OtpDepth * OtpWidth <= (OtpPages - 1) * WordsPerPage * DataWidth)
+  `ASSERT_INIT(OtpIntgFitsRramIntgPage_A,
+               OtpDepth * OtpWidth / OtpIntgDataWidth * OtpIntgWidth <= WordsPerPage * DataWidth)
+
 endmodule : rram_ctrl_otp

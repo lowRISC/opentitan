@@ -144,8 +144,10 @@ Reading that field back returns the length actually in use.
 
 Next to the key, the sideload interface carries a valid indication with which the key manager signals that the key it drives can be used.
 The key manager has to keep it set for the entire duration of an operation, because the HMAC core uses the key twice: for the inner key padding when the operation starts, and again for the outer key padding after the message has been hashed.
-For the same reason, the key itself has to stay stable as long as the valid indication is set.
-HMAC does not check this: a key that changes while it is marked valid would be used with one value for the inner key padding and with another one for the outer key padding, which silently produces a wrong result.
+For the same reason, the key itself has to stay stable for the entire duration of an operation.
+Neither HMAC nor the key manager enforces this: the key manager replaces the sideloaded key whenever a new key is generated for HMAC, without deasserting the valid indication, and HMAC does not detect the change.
+A key that changes during an operation is used with one value for the inner key padding and with another one for the outer key padding, which silently produces a wrong result.
+It is therefore up to software not to generate a new HMAC sideload key while an operation with a sideloaded key is in progress, see the [Programmer's Guide](programmers_guide.md#using-a-sideloaded-key).
 
 HMAC reacts to an invalid key as follows:
 

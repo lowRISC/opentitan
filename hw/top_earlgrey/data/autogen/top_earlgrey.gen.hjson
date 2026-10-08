@@ -998,6 +998,10 @@
         GpioAsHwStrapsEn: "0"
         GpioAsyncOn: "1"
       }
+      ipgen_params:
+      {
+        per_pin_view: true
+      }
       attr: ipgen
       domain: Main
       clock_connections:
@@ -7096,6 +7100,19 @@
           name_top: KmacEnMasking
         }
         {
+          name: EnFullKmac
+          desc:
+            '''
+            Disable(0) or enable(1) the full KMAC functionality.
+            If disabled, the module is stripped down to only support SHA3, SHAKE and cSHAKE.
+            '''
+          type: bit
+          default: "1"
+          local: "false"
+          expose: "true"
+          name_top: KmacEnFullKmac
+        }
+        {
           name: SwKeyMasked
           desc:
             '''
@@ -8259,28 +8276,6 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: entropy_src
-          index: -1
-        }
-        {
-          name: otp_en_entropy_src_fw_read
-          struct: mubi8
-          package: prim_mubi_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: prim_mubi_pkg::MuBi8True
-          inst_name: entropy_src
-          index: -1
-        }
-        {
-          name: otp_en_entropy_src_fw_over
-          struct: mubi8
-          package: prim_mubi_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: prim_mubi_pkg::MuBi8True
           inst_name: entropy_src
           index: -1
         }
@@ -10137,11 +10132,11 @@
       }
       param_decl:
       {
-        MainSramBaseAddr: 32'h1000_0000
-        MainSramTopAddr: 32'h1003_0000
-        NvmBaseAddr: 32'h3000_0000
-        NvmTopAddr: 32'h3020_0000
-        MetaSramBaseAddr: 32'h1100_0000
+        MainSramBaseAddr: tl_main_pkg::ADDR_SPACE_SRAM_CTRL_MAIN__RAM
+        MainSramTopAddr: tl_main_pkg::ADDR_SPACE_SRAM_CTRL_SEC__RAM + tl_main_pkg::ADDR_MASK_SRAM_CTRL_SEC__RAM + 1
+        NvmBaseAddr: tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST
+        NvmTopAddr: tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST + tl_main_pkg::ADDR_MASK_RRAM_CTRL__HOST + 1
+        MetaSramBaseAddr: tl_main_pkg::ADDR_SPACE_CHERIOT__REVBM
       }
       base_addrs:
       {
@@ -10177,7 +10172,7 @@
           name: MainSramBaseAddr
           desc: Base address of the main SRAM region (inclusive).
           type: logic [top_pkg::TL_AW-1:0]
-          default: 32'h1000_0000
+          default: tl_main_pkg::ADDR_SPACE_SRAM_CTRL_MAIN__RAM
           local: "false"
           expose: "true"
           name_top: CheriotMainSramBaseAddr
@@ -10186,7 +10181,7 @@
           name: MainSramTopAddr
           desc: Top address of the main SRAM region (exclusive).
           type: logic [top_pkg::TL_AW-1:0]
-          default: 32'h1003_0000
+          default: tl_main_pkg::ADDR_SPACE_SRAM_CTRL_SEC__RAM + tl_main_pkg::ADDR_MASK_SRAM_CTRL_SEC__RAM + 1
           local: "false"
           expose: "true"
           name_top: CheriotMainSramTopAddr
@@ -10195,7 +10190,7 @@
           name: NvmBaseAddr
           desc: Base address of the NVM region (inclusive).
           type: logic [top_pkg::TL_AW-1:0]
-          default: 32'h3000_0000
+          default: tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST
           local: "false"
           expose: "true"
           name_top: CheriotNvmBaseAddr
@@ -10204,7 +10199,7 @@
           name: NvmTopAddr
           desc: Top address of the NVM region (exclusive).
           type: logic [top_pkg::TL_AW-1:0]
-          default: 32'h3020_0000
+          default: tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST + tl_main_pkg::ADDR_MASK_RRAM_CTRL__HOST + 1
           local: "false"
           expose: "true"
           name_top: CheriotNvmTopAddr
@@ -10213,7 +10208,7 @@
           name: MetaSramBaseAddr
           desc: Base address of the CHERIoT meta SRAM region.
           type: logic [top_pkg::TL_AW-1:0]
-          default: 32'h1100_0000
+          default: tl_main_pkg::ADDR_SPACE_CHERIOT__REVBM
           local: "false"
           expose: "true"
           name_top: CheriotMetaSramBaseAddr
@@ -10330,6 +10325,19 @@
           default: ""
           domain: Main
           top_signame: main_tl_cheriot__cored
+          index: -1
+        }
+        {
+          name: tbre_tl_h
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: cheriot
+          default: ""
+          domain: Main
+          top_signame: main_tl_cheriot__tbre
           index: -1
         }
         {
@@ -11117,6 +11125,10 @@
       [
         cheriot.cored_tl_h
       ]
+      main.tl_cheriot__tbre:
+      [
+        cheriot.tbre_tl_h
+      ]
       main.tl_rv_dm__sba:
       [
         rv_dm.sba_tl_h
@@ -11503,6 +11515,12 @@
           cheriot.regs
           cheriot.revbm
         ]
+        cheriot.tbre:
+        [
+          sram_ctrl_main.ram
+          sram_ctrl_sec.ram
+          rram_ctrl.host
+        ]
         rv_dm.sba:
         [
           rom_ctrl.rom
@@ -11553,6 +11571,19 @@
         }
         {
           name: cheriot.cored
+          type: host
+          addr_space: hart
+          clock: clk_main_i
+          reset: rst_main_ni
+          pipeline: false
+          xbar: false
+          stub: false
+          inst_type: ""
+          req_fifo_pass: true
+          rsp_fifo_pass: true
+        }
+        {
+          name: cheriot.tbre
           type: host
           addr_space: hart
           clock: clk_main_i
@@ -12191,7 +12222,7 @@
               {
                 hart: 0x411b0000
               }
-              size_byte: 0x4
+              size_byte: 0x40
             }
           ]
           xbar: false
@@ -12255,6 +12286,20 @@
           end_idx: -1
           top_type: one-to-one
           top_signame: main_tl_cheriot__cored
+          index: -1
+        }
+        {
+          name: tl_cheriot__tbre
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          inst_name: main
+          width: 1
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: main_tl_cheriot__tbre
           index: -1
         }
         {
@@ -12878,7 +12923,7 @@
               {
                 hart: 0x40040000
               }
-              size_byte: 0x80
+              size_byte: 0x400
             }
           ]
           xbar: false
@@ -13025,7 +13070,7 @@
               {
                 hart: 0x40130000
               }
-              size_byte: 0x1000
+              size_byte: 0x2000
             }
           ]
           xbar: false
@@ -19012,6 +19057,19 @@
       plic: rv_plic
       outgoing: false
     }
+    {
+      name: cheriot_tbre_done
+      width: 1
+      type: interrupt
+      module_name: cheriot
+      desc: cheriot tbre_done interrupt
+      intr_type: IntrType.Event
+      default_val: false
+      incoming: false
+      domain: Main
+      plic: rv_plic
+      outgoing: false
+    }
   ]
   outgoing_interrupt: {}
   plic_info:
@@ -19019,11 +19077,11 @@
     rv_plic:
     {
       domain: Main
-      count_tot: 185
+      count_tot: 186
       count_pd:
       {
         Aon: 7
-        Main: 177
+        Main: 178
       }
     }
   }
@@ -20494,6 +20552,7 @@
     entropy_src
     edn0
     edn1
+    cheriot
   ]
   outgoing_alert_module: {}
   outgoing_interrupt_module: {}
@@ -26128,28 +26187,6 @@
         index: -1
       }
       {
-        name: otp_en_entropy_src_fw_read
-        struct: mubi8
-        package: prim_mubi_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: prim_mubi_pkg::MuBi8True
-        inst_name: entropy_src
-        index: -1
-      }
-      {
-        name: otp_en_entropy_src_fw_over
-        struct: mubi8
-        package: prim_mubi_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: prim_mubi_pkg::MuBi8True
-        inst_name: entropy_src
-        index: -1
-      }
-      {
         name: rng_fips
         struct: logic
         type: uni
@@ -27122,6 +27159,19 @@
         index: -1
       }
       {
+        name: tbre_tl_h
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: cheriot
+        default: ""
+        domain: Main
+        top_signame: main_tl_cheriot__tbre
+        index: -1
+      }
+      {
         name: regs_tl_d
         struct: tl
         package: tlul_pkg
@@ -27313,6 +27363,20 @@
         end_idx: -1
         top_type: one-to-one
         top_signame: main_tl_cheriot__cored
+        index: -1
+      }
+      {
+        name: tl_cheriot__tbre
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        inst_name: main
+        width: 1
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: main_tl_cheriot__tbre
         index: -1
       }
       {
@@ -33727,6 +33791,30 @@
         struct: tl_d2h
         domain: Main
         signame: main_tl_cheriot__cored_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Main
+        signame: main_tl_cheriot__tbre_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Main
+        signame: main_tl_cheriot__tbre_rsp
         width: 1
         type: req_rsp
         end_idx: -1

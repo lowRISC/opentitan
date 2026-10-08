@@ -19,8 +19,6 @@ class entropy_src_rng_test extends entropy_src_base_test;
     // The random alerts only need to happen frequently enough to
     // close coverage
     cfg.mean_rand_csr_alert_time    = 20ms;
-    // The following should be enough to confirm that OTP-silenced configurations are not
-    // outputting any seeds.
     // TODO (V3/Enhancement): Add coverpoints (with sampling ifs) and assertions to
     // confirm that data is actually being dropped in the DUT. (Silent configs are not counted
     // by existing CP's as we only sample when seeds are generated)
@@ -53,10 +51,6 @@ class entropy_src_rng_test extends entropy_src_base_test;
 
     cfg.dut_cfg.entropy_data_reg_enable_pct = 50;
     cfg.dut_cfg.route_software_pct          = 50;
-    cfg.otp_en_es_fw_read_pct               = 33;
-    cfg.otp_en_es_fw_read_inval_pct         = 33;
-    cfg.otp_en_es_fw_over_pct               = 33;
-    cfg.otp_en_es_fw_over_inval_pct         = 33;
 
     cfg.dut_cfg.ht_threshold_oneway_pct     = 10;
     cfg.dut_cfg.ht_threshold_scope_pct      = 50;

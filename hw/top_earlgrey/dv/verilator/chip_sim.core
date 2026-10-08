@@ -116,6 +116,18 @@ targets:
           # XXX: Cleanup all warnings and remove this option
           # (or make it more fine-grained at least)
           - '-Wno-fatal'
+          # The behavioral models of the AST power good detectors (`vio_pgd`
+          # and `vcc_pgd`) drive their outputs through delays.  Verilator 5
+          # refuses to compile a design with delays unless told what to do
+          # with them, whereas Verilator 4 ignored them.  Keep ignoring them,
+          # as the simulation does not model analog ramp times.  The same
+          # holds for the oscillator models, which `AST_BYPASS_CLK` excludes
+          # today.  Those two models are waived in `ip/ast/lint/ast.vlt`;
+          # `-Werror-` turns a delay anywhere else into an error, which
+          # `-Wno-fatal` above would otherwise demote to a report.
+          - '--no-timing'
+          - '-Werror-STMTDLY'
+          - '-Werror-ASSIGNDLY'
 
   lint:
     <<: *default_target

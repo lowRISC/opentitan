@@ -144,6 +144,7 @@
         # check-lock-files regenerates python-requirements.txt via `uv pip compile`.
         uv
         pkgs.iproute2
+        yosys.packages.${system}.yosys
       ];
 
       # Shell args shared by both devshells.
@@ -167,7 +168,7 @@
 
       elab = lowrisc-nix.lib.mkEdaShell (edaShellArgs // {
         name = "opentitan-elab";
-        extraPkgs = edaPkgs ++ [yosys.packages.${system}.yosys];
+        extraPkgs = edaPkgs;
         profile = edaShellArgs.profile + ''
           export IHP_PDK_ROOT=${ihp-pdk}/ihp-sg13cmos5l
         '';

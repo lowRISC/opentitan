@@ -118,7 +118,7 @@ extern "C" {
  * address between #TOP_EARLGREY_GPIO_BASE_ADDR and
  * `TOP_EARLGREY_GPIO_BASE_ADDR + TOP_EARLGREY_GPIO_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_GPIO_SIZE_BYTES 0x80u
+#define TOP_EARLGREY_GPIO_SIZE_BYTES 0x400u
 
 /**
  * Peripheral base address for spi_device in top earlgrey.
@@ -226,7 +226,7 @@ extern "C" {
  * address between #TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR and
  * `TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR + TOP_EARLGREY_OTP_CTRL_CORE_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_OTP_CTRL_CORE_SIZE_BYTES 0x1000u
+#define TOP_EARLGREY_OTP_CTRL_CORE_SIZE_BYTES 0x2000u
 
 /**
  * Peripheral base address for regs device on lc_ctrl in top earlgrey.
@@ -838,7 +838,7 @@ extern "C" {
  * address between #TOP_EARLGREY_CHERIOT_REGS_BASE_ADDR and
  * `TOP_EARLGREY_CHERIOT_REGS_BASE_ADDR + TOP_EARLGREY_CHERIOT_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_CHERIOT_REGS_SIZE_BYTES 0x4u
+#define TOP_EARLGREY_CHERIOT_REGS_SIZE_BYTES 0x40u
 
 /**
  * Peripheral base address for regs device on sram_ctrl_meta in top earlgrey.
@@ -967,7 +967,8 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralEntropySrc = 27, /**< entropy_src */
   kTopEarlgreyPlicPeripheralEdn0 = 28, /**< edn0 */
   kTopEarlgreyPlicPeripheralEdn1 = 29, /**< edn1 */
-  kTopEarlgreyPlicPeripheralLast = 29, /**< \internal Final PLIC peripheral */
+  kTopEarlgreyPlicPeripheralCheriot = 30, /**< cheriot */
+  kTopEarlgreyPlicPeripheralLast = 30, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
 /**
@@ -1162,7 +1163,8 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdEdn0EdnFatalErr = 182, /**< edn0_edn_fatal_err */
   kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 183, /**< edn1_edn_cmd_req_done */
   kTopEarlgreyPlicIrqIdEdn1EdnFatalErr = 184, /**< edn1_edn_fatal_err */
-  kTopEarlgreyPlicIrqIdLast = 184, /**< \internal The Last Valid Interrupt ID. */
+  kTopEarlgreyPlicIrqIdCheriotTbreDone = 185, /**< cheriot_tbre_done */
+  kTopEarlgreyPlicIrqIdLast = 185, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
 /**
@@ -1172,7 +1174,7 @@ typedef enum top_earlgrey_plic_irq_id {
  * `top_earlgrey_plic_peripheral_t`.
  */
 extern const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[185];
+    top_earlgrey_plic_interrupt_for_peripheral[186];
 
 /**
  * PLIC Interrupt Target.

@@ -82,9 +82,13 @@
       type:    "int",
       default: "32",
       desc:    '''Number of I/Os.
+% if per_pin_view:
+                  The per-pin register view requires 32.
+% else:
                   If you change this, also change the width of `gpio` in `available_inout_list` and `interrupt_list`.
                   Values >= 17 and <= 32 should be supported without RTL changes, although only 32 has been verified.
                   Values outside that range would likely require significant RTL changes.
+% endif
                '''
       local:   "true",
     },
@@ -359,7 +363,13 @@
             enables rising-edge interrupt detection on GPIO[i].
             ''',
       swaccess: "rw",
+% if per_pin_view:
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+% else:
       hwaccess: "hro",
+% endif
       fields: [
         { bits: "31:0" }
       ],
@@ -371,7 +381,13 @@
             enables falling-edge interrupt detection on GPIO[i].
             ''',
       swaccess: "rw",
+% if per_pin_view:
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+% else:
       hwaccess: "hro",
+% endif
       fields: [
         { bits: "31:0" }
       ],
@@ -383,7 +399,13 @@
             enables level high interrupt detection on GPIO[i].
             ''',
       swaccess: "rw",
+% if per_pin_view:
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+% else:
       hwaccess: "hro",
+% endif
       fields: [
         { bits: "31:0" }
       ],
@@ -395,7 +417,13 @@
             enables level low interrupt detection on GPIO[i].
             ''',
       swaccess: "rw",
+% if per_pin_view:
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+% else:
       hwaccess: "hro",
+% endif
       fields: [
         { bits: "31:0" }
       ],
@@ -407,7 +435,13 @@
             must be stable for 16 cycles before transitioning.
             ''',
       swaccess: "rw",
+% if per_pin_view:
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+% else:
       hwaccess: "hro",
+% endif
       fields: [
         { bits: "31:0" }
       ],
@@ -549,6 +583,104 @@
         ]
       },
     }
+% endif
+% if per_pin_view:
+    // The per-pin ranges at 0x100 and 0x200 have room for up to 64 GPIOs, each range aligned to its
+    // size. More GPIOs need larger offsets.
+    { skipto: "0x100" },
+    { multireg:
+      { name: "PER_PIN_IO",
+        cname: "PER_PIN_IO",
+        desc: '''Per-pin view of the output and input data of one GPIO.
+
+              This register aliases bit i of !!DIRECT_OUT and !!DATA_IN for GPIO[i].
+              Writing it updates only DATA_OUT[i], without affecting the other GPIOs.
+              ''',
+        count: "NumIOs",
+        swaccess: "rw",
+        hwaccess: "hrw",
+        hwext: "true",
+        hwqe: "true",
+        tags: [// read value of per_pin_* registers depends on other registers and the inputs
+               // avoid writing to per_pin_io* registers as they affect direct_out value
+               "excl:CsrNonInitTests:CsrExclAll"],
+        fields: [
+          { bits: "0",
+            name: "data_out",
+            desc: "Output data value of GPIO[i], alias of DATA_OUT[i]."
+          },
+          { bits: "8",
+            name: "data_in",
+            desc: "Input data value of GPIO[i], alias of !!DATA_IN[i].",
+            swaccess: "ro",
+            hwaccess: "hwo",
+            resval: "x"
+          },
+        ]
+      },
+    },
+    { skipto: "0x200" },
+    // The PER_PIN_OE and PER_PIN_INTR_CTRL registers of each GPIO are interleaved, which a multireg
+    // cannot express. Generate one pair of registers for each of the NumIOs GPIOs instead.
+% for i in range(32):
+    { name: "PER_PIN_OE_${i}",
+      desc: '''Per-pin view of the output enable of GPIO[${i}].
+
+            This register aliases bit ${i} of !!DIRECT_OE.
+            Writing it updates only DATA_OE[${i}], without affecting the other GPIOs.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_oe* registers as they affect direct_oe value
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "oe",
+          desc: "Output enable of GPIO[${i}], alias of DATA_OE[${i}]."
+        },
+      ]
+    },
+    { name: "PER_PIN_INTR_CTRL_${i}",
+      desc: '''Per-pin view of the interrupt control and input filter configuration of GPIO[${i}].
+
+            This register aliases bit ${i} of !!INTR_CTRL_EN_RISING, !!INTR_CTRL_EN_FALLING, !!INTR_CTRL_EN_LVLHIGH, !!INTR_CTRL_EN_LVLLOW and !!CTRL_EN_INPUT_FILTER.
+            Writing it updates only the configuration of GPIO[${i}], without affecting the other GPIOs.
+            It is separate from !!PER_PIN_OE_${i}, so access to the output enable and to the interrupt configuration of a GPIO can be controlled independently.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true",
+      hwqe: "true",
+      tags: [// read value of per_pin_* registers depends on other registers
+             // avoid writing to per_pin_intr_ctrl* registers as they affect the aliased registers
+             "excl:CsrNonInitTests:CsrExclAll"],
+      fields: [
+        { bits: "0",
+          name: "intr_ctrl_en_rising",
+          desc: "Rising-edge interrupt enable of GPIO[${i}], alias of !!INTR_CTRL_EN_RISING[${i}]."
+        },
+        { bits: "1",
+          name: "intr_ctrl_en_falling",
+          desc: "Falling-edge interrupt enable of GPIO[${i}], alias of !!INTR_CTRL_EN_FALLING[${i}]."
+        },
+        { bits: "2",
+          name: "intr_ctrl_en_lvlhigh",
+          desc: "Level-high interrupt enable of GPIO[${i}], alias of !!INTR_CTRL_EN_LVLHIGH[${i}]."
+        },
+        { bits: "3",
+          name: "intr_ctrl_en_lvllow",
+          desc: "Level-low interrupt enable of GPIO[${i}], alias of !!INTR_CTRL_EN_LVLLOW[${i}]."
+        },
+        { bits: "4",
+          name: "ctrl_en_input_filter",
+          desc: "Input filter enable of GPIO[${i}], alias of !!CTRL_EN_INPUT_FILTER[${i}]."
+        },
+      ]
+    },
+% endfor
 % endif
   ],
 }

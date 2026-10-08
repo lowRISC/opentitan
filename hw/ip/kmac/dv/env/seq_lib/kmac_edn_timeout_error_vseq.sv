@@ -29,6 +29,7 @@ class kmac_edn_timeout_error_vseq extends kmac_app_vseq;
   endfunction
 
   virtual task pre_start();
+    `DV_CHECK_FATAL(cfg.enable_full_kmac, "This sequence requires EnFullKmac == 1")
     super.pre_start();
     if (cfg.enable_masking) disable_asserts();
     cfg.en_scb = 0;

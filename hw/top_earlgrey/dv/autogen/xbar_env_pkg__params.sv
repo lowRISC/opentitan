@@ -86,7 +86,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h10020000, 32'h1002ffff}
     }},
     '{"cheriot__regs", '{
-        '{32'h411b0000, 32'h411b0003}
+        '{32'h411b0000, 32'h411b003f}
     }},
     '{"cheriot__revbm", '{
         '{32'h11000000, 32'h11000bff}
@@ -113,7 +113,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h400a0000, 32'h400a007f}
     }},
     '{"gpio", '{
-        '{32'h40040000, 32'h4004007f}
+        '{32'h40040000, 32'h400403ff}
     }},
     '{"spi_device", '{
         '{32'h40050000, 32'h40051fff}
@@ -134,7 +134,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h40460000, 32'h40460fff}
     }},
     '{"otp_ctrl__core", '{
-        '{32'h40130000, 32'h40130fff}
+        '{32'h40130000, 32'h40131fff}
     }},
     '{"lc_ctrl__regs", '{
         '{32'h40140000, 32'h401400ff}
@@ -227,7 +227,12 @@ tl_host_t xbar_hosts[$] = '{
         "cheriot__regs",
         "cheriot__revbm"}}
     ,
-    '{"rv_dm__sba", 2, '{
+    '{"cheriot__tbre", 2, '{
+        "sram_ctrl_main__ram",
+        "sram_ctrl_sec__ram",
+        "rram_ctrl__host"}}
+    ,
+    '{"rv_dm__sba", 3, '{
         "rom_ctrl__rom",
         "rom_ctrl__regs",
         "rv_dm__mem",

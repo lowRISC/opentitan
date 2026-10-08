@@ -31,7 +31,8 @@ enum {
   kAesBlockWords = kAesBlockBytes / sizeof(uint32_t),
 };
 
-static otcrypto_key_config_t make_key_config(const aes_test_t *test) {
+static otcrypto_key_config_t make_key_config(
+    const aes_test_t *test, otcrypto_key_security_level_t security_level) {
   otcrypto_key_mode_t key_mode;
   switch (test->mode) {
     case kOtcryptoAesModeEcb:
@@ -64,7 +65,7 @@ static otcrypto_key_config_t make_key_config(const aes_test_t *test) {
       .key_mode = key_mode,
       .key_length = test->key_len,
       .hw_backed = kHardenedBoolFalse,
-      .security_level = kOtcryptoKeySecurityLevelLow,
+      .security_level = security_level,
   };
 }
 
@@ -79,7 +80,8 @@ static otcrypto_key_config_t make_key_config(const aes_test_t *test) {
  */
 static status_t run_encrypt(const aes_test_t *test, bool streaming) {
   // Determine the key configuration.
-  otcrypto_key_config_t config = make_key_config(test);
+  otcrypto_key_config_t config =
+      make_key_config(test, kOtcryptoKeySecurityLevelLow);
 
   // Construct blinded key from the key and testing mask.
   uint32_t keyblob[keyblob_num_words(config)];
@@ -148,10 +150,12 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
  *
  * @param test Test vector to run.
  * @param streaming Whether to run in streaming mode.
+ * @param security_level Security level of the key.
  */
-static status_t run_decrypt(const aes_test_t *test, bool streaming) {
+static status_t run_decrypt(const aes_test_t *test, bool streaming,
+                            otcrypto_key_security_level_t security_level) {
   // Determine the key configuration.
-  otcrypto_key_config_t config = make_key_config(test);
+  otcrypto_key_config_t config = make_key_config(test, security_level);
 
   // Construct blinded key from the key and testing mask.
   uint32_t keyblob[keyblob_num_words(config)];
@@ -240,7 +244,17 @@ static status_t encrypt_test(void) {
  * Test one-shot AES decryption.
  */
 static status_t decrypt_test(void) {
-  return run_decrypt(test, /*streaming=*/false);
+  return run_decrypt(test, /*streaming=*/false, kOtcryptoKeySecurityLevelLow);
+}
+
+/**
+ * Test one-shot AES decryption with a high security level key.
+ *
+ * Above the low security level, `otcrypto_aes` also runs the inverse operation
+ * as a fault injection check.
+ */
+static status_t decrypt_high_test(void) {
+  return run_decrypt(test, /*streaming=*/false, kOtcryptoKeySecurityLevelHigh);
 }
 
 /**
@@ -254,7 +268,7 @@ static status_t encrypt_streaming_test(void) {
  * Test streaming AES decryption.
  */
 static status_t decrypt_streaming_test(void) {
-  return run_decrypt(test, /*streaming=*/true);
+  return run_decrypt(test, /*streaming=*/true, kOtcryptoKeySecurityLevelLow);
 }
 
 /**
@@ -365,6 +379,7 @@ bool test_main(void) {
     EXECUTE_TEST(result, decrypt_test);
     EXECUTE_TEST(result, encrypt_streaming_test);
     EXECUTE_TEST(result, decrypt_streaming_test);
+    EXECUTE_TEST(result, decrypt_high_test);
     LOG_INFO("Finished AES test %d.", i + 1);
   }
 

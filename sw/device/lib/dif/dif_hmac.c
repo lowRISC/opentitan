@@ -89,6 +89,8 @@ static dif_result_t dif_hmac_calculate_device_config_value(
       *device_config, HMAC_CFG_ENDIAN_SWAP_BIT, swap_message_endianness);
   *device_config = bitfield_bit32_write(
       *device_config, HMAC_CFG_DIGEST_SWAP_BIT, swap_digest_endianness);
+  *device_config = bitfield_bit32_write(*device_config, HMAC_CFG_SIDELOAD_BIT,
+                                        config.sideload);
 
   return kDifOk;
 }
@@ -106,7 +108,7 @@ dif_result_t dif_hmac_mode_hmac_start(const dif_hmac_t *hmac,
   // Set the byte-order of the input message and the digest.
   DIF_RETURN_IF_ERROR(dif_hmac_calculate_device_config_value(&reg, config));
 
-  if (key != NULL) {
+  if (key != NULL && !config.sideload) {
     // Set the HMAC key.
     // The least significant word is at HMAC_KEY_7_REG_OFFSET.
     // From the HWIP spec: "Order of the secret key is: key[255:0] = {KEY0,

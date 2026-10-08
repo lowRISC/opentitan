@@ -47,6 +47,7 @@ module darjeeling_pd_main #(
   parameter bit SecAesSkipPRNGReseeding = 1'b0,
   // parameters for kmac
   parameter bit KmacEnMasking = 1,
+  parameter bit KmacEnFullKmac = 1,
   parameter bit KmacSwKeyMasked = 0,
   parameter int SecKmacCmdDelay = 0,
   parameter bit SecKmacIdleAcceptSwMsg = 0,
@@ -1588,6 +1589,7 @@ module darjeeling_pd_main #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[29:28]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .EnMasking(KmacEnMasking),
+    .EnFullKmac(KmacEnFullKmac),
     .SwKeyMasked(KmacSwKeyMasked),
     .SecCmdDelay(SecKmacCmdDelay),
     .SecIdleAcceptSwMsg(SecKmacIdleAcceptSwMsg),
@@ -1807,8 +1809,6 @@ module darjeeling_pd_main #(
     .entropy_src_xht_health_test_window_o(),
     .entropy_src_xht_meta_o(),
     .entropy_src_xht_meta_i(entropy_src_pkg::ENTROPY_SRC_XHT_META_RSP_DEFAULT),
-    .otp_en_entropy_src_fw_read_i(prim_mubi_pkg::MuBi8True),
-    .otp_en_entropy_src_fw_over_i(prim_mubi_pkg::MuBi8True),
     .rng_fips_o(es_rng_fips_o),
     .tl_i(entropy_src_tl_req),
     .tl_o(entropy_src_tl_rsp)

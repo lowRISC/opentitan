@@ -116,7 +116,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
     // Cipher data path
     state_sel_o          = STATE_ROUND;
     state_we_o           = 1'b0;
-    add_rk_sel_o         = ADD_RK_ROUND;
+    add_rk_sel_o         = ADD_RK_INIT;
     sub_bytes_en_o       = 1'b0;
     sub_bytes_out_ack_o  = 1'b0;
 
@@ -151,6 +151,9 @@ module aes_cipher_control_fsm import aes_pkg::*;
 
       CIPHER_CTRL_IDLE: begin
         cyc_ctr_d = 3'd0;
+
+        // Forward the state (previously cleared with pseudo-random data).
+        add_rk_sel_o = ADD_RK_INIT;
 
         // Signal that we are ready, wait for handshake.
         in_ready_o = 1'b1;
@@ -257,6 +260,7 @@ module aes_cipher_control_fsm import aes_pkg::*;
 
       CIPHER_CTRL_ROUND: begin
         // Normal rounds
+        add_rk_sel_o = ADD_RK_ROUND;
 
         // Select key words for add_round_key
         key_words_sel_o = (dec_key_gen_q_i)            ? KEY_WORDS_ZERO :

@@ -35,6 +35,7 @@
 
             X-ref'ed with kmac test.
             '''
+      features: ["KEYMGR_DPE.GENERATE.OUTPUT"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -72,7 +73,7 @@
 
             For SV2 X-ref'ed with chip_sw_kmac_kmac_key_sideload.
             '''
-      features: ["KEYMGR.SIDELOAD.KMAC"]
+      features: ["KEYMGR_DPE.SIDELOAD.KMAC"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -106,7 +107,7 @@
 
                Same as `chip_keymgr_dpe_sideload_kmac`, except, sideload to AES.
             '''
-      features: ["KEYMGR.SIDELOAD.AES"]
+      features: ["KEYMGR_DPE.SIDELOAD.AES"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]
@@ -126,7 +127,7 @@
 
                Clear the sideload key once done.
             '''
-      features: ["KEYMGR.SIDELOAD.OTBN"]
+      features: ["KEYMGR_DPE.SIDELOAD.OTBN"]
       stage: V2
       si_stage: SV3
       lc_states: ["PROD"]

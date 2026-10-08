@@ -88,7 +88,7 @@ package top_earlgrey_rnd_cnst_pkg;
   };
 
   // OTP invalid partition default for buffered partitions
-  parameter logic [16383:0] RndCnstOtpCtrlPartInvDefault = {
+  parameter logic [16511:0] RndCnstOtpCtrlPartInvDefault = {
     704'({
       320'h1657295871E0F57DBABBA5389FF56CE4E1329D01FA1FCF7943D57B9508A9E8D1FFFEF15C246F62B4,
       384'hED73C3F084F0183C44DF2B2D84DC3249FBC6048325D4C625ECEEC3C7F48DA8CCDD589F9FA43AABA8DC41C649B2F9DCDA
@@ -157,9 +157,9 @@ package top_earlgrey_rnd_cnst_pkg;
       512'h0,
       32'h0
     }),
-    5376'({
+    5440'({
       64'hF49CFEC2EE84C2C3,
-      32'h0, // unallocated space
+      96'h0, // unallocated space
       768'h0,
       32'h0,
       32'h0,
@@ -186,9 +186,9 @@ package top_earlgrey_rnd_cnst_pkg;
       32'h0,
       32'h0
     }),
-    3264'({
+    3328'({
       64'hD28D102FC86A79C6,
-      96'h0, // unallocated space
+      160'h0, // unallocated space
       256'h0,
       32'h0,
       32'h0,

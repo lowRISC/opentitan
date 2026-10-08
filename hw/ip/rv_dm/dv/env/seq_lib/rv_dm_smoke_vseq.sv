@@ -53,16 +53,34 @@ class rv_dm_smoke_vseq extends rv_dm_base_vseq;
     end
   endtask
 
-  // Verify that the dmstatus[*unavail] field tracks the unavailable_i input.
+  // Verify that the dmstatus[*unavail] fields track the unavailable_i input.
   task check_unavailable();
-    uvm_reg_data_t data = $urandom_range(0, 1);
-    cfg.rv_dm_vif.cb.unavailable <= data;
-    csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(data));
-    if (cfg.clk_rst_vif.rst_n) begin
-      `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
-                   get_field_val(jtag_dmi_ral.dmstatus.anyunavail, data))
-      `DV_CHECK_EQ(cfg.rv_dm_vif.unavailable,
-                   get_field_val(jtag_dmi_ral.dmstatus.allunavail, data))
+    // A random bit to send to the unavailable_i input (reporting that the one and only hart is
+    // unavailable)
+    bit            reported_unavailable = $urandom_range(0, 1);
+
+    uvm_reg_data_t dmstatus;
+    bit            anyunavail, allunavail;
+
+    // Drive "unavailable" to the dut
+    cfg.rv_dm_vif.cb.unavailable <= reported_unavailable;
+
+    // Now read the DMSTATUS register
+    csr_rd(.ptr(jtag_dmi_ral.dmstatus), .value(dmstatus));
+    if (cfg.under_reset) return;
+
+    // Extract the anyunavail and allunavail fields and check that they match the value that we
+    // drove.
+    anyunavail = get_field_val(jtag_dmi_ral.dmstatus.anyunavail, dmstatus);
+    allunavail = get_field_val(jtag_dmi_ral.dmstatus.allunavail, dmstatus);
+    if ({anyunavail, allunavail} != {reported_unavailable, reported_unavailable}) begin
+      `uvm_error(get_full_name(),
+                 $sformatf({"Unexpected *unavail fields in DMSTATUS. After driving ",
+                            "unavailable with %0d on the interface, the ",
+                            "{anyunavail, allunavail} fields of the register read as ",
+                            "{%0d, %0d} (rather than {%0d, %0d})"},
+                           unavailable, anyunavail, allunavail,
+                           reported_unavailable, reported_unavailable))
     end
   endtask
 

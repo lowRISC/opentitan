@@ -18,13 +18,13 @@ The main address space, shared between the CPU and DM
 | uart1          | default     | `0x40010000`   | `0x40`         | `0x10`         | uart1                         |
 | uart2          | default     | `0x40020000`   | `0x40`         | `0x10`         | uart2                         |
 | uart3          | default     | `0x40030000`   | `0x40`         | `0x10`         | uart3                         |
-| gpio           | default     | `0x40040000`   | `0x80`         | `0x20`         | gpio                          |
+| gpio           | default     | `0x40040000`   | `0x400`        | `0x100`        | gpio                          |
 | spi_device     | default     | `0x40050000`   | `0x2000`       | `0x800`        | spi_device                    |
 | i2c0           | default     | `0x40080000`   | `0x80`         | `0x20`         | i2c0                          |
 | i2c1           | default     | `0x40090000`   | `0x80`         | `0x20`         | i2c1                          |
 | i2c2           | default     | `0x400A0000`   | `0x80`         | `0x20`         | i2c2                          |
 | rv_timer       | default     | `0x40100000`   | `0x200`        | `0x80`         | rv_timer                      |
-| otp_ctrl       | core        | `0x40130000`   | `0x1000`       | `0x400`        | core device on otp_ctrl       |
+| otp_ctrl       | core        | `0x40130000`   | `0x2000`       | `0x800`        | core device on otp_ctrl       |
 | lc_ctrl        | regs        | `0x40140000`   | `0x100`        | `0x40`         | regs device on lc_ctrl        |
 | alert_handler  | default     | `0x40150000`   | `0x800`        | `0x200`        | alert_handler                 |
 | spi_host0      | default     | `0x40300000`   | `0x40`         | `0x10`         | spi_host0                     |
@@ -58,7 +58,7 @@ The main address space, shared between the CPU and DM
 | sram_ctrl_sec  | regs        | `0x411D0000`   | `0x40`         | `0x10`         | regs device on sram_ctrl_sec  |
 | rom_ctrl       | regs        | `0x411E0000`   | `0x80`         | `0x20`         | regs device on rom_ctrl       |
 | rv_core_ibex   | cfg         | `0x411F0000`   | `0x100`        | `0x40`         | cfg device on rv_core_ibex    |
-| cheriot        | regs        | `0x411B0000`   | `0x4`          | `0x1`          | regs device on cheriot        |
+| cheriot        | regs        | `0x411B0000`   | `0x40`         | `0x10`         | regs device on cheriot        |
 | sram_ctrl_meta | regs        | `0x411A0000`   | `0x40`         | `0x10`         | regs device on sram_ctrl_meta |
 
 ### Memory Blocks

@@ -266,8 +266,20 @@ module rram_phy
   logic                    rram_wr_req;
   logic [PageW-1:0]        wr_page_addr;
 
-  assign rram_wr_req  = rram_macro_req_o.wr_last & rram_macro_req_o.wr_req & rram_macro_rsp_i.ack;
-  assign wr_page_addr = rram_macro_req_o.addr[AddrW-1 -: PageW];
+  // Fields of the request towards the RRAM macro.  They are collected here and
+  // driven into `rram_macro_req_o` by a single assignment below, because
+  // driving the fields of a packed struct from several processes is not
+  // guaranteed to schedule correctly in simulation.
+  logic                 macro_rd_req;
+  logic                 macro_wr_req;
+  logic                 macro_wr_last;
+  logic [DataWidth-1:0] macro_wr_data;
+  logic [AddrW-1:0]     macro_addr;
+  rram_part_e           macro_part;
+  logic                 macro_ecc_en;
+
+  assign rram_wr_req  = macro_wr_last & macro_wr_req & rram_macro_rsp_i.ack;
+  assign wr_page_addr = wr_addr[AddrW-1 -: PageW];
 
   rram_phy_rd u_rram_phy_rd (
     .clk_i,
@@ -280,7 +292,7 @@ module rram_phy
     .addr_xor_en_i  (muxed_addr_xor_en),
     .wr_req_i       (rram_wr_req),
     .wr_page_addr_i (wr_page_addr),
-    .wr_part_i      (rram_macro_req_o.part),
+    .wr_part_i      (wr_part),
     .addr_i         (muxed_addr),
     .part_i         (muxed_part_buf),
     .data_valid_o   (data_valid),
@@ -290,8 +302,8 @@ module rram_phy
     .scramble_req_o (scramble_req[0]),
     .scramble_rsp_i (scramble_rsp[0]),
     // RRAM Macro Interface
-    .rd_req_o       (rram_macro_req_o.rd_req),
-    .rd_ack_i       (rram_macro_req_o.rd_req & rram_macro_rsp_i.ack),
+    .rd_req_o       (macro_rd_req),
+    .rd_ack_i       (macro_rd_req & rram_macro_rsp_i.ack),
     .rd_done_i      (rram_macro_rsp_i.done),
     .rd_addr_o      (rd_addr),
     .rd_part_o      (rd_part),
@@ -348,13 +360,13 @@ module rram_phy
     .busy_o        (wr_busy),
     .scramble_req_o(scramble_req[1]),
     .scramble_rsp_i(scramble_rsp[1]),
-    .wr_req_o      (rram_macro_req_o.wr_req),
-    .wr_last_o     (rram_macro_req_o.wr_last),
-    .data_o        (rram_macro_req_o.wr_data),
+    .wr_req_o      (macro_wr_req),
+    .wr_last_o     (macro_wr_last),
+    .data_o        (macro_wr_data),
     .addr_o        (wr_addr),
     .part_o        (wr_part),
     .ecc_en_o      (wr_ecc_en),
-    .ack_i         (rram_macro_req_o.wr_req & rram_macro_rsp_i.ack),
+    .ack_i         (macro_wr_req & rram_macro_rsp_i.ack),
     .done_i        (rram_macro_rsp_i.done),
     .fsm_err_o     (wr_fsm_err),
     .cnt_err_o     (wr_cnt_err),
@@ -364,23 +376,34 @@ module rram_phy
   assign phy_wr_busy_o  = wr_busy;
 
   always_comb begin
-    rram_macro_req_o.addr   = '0;
-    rram_macro_req_o.part   = RramPartData;
-    rram_macro_req_o.ecc_en = 1'b1;
+    macro_addr   = '0;
+    macro_part   = RramPartData;
+    macro_ecc_en = 1'b1;
     unique case(1'b1)
-      rram_macro_req_o.rd_req: begin
-        rram_macro_req_o.addr   = rd_addr;
-        rram_macro_req_o.part   = rd_part;
-        rram_macro_req_o.ecc_en = rd_ecc_en;
+      macro_rd_req: begin
+        macro_addr   = rd_addr;
+        macro_part   = rd_part;
+        macro_ecc_en = rd_ecc_en;
       end
-      rram_macro_req_o.wr_req: begin
-        rram_macro_req_o.addr   = wr_addr;
-        rram_macro_req_o.part   = wr_part;
-        rram_macro_req_o.ecc_en = wr_ecc_en;
+      macro_wr_req: begin
+        macro_addr   = wr_addr;
+        macro_part   = wr_part;
+        macro_ecc_en = wr_ecc_en;
       end
       default: ;
     endcase
   end
+
+  // Single driver of the request struct, see the comment at its signals above.
+  assign rram_macro_req_o = '{
+    rd_req:  macro_rd_req,
+    wr_req:  macro_wr_req,
+    wr_last: macro_wr_last,
+    addr:    macro_addr,
+    wr_data: macro_wr_data,
+    part:    macro_part,
+    ecc_en:  macro_ecc_en
+  };
 
   // phy init done
   always_ff @(posedge clk_i or negedge rst_ni) begin

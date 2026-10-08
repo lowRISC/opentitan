@@ -9,15 +9,17 @@
   // memory to walk.
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
 
   testpoints: [
     {
       name: smoke
       desc: '''
-            Bring the subsystem out of reset in ePMP mode and check that it stays quiescent: no
-            transaction is generated on either host port, `fatal_fault` stays low, and the CSR
-            interface responds to a register access.
+            Bring the subsystem out of reset in ePMP mode with the CSR interface connected. The
+            checks that no host port (`cored_tl_h`, `tbre_tl_h`, `meta_sram_tl`) transacts and that
+            `fatal_fault` stays low are not implemented yet: the testbench leaves those ports
+            unconnected.
             '''
       stage: V1
       tests: ["cheriot_smoke"]

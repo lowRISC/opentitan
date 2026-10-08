@@ -180,7 +180,7 @@
  * address between #TOP_GPIO_BASE_ADDR and
  * `TOP_GPIO_BASE_ADDR + TOP_GPIO_SIZE_BYTES`.
  */
-#define TOP_GPIO_SIZE_BYTES 0x80
+#define TOP_GPIO_SIZE_BYTES 0x400
 /**
  * Peripheral base address for spi_device in top earlgrey.
  *
@@ -282,7 +282,7 @@
  * address between #TOP_OTP_CTRL_CORE_BASE_ADDR and
  * `TOP_OTP_CTRL_CORE_BASE_ADDR + TOP_OTP_CTRL_CORE_SIZE_BYTES`.
  */
-#define TOP_OTP_CTRL_CORE_SIZE_BYTES 0x1000
+#define TOP_OTP_CTRL_CORE_SIZE_BYTES 0x2000
 /**
  * Peripheral base address for regs device on lc_ctrl in top earlgrey.
  *
@@ -860,7 +860,7 @@
  * address between #TOP_CHERIOT_REGS_BASE_ADDR and
  * `TOP_CHERIOT_REGS_BASE_ADDR + TOP_CHERIOT_REGS_SIZE_BYTES`.
  */
-#define TOP_CHERIOT_REGS_SIZE_BYTES 0x4
+#define TOP_CHERIOT_REGS_SIZE_BYTES 0x40
 /**
  * Peripheral base address for regs device on sram_ctrl_meta in top earlgrey.
  *

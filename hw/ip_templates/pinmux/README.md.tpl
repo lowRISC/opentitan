@@ -1,4 +1,8 @@
 # Pinmux Technical Specification
+% if topname == "earlgrey":
+
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/ip/pinmux/index.html).
+% endif
 
 
 # Overview
@@ -10,7 +14,7 @@ The module provides a mechanism to reconfigure the peripheral-to-pin mapping at 
 In addition to that, the `pinmux` also allows the user to control pad attributes (such as pull-up, pull-down, open-drain, drive-strength, keeper and inversion), and it contains features that facilitate low-power modes of the system.
 For example, the sleep behavior of each pad can be programmed individually, and the module contains additional pattern detectors that can listen on any IO and wake up the system if a specific pattern has been detected.
 
-## Features
+${"##"} Features
 
 - Configurable number of chip bidirectional IOs
 

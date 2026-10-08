@@ -16,4 +16,9 @@ class kmac_entropy_ready_error_vseq extends kmac_app_vseq;
     entropy_ready == 0;
   }
 
+  virtual task pre_start();
+    `DV_CHECK_FATAL(cfg.enable_full_kmac, "This sequence requires EnFullKmac == 1")
+    super.pre_start();
+  endtask
+
 endclass

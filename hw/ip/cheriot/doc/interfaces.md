@@ -21,9 +21,8 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 - Primary Clock: **`clk_i`**
 - Other Clocks: *none*
 - Bus Device Interfaces (TL-UL): **`regs_tl_d`**, **`revbm_tl_d`**
-- Bus Host Interfaces (TL-UL): **`cored_tl_h`**
+- Bus Host Interfaces (TL-UL): **`cored_tl_h`**, **`tbre_tl_h`**
 - Peripheral Pins for Chip IO: *none*
-- Interrupts: *none*
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
@@ -36,24 +35,30 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | corerevbm_tl  | tlul_pkg::tl         | req_rsp | rsp   |       1 | TRVK (tag revocation) revocation bitmap port from the core.           |
 | meta_sram_tl  | tlul_pkg::tl         | req_rsp | req   |       1 | Host TL-UL port to the external meta SRAM controller's RAM interface. |
 | cored_tl_h    | tlul_pkg::tl         | req_rsp | req   |       1 |                                                                       |
+| tbre_tl_h     | tlul_pkg::tl         | req_rsp | req   |       1 |                                                                       |
 | regs_tl_d     | tlul_pkg::tl         | req_rsp | rsp   |       1 |                                                                       |
 | revbm_tl_d    | tlul_pkg::tl         | req_rsp | rsp   |       1 |                                                                       |
 
+## Interrupts
+
+| Interrupt Name   | Type   | Description                                                                 |
+|:-----------------|:-------|:----------------------------------------------------------------------------|
+| tbre_done        | Event  | Raised when the revocation engine has resolved every capability of a sweep. |
+
 ## Security Alerts
 
-| Alert Name   | Description                                                                                                                                                                           |
-|:-------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| fatal_fault  | This fatal alert is triggered when an integrity fault is detected, when the meta SRAM path returns a device error, or when the tag filter's transaction FIFO reports a pointer error. |
+| Alert Name   | Description                                                                                                                                                                                                                                                                  |
+|:-------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| fatal_fault  | This fatal alert is triggered when an integrity fault is detected, when the meta SRAM path returns a device error, when the revocation engine reports a fault, when a capability store to the NVM is partial, or when a request breaks the core's capability store sequence. |
 
 ## Security Countermeasures
 
-| Countermeasure ID       | Description                                                                                                                     |
-|:------------------------|:--------------------------------------------------------------------------------------------------------------------------------|
-| CHERIOT.BUS.INTEGRITY   | End-to-end bus integrity between the Ibex lockstep and the storage cells. Relies on LOGIC.SHADOW, which is not implemented yet. |
-| CHERIOT.LOGIC.SHADOW    | The CHERIoT subsystem is instantiated in lockstep. Not implemented yet.                                                         |
-| CHERIOT.MEM.SW_NOACCESS | The capability tag store is not memory mapped.                                                                                  |
-| CHERIOT.INTERSIG.MUBI   | The CHERIoT mode enable is multi-bit encoded.                                                                                   |
-| CHERIOT.CTR.REDUN       | The tag filter's outstanding-transaction FIFO uses redundantly encoded read and write pointers.                                 |
+| Countermeasure ID       | Description                                                                                                                                                                              |
+|:------------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| CHERIOT.BUS.INTEGRITY   | End-to-end bus integrity between the Ibex lockstep and the storage cells. Relies on LOGIC.SHADOW, which is not implemented yet.                                                          |
+| CHERIOT.LOGIC.SHADOW    | The CHERIoT subsystem is instantiated in lockstep. Not implemented yet. This also covers the pointers of the subsystem's FIFOs, which therefore are not redundantly encoded (CTR.REDUN). |
+| CHERIOT.MEM.SW_NOACCESS | The capability tag store is not memory mapped.                                                                                                                                           |
+| CHERIOT.INTERSIG.MUBI   | The CHERIoT mode enable is multi-bit encoded.                                                                                                                                            |
 
 
 <!-- END CMDGEN -->

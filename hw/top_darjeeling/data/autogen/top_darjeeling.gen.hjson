@@ -5263,6 +5263,19 @@
           name_top: KmacEnMasking
         }
         {
+          name: EnFullKmac
+          desc:
+            '''
+            Disable(0) or enable(1) the full KMAC functionality.
+            If disabled, the module is stripped down to only support SHA3, SHAKE and cSHAKE.
+            '''
+          type: bit
+          default: "1"
+          local: "false"
+          expose: "true"
+          name_top: KmacEnFullKmac
+        }
+        {
           name: SwKeyMasked
           desc:
             '''
@@ -6437,28 +6450,6 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: entropy_src
-          index: -1
-        }
-        {
-          name: otp_en_entropy_src_fw_read
-          struct: mubi8
-          package: prim_mubi_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: prim_mubi_pkg::MuBi8True
-          inst_name: entropy_src
-          index: -1
-        }
-        {
-          name: otp_en_entropy_src_fw_over
-          struct: mubi8
-          package: prim_mubi_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: prim_mubi_pkg::MuBi8True
           inst_name: entropy_src
           index: -1
         }
@@ -26264,28 +26255,6 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: entropy_src
-        index: -1
-      }
-      {
-        name: otp_en_entropy_src_fw_read
-        struct: mubi8
-        package: prim_mubi_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: prim_mubi_pkg::MuBi8True
-        inst_name: entropy_src
-        index: -1
-      }
-      {
-        name: otp_en_entropy_src_fw_over
-        struct: mubi8
-        package: prim_mubi_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: prim_mubi_pkg::MuBi8True
         inst_name: entropy_src
         index: -1
       }

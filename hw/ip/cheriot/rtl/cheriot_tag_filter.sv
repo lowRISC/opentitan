@@ -16,7 +16,13 @@ module cheriot_tag_filter #(
   parameter addr_t NvmTopAddr                = 'h3020_0000,
   // Base addresses of the corresponding tag regions in the meta SRAM
   parameter addr_t MetaMainSramTagBase       = 'h1100_8C00,
-  parameter addr_t MetaNvmTagBase            = 'h1100_0C00
+  parameter addr_t MetaNvmTagBase            = 'h1100_0C00,
+  // Writes only update the capability tag and are never forwarded to the host port; the filter
+  // answers them itself. A write that does not update a tag is answered with an error.
+  parameter bit    TagOnlyWrites             = 1'b0,
+  // A capability store to the NVM is verified against the NVM contents instead of written, and sets
+  // the tag if they match (cheriot_wtrc).
+  parameter bit    NvmCapStores              = 1'b0
 )(
   input clk_i,
   input rst_ni,
@@ -41,7 +47,8 @@ module cheriot_tag_filter #(
   output tlul_pkg::tl_h2d_t tl_h_o,
   input  tlul_pkg::tl_d2h_t tl_h_i,
 
-  output logic fifo_err_o
+  // A capability store to the NVM did something the core cannot do
+  output logic              wtrc_err_o
 );
 
   ///////////
@@ -50,11 +57,23 @@ module cheriot_tag_filter #(
 
   // The meta data type handed between the host's request and response channel
   typedef struct packed {
+    logic read;
     logic lookup;
     logic aligned;
   } req_rsp_meta_t;
 
   localparam int unsigned MetaWidth = $bits(req_rsp_meta_t);
+
+  // The fields of a request the filter answers itself, kept in the meta FIFO next to the meta data
+  // with tag-only writes only
+  typedef struct packed {
+    logic                       host;
+    logic [top_pkg::TL_AIW-1:0] source;
+    logic [top_pkg::TL_SZW-1:0] size;
+  } local_meta_t;
+
+  localparam int unsigned LocalWidth = TagOnlyWrites ? $bits(local_meta_t) : 32'd0;
+  localparam int unsigned FifoWidth  = MetaWidth + LocalWidth;
 
   localparam int unsigned AddrWidth = $bits(addr_t);
 
@@ -73,7 +92,19 @@ module cheriot_tag_filter #(
   // Request handshaking signals
   logic tl_d_req_ready;
   logic tl_m_req_valid;
+  logic tl_m_req_ready;
   logic tl_h_req_valid;
+
+  // Host port of the filter, in front of the NVM capability stores
+  tlul_pkg::tl_h2d_t host_req;
+  tlul_pkg::tl_d2h_t host_rsp;
+
+  // The request is a capability store to the NVM
+  logic              cap_store;
+  // Tag write of a verified capability store, and whether the oldest request waits for it
+  tlul_pkg::tl_h2d_t cap_tag_req;
+  logic [4:0]        cap_tag_bit_sel;
+  logic              cap_tag_wr;
 
   // Input port of the meta FIFO
   logic          meta_req_valid;
@@ -84,6 +115,19 @@ module cheriot_tag_filter #(
   logic          meta_rsp_valid;
   logic          meta_rsp_ready;
   req_rsp_meta_t meta_rsp;
+
+  // Meta FIFO contents, including the fields of requests the filter answers itself
+  logic [FifoWidth-1:0] meta_fifo_wdata;
+  logic [FifoWidth-1:0] meta_fifo_rdata;
+  local_meta_t          local_req;
+  local_meta_t          local_rsp_meta;
+
+  // Whether a request goes to the host port, and whether its response comes from there
+  logic host_fork;
+  logic host_join;
+
+  // Response the filter gives itself
+  tlul_pkg::tl_d2h_t local_rsp_intg;
 
   // Whether we need to lookup or fork into the meta memory
   logic require_lookup;
@@ -98,6 +142,18 @@ module cheriot_tag_filter #(
   // Unused meta response signals
   logic unused_m_rsp;
 
+  // The meta port's response handshake is the filter's, not the tag write's
+  logic unused_cap_tag_req;
+
+  // Meta responses, always accepted into a buffer until joined
+  logic meta_buf_wready;
+  logic meta_buf_valid;
+  logic meta_buf_tag;
+  logic meta_buf_err;
+
+  // A failed lookup turns the host response into an error
+  logic host_rsp_meta_err;
+
   // Tag bit store. We only do the lookup on the lower word of a capability to save
   // bandwidth into the meta memory. For the directly following meta word, we store
   // the capability
@@ -111,6 +167,8 @@ module cheriot_tag_filter #(
   meta_addr_t addr_stem;
   addr_t      meta_addr;
   logic       addr_tagged;
+  // Whether the access goes to the NVM
+  logic       addr_nvm;
 
   // Unused address signals
   logic unused_addr;
@@ -135,6 +193,7 @@ module cheriot_tag_filter #(
     addr_stem   = '0;
     meta_addr   = '0;
     addr_tagged = 1'b0;
+    addr_nvm    = 1'b0;
 
     if(tl_d_i.a_address >= MainSramBaseAddr && tl_d_i.a_address < MainSramTopAddr) begin
       addr_stem   = tl_d_i.a_address - MainSramBaseAddr;
@@ -144,21 +203,26 @@ module cheriot_tag_filter #(
       addr_stem   = tl_d_i.a_address - NvmBaseAddr;
       meta_addr   = MetaNvmTagBase + (addr_t'(addr_stem.meta_word) << 32'd2);
       addr_tagged = 1'b1;
+      addr_nvm    = 1'b1;
     end
   end
 
-  assign bit_sel_m_o = addr_stem.bit_sel;
+  assign bit_sel_m_o = cap_tag_req.a_valid ? cap_tag_bit_sel : addr_stem.bit_sel;
   assign unused_addr = ^addr_stem.rsvd;
 
   // We need to perform a lookup on 64-bit-aligned reads where the host hints
   // us a valid capability load or on any write. A lookup is only required if CHERIoT is enabled.
   assign require_lookup = prim_mubi_pkg::mubi4_test_true_strict(cheriot_ena_i) ?
                           addr_tagged       &&                                   // CHERIoT dev,
+                          !cap_store        &&                                   // no NVM cap,
                           ((tl_d_is_read    &&                                   // and: Read,
                             tl_d_is_aligned &&                                   // 64-bit-aligned,
                             tag_d_i)        ||                                   // hinted cap
                             tl_d_is_write)                                     : // or write
                           1'b0;
+
+  // With tag-only writes, a write is not forwarded to the host port
+  assign host_fork = !(TagOnlyWrites && tl_d_is_write);
 
   // We only fork the meta channel if a lookup is required
   stream_fork_dynamic #(
@@ -168,11 +232,11 @@ module cheriot_tag_filter #(
     .rst_ni,
     .valid_i    ( tl_d_i.a_valid                                   ),
     .ready_o    ( tl_d_req_ready                                   ),
-    .sel_i      ( {1'b1, require_lookup, 1'b1}                     ),
+    .sel_i      ( {1'b1, require_lookup, host_fork}                ),
     .sel_valid_i( tl_d_i.a_valid                                   ),
     .sel_ready_o( /* NOT CONNECTED */                              ),
     .valid_o    ( {meta_req_valid, tl_m_req_valid, tl_h_req_valid} ),
-    .ready_i    ( {meta_req_ready, tl_m_i.a_ready, tl_h_i.a_ready} )
+    .ready_i    ( {meta_req_ready, tl_m_req_ready, host_rsp.a_ready} )
   );
 
 
@@ -182,30 +246,39 @@ module cheriot_tag_filter #(
 
   // Assemble meta data between host's request and response channel.
   assign meta_req = '{
+    read:    tl_d_is_read,
     lookup:  require_lookup,
     aligned: tl_d_is_aligned
   };
 
-  // SEC_CM: CTR.REDUN
+  assign local_req = '{
+    host:   host_fork,
+    source: tl_d_i.a_source,
+    size:   tl_d_i.a_size
+  };
+
+  // The local fields only occupy FIFO bits with tag-only writes
+  assign meta_fifo_wdata = FifoWidth'({local_req, meta_req});
+  assign meta_rsp        = req_rsp_meta_t'(meta_fifo_rdata[MetaWidth-1:0]);
+
   prim_fifo_sync #(
-    .Width(MetaWidth),
+    .Width(FifoWidth),
     .Pass(1'b0),
     .Depth(NumOutstanding),
-    .NeverClears(1'b1),
-    .Secure(1'b1)
+    .NeverClears(1'b1)
   ) u_prim_fifo_sync_align (
     .clk_i,
     .rst_ni,
     .clr_i   ( 1'b0           ),
     .wvalid_i( meta_req_valid ),
     .wready_o( meta_req_ready ),
-    .wdata_i ( meta_req       ),
+    .wdata_i ( meta_fifo_wdata),
     .rvalid_o( meta_rsp_valid ),
     .rready_i( meta_rsp_ready ),
-    .rdata_o ( meta_rsp       ),
+    .rdata_o ( meta_fifo_rdata),
     .full_o  (                ),
     .depth_o (                ),
-    .err_o   ( fifo_err_o     )
+    .err_o   (                )
   );
 
 
@@ -213,15 +286,37 @@ module cheriot_tag_filter #(
   // Join //
   //////////
 
+  // Unjoined lookups are bounded by the meta FIFO's entries plus the one lookup the fork can issue
+  // while that FIFO is full, so a buffer one entry deeper never refuses a response.
+  prim_fifo_sync #(
+    .Width(2),
+    .Pass(1'b1),
+    .Depth(NumOutstanding + 32'd1)
+  ) u_prim_fifo_sync_meta_rsp (
+    .clk_i,
+    .rst_ni,
+    .clr_i   ( 1'b0                        ),
+    .wvalid_i( tl_m_i.d_valid              ),
+    .wready_o( meta_buf_wready             ),
+    .wdata_i ( {tag_m_i, tl_m_i.d_error}   ),
+    .rvalid_o( meta_buf_valid              ),
+    .rready_i( tl_m_rsp_ready              ),
+    .rdata_o ( {meta_buf_tag, meta_buf_err}),
+    .full_o  (                             ),
+    .depth_o (                             ),
+    .err_o   (                             )
+  );
+
   // We join in exactly the transactions we forked.
-  assign require_join = meta_rsp.lookup;
+  assign require_join = meta_rsp.lookup || cap_tag_wr;
+  assign host_join    = local_rsp_meta.host;
 
   stream_join_dynamic #(
     .N_INP(32'd3)
   ) u_stream_join_dynamic (
-    .inp_valid_i( {meta_rsp_valid, tl_m_i.d_valid, tl_h_i.d_valid} ),
+    .inp_valid_i( {meta_rsp_valid, meta_buf_valid, host_rsp.d_valid} ),
     .inp_ready_o( {meta_rsp_ready, tl_m_rsp_ready, tl_h_rsp_ready} ),
-    .sel_i      ( {1'b1, require_join, 1'b1} ),
+    .sel_i      ( {1'b1, require_join, host_join} ),
     .oup_valid_o( tl_d_rsp_valid ),
     .oup_ready_i( tl_d_i.d_ready )
   );
@@ -231,15 +326,17 @@ module cheriot_tag_filter #(
   // Stick Capability Tag //
   //////////////////////////
 
-  assign tag_m_o = tag_d_i;
+  assign tag_m_o = cap_tag_req.a_valid || tag_d_i;
 
+  // Only read responses carry a tag; a write answered between the two words of a capability leaves
+  // the stored tag alone.
   always_comb begin: proc_sticky_tag_d_o
     tag_d_d = tag_d_q;
-    tag_d_o = tag_d_q;
-    if(tl_d_o.d_valid && tl_d_i.d_ready) begin
-      if(meta_rsp.aligned) begin
-        tag_d_o = require_join && tag_m_i;
-        tag_d_d = require_join && tag_m_i;
+    tag_d_o = !meta_rsp.read  ? 1'b0 :
+              (meta_rsp.aligned ? (require_join && meta_buf_tag) : tag_d_q);
+    if (tl_d_o.d_valid && tl_d_i.d_ready && meta_rsp.read) begin
+      if (meta_rsp.aligned) begin
+        tag_d_d = require_join && meta_buf_tag;
       end else begin
         tag_d_d = 1'b0;
       end
@@ -261,25 +358,119 @@ module cheriot_tag_filter #(
 
   // We forward the host requests to both endpoints
   always_comb begin: proc_connect_tl_req
-    tl_h_o         = tl_d_i;
-    tl_h_o.a_valid = tl_h_req_valid;
-    tl_h_o.d_ready = tl_h_rsp_ready;
+    host_req         = tl_d_i;
+    host_req.a_valid = tl_h_req_valid;
+    host_req.d_ready = tl_h_rsp_ready;
 
     // We inject the meta address here
     tl_m_o                 = tl_d_i;
     tl_m_o.a_address       = meta_addr;
     tl_m_o.a_user.cmd_intg = tlul_pkg::get_cmd_intg(tl_m_o);
     tl_m_o.a_valid         = tl_m_req_valid;
-    tl_m_o.d_ready         = tl_m_rsp_ready;
+    tl_m_o.d_ready         = meta_buf_wready;
+
+    // The tag write of a verified capability store goes first: it is older than any lookup.
+    if (cap_tag_req.a_valid) begin
+      tl_m_o         = cap_tag_req;
+      tl_m_o.d_ready = meta_buf_wready;
+    end
   end
+
+  assign tl_m_req_ready = tl_m_i.a_ready && !cap_tag_req.a_valid;
+
+  assign host_rsp_meta_err = require_join && meta_buf_err;
 
   // We disregard all of the meta SRAM response except for the tag bit and the error bit
   always_comb begin: proc_connect_tl_rsp
-    tl_d_o         = tl_h_i;
-    tl_d_o.d_error = tl_d_o.d_error || (require_join && tl_m_i.d_error);
+    tl_d_o = host_rsp;
+    // The response integrity is linear, so it is updated by the difference the new d_error makes: a
+    // correct integrity stays correct, a broken one stays broken.
+    if (host_rsp_meta_err) begin
+      tl_d_o.d_error         = 1'b1;
+      tl_d_o.d_user.rsp_intg = host_rsp.d_user.rsp_intg ^ tlul_pkg::get_rsp_intg(tl_d_o) ^
+                               tlul_pkg::get_rsp_intg(host_rsp);
+    end
+    if (!host_join) begin
+      tl_d_o = local_rsp_intg;
+    end
     tl_d_o.a_ready = tl_d_req_ready;
     tl_d_o.d_valid = tl_d_rsp_valid;
   end
+
+  // Tag-only writes are answered by the filter itself: the meta response only carries the error,
+  // and a write without a tag update is refused.
+  if (TagOnlyWrites) begin : gen_local_rsp
+    tlul_pkg::tl_d2h_t local_rsp;
+    logic              unused_local_rsp_intg;
+
+    assign local_rsp_meta = local_meta_t'(meta_fifo_rdata[FifoWidth-1:MetaWidth]);
+
+    always_comb begin : proc_local_rsp
+      local_rsp          = tlul_pkg::TL_D2H_DEFAULT;
+      local_rsp.d_opcode = tlul_pkg::AccessAck;
+      local_rsp.d_size   = local_rsp_meta.size;
+      local_rsp.d_source = local_rsp_meta.source;
+      local_rsp.d_error  = require_join ? meta_buf_err : 1'b1;
+    end
+
+    tlul_rsp_intg_gen #(
+      .EnableRspIntgGen (1'b1),
+      .EnableDataIntgGen(1'b1)
+    ) u_tlul_rsp_intg_gen_local (
+      .tl_i(local_rsp),
+      .tl_o(local_rsp_intg)
+    );
+
+    // The handshake comes from the join
+    assign unused_local_rsp_intg = ^{local_rsp_intg.a_ready, local_rsp_intg.d_valid};
+  end else begin : gen_no_local_rsp
+    logic unused_local_meta;
+    assign unused_local_meta = ^{local_req.source, local_req.size,
+                                 local_rsp_meta.source, local_rsp_meta.size};
+
+    assign local_rsp_meta = '{host: 1'b1, default: '0};
+    assign local_rsp_intg = tlul_pkg::TL_D2H_DEFAULT;
+  end
+
+  // Capability stores to the NVM sit on the host port. They are verified, so they need no lookup.
+  if (NvmCapStores) begin : gen_wtrc
+    assign cap_store = prim_mubi_pkg::mubi4_test_true_strict(cheriot_ena_i) &&
+                       addr_nvm && tl_d_is_write && tag_d_i;
+
+    cheriot_wtrc #(
+      .NumOutstanding(NumOutstanding),
+      .addr_t        (addr_t),
+      .NvmBaseAddr   (NvmBaseAddr),
+      .MetaNvmTagBase(MetaNvmTagBase)
+    ) u_cheriot_wtrc (
+      .clk_i,
+      .rst_ni,
+      .cap_store_i(cap_store),
+      .req_done_i (tl_d_i.a_valid && tl_d_req_ready),
+      .tl_d_i     (host_req),
+      .tl_d_o     (host_rsp),
+      .tl_h_i,
+      .tl_h_o,
+      .tl_m_o     (cap_tag_req),
+      .bit_sel_m_o(cap_tag_bit_sel),
+      .m_ready_i  (tl_m_i.a_ready),
+      .tag_wr_o   (cap_tag_wr),
+      .err_o      (wtrc_err_o)
+    );
+  end else begin : gen_no_wtrc
+    logic unused_addr_nvm;
+    assign unused_addr_nvm = addr_nvm;
+
+    assign cap_store       = 1'b0;
+    assign tl_h_o          = host_req;
+    assign host_rsp        = tl_h_i;
+    assign cap_tag_req     = tlul_pkg::TL_H2D_DEFAULT;
+    assign cap_tag_bit_sel = '0;
+    assign cap_tag_wr      = 1'b0;
+    assign wtrc_err_o   = 1'b0;
+  end
+
+  assign unused_cap_tag_req = cap_tag_req.d_ready;
 
   // The response and data integrity is not checked, as both the RMW and the tag filter are
   // lock-stepped.
@@ -298,5 +489,11 @@ module cheriot_tag_filter #(
 
   // Meta FIFO has to be valid when device port handshakes its response
   `ASSERT(MetaRspValidOnDHs_A, (tl_d_o.d_valid && tl_d_i.d_ready) |-> meta_rsp_valid)
+
+  // The meta path never waits on a join
+  `ASSERT(MetaRspAlwaysAccepted_A, tl_m_i.d_valid |-> meta_buf_wready)
+
+  // A filter that answers writes itself never forwards a capability store
+  `ASSERT_INIT(NvmCapStoresNeedHostWrites_A, !(TagOnlyWrites && NvmCapStores))
 
 endmodule

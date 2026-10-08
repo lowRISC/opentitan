@@ -15,6 +15,7 @@ package hmac_env_pkg;
   import test_vectors_pkg::*;
   import hmac_ral_pkg::*;
   import prim_sha2_pkg::*;
+  import key_sideload_agent_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -49,6 +50,10 @@ package hmac_env_pkg;
   // alerts
   parameter uint NUM_ALERTS = 1;
   parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"fatal_fault"};
+
+  // keymgr_dpe sideload agent, using the wide (512-bit) key interface
+  typedef key_sideload_agent#(keymgr_dpe_pkg::wide_hw_key_req_t) hmac_sideload_agent;
+  typedef key_sideload_agent_cfg#(keymgr_dpe_pkg::wide_hw_key_req_t) hmac_sideload_agent_cfg;
 
   // HMAC interrupt register indices
   typedef enum int {

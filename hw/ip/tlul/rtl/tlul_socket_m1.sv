@@ -4,6 +4,8 @@
 //
 // TL-UL socket M:1 module
 //
+// cheriot_socket_m1 is a copy of this module with a CHERIoT sideband; keep the two in sync.
+//
 // Verilog parameters
 //   M:             Number of host ports.
 //   HReqPass:      M bit array to allow requests to pass through the host i

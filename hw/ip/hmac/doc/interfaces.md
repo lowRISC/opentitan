@@ -35,6 +35,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | Countermeasure ID   | Description                      |
 |:--------------------|:---------------------------------|
 | HMAC.BUS.INTEGRITY  | End-to-end bus integrity scheme. |
+| HMAC.KEY.SIDELOAD   | Key from KeyMgr is sideloaded.   |
 
 
 <!-- END CMDGEN -->

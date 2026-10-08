@@ -29,6 +29,12 @@ static_assert(kKeymgrDPEOutputShareNumWords ==
 static_assert(kKeymgrDPEOutputShareNumWords ==
                   KEYMGR_DPE_SW_SHARE1_OUTPUT_MULTIREG_COUNT,
               "Number of output share 1 registers does not match.");
+static_assert(KEYMGR_DPE_METADATA_LOW_MULTIREG_COUNT ==
+                  KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT,
+              "Number of metadata low registers does not match.");
+static_assert(KEYMGR_DPE_METADATA_HIGH_MULTIREG_COUNT ==
+                  KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT,
+              "Number of metadata high registers does not match.");
 
 /**
  * Fails if the keymgr dpe is not idle.
@@ -333,4 +339,43 @@ status_t keymgr_dpe_sideload_clear_otbn(void) {
 
 status_t keymgr_dpe_sideload_clear_hmac(void) {
   return keymgr_dpe_sideload_clear(KEYMGR_DPE_SIDELOAD_CLEAR_VAL_VALUE_HMAC);
+}
+
+status_t keymgr_dpe_get_metadata(uint32_t slot,
+                                 keymgr_dpe_metadata_t *metadata) {
+  if (launder32(slot) >= KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_LT(slot, KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT);
+
+  const uint32_t kBase = keymgr_dpe_base();
+  metadata->max_key_version = abs_mmio_read32(
+      kBase + KEYMGR_DPE_METADATA_LOW_0_REG_OFFSET + slot * sizeof(uint32_t));
+
+  uint32_t reg_high = abs_mmio_read32(
+      kBase + KEYMGR_DPE_METADATA_HIGH_0_REG_OFFSET + slot * sizeof(uint32_t));
+  metadata->valid =
+      bitfield_bit32_read(reg_high, KEYMGR_DPE_METADATA_HIGH_0_VALID_0_BIT)
+          ? kHardenedBoolTrue
+          : kHardenedBoolFalse;
+  metadata->boot_stage = (keymgr_dpe_boot_stage_t)bitfield_field32_read(
+      reg_high, KEYMGR_DPE_METADATA_HIGH_0_BOOT_STAGE_0_FIELD);
+
+  metadata->slot_policy.allow_child =
+      bitfield_bit32_read(reg_high,
+                          KEYMGR_DPE_METADATA_HIGH_0_ALLOW_CHILD_POLICY_0_BIT)
+          ? kHardenedBoolTrue
+          : kHardenedBoolFalse;
+  metadata->slot_policy.exportable =
+      bitfield_bit32_read(reg_high,
+                          KEYMGR_DPE_METADATA_HIGH_0_EXPORTABLE_POLICY_0_BIT)
+          ? kHardenedBoolTrue
+          : kHardenedBoolFalse;
+  metadata->slot_policy.retain_parent =
+      bitfield_bit32_read(reg_high,
+                          KEYMGR_DPE_METADATA_HIGH_0_RETAIN_PARENT_POLICY_0_BIT)
+          ? kHardenedBoolTrue
+          : kHardenedBoolFalse;
+
+  return OTCRYPTO_OK;
 }
