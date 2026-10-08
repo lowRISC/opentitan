@@ -7,6 +7,5 @@
 
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
-CONNECTION, OTP_EXT_VOLT,     , OTP_EXT_VOLT,     top_earlgrey.earlgrey_pd_main.u_otp_macro                  , ext_voltage_h_io,
 CONNECTION, AST_CC1,          , CC1,              u_ast,                                      adc_a0_ai,
 CONNECTION, AST_CC2,          , CC2,              u_ast,                                      adc_a1_ai,
