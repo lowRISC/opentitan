@@ -20,8 +20,6 @@ cio_info = {}
 bkdr_loader_targets = ["cw340"]
 gen_bkdr_loader = target["name"] in bkdr_loader_targets
 
-ast = lib.get_module_by_name(top, "ast")
-
 def get_dio_sig(pinmux: {}, pad: {}):
   '''Get DIO signal associated with this pad or return None'''
   for sig in pinmux["ios"]:
@@ -260,6 +258,25 @@ module chip_${top["name"]}_${target["name"]} #(
 % endfor
 % endif
 
+  // Power state from AST to USB
+  ast_pkg::ast_pwst_t ast_pwst_h;
+
+  // AST ADC analog inputs and direct analog pad-short outputs.
+  ast_pkg::awire_t ast_adc_a0_a, ast_adc_a1_a;
+  ast_pkg::awire_t ast2pad_t0_a, ast2pad_t1_a;
+% if target["name"] == "asic":
+  assign ast_adc_a0_a = CC1;
+  assign ast_adc_a1_a = CC2;
+  assign IOA2 = ast2pad_t0_a;
+  assign IOA3 = ast2pad_t1_a;
+% else:
+  // Tie-off ADC inputs. Leave the direct pad-short outputs unused.
+  assign ast_adc_a0_a = '0;
+  assign ast_adc_a1_a = '0;
+  logic unused_ast_analog;
+  assign unused_ast_analog = ^{ast2pad_t0_a, ast2pad_t1_a};
+% endif
+
 % if target["pinout"]["remove_pads"]:
   /////////////////////////
   // Stubbed pad tie-off //
@@ -296,7 +313,7 @@ module chip_${top["name"]}_${target["name"]} #(
   //////////////////////
 
   // AST signals needed in padring - must be decleared here
-  ast_pkg::ast_clks_t    ast_base_clks;
+  logic padring_scan_clk;
   prim_mubi_pkg::mubi4_t scanmode;
 
 % if target["name"] == "verilator":
@@ -387,7 +404,7 @@ module chip_${top["name"]}_${target["name"]} #(
     })
   ) u_padring (
     // This is only used for scan and DFT purposes
-    .clk_scan_i(ast_base_clks.clk_sys),
+    .clk_scan_i(padring_scan_clk),
     .scanmode_i(scanmode),
 
     .mux_iob_sel_i(mux_iob_sel),
@@ -537,175 +554,40 @@ module chip_${top["name"]}_${target["name"]} #(
   };
 % endif
 
-###################################################################
-## AST For all targets                                           ##
-###################################################################
-  //////////////////////////////////
-  // AST - Common for all targets //
-  //////////////////////////////////
 
-  // pwrmgr interface
-  pwrmgr_pkg::pwr_ast_req_t pwrmgr_ast_req;
-  pwrmgr_pkg::pwr_ast_rsp_t pwrmgr_ast_rsp;
+  ////////////////////////
+  // AST related wiring //
+  ////////////////////////
 
-  // assorted ast status
-  ast_pkg::ast_pwst_t    ast_pwst;
-  prim_mubi_pkg::mubi4_t ast_init_done;
+  logic clk_ast_ext;
+  prim_mubi_pkg::mubi4_t cg_en_ast_ext;
+  // This clock gate is never used inside the top. It is a topgen artifact of an external clock.
+  assign cg_en_ast_ext = prim_mubi_pkg::MuBi4False;
 
-  // TLUL interface
-  tlul_pkg::tl_h2d_t ast_tl_req;
-  tlul_pkg::tl_d2h_t ast_tl_rsp;
-
-  // Generated clocks and resets
-  clkmgr_pkg::clkmgr_out_t clkmgr_clocks;
-  rstmgr_pkg::rstmgr_out_t rstmgr_resets;
-
-  // external clock
-  logic ext_clk;
-
-  // monitored clock
-  logic sck_monitor;
-
-  // POR signal for top
-  logic [rstmgr_pkg::PowerDomains-1:0] por_n;
-
-  // observe interface
-  logic [7:0] flash_obs;
-  ast_pkg::ast_obs_ctrl_t obs_ctrl;
-
-  logic usb_ref_pulse;
-  logic usb_ref_val;
-
-  // adc
-  ast_pkg::adc_ast_req_t adc_req;
-  ast_pkg::adc_ast_rsp_t adc_rsp;
-
-  // entropy source interface
-  logic es_rng_enable, es_rng_valid;
-  logic [ast_pkg::EntropyStreams-1:0] es_rng_bit;
-  logic es_rng_fips;
-
-  // entropy distribution network
-  edn_pkg::edn_req_t ast_edn_req;
-  edn_pkg::edn_rsp_t ast_edn_rsp;
-
-  // alerts interface
-  ast_pkg::ast_alert_rsp_t ast_alert_rsp;
-  ast_pkg::ast_alert_req_t ast_alert_req;
-
-  // Flash connections (only for englishbreakfast).
-  prim_mubi_pkg::mubi4_t flash_bist_enable;
-  logic flash_power_down_h;
-  logic flash_power_ready_h;
-% if top["name"] == "earlgrey":
-  assign flash_obs = '0;
-% endif
-
-  // clock bypass req/ack
-  prim_mubi_pkg::mubi4_t io_clk_byp_req;
-  prim_mubi_pkg::mubi4_t io_clk_byp_ack;
-  prim_mubi_pkg::mubi4_t all_clk_byp_req;
-  prim_mubi_pkg::mubi4_t all_clk_byp_ack;
-  prim_mubi_pkg::mubi4_t hi_speed_sel;
-  prim_mubi_pkg::mubi4_t div_step_down_req;
-
-  // DFT connections
-  logic scan_en;
-  logic scan_rst_n;
-  lc_ctrl_pkg::lc_tx_t lc_dft_en;
-  pinmux_pkg::dft_strap_test_req_t dft_strap_test;
+  ast_pkg::clks_osc_byp_t clks_osc_byp;
 
   // Debug connections
-  logic [ast_pkg::Ast2PadOutWidth-1:0] ast2pinmux;
-  logic [ast_pkg::Pad2AstInWidth-1:0] pad2ast;
+  logic [ast_pkg::Pad2AstInWidth-1:0] padmux2ast;
 
-  // Jitter enable for main clock
-  prim_mubi_pkg::mubi4_t clk_main_jitter_en;
-
-## englishbreakfast does not use the AST SRAM configuration; its memory cfg is
-## tied off directly at the u_ast instance below
-% if top["name"] != "englishbreakfast":
-<%
-  # cfg type kind -> (req struct type, rsp struct type)
-  mem_cfg_types = {
-    '1p':   ('prim_ram_1p_pkg::ram_1p_cfg_req_t',     'prim_ram_1p_pkg::ram_1p_cfg_rsp_t'),
-    '1r1w': ('prim_ram_1r1w_pkg::ram_1r1w_cfg_req_t', 'prim_ram_1r1w_pkg::ram_1r1w_cfg_rsp_t'),
-    'rom':  ('prim_rom_pkg::rom_cfg_req_t',           'prim_rom_pkg::rom_cfg_rsp_t'),
-  }
-  # (struct field, flat inter-signal base name, cfg type kind, array width expr or None)
-  # for every memory-cfg consumer.
-  mem_cfg_consumers = [
-    ('otbn_imem',                'otbn_imem_ram_cfg',                '1p',   None),
-    ('otbn_dmem',                'otbn_dmem_ram_cfg',                '1p',   None),
-    ('i2c0',                     'i2c0_ram_cfg',                     '1p',   None),
-    ('i2c1',                     'i2c1_ram_cfg',                     '1p',   None),
-    ('i2c2',                     'i2c2_ram_cfg',                     '1p',   None),
-    ('usbdev_ram',               'usbdev_ram_cfg',                   '1p',   None),
-    ('rv_core_ibex_icache_tag',  'rv_core_ibex_icache_tag_ram_cfg',  '1p',   'ibex_pkg::IC_NUM_WAYS'),
-    ('rv_core_ibex_icache_data', 'rv_core_ibex_icache_data_ram_cfg', '1p',   'ibex_pkg::IC_NUM_WAYS'),
-    ('sram_ctrl_main',           'sram_ctrl_main_ram_cfg',           '1p',   'ast_pkg::SramCtrlMainNumRamInst'),
-    ('sram_ctrl_sec',            'sram_ctrl_sec_ram_cfg',            '1p',   'ast_pkg::SramCtrlSecNumRamInst'),
-    ('sram_ctrl_ret',            'sram_ctrl_ret_ram_cfg',            '1p',   'ast_pkg::SramCtrlRetNumRamInst'),
-    ('sram_ctrl_meta',           'sram_ctrl_meta_ram_cfg',           '1p',   'ast_pkg::SramCtrlMetaNumRamInst'),
-    ('spi_device_sys2spi',       'spi_device_sys2spi_ram_cfg',       '1r1w', None),
-    ('spi_device_spi2sys',       'spi_device_spi2sys_ram_cfg',       '1r1w', None),
-    ('rom_ctrl_rom',             'rom_ctrl_rom_cfg',                 'rom',  None),
-  ]
-  # Width of the widest left-hand side, so the '=' align across both directions.
-  mem_cfg_lhs_pad = max(max(len(w) + len('_req') for f, w, k, a in mem_cfg_consumers),
-                        max(len('chip_mem_cfg_rsp.') + len(f) for f, w, k, a in mem_cfg_consumers))
-%>\
-  // Memory configuration connections
-% for field, wire, kind, width in mem_cfg_consumers:
-<% req_type, rsp_type = mem_cfg_types[kind] %>\
-% if width is None:
-  ${req_type} ${wire}_req;
-  ${rsp_type} ${wire}_rsp;
-% else:
-  ${req_type} [${width}-1:0]
-      ${wire}_req;
-  ${rsp_type} [${width}-1:0]
-      ${wire}_rsp;
-% endif
-% endfor
-
-  ast_pkg::ast_mem_cfg_req_t chip_mem_cfg_req;
-  ast_pkg::ast_mem_cfg_rsp_t chip_mem_cfg_rsp;
-% for field, wire, kind, width in mem_cfg_consumers:
-  assign ${(wire + '_req').ljust(mem_cfg_lhs_pad)} = chip_mem_cfg_req.${field};
-  assign ${('chip_mem_cfg_rsp.' + field).ljust(mem_cfg_lhs_pad)} = ${wire}_rsp;
-% endfor
-% endif
-
-  assign pwrmgr_ast_rsp.main_pok = ast_pwst.main_pok;
-  assign por_n = {ast_pwst.main_pok, ast_pwst.aon_pok};
-
-  //////////////////////////////////
-  // AST - Custom for targets     //
-  //////////////////////////////////
-
+##########
+## ASIC ##
+##########
 % if target["name"] == "asic":
-
-  ast_pkg::ast_pwst_t                ast_pwst_h;
-  logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
-  logic                              usb_diff_rx_obs;
-
   // external clock comes in at a fixed position
-  assign ext_clk = mio_in_raw[MioPadIoc6];
+  assign clk_ast_ext = mio_in_raw[MioPadIoc6];
+
+  // Bypass clocks are irrelevant for asic
+  assign clks_osc_byp = '0;
 
   // Raw pad signals required by the ast
-  assign pad2ast = `PAD2AST_WIRES ;
+  assign padmux2ast = `PAD2AST_WIRES ;
 
-  // AST does not use all clocks / resets forwarded to it
-  logic unused_slow_clk_en;
-  assign unused_slow_clk_en = pwrmgr_ast_req.slow_clk_en;
-
-  logic unused_pwr_clamp;
-  assign unused_pwr_clamp = pwrmgr_ast_req.pwr_clamp;
-
+###############
+## Verilator ##
+###############
 % elif target["name"] == "verilator":
-  assign ext_clk = '0;
-  assign pad2ast = '0;
+  assign clk_ast_ext = '0;
+  assign padmux2ast = '0; // TODO: check how to handle this.
 
   // AON clock divider. Reset is not used because Verilator uses only sync
   // resets (and does not model 'x'); if the divider below were reset, clk_aon
@@ -728,7 +610,6 @@ module chip_${top["name"]}_${target["name"]} #(
   logic rst_n;
   assign rst_n = rst_ni;
 
-  ast_pkg::clks_osc_byp_t clks_osc_byp;
   assign clks_osc_byp = '{
     usb: clk_i,
     sys: clk_i,
@@ -749,13 +630,9 @@ module chip_${top["name"]}_${target["name"]} #(
                     cnt < 4'h8 ? 1'b1 :
                     cnt < 4'hc ? 1'b0 : 1'b1;
 
-  // AST does not use all clocks / resets forwarded to it
-  logic unused_slow_clk_en;
-  assign unused_slow_clk_en = pwrmgr_ast_req.slow_clk_en;
-
-  logic unused_pwr_clamp;
-  assign unused_pwr_clamp = pwrmgr_ast_req.pwr_clamp;
-
+##########
+## FPGA ##
+##########
 % elif target["name"] in ["cw305", "cw310", "cw340"]:
 <%
   # The CW340 is based on an UltraScale FPGA, whereas the CW305 and CW310 use
@@ -774,13 +651,16 @@ module chip_${top["name"]}_${target["name"]} #(
   clkgen_rst_o = "bkdr_rst_n" if gen_bkdr_loader else "rst_n"
 %>\
   // TODO: Hook this up when FPGA pads are updated
-  assign ext_clk = '0;
-  assign pad2ast = '0;
+  assign clk_ast_ext = '0;
+  assign padmux2ast = '0;
 
-% if gen_bkdr_loader:
+  logic rst_n;
+
+  % if gen_bkdr_loader:
   logic bkdr_rst_n;
-% endif
-  logic clk_main, ${"clk_io, " if has_separate_io_clk else ""}clk_usb_48mhz, clk_aon${"" if gen_bkdr_loader else ", rst_n"};
+  % endif
+
+  logic clk_main, ${"clk_io, " if has_separate_io_clk else ""}clk_usb_48mhz, clk_aon;
   ${clkgen_module} # (
     .AddClkBuf(0)
   ) clkgen (
@@ -803,205 +683,71 @@ module chip_${top["name"]}_${target["name"]} #(
     .info_o(fpga_info)
   );
 
-  ast_pkg::clks_osc_byp_t clks_osc_byp;
   assign clks_osc_byp = '{
     usb: clk_usb_48mhz,
     sys: clk_main,
     io:  ${"clk_io" if has_separate_io_clk else "clk_main"},
     aon: clk_aon
   };
-
 % endif\
 
-% if top["name"] == "englishbreakfast":
 
-  // Englishbreakfast doesn't use many AST signals
-  assign adc_req           = '0;
-  assign es_rng_enable     = '0;
-  assign es_rng_fips       = '0;
-  assign ast_edn_rsp       = '0;
-  assign ast_alert_rsp     = '0;
-  assign lc_dft_en         = lc_ctrl_pkg::Off;
-
-  logic unused_ast;
-
-  assign unused_ast = ^{
-    ast_init_done,
-    adc_rsp,
-    es_rng_valid,
-    es_rng_bit,
-    ast_edn_req,
-    ast_alert_req,
-    ast2pinmux
-  };
-% endif
-
-  ast u_ast (
-% if target["name"] == "asic":
-    // external POR
-    .por_ni                ( manual_in_por_n ),
-
-    // USB IO Pull-up Calibration Setting
-    .usb_io_pu_cal_o       ( usb_io_pu_cal ),
-
-    // adc
-    .adc_a0_ai             ( CC1 ),
-    .adc_a1_ai             ( CC2 ),
-
-    // Direct short to PAD
-    .ast2pad_t0_ao         ( IOA2 ),
-    .ast2pad_t1_ao         ( IOA3 ),
-
-% else:
-    // external POR
-    .por_ni                ( rst_n ),
-
-    // USB IO Pull-up Calibration Setting
-    .usb_io_pu_cal_o       ( ),
-
-    // clocks' oscillator bypass for FPGA
-    .clk_osc_byp_i         ( clks_osc_byp ),
-
-    // adc
-    .adc_a0_ai             ( '0 ),
-    .adc_a1_ai             ( '0 ),
-
-    // Direct short to PAD
-    .ast2pad_t0_ao         (  ),
-    .ast2pad_t1_ao         (  ),
-
-% endif
-    // clocks and resets supplied for detection
-    .sns_clks_i            ( clkmgr_clocks ),
-    .sns_rsts_i            ( rstmgr_resets ),
-    .sns_spi_ext_clk_i     ( sck_monitor   ),
-    // tlul
-    .tl_i                  ( ast_tl_req ),
-    .tl_o                  ( ast_tl_rsp ),
-    // init done indication
-    .ast_init_done_o       ( ast_init_done ),
-    // buffered clocks & resets
-    % for port, clk in ast["clock_srcs"].items():
-    .${port} (${lib.get_clock_prefixes(top)["top"]}clk_${clk["clock"]}_${clk["group"]}),
-    % endfor
-    % for port, reset in ast["reset_connections"].items():
-    .${port} (${lib.get_reset_path(top, reset)}),
-    % endfor
-    .clk_ast_ext_i         ( ext_clk ),
-
-    // pok test for FPGA
+## Struct generation for internal AST
+  // Tie-off supply voltage test signals
+  ast_pkg::ast_vx_supp_t ast_vx_supp;
+  assign ast_vx_supp = '{
 % if target["name"] == "verilator":
-    .vcc_supp_i            ( vcc_supp ),
+    vcc:    vcc_supp,
 % else:
-    .vcc_supp_i            ( 1'b1 ),
+    vcc:    1'b1,
 % endif
-    .vcaon_supp_i          ( 1'b1 ),
-    .vcmain_supp_i         ( 1'b1 ),
-    .vioa_supp_i           ( 1'b1 ),
-    .viob_supp_i           ( 1'b1 ),
-    // pok
-    .ast_pwst_o            ( ast_pwst ),
-% if target["name"] == "asic":
-    .ast_pwst_h_o          ( ast_pwst_h ),
-% else:
-    .ast_pwst_h_o          (  ),
-% endif
-    // main regulator
-    .main_env_iso_en_i     ( pwrmgr_ast_req.pwr_clamp_env ),
-    .main_pd_ni            ( pwrmgr_ast_req.main_pd_n ),
-    // pdm control (flash)
-    .flash_power_down_h_o  ( flash_power_down_h  ),
-    .flash_power_ready_h_o ( flash_power_ready_h ),
-    .otp_power_seq_i       ( '0 ),
-    .otp_power_seq_h_o     (    ),
-    // system source clock
-    .clk_src_sys_en_i      ( pwrmgr_ast_req.core_clk_en ),
-    // need to add function in clkmgr
-    .clk_src_sys_jen_i     ( clk_main_jitter_en ),
-    .clk_src_sys_o         ( ast_base_clks.clk_sys  ),
-    .clk_src_sys_val_o     ( pwrmgr_ast_rsp.core_clk_val ),
-    // aon source clock
-    .clk_src_aon_o         ( ast_base_clks.clk_aon ),
-    .clk_src_aon_val_o     ( pwrmgr_ast_rsp.slow_clk_val ),
-    // io source clock
-    .clk_src_io_en_i       ( pwrmgr_ast_req.io_clk_en ),
-    .clk_src_io_o          ( ast_base_clks.clk_io ),
-    .clk_src_io_val_o      ( pwrmgr_ast_rsp.io_clk_val ),
-    .clk_src_io_48m_o      ( div_step_down_req ),
-    // usb source clock
-    .usb_ref_pulse_i       ( usb_ref_pulse ),
-    .usb_ref_val_i         ( usb_ref_val ),
-    .clk_src_usb_en_i      ( pwrmgr_ast_req.usb_clk_en ),
-    .clk_src_usb_o         ( ast_base_clks.clk_usb ),
-    .clk_src_usb_val_o     ( pwrmgr_ast_rsp.usb_clk_val ),
-    // adc
-    .adc_pd_i              ( adc_req.pd ),
-    .adc_chnsel_i          ( adc_req.channel_sel ),
-    .adc_d_o               ( adc_rsp.data ),
-    .adc_d_val_o           ( adc_rsp.data_valid ),
-    // rng
-    .rng_en_i              ( es_rng_enable ),
-    .rng_fips_i            ( es_rng_fips ),
-    .rng_val_o             ( es_rng_valid ),
-    .rng_b_o               ( es_rng_bit ),
-    // entropy
-    .entropy_rsp_i         ( ast_edn_rsp ),
-    .entropy_req_o         ( ast_edn_req ),
-    // alerts
-    .alert_rsp_i           ( ast_alert_rsp  ),
-    .alert_req_o           ( ast_alert_req  ),
-    // dft
-    .dft_strap_test_i      ( dft_strap_test   ),
-    .lc_dft_en_i           ( lc_dft_en        ),
-    .fla_obs_i             ( flash_obs ),
-    .otp_obs_i             ( '0 ),
-    .otm_obs_i             ( '0 ),
-% if target["name"] == "asic":
-    .usb_obs_i             ( usb_diff_rx_obs ),
-% else:
-    .usb_obs_i             ( '0 ),
-% endif
-    .obs_ctrl_o            ( obs_ctrl ),
-    // pinmux related
-    .padmux2ast_i          ( pad2ast    ),
-    .ast2padmux_o          ( ast2pinmux ),
-% if target["name"] != "verilator":
-    .mux_iob_sel_o         ( mux_iob_sel ),
-% else:
-    .mux_iob_sel_o         (  ),
-% endif
-    .ext_freq_is_96m_i     ( hi_speed_sel ),
-    .all_clk_byp_req_i     ( all_clk_byp_req  ),
-    .all_clk_byp_ack_o     ( all_clk_byp_ack  ),
-    .io_clk_byp_req_i      ( io_clk_byp_req   ),
-    .io_clk_byp_ack_o      ( io_clk_byp_ack   ),
-    // bist enable (flash)
-    .flash_bist_en_o       ( flash_bist_enable ),
-    // Memory configuration connections
-% if top["name"] != "englishbreakfast":
-    // Single aggregated request/response struct, driven from the AST's internal
-    // SRAM configuration and fanned out to the individual cut signals above.
-    .mem_cfg_req_o         ( chip_mem_cfg_req ),
-    .mem_cfg_rsp_i         ( chip_mem_cfg_rsp ),
-% else:
-    // englishbreakfast does not use the AST SRAM configuration: leave the cfg
-    // request output open and tie the response input off (all consumers default).
-    .mem_cfg_req_o         ( ),
-    .mem_cfg_rsp_i         ( '0 ),
-% endif
-    // scan
-    .dft_scan_md_o         ( scanmode   ),
-    .scan_shift_en_o       ( scan_en    ),
-    .scan_reset_no         ( scan_rst_n )
-  );
-
-% if top["name"] == "earlgrey":
-  logic unused_flash_ast_sigs;
-  assign unused_flash_ast_sigs = ^{
-    flash_bist_enable,
-    flash_power_down_h,
-    flash_power_ready_h
+    vcaon:  1'b1,
+    vcmain: 1'b1,
+    vioa:   1'b1,
+    viob:   1'b1
   };
+
+  // flash observation (only for englishbreakfast)
+  logic [7:0] flash_obs;
+% if top["name"] == "earlgrey":
+  assign flash_obs = '0;
+% endif
+
+  // Tie-off observation signals
+  ast_pkg::ast_obs_bus_t ast_obs;
+% if target["name"] == "asic":
+  logic usb_diff_rx_obs;
+% endif
+  assign ast_obs = '{
+    fla_obs: flash_obs,
+    otp_obs: '0,
+    otm_obs: '0,
+% if target["name"] == "asic":
+    usb_obs: usb_diff_rx_obs
+% else:
+    usb_obs: '0
+% endif
+  };
+
+  // Feed the same bypass struct to both PDs. This is a limitation as topgen cannot distribute the
+  // same external signal to multiple IP ports from the top. The 'top' signals are local to their
+  // power domain. Note these are only relevant for FPGA and verilator. But we always connect them
+  // as topgen does not support conditional port generation.
+  ast_pkg::clks_osc_byp_t clk_osc_byp_pd_main;
+  ast_pkg::clks_osc_byp_t clk_osc_byp_pd_aon;
+  assign clk_osc_byp_pd_main = clks_osc_byp;
+  assign clk_osc_byp_pd_aon  = clks_osc_byp;
+
+% if target["name"] == "asic":
+  // Unused AST power states
+  logic unused_ast_pwst_h;
+  assign unused_ast_pwst_h = ^{ast_pwst_h.vcc_pok,
+                               ast_pwst_h.main_pok,
+                               ast_pwst_h.io_pok};
+% else:
+  // AST power states are unused
+  logic unused_ast_pwst_h;
+  assign unused_ast_pwst_h = ^ast_pwst_h;
 % endif
 
 ###################################################################
@@ -1077,6 +823,8 @@ module chip_${top["name"]}_${target["name"]} #(
   logic usb_dp_pullup_en, usb_dn_pullup_en;
   logic usb_rx_enable;
 
+  logic [ast_pkg::UsbCalibWidth-1:0] usb_io_pu_cal;
+
   prim_usb_diff_rx #(
     .CalibW(ast_pkg::UsbCalibWidth)
   ) u_prim_usb_diff_rx (
@@ -1095,7 +843,8 @@ module chip_${top["name"]}_${target["name"]} #(
 ## FPGA shared                                                   ##
 ###################################################################
 % elif target["name"] != "verilator":
-% if gen_bkdr_loader:
+
+  % if gen_bkdr_loader:
   /////////////////////
   // Memory Backdoor //
   /////////////////////
@@ -1182,10 +931,10 @@ module chip_${top["name"]}_${target["name"]} #(
     assign mio_out     = mio_bkdr_out;
     assign mio_oe      = mio_bkdr_oe;
     assign mio_bkdr_in = mio_in;
-    assign bkdr_rst_n  = manual_in_por_n;
+    assign rst_n       = bkdr_rst_n;
   end
+  %endif
 
-% endif
   //////////////////
   // PLL for FPGA //
   //////////////////
@@ -1209,9 +958,10 @@ module chip_${top["name"]}_${target["name"]} #(
   prim_mubi_pkg::mubi4_t lc_clk_bypass;   // TODO Tim
 % endif
 
-  /////////////////////////////////////////////
-  // top_${top["name"]}: power domains + AST //
-  /////////////////////////////////////////////
+  ///////////////////////////////////////
+  // top_${top["name"]}: power domains //
+  ///////////////////////////////////////
+
   top_${top["name"]} #(
 % if target["name"] == "cw310":
     .EntropySrcStub(1'b1), // Stub ENTROPY_SRC to reduce resource usage on CW310. See #30062.
