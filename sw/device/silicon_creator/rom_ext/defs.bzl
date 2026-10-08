@@ -14,9 +14,18 @@ def secver_write_selection():
 # The ROM_EXT version number to encode into the manifest.
 # NOTE: the version numbers are integers, but have to be encoded as strings
 # because of how the bazel rule accepts attributes.
+
+_ROM_EXT_DATE = "20261008"
+
+# Most significant digit for release candidate (reserved for future purposes)
+_ROM_EXT_RC_MSD = "0"
 ROM_EXT_VERSION = struct(
     MAJOR = "0",
-    MINOR = "2026100800",
+    # We've introduced a numbering scheme within the minor version number to
+    # differentiate between 88K PQ-DICE rom_ext versus 64K rom_exts using the
+    # least significant digit
+    MINOR = _ROM_EXT_DATE + _ROM_EXT_RC_MSD + "0",
+    MINOR_88K = _ROM_EXT_DATE + _ROM_EXT_RC_MSD + "1",
     SECURITY = "0",
 )
 
