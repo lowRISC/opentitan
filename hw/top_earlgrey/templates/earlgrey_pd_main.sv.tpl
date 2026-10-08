@@ -85,17 +85,9 @@ module ${top["name"]}_pd_${domain.lower()} #(
   % endif
 % endif
 
-  // Struct breakout module tool-inserted DFT TAP signals
-  pinmux_jtag_breakout u_dft_tap_breakout (
-    .req_i    (pinmux_dft_jtag_req),
-    .rsp_o    (pinmux_dft_jtag_rsp),
-    .tck_o    (),
-    .trst_no  (),
-    .tms_o    (),
-    .tdi_o    (),
-    .tdo_i    (1'b0),
-    .tdo_oe_i (1'b0)
-  );
+% if lib.find_module(top["module"], "pinmux", domain=domain):
+<%include file="/toplevel_snippets/pinmux_jtag_breakout.tpl"/>\
+% endif
 
 <%include file="/toplevel_snippets/clk_reset_lpg_assigns.tpl" args="top=top, feature_info=feature_info, domain=domain" />\
 

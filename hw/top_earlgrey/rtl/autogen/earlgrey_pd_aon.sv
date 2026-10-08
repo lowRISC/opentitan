@@ -668,6 +668,7 @@ module earlgrey_pd_aon #(
   assign sram_ctrl_ret_ram_cfg_req     = ast_mem_cfg_req.sram_ctrl_ret;
   assign ast_mem_cfg_rsp.sram_ctrl_ret = sram_ctrl_ret_ram_cfg_rsp;
 
+
   // Make sure scanmode is never X (including during reset)
   `ASSERT_KNOWN(scanmodeKnown, scanmode_o, ast_clk_src_sys_i, 0)
 
