@@ -7,7 +7,7 @@ module top_earlgrey_bind;
   bind earlgrey_pd_aon clk_ctrl_and_main_pd_sva_if clk_ctrl_and_main_pd_sva_if (
     .clk_slow_i(u_pwrmgr.clk_slow_i),
     .rst_slow_ni(u_pwrmgr.rst_slow_ni),
-    .por_d0_ni(por_n_i[1]),
+    .por_d0_ni(rstmgr_por_n[1]),
     .core_clk_en(u_pwrmgr.pwr_ast_o.core_clk_en),
     .core_clk_val(u_pwrmgr.pwr_ast_i.core_clk_val),
     .clk_core_i(u_clkmgr.clk_main_i),
