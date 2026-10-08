@@ -92,7 +92,7 @@ default_alert_config = {
         1,  # "rv_core_ibex_recov_sw_err",
         0,  # "rv_core_ibex_fatal_hw_err",
         1,  # "rv_core_ibex_recov_hw_err"
-        0,  # "cheriot_fatal_fault",
+        0,  # "cheriot_mem_sys_fatal_fault",
         0,  # "sram_ctrl_meta_fatal_error"
     ],
     "enable_loc_alerts": [
@@ -169,7 +169,7 @@ default_alert_config = {
         True,  # "rv_core_ibex_recov_sw_err",
         True,  # "rv_core_ibex_fatal_hw_err",
         True,  # "rv_core_ibex_recov_hw_err"
-        True,  # "cheriot_fatal_fault",
+        True,  # "cheriot_mem_sys_fatal_fault",
         True,  # "sram_ctrl_meta_fatal_error"
     ],
     "enable_classes": [True, True, False, False],
@@ -245,7 +245,7 @@ default_fpga_friendly_alert_config = {
         1,  # "rv_core_ibex_recov_sw_err",
         0,  # "rv_core_ibex_fatal_hw_err",
         1,  # "rv_core_ibex_recov_hw_err"
-        0,  # "cheriot_fatal_fault",
+        0,  # "cheriot_mem_sys_fatal_fault",
         0,  # "sram_ctrl_meta_fatal_error"
     ],
     "enable_alerts": [
@@ -313,7 +313,7 @@ default_fpga_friendly_alert_config = {
         True,  # "rv_core_ibex_recov_sw_err",
         True,  # "rv_core_ibex_fatal_hw_err",
         True,  # "rv_core_ibex_recov_hw_err"
-        True,  # "cheriot_fatal_fault",
+        True,  # "cheriot_mem_sys_fatal_fault",
         True,  # "sram_ctrl_meta_fatal_error"
     ],
     "enable_loc_alerts": [
@@ -398,7 +398,7 @@ no_escalation_alert_config = {
         1,  # "rv_core_ibex_recov_sw_err",
         0,  # "rv_core_ibex_fatal_hw_err",
         1,  # "rv_core_ibex_recov_hw_err"
-        0,  # "cheriot_fatal_fault",
+        0,  # "cheriot_mem_sys_fatal_fault",
         0,  # "sram_ctrl_meta_fatal_error"
     ],
     "enable_alerts": [
@@ -466,7 +466,7 @@ no_escalation_alert_config = {
         True,  # "rv_core_ibex_recov_sw_err",
         True,  # "rv_core_ibex_fatal_hw_err",
         True,  # "rv_core_ibex_recov_hw_err"
-        True,  # "cheriot_fatal_fault",
+        True,  # "cheriot_mem_sys_fatal_fault",
         True,  # "sram_ctrl_meta_fatal_error"
     ],
     "enable_loc_alerts": [

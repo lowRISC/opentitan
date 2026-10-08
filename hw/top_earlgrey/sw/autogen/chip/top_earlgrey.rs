@@ -637,19 +637,19 @@ pub const RV_CORE_IBEX_CFG_BASE_ADDR: usize = 0x411F0000;
 /// `RV_CORE_IBEX_CFG_BASE_ADDR + RV_CORE_IBEX_CFG_SIZE_BYTES`.
 pub const RV_CORE_IBEX_CFG_SIZE_BYTES: usize = 0x100;
 
-/// Peripheral base address for regs device on cheriot in top earlgrey.
+/// Peripheral base address for regs device on cheriot_mem_sys in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const CHERIOT_REGS_BASE_ADDR: usize = 0x411B0000;
+pub const CHERIOT_MEM_SYS_REGS_BASE_ADDR: usize = 0x411B0000;
 
-/// Peripheral size for regs device on cheriot in top earlgrey.
+/// Peripheral size for regs device on cheriot_mem_sys in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #CHERIOT_REGS_BASE_ADDR and
-/// `CHERIOT_REGS_BASE_ADDR + CHERIOT_REGS_SIZE_BYTES`.
-pub const CHERIOT_REGS_SIZE_BYTES: usize = 0x40;
+/// address between #CHERIOT_MEM_SYS_REGS_BASE_ADDR and
+/// `CHERIOT_MEM_SYS_REGS_BASE_ADDR + CHERIOT_MEM_SYS_REGS_SIZE_BYTES`.
+pub const CHERIOT_MEM_SYS_REGS_SIZE_BYTES: usize = 0x40;
 
 /// Peripheral base address for regs device on sram_ctrl_meta in top earlgrey.
 ///
@@ -695,11 +695,11 @@ pub const ROM_CTRL_ROM_BASE_ADDR: usize = 0x40000;
 /// Memory size for rom memory on rom_ctrl in top earlgrey.
 pub const ROM_CTRL_ROM_SIZE_BYTES: usize = 0x30000;
 
-/// Memory base address for revbm memory on cheriot in top earlgrey.
-pub const CHERIOT_REVBM_BASE_ADDR: usize = 0x11000000;
+/// Memory base address for revbm memory on cheriot_mem_sys in top earlgrey.
+pub const CHERIOT_MEM_SYS_REVBM_BASE_ADDR: usize = 0x11000000;
 
-/// Memory size for revbm memory on cheriot in top earlgrey.
-pub const CHERIOT_REVBM_SIZE_BYTES: usize = 0xC00;
+/// Memory size for revbm memory on cheriot_mem_sys in top earlgrey.
+pub const CHERIOT_MEM_SYS_REVBM_SIZE_BYTES: usize = 0xC00;
 
 /// Memory base address for ram memory on sram_ctrl_meta in top earlgrey.
 pub const SRAM_CTRL_META_RAM_BASE_ADDR: usize = 0x11000000;
@@ -774,8 +774,8 @@ pub enum PlicPeripheral {
     Edn0 = 28,
     /// edn1
     Edn1 = 29,
-    /// cheriot
-    Cheriot = 30,
+    /// cheriot_mem_sys
+    CheriotMemSys = 30,
 }
 
 impl TryFrom<u32> for PlicPeripheral {
@@ -812,7 +812,7 @@ impl TryFrom<u32> for PlicPeripheral {
             27 => Ok(Self::EntropySrc),
             28 => Ok(Self::Edn0),
             29 => Ok(Self::Edn1),
-            30 => Ok(Self::Cheriot),
+            30 => Ok(Self::CheriotMemSys),
             _ => Err(val),
         }
     }
@@ -1195,8 +1195,8 @@ pub enum PlicIrqId {
     Edn1EdnCmdReqDone = 183,
     /// edn1_edn_fatal_err
     Edn1EdnFatalErr = 184,
-    /// cheriot_tbre_done
-    CheriotTbreDone = 185,
+    /// cheriot_mem_sys_tbre_done
+    CheriotMemSysTbreDone = 185,
 }
 
 impl TryFrom<u32> for PlicIrqId {
@@ -1388,7 +1388,7 @@ impl TryFrom<u32> for PlicIrqId {
             182 => Ok(Self::Edn0EdnFatalErr),
             183 => Ok(Self::Edn1EdnCmdReqDone),
             184 => Ok(Self::Edn1EdnFatalErr),
-            185 => Ok(Self::CheriotTbreDone),
+            185 => Ok(Self::CheriotMemSysTbreDone),
             _ => Err(val),
         }
     }
@@ -1780,8 +1780,8 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 186] = [
     PlicPeripheral::Edn1,
     // Edn1EdnFatalErr -> PlicPeripheral::Edn1
     PlicPeripheral::Edn1,
-    // CheriotTbreDone -> PlicPeripheral::Cheriot
-    PlicPeripheral::Cheriot,
+    // CheriotMemSysTbreDone -> PlicPeripheral::CheriotMemSys
+    PlicPeripheral::CheriotMemSys,
 ];
 
 /// Alert Handler Source Peripheral.
@@ -1873,8 +1873,8 @@ pub enum AlertPeripheral {
     RomCtrl = 39,
     /// rv_core_ibex
     RvCoreIbex = 40,
-    /// cheriot
-    Cheriot = 41,
+    /// cheriot_mem_sys
+    CheriotMemSys = 41,
     /// sram_ctrl_meta
     SramCtrlMeta = 42,
 }
@@ -2014,8 +2014,8 @@ pub enum AlertId {
     RvCoreIbexFatalHwErr = 62,
     /// rv_core_ibex_recov_hw_err
     RvCoreIbexRecovHwErr = 63,
-    /// cheriot_fatal_fault
-    CheriotFatalFault = 64,
+    /// cheriot_mem_sys_fatal_fault
+    CheriotMemSysFatalFault = 64,
     /// sram_ctrl_meta_fatal_error
     SramCtrlMetaFatalError = 65,
 }
@@ -2088,7 +2088,7 @@ impl TryFrom<u32> for AlertId {
             61 => Ok(Self::RvCoreIbexRecovSwErr),
             62 => Ok(Self::RvCoreIbexFatalHwErr),
             63 => Ok(Self::RvCoreIbexRecovHwErr),
-            64 => Ok(Self::CheriotFatalFault),
+            64 => Ok(Self::CheriotMemSysFatalFault),
             65 => Ok(Self::SramCtrlMetaFatalError),
             _ => Err(val),
         }
@@ -2228,8 +2228,8 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 66] = [
     AlertPeripheral::RvCoreIbex,
     // RvCoreIbexRecovHwErr -> AlertPeripheral::RvCoreIbex
     AlertPeripheral::RvCoreIbex,
-    // CheriotFatalFault -> AlertPeripheral::Cheriot
-    AlertPeripheral::Cheriot,
+    // CheriotMemSysFatalFault -> AlertPeripheral::CheriotMemSys
+    AlertPeripheral::CheriotMemSys,
     // SramCtrlMetaFatalError -> AlertPeripheral::SramCtrlMeta
     AlertPeripheral::SramCtrlMeta,
 ];

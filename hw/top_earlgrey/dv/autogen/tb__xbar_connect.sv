@@ -36,8 +36,8 @@ wire clk_io_div4;
 clk_rst_if clk_rst_if_io_div4(.clk(clk_io_div4), .rst_n(rst_n));
 
 tl_if rv_core_ibex__corei_tl_if(clk_main, rst_n);
-tl_if cheriot__cored_tl_if(clk_main, rst_n);
-tl_if cheriot__tbre_tl_if(clk_main, rst_n);
+tl_if cheriot_mem_sys__cored_tl_if(clk_main, rst_n);
+tl_if cheriot_mem_sys__tbre_tl_if(clk_main, rst_n);
 tl_if rv_dm__sba_tl_if(clk_main, rst_n);
 
 tl_if rv_dm__regs_tl_if(clk_main, rst_n);
@@ -66,8 +66,8 @@ tl_if sram_ctrl_main__ram_tl_if(clk_main, rst_n);
 tl_if sram_ctrl_sec__regs_tl_if(clk_main, rst_n);
 tl_if sram_ctrl_meta__regs_tl_if(clk_main, rst_n);
 tl_if sram_ctrl_sec__ram_tl_if(clk_main, rst_n);
-tl_if cheriot__regs_tl_if(clk_main, rst_n);
-tl_if cheriot__revbm_tl_if(clk_main, rst_n);
+tl_if cheriot_mem_sys__regs_tl_if(clk_main, rst_n);
+tl_if cheriot_mem_sys__revbm_tl_if(clk_main, rst_n);
 tl_if uart0_tl_if(clk_io_div4, rst_n);
 tl_if uart1_tl_if(clk_io_div4, rst_n);
 tl_if uart2_tl_if(clk_io_div4, rst_n);
@@ -122,8 +122,8 @@ initial begin
 
 `ifndef GATE_LEVEL
     `DRIVE_CHIP_TL_HOST_IF(rv_core_ibex__corei, rv_core_ibex, corei_tl_h, main, clk_i)
-    `DRIVE_CHIP_TL_HOST_IF(cheriot__cored, cheriot, cored_tl_h, main, clk_i)
-    `DRIVE_CHIP_TL_HOST_IF(cheriot__tbre, cheriot, tbre_tl_h, main, clk_i)
+    `DRIVE_CHIP_TL_HOST_IF(cheriot_mem_sys__cored, cheriot_mem_sys, cored_tl_h, main, clk_i)
+    `DRIVE_CHIP_TL_HOST_IF(cheriot_mem_sys__tbre, cheriot_mem_sys, tbre_tl_h, main, clk_i)
     `DRIVE_CHIP_TL_HOST_IF(rv_dm__sba, rv_dm, sba_tl_h, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__regs, rv_dm, regs_tl_d, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_dm__mem, rv_dm, mem_tl_d, main, clk_i)
@@ -151,8 +151,8 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_sec__regs, sram_ctrl_sec, regs_tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_meta__regs, sram_ctrl_meta, regs_tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_sec__ram, sram_ctrl_sec, ram_tl, main, clk_i)
-    `DRIVE_CHIP_TL_DEVICE_IF(cheriot__regs, cheriot, regs_tl_d, main, clk_i)
-    `DRIVE_CHIP_TL_DEVICE_IF(cheriot__revbm, cheriot, revbm_tl_d, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(cheriot_mem_sys__regs, cheriot_mem_sys, regs_tl_d, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(cheriot_mem_sys__revbm, cheriot_mem_sys, revbm_tl_d, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(uart0, uart0, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(uart1, uart1, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(uart2, uart2, tl, main, clk_i)

@@ -31,7 +31,7 @@
 #include "sw/device/lib/dif/autogen/dif_adc_ctrl_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_alert_handler_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_aon_timer_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_cheriot_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_cheriot_mem_sys_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_csrng_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_edn_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_entropy_src_autogen.h"
@@ -75,7 +75,7 @@ static dif_aon_timer_t aon_timer;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
-static dif_cheriot_t cheriot;
+static dif_cheriot_mem_sys_t cheriot_mem_sys;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
@@ -217,8 +217,8 @@ static volatile dif_aon_timer_irq_t aon_timer_irq_serviced;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
-static volatile dif_cheriot_irq_t cheriot_irq_expected;
-static volatile dif_cheriot_irq_t cheriot_irq_serviced;
+static volatile dif_cheriot_mem_sys_irq_t cheriot_mem_sys_irq_expected;
+static volatile dif_cheriot_mem_sys_irq_t cheriot_mem_sys_irq_serviced;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
@@ -423,24 +423,24 @@ void ottf_external_isr(uint32_t *exc_info) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
-    case kTopEarlgreyPlicPeripheralCheriot: {
-      dif_cheriot_irq_t irq =
-          (dif_cheriot_irq_t)(plic_irq_id -
-                              (dif_rv_plic_irq_id_t)
-                                  kTopEarlgreyPlicIrqIdCheriotTbreDone);
-      CHECK(irq == cheriot_irq_expected,
-            "Incorrect cheriot IRQ triggered: exp = %d, obs = %d",
-            cheriot_irq_expected, irq);
-      cheriot_irq_serviced = irq;
+    case kTopEarlgreyPlicPeripheralCheriotMemSys: {
+      dif_cheriot_mem_sys_irq_t irq =
+          (dif_cheriot_mem_sys_irq_t)(plic_irq_id -
+                                      (dif_rv_plic_irq_id_t)
+                                          kTopEarlgreyPlicIrqIdCheriotMemSysTbreDone);
+      CHECK(irq == cheriot_mem_sys_irq_expected,
+            "Incorrect cheriot_mem_sys IRQ triggered: exp = %d, obs = %d",
+            cheriot_mem_sys_irq_expected, irq);
+      cheriot_mem_sys_irq_serviced = irq;
 
-      dif_cheriot_irq_state_snapshot_t snapshot;
-      CHECK_DIF_OK(dif_cheriot_irq_get_state(&cheriot, &snapshot));
-      CHECK(snapshot == (dif_cheriot_irq_state_snapshot_t)(1 << irq),
-            "Only cheriot IRQ %d expected to fire. Actual interrupt "
+      dif_cheriot_mem_sys_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_cheriot_mem_sys_irq_get_state(&cheriot_mem_sys, &snapshot));
+      CHECK(snapshot == (dif_cheriot_mem_sys_irq_state_snapshot_t)(1 << irq),
+            "Only cheriot_mem_sys IRQ %d expected to fire. Actual interrupt "
             "status = %x",
             irq, snapshot);
 
-      CHECK_DIF_OK(dif_cheriot_irq_acknowledge(&cheriot, irq));
+      CHECK_DIF_OK(dif_cheriot_mem_sys_irq_acknowledge(&cheriot_mem_sys, irq));
       break;
     }
 #endif
@@ -1268,8 +1268,8 @@ static void peripherals_init(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_CHERIOT_REGS_BASE_ADDR);
-  CHECK_DIF_OK(dif_cheriot_init(base_addr, &cheriot));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_CHERIOT_MEM_SYS_REGS_BASE_ADDR);
+  CHECK_DIF_OK(dif_cheriot_mem_sys_init(base_addr, &cheriot_mem_sys));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
@@ -1423,7 +1423,7 @@ static void peripheral_irqs_clear(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_cheriot_irq_acknowledge_all(&cheriot));
+  CHECK_DIF_OK(dif_cheriot_mem_sys_irq_acknowledge_all(&cheriot_mem_sys));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
@@ -1548,8 +1548,8 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
-  dif_cheriot_irq_state_snapshot_t cheriot_irqs =
-      (dif_cheriot_irq_state_snapshot_t)0xffffffff;
+  dif_cheriot_mem_sys_irq_state_snapshot_t cheriot_mem_sys_irqs =
+      (dif_cheriot_mem_sys_irq_state_snapshot_t)0xffffffff;
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
@@ -1664,7 +1664,7 @@ static void peripheral_irqs_enable(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
-  CHECK_DIF_OK(dif_cheriot_irq_restore_all(&cheriot, &cheriot_irqs));
+  CHECK_DIF_OK(dif_cheriot_mem_sys_irq_restore_all(&cheriot_mem_sys, &cheriot_mem_sys_irqs));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 4 && 4 < TEST_MAX_IRQ_PERIPHERAL
@@ -1855,17 +1855,17 @@ static void peripheral_irqs_trigger(void) {
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 3 && 3 < TEST_MAX_IRQ_PERIPHERAL
-  peripheral_expected = kTopEarlgreyPlicPeripheralCheriot;
-  for (dif_cheriot_irq_t irq = kDifCheriotIrqTbreDone; irq <= kDifCheriotIrqTbreDone;
+  peripheral_expected = kTopEarlgreyPlicPeripheralCheriotMemSys;
+  for (dif_cheriot_mem_sys_irq_t irq = kDifCheriotMemSysIrqTbreDone; irq <= kDifCheriotMemSysIrqTbreDone;
        ++irq) {
-    cheriot_irq_expected = irq;
-    LOG_INFO("Triggering cheriot IRQ %d.", irq);
-    CHECK_DIF_OK(dif_cheriot_irq_force(&cheriot, irq, true));
+    cheriot_mem_sys_irq_expected = irq;
+    LOG_INFO("Triggering cheriot_mem_sys IRQ %d.", irq);
+    CHECK_DIF_OK(dif_cheriot_mem_sys_irq_force(&cheriot_mem_sys, irq, true));
 
     // This avoids a race where *irq_serviced is read before
     // entering the ISR.
-    IBEX_SPIN_FOR(cheriot_irq_serviced == irq, 1);
-    LOG_INFO("IRQ %d from cheriot is serviced.", irq);
+    IBEX_SPIN_FOR(cheriot_mem_sys_irq_serviced == irq, 1);
+    LOG_INFO("IRQ %d from cheriot_mem_sys is serviced.", irq);
   }
 #endif
 

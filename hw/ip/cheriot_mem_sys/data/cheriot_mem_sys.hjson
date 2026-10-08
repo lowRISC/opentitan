@@ -1,0 +1,445 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  name:               "cheriot_mem_sys",
+  human_name:         "CHERIoT Memory Subsystem",
+  one_line_desc:      "CHERIoT-aware memory subsystem",
+  one_paragraph_desc: '''
+    The CHERIoT memory subsystem sits between a CHERIoT-capable Ibex core and the system
+    interconnect.  It enforces capability tag semantics on data-memory accesses, transparently
+    remapping capability accesses and revocation bitmap reads into a dedicated meta SRAM.
+  '''
+  // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
+  cip_id:             "48",
+  design_spec:        "../doc",
+  dv_doc:             "../doc/dv",
+  hw_checklist:       "../doc/checklist",
+  version:            "1.0.0",
+  life_stage:         "L1",
+  design_stage:       "D0",
+  verification_stage: "V0",
+
+  clocking: [
+    {clock: "clk_i", reset: "rst_ni", primary: true}
+  ],
+
+  bus_interfaces: [
+    {protocol: "tlul", direction: "device", name: "regs"},
+    {protocol: "tlul", direction: "device", name: "revbm"},
+    {protocol: "tlul", direction: "host", name: "cored"},
+    {protocol: "tlul", direction: "host", name: "tbre"}
+  ],
+
+  ///////////////////////////
+  // Interrupts and Alerts //
+  ///////////////////////////
+
+  interrupt_list: [
+    { name: "tbre_done",
+      desc: "Raised when the revocation engine has resolved every capability of a sweep.",
+    }
+  ],
+
+  alert_list: [
+    { name: "fatal_fault",
+      desc: '''
+            This fatal alert is triggered when an integrity fault is detected, when the meta
+            SRAM path returns a device error, when the revocation engine reports a fault, when a
+            capability store to the NVM is partial, or when a request breaks the core's capability
+            store sequence.
+            '''
+    }
+  ],
+
+  ////////////////
+  // Parameters //
+  ////////////////
+
+  param_list: [
+
+    /////////////////////
+    // Address map     //
+    /////////////////////
+
+    { name:    "MainSramBaseAddr",
+      desc:    "Base address of the main SRAM region (inclusive).",
+      type:    "logic [top_pkg::TL_AW-1:0]",
+      default: "32'h1000_0000",
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "MainSramTopAddr",
+      desc:    "Top address of the main SRAM region (exclusive).",
+      type:    "logic [top_pkg::TL_AW-1:0]",
+      default: "32'h1003_0000",
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "NvmBaseAddr",
+      desc:    "Base address of the NVM region (inclusive).",
+      type:    "logic [top_pkg::TL_AW-1:0]",
+      default: "32'h3000_0000",
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "NvmTopAddr",
+      desc:    "Top address of the NVM region (exclusive).",
+      type:    "logic [top_pkg::TL_AW-1:0]",
+      default: "32'h3020_0000",
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "MetaSramBaseAddr",
+      desc:    '''
+               Base address of the CHERIoT meta SRAM region.
+               ''',
+      type:    "logic [top_pkg::TL_AW-1:0]",
+      default: "32'h1100_0000",
+      local:   "false",
+      expose:  "true"
+    },
+    // Overridden by topgen with the size of the `revbm` memory window.
+    { name:    "MemSizeRevbm",
+      desc:    '''
+               Size of the revocation bitmap window (in bytes).
+               Must match the size derived from the main SRAM region; this is checked by an
+               assertion in the RTL.
+               ''',
+      type:    "int",
+      default: "3072"
+    },
+
+    /////////////////////
+    // Register widths //
+    /////////////////////
+
+    { name:    "TbreNumCapsW",
+      desc:    '''
+               Width of TBRE_NUM_CAPS. A sweep reads two words per capability, and that word count
+               fits the TL-UL address width.
+               ''',
+      type:    "int unsigned",
+      default: "31",
+      local:   "true"
+    },
+    { name:    "TbreEpochW",
+      desc:    "Width of TBRE_EPOCH.count, the sweep count above the active bit.",
+      type:    "int unsigned",
+      default: "31",
+      local:   "true"
+    },
+  ],
+
+  //////////////
+  // Features //
+  //////////////
+
+  features: [
+    { name: "CHERIOT_MEM_SYS.TAG_SPLIT",
+      desc: '''
+        A data access from the core is split into the data access towards the interconnect and a
+        capability tag access towards the meta SRAM. Their responses are joined so that data and
+        tag are returned together.
+      '''
+    },
+    { name: "CHERIOT_MEM_SYS.TAG_READ",
+      desc: '''
+        On a hinted capability load, the tag bit of the addressed capability is looked up in the
+        meta SRAM and returned.
+      '''
+    },
+    { name: "CHERIOT_MEM_SYS.TAG_WRITE_RMW",
+      desc: '''
+        Because tags are stored at bit granularity, a write performs a read-modify-write on the
+        addressed meta SRAM word.
+      '''
+    },
+    { name: "CHERIOT_MEM_SYS.TAG_CLEAR_ON_DATA_WRITE",
+      desc: '''
+        Any non-capability write clears the tag bit of the addressed location, so that data stores
+        cannot modify a valid capability.
+      '''
+    },
+    { name: "CHERIOT_MEM_SYS.REVOCATION_BITMAP",
+      desc: '''
+        The revocation bitmap is exposed as a memory window on the `revbm` device interface and is
+        read by the core's TRVK filter through the `corerevbm` port.
+      '''
+    },
+    { name: "CHERIOT_MEM_SYS.ACCESS_CHECK",
+      desc: '''
+        Every meta SRAM access is checked against the region and the operations permitted for its
+        originating port.
+      '''
+    },
+    { name: "CHERIOT_MEM_SYS.MODE_GATING",
+      desc: '''
+        In ePMP mode the entire meta SRAM is inaccessible through all four ports of the
+        subsystem. No tag lookups are issued.
+      '''
+    },
+    { name: "CHERIOT_MEM_SYS.TBRE_SWEEP",
+      desc: '''
+        The background revocation engine sweeps a range of capabilities in the main SRAM or the NVM
+        region and clears the tag of every tagged, non-sealing capability whose base has its
+        revocation bit set, without modifying memory data.
+      '''
+    },
+    { name: "CHERIOT_MEM_SYS.TBRE_CORE_WRITE_SNOOP",
+      desc: '''
+        A capability the core writes while the revocation engine resolves it keeps the tag the
+        core wrote.
+      '''
+    },
+    { name: "CHERIOT_MEM_SYS.TBRE_STATUS",
+      desc: '''
+        The revocation engine reports a sweep in progress, flags ignored starts and errors during a
+        sweep until software clears them, raises an interrupt when a sweep completes, and keeps an
+        epoch, odd while a sweep runs, that counts the sweeps that ended without an error.
+      '''
+    },
+  ],
+
+  /////////////////////////////
+  // Intermodule Connections //
+  /////////////////////////////
+
+  inter_signal_list: [
+    // CHERIoT mode enable
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "cheriot_ena",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "CHERIoT mode enable."
+    },
+    // Data TL-UL interface from the core
+    { struct:  "tl",
+      type:    "req_rsp",
+      name:    "cored_tl_d",
+      act:     "rsp",
+      package: "tlul_pkg",
+      desc:    "Data port from the core."
+    },
+    // Capability tag sideband - write direction (from core to subsystem)
+    { struct:  "logic",
+      type:    "uni",
+      name:    "cored_tag_h2d",
+      act:     "rcv",
+      width:   "1",
+      package: "",
+      default: "1'b0",
+      desc:    "CHERIoT capability tag carried with the A-channel of cored_tl_h."
+    },
+    // Capability tag sideband - read response direction (from subsystem to core)
+    { struct:  "logic",
+      type:    "uni",
+      name:    "cored_tag_d2h",
+      act:     "req",
+      width:   "1",
+      package: "",
+      default: "1'b0",
+      desc:    "Capability tag returned on the D-channel of cored_tl_h."
+    },
+    // TRVK revocation bitmap TL-UL host port
+    { struct:  "tl",
+      type:    "req_rsp",
+      name:    "corerevbm_tl",
+      act:     "rsp",
+      package: "tlul_pkg",
+      desc:    "TRVK (tag revocation) revocation bitmap port from the core."
+    },
+    // Meta SRAM host TL-UL port (to external sram_ctrl RAM interface)
+    { struct:  "tl",
+      type:    "req_rsp",
+      name:    "meta_sram_tl",
+      act:     "req",
+      package: "tlul_pkg",
+      desc:    "Host TL-UL port to the external meta SRAM controller's RAM interface."
+    },
+  ],
+
+  /////////////////////
+  // Countermeasures //
+  /////////////////////
+
+  countermeasures: [
+    { name: "BUS.INTEGRITY",
+      desc: '''
+        End-to-end bus integrity between the Ibex lockstep and the storage cells.
+        Relies on LOGIC.SHADOW, which is not implemented yet.
+      '''
+    },
+    { name: "LOGIC.SHADOW",
+      desc: '''
+        The CHERIoT memory subsystem is instantiated in lockstep. Not implemented yet.
+        This also covers the pointers of the subsystem's FIFOs, which therefore are not
+        redundantly encoded (CTR.REDUN).
+      '''
+    },
+    { name: "MEM.SW_NOACCESS",
+      desc: '''
+        The capability tag store is not memory mapped.
+      '''
+    },
+    { name: "INTERSIG.MUBI",
+      desc: '''
+        The CHERIoT mode enable is multi-bit encoded.
+      '''
+    },
+  ],
+
+  ///////////
+  // Memory //
+  ///////////
+
+  memory: {
+    revbm: {}
+  }
+
+  ///////////////
+  // Registers //
+  ///////////////
+
+  regwidth: "32",
+  registers: {
+    regs: [
+      { name: "TBRE_REGWEN",
+        desc: "Write enable for the revocation engine registers.",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true",
+        fields: [
+          { bits: "0",
+            name: "en",
+            desc: '''
+              Low while the revocation engine is active, locking !!TBRE_BASE_ADDR, !!TBRE_NUM_CAPS
+              and !!TBRE_START. !!TBRE_STATUS.busy follows the same state one cycle later.
+            ''',
+            resval: "1"
+          }
+        ]
+      },
+      { name: "TBRE_BASE_ADDR",
+        desc: "Address of the first capability the revocation engine sweeps.",
+        regwen: "TBRE_REGWEN",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "31:3",
+            name: "addr",
+            desc: '''
+              Bits 31:3 of the address. The sweep starts at a capability boundary; bits 2:0 read as
+              zero. The address must lie in a tagged region, the main SRAM or the NVM; the sweep
+              stops at the top of that region.
+            ''',
+            resval: "0"
+          }
+        ]
+      },
+      { name: "TBRE_NUM_CAPS",
+        desc: "Number of capabilities the revocation engine sweeps, each of them two 32-bit words.",
+        regwen: "TBRE_REGWEN",
+        swaccess: "rw",
+        hwaccess: "hro",
+        fields: [
+          { bits: "TbreNumCapsW-1:0",
+            name: "num",
+            desc: '''
+              Number of capabilities. A sweep reaching past the top of its tagged region ends at its
+              top; the register keeps the value written.
+            ''',
+            resval: "0"
+          }
+        ]
+      },
+      { name: "TBRE_START",
+        desc: '''
+          Starts a sweep over the capabilities !!TBRE_BASE_ADDR and !!TBRE_NUM_CAPS describe.
+          !!TBRE_STATUS.busy reflects the sweep in progress. A start outside CHERIoT mode, with
+          !!TBRE_NUM_CAPS zero, or with !!TBRE_BASE_ADDR outside the tagged regions, is ignored and
+          sets !!TBRE_STATUS.start_err.
+        ''',
+        regwen: "TBRE_REGWEN",
+        swaccess: "wo",
+        hwaccess: "hro",
+        hwext: "true",
+        hwqe: "true",
+        // Writing it starts a sweep over whatever the other registers hold.
+        tags: ["excl:CsrAllTests:CsrExclWrite"],
+        fields: [
+          { bits: "0",
+            name: "start",
+            desc: "Write 1 to start a sweep.",
+            resval: "0"
+          }
+        ]
+      },
+      { name: "TBRE_STATUS",
+        desc: "Status of the revocation engine.",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "0",
+            name: "busy",
+            desc: '''
+              The revocation engine is sweeping; it is low once every capability of the sweep is
+              resolved.
+            ''',
+            resval: "0"
+          },
+          { bits: "8",
+            name: "start_err",
+            swaccess: "rw1c",
+            desc: '''
+              A start was ignored because the subsystem was not in CHERIoT mode, !!TBRE_NUM_CAPS was
+              zero or !!TBRE_BASE_ADDR was outside the tagged regions. Stays set until software
+              writes 1 to it.
+            ''',
+            resval: "0"
+          },
+          { bits: "9",
+            name: "sweep_err",
+            swaccess: "rw1c",
+            desc: '''
+              A response to the revocation engine was an error, failed its integrity check or was
+              malformed, or the RMW filter reported a fault, during a sweep. Except for an error
+              response to a read of the swept memory, the fatal_fault alert is raised as well. Stays
+              set until software writes 1 to it.
+            ''',
+            resval: "0"
+          }
+        ]
+      }
+      { name: "TBRE_EPOCH",
+        desc: '''
+          Sweep epoch, twice the number of sweeps that ended without an error, plus one while the
+          revocation engine is active. It is odd from the cycle a start is taken, when !!TBRE_REGWEN
+          falls, until the engine is inactive again, and even otherwise. A sweep that ends with an
+          error (see !!TBRE_STATUS.sweep_err) is not counted, so the epoch returns to the even value
+          it had before that start, and no software waiting for a completed sweep proceeds on it.
+        ''',
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true",
+        fields: [
+          { bits: "0",
+            name: "active",
+            desc: "The revocation engine is active; the inverse of !!TBRE_REGWEN.",
+            resval: "0"
+          },
+          { bits: "TbreEpochW:1",
+            name: "count",
+            desc: '''
+              Sweeps that ended without an error, modulo 2^31; a sweep counts in the cycle
+              !!TBRE_EPOCH.active clears.
+            ''',
+            resval: "0"
+          }
+        ]
+      }
+    ]
+  }
+}

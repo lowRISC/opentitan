@@ -823,22 +823,22 @@ extern "C" {
 #define TOP_EARLGREY_RV_CORE_IBEX_CFG_SIZE_BYTES 0x100u
 
 /**
- * Peripheral base address for regs device on cheriot in top earlgrey.
+ * Peripheral base address for regs device on cheriot_mem_sys in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_CHERIOT_REGS_BASE_ADDR 0x411B0000u
+#define TOP_EARLGREY_CHERIOT_MEM_SYS_REGS_BASE_ADDR 0x411B0000u
 
 /**
- * Peripheral size for regs device on cheriot in top earlgrey.
+ * Peripheral size for regs device on cheriot_mem_sys in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_CHERIOT_REGS_BASE_ADDR and
- * `TOP_EARLGREY_CHERIOT_REGS_BASE_ADDR + TOP_EARLGREY_CHERIOT_REGS_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_CHERIOT_MEM_SYS_REGS_BASE_ADDR and
+ * `TOP_EARLGREY_CHERIOT_MEM_SYS_REGS_BASE_ADDR + TOP_EARLGREY_CHERIOT_MEM_SYS_REGS_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_CHERIOT_REGS_SIZE_BYTES 0x40u
+#define TOP_EARLGREY_CHERIOT_MEM_SYS_REGS_SIZE_BYTES 0x40u
 
 /**
  * Peripheral base address for regs device on sram_ctrl_meta in top earlgrey.
@@ -910,14 +910,14 @@ extern "C" {
 #define TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES 0x30000u
 
 /**
- * Memory base address for revbm memory on cheriot in top earlgrey.
+ * Memory base address for revbm memory on cheriot_mem_sys in top earlgrey.
  */
-#define TOP_EARLGREY_CHERIOT_REVBM_BASE_ADDR 0x11000000u
+#define TOP_EARLGREY_CHERIOT_MEM_SYS_REVBM_BASE_ADDR 0x11000000u
 
 /**
- * Memory size for revbm memory on cheriot in top earlgrey.
+ * Memory size for revbm memory on cheriot_mem_sys in top earlgrey.
  */
-#define TOP_EARLGREY_CHERIOT_REVBM_SIZE_BYTES 0xC00u
+#define TOP_EARLGREY_CHERIOT_MEM_SYS_REVBM_SIZE_BYTES 0xC00u
 
 /**
  * Memory base address for ram memory on sram_ctrl_meta in top earlgrey.
@@ -967,7 +967,7 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralEntropySrc = 27, /**< entropy_src */
   kTopEarlgreyPlicPeripheralEdn0 = 28, /**< edn0 */
   kTopEarlgreyPlicPeripheralEdn1 = 29, /**< edn1 */
-  kTopEarlgreyPlicPeripheralCheriot = 30, /**< cheriot */
+  kTopEarlgreyPlicPeripheralCheriotMemSys = 30, /**< cheriot_mem_sys */
   kTopEarlgreyPlicPeripheralLast = 30, /**< \internal Final PLIC peripheral */
 } top_earlgrey_plic_peripheral_t;
 
@@ -1163,7 +1163,7 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdEdn0EdnFatalErr = 182, /**< edn0_edn_fatal_err */
   kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 183, /**< edn1_edn_cmd_req_done */
   kTopEarlgreyPlicIrqIdEdn1EdnFatalErr = 184, /**< edn1_edn_fatal_err */
-  kTopEarlgreyPlicIrqIdCheriotTbreDone = 185, /**< cheriot_tbre_done */
+  kTopEarlgreyPlicIrqIdCheriotMemSysTbreDone = 185, /**< cheriot_mem_sys_tbre_done */
   kTopEarlgreyPlicIrqIdLast = 185, /**< \internal The Last Valid Interrupt ID. */
 } top_earlgrey_plic_irq_id_t;
 
@@ -1236,7 +1236,7 @@ typedef enum top_earlgrey_alert_peripheral {
   kTopEarlgreyAlertPeripheralSramCtrlSec = 38, /**< sram_ctrl_sec */
   kTopEarlgreyAlertPeripheralRomCtrl = 39, /**< rom_ctrl */
   kTopEarlgreyAlertPeripheralRvCoreIbex = 40, /**< rv_core_ibex */
-  kTopEarlgreyAlertPeripheralCheriot = 41, /**< cheriot */
+  kTopEarlgreyAlertPeripheralCheriotMemSys = 41, /**< cheriot_mem_sys */
   kTopEarlgreyAlertPeripheralSramCtrlMeta = 42, /**< sram_ctrl_meta */
   kTopEarlgreyAlertPeripheralLast = 42, /**< \internal Final Alert peripheral */
 } top_earlgrey_alert_peripheral_t;
@@ -1312,7 +1312,7 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdRvCoreIbexRecovSwErr = 61, /**< rv_core_ibex_recov_sw_err */
   kTopEarlgreyAlertIdRvCoreIbexFatalHwErr = 62, /**< rv_core_ibex_fatal_hw_err */
   kTopEarlgreyAlertIdRvCoreIbexRecovHwErr = 63, /**< rv_core_ibex_recov_hw_err */
-  kTopEarlgreyAlertIdCheriotFatalFault = 64, /**< cheriot_fatal_fault */
+  kTopEarlgreyAlertIdCheriotMemSysFatalFault = 64, /**< cheriot_mem_sys_fatal_fault */
   kTopEarlgreyAlertIdSramCtrlMetaFatalError = 65, /**< sram_ctrl_meta_fatal_error */
   kTopEarlgreyAlertIdLast = 65, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
