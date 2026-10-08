@@ -641,9 +641,6 @@
           '''
         }
       ],
-      // TODO(#30682): Remove this label as soon as the RTL raises an
-      // error instead of a assertion.
-      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "SIDELOAD_CLEAR",
