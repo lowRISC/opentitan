@@ -10,7 +10,7 @@ filesets:
       - lowrisc:systems:top_earlgrey:0.1
       - lowrisc:systems:top_earlgrey_pkg
       - lowrisc:systems:top_earlgrey_padring
-      - lowrisc:virtual_systems:top_earlgrey_ast
+      - lowrisc:systems:top_earlgrey_ast_pkg
       - lowrisc:virtual_systems:top_earlgrey_pad_orient_pkg
       - lowrisc:virtual_systems:top_earlgrey_scan_role_pkg
       # Which technology library resolves this is chosen by --mapping.

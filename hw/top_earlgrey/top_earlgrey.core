@@ -59,7 +59,7 @@ filesets:
       - lowrisc:prim:usb_diff_rx
       - lowrisc:prim:mubi
       - lowrisc:systems:top_earlgrey_pkg
-      - lowrisc:systems:ast_pkg
+      - lowrisc:virtual_systems:top_earlgrey_ast
     files:
       - rtl/autogen/top_earlgrey.sv
       - rtl/autogen/earlgrey_pd_main.sv
