@@ -7,5 +7,5 @@
 
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
-CONNECTION, AST_CC1,          , CC1,              u_ast,                                      adc_a0_ai,
-CONNECTION, AST_CC2,          , CC2,              u_ast,                                      adc_a1_ai,
+CONNECTION, AST_CC1,          , CC1,              top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary,           adc_a0_a_i,
+CONNECTION, AST_CC2,          , CC2,              top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary,           adc_a1_a_i,
