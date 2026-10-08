@@ -88,6 +88,10 @@ module ${top["name"]}_pd_${domain.lower()} #(
 %>\
 <%include file="/toplevel_snippets/mem_cfg_wiring.tpl" args="mem_cfg_consumers=mem_cfg_consumers" />\
 
+% if lib.find_module(top["module"], "pinmux", domain=domain):
+<%include file="/toplevel_snippets/pinmux_jtag_breakout.tpl"/>\
+% endif
+
   // Make sure scanmode is never X (including during reset)
 % if feature_info["dft_source_in_domain"][domain]:
   `ASSERT_KNOWN(scanmodeKnown, scanmode_o, ast_clk_src_sys_i, 0)
