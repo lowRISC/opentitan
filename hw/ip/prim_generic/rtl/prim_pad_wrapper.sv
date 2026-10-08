@@ -42,6 +42,7 @@ module prim_pad_wrapper
                          attr_i.od_en,
                          attr_i.schmitt_en,
                          attr_i.keep_en,
+                         clk_scan_i,
                          scanmode_i,
                          pok_i};
   //VCS coverage on
