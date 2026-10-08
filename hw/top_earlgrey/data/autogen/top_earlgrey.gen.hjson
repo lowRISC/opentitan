@@ -2218,6 +2218,8 @@
           domain: Main
           top_signame: pinmux_lc_jtag
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: esc_scrap_state0_tx
@@ -2416,6 +2418,8 @@
           top_type: broadcast
           top_signame: lc_ctrl_lc_hw_debug_clr
           index: -1
+          external: true
+          conn_type: true
         }
         {
           name: lc_hw_debug_en
@@ -2572,6 +2576,8 @@
           top_type: broadcast
           top_signame: lc_ctrl_lc_check_byp_en
           index: -1
+          external: true
+          conn_type: true
         }
         {
           name: lc_creator_seed_sw_rw_en
@@ -2726,6 +2732,8 @@
           top_type: broadcast
           top_signame: lc_ctrl_strap_en_override
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: regs_tl
@@ -3253,6 +3261,8 @@
           top_type: broadcast
           top_signame: usbdev_usb_dp_pullup
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: usb_dn_pullup
@@ -3268,6 +3278,8 @@
           top_type: broadcast
           top_signame: usbdev_usb_dn_pullup
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: usb_rx_enable
@@ -3332,6 +3344,8 @@
           top_type: broadcast
           top_signame: usbdev_usb_aon_suspend_req
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: usb_aon_wake_ack
@@ -3347,6 +3361,8 @@
           top_type: broadcast
           top_signame: usbdev_usb_aon_wake_ack
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: usb_aon_bus_reset
@@ -3362,6 +3378,8 @@
           top_type: broadcast
           top_signame: usbdev_usb_aon_bus_reset
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: usb_aon_sense_lost
@@ -3377,6 +3395,8 @@
           top_type: broadcast
           top_signame: usbdev_usb_aon_sense_lost
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: usb_aon_bus_not_idle
@@ -3392,6 +3412,8 @@
           top_type: broadcast
           top_signame: usbdev_usb_aon_bus_not_idle
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: usb_aon_wake_detect_active
@@ -3406,6 +3428,8 @@
           domain: Main
           top_signame: pinmux_usbdev_wake_detect_active
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: ram_cfg
@@ -3672,13 +3696,7 @@
           end_idx: -1
           top_type: one-to-N
           top_signame: pwrmgr_wakeups
-          index:
-          [
-            2
-            3
-          ]
-          external: true
-          conn_type: true
+          index: -1
         }
         {
           name: rstreqs
@@ -3722,8 +3740,6 @@
           top_type: broadcast
           top_signame: pwrmgr_strap
           index: -1
-          external: true
-          conn_type: false
         }
         {
           name: low_power
@@ -3738,8 +3754,6 @@
           top_type: broadcast
           top_signame: pwrmgr_low_power
           index: -1
-          external: true
-          conn_type: true
         }
         {
           name: rom_ctrl
@@ -4615,7 +4629,7 @@
           domain: Aon
         }
       }
-      domain: Main
+      domain: Aon
       attr: ipgen
       param_decl:
       {
@@ -4623,8 +4637,8 @@
       }
       clock_connections:
       {
-        clk_i: clkmgr_clocks_i.clk_io_div4_powerup
-        clk_aon_i: clkmgr_clocks_i.clk_aon_powerup
+        clk_i: clkmgr_clocks.clk_io_div4_powerup
+        clk_aon_i: clkmgr_clocks.clk_aon_powerup
       }
       memory: {}
       param_list:
@@ -4668,9 +4682,11 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: pinmux
-          domain: Main
+          domain: Aon
           top_signame: lc_ctrl_lc_hw_debug_clr
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: lc_hw_debug_en
@@ -4682,9 +4698,11 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: pinmux
-          domain: Main
+          domain: Aon
           top_signame: lc_ctrl_lc_hw_debug_en
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: lc_dft_en
@@ -4696,9 +4714,11 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: pinmux
-          domain: Main
+          domain: Aon
           top_signame: lc_ctrl_lc_dft_en
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: lc_escalate_en
@@ -4714,9 +4734,11 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: pinmux
-          domain: Main
+          domain: Aon
           top_signame: lc_ctrl_lc_escalate_en
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: lc_check_byp_en
@@ -4735,9 +4757,11 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: pinmux
-          domain: Main
+          domain: Aon
           top_signame: lc_ctrl_lc_check_byp_en
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: pinmux_hw_debug_en
@@ -4757,6 +4781,8 @@
           top_type: broadcast
           top_signame: pinmux_pinmux_hw_debug_en
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: lc_jtag
@@ -4772,6 +4798,8 @@
           top_type: one-to-one
           top_signame: pinmux_lc_jtag
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: rv_jtag
@@ -4787,6 +4815,8 @@
           top_type: one-to-one
           top_signame: pinmux_rv_jtag
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: dft_jtag
@@ -4815,8 +4845,6 @@
           top_type: broadcast
           top_signame: pinmux_dft_strap_test
           index: -1
-          external: true
-          conn_type: false
         }
         {
           name: dft_hold_tap_sel
@@ -4843,11 +4871,9 @@
           default: 1'b0
           inst_name: pinmux
           package: ""
-          domain: Main
+          domain: Aon
           top_signame: pwrmgr_low_power
           index: -1
-          external: true
-          conn_type: false
         }
         {
           name: strap_en
@@ -4859,11 +4885,9 @@
           default: 1'b0
           inst_name: pinmux
           package: ""
-          domain: Main
+          domain: Aon
           top_signame: pwrmgr_strap
           index: -1
-          external: true
-          conn_type: false
         }
         {
           name: strap_en_override
@@ -4881,9 +4905,11 @@
           default: 1'b0
           inst_name: pinmux
           package: ""
-          domain: Main
+          domain: Aon
           top_signame: lc_ctrl_strap_en_override
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: pin_wkup_req
@@ -4895,11 +4921,9 @@
           default: 1'b0
           inst_name: pinmux
           package: ""
-          domain: Main
+          domain: Aon
           top_signame: pwrmgr_wakeups
-          index: 0
-          external: true
-          conn_type: false
+          index: 2
         }
         {
           name: usbdev_dppullup_en
@@ -4911,9 +4935,11 @@
           inst_name: pinmux
           default: ""
           package: ""
-          domain: Main
+          domain: Aon
           top_signame: usbdev_usb_dp_pullup
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: usbdev_dnpullup_en
@@ -4925,9 +4951,11 @@
           inst_name: pinmux
           default: ""
           package: ""
-          domain: Main
+          domain: Aon
           top_signame: usbdev_usb_dn_pullup
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: usb_dppullup_en
@@ -4969,11 +4997,9 @@
           default: 1'b0
           inst_name: pinmux
           package: ""
-          domain: Main
+          domain: Aon
           top_signame: pwrmgr_wakeups
-          index: 1
-          external: true
-          conn_type: false
+          index: 3
         }
         {
           name: usbdev_suspend_req
@@ -4985,9 +5011,11 @@
           inst_name: pinmux
           default: ""
           package: ""
-          domain: Main
+          domain: Aon
           top_signame: usbdev_usb_aon_suspend_req
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: usbdev_wake_ack
@@ -4999,9 +5027,11 @@
           inst_name: pinmux
           default: ""
           package: ""
-          domain: Main
+          domain: Aon
           top_signame: usbdev_usb_aon_wake_ack
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: usbdev_bus_not_idle
@@ -5013,9 +5043,11 @@
           default: 1'b0
           inst_name: pinmux
           package: ""
-          domain: Main
+          domain: Aon
           top_signame: usbdev_usb_aon_bus_not_idle
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: usbdev_bus_reset
@@ -5027,9 +5059,11 @@
           default: 1'b0
           inst_name: pinmux
           package: ""
-          domain: Main
+          domain: Aon
           top_signame: usbdev_usb_aon_bus_reset
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: usbdev_sense_lost
@@ -5041,9 +5075,11 @@
           default: 1'b0
           inst_name: pinmux
           package: ""
-          domain: Main
+          domain: Aon
           top_signame: usbdev_usb_aon_sense_lost
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: usbdev_wake_detect_active
@@ -5059,6 +5095,8 @@
           top_type: broadcast
           top_signame: pinmux_usbdev_wake_detect_active
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: tl
@@ -5073,6 +5111,8 @@
           top_type: one-to-one
           top_signame: pinmux_tl
           index: -1
+          external: true
+          conn_type: false
         }
       ]
       base_addrs:
@@ -6061,8 +6101,6 @@
           domain: Aon
           top_signame: pinmux_dft_strap_test
           index: -1
-          external: true
-          conn_type: false
         }
         {
           name: lc_dft_en
@@ -7482,6 +7520,8 @@
           domain: Main
           top_signame: pinmux_rv_jtag
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: lc_init_done
@@ -7570,6 +7610,8 @@
           domain: Main
           top_signame: pinmux_pinmux_hw_debug_en
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: otp_dis_rv_dm_late_debug
@@ -14624,6 +14666,8 @@
           domain: Main
           top_signame: pinmux_tl
           index: -1
+          external: true
+          conn_type: false
         }
         {
           name: tl_otp_ctrl__core
@@ -20195,7 +20239,7 @@
         struct: alert_tx
         domain: chip
         signame: alert_tx_pd_aon
-        width: 11
+        width: 12
         type: uni
         special: alert
         end_idx: -1
@@ -20208,7 +20252,7 @@
         struct: alert_rx
         domain: chip
         signame: alert_rx_pd_aon
-        width: 11
+        width: 12
         type: uni
         special: alert
         end_idx: -1
@@ -20287,18 +20331,6 @@
         act: req
         suffix: ""
         default: 1'b0
-      }
-      {
-        package: pinmux_pkg
-        struct: dft_strap_test_req
-        domain: chip
-        signame: pinmux_dft_strap_test
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: "'0"
       }
       {
         package: prim_mubi_pkg
@@ -20505,30 +20537,6 @@
         default: lc_ctrl_pkg::PWR_LC_RSP_DEFAULT
       }
       {
-        package: ""
-        struct: logic
-        domain: chip
-        signame: pwrmgr_strap
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: 1'b0
-      }
-      {
-        package: ""
-        struct: logic
-        domain: chip
-        signame: pwrmgr_low_power
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: 1'b0
-      }
-      {
         package: lc_ctrl_pkg
         struct: lc_tx
         domain: chip
@@ -20553,6 +20561,102 @@
         default: rom_ctrl_pkg::PWRMGR_DATA_DEFAULT
       }
       {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: usbdev_usb_dp_pullup
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: usbdev_usb_dn_pullup
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: usbdev_usb_aon_suspend_req
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: usbdev_usb_aon_wake_ack
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: usbdev_usb_aon_bus_not_idle
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: 1'b0
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: usbdev_usb_aon_bus_reset
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: 1'b0
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: usbdev_usb_aon_sense_lost
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: 1'b0
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: pinmux_usbdev_wake_detect_active
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
+      }
+      {
         package: prim_mubi_pkg
         struct: mubi4
         domain: chip
@@ -20565,10 +20669,94 @@
         default: "'{default: prim_mubi_pkg::MUBI4_DEFAULT}"
       }
       {
+        package: jtag_pkg
+        struct: jtag_req
+        domain: chip
+        signame: pinmux_lc_jtag_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
+        default: jtag_pkg::JTAG_REQ_DEFAULT
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_rsp
+        domain: chip
+        signame: pinmux_lc_jtag_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
+        default: jtag_pkg::JTAG_RSP_DEFAULT
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_req
+        domain: chip
+        signame: pinmux_rv_jtag_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
+        default: jtag_pkg::JTAG_REQ_DEFAULT
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_rsp
+        domain: chip
+        signame: pinmux_rv_jtag_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
+        default: jtag_pkg::JTAG_RSP_DEFAULT
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        domain: chip
+        signame: pinmux_pinmux_hw_debug_en
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: lc_ctrl_strap_en_override
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
+      }
+      {
         package: lc_ctrl_pkg
         struct: lc_tx
         domain: chip
         signame: lc_ctrl_lc_dft_en
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        domain: chip
+        signame: lc_ctrl_lc_hw_debug_clr
         width: 1
         type: uni
         end_idx: -1
@@ -20593,6 +20781,18 @@
         struct: lc_tx
         domain: chip
         signame: lc_ctrl_lc_escalate_en
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        domain: chip
+        signame: lc_ctrl_lc_check_byp_en
         width: 1
         type: uni
         end_idx: -1
@@ -20659,18 +20859,6 @@
         act: req
         suffix: ""
         default: 1'b0
-      }
-      {
-        package: ""
-        struct: logic
-        domain: chip
-        signame: pwrmgr_wakeups
-        width: 2
-        type: uni
-        end_idx: -1
-        act: rcv
-        suffix: ""
-        default: "'0"
       }
       {
         package: ast_intraip_pkg
@@ -20761,6 +20949,30 @@
         struct: tl_d2h
         domain: chip
         signame: clkmgr_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: tlul_pkg::TL_D2H_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: chip
+        signame: pinmux_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: chip
+        signame: pinmux_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -20916,7 +21128,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_ec_rst_l_d2p
+        signame: cio_uart0_rx_p2d
         width: 1
         type: uni
         end_idx: -1
@@ -20928,7 +21140,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_ec_rst_l_en_d2p
+        signame: cio_uart0_tx_d2p
         width: 1
         type: uni
         end_idx: -1
@@ -20940,7 +21152,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_ec_rst_l_p2d
+        signame: cio_uart0_tx_en_d2p
         width: 1
         type: uni
         end_idx: -1
@@ -20952,7 +21164,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_flash_wp_l_d2p
+        signame: cio_uart1_rx_p2d
         width: 1
         type: uni
         end_idx: -1
@@ -20964,7 +21176,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_flash_wp_l_en_d2p
+        signame: cio_uart1_tx_d2p
         width: 1
         type: uni
         end_idx: -1
@@ -20976,7 +21188,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_flash_wp_l_p2d
+        signame: cio_uart1_tx_en_d2p
         width: 1
         type: uni
         end_idx: -1
@@ -20988,7 +21200,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_ac_present_p2d
+        signame: cio_uart2_rx_p2d
         width: 1
         type: uni
         end_idx: -1
@@ -21000,7 +21212,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_key0_in_p2d
+        signame: cio_uart2_tx_d2p
         width: 1
         type: uni
         end_idx: -1
@@ -21012,7 +21224,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_key1_in_p2d
+        signame: cio_uart2_tx_en_d2p
         width: 1
         type: uni
         end_idx: -1
@@ -21024,7 +21236,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_key2_in_p2d
+        signame: cio_uart3_rx_p2d
         width: 1
         type: uni
         end_idx: -1
@@ -21036,7 +21248,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_pwrb_in_p2d
+        signame: cio_uart3_tx_d2p
         width: 1
         type: uni
         end_idx: -1
@@ -21048,7 +21260,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_lid_open_p2d
+        signame: cio_uart3_tx_en_d2p
         width: 1
         type: uni
         end_idx: -1
@@ -21060,7 +21272,79 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_bat_disable_d2p
+        signame: cio_gpio_gpio_d2p
+        width: 32
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_gpio_gpio_en_d2p
+        width: 32
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_gpio_gpio_p2d
+        width: 32
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_device_sd_d2p
+        width: 4
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_device_sd_en_d2p
+        width: 4
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_device_sd_p2d
+        width: 4
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_device_sck_p2d
         width: 1
         type: uni
         end_idx: -1
@@ -21072,7 +21356,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_bat_disable_en_d2p
+        signame: cio_spi_device_csb_p2d
         width: 1
         type: uni
         end_idx: -1
@@ -21084,7 +21368,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_key0_out_d2p
+        signame: cio_spi_device_tpm_csb_p2d
         width: 1
         type: uni
         end_idx: -1
@@ -21096,7 +21380,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_key0_out_en_d2p
+        signame: cio_i2c0_sda_d2p
         width: 1
         type: uni
         end_idx: -1
@@ -21108,7 +21392,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_key1_out_d2p
+        signame: cio_i2c0_sda_en_d2p
         width: 1
         type: uni
         end_idx: -1
@@ -21120,7 +21404,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_key1_out_en_d2p
+        signame: cio_i2c0_sda_p2d
         width: 1
         type: uni
         end_idx: -1
@@ -21132,7 +21416,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_key2_out_d2p
+        signame: cio_i2c0_scl_d2p
         width: 1
         type: uni
         end_idx: -1
@@ -21144,7 +21428,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_key2_out_en_d2p
+        signame: cio_i2c0_scl_en_d2p
         width: 1
         type: uni
         end_idx: -1
@@ -21156,7 +21440,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_pwrb_out_d2p
+        signame: cio_i2c0_scl_p2d
         width: 1
         type: uni
         end_idx: -1
@@ -21168,7 +21452,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_pwrb_out_en_d2p
+        signame: cio_i2c1_sda_d2p
         width: 1
         type: uni
         end_idx: -1
@@ -21180,7 +21464,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_z3_wakeup_d2p
+        signame: cio_i2c1_sda_en_d2p
         width: 1
         type: uni
         end_idx: -1
@@ -21192,7 +21476,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sysrst_ctrl_z3_wakeup_en_d2p
+        signame: cio_i2c1_sda_p2d
         width: 1
         type: uni
         end_idx: -1
@@ -21204,8 +21488,8 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sensor_ctrl_ast_debug_out_d2p
-        width: 9
+        signame: cio_i2c1_scl_d2p
+        width: 1
         type: uni
         end_idx: -1
         act: ""
@@ -21216,8 +21500,404 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_sensor_ctrl_ast_debug_out_en_d2p
-        width: 9
+        signame: cio_i2c1_scl_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i2c1_scl_p2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i2c2_sda_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i2c2_sda_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i2c2_sda_p2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i2c2_scl_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i2c2_scl_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i2c2_scl_p2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_host0_sd_d2p
+        width: 4
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_host0_sd_en_d2p
+        width: 4
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_host0_sd_p2d
+        width: 4
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_host0_sck_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_host0_sck_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_host0_csb_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_host0_csb_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_host1_sd_d2p
+        width: 4
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_host1_sd_en_d2p
+        width: 4
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_host1_sd_p2d
+        width: 4
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_host1_sck_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_host1_sck_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_host1_csb_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_spi_host1_csb_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_usbdev_usb_dp_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_usbdev_usb_dp_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_usbdev_usb_dp_p2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_usbdev_usb_dn_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_usbdev_usb_dn_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_usbdev_usb_dn_p2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_usbdev_sense_p2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_rram_macro_tck_p2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_rram_macro_tms_p2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_rram_macro_tdi_p2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_rram_macro_tdo_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_rram_macro_tdo_en_d2p
+        width: 1
         type: uni
         end_idx: -1
         act: ""
@@ -21513,8 +22193,8 @@
     }
     module_pinmux:
     {
-      tx_expr: alert_tx[28]
-      rx_expr: alert_rx[28]
+      tx_expr: alert_tx_o[7]
+      rx_expr: alert_rx_i[7]
       async_expr: alert_handler_reg_pkg::AsyncOn[28]
       comments:
       [
@@ -21523,8 +22203,8 @@
     }
     module_aon_timer:
     {
-      tx_expr: alert_tx_o[7]
-      rx_expr: alert_rx_i[7]
+      tx_expr: alert_tx_o[8]
+      rx_expr: alert_rx_i[8]
       async_expr: alert_handler_reg_pkg::AsyncOn[29]
       comments:
       [
@@ -21533,8 +22213,8 @@
     }
     module_sensor_ctrl:
     {
-      tx_expr: alert_tx_o[9:8]
-      rx_expr: alert_rx_i[9:8]
+      tx_expr: alert_tx_o[10:9]
+      rx_expr: alert_rx_i[10:9]
       async_expr: alert_handler_reg_pkg::AsyncOn[31:30]
       comments:
       [
@@ -21544,8 +22224,8 @@
     }
     module_sram_ctrl_ret:
     {
-      tx_expr: alert_tx_o[10]
-      rx_expr: alert_rx_i[10]
+      tx_expr: alert_tx_o[11]
+      rx_expr: alert_rx_i[11]
       async_expr: alert_handler_reg_pkg::AsyncOn[32]
       comments:
       [
@@ -21756,8 +22436,8 @@
       count_tot: 66
       count_pd:
       {
-        Aon: 11
-        Main: 55
+        Aon: 12
+        Main: 54
       }
       connect_pd:
       {
@@ -21796,25 +22476,30 @@
           src_pd: Aon
           idx: 6
         }
-        29:
+        28:
         {
           src_pd: Aon
           idx: 7
         }
-        30:
+        29:
         {
           src_pd: Aon
           idx: 8
         }
-        31:
+        30:
         {
           src_pd: Aon
           idx: 9
         }
-        32:
+        31:
         {
           src_pd: Aon
           idx: 10
+        }
+        32:
+        {
+          src_pd: Aon
+          idx: 11
         }
       }
     }
@@ -23396,6 +24081,8 @@
         domain: Main
         top_signame: pinmux_lc_jtag
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: esc_scrap_state0_tx
@@ -23594,6 +24281,8 @@
         top_type: broadcast
         top_signame: lc_ctrl_lc_hw_debug_clr
         index: -1
+        external: true
+        conn_type: true
       }
       {
         name: lc_hw_debug_en
@@ -23750,6 +24439,8 @@
         top_type: broadcast
         top_signame: lc_ctrl_lc_check_byp_en
         index: -1
+        external: true
+        conn_type: true
       }
       {
         name: lc_creator_seed_sw_rw_en
@@ -23904,6 +24595,8 @@
         top_type: broadcast
         top_signame: lc_ctrl_strap_en_override
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: regs_tl
@@ -24209,6 +24902,8 @@
         top_type: broadcast
         top_signame: usbdev_usb_dp_pullup
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: usb_dn_pullup
@@ -24224,6 +24919,8 @@
         top_type: broadcast
         top_signame: usbdev_usb_dn_pullup
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: usb_rx_enable
@@ -24288,6 +24985,8 @@
         top_type: broadcast
         top_signame: usbdev_usb_aon_suspend_req
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: usb_aon_wake_ack
@@ -24303,6 +25002,8 @@
         top_type: broadcast
         top_signame: usbdev_usb_aon_wake_ack
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: usb_aon_bus_reset
@@ -24318,6 +25019,8 @@
         top_type: broadcast
         top_signame: usbdev_usb_aon_bus_reset
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: usb_aon_sense_lost
@@ -24333,6 +25036,8 @@
         top_type: broadcast
         top_signame: usbdev_usb_aon_sense_lost
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: usb_aon_bus_not_idle
@@ -24348,6 +25053,8 @@
         top_type: broadcast
         top_signame: usbdev_usb_aon_bus_not_idle
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: usb_aon_wake_detect_active
@@ -24362,6 +25069,8 @@
         domain: Main
         top_signame: pinmux_usbdev_wake_detect_active
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: ram_cfg
@@ -24536,13 +25245,7 @@
         end_idx: -1
         top_type: one-to-N
         top_signame: pwrmgr_wakeups
-        index:
-        [
-          2
-          3
-        ]
-        external: true
-        conn_type: true
+        index: -1
       }
       {
         name: rstreqs
@@ -24586,8 +25289,6 @@
         top_type: broadcast
         top_signame: pwrmgr_strap
         index: -1
-        external: true
-        conn_type: false
       }
       {
         name: low_power
@@ -24602,8 +25303,6 @@
         top_type: broadcast
         top_signame: pwrmgr_low_power
         index: -1
-        external: true
-        conn_type: true
       }
       {
         name: rom_ctrl
@@ -25158,9 +25857,11 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: pinmux
-        domain: Main
+        domain: Aon
         top_signame: lc_ctrl_lc_hw_debug_clr
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: lc_hw_debug_en
@@ -25172,9 +25873,11 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: pinmux
-        domain: Main
+        domain: Aon
         top_signame: lc_ctrl_lc_hw_debug_en
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: lc_dft_en
@@ -25186,9 +25889,11 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: pinmux
-        domain: Main
+        domain: Aon
         top_signame: lc_ctrl_lc_dft_en
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: lc_escalate_en
@@ -25204,9 +25909,11 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: pinmux
-        domain: Main
+        domain: Aon
         top_signame: lc_ctrl_lc_escalate_en
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: lc_check_byp_en
@@ -25225,9 +25932,11 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: pinmux
-        domain: Main
+        domain: Aon
         top_signame: lc_ctrl_lc_check_byp_en
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: pinmux_hw_debug_en
@@ -25247,6 +25956,8 @@
         top_type: broadcast
         top_signame: pinmux_pinmux_hw_debug_en
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: lc_jtag
@@ -25262,6 +25973,8 @@
         top_type: one-to-one
         top_signame: pinmux_lc_jtag
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: rv_jtag
@@ -25277,6 +25990,8 @@
         top_type: one-to-one
         top_signame: pinmux_rv_jtag
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: dft_jtag
@@ -25305,8 +26020,6 @@
         top_type: broadcast
         top_signame: pinmux_dft_strap_test
         index: -1
-        external: true
-        conn_type: false
       }
       {
         name: dft_hold_tap_sel
@@ -25333,11 +26046,9 @@
         default: 1'b0
         inst_name: pinmux
         package: ""
-        domain: Main
+        domain: Aon
         top_signame: pwrmgr_low_power
         index: -1
-        external: true
-        conn_type: false
       }
       {
         name: strap_en
@@ -25349,11 +26060,9 @@
         default: 1'b0
         inst_name: pinmux
         package: ""
-        domain: Main
+        domain: Aon
         top_signame: pwrmgr_strap
         index: -1
-        external: true
-        conn_type: false
       }
       {
         name: strap_en_override
@@ -25371,9 +26080,11 @@
         default: 1'b0
         inst_name: pinmux
         package: ""
-        domain: Main
+        domain: Aon
         top_signame: lc_ctrl_strap_en_override
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: pin_wkup_req
@@ -25385,11 +26096,9 @@
         default: 1'b0
         inst_name: pinmux
         package: ""
-        domain: Main
+        domain: Aon
         top_signame: pwrmgr_wakeups
-        index: 0
-        external: true
-        conn_type: false
+        index: 2
       }
       {
         name: usbdev_dppullup_en
@@ -25401,9 +26110,11 @@
         inst_name: pinmux
         default: ""
         package: ""
-        domain: Main
+        domain: Aon
         top_signame: usbdev_usb_dp_pullup
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: usbdev_dnpullup_en
@@ -25415,9 +26126,11 @@
         inst_name: pinmux
         default: ""
         package: ""
-        domain: Main
+        domain: Aon
         top_signame: usbdev_usb_dn_pullup
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: usb_dppullup_en
@@ -25459,11 +26172,9 @@
         default: 1'b0
         inst_name: pinmux
         package: ""
-        domain: Main
+        domain: Aon
         top_signame: pwrmgr_wakeups
-        index: 1
-        external: true
-        conn_type: false
+        index: 3
       }
       {
         name: usbdev_suspend_req
@@ -25475,9 +26186,11 @@
         inst_name: pinmux
         default: ""
         package: ""
-        domain: Main
+        domain: Aon
         top_signame: usbdev_usb_aon_suspend_req
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: usbdev_wake_ack
@@ -25489,9 +26202,11 @@
         inst_name: pinmux
         default: ""
         package: ""
-        domain: Main
+        domain: Aon
         top_signame: usbdev_usb_aon_wake_ack
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: usbdev_bus_not_idle
@@ -25503,9 +26218,11 @@
         default: 1'b0
         inst_name: pinmux
         package: ""
-        domain: Main
+        domain: Aon
         top_signame: usbdev_usb_aon_bus_not_idle
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: usbdev_bus_reset
@@ -25517,9 +26234,11 @@
         default: 1'b0
         inst_name: pinmux
         package: ""
-        domain: Main
+        domain: Aon
         top_signame: usbdev_usb_aon_bus_reset
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: usbdev_sense_lost
@@ -25531,9 +26250,11 @@
         default: 1'b0
         inst_name: pinmux
         package: ""
-        domain: Main
+        domain: Aon
         top_signame: usbdev_usb_aon_sense_lost
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: usbdev_wake_detect_active
@@ -25549,6 +26270,8 @@
         top_type: broadcast
         top_signame: pinmux_usbdev_wake_detect_active
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: tl
@@ -25563,6 +26286,8 @@
         top_type: one-to-one
         top_signame: pinmux_tl
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: nmi_wdog_timer_bark
@@ -26322,8 +27047,6 @@
         domain: Aon
         top_signame: pinmux_dft_strap_test
         index: -1
-        external: true
-        conn_type: false
       }
       {
         name: lc_dft_en
@@ -27267,6 +27990,8 @@
         domain: Main
         top_signame: pinmux_rv_jtag
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: lc_init_done
@@ -27355,6 +28080,8 @@
         domain: Main
         top_signame: pinmux_pinmux_hw_debug_en
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: otp_dis_rv_dm_late_debug
@@ -30244,6 +30971,8 @@
         domain: Main
         top_signame: pinmux_tl
         index: -1
+        external: true
+        conn_type: false
       }
       {
         name: tl_otp_ctrl__core
@@ -30629,46 +31358,6 @@
         conn_type: false
         index: -1
         netname: usbdev_usb_ref_val
-      }
-      {
-        package: pinmux_pkg
-        struct: dft_strap_test_req
-        domain: Main
-        inter_pd: true
-        signame: pinmux_dft_strap_test_o
-        signame_chip:
-        {
-          asic: pinmux_dft_strap_test
-          verilator: pinmux_dft_strap_test
-          cw340: pinmux_dft_strap_test
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: out
-        conn_type: false
-        index: -1
-        netname: pinmux_dft_strap_test
-      }
-      {
-        package: pinmux_pkg
-        struct: dft_strap_test_req
-        domain: Aon
-        inter_pd: true
-        signame: pinmux_dft_strap_test_i
-        signame_chip:
-        {
-          asic: pinmux_dft_strap_test
-          verilator: pinmux_dft_strap_test
-          cw340: pinmux_dft_strap_test
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: pinmux_dft_strap_test
       }
       {
         package: prim_mubi_pkg
@@ -31351,86 +32040,6 @@
         netname: pwrmgr_pwr_lc_rsp
       }
       {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: pwrmgr_strap_o
-        signame_chip:
-        {
-          asic: pwrmgr_strap
-          verilator: pwrmgr_strap
-          cw340: pwrmgr_strap
-        }
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: pwrmgr_strap
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: pwrmgr_strap_i
-        signame_chip:
-        {
-          asic: pwrmgr_strap
-          verilator: pwrmgr_strap
-          cw340: pwrmgr_strap
-        }
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: pwrmgr_strap
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: pwrmgr_low_power_o
-        signame_chip:
-        {
-          asic: pwrmgr_low_power
-          verilator: pwrmgr_low_power
-          cw340: pwrmgr_low_power
-        }
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: true
-        index: -1
-        netname: pwrmgr_low_power
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: pwrmgr_low_power_i
-        signame_chip:
-        {
-          asic: pwrmgr_low_power
-          verilator: pwrmgr_low_power
-          cw340: pwrmgr_low_power
-        }
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: pwrmgr_low_power
-      }
-      {
         package: lc_ctrl_pkg
         struct: lc_tx
         domain: Aon
@@ -31511,6 +32120,326 @@
         netname: rom_ctrl_pwrmgr_data
       }
       {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: usbdev_usb_dp_pullup_o
+        signame_chip:
+        {
+          asic: usbdev_usb_dp_pullup
+          verilator: usbdev_usb_dp_pullup
+          cw340: usbdev_usb_dp_pullup
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_dp_pullup
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: usbdev_usb_dp_pullup_i
+        signame_chip:
+        {
+          asic: usbdev_usb_dp_pullup
+          verilator: usbdev_usb_dp_pullup
+          cw340: usbdev_usb_dp_pullup
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_dp_pullup
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: usbdev_usb_dn_pullup_o
+        signame_chip:
+        {
+          asic: usbdev_usb_dn_pullup
+          verilator: usbdev_usb_dn_pullup
+          cw340: usbdev_usb_dn_pullup
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_dn_pullup
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: usbdev_usb_dn_pullup_i
+        signame_chip:
+        {
+          asic: usbdev_usb_dn_pullup
+          verilator: usbdev_usb_dn_pullup
+          cw340: usbdev_usb_dn_pullup
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_dn_pullup
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: usbdev_usb_aon_suspend_req_o
+        signame_chip:
+        {
+          asic: usbdev_usb_aon_suspend_req
+          verilator: usbdev_usb_aon_suspend_req
+          cw340: usbdev_usb_aon_suspend_req
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_aon_suspend_req
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: usbdev_usb_aon_suspend_req_i
+        signame_chip:
+        {
+          asic: usbdev_usb_aon_suspend_req
+          verilator: usbdev_usb_aon_suspend_req
+          cw340: usbdev_usb_aon_suspend_req
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_aon_suspend_req
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: usbdev_usb_aon_wake_ack_o
+        signame_chip:
+        {
+          asic: usbdev_usb_aon_wake_ack
+          verilator: usbdev_usb_aon_wake_ack
+          cw340: usbdev_usb_aon_wake_ack
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_aon_wake_ack
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: usbdev_usb_aon_wake_ack_i
+        signame_chip:
+        {
+          asic: usbdev_usb_aon_wake_ack
+          verilator: usbdev_usb_aon_wake_ack
+          cw340: usbdev_usb_aon_wake_ack
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_aon_wake_ack
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: usbdev_usb_aon_bus_not_idle_i
+        signame_chip:
+        {
+          asic: usbdev_usb_aon_bus_not_idle
+          verilator: usbdev_usb_aon_bus_not_idle
+          cw340: usbdev_usb_aon_bus_not_idle
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_aon_bus_not_idle
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: usbdev_usb_aon_bus_not_idle_o
+        signame_chip:
+        {
+          asic: usbdev_usb_aon_bus_not_idle
+          verilator: usbdev_usb_aon_bus_not_idle
+          cw340: usbdev_usb_aon_bus_not_idle
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_aon_bus_not_idle
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: usbdev_usb_aon_bus_reset_i
+        signame_chip:
+        {
+          asic: usbdev_usb_aon_bus_reset
+          verilator: usbdev_usb_aon_bus_reset
+          cw340: usbdev_usb_aon_bus_reset
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_aon_bus_reset
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: usbdev_usb_aon_bus_reset_o
+        signame_chip:
+        {
+          asic: usbdev_usb_aon_bus_reset
+          verilator: usbdev_usb_aon_bus_reset
+          cw340: usbdev_usb_aon_bus_reset
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_aon_bus_reset
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: usbdev_usb_aon_sense_lost_i
+        signame_chip:
+        {
+          asic: usbdev_usb_aon_sense_lost
+          verilator: usbdev_usb_aon_sense_lost
+          cw340: usbdev_usb_aon_sense_lost
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_aon_sense_lost
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: usbdev_usb_aon_sense_lost_o
+        signame_chip:
+        {
+          asic: usbdev_usb_aon_sense_lost
+          verilator: usbdev_usb_aon_sense_lost
+          cw340: usbdev_usb_aon_sense_lost
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: usbdev_usb_aon_sense_lost
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: pinmux_usbdev_wake_detect_active_o
+        signame_chip:
+        {
+          asic: pinmux_usbdev_wake_detect_active
+          verilator: pinmux_usbdev_wake_detect_active
+          cw340: pinmux_usbdev_wake_detect_active
+        }
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: pinmux_usbdev_wake_detect_active
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: pinmux_usbdev_wake_detect_active_i
+        signame_chip:
+        {
+          asic: pinmux_usbdev_wake_detect_active
+          verilator: pinmux_usbdev_wake_detect_active
+          cw340: pinmux_usbdev_wake_detect_active
+        }
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: in
+        conn_type: false
+        index: -1
+        netname: pinmux_usbdev_wake_detect_active
+      }
+      {
         package: prim_mubi_pkg
         struct: mubi4
         domain: Aon
@@ -31551,6 +32480,246 @@
         netname: clkmgr_idle
       }
       {
+        package: jtag_pkg
+        struct: jtag_req
+        domain: Aon
+        inter_pd: true
+        signame: pinmux_lc_jtag_req_o
+        signame_chip:
+        {
+          asic: pinmux_lc_jtag_req
+          verilator: pinmux_lc_jtag_req
+          cw340: pinmux_lc_jtag_req
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: pinmux_lc_jtag_req
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_rsp
+        domain: Aon
+        inter_pd: true
+        signame: pinmux_lc_jtag_rsp_i
+        signame_chip:
+        {
+          asic: pinmux_lc_jtag_rsp
+          verilator: pinmux_lc_jtag_rsp
+          cw340: pinmux_lc_jtag_rsp
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: pinmux_lc_jtag_rsp
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_req
+        domain: Main
+        inter_pd: true
+        signame: pinmux_lc_jtag_req_i
+        signame_chip:
+        {
+          asic: pinmux_lc_jtag_req
+          verilator: pinmux_lc_jtag_req
+          cw340: pinmux_lc_jtag_req
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: pinmux_lc_jtag_req
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_rsp
+        domain: Main
+        inter_pd: true
+        signame: pinmux_lc_jtag_rsp_o
+        signame_chip:
+        {
+          asic: pinmux_lc_jtag_rsp
+          verilator: pinmux_lc_jtag_rsp
+          cw340: pinmux_lc_jtag_rsp
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: pinmux_lc_jtag_rsp
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_req
+        domain: Aon
+        inter_pd: true
+        signame: pinmux_rv_jtag_req_o
+        signame_chip:
+        {
+          asic: pinmux_rv_jtag_req
+          verilator: pinmux_rv_jtag_req
+          cw340: pinmux_rv_jtag_req
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: pinmux_rv_jtag_req
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_rsp
+        domain: Aon
+        inter_pd: true
+        signame: pinmux_rv_jtag_rsp_i
+        signame_chip:
+        {
+          asic: pinmux_rv_jtag_rsp
+          verilator: pinmux_rv_jtag_rsp
+          cw340: pinmux_rv_jtag_rsp
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: pinmux_rv_jtag_rsp
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_req
+        domain: Main
+        inter_pd: true
+        signame: pinmux_rv_jtag_req_i
+        signame_chip:
+        {
+          asic: pinmux_rv_jtag_req
+          verilator: pinmux_rv_jtag_req
+          cw340: pinmux_rv_jtag_req
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: pinmux_rv_jtag_req
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_rsp
+        domain: Main
+        inter_pd: true
+        signame: pinmux_rv_jtag_rsp_o
+        signame_chip:
+        {
+          asic: pinmux_rv_jtag_rsp
+          verilator: pinmux_rv_jtag_rsp
+          cw340: pinmux_rv_jtag_rsp
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: pinmux_rv_jtag_rsp
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        domain: Aon
+        inter_pd: true
+        signame: pinmux_pinmux_hw_debug_en_o
+        signame_chip:
+        {
+          asic: pinmux_pinmux_hw_debug_en
+          verilator: pinmux_pinmux_hw_debug_en
+          cw340: pinmux_pinmux_hw_debug_en
+        }
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+        direction: out
+        conn_type: false
+        index: -1
+        netname: pinmux_pinmux_hw_debug_en
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        domain: Main
+        inter_pd: true
+        signame: pinmux_pinmux_hw_debug_en_i
+        signame_chip:
+        {
+          asic: pinmux_pinmux_hw_debug_en
+          verilator: pinmux_pinmux_hw_debug_en
+          cw340: pinmux_pinmux_hw_debug_en
+        }
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+        direction: in
+        conn_type: false
+        index: -1
+        netname: pinmux_pinmux_hw_debug_en
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: lc_ctrl_strap_en_override_o
+        signame_chip:
+        {
+          asic: lc_ctrl_strap_en_override
+          verilator: lc_ctrl_strap_en_override
+          cw340: lc_ctrl_strap_en_override
+        }
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: out
+        conn_type: false
+        index: -1
+        netname: lc_ctrl_strap_en_override
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: lc_ctrl_strap_en_override_i
+        signame_chip:
+        {
+          asic: lc_ctrl_strap_en_override
+          verilator: lc_ctrl_strap_en_override
+          cw340: lc_ctrl_strap_en_override
+        }
+        width: 1
+        type: uni
+        default: 1'b0
+        direction: in
+        conn_type: false
+        index: -1
+        netname: lc_ctrl_strap_en_override
+      }
+      {
         package: lc_ctrl_pkg
         struct: lc_tx
         domain: Main
@@ -31589,6 +32758,46 @@
         conn_type: false
         index: -1
         netname: lc_ctrl_lc_dft_en
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        domain: Main
+        inter_pd: true
+        signame: lc_ctrl_lc_hw_debug_clr_o
+        signame_chip:
+        {
+          asic: lc_ctrl_lc_hw_debug_clr
+          verilator: lc_ctrl_lc_hw_debug_clr
+          cw340: lc_ctrl_lc_hw_debug_clr
+        }
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+        direction: out
+        conn_type: true
+        index: -1
+        netname: lc_ctrl_lc_hw_debug_clr
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        domain: Aon
+        inter_pd: true
+        signame: lc_ctrl_lc_hw_debug_clr_i
+        signame_chip:
+        {
+          asic: lc_ctrl_lc_hw_debug_clr
+          verilator: lc_ctrl_lc_hw_debug_clr
+          cw340: lc_ctrl_lc_hw_debug_clr
+        }
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+        direction: in
+        conn_type: false
+        index: -1
+        netname: lc_ctrl_lc_hw_debug_clr
       }
       {
         package: lc_ctrl_pkg
@@ -31669,6 +32878,46 @@
         conn_type: false
         index: -1
         netname: lc_ctrl_lc_escalate_en
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        domain: Main
+        inter_pd: true
+        signame: lc_ctrl_lc_check_byp_en_o
+        signame_chip:
+        {
+          asic: lc_ctrl_lc_check_byp_en
+          verilator: lc_ctrl_lc_check_byp_en
+          cw340: lc_ctrl_lc_check_byp_en
+        }
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+        direction: out
+        conn_type: true
+        index: -1
+        netname: lc_ctrl_lc_check_byp_en
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        domain: Aon
+        inter_pd: true
+        signame: lc_ctrl_lc_check_byp_en_i
+        signame_chip:
+        {
+          asic: lc_ctrl_lc_check_byp_en
+          verilator: lc_ctrl_lc_check_byp_en
+          cw340: lc_ctrl_lc_check_byp_en
+        }
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+        direction: in
+        conn_type: false
+        index: -1
+        netname: lc_ctrl_lc_check_byp_en
       }
       {
         package: lc_ctrl_pkg
@@ -31869,54 +33118,6 @@
         conn_type: false
         index: -1
         netname: rv_dm_ndmreset_req
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: pwrmgr_wakeups_i
-        signame_chip:
-        {
-          asic: pwrmgr_wakeups
-          verilator: pwrmgr_wakeups
-          cw340: pwrmgr_wakeups
-        }
-        width: 2
-        type: uni
-        default: ""
-        direction: in
-        conn_type: true
-        index:
-        [
-          2
-          3
-        ]
-        netname: pwrmgr_wakeups
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: pwrmgr_wakeups_o
-        signame_chip:
-        {
-          asic: pwrmgr_wakeups
-          verilator: pwrmgr_wakeups
-          cw340: pwrmgr_wakeups
-        }
-        width: 2
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index:
-        [
-          2
-          3
-        ]
-        netname: pwrmgr_wakeups
       }
       {
         package: ast_intraip_pkg
@@ -32237,6 +33438,86 @@
         conn_type: false
         index: -1
         netname: clkmgr_tl_d2h
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Aon
+        inter_pd: true
+        signame: pinmux_tl_req_i
+        signame_chip:
+        {
+          asic: pinmux_tl_req
+          verilator: pinmux_tl_req
+          cw340: pinmux_tl_req
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: pinmux_tl_h2d
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Aon
+        inter_pd: true
+        signame: pinmux_tl_rsp_o
+        signame_chip:
+        {
+          asic: pinmux_tl_rsp
+          verilator: pinmux_tl_rsp
+          cw340: pinmux_tl_rsp
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: pinmux_tl_d2h
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Main
+        inter_pd: true
+        signame: pinmux_tl_req_o
+        signame_chip:
+        {
+          asic: pinmux_tl_req
+          verilator: pinmux_tl_req
+          cw340: pinmux_tl_req
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: pinmux_tl_h2d
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Main
+        inter_pd: true
+        signame: pinmux_tl_rsp_i
+        signame_chip:
+        {
+          asic: pinmux_tl_rsp
+          verilator: pinmux_tl_rsp
+          cw340: pinmux_tl_rsp
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: pinmux_tl_d2h
       }
       {
         package: tlul_pkg
@@ -33063,7 +34344,7 @@
       {
         package: ""
         struct: logic
-        domain: Main
+        domain: Aon
         inter_pd: false
         signame: dft_hold_tap_sel_i
         signame_chip:
@@ -33083,7 +34364,7 @@
       {
         package: ""
         struct: logic
-        domain: Main
+        domain: Aon
         inter_pd: false
         signame: usb_dp_pullup_en_o
         signame_chip:
@@ -33103,7 +34384,7 @@
       {
         package: ""
         struct: logic
-        domain: Main
+        domain: Aon
         inter_pd: false
         signame: usb_dn_pullup_en_o
         signame_chip:
@@ -33283,34 +34564,14 @@
       {
         package: ""
         struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_sysrst_ctrl_ec_rst_l_d2p_o
-        signame_chip:
-        {
-          asic: cio_sysrst_ctrl_ec_rst_l_d2p
-          verilator: cio_sysrst_ctrl_ec_rst_l_d2p
-          cw340: cio_sysrst_ctrl_ec_rst_l_d2p
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: out
-        conn_type: false
-        index: -1
-        netname: cio_sysrst_ctrl_ec_rst_l_d2p
-      }
-      {
-        package: ""
-        struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_ec_rst_l_d2p_i
+        signame: cio_uart0_rx_p2d_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_ec_rst_l_d2p
-          verilator: cio_sysrst_ctrl_ec_rst_l_d2p
-          cw340: cio_sysrst_ctrl_ec_rst_l_d2p
+          asic: cio_uart0_rx_p2d
+          verilator: cio_uart0_rx_p2d
+          cw340: cio_uart0_rx_p2d
         }
         width: 1
         type: uni
@@ -33318,19 +34579,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_ec_rst_l_d2p
+        netname: cio_uart0_rx_p2d
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_ec_rst_l_en_d2p_o
+        signame: cio_uart0_rx_p2d_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_ec_rst_l_en_d2p
-          verilator: cio_sysrst_ctrl_ec_rst_l_en_d2p
-          cw340: cio_sysrst_ctrl_ec_rst_l_en_d2p
+          asic: cio_uart0_rx_p2d
+          verilator: cio_uart0_rx_p2d
+          cw340: cio_uart0_rx_p2d
         }
         width: 1
         type: uni
@@ -33338,59 +34599,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_ec_rst_l_en_d2p
+        netname: cio_uart0_rx_p2d
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_ec_rst_l_en_d2p_i
+        signame: cio_uart0_tx_d2p_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_ec_rst_l_en_d2p
-          verilator: cio_sysrst_ctrl_ec_rst_l_en_d2p
-          cw340: cio_sysrst_ctrl_ec_rst_l_en_d2p
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: cio_sysrst_ctrl_ec_rst_l_en_d2p
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_sysrst_ctrl_ec_rst_l_p2d_i
-        signame_chip:
-        {
-          asic: cio_sysrst_ctrl_ec_rst_l_p2d
-          verilator: cio_sysrst_ctrl_ec_rst_l_p2d
-          cw340: cio_sysrst_ctrl_ec_rst_l_p2d
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: cio_sysrst_ctrl_ec_rst_l_p2d
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: cio_sysrst_ctrl_ec_rst_l_p2d_o
-        signame_chip:
-        {
-          asic: cio_sysrst_ctrl_ec_rst_l_p2d
-          verilator: cio_sysrst_ctrl_ec_rst_l_p2d
-          cw340: cio_sysrst_ctrl_ec_rst_l_p2d
+          asic: cio_uart0_tx_d2p
+          verilator: cio_uart0_tx_d2p
+          cw340: cio_uart0_tx_d2p
         }
         width: 1
         type: uni
@@ -33398,39 +34619,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_ec_rst_l_p2d
+        netname: cio_uart0_tx_d2p
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_flash_wp_l_d2p_o
+        signame: cio_uart0_tx_d2p_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_flash_wp_l_d2p
-          verilator: cio_sysrst_ctrl_flash_wp_l_d2p
-          cw340: cio_sysrst_ctrl_flash_wp_l_d2p
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: out
-        conn_type: false
-        index: -1
-        netname: cio_sysrst_ctrl_flash_wp_l_d2p
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: cio_sysrst_ctrl_flash_wp_l_d2p_i
-        signame_chip:
-        {
-          asic: cio_sysrst_ctrl_flash_wp_l_d2p
-          verilator: cio_sysrst_ctrl_flash_wp_l_d2p
-          cw340: cio_sysrst_ctrl_flash_wp_l_d2p
+          asic: cio_uart0_tx_d2p
+          verilator: cio_uart0_tx_d2p
+          cw340: cio_uart0_tx_d2p
         }
         width: 1
         type: uni
@@ -33438,19 +34639,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_flash_wp_l_d2p
+        netname: cio_uart0_tx_d2p
       }
       {
         package: ""
         struct: logic
-        domain: Aon
+        domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_flash_wp_l_en_d2p_o
+        signame: cio_uart0_tx_en_d2p_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_flash_wp_l_en_d2p
-          verilator: cio_sysrst_ctrl_flash_wp_l_en_d2p
-          cw340: cio_sysrst_ctrl_flash_wp_l_en_d2p
+          asic: cio_uart0_tx_en_d2p
+          verilator: cio_uart0_tx_en_d2p
+          cw340: cio_uart0_tx_en_d2p
         }
         width: 1
         type: uni
@@ -33458,39 +34659,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_flash_wp_l_en_d2p
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: cio_sysrst_ctrl_flash_wp_l_en_d2p_i
-        signame_chip:
-        {
-          asic: cio_sysrst_ctrl_flash_wp_l_en_d2p
-          verilator: cio_sysrst_ctrl_flash_wp_l_en_d2p
-          cw340: cio_sysrst_ctrl_flash_wp_l_en_d2p
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: cio_sysrst_ctrl_flash_wp_l_en_d2p
+        netname: cio_uart0_tx_en_d2p
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_flash_wp_l_p2d_i
+        signame: cio_uart0_tx_en_d2p_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_flash_wp_l_p2d
-          verilator: cio_sysrst_ctrl_flash_wp_l_p2d
-          cw340: cio_sysrst_ctrl_flash_wp_l_p2d
+          asic: cio_uart0_tx_en_d2p
+          verilator: cio_uart0_tx_en_d2p
+          cw340: cio_uart0_tx_en_d2p
         }
         width: 1
         type: uni
@@ -33498,19 +34679,39 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_flash_wp_l_p2d
+        netname: cio_uart0_tx_en_d2p
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_flash_wp_l_p2d_o
+        signame: cio_uart1_rx_p2d_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_flash_wp_l_p2d
-          verilator: cio_sysrst_ctrl_flash_wp_l_p2d
-          cw340: cio_sysrst_ctrl_flash_wp_l_p2d
+          asic: cio_uart1_rx_p2d
+          verilator: cio_uart1_rx_p2d
+          cw340: cio_uart1_rx_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_uart1_rx_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_uart1_rx_p2d_o
+        signame_chip:
+        {
+          asic: cio_uart1_rx_p2d
+          verilator: cio_uart1_rx_p2d
+          cw340: cio_uart1_rx_p2d
         }
         width: 1
         type: uni
@@ -33518,39 +34719,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_flash_wp_l_p2d
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_sysrst_ctrl_ac_present_p2d_i
-        signame_chip:
-        {
-          asic: cio_sysrst_ctrl_ac_present_p2d
-          verilator: cio_sysrst_ctrl_ac_present_p2d
-          cw340: cio_sysrst_ctrl_ac_present_p2d
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: cio_sysrst_ctrl_ac_present_p2d
+        netname: cio_uart1_rx_p2d
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_ac_present_p2d_o
+        signame: cio_uart1_tx_d2p_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_ac_present_p2d
-          verilator: cio_sysrst_ctrl_ac_present_p2d
-          cw340: cio_sysrst_ctrl_ac_present_p2d
+          asic: cio_uart1_tx_d2p
+          verilator: cio_uart1_tx_d2p
+          cw340: cio_uart1_tx_d2p
         }
         width: 1
         type: uni
@@ -33558,19 +34739,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_ac_present_p2d
+        netname: cio_uart1_tx_d2p
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_key0_in_p2d_i
+        signame: cio_uart1_tx_d2p_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_key0_in_p2d
-          verilator: cio_sysrst_ctrl_key0_in_p2d
-          cw340: cio_sysrst_ctrl_key0_in_p2d
+          asic: cio_uart1_tx_d2p
+          verilator: cio_uart1_tx_d2p
+          cw340: cio_uart1_tx_d2p
         }
         width: 1
         type: uni
@@ -33578,19 +34759,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key0_in_p2d
+        netname: cio_uart1_tx_d2p
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_key0_in_p2d_o
+        signame: cio_uart1_tx_en_d2p_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_key0_in_p2d
-          verilator: cio_sysrst_ctrl_key0_in_p2d
-          cw340: cio_sysrst_ctrl_key0_in_p2d
+          asic: cio_uart1_tx_en_d2p
+          verilator: cio_uart1_tx_en_d2p
+          cw340: cio_uart1_tx_en_d2p
         }
         width: 1
         type: uni
@@ -33598,19 +34779,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key0_in_p2d
+        netname: cio_uart1_tx_en_d2p
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_key1_in_p2d_i
+        signame: cio_uart1_tx_en_d2p_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_key1_in_p2d
-          verilator: cio_sysrst_ctrl_key1_in_p2d
-          cw340: cio_sysrst_ctrl_key1_in_p2d
+          asic: cio_uart1_tx_en_d2p
+          verilator: cio_uart1_tx_en_d2p
+          cw340: cio_uart1_tx_en_d2p
         }
         width: 1
         type: uni
@@ -33618,39 +34799,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key1_in_p2d
+        netname: cio_uart1_tx_en_d2p
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_key1_in_p2d_o
+        signame: cio_uart2_rx_p2d_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_key1_in_p2d
-          verilator: cio_sysrst_ctrl_key1_in_p2d
-          cw340: cio_sysrst_ctrl_key1_in_p2d
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: out
-        conn_type: false
-        index: -1
-        netname: cio_sysrst_ctrl_key1_in_p2d
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_sysrst_ctrl_key2_in_p2d_i
-        signame_chip:
-        {
-          asic: cio_sysrst_ctrl_key2_in_p2d
-          verilator: cio_sysrst_ctrl_key2_in_p2d
-          cw340: cio_sysrst_ctrl_key2_in_p2d
+          asic: cio_uart2_rx_p2d
+          verilator: cio_uart2_rx_p2d
+          cw340: cio_uart2_rx_p2d
         }
         width: 1
         type: uni
@@ -33658,19 +34819,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key2_in_p2d
+        netname: cio_uart2_rx_p2d
       }
       {
         package: ""
         struct: logic
-        domain: Main
+        domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_key2_in_p2d_o
+        signame: cio_uart2_rx_p2d_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_key2_in_p2d
-          verilator: cio_sysrst_ctrl_key2_in_p2d
-          cw340: cio_sysrst_ctrl_key2_in_p2d
+          asic: cio_uart2_rx_p2d
+          verilator: cio_uart2_rx_p2d
+          cw340: cio_uart2_rx_p2d
         }
         width: 1
         type: uni
@@ -33678,19 +34839,39 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key2_in_p2d
+        netname: cio_uart2_rx_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_uart2_tx_d2p_o
+        signame_chip:
+        {
+          asic: cio_uart2_tx_d2p
+          verilator: cio_uart2_tx_d2p
+          cw340: cio_uart2_tx_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_uart2_tx_d2p
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_pwrb_in_p2d_i
+        signame: cio_uart2_tx_d2p_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_pwrb_in_p2d
-          verilator: cio_sysrst_ctrl_pwrb_in_p2d
-          cw340: cio_sysrst_ctrl_pwrb_in_p2d
+          asic: cio_uart2_tx_d2p
+          verilator: cio_uart2_tx_d2p
+          cw340: cio_uart2_tx_d2p
         }
         width: 1
         type: uni
@@ -33698,19 +34879,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_pwrb_in_p2d
+        netname: cio_uart2_tx_d2p
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_pwrb_in_p2d_o
+        signame: cio_uart2_tx_en_d2p_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_pwrb_in_p2d
-          verilator: cio_sysrst_ctrl_pwrb_in_p2d
-          cw340: cio_sysrst_ctrl_pwrb_in_p2d
+          asic: cio_uart2_tx_en_d2p
+          verilator: cio_uart2_tx_en_d2p
+          cw340: cio_uart2_tx_en_d2p
         }
         width: 1
         type: uni
@@ -33718,19 +34899,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_pwrb_in_p2d
+        netname: cio_uart2_tx_en_d2p
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_lid_open_p2d_i
+        signame: cio_uart2_tx_en_d2p_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_lid_open_p2d
-          verilator: cio_sysrst_ctrl_lid_open_p2d
-          cw340: cio_sysrst_ctrl_lid_open_p2d
+          asic: cio_uart2_tx_en_d2p
+          verilator: cio_uart2_tx_en_d2p
+          cw340: cio_uart2_tx_en_d2p
         }
         width: 1
         type: uni
@@ -33738,59 +34919,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_lid_open_p2d
+        netname: cio_uart2_tx_en_d2p
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_lid_open_p2d_o
+        signame: cio_uart3_rx_p2d_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_lid_open_p2d
-          verilator: cio_sysrst_ctrl_lid_open_p2d
-          cw340: cio_sysrst_ctrl_lid_open_p2d
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: out
-        conn_type: false
-        index: -1
-        netname: cio_sysrst_ctrl_lid_open_p2d
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_sysrst_ctrl_bat_disable_d2p_o
-        signame_chip:
-        {
-          asic: cio_sysrst_ctrl_bat_disable_d2p
-          verilator: cio_sysrst_ctrl_bat_disable_d2p
-          cw340: cio_sysrst_ctrl_bat_disable_d2p
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: out
-        conn_type: false
-        index: -1
-        netname: cio_sysrst_ctrl_bat_disable_d2p
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: cio_sysrst_ctrl_bat_disable_d2p_i
-        signame_chip:
-        {
-          asic: cio_sysrst_ctrl_bat_disable_d2p
-          verilator: cio_sysrst_ctrl_bat_disable_d2p
-          cw340: cio_sysrst_ctrl_bat_disable_d2p
+          asic: cio_uart3_rx_p2d
+          verilator: cio_uart3_rx_p2d
+          cw340: cio_uart3_rx_p2d
         }
         width: 1
         type: uni
@@ -33798,19 +34939,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_bat_disable_d2p
+        netname: cio_uart3_rx_p2d
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_bat_disable_en_d2p_o
+        signame: cio_uart3_rx_p2d_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_bat_disable_en_d2p
-          verilator: cio_sysrst_ctrl_bat_disable_en_d2p
-          cw340: cio_sysrst_ctrl_bat_disable_en_d2p
+          asic: cio_uart3_rx_p2d
+          verilator: cio_uart3_rx_p2d
+          cw340: cio_uart3_rx_p2d
         }
         width: 1
         type: uni
@@ -33818,39 +34959,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_bat_disable_en_d2p
+        netname: cio_uart3_rx_p2d
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_bat_disable_en_d2p_i
+        signame: cio_uart3_tx_d2p_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_bat_disable_en_d2p
-          verilator: cio_sysrst_ctrl_bat_disable_en_d2p
-          cw340: cio_sysrst_ctrl_bat_disable_en_d2p
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: cio_sysrst_ctrl_bat_disable_en_d2p
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_sysrst_ctrl_key0_out_d2p_o
-        signame_chip:
-        {
-          asic: cio_sysrst_ctrl_key0_out_d2p
-          verilator: cio_sysrst_ctrl_key0_out_d2p
-          cw340: cio_sysrst_ctrl_key0_out_d2p
+          asic: cio_uart3_tx_d2p
+          verilator: cio_uart3_tx_d2p
+          cw340: cio_uart3_tx_d2p
         }
         width: 1
         type: uni
@@ -33858,19 +34979,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key0_out_d2p
+        netname: cio_uart3_tx_d2p
       }
       {
         package: ""
         struct: logic
-        domain: Main
+        domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_key0_out_d2p_i
+        signame: cio_uart3_tx_d2p_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_key0_out_d2p
-          verilator: cio_sysrst_ctrl_key0_out_d2p
-          cw340: cio_sysrst_ctrl_key0_out_d2p
+          asic: cio_uart3_tx_d2p
+          verilator: cio_uart3_tx_d2p
+          cw340: cio_uart3_tx_d2p
         }
         width: 1
         type: uni
@@ -33878,19 +34999,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key0_out_d2p
+        netname: cio_uart3_tx_d2p
       }
       {
         package: ""
         struct: logic
-        domain: Aon
+        domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_key0_out_en_d2p_o
+        signame: cio_uart3_tx_en_d2p_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_key0_out_en_d2p
-          verilator: cio_sysrst_ctrl_key0_out_en_d2p
-          cw340: cio_sysrst_ctrl_key0_out_en_d2p
+          asic: cio_uart3_tx_en_d2p
+          verilator: cio_uart3_tx_en_d2p
+          cw340: cio_uart3_tx_en_d2p
         }
         width: 1
         type: uni
@@ -33898,19 +35019,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key0_out_en_d2p
+        netname: cio_uart3_tx_en_d2p
       }
       {
         package: ""
         struct: logic
-        domain: Main
+        domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_key0_out_en_d2p_i
+        signame: cio_uart3_tx_en_d2p_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_key0_out_en_d2p
-          verilator: cio_sysrst_ctrl_key0_out_en_d2p
-          cw340: cio_sysrst_ctrl_key0_out_en_d2p
+          asic: cio_uart3_tx_en_d2p
+          verilator: cio_uart3_tx_en_d2p
+          cw340: cio_uart3_tx_en_d2p
         }
         width: 1
         type: uni
@@ -33918,19 +35039,279 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key0_out_en_d2p
+        netname: cio_uart3_tx_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_gpio_gpio_d2p_o
+        signame_chip:
+        {
+          asic: cio_gpio_gpio_d2p
+          verilator: cio_gpio_gpio_d2p
+          cw340: cio_gpio_gpio_d2p
+        }
+        width: 32
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_gpio_gpio_d2p
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_key1_out_d2p_o
+        signame: cio_gpio_gpio_d2p_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_key1_out_d2p
-          verilator: cio_sysrst_ctrl_key1_out_d2p
-          cw340: cio_sysrst_ctrl_key1_out_d2p
+          asic: cio_gpio_gpio_d2p
+          verilator: cio_gpio_gpio_d2p
+          cw340: cio_gpio_gpio_d2p
+        }
+        width: 32
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_gpio_gpio_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_gpio_gpio_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_gpio_gpio_en_d2p
+          verilator: cio_gpio_gpio_en_d2p
+          cw340: cio_gpio_gpio_en_d2p
+        }
+        width: 32
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_gpio_gpio_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_gpio_gpio_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_gpio_gpio_en_d2p
+          verilator: cio_gpio_gpio_en_d2p
+          cw340: cio_gpio_gpio_en_d2p
+        }
+        width: 32
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_gpio_gpio_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_gpio_gpio_p2d_i
+        signame_chip:
+        {
+          asic: cio_gpio_gpio_p2d
+          verilator: cio_gpio_gpio_p2d
+          cw340: cio_gpio_gpio_p2d
+        }
+        width: 32
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_gpio_gpio_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_gpio_gpio_p2d_o
+        signame_chip:
+        {
+          asic: cio_gpio_gpio_p2d
+          verilator: cio_gpio_gpio_p2d
+          cw340: cio_gpio_gpio_p2d
+        }
+        width: 32
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_gpio_gpio_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_device_sd_d2p_o
+        signame_chip:
+        {
+          asic: cio_spi_device_sd_d2p
+          verilator: cio_spi_device_sd_d2p
+          cw340: cio_spi_device_sd_d2p
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_device_sd_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_device_sd_d2p_i
+        signame_chip:
+        {
+          asic: cio_spi_device_sd_d2p
+          verilator: cio_spi_device_sd_d2p
+          cw340: cio_spi_device_sd_d2p
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_device_sd_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_device_sd_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_spi_device_sd_en_d2p
+          verilator: cio_spi_device_sd_en_d2p
+          cw340: cio_spi_device_sd_en_d2p
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_device_sd_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_device_sd_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_spi_device_sd_en_d2p
+          verilator: cio_spi_device_sd_en_d2p
+          cw340: cio_spi_device_sd_en_d2p
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_device_sd_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_device_sd_p2d_i
+        signame_chip:
+        {
+          asic: cio_spi_device_sd_p2d
+          verilator: cio_spi_device_sd_p2d
+          cw340: cio_spi_device_sd_p2d
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_device_sd_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_device_sd_p2d_o
+        signame_chip:
+        {
+          asic: cio_spi_device_sd_p2d
+          verilator: cio_spi_device_sd_p2d
+          cw340: cio_spi_device_sd_p2d
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_device_sd_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_device_sck_p2d_i
+        signame_chip:
+        {
+          asic: cio_spi_device_sck_p2d
+          verilator: cio_spi_device_sck_p2d
+          cw340: cio_spi_device_sck_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_device_sck_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_device_sck_p2d_o
+        signame_chip:
+        {
+          asic: cio_spi_device_sck_p2d
+          verilator: cio_spi_device_sck_p2d
+          cw340: cio_spi_device_sck_p2d
         }
         width: 1
         type: uni
@@ -33938,19 +35319,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key1_out_d2p
+        netname: cio_spi_device_sck_p2d
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_key1_out_d2p_i
+        signame: cio_spi_device_csb_p2d_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_key1_out_d2p
-          verilator: cio_sysrst_ctrl_key1_out_d2p
-          cw340: cio_sysrst_ctrl_key1_out_d2p
+          asic: cio_spi_device_csb_p2d
+          verilator: cio_spi_device_csb_p2d
+          cw340: cio_spi_device_csb_p2d
         }
         width: 1
         type: uni
@@ -33958,19 +35339,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key1_out_d2p
+        netname: cio_spi_device_csb_p2d
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_key1_out_en_d2p_o
+        signame: cio_spi_device_csb_p2d_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_key1_out_en_d2p
-          verilator: cio_sysrst_ctrl_key1_out_en_d2p
-          cw340: cio_sysrst_ctrl_key1_out_en_d2p
+          asic: cio_spi_device_csb_p2d
+          verilator: cio_spi_device_csb_p2d
+          cw340: cio_spi_device_csb_p2d
         }
         width: 1
         type: uni
@@ -33978,19 +35359,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key1_out_en_d2p
+        netname: cio_spi_device_csb_p2d
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_key1_out_en_d2p_i
+        signame: cio_spi_device_tpm_csb_p2d_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_key1_out_en_d2p
-          verilator: cio_sysrst_ctrl_key1_out_en_d2p
-          cw340: cio_sysrst_ctrl_key1_out_en_d2p
+          asic: cio_spi_device_tpm_csb_p2d
+          verilator: cio_spi_device_tpm_csb_p2d
+          cw340: cio_spi_device_tpm_csb_p2d
         }
         width: 1
         type: uni
@@ -33998,19 +35379,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key1_out_en_d2p
+        netname: cio_spi_device_tpm_csb_p2d
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_key2_out_d2p_o
+        signame: cio_spi_device_tpm_csb_p2d_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_key2_out_d2p
-          verilator: cio_sysrst_ctrl_key2_out_d2p
-          cw340: cio_sysrst_ctrl_key2_out_d2p
+          asic: cio_spi_device_tpm_csb_p2d
+          verilator: cio_spi_device_tpm_csb_p2d
+          cw340: cio_spi_device_tpm_csb_p2d
         }
         width: 1
         type: uni
@@ -34018,39 +35399,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key2_out_d2p
+        netname: cio_spi_device_tpm_csb_p2d
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_key2_out_d2p_i
+        signame: cio_i2c0_sda_d2p_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_key2_out_d2p
-          verilator: cio_sysrst_ctrl_key2_out_d2p
-          cw340: cio_sysrst_ctrl_key2_out_d2p
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: cio_sysrst_ctrl_key2_out_d2p
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_sysrst_ctrl_key2_out_en_d2p_o
-        signame_chip:
-        {
-          asic: cio_sysrst_ctrl_key2_out_en_d2p
-          verilator: cio_sysrst_ctrl_key2_out_en_d2p
-          cw340: cio_sysrst_ctrl_key2_out_en_d2p
+          asic: cio_i2c0_sda_d2p
+          verilator: cio_i2c0_sda_d2p
+          cw340: cio_i2c0_sda_d2p
         }
         width: 1
         type: uni
@@ -34058,19 +35419,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key2_out_en_d2p
+        netname: cio_i2c0_sda_d2p
       }
       {
         package: ""
         struct: logic
-        domain: Main
+        domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_key2_out_en_d2p_i
+        signame: cio_i2c0_sda_d2p_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_key2_out_en_d2p
-          verilator: cio_sysrst_ctrl_key2_out_en_d2p
-          cw340: cio_sysrst_ctrl_key2_out_en_d2p
+          asic: cio_i2c0_sda_d2p
+          verilator: cio_i2c0_sda_d2p
+          cw340: cio_i2c0_sda_d2p
         }
         width: 1
         type: uni
@@ -34078,19 +35439,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_key2_out_en_d2p
+        netname: cio_i2c0_sda_d2p
       }
       {
         package: ""
         struct: logic
-        domain: Aon
+        domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_pwrb_out_d2p_o
+        signame: cio_i2c0_sda_en_d2p_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_pwrb_out_d2p
-          verilator: cio_sysrst_ctrl_pwrb_out_d2p
-          cw340: cio_sysrst_ctrl_pwrb_out_d2p
+          asic: cio_i2c0_sda_en_d2p
+          verilator: cio_i2c0_sda_en_d2p
+          cw340: cio_i2c0_sda_en_d2p
         }
         width: 1
         type: uni
@@ -34098,19 +35459,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_pwrb_out_d2p
+        netname: cio_i2c0_sda_en_d2p
       }
       {
         package: ""
         struct: logic
-        domain: Main
+        domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_pwrb_out_d2p_i
+        signame: cio_i2c0_sda_en_d2p_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_pwrb_out_d2p
-          verilator: cio_sysrst_ctrl_pwrb_out_d2p
-          cw340: cio_sysrst_ctrl_pwrb_out_d2p
+          asic: cio_i2c0_sda_en_d2p
+          verilator: cio_i2c0_sda_en_d2p
+          cw340: cio_i2c0_sda_en_d2p
         }
         width: 1
         type: uni
@@ -34118,19 +35479,39 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_pwrb_out_d2p
+        netname: cio_i2c0_sda_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i2c0_sda_p2d_i
+        signame_chip:
+        {
+          asic: cio_i2c0_sda_p2d
+          verilator: cio_i2c0_sda_p2d
+          cw340: cio_i2c0_sda_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i2c0_sda_p2d
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_pwrb_out_en_d2p_o
+        signame: cio_i2c0_sda_p2d_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_pwrb_out_en_d2p
-          verilator: cio_sysrst_ctrl_pwrb_out_en_d2p
-          cw340: cio_sysrst_ctrl_pwrb_out_en_d2p
+          asic: cio_i2c0_sda_p2d
+          verilator: cio_i2c0_sda_p2d
+          cw340: cio_i2c0_sda_p2d
         }
         width: 1
         type: uni
@@ -34138,39 +35519,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_pwrb_out_en_d2p
+        netname: cio_i2c0_sda_p2d
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_pwrb_out_en_d2p_i
+        signame: cio_i2c0_scl_d2p_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_pwrb_out_en_d2p
-          verilator: cio_sysrst_ctrl_pwrb_out_en_d2p
-          cw340: cio_sysrst_ctrl_pwrb_out_en_d2p
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: cio_sysrst_ctrl_pwrb_out_en_d2p
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_sysrst_ctrl_z3_wakeup_d2p_o
-        signame_chip:
-        {
-          asic: cio_sysrst_ctrl_z3_wakeup_d2p
-          verilator: cio_sysrst_ctrl_z3_wakeup_d2p
-          cw340: cio_sysrst_ctrl_z3_wakeup_d2p
+          asic: cio_i2c0_scl_d2p
+          verilator: cio_i2c0_scl_d2p
+          cw340: cio_i2c0_scl_d2p
         }
         width: 1
         type: uni
@@ -34178,19 +35539,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_z3_wakeup_d2p
+        netname: cio_i2c0_scl_d2p
       }
       {
         package: ""
         struct: logic
-        domain: Main
+        domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_z3_wakeup_d2p_i
+        signame: cio_i2c0_scl_d2p_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_z3_wakeup_d2p
-          verilator: cio_sysrst_ctrl_z3_wakeup_d2p
-          cw340: cio_sysrst_ctrl_z3_wakeup_d2p
+          asic: cio_i2c0_scl_d2p
+          verilator: cio_i2c0_scl_d2p
+          cw340: cio_i2c0_scl_d2p
         }
         width: 1
         type: uni
@@ -34198,19 +35559,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_z3_wakeup_d2p
+        netname: cio_i2c0_scl_d2p
       }
       {
         package: ""
         struct: logic
-        domain: Aon
+        domain: Main
         inter_pd: true
-        signame: cio_sysrst_ctrl_z3_wakeup_en_d2p_o
+        signame: cio_i2c0_scl_en_d2p_o
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_z3_wakeup_en_d2p
-          verilator: cio_sysrst_ctrl_z3_wakeup_en_d2p
-          cw340: cio_sysrst_ctrl_z3_wakeup_en_d2p
+          asic: cio_i2c0_scl_en_d2p
+          verilator: cio_i2c0_scl_en_d2p
+          cw340: cio_i2c0_scl_en_d2p
         }
         width: 1
         type: uni
@@ -34218,19 +35579,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_z3_wakeup_en_d2p
+        netname: cio_i2c0_scl_en_d2p
       }
       {
         package: ""
         struct: logic
-        domain: Main
+        domain: Aon
         inter_pd: true
-        signame: cio_sysrst_ctrl_z3_wakeup_en_d2p_i
+        signame: cio_i2c0_scl_en_d2p_i
         signame_chip:
         {
-          asic: cio_sysrst_ctrl_z3_wakeup_en_d2p
-          verilator: cio_sysrst_ctrl_z3_wakeup_en_d2p
-          cw340: cio_sysrst_ctrl_z3_wakeup_en_d2p
+          asic: cio_i2c0_scl_en_d2p
+          verilator: cio_i2c0_scl_en_d2p
+          cw340: cio_i2c0_scl_en_d2p
         }
         width: 1
         type: uni
@@ -34238,87 +35599,1567 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sysrst_ctrl_z3_wakeup_en_d2p
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_sensor_ctrl_ast_debug_out_d2p_o
-        signame_chip:
-        {
-          asic: cio_sensor_ctrl_ast_debug_out_d2p
-          verilator: cio_sensor_ctrl_ast_debug_out_d2p
-          cw340: cio_sensor_ctrl_ast_debug_out_d2p
-        }
-        width: 9
-        type: uni
-        default: "'0"
-        direction: out
-        conn_type: false
-        index: -1
-        netname: cio_sensor_ctrl_ast_debug_out_d2p
+        netname: cio_i2c0_scl_en_d2p
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_sensor_ctrl_ast_debug_out_d2p_i
+        signame: cio_i2c0_scl_p2d_i
         signame_chip:
         {
-          asic: cio_sensor_ctrl_ast_debug_out_d2p
-          verilator: cio_sensor_ctrl_ast_debug_out_d2p
-          cw340: cio_sensor_ctrl_ast_debug_out_d2p
+          asic: cio_i2c0_scl_p2d
+          verilator: cio_i2c0_scl_p2d
+          cw340: cio_i2c0_scl_p2d
         }
-        width: 9
+        width: 1
         type: uni
         default: "'0"
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sensor_ctrl_ast_debug_out_d2p
+        netname: cio_i2c0_scl_p2d
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_sensor_ctrl_ast_debug_out_en_d2p_o
+        signame: cio_i2c0_scl_p2d_o
         signame_chip:
         {
-          asic: cio_sensor_ctrl_ast_debug_out_en_d2p
-          verilator: cio_sensor_ctrl_ast_debug_out_en_d2p
-          cw340: cio_sensor_ctrl_ast_debug_out_en_d2p
+          asic: cio_i2c0_scl_p2d
+          verilator: cio_i2c0_scl_p2d
+          cw340: cio_i2c0_scl_p2d
         }
-        width: 9
+        width: 1
         type: uni
         default: "'0"
         direction: out
         conn_type: false
         index: -1
-        netname: cio_sensor_ctrl_ast_debug_out_en_d2p
+        netname: cio_i2c0_scl_p2d
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_sensor_ctrl_ast_debug_out_en_d2p_i
+        signame: cio_i2c1_sda_d2p_o
         signame_chip:
         {
-          asic: cio_sensor_ctrl_ast_debug_out_en_d2p
-          verilator: cio_sensor_ctrl_ast_debug_out_en_d2p
-          cw340: cio_sensor_ctrl_ast_debug_out_en_d2p
+          asic: cio_i2c1_sda_d2p
+          verilator: cio_i2c1_sda_d2p
+          cw340: cio_i2c1_sda_d2p
         }
-        width: 9
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i2c1_sda_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i2c1_sda_d2p_i
+        signame_chip:
+        {
+          asic: cio_i2c1_sda_d2p
+          verilator: cio_i2c1_sda_d2p
+          cw340: cio_i2c1_sda_d2p
+        }
+        width: 1
         type: uni
         default: "'0"
         direction: in
         conn_type: false
         index: -1
-        netname: cio_sensor_ctrl_ast_debug_out_en_d2p
+        netname: cio_i2c1_sda_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i2c1_sda_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i2c1_sda_en_d2p
+          verilator: cio_i2c1_sda_en_d2p
+          cw340: cio_i2c1_sda_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i2c1_sda_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i2c1_sda_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i2c1_sda_en_d2p
+          verilator: cio_i2c1_sda_en_d2p
+          cw340: cio_i2c1_sda_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i2c1_sda_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i2c1_sda_p2d_i
+        signame_chip:
+        {
+          asic: cio_i2c1_sda_p2d
+          verilator: cio_i2c1_sda_p2d
+          cw340: cio_i2c1_sda_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i2c1_sda_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i2c1_sda_p2d_o
+        signame_chip:
+        {
+          asic: cio_i2c1_sda_p2d
+          verilator: cio_i2c1_sda_p2d
+          cw340: cio_i2c1_sda_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i2c1_sda_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i2c1_scl_d2p_o
+        signame_chip:
+        {
+          asic: cio_i2c1_scl_d2p
+          verilator: cio_i2c1_scl_d2p
+          cw340: cio_i2c1_scl_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i2c1_scl_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i2c1_scl_d2p_i
+        signame_chip:
+        {
+          asic: cio_i2c1_scl_d2p
+          verilator: cio_i2c1_scl_d2p
+          cw340: cio_i2c1_scl_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i2c1_scl_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i2c1_scl_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i2c1_scl_en_d2p
+          verilator: cio_i2c1_scl_en_d2p
+          cw340: cio_i2c1_scl_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i2c1_scl_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i2c1_scl_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i2c1_scl_en_d2p
+          verilator: cio_i2c1_scl_en_d2p
+          cw340: cio_i2c1_scl_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i2c1_scl_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i2c1_scl_p2d_i
+        signame_chip:
+        {
+          asic: cio_i2c1_scl_p2d
+          verilator: cio_i2c1_scl_p2d
+          cw340: cio_i2c1_scl_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i2c1_scl_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i2c1_scl_p2d_o
+        signame_chip:
+        {
+          asic: cio_i2c1_scl_p2d
+          verilator: cio_i2c1_scl_p2d
+          cw340: cio_i2c1_scl_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i2c1_scl_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i2c2_sda_d2p_o
+        signame_chip:
+        {
+          asic: cio_i2c2_sda_d2p
+          verilator: cio_i2c2_sda_d2p
+          cw340: cio_i2c2_sda_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i2c2_sda_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i2c2_sda_d2p_i
+        signame_chip:
+        {
+          asic: cio_i2c2_sda_d2p
+          verilator: cio_i2c2_sda_d2p
+          cw340: cio_i2c2_sda_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i2c2_sda_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i2c2_sda_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i2c2_sda_en_d2p
+          verilator: cio_i2c2_sda_en_d2p
+          cw340: cio_i2c2_sda_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i2c2_sda_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i2c2_sda_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i2c2_sda_en_d2p
+          verilator: cio_i2c2_sda_en_d2p
+          cw340: cio_i2c2_sda_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i2c2_sda_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i2c2_sda_p2d_i
+        signame_chip:
+        {
+          asic: cio_i2c2_sda_p2d
+          verilator: cio_i2c2_sda_p2d
+          cw340: cio_i2c2_sda_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i2c2_sda_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i2c2_sda_p2d_o
+        signame_chip:
+        {
+          asic: cio_i2c2_sda_p2d
+          verilator: cio_i2c2_sda_p2d
+          cw340: cio_i2c2_sda_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i2c2_sda_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i2c2_scl_d2p_o
+        signame_chip:
+        {
+          asic: cio_i2c2_scl_d2p
+          verilator: cio_i2c2_scl_d2p
+          cw340: cio_i2c2_scl_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i2c2_scl_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i2c2_scl_d2p_i
+        signame_chip:
+        {
+          asic: cio_i2c2_scl_d2p
+          verilator: cio_i2c2_scl_d2p
+          cw340: cio_i2c2_scl_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i2c2_scl_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i2c2_scl_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i2c2_scl_en_d2p
+          verilator: cio_i2c2_scl_en_d2p
+          cw340: cio_i2c2_scl_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i2c2_scl_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i2c2_scl_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i2c2_scl_en_d2p
+          verilator: cio_i2c2_scl_en_d2p
+          cw340: cio_i2c2_scl_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i2c2_scl_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i2c2_scl_p2d_i
+        signame_chip:
+        {
+          asic: cio_i2c2_scl_p2d
+          verilator: cio_i2c2_scl_p2d
+          cw340: cio_i2c2_scl_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i2c2_scl_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i2c2_scl_p2d_o
+        signame_chip:
+        {
+          asic: cio_i2c2_scl_p2d
+          verilator: cio_i2c2_scl_p2d
+          cw340: cio_i2c2_scl_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i2c2_scl_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_host0_sd_d2p_o
+        signame_chip:
+        {
+          asic: cio_spi_host0_sd_d2p
+          verilator: cio_spi_host0_sd_d2p
+          cw340: cio_spi_host0_sd_d2p
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_host0_sd_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_host0_sd_d2p_i
+        signame_chip:
+        {
+          asic: cio_spi_host0_sd_d2p
+          verilator: cio_spi_host0_sd_d2p
+          cw340: cio_spi_host0_sd_d2p
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_host0_sd_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_host0_sd_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_spi_host0_sd_en_d2p
+          verilator: cio_spi_host0_sd_en_d2p
+          cw340: cio_spi_host0_sd_en_d2p
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_host0_sd_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_host0_sd_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_spi_host0_sd_en_d2p
+          verilator: cio_spi_host0_sd_en_d2p
+          cw340: cio_spi_host0_sd_en_d2p
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_host0_sd_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_host0_sd_p2d_i
+        signame_chip:
+        {
+          asic: cio_spi_host0_sd_p2d
+          verilator: cio_spi_host0_sd_p2d
+          cw340: cio_spi_host0_sd_p2d
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_host0_sd_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_host0_sd_p2d_o
+        signame_chip:
+        {
+          asic: cio_spi_host0_sd_p2d
+          verilator: cio_spi_host0_sd_p2d
+          cw340: cio_spi_host0_sd_p2d
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_host0_sd_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_host0_sck_d2p_o
+        signame_chip:
+        {
+          asic: cio_spi_host0_sck_d2p
+          verilator: cio_spi_host0_sck_d2p
+          cw340: cio_spi_host0_sck_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_host0_sck_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_host0_sck_d2p_i
+        signame_chip:
+        {
+          asic: cio_spi_host0_sck_d2p
+          verilator: cio_spi_host0_sck_d2p
+          cw340: cio_spi_host0_sck_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_host0_sck_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_host0_sck_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_spi_host0_sck_en_d2p
+          verilator: cio_spi_host0_sck_en_d2p
+          cw340: cio_spi_host0_sck_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_host0_sck_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_host0_sck_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_spi_host0_sck_en_d2p
+          verilator: cio_spi_host0_sck_en_d2p
+          cw340: cio_spi_host0_sck_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_host0_sck_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_host0_csb_d2p_o
+        signame_chip:
+        {
+          asic: cio_spi_host0_csb_d2p
+          verilator: cio_spi_host0_csb_d2p
+          cw340: cio_spi_host0_csb_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_host0_csb_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_host0_csb_d2p_i
+        signame_chip:
+        {
+          asic: cio_spi_host0_csb_d2p
+          verilator: cio_spi_host0_csb_d2p
+          cw340: cio_spi_host0_csb_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_host0_csb_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_host0_csb_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_spi_host0_csb_en_d2p
+          verilator: cio_spi_host0_csb_en_d2p
+          cw340: cio_spi_host0_csb_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_host0_csb_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_host0_csb_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_spi_host0_csb_en_d2p
+          verilator: cio_spi_host0_csb_en_d2p
+          cw340: cio_spi_host0_csb_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_host0_csb_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_host1_sd_d2p_o
+        signame_chip:
+        {
+          asic: cio_spi_host1_sd_d2p
+          verilator: cio_spi_host1_sd_d2p
+          cw340: cio_spi_host1_sd_d2p
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_host1_sd_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_host1_sd_d2p_i
+        signame_chip:
+        {
+          asic: cio_spi_host1_sd_d2p
+          verilator: cio_spi_host1_sd_d2p
+          cw340: cio_spi_host1_sd_d2p
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_host1_sd_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_host1_sd_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_spi_host1_sd_en_d2p
+          verilator: cio_spi_host1_sd_en_d2p
+          cw340: cio_spi_host1_sd_en_d2p
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_host1_sd_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_host1_sd_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_spi_host1_sd_en_d2p
+          verilator: cio_spi_host1_sd_en_d2p
+          cw340: cio_spi_host1_sd_en_d2p
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_host1_sd_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_host1_sd_p2d_i
+        signame_chip:
+        {
+          asic: cio_spi_host1_sd_p2d
+          verilator: cio_spi_host1_sd_p2d
+          cw340: cio_spi_host1_sd_p2d
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_host1_sd_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_host1_sd_p2d_o
+        signame_chip:
+        {
+          asic: cio_spi_host1_sd_p2d
+          verilator: cio_spi_host1_sd_p2d
+          cw340: cio_spi_host1_sd_p2d
+        }
+        width: 4
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_host1_sd_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_host1_sck_d2p_o
+        signame_chip:
+        {
+          asic: cio_spi_host1_sck_d2p
+          verilator: cio_spi_host1_sck_d2p
+          cw340: cio_spi_host1_sck_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_host1_sck_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_host1_sck_d2p_i
+        signame_chip:
+        {
+          asic: cio_spi_host1_sck_d2p
+          verilator: cio_spi_host1_sck_d2p
+          cw340: cio_spi_host1_sck_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_host1_sck_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_host1_sck_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_spi_host1_sck_en_d2p
+          verilator: cio_spi_host1_sck_en_d2p
+          cw340: cio_spi_host1_sck_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_host1_sck_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_host1_sck_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_spi_host1_sck_en_d2p
+          verilator: cio_spi_host1_sck_en_d2p
+          cw340: cio_spi_host1_sck_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_host1_sck_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_host1_csb_d2p_o
+        signame_chip:
+        {
+          asic: cio_spi_host1_csb_d2p
+          verilator: cio_spi_host1_csb_d2p
+          cw340: cio_spi_host1_csb_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_host1_csb_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_host1_csb_d2p_i
+        signame_chip:
+        {
+          asic: cio_spi_host1_csb_d2p
+          verilator: cio_spi_host1_csb_d2p
+          cw340: cio_spi_host1_csb_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_host1_csb_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_spi_host1_csb_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_spi_host1_csb_en_d2p
+          verilator: cio_spi_host1_csb_en_d2p
+          cw340: cio_spi_host1_csb_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_spi_host1_csb_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_spi_host1_csb_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_spi_host1_csb_en_d2p
+          verilator: cio_spi_host1_csb_en_d2p
+          cw340: cio_spi_host1_csb_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_spi_host1_csb_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_usbdev_usb_dp_d2p_o
+        signame_chip:
+        {
+          asic: cio_usbdev_usb_dp_d2p
+          verilator: cio_usbdev_usb_dp_d2p
+          cw340: cio_usbdev_usb_dp_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_usbdev_usb_dp_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_usbdev_usb_dp_d2p_i
+        signame_chip:
+        {
+          asic: cio_usbdev_usb_dp_d2p
+          verilator: cio_usbdev_usb_dp_d2p
+          cw340: cio_usbdev_usb_dp_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_usbdev_usb_dp_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_usbdev_usb_dp_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_usbdev_usb_dp_en_d2p
+          verilator: cio_usbdev_usb_dp_en_d2p
+          cw340: cio_usbdev_usb_dp_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_usbdev_usb_dp_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_usbdev_usb_dp_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_usbdev_usb_dp_en_d2p
+          verilator: cio_usbdev_usb_dp_en_d2p
+          cw340: cio_usbdev_usb_dp_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_usbdev_usb_dp_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_usbdev_usb_dp_p2d_i
+        signame_chip:
+        {
+          asic: cio_usbdev_usb_dp_p2d
+          verilator: cio_usbdev_usb_dp_p2d
+          cw340: cio_usbdev_usb_dp_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_usbdev_usb_dp_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_usbdev_usb_dp_p2d_o
+        signame_chip:
+        {
+          asic: cio_usbdev_usb_dp_p2d
+          verilator: cio_usbdev_usb_dp_p2d
+          cw340: cio_usbdev_usb_dp_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_usbdev_usb_dp_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_usbdev_usb_dn_d2p_o
+        signame_chip:
+        {
+          asic: cio_usbdev_usb_dn_d2p
+          verilator: cio_usbdev_usb_dn_d2p
+          cw340: cio_usbdev_usb_dn_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_usbdev_usb_dn_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_usbdev_usb_dn_d2p_i
+        signame_chip:
+        {
+          asic: cio_usbdev_usb_dn_d2p
+          verilator: cio_usbdev_usb_dn_d2p
+          cw340: cio_usbdev_usb_dn_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_usbdev_usb_dn_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_usbdev_usb_dn_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_usbdev_usb_dn_en_d2p
+          verilator: cio_usbdev_usb_dn_en_d2p
+          cw340: cio_usbdev_usb_dn_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_usbdev_usb_dn_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_usbdev_usb_dn_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_usbdev_usb_dn_en_d2p
+          verilator: cio_usbdev_usb_dn_en_d2p
+          cw340: cio_usbdev_usb_dn_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_usbdev_usb_dn_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_usbdev_usb_dn_p2d_i
+        signame_chip:
+        {
+          asic: cio_usbdev_usb_dn_p2d
+          verilator: cio_usbdev_usb_dn_p2d
+          cw340: cio_usbdev_usb_dn_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_usbdev_usb_dn_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_usbdev_usb_dn_p2d_o
+        signame_chip:
+        {
+          asic: cio_usbdev_usb_dn_p2d
+          verilator: cio_usbdev_usb_dn_p2d
+          cw340: cio_usbdev_usb_dn_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_usbdev_usb_dn_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_usbdev_sense_p2d_i
+        signame_chip:
+        {
+          asic: cio_usbdev_sense_p2d
+          verilator: cio_usbdev_sense_p2d
+          cw340: cio_usbdev_sense_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_usbdev_sense_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_usbdev_sense_p2d_o
+        signame_chip:
+        {
+          asic: cio_usbdev_sense_p2d
+          verilator: cio_usbdev_sense_p2d
+          cw340: cio_usbdev_sense_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_usbdev_sense_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_rram_macro_tck_p2d_i
+        signame_chip:
+        {
+          asic: cio_rram_macro_tck_p2d
+          verilator: cio_rram_macro_tck_p2d
+          cw340: cio_rram_macro_tck_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_rram_macro_tck_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_rram_macro_tck_p2d_o
+        signame_chip:
+        {
+          asic: cio_rram_macro_tck_p2d
+          verilator: cio_rram_macro_tck_p2d
+          cw340: cio_rram_macro_tck_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_rram_macro_tck_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_rram_macro_tms_p2d_i
+        signame_chip:
+        {
+          asic: cio_rram_macro_tms_p2d
+          verilator: cio_rram_macro_tms_p2d
+          cw340: cio_rram_macro_tms_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_rram_macro_tms_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_rram_macro_tms_p2d_o
+        signame_chip:
+        {
+          asic: cio_rram_macro_tms_p2d
+          verilator: cio_rram_macro_tms_p2d
+          cw340: cio_rram_macro_tms_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_rram_macro_tms_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_rram_macro_tdi_p2d_i
+        signame_chip:
+        {
+          asic: cio_rram_macro_tdi_p2d
+          verilator: cio_rram_macro_tdi_p2d
+          cw340: cio_rram_macro_tdi_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_rram_macro_tdi_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_rram_macro_tdi_p2d_o
+        signame_chip:
+        {
+          asic: cio_rram_macro_tdi_p2d
+          verilator: cio_rram_macro_tdi_p2d
+          cw340: cio_rram_macro_tdi_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_rram_macro_tdi_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_rram_macro_tdo_d2p_o
+        signame_chip:
+        {
+          asic: cio_rram_macro_tdo_d2p
+          verilator: cio_rram_macro_tdo_d2p
+          cw340: cio_rram_macro_tdo_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_rram_macro_tdo_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_rram_macro_tdo_d2p_i
+        signame_chip:
+        {
+          asic: cio_rram_macro_tdo_d2p
+          verilator: cio_rram_macro_tdo_d2p
+          cw340: cio_rram_macro_tdo_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_rram_macro_tdo_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_rram_macro_tdo_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_rram_macro_tdo_en_d2p
+          verilator: cio_rram_macro_tdo_en_d2p
+          cw340: cio_rram_macro_tdo_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_rram_macro_tdo_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_rram_macro_tdo_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_rram_macro_tdo_en_d2p
+          verilator: cio_rram_macro_tdo_en_d2p
+          cw340: cio_rram_macro_tdo_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_rram_macro_tdo_en_d2p
       }
       {
         package: ""
@@ -34583,6 +37424,18 @@
         act: req
         suffix: ""
         default: ast_pkg::AST_STATUS_DEFAULT
+      }
+      {
+        package: pinmux_pkg
+        struct: dft_strap_test_req
+        domain: Aon
+        signame: pinmux_dft_strap_test
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: "'0"
       }
       {
         package: prim_mubi_pkg
@@ -34852,6 +37705,18 @@
         package: ""
         struct: logic
         domain: Aon
+        signame: pwrmgr_strap
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
         signame: pwrmgr_low_power
         width: 1
         type: uni
@@ -34895,102 +37760,6 @@
         act: rcv
         suffix: ""
         default: lc_ctrl_pkg::On
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        signame: usbdev_usb_dp_pullup
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: 1'b0
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        signame: usbdev_usb_dn_pullup
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: 1'b0
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        signame: usbdev_usb_aon_suspend_req
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: 1'b0
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        signame: usbdev_usb_aon_wake_ack
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: 1'b0
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        signame: usbdev_usb_aon_bus_not_idle
-        width: 1
-        type: uni
-        end_idx: -1
-        act: rcv
-        suffix: ""
-        default: 1'b0
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        signame: usbdev_usb_aon_bus_reset
-        width: 1
-        type: uni
-        end_idx: -1
-        act: rcv
-        suffix: ""
-        default: 1'b0
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        signame: usbdev_usb_aon_sense_lost
-        width: 1
-        type: uni
-        end_idx: -1
-        act: rcv
-        suffix: ""
-        default: 1'b0
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        signame: pinmux_usbdev_wake_detect_active
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: 1'b0
       }
       {
         package: edn_pkg
@@ -35245,66 +38014,6 @@
         default: 1'b0
       }
       {
-        package: jtag_pkg
-        struct: jtag_req
-        domain: Main
-        signame: pinmux_lc_jtag_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: req
-        default: ""
-      }
-      {
-        package: jtag_pkg
-        struct: jtag_rsp
-        domain: Main
-        signame: pinmux_lc_jtag_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: rsp
-        default: jtag_pkg::JTAG_RSP_DEFAULT
-      }
-      {
-        package: jtag_pkg
-        struct: jtag_req
-        domain: Main
-        signame: pinmux_rv_jtag_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: req
-        default: ""
-      }
-      {
-        package: jtag_pkg
-        struct: jtag_rsp
-        domain: Main
-        signame: pinmux_rv_jtag_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: req
-        suffix: rsp
-        default: jtag_pkg::JTAG_RSP_DEFAULT
-      }
-      {
-        package: lc_ctrl_pkg
-        struct: lc_tx
-        domain: Main
-        signame: pinmux_pinmux_hw_debug_en
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: lc_ctrl_pkg::Off
-      }
-      {
         package: otp_ctrl_pkg
         struct: otp_lc_data
         domain: Main
@@ -35351,18 +38060,6 @@
         act: req
         suffix: ""
         default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        signame: lc_ctrl_strap_en_override
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: 1'b0
       }
       {
         package: lc_ctrl_pkg
@@ -36844,30 +39541,6 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
-        signame: pinmux_tl_req
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: req
-        default: tlul_pkg::TL_H2D_DEFAULT
-      }
-      {
-        package: tlul_pkg
-        struct: tl_d2h
-        domain: Main
-        signame: pinmux_tl_rsp
-        width: 1
-        type: req_rsp
-        end_idx: -1
-        act: rsp
-        suffix: rsp
-        default: ""
-      }
-      {
-        package: tlul_pkg
-        struct: tl_h2d
-        domain: Main
         signame: otp_ctrl_core_tl_req
         width: 1
         type: req_rsp
@@ -37523,7 +40196,7 @@
       {
         package: jtag_pkg
         struct: jtag_req
-        domain: Main
+        domain: Aon
         signame: pinmux_dft_jtag_req
         width: 1
         type: req_rsp
@@ -37533,7 +40206,7 @@
       {
         package: jtag_pkg
         struct: jtag_rsp
-        domain: Main
+        domain: Aon
         signame: pinmux_dft_jtag_rsp
         width: 1
         type: req_rsp

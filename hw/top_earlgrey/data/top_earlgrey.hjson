@@ -658,7 +658,7 @@
           domain: "Aon",
         },
       },
-      domain: "Main",
+      domain: "Aon",
       base_addr: {
         hart: "0x40460000",
       },

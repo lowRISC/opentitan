@@ -166,7 +166,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr, pwrmgr, tl, aon, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(rstmgr, rstmgr, tl, aon, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(clkmgr, clkmgr, tl, aon, clk_i)
-    `DRIVE_CHIP_TL_DEVICE_IF(pinmux, pinmux, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(pinmux, pinmux, tl, aon, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(otp_ctrl__core, otp_ctrl, core_tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(lc_ctrl__regs, lc_ctrl, regs_tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(sensor_ctrl, sensor_ctrl, tl, aon, clk_i)

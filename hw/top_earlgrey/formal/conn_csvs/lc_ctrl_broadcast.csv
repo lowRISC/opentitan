@@ -27,14 +27,14 @@ CONNECTION, LC_CPU_EN_RV_CORE_IBEX, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_
 # Verify that lc_ctrl's lc_hw_debug_en_o signal is correctly connected to IPs.
 CONNECTION, LC_HW_DEBUG_EN_PWRMGR,         top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_aon.u_pwrmgr,        lc_hw_debug_en_i
 CONNECTION, LC_HW_DEBUG_EN_CLKMGR,         top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_aon.u_clkmgr,        lc_hw_debug_en_i
-CONNECTION, LC_HW_DEBUG_EN_PINMUX,         top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_main.u_pinmux,        lc_hw_debug_en_i
+CONNECTION, LC_HW_DEBUG_EN_PINMUX,         top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_aon.u_pinmux,        lc_hw_debug_en_i
 CONNECTION, LC_HW_DEBUG_EN_SRAM_CTRL_MAIN, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_main.u_sram_ctrl_main,    lc_hw_debug_en_i
 CONNECTION, LC_HW_DEBUG_EN_RV_DM,          top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_main.u_rv_dm,             lc_hw_debug_en_i
 CONNECTION, LC_HW_DEBUG_EN_CSRNG,          top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_hw_debug_en_o, top_earlgrey.earlgrey_pd_main.u_csrng,             lc_hw_debug_en_i
 
 # Verify that lc_ctrl's lc_dft_en_o signal is correctly connected to IPs.
 CONNECTION, LC_DFT_EN_PWRMGR, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_dft_en_o, top_earlgrey.earlgrey_pd_aon.u_pwrmgr, lc_dft_en_i
-CONNECTION, LC_DFT_EN_PINMUX, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_dft_en_o, top_earlgrey.earlgrey_pd_main.u_pinmux, lc_dft_en_i
+CONNECTION, LC_DFT_EN_PINMUX, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_dft_en_o, top_earlgrey.earlgrey_pd_aon.u_pinmux, lc_dft_en_i
 CONNECTION, LC_DFT_EN_AST,    top_earlgrey.earlgrey_pd_main.u_lc_ctrl, lc_dft_en_o, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, lc_dft_en_i
 
 # Verify lc_ctrl's RMA request connections.

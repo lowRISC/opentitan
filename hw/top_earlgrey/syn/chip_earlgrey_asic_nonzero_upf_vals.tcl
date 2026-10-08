@@ -11,8 +11,8 @@
 set UPF_ISO_LC_OFF_PORTS_CLAMP1 {
   top_earlgrey/earlgrey_pd_aon/u_aon_timer/lc_escalate_en_i[3] \
   top_earlgrey/earlgrey_pd_aon/u_aon_timer/lc_escalate_en_i[1] \
-  top_earlgrey/earlgrey_pd_main/u_pinmux/lc_escalate_en_i[3]   \
-  top_earlgrey/earlgrey_pd_main/u_pinmux/lc_escalate_en_i[1]   \
-  top_earlgrey/earlgrey_pd_main/u_pinmux/lc_check_byp_en_i[3]  \
-  top_earlgrey/earlgrey_pd_main/u_pinmux/lc_check_byp_en_i[1]
+  top_earlgrey/earlgrey_pd_aon/u_pinmux/lc_escalate_en_i[3]   \
+  top_earlgrey/earlgrey_pd_aon/u_pinmux/lc_escalate_en_i[1]   \
+  top_earlgrey/earlgrey_pd_aon/u_pinmux/lc_check_byp_en_i[3]  \
+  top_earlgrey/earlgrey_pd_aon/u_pinmux/lc_check_byp_en_i[1]
 }

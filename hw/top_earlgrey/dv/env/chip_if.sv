@@ -63,7 +63,7 @@ interface chip_if;
 `define LC_CTRL_HIER        `PD_MAIN_HIER.u_lc_ctrl
 `define OTP_CTRL_HIER       `PD_MAIN_HIER.u_otp_ctrl
 `define OTBN_HIER           `PD_MAIN_HIER.u_otbn
-`define PINMUX_HIER         `PD_MAIN_HIER.u_pinmux
+`define PINMUX_HIER         `PD_AON_HIER.u_pinmux
 `define PWRMGR_HIER         `PD_AON_HIER.u_pwrmgr
 `define ROM_CTRL_HIER       `PD_MAIN_HIER.u_rom_ctrl
 `define RSTMGR_HIER         `PD_AON_HIER.u_rstmgr
