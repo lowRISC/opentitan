@@ -13,6 +13,9 @@
         aon: false
         freq: 100000000
         ref: false
+        module: ast
+        signal: clk_src_sys
+        partition: primary
       }
       io:
       {
@@ -20,6 +23,9 @@
         aon: false
         freq: 96000000
         ref: false
+        module: ast
+        signal: clk_src_io
+        partition: primary
       }
       usb:
       {
@@ -27,6 +33,9 @@
         aon: false
         freq: 48000000
         ref: false
+        module: ast
+        signal: clk_src_usb
+        partition: primary
       }
       aon:
       {
@@ -34,6 +43,9 @@
         aon: true
         freq: 200000
         ref: true
+        module: ast
+        signal: clk_src_aon
+        partition: secondary
       }
     }
     derived_clks:
@@ -51,6 +63,9 @@
           aon: no
           freq: "96000000"
           ref: false
+          module: ast
+          signal: clk_src_io
+          partition: primary
         }
       }
       io_div4:
@@ -66,6 +81,9 @@
           aon: no
           freq: "96000000"
           ref: false
+          module: ast
+          signal: clk_src_io
+          partition: primary
         }
       }
     }
