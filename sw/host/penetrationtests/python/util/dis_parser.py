@@ -10,6 +10,7 @@ import re
 class DisParser:
     def __init__(self, dis_file_path=None):
         self.dis_file_path = dis_file_path
+        self._func_start_addrs = None
         if not os.path.exists(self.dis_file_path):
             print(f"Error: File not found at path: {self.dis_file_path}")
             sys.exit(1)
@@ -83,12 +84,14 @@ class DisParser:
             return None
 
     def get_function_start_address(self, function_name):
+        if self._func_start_addrs is not None:
+            return self._func_start_addrs.get(function_name)
+
+        escaped_name = re.escape(function_name)
+        pattern = re.compile(r"^([0-9a-fA-F]{1,16})\s*<" + escaped_name + r">:")
         try:
             with open(self.dis_file_path, "r") as f:
                 for line in f:
-                    escaped_name = re.escape(function_name)
-                    pattern = re.compile(r"^([0-9a-fA-F]{1,16})\s*<" + escaped_name + r">:")
-
                     match = pattern.search(line)
                     if match:
                         return f"0x{match.group(1)}"
@@ -172,3 +175,56 @@ class DisParser:
 
         print(f"Error: Inlined function address not found for {function_name}")
         return None
+
+    def parse_all_instructions(self):
+        """Parse all disassembled instructions and their source locations by PC."""
+        func_header_re = re.compile(r"^([0-9a-fA-F]+)\s+<([^>]+)>:")
+        src_line_re = re.compile(r"^([^\s:][^:]*\.[chS]):([0-9]+)")
+        insn_line_re = re.compile(
+            r"^\s*([0-9a-fA-F]+):[\s|/\-\\>,+!.*x'=]+([0-9a-fA-F]+)\s+"
+            r"([a-zA-Z0-9_.]+)(?:\s+([^;#<]*))?"
+        )
+        instructions = {}
+        func_addrs = {}
+        current_func = ""
+        current_src = ""
+        try:
+            with open(self.dis_file_path, "r", errors="replace") as f:
+                for line in f:
+                    fh = func_header_re.match(line)
+                    if fh:
+                        current_func = fh.group(2)
+                        func_addrs.setdefault(current_func, f"0x{fh.group(1)}")
+                        current_src = ""
+                        continue
+                    sl = src_line_re.match(line.strip())
+                    if sl:
+                        current_src = f"{os.path.basename(sl.group(1))}:{sl.group(2)}"
+                        continue
+                    m = insn_line_re.match(line)
+                    if not m:
+                        continue
+                    pc = int(m.group(1), 16)
+                    insn_bits = int(m.group(2), 16)
+                    mnemonic = m.group(3).strip()
+                    operands_raw = (m.group(4) or "").strip()
+                    raw_text = f"{mnemonic} {operands_raw}".strip()
+                    if current_src:
+                        loc = (
+                            f"{current_func} ({current_src})"
+                            if current_func
+                            else current_src
+                        )
+                    else:
+                        loc = current_func
+                    instructions[pc] = {
+                        "insn_bits": insn_bits,
+                        "mnemonic": mnemonic,
+                        "operands": operands_raw,
+                        "text": raw_text,
+                        "source_loc": loc,
+                    }
+            self._func_start_addrs = func_addrs
+        except IOError as e:
+            print(f"Error reading file: {e}")
+        return instructions
