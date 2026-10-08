@@ -93,7 +93,7 @@ module chip_sim_tb (
 `else
   // TODO: this is currently not supported.
   // connect this to the correct pins once pinout is final and once the
-  // verilator testbench supports DFT/Debug strap sampling.
+  // testbench for Verilator supports DFT/Debug strap sampling.
   // See also #5221.
   //
   // jtagdpi u_jtagdpi (
