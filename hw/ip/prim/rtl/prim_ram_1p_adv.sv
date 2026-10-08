@@ -112,7 +112,7 @@ module prim_ram_1p_adv import prim_ram_1p_pkg::*; #(
 
   logic [NumRamInst-1:0] inst_req_d, inst_req_q, rvalid_inst;
   logic [InstAw-1:0] inst_addr;
-  logic [NumRamInst-1:0] [Width-1:0] inst_rdata;
+  logic [NumRamInst-1:0] [TotalWidth-1:0] inst_rdata;
 
   // The lower InstAw bits of the address are used to address within one RAM primitive
   assign inst_addr = addr_q[InstAw-1:0];
