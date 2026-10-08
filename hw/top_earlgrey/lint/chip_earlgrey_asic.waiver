@@ -28,28 +28,12 @@ waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
       -comment "This is due to the external clock input pin."
 
 waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
-      -msg {'ast_base_clks.clk_io' is driven by instance 'u_ast' of module 'ast', and used as a clock} \
-      -comment "This is a clock source."
-
-waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
-      -msg {'clk_src_io_o' driven in module 'ast' by port 'u_ast_dft.clk_src_io_o' at ast} \
-      -comment "This is a clock source."
-
-waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
-      -msg {'clk_src_io_o' driven in module 'ast_dft' at ast_dft} \
-      -comment "This is a clock source."
-
-waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
       -regexp {'dio_in\[12\]' is driven by instance 'u_padring' of module 'padring', and used as a clock} \
       -comment "'DioSpiDeviceSck' is the dedicated IO for the spi_device clock signal."
 
 waive -rules {CLOCK_MUX} -location {chip_earlgrey_asic.sv} \
       -regexp {Clock 'dio_in\[12\]' reaches a multiplexer here, used as a clock}
       -comment "'DioSpiDeviceSck' is the dedicated IO for the spi_device clock signal. Inside spi_device, it's fed into a clock mux."
-
-waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
-      -regexp {'sck_monitor' is connected to 'ast' port 'sns_spi_ext_clk_i', and used as a clock} \
-      -comment "'DioSpiDeviceSck' is the dedicated IO for the spi_device clock signal. Inside spi_device, it's connected to 'sck_monitor' which is fed into ast for monitoring."
 
 waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv} \
       -regexp {'dio_in\[13\]' is driven by instance 'u_padring' of module 'padring', and used as a clock 'csb_i' at spid_csb_sync.sv} \
@@ -62,38 +46,6 @@ waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
 waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
       -msg {'mio_in_raw[28]' is used for some other purpose, and as clock 'clk_i' at prim_flop} \
       -comment "This is due to the external clock input pin."
-
-waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
-      -msg {'clks_ast.clk_ast_usbdev_usb_peri' is connected to 'ast' port 'clk_ast_usb_i', and used as a clock} \
-      -comment "This is a valid clock signal."
-
-waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} \
-      -msg {'clks_ast.clk_ast_usbdev_usb_peri' is connected to 'ast' port 'clk_ast_usb_i', and used as a clock} \
-      -comment "This is a valid clock signal."
-
-waive -rules {CLOCK_USE} -location {ast.sv} \
-      -msg {'clk_ast_usb_i' is used for some other purpose, and as clock 'clk_i' at prim_flop.sv} \
-      -comment "This is a valid clock signal."
-
-waive -rules {RESET_DRIVER} -location {chip_earlgrey_asic.sv} \
-      -msg {'scan_rst_n' is driven by instance 'u_ast' of module 'ast', and used as an asynchronous reset} \
-      -comment "This is a valid reset signal."
-
-waive -rules {RESET_DRIVER} -location {chip_earlgrey_asic.sv} \
-      -msg {'scan_reset_no' driven in module 'ast' at ast} \
-      -comment "This is a valid reset signal."
-
-waive -rules {RESET_DRIVER} -location {ast.sv} \
-      -msg {'rst_sys_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_flop.sv} \
-      -comment "This is a valid reset signal."
-
-waive -rules {RESET_DRIVER} -location {ast.sv} \
-      -msg {'rst_usb_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_flop.sv} \
-      -comment "This is a valid reset signal."
-
-waive -rules {RESET_DRIVER} -location {ast.sv} \
-      -msg {'rst_io_clk_n' is driven here, and used as an asynchronous reset 'rst_ni' at prim_flop.sv} \
-      -comment "This is a valid reset signal."
 
 # Combo loops through uart loopback can be ignored
 waive -rules {COMBO_LOOP} -location {chip_earlgrey_asic.sv} -regexp {'tx' driven in module 'uart_core' by 'rx' at uart_core.sv} \
@@ -109,50 +61,6 @@ waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv}  -regexp {'(attr_p
 
 waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv}  -msg {'mio_in_raw[28]' is used for some other purpose, and as clock 'clk_ast_ext_scn'} \
       -comment "MioPadIoc6 at index 28 may serve as an external clock input, hence the warnings"
-
-waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} -regexp {'ast_base_clks.clk_sys' is connected to 'padring' port 'clk_scan_i', and used as a clock} \
-      -comment "clk_sys is intentionally used as the DFT scan clock fed into padring."
-
-# Unused power OK signals
-waive -rules {HIER_NET_NOT_READ NOT_READ} -location {chip_earlgrey_asic.sv} -regexp {(Signal|Net) 'ast_pwst(\.vcc_pok|_h\.io_pok|_h\.main_pok|_h\.vcc_pok)' is not read from in module 'chip_earlgrey_asic'} \
-      -comment "Not all POK signals are used inside top_earlgrey"
-
-# Clock / reset connections going back into AST
-waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} -regexp {'clkmgr_clocks..*' is connected to 'ast' port '(sns_clks_i..*|clk_ast_usb_i)', and used as a clock} \
-      -comment "This is a clock struct that is fed back into AST."
-
-waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} -regexp {'clkmgr_clocks..*' is connected to 'top_earlgrey' port 'clkmgr_clocks..*', and used as a clock} \
-      -comment "This is a clock struct that is fed back into AST."
-
-waive -rules {CLOCK_MUX} -location {chip_earlgrey_asic.sv} -regexp {Clock 'ast_base_clks.clk_io' reaches a multiplexer here, used as a clock 'clk_i' at} \
-      -comment "This is a clock signal that is fed back into AST."
-
-waive -rules {CLOCK_MUX} -location {chip_earlgrey_asic.sv} -regexp {Clock 'clkmgr_clocks.clk_io_div4_secure' is driven by a multiplexer here, used as a clock 'clk_i' at} \
-      -comment "This is a clock signal that is fed back into AST."
-
-waive -rules {CLOCK_MUX} -location {chip_earlgrey_asic.sv} -regexp {Clock 'clkmgr_clocks.clk_io_div4_infra' is driven by a multiplexer here, used as a clock 'clk_i' at} \
-      -comment "This is a clock signal that is fed back into AST."
-
-waive -rules CLOCK_MUX -location {chip_earlgrey_asic.sv} -regexp {.*clk_io_div.* is driven by a multiplexer here} \
-      -comment "Divided clocks go through prim_clock_div, which use muxes for scan bypass and clock step down"
-
-waive -rules {RESET_USE} -location {chip_earlgrey_asic.sv} -regexp {'rstmgr_resets..*' is connected to 'ast' port 'sns_rsts_i..*', and used as an asynchronous reset or set} \
-      -comment "This is a reset struct that is fed back into AST."
-
-waive -rules {RESET_USE} -location {ast.sv} \
-      -regexp {'rst_ast_usb_ni' is used for some other purpose, and as asynchronous reset 'rst_ni' at prim_flop.sv} \
-      -comment "This is a reset struct that is fed back into AST."
-
-waive -rules {RESET_USE} -location {usb_clk.sv} \
-      -regexp {'rst_usb_clk_ni' is used for some other purpose, and as asynchronous reset 'rst_ni' at prim_flop.sv} \
-      -comment "This is a reset struct that is fed back into AST."
-
-waive -rules {RESET_MUX} -location {chip_earlgrey_asic.sv} -regexp {Asynchronous reset 'rstmgr_resets..*' is driven by a multiplexer here, used as a reset} \
-      -comment "This is a reset struct that is fed back into AST."
-
-waive -rules {RESET_MUX} -location {usb_clk.sv} \
-      -regexp {Asynchronous reset 'rst_n' is driven by a multiplexer here, used as a reset 'rst_ni' at prim_flop.sv} \
-      -comment "This is reset generation logic, hence reset muxes are allowed."
 
 # See https://github.com/lowRISC/opentitan/issues/15674
 waive -rules {LHS_TOO_SHORT} -location {aes_prng_masking.sv} \
