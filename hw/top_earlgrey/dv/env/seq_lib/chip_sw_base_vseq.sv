@@ -862,14 +862,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
         forever begin
           bit[1:0] tap_strap_value;
 `ifdef GATE_LEVEL
-          tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_main.u_pinmux.",
+          tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_aon.u_pinmux.",
                             "u_pinmux_strap_sampling.tap_strap_q_reg_1_.Q"};
           `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value[1]))
-          tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_main.u_pinmux.",
+          tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_aon.u_pinmux.",
                             "u_pinmux_strap_sampling.tap_strap_q_reg_0_.Q"};
           `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value[0]))
 `else
-          string tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_main.u_pinmux.",
+          string tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_aon.u_pinmux.",
                                    "u_pinmux_strap_sampling.tap_strap"};
           `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value))
 `endif

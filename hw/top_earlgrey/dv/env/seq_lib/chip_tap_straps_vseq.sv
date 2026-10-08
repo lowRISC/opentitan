@@ -8,14 +8,14 @@
 // Verify in PROD state, only the LC tap can be selected.
 // Verify in DEV state, only the LC tap and RISC-V taps can be selected.
 // Verify DFT test mode straps are sampled and output to AST via
-// top_earlgrey.earlgrey_pd_main.pinmux_dft_strap_test_o in TEST_UNLOCKED* and RMA states.
+// top_earlgrey.earlgrey_pd_aon.u_pinmux.dft_strap_test_o in TEST_UNLOCKED* and RMA states.
 // Verify pinmux.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED* and
 // RMA, regardless of the value on DFT SW straps.
 
 class chip_tap_straps_vseq extends chip_sw_base_vseq;
-  string path_dft_strap_test_o = "tb.dut.top_earlgrey.earlgrey_pd_main.pinmux_dft_strap_test_o";
-  string path_dft_tap_req = "tb.dut.top_earlgrey.earlgrey_pd_main.u_dft_tap_breakout.req_i";
-  string path_dft_tap_rsp = "tb.dut.top_earlgrey.earlgrey_pd_main.u_dft_tap_breakout.rsp_o";
+  string path_dft_strap_test = "tb.dut.top_earlgrey.earlgrey_pd_aon.u_pinmux.dft_strap_test_o";
+  string path_dft_tap_req = "tb.dut.top_earlgrey.earlgrey_pd_aon.u_dft_tap_breakout.req_i";
+  string path_dft_tap_rsp = "tb.dut.top_earlgrey.earlgrey_pd_aon.u_dft_tap_breakout.rsp_o";
   string path_tb_jtag_tck = "tb.dut.chip_if.jtag_if.tck";
   string path_tb_jtag_tms = "tb.dut.chip_if.jtag_if.tms";
   string path_tb_jtag_trst_n = "tb.dut.chip_if.jtag_if.trst_n";
@@ -32,7 +32,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
 
   virtual task pre_start();
     // path check
-    `DV_CHECK_FATAL(uvm_hdl_check_path(path_dft_strap_test_o))
+    `DV_CHECK_FATAL(uvm_hdl_check_path(path_dft_strap_test))
     `DV_CHECK_FATAL(uvm_hdl_check_path(path_dft_tap_req))
     `DV_CHECK_FATAL(uvm_hdl_check_path(path_tb_jtag_tck))
     `DV_CHECK_FATAL(uvm_hdl_check_path(path_tb_jtag_tms))
@@ -292,7 +292,7 @@ class chip_tap_straps_vseq extends chip_sw_base_vseq;
     if (!is_lc_in_unlocked_or_rma()) begin
       dft_straps_val = 0;
     end
-    `DV_CHECK_FATAL(uvm_hdl_read(path_dft_strap_test_o, act_val))
+    `DV_CHECK_FATAL(uvm_hdl_read(path_dft_strap_test, act_val))
     `DV_CHECK_EQ(act_val, dft_straps_val)
   endfunction
 

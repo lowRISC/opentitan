@@ -785,6 +785,8 @@
       domain: Main
       top_signame: pinmux_tl
       index: -1
+      external: true
+      conn_type: false
     }
     {
       name: tl_otp_ctrl__core

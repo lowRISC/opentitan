@@ -54,8 +54,8 @@ CONNECTION, RSTMGR_LC_IO_DIV4_AON_LCRST_CTRL_RST_NI, top_earlgrey.earlgrey_pd_ao
 CONNECTION, RSTMGR_LC_AON_AON_LCRST_CTRL_RST_AON_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_aon_n[0], top_earlgrey.earlgrey_pd_aon.u_sysrst_ctrl, rst_aon_ni
 CONNECTION, RSTMGR_LC_IO_DIV4_AON_ADC_CTRL_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_div4_n[0], top_earlgrey.earlgrey_pd_aon.u_adc_ctrl, rst_ni
 CONNECTION, RSTMGR_LC_AON_AON_ADC_CTRL_RST_AON_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_aon_n[0], top_earlgrey.earlgrey_pd_aon.u_adc_ctrl, rst_aon_ni
-CONNECTION, RSTMGR_LC_IO_DIV4_AON_PINMUX_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_div4_n[0], top_earlgrey.earlgrey_pd_main.u_pinmux, rst_ni
-CONNECTION, RSTMGR_LC_AON_AON_PINMUX_RST_AON_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_aon_n[0], top_earlgrey.earlgrey_pd_main.u_pinmux, rst_aon_ni
+CONNECTION, RSTMGR_LC_IO_DIV4_AON_PINMUX_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_div4_n[0], top_earlgrey.earlgrey_pd_aon.u_pinmux, rst_ni
+CONNECTION, RSTMGR_LC_AON_AON_PINMUX_RST_AON_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_aon_n[0], top_earlgrey.earlgrey_pd_aon.u_pinmux, rst_aon_ni
 CONNECTION, RSTMGR_LC_IO_DIV4_AON_AON_TIMER_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_div4_n[0], top_earlgrey.earlgrey_pd_aon.u_aon_timer, rst_ni
 CONNECTION, RSTMGR_LC_AON_AON_AON_TIMER_RST_AON_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_aon_n[0], top_earlgrey.earlgrey_pd_aon.u_aon_timer, rst_aon_ni
 CONNECTION, RSTMGR_LC_IO_DIV4_AON_SENSOR_CTRL_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_div4_n[0], top_earlgrey.earlgrey_pd_aon.u_sensor_ctrl, rst_ni

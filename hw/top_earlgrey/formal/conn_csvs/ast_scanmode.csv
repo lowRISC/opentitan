@@ -11,7 +11,7 @@
 CONNECTION, AST_SCANMODE_PADRING,      top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, u_padring,                   scanmode_i
 CONNECTION, AST_SCANMODE_CLKMGR,       top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_aon.u_clkmgr,   scanmode_i
 CONNECTION, AST_SCANMODE_LC_CTRL,      top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_lc_ctrl,      scanmode_i
-CONNECTION, AST_SCANMODE_PINMUX,       top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_pinmux,   scanmode_i
+CONNECTION, AST_SCANMODE_PINMUX,       top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_aon.u_pinmux,   scanmode_i
 CONNECTION, AST_SCANMODE_RSTMGR,       top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_aon.u_rstmgr,   scanmode_i
 CONNECTION, AST_SCANMODE_RV_CORE_IBEX, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_rv_core_ibex, scanmode_i
 CONNECTION, AST_SCANMODE_RV_DM,        top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_rv_dm,        scanmode_i

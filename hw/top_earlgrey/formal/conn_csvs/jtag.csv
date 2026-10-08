@@ -8,5 +8,5 @@
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
 # Pinmux and lc_ctrl jtag connection.
-CONNECTION, PINMUX_LC_CTRL_JTAG_REQ, top_earlgrey.earlgrey_pd_main.u_pinmux, lc_jtag_o, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, jtag_i
-CONNECTION, PINMUX_LC_CTRL_JTAG_RSP, top_earlgrey.earlgrey_pd_main.u_pinmux, lc_jtag_i, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, jtag_o
+CONNECTION, PINMUX_LC_CTRL_JTAG_REQ, top_earlgrey.earlgrey_pd_aon.u_pinmux, lc_jtag_o, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, jtag_i
+CONNECTION, PINMUX_LC_CTRL_JTAG_RSP, top_earlgrey.earlgrey_pd_aon.u_pinmux, lc_jtag_i, top_earlgrey.earlgrey_pd_main.u_lc_ctrl, jtag_o

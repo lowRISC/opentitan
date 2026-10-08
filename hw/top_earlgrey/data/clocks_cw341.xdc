@@ -7,7 +7,7 @@ set clkgen          clkgen/pll
 set u_ast_primary   top_*/*_pd_main/u_ast_part_primary
 set u_ast_secondary top_*/*_pd_aon/u_ast_part_secondary
 set u_clkmgr        top_*/*_pd_aon/u_clkmgr
-set u_pinmux        top_*/*_pd_main/u_pinmux
+set u_pinmux        top_*/*_pd_aon/u_pinmux
 set u_spi_device    top_*/*_pd_main/u_spi_device
 
 ## Clock Signal
