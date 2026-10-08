@@ -8,14 +8,13 @@
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
 # Verify the scanmode connectivities.
-CONNECTION, AST_SCANMODE_PADRING,      u_ast, dft_scan_md_o, u_padring,                   scanmode_i
-CONNECTION, AST_SCANMODE_CLKMGR,       u_ast, dft_scan_md_o, top_earlgrey.earlgrey_pd_aon.u_clkmgr,   scanmode_i
-CONNECTION, AST_SCANMODE_LC_CTRL,      u_ast, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_lc_ctrl,      scanmode_i
-CONNECTION, AST_SCANMODE_OTP_CTRL,     u_ast, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_otp_macro,    scanmode_i
-CONNECTION, AST_SCANMODE_PINMUX,       u_ast, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_pinmux,   scanmode_i
-CONNECTION, AST_SCANMODE_RSTMGR,       u_ast, dft_scan_md_o, top_earlgrey.earlgrey_pd_aon.u_rstmgr,   scanmode_i
-CONNECTION, AST_SCANMODE_RV_CORE_IBEX, u_ast, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_rv_core_ibex, scanmode_i
-CONNECTION, AST_SCANMODE_RV_DM,        u_ast, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_rv_dm,        scanmode_i
-CONNECTION, AST_SCANMODE_SPI_DEVICE,   u_ast, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_spi_device,   scanmode_i
-CONNECTION, AST_SCANMODE_XBAR_MAIN,    u_ast, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_xbar_main,    scanmode_i
-CONNECTION, AST_SCANMODE_XBAR_PERI,    u_ast, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_xbar_peri,    scanmode_i
+CONNECTION, AST_SCANMODE_PADRING,      top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, u_padring,                   scanmode_i
+CONNECTION, AST_SCANMODE_CLKMGR,       top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_aon.u_clkmgr,   scanmode_i
+CONNECTION, AST_SCANMODE_LC_CTRL,      top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_lc_ctrl,      scanmode_i
+CONNECTION, AST_SCANMODE_PINMUX,       top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_pinmux,   scanmode_i
+CONNECTION, AST_SCANMODE_RSTMGR,       top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_aon.u_rstmgr,   scanmode_i
+CONNECTION, AST_SCANMODE_RV_CORE_IBEX, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_rv_core_ibex, scanmode_i
+CONNECTION, AST_SCANMODE_RV_DM,        top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_rv_dm,        scanmode_i
+CONNECTION, AST_SCANMODE_SPI_DEVICE,   top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_spi_device,   scanmode_i
+CONNECTION, AST_SCANMODE_XBAR_MAIN,    top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_xbar_main,    scanmode_i
+CONNECTION, AST_SCANMODE_XBAR_PERI,    top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, dft_scan_md_o, top_earlgrey.earlgrey_pd_main.u_xbar_peri,    scanmode_i

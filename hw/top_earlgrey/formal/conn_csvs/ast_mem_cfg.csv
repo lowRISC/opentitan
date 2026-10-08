@@ -18,8 +18,12 @@
 #  <consumer>_rom_cfg_req_o), which is what these checks now source from.
 
 # Dual port RAM.
-# To spi_device (SramType2p: only the sys2spi config port drives the shared 2p macro).
-CONNECTION, AST_SPI_DEVICE_RAM_2P_CFG, u_ast, spi_device_sys2spi_ram_cfg_req_o, top_earlgrey.earlgrey_pd_main.u_spi_device.u_spid_dpram.gen_ram2p.u_memory_2p.u_mem, cfg_i
+# To spi_device
+# If SramType2p: only the sys2spi config port drives the shared 2p macro.
+# CONNECTION, AST_SPI_DEVICE_RAM_2P_CFG, top_earlgrey.earlgrey_pd_main.u_ast_part_primary, mem_cfg_o.spi_device_sys2spi, top_earlgrey.earlgrey_pd_main.u_spi_device.u_spid_dpram.gen_ram2p.u_memory_2p.u_mem, cfg_i
+# If SramType1r1w:
+CONNECTION, AST_SPI_DEVICE_SYS2SPI_RAM_1P_CFG, top_earlgrey.earlgrey_pd_main.u_ast_part_primary, mem_cfg_o.spi_device_sys2spi, top_earlgrey.earlgrey_pd_main.u_spi_device.u_spid_dpram.gen_ram1r1w.u_sys2spi_mem.u_mem, cfg_i
+CONNECTION, AST_SPI_DEVICE_SPI2SYS_RAM_1P_CFG, top_earlgrey.earlgrey_pd_main.u_ast_part_primary, mem_cfg_o.spi_device_spi2sys, top_earlgrey.earlgrey_pd_main.u_spi_device.u_spid_dpram.gen_ram1r1w.u_spi2sys_mem.u_mem, cfg_i
 
 # Single port RAMs.
 # To otbn.
@@ -35,8 +39,11 @@ CONNECTION, AST_RV_CORE_IBEX_DATA1_RAM_1P_CFG, u_ast, rv_core_ibex_icache_data_r
 # To sram_ctrl (main).
 CONNECTION, AST_SRAM_MAIN_RAM_1P_CFG, u_ast, sram_ctrl_main_ram_cfg_req_o[0], top_earlgrey.earlgrey_pd_main.u_sram_ctrl_main.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem, cfg_i
 
-# To sram_ctrl (ret).
-CONNECTION, AST_SRAM_RET_RAM_1P_CFG, u_ast, sram_ctrl_ret_ram_cfg_req_o[0], top_earlgrey.earlgrey_pd_aon.u_sram_ctrl_ret.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem, cfg_i
+# To sram_ctrl (sec).
+CONNECTION, AST_SRAM_RET_RAM_1P_CFG, top_earlgrey.earlgrey_pd_main.u_ast_part_primary, mem_cfg_o.sram_ctrl_sec[0], top_earlgrey.earlgrey_pd_main.u_sram_ctrl_sec.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem, cfg_i
+
+# To sram_ctrl (meta).
+CONNECTION, AST_SRAM_META_RAM_1P_CFG, top_earlgrey.earlgrey_pd_main.u_ast_part_primary, mem_cfg_o.sram_ctrl_meta[0], top_earlgrey.earlgrey_pd_main.u_sram_ctrl_meta.u_prim_ram_1p_scr.u_prim_ram_1p_adv.gen_ram_inst[0].u_mem, cfg_i
 
 # To rom.
 CONNECTION, AST_ROM_CFG, u_ast, rom_ctrl_rom_cfg_req_o, top_earlgrey.earlgrey_pd_main.u_rom_ctrl.gen_rom_scramble_enabled.u_rom.u_rom.u_prim_rom, cfg_i
