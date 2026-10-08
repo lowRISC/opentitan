@@ -430,7 +430,15 @@ assign intraip_p2s_o.ot0_alert_src = '{p: intg_err, n: ~intg_err};
 /////////////////////
 logic unused_sigs;
 
-assign unused_sigs = ^{ reg2hw.rega0,
+assign unused_sigs = ^{ intraip_s2p_i.clk_rst.clk_aon,
+                        intraip_s2p_i.clk_rst.clk_ast_es,
+                        intraip_s2p_i.clk_rst.rst_ast_es_n,
+                        intraip_s2p_i.clk_rst.rst_io_clk_n,
+                        intraip_s2p_i.clk_rst.rst_sys_clk_n,
+                        intraip_s2p_i.clk_rst.rst_usb_clk_n,
+                        intraip_s2p_i.pwr.vcaon_pok,
+                        intraip_s2p_i.pwr.vcc_pok_str,
+                        reg2hw.rega0,
                         reg2hw.rega1,
                         reg2hw.rega2,
                         reg2hw.rega3,
