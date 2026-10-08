@@ -59,6 +59,47 @@ def char_aes_fvsr_plaintext(
     return response
 
 
+def char_aes_fvsr_key(
+    target,
+    iterations,
+    data,
+    data_len,
+    key,
+    key_len,
+    iv,
+    padding,
+    mode,
+    op_enc,
+    cfg,
+    trigger,
+    num_iterations,
+    reset=False,
+):
+    symsca = OTSymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    symsca.init()
+    ot_prng = OTPRNG(target=target)
+    ot_prng.seed_prng([1, 0, 0, 0])
+    for _ in range(iterations):
+        symsca.handle_aes_fvsr_key(
+            data,
+            data_len,
+            key,
+            key_len,
+            iv,
+            padding,
+            mode,
+            op_enc,
+            cfg,
+            trigger,
+            num_iterations,
+        )
+        response = target.read_response()
+    return response
+
+
 def char_aes_daisy(
     target,
     iterations,
@@ -140,6 +181,41 @@ def char_cmac_fvsr_plaintext(
     ot_prng.seed_prng([1, 0, 0, 0])
     for _ in range(iterations):
         symsca.handle_cmac_fvsr_plaintext(
+            data,
+            data_len,
+            key,
+            key_len,
+            iv,
+            cfg,
+            trigger,
+            num_iterations,
+        )
+        response = target.read_response()
+    return response
+
+
+def char_cmac_fvsr_key(
+    target,
+    iterations,
+    data,
+    data_len,
+    key,
+    key_len,
+    iv,
+    cfg,
+    trigger,
+    num_iterations,
+    reset=False,
+):
+    symsca = OTSymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    symsca.init()
+    ot_prng = OTPRNG(target=target)
+    ot_prng.seed_prng([1, 0, 0, 0])
+    for _ in range(iterations):
+        symsca.handle_cmac_fvsr_key(
             data,
             data_len,
             key,
@@ -245,6 +321,45 @@ def char_gcm_fvsr_plaintext(
     return response
 
 
+def char_gcm_fvsr_key(
+    target,
+    iterations,
+    data,
+    data_len,
+    key,
+    key_len,
+    aad,
+    aad_len,
+    iv,
+    cfg,
+    trigger,
+    num_iterations,
+    reset=False,
+):
+    symsca = OTSymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    symsca.init()
+    ot_prng = OTPRNG(target=target)
+    ot_prng.seed_prng([1, 0, 0, 0])
+    for _ in range(iterations):
+        symsca.handle_gcm_fvsr_key(
+            data,
+            data_len,
+            key,
+            key_len,
+            aad,
+            aad_len,
+            iv,
+            cfg,
+            trigger,
+            num_iterations,
+        )
+        response = target.read_response()
+    return response
+
+
 def char_gcm_daisy(
     target,
     iterations,
@@ -325,6 +440,43 @@ def char_hmac_fvsr_plaintext(
     ot_prng.seed_prng([1, 0, 0, 0])
     for _ in range(iterations):
         symsca.handle_hmac_fvsr_plaintext(
+            data,
+            data_len,
+            key,
+            key_len,
+            padding,
+            mode,
+            cfg,
+            trigger,
+            num_iterations,
+        )
+        response = target.read_response()
+    return response
+
+
+def char_hmac_fvsr_key(
+    target,
+    iterations,
+    data,
+    data_len,
+    key,
+    key_len,
+    padding,
+    mode,
+    cfg,
+    trigger,
+    num_iterations,
+    reset=False,
+):
+    symsca = OTSymCrypto(target)
+    if reset:
+        target.reset_target()
+        target.dump_all()
+    symsca.init()
+    ot_prng = OTPRNG(target=target)
+    ot_prng.seed_prng([1, 0, 0, 0])
+    for _ in range(iterations):
+        symsca.handle_hmac_fvsr_key(
             data,
             data_len,
             key,

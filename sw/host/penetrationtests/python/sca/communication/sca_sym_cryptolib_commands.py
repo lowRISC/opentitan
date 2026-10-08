@@ -102,6 +102,38 @@ class OTSymCrypto:
         }
         self.target.write(json.dumps(input_data).encode("ascii"))
 
+    def handle_aes_fvsr_key(
+        self,
+        data,
+        data_len,
+        key,
+        key_len,
+        iv,
+        padding,
+        mode,
+        op_enc,
+        cfg,
+        trigger,
+        num_iterations,
+    ) -> None:
+        """Call the cryptolib AES with FvsR key generation."""
+        self._ujson_sym_crypto_sca_cmd()
+        self.target.write(json.dumps("AesFvsrKey").encode("ascii"))
+        input_data = {
+            "data": data,
+            "data_len": data_len,
+            "key": key,
+            "key_len": key_len,
+            "iv": iv,
+            "padding": padding,
+            "mode": mode,
+            "op_enc": op_enc,
+            "cfg": cfg,
+            "trigger": trigger,
+            "num_iterations": num_iterations,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
     def handle_aes_daisy(
         self,
         data,
@@ -165,6 +197,24 @@ class OTSymCrypto:
         """
         self._ujson_sym_crypto_sca_cmd()
         self.target.write(json.dumps("CmacFvsrPlaintext").encode("ascii"))
+        input_data = {
+            "data": data,
+            "data_len": data_len,
+            "key": key,
+            "key_len": key_len,
+            "iv": iv,
+            "cfg": cfg,
+            "trigger": trigger,
+            "num_iterations": num_iterations,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_cmac_fvsr_key(
+        self, data, data_len, key, key_len, iv, cfg, trigger, num_iterations
+    ) -> None:
+        """Call the cryptolib CMAC with FvsR key generation."""
+        self._ujson_sym_crypto_sca_cmd()
+        self.target.write(json.dumps("CmacFvsrKey").encode("ascii"))
         input_data = {
             "data": data,
             "data_len": data_len,
@@ -249,6 +299,36 @@ class OTSymCrypto:
         }
         self.target.write(json.dumps(input_data).encode("ascii"))
 
+    def handle_gcm_fvsr_key(
+        self,
+        data,
+        data_len,
+        key,
+        key_len,
+        aad,
+        aad_len,
+        iv,
+        cfg,
+        trigger,
+        num_iterations,
+    ) -> None:
+        """Call the cryptolib GCM with FvsR key generation."""
+        self._ujson_sym_crypto_sca_cmd()
+        self.target.write(json.dumps("GcmFvsrKey").encode("ascii"))
+        input_data = {
+            "data": data,
+            "data_len": data_len,
+            "key": key,
+            "key_len": key_len,
+            "aad": aad,
+            "aad_len": aad_len,
+            "iv": iv,
+            "cfg": cfg,
+            "trigger": trigger,
+            "num_iterations": num_iterations,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
     def handle_gcm_daisy(
         self,
         data,
@@ -310,6 +390,25 @@ class OTSymCrypto:
         """
         self._ujson_sym_crypto_sca_cmd()
         self.target.write(json.dumps("HmacFvsrPlaintext").encode("ascii"))
+        input_data = {
+            "data": data,
+            "data_len": data_len,
+            "key": key,
+            "key_len": key_len,
+            "padding": padding,
+            "mode": mode,
+            "cfg": cfg,
+            "trigger": trigger,
+            "num_iterations": num_iterations,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
+    def handle_hmac_fvsr_key(
+        self, data, data_len, key, key_len, padding, mode, cfg, trigger, num_iterations
+    ) -> None:
+        """Call the cryptolib HMAC with FvsR key generation."""
+        self._ujson_sym_crypto_sca_cmd()
+        self.target.write(json.dumps("HmacFvsrKey").encode("ascii"))
         input_data = {
             "data": data,
             "data_len": data_len,
