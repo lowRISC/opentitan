@@ -10,9 +10,9 @@
 #################################
 # Pad connections to/from AST
 #################################
-CONNECTION, AST_PAD0,   u_ast, ast2pad_t0_ao, ,                                           IOA2,
-CONNECTION, AST_PAD1,   u_ast, ast2pad_t1_ao, ,                                           IOA3,
-CONNECTION, AST_PINMUX, u_ast, ast2padmux_o,  top_earlgrey.earlgrey_pd_aon.u_sensor_ctrl, ast2pinmux_i,
+CONNECTION, AST_PAD0,   top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, ast2pad_t0_a_o, ,                                           IOA2,
+CONNECTION, AST_PAD1,   top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, ast2pad_t1_a_o, ,                                           IOA3,
+CONNECTION, AST_PINMUX, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, ast2padmux_o,   top_earlgrey.earlgrey_pd_aon.u_sensor_ctrl, ast2pinmux_i,
 
 # There are fixed connections from MIO pads to the AST's padmux2ast_i. These are listed in a
 # definition called PAD2AST_WIRES (in ast_pkg.sv). Check that chip_earlgrey_asic.sv connects the
@@ -33,7 +33,7 @@ CONNECTION, AST_PINMUX, u_ast, ast2padmux_o,  top_earlgrey.earlgrey_pd_aon.u_sen
 #
 #  - The source signal (a pin name here) is IOA4
 #
-#  - The destination block is u_ast
+#  - The destination block is top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary
 #
 #  - The signal in that destination block is padmux2ast_i[0]
 #
@@ -57,7 +57,7 @@ CONNECTION, AST_PINMUX, u_ast, ast2padmux_o,  top_earlgrey.earlgrey_pd_aon.u_sen
 # In prose form, the full block says:
 #
 #   "If mio_attr[4].input_disable is false or if pinmux is in reset then the IOA4 pin is connected
-#   to bit zero of the padmux2ast_i input of u_ast."
+#   to bit zero of the padmux2ast_i input of top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary."
 #
 #
 # Note: This PAD_AST_* checks below contain a manual copy of that list of pads and also the mapping
@@ -65,57 +65,58 @@ CONNECTION, AST_PINMUX, u_ast, ast2padmux_o,  top_earlgrey.earlgrey_pd_aon.u_sen
 #       This list is currently also set to match the behaviour of padring.sv when its mux_iob_sel_i
 #       signal is zero (which is the case in the open source repository).
 
-CONNECTION, PAD_AST_0, , IOA4, u_ast, padmux2ast_i[0],
+CONNECTION, PAD_AST_0, , IOA4, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, padmux2ast_i[0],
 CONDITION, , mio_attr[4].input_disable, 1'b0
 CONDITION, top_earlgrey.earlgrey_pd_main.u_pinmux, rst_ni, 1'b1, 1'b0
 
-CONNECTION, PAD_AST_1, , IOA5, u_ast, padmux2ast_i[1],
+CONNECTION, PAD_AST_1, , IOA5, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, padmux2ast_i[1],
 CONDITION, , mio_attr[5].input_disable, 1'b0
 CONDITION, top_earlgrey.earlgrey_pd_main.u_pinmux, rst_ni, 1'b1, 1'b0
 
-CONNECTION, PAD_AST_2, , IOB0, u_ast, padmux2ast_i[2],
+CONNECTION, PAD_AST_2, , IOB0, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, padmux2ast_i[2],
 CONDITION, , mio_attr[9].input_disable, 1'b0
 CONDITION, top_earlgrey.earlgrey_pd_main.u_pinmux, rst_ni, 1'b1, 1'b0
 
-CONNECTION, PAD_AST_3, , IOB1, u_ast, padmux2ast_i[3],
+CONNECTION, PAD_AST_3, , IOB1, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, padmux2ast_i[3],
 CONDITION, , mio_attr[10].input_disable, 1'b0
 CONDITION, top_earlgrey.earlgrey_pd_main.u_pinmux, rst_ni, 1'b1, 1'b0
 
-CONNECTION, PAD_AST_4, , IOB2, u_ast, padmux2ast_i[4],
+CONNECTION, PAD_AST_4, , IOB2, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, padmux2ast_i[4],
 CONDITION, , mio_attr[11].input_disable, 1'b0
 CONDITION, top_earlgrey.earlgrey_pd_main.u_pinmux, rst_ni, 1'b1, 1'b0
 
-CONNECTION, PAD_AST_5, , IOC1, u_ast, padmux2ast_i[5],
+CONNECTION, PAD_AST_5, , IOC1, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, padmux2ast_i[5],
 CONDITION, , mio_attr[23].input_disable, 1'b0
 CONDITION, top_earlgrey.earlgrey_pd_main.u_pinmux, rst_ni, 1'b1, 1'b0
 
-CONNECTION, PAD_AST_6, , IOC2, u_ast, padmux2ast_i[6],
+CONNECTION, PAD_AST_6, , IOC2, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, padmux2ast_i[6],
 CONDITION, , mio_attr[24].input_disable, 1'b0
 CONDITION, top_earlgrey.earlgrey_pd_main.u_pinmux, rst_ni, 1'b1, 1'b0
 
-CONNECTION, PAD_AST_7, , IOC3, u_ast, padmux2ast_i[7],
+CONNECTION, PAD_AST_7, , IOC3, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, padmux2ast_i[7],
 CONDITION, , mio_attr[25].input_disable, 1'b0
 CONDITION, top_earlgrey.earlgrey_pd_main.u_pinmux, rst_ni, 1'b1, 1'b0
 
 #################################
 # Other clocks
 #################################
-CONNECTION, AST_CLK_SPI_SNS_IN,       ,                      SPI_DEV_CLK,               u_ast,                   sns_spi_ext_clk_i
+CONNECTION, AST_CLK_SPI_SNS_IN, , SPI_DEV_CLK, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, sns_spi_ext_clk_i
 
-CONNECTION, AST_CLK_EXT_IN,           ,                      IOC6,                      u_ast,                   clk_ast_ext_i
+CONNECTION, AST_CLK_EXT_IN_1ST, , IOC6,        top_earlgrey.earlgrey_pd_main.u_ast_part_primary,   clk_ast_ext_i
+CONNECTION, AST_CLK_EXT_IN_2ND, , IOC6,        top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, clk_ast_ext_i
 CONDITION, , mio_attr[28].input_disable, 1'b0
 CONDITION, top_earlgrey.earlgrey_pd_main.u_pinmux, rst_ni, 1'b1, 1'b0
 
 #################################
 # Other resets
 #################################
-CONNECTION, AST_RST_POR_IN,           ,                      POR_N,                     u_ast,                   por_ni
+CONNECTION, AST_RST_POR_IN, , POR_N, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, por_n_i
 
 #################################
 # Other power related signals
 #################################
 
-CONNECTION, AST_USB_REF_IN,      top_earlgrey.earlgrey_pd_main.u_usbdev,      usb_ref_pulse_o,           u_ast,                    usb_ref_pulse_i
-CONNECTION, AST_USB_REF_VAL_IN,  top_earlgrey.earlgrey_pd_main.u_usbdev,      usb_ref_val_o,             u_ast,                    usb_ref_val_i
-CONNECTION, AST_MAIN_PD_IN,      top_earlgrey.earlgrey_pd_aon.u_pwrmgr,  pwr_ast_o.main_pd_n,       u_ast,                    main_pd_ni
-CONNECTION, AST_MAIN_ISO_EN_IN,  top_earlgrey.earlgrey_pd_aon.u_pwrmgr,  pwr_ast_o.pwr_clamp_env,   u_ast,                    main_env_iso_en_i
+CONNECTION, AST_USB_REF_IN,      top_earlgrey.earlgrey_pd_main.u_usbdev, usb_ref_pulse_o,         top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, usb_ref_pulse_i
+CONNECTION, AST_USB_REF_VAL_IN,  top_earlgrey.earlgrey_pd_main.u_usbdev, usb_ref_val_o,           top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, usb_ref_val_i
+CONNECTION, AST_MAIN_PD_IN,      top_earlgrey.earlgrey_pd_aon.u_pwrmgr,  pwr_ast_o.main_pd_n,     top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, pwrmgr_i.main_pd_n
+CONNECTION, AST_MAIN_ISO_EN_IN,  top_earlgrey.earlgrey_pd_aon.u_pwrmgr,  pwr_ast_o.pwr_clamp_env, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, pwrmgr_i.pwr_clamp_env
