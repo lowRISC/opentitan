@@ -235,24 +235,28 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
                            const otcrypto_const_byte_buf_t *,
                            otcrypto_word32_buf_t *) = NULL;
   size_t block_words = 0;
+  size_t digest_words = 0;
   otcrypto_hmac_key_mode_t key_mode_used = launder32(0);
 
   switch (key->config.key_mode) {
     case kOtcryptoKeyModeHmacSha256:
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeHmacSha256;
       block_words = kHmacSha256BlockWords;
+      digest_words = kHmacSha256DigestWords;
       cl_fn = hmac_hmac_sha256;
       redundant_fn = hmac_hmac_sha256_redundant;
       break;
     case kOtcryptoKeyModeHmacSha384:
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeHmacSha384;
       block_words = kHmacSha384BlockWords;
+      digest_words = kHmacSha384DigestWords;
       cl_fn = hmac_hmac_sha384;
       redundant_fn = hmac_hmac_sha384_redundant;
       break;
     case kOtcryptoKeyModeHmacSha512:
       key_mode_used = launder32(key_mode_used) | kOtcryptoKeyModeHmacSha512;
       block_words = kHmacSha512BlockWords;
+      digest_words = kHmacSha512DigestWords;
       cl_fn = hmac_hmac_sha512;
       redundant_fn = hmac_hmac_sha512_redundant;
       break;
@@ -260,6 +264,15 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
       return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(key_mode_used), key->config.key_mode);
+
+  // The driver always writes a full `digest_words`-word tag, so reject a tag
+  // buffer that is not exactly that size before calling it. This matches the
+  // check in `otcrypto_hmac_final` and prevents an out-of-bounds write when a
+  // caller sizes `tag` for a shorter digest.
+  if (launder32(tag->len) != digest_words) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(tag->len, digest_words);
 
   hmac_key_t hmac_key;
   HARDENED_TRY(hmac_key_construct(key, block_words, &hmac_key));

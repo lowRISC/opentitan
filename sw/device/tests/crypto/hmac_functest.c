@@ -114,8 +114,20 @@ static status_t run_negative_tests(void) {
   otcrypto_word32_buf_t bad_tag =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, 8);
 
+  // The tag length must match the digest size. Both backing buffers hold at
+  // least a full digest, so these cases only exercise the length check.
+  otcrypto_word32_buf_t short_tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, 7);
+  uint32_t long_tag_data[9] = {0};
+  otcrypto_word32_buf_t long_tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, long_tag_data, 9);
+
   // otcrypto_hmac
   CHECK(otcrypto_hmac(&valid_key, &msg, &bad_tag).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_hmac(&valid_key, &msg, &short_tag).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_hmac(&valid_key, &msg, &long_tag).value ==
         OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_hmac(&valid_key, &bad_msg, &tag).value ==
         OTCRYPTO_BAD_ARGS.value);

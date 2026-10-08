@@ -550,9 +550,41 @@ static status_t hmac_init_redundant_core(hmac_key_t key, hmac_ctx_t *ctx,
   return OTCRYPTO_OK;
 }
 
+/**
+ * Check that the length fields of a streaming context are within bounds.
+ *
+ * A caller owns the context between streaming calls, so these fields are
+ * untrusted on entry. They drive the message-block, key and digest copies in
+ * `hmac_update`, `hmac_final` and `hmac_final_redundant_core`; bounding them
+ * here keeps those copies in bounds. A zero message block length would also
+ * divide by zero in `hmac_update`.
+ *
+ * @param ctx HMAC context object.
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t check_ctx_lengths(const hmac_ctx_t *ctx) {
+  size_t block_bytelen = ctx->msg_block_wordlen * sizeof(uint32_t);
+  if (launder32(ctx->msg_block_wordlen) == 0 ||
+      launder32(ctx->msg_block_wordlen) > kHmacMaxBlockWords ||
+      launder32(ctx->digest_wordlen) > kHmacMaxDigestWords ||
+      launder32(ctx->key.key_len) > kHmacMaxBlockWords ||
+      launder32(ctx->partial_block_bytelen) >= block_bytelen) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_NE(ctx->msg_block_wordlen, 0);
+  HARDENED_CHECK_LE(ctx->msg_block_wordlen, kHmacMaxBlockWords);
+  HARDENED_CHECK_LE(ctx->digest_wordlen, kHmacMaxDigestWords);
+  HARDENED_CHECK_LE(ctx->key.key_len, kHmacMaxBlockWords);
+  HARDENED_CHECK_LT(ctx->partial_block_bytelen, block_bytelen);
+  return OTCRYPTO_OK;
+}
+
 static status_t hmac_final_redundant_core(
     hmac_ctx_t *ctx, otcrypto_word32_buf_t *tag, size_t block_words,
     size_t digest_words, uint32_t opad_mask, void (*init_fn)(hmac_ctx_t *)) {
+  // The key length drives the copy below, so bound the context first.
+  HARDENED_TRY(check_ctx_lengths(ctx));
   size_t block_bytes = block_words * sizeof(uint32_t);
   // Save key before hmac_final wipes the context.
   hmac_key_t saved_key;
@@ -808,6 +840,9 @@ status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
   uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
 
+  // Reject a context with out-of-range length fields before using them.
+  HARDENED_TRY(check_ctx_lengths(ctx));
+
   // If we don't have enough new bytes to fill a block, just update the partial
   // block and return.
   size_t block_bytelen = ctx->msg_block_wordlen * sizeof(uint32_t);
@@ -856,6 +891,9 @@ status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
 status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest) {
   uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
+
+  // Reject a context with out-of-range length fields before using them.
+  HARDENED_TRY(check_ctx_lengths(ctx));
 
   // Restore context will restore the context and also hit start or continue
   // button as necessary.
