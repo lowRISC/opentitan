@@ -62,6 +62,9 @@ waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv} -regexp {'clkmgr_cl
 waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv}  -msg {'mio_in_raw[11]' is used for some other purpose, and as clock} \
       -comment "MioPadMio11 at index 11 may serve as an external clock input, hence the warnings"
 
+waive -rules {CLOCK_USE} -location {chip_darjeeling_asic.sv} -regexp {'ast_base_clks.clk_sys' is connected to 'padring' port 'clk_scan_i', and used as a clock} \
+      -comment "clk_sys is intentionally used as the DFT scan clock fed into padring."
+
 # Unused power OK signals
 waive -rules {NOT_READ HIER_NET_NOT_READ} -location {chip_darjeeling_asic.sv} -regexp {(Signal|Net) 'ast_pwst\.(vcc_pok|io_pok)' is not read from in module 'chip_darjeeling_asic'} \
       -comment "Not all POK signals are used inside top_darjeeling"

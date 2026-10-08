@@ -110,6 +110,9 @@ waive -rules {CLOCK_DRIVER} -location {chip_earlgrey_asic.sv}  -regexp {'(attr_p
 waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv}  -msg {'mio_in_raw[28]' is used for some other purpose, and as clock 'clk_ast_ext_scn'} \
       -comment "MioPadIoc6 at index 28 may serve as an external clock input, hence the warnings"
 
+waive -rules {CLOCK_USE} -location {chip_earlgrey_asic.sv} -regexp {'ast_base_clks.clk_sys' is connected to 'padring' port 'clk_scan_i', and used as a clock} \
+      -comment "clk_sys is intentionally used as the DFT scan clock fed into padring."
+
 # Unused power OK signals
 waive -rules {HIER_NET_NOT_READ NOT_READ} -location {chip_earlgrey_asic.sv} -regexp {(Signal|Net) 'ast_pwst(\.vcc_pok|_h\.io_pok|_h\.main_pok|_h\.vcc_pok)' is not read from in module 'chip_earlgrey_asic'} \
       -comment "Not all POK signals are used inside top_earlgrey"
