@@ -158,6 +158,7 @@ module otbn_mask_accelerator
   ma_sharing_t a2b_inp2_q;
 
   // Direct input path (B2A / SecAdd / SecAddMod): pre-computation -> blanker -> register.
+  ma_ele_t     b2a_mask_adder;
   ma_sharing_t b2a_inp2_pre;
   ma_sharing_t direct_inp2_pre;
   ma_sharing_t direct_inp1_blanked;
@@ -228,7 +229,10 @@ module otbn_mask_accelerator
   //   inp2 = ((-m) ^ r1, r1)
   // The adder computes a + (-m) = a - m.
   // The output creates an Arithmetic sharing with m popped from the FIFO.
-  assign b2a_inp2_pre[0] = (-mask_mod) ^ remask_rand_i[1];
+  // m = 0 would require the adder operand (q - m) + (2^SecAddWidth - q) = 2^SecAddWidth, which
+  // overflows to 0. Use m = q instead.
+  assign b2a_mask_adder  = (mask_mod == '0) ? mod_i : mask_mod;
+  assign b2a_inp2_pre[0] = (-b2a_mask_adder) ^ remask_rand_i[1];
   assign b2a_inp2_pre[1] = remask_rand_i[1];
 
   // A2B blanker + flop: gate the A2B pre-computed inputs to zero outside A2B mode so that
