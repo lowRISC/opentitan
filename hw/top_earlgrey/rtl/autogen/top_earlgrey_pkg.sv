@@ -450,14 +450,14 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_RV_CORE_IBEX_CFG_SIZE_BYTES = 32'h100;
 
   /**
-   * Peripheral base address for regs device on cheriot in top earlgrey.
+   * Peripheral base address for regs device on cheriot_mem_sys in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_CHERIOT_REGS_BASE_ADDR = 32'h411B0000;
+  parameter int unsigned TOP_EARLGREY_CHERIOT_MEM_SYS_REGS_BASE_ADDR = 32'h411B0000;
 
   /**
-   * Peripheral size in bytes for regs device on cheriot in top earlgrey.
+   * Peripheral size in bytes for regs device on cheriot_mem_sys in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_CHERIOT_REGS_SIZE_BYTES = 32'h40;
+  parameter int unsigned TOP_EARLGREY_CHERIOT_MEM_SYS_REGS_SIZE_BYTES = 32'h40;
 
   /**
    * Peripheral base address for regs device on sram_ctrl_meta in top earlgrey.
@@ -520,14 +520,14 @@ package top_earlgrey_pkg;
   parameter int unsigned TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES = 32'h30000;
 
   /**
-   * Memory base address for revbm memory on cheriot in top earlgrey.
+   * Memory base address for revbm memory on cheriot_mem_sys in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_CHERIOT_REVBM_BASE_ADDR = 32'h11000000;
+  parameter int unsigned TOP_EARLGREY_CHERIOT_MEM_SYS_REVBM_BASE_ADDR = 32'h11000000;
 
   /**
-   * Memory size for revbm memory on cheriot in top earlgrey.
+   * Memory size for revbm memory on cheriot_mem_sys in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_CHERIOT_REVBM_SIZE_BYTES = 32'hc00;
+  parameter int unsigned TOP_EARLGREY_CHERIOT_MEM_SYS_REVBM_SIZE_BYTES = 32'hc00;
 
   /**
    * Memory base address for ram memory on sram_ctrl_meta in top earlgrey.
@@ -582,7 +582,7 @@ package top_earlgrey_pkg;
     TopEarlgreyAlertPeripheralSramCtrlSec = 37,
     TopEarlgreyAlertPeripheralRomCtrl = 38,
     TopEarlgreyAlertPeripheralRvCoreIbex = 39,
-    TopEarlgreyAlertPeripheralCheriot = 40,
+    TopEarlgreyAlertPeripheralCheriotMemSys = 40,
     TopEarlgreyAlertPeripheralSramCtrlMeta = 41,
     TopEarlgreyAlertPeripheralCount
   } alert_peripheral_e;
@@ -653,7 +653,7 @@ package top_earlgrey_pkg;
     TopEarlgreyAlertIdRvCoreIbexRecovSwErr = 61,
     TopEarlgreyAlertIdRvCoreIbexFatalHwErr = 62,
     TopEarlgreyAlertIdRvCoreIbexRecovHwErr = 63,
-    TopEarlgreyAlertIdCheriotFatalFault = 64,
+    TopEarlgreyAlertIdCheriotMemSysFatalFault = 64,
     TopEarlgreyAlertIdSramCtrlMetaFatalError = 65,
     TopEarlgreyAlertIdCount
   } alert_id_e;
@@ -845,7 +845,7 @@ package top_earlgrey_pkg;
     TopEarlgreyPlicIrqIdEdn0EdnFatalErr = 182,
     TopEarlgreyPlicIrqIdEdn1EdnCmdReqDone = 183,
     TopEarlgreyPlicIrqIdEdn1EdnFatalErr = 184,
-    TopEarlgreyPlicIrqIdCheriotTbreDone = 185,
+    TopEarlgreyPlicIrqIdCheriotMemSysTbreDone = 185,
     TopEarlgreyPlicIrqIdCount
   } interrupt_rv_plic_id_e;
 
@@ -1102,7 +1102,7 @@ package top_earlgrey_pkg;
     PeripheralAlertHandler,
     PeripheralAonTimer,
     PeripheralAst,
-    PeripheralCheriot,
+    PeripheralCheriotMemSys,
     PeripheralClkmgr,
     PeripheralCsrng,
     PeripheralEdn0,

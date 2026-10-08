@@ -18,7 +18,7 @@
 //       -> sram_ctrl_sec.ram
 //     -> sm1_38
 //       -> rram_ctrl.host
-// cheriot.cored
+// cheriot_mem_sys.cored
 //   -> s1n_39
 //     -> sm1_34
 //       -> rom_ctrl.rom
@@ -79,10 +79,10 @@
 //     -> sm1_65
 //       -> rv_core_ibex.cfg
 //     -> sm1_66
-//       -> cheriot.regs
+//       -> cheriot_mem_sys.regs
 //     -> sm1_67
-//       -> cheriot.revbm
-// cheriot.tbre
+//       -> cheriot_mem_sys.revbm
+// cheriot_mem_sys.tbre
 //   -> s1n_68
 //     -> sm1_36
 //       -> sram_ctrl_main.ram
@@ -151,9 +151,9 @@
 //     -> sm1_65
 //       -> rv_core_ibex.cfg
 //     -> sm1_66
-//       -> cheriot.regs
+//       -> cheriot_mem_sys.regs
 //     -> sm1_67
-//       -> cheriot.revbm
+//       -> cheriot_mem_sys.revbm
 
 module xbar_main (
   input clk_main_i,
@@ -170,10 +170,10 @@ module xbar_main (
   // Host interfaces
   input  tlul_pkg::tl_h2d_t tl_rv_core_ibex__corei_i,
   output tlul_pkg::tl_d2h_t tl_rv_core_ibex__corei_o,
-  input  tlul_pkg::tl_h2d_t tl_cheriot__cored_i,
-  output tlul_pkg::tl_d2h_t tl_cheriot__cored_o,
-  input  tlul_pkg::tl_h2d_t tl_cheriot__tbre_i,
-  output tlul_pkg::tl_d2h_t tl_cheriot__tbre_o,
+  input  tlul_pkg::tl_h2d_t tl_cheriot_mem_sys__cored_i,
+  output tlul_pkg::tl_d2h_t tl_cheriot_mem_sys__cored_o,
+  input  tlul_pkg::tl_h2d_t tl_cheriot_mem_sys__tbre_i,
+  output tlul_pkg::tl_d2h_t tl_cheriot_mem_sys__tbre_o,
   input  tlul_pkg::tl_h2d_t tl_rv_dm__sba_i,
   output tlul_pkg::tl_d2h_t tl_rv_dm__sba_o,
 
@@ -232,10 +232,10 @@ module xbar_main (
   input  tlul_pkg::tl_d2h_t tl_sram_ctrl_meta__regs_i,
   output tlul_pkg::tl_h2d_t tl_sram_ctrl_sec__ram_o,
   input  tlul_pkg::tl_d2h_t tl_sram_ctrl_sec__ram_i,
-  output tlul_pkg::tl_h2d_t tl_cheriot__regs_o,
-  input  tlul_pkg::tl_d2h_t tl_cheriot__regs_i,
-  output tlul_pkg::tl_h2d_t tl_cheriot__revbm_o,
-  input  tlul_pkg::tl_d2h_t tl_cheriot__revbm_i,
+  output tlul_pkg::tl_h2d_t tl_cheriot_mem_sys__regs_o,
+  input  tlul_pkg::tl_d2h_t tl_cheriot_mem_sys__regs_i,
+  output tlul_pkg::tl_h2d_t tl_cheriot_mem_sys__revbm_o,
+  input  tlul_pkg::tl_d2h_t tl_cheriot_mem_sys__revbm_i,
 
   input prim_mubi_pkg::mubi4_t scanmode_i
 );
@@ -729,8 +729,8 @@ module xbar_main (
   assign tl_rram_ctrl__host_o = tl_sm1_38_ds_h2d;
   assign tl_sm1_38_ds_d2h = tl_rram_ctrl__host_i;
 
-  assign tl_s1n_39_us_h2d = tl_cheriot__cored_i;
-  assign tl_cheriot__cored_o = tl_s1n_39_us_d2h;
+  assign tl_s1n_39_us_h2d = tl_cheriot_mem_sys__cored_i;
+  assign tl_cheriot_mem_sys__cored_o = tl_s1n_39_us_d2h;
 
   assign tl_rom_ctrl__regs_o = tl_sm1_40_ds_h2d;
   assign tl_sm1_40_ds_d2h = tl_rom_ctrl__regs_i;
@@ -810,14 +810,14 @@ module xbar_main (
   assign tl_rv_core_ibex__cfg_o = tl_sm1_65_ds_h2d;
   assign tl_sm1_65_ds_d2h = tl_rv_core_ibex__cfg_i;
 
-  assign tl_cheriot__regs_o = tl_sm1_66_ds_h2d;
-  assign tl_sm1_66_ds_d2h = tl_cheriot__regs_i;
+  assign tl_cheriot_mem_sys__regs_o = tl_sm1_66_ds_h2d;
+  assign tl_sm1_66_ds_d2h = tl_cheriot_mem_sys__regs_i;
 
-  assign tl_cheriot__revbm_o = tl_sm1_67_ds_h2d;
-  assign tl_sm1_67_ds_d2h = tl_cheriot__revbm_i;
+  assign tl_cheriot_mem_sys__revbm_o = tl_sm1_67_ds_h2d;
+  assign tl_sm1_67_ds_d2h = tl_cheriot_mem_sys__revbm_i;
 
-  assign tl_s1n_68_us_h2d = tl_cheriot__tbre_i;
-  assign tl_cheriot__tbre_o = tl_s1n_68_us_d2h;
+  assign tl_s1n_68_us_h2d = tl_cheriot_mem_sys__tbre_i;
+  assign tl_cheriot_mem_sys__tbre_o = tl_s1n_68_us_d2h;
 
   assign tl_s1n_69_us_h2d = tl_rv_dm__sba_i;
   assign tl_rv_dm__sba_o = tl_s1n_69_us_d2h;
@@ -963,12 +963,13 @@ end
       dev_sel_s1n_39 = 5'd26;
 
     end else if ((tl_s1n_39_us_h2d.a_address &
-                  ~(ADDR_MASK_CHERIOT__REGS)) == ADDR_SPACE_CHERIOT__REGS) begin
+                  ~(ADDR_MASK_CHERIOT_MEM_SYS__REGS)) == ADDR_SPACE_CHERIOT_MEM_SYS__REGS) begin
       dev_sel_s1n_39 = 5'd27;
 
     end else if (
-      (tl_s1n_39_us_h2d.a_address < (ADDR_SPACE_CHERIOT__REVBM + ADDR_SIZE_CHERIOT__REVBM)) &&
-      (tl_s1n_39_us_h2d.a_address >= ADDR_SPACE_CHERIOT__REVBM)) begin
+      (tl_s1n_39_us_h2d.a_address <
+       (ADDR_SPACE_CHERIOT_MEM_SYS__REVBM + ADDR_SIZE_CHERIOT_MEM_SYS__REVBM)) &&
+      (tl_s1n_39_us_h2d.a_address >= ADDR_SPACE_CHERIOT_MEM_SYS__REVBM)) begin
       dev_sel_s1n_39 = 5'd28;
 end
   end
@@ -1105,12 +1106,13 @@ end
       dev_sel_s1n_69 = 5'd26;
 
     end else if ((tl_s1n_69_us_h2d.a_address &
-                  ~(ADDR_MASK_CHERIOT__REGS)) == ADDR_SPACE_CHERIOT__REGS) begin
+                  ~(ADDR_MASK_CHERIOT_MEM_SYS__REGS)) == ADDR_SPACE_CHERIOT_MEM_SYS__REGS) begin
       dev_sel_s1n_69 = 5'd27;
 
     end else if (
-      (tl_s1n_69_us_h2d.a_address < (ADDR_SPACE_CHERIOT__REVBM + ADDR_SIZE_CHERIOT__REVBM)) &&
-      (tl_s1n_69_us_h2d.a_address >= ADDR_SPACE_CHERIOT__REVBM)) begin
+      (tl_s1n_69_us_h2d.a_address <
+       (ADDR_SPACE_CHERIOT_MEM_SYS__REVBM + ADDR_SIZE_CHERIOT_MEM_SYS__REVBM)) &&
+      (tl_s1n_69_us_h2d.a_address >= ADDR_SPACE_CHERIOT_MEM_SYS__REVBM)) begin
       dev_sel_s1n_69 = 5'd28;
 end
   end

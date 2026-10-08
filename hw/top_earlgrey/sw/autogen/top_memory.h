@@ -76,14 +76,14 @@
 #define TOP_ROM_CTRL_ROM_SIZE_BYTES 0x30000
 
 /**
- * Memory base for revbm memory on cheriot in top earlgrey.
+ * Memory base for revbm memory on cheriot_mem_sys in top earlgrey.
  */
-#define TOP_CHERIOT_REVBM_BASE_ADDR 0x11000000
+#define TOP_CHERIOT_MEM_SYS_REVBM_BASE_ADDR 0x11000000
 
 /**
- * Memory size for revbm memory on cheriot in top earlgrey.
+ * Memory size for revbm memory on cheriot_mem_sys in top earlgrey.
  */
-#define TOP_CHERIOT_REVBM_SIZE_BYTES 0xC00
+#define TOP_CHERIOT_MEM_SYS_REVBM_SIZE_BYTES 0xC00
 
 /**
  * Memory base for ram memory on sram_ctrl_meta in top earlgrey.
@@ -845,22 +845,22 @@
  */
 #define TOP_RV_CORE_IBEX_CFG_SIZE_BYTES 0x100
 /**
- * Peripheral base address for regs device on cheriot in top earlgrey.
+ * Peripheral base address for regs device on cheriot_mem_sys in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_CHERIOT_REGS_BASE_ADDR 0x411B0000
+#define TOP_CHERIOT_MEM_SYS_REGS_BASE_ADDR 0x411B0000
 
 /**
- * Peripheral size for regs device on cheriot in top earlgrey.
+ * Peripheral size for regs device on cheriot_mem_sys in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_CHERIOT_REGS_BASE_ADDR and
- * `TOP_CHERIOT_REGS_BASE_ADDR + TOP_CHERIOT_REGS_SIZE_BYTES`.
+ * address between #TOP_CHERIOT_MEM_SYS_REGS_BASE_ADDR and
+ * `TOP_CHERIOT_MEM_SYS_REGS_BASE_ADDR + TOP_CHERIOT_MEM_SYS_REGS_SIZE_BYTES`.
  */
-#define TOP_CHERIOT_REGS_SIZE_BYTES 0x40
+#define TOP_CHERIOT_MEM_SYS_REGS_SIZE_BYTES 0x40
 /**
  * Peripheral base address for regs device on sram_ctrl_meta in top earlgrey.
  *

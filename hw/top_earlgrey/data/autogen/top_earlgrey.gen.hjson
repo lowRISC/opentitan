@@ -608,7 +608,7 @@
             sram_ctrl_meta.regs
             rom_ctrl.regs
             rv_core_ibex
-            cheriot.regs
+            cheriot_mem_sys.regs
           ]
         }
       ]
@@ -9307,8 +9307,8 @@
         PMPRstCfg: ibex_pmp_reset_pkg::PmpCfgRst
         PMPRstAddr: ibex_pmp_reset_pkg::PmpAddrRst
         PMPRstMsecCfg: ibex_pmp_reset_pkg::PmpMseccfgRst
-        CheriotRevBitmapAddrWidth: $clog2(tl_main_pkg::ADDR_SIZE_CHERIOT__REVBM)
-        CheriotRevBitmapBaseAddr: tl_main_pkg::ADDR_SPACE_CHERIOT__REVBM
+        CheriotRevBitmapAddrWidth: $clog2(tl_main_pkg::ADDR_SIZE_CHERIOT_MEM_SYS__REVBM)
+        CheriotRevBitmapBaseAddr: tl_main_pkg::ADDR_SPACE_CHERIOT_MEM_SYS__REVBM
         CheriotTrvkHeapBaseAddr: tl_main_pkg::ADDR_SPACE_SRAM_CTRL_MAIN__RAM
         RV32E: "0"
         RV32M: ibex_pkg::RV32MSingleCycle
@@ -9478,7 +9478,7 @@
           name: CheriotRevBitmapAddrWidth
           desc: Address width of the TRVK revocation bitmap.
           type: int unsigned
-          default: $clog2(tl_main_pkg::ADDR_SIZE_CHERIOT__REVBM)
+          default: $clog2(tl_main_pkg::ADDR_SIZE_CHERIOT_MEM_SYS__REVBM)
           local: "false"
           expose: "true"
           name_top: RvCoreIbexCheriotRevBitmapAddrWidth
@@ -9487,7 +9487,7 @@
           name: CheriotRevBitmapBaseAddr
           desc: Base address of the TRVK revocation bitmap.
           type: int unsigned
-          default: tl_main_pkg::ADDR_SPACE_CHERIOT__REVBM
+          default: tl_main_pkg::ADDR_SPACE_CHERIOT_MEM_SYS__REVBM
           local: "false"
           expose: "true"
           name_top: RvCoreIbexCheriotRevBitmapBaseAddr
@@ -9756,7 +9756,7 @@
         }
         {
           name: cored_tl_h
-          desc: Core data host port to the CHERIoT subsystem.
+          desc: Core data host port to the CHERIoT memory subsystem.
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -9795,7 +9795,7 @@
           inst_name: rv_core_ibex
           package: ""
           domain: Main
-          top_signame: cheriot_cored_tag_d2h
+          top_signame: cheriot_mem_sys_cored_tag_d2h
           index: -1
         }
         {
@@ -10115,8 +10115,8 @@
       generate_dif: true
     }
     {
-      name: cheriot
-      type: cheriot
+      name: cheriot_mem_sys
+      type: cheriot_mem_sys
       clock_srcs:
       {
         clk_i: main
@@ -10136,7 +10136,7 @@
         MainSramTopAddr: tl_main_pkg::ADDR_SPACE_SRAM_CTRL_SEC__RAM + tl_main_pkg::ADDR_MASK_SRAM_CTRL_SEC__RAM + 1
         NvmBaseAddr: tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST
         NvmTopAddr: tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST + tl_main_pkg::ADDR_MASK_RRAM_CTRL__HOST + 1
-        MetaSramBaseAddr: tl_main_pkg::ADDR_SPACE_CHERIOT__REVBM
+        MetaSramBaseAddr: tl_main_pkg::ADDR_SPACE_CHERIOT_MEM_SYS__REVBM
       }
       base_addrs:
       {
@@ -10175,7 +10175,7 @@
           default: tl_main_pkg::ADDR_SPACE_SRAM_CTRL_MAIN__RAM
           local: "false"
           expose: "true"
-          name_top: CheriotMainSramBaseAddr
+          name_top: CheriotMemSysMainSramBaseAddr
         }
         {
           name: MainSramTopAddr
@@ -10184,7 +10184,7 @@
           default: tl_main_pkg::ADDR_SPACE_SRAM_CTRL_SEC__RAM + tl_main_pkg::ADDR_MASK_SRAM_CTRL_SEC__RAM + 1
           local: "false"
           expose: "true"
-          name_top: CheriotMainSramTopAddr
+          name_top: CheriotMemSysMainSramTopAddr
         }
         {
           name: NvmBaseAddr
@@ -10193,7 +10193,7 @@
           default: tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST
           local: "false"
           expose: "true"
-          name_top: CheriotNvmBaseAddr
+          name_top: CheriotMemSysNvmBaseAddr
         }
         {
           name: NvmTopAddr
@@ -10202,16 +10202,16 @@
           default: tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST + tl_main_pkg::ADDR_MASK_RRAM_CTRL__HOST + 1
           local: "false"
           expose: "true"
-          name_top: CheriotNvmTopAddr
+          name_top: CheriotMemSysNvmTopAddr
         }
         {
           name: MetaSramBaseAddr
           desc: Base address of the CHERIoT meta SRAM region.
           type: logic [top_pkg::TL_AW-1:0]
-          default: tl_main_pkg::ADDR_SPACE_CHERIOT__REVBM
+          default: tl_main_pkg::ADDR_SPACE_CHERIOT_MEM_SYS__REVBM
           local: "false"
           expose: "true"
-          name_top: CheriotMetaSramBaseAddr
+          name_top: CheriotMemSysMetaSramBaseAddr
         }
         {
           name: MemSizeRevbm
@@ -10222,7 +10222,7 @@
             assertion in the RTL.
             '''
           type: int
-          name_top: MemSizeCheriotRevbm
+          name_top: MemSizeCheriotMemSysRevbm
           default: 3072
         }
       ]
@@ -10237,7 +10237,7 @@
           act: rcv
           width: 1
           default: prim_mubi_pkg::MuBi4False
-          inst_name: cheriot
+          inst_name: cheriot_mem_sys
           domain: Main
           top_signame: rv_core_ibex_cheriot_ena
           index: -1
@@ -10250,7 +10250,7 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: cheriot
+          inst_name: cheriot_mem_sys
           default: ""
           domain: Main
           top_signame: rv_core_ibex_cored_tl_h
@@ -10264,7 +10264,7 @@
           act: rcv
           width: 1
           default: 1'b0
-          inst_name: cheriot
+          inst_name: cheriot_mem_sys
           package: ""
           domain: Main
           top_signame: rv_core_ibex_cored_tag_h2d
@@ -10278,11 +10278,11 @@
           act: req
           width: 1
           default: 1'b0
-          inst_name: cheriot
+          inst_name: cheriot_mem_sys
           package: ""
           end_idx: -1
           top_type: broadcast
-          top_signame: cheriot_cored_tag_d2h
+          top_signame: cheriot_mem_sys_cored_tag_d2h
           index: -1
         }
         {
@@ -10293,7 +10293,7 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: cheriot
+          inst_name: cheriot_mem_sys
           default: ""
           domain: Main
           top_signame: rv_core_ibex_corerevbm_tl
@@ -10307,11 +10307,11 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: cheriot
+          inst_name: cheriot_mem_sys
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: cheriot_meta_sram_tl
+          top_signame: cheriot_mem_sys_meta_sram_tl
           index: -1
         }
         {
@@ -10321,10 +10321,10 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: cheriot
+          inst_name: cheriot_mem_sys
           default: ""
           domain: Main
-          top_signame: main_tl_cheriot__cored
+          top_signame: main_tl_cheriot_mem_sys__cored
           index: -1
         }
         {
@@ -10334,10 +10334,10 @@
           type: req_rsp
           act: req
           width: 1
-          inst_name: cheriot
+          inst_name: cheriot_mem_sys
           default: ""
           domain: Main
-          top_signame: main_tl_cheriot__tbre
+          top_signame: main_tl_cheriot_mem_sys__tbre
           index: -1
         }
         {
@@ -10347,11 +10347,11 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: cheriot
+          inst_name: cheriot_mem_sys
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: cheriot_regs_tl_d
+          top_signame: cheriot_mem_sys_regs_tl_d
           index: -1
         }
         {
@@ -10361,11 +10361,11 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: cheriot
+          inst_name: cheriot_mem_sys
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: cheriot_revbm_tl_d
+          top_signame: cheriot_mem_sys_revbm_tl_d
           index: -1
         }
       ]
@@ -10654,7 +10654,7 @@
           inst_name: sram_ctrl_meta
           default: ""
           domain: Main
-          top_signame: cheriot_meta_sram_tl
+          top_signame: cheriot_mem_sys_meta_sram_tl
           index: -1
         }
       ]
@@ -11065,15 +11065,15 @@
       ]
       rv_core_ibex.cored_tl_h:
       [
-        cheriot.cored_tl_d
+        cheriot_mem_sys.cored_tl_d
       ]
       rv_core_ibex.corerevbm_tl:
       [
-        cheriot.corerevbm_tl
+        cheriot_mem_sys.corerevbm_tl
       ]
       rv_core_ibex.cored_tag_h2d:
       [
-        cheriot.cored_tag_h2d
+        cheriot_mem_sys.cored_tag_h2d
       ]
       spi_device.passthrough:
       [
@@ -11091,17 +11091,17 @@
       [
         rram_macro.rram_macro
       ]
-      cheriot.meta_sram_tl:
+      cheriot_mem_sys.meta_sram_tl:
       [
         sram_ctrl_meta.ram_tl
       ]
-      cheriot.cored_tag_d2h:
+      cheriot_mem_sys.cored_tag_d2h:
       [
         rv_core_ibex.cored_tag_d2h
       ]
       rv_core_ibex.cheriot_ena:
       [
-        cheriot.cheriot_ena
+        cheriot_mem_sys.cheriot_ena
       ]
       pwrmgr.wakeups:
       [
@@ -11121,13 +11121,13 @@
       [
         rv_core_ibex.corei_tl_h
       ]
-      main.tl_cheriot__cored:
+      main.tl_cheriot_mem_sys__cored:
       [
-        cheriot.cored_tl_h
+        cheriot_mem_sys.cored_tl_h
       ]
-      main.tl_cheriot__tbre:
+      main.tl_cheriot_mem_sys__tbre:
       [
-        cheriot.tbre_tl_h
+        cheriot_mem_sys.tbre_tl_h
       ]
       main.tl_rv_dm__sba:
       [
@@ -11241,13 +11241,13 @@
       [
         main.tl_sram_ctrl_sec__ram
       ]
-      cheriot.regs_tl_d:
+      cheriot_mem_sys.regs_tl_d:
       [
-        main.tl_cheriot__regs
+        main.tl_cheriot_mem_sys__regs
       ]
-      cheriot.revbm_tl_d:
+      cheriot_mem_sys.revbm_tl_d:
       [
-        main.tl_cheriot__revbm
+        main.tl_cheriot_mem_sys__revbm
       ]
       uart0.tl:
       [
@@ -11483,7 +11483,7 @@
           sram_ctrl_sec.ram
           rram_ctrl.host
         ]
-        cheriot.cored:
+        cheriot_mem_sys.cored:
         [
           rom_ctrl.rom
           rom_ctrl.regs
@@ -11512,10 +11512,10 @@
           sram_ctrl_sec.regs
           sram_ctrl_meta.regs
           rv_core_ibex.cfg
-          cheriot.regs
-          cheriot.revbm
+          cheriot_mem_sys.regs
+          cheriot_mem_sys.revbm
         ]
-        cheriot.tbre:
+        cheriot_mem_sys.tbre:
         [
           sram_ctrl_main.ram
           sram_ctrl_sec.ram
@@ -11550,8 +11550,8 @@
           sram_ctrl_sec.regs
           sram_ctrl_meta.regs
           rv_core_ibex.cfg
-          cheriot.regs
-          cheriot.revbm
+          cheriot_mem_sys.regs
+          cheriot_mem_sys.revbm
         ]
       }
       nodes:
@@ -11570,7 +11570,7 @@
           rsp_fifo_pass: true
         }
         {
-          name: cheriot.cored
+          name: cheriot_mem_sys.cored
           type: host
           addr_space: hart
           clock: clk_main_i
@@ -11583,7 +11583,7 @@
           rsp_fifo_pass: true
         }
         {
-          name: cheriot.tbre
+          name: cheriot_mem_sys.tbre
           type: host
           addr_space: hart
           clock: clk_main_i
@@ -12208,13 +12208,13 @@
           req_fifo_pass: true
         }
         {
-          name: cheriot.regs
+          name: cheriot_mem_sys.regs
           type: device
           clock: clk_main_i
           reset: rst_main_ni
           req_fifo_pass: false
           rsp_fifo_pass: false
-          inst_type: cheriot
+          inst_type: cheriot_mem_sys
           addr_range:
           [
             {
@@ -12230,13 +12230,13 @@
           pipeline: true
         }
         {
-          name: cheriot.revbm
+          name: cheriot_mem_sys.revbm
           type: device
           clock: clk_main_i
           reset: rst_main_ni
           req_fifo_pass: false
           rsp_fifo_pass: false
-          inst_type: cheriot
+          inst_type: cheriot_mem_sys
           addr_range:
           [
             {
@@ -12275,7 +12275,7 @@
           index: -1
         }
         {
-          name: tl_cheriot__cored
+          name: tl_cheriot_mem_sys__cored
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -12285,11 +12285,11 @@
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: main_tl_cheriot__cored
+          top_signame: main_tl_cheriot_mem_sys__cored
           index: -1
         }
         {
-          name: tl_cheriot__tbre
+          name: tl_cheriot_mem_sys__tbre
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -12299,7 +12299,7 @@
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: main_tl_cheriot__tbre
+          top_signame: main_tl_cheriot_mem_sys__tbre
           index: -1
         }
         {
@@ -12669,7 +12669,7 @@
           index: -1
         }
         {
-          name: tl_cheriot__regs
+          name: tl_cheriot_mem_sys__regs
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -12678,11 +12678,11 @@
           width: 1
           default: ""
           domain: Main
-          top_signame: cheriot_regs_tl_d
+          top_signame: cheriot_mem_sys_regs_tl_d
           index: -1
         }
         {
-          name: tl_cheriot__revbm
+          name: tl_cheriot_mem_sys__revbm
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -12691,7 +12691,7 @@
           width: 1
           default: ""
           domain: Main
-          top_signame: cheriot_revbm_tl_d
+          top_signame: cheriot_mem_sys_revbm_tl_d
           index: -1
         }
       ]
@@ -17043,13 +17043,13 @@
       lpg_idx: 17
     }
     {
-      name: cheriot_fatal_fault
+      name: cheriot_mem_sys_fatal_fault
       width: 1
       type: alert
       async: "1"
       handler: alert_handler
-      module_name: cheriot
-      desc: cheriot fatal_fault alert
+      module_name: cheriot_mem_sys
+      desc: cheriot_mem_sys fatal_fault alert
       lpg_name: infra_lc_Main
       lpg_idx: 17
     }
@@ -19058,11 +19058,11 @@
       outgoing: false
     }
     {
-      name: cheriot_tbre_done
+      name: cheriot_mem_sys_tbre_done
       width: 1
       type: interrupt
-      module_name: cheriot
-      desc: cheriot tbre_done interrupt
+      module_name: cheriot_mem_sys
+      desc: cheriot_mem_sys tbre_done interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -20000,7 +20000,7 @@
     sram_ctrl_sec
     rom_ctrl
     rv_core_ibex
-    cheriot
+    cheriot_mem_sys
     sram_ctrl_meta
   ]
   alert_connections:
@@ -20429,7 +20429,7 @@
         alert_handler[63]: recov_hw_err
       ]
     }
-    module_cheriot:
+    module_cheriot_mem_sys:
     {
       tx_expr: alert_tx[64]
       rx_expr: alert_rx[64]
@@ -20552,7 +20552,7 @@
     entropy_src
     edn0
     edn1
-    cheriot
+    cheriot_mem_sys
   ]
   outgoing_alert_module: {}
   outgoing_interrupt_module: {}
@@ -26711,7 +26711,7 @@
       }
       {
         name: cored_tl_h
-        desc: Core data host port to the CHERIoT subsystem.
+        desc: Core data host port to the CHERIoT memory subsystem.
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -26750,7 +26750,7 @@
         inst_name: rv_core_ibex
         package: ""
         domain: Main
-        top_signame: cheriot_cored_tag_d2h
+        top_signame: cheriot_mem_sys_cored_tag_d2h
         index: -1
       }
       {
@@ -27068,7 +27068,7 @@
         act: rcv
         width: 1
         default: prim_mubi_pkg::MuBi4False
-        inst_name: cheriot
+        inst_name: cheriot_mem_sys
         domain: Main
         top_signame: rv_core_ibex_cheriot_ena
         index: -1
@@ -27081,7 +27081,7 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: cheriot
+        inst_name: cheriot_mem_sys
         default: ""
         domain: Main
         top_signame: rv_core_ibex_cored_tl_h
@@ -27095,7 +27095,7 @@
         act: rcv
         width: 1
         default: 1'b0
-        inst_name: cheriot
+        inst_name: cheriot_mem_sys
         package: ""
         domain: Main
         top_signame: rv_core_ibex_cored_tag_h2d
@@ -27109,11 +27109,11 @@
         act: req
         width: 1
         default: 1'b0
-        inst_name: cheriot
+        inst_name: cheriot_mem_sys
         package: ""
         end_idx: -1
         top_type: broadcast
-        top_signame: cheriot_cored_tag_d2h
+        top_signame: cheriot_mem_sys_cored_tag_d2h
         index: -1
       }
       {
@@ -27124,7 +27124,7 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: cheriot
+        inst_name: cheriot_mem_sys
         default: ""
         domain: Main
         top_signame: rv_core_ibex_corerevbm_tl
@@ -27138,11 +27138,11 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: cheriot
+        inst_name: cheriot_mem_sys
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: cheriot_meta_sram_tl
+        top_signame: cheriot_mem_sys_meta_sram_tl
         index: -1
       }
       {
@@ -27152,10 +27152,10 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: cheriot
+        inst_name: cheriot_mem_sys
         default: ""
         domain: Main
-        top_signame: main_tl_cheriot__cored
+        top_signame: main_tl_cheriot_mem_sys__cored
         index: -1
       }
       {
@@ -27165,10 +27165,10 @@
         type: req_rsp
         act: req
         width: 1
-        inst_name: cheriot
+        inst_name: cheriot_mem_sys
         default: ""
         domain: Main
-        top_signame: main_tl_cheriot__tbre
+        top_signame: main_tl_cheriot_mem_sys__tbre
         index: -1
       }
       {
@@ -27178,11 +27178,11 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: cheriot
+        inst_name: cheriot_mem_sys
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: cheriot_regs_tl_d
+        top_signame: cheriot_mem_sys_regs_tl_d
         index: -1
       }
       {
@@ -27192,11 +27192,11 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: cheriot
+        inst_name: cheriot_mem_sys
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: cheriot_revbm_tl_d
+        top_signame: cheriot_mem_sys_revbm_tl_d
         index: -1
       }
       {
@@ -27334,7 +27334,7 @@
         inst_name: sram_ctrl_meta
         default: ""
         domain: Main
-        top_signame: cheriot_meta_sram_tl
+        top_signame: cheriot_mem_sys_meta_sram_tl
         index: -1
       }
       {
@@ -27352,7 +27352,7 @@
         index: -1
       }
       {
-        name: tl_cheriot__cored
+        name: tl_cheriot_mem_sys__cored
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -27362,11 +27362,11 @@
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: main_tl_cheriot__cored
+        top_signame: main_tl_cheriot_mem_sys__cored
         index: -1
       }
       {
-        name: tl_cheriot__tbre
+        name: tl_cheriot_mem_sys__tbre
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -27376,7 +27376,7 @@
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: main_tl_cheriot__tbre
+        top_signame: main_tl_cheriot_mem_sys__tbre
         index: -1
       }
       {
@@ -27746,7 +27746,7 @@
         index: -1
       }
       {
-        name: tl_cheriot__regs
+        name: tl_cheriot_mem_sys__regs
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -27755,11 +27755,11 @@
         width: 1
         default: ""
         domain: Main
-        top_signame: cheriot_regs_tl_d
+        top_signame: cheriot_mem_sys_regs_tl_d
         index: -1
       }
       {
-        name: tl_cheriot__revbm
+        name: tl_cheriot_mem_sys__revbm
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -27768,7 +27768,7 @@
         width: 1
         default: ""
         domain: Main
-        top_signame: cheriot_revbm_tl_d
+        top_signame: cheriot_mem_sys_revbm_tl_d
         index: -1
       }
       {
@@ -33682,7 +33682,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
-        signame: cheriot_meta_sram_tl_req
+        signame: cheriot_mem_sys_meta_sram_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -33694,7 +33694,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: Main
-        signame: cheriot_meta_sram_tl_rsp
+        signame: cheriot_mem_sys_meta_sram_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -33706,7 +33706,7 @@
         package: ""
         struct: logic
         domain: Main
-        signame: cheriot_cored_tag_d2h
+        signame: cheriot_mem_sys_cored_tag_d2h
         width: 1
         type: uni
         end_idx: -1
@@ -33778,7 +33778,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
-        signame: main_tl_cheriot__cored_req
+        signame: main_tl_cheriot_mem_sys__cored_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -33790,7 +33790,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: Main
-        signame: main_tl_cheriot__cored_rsp
+        signame: main_tl_cheriot_mem_sys__cored_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -33802,7 +33802,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
-        signame: main_tl_cheriot__tbre_req
+        signame: main_tl_cheriot_mem_sys__tbre_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -33814,7 +33814,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: Main
-        signame: main_tl_cheriot__tbre_rsp
+        signame: main_tl_cheriot_mem_sys__tbre_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -34498,7 +34498,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
-        signame: cheriot_regs_tl_d_req
+        signame: cheriot_mem_sys_regs_tl_d_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -34510,7 +34510,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: Main
-        signame: cheriot_regs_tl_d_rsp
+        signame: cheriot_mem_sys_regs_tl_d_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -34522,7 +34522,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
-        signame: cheriot_revbm_tl_d_req
+        signame: cheriot_mem_sys_revbm_tl_d_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -34534,7 +34534,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: Main
-        signame: cheriot_revbm_tl_d_rsp
+        signame: cheriot_mem_sys_revbm_tl_d_rsp
         width: 1
         type: req_rsp
         end_idx: -1

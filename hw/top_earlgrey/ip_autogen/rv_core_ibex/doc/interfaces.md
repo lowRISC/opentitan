@@ -15,7 +15,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:--------------------|:---------------------------------|:--------|:------|:------------|:-----------------------------------------------------------------|
 | rst_cpu_n           | logic                            | uni     | req   | 1           |                                                                  |
 | cheriot_ena         | prim_mubi_pkg::mubi4             | uni     | req   | 1           | CHERIoT mode enable.                                             |
-| cored_tl_h          | tlul_pkg::tl                     | req_rsp | req   | 1           | Core data host port to the CHERIoT subsystem.                    |
+| cored_tl_h          | tlul_pkg::tl                     | req_rsp | req   | 1           | Core data host port to the CHERIoT memory subsystem.             |
 | cored_tag_h2d       | logic                            | uni     | req   | 1           | CHERIoT capability tag carried with the A-channel of cored_tl_h. |
 | cored_tag_d2h       | logic                            | uni     | rcv   | 1           | Capability tag returned on the D-channel of cored_tl_h.          |
 | corerevbm_tl        | tlul_pkg::tl                     | req_rsp | req   | 1           | Core revocation bitmap host port.                                |

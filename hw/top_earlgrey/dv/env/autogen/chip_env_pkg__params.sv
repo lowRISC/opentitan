@@ -70,6 +70,6 @@ parameter string LIST_OF_ALERTS[NUM_ALERTS] = {
   "rv_core_ibex_recov_sw_err",
   "rv_core_ibex_fatal_hw_err",
   "rv_core_ibex_recov_hw_err",
-  "cheriot_fatal_fault",
+  "cheriot_mem_sys_fatal_fault",
   "sram_ctrl_meta_fatal_error"
 };

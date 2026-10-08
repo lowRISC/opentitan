@@ -109,9 +109,9 @@ module earlgrey_pd_main #(
   parameter logic [33:0] RvCoreIbexPMPRstAddr[16] = ibex_pmp_reset_pkg::PmpAddrRst,
   parameter ibex_pkg::pmp_mseccfg_t RvCoreIbexPMPRstMsecCfg = ibex_pmp_reset_pkg::PmpMseccfgRst,
   parameter int unsigned RvCoreIbexCheriotRevBitmapAddrWidth =
-      $clog2(tl_main_pkg::ADDR_SIZE_CHERIOT__REVBM),
+      $clog2(tl_main_pkg::ADDR_SIZE_CHERIOT_MEM_SYS__REVBM),
   parameter int unsigned RvCoreIbexCheriotRevBitmapBaseAddr =
-      tl_main_pkg::ADDR_SPACE_CHERIOT__REVBM,
+      tl_main_pkg::ADDR_SPACE_CHERIOT_MEM_SYS__REVBM,
   parameter int unsigned RvCoreIbexCheriotTrvkHeapBaseAddr =
       tl_main_pkg::ADDR_SPACE_SRAM_CTRL_MAIN__RAM,
   parameter bit RvCoreIbexRV32E = 0,
@@ -139,17 +139,17 @@ module earlgrey_pd_main #(
   parameter logic [tlul_pkg::RsvdWidth-1:0] RvCoreIbexTlulHostUserRsvdBits = '0,
   parameter logic [31:0] RvCoreIbexCsrMvendorId = '0,
   parameter logic [31:0] RvCoreIbexCsrMimpId = '0,
-  // parameters for cheriot
-  parameter logic [top_pkg::TL_AW-1:0] CheriotMainSramBaseAddr =
+  // parameters for cheriot_mem_sys
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMemSysMainSramBaseAddr =
       tl_main_pkg::ADDR_SPACE_SRAM_CTRL_MAIN__RAM,
-  parameter logic [top_pkg::TL_AW-1:0] CheriotMainSramTopAddr =
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMemSysMainSramTopAddr =
       tl_main_pkg::ADDR_SPACE_SRAM_CTRL_SEC__RAM + tl_main_pkg::ADDR_MASK_SRAM_CTRL_SEC__RAM + 1,
-  parameter logic [top_pkg::TL_AW-1:0] CheriotNvmBaseAddr =
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMemSysNvmBaseAddr =
       tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST,
-  parameter logic [top_pkg::TL_AW-1:0] CheriotNvmTopAddr =
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMemSysNvmTopAddr =
       tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST + tl_main_pkg::ADDR_MASK_RRAM_CTRL__HOST + 1,
-  parameter logic [top_pkg::TL_AW-1:0] CheriotMetaSramBaseAddr =
-      tl_main_pkg::ADDR_SPACE_CHERIOT__REVBM,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMemSysMetaSramBaseAddr =
+      tl_main_pkg::ADDR_SPACE_CHERIOT_MEM_SYS__REVBM,
   // parameters for sram_ctrl_meta
   parameter int SramCtrlMetaInstSize = 38912,
   parameter int SramCtrlMetaNumRamInst = 1,
@@ -462,7 +462,7 @@ module earlgrey_pd_main #(
   // sram_ctrl_sec
   // rom_ctrl
   // rv_core_ibex
-  // cheriot
+  // cheriot_mem_sys
   // sram_ctrl_meta
 
 
@@ -614,7 +614,7 @@ module earlgrey_pd_main #(
   logic intr_edn0_edn_fatal_err;
   logic intr_edn1_edn_cmd_req_done;
   logic intr_edn1_edn_fatal_err;
-  logic intr_cheriot_tbre_done;
+  logic intr_cheriot_mem_sys_tbre_done;
 
   // Alert list
   prim_alert_pkg::alert_tx_t [alert_handler_pkg::NAlerts-1:0] alert_tx;
@@ -723,16 +723,16 @@ module earlgrey_pd_main #(
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   rram_ctrl_pkg::rram_macro_req_t       rram_ctrl_rram_macro_req;
   rram_ctrl_pkg::rram_macro_rsp_t       rram_ctrl_rram_macro_rsp;
-  tlul_pkg::tl_h2d_t       cheriot_meta_sram_tl_req;
-  tlul_pkg::tl_d2h_t       cheriot_meta_sram_tl_rsp;
-  logic       cheriot_cored_tag_d2h;
+  tlul_pkg::tl_h2d_t       cheriot_mem_sys_meta_sram_tl_req;
+  tlul_pkg::tl_d2h_t       cheriot_mem_sys_meta_sram_tl_rsp;
+  logic       cheriot_mem_sys_cored_tag_d2h;
   prim_mubi_pkg::mubi4_t       rv_core_ibex_cheriot_ena;
   tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__corei_req;
   tlul_pkg::tl_d2h_t       main_tl_rv_core_ibex__corei_rsp;
-  tlul_pkg::tl_h2d_t       main_tl_cheriot__cored_req;
-  tlul_pkg::tl_d2h_t       main_tl_cheriot__cored_rsp;
-  tlul_pkg::tl_h2d_t       main_tl_cheriot__tbre_req;
-  tlul_pkg::tl_d2h_t       main_tl_cheriot__tbre_rsp;
+  tlul_pkg::tl_h2d_t       main_tl_cheriot_mem_sys__cored_req;
+  tlul_pkg::tl_d2h_t       main_tl_cheriot_mem_sys__cored_rsp;
+  tlul_pkg::tl_h2d_t       main_tl_cheriot_mem_sys__tbre_req;
+  tlul_pkg::tl_d2h_t       main_tl_cheriot_mem_sys__tbre_rsp;
   tlul_pkg::tl_h2d_t       main_tl_rv_dm__sba_req;
   tlul_pkg::tl_d2h_t       main_tl_rv_dm__sba_rsp;
   tlul_pkg::tl_h2d_t       rv_dm_regs_tl_d_req;
@@ -789,10 +789,10 @@ module earlgrey_pd_main #(
   tlul_pkg::tl_d2h_t       sram_ctrl_meta_regs_tl_rsp;
   tlul_pkg::tl_h2d_t       sram_ctrl_sec_ram_tl_req;
   tlul_pkg::tl_d2h_t       sram_ctrl_sec_ram_tl_rsp;
-  tlul_pkg::tl_h2d_t       cheriot_regs_tl_d_req;
-  tlul_pkg::tl_d2h_t       cheriot_regs_tl_d_rsp;
-  tlul_pkg::tl_h2d_t       cheriot_revbm_tl_d_req;
-  tlul_pkg::tl_d2h_t       cheriot_revbm_tl_d_rsp;
+  tlul_pkg::tl_h2d_t       cheriot_mem_sys_regs_tl_d_req;
+  tlul_pkg::tl_d2h_t       cheriot_mem_sys_regs_tl_d_rsp;
+  tlul_pkg::tl_h2d_t       cheriot_mem_sys_revbm_tl_d_req;
+  tlul_pkg::tl_d2h_t       cheriot_mem_sys_revbm_tl_d_rsp;
   tlul_pkg::tl_h2d_t       uart0_tl_req;
   tlul_pkg::tl_d2h_t       uart0_tl_rsp;
   tlul_pkg::tl_h2d_t       uart1_tl_req;
@@ -2613,7 +2613,7 @@ module earlgrey_pd_main #(
     .cored_tl_h_o(rv_core_ibex_cored_tl_h_req),
     .cored_tl_h_i(rv_core_ibex_cored_tl_h_rsp),
     .cored_tag_h2d_o(rv_core_ibex_cored_tag_h2d),
-    .cored_tag_d2h_i(cheriot_cored_tag_d2h),
+    .cored_tag_d2h_i(cheriot_mem_sys_cored_tag_d2h),
     .corerevbm_tl_o(rv_core_ibex_corerevbm_tl_req),
     .corerevbm_tl_i(rv_core_ibex_corerevbm_tl_rsp),
     .ram_cfg_icache_tag_i(rv_core_ibex_icache_tag_ram_cfg_req_i),
@@ -2644,22 +2644,22 @@ module earlgrey_pd_main #(
     .cfg_tl_d_o(rv_core_ibex_cfg_tl_d_rsp)
   );
 
-  cheriot #(
+  cheriot_mem_sys #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[64]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .MainSramBaseAddr(CheriotMainSramBaseAddr),
-    .MainSramTopAddr(CheriotMainSramTopAddr),
-    .NvmBaseAddr(CheriotNvmBaseAddr),
-    .NvmTopAddr(CheriotNvmTopAddr),
-    .MetaSramBaseAddr(CheriotMetaSramBaseAddr),
+    .MainSramBaseAddr(CheriotMemSysMainSramBaseAddr),
+    .MainSramTopAddr(CheriotMemSysMainSramTopAddr),
+    .NvmBaseAddr(CheriotMemSysNvmBaseAddr),
+    .NvmTopAddr(CheriotMemSysNvmTopAddr),
+    .MetaSramBaseAddr(CheriotMemSysMetaSramBaseAddr),
     .MemSizeRevbm(3072)
-  ) u_cheriot (
+  ) u_cheriot_mem_sys (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_infra),
     .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
 
     // Interrupts
-    .intr_tbre_done_o(intr_cheriot_tbre_done),
+    .intr_tbre_done_o(intr_cheriot_mem_sys_tbre_done),
 
     // alert_handler[64]: fatal_fault
     .alert_tx_o(alert_tx[64]),
@@ -2670,19 +2670,19 @@ module earlgrey_pd_main #(
     .cored_tl_d_i(rv_core_ibex_cored_tl_h_req),
     .cored_tl_d_o(rv_core_ibex_cored_tl_h_rsp),
     .cored_tag_h2d_i(rv_core_ibex_cored_tag_h2d),
-    .cored_tag_d2h_o(cheriot_cored_tag_d2h),
+    .cored_tag_d2h_o(cheriot_mem_sys_cored_tag_d2h),
     .corerevbm_tl_i(rv_core_ibex_corerevbm_tl_req),
     .corerevbm_tl_o(rv_core_ibex_corerevbm_tl_rsp),
-    .meta_sram_tl_o(cheriot_meta_sram_tl_req),
-    .meta_sram_tl_i(cheriot_meta_sram_tl_rsp),
-    .cored_tl_h_o(main_tl_cheriot__cored_req),
-    .cored_tl_h_i(main_tl_cheriot__cored_rsp),
-    .tbre_tl_h_o(main_tl_cheriot__tbre_req),
-    .tbre_tl_h_i(main_tl_cheriot__tbre_rsp),
-    .regs_tl_d_i(cheriot_regs_tl_d_req),
-    .regs_tl_d_o(cheriot_regs_tl_d_rsp),
-    .revbm_tl_d_i(cheriot_revbm_tl_d_req),
-    .revbm_tl_d_o(cheriot_revbm_tl_d_rsp)
+    .meta_sram_tl_o(cheriot_mem_sys_meta_sram_tl_req),
+    .meta_sram_tl_i(cheriot_mem_sys_meta_sram_tl_rsp),
+    .cored_tl_h_o(main_tl_cheriot_mem_sys__cored_req),
+    .cored_tl_h_i(main_tl_cheriot_mem_sys__cored_rsp),
+    .tbre_tl_h_o(main_tl_cheriot_mem_sys__tbre_req),
+    .tbre_tl_h_i(main_tl_cheriot_mem_sys__tbre_rsp),
+    .regs_tl_d_i(cheriot_mem_sys_regs_tl_d_req),
+    .regs_tl_d_o(cheriot_mem_sys_regs_tl_d_rsp),
+    .revbm_tl_d_i(cheriot_mem_sys_revbm_tl_d_req),
+    .revbm_tl_d_o(cheriot_mem_sys_revbm_tl_d_rsp)
   );
 
   sram_ctrl #(
@@ -2728,14 +2728,14 @@ module earlgrey_pd_main #(
     .sram_rerror_o(),
     .regs_tl_i(sram_ctrl_meta_regs_tl_req),
     .regs_tl_o(sram_ctrl_meta_regs_tl_rsp),
-    .ram_tl_i(cheriot_meta_sram_tl_req),
-    .ram_tl_o(cheriot_meta_sram_tl_rsp)
+    .ram_tl_i(cheriot_mem_sys_meta_sram_tl_req),
+    .ram_tl_o(cheriot_mem_sys_meta_sram_tl_rsp)
   );
 
 
   // Interrupt assignments
   assign intr_vector = {
-    intr_cheriot_tbre_done,                   // ID 185
+    intr_cheriot_mem_sys_tbre_done,           // ID 185
     intr_edn1_edn_fatal_err,                  // ID 184
     intr_edn1_edn_cmd_req_done,               // ID 183
     intr_edn0_edn_fatal_err,                  // ID 182
@@ -2909,13 +2909,13 @@ module earlgrey_pd_main #(
     .tl_rv_core_ibex__corei_i(main_tl_rv_core_ibex__corei_req),
     .tl_rv_core_ibex__corei_o(main_tl_rv_core_ibex__corei_rsp),
 
-    // port: tl_cheriot__cored
-    .tl_cheriot__cored_i(main_tl_cheriot__cored_req),
-    .tl_cheriot__cored_o(main_tl_cheriot__cored_rsp),
+    // port: tl_cheriot_mem_sys__cored
+    .tl_cheriot_mem_sys__cored_i(main_tl_cheriot_mem_sys__cored_req),
+    .tl_cheriot_mem_sys__cored_o(main_tl_cheriot_mem_sys__cored_rsp),
 
-    // port: tl_cheriot__tbre
-    .tl_cheriot__tbre_i(main_tl_cheriot__tbre_req),
-    .tl_cheriot__tbre_o(main_tl_cheriot__tbre_rsp),
+    // port: tl_cheriot_mem_sys__tbre
+    .tl_cheriot_mem_sys__tbre_i(main_tl_cheriot_mem_sys__tbre_req),
+    .tl_cheriot_mem_sys__tbre_o(main_tl_cheriot_mem_sys__tbre_rsp),
 
     // port: tl_rv_dm__sba
     .tl_rv_dm__sba_i(main_tl_rv_dm__sba_req),
@@ -3029,13 +3029,13 @@ module earlgrey_pd_main #(
     .tl_sram_ctrl_sec__ram_o(sram_ctrl_sec_ram_tl_req),
     .tl_sram_ctrl_sec__ram_i(sram_ctrl_sec_ram_tl_rsp),
 
-    // port: tl_cheriot__regs
-    .tl_cheriot__regs_o(cheriot_regs_tl_d_req),
-    .tl_cheriot__regs_i(cheriot_regs_tl_d_rsp),
+    // port: tl_cheriot_mem_sys__regs
+    .tl_cheriot_mem_sys__regs_o(cheriot_mem_sys_regs_tl_d_req),
+    .tl_cheriot_mem_sys__regs_i(cheriot_mem_sys_regs_tl_d_rsp),
 
-    // port: tl_cheriot__revbm
-    .tl_cheriot__revbm_o(cheriot_revbm_tl_d_req),
-    .tl_cheriot__revbm_i(cheriot_revbm_tl_d_rsp),
+    // port: tl_cheriot_mem_sys__revbm
+    .tl_cheriot_mem_sys__revbm_o(cheriot_mem_sys_revbm_tl_d_req),
+    .tl_cheriot_mem_sys__revbm_i(cheriot_mem_sys_revbm_tl_d_rsp),
 
     .scanmode_i
   );

@@ -72,7 +72,7 @@ KNOWN_CIP_IDS = {
     45: 'rram_ctrl',
     46: 'rram_macro',
     47: 'i3c',
-    48: 'cheriot'
+    48: 'cheriot_mem_sys'
 }
 
 REQUIRED_ALIAS_FIELDS = {

@@ -81,7 +81,7 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdRvCoreIbexRecovSwErr] = kTopEarlgreyAlertPeripheralRvCoreIbex,
   [kTopEarlgreyAlertIdRvCoreIbexFatalHwErr] = kTopEarlgreyAlertPeripheralRvCoreIbex,
   [kTopEarlgreyAlertIdRvCoreIbexRecovHwErr] = kTopEarlgreyAlertPeripheralRvCoreIbex,
-  [kTopEarlgreyAlertIdCheriotFatalFault] = kTopEarlgreyAlertPeripheralCheriot,
+  [kTopEarlgreyAlertIdCheriotMemSysFatalFault] = kTopEarlgreyAlertPeripheralCheriotMemSys,
   [kTopEarlgreyAlertIdSramCtrlMetaFatalError] = kTopEarlgreyAlertPeripheralSramCtrlMeta,
 };
 
@@ -278,5 +278,5 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdEdn0EdnFatalErr] = kTopEarlgreyPlicPeripheralEdn0,
   [kTopEarlgreyPlicIrqIdEdn1EdnCmdReqDone] = kTopEarlgreyPlicPeripheralEdn1,
   [kTopEarlgreyPlicIrqIdEdn1EdnFatalErr] = kTopEarlgreyPlicPeripheralEdn1,
-  [kTopEarlgreyPlicIrqIdCheriotTbreDone] = kTopEarlgreyPlicPeripheralCheriot,
+  [kTopEarlgreyPlicIrqIdCheriotMemSysTbreDone] = kTopEarlgreyPlicPeripheralCheriotMemSys,
 };

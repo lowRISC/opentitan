@@ -20,13 +20,13 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_cheriot__cored"
+      name:   "tl_cheriot_mem_sys__cored"
       act:    "rsp"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_cheriot__tbre"
+      name:   "tl_cheriot_mem_sys__tbre"
       act:    "rsp"
       package: "tlul_pkg"
     }
@@ -201,13 +201,13 @@
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_cheriot__regs"
+      name:   "tl_cheriot_mem_sys__regs"
       act:    "req"
       package: "tlul_pkg"
     }
     { struct: "tl"
       type:   "req_rsp"
-      name:   "tl_cheriot__revbm"
+      name:   "tl_cheriot_mem_sys__revbm"
       act:    "req"
       package: "tlul_pkg"
     }

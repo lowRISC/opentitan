@@ -120,9 +120,9 @@ module top_earlgrey #(
   parameter logic [33:0] RvCoreIbexPMPRstAddr[16] = ibex_pmp_reset_pkg::PmpAddrRst,
   parameter ibex_pkg::pmp_mseccfg_t RvCoreIbexPMPRstMsecCfg = ibex_pmp_reset_pkg::PmpMseccfgRst,
   parameter int unsigned RvCoreIbexCheriotRevBitmapAddrWidth =
-      $clog2(tl_main_pkg::ADDR_SIZE_CHERIOT__REVBM),
+      $clog2(tl_main_pkg::ADDR_SIZE_CHERIOT_MEM_SYS__REVBM),
   parameter int unsigned RvCoreIbexCheriotRevBitmapBaseAddr =
-      tl_main_pkg::ADDR_SPACE_CHERIOT__REVBM,
+      tl_main_pkg::ADDR_SPACE_CHERIOT_MEM_SYS__REVBM,
   parameter int unsigned RvCoreIbexCheriotTrvkHeapBaseAddr =
       tl_main_pkg::ADDR_SPACE_SRAM_CTRL_MAIN__RAM,
   parameter bit RvCoreIbexRV32E = 0,
@@ -150,17 +150,17 @@ module top_earlgrey #(
   parameter logic [tlul_pkg::RsvdWidth-1:0] RvCoreIbexTlulHostUserRsvdBits = '0,
   parameter logic [31:0] RvCoreIbexCsrMvendorId = '0,
   parameter logic [31:0] RvCoreIbexCsrMimpId = '0,
-  // parameters for cheriot
-  parameter logic [top_pkg::TL_AW-1:0] CheriotMainSramBaseAddr =
+  // parameters for cheriot_mem_sys
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMemSysMainSramBaseAddr =
       tl_main_pkg::ADDR_SPACE_SRAM_CTRL_MAIN__RAM,
-  parameter logic [top_pkg::TL_AW-1:0] CheriotMainSramTopAddr =
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMemSysMainSramTopAddr =
       tl_main_pkg::ADDR_SPACE_SRAM_CTRL_SEC__RAM + tl_main_pkg::ADDR_MASK_SRAM_CTRL_SEC__RAM + 1,
-  parameter logic [top_pkg::TL_AW-1:0] CheriotNvmBaseAddr =
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMemSysNvmBaseAddr =
       tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST,
-  parameter logic [top_pkg::TL_AW-1:0] CheriotNvmTopAddr =
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMemSysNvmTopAddr =
       tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST + tl_main_pkg::ADDR_MASK_RRAM_CTRL__HOST + 1,
-  parameter logic [top_pkg::TL_AW-1:0] CheriotMetaSramBaseAddr =
-      tl_main_pkg::ADDR_SPACE_CHERIOT__REVBM,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotMemSysMetaSramBaseAddr =
+      tl_main_pkg::ADDR_SPACE_CHERIOT_MEM_SYS__REVBM,
   // parameters for sram_ctrl_meta
   parameter int SramCtrlMetaInstSize = 38912,
   parameter int SramCtrlMetaNumRamInst = 1,
@@ -456,11 +456,11 @@ module top_earlgrey #(
   .RvCoreIbexTlulHostUserRsvdBits(RvCoreIbexTlulHostUserRsvdBits),
   .RvCoreIbexCsrMvendorId(RvCoreIbexCsrMvendorId),
   .RvCoreIbexCsrMimpId(RvCoreIbexCsrMimpId),
-  .CheriotMainSramBaseAddr(CheriotMainSramBaseAddr),
-  .CheriotMainSramTopAddr(CheriotMainSramTopAddr),
-  .CheriotNvmBaseAddr(CheriotNvmBaseAddr),
-  .CheriotNvmTopAddr(CheriotNvmTopAddr),
-  .CheriotMetaSramBaseAddr(CheriotMetaSramBaseAddr),
+  .CheriotMemSysMainSramBaseAddr(CheriotMemSysMainSramBaseAddr),
+  .CheriotMemSysMainSramTopAddr(CheriotMemSysMainSramTopAddr),
+  .CheriotMemSysNvmBaseAddr(CheriotMemSysNvmBaseAddr),
+  .CheriotMemSysNvmTopAddr(CheriotMemSysNvmTopAddr),
+  .CheriotMemSysMetaSramBaseAddr(CheriotMemSysMetaSramBaseAddr),
   .SramCtrlMetaInstSize(SramCtrlMetaInstSize),
   .SramCtrlMetaNumRamInst(SramCtrlMetaNumRamInst),
   .SramCtrlMetaInstrExec(SramCtrlMetaInstrExec),

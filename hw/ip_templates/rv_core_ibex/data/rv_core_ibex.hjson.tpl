@@ -105,7 +105,7 @@
       name:    "cored_tl_h",
       act:     "req",
       package: "tlul_pkg",
-      desc:    "Core data host port to the CHERIoT subsystem."
+      desc:    "Core data host port to the CHERIoT memory subsystem."
     },
 
     { struct:  "logic",
