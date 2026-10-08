@@ -332,20 +332,12 @@ TEST_F(SetEnabledTest, BadToggle) {
       dif_entropy_src_set_enabled(nullptr, static_cast<dif_toggle_t>(1)));
 }
 
-TEST_F(SetEnabledTest, Locked) {
-  EXPECT_READ32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 0);
-  EXPECT_EQ(dif_entropy_src_set_enabled(&entropy_src_, kDifToggleEnabled),
-            kDifLocked);
-}
-
 TEST_F(SetEnabledTest, Success) {
   // Enable.
-  EXPECT_READ32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 1);
   EXPECT_WRITE32(ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET, kMultiBitBool4True);
   EXPECT_DIF_OK(dif_entropy_src_set_enabled(&entropy_src_, kDifToggleEnabled));
 
   // Disable.
-  EXPECT_READ32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 1);
   EXPECT_WRITE32(ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET, kMultiBitBool4False);
   EXPECT_DIF_OK(dif_entropy_src_set_enabled(&entropy_src_, kDifToggleDisabled));
 }
@@ -357,7 +349,6 @@ TEST_F(LockTest, NullHandle) {
 }
 
 TEST_F(LockTest, Success) {
-  EXPECT_WRITE32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 0);
   EXPECT_WRITE32(ENTROPY_SRC_SW_REGUPD_REG_OFFSET, 0);
   EXPECT_DIF_OK(dif_entropy_src_lock(&entropy_src_));
 }
@@ -371,25 +362,12 @@ TEST_F(IsLockedTest, NullArgs) {
   EXPECT_DIF_BADARG(dif_entropy_src_is_locked(nullptr, nullptr));
 }
 
-TEST_F(IsLockedTest, BadState) {
-  bool is_locked;
-  EXPECT_READ32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 1);
-  EXPECT_READ32(ENTROPY_SRC_SW_REGUPD_REG_OFFSET, 0);
-  EXPECT_EQ(dif_entropy_src_is_locked(&entropy_src_, &is_locked), kDifError);
-
-  EXPECT_READ32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 0);
-  EXPECT_READ32(ENTROPY_SRC_SW_REGUPD_REG_OFFSET, 1);
-  EXPECT_EQ(dif_entropy_src_is_locked(&entropy_src_, &is_locked), kDifError);
-}
-
 TEST_F(IsLockedTest, Success) {
   bool is_locked;
-  EXPECT_READ32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 0);
   EXPECT_READ32(ENTROPY_SRC_SW_REGUPD_REG_OFFSET, 0);
   EXPECT_DIF_OK(dif_entropy_src_is_locked(&entropy_src_, &is_locked));
   EXPECT_TRUE(is_locked);
 
-  EXPECT_READ32(ENTROPY_SRC_ME_REGWEN_REG_OFFSET, 1);
   EXPECT_READ32(ENTROPY_SRC_SW_REGUPD_REG_OFFSET, 1);
   EXPECT_DIF_OK(dif_entropy_src_is_locked(&entropy_src_, &is_locked));
   EXPECT_FALSE(is_locked);

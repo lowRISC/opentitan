@@ -1542,8 +1542,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
       "intr_test": begin
       end
-      "me_regwen": begin
-      end
       "sw_regupd": begin
       end
       "regwen": begin
@@ -1727,7 +1725,6 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
           csr_rd(.ptr(ral.main_sm_state.main_sm_state), .value(reg_data), .backdoor(1));
           tl_data_lsbs = item.get_written_data();
           cov_vif.cg_sw_disable_sample(
-              ral.me_regwen.me_regwen.get_mirrored_value(),
               tl_data_lsbs == MuBi4True,
               entropy_src_main_sm_pkg::state_e'(reg_data)
           );
