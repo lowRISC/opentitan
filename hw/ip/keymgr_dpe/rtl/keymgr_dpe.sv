@@ -102,7 +102,6 @@ module keymgr_dpe
 
   // Determine the actual signal width to address all the hw slots
   localparam int NumInstHwSlotWidth = prim_util_pkg::vbits(NumInstHwSlot);
-  localparam int NumMaxHwSlotWidth = prim_util_pkg::vbits(NumMaxHwSlot);
   typedef logic [NumInstHwSlotWidth-1:0] keymgr_dpe_slot_idx_e;
 
   import lc_ctrl_pkg::lc_tx_test_true_strict;
@@ -283,6 +282,8 @@ module keymgr_dpe
   logic sideload_sel_err;
   logic key_version_vld;
   logic dest_sel_oob;
+  logic slot_src_sel_oob;
+  logic slot_dst_sel_oob;
 
   keymgr_dpe_metadata_slot_t [NumInstHwSlot-1:0] metadata;
   for (genvar i = 0; i < NumMaxHwSlot; i++) begin : gen_metadata_read_data
@@ -327,27 +328,20 @@ module keymgr_dpe
   logic invalid_advance;
   mubi4_t enforce_sw_binding_err;
 
-  // TODO(#30682): Remove this assertion
-  // Raise an assertion if the source / destination field provided by the
-  // sw register is out of bounds.
-  `ASSERT(SrcSelInRange_A, reg2hw.control_shadowed.slot_src_sel.q < NumInstHwSlot)
-  `ASSERT(DstSelInRange_A, reg2hw.control_shadowed.slot_dst_sel.q < NumInstHwSlot)
+  // Indicate Out-Of-Bound for source / destination selection if the request matches
+  // a non-instantiated slot.
+  if (NumInstHwSlot < NumMaxHwSlot) begin : gen_oob_slot_selction
+    assign slot_src_sel_oob = (reg2hw.control_shadowed.slot_src_sel.q >= NumInstHwSlot);
+    assign slot_dst_sel_oob = (reg2hw.control_shadowed.slot_dst_sel.q >= NumInstHwSlot);
+  end else begin : gen_no_oob_slot_selection
+    assign slot_src_sel_oob = 1'b0;
+    assign slot_dst_sel_oob = 1'b0;
+  end
   keymgr_dpe_slot_idx_e slot_src_sel_trunc, slot_dst_sel_trunc;
   assign slot_src_sel_trunc =
       keymgr_dpe_slot_idx_e'(reg2hw.control_shadowed.slot_src_sel.q);
   assign slot_dst_sel_trunc =
       keymgr_dpe_slot_idx_e'(reg2hw.control_shadowed.slot_dst_sel.q);
-
-  // AscentLint: Tie off upper bits of the slot selection register field if not the
-  // full register width is used.
-  if (NumInstHwSlotWidth < prim_util_pkg::vbits(NumMaxHwSlot)) begin : gen_unused_slot_sel_bits
-    logic unused_dst_slot_sel;
-    logic unused_src_slot_sel;
-    assign unused_dst_slot_sel = ^reg2hw.control_shadowed.slot_dst_sel.q[
-      NumMaxHwSlotWidth-1:NumInstHwSlotWidth];
-    assign unused_src_slot_sel = ^reg2hw.control_shadowed.slot_src_sel.q[
-      NumMaxHwSlotWidth-1:NumInstHwSlotWidth];
-  end
 
   keymgr_dpe_ctrl # (
     .NumInstHwSlot(NumInstHwSlot),
@@ -370,8 +364,6 @@ module keymgr_dpe
     .entropy_i(ctrl_rand),
     .op_i(keymgr_dpe_ops_e'(reg2hw.control_shadowed.operation.q)),
     .load_key_lock_i(reg2hw.load_key_lock.q),
-    // TODO(#384): Add assertions to check that we are not losing some bits by casting
-    // slot_src/dst_sel bits to enum type
     .slot_src_sel_i(slot_src_sel_trunc),
     .slot_dst_sel_i(slot_dst_sel_trunc),
     .slot_policy_i(keymgr_dpe_policy_t'(reg2hw.slot_policy)),
@@ -406,7 +398,9 @@ module keymgr_dpe
     .kmac_done_err_i(kmac_done_err),
     .kmac_cmd_err_i(kmac_cmd_err),
     .kmac_data_i(kmac_data_truncated),
-    .dest_sel_oob_i(dest_sel_oob)
+    .dest_sel_oob_i(dest_sel_oob),
+    .slot_src_sel_oob_i(slot_src_sel_oob),
+    .slot_dst_sel_oob_i(slot_dst_sel_oob)
   );
 
   assign hw2reg.start.d  = '0;

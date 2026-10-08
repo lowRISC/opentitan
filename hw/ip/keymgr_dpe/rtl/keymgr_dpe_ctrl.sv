@@ -92,7 +92,9 @@ module keymgr_dpe_ctrl
   output logic prng_en_o,
 
   // Out-of-bound checks
-  input logic dest_sel_oob_i
+  input logic dest_sel_oob_i,
+  input logic slot_src_sel_oob_i,
+  input logic slot_dst_sel_oob_i
 );
 
   localparam int EntropyWidth = LfsrWidth / 2;
@@ -475,15 +477,16 @@ module keymgr_dpe_ctrl
     unique case (state_q)
       // Only advance can be called from reset state
       StCtrlDpeReset: begin
-        // if ~en_i, then any operation request is invalid
-        // if en_i, then only advance operation is valid
-        invalid_op = op_start_i & (~en_i | en_i & (op_i != OpDpeAdvance));
+        // The only accepted operation in this state is the initial advance which latches the
+        // creator root key into the slot selected by `SLOT_DST_SEL`. A request is invalid if
+        // keymgr_dpe is disabled or if `SLOT_DST_SEL` selects a slot at or above `NumInstHwSlot`.
+        invalid_op = op_start_i & (~en_i | en_i & ((op_i != OpDpeAdvance) | slot_dst_sel_oob_i));
 
         // if there was a structural fault before anything then move to invalid directly
         if (inv_state) begin
           state_d = StCtrlDpeInvalid;
           prng_en_dis_inv_set = 1'b1;
-        end else if (advance_cmd) begin
+        end else if (advance_cmd && !slot_dst_sel_oob_i) begin
           state_d = StCtrlDpeEntropyReseed;
         end
       end
@@ -701,29 +704,36 @@ module keymgr_dpe_ctrl
                            (slot_src_sel_i == slot_dst_sel_i | destination_slot_valid) :
                            (slot_src_sel_i != slot_dst_sel_i);
 
-  assign invalid_advance = adv_req & (invalid_allow_child   |
-                                      invalid_src_slot      |
-                                      invalid_retain_parent |
-                                      enforce_sw_binding_err);
+  assign invalid_advance = adv_req & (invalid_allow_child    |
+                                      invalid_src_slot       |
+                                      invalid_retain_parent  |
+                                      enforce_sw_binding_err |
+                                      slot_src_sel_oob_i     |
+                                      slot_dst_sel_oob_i);
 
-  assign invalid_erase = erase_req & ~destination_slot_valid;
+  assign invalid_erase = erase_req & (~destination_slot_valid |
+                                      slot_dst_sel_oob_i);
 
   assign invalid_gen = gen_req & (~active_key_slot_o.valid |
-                                  ~key_version_vld_o |
-                                  dest_sel_oob_i);
+                                  ~key_version_vld_o       |
+                                  dest_sel_oob_i           |
+                                  slot_src_sel_oob_i);
 
   assign invalid_load = load_req & (~root_key_i.valid      |
                                     destination_slot_valid |
-                                    load_key_lock_i);
+                                    load_key_lock_i        |
+                                    slot_dst_sel_oob_i);
 
   // This is similar to `invalid_advance` except that it does not depend on a incoming request.
   // The outer module uses `invalid_advance_o` to invalidate KMAC msg payload, when the advance
   // operation is not valid. It is better be loose here and ask to invalidate even when there is no
   // advance request.
-  assign invalid_advance_o = invalid_allow_child   |
-                             invalid_src_slot      |
-                             invalid_retain_parent |
-                             enforce_sw_binding_err;
+  assign invalid_advance_o = invalid_allow_child    |
+                             invalid_src_slot       |
+                             invalid_retain_parent  |
+                             enforce_sw_binding_err |
+                             slot_src_sel_oob_i     |
+                             slot_dst_sel_oob_i;
 
   // Exportable DPE is not yet implemented, so mark it unused for lint.
   logic unused_exportable_bit;
@@ -774,6 +784,12 @@ module keymgr_dpe_ctrl
   /////////////////////////////////
   // Assertions
   /////////////////////////////////
+
+  // Ensure no slot update (either read or write) oocurs when the corresponding out-of-bound
+  // signal is asserted.
+  `ASSERT(DstOobNoSlotWrite_A, update_sel inside
+      {SlotDestRandomize, SlotLoadRoot, SlotLoadFromKmac, SlotErase} |-> !slot_dst_sel_oob_i)
+  `ASSERT(SrcOobNoKeyRelease_A, slot_src_sel_oob_i |-> !release_real_key && !data_valid_o)
 
   // TODO(#384): Revisit assertions.
   // 1) Can these assertions be rewritten for keymgr_dpe context?
