@@ -6,6 +6,15 @@ and this project adheres to [Semantic Versioning](http://semver.org/spec/v2.0.0.
 
 ## Unreleased
 
+## [0.9.0] - 2025-11-23
+### Added
+- nextdm register (#160) [@msfchaffner](https://github.com/msfschaffner)
+- ack signal for ndmreset [@msfchaffner](https://github.com/msfschaffner)
+### Fixed
+- hartsel behavior (#160) [@msfchaffner](https://github.com/msfschaffner)
+- Wrong reset state after trst_ni (#169)
+- dtmcs_q used for declared (#183) [@phsauter](https://github.com/phsauter)
+
 ## [0.8.1] - 2023-10-01
 ### Changed
 - debug_rom: Add rst

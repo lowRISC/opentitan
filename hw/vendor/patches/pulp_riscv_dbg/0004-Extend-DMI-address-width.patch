@@ -1,7 +1,7 @@
-From c1d7ebe40689eced35ae6b8cc2f1431f6ce42e51 Mon Sep 17 00:00:00 2001
+From 5270d3105439806967e0382cbd14224f7dd24130 Mon Sep 17 00:00:00 2001
 From: Michael Schaffner <msf@opentitan.org>
 Date: Thu, 17 Aug 2023 10:30:17 -0700
-Subject: [PATCH 4/7] Extend DMI address width
+Subject: [PATCH 4/4] Extend DMI address width
 
 Make the DMI interface address 32bits so that larger
 address ranges can be supported (e.g. to take advantage
@@ -12,12 +12,17 @@ in the TAP so that this can be determined based on
 the specific integration.
 
 Signed-off-by: Michael Schaffner <msf@opentitan.org>
+---
+ src/dm_csrs.sv  |  4 +++-
+ src/dm_pkg.sv   |  2 +-
+ src/dmi_jtag.sv | 11 ++++++-----
+ 3 files changed, 10 insertions(+), 7 deletions(-)
 
 diff --git a/src/dm_csrs.sv b/src/dm_csrs.sv
-index 259f3fc..b899b17 100644
+index e5427bc..a800141 100644
 --- a/src/dm_csrs.sv
 +++ b/src/dm_csrs.sv
-@@ -87,7 +87,6 @@ module dm_csrs #(
+@@ -89,7 +89,6 @@ module dm_csrs #(
    dm::dtm_op_e dtm_op;
    assign dtm_op = dm::dtm_op_e'(dmi_req_i.op);
  
@@ -25,7 +30,7 @@ index 259f3fc..b899b17 100644
    localparam dm::dm_csr_e DataEnd = dm::dm_csr_e'(dm::Data0 + {4'h0, dm::DataCount} - 8'h1);
    localparam dm::dm_csr_e ProgBufEnd = dm::dm_csr_e'(dm::ProgBuf0 + {4'h0, dm::ProgBufSize} - 8'h1);
  
-@@ -212,6 +211,9 @@ module dm_csrs #(
+@@ -214,6 +213,9 @@ module dm_csrs #(
  
    // Get the data index, i.e. 0 for dm::Data0 up to 11 for dm::Data11
    assign dm_csr_addr = dm::dm_csr_e'({1'b0, dmi_req_i.addr});
@@ -49,7 +54,7 @@ index cc2e1eb..a8a27d2 100644
      logic [31:0] data;
    } dmi_req_t;
 diff --git a/src/dmi_jtag.sv b/src/dmi_jtag.sv
-index f8b8483..b82bde1 100644
+index 36e3235..17d0060 100644
 --- a/src/dmi_jtag.sv
 +++ b/src/dmi_jtag.sv
 @@ -17,7 +17,8 @@
@@ -62,7 +67,7 @@ index f8b8483..b82bde1 100644
  ) (
    input  logic         clk_i,      // DMI Clock
    input  logic         rst_ni,     // Asynchronous reset active low
-@@ -78,7 +79,7 @@ module dmi_jtag #(
+@@ -79,7 +80,7 @@ module dmi_jtag #(
                        zero0        : '0,
                        idle         : 3'd1, // 1: Enter Run-Test/Idle and leave it immediately
                        dmistat      : error_q, // 0: No error, 2: Op failed, 3: too fast
@@ -71,7 +76,7 @@ index f8b8483..b82bde1 100644
                        version      : 4'd1  // Version described in spec version 0.13 (and later?)
                      };
        end
-@@ -113,7 +114,7 @@ module dmi_jtag #(
+@@ -114,7 +115,7 @@ module dmi_jtag #(
    logic          dmi_resp_ready;
  
    typedef struct packed {
@@ -80,7 +85,7 @@ index f8b8483..b82bde1 100644
      logic [31:0] data;
      logic [1:0]  op;
    } dmi_t;
-@@ -122,12 +123,12 @@ module dmi_jtag #(
+@@ -123,12 +124,12 @@ module dmi_jtag #(
    state_e state_d, state_q;
  
    logic [$bits(dmi_t)-1:0] dr_d, dr_q;
@@ -95,3 +100,6 @@ index f8b8483..b82bde1 100644
    assign dmi_req.data = data_q;
    assign dmi_req.op   = (state_q == Write) ? dm::DTM_WRITE : dm::DTM_READ;
    // We will always be ready to accept the data we requested.
+-- 
+2.43.0
+
