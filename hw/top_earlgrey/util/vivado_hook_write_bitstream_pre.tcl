@@ -42,7 +42,7 @@ proc generate_mmi {filename designtask_count} {
 #   brams:            A list of BRAM cells.
 #   designtask_count: A number used for logging with `send_msg`.
 proc dump_init_strings {filename brams designtask_count} {
-    # For each OTP BRAM, dump all the INIT_XX strings.
+    # For each BRAM, dump all the INIT_XX strings.
     send_msg "${designtask_count}-1" INFO "Dumping INIT_XX strings to ${filename}"
 
     set workroot [file dirname [info script]]
@@ -112,16 +112,7 @@ set gen_mem_info {{brams mem_type_regex fake_word_width addr_end_multiplier sche
 set rom_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_rom_ctrl*"] " "]
 dict set memInfo rom [apply $gen_mem_info $rom_brams $mem_type_regex 40 1 "Processor"]
 
-# OTP does not require faking the word width, but it has its own quirk. It seems
-# each 22-bit OTP word is followed by 15 zero words. The MMI's <AddressSpace>
-# and <AddressRange> tags need to account for this or else updatemem will think
-# that its data input overruns the address space. The workaround is to pretend
-# the address space is 16 times larger than we would normally compute.
-set otp_brams [split [get_cells -hierarchical -filter " PRIMITIVE_TYPE =~ ${bram_regex} && NAME =~ *u_otp_macro*"] " "]
-dict set memInfo otp [apply $gen_mem_info $otp_brams $mem_type_regex 0 16 "Processor"]
-
 generate_mmi "memories.mmi" 1
 
-# For debugging purposes, dump the INIT_XX strings for ROM and OTP.
+# For debugging purposes, dump the INIT_XX strings for ROM.
 dump_init_strings "rom_init_strings.txt" $rom_brams 3
-dump_init_strings "otp_init_strings.txt" $otp_brams 4
