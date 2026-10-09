@@ -33,11 +33,11 @@ with_unknown! {
     }
 
     pub enum OwnershipUpdateMode: u32 [default = Self::Open] {
-        Open = u32::from_le_bytes(*b"OPEN"),
-        UnlockSelf = u32::from_le_bytes(*b"SELF"),
-        SelfVersion = u32::from_le_bytes(*b"SELV"),
-        NewVersion = u32::from_le_bytes(*b"NEWV"),
-        AnyVersion = u32::from_le_bytes(*b"_ANY"),
+        Open = bindgen::ownership_datatypes::ownership_update_mode::kOwnershipUpdateModeOpen as u32,
+        UnlockSelf = bindgen::ownership_datatypes::ownership_update_mode::kOwnershipUpdateModeSelf as u32,
+        SelfVersion = bindgen::ownership_datatypes::ownership_update_mode::kOwnershipUpdateModeSelfVersion as u32,
+        NewVersion = bindgen::ownership_datatypes::ownership_update_mode::kOwnershipUpdateModeNewVersion as u32,
+        AnyVersion = bindgen::ownership_datatypes::ownership_update_mode::kOwnershipUpdateModeAnyVersion as u32,
     }
 }
 
