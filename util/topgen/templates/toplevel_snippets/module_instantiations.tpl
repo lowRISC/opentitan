@@ -153,9 +153,7 @@ else:
     // CIO outputs
   % for p_out in outputs + inouts:
     .${lib.ljust("cio_"+p_out.name+"_o",   max_sigwidth+9)}(cio_${m["name"]}_${p_out.name}_d2p${cio_suffix_o}),
-    % if not p_out.name.endswith("_en", 1):
     .${lib.ljust("cio_"+p_out.name+"_en_o",max_sigwidth+9)}(cio_${m["name"]}_${p_out.name}_en_d2p${cio_suffix_o})${"" if (last_section == "cio_out" and loop.last) else ","}
-    % endif
   % endfor
 
 % endif\
