@@ -419,6 +419,21 @@ rom_error_t sc_keymgr_dpe_advance_dpe_context(
 void sc_keymgr_dpe_lock_uds(void);
 
 /**
+ * Enforces the software binding as the only advance input until the next reset.
+ *
+ * Once called, every advance call from a parent slot that consumes hw binding
+ * values must set `kScKeymgrDPEUseExclusiveSwBinding`, otherwise the
+ * keymgr_dpe raises an `invalid_op` error and leaves the destination slot
+ * untouched. Advance calls from later boot stages are not affected. This lock
+ * can only be released by resetting the device.
+ *
+ * @return `kErrorOk` if the lock reads back as `kMultiBitBool4True`,
+ * `kErrorKeymgrInternal` otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sc_keymgr_dpe_enforce_sw_binding(void);
+
+/**
  * Load the UDS into an empty hw slot.
  *
  * Load the UDS into the selected hw slot. If the selected hw slot is not
