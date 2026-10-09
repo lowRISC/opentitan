@@ -50,9 +50,10 @@ lint_off -rule UNUSED -file "*/src/dm_mem.sv" -match "Bits of signal are not use
 // the "resp" field.
 lint_off -rule UNUSED -file "*/src/dmi_jtag.sv" -match "Bits of signal are not used: 'dmi_resp'[1:0]"
 
-// In debug_rom.sv, the addr_i input is a full 64-bit address. We only
+// In debug_rom.sv and debug_rom_cheriot.sv, the addr_i input is a full 64-bit address. We only
 // use bits 7:3; waive the others.
 lint_off -rule UNUSED -file "*/debug_rom/debug_rom.sv" -match "Bits of signal are not used: 'addr_i'[63:8,2:0]"
+lint_off -rule UNUSED -file "*/debug_rom/debug_rom_cheriot.sv" -match "Bits of signal are not used: 'addr_i'[63:8,2:0]"
 
 // Waive a warning where we're subtracting an undecorated integer from a bit-vector with fixed
 // width.
