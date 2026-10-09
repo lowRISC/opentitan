@@ -246,6 +246,7 @@ module tb_test_env #(
        .clk_i             ( clk_i             ),
        .rst_ni            ( rst_ni            ),
        .next_dm_addr_i    ( '0                ),
+       .cheriot_enable_i  ( prim_mubi_pkg::MuBi4False ),
        .testmode_i        ( 1'b0              ),
        .ndmreset_o        ( ndmreset          ),
        .dmactive_o        (                   ), // active debug session TODO
