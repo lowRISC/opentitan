@@ -40,6 +40,10 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
 
   rand bit is_key_version_err;
 
+  // Hold the decoy data at all zeros or all ones during a single-cycle operation.
+  rand bit const_decoy;
+  rand bit const_decoy_ones;
+
   constraint is_key_version_err_c {
     is_key_version_err == 0;
   }
@@ -118,6 +122,18 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.reseed_interval_shadowed));
   endtask : keymgr_dpe_init
 
+  // Sometimes run the next single-cycle operation (erase or disable) with constant decoy data.
+  // These operations produce no KMAC output, so the DUT must not report the decoy as invalid.
+  virtual task maybe_force_const_decoy();
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(const_decoy)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(const_decoy_ones)
+    if (const_decoy) cfg.keymgr_dpe_vif.force_const_decoy(const_decoy_ones);
+  endtask
+
+  virtual task release_const_decoy();
+    if (const_decoy) cfg.keymgr_dpe_vif.release_const_decoy();
+  endtask
+
   virtual task keymgr_dpe_erase(
       int num_gen_op = $urandom_range(1, 4),
       int num_adv_op = $urandom_range(1, 4),
@@ -130,10 +146,13 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     ral.control_shadowed.slot_src_sel.set(src_slot);
     ral.control_shadowed.slot_dst_sel.set(dst_slot);
     csr_update(.csr(ral.control_shadowed));
+    if (wait_done) maybe_force_const_decoy();
     csr_wr(.ptr(ral.start), .value(1), .blocking(0));
 
-    if (wait_done)
+    if (wait_done) begin
       wait_op_done();
+      release_const_decoy();
+    end
 
     if (num_adv_op) begin
       src_slot = dst_slot;
@@ -169,10 +188,13 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     ral.control_shadowed.slot_src_sel.set(src_slot);
     ral.control_shadowed.slot_dst_sel.set(dst_slot);
     csr_update(.csr(ral.control_shadowed));
+    if (wait_done) maybe_force_const_decoy();
     csr_wr(.ptr(ral.start), .value(1));
 
-    if (wait_done)
+    if (wait_done) begin
       wait_op_done();
+      release_const_decoy();
+    end
 
     // Fix to make the smoketest pass again. The problem is that if
     // the advance operation is invoked in the reset state, it is impossible
