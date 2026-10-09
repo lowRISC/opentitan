@@ -211,9 +211,7 @@ impl Certificate {
             val.list_variables(names);
         }
         self.subject_alt_name.list_variables(names);
-        for ext in &self.private_extensions {
-            ext.list_variables(names);
-        }
+        self.private_extensions.list_variables(names);
         if let Selectable::Choice(choice) = &self.signature {
             names.insert(choice.selector.clone());
         }

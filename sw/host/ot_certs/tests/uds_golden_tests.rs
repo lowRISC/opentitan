@@ -28,7 +28,7 @@ fn compare_uds_ecdsa_tbs() {
         .subst(&ecdsa_test_data)
         .expect("Template substitution for UDS ECDSA TBS must succeed");
     let tbs = der::Der::generate(|builder| {
-        x509::X509::push_tbs_certificate(builder, &subst_template.certificate)
+        x509::X509::push_tbs_certificate(builder, subst_template.certificate()?)
     })
     .expect("TBS UDS certificate generation to succeed");
 
