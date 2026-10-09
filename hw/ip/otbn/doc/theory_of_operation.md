@@ -1052,13 +1052,16 @@ An erroneous use of the MAI will result in a `MAI_SOFTWARE_ERROR`.
 This will trigger an abortion of the OTBN execution with a secure wipe.
 
 The `MAI_SOFTWARE_ERROR` is triggered when:
-- `MAI_CTRL.OPERATION` contains an invalid selection when the `MAI_CTRL.START` bit is set.
+- A write to `MAI_CTRL` has an invalid `MAI_CTRL.OPERATION` value, whether or not the `MAI_CTRL.START` bit is set.
 - The `MAI_CTRL.START` bit is set or `MAI_CTRL.OPERATION` is written to whilst `MAI_STATUS.BUSY = 1`.
 - A write to input WSRs is detected whilst `MAI_STATUS.INPUT_READY = 0`.
   - The `MAI_INx_Sy` registers are used as input buffers.
     Modifying the register content can lead to unexpected results.
 - A write to the reserved section of `MAI_CTRL` is detected.
   - Note that the MOD WSR must also remain constant but this is not checked for in HW.
+
+A write to `MAI_CTRL` that triggers a `MAI_SOFTWARE_ERROR` has no effect on the MAI.
+It does not start an execution or change `MAI_CTRL.OPERATION`.
 
 A write to the output WSRs whilst an operation is ongoing is on purpose not handled as an error.
 This allows clearing the output WSRs between two overlapping operations if this would be required for security reasons.
