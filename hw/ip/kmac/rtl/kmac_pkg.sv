@@ -373,22 +373,22 @@ package kmac_pkg;
     SelSw     = 5'b01111
   } app_mux_sel_e ;
 
-  // Encoding generated at commit 6852a91493 using Python 3.12.13 with:
+  // Encoding generated at commit 23e303e0e2 using Python 3.12.14 with:
   // $ ./util/design/sparse-fsm-encode.py --language=sv \
-  //     --seed 404110924 --distance 3 --states 19 --bits 10
+  //     --seed 3362063275 --distance 3 --states 17 --bits 10
   //
   // Hamming distance histogram:
   //
   //  0: --
   //  1: --
   //  2: --
-  //  3: ||||||||||| (14.04%)
-  //  4: ||||||||||||||||||| (22.81%)
-  //  5: ||||||||||||||||| (20.47%)
-  //  6: |||||||||||||||||||| (23.98%)
-  //  7: ||||||||||| (13.45%)
-  //  8: ||| (4.09%)
-  //  9:  (1.17%)
+  //  3: |||||||||| (13.97%)
+  //  4: |||||||||||||||||||| (25.74%)
+  //  5: |||||||||||||||||||| (25.74%)
+  //  6: ||||||||||||| (16.91%)
+  //  7: ||||||| (9.56%)
+  //  8: |||| (5.88%)
+  //  9: | (2.21%)
   // 10: --
   //
   // Minimum Hamming distance: 3
@@ -425,16 +425,15 @@ package kmac_pkg;
     // Error KeyNotValid triggers if key is used but it is not valid at the time.
     StErrorKeyNotValid = 10'b1000011011,
 
-    StErrorAwaitMsg         = 10'b1010001100,
-    StErrorNotify           = 10'b0010001011,
-    StErrorAwaitTermination = 10'b0011111000,
-    StErrorFinish           = 10'b0101100111,
-    StErrorAwaitSw          = 10'b0011010100,
-    StErrorAwaitAbsorbed    = 10'b0011101101,
-    StErrorPush             = 10'b1110010011,
+    StErrorAwaitMsg         = 10'b1100100100,
+    StErrorNotify           = 10'b0111100010,
+    StErrorAwaitTermination = 10'b0101101000,
+    StErrorFinish           = 10'b0011111101,
+    StErrorAwaitSw          = 10'b0100001100,
+    StErrorAwaitAbsorbed    = 10'b1110001111,
 
     // This state is used for terminal errors
-    StTerminalError = 10'b0110011101
+    StTerminalError = 10'b0010110100
   } st_e;
 
   // MsgWidth : 64

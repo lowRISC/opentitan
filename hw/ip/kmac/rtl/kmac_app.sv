@@ -234,9 +234,8 @@ module kmac_app
   app_mux_sel_e mux_sel_buf_err_check;
   app_mux_sel_e mux_sel_buf_kmac;
 
-  // Tracking and error signals
+  // Error signals
   kmac_pkg::err_t fsm_err, mux_err;
-  logic err_sha3_during_app_set, err_sha3_during_app_d, err_sha3_during_app_q;
 
   /////////////////////////////
   // Application arbitration //
@@ -445,14 +444,14 @@ module kmac_app
   // to accept messages and control requests during the error handling.
   // Similarly, there are three response generators. One drives digest responses, one the finish
   // response and one the error responses.
+  // Any SHA3 core error results in a fatal alert but we still raise the error flag to ensure the
+  // current response gets invalidated.
   assign app_rsp = '{
     req_ready:  app_data_ready | app_error_req_ready | app_req_ready,
     rsp_valid:  app_digest_valid | app_finish_rsp_valid | app_error_rsp_valid,
     digest_s0:  app_digest[0],
     digest_s1:  app_digest[1],
-    error:      app_error_rsp_valid | app_finish_rsp_is_error |
-                // Must use _d as error is relevant in cycle the digest is returned.
-                (err_sha3_during_app_d & app_cfg.if_type == AppStatic),
+    error:      app_error_rsp_valid | app_finish_rsp_is_error | error_i,
     rsp_finish: app_finish_rsp_valid
   };
 
@@ -547,7 +546,6 @@ module kmac_app
     sparse_fsm_error_o             = 1'b0;
     clear_after_error_o            = prim_mubi_pkg::MuBi4False;
     service_rejected_error_set     = 1'b0;
-    err_sha3_during_app_set        = 1'b0;
     err_key_used_but_invalid_clear = 1'b0;
     process_cmd_sent_set           = 1'b0;
     last_msg_part_received_set     = 1'b0;
@@ -621,9 +619,6 @@ module kmac_app
             // With KMAC disabled the next state is StAppProcess.
             st_d = StAppProcess;
           end
-        end else if (err_sha3_during_app_q) begin
-          // Handshaking last message part has priority as this error is also checked afterwards.
-          st_d = StErrorAwaitMsg;
         end
       end
 
@@ -674,18 +669,14 @@ module kmac_app
 
         if (app_cfg.if_type == AppStatic) begin
           if (app_rsp.rsp_valid && app_req.rsp_ready) begin
-            // Must be on _d signal to capture the error in the same cycle.
-            st_d = err_sha3_during_app_d ? StErrorAwaitSw : StAppFinish;
+            st_d = StAppFinish;
           end
         end else begin
-          // Ending a session by handshaking the request takes priority over 1) handling a SHA3
-          // error as it is checked for when sending the response and 2) squeezing to avoid
+          // Ending a session by handshaking the request takes priority over squeezing to avoid
           // starting an obsolete squeeze operation.
           if (last_req_pending) begin
             st_d          = StAppFinish;
             app_req_ready = 1'b1;
-          end else if (err_sha3_during_app_q) begin
-            st_d = StErrorPush;
           end else if (squeeze_again && !pending_digest_rsp_d) begin
             // Trigger a squeeze if there should be sent more digest parts. Ensure that there
             // is no pending response which would be 'killed' when changing the state.
@@ -707,19 +698,14 @@ module kmac_app
           app_push_digest     = pending_digest_rsp_q;
           app_error_rsp_valid = pending_error_rsp_q;
           if (!pending_digest_rsp_q && !pending_error_rsp_q) begin
-            // We now can send the finish response. Send again the error flag to cover the case the
-            // error occurred whilst the last digest response was pending.
-            app_finish_rsp_valid    = 1'b1;
-            app_finish_rsp_is_error = err_sha3_during_app_q;
+            // We now can send the finish response.
+            app_finish_rsp_valid = 1'b1;
 
             // Once the finish response is handshaked the session can be terminated.
             if (app_finish_rsp_valid && app_req.rsp_ready) begin
               st_d      = StIdle;
               cmd_o     = CmdDone;
               clr_appid = 1'b1;
-              if (err_sha3_during_app_q) begin
-                clear_after_error_o = prim_mubi_pkg::MuBi4True;
-              end
             end
          end
         end
@@ -815,13 +801,12 @@ module kmac_app
         // For service-rejected errors, return to idle without SW interaction.
         // For other errors, wait for SW to acknowledge the error.
 
-        // A SHA3 error can occur after the service rejected error is latched. Thus only send an
-        // error-free finish response if the only error case is a service rejected error.
+        // Only send an error-free finish response if a service rejected error occurred.
         app_finish_rsp_valid    = app_cfg.if_type == AppDynamic;
-        app_finish_rsp_is_error = !service_rejected_error_q || err_sha3_during_app_q;
+        app_finish_rsp_is_error = !service_rejected_error_q;
 
         if ((app_finish_rsp_valid && app_req.rsp_ready) || (app_cfg.if_type == AppStatic)) begin
-          if (!app_finish_rsp_is_error) begin
+          if (service_rejected_error_q) begin
             clr_appid           = 1'b1;
             clear_after_error_o = prim_mubi_pkg::MuBi4True;
             st_d                = StIdle;
@@ -865,24 +850,6 @@ module kmac_app
         end
       end
 
-      StErrorPush: begin
-        // State for dynamic interfaces only.
-        // An error occurred while pushing digest parts. Keep sending error responses until the
-        // app sends a termination request. Then close the session normally.
-
-        // Continue sending pending response to adhere to valid locked-in principle.
-        if (pending_digest_rsp_q) begin
-          app_push_digest = 1'b1;
-        end else begin
-          // Now continuously send error responses until termination request arrives.
-          app_error_rsp_valid = 1'b1;
-          if (app_req.req_valid && app_req.req_last) begin
-            app_req_ready = 1'b1;
-            st_d          = StAppFinish;
-          end
-        end
-      end
-
       StTerminalError: begin
         // this state is terminal
         st_d = st;
@@ -909,10 +876,13 @@ module kmac_app
       err_during_sw_set = st == StSw;
     end
 
-    // Track whether a hashing engine error occurred.
-    err_sha3_during_app_set =
-        error_i &&
-        (st inside {StAppCfg, StAppMsg, StAppOutLen, StAppProcess, StAppWait, StAppPushDigest});
+    // Detect if a hashing engine error occurred whilst an app was active. This can only happen if
+    // a wrong command order is issued or control signals are faulted. As the app interface per
+    // design never violates the command order, we treat this as a fatal alert.
+    if (error_i && (st inside {StAppCfg, StAppMsg, StAppOutLen, StAppProcess, StAppWait,
+                               StAppPushDigest})) begin
+       st_d = StTerminalError;
+    end
 
     // Enforce the entropy_fast_process bit is set to 0 for the duration of the error handling.
     // This ensures the hashing updates the PRNG and hence the masking is fully enabled. This
@@ -926,6 +896,11 @@ module kmac_app
     // Unconditionally jump into the terminal error state if the life cycle controller triggers an
     // escalation.
     if (lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i)) begin
+      st_d = StTerminalError;
+    end
+
+    // Ensure we stay in this state.
+    if (st == StTerminalError) begin
       st_d = StTerminalError;
     end
   end
@@ -961,11 +936,6 @@ module kmac_app
                            err_during_sw_set  ? 1'b1 : // set
                            err_during_sw_q;            // hold
 
-  // Track hashing engine errors
-  assign err_sha3_during_app_d = clear_app_trackers      ? 1'b0 : // clear
-                                 err_sha3_during_app_set ? 1'b1 : // set
-                                 err_sha3_during_app_q;           // hold
-
   // Track key invalid errors
   assign err_key_used_but_invalid_d = clear_app_trackers             ? 1'b0 : // clear
                                       err_key_used_but_invalid_clear ? 1'b0 : // clear when handled
@@ -990,7 +960,6 @@ module kmac_app
       service_rejected_error_q   <= 1'b0;
       err_processed_q            <= 1'b0;
       err_during_sw_q            <= 1'b0;
-      err_sha3_during_app_q      <= 1'b0;
       err_key_used_but_invalid_q <= 1'b0;
     end else begin
       last_msg_part_received_q   <= last_msg_part_received_d;
@@ -1000,14 +969,13 @@ module kmac_app
       service_rejected_error_q   <= service_rejected_error_d;
       err_processed_q            <= err_processed_d;
       err_during_sw_q            <= err_during_sw_d;
-      err_sha3_during_app_q      <= err_sha3_during_app_d;
       err_key_used_but_invalid_q <= err_key_used_but_invalid_d;
     end
   end
 
   // Check that dynamic app only states are never entered for a static app.
   `ASSERT(InvalidStateForStaticApp_A,
-          st inside {StErrorPush, StErrorAwaitTermination} |-> (app_cfg.if_type == AppDynamic),
+          st inside {StErrorAwaitTermination} |-> (app_cfg.if_type == AppDynamic),
           clk_i, rst_ni)
 
   //////////////
