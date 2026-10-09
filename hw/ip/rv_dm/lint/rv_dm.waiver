@@ -115,9 +115,10 @@ waive -rules INPUT_NOT_READ -location {dm_pkg.sv} -regexp {Input port 'imm.0.' i
       -comment "These functions use all bits of input imm, except for bit 0"
 
 # debug_rom and dm_mem
-waive -rules INPUT_NOT_READ -location {debug_rom.sv} -regexp {Input port 'addr_i.(2:0|63:8).' is not read from in module 'debug_rom'} \
+waive -rules INPUT_NOT_READ -location {debug_rom.sv debug_rom_cheriot.sv} \
+      -regexp {Input port 'addr_i.(2:0|63:8).' is not read from in module 'debug_rom(_cheriot)?'} \
       -comment "These bits are not used, but the remaining address bits are used"
-waive -rules HIER_NET_NOT_READ -location {dm_mem.sv} -regexp {Connected net 'addr_i.(2:0|31:8).' at debug_rom.sv} \
+waive -rules HIER_NET_NOT_READ -location {dm_mem.sv} -regexp {Connected net 'addr_i.(2:0|31:8).' at debug_rom(_cheriot)?.sv} \
       -comment "These bits are not used, but the remaining address bits are used"
 
 # dmi_jtag
