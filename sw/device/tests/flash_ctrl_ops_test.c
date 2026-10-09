@@ -13,6 +13,7 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/silicon_creator/lib/drivers/epmp.h"
 
 #include "flash_ctrl_regs.h"
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -438,6 +439,14 @@ static void do_bank1_erase_test(void) {
 
 bool test_main(void) {
   flash_info = dif_flash_ctrl_get_device_info();
+
+  // ROM_EXT only maps the verified active images in ePMP. Unlock the entire
+  // flash in ePMP so this test can access the rest of flash.
+  epmp_set_napot(12,
+                 (epmp_region_t){.start = TOP_EARLGREY_EFLASH_BASE_ADDR,
+                                 .end = TOP_EARLGREY_EFLASH_BASE_ADDR +
+                                        TOP_EARLGREY_EFLASH_SIZE_BYTES},
+                 kEpmpPermReadOnly);
 
   // First 0x20 pages are configured by ROM_EXT. To avoid conflicts, skip over
   // these pages.
