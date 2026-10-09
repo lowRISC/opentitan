@@ -71,6 +71,8 @@
       i2c0: io_div4
       i2c1: io_div4
       i2c2: io_div4
+      i3c0: io
+      i3c1: io
     }
     output_rsts:
     [
@@ -179,6 +181,7 @@
         type: top
         domains:
         [
+          Main
           Aon
         ]
         shadowed: false
@@ -385,6 +388,34 @@
         path: rst_i2c2_n
         parent: lc_src
         clock: io_div4
+      }
+      {
+        name: i3c0
+        gen: true
+        type: top
+        domains:
+        [
+          Main
+        ]
+        shadowed: false
+        sw: true
+        path: rst_i3c0_n
+        parent: lc_src
+        clock: io
+      }
+      {
+        name: i3c1
+        gen: true
+        type: top
+        domains:
+        [
+          Main
+        ]
+        shadowed: false
+        sw: true
+        path: rst_i3c1_n
+        parent: lc_src
+        clock: io
       }
     ]
     leaf_rsts:
@@ -480,6 +511,7 @@
         type: top
         domains:
         [
+          Main
           Aon
         ]
         shadowed: false
@@ -686,6 +718,34 @@
         path: rst_i2c2_n
         parent: lc_src
         clock: io_div4
+      }
+      {
+        name: i3c0
+        gen: true
+        type: top
+        domains:
+        [
+          Main
+        ]
+        shadowed: false
+        sw: true
+        path: rst_i3c0_n
+        parent: lc_src
+        clock: io
+      }
+      {
+        name: i3c1
+        gen: true
+        type: top
+        domains:
+        [
+          Main
+        ]
+        shadowed: false
+        sw: true
+        path: rst_i3c1_n
+        parent: lc_src
+        clock: io
       }
     ]
     rst_ni: lc_io_div4

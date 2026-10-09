@@ -187,12 +187,12 @@ module rstmgr
   ////////////////////////////////////////////////////
 
   // consistency check errors
-  logic [20:0][PowerDomains-1:0] cnsty_chk_errs;
-  logic [20:0][PowerDomains-1:0] shadow_cnsty_chk_errs;
+  logic [22:0][PowerDomains-1:0] cnsty_chk_errs;
+  logic [22:0][PowerDomains-1:0] shadow_cnsty_chk_errs;
 
   // consistency sparse fsm errors
-  logic [20:0][PowerDomains-1:0] fsm_errs;
-  logic [20:0][PowerDomains-1:0] shadow_fsm_errs;
+  logic [22:0][PowerDomains-1:0] fsm_errs;
+  logic [22:0][PowerDomains-1:0] shadow_fsm_errs;
 
   assign hw2reg.err_code.reg_intg_err.d  = 1'b1;
   assign hw2reg.err_code.reg_intg_err.de = reg_intg_err;
@@ -561,7 +561,7 @@ module rstmgr
   end
 
   // Generating resets for lc_aon
-  // Power Domains: ['Aon']
+  // Power Domains: ['Main', 'Aon']
   // Shadowed: False
   rstmgr_leaf_rst #(
     .SecCheck(SecCheck),
@@ -587,10 +587,30 @@ module rstmgr
     u_daon_lc_aon.gen_rst_chk.u_rst_chk.u_state_regs,
     alert_tx_o[0])
   end
-  assign resets_o.rst_lc_aon_n[DomainMainSel] = '0;
-  assign cnsty_chk_errs[6][DomainMainSel] = '0;
-  assign fsm_errs[6][DomainMainSel] = '0;
-  assign rst_en_o.lc_aon[DomainMainSel] = MuBi4True;
+  rstmgr_leaf_rst #(
+    .SecCheck(SecCheck),
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b0)
+  ) u_dmain_lc_aon (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_aon_i),
+    .parent_rst_ni(rst_lc_src_n[DomainMainSel]),
+    .sw_rst_req_ni(1'b1),
+    .scan_rst_ni,
+    .scanmode_i,
+    .rst_en_o(rst_en_o.lc_aon[DomainMainSel]),
+    .leaf_rst_o(resets_o.rst_lc_aon_n[DomainMainSel]),
+    .err_o(cnsty_chk_errs[6][DomainMainSel]),
+    .fsm_err_o(fsm_errs[6][DomainMainSel])
+  );
+
+  if (SecCheck) begin : gen_dmain_lc_aon_assert
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+    DMainLcAonFsmCheck_A,
+    u_dmain_lc_aon.gen_rst_chk.u_rst_chk.u_state_regs,
+    alert_tx_o[0])
+  end
   assign shadow_cnsty_chk_errs[6] = '0;
   assign shadow_fsm_errs[6] = '0;
 
@@ -1151,6 +1171,74 @@ module rstmgr
   end
   assign shadow_cnsty_chk_errs[20] = '0;
   assign shadow_fsm_errs[20] = '0;
+
+  // Generating resets for i3c0
+  // Power Domains: ['Main']
+  // Shadowed: False
+  assign resets_o.rst_i3c0_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[21][DomainAonSel] = '0;
+  assign fsm_errs[21][DomainAonSel] = '0;
+  assign rst_en_o.i3c0[DomainAonSel] = MuBi4True;
+  rstmgr_leaf_rst #(
+    .SecCheck(SecCheck),
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b1)
+  ) u_dmain_i3c0 (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_i),
+    .parent_rst_ni(rst_lc_src_n[DomainMainSel]),
+    .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[I3C0].q),
+    .scan_rst_ni,
+    .scanmode_i,
+    .rst_en_o(rst_en_o.i3c0[DomainMainSel]),
+    .leaf_rst_o(resets_o.rst_i3c0_n[DomainMainSel]),
+    .err_o(cnsty_chk_errs[21][DomainMainSel]),
+    .fsm_err_o(fsm_errs[21][DomainMainSel])
+  );
+
+  if (SecCheck) begin : gen_dmain_i3c0_assert
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+    DMainI3c0FsmCheck_A,
+    u_dmain_i3c0.gen_rst_chk.u_rst_chk.u_state_regs,
+    alert_tx_o[0])
+  end
+  assign shadow_cnsty_chk_errs[21] = '0;
+  assign shadow_fsm_errs[21] = '0;
+
+  // Generating resets for i3c1
+  // Power Domains: ['Main']
+  // Shadowed: False
+  assign resets_o.rst_i3c1_n[DomainAonSel] = '0;
+  assign cnsty_chk_errs[22][DomainAonSel] = '0;
+  assign fsm_errs[22][DomainAonSel] = '0;
+  assign rst_en_o.i3c1[DomainAonSel] = MuBi4True;
+  rstmgr_leaf_rst #(
+    .SecCheck(SecCheck),
+    .SecMaxSyncDelay(SecMaxSyncDelay),
+    .SwRstReq(1'b1)
+  ) u_dmain_i3c1 (
+    .clk_i,
+    .rst_ni,
+    .leaf_clk_i(clk_io_i),
+    .parent_rst_ni(rst_lc_src_n[DomainMainSel]),
+    .sw_rst_req_ni(reg2hw.sw_rst_ctrl_n[I3C1].q),
+    .scan_rst_ni,
+    .scanmode_i,
+    .rst_en_o(rst_en_o.i3c1[DomainMainSel]),
+    .leaf_rst_o(resets_o.rst_i3c1_n[DomainMainSel]),
+    .err_o(cnsty_chk_errs[22][DomainMainSel]),
+    .fsm_err_o(fsm_errs[22][DomainMainSel])
+  );
+
+  if (SecCheck) begin : gen_dmain_i3c1_assert
+  `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(
+    DMainI3c1FsmCheck_A,
+    u_dmain_i3c1.gen_rst_chk.u_rst_chk.u_state_regs,
+    alert_tx_o[0])
+  end
+  assign shadow_cnsty_chk_errs[22] = '0;
+  assign shadow_fsm_errs[22] = '0;
 
 
   ////////////////////////////////////////////////////
