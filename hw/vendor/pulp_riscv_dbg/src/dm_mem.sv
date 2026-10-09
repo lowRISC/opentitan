@@ -21,12 +21,15 @@ module dm_mem #(
   parameter int unsigned        BusWidth         = 32,
   parameter logic [NrHarts-1:0] SelectableHarts  = {NrHarts{1'b1}},
   parameter int unsigned        DmBaseAddress    = '0,
+  parameter bit                 CheriotSupport   = 1'b0,
   localparam int unsigned       BeWidth          = BusWidth/8
 ) (
   input  logic                             clk_i,       // Clock
   input  logic                             rst_ni,      // debug module reset
 
   output logic [NrHarts-1:0]               debug_req_o,
+  // Select CHERIoT mode
+  input  prim_mubi_pkg::mubi4_t            cheriot_enable_i,
   input  logic                             ndmreset_i,
   input  logic [19:0]                      hartsel_i,
   // from Ctrl and Status register
