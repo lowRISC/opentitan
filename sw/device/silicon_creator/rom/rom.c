@@ -659,13 +659,18 @@ static rom_error_t rom_boot(const manifest_t *manifest,
       sc_keymgr_dpe_entropy_reseed_interval_set(UINT16_MAX);
       SEC_MMIO_WRITE_INCREMENT(kScKeymgrDPESecMmioReseedIntervalSet);
 
+      // TODO(#31516): Set the MaxKeyVersion here for the UDS DPE Context
+
       // Advance the keymgr dpe into the Available state and load the UDS in
       // the selected DPE slot.
       HARDENED_RETURN_IF_ERROR(
           sc_keymgr_dpe_advance_initial(kKeymgrDPESealSlot));
 
-      // TODO(#30759): Verify the kKeymgrDPESealSlot hold the UDS with boot
-      // stage set to BootStageCreator (0). (Note: Current bootstage + 1)
+      // Verify the kKeymgrDPESealSlot holds the UDS with boot stage set to
+      // BootStageCreator (0), the MaxKeyVersion and the default UDS policy.
+      HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_check_metadata(
+          kKeymgrDPESealSlot, /*expected_max_key_version=*/0,
+          kScKeymgrDPEBootStageCreator, &kKeymgrDPEDefaultPolicy));
     } else {
       HARDENED_CHECK_EQ(secret2_locked, kHardenedBoolFalse);
       // TODO(#30830): Gracefully handle if secret2 is not locked. This option
@@ -733,9 +738,14 @@ static rom_error_t rom_boot(const manifest_t *manifest,
       HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_advance_creator(
           adv_sealing_data, adv_attestation_data));
 
-      // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot
-      // hold keys with boot stage set to BootStageOwnerInt (1). (Note:
-      // Current bootstage + 1)
+      // Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold keys with
+      // boot stage set to BootStageOwnerInt (1).
+      HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_check_metadata(
+          kKeymgrDPESealSlot, adv_sealing_data.version,
+          kScKeymgrDPEBootStageOwnerInt, &adv_sealing_data.policy));
+      HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_check_metadata(
+          kKeymgrDPEAttestSlot, adv_attestation_data.version,
+          kScKeymgrDPEBootStageOwnerInt, &adv_attestation_data.policy));
 
     } else {
       HARDENED_CHECK_EQ(secret2_locked, kHardenedBoolFalse);
