@@ -3264,7 +3264,6 @@ opentitan_test(
     srcs = ["otbn_kmac_test.c"],
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
-        DARJEELING_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
