@@ -521,6 +521,7 @@ def opentitan_test(
             rsa_key = rsa_key,
             spx_key = spx_key,
             manifest = manifest,
+            shard_count = getattr(tparam, "shard_count", None),
             # Point to test suite created below.
             test_suite = str(Label(":{}".format(name))),
             **test_kwargs

@@ -5,6 +5,7 @@
 import atexit
 import json
 import os
+import re
 import shutil
 import signal
 import socket
@@ -129,21 +130,90 @@ class QemuMonitor:
                 if attempt == 1:
                     raise
 
-    def _trigger_por_reset(self):
+    def _get_otbn_status(self):
+        try:
+            resp = self.cmd(
+                "human-monitor-command",
+                {"command-line": "xp /1wx 0x41130018"},
+            )
+            if isinstance(resp, str):
+                m = re.search(r":\s*0x([0-9a-fA-F]+)", resp)
+                if m:
+                    return int(m.group(1), 16) & 0xFF
+        except Exception:
+            pass
+        return 0
+
+    def _wait_for_otbn_idle(self, max_wait=0.5):
+        """Ensures OTBN proxy finishes any in-flight operation before reset."""
+        status = self._get_otbn_status()
+        if status in (0, 0xFF):
+            return
+        start_t = time.time()
+        while time.time() - start_t < max_wait:
+            self.cmd("cont")
+            time.sleep(0.01)
+            self.cmd("stop")
+            status = self._get_otbn_status()
+            if status in (0, 0xFF):
+                return
+
+    def _trigger_por_reset(self, por=True):
         status = self.cmd("query-status")
         if status and status.get("status") == "prelaunch":
             return
         self.cmd("stop")
-        self.cmd(
-            "qom-set",
-            {"path": "ot-eg-pad-ring.0", "property": "por_n", "value": "low"},
-        )
-        self.cmd("system_reset")
-        time.sleep(0.02)
-        self.cmd(
-            "qom-set",
-            {"path": "ot-eg-pad-ring.0", "property": "por_n", "value": "high"},
-        )
+        self._wait_for_otbn_idle()
+        if por:
+            self.cmd(
+                "qom-set",
+                {"path": "ot-eg-pad-ring.0", "property": "por_n", "value": "low"},
+            )
+            self.cmd("system_reset")
+            time.sleep(0.02)
+            self.cmd(
+                "qom-set",
+                {"path": "ot-eg-pad-ring.0", "property": "por_n", "value": "high"},
+            )
+        else:
+            self.cmd("system_reset")
+        if getattr(self, "_qemu", None) is not None and self._qemu.serial is not None:
+            try:
+                self._qemu.serial.reset_input_buffer()
+            except Exception:
+                pass
+            if getattr(self._qemu, "_proxy", None) is not None:
+                self._qemu._proxy._empty_reads = 0
+
+    def _get_cpu_pc(self):
+        try:
+            regs = self.cmd(
+                "human-monitor-command",
+                {"command-line": "info registers"},
+            )
+            if isinstance(regs, str):
+                m = re.search(r"\bpc\s+([0-9a-fA-F]+)", regs)
+                if m:
+                    return int(m.group(1), 16)
+        except Exception:
+            pass
+        return None
+
+    def _wait_for_rma_spin(self, rma_spin_delay=0.05, max_wait=2.0):
+        """Runs CPU until _rom_start_boot parks in .L_rma_spin_cycles_loop."""
+        self.cmd("cont")
+        time.sleep(rma_spin_delay)
+        self.cmd("stop")
+        if not self.always_rma_strap:
+            return
+        start_t = time.time()
+        while time.time() - start_t < max_wait:
+            pc = self._get_cpu_pc()
+            if pc is not None and 0x8320 <= pc < 0x8350:
+                return
+            self.cmd("cont")
+            time.sleep(0.02)
+            self.cmd("stop")
 
     def reset(self, halt=False, rma_spin_delay=0.05):
         """Resets the OpenTitan Earlgrey machine via QMP."""
@@ -155,10 +225,8 @@ class QemuMonitor:
                     # disables watchdog, and parks in .L_rma_spin_cycles_loop, and keep
                     # it asserted so subsequent internal SW resets also park in the spin loop.
                     self.set_gpio_rma_strap(True)
-                    self._trigger_por_reset()
-                    self.cmd("cont")
-                    time.sleep(rma_spin_delay)
-                    self.cmd("stop")
+                    self._trigger_por_reset(por=False)
+                    self._wait_for_rma_spin(rma_spin_delay=rma_spin_delay)
                     if getattr(self, "_qemu", None) is not None and self._qemu.serial is not None:
                         try:
                             self._qemu.serial.reset_input_buffer()
@@ -166,6 +234,8 @@ class QemuMonitor:
                             pass
                         self._qemu._faulted = False
                         self._qemu._timed_out = False
+                        if getattr(self._qemu, "_proxy", None) is not None:
+                            self._qemu._proxy._empty_reads = 0
                         if self._qemu.has_rma_spin:
                             self._qemu._halted_at_reset = True
                             self._qemu.serial.timeout = self._qemu.RMA_SPIN_TIMEOUT
@@ -264,6 +334,13 @@ class QemuSerialProxy:
             return len(data)
         if not self._qemu._timed_out:
             self._empty_reads = 0
+        if isinstance(data, (bytes, bytearray)) and (
+            data.startswith(b'"CryptoLibFi') or data.startswith(b'"Fi')
+        ):
+            try:
+                self._qemu.serial.reset_input_buffer()
+            except Exception:
+                pass
         try:
             return self._qemu.serial.write(data)
         except Exception:
@@ -303,7 +380,7 @@ class QemuSerialProxy:
                 if self._qemu.monitor._pc_tracing:
                     return b""
                 self._empty_reads += 1
-                if self._empty_reads >= 250:
+                if self._empty_reads >= 300:
                     if not self._qemu.monitor.is_running():
                         self._empty_reads = 0
                     else:
@@ -335,8 +412,8 @@ class Qemu:
     """
 
     FLASH_HEADER_SIZE = 32
-    DEFAULT_TIMEOUT = 0.004
-    RMA_SPIN_TIMEOUT = 1.8
+    DEFAULT_TIMEOUT = 0.01
+    RMA_SPIN_TIMEOUT = 5.0
     RMA_SPIN_SHORT_TIMEOUT = 0.02
     RMA_SPIN_TERMINAL_MARKERS = (
         b"VER:",
@@ -356,6 +433,7 @@ class Qemu:
         self.monitor._qemu = self
         self.monitor.always_rma_strap = self.has_rma_spin
         self.serial = None
+        self._proxy = None
         self.baudrate = 115200
         self._initialized_count = 0
         self._restarted_qemu = False
@@ -369,6 +447,7 @@ class Qemu:
         self.otp_file = os.environ.get("QEMU_OTP", "otp_img.mut.raw")
         self.flash_file = os.environ.get("QEMU_FLASH", "flash_img.mut.bin")
         self.pid_file = os.environ.get("QEMU_PIDFILE", "qemu.pid")
+        self.gdb_socket = os.environ.get("QEMU_GDB", "qemu-gdb.sock")
         self.otp_orig_file = "otp_img.orig.raw"
         self.flash_orig_file = "flash_img.orig.bin"
 
@@ -404,6 +483,8 @@ class Qemu:
         self._faulted = False
         self._timed_out = False
         self._halted_at_reset = False
+        if self._proxy is not None:
+            self._proxy._empty_reads = 0
         self._default_timeout = (
             self.RMA_SPIN_TIMEOUT if self.has_rma_spin else self.DEFAULT_TIMEOUT
         )
@@ -417,7 +498,8 @@ class Qemu:
     def init_communication(self, port, baudrate):
         self.baudrate = baudrate
         self._open_serial()
-        return QemuSerialProxy(self)
+        self._proxy = QemuSerialProxy(self)
+        return self._proxy
 
     def _expected_flash_bytes(self):
         if not os.path.exists(self.flash_orig_file):
@@ -490,6 +572,7 @@ class Qemu:
         for sock_env, default_name in [
             ("QEMU_MONITOR", "qemu-monitor"),
             ("QEMU_GPIO", "qemu-gpio.sock"),
+            ("QEMU_GDB", "qemu-gdb.sock"),
             ("QEMU_RV_DM_JTAG", "qemu-jtag.sock"),
             ("QEMU_LC_JTAG", "qemu-jtag-lc-ctrl.sock"),
             ("QEMU_PIDFILE", "qemu.pid"),
@@ -504,7 +587,12 @@ class Qemu:
 
         qemu_start = "hw/top_earlgrey/sw/util/qemu_start"
         run(
-            [qemu_start, "-gdb", f"tcp::{self.gdb_port}", "-no-shutdown"],
+            [
+                qemu_start,
+                "-gdb",
+                f"unix:path={self.gdb_socket},server=on,wait=off",
+                "-no-shutdown",
+            ],
             check=True,
             close_fds=True,
         )
@@ -523,7 +611,7 @@ class Qemu:
         self.monitor.close_gpio()
         if self._restarted_qemu:
             self._kill_qemu_pid()
-        for f in (self.otp_orig_file, self.flash_orig_file):
+        for f in (self.otp_orig_file, self.flash_orig_file, self.gdb_socket):
             if os.path.exists(f):
                 try:
                     os.remove(f)
@@ -537,12 +625,19 @@ class Qemu:
         try:
             start_t = time.time()
             self.serial.timeout = 0.2
-            while time.time() - start_t < 6.0:
+            seen_running = False
+            while time.time() - start_t < 12.0:
                 line = self.serial.readline()
+                if b"Enabling OTTF alert catcher" in line:
+                    break
                 if b"Running " in line:
+                    seen_running = True
+                elif seen_running and not line:
                     break
         finally:
-            self.serial.timeout = self.RMA_SPIN_TIMEOUT if self.has_rma_spin else 0.004
+            self.serial.timeout = (
+                self.RMA_SPIN_TIMEOUT if self.has_rma_spin else self.DEFAULT_TIMEOUT
+            )
 
     def initialize_target(self, print_output=True):
         if not self._is_qemu_alive() or self._needs_image_restore():
@@ -559,6 +654,7 @@ class Qemu:
         if not self._is_qemu_alive():
             self._restart_qemu()
         try:
+            self.monitor.cmd("stop")
             self._open_serial(reset_pty=True)
         except Exception:
             self._restart_qemu()
@@ -568,7 +664,7 @@ class Qemu:
         time.sleep(reset_delay)
 
     def start_openocd(self, startup_delay=0, print_output=False):
-        # QEMU provides its own built-in GDB stub on tcp::3333; OpenOCD is not needed.
+        # QEMU provides its own built-in GDB stub on qemu-gdb.sock; OpenOCD is not needed.
         if not self._is_qemu_alive():
             self._restart_qemu()
 
