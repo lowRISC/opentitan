@@ -92,6 +92,21 @@ bazel build //hw/bitstream/vivado:fpga_${BOARD}_rom_with_fake_keys
 
 >**Note**: Building these bitstreams will require Vivado to be installed on your system, with access to the proper (paid) licenses, described [here](./install_vivado/README.md).
 
+The CW340 bitstream is built with a build-time optimized Vivado flow, set up in `hw/top_earlgrey/util/vivado_setup_hooks.tcl`:
+- Synthesis flattens the whole design (`-flatten_hierarchy full`) and is not timing driven (`-no_timing_driven`).
+- `opt_design` uses the `RuntimeOptimized` directive.
+- `place_design` uses the `Quick` directive, which is not timing driven.
+- `phys_opt_design` is skipped.
+- `route_design` keeps its default, timing-driven directive, and the design must still meet timing.
+- Only the utilization report after placement and the timing summary after routing are written.
+- The post-route hook does not dump the ROM's `INIT_XX` strings.
+
+To run the Vivado flow with the default flow settings instead, i.e., Vivado's default synthesis and implementation strategies with all reports and the design hierarchy, e.g., to debug, set the `--//hw/bitstream/vivado:fpga_cw340_debug` flag:
+```sh
+bazel build --//hw/bitstream/vivado:fpga_cw340_debug //hw/bitstream/vivado:fpga_cw340
+```
+Later Bazel commands that build this bitstream, e.g., tests with `--define bitstream=vivado`, also need the flag to use Vivado's default flow.
+
 #### Dealing with FPGA Congestion Issues
 
 The default Vivado tool placement may sometimes result in congested FPGA floorplans.
