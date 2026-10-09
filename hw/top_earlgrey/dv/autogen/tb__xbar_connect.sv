@@ -46,6 +46,8 @@ tl_if rom_ctrl__rom_tl_if(clk_main, rst_n);
 tl_if rom_ctrl__regs_tl_if(clk_main, rst_n);
 tl_if spi_host0_tl_if(clk_io, rst_n);
 tl_if spi_host1_tl_if(clk_io, rst_n);
+tl_if i3c0_tl_if(clk_io, rst_n);
+tl_if i3c1_tl_if(clk_io, rst_n);
 tl_if usbdev_tl_if(clk_usb, rst_n);
 tl_if rram_ctrl__core_tl_if(clk_main, rst_n);
 tl_if rram_macro__prim_tl_if(clk_main, rst_n);
@@ -108,16 +110,14 @@ initial begin
     force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.clk_main_i = clk_main;
     force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.clk_fixed_i = clk_io_div4;
     force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.clk_usb_i = clk_usb;
-    force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.clk_spi_host0_i = clk_io;
-    force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.clk_spi_host1_i = clk_io;
+    force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.clk_io_i = clk_io;
     force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_peri.clk_peri_i = clk_io_div4;
 
     // bypass rstmgr, force resets directly
     force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.rst_main_ni = rst_n;
     force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.rst_fixed_ni = rst_n;
     force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.rst_usb_ni = rst_n;
-    force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.rst_spi_host0_ni = rst_n;
-    force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.rst_spi_host1_ni = rst_n;
+    force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_main.rst_io_ni = rst_n;
     force tb.dut.top_earlgrey.earlgrey_pd_main.u_xbar_peri.rst_peri_ni = rst_n;
 
 `ifndef GATE_LEVEL
@@ -131,6 +131,8 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__regs, rom_ctrl, regs_tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(spi_host0, spi_host0, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(spi_host1, spi_host1, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(i3c0, i3c0, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(i3c1, i3c1, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(usbdev, usbdev, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(rram_ctrl__core, rram_ctrl, core_tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(rram_macro__prim, rram_macro, prim_tl, main, clk_i)

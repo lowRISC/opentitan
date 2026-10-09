@@ -29,6 +29,12 @@ tl_device_t xbar_devices[$] = '{
     '{"spi_host1", '{
         '{32'h40310000, 32'h4031003f}
     }},
+    '{"i3c0", '{
+        '{32'h40330000, 32'h40331fff}
+    }},
+    '{"i3c1", '{
+        '{32'h40340000, 32'h40341fff}
+    }},
     '{"usbdev", '{
         '{32'h40320000, 32'h40320fff}
     }},
@@ -116,6 +122,8 @@ tl_host_t xbar_hosts[$] = '{
         "spi_host0",
         "spi_host1",
         "usbdev",
+        "i3c0",
+        "i3c1",
         "rram_ctrl__core",
         "rram_ctrl__host",
         "rram_macro__prim",
@@ -152,6 +160,8 @@ tl_host_t xbar_hosts[$] = '{
         "spi_host0",
         "spi_host1",
         "usbdev",
+        "i3c0",
+        "i3c1",
         "rram_ctrl__core",
         "rram_ctrl__host",
         "rram_macro__prim",

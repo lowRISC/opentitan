@@ -20,6 +20,7 @@ load("//hw/ip/entropy_src:defs.bzl", "ENTROPY_SRC")
 load("//hw/top_earlgrey/ip_autogen/gpio:defs.bzl", "GPIO")
 load("//hw/ip/hmac:defs.bzl", "HMAC")
 load("//hw/ip/i2c:defs.bzl", "I2C")
+load("//hw/ip/i3c:defs.bzl", "I3C")
 load("//hw/ip/keymgr_dpe:defs.bzl", "KEYMGR_DPE")
 load("//hw/ip/kmac:defs.bzl", "KMAC")
 load("//hw/ip/lc_ctrl:defs.bzl", "LC_CTRL")
@@ -57,6 +58,7 @@ EARLGREY_IPS = [
     GPIO,
     HMAC,
     I2C,
+    I3C,
     KEYMGR_DPE,
     KMAC,
     LC_CTRL,
@@ -91,6 +93,8 @@ EARLGREY_ALERTS = [
     "i2c0_fatal_fault",
     "i2c1_fatal_fault",
     "i2c2_fatal_fault",
+    "i3c0_fatal_fault",
+    "i3c1_fatal_fault",
     "rv_timer_fatal_fault",
     "otp_ctrl_fatal_macro_error",
     "otp_ctrl_fatal_check_error",

@@ -63,16 +63,28 @@ module xbar_main_bind;
     .d2h    (tl_peri_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_spi_host0 (
-    .clk_i  (clk_spi_host0_i),
-    .rst_ni (rst_spi_host0_ni),
+    .clk_i  (clk_io_i),
+    .rst_ni (rst_io_ni),
     .h2d    (tl_spi_host0_o),
     .d2h    (tl_spi_host0_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_spi_host1 (
-    .clk_i  (clk_spi_host1_i),
-    .rst_ni (rst_spi_host1_ni),
+    .clk_i  (clk_io_i),
+    .rst_ni (rst_io_ni),
     .h2d    (tl_spi_host1_o),
     .d2h    (tl_spi_host1_i)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_i3c0 (
+    .clk_i  (clk_io_i),
+    .rst_ni (rst_io_ni),
+    .h2d    (tl_i3c0_o),
+    .d2h    (tl_i3c0_i)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_i3c1 (
+    .clk_i  (clk_io_i),
+    .rst_ni (rst_io_ni),
+    .h2d    (tl_i3c1_o),
+    .d2h    (tl_i3c1_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_usbdev (
     .clk_i  (clk_usb_i),

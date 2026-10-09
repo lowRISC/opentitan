@@ -136,6 +136,19 @@ interface rstmgr_rst_en_track_sva_if (
           clk_main_i,
           !rst_por_ni)
 
+  `ASSERT(DMainRstLcAonEnTracksRstLcAonActive_A,
+          $fell(resets_i.rst_lc_aon_n[DomainMainSel]) |-> ##[0:DELAY]
+          reset_en_i.lc_aon[DomainMainSel] == prim_mubi_pkg::MuBi4True,
+          clk_aon_i,
+          !rst_por_ni)
+
+  `ASSERT(DMainRstLcAonEnTracksRstLcAonInactive_A,
+          $rose(resets_i.rst_lc_aon_n[DomainMainSel]) |-> ##DELAY
+          !resets_i.rst_lc_aon_n[DomainMainSel] ||
+          reset_en_i.lc_aon[DomainMainSel] == prim_mubi_pkg::MuBi4False,
+          clk_aon_i,
+          !rst_por_ni)
+
   `ASSERT(DAonRstLcAonEnTracksRstLcAonActive_A,
           $fell(resets_i.rst_lc_aon_n[DomainAonSel]) |-> ##[0:DELAY]
           reset_en_i.lc_aon[DomainAonSel] == prim_mubi_pkg::MuBi4True,
@@ -368,6 +381,32 @@ interface rstmgr_rst_en_track_sva_if (
           !resets_i.rst_i2c2_n[DomainMainSel] ||
           reset_en_i.i2c2[DomainMainSel] == prim_mubi_pkg::MuBi4False,
           clk_io_div4_i,
+          !rst_por_ni)
+
+  `ASSERT(DMainRstI3c0EnTracksRstI3c0Active_A,
+          $fell(resets_i.rst_i3c0_n[DomainMainSel]) |-> ##[0:DELAY]
+          reset_en_i.i3c0[DomainMainSel] == prim_mubi_pkg::MuBi4True,
+          clk_io_i,
+          !rst_por_ni)
+
+  `ASSERT(DMainRstI3c0EnTracksRstI3c0Inactive_A,
+          $rose(resets_i.rst_i3c0_n[DomainMainSel]) |-> ##DELAY
+          !resets_i.rst_i3c0_n[DomainMainSel] ||
+          reset_en_i.i3c0[DomainMainSel] == prim_mubi_pkg::MuBi4False,
+          clk_io_i,
+          !rst_por_ni)
+
+  `ASSERT(DMainRstI3c1EnTracksRstI3c1Active_A,
+          $fell(resets_i.rst_i3c1_n[DomainMainSel]) |-> ##[0:DELAY]
+          reset_en_i.i3c1[DomainMainSel] == prim_mubi_pkg::MuBi4True,
+          clk_io_i,
+          !rst_por_ni)
+
+  `ASSERT(DMainRstI3c1EnTracksRstI3c1Inactive_A,
+          $rose(resets_i.rst_i3c1_n[DomainMainSel]) |-> ##DELAY
+          !resets_i.rst_i3c1_n[DomainMainSel] ||
+          reset_en_i.i3c1[DomainMainSel] == prim_mubi_pkg::MuBi4False,
+          clk_io_i,
           !rst_por_ni)
 
 endinterface
