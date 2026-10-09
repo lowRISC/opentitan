@@ -532,7 +532,12 @@
       fields: [
         { bits: "6:4",
           name: "OPERATION",
-          desc: "Key manager DPE operation selection",
+          desc: '''
+            Key manager DPE operation selection.
+
+            The remaining value (7) is invalid. Starting an operation with one of them
+            makes it fail with `invalid_op` in every working state.
+          ''',
           resval: "1",
           enum: [
             { value: "0",
