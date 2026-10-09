@@ -72,6 +72,7 @@ module earlgrey_pd_main #(
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::RV_DM_JTAG_IDCODE,
   parameter bit RvDmUseDmiInterface = 0,
+  parameter bit RvDmCheriotSupport = 1,
   parameter bit SecRvDmVolatileRawUnlockEn = 1'b0,
   parameter logic [tlul_pkg::RsvdWidth-1:0] RvDmTlulHostUserRsvdBits = '0,
   // parameters for aes
@@ -2160,6 +2161,7 @@ module earlgrey_pd_main #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .IdcodeValue(RvDmIdcodeValue),
     .UseDmiInterface(RvDmUseDmiInterface),
+    .CheriotSupport(RvDmCheriotSupport),
     .SecVolatileRawUnlockEn(SecRvDmVolatileRawUnlockEn),
     .TlulHostUserRsvdBits(RvDmTlulHostUserRsvdBits)
   ) u_rv_dm (
@@ -2181,6 +2183,7 @@ module earlgrey_pd_main #(
     .next_dm_addr_i('0),
     .jtag_i(pinmux_rv_jtag_req_i),
     .jtag_o(pinmux_rv_jtag_rsp_o),
+    .cheriot_ena_i(rv_core_ibex_cheriot_ena),
     .lc_init_done_i(lc_ctrl_lc_init_done),
     .lc_hw_debug_clr_i(lc_ctrl_lc_hw_debug_clr),
     .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),

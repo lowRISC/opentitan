@@ -89,6 +89,7 @@ module top_earlgrey #(
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::RV_DM_JTAG_IDCODE,
   parameter bit RvDmUseDmiInterface = 0,
+  parameter bit RvDmCheriotSupport = 1,
   parameter bit SecRvDmVolatileRawUnlockEn = 1'b0,
   parameter logic [tlul_pkg::RsvdWidth-1:0] RvDmTlulHostUserRsvdBits = '0,
   // parameters for aes
@@ -490,6 +491,7 @@ module top_earlgrey #(
   .RramCtrlRdFifoDepth(RramCtrlRdFifoDepth),
   .RvDmIdcodeValue(RvDmIdcodeValue),
   .RvDmUseDmiInterface(RvDmUseDmiInterface),
+  .RvDmCheriotSupport(RvDmCheriotSupport),
   .SecRvDmVolatileRawUnlockEn(SecRvDmVolatileRawUnlockEn),
   .RvDmTlulHostUserRsvdBits(RvDmTlulHostUserRsvdBits),
   .AesAESGCMEnable(AesAESGCMEnable),

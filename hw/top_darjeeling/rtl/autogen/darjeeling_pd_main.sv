@@ -36,6 +36,7 @@ module darjeeling_pd_main #(
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = 32'h 0000_0001,
   parameter bit RvDmUseDmiInterface = 1,
+  parameter bit RvDmCheriotSupport = 0,
   parameter bit SecRvDmVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter logic [tlul_pkg::RsvdWidth-1:0] RvDmTlulHostUserRsvdBits = '0,
   // parameters for aes
@@ -1446,6 +1447,7 @@ module darjeeling_pd_main #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .IdcodeValue(RvDmIdcodeValue),
     .UseDmiInterface(RvDmUseDmiInterface),
+    .CheriotSupport(RvDmCheriotSupport),
     .SecVolatileRawUnlockEn(SecRvDmVolatileRawUnlockEn),
     .TlulHostUserRsvdBits(RvDmTlulHostUserRsvdBits)
   ) u_rv_dm (
@@ -1467,6 +1469,7 @@ module darjeeling_pd_main #(
     .next_dm_addr_i(rv_dm_next_dm_addr_i),
     .jtag_i(jtag_pkg::JTAG_REQ_DEFAULT),
     .jtag_o(),
+    .cheriot_ena_i(prim_mubi_pkg::MuBi4False),
     .lc_init_done_i(lc_ctrl_lc_init_done),
     .lc_hw_debug_clr_i(lc_ctrl_lc_hw_debug_clr),
     .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),

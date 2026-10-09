@@ -934,6 +934,7 @@
       reset_connections: {rst_ni: "sys", rst_lc_ni: "lc"},
       param_decl: {
         IdcodeValue: "jtag_id_pkg::RV_DM_JTAG_IDCODE",
+        CheriotSupport: "1",
       },
       // Note that this module also contains a bus host.
       base_addrs: {
@@ -1500,7 +1501,7 @@
       // CHERIoT connections
       'cheriot_mem_sys.meta_sram_tl'  : ['sram_ctrl_meta.ram_tl'],
       'cheriot_mem_sys.cored_tag_d2h' : ['rv_core_ibex.cored_tag_d2h'],
-      'rv_core_ibex.cheriot_ena'      : ['cheriot_mem_sys.cheriot_ena'],
+      'rv_core_ibex.cheriot_ena'      : ['cheriot_mem_sys.cheriot_ena', 'rv_dm.cheriot_ena'],
     },
 
     // top is to connect to top net/struct.

@@ -47,6 +47,7 @@ module top_darjeeling #(
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = 32'h 0000_0001,
   parameter bit RvDmUseDmiInterface = 1,
+  parameter bit RvDmCheriotSupport = 0,
   parameter bit SecRvDmVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter logic [tlul_pkg::RsvdWidth-1:0] RvDmTlulHostUserRsvdBits = '0,
   // parameters for aes
@@ -368,6 +369,7 @@ module top_darjeeling #(
   .PinmuxTargetCfg(PinmuxTargetCfg),
   .RvDmIdcodeValue(RvDmIdcodeValue),
   .RvDmUseDmiInterface(RvDmUseDmiInterface),
+  .RvDmCheriotSupport(RvDmCheriotSupport),
   .SecRvDmVolatileRawUnlockEn(SecRvDmVolatileRawUnlockEn),
   .RvDmTlulHostUserRsvdBits(RvDmTlulHostUserRsvdBits),
   .AesAESGCMEnable(AesAESGCMEnable),
