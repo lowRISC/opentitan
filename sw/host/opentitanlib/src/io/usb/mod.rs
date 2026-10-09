@@ -33,6 +33,9 @@ pub trait UsbDevice {
     /// Gets the serial number of the device.
     fn get_serial_number(&self) -> Option<&str>;
 
+    /// Try to get the parent of this device (or None if root).
+    fn get_parent(&self) -> Result<Box<dyn UsbDevice>>;
+
     /// Set the active configuration.
     fn set_active_configuration(&self, config: u8) -> Result<()>;
 
@@ -54,11 +57,17 @@ pub trait UsbDevice {
     /// Attach the kernel driver to the device.
     fn attach_kernel_driver(&self, iface: u8) -> Result<()>;
 
+    /// Return the device's descriptor.
+    fn device_descriptor(&self) -> desc::Device<'_>;
+
     /// Return the currently active configuration's descriptor.
     fn active_configuration(&self) -> Result<desc::Configuration>;
 
     /// Return the device's bus number.
     fn bus_number(&self) -> u8;
+
+    /// Return the device's address.
+    fn address(&self) -> u8;
 
     /// Return the sequence of port numbers from the root down to the device.
     fn port_numbers(&self) -> Result<Vec<u8>>;
