@@ -4448,6 +4448,15 @@
           name_top: RvDmUseDmiInterface
         }
         {
+          name: CheriotSupport
+          desc: When 1, cheriot_ena can select CHERIoT mode. When 0, the CHERIoT logic is removed.
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: RvDmCheriotSupport
+        }
+        {
           name: SecVolatileRawUnlockEn
           desc:
             '''
@@ -4502,6 +4511,23 @@
           type: req_rsp
           act: rsp
           width: 1
+          inst_name: rv_dm
+          index: -1
+        }
+        {
+          name: cheriot_ena
+          desc:
+            '''
+            CHERIoT mode enable.
+            Selects which ROM and which abstract command encodings the debug module uses.
+            Ignored unless CheriotSupport is set.
+            '''
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi4False
           inst_name: rv_dm
           index: -1
         }
@@ -25008,6 +25034,23 @@
         type: req_rsp
         act: rsp
         width: 1
+        inst_name: rv_dm
+        index: -1
+      }
+      {
+        name: cheriot_ena
+        desc:
+          '''
+          CHERIoT mode enable.
+          Selects which ROM and which abstract command encodings the debug module uses.
+          Ignored unless CheriotSupport is set.
+          '''
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi4False
         inst_name: rv_dm
         index: -1
       }
