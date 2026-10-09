@@ -12,12 +12,6 @@ set_msg_config -id {[Synth 8-4445]} -new_severity ERROR
 # code inferring latches ends up in the repo in the first place.
 set_msg_config -id {[Synth 8-327]} -new_severity ERROR
 
-# Abort if a create_clock command fails. This typically happens if anchor points for clock
-# constraints inside the design change. The failure is normally just reported as a critical
-# warning in batch mode which is easily overlooked. The design might still work but some clocks
-# will be unconstrained which can lead to other problems later on.
-set_msg_config -id {[Vivado 12-4739]} -new_severity ERROR
-
 # Abort if pblock constraints lose their target cells. This can happen if hierarchies change and
 # the constraint doesn't get updated.
 set_msg_config -id {[Vivado 12-1433]} -new_severity ERROR

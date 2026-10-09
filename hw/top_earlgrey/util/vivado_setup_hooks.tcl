@@ -24,3 +24,6 @@ set_property STEPS.OPT_DESIGN.TCL.POST "${workroot}/vivado_hook_opt_design_post.
 
 # As workaround, we use the post route design hook, which gets called.
 set_property STEPS.ROUTE_DESIGN.TCL.POST "${workroot}/vivado_hook_write_bitstream_pre.tcl" [get_runs impl_1]
+
+# Abort if a constraint matches no object, in all runs.
+set_msg_config -id {[Vivado 12-4739]} -new_severity ERROR
