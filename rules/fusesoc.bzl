@@ -98,6 +98,7 @@ def _fusesoc_build_impl(ctx):
         env = dicts.add(
             # Verilator build doesn't need nonhermetic environment variables
             ENV if ctx.attr.target == "synth" else {},
+            ctx.attr.env,
             {
                 "HOME": home_dir,
                 # Obtain the non-hermetic binary path and append Bazel's default PATH.
@@ -122,6 +123,7 @@ fusesoc_build = rule(
         "target": attr.string(mandatory = True, doc = "Target name (e.g. 'sim')"),
         "systems": attr.string_list(mandatory = True, doc = "Systems to build"),
         "flags": attr.string_list(doc = "Flags controlling the FuseSOC system build"),
+        "env": attr.string_dict(doc = "Environment variables for the tools, except HOME and PATH"),
         "output_groups": attr.string_list_dict(
             allow_empty = True,
             doc = """
