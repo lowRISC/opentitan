@@ -118,6 +118,18 @@
       package: "jtag_pkg",
       desc:    "JTAG signals for the RISC-V TAP."
     },
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "cheriot_ena",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    '''
+               CHERIoT mode enable.
+               Selects which ROM and which abstract command encodings the debug module uses.
+               Tops whose core does not implement CHERIoT can tie to False.
+               '''
+    },
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_init_done"
