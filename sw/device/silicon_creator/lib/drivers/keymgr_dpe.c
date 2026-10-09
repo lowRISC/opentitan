@@ -331,6 +331,9 @@ void sc_keymgr_dpe_policy_set(sc_keymgr_dpe_policies_t policy) {
                              policy.expo);
   reg = bitfield_bit32_write(reg, KEYMGR_DPE_SLOT_POLICY_RETAIN_PARENT_BIT,
                              policy.parent);
+  // TODO: Expose the allow_keygen policy through `sc_keymgr_dpe_policies_t`.
+  reg =
+      bitfield_bit32_write(reg, KEYMGR_DPE_SLOT_POLICY_ALLOW_KEYGEN_BIT, true);
   sec_mmio_write32(sc_keymgr_dpe_base() + KEYMGR_DPE_SLOT_POLICY_REG_OFFSET,
                    reg);
   // TODO(#30665): sec_mmio_writes currently does not work > The reason is if

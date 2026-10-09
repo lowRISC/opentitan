@@ -125,6 +125,7 @@ class KeymgrDpeTest : public rom_test::RomTest {
             {KEYMGR_DPE_SLOT_POLICY_ALLOW_CHILD_BIT, policy.child},
             {KEYMGR_DPE_SLOT_POLICY_EXPORTABLE_BIT, policy.expo},
             {KEYMGR_DPE_SLOT_POLICY_RETAIN_PARENT_BIT, policy.parent},
+            {KEYMGR_DPE_SLOT_POLICY_ALLOW_KEYGEN_BIT, true},
         });
     EXPECT_ABS_WRITE32(base_ + KEYMGR_DPE_SLOT_POLICY_REGWEN_REG_OFFSET, 0);
   }
