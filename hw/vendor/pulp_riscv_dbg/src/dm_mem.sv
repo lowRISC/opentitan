@@ -565,17 +565,33 @@ module dm_mem #(
   // two registers per hart, hence we also need
   // two scratch registers.
   if (HasSndScratch) begin : gen_rom_snd_scratch
+    // Select between the RV32I or the CHERIoT ROM
+    logic [63:0] rom_rdata_rv32, rom_rdata_cheriot;
+
     debug_rom i_debug_rom (
       .clk_i,
       .rst_ni,
       .req_i,
-      .addr_i  ( rom_addr  ),
-      .rdata_o ( rom_rdata )
+      .addr_i  ( rom_addr       ),
+      .rdata_o ( rom_rdata_rv32 )
     );
+
+    debug_rom_cheriot i_debug_rom_cheriot (
+      .clk_i,
+      .rst_ni,
+      .req_i,
+      .addr_i  ( rom_addr          ),
+      .rdata_o ( rom_rdata_cheriot )
+    );
+
+    assign rom_rdata = prim_mubi_pkg::mubi4_test_true_strict(cheriot_enable_i) ? rom_rdata_cheriot
+                                                                               : rom_rdata_rv32;
   end else begin : gen_rom_one_scratch
     // It uses the zero register (`x0`) as the base
     // for its loads. The zero register does not need to
     // be saved.
+    //
+    // There is no CHERIoT counterpart to this ROM.
     debug_rom_one_scratch i_debug_rom (
       .clk_i,
       .rst_ni,
