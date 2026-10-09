@@ -9,6 +9,8 @@ set slack_ns [get_property SLACK [get_timing_paths -delay_type min_max]]
 send_msg "Designcheck 1-2" INFO "Slack is ${slack_ns} ns."
 
 if [expr {$slack_ns < 0}] {
+  # The routed timing report is written after this hook, so show the failing paths here.
+  report_timing_summary -max_paths 10
   send_msg "Designcheck 1-3" ERROR "Timing failed. Slack is ${slack_ns} ns."
 }
 
