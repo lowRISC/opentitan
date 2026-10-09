@@ -27,6 +27,8 @@ module dm_mem #(
   input  logic                             rst_ni,      // debug module reset
 
   output logic [NrHarts-1:0]               debug_req_o,
+  // Select CHERIoT mode
+  input  prim_mubi_pkg::mubi4_t            cheriot_enable_i,
   input  logic                             ndmreset_i,
   input  logic [19:0]                      hartsel_i,
   // from Ctrl and Status register
