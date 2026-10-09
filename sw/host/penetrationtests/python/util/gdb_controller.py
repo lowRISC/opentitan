@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+from pathlib import Path
 from subprocess import PIPE, Popen, TimeoutExpired
 import select
 import os
@@ -83,7 +84,11 @@ class GDBController:
             ]
             if elf_file:
                 gdb_command.extend(["-ex", f"file {elf_file}"])
-            gdb_command.extend(["-ex", f"target remote {remote_host}:{gdb_port}"])
+            if is_qemu_available():
+                gdb_target = os.environ.get("QEMU_GDB", "qemu-gdb.sock")
+            else:
+                gdb_target = f"{remote_host}:{gdb_port}"
+            gdb_command.extend(["-ex", f"target remote {gdb_target}"])
 
             gdb_env = os.environ.copy()
             if "XDG_CACHE_HOME" not in gdb_env:
@@ -420,6 +425,13 @@ class GDBController:
     ):
         """Configures GDB step-based instruction tracing."""
         self.n_brkp = 1
+        try:
+            self.send_command("set logging enabled off")
+        except Exception:
+            try:
+                self.send_command("set logging off")
+            except Exception:
+                pass
         self.send_command(f"set logging file {file_name}")
         self.send_command("set logging overwrite on")
         self.send_command("set pagination off")
@@ -444,6 +456,7 @@ class GDBController:
 
         traceloop_definition = f"""\
         define traceloop
+            printf "Breakpoint 1, trace start\\n"
             while $pc != {trace_end_addr}
                 printf "PC: 0x%x\\n", $pc
                 {step_logic}
@@ -482,6 +495,25 @@ class GDBController:
             print(f"Error: Trace file not found at {file_path}")
         except Exception as e:
             print(f"Error reading or parsing trace file: {e}")
+
+        shard_status_file = os.environ.get("TEST_SHARD_STATUS_FILE")
+        if shard_status_file:
+            Path(shard_status_file).touch()
+
+        total_shards = int(os.environ.get("TEST_TOTAL_SHARDS", "1"))
+        shard_index = int(os.environ.get("TEST_SHARD_INDEX", "0"))
+        if total_shards > 1 and pc_list:
+            unique_pcs = list(dict.fromkeys(pc_list))
+            shard_pcs = unique_pcs[shard_index::total_shards]
+            if not shard_pcs:
+                shard_pcs = [unique_pcs[shard_index % len(unique_pcs)]]
+            my_pcs = set(shard_pcs)
+            pc_list = [pc for pc in pc_list if pc in my_pcs]
+            print(
+                f"[Shard {shard_index + 1}/{total_shards}] Selected {len(shard_pcs)}/"
+                f"{len(unique_pcs)} unique PCs from {file_path}",
+                flush=True,
+            )
 
         return pc_list
 

@@ -314,6 +314,7 @@ def opentitan_test(
             # Tagging and timeout info always comes from a param block.
             tags = tparam.tags + extra_tags + skip_in_ci,
             timeout = tparam.timeout,
+            shard_count = getattr(tparam, "shard_count", None),
             # Override parameters in the test rule.
             test_harness = tparam.test_harness,
             binaries = tparam.binaries,
