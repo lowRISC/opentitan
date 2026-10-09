@@ -178,9 +178,9 @@ set_multicycle_path -hold -end -from [get_clocks clk_spid_csb] \
 # to accommodate the gate for the inverted clock, which isn't active for the
 # modes used for these constraints. However, it would be an okay outcome if the
 # filter result reached the gate before even the 7th clock edge got out.
+# Anchor on the clock gate: the sck_gate_en net does not survive synthesis.
 set_multicycle_path -hold -end 1 -from [get_clocks clk_spi] \
-    -to [get_pins -filter "DIRECTION == IN && IS_LEAF" -of_objects \
-        [get_nets -segments ${u_spi_device}/u_passthrough/sck_gate_en]]
+    -to [get_pins ${u_spi_device}/u_passthrough/u_pt_sck_cg/gen_gate.u_bufgce/CE]
 # Since this section is for full-cycle sampling, move the capture edge out for
 # data driven clk_spi_in. These cases would actually wait for the clk_spi_out
 # edge to change the data on the port and get sampled by the host on the next
@@ -222,9 +222,9 @@ set_output_delay -clock clk_spi_tpm -max ${spi_dev_out_setup} ${spi_dev_data} -a
 # to accommodate the gate for the inverted clock, which isn't active for the
 # modes used for these constraints. However, it would be an okay outcome if the
 # filter result reached the gate before even the 7th clock edge got out.
+# Anchor on the clock gate: the sck_gate_en net does not survive synthesis.
 set_multicycle_path -hold -end 1 -from [get_clocks clk_spi_tpm] \
-    -to [get_pins -filter "DIRECTION == IN && IS_LEAF" -of_objects \
-        [get_nets -segments ${u_spi_device}/u_passthrough/sck_gate_en]]
+    -to [get_pins ${u_spi_device}/u_passthrough/u_pt_sck_cg/gen_gate.u_bufgce/CE]
 
 
 ## SPI Passthrough constraints
