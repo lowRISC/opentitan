@@ -53,6 +53,8 @@ module rv_dm
   // SEC_CM: OTP_DIS_RV_DM_LATE_DEBUG.INTERSIG.MUBI
   // Late debug enable disablement signal coming from the OTP HW_CFG1 partition.
   input  prim_mubi_pkg::mubi8_t otp_dis_rv_dm_late_debug_i,
+  // Select CHERIoT mode
+  input  prim_mubi_pkg::mubi4_t cheriot_ena_i,
   input  prim_mubi_pkg::mubi4_t scanmode_i,
   input                       scan_rst_ni,
   output logic                ndmreset_req_o,  // non-debug module reset
@@ -236,6 +238,18 @@ module rv_dm
     .rst_ni,
     .mubi_i(otp_dis_rv_dm_late_debug_i),
     .mubi_o(otp_dis_rv_dm_late_debug)
+  );
+
+  // The mode switch that drives this lives in the core's reset domain while rv_dm is held in reset
+  // by PoR, so the signal crosses a reset boundary and has to be synchronised.
+  prim_mubi_pkg::mubi4_t cheriot_ena_sync;
+  prim_mubi4_sync #(
+    .NumCopies (1)
+  ) u_prim_mubi4_sync_cheriot_ena (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cheriot_ena_i),
+    .mubi_o({cheriot_ena_sync})
   );
 
   prim_mubi_pkg::mubi32_t [lc_ctrl_pkg::TxWidth-1:0] late_debug_enable;
@@ -708,6 +722,7 @@ module rv_dm
     .clk_i,
     .rst_ni,
     .next_dm_addr_i,
+    .cheriot_enable_i      (cheriot_ena_sync    ),
     .testmode_i            (testmode            ),
     .ndmreset_o            (ndmreset_req        ),
     .ndmreset_ack_i        (ndmreset_ack        ),
@@ -756,6 +771,8 @@ module rv_dm
 
   `ASSERT_KNOWN(TlDmiDValidKnown_A, dbg_tl_d_o.d_valid)
   `ASSERT_KNOWN(TlDmiAReadyKnown_A, dbg_tl_d_o.a_ready)
+
+  `ASSERT_KNOWN(CheriotEnaIKnown_A, cheriot_ena_i)
 
   `ASSERT_KNOWN(NdmresetOKnown_A, ndmreset_req_o)
   `ASSERT_KNOWN(DmactiveOKnown_A, dmactive_o)
