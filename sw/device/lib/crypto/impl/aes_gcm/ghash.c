@@ -224,15 +224,18 @@ status_t ghash_init(ghash_context_t *ctx) {
  * This operation corresponds to multiplication in the Galois field with order
  * 2^128, modulo the polynomial x^128 +  x^8 + x^2 + x + 1
  *
+ * The product is written through `result` instead of being returned, so that
+ * no unshredded copy of it is left in the caller's stack frame.
+ *
  * @param state GHASH state.
  * @param tbl Product table for the masked hash subkey.
- * @return Multiplication of the state and the hash subkey.
+ * @param[out] result Multiplication of the state and the hash subkey; must not
+ * overlap `state` or `tbl`.
  */
-static ghash_block_t galois_mul_state_key(ghash_block_t state,
-                                          ghash_block_t tbl[16]) {
+static void galois_mul_state_key(const ghash_block_t *state,
+                                 ghash_block_t tbl[16], ghash_block_t *result) {
   // Initialize the multiplication result to 0.
-  ghash_block_t result;
-  memset(result.data, 0, kGhashBlockNumBytes);
+  memset(result->data, 0, kGhashBlockNumBytes);
 
   // To compute the product, we iterate through the bytes of the input block,
   // considering the most significant (in polynomial terms) first. For each
@@ -246,23 +249,22 @@ static ghash_block_t galois_mul_state_key(ghash_block_t state,
   for (size_t i = 0; i < kNumWindows; ++i) {
     if (i != 0) {
       // Save the most significant half-byte of `result` before shifting.
-      uint8_t overflow =
-          block_byte_get(&result, kGhashBlockNumBytes - 1) & 0x0f;
+      uint8_t overflow = block_byte_get(result, kGhashBlockNumBytes - 1) & 0x0f;
       // Shift `result` to the right, discarding high bits.
-      block_shiftr(&result, 4);
+      block_shiftr(result, 4);
       // Look up the product of `overflow` and the low terms of the modulus in
       // the precomputed table.
       uint16_t reduce_term = kGFReduceTable[overflow];
       // Add (xor) this product to the low bits to complete modular reduction.
       // This works because (low + x^128 * high) is equivalent to (low + (x^128
       // - modulus) * high).
-      result.data[0] ^= reduce_term;
+      result->data[0] ^= reduce_term;
     }
 
     // Add the product of the next window and H to `result`. We process the
     // windows starting with the most significant polynomial terms, which means
     // starting from the last byte and proceeding to the first.
-    uint8_t tbl_index = block_byte_get(&state, (kNumWindows - 1 - i) >> 1);
+    uint8_t tbl_index = block_byte_get(state, (kNumWindows - 1 - i) >> 1);
 
     // Select the less significant 4 bits if i is even, or the more significant
     // 4 bits if i is odd. This does not need to be constant time, since the
@@ -272,9 +274,67 @@ static ghash_block_t galois_mul_state_key(ghash_block_t state,
     } else {
       tbl_index &= 0x0f;
     }
-    block_xor(&result, &tbl[tbl_index], &result);
+    block_xor(result, &tbl[tbl_index], result);
   }
-  return result;
+}
+
+/**
+ * Overwrite a GHASH block with random data; used as a cleanup guard.
+ *
+ * @param block GHASH block to shred.
+ */
+static void ghash_block_shred(ghash_block_t *block) {
+  hardened_memshred(block->data, kGhashBlockNumWords);
+}
+
+/**
+ * Overwrite a GHASH product table with random data; used as a cleanup guard.
+ *
+ * @param tbl GHASH product table to shred.
+ */
+static void ghash_table_shred(ghash_block_t (*tbl)[16]) {
+  hardened_memshred((*tbl)[0].data, 16 * kGhashBlockNumWords);
+}
+
+/**
+ * Overwrite a GHASH context with random data; used as a cleanup guard.
+ *
+ * @param ctx GHASH context to shred.
+ */
+static void ghash_context_shred(ghash_context_t *ctx) {
+  hardened_memshred((uint32_t *)ctx,
+                    sizeof(ghash_context_t) / sizeof(uint32_t));
+}
+
+/**
+ * Temporaries of the single-block update.
+ *
+ * Each block overwrites the previous block's values, so the caller shreds them
+ * once after its last block instead of after every block.
+ */
+typedef struct ghash_scratch {
+  /**
+   * Later blocks: the block XORed with both state shares.
+   */
+  ghash_block_t tmp;
+  /**
+   * First block: share 0 input. Later blocks: share 0 product.
+   */
+  ghash_block_t s0_tmp;
+  /**
+   * First block: share 1 input. Later blocks: share 1 product.
+   */
+  ghash_block_t s1_tmp;
+} ghash_scratch_t;
+
+/**
+ * Overwrite GHASH temporaries with random data; used as a cleanup guard.
+ *
+ * @param scratch Temporaries to shred.
+ */
+static void ghash_scratch_shred(ghash_scratch_t *scratch) {
+  hardened_memshred((uint32_t *)scratch,
+                    sizeof(ghash_scratch_t) / sizeof(uint32_t));
 }
 
 /**
@@ -290,11 +350,11 @@ static status_t ghash_refresh_subkey_mask(ghash_context_t *ctx) {
   HARDENED_CHECK_EQ(ghash_context_integrity_checksum_check(ctx),
                     kHardenedBoolTrue);
 
-  uint32_t delta_h[kGhashBlockNumWords];
-  HARDENED_TRY(hardened_memshred(delta_h, kGhashBlockNumWords));
+  ghash_block_t delta_h __attribute__((cleanup(ghash_block_shred)));
+  HARDENED_TRY(hardened_memshred(delta_h.data, kGhashBlockNumWords));
 
-  ghash_block_t tbl_delta[16];
-  HARDENED_TRY(ghash_init_subkey(delta_h, tbl_delta));
+  ghash_block_t tbl_delta[16] __attribute__((cleanup(ghash_table_shred)));
+  HARDENED_TRY(ghash_init_subkey(delta_h.data, tbl_delta));
 
   // Update tbl0 and tbl1 with tbl_delta.
   for (size_t i = 0; i < 16; ++i) {
@@ -304,14 +364,14 @@ static status_t ghash_refresh_subkey_mask(ghash_context_t *ctx) {
 
   // Update correction_term0 and correction_term1 (both shifted by S0 *
   // delta_h).
-  ghash_block_t s0_delta =
-      galois_mul_state_key(ctx->enc_initial_counter_block0, tbl_delta);
+  ghash_block_t s0_delta __attribute__((cleanup(ghash_block_shred)));
+  galois_mul_state_key(&ctx->enc_initial_counter_block0, tbl_delta, &s0_delta);
   block_xor(&ctx->correction_term0, &s0_delta, &ctx->correction_term0);
   block_xor(&ctx->correction_term1, &s0_delta, &ctx->correction_term1);
 
   // Update correction_term1_init (shifted by S1 * delta_h).
-  ghash_block_t s1_delta =
-      galois_mul_state_key(ctx->enc_initial_counter_block1, tbl_delta);
+  ghash_block_t s1_delta __attribute__((cleanup(ghash_block_shred)));
+  galois_mul_state_key(&ctx->enc_initial_counter_block1, tbl_delta, &s1_delta);
   block_xor(&ctx->correction_term1_init, &s1_delta,
             &ctx->correction_term1_init);
 
@@ -327,12 +387,10 @@ static status_t ghash_refresh_subkey_mask(ghash_context_t *ctx) {
  *
  * @param ctx GHASH context.
  * @param block Block to incorporate.
+ * @param scratch Temporaries, shredded by the caller.
  */
-static status_t ghash_process_block(ghash_context_t *ctx,
-                                    ghash_block_t *block) {
-  ghash_block_t s0_tmp;
-  ghash_block_t s1_tmp;
-
+static status_t ghash_process_block(ghash_context_t *ctx, ghash_block_t *block,
+                                    ghash_scratch_t *scratch) {
   // Periodically refresh the subkey table mask every 64 blocks to limit
   // side-channel DPA/CPA trace accumulation on long messages.
   if (ctx->ghash_block_cnt > 0 && (ctx->ghash_block_cnt % 64) == 0) {
@@ -342,14 +400,14 @@ static status_t ghash_process_block(ghash_context_t *ctx,
   if (ctx->ghash_block_cnt == 0) {
     // Process share 0.
     // share0_tmp = (S0 + T0) * H0
-    hardened_memcpy(s0_tmp.data, block->data, kGhashBlockNumWords);
-    hardened_xor_in_place(s0_tmp.data, ctx->enc_initial_counter_block0.data,
+    hardened_memcpy(scratch->s0_tmp.data, block->data, kGhashBlockNumWords);
+    hardened_xor_in_place(scratch->s0_tmp.data,
+                          ctx->enc_initial_counter_block0.data,
                           kGhashBlockNumWords);
-    s0_tmp = galois_mul_state_key(s0_tmp, ctx->tbl0);
+    galois_mul_state_key(&scratch->s0_tmp, ctx->tbl0, &ctx->state0);
 
     // Apply the correction terms for state share 0.
     // share0 = share0_tmp + (S0*(H0+1))
-    hardened_memcpy(ctx->state0.data, s0_tmp.data, kGhashBlockNumWords);
     hardened_xor_in_place(ctx->state0.data, ctx->correction_term0.data,
                           kGhashBlockNumWords);
 
@@ -359,43 +417,46 @@ static status_t ghash_process_block(ghash_context_t *ctx,
 
     // Process share 1.
     // share1_tmp = (S1 + T0) * H1
-    hardened_memcpy(s1_tmp.data, block->data, kGhashBlockNumWords);
-    hardened_xor_in_place(s1_tmp.data, ctx->enc_initial_counter_block1.data,
+    hardened_memcpy(scratch->s1_tmp.data, block->data, kGhashBlockNumWords);
+    hardened_xor_in_place(scratch->s1_tmp.data,
+                          ctx->enc_initial_counter_block1.data,
                           kGhashBlockNumWords);
     ibex_clear_rf();
-    s1_tmp = galois_mul_state_key(s1_tmp, ctx->tbl1);
+    galois_mul_state_key(&scratch->s1_tmp, ctx->tbl1, &ctx->state1);
 
     // Apply the correction terms for state share 1.
     // share1 = share1_tmp + correction_term1
-    hardened_memcpy(ctx->state1.data, s1_tmp.data, kGhashBlockNumWords);
     hardened_xor_in_place(ctx->state1.data, ctx->correction_term1_init.data,
                           kGhashBlockNumWords);
   } else {
     // Process share 0.
     // tmp = (share0+TN-1)+share1
-    ghash_block_t tmp;
-    hardened_memcpy(tmp.data, block->data, kGhashBlockNumWords);
-    hardened_xor_in_place(tmp.data, ctx->state0.data, kGhashBlockNumWords);
-    hardened_xor_in_place(tmp.data, ctx->state1.data, kGhashBlockNumWords);
+    hardened_memcpy(scratch->tmp.data, block->data, kGhashBlockNumWords);
+    hardened_xor_in_place(scratch->tmp.data, ctx->state0.data,
+                          kGhashBlockNumWords);
+    hardened_xor_in_place(scratch->tmp.data, ctx->state1.data,
+                          kGhashBlockNumWords);
 
     // s0_tmp = tmp * H0
-    s0_tmp = galois_mul_state_key(tmp, ctx->tbl0);
+    galois_mul_state_key(&scratch->tmp, ctx->tbl0, &scratch->s0_tmp);
 
     // Apply the correction terms for state share 0.
     // share0 = share0_tmp + (S0*(H0+1))
     ibex_clear_rf();
-    hardened_memcpy(ctx->state0.data, s0_tmp.data, kGhashBlockNumWords);
+    hardened_memcpy(ctx->state0.data, scratch->s0_tmp.data,
+                    kGhashBlockNumWords);
     hardened_xor_in_place(ctx->state0.data, ctx->correction_term0.data,
                           kGhashBlockNumWords);
 
     // Process share 1.
     // share1_tmp = tmp * H1
     ibex_clear_rf();
-    s1_tmp = galois_mul_state_key(tmp, ctx->tbl1);
+    galois_mul_state_key(&scratch->tmp, ctx->tbl1, &scratch->s1_tmp);
 
     // Apply the correction terms for state share 1.
     // share1 = share1_tmp + (S0*H0)
-    hardened_memcpy(ctx->state1.data, s1_tmp.data, kGhashBlockNumWords);
+    hardened_memcpy(ctx->state1.data, scratch->s1_tmp.data,
+                    kGhashBlockNumWords);
     hardened_xor_in_place(ctx->state1.data, ctx->correction_term1.data,
                           kGhashBlockNumWords);
   }
@@ -410,9 +471,20 @@ static status_t ghash_process_block(ghash_context_t *ctx,
   return LAUNDERED_OTCRYPTO_OK;
 }
 
-status_t ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
-                                   ghash_block_t *partial,
-                                   const otcrypto_const_byte_buf_t *input_buf) {
+/**
+ * Version of `ghash_process_full_blocks` that uses the caller's temporaries.
+ *
+ * @param ctx Context object.
+ * @param partial_len Length of the partial block.
+ * @param partial Partial GHASH block.
+ * @param input_buf Input data buffer.
+ * @param scratch Temporaries, shredded by the caller.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t process_full_blocks(ghash_context_t *ctx, size_t partial_len,
+                                    ghash_block_t *partial,
+                                    const otcrypto_const_byte_buf_t *input_buf,
+                                    ghash_scratch_t *scratch) {
   size_t input_len = input_buf->len;
   const uint8_t *input = input_buf->data;
   if (input_len < kGhashBlockNumBytes - partial_len) {
@@ -428,12 +500,12 @@ status_t ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
     input_len -= kGhashBlockNumBytes - partial_len;
 
     // Process the block.
-    HARDENED_TRY(ghash_process_block(ctx, partial));
+    HARDENED_TRY(ghash_process_block(ctx, partial, scratch));
 
     // Process any remaining full blocks of input.
     while (input_len >= kGhashBlockNumBytes) {
       randomized_bytecopy(partial->data, input, kGhashBlockNumBytes);
-      HARDENED_TRY(ghash_process_block(ctx, partial));
+      HARDENED_TRY(ghash_process_block(ctx, partial, scratch));
       input += kGhashBlockNumBytes;
       input_len -= kGhashBlockNumBytes;
     }
@@ -447,19 +519,28 @@ status_t ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
   return OTCRYPTO_OK;
 }
 
+status_t ghash_process_full_blocks(ghash_context_t *ctx, size_t partial_len,
+                                   ghash_block_t *partial,
+                                   const otcrypto_const_byte_buf_t *input_buf) {
+  ghash_scratch_t scratch __attribute__((cleanup(ghash_scratch_shred)));
+  return process_full_blocks(ctx, partial_len, partial, input_buf, &scratch);
+}
+
 status_t ghash_update(ghash_context_t *ctx,
                       const otcrypto_const_byte_buf_t *input) {
+  ghash_scratch_t scratch __attribute__((cleanup(ghash_scratch_shred)));
+
   // Process all full blocks and write the remaining non-full data into
   // `partial`.
   ghash_block_t partial = {.data = {0}};
-  HARDENED_TRY(ghash_process_full_blocks(ctx, 0, &partial, input));
+  HARDENED_TRY(process_full_blocks(ctx, 0, &partial, input, &scratch));
 
   // Check if there is data remaining, and process it if so.
   size_t partial_len = input->len % kGhashBlockNumBytes;
   if (partial_len != 0) {
     unsigned char *partial_bytes = (unsigned char *)partial.data;
     memset(partial_bytes + partial_len, 0, kGhashBlockNumBytes - partial_len);
-    HARDENED_TRY(ghash_process_block(ctx, &partial));
+    HARDENED_TRY(ghash_process_block(ctx, &partial, &scratch));
   }
 
   return OTCRYPTO_OK;
@@ -468,7 +549,7 @@ status_t ghash_update(ghash_context_t *ctx,
 status_t ghash_update_redundant(ghash_context_t *ctx,
                                 const otcrypto_const_byte_buf_t *input) {
   // Copy ctx.
-  ghash_context_t ctx_redundant;
+  ghash_context_t ctx_redundant __attribute__((cleanup(ghash_context_shred)));
   randomized_bytecopy(&ctx_redundant, ctx, sizeof(ctx_redundant));
 
   HARDENED_TRY(ghash_update(ctx, input));
@@ -486,9 +567,6 @@ status_t ghash_update_redundant(ghash_context_t *ctx,
       consttime_memeq_byte(diff0.data, diff1.data, kGhashBlockNumBytes),
       kHardenedBoolTrue);
 
-  hardened_memshred((uint32_t *)&ctx_redundant,
-                    sizeof(ctx_redundant) / sizeof(uint32_t));
-
   return OTCRYPTO_OK;
 }
 
@@ -496,18 +574,19 @@ status_t ghash_handle_enc_initial_counter_block(
     const uint32_t *enc_initial_counter_block0,
     const uint32_t *enc_initial_counter_block1, ghash_context_t *ctx) {
   // correction_term0 = S0 * (H0 + 1).
-  ghash_block_t s0;
+  ghash_block_t s0 __attribute__((cleanup(ghash_block_shred)));
   hardened_memcpy(s0.data, enc_initial_counter_block0, kGhashBlockNumWords);
-  ghash_block_t mul_tmp = galois_mul_state_key(s0, ctx->tbl0);
+  ghash_block_t mul_tmp __attribute__((cleanup(ghash_block_shred)));
+  galois_mul_state_key(&s0, ctx->tbl0, &mul_tmp);
   block_xor(&mul_tmp, &s0, &ctx->correction_term0);
 
   // correction_term1 = S0 * H1.
-  ctx->correction_term1 = galois_mul_state_key(s0, ctx->tbl1);
+  galois_mul_state_key(&s0, ctx->tbl1, &ctx->correction_term1);
 
   // correction_term1_init = S1 * H1.
-  ghash_block_t s1;
+  ghash_block_t s1 __attribute__((cleanup(ghash_block_shred)));
   hardened_memcpy(s1.data, enc_initial_counter_block1, kGhashBlockNumWords);
-  ctx->correction_term1_init = galois_mul_state_key(s1, ctx->tbl1);
+  galois_mul_state_key(&s1, ctx->tbl1, &ctx->correction_term1_init);
 
   // Save the encrypted initial counter blocks into the ghash context as we
   // need them throughout the ghash computations.
@@ -528,8 +607,8 @@ status_t ghash_final(ghash_context_t *ctx, uint32_t *result) {
                     kHardenedBoolTrue);
 
   // Tag = (state0 + state1) + S1
-  ghash_block_t tmp_block;
-  ghash_block_t final_block;
+  ghash_block_t tmp_block __attribute__((cleanup(ghash_block_shred)));
+  ghash_block_t final_block __attribute__((cleanup(ghash_block_shred)));
   hardened_xor(ctx->state0.data, ctx->state1.data, kGhashBlockNumWords,
                tmp_block.data);
   hardened_xor(tmp_block.data, ctx->enc_initial_counter_block1.data,
