@@ -1,0 +1,106 @@
+From 8966697ca9b09ed5a8989c69b7a4854fdfec5b08 Mon Sep 17 00:00:00 2001
+From: Samuel Riedel <sriedel@lowrisc.org>
+Date: Thu, 1 Oct 2026 17:24:41 +0200
+Subject: [PATCH 11/12] Tie cheriot_enable_i off in the testbench
+
+Signed-off-by: Samuel Riedel <sriedel@lowrisc.org>
+---
+ tb/tb_test_env.sv | 80 ++++++++++++++++++++++++-----------------------
+ 1 file changed, 41 insertions(+), 39 deletions(-)
+
+diff --git a/tb/tb_test_env.sv b/tb/tb_test_env.sv
+index 9ac8f28..463ece5 100644
+--- a/tb/tb_test_env.sv
++++ b/tb/tb_test_env.sv
+@@ -238,47 +238,49 @@ module tb_test_env #(
+     );
+ 
+     dm_top #(
+-       .NrHarts           ( NrHarts           ),
+-       .BusWidth          ( 32                ),
+-       .SelectableHarts   ( SELECTABLE_HARTS  )
++       .NrHarts           ( NrHarts                   ),
++       .BusWidth          ( 32                        ),
++       .SelectableHarts   ( SELECTABLE_HARTS          )
+     ) i_dm_top (
+ 
+-       .clk_i             ( clk_i             ),
+-       .rst_ni            ( rst_ni            ),
+-       .next_dm_addr_i    ( '0                ),
+-       .testmode_i        ( 1'b0              ),
+-       .ndmreset_o        ( ndmreset          ),
+-       .dmactive_o        (                   ), // active debug session TODO
+-       .debug_req_o       ( dm_debug_req      ),
+-       .unavailable_i     ( ~SELECTABLE_HARTS ),
+-       .hartinfo_i        ( HARTINFO          ),
+-
+-       .slave_req_i       ( dm_req            ),
+-       .slave_we_i        ( dm_we             ),
+-       .slave_addr_i      ( dm_addr           ),
+-       .slave_be_i        ( dm_be             ),
+-       .slave_wdata_i     ( dm_wdata          ),
+-       .slave_rdata_o     ( dm_rdata          ),
+-       .slave_err_o       (                   ),
+-
+-       .master_req_o      ( sb_req            ),
+-       .master_add_o      ( sb_addr           ),
+-       .master_we_o       ( sb_we             ),
+-       .master_wdata_o    ( sb_wdata          ),
+-       .master_be_o       ( sb_be             ),
+-       .master_gnt_i      ( sb_gnt            ),
+-       .master_r_valid_i  ( sb_rvalid         ),
+-       .master_r_err_i    ( 1'b0              ),
+-       .master_r_other_err_i ( 1'b0           ),
+-       .master_r_rdata_i  ( sb_rdata          ),
+-
+-       .dmi_rst_ni        ( rst_ni            ),
+-       .dmi_req_valid_i   ( jtag_req_valid    ),
+-       .dmi_req_ready_o   ( debug_req_ready   ),
+-       .dmi_req_i         ( jtag_dmi_req      ),
+-       .dmi_resp_valid_o  ( jtag_resp_valid   ),
+-       .dmi_resp_ready_i  ( jtag_resp_ready   ),
+-       .dmi_resp_o        ( debug_resp        )
++       .clk_i             ( clk_i                     ),
++       .rst_ni            ( rst_ni                    ),
++       .next_dm_addr_i    ( '0                        ),
++       // The testbench drives an RV32I hart.
++       .cheriot_enable_i  ( prim_mubi_pkg::MuBi4False ),
++       .testmode_i        ( 1'b0                      ),
++       .ndmreset_o        ( ndmreset                  ),
++       .dmactive_o        (                           ), // active debug session TODO
++       .debug_req_o       ( dm_debug_req              ),
++       .unavailable_i     ( ~SELECTABLE_HARTS         ),
++       .hartinfo_i        ( HARTINFO                  ),
++
++       .slave_req_i       ( dm_req                    ),
++       .slave_we_i        ( dm_we                     ),
++       .slave_addr_i      ( dm_addr                   ),
++       .slave_be_i        ( dm_be                     ),
++       .slave_wdata_i     ( dm_wdata                  ),
++       .slave_rdata_o     ( dm_rdata                  ),
++       .slave_err_o       (                           ),
++
++       .master_req_o      ( sb_req                    ),
++       .master_add_o      ( sb_addr                   ),
++       .master_we_o       ( sb_we                     ),
++       .master_wdata_o    ( sb_wdata                  ),
++       .master_be_o       ( sb_be                     ),
++       .master_gnt_i      ( sb_gnt                    ),
++       .master_r_valid_i  ( sb_rvalid                 ),
++       .master_r_err_i    ( 1'b0                      ),
++       .master_r_other_err_i ( 1'b0                   ),
++       .master_r_rdata_i  ( sb_rdata                  ),
++
++       .dmi_rst_ni        ( rst_ni                    ),
++       .dmi_req_valid_i   ( jtag_req_valid            ),
++       .dmi_req_ready_o   ( debug_req_ready           ),
++       .dmi_req_i         ( jtag_dmi_req              ),
++       .dmi_resp_valid_o  ( jtag_resp_valid           ),
++       .dmi_resp_ready_i  ( jtag_resp_ready           ),
++       .dmi_resp_o        ( debug_resp                )
+     );
+ 
+     ///////////////////////////////////////////////////////
+-- 
+2.43.0
+
