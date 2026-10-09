@@ -238,7 +238,7 @@ impl HybridPair {
     pub fn load(ecdsa: Option<&Path>, spx: Option<&Path>) -> Result<Self> {
         Ok(Self {
             ecdsa: ecdsa.map(EcdsaPrivateKey::load).transpose()?,
-            spx: spx.map(SpxSecretKey::read_pem_file).transpose()?,
+            spx: spx.map(SpxSecretKey::from_pem_file).transpose()?,
         })
     }
 
