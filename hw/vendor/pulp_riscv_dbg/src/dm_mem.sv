@@ -1,4 +1,7 @@
-/* Copyright 2018 ETH Zurich and University of Bologna.
+/*
+* Copyright lowRISC contributors (OpenTitan project).
+*
+* Copyright 2018 ETH Zurich and University of Bologna.
 * Copyright and related rights are licensed under the Solderpad Hardware
 * License, Version 0.51 (the “License”); you may not use this file except in
 * compliance with the License.  You may obtain a copy of the License at
@@ -565,17 +568,34 @@ module dm_mem #(
   // two registers per hart, hence we also need
   // two scratch registers.
   if (HasSndScratch) begin : gen_rom_snd_scratch
+    // Select between the RV32I or the CHERIoT ROM
+    logic [63:0] rom_rdata_rv32, rom_rdata_cheriot;
+
     debug_rom i_debug_rom (
       .clk_i,
       .rst_ni,
       .req_i,
-      .addr_i  ( rom_addr  ),
-      .rdata_o ( rom_rdata )
+      .addr_i  ( rom_addr       ),
+      .rdata_o ( rom_rdata_rv32 )
     );
+
+    debug_rom_cheriot i_debug_rom_cheriot (
+      .clk_i,
+      .rst_ni,
+      .req_i,
+      .addr_i  ( rom_addr          ),
+      .rdata_o ( rom_rdata_cheriot )
+    );
+
+    assign rom_rdata = prim_mubi_pkg::mubi4_test_true_strict(cheriot_enable_i) ? rom_rdata_cheriot
+                                                                               : rom_rdata_rv32;
   end else begin : gen_rom_one_scratch
     // It uses the zero register (`x0`) as the base
     // for its loads. The zero register does not need to
     // be saved.
+    //
+    // There is no CHERIoT counterpart to this ROM. It saves s0 with CSRRW, while the abstract
+    // commands use CSpecialRW in CHERIoT mode, so CHERIoT mode is not supported here.
     debug_rom_one_scratch i_debug_rom (
       .clk_i,
       .rst_ni,
@@ -583,6 +603,14 @@ module dm_mem #(
       .addr_i  ( rom_addr  ),
       .rdata_o ( rom_rdata )
     );
+
+    // pragma translate_off
+    `ifndef VERILATOR
+    assert property (@(posedge clk_i) disable iff (!rst_ni)
+                     !prim_mubi_pkg::mubi4_test_true_strict(cheriot_enable_i))
+      else $error("CHERIoT mode is not supported with DmBaseAddress == 0");
+    `endif
+    // pragma translate_on
   end
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
