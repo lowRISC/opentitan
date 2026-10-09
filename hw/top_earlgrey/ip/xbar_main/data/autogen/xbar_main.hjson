@@ -81,6 +81,18 @@
     }
     { struct: "tl"
       type:   "req_rsp"
+      name:   "tl_i3c0"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
+      name:   "tl_i3c1"
+      act:    "req"
+      package: "tlul_pkg"
+    }
+    { struct: "tl"
+      type:   "req_rsp"
       name:   "tl_usbdev"
       act:    "req"
       package: "tlul_pkg"

@@ -152,7 +152,7 @@
         clk_aon_peri:
         {
           src_name: aon
-          endpoint_ip: usbdev
+          endpoint_ip: i3c0
         }
         clk_aon_timers:
         {
@@ -213,7 +213,7 @@
         clk_io_peri:
         {
           src_name: io
-          endpoint_ip: spi_host0
+          endpoint_ip: i3c0
         }
         clk_usb_peri:
         {

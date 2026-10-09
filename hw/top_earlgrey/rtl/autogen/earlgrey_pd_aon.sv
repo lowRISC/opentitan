@@ -164,6 +164,34 @@ module earlgrey_pd_aon #(
   input  logic       cio_i2c2_scl_d2p_i,
   input  logic       cio_i2c2_scl_en_d2p_i,
   output logic       cio_i2c2_scl_p2d_o,
+  input  logic       cio_i3c0_scl_d2p_i,
+  input  logic       cio_i3c0_scl_en_d2p_i,
+  output logic       cio_i3c0_scl_p2d_o,
+  input  logic       cio_i3c0_sda_d2p_i,
+  input  logic       cio_i3c0_sda_en_d2p_i,
+  output logic       cio_i3c0_sda_p2d_o,
+  input  logic       cio_i3c0_ctrl_scl_pu_d2p_i,
+  input  logic       cio_i3c0_ctrl_scl_pu_en_d2p_i,
+  input  logic       cio_i3c0_ctrl_sda_pu_d2p_i,
+  input  logic       cio_i3c0_ctrl_sda_pu_en_d2p_i,
+  input  logic       cio_i3c0_scl_hk_d2p_i,
+  input  logic       cio_i3c0_scl_hk_en_d2p_i,
+  input  logic       cio_i3c0_sda_hk_d2p_i,
+  input  logic       cio_i3c0_sda_hk_en_d2p_i,
+  input  logic       cio_i3c1_scl_d2p_i,
+  input  logic       cio_i3c1_scl_en_d2p_i,
+  output logic       cio_i3c1_scl_p2d_o,
+  input  logic       cio_i3c1_sda_d2p_i,
+  input  logic       cio_i3c1_sda_en_d2p_i,
+  output logic       cio_i3c1_sda_p2d_o,
+  input  logic       cio_i3c1_ctrl_scl_pu_d2p_i,
+  input  logic       cio_i3c1_ctrl_scl_pu_en_d2p_i,
+  input  logic       cio_i3c1_ctrl_sda_pu_d2p_i,
+  input  logic       cio_i3c1_ctrl_sda_pu_en_d2p_i,
+  input  logic       cio_i3c1_scl_hk_d2p_i,
+  input  logic       cio_i3c1_scl_hk_en_d2p_i,
+  input  logic       cio_i3c1_sda_hk_d2p_i,
+  input  logic       cio_i3c1_sda_hk_en_d2p_i,
   input  logic [3:0] cio_spi_host0_sd_d2p_i,
   input  logic [3:0] cio_spi_host0_sd_en_d2p_i,
   output logic [3:0] cio_spi_host0_sd_p2d_o,
@@ -240,9 +268,9 @@ module earlgrey_pd_aon #(
   localparam int SramCtrlRetOutstanding = 2;
 
   // Signals
-  logic [56:0] mio_p2d;
-  logic [63:0] mio_d2p;
-  logic [63:0] mio_en_d2p;
+  logic [60:0] mio_p2d;
+  logic [75:0] mio_d2p;
+  logic [75:0] mio_en_d2p;
   logic [15:0] dio_p2d;
   logic [15:0] dio_d2p;
   logic [15:0] dio_en_d2p;
@@ -345,7 +373,7 @@ module earlgrey_pd_aon #(
 
   // Instantiation of IPs
   pwrmgr #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[21]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[23]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .EscNumSeverities(AlertHandlerEscNumSeverities),
     .EscPingCountWidth(AlertHandlerEscPingCountWidth)
@@ -364,7 +392,7 @@ module earlgrey_pd_aon #(
     // Interrupts
     .intr_wakeup_o(intr_pwrmgr_wakeup),
 
-    // alert_handler[21]: fatal_fault
+    // alert_handler[23]: fatal_fault
     .alert_tx_o(alert_tx_o[0]),
     .alert_rx_i(alert_rx_i[0]),
 
@@ -398,7 +426,7 @@ module earlgrey_pd_aon #(
   );
 
   rstmgr #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[23:22]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[25:24]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .SecCheck(SecRstmgrCheck),
     .SecMaxSyncDelay(SecRstmgrMaxSyncDelay)
@@ -419,8 +447,8 @@ module earlgrey_pd_aon #(
     .scanmode_i(scanmode_o),
     .scan_rst_ni(scan_rst_n_o),
 
-    // alert_handler[22]: fatal_fault
-    // alert_handler[23]: fatal_cnsty_fault
+    // alert_handler[24]: fatal_fault
+    // alert_handler[25]: fatal_cnsty_fault
     .alert_tx_o(alert_tx_o[2:1]),
     .alert_rx_i(alert_rx_i[2:1]),
 
@@ -438,7 +466,7 @@ module earlgrey_pd_aon #(
   );
 
   clkmgr #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[25:24]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[27:26]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_clkmgr (
     // Clock and reset connections
@@ -465,8 +493,8 @@ module earlgrey_pd_aon #(
     // DFT/scan connections
     .scanmode_i(scanmode_o),
 
-    // alert_handler[24]: recov_fault
-    // alert_handler[25]: fatal_fault
+    // alert_handler[26]: recov_fault
+    // alert_handler[27]: fatal_fault
     .alert_tx_o(alert_tx_o[4:3]),
     .alert_rx_i(alert_rx_i[4:3]),
 
@@ -492,7 +520,7 @@ module earlgrey_pd_aon #(
   );
 
   sysrst_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[26]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[28]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_sysrst_ctrl (
     // Clock and reset connections
@@ -504,7 +532,7 @@ module earlgrey_pd_aon #(
     // Interrupts
     .intr_event_detected_o(intr_sysrst_ctrl_event_detected),
 
-    // alert_handler[26]: fatal_fault
+    // alert_handler[28]: fatal_fault
     .alert_tx_o(alert_tx_o[5]),
     .alert_rx_i(alert_rx_i[5]),
 
@@ -544,7 +572,7 @@ module earlgrey_pd_aon #(
   );
 
   adc_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[27]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[29]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_adc_ctrl (
     // Clock and reset connections
@@ -556,7 +584,7 @@ module earlgrey_pd_aon #(
     // Interrupts
     .intr_match_pending_o(intr_adc_ctrl_match_pending),
 
-    // alert_handler[27]: fatal_fault
+    // alert_handler[29]: fatal_fault
     .alert_tx_o(alert_tx_o[6]),
     .alert_rx_i(alert_rx_i[6]),
 
@@ -569,7 +597,7 @@ module earlgrey_pd_aon #(
   );
 
   pinmux #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[28]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[30]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .SecVolatileRawUnlockEn(SecPinmuxVolatileRawUnlockEn),
     .TargetCfg(PinmuxTargetCfg)
@@ -584,7 +612,7 @@ module earlgrey_pd_aon #(
     // DFT/scan connections
     .scanmode_i(scanmode_o),
 
-    // alert_handler[28]: fatal_fault
+    // alert_handler[30]: fatal_fault
     .alert_tx_o(alert_tx_o[7]),
     .alert_rx_i(alert_rx_i[7]),
 
@@ -641,7 +669,7 @@ module earlgrey_pd_aon #(
   );
 
   aon_timer #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[29]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[31]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_aon_timer (
     // Clock and reset connections
@@ -654,7 +682,7 @@ module earlgrey_pd_aon #(
     .intr_wkup_timer_expired_o(intr_aon_timer_wkup_timer_expired),
     .intr_wdog_timer_bark_o   (intr_aon_timer_wdog_timer_bark),
 
-    // alert_handler[29]: fatal_fault
+    // alert_handler[31]: fatal_fault
     .alert_tx_o(alert_tx_o[8]),
     .alert_rx_i(alert_rx_i[8]),
 
@@ -741,7 +769,7 @@ module earlgrey_pd_aon #(
   );
 
   sensor_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[31:30]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[33:32]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_sensor_ctrl (
     // Clock and reset connections
@@ -754,8 +782,8 @@ module earlgrey_pd_aon #(
     .intr_io_status_change_o  (intr_sensor_ctrl_io_status_change),
     .intr_init_status_change_o(intr_sensor_ctrl_init_status_change),
 
-    // alert_handler[30]: recov_alert
-    // alert_handler[31]: fatal_alert
+    // alert_handler[32]: recov_alert
+    // alert_handler[33]: fatal_alert
     .alert_tx_o(alert_tx_o[10:9]),
     .alert_rx_i(alert_rx_i[10:9]),
 
@@ -776,7 +804,7 @@ module earlgrey_pd_aon #(
   );
 
   sram_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[32]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[34]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .RndCnstSramKey(RndCnstSramCtrlRetSramKey),
     .RndCnstSramNonce(RndCnstSramCtrlRetSramNonce),
@@ -798,7 +826,7 @@ module earlgrey_pd_aon #(
     .rst_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
     .rst_otp_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
 
-    // alert_handler[32]: fatal_error
+    // alert_handler[34]: fatal_error
     .alert_tx_o(alert_tx_o[11]),
     .alert_rx_i(alert_rx_i[11]),
 
@@ -875,6 +903,10 @@ module earlgrey_pd_aon #(
   assign cio_i2c1_scl_p2d_o = mio_p2d[MioInI2c1Scl];
   assign cio_i2c2_sda_p2d_o = mio_p2d[MioInI2c2Sda];
   assign cio_i2c2_scl_p2d_o = mio_p2d[MioInI2c2Scl];
+  assign cio_i3c0_scl_p2d_o = mio_p2d[MioInI3c0Scl];
+  assign cio_i3c0_sda_p2d_o = mio_p2d[MioInI3c0Sda];
+  assign cio_i3c1_scl_p2d_o = mio_p2d[MioInI3c1Scl];
+  assign cio_i3c1_sda_p2d_o = mio_p2d[MioInI3c1Sda];
   assign cio_spi_host1_sd_p2d_o[0] = mio_p2d[MioInSpiHost1Sd0];
   assign cio_spi_host1_sd_p2d_o[1] = mio_p2d[MioInSpiHost1Sd1];
   assign cio_spi_host1_sd_p2d_o[2] = mio_p2d[MioInSpiHost1Sd2];
@@ -934,6 +966,10 @@ module earlgrey_pd_aon #(
   assign mio_d2p[MioOutI2c1Scl] = cio_i2c1_scl_d2p_i;
   assign mio_d2p[MioOutI2c2Sda] = cio_i2c2_sda_d2p_i;
   assign mio_d2p[MioOutI2c2Scl] = cio_i2c2_scl_d2p_i;
+  assign mio_d2p[MioOutI3c0Scl] = cio_i3c0_scl_d2p_i;
+  assign mio_d2p[MioOutI3c0Sda] = cio_i3c0_sda_d2p_i;
+  assign mio_d2p[MioOutI3c1Scl] = cio_i3c1_scl_d2p_i;
+  assign mio_d2p[MioOutI3c1Sda] = cio_i3c1_sda_d2p_i;
   assign mio_d2p[MioOutSpiHost1Sd0] = cio_spi_host1_sd_d2p_i[0];
   assign mio_d2p[MioOutSpiHost1Sd1] = cio_spi_host1_sd_d2p_i[1];
   assign mio_d2p[MioOutSpiHost1Sd2] = cio_spi_host1_sd_d2p_i[2];
@@ -942,6 +978,14 @@ module earlgrey_pd_aon #(
   assign mio_d2p[MioOutUart1Tx] = cio_uart1_tx_d2p_i;
   assign mio_d2p[MioOutUart2Tx] = cio_uart2_tx_d2p_i;
   assign mio_d2p[MioOutUart3Tx] = cio_uart3_tx_d2p_i;
+  assign mio_d2p[MioOutI3c0CtrlSclPu] = cio_i3c0_ctrl_scl_pu_d2p_i;
+  assign mio_d2p[MioOutI3c0CtrlSdaPu] = cio_i3c0_ctrl_sda_pu_d2p_i;
+  assign mio_d2p[MioOutI3c0SclHk] = cio_i3c0_scl_hk_d2p_i;
+  assign mio_d2p[MioOutI3c0SdaHk] = cio_i3c0_sda_hk_d2p_i;
+  assign mio_d2p[MioOutI3c1CtrlSclPu] = cio_i3c1_ctrl_scl_pu_d2p_i;
+  assign mio_d2p[MioOutI3c1CtrlSdaPu] = cio_i3c1_ctrl_sda_pu_d2p_i;
+  assign mio_d2p[MioOutI3c1SclHk] = cio_i3c1_scl_hk_d2p_i;
+  assign mio_d2p[MioOutI3c1SdaHk] = cio_i3c1_sda_hk_d2p_i;
   assign mio_d2p[MioOutSpiHost1Sck] = cio_spi_host1_sck_d2p_i;
   assign mio_d2p[MioOutSpiHost1Csb] = cio_spi_host1_csb_d2p_i;
   assign mio_d2p[MioOutRramMacroTdo] = cio_rram_macro_tdo_d2p_i;
@@ -1000,6 +1044,10 @@ module earlgrey_pd_aon #(
   assign mio_en_d2p[MioOutI2c1Scl] = cio_i2c1_scl_en_d2p_i;
   assign mio_en_d2p[MioOutI2c2Sda] = cio_i2c2_sda_en_d2p_i;
   assign mio_en_d2p[MioOutI2c2Scl] = cio_i2c2_scl_en_d2p_i;
+  assign mio_en_d2p[MioOutI3c0Scl] = cio_i3c0_scl_en_d2p_i;
+  assign mio_en_d2p[MioOutI3c0Sda] = cio_i3c0_sda_en_d2p_i;
+  assign mio_en_d2p[MioOutI3c1Scl] = cio_i3c1_scl_en_d2p_i;
+  assign mio_en_d2p[MioOutI3c1Sda] = cio_i3c1_sda_en_d2p_i;
   assign mio_en_d2p[MioOutSpiHost1Sd0] = cio_spi_host1_sd_en_d2p_i[0];
   assign mio_en_d2p[MioOutSpiHost1Sd1] = cio_spi_host1_sd_en_d2p_i[1];
   assign mio_en_d2p[MioOutSpiHost1Sd2] = cio_spi_host1_sd_en_d2p_i[2];
@@ -1008,6 +1056,14 @@ module earlgrey_pd_aon #(
   assign mio_en_d2p[MioOutUart1Tx] = cio_uart1_tx_en_d2p_i;
   assign mio_en_d2p[MioOutUart2Tx] = cio_uart2_tx_en_d2p_i;
   assign mio_en_d2p[MioOutUart3Tx] = cio_uart3_tx_en_d2p_i;
+  assign mio_en_d2p[MioOutI3c0CtrlSclPu] = cio_i3c0_ctrl_scl_pu_en_d2p_i;
+  assign mio_en_d2p[MioOutI3c0CtrlSdaPu] = cio_i3c0_ctrl_sda_pu_en_d2p_i;
+  assign mio_en_d2p[MioOutI3c0SclHk] = cio_i3c0_scl_hk_en_d2p_i;
+  assign mio_en_d2p[MioOutI3c0SdaHk] = cio_i3c0_sda_hk_en_d2p_i;
+  assign mio_en_d2p[MioOutI3c1CtrlSclPu] = cio_i3c1_ctrl_scl_pu_en_d2p_i;
+  assign mio_en_d2p[MioOutI3c1CtrlSdaPu] = cio_i3c1_ctrl_sda_pu_en_d2p_i;
+  assign mio_en_d2p[MioOutI3c1SclHk] = cio_i3c1_scl_hk_en_d2p_i;
+  assign mio_en_d2p[MioOutI3c1SdaHk] = cio_i3c1_sda_hk_en_d2p_i;
   assign mio_en_d2p[MioOutSpiHost1Sck] = cio_spi_host1_sck_en_d2p_i;
   assign mio_en_d2p[MioOutSpiHost1Csb] = cio_spi_host1_csb_en_d2p_i;
   assign mio_en_d2p[MioOutRramMacroTdo] = cio_rram_macro_tdo_en_d2p_i;

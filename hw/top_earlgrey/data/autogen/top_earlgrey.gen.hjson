@@ -167,8 +167,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       {
@@ -323,6 +323,7 @@
         type: top
         domains:
         [
+          Main
           Aon
         ]
         shadowed: false
@@ -530,6 +531,34 @@
         parent: lc_src
         clock: io_div4
       }
+      {
+        name: i3c0
+        gen: true
+        type: top
+        domains:
+        [
+          Main
+        ]
+        shadowed: false
+        sw: true
+        path: rst_i3c0_n
+        parent: lc_src
+        clock: io
+      }
+      {
+        name: i3c1
+        gen: true
+        type: top
+        domains:
+        [
+          Main
+        ]
+        shadowed: false
+        sw: true
+        path: rst_i3c1_n
+        parent: lc_src
+        clock: io
+      }
     ]
   }
   reset_requests:
@@ -602,6 +631,8 @@
             i2c0
             i2c1
             i2c2
+            i3c0
+            i3c1
             rv_timer
             otp_ctrl
             lc_ctrl.regs
@@ -1639,6 +1670,522 @@
         null:
         {
           hart: 0x400A0000
+        }
+      }
+      generate_dif: true
+    }
+    {
+      name: i3c0
+      type: i3c
+      clock_srcs:
+      {
+        clk_i: io
+        clk_aon_i: aon
+        scan_clk_i: io_div2
+      }
+      clock_group: peri
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: i3c0
+          domain: Main
+        }
+        rst_aon_ni:
+        {
+          name: lc_aon
+          domain: Main
+        }
+      }
+      param_decl:
+      {
+        ClkFreq: "96000000"
+        HalfCycleScl: "1"
+      }
+      domain: Main
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks_i.clk_io_peri
+        clk_aon_i: clkmgr_clocks_i.clk_aon_peri
+        scan_clk_i: clkmgr_clocks_i.clk_io_div2_peri
+      }
+      memory: {}
+      param_list:
+      [
+        {
+          name: ClkFreq
+          desc: The frequency of the main clock, in Hz.
+          type: int unsigned
+          default: "96000000"
+          local: "false"
+          expose: "true"
+          name_top: I3c0ClkFreq
+        }
+        {
+          name: PrimaryCtrl
+          desc: Disable(0) or enable(1) Primary Controller role.
+          type: bit
+          default: 1'b1
+          local: "false"
+          expose: "true"
+          name_top: I3c0PrimaryCtrl
+        }
+        {
+          name: SecondaryCtrl
+          desc: Disable(0) or enable(1) Secondary Controller role.
+          type: bit
+          default: 1'b0
+          local: "false"
+          expose: "true"
+          name_top: I3c0SecondaryCtrl
+        }
+        {
+          name: Target
+          desc:
+            '''
+            Disable(0) or enable(1) Target functionality even in the absence of a role as
+            Secondary Controller.
+            '''
+          type: bit
+          default: 1'b1
+          local: "false"
+          expose: "true"
+          name_top: I3c0Target
+        }
+        {
+          name: SWDirectMsgBuf
+          desc: Disable(0) or enable(1) direct software access to the message buffer.
+          type: bit
+          default: 1'b1
+          local: "false"
+          expose: "true"
+          name_top: I3c0SWDirectMsgBuf
+        }
+        {
+          name: SWDirEnIFetch
+          desc: Disable(0) or enable(1) software execution through direct message buffer access.
+          type: bit
+          default: 1'b0
+          local: "false"
+          expose: "true"
+          name_top: I3c0SWDirEnIFetch
+        }
+        {
+          name: CompManufacturer
+          desc: Hardware Identification Extended Capability: Component manufacturer.
+          type: logic [31:0]
+          default: i3c_pkg::CompManufacturer
+          local: "false"
+          expose: "true"
+          name_top: I3c0CompManufacturer
+        }
+        {
+          name: CompVersion
+          desc: Hardware Identification Extended Capability: Component version.
+          type: logic [31:0]
+          default: i3c_pkg::CompVersion
+          local: "false"
+          expose: "true"
+          name_top: I3c0CompVersion
+        }
+        {
+          name: CompType
+          desc: Hardware Identification Extended Capability: Component type.
+          type: logic [31:0]
+          default: i3c_pkg::CompType
+          local: "false"
+          expose: "true"
+          name_top: I3c0CompType
+        }
+        {
+          name: HalfCycleScl
+          desc: Disable(0) or enable(1) half-cycle SCL extension for additional IP clock frequency support.
+          type: bit
+          default: "1"
+          local: "false"
+          expose: "true"
+          name_top: I3c0HalfCycleScl
+        }
+        {
+          name: TargetExt
+          desc: Disable(0) or enable(1) Target-side Extension hardware.
+          type: bit
+          default: 1'b0
+          local: "false"
+          expose: "true"
+          name_top: I3c0TargetExt
+        }
+      ]
+      inter_signal_list:
+      [
+        {
+          name: rstdet_enable
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: i3c0
+          index: -1
+        }
+        {
+          name: rstdet
+          struct: i3c_rstdet
+          package: i3c_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: i3c0
+          index: -1
+        }
+        {
+          name: mbist_en
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: i3c0
+          index: -1
+        }
+        {
+          name: ram_cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: i3c0
+          default: ""
+          top_signame: i3c0_ram_cfg
+          index: -1
+        }
+        {
+          name: dat_cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: i3c0
+          default: ""
+          top_signame: i3c0_dat_cfg
+          index: -1
+        }
+        {
+          name: dct_cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: i3c0
+          default: ""
+          top_signame: i3c0_dct_cfg
+          index: -1
+        }
+        {
+          name: racl_policies
+          desc:
+            '''
+            Incoming RACL policy vector from a racl_ctrl instance.
+            The policy selection vector (parameter) selects the policy for each register.
+            '''
+          struct: racl_policy_vec
+          package: top_racl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: i3c0
+          index: -1
+        }
+        {
+          name: racl_error
+          desc: RACL error log information of this module.
+          struct: racl_error_log
+          package: top_racl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: i3c0
+          index: -1
+        }
+        {
+          name: tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: i3c0
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: i3c0_tl
+          index: -1
+        }
+      ]
+      base_addrs:
+      {
+        null:
+        {
+          hart: 0x40330000
+        }
+      }
+      generate_dif: true
+    }
+    {
+      name: i3c1
+      type: i3c
+      clock_srcs:
+      {
+        clk_i: io
+        clk_aon_i: aon
+        scan_clk_i: io_div2
+      }
+      clock_group: peri
+      reset_connections:
+      {
+        rst_ni:
+        {
+          name: i3c1
+          domain: Main
+        }
+        rst_aon_ni:
+        {
+          name: lc_aon
+          domain: Main
+        }
+      }
+      param_decl:
+      {
+        ClkFreq: "96000000"
+        HalfCycleScl: "1"
+      }
+      domain: Main
+      clock_connections:
+      {
+        clk_i: clkmgr_clocks_i.clk_io_peri
+        clk_aon_i: clkmgr_clocks_i.clk_aon_peri
+        scan_clk_i: clkmgr_clocks_i.clk_io_div2_peri
+      }
+      memory: {}
+      param_list:
+      [
+        {
+          name: ClkFreq
+          desc: The frequency of the main clock, in Hz.
+          type: int unsigned
+          default: "96000000"
+          local: "false"
+          expose: "true"
+          name_top: I3c1ClkFreq
+        }
+        {
+          name: PrimaryCtrl
+          desc: Disable(0) or enable(1) Primary Controller role.
+          type: bit
+          default: 1'b1
+          local: "false"
+          expose: "true"
+          name_top: I3c1PrimaryCtrl
+        }
+        {
+          name: SecondaryCtrl
+          desc: Disable(0) or enable(1) Secondary Controller role.
+          type: bit
+          default: 1'b0
+          local: "false"
+          expose: "true"
+          name_top: I3c1SecondaryCtrl
+        }
+        {
+          name: Target
+          desc:
+            '''
+            Disable(0) or enable(1) Target functionality even in the absence of a role as
+            Secondary Controller.
+            '''
+          type: bit
+          default: 1'b1
+          local: "false"
+          expose: "true"
+          name_top: I3c1Target
+        }
+        {
+          name: SWDirectMsgBuf
+          desc: Disable(0) or enable(1) direct software access to the message buffer.
+          type: bit
+          default: 1'b1
+          local: "false"
+          expose: "true"
+          name_top: I3c1SWDirectMsgBuf
+        }
+        {
+          name: SWDirEnIFetch
+          desc: Disable(0) or enable(1) software execution through direct message buffer access.
+          type: bit
+          default: 1'b0
+          local: "false"
+          expose: "true"
+          name_top: I3c1SWDirEnIFetch
+        }
+        {
+          name: CompManufacturer
+          desc: Hardware Identification Extended Capability: Component manufacturer.
+          type: logic [31:0]
+          default: i3c_pkg::CompManufacturer
+          local: "false"
+          expose: "true"
+          name_top: I3c1CompManufacturer
+        }
+        {
+          name: CompVersion
+          desc: Hardware Identification Extended Capability: Component version.
+          type: logic [31:0]
+          default: i3c_pkg::CompVersion
+          local: "false"
+          expose: "true"
+          name_top: I3c1CompVersion
+        }
+        {
+          name: CompType
+          desc: Hardware Identification Extended Capability: Component type.
+          type: logic [31:0]
+          default: i3c_pkg::CompType
+          local: "false"
+          expose: "true"
+          name_top: I3c1CompType
+        }
+        {
+          name: HalfCycleScl
+          desc: Disable(0) or enable(1) half-cycle SCL extension for additional IP clock frequency support.
+          type: bit
+          default: "1"
+          local: "false"
+          expose: "true"
+          name_top: I3c1HalfCycleScl
+        }
+        {
+          name: TargetExt
+          desc: Disable(0) or enable(1) Target-side Extension hardware.
+          type: bit
+          default: 1'b0
+          local: "false"
+          expose: "true"
+          name_top: I3c1TargetExt
+        }
+      ]
+      inter_signal_list:
+      [
+        {
+          name: rstdet_enable
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          inst_name: i3c1
+          index: -1
+        }
+        {
+          name: rstdet
+          struct: i3c_rstdet
+          package: i3c_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: i3c1
+          index: -1
+        }
+        {
+          name: mbist_en
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: i3c1
+          index: -1
+        }
+        {
+          name: ram_cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: i3c1
+          default: ""
+          top_signame: i3c1_ram_cfg
+          index: -1
+        }
+        {
+          name: dat_cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: i3c1
+          default: ""
+          top_signame: i3c1_dat_cfg
+          index: -1
+        }
+        {
+          name: dct_cfg
+          struct: ram_1p_cfg
+          package: prim_ram_1p_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: i3c1
+          default: ""
+          top_signame: i3c1_dct_cfg
+          index: -1
+        }
+        {
+          name: racl_policies
+          desc:
+            '''
+            Incoming RACL policy vector from a racl_ctrl instance.
+            The policy selection vector (parameter) selects the policy for each register.
+            '''
+          struct: racl_policy_vec
+          package: top_racl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: i3c1
+          index: -1
+        }
+        {
+          name: racl_error
+          desc: RACL error log information of this module.
+          struct: racl_error_log
+          package: top_racl_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: i3c1
+          index: -1
+        }
+        {
+          name: tl
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: i3c1
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: i3c1_tl
+          index: -1
+        }
+      ]
+      base_addrs:
+      {
+        null:
+        {
+          hart: 0x40340000
         }
       }
       generate_dif: true
@@ -12358,6 +12905,14 @@
       [
         main.tl_spi_host1
       ]
+      i3c0.tl:
+      [
+        main.tl_i3c0
+      ]
+      i3c1.tl:
+      [
+        main.tl_i3c1
+      ]
       usbdev.tl:
       [
         main.tl_usbdev
@@ -12555,6 +13110,12 @@
       i2c0.ram_cfg
       i2c1.ram_cfg
       i2c2.ram_cfg
+      i3c0.ram_cfg
+      i3c0.dat_cfg
+      i3c0.dct_cfg
+      i3c1.ram_cfg
+      i3c1.dat_cfg
+      i3c1.dct_cfg
       usbdev.ram_cfg
       rv_core_ibex.ram_cfg_icache_tag
       rv_core_ibex.ram_cfg_icache_data
@@ -12686,6 +13247,8 @@
           spi_host0
           spi_host1
           usbdev
+          i3c0
+          i3c1
           rram_ctrl.core
           rram_ctrl.host
           rram_macro.prim
@@ -12724,6 +13287,8 @@
           spi_host0
           spi_host1
           usbdev
+          i3c0
+          i3c1
           rram_ctrl.core
           rram_ctrl.host
           rram_macro.prim
@@ -12954,6 +13519,50 @@
                 hart: 0x40310000
               }
               size_byte: 0x40
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: true
+        }
+        {
+          name: i3c0
+          type: device
+          clock: clk_spi_host0_i
+          reset: rst_spi_host0_ni
+          req_fifo_pass: false
+          rsp_fifo_pass: false
+          inst_type: i3c
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x40330000
+              }
+              size_byte: 0x2000
+            }
+          ]
+          xbar: false
+          stub: false
+          pipeline: true
+        }
+        {
+          name: i3c1
+          type: device
+          clock: clk_spi_host0_i
+          reset: rst_spi_host0_ni
+          req_fifo_pass: false
+          rsp_fifo_pass: false
+          inst_type: i3c
+          addr_range:
+          [
+            {
+              base_addrs:
+              {
+                hart: 0x40340000
+              }
+              size_byte: 0x2000
             }
           ]
           xbar: false
@@ -13597,6 +14206,32 @@
           default: ""
           domain: Main
           top_signame: spi_host1_tl
+          index: -1
+        }
+        {
+          name: tl_i3c0
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          inst_name: main
+          width: 1
+          default: ""
+          domain: Main
+          top_signame: i3c0_tl
+          index: -1
+        }
+        {
+          name: tl_i3c1
+          struct: tl
+          package: tlul_pkg
+          type: req_rsp
+          act: req
+          inst_name: main
+          width: 1
+          default: ""
+          domain: Main
+          top_signame: i3c1_tl
           index: -1
         }
         {
@@ -15611,6 +16246,22 @@
         attr: ""
       }
       {
+        instance: i3c0
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c1
+        port: ""
+        connection: muxed
+        pad: ""
+        desc: ""
+        attr: ""
+      }
+      {
         instance: spi_device
         port: tpm_csb
         connection: muxed
@@ -16346,6 +16997,54 @@
         glob_idx: 37
       }
       {
+        name: i3c0_scl
+        width: 1
+        type: inout
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 38
+      }
+      {
+        name: i3c0_sda
+        width: 1
+        type: inout
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 39
+      }
+      {
+        name: i3c1_scl
+        width: 1
+        type: inout
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 40
+      }
+      {
+        name: i3c1_sda
+        width: 1
+        type: inout
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 41
+      }
+      {
         name: spi_host1_sd
         width: 4
         type: inout
@@ -16355,7 +17054,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 38
+        glob_idx: 42
       }
       {
         name: spi_host1_sd
@@ -16367,7 +17066,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 39
+        glob_idx: 43
       }
       {
         name: spi_host1_sd
@@ -16379,7 +17078,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 40
+        glob_idx: 44
       }
       {
         name: spi_host1_sd
@@ -16391,7 +17090,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 41
+        glob_idx: 45
       }
       {
         name: sysrst_ctrl_ec_rst_l
@@ -16451,7 +17150,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 42
+        glob_idx: 46
       }
       {
         name: uart1_rx
@@ -16463,7 +17162,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 43
+        glob_idx: 47
       }
       {
         name: uart2_rx
@@ -16475,7 +17174,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 44
+        glob_idx: 48
       }
       {
         name: uart3_rx
@@ -16487,7 +17186,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 45
+        glob_idx: 49
       }
       {
         name: spi_device_tpm_csb
@@ -16499,7 +17198,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 46
+        glob_idx: 50
       }
       {
         name: rram_macro_tck
@@ -16511,7 +17210,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 47
+        glob_idx: 51
       }
       {
         name: rram_macro_tms
@@ -16523,7 +17222,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 48
+        glob_idx: 52
       }
       {
         name: rram_macro_tdi
@@ -16535,7 +17234,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 49
+        glob_idx: 53
       }
       {
         name: sysrst_ctrl_ac_present
@@ -16547,7 +17246,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 50
+        glob_idx: 54
       }
       {
         name: sysrst_ctrl_key0_in
@@ -16559,7 +17258,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 51
+        glob_idx: 55
       }
       {
         name: sysrst_ctrl_key1_in
@@ -16571,7 +17270,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 52
+        glob_idx: 56
       }
       {
         name: sysrst_ctrl_key2_in
@@ -16583,7 +17282,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 53
+        glob_idx: 57
       }
       {
         name: sysrst_ctrl_pwrb_in
@@ -16595,7 +17294,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 54
+        glob_idx: 58
       }
       {
         name: sysrst_ctrl_lid_open
@@ -16607,7 +17306,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 55
+        glob_idx: 59
       }
       {
         name: usbdev_sense
@@ -16619,7 +17318,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 56
+        glob_idx: 60
       }
       {
         name: spi_host0_sck
@@ -16655,7 +17354,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 42
+        glob_idx: 46
       }
       {
         name: uart1_tx
@@ -16667,7 +17366,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 43
+        glob_idx: 47
       }
       {
         name: uart2_tx
@@ -16679,7 +17378,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 44
+        glob_idx: 48
       }
       {
         name: uart3_tx
@@ -16691,7 +17390,103 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 45
+        glob_idx: 49
+      }
+      {
+        name: i3c0_ctrl_scl_pu
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 50
+      }
+      {
+        name: i3c0_ctrl_sda_pu
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 51
+      }
+      {
+        name: i3c0_scl_hk
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 52
+      }
+      {
+        name: i3c0_sda_hk
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 53
+      }
+      {
+        name: i3c1_ctrl_scl_pu
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 54
+      }
+      {
+        name: i3c1_ctrl_sda_pu
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 55
+      }
+      {
+        name: i3c1_scl_hk
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 56
+      }
+      {
+        name: i3c1_sda_hk
+        width: 1
+        type: output
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 57
       }
       {
         name: spi_host1_sck
@@ -16703,7 +17498,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 46
+        glob_idx: 58
       }
       {
         name: spi_host1_csb
@@ -16715,7 +17510,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 47
+        glob_idx: 59
       }
       {
         name: rram_macro_tdo
@@ -16727,7 +17522,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 48
+        glob_idx: 60
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -16739,7 +17534,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 49
+        glob_idx: 61
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -16751,7 +17546,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 50
+        glob_idx: 62
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -16763,7 +17558,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 51
+        glob_idx: 63
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -16775,7 +17570,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 52
+        glob_idx: 64
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -16787,7 +17582,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 53
+        glob_idx: 65
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -16799,7 +17594,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 54
+        glob_idx: 66
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -16811,7 +17606,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 55
+        glob_idx: 67
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -16823,7 +17618,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 56
+        glob_idx: 68
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -16835,7 +17630,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 57
+        glob_idx: 69
       }
       {
         name: sysrst_ctrl_bat_disable
@@ -16847,7 +17642,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 58
+        glob_idx: 70
       }
       {
         name: sysrst_ctrl_key0_out
@@ -16859,7 +17654,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 59
+        glob_idx: 71
       }
       {
         name: sysrst_ctrl_key1_out
@@ -16871,7 +17666,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 60
+        glob_idx: 72
       }
       {
         name: sysrst_ctrl_key2_out
@@ -16883,7 +17678,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 61
+        glob_idx: 73
       }
       {
         name: sysrst_ctrl_pwrb_out
@@ -16895,7 +17690,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 62
+        glob_idx: 74
       }
       {
         name: sysrst_ctrl_z3_wakeup
@@ -16907,7 +17702,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 63
+        glob_idx: 75
       }
     ]
     io_counts:
@@ -16921,9 +17716,9 @@
       }
       muxed:
       {
-        inouts: 42
+        inouts: 46
         inputs: 15
-        outputs: 22
+        outputs: 30
         pads: 47
       }
     }
@@ -17570,6 +18365,28 @@
       lpg_idx: 4
     }
     {
+      name: i3c0_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      handler: alert_handler
+      module_name: i3c0
+      desc: i3c0 fatal_fault alert
+      lpg_name: peri_i3c0_Main
+      lpg_idx: 5
+    }
+    {
+      name: i3c1_fatal_fault
+      width: 1
+      type: alert
+      async: "1"
+      handler: alert_handler
+      module_name: i3c1
+      desc: i3c1 fatal_fault alert
+      lpg_name: peri_i3c1_Main
+      lpg_idx: 6
+    }
+    {
       name: rv_timer_fatal_fault
       width: 1
       type: alert
@@ -17578,7 +18395,7 @@
       module_name: rv_timer
       desc: rv_timer fatal_fault alert
       lpg_name: timers_lc_io_div4_Main
-      lpg_idx: 5
+      lpg_idx: 7
     }
     {
       name: otp_ctrl_fatal_macro_error
@@ -17589,7 +18406,7 @@
       module_name: otp_ctrl
       desc: otp_ctrl fatal_macro_error alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 6
+      lpg_idx: 8
     }
     {
       name: otp_ctrl_fatal_check_error
@@ -17600,7 +18417,7 @@
       module_name: otp_ctrl
       desc: otp_ctrl fatal_check_error alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 6
+      lpg_idx: 8
     }
     {
       name: otp_ctrl_fatal_bus_integ_error
@@ -17611,7 +18428,7 @@
       module_name: otp_ctrl
       desc: otp_ctrl fatal_bus_integ_error alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 6
+      lpg_idx: 8
     }
     {
       name: otp_ctrl_fatal_prim_otp_alert
@@ -17622,7 +18439,7 @@
       module_name: otp_ctrl
       desc: otp_ctrl fatal_prim_otp_alert alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 6
+      lpg_idx: 8
     }
     {
       name: otp_ctrl_recov_prim_otp_alert
@@ -17633,7 +18450,7 @@
       module_name: otp_ctrl
       desc: otp_ctrl recov_prim_otp_alert alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 6
+      lpg_idx: 8
     }
     {
       name: lc_ctrl_fatal_prog_error
@@ -17644,7 +18461,7 @@
       module_name: lc_ctrl
       desc: lc_ctrl fatal_prog_error alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 6
+      lpg_idx: 8
     }
     {
       name: lc_ctrl_fatal_state_error
@@ -17655,7 +18472,7 @@
       module_name: lc_ctrl
       desc: lc_ctrl fatal_state_error alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 6
+      lpg_idx: 8
     }
     {
       name: lc_ctrl_fatal_bus_integ_error
@@ -17666,7 +18483,7 @@
       module_name: lc_ctrl
       desc: lc_ctrl fatal_bus_integ_error alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 6
+      lpg_idx: 8
     }
     {
       name: spi_host0_fatal_fault
@@ -17677,7 +18494,7 @@
       module_name: spi_host0
       desc: spi_host0 fatal_fault alert
       lpg_name: peri_spi_host0_Main
-      lpg_idx: 7
+      lpg_idx: 9
     }
     {
       name: spi_host1_fatal_fault
@@ -17688,7 +18505,7 @@
       module_name: spi_host1
       desc: spi_host1 fatal_fault alert
       lpg_name: spi_host1_spi_host1_Main
-      lpg_idx: 8
+      lpg_idx: 10
     }
     {
       name: usbdev_fatal_fault
@@ -17699,7 +18516,7 @@
       module_name: usbdev
       desc: usbdev fatal_fault alert
       lpg_name: peri_usb_Main
-      lpg_idx: 9
+      lpg_idx: 11
     }
     {
       name: pwrmgr_fatal_fault
@@ -17710,7 +18527,7 @@
       module_name: pwrmgr
       desc: pwrmgr fatal_fault alert
       lpg_name: powerup_por_io_div4_Aon
-      lpg_idx: 10
+      lpg_idx: 12
     }
     {
       name: rstmgr_fatal_fault
@@ -17721,7 +18538,7 @@
       module_name: rstmgr
       desc: rstmgr fatal_fault alert
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 11
+      lpg_idx: 13
     }
     {
       name: rstmgr_fatal_cnsty_fault
@@ -17732,7 +18549,7 @@
       module_name: rstmgr
       desc: rstmgr fatal_cnsty_fault alert
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 11
+      lpg_idx: 13
     }
     {
       name: clkmgr_recov_fault
@@ -17743,7 +18560,7 @@
       module_name: clkmgr
       desc: clkmgr recov_fault alert
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 11
+      lpg_idx: 13
     }
     {
       name: clkmgr_fatal_fault
@@ -17754,7 +18571,7 @@
       module_name: clkmgr
       desc: clkmgr fatal_fault alert
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 11
+      lpg_idx: 13
     }
     {
       name: sysrst_ctrl_fatal_fault
@@ -17765,7 +18582,7 @@
       module_name: sysrst_ctrl
       desc: sysrst_ctrl fatal_fault alert
       lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 12
+      lpg_idx: 14
     }
     {
       name: adc_ctrl_fatal_fault
@@ -17776,7 +18593,7 @@
       module_name: adc_ctrl
       desc: adc_ctrl fatal_fault alert
       lpg_name: peri_lc_io_div4_Aon
-      lpg_idx: 13
+      lpg_idx: 15
     }
     {
       name: pinmux_fatal_fault
@@ -17787,7 +18604,7 @@
       module_name: pinmux
       desc: pinmux fatal_fault alert
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 11
+      lpg_idx: 13
     }
     {
       name: aon_timer_fatal_fault
@@ -17798,7 +18615,7 @@
       module_name: aon_timer
       desc: aon_timer fatal_fault alert
       lpg_name: timers_lc_io_div4_Aon
-      lpg_idx: 14
+      lpg_idx: 16
     }
     {
       name: sensor_ctrl_recov_alert
@@ -17809,7 +18626,7 @@
       module_name: sensor_ctrl
       desc: sensor_ctrl recov_alert alert
       lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 12
+      lpg_idx: 14
     }
     {
       name: sensor_ctrl_fatal_alert
@@ -17820,7 +18637,7 @@
       module_name: sensor_ctrl
       desc: sensor_ctrl fatal_alert alert
       lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 12
+      lpg_idx: 14
     }
     {
       name: sram_ctrl_ret_fatal_error
@@ -17831,7 +18648,7 @@
       module_name: sram_ctrl_ret
       desc: sram_ctrl_ret fatal_error alert
       lpg_name: infra_lc_io_div4_Aon
-      lpg_idx: 16
+      lpg_idx: 18
     }
     {
       name: rram_ctrl_recov_err
@@ -17842,7 +18659,7 @@
       module_name: rram_ctrl
       desc: rram_ctrl recov_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 17
+      lpg_idx: 19
     }
     {
       name: rram_ctrl_fatal_std_err
@@ -17853,7 +18670,7 @@
       module_name: rram_ctrl
       desc: rram_ctrl fatal_std_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 17
+      lpg_idx: 19
     }
     {
       name: rram_ctrl_fatal_err
@@ -17864,7 +18681,7 @@
       module_name: rram_ctrl
       desc: rram_ctrl fatal_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 17
+      lpg_idx: 19
     }
     {
       name: rram_ctrl_fatal_macro_err
@@ -17875,7 +18692,7 @@
       module_name: rram_ctrl
       desc: rram_ctrl fatal_macro_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 17
+      lpg_idx: 19
     }
     {
       name: rram_ctrl_recov_macro_err
@@ -17886,7 +18703,7 @@
       module_name: rram_ctrl
       desc: rram_ctrl recov_macro_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 17
+      lpg_idx: 19
     }
     {
       name: rv_dm_fatal_fault
@@ -17897,7 +18714,7 @@
       module_name: rv_dm
       desc: rv_dm fatal_fault alert
       lpg_name: infra_sys_Main
-      lpg_idx: 18
+      lpg_idx: 20
     }
     {
       name: rv_plic_fatal_fault
@@ -17908,7 +18725,7 @@
       module_name: rv_plic
       desc: rv_plic fatal_fault alert
       lpg_name: secure_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: aes_recov_ctrl_update_err
@@ -17919,7 +18736,7 @@
       module_name: aes
       desc: aes recov_ctrl_update_err alert
       lpg_name: aes_trans_lc_Main
-      lpg_idx: 20
+      lpg_idx: 22
     }
     {
       name: aes_fatal_fault
@@ -17930,7 +18747,7 @@
       module_name: aes
       desc: aes fatal_fault alert
       lpg_name: aes_trans_lc_Main
-      lpg_idx: 20
+      lpg_idx: 22
     }
     {
       name: hmac_fatal_fault
@@ -17941,7 +18758,7 @@
       module_name: hmac
       desc: hmac fatal_fault alert
       lpg_name: hmac_trans_lc_Main
-      lpg_idx: 21
+      lpg_idx: 23
     }
     {
       name: kmac_recov_operation_err
@@ -17952,7 +18769,7 @@
       module_name: kmac
       desc: kmac recov_operation_err alert
       lpg_name: kmac_trans_lc_Main
-      lpg_idx: 22
+      lpg_idx: 24
     }
     {
       name: kmac_fatal_fault_err
@@ -17963,7 +18780,7 @@
       module_name: kmac
       desc: kmac fatal_fault_err alert
       lpg_name: kmac_trans_lc_Main
-      lpg_idx: 22
+      lpg_idx: 24
     }
     {
       name: otbn_fatal
@@ -17974,7 +18791,7 @@
       module_name: otbn
       desc: otbn fatal alert
       lpg_name: otbn_trans_lc_Main
-      lpg_idx: 23
+      lpg_idx: 25
     }
     {
       name: otbn_recov
@@ -17985,7 +18802,7 @@
       module_name: otbn
       desc: otbn recov alert
       lpg_name: otbn_trans_lc_Main
-      lpg_idx: 23
+      lpg_idx: 25
     }
     {
       name: keymgr_dpe_recov_operation_err
@@ -17996,7 +18813,7 @@
       module_name: keymgr_dpe
       desc: keymgr_dpe recov_operation_err alert
       lpg_name: secure_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: keymgr_dpe_fatal_fault_err
@@ -18007,7 +18824,7 @@
       module_name: keymgr_dpe
       desc: keymgr_dpe fatal_fault_err alert
       lpg_name: secure_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: csrng_recov_alert
@@ -18018,7 +18835,7 @@
       module_name: csrng
       desc: csrng recov_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: csrng_fatal_alert
@@ -18029,7 +18846,7 @@
       module_name: csrng
       desc: csrng fatal_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: entropy_src_recov_alert
@@ -18040,7 +18857,7 @@
       module_name: entropy_src
       desc: entropy_src recov_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: entropy_src_fatal_alert
@@ -18051,7 +18868,7 @@
       module_name: entropy_src
       desc: entropy_src fatal_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: edn0_recov_alert
@@ -18062,7 +18879,7 @@
       module_name: edn0
       desc: edn0 recov_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: edn0_fatal_alert
@@ -18073,7 +18890,7 @@
       module_name: edn0
       desc: edn0 fatal_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: edn1_recov_alert
@@ -18084,7 +18901,7 @@
       module_name: edn1
       desc: edn1 recov_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: edn1_fatal_alert
@@ -18095,7 +18912,7 @@
       module_name: edn1
       desc: edn1 fatal_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: sram_ctrl_main_fatal_error
@@ -18106,7 +18923,7 @@
       module_name: sram_ctrl_main
       desc: sram_ctrl_main fatal_error alert
       lpg_name: infra_lc_Main
-      lpg_idx: 17
+      lpg_idx: 19
     }
     {
       name: sram_ctrl_sec_fatal_error
@@ -18117,7 +18934,7 @@
       module_name: sram_ctrl_sec
       desc: sram_ctrl_sec fatal_error alert
       lpg_name: infra_lc_Main
-      lpg_idx: 17
+      lpg_idx: 19
     }
     {
       name: rom_ctrl_fatal
@@ -18128,7 +18945,7 @@
       module_name: rom_ctrl
       desc: rom_ctrl fatal alert
       lpg_name: infra_lc_Main
-      lpg_idx: 17
+      lpg_idx: 19
     }
     {
       name: rv_core_ibex_fatal_sw_err
@@ -18139,7 +18956,7 @@
       module_name: rv_core_ibex
       desc: rv_core_ibex fatal_sw_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 17
+      lpg_idx: 19
     }
     {
       name: rv_core_ibex_recov_sw_err
@@ -18150,7 +18967,7 @@
       module_name: rv_core_ibex
       desc: rv_core_ibex recov_sw_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 17
+      lpg_idx: 19
     }
     {
       name: rv_core_ibex_fatal_hw_err
@@ -18161,7 +18978,7 @@
       module_name: rv_core_ibex
       desc: rv_core_ibex fatal_hw_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 17
+      lpg_idx: 19
     }
     {
       name: rv_core_ibex_recov_hw_err
@@ -18172,7 +18989,7 @@
       module_name: rv_core_ibex
       desc: rv_core_ibex recov_hw_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 17
+      lpg_idx: 19
     }
     {
       name: cheriot_mem_sys_fatal_fault
@@ -18183,7 +19000,7 @@
       module_name: cheriot_mem_sys
       desc: cheriot_mem_sys fatal_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 17
+      lpg_idx: 19
     }
     {
       name: sram_ctrl_meta_fatal_error
@@ -18194,7 +19011,7 @@
       module_name: sram_ctrl_meta
       desc: sram_ctrl_meta fatal_error alert
       lpg_name: infra_lc_Main
-      lpg_idx: 17
+      lpg_idx: 19
     }
   ]
   outgoing_alert: {}
@@ -19371,6 +20188,58 @@
       outgoing: false
     }
     {
+      name: i3c0_hci
+      width: 1
+      type: interrupt
+      module_name: i3c0
+      desc: i3c0 hci interrupt
+      intr_type: IntrType.Status
+      default_val: false
+      incoming: false
+      domain: Main
+      plic: rv_plic
+      outgoing: false
+    }
+    {
+      name: i3c0_targ
+      width: 1
+      type: interrupt
+      module_name: i3c0
+      desc: i3c0 targ interrupt
+      intr_type: IntrType.Status
+      default_val: false
+      incoming: false
+      domain: Main
+      plic: rv_plic
+      outgoing: false
+    }
+    {
+      name: i3c1_hci
+      width: 1
+      type: interrupt
+      module_name: i3c1
+      desc: i3c1 hci interrupt
+      intr_type: IntrType.Status
+      default_val: false
+      incoming: false
+      domain: Main
+      plic: rv_plic
+      outgoing: false
+    }
+    {
+      name: i3c1_targ
+      width: 1
+      type: interrupt
+      module_name: i3c1
+      desc: i3c1 targ interrupt
+      intr_type: IntrType.Status
+      default_val: false
+      incoming: false
+      domain: Main
+      plic: rv_plic
+      outgoing: false
+    }
+    {
       name: rv_timer_timer_expired_hart0_timer0
       width: 1
       type: interrupt
@@ -20209,11 +21078,11 @@
     rv_plic:
     {
       domain: Main
-      count_tot: 186
+      count_tot: 190
       count_pd:
       {
         Aon: 7
-        Main: 178
+        Main: 182
       }
     }
   }
@@ -21596,6 +22465,342 @@
         package: ""
         struct: logic
         domain: chip
+        signame: cio_i3c0_scl_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c0_scl_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c0_scl_p2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c0_sda_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c0_sda_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c0_sda_p2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c0_ctrl_scl_pu_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c0_ctrl_scl_pu_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c0_ctrl_sda_pu_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c0_ctrl_sda_pu_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c0_scl_hk_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c0_scl_hk_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c0_sda_hk_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c0_sda_hk_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_scl_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_scl_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_scl_p2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_sda_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_sda_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_sda_p2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_ctrl_scl_pu_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_ctrl_scl_pu_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_ctrl_sda_pu_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_ctrl_sda_pu_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_scl_hk_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_scl_hk_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_sda_hk_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_sda_hk_en_d2p
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
         signame: cio_spi_host0_sd_d2p
         width: 4
         type: uni
@@ -21947,6 +23152,8 @@
     i2c0
     i2c1
     i2c2
+    i3c0
+    i3c1
     rv_timer
     otp_ctrl
     lc_ctrl
@@ -22073,7 +23280,7 @@
         alert_handler[8]: fatal_fault
       ]
     }
-    module_rv_timer:
+    module_i3c0:
     {
       tx_expr: alert_tx[9]
       rx_expr: alert_rx[9]
@@ -22083,53 +23290,53 @@
         alert_handler[9]: fatal_fault
       ]
     }
-    module_otp_ctrl:
+    module_i3c1:
     {
-      tx_expr: alert_tx[14:10]
-      rx_expr: alert_rx[14:10]
-      async_expr: alert_handler_reg_pkg::AsyncOn[14:10]
+      tx_expr: alert_tx[10]
+      rx_expr: alert_rx[10]
+      async_expr: alert_handler_reg_pkg::AsyncOn[10]
       comments:
       [
-        alert_handler[10]: fatal_macro_error
-        alert_handler[11]: fatal_check_error
-        alert_handler[12]: fatal_bus_integ_error
-        alert_handler[13]: fatal_prim_otp_alert
-        alert_handler[14]: recov_prim_otp_alert
+        alert_handler[10]: fatal_fault
+      ]
+    }
+    module_rv_timer:
+    {
+      tx_expr: alert_tx[11]
+      rx_expr: alert_rx[11]
+      async_expr: alert_handler_reg_pkg::AsyncOn[11]
+      comments:
+      [
+        alert_handler[11]: fatal_fault
+      ]
+    }
+    module_otp_ctrl:
+    {
+      tx_expr: alert_tx[16:12]
+      rx_expr: alert_rx[16:12]
+      async_expr: alert_handler_reg_pkg::AsyncOn[16:12]
+      comments:
+      [
+        alert_handler[12]: fatal_macro_error
+        alert_handler[13]: fatal_check_error
+        alert_handler[14]: fatal_bus_integ_error
+        alert_handler[15]: fatal_prim_otp_alert
+        alert_handler[16]: recov_prim_otp_alert
       ]
     }
     module_lc_ctrl:
     {
-      tx_expr: alert_tx[17:15]
-      rx_expr: alert_rx[17:15]
-      async_expr: alert_handler_reg_pkg::AsyncOn[17:15]
+      tx_expr: alert_tx[19:17]
+      rx_expr: alert_rx[19:17]
+      async_expr: alert_handler_reg_pkg::AsyncOn[19:17]
       comments:
       [
-        alert_handler[15]: fatal_prog_error
-        alert_handler[16]: fatal_state_error
-        alert_handler[17]: fatal_bus_integ_error
+        alert_handler[17]: fatal_prog_error
+        alert_handler[18]: fatal_state_error
+        alert_handler[19]: fatal_bus_integ_error
       ]
     }
     module_spi_host0:
-    {
-      tx_expr: alert_tx[18]
-      rx_expr: alert_rx[18]
-      async_expr: alert_handler_reg_pkg::AsyncOn[18]
-      comments:
-      [
-        alert_handler[18]: fatal_fault
-      ]
-    }
-    module_spi_host1:
-    {
-      tx_expr: alert_tx[19]
-      rx_expr: alert_rx[19]
-      async_expr: alert_handler_reg_pkg::AsyncOn[19]
-      comments:
-      [
-        alert_handler[19]: fatal_fault
-      ]
-    }
-    module_usbdev:
     {
       tx_expr: alert_tx[20]
       rx_expr: alert_rx[20]
@@ -22139,199 +23346,208 @@
         alert_handler[20]: fatal_fault
       ]
     }
-    module_pwrmgr:
+    module_spi_host1:
     {
-      tx_expr: alert_tx_o[0]
-      rx_expr: alert_rx_i[0]
+      tx_expr: alert_tx[21]
+      rx_expr: alert_rx[21]
       async_expr: alert_handler_reg_pkg::AsyncOn[21]
       comments:
       [
         alert_handler[21]: fatal_fault
       ]
     }
+    module_usbdev:
+    {
+      tx_expr: alert_tx[22]
+      rx_expr: alert_rx[22]
+      async_expr: alert_handler_reg_pkg::AsyncOn[22]
+      comments:
+      [
+        alert_handler[22]: fatal_fault
+      ]
+    }
+    module_pwrmgr:
+    {
+      tx_expr: alert_tx_o[0]
+      rx_expr: alert_rx_i[0]
+      async_expr: alert_handler_reg_pkg::AsyncOn[23]
+      comments:
+      [
+        alert_handler[23]: fatal_fault
+      ]
+    }
     module_rstmgr:
     {
       tx_expr: alert_tx_o[2:1]
       rx_expr: alert_rx_i[2:1]
-      async_expr: alert_handler_reg_pkg::AsyncOn[23:22]
+      async_expr: alert_handler_reg_pkg::AsyncOn[25:24]
       comments:
       [
-        alert_handler[22]: fatal_fault
-        alert_handler[23]: fatal_cnsty_fault
+        alert_handler[24]: fatal_fault
+        alert_handler[25]: fatal_cnsty_fault
       ]
     }
     module_clkmgr:
     {
       tx_expr: alert_tx_o[4:3]
       rx_expr: alert_rx_i[4:3]
-      async_expr: alert_handler_reg_pkg::AsyncOn[25:24]
+      async_expr: alert_handler_reg_pkg::AsyncOn[27:26]
       comments:
       [
-        alert_handler[24]: recov_fault
-        alert_handler[25]: fatal_fault
+        alert_handler[26]: recov_fault
+        alert_handler[27]: fatal_fault
       ]
     }
     module_sysrst_ctrl:
     {
       tx_expr: alert_tx_o[5]
       rx_expr: alert_rx_i[5]
-      async_expr: alert_handler_reg_pkg::AsyncOn[26]
-      comments:
-      [
-        alert_handler[26]: fatal_fault
-      ]
-    }
-    module_adc_ctrl:
-    {
-      tx_expr: alert_tx_o[6]
-      rx_expr: alert_rx_i[6]
-      async_expr: alert_handler_reg_pkg::AsyncOn[27]
-      comments:
-      [
-        alert_handler[27]: fatal_fault
-      ]
-    }
-    module_pinmux:
-    {
-      tx_expr: alert_tx_o[7]
-      rx_expr: alert_rx_i[7]
       async_expr: alert_handler_reg_pkg::AsyncOn[28]
       comments:
       [
         alert_handler[28]: fatal_fault
       ]
     }
-    module_aon_timer:
+    module_adc_ctrl:
     {
-      tx_expr: alert_tx_o[8]
-      rx_expr: alert_rx_i[8]
+      tx_expr: alert_tx_o[6]
+      rx_expr: alert_rx_i[6]
       async_expr: alert_handler_reg_pkg::AsyncOn[29]
       comments:
       [
         alert_handler[29]: fatal_fault
       ]
     }
+    module_pinmux:
+    {
+      tx_expr: alert_tx_o[7]
+      rx_expr: alert_rx_i[7]
+      async_expr: alert_handler_reg_pkg::AsyncOn[30]
+      comments:
+      [
+        alert_handler[30]: fatal_fault
+      ]
+    }
+    module_aon_timer:
+    {
+      tx_expr: alert_tx_o[8]
+      rx_expr: alert_rx_i[8]
+      async_expr: alert_handler_reg_pkg::AsyncOn[31]
+      comments:
+      [
+        alert_handler[31]: fatal_fault
+      ]
+    }
     module_sensor_ctrl:
     {
       tx_expr: alert_tx_o[10:9]
       rx_expr: alert_rx_i[10:9]
-      async_expr: alert_handler_reg_pkg::AsyncOn[31:30]
+      async_expr: alert_handler_reg_pkg::AsyncOn[33:32]
       comments:
       [
-        alert_handler[30]: recov_alert
-        alert_handler[31]: fatal_alert
+        alert_handler[32]: recov_alert
+        alert_handler[33]: fatal_alert
       ]
     }
     module_sram_ctrl_ret:
     {
       tx_expr: alert_tx_o[11]
       rx_expr: alert_rx_i[11]
-      async_expr: alert_handler_reg_pkg::AsyncOn[32]
+      async_expr: alert_handler_reg_pkg::AsyncOn[34]
       comments:
       [
-        alert_handler[32]: fatal_error
+        alert_handler[34]: fatal_error
       ]
     }
     module_rram_ctrl:
     {
-      tx_expr: alert_tx[37:33]
-      rx_expr: alert_rx[37:33]
-      async_expr: alert_handler_reg_pkg::AsyncOn[37:33]
+      tx_expr: alert_tx[39:35]
+      rx_expr: alert_rx[39:35]
+      async_expr: alert_handler_reg_pkg::AsyncOn[39:35]
       comments:
       [
-        alert_handler[33]: recov_err
-        alert_handler[34]: fatal_std_err
-        alert_handler[35]: fatal_err
-        alert_handler[36]: fatal_macro_err
-        alert_handler[37]: recov_macro_err
+        alert_handler[35]: recov_err
+        alert_handler[36]: fatal_std_err
+        alert_handler[37]: fatal_err
+        alert_handler[38]: fatal_macro_err
+        alert_handler[39]: recov_macro_err
       ]
     }
     module_rv_dm:
     {
-      tx_expr: alert_tx[38]
-      rx_expr: alert_rx[38]
-      async_expr: alert_handler_reg_pkg::AsyncOn[38]
+      tx_expr: alert_tx[40]
+      rx_expr: alert_rx[40]
+      async_expr: alert_handler_reg_pkg::AsyncOn[40]
       comments:
       [
-        alert_handler[38]: fatal_fault
+        alert_handler[40]: fatal_fault
       ]
     }
     module_rv_plic:
     {
-      tx_expr: alert_tx[39]
-      rx_expr: alert_rx[39]
-      async_expr: alert_handler_reg_pkg::AsyncOn[39]
+      tx_expr: alert_tx[41]
+      rx_expr: alert_rx[41]
+      async_expr: alert_handler_reg_pkg::AsyncOn[41]
       comments:
       [
-        alert_handler[39]: fatal_fault
+        alert_handler[41]: fatal_fault
       ]
     }
     module_aes:
     {
-      tx_expr: alert_tx[41:40]
-      rx_expr: alert_rx[41:40]
-      async_expr: alert_handler_reg_pkg::AsyncOn[41:40]
+      tx_expr: alert_tx[43:42]
+      rx_expr: alert_rx[43:42]
+      async_expr: alert_handler_reg_pkg::AsyncOn[43:42]
       comments:
       [
-        alert_handler[40]: recov_ctrl_update_err
-        alert_handler[41]: fatal_fault
+        alert_handler[42]: recov_ctrl_update_err
+        alert_handler[43]: fatal_fault
       ]
     }
     module_hmac:
     {
-      tx_expr: alert_tx[42]
-      rx_expr: alert_rx[42]
-      async_expr: alert_handler_reg_pkg::AsyncOn[42]
+      tx_expr: alert_tx[44]
+      rx_expr: alert_rx[44]
+      async_expr: alert_handler_reg_pkg::AsyncOn[44]
       comments:
       [
-        alert_handler[42]: fatal_fault
+        alert_handler[44]: fatal_fault
       ]
     }
     module_kmac:
-    {
-      tx_expr: alert_tx[44:43]
-      rx_expr: alert_rx[44:43]
-      async_expr: alert_handler_reg_pkg::AsyncOn[44:43]
-      comments:
-      [
-        alert_handler[43]: recov_operation_err
-        alert_handler[44]: fatal_fault_err
-      ]
-    }
-    module_otbn:
     {
       tx_expr: alert_tx[46:45]
       rx_expr: alert_rx[46:45]
       async_expr: alert_handler_reg_pkg::AsyncOn[46:45]
       comments:
       [
-        alert_handler[45]: fatal
-        alert_handler[46]: recov
+        alert_handler[45]: recov_operation_err
+        alert_handler[46]: fatal_fault_err
       ]
     }
-    module_keymgr_dpe:
+    module_otbn:
     {
       tx_expr: alert_tx[48:47]
       rx_expr: alert_rx[48:47]
       async_expr: alert_handler_reg_pkg::AsyncOn[48:47]
       comments:
       [
-        alert_handler[47]: recov_operation_err
-        alert_handler[48]: fatal_fault_err
+        alert_handler[47]: fatal
+        alert_handler[48]: recov
       ]
     }
-    module_csrng:
+    module_keymgr_dpe:
     {
       tx_expr: alert_tx[50:49]
       rx_expr: alert_rx[50:49]
       async_expr: alert_handler_reg_pkg::AsyncOn[50:49]
       comments:
       [
-        alert_handler[49]: recov_alert
-        alert_handler[50]: fatal_alert
+        alert_handler[49]: recov_operation_err
+        alert_handler[50]: fatal_fault_err
       ]
     }
-    module_entropy_src:
+    module_csrng:
     {
       tx_expr: alert_tx[52:51]
       rx_expr: alert_rx[52:51]
@@ -22342,7 +23558,7 @@
         alert_handler[52]: fatal_alert
       ]
     }
-    module_edn0:
+    module_entropy_src:
     {
       tx_expr: alert_tx[54:53]
       rx_expr: alert_rx[54:53]
@@ -22353,7 +23569,7 @@
         alert_handler[54]: fatal_alert
       ]
     }
-    module_edn1:
+    module_edn0:
     {
       tx_expr: alert_tx[56:55]
       rx_expr: alert_rx[56:55]
@@ -22364,67 +23580,78 @@
         alert_handler[56]: fatal_alert
       ]
     }
+    module_edn1:
+    {
+      tx_expr: alert_tx[58:57]
+      rx_expr: alert_rx[58:57]
+      async_expr: alert_handler_reg_pkg::AsyncOn[58:57]
+      comments:
+      [
+        alert_handler[57]: recov_alert
+        alert_handler[58]: fatal_alert
+      ]
+    }
     module_sram_ctrl_main:
-    {
-      tx_expr: alert_tx[57]
-      rx_expr: alert_rx[57]
-      async_expr: alert_handler_reg_pkg::AsyncOn[57]
-      comments:
-      [
-        alert_handler[57]: fatal_error
-      ]
-    }
-    module_sram_ctrl_sec:
-    {
-      tx_expr: alert_tx[58]
-      rx_expr: alert_rx[58]
-      async_expr: alert_handler_reg_pkg::AsyncOn[58]
-      comments:
-      [
-        alert_handler[58]: fatal_error
-      ]
-    }
-    module_rom_ctrl:
     {
       tx_expr: alert_tx[59]
       rx_expr: alert_rx[59]
       async_expr: alert_handler_reg_pkg::AsyncOn[59]
       comments:
       [
-        alert_handler[59]: fatal
+        alert_handler[59]: fatal_error
+      ]
+    }
+    module_sram_ctrl_sec:
+    {
+      tx_expr: alert_tx[60]
+      rx_expr: alert_rx[60]
+      async_expr: alert_handler_reg_pkg::AsyncOn[60]
+      comments:
+      [
+        alert_handler[60]: fatal_error
+      ]
+    }
+    module_rom_ctrl:
+    {
+      tx_expr: alert_tx[61]
+      rx_expr: alert_rx[61]
+      async_expr: alert_handler_reg_pkg::AsyncOn[61]
+      comments:
+      [
+        alert_handler[61]: fatal
       ]
     }
     module_rv_core_ibex:
     {
-      tx_expr: alert_tx[63:60]
-      rx_expr: alert_rx[63:60]
-      async_expr: alert_handler_reg_pkg::AsyncOn[63:60]
+      tx_expr: alert_tx[65:62]
+      rx_expr: alert_rx[65:62]
+      async_expr: alert_handler_reg_pkg::AsyncOn[65:62]
       comments:
       [
-        alert_handler[60]: fatal_sw_err
-        alert_handler[61]: recov_sw_err
-        alert_handler[62]: fatal_hw_err
-        alert_handler[63]: recov_hw_err
+        alert_handler[62]: fatal_sw_err
+        alert_handler[63]: recov_sw_err
+        alert_handler[64]: fatal_hw_err
+        alert_handler[65]: recov_hw_err
       ]
     }
     module_cheriot_mem_sys:
     {
-      tx_expr: alert_tx[64]
-      rx_expr: alert_rx[64]
-      async_expr: alert_handler_reg_pkg::AsyncOn[64]
+      tx_expr: alert_tx[66]
+      rx_expr: alert_rx[66]
+      async_expr: alert_handler_reg_pkg::AsyncOn[66]
       comments:
       [
-        alert_handler[64]: fatal_fault
+        alert_handler[66]: fatal_fault
       ]
     }
     module_sram_ctrl_meta:
     {
-      tx_expr: alert_tx[65]
-      rx_expr: alert_rx[65]
-      async_expr: alert_handler_reg_pkg::AsyncOn[65]
+      tx_expr: alert_tx[67]
+      rx_expr: alert_rx[67]
+      async_expr: alert_handler_reg_pkg::AsyncOn[67]
       comments:
       [
-        alert_handler[65]: fatal_error
+        alert_handler[67]: fatal_error
       ]
     }
   }
@@ -22433,70 +23660,70 @@
     alert_handler:
     {
       domain: Main
-      count_tot: 66
+      count_tot: 68
       count_pd:
       {
         Aon: 12
-        Main: 54
+        Main: 56
       }
       connect_pd:
       {
-        21:
+        23:
         {
           src_pd: Aon
           idx: 0
         }
-        22:
+        24:
         {
           src_pd: Aon
           idx: 1
         }
-        23:
+        25:
         {
           src_pd: Aon
           idx: 2
         }
-        24:
+        26:
         {
           src_pd: Aon
           idx: 3
         }
-        25:
+        27:
         {
           src_pd: Aon
           idx: 4
         }
-        26:
+        28:
         {
           src_pd: Aon
           idx: 5
         }
-        27:
+        29:
         {
           src_pd: Aon
           idx: 6
         }
-        28:
+        30:
         {
           src_pd: Aon
           idx: 7
         }
-        29:
+        31:
         {
           src_pd: Aon
           idx: 8
         }
-        30:
+        32:
         {
           src_pd: Aon
           idx: 9
         }
-        31:
+        33:
         {
           src_pd: Aon
           idx: 10
         }
-        32:
+        34:
         {
           src_pd: Aon
           idx: 11
@@ -22515,6 +23742,8 @@
     i2c0
     i2c1
     i2c2
+    i3c0
+    i3c1
     rv_timer
     otp_ctrl
     alert_handler
@@ -22554,8 +23783,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_clocks_i.clk_io_div4_peri
@@ -22580,8 +23809,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_clocks_i.clk_io_div4_peri
@@ -22606,8 +23835,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_clocks_i.clk_io_div4_peri
@@ -22632,8 +23861,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_clocks_i.clk_io_div4_peri
@@ -22658,8 +23887,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_clocks_i.clk_io_div4_peri
@@ -22668,6 +23897,58 @@
       reset_connection:
       {
         name: i2c2
+        domain: Main
+      }
+    }
+    {
+      name: peri_i3c0_Main
+      clock_group:
+      {
+        name: peri
+        src: top
+        sw_cg: yes
+        unique: no
+        clocks:
+        {
+          clk_io_div4_peri: io_div4
+          clk_io_div2_peri: io_div2
+          clk_io_peri: io
+          clk_aon_peri: aon
+          clk_usb_peri: usb
+        }
+      }
+      clock_connection: clkmgr_clocks_i.clk_io_peri
+      unmanaged_clock: false
+      unmanaged_reset: false
+      reset_connection:
+      {
+        name: i3c0
+        domain: Main
+      }
+    }
+    {
+      name: peri_i3c1_Main
+      clock_group:
+      {
+        name: peri
+        src: top
+        sw_cg: yes
+        unique: no
+        clocks:
+        {
+          clk_io_div4_peri: io_div4
+          clk_io_div2_peri: io_div2
+          clk_io_peri: io
+          clk_aon_peri: aon
+          clk_usb_peri: usb
+        }
+      }
+      clock_connection: clkmgr_clocks_i.clk_io_peri
+      unmanaged_clock: false
+      unmanaged_reset: false
+      reset_connection:
+      {
+        name: i3c1
         domain: Main
       }
     }
@@ -22731,8 +24012,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_clocks_i.clk_io_peri
@@ -22779,8 +24060,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_clocks_i.clk_usb_peri
@@ -22883,8 +24164,8 @@
           clk_io_div4_peri: io_div4
           clk_io_div2_peri: io_div2
           clk_io_peri: io
-          clk_usb_peri: usb
           clk_aon_peri: aon
+          clk_usb_peri: usb
         }
       }
       clock_connection: clkmgr_clocks.clk_io_div4_peri
@@ -23731,6 +25012,214 @@
         end_idx: -1
         top_type: one-to-one
         top_signame: i2c2_tl
+        index: -1
+      }
+      {
+        name: rstdet_enable
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: i3c0
+        index: -1
+      }
+      {
+        name: rstdet
+        struct: i3c_rstdet
+        package: i3c_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: i3c0
+        index: -1
+      }
+      {
+        name: mbist_en
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: i3c0
+        index: -1
+      }
+      {
+        name: ram_cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: i3c0
+        default: ""
+        top_signame: i3c0_ram_cfg
+        index: -1
+      }
+      {
+        name: dat_cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: i3c0
+        default: ""
+        top_signame: i3c0_dat_cfg
+        index: -1
+      }
+      {
+        name: dct_cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: i3c0
+        default: ""
+        top_signame: i3c0_dct_cfg
+        index: -1
+      }
+      {
+        name: racl_policies
+        desc:
+          '''
+          Incoming RACL policy vector from a racl_ctrl instance.
+          The policy selection vector (parameter) selects the policy for each register.
+          '''
+        struct: racl_policy_vec
+        package: top_racl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: i3c0
+        index: -1
+      }
+      {
+        name: racl_error
+        desc: RACL error log information of this module.
+        struct: racl_error_log
+        package: top_racl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: i3c0
+        index: -1
+      }
+      {
+        name: tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: i3c0
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: i3c0_tl
+        index: -1
+      }
+      {
+        name: rstdet_enable
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        inst_name: i3c1
+        index: -1
+      }
+      {
+        name: rstdet
+        struct: i3c_rstdet
+        package: i3c_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: i3c1
+        index: -1
+      }
+      {
+        name: mbist_en
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: i3c1
+        index: -1
+      }
+      {
+        name: ram_cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: i3c1
+        default: ""
+        top_signame: i3c1_ram_cfg
+        index: -1
+      }
+      {
+        name: dat_cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: i3c1
+        default: ""
+        top_signame: i3c1_dat_cfg
+        index: -1
+      }
+      {
+        name: dct_cfg
+        struct: ram_1p_cfg
+        package: prim_ram_1p_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: i3c1
+        default: ""
+        top_signame: i3c1_dct_cfg
+        index: -1
+      }
+      {
+        name: racl_policies
+        desc:
+          '''
+          Incoming RACL policy vector from a racl_ctrl instance.
+          The policy selection vector (parameter) selects the policy for each register.
+          '''
+        struct: racl_policy_vec
+        package: top_racl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: i3c1
+        index: -1
+      }
+      {
+        name: racl_error
+        desc: RACL error log information of this module.
+        struct: racl_error_log
+        package: top_racl_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: i3c1
+        index: -1
+      }
+      {
+        name: tl
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: i3c1
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: i3c1_tl
         index: -1
       }
       {
@@ -30486,6 +31975,32 @@
         index: -1
       }
       {
+        name: tl_i3c0
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        inst_name: main
+        width: 1
+        default: ""
+        domain: Main
+        top_signame: i3c0_tl
+        index: -1
+      }
+      {
+        name: tl_i3c1
+        struct: tl
+        package: tlul_pkg
+        type: req_rsp
+        act: req
+        inst_name: main
+        width: 1
+        default: ""
+        domain: Main
+        top_signame: i3c1_tl
+        index: -1
+      }
+      {
         name: tl_usbdev
         struct: tl
         package: tlul_pkg
@@ -36126,6 +37641,1126 @@
         struct: logic
         domain: Main
         inter_pd: true
+        signame: cio_i3c0_scl_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c0_scl_d2p
+          verilator: cio_i3c0_scl_d2p
+          cw340: cio_i3c0_scl_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_scl_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c0_scl_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c0_scl_d2p
+          verilator: cio_i3c0_scl_d2p
+          cw340: cio_i3c0_scl_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_scl_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c0_scl_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c0_scl_en_d2p
+          verilator: cio_i3c0_scl_en_d2p
+          cw340: cio_i3c0_scl_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_scl_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c0_scl_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c0_scl_en_d2p
+          verilator: cio_i3c0_scl_en_d2p
+          cw340: cio_i3c0_scl_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_scl_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c0_scl_p2d_i
+        signame_chip:
+        {
+          asic: cio_i3c0_scl_p2d
+          verilator: cio_i3c0_scl_p2d
+          cw340: cio_i3c0_scl_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_scl_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c0_scl_p2d_o
+        signame_chip:
+        {
+          asic: cio_i3c0_scl_p2d
+          verilator: cio_i3c0_scl_p2d
+          cw340: cio_i3c0_scl_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_scl_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c0_sda_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c0_sda_d2p
+          verilator: cio_i3c0_sda_d2p
+          cw340: cio_i3c0_sda_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_sda_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c0_sda_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c0_sda_d2p
+          verilator: cio_i3c0_sda_d2p
+          cw340: cio_i3c0_sda_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_sda_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c0_sda_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c0_sda_en_d2p
+          verilator: cio_i3c0_sda_en_d2p
+          cw340: cio_i3c0_sda_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_sda_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c0_sda_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c0_sda_en_d2p
+          verilator: cio_i3c0_sda_en_d2p
+          cw340: cio_i3c0_sda_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_sda_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c0_sda_p2d_i
+        signame_chip:
+        {
+          asic: cio_i3c0_sda_p2d
+          verilator: cio_i3c0_sda_p2d
+          cw340: cio_i3c0_sda_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_sda_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c0_sda_p2d_o
+        signame_chip:
+        {
+          asic: cio_i3c0_sda_p2d
+          verilator: cio_i3c0_sda_p2d
+          cw340: cio_i3c0_sda_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_sda_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c0_ctrl_scl_pu_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c0_ctrl_scl_pu_d2p
+          verilator: cio_i3c0_ctrl_scl_pu_d2p
+          cw340: cio_i3c0_ctrl_scl_pu_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_ctrl_scl_pu_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c0_ctrl_scl_pu_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c0_ctrl_scl_pu_d2p
+          verilator: cio_i3c0_ctrl_scl_pu_d2p
+          cw340: cio_i3c0_ctrl_scl_pu_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_ctrl_scl_pu_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c0_ctrl_scl_pu_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c0_ctrl_scl_pu_en_d2p
+          verilator: cio_i3c0_ctrl_scl_pu_en_d2p
+          cw340: cio_i3c0_ctrl_scl_pu_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_ctrl_scl_pu_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c0_ctrl_scl_pu_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c0_ctrl_scl_pu_en_d2p
+          verilator: cio_i3c0_ctrl_scl_pu_en_d2p
+          cw340: cio_i3c0_ctrl_scl_pu_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_ctrl_scl_pu_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c0_ctrl_sda_pu_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c0_ctrl_sda_pu_d2p
+          verilator: cio_i3c0_ctrl_sda_pu_d2p
+          cw340: cio_i3c0_ctrl_sda_pu_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_ctrl_sda_pu_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c0_ctrl_sda_pu_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c0_ctrl_sda_pu_d2p
+          verilator: cio_i3c0_ctrl_sda_pu_d2p
+          cw340: cio_i3c0_ctrl_sda_pu_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_ctrl_sda_pu_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c0_ctrl_sda_pu_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c0_ctrl_sda_pu_en_d2p
+          verilator: cio_i3c0_ctrl_sda_pu_en_d2p
+          cw340: cio_i3c0_ctrl_sda_pu_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_ctrl_sda_pu_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c0_ctrl_sda_pu_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c0_ctrl_sda_pu_en_d2p
+          verilator: cio_i3c0_ctrl_sda_pu_en_d2p
+          cw340: cio_i3c0_ctrl_sda_pu_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_ctrl_sda_pu_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c0_scl_hk_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c0_scl_hk_d2p
+          verilator: cio_i3c0_scl_hk_d2p
+          cw340: cio_i3c0_scl_hk_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_scl_hk_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c0_scl_hk_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c0_scl_hk_d2p
+          verilator: cio_i3c0_scl_hk_d2p
+          cw340: cio_i3c0_scl_hk_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_scl_hk_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c0_scl_hk_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c0_scl_hk_en_d2p
+          verilator: cio_i3c0_scl_hk_en_d2p
+          cw340: cio_i3c0_scl_hk_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_scl_hk_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c0_scl_hk_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c0_scl_hk_en_d2p
+          verilator: cio_i3c0_scl_hk_en_d2p
+          cw340: cio_i3c0_scl_hk_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_scl_hk_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c0_sda_hk_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c0_sda_hk_d2p
+          verilator: cio_i3c0_sda_hk_d2p
+          cw340: cio_i3c0_sda_hk_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_sda_hk_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c0_sda_hk_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c0_sda_hk_d2p
+          verilator: cio_i3c0_sda_hk_d2p
+          cw340: cio_i3c0_sda_hk_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_sda_hk_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c0_sda_hk_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c0_sda_hk_en_d2p
+          verilator: cio_i3c0_sda_hk_en_d2p
+          cw340: cio_i3c0_sda_hk_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_sda_hk_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c0_sda_hk_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c0_sda_hk_en_d2p
+          verilator: cio_i3c0_sda_hk_en_d2p
+          cw340: cio_i3c0_sda_hk_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c0_sda_hk_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c1_scl_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c1_scl_d2p
+          verilator: cio_i3c1_scl_d2p
+          cw340: cio_i3c1_scl_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_scl_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_scl_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c1_scl_d2p
+          verilator: cio_i3c1_scl_d2p
+          cw340: cio_i3c1_scl_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_scl_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c1_scl_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c1_scl_en_d2p
+          verilator: cio_i3c1_scl_en_d2p
+          cw340: cio_i3c1_scl_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_scl_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_scl_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c1_scl_en_d2p
+          verilator: cio_i3c1_scl_en_d2p
+          cw340: cio_i3c1_scl_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_scl_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c1_scl_p2d_i
+        signame_chip:
+        {
+          asic: cio_i3c1_scl_p2d
+          verilator: cio_i3c1_scl_p2d
+          cw340: cio_i3c1_scl_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_scl_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_scl_p2d_o
+        signame_chip:
+        {
+          asic: cio_i3c1_scl_p2d
+          verilator: cio_i3c1_scl_p2d
+          cw340: cio_i3c1_scl_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_scl_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c1_sda_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c1_sda_d2p
+          verilator: cio_i3c1_sda_d2p
+          cw340: cio_i3c1_sda_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_sda_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_sda_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c1_sda_d2p
+          verilator: cio_i3c1_sda_d2p
+          cw340: cio_i3c1_sda_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_sda_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c1_sda_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c1_sda_en_d2p
+          verilator: cio_i3c1_sda_en_d2p
+          cw340: cio_i3c1_sda_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_sda_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_sda_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c1_sda_en_d2p
+          verilator: cio_i3c1_sda_en_d2p
+          cw340: cio_i3c1_sda_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_sda_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c1_sda_p2d_i
+        signame_chip:
+        {
+          asic: cio_i3c1_sda_p2d
+          verilator: cio_i3c1_sda_p2d
+          cw340: cio_i3c1_sda_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_sda_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_sda_p2d_o
+        signame_chip:
+        {
+          asic: cio_i3c1_sda_p2d
+          verilator: cio_i3c1_sda_p2d
+          cw340: cio_i3c1_sda_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_sda_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c1_ctrl_scl_pu_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c1_ctrl_scl_pu_d2p
+          verilator: cio_i3c1_ctrl_scl_pu_d2p
+          cw340: cio_i3c1_ctrl_scl_pu_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_ctrl_scl_pu_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_ctrl_scl_pu_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c1_ctrl_scl_pu_d2p
+          verilator: cio_i3c1_ctrl_scl_pu_d2p
+          cw340: cio_i3c1_ctrl_scl_pu_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_ctrl_scl_pu_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c1_ctrl_scl_pu_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c1_ctrl_scl_pu_en_d2p
+          verilator: cio_i3c1_ctrl_scl_pu_en_d2p
+          cw340: cio_i3c1_ctrl_scl_pu_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_ctrl_scl_pu_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_ctrl_scl_pu_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c1_ctrl_scl_pu_en_d2p
+          verilator: cio_i3c1_ctrl_scl_pu_en_d2p
+          cw340: cio_i3c1_ctrl_scl_pu_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_ctrl_scl_pu_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c1_ctrl_sda_pu_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c1_ctrl_sda_pu_d2p
+          verilator: cio_i3c1_ctrl_sda_pu_d2p
+          cw340: cio_i3c1_ctrl_sda_pu_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_ctrl_sda_pu_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_ctrl_sda_pu_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c1_ctrl_sda_pu_d2p
+          verilator: cio_i3c1_ctrl_sda_pu_d2p
+          cw340: cio_i3c1_ctrl_sda_pu_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_ctrl_sda_pu_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c1_ctrl_sda_pu_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c1_ctrl_sda_pu_en_d2p
+          verilator: cio_i3c1_ctrl_sda_pu_en_d2p
+          cw340: cio_i3c1_ctrl_sda_pu_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_ctrl_sda_pu_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_ctrl_sda_pu_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c1_ctrl_sda_pu_en_d2p
+          verilator: cio_i3c1_ctrl_sda_pu_en_d2p
+          cw340: cio_i3c1_ctrl_sda_pu_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_ctrl_sda_pu_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c1_scl_hk_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c1_scl_hk_d2p
+          verilator: cio_i3c1_scl_hk_d2p
+          cw340: cio_i3c1_scl_hk_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_scl_hk_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_scl_hk_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c1_scl_hk_d2p
+          verilator: cio_i3c1_scl_hk_d2p
+          cw340: cio_i3c1_scl_hk_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_scl_hk_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c1_scl_hk_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c1_scl_hk_en_d2p
+          verilator: cio_i3c1_scl_hk_en_d2p
+          cw340: cio_i3c1_scl_hk_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_scl_hk_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_scl_hk_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c1_scl_hk_en_d2p
+          verilator: cio_i3c1_scl_hk_en_d2p
+          cw340: cio_i3c1_scl_hk_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_scl_hk_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c1_sda_hk_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c1_sda_hk_d2p
+          verilator: cio_i3c1_sda_hk_d2p
+          cw340: cio_i3c1_sda_hk_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_sda_hk_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_sda_hk_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c1_sda_hk_d2p
+          verilator: cio_i3c1_sda_hk_d2p
+          cw340: cio_i3c1_sda_hk_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_sda_hk_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c1_sda_hk_en_d2p_o
+        signame_chip:
+        {
+          asic: cio_i3c1_sda_hk_en_d2p
+          verilator: cio_i3c1_sda_hk_en_d2p
+          cw340: cio_i3c1_sda_hk_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_sda_hk_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_sda_hk_en_d2p_i
+        signame_chip:
+        {
+          asic: cio_i3c1_sda_hk_en_d2p
+          verilator: cio_i3c1_sda_hk_en_d2p
+          cw340: cio_i3c1_sda_hk_en_d2p
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_sda_hk_en_d2p
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
         signame: cio_spi_host0_sd_d2p_o
         signame_chip:
         {
@@ -38773,6 +41408,54 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
+        signame: i3c0_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Main
+        signame: i3c0_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Main
+        signame: i3c1_tl_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: req
+        default: tlul_pkg::TL_H2D_DEFAULT
+      }
+      {
+        package: tlul_pkg
+        struct: tl_d2h
+        domain: Main
+        signame: i3c1_tl_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: rsp
+        suffix: rsp
+        default: ""
+      }
+      {
+        package: tlul_pkg
+        struct: tl_h2d
+        domain: Main
         signame: usbdev_tl_req
         width: 1
         type: req_rsp
@@ -39788,6 +42471,126 @@
         struct: ram_1p_cfg_rsp
         domain: Main
         signame: i2c2_ram_cfg_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_req
+        domain: Main
+        signame: i3c0_ram_cfg_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_rsp
+        domain: Main
+        signame: i3c0_ram_cfg_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_req
+        domain: Main
+        signame: i3c0_dat_cfg_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_rsp
+        domain: Main
+        signame: i3c0_dat_cfg_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_req
+        domain: Main
+        signame: i3c0_dct_cfg_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_rsp
+        domain: Main
+        signame: i3c0_dct_cfg_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_req
+        domain: Main
+        signame: i3c1_ram_cfg_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_rsp
+        domain: Main
+        signame: i3c1_ram_cfg_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_req
+        domain: Main
+        signame: i3c1_dat_cfg_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_rsp
+        domain: Main
+        signame: i3c1_dat_cfg_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_req
+        domain: Main
+        signame: i3c1_dct_cfg_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        default: ""
+      }
+      {
+        package: prim_ram_1p_pkg
+        struct: ram_1p_cfg_rsp
+        domain: Main
+        signame: i3c1_dct_cfg_rsp
         width: 1
         type: req_rsp
         end_idx: -1

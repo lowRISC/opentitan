@@ -23,6 +23,30 @@ module top_earlgrey #(
   parameter int I2c1InputDelayCycles = 0,
   // parameters for i2c2
   parameter int I2c2InputDelayCycles = 0,
+  // parameters for i3c0
+  parameter int unsigned I3c0ClkFreq = 96000000,
+  parameter bit I3c0PrimaryCtrl = 1'b1,
+  parameter bit I3c0SecondaryCtrl = 1'b0,
+  parameter bit I3c0Target = 1'b1,
+  parameter bit I3c0SWDirectMsgBuf = 1'b1,
+  parameter bit I3c0SWDirEnIFetch = 1'b0,
+  parameter logic [31:0] I3c0CompManufacturer = i3c_pkg::CompManufacturer,
+  parameter logic [31:0] I3c0CompVersion = i3c_pkg::CompVersion,
+  parameter logic [31:0] I3c0CompType = i3c_pkg::CompType,
+  parameter bit I3c0HalfCycleScl = 1,
+  parameter bit I3c0TargetExt = 1'b0,
+  // parameters for i3c1
+  parameter int unsigned I3c1ClkFreq = 96000000,
+  parameter bit I3c1PrimaryCtrl = 1'b1,
+  parameter bit I3c1SecondaryCtrl = 1'b0,
+  parameter bit I3c1Target = 1'b1,
+  parameter bit I3c1SWDirectMsgBuf = 1'b1,
+  parameter bit I3c1SWDirEnIFetch = 1'b0,
+  parameter logic [31:0] I3c1CompManufacturer = i3c_pkg::CompManufacturer,
+  parameter logic [31:0] I3c1CompVersion = i3c_pkg::CompVersion,
+  parameter logic [31:0] I3c1CompType = i3c_pkg::CompType,
+  parameter bit I3c1HalfCycleScl = 1,
+  parameter bit I3c1TargetExt = 1'b0,
   // parameters for lc_ctrl
   parameter bit SecLcCtrlVolatileRawUnlockEn = top_pkg::SecVolatileRawUnlockEn,
   parameter bit LcCtrlUseDmiInterface = 0,
@@ -344,6 +368,34 @@ module top_earlgrey #(
   logic       cio_i2c2_scl_d2p;
   logic       cio_i2c2_scl_en_d2p;
   logic       cio_i2c2_scl_p2d;
+  logic       cio_i3c0_scl_d2p;
+  logic       cio_i3c0_scl_en_d2p;
+  logic       cio_i3c0_scl_p2d;
+  logic       cio_i3c0_sda_d2p;
+  logic       cio_i3c0_sda_en_d2p;
+  logic       cio_i3c0_sda_p2d;
+  logic       cio_i3c0_ctrl_scl_pu_d2p;
+  logic       cio_i3c0_ctrl_scl_pu_en_d2p;
+  logic       cio_i3c0_ctrl_sda_pu_d2p;
+  logic       cio_i3c0_ctrl_sda_pu_en_d2p;
+  logic       cio_i3c0_scl_hk_d2p;
+  logic       cio_i3c0_scl_hk_en_d2p;
+  logic       cio_i3c0_sda_hk_d2p;
+  logic       cio_i3c0_sda_hk_en_d2p;
+  logic       cio_i3c1_scl_d2p;
+  logic       cio_i3c1_scl_en_d2p;
+  logic       cio_i3c1_scl_p2d;
+  logic       cio_i3c1_sda_d2p;
+  logic       cio_i3c1_sda_en_d2p;
+  logic       cio_i3c1_sda_p2d;
+  logic       cio_i3c1_ctrl_scl_pu_d2p;
+  logic       cio_i3c1_ctrl_scl_pu_en_d2p;
+  logic       cio_i3c1_ctrl_sda_pu_d2p;
+  logic       cio_i3c1_ctrl_sda_pu_en_d2p;
+  logic       cio_i3c1_scl_hk_d2p;
+  logic       cio_i3c1_scl_hk_en_d2p;
+  logic       cio_i3c1_sda_hk_d2p;
+  logic       cio_i3c1_sda_hk_en_d2p;
   logic [3:0] cio_spi_host0_sd_d2p;
   logic [3:0] cio_spi_host0_sd_en_d2p;
   logic [3:0] cio_spi_host0_sd_p2d;
@@ -396,6 +448,28 @@ module top_earlgrey #(
   .I2c0InputDelayCycles(I2c0InputDelayCycles),
   .I2c1InputDelayCycles(I2c1InputDelayCycles),
   .I2c2InputDelayCycles(I2c2InputDelayCycles),
+  .I3c0ClkFreq(I3c0ClkFreq),
+  .I3c0PrimaryCtrl(I3c0PrimaryCtrl),
+  .I3c0SecondaryCtrl(I3c0SecondaryCtrl),
+  .I3c0Target(I3c0Target),
+  .I3c0SWDirectMsgBuf(I3c0SWDirectMsgBuf),
+  .I3c0SWDirEnIFetch(I3c0SWDirEnIFetch),
+  .I3c0CompManufacturer(I3c0CompManufacturer),
+  .I3c0CompVersion(I3c0CompVersion),
+  .I3c0CompType(I3c0CompType),
+  .I3c0HalfCycleScl(I3c0HalfCycleScl),
+  .I3c0TargetExt(I3c0TargetExt),
+  .I3c1ClkFreq(I3c1ClkFreq),
+  .I3c1PrimaryCtrl(I3c1PrimaryCtrl),
+  .I3c1SecondaryCtrl(I3c1SecondaryCtrl),
+  .I3c1Target(I3c1Target),
+  .I3c1SWDirectMsgBuf(I3c1SWDirectMsgBuf),
+  .I3c1SWDirEnIFetch(I3c1SWDirEnIFetch),
+  .I3c1CompManufacturer(I3c1CompManufacturer),
+  .I3c1CompVersion(I3c1CompVersion),
+  .I3c1CompType(I3c1CompType),
+  .I3c1HalfCycleScl(I3c1HalfCycleScl),
+  .I3c1TargetExt(I3c1TargetExt),
   .SecLcCtrlVolatileRawUnlockEn(SecLcCtrlVolatileRawUnlockEn),
   .LcCtrlUseDmiInterface(LcCtrlUseDmiInterface),
   .LcCtrlSiliconCreatorId(LcCtrlSiliconCreatorId),
@@ -636,6 +710,34 @@ module top_earlgrey #(
     .cio_i2c2_scl_d2p_o                (cio_i2c2_scl_d2p         ),
     .cio_i2c2_scl_en_d2p_o             (cio_i2c2_scl_en_d2p      ),
     .cio_i2c2_scl_p2d_i                (cio_i2c2_scl_p2d         ),
+    .cio_i3c0_scl_d2p_o                (cio_i3c0_scl_d2p         ),
+    .cio_i3c0_scl_en_d2p_o             (cio_i3c0_scl_en_d2p      ),
+    .cio_i3c0_scl_p2d_i                (cio_i3c0_scl_p2d         ),
+    .cio_i3c0_sda_d2p_o                (cio_i3c0_sda_d2p         ),
+    .cio_i3c0_sda_en_d2p_o             (cio_i3c0_sda_en_d2p      ),
+    .cio_i3c0_sda_p2d_i                (cio_i3c0_sda_p2d         ),
+    .cio_i3c0_ctrl_scl_pu_d2p_o        (cio_i3c0_ctrl_scl_pu_d2p ),
+    .cio_i3c0_ctrl_scl_pu_en_d2p_o     (cio_i3c0_ctrl_scl_pu_en_d2p),
+    .cio_i3c0_ctrl_sda_pu_d2p_o        (cio_i3c0_ctrl_sda_pu_d2p ),
+    .cio_i3c0_ctrl_sda_pu_en_d2p_o     (cio_i3c0_ctrl_sda_pu_en_d2p),
+    .cio_i3c0_scl_hk_d2p_o             (cio_i3c0_scl_hk_d2p      ),
+    .cio_i3c0_scl_hk_en_d2p_o          (cio_i3c0_scl_hk_en_d2p   ),
+    .cio_i3c0_sda_hk_d2p_o             (cio_i3c0_sda_hk_d2p      ),
+    .cio_i3c0_sda_hk_en_d2p_o          (cio_i3c0_sda_hk_en_d2p   ),
+    .cio_i3c1_scl_d2p_o                (cio_i3c1_scl_d2p         ),
+    .cio_i3c1_scl_en_d2p_o             (cio_i3c1_scl_en_d2p      ),
+    .cio_i3c1_scl_p2d_i                (cio_i3c1_scl_p2d         ),
+    .cio_i3c1_sda_d2p_o                (cio_i3c1_sda_d2p         ),
+    .cio_i3c1_sda_en_d2p_o             (cio_i3c1_sda_en_d2p      ),
+    .cio_i3c1_sda_p2d_i                (cio_i3c1_sda_p2d         ),
+    .cio_i3c1_ctrl_scl_pu_d2p_o        (cio_i3c1_ctrl_scl_pu_d2p ),
+    .cio_i3c1_ctrl_scl_pu_en_d2p_o     (cio_i3c1_ctrl_scl_pu_en_d2p),
+    .cio_i3c1_ctrl_sda_pu_d2p_o        (cio_i3c1_ctrl_sda_pu_d2p ),
+    .cio_i3c1_ctrl_sda_pu_en_d2p_o     (cio_i3c1_ctrl_sda_pu_en_d2p),
+    .cio_i3c1_scl_hk_d2p_o             (cio_i3c1_scl_hk_d2p      ),
+    .cio_i3c1_scl_hk_en_d2p_o          (cio_i3c1_scl_hk_en_d2p   ),
+    .cio_i3c1_sda_hk_d2p_o             (cio_i3c1_sda_hk_d2p      ),
+    .cio_i3c1_sda_hk_en_d2p_o          (cio_i3c1_sda_hk_en_d2p   ),
     .cio_spi_host0_sd_d2p_o            (cio_spi_host0_sd_d2p     ),
     .cio_spi_host0_sd_en_d2p_o         (cio_spi_host0_sd_en_d2p  ),
     .cio_spi_host0_sd_p2d_i            (cio_spi_host0_sd_p2d     ),
@@ -840,6 +942,34 @@ module top_earlgrey #(
     .cio_i2c2_scl_d2p_i                (cio_i2c2_scl_d2p         ),
     .cio_i2c2_scl_en_d2p_i             (cio_i2c2_scl_en_d2p      ),
     .cio_i2c2_scl_p2d_o                (cio_i2c2_scl_p2d         ),
+    .cio_i3c0_scl_d2p_i                (cio_i3c0_scl_d2p         ),
+    .cio_i3c0_scl_en_d2p_i             (cio_i3c0_scl_en_d2p      ),
+    .cio_i3c0_scl_p2d_o                (cio_i3c0_scl_p2d         ),
+    .cio_i3c0_sda_d2p_i                (cio_i3c0_sda_d2p         ),
+    .cio_i3c0_sda_en_d2p_i             (cio_i3c0_sda_en_d2p      ),
+    .cio_i3c0_sda_p2d_o                (cio_i3c0_sda_p2d         ),
+    .cio_i3c0_ctrl_scl_pu_d2p_i        (cio_i3c0_ctrl_scl_pu_d2p ),
+    .cio_i3c0_ctrl_scl_pu_en_d2p_i     (cio_i3c0_ctrl_scl_pu_en_d2p),
+    .cio_i3c0_ctrl_sda_pu_d2p_i        (cio_i3c0_ctrl_sda_pu_d2p ),
+    .cio_i3c0_ctrl_sda_pu_en_d2p_i     (cio_i3c0_ctrl_sda_pu_en_d2p),
+    .cio_i3c0_scl_hk_d2p_i             (cio_i3c0_scl_hk_d2p      ),
+    .cio_i3c0_scl_hk_en_d2p_i          (cio_i3c0_scl_hk_en_d2p   ),
+    .cio_i3c0_sda_hk_d2p_i             (cio_i3c0_sda_hk_d2p      ),
+    .cio_i3c0_sda_hk_en_d2p_i          (cio_i3c0_sda_hk_en_d2p   ),
+    .cio_i3c1_scl_d2p_i                (cio_i3c1_scl_d2p         ),
+    .cio_i3c1_scl_en_d2p_i             (cio_i3c1_scl_en_d2p      ),
+    .cio_i3c1_scl_p2d_o                (cio_i3c1_scl_p2d         ),
+    .cio_i3c1_sda_d2p_i                (cio_i3c1_sda_d2p         ),
+    .cio_i3c1_sda_en_d2p_i             (cio_i3c1_sda_en_d2p      ),
+    .cio_i3c1_sda_p2d_o                (cio_i3c1_sda_p2d         ),
+    .cio_i3c1_ctrl_scl_pu_d2p_i        (cio_i3c1_ctrl_scl_pu_d2p ),
+    .cio_i3c1_ctrl_scl_pu_en_d2p_i     (cio_i3c1_ctrl_scl_pu_en_d2p),
+    .cio_i3c1_ctrl_sda_pu_d2p_i        (cio_i3c1_ctrl_sda_pu_d2p ),
+    .cio_i3c1_ctrl_sda_pu_en_d2p_i     (cio_i3c1_ctrl_sda_pu_en_d2p),
+    .cio_i3c1_scl_hk_d2p_i             (cio_i3c1_scl_hk_d2p      ),
+    .cio_i3c1_scl_hk_en_d2p_i          (cio_i3c1_scl_hk_en_d2p   ),
+    .cio_i3c1_sda_hk_d2p_i             (cio_i3c1_sda_hk_d2p      ),
+    .cio_i3c1_sda_hk_en_d2p_i          (cio_i3c1_sda_hk_en_d2p   ),
     .cio_spi_host0_sd_d2p_i            (cio_spi_host0_sd_d2p     ),
     .cio_spi_host0_sd_en_d2p_i         (cio_spi_host0_sd_en_d2p  ),
     .cio_spi_host0_sd_p2d_o            (cio_spi_host0_sd_p2d     ),
