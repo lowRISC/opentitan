@@ -417,6 +417,11 @@ module keymgr_dpe_ctrl
   // op_ack: comes back from the inner FSM (op_state) to confirm that the current operation is acked
   assign op_done_o = op_req ? op_ack : (init_o | invalid_op);
 
+  // Check if the op is known to the keymgr_dpe
+  logic op_known;
+  assign op_known = op_i inside {OpDpeAdvance, OpDpeErase, OpDpeGenSwOut,
+                                 OpDpeGenHwOut, OpDpeDisable, OpDpeLoadRootKey};
+
   // SEC_CM: CTRL.FSM.LOCAL_ESC
   // begin invalidation when faults are observed.
   // sync faults only invalidate on transaction boundaries
@@ -542,13 +547,14 @@ module keymgr_dpe_ctrl
       // In Available state, advance/generate/erase/disable operations are accepted.
       // Except for disable command or unexpected faults, FSM should linger on this state.
       StCtrlDpeAvailable: begin
-        op_req = op_start_i;
+        op_req = op_start_i & op_known;
 
         // This is the operational state, most operations are valid (modulo policy violations).
-        invalid_op = invalid_advance |
-                     invalid_erase   |
-                     invalid_gen     |
-                     invalid_load    |
+        invalid_op = invalid_advance          |
+                     invalid_erase            |
+                     invalid_gen              |
+                     invalid_load             |
+                     (op_start_i & ~op_known) |
                      (~en_i & op_start_i);
 
         // Given that the root key was latched by an earlier FSM state, we need to take care of

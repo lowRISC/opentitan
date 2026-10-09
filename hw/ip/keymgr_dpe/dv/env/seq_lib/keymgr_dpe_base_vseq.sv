@@ -309,7 +309,12 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
           keymgr_dpe_pkg::StWorkDpeReset
         });
       end
+      keymgr_dpe_pkg::OpDpeLoadRootKey: begin
+        // TODO(#31746): Support `OpDpeLoadRootKey` in blocklevel dv
+        is_good_op = 0;
+      end
       default: begin
+        is_good_op = 0;
       end
     endcase
 
