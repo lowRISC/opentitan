@@ -91,9 +91,43 @@ module otbn
   input keymgr_dpe_pkg::wide_hw_key_req_t keymgr_key_i,
 
   // KMAC application interface.
-  output kmac_pkg::app_req_t kmac_data_o,
-  input  kmac_pkg::app_rsp_t kmac_data_i
+  output kmac_pkg::app_req_t kmac_app_o,
+  input  kmac_pkg::app_rsp_t kmac_app_i,
+
+  // Application interface from keymgr when OTBN is used as hashing engine
+  input  kmac_pkg::app_req_t    keymgr_app_i,
+  output kmac_pkg::app_rsp_t    keymgr_app_o,
+  input  prim_mubi_pkg::mubi4_t keymgr_sensitive_key_i
 );
+
+  // TODO(#915): Connect keymgr_dpe and otbn - app interface (rsp)
+  localparam int NumOutBufBitsKeymgrApp = $bits(kmac_pkg::app_rsp_t);
+  prim_buf #(
+    .Width  (NumOutBufBitsKeymgrApp)
+  ) u_anchor_buf_app_rsp (
+    .in_i   ('0),
+    .out_o  (keymgr_app_o)
+  );
+
+  // TODO(#915): Connect keymgr_dpe and otbn - app interface (req)
+  localparam int NumInBufBitsKeymgrApp = $bits(kmac_pkg::app_req_t);
+  kmac_pkg::app_req_t unused_req;
+  prim_buf #(
+    .Width  (NumInBufBitsKeymgrApp)
+  ) u_anchor_buf_app_req (
+    .in_i   (keymgr_app_i),
+    .out_o  (unused_req)
+  );
+
+  // TODO(#915): Connect keymgr_dpe and otbn - sensitive key indicator
+  localparam int NumInBufBitsSensKey = $bits(prim_mubi_pkg::mubi4_t);
+  logic [NumInBufBitsSensKey-1:0] unused_key;
+  prim_buf #(
+    .Width  (NumInBufBitsSensKey)
+  ) u_anchor_buf_sens_key (
+    .in_i   (NumInBufBitsSensKey'(keymgr_sensitive_key_i)),
+    .out_o  (unused_key)
+  );
 
   import prim_mubi_pkg::*;
   import prim_util_pkg::vbits;
@@ -1243,10 +1277,8 @@ module otbn
     .sideload_key_shares_i       (keymgr_key_i.key),
     .sideload_key_shares_valid_i ({2{keymgr_key_i.valid}}),
 
-    // The naming kmac_data is just to be consistent with other IPs connecting to KMAC. From here
-    // on use more sensible name.
-    .kmac_app_req_o(kmac_data_o),
-    .kmac_app_rsp_i(kmac_data_i)
+    .kmac_app_req_o              (kmac_app_o),
+    .kmac_app_rsp_i              (kmac_app_i)
   );
 
   always_ff @(posedge clk_i or negedge rst_n) begin
@@ -1477,13 +1509,14 @@ module otbn
   `ASSERT_KNOWN(EdnUrndOKnown_A, edn_urnd_o, clk_edn_i, !rst_edn_ni)
   `ASSERT_KNOWN(OtbnOtpKeyO_A, otbn_otp_key_o, clk_otp_i, !rst_otp_ni)
   `ASSERT_KNOWN(ErrBitsKnown_A, err_bits)
+  `ASSERT_KNOWN(KeymgrAppRspKnownO_A, keymgr_app_o)
   // The data part of the request directly originates from WSRs. These are non resettable flops.
   // When a simulation starts, these are still X as only a secure wipe will set a value. We thus
   // only check whether the data is known when the valid is set.
-  `ASSERT_KNOWN(KmacReqKnown_A, {kmac_data_o.req_last, kmac_data_o.req_valid,
-                                 kmac_data_o.rsp_ready, kmac_data_o.strb})
-  `ASSERT_KNOWN_IF(KmacReqDataKnown_A, {kmac_data_o.data_s0, kmac_data_o.data_s1},
-                   kmac_data_o.req_valid)
+  `ASSERT_KNOWN(KmacReqKnown_A, {kmac_app_o.req_last, kmac_app_o.req_valid,
+                                 kmac_app_o.rsp_ready, kmac_app_o.strb})
+  `ASSERT_KNOWN_IF(KmacReqDataKnown_A, {kmac_app_o.data_s0, kmac_app_o.data_s1},
+                   kmac_app_o.req_valid)
 
   // Incoming key must be valid (other inputs go via prim modules that handle the X checks).
   `ASSERT_KNOWN(KeyMgrKeyValid_A, keymgr_key_i.valid)
