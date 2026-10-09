@@ -329,6 +329,17 @@ package dm;
     CSR_INSTRET        = 12'hC02
   } csr_reg_t;
 
+  // CHERIoT Special Capability Registers (SCRs).
+  //
+  // In CHERIoT mode the debug scratch registers are capability registers reached with CSpecialRW
+  // rather than CSRs reached with CSRRW, and they are addressed by a five bit SCR index instead of
+  // a twelve bit CSR address. The RV32I CSR_DSCRATCH0/CSR_DSCRATCH1 entries above are deliberately
+  // kept. A debug module that supports both ISAs needs both encodings.
+  typedef enum logic [4:0] {
+    SCR_DSCRATCHC0 = 5'h19,
+    SCR_DSCRATCHC1 = 5'h1a
+  } spec_csr_e;
+
   // SBA state
   typedef enum logic [2:0] {
     Idle,
@@ -421,6 +432,19 @@ package dm;
                                         logic [4:0] dest);
     // rs1, CSRRS, rd, OpCode System
     return {csr, 5'h0, 3'h2, dest, 7'h73};
+  endfunction
+
+  // CHERIoT equivalents of csrw/csrr for the Special Capability Registers.
+  function automatic logic [31:0] cspecialw (spec_csr_e  csr,
+                                             logic [4:0] rs1);
+    // CSpecialRW c0, scr, csrc -> discards the read value
+    return {7'h01, csr, rs1, 3'h0, 5'h0, 7'h5b};
+  endfunction
+
+  function automatic logic [31:0] cspecialr (spec_csr_e  csr,
+                                             logic [4:0] dest);
+    // CSpecialRW cdest, scr, c0 -> leaves the register unchanged
+    return {7'h01, csr, 5'h0, 3'h0, dest, 7'h5b};
   endfunction
 
   function automatic logic [31:0] branch(logic [4:0]  src2,
