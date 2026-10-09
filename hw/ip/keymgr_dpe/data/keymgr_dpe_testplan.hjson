@@ -25,7 +25,8 @@
             - At each stage, issue gen-hw-out and gen-sw-out using the previously loaded key slot.
             - At each stage, advance to the next stage by randomly picking a new destination slot y,
               and advancing to it from slot x (x = y is also allowed).
-            - Use fixed values for max_key_version = 0 and policy.allow_child = 1 during advance calls.
+            - Use fixed values for max_key_version = 0 / policy.allow_child = 1 /
+              policy.allow_keygen = 1 during advance calls.
             - Use default/fixed values for HW/SW inputs. Use key_version = 0 during key generation.
             - During some erase and disable operations, hold the decoy data of the KMAC interface at
               all zeros or all ones.

@@ -59,14 +59,15 @@ package keymgr_dpe_pkg;
     OpDoneFail    = 3
   } keymgr_dpe_op_status_e;
 
-  // TODO(#354): Define further policy bits and extend this struct
   typedef struct packed {
+    logic allow_keygen;
     logic retain_parent;
     logic exportable;
     logic allow_child;
   } keymgr_dpe_policy_t;
 
   localparam keymgr_dpe_policy_t DEFAULT_UDS_POLICY = '{
+    allow_keygen  : 1'b0,
     retain_parent : 1'b0,
     exportable    : 1'b0,
     allow_child   : 1'b1

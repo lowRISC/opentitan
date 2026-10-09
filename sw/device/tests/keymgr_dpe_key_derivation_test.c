@@ -345,8 +345,8 @@ bool key_derivation_test(void) {
   adv_params.binding_value[1] = 0xa226160d;
   adv_params.binding_value[0] = 0x45790409;
   adv_params.max_key_version = 0x100;
-  // Children allowed without retaining the partent slot
-  adv_params.slot_policy = 1;
+  // Key generation and children allowed without retaining the parent slot
+  adv_params.slot_policy = 9;
   // Generate a new (derived from OwnerKey) DPE context
   advance(&adv_params);
   // DV SYNC MESSAGE

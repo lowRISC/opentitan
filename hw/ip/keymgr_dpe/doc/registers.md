@@ -349,21 +349,22 @@ Register write enable for SLOT_POLICY
 Policy bits for the child DPE context
 - Offset: `0x2c`
 - Reset default: `0x0`
-- Reset mask: `0x7`
+- Reset mask: `0xf`
 - Register enable: [`SLOT_POLICY_REGWEN`](#slot_policy_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ALLOW_CHILD", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EXPORTABLE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RETAIN_PARENT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
+{"reg": [{"name": "ALLOW_CHILD", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EXPORTABLE", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RETAIN_PARENT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ALLOW_KEYGEN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name          | Description                                                       |
-|:------:|:------:|:-------:|:--------------|:------------------------------------------------------------------|
-|  31:3  |        |         |               | Reserved                                                          |
-|   2    |   rw   |   0x0   | RETAIN_PARENT | Set whether further advance operations force erasure of the slot. |
-|   1    |   rw   |   0x0   | EXPORTABLE    | Set whether the key for the target slot is exportable.            |
-|   0    |   rw   |   0x0   | ALLOW_CHILD   | Set whether this context allows derivation of further children.   |
+|  Bits  |  Type  |  Reset  | Name          | Description                                                                                                       |
+|:------:|:------:|:-------:|:--------------|:------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |               | Reserved                                                                                                          |
+|   3    |   rw   |   0x0   | ALLOW_KEYGEN  | Set whether this context can be used to generate keys. This applies to both software and sideload key generation. |
+|   2    |   rw   |   0x0   | RETAIN_PARENT | Set whether further advance operations force erasure of the slot.                                                 |
+|   1    |   rw   |   0x0   | EXPORTABLE    | Set whether the key for the target slot is exportable.                                                            |
+|   0    |   rw   |   0x0   | ALLOW_CHILD   | Set whether this context allows derivation of further children.                                                   |
 
 ## SW_BINDING_REGWEN
 Register write enable for SOFTWARE_BINDING
@@ -671,7 +672,7 @@ Entries at index `NumInstHwSlot` and above always read as 0.
 Together with [`METADATA_LOW`](#metadata_low), this register lets software inspect the non-secret
 metadata of the DPE context.
 - Reset default: `0x0`
-- Reset mask: `0x3f`
+- Reset mask: `0x7f`
 
 ### Instances
 
@@ -690,17 +691,21 @@ metadata of the DPE context.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "BOOT_STAGE", "bits": 2, "attr": ["ro"], "rotate": -90}, {"name": "ALLOW_CHILD_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "EXPORTABLE_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RETAIN_PARENT_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "BOOT_STAGE", "bits": 2, "attr": ["ro"], "rotate": -90}, {"name": "ALLOW_CHILD_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "EXPORTABLE_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RETAIN_PARENT_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALLOW_KEYGEN_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                         |
 |:------:|:------:|:-------:|:-------------------------------------------------------------|
-|  31:6  |        |         | Reserved                                                     |
+|  31:7  |        |         | Reserved                                                     |
+|   6    |   ro   |   0x0   | [ALLOW_KEYGEN_POLICY](#metadata_high--allow_keygen_policy)   |
 |   5    |   ro   |   0x0   | [RETAIN_PARENT_POLICY](#metadata_high--retain_parent_policy) |
 |   4    |   ro   |   0x0   | [EXPORTABLE_POLICY](#metadata_high--exportable_policy)       |
 |   3    |   ro   |   0x0   | [ALLOW_CHILD_POLICY](#metadata_high--allow_child_policy)     |
 |  2:1   |   ro   |   0x0   | [BOOT_STAGE](#metadata_high--boot_stage)                     |
 |   0    |   ro   |   0x0   | [VALID](#metadata_high--valid)                               |
+
+### METADATA_HIGH . ALLOW_KEYGEN_POLICY
+Read the `allow_keygen` policy applied to the DPE context in this slot.
 
 ### METADATA_HIGH . RETAIN_PARENT_POLICY
 Read the `retain_parent` policy applied to the DPE context in this slot.

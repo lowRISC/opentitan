@@ -361,6 +361,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           key_policy.exportable;
         current_internal_key[current_key_slot.dst_slot].key_policy.retain_parent =
           key_policy.retain_parent;
+        current_internal_key[current_key_slot.dst_slot].key_policy.allow_keygen =
+          key_policy.allow_keygen;
         // max version should also be set from the max_version signal that was populated
         // from the last max_key_ver_shadowed csr write before the "start" operation was enabled
         current_internal_key[current_key_slot.dst_slot].max_key_version = max_key_version;
@@ -754,9 +756,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         // Capture the latest key policy write
         // only valid when start is enabled
         if (addr_phase_write) begin
-          key_policy.allow_child   = item.a_data[0];
-          key_policy.exportable    = item.a_data[1];
-          key_policy.retain_parent = item.a_data[2];
+          key_policy.allow_child    = item.a_data[0];
+          key_policy.exportable     = item.a_data[1];
+          key_policy.retain_parent  = item.a_data[2];
+          key_policy.allow_keygen   = item.a_data[3];
           `uvm_info(`gfn,
             $sformatf("key_policy write with item.a_data 'h%h, key_policy = %p",
               item.a_data, key_policy), UVM_LOW)
@@ -1238,6 +1241,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               `uvm_info(`gfn,
                 $sformatf("get_invalid_op: op %s current_state: %s valid == 0 err",
                 op.name, current_state.name), UVM_MEDIUM)
+              return 1;
+            end
+            if (!current_internal_key[current_key_slot.src_slot].key_policy.allow_keygen) begin
+              `uvm_info(`gfn,
+                        $sformatf("get_invalid_op: op %s current_state: %s allow_keygen == 0 err",
+                                  op.name, current_state.name),
+                        UVM_MEDIUM)
               return 1;
             end
             if (`gmv(ral.key_version[0]) >
@@ -1733,6 +1743,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     is_kmac_invalid_data  = 0;
     is_sw_share_corrupted = 0;
     load_uds_with_randomness = 0;
+    key_policy = 0;
     foreach (current_internal_key[slot]) begin
       current_internal_key[slot].key = '0;
       current_internal_key[slot].key_policy = '0;

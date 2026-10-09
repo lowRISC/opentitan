@@ -19,6 +19,7 @@ class keymgr_dpe_smoke_vseq extends keymgr_dpe_base_vseq;
     policy.allow_child == 1;
     policy.exportable == 0;
     soft policy.retain_parent == 1;
+    policy.allow_keygen == 1;
   }
 
   // for initial latch of OTP key src slot does not matter

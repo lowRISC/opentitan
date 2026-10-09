@@ -708,8 +708,9 @@ module keymgr_dpe_ctrl
 
   assign invalid_erase = erase_req & ~destination_slot_valid;
 
-  assign invalid_gen = gen_req & (~active_key_slot_o.valid |
-                                  ~key_version_vld_o |
+  assign invalid_gen = gen_req & (~active_key_slot_o.valid         |
+                                  ~active_slot_policy.allow_keygen |
+                                  ~key_version_vld_o               |
                                   dest_sel_oob_i);
 
   assign invalid_load = load_req & (~root_key_i.valid      |

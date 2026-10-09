@@ -291,6 +291,7 @@ module keymgr_dpe
       assign hw2reg.metadata_high[i].exportable_policy.d    = metadata[i].key_policy.exportable;
       assign hw2reg.metadata_high[i].retain_parent_policy.d = metadata[i].key_policy.retain_parent;
       assign hw2reg.metadata_high[i].allow_child_policy.d   = metadata[i].key_policy.allow_child;
+      assign hw2reg.metadata_high[i].allow_keygen_policy.d  = metadata[i].key_policy.allow_keygen;
       assign hw2reg.metadata_high[i].boot_stage.d           = metadata[i].boot_stage;
       assign hw2reg.metadata_low[i].d                       = metadata[i].max_key_version;
     end else begin : gen_tieoff_slot
@@ -298,6 +299,7 @@ module keymgr_dpe
       assign hw2reg.metadata_high[i].exportable_policy.d    = '0;
       assign hw2reg.metadata_high[i].retain_parent_policy.d = '0;
       assign hw2reg.metadata_high[i].allow_child_policy.d   = '0;
+      assign hw2reg.metadata_high[i].allow_keygen_policy.d  = '0;
       assign hw2reg.metadata_high[i].boot_stage.d           = '0;
       assign hw2reg.metadata_low[i].d                       = '0;
     end

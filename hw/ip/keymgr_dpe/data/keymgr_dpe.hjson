@@ -784,6 +784,14 @@
             Set whether further advance operations force erasure of the slot.
           '''
         },
+        { bits: "3",
+          name: "ALLOW_KEYGEN",
+          resval: "0"
+          desc: '''
+            Set whether this context can be used to generate keys.
+            This applies to both software and sideload key generation.
+          '''
+        },
       ]
     },
 
@@ -1157,6 +1165,13 @@
               resval: "0"
               desc: '''
                 Read the `retain_parent` policy applied to the DPE context in this slot.
+              '''
+            },
+            { bits: "6",
+              name: "ALLOW_KEYGEN_POLICY",
+              resval: "0"
+              desc: '''
+                Read the `allow_keygen` policy applied to the DPE context in this slot.
               '''
             },
         ],
