@@ -24,6 +24,8 @@ module dm_top #(
   // Bitmask to select physically available harts for systems
   // that don't use hart numbers in a contiguous fashion.
   parameter logic [NrHarts-1:0] SelectableHarts  = {NrHarts{1'b1}},
+  // Include the CHERIoT debug ROM and let cheriot_enable_i select CHERIoT mode
+  parameter bit                 CheriotSupport   = 1'b0,
   // toggle new behavior to drive master_be_o during a read
   parameter bit                 ReadByteEnable   = 1
 ) (
@@ -36,6 +38,8 @@ module dm_top #(
   // register is a word address and not a byte address. This value is passed in as a static signal
   // so that it becomes possible to assign this value with chiplet tie-offs or straps, if needed.
   input  logic [31:0]           next_dm_addr_i,
+  // Select CHERIoT mode
+  input  prim_mubi_pkg::mubi4_t cheriot_enable_i,
   input  logic                  testmode_i,
   output logic                  ndmreset_o,  // non-debug module reset
   input  logic                  ndmreset_ack_i, // non-debug module reset acknowledgement pulse
@@ -208,11 +212,13 @@ module dm_top #(
     .NrHarts(NrHarts),
     .BusWidth(BusWidth),
     .SelectableHarts(SelectableHarts),
+    .CheriotSupport(CheriotSupport),
     .DmBaseAddress(DmBaseAddress)
   ) i_dm_mem (
     .clk_i,
     .rst_ni,
     .debug_req_o,
+    .cheriot_enable_i,
     .ndmreset_i              ( ndmreset              ),
     .hartsel_i               ( hartsel               ),
     .haltreq_i               ( haltreq               ),
