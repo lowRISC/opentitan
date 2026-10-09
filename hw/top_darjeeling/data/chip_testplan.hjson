@@ -2179,6 +2179,35 @@
       stage: V2
       tests: ["chip_sw_otbn_mem_scramble"]
     }
+    {
+      name: chip_sw_otbn_mai
+      desc: '''Verify the OTBN masked arithmetic interface (MAI).
+
+            - SW loads an OTBN app and writes a secret and two operands to dmem.
+            - The app runs a B2A conversion followed by an A2B conversion on the secret, and a
+              secAdd on the two operands.
+            - SW checks that OTBN completed without errors, that the secret is unchanged after the
+              round trip and that the secAdd result is the element-wise sum of the operands.
+            '''
+      stage: V2
+      tests: ["chip_sw_otbn_mai"]
+    }
+    {
+      name: chip_sw_otbn_wfi
+      desc: '''Verify the OTBN WFI instruction and the RESUME command.
+
+            - SW enables WFI, writes a value to dmem and starts an OTBN app that copies it and then
+              executes WFI.
+            - SW polls until OTBN is paused, then checks that the done interrupt is pending and
+              checks the copied value.
+            - SW writes a second value, issues RESUME and polls the interrupt state until the done
+              interrupt of the second WFI is pending. It then checks the status and the copied value
+              again.
+            - SW issues RESUME once more and checks that OTBN completes without errors.
+            '''
+      stage: V2
+      tests: ["chip_sw_otbn_wfi"]
+    }
 
     /////////////////////////////////////////////////////
     // Memory & Controllers                            //
