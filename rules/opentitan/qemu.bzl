@@ -41,6 +41,7 @@ def qemu_params(
         traces = [],
         qemu_args = [],
         bootstrap = False,
+        shard_count = None,
         **kwargs):
     extra_params = {
         "icount": str(icount),
@@ -58,6 +59,7 @@ def qemu_params(
         tags = tags,
         timeout = timeout,
         local = local,
+        shard_count = shard_count,
         test_harness = test_harness,
         binaries = binaries,
         rom = rom,
