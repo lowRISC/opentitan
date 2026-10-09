@@ -1363,7 +1363,7 @@
       // CHERIoT connections
       'cheriot.meta_sram_tl'     : ['sram_ctrl_meta.ram_tl'],
       'cheriot.cored_tag_d2h'    : ['rv_core_ibex.cored_tag_d2h'],
-      'rv_core_ibex.cheriot_ena' : ['cheriot.cheriot_ena'],
+      'rv_core_ibex.cheriot_ena' : ['cheriot.cheriot_ena', 'rv_dm.cheriot_ena'],
     },
 
     // top is to connect to top net/struct.

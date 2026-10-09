@@ -6337,6 +6337,25 @@
           index: -1
         }
         {
+          name: cheriot_ena
+          desc:
+            '''
+            CHERIoT mode enable.
+            Selects which ROM and which abstract command encodings the debug module uses.
+            Tops whose core does not implement CHERIoT can tie to False.
+            '''
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi4False
+          inst_name: rv_dm
+          domain: Main
+          top_signame: rv_core_ibex_cheriot_ena
+          index: -1
+        }
+        {
           name: lc_init_done
           desc: Lifecycle initialization done signal coming from life cycle controller.
           struct: lc_tx
@@ -11032,6 +11051,7 @@
       rv_core_ibex.cheriot_ena:
       [
         cheriot.cheriot_ena
+        rv_dm.cheriot_ena
       ]
       pwrmgr.wakeups:
       [
@@ -24830,6 +24850,25 @@
         default: ""
         domain: Main
         top_signame: pinmux_rv_jtag
+        index: -1
+      }
+      {
+        name: cheriot_ena
+        desc:
+          '''
+          CHERIoT mode enable.
+          Selects which ROM and which abstract command encodings the debug module uses.
+          Tops whose core does not implement CHERIoT can tie to False.
+          '''
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi4False
+        inst_name: rv_dm
+        domain: Main
+        top_signame: rv_core_ibex_cheriot_ena
         index: -1
       }
       {

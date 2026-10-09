@@ -1468,6 +1468,7 @@ module darjeeling_pd_main #(
     .next_dm_addr_i(rv_dm_next_dm_addr_i),
     .jtag_i(jtag_pkg::JTAG_REQ_DEFAULT),
     .jtag_o(),
+    .cheriot_ena_i(prim_mubi_pkg::MuBi4False),
     .lc_init_done_i(lc_ctrl_lc_init_done),
     .lc_hw_debug_clr_i(lc_ctrl_lc_hw_debug_clr),
     .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
