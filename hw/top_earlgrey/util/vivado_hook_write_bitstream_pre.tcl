@@ -115,4 +115,7 @@ dict set memInfo rom [apply $gen_mem_info $rom_brams $mem_type_regex 40 1 "Proce
 generate_mmi "memories.mmi" 1
 
 # For debugging purposes, dump the INIT_XX strings for ROM.
-dump_init_strings "rom_init_strings.txt" $rom_brams 3
+# Only with CW340_DEBUG=1: this is very slow on a flattened netlist.
+if {[info exists ::env(CW340_DEBUG)] && [string is true -strict $::env(CW340_DEBUG)]} {
+  dump_init_strings "rom_init_strings.txt" $rom_brams 3
+}
