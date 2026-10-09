@@ -18,6 +18,41 @@ The [Debug Module Registers](https://github.com/lowRISC/opentitan/blob/master/hw
 There is no access to these via the TL-UL device interface.
 
 
+## CHERIoT Mode
+
+The debug module supports RV32I and CHERIoT harts if the `CheriotSupport` parameter is set.
+In that case, `cheriot_ena_i` selects the mode at runtime and only selects CHERIoT with `MuBi4True`.
+The mode must not change while a hart is halted.
+In Earl Grey, `rv_core_ibex` drives `cheriot_ena_i` and switches from RV32I to CHERIoT once.
+In CHERIoT mode:
+
+- A separate CHERIoT debug ROM is used.
+- Abstract commands save and restore their scratch registers with `CSpecialRW`, so borrowed capabilities keep their tags.
+- `aarsize == 3` is supported and transfers a capability without its tag: address in `data0`, metadata in `data1`.
+
+Register mapping for `aarsize == 3` in CHERIoT mode:
+
+- A GPR (`regno` 0x1000 to 0x101f) transfers the address and metadata of the capability held in that register.
+- `regno` 0x0 to 0x1f accesses the Special Capability Register (SCR). Higher `regno` values in the CSR range are rejected as unsupported.
+
+Limitations of CHERIoT mode:
+
+- Tags are not transported through `data0`/`data1` in either direction.
+  A read does not return the tag and a capability written by the debugger is untagged.
+  This includes GPRs written from GDB.
+  To check a tag, the debugger can run `cgettag` in the program buffer and read the result back.
+  This needs a scratch GPR for the result.
+  Unlike the scratch registers of abstract commands, the debugger saves this one through `data0`/`data1` (as current OpenOCD does), not in an SCR, so it loses its own tag.
+- SBA bypasses the CHERIoT tag filter and does not clear tags on writes.
+- In debug mode, Ibex disables its CHERIoT bounds and permission checks, so it can access any memory.
+- The debug module is currently not designed to protect capabilities and must never be used in a system that relies on capabilities to protect production assets.
+
+This follows the abstract command interface of the CHERIoT-Platform `cheriot-dbg-module`, so the debugger must be CHERIoT-aware.
+OpenTitan's host tooling (`util/openocd/`, `opentitanlib`) does not support CHERIoT mode yet.
+Stock OpenOCD is not CHERIoT-aware: if it connects after the mode switch, its 64-bit probe read of `s0` succeeds, so it treats the hart as RV64.
+Connecting it before the mode switch allows basic debugging with 32-bit register accesses, but only with `riscv set_mem_access sysbus`, as in `util/openocd/target/lowrisc-earlgrey.cfg`.
+Otherwise, OpenOCD accesses memory through the program buffer and saves and restores `s0`, `s1` and `s2` with 32-bit accesses, which clears their tags.
+
 ## Late Debug Enable Mechanism
 
 The RV_DM is gated by life cycle so that it is only usable during TEST_UNLOCKED*, DEV and RMA life cycle states where the LC_HW_DEBUG_EN signal is asserted.
