@@ -435,13 +435,13 @@ package dm;
   endfunction
 
   // CHERIoT equivalents of csrw/csrr for the Special Capability Registers.
-  function automatic logic [31:0] cspecialw (spec_csr_e  csr,
+  function automatic logic [31:0] cspecialw (logic [4:0] csr,
                                              logic [4:0] rs1);
     // CSpecialRW c0, scr, csrc -> discards the read value
     return {7'h01, csr, rs1, 3'h0, 5'h0, 7'h5b};
   endfunction
 
-  function automatic logic [31:0] cspecialr (spec_csr_e  csr,
+  function automatic logic [31:0] cspecialr (logic [4:0] csr,
                                              logic [4:0] dest);
     // CSpecialRW cdest, scr, c0 -> leaves the register unchanged
     return {7'h01, csr, 5'h0, 3'h0, dest, 7'h5b};
