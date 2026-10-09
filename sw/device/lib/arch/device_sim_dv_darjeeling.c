@@ -18,10 +18,14 @@ static inline uintptr_t rv_core_ibex_base(void) {
 }
 
 /**
- * Device-specific symbol definitions for the DV simulation device.
+ * Device-specific symbol definitions for the Darjeeling DV simulation device.
  *
- * Clock frequencies below are for Earlgrey and EnglishBreakfast; see
- * `device_sim_dv_darjeeling.c` for Darjeeling.
+ * The clock frequencies are the calibrated power-up frequencies of the AST
+ * oscillator models in `hw/top_darjeeling/ip/ast/rtl/{sys,io,aon}_osc.sv` and
+ * must match the DV clock table in `hw/top_darjeeling/sw/dt/sim_dv.c`. As on
+ * Earlgrey, they do not track bench run-time options that change the system
+ * clock (`+cal_sys_clk_70mhz`, `+en_jitter`): the same image is used for
+ * those run modes.
  */
 
 const device_type_t kDeviceType = kDeviceSimDV;
@@ -29,19 +33,22 @@ const device_type_t kDeviceType = kDeviceSimDV;
 // TODO: DV testbench completely randomizes these. Need to add code to
 // retrieve these from a preloaded memory location set by the testbench.
 
-const uint64_t kClockFreqCpuMhz = 100;
+const uint64_t kClockFreqCpuMhz = 1000;
 
 const uint64_t kClockFreqCpuHz = kClockFreqCpuMhz * 1000 * 1000;
 
 uint64_t to_cpu_cycles(uint64_t usec) { return usec * kClockFreqCpuMhz; }
 
-const uint64_t kClockFreqHiSpeedPeripheralHz = 96 * 1000 * 1000;  // 96MHz
+// Darjeeling has no derived IO clocks: every IO peripheral runs on the
+// undivided io clock.
+const uint64_t kClockFreqHiSpeedPeripheralHz = 250 * 1000 * 1000;  // 250MHz
 
-const uint64_t kClockFreqPeripheralHz = 24 * 1000 * 1000;  // 24MHz
+const uint64_t kClockFreqPeripheralHz = 250 * 1000 * 1000;  // 250MHz
 
-const uint64_t kClockFreqUsbHz = 48 * 1000 * 1000;  // 48MHz
+// Darjeeling has no USB clock.
+const uint64_t kClockFreqUsbHz = 0;
 
-const uint64_t kClockFreqAonHz = 200 * 1000;  // 200kHz
+const uint64_t kClockFreqAonHz = 625 * 100 * 1000;  // 62.5MHz
 
 const uint64_t kUartBaudrate = 1 * 1000 * 1000;  // 1Mbps
 
