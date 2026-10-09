@@ -393,7 +393,8 @@ rg_srcs = get_rg_srcs(typed_clocks)
   % if ext_clk_bypass:
     .mubi_i(calib_rdy_i),
   % else:
-    .mubi_i(MuBi4False),
+    // No calib_rdy_i on this top: the clocks are always considered calibrated.
+    .mubi_i(MuBi4True),
   % endif
     .mubi_o({calib_rdy})
   );
