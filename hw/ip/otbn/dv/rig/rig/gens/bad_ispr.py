@@ -6,7 +6,7 @@ import random
 from typing import Optional, Tuple
 
 from shared.insn_yaml import InsnsFile
-from shared.operand import ImmOperandType
+from shared.operand import ImmOperandType, IsrOperandType
 
 from ..config import Config
 from ..program import ProgInsn, Program
@@ -30,7 +30,7 @@ class BadIspr(SnippetGen):
 
         for insn in insns_file.insns:
             # Pick only the instructions pertaining to CSR and WSR.
-            if insn.mnemonic not in ['csrrw', 'csrrs', 'wsrs', 'wsrw']:
+            if insn.mnemonic not in ['csrrw', 'csrrs', 'bn.wsrr', 'bn.wsrw']:
                 continue
 
             assert not (insn.python_pseudo_op or insn.literal_pseudo_op)
@@ -91,16 +91,23 @@ class BadIspr(SnippetGen):
 
             assert prog_insn.lsu_info is not None
             mem_type, _tgt_addr = prog_insn.lsu_info
-            # Replace good CSR / WSR address with bad address.
-            bad_addr = model.pick_bad_addr(mem_type)
-            assert bad_addr is not None
-            prog_insn.lsu_info = mem_type, bad_addr
             imm_idx = None
             for i, each in enumerate(prog_insn.insn.operands):
                 if isinstance(each.op_type, ImmOperandType):
                     assert imm_idx is None
                     imm_idx = i
             assert imm_idx is not None
+
+            # Replace good CSR / WSR address with bad address: one that
+            # doesn't name any CSR / WSR.
+            isr_type = prog_insn.insn.operands[imm_idx].op_type
+            assert isinstance(isr_type, IsrOperandType)
+            assert isr_type.width is not None
+            bad = [addr for addr in range(1 << isr_type.width)
+                   if addr not in isr_type.isrs.addr_to_isr]
+            assert bad, f'Every {isr_type.name} index names a register'
+            bad_addr = random.choice(bad)
+            prog_insn.lsu_info = mem_type, bad_addr
             prog_insn.operands[imm_idx] = bad_addr
 
             # In the case of a randomly generated CSRRW, it is better to have
