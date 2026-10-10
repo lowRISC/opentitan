@@ -20,10 +20,10 @@ module i3c_timers #(
   parameter int unsigned NumTimers = 1,
   parameter int unsigned MaxDefaultW = 16,
   // Shift distances, in bits, for each software-programmed adjustment.
-  parameter bit [NumTimers-1:0][3:0] TimerShifts,
+  parameter bit [NumTimers-1:0][3:0] TimerShifts = '0,
   // For each timer, the default interval is specified in microseconds, allocating 16 bits to each
   // timer in turn.
-  parameter bit [NumTimers-1:0][MaxDefaultW-1:0] DefaultInts
+  parameter bit [NumTimers-1:0][MaxDefaultW-1:0] DefaultInts = {NumTimers{MaxDefaultW'(1)}}
 ) (
   input                       clk_i,
   input                       rst_ni,
