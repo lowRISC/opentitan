@@ -119,7 +119,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:          Unbuffered,
       offset:           12'd64,
-      size:             416,
+      size:             400,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -135,8 +135,8 @@ package otp_ctrl_part_pkg;
     // OWNER_SW_CFG
     '{
       variant:          Unbuffered,
-      offset:           12'd480,
-      size:             680,
+      offset:           12'd464,
+      size:             672,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
       sw_digest:        1'b1,
@@ -152,7 +152,7 @@ package otp_ctrl_part_pkg;
     // ROT_CREATOR_AUTH_CODESIGN
     '{
       variant:          Unbuffered,
-      offset:           12'd1160,
+      offset:           12'd1136,
       size:             472,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -169,7 +169,7 @@ package otp_ctrl_part_pkg;
     // ROT_CREATOR_AUTH_STATE
     '{
       variant:          Unbuffered,
-      offset:           12'd1632,
+      offset:           12'd1608,
       size:             40,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -186,7 +186,7 @@ package otp_ctrl_part_pkg;
     // HW_CFG0
     '{
       variant:          Buffered,
-      offset:           12'd1672,
+      offset:           12'd1648,
       size:             72,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -203,7 +203,7 @@ package otp_ctrl_part_pkg;
     // HW_CFG1
     '{
       variant:          Buffered,
-      offset:           12'd1744,
+      offset:           12'd1720,
       size:             16,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -220,8 +220,8 @@ package otp_ctrl_part_pkg;
     // SECRET0
     '{
       variant:          Buffered,
-      offset:           12'd1760,
-      size:             40,
+      offset:           12'd1736,
+      size:             48,
       key_sel:          Secret0Key,
       secret:           1'b1,
       sw_digest:        1'b0,
@@ -231,14 +231,14 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
+      zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b1
     },
     // SECRET1
     '{
       variant:          Buffered,
-      offset:           12'd1800,
-      size:             88,
+      offset:           12'd1784,
+      size:             96,
       key_sel:          Secret1Key,
       secret:           1'b1,
       sw_digest:        1'b0,
@@ -248,14 +248,14 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b0,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
+      zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b1
     },
     // SECRET2
     '{
       variant:          Buffered,
-      offset:           12'd1888,
-      size:             88,
+      offset:           12'd1880,
+      size:             96,
       key_sel:          Secret2Key,
       secret:           1'b1,
       sw_digest:        1'b0,
@@ -265,7 +265,7 @@ package otp_ctrl_part_pkg;
       integrity:        1'b1,
       iskeymgr_creator: 1'b1,
       iskeymgr_owner:   1'b0,
-      zeroizable:       1'b0,
+      zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b1
     },
     // LIFE_CYCLE
@@ -488,6 +488,7 @@ package otp_ctrl_part_pkg;
       otp_keymgr_key.creator_root_key_share1 =
           part_inv_default[CreatorRootKeyShare1Offset*8 +: CreatorRootKeyShare1Size*8];
     end
+    unused ^= ^part_buf_data[Secret2ZerOffset +: Secret2ZerSize];
     // This is not used since we consume the
     // ungated digest values from the part_digest array.
     unused ^= ^part_buf_data[Secret2DigestOffset +: Secret2DigestSize];
