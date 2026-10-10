@@ -55,6 +55,7 @@ pub use ti50::Ti50Flavor;
 /// Implementation of the Transport trait for HyperDebug based on the
 /// Nucleo-L552ZE-Q.
 pub struct Hyperdebug<T: Flavor> {
+    flavor_data: T::FlavorData,
     spi_interface: BulkInterface,
     i2c_interface: Option<BulkInterface>,
     cmsis_interface: Option<BulkInterface>,
@@ -70,6 +71,8 @@ pub struct Hyperdebug<T: Flavor> {
 /// Trait allowing slightly different treatment of USB devices that work almost like a
 /// HyperDebug.  E.g. C2D2 and Servo micro.
 pub trait Flavor {
+    type FlavorData;
+
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>>;
     fn spi_index(_inner: &Rc<Inner>, instance: &str) -> Result<(u8, u8)> {
         bail!(TransportError::InvalidInstance(
@@ -85,14 +88,34 @@ pub trait Flavor {
     }
     fn get_default_usb_vid() -> u16;
     fn get_default_usb_pid() -> u16;
-    fn load_bitstream(_bitstream: &[u8], _progress: &dyn ProgressIndicator) -> Result<()> {
+    fn load_bitstream(
+        _data: &Self::FlavorData,
+        _bitstream: &[u8],
+        _progress: &dyn ProgressIndicator,
+    ) -> Result<()> {
         Err(TransportError::UnsupportedOperation.into())
     }
-    fn clear_bitstream() -> Result<()> {
+    fn clear_bitstream(_data: &Self::FlavorData) -> Result<()> {
         Err(TransportError::UnsupportedOperation.into())
     }
     fn perform_initial_fw_check() -> bool {
         true
+    }
+    fn get_default_flavor_data() -> Self::FlavorData;
+    fn open_device(
+        usb_vid: Option<u16>,
+        usb_pid: Option<u16>,
+        usb_serial: Option<&str>,
+    ) -> Result<(Box<dyn UsbDevice>, Self::FlavorData)> {
+        let usb_context = RusbContext::new();
+        Ok((
+            usb_context.device_by_id(
+                usb_vid.unwrap_or_else(Self::get_default_usb_vid),
+                usb_pid.unwrap_or_else(Self::get_default_usb_pid),
+                usb_serial,
+            )?,
+            Self::get_default_flavor_data(),
+        ))
     }
 }
 
@@ -149,12 +172,8 @@ impl<T: Flavor> Hyperdebug<T> {
         usb_serial: Option<&str>,
         cw_usb_port_workaround: Option<u8>,
     ) -> Result<Self> {
-        let usb_context = RusbContext::new();
-        let device = usb_context.device_by_id(
-            usb_vid.unwrap_or_else(T::get_default_usb_vid),
-            usb_pid.unwrap_or_else(T::get_default_usb_pid),
-            usb_serial,
-        )?;
+        let (device, flavor_data) = T::open_device(usb_vid, usb_pid, usb_serial)?;
+        log::debug!("Found HyperDebug: {device:?}");
 
         let path = PathBuf::from("/sys/bus/usb/devices");
 
@@ -285,6 +304,7 @@ impl<T: Flavor> Hyperdebug<T> {
             }
         }
         let result = Hyperdebug::<T> {
+            flavor_data,
             spi_interface: spi_interface.ok_or_else(|| {
                 TransportError::CommunicationError("Missing SPI interface".to_string())
             })?,
@@ -929,13 +949,13 @@ impl<T: Flavor> FpgaOps for Hyperdebug<T> {
         // Before loading the bitstream, we disable the USB port which corresponds to the USB OT
         // device and only re-enable it after loading.
         self.enable_dut_usb_port(false)?;
-        T::load_bitstream(bitstream, progress)?;
+        T::load_bitstream(&self.flavor_data, bitstream, progress)?;
         self.enable_dut_usb_port(true)
     }
 
     fn clear_bitstream(&self) -> Result<()> {
         self.enable_dut_usb_port(false)?;
-        T::clear_bitstream()
+        T::clear_bitstream(&self.flavor_data)
     }
 }
 
@@ -946,6 +966,10 @@ static SPI_REGEX: LazyLock<Regex> =
     LazyLock::new(|| Regex::new("^ +([0-9]+) ([^ ]+) ([0-9]+) bps(?: ([hd])[^ ]*)?").unwrap());
 
 impl Flavor for StandardFlavor {
+    type FlavorData = ();
+
+    fn get_default_flavor_data() -> Self::FlavorData {}
+
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         Ok(Rc::new(gpio::HyperdebugGpioPin::open(inner, pinname)?))
     }
@@ -1010,7 +1034,19 @@ pub struct ChipWhispererFlavor<B: Board> {
     _phantom: PhantomData<B>,
 }
 
+impl<B: Board> ChipWhispererFlavor<B> {
+    fn open_cw(usb_serial: Option<&str>) -> Result<ChipWhisperer<B>> {
+        ChipWhisperer::<B>::new(None, None, usb_serial, &[])
+    }
+}
+
 impl<B: Board> Flavor for ChipWhispererFlavor<B> {
+    type FlavorData = ChipWhisperer<B>;
+
+    fn get_default_flavor_data() -> Self::FlavorData {
+        unimplemented!()
+    }
+
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         StandardFlavor::gpio_pin(inner, pinname)
     }
@@ -1026,17 +1062,108 @@ impl<B: Board> Flavor for ChipWhispererFlavor<B> {
     fn get_default_usb_pid() -> u16 {
         StandardFlavor::get_default_usb_pid()
     }
-    fn load_bitstream(bitstream: &[u8], progress: &dyn ProgressIndicator) -> Result<()> {
+    fn load_bitstream(
+        cw: &Self::FlavorData,
+        bitstream: &[u8],
+        progress: &dyn ProgressIndicator,
+    ) -> Result<()> {
         // Try to establish a connection to the native Chip Whisperer interface
         // which we will use for bitstream loading.
-        let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
-        board.load_bitstream(bitstream, progress)?;
+        cw.load_bitstream(bitstream, progress)?;
         Ok(())
     }
-    fn clear_bitstream() -> Result<()> {
-        let board = ChipWhisperer::<B>::new(None, None, None, &[])?;
-        board.clear_bitstream()?;
+    fn clear_bitstream(cw: &Self::FlavorData) -> Result<()> {
+        cw.clear_bitstream()?;
         Ok(())
+    }
+    fn open_device(
+        usb_vid: Option<u16>,
+        usb_pid: Option<u16>,
+        usb_serial: Option<&str>,
+    ) -> Result<(Box<dyn UsbDevice>, Self::FlavorData)> {
+        let usb_vid = usb_vid.unwrap_or_else(Self::get_default_usb_vid);
+        let usb_pid = usb_pid.unwrap_or_else(Self::get_default_usb_pid);
+        let usb_context = RusbContext::new();
+        // We try to be smart: first look for a ChipWhisperer board
+        // and then try to find a hyperdebug under the same USB hub.
+        // NOTE: when doing this, we reinterpret the `usb_serial` argument
+        // as the serial number of the ChipWhisperer board. This is more
+        // consistent since we usually identify CW+HD combinations by the
+        // CW serial.
+        let cw =
+            Self::open_cw(usb_serial).with_context(|| format!("No {} found", B::BOARD_NAME))?;
+        log::debug!("Found ChipWhisperer: {cw:?}");
+        let cw_backend = cw.backend();
+        let cw_backend_borrow = cw_backend.borrow();
+        let cw_usb = cw_backend_borrow.usb_device();
+        let cw_bus = cw_usb.bus_number();
+        let mut cw_ports = cw_usb.port_numbers().context("Unable to query USB ports")?;
+        // In order to check if two devices are connected to the same hub, we need to check
+        // if their port sequence matches except for the last entry, e.g. 3.2.1 and 3.2.2 are
+        // under the same hub (3.2). Hence, we remove the last port of the list for the comparison
+        // below.
+        cw_ports.pop();
+        let mut hd_devices = usb_context.scan(Some(usb_vid), Some(usb_pid), None, None)?;
+        // If only one HD device was detected, assume that this is the one the user wants.
+        if hd_devices.len() == 1 {
+            return Ok((hd_devices.remove(0), cw));
+        }
+        let simple_criterion = format!("vid:pid=0x{:04x}:0x{:04x}", usb_vid, usb_pid,);
+        if hd_devices.is_empty() {
+            return Err(TransportError::NoDevice(simple_criterion).into());
+        }
+
+        let filtered_hd_idx = hd_devices
+            .iter()
+            .enumerate()
+            .filter_map(|(idx, dev)| {
+                if dev.bus_number() != cw_bus {
+                    return None;
+                }
+                let mut ports = match dev.port_numbers() {
+                    Ok(ports) => ports,
+                    Err(err) => {
+                        log::error!("Unable to query USB ports of {dev:?}: {err:?}");
+                        return None;
+                    }
+                };
+                ports.pop();
+                // They must be on the same hub.
+                if cw_ports == ports { Some(idx) } else { None }
+            })
+            .collect::<Vec<_>>();
+
+        if filtered_hd_idx.len() == 1 {
+            return Ok((hd_devices.remove(filtered_hd_idx[0]), cw));
+        }
+        let search_criterion = format!(
+            "are plugged on the same hub as the ChipWhisperer (bus-loc={}-{})",
+            cw_bus,
+            cw_ports
+                .iter()
+                .map(|id| id.to_string())
+                .collect::<Vec<String>>()
+                .join(".")
+        );
+        if !filtered_hd_idx.is_empty() {
+            Err(TransportError::MultipleDevices(
+                format!(
+                    "{:?}",
+                    filtered_hd_idx
+                        .iter()
+                        .map(|idx| &hd_devices[*idx])
+                        .collect::<Vec<_>>()
+                ),
+                format!("{simple_criterion} and {search_criterion}"),
+            )
+            .into())
+        } else {
+            Err(TransportError::MultipleDevices(
+                format!("{:?}", hd_devices),
+                format!("{simple_criterion} but none {search_criterion}"),
+            )
+            .into())
+        }
     }
 }
 

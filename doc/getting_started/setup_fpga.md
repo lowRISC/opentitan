@@ -469,15 +469,29 @@ BITSTREAM="--cache $CUSTOM_BITSTREAM_CACHE --offline --list" ./bazelisk.sh query
 
 #### Running tests on a multi-board workstation
 
-If you have multiple debug interface boards (e.g. HyperDebug) connected to the same workstation, `opentitantool` will fail to run tests by default because it cannot automatically determine which board to target.
+If you have multiple boards (e.g. HyperDebug and/or ChipWhisperer) connected to the same workstation, `opentitantool` will try to automatically detect which one to use based on the interface requested.
+For example, if a CW310 and a CW340 are both connected with their respective Hyperdebug boards, and you attempt to run a CW340 test, `opentitantool` will try to find which of the two connected Hyperdebug boards corresponds to the CW340.
 
-To target a specific board, you must provide its USB serial number to Bazel using the `--test_arg=--usb-serial=<serial>` flag:
+More generally, the search logic for the ChipWhisperer is as follows:
+- If a single ChipWhisperer board (matching the requested type, i.e. CW310 or CW340) is detected, it is used.
+- If multiple ChipWhisperer boards of the requested type are found, you need to provide the specific serial number using `--usb-serial` (see below).
+
+To target a specific ChipWhisperer board, you must provide its USB serial number to Bazel using the `--test_arg=--usb-serial=<serial>` flag.
+
+The search logic for the HyperDebug is as follows:
+- If a single HyperDebug board is detected, it is used.
+- If multiple HyperDebug boards are found, but exactly one of them is connected to the same USB hub as the ChipWhisperer USB device, then this one will be used.
+- All other cases are unsupported.
+
+Note that the CW340 has an internal USB hub to which the ChipWhisperer USB device is connected.
+Therefore, you must connect the Hyperdebug to one of the USB ports of the CW340 board for `opentitantool` to automatically detect it.
+The CW310 does not have an internal hub so an external hub must be used in this case.
 
 ```sh
 bazel test --test_arg=--usb-serial=123456789012 --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
 ```
 
-You can list the serial numbers of all connected HyperDebug boards by running `lsusb -v -d 18d1:520e | grep iSerial`.
+You can list the serial numbers of all connected ChipWhisperer boards by running `lsusb -v -d 2b3e: | grep -B14 iSerial`.
 
 To avoid typing the serial number every time, you can define shortcut configurations in your user `~/.bazelrc` file:
 

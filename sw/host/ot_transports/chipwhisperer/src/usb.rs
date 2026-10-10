@@ -39,6 +39,12 @@ struct PllMulDiv {
 #[derive(Ord, PartialOrd, Eq, PartialEq, Debug, Clone, serde::Serialize)]
 pub struct FirmwareVersion(u8, u8, u8);
 
+impl<B: Board> std::fmt::Debug for Backend<B> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{:?}", self.usb)
+    }
+}
+
 impl<B: Board> Backend<B> {
     /// Commands for the Chip Whisperer board board.
     pub const CMD_FW_VERSION: u8 = 0x17;
@@ -119,6 +125,10 @@ impl<B: Board> Backend<B> {
             )?,
             _marker: PhantomData,
         })
+    }
+
+    pub fn usb_device(&self) -> &dyn UsbDevice {
+        &*self.usb
     }
 
     /// Send a control write transaction to the Chip Whisperer board.
