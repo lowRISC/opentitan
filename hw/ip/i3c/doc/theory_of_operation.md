@@ -144,8 +144,7 @@ Any specific implementation of the Target Extension extended capability shall id
 The I3C Host Controller Specification permits the addition of a 'Target Transaction Interface' that implements Private Read and Write Transfers over the I3C bus.
 This is not a standardized interface but rather an opportunity to extend the functionality of the Standby Controller to make it more useful as a Target device.
 
-Documentation on the specific TTI implemented by this IP block may be found in the TTI documentation.
-<!-- link to tti.md when available -->
+Documentation on the specific TTI implemented by this IP block may be found in the [TTI](tti.md) documentation.
 
 ## Virtual Targets
 
@@ -183,16 +182,17 @@ The register interface of the IP block and the signaling to the power management
 
 ## Address blocking
 
-The IP block supports the configuration of two sets of addresses which both the Controller logic and the Target logic will reject as invalid, refusing to initiate communication with any of these addresses.
+The IP block supports the configuration of two sets of addresses which the Controller logic will reject as invalid, refusing to initiate communication with any of these addresses.
 Instead an error will be raised and the transfer will be aborted.
+The Target logic does not need to consult these blocked addresses because it only ever initiates I3C communication using its own assigned target address(es) or the Hot-Join address (7'h02), which is always valid.
 
 This allows software to declare any I<sup>2</sup>C devices present on a Mixed Bus that may try to employ clock-stretching, and provides protection against electrical driver conflict that could potentially damage the hardware.
 Clock-stretching by Target devices is not supported by the I3C Basic Specification since the SCL line is driven by the Controller in 'push-pull' mode.
 
 This feature may also be of use diagnostically, by catching and reporting traffic to any devices that were not intentionally addressed.
 
-A set of blocked addresses may be specified by setting the address [mask](registers.md#blocked_addr--mask0) to a value other than 0x7f, i.e. by leaving one or more bits clear.
-This is useful because only I<sup>2</sup>C devices shall attempt to employ clock-stretching, and I<sup>2</sup>C devices are commonly configured with one of a small set of static addresses that differ from each other by only one or two address bits.
+To block multiple addresses using a single entry, set the address [mask](registers.md#blocked_addr--mask0) to a value other than 0x7f, i.e. by leaving one or more bits clear.
+This is useful because I<sup>2</sup>C devices are commonly configured with one of a small set of static addresses that differ from each other by only one or two address bits.
 All instances of a given I<sup>2</sup>C device may therefore be blocked using a single mask/address pair.
 
 ## Memory mapping of the message buffer
@@ -220,6 +220,13 @@ Direct driving should only be done when the Controller is not enabled, because o
 
 ### Traffic capture
 
-<!-- link to tti.md when available -->
-As documented in the Target Transaction Interface specification, a Virtual Target may be configured to capture all of the traffic that occurs on the I3C bus.
+As documented in the [Target Transaction Interface](tti.md) specification, a Virtual Target may be configured to capture all of the traffic that occurs on the I3C bus.
 This can provide useful diagnostic information about bus utilization, any unintended traffic, incorrect addressing etc.
+
+### Disabling HDR-DDR mode
+
+<!-- link to `./registers.md#targ_control--en_hdr_ddr` when the register field is available.-->
+Although the IP block offers HDR-DDR mode signaling, as a contingency, software may suppress the declaration of HDR-DDR mode support in the Target by clearing `HDR_DDR_EN` before enabling the Target.
+
+The software driver controls the signaling modes and speeds employed by the Controller, by the way that it constructs Command Descriptors.
+It may therefore avoid the use of HDR-DDR if necessary, even for Targets that _do_ declare support for HDR-DDR signaling.
