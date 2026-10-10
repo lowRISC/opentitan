@@ -10,9 +10,9 @@ module i3c_dat_cache
   import i3c_pkg::*;
 #(
   // Number of entries in the DAT.
-  parameter int unsigned NumDATEntries,
+  parameter int unsigned NumDATEntries = i3c_pkg::NumDATEntries,
   // Maximum number of entries in the DAT cache.
-  parameter int unsigned CacheSize,
+  parameter int unsigned CacheSize = i3c_pkg::NumDATEntries,
 
   // Derived parameters.
   localparam int unsigned DATAddrW = $clog2(NumDATEntries)
