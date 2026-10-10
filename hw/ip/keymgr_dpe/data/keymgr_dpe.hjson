@@ -89,6 +89,12 @@
       act:     "rcv",
       package: "keymgr_dpe_pkg",
     },
+    { struct:  "keymgr_dpe_creator_root_key",
+      type:    "uni",
+      name:    "secondary_root_key",
+      act:     "rcv",
+      package: "keymgr_dpe_pkg",
+    },
     { struct:  "keymgr_dpe_creator_seed",
       type:    "uni",
       name:    "creator_seed",
@@ -562,9 +568,16 @@
               value: "5",
               name: "Load root key",
               desc: '''
-                Loads the root key into the key manager.
+                Loads the root key into the key manager. Can be disabled by !!LOAD_ROOT_KEY_LOCK.
                 '''
-            }
+            },
+            {
+              value: "6",
+              name: "Load secondary root key",
+              desc: '''
+                Loads the secondary root key into the key manager. Can be disabled by !!LOAD_SECONDARY_ROOT_KEY_LOCK.
+                '''
+            },
           ],
         },
 
@@ -1325,18 +1338,23 @@
         { bits: "7",
           name: "INVALID_ROOT_KEY",
           resval: "0x0"
-          desc: "OTP root key was invalid during the first advance",
+          desc: "OTP root key was invalid during the first advance or during a `load root key` operation",
         },
         { bits: "8",
           name: "INACTIVE_LC_EN",
           resval: "0x0"
           desc: "Enable signal from LC ctrl is deactivated",
         },
+        { bits: "9",
+          name: "INVALID_SECONDARY_ROOT_KEY",
+          resval: "0x0"
+          desc: "Secondary root key was invalid during a `load secondary root key` operation",
+        },
       ]
     },
 
-    { name: "LOAD_KEY_LOCK",
-      desc: "Register write lock for the LOAD_KEY command",
+    { name: "LOAD_ROOT_KEY_LOCK",
+      desc: "Register lock for the `load root key` operation, see !!CONTROL_SHADOWED.OPERATION.",
       swaccess: "rw1s",
       hwaccess: "hro",
       fields: [
@@ -1344,10 +1362,25 @@
           name: "LOCK",
           resval: "0"
           desc: '''
-            Load key register write lock.
+            Write 1 to disable the `load root key` operation until the next reset.
+          '''
+        },
+      ]
+      // Don't let automated CSR tests write random values to this register, as it could lock
+      // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    },
 
-            Load key lock to 0, and its value cannot be altered by software until the next reset or locked.
-            Once locked, the LOAD_KEY command is disabled.
+    { name: "LOAD_SECONDARY_ROOT_KEY_LOCK",
+      desc: "Register lock for the `load secondary root key` operation, see !!CONTROL_SHADOWED.OPERATION.",
+      swaccess: "rw1s",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "LOCK",
+          resval: "0"
+          desc: '''
+            Write 1 to disable the `load secondary root key` operation until the next reset.
           '''
         },
       ]

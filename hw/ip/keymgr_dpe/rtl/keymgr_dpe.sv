@@ -65,6 +65,7 @@ module keymgr_dpe
   input lc_ctrl_pkg::lc_tx_t lc_keymgr_en_i,
   input lc_ctrl_pkg::lc_keymgr_div_t lc_keymgr_div_i,
   input keymgr_dpe_creator_root_key_t creator_root_key_i,
+  input keymgr_dpe_creator_root_key_t secondary_root_key_i,
   input keymgr_dpe_creator_seed_t creator_seed_i,
   input keymgr_dpe_owner_seed_t owner_seed_i,
   input keymgr_dpe_device_id_t device_id_i,
@@ -311,6 +312,10 @@ module keymgr_dpe
   assign root_key.key = '{creator_root_key_i.share1,
                           creator_root_key_i.share0};
 
+  hw_key_req_t secondary_root_key;
+  assign secondary_root_key.key = '{secondary_root_key_i.share1,
+                                    secondary_root_key_i.share0};
+
   prim_flop_2sync # (
     .Width(1)
   ) u_key_valid_sync (
@@ -319,6 +324,16 @@ module keymgr_dpe
     .d_i(creator_root_key_i.share0_valid &
          creator_root_key_i.share1_valid),
     .q_o(root_key.valid)
+  );
+
+  prim_flop_2sync # (
+    .Width(1)
+  ) u_secondary_key_valid_sync (
+    .clk_i,
+    .rst_ni,
+    .d_i(secondary_root_key_i.share0_valid &
+         secondary_root_key_i.share1_valid),
+    .q_o(secondary_root_key.valid)
   );
 
   keymgr_dpe_slot_t active_key_slot;
@@ -369,7 +384,8 @@ module keymgr_dpe
     .prng_en_o(ctrl_lfsr_en),
     .entropy_i(ctrl_rand),
     .op_i(keymgr_dpe_ops_e'(reg2hw.control_shadowed.operation.q)),
-    .load_key_lock_i(reg2hw.load_key_lock.q),
+    .load_root_key_lock_i(reg2hw.load_root_key_lock.q),
+    .load_secondary_root_key_lock_i(reg2hw.load_secondary_root_key_lock.q),
     // TODO(#384): Add assertions to check that we are not losing some bits by casting
     // slot_src/dst_sel bits to enum type
     .slot_src_sel_i(slot_src_sel_trunc),
@@ -392,6 +408,7 @@ module keymgr_dpe
     .data_valid_o(data_valid),
     .working_state_o(hw2reg.working_state.d),
     .root_key_i(root_key),
+    .secondary_root_key_i(secondary_root_key),
     .hw_sel_o(hw_key_sel),
     .wipe_key_o(wipe_key),
     .adv_en_o(adv_en),
@@ -680,16 +697,17 @@ module keymgr_dpe
     .rom_digest_vld_o(rom_digest_vld)
   );
 
-  assign hw2reg.debug.invalid_creator_seed.d  = ~creator_seed_vld;
-  assign hw2reg.debug.invalid_owner_seed.d    = ~owner_seed_vld;
-  assign hw2reg.debug.invalid_dev_id.d        = ~devid_vld;
-  assign hw2reg.debug.invalid_health_state.d  = ~health_state_vld;
-  assign hw2reg.debug.invalid_key_version.d   = ~key_version_vld;
-  assign hw2reg.debug.invalid_key.d           = ~key_vld;
-  assign hw2reg.debug.invalid_digest.d        = ~rom_digest_vld;
-  assign hw2reg.debug.invalid_root_key.d      = ~root_key.valid;
-  assign hw2reg.debug.inactive_lc_en.d        = lc_tx_test_false_loose(
-                                                  lc_keymgr_en[KeymgrDpeEnDebug]);
+  assign hw2reg.debug.invalid_creator_seed.d       = ~creator_seed_vld;
+  assign hw2reg.debug.invalid_owner_seed.d         = ~owner_seed_vld;
+  assign hw2reg.debug.invalid_dev_id.d             = ~devid_vld;
+  assign hw2reg.debug.invalid_health_state.d       = ~health_state_vld;
+  assign hw2reg.debug.invalid_key_version.d        = ~key_version_vld;
+  assign hw2reg.debug.invalid_key.d                = ~key_vld;
+  assign hw2reg.debug.invalid_digest.d             = ~rom_digest_vld;
+  assign hw2reg.debug.invalid_root_key.d           = ~root_key.valid;
+  assign hw2reg.debug.invalid_secondary_root_key.d = ~secondary_root_key.valid;
+  assign hw2reg.debug.inactive_lc_en.d             = lc_tx_test_false_loose(
+                                                       lc_keymgr_en[KeymgrDpeEnDebug]);
 
   // Only latch required signals to advance the bootstage during consumption.
   logic is_creator_boot_stage, is_owner_boot_stage;
@@ -720,9 +738,17 @@ module keymgr_dpe
   // operation.
   assign hw2reg.debug.invalid_key_version.de   = gen_en;
   assign hw2reg.debug.invalid_key.de           = adv_en | gen_en;
-
-  assign hw2reg.debug.invalid_root_key.de      = init;
   assign hw2reg.debug.inactive_lc_en.de        = 1'b1;
+
+  // The root key is consumed by the first derivation and by an explicit SW-issued load operation.
+  assign hw2reg.debug.invalid_root_key.de =
+      init | (op_start & (keymgr_dpe_ops_e'(reg2hw.control_shadowed.operation.q) ==
+                          OpDpeLoadRootKey));
+
+  // The secondary root key is only consumed by an explicit SW-issued load operation.
+  assign hw2reg.debug.invalid_secondary_root_key.de =
+      op_start & (keymgr_dpe_ops_e'(reg2hw.control_shadowed.operation.q) ==
+                  OpDpeLoadSecondaryRootKey);
 
   /////////////////////////////////////
   //  KMAC Control

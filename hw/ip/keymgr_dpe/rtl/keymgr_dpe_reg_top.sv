@@ -56,9 +56,9 @@ module keymgr_dpe_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [70:0] reg_we_check;
+  logic [71:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(71)
+    .OneHotWidth(72)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -409,9 +409,14 @@ module keymgr_dpe_reg_top (
   logic debug_invalid_root_key_wd;
   logic debug_inactive_lc_en_qs;
   logic debug_inactive_lc_en_wd;
-  logic load_key_lock_we;
-  logic load_key_lock_qs;
-  logic load_key_lock_wd;
+  logic debug_invalid_secondary_root_key_qs;
+  logic debug_invalid_secondary_root_key_wd;
+  logic load_root_key_lock_we;
+  logic load_root_key_lock_qs;
+  logic load_root_key_lock_wd;
+  logic load_secondary_root_key_lock_we;
+  logic load_secondary_root_key_lock_qs;
+  logic load_secondary_root_key_lock_wd;
   logic enforce_sw_binding_we;
   logic [3:0] enforce_sw_binding_qs;
   logic [3:0] enforce_sw_binding_wd;
@@ -3679,21 +3684,49 @@ module keymgr_dpe_reg_top (
     .qs     (debug_inactive_lc_en_qs)
   );
 
-
-  // R[load_key_lock]: V(False)
+  //   F[invalid_secondary_root_key]: 9:9
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_load_key_lock (
+  ) u_debug_invalid_secondary_root_key (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
     .reinit_i(1'b0),
 
     // from register interface
-    .we     (load_key_lock_we),
-    .wd     (load_key_lock_wd),
+    .we     (debug_we),
+    .wd     (debug_invalid_secondary_root_key_wd),
+
+    // from internal hardware
+    .de     (hw2reg.debug.invalid_secondary_root_key.de),
+    .d      (hw2reg.debug.invalid_secondary_root_key.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (debug_invalid_secondary_root_key_qs)
+  );
+
+
+  // R[load_root_key_lock]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_load_root_key_lock (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (load_root_key_lock_we),
+    .wd     (load_root_key_lock_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3701,11 +3734,40 @@ module keymgr_dpe_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.load_key_lock.q),
+    .q      (reg2hw.load_root_key_lock.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (load_key_lock_qs)
+    .qs     (load_root_key_lock_qs)
+  );
+
+
+  // R[load_secondary_root_key_lock]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_load_secondary_root_key_lock (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (load_secondary_root_key_lock_we),
+    .wd     (load_secondary_root_key_lock_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.load_secondary_root_key_lock.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (load_secondary_root_key_lock_qs)
   );
 
 
@@ -3739,7 +3801,7 @@ module keymgr_dpe_reg_top (
 
 
 
-  logic [70:0] addr_hit;
+  logic [71:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == KEYMGR_DPE_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == KEYMGR_DPE_INTR_ENABLE_OFFSET);
@@ -3810,8 +3872,9 @@ module keymgr_dpe_reg_top (
     addr_hit[66] = (reg_addr == KEYMGR_DPE_ERR_CODE_OFFSET);
     addr_hit[67] = (reg_addr == KEYMGR_DPE_FAULT_STATUS_OFFSET);
     addr_hit[68] = (reg_addr == KEYMGR_DPE_DEBUG_OFFSET);
-    addr_hit[69] = (reg_addr == KEYMGR_DPE_LOAD_KEY_LOCK_OFFSET);
-    addr_hit[70] = (reg_addr == KEYMGR_DPE_ENFORCE_SW_BINDING_OFFSET);
+    addr_hit[69] = (reg_addr == KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_OFFSET);
+    addr_hit[70] = (reg_addr == KEYMGR_DPE_LOAD_SECONDARY_ROOT_KEY_LOCK_OFFSET);
+    addr_hit[71] = (reg_addr == KEYMGR_DPE_ENFORCE_SW_BINDING_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -3889,7 +3952,8 @@ module keymgr_dpe_reg_top (
                (addr_hit[67] & (|(KEYMGR_DPE_PERMIT[67] & ~reg_be))) |
                (addr_hit[68] & (|(KEYMGR_DPE_PERMIT[68] & ~reg_be))) |
                (addr_hit[69] & (|(KEYMGR_DPE_PERMIT[69] & ~reg_be))) |
-               (addr_hit[70] & (|(KEYMGR_DPE_PERMIT[70] & ~reg_be)))));
+               (addr_hit[70] & (|(KEYMGR_DPE_PERMIT[70] & ~reg_be))) |
+               (addr_hit[71] & (|(KEYMGR_DPE_PERMIT[71] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -4102,10 +4166,15 @@ module keymgr_dpe_reg_top (
   assign debug_invalid_root_key_wd = reg_wdata[7];
 
   assign debug_inactive_lc_en_wd = reg_wdata[8];
-  assign load_key_lock_we = addr_hit[69] & reg_we & !reg_error;
 
-  assign load_key_lock_wd = reg_wdata[0];
-  assign enforce_sw_binding_we = addr_hit[70] & reg_we & !reg_error;
+  assign debug_invalid_secondary_root_key_wd = reg_wdata[9];
+  assign load_root_key_lock_we = addr_hit[69] & reg_we & !reg_error;
+
+  assign load_root_key_lock_wd = reg_wdata[0];
+  assign load_secondary_root_key_lock_we = addr_hit[70] & reg_we & !reg_error;
+
+  assign load_secondary_root_key_lock_wd = reg_wdata[0];
+  assign enforce_sw_binding_we = addr_hit[71] & reg_we & !reg_error;
 
   assign enforce_sw_binding_wd = reg_wdata[3:0];
 
@@ -4180,8 +4249,9 @@ module keymgr_dpe_reg_top (
     reg_we_check[66] = err_code_we;
     reg_we_check[67] = 1'b0;
     reg_we_check[68] = debug_we;
-    reg_we_check[69] = load_key_lock_we;
-    reg_we_check[70] = enforce_sw_binding_we;
+    reg_we_check[69] = load_root_key_lock_we;
+    reg_we_check[70] = load_secondary_root_key_lock_we;
+    reg_we_check[71] = enforce_sw_binding_we;
   end
 
   // Read data return
@@ -4525,13 +4595,18 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[6] = debug_invalid_digest_qs;
         reg_rdata_next[7] = debug_invalid_root_key_qs;
         reg_rdata_next[8] = debug_inactive_lc_en_qs;
+        reg_rdata_next[9] = debug_invalid_secondary_root_key_qs;
       end
 
       addr_hit[69]: begin
-        reg_rdata_next[0] = load_key_lock_qs;
+        reg_rdata_next[0] = load_root_key_lock_qs;
       end
 
       addr_hit[70]: begin
+        reg_rdata_next[0] = load_secondary_root_key_lock_qs;
+      end
+
+      addr_hit[71]: begin
         reg_rdata_next[3:0] = enforce_sw_binding_qs;
       end
 

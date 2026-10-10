@@ -2165,6 +2165,7 @@ module earlgrey_pd_main #(
     .kmac_data_o(kmac_app_req[0]),
     .kmac_data_i(kmac_app_rsp[0]),
     .creator_root_key_i(otp_ctrl_keymgr_creator_root_key),
+    .secondary_root_key_i(keymgr_dpe_pkg::KEYMGR_DPE_CREATOR_ROOT_KEY_DEFAULT),
     .creator_seed_i(rram_ctrl_keymgr_creator_seed),
     .owner_seed_i(rram_ctrl_keymgr_owner_seed),
     .device_id_i(keymgr_dpe_device_id),

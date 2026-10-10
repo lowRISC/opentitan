@@ -38,7 +38,8 @@ class keymgr_dpe_common_vseq extends keymgr_dpe_base_vseq;
 
   virtual protected task read_and_check_all_csrs_after_reset();
     // need to set keymgr_en to be On, before it can be read back with correct init values
-    cfg.keymgr_dpe_vif.init(do_rand_otp_key, do_invalid_otp_key);
+    cfg.keymgr_dpe_vif.init(do_rand_otp_key, do_invalid_otp_key, do_rand_secondary_root_key,
+                            do_invalid_secondary_root_key);
     delay_after_reset_before_access_csr();
 
     super.read_and_check_all_csrs_after_reset();

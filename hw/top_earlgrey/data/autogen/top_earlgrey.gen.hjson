@@ -8926,6 +8926,16 @@
           index: -1
         }
         {
+          name: secondary_root_key
+          struct: keymgr_dpe_creator_root_key
+          package: keymgr_dpe_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: keymgr_dpe
+          index: -1
+        }
+        {
           name: creator_seed
           struct: keymgr_dpe_creator_seed
           package: keymgr_dpe_pkg
@@ -28831,6 +28841,16 @@
         default: ""
         domain: Main
         top_signame: otp_ctrl_keymgr_creator_root_key
+        index: -1
+      }
+      {
+        name: secondary_root_key
+        struct: keymgr_dpe_creator_root_key
+        package: keymgr_dpe_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: keymgr_dpe
         index: -1
       }
       {

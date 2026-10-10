@@ -43,12 +43,13 @@ package keymgr_dpe_pkg;
 
   // Enumeration for operation
   typedef enum logic [2:0] {
-    OpDpeAdvance     = 0,
-    OpDpeErase       = 1,
-    OpDpeGenSwOut    = 2,
-    OpDpeGenHwOut    = 3,
-    OpDpeDisable     = 4,
-    OpDpeLoadRootKey = 5
+    OpDpeAdvance              = 0,
+    OpDpeErase                = 1,
+    OpDpeGenSwOut             = 2,
+    OpDpeGenHwOut             = 3,
+    OpDpeDisable              = 4,
+    OpDpeLoadRootKey          = 5,
+    OpDpeLoadSecondaryRootKey = 6
   } keymgr_dpe_ops_e;
 
   // Enumeration for operation status
@@ -277,6 +278,7 @@ package keymgr_dpe_pkg;
     SlotUpdateIdle,
     SlotDestRandomize,
     SlotLoadRoot,
+    SlotLoadSecondaryRoot,
     SlotLoadFromKmac,
     SlotErase,
     SlotWipeInternalOnly,
