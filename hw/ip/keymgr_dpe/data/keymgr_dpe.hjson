@@ -619,7 +619,10 @@
           name: "SLOT_SRC_SEL",
           resval: "0x0"
           desc: '''
-            The source key slot to be used for the invoked operation.
+            The source key slot to be used for the advance and generate operations.
+
+            Only slots below `NumInstHwSlot` are instantiated.
+            If this field selects a slot at or above `NumInstHwSlot`, an advance or generate operation is rejected with !!ERR_CODE.INVALID_OP and no slot is modified.
           '''
         },
 
@@ -627,7 +630,10 @@
           name: "SLOT_DST_SEL",
           resval: "0x0"
           desc: '''
-            The destination key slot to be used for the advance and erase operations.
+            The destination key slot to be used for the advance, erase and load root key operations.
+
+            Only slots below `NumInstHwSlot` are instantiated.
+            If this field selects a slot at or above `NumInstHwSlot`, an advance, erase or load root key operation is rejected with !!ERR_CODE.INVALID_OP and no slot is modified.
           '''
         },
         {
@@ -641,9 +647,6 @@
           '''
         }
       ],
-      // TODO(#30682): Remove this label as soon as the RTL raises an
-      // error instead of a assertion.
-      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "SIDELOAD_CLEAR",

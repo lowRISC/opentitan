@@ -6,6 +6,10 @@ Except for the first advance call that initializes keymgr_dpe, this means keymgr
 Similarly, at the end of the operation (when `OP_STATUS` is not `WIP` anymore), it is recommended to check that the operation was successful by reading `ERR_CODE`.
 SW can also read the reported FSM state through `WORKING_STATE` to confirm that keymgr_dpe reaches the expected state.
 
+`CONTROL_SHADOWED.SLOT_SRC_SEL` and `CONTROL_SHADOWED.SLOT_DST_SEL` must select an instantiated slot, i.e. a value below `NumInstHwSlot`.
+Both fields are sized for `NumMaxHwSlot` slots, so they accept larger values.
+An operation that uses a slot selection at or above `NumInstHwSlot` is rejected with `ERR_CODE.INVALID_OP`, and no slot is modified.
+
 ## Initialize (first advance call)
 
 From a SW perspective, there is not an explicit initialize command.
@@ -18,6 +22,8 @@ Keymgr_DPE is initialized by configuring the following CSR:
 *  Set `START` to initiate the operation.
 
 At the end of the successful first advance call, the UDS is latched into the specified destination slot.
+If `SLOT_DST_SEL` is at or above `NumInstHwSlot`, the call is rejected with `ERR_CODE.INVALID_OP` and keymgr_dpe remains in `Reset` state.
+SW can then correct `SLOT_DST_SEL` and retry.
 
 ## Advance
 

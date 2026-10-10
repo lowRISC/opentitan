@@ -32,6 +32,10 @@ In order to address the relationships among keymgr_dpe slots and their stored DP
 Each of these key manager slots can store a DPE context, i.e. all DICE-related information for a particular boot stage. That includes a secret key along with additional context information described below.
 The secret key size is fixed to 256-bit.
 
+Software selects slots through `CONTROL_SHADOWED.SLOT_SRC_SEL` and `CONTROL_SHADOWED.SLOT_DST_SEL`.
+Both fields are sized for `NumMaxHwSlot` slots, so they can hold indices of slots that are not instantiated.
+An operation that uses a slot selection at or above `NumInstHwSlot` is rejected with `ERR_CODE.INVALID_OP`, and no slot is modified.
+
 Each slot data consists of the following fields:
 * `valid` bit that tells whether the slot is occupied.
 * `boot_stage` is a monotonic counter that refers to which boot stage this slot belongs to.
@@ -170,10 +174,12 @@ In other words, `retain_parent = false` forces SW to request in-place update, wh
 
 When there is no fault and the enable signal is active by life cycle controller, the validity of an advance operation is defined as follows:
 
-* If keymgr_dpe is in `Reset` state (i.e. the first advance call that latches UDS), then an advance operation is valid if:
+* If keymgr_dpe is in `Reset` state (i.e. the first advance call that latches UDS), then an advance operation is valid if all of the following conditions are satisfied (AND clause):
+  * `CONTROL_SHADOWED.SLOT_DST_SEL` is below `NumInstHwSlot`.
   * The OTP creator root key is valid during the clock cycle keymgr_DPE tries to latch it.
 * If keymgr_dpe is in `Available` state, then an advance operation is valid if all of the following conditions are satisfied (AND clause):
   * Keymgr_DPE is in `Available` state.
+  * `CONTROL_SHADOWED.SLOT_SRC_SEL` and `CONTROL_SHADOWED.SLOT_DST_SEL` are both below `NumInstHwSlot`.
   * `valid = true` for the source slot.
   * `allow_child = true` for the source slot.
   * If `retain_parent = true`, then the source and the destination slots are different.
@@ -203,18 +209,20 @@ The only difference is that the input messages are 0-padded to another length pa
 
 Key generation request is valid if all of the following conditions are satisfied (AND clause):
 * The internal FSM is in `Available` state. Namely, keymgr_dpe rejects key generation requests during `Invalid`/`Disabled` as they are inactive states, and during `Reset` for not having latched the UDS key yet.
+* The selected source slot is below `NumInstHwSlot`.
 * The selected source slot is valid.
 * `DEST_SEL` contains one of the five valid sideload destinations (None, AES, KMAC, OTBN, HMAC).
 
 ### Erase slot
 
-Erasing operation can be used to clear the DICE context from a destination slot. This is done by selecting the slot with `CONTROL_SHADOWED.DST_SEL`, and then configuring and initiating the operation. At the end of a successful erase, the DPE context is removed from the destination slot.
+Erasing operation can be used to clear the DICE context from a destination slot. This is done by selecting the slot with `CONTROL_SHADOWED.SLOT_DST_SEL`, and then configuring and initiating the operation. At the end of a successful erase, the DPE context is removed from the destination slot.
 
 Note that the slots with `retain_parent = false` policy do not require explicit erase calls, as they are automatically erased when advanced.
 However, HW does not specifically block such an erase request.
 Meanwhile, the slots with `retain_parent = true` can only be destroyed with explicit erase calls, as advance calls will reject overwriting these slots.
 
 Erase request is valid if the following conditions are satisfied:
+* `CONTROL_SHADOWED.SLOT_DST_SEL` is below `NumInstHwSlot`.
 * The destination slot is valid (i.e. not empty).
 * keymgr_dpe FSM's working state is `Available`.
 

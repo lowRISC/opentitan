@@ -223,10 +223,16 @@ Only apply software binding as a message input to the advance operation.
 See [`ENFORCE_SW_BINDING`](#enforce_sw_binding) to make this mandatory for all advance calls until the next reset.
 
 ### CONTROL_SHADOWED . SLOT_DST_SEL
-The destination key slot to be used for the advance and erase operations.
+The destination key slot to be used for the advance, erase and load root key operations.
+
+Only slots below `NumInstHwSlot` are instantiated.
+If this field selects a slot at or above `NumInstHwSlot`, an advance, erase or load root key operation is rejected with [`ERR_CODE.INVALID_OP`](#err_code) and no slot is modified.
 
 ### CONTROL_SHADOWED . SLOT_SRC_SEL
-The source key slot to be used for the invoked operation.
+The source key slot to be used for the advance and generate operations.
+
+Only slots below `NumInstHwSlot` are instantiated.
+If this field selects a slot at or above `NumInstHwSlot`, an advance or generate operation is rejected with [`ERR_CODE.INVALID_OP`](#err_code) and no slot is modified.
 
 ### CONTROL_SHADOWED . DEST_SEL
 When the OPERATION field is programmed to generate output, this field selects
