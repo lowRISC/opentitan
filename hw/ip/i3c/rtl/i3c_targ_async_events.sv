@@ -9,6 +9,8 @@
 // - suspended transmission
 // - bus events
 
+`include "prim_assert.sv"
+
 module i3c_targ_async_events
   import i3c_async_event_pkg::*;
   import i3c_consts_pkg::*;
@@ -336,6 +338,6 @@ module i3c_targ_async_events
   );
 
   // TTI Async Event union size check.
-  if ($bits(i3c_tti_async_event_t) != DataWidth) $fatal(2, "i3c_tti_async_event_t has incorrect size");
+  `ASSERT_INIT(TtiAsyncEvtWidthIsDataWidth_A, $bits(i3c_tti_async_event_t) == DataWidth)
 
 endmodule

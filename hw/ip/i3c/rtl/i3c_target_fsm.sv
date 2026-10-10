@@ -1228,7 +1228,8 @@ module i3c_target_fsm
     assign grp_addr_de_o[grp] = grp_set & grp_add & grp_idx_valid & (grp == grp_idx);
     assign grp_addr_d_o[grp]  = grp_addr;
     // Update the list of subscribed targets.
-    assign grp_targ_de_o[grp] = (grp_set | grp_rst) & (grp_all | (grp_idx_valid & (grp == grp_idx)));
+    assign grp_targ_de_o[grp] = (grp_set | grp_rst) &
+                                (grp_all | (grp_idx_valid & (grp == grp_idx)));
     assign grp_targ_d_o[grp]  = (grp_curr | targs_set) & ~targs_rst;
   end
 

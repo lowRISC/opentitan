@@ -669,12 +669,12 @@ module i3c_target
   // TODO: We cannot yet issue a Hot-Join request.
   assign hj_request_clear_o = 1'b0;
 
-  // TTI Data Structures that must fit into one buffer data word (currently fixed to 32b).
-  if ($bits(i3c_tti_tx_desc_t) != DataWidth)    $fatal(1, "TTI Tx Descriptor has incorrect size.");
-  if ($bits(i3c_tti_rx_desc_t) != DataWidth)    $fatal(1, "TTI Rx Descriptor has incorrect size.");
-  if ($bits(i3c_tti_ibi_status_t) != DataWidth) $fatal(1, "TTI IBI Status Descriptor has incorrect size.");
-
   // Assertions.
+  // TTI Data Structures that must fit into one buffer data word (currently fixed to 32b).
+  `ASSERT_INIT(TtiTxDescWidthIsDataWidth_A, $bits(i3c_tti_tx_desc_t) == DataWidth)
+  `ASSERT_INIT(TtiRxDescWidthIsDataWidth_A, $bits(i3c_tti_rx_desc_t) == DataWidth)
+  `ASSERT_INIT(TtiIbiStatusWidthIsDataWidth_A, $bits(i3c_tti_ibi_status_t) == DataWidth)
+
   `ASSERT_INIT(NumTargetsLegal, NumTargets <= MaxTargets)
 
 endmodule
