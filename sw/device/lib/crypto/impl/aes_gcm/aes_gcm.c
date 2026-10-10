@@ -248,8 +248,8 @@ static status_t aes_gcm_hash_subkey(
                hash_subkey_share1.data);
 
   // Set the key for the GHASH context.
-  HARDENED_TRY(ghash_init_subkey(hash_subkey_share0.data, ctx->tbl0));
-  ghash_init_subkey(hash_subkey_share1.data, ctx->tbl1);
+  HARDENED_TRY(ghash_init_subkey(hash_subkey_share0.data, &ctx->hash_subkey0));
+  ghash_init_subkey(hash_subkey_share1.data, &ctx->hash_subkey1);
 
   return OTCRYPTO_OK;
 }
@@ -261,7 +261,7 @@ static status_t aes_gcm_hash_subkey(
  * encryption and decryption.
  *
  * @param iv IV buffer
- * @param ctx GHASH context with product table for hash subkey H
+ * @param ctx GHASH context with the hash subkey shares
  * @param[out] j0 Destination for the output counter block
  * @return OK or error
  */
