@@ -138,12 +138,14 @@ module i3c_target_ccc
         case (ccc_req_i.idx)
           0: rdata_src = RData_MWL0;
           1: rdata_src = RData_MWL1;
+          default: rdata_src = RData_UNDEF;
         endcase
       GETMRL:  // Figure 29.
         case (ccc_req_i.idx)
           0: rdata_src = RData_MRL0;
           1: rdata_src = RData_MRL1;
           2: rdata_src = RData_IBI;
+          default: rdata_src = RData_UNDEF;
         endcase
       GETPID:  // Figure 36.
         case (ccc_req_i.idx)
@@ -153,6 +155,7 @@ module i3c_target_ccc
           3: rdata_src = RData_PID3;
           4: rdata_src = RData_PID4;
           5: rdata_src = RData_PID5;
+          default: rdata_src = RData_UNDEF;
         endcase
       GETBCR: rdata_src = RData_BCR;  // Figure 37.
       GETDCR: rdata_src = RData_DCR;  // Figure 38.
@@ -163,12 +166,15 @@ module i3c_target_ccc
               case (ccc_req_i.idx)
                 0: rdata_src = RData_PRECR0;
                 1: rdata_src = RData_PRECR1;
+                default: rdata_src = RData_UNDEF;
               endcase
+            default: rdata_src = RData_UNDEF;
           endcase
         end else begin
           case (ccc_req_i.idx)
             0: rdata_src = RData_TGTSTAT0;
             1: rdata_src = RData_TGTSTAT1;
+            default: rdata_src = RData_UNDEF;
           endcase
         end
       // TODO(#31128): We have to respond conditionally with 'Not Accepted through a NACK.'
@@ -179,6 +185,7 @@ module i3c_target_ccc
         if (has_defb && (defb != 8'h00)) begin
           case (defb)
             8'h91: rdata_src = RData_CRHDLY1;
+            default: rdata_src = RData_UNDEF;
           endcase
         end else begin
           case (ccc_req_i.idx)
@@ -187,6 +194,7 @@ module i3c_target_ccc
             2: rdata_src = RData_MAXRDTURN0;
             3: rdata_src = RData_MAXRDTURN1;
             4: rdata_src = RData_MAXRDTURN2;
+            default: rdata_src = RData_UNDEF;
           endcase
         end
       GETCAPS:  // Figure 50.
@@ -199,16 +207,19 @@ module i3c_target_ccc
                 1: rdata_src = RData_TESTPAT1;
                 2: rdata_src = RData_TESTPAT2;
                 3: rdata_src = RData_TESTPAT3;
+                default: rdata_src = RData_UNDEF;
               endcase
             8'h91:
               case (ccc_req_i.idx)
                 0: rdata_src = RData_CRCAP1;
                 1: rdata_src = RData_CRCAP2;
+                default: rdata_src = RData_UNDEF;
               endcase
             default: // 8'h93
               case (ccc_req_i.idx)
                 0: rdata_src = RData_VTCAP1;
                 1: rdata_src = RData_VTCAP2;
+                default: rdata_src = RData_UNDEF;
               endcase
           endcase
         end else begin
@@ -218,6 +229,7 @@ module i3c_target_ccc
             1: rdata_src = RData_GETCAP2;
             2: rdata_src = RData_GETCAP3;
             3: rdata_src = RData_GETCAP4;
+            default: rdata_src = RData_UNDEF;
           endcase
         end
       // TODO(#31128): entry for RSTACT currently missing.
@@ -453,7 +465,7 @@ module i3c_target_ccc
       // TODO(31128): TargCRsn_Sr is currently unreachable.
       TargCRsn_Sr: wr_commit = ccc_req_i.sr;
       TargCRsn_P:  wr_commit = 1'b1;
-      // All cases are covered above; no requirement for a `default` clause.
+      default: ;  // All cases are covered above; outputs are defaulted at the top.
     endcase
   end
 
