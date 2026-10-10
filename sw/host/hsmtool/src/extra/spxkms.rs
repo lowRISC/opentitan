@@ -9,7 +9,7 @@ use core::iter::DoubleEndedIterator;
 use indexmap::IndexMap;
 use serde::{Deserialize, Serialize, de::DeserializeOwned};
 use serde_json::Value;
-use sphincsplus::{SphincsPlus, SpxDomain, SpxPublicKey};
+use sphincsplus::{SphincsPlus, SpxPublicKey, SpxSignatureMode};
 use std::process::Command;
 use std::str::FromStr;
 use thiserror::Error;
@@ -182,10 +182,10 @@ impl SpxKms {
         }
     }
 
-    fn kms_to_domain(kms_algo: &str) -> Result<SpxDomain> {
+    fn kms_to_domain(kms_algo: &str) -> Result<SpxSignatureMode> {
         match kms_algo {
-            Self::PURE_ALGORITHM => Ok(SpxDomain::Pure),
-            Self::PREHASH_ALGORITHM => Ok(SpxDomain::PreHashedSha256),
+            Self::PURE_ALGORITHM => Ok(SpxSignatureMode::Pure),
+            Self::PREHASH_ALGORITHM => Ok(SpxSignatureMode::PreHashedSha256),
             _ => Err(HsmError::Unsupported(format!("algorithm {kms_algo}")).into()),
         }
     }
@@ -306,7 +306,7 @@ impl SpxInterface for SpxKms {
         &self,
         alias: &str,
         _algorithm: &str,
-        domain: SpxDomain,
+        domain: Option<SpxSignatureMode>,
         _token: &str,
         flags: GenerateFlags,
     ) -> Result<KeyEntry> {
@@ -314,9 +314,13 @@ impl SpxInterface for SpxKms {
             return Err(HsmError::Unsupported("export of private key material".into()).into());
         }
         let algorithm = match domain {
-            SpxDomain::Pure => Self::PURE_ALGORITHM,
-            SpxDomain::PreHashedSha256 => Self::PREHASH_ALGORITHM,
-            _ => return Err(HsmError::Unsupported(format!("domain {domain}")).into()),
+            Some(SpxSignatureMode::Pure) => Self::PURE_ALGORITHM,
+            Some(SpxSignatureMode::PreHashedSha256) => Self::PREHASH_ALGORITHM,
+            _ => {
+                return Err(
+                    HsmError::Unsupported("SpxKms needs a domain to be specified".into()).into(),
+                );
+            }
         };
         let url = self
             .keyring
@@ -342,7 +346,7 @@ impl SpxInterface for SpxKms {
         &self,
         _alias: &str,
         _algorithm: &str,
-        _domain: SpxDomain,
+        _domain: Option<SpxSignatureMode>,
         _token: &str,
         _overwrite: bool,
         _public_key: &[u8],
@@ -360,7 +364,7 @@ impl SpxInterface for SpxKms {
         &self,
         alias: Option<&str>,
         key_hash: Option<&str>,
-        domain: SpxDomain,
+        domain: SpxSignatureMode,
         message: &[u8],
     ) -> Result<Vec<u8>> {
         let alias = alias.ok_or(HsmError::NoSearchCriteria)?;
@@ -381,20 +385,19 @@ impl SpxInterface for SpxKms {
             .join(&format!("/v1/{}:asymmetricSign", key.name))?;
 
         // Format the signing request:
-        // - For the "pure" domain, we place the message in the `data` field.
-        // - For the "prehashed" domain, we place the digest into the `digest` field.
+        // - For the "pure" mode, we place the message in the `data` field.
+        // - For the "prehashed" mode, we place the digest into the `digest` field.
         let req = match keydomain {
-            SpxDomain::Pure => KmsSignRequest {
+            SpxSignatureMode::Pure => KmsSignRequest {
                 data: Some(Base64::encode_string(message)),
                 ..Default::default()
             },
-            SpxDomain::PreHashedSha256 => KmsSignRequest {
+            SpxSignatureMode::PreHashedSha256 => KmsSignRequest {
                 digest: Some(KmsDigest {
                     sha256: Base64::encode_string(message),
                 }),
                 ..Default::default()
             },
-            _ => unreachable!(),
         };
 
         let resp = self.post::<IndexMap<String, String>>(url, &req)?;
@@ -407,7 +410,7 @@ impl SpxInterface for SpxKms {
         &self,
         alias: Option<&str>,
         key_hash: Option<&str>,
-        domain: SpxDomain,
+        domain: SpxSignatureMode,
         message: &[u8],
         signature: &[u8],
     ) -> Result<bool> {
@@ -425,7 +428,7 @@ impl SpxInterface for SpxKms {
         }
         let pk =
             SpxPublicKey::from_bytes(SphincsPlus::from_str(&info.algorithm)?, &info.public_key)?;
-        match pk.verify(domain, signature, message) {
+        match pk.verify(domain.into(), signature, message) {
             Ok(_) => Ok(true),
             Err(_) => Ok(false),
         }

@@ -69,6 +69,7 @@ keyset(
     keys = {
         "app_prod_ecdsa_p256.der": "app_prod_0",
     },
+    keytype = "ecdsa",
     profile = "local",
     tool = "//signing/tokens:local",
 )

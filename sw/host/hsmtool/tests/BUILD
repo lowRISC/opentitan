@@ -250,7 +250,7 @@ _SPX_TESTS = {
             ":tqbf_digest",
             "//signing/softhsm",
             "//signing/softhsm:conf",
-            "//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset",
+            "//sw/device/silicon_creator/lib/ownership/keys/fake:app_prod_spx_pub",
             "//sw/host/hsmtool",
             "//sw/host/opentitantool",
             "@softhsm2//:gen_dir",
@@ -262,7 +262,7 @@ _SPX_TESTS = {
                 --rcfile=
                 spx verify {rev_flag}
                     --domain={domain}
-                    sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_spx.pem
+                    sw/device/silicon_creator/lib/ownership/keys/fake/app_prod_spx.pub.pem
                     $(rootpath :tqbf_digest)
                     tqbf.spx_sig
             """.format(
@@ -404,5 +404,49 @@ sh_test(
                 image.signed_bin
         """,
     },
+    deps = [":test_lib"],
+)
+
+# SLH-DSA PEM-format PKCS#8/SPKI encoded keys with RFC 9909 HashSLH-DSA OIDs.
+filegroup(
+    name = "hash_slh_dsa_keys",
+    testonly = True,
+    srcs = [
+        "hash-slh-dsa-{}-{}.pem".format(parameter_set, key_type)
+        for key_type in [
+            "public",
+            "private",
+        ]
+        for parameter_set in [
+            "sha2-128s",
+            "shake-128s",
+        ]
+    ],
+)
+
+# Verify that hsmtool can accept SLH-DSA keys with RFC9909 HashSLH-DSA
+# OIDs, since some exported PKCS#8/SPKI encoded keys might contain
+# algorithm OIDs describing key usage with HashSLH-DSA.
+sh_test(
+    name = "hsmtool_hash_slh_dsa_key_test",
+    srcs = ["hash_slh_dsa_key_test.sh"],
+    args = ["$(locations :hash_slh_dsa_keys)"],
+    data = [
+        ":hash_slh_dsa_keys",
+        "//signing/softhsm",
+        "//signing/softhsm:conf",
+        "//sw/host/hsmtool",
+        "@openssl",
+        "@softhsm2//:gen_dir",
+    ],
+    env = {
+        "OPENSSL": "$(rootpath @openssl)",
+        "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
+        "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
+    },
+    # hsmtool currently does not recognize the HashSLH-DSA algorithm identifiers
+    # (OIDs) in the PKCS#8/SPKI ASN.1 encodings, despite the fact that it supports
+    # use of the underlying `CKM_HASH_SLH_DSA` mechanism type.
+    tags = ["broken"],
     deps = [":test_lib"],
 )

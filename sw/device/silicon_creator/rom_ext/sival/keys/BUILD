@@ -14,6 +14,7 @@ keyset(
         "sv00-app-key-dev-0.pub.der": "sv00-app-key-dev-0",
         "sv00-app-key-test-0.pub.der": "sv00-app-key-test-0",
     },
+    keytype = "ecdsa",
     profile = "earlgrey_a1_sival_owner",
     tool = "//signing:token",
 )

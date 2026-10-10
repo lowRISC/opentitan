@@ -19,3 +19,11 @@ filegroup(
         allow_empty = True,
     ),
 )
+
+filegroup(
+    name = "slh_dsa_signatures",
+    srcs = glob(
+        ["*.slh_dsa_sig"],
+        allow_empty = True,
+    ),
+)

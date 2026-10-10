@@ -12,12 +12,16 @@ use std::str::FromStr;
 use strum::{Display, EnumString};
 use zeroize::Zeroize;
 
+/// A SPHINCS+ public (verifying) key, stored as an algorithm (parameter set)
+/// and raw bytes.
 #[derive(Clone, PartialEq, Eq, Debug)]
 pub struct SpxPublicKey {
     algorithm: SphincsPlus,
     key: Vec<u8>,
 }
 
+/// A SPHINCS+ secret (signing/private) key, stored as an algorithm (parameter
+/// set) and raw bytes.
 #[derive(Clone, PartialEq, Eq)]
 pub struct SpxSecretKey {
     algorithm: SphincsPlus,
@@ -33,6 +37,27 @@ impl fmt::Debug for SpxSecretKey {
     }
 }
 
+/// The SPHINCS+ signature mode. OpenTitan currently only uses the SHA256
+/// variant of the Pre-Hash mode.
+#[derive(
+    Default, Debug, Clone, Copy, PartialEq, Eq, EnumString, Display, Serialize, Deserialize,
+)]
+#[strum(ascii_case_insensitive)]
+pub enum SpxSignatureMode {
+    #[default]
+    Pure,
+    PreHashedSha256,
+}
+
+/// The SPHINCS+ domain separator that should be used with a given key.
+/// SPHINCS+ has two signature modes - Pure and Pre-Hash. There are many
+/// variations depending on the pre-hash function or (XOF) used - OpenTitan
+/// only uses Sha256 currently.
+///
+/// The current implementation of these two modes assumes that the default
+/// empty context string is always being used. If this is not the case,
+/// then the `None` domain should be used, and the domain separator must be
+/// manually prepended to the string.
 #[derive(
     Default, Debug, Clone, Copy, PartialEq, Eq, EnumString, Display, Serialize, Deserialize,
 )]
@@ -42,6 +67,15 @@ pub enum SpxDomain {
     #[default]
     Pure,
     PreHashedSha256,
+}
+
+impl From<SpxSignatureMode> for SpxDomain {
+    fn from(mode: SpxSignatureMode) -> Self {
+        match mode {
+            SpxSignatureMode::Pure => SpxDomain::Pure,
+            SpxSignatureMode::PreHashedSha256 => SpxDomain::PreHashedSha256,
+        }
+    }
 }
 
 impl SpxDomain {
@@ -120,21 +154,27 @@ impl Drop for SpxSecretKey {
 }
 
 impl DecodeKey for SpxSecretKey {
-    /// Decodes a SPHINCS+ secret key from a PEM encoded string.
-    fn from_pem(s: &str) -> Result<Self, SpxError> {
-        let (label, mut key) = pem_rfc7468::decode_vec(s.as_bytes()).map_err(SpxError::Pem)?;
+    /// Deserialize a SPHINCS+ secret key from raw bytes representing the key stored in
+    /// OpenTitan's custom legacy RAW PEM format.
+    fn from_pem_bytes(pem: &[u8]) -> Result<Self, SpxError> {
+        let (label, mut key) = pem_rfc7468::decode_vec(pem).map_err(SpxError::Pem)?;
         let (algorithm, _) = label
             .split_once(' ')
             .ok_or_else(|| SpxError::ParseError(format!("failed to parse label: {label:?}")))?;
         if !label.contains("PRIVATE KEY") {
-            return Err(SpxError::ParseError(format!(
-                "not a private key: {label:?}"
-            )));
+            let err_msg = if label.contains("PUBLIC KEY") {
+                format!("not a private key, this looks like a public key instead? {label:?}")
+            } else {
+                format!("not a private key: {label:?}")
+            };
+            return Err(SpxError::ParseError(err_msg));
         }
-        if !algorithm.starts_with("RAW:") {
-            return Err(SpxError::ParseError(format!("not a RAW key: {label:?}")));
-        }
-        let algorithm = algorithm[4..].replace('_', "-");
+        let algorithm = algorithm
+            .strip_prefix("RAW:")
+            .ok_or_else(|| SpxError::ParseError(format!("not a RAW key: {label:?}")))?;
+        // The `pem_rfc7468` crate does not correctly handle `-` in labels, so
+        // the labels we're decoding from use `_` separators instead.
+        let algorithm = algorithm.replace('_', "-");
         let algorithm = SphincsPlus::from_str(&algorithm).map_err(SpxError::Strum)?;
         if key.len() == algorithm.public_key_len() + algorithm.secret_key_len() {
             // Older versions of our tooling would save the private key as PubKey || SecretKey.
@@ -159,7 +199,7 @@ impl EncodeKey for SpxSecretKey {
     /// Encodes the SPHINCS+ secret key as a PEM encoded string.
     fn to_pem(&self) -> Result<String, SpxError> {
         // RFC7468 permits hyphen-minus in the label as long as it isn't the
-        // first character.  The pem_rfc7468 crate does not.
+        // first character.  The `pem_rfc7468` crate does not.
         let algorithm = self.algorithm.to_string().replace('-', "_");
         pem_rfc7468::encode_string(
             &format!("RAW:{algorithm} PRIVATE KEY"),
@@ -171,7 +211,7 @@ impl EncodeKey for SpxSecretKey {
 }
 
 impl SpxPublicKey {
-    const OID_SHA2_128S_SPX_PUBLIC_KEY: ObjectIdentifier =
+    const OID_SHA2_128S_WITH_SHA_256_SPX_PUBLIC_KEY: ObjectIdentifier =
         asn1::oid!(2, 16, 840, 1, 101, 3, 4, 3, 35);
 
     /// Creates a SPHINCS+ public key from raw bytes.
@@ -201,6 +241,19 @@ impl SpxPublicKey {
         self.algorithm.verify(&self.key, signature, &msg)
     }
 
+    /// Attempt to parse the given PEM block as an ASN.1 SPKI with the OID for
+    /// Pre-hashed SHA2-128-S-SPX with SHA-256. Note that this is the only SPKI
+    /// OID variant that is supported for this fallback case -- there is no
+    /// support for the Pure SHA2-128-S OID nor either of the SHAKE2-128S OIDs.
+    ///
+    /// IMPORTANT CAVEAT: this implementation is a legacy workaround to accept
+    /// PEM encoded ASN.1 objects commonly distributed by HSMs as public keys.
+    /// In its implementation, it mixes the key object (the [`SpxPublicKey`])
+    /// with its external PEM / SPKI representation. Thus, decoding and encoding
+    /// such a key is lossy - it will be converted to a `RAW` PEM key, and will
+    /// lose its OID. Although the [`SphincsPlus`] algorithm is encoded
+    /// out-of-band in the label, this does not distinguish between the Pure
+    /// and pre-hash OID. As such, this mode info in the SPKI is lost.
     fn parse_asn1_public_key(key: &[u8], label: &str) -> Result<Self, SpxError> {
         // The PEM block is not a raw key, maybe it is an ASN.1 object.
         let r: ParseResult<(ObjectIdentifier, &[u8])> = asn1::parse(key, |d| {
@@ -218,7 +271,7 @@ impl SpxPublicKey {
             Err(_) => return Err(SpxError::ParseError(format!("Not a RAW key {label:?}"))),
         };
 
-        if oid == Self::OID_SHA2_128S_SPX_PUBLIC_KEY && key.len() == 32 {
+        if oid == Self::OID_SHA2_128S_WITH_SHA_256_SPX_PUBLIC_KEY && key.len() == 32 {
             Ok(SpxPublicKey {
                 algorithm: SphincsPlus::Sha2128sSimple,
                 key: key.to_vec(),
@@ -232,23 +285,30 @@ impl SpxPublicKey {
 }
 
 impl DecodeKey for SpxPublicKey {
-    /// Decodes a SPHINCS+ public key from a PEM encoded string.
-    fn from_pem(s: &str) -> Result<Self, SpxError> {
-        let (label, key) = pem_rfc7468::decode_vec(s.as_bytes()).map_err(SpxError::Pem)?;
+    /// Deserialize a SPHINCS+ public key from raw bytes representing the key stored in
+    /// OpenTitan's custom legacy RAW PEM format.
+    fn from_pem_bytes(pem: &[u8]) -> Result<Self, SpxError> {
+        let (label, key) = pem_rfc7468::decode_vec(pem).map_err(SpxError::Pem)?;
         let (algorithm, _) = label
             .split_once(' ')
             .ok_or_else(|| SpxError::ParseError(format!("failed to parse label: {label:?}")))?;
         if !label.contains("PUBLIC KEY") {
-            if label.contains("PRIVATE KEY") {
-                // Decode the private key and convert to public key.
-                return SpxSecretKey::from_pem(s).map(|ref k| k.into());
-            }
-            return Err(SpxError::ParseError(format!("not a public key: {label:?}")));
-        }
-        if !algorithm.starts_with("RAW:") {
+            let err_msg = if label.contains("PUBLIC KEY") {
+                format!("not a public key, this looks like a private key instead? {label:?}")
+            } else {
+                format!("not a public key: {label:?}")
+            };
+            return Err(SpxError::ParseError(err_msg));
+        };
+        // WORKAROUND: Additionally fallback to handle parsing ASN.1 SPKIs with
+        // a specific OID, which is commonly distributed by HSMs. We try this
+        // if we detect that the key is not a custom RAW format.
+        let Some(algorithm) = algorithm.strip_prefix("RAW:") else {
             return Self::parse_asn1_public_key(&key, label);
-        }
-        let algorithm = algorithm[4..].replace('_', "-");
+        };
+        // The `pem_rfc7468` crate does not correctly handle `-` in labels, so
+        // the labels we're decoding from use `_` separators instead.
+        let algorithm = algorithm.replace('_', "-");
         let algorithm = SphincsPlus::from_str(&algorithm).map_err(SpxError::Strum)?;
         if key.len() != algorithm.public_key_len() {
             return Err(SpxError::ParseError(format!(
@@ -265,7 +325,7 @@ impl EncodeKey for SpxPublicKey {
     /// Encodes the SPHINCS+ public key as a PEM encoded string.
     fn to_pem(&self) -> Result<String, SpxError> {
         // RFC7468 permits hyphen-minus in the label as long as it isn't the
-        // first character.  The pem_rfc7468 crate does not.
+        // first character.  The `pem_rfc7468` crate does not.
         let algorithm = self.algorithm.to_string().replace('-', "_");
         pem_rfc7468::encode_string(
             &format!("RAW:{algorithm} PUBLIC KEY"),
@@ -304,10 +364,6 @@ mod test {
         // Public key encode/decode.
         let public_pem = pk.to_pem()?;
         let xk = SpxPublicKey::from_pem(&public_pem)?;
-        assert_eq!(pk, xk);
-
-        // Public key decode from private key.
-        let xk = SpxPublicKey::from_pem(&secret_pem)?;
         assert_eq!(pk, xk);
 
         // Error conditions for confusing secret/public.
@@ -364,6 +420,23 @@ mod test {
         ];
         let msg = [domain_sep.as_slice(), &sha256_oid, &digest].concat();
         assert!(pk.verify(SpxDomain::None, &sig, &msg).is_ok());
+        Ok(())
+    }
+
+    // Some HSMs that we want to support hand out ASN.1 `SubjectPublicKeyInfo`
+    // objects with the OID SLH-DSA-SHA2-128S-WITH-SHA-256. Check that the
+    // workaround that is implemented specifically for such keys is working.
+    const ASN1_SPKI_PUBLIC_KEY_PEM: &str = "-----BEGIN PUBLIC KEY-----\n\
+        MDAwCwYJYIZIAWUDBAMjAyEA2kmlVjTnzcl0g3PaKSnodnTVSJTEyoQFgmFJy4Wd\n\
+        ILM=\n\
+        -----END PUBLIC KEY-----\n";
+    const PK_HEX: &str = "da49a55634e7cdc9748373da2929e87674d54894c4ca8405826149cb859d20b3";
+
+    #[test]
+    fn asn1_spki_public_key() -> Result<(), SpxError> {
+        let pk = SpxPublicKey::from_pem(ASN1_SPKI_PUBLIC_KEY_PEM)?;
+        assert_eq!(pk.algorithm(), SphincsPlus::Sha2128sSimple);
+        assert_eq!(hex::encode(pk.as_bytes()), PK_HEX);
         Ok(())
     }
 }

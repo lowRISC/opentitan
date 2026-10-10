@@ -7,15 +7,15 @@ load("//rules:signing.bzl", "keyset")
 package(default_visibility = ["//visibility:public"])
 
 keyset(
-    name = "spx_keyset",
+    name = "slh_dsa_keyset",
     build_setting_default = "",
     keys = {
-        "test_key_0_spx.pem": "test_key_0",
-        "dev_key_0_spx.pem": "dev_key_0",
-        "prod_key_0_spx.pem": "prod_key_0",
-        "prod_key_1_spx.pem": "prod_key_1:domain=PreHashedSha256",
+        "test_key_0_slh_dsa.pem": "test_key_0",
+        "dev_key_0_slh_dsa.pem": "dev_key_0",
+        "prod_key_0_slh_dsa.pem": "prod_key_0",
+        "prod_key_1_slh_dsa.pem": "prod_key_1:domain=PreHashedSha256",
     },
-    keytype = "spx",
+    keytype = "slh-dsa",
     profile = "local",
     tool = "//signing/tokens:local",
 )

@@ -22,6 +22,7 @@ keyset(
         "sv00-earlgrey-a1-root-ecdsa-prod-2.pub.der": "sv00-earlgrey-a1-root-ecdsa-prod-2",
         "sv00-earlgrey-a1-root-ecdsa-test-0.pub.der": "sv00-earlgrey-a1-root-ecdsa-test-0",
     },
+    keytype = "ecdsa",
     profile = "earlgrey_a1_sival_root",
     tool = "//signing:token",
 )

@@ -12,6 +12,7 @@ keyset(
     keys = {
         "unauthorized_key_0_ecdsa_p256.der": "unauthorized_key_0",
     },
+    keytype = "ecdsa",
     profile = "local",
     tool = "//signing/tokens:local",
 )
