@@ -1,5 +1,72 @@
 {
   "nodes": {
+    "aig-manip": {
+      "inputs": {
+        "fenix": "fenix",
+        "nixpkgs": [
+          "fpv-conductor",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1792079591,
+        "narHash": "sha256-9q5j+y30XMOUZ1WBHuvtBRx4BePFzO1ylQype9cjPbo=",
+        "ref": "refs/heads/main",
+        "rev": "81e4c141600f6c8b8ec29764d72a1d202ead070d",
+        "revCount": 9,
+        "type": "git",
+        "url": "https://github.com/rswarbrick/aig-manip"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/rswarbrick/aig-manip"
+      }
+    },
+    "fenix": {
+      "inputs": {
+        "nixpkgs": [
+          "fpv-conductor",
+          "aig-manip",
+          "nixpkgs"
+        ],
+        "rust-analyzer-src": "rust-analyzer-src"
+      },
+      "locked": {
+        "lastModified": 1791721616,
+        "narHash": "sha256-leWbPEBub+eRxEt/+6ukBxwQJuko5E3UzPkP7+Vn+Q0=",
+        "owner": "nix-community",
+        "repo": "fenix",
+        "rev": "cf67babe5be61cdcd6d83b4ed5e12088146f3917",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "fenix",
+        "type": "github"
+      }
+    },
+    "fenix_2": {
+      "inputs": {
+        "nixpkgs": [
+          "fpv-conductor",
+          "nixpkgs"
+        ],
+        "rust-analyzer-src": "rust-analyzer-src_2"
+      },
+      "locked": {
+        "lastModified": 1791721616,
+        "narHash": "sha256-leWbPEBub+eRxEt/+6ukBxwQJuko5E3UzPkP7+Vn+Q0=",
+        "owner": "nix-community",
+        "repo": "fenix",
+        "rev": "cf67babe5be61cdcd6d83b4ed5e12088146f3917",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "fenix",
+        "type": "github"
+      }
+    },
     "flake-utils": {
       "inputs": {
         "systems": "systems"
@@ -31,8 +98,76 @@
         "type": "github"
       },
       "original": {
+        "id": "flake-utils",
+        "type": "indirect"
+      }
+    },
+    "flake-utils_3": {
+      "inputs": {
+        "systems": "systems_3"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
         "owner": "numtide",
         "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "fpv-conductor": {
+      "inputs": {
+        "aig-manip": "aig-manip",
+        "fenix": "fenix_2",
+        "flake-utils": "flake-utils_2",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "pyproject-build-systems": "pyproject-build-systems",
+        "pyproject-nix": "pyproject-nix",
+        "uv2nix": "uv2nix"
+      },
+      "locked": {
+        "lastModified": 1793121448,
+        "narHash": "sha256-7clljx5MzIzuVIonsaDq7uRcRGFC+gKTkgZlPhkpf9E=",
+        "ref": "refs/heads/main",
+        "rev": "8de3610bfa324c26b4a7ee847d1b5cf2f20a4b20",
+        "revCount": 37,
+        "type": "git",
+        "url": "https://github.com/rswarbrick/fpv-conductor"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/rswarbrick/fpv-conductor"
+      }
+    },
+    "gomod2nix": {
+      "inputs": {
+        "flake-utils": [
+          "psgen",
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "psgen",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1770585520,
+        "narHash": "sha256-yBz9Ozd5Wb56i3e3cHZ8WcbzCQ9RlVaiW18qDYA/AzA=",
+        "owner": "tweag",
+        "repo": "gomod2nix",
+        "rev": "1201ddd1279c35497754f016ef33d5e060f3da8d",
+        "type": "github"
+      },
+      "original": {
+        "owner": "tweag",
+        "repo": "gomod2nix",
         "type": "github"
       }
     },
@@ -55,7 +190,7 @@
     },
     "lowrisc-nix": {
       "inputs": {
-        "flake-utils": "flake-utils_2",
+        "flake-utils": "flake-utils_3",
         "nixpkgs": "nixpkgs"
       },
       "locked": {
@@ -71,6 +206,26 @@
         "repo": "lowrisc-nix",
         "rev": "ded9720f4960e3da2ffcb7d88dfa5fd51cbe4021",
         "type": "github"
+      }
+    },
+    "lowrisc-yosys-formal": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791807361,
+        "narHash": "sha256-TxAdHpqtiwb3D3UhqJx0iu84xdj+MNQ0UlsVY1i1qDQ=",
+        "ref": "refs/heads/main",
+        "rev": "2122e48893b2cef6130949005693847359170cbd",
+        "revCount": 2,
+        "type": "git",
+        "url": "https://github.com/rswarbrick/lowrisc-yosys-formal"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/rswarbrick/lowrisc-yosys-formal"
       }
     },
     "nixpkgs": {
@@ -121,7 +276,60 @@
         "type": "github"
       }
     },
+    "psgen": {
+      "inputs": {
+        "flake-utils": [
+          "flake-utils"
+        ],
+        "gomod2nix": "gomod2nix",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791659352,
+        "narHash": "sha256-HSCA3mf+aYjDdcjDYE08/9kRjsXypo8irj5G2j6r2qc=",
+        "owner": "rswarbrick",
+        "repo": "psgen",
+        "rev": "3632a6c8c570644f429cc3d24c3cd404d880da92",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rswarbrick",
+        "repo": "psgen",
+        "type": "github"
+      }
+    },
     "pyproject-build-systems": {
+      "inputs": {
+        "nixpkgs": [
+          "fpv-conductor",
+          "nixpkgs"
+        ],
+        "pyproject-nix": [
+          "fpv-conductor",
+          "pyproject-nix"
+        ],
+        "uv2nix": [
+          "fpv-conductor",
+          "uv2nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791170410,
+        "narHash": "sha256-pyru9MpuXRiyq0Bd4q0nHpL4T6HCuZT4B+alcgAYE4A=",
+        "owner": "pyproject-nix",
+        "repo": "build-system-pkgs",
+        "rev": "953d35d03a51dbecaf3feb3fb679eb63e90ebeb4",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pyproject-nix",
+        "repo": "build-system-pkgs",
+        "type": "github"
+      }
+    },
+    "pyproject-build-systems_2": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
@@ -150,6 +358,27 @@
     "pyproject-nix": {
       "inputs": {
         "nixpkgs": [
+          "fpv-conductor",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791657700,
+        "narHash": "sha256-vcCAvhtA7hG+/gOge29hYHy7I/dLkIsr5nLx4sFEQic=",
+        "owner": "pyproject-nix",
+        "repo": "pyproject.nix",
+        "rev": "ddc400a6883b042646d0940e65971bb7f7e96107",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pyproject-nix",
+        "repo": "pyproject.nix",
+        "type": "github"
+      }
+    },
+    "pyproject-nix_2": {
+      "inputs": {
+        "nixpkgs": [
           "nixpkgs"
         ]
       },
@@ -170,13 +399,51 @@
     "root": {
       "inputs": {
         "flake-utils": "flake-utils",
+        "fpv-conductor": "fpv-conductor",
         "ihp-pdk": "ihp-pdk",
         "lowrisc-nix": "lowrisc-nix",
+        "lowrisc-yosys-formal": "lowrisc-yosys-formal",
         "nixpkgs": "nixpkgs_2",
         "nixpkgs-yosys": "nixpkgs-yosys",
-        "pyproject-build-systems": "pyproject-build-systems",
-        "pyproject-nix": "pyproject-nix",
-        "uv2nix": "uv2nix"
+        "psgen": "psgen",
+        "pyproject-build-systems": "pyproject-build-systems_2",
+        "pyproject-nix": "pyproject-nix_2",
+        "uv2nix": "uv2nix_2",
+        "yosys-slang": "yosys-slang"
+      }
+    },
+    "rust-analyzer-src": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791661704,
+        "narHash": "sha256-1O6iYbegEi2KCMiDiVt6g2VdcnTKZE2dW27sQFpsKZw=",
+        "owner": "rust-lang",
+        "repo": "rust-analyzer",
+        "rev": "be9f94256713d72d359b67317b751a58220e353f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rust-lang",
+        "ref": "nightly",
+        "repo": "rust-analyzer",
+        "type": "github"
+      }
+    },
+    "rust-analyzer-src_2": {
+      "flake": false,
+      "locked": {
+        "lastModified": 1791661704,
+        "narHash": "sha256-1O6iYbegEi2KCMiDiVt6g2VdcnTKZE2dW27sQFpsKZw=",
+        "owner": "rust-lang",
+        "repo": "rust-analyzer",
+        "rev": "be9f94256713d72d359b67317b751a58220e353f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "rust-lang",
+        "ref": "nightly",
+        "repo": "rust-analyzer",
+        "type": "github"
       }
     },
     "systems": {
@@ -209,7 +476,47 @@
         "type": "github"
       }
     },
+    "systems_3": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
+        "type": "github"
+      }
+    },
     "uv2nix": {
+      "inputs": {
+        "nixpkgs": [
+          "fpv-conductor",
+          "nixpkgs"
+        ],
+        "pyproject-nix": [
+          "fpv-conductor",
+          "pyproject-nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791656763,
+        "narHash": "sha256-2mFllBdFGB4zNogzx02b8O5JObd7LeAGsndk+ZB5XvI=",
+        "owner": "pyproject-nix",
+        "repo": "uv2nix",
+        "rev": "ddca81d752e29c063eaa914e040c3ec56ed39558",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pyproject-nix",
+        "repo": "uv2nix",
+        "type": "github"
+      }
+    },
+    "uv2nix_2": {
       "inputs": {
         "nixpkgs": [
           "nixpkgs"
@@ -230,6 +537,27 @@
         "owner": "pyproject-nix",
         "repo": "uv2nix",
         "type": "github"
+      }
+    },
+    "yosys-slang": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1791728420,
+        "narHash": "sha256-2JjX5Sbgfy5pNK4KAi9rxd/zg3u3us9FvptksPJKJn4=",
+        "ref": "refs/heads/formal",
+        "rev": "4563adca3901fb0a3d996ab68b2501a6159b5147",
+        "revCount": 502,
+        "submodules": true,
+        "type": "git",
+        "url": "https://github.com/rswarbrick/yosys-slang"
+      },
+      "original": {
+        "type": "git",
+        "url": "https://github.com/rswarbrick/yosys-slang"
       }
     }
   },
