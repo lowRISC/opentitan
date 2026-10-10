@@ -52,3 +52,21 @@ py_library(
     name = "dis_parser",
     srcs = ["dis_parser.py"],
 )
+
+py_library(
+    name = "tvla",
+    srcs = ["tvla.py"],
+)
+
+py_library(
+    name = "gdb_tvla",
+    srcs = ["gdb_tvla.py"],
+    deps = [
+        ":common_library",
+        ":dis_parser",
+        ":gdb_controller",
+        ":qemu",
+        ":targets",
+        ":tvla",
+    ],
+)
