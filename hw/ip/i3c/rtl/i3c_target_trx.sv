@@ -1068,9 +1068,17 @@ module i3c_target_trx
     // Counterpart of the wired-AND for SDA above: the two enables are OR'ed. Since a '1' is
     // indistinguishable from released on an open-drain bus, the enable windows of the two owners
     // must overlap rather than abut, such that SDA is never let go part-way through a bit.
-    assign bus_drv_o.sda_pp_en =  (sda_en_ptog ^ sda_en_ntog) ? sda_pp_en_pq : sda_pp_en_nq;
-    assign bus_drv_o.sda_od_en = ((sda_en_ptog ^ sda_en_ntog) ? sda_od_en_pq : sda_od_en_nq)
-                                 | sreq_sda_od_en_i;  // Start request and addressing.
+    logic sda_pp_sel;
+    assign sda_pp_sel = sda_en_ptog ^ sda_en_ntog;
+    if (DrvSeparatedEn) begin : gen_sda_en_sep_drv
+      assign bus_drv_o.sda_pp_en =  sda_pp_sel ? sda_pp_en_pq : sda_pp_en_nq;
+      assign bus_drv_o.sda_od_en = (sda_pp_sel ? sda_od_en_pq : sda_od_en_nq) |
+                                   sreq_sda_od_en_i;  // Start request and addressing.
+    end else begin : gen_sda_en_vod_drv
+      assign bus_drv_o.sda_en = (sda_pp_sel ? sda_pp_en_pq | (sda_od_en_pq & !sda_pq[0][8])
+                                            : sda_pp_en_nq | (sda_od_en_nq & !sda_nq[0][8])) |
+                                (sreq_sda_od_en_i & !sreq_sda_i);
+    end
   end else begin : gen_no_tokens
     // This approach just uses the clock state directly, but introduces a combinational path
     // from SCL to SDA. Comments about `sreq_sda_i` and `sreq_sda_od_en_i` from the UseTokens branch
@@ -1078,13 +1086,24 @@ module i3c_target_trx
     assign bus_drv_o.sda = (scl_i ? sda_pq[0][8] : sda_nq[0][8]) & sreq_sda_i;
 
     // Driver enables must switch too.
-    assign bus_drv_o.sda_pp_en =  scl_i ? sda_pp_en_pq : sda_pp_en_nq;
-    assign bus_drv_o.sda_od_en = (scl_i ? sda_od_en_pq : sda_od_en_nq) | sreq_sda_od_en_i;
+    if (DrvSeparatedEn) begin : gen_sda_en_sep_drv
+      assign bus_drv_o.sda_pp_en =  scl_i ? sda_pp_en_pq : sda_pp_en_nq;
+      assign bus_drv_o.sda_od_en = (scl_i ? sda_od_en_pq : sda_od_en_nq) | sreq_sda_od_en_i;
+    end else begin : gen_sda_en_vod_drv
+      assign bus_drv_o.sda_en = (scl_i ? sda_pp_en_pq | (sda_od_en_pq & !sda_pq[0][8])
+                                       : sda_pp_en_nq | (sda_od_en_nq & !sda_nq[0][8])) |
+                                (sreq_sda_od_en_i & !sreq_sda_i);
+    end
   end
 
   // Detection of conflict on the SDA line; this detects arbitration loss or a driver conflict with
   // the Active Controller.
-  wire sda_driven = (bus_drv_o.sda_pp_en | bus_drv_o.sda_od_en);
+  logic sda_driven;
+  if (DrvSeparatedEn) begin : gen_sda_driven_sep_drv
+    assign sda_driven = (bus_drv_o.sda_pp_en | bus_drv_o.sda_od_en);
+  end else begin : gen_sda_driven_vod_drv
+    assign sda_driven = bus_drv_o.sda_en;
+  end
   assign sda_diff = &{sda_driven, sda_i != bus_drv_o.sda[0]};
 
   // -------------------------------- Response to Target core --------------------------------------
