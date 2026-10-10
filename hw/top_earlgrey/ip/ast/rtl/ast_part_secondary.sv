@@ -649,6 +649,12 @@ assign primary_mem_cfg_req.otbn_dmem                = '{req: spram_rm.cfg};
 assign primary_mem_cfg_req.i2c0                     = '{req: spram_rm.cfg};
 assign primary_mem_cfg_req.i2c1                     = '{req: spram_rm.cfg};
 assign primary_mem_cfg_req.i2c2                     = '{req: spram_rm.cfg};
+assign primary_mem_cfg_req.i3c0_ram                 = '{req: spram_rm.cfg};
+assign primary_mem_cfg_req.i3c0_dat                 = '{req: spram_rm.cfg};
+assign primary_mem_cfg_req.i3c0_dct                 = '{req: spram_rm.cfg};
+assign primary_mem_cfg_req.i3c1_ram                 = '{req: spram_rm.cfg};
+assign primary_mem_cfg_req.i3c1_dat                 = '{req: spram_rm.cfg};
+assign primary_mem_cfg_req.i3c1_dct                 = '{req: spram_rm.cfg};
 assign primary_mem_cfg_req.usbdev_ram               = '{req: spram_rm.cfg};
 assign primary_mem_cfg_req.rv_core_ibex_icache_tag  =
     {ibex_pkg::IC_NUM_WAYS{prim_ram_1p_pkg::ram_1p_cfg_req_t'{req: spram_rm.cfg}}};
