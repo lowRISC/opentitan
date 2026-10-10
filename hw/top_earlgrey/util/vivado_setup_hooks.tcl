@@ -24,3 +24,32 @@ set_property STEPS.OPT_DESIGN.TCL.POST "${workroot}/vivado_hook_opt_design_post.
 
 # As workaround, we use the post route design hook, which gets called.
 set_property STEPS.ROUTE_DESIGN.TCL.POST "${workroot}/vivado_hook_write_bitstream_pre.tcl" [get_runs impl_1]
+
+# Abort if a constraint matches no object, in all runs.
+set_msg_config -id {[Vivado 12-4739]} -new_severity ERROR
+
+# Build-time optimized flow. Build with --//hw/bitstream/vivado:fpga_cw340_debug, which sets
+# CW340_DEBUG=1, to use Vivado's default flow instead.
+if {!([info exists ::env(CW340_DEBUG)] && [string is true -strict $::env(CW340_DEBUG)])} {
+  set_property STEPS.SYNTH_DESIGN.ARGS.FLATTEN_HIERARCHY full [get_runs synth_1]
+  set_property -name {STEPS.SYNTH_DESIGN.ARGS.MORE OPTIONS} -value {-no_timing_driven} \
+    -objects [get_runs synth_1]
+  # Synthesis then cannot apply the generated clocks (Synth 8-3321). Implementation applies them
+  # and aborts on unmatched objects.
+  set_msg_config -id {[Synth 8-3321]} -new_severity WARNING
+
+  # Quick placement is not timing driven, but the router is. Quick routing would break hold.
+  set_property STEPS.OPT_DESIGN.ARGS.DIRECTIVE RuntimeOptimized [get_runs impl_1]
+  set_property STEPS.PLACE_DESIGN.ARGS.DIRECTIVE Quick [get_runs impl_1]
+  set_property STEPS.PHYS_OPT_DESIGN.IS_ENABLED false [get_runs impl_1]
+
+  # Only keep the reports that .github/workflows/bitstream.yml prints.
+  set kept_reports {impl_1_place_report_utilization_0 impl_1_route_report_timing_summary_0}
+  foreach run {synth_1 impl_1} {
+    foreach report [get_report_configs -of_objects [get_runs $run]] {
+      if {$report ni $kept_reports} {
+        set_property IS_ENABLED false $report
+      }
+    }
+  }
+}

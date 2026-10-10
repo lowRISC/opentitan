@@ -238,6 +238,7 @@ So you can ignore this warning, but it's worth keeping in mind *if* you should s
 
 With the steps above complete, building a first bitstream that includes the defined ILAs is as simple as following the [corresponding guide](../../getting_started/setup_fpga.md#build-an-fpga-bitstream).
 The generated bitstream will include the defined ILAs.
+Consider building it with `--//hw/bitstream/vivado:fpga_cw340_debug`, which uses [Vivado's default flow](../../getting_started/setup_fpga.md#from-scratch) and keeps the design hierarchy.
 
 
 ## Programming the FPGA, controlling the ILA, and running a test

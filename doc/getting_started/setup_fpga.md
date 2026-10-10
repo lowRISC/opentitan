@@ -92,6 +92,13 @@ bazel build //hw/bitstream/vivado:fpga_${BOARD}_rom_with_fake_keys
 
 >**Note**: Building these bitstreams will require Vivado to be installed on your system, with access to the proper (paid) licenses, described [here](./install_vivado/README.md).
 
+The CW340 bitstream is built with a build-time optimized Vivado flow.
+To use Vivado's default flow with all reports and design hierarchy instead, e.g., to debug, set the `--//hw/bitstream/vivado:fpga_cw340_debug` flag:
+```sh
+bazel build --//hw/bitstream/vivado:fpga_cw340_debug //hw/bitstream/vivado:fpga_cw340
+```
+Later Bazel commands that build this bitstream, e.g., tests with `--define bitstream=vivado`, also need the flag to use Vivado's default flow.
+
 #### Dealing with FPGA Congestion Issues
 
 The default Vivado tool placement may sometimes result in congested FPGA floorplans.
