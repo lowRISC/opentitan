@@ -43,14 +43,16 @@
     { name: "sc_sw_reinit_i",  desc: "Software reinitialization of the Standby Controller registers" }
   ],
   available_inout_list: [
+    { name: "scl", desc: "I3C SCL bus clock" }
+    { name: "sda", desc: "I3C SDA data line" }
   ],
   available_input_list: [
   ],
   available_output_list: [
-    { name: "ctrl_scl_pu_en", desc: "I3C Controller clock Pullup enable output" }
-    { name: "ctrl_sda_pu_en", desc: "I3C Controller data Pullup enable output" }
-    { name: "scl_hk_en", desc: "I3C Controller clock High-keeper enable output" }
-    { name: "sda_hk_en", desc: "I3C Controller data High-keeper enable output" }
+    { name: "ctrl_scl_pu", desc: "I3C Controller clock Pullup enable output" }
+    { name: "ctrl_sda_pu", desc: "I3C Controller data Pullup enable output" }
+    { name: "scl_hk", desc: "I3C Controller clock High-keeper enable output" }
+    { name: "sda_hk", desc: "I3C Controller data High-keeper enable output" }
   ],
   interrupt_list: [
     // Global HCI interrupt, asserted when any HCI interrupt is pending.
@@ -72,48 +74,17 @@
     }
   ],
   inter_signal_list: [
-    { struct:  "i3c_ctrl_bus_drv",
-      package: "i3c_io_pkg",
-      type:    "uni",
-      name:    "cio_ctrl_bus_drv",
-      act:     "req"
-    }
-    { struct:  "i3c_ctrl_bus_obs",
-      package: "i3c_io_pkg",
-      type:    "uni",
-      name:    "cio_ctrl_bus_obs",
-      act:     "rcv"
-    }
-    { struct:  "i3c_targ_bus_drv",
-      package: "i3c_io_pkg",
-      type:    "uni",
-      name:    "cio_targ_bus_drv",
-      act:     "req"
-    }
-    { struct:  "i3c_targ_bus_obs",
-      package: "i3c_io_pkg",
-      type:    "uni",
-      name:    "cio_targ_bus_obs",
-      act:     "rcv"
-    }
     { struct:  "logic",
       package: "",
       type:    "uni",
       name:    "rstdet_enable",
       act:     "req"
     }
-    // TODO: Combine the following two entries to become a `req_rsp?`
-    { struct:  "i3c_rstdet_req"
+    { struct:  "i3c_rstdet"
       package: "i3c_pkg"
-      type:    "uni"
-      name:    "rstdet_req"
+      type:    "req_rsp",
+      name:    "rstdet"
       act:     "req"
-    }
-    { struct:  "i3c_rstdet_rsp"
-      package: "i3c_pkg"
-      type:    "uni"
-      name:    "rstdet_rsp"
-      act:     "rcv"
     }
     { struct:  "logic"
       package: ""
@@ -161,6 +132,102 @@
   scan: "true",       // Enable `scanmode_i` port
   scan_reset: "true", // Enable `scan_rst_ni` port
   param_list: [
+    // Main IP block clock frequency; this allows the design to set the default time intervals appropriately.
+    { name:    "ClkFreq",
+      type:    "int unsigned",
+      default: "50000000",
+      desc:    "The frequency of the main clock, in Hz.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "PrimaryCtrl",
+      type:    "bit",
+      default: "1'b1",
+      desc:    "Disable(0) or enable(1) Primary Controller role.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "SecondaryCtrl",
+      type:    "bit",
+      default: "1'b0",
+      desc:    "Disable(0) or enable(1) Secondary Controller role.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "Target",
+      type:    "bit",
+      default: "1'b1",
+      desc:    '''Disable(0) or enable(1) Target functionality even in the absence of a role as
+               Secondary Controller.
+               ''',
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "NumTargets",
+      type:    "int unsigned",
+      default: "2",
+      desc:    '''Number of target(s) or target group(s) presented simultaneously on the I3C bus,
+               including the Secondary Controller Role on (Virtual) Target 0.
+               ''',
+      local:   "true",
+      expose:  "false"
+    }
+    { name:    "NumSDALanes",
+      type:    "int unsigned",
+      default: "1",
+      desc:    "Number of SDA lanes.",
+      local:   "true",
+      expose:  "false"
+    }
+    { name:    "SWDirectMsgBuf",
+      type:    "bit",
+      default: "1'b1",
+      desc:    "Disable(0) or enable(1) direct software access to the message buffer.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "SWDirEnIFetch",
+      type:    "bit",
+      default: "1'b0",
+      desc:    "Disable(0) or enable(1) software execution through direct message buffer access.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "CompManufacturer",
+      type:    "logic [31:0]",
+      default: "i3c_pkg::CompManufacturer",
+      desc:    "Hardware Identification Extended Capability: Component manufacturer.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "CompVersion",
+      type:    "logic [31:0]",
+      default: "i3c_pkg::CompVersion",
+      desc:    "Hardware Identification Extended Capability: Component version.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "CompType",
+      type:    "logic [31:0]",
+      default: "i3c_pkg::CompType",
+      desc:    "Hardware Identification Extended Capability: Component type.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "HalfCycleScl",
+      type:    "bit",
+      default: "1'b0",
+      desc:    "Disable(0) or enable(1) half-cycle SCL extension for additional IP clock frequency support.",
+      local:   "false",
+      expose:  "true"
+    }
+    { name:    "TargetExt",
+      type:    "bit",
+      default: "1'b0",
+      desc:    "Disable(0) or enable(1) Target-side Extension hardware.",
+      local:   "false",
+      expose:  "true"
+    }
     // Device Address Table size in bus words; each entry consumes 8 bytes of address space.
     { name:    "NumDATWords",
       type:    "int unsigned",

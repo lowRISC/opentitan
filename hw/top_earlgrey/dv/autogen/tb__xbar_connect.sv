@@ -46,6 +46,8 @@ tl_if rom_ctrl__rom_tl_if(clk_main, rst_n);
 tl_if rom_ctrl__regs_tl_if(clk_main, rst_n);
 tl_if spi_host0_tl_if(clk_io, rst_n);
 tl_if spi_host1_tl_if(clk_io, rst_n);
+tl_if i3c0_tl_if(clk_io, rst_n);
+tl_if i3c1_tl_if(clk_io, rst_n);
 tl_if usbdev_tl_if(clk_usb, rst_n);
 tl_if rram_ctrl__core_tl_if(clk_main, rst_n);
 tl_if rram_macro__prim_tl_if(clk_main, rst_n);
@@ -131,6 +133,8 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(rom_ctrl__regs, rom_ctrl, regs_tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(spi_host0, spi_host0, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(spi_host1, spi_host1, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(i3c0, i3c0, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(i3c1, i3c1, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(usbdev, usbdev, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(rram_ctrl__core, rram_ctrl, core_tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(rram_macro__prim, rram_macro, prim_tl, main, clk_i)

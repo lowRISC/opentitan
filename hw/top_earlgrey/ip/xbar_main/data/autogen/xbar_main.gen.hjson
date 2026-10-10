@@ -77,6 +77,8 @@
       spi_host0
       spi_host1
       usbdev
+      i3c0
+      i3c1
       rram_ctrl.core
       rram_ctrl.host
       rram_macro.prim
@@ -115,6 +117,8 @@
       spi_host0
       spi_host1
       usbdev
+      i3c0
+      i3c1
       rram_ctrl.core
       rram_ctrl.host
       rram_macro.prim
@@ -345,6 +349,50 @@
             hart: 0x40310000
           }
           size_byte: 0x40
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: i3c0
+      type: device
+      clock: clk_spi_host0_i
+      reset: rst_spi_host0_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: i3c
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40330000
+          }
+          size_byte: 0x2000
+        }
+      ]
+      xbar: false
+      stub: false
+      pipeline: true
+    }
+    {
+      name: i3c1
+      type: device
+      clock: clk_spi_host0_i
+      reset: rst_spi_host0_ni
+      req_fifo_pass: false
+      rsp_fifo_pass: false
+      inst_type: i3c
+      addr_range:
+      [
+        {
+          base_addrs:
+          {
+            hart: 0x40340000
+          }
+          size_byte: 0x2000
         }
       ]
       xbar: false
@@ -988,6 +1036,32 @@
       default: ""
       domain: Main
       top_signame: spi_host1_tl
+      index: -1
+    }
+    {
+      name: tl_i3c0
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      domain: Main
+      top_signame: i3c0_tl
+      index: -1
+    }
+    {
+      name: tl_i3c1
+      struct: tl
+      package: tlul_pkg
+      type: req_rsp
+      act: req
+      inst_name: main
+      width: 1
+      default: ""
+      domain: Main
+      top_signame: i3c1_tl
       index: -1
     }
     {

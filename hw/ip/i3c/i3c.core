@@ -5,7 +5,7 @@ CAPI=2:
 name: "lowrisc:ip:i3c:0.1"
 description: "i3c"
 filesets:
-  files_rtl:
+  files_rtl_common:
     depend:
       - lowrisc:virtual_constants:top_pkg
       - lowrisc:prim:all
@@ -17,13 +17,12 @@ filesets:
     files:
       - rtl/i3c_tti_pkg.sv
       - rtl/i3c_async_event_pkg.sv
-      - rtl/i3c_ctrl_ccc_pkg.sv
       - rtl/i3c_fifo_pkg.sv
-      - rtl/i3c_targ_ccc_pkg.sv
       - rtl/i3c_target_pkg.sv
       - rtl/i3c_timing_pkg.sv
       - rtl/i3c_controller_pkg.sv
-      - rtl/io_sep/i3c_io_pkg.sv
+      - rtl/i3c_ctrl_ccc_pkg.sv
+      - rtl/i3c_targ_ccc_pkg.sv
       - rtl/i3c_targ_ext_pkg.sv
       - rtl/i3c_buf_en.sv
       - rtl/i3c_buffer.sv
@@ -68,6 +67,18 @@ filesets:
       - rtl/i3c_timers.sv
     file_type: systemVerilogSource
 
+  # I/O variant with separated SDA push-pull and open drain driver enable signals.
+  files_rtl_io_sep:
+    files:
+      - rtl/io_sep/i3c_io_pkg.sv
+    file_type: systemVerilogSource
+
+  # I/O variant with combined SDA driver enable signal.
+  files_rtl_io_vod:
+    files:
+      - rtl/io_vod/i3c_io_pkg.sv
+    file_type: systemVerilogSource
+
   files_verilator_waiver:
     depend:
       # common waivers
@@ -110,11 +121,13 @@ parameters:
 targets:
   default: &default_target
     filesets:
-      - tool_verilator   ? (files_verilator_waiver)
-      - tool_ascentlint  ? (files_ascentlint_waiver)
-      - tool_veriblelint ? (files_veriblelint_waiver)
-      - tool_slang       ? (files_slang_waiver)
-      - files_rtl
+      - tool_verilator      ? (files_verilator_waiver)
+      - tool_ascentlint     ? (files_ascentlint_waiver)
+      - tool_veriblelint    ? (files_veriblelint_waiver)
+      - tool_slang          ? (files_slang_waiver)
+      - i3c_io_sep_drv_en   ? (files_rtl_io_sep)
+      - "!i3c_io_sep_drv_en ? (files_rtl_io_vod)"
+      - files_rtl_common
     toplevel: i3c
 
   lint:

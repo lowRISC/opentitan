@@ -28,7 +28,7 @@ module i3c
   // Whether to include direct software access to the message buffer?
   parameter bit                     SWDirectMsgBuf   = 1'b1,
   // Whether the direct message buffer access supports execution.
-  parameter prim_mubi_pkg::mubi4_t  SWDirEnIFetch    = prim_mubi_pkg::MuBi4False,
+  parameter bit                     SWDirEnIFetch    = 1'b0,
   // Hardware Identification Extended Capability.
   parameter int unsigned            CompManufacturer = i3c_pkg::CompManufacturer,
   parameter int unsigned            CompVersion      = i3c_pkg::CompVersion,
@@ -65,26 +65,31 @@ module i3c
   input  top_racl_pkg::racl_policy_vec_t    racl_policies_i,
   output top_racl_pkg::racl_error_log_t     racl_error_o,
 
-  // I3C Controller I/O signaling.
-  output i3c_ctrl_bus_drv_t                 cio_ctrl_bus_drv_o,
-  input  i3c_ctrl_bus_obs_t                 cio_ctrl_bus_obs_i,
+  // SCL and SDA
+  input                                     cio_scl_i,
+  output logic                              cio_scl_o,
+  output logic                              cio_scl_en_o,
+
+  input                                     cio_sda_i,
+  output logic                              cio_sda_o,
+  output logic                              cio_sda_en_o,
 
   // Pull-up enables for open drain intervals.
+  output logic                              cio_ctrl_scl_pu_o,
   output logic                              cio_ctrl_scl_pu_en_o,
+  output logic                              cio_ctrl_sda_pu_o,
   output logic                              cio_ctrl_sda_pu_en_o,
 
   // High-keeper enables.
+  output logic                              cio_scl_hk_o,
   output logic                              cio_scl_hk_en_o,
+  output logic                              cio_sda_hk_o,
   output logic                              cio_sda_hk_en_o,
-
-  // I3C Target I/O signaling.
-  output i3c_targ_bus_drv_t                 cio_targ_bus_drv_o,
-  input  i3c_targ_bus_obs_t                 cio_targ_bus_obs_i,
 
   // Target Reset Detector request/response.
   output                                    rstdet_enable_o,
-  output i3c_rstdet_req_t                   rstdet_req_o,
-  input  i3c_rstdet_rsp_t                   rstdet_rsp_i,
+  output i3c_rstdet_req_t                   rstdet_o,
+  input  i3c_rstdet_rsp_t                   rstdet_i,
 
   // Interrupts.
   // - HCI-global interrupt, asserted when any HCI interrupt is asserted.
@@ -103,12 +108,6 @@ module i3c
   input                                     scan_clk_i,
   input                                     scan_rst_ni,
   input prim_mubi_pkg::mubi4_t              scanmode_i
-
-  // TODO(#31336): Dummy ports for top-level integration. These are presently required because
-  // `topgen` creates enables for all output signals.
-  ,
-  output cio_ctrl_bus_drv_en_o,
-  output cio_targ_bus_drv_en_o
 );
 
   localparam int unsigned DataWidth = top_pkg::TL_DW;
@@ -127,14 +126,52 @@ module i3c
 
   logic [NumAlerts-1:0] alert_test, alerts;
 
-  // TODO(#31336): These drivers should not exist, because the ports should not exist, but it's
-  // adding noise to synthesis logs.
-  assign {cio_ctrl_bus_drv_en_o, cio_targ_bus_drv_en_o} = 'b0;
+  // Pull-up and high-keeper "data" signals. These are tied-high; the actual dynamic control is
+  // done through the corresponding enable signals which connect to the output-enable inputs of the
+  // corresponding pads.
+  assign cio_ctrl_scl_pu_o = 1'b1;
+  assign cio_ctrl_sda_pu_o = 1'b1;
+
+  assign cio_scl_hk_o = 1'b1;
+  assign cio_sda_hk_o = 1'b1;
 
   // Register reinitialization.
   logic hci_soft_rst;  // Host Controller Interface (HCI) registers.
   logic tti_soft_rst;  // Target Transaction Interface (TTI) registers.
   logic sc_soft_rst;   // Standby Controller registers.
+
+  // Controller and Target I/O signals.
+  i3c_io_pkg::i3c_ctrl_bus_drv_t cio_ctrl_bus_drv;
+  i3c_io_pkg::i3c_ctrl_bus_obs_t cio_ctrl_bus_obs;
+  i3c_io_pkg::i3c_targ_bus_drv_t cio_targ_bus_drv;
+  i3c_io_pkg::i3c_targ_bus_obs_t cio_targ_bus_obs;
+
+  // SCL and SDA observation
+  assign cio_ctrl_bus_obs = '{
+    scl: cio_scl_i,
+    sda: {NumSDALanes{cio_sda_i}}
+  };
+
+  assign cio_targ_bus_obs = '{
+    scl: cio_scl_i,
+    sda: {NumSDALanes{cio_sda_i}}
+  };
+
+  // SCL is only driven by the Controller
+  assign cio_scl_o    = cio_ctrl_bus_drv.scl;
+  assign cio_scl_en_o = cio_ctrl_bus_drv.scl_en;
+
+  if (DrvSeparatedEn) begin : gen_cio_sda_from_sep_drv
+    // TODO
+  end else begin : gen_cio_sda_from_vod_drv
+    // Combination of Controller and Target SDA
+    assign cio_sda_o    = cio_ctrl_bus_drv.sda[0]    & cio_targ_bus_drv.sda[0];
+    assign cio_sda_en_o = cio_ctrl_bus_drv.sda_en[0] | cio_targ_bus_drv.sda_en[0];
+
+    // Only one out of Controller and Target may drive at any time
+    `ASSERT(NoConcurrentSdaEn_A, !(cio_ctrl_bus_drv.sda_en[0] & cio_targ_bus_drv.sda_en[0]))
+    `ASSERT(NoConcurrentSdaLow_A, cio_ctrl_bus_drv.sda[0] | cio_targ_bus_drv.sda[0])
+  end
 
   // Registers.
   i3c_reg2hw_t reg2hw;
@@ -174,6 +211,7 @@ module i3c
     .racl_error_o   (racl_error_o),
 
     // Integrity checking.
+    // SEC_CM: BUS.INTEGRITY
     .intg_err_o     (alerts[0])
   );
 
@@ -350,7 +388,7 @@ module i3c
 
       .tl_i                      (tl_win_h2d[TL_SwBuf]),
       .tl_o                      (tl_win_d2h[TL_SwBuf]),
-      .en_ifetch_i               (SWDirEnIFetch),
+      .en_ifetch_i               (prim_mubi_pkg::mubi4_bool_to_mubi(SWDirEnIFetch)),
       .req_o                     (sw_buf_req),
       .req_type_o                (),
       .gnt_i                     (sw_buf_gnt),
@@ -455,8 +493,8 @@ module i3c
     .sw_buf_rdata_o  (sw_buf_rdata),
 
     // I3C Controller I/O signaling.
-    .ctrl_bus_drv_o  (cio_ctrl_bus_drv_o),
-    .ctrl_bus_obs_i  (cio_ctrl_bus_obs_i),
+    .ctrl_bus_drv_o  (cio_ctrl_bus_drv),
+    .ctrl_bus_obs_i  (cio_ctrl_bus_obs),
 
     // Pull-up enables for open drain intervals.
     .ctrl_scl_pu_en_o(cio_ctrl_scl_pu_en_o),
@@ -467,13 +505,13 @@ module i3c
     .sda_hk_en_o     (cio_sda_hk_en_o),
 
     // I3C Target I/O signaling.
-    .targ_bus_drv_o  (cio_targ_bus_drv_o),
-    .targ_bus_obs_i  (cio_targ_bus_obs_i),
+    .targ_bus_drv_o  (cio_targ_bus_drv),
+    .targ_bus_obs_i  (cio_targ_bus_obs),
 
     // Target Reset Detector request/response.
     .rstdet_enable_o (rstdet_enable_o),
-    .rstdet_o        (rstdet_req_o),
-    .rstdet_i        (rstdet_rsp_i),
+    .rstdet_o        (rstdet_o),
+    .rstdet_i        (rstdet_i),
 
     // Interrupts.
     .intr_hci_o      (intr_hci_o),
@@ -515,6 +553,56 @@ module i3c
     );
   end
 
+  // Currently this IP only supports one SDA lane (no support for HDR-BT)
+  `ASSERT_INIT(OnlyOneSdaLine_A, NumSDALanes == 1)
+
+  // Assert Known for I3C Controller outputs
+  `ASSERT_KNOWN(CtrlSCLEnKnown_A, cio_ctrl_bus_drv.scl_en)
+  `ASSERT_KNOWN(CtrlSCLKnown_A, cio_ctrl_bus_drv.scl, clk_i, !rst_ni ||
+                !cio_ctrl_bus_drv.scl_en)
+
+  if (DrvSeparatedEn) begin : gen_ctrl_sep_asserts
+    `ASSERT_KNOWN(CtrlSDAPPEnKnown_A, cio_ctrl_bus_drv.sda_pp_en)
+    `ASSERT_KNOWN(CtrlSDAODEnKnown_A, cio_ctrl_bus_drv.sda_od_en)
+    `ASSERT_KNOWN(CtrlSDAKnown_A, cio_ctrl_bus_drv.sda, clk_i, !rst_ni ||
+                  (!cio_ctrl_bus_drv.sda_pp_en & !cio_ctrl_bus_drv.sda_od_en))
+  end else begin : gen_ctrl_nosep_asserts
+    `ASSERT_KNOWN(CtrlSDAEnKnown_A, cio_ctrl_bus_drv.sda_en)
+    `ASSERT_KNOWN(CtrlSDAKnown_A, cio_ctrl_bus_drv.sda, clk_i, !rst_ni ||
+                  !cio_ctrl_bus_drv.sda_en)
+  end
+
+  // Assert Known for Controller-driven pull-up enables.
+  `ASSERT_KNOWN(CtrlSCLPUEnKnown_A, cio_ctrl_scl_pu_en_o)
+  `ASSERT_KNOWN(CtrlSDAPUEnKnown_A, cio_ctrl_sda_pu_en_o)
+
+  // Assert Known for Controller-driven high-keeper enables.
+  `ASSERT_KNOWN(SCLHKEnKnown_A, cio_scl_hk_en_o)
+  `ASSERT_KNOWN(SDAHKEnKnown_A, cio_sda_hk_en_o)
+
+  // Assert Known for I3C Target outputs
+  if (DrvSeparatedEn) begin : gen_targ_sep_asserts
+    `ASSERT_KNOWN(TargSDAPPEnKnown_A, cio_targ_bus_drv.sda_pp_en)
+    `ASSERT_KNOWN(TargSDAODEnKnown_A, cio_targ_bus_drv.sda_od_en)
+    `ASSERT_KNOWN(TargSDAKnown_A, cio_targ_bus_drv.sda, clk_i, !rst_ni ||
+                  (!cio_targ_bus_drv.sda_pp_en & !cio_targ_bus_drv.sda_od_en))
+  end else begin : gen_targ_nosep_asserts
+    `ASSERT_KNOWN(TargSDAEnKnown_A, cio_targ_bus_drv.sda_en)
+    `ASSERT_KNOWN(TargSDAKnown_A, cio_targ_bus_drv.sda, clk_i, !rst_ni ||
+                  !cio_targ_bus_drv.sda_en)
+  end
+
+  // Assert Known for Target-driven Reset Detector outputs.
+  `ASSERT_KNOWN(RstDetEnKnown_A, rstdet_enable_o)
+  `ASSERT_KNOWN(RstDetReqKnown_A, rstdet_o)
+
+  // Assert Known for interrupts.
+  `ASSERT_KNOWN(IntrHCIKnown_A, intr_hci_o)
+  `ASSERT_KNOWN(IntrTargKnown_A, intr_targ_o)
+
+  // Check that the bus width meets the requirements of the message buffer, DAT and DCT tables.
+  `ASSERT_INIT(DataWidthIs32_A, DataWidth == 32)
+
   // Assert Known for the register interface.
   `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
   `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
@@ -522,61 +610,10 @@ module i3c
   // Assert Known for the RACL error log.
   `ASSERT_KNOWN(RaclErrorValidKnown_A, racl_error_o.valid)
 
-  // Assert Known for I3C Controller outputs.
-  `ASSERT_KNOWN(CtrlSCLEnKnown_A, cio_ctrl_bus_drv_o.scl_en, clk_i, !rst_ni)
-  `ASSERT_KNOWN(CtrlSCLKnown_A, cio_ctrl_bus_drv_o.scl, clk_i, !rst_ni ||
-                !cio_ctrl_bus_drv_o.scl_en)
-
-  if (DrvSeparatedEn) begin : gen_ctrl_sep_asserts
-    `ASSERT_KNOWN(CtrlSDAPPEnKnown_A, cio_ctrl_bus_drv_o.sda_pp_en, clk_i, !rst_ni)
-    `ASSERT_KNOWN(CtrlSDAODEnKnown_A, cio_ctrl_bus_drv_o.sda_od_en, clk_i, !rst_ni)
-    `ASSERT_KNOWN(CtrlSDAKnown_A, cio_ctrl_bus_drv_o.sda, clk_i, !rst_ni ||
-                  (!cio_ctrl_bus_drv_o.sda_pp_en & !cio_ctrl_bus_drv_o.sda_od_en))
-  end else begin : gen_ctrl_nosep_asserts
-    `ASSERT_KNOWN(CtrlSDAEnKnown_A, cio_ctrl_bus_drv_o.sda_en, clk_i, !rst_ni)
-    `ASSERT_KNOWN(CtrlSDAKnown_A, cio_ctrl_bus_drv_o.sda, clk_i, !rst_ni ||
-                  !cio_ctrl_bus_drv_o.sda_en)
-  end
-
-  // Assert Known for Controller-driven pull-up enables.
-  `ASSERT_KNOWN(CtrlSCLPUEnKnown_A, cio_ctrl_scl_pu_en_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(CtrlSDAPUEnKnown_A, cio_ctrl_sda_pu_en_o, clk_i, !rst_ni)
-
-  // Assert Known for Controller-driven high-keeper enables.
-  `ASSERT_KNOWN(SCLHKEnKnown_A, cio_scl_hk_en_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(SDAHKEnKnown_A, cio_sda_hk_en_o, clk_i, !rst_ni)
-
-  // Assert Known for I3C Target outputs.
-  if (DrvSeparatedEn) begin : gen_targ_sep_asserts
-    `ASSERT_KNOWN(TargSDAPPEnKnown_A, cio_targ_bus_drv_o.sda_pp_en, clk_i, !rst_ni)
-    `ASSERT_KNOWN(TargSDAODEnKnown_A, cio_targ_bus_drv_o.sda_od_en, clk_i, !rst_ni)
-    `ASSERT_KNOWN(TargSDAKnown_A, cio_targ_bus_drv_o.sda, clk_i, !rst_ni ||
-                  (!cio_targ_bus_drv_o.sda_pp_en & !cio_targ_bus_drv_o.sda_od_en))
-  end else begin : gen_targ_nosep_asserts
-    `ASSERT_KNOWN(TargSDAEnKnown_A, cio_targ_bus_drv_o.sda_en, clk_i, !rst_ni)
-    `ASSERT_KNOWN(TargSDAKnown_A, cio_targ_bus_drv_o.sda, clk_i, !rst_ni ||
-                  !cio_targ_bus_drv_o.sda_en)
-  end
-
-  // Assert Known for Target-driven Reset Detector outputs.
-  `ASSERT_KNOWN(RstDetEnKnown_A, rstdet_enable_o, clk_i, !rst_ni)
-  `ASSERT_KNOWN(RstDetReqKnown_A, rstdet_req_o, clk_i, !rst_ni)
-
   // Assert Known for alerts.
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
 
   // Alert assertions for reg_we onehot check.
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
-
-  // Assert Known for interrupts.
-  `ASSERT_KNOWN(IntrHCIKnown_A, intr_hci_o)
-  `ASSERT_KNOWN(IntrTargKnown_A, intr_targ_o)
-
-  // Assert Known for the driver-enable outputs.
-  `ASSERT_KNOWN(CtrlBusDrvEnKnown_A, cio_ctrl_bus_drv_en_o)
-  `ASSERT_KNOWN(TargBusDrvEnKnown_A, cio_targ_bus_drv_en_o)
-
-  // Check that the bus width meets the requirements of the message buffer, DAT and DCT tables.
-  if (DataWidth != 32) $fatal(1, "This design presently supports only 32-bit system buses.");
 
 endmodule

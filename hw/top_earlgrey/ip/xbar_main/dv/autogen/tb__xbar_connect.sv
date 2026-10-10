@@ -39,6 +39,8 @@ initial force dut.rst_spi_host1_ni = rst_n;
 `CONNECT_TL_DEVICE_IF(peri, dut, clk_fixed_i, rst_n)
 `CONNECT_TL_DEVICE_IF(spi_host0, dut, clk_spi_host0_i, rst_n)
 `CONNECT_TL_DEVICE_IF(spi_host1, dut, clk_spi_host1_i, rst_n)
+`CONNECT_TL_DEVICE_IF(i3c0, dut, clk_spi_host0_i, rst_n)
+`CONNECT_TL_DEVICE_IF(i3c1, dut, clk_spi_host0_i, rst_n)
 `CONNECT_TL_DEVICE_IF(usbdev, dut, clk_usb_i, rst_n)
 `CONNECT_TL_DEVICE_IF(rram_ctrl__core, dut, clk_main_i, rst_n)
 `CONNECT_TL_DEVICE_IF(rram_macro__prim, dut, clk_main_i, rst_n)
