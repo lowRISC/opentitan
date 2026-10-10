@@ -92,6 +92,39 @@ static status_t run_negative_test(void) {
   CHECK(hmac_final(&ctx, &digest_buf).value == OTCRYPTO_FATAL_ERR.value);
   abs_mmio_write32(hmac_base() + HMAC_CFG_REG_OFFSET, 0);
 
+  // A caller owns the streaming context between calls, so the driver must
+  // reject a context whose length fields are out of range.
+  hmac_ctx_t bad_ctx;
+
+  // A block length larger than the partial block buffer.
+  hmac_hash_sha256_init(&bad_ctx);
+  bad_ctx.msg_block_wordlen = kHmacMaxBlockWords + 1;
+  CHECK(hmac_update(&bad_ctx, &dummy_buf).value == OTCRYPTO_BAD_ARGS.value);
+
+  // A zero block length, which hmac_update divides by.
+  hmac_hash_sha256_init(&bad_ctx);
+  bad_ctx.msg_block_wordlen = 0;
+  CHECK(hmac_update(&bad_ctx, &dummy_buf).value == OTCRYPTO_BAD_ARGS.value);
+
+  // A full partial block, which a valid update never leaves behind.
+  hmac_hash_sha256_init(&bad_ctx);
+  bad_ctx.partial_block_bytelen = bad_ctx.msg_block_wordlen * sizeof(uint32_t);
+  CHECK(hmac_update(&bad_ctx, &dummy_buf).value == OTCRYPTO_BAD_ARGS.value);
+
+  // A digest length larger than the digest registers.
+  hmac_hash_sha256_init(&bad_ctx);
+  bad_ctx.digest_wordlen = kHmacMaxDigestWords + 1;
+  CHECK(hmac_final(&bad_ctx, &digest_buf).value == OTCRYPTO_BAD_ARGS.value);
+
+  // A key length larger than the key buffer, through both final paths.
+  hmac_hash_sha256_init(&bad_ctx);
+  bad_ctx.key.key_len = kHmacMaxBlockWords + 1;
+  CHECK(hmac_final(&bad_ctx, &digest_buf).value == OTCRYPTO_BAD_ARGS.value);
+  hmac_hash_sha256_init(&bad_ctx);
+  bad_ctx.key.key_len = kHmacMaxBlockWords + 1;
+  CHECK(hmac_hmac_sha256_final_redundant(&bad_ctx, &digest_buf).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
   return OTCRYPTO_OK;
 }
 
