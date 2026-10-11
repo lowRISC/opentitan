@@ -6640,7 +6640,7 @@
       param_decl:
       {
         InstrExec: "0"
-        InstSize: "4096"
+        InstSize: "8192"
       }
       base_addrs:
       {
@@ -6662,7 +6662,7 @@
           data_intg_passthru: "true"
           exec: True
           byte_write: True
-          size: 0x1000
+          size: 0x2000
         }
       }
       clock_connections:
@@ -6682,13 +6682,13 @@
             '''
           type: int
           name_top: MemSizeSramCtrlRetRam
-          default: 4096
+          default: 8192
         }
         {
           name: InstSize
           desc: Memory size of a single RAM tile (in bytes).
           type: int
-          default: "4096"
+          default: "8192"
           local: "false"
           expose: "true"
           name_top: SramCtrlRetInstSize
@@ -14366,7 +14366,7 @@
               {
                 hart: 0x40600000
               }
-              size_byte: 0x1000
+              size_byte: 0x2000
             }
           ]
           xbar: false

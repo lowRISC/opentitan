@@ -33,7 +33,7 @@
 /**
  * Memory size for ram memory on sram_ctrl_ret in top earlgrey.
  */
-#define TOP_SRAM_CTRL_RET_RAM_SIZE_BYTES 0x1000
+#define TOP_SRAM_CTRL_RET_RAM_SIZE_BYTES 0x2000
 
 /**
  * Memory base for host memory on rram_ctrl in top earlgrey.

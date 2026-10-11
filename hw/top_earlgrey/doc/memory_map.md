@@ -65,7 +65,7 @@ The main address space, shared between the CPU and DM
 
 | Memory          | Interface   | Base Address   | Size (bytes)   | Size (words)   |
 |-----------------|-------------|----------------|----------------|----------------|
-| sram_ctrl_ret   | ram         | `0x40600000`   | `0x1000`       | `0x400`        |
+| sram_ctrl_ret   | ram         | `0x40600000`   | `0x2000`       | `0x800`        |
 | rram_ctrl       | host        | `0x30000000`   | `0x200000`     | `0x80000`      |
 | sram_ctrl_main  | ram         | `0x10000000`   | `0x20000`      | `0x8000`       |
 | sram_ctrl_sec   | ram         | `0x10020000`   | `0x10000`      | `0x4000`       |

@@ -37,7 +37,7 @@ typedef struct retention_sram_creator {
   /**
    * Space reserved for future allocation by the silicon creator.
    *
-   * The first half of the retention SRAM is reserved for the silicon creator
+   * The first 2 KiB of the retention SRAM are reserved for the silicon creator
    * except for the first word that stores the format version. Hence the total
    * size of this struct must be 2044 bytes.
    *
@@ -99,6 +99,10 @@ OT_ASSERT_SIZE(retention_sram_owner_t, 2048);
  * The retention SRAM is memory that is used to retain information, such as a
  * boot service request, across a device reset. If the reset reason is 'power
  * on' (POR) all fields will be initialized using the LFSR by the ROM.
+ *
+ * This layout covers the first 4 KiB of the retention SRAM. Retention SRAMs
+ * larger than 4 KiB (e.g., 8 KiB in Earl Grey) have additional space after
+ * this layout that is not yet allocated.
  */
 typedef struct retention_sram {
   /**
