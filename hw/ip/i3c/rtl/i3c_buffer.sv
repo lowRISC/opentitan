@@ -30,7 +30,7 @@ module i3c_buffer
   parameter bit [NumFifos-1:0] DirTx = 0,
   // The default FIFO configuration; when reset each FIFO shall be empty, with both its write
   // pointer and its read pointer set to the configured minimum address.
-  parameter logic [BufAddrW-1:0] DefMin[NumFifos] = '{0}
+  parameter logic [BufAddrW-1:0] DefMin[NumFifos] = '{default: '0}
 ) (
   input                     clk_i,
   input                     rst_ni,
