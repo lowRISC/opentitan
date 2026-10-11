@@ -27,7 +27,7 @@ package i3c_timing_pkg;
   // min and max values.
   // All time intervals are in nanoseconds.
   parameter int unsigned TCAS       = 39;    // 38.4ns (Table 49).
-  parameter int unsigned TCBP       = ceil_div(TCAS, 2);
+  parameter int unsigned TCBP       = prim_util_pkg::ceil_udiv(TCAS, 2);
   parameter int unsigned THIGH_INIT = 200;
   parameter int unsigned TDIGH      = 36;
   parameter int unsigned TLOW_OD    = 200;
@@ -45,11 +45,6 @@ package i3c_timing_pkg;
   parameter int unsigned TPERIOD_OD   = TDIGH + TLOW_OD;
   parameter int unsigned TPERIOD_OD1  = THIGH_INIT + TLOW_OD;
 
-  // Ceiling division: returns ceil(a / b) for unsigned a, b.
-  function automatic int unsigned ceil_div(int unsigned a, int unsigned b);
-    return (a + b - 1) / b;
-  endfunction
-
   // Determine the number of cycles of the IP clock required to achieve (at least) the given delay.
   // - in the case of the SCL high interval we may have the option of extending by half a cycle,
   //   so here we actually calculate the half-cycle too, i.e. 'n.1' fixed-point.
@@ -58,8 +53,8 @@ package i3c_timing_pkg;
     // so 32-bit _unsigned_ calculation suffices.
     // Notes: we round up the clock frequency, _increasing_ the cycle count to cover the interval.
     int unsigned unity = 2;  // ... because we're calculating as 'n.1' fixed-point.
-    int unsigned clk_khz = ceil_div(clk_freq, 1000);
-    return (TmCycW + 1)'(ceil_div(tm_ns * clk_khz, 500_000));
+    int unsigned clk_khz = prim_util_pkg::ceil_udiv(clk_freq, 1000);
+    return (TmCycW + 1)'(prim_util_pkg::ceil_udiv(tm_ns * clk_khz, 500_000));
   endfunction
 
   // Determine the initial value of the IP clock cycle counter required to achieve (at least) the

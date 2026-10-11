@@ -139,8 +139,8 @@ module i3c_ctrl_req_gen
   // This is important because the logic is really quite involved but ultimately dependent only
   // upon constant values, particularly the clock frequency (ClkFreq).
 
-  wire [TmCycW-1:0] hw_tcas_d2  = tm_cycles_init(ClkFreq, ceil_div(TCAS, 2));
-  wire [TmCycW-1:0] hw_tcbp_d2  = tm_cycles_init(ClkFreq, ceil_div(TCBP, 2));
+  wire [TmCycW-1:0] hw_tcas_d2  = tm_cycles_init(ClkFreq, prim_util_pkg::ceil_udiv(TCAS, 2));
+  wire [TmCycW-1:0] hw_tcbp_d2  = tm_cycles_init(ClkFreq, prim_util_pkg::ceil_udiv(TCBP, 2));
 
   // Hardware-calculated default timing parameters for the various modes.
   tm_params_t tmhw_sdr0, tmhw_sdr1, tmhw_sdr2, tmhw_sdr3, tmhw_sdr4, tmhw_fmp, tmhw_fm;
