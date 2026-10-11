@@ -135,14 +135,14 @@ module i3c_buffer
     //   of the logical FIFO and avoid confusion. Even though - physically - it would be possible
     //   to store 'depth + 1' words of data now, this would not conform to the HCI specification.
     wire [BufAddrW:0] ptr_diff = wptr - rptr;
-    wire [BufAddrW:0] neg_diff = ~ptr_diff + 'b1;
+    wire [BufAddrW:0] neg_diff = -ptr_diff;
     wire [BufAddrW:0] left     = cfg_i[f].size + (ptr_diff[BufAddrW] ? ptr_diff : neg_diff);
     wire [BufAddrW:0] used     = (ptr_diff[BufAddrW] | full) ? left : ptr_diff;
     wire [BufAddrW:0] avail    = (ptr_diff[BufAddrW] | full) ? neg_diff : left;
 
     // Generate status information for all clients at all times, and then when a request is received
     // we arbitrate amongst those which actually CAN proceed.
-    wire prefetching = mem_rvalid & (IdxW'(f) == mem_ridx);
+    wire prefetching = mem_rvalid & (IdxW'($unsigned(f)) == mem_ridx);
     always_comb begin
       // Response to FIFO write requests.
       out_o[f].wready = wgnt;
@@ -169,7 +169,7 @@ module i3c_buffer
     // Prefetched read data, presenting a FIFO interface where the assertion of `rready` consumes
     // the data rather than starting a read operation.
     wire consume_rdata = out_o[f].rvalid & in_i[f].rready;
-    wire capt_rdata = &{mem_rvalid, (IdxW'(f) == mem_ridx), !in_i[f].rready};
+    wire capt_rdata = &{mem_rvalid, (IdxW'($unsigned(f)) == mem_ridx), !in_i[f].rready};
     always_ff @(posedge clk_i or negedge rst_ni) begin
       if (!rst_ni) begin
         pre_rvalid  <= 1'b0;
