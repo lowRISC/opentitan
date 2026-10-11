@@ -12,13 +12,7 @@ module i3c_cmd_decode
   import i3c_consts_pkg::*;
   import i3c_controller_pkg::*;
   import i3c_pkg::*;
-#(
-  // Number of entries in the Device Address Table.
-  parameter int unsigned NumDATEntries = i3c_pkg::NumDATEntries,
-
-  // Derived parameters.
-  localparam int unsigned DATAddrW = $clog2(NumDATEntries)
-) (
+(
   // No requirement for clock or reset.
 
   // Current command state.
