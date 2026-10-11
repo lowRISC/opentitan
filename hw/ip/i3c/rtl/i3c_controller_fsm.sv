@@ -856,14 +856,19 @@ module i3c_controller_fsm
   wire cmd_ddr_done = state_q inside {RxCRC, TxCRC};
   // - Completion does _not_ imply success, only that the Command Descriptor can be discarded and an
   //   outcome may be posted.
+  // - in all completion states except `CmdDecErr`, `proceed` equals `trx_dready_i`; using the
+  //   latter directly avoids a combinational loop through `proceed`, which in `DATCapt` depends
+  //   upon the Response Queue accepting a write, and the shared buffer arbiter, which considers
+  //   the read request from the Command Queue that `cmd_complete` drives.
   wire cmd_trans_done = &{cmd_sdr_done | cmd_ddr_done,
                         ~|cmd_state.retry_cnt || !nacked,  // Retries in response to Nack.
-                        ~|cmd_state.reps_left, proceed};   // Iteration within Address Assignment.
+                        ~|cmd_state.reps_left,             // Iteration within Address Assignment.
+                        trx_dready_i};
   // - Any transfer such as an IBI request that does involve a Command Descriptor shall be excluded.
   assign cmd_complete = (trans_type == TransType_Cmd) &
                        |{cmd_trans_done,
-                        (state_q == TargRst) & proceed,  // Target Reset internal command.
-                        (state_q == CmdDecErr)};         // Command rejected.
+                        (state_q == TargRst) & trx_dready_i,  // Target Reset internal command.
+                        (state_q == CmdDecErr)};              // Command rejected.
 
   // Reading of commands; we use the FIFO output directly for the upper half of the Command
   // Descriptor, so it is consumed upon completion of the command.
