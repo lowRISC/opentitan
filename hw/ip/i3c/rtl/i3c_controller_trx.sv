@@ -249,11 +249,12 @@ module i3c_controller_trx
 
   // Properties of the next unit; these depend upon whether we're continuing with the current
   // request. These shall only be used when `unit_starting` is asserted.
-  struct {
+  typedef struct packed {
     i3c_ctrl_req_e req;
     logic          ddr;
     logic          rx;
-  } next_unit;
+  } next_unit_t;
+  next_unit_t next_unit;
 
   // Starting a new request?
   wire req_starting = trx_dvalid_i & trx_dready_o;

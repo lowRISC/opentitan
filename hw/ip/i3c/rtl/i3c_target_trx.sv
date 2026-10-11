@@ -310,7 +310,7 @@ module i3c_target_trx
 
   // Properties of the current transfer.
   // - these properties are persistent and may be used during transfer processing.
-  struct packed {
+  typedef struct packed {
     logic     [TargIDW-1:0] targ_id;   // Target ID (this is _not_ the I3C Address).
     logic  [NumTargets-1:0] targ_set;  // Set of addressed targets, supporting Group Addresses too.
     logic             [6:0] addr;      // Addressed target/group.
@@ -321,7 +321,8 @@ module i3c_target_trx
     //       CCCs such as ENEC/DISEC this is strictly not called a Defining Byte in the spec.
     logic                   has_defb;  // Indicates whether a Defining Byte has been received.
     logic             [7:0] defb;      // Defining Byte, if any, for CCC handling.
-  } trans;
+  } trans_t;
+  trans_t trans;
 
   i3c_targ_ccc_state_e ccc_state_q;
   logic [3:0] ccc_idx_q;
