@@ -4,8 +4,6 @@
 
 """Rules to describe OpenTitan HW"""
 
-load("//rules:host.bzl", "host_tools_transition")
-
 def opentitan_ip(name, **kwargs):
     """
     Return a structure describing an IP. This can be given to opentitan_top.
