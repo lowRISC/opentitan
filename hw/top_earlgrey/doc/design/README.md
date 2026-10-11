@@ -513,11 +513,21 @@ See the [sensor control specification](../../ip/sensor_ctrl/README.md) for more 
 
 Timers are critical for operating systems to ensure guaranteed performance for users.
 To some level they are even required by the RISC-V specification.
-At this time, one timer is provided, a 64b free running timer with a guaranteed (within a certain percentage) frequency.
-A second one acting as a watchdog timer that can be used to backstop the processor in the case of it being unresponsive (usually due to development code that is wedged, rather than for instance due to security attack) will be provided in the future.
-The goal is for both of these to be satisfied with the same timer module.
+Earl Grey contains two timer peripherals.
 
-The specification for the timer can be found [here](../../../ip/rv_timer/README.md).
+The [timer](../../../ip/rv_timer/README.md) (`rv_timer`) provides one 64b free-running timer for the Ibex processor, with a programmable prescaler and step.
+It raises an interrupt when it reaches a compare value.
+
+The [AON timer](../../../ip/aon_timer/README.md) (`aon_timer`) is in the `Aon` power domain and runs on the always-on clock.
+It contains two timers:
+- A 64b wakeup timer, which can wake the device from sleep and raise an interrupt.
+- A 32b watchdog timer, which backstops the processor in case it becomes unresponsive.
+  Software must periodically reset ("pet") the watchdog counter.
+  When the counter reaches the bark threshold, the watchdog raises an interrupt, a non-maskable interrupt (NMI) to Ibex, and a wakeup request.
+  When the counter reaches the bite threshold, the watchdog requests a system reset from the power manager.
+  Software can lock the watchdog configuration, and can configure the watchdog to pause during sleep.
+
+Both AON timers pause while the life cycle controller signals escalation.
 
 ##### RRAM Controller
 
