@@ -99,7 +99,7 @@ When this occurs, the memory macro must go through appropriate sequencing, handl
 #### Reset while Write in Progress
 
 Resets that happen during a write operation need special care, because an incomplete write could leave the RRAM in an undefined state.
-To that end, the RRAM controller indicates to the [pwrmgr](../../ip_autogen/pwrmgr/README.md#abort-handling) when a write is in progress, so that a reset or low power entry request can be aborted until the write completes.
+To that end, the RRAM controller indicates to the [pwrmgr](../../ip_autogen/pwrmgr/doc/theory_of_operation.md#abort-handling) when a write is in progress, so that a reset or low power entry request can be aborted until the write completes.
 
 
 ### Main processor (`core_ibex`)
