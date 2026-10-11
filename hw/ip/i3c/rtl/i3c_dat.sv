@@ -67,6 +67,10 @@ module i3c_dat
   i3c_dat_mem_t sw_dat_wdata_packed;
   i3c_dat_entry_t sw_dat_wdata_full;
   assign sw_dat_wdata_full = i3c_dat_entry_t'({DATWidthWords{sw_dat_wdata_i}});
+  // Software writes to reserved fields have no effect.
+  logic unused_sw_dat_wdata;
+  assign unused_sw_dat_wdata = ^{sw_dat_wdata_full.reserved0, sw_dat_wdata_full.reserved1,
+                                 sw_dat_wdata_full.reserved2};
 
   always_comb begin
     // Write strobes for software access to the DAT

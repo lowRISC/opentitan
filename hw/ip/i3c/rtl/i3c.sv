@@ -370,7 +370,7 @@ module i3c
       .write_pending_i           (1'b0)
     );
   end else begin : gen_no_swdirect
-    wire swbuf_unused = ^{sw_buf_rdata, sw_buf_rvalid, sw_buf_rerror};
+    wire unused_swbuf = ^{sw_buf_rdata, sw_buf_rvalid, sw_buf_rerror};
     assign {sw_buf_req, sw_buf_we, sw_buf_addr, sw_buf_wdata, sw_buf_wmask} = '0;
     tlul_err_resp u_err_sw_buf(
       .clk_i,
