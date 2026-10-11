@@ -757,8 +757,9 @@ module i3c_controller_trx
       State_RepStartLoD:      state_d = targ_reset ? State_Stop : state_next_req;
       // --- SDR STOP ---
       State_PreStop:          state_d = State_Stop;
+      State_Stop:             state_d = State_Idle;
 
-      // The default case handles State_Stop as well as invalid states.
+      // Recovery from invalid states.
       default:                state_d = State_Idle;
     endcase
   end
