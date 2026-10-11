@@ -441,4 +441,24 @@ module i3c_ctrl_req_gen
     trx_dreq_o.i3c_first = i3c_first_i;
   end
 
+  // Signals that the logic does not use (yet).
+  // - fields of the shared command state, attribute, DAT entry and CCC response structs that the
+  //   request generation does not need.
+  logic unused_req_inputs;
+  assign unused_req_inputs = ^{cmd_state_i.available, cmd_state_i.dev_index,
+                               cmd_state_i.reps_left, cmd_state_i.retry_cnt,
+                               cmd_state_i.rst_csect, cmd_state_i.started, cmd_attrs_i.attr,
+                               cmd_attrs_i.brd_ccc, cmd_attrs_i.data_len, cmd_attrs_i.defb,
+                               cmd_attrs_i.dev_index, cmd_attrs_i.has_defb, cmd_attrs_i.reps_left,
+                               cmd_attrs_i.retry_cnt, cmd_attrs_i.tid, cmd_attrs_i.toc,
+                               cmd_attrs_i.wroc, dat_entry_i.autocmd_hdr_code,
+                               dat_entry_i.autocmd_mask, dat_entry_i.autocmd_mode,
+                               dat_entry_i.autocmd_value, dat_entry_i.crr_reject,
+                               dat_entry_i.dev_nack_retry_cnt, dat_entry_i.device,
+                               dat_entry_i.dynamic_address[23], dat_entry_i.ibi_payload,
+                               dat_entry_i.ibi_reject, dat_entry_i.ring_id, dat_entry_i.ts,
+                               ccc_rsp_i.done, ccc_rsp_i.err_status, ccc_rsp_i.inc_idx,
+                               ccc_rsp_i.reg_wdata, ccc_rsp_i.reg_we, ccc_rsp_i.reg_widx,
+                               ccc_rsp_i.rst_idx, ccc_rsp_i.txd_consume, ccc_rsp_i.txd_req};
+
 endmodule

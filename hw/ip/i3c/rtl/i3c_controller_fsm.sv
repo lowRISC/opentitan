@@ -1501,4 +1501,51 @@ module i3c_controller_fsm
                          &{state_q == WaitAckb, addr_bcst, trx_arb_i.nack},  // No ACK to 7'h7e.
                          1'b0,
                          1'b0};
+
+  // Signals that the logic does not use (yet).
+  // - FIFO resets other than those of the IBI queues are handled elsewhere.
+  logic unused_fifo_rst;
+  always_comb begin
+    unused_fifo_rst = 1'b0;
+    for (int unsigned f = 0; f < FIFO_Count; f++) begin
+      if (!(f inside {FIFO_IBIQ, FIFO_IBIStD})) unused_fifo_rst ^= fifo_rst_i[f];
+    end
+  end
+  // - fields of the HC_CONTROL register that other logic handles or that are not implemented.
+  logic unused_hc_control;
+  assign unused_hc_control = ^{hc_control_i.abort, hc_control_i.autocmd_data_rpt,
+                               hc_control_i.bus_enable, hc_control_i.data_byte_order_mode,
+                               hc_control_i.halt_on_cmd_seq_timeout, hc_control_i.hot_join_ctrl,
+                               hc_control_i.i2c_dev_present, hc_control_i.mode_selector,
+                               hc_control_i.resume};
+  // - TODO(#31304): blocked addresses are not checked yet.
+  logic unused_blocked;
+  always_comb begin
+    unused_blocked = 1'b0;
+    for (int unsigned b = 0; b < NumBlocked; b++) begin
+      unused_blocked ^= ^{addr_blocked_i[b], mask_blocked_i[b]};
+    end
+  end
+  // - buffer status and broadcast writes from the Standby Controller that are not used yet.
+  logic unused_buf_status;
+  assign unused_buf_status = ^{txbuf_rempty_i, rxbuf_wfull_i, ibi_data_wfull_i,
+                               stby_bcst_wvalid_i, stby_bcst_wdata_i};
+  // - transceiver response fields that are not used yet.
+  logic unused_trx_rsp;
+  assign unused_trx_rsp = ^{trx_rdata_i.rearly, trx_rdata_i.rerr, trx_rsp_i.wearly,
+                            trx_rsp_i.werr, trx_rsp_i.wlen};
+  // - fields of the Command Descriptor interpretations that the logic does not need.
+  logic unused_cmd_desc;
+  assign unused_cmd_desc = ^{cmd_intn.cmd_attr, cmd_intn.mipi_reserved[31:19], cmd_intn.tid,
+                             cmd_intn.vend_info_present, cmd_intn.vendor_specific, cmd_daa,
+                             cmd_combo, cmd_reg.cmd, cmd_reg.cmd_attr, cmd_reg.cp, cmd_reg.dbp,
+                             cmd_reg.def_byte, cmd_reg.dev_index, cmd_reg.mode, cmd_reg.reserved,
+                             cmd_reg.reserved1, cmd_reg.rnw, cmd_reg.short_read_err, cmd_reg.tid,
+                             cmd_reg.toc, cmd_reg.wroc, cmd_imm.cmd, cmd_imm.cmd_attr, cmd_imm.cp,
+                             cmd_imm.dev_index, cmd_imm.mode, cmd_imm.reserved, cmd_imm.rnw,
+                             cmd_imm.tid, cmd_imm.toc, cmd_imm.wroc};
+  // - Controller Role Requests, Auto-Commands and DAT cache hits are not handled yet.
+  logic unused_ibi_handling;
+  assign unused_ibi_handling = ^{crr_reject, autocmd_fetch, autocmd_code, datc_hit};
+
 endmodule

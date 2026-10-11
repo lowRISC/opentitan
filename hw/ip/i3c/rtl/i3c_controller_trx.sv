@@ -1134,6 +1134,9 @@ module i3c_controller_trx
     assign bus_drv_o.scl = state_q[ST_SCL] | scl_n;
   end else begin : gen_pure_scl
     assign bus_drv_o.scl = state_q[ST_SCL];
+    // The SCL high interval is never extended by half a cycle.
+    logic unused_hcext;
+    assign unused_hcext = req_q.tm.hcext;
   end
   assign bus_drv_o.scl_en = state_q[ST_SCL_PP_EN];
 
@@ -1260,5 +1263,19 @@ module i3c_controller_trx
       default: bcl_tfr_status_o = BCLStatus_Idle;
     endcase
   end
+
+  // Signals that the logic does not use (yet).
+  // - TODO(#31304): blocked addresses are not checked yet.
+  logic unused_blocked;
+  always_comb begin
+    unused_blocked = 1'b0;
+    for (int unsigned b = 0; b < NumBlocked; b++) begin
+      unused_blocked ^= ^{addr_blocked_i[b], mask_blocked_i[b]};
+    end
+  end
+  // - the MSB of the halved Start/stoP timing parameters is dropped when doubling them.
+  logic unused_misc;
+  assign unused_misc = ^{hotjoin_ctrl_i, trx_dreq_i.i3c_first, tcas_d2_i[TmCycW-1],
+                         tcbp_d2_i[TmCycW-1], sdr_write, gen_hdr_patt, raise_error, dreq_cmd};
 
 endmodule
