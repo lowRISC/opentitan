@@ -621,7 +621,8 @@ module i3c_controller_fsm
       // --- Direct-driving of pins by software ---
       DirectDrv:  state_d = direct_drive ? DirectDrv : ExitHDR;
 
-      // --- Any undefined state requires a software reset ---
+      // --- Fatal errors and any undefined state require a software reset ---
+      ErrFatal:   state_d = ErrFatal;
       default:    state_d = ErrFatal;
     endcase
   end

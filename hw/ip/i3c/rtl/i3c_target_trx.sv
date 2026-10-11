@@ -683,8 +683,12 @@ module i3c_target_trx
         State_TxDataDDR: state_d = last_bit ? (tx_avail ? State_TxPreDDR : State_TxCRCDDR)
                                             : State_TxDataDDR;
         State_TxCRCDDR:  state_d = last_bit ? State_RxCmdDDR : State_TxCRCDDR;
+        // TODO(#31065): Implement the transmission of the NACK.
+        State_TxNACKDDR: state_d = State_Idle;
         // --- Ignoring traffic that is not understood; other HDR modes and Target Errors. ---
         State_Ignore:    state_d = hdr_exit_det_i ? State_Idle : State_Ignore;
+        // --- Awaiting a Start condition ---
+        State_Idle:      state_d = State_Idle;
         // --- Recovery from invalid states ---
         default:         state_d = State_Idle;
       endcase
