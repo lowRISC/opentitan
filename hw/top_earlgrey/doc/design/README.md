@@ -407,6 +407,99 @@ Since silicon is required to contain an analog design tied to the final chosen s
 We however fully specify the software interface to the TRNG in a digital wrapper.
 In FPGA we emulate the randomness with something akin to a [PRBS](https://en.wikipedia.org/wiki/Pseudorandom_binary_sequence).
 
+##### KMAC
+
+KMAC implements the [SHA-3](https://nvlpubs.nist.gov/nistpubs/FIPS/NIST.FIPS.202.pdf) hash functions (SHA3-224, SHA3-256, SHA3-384 and SHA3-512), the extendable-output functions SHAKE and cSHAKE (128 and 256), and the [KMAC](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-185.pdf) message authentication code.
+KMAC keys can be up to 512b long.
+On Earl Grey, the Keccak core is first-order masked to protect against side-channel analysis.
+
+Software uses KMAC through registers and a message FIFO.
+KMAC also has an application interface through which other hardware blocks use it without software involvement: the key manager DPE, the life cycle controller, the ROM controller and OTBN.
+The key manager DPE can sideload a key into KMAC, which software cannot read.
+
+See the [KMAC specification](../../../ip/kmac/README.md) for more details.
+
+##### OTBN
+
+The OpenTitan Big Number Accelerator (OTBN) is a coprocessor for asymmetric cryptography, including post-quantum cryptography (PQC), elliptic curve cryptography and RSA.
+Its PQC support includes hardened ML-DSA and ML-KEM.
+It has a 32b control path and a 256b data path with full-width and 32b SIMD instructions.
+OTBN has its own 16 KiB instruction memory and 32 KiB data memory, of which software can access 16 KiB over the bus.
+Both memories are scrambled with keys from the OTP controller.
+
+OTBN obtains random numbers from both EDN instances (see [Entropy Distribution Network](#entropy-distribution-network)).
+It can use KMAC for hashing and contains a masking accelerator interface for first-order masked operations.
+The key manager DPE can sideload a key into OTBN.
+
+See the [OTBN specification](../../../ip/otbn/README.md) for more details.
+
+##### Key Manager DPE
+
+The key manager DPE derives keys for identity, attestation and sealing without exposing the underlying secrets to software.
+It implements the [DICE Protection Environment (DPE)](https://trustedcomputinggroup.org/wp-content/uploads/TCG-DICE-Protection-Environment-Specification_14february2023-1.pdf).
+On Earl Grey, it has 4 key slots, each of which holds one DICE context.
+Software can derive a child slot from any valid slot; per-slot policies constrain derivation.
+
+The key manager DPE uses KMAC as its key derivation function.
+Its inputs include the creator root key from the OTP controller, the creator and owner seeds from the RRAM controller, the ROM digest from the ROM controller, and a diversification value from the life cycle controller.
+It can generate keys for software or sideload them into AES, HMAC, KMAC and OTBN.
+
+See the [key manager DPE specification](../../../ip/keymgr_dpe/README.md) for more details.
+
+##### Life Cycle Controller
+
+The life cycle controller manages the [device life cycle](../../../../doc/security/specs/device_life_cycle/README.md) state, which is redundantly encoded and stored in OTP.
+It decodes the state and broadcasts redundantly encoded enable signals to other blocks, for example to enable the CPU, debug or DFT features.
+Life cycle transitions are requested through registers or through JTAG.
+Important transitions are guarded by tokens, which the life cycle controller hashes with KMAC.
+On a transition to RMA, the life cycle controller requests the RRAM controller to wipe the RRAM.
+The alert handler can escalate to the life cycle controller.
+The life cycle controller then moves into a virtual scrap state, which is not programmed into OTP and lasts until the next reset, and asserts an escalation signal to all blocks with an escalation action.
+
+See the [life cycle controller specification](../../../ip/lc_ctrl/README.md) for more details.
+
+##### OTP Controller
+
+The OTP controller provides one-time programmable storage that is logically divided into partitions.
+Partitions can be locked, integrity checked with digests, and scrambled.
+The OTP controller checks the partitions periodically in the background.
+It provides keys and seeds to other blocks over dedicated hardware interfaces, including the scrambling keys of the SRAMs, the instruction cache, OTBN and the RRAM, the creator root key of the key manager DPE, and the life cycle state.
+
+Earl Grey has no OTP macro.
+The OTP controller stores its data in the OTP region of the RRAM through the RRAM controller (see [OTP](#otp)).
+
+See the [OTP controller specification](../../ip_autogen/otp_ctrl/README.md) for more details.
+
+##### ROM Controller
+
+The ROM controller connects the ROM to the system bus.
+The ROM contents are stored scrambled, and the ROM controller descrambles them on reads.
+After reset and before the CPU starts, the ROM controller reads the entire ROM and computes its digest with KMAC.
+It compares the digest with the expected digest stored in the top words of the ROM and reports the result to the power manager, which stops chip startup on a mismatch.
+The power manager ignores the result when both DFT and hardware debug are enabled, i.e., in the `TEST_UNLOCKED*` and `RMA` life cycle states.
+The ROM controller also passes the digest to the key manager DPE.
+
+See the [ROM controller specification](../../../ip/rom_ctrl/README.md) for more details.
+
+##### SRAM Controller
+
+Earl Grey contains four SRAM controller instances: one each for the Main SRAM, the Secondary SRAM, the Retention SRAM and the CHERIoT meta SRAM (see [SRAMs](#srams)).
+Each SRAM controller scrambles the addresses and data of its SRAM with a reduced-round PRINCE cipher.
+It requests ephemeral scrambling keys from the OTP controller, and software can request a new key at any time.
+It can initialize the SRAM with pseudo-random data in hardware.
+It also controls whether code can execute from the SRAM, checks bus integrity, and can check each read and write with a readback to detect faults.
+
+See the [SRAM controller specification](../../../ip/sram_ctrl/README.md) for more details.
+
+##### Sensor Control
+
+The sensor control block is the comportable front-end of the [analog sensor top](../../ip/ast/README.md) (`ast`).
+It receives alerts from the `ast` sensors and forwards them to the alert handler.
+It can wake the device from sleep on these alerts, and it provides status readback of the `ast`.
+Sensor control is in the `Aon` power domain.
+
+See the [sensor control specification](../../ip/sensor_ctrl/README.md) for more details.
+
 #### Other peripherals
 
 ##### Timer(s)
