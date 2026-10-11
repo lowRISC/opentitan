@@ -297,7 +297,7 @@ See the [pinmux specification](../../ip_autogen/pinmux/README.md) for how to con
 
 ##### UART
 
-The chip contains one UART peripheral that implement single-lane duplex UART functionality.
+The chip contains four UART peripherals (`uart0` to `uart3`), each of which implements single-lane duplex UART functionality.
 The outputs and inputs can be configured to any chip IO via the [pinmux](../../ip_autogen/pinmux/README.md).
 
 See the [UART specification](../../../ip/uart/README.md) for more details on this peripheral.
