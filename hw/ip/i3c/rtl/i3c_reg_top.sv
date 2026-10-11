@@ -243,7 +243,7 @@ module i3c_reg_top
   logic targ_control_crhdly1_set_as_wd;
   logic targ_control_hj_request_qs;
   logic targ_control_hj_request_wd;
-  logic targ_control_reset_wd;
+  logic targ_control_sw_reset_wd;
   logic targ_status_re;
   logic targ_status_we;
   logic [14:0] targ_status_ext_info_qs;
@@ -1109,8 +1109,8 @@ module i3c_reg_top
   logic targ_async_evt_control_ibi_suspend_wd;
   logic targ_async_evt_control_bus_events_qs;
   logic targ_async_evt_control_bus_events_wd;
-  logic targ_async_evt_control_reset_qs;
-  logic targ_async_evt_control_reset_wd;
+  logic targ_async_evt_control_queue_reset_qs;
+  logic targ_async_evt_control_queue_reset_wd;
   logic targ_error_we;
   logic [3:0] targ_error_te0_qs;
   logic [3:0] targ_error_te0_wd;
@@ -2141,20 +2141,20 @@ module i3c_reg_top
   );
   assign reg2hw.targ_control.hj_request.qe = targ_control_qe;
 
-  //   F[reset]: 31:31
+  //   F[sw_reset]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_targ_control_reset (
+  ) u_targ_control_sw_reset (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
     .we     (targ_control_we),
-    .wd     (targ_control_reset_wd),
+    .wd     (targ_control_sw_reset_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -2162,13 +2162,13 @@ module i3c_reg_top
 
     // to internal hardware
     .qe     (targ_control_flds_we[5]),
-    .q      (reg2hw.targ_control.reset.q),
+    .q      (reg2hw.targ_control.sw_reset.q),
     .ds     (),
 
     // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.targ_control.reset.qe = targ_control_qe;
+  assign reg2hw.targ_control.sw_reset.qe = targ_control_qe;
 
 
   // R[targ_status]: V(True)
@@ -13516,20 +13516,20 @@ module i3c_reg_top
   );
   assign reg2hw.targ_async_evt_control.bus_events.qe = targ_async_evt_control_qe;
 
-  //   F[reset]: 31:31
+  //   F[queue_reset]: 31:31
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessW1C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_targ_async_evt_control_reset (
+  ) u_targ_async_evt_control_queue_reset (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
     .we     (targ_async_evt_control_we),
-    .wd     (targ_async_evt_control_reset_wd),
+    .wd     (targ_async_evt_control_queue_reset_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -13537,13 +13537,13 @@ module i3c_reg_top
 
     // to internal hardware
     .qe     (targ_async_evt_control_flds_we[8]),
-    .q      (reg2hw.targ_async_evt_control.reset.q),
+    .q      (reg2hw.targ_async_evt_control.queue_reset.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (targ_async_evt_control_reset_qs)
+    .qs     (targ_async_evt_control_queue_reset_qs)
   );
-  assign reg2hw.targ_async_evt_control.reset.qe = targ_async_evt_control_qe;
+  assign reg2hw.targ_async_evt_control.queue_reset.qe = targ_async_evt_control_qe;
 
 
   // R[targ_error]: V(False)
@@ -19401,7 +19401,7 @@ module i3c_reg_top
 
   assign targ_control_hj_request_wd = reg_wdata[30];
 
-  assign targ_control_reset_wd = reg_wdata[31];
+  assign targ_control_sw_reset_wd = reg_wdata[31];
   assign targ_status_re = racl_addr_hit_read[8] & reg_re & !reg_error;
   assign targ_status_we = racl_addr_hit_write[8] & reg_we & !reg_error;
 
@@ -20128,7 +20128,7 @@ module i3c_reg_top
 
   assign targ_async_evt_control_bus_events_wd = reg_wdata[7];
 
-  assign targ_async_evt_control_reset_wd = reg_wdata[31];
+  assign targ_async_evt_control_queue_reset_wd = reg_wdata[31];
   assign targ_error_we = racl_addr_hit_write[130] & reg_we & !reg_error;
 
   assign targ_error_te0_wd = reg_wdata[3:0];
@@ -21532,7 +21532,7 @@ module i3c_reg_top
         reg_rdata_next[5] = targ_async_evt_control_tx_suspend_qs;
         reg_rdata_next[6] = targ_async_evt_control_ibi_suspend_qs;
         reg_rdata_next[7] = targ_async_evt_control_bus_events_qs;
-        reg_rdata_next[31] = targ_async_evt_control_reset_qs;
+        reg_rdata_next[31] = targ_async_evt_control_queue_reset_qs;
       end
 
       racl_addr_hit_read[130]: begin
