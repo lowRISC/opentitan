@@ -986,67 +986,71 @@ module i3c_core
 
   // Buffer configuration.
   // - a single physical buffer implements a number of logical FIFOs.
-  assign fifo_cfg[FIFO_CmdQ].min   = BufAddrW'(reg2hw_i.command_queue_config.min_addr.q);
-  assign fifo_cfg[FIFO_CmdQ].max   = BufAddrW'(reg2hw_i.command_queue_config.max_addr.q);
-  assign fifo_cfg[FIFO_CmdQ].size  = fifo_size(fifo_cfg[FIFO_CmdQ]);
+  assign fifo_cfg[FIFO_CmdQ].min_addr = BufAddrW'(reg2hw_i.command_queue_config.min_addr.q);
+  assign fifo_cfg[FIFO_CmdQ].max_addr = BufAddrW'(reg2hw_i.command_queue_config.max_addr.q);
+  assign fifo_cfg[FIFO_CmdQ].size     = fifo_size(fifo_cfg[FIFO_CmdQ]);
 
-  assign fifo_cfg[FIFO_RspQ].min   = BufAddrW'(reg2hw_i.response_queue_config.min_addr.q);
-  assign fifo_cfg[FIFO_RspQ].max   = BufAddrW'(reg2hw_i.response_queue_config.max_addr.q);
-  assign fifo_cfg[FIFO_RspQ].size  = fifo_size(fifo_cfg[FIFO_RspQ]);
+  assign fifo_cfg[FIFO_RspQ].min_addr = BufAddrW'(reg2hw_i.response_queue_config.min_addr.q);
+  assign fifo_cfg[FIFO_RspQ].max_addr = BufAddrW'(reg2hw_i.response_queue_config.max_addr.q);
+  assign fifo_cfg[FIFO_RspQ].size     = fifo_size(fifo_cfg[FIFO_RspQ]);
 
-  assign fifo_cfg[FIFO_IBIQ].min   = BufAddrW'(reg2hw_i.ibi_config.min_addr.q);
-  assign fifo_cfg[FIFO_IBIQ].max   = BufAddrW'(reg2hw_i.ibi_config.max_addr.q);
-  assign fifo_cfg[FIFO_IBIQ].size  = fifo_size(fifo_cfg[FIFO_IBIQ]);
+  assign fifo_cfg[FIFO_IBIQ].min_addr = BufAddrW'(reg2hw_i.ibi_config.min_addr.q);
+  assign fifo_cfg[FIFO_IBIQ].max_addr = BufAddrW'(reg2hw_i.ibi_config.max_addr.q);
+  assign fifo_cfg[FIFO_IBIQ].size     = fifo_size(fifo_cfg[FIFO_IBIQ]);
 
-  assign fifo_cfg[FIFO_IBIStD].min   = BufAddrW'(reg2hw_i.ibi_stat_config.min_addr.q);
-  assign fifo_cfg[FIFO_IBIStD].max   = BufAddrW'(reg2hw_i.ibi_stat_config.max_addr.q);
-  assign fifo_cfg[FIFO_IBIStD].size  = fifo_size(fifo_cfg[FIFO_IBIStD]);
+  assign fifo_cfg[FIFO_IBIStD].min_addr = BufAddrW'(reg2hw_i.ibi_stat_config.min_addr.q);
+  assign fifo_cfg[FIFO_IBIStD].max_addr = BufAddrW'(reg2hw_i.ibi_stat_config.max_addr.q);
+  assign fifo_cfg[FIFO_IBIStD].size     = fifo_size(fifo_cfg[FIFO_IBIStD]);
 
-  assign fifo_cfg[FIFO_TxBuf].min   = BufAddrW'(reg2hw_i.ctrl_txbuf_config.min_addr.q);
-  assign fifo_cfg[FIFO_TxBuf].max   = BufAddrW'(reg2hw_i.ctrl_txbuf_config.max_addr.q);
-  assign fifo_cfg[FIFO_TxBuf].size  = fifo_size(fifo_cfg[FIFO_TxBuf]);
+  assign fifo_cfg[FIFO_TxBuf].min_addr = BufAddrW'(reg2hw_i.ctrl_txbuf_config.min_addr.q);
+  assign fifo_cfg[FIFO_TxBuf].max_addr = BufAddrW'(reg2hw_i.ctrl_txbuf_config.max_addr.q);
+  assign fifo_cfg[FIFO_TxBuf].size     = fifo_size(fifo_cfg[FIFO_TxBuf]);
 
-  assign fifo_cfg[FIFO_RxBuf].min   = BufAddrW'(reg2hw_i.ctrl_rxbuf_config.min_addr.q);
-  assign fifo_cfg[FIFO_RxBuf].max   = BufAddrW'(reg2hw_i.ctrl_rxbuf_config.max_addr.q);
-  assign fifo_cfg[FIFO_RxBuf].size  = fifo_size(fifo_cfg[FIFO_RxBuf]);
+  assign fifo_cfg[FIFO_RxBuf].min_addr = BufAddrW'(reg2hw_i.ctrl_rxbuf_config.min_addr.q);
+  assign fifo_cfg[FIFO_RxBuf].max_addr = BufAddrW'(reg2hw_i.ctrl_rxbuf_config.max_addr.q);
+  assign fifo_cfg[FIFO_RxBuf].size     = fifo_size(fifo_cfg[FIFO_RxBuf]);
 
-  assign fifo_cfg[FIFO_IBITarg].min  = BufAddrW'(reg2hw_i.targ_ibi_config.min_addr.q);
-  assign fifo_cfg[FIFO_IBITarg].max  = BufAddrW'(reg2hw_i.targ_ibi_config.max_addr.q);
-  assign fifo_cfg[FIFO_IBITarg].size = fifo_size(fifo_cfg[FIFO_IBITarg]);
+  assign fifo_cfg[FIFO_IBITarg].min_addr = BufAddrW'(reg2hw_i.targ_ibi_config.min_addr.q);
+  assign fifo_cfg[FIFO_IBITarg].max_addr = BufAddrW'(reg2hw_i.targ_ibi_config.max_addr.q);
+  assign fifo_cfg[FIFO_IBITarg].size     = fifo_size(fifo_cfg[FIFO_IBITarg]);
 
-  assign fifo_cfg[FIFO_RxTarg].min  = BufAddrW'(reg2hw_i.targ_rxbuf_config.min_addr.q);
-  assign fifo_cfg[FIFO_RxTarg].max  = BufAddrW'(reg2hw_i.targ_rxbuf_config.max_addr.q);
-  assign fifo_cfg[FIFO_RxTarg].size = fifo_size(fifo_cfg[FIFO_RxTarg]);
+  assign fifo_cfg[FIFO_RxTarg].min_addr = BufAddrW'(reg2hw_i.targ_rxbuf_config.min_addr.q);
+  assign fifo_cfg[FIFO_RxTarg].max_addr = BufAddrW'(reg2hw_i.targ_rxbuf_config.max_addr.q);
+  assign fifo_cfg[FIFO_RxTarg].size     = fifo_size(fifo_cfg[FIFO_RxTarg]);
 
-  assign fifo_cfg[FIFO_RxDTarg].min  = BufAddrW'(reg2hw_i.targ_rxdesc_config.min_addr.q);
-  assign fifo_cfg[FIFO_RxDTarg].max  = BufAddrW'(reg2hw_i.targ_rxdesc_config.max_addr.q);
-  assign fifo_cfg[FIFO_RxDTarg].size = fifo_size(fifo_cfg[FIFO_RxDTarg]);
+  assign fifo_cfg[FIFO_RxDTarg].min_addr = BufAddrW'(reg2hw_i.targ_rxdesc_config.min_addr.q);
+  assign fifo_cfg[FIFO_RxDTarg].max_addr = BufAddrW'(reg2hw_i.targ_rxdesc_config.max_addr.q);
+  assign fifo_cfg[FIFO_RxDTarg].size     = fifo_size(fifo_cfg[FIFO_RxDTarg]);
 
-  assign fifo_cfg[FIFO_IBIDTarg].min  = BufAddrW'(reg2hw_i.targ_ibidesc_config.min_addr.q);
-  assign fifo_cfg[FIFO_IBIDTarg].max  = BufAddrW'(reg2hw_i.targ_ibidesc_config.max_addr.q);
-  assign fifo_cfg[FIFO_IBIDTarg].size = fifo_size(fifo_cfg[FIFO_IBIDTarg]);
+  assign fifo_cfg[FIFO_IBIDTarg].min_addr = BufAddrW'(reg2hw_i.targ_ibidesc_config.min_addr.q);
+  assign fifo_cfg[FIFO_IBIDTarg].max_addr = BufAddrW'(reg2hw_i.targ_ibidesc_config.max_addr.q);
+  assign fifo_cfg[FIFO_IBIDTarg].size     = fifo_size(fifo_cfg[FIFO_IBIDTarg]);
 
-  assign fifo_cfg[FIFO_AsyncTarg].min  = BufAddrW'(reg2hw_i.targ_async_config.min_addr.q);
-  assign fifo_cfg[FIFO_AsyncTarg].max  = BufAddrW'(reg2hw_i.targ_async_config.max_addr.q);
-  assign fifo_cfg[FIFO_AsyncTarg].size = fifo_size(fifo_cfg[FIFO_AsyncTarg]);
+  assign fifo_cfg[FIFO_AsyncTarg].min_addr = BufAddrW'(reg2hw_i.targ_async_config.min_addr.q);
+  assign fifo_cfg[FIFO_AsyncTarg].max_addr = BufAddrW'(reg2hw_i.targ_async_config.max_addr.q);
+  assign fifo_cfg[FIFO_AsyncTarg].size     = fifo_size(fifo_cfg[FIFO_AsyncTarg]);
 
   // The number of extant Virtual Targets may be configured; extract their buffer configuration.
   for (genvar t = 0; t < NumTargets; t++) begin : gen_vt_buf_config
-    assign fifo_cfg[FIFO_TxTarg0 + t].min  = BufAddrW'(reg2hw_i.targ_txbuf_config[t].min_addr.q);
-    assign fifo_cfg[FIFO_TxTarg0 + t].max  = BufAddrW'(reg2hw_i.targ_txbuf_config[t].max_addr.q);
-    assign fifo_cfg[FIFO_TxTarg0 + t].size = fifo_size(fifo_cfg[FIFO_TxTarg0 + t]);
+    assign fifo_cfg[FIFO_TxTarg0 + t].min_addr =
+        BufAddrW'(reg2hw_i.targ_txbuf_config[t].min_addr.q);
+    assign fifo_cfg[FIFO_TxTarg0 + t].max_addr =
+        BufAddrW'(reg2hw_i.targ_txbuf_config[t].max_addr.q);
+    assign fifo_cfg[FIFO_TxTarg0 + t].size     = fifo_size(fifo_cfg[FIFO_TxTarg0 + t]);
 
-    assign fifo_cfg[FIFO_TxDTarg0 + t].min  = BufAddrW'(reg2hw_i.targ_txdesc_config[t].min_addr.q);
-    assign fifo_cfg[FIFO_TxDTarg0 + t].max  = BufAddrW'(reg2hw_i.targ_txdesc_config[t].max_addr.q);
-    assign fifo_cfg[FIFO_TxDTarg0 + t].size = fifo_size(fifo_cfg[FIFO_TxDTarg0 + t]);
+    assign fifo_cfg[FIFO_TxDTarg0 + t].min_addr =
+        BufAddrW'(reg2hw_i.targ_txdesc_config[t].min_addr.q);
+    assign fifo_cfg[FIFO_TxDTarg0 + t].max_addr =
+        BufAddrW'(reg2hw_i.targ_txdesc_config[t].max_addr.q);
+    assign fifo_cfg[FIFO_TxDTarg0 + t].size     = fifo_size(fifo_cfg[FIFO_TxDTarg0 + t]);
   end
   for (genvar t = NumTargets; t < MaxTargets; t++) begin : gen_no_vt_buf_config
-    assign fifo_cfg[FIFO_TxTarg0  + t].min  = 'b0;
-    assign fifo_cfg[FIFO_TxTarg0  + t].max  = 'b0;
-    assign fifo_cfg[FIFO_TxTarg0  + t].size = 'b0;
-    assign fifo_cfg[FIFO_TxDTarg0 + t].min  = 'b0;
-    assign fifo_cfg[FIFO_TxDTarg0 + t].max  = 'b0;
-    assign fifo_cfg[FIFO_TxDTarg0 + t].size = 'b0;
+    assign fifo_cfg[FIFO_TxTarg0  + t].min_addr = 'b0;
+    assign fifo_cfg[FIFO_TxTarg0  + t].max_addr = 'b0;
+    assign fifo_cfg[FIFO_TxTarg0  + t].size     = 'b0;
+    assign fifo_cfg[FIFO_TxDTarg0 + t].min_addr = 'b0;
+    assign fifo_cfg[FIFO_TxDTarg0 + t].max_addr = 'b0;
+    assign fifo_cfg[FIFO_TxDTarg0 + t].size     = 'b0;
   end
 
   // FIFO software reset signals.
