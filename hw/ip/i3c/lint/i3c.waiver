@@ -42,3 +42,29 @@ waive -rules {RESET_USE} -location {i3c_dxt.sv} \
 waive -rules {PARAM_NOT_USED} -location {i3c_controller.sv i3c_controller_trx.sv} \
       -regexp {Parameter '(PrimaryCtrl|SecondaryCtrl)' not used} \
       -comment "The Controller logic does not yet distinguish between the Primary and the Secondary Controller role (see #31308)."
+
+## Coding style
+waive -rules {ONE_BIT_MEM_WIDTH} -location {i3c.sv i3c_core.sv i3c_target.sv} \
+      -regexp {Memory '(bufq_(req|gnt|we|rvalid)|(hci|tti)_(wvalid|rready)|fifo_rst|targ_trx_(dvalid|dready)|targ_tx_desc_(rready|rvalid)|targ_buf_(rready|rvalid|rempty)|targ_grp_(addr|targ)_de|txd_toggle_(in|out))' has word width which is single bit wide} \
+      -comment "These unpacked arrays hold one valid, ready or enable signal per queue, FIFO, group or Virtual Target, in line with the arrays of the corresponding data."
+waive -rules {CALC_NEXT_STATE} -location {i3c_controller_trx.sv} \
+      -regexp {Next state register 'state_d' is assigned a non-constant expression 'state_next_req'} \
+      -comment "state_next_req is the state that serves the next transceiver request, which a separate block decodes."
+waive -rules {ENUM_RANGE} -location {i3c_controller_trx.sv} \
+      -regexp {Base of index expression 'state_q\[(ST_SCL|ST_SCL_PP_EN)\]' is of enumerated type 'state_e'} \
+      -comment "The state encoding drives SCL and its push-pull enable directly from state flops, to avoid glitches."
+waive -rules {INTEGER} -location {i3c_target_fsm.sv i3c_target_trx.sv} \
+      -regexp {'(t|grp)' of type int used as a non-constant value} \
+      -comment "The loop variable is converted to the index of the selected Target or group."
+waive -rules {LOOP_VAR_OP} -location {i3c_controller_fsm.sv} \
+      -regexp {Loop variable 'ib' is in arithmetic expression 'ib \+ 8 < bits_left'} \
+      -comment "The loop variable selects which bytes are padded with zero."
+waive -rules {INVALID_COMPARE} -location {i3c_controller_fsm.sv} \
+      -regexp {Comparison '\(dct_idx_next >= NumDCTEntries\)' with 'NumDCTEntries'=32 can never be true} \
+      -comment "The comparison wraps the DCT index for table sizes that are not a power of two."
+waive -rules {INVALID_COMPARE} -location {i3c_queues.sv} \
+      -regexp {Comparison 'addr_i < NumQueues' with 'NumQueues'=4 can never be false} \
+      -comment "The comparison guards against out-of-range addresses for queue counts that are not a power of two."
+waive -rules {NEG_RANGE} -location {i3c_timing_pkg.sv} \
+      -regexp {Declaration range index '-1' of '(cnt|per_cyc)' is negative} \
+      -comment "Bit -1 holds the half cycle of the 'n.1' fixed-point cycle counts."
