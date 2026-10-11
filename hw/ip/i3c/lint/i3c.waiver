@@ -100,3 +100,24 @@ waive -rules {CONST_FF} -location {i3c_stby_cr_regs.sv} \
 waive -rules {CONST_FF} -location {i3c_targ_async_events.sv} \
       -regexp {Flip-flop 'ccc_address' is driven by constant zeros} \
       -comment "The reporting of CCC activity is not specified completely yet (see #31337)."
+
+## Unused signals
+waive -rules {INPUT_NOT_READ HIER_BRANCH_NOT_READ} \
+      -location {i3c_core.sv i3c_controller.sv i3c_controller_ccc.sv i3c_controller_fsm.sv i3c_controller_state.sv i3c_ctrl_req_gen.sv i3c_stby_cr_regs.sv i3c_target.sv i3c_target_ccc.sv i3c_target_fsm.sv i3c_targ_async_events.sv} \
+      -regexp {(Input port|Net|Connected net) 'reg2hw_i[.']} \
+      -comment "These modules receive the complete register interface and read only the fields they need. Fields that no module reads are sunk explicitly in i3c_core."
+waive -rules {INPUT_NOT_READ} -location {i3c_sync_data.sv} \
+      -regexp {Input port '(clk_src_i|rst_src_ni)' is not read from} \
+      -comment "The source clock and reset are used only when EnSrcToggleOut is set."
+waive -rules {INPUT_NOT_READ} -location {i3c_fifo_pkg.sv} \
+      -regexp {Input port 'cfg\.size' is not read from} \
+      -comment "fifo_size derives the size from the address bounds of the configuration."
+waive -rules {INPUT_NOT_READ} -location {i3c_pkg.sv} \
+      -regexp {Input port 'ccc\[6:0\]' is not read from} \
+      -comment "broadcast_ccc needs only the MSB of the CCC."
+waive -rules {INPUT_NOT_READ} -location {i3c_target_trx.sv} \
+      -regexp {Input port 'data_pq\[(3:0|8)\]' is not read from} \
+      -comment "extract_data_nq needs only some of the positive-edge data bits."
+waive -rules {NOT_READ} -location {i3c_timing_pkg.sv} \
+      -regexp {Signal 'cnt\[-1\]' is not read from} \
+      -comment "tm_cycles_init drops the half cycle of the 'n.1' fixed-point cycle count."
