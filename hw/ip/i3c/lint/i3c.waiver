@@ -68,3 +68,35 @@ waive -rules {INVALID_COMPARE} -location {i3c_queues.sv} \
 waive -rules {NEG_RANGE} -location {i3c_timing_pkg.sv} \
       -regexp {Declaration range index '-1' of '(cnt|per_cyc)' is negative} \
       -comment "Bit -1 holds the half cycle of the 'n.1' fixed-point cycle counts."
+waive -rules {CASE_SEL_EXPR} -location {i3c_controller_trx.sv} \
+      -regexp {Expression '\{tx_load,trx_dreq_i\.req == CReqType_ArbAddr\}' as case selector encountered} \
+      -comment "The concatenation selects how the transmit buffer is loaded."
+waive -rules {VAR_INDEX_RANGE} -location {i3c_target_trx.sv} \
+      -regexp {'(sel_targ_id|targ_id)' of length 2 is larger than the 1 bits required} \
+      -comment "Target IDs also encode the Broadcast Address and the absence of a match, so they are wider than the index of the Virtual Targets. The logic checks them against NumTargets before indexing."
+waive -rules {VAR_INDEX_RANGE} -location {i3c_controller_fsm.sv} \
+      -regexp {'ccc_rsp\.reg_widx' of length 3 is larger than the 2 bits required} \
+      -comment "The register index enum includes the CtrlCR_Count member, which is never used as an index."
+
+## Constant flops
+waive -rules {CONST_FF} -location {i3c_controller_fsm.sv i3c_target_fsm.sv} \
+      -regexp {Flip-flop '(rsp|rx_desc_q)\.reserved' is driven by constant zeros?} \
+      -comment "Reserved fields of descriptors are always zero."
+waive -rules {CONST_FF} -location {i3c_target_fsm.sv} \
+      -regexp {Flip-flop 'rx_desc_q\.targets\[3:2\]' is driven by constant zeros} \
+      -comment "The descriptor has a bit for each of the maximum number of Virtual Targets; bits above NumTargets are zero."
+waive -rules {CONST_FF} -location {i3c_controller_fsm.sv i3c_target_trx.sv} \
+      -regexp {Flip-flop '(state_q\[5\]|trx_rxd_o\.dtype\[4\])' is driven by constant zero} \
+      -comment "None of the enum values that the logic assigns to this flop sets this bit."
+waive -rules {CONST_FF} -location {i3c_target_trx.sv} \
+      -regexp {Flip-flop 'trx_rxd_o\.status\[2\]' is driven by constant zero} \
+      -comment "Only TTIRxStatus_BusAborted sets this bit, and the Target does not report aborted transfers yet (see #31337)."
+waive -rules {CONST_FF} -location {i3c_patt_detector.sv} \
+      -regexp {Flip-flop 'exit_det\[0\]' is driven by constant one} \
+      -comment "The first stage of the HDR Exit Pattern Detector shift chain captures a constant one on each SDA edge, as in the I3C Basic specification."
+waive -rules {CONST_FF} -location {i3c_stby_cr_regs.sv} \
+      -regexp {Flip-flop 'stby_cr_control_o\.(handoff_delay_nack|pending_rx_nack)\.d' is driven by constant zero} \
+      -comment "Software can clear these W1C fields, but hardware does not set them yet (see #31308)."
+waive -rules {CONST_FF} -location {i3c_targ_async_events.sv} \
+      -regexp {Flip-flop 'ccc_address' is driven by constant zeros} \
+      -comment "The reporting of CCC activity is not specified completely yet (see #31337)."
