@@ -358,9 +358,11 @@ module i3c_core
   logic hdr_restart_det;
   logic hdr_exit_det;
   // Acknowledge and clear the `HDR Restart detected` condition.
+  // TODO(#31035): Target-side logic does not yet use `hdr_restart_det`; once it does, it shall
+  // acknowledge each detection here, through a registered pulse in the `clk_i` domain. Until
+  // then, the detection remains set until the HDR Restart detector is disabled.
   logic hdr_restart_done;
-  // TODO(#31035): Target-side logic does not yet use this.
-  assign hdr_restart_done = hdr_restart_det;
+  assign hdr_restart_done = 1'b0;
 
   // High-keeper enables; see section 4.3.3.1.
   assign scl_hk_en_o = reg2hw_i.phy_config.scl_hk_en.q;
