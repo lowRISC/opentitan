@@ -256,7 +256,7 @@ module i3c_cmd_decode
     endcase
 
     // Derived properties.
-    cmd_attrs_o.brd_ccc = cmd_attrs_o.is_ccc & !cmd_attrs_o.ccc[7];
+    cmd_attrs_o.brd_ccc = cmd_attrs_o.is_ccc & broadcast_ccc(cmd_attrs_o.ccc);
   end
 
 endmodule

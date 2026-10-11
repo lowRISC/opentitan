@@ -320,7 +320,7 @@ module i3c_targ_async_events
 
   // Arbitrate amongst the Asynchronous Event types.
   prim_arbiter_fixed #(
-    .N         (AsyncEv_Count),
+    .N         (int'(AsyncEv_Count)),
     .DW        ($bits(i3c_tti_async_event_t)),
     .EnDataPort(1)
   ) u_arb (

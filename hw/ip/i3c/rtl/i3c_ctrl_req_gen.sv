@@ -354,7 +354,7 @@ module i3c_ctrl_req_gen
       CmdWord: begin
         trx_dreq_o.req   = CReqType_CommandWord;
         trx_dreq_o.wdata = {// Upper bit of `CMD` field ignored in HDR-DDR.
-                            cmd_attrs_i.rnw, cmd_attrs_i.ccc[6:0],
+                            cmd_attrs_i.rnw, 7'(cmd_attrs_i.ccc),
                             dat_entry_i.dynamic_address[22:16],  // Target Address/Group.
                             1'b0,  // Transceiver completes the Parity Adjustment bit.
                             16'b0};

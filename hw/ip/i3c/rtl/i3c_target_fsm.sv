@@ -1201,10 +1201,10 @@ module i3c_target_fsm
     for (int grp = MaxGroups - 1; grp >= 0; grp--) begin
       if (reg2hw_i.targ_group[grp].group_addr.q == grp_addr) begin
         grp_match_valid = 1'b1;
-        grp_match_idx   = MaxGroupsW'(grp);
+        grp_match_idx   = MaxGroupsW'($unsigned(grp));
       end else if (reg2hw_i.targ_group[grp].targets.q == '0) begin
         grp_free_valid  = 1'b1;
-        grp_free_idx    = MaxGroupsW'(grp);
+        grp_free_idx    = MaxGroupsW'($unsigned(grp));
       end
     end
     // An entry already describing this group address always takes precedence.

@@ -284,7 +284,7 @@ module i3c_target_trx
     capture_all = 1'b0;
     for (int t = NumTargets - 1; t >= 0; t--) begin
       if (contenders[t] && addr_recvd == targ_dev_i[t].addr && !targ_ignore_ccc[t]) begin
-        targ_id     = TargIDW'(t);
+        targ_id     = TargIDW'($unsigned(t));
         targ_set[t] = 1'b1;
       end
     end
@@ -893,7 +893,7 @@ module i3c_target_trx
   assign parity_sdr = parity_q[0];
   // Parity has no history from one data unit to the next, so we just need to initialize it on the
   // first data bit (SDR) or bit pair (HDR-DDR) of each word; both arrive at `bit_idx` == 8.
-  assign init_parity = (bit_idx == BitW'(8));
+  assign init_parity = (bit_idx == BitW'('d8));
   assign upd_parity = data_bit & (state_q inside {State_RxCmdDDR, State_RxDataDDR, State_TxDataDDR,
                                                   State_RxSDR});
 
@@ -941,25 +941,25 @@ module i3c_target_trx
       rx_sample_q   <= 1'b0;
     end else begin
       if (starting | rep_starting) begin
-        bit_idx <= BitW'(8);
+        bit_idx <= BitW'('d8);
       end else if (last_bit) begin
         unique case (state_q)
           // SDR traffic shall be followed by further SDR traffic or, if entering HDR-DDR mode,
           // a Command Word.
-          State_RxSDR:     bit_idx <= entddr_det ? BitW'(9) : BitW'(8);
+          State_RxSDR:     bit_idx <= entddr_det ? BitW'('d9) : BitW'('d8);
           // DDR signaling counts down two bits at a time and should be zero for the final pair of
           // bits, which will be collected on the SCL negative edge, so we initialize to 'bits'/2-1.
-          State_RxCmdDDR:  bit_idx <= BitW'(0);  // Preamble next.
-          State_RxPreDDR:  bit_idx <= (ddr_pre == 2'b01) ? BitW'(4) : BitW'(8);
+          State_RxCmdDDR:  bit_idx <= BitW'('d0);  // Preamble next.
+          State_RxPreDDR:  bit_idx <= (ddr_pre == 2'b01) ? BitW'('d4) : BitW'('d8);
           State_RxDataDDR,
-          State_RxRsvdDDR: bit_idx <= BitW'(0);  // Preamble next.
-          State_TxPreDDR:  bit_idx <= BitW'(8);
-          State_TxDataDDR: bit_idx <= tx_avail ? BitW'(0) : BitW'(5);
+          State_RxRsvdDDR: bit_idx <= BitW'('d0);  // Preamble next.
+          State_TxPreDDR:  bit_idx <= BitW'('d8);
+          State_TxDataDDR: bit_idx <= tx_avail ? BitW'('d0) : BitW'('d5);
           // After a CRC Word in either direction, a command is expected, unless signaling is
           // interrupted by HDR Restart/Exit.
           State_RxCRCDDR,
-          State_TxCRCDDR:  bit_idx <= BitW'(9);
-          default:         bit_idx <= BitW'(8);
+          State_TxCRCDDR:  bit_idx <= BitW'('d9);
+          default:         bit_idx <= BitW'('d8);
         endcase
       end else begin
         bit_idx   <= bit_idx - BitW'(buf_shift);
@@ -1110,7 +1110,7 @@ module i3c_target_trx
 
   // We want to warn the FSM as soon as possible that prefetched read data is required.
   // TODO(#31337): Rename, and give more thought to the introduction of a suitable state encoding.
-  wire rxd_sr = &{ccc_state_q == CCC_SegAddr, direct_get(trans.cmd), bit_idx == BitW'(8)};
+  wire rxd_sr = &{ccc_state_q == CCC_SegAddr, direct_get(trans.cmd), bit_idx == BitW'('d8)};
 
   // Under-construction response to the FSM logic.
   i3c_targ_trx_rxd_t rxd;

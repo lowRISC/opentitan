@@ -1389,7 +1389,7 @@ module i3c_core
   i3c_buffer #(
     .BufAddrW  (BufAddrW),
     .DataWidth (DataWidth),
-    .NumFifos  (FIFO_Count),
+    .NumFifos  (int'(FIFO_Count)),
     // These FIFOs are involved in the transmission of data over the I3C bus, which means that
     // read prefetching must be prioritized over writing.
     .DirTx     (FIFO_Count'((1 << FIFO_CmdQ)    | (1 << FIFO_TxBuf)    |
