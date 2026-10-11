@@ -432,7 +432,7 @@ module i3c_controller_fsm
   logic proceed;
   always_comb begin
     proceed = 1'b0;
-    case (state_q)
+    unique case (state_q)
       Inactive: proceed = 1'b1;  // Transition to Idle only occurs when enabled.
       // We leave the Idle state because command(s) are pending, or because the transceiver has
       // notified us of the Start request of one or more Target(s).
@@ -501,7 +501,7 @@ module i3c_controller_fsm
     // - detection of the event is handled in the `proceed` logic above, the new `state_d` value
     //   is used only when `proceed` becomes asserted.
     state_d = state_q;
-    case (state_q)
+    unique case (state_q)
       // --- No activity; can disconnect and disable the Controller logic ---
       Inactive:     state_d = Idle;
       // --- Bus is idle; a command may be available but still awaiting a retry ---
@@ -533,16 +533,16 @@ module i3c_controller_fsm
         if (cmd_dec_err) state_d = CmdDecErr;
         else begin
           // Here we need only handle the Command Descriptors that `i3c_cmd_decode` did not reject.
-          case (cmd_attrs.attr)
+          unique case (cmd_attrs.attr)
             CmdAttr_InternalCtrl: begin
-              case (cmd_intn.mipi_cmd)
+              unique case (cmd_intn.mipi_cmd)
                 // These commands just modify the Controller internal state; no bus activity.
                 MIPICmd_NoOp,
                 MIPICmd_BroadAddrEnable,
                 MIPICmd_EndXferHDR: state_d = Idle;
                 // The Target Reset Pattern command may involve RSTACT CCC handling.
                 MIPICmd_TargRstPattern:
-                  case (i3c_reset_op_type_e'(cmd_intn.mipi_reserved[13:12]))
+                  unique case (i3c_reset_op_type_e'(cmd_intn.mipi_reserved[13:12]))
                     RstOpType_Single: state_d = TargRst;
                     default: state_d = Idle;
                   endcase
@@ -606,7 +606,7 @@ module i3c_controller_fsm
       // It will remain in the `CCC` state until this phase of the CCC is completed, successfully
       // or otherwise.
       CCC: begin
-        case (ccc_rsp.err_status)
+        unique case (ccc_rsp.err_status)
           ErrStatus_OK: state_d = cmd_attrs.toc ? StopSDR : RepStSDR;
           default: state_d = ErrFatal;
         endcase
@@ -690,7 +690,7 @@ module i3c_controller_fsm
       cmd_state.rst_csect <= 1'b0;
     end else if (enable_i) begin
       if (proceed) begin  // The progress of the state machine is conditional.
-        case (state_q)
+        unique case (state_q)
           // Proceeding from Idle state to CmdBegin means we have a command available to be
           // processed, even if we are merely rejecting it with an error.
           Idle: begin
@@ -716,10 +716,10 @@ module i3c_controller_fsm
             // `data_len` directly.
             data_len <= cmd_attrs.data_len;
             if (cmd_attrs.attr == CmdAttr_InternalCtrl) begin
-              case (cmd_intn.mipi_cmd)
+              unique case (cmd_intn.mipi_cmd)
                 MIPICmd_BroadAddrEnable: pio_bcst_addr_en <= cmd_intn.mipi_reserved[12];
                 MIPICmd_TargRstPattern:
-                  case (i3c_reset_op_type_e '(cmd_intn.mipi_reserved[13:12]))
+                  unique case (i3c_reset_op_type_e '(cmd_intn.mipi_reserved[13:12]))
                     RstOpType_RSTACT: cmd_state.rst_csect <= 1'b1;
                     default:          cmd_state.rst_csect <= 1'b0;
                   endcase
@@ -780,7 +780,7 @@ module i3c_controller_fsm
         state_q <= state_d;
       end else begin
         // Not leaving the current state, but some activity is still occurring...
-        case (state_q)
+        unique case (state_q)
           CCC: begin
             if (ccc_rsp.txd_consume) begin
               data_len  <= next_len;
@@ -815,7 +815,7 @@ module i3c_controller_fsm
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) ccc_idx <= '0;
     else if (enable_i) begin
-      case (state_q)
+      unique case (state_q)
         // Potentially entering CCC handling. Index will be unused if not, but we _must_ initialize
         // this for the start of every CCC operation, no matter how any previous operation
         // concluded.
@@ -1066,7 +1066,7 @@ module i3c_controller_fsm
         rx_data_len <= '0;
       end else begin
         // TODO(#31304): Consider more carefully the use of `cmd_state` here.
-        case ({cmd_state.available, cmd_attrs.attr})
+        unique case ({cmd_state.available, cmd_attrs.attr})
           {1'b1, CmdAttr_AddrAssignment}: begin
             // The `data_length` field of the posted response indicates only whether there _may_ be
             // other devices in need of a dynamic address. Zero indicates that the command did not
@@ -1126,7 +1126,7 @@ module i3c_controller_fsm
       // Bytes were shifted into the buffer from the LSB, left-shifting, so the first byte
       // received (which should be in the LSB of the output word) will be in the highest used
       // bits presently; exactly where depends upon the number of bytes received.
-      case (rx_len[1:0])
+      unique case (rx_len[1:0])
         2'b00:   rx_data = {trx_rdata_i.rdata[7:0],   trx_rdata_i.rdata[15:8],
                             trx_rdata_i.rdata[23:16], trx_rdata_i.rdata[31:24]};
         2'b01:   rx_data = {24'b0, trx_rdata_i.rdata[7:0]};
@@ -1246,7 +1246,7 @@ module i3c_controller_fsm
   // Software may request notification when an IBI, CRR or HJ is rejected by the Controller.
   logic ibi_capt_crr_hj;
   always_comb begin
-    case (state_q)
+    unique case (state_q)
       // Hot-Join and CRR carry no data bytes and are transient states.
       HotJoin:  ibi_capt_crr_hj = reg2hw_i.ibi_notify_ctrl.notify_hj_rejected.q  | !nacked;
       CRR:      ibi_capt_crr_hj = reg2hw_i.ibi_notify_ctrl.notify_crr_rejected.q | !nacked;
@@ -1273,7 +1273,7 @@ module i3c_controller_fsm
     // Address and RnW indication from the IBI, CRR or HJ request.
     // - the least significant bit indicates `1` for a real IBI, `0` for CRR or HJ request.
     ibi_stat_desc.ibi_id = {trx_arb_i.addr, trx_arb_i.ibi};
-    case (ibi_status_type)
+    unique case (ibi_status_type)
       // This applies to IBI, CRR and HJ, as well as any rejection of such for which notification
       // has been requested via `IBI_NOTIFY_CTRL`.
       IBIStatus_Regular: begin
@@ -1469,7 +1469,7 @@ module i3c_controller_fsm
   // - translate our FSM state information into the HCI-defined states.
   // - this mapping cannot be perfect due to implementation details but it's close.
   always_comb begin
-    case (state_q)
+    unique case (state_q)
       StartSDR:  bcl_tfr_ststat_o = BCLState_Start;
       RepStSDR:  bcl_tfr_ststat_o = BCLState_Restart;
       StopSDR:   bcl_tfr_ststat_o = BCLState_Stop;

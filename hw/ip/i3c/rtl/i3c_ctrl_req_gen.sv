@@ -75,7 +75,7 @@ module i3c_ctrl_req_gen
       mode = cmd_attrs_i.mode;
       i2c  = cmd_attrs_i.i2c;
 
-      case (state_i)
+      unique case (state_i)
         // HDR Exit/Restart signaling.
         ExitHDR,
         ReStHDR: begin
@@ -114,7 +114,7 @@ module i3c_ctrl_req_gen
       endcase
 
       // Translate these two parameters into a speed index.
-      case ({i2c, mode})
+      unique case ({i2c, mode})
         // I2C signaling modes.
         {1'b1, XferMode_I2CUDR3},
         {1'b1, XferMode_I2CUDR2},
@@ -296,7 +296,7 @@ module i3c_ctrl_req_gen
     trx_dreq_o = '0;
     // Only data transfer really needs to modify this field, based on the data length.
     trx_dreq_o.last = 1'b1;
-    case (state_i)
+    unique case (state_i)
       // SDR Bus State signaling.
       StartSDR: trx_dreq_o.req = CReqType_SDRStart;
       StopSDR:  trx_dreq_o.req = CReqType_SDRStop;

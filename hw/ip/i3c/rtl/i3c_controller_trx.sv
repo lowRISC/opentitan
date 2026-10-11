@@ -86,7 +86,7 @@ module i3c_controller_trx
 
   // Return the length in bits of the given unit type, minus 1 for counting down.
   function automatic bit [Log2DW-1:0] unitlen_bits(i3c_ctrl_req_e req);
-    case (req)
+    unique case (req)
       CReqType_CommandWord,
       CReqType_DataWord:   return Log2DW'(19);
       // CRC Words are 12 bits including the final setup bit ('1') for HDR Restart/Exit.
@@ -486,7 +486,7 @@ module i3c_controller_trx
   // - this includes non-data bits.
   always_comb begin
     bit_done = 1'b0;
-    case (state_q)
+    unique case (state_q)
       // Twice per SCL cycle for HDR-DDR mode.
       State_ClkHiHoldD,
       State_ClkHiSampleD: bit_done = phase_end & ddr_mode;
@@ -581,7 +581,7 @@ module i3c_controller_trx
         6'b000001: sda_d = parity_sdr_tx;
         default: begin
           if (ddr_crc) begin
-            case (bit_idx)
+            unique case (bit_idx)
               // Inject the CRC-5 result into the transmitted CRC word at the appropriate position.
               'h6: sda_d = crc5_q[4];
               'h5: sda_d = crc5_q[3];
@@ -602,7 +602,7 @@ module i3c_controller_trx
   logic [DataWidth-1:0] buf_d;
   always_comb begin : gen_buf_data
     buf_d = buf_q;
-    case ({tx_load, trx_dreq_i.req == CReqType_ArbAddr})
+    unique case ({tx_load, trx_dreq_i.req == CReqType_ArbAddr})
       // Loading data into a normal transmission-only phase.
       2'b10: buf_d[DataWidth-1:1] = trx_dreq_i.wdata[DataWidth-2:0];
       // Loading data into an Arbitrable Address phase causes SDA to be sampled into `buf_q`,
@@ -663,7 +663,7 @@ module i3c_controller_trx
 
     // Handle the receive of a new request.
     if (trx_dvalid_i) begin
-      case (trx_dreq_i.req)
+      unique case (trx_dreq_i.req)
         // SDR bus state signaling.
         // - (S)tart and sto(P) signaling rely upon the bus being in a defined state before SDA
         //   transitions; the `Pre` states establish these preconditions.
@@ -693,7 +693,7 @@ module i3c_controller_trx
         CReqType_DirectDrive:
           // Open drain signaling takes precedence over push-pull driving,
           // TODO(#31307): ... but we have no open drain driver on SCL.
-          casez (trx_dreq_i.wdata[27:24])
+          unique casez (trx_dreq_i.wdata[27:24])
             4'b0001: state_next_req = State_ClkLoPPDirDrv;
             4'b0?1?: state_next_req = State_ClkLoDirDrv;
             4'b1001: state_next_req = State_ClkHiPPDirDrv;
@@ -707,7 +707,7 @@ module i3c_controller_trx
   // Transceiver state.
   always_comb begin
     state_d = state_q;
-    case (state_q)
+    unique case (state_q)
       // --- Idle, Stalling and Direct Driving persist until another request is received. ---
       State_Idle,
       State_Stalling,
@@ -776,7 +776,7 @@ module i3c_controller_trx
     if (unit_starting) begin
       // When transitioning to a new unit/request, the next state is difficult to predict from the
       // current state alone, so we use the request type.
-      case (next_unit.req)
+      unique case (next_unit.req)
         CReqType_SDRStart: phase_cycles = tcas;
         CReqType_SDRStop:  phase_cycles = tcbp;
         CReqType_ArbAddr,
@@ -791,7 +791,7 @@ module i3c_controller_trx
     end else begin
       // We can use the current state here because the next state, and thus its duration, are very
       // predictable.
-      case (state_q)
+      unique case (state_q)
         State_Idle:            phase_cycles = tcas;
         State_Start:           phase_cycles = targ_resetting ? DefTmCyc : trx_dreq_i.tm.tcls;
         // SCL low, setup/await data...SCL high next.
@@ -844,7 +844,7 @@ module i3c_controller_trx
     end else if (enable_i) begin
       if (req_starting) begin
         // Behavior specific to the new data unit.
-        case (trx_dreq_i.req)
+        unique case (trx_dreq_i.req)
           CReqType_HDRRestart:  bit_idx <= Log2DW'(2);  // Re-purposing the `bit_idx` counter for...
           CReqType_HDRExit:     bit_idx <= Log2DW'(4);  // ...counting SDA negative edges.
           CReqType_TargetReset: bit_idx <= Log2DW'(7);
@@ -887,7 +887,7 @@ module i3c_controller_trx
     if (!rst_ni) begin
       arb_lost  <= 1'b0;
     end else if (enable_i) begin
-      case (state_q)
+      unique case (state_q)
         // Arbitration verdict is sticky throughout the address arbitration;
         // - as we transmit the arbitrable address we lose its value, but the comparison of
         //   received address cf transmitted is done bit-serially.
@@ -908,7 +908,7 @@ module i3c_controller_trx
     sda_drv_d = sda_drv_q;
     if (unit_starting) begin
       // Set up the appropriate driver state for the next request.
-      case (next_unit.req)
+      unique case (next_unit.req)
         // SDR Start, stoP and Repeated Start.
         CReqType_SDRStart:    sda_drv_d = open_drain();
         CReqType_SDRRepStart,
@@ -944,7 +944,7 @@ module i3c_controller_trx
       endcase
     end else if (phase_end) begin
       // TODO(#31304): References to `state_next_req` should be disappearing from here.
-      case (state_q)
+      unique case (state_q)
         State_Reset: sda_drv_d = disconnect();
         // Leave the bus inactive with pull-up enabled until starting a transaction.
         State_Idle:  sda_drv_d = starting ? open_drain() : pull_up();
@@ -1242,7 +1242,7 @@ module i3c_controller_trx
   always_comb begin
     // TODO(#31307): The transmit/receive states require further qualifications, in particular to
     // report ENTDAA, SETDASA and IBI.
-    case (state_q)
+    unique case (state_q)
       State_ClkLoSetupD,
       State_ClkHiHoldD,
       State_ClkHiSetupD,

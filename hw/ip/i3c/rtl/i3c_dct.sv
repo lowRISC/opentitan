@@ -55,7 +55,7 @@ module i3c_dct
     sw_dct_wmask = '0;
     // The DCT entry is mapped into a number of CPU memory locations, but with
     // holes (HCI Table 131).
-    case (sw_dct_addr_i[1:0])
+    unique case (sw_dct_addr_i[1:0])
       2'b00: sw_dct_wmask[3:0] = 4'hF;
       2'b01: sw_dct_wmask[5:4] = 2'b11;
       2'b10: sw_dct_wmask[7:6] = 2'b11;

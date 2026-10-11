@@ -480,7 +480,7 @@ package i3c_pkg;
   // The use of some CCCs is absolutely prohibited in Command Descriptors (TCRI 6.2) because the
   // Host Controller issues them internally. (Note that some others are conditionally-blocked.)
   function automatic bit tcri_blocked_ccc(logic [7:0] ccc);
-    case (ccc)
+    unique case (ccc)
       ENTHDR0, ENTHDR1, ENTHDR2, ENTHDR3, ENTHDR4, ENTHDR5, ENTHDR6, ENTHDR7,
       GETACCCR: return 1'b1;
       default:  return 1'b0;

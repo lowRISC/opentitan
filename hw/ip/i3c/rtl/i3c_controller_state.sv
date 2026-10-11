@@ -57,7 +57,7 @@ module i3c_controller_state
     if (disable_now) gstate_d = GState_Disabling;
     else begin
       gstate_d = gstate_q;
-      case (gstate_q)
+      unique case (gstate_q)
         GState_Disabled:  if (enable_now)        gstate_d = GState_Running;
         GState_Disabling: if (inactive_i)        gstate_d = GState_Disabled;
         GState_Aborted:   if (abort_clr)         gstate_d = GState_Running;

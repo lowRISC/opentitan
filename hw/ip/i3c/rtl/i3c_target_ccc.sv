@@ -133,22 +133,22 @@ module i3c_target_ccc
   rdata_src_e rdata_src;
   always_comb begin
     rdata_src = RData_UNDEF;
-    case (ccc)
+    unique case (ccc)
       GETMWL:  // Figure 27.
-        case (ccc_req_i.idx)
+        unique case (ccc_req_i.idx)
           0: rdata_src = RData_MWL0;
           1: rdata_src = RData_MWL1;
           default: rdata_src = RData_UNDEF;
         endcase
       GETMRL:  // Figure 29.
-        case (ccc_req_i.idx)
+        unique case (ccc_req_i.idx)
           0: rdata_src = RData_MRL0;
           1: rdata_src = RData_MRL1;
           2: rdata_src = RData_IBI;
           default: rdata_src = RData_UNDEF;
         endcase
       GETPID:  // Figure 36.
-        case (ccc_req_i.idx)
+        unique case (ccc_req_i.idx)
           0: rdata_src = RData_PID0;
           1: rdata_src = RData_PID1;
           2: rdata_src = RData_PID2;
@@ -161,9 +161,9 @@ module i3c_target_ccc
       GETDCR: rdata_src = RData_DCR;  // Figure 38.
       GETSTATUS:  // TODO(#31128): Check support for NASTAT SCMSTAT (Table 28).
         if (has_defb && (defb != 8'h00)) begin
-          case (defb)
+          unique case (defb)
             8'h91:
-              case (ccc_req_i.idx)
+              unique case (ccc_req_i.idx)
                 0: rdata_src = RData_PRECR0;
                 1: rdata_src = RData_PRECR1;
                 default: rdata_src = RData_UNDEF;
@@ -171,7 +171,7 @@ module i3c_target_ccc
             default: rdata_src = RData_UNDEF;
           endcase
         end else begin
-          case (ccc_req_i.idx)
+          unique case (ccc_req_i.idx)
             0: rdata_src = RData_TGTSTAT0;
             1: rdata_src = RData_TGTSTAT1;
             default: rdata_src = RData_UNDEF;
@@ -183,12 +183,12 @@ module i3c_target_ccc
       ENDXFER:  rdata_src = RData_ENDXFER;
       GETMXDS:  // Figure 47.
         if (has_defb && (defb != 8'h00)) begin
-          case (defb)
+          unique case (defb)
             8'h91: rdata_src = RData_CRHDLY1;
             default: rdata_src = RData_UNDEF;
           endcase
         end else begin
-          case (ccc_req_i.idx)
+          unique case (ccc_req_i.idx)
             0: rdata_src = RData_MAXWR;
             1: rdata_src = RData_MAXRD;
             2: rdata_src = RData_MAXRDTURN0;
@@ -200,9 +200,9 @@ module i3c_target_ccc
       GETCAPS:  // Figure 50.
         if (has_defb && (defb != 8'h00)) begin
           // GETCAPS Format 2; DEFB has already been validated.
-          case (defb)
+          unique case (defb)
             8'h5a:
-              case (ccc_req_i.idx)
+              unique case (ccc_req_i.idx)
                 0: rdata_src = RData_TESTPAT0;
                 1: rdata_src = RData_TESTPAT1;
                 2: rdata_src = RData_TESTPAT2;
@@ -210,13 +210,13 @@ module i3c_target_ccc
                 default: rdata_src = RData_UNDEF;
               endcase
             8'h91:
-              case (ccc_req_i.idx)
+              unique case (ccc_req_i.idx)
                 0: rdata_src = RData_CRCAP1;
                 1: rdata_src = RData_CRCAP2;
                 default: rdata_src = RData_UNDEF;
               endcase
             default: // 8'h93
-              case (ccc_req_i.idx)
+              unique case (ccc_req_i.idx)
                 0: rdata_src = RData_VTCAP1;
                 1: rdata_src = RData_VTCAP2;
                 default: rdata_src = RData_UNDEF;
@@ -224,7 +224,7 @@ module i3c_target_ccc
           endcase
         end else begin
           // GETCAPS Format 1
-          case (ccc_req_i.idx)
+          unique case (ccc_req_i.idx)
             0: rdata_src = RData_GETCAP1;
             1: rdata_src = RData_GETCAP2;
             2: rdata_src = RData_GETCAP3;
@@ -269,7 +269,7 @@ module i3c_target_ccc
   logic rlast;
   always_comb begin
     for (int unsigned t = 0; t < NumTargets; t++) begin
-      case (rdata_src)
+      unique case (rdata_src)
         RData_MWL0: rdata[t] = reg2hw_i.targ_rw_len[t].mwl.q[15:8];
         RData_MWL1: rdata[t] = reg2hw_i.targ_rw_len[t].mwl.q[7:0];
         RData_MRL0: rdata[t] = reg2hw_i.targ_rw_len[t].mrl.q[15:8];
@@ -356,7 +356,7 @@ module i3c_target_ccc
 
     // Is this the final byte of read data?
     rlast = 1'b0;
-    case (rdata_src)
+    unique case (rdata_src)
       // Reading from these data sources signals the end of the command.
       RData_MWL1,
       RData_IBI,
@@ -402,7 +402,7 @@ module i3c_target_ccc
     for (int unsigned t = 0; t < NumTargets; t++) ccc_rsp_o.req_cdata[t] = rdata[t];
     ccc_rsp_o.req_clast = rlast;
     wr_commit = 1'b0;
-    case (ccc_req_i.rsn)
+    unique case (ccc_req_i.rsn)
       TargCRsn_TxD: begin
         // Return the read data selected/constructed above.
         ccc_rsp_o.req_cvalid = 1'b1; //ccc_req_i.en;
@@ -418,7 +418,7 @@ module i3c_target_ccc
             end else begin
               // Collect write data into registers whilst we're still receiving it.
               ccc_rsp_o.reg_we = ccc_req_i.en;
-              case (ccc_req_i.idx)
+              unique case (ccc_req_i.idx)
                 'h1: ccc_rsp_o.reg_widx = TargCR_WData0;
                 'h2: ccc_rsp_o.reg_widx = TargCR_WData1;
                 'h3: ccc_rsp_o.reg_widx = TargCR_WData2;
@@ -439,7 +439,7 @@ module i3c_target_ccc
           // All of the data in the CCC setup is write data; capture it in registers.
           ccc_rsp_o.reg_we    = ccc_req_i.en;
           ccc_rsp_o.reg_wdata = ccc_req_i.rdata;
-          case (ccc_req_i.idx)
+          unique case (ccc_req_i.idx)
             'h0: begin
               // Capture the CCC in a register.
               ccc_rsp_o.reg_widx = TargCR_CCC;
@@ -533,7 +533,7 @@ module i3c_target_ccc
                                      (ccc inside {ENTAS0,  ENTAS1,  ENTAS2,  ENTAS3,
                                                   ENTAS0B, ENTAS1B, ENTAS2B, ENTAS3B})}} & targets;
   always_comb begin
-    case (ccc)
+    unique case (ccc)
       ENTAS3, ENTAS3B: act_state_d_o = 2'b11;  // 50ms: Lowest-activity operation.
       ENTAS2, ENTAS2B: act_state_d_o = 2'b10;  // 2ms.
       ENTAS1, ENTAS1B: act_state_d_o = 2'b01;  // 100us.

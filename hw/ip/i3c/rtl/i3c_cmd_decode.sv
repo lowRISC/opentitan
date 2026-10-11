@@ -76,7 +76,7 @@ module i3c_cmd_decode
   // otherwise deadlock the Controller and Driver.
   always_comb begin
     // Is this a Common Command Code transfer?
-    case (cmd_reg_o.cmd_attr)
+    unique case (cmd_reg_o.cmd_attr)
       CmdAttr_ImmTransfer,
       CmdAttr_RegTransfer: begin
         // HCI version 1.2 supports CCC Framing in SDR only (not HDR modes), but the CMD field may
@@ -93,7 +93,7 @@ module i3c_cmd_decode
     init_ok_o = !(cmd_attrs_o.is_ccc & tcri_blocked_ccc(cmd_reg_o.cmd));
 
     // Initial dispatch checks based on the type of Command Descriptor.
-    case (cmd_reg_o.cmd_attr)
+    unique case (cmd_reg_o.cmd_attr)
       CmdAttr_ImmTransfer:    init_ok_o = init_ok_o & !cmd_imm_o.rnw;  // Write Transfers only.
       // Any CCC command having just a Defining Byte and no data payload shall be sent as an
       // Immediate Data Transfer Command.
@@ -102,7 +102,7 @@ module i3c_cmd_decode
       // Address Assignment Commands support SETDASA and ENTDAA, but not SETAASA (HCI 8.4.1).
       CmdAttr_AddrAssignment: init_ok_o = init_ok_o & (cmd_daa_o.cmd inside {ENTDAA, SETDASA});
       CmdAttr_InternalCtrl:
-        case (cmd_intn_o.mipi_cmd)
+        unique case (cmd_intn_o.mipi_cmd)
           MIPICmd_NoOp,
           MIPICmd_BroadAddrEnable: init_ok_o = 1'b1;
           MIPICmd_TargRstPattern:
@@ -144,7 +144,7 @@ module i3c_cmd_decode
     cmd_attrs_o.ddr  = hdr_ddr;
 
     // Determine maximum number of retries; this depends upon the device properties as well.
-    case (cmd_reg_o.cmd_attr)
+    unique case (cmd_reg_o.cmd_attr)
       CmdAttr_ImmTransfer,
       CmdAttr_RegTransfer,
       CmdAttr_ComboTransfer: begin
@@ -179,11 +179,11 @@ module i3c_cmd_decode
 
     // The most significant field is the command type (`cmd_attr`).
     // - the validity of fields is type-specific.
-    case (cmd_reg_o.cmd_attr)
+    unique case (cmd_reg_o.cmd_attr)
       CmdAttr_ImmTransfer: begin
         cmd_attrs_o.has_defb = (cmd_imm_o.dtt > 'h4);
         cmd_attrs_o.defb     =  cmd_imm_o.data_byte_1;
-        case (cmd_imm_o.dtt)
+        unique case (cmd_imm_o.dtt)
           // Data length does _not_ include the Defining Byte.
           3'h5, 3'h6, 3'h7: cmd_attrs_o.data_len = cmd_imm_o.dtt - 3'h5;
           default:          cmd_attrs_o.data_len = cmd_imm_o.dtt;
@@ -235,7 +235,7 @@ module i3c_cmd_decode
                                                       : cmd_daa_o.dev_count;
       end
       CmdAttr_InternalCtrl:
-        case (cmd_intn_o.mipi_cmd)
+        unique case (cmd_intn_o.mipi_cmd)
           MIPICmd_NoOp,
           MIPICmd_BroadAddrEnable: err_o = 1'b0;
           MIPICmd_TargRstPattern:
