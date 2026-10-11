@@ -770,57 +770,57 @@ module i3c_controller_trx
   // Duration of the next state, in clock cycles.
   // - most of these timings are supplied with the request because they are target- and mode-
   //   dependent.
-  logic [TmCycW-1:0] tm_cycles;
+  logic [TmCycW-1:0] phase_cycles;
   always_comb begin
     if (unit_starting) begin
       // When transitioning to a new unit/request, the next state is difficult to predict from the
       // current state alone, so we use the request type.
       case (next_unit.req)
-        CReqType_SDRStart: tm_cycles = tcas;
-        CReqType_SDRStop:  tm_cycles = tcbp;
+        CReqType_SDRStart: phase_cycles = tcas;
+        CReqType_SDRStop:  phase_cycles = tcbp;
         CReqType_ArbAddr,
         CReqType_AckNack,
         CReqType_Address,
         CReqType_SDRBytes,
         CReqType_CommandWord,
         CReqType_DataWord,
-        CReqType_CRCWord:  tm_cycles = trx_dreq_i.tm.tcls;
-        default:           tm_cycles = DefTmCyc;
+        CReqType_CRCWord:  phase_cycles = trx_dreq_i.tm.tcls;
+        default:           phase_cycles = DefTmCyc;
       endcase
     end else begin
       // We can use the current state here because the next state, and thus its duration, are very
       // predictable.
       case (state_q)
-        State_Idle:            tm_cycles = tcas;
-        State_Start:           tm_cycles = targ_resetting ? DefTmCyc : trx_dreq_i.tm.tcls;
+        State_Idle:            phase_cycles = tcas;
+        State_Start:           phase_cycles = targ_resetting ? DefTmCyc : trx_dreq_i.tm.tcls;
         // SCL low, setup/await data...SCL high next.
         State_ArbClkLoSetupD,
         State_AddrClkLoSetupD,
         State_ClkLoSetupD,
-        State_ClkLoAwaitD:     tm_cycles = req_q.tm.tchh;
+        State_ClkLoAwaitD:     phase_cycles = req_q.tm.tchh;
         // SCL high, hold/sample data...SCL remains high.
         State_ArbClkHiHoldD,
         State_AddrClkHiHoldD,
         State_ClkHiHoldD,
-        State_ClkHiSampleD:    tm_cycles = req_q.tm.tchs;
+        State_ClkHiSampleD:    phase_cycles = req_q.tm.tchs;
         // SCL high, setup/await data...SCL low next.
         State_ArbClkHiIdle,
         State_AddrClkHiSetupD,
         State_ClkHiSetupD,
-        State_ClkHiAwaitD:     tm_cycles = req_q.tm.tclh;
+        State_ClkHiAwaitD:     phase_cycles = req_q.tm.tclh;
         // SCL low...SCL remains low.
         State_ArbClkLoIdle,
         State_AddrClkLoHoldD,
         State_ClkLoHoldD,
-        State_ClkLoSampleD:    tm_cycles = req_q.tm.tcls;
+        State_ClkLoSampleD:    phase_cycles = req_q.tm.tcls;
         // Direct-driving of pins under software control; collect new state from FSM on each cycle.
         State_ClkLoDirDrv,
         State_ClkHiDirDrv,
         State_ClkLoPPDirDrv,
-        State_ClkHiPPDirDrv:   tm_cycles = '0;
+        State_ClkHiPPDirDrv:   phase_cycles = '0;
         // HDR Exit/Restart signaling requires 2 cycles per state at 50MHz.
         // - covered by the default timing.
-        default:               tm_cycles = DefTmCyc;
+        default:               phase_cycles = DefTmCyc;
       endcase
     end
   end
@@ -873,7 +873,7 @@ module i3c_controller_trx
       if (phase_end) begin
         // Advance the signaling state machine.
         state_q   <= state_d;
-        cnt       <= tm_cycles;
+        cnt       <= phase_cycles;
       end else begin
         cnt       <= cnt - 'b1;
       end
