@@ -1399,25 +1399,26 @@ module i3c_core
     // Presenting the default FIFO configuration permits the message buffer to initialize the write
     // and read pointers for each FIFO such that they match the register descriptions even before
     // any of the logic is enabled; this helps with CSR tests.
-    .DefMin    ('{FIFO_TxTarg0:   I3C_TARG_TXBUF_STATE_0_WPTR_0_RESVAL,
-                  FIFO_TxTarg1:   I3C_TARG_TXBUF_STATE_1_WPTR_1_RESVAL,
-                  FIFO_TxTarg2:   I3C_TARG_TXBUF_STATE_2_WPTR_2_RESVAL,
-                  FIFO_TxTarg3:   I3C_TARG_TXBUF_STATE_3_WPTR_3_RESVAL,
-                  FIFO_TxBuf:     I3C_CTRL_TXBUF_STATE_WPTR_RESVAL,
-                  FIFO_IBITarg:   I3C_TARG_IBI_STATE_WPTR_RESVAL,
-                  FIFO_RxTarg:    I3C_TARG_RXBUF_STATE_WPTR_RESVAL,
-                  FIFO_RxBuf:     I3C_CTRL_RXBUF_STATE_WPTR_RESVAL,
-                  FIFO_IBIQ:      I3C_IBI_STATE_WPTR_RESVAL,
-                  FIFO_IBIStD:    I3C_IBI_STAT_STATE_WPTR_RESVAL,
-                  FIFO_RspQ:      I3C_RESPONSE_QUEUE_STATE_WPTR_RESVAL,
-                  FIFO_CmdQ:      I3C_COMMAND_QUEUE_STATE_WPTR_RESVAL,
-                  FIFO_TxDTarg0:  I3C_TARG_TXDESC_STATE_0_WPTR_0_RESVAL,
-                  FIFO_TxDTarg1:  I3C_TARG_TXDESC_STATE_1_WPTR_1_RESVAL,
-                  FIFO_TxDTarg2:  I3C_TARG_TXDESC_STATE_2_WPTR_2_RESVAL,
-                  FIFO_TxDTarg3:  I3C_TARG_TXDESC_STATE_3_WPTR_3_RESVAL,
-                  FIFO_RxDTarg:   I3C_TARG_RXDESC_STATE_WPTR_RESVAL,
-                  FIFO_IBIDTarg:  I3C_TARG_IBIDESC_STATE_WPTR_RESVAL,
-                  FIFO_AsyncTarg: I3C_TARG_ASYNC_STATE_WPTR_RESVAL})
+    // - the FIFOs are listed in the order of their enumeration in `i3c_fifo_pkg`.
+    .DefMin    ('{I3C_TARG_TXBUF_STATE_0_WPTR_0_RESVAL,   // FIFO_TxTarg0
+                  I3C_TARG_TXBUF_STATE_1_WPTR_1_RESVAL,   // FIFO_TxTarg1
+                  I3C_TARG_TXBUF_STATE_2_WPTR_2_RESVAL,   // FIFO_TxTarg2
+                  I3C_TARG_TXBUF_STATE_3_WPTR_3_RESVAL,   // FIFO_TxTarg3
+                  I3C_CTRL_TXBUF_STATE_WPTR_RESVAL,       // FIFO_TxBuf
+                  I3C_TARG_IBI_STATE_WPTR_RESVAL,         // FIFO_IBITarg
+                  I3C_TARG_RXBUF_STATE_WPTR_RESVAL,       // FIFO_RxTarg
+                  I3C_CTRL_RXBUF_STATE_WPTR_RESVAL,       // FIFO_RxBuf
+                  I3C_IBI_STATE_WPTR_RESVAL,              // FIFO_IBIQ
+                  I3C_IBI_STAT_STATE_WPTR_RESVAL,         // FIFO_IBIStD
+                  I3C_RESPONSE_QUEUE_STATE_WPTR_RESVAL,   // FIFO_RspQ
+                  I3C_COMMAND_QUEUE_STATE_WPTR_RESVAL,    // FIFO_CmdQ
+                  I3C_TARG_TXDESC_STATE_0_WPTR_0_RESVAL,  // FIFO_TxDTarg0
+                  I3C_TARG_TXDESC_STATE_1_WPTR_1_RESVAL,  // FIFO_TxDTarg1
+                  I3C_TARG_TXDESC_STATE_2_WPTR_2_RESVAL,  // FIFO_TxDTarg2
+                  I3C_TARG_TXDESC_STATE_3_WPTR_3_RESVAL,  // FIFO_TxDTarg3
+                  I3C_TARG_RXDESC_STATE_WPTR_RESVAL,      // FIFO_RxDTarg
+                  I3C_TARG_IBIDESC_STATE_WPTR_RESVAL,     // FIFO_IBIDTarg
+                  I3C_TARG_ASYNC_STATE_WPTR_RESVAL})      // FIFO_AsyncTarg
   ) u_buf (
     .clk_i          (clk_i),
     .rst_ni         (rst_ni),
