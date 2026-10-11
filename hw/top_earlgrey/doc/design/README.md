@@ -103,11 +103,52 @@ To that end, the RRAM controller indicates to the [pwrmgr](../../ip_autogen/pwrm
 
 ### Main processor (`core_ibex`)
 
-The main processor (`core_ibex`) is a small and efficient, 32-bit, in-order RISC-V core with a 2-stage pipeline that implements the RV32IMC instruction set architecture.
-It was initially developed as part of the [PULP platform](https://www.pulp-platform.org) under the name "Zero-riscy" [\[1\]](https://doi.org/10.1109/PATMOS.2017.8106976), and has been contributed to [lowRISC](https://www.lowrisc.org) who maintains it and develops it further.
+The main processor (`core_ibex`) is a small and efficient, 32-bit, in-order RISC-V core.
 See the [core_ibex specification](https://ibex-core.readthedocs.io/en/latest/) for more details of the core.
-In addition to the standard RISC-V functionality, Ibex implements M (machine) and U (user) mode per the RISC-V standard.
+Ibex is integrated into Earl Grey through the [`rv_core_ibex` wrapper](../../ip_autogen/rv_core_ibex/README.md), whose parameters set the configuration below.
+
+Earl Grey configures Ibex as follows:
+- Pipeline: 3 stages (instruction fetch; decode and execute; writeback).
+- Base ISA: RV32I or CHERIoT, see [CHERIoT](#cheriot) below.
+- M extension with a single-cycle multiplier.
+- C extension, plus the Zcb and Zcmp code size reduction extensions.
+- Bit manipulation: Zba, Zbb and Zbs (B), plus Zbc (implies Zbkc), Zbkb and Zbkx.
+- Zicsr, Zicntr, Zihpm and Zifencei.
+- Execution modes: M (machine) and U (user).
+- Smepmp: enhanced physical memory protection (ePMP) with 16 regions and a granularity of 4 bytes.
+- Instruction cache: 4 KiB, 2-way set associative, with ECC and scrambling.
+- Debug: 4 hardware breakpoints (triggers).
+
+`SecureIbex` is enabled, which adds the following hardware security features (see the Ibex [security features](https://ibex-core.readthedocs.io/en/latest/03_reference/security.html)):
+- Dual-core lockstep.
+- Integrity checks on the register file, the instruction cache and the bus interfaces.
+- Hardened program counter.
+- Data-independent timing, enabled through the `cpuctrlsts` CSR.
+- Dummy instruction insertion, enabled through the `cpuctrlsts` CSR.
+
 Attached to the Ibex core are a debug module (DM) and interrupt module (PLIC).
+
+#### CHERIoT
+
+Ibex is built with a base ISA that can switch from RV32I to [CHERIoT](https://github.com/microsoft/cheriot-sail/releases/) version 1.0.
+CHERIoT is a capability-based ISA that provides hardware-enforced memory safety.
+After reset, Ibex executes RV32I and uses the ePMP for memory protection.
+Software can switch to CHERIoT, or lock the RV32I mode, once through the [`CHERIOT_ENA`](../../ip_autogen/rv_core_ibex/doc/registers.md#cheriot_ena) and [`CHERIOT_LOCK`](../../ip_autogen/rv_core_ibex/doc/registers.md#cheriot_lock) registers of `rv_core_ibex`.
+The selected mode stays locked until the next reset.
+See [execution mode switch](../../ip_autogen/rv_core_ibex/doc/theory_of_operation.md#execution-mode-switch) for details.
+
+A CHERIoT capability consists of a 32-bit address, 32 bits of metadata and a validity tag bit.
+The [CHERIoT memory subsystem](../../../ip/cheriot_mem_sys/README.md) (`cheriot_mem_sys`) sits between the data port of Ibex and the main crossbar.
+It stores the validity tags and the revocation bitmap in the [CHERIoT meta SRAM](#memory), which is separate from the memories that hold the capabilities.
+It splits each data access into an access to the memory and an access to the tag.
+A non-capability store clears the tag of the location it writes.
+
+The memory subsystem also contains a background revocation engine.
+The engine sweeps a range of capabilities in the Main SRAM, the Secondary SRAM or the RRAM.
+It clears the tag of every capability whose base is marked as revoked in the revocation bitmap.
+It raises an interrupt when a sweep completes and counts completed sweeps in an epoch register, which the CHERIoT RTOS revoker uses.
+
+In RV32I mode, the CHERIoT meta SRAM is not accessible by software.
 
 #### JTAG / Debug module
 
@@ -510,9 +551,3 @@ It becomes active after reset if both TAP strap pins are high.
 While active, it keeps `top_earlgrey` in reset and lets the external host preload the non-volatile and volatile memories over JTAG.
 Once deactivated, it forwards the JTAG signals to `top_earlgrey` and releases the reset.
 This loader does not exist on the ASIC target.
-
-## References
-1. [Schiavone, Pasquale Davide, et al. "Slow and steady wins the race? A comparison of
- ultra-low-power RISC-V cores for Internet-of-Things applications."
- _27th International Symposium on Power and Timing Modeling, Optimization and Simulation
- (PATMOS 2017)_](https://doi.org/10.1109/PATMOS.2017.8106976)
