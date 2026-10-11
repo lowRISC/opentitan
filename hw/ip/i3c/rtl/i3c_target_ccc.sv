@@ -85,7 +85,7 @@ module i3c_target_ccc
   // We are only combinationally supplying data from persistent register state here, but we are
   // doing this for a set of Virtual Targets so perform the decoding once to determine the source
   // of the read data that we must provide.
-  typedef enum {
+  typedef enum logic [5:0] {
     RData_MWL0,
     RData_MWL1,
     RData_MRL0,

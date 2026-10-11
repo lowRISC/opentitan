@@ -108,14 +108,14 @@ package i3c_fifo_pkg;
   // Convenience function that clamps the supplied quantity to the specified number of bits for
   // presentation via an HCI register field. This is just an aid to software in the event that
   // FIFO properties have been misconfigured; it should lead to better behavior than wrapping would.
-  function automatic bit [DepthW:0] fifo_lvl_clamp(input logic [DepthW:0] entries,
-                                                   input int n);
+  function automatic logic [DepthW:0] fifo_lvl_clamp(input logic [DepthW:0] entries,
+                                                     input logic [31:0] n);
     return (DepthW + 1)'(|(entries >> n) ? (('b1 << n) - 'b1) : entries);
   endfunction
 
   // Convenience function that returns the size of the FIFO in DWORD entries; this is not supplied
   // in the register configuration but is instead derived from the programmed min/max bounds.
-  function automatic bit [DepthW:0] fifo_size(input fifo_config_t cfg);
+  function automatic logic [DepthW:0] fifo_size(input fifo_config_t cfg);
     return (cfg.max_addr - cfg.min_addr) + 'b1;
   endfunction
 
