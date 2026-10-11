@@ -515,4 +515,17 @@ module i3c_controller
   if ($bits(i3c_xfer_rsp_t) != 32)             $fatal(1, "Response Descriptor has incorrect size.");
   if ($bits(i3c_ibi_status_t) != 32)           $fatal(1, "IBI Descriptor has incorrect size.");
 
+  // Signals that the logic does not use (yet).
+  // - the DAT cache holds only the DAT fields that the Controller logic needs.
+  logic unused_sw_dat_entry;
+  assign unused_sw_dat_entry = ^{sw_dat_entry.autocmd_hdr_code, sw_dat_entry.autocmd_mask,
+                                 sw_dat_entry.autocmd_value, sw_dat_entry.dev_nack_retry_cnt,
+                                 sw_dat_entry.device, sw_dat_entry.dynamic_address[23],
+                                 sw_dat_entry.reserved0, sw_dat_entry.reserved1,
+                                 sw_dat_entry.reserved2, sw_dat_entry.ring_id,
+                                 sw_dat_entry.static_address, sw_dat_entry.ts};
+  // - the thresholds compare against levels in units of two DWORDs.
+  logic unused_lvl_lsbs;
+  assign unused_lvl_lsbs = ^{cmd_desc_ravail_i[0], rxbuf_wused_i[0], txbuf_ravail_i[0]};
+
 endmodule
