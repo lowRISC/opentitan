@@ -9,6 +9,9 @@ filesets:
     depend:
       - lowrisc:virtual_constants:top_pkg
       - lowrisc:prim:all
+      - lowrisc:prim:clock_buf
+      - lowrisc:prim:edge_detector
+      - lowrisc:prim:onehot
       - lowrisc:prim:ram_1p_pkg
       - lowrisc:prim:ram_1p_adv
       - lowrisc:ip:tlul
