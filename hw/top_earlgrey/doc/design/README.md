@@ -9,7 +9,7 @@ For an overview, refer to the [OpenTitan Earl Grey Chip Datasheet](../datasheet.
 
 # Theory of Operations
 
-The netlist `chip_earlgrey_asic` contains the features listed above and is intended for ASIC synthesis, whereas the netlist `chip_earlgrey_cw310` provides an emulation environment for the `cw310` FPGA board, analogous for the `cw340` board. Finally, `chip_earlgrey_verilator` is intended for elaboration and simulation with Verilator.
+The netlist `chip_earlgrey_asic` contains the features listed in the [datasheet](../datasheet.md) and is intended for ASIC synthesis, whereas the netlist `chip_earlgrey_cw340` provides an emulation environment for the `cw340` FPGA board. Finally, `chip_earlgrey_verilator` is intended for elaboration and simulation with Verilator.
 The code for Ibex is developed in its own [lowRISC repo](https://github.com/lowrisc/ibex), and is [*vendored in*](../../../../doc/contributing/hw/vendor.md) to this repository.
 Surrounding Ibex is a suite of *Comportable* peripherals that follow the [Comportability Guidelines](../../../../doc/contributing/hw/comportability/README.md) for lowRISC peripheral IP.
 Each of these IP has its own specification.
@@ -123,12 +123,15 @@ See the details in the [rv_plic specification](../../ip_autogen/rv_plic/README.m
 
 #### Performance
 
-Ibex currently achieves a [CoreMark](https://www.eembc.org/coremark/) per MHz of 1.93 on Earl Grey.
+The following numbers were measured on the first generation of Earl Grey, whose non-volatile memory was embedded flash.
+They have not yet been re-measured on Earl Grey 2.
+
+Ibex achieved a [CoreMark](https://www.eembc.org/coremark/) per MHz of 1.93 on Earl Grey.
 For a detailed analysis of where this number comes from, please refer to this [GitHub issue](https://github.com/lowRISC/opentitan/issues/17370#issuecomment-1453324348).
-In short, by [moving read-only data from Flash into SRAM](https://github.com/lowRISC/opentitan/issues/17370#issuecomment-1446719338) and by playing with optimization flags, A CoreMark/MHz of 2.15 is achievable.
+In short, by [moving read-only data from non-volatile memory into SRAM](https://github.com/lowRISC/opentitan/issues/17370#issuecomment-1446719338) and by playing with optimization flags, a CoreMark/MHz of 2.15 is achievable.
 This number is close to the maximum achievable number for Ibex with an ideal single-cycle access memory system when using the LLVM compiler.
 
-When switching to GCC and combining the Ibex configuration used in OpenTitan Earl Grey with an idealistic single-cycle access Flash memory, a CoreMark/MHz number of 3.07 is achievable.
+When switching to GCC and combining the Ibex configuration used in OpenTitan Earl Grey with an idealistic single-cycle access non-volatile memory, a CoreMark/MHz number of 3.07 is achievable.
 To achieve this performance, CoreMark can be compiled with GCC 9.2.0 and with the following flags: `-march=rv32imc -mabi=ilp32 -mcmodel=medany -mtune=sifive-3-series -O3 -falign-functions=16 -funroll-all-loops -finline-functions -falign-jumps=4 -mstrict-align` .
 
 The Ibex documentation has more details on the current pipeline operation, including stall behaviour for each instruction in the [Pipeline Details](https://ibex-core.readthedocs.io/en/latest/03_reference/pipeline_details.html) section.
@@ -489,7 +492,7 @@ It should first be **NOTED** that there is some subtlety on the notion of hierar
 There is automation to create the power domain wrapper modules `earlgrey_pd_main` and `earlgrey_pd_aon` as indicated in sections of this specification that follow. On top of those, there is the `top_earlgrey` wrapper which instantiates both wrappers, establishes the inter-power-domain connections, and exposes all signals that are required further up the hierarchy at its port.
 
 **On top** of `top_earlgrey`, highest up in the design hierarchy, are chip level instantiation targets directed towards a particular use case.
-This includes `chip_earlgrey_cw3x0` for use in FPGA, `chip_earlgrey_asic` for use in silicon implementations, and finally `chip_earlgrey_verilator`.
+This includes `chip_earlgrey_cw340` for use in FPGA, `chip_earlgrey_asic` for use in silicon implementations, and finally `chip_earlgrey_verilator`.
 
 These chip level targets will include the actual pads as needed by the target platform, and further target-specific circuitry (such as e.g., clock generators for the FPGA targets or a hard macro for the USB differential receiver on the ASIC target).
 Due to these target-specific requirements, the chip levels may substantially differ from each other.
@@ -497,10 +500,16 @@ Where appropriate, including the block diagram below, notes will be provided whe
 
 ## FPGA Platform
 
-**TODO: This section needs to be updated once pin updates are complete.**
+The FPGA platform is the `chip_earlgrey_cw340` target for the ChipWhisperer CW340 board.
+Its pin assignment is listed in the [CW340 pinout table](../../ip_autogen/pinmux/doc/pinout_cw340.md).
+The SPI device uses dedicated pads, as on the ASIC target.
 
-In the FPGA platform, the logic for the JTAG and the SPI device are multiplexed within `chip_earlgrey_cw3x0`.
-This is done for ease of programming by the external host.
+`chip_earlgrey_cw340` contains an FPGA-only memory backdoor loader (`bkdr_loader`, enabled by the `BkdrLoaderEn` parameter).
+It sits between the JTAG and reset pads and `top_earlgrey`.
+It becomes active after reset if both TAP strap pins are high.
+While active, it keeps `top_earlgrey` in reset and lets the external host preload the non-volatile and volatile memories over JTAG.
+Once deactivated, it forwards the JTAG signals to `top_earlgrey` and releases the reset.
+This loader does not exist on the ASIC target.
 
 ## References
 1. [Schiavone, Pasquale Davide, et al. "Slow and steady wins the race? A comparison of
