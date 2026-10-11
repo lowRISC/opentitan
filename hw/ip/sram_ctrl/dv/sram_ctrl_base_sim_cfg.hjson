@@ -41,8 +41,8 @@
                 "{proj_root}/hw/dv/tools/dvsim/tests/stress_tests.hjson"
                 ]
 
-  // A manually generated vRefine file with exclusions that hold for
-  // both variants (main and ret).
+  // A manually generated vRefine file with exclusions that hold for all
+  // variants.
   xcelium_cov_refine_files: ["{proj_root}/hw/ip/sram_ctrl/dv/cov/manual.vRefine"]
 
   en_build_modes: ["{tool}_memutil_dpi_scrambled_build_opts"]
