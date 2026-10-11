@@ -37,3 +37,8 @@ waive -rules {RESET_USE} -location {i3c_core.sv} \
 waive -rules {RESET_USE} -location {i3c_dxt.sv} \
       -regexp {'rst_ni' is connected to 'prim_ram_1p' port 'rst_ni', and used as an asynchronous reset or set} \
       -comment "rst_ni is the asynchronous reset of prim_ram_1p. It is unused in the generic implementation, but other implementations may use it."
+
+## Parameters
+waive -rules {PARAM_NOT_USED} -location {i3c_controller.sv i3c_controller_trx.sv} \
+      -regexp {Parameter '(PrimaryCtrl|SecondaryCtrl)' not used} \
+      -comment "The Controller logic does not yet distinguish between the Primary and the Secondary Controller role (see #31308)."
