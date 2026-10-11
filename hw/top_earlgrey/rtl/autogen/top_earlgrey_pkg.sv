@@ -477,7 +477,7 @@ package top_earlgrey_pkg;
   /**
    * Memory size for ram memory on sram_ctrl_ret in top earlgrey.
    */
-  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_RAM_SIZE_BYTES = 32'h1000;
+  parameter int unsigned TOP_EARLGREY_SRAM_CTRL_RET_RAM_SIZE_BYTES = 32'h2000;
 
   /**
    * Memory base address for host memory on rram_ctrl in top earlgrey.

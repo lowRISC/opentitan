@@ -50,7 +50,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_MASK_SENSOR_CTRL         = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_ALERT_HANDLER       = 32'h 000007ff;
   localparam logic [31:0] ADDR_MASK_SRAM_CTRL_RET__REGS = 32'h 0000003f;
-  localparam logic [31:0] ADDR_MASK_SRAM_CTRL_RET__RAM  = 32'h 00000fff;
+  localparam logic [31:0] ADDR_MASK_SRAM_CTRL_RET__RAM  = 32'h 00001fff;
   localparam logic [31:0] ADDR_MASK_AON_TIMER           = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_SYSRST_CTRL         = 32'h 000000ff;
   localparam logic [31:0] ADDR_MASK_ADC_CTRL            = 32'h 0000007f;

@@ -669,7 +669,7 @@ pub const SRAM_CTRL_META_REGS_SIZE_BYTES: usize = 0x40;
 pub const SRAM_CTRL_RET_RAM_BASE_ADDR: usize = 0x40600000;
 
 /// Memory size for ram memory on sram_ctrl_ret in top earlgrey.
-pub const SRAM_CTRL_RET_RAM_SIZE_BYTES: usize = 0x1000;
+pub const SRAM_CTRL_RET_RAM_SIZE_BYTES: usize = 0x2000;
 
 /// Memory base address for host memory on rram_ctrl in top earlgrey.
 pub const RRAM_CTRL_HOST_BASE_ADDR: usize = 0x30000000;

@@ -25,7 +25,7 @@ module earlgrey_pd_aon #(
   parameter int unsigned AstUsbCalibWidth = 20,
   parameter int unsigned AstPad2AstInWidth = 8,
   // parameters for sram_ctrl_ret
-  parameter int SramCtrlRetInstSize = 4096,
+  parameter int SramCtrlRetInstSize = 8192,
   parameter int SramCtrlRetNumRamInst = 1,
   parameter bit SramCtrlRetInstrExec = 0,
   parameter int SramCtrlRetNumPrinceRoundsHalf = 3,
@@ -782,7 +782,7 @@ module earlgrey_pd_aon #(
     .RndCnstSramNonce(RndCnstSramCtrlRetSramNonce),
     .RndCnstLfsrSeed(RndCnstSramCtrlRetLfsrSeed),
     .RndCnstLfsrPerm(RndCnstSramCtrlRetLfsrPerm),
-    .MemSizeRam(4096),
+    .MemSizeRam(8192),
     .InstSize(SramCtrlRetInstSize),
     .NumRamInst(SramCtrlRetNumRamInst),
     .InstrExec(SramCtrlRetInstrExec),

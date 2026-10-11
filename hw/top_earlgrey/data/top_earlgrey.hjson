@@ -799,7 +799,7 @@
       domain: "Aon",
       param_decl: {
         InstrExec: "0",
-        InstSize: "4096",
+        InstSize: "8192",
       }
       base_addrs: {
         regs: {hart: "0x40500000"},
@@ -814,7 +814,7 @@
           data_intg_passthru: "true",
           exec:       "True",
           byte_write: "True",
-          size:     "0x1000"
+          size:     "0x2000"
         }
       }
     },

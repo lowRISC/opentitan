@@ -867,7 +867,7 @@ extern "C" {
 /**
  * Memory size for ram memory on sram_ctrl_ret in top earlgrey.
  */
-#define TOP_EARLGREY_SRAM_CTRL_RET_RAM_SIZE_BYTES 0x1000u
+#define TOP_EARLGREY_SRAM_CTRL_RET_RAM_SIZE_BYTES 0x2000u
 
 /**
  * Memory base address for host memory on rram_ctrl in top earlgrey.
