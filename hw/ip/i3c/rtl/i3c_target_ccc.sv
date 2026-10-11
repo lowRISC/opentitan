@@ -566,4 +566,9 @@ module i3c_target_ccc
                                (rdata_src == RData_TGTSTAT1);
   assign protocol_error_d_o  = 1'b0;  // Only ever clears from here.
 
+  // Signals that the logic does not use (yet).
+  logic unused_ccc_inputs;
+  assign unused_ccc_inputs = ^{enable_i, r_i[TargCR_Status][7:1], r_i[TargCR_Targets][7:2],
+                               ccc_req_i.re};
+
 endmodule

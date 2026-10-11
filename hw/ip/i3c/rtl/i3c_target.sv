@@ -679,4 +679,10 @@ module i3c_target
 
   `ASSERT_INIT(NumTargetsLegal, NumTargets <= MaxTargets)
 
+  // Signals that the logic does not use (yet).
+  // - TODO(#31035): HDR Exit and HDR Restart are not handled yet.
+  // - TODO: `rstdet_rsp_sync` and `buf_wused_i` are not used yet (see above).
+  logic unused_targ_inputs;
+  assign unused_targ_inputs = ^{hdr_exit_det_i, hdr_restart_det_i, buf_wused_i, rstdet_rsp_sync};
+
 endmodule
