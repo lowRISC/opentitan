@@ -20,3 +20,20 @@ waive -rules {CLOCK_USE INV_CLOCK} -location {i3c_patt_detector.sv} \
 waive -rules {CLOCK_USE INV_CLOCK} -location {i3c_target_trx.sv} \
       -regexp {'scl_i' is (used for some other purpose, and|inverted, used) as clock} \
       -comment "SDA edges sample SCL to detect START, Repeated START and STOP conditions."
+
+## Asynchronous resets
+waive -rules {RESET_DRIVER} -location {i3c_core.sv} \
+      -regexp {'targ_trx_rst_n' is driven by instance 'u_targ_rst_src' of module 'prim_flop'} \
+      -comment "A flop in the clk_i domain drives the reset of the Target transceiver, so that the reset is free of glitches. The transceiver is clocked by SCL and SDA and has no free-running clock."
+waive -rules {RESET_USE} -location {i3c_core.sv} \
+      -regexp {'targ_trx_rst_n' is used for some other purpose, and as asynchronous reset} \
+      -comment "The Target transceiver reset is also reported to software and restarts the Bus Available timer."
+waive -rules {RESET_DRIVER} -location {i3c_patt_detector.sv} \
+      -regexp {'(scl_rst_n|restart_rst_n)' is driven here, and used as an asynchronous reset} \
+      -comment "The HDR Exit and Restart Pattern Detector has asynchronous resets derived from SCL and the enables, as in the example design of the I3C Basic specification (section 6.1.2.1)."
+waive -rules {RESET_USE} -location {i3c_core.sv} \
+      -regexp {'rst_ni' is connected to 'i3c_patt_detector' port 'rst_ni', and used as an asynchronous reset} \
+      -comment "The HDR Exit and Restart Pattern Detector combines rst_ni into its asynchronous resets."
+waive -rules {RESET_USE} -location {i3c_dxt.sv} \
+      -regexp {'rst_ni' is connected to 'prim_ram_1p' port 'rst_ni', and used as an asynchronous reset or set} \
+      -comment "rst_ni is the asynchronous reset of prim_ram_1p. It is unused in the generic implementation, but other implementations may use it."
