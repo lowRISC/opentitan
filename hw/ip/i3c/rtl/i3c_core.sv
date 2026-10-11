@@ -169,7 +169,7 @@ module i3c_core
   // Software reset for the Target logic.
   // - if operating as Standby Controller, and thus sharing the Target-side logic with all other
   //   Virtual Targets
-  wire targ_sw_reset = reg2hw_i.targ_control.reset.qe & reg2hw_i.targ_control.reset.q;
+  wire targ_sw_reset = reg2hw_i.targ_control.sw_reset.qe & reg2hw_i.targ_control.sw_reset.q;
   assign tti_soft_rst_o = targ_sw_reset;
 
   // Software reset for the Standby Controller registers, but note that it shares its logic with all
@@ -773,8 +773,8 @@ module i3c_core
 
   // The Asynchronous Event Queue also has a queue-specific reset under software control.
   logic async_evt_rst;
-  assign async_evt_rst = reg2hw_i.targ_async_evt_control.reset.qe
-                       & reg2hw_i.targ_async_evt_control.reset.q;
+  assign async_evt_rst = reg2hw_i.targ_async_evt_control.queue_reset.qe
+                       & reg2hw_i.targ_async_evt_control.queue_reset.q;
 
   // TODO(#31035): This driver should be in `i3c_target`.
   assign hdr_restart_det_en = targ_ddr_mode;
@@ -1061,7 +1061,7 @@ module i3c_core
   // - there is also a global reset (`BUFFER_CTRL.CLEAR`) for software use _when the IP block is
   //   disabled_.
   // - both the HCI and the TTI require that their associated FIFOs be cleared when the software
-  //   reset is asserted (`RESET_CONTROL.SOFT_RST` and `TARG_CONTROL.RESET`).
+  //   reset is asserted (`RESET_CONTROL.SOFT_RST` and `TARG_CONTROL.SW_RESET`).
   wire buffer_clear  = (reg2hw_i.buffer_ctrl.clear.qe & reg2hw_i.buffer_ctrl.clear.q) | enabling;
   wire hci_buf_clear = ctrl_sw_reset | buffer_clear;
   wire tti_buf_clear = targ_sw_reset | buffer_clear;

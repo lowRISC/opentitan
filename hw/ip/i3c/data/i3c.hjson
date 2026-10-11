@@ -359,7 +359,7 @@
       reinit: "tti_sw_reinit_i",
       fields: [
         { bits:     "31",
-          name:     "RESET",
+          name:     "SW_RESET",
           desc:     '''Software reset of Target logic.
 
                     Writing '1' to this field will reset all of the Target-side logic and registers.
@@ -4103,7 +4103,7 @@
       reinit:   "tti_sw_reinit_i",
       fields: [
         { bits:     "31",
-          name:     "RESET",
+          name:     "QUEUE_RESET",
           desc:     "Write 1 to reset the Asynchronous Event Queue.",
           swaccess: "rw1c",
           resval:   "0",

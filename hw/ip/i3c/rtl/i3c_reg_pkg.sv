@@ -83,7 +83,7 @@ package i3c_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } reset;
+    } sw_reset;
     struct packed {
       logic        q;
       logic        qe;
@@ -1320,7 +1320,7 @@ package i3c_reg_pkg;
     struct packed {
       logic        q;
       logic        qe;
-    } reset;
+    } queue_reset;
     struct packed {
       logic        q;
       logic        qe;

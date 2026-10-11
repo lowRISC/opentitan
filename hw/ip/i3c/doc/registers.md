@@ -338,12 +338,12 @@ Target Control register.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "STBY_CR_SUPPORT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CRHDLY1_AS", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "CRHDLY1_SET_AS", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 25}, {"name": "HJ_REQUEST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RESET", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "STBY_CR_SUPPORT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CRHDLY1_AS", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "CRHDLY1_SET_AS", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 25}, {"name": "HJ_REQUEST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "SW_RESET", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                              |
 |:------:|:------:|:-------:|:--------------------------------------------------|
-|   31   |   wo   |   0x0   | [RESET](#targ_control--reset)                     |
+|   31   |   wo   |   0x0   | [SW_RESET](#targ_control--sw_reset)               |
 |   30   |   rw   |   0x0   | [HJ_REQUEST](#targ_control--hj_request)           |
 |  29:5  |        |         | Reserved                                          |
 |   4    |   rw   |   0x0   | [CRHDLY1_SET_AS](#targ_control--crhdly1_set_as)   |
@@ -351,7 +351,7 @@ Target Control register.
 |   1    |   rw   |   0x1   | [STBY_CR_SUPPORT](#targ_control--stby_cr_support) |
 |   0    |   rw   |   0x0   | [EN](#targ_control--en)                           |
 
-### TARG_CONTROL . RESET
+### TARG_CONTROL . SW_RESET
 Software reset of Target logic.
 
 Writing '1' to this field will reset all of the Target-side logic and registers.
@@ -2921,12 +2921,12 @@ Target Asynchronous Event Queue Control.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "BCST_CCC", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "DIR_SET_CCC", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "DIR_GET_CCC", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX_NOTIFY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_NOTIFY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX_SUSPEND", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_SUSPEND", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "BUS_EVENTS", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 23}, {"name": "RESET", "bits": 1, "attr": ["rw1c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"name": "BCST_CCC", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "DIR_SET_CCC", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "DIR_GET_CCC", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX_NOTIFY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_NOTIFY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX_SUSPEND", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_SUSPEND", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "BUS_EVENTS", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 23}, {"name": "QUEUE_RESET", "bits": 1, "attr": ["rw1c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name        | Description                                          |
 |:------:|:------:|:-------:|:------------|:-----------------------------------------------------|
-|   31   |  rw1c  |   0x0   | RESET       | Write 1 to reset the Asynchronous Event Queue.       |
+|   31   |  rw1c  |   0x0   | QUEUE_RESET | Write 1 to reset the Asynchronous Event Queue.       |
 |  30:8  |        |         |             | Reserved                                             |
 |   7    |   rw   |   0x0   | BUS_EVENTS  | Report I3C Bus Events.                               |
 |   6    |   rw   |   0x0   | IBI_SUSPEND | Report Suspension of In-Band Interrupt transmission. |
