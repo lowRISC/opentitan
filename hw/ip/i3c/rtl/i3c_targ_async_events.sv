@@ -341,4 +341,12 @@ module i3c_targ_async_events
   // TTI Async Event union size check.
   `ASSERT_INIT(TtiAsyncEvtWidthIsDataWidth_A, $bits(i3c_tti_async_event_t) == DataWidth)
 
+  // Signals that the logic does not use (yet).
+  // - TODO(#31337): reporting of CCC activity is not specified completely yet.
+  logic unused_async_inputs;
+  assign unused_async_inputs = ^{enable_i, ccc_req_i.is_group, ccc_req_i.re, ccc_req_i.rnw,
+                                 ccc_req_i.targ_id, r_i[TargCR_Status][7:1],
+                                 r_i[TargCR_Targets][7:2], r_i[TargCR_WData0],
+                                 r_i[TargCR_WData1], r_i[TargCR_WData2], ccc_address};
+
 endmodule

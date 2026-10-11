@@ -1180,4 +1180,31 @@ module i3c_target_trx
     end
   end
 
+  // Signals that the logic does not use (yet).
+  // - TODO(#31304): blocked addresses are not checked yet.
+  logic unused_blocked;
+  always_comb begin
+    unused_blocked = 1'b0;
+    for (int unsigned b = 0; b < NumBlocked; b++) begin
+      unused_blocked ^= ^{addr_blocked_i[b], mask_blocked_i[b]};
+    end
+  end
+  // - early termination and NACK of writes are not implemented yet, and only the LSB of `rlast`
+  //   is used.
+  logic unused_targ_dev;
+  always_comb begin
+    unused_targ_dev = 1'b0;
+    for (int unsigned t = 0; t < NumTargets; t++) begin
+      unused_targ_dev ^= ^{targ_dev_i[t].en_early_crc, targ_dev_i[t].en_write_nack,
+                           targ_dev_i[t].en_write_term, trx_dreq_i[t].rlast[1],
+                           trx_ctreq_i.rlast[t][1]};
+    end
+  end
+  // - TODO(#31035): HDR Restart is not handled yet.
+  // - TODO(#31335): scan mode is not supported yet.
+  logic unused_trx_signals;
+  assign unused_trx_signals = ^{trx_areq_i.targ_id, trx_areq_i.rdata_nq, hdr_restart_det_i,
+                                scanmode_i, cmd_word.cmd_code, cmd_word.para, capture_all,
+                                trans.defb, trans.has_defb, prepen_bit, sda_mismatch, rx_sample_q};
+
 endmodule

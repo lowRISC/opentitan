@@ -1315,10 +1315,47 @@ module i3c_target_fsm
     assign ext_present_o = 1'b0;
     assign ext_info_o    = 'b0;
     assign ext_hw2reg_o  = 'b0;
+    logic unused_ext_reg2hw;
+    assign unused_ext_reg2hw = ^ext_reg2hw_i;
   end
 
   // TODO(#31333): Dummy drivers for now.
   assign transfer_err_o = 1'b0;
   assign transfer_aborted_o = 1'b0;
+
+  // Signals that the logic does not use (yet).
+  // - TODO(#31304): blocked addresses are not checked yet.
+  logic unused_blocked;
+  always_comb begin
+    unused_blocked = 1'b0;
+    for (int unsigned b = 0; b < NumBlocked; b++) begin
+      unused_blocked ^= ^{addr_blocked_i[b], mask_blocked_i[b]};
+    end
+  end
+  // - Target device configuration, information and Tx Descriptor queue levels that the
+  //   transceiver uses instead or that are not used yet, and Pending Read Notification fields that
+  //   are not used yet.
+  logic unused_targ_dev;
+  always_comb begin
+    unused_targ_dev = 1'b0;
+    for (int unsigned t = 0; t < NumTargets; t++) begin
+      unused_targ_dev ^= ^{targ_dev_i[t], targ_info[t], tx_desc[t].prn.reserved,
+                           tx_desc[t].prn.tid, tx_desc[t].prn.wroc, tx_desc_rused_i[t],
+                           tx_desc_ravail_i[t]};
+    end
+  end
+  // - inputs that are not used yet (see the TODOs at their declarations).
+  logic unused_fsm_inputs;
+  assign unused_fsm_inputs = ^{rstact_i, bus_avail_i, rx_desc_wused_i, rx_desc_wfull_i,
+                               ibi_rused_i, buf_wavail_i, stby_bcst_wready_i};
+  // - descriptor fields, grants, DAA state and the Virtual Target Detect bit that are not used yet.
+  logic unused_fsm_signals;
+  assign unused_fsm_signals = ^{ccc_rsp.inc_idx, ccc_rsp.rst_idx, arb_gnt_q[1],
+                                tx_desc_curr.tx.data_length, tx_desc_curr.tx.notify,
+                                tx_desc_curr.tx.reserved, tx_desc_curr.tx.wroc,
+                                ibi_desc.data_length, ibi_desc.mdb, ibi_desc.reserved,
+                                ibi_desc.wroc, daa_targ_valid, daa_targ_id, ibi_unit_data,
+                                ibi_stat_desc.reserved, ibi_stat_desc.tid, ibi_stat_desc.wroc,
+                                ibi_arb_winner, virt_targ_det};
 
 endmodule
