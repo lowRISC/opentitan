@@ -45,7 +45,7 @@ module i3c_targ_start_req
   // arbitration has yet been lost.
 
   logic scl_rise, scl_fall;
-  prim_edge_detector #(.Width(1), .ResetValue('1), .EnSync(1'b0)) u_scl_edge (
+  prim_edge_detector #(.Width(1), .ResetValue(1'b1), .EnSync(1'b0)) u_scl_edge (
     .clk_i              (clk_i),
     .rst_ni             (rst_ni),
     .d_i                (scl_i),

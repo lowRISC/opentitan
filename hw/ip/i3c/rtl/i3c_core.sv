@@ -232,7 +232,7 @@ module i3c_core
   // monitoring traffic.
   assign hw2reg_o.targ_status.connected.d = targ_trx_rst_n & inbuf_enable;
   // Report the number of Targets supported, because any software driver will need this information.
-  assign hw2reg_o.targ_status.num_targets.d = (Target | SecondaryCtrl) ? 2'(NumTargets) : 2'b00;
+  assign hw2reg_o.targ_status.num_targets.d = (Target | SecondaryCtrl) ? 3'(NumTargets) : 3'b000;
 
   // We measure tAVAL from the most recently bus active _and_ the most recent transceiver reset.
   assign targ_rst_bus_avail = targ_bus_active | !targ_trx_rst_n;
@@ -670,13 +670,14 @@ module i3c_core
   logic [NumTargets-1:0] targ_suspend_tx;
   assign hw2reg_o.targ_pio_control.suspended.de = |targ_suspend_tx;
   assign hw2reg_o.targ_pio_control.suspended.d  = reg2hw_i.targ_pio_control.suspended.q
-                                                | targ_suspend_tx;
+                                                | MaxTargets'(targ_suspend_tx);
   // Suspend IBI Transmission from target; hardware only ever sets the 'suspended' bit.
   assign hw2reg_o.targ_pio_control.ibi_suspended.d = 1'b1;
   // Abort clearing.
   logic [NumTargets-1:0] targ_abort_clr;
   assign hw2reg_o.targ_pio_control.abort.de = |targ_abort_clr;
-  assign hw2reg_o.targ_pio_control.abort.d  = reg2hw_i.targ_pio_control.abort.q & ~targ_abort_clr;
+  assign hw2reg_o.targ_pio_control.abort.d  = reg2hw_i.targ_pio_control.abort.q
+                                            & ~MaxTargets'(targ_abort_clr);
   assign hw2reg_o.targ_pio_control.ibi_abort.d = 1'b0;  // Hardware only ever clears the 'abort'.
 
   // Shared configuration/status for all Virtual Targets.
@@ -1732,7 +1733,10 @@ module i3c_core
 
   // General Host Controller interrupts.
   // TODO(#31334): Check interrupt types.
-  i3c_intr #(.Width($bits(i3c_hc_intr_t)), .EventType('1)) u_hc_intr (
+  i3c_intr #(
+    .Width    ($bits(i3c_hc_intr_t)),
+    .EventType({$bits(i3c_hc_intr_t){1'b1}})
+  ) u_hc_intr (
     .event_i    (hc_interrupts),
 
     .status_en_i({reg2hw_i.intr_status_enable.sched_cmd_missed_tick_stat_en.q,
@@ -1831,7 +1835,10 @@ module i3c_core
 
   // Secondary Controller interrupts.
   // TODO(#31334): Check interrupt types.
-  i3c_intr #(.Width($bits(i3c_stby_cr_intr_t)), .EventType('1)) u_stby_cr_intr (
+  i3c_intr #(
+    .Width    ($bits(i3c_stby_cr_intr_t)),
+    .EventType({$bits(i3c_stby_cr_intr_t){1'b1}})
+  ) u_stby_cr_intr (
     .event_i    (stby_cr_interrupts),
 
     .status_en_i('1),  // No INTR_STATUS_ENABLE for these interrupts.
@@ -2054,7 +2061,7 @@ module i3c_core
   // HCI information fields.
   // - `BASE` is at offset 'h100 within the I3C block register space.
   // - offsets are specified relative to that base.
-  localparam bit [11:0] BASE_OFFSET = I3C_HCI_VERSION_OFFSET;
+  localparam logic [BlockAw-1:0] BASE_OFFSET = I3C_HCI_VERSION_OFFSET;
   assign hw2reg_o.hci_version.d = 'h120;
   // Controller Device Address.
   // - as the Active Controller this may be set by software before Controller Role handoff.
@@ -2083,11 +2090,11 @@ module i3c_core
   assign hw2reg_o.pio_section_offset.d              = 16'(I3C_HCI_PORTS_OFFSET - BASE_OFFSET);
   assign hw2reg_o.dat_section_offset.entry_size.d   = 'h0;
   assign hw2reg_o.dat_section_offset.table_size.d   = 7'(NumDATEntries);
-  assign hw2reg_o.dat_section_offset.table_offset.d = 16'(I3C_DAT_OFFSET - BASE_OFFSET);
+  assign hw2reg_o.dat_section_offset.table_offset.d = 12'(I3C_DAT_OFFSET - BASE_OFFSET);
   assign hw2reg_o.dct_section_offset.entry_size.d   = 'h0;
   assign hw2reg_o.dct_section_offset.table_index.d  = dct_idx;
   assign hw2reg_o.dct_section_offset.table_size.d   = 7'(NumDCTEntries);
-  assign hw2reg_o.dct_section_offset.table_offset.d = 16'(I3C_DCT_OFFSET - BASE_OFFSET);
+  assign hw2reg_o.dct_section_offset.table_offset.d = 12'(I3C_DCT_OFFSET - BASE_OFFSET);
   assign hw2reg_o.ring_headers_section_offset.d     = '0;
   // The start of the Extended Capabilities linked-list; we know that Hardware Identification is
   // the first entry in the list.
@@ -2228,7 +2235,7 @@ module i3c_core
     assign hw2reg_o.targ_group[grp].group_addr.de = targ_grp_addr_de[grp];
     assign hw2reg_o.targ_group[grp].group_addr.d  = targ_grp_addr_d[grp];
     assign hw2reg_o.targ_group[grp].targets.de    = targ_grp_targ_de[grp];
-    assign hw2reg_o.targ_group[grp].targets.d     = targ_grp_targ_d[grp];
+    assign hw2reg_o.targ_group[grp].targets.d     = MaxTargets'(targ_grp_targ_d[grp]);
   end
 
   assign hw2reg_o.reset_det_status.active.de     = 1'b1;

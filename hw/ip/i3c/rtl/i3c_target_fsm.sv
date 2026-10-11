@@ -344,7 +344,7 @@ module i3c_target_fsm
     // - At least as many DWORDs in buffer as dictated in descriptor, or
     // - At least as many DWORDs in buffer as dictated by tx threshold (threshold is power-of-two)
     assign tx_start_thld       = reg2hw_i.targ_tx_thld_ctrl[t].tx_start_thld.q;
-    assign tx_desc_len_reached = {buf_rused_i[t], 2'b00} >= tx_desc[t].tx.data_length;
+    assign tx_desc_len_reached = 32'({buf_rused_i[t], 2'b00}) >= 32'(tx_desc[t].tx.data_length);
     assign tx_thld_reached     = |(buf_rused_i[t][FIFODepthW:1] >> tx_start_thld);
 
     assign tx_start = (tx_desc_len_reached || tx_thld_reached) && !tx_suspended;
@@ -644,7 +644,8 @@ module i3c_target_fsm
           // Set the initial set of Targets involved in this CCC.
           // - note that a Broadcast CCC affects only the responsive targets, and the transceiver
           //   has already determined this for us.
-          reg_state[TargCR_Targets] <= broadcast_ccc(ccc_rsp.reg_wdata) ? trx_rxd_i.targ_set : 'b0;
+          reg_state[TargCR_Targets] <= broadcast_ccc(ccc_rsp.reg_wdata) ?
+                                       TargCRWidth'(trx_rxd_i.targ_set) : '0;
           // Declare 'no DEFB' until it is received.
           reg_state[TargCR_Status][TargStat_HasDEFB] <= 1'b0;
         end
@@ -823,8 +824,9 @@ module i3c_target_fsm
     // itself is reported via `rx_desc_ovl_o` and must not be attributed to this transfer, which
     // is a later one than the transfer whose descriptor was lost.
     rx_desc_d.status      = rx_flood_q ? TTIRxStatus_RxOverflow : trx_rxd_i.status;
-    rx_desc_d.targets     = (trx_rxd_i.targ_id < NumTargets) ? NumTargets'('b1 << trx_rxd_i.targ_id)
-                                                             : NumTargets'(trx_rxd_i.targ_set);
+    rx_desc_d.targets     = MaxTargets'((trx_rxd_i.targ_id < NumTargets) ?
+                                        NumTargets'('b1 << trx_rxd_i.targ_id) :
+                                        trx_rxd_i.targ_set);
     rx_desc_d.address     = trx_rxd_i.addr;
     rx_desc_d.is_group    = trx_rxd_i.is_group;
     rx_desc_d.data_length = rx_data_len;
@@ -1214,7 +1216,8 @@ module i3c_target_fsm
   logic [NumTargets-1:0] targs_curr;
   logic [NumTargets-1:0] targs_set;
   logic [NumTargets-1:0] targs_rst;
-  assign targs_curr = {NumTargets{~grp_add}} & reg2hw_i.targ_group[grp_idx].targets.q;
+  assign targs_curr = {NumTargets{~grp_add}} &
+                      reg2hw_i.targ_group[grp_idx].targets.q[NumTargets-1:0];
   assign targs_set  = {NumTargets{ grp_set}} & grp_targets;
   assign targs_rst  = {NumTargets{ grp_rst}} & grp_targets;
 

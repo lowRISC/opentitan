@@ -14,11 +14,11 @@ module i3c_queues
   // Data width, in bits.
   parameter int unsigned DataWidth = 32,
   // Indicates, for each queue in turn, whether writing by software is supported.
-  parameter bit [NumQueues-1:0] SupportTx = '1,
+  parameter bit [NumQueues-1:0] SupportTx = {NumQueues{1'b1}},
   // Indicates, for each queue in turn, whether reading by software is supported.
   // - most of the queues in both the HCI and the TTI are unidirectional, with the exception
   //   being `TL_XferBuf` for example, which maps to both the Tx Data buffer and the Rx Data Buffer.
-  parameter bit [NumQueues-1:0] SupportRx = '1,
+  parameter bit [NumQueues-1:0] SupportRx = {NumQueues{1'b1}},
 
   // Derived parameters.
   localparam int unsigned AddrWidth = $clog2(NumQueues)  // The number of address bits.

@@ -71,7 +71,7 @@ module i3c_controller_ccc
         // Address Assignment command using ENTDAA.
         ENTDAA: begin  // 4.3.4.2
           unique case (ccc_req_i.idx)
-            3'b010: begin
+            4'h2: begin
               // Sending the Dynamic Address must be done with Open-Drain signaling.
               ccc_rsp_o.req_dvalid = 1'b1;
               ccc_rsp_o.req_type   = CReqType_DynAddr;
@@ -82,7 +82,7 @@ module i3c_controller_ccc
                                       ccc_req_i.dat_entry.dynamic_address[23], 24'b0};
               ccc_rsp_o.inc_idx    = 1'b1;
             end
-            3'b011: begin
+            4'h3: begin
               // TODO(#31304): At this point we should be accepting/responding to ACK/NACK.
               // We must send Sr at this point, the command is continuing.
               ccc_rsp_o.done       = 1'b1;
@@ -103,7 +103,7 @@ module i3c_controller_ccc
         // Address Assignment command using SETDASA.
         SETDASA: begin  // 4.3.7.3.10
           unique case (ccc_req_i.idx)
-            3'b001: begin
+            4'h1: begin
               // TODO(#31304): At this point we should be accepting/responding to ACK/NACK.
               // We must send Sr at this point, the command is continuing.
               // return.
@@ -132,7 +132,7 @@ module i3c_controller_ccc
           // - Here we are concerned with transmitting the data payload, if any.
           unique case (ccc_req_i.idx)
             // Pass Tx buffer data to the transceiver logic.
-            3'b001:
+            4'h1:
               if (ccc_req_i.txd_valid) begin
                 ccc_rsp_o.req_dvalid = 1'b1;
                 ccc_rsp_o.req_type   = CReqType_SDRBytes;

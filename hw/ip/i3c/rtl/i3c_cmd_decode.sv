@@ -185,8 +185,8 @@ module i3c_cmd_decode
         cmd_attrs_o.defb     =  cmd_imm_o.data_byte_1;
         unique case (cmd_imm_o.dtt)
           // Data length does _not_ include the Defining Byte.
-          3'h5, 3'h6, 3'h7: cmd_attrs_o.data_len = cmd_imm_o.dtt - 3'h5;
-          default:          cmd_attrs_o.data_len = cmd_imm_o.dtt;
+          3'h5, 3'h6, 3'h7: cmd_attrs_o.data_len = 16'(cmd_imm_o.dtt - 3'h5);
+          default:          cmd_attrs_o.data_len = 16'(cmd_imm_o.dtt);
         endcase
         if (cmd_imm_o.rnw) err_o = 1'b1;  // Immediate transfers are Write only.
         // Not all Transfer mode values are valid/supported.
@@ -207,7 +207,7 @@ module i3c_cmd_decode
         // TODO(#31304). Combo Transfer Commands are declared as unsupported, and not implemented.
         cmd_attrs_o.data_len  = cmd_combo_o.data_length;
         // There are two phases to a Combo Transfer command.
-        cmd_attrs_o.reps_left = !cmd_state_i.rep_start;
+        cmd_attrs_o.reps_left = CmdRepW'(!cmd_state_i.rep_start);
         // Not all Transfer mode values are valid/supported, and zero-length transfers are invalid.
         if (!mode_supported(cmd_attrs_o.mode, cmd_attrs_o.i2c) || ~|cmd_combo_o.data_length ||
             &cmd_combo_o.dlp) begin
