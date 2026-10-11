@@ -129,7 +129,9 @@ module i3c_dat
 
   // Extract the appropriate CPU word from the DCT entry to return it.
   logic sw_dat_rdata_sel;
-  assign sw_dat_rdata_o = sw_dat_rdata_sel ? sw_dat_rdata_full[63:32] : sw_dat_rdata_full[31:0];
+  logic [1:0][31:0] sw_dat_rdata_words;
+  assign sw_dat_rdata_words = sw_dat_rdata_full;
+  assign sw_dat_rdata_o = sw_dat_rdata_words[sw_dat_rdata_sel];
 
   i3c_dat_mem_t dat_wdata_packed;
   logic [DATMemWidth-1:0] dat_rdata_raw;
