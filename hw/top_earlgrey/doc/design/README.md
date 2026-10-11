@@ -338,13 +338,20 @@ In addition to normal functionality, USB suspend / resume is supported alongside
 
 See the [USB device specification](../../../ip/usbdev/README.md) for more details.
 
-##### I2C host
+##### I2C
 
-In order to be able to command I2C devices on systems where Earl Grey will be included, I2C host functionality will be required.
-This will include standard, full, and fast mode, up to 1Mbaud.
-More details of the I2C host module will come in a later specification update.
-The pins of the I2C host will be available to connect to any of the multiplexable IO (MIO) of the Earl Grey device.
-More than one I2C host module might be instantiated in the top level.
+The chip contains three I2C peripherals (`i2c0` to `i2c2`).
+Each one can operate as an I2C controller or as an I2C target.
+They support Standard-mode (100 kbaud), Fast-mode (400 kbaud) and Fast-mode Plus (1 Mbaud).
+In controller mode, they support clock stretching and multi-controller operation with clock synchronization and bus arbitration.
+In target mode, they stretch the clock automatically and support programmable automatic ACK control.
+
+The SCL and SDA signals of each I2C peripheral can be connected to any of the multiplexable IO (MIO) of the chip via the [pinmux](../../ip_autogen/pinmux/README.md).
+The I2C peripherals drive SCL and SDA as a virtual open drain: they only pull the lines low and otherwise release them.
+A bus pulled up above the pad supply voltage needs a **BidirOd** pad with open drain enabled (see [Open drain / virtual open drain](#open-drain--virtual-open-drain)).
+Each I2C peripheral has its own reset, which software can assert through the [reset manager](../../ip_autogen/rstmgr/README.md).
+
+See the [I2C specification](../../../ip/i2c/README.md) for more details.
 
 #### Security Peripherals
 
