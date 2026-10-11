@@ -593,7 +593,7 @@ module i3c_target_trx
   logic ack_addr;
   always_comb begin
     // sda_i[0] is the RnW bit at this point.
-    case (targ_id)
+    unique case (targ_id)
       TargIDNoMatch:   ack_addr = !sda_i[0] & |targ_set;  // Group Addresses accept only Writes.
       TargIDBroadcast: ack_addr = !sda_i[0];  // Writes only.
       // TODO(#31337): We should have an indication at this point whether we are able to accept any
@@ -632,7 +632,7 @@ module i3c_target_trx
     end else if (rep_starting) begin
       state_d = State_ArbCede;
     end else begin
-      case (state_q)
+      unique case (state_q)
         // --- Address Arbitration ---
         State_ArbCont: state_d = penult_bit ? (ack_addr ? State_AckAddr : State_WaitStop)
                                             : (arb_lost ? State_ArbCede : State_ArbCont);
@@ -669,7 +669,7 @@ module i3c_target_trx
         end
         // --- Expecting an HDR-DDR Data Word or CRC word ---
         State_RxPreDDR:
-          case (ddr_pre)
+          unique case (ddr_pre)
             2'b00:   state_d = State_RxRsvdDDR;
             2'b01:   state_d = State_RxCRCDDR;
             default: state_d = State_RxDataDDR;
@@ -735,7 +735,7 @@ module i3c_target_trx
         // Capture important data because `sdr_payload` or `ddr_payload` is available, but do _not_
         // commit to a state change at this point because the parity has not been checked.
         if (penult_bit) begin
-          case (state_q)
+          unique case (state_q)
             State_ArbCont,
             State_ArbCede: begin
                 trans.targ_id   <= targ_id;
@@ -746,9 +746,9 @@ module i3c_target_trx
               end
 
             State_RxSDR:
-              case (ccc_state_q)
+              unique case (ccc_state_q)
                 CCC_Setup:
-                  case (ccc_idx_q)
+                  unique case (ccc_idx_q)
                     4'd0: trans.cmd <= sdr_payload;          // The Common Command Code.
                     4'd1: if (ccc_has_defb(trans.cmd)) begin // Only CCCs that actually define one.
                       trans.defb     <= sdr_payload;
@@ -760,7 +760,7 @@ module i3c_target_trx
               endcase
 
             State_RxCmdDDR:
-              case (ccc_state_q)
+              unique case (ccc_state_q)
                 CCC_Idle: begin
                   // Target ID here determines whether this is CCC framing or a Private transfer.
                   trans.targ_id   <= targ_id;
@@ -786,7 +786,7 @@ module i3c_target_trx
               endcase
 
             State_RxDataDDR:
-              case (ccc_state_q)
+              unique case (ccc_state_q)
                 CCC_Setup: begin
                   // Capture the Common Command Code and Defining Byte, if any.
                   trans.cmd   <= ddr_payload[15:8];
@@ -808,13 +808,13 @@ module i3c_target_trx
 
         // Confirm validity of received data and perform state transition.
         if (last_bit) begin
-          case (state_q)
+          unique case (state_q)
             State_AckAddr: begin
               if (trans.targ_id == TargIDBroadcast && !trans.rnw) begin
                 ccc_state_q <= CCC_Setup;
               end else begin
                 // Next segment/phase within the same CCC transfer?
-                case (ccc_state_q)
+                unique case (ccc_state_q)
                   CCC_SegAddr: ccc_state_q <= CCC_SegData;
                   default:     ccc_state_q <= CCC_Private;
                 endcase
@@ -823,7 +823,7 @@ module i3c_target_trx
             end
 
             State_RxSDR: begin
-              case (ccc_state_q)
+              unique case (ccc_state_q)
                 CCC_Setup:
                   // ENTHDRx CCCs do not follow the normal pattern; no Sr expected.
                   if (enthdr_det) ccc_state_q <= CCC_Idle;
@@ -840,7 +840,7 @@ module i3c_target_trx
             end
 
             State_RxCmdDDR: begin
-              case (ccc_state_q)
+              unique case (ccc_state_q)
                 CCC_Idle: begin
                   // Note: HDR-DDR CCC framing is not yet supported; the Indicator Word is treated
                   // as a Private transfer. `trans.targ_id` (not the stale combinational `targ_id`)
@@ -943,7 +943,7 @@ module i3c_target_trx
       if (starting | rep_starting) begin
         bit_idx <= BitW'(8);
       end else if (last_bit) begin
-        case (state_q)
+        unique case (state_q)
           // SDR traffic shall be followed by further SDR traffic or, if entering HDR-DDR mode,
           // a Command Word.
           State_RxSDR:     bit_idx <= entddr_det ? BitW'(9) : BitW'(8);
@@ -1136,7 +1136,7 @@ module i3c_target_trx
       rxd.addr      = trans.addr;
       rxd.is_group  = trans.is_group;
     end
-    case (state_q)
+    unique case (state_q)
       State_RxCmdDDR,
       State_RxDataDDR: begin
         rxd.wdata = ddr_payload;

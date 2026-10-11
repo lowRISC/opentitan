@@ -525,7 +525,7 @@ module i3c_target_fsm
   logic proceed;
   always_comb begin : drv_proceed
     proceed = 1'b0;
-    case (state_q)
+    unique case (state_q)
       Inactive: proceed = trx_rvalid_i;
       PrivXfer: proceed = stop_det_i;  // TODO(#31337): Want to define here what happens w.r.t. Sr?
                                        //  Important e.g., for the legal combination of
@@ -540,9 +540,9 @@ module i3c_target_fsm
 
   always_comb begin
     state_d = state_q;
-    case (state_q)
+    unique case (state_q)
       Inactive: begin
-          case (trx_rxd_i.ccc_state)
+          unique case (trx_rxd_i.ccc_state)
             CCC_Setup: state_d = CCC;
             default:   state_d = PrivXfer;
           endcase
@@ -587,7 +587,7 @@ module i3c_target_fsm
     // Is there potential for the P to leapfrog the final byte, in which case we
     // perhaps use _P to retain that information and treat `trx_rvalid_i` the same in
     // each state?
-    case (state_q)
+    unique case (state_q)
       Inactive: ccc_req.en = trx_rvalid_i & (trx_rxd_i.ccc_state == CCC_Setup);
       CCC:      ccc_req.en = trx_rvalid_i;
       CCC_Tx:   ccc_req.en = ccc_unit_ready;
@@ -598,7 +598,7 @@ module i3c_target_fsm
     // TODO(#31337): Presently the Sr and P processing relies on - for example - the idx being
     //       stable, we may need to capture it, to be certain of the segment/phase length.
     ccc_req.idx = ccc_rd_prefetch + (trx_rxd_i.ccc_state == CCC_SegData) + trx_rxd_i.ccc_idx[3:0];
-    case (state_q)
+    unique case (state_q)
       Inactive,
       CCC: begin
         if (trx_rxd_i.sr) begin
@@ -639,7 +639,7 @@ module i3c_target_fsm
       reg_state[ccc_rsp.reg_widx] <= ccc_rsp.reg_wdata;
       // When capturing the CCC or DEFB we also need to modify other state; since this is true for
       // all Common Command Codes we opt to do it here.
-      case (ccc_rsp.reg_widx)
+      unique case (ccc_rsp.reg_widx)
         TargCR_CCC: begin
           // Set the initial set of Targets involved in this CCC.
           // - note that a Broadcast CCC affects only the responsive targets, and the transceiver
