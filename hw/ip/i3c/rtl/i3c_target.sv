@@ -636,9 +636,11 @@ module i3c_target
     // Reception uses a single buffer for all Targets.
     intr_o = '0;  // Note: this provides drivers for non-extant Virtual Targets.
     intr_o.rx_desc_ready   = |reg2hw_i.targ_queue_thld_ctrl.rx_desc_thld.q &&
-                             (rx_desc_wused_i >= reg2hw_i.targ_queue_thld_ctrl.rx_desc_thld.q);
+                             (32'(rx_desc_wused_i) >=
+                              32'(reg2hw_i.targ_queue_thld_ctrl.rx_desc_thld.q));
     intr_o.ibi_status_thld = |reg2hw_i.targ_queue_thld_ctrl.ibi_status_thld.q &&
-                             (ibi_desc_ravail_i >= reg2hw_i.targ_queue_thld_ctrl.ibi_status_thld.q);
+                             (32'(ibi_desc_ravail_i) >=
+                              32'(reg2hw_i.targ_queue_thld_ctrl.ibi_status_thld.q));
     intr_o.async_evt_ready = !async_empty_i;  // TODO: Need to reconsider if CCC becomes multi-desc?
     intr_o.transfer_abort  = transfer_aborted;
     intr_o.transfer_err    = transfer_err;
@@ -649,9 +651,9 @@ module i3c_target
     // Transmission requires per-Target buffers.
     for (int unsigned t = 0; t < NumTargets; t++) begin
       intr_o.tx_thld[t] = |reg2hw_i.targ_tx_thld_ctrl[t].tx_buf_free_thld.q &&
-        (buf_ravail_i[t] >= reg2hw_i.targ_tx_thld_ctrl[t].tx_buf_free_thld.q);
+        (32'(buf_ravail_i[t]) >= 32'(reg2hw_i.targ_tx_thld_ctrl[t].tx_buf_free_thld.q));
       intr_o.tx_desc_ready[t] = |reg2hw_i.targ_tx_thld_ctrl[t].tx_desc_empty_thld.q &&
-        (tx_desc_ravail_i[t] >= reg2hw_i.targ_tx_thld_ctrl[t].tx_desc_empty_thld.q);
+        (32'(tx_desc_ravail_i[t]) >= 32'(reg2hw_i.targ_tx_thld_ctrl[t].tx_desc_empty_thld.q));
     end
 
     // Raise an interrupt to software when any of the Target Error counts is non-zero.

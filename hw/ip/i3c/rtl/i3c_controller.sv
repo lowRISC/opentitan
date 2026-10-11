@@ -237,7 +237,7 @@ module i3c_controller
                           {sw_dat_addr_i[0], !sw_dat_addr_i[0]};
   wire [DATAddrW-1:0] sw_datc_widx = sw_dat_addr_i[DATAddrW:1];  // Entry index.
   assign sw_dat_entry = i3c_dat_entry_t'({2{sw_dat_wdata_i}});   // Reinterpret write data.
-  assign sw_datc_wdata.dyn_addr     = sw_dat_entry.dynamic_address;
+  assign sw_datc_wdata.dyn_addr     = sw_dat_entry.dynamic_address[22:16];  // No parity bit.
   assign sw_datc_wdata.ibi_payload  = sw_dat_entry.ibi_payload;
   assign sw_datc_wdata.ibi_reject   = sw_dat_entry.ibi_reject;
   assign sw_datc_wdata.crr_reject   = sw_dat_entry.crr_reject;
@@ -477,12 +477,12 @@ module i3c_controller
     intr_pio_o.transfer_err    = suspending;
     intr_pio_o.transfer_abort  = transfer_aborted;
     intr_pio_o.resp_ready      = |reg2hw_i.queue_thld_ctrl.resp_buf_thld.q &&  // Field valid?
-                                 (rsp_desc_wused_i >= resp_buf_thld);
+                                 (32'(rsp_desc_wused_i) >= 32'(resp_buf_thld));
     intr_pio_o.cmd_queue_ready = |reg2hw_i.queue_thld_ctrl.cmd_empty_buf_thld.q &&  // Field valid?
-                                 (cmd_desc_ravail_i[FIFODepthW:1] >= cmd_empty_buf_thld);
+                                 (32'(cmd_desc_ravail_i[FIFODepthW:1]) >= 32'(cmd_empty_buf_thld));
     // Note that this is comparing the number of IBI Status Descriptors.
     intr_pio_o.ibi_status_thld = |reg2hw_i.queue_thld_ctrl.ibi_status_thld.q &&  // Field valid?
-             (ibi_stat_wused_i >= reg2hw_i.queue_thld_ctrl.ibi_status_thld.q);
+             (32'(ibi_stat_wused_i) >= 32'(reg2hw_i.queue_thld_ctrl.ibi_status_thld.q));
     intr_pio_o.rx_thld = rx_thld;
     intr_pio_o.tx_thld = tx_thld;
   end

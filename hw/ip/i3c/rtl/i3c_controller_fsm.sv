@@ -272,7 +272,7 @@ module i3c_controller_fsm
   // Some commands do not require the Tx Buffer.
   wire cmd_no_txd = |{cmd_attrs.attr == CmdAttr_ImmTransfer,
                       cmd_attrs.attr == CmdAttr_RegTransfer && ~|cmd_reg.data_length};
-  wire buf_words_enough = ({buf_words, 2'b00} >= cmd_reg.data_length);
+  wire buf_words_enough = (32'({buf_words, 2'b00}) >= 32'(cmd_reg.data_length));
   // The start threshold or the data length must be satisfied before the command may be dispatched.
   wire cmd_start  = |{cmd_no_txd, buf_words[FIFODepthW:1] >> start_thld, buf_words_enough};
 
@@ -287,7 +287,7 @@ module i3c_controller_fsm
   // Track the number of bytes of received data.
   // - this is used for CCC handling, Private Reads _and_ IBI payload reception.
   logic [15:0] rx_data_len;
-  wire  [15:0] rx_next_len = rx_data_len + rx_len;
+  wire  [15:0] rx_next_len = rx_data_len + 16'(rx_len);
 
   // Interface to Common Command Code handling.
   i3c_ctrl_ccc_req_t ccc_req;

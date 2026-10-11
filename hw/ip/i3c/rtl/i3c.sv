@@ -37,7 +37,7 @@ module i3c
   parameter bit                     HalfCycleScl     = 1'b0,
   // Include Target-side Extension hardware?
   parameter bit                     TargetExt        = 1'b0,
-  parameter logic   [NumAlerts-1:0] AlertAsyncOn     = '1,
+  parameter logic   [NumAlerts-1:0] AlertAsyncOn     = {NumAlerts{1'b1}},
   // Number of cycles of differential skew tolerated on the alert signal.
   parameter int unsigned            AlertSkewCycles  = 1,
   // Register Access Control List.

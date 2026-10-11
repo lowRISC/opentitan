@@ -68,8 +68,8 @@ module i3c_controller_ibi
   // IBI Data Queue it would be impossible to receive IBIs longer than the queue.
   // - HCI 6.9.1 actually requires software to prevent deadlock, but we try to be helpful.
   logic [SegCntW-1:0] seg_dwords;
-  assign seg_dwords = (ibi_status_size_clamped < data_seg_size_i) ? ibi_status_size_clamped
-                                                                  : data_seg_size_i[SegCntW-1:0];
+  assign seg_dwords = (8'(ibi_status_size_clamped) < data_seg_size_i) ?
+                      ibi_status_size_clamped : data_seg_size_i[SegCntW-1:0];
   // Count of IBI payload bytes written.
   // - an IBI with a data payload exceeding `IBI_DATA_SEGMENT_SIZE` DWORDs or the IBI Queue Size
   //   must be split into multiple segments.
@@ -78,7 +78,7 @@ module i3c_controller_ibi
   logic [SegCntB-1:0] bytes_written;
   logic [SegCntB-1:0] bytes_next;
   // Since the segment cannot exceed 252 bytes, this addition cannot overflow.
-  assign bytes_next = bytes_written + (write_i ? wlen_i : Log2DBW'('b0));
+  assign bytes_next = bytes_written + SegCntB'(write_i ? wlen_i : (Log2DBW + 1)'('b0));
 
   // Emit the modified IBI Status Descriptor.
   always_comb begin

@@ -160,10 +160,11 @@ module i3c_ctrl_req_gen
 
   // Hardware-calculated default timing parameters for the current mode.
   tm_params_t tm_hw;
-  assign tm_hw = {tmhw_od1, tmhw_od,  // Open Drain signaling.
-                  tmhw_fm, tmhw_fmp,  // I2C modes.
-                  tmhw_sdr4, tmhw_sdr3, tmhw_sdr2, tmhw_sdr1, tmhw_sdr0} >>  // SDR and HDR-DDR.
-                 (sn * $bits(tm_params_t));
+  assign tm_hw = tm_params_t'({tmhw_od1, tmhw_od,  // Open Drain signaling.
+                              tmhw_fm, tmhw_fmp,  // I2C modes.
+                              tmhw_sdr4, tmhw_sdr3, tmhw_sdr2, tmhw_sdr1,
+                              tmhw_sdr0} >>  // SDR and HDR-DDR.
+                             (sn * $bits(tm_params_t)));
 
   // ----- Software-programmed timing parameters. -----
 
@@ -237,10 +238,11 @@ module i3c_ctrl_req_gen
 
   // Software-programmed default timing parameters for the current mode.
   tm_params_t tm_sw;
-  assign tm_sw = {tmsw_od1, tmsw_od,  // Open Drain signaling.
-                  tmsw_fm, tmsw_fmp,  // I2C modes.
-                  tmsw_sdr4, tmsw_sdr3, tmsw_sdr2, tmsw_sdr1, tmsw_sdr0} >>  // SDR and HDR-DDR.
-                 (sn * $bits(tm_params_t));
+  assign tm_sw = tm_params_t'({tmsw_od1, tmsw_od,  // Open Drain signaling.
+                              tmsw_fm, tmsw_fmp,  // I2C modes.
+                              tmsw_sdr4, tmsw_sdr3, tmsw_sdr2, tmsw_sdr1,
+                              tmsw_sdr0} >>  // SDR and HDR-DDR.
+                             (sn * $bits(tm_params_t)));
 
   // ----- Choose between hardware and software candidates. -----
   // Start/stoP timings.

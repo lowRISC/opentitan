@@ -343,7 +343,7 @@ module i3c_target_ccc
           end
         end
         RData_MAXWR: rdata[t] = reg2hw_i.targ_max_rdwr[t].maxwr.q;
-        RData_MAXRD: rdata[t] = reg2hw_i.targ_max_rdwr[t].maxrd.q;
+        RData_MAXRD: rdata[t] = 8'(reg2hw_i.targ_max_rdwr[t].maxrd.q);
         RData_MAXRDTURN0: rdata[t] = maxrdturn[t][23:16];
         RData_MAXRDTURN1: rdata[t] = maxrdturn[t][15:8];
         RData_MAXRDTURN2: rdata[t] = maxrdturn[t][7:0];
@@ -433,7 +433,8 @@ module i3c_target_ccc
             ccc_rsp_o.reg_widx  = TargCR_Targets;
             // TODO(31128): This overwrites all targets if a group address is used, even if some or
             //              all targets are not part of the group at hand.
-            ccc_rsp_o.reg_wdata = ('b1 << ccc_req_i.targ_id) | {NumTargets{ccc_req_i.is_group}};
+            ccc_rsp_o.reg_wdata = ('b1 << ccc_req_i.targ_id) |
+                                  TargCRWidth'({NumTargets{ccc_req_i.is_group}});
           end
         end else begin
           // All of the data in the CCC setup is write data; capture it in registers.
