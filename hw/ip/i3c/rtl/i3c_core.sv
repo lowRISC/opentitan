@@ -1730,7 +1730,7 @@ module i3c_core
 
   // General Host Controller interrupts.
   // TODO(#31334): Check interrupt types.
-  i3c_intr #(.Width($bits(i3c_hc_intr_t)), .Event('1)) u_hc_intr (
+  i3c_intr #(.Width($bits(i3c_hc_intr_t)), .EventType('1)) u_hc_intr (
     .event_i    (hc_interrupts),
 
     .status_en_i({reg2hw_i.intr_status_enable.sched_cmd_missed_tick_stat_en.q,
@@ -1775,7 +1775,7 @@ module i3c_core
 
   // PIO interrupts.
   // TODO(#31334): Check interrupt types.
-  i3c_intr #(.Width($bits(i3c_pio_intr_t)), .Event(7'b11_00000)) u_pio_intr (
+  i3c_intr #(.Width($bits(i3c_pio_intr_t)), .EventType(7'b11_00000)) u_pio_intr (
     .event_i    (pio_interrupts),
 
     .status_en_i({reg2hw_i.pio_intr_status_enable.transfer_err_stat_en.q,
@@ -1829,7 +1829,7 @@ module i3c_core
 
   // Secondary Controller interrupts.
   // TODO(#31334): Check interrupt types.
-  i3c_intr #(.Width($bits(i3c_stby_cr_intr_t)), .Event('1)) u_stby_cr_intr (
+  i3c_intr #(.Width($bits(i3c_stby_cr_intr_t)), .EventType('1)) u_stby_cr_intr (
     .event_i    (stby_cr_interrupts),
 
     .status_en_i('1),  // No INTR_STATUS_ENABLE for these interrupts.
@@ -1911,7 +1911,7 @@ module i3c_core
 
   // Target-side interrupts; these are additional to those of the Standby Controller.
   // TODO(#31334): Check interrupt types.
-  i3c_intr #(.Width($bits(i3c_targ_intr_t)), .Event('0)) u_targ_intr (
+  i3c_intr #(.Width($bits(i3c_targ_intr_t)), .EventType('0)) u_targ_intr (
     .event_i    (targ_interrupts),
 
     .status_en_i({reg2hw_i.targ_intr_status_enable.te_stat_en.q,
