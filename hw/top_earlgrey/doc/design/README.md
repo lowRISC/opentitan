@@ -1,8 +1,9 @@
 # OpenTitan Earl Grey Chip Specification
 
-**NOTE**: This doc is work in progress.
-It refers to and is still being updated for Earl Grey 2, i.e., the second generation of the discrete OpenTitan chip design currently being developed on the [`master` branch](https://github.com/lowRISC/opentitan).
+**NOTE**: This doc refers to Earl Grey 2, i.e., the second generation of the discrete OpenTitan chip design currently being developed on the [`master` branch](https://github.com/lowRISC/opentitan).
 For information on the taped out Earl Grey design, i.e., the first production OpenTitan silicon, refer to the documentation for the [`earlgrey_1.0.0` branch](https://github.com/lowRISC/opentitan/tree/earlgrey_1.0.0) [available here](https://opentitan.org/earlgrey_1.0.0/book/hw/top_earlgrey/doc/design/index.html).
+This doc describes the hardware design.
+The software (ROM, ROM_EXT) is also under development and may not yet implement all features of the hardware.
 
 This document describes the OpenTitan Earl Grey chip functionality in detail.
 For an overview, refer to the [OpenTitan Earl Grey Chip Datasheet](../datasheet.md).
@@ -251,18 +252,28 @@ For the CHERIoT meta SRAM, address scrambling is currently disabled.
 
 ### Secure boot
 
-Earlgrey follows the [Secure Boot](../../../../doc/security/specs/secure_boot/README.md) specification. The `ROM` has 3 key slots
-which are allocated as follows:
+Earl Grey follows the [Secure Boot](../../../../doc/security/specs/secure_boot/README.md) specification.
+The ROM verifies the signature of ROM_EXT before it executes ROM_EXT.
+Earl Grey supports post-quantum secure boot with ML-DSA-87 signatures, whose verification [OTBN](#otbn) accelerates.
 
-| Slot | Role | Name |
-|------|------|------|
-| 0 | test | `test 0` |
-| 1 | test | `test 1` |
-| 2 | dev | `dev 0` |
-| 3 | dev | `dev 1` |
-| 4 | prod | `prod 0` |
-| 5 | prod | `prod 1` |
-| 6 | prod | `prod 2` |
+The ROM reads the Silicon Creator public keys from the `ROT_CREATOR_AUTH_CODESIGN` partition of [OTP](#otp), which has the following key slots:
+- 4 ECDSA-P256 key slots, and
+- 4 ML-DSA-87 key slots.
+
+Every ROM_EXT must have a valid ECDSA-P256 signature.
+An ML-DSA-87 signature is required in addition unless ML-DSA-87 verification is disabled in OTP.
+In the `TEST_UNLOCKED*` life cycle states, the ROM does not check ML-DSA-87 signatures.
+
+Each key slot has a key type, which determines the life cycle states in which the ROM accepts the key:
+
+| Key type | `TEST_UNLOCKED*` | `DEV` | `PROD`, `PROD_END` | `RMA` |
+|----------|------------------|-------|--------------------|-------|
+| test     | yes              | no    | no                 | yes   |
+| dev      | yes              | yes   | no                 | yes   |
+| prod     | yes              | yes   | yes                | yes   |
+
+The `ROT_CREATOR_AUTH_STATE` partition of OTP holds the state of each key slot: blank, provisioned or revoked.
+The ROM accepts only provisioned keys.
 
 ### Peripherals
 
