@@ -928,7 +928,7 @@ module i3c_controller_fsm
     // - MSB is driven onto the I3C bus first.
     // - CCC logic shall expect the data in the same format as the Transceiver.
     if (cmd_attrs.ddr) begin : ddr_data
-      bit [Log2DW-3:0] bytes_left;
+      logic [Log2DW-3:0] bytes_left;
       // Calculate the number of bytes remaining, since we may need to pad with a zero byte.
       bytes_left = data_last ? data_len[2:0] : 3'b100;
       tx_data = revh(tx_data_pre, {bytes_left, 3'b0});

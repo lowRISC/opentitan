@@ -85,7 +85,7 @@ module i3c_controller_trx
   localparam bit FICRC5   = 1'b0;
 
   // Return the length in bits of the given unit type, minus 1 for counting down.
-  function automatic bit [Log2DW-1:0] unitlen_bits(i3c_ctrl_req_e req);
+  function automatic logic [Log2DW-1:0] unitlen_bits(i3c_ctrl_req_e req);
     unique case (req)
       CReqType_CommandWord,
       CReqType_DataWord:   return Log2DW'(19);

@@ -454,7 +454,7 @@ package i3c_pkg;
   // - these are single-bit deviations from the I3C Broadcast Address 7'h7e.
   // TODO(#31035): Target-side logic checking using this function also needs to catch 7'h7e/R except
   // when handling ENTDAA (HCI 4.3.8.1.1).
-  function automatic bit te0_invalid_addr(bit [6:0] addr);
+  function automatic logic te0_invalid_addr(logic [6:0] addr);
     return (addr inside {7'h7f, 7'h7c, 7'h7a, 7'h76, 7'h6e, 7'h5e, 7'h3e});
   endfunction
 
@@ -463,10 +463,10 @@ package i3c_pkg;
   // on the bus that are known to employ clock-stretching.
   //
   // TODO(#31304): Update this according to usage, include masks and parameterize for NumBlocked.
-  function automatic bit invalid_addr(bit [6:0] addr,
-                                      bit [6:0] blocked_addr0,
-                                      bit [6:0] blocked_addr1,
-                                      bit       target);
+  function automatic logic invalid_addr(logic [6:0] addr,
+                                        logic [6:0] blocked_addr0,
+                                        logic [6:0] blocked_addr1,
+                                        logic       target);
     case (addr)
       7'h00:         return 1'b1;
       7'h02:         return !target;  // Hot-Join requests permissible only from Targets.
@@ -479,7 +479,7 @@ package i3c_pkg;
 
   // The use of some CCCs is absolutely prohibited in Command Descriptors (TCRI 6.2) because the
   // Host Controller issues them internally. (Note that some others are conditionally-blocked.)
-  function automatic bit tcri_blocked_ccc(logic [7:0] ccc);
+  function automatic logic tcri_blocked_ccc(logic [7:0] ccc);
     unique case (ccc)
       ENTHDR0, ENTHDR1, ENTHDR2, ENTHDR3, ENTHDR4, ENTHDR5, ENTHDR6, ENTHDR7,
       GETACCCR: return 1'b1;
@@ -488,19 +488,19 @@ package i3c_pkg;
   endfunction
 
   // Broadcast CCCs need to be treated differently, especially on the Target side.
-  function automatic bit broadcast_ccc(logic [7:0] ccc);
+  function automatic logic broadcast_ccc(logic [7:0] ccc);
     return !ccc[7];
   endfunction
 
   // Direct Get, as opposed to Direct Set or Broadcast CCC?
-  function automatic bit direct_get(logic [7:0] ccc);
+  function automatic logic direct_get(logic [7:0] ccc);
     return ccc[7] & (ccc inside {GETMWL, GETMRL, GETPID, GETBCR, GETDCR, GETSTATUS,
                                  GETACCCR, GETMXDS, GETCAPS, GETXTIME});
   endfunction
 
   // A small number of the CCCs have a Defining Byte, which precedes the write data in the event
   // of a Broadcast CCC.
-  function automatic bit ccc_has_defb(logic [7:0] ccc);
+  function automatic logic ccc_has_defb(logic [7:0] ccc);
     // Note that we need only be concerned with those CCCs that are supported by the Target;
     // the Target transceiver logic is responsible for rejecting or ignoring CCCs/DEFBs that are not
     // supported.
@@ -510,7 +510,7 @@ package i3c_pkg;
   // Indicates whether the Target supports the given Direct Common Control Command.
   // - this is for use in deciding whether to ACK/NACK the Target/Group address, so it is not
   //   concerned with Broadcast CCCs.
-  function automatic bit supported_direct_ccc(logic [7:0] ccc);
+  function automatic logic supported_direct_ccc(logic [7:0] ccc);
     return ccc inside {ENEC, DISEC, SETDASA, SETNEWDA, SETMWL, SETMRL, GETMWL, GETMRL, GETPID,
                        GETBCR, GETDCR, GETSTATUS, GETACCCR, ENDXFER, GETMXDS, GETCAPS, RSTACT,
                        SETGRPA, RSTGRPA};

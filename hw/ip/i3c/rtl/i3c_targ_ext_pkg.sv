@@ -11,12 +11,12 @@ package i3c_targ_ext_pkg;
 
   // Register interface to target extension.
   typedef struct packed {
-    bit dummy;
+    logic dummy;
   } i3c_reg2targ_ext_t;
 
   // Target extension to register interface.
   typedef struct packed {
-    bit dummy;
+    logic dummy;
   } i3c_targ_ext2reg_t;
 
 endpackage
