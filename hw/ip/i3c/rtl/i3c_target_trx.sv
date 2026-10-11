@@ -916,7 +916,8 @@ module i3c_target_trx
   wire parity_error_ddr = parity_check_ddr && !parity_match_ddr;
 
   // I3C SDR Write data uses odd parity, so the received T bit should equal `parity_sdr`.
-  // - the T bit is sampled into the shift register on the SCL rising edge within its own bit period.
+  // - the T bit is sampled into the shift register on the SCL rising edge within its own bit
+  //   period.
   wire parity_match_sdr = (sda_pq[0][0] == parity_sdr);
   wire parity_check_sdr = (state_q == State_RxSDR) && last_bit;
   wire parity_error_sdr = parity_check_sdr && !parity_match_sdr;
