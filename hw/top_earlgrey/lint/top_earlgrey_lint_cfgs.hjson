@@ -112,6 +112,12 @@
                   additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
                   rel_path: "hw/ip/i2c/lint/{tool}"
              },
+             {    name: i3c
+                  fusesoc_core: lowrisc:ip:i3c
+                  import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
+                  additional_fusesoc_argument: "--mapping=lowrisc:systems:top_earlgrey:0.1"
+                  rel_path: "hw/ip/i3c/lint/{tool}"
+             },
              {    name: lc_ctrl
                   fusesoc_core: lowrisc:ip:lc_ctrl
                   import_cfgs: ["{proj_root}/hw/lint/tools/dvsim/common_lint_cfg.hjson"]
