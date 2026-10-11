@@ -8,9 +8,7 @@ module i3c_controller_ccc
   import i3c_ctrl_ccc_pkg::*;
   import i3c_pkg::*;
   import i3c_reg_pkg::*;
-#(
-  parameter int unsigned DataWidth = 32
-) (
+(
   // CCC logic is enabled and active.
   // - this may be used to suppress any internal activity and gate off any output control signals
   //   when not processing CCCs.

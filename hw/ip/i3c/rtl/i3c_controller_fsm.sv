@@ -1029,9 +1029,7 @@ module i3c_controller_fsm
   // ----------------------------------- Common Command Codes --------------------------------------
 
   // Controller-side Common Command Code handling.
-  i3c_controller_ccc #(
-    .DataWidth  (DataWidth)
-  ) u_ctrl_ccc (
+  i3c_controller_ccc u_ctrl_ccc (
     // CCC handling enabled and active?
     .enable_i   (enable_i & (state_q == CCC)),
 
