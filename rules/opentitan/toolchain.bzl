@@ -31,6 +31,8 @@ localtools_toolchain = rule(
         "opentitantool": attr.label(
             default = "//sw/host/opentitantool:opentitantool",
             executable = True,
+            # This transition is technically redundant since the `opentitantool` target is already
+            # declared with `host_tool` but we keep it for consistency with the other attributes.
             cfg = host_tools_transition,
         ),
         "gen_devid": attr.label(
