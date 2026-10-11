@@ -1011,7 +1011,7 @@ module i3c_core
   assign fifo_cfg[FIFO_RxBuf].size  = fifo_size(fifo_cfg[FIFO_RxBuf]);
 
   assign fifo_cfg[FIFO_IBITarg].min  = BufAddrW'(reg2hw_i.targ_ibi_config.min_addr.q);
-  assign fifo_cfg[FIFO_IBITarg].max  = BufAddrW'(reg2hw_i.targ_ibi_config.min_addr.q);
+  assign fifo_cfg[FIFO_IBITarg].max  = BufAddrW'(reg2hw_i.targ_ibi_config.max_addr.q);
   assign fifo_cfg[FIFO_IBITarg].size = fifo_size(fifo_cfg[FIFO_IBITarg]);
 
   assign fifo_cfg[FIFO_RxTarg].min  = BufAddrW'(reg2hw_i.targ_rxbuf_config.min_addr.q);
