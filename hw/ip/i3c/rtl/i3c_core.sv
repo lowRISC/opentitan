@@ -2260,4 +2260,121 @@ module i3c_core
   // Target clearing of Hot-Join request, once acknowledged by the Active Controller.
   assign hw2reg_o.targ_control.hj_request.d = 1'b0;
 
+  // Signals that the logic does not use (yet).
+  // - register fields of features that are not implemented, and `reinit` strobes of registers that
+  //   hold no state beyond the register itself.
+  logic unused_reg2hw;
+  assign unused_reg2hw = ^{
+    reg2hw_i.ctrl_error.reinit, reg2hw_i.data_buffer_thld_ctrl.reinit,
+    reg2hw_i.dbr_engage.dbr_asx_timing.q, reg2hw_i.dbr_engage.dbr_asx_timing.qe,
+    reg2hw_i.dbr_engage.dbr_ibi_address.q, reg2hw_i.dbr_engage.dbr_ibi_address.qe,
+    reg2hw_i.dbr_engage.dbr_mode.q, reg2hw_i.dbr_engage.dbr_mode.qe,
+    reg2hw_i.dbr_engage.dbr_verif_key.q, reg2hw_i.dbr_engage.dbr_verif_key.qe,
+    reg2hw_i.ibi_data_abort_ctrl.after_n_chunks.q,
+    reg2hw_i.ibi_data_abort_ctrl.ibi_data_abort_mon.q,
+    reg2hw_i.ibi_data_abort_ctrl.match_ibi_id.q,
+    reg2hw_i.ibi_data_abort_ctrl.match_status_type.q, reg2hw_i.ibi_data_abort_ctrl.reinit,
+    reg2hw_i.ibi_notify_ctrl.reinit, reg2hw_i.intr_force.reinit,
+    reg2hw_i.intr_signal_enable.reinit, reg2hw_i.intr_status.reinit,
+    reg2hw_i.intr_status_enable.reinit, reg2hw_i.mx_error_counters.q, reg2hw_i.phy_config.reinit,
+    reg2hw_i.pio_control.reinit, reg2hw_i.pio_intr_force.cmd_queue_ready_force.qe,
+    reg2hw_i.pio_intr_force.ibi_thld_force.qe, reg2hw_i.pio_intr_force.reinit,
+    reg2hw_i.pio_intr_force.resp_ready_force.qe, reg2hw_i.pio_intr_force.rx_thld_force.qe,
+    reg2hw_i.pio_intr_force.tx_thld_force.qe, reg2hw_i.pio_intr_signal_enable.reinit,
+    reg2hw_i.pio_intr_status.reinit, reg2hw_i.pio_intr_status_enable.reinit,
+    reg2hw_i.queue_thld_ctrl.reinit, reg2hw_i.reset_det_ctrl.rst_periph_en.qe,
+    reg2hw_i.reset_det_ctrl.rst_target_en.qe, reg2hw_i.reset_det_ctrl.sleep_req.qe,
+    reg2hw_i.reset_det_ctrl.wake_ack.q, reg2hw_i.reset_det_ctrl.wake_ack.qe,
+    reg2hw_i.stby_cr_ccc_config_rstact_params.rst_action.q,
+    reg2hw_i.stby_cr_ccc_config_rstact_params.rst_action.qe, reg2hw_i.stby_cr_intr_force.reinit,
+    reg2hw_i.stby_cr_intr_signal_enable.reinit, reg2hw_i.stby_cr_intr_status.reinit,
+    reg2hw_i.targ_async_evt_control.bcst_ccc.qe, reg2hw_i.targ_async_evt_control.bus_events.qe,
+    reg2hw_i.targ_async_evt_control.dir_get_ccc.qe,
+    reg2hw_i.targ_async_evt_control.dir_set_ccc.qe,
+    reg2hw_i.targ_async_evt_control.ibi_notify.qe,
+    reg2hw_i.targ_async_evt_control.ibi_suspend.qe, reg2hw_i.targ_async_evt_control.reinit,
+    reg2hw_i.targ_async_evt_control.tx_notify.qe, reg2hw_i.targ_async_evt_control.tx_suspend.qe,
+    reg2hw_i.targ_buf_thld_ctrl.reinit, reg2hw_i.targ_buf_thld_ctrl.rx_segment_size.q,
+    reg2hw_i.targ_buf_thld_ctrl.rx_start_thld.q, reg2hw_i.targ_control.hj_request.q,
+    reg2hw_i.targ_control.hj_request.qe, reg2hw_i.targ_control.reinit,
+    reg2hw_i.targ_error.reinit, reg2hw_i.targ_intr_force.async_evt_ovf_force.qe,
+    reg2hw_i.targ_intr_force.async_evt_ready_force.qe,
+    reg2hw_i.targ_intr_force.ibi_thld_force.qe, reg2hw_i.targ_intr_force.reinit,
+    reg2hw_i.targ_intr_force.rx_buffer_ovf_force.qe,
+    reg2hw_i.targ_intr_force.rx_desc_ready_force.qe, reg2hw_i.targ_intr_force.te_force.qe,
+    reg2hw_i.targ_intr_force.transfer_abort_force.qe,
+    reg2hw_i.targ_intr_force.transfer_err_force.qe,
+    reg2hw_i.targ_intr_force.tx0_desc_ready_force.qe, reg2hw_i.targ_intr_force.tx0_thld_force.qe,
+    reg2hw_i.targ_intr_force.tx1_desc_ready_force.qe, reg2hw_i.targ_intr_force.tx1_thld_force.qe,
+    reg2hw_i.targ_intr_force.tx2_desc_ready_force.qe, reg2hw_i.targ_intr_force.tx2_thld_force.qe,
+    reg2hw_i.targ_intr_force.tx3_desc_ready_force.qe, reg2hw_i.targ_intr_force.tx3_thld_force.qe,
+    reg2hw_i.targ_intr_signal_enable.reinit, reg2hw_i.targ_intr_status.reinit,
+    reg2hw_i.targ_intr_status_enable.reinit, reg2hw_i.targ_pio_control.abort.qe,
+    reg2hw_i.targ_pio_control.ibi_abort.q, reg2hw_i.targ_pio_control.ibi_abort.qe,
+    reg2hw_i.targ_pio_control.reinit, reg2hw_i.targ_queue_thld_ctrl.reinit,
+    reg2hw_i.targ_sink_control.reinit, reg2hw_i.targ_status.ext_info.q,
+    reg2hw_i.targ_status.ext_info.qe, reg2hw_i.targ_status.protocol_error.qe,
+    reg2hw_i.targ_sink_control.buffer.q[2]
+  };
+  // - register fields of all Virtual Targets.
+  logic [MaxTargets-1:0] unused_targ_reg2hw;
+  for (genvar t = 0; t < MaxTargets; t++) begin : gen_unused_targ_reg2hw
+    if (t < NumTargets) begin : gen_extant
+      assign unused_targ_reg2hw[t] = ^{
+        reg2hw_i.targ_addr[t].reinit, reg2hw_i.targ_caps[t].reinit,
+        reg2hw_i.targ_char[t].reinit, reg2hw_i.targ_enable[t].reinit,
+        reg2hw_i.targ_event_enable[t], reg2hw_i.targ_ibi_len[t].reinit,
+        reg2hw_i.targ_info[t].reinit, reg2hw_i.targ_max_rdwr[t].reinit,
+        reg2hw_i.targ_pid_lo[t].reinit, reg2hw_i.targ_rw_len[t].reinit,
+        reg2hw_i.targ_tx_thld_ctrl[t].reinit
+      };
+    end else begin : gen_non_extant
+      // Non-extant Virtual Targets.
+      assign unused_targ_reg2hw[t] = ^{
+        reg2hw_i.targ_addr[t], reg2hw_i.targ_caps[t], reg2hw_i.targ_char[t],
+        reg2hw_i.targ_enable[t], reg2hw_i.targ_event_enable[t], reg2hw_i.targ_ibi_len[t],
+        reg2hw_i.targ_info[t], reg2hw_i.targ_max_rdwr[t], reg2hw_i.targ_pid_lo[t],
+        reg2hw_i.targ_rw_len[t],
+        reg2hw_i.targ_tx_thld_ctrl[t], reg2hw_i.targ_txbuf_config[t],
+        reg2hw_i.targ_txdesc_config[t]
+      };
+    end
+  end
+  logic [MaxGroups-1:0] unused_targ_group_reinit;
+  for (genvar grp = 0; grp < MaxGroups; grp++) begin : gen_unused_targ_group_reinit
+    assign unused_targ_group_reinit[grp] = reg2hw_i.targ_group[grp].reinit;
+  end
+  // - FIFO status that is not presented to software or the Controller/Target logic.
+  logic unused_fifo_state;
+  always_comb begin
+    unused_fifo_state = ^{fifo_state[FIFO_IBIQ].avail, fifo_state[FIFO_IBIStD].avail,
+                          fifo_state[FIFO_RspQ].avail, fifo_state[FIFO_CmdQ].used,
+                          fifo_state[FIFO_RxDTarg].avail, fifo_state[FIFO_IBIDTarg].used,
+                          fifo_state[FIFO_AsyncTarg].avail};
+    for (int unsigned t = NumTargets; t < MaxTargets; t++) begin
+      unused_fifo_state ^= ^{fifo_state[FIFO_TxTarg0 + t], fifo_state[FIFO_TxDTarg0 + t]};
+    end
+  end
+  // - handshakes of queue directions that software does not support, and of non-extant Virtual
+  //   Targets.
+  logic unused_queue_handshakes;
+  always_comb begin
+    unused_queue_handshakes = ^{hci_wvalid[HCI_Response], hci_wvalid[HCI_IBI],
+                                hci_rready[HCI_Command], tti_wvalid[TTI_RxDesc],
+                                tti_wvalid[TTI_RxData], tti_wvalid[TTI_AsyncEvt],
+                                tti_rready[TTI_IBIDesc], tti_rready[TTI_IBIData]};
+    for (int unsigned t = 0; t < MaxTargets; t++) begin
+      unused_queue_handshakes ^= tti_rready[TTI_Tx0Desc + t] ^ tti_rready[TTI_Tx0Data + t];
+    end
+    for (int unsigned t = NumTargets; t < MaxTargets; t++) begin
+      unused_queue_handshakes ^= tti_wvalid[TTI_Tx0Desc + t] ^ tti_wvalid[TTI_Tx0Data + t];
+    end
+  end
+  // - only the lower address bits select an HCI queue.
+  logic unused_hci_addr;
+  assign unused_hci_addr = ^bufq_addr_i[TL_HCI][3:2];
+  // - TODO(#31333): timers whose outputs are not yet routed to the core logic.
+  logic unused_timers;
+  assign unused_timers = ^{read_stalled, te0_recov};
+
 endmodule

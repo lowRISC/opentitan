@@ -50,6 +50,10 @@ module i3c_dct
   i3c_dct_mem_t sw_dct_wdata_packed;
   i3c_dct_entry_t sw_dct_wdata_full;
   assign sw_dct_wdata_full = i3c_dct_entry_t'({DCTWidthWords{sw_dct_wdata_i}});
+  // Software writes to reserved fields have no effect.
+  logic unused_sw_dct_wdata;
+  assign unused_sw_dct_wdata = ^{sw_dct_wdata_full.reserved0, sw_dct_wdata_full.reserved1,
+                                 sw_dct_wdata_full.reserved2};
 
   always_comb begin
     sw_dct_wmask = '0;

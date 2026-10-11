@@ -62,6 +62,9 @@ module i3c_data_sink
   assign valid = rvalid_i >> buf_i;
   logic [NumBuffers-1:0] empty;
   assign empty = empty_i >> buf_i;
+  // Only the selected buffer, now at index 0, is of interest.
+  logic unused_valid_empty;
+  assign unused_valid_empty = ^{valid >> 1, empty >> 1};
 
   // Error indicator is sticky until the next operation or reset.
   logic error;
