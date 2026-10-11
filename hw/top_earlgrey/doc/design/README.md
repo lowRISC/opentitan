@@ -139,7 +139,7 @@ See [execution mode switch](../../ip_autogen/rv_core_ibex/doc/theory_of_operatio
 
 A CHERIoT capability consists of a 32-bit address, 32 bits of metadata and a validity tag bit.
 The [CHERIoT memory subsystem](../../../ip/cheriot_mem_sys/README.md) (`cheriot_mem_sys`) sits between the data port of Ibex and the main crossbar.
-It stores the validity tags and the revocation bitmap in the [CHERIoT meta SRAM](#memory), which is separate from the memories that hold the capabilities.
+It stores the validity tags and the revocation bitmap in the [CHERIoT meta SRAM](#srams), which is separate from the memories that hold the capabilities.
 It splits each data access into an access to the memory and an access to the tag.
 A non-capability store clears the tag of the location it writes.
 
@@ -179,25 +179,39 @@ The Ibex documentation has more details on the current pipeline operation, inclu
 
 ### Memory
 
-The device contains three memory address spaces for instruction and data.
+The table below lists the memories of Earl Grey.
+The [memory map](../memory_map.md) gives their base addresses.
 
-Instruction ROM (192KiB) is the target for the Ibex processor after release of external reset.
-The ROM contains hard-coded instructions whose purpose is to do a minimal subset of platform checking before checking the next stage of code.
-The next stage - a boot loader stored in non-volatile memory - is the first piece of code that is not hard-coded into the silicon of the device, and thus must be signature checked.
-The ROM executes this signature check by implementing a RSA-check algorithm on the full contents of the boot loader.
-The details of this check will come at a later date.
-For verification execute-time reasons, this RSA check will be overridable in the FPGA and verification platforms (details TBD).
-This is part of the *Secure Boot Process* that will be detailed in a security section in the future.
+| Memory            | Size    | Controller                                          | Power domain | Intended use                                  |
+|-------------------|---------|-----------------------------------------------------|--------------|-----------------------------------------------|
+| ROM               | 192 KiB | [`rom_ctrl`](../../../ip/rom_ctrl/README.md)        | `Main`       | Boot code                                     |
+| RRAM              | 2 MiB   | [`rram_ctrl`](../../../ip/rram_ctrl/README.md)      | `Main`       | Non-volatile code and data storage            |
+| OTP               | 2 KiB   | [`otp_ctrl`](../../ip_autogen/otp_ctrl/README.md)   | `Main`       | One-time programmable data                    |
+| Main SRAM         | 128 KiB | [`sram_ctrl_main`](../../../ip/sram_ctrl/README.md) | `Main`       | General-purpose data (e.g., heap, stack)      |
+| Secondary SRAM    | 64 KiB  | [`sram_ctrl_sec`](../../../ip/sram_ctrl/README.md)  | `Main`       | General-purpose data (e.g., heap, stack)      |
+| Retention SRAM    | 8 KiB   | [`sram_ctrl_ret`](../../../ip/sram_ctrl/README.md)  | `Aon`        | Data that must be retained during deep sleep  |
+| CHERIoT meta SRAM | 38 KiB  | [`sram_ctrl_meta`](../../../ip/sram_ctrl/README.md) | `Main`       | CHERIoT capability tags and revocation bitmap |
 
-Earl Grey contains 2MiB of embedded RRAM (resistive RAM), its non-volatile memory (NVM) technology: it houses the boot loader mentioned above, as well as the operating system and application that layers on top.
+[OTBN](../../../ip/otbn/README.md) additionally contains 16 KiB of instruction memory and 32 KiB of data memory.
+Software accesses them through the OTBN register interface.
 
-At this time there is no operating system provided; applications are simple proof of concept code to show that the chip can do with a bare-metal framework.
+#### ROM
+
+The ROM contains the instructions that Ibex executes after it is released from reset.
+Their purpose is to do a minimal subset of platform checking before checking the next stage of code.
+The next stage, ROM_EXT, is stored in non-volatile memory.
+It is the first piece of code that is not hard-coded into the silicon of the device, and thus must be signature checked.
+The ROM verifies the signature of ROM_EXT before it jumps to it, as described in [Secure boot](#secure-boot).
+
+#### RRAM
+
+Earl Grey contains 2 MiB of embedded RRAM (resistive RAM), its non-volatile memory (NVM) technology: it houses ROM_EXT and subsequent software layers.
 
 RRAM is the primary technology for code and data storage on Earl Grey.
 Being a non-volatile memory technology, software must interact with the [RRAM controller](#rram-controller) to write to it rather than writing to the standard memory address space directly; unlike flash, RRAM only requires a read/write interface, with no separate erase step.
 The FPGA emulation of the memory approximates the read and write speeds and non-volatile nature that the RRAM macro exhibits in silicon.
 
-Details on how RRAM is used by software will be detailed in future Secure Boot Process and Software sections over time.
+The top 3 KiB of the RRAM data partition are reserved as the OTP region and are not accessible by software (see [OTP](#otp)).
 
 The intent is for the contents of the NVM code to survive FPGA reset as it would as a NVM in silicon.
 Loading of the FPGA with initial content, or updating with new content, is described in other software specifications.
@@ -205,10 +219,35 @@ The SPI device peripheral is provided as a method to bulk-load the NVM.
 The processor debug port (via JTAG) is also available for code loading.
 See those specifications for more details.
 
-Also included is a 128kB of SRAM available for data storage (stack, heap, etc.) by the Ibex processor.
-It is also available for code storage, though that is not its intended purpose.
+#### OTP
 
-The base address of the ROM, RRAM, and SRAM are given in the address map section later in this document.
+Earl Grey has no OTP macro.
+Instead, the [OTP controller](../../ip_autogen/otp_ctrl/README.md) stores its 2 KiB of one-time programmable memory (1032 words of 16 bit) in the OTP region of the RRAM.
+The RRAM controller implements OTP semantics on that region: bits can only be set, never cleared.
+
+#### SRAMs
+
+The Main SRAM (128 KiB) and the Secondary SRAM (64 KiB) are available for data storage (stack, heap, etc.) by the Ibex processor.
+They occupy one contiguous address range of 192 KiB.
+They are also available for code storage, though that is not their intended purpose.
+Depending on an OTP setting, execution from them is controlled either by a lockable firmware register or by the life cycle state.
+In CHERIoT mode, both can store capabilities that can be revoked at a granularity of 8 bytes.
+
+The Retention SRAM (8 KiB) is in the `Aon` power domain and retains its contents during deep sleep.
+Code execution from the Retention SRAM is not supported.
+
+The CHERIoT meta SRAM (38 KiB) stores the data of the [CHERIoT memory subsystem](#cheriot):
+- the revocation bitmap for the Main and Secondary SRAMs (3 KiB),
+- the capability tags for the RRAM (32 KiB), and
+- the capability tags for the Main and Secondary SRAMs (3 KiB).
+
+Only `cheriot_mem_sys` accesses the CHERIoT meta SRAM directly.
+Software can access only the revocation bitmap, through a window of `cheriot_mem_sys`, and only in CHERIoT mode.
+When software triggers the hardware initialization of the CHERIoT meta SRAM, its SRAM controller fills it with zeros instead of pseudo-random data, so that all tags and revocation bits start cleared.
+Code execution from it is not supported.
+
+All four SRAMs have 7 ECC bits per 32-bit word and are scrambled by their [SRAM controller](../../../ip/sram_ctrl/README.md) with a reduced-round PRINCE cipher.
+For the CHERIoT meta SRAM, address scrambling is currently disabled.
 
 ### Secure boot
 
