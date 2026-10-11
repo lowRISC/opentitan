@@ -95,6 +95,7 @@
     - [CW340](./hw/top_earlgrey/ip_autogen/pinmux/doc/pinout_cw340.md)
   - [Design Verification](./hw/top_earlgrey/dv/README.md)
     - [Chip Testplan](./hw/top_earlgrey/data/chip_testplan.hjson)
+  - [Checklist](./hw/top_earlgrey/doc/checklist.md)
   - [Alert Handler](./hw/top_earlgrey/ip_autogen/alert_handler/README.md)
     - [Theory of Operation](./hw/top_earlgrey/ip_autogen/alert_handler/doc/theory_of_operation.md)
     - [Design Verification](./hw/top_earlgrey/ip_autogen/alert_handler/dv/README.md)
