@@ -765,8 +765,8 @@ module i3c_controller_trx
   end
 
   // Default state duration in clock cycles (2 cycles at 50MHz), minus 1 because downcounting.
-  localparam int unsigned ClkKhz = i3c_timing_pkg::ceil_div(ClkFreq, 1000);
-  localparam int unsigned DefTmCyc = i3c_timing_pkg::ceil_div(40 * ClkKhz, 1_000_000) - 1;
+  localparam int unsigned ClkKhz = prim_util_pkg::ceil_udiv(ClkFreq, 1000);
+  localparam int unsigned DefTmCyc = prim_util_pkg::ceil_udiv(40 * ClkKhz, 1_000_000) - 1;
   // Duration of the next state, in clock cycles.
   // - most of these timings are supplied with the request because they are target- and mode-
   //   dependent.
