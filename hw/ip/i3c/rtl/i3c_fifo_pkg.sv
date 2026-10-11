@@ -72,8 +72,8 @@ package i3c_fifo_pkg;
 
   // FIFO configuration.
   typedef struct packed {
-    logic  [DepthW-1:0] min;  // Base address of the FIFO within the shared memory.
-    logic  [DepthW-1:0] max;  // End address, inclusive.
+    logic  [DepthW-1:0] min_addr;  // Base address of the FIFO within the shared memory.
+    logic  [DepthW-1:0] max_addr;  // End address, inclusive.
     logic    [DepthW:0] size; // Size of the FIFO, in DWORD entries.
   } fifo_config_t;
 
@@ -116,7 +116,7 @@ package i3c_fifo_pkg;
   // Convenience function that returns the size of the FIFO in DWORD entries; this is not supplied
   // in the register configuration but is instead derived from the programmed min/max bounds.
   function automatic bit [DepthW:0] fifo_size(input fifo_config_t cfg);
-    return (cfg.max - cfg.min) + 'b1;
+    return (cfg.max_addr - cfg.min_addr) + 'b1;
   endfunction
 
 endpackage
