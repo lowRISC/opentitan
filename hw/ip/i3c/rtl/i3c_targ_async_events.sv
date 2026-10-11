@@ -119,11 +119,12 @@ module i3c_targ_async_events
   logic [NumTargets-1:0] ccc_targets;
   logic [6:0] ccc_address;
 
-  struct packed {
+  typedef struct packed {
     logic [7:0] ccc;
     logic [7:0] defb;
     logic       has_defb;
-  } ccc_info;
+  } ccc_info_t;
+  ccc_info_t ccc_info;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
