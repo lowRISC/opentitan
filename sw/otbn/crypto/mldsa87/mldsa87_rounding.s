@@ -71,10 +71,10 @@ power2round:
 
     /* t1 = (t + (2^(D-1) - 1)) / 2^D. */
     bn.addv.8S w1, w0, w3
-    bn.shv.8S w1, w1 >> 13
+    bn.shv.8S w1, w1 >> MLDSA87_D
 
     /* t0 = (t - t1 * 2^D) mod Q. */
-    bn.shv.8S w2, w1 << 13
+    bn.shv.8S w2, w1 << MLDSA87_D
     bn.subvm.8S w0, w0, w2
 
     /* Store both vectors t0 and t1 back to DMEM. */
@@ -108,7 +108,7 @@ shift_left:
   /* Each iteration shifts 8 coefficients. */
   loopi 32, 3
     bn.lid x0, 0(x2++)
-    bn.shv.8S w0, w0 << 13
+    bn.shv.8S w0, w0 << MLDSA87_D
     bn.sid x0, 0(x3++)
     /* End of loop */
 
@@ -222,25 +222,25 @@ mldsa87_const_decompose_alphas:
 
 /* GAMMA2 = (Q - 1) / 32. */
 mldsa87_const_decompose_gamma2:
-.word 0x0003ff00
-.word 0x0003ff00
-.word 0x0003ff00
-.word 0x0003ff00
-.word 0x0003ff00
-.word 0x0003ff00
-.word 0x0003ff00
-.word 0x0003ff00
+.word MLDSA87_GAMMA2
+.word MLDSA87_GAMMA2
+.word MLDSA87_GAMMA2
+.word MLDSA87_GAMMA2
+.word MLDSA87_GAMMA2
+.word MLDSA87_GAMMA2
+.word MLDSA87_GAMMA2
+.word MLDSA87_GAMMA2
 
 /* ML-DSA modulus: Q = 8380417. */
 mldsa87_const_decompose_q:
-.word 0x007fe001
-.word 0x007fe001
-.word 0x007fe001
-.word 0x007fe001
-.word 0x007fe001
-.word 0x007fe001
-.word 0x007fe001
-.word 0x007fe001
+.word MLDSA87_Q
+.word MLDSA87_Q
+.word MLDSA87_Q
+.word MLDSA87_Q
+.word MLDSA87_Q
+.word MLDSA87_Q
+.word MLDSA87_Q
+.word MLDSA87_Q
 
 /* Unmasked infinity norm bound check. */
 

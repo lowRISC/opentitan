@@ -4,6 +4,8 @@
 
 /* ML-DSA-87 memory file. */
 
+.include "mldsa87.inc"
+
 /*
  * All DMEM buffers live at fixed offsets in block. The layout is identical for
  * the `run_mldsa87` app and for usage as a library via `:mldsa87`. There are
@@ -131,7 +133,7 @@ _mldsa87_dmem:
  * mu = -q^-1 mod R (Montgomery constant)
  * f  = 256^-1 * R^2 mod q (INTT divisor time R in Montgomery domain)
  */
-.word 0x007fe001 /* q */
+.word MLDSA87_Q /* q */
 .word 0xfc7fdfff /* mu */
 .word 0x0000a3fa /* f */
 .word 0x00000000
@@ -141,24 +143,24 @@ _mldsa87_dmem:
 .word 0x00000000
 
 /* GAMMA1 - BETA = 2^19 - 120. */
-.word 0x0007ff88
-.word 0x0007ff88
-.word 0x0007ff88
-.word 0x0007ff88
-.word 0x0007ff88
-.word 0x0007ff88
-.word 0x0007ff88
-.word 0x0007ff88
+.word MLDSA87_GAMMA1 - MLDSA87_BETA
+.word MLDSA87_GAMMA1 - MLDSA87_BETA
+.word MLDSA87_GAMMA1 - MLDSA87_BETA
+.word MLDSA87_GAMMA1 - MLDSA87_BETA
+.word MLDSA87_GAMMA1 - MLDSA87_BETA
+.word MLDSA87_GAMMA1 - MLDSA87_BETA
+.word MLDSA87_GAMMA1 - MLDSA87_BETA
+.word MLDSA87_GAMMA1 - MLDSA87_BETA
 
 /* GAMMA2 - BETA = ((Q - 1) / 32) - 120. */
-.word 0x0003fe88
-.word 0x0003fe88
-.word 0x0003fe88
-.word 0x0003fe88
-.word 0x0003fe88
-.word 0x0003fe88
-.word 0x0003fe88
-.word 0x0003fe88
+.word MLDSA87_GAMMA2 - MLDSA87_BETA
+.word MLDSA87_GAMMA2 - MLDSA87_BETA
+.word MLDSA87_GAMMA2 - MLDSA87_BETA
+.word MLDSA87_GAMMA2 - MLDSA87_BETA
+.word MLDSA87_GAMMA2 - MLDSA87_BETA
+.word MLDSA87_GAMMA2 - MLDSA87_BETA
+.word MLDSA87_GAMMA2 - MLDSA87_BETA
+.word MLDSA87_GAMMA2 - MLDSA87_BETA
 
 /* .data buffers. */
 .zero 0x36e0 - 0x80

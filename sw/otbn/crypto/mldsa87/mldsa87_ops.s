@@ -67,7 +67,7 @@ sample_s:
   addi x16, x0, 0 /* s */
 
   /* Expand the S1 polynomials and encode them. */
-  loopi 7, 14    /* SCA_TEST_REPLACE: loopi 1, 14 */
+  loopi MLDSA87_L, 14    /* SCA_TEST_REPLACE: loopi 1, 14 */
     /* Expand S1[s] into slots 0 and 1. */
     addi x2, x10, 0
     addi x3, x11, 0
@@ -92,7 +92,7 @@ sample_s:
   addi x16, x0, 0 /* r */
 
   /* Expand the S2 polynomials and encode them. */
-  loopi 8, 14    /* SCA_TEST_REPLACE: loopi 1, 14 */
+  loopi MLDSA87_K, 14    /* SCA_TEST_REPLACE: loopi 1, 14 */
     /* Expand S2[r] into slots 0 and 1. */
     addi x2, x10, 0
     addi x3, x11, 0
@@ -177,7 +177,7 @@ compute_t:
    * end for
    */
 
-  loopi 7, 38    /* SCA_TEST_REPLACE: loopi 1, 38 */
+  loopi MLDSA87_L, 38    /* SCA_TEST_REPLACE: loopi 1, 38 */
     /* X0, X1 = decode_s(S1_0_enc[s], S1_1_enc[s]) (poly slots 0, 1). */
     addi x2, x13, 0
     addi x3, x14, 0
@@ -195,7 +195,7 @@ compute_t:
     addi x3, x10, 0
     jal x1, ntt
 
-    loopi 8, 18    /* SCA_TEST_REPLACE: loopi 1, 18 */
+    loopi MLDSA87_K, 18    /* SCA_TEST_REPLACE: loopi 1, 18 */
       /* A = expand_a(RHO, r, s) (poly slot 2). */
       addi x2, x11, 0
       addi x3, x12, 0
@@ -250,7 +250,7 @@ compute_t:
    * end for
   */
 
-  loopi 8, 23    /* SCA_TEST_REPLACE: loopi 1, 23 */
+  loopi MLDSA87_K, 23    /* SCA_TEST_REPLACE: loopi 1, 23 */
     /* T_0[r] = INTT(T_0[r]). */
     addi x2, x7, 0
     addi x3, x7, 0
@@ -312,7 +312,7 @@ encode_t:
   addi x11, x5, 0 /* T1_enc */
 
   /* Unmask, round and encode each T polynomial. */
-  loopi 8, 18    /* SCA_TEST_REPLACE: loopi 1, 18 */
+  loopi MLDSA87_K, 18    /* SCA_TEST_REPLACE: loopi 1, 18 */
     /* Securely unmask T into slot 0. */
     addi x2, x8, 0
     addi x3, x9, 0
@@ -549,7 +549,7 @@ compute_w:
    *   end for
    * end for
    */
-  loopi 7, 38    /* SCA_TEST_REPLACE: loopi 1, 38 */
+  loopi MLDSA87_L, 38    /* SCA_TEST_REPLACE: loopi 1, 38 */
     /* Expand polynomials Y0[s] and Y1[s] and store them in slots 1 and 2. */
     addi x2, x8, 1024 /* Slot 1 */
     addi x3, x9, 0    /* Slot 2 */
@@ -569,7 +569,7 @@ compute_w:
     addi x3, x9, 0
     jal x1, ntt
 
-    loopi 8, 18    /* SCA_TEST_REPLACE: loopi 1, 18 */
+    loopi MLDSA87_K, 18    /* SCA_TEST_REPLACE: loopi 1, 18 */
       /* Expand polynomial A[r][s] and store it at slot 0. */
       addi x2, x8, 0
       addi x3, x12, 0
@@ -609,7 +609,7 @@ compute_w:
     /* End of loop */
 
   /* Map the result polynomials back to the time domain. */
-  loopi 8, 8    /* SCA_TEST_REPLACE: loopi 1, 8 */
+  loopi MLDSA87_K, 8    /* SCA_TEST_REPLACE: loopi 1, 8 */
     /* W0[r] = INTT(W0[r]). */
     addi x2, x10, 0
     addi x3, x10, 0
@@ -657,7 +657,7 @@ decompose_w:
    * polynomial for the high-bit coefficients W1[i]. To save DMEM space, W1[i]
    * is immediately encoded into a dense representation.
    */
-  loopi 8, 10    /* SCA_TEST_REPLACE: loopi 1, 10 */
+  loopi MLDSA87_K, 10    /* SCA_TEST_REPLACE: loopi 1, 10 */
     /* Compute the decomposition of W[i]. Overwrite the two shares of W[i] with
        the shares of W0[i] and place W1[i] in the slot. */
     addi x2, x6, 0
@@ -804,7 +804,7 @@ _compute_z_norm_check_loop:
   addi x16, x16, -672    /* SCA_TEST_REPLACE: addi x16, x16, -96 */
   addi x17, x17, -672    /* SCA_TEST_REPLACE: addi x17, x17, -96 */
 
-  loopi 7, 9    /* SCA_TEST_REPLACE: loopi 1, 9 */
+  loopi MLDSA87_L, 9    /* SCA_TEST_REPLACE: loopi 1, 9 */
     /* Compute the arithmetic shares of Z[s]. */
     jal x1, _compute_z_kernel
 
@@ -1053,7 +1053,7 @@ _compute_r0_loop:
   /* At this point, due to the passed infinity norm check, D0 and D1 are not
      considered sensitive anymore and can be unmasked (see Section 3.2 in [1]).
        R0[s] = D0 + D1 (unmasking). */
-  loopi 8, 6    /* SCA_TEST_REPLACE: loopi 1, 6 */
+  loopi MLDSA87_K, 6    /* SCA_TEST_REPLACE: loopi 1, 6 */
     addi x2, x10, 0
     addi x3, x11, 0
     addi x4, x10, 0
@@ -1105,7 +1105,7 @@ compute_x0:
    *   X0[r] = R0[r] + C
    * endfor
    */
-  loopi 8, 19    /* SCA_TEST_REPLACE: loopi 1, 19 */
+  loopi MLDSA87_K, 19    /* SCA_TEST_REPLACE: loopi 1, 19 */
     /* Decode T0[r] into the polynomial slot. */
     addi x2, x8, 0
     addi x3, x9, 0
@@ -1198,7 +1198,7 @@ make_hint:
    */
 
   /* Calculate the hint polynomials H[r] for 0 <= r < 8. */
-  loopi 8, 32    /* SCA_TEST_REPLACE: loopi 1, 32 */
+  loopi MLDSA87_K, 32    /* SCA_TEST_REPLACE: loopi 1, 32 */
     /* Decode W1[r] into the polynomial slot. */
     addi x2, x6, 0
     addi x3, x7, 0
@@ -1314,7 +1314,7 @@ hw_check_hint:
    * Accumulate the eight parallel counters by looping over all H[r] in steps
    * of eight coefficients at a time.
    */
-  loopi 8, 4    /* SCA_TEST_REPLACE: loopi 1, 4 */
+  loopi MLDSA87_K, 4    /* SCA_TEST_REPLACE: loopi 1, 4 */
     loopi 32, 2
       bn.lid x0, 0(x2++)
       bn.addv.8s w1, w1, w0
@@ -1337,7 +1337,7 @@ hw_check_hint:
   /*
    * w0 = 2^256 - 1 if 75 - w0 >= 0 (MSB of 75 - w0 not set).
    */
-  bn.addi w2, w31, 75
+  bn.addi w2, w31, MLDSA87_OMEGA
   bn.not w3, w31
 
   bn.cmp w2, w0, FG0
@@ -1384,7 +1384,7 @@ compress_hint:
    *   Slot[(75 + i) * 4] = index
    * endfor
    */
-  loopi 8, 16    /* SCA_TEST_REPLACE: loopi 1, 16 */
+  loopi MLDSA87_K, 16    /* SCA_TEST_REPLACE: loopi 1, 16 */
     loopi 256, 8
       /* x8 = H[i][j]. */
       lw x8, 0(x2)
@@ -1408,7 +1408,7 @@ _compress_hint_skip_coeff:
       /* End of loop */
 
     /* Slot[(75 + i) * 4] = index. */
-    addi x8, x0, 75
+    addi x8, x0, MLDSA87_OMEGA
     add x8, x8, x5
     slli x8, x8, 2
     add x8, x8, x4
@@ -1487,7 +1487,7 @@ sig_decode:
   /* Init counter and bound to check when the 75th iteration is reached and a
      0-word has to be inserted. */
   addi x8, x0, 0
-  addi x9, x0, 75
+  addi x9, x0, MLDSA87_OMEGA
 
   /* Iterate over all 83 elements in 21 4-element steps. */
   loopi 21, 11
@@ -1516,7 +1516,7 @@ _sig_decode_zero_insert_skip:
    * representation.
    */
 
-  loopi 7, 5
+  loopi MLDSA87_L, 5
     addi x2, x4, 0
     addi x3, x5, 0
     jal x1, decode_z
@@ -1543,7 +1543,7 @@ check_infinity_norm_z:
   bn.subi w16, w31, 1
 
   /* Iterate over all Z polynomials. */
-  loopi 7, 3
+  loopi MLDSA87_L, 3
     jal x1, check_infinity_norm
 
     bn.and w16, w16, w0
@@ -1594,7 +1594,7 @@ compute_w_approx:
 
   /* Transfer the Z vector into NTT domain in-place. */
   addi x14, x9, 0
-  loopi 7, 11
+  loopi MLDSA87_L, 11
     addi x2, x14, 0
     addi x3, x14, 0
     jal_fi ntt, 977 /* 7 instructions. */
@@ -1610,8 +1610,8 @@ compute_w_approx:
   addi x17, x12, 0
 
   /* Compute W_approx = A * NTT(Z). */
-  loopi 8, 24
-    loopi 7, 19
+  loopi MLDSA87_K, 24
+    loopi MLDSA87_L, 19
       /* Expand A[r][s] into the slot. */
       addi x2, x13, 0
       addi x3, x8, 0
@@ -1653,7 +1653,7 @@ compute_w_approx:
   jal_fi ntt, 977 /* 7 instructions. */
 
   /* Compute W_approx[i] = INTT((A * NTT(Z))[i] - NTT(C) * NTT(T1[i] * 2^d)). */
-  loopi 8, 64
+  loopi MLDSA87_K, 64
     /* Decode T1[i] into slot 0. */
     addi x2, x11, 0
     addi x3, x13, 0
@@ -1743,7 +1743,7 @@ use_hint:
    * and high (r1) bits polynomials, then decodes the i-th hint polynomial and
    * adjusts each of the 256 coefficients in r1 per inner loop.
    */
-  loopi 8, 35
+  loopi MLDSA87_K, 35
     /* Decompose W[i] and put the high bits in the output location and the low
       bits into slot 0. */
     addi x2, x6, 0
@@ -1810,7 +1810,7 @@ use_hint:
   slli x2, x2, 3
   sub  x2, x6, x2
   addi x3, x2, 0
-  loopi 8, 10
+  loopi MLDSA87_K, 10
     jal_fi encode_w1, 690 /* 7 instructions. */
     addi x2, x2, 1024
     addi x3, x3, 128
@@ -1901,8 +1901,8 @@ check_hint:
   addi x3, x0, 0 /* i */
   addi x4, x0, 0 /* index */
 
-  addi x5, x0, 8  /* k */
-  addi x6, x0, 75 /* OMEGA */
+  addi x5, x0, MLDSA87_K
+  addi x6, x0, MLDSA87_OMEGA
 
   bn.xor w0, w0, w0 /* flag */
 
@@ -2051,7 +2051,7 @@ check_hw_c:
    * If x3 != 60: return w0 = 0.
    */
   bn.addi w0, w31, 0    /* Default w0 = 0 */
-  li x4, 60
+  li x4, MLDSA87_TAU
   bne x3, x4, _check_hw_c_end
 
   bn.not w0, w31        /* w0 = 2^256 - 1 */

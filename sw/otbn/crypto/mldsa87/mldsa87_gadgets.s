@@ -254,14 +254,14 @@ sec_mod5_8x32:
 
 /* GAMMA2 = (Q - 1) / 32. */
 mldsa87_const_sec_decompose_gamma2:
-.word 0x0003ff00
-.word 0x0003ff00
-.word 0x0003ff00
-.word 0x0003ff00
-.word 0x0003ff00
-.word 0x0003ff00
-.word 0x0003ff00
-.word 0x0003ff00
+.word MLDSA87_GAMMA2
+.word MLDSA87_GAMMA2
+.word MLDSA87_GAMMA2
+.word MLDSA87_GAMMA2
+.word MLDSA87_GAMMA2
+.word MLDSA87_GAMMA2
+.word MLDSA87_GAMMA2
+.word MLDSA87_GAMMA2
 
 mldsa87_const_sec_decompose_alphas:
 .word 0x0007fe00 /* ALPHA = 2 * GAMMA1 = (Q - 1) / 16 */

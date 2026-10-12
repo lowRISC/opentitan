@@ -254,7 +254,7 @@ sample_in_ball:
 
   /* Set up constants. */
   li x11, 1
-  li x12, 8380417 /* Q */
+  li x12, MLDSA87_Q
 
   /*
    * In the following, we denote by C[i] the i-th coefficient of the sampled
@@ -264,7 +264,7 @@ sample_in_ball:
 
   /* Set TAU = 60 random coefficients of C to either 1 or -1 depending on the
    * indicator string h. */
-  loopi 60, 28
+  loopi MLDSA87_TAU, 28
 _sample_in_ball_coeff:
     /* Squeeze a new batch of 32 bytes, if the buffer has been depleted. */
     bne x10, x0, _sample_in_ball_skip_squeeze
