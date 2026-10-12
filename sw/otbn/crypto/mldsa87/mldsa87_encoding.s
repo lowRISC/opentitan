@@ -39,10 +39,7 @@
  */
 encode_w1:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x2, x3, x4, x5
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3, x4, x5
 
   /* w1 is encoded in chunks of 64 32-bit coefficients that fit in a single
     256-bit WDR. */
@@ -65,10 +62,7 @@ encode_w1:
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x5, x4, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x5, x4, x3, x2
 
   ret
 
@@ -115,10 +109,7 @@ _simple_bit_pack_w1_64x32_64x4:
  */
 decode_s:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x4, x5, x6, x7
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x4, x5, x6, x7
 
   /* Prepare subtraction vector ETA = 2: w2 = [2, 2, 2, 2, 2, 2, 2, 2]. */
   bn.not w2, w31
@@ -170,10 +161,7 @@ decode_s:
   jal x1, _bit_unpack_s
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x7, x6, x5, x4
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x7, x6, x5, x4
 
   ret
 
@@ -268,10 +256,7 @@ _bit_unpack_s:
  */
 encode_t0:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x2, x3, x4
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3, x4
 
   /* Prepare subtraction vector w2 = b = (2^12, 2^12, ..., 2^12). */
   bn.not w1, w31
@@ -322,10 +307,7 @@ encode_t0:
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x4, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x4, x3, x2
 
   ret
 
@@ -342,10 +324,7 @@ encode_t0:
  */
 encode_t1:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x2, x3, x4
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3, x4
 
   /*
    * We have 2560 = 10 * 256, hence all 256 10-bit coefficients exactly fit in
@@ -384,10 +363,7 @@ encode_t1:
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x4, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x4, x3, x2
 
   ret
 
@@ -409,10 +385,7 @@ encode_t1:
  */
 encode_s:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x2, x3, x6, x7
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3, x6, x7
 
   /* Set up subtraction vector w2 = [ETA, ETA, ..., ETA]. */
   bn.not w2, w31
@@ -499,10 +472,7 @@ encode_s:
   bn.sid x6++, 64(x5)
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x7, x6, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x7, x6, x3, x2
 
   ret
 
@@ -524,10 +494,7 @@ encode_s:
  */
 decode_t0:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x4, x5, x6
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x4, x5, x6
 
   /* Prepare subtraction vector 2^(D-1) = 2^(13-1) = 4096:
      [4096, 4096, 4096, 4096, 4096, 4096, 4096, 4096]. */
@@ -591,10 +558,7 @@ decode_t0:
   jal x1, _bit_unpack_t0
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x6, x5, x4
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x6, x5, x4
 
   ret
 
@@ -652,10 +616,7 @@ _bit_unpack_t0:
  */
 decode_w1:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x2, x3, x4, x5, x6, x7
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3, x4, x5, x6, x7
 
   /* WDR pointer. */
   addi x4, x0, 8
@@ -669,10 +630,7 @@ decode_w1:
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x7, x6, x5, x4, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x7, x6, x5, x4, x3, x2
 
   ret
 
@@ -723,10 +681,7 @@ _simple_bit_unpack_w1:
  */
 encode_z:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x2, x3, x4
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3, x4
 
   /* w5 = 2^GAMMA1 = 2^19. */
   bn.not w5, w31
@@ -753,10 +708,7 @@ encode_z:
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x4, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x4, x3, x2
 
   ret
 
@@ -823,10 +775,7 @@ _bit_pack_z:
  */
 decode_z:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x3, x4, x5, x6, x7
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x3, x4, x5, x6, x7
 
   /* Prepare subtraction vector GAMMA1 = 2^19:
      w13 = [2^19, 2^19, 2^19, 2^19, 2^19, 2^19, 2^19, 2^19]. */
@@ -855,10 +804,7 @@ decode_z:
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x7, x6, x5, x4, x3
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x7, x6, x5, x4, x3
 
   ret
 
@@ -920,10 +866,7 @@ _bit_unpack_z_8x8:
  */
 decode_t1:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x3, x4, x5, x6
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x3, x4, x5, x6
 
   /* An undecoded t1 polynomial is 256*10=2560 bits or 10 256-bit words.
      Load them here into w4-w13. */
@@ -981,10 +924,7 @@ decode_t1:
   jal x1, _simple_bit_unpack_t1_4x8
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x6, x5, x4, x3
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x6, x5, x4, x3
 
   ret
 
@@ -1047,10 +987,7 @@ _simple_bit_unpack_t1_4x8:
  */
 decode_h:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x4, x5, x6, x7, x8, x9
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x4, x5, x6, x7, x8, x9
 
   /* A hint polynomial is very sparse, zeroize it here before the inserting
      the non-zero coefficients. */
@@ -1092,9 +1029,6 @@ decode_h:
 _decode_h_end:
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x9, x8, x7, x6, x5, x4
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x9, x8, x7, x6, x5, x4
 
   ret

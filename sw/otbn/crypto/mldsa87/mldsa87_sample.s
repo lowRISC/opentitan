@@ -31,10 +31,7 @@
  */
 rej_ntt_poly:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x2, x4, x5, x6, x7, x8, x9, x10
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x4, x5, x6, x7, x8, x9, x10
 
   /* (Q - 1)^8 = (0x007fe000, 0x007fe000, ..., 0x007fe000). */
   bn.not w5, w31
@@ -119,10 +116,7 @@ _rej_ntt_poly_advance:
   jal x1, xof_finish
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x10, x9, x8, x7, x6, x5, x4, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x10, x9, x8, x7, x6, x5, x4, x2
 
   ret
 
@@ -218,10 +212,7 @@ _rej_ntt_poly_shift_right_recharge_skip:
  */
 sample_in_ball:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x5, x6, x7, x8, x9, x10, x11, x12
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x5, x6, x7, x8, x9, x10, x11, x12
 
   /* Scratch DMEM location to transfer a value in a WDR to a GPR. */
   la x4, mldsa87_sample_in_ball_scratch
@@ -332,10 +323,7 @@ _sample_in_ball_skip_squeeze:
   jal x1, xof_finish
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x12, x11, x10, x9, x8, x7, x6, x5
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x12, x11, x10, x9, x8, x7, x6, x5
 
   ret
 
@@ -407,10 +395,7 @@ mldsa87_sample_in_ball_scratch:
  */
 rej_bounded_poly:
   /* Push clobbered general-purpose registers onto the stack. */
-  .irp reg, x4, x5, x6, x7, x8, x9
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x4, x5, x6, x7, x8, x9
 
   /* Load [ETA, ETA, ..., ETA] into w16. */
   bn.not w16, w31
@@ -566,10 +551,7 @@ _rej_bounded_poly_squeeze_end:
   jal x1, xof_finish
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x9, x8, x7, x6, x5, x4
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x9, x8, x7, x6, x5, x4
 
   ret
 
@@ -593,10 +575,7 @@ _rej_bounded_poly_squeeze_end:
  */
 sample_mask_poly:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x2, x3, x4, x5
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3, x4, x5
 
   /* Load GAMMA1 = (2^19, 2^19, ..., 2^19) into w15. */
   bn.not w15, w31
@@ -754,9 +733,6 @@ sample_mask_poly:
   jal x1, xof_finish
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x5, x4, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x5, x4, x3, x2
 
   ret

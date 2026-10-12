@@ -279,10 +279,7 @@ coefficients.
  */
 ntt:
   /* Push clobbered general-purpose registers onto the stack. */
-  .irp reg, x4, x5, x6, x7, x8
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x4, x5, x6, x7, x8
 
   /* In this routine, we will use w0-15 as the intermediate state holding the
      coefficients while w16 is used to hold an array of 8 twiddle factors. */
@@ -728,10 +725,7 @@ ntt:
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x8, x7, x6, x5, x4
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x8, x7, x6, x5, x4
 
   ret
 
@@ -749,10 +743,7 @@ ntt:
  */
 intt:
   /* Push clobbered general-purpose registers onto the stack. */
-  .irp reg, x4, x5, x6, x7, x8
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x4, x5, x6, x7, x8
 
   /* In this routine, we will use w0-15 as the intermediate state holding the
      coefficients while w16 is used to hold an array of 8 twiddle factors. */
@@ -1228,10 +1219,7 @@ intt:
     /* End of loop. */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x8, x7, x6, x5, x4
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x8, x7, x6, x5, x4
 
   ret
 

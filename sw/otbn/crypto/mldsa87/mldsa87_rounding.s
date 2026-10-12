@@ -32,10 +32,7 @@
  */
 power2round:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x2, x3, x4, x5, x6
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3, x4, x5, x6
 
   /* Prepare an offset vector w3 = (2^(D-1) - 1, ..., 2^(D-1) - 1). */
   bn.not w3, w31
@@ -86,10 +83,7 @@ power2round:
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x6, x5, x4, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x6, x5, x4, x3, x2
 
   ret
 
@@ -109,10 +103,7 @@ power2round:
  */
 shift_left:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x2, x3
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3
 
   /* Each iteration shifts 8 coefficients. */
   loopi 32, 3
@@ -122,10 +113,7 @@ shift_left:
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x3, x2
 
   ret
 
@@ -149,10 +137,7 @@ shift_left:
  */
 decompose:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x2, x3, x4, x5, x6
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3, x4, x5, x6
 
   /*
    Proof of correctness:
@@ -219,10 +204,7 @@ decompose:
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x6, x5, x4, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x6, x5, x4, x3, x2
 
   ret
 
@@ -278,10 +260,7 @@ mldsa87_const_decompose_q:
  */
 check_infinity_norm:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x2, x4
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x4
 
   /*
     For the sake of simplicity, let us start with a weaker notion of the bound
@@ -349,9 +328,6 @@ check_infinity_norm:
   bn.sel w0, w0, w31, FG0.Z
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x4, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x4, x2
 
   ret

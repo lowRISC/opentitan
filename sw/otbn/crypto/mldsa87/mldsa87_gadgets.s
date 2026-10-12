@@ -28,10 +28,7 @@
  */
 sec_bound_check:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x2, x3, x5, x6
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3, x5, x6
 
   /* Load the bound constant b and subtract 1 from it. */
   bn.lid x0, 0(x4)
@@ -73,10 +70,7 @@ sec_bound_check:
   bn.sel w0, w0, w31, FG0.Z
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x6, x5, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x6, x5, x3, x2
 
   ret
 
@@ -102,10 +96,7 @@ sec_bound_check:
  */
 sec_decompose:
   /* Push clobbered registers onto the stack. */
-  .irp reg, x2, x3, x4, x5, x6
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3, x4, x5, x6
 
   /* Load decomposition constants into w4-w7. */
   addi x5, x0, 4
@@ -165,10 +156,7 @@ sec_decompose:
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x6, x5, x4, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x6, x5, x4, x3, x2
 
   ret
 
