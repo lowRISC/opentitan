@@ -217,6 +217,7 @@ pub struct TransportWrapperBuilder {
     strapping_conf_map: HashMap<String, Vec<(String, PinConfiguration)>>,
     io_expander_conf_map: HashMap<String, config::IoExpander>,
     gpio_conf: HashSet<String>,
+    clock_freq_conf: HashMap<String, u64>,
 }
 
 // This is the structure to be passed to each Command implementation,
@@ -236,6 +237,7 @@ pub struct TransportWrapper {
     i2c_conf_map: HashMap<String, I2cConfiguration>,
     strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>>,
     gpio_conf: HashSet<String>,
+    clock_freq_conf: HashMap<String, u64>,
     //
     // Below fields are lazily populated, as instances are requested.
     //
@@ -269,6 +271,7 @@ impl TransportWrapperBuilder {
             strapping_conf_map: HashMap::new(),
             io_expander_conf_map: HashMap::new(),
             gpio_conf: HashSet::new(),
+            clock_freq_conf: HashMap::new(),
         }
     }
 
@@ -357,6 +360,19 @@ impl TransportWrapperBuilder {
         merge_field(&mut entry.address, &i2c_conf.address)?;
         merge_field(&mut entry.bits_per_sec, &i2c_conf.bits_per_sec)?;
         merge_field(&mut entry.alias_of, &i2c_conf.alias_of)?;
+        Ok(())
+    }
+
+    fn record_clock_freq_conf(
+        clock_freq_conf: &mut HashMap<String, u64>,
+        clock_domain: &str,
+        clock_frequency: u64,
+    ) -> Result<(), ()> {
+        let mut entry = clock_freq_conf.get(clock_domain).copied();
+        merge_field(&mut entry, &Some(clock_frequency))?;
+        if let Some(e) = entry {
+            clock_freq_conf.insert(clock_domain.to_owned(), e);
+        }
         Ok(())
     }
 
@@ -475,6 +491,11 @@ impl TransportWrapperBuilder {
         }
         for pin in file.gpios {
             self.gpio_conf.insert(pin);
+        }
+        for (domain, frequency) in file.clock_freqs {
+            Self::record_clock_freq_conf(&mut self.clock_freq_conf, &domain, frequency).map_err(
+                |_| TransportError::InconsistentConf(TransportInterfaceType::ClockFreq, domain),
+            )?;
         }
         Ok(())
     }
@@ -732,6 +753,7 @@ impl TransportWrapperBuilder {
             i2c_conf_map,
             strapping_conf_map,
             gpio_conf: self.gpio_conf,
+            clock_freq_conf: self.clock_freq_conf,
             pin_instance_map: RefCell::new(HashMap::new()),
             spi_physical_map: RefCell::new(HashMap::new()),
             spi_logical_map: RefCell::new(HashMap::new()),
@@ -981,6 +1003,11 @@ impl TransportWrapper {
     /// Returns a [`GpioBitbanging`] implementation.
     pub fn gpio_bitbanging(&self) -> Result<Rc<dyn GpioBitbanging>> {
         self.transport.gpio_bitbanging()
+    }
+
+    /// For a particular clock domain, e.g. "main" or "io", returns its clock frequency, in Hz.
+    pub fn clock_frequency(&self, domain: &str) -> Option<u64> {
+        self.clock_freq_conf.get(domain).copied()
     }
 
     /// Returns the [`PinStrapping`] of the given name, or `None` if the transport configuration

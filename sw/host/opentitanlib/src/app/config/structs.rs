@@ -189,4 +189,7 @@ pub struct ConfigurationFile {
     /// List of GPIO pins.
     #[serde(default)]
     pub gpios: Vec<String>,
+    /// Mapping from a clock domain, e.g. "main" or "io", to its clock frequency (Hz).
+    #[serde(default)]
+    pub clock_freqs: HashMap<String, u64>,
 }
