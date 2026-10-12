@@ -36,7 +36,7 @@
     };
 
     # Provides mkEdaShell (the EDA devshell builder)
-    lowrisc-nix.url = "github:lowRISC/lowrisc-nix/1b7a99222081d9c7f519c18b76c511ff977a7a34";
+    lowrisc-nix.url = "github:lowRISC/lowrisc-nix/8c986b6c902637591f62841d45cf32bd3060add0";
 
     # Makes the standalone dvsim available, however this branch still contains
     # the in-tree version of DVSim and which was used for development at the
