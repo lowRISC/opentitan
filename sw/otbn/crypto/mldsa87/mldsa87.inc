@@ -52,4 +52,34 @@
 1:
 .endm
 
+/**
+ * Push general-purpose registers onto the stack.
+ *
+ * This macro executes 2 instructions per register.
+ *
+ * @param regs The registers to push.
+ */
+.macro push, regs:vararg
+  .irp reg, \regs
+    sw \reg, 0(x31)
+    addi x31, x31, 4
+  .endr
+.endm
+
+/**
+ * Pop general-purpose registers from the stack.
+ *
+ * The registers must be given in the reverse order of the matching `push`.
+ *
+ * This macro executes 2 instructions per register.
+ *
+ * @param regs The registers to pop.
+ */
+.macro pop, regs:vararg
+  .irp reg, \regs
+    addi x31, x31, -4
+    lw \reg, 0(x31)
+  .endr
+.endm
+
 .endif /* MLDSA87_INC */
