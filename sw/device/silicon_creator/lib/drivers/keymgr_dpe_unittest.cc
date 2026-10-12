@@ -125,7 +125,7 @@ class KeymgrDpeTest : public rom_test::RomTest {
             {KEYMGR_DPE_SLOT_POLICY_ALLOW_CHILD_BIT, policy.child},
             {KEYMGR_DPE_SLOT_POLICY_EXPORTABLE_BIT, policy.expo},
             {KEYMGR_DPE_SLOT_POLICY_RETAIN_PARENT_BIT, policy.parent},
-            {KEYMGR_DPE_SLOT_POLICY_ALLOW_KEYGEN_BIT, true},
+            {KEYMGR_DPE_SLOT_POLICY_ALLOW_KEYGEN_BIT, policy.keygen},
         });
     EXPECT_ABS_WRITE32(base_ + KEYMGR_DPE_SLOT_POLICY_REGWEN_REG_OFFSET, 0);
   }
@@ -177,6 +177,8 @@ class KeymgrDpeTest : public rom_test::RomTest {
             {KEYMGR_DPE_METADATA_HIGH_0_EXPORTABLE_POLICY_0_BIT, policy.expo},
             {KEYMGR_DPE_METADATA_HIGH_0_RETAIN_PARENT_POLICY_0_BIT,
              policy.parent},
+            {KEYMGR_DPE_METADATA_HIGH_0_ALLOW_KEYGEN_POLICY_0_BIT,
+             policy.keygen},
         });
   }
 
@@ -190,6 +192,7 @@ class KeymgrDpeTest : public rom_test::RomTest {
       .parent = kScKeymgrDPESlotPolEraseParent,
       .child = kScKeymgrDPESlotPolAllowChild,
       .expo = kScKeymgrDPESlotPolNoExport,
+      .keygen = kScKeymgrDPESlotPolAllowKeygen,
   };
   sc_keymgr_dpe_diversification_t diversification_ = {
       .salt = {0xf0f1f2f3, 0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff, 0xd0d1d2d3,
@@ -236,6 +239,18 @@ TEST_F(KeymgrDpeTest, PolicySet) {
       .parent = kScKeymgrDPESlotPolRetainParent,
       .child = kScKeymgrDPESlotPolAllowChild,
       .expo = kScKeymgrDPESlotPolNoExport,
+      .keygen = kScKeymgrDPESlotPolAllowKeygen,
+  };
+  ExpectPolicySet(policy);
+  sc_keymgr_dpe_policy_set(policy);
+}
+
+TEST_F(KeymgrDpeTest, PolicySetNoKeygen) {
+  sc_keymgr_dpe_policies_t policy = {
+      .parent = kScKeymgrDPESlotPolEraseParent,
+      .child = kScKeymgrDPESlotPolAllowChild,
+      .expo = kScKeymgrDPESlotPolNoExport,
+      .keygen = kScKeymgrDPESlotPolNoKeygen,
   };
   ExpectPolicySet(policy);
   sc_keymgr_dpe_policy_set(policy);
@@ -704,6 +719,7 @@ TEST_F(KeymgrDpeTest, GetMetadata) {
       .parent = kScKeymgrDPESlotPolRetainParent,
       .child = kScKeymgrDPESlotPolAllowChild,
       .expo = kScKeymgrDPESlotPolNoExport,
+      .keygen = kScKeymgrDPESlotPolAllowKeygen,
   };
   ExpectGetMetadata(/*slot=*/3, /*max_key_version=*/0xA5A5A5A5,
                     /*valid=*/true, kScKeymgrDPEBootStageOwner, policy);
@@ -716,6 +732,7 @@ TEST_F(KeymgrDpeTest, GetMetadata) {
   EXPECT_EQ(metadata.slot_policy.parent, kScKeymgrDPESlotPolRetainParent);
   EXPECT_EQ(metadata.slot_policy.child, kScKeymgrDPESlotPolAllowChild);
   EXPECT_EQ(metadata.slot_policy.expo, kScKeymgrDPESlotPolNoExport);
+  EXPECT_EQ(metadata.slot_policy.keygen, kScKeymgrDPESlotPolAllowKeygen);
 }
 
 TEST_F(KeymgrDpeTest, GetMetadataInvalidSlot) {
@@ -723,6 +740,7 @@ TEST_F(KeymgrDpeTest, GetMetadataInvalidSlot) {
       .parent = kScKeymgrDPESlotPolEraseParent,
       .child = kScKeymgrDPESlotPolNoChild,
       .expo = kScKeymgrDPESlotPolAllowExport,
+      .keygen = kScKeymgrDPESlotPolNoKeygen,
   };
   ExpectGetMetadata(/*slot=*/0, /*max_key_version=*/0, /*valid=*/false,
                     kScKeymgrDPEBootStageRuntime, policy);
@@ -735,6 +753,7 @@ TEST_F(KeymgrDpeTest, GetMetadataInvalidSlot) {
   EXPECT_EQ(metadata.slot_policy.parent, kScKeymgrDPESlotPolEraseParent);
   EXPECT_EQ(metadata.slot_policy.child, kScKeymgrDPESlotPolNoChild);
   EXPECT_EQ(metadata.slot_policy.expo, kScKeymgrDPESlotPolAllowExport);
+  EXPECT_EQ(metadata.slot_policy.keygen, kScKeymgrDPESlotPolNoKeygen);
 }
 
 TEST_F(KeymgrDpeTest, GetMetadataSlotOutOfRange) {
@@ -809,6 +828,14 @@ TEST_F(KeymgrDpeTest, CheckMetadataMismatch) {
   // Wrong exportable policy.
   policy = policy_erase_parent_;
   policy.expo = kScKeymgrDPESlotPolAllowExport;
+  ExpectGetMetadata(kSlot, kMaxKeyVersion, /*valid=*/true, kBootStage, policy);
+  EXPECT_EQ(sc_keymgr_dpe_check_metadata(kSlot, kMaxKeyVersion, kBootStage,
+                                         &policy_erase_parent_),
+            kErrorKeymgrInternal);
+
+  // Wrong allow keygen policy.
+  policy = policy_erase_parent_;
+  policy.keygen = kScKeymgrDPESlotPolNoKeygen;
   ExpectGetMetadata(kSlot, kMaxKeyVersion, /*valid=*/true, kBootStage, policy);
   EXPECT_EQ(sc_keymgr_dpe_check_metadata(kSlot, kMaxKeyVersion, kBootStage,
                                          &policy_erase_parent_),

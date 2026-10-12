@@ -376,6 +376,11 @@ status_t keymgr_dpe_get_metadata(uint32_t slot,
                           KEYMGR_DPE_METADATA_HIGH_0_RETAIN_PARENT_POLICY_0_BIT)
           ? kHardenedBoolTrue
           : kHardenedBoolFalse;
+  metadata->slot_policy.allow_keygen =
+      bitfield_bit32_read(reg_high,
+                          KEYMGR_DPE_METADATA_HIGH_0_ALLOW_KEYGEN_POLICY_0_BIT)
+          ? kHardenedBoolTrue
+          : kHardenedBoolFalse;
 
   return OTCRYPTO_OK;
 }

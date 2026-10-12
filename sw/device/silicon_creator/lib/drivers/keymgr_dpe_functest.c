@@ -70,6 +70,7 @@ static const sc_keymgr_dpe_policies_t kDefaultPolicy = {
     .child = kScKeymgrDPESlotPolAllowChild,
     .parent = kScKeymgrDPESlotPolEraseParent,
     .expo = kScKeymgrDPESlotPolNoExport,
+    .keygen = kScKeymgrDPESlotPolAllowKeygen,
 };
 
 enum {

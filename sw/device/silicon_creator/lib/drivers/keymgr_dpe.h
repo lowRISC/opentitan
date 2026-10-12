@@ -82,12 +82,21 @@ typedef enum sc_keymgr_dpe_policy_children {
 } sc_keymgr_dpe_policy_children_t;
 
 /**
- * Merges the three policies into a single struct.
+ * Set whether this DPE context allows generating SW or sideload keys.
+ */
+typedef enum sc_keymgr_dpe_policy_keygen {
+  kScKeymgrDPESlotPolNoKeygen = 0,
+  kScKeymgrDPESlotPolAllowKeygen = 1,
+} sc_keymgr_dpe_policy_keygen_t;
+
+/**
+ * Merges the four policies into a single struct.
  */
 typedef struct sc_keymgr_dpe_policies {
   sc_keymgr_dpe_policy_parent_t parent;
   sc_keymgr_dpe_policy_children_t child;
   sc_keymgr_dpe_policy_export_t expo;
+  sc_keymgr_dpe_policy_keygen_t keygen;
 } sc_keymgr_dpe_policies_t;
 
 enum {

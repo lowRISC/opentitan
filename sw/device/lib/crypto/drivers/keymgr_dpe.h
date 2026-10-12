@@ -71,6 +71,10 @@ typedef struct keymgr_dpe_policy {
    * Set if further advance operations retain (do not erase) this slot.
    */
   hardened_bool_t retain_parent;
+  /**
+   * Set if this DPE context allows generating SW or sideload keys.
+   */
+  hardened_bool_t allow_keygen;
 } keymgr_dpe_policy_t;
 
 /**
