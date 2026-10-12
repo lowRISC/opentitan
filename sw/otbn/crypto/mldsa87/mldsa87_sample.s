@@ -55,16 +55,13 @@ rej_ntt_poly:
   addi x4, x2, 0
 
   /* Sample 256 coefficients in the interval [0, 2^23 - 1]. */
-  loopi 32, 7
+  loopi 32, 5
     /* Squeeze 24 bytes from the XOF, enough to populate one 8-coefficient
        WDR. */
     jal x1, xof_squeeze24
     bn.xor w8, w29, w30 /* unmask */
 
-    loopi 8, 2
-      bn.rshi w0, w8, w0 >> 32
-      bn.rshi w8, w31, w8 >> 24
-      /* End of loop */
+    bn.unpk w0, w31, w8, 0
 
     /* Set bits 31:23 to 0 to map the 3-byte value to [0, 2^23 - 1]. */
     bn.and w0, w0, w5
