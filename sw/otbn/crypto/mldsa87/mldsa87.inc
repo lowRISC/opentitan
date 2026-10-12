@@ -19,6 +19,19 @@
 .equ MLDSA87_MODE_SIGN_DET, 0x8accea7f
 .equ MLDSA87_MODE_VERIFY, 0x1f9b0e52
 
+/*
+ * ML-DSA-87 parameters (FIPS-204, Table 1).
+ */
+.equ MLDSA87_Q, 8380417      /* Modulus, 2^23 - 2^13 + 1. */
+.equ MLDSA87_D, 13           /* Dropped bits from t. */
+.equ MLDSA87_TAU, 60         /* Number of +/-1's in the challenge polynomial. */
+.equ MLDSA87_GAMMA1, 524288  /* Coefficient range of y, 2^19. */
+.equ MLDSA87_GAMMA2, 261888  /* Low-order rounding range, (q - 1) / 32. */
+.equ MLDSA87_K, 8            /* Rows of A. */
+.equ MLDSA87_L, 7            /* Columns of A. */
+.equ MLDSA87_BETA, 120       /* tau * eta. */
+.equ MLDSA87_OMEGA, 75       /* Max number of 1's in the hint h. */
+
 /**
  * Wrap a `jal` instruction and perform an instruction count check on the called
  * routine. If the check fails, the program will be trapped.

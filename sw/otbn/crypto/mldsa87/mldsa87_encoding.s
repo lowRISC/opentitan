@@ -996,7 +996,7 @@ decode_h:
   jal x1, zeroize
 
   /* Fetch the start and end position of the H[k] indices. */
-  addi x5, x4, 75
+  addi x5, x4, MLDSA87_OMEGA
   slli x5, x5, 2
   add  x5, x5, x2
   lw   x6, 0(x5) /* start */
