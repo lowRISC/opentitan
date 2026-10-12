@@ -17,7 +17,7 @@
  * This is a masked variant of the infinity norm check that verifies for a
  * polynomial X that its infinity norm is smaller than a given bound b, i.e.,
  * |X|_inf < b. For a detailed explanation of the inner workings of this
- * algorithm see `mldsa87_verify_norm.s`.
+ * algorithm see `check_infinity_norm` in `mldsa87_rounding.s`.
  *
  * This routine implements the `SecBoundCheck` function (Algorithm 5 in [1]).
  *
@@ -87,7 +87,7 @@ sec_bound_check:
  * while W1 is unmasked.
  *
  * This routine is a masked variant of the polynomial decomposition. See
- * `mldsa87_verify_rounding.s` for detailed breakdown of the individual
+ * `decompose` in `mldsa87_rounding.s` for detailed breakdown of the individual
  * computational steps. This is an implementation of the `SecDecompose`
  * function (Algorithm 7 in [1]).
  *
@@ -109,7 +109,7 @@ sec_decompose:
 
   /* Load decomposition constants into w4-w7. */
   addi x5, x0, 4
-  la x6, _sec_decompose_gamma2
+  la x6, mldsa87_const_sec_decompose_gamma2
   bn.lid x5++, 0(x6)  /* w4 = GAMMA2 */
   bn.lid x5++, 32(x6) /* w5 = (ALPHA, ALPHA^-1) */
 
@@ -260,8 +260,12 @@ sec_mod5_8x32:
 .data
 .balign 32
 
+/*
+ * Decomposition constants (declared in `mldsa87_mem.s`).
+ */
+
 /* GAMMA2 = (Q - 1) / 32. */
-_sec_decompose_gamma2:
+mldsa87_const_sec_decompose_gamma2:
 .word 0x0003ff00
 .word 0x0003ff00
 .word 0x0003ff00
@@ -271,7 +275,7 @@ _sec_decompose_gamma2:
 .word 0x0003ff00
 .word 0x0003ff00
 
-_sec_decompose_alphas:
+mldsa87_const_sec_decompose_alphas:
 .word 0x0007fe00 /* ALPHA = 2 * GAMMA1 = (Q - 1) / 16 */
 .word 0x007f0009 /* ALPHA^-1 * 2^32 mod Q (Montgomery domain) */
 .zero 24 /* Padding */

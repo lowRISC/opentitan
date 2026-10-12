@@ -6,9 +6,16 @@
 
 /* Polynomial sampling routines. */
 
+/* Common */
 .globl rej_ntt_poly
 .globl sample_in_ball
 .globl challenge_hash
+
+/* Keygen */
+.globl rej_bounded_poly
+
+/* Sign */
+.globl sample_mask_poly
 
 .text
 
@@ -217,7 +224,7 @@ sample_in_ball:
   .endr
 
   /* Scratch DMEM location to transfer a value in a WDR to a GPR. */
-  la x4, _sample_in_ball_scratch
+  la x4, mldsa87_sample_in_ball_scratch
 
   /* Make sure the target location of the sampled polynomial is set to 0. */
   addi x20, x2, 0
@@ -373,5 +380,383 @@ challenge_hash:
 .data
 .balign 32
 
-_sample_in_ball_scratch:
+/* Scratch buffer of `sample_in_ball` (declared in `mldsa87_mem.s`). */
+mldsa87_sample_in_ball_scratch:
 .zero 32
+
+/* Polynomial sampling routines for ML-DSA-87 keygen. */
+
+.text
+
+/**
+ * Rejection sample a polynomial with coefficients in the interval [-ETA, ETA].
+ *
+ * This routine can be used to sample a secret-key polynomial S as part of the
+ * vectors S1 and S2 whose coefficients are uniformly distributed in the
+ * interval [-ETA, ETA] for ETA = 2. This is a direct implementation of the
+ * `RejBoundedPoly` function (Algorithm 31) of FIPS-204.
+ *
+ * Note that although the seed rho is a 66-byte Boolean-shared value it shall
+ * be provided in two 96-byte allocated regions in DMEM for seamless
+ * processing by the XOF.
+ *
+ * @param[in] x2: DMEM address of the first Boolean share of rho.
+ * @param[in] x3: DMEM address of the second Boolean share of rho.
+ * @param[in] x4: DMEM address of the first arithmetic share of the sampled S.
+ * @param[in] x5: DMEM address of the second arithmetic share of the sampled S.
+ */
+rej_bounded_poly:
+  /* Push clobbered general-purpose registers onto the stack. */
+  .irp reg, x4, x5, x6, x7, x8, x9
+    sw \reg, 0(x31)
+    addi x31, x31, 4
+  .endr
+
+  /* Load [ETA, ETA, ..., ETA] into w16. */
+  bn.not w16, w31
+  bn.shv.8s w16, w16 >> 31
+  bn.shv.8s w16, w16 << 1
+
+  /* Set the rejection bound to 14. */
+  bn.addi w17, w31, 14
+
+  /* Prepare a 32-bit mask. w12 = 0x000...000ffffffff. */
+  bn.not w12, w31
+  bn.rshi w12, w31, w12 >> 224
+
+  /* Prepare a 4-bit mask. w13 = 0xfff...fff0000000f. */
+  bn.not w13, w31
+  bn.rshi w13, w13, w31 >> 224
+  bn.addi w13, w13, 15
+
+  /* Initialize the SHAKE256 XOF and absorb the 66 bytes of rho. */
+  jal x1, xof_shake256_init
+  addi x20, x0, 66
+  addi x21, x2, 0
+  addi x22, x3, 0
+  jal x1, xof_absorb
+  jal x1, xof_process
+
+  /* Number of half-byte words left in the buffer. */
+  addi x6, x0, 0
+
+  /* WDR pointers. */
+  addi x7, x0, 0
+  addi x8, x0, 1
+
+  /* Initialize the WDRs that hold intermediate results with randomness. */
+  bn.wsrr w4, URND
+  bn.wsrr w5, URND
+  bn.wsrr w10, URND
+  bn.wsrr w11, URND
+
+  /*
+   * The following loop unfolds in two parts. First, rejection sample a
+   * Boolean shared vector x consisting of 8 4-bit coefficients in the interval
+   * [0, 14]. Second, compute x mod 5 and convert the coefficients to
+   * arithmetic shares. Repeat this 32 times until all the coefficients of the
+   * polynomial have been sampled.
+   */
+  loopi 32, 38
+    loopi 8, 27
+     /* If the squeezed buffer is empty re-squeeze a new batch of 64 4-bit
+        coefficients. */
+_rej_bounded_poly_squeeze_start:
+      bne x6, x0, _rej_bounded_poly_squeeze_end
+
+      /* Squeeze and reset the counter. */
+      jal x1, xof_squeeze32
+      addi x6, x0, 64
+
+      /* Rejection loop. Check if a 4-bit value is in interval [0, 14], if so
+         keep it otherwise try the next 4-bit value. */
+_rej_bounded_poly_squeeze_end:
+      /* Update the buffer capacity. */
+      addi x6, x6, -1
+
+      /* Extract a Boolean-shared 4-bit value x[i] from the XOF buffers
+         (w29, w30) and place it at the LSB in w0 and w1. */
+
+      /* Randomness to shift into registers when a coefficient is extracted.
+         This avoids that few secrets bits are isolated in an all-zero WDR. */
+      bn.wsrr w6, URND
+      bn.wsrr w7, URND
+
+      /*
+       * Share 0:
+       */
+
+      /* Extract 4 bits from the buffer and place at the LSB of w4. */
+      bn.rshi w4, w29, w4 >> 4
+      bn.rshi w4, w6, w4 >> 252
+
+      /* Mask out the lower 4 bits. This is necessary for the correctness of
+         the `sec_leq_8x32` bound check below. */
+      bn.and w4, w4, w13
+
+      /* Remove the extracted 4 bits from the buffer. */
+      bn.rshi w29, w6, w29 >> 4
+
+      bn.xor w31, w31, w31 /* dummy */
+
+      /*
+       * Share 1:
+       */
+
+      /* Extract 4 bits from the buffer and place at the LSB of w5. */
+      bn.rshi w5, w30, w5 >> 4
+      bn.rshi w5, w7, w5 >> 252
+
+      /* Mask out the lower 4 bits. This is necessary for the correctness of
+         the `sec_leq_8x32` bound check below. */
+      bn.and w5, w5, w13
+
+      /* Remove the extracted 4 bits from the buffer. */
+      bn.rshi w30, w7, w30 >> 4
+
+      /* Check that x[i] <= 14. */
+      bn.mov w0, w4
+      bn.mov w2, w17 /* splice */
+      bn.mov w1, w5
+      jal x1, sec_leq_8x32
+
+      /* We are only interested in the lower 32 bits of the `sec_leq_8x32`
+         result, mask them out here. */
+      bn.and w0, w0, w12
+
+      /* If x[i] > 14, then x9 = 1, else x9 = 0. */
+      bn.cmp w0, w31, FG0
+      csrrs x9, FG0, x0
+      andi x9, x9, 0x8
+      bne x9, x0, _rej_bounded_poly_squeeze_start
+
+      /* x[i] has passed the rejection check and can be shifted into w10 and
+         w11. */
+      bn.rshi w10, w4, w10 >> 32
+      bn.xor w31, w31, w31 /* dummy */
+      bn.rshi w11, w5, w11 >> 32
+      /* End of loop */
+
+    /*
+     * At this point, we have a Boolean-shared vector x with 8 uniformly
+     * distributed coefficients in the interval [0, 14]. First calculate
+     * x = x mod 5, then convert them to arithmetic shares and calculate
+     * x = 2 - x mod Q. This part is an implementation of the
+     * `CoeffFromHalfByte` function (Algorithm 15) of FIPS-204.
+     */
+
+    /* Compute x mod 5 and convert to arithmetic shares. */
+    bn.mov w0, w10
+    bn.xor w31, w31, w31 /* dummy */
+    bn.mov w1, w11
+
+    jal x1, sec_mod5_8x32
+    jal x1, sec_b2a_8x32
+
+    /* Compute 2 - x mod Q and store the vector in the output DMEM location. */
+    bn.subvm.8S w0, w16, w0
+    bn.sid x7, 0(x4++)
+
+    bn.xor w31, w31, w31 /* dummy */
+
+    bn.subvm.8S w1, w31, w1
+    bn.sid x8, 0(x5++)
+    /* End of loop */
+
+  jal x1, xof_finish
+
+  /* Restore clobbered general-purpose registers. */
+  .irp reg, x9, x8, x7, x6, x5, x4
+    addi x31, x31, -4
+    lw \reg, 0(x31)
+  .endr
+
+  ret
+
+/* Polynomial sampling routines for ML-DSA-87 sign. */
+
+.text
+
+/**
+ * Sample an arithmetically shared mask polynomial Y with coefficients in
+ * [-GAMMA1+1, GAMMA1] for GAMMA1 = 2^19.
+ *
+ * This routine is a subprocedure of `ExpandMask` (Algorithm 34) of FIPS-204
+ * and is parametrized by a 64-byte secret Boolean-shared seed rho and a 2-byte
+ * nonce kappa (provided in 32-byte DMEM region).
+ *
+ * @param[in] x2: DMEM address of the first arithmetic share of Y.
+ * @param[in] x3: DMEM address of the second arithmetic share of Y.
+ * @param[in] x4: DMEM address of the first Boolean share of rho (64 bytes).
+ * @param[in] x5: DMEM address of the second Boolean share of rho (64 bytes).
+ * @param[in] x6: DMEM address of KAPPA (2 bytes, 32-byte DMEM region).
+ */
+sample_mask_poly:
+  /* Push clobbered registers onto the stack. */
+  .irp reg, x2, x3, x4, x5
+    sw \reg, 0(x31)
+    addi x31, x31, 4
+  .endr
+
+  /* Load GAMMA1 = (2^19, 2^19, ..., 2^19) into w15. */
+  bn.not w15, w31
+  bn.shv.8s w15, w15 >> 31
+  bn.shv.8s w15, w15 << 19
+
+  /* Prepare 20-bit masks. w16 = (0x000fffff, ..., 0x000fffff). */
+  bn.not w16, w31
+  bn.shv.8s w16, w16 >> 12
+
+  /* Initialize the SHAKE256 XOF and absorb the 64 bytes of rho. */
+  jal x1, xof_shake256_init
+  addi x20, x0, 64
+  addi x21, x4, 0
+  addi x22, x5, 0
+  jal x1, xof_absorb
+
+  /* Absorb the 2-byte nonce kappa. */
+  addi x20, x0, 2
+  addi x21, x6, 0
+  addi x22, x0, 0
+  jal x1, xof_absorb
+  jal x1, xof_process
+
+  /* Set up WDR pointers. */
+  addi x4, x0, 0
+  addi x5, x0, 1
+
+  /* Initialize the registers that hold the compressed polynomial shares with
+     randomness. This avoids isolating secrets bits in an all-zero register
+     during the shifting operations. */
+
+  /* Share 0. */
+  bn.wsrr w0, URND
+  bn.wsrr w3, URND
+  bn.wsrr w4, URND
+  bn.wsrr w5, URND
+  bn.wsrr w6, URND
+  bn.wsrr w7, URND
+
+  /* Share 1. */
+  bn.wsrr w1, URND
+  bn.wsrr w8, URND
+  bn.wsrr w9, URND
+  bn.wsrr w10, URND
+  bn.wsrr w11, URND
+  bn.wsrr w12, URND
+
+  /* In each iteration, we sample 64 coefficients. */
+  loopi 4, 49
+
+    /*
+     * Each coefficient of the mask polynomial has a size of 20 bits. Since
+     * LCM(20, 256) = 1280 = 5 * 256, we can fully fill five WDRs w3-w7 (share
+     * 0) and w8-w12 (share 1) with sampled bits which in turn is exactly the
+     * amount of bits we need to create 64 coefficients.
+     */
+
+    jal x1, xof_squeeze32
+    bn.mov w3, w29
+    bn.xor w31, w31, w31 /* dummy */
+    bn.mov w8, w30
+
+    jal x1, xof_squeeze32
+    bn.mov w4, w29
+    bn.xor w31, w31, w31 /* dummy */
+    bn.mov w9, w30
+
+    jal x1, xof_squeeze32
+    bn.mov w5, w29
+    bn.xor w31, w31, w31 /* dummy */
+    bn.mov w10, w30
+
+    jal x1, xof_squeeze32
+    bn.mov w6, w29
+    bn.xor w31, w31, w31 /* dummy */
+    bn.mov w11, w30
+
+    jal x1, xof_squeeze32
+    bn.mov w7, w29
+    bn.xor w31, w31, w31 /* dummy */
+    bn.mov w12, w30
+
+    /* Sample 64 coefficients in steps of eight at at time. */
+    loopi 8, 27
+
+      /* Sample one shared vector of eight coefficients. */
+      loopi 8, 17
+
+        /* Randomness to shift into registers when a coefficient is extracted.
+           This avoids that few secrets bits are isolated in an all-zero WDR. */
+        bn.wsrr w13, URND
+        bn.wsrr w14, URND
+
+        /*
+         * Share 0:
+         */
+
+        /* Shift in the next 20-bit coefficient and move it to the most
+           significant 32-bit slot in w0 and w1. */
+        bn.rshi w0, w3, w0 >> 20
+        bn.rshi w0, w13, w0 >> 12
+
+        /* Shift out the 20 bits out of the sampled buffer. */
+        bn.rshi w3, w4, w3 >> 20
+        bn.rshi w4, w5, w4 >> 20
+        bn.rshi w5, w6, w5 >> 20
+        bn.rshi w6, w7, w6 >> 20
+        bn.rshi w7, w13, w7 >> 20
+
+        bn.xor w31, w31, w31 /* dummy */
+
+        /*
+         * Share 1:
+         */
+
+        bn.rshi w1, w8, w1 >> 20
+        bn.rshi w1, w14, w1 >> 12
+
+        bn.rshi w8, w9, w8 >> 20
+        bn.rshi w9, w10, w9 >> 20
+        bn.rshi w10, w11, w10 >> 20
+        bn.rshi w11, w12, w11 >> 20
+        bn.rshi w12, w14, w12 >> 20
+        /* End of loop */
+
+      /*
+       * At this point, w0 and w1 contain eight Boolean-shared coefficients in
+       * w0 and w1. We first convert them to arithmetic shares, then calculate
+       * w0 = GAMMA1 - w0 mod Q and w1 = 0 - w1 mod Q which implements the
+       * `BitUnpack` function (Algorithm 19) of FIPS-204.
+       */
+
+      /* Mask out the lower 20 bits of each 32-bit chunk. */
+      bn.and w0, w0, w16
+      bn.xor w31, w31, w31 /* dummy */
+      bn.and w1, w1, w16
+
+      jal x1, sec_b2a_8x32
+
+      /* w0 = GAMMA1 - w0 mod Q. */
+      bn.subvm.8S w0, w15, w0
+      bn.sid x4, 0(x2++)
+
+      bn.xor w31, w31, w31 /* dummy */
+
+      /* w1 = 0 - w1 mod Q. */
+      bn.subvm.8S w1, w31, w1
+      bn.sid x5, 0(x3++)
+      /* End of loop */
+
+    nop
+    /* End of loop */
+
+  jal x1, xof_finish
+
+  /* Restore clobbered general-purpose registers. */
+  .irp reg, x5, x4, x3, x2
+    addi x31, x31, -4
+    lw \reg, 0(x31)
+  .endr
+
+  ret

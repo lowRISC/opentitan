@@ -7,4 +7,5 @@
 .section .text.start
 
 main:
-  jal x0, mldsa87_sign
+  jal x1, mldsa87_sign
+  ecall
