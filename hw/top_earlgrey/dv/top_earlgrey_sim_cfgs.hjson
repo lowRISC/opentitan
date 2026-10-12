@@ -23,6 +23,7 @@
              "{proj_root}/hw/ip/aes/dv/aes_unmasked_sim_cfg.hjson",
              "{proj_root}/hw/ip/aes/dv/aes_masked_sim_cfg.hjson",
              "{proj_root}/hw/ip/aon_timer/dv/aon_timer_sim_cfg.hjson",
+             "{proj_root}/hw/ip/cheriot_mem_sys/dv/cheriot_mem_sys_sim_cfg.hjson",
              "{proj_root}/hw/ip/csrng/dv/csrng_sim_cfg.hjson",
              "{proj_root}/hw/ip/edn/dv/edn_edn0_sim_cfg.hjson",
              "{proj_root}/hw/ip/edn/dv/edn_edn1_sim_cfg.hjson",
