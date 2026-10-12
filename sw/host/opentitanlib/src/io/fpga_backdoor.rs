@@ -62,11 +62,6 @@ pub mod consts {
     // as being completed. We default to 10000, which is a conservative threshold.
     pub const JTAG_DONE_CYCLES: u64 = 10000;
 
-    // FIXME: This should be refactored so that the ot_transport JSON5 file declares clock
-    // frequencies for each device which we can then query through the transport. This
-    // is hardcoded for now for convenience.
-    pub const CW340_MAIN_CLOCK_FREQ_HZ: u64 = 24 * 1000 * 1000; // 24 MHz
-
     // Parameters - see hw/ip/bkdr_loader/doc/interfaces.md
     pub const DATA_REGS_PER_WORD: usize = 8; // MaxWordWidthDiv32
 }
@@ -113,6 +108,7 @@ pub fn enter_backdoor_loader(transport: &TransportWrapper) -> Result<()> {
 pub struct BackdoorTap<'a> {
     jtag: Box<dyn JtagChain + 'a>,
     jtag_speed_khz: u64,
+    clock_main_hz: u64,
 }
 
 impl BackdoorTap<'_> {
@@ -122,6 +118,7 @@ impl BackdoorTap<'_> {
         Backdoor::new(
             OpenOcdDmi::new(openocd, "fpga_backdoor.tap")?,
             self.jtag_speed_khz,
+            self.clock_main_hz,
             enumerate,
         )
     }
@@ -139,6 +136,9 @@ impl BackdoorParams {
         Ok(BackdoorTap {
             jtag: self.jtag.create(transport)?,
             jtag_speed_khz: self.jtag.adapter_speed_khz,
+            clock_main_hz: transport
+                .clock_frequency("main")
+                .context("main clock frequency must be set to use the FPGA backdoor")?,
         })
     }
 }
@@ -339,16 +339,23 @@ impl<'a> BackdoorTarget<'a> {
 pub struct Backdoor {
     dmi: OpenOcdDmi,
     jtag_speed_khz: u64,
+    clock_main_hz: u64,
     targets: Vec<BackdoorTargetInfo>,
 }
 
 impl Backdoor {
     /// Construct a [`Backdoor`] from a DMI connection to the backdoor TAP. Optionally
     /// enumerate and discover information about all available targets.
-    pub fn new(dmi: OpenOcdDmi, jtag_speed_khz: u64, enumerate: bool) -> Result<Self> {
+    pub fn new(
+        dmi: OpenOcdDmi,
+        jtag_speed_khz: u64,
+        clock_main_hz: u64,
+        enumerate: bool,
+    ) -> Result<Self> {
         let mut fpga_backdoor = Self {
             dmi,
             jtag_speed_khz,
+            clock_main_hz,
             targets: Vec::new(),
         };
         if enumerate {
@@ -409,10 +416,8 @@ impl Backdoor {
         // different DMI / DTM (which can also put the RV_DM into a bad state). It will also
         // potentially put the RV_dM debug infrastructure into a bad state. Configure the
         // bkdr_loader to wait long enough so that we can finish our JTAG transaction.
-        // FIXME: These calculations are specific to the CW340.
         let jtag_freq_hz: u64 = self.jtag_speed_khz * 1000;
-        let soc_clk_wait_cycles =
-            CW340_MAIN_CLOCK_FREQ_HZ.div_ceil(jtag_freq_hz) * JTAG_DONE_CYCLES;
+        let soc_clk_wait_cycles = self.clock_main_hz.div_ceil(jtag_freq_hz) * JTAG_DONE_CYCLES;
         let soc_clk_wait_cycles: u32 = soc_clk_wait_cycles.try_into().unwrap_or_else(|_| {
             log::warn!(
                 "Configured JTAG speed ({} kHz) may overflow bkdr_loader wait time.",
