@@ -1,0 +1,12 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# A placeholder lemma which is trivially true (it's also FifoDepthCheck_A in rram_ctrl.sv), but lets
+# us check that the tooling works
+lemma example
+  FifoDepthCheck: have ((WrFifoDepth <= MaxFifoDepth) &
+                        (RdFifoDepth <= MaxFifoDepth))
+
+
+
