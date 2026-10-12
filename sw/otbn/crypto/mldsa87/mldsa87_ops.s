@@ -2,8 +2,18 @@
 /* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
 /* SPDX-License-Identifier: Apache-2.0 */
 
-/* High-level operations for ML-DSA-87 sign. */
+.include "mldsa87.inc"
 
+/* High-level (vector) operations for ML-DSA-87 keygen, sign and verify. */
+
+/* Keygen */
+.globl sample_s
+.globl compute_t
+.globl encode_t
+.globl hash_seed
+.globl hash_pk
+
+/* Sign */
 .globl compute_rho_prime
 .globl compute_w
 .globl decompose_w
@@ -13,6 +23,421 @@
 .globl make_hint
 .globl hw_check_hint
 .globl compress_hint
+
+/* Verify */
+.globl sig_decode
+.globl check_infinity_norm_z
+.globl compute_w_approx
+.globl use_hint
+.globl check_hint
+.globl check_hw_c
+
+/* High-level operations for the ML-DSA key generation function. */
+
+.text
+
+/**
+ * Sample the S{1,2} vectors.
+ *
+ * Given a Boolean-shared 66-byte (in a 96-byte region) seed RHO_PRIME, this
+ * routine expands the S1 and S2 polynomials (see `expand_s1` and `expand_s2`)
+ * and directly encodes them into the output location. The result are
+ * Boolean-shared encoded vectors S1 and S2 (2 * 672 byte, 2 * 768 bytes).
+ *
+ * Two polynomial slots are required for the storage of intermediate results.
+ *
+ * @param[in] x2: DMEM address of the first Boolean share RHO_PRIME.
+ * @param[in] x3: DMEM address of the second Boolean share RHO_PRIME.
+ * @param[in] x4: DMEM address of the first Boolean share of the encoded S1.
+ * @param[in] x5: DMEM address of the second Boolean share of the encoded S1.
+ * @param[in] x6: DMEM address of the first Boolean share of the encoded S2.
+ * @param[in] x7: DMEM address of the second Boolean share of the encoded S2.
+ * @param[in] x8: DMEM address of polynomial slot 0 (1024 bytes).
+ * @param[in] x9: DMEM address of polynomial slot 1 (1024 bytes).
+ */
+sample_s:
+  /* Prepare DMEM address registers. */
+  addi x10, x2, 0 /* RHO_PRIME (share 0) */
+  addi x11, x3, 0 /* RHO_PRIME (share 1) */
+  addi x12, x4, 0 /* S1_enc (share 0) */
+  addi x13, x5, 0 /* S1_enc (share 1) */
+  addi x14, x6, 0 /* S2_enc (share 0) */
+  addi x15, x7, 0 /* S2_enc (share 1) */
+
+  addi x16, x0, 0 /* s */
+
+  /* Expand the S1 polynomials and encode them. */
+  loopi 7, 14    /* SCA_TEST_REPLACE: loopi 1, 14 */
+    /* Expand S1[s] into slots 0 and 1. */
+    addi x2, x10, 0
+    addi x3, x11, 0
+    addi x4, x8, 0
+    addi x5, x9, 0
+    addi x6, x16, 0
+    jal x1, expand_s1
+
+    /* Encode S1[s] into the output location. */
+    addi x2, x8, 0
+    addi x3, x9, 0
+    addi x4, x12, 0
+    addi x5, x13, 0
+    jal x1, encode_s
+
+    /* Advance output pointers and increment s. */
+    addi x12, x12, 96
+    addi x13, x13, 96
+    addi x16, x16, 1
+    /* End of loop */
+
+  addi x16, x0, 0 /* r */
+
+  /* Expand the S2 polynomials and encode them. */
+  loopi 8, 14    /* SCA_TEST_REPLACE: loopi 1, 14 */
+    /* Expand S2[r] into slots 0 and 1. */
+    addi x2, x10, 0
+    addi x3, x11, 0
+    addi x4, x8, 0
+    addi x5, x9, 0
+    addi x6, x16, 0
+    jal x1, expand_s2
+
+    /* Encode S2[r] into the output location. */
+    addi x2, x8, 0
+    addi x3, x9, 0
+    addi x4, x14, 0
+    addi x5, x15, 0
+    jal x1, encode_s
+
+    /* Advance output pointers and increment r. */
+    addi x14, x14, 96
+    addi x15, x15, 96
+    addi x16, x16, 1
+    /* End of loop */
+
+  ret
+
+/**
+ * Compute the T vector.
+ *
+ * This routine computes T = INTT(A * NTT(S1)) + S2 which is a 8x7
+ * matrix-vector multiplication followed by vector addition. The individual
+ * polynomials of A, S1 and S2 are generated and decoded on-the-fly through
+ * `expand_a` and `decode_s` respectively. `expand_a` requires a 34-byte seed
+ * RHO (in a 64-byte region).
+ *
+ * The secret vectors S1 and S2 are assumed to be provided Boolean shares in
+ * encoded form (2 * 672 bytes, 2 * 768 bytes). The resulting vector is T
+ * is returned in two arithmetic shares (2 * 8192 bytes).
+ *
+ * Three polynomial slots are required for the storage of intermediate results.
+ *
+ * @param[in] x2:  DMEM address of the seed RHO.
+ * @param[in] x3:  DMEM address of the first Boolean share of the encoded S1.
+ * @param[in] x4:  DMEM address of the second Boolean share of the encoded S1.
+ * @param[in] x5:  DMEM address of the first Boolean share of the encoded S2.
+ * @param[in] x6:  DMEM address of the second Boolean share of the encoded S2.
+ * @param[in] x7:  DMEM address of the first arithmetic share of T.
+ * @param[in] x8:  DMEM address of the first arithmetic share of T.
+ * @param[in] x9:  DMEM address of polynomial slot 0 (1024 bytes).
+ * @param[in] x10: DMEM address of polynomial slot 1 (1024 bytes).
+ * @param[in] x11: DMEM address of polynomial slot 2 (1024 bytes).
+ */
+compute_t:
+  /* Prepare DMEM address registers. */
+  addi x12, x2, 0 /* RHO */
+  addi x13, x3, 0 /* S1_0_enc (share 0) */
+  addi x14, x4, 0 /* S1_1_enc (share 1) */
+  addi x15, x5, 0 /* S2_0_enc (share 0) */
+  addi x16, x6, 0 /* S2_1_enc (share 1) */
+
+  /* Loop indices for `expand_a`. */
+  addi x17, x0, 0 /* r */
+  addi x18, x0, 0 /* s */
+
+  /* Zeroize the vector slots. */
+  addi x20, x7, 0
+  addi x21, x0, 256
+  jal x1, zeroize
+
+  addi x20, x8, 0
+  addi x21, x0, 256
+  jal x1, zeroize
+
+  /*
+   * The matrix-vector multiplication proceeds in column-major order:
+   *
+   * for s in [0, 6]:
+   *   S1_0, S1_1 = decode_s(S1_0_enc[s], S1_1_enc[s])
+   *   X0, X1 = NTT(S1_0), NTT(S1_1)
+   *   for r in [0, 7]:
+   *     A = expand_a(RHO, r, s)
+   *     T_0[r] += A * X0
+   *     T_1[r] += A * X1
+   *   end for
+   * end for
+   */
+
+  loopi 7, 38    /* SCA_TEST_REPLACE: loopi 1, 38 */
+    /* X0, X1 = decode_s(S1_0_enc[s], S1_1_enc[s]) (poly slots 0, 1). */
+    addi x2, x13, 0
+    addi x3, x14, 0
+    addi x4, x9, 0
+    addi x5, x10, 0
+    jal x1, decode_s
+
+    /* X0 = NTT(S1_0). */
+    addi x2, x9, 0
+    addi x3, x9, 0
+    jal x1, ntt
+
+    /* X1 = NTT(S1_1). */
+    addi x2, x10, 0
+    addi x3, x10, 0
+    jal x1, ntt
+
+    loopi 8, 18    /* SCA_TEST_REPLACE: loopi 1, 18 */
+      /* A = expand_a(RHO, r, s) (poly slot 2). */
+      addi x2, x11, 0
+      addi x3, x12, 0
+      addi x4, x17, 0
+      addi x5, x18, 0
+      jal x1, expand_a
+
+      /* T_0[r] += A * X0 = A * NTT(S1_0). */
+      addi x2, x11, 0
+      addi x3, x9, 0
+      addi x4, x7, 0
+      addi x5, x7, 0
+      jal x1, poly_mul_add
+
+      /* T_1[r] += A * X1 = A * NTT(S1_1). */
+      addi x2, x11, 0
+      addi x3, x10, 0
+      addi x4, x8, 0
+      addi x5, x8, 0
+      jal x1, poly_mul_add
+
+      /* Increment r and advance output addresses. */
+      addi x7, x7, 1024
+      addi x8, x8, 1024
+      addi x17, x17, 1
+      /* End of loop */
+
+    /* Reset r and increment s. */
+    addi x17, x0, 0
+    addi x18, x18, 1
+
+    /* Reset the output addresses, i.e., subtract 8192. */
+    addi x20, x0, 1024
+    slli x20, x20, 3    /* SCA_TEST_REPLACE: slli x20, x20, 0 */
+    sub x7, x7, x20
+    sub x8, x8, x20
+
+    /* Advance S1_0_enc and S1_1_enc pointers. */
+    addi x13, x13, 96
+    addi x14, x14, 96
+    /* End of loop */
+
+  /*
+   * Vector-vector addition:
+   *
+   * for r in [0, 7]:
+   *   T_0[r] = INTT(T_0[r])
+   *   T_1[r] = INTT(T_1[r])
+   *   X0, X1 = decode_s(S2_0_enc[r], S2_1_enc[r])
+   *   T_0[r] += X0
+   *   T_1[r] += X1
+   * end for
+  */
+
+  loopi 8, 23    /* SCA_TEST_REPLACE: loopi 1, 23 */
+    /* T_0[r] = INTT(T_0[r]). */
+    addi x2, x7, 0
+    addi x3, x7, 0
+    jal x1, intt
+
+    /* T_1[r] = INTT(T_1[r]). */
+    addi x2, x8, 0
+    addi x3, x8, 0
+    jal x1, intt
+
+    /* X0, X1 = decode_s(S2_0_enc[r], S2_1_enc[r]) (poly slots 0, 1). */
+    addi x2, x15, 0
+    addi x3, x16, 0
+    addi x4, x9, 0
+    addi x5, x10, 0
+    jal x1, decode_s
+
+    /* T_0[r] += X0. */
+    addi x2, x7, 0
+    addi x3, x9, 0
+    addi x4, x7, 0
+    jal x1, poly_add
+
+    /* T_1[r] += X1. */
+    addi x2, x8, 0
+    addi x3, x10, 0
+    addi x4, x8, 0
+    jal x1, poly_add
+
+    /* Advance output and S2_enc pointers. */
+    addi x7, x7, 1024
+    addi x8, x8, 1024
+    addi x15, x15, 96
+    addi x16, x16, 96
+    /* End of loop */
+
+  ret
+
+/**
+ * Round and encode T.
+ *
+ * This routine unmasks the arithmetically shared vector T, rounds it to T0 and
+ * T1 vectors which are then encoded on-the-fly.
+ *
+ * Two polynomial slots are required for the storage of intermediate results.
+ *
+ * @param[in] x2: DMEM address of the first arithmetic share of T (8192 bytes).
+ * @param[in] x3: DMEM address of the second arithmetic share of T (8192 bytes).
+ * @param[in] x4: DMEM address of the encoded T0 vector (3328 bytes).
+ * @param[in] x5: DMEM address of the encoded T1 vector (2560 bytes).
+ * @param[in] x6: DMEM address of polynomial slot 0 (1024 bytes).
+ * @param[in] x7: DMEM address of polynomial slot 1 (1024 bytes).
+ */
+encode_t:
+  /* Prepare DMEM address registers. */
+  addi x8, x2, 0  /* T (share 0) */
+  addi x9, x3, 0  /* T (share 1) */
+  addi x10, x4, 0 /* T0_enc */
+  addi x11, x5, 0 /* T1_enc */
+
+  /* Unmask, round and encode each T polynomial. */
+  loopi 8, 18    /* SCA_TEST_REPLACE: loopi 1, 18 */
+    /* Securely unmask T into slot 0. */
+    addi x2, x8, 0
+    addi x3, x9, 0
+    addi x4, x6, 0
+    jal x1, sec_unmask
+
+    /* Split T into T0 and T1 in slots 0 and 1. */
+    addi x2, x6, 0
+    addi x3, x6, 0
+    addi x4, x7, 0
+    jal x1, power2round
+
+    /* Encode T0 into the output location. */
+    addi x2, x6, 0
+    addi x3, x10, 0
+    jal x1, encode_t0
+
+    /* Encode T1 into the output location. */
+    addi x2, x7, 0
+    addi x3, x11, 0
+    jal x1, encode_t1
+
+    /* Advance T and output pointers.*/
+    addi x8, x8, 1024
+    addi x9, x9, 1024
+    addi x10, x10, 416
+    addi x11, x11, 320
+    /* End of loop */
+
+  ret
+
+/**
+ * Hash the seed Xi.
+ *
+ * ML-DSA keygen is parametrized by a 32-byte seed Xi (passed as a 34-byte
+ * value) that is hashed to create RHO, RHO_PRIME and K, i.e.,
+ *
+ *   RHO, RHO_PRIME, K = Shake256(Xi),
+ *
+ * where RHO is a 32-byte unshared value, RHO_PRIME is a 64-byte Boolean-shared
+ * value and K is a 32-byte Boolean-shared value.
+ *
+ * Xi is assumed to be passed as a 34-byte value in a 64-byte region with bytes
+ * 32 and 33 of both shares set to 0.
+ *
+ * @param[in] x2: DMEM address of the first Boolean share of Xi.
+ * @param[in] x3: DMEM address of the second Boolean share of Xi.
+ * @param[in] x4: DMEM address of RHO.
+ * @param[in] x5: DMEM address of the first Boolean share of RHO_PRIME.
+ * @param[in] x6: DMEM address of the second Boolean share of RHO_PRIME.
+ * @param[in] x7: DMEM address of the first Boolean share of K.
+ * @param[in] x8: DMEM address of the second Boolean share of K.
+ */
+hash_seed:
+  /* Squeeze buffer WDR pointers. */
+  addi x9, x0, 29
+  addi x10, x0, 30
+
+  jal x1, xof_shake256_init
+
+  /* Absorb the 34-byte Boolean shared seed value Xi. */
+  addi x20, x0, 34
+  addi x21, x2, 0
+  addi x22, x3, 0
+  jal x1, xof_absorb
+  jal x1, xof_process
+
+  /* Squeeze the 32-byte unshared value RHO. */
+  jal x1, xof_squeeze32
+  bn.xor w29, w29, w30 /* unmask */
+  bn.sid x9, 0(x4)
+
+  /* Squeeze the 64-byte Boolean-shared value RHO_PRIME. */
+  jal x1, xof_squeeze32
+  bn.sid x9, 0(x5)
+  bn.xor w31, w31, w31 /* dummy */
+  bn.sid x10, 0(x6)
+  jal x1, xof_squeeze32
+  bn.sid x9, 32(x5)
+  bn.xor w31, w31, w31 /* dummy */
+  bn.sid x10, 32(x6)
+
+  /* Squeeze the 32-byte Boolean-shared value K. */
+  jal x1, xof_squeeze32
+  bn.sid x9, 0(x7)
+  bn.xor w31, w31, w31 /* dummy */
+  bn.sid x10, 0(x8)
+
+  jal x1, xof_finish
+
+  ret
+
+/**
+ * Hash the public key.
+ *
+ * The hash of the 2592-byte public key is 64-byte unshared value TR.
+ *
+ *   TR = Shake256(PK)
+ *
+ * @param[in] x2: DMEM address of the 2592-byte public key.
+ * @param[in] x3: DMEM address of TR.
+ */
+hash_pk:
+  jal x1, xof_shake256_init
+
+  /* Absorb the entire public key of size 2592 bytes. */
+  li x20, 2592
+  addi x21, x2, 0
+  addi x22, x0, 0
+  jal x1, xof_absorb
+  jal x1, xof_process
+
+  /* Squeeze the 64-byte value TR. */
+  jal x1, xof_squeeze32
+  bn.xor w0, w29, w30 /* unmask */
+  bn.sid x0, 0(x3)
+  jal x1, xof_squeeze32
+  bn.xor w0, w29, w30 /* unmask */
+  bn.sid x0, 32(x3)
+
+  jal x1, xof_finish
+
+  ret
+
+/* High-level operations for ML-DSA-87 sign. */
 
 .text
 
@@ -1031,4 +1456,605 @@ _compress_hint_skip_coeff:
     addi x5, x5, 4
     /* End of loop */
 
+  ret
+
+/* High-level operations for the ML-DSA-87 verify function. */
+
+.text
+
+/**
+ * Decode the signature blob.
+ *
+ * The signature comprises the challenge string C_TILDE, the signature
+ * vector Z and the hint vector H. This routine decodes Z to polynomials in the
+ * canonical representation and H to an intermediate internal representation
+ * (see `decode_z` and `decode_h`). This is an implementation of the `sigDecode`
+ * function (Algorithm 27) of FIPS-204.
+ *
+ * @param[in] x2: DMEM address of the encoded H (83 bytes in 96-byte region).
+ * @param[in] x3: DMEM address of the decoded H (336 bytes in 352-byte region).
+ * @param[in] x4: DMEM address of the encoded signature vector Z.
+ * @param[in] x5: DMEM address of the decoded signature vector Z.
+ */
+sig_decode:
+
+  /*
+   * Part 1: Decode the encoded hint vector H to an internal representation in
+   * in which every of the 83 bytes reside in separate 32-bit words and a
+   * zero 32-bit word is inserted after the 75th element.
+   */
+
+  /* Init counter and bound to check when the 75th iteration is reached and a
+     0-word has to be inserted. */
+  addi x8, x0, 0
+  addi x9, x0, 75
+
+  /* Iterate over all 83 elements in 21 4-element steps. */
+  loopi 21, 11
+    lw x6, 0(x2)
+    loopi 4, 8
+      /* Only insert the 0-word after the 75th element. */
+      bne x8, x9, _sig_decode_zero_insert_skip
+      sw x0, 0(x3)
+      addi x3, x3, 4
+
+_sig_decode_zero_insert_skip:
+
+      /* Rotate out the least-significant byte and store it in DMEM. */
+      and  x7, x6, 0xff
+      sw   x7, 0(x3)
+      srli x6, x6, 8
+      addi x3, x3, 4
+
+      addi x8, x8, 1
+      /* End of loop */
+    addi x2, x2, 4
+    /* End of loop */
+
+  /*
+   * Part 2: Decode the 7 signature polynomials Z[i] to the canonical
+   * representation.
+   */
+
+  loopi 7, 5
+    addi x2, x4, 0
+    addi x3, x5, 0
+    jal x1, decode_z
+
+    addi x4, x4, 640
+    addi x5, x5, 1024
+    /* End of loop */
+
+  ret
+
+/**
+ * Check that |Z|_inf < GAMMA - BETA = 2^19 - 120.
+ *
+ * This check is part of the signature verification function of ML-DSA-87.
+ * The polynomial vector z is assumed to be provided in encoded form and is
+ * decoded on-the-fly.
+ *
+ * @param[in] x2: DMEM address of the vector Z (8 * 1024 bytes).
+ * @param[in] x3: DMEM address of the bound vector (32 bytes).
+ * @param[out] w0: 2^256-1 if |Z|_inf < GAMMA1 - BETA, else 0.
+ */
+check_infinity_norm_z:
+  /* Init flag. w16 is not clobbered by `check_infinity_norm`. */
+  bn.subi w16, w31, 1
+
+  /* Iterate over all Z polynomials. */
+  loopi 7, 3
+    jal x1, check_infinity_norm
+
+    bn.and w16, w16, w0
+    addi x2, x2, 1024
+    /* End of loop */
+
+  bn.mov w0, w16
+
+  ret
+
+/**
+ * Compute the approximated commitment vector W_approx.
+ *
+ * This routine computes INTT(A * NTT(Z) - NTT(C) * NTT(T1 * 2^d)) analogously
+ * to line 9 in Algorithm 8 of FIPS-204. The signature vector Z shall be passed
+ * in decoded form and the public-key vector T1 in encoded form which is
+ * undecoded on-the-fly. Similarly, the polynomial matrix A is expanded
+ * on-the-fly using the RHO seed. The input values are not preserved.
+ *
+ * Note that this routine alone accounts for almost 90% of all verify cycles.
+ *
+ * @param[in] x2: DMEM address of RHO (32 bytes in a 64 byte region).
+ * @param[in] x3: DMEM address of Z (7168 bytes).
+ * @param[in] x4: DMEM adresss of C (1024 bytes).
+ * @param[in] x5: DMEM address of encoded T1 (2560 bytes).
+ * @param[in] x6: DMEM address of the result W_approx (8192 bytes).
+ * @param[in] x7: DMEM address of a polynomial slot (1024 bytes).
+ */
+compute_w_approx:
+  /* Save DMEM address pointers. */
+  addi x8, x2, 0  /* RHO */
+  addi x9, x3, 0  /* Z */
+  addi x10, x4, 0 /* C */
+  addi x11, x5, 0 /* T1_enc */
+  addi x12, x6, 0 /* W_approx */
+  addi x13, x7, 0 /* Slot */
+
+  /* Make sure the output location is properly zeroized. Dangling non-zero
+     values can make the matrix multiplication fail (see `poly_mul_add`). */
+  addi x20, x12, 0
+  addi x21, x0, 256
+  jal x1, zeroize
+
+  /*
+   * Part 1: Compute A * NTT(Z), where A is 8x7 polynomial matrix and Z is the
+   * signature vector. A is sampled on-the-fly.
+   */
+
+  /* Transfer the Z vector into NTT domain in-place. */
+  addi x14, x9, 0
+  loopi 7, 11
+    addi x2, x14, 0
+    addi x3, x14, 0
+    jal_fi ntt, 977 /* 7 instructions. */
+    addi x14, x14, 1024
+    /* End of loop */
+
+  /* Indices r, s for the expansion of A. */
+  addi x14, x0, 0
+  addi x15, x0, 0
+
+  /* Temp address pointers for Z and W_approx. */
+  addi x16, x9, 0
+  addi x17, x12, 0
+
+  /* Compute W_approx = A * NTT(Z). */
+  loopi 8, 24
+    loopi 7, 19
+      /* Expand A[r][s] into the slot. */
+      addi x2, x13, 0
+      addi x3, x8, 0
+      addi x4, x14, 0
+      addi x5, x15, 0
+      jal x1, expand_a
+
+      /* W_approx[r] += A[r][s] * Z[s]. */
+      addi x2, x13, 0
+      addi x3, x16, 0
+      addi x4, x17, 0
+      addi x5, x17, 0
+      jal_fi poly_mul_add, 252  /* 7 instructions. */
+
+      /* Increment s and the Z address pointer. */
+      addi x15, x15, 1
+      addi x16, x16, 1024
+      /* End of loop */
+
+  /* Increment r, reset s and the Z address pointer, advance the W_approx
+     pointer. */
+  addi x14, x14, 1
+  addi x15, x0, 0
+  addi x16, x9, 0
+  addi x17, x17, 1024
+  /* End of loop */
+
+  /*
+   * Part 2: Compute the subtraction INTT(A * NTT(Z) - NTT(C) * NTT(T1)) by
+   * decoding T1 on-the-fly.
+   */
+
+  /* Temp W_approx address pointer. */
+  addi x14, x12, 0
+
+  /* Map C into NTT domain in-place. */
+  addi x2, x10, 0
+  addi x3, x10, 0
+  jal_fi ntt, 977 /* 7 instructions. */
+
+  /* Compute W_approx[i] = INTT((A * NTT(Z))[i] - NTT(C) * NTT(T1[i] * 2^d)). */
+  loopi 8, 64
+    /* Decode T1[i] into slot 0. */
+    addi x2, x11, 0
+    addi x3, x13, 0
+    jal_fi decode_t1, 1232 /* 7 instructions. */
+
+    /* Shift left: T1[i] * 2^d. */
+    addi x2, x13, 0
+    addi x3, x13, 0
+    jal_fi shift_left, 106 /* 7 instructions. */
+
+    /* Map T1[i] * 2^d into NTT domain in-place. */
+    addi x2, x13, 0
+    addi x3, x13, 0
+    jal_fi ntt, 977 /* 7 instructions. */
+
+    /* Calculate T1[i] = c * T1[i]. */
+    addi x2, x10, 0
+    addi x3, x13, 0
+    addi x4, x13, 0
+    jal_fi poly_mul, 179 /* 7 instructions. */
+
+    /* Calculate W[i] = W[i] - c * T1[i]. */
+    addi x2, x14, 0
+    addi x3, x13, 0
+    addi x4, x14, 0
+    jal_fi poly_sub, 147 /* 7 instructions. */
+
+    /* Map the result back to the time domain. */
+    addi x2, x14, 0
+    addi x3, x14, 0
+    jal_fi intt, 1042 /* 7 instructions. */
+
+    addi x11, x11, 320
+    addi x14, x14, 1024
+    /* End of loop */
+
+  ret
+
+/**
+ * Returns the hint-adjusted high level bits W1 of the commitment vector W
+ * in encoded form (8 * 128 bytes).
+ *
+ * For the signature verification to succeed, the approximation of the high bits
+ * in the commitment vector needs to be corrected using the hint. This routine
+ * implements the `UseHint` function (Algorithm 40) of FIPS-204. The
+ * coefficients of the output polynomials lie in the interval
+ * [0, (q-1)/(2*gamma2)[ = [0, 15].
+ *
+ * This routine is in-place meaning that the corrected and encoded W1 vector
+ * resides at DMEM[x2].
+ *
+ * The hint vector is assumed to be provided in the intermediate encoded
+ * representation (see `sig_decode`).
+ *
+ * @param[in] x2: DMEM address of the approximated commitment vector W_approx.
+ * @param[in] x3: DMEM address of the undecoded hint vector H.
+ * @param[in] x4: DMEM address of the polynomial slot 0.
+ * @param[in] x5: DMEM address of the polynomial slot 1.
+ */
+use_hint:
+
+  /*
+    The original commitment vector is calculated by HighBits(AZ - CT), however
+    due to the decomposition of  T = T1 * 2^d + T0, the verifier can only
+    compute AZ - CT + CT0. Since CT0 contains only small-norm coefficients, all
+    we need to know to recreate HighBits(AZ - CT) from AZ - CT + CT0 is which
+    coefficients of HighBits(AZ - CT) would change with the subtraction of CT0.
+    So the hint is basically the carry bits of the subtraction of CT0.
+   */
+
+  /* Prepare the address pointers. */
+  addi x6, x2, 0 /* w1_approx */
+  addi x7, x3, 0 /* h */
+  addi x8, x4, 0 /* slot 0 */
+  addi x9, x5, 0 /* slot 1 */
+
+  /* Index counter for the decoding of the hint polynomials. */
+  addi x10, x0, 0
+
+  /* WDR pointers. */
+  addi x11, x0, 0
+  addi x12, x0, 1
+  addi x13, x0, 2
+
+  /*
+   * The adjustment algorithm first decomposes the input polynomial in low (r0)
+   * and high (r1) bits polynomials, then decodes the i-th hint polynomial and
+   * adjusts each of the 256 coefficients in r1 per inner loop.
+   */
+  loopi 8, 35
+    /* Decompose W[i] and put the high bits in the output location and the low
+      bits into slot 0. */
+    addi x2, x6, 0
+    addi x3, x8, 0 /* r0 */
+    addi x4, x6, 0 /* r1 */
+    jal_fi decompose, 513 /* 7 instructions. */
+
+    /* Decode H[i] and place into slot 1. */
+    addi x2, x7, 0
+    addi x3, x9, 0
+    addi x4, x10, 0
+    jal x1, decode_h
+
+    /* Prepare constant vectors. Due to clobbered WDRs place them inside the
+       loop. */
+
+    /* [1, 1, 1, 1, 1, 1, 1, 1]. */
+    bn.not w6, w31
+    bn.shv.8s w6, w6 >> 31
+    /* [15, 15, 15, 15, 15, 15, 15, 15]. */
+    bn.not w7, w31
+    bn.shv.8s w7, w7 >> 28
+
+    loopi 32, 12
+      bn.lid x11, 0(x8++) /* r0 */
+      bn.lid x12, 0(x6)   /* r1 */
+      bn.lid x13, 0(x9++) /* h  */
+
+      /* Create a mask for h; -1 if h = 1, else 0. */
+      bn.subv.8s w2, w31, w2
+
+      /*
+       * Merge lines 3, 4, and 5 of Algorithm 40 into one operation that
+       * calculates (r1 + x) mod 16 where
+       *   x =  1 if h = 1 and r0 > 0,
+       *   x = -1 if h = 1 and r0 <= 0,
+       *   x = 0 otherwise.
+       */
+
+      /* x = -1 if r0 <= 0, else x = 0. */
+      bn.subv.8s w3, w0, w6
+      bn.shv.8s w3, w3 >> 31
+      bn.subv.8s w3, w31, w3
+      /* x = -1 if r0 <= 0, else x = 1. */
+      bn.or w3, w3, w6
+      /* x = -1 if r0 <= 0 and h = 1; x = 1 if r0 > 0 and h = 1. */
+      bn.and w5, w3, w2
+
+      /* r1 + x mod 16. */
+      bn.addv.8s w1, w1, w5
+      bn.and w1, w1, w7
+
+      bn.sid x12, 0(x6++)
+      /* End of loop */
+
+    /* Advance/reset address pointers and hint index. */
+    addi x8, x8, -1024
+    addi x9, x9, -1024
+    addi x10, x10, 1
+    /* End of loop */
+
+  /* Restore the w1 pointer and encode w1 in-place.  */
+  addi x2, x0, 1024
+  slli x2, x2, 3
+  sub  x2, x6, x2
+  addi x3, x2, 0
+  loopi 8, 10
+    jal_fi encode_w1, 690 /* 7 instructions. */
+    addi x2, x2, 1024
+    addi x3, x3, 128
+    /* End of loop */
+
+  ret
+
+/**
+ * Check that the hint is valid.
+ *
+ * Given the encoded hint bytes in the intermediate representation generated
+ * by `sig_decode`, i.e., 83 + 1 4-byte words, this routine verifies its
+ * validity by checking three error conditions as specified in the
+ * `HintBitUnpack` function (Algorithm 21) of FIPS-204.
+ *
+ * @param[in]  x2: DMEM address of the hint in the intermediate representation.
+ * @param[out] w0: 2^256-1 if the hint is valid, else 0.
+ */
+check_hint:
+
+  /*
+   * The hint encodes which indices in the K = 8 polynomials in W1_APPROX need
+   * to be corrected. The encoding is of the following form:
+   *
+   * | X00, ..., X0A | X10, ..., X1B | ... | X70, ..., X7H | 0 ... 0 | A + 1, B + 1, ..., H + 1 |
+   *    ^               ^                     ^                 ^        ^                  ^
+   *    |               |                     |                 |        |                  |
+   *   H[0]           H[A+1]                H[G+1]           Padding  H[OMEGA+0]         H[OMEGA+7]
+   *
+   * Here X0[0-A] denotes the A coefficient indices of the first polynomial
+   * that need correction while X7[0-H] denotes the same thing for the H
+   * coefficients in the eight polynomial. Bytes 75 to 82 serve as a lookup
+   * table that indicates the last element of each of the eight subsequences.
+   * For example, Bytes 0 to A correspond to the first polynomial, bytes
+   * A + 1 to B to the second polynomial and so on.
+   *
+   * A correctly encoded hint respects three conditions that need to be
+   * verified before it can be unpacked correctly:
+   *
+   *   1. 0 <= H[OMEGA+0] <= H[OMEGA+1] <= ... <= H[OMEGA+7] <= OMEGA.
+   *
+   *   2. X00 < X01 < ... X0A, X10 < X11 < ... X1B, etc.
+   *
+   *   3. H[H+1] to H[OMEGA-1] = 0.
+   */
+
+  /*
+   * We follow the `HintBitUnpack` function from FIPS-204 in a verbatim manner
+   * and early-exit the routine upon encountering the first violation of one
+   * of the three conditions.
+   *
+   * index = 0
+   * k = 8
+   *
+   * for i in [0, k - 1]:
+   *
+   *   # Condition 1
+   *   if H[OMEGA + i] < index or H[OMEGA + i] > OMEGA:
+   *     return 0
+   *   end if
+   *
+   *   first = index
+   *
+   *   while index < H[OMEGA + i]:
+   *     # Condition 2
+   *     if index > first and H[index - 1] >= H[index]:
+   *       return 0
+   *     end if
+   *
+   *     index = index + 1
+   *
+   *   end while
+   *
+   * end for
+   *
+   * for i in [index, OMEGA - 1]:
+   *   # Condition 3
+   *   if H[i] != 0:
+   *     return 0
+   *   end if
+   *
+   * end for
+   *
+   * return 2^256 - 1
+   */
+
+  /* Set up variables and constants. */
+  addi x3, x0, 0 /* i */
+  addi x4, x0, 0 /* index */
+
+  addi x5, x0, 8  /* k */
+  addi x6, x0, 75 /* OMEGA */
+
+  bn.xor w0, w0, w0 /* flag */
+
+  /*
+   * Outer for-loop and inner while-loop to check conditions 1 and 2.
+   */
+_check_hint_outer_loop:
+
+  /* Calculate the address of H[OMEGA + i]. Note that the intermediate
+     representation created by `sig_decode` inserts a zero byte at index 75
+     which means the first element of the lookup table is actually at
+     H[OMEGA + 1 + 0]. For simplicity, we drop the +1 below. */
+  add x7, x3, x6
+  addi x7, x7, 1
+  slli x7, x7, 2
+  add x7, x7, x2
+
+  /* Load H[OMEGA + i]. */
+  lw x8, 0(x7)
+
+  /* Condition 1. */
+
+  /* H[OMEGA + i] >= index. */
+  sub x7, x8, x4
+  srai x7, x7, 31
+  bne x7, x0, _check_hint_end
+
+  /* H[OMEGA + i] <= OMEGA. */
+  sub x7, x6, x8
+  srai x7, x7, 31
+  bne x7, x0, _check_hint_end
+
+  addi x7, x4, 0 /* first = index. */
+
+  /*
+   * Start of the inner while-loop.
+   */
+_check_hint_inner_loop_start:
+
+  /* Exit the while-loop if index >= H[OMEGA + i]. */
+  sub x9, x8, x4
+  addi x9, x9, -1
+  srai x9, x9, 31
+  bne x9, x0, _check_hint_inner_loop_end
+
+  /* If index <= first, then skip the second check. The skip is necessary to
+     prevent out-of-bounds memory accesses. */
+  sub x9, x4, x7
+  addi x9, x9, -1
+  srai x9, x9, 31
+  bne x9, x0, _check_hint_inner_loop_cond_skip
+
+  /* Calculate the address of H[index]. */
+  slli x9, x4, 2
+  add x9, x9, x2
+
+  /* Load H[index - 1] and H[index]. */
+  lw x10, -4(x9)
+  lw x11, 0 (x9)
+
+  /* Condition 2. */
+
+  /* H[index - 1] < H[index]. */
+  sub x9, x11, x10
+  addi x9, x9, -1
+  srai x9, x9, 31
+  bne x9, x0, _check_hint_end
+
+_check_hint_inner_loop_cond_skip:
+
+  /* Increment index and jump to the start of the while loop. */
+  addi x4, x4, 1
+  jal x0, _check_hint_inner_loop_start
+
+_check_hint_inner_loop_end:
+
+  /* Increment i and jump back to the start of the for-loop if i < k. */
+  addi x3, x3, 1
+  bne x3, x5, _check_hint_outer_loop
+
+  /* At this point conditions 1 and 2 have been successfully verified. */
+
+  addi x3, x4, 0 /* i = index */
+
+  /*
+   * Start of the final for-loop.
+   */
+_check_hint_final_loop_start:
+
+  /* Exit the loop, if i = OMEGA. */
+  beq x3, x6, _check_hint_final_loop_end
+
+  /* Calculate the address of H[i]. */
+  slli x9, x3, 2
+  add x9, x9, x2
+
+  /* Load H[i]. */
+  lw x10, 0(x9)
+
+  /* Condition 3. */
+
+  /* H[0] == 0. */
+  bne x10, x0, _check_hint_end
+
+  /* Increment i and jump to the start of the final loop. */
+  addi x3, x3, 1
+  jal x0, _check_hint_final_loop_start
+
+_check_hint_final_loop_end:
+
+  /* Arriving here means the hint has passed the validity check and we can set
+     the return flag to 2^256 - 1. */
+
+  bn.not w0, w0
+
+_check_hint_end:
+  ret
+
+/**
+ * Check the Hamming weight of the challenge polynomial c (scalar loop).
+ *
+ * The challenge polynomial must contain exactly 60 non-zero coefficients.
+ * This routine calculates this Hamming weight coefficient-by-coefficient
+ * across the 256 coefficients and asserts that it equals 60.
+ *
+ * @param[in] x2: DMEM address of the challenge polynomial c (1024 bytes).
+ * @param[out] w0: 2^256 - 1 if HW(c) == 60, else 0.
+ */
+check_hw_c:
+  li x3, 0  /* Counter for non-zero coefficients */
+
+  /*
+   * Loop over all 256 32-bit coefficients.
+   */
+  loopi 256, 6
+    lw x4, 0(x2)
+    addi x2, x2, 4
+    sub x5, x0, x4      /* x5 = -c_i */
+    or x5, x5, x4       /* x5 = c_i | (-c_i) (MSB is 1 iff c_i != 0) */
+    srli x5, x5, 31     /* x5 = 1 if c_i != 0, else 0 */
+    add x3, x3, x5      /* counter += (c_i != 0) */
+
+  /*
+   * Check if counter (x3) == 60.
+   * If x3 == 60: return w0 = 2^256 - 1.
+   * If x3 != 60: return w0 = 0.
+   */
+  bn.addi w0, w31, 0    /* Default w0 = 0 */
+  li x4, 60
+  bne x3, x4, _check_hw_c_end
+
+  bn.not w0, w31        /* w0 = 2^256 - 1 */
+
+_check_hw_c_end:
   ret

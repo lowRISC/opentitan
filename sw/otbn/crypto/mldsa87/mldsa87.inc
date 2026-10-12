@@ -7,6 +7,18 @@
 .ifndef MLDSA87_INC
 .set MLDSA87_INC, 1
 
+/*
+ * Mode identifiers. The keygen and sign values must match the ones declared in
+ * the cryptolib files `sw/device/lib/crypto/include/mldsa.h` and
+ * `sw/device/lib/crypto/impl/mldsa/mldsa.c`.
+ */
+.equ MLDSA87_MODE_KEYGEN_RND, 0x5514edb7
+.equ MLDSA87_MODE_KEYGEN_DET, 0xfaacd725
+.equ MLDSA87_MODE_SIGN_ABRIDGED, 0x29d8e5c9
+.equ MLDSA87_MODE_SIGN_RND, 0x7138777c
+.equ MLDSA87_MODE_SIGN_DET, 0x8accea7f
+.equ MLDSA87_MODE_VERIFY, 0x1f9b0e52
+
 /**
  * Wrap a `jal` instruction and perform an instruction count check on the called
  * routine. If the check fails, the program will be trapped.

@@ -296,7 +296,7 @@ ntt:
 
   /* Load the first array of 8 twiddle factors. Only the first element is
      used in the computation of the first layer. */
-  la x4, _zeta
+  la x4, mldsa87_const_zeta
   bn.lid x5, 0(x4)
 
   /* Save the address registers for the input and output locations in DMEM. */
@@ -763,7 +763,7 @@ intt:
    */
 
   /* Set up DMEM address pointers. */
-  la x4, _zeta_inv
+  la x4, mldsa87_const_zeta_inv
   addi x6, x2, 0
   addi x7, x3, 0
   addi x8, x4, 0
@@ -1241,14 +1241,14 @@ intt:
 .data
 .balign 32
 
-/* ML-DSA twiddle factors (zeta) in bit-reversed ordering and in the Montgomery
+/* ML-DSA twiddle factors (zeta, declared in `mldsa87_mem.s`) in bit-reversed ordering and in the Montgomery
    domain partitioned into two halves (lower and upper 128 coefficients).
 
    tmp[i] = w^(bit_rev(i)) * R^2 mod q. for i in [0, 256)
    for i in [1, 2, 4, 8, 16, 32, 64, 128]:
      for j in [i, i+i/2]:   zeta[j] = tmp[j] # Half 1
      for j in [i+i/2, 2*i]: zeta[j] = tmp[j] # Half 2 */
-_zeta:
+mldsa87_const_zeta:
 
 /*
  * Half 1
@@ -1541,7 +1541,7 @@ _zeta:
    for i in [128, 64, 32, 16, 8, 4, 2, 1]:
      for j in [i+i/2, 2*i]: zeta[2*i-j]     = -tmp[j] % q # Half 1
      for j in [i, i+i/2]:   zeta[(i+i/2)-j] = -tmp[j] % q # Half 2 */
-_zeta_inv:
+mldsa87_const_zeta_inv:
 
 /*
  * Half 1

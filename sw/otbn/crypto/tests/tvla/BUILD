@@ -277,18 +277,28 @@ otbn_tvla_sim_test(
     },
 )
 
+# The shortened ML-DSA-87 sources are generated into this package and include
+# `mldsa87.inc` relative to their own location, hence the copy.
+genrule(
+    name = "mldsa87_inc",
+    srcs = ["//sw/otbn/crypto/mldsa87:mldsa87.inc"],
+    outs = ["mldsa87.inc"],
+    cmd = "cp $< $@",
+    tags = ["manual"],
+)
+
 genrule(
     name = "mldsa87_sign_short_s",
-    srcs = ["//sw/otbn/crypto/mldsa87/sign:mldsa87_sign.s"],
+    srcs = ["//sw/otbn/crypto/mldsa87:mldsa87_sign.s"],
     outs = ["mldsa87_sign_short.s"],
     cmd = "sed -E 's/^([[:space:]]*).*\\/\\*[[:space:]]*SCA_TEST_REPLACE:[[:space:]]*(.*)[[:space:]]*\\*\\//\\1\\2/' $< > $@",
     tags = ["manual"],
 )
 
 genrule(
-    name = "mldsa87_sign_ops_short_s",
-    srcs = ["//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_ops.s"],
-    outs = ["mldsa87_sign_ops_short.s"],
+    name = "mldsa87_ops_short_s",
+    srcs = ["//sw/otbn/crypto/mldsa87:mldsa87_ops.s"],
+    outs = ["mldsa87_ops_short.s"],
     cmd = "sed -E 's/^([[:space:]]*).*\\/\\*[[:space:]]*SCA_TEST_REPLACE:[[:space:]]*(.*)[[:space:]]*\\*\\//\\1\\2/' $< > $@",
     tags = ["manual"],
 )
@@ -296,24 +306,27 @@ genrule(
 otbn_sim_test(
     name = "run_mldsa87_sign_short",
     srcs = [
-        ":mldsa87_sign_ops_short_s",
+        ":mldsa87_ops_short_s",
         ":mldsa87_sign_short_s",
         "//sw/otbn/crypto:mai_gadgets.s",
         "//sw/otbn/crypto:xof.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_arith.s",
-        "//sw/otbn/crypto/mldsa87:mldsa87_decoding.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_encoding.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_expand.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_gadgets.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_keygen.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_mem.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_rounding.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_sample.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_utils.s",
-        "//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_encoding.s",
-        "//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_expand.s",
-        "//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_mem.s",
-        "//sw/otbn/crypto/mldsa87/sign:mldsa87_sign_sample.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_verify.s",
+        "//sw/otbn/crypto/mldsa87:run_mldsa87.s",
     ],
-    includes = ["//sw/otbn/crypto/mldsa87:mldsa87.inc"],
+    includes = [
+        ":mldsa87_inc",
+        "//sw/otbn/crypto/mldsa87:mldsa87.inc",
+    ],
     tags = ["manual"],
 )
 
@@ -324,10 +337,10 @@ otbn_tvla_sim_test(
     name = "mldsa87_sign_tvla_test",
     timeout = "eternal",
     fixed_background_secrets = {
-        "mldsa87_sign_mode": "const:4:0x29d8e5c9",  # Abridged Mode: skips mask seed derivation and directly executes the signing loop
-        "mldsa87_sign_mu": "const:64:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
-        "mldsa87_sign_sk_rho": "const:32:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
-        "mldsa87_sign_sk_s2_share0,mldsa87_sign_sk_s2_share1": "boolean:768:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_mode": "const:4:0x29d8e5c9",  # Abridged Mode: skips mask seed derivation and directly executes the signing loop
+        "mldsa87_mu": "const:64:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_sk_rho": "const:32:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_sk_s2_share0,mldsa87_sk_s2_share1": "boolean:768:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
         "mldsa87_sign_var_rho_prime_share0,mldsa87_sign_var_rho_prime_share1": "boolean:66:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
     },
     num_experiments = 2000,
@@ -335,7 +348,7 @@ otbn_tvla_sim_test(
     tags = ["manual"],
     target = ":run_mldsa87_sign_short",
     tvla_secrets = {
-        "mldsa87_sign_sk_s1_share0,mldsa87_sign_sk_s1_share1": "boolean:672:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_sk_s1_share0,mldsa87_sk_s1_share1": "boolean:672:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
     },
 )
 
@@ -347,51 +360,42 @@ otbn_tvla_sim_test(
     name = "mldsa87_sign_mode_tvla_test",
     timeout = "eternal",
     fixed_background_secrets = {
-        "mldsa87_sign_mu": "const:64:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
-        "mldsa87_sign_sk_k_share0,mldsa87_sign_sk_k_share1": "boolean:32:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
-        "mldsa87_sign_sk_rho": "const:32:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
-        "mldsa87_sign_sk_s1_share0,mldsa87_sign_sk_s1_share1": "boolean:672:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
-        "mldsa87_sign_sk_s2_share0,mldsa87_sign_sk_s2_share1": "boolean:768:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_mu": "const:64:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_sk_k_share0,mldsa87_sk_k_share1": "boolean:32:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_sk_rho": "const:32:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_sk_s1_share0,mldsa87_sk_s1_share1": "boolean:672:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
+        "mldsa87_sk_s2_share0,mldsa87_sk_s2_share1": "boolean:768:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00",
     },
     num_experiments = 2000,
     t_threshold = "7.0",
     tags = ["manual"],
     target = ":run_mldsa87_sign_short",
     tvla_secrets = {
-        "mldsa87_sign_mode": "enum:4:0x8accea7f:0x7138777c",
+        "mldsa87_mode": "enum:4:0x8accea7f:0x7138777c",
     },
-)
-
-genrule(
-    name = "mldsa87_keygen_ops_short_s",
-    srcs = ["//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_ops.s"],
-    outs = ["mldsa87_keygen_ops_short.s"],
-    cmd = "sed -E 's/^([[:space:]]*).*\\/\\*[[:space:]]*SCA_TEST_REPLACE:[[:space:]]*(.*)[[:space:]]*\\*\\//\\1\\2/' $< > $@",
-    tags = ["manual"],
 )
 
 otbn_sim_test(
     name = "run_mldsa87_keygen_from_seeds_short",
     srcs = [
         "mldsa87_keygen_from_seeds.s",
-        ":mldsa87_keygen_ops_short_s",
+        ":mldsa87_ops_short_s",
         "//sw/otbn/crypto:mai_gadgets.s",
         "//sw/otbn/crypto:xof.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_arith.s",
-        "//sw/otbn/crypto/mldsa87:mldsa87_decoding.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_encoding.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_expand.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_gadgets.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_mem.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_ntt.s",
+        "//sw/otbn/crypto/mldsa87:mldsa87_rounding.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_sample.s",
         "//sw/otbn/crypto/mldsa87:mldsa87_utils.s",
-        "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_encoding.s",
-        "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_expand.s",
-        "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_mem.s",
-        "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_rounding.s",
-        "//sw/otbn/crypto/mldsa87/keygen:mldsa87_keygen_sample.s",
     ],
-    includes = ["//sw/otbn/crypto/mldsa87:mldsa87.inc"],
+    includes = [
+        ":mldsa87_inc",
+        "//sw/otbn/crypto/mldsa87:mldsa87.inc",
+    ],
     tags = ["manual"],
 )
 
