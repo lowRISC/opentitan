@@ -1087,13 +1087,15 @@ module i3c_controller_trx
     end
   end
 
+  // Note: Due to a simulator (VCS) limitation, disconnect() can currently not be used outside of
+  // the reset branch of the process below (leads to 'x on sda_drv_q for unknown reasons).
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       // We must have no impact upon the bus post-reset until our role has been decided.
       sda_drv_q  <= disconnect();
       sda_driven <= 1'b0;
     end else if (sw_reset_i) begin
-      sda_drv_q  <= disconnect();
+      sda_drv_q  <= '{default: '0}; // Cannot use disconnect() here;
       sda_driven <= 1'b0;
     end else if (enable_i) begin
       sda_drv_q  <= sda_drv_mod;  // Virtual Open Drain support needs to modify `sda_drv_d`.
@@ -1101,7 +1103,7 @@ module i3c_controller_trx
       sda_driven <= sda_drv_d.pp_en | sda_drv_d.od_en;
     end else begin
       // Have no impact upon the bus whilst the Controller is disabled.
-      sda_drv_q  <= disconnect();
+      sda_drv_q  <= '{default: '0}; // Cannot use disconnect() here;
       sda_driven <= 1'b0;
     end
   end
