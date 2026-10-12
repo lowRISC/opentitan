@@ -89,11 +89,27 @@ FIRMWARE_DEPS_SCA = [
     "//sw/device/tests/penetrationtests/firmware/sca:hmac_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:ibex_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:kmac_sca",
-    "//sw/device/tests/penetrationtests/firmware/sca:otbn_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:prng_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:sha3_sca",
     "//sw/device/tests/penetrationtests/firmware/sca:trigger_sca",
     "//sw/device/tests/penetrationtests/firmware/lib:extclk_sca_fi",
+    "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+    "//sw/device/lib/testing:entropy_testutils",
+    "//sw/device/lib/base:csr",
+    "//sw/device/lib/base:status",
+    "//sw/device/lib/crypto",
+    "//sw/device/lib/testing/test_framework:check",
+    "//sw/device/lib/testing/test_framework:ottf_main",
+    "//sw/device/lib/testing/test_framework:ujson_ottf",
+    "//sw/device/lib/ujson",
+
+    # Include all JSON commands.
+    "//sw/device/tests/penetrationtests/json:commands",
+]
+
+FIRMWARE_DEPS_SCA_OTBN = [
+    "//sw/device/tests/penetrationtests/firmware/sca:otbn_sca",
+    "//sw/device/tests/penetrationtests/firmware/sca:prng_sca",
     "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
     "//sw/device/lib/testing:entropy_testutils",
     "//sw/device/lib/base:csr",
@@ -293,6 +309,31 @@ opentitan_test(
         ],
     ),
     deps = FIRMWARE_DEPS_SCA,
+)
+
+# Not an actual test, only for building purposes
+opentitan_test(
+    name = "pen_test_sca_otbn",
+    srcs = [":firmware_sca_otbn.c"],
+    exec_env = PENTEST_EXEC_ENVS,
+    # Tags are manual since these are not actually tests, but these create binaries to run the pentest framework
+    fpga = fpga_params(tags = [
+        "manual",
+        "skip_in_ci",
+    ]),
+    silicon = silicon_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
+    verilator = verilator_params(
+        tags = [
+            "manual",
+            "skip_in_ci",
+        ],
+    ),
+    deps = FIRMWARE_DEPS_SCA_OTBN,
 )
 
 # Not an actual test, only for building purposes

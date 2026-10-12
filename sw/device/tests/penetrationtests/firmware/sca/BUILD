@@ -206,9 +206,9 @@ cc_library(
     srcs = ["ibex_sca.c"],
     hdrs = ["ibex_sca.h"],
     deps = [
-        ":ecc256_keygen_sca",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
@@ -221,6 +221,7 @@ cc_library(
         "//sw/device/sca/lib:prng",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:ibex_sca_commands",
+        "//sw/otbn/crypto:p256_ecdsa_sca",
     ],
 )
 
