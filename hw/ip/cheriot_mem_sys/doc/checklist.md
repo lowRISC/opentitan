@@ -78,7 +78,7 @@ Security      | [SEC_CM_DOCUMENTED][]     | Not Started |
  Type         | Item                         | Resolution  | Note/Collaterals
 --------------|------------------------------|-------------|------------------
 Security      | [SEC_CM_ASSETS_LISTED][]     | Done        | [cheriot_mem_sys.hjson](../data/cheriot_mem_sys.hjson)
-Security      | [SEC_CM_IMPLEMENTED][]       | Not Started | Everything except `LOGIC.SHADOW` is implemented and escalated by the `fatal_fault` alert.
+Security      | [SEC_CM_IMPLEMENTED][]       | Not Started | `LOGIC.SHADOW` (#30572) and `CORED_TAG.INTERSIG.MUBI` (#31066) are not implemented yet, and `BUS.INTEGRITY` relies on `LOGIC.SHADOW`. `MEM.SW_NOACCESS` and `INTERSIG.MUBI` are implemented.
 Security      | [SEC_CM_RND_CNST][]          | N/A         |
 Security      | [SEC_CM_NON_RESET_FLOPS][]   | Not Started |
 Security      | [SEC_CM_SHADOW_REGS][]       | Not Started |

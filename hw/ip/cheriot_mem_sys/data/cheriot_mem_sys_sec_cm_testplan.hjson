@@ -47,5 +47,11 @@
       stage: V2S
       tests: []
     }
+    {
+      name: sec_cm_cored_tag_intersig_mubi
+      desc: "Verify the countermeasure(s) CORED_TAG.INTERSIG.MUBI."
+      stage: V2S
+      tests: []
+    }
   ]
 }

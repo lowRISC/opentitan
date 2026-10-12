@@ -53,12 +53,13 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Security Countermeasures
 
-| Countermeasure ID               | Description                                                                                                                                                                                     |
-|:--------------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| CHERIOT_MEM_SYS.BUS.INTEGRITY   | End-to-end bus integrity between the Ibex lockstep and the storage cells. Relies on LOGIC.SHADOW, which is not implemented yet.                                                                 |
-| CHERIOT_MEM_SYS.LOGIC.SHADOW    | The CHERIoT memory subsystem is instantiated in lockstep. Not implemented yet. This also covers the pointers of the subsystem's FIFOs, which therefore are not redundantly encoded (CTR.REDUN). |
-| CHERIOT_MEM_SYS.MEM.SW_NOACCESS | The capability tag store is not memory mapped.                                                                                                                                                  |
-| CHERIOT_MEM_SYS.INTERSIG.MUBI   | The CHERIoT mode enable is multi-bit encoded.                                                                                                                                                   |
+| Countermeasure ID                       | Description                                                                                                                                                                                                                                  |
+|:----------------------------------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| CHERIOT_MEM_SYS.BUS.INTEGRITY           | End-to-end bus integrity between the Ibex lockstep and the storage cells. Relies on LOGIC.SHADOW, which is not implemented yet.                                                                                                              |
+| CHERIOT_MEM_SYS.LOGIC.SHADOW            | The CHERIoT memory subsystem, including the background revocation engine, is instantiated in lockstep. Not implemented yet. This also covers the pointers of the subsystem's FIFOs, which therefore are not redundantly encoded (CTR.REDUN). |
+| CHERIOT_MEM_SYS.MEM.SW_NOACCESS         | The capability tag store is not memory mapped.                                                                                                                                                                                               |
+| CHERIOT_MEM_SYS.INTERSIG.MUBI           | The CHERIoT mode enable is multi-bit encoded.                                                                                                                                                                                                |
+| CHERIOT_MEM_SYS.CORED_TAG.INTERSIG.MUBI | The capability tag is multi-bit encoded between the Ibex lockstep domain and the lockstep domain of the CHERIoT memory subsystem. Not implemented yet.                                                                                       |
 
 
 <!-- END CMDGEN -->
