@@ -52,5 +52,12 @@
       "name": "console",
       "alias_of": "0"
     }
-  ]
+  ],
+  "clock_frequencies": {  // Hz
+    "cpu": 24000000,  // 24e6
+    "hi_speed_peripheral": 24000000,  // 24e6
+    "peripheral": 6000000,  //6e6
+    "usb": 48000000,  // 48e6
+    "aon": 250000,  // 250e3
+  }
 }
