@@ -331,9 +331,8 @@ void sc_keymgr_dpe_policy_set(sc_keymgr_dpe_policies_t policy) {
                              policy.expo);
   reg = bitfield_bit32_write(reg, KEYMGR_DPE_SLOT_POLICY_RETAIN_PARENT_BIT,
                              policy.parent);
-  // TODO: Expose the allow_keygen policy through `sc_keymgr_dpe_policies_t`.
-  reg =
-      bitfield_bit32_write(reg, KEYMGR_DPE_SLOT_POLICY_ALLOW_KEYGEN_BIT, true);
+  reg = bitfield_bit32_write(reg, KEYMGR_DPE_SLOT_POLICY_ALLOW_KEYGEN_BIT,
+                             policy.keygen);
   sec_mmio_write32(sc_keymgr_dpe_base() + KEYMGR_DPE_SLOT_POLICY_REG_OFFSET,
                    reg);
   // TODO(#30665): sec_mmio_writes currently does not work > The reason is if
@@ -641,6 +640,8 @@ rom_error_t sc_keymgr_dpe_get_metadata(uint32_t slot,
       reg_high, KEYMGR_DPE_METADATA_HIGH_0_EXPORTABLE_POLICY_0_BIT);
   metadata->slot_policy.parent = bitfield_bit32_read(
       reg_high, KEYMGR_DPE_METADATA_HIGH_0_RETAIN_PARENT_POLICY_0_BIT);
+  metadata->slot_policy.keygen = bitfield_bit32_read(
+      reg_high, KEYMGR_DPE_METADATA_HIGH_0_ALLOW_KEYGEN_POLICY_0_BIT);
 
   return kErrorOk;
 }
@@ -660,13 +661,15 @@ rom_error_t sc_keymgr_dpe_check_metadata(
       launder32(metadata.boot_stage) == expected_boot_stage &&
       launder32(metadata.slot_policy.child) == expected_policy->child &&
       launder32(metadata.slot_policy.expo) == expected_policy->expo &&
-      launder32(metadata.slot_policy.parent) == expected_policy->parent) {
+      launder32(metadata.slot_policy.parent) == expected_policy->parent &&
+      launder32(metadata.slot_policy.keygen) == expected_policy->keygen) {
     HARDENED_CHECK_EQ(metadata.valid, kHardenedBoolTrue);
     HARDENED_CHECK_EQ(metadata.max_key_version, expected_max_key_version);
     HARDENED_CHECK_EQ(metadata.boot_stage, expected_boot_stage);
     HARDENED_CHECK_EQ(metadata.slot_policy.child, expected_policy->child);
     HARDENED_CHECK_EQ(metadata.slot_policy.expo, expected_policy->expo);
     HARDENED_CHECK_EQ(metadata.slot_policy.parent, expected_policy->parent);
+    HARDENED_CHECK_EQ(metadata.slot_policy.keygen, expected_policy->keygen);
     return kErrorOk;
   }
   return kErrorKeymgrInternal;

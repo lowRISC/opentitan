@@ -141,6 +141,7 @@ static const sc_keymgr_dpe_policies_t kKeymgrDPEDefaultPolicy = {
     .child = kScKeymgrDPESlotPolAllowChild,
     .expo = kScKeymgrDPESlotPolNoExport,
     .parent = kScKeymgrDPESlotPolEraseParent,
+    .keygen = kScKeymgrDPESlotPolAllowKeygen,
 };
 
 /**

@@ -334,6 +334,10 @@ dif_result_t dif_keymgr_dpe_get_metadata(const dif_keymgr_dpe_t *keymgr_dpe,
       slot_policy, KEYMGR_DPE_SLOT_POLICY_RETAIN_PARENT_BIT,
       bitfield_bit32_read(
           reg_high, KEYMGR_DPE_METADATA_HIGH_0_RETAIN_PARENT_POLICY_0_BIT));
+  slot_policy = bitfield_bit32_write(
+      slot_policy, KEYMGR_DPE_SLOT_POLICY_ALLOW_KEYGEN_BIT,
+      bitfield_bit32_read(
+          reg_high, KEYMGR_DPE_METADATA_HIGH_0_ALLOW_KEYGEN_POLICY_0_BIT));
   metadata->slot_policy = slot_policy;
 
   return kDifOk;
