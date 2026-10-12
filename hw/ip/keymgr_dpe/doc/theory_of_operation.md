@@ -36,7 +36,7 @@ Each slot data consists of the following fields:
 * `valid` bit that tells whether the slot is occupied.
 * `boot_stage` is a monotonic counter that refers to which boot stage this slot belongs to.
 * `max_key_version` stores the maximum allowed key version that is used for comparison during versioned key generation.
-* `key_policy` contains policy bits that restrict advance calls that specify this slot as the source slot.
+* `key_policy` contains policy bits that restrict advance and key generation calls that specify this slot as the source slot.
 
 A slot is a dynamic storage unit and the DPE context it stores is controlled by SW, even though their secret keys never leave HW.
 A slot becomes active (i.e. `valid` is set to 1) after a successful advance call that specified this slot as its destination.
@@ -53,12 +53,16 @@ When a versioned key generation is invoked later, `max_key_version` field of the
 The result of this inequality check decides whether keymgr_dpe grants the request by initiating KMAC transaction that computes the requested versioned key.
 
 Similar to `max_key_version`, the slot policy is not a value inherited from parent to child, but instead it is directly copied from `SLOT_POLICY` register into the `key_policy` field (again, during a previous advance call).
-`key_policy` is the concatenation of `exportable ||  allow_child || retain_parent` bits, such that:
-*  `exportable` decides whether the DPE context secret can be exported in an encrypted manner. However, this feature is not yet implemented, and the bit is simply there to reserve its space.
+`key_policy` is the concatenation of `allow_keygen || retain_parent || exportable || allow_child` bits, such that:
 *  If `allow_child` is set to `true`/`1`, then further advance operations can be requested from this slot (assuming there are no other invalidating preconditions).
 Otherwise all advance requests are rejected that specify this slot as its source.
+*  `exportable` is currently not implemented and can be ignored.
 *  If `retain_parent` is set to `true`/`1`, then the parent slot remains valid after an advance call.
 Otherwise, after the derivation of a child slot, the DPE context of the parent slot is removed automatically.
+*  If `allow_keygen` is set to `true`/`1`, then key generation operations (both SW and sideload outputs) can be requested from this slot (assuming there are no other invalidating preconditions).
+
+The slot holding the UDS is an exception, as its `key_policy` is not taken from `SLOT_POLICY` but fixed by HW to `allow_child = 1`, `exportable = 0`, `retain_parent = 0` and `allow_keygen = 0`.
+Hence, no key can be generated directly from the UDS, and SW must advance the UDS slot at least once before it can generate keys.
 
 With the exception of the secret key itself, software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` subfields at any time through the `METADATA_LOW` and `METADATA_HIGH` registers.
 Both registers are replicated `NumMaxHwSlot` times but only indices below `NumInstHwSlot` correspond to an actual hardware slot, the remaining slots are bound to `0`.
@@ -204,6 +208,8 @@ The only difference is that the input messages are 0-padded to another length pa
 Key generation request is valid if all of the following conditions are satisfied (AND clause):
 * The internal FSM is in `Available` state. Namely, keymgr_dpe rejects key generation requests during `Invalid`/`Disabled` as they are inactive states, and during `Reset` for not having latched the UDS key yet.
 * The selected source slot is valid.
+* `allow_keygen = true` for the source slot.
+* `KEY_VERSION` is less than or equal to `max_key_version` of the source slot.
 * `DEST_SEL` contains one of the five valid sideload destinations (None, AES, KMAC, OTBN, HMAC).
 
 ### Erase slot

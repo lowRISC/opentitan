@@ -66,6 +66,8 @@ SW needs to configure the following registers:
 *  Set `CONTROL_SHADOWED.DST_SEL` for either of the use cases {`AES`, `KMAC`, `OTBN`, `HMAC`}.
 *  Set `CONTROL_SHADOWED.OPERATION` to either of {Generate SW Operation, Generate HW Operation}.
 *  Set `CONTROL_SHADOWED.SLOT_SRC_SEL` to select the source slot whose secret will be used to generate the key.
+   The `allow_keygen` policy of this slot must be set, otherwise the operation fails with `ERR_CODE.INVALID_OP`.
+   In particular, keys can never be generated from the slot holding the UDS.
 *  Set `SALT` and `KEY_VERSION` registers.
 *  Trigger the operation by setting `START`.
 
@@ -94,6 +96,7 @@ Software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `ke
 *  `METADATA_HIGH[i].ALLOW_CHILD_POLICY` reports the `allow_child` policy applied to slot `i`.
 *  `METADATA_HIGH[i].EXPORTABLE_POLICY` reports the `exportable` policy applied to slot `i`.
 *  `METADATA_HIGH[i].RETAIN_PARENT_POLICY` reports the `retain_parent` policy applied to slot `i`.
+*  `METADATA_HIGH[i].ALLOW_KEYGEN_POLICY` reports the `allow_keygen` policy applied to slot `i`.
 
 The secret key itself is never exposed through these registers.
 Both registers are replicated `NumMaxHwSlot` times but only indices below `NumInstHwSlot` correspond to an actual hardware slot, the remaining slots are bound to `0`.
