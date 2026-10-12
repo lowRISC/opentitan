@@ -13,12 +13,12 @@ Documentation | [SPEC_COMPLETE][]              | Done        | [CHERIoT Design S
 Documentation | [CSR_DEFINED][]                | Done        | [CHERIoT Registers](registers.md).
 RTL           | [CLKRST_CONNECTED][]           | Done        |
 RTL           | [IP_TOP][]                     | Done        |
-RTL           | [IP_INSTANTIABLE][]            | Not Started | Instantiated in `top_earlgrey`; clean top-level elaboration not yet verified.
+RTL           | [IP_INSTANTIABLE][]            | Done        | Elaborates cleanly in Earl Grey; `chip_sw_cheriot_smoketest` and `chip_sw_cheriot_epmp_smoketest` pass.
 RTL           | [PHYSICAL_MACROS_DEFINED_80][] | N/A         |
 RTL           | [FUNC_IMPLEMENTED][]           | Done        |
 RTL           | [ASSERT_KNOWN_ADDED][]         | Done        |
-Code Quality  | [LINT_SETUP][]                 | Done        | Linting using Verilator in-place
-Security      | [SEC_CM_SCOPED][]              | Not Started | Lockstep of the CHERIoT memory subsystem, end-to-end integrity between the subsystem, Ibex, and the memory endpoints specified.
+Code Quality  | [LINT_SETUP][]                 | Done        | Linted in pre-merge CI with Verible, slang and AscentLint via [top_earlgrey_lint_cfgs.hjson](../../../top_earlgrey/lint/top_earlgrey_lint_cfgs.hjson).
+Security      | [SEC_CM_SCOPED][]              | Done        | [Security countermeasures](interfaces.md#security-countermeasures), reviewed in the HW WG meeting (successor of the Security WG meeting) on 2026-09-15, see #31707.
 
 [SPEC_COMPLETE]:              ../../../../doc/project_governance/checklist/README.md#spec_complete
 [CSR_DEFINED]:                ../../../../doc/project_governance/checklist/README.md#csr_defined
@@ -134,7 +134,7 @@ Testbench     | [SIM_RAL_MODEL_GEN_AUTOMATED][]       | Done        |
 Testbench     | [CSR_CHECK_GEN_AUTOMATED][]           | Done        |
 Testbench     | [TB_GEN_AUTOMATED][]                  | Not Started |
 Tests         | [SIM_SMOKE_TEST_PASSING][]            | Not Started |
-Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Not Started | `mem_tests` is not imported as `revbm` has no registers and no RAL memory to walk.
+Tests         | [SIM_CSR_MEM_TEST_SUITE_PASSING][]    | Done        | The CSR tests run in the nightly regression. No mem walk: the subsystem has no memories, and `revbm` is a window into `sram_ctrl_meta`, to be walked at chip level (#31708).
 Tests         | [FPV_MAIN_ASSERTIONS_PROVEN][]        | Not Started |
 Tool Setup    | [SIM_ALT_TOOL_SETUP][]                | Not Started |
 Regression    | [SIM_SMOKE_REGRESSION_SETUP][]        | Not Started |
