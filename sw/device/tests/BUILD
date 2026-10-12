@@ -4837,6 +4837,23 @@ alias(
     actual = "//sw/host/tests/usbdev/usbdev_stream:stream_test",
 )
 
+# Common test flags for the various hardware platforms.
+# - On silicon (teaucp board): there are two GPIOS to control
+#   and sense VBUS which need to be enabled.
+USBDEV_SILICON_TEST_ARGS = """
+    --strapping=USB_VBUS_SENSE
+    --vbus-sense-en=VBUS_SENSE_EN
+    --vbus-sense=VBUS_SENSE
+"""
+
+# - On FPGA (cw340): we use the internal hub to control vbus.
+#   This is exposed as a fake pin provided by the transport,
+#   provided that it was initialized with the required information.
+#   See hw/top_earlgrey/BUILD for more details about this point.
+USBDEV_FPGA_TEST_ARGS = """
+    --vbus-sense-en=FAKE_VBUS_SENSE_EN
+"""
+
 opentitan_test(
     name = "usbdev_pincfg_test",
     srcs = ["usbdev_pincfg_test.c"],
@@ -4847,11 +4864,8 @@ opentitan_test(
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     verilator = verilator_params(timeout = "long"),
@@ -4879,18 +4893,15 @@ opentitan_test(
         test_cmd = """
             --bootstrap="{firmware}"
             --no-wait-for-usb-device
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --timeout=30s
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     deps = [
@@ -4915,17 +4926,14 @@ opentitan_test(
         test_cmd = """
             --bootstrap="{firmware}"
             --no-wait-for-usb-device
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     deps = [
@@ -4939,23 +4947,25 @@ opentitan_test(
     ],
 )
 
-# Same requirements as usbdev_aon_wake_reset_test
-# This test cannot be implemented on the CW310 because
-# there is no VBUS control so we cannot disconnect the device.
 opentitan_test(
     name = "usbdev_aon_wake_disconnect_test",
     srcs = ["usbdev_aon_wake_disconnect_test.c"],
     exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --wake=disconnect
+        """ + USBDEV_FPGA_TEST_ARGS,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
             --wake=disconnect
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
     ),
     deps = [
@@ -4981,17 +4991,14 @@ opentitan_test(
         test_cmd = """
             --bootstrap="{firmware}"
             --no-wait-for-usb-device
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     deps = [
@@ -5005,10 +5012,6 @@ opentitan_test(
     ],
 )
 
-# This test requires that the harness has sufficient permissions to
-# open the USB parent hub of the device under test so it can issue
-# requests directly. For this reason, the test is tagged as manual
-# until the CI can provide such an access.
 opentitan_test(
     name = "usbdev_aon_wake_reset_test",
     srcs = ["usbdev_aon_wake_reset_test.c"],
@@ -5023,21 +5026,17 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
     ),
     fpga = fpga_params(
-        tags = ["manual"],
         test_cmd = """
             --bootstrap="{firmware}"
             --wake=reset
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
             --wake=reset
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_aon_wake",
     ),
     deps = [
@@ -5064,17 +5063,14 @@ opentitan_test(
         test_cmd = """
             --bootstrap="{firmware}"
             --no-wait-for-usb-device
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     # Broken on Verilator. See #24182.
@@ -5102,17 +5098,14 @@ opentitan_test(
         test_cmd = """
             --bootstrap="{firmware}"
             --no-wait-for-usb-device
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     verilator = verilator_params(
@@ -5144,16 +5137,13 @@ opentitan_test(
         tags = ["manual"],
         test_cmd = """
             --bootstrap="{firmware}"
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_smoketest",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_smoketest",
     ),
     verilator = verilator_params(timeout = "long"),
@@ -5204,17 +5194,14 @@ opentitan_test(
         test_cmd = """
             --bootstrap="{firmware}"
             --exec=$(rootpath :usbdev_stream_host_harness)
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
             --exec=$(rootpath :usbdev_stream_host_harness)
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     verilator = verilator_params(timeout = "long"),
@@ -5245,17 +5232,14 @@ opentitan_test(
         test_cmd = """
             --bootstrap="{firmware}"
             --exec=$(rootpath :usbdev_stream_host_harness)
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
             --exec=$(rootpath :usbdev_stream_host_harness)
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     verilator = verilator_params(timeout = "long"),
@@ -5286,17 +5270,14 @@ opentitan_test(
         test_cmd = """
             --bootstrap="{firmware}"
             --exec=$(rootpath :usbdev_stream_host_harness)
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
             --exec=$(rootpath :usbdev_stream_host_harness)
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     verilator = verilator_params(timeout = "long"),
@@ -5324,17 +5305,14 @@ opentitan_test(
         test_cmd = """
             --bootstrap="{firmware}"
             --no-wait-for-usb-device
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
             --no-wait-for-usb-device
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usb_harness",
     ),
     deps = [
@@ -5426,7 +5404,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=suspend
             --init-phase=suspend
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     silicon = silicon_params(
@@ -5434,10 +5412,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=suspend
             --init-phase=suspend
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     verilator = verilator_params(timeout = "long"),
@@ -5465,7 +5440,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=sleep-resume
             --init-phase=sleep-resume
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     silicon = silicon_params(
@@ -5473,10 +5448,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=sleep-resume
             --init-phase=sleep-resume
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     verilator = verilator_params(timeout = "long"),
@@ -5506,7 +5478,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=sleep-reset
             --init-phase=sleep-resume
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     silicon = silicon_params(
@@ -5514,10 +5486,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=sleep-reset
             --init-phase=sleep-resume
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     verilator = verilator_params(timeout = "long"),
@@ -5551,7 +5520,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=deep-resume
             --init-phase=sleep-disconnect
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     silicon = silicon_params(
@@ -5559,10 +5528,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=deep-resume
             --init-phase=sleep-disconnect
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     verilator = verilator_params(timeout = "long"),
@@ -5592,7 +5558,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=deep-resume
             --init-phase=deep-resume
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     silicon = silicon_params(
@@ -5600,10 +5566,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=deep-resume
             --init-phase=deep-resume
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     verilator = verilator_params(timeout = "long"),
@@ -5629,13 +5592,11 @@ opentitan_test(
         },
     ),
     fpga = fpga_params(
-        # FIXME (#29490) - we are temporarily experiencing USB issues in CI.
-        tags = ["broken"],
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=deep-reset
             --init-phase=deep-resume
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     silicon = silicon_params(
@@ -5643,10 +5604,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=deep-reset
             --init-phase=deep-resume
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     verilator = verilator_params(timeout = "long"),
@@ -5674,7 +5632,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=shutdown
             --init-phase=deep-disconnect
-        """,
+        """ + USBDEV_FPGA_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     silicon = silicon_params(
@@ -5682,10 +5640,7 @@ opentitan_test(
             --bootstrap="{firmware}"
             --fin-phase=shutdown
             --init-phase=deep-disconnect
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     verilator = verilator_params(timeout = "long"),
@@ -5703,20 +5658,27 @@ opentitan_test(
     # This test cannot be implemented on the CW310/CW340 because
     # there is no VBUS control so we cannot disconnect the device.
     exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_CW340_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             "//hw/top_earlgrey:sim_dv": None,
         },
+    ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+            --fin-phase=shutdown
+            --init-phase=suspend
+        """ + USBDEV_FPGA_TEST_ARGS,
+        test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     silicon = silicon_params(
         test_cmd = """
             --bootstrap="{firmware}"
             --fin-phase=shutdown
             --init-phase=suspend
-            --strapping=USB_VBUS_SENSE
-            --vbus-sense-en=VBUS_SENSE_EN
-            --vbus-sense=VBUS_SENSE
-        """,
+        """ + USBDEV_SILICON_TEST_ARGS,
         test_harness = "//sw/host/tests/chip/usb:usbdev_suspend",
     ),
     verilator = verilator_params(timeout = "long"),
