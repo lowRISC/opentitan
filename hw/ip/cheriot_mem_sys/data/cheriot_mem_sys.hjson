@@ -274,7 +274,8 @@
     },
     { name: "LOGIC.SHADOW",
       desc: '''
-        The CHERIoT memory subsystem is instantiated in lockstep. Not implemented yet.
+        The CHERIoT memory subsystem, including the background revocation engine, is
+        instantiated in lockstep. Not implemented yet.
         This also covers the pointers of the subsystem's FIFOs, which therefore are not
         redundantly encoded (CTR.REDUN).
       '''
@@ -287,6 +288,12 @@
     { name: "INTERSIG.MUBI",
       desc: '''
         The CHERIoT mode enable is multi-bit encoded.
+      '''
+    },
+    { name: "CORED_TAG.INTERSIG.MUBI",
+      desc: '''
+        The capability tag is multi-bit encoded between the Ibex lockstep domain and the
+        lockstep domain of the CHERIoT memory subsystem. Not implemented yet.
       '''
     },
   ],

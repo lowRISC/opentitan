@@ -5,7 +5,9 @@
 `include "prim_assert.sv"
 
 // SEC_CM: LOGIC.SHADOW
-// TODO: Implement lockstep operation for this module
+// TODO(#30572): Implement lockstep operation for this module
+// SEC_CM: CORED_TAG.INTERSIG.MUBI
+// TODO(#31066): Multi-bit encode the capability tag sidebands of the core data port
 
 module cheriot_mem_sys
   import cheriot_mem_sys_reg_pkg::*;
