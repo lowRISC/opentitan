@@ -89,6 +89,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-yosys": {
+      "locked": {
+        "lastModified": 1791487292,
+        "narHash": "sha256-tqM7xDEsaeK1p6VvRygeZ9LkQRpUUkbRT02BHv6hnTM=",
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "8edc0c72e3a38faf5434e40d1f19431125fe4b30",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nixos",
+        "repo": "nixpkgs",
+        "rev": "8edc0c72e3a38faf5434e40d1f19431125fe4b30",
+        "type": "github"
+      }
+    },
     "nixpkgs_2": {
       "locked": {
         "lastModified": 1784707089,
@@ -157,10 +173,10 @@
         "ihp-pdk": "ihp-pdk",
         "lowrisc-nix": "lowrisc-nix",
         "nixpkgs": "nixpkgs_2",
+        "nixpkgs-yosys": "nixpkgs-yosys",
         "pyproject-build-systems": "pyproject-build-systems",
         "pyproject-nix": "pyproject-nix",
-        "uv2nix": "uv2nix",
-        "yosys": "yosys"
+        "uv2nix": "uv2nix"
       }
     },
     "systems": {
@@ -214,32 +230,6 @@
         "owner": "pyproject-nix",
         "repo": "uv2nix",
         "type": "github"
-      }
-    },
-    "yosys": {
-      "inputs": {
-        "flake-utils": [
-          "flake-utils"
-        ],
-        "nixpkgs": [
-          "nixpkgs"
-        ]
-      },
-      "locked": {
-        "lastModified": 1788931604,
-        "narHash": "sha256-4G0nyu1TkrbTDMxI9tlJSADKQuDzXhqgsVR7w0LwJTI=",
-        "ref": "refs/tags/v0.69",
-        "rev": "9f75ca1f9834a39a863915b5dae0c7b1e33533bc",
-        "revCount": 17814,
-        "submodules": true,
-        "type": "git",
-        "url": "https://github.com/YosysHQ/yosys"
-      },
-      "original": {
-        "ref": "refs/tags/v0.69",
-        "submodules": true,
-        "type": "git",
-        "url": "https://github.com/YosysHQ/yosys"
       }
     }
   },

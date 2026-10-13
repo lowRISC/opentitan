@@ -37,12 +37,9 @@
     # Provides mkEdaShell (the EDA devshell builder)
     lowrisc-nix.url = "github:lowRISC/lowrisc-nix/8c986b6c902637591f62841d45cf32bd3060add0";
 
-    # Fetched via git (not github:) so the abc/slang/... submodules are included.
-    yosys = {
-      url = "git+https://github.com/YosysHQ/yosys?ref=refs/tags/v0.69&submodules=1";
-      inputs.nixpkgs.follows = "nixpkgs";
-      inputs.flake-utils.follows = "flake-utils";
-    };
+    # Yosys 0.69 with slang, cached on cache.nixos.org (do not override).
+    nixpkgs-yosys.url = "github:nixos/nixpkgs/8edc0c72e3a38faf5434e40d1f19431125fe4b30";
+
     ihp-pdk = {
       url = "github:IHP-GmbH/IHP-Open-PDK/dev";
       flake = false;
@@ -61,7 +58,7 @@
     uv2nix,
     pyproject-build-systems,
     lowrisc-nix,
-    yosys,
+    nixpkgs-yosys,
     ihp-pdk,
     ...
   }:
@@ -144,7 +141,7 @@
         # check-lock-files regenerates python-requirements.txt via `uv pip compile`.
         uv
         pkgs.iproute2
-        yosys.packages.${system}.yosys
+        nixpkgs-yosys.legacyPackages.${system}.yosys
       ];
 
       # Shell args shared by both devshells.
