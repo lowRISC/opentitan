@@ -141,30 +141,32 @@ If the OTP creator root key is not valid during the latching cycle, keymgr_dpe m
 Further advance calls use the key stored in the specified `CONTROL_SHADOWED.SLOT_SRC_SEL` slot (equally referred to as _parent_ or _source_ slot) , and the result of the derivation updates the slot specified by `CONTROL_SHADOWED.SLOT_DST_SEL`  (referred to as _destination_ or _child_ slot).
 Assuming that `key_policy`, `boot_stage` or `valid` bits of the parent context permit, the child secret is derived from the parent secret through a key derivation function during advance operation.
 `child_key = KDF(parent_key, message)`, where the message input takes different forms depending on the parent slot's `boot_stage` value.
-Which HW binding values are consumed at each stage is controlled by the `NumBootStages` parameter, and in particular whether the `creator_seed` is consumed together with the other creator inputs (two-stage configuration) or by a dedicated intermediate owner stage (three-stage configuration).
+Which HW binding values are consumed at each stage is controlled by the `NumBootStages` parameter, and in particular whether the `creator_seed` is consumed together with the other creator inputs (two-stage configuration) or by a dedicated `OwnerInt` stage, with the `field_entropy` consumed by a dedicated `CreatorInt` stage (four-stage configuration).
 See [KDF Details](#kdf-details) for more details on HW binding values.
 
-With `NumBootStages = 3`, the `creator_seed` is consumed by a dedicated `OwnerInt` (owner intermediate) stage:
+With `NumBootStages = 4`, the `field_entropy` and the `creator_seed` are consumed by the dedicated `CreatorInt` (creator intermediate) and `OwnerInt` (owner intermediate) stages, respectively:
 * If `boot_stage = 0` (Creator) for the parent, then `message = SW_CDI_INPUT || device_identifier || health_st_measurement || rom_descriptors || hw_revision_seed`.
-* If `boot_stage = 1` (OwnerInt) for the parent, then `message = SW_CDI_INPUT || creator_seed`.
-* If `boot_stage = 2` (Owner) for the parent, then `message = SW_CDI_INPUT || owner_seed`.
-* If `boot_stage > 2` for the parent, then `message = SW_CDI_INPUT`.
+* If `boot_stage = 1` (CreatorInt) for the parent, then `message = SW_CDI_INPUT || field_entropy`.
+* If `boot_stage = 2` (OwnerInt) for the parent, then `message = SW_CDI_INPUT || creator_seed`.
+* If `boot_stage = 3` (Owner) for the parent, then `message = SW_CDI_INPUT || owner_seed`.
+* If `boot_stage > 3` for the parent, then `message = SW_CDI_INPUT`.
 
-With `NumBootStages = 2`, the `OwnerInt` stage is omitted; the `creator_seed` is consumed together with the other creator inputs, and an advance from `Creator` increments `boot_stage` directly to `Owner` (i.e. `boot_stage = 1` is not used):
+With `NumBootStages = 2`, the `CreatorInt` and `OwnerInt` stages are omitted; the `field_entropy` is not consumed, the `creator_seed` is consumed together with the other creator inputs, and an advance from `Creator` increments `boot_stage` directly to `Owner` (i.e. `boot_stage = 1` and `boot_stage = 2` are not used):
 * If `boot_stage = 0` (Creator) for the parent, then `message = SW_CDI_INPUT || hw_revision_seed || device_identifier || health_st_measurement || rom_descriptors || creator_seed`.
-* If `boot_stage = 2` (Owner) for the parent, then `message = SW_CDI_INPUT || owner_seed`.
-* If `boot_stage > 2` for the parent, then `message = SW_CDI_INPUT`.
+* If `boot_stage = 3` (Owner) for the parent, then `message = SW_CDI_INPUT || owner_seed`.
+* If `boot_stage > 3` for the parent, then `message = SW_CDI_INPUT`.
 
 Regardless of `boot_stage`, software can force an advance call to use only `message = SW_CDI_INPUT` (dropping HW binding values) by setting `CONTROL_SHADOWED.SW_BINDING_ONLY`.
 To prevent a later `boot_stage` from clearing this option to maliciously reconstruct earlier keys, the `ENFORCE_SW_BINDING` register locks this behavior.
-Once set, every subsequent advance call from a parent with `boot_stage <= 2` (i.e. a stage that would consume HW binding values) must use `SW_BINDING_ONLY`, permanently blocking access to HW binding values until the next reset.
-Advance calls from parents with `boot_stage > 2` are not affected, as their message is `SW_CDI_INPUT` regardless of `SW_BINDING_ONLY`.
+Once set, every subsequent advance call from a parent with `boot_stage <= 3` (i.e. a stage that would consume HW binding values) must use `SW_BINDING_ONLY`, permanently blocking access to HW binding values until the next reset.
+Advance calls from parents with `boot_stage > 3` are not affected, as their message is `SW_CDI_INPUT` regardless of `SW_BINDING_ONLY`.
 
 At the end of a successful advance operation, the following updates are made for the slot selected by `SLOT_DST_SEL`:
 * `valid` bit is set to 1.
 * `key_policy` is updated with `SLOT_POLICY`.
 * `max_key_version` is updated with `MAX_KEY_VERSION`.
-* `boot_stage` is set to the parent’s `boot_stage + 1`, except for the initial `Advance` call that initializes the UDS slot `boot_stage` value to `0`.
+* `boot_stage` is set to the parent’s next boot stage (i.e. `boot_stage + 1`, skipping the omitted stages in the two-stage configuration), except for the initial `Advance` call that initializes the UDS slot `boot_stage` value to `0`.
+  Once `boot_stage` reaches `Runtime`, it saturates and there is no limit on the number of further advance calls.
 * `key` is updated from the key received from KMAC.
 
 Whether the same slot can be chosen both as the source and the destination during advance call depends on `retain_parent` policy bit.
@@ -183,8 +185,7 @@ When there is no fault and the enable signal is active by life cycle controller,
   * If `retain_parent = true`, then the source and the destination slots are different.
   * If `retain_parent = true`, then the destination slot is not valid (i.e. `valid = 0`).
   * If `retain_parent = false`, then the source and the destination slots are the same.
-  * `boot_stage` of the source slot has not reached to the maximum value supported by HW (i.e. `boot_stage + 1 < NumBootStages`).
-  * If `ENFORCE_SW_BINDING.ENFORCE` is set and the source slot has `boot_stage <= 2`, then `CONTROL_SHADOWED.SW_BINDING_ONLY` must also be set.
+  * If `ENFORCE_SW_BINDING.ENFORCE` is set and the source slot has `boot_stage <= 3`, then `CONTROL_SHADOWED.SW_BINDING_ONLY` must also be set.
 
 
 ### Versioned Key Generation
@@ -239,6 +240,7 @@ During advance operations, KDF inputs are 0 padded to `AdvDataWidth` bits. Depen
 * `device_identifier` is a 256-bit non-secret device identifier. This value is received from peripheral OTP port.
 * `health_st_measurement` is a 128-bit domain separator (i.e. diversification constant) that depends on the life cycle stage. This value is received from peripheral LC port.
 * `rom_descriptors` are `NumRomDigestInputs` hash values received from the respective ROM controller(s). Each digest is 256-bits.
+* `field_entropy` is a 256-bit secret received from the `field_entropy` port. If the secret is not marked as valid, the 256-bit netlist constant `RndCnstFieldEntropySeed` is used instead.
 * `creator_seed` is 256-bit creator secret received from the `SECRET2` OTP partition..
 * `owner_seed` is 256-bit owner secret received from the `SECRET3` OTP partition.
 

@@ -27,7 +27,7 @@ The advance operation is executed by configuring the following CSR:
 *  Set `SW_BINDING`.
 *  Set `SW_BINDING_REGWEN` to zero, if modifications on `SW_BINDING` needs to be prevented until the next advance call.
 *  Set `CONTROL_SHADOWED.SW_BINDING_ONLY` if this advance call should use `SW_BINDING` only, excluding all HW binding values.
-Once `ENFORCE_SW_BINDING.ENFORCE` has been set, this is mandatory for advance calls whose parent slot consumes HW binding values (i.e. `boot_stage` 0 to 2: Creator, OwnerInt and Owner).
+Once `ENFORCE_SW_BINDING.ENFORCE` has been set, this is mandatory for advance calls whose parent slot consumes HW binding values (i.e. `boot_stage` 0 to 3: Creator, CreatorInt, OwnerInt and Owner).
 It has no effect for parents in later boot stages, whose derivation only uses `SW_BINDING`.
 *  Set `MAX_KEY_VER_SHADOWED`.
 *  Set `MAX_KEY_VER_REGWEN` to zero, if modifications on `MAX_KEY_VER_SHADOWED` needs to be prevented until the next advance call.
@@ -46,7 +46,8 @@ At the end of a successful operation, the slot selected by `SLOT_DST_SEL` is loa
 *  `valid` bit is set to 1.
 *  Its `key_policy` is updated with `SLOT_POLICY`.
 *  `max_key_version` is updated with `MAX_KEY_VERSION`.
-*  `boot_stage` is set to the parent’s `boot_stage + 1`
+*  `boot_stage` is set to the parent’s next boot stage (i.e. `boot_stage + 1`, skipping the omitted stages in the two-stage configuration).
+   Once `boot_stage` reaches `Runtime`, it saturates.
 *  `key` is updated from the digest received from KMAC (after truncating to 256-bit).
 
 The slot `SLOT_SRC_SEL` remains unmodified (unless `SLOT_SRC_SEL = SLOT_DST_SEL` required by `retain_parent = false`).
