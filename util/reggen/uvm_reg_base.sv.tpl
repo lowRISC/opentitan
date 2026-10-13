@@ -313,7 +313,9 @@ reg_block_path, reg, mr, reg_idx)">\
       fields = reg.fields
   else:
     if not mr.compact:
-      fields = mr.pregs[0].fields
+      # Without dv_compact, each copy of the register gets its own class, which may differ in
+      # reset values.
+      fields = mr.pregs[0 if mr.dv_compact else reg_idx].fields
     else:
       fields = mr.cregs[reg_idx].fields
       compact_field_inst_name = mr.pregs[0].fields[0].name.lower()

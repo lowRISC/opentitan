@@ -312,8 +312,14 @@ class MultiRegister(RegBase):
             cregs.append(creg)
 
         # dv_compact is true if the multireg can be equally divided, and we can
-        # pack them as an array
-        dv_compact = (count < regs_per_creg or (count % regs_per_creg) == 0)
+        # pack them as an array. The DV register model then uses a single class
+        # for all copies, so the copies must also have identical reset values;
+        # they may differ if a field's resval uses `multireg_idx`.
+        same_resvals = all([fld.resval for fld in preg.fields] ==
+                           [fld.resval for fld in pregs[0].fields]
+                           for preg in pregs)
+        dv_compact = (same_resvals and
+                      (count < regs_per_creg or (count % regs_per_creg) == 0))
 
         return MultiRegister(name, offset, count, addrsep, reinit_str, alias_target,
                              pregs, cname, regwen_multi, compact, dv_compact, cregs)
