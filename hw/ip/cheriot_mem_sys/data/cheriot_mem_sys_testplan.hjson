@@ -4,13 +4,14 @@
 {
   name: "cheriot_mem_sys"
 
-  // Mirrors the test lists imported by cheriot_mem_sys_sim_cfg.hjson. mem_testplan is not
-  // imported: the only memory window, `revbm`, has no registers, so reggen emits no RAL model and
-  // there is no RAL memory to walk.
+  // The common testplans mirror the test lists imported by cheriot_mem_sys_sim_cfg.hjson.
+  // mem_testplan is not imported: the only memory window, `revbm`, has no registers, so reggen
+  // emits no RAL model and there is no RAL memory to walk.
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson"]
+                     "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "cheriot_mem_sys_sec_cm_testplan.hjson"]
 
   testpoints: [
     {
