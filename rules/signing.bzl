@@ -423,7 +423,6 @@ def _hsmtool_sign(ctx, tool, digest, ecdsa_key, rsa_key, spxmsg = None, spx_key 
             rev = spx_key.config.get("byte-reversal-bug", "false")
             fmt = "sha256-hash-reversed" if rev == "true" else "sha256-hash"
             args = [
-                "--little-endian",
                 "--format={}".format(fmt),
                 "--domain={}".format(domain),
             ]
