@@ -8,8 +8,13 @@ module i3c_target_ccc
   import i3c_pkg::*;
   import i3c_reg_pkg::*;
   import i3c_targ_ccc_pkg::*;
+  import i3c_tti_pkg::Log2MT;
 #(
-  parameter int unsigned NumTargets = 2
+  parameter int unsigned NumTargets = 2,
+
+  // Derived parameters.
+  // Mask of the Virtual Targets implemented by this instance.
+  localparam logic [MaxTargets-1:0] TargPresent = MaxTargets'({NumTargets{1'b1}})
 ) (
   // CCC logic is enabled and active.
   // - this may be used to suppress any internal activity and gate off any output control signals
@@ -33,12 +38,12 @@ module i3c_target_ccc
   // ----- Reading of Target information (Direct GET CCCs). -----
 
   // ----- Updating of Target information (Broadcast/Direct SET CCCs). -----
-  output logic [NumTargets-1:0] dynaddr_de_o,
+  output logic [MaxTargets-1:0] dynaddr_de_o,
   output                        dynaddr_valid_d_o,
-  output logic            [6:0] dynaddr_d_o[NumTargets],
-  output       [NumTargets-1:0] mwl_de_o,
-  output       [NumTargets-1:0] mrl_de_o,
-  output       [NumTargets-1:0] ibi_de_o,
+  output logic            [6:0] dynaddr_d_o[MaxTargets],
+  output       [MaxTargets-1:0] mwl_de_o,
+  output       [MaxTargets-1:0] mrl_de_o,
+  output       [MaxTargets-1:0] ibi_de_o,
   output                 [15:0] mwl_d_o,
   output                 [15:0] mrl_d_o,
   output                  [7:0] ibi_d_o,
@@ -51,15 +56,15 @@ module i3c_target_ccc
   output                        grp_rst_o,
   output                        grp_all_o,
   output                  [6:0] grp_addr_o,
-  output       [NumTargets-1:0] grp_targets_o,
+  output       [MaxTargets-1:0] grp_targets_o,
   // Activity States (ENTASn).
-  output       [NumTargets-1:0] act_state_de_o,
+  output       [MaxTargets-1:0] act_state_de_o,
   output logic            [1:0] act_state_d_o,
   // ENDXFER Configuration.
-  output       [NumTargets-1:0] endxfer_cand_de_o,
+  output       [MaxTargets-1:0] endxfer_cand_de_o,
   output                  [2:0] endxfer_cand_d_o,
-  output       [NumTargets-1:0] endxfer_de_o,
-  output logic            [2:0] endxfer_d_o[NumTargets],
+  output       [MaxTargets-1:0] endxfer_de_o,
+  output logic            [2:0] endxfer_d_o[MaxTargets],
   // Test Mode (ENTTM).
   output                        test_mode_de_o,
   output                        test_mode_d_o,
@@ -375,8 +380,7 @@ module i3c_target_ccc
       // On MRL1, we can only continue to the IBI byte if the currently addressed target is
       // IBI capable. Watch out for group addresses.
       RData_MRL1: rlast = ccc_req_i.is_group || (ccc_req_i.targ_id >= NumTargets) ||
-                          ((ccc_req_i.targ_id < NumTargets) &&
-                           !reg2hw_i.targ_char[ccc_req_i.targ_id].bcr.q[2]);
+                          !reg2hw_i.targ_char[Log2MT'(ccc_req_i.targ_id)].bcr.q[2];
 
       // These values are read by ENTDAA too, so termination depends upon the CCC received.
       RData_BCR: rlast = (ccc == GETBCR);
@@ -399,6 +403,7 @@ module i3c_target_ccc
   always_comb begin
     ccc_rsp_o = '0;
     // Supply read data for transmission.
+    // Virtual Targets that are not present keep the default of zero assigned above.
     for (int unsigned t = 0; t < NumTargets; t++) ccc_rsp_o.req_cdata[t] = rdata[t];
     ccc_rsp_o.req_clast = rlast;
     wr_commit = 1'b0;
@@ -470,21 +475,31 @@ module i3c_target_ccc
     endcase
   end
 
-  // The set of selected targets is required in many `Set` CCCs.
-  wire [NumTargets-1:0] targets = r_i[TargCR_Targets][NumTargets-1:0];
+  // The set of selected targets is required in many `Set` CCCs. Trimming it to the Virtual Targets
+  // that are present is the single point at which the register state (which is always sized for
+  // `MaxTargets`) is reduced to this instance's configuration. Every `Set` CCC below derives its
+  // write enables from this, so absent Virtual Targets can never be addressed.
+  wire [MaxTargets-1:0] targets = r_i[TargCR_Targets][MaxTargets-1:0] & TargPresent;
 
   // Modification of Dynamic Address.
   // - RSTDAA, SETAASA, SETDASA, SETNEWDA.
   // TODO(#31128): ENTDAA
   assign dynaddr_valid_d_o = (ccc != RSTDAA);
-  for (genvar t = 0; t < NumTargets; t++) begin : gen_dynaddr
-    assign dynaddr_de_o[t] = wr_commit & r_i[TargCR_Targets][t] &
-                             ((ccc inside {RSTDAA, SETDASA, SETNEWDA}) ||
-                              (ccc == SETAASA && reg2hw_i.targ_addr[t].static_addr_valid.q &&
-                               !reg2hw_i.targ_addr[t].dynamic_addr_valid.q));
-    // SETDASA and SETNEWDA carry the address in the Dynamic Address Byte, which holds the 7-bit
-    // address in Bits[7:1] with Bit[0] set to 1'b0 (Figures 33 and 35).
-    assign dynaddr_d_o[t]  = (ccc == SETAASA) ?  reg2hw_i.targ_addr[t].static_addr.q : wdata0[7:1];
+  for (genvar t = 0; t < MaxTargets; t++) begin : gen_dynaddr
+    if (t < NumTargets) begin : gen_vt_dynaddr
+      assign dynaddr_de_o[t] = wr_commit & targets[t] &
+                               ((ccc inside {RSTDAA, SETDASA, SETNEWDA}) ||
+                                (ccc == SETAASA && reg2hw_i.targ_addr[t].static_addr_valid.q &&
+                                 !reg2hw_i.targ_addr[t].dynamic_addr_valid.q));
+      // SETDASA and SETNEWDA carry the address in the Dynamic Address Byte, which holds the 7-bit
+      // address in Bits[7:1] with Bit[0] set to 1'b0 (Figures 33 and 35).
+      assign dynaddr_d_o[t]  = (ccc == SETAASA) ? reg2hw_i.targ_addr[t].static_addr.q
+                                                : wdata0[7:1];
+    end else begin : gen_no_vt_dynaddr
+      // Virtual Target not present.
+      assign dynaddr_de_o[t] = 1'b0;
+      assign dynaddr_d_o[t]  = '0;
+    end
   end
 
   // Set Maximum Write/Read/IBI Length.
@@ -492,9 +507,9 @@ module i3c_target_ccc
   wire setmwl = wr_commit & (ccc inside {SETMWLB, SETMWL});
   wire setmrl = wr_commit & (ccc inside {SETMRLB, SETMRL});
   wire setibi = wr_commit & (ccc inside {SETMRLB, SETMRL}) & (ccc_req_i.idx == 4'd4);
-  assign mwl_de_o = {NumTargets{setmwl}} & targets;
-  assign mrl_de_o = {NumTargets{setmrl}} & targets;
-  assign ibi_de_o = {NumTargets{setibi}} & targets;
+  assign mwl_de_o = {MaxTargets{setmwl}} & targets;
+  assign mrl_de_o = {MaxTargets{setmrl}} & targets;
+  assign ibi_de_o = {MaxTargets{setibi}} & targets;
   assign mwl_d_o  = {wdata0, wdata1};
   assign mrl_d_o  = {wdata0, wdata1};
   assign ibi_d_o  =  wdata2;
@@ -502,12 +517,12 @@ module i3c_target_ccc
   // Enable/Disable events.
   wire enevt  = wr_commit & (ccc inside {ENECB,  ENEC});
   wire disevt = wr_commit & (ccc inside {DISECB, DISEC});
-  assign endis_event_o.enint  = {NumTargets{enevt  & wdata0[0]}} & targets;
-  assign endis_event_o.disint = {NumTargets{disevt & wdata0[0]}} & targets;
-  assign endis_event_o.encr   = {NumTargets{enevt  & wdata0[1]}} & targets;
-  assign endis_event_o.discr  = {NumTargets{disevt & wdata0[1]}} & targets;
-  assign endis_event_o.enhj   = {NumTargets{enevt  & wdata0[3]}} & targets;
-  assign endis_event_o.dishj  = {NumTargets{disevt & wdata0[3]}} & targets;
+  assign endis_event_o.enint  = {MaxTargets{enevt  & wdata0[0]}} & targets;
+  assign endis_event_o.disint = {MaxTargets{disevt & wdata0[0]}} & targets;
+  assign endis_event_o.encr   = {MaxTargets{enevt  & wdata0[1]}} & targets;
+  assign endis_event_o.discr  = {MaxTargets{disevt & wdata0[1]}} & targets;
+  assign endis_event_o.enhj   = {MaxTargets{enevt  & wdata0[3]}} & targets;
+  assign endis_event_o.dishj  = {MaxTargets{disevt & wdata0[3]}} & targets;
 
   // Reset Action.
   // TODO(31128): This only implements a small part of what RSTACT is supposed to do.
@@ -530,7 +545,7 @@ module i3c_target_ccc
 
   // Activity State of I3C bus (Table 21).
   // - both the Broadcast (ENTASnB) and Direct (ENTASn) forms shall be actioned.
-  assign act_state_de_o = {NumTargets{wr_commit &
+  assign act_state_de_o = {MaxTargets{wr_commit &
                                      (ccc inside {ENTAS0,  ENTAS1,  ENTAS2,  ENTAS3,
                                                   ENTAS0B, ENTAS1B, ENTAS2B, ENTAS3B})}} & targets;
   always_comb begin
@@ -544,16 +559,20 @@ module i3c_target_ccc
 
   // Candidate ENDXFER Configuration (Table 84).
   wire endxfer_set = wr_commit && (ccc inside {ENDXFER, ENDXFERB}) && (defb == 8'hf7);
-  assign endxfer_cand_de_o = {NumTargets{endxfer_set}} & targets;
+  assign endxfer_cand_de_o = {MaxTargets{endxfer_set}} & targets;
   assign endxfer_cand_d_o  = {wdata0[7:6] == 2'b01, wdata0[5], wdata0[4]};
   // Activated ENDXFER Configuration (Table 84).
   wire endxfer_commit = &{wr_commit, ccc inside {ENDXFER, ENDXFERB},
                           defb == 8'haa, wdata0 == 8'haa};
-  assign endxfer_de_o =  {NumTargets{endxfer_commit}} & targets;
-  for (genvar t = 0; t < NumTargets; t++) begin : gen_vt_endxfer
-    assign endxfer_d_o[t] = {reg2hw_i.targ_info[t].endxfer_cand_crc_early.q,
-                             reg2hw_i.targ_info[t].endxfer_cand_wr_early_term.q,
-                             reg2hw_i.targ_info[t].endxfer_cand_wr_nack.q};
+  assign endxfer_de_o =  {MaxTargets{endxfer_commit}} & targets;
+  for (genvar t = 0; t < MaxTargets; t++) begin : gen_endxfer
+    if (t < NumTargets) begin : gen_vt_endxfer
+      assign endxfer_d_o[t] = {reg2hw_i.targ_info[t].endxfer_cand_crc_early.q,
+                               reg2hw_i.targ_info[t].endxfer_cand_wr_early_term.q,
+                               reg2hw_i.targ_info[t].endxfer_cand_wr_nack.q};
+    end else begin : gen_no_vt_endxfer
+      assign endxfer_d_o[t] = '0;  // Virtual Target not present.
+    end
   end
 
   // Test Mode.
@@ -568,7 +587,7 @@ module i3c_target_ccc
 
   // Signals that the logic does not use (yet).
   logic unused_ccc_inputs;
-  assign unused_ccc_inputs = ^{enable_i, r_i[TargCR_Status][7:1], r_i[TargCR_Targets][7:2],
-                               ccc_req_i.re};
+  assign unused_ccc_inputs = ^{enable_i, r_i[TargCR_Status][7:1], ccc_req_i.re,
+                               r_i[TargCR_Targets][TargCRWidth-1:NumTargets]};
 
 endmodule

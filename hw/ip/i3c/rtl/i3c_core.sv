@@ -27,7 +27,7 @@ module i3c_core
   parameter int unsigned BufAddrW         = i3c_pkg::BufAddrW,
   parameter int unsigned DataWidth        = 32,
   parameter int unsigned NumSDALanes      = 1,
-  parameter int unsigned NumTargets       = i3c_pkg::NumTargets,
+  parameter int unsigned NumTargets       = 2,
   parameter int unsigned NumDATEntries    = i3c_pkg::NumDATEntries,
   parameter int unsigned NumDCTEntries    = i3c_pkg::NumDCTEntries,
   parameter int unsigned SWDirAddrW       = 9,
@@ -590,14 +590,14 @@ module i3c_core
   logic hdr_restart_det_en;  // Enable HDR Restart Pattern detector.
 
   // Target device descriptions.
-  i3c_targ_dev_t      targ_dev[NumTargets];
+  i3c_targ_dev_t      targ_dev[MaxTargets];
   // Group address descriptions.
   i3c_grp_addr_t      grp_addr[NumGroups];
 
   // Interface between Target logic and transceiver.
-  logic               targ_trx_dvalid[NumTargets];
-  logic               targ_trx_dready[NumTargets];
-  i3c_targ_trx_txd_t  targ_trx_dreq[NumTargets];
+  logic               targ_trx_dvalid[MaxTargets];
+  logic               targ_trx_dready[MaxTargets];
+  i3c_targ_trx_txd_t  targ_trx_dreq[MaxTargets];
 
   // Direct Read CCC data for all Targets is carried as a single unit.
   logic               targ_trx_ctvalid;
@@ -667,23 +667,23 @@ module i3c_core
   end
 
   // Suspend transmission from Virtual Targets.
-  logic [NumTargets-1:0] targ_suspend_tx;
+  logic [MaxTargets-1:0] targ_suspend_tx;
   assign hw2reg_o.targ_pio_control.suspended.de = |targ_suspend_tx;
   assign hw2reg_o.targ_pio_control.suspended.d  = reg2hw_i.targ_pio_control.suspended.q
-                                                | MaxTargets'(targ_suspend_tx);
+                                                | targ_suspend_tx;
   // Suspend IBI Transmission from target; hardware only ever sets the 'suspended' bit.
   assign hw2reg_o.targ_pio_control.ibi_suspended.d = 1'b1;
   // Abort clearing.
-  logic [NumTargets-1:0] targ_abort_clr;
+  logic [MaxTargets-1:0] targ_abort_clr;
   assign hw2reg_o.targ_pio_control.abort.de = |targ_abort_clr;
   assign hw2reg_o.targ_pio_control.abort.d  = reg2hw_i.targ_pio_control.abort.q
-                                            & ~MaxTargets'(targ_abort_clr);
+                                            & ~targ_abort_clr;
   assign hw2reg_o.targ_pio_control.ibi_abort.d = 1'b0;  // Hardware only ever clears the 'abort'.
 
   // Shared configuration/status for all Virtual Targets.
-  logic [NumTargets-1:0] targ_mwl_de;
-  logic [NumTargets-1:0] targ_mrl_de;
-  logic [NumTargets-1:0] targ_ibi_de;
+  logic [MaxTargets-1:0] targ_mwl_de;
+  logic [MaxTargets-1:0] targ_mrl_de;
+  logic [MaxTargets-1:0] targ_ibi_de;
   logic           [15:0] targ_mwl_d;
   logic           [15:0] targ_mrl_d;
   logic            [7:0] targ_ibi_d;
@@ -691,7 +691,7 @@ module i3c_core
   logic                  targ_grp_addr_de[MaxGroups];
   logic                  targ_grp_targ_de[MaxGroups];
   logic            [6:0] targ_grp_addr_d[MaxGroups];
-  logic [NumTargets-1:0] targ_grp_targ_d[MaxGroups];
+  logic [MaxTargets-1:0] targ_grp_targ_d[MaxGroups];
 
   // Enable/disable Events for a set of Virtual Targets.
   i3c_endis_event_t targ_endis_evt;
@@ -709,9 +709,9 @@ module i3c_core
   end
 
   // Updating of Target dynamic addresses.
-  logic [NumTargets-1:0] targ_dynaddr_de;
+  logic [MaxTargets-1:0] targ_dynaddr_de;
   logic                  targ_dynaddr_valid_d;
-  logic            [6:0] targ_dynaddr_d[NumTargets];
+  logic            [6:0] targ_dynaddr_d[MaxTargets];
   always_comb begin
     for (int unsigned t = 0; t < MaxTargets; t++) begin
       if (t < NumTargets) begin
@@ -725,12 +725,12 @@ module i3c_core
   end
 
   // Updating of Target Activity State (ENTASn) and ENDXFER configuration.
-  logic [NumTargets-1:0] targ_act_state_de;
+  logic [MaxTargets-1:0] targ_act_state_de;
   logic            [1:0] targ_act_state_d;
-  logic [NumTargets-1:0] targ_endxfer_cand_de;
+  logic [MaxTargets-1:0] targ_endxfer_cand_de;
   logic            [2:0] targ_endxfer_cand_d;
-  logic [NumTargets-1:0] targ_endxfer_de;
-  logic            [2:0] targ_endxfer_d[NumTargets];
+  logic [MaxTargets-1:0] targ_endxfer_de;
+  logic            [2:0] targ_endxfer_d[MaxTargets];
   always_comb begin
     for (int unsigned t = 0; t < MaxTargets; t++) begin
       if (t < NumTargets) begin
@@ -2236,7 +2236,7 @@ module i3c_core
     assign hw2reg_o.targ_group[grp].group_addr.de = targ_grp_addr_de[grp];
     assign hw2reg_o.targ_group[grp].group_addr.d  = targ_grp_addr_d[grp];
     assign hw2reg_o.targ_group[grp].targets.de    = targ_grp_targ_de[grp];
-    assign hw2reg_o.targ_group[grp].targets.d     = MaxTargets'(targ_grp_targ_d[grp]);
+    assign hw2reg_o.targ_group[grp].targets.d     = targ_grp_targ_d[grp];
   end
 
   assign hw2reg_o.reset_det_status.active.de     = 1'b1;
@@ -2343,6 +2343,21 @@ module i3c_core
   logic [MaxGroups-1:0] unused_targ_group_reinit;
   for (genvar grp = 0; grp < MaxGroups; grp++) begin : gen_unused_targ_group_reinit
     assign unused_targ_group_reinit[grp] = reg2hw_i.targ_group[grp].reinit;
+  end
+  // - the configuration updates of the Virtual Targets that this instance does not implement.
+  //   The Target core ties these slices off, and the register interface above presents them to
+  //   software as zero rather than from these signals.
+  logic unused_absent_vt;
+  always_comb begin
+    unused_absent_vt = 1'b0;
+    for (int unsigned t = NumTargets; t < MaxTargets; t++) begin
+      unused_absent_vt ^= ^{targ_mwl_de[t], targ_mrl_de[t], targ_ibi_de[t],
+                            targ_endis_evt.enint[t], targ_endis_evt.disint[t],
+                            targ_endis_evt.encr[t], targ_endis_evt.discr[t],
+                            targ_endis_evt.enhj[t], targ_endis_evt.dishj[t],
+                            targ_dynaddr_de[t], targ_dynaddr_d[t], targ_act_state_de[t],
+                            targ_endxfer_cand_de[t], targ_endxfer_de[t], targ_endxfer_d[t]};
+    end
   end
   // - FIFO status that is not presented to software or the Controller/Target logic.
   logic unused_fifo_state;

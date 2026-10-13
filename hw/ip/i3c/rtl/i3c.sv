@@ -22,9 +22,11 @@ module i3c
   // Include Target functionality even in the absence of Secondary Controller operation?
   parameter bit                     Target           = 1'b1,
   // Number of target(s) or target group(s) presented simultaneously on the I3C bus,
-  // including the Secondary Controller Role.
-  parameter int unsigned            NumTargets       = i3c_pkg::NumTargets,
-  parameter int unsigned            NumSDALanes      = 1,
+  // including the Secondary Controller Role. This may be configured per instance; all
+  // Target-indexed data types are sized for `i3c_reg_pkg::MaxTargets`, and the surplus slices
+  // of an instance with fewer Targets are tied off.
+  parameter int unsigned            NumTargets       = 2,
+  parameter int unsigned            NumSDALanes      = i3c_pkg::NumSDALanes,
   // Whether to include direct software access to the message buffer?
   parameter bit                     SWDirectMsgBuf   = 1'b1,
   // Whether the direct message buffer access supports execution.
@@ -548,6 +550,9 @@ module i3c
 
   // Currently this IP only supports one SDA lane (no support for HDR-BT)
   `ASSERT_INIT(OnlyOneSdaLine_A, NumSDALanes == 1)
+
+  // At least one Virtual Target must be implemented, and at most `MaxTargets` many.
+  `ASSERT_INIT(NumTargetsLegal_A, (NumTargets >= 1) && (NumTargets <= MaxTargets))
 
   // Assert Known for I3C Controller outputs
   `ASSERT_KNOWN(CtrlSCLEnKnown_A, cio_ctrl_bus_drv.scl_en)

@@ -186,7 +186,9 @@
       type:    "int unsigned",
       default: "2",
       desc:    '''Number of target(s) or target group(s) presented simultaneously on the I3C bus,
-               including the Secondary Controller Role on (Virtual) Target 0.
+               including the Secondary Controller Role on (Virtual) Target 0. This must not exceed
+               `MaxTargets`, for which all Target-indexed data types are sized; the surplus slices
+               of an instance with fewer Targets are tied off.
                ''',
       local:   "false",
       expose:  "true"

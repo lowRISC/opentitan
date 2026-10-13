@@ -16,7 +16,11 @@ module i3c_target_fsm
   parameter int unsigned NumTargets = 2,
   parameter int unsigned DataWidth  = 32,
   parameter int unsigned FIFODepthW = i3c_fifo_pkg::DepthW,
-  parameter bit          TargetExt  = 1'b0
+  parameter bit          TargetExt  = 1'b0,
+
+  // Derived parameters.
+  // Mask of the Virtual Targets implemented by this instance.
+  localparam logic [MaxTargets-1:0] TargPresent = MaxTargets'({NumTargets{1'b1}})
 ) (
   input                     clk_i,
   input                     rst_ni,
@@ -43,12 +47,12 @@ module i3c_target_fsm
   input               [6:0] mask_blocked_i[NumBlocked],
 
   // Updating configuration.
-  output   [NumTargets-1:0] dynaddr_de_o,
+  output   [MaxTargets-1:0] dynaddr_de_o,
   output                    dynaddr_valid_d_o,
-  output              [6:0] dynaddr_d_o[NumTargets],
-  output   [NumTargets-1:0] mwl_de_o,
-  output   [NumTargets-1:0] mrl_de_o,
-  output   [NumTargets-1:0] ibi_de_o,
+  output              [6:0] dynaddr_d_o[MaxTargets],
+  output   [MaxTargets-1:0] mwl_de_o,
+  output   [MaxTargets-1:0] mrl_de_o,
+  output   [MaxTargets-1:0] ibi_de_o,
   output             [15:0] mwl_d_o,
   output             [15:0] mrl_d_o,
   output              [7:0] ibi_d_o,
@@ -59,13 +63,13 @@ module i3c_target_fsm
   output                    grp_addr_de_o[MaxGroups],
   output                    grp_targ_de_o[MaxGroups],
   output              [6:0] grp_addr_d_o[MaxGroups],
-  output   [NumTargets-1:0] grp_targ_d_o[MaxGroups],
-  output   [NumTargets-1:0] act_state_de_o,
+  output   [MaxTargets-1:0] grp_targ_d_o[MaxGroups],
+  output   [MaxTargets-1:0] act_state_de_o,
   output              [1:0] act_state_d_o,
-  output   [NumTargets-1:0] endxfer_cand_de_o,
+  output   [MaxTargets-1:0] endxfer_cand_de_o,
   output              [2:0] endxfer_cand_d_o,
-  output   [NumTargets-1:0] endxfer_de_o,
-  output              [2:0] endxfer_d_o[NumTargets],
+  output   [MaxTargets-1:0] endxfer_de_o,
+  output              [2:0] endxfer_d_o[MaxTargets],
   output                    vend_test_mode_o,
   output                    protocol_error_o,
 
@@ -81,7 +85,7 @@ module i3c_target_fsm
   input                     stby_cr_enabled_i,
 
   // Target device descriptions.
-  input  i3c_targ_dev_t     targ_dev_i[NumTargets],
+  input  i3c_targ_dev_t     targ_dev_i[MaxTargets],
 
   // Start request to the transceiver.
   // - SDA lowered to request Start signaling, and partial address phase.
@@ -94,11 +98,11 @@ module i3c_target_fsm
   input                     ddr_mode_i,
 
   // Transmission from Virtual Target(s) suspended.
-  output   [NumTargets-1:0] suspend_tx_o,
+  output   [MaxTargets-1:0] suspend_tx_o,
   // IBI Transmission suspended.
   output                    ibi_suspend_tx_o,
   // Clear the Abort status when transmission is resumed.
-  output   [NumTargets-1:0] abort_clr_o,
+  output   [MaxTargets-1:0] abort_clr_o,
   output                    ibi_abort_clr_o,
 
   // Transmission Descriptor access.
@@ -138,9 +142,9 @@ module i3c_target_fsm
   input      [FIFODepthW:0] ibi_rused_i,
 
   // Transmit data for Private Read transfers.
-  output logic              txd_toggle_o[NumTargets],
-  input                     txd_toggle_i[NumTargets],
-  output i3c_targ_trx_txd_t txd_data_o[NumTargets],
+  output logic              txd_toggle_o[MaxTargets],
+  input                     txd_toggle_i[MaxTargets],
+  output i3c_targ_trx_txd_t txd_data_o[MaxTargets],
 
   // Transmit data for Direct Read CCCs.
   output logic              txc_toggle_o,
@@ -204,7 +208,9 @@ module i3c_target_fsm
   import i3c_tti_pkg::*;
 
   // Local parameters.
-  localparam int unsigned NumTargetsW = $clog2(NumTargets);
+  // Width of an index over the implemented Virtual Targets; this sizes the arbiter indices, which
+  // must match `prim_arbiter_fixed`. Indices into the `MaxTargets`-sized structures use `Log2MT`.
+  localparam int unsigned NumTargetsW = prim_util_pkg::vbits(NumTargets);
   localparam int unsigned MaxGroupsW  = $clog2(MaxGroups);
 
   // Additional Target info required by the Target Core logic; this is required for CCC handling,
@@ -445,6 +451,15 @@ module i3c_target_fsm
                              reg2hw_i.targ_pio_control.suspended.q[t];
   end
 
+  // Virtual Targets that this instance does not implement have no transmit path; tie off the
+  // outputs that `gen_splitters` would otherwise have driven.
+  for (genvar t = NumTargets; t < MaxTargets; t++) begin : gen_no_splitters
+    assign txd_toggle_o[t] = 1'b0;
+    assign txd_data_o[t]   = '0;
+    assign suspend_tx_o[t] = 1'b0;
+    assign abort_clr_o[t]  = 1'b0;
+  end
+
   // Similarly, we supply data for Direct GET CCCs using another inverting toggle.
   logic prev_txc_toggle;
   assign txc_toggle_o = ccc_rsp.req_cvalid ^ prev_txc_toggle;
@@ -459,6 +474,7 @@ module i3c_target_fsm
 
   // Direct Read CCC data for all Targets.
   always_comb begin : drv_txc_data
+    // Slices belonging to Virtual Targets that are not present keep this default of zero.
     txc_data_o = '0;
     for (int unsigned t = 0; t < NumTargets; t++) begin
       // TODO(#31337): rdata_first is hardcoded to 1'b0, which fails DDR CCC reads
@@ -661,7 +677,7 @@ module i3c_target_fsm
   logic                  grp_set;
   logic                  grp_rst;
   // SETGRPA and RSTGRPA may subscribe/unsubscribe multiple targets.
-  logic [NumTargets-1:0] grp_targets;
+  logic [MaxTargets-1:0] grp_targets;
   // RSTGRPA may affect all groups or rather than just a single Group address.
   logic                  grp_all;
   logic            [6:0] grp_addr;
@@ -716,10 +732,10 @@ module i3c_target_fsm
   );
 
   // Transmission outcome; for completion signaling and error reporting.
-  logic [NumTargetsW-1:0] tx_targ_id;
+  logic [Log2MT-1:0] tx_targ_id;
   assign tx_targ_id = '0;  // TODO(#31337): FSM Tracks target.
   i3c_tti_tx_desc_t tx_desc_curr;
-  assign tx_desc_curr = i3c_tti_tx_desc_t'(tx_desc_rdata_i[tx_targ_id]);
+  assign tx_desc_curr = i3c_tti_tx_desc_t'(tx_desc_rdata_i[NumTargetsW'(tx_targ_id)]);
   i3c_tti_ibi_status_t ibi_desc;
   assign ibi_desc = i3c_tti_ibi_status_t'(ibi_desc_rdata_i);
 
@@ -824,9 +840,8 @@ module i3c_target_fsm
     // itself is reported via `rx_desc_ovl_o` and must not be attributed to this transfer, which
     // is a later one than the transfer whose descriptor was lost.
     rx_desc_d.status      = rx_flood_q ? TTIRxStatus_RxOverflow : trx_rxd_i.status;
-    rx_desc_d.targets     = MaxTargets'((trx_rxd_i.targ_id < NumTargets) ?
-                                        NumTargets'('b1 << trx_rxd_i.targ_id) :
-                                        trx_rxd_i.targ_set);
+    rx_desc_d.targets     = (trx_rxd_i.targ_id < NumTargets) ? MaxTargets'('b1 << trx_rxd_i.targ_id)
+                                                             : trx_rxd_i.targ_set;
     rx_desc_d.address     = trx_rxd_i.addr;
     rx_desc_d.is_group    = trx_rxd_i.is_group;
     rx_desc_d.data_length = rx_data_len;
@@ -1002,14 +1017,13 @@ module i3c_target_fsm
   localparam int unsigned IBIArbDataW = $bits(i3c_targ_trx_arb_t);
   i3c_targ_trx_arb_t ibi_arb_in[NumTargets + 2];
   logic  [NumTargets+1:0] ibi_arb_req, ibi_arb_gnt;
-  logic [NumTargetsW-1:0] ibi_targ_id_clamp;
+  logic      [Log2MT-1:0] ibi_targ_id_clamp;
   always_comb begin
     for (int unsigned c = 0; c < NumTargets + 2; c++) ibi_arb_in[c] = '0;
-    ibi_targ_id_clamp = ibi_stat_desc.targ_id < NumTargets ? NumTargetsW'(ibi_stat_desc.targ_id)
-                                                           : '0;
+    ibi_targ_id_clamp = ibi_stat_desc.targ_id < NumTargets ? Log2MT'(ibi_stat_desc.targ_id) : '0;
     // The highest-priority contender is any In-Band Interrupt from the queue.
     ibi_arb_req[0] = ibi_dispatch;
-    ibi_arb_in[0].targ_id  = ibi_stat_desc.targ_id;
+    ibi_arb_in[0].targ_id  = TargIDW'(ibi_stat_desc.targ_id);
     ibi_arb_in[0].addr     = targ_dev_i[ibi_targ_id_clamp].addr;
     ibi_arb_in[0].ibi      = 1'b1;
     ibi_arb_in[0].rdata_nq = mand_data_nq(ibi_stat_desc.mdb, ibi_stat_desc.data_length);
@@ -1213,19 +1227,21 @@ module i3c_target_fsm
     grp_idx       = grp_match_valid ? grp_match_idx : grp_free_idx;
   end
 
-  logic [NumTargets-1:0] targs_curr;
-  logic [NumTargets-1:0] targs_set;
-  logic [NumTargets-1:0] targs_rst;
-  assign targs_curr = {NumTargets{~grp_add}} &
-                      reg2hw_i.targ_group[grp_idx].targets.q[NumTargets-1:0];
-  assign targs_set  = {NumTargets{ grp_set}} & grp_targets;
-  assign targs_rst  = {NumTargets{ grp_rst}} & grp_targets;
+  // The subscription registers are sized for `MaxTargets`, so trim them to the Virtual Targets
+  // that are present; `grp_targets` is already trimmed by the CCC handling.
+  logic [MaxTargets-1:0] targs_curr;
+  logic [MaxTargets-1:0] targs_set;
+  logic [MaxTargets-1:0] targs_rst;
+  assign targs_curr = {MaxTargets{~grp_add}} & TargPresent &
+                      reg2hw_i.targ_group[grp_idx].targets.q;
+  assign targs_set  = {MaxTargets{ grp_set}} & grp_targets;
+  assign targs_rst  = {MaxTargets{ grp_rst}} & grp_targets;
 
   // Just leave group addresses in place when all targets become unsubscribed; we can reallocate
   // those entries above.
   for (genvar grp = 0; grp < MaxGroups; grp++) begin : gen_grp_addr
-    logic [NumTargets-1:0] grp_curr;
-    assign grp_curr           = grp_all ? reg2hw_i.targ_group[grp].targets.q[NumTargets-1:0]
+    logic [MaxTargets-1:0] grp_curr;
+    assign grp_curr           = grp_all ? reg2hw_i.targ_group[grp].targets.q & TargPresent
                                         : targs_curr;
     // Are we adding a new group address?
     assign grp_addr_de_o[grp] = grp_set & grp_add & grp_idx_valid & (grp == grp_idx);
@@ -1339,9 +1355,14 @@ module i3c_target_fsm
   always_comb begin
     unused_targ_dev = 1'b0;
     for (int unsigned t = 0; t < NumTargets; t++) begin
-      unused_targ_dev ^= ^{targ_dev_i[t], targ_info[t], tx_desc[t].prn.reserved,
-                           tx_desc[t].prn.tid, tx_desc[t].prn.wroc, tx_desc_rused_i[t],
-                           tx_desc_ravail_i[t]};
+      unused_targ_dev ^= ^{targ_info[t], tx_desc[t].prn.reserved, tx_desc[t].prn.tid,
+                           tx_desc[t].prn.wroc, tx_desc_rused_i[t], tx_desc_ravail_i[t]};
+    end
+    for (int unsigned t = 0; t < MaxTargets; t++) unused_targ_dev ^= ^targ_dev_i[t];
+    // - the transmit-data handshake and the Direct Read CCC data of the Virtual Targets that
+    //   are not implemented.
+    for (int unsigned t = NumTargets; t < MaxTargets; t++) begin
+      unused_targ_dev ^= ^{txd_toggle_i[t], ccc_rsp.req_cdata[t]};
     end
   end
   // - inputs that are not used yet (see the TODOs at their declarations).

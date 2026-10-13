@@ -38,18 +38,20 @@ package i3c_pkg;
   //   entries; TODO(#31304): ratify and simplify, or modify as required.
   localparam int unsigned DATCacheSize = NumDATEntries;
 
-  // Number of Target(s) presented simultaneously on the I3C bus, including the Standby Controller.
-  localparam int unsigned NumTargets = 2;
-  localparam int unsigned Log2NT = $clog2(NumTargets);
+  // The number of Target(s) presented simultaneously on the I3C bus, including the Standby
+  // Controller, is a per-instance parameter (`NumTargets`) of the IP block top level.
+  // Every Target-indexed data type below is sized for `MaxTargets` so that none of
+  // them depends on that parameter. An instance configured with fewer Targets ties off the
+  // surplus slices, which synthesis then removes.
 
   // Maximum number of groups to which a Target may be added.
   localparam int unsigned NumGroups = 8;
 
   // The Target must also respond to the I3C Broadcast Address (7'h7e), and an additional encoding
   // is used within the Target transceiver logic to indicate the address did not match anything.
-  localparam int unsigned TargIDW = $clog2(NumTargets + 2);
-  localparam bit [TargIDW-1:0] TargIDNoMatch   = TargIDW'(NumTargets);
-  localparam bit [TargIDW-1:0] TargIDBroadcast = TargIDW'(NumTargets+1);
+  localparam int unsigned TargIDW = $clog2(MaxTargets + 2);
+  localparam bit [TargIDW-1:0] TargIDNoMatch   = TargIDW'(MaxTargets);
+  localparam bit [TargIDW-1:0] TargIDBroadcast = TargIDW'(MaxTargets+1);
 
   // Number of blocked addresses supported; this is a safeguard against I2C devices that may use
   // clock-stretching, but may also be of use diagnostically.
@@ -432,26 +434,26 @@ package i3c_pkg;
     logic            [6:0] addr;
     logic                  addr_valid;
     // Subset of Virtual Targets presently subscribed to this group address.
-    logic [NumTargets-1:0] targets;
+    logic [MaxTargets-1:0] targets;
   } i3c_grp_addr_t;
 
   // Set maximum read, write, IBI length.
   typedef struct packed {
     logic                  setmwl;   // As opposed to SETMRL.
     logic                  setibi;   // Optional, SETMRL only.
-    logic [NumTargets-1:0] targets;  // Set of affected Targets.
+    logic [MaxTargets-1:0] targets;  // Set of affected Targets.
     logic           [15:0] mwrl;     // Length for SETMW|RL.
     logic            [7:0] ibil;     // Optional max IBI payload length.
   } i3c_setml_t;
 
   // Enable/Disable Target-side IBI generation.
   typedef struct packed {
-    logic [NumTargets-1:0] enint;   // Regular In-Band Interrupts.
-    logic [NumTargets-1:0] disint;
-    logic [NumTargets-1:0] encr;    // Controller Role requests.
-    logic [NumTargets-1:0] discr;
-    logic [NumTargets-1:0] enhj;    // Hot-Join requests.
-    logic [NumTargets-1:0] dishj;
+    logic [MaxTargets-1:0] enint;   // Regular In-Band Interrupts.
+    logic [MaxTargets-1:0] disint;
+    logic [MaxTargets-1:0] encr;    // Controller Role requests.
+    logic [MaxTargets-1:0] discr;
+    logic [MaxTargets-1:0] enhj;    // Hot-Join requests.
+    logic [MaxTargets-1:0] dishj;
   } i3c_endis_event_t;
 
   // Indicates whether the given address is an 'Error Type TE0' address (4.3.8.1.1).
