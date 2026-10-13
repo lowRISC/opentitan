@@ -103,10 +103,21 @@
     // job prefix
     {job_prefix: "{job_prefix}"}
 
+    // The Verdi FSDB dumper libraries (see xcelium_fsdb_pli_opt) depend on libIUS.so, which lives
+    // alongside them and has no rpath, so add their directory when dumping FSDB waves.
+    {LD_LIBRARY_PATH: "{xcelium_fsdb_ld_library_path}"}
+
   ]
 
   // Supported wave dumping formats (in order of preference).
   supported_wave_formats: ["shm", "fsdb", "vcd"]
+
+  // Load the Verdi FSDB dumper when dumping waves in FSDB format (requires VERDI_HOME). The PLI
+  // provides the $fsdb* system tasks and the CFC library provides the `call fsdb*` Tcl commands
+  // used by waves.tcl. Both expand to nothing for other wave formats.
+  xcelium_fsdb_pli_opt: "{eval_cmd} [ {waves} = fsdb ] && echo -loadpli1 $VERDI_HOME/share/PLI/IUS/linux64/boot/debpli.so:novas_pli_boot || true"
+  xcelium_fsdb_cfc_opt: "{eval_cmd} [ {waves} = fsdb ] && echo -loadcfc $VERDI_HOME/share/PLI/IUS/linux64/boot/debcfc.so:novas_cfc_boot || true"
+  xcelium_fsdb_ld_library_path: "{eval_cmd} [ {waves} = fsdb ] && echo $VERDI_HOME/share/PLI/IUS/linux64/boot:$LD_LIBRARY_PATH || echo $LD_LIBRARY_PATH"
 
   // Default tcl script used when running the sim. Override if needed.
   run_script: "{dv_root}/tools/sim.tcl"
@@ -218,7 +229,8 @@
     {
       name: xcelium_waves
       is_sim_mode: 1
-      build_opts: ["-access +c"]
+      build_opts: ["-access +c", "{xcelium_fsdb_pli_opt}"]
+      run_opts:   ["{xcelium_fsdb_pli_opt}", "{xcelium_fsdb_cfc_opt}"]
     }
     {
       name: xcelium_waves_off
