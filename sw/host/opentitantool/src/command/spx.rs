@@ -235,9 +235,9 @@ pub struct SpxVerifyCommand {
     /// The SPHINCS+ / SLH-DSA signature mode (Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxSignatureMode::default())]
     domain: SpxSignatureMode,
-    /// The signature algorithm (SHA2-128s-simple, SHAKE-128s-simple)
-    #[arg(long, default_value = "SHA2-128s-simple")]
-    spx_algorithm: SphincsPlus,
+    /// Deprecated, to be removed. The parameter set is determined using the public key.
+    #[arg(long, hide = true)]
+    spx_algorithm: Option<SphincsPlus>,
     /// The file containing the SPHINCS+ / SLH-DSA public key.
     #[arg(value_name = "KEY")]
     public_key: PathBuf,
@@ -258,7 +258,18 @@ impl CommandDispatch for SpxVerifyCommand {
             message.reverse();
         }
         let public_key = spx::load_spx_public_key(&self.public_key, SpxKeyLoadingMode::PublicOnly)?;
-        let signature = SpxRawSignature::read_from_file(&self.signature, self.spx_algorithm)?;
+        let algorithm = public_key.algorithm();
+        if let Some(spx_algorithm) = self.spx_algorithm {
+            log::warn!(
+                "--spx-algorithm is deprecated. The parameter set from the key is used instead."
+            );
+            if spx_algorithm != algorithm {
+                log::warn!(
+                    "--spx-algorithm {spx_algorithm} does not match the public key parameter set: {algorithm}"
+                );
+            }
+        }
+        let signature = SpxRawSignature::read_from_file(&self.signature, algorithm)?;
         public_key.verify(self.domain.into(), signature.as_bytes(), &message)?;
         Ok(None)
     }
