@@ -30,6 +30,12 @@
         "comment": "RTL simulator."
     },
     {
+        "name": "Verdi",
+        "vendor": "Synopsys",
+        "version": "U-2023.03-SP2",
+        "comment": "Provides the FSDB dumper (novas) libraries VCS loads to dump waves in FSDB format."
+    },
+    {
         "name": "Vivado",
         "vendor": "Xilinx",
         "version": "2021.1",
