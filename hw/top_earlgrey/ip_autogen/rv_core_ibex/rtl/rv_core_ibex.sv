@@ -217,6 +217,10 @@ module rv_core_ibex
   tl_h2d_t tl_revbm_ibex2fifo;
   tl_d2h_t tl_revbm_fifo2ibex;
 
+  // Pipeline interfaces for capability tags
+  logic main_core_data_tag_h2d;
+  logic main_core_data_tag_d2h;
+
   // TLUL LC Gate interfaces
   tl_h2d_t tl_d_fifo2gate;
   tl_d2h_t tl_d_gate2fifo;
@@ -562,10 +566,10 @@ module rv_core_ibex
     .data_addr_o        (main_core_data_addr),
     .data_wdata_o       (main_core_data_wdata),
     .data_wdata_intg_o  (main_core_data_wdata_intg),
-    .data_tag_o         (cored_tag_h2d_o),
+    .data_tag_o         (main_core_data_tag_h2d),
     .data_rdata_i       (main_core_data_rdata),
     .data_rdata_intg_i  (main_core_data_rdata_intg),
-    .data_tag_i         (cored_tag_d2h_i),
+    .data_tag_i         (main_core_data_tag_d2h),
     .data_err_i         (main_core_data_err),
 
     .trvk_revbm_req_o       (main_core_revbm_req),
@@ -843,10 +847,10 @@ module rv_core_ibex
     .tl_h_o      (tl_d_fifo2ibex),
     .tl_d_o      (tl_d_fifo2gate),
     .tl_d_i      (tl_d_gate2fifo),
-    .spare_req_i (1'b0),
-    .spare_req_o (),
-    .spare_rsp_i (1'b0),
-    .spare_rsp_o ());
+    .spare_req_i (main_core_data_tag_h2d),
+    .spare_req_o (cored_tag_h2d_o),
+    .spare_rsp_i (cored_tag_d2h_i),
+    .spare_rsp_o (main_core_data_tag_d2h));
 
   // SEC_CM: CORED_TLUL.BUS.LC_GATED
   // Gate any pending requests on escalation
