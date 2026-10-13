@@ -24,7 +24,9 @@
 module i3c_target_trx
   import i3c_io_pkg::*;
   import i3c_pkg::*;
+  import i3c_reg_pkg::*;
   import i3c_target_pkg::*;
+  import i3c_tti_pkg::Log2MT;
 #(
   // Number of target(s) or target group(s) presented simultaneously on the I3C bus, including the
   // Standby Controller Role.
@@ -40,7 +42,7 @@ module i3c_target_trx
   // - these signals may be treated as quasi-static? Note, though, that they are modified in
   //   the target core in response to CCC traffic.
   // Target device descriptions.
-  input  i3c_targ_dev_t     targ_dev_i[NumTargets],
+  input  i3c_targ_dev_t     targ_dev_i[MaxTargets],
   // Group address descriptions.
   input  i3c_grp_addr_t     grp_addr_i[NumGroups],
   // Blocked device addresses.
@@ -49,9 +51,9 @@ module i3c_target_trx
   input               [6:0] mask_blocked_i[NumBlocked],
 
   // Transmit data for Private Read transfers.
-  input                     trx_dvalid_i[NumTargets],
-  output logic              trx_dready_o[NumTargets],
-  input  i3c_targ_trx_txd_t trx_dreq_i[NumTargets],
+  input                     trx_dvalid_i[MaxTargets],
+  output logic              trx_dready_o[MaxTargets],
+  input  i3c_targ_trx_txd_t trx_dreq_i[MaxTargets],
 
   // Transmit for Direct Read CCCs.
   input                     trx_ctvalid_i,
@@ -258,7 +260,7 @@ module i3c_target_trx
   assign cmd_word = i3c_ddr_cmd_word_t'(ddr_payload);
 
   // The CCCs SETAASA and SETDASA shall be ignored by targets that already have a dynamic address.
-  logic [NumTargets-1:0] targ_ignore_ccc;
+  logic [MaxTargets-1:0] targ_ignore_ccc;
   // Some CCCs shall be ignored at all times by all targets because they are unsupported.
   logic                  ignore_ccc;
 
@@ -266,14 +268,16 @@ module i3c_target_trx
   logic            [6:0] addr_recvd;  // Target/Group being addressed.
   logic                  is_group;    // Is this a group address?
   logic    [TargIDW-1:0] targ_id;     // Individual Target addressed, _NoMatch or _Broadcast.
-  logic [NumTargets-1:0] targ_set;    // Set of addressed target(s), valid for Group Addressing too.
+  logic [MaxTargets-1:0] targ_set;    // Set of addressed target(s), valid for Group Addressing too.
   logic                  capture_all; // Capturing all traffic? TODO(#31337): presently unused.
   always_comb begin : addr_matching
     // Disabled targets and those without a valid address shall ignore all traffic; i.e., they do
-    // not even receive and respond to broadcast writes.
-    logic [NumTargets-1:0] contenders;
+    // not even receive and respond to broadcast writes. Virtual Targets that this instance does not
+    // implement are never enabled, so they drop out of `contenders` - and thus out of every
+    // `targ_set` derived from it - without any further trimming here.
+    logic [MaxTargets-1:0] contenders;
     contenders = '0;
-    for (int unsigned t = 0; t < NumTargets; t++) begin
+    for (int unsigned t = 0; t < MaxTargets; t++) begin
       contenders[t] = targ_dev_i[t].en & targ_dev_i[t].addr_valid;
     end
     // Test the configured targets in descending order such that the first target has the
@@ -282,7 +286,7 @@ module i3c_target_trx
     targ_set    = '0;
     is_group    = 1'b0;
     capture_all = 1'b0;
-    for (int t = NumTargets - 1; t >= 0; t--) begin
+    for (int t = MaxTargets - 1; t >= 0; t--) begin
       if (contenders[t] && addr_recvd == targ_dev_i[t].addr && !targ_ignore_ccc[t]) begin
         targ_id     = TargIDW'($unsigned(t));
         targ_set[t] = 1'b1;
@@ -299,7 +303,7 @@ module i3c_target_trx
       for (int g = NumGroups - 1; g >= 0; g--) begin
         if (grp_addr_i[g].addr_valid &&  // Group configured?
            ((addr_recvd == grp_addr_i[g].addr && !ignore_ccc) || ~|grp_addr_i[g].addr)) begin
-          targ_set = grp_addr_i[g].targets[NumTargets-1:0] & contenders;
+          targ_set = grp_addr_i[g].targets & contenders;
           targ_id  = TargIDNoMatch;
           is_group = 1'b1;
           capture_all = ~|grp_addr_i[g].addr;
@@ -312,7 +316,7 @@ module i3c_target_trx
   // - these properties are persistent and may be used during transfer processing.
   typedef struct packed {
     logic     [TargIDW-1:0] targ_id;   // Target ID (this is _not_ the I3C Address).
-    logic  [NumTargets-1:0] targ_set;  // Set of addressed targets, supporting Group Addresses too.
+    logic  [MaxTargets-1:0] targ_set;  // Set of addressed targets, supporting Group Addresses too.
     logic             [6:0] addr;      // Addressed target/group.
     logic                   is_group;  // Is this a group address?
     logic                   rnw;       // Read, not Write, for Private transfers or CCC segments.
@@ -343,16 +347,19 @@ module i3c_target_trx
     ignore_ccc = (ccc_state_q == CCC_SegAddr) && !supported_direct_ccc(trans.cmd);
     // The CCCs SETAASA and SETDASA shall be ignored by targets that already have a dynamic address
     // (4.3.7.3.10); the Target(s) shall NACK in this case, which must be done in the transceiver.
-    for (int unsigned t = 0; t < NumTargets; t++) begin
+    for (int unsigned t = 0; t < MaxTargets; t++) begin
       targ_ignore_ccc[t] = &{ccc_state_q == CCC_SegAddr, trans.cmd inside {SETAASA, SETDASA},
                              targ_dev_i[t].addr_valid, targ_dev_i[t].addr_dynamic} | ignore_ccc;
     end
   end
 
   // Target ID; this is either the unique ID number of a configured Target, or zero, to ensure it
-  // can be safely used as index into all data structures that have `NumTargets` entries.
-  logic [TargIDW-1:0] sel_targ_id;
-  assign sel_targ_id = (trans.targ_id < NumTargets) ? trans.targ_id : '0;
+  // can be safely used as index into all data structures that have `MaxTargets` entries. Only the
+  // first `NumTargets` of those are implemented, so the bound here is `NumTargets`. A Target ID is
+  // one bit wider than an index, because it also encodes the Broadcast Address and the absence of
+  // a match, so narrow it to the index width once the bound has been checked.
+  logic [Log2MT-1:0] sel_targ_id;
+  assign sel_targ_id = (trans.targ_id < NumTargets) ? Log2MT'(trans.targ_id) : '0;
 
   // Read data has been presented in anticipation of HDR-DDR transmission, but it may be collected
   // in SDR mode.
@@ -601,7 +608,7 @@ module i3c_target_trx
       // we must junk data.
       default: ack_addr = !sda_i[0] |
                          ((targ_id < NumTargets) & (ccc_addr_seg ? trx_ctvalid_i
-                                                                 : trx_dvalid_i[targ_id]));
+                                                                 : trx_dvalid_i[Log2MT'(targ_id)]));
     endcase
   end
   assign send_ack = &{state_q == State_ArbCede, penult_bit, ack_addr};
@@ -1118,8 +1125,12 @@ module i3c_target_trx
 
   // TODO(#31337): Request/response interface is incomplete at present; just capture the received
   // word here for checking.
-  for (genvar t = 0; t < NumTargets; t++) begin : gen_dready
-    assign trx_dready_o[t] = tx_starting & (t == trans.targ_id) & !ccc_command;
+  for (genvar t = 0; t < MaxTargets; t++) begin : gen_dready
+    if (t < NumTargets) begin : gen_vt_dready
+      assign trx_dready_o[t] = tx_starting & (t == trans.targ_id) & !ccc_command;
+    end else begin : gen_no_vt_dready
+      assign trx_dready_o[t] = 1'b0;  // Virtual Target not present.
+    end
   end
   // TODO(#31337): Re Direct GET read data:
   // Note: we consume data from all targets rather than the specific one that is transmitting
@@ -1215,7 +1226,7 @@ module i3c_target_trx
   logic unused_targ_dev;
   always_comb begin
     unused_targ_dev = 1'b0;
-    for (int unsigned t = 0; t < NumTargets; t++) begin
+    for (int unsigned t = 0; t < MaxTargets; t++) begin
       unused_targ_dev ^= ^{targ_dev_i[t].en_early_crc, targ_dev_i[t].en_write_nack,
                            targ_dev_i[t].en_write_term, trx_dreq_i[t].rlast[1],
                            trx_ctreq_i.rlast[t][1]};
