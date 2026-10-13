@@ -235,6 +235,10 @@ module ${module_instance_name}
 % if cheriot_available:
   tl_h2d_t tl_revbm_ibex2fifo;
   tl_d2h_t tl_revbm_fifo2ibex;
+
+  // Pipeline interfaces for capability tags
+  logic main_core_data_tag_h2d;
+  logic main_core_data_tag_d2h;
 % endif
 
   // TLUL LC Gate interfaces
@@ -604,14 +608,14 @@ module ${module_instance_name}
     .data_wdata_o       (main_core_data_wdata),
     .data_wdata_intg_o  (main_core_data_wdata_intg),
 % if cheriot_available:
-    .data_tag_o         (cored_tag_h2d_o),
+    .data_tag_o         (main_core_data_tag_h2d),
 % else:
     .data_tag_o         (),
 % endif
     .data_rdata_i       (main_core_data_rdata),
     .data_rdata_intg_i  (main_core_data_rdata_intg),
 % if cheriot_available:
-    .data_tag_i         (cored_tag_d2h_i),
+    .data_tag_i         (main_core_data_tag_d2h),
 % else:
     .data_tag_i         ('0),
 % endif
@@ -903,10 +907,17 @@ module ${module_instance_name}
     .tl_h_o      (tl_d_fifo2ibex),
     .tl_d_o      (tl_d_fifo2gate),
     .tl_d_i      (tl_d_gate2fifo),
+% if cheriot_available:
+    .spare_req_i (main_core_data_tag_h2d),
+    .spare_req_o (cored_tag_h2d_o),
+    .spare_rsp_i (cored_tag_d2h_i),
+    .spare_rsp_o (main_core_data_tag_d2h));
+% else:
     .spare_req_i (1'b0),
     .spare_req_o (),
     .spare_rsp_i (1'b0),
     .spare_rsp_o ());
+% endif
 
   // SEC_CM: CORED_TLUL.BUS.LC_GATED
   // Gate any pending requests on escalation
