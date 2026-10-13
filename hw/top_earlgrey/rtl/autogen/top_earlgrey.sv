@@ -216,7 +216,6 @@ module top_earlgrey #(
   output logic       usb_dp_pullup_en_o,
   output logic       usb_dn_pullup_en_o,
   inout         rram_test_analog_io,
-  input  logic [31:0] fpga_info_i,
   output prim_pad_wrapper_pkg::pad_attr_t [3:0] sensor_ctrl_manual_pad_attr_o,
   input  logic       usbdev_usb_rx_d_i,
   output logic       usbdev_usb_tx_d_o,
@@ -669,7 +668,6 @@ module top_earlgrey #(
     // Regular ports (auto-generated)
     .clk_osc_byp_pd_main_i,
     .rram_test_analog_io,
-    .fpga_info_i,
     .usbdev_usb_rx_d_i,
     .usbdev_usb_tx_d_o,
     .usbdev_usb_tx_se0_o,

@@ -11136,20 +11136,6 @@
           index: 3
         }
         {
-          name: fpga_info
-          struct: logic
-          type: uni
-          act: rcv
-          width: 32
-          inst_name: rv_core_ibex
-          default: ""
-          package: ""
-          external: true
-          conn_type: false
-          index: -1
-          top_signame: fpga_info
-        }
-        {
           name: corei_tl_h
           struct: tl
           package: tlul_pkg
@@ -12048,7 +12034,6 @@
       rstmgr.por_n: por_n
       rstmgr.resets: ""
       rstmgr.rst_en: ""
-      rv_core_ibex.fpga_info: fpga_info
       soc_proxy.misc_tl_h2d: ctn_misc_tl_h2d
       soc_proxy.misc_tl_d2h: ctn_misc_tl_d2h
       soc_proxy.soc_wkup_async: soc_wkup_async
@@ -17791,10 +17776,6 @@
       {
         port_overrides:
         {
-          rv_core_ibex.fpga_info:
-          {
-            unused: true
-          }
           rv_dm.next_dm_addr:
           {
             unused: true
@@ -18074,10 +18055,6 @@
       {
         port_overrides:
         {
-          rv_core_ibex.fpga_info:
-          {
-            unused: true
-          }
           rv_dm.next_dm_addr:
           {
             unused: true
@@ -28899,20 +28876,6 @@
         index: 3
       }
       {
-        name: fpga_info
-        struct: logic
-        type: uni
-        act: rcv
-        width: 32
-        inst_name: rv_core_ibex
-        default: ""
-        package: ""
-        external: true
-        conn_type: false
-        index: -1
-        top_signame: fpga_info
-      }
-      {
         name: corei_tl_h
         struct: tl
         package: tlul_pkg
@@ -33858,25 +33821,6 @@
         conn_type: true
         index: -1
         netname: rstmgr_rst_en
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: false
-        signame: fpga_info_i
-        signame_chip:
-        {
-          asic: "'0"
-          verilator: "'0"
-        }
-        width: 32
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: fpga_info
       }
       {
         package: tlul_pkg

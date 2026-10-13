@@ -16,7 +16,7 @@ package rv_core_ibex_reg_pkg;
   parameter int CfgAw = 8;
 
   // Number of registers for every interface
-  parameter int NumRegsCfg = 29;
+  parameter int NumRegsCfg = 28;
 
   // Alert indices
   typedef enum int {
@@ -171,10 +171,6 @@ package rv_core_ibex_reg_pkg;
     } rnd_data_valid;
   } rv_core_ibex_hw2reg_rnd_status_reg_t;
 
-  typedef struct packed {
-    logic [31:0] d;
-  } rv_core_ibex_hw2reg_fpga_info_reg_t;
-
   // Register -> HW type for cfg interface
   typedef struct packed {
     rv_core_ibex_reg2hw_alert_test_reg_t alert_test; // [337:330]
@@ -196,12 +192,11 @@ package rv_core_ibex_reg_pkg;
 
   // HW -> register type for cfg interface
   typedef struct packed {
-    rv_core_ibex_hw2reg_sw_recov_err_reg_t sw_recov_err; // [82:78]
-    rv_core_ibex_hw2reg_nmi_state_reg_t nmi_state; // [77:74]
-    rv_core_ibex_hw2reg_err_status_reg_t err_status; // [73:66]
-    rv_core_ibex_hw2reg_rnd_data_reg_t rnd_data; // [65:34]
-    rv_core_ibex_hw2reg_rnd_status_reg_t rnd_status; // [33:32]
-    rv_core_ibex_hw2reg_fpga_info_reg_t fpga_info; // [31:0]
+    rv_core_ibex_hw2reg_sw_recov_err_reg_t sw_recov_err; // [50:46]
+    rv_core_ibex_hw2reg_nmi_state_reg_t nmi_state; // [45:42]
+    rv_core_ibex_hw2reg_err_status_reg_t err_status; // [41:34]
+    rv_core_ibex_hw2reg_rnd_data_reg_t rnd_data; // [33:2]
+    rv_core_ibex_hw2reg_rnd_status_reg_t rnd_status; // [1:0]
   } rv_core_ibex_cfg_hw2reg_t;
 
   // Register offsets for cfg interface
@@ -231,9 +226,8 @@ package rv_core_ibex_reg_pkg;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_RND_STATUS_OFFSET = 8'h 5c;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_CHERIOT_ENA_OFFSET = 8'h 60;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_CHERIOT_LOCK_OFFSET = 8'h 64;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_FPGA_INFO_OFFSET = 8'h 68;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN_OFFSET = 8'h 6c;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_OFFSET = 8'h 70;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN_OFFSET = 8'h 68;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_OFFSET = 8'h 6c;
 
   // Reset values for hwext registers and their fields for cfg interface
   parameter logic [31:0] RV_CORE_IBEX_ALERT_TEST_RESVAL = 32'h 80000000;
@@ -248,8 +242,6 @@ package rv_core_ibex_reg_pkg;
   parameter logic [0:0] RV_CORE_IBEX_RND_STATUS_RND_DATA_VALID_RESVAL = 1'h 0;
   parameter logic [0:0] RV_CORE_IBEX_RND_STATUS_RND_DATA_FIPS_RESVAL = 1'h 0;
   parameter logic [3:0] RV_CORE_IBEX_CHERIOT_LOCK_RESVAL = 4'h 0;
-  parameter logic [31:0] RV_CORE_IBEX_FPGA_INFO_RESVAL = 32'h 0;
-  parameter logic [31:0] RV_CORE_IBEX_FPGA_INFO_VAL_RESVAL = 32'h 0;
 
   // Window parameters for cfg interface
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_DV_SIM_WINDOW_OFFSET = 8'h 80;
@@ -284,13 +276,12 @@ package rv_core_ibex_reg_pkg;
     RV_CORE_IBEX_RND_STATUS,
     RV_CORE_IBEX_CHERIOT_ENA,
     RV_CORE_IBEX_CHERIOT_LOCK,
-    RV_CORE_IBEX_FPGA_INFO,
     RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN,
     RV_CORE_IBEX_MCOUNTEREN_WRITABLE
   } rv_core_ibex_cfg_id_e;
 
   // Register width information to check illegal writes for cfg interface
-  parameter logic [3:0] RV_CORE_IBEX_CFG_PERMIT [29] = '{
+  parameter logic [3:0] RV_CORE_IBEX_CFG_PERMIT [28] = '{
     4'b 1111, // index[ 0] RV_CORE_IBEX_ALERT_TEST
     4'b 0001, // index[ 1] RV_CORE_IBEX_SW_RECOV_ERR
     4'b 0001, // index[ 2] RV_CORE_IBEX_SW_FATAL_ERR
@@ -317,9 +308,8 @@ package rv_core_ibex_reg_pkg;
     4'b 0001, // index[23] RV_CORE_IBEX_RND_STATUS
     4'b 0001, // index[24] RV_CORE_IBEX_CHERIOT_ENA
     4'b 0001, // index[25] RV_CORE_IBEX_CHERIOT_LOCK
-    4'b 1111, // index[26] RV_CORE_IBEX_FPGA_INFO
-    4'b 0001, // index[27] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN
-    4'b 0001  // index[28] RV_CORE_IBEX_MCOUNTEREN_WRITABLE
+    4'b 0001, // index[26] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN
+    4'b 0001  // index[27] RV_CORE_IBEX_MCOUNTEREN_WRITABLE
   };
 
 endpackage

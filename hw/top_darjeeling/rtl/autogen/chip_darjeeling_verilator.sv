@@ -832,7 +832,6 @@ module chip_darjeeling_verilator #(
     .por_n_i                               (por_n                    ),
     .rstmgr_resets_o                       (rstmgr_resets            ),
     .rstmgr_rst_en_o                       (                         ),
-    .fpga_info_i                           ('0                       ),
     .ctn_misc_tl_h2d_i                     (ctn_misc_tl_h2d_i        ),
     .ctn_misc_tl_d2h_o                     (ctn_misc_tl_d2h_o        ),
     .soc_wkup_async_i                      (1'b0                     ),

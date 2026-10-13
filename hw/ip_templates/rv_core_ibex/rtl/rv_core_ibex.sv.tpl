@@ -153,9 +153,6 @@ module ${module_instance_name}
   output otp_ctrl_pkg::sram_otp_key_req_t icache_otp_key_o,
   input  otp_ctrl_pkg::sram_otp_key_rsp_t icache_otp_key_i,
 
-  // fpga build info
-  input [31:0] fpga_info_i,
-
 % if racl_support:
   // RACL interface
   input  top_racl_pkg::racl_policy_vec_t racl_policies_i,
@@ -1244,10 +1241,6 @@ module ${module_instance_name}
 % endif
   logic unused_reg2hw;
   assign unused_reg2hw = |reg2hw.rnd_data.q;
-
-
-  // fpga build info hook-up
-  assign hw2reg.fpga_info.d = fpga_info_i;
 
   // SEC_CM: TLUL_ADAPTER.LOGIC.SHADOW
   if (SecureIbex) begin : gen_tlul_lockstep

@@ -26,7 +26,6 @@ Signal                  | Direction | Type                                      
 `ram_cfg_icache_data_o` | `output`  | `prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ICacheNWays-1:0]` | Outgoing icache data RAM configuration response.
 `hart_id_i`             | `input`   | `logic [31:0]`                                        | Static Hard ID input signal.
 `boot_addr_i`           | `input`   | `logic [31:0]`                                        | Static boot address input signal.
-`fpga_info_i`           | `input`   | `logic [31:0]`                                        | Fpga info input signal, coming from a Xilinx USR_ACCESSE2 primitive for example.
 `irq_software_i`        | `input`   | `logic`                                               | Software interrupt input.
 `irq_timer_i`           | `input`   | `logic`                                               | Timer interrupt input.
 `irq_external_i`        | `input`   | `logic`                                               | External interrupt input.

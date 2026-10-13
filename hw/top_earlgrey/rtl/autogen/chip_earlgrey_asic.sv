@@ -1003,7 +1003,6 @@ module chip_earlgrey_asic #(
     .usb_dp_pullup_en_o           (usb_dp_pullup_en   ),
     .usb_dn_pullup_en_o           (usb_dn_pullup_en   ),
     .rram_test_analog_io          (RRAM_ANALOG        ),
-    .fpga_info_i                  ('0                 ),
     .sensor_ctrl_manual_pad_attr_o(sensor_ctrl_manual_pad_attr),
     .usbdev_usb_rx_d_i            (usb_rx_d           ),
     .usbdev_usb_tx_d_o            (                   ),
