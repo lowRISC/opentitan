@@ -572,7 +572,9 @@
       sw_images: ["//sw/device/tests/sim_dv:data_integrity_escalation_reset_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
-      reseed: 6
+      // Each seed picks one of three fault targets, so 12 seeds miss any given target with a
+      // probability of (2/3)^12 < 1%.
+      reseed: 12
     }
     {
       name: chip_sw_sleep_pin_mio_dio_val
