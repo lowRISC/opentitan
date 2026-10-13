@@ -33,9 +33,8 @@ A number of memory-mapped registers are available to control Ibex-related functi
 | rv_core_ibex.[`RND_STATUS`](#rnd_status)                                 | 0x5c     |        4 | Status of random data in [`RND_DATA`](#rnd_data)                                |
 | rv_core_ibex.[`CHERIOT_ENA`](#cheriot_ena)                               | 0x60     |        4 | Whether to enable (MuBi4True) CHERIoT mode or remain in ePMP mode (MuBi4False). |
 | rv_core_ibex.[`CHERIOT_LOCK`](#cheriot_lock)                             | 0x64     |        4 | Locks the CHERIoT/ePMP mode.                                                    |
-| rv_core_ibex.[`FPGA_INFO`](#fpga_info)                                   | 0x68     |        4 | FPGA build timestamp info.                                                      |
-| rv_core_ibex.[`MCOUNTEREN_WRITABLE_REGWEN`](#mcounteren_writable_regwen) | 0x6c     |        4 | Register write-enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable)        |
-| rv_core_ibex.[`MCOUNTEREN_WRITABLE`](#mcounteren_writable)               | 0x70     |        4 | Controls whether Ibex mcounteren CSR is writable by software.                   |
+| rv_core_ibex.[`MCOUNTEREN_WRITABLE_REGWEN`](#mcounteren_writable_regwen) | 0x68     |        4 | Register write-enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable)        |
+| rv_core_ibex.[`MCOUNTEREN_WRITABLE`](#mcounteren_writable)               | 0x6c     |        4 | Controls whether Ibex mcounteren CSR is writable by software.                   |
 | rv_core_ibex.[`DV_SIM_WINDOW`](#dv_sim_window)                           | 0x80     |       32 | Exposed tlul window for DV only purposes.                                       |
 
 ## ALERT_TEST
@@ -461,26 +460,9 @@ If [`CHERIOT_ENA`](#cheriot_ena) is set to MuBi4True, CHERIoT mode is enabled on
 |  31:4  |        |         |        | Reserved                                                                                                                                                                                                                     |
 |  3:0   |   wo   |    x    | VAL    | Write MuBi4True to lock the mode selected by [`CHERIOT_ENA.`](#cheriot_ena) Any other value moves the switch into a terminal error state, in which CHERIoT mode stays unavailable until reset and the fatal alert is raised. |
 
-## FPGA_INFO
-FPGA build timestamp info.
-This register only contains valid data for fpga, for all other variants it is simply 0.
-- Offset: `0x68`
-- Reset default: `0x0`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "VAL", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name   | Description                       |
-|:------:|:------:|:-------:|:-------|:----------------------------------|
-|  31:0  |   ro   |   0x0   | VAL    | FPGA build timestamp information. |
-
 ## MCOUNTEREN_WRITABLE_REGWEN
 Register write-enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable)
-- Offset: `0x6c`
+- Offset: `0x68`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -506,7 +488,7 @@ Write enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable) Once set to 0, i
 
 ## MCOUNTEREN_WRITABLE
 Controls whether Ibex mcounteren CSR is writable by software.
-- Offset: `0x70`
+- Offset: `0x6c`
 - Reset default: `0x6`
 - Reset mask: `0xf`
 - Register enable: [`MCOUNTEREN_WRITABLE_REGWEN`](#mcounteren_writable_regwen)

@@ -11209,20 +11209,6 @@
           index: 4
         }
         {
-          name: fpga_info
-          struct: logic
-          type: uni
-          act: rcv
-          width: 32
-          inst_name: rv_core_ibex
-          default: ""
-          package: ""
-          external: true
-          conn_type: false
-          index: -1
-          top_signame: fpga_info
-        }
-        {
           name: corei_tl_h
           struct: tl
           package: tlul_pkg
@@ -12604,7 +12590,6 @@
       pinmux.usb_dppullup_en: usb_dp_pullup_en
       pinmux.usb_dnpullup_en: usb_dn_pullup_en
       rram_macro.rram_test_analog: rram_test_analog
-      rv_core_ibex.fpga_info: fpga_info
       sensor_ctrl.manual_pad_attr: sensor_ctrl_manual_pad_attr
       usbdev.usb_rx_d: ""
       usbdev.usb_tx_d: ""
@@ -16960,10 +16945,6 @@
           {
             unused: true
           }
-          rv_core_ibex.fpga_info:
-          {
-            unused: true
-          }
           pinmux.dft_hold_tap_sel:
           {
             unused: true
@@ -17087,10 +17068,6 @@
           usbdev.usb_tx_use_d_se0:
           {
             signal: usb_tx_use_d_se0
-          }
-          rv_core_ibex.fpga_info:
-          {
-            unused: true
           }
           pinmux.dft_hold_tap_sel:
           {
@@ -30021,20 +29998,6 @@
         index: 4
       }
       {
-        name: fpga_info
-        struct: logic
-        type: uni
-        act: rcv
-        width: 32
-        inst_name: rv_core_ibex
-        default: ""
-        package: ""
-        external: true
-        conn_type: false
-        index: -1
-        top_signame: fpga_info
-      }
-      {
         name: corei_tl_h
         struct: tl
         package: tlul_pkg
@@ -34420,26 +34383,6 @@
         conn_type: false
         index: -1
         netname: rram_test_analog
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: false
-        signame: fpga_info_i
-        signame_chip:
-        {
-          asic: "'0"
-          verilator: "'0"
-          cw340: fpga_info
-        }
-        width: 32
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: fpga_info
       }
       {
         package: prim_pad_wrapper_pkg

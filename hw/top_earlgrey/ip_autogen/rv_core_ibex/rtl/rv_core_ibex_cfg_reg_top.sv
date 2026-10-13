@@ -57,9 +57,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [28:0] reg_we_check;
+  logic [27:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(29)
+    .OneHotWidth(28)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -260,8 +260,6 @@ module rv_core_ibex_cfg_reg_top (
   logic [3:0] cheriot_ena_wd;
   logic cheriot_lock_we;
   logic [3:0] cheriot_lock_wd;
-  logic fpga_info_re;
-  logic [31:0] fpga_info_qs;
   logic mcounteren_writable_regwen_we;
   logic mcounteren_writable_regwen_qs;
   logic mcounteren_writable_regwen_wd;
@@ -1415,22 +1413,6 @@ module rv_core_ibex_cfg_reg_top (
   assign reg2hw.cheriot_lock.qe = cheriot_lock_qe;
 
 
-  // R[fpga_info]: V(True)
-  prim_subreg_ext #(
-    .DW    (32)
-  ) u_fpga_info (
-    .re     (fpga_info_re),
-    .we     (1'b0),
-    .wd     ('0),
-    .d      (hw2reg.fpga_info.d),
-    .qre    (),
-    .qe     (),
-    .q      (),
-    .ds     (),
-    .qs     (fpga_info_qs)
-  );
-
-
   // R[mcounteren_writable_regwen]: V(False)
   prim_subreg #(
     .DW      (1),
@@ -1493,7 +1475,7 @@ module rv_core_ibex_cfg_reg_top (
 
 
 
-  logic [28:0] addr_hit;
+  logic [27:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == RV_CORE_IBEX_ALERT_TEST_OFFSET);
     addr_hit[ 1] = (reg_addr == RV_CORE_IBEX_SW_RECOV_ERR_OFFSET);
@@ -1521,9 +1503,8 @@ module rv_core_ibex_cfg_reg_top (
     addr_hit[23] = (reg_addr == RV_CORE_IBEX_RND_STATUS_OFFSET);
     addr_hit[24] = (reg_addr == RV_CORE_IBEX_CHERIOT_ENA_OFFSET);
     addr_hit[25] = (reg_addr == RV_CORE_IBEX_CHERIOT_LOCK_OFFSET);
-    addr_hit[26] = (reg_addr == RV_CORE_IBEX_FPGA_INFO_OFFSET);
-    addr_hit[27] = (reg_addr == RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN_OFFSET);
-    addr_hit[28] = (reg_addr == RV_CORE_IBEX_MCOUNTEREN_WRITABLE_OFFSET);
+    addr_hit[26] = (reg_addr == RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN_OFFSET);
+    addr_hit[27] = (reg_addr == RV_CORE_IBEX_MCOUNTEREN_WRITABLE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1558,8 +1539,7 @@ module rv_core_ibex_cfg_reg_top (
                (addr_hit[24] & (|(RV_CORE_IBEX_CFG_PERMIT[24] & ~reg_be))) |
                (addr_hit[25] & (|(RV_CORE_IBEX_CFG_PERMIT[25] & ~reg_be))) |
                (addr_hit[26] & (|(RV_CORE_IBEX_CFG_PERMIT[26] & ~reg_be))) |
-               (addr_hit[27] & (|(RV_CORE_IBEX_CFG_PERMIT[27] & ~reg_be))) |
-               (addr_hit[28] & (|(RV_CORE_IBEX_CFG_PERMIT[28] & ~reg_be)))));
+               (addr_hit[27] & (|(RV_CORE_IBEX_CFG_PERMIT[27] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -1655,11 +1635,10 @@ module rv_core_ibex_cfg_reg_top (
   assign cheriot_lock_we = addr_hit[25] & reg_we & !reg_error;
 
   assign cheriot_lock_wd = reg_wdata[3:0];
-  assign fpga_info_re = addr_hit[26] & reg_re & !reg_error;
-  assign mcounteren_writable_regwen_we = addr_hit[27] & reg_we & !reg_error;
+  assign mcounteren_writable_regwen_we = addr_hit[26] & reg_we & !reg_error;
 
   assign mcounteren_writable_regwen_wd = reg_wdata[0];
-  assign mcounteren_writable_we = addr_hit[28] & reg_we & !reg_error;
+  assign mcounteren_writable_we = addr_hit[27] & reg_we & !reg_error;
 
   assign mcounteren_writable_wd = reg_wdata[3:0];
 
@@ -1691,9 +1670,8 @@ module rv_core_ibex_cfg_reg_top (
     reg_we_check[23] = 1'b0;
     reg_we_check[24] = cheriot_ena_we;
     reg_we_check[25] = cheriot_lock_we;
-    reg_we_check[26] = 1'b0;
-    reg_we_check[27] = mcounteren_writable_regwen_we;
-    reg_we_check[28] = mcounteren_writable_gated_we;
+    reg_we_check[26] = mcounteren_writable_regwen_we;
+    reg_we_check[27] = mcounteren_writable_gated_we;
   end
 
   // Read data return
@@ -1815,14 +1793,10 @@ module rv_core_ibex_cfg_reg_top (
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[31:0] = fpga_info_qs;
-      end
-
-      addr_hit[27]: begin
         reg_rdata_next[0] = mcounteren_writable_regwen_qs;
       end
 
-      addr_hit[28]: begin
+      addr_hit[27]: begin
         reg_rdata_next[3:0] = mcounteren_writable_qs;
       end
 

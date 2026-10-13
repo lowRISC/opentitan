@@ -798,7 +798,6 @@
         'rstmgr.por_n'                   : 'por_n',
         'rstmgr.resets'                  : '',
         'rstmgr.rst_en'                  : '',
-        'rv_core_ibex.fpga_info'         : 'fpga_info',
         'usbdev.usb_rx_d'                : '',
         'usbdev.usb_tx_d'                : '',
         'usbdev.usb_tx_se0'              : '',
@@ -1119,7 +1118,6 @@
           'usbdev.usb_tx_use_d_se0' : { signal: 'usb_tx_use_d_se0'},
           'usbdev.usb_ref_val'      : { signal: 'usb_ref_val'     },
           'usbdev.usb_ref_pulse'    : { signal: 'usb_ref_pulse'   },
-          'rv_core_ibex.fpga_info'  : { unused: true              },
         }
       }
 

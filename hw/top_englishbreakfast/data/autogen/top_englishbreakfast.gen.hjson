@@ -4781,20 +4781,6 @@
           index: -1
         }
         {
-          name: fpga_info
-          struct: logic
-          type: uni
-          act: rcv
-          width: 32
-          inst_name: rv_core_ibex
-          default: ""
-          package: ""
-          external: true
-          conn_type: false
-          index: -1
-          top_signame: fpga_info
-        }
-        {
           name: corei_tl_h
           struct: tl
           package: tlul_pkg
@@ -5127,7 +5113,6 @@
       rstmgr.por_n: por_n
       rstmgr.resets: ""
       rstmgr.rst_en: ""
-      rv_core_ibex.fpga_info: fpga_info
       usbdev.usb_rx_d: ""
       usbdev.usb_tx_d: ""
       usbdev.usb_tx_se0: ""
@@ -7902,10 +7887,6 @@
           usbdev.usb_ref_pulse:
           {
             signal: usb_ref_pulse
-          }
-          rv_core_ibex.fpga_info:
-          {
-            unused: true
           }
         }
       }
@@ -12454,20 +12435,6 @@
         index: -1
       }
       {
-        name: fpga_info
-        struct: logic
-        type: uni
-        act: rcv
-        width: 32
-        inst_name: rv_core_ibex
-        default: ""
-        package: ""
-        external: true
-        conn_type: false
-        index: -1
-        top_signame: fpga_info
-      }
-      {
         name: corei_tl_h
         struct: tl
         package: tlul_pkg
@@ -13917,25 +13884,6 @@
         conn_type: true
         index: -1
         netname: rstmgr_rst_en
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: false
-        signame: fpga_info_i
-        signame_chip:
-        {
-          cw305: fpga_info
-          verilator: "'0"
-        }
-        width: 32
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: fpga_info
       }
       {
         package: ""

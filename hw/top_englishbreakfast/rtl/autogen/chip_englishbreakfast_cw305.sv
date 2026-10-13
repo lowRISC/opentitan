@@ -697,11 +697,6 @@ module chip_englishbreakfast_cw305 #(
     .rst_no(rst_n)
   );
 
-  logic [31:0] fpga_info;
-  usr_access_xil7series u_info (
-    .info_o(fpga_info)
-  );
-
   ast_pkg::clks_osc_byp_t clks_osc_byp;
   assign clks_osc_byp = '{
     usb: clk_usb_48mhz,
@@ -942,7 +937,6 @@ module chip_englishbreakfast_cw305 #(
     .por_n_i                  (por_n             ),
     .rstmgr_resets_o          (rstmgr_resets     ),
     .rstmgr_rst_en_o          (                  ),
-    .fpga_info_i              (fpga_info         ),
     .usbdev_usb_rx_d_i        (1'b0              ),
     .usbdev_usb_tx_d_o        (                  ),
     .usbdev_usb_tx_se0_o      (                  ),

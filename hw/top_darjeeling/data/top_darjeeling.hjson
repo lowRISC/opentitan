@@ -1454,7 +1454,6 @@
         'rstmgr.por_n'                         : 'por_n',
         'rstmgr.resets'                        : '',
         'rstmgr.rst_en'                        : '',
-        'rv_core_ibex.fpga_info'               : 'fpga_info',
         'soc_proxy.misc_tl_h2d'                : 'ctn_misc_tl_h2d',
         'soc_proxy.misc_tl_d2h'                : 'ctn_misc_tl_d2h',
         'soc_proxy.soc_wkup_async'             : 'soc_wkup_async',
@@ -1789,7 +1788,6 @@
       // Chip level changes
       chiplevel: {
         port_overrides: {
-          'rv_core_ibex.fpga_info'               : { unused:      true             },
           'rv_dm.next_dm_addr'                   : { unused:      true             },
           'soc_proxy.integrator_id'              : { unused:      true             },
           'soc_proxy.soc_lsio_trigger'           : { unused:      true             },
@@ -1914,7 +1912,6 @@
       // is an inout pad on the asic and therefore left open here.
       chiplevel: {
         port_overrides: {
-          'rv_core_ibex.fpga_info'               : { unused:      true             },
           'rv_dm.next_dm_addr'                   : { unused:      true             },
           'soc_proxy.integrator_id'              : { unused:      true             },
           'soc_proxy.soc_lsio_trigger'           : { unused:      true             },

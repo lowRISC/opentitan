@@ -739,11 +739,6 @@ module chip_earlgrey_cw340 #(
     .rst_no(bkdr_rst_n)
   );
 
-  logic [31:0] fpga_info;
-  usr_access_xil7series u_info (
-    .info_o(fpga_info)
-  );
-
   assign clks_osc_byp = '{
     usb: clk_usb_48mhz,
     sys: clk_main,
@@ -816,6 +811,12 @@ module chip_earlgrey_cw340 #(
     // Backdoor ports
     bkdr_loader_pkg::bkdr_req_t [bkdr_loader_reg_pkg::NumBkdrTgts-1:0] bkdr_req;
     bkdr_loader_pkg::bkdr_rsp_t [bkdr_loader_reg_pkg::NumBkdrTgts-1:0] bkdr_rsp;
+
+    // Bitstream USR_ACCESS value
+    logic [31:0] fpga_info;
+    usr_access_xil7series u_info (
+      .info_o(fpga_info)
+    );
 
     bkdr_loader i_bkdr_loader (
       .clk_i      (clk_main),
@@ -959,7 +960,6 @@ module chip_earlgrey_cw340 #(
     .usb_dp_pullup_en_o           (usb_dp_pullup_en   ),
     .usb_dn_pullup_en_o           (                   ),
     .rram_test_analog_io          ('0                 ),
-    .fpga_info_i                  (fpga_info          ),
     .sensor_ctrl_manual_pad_attr_o(                   ),
     .usbdev_usb_rx_d_i            (usb_rx_d           ),
     .usbdev_usb_tx_d_o            (                   ),

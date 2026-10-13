@@ -798,11 +798,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .rst_no(${clkgen_rst_o})
   );
 
-  logic [31:0] fpga_info;
-  usr_access_xil7series u_info (
-    .info_o(fpga_info)
-  );
-
   ast_pkg::clks_osc_byp_t clks_osc_byp;
   assign clks_osc_byp = '{
     usb: clk_usb_48mhz,
@@ -1124,6 +1119,12 @@ module chip_${top["name"]}_${target["name"]} #(
     // Backdoor ports
     bkdr_loader_pkg::bkdr_req_t [bkdr_loader_reg_pkg::NumBkdrTgts-1:0] bkdr_req;
     bkdr_loader_pkg::bkdr_rsp_t [bkdr_loader_reg_pkg::NumBkdrTgts-1:0] bkdr_rsp;
+
+    // Bitstream USR_ACCESS value
+    logic [31:0] fpga_info;
+    usr_access_xil7series u_info (
+      .info_o(fpga_info)
+    );
 
     bkdr_loader i_bkdr_loader (
       .clk_i      (clk_main),

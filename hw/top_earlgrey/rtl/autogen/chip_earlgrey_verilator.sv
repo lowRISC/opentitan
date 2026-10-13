@@ -405,7 +405,6 @@ module chip_earlgrey_verilator (
     .usb_dp_pullup_en_o           (usb_dp_pullup_en   ),
     .usb_dn_pullup_en_o           (usb_dn_pullup_en   ),
     .rram_test_analog_io          (                   ),
-    .fpga_info_i                  ('0                 ),
     .sensor_ctrl_manual_pad_attr_o(                   ),
     .usbdev_usb_rx_d_i            (usb_rx_d           ),
     .usbdev_usb_tx_d_o            (usb_tx_d           ),
