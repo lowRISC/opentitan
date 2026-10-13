@@ -21,6 +21,9 @@ static inline uintptr_t rv_core_ibex_base(void) {
 /**
  * @file
  * @brief Device-specific symbol definitions for the Verilator device.
+ *
+ * Clock frequencies below are for Earlgrey and EnglishBreakfast; see
+ * `device_sim_verilator_darjeeling.c` for Darjeeling.
  */
 
 const device_type_t kDeviceType = kDeviceSimVerilator;
