@@ -892,7 +892,7 @@ Enforce using only sw binding value for context derivation.
 
 Once set no hw binding value can be consumed until the next reset.
 An advance operation from a parent whose boot stage consumes hw binding values
-(`boot_stage` 0 to 2, i.e. Creator, OwnerInt or Owner) without
+(`boot_stage` 0 to 3, i.e. Creator, CreatorInt, OwnerInt or Owner) without
 `CONTROL_SHADOWED.SW_BINDING_ONLY` set will fail with an `invalid_op` error without
 updating the destination slot.
 Advance operations from later boot stages are not affected.
