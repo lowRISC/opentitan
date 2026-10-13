@@ -53,10 +53,16 @@ opentitan_binary(
     ],
 )
 
+# TODO: Move flash_regions.c to verified_boot and update labels in a follow-up PR.
+filegroup(
+    name = "flash_regions_src",
+    srcs = ["flash_regions.c"],
+)
+
 opentitan_binary(
     name = "flash_regions",
     testonly = True,
-    srcs = ["flash_regions.c"],
+    srcs = [":flash_regions_src"],
     ecdsa_key = {
         "//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0",
     },

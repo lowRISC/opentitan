@@ -2,6 +2,11 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load(
+    "//hw/top_earlgrey:defs.bzl",
+    "EARLGREY_MLDSA_SLOTS",
+    "EARLGREY_SLOTS",
+)
 load("//rules:const.bzl", "CONST", "hex")
 load(
     "//rules:manifest.bzl",
@@ -242,6 +247,177 @@ _POSITIONS = {
 test_suite(
     name = "positions",
     tests = ["position_{}".format(name) for name in _POSITIONS],
+)
+
+# Verify that `rom_ext_flash_lockdown` configures data region 0 (active ROM_EXT,
+# read-only) to the active `_rom_ext_size` and data region 1 (inactive ROM_EXT,
+# read-write-erase) up to the opposite slot's BL0 manifest offset when present
+# (or `_rom_ext_size` when absent).
+#
+# The regex alternations `(32|64)` and `(44|84)` match the 2 KiB flash page
+# counts in normal builds vs. `--collect_code_coverage` builds (see
+# `//hw/top_earlgrey:defs.bzl`):
+# - Standard (ECDSA) ROM_EXT slot: 64 KiB (32 pages) normal, 128 KiB (64 pages) coverage.
+# - ML-DSA ROM_EXT slot: 88 KiB (44 pages) normal, 168 KiB (84 pages) coverage.
+_ROM_EXT_LOCKDOWN = {
+    "slot_a_64k_opposite_none": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+        "romext_offset": "{rom_ext_slot_a}",
+        "owner_offset": "{owner_slot_a}",
+        "slot_spec": EARLGREY_SLOTS,
+        # Active 64K ROM_EXT in Slot A (region 0: 32 pages RD) with no BL0 in
+        # Slot B; inactive Slot B (region 1) defaults to 64K (32 pages RD-WR-ER).
+        "success": r"rom_ext_slot = AA__[\s\S]*data region n=0 st=0 sz=(32|64) RD-xx-xx-uu-uu-uu LK[\s\S]*data region n=1 st=256 sz=(32|64) RD-WR-ER-uu-uu-uu LK",
+    },
+    "slot_a_64k_opposite_64k": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+        "romext_offset": "{rom_ext_slot_a}",
+        "owner_offset": "{owner_slot_b}",
+        "slot_spec": EARLGREY_SLOTS,
+        # Active 64K ROM_EXT in Slot A (region 0: 32 pages RD) with a 64K-offset
+        # BL0 in Slot B; inactive Slot B (region 1) is 64K (32 pages RD-WR-ER).
+        "success": r"rom_ext_slot = AA__[\s\S]*data region n=0 st=0 sz=(32|64) RD-xx-xx-uu-uu-uu LK[\s\S]*data region n=1 st=256 sz=(32|64) RD-WR-ER-uu-uu-uu LK",
+    },
+    "slot_a_64k_opposite_88k": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_a",
+        "romext_offset": "{rom_ext_slot_a}",
+        "owner_offset": "{owner_slot_b}",
+        "slot_spec": EARLGREY_MLDSA_SLOTS,
+        # Active 64K ROM_EXT in Slot A (region 0: 32 pages RD) with an 88K-offset
+        # BL0 in Slot B; inactive Slot B (region 1) expands to 88K (44 pages RD-WR-ER).
+        "success": r"rom_ext_slot = AA__[\s\S]*data region n=0 st=0 sz=(32|64) RD-xx-xx-uu-uu-uu LK[\s\S]*data region n=1 st=256 sz=(44|84) RD-WR-ER-uu-uu-uu LK",
+    },
+    "slot_a_88k_opposite_none": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a",
+        "romext_offset": "{rom_ext_slot_a}",
+        "owner_offset": "{owner_slot_a}",
+        "slot_spec": EARLGREY_MLDSA_SLOTS,
+        # Active 88K ROM_EXT in Slot A (region 0: 44 pages RD) with no BL0 in
+        # Slot B; inactive Slot B (region 1) defaults to 88K (44 pages RD-WR-ER).
+        "success": r"rom_ext_slot = AA__[\s\S]*data region n=0 st=0 sz=(44|84) RD-xx-xx-uu-uu-uu LK[\s\S]*data region n=1 st=256 sz=(44|84) RD-WR-ER-uu-uu-uu LK",
+    },
+    "slot_a_88k_opposite_88k": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a",
+        "romext_offset": "{rom_ext_slot_a}",
+        "owner_offset": "{owner_slot_b}",
+        "slot_spec": EARLGREY_MLDSA_SLOTS,
+        # Active 88K ROM_EXT in Slot A (region 0: 44 pages RD) with an 88K-offset
+        # BL0 in Slot B; inactive Slot B (region 1) is 88K (44 pages RD-WR-ER).
+        "success": r"rom_ext_slot = AA__[\s\S]*data region n=0 st=0 sz=(44|84) RD-xx-xx-uu-uu-uu LK[\s\S]*data region n=1 st=256 sz=(44|84) RD-WR-ER-uu-uu-uu LK",
+    },
+    "slot_a_88k_opposite_64k": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a",
+        "romext_offset": "{rom_ext_slot_a}",
+        "owner_offset": "{owner_slot_b}",
+        "slot_spec": EARLGREY_SLOTS,
+        # Active 88K ROM_EXT in Slot A (region 0: 44 pages RD) with a 64K-offset
+        # BL0 in Slot B; inactive Slot B (region 1) shrinks to 64K (32 pages RD-WR-ER).
+        "success": r"rom_ext_slot = AA__[\s\S]*data region n=0 st=0 sz=(44|84) RD-xx-xx-uu-uu-uu LK[\s\S]*data region n=1 st=256 sz=(32|64) RD-WR-ER-uu-uu-uu LK",
+    },
+    "slot_b_64k_opposite_none": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_b",
+        "romext_offset": "{rom_ext_slot_b}",
+        "owner_offset": "{owner_slot_b}",
+        "slot_spec": EARLGREY_SLOTS,
+        # Active 64K ROM_EXT in Slot B (region 0: 32 pages RD) with no BL0 in
+        # Slot A; inactive Slot A (region 1) defaults to 64K (32 pages RD-WR-ER).
+        "success": r"rom_ext_slot = __BB[\s\S]*data region n=0 st=256 sz=(32|64) RD-xx-xx-uu-uu-uu LK[\s\S]*data region n=1 st=0 sz=(32|64) RD-WR-ER-uu-uu-uu LK",
+    },
+    "slot_b_64k_opposite_64k": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_b",
+        "romext_offset": "{rom_ext_slot_b}",
+        "owner_offset": "{owner_slot_a}",
+        "slot_spec": EARLGREY_SLOTS,
+        # Active 64K ROM_EXT in Slot B (region 0: 32 pages RD) with a 64K-offset
+        # BL0 in Slot A; inactive Slot A (region 1) is 64K (32 pages RD-WR-ER).
+        "success": r"rom_ext_slot = __BB[\s\S]*data region n=0 st=256 sz=(32|64) RD-xx-xx-uu-uu-uu LK[\s\S]*data region n=1 st=0 sz=(32|64) RD-WR-ER-uu-uu-uu LK",
+    },
+    "slot_b_64k_opposite_88k": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_x509_slot_b",
+        "romext_offset": "{rom_ext_slot_b}",
+        "owner_offset": "{owner_slot_a}",
+        "slot_spec": EARLGREY_MLDSA_SLOTS,
+        # Active 64K ROM_EXT in Slot B (region 0: 32 pages RD) with an 88K-offset
+        # BL0 in Slot A; inactive Slot A (region 1) expands to 88K (44 pages RD-WR-ER).
+        "success": r"rom_ext_slot = __BB[\s\S]*data region n=0 st=256 sz=(32|64) RD-xx-xx-uu-uu-uu LK[\s\S]*data region n=1 st=0 sz=(44|84) RD-WR-ER-uu-uu-uu LK",
+    },
+    "slot_b_88k_opposite_none": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_b",
+        "romext_offset": "{rom_ext_slot_b}",
+        "owner_offset": "{owner_slot_b}",
+        "slot_spec": EARLGREY_MLDSA_SLOTS,
+        # Active 88K ROM_EXT in Slot B (region 0: 44 pages RD) with no BL0 in
+        # Slot A; inactive Slot A (region 1) defaults to 88K (44 pages RD-WR-ER).
+        "success": r"rom_ext_slot = __BB[\s\S]*data region n=0 st=256 sz=(44|84) RD-xx-xx-uu-uu-uu LK[\s\S]*data region n=1 st=0 sz=(44|84) RD-WR-ER-uu-uu-uu LK",
+    },
+    "slot_b_88k_opposite_88k": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_b",
+        "romext_offset": "{rom_ext_slot_b}",
+        "owner_offset": "{owner_slot_a}",
+        "slot_spec": EARLGREY_MLDSA_SLOTS,
+        # Active 88K ROM_EXT in Slot B (region 0: 44 pages RD) with an 88K-offset
+        # BL0 in Slot A; inactive Slot A (region 1) is 88K (44 pages RD-WR-ER).
+        "success": r"rom_ext_slot = __BB[\s\S]*data region n=0 st=256 sz=(44|84) RD-xx-xx-uu-uu-uu LK[\s\S]*data region n=1 st=0 sz=(44|84) RD-WR-ER-uu-uu-uu LK",
+    },
+    "slot_b_88k_opposite_64k": {
+        "romext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_b",
+        "romext_offset": "{rom_ext_slot_b}",
+        "owner_offset": "{owner_slot_a}",
+        "slot_spec": EARLGREY_SLOTS,
+        # Active 88K ROM_EXT in Slot B (region 0: 44 pages RD) with a 64K-offset
+        # BL0 in Slot A; inactive Slot A (region 1) shrinks to 64K (32 pages RD-WR-ER).
+        "success": r"rom_ext_slot = __BB[\s\S]*data region n=0 st=256 sz=(44|84) RD-xx-xx-uu-uu-uu LK[\s\S]*data region n=1 st=0 sz=(32|64) RD-WR-ER-uu-uu-uu LK",
+    },
+}
+
+[
+    opentitan_test(
+        name = "rom_ext_lockdown_{}".format(name),
+        # TODO: Move flash_regions.c to verified_boot and update labels in a follow-up PR.
+        srcs = ["//sw/device/silicon_creator/rom_ext/e2e/ownership:flash_regions_src"],
+        exec_env = {
+            "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+            "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+            "//hw/top_earlgrey:sim_qemu_rom_ext": None,
+        },
+        fpga = fpga_params(
+            assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
+            binaries = {
+                test["romext"]: "romext",
+            },
+            exit_failure = DEFAULT_TEST_FAILURE_MSG,
+            exit_success = test["success"],
+            owner_offset = test["owner_offset"],
+            romext_offset = test["romext_offset"],
+        ),
+        linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
+        qemu = qemu_params(
+            assemble = "{romext}@{romext_offset} {firmware}@{owner_offset}",
+            binaries = {
+                test["romext"]: "romext",
+            },
+            exit_failure = DEFAULT_TEST_FAILURE_MSG,
+            exit_success = test["success"],
+            owner_offset = test["owner_offset"],
+            romext_offset = test["romext_offset"],
+        ),
+        slot_spec = test["slot_spec"],
+        deps = [
+            "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+            "//sw/device/lib/base:status",
+            "//sw/device/lib/dif:flash_ctrl",
+            "//sw/device/lib/testing:flash_ctrl_testutils",
+            "//sw/device/lib/testing/test_framework:ottf_main",
+            "//sw/device/silicon_creator/lib:boot_log",
+            "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        ],
+    )
+    for name, test in _ROM_EXT_LOCKDOWN.items()
+]
+
+test_suite(
+    name = "rom_ext_lockdown",
+    tests = ["rom_ext_lockdown_{}".format(name) for name in _ROM_EXT_LOCKDOWN],
 )
 
 manifest(d = {
