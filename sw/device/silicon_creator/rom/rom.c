@@ -288,8 +288,6 @@ static rom_error_t rom_init(void) {
   if (waking_from_low_power != kHardenedBoolTrue) {
     rom_banner();
   }
-  // This function is a NOP unless ROM is built for an fpga.
-  device_fpga_version_print();
 
   // Double check the reset reason value against the OTP-defined value.
   reset_reason_check = launder32(reset_reason_check) ^ rstmgr_reason_get();
