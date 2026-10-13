@@ -300,16 +300,24 @@ gen_witness:
     bn.xor  w23, w22, w23 # w23  <= w22 ^ w23
     bn.sid  x8, 0(x10++)  # b[i] <= w23
 
-  bn.subi w22, w31, 1 # FG0.C <= 1
+  # Clear flags and compute the constant 1.
+  # w22   <= 1
+  # FG0.C <= 0
+  # FG1.C <= 0
+  bn.addi w22, w31, 1
+  bn.add  w31, w31, w31, FG1
 
-  # Check that w < b - 1.
-  # FG0.C <= w <? b - FG0.C
+  # Check that w < b - 1. Computes b - 1 limb by limb using the borrow bit in
+  # FG1 and compares it against w using the borrow bit in FG0.
+  # FG0.C <= w <? b - 1
   addi x10, x16, 0
   addi x11, x17, 0
-  loop x30, 3
-    bn.lid  x8, 0(x10++) # w23   <= w[i]
-    bn.lid  x9, 0(x11++) # w24   <= b[i]
-    bn.cmpb w23, w24     # FG0.C <= b[i] - w[i] - FG0.C
+  loop x30, 5
+    bn.lid  x8, 0(x10++)       # w23   <= w[i]
+    bn.lid  x9, 0(x11++)       # w24   <= b[i]
+    bn.subb w24, w24, w22, FG1 # w24   <= (b-1)[i]
+    bn.cmpb w23, w24           # FG0.C <= w[i] - (b-1)[i] - FG0.C
+    bn.mov  w22, w31           # w22   <= 0
 
   # Extract FG0.C into a small register and jump back to the start if it is 0.
   # x2 <= CSRs[FG0][0] = FG0.C
