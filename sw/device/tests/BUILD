@@ -1663,6 +1663,7 @@ opentitan_test(
     deps = [
         ":otbn_randomness_impl",
         "//hw/top/dt",
+        "//sw/device/lib/arch:device",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/dif:aes",

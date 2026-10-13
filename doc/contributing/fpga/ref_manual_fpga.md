@@ -41,10 +41,8 @@ $ bazel run //sw/host/opentitantool bootstrap $(ci/scripts/target-location.sh //
 Uart output:
 ```
 I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
-I00001 test_rom.c:87] TestROM:6b2ca9a1
 I00000 test_rom.c:81] Version: earlgrey_silver_release_v5-5886-gde4cb1bb9, Build Date: 2022-06-13 09:17:56
-I00001 test_rom.c:87] TestROM:6b2ca9a1
-I00002 test_rom.c:118] Test ROM complete, jumping to flash!
+I00001 test_rom.c:118] Test ROM complete, jumping to flash!
 I00000 hello_world.c:66] Hello World!
 I00001 hello_world.c:67] Built at: Jun 13 2022, 14:16:59
 I00002 demos.c:18] Watch the LEDs!

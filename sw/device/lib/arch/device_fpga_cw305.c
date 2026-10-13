@@ -6,7 +6,6 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/silicon_creator/lib/drivers/ibex.h"
 
 /**
  * @file
