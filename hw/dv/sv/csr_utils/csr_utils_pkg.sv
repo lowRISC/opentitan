@@ -158,7 +158,8 @@ package csr_utils_pkg;
                         input bit                 predict = 0,
                         input uvm_reg_map         map = null,
                         input uvm_reg_frontdoor   user_ftdr = default_user_frontdoor,
-                        input bit                 en_shadow_wr = 1);
+                        input bit                 en_shadow_wr = 1,
+                        input bit                 exp_error = 0);
     if (backdoor) begin
       csr_poke(ptr, value, check, predict);
     end else begin
@@ -172,12 +173,12 @@ package csr_utils_pkg;
 
       if (blocking) begin
         csr_wr_sub(csr_or_fld.csr, value, check, path, timeout_ns, predict, map, user_ftdr,
-                   en_shadow_wr);
+                   en_shadow_wr, exp_error);
       end else begin
         fork
           begin
             csr_wr_sub(csr_or_fld.csr, value, check, path, timeout_ns, predict, map, user_ftdr,
-                       en_shadow_wr);
+                       en_shadow_wr, exp_error);
           end
         join_none
         // Add #0 to ensure that this thread starts executing before any subsequent call
@@ -195,7 +196,8 @@ package csr_utils_pkg;
                             input bit                 predict = 0,
                             input uvm_reg_map         map = null,
                             input uvm_reg_frontdoor   user_ftdr = default_user_frontdoor,
-                            input bit                 en_shadow_wr = 1);
+                            input bit                 en_shadow_wr = 1,
+                            input bit                 exp_error = 0);
     fork
       begin : isolation_fork
         fork
@@ -207,10 +209,12 @@ package csr_utils_pkg;
             csr_pre_write_sub(csr, en_shadow_wr);
 
             csr_wr_and_predict_sub(.csr(csr), .value(value), .check(check), .path(path),
-                                   .predict(predict), .map(map), .user_ftdr(user_ftdr));
+                                   .predict(predict), .map(map), .user_ftdr(user_ftdr),
+                                   .exp_error(exp_error));
             if (en_shadow_wr && dv_reg.get_is_shadowed()) begin
               csr_wr_and_predict_sub(.csr(csr), .value(value), .check(check), .path(path),
-                                     .predict(predict), .map(map), .user_ftdr(user_ftdr));
+                                     .predict(predict), .map(map), .user_ftdr(user_ftdr),
+                                     .exp_error(exp_error));
             end
 
             csr_post_write_sub(csr, en_shadow_wr);
@@ -234,7 +238,8 @@ package csr_utils_pkg;
                                         uvm_path_e          path,
                                         bit                 predict,
                                         uvm_reg_map         map,
-                                        uvm_reg_frontdoor   user_ftdr);
+                                        uvm_reg_frontdoor   user_ftdr,
+                                        bit                 exp_error);
     uvm_status_e status;
 
     if (user_ftdr != null) csr.set_frontdoor(user_ftdr);
@@ -244,7 +249,7 @@ package csr_utils_pkg;
 
     if (under_reset) return;
     if (check == UVM_CHECK) begin
-      `DV_CHECK_EQ(status, UVM_IS_OK,
+      `DV_CHECK_EQ(status, exp_error ? UVM_NOT_OK : UVM_IS_OK,
                    $sformatf("trying to write csr %0s", csr.get_full_name()),
                    error, $sformatf("%m"))
     end
@@ -316,16 +321,19 @@ package csr_utils_pkg;
                         input  bit                backdoor = 0,
                         input  uint               timeout_ns = default_timeout_ns,
                         input  uvm_reg_map        map = null,
-                        input  uvm_reg_frontdoor  user_ftdr = default_user_frontdoor);
+                        input  uvm_reg_frontdoor  user_ftdr = default_user_frontdoor,
+                        input  bit                exp_error = 0);
     uvm_status_e status;
     if (blocking) begin
       csr_rd_sub(.ptr(ptr), .value(value), .status(status), .check(check), .path(path),
-                 .backdoor(backdoor), .timeout_ns(timeout_ns), .map(map), .user_ftdr(user_ftdr));
+                 .backdoor(backdoor), .timeout_ns(timeout_ns), .map(map), .user_ftdr(user_ftdr),
+                 .exp_error(exp_error));
     end else begin
       if (backdoor) `uvm_error($sformatf("%m"), "Non-blocking backdoor access doesn't make sense.")
       fork
         csr_rd_sub(.ptr(ptr), .value(value), .status(status), .check(check), .path(path),
-                   .backdoor(backdoor), .timeout_ns(timeout_ns), .map(map), .user_ftdr(user_ftdr));
+                   .backdoor(backdoor), .timeout_ns(timeout_ns), .map(map), .user_ftdr(user_ftdr),
+                   .exp_error(exp_error));
       join_none
       // Add #0 to ensure that this thread starts executing before any subsequent call
       #0;
@@ -341,7 +349,8 @@ package csr_utils_pkg;
                             input  uvm_path_e         path = UVM_DEFAULT_PATH,
                             input  uint               timeout_ns = default_timeout_ns,
                             input  uvm_reg_map        map = null,
-                            input  uvm_reg_frontdoor  user_ftdr = default_user_frontdoor);
+                            input  uvm_reg_frontdoor  user_ftdr = default_user_frontdoor,
+                            input  bit                exp_error = 0);
     if (backdoor) begin
       value = csr_peek(ptr, check);
       status = UVM_IS_OK;
@@ -365,7 +374,7 @@ package csr_utils_pkg;
             // TODO: need to remove the frontdoor to switch back to the default,
             // but this doesn't work: if (user_ftdr != null) ptr.set_frontdoor(null);
             if (check == UVM_CHECK && !under_reset) begin
-              `DV_CHECK_EQ(status, UVM_IS_OK,
+              `DV_CHECK_EQ(status, exp_error ? UVM_NOT_OK : UVM_IS_OK,
                            $sformatf("trying to read csr/field %0s", ptr.get_full_name()),
                            error, $sformatf("%m"))
             end
