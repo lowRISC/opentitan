@@ -171,11 +171,11 @@ static void rom_ext_flash_lockdown(uint32_t rom_ext_slot) {
 
   uint32_t inactive_size = (uint32_t)_rom_ext_size;
   if (opposite_status == kErrorOk) {
-    uint32_t manifest_offset = (uint32_t)((uintptr_t)opposite_manifest %
-                                          (kFlashBankSize * kFlashPageSize));
-    if (manifest_offset < inactive_size) {
-      inactive_size = manifest_offset;
-    }
+    // The inactive ROM_EXT extends up to the opposite slot's BL0, whatever
+    // our own size. This lets a 64k ROM_EXT stage an 88k ROM_EXT opposite
+    // an 88k BL0, and keeps an 88k ROM_EXT off a 64k BL0's manifest.
+    inactive_size = (uint32_t)((uintptr_t)opposite_manifest %
+                               (kFlashBankSize * kFlashPageSize));
   }
   uint32_t inactive_pages =
       (inactive_size + kFlashPageSize - 1) / kFlashPageSize;
