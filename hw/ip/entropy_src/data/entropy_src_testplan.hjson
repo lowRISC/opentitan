@@ -22,7 +22,7 @@
       name: firmware
       desc: '''
             Verify ability to access entropy register based on value of efuse input
-            Verify sw_regupd, me_regwen bits enables/disables write access to control registers
+            Verify sw_regupd enables/disables write access to control registers
             Verify control registers are read-only while DUT is enabled
             Verify registers at End-Of-Test
             '''
