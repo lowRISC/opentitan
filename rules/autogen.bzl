@@ -58,6 +58,10 @@ def _hjson_c_header(ctx):
         OutputGroupInfo(
             header = depset([header]),
         ),
+        coverage_common.instrumented_files_info(
+            ctx = ctx,
+            metadata_files = [header],
+        ),
     ]
 
 autogen_hjson_c_header = rule(

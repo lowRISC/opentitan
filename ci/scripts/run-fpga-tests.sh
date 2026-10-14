@@ -91,5 +91,5 @@ fi
 
 # Ensure all generated sources are available.
 if [[ "${mode}" == "coverage" ]]; then
-  ./bazelisk.sh build "${ARGS[@]}" --output_groups=coverage_sources
+  ./bazelisk.sh build "${TEST_ARGS[@]}" --output_groups=coverage_sources
 fi
