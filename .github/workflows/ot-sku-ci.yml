@@ -81,7 +81,7 @@ jobs:
         run: |
           cd opentitan
           . util/build_consts.sh
-          module load "xilinx/vivado/${{ inputs.vivado_version }}"
+          module load "xilinx/vivado/$VIVADO_VERSION"
           # TODO: make set of tests configurable?
           ./bazelisk.sh test \
             --override_module=ot_provisioning_exts=${{ github.workspace }}/ot-sku \
