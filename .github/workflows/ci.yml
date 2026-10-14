@@ -518,6 +518,17 @@ jobs:
       interface: cw340
       tag_filters: "manuf,-hyper310,-qemu"
 
+  execute_ot_sku_fpga_test_cw340:
+    name: CW340 OT-SKU Tests
+    needs: chip_earlgrey_cw340
+    uses: ./.github/workflows/ot-sku-ci.yml
+    secrets: inherit
+    with:
+      merge_sha: main
+      # The OT-SKU repository currently does not pass the CI.
+      # Do not block the OT CI until those errors are fixed.
+      continue-on-error: true
+
   verify_fpga_jobs:
     name: Verify FPGA jobs
     runs-on: ubuntu-22.04
