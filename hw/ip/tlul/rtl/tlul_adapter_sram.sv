@@ -10,6 +10,46 @@
  * - Intentionally omitted BaseAddr in case of multiple memory maps are used in a SoC,
  *   it means that aliasing can happen if target device size in TL-UL crossbar is bigger
  *   than SRAM size
+ *
+ * - To prevent long timing paths through the TL-UL interface, there is no combinational path
+ *   between the A channel input signals (incl. a_valid) and a_ready within this module. Similarly,
+ *   integrators are advised to avoid combinationally factoring in any of the request signals
+ *   of the SRAM interface into the gnt_i signal. In case of SRAMs, the gnt_i signal is meant to
+ *   statically indicate the readiness of the memory primitive (e.g. if the scrambling key is
+ *   ready in case of scrambled memory primitives).
+ *
+ * - If the underlying SRAM-like memory primitive is not ready (gnt_i low), this module can still
+ *   signal D channel error responses without forwarding the request to the memory primitive, e.g.,
+ *   in the case of protocol or integrity errors. To avoid combinational paths between the
+ *   A channel input signals and a_ready, the error condition is then registered and a_ready is set
+ *   in the following clock cycle. In any case, a D channel response is only sent after observing
+ *   an A channel handshake.
+ *
+ * - Since the TileLink specification allows hosts to change A channel signals (including a_valid)
+ *   independent of a_ready in the previous clock cycle, this leads to the following interesting
+ *   scenarios:
+ *
+ *   Cycle 0:  a_valid,  error_internal, !gnt_i, !a_ready -> no handshake, set    missed_err_gnt_q
+ *   Cycle 1
+ *     a)      a_valid,  error_internal, !gnt_i,  a_ready ->    handshake, signal missed_err_gnt_q
+ *     b)      a_valid,  error_internal,  gnt_i,  a_ready ->    handshake, signal missed_err_gnt_q
+ *     c)      a_valid, !error_internal, !gnt_i,  a_ready ->    handshake, signal missed_err_gnt_q
+ *     d)      a_valid, !error_internal,  gnt_i,  a_ready ->    handshake, drop   missed_err_gnt_q
+ *     e)     !a_valid,                           a_ready -> no handshake, drop   missed_err_gnt_q
+ *
+ *   In Scenarios a) and b), an error response is returned. Whether the A channel signals or the
+ *   exact error condition between Cycles 0 and 1 have changed doesn't matter.
+ *
+ *   In Scenario c), the original error condition has resolved but the memory is still not ready.
+ *   The previously registered error is returned. The host should interpret this as the device
+ *   not being ready.
+ *
+ *   In Scenario d), the original error condition has resolved and the memory is now ready. The
+ *   current request gets forwarded to the memory and the previously registered error is dropped.
+ *
+ *   In Scenario e), a_valid is lowered and no handshake happens. The previously registered error
+ *   is dropped.
+ *
  * - At most one of EnableDataIntgGen / EnableDataIntgPt can be enabled. However it
  *   possible for both to be disabled.
  *   A module can neither generate an integrity response nor pass through any pre-existing
@@ -56,7 +96,8 @@ module tlul_adapter_sram
   // SRAM interface
   output logic                 req_o,
   output mubi4_t               req_type_o,
-  input                        gnt_i,
+  input                        gnt_i, // To prevent long timing paths through the TL-UL interface,
+                                      // this should be independent of the request output signals.
   output logic                 we_o,
   output logic [SramAw-1:0]    addr_o,
   output logic [DataOutW-1:0]  wdata_o,
@@ -475,10 +516,21 @@ module tlul_adapter_sram
   assign wmask_o = wmask_combined;
   assign wdata_o = wdata_combined;
 
-  assign reqfifo_wvalid = a_ack ; // Push to FIFO only when granted
+  // The TileLink spec allows hosts to change A channel signals (including the valid signal)
+  // independent of the ready signal in the previous clock cycle. See Section 4.1:
+  // "Note that a sender may raise valid and then lower it on the following cycle, even if the
+  // message was not accepted on the previous cycle."
+  // As a consequence, we only signal an error back to the host in case of a missed grant for a
+  // request triggering an error if:
+  // - The error condition still persists, this is the case if the host did not change its A
+  //   channel signals, or
+  // - the grant signal is still low, meaning even if the host changed its A channel signals, we
+  //   wouldn't be able to accept the request.
+  assign reqfifo_wvalid = a_ack ; // Push to FIFO only when granted,
+                                  // either due to gnt_i or due to missed_err_gnt_q.
   assign reqfifo_wdata  = '{
     is_read: tl_i_int.a_opcode == Get,
-    error:  error_internal,
+    error:  error_internal | (~gnt_i & missed_err_gnt_q),
     instr_type: tl_i_int.a_user.instr_type,
     size:   tl_i_int.a_size,
     source: tl_i_int.a_source
