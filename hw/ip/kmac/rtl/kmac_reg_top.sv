@@ -261,6 +261,8 @@ module kmac_reg_top (
   logic [4:0] status_fifo_depth_qs;
   logic status_fifo_empty_qs;
   logic status_fifo_full_qs;
+  logic status_entropy_ready_qs;
+  logic status_entropy_reseeding_qs;
   logic status_alert_fatal_fault_qs;
   logic status_alert_recov_ctrl_update_err_qs;
   logic entropy_period_we;
@@ -1301,7 +1303,37 @@ module kmac_reg_top (
     .qs     (status_fifo_full_qs)
   );
 
-  //   F[alert_fatal_fault]: 16:16
+  //   F[entropy_ready]: 20:20
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_entropy_ready (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.entropy_ready.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (status_entropy_ready_qs)
+  );
+
+  //   F[entropy_reseeding]: 21:21
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_status_entropy_reseeding (
+    .re     (status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.status.entropy_reseeding.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (status_entropy_reseeding_qs)
+  );
+
+  //   F[alert_fatal_fault]: 28:28
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_alert_fatal_fault (
@@ -1316,7 +1348,7 @@ module kmac_reg_top (
     .qs     (status_alert_fatal_fault_qs)
   );
 
-  //   F[alert_recov_ctrl_update_err]: 17:17
+  //   F[alert_recov_ctrl_update_err]: 29:29
   prim_subreg_ext #(
     .DW    (1)
   ) u_status_alert_recov_ctrl_update_err (
@@ -3131,8 +3163,10 @@ module kmac_reg_top (
         reg_rdata_next[12:8] = status_fifo_depth_qs;
         reg_rdata_next[14] = status_fifo_empty_qs;
         reg_rdata_next[15] = status_fifo_full_qs;
-        reg_rdata_next[16] = status_alert_fatal_fault_qs;
-        reg_rdata_next[17] = status_alert_recov_ctrl_update_err_qs;
+        reg_rdata_next[20] = status_entropy_ready_qs;
+        reg_rdata_next[21] = status_entropy_reseeding_qs;
+        reg_rdata_next[28] = status_alert_fatal_fault_qs;
+        reg_rdata_next[29] = status_alert_recov_ctrl_update_err_qs;
       end
 
       addr_hit[8]: begin
