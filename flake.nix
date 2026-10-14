@@ -35,7 +35,7 @@
     };
 
     # Provides mkEdaShell (the EDA devshell builder)
-    lowrisc-nix.url = "github:lowRISC/lowrisc-nix/8c986b6c902637591f62841d45cf32bd3060add0";
+    lowrisc-nix.url = "github:lowRISC/lowrisc-nix/06ea699ac92c423211a273251e9ae618f0e96c5c";
 
     # Fetched via git (not github:) so the abc/slang/... submodules are included.
     yosys = {
