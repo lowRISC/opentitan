@@ -26,7 +26,7 @@ find "${OUTPUT_DIR}" -type f -exec chmod 644 {} +
 
 echo "Collect all test coverage data"
 mkdir -p "${TESTS}"
-rsync -a --ignore-missing-args --files-from="${LCOV_FILES}" . "${TESTS}/"
+rsync -ak --ignore-missing-args --files-from="${LCOV_FILES}" . "${TESTS}/"
 
 echo "Merge all coverage data"
 find "${TESTS}" -type f -name "*.dat" -exec cat {} + > "${COVERAGE}"
@@ -49,6 +49,6 @@ done
 echo "Collect all source files listed in coverage data"
 mkdir -p "${SOURCES}"
 grep -h '^SF:' "${COVERAGE}" | sed 's/^SF://' | sort -u \
-| rsync -a --ignore-missing-args --files-from=- . "${SOURCES}/"
+| rsync -ak --ignore-missing-args --files-from=- . "${SOURCES}/"
 
 echo "coverageReport=ok" >> "${GITHUB_OUTPUT:-/dev/null}"
