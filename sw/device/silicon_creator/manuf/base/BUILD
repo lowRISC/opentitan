@@ -333,8 +333,8 @@ manifest(d = {
     "identifier": hex(CONST.ROM_EXT),
     "manuf_state_creator": hex(CONST.MANUF_STATE.PERSO_INITIAL),
     "version_major": "0",
-    # Release: 2026-10-08-RC00
-    "version_minor": "2026100800",
+    # Release: 2026-10-14-RC00
+    "version_minor": "2026101400",
     "security_version": "0xFFFFFFFF",
 })
 
