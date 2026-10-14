@@ -15,7 +15,7 @@ def secver_write_selection():
 # NOTE: the version numbers are integers, but have to be encoded as strings
 # because of how the bazel rule accepts attributes.
 
-_ROM_EXT_DATE = "20261008"
+_ROM_EXT_DATE = "20261014"
 
 # Most significant digit for release candidate (reserved for future purposes)
 _ROM_EXT_RC_MSD = "0"
