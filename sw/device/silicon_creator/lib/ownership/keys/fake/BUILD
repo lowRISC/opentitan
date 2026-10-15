@@ -135,6 +135,7 @@ pkg_files(
     srcs = [
         ":app_dev_pub",
         ":app_prod_ecdsa_pub",
+        ":app_prod_spx_pub",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:slh_dsa_keyset",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:spx_keyset",
