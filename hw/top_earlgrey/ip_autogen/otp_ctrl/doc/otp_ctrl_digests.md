@@ -15,3 +15,4 @@ It has been generated with ./util/topgen.py -t hw/top_earlgrey/data/top_earlgrey
 |                   [SECRET0_DIGEST](#Reg_secret0_digest_0)                   |          SECRET0          |        yes         |
 |                   [SECRET1_DIGEST](#Reg_secret1_digest_0)                   |          SECRET1          |        yes         |
 |                   [SECRET2_DIGEST](#Reg_secret2_digest_0)                   |          SECRET2          |        yes         |
+|                   [SECRET3_DIGEST](#Reg_secret3_digest_0)                   |          SECRET3          |        yes         |

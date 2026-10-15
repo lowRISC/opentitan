@@ -97,6 +97,7 @@ module tb;
     .RndCnstScrmblKey0(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey0),
     .RndCnstScrmblKey1(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey1),
     .RndCnstScrmblKey2(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey2),
+    .RndCnstScrmblKey3(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlScrmblKey3),
     .RndCnstDigestConst0(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst0),
     .RndCnstDigestConst1(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst1),
     .RndCnstDigestConst2(top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlDigestConst2),
@@ -140,6 +141,7 @@ module tb;
     .keymgr_creator_root_key_o  (otp_ctrl_if.keymgr_creator_root_key_o),
     .keymgr_creator_seed_o      (otp_ctrl_if.keymgr_creator_seed_o),
     .keymgr_owner_seed_o        (otp_ctrl_if.keymgr_owner_seed_o),
+    .keymgr_field_entropy_o     (otp_ctrl_if.keymgr_field_entropy_o),
     // nvm
     .nvm_otp_key_i              (nvm_req),
     .nvm_otp_key_o              (nvm_rsp),

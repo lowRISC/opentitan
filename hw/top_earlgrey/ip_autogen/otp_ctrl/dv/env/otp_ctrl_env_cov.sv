@@ -80,7 +80,9 @@ class otp_ctrl_csr_rd_after_alert_cg_wrap;
         ral.secret1_digest[0].get_offset(),
         ral.secret1_digest[1].get_offset(),
         ral.secret2_digest[0].get_offset(),
-        ral.secret2_digest[1].get_offset()
+        ral.secret2_digest[1].get_offset(),
+        ral.secret3_digest[0].get_offset(),
+        ral.secret3_digest[1].get_offset()
       };
       bins direct_access_rdata = {
         ral.direct_access_rdata[0].get_offset(),
@@ -102,7 +104,8 @@ class otp_ctrl_csr_rd_after_alert_cg_wrap;
         ral.err_code[9].get_offset(),
         ral.err_code[10].get_offset(),
         ral.err_code[11].get_offset(),
-        ral.err_code[12].get_offset()
+        ral.err_code[12].get_offset(),
+        ral.err_code[13].get_offset()
       };
     }
   endgroup
@@ -171,6 +174,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     secret0_lock: coverpoint parts_locked[7];
     secret1_lock: coverpoint parts_locked[8];
     secret2_lock: coverpoint parts_locked[9];
+    secret3_lock: coverpoint parts_locked[10];
   endgroup
 
   // This covergroup is sampled only if nvm request passed scb check.
@@ -200,6 +204,13 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     // TODO: probably should add all partitions with keymgr material here.
     secret2_lock: coverpoint locked;
     keymgr_output_conditions: cross keymgr_rd_en, secret2_lock;
+  endgroup
+
+  // This covergroup is sampled only if the keymgr field entropy output passed scb check.
+  covergroup keymgr_field_entropy_o_cg with function sample (bit lc_seed_hw_rd_en, bit locked);
+    keymgr_rd_en: coverpoint lc_seed_hw_rd_en;
+    field_entropy_lock: coverpoint locked;
+    field_entropy_output_conditions: cross keymgr_rd_en, field_entropy_lock;
   endgroup
 
   // This covergroup samples dai request being issued after fatal alert is issued.
@@ -243,6 +254,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
       bins secret0 = {Secret0Idx};
       bins secret1 = {Secret1Idx};
       bins secret2 = {Secret2Idx};
+      bins secret3 = {Secret3Idx};
       bins life_cycle = {LifeCycleIdx};
       bins illegal_idx    = default;
     }
@@ -286,6 +298,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     nvm_req_cg                    = new();
     sram_req_cg                   = new();
     keymgr_o_cg                   = new();
+    keymgr_field_entropy_o_cg     = new();
     req_dai_access_after_alert_cg = new();
     issue_checks_after_alert_cg   = new();
     dai_err_code_cg               = new();
@@ -370,6 +383,9 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
         buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
       Secret2Idx: begin
+        buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
+      end
+      Secret3Idx: begin
         buf_err_code_cg_wrap[part_idx - NumPartUnbuf].buf_err_code_cg.sample(val);
       end
       LifeCycleIdx: begin

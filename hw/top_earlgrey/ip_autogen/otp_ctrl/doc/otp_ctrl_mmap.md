@@ -122,5 +122,8 @@ It has been generated with ./util/topgen.py -t hw/top_earlgrey/data/top_earlgrey
 |         |                           |            |              |      64bit       |                           CREATOR_ROOT_KEY_SHARE1                           |     0x798      |     48     |
 |         |                           |            |              |      64bit       |                   [SECRET2_DIGEST](#Reg_secret2_digest_0)                   |     0x7C8      |     8      |
 |         |                           |            |              |      64bit       |                                 SECRET2_ZER                                 |     0x7D0      |     8      |
-|   10    |        LIFE_CYCLE         |     88     |      no      |      32bit       |                              LC_TRANSITION_CNT                              |     0x7D8      |     48     |
-|         |                           |            |              |      32bit       |                                  LC_STATE                                   |     0x808      |     40     |
+|   10    |          SECRET3          |     48     |     yes      |      64bit       |                                FIELD_ENTROPY                                |     0x7D8      |     32     |
+|         |                           |            |              |      64bit       |                   [SECRET3_DIGEST](#Reg_secret3_digest_0)                   |     0x7F8      |     8      |
+|         |                           |            |              |      64bit       |                                 SECRET3_ZER                                 |     0x800      |     8      |
+|   11    |        LIFE_CYCLE         |     88     |      no      |      32bit       |                              LC_TRANSITION_CNT                              |     0x808      |     48     |
+|         |                           |            |              |      32bit       |                                  LC_STATE                                   |     0x838      |     40     |

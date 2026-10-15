@@ -12,6 +12,9 @@ buf_parts_without_lc = [part for part in otp_mmap["partitions"] if
                         part["variant"] == "Buffered"]
 secret_parts = [part for part in otp_mmap["partitions"] if
                 part["secret"]]
+## Name of the partition holding FIELD_ENTROPY, if the memory map contains that item.
+field_entropy_part = next((part["name"] for part in otp_mmap["partitions"]
+                           for item in part["items"] if item["name"] == "FIELD_ENTROPY"), None)
 ## Partitions + LCI + DAI
 num_err_code = len(otp_mmap["partitions"]) + 2
 ## Number of partition status registers (32 bits per register)
@@ -155,6 +158,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t exp_creator_root_key;
           keymgr_dpe_pkg::keymgr_dpe_creator_seed_t     exp_creator_seed;
           keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       exp_owner_seed;
+% if field_entropy_part:
+          keymgr_dpe_pkg::keymgr_dpe_field_entropy_t    exp_field_entropy;
+% endif
 
           if (PartInfo[dai_digest_ip].sw_digest || PartInfo[dai_digest_ip].hw_digest) begin
             bit [TL_DW-1:0] otp_addr = PART_OTP_DIGEST_ADDRS[dai_digest_ip];
@@ -278,9 +284,29 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
     % endfor
   % endif
 % endfor
+% if field_entropy_part:
+            // Fetch and verify the FIELD_ENTROPY secret. It is valid once its partition has a
+            // digest and the secret is not all-zero. The secret is replaced by a constant unless
+            // lc_seed_hw_rd_en_i is On.
+            exp_field_entropy.secret = {<<32 {otp_a[FieldEntropyOffset/4 +: FieldEntropySize/4]}};
+            exp_field_entropy.secret_valid =
+                get_otp_digest_val(${Name.to_camel_case(field_entropy_part)}Idx) != 0 &&
+                exp_field_entropy.secret != '0;
+            if (cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i != lc_ctrl_pkg::On) begin
+              exp_field_entropy.secret =
+                  top_${topname}_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault[FieldEntropyOffset*8 +: FieldEntropySize*8];
+            end
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_field_entropy_o, exp_field_entropy)
+
+% endif
             if (cfg.en_cov) begin
               cov.keymgr_o_cg.sample(cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On,
                                      exp_creator_root_key.share0_valid);
+% if field_entropy_part:
+              cov.keymgr_field_entropy_o_cg.sample(
+                  cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On,
+                  get_otp_digest_val(${Name.to_camel_case(field_entropy_part)}Idx) != 0);
+% endif
             end
           end
         end else if (cfg.otp_ctrl_vif.alert_reqs) begin
