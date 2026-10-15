@@ -130,6 +130,26 @@
       tests: [/*TODO(#30753) Define + Implement Test(s)*/]
     }
     {
+      name: invalid_keygen_policy
+      desc: '''
+            Verify that key generation (sideload and SW-visible) is rejected when the allow_keygen
+            policy bit is false.
+
+            Stimulus:
+            - Generate a sideload key for any of the sideload ports.
+            - Generate a SW-visible key.
+            - Derive a DPE context with allow_keygen == 0.
+            - Attempt to generate a sideload key for the same sideload port as before.
+            - Attempt to generate a SW-visible key.
+
+            Checks:
+            - Verify that 'INVALID_OP' is raised twice.
+            - Verify the key is unchanged on the sideload port and in the SW output register.
+            '''
+      stage: V2
+      tests: [/*TODO(#30753) Define + Implement Test(s)*/]
+    }
+    {
       name: invalid_child_policy
       desc: '''
             Verify that deriving a child context is rejected when the allow_child policy bit
