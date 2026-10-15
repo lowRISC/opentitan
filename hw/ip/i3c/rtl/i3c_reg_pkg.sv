@@ -1633,8 +1633,8 @@ package i3c_reg_pkg;
       logic        d;
     } vtm;
     struct packed {
-      logic        d;
-    } rstact_virt_targ_det;
+      logic [2:0]  d;
+    } num_targets;
     struct packed {
       logic [7:0]  d;
     } rstact;
@@ -2816,12 +2816,12 @@ package i3c_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    i3c_hw2reg_intr_state_reg_t intr_state; // [2037:2034]
-    i3c_hw2reg_info_reg_t info; // [2033:2005]
-    i3c_hw2reg_ctrl_status_reg_t ctrl_status; // [2004:2004]
-    i3c_hw2reg_ctrl_error_reg_t ctrl_error; // [2003:1984]
-    i3c_hw2reg_targ_control_reg_t targ_control; // [1983:1982]
-    i3c_hw2reg_targ_status_reg_t targ_status; // [1981:1952]
+    i3c_hw2reg_intr_state_reg_t intr_state; // [2039:2036]
+    i3c_hw2reg_info_reg_t info; // [2035:2007]
+    i3c_hw2reg_ctrl_status_reg_t ctrl_status; // [2006:2006]
+    i3c_hw2reg_ctrl_error_reg_t ctrl_error; // [2005:1986]
+    i3c_hw2reg_targ_control_reg_t targ_control; // [1985:1984]
+    i3c_hw2reg_targ_status_reg_t targ_status; // [1983:1952]
     i3c_hw2reg_targ_sink_status_reg_t targ_sink_status; // [1951:1939]
     i3c_hw2reg_reset_det_status_reg_t reset_det_status; // [1938:1931]
     i3c_hw2reg_buffer_ctrl_reg_t buffer_ctrl; // [1930:1929]
@@ -3103,11 +3103,11 @@ package i3c_reg_pkg;
   parameter logic [10:0] I3C_INFO_BUF_DWORD_MAX_RESVAL = 11'h 3ff;
   parameter logic [31:0] I3C_CTRL_STATUS_RESVAL = 32'h 80000000;
   parameter logic [0:0] I3C_CTRL_STATUS_PRESENT_RESVAL = 1'h 1;
-  parameter logic [31:0] I3C_TARG_STATUS_RESVAL = 32'h 80000000;
+  parameter logic [31:0] I3C_TARG_STATUS_RESVAL = 32'h 82000000;
   parameter logic [14:0] I3C_TARG_STATUS_EXT_INFO_RESVAL = 15'h 0;
   parameter logic [0:0] I3C_TARG_STATUS_EXT_PRESENT_RESVAL = 1'h 0;
   parameter logic [7:0] I3C_TARG_STATUS_RSTACT_RESVAL = 8'h 0;
-  parameter logic [0:0] I3C_TARG_STATUS_RSTACT_VIRT_TARG_DET_RESVAL = 1'h 0;
+  parameter logic [2:0] I3C_TARG_STATUS_NUM_TARGETS_RESVAL = 3'h 2;
   parameter logic [0:0] I3C_TARG_STATUS_VTM_RESVAL = 1'h 0;
   parameter logic [0:0] I3C_TARG_STATUS_PROTOCOL_ERROR_RESVAL = 1'h 0;
   parameter logic [0:0] I3C_TARG_STATUS_CONNECTED_RESVAL = 1'h 0;

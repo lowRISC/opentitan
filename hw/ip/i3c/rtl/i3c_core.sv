@@ -231,6 +231,8 @@ module i3c_core
   // Indicate to software whether the Target transceiver logic is connected to the bus and
   // monitoring traffic.
   assign hw2reg_o.targ_status.connected.d = targ_trx_rst_n & inbuf_enable;
+  // Report the number of Targets supported, because any software driver will need this information.
+  assign hw2reg_o.targ_status.num_targets.d = (Target | SecondaryCtrl) ? 2'(NumTargets) : 2'b00;
 
   // We measure tAVAL from the most recently bus active _and_ the most recent transceiver reset.
   assign targ_rst_bus_avail = targ_bus_active | !targ_trx_rst_n;
@@ -835,7 +837,6 @@ module i3c_core
     .dynaddr_de_o         (targ_dynaddr_de),
     .dynaddr_valid_d_o    (targ_dynaddr_valid_d),
     .dynaddr_d_o          (targ_dynaddr_d),
-    .virt_targ_det_o      (hw2reg_o.targ_status.rstact_virt_targ_det.d),  // I3C Basic 4.3.7.3.23.2.
     .mwl_de_o             (targ_mwl_de),
     .mrl_de_o             (targ_mrl_de),
     .ibi_de_o             (targ_ibi_de),

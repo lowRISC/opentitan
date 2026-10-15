@@ -42,8 +42,6 @@ module i3c_target_fsm
   input               [6:0] addr_blocked_i[NumBlocked],
   input               [6:0] mask_blocked_i[NumBlocked],
 
-  // Status information.
-  output logic              virt_targ_det_o,
   // Updating configuration.
   output   [NumTargets-1:0] dynaddr_de_o,
   output                    dynaddr_valid_d_o,
@@ -264,7 +262,6 @@ module i3c_target_fsm
       else if (rstact_d_o == RstAct_VirtualTargDet) virt_targ_det <= 1'b1; // Set reset action
     end
   end
-  assign virt_targ_det_o = virt_targ_det;
 
   // Vendor Test Mode active/inactive?
   // - this state bit is the only part implemented in hardware; the provision of a random PID is the
