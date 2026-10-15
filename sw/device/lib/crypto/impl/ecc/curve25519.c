@@ -72,7 +72,7 @@ enum {
   kModeX25519InsCnt = 366575,
   kModeX25519SideloadInsCnt = 362940,
   kModeKeygenInsCnt = 342100,
-  kModeEd25519VerifyInsCnt = 332987,
+  kModeEd25519VerifyInsCnt = 333861,
 };
 
 /**
