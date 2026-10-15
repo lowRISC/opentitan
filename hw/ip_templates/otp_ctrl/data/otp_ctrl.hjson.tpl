@@ -16,6 +16,8 @@ for part in otp_mmap["partitions"]:
 num_part_buf = num_part - num_part_unbuf
 otp_size_as_bytes = 2 ** otp_mmap["otp"]["byte_addr_width"]
 otp_size_as_uint32 = otp_size_as_bytes // 4
+item_names = [item["name"] for part in otp_mmap["partitions"] for item in part["items"]]
+has_field_entropy = "FIELD_ENTROPY" in item_names
 %>\
 {
   name:               "otp_ctrl",
@@ -409,6 +411,16 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       package: "keymgr_dpe_pkg"
       desc:    "Owner seed output to the key manager"
     }
+  % if has_field_entropy:
+    { struct:  "keymgr_dpe_field_entropy"
+      type:    "uni"
+      name:    "keymgr_field_entropy"
+      act:     "req"
+      default: "'0"
+      package: "keymgr_dpe_pkg"
+      desc:    "Field entropy output to the key manager holding FIELD_ENTROPY."
+    }
+  % endif
   % if enable_nvm_key:
     // Broadcast to Nvm Controller
     { struct:  "nvm_otp_key"

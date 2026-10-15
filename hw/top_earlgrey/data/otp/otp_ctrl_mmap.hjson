@@ -16,7 +16,7 @@
 {
     otp: {
         width: "2", // bytes
-        depth: "1032"
+        depth: "1056"
     }
 
     // Definition of scrambling and digest constants and keys.
@@ -35,6 +35,10 @@
             }
             {
                 name:  "Secret2Key",
+                value: "<random>",
+            }
+            {
+                name:  "Secret3Key",
                 value: "<random>",
             }
         ]
@@ -1197,6 +1201,33 @@
             ],
             desc: '''Secret partition 2.
             This contains RMA unlock token, creator root key, and creator seed.
+            '''
+        }
+        {
+            name:           "SECRET3",
+            variant:        "Buffered",
+            secret:         true,
+            sw_digest:      false,
+            hw_digest:      true,
+            write_lock:     "Digest",
+            read_lock:      "Digest",
+            ignore_read_lock_in_rma: true,
+            key_sel:        "Secret3Key",
+            integrity:      true,
+            bkout_type:     false,
+            skip_sw_header: true,
+            zeroizable:     true,
+            items: [
+                {
+                    name: "FIELD_ENTROPY",
+                    // If this partition is not provisioned or the `FIELD_ENTROPY` is all-zeros, then
+                    // the keymgr_dpe will fall back to a netlist secret for the `FIELD_ENTROPY`.
+                    inv_default: "<random>",
+                    size: "32"
+                }
+            ],
+            desc: '''Secret partition 3.
+            This contains the field entropy consumed by the keymgr_dpe CreatorInt boot stage.
             '''
         }
         {
