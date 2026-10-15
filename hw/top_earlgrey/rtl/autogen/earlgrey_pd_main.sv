@@ -641,6 +641,7 @@ module earlgrey_pd_main #(
   otp_ctrl_pkg::otbn_otp_key_req_t       otp_ctrl_otbn_otp_key_req;
   otp_ctrl_pkg::otbn_otp_key_rsp_t       otp_ctrl_otbn_otp_key_rsp;
   keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t       otp_ctrl_keymgr_creator_root_key;
+  keymgr_dpe_pkg::keymgr_dpe_field_entropy_t       otp_ctrl_keymgr_field_entropy;
   keymgr_dpe_pkg::keymgr_dpe_creator_seed_t       rram_ctrl_keymgr_creator_seed;
   keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       rram_ctrl_keymgr_owner_seed;
   keymgr_dpe_pkg::hw_key_req_t       keymgr_dpe_aes_key;
@@ -1687,6 +1688,7 @@ module earlgrey_pd_main #(
     .RndCnstScrmblKey0(RndCnstOtpCtrlScrmblKey0),
     .RndCnstScrmblKey1(RndCnstOtpCtrlScrmblKey1),
     .RndCnstScrmblKey2(RndCnstOtpCtrlScrmblKey2),
+    .RndCnstScrmblKey3(RndCnstOtpCtrlScrmblKey3),
     .RndCnstDigestConst0(RndCnstOtpCtrlDigestConst0),
     .RndCnstDigestConst1(RndCnstOtpCtrlDigestConst1),
     .RndCnstDigestConst2(RndCnstOtpCtrlDigestConst2),
@@ -1732,6 +1734,7 @@ module earlgrey_pd_main #(
     .keymgr_creator_root_key_o(otp_ctrl_keymgr_creator_root_key),
     .keymgr_creator_seed_o(),
     .keymgr_owner_seed_o(),
+    .keymgr_field_entropy_o(otp_ctrl_keymgr_field_entropy),
     .nvm_otp_key_i(rram_ctrl_otp_key_req),
     .nvm_otp_key_o(rram_ctrl_otp_key_rsp),
     .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
@@ -2450,7 +2453,7 @@ module earlgrey_pd_main #(
     .creator_seed_i(rram_ctrl_keymgr_creator_seed),
     .owner_seed_i(rram_ctrl_keymgr_owner_seed),
     .device_id_i(keymgr_dpe_device_id),
-    .field_entropy_i(keymgr_dpe_pkg::KEYMGR_DPE_FIELD_ENTROPY_DEFAULT),
+    .field_entropy_i(otp_ctrl_keymgr_field_entropy),
     .lc_keymgr_en_i(lc_ctrl_lc_keymgr_en),
     .lc_keymgr_div_i(lc_ctrl_lc_keymgr_div),
     .rom_digest_i(rom_ctrl_keymgr_data),
