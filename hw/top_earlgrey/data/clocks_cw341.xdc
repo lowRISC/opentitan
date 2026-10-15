@@ -295,18 +295,6 @@ set_input_delay  -clock clk_spi_host0 -clock_fall -min ${spi_host_in_delay_min} 
 set_input_delay  -clock clk_spi_host0 -clock_fall -max ${spi_host_in_delay_max} \
     ${spi_host_0_data} -add_delay
 
-## Set asynchronous clock groups
-set_clock_groups -asynchronous \
-    -group clk_main \
-    -group {clk_usb_48 usb_embed_out_clk} \
-    -group clk_aon \
-    -group {clk_io_div2 clk_io_div2_ext_lc} \
-    -group {clk_io_div4 clk_io_div4_ext_lc} \
-    -group {clk_io_pre clk_io clk_io_ext_lc clk_spi_host0} \
-    -group [get_clocks -include_generated_clocks jtag_tck] \
-    -group {clk_spi clk_spi_in clk_spi_out clk_spi_pt clk_spid_csb clk_spi_tpm clk_spi_tpm_in clk_spi_tpm_out} \
-    -group sys_clk_pin
-
 # TPM and non-TPM modes can't be active simultaneously
 set_clock_groups -physically_exclusive \
     -group {clk_spi clk_spi_in clk_spi_out clk_spi_pt clk_spid_csb} \
@@ -350,3 +338,80 @@ set_multicycle_path -hold -end -from [get_clocks clk_spi_tpm] \
 ## The usb calibration handling inside ast is assumed to be async to the outside world
 ## even though its interface is also a usb clock.
 set_false_path -from [get_clocks clk_usb_48] -to [get_pins ${u_ast_primary}/u_usb_clk/u_ref_pulse_sync/u_sync*/u_sync_1/q_o_reg[0]/D]
+
+## I3C
+# The I3C Target logic is clocked by the bus itself: SCL, plus an inverted copy
+# for the HDR-DDR negative-edge flops, and SDA plus its inverse for START/STOP
+# detection. Both reach the clock buffers in u_targ_inbufs through the MIO
+# pinmux. Pin the pinmux input selects of the I3C inputs to fixed pads, so each
+# I3C clock tree is driven from exactly one pad and no other muxed-pad clock
+# (e.g. jtag_tck on IOR3) propagates into it. Only these pads are analyzed;
+# software may still select others.
+#   I3C0: SCL = IOB10 (insel 21), SDA = IOB9  (insel 20)
+#   I3C1: SCL = IOB11 (insel 22), SDA = IOB12 (insel 23)
+set i3c0_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_38/q_reg
+set i3c0_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_39/q_reg
+set i3c1_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_40/q_reg
+set i3c1_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_41/q_reg
+
+# insel 21 = 6'b010101
+set_case_analysis 1 [get_pins [list ${i3c0_scl_insel}\[0\]/Q ${i3c0_scl_insel}\[2\]/Q \
+    ${i3c0_scl_insel}\[4\]/Q]]
+set_case_analysis 0 [get_pins [list ${i3c0_scl_insel}\[1\]/Q ${i3c0_scl_insel}\[3\]/Q \
+    ${i3c0_scl_insel}\[5\]/Q]]
+# insel 20 = 6'b010100
+set_case_analysis 1 [get_pins [list ${i3c0_sda_insel}\[2\]/Q ${i3c0_sda_insel}\[4\]/Q]]
+set_case_analysis 0 [get_pins [list ${i3c0_sda_insel}\[0\]/Q ${i3c0_sda_insel}\[1\]/Q \
+    ${i3c0_sda_insel}\[3\]/Q ${i3c0_sda_insel}\[5\]/Q]]
+# insel 22 = 6'b010110
+set_case_analysis 1 [get_pins [list ${i3c1_scl_insel}\[1\]/Q ${i3c1_scl_insel}\[2\]/Q \
+    ${i3c1_scl_insel}\[4\]/Q]]
+set_case_analysis 0 [get_pins [list ${i3c1_scl_insel}\[0\]/Q ${i3c1_scl_insel}\[3\]/Q \
+    ${i3c1_scl_insel}\[5\]/Q]]
+# insel 23 = 6'b010111
+set_case_analysis 1 [get_pins [list ${i3c1_sda_insel}\[0\]/Q ${i3c1_sda_insel}\[1\]/Q \
+    ${i3c1_sda_insel}\[2\]/Q ${i3c1_sda_insel}\[4\]/Q]]
+set_case_analysis 0 [get_pins [list ${i3c1_sda_insel}\[3\]/Q ${i3c1_sda_insel}\[5\]/Q]]
+
+# Also fix the input inversion pad attribute of these pads (MIO pads 18 to 21) to off.
+# Otherwise, the XOR in the pad wrapper is non-unate, potentially leading Vivado to
+# propagating each clock with both polarities.
+set_case_analysis 0 [get_pins [list \
+    ${u_pinmux}/mio_pad_attr_q_reg\[18\]\[invert\]/Q \
+    ${u_pinmux}/mio_pad_attr_q_reg\[19\]\[invert\]/Q \
+    ${u_pinmux}/mio_pad_attr_q_reg\[20\]\[invert\]/Q \
+    ${u_pinmux}/mio_pad_attr_q_reg\[21\]\[invert\]/Q]]
+
+# SCL runs at up to 12.5 MHz. SDA changes at most once per SCL half period
+# (HDR-DDR), so the same period bounds it. The inverted clock trees derive from
+# the same clocks through inverting BUFGCEs, so the HDR-DDR half-cycle paths
+# between both SCL edges remain timed.
+set i3c_period 80
+create_clock -name i3c0_scl -period ${i3c_period} [get_ports IOB10]
+create_clock -name i3c0_sda -period ${i3c_period} [get_ports IOB9]
+create_clock -name i3c1_scl -period ${i3c_period} [get_ports IOB11]
+create_clock -name i3c1_sda -period ${i3c_period} [get_ports IOB12]
+
+# For now, treat all I3C bus clock as asynchronous to all other clocks, including
+# the other bus clocks. This cuts the crossings between the bus and the IP
+# clock (clk_io), the SCL/SDA interaction in the START/STOP detectors, and the
+# I/O paths relative to other clocks (e.g. the TPM CSB input delays on all
+# muxed ports).
+
+# TODO: Neither I/O timing nor I3C bus timing is modeled yet.
+
+## Set asynchronous clock groups
+set_clock_groups -asynchronous \
+    -group clk_main \
+    -group {clk_usb_48 usb_embed_out_clk} \
+    -group clk_aon \
+    -group {clk_io_div2 clk_io_div2_ext_lc} \
+    -group {clk_io_div4 clk_io_div4_ext_lc} \
+    -group {clk_io_pre clk_io clk_io_ext_lc clk_spi_host0} \
+    -group [get_clocks -include_generated_clocks jtag_tck] \
+    -group {clk_spi clk_spi_in clk_spi_out clk_spi_pt clk_spid_csb clk_spi_tpm clk_spi_tpm_in clk_spi_tpm_out} \
+    -group sys_clk_pin \
+    -group [get_clocks i3c0_scl] \
+    -group [get_clocks i3c0_sda] \
+    -group [get_clocks i3c1_scl] \
+    -group [get_clocks i3c1_sda] \
