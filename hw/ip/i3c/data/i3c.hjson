@@ -368,24 +368,24 @@
           hwaccess: "hwo",
           resval:   "0"
         }
-        { bits:     "26",
+        { bits:     "28",
           name:     "PROTOCOL_ERROR",
           desc:     "Protocol error detected since the last GETSTATUS CCC to read this indicator.",
           hwaccess: "hrw",
           hwqe:     "true",
           resval:   "0"
         }
-        { bits:     "25",
+        { bits:     "27",
           name:     "VTM",
           desc:     "Vendor Test Mode active, in response to ENTTM.",
           hwaccess: "hwo",
           resval:   "0"
         }
-        { bits:     "24",
-          name:     "RSTACT_VIRT_TARG_DET",
-          desc:     "RSTACT Virtual Target Detect.",
+        { bits:     "26:24",
+          name:     "NUM_TARGETS",
+          desc:     "The number of Targets in this implementation.",
           hwaccess: "hwo",
-          resval:   "0"
+          resval:   "2"
         }
         { bits:     "23:16",
           name:     "RSTACT",
@@ -4242,7 +4242,7 @@
         count:    "MaxGroups"
         cname:    "GROUP"
         desc:     "Group addressing configuration.",
-        swaccess: "ro",
+        swaccess: "rw",
         hwaccess: "hrw",
         reinit:   "tti_sw_reinit_i",
         fields: [
@@ -4256,7 +4256,7 @@
           { bits:   "6:0",
             name:   "GROUP_ADDR",
             desc:   '''Group address, iff the entry is used.
-                    If zero, and TARGETS is non-zero, all I3C traffic will be captured as if addressed to the selected Target(s).
+                    If software sets this address to zero and TARGETS to non-zero, all I3C traffic will be captured as if addressed to the selected Target(s).
                     '''
             resval: "0"
           }

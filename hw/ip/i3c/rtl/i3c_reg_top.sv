@@ -250,7 +250,7 @@ module i3c_reg_top
   logic [14:0] targ_status_ext_info_wd;
   logic targ_status_ext_present_qs;
   logic [7:0] targ_status_rstact_qs;
-  logic targ_status_rstact_virt_targ_det_qs;
+  logic [2:0] targ_status_num_targets_qs;
   logic targ_status_vtm_qs;
   logic targ_status_protocol_error_qs;
   logic targ_status_connected_qs;
@@ -1202,22 +1202,46 @@ module i3c_reg_top
   logic targ_enable_enable_2_wd;
   logic targ_enable_enable_3_qs;
   logic targ_enable_enable_3_wd;
+  logic targ_group_0_we;
   logic [6:0] targ_group_0_group_addr_0_qs;
+  logic [6:0] targ_group_0_group_addr_0_wd;
   logic [3:0] targ_group_0_targets_0_qs;
+  logic [3:0] targ_group_0_targets_0_wd;
+  logic targ_group_1_we;
   logic [6:0] targ_group_1_group_addr_1_qs;
+  logic [6:0] targ_group_1_group_addr_1_wd;
   logic [3:0] targ_group_1_targets_1_qs;
+  logic [3:0] targ_group_1_targets_1_wd;
+  logic targ_group_2_we;
   logic [6:0] targ_group_2_group_addr_2_qs;
+  logic [6:0] targ_group_2_group_addr_2_wd;
   logic [3:0] targ_group_2_targets_2_qs;
+  logic [3:0] targ_group_2_targets_2_wd;
+  logic targ_group_3_we;
   logic [6:0] targ_group_3_group_addr_3_qs;
+  logic [6:0] targ_group_3_group_addr_3_wd;
   logic [3:0] targ_group_3_targets_3_qs;
+  logic [3:0] targ_group_3_targets_3_wd;
+  logic targ_group_4_we;
   logic [6:0] targ_group_4_group_addr_4_qs;
+  logic [6:0] targ_group_4_group_addr_4_wd;
   logic [3:0] targ_group_4_targets_4_qs;
+  logic [3:0] targ_group_4_targets_4_wd;
+  logic targ_group_5_we;
   logic [6:0] targ_group_5_group_addr_5_qs;
+  logic [6:0] targ_group_5_group_addr_5_wd;
   logic [3:0] targ_group_5_targets_5_qs;
+  logic [3:0] targ_group_5_targets_5_wd;
+  logic targ_group_6_we;
   logic [6:0] targ_group_6_group_addr_6_qs;
+  logic [6:0] targ_group_6_group_addr_6_wd;
   logic [3:0] targ_group_6_targets_6_qs;
+  logic [3:0] targ_group_6_targets_6_wd;
+  logic targ_group_7_we;
   logic [6:0] targ_group_7_group_addr_7_qs;
+  logic [6:0] targ_group_7_group_addr_7_wd;
   logic [3:0] targ_group_7_targets_7_qs;
+  logic [3:0] targ_group_7_targets_7_wd;
   logic targ_tx_thld_ctrl_0_we;
   logic [11:0] targ_tx_thld_ctrl_0_tx_buf_free_thld_0_qs;
   logic [11:0] targ_tx_thld_ctrl_0_tx_buf_free_thld_0_wd;
@@ -2200,22 +2224,22 @@ module i3c_reg_top
     .qs     (targ_status_rstact_qs)
   );
 
-  //   F[rstact_virt_targ_det]: 24:24
+  //   F[num_targets]: 26:24
   prim_subreg_ext #(
-    .DW    (1)
-  ) u_targ_status_rstact_virt_targ_det (
+    .DW    (3)
+  ) u_targ_status_num_targets (
     .re     (targ_status_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.targ_status.rstact_virt_targ_det.d),
+    .d      (hw2reg.targ_status.num_targets.d),
     .qre    (),
     .qe     (targ_status_flds_we[3]),
     .q      (),
     .ds     (),
-    .qs     (targ_status_rstact_virt_targ_det_qs)
+    .qs     (targ_status_num_targets_qs)
   );
 
-  //   F[vtm]: 25:25
+  //   F[vtm]: 27:27
   prim_subreg_ext #(
     .DW    (1)
   ) u_targ_status_vtm (
@@ -2230,7 +2254,7 @@ module i3c_reg_top
     .qs     (targ_status_vtm_qs)
   );
 
-  //   F[protocol_error]: 26:26
+  //   F[protocol_error]: 28:28
   prim_subreg_ext #(
     .DW    (1)
   ) u_targ_status_protocol_error (
@@ -14915,7 +14939,7 @@ module i3c_reg_top
 
   prim_subreg #(
     .DW      (7),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_targ_group_0_group_addr_0 (
@@ -14924,8 +14948,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_0_we),
+    .wd     (targ_group_0_group_addr_0_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[0].group_addr.de),
@@ -14943,7 +14967,7 @@ module i3c_reg_top
   //   F[targets_0]: 11:8
   prim_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
   ) u_targ_group_0_targets_0 (
@@ -14952,8 +14976,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_0_we),
+    .wd     (targ_group_0_targets_0_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[0].targets.de),
@@ -14977,7 +15001,7 @@ module i3c_reg_top
 
   prim_subreg #(
     .DW      (7),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_targ_group_1_group_addr_1 (
@@ -14986,8 +15010,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_1_we),
+    .wd     (targ_group_1_group_addr_1_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[1].group_addr.de),
@@ -15005,7 +15029,7 @@ module i3c_reg_top
   //   F[targets_1]: 11:8
   prim_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
   ) u_targ_group_1_targets_1 (
@@ -15014,8 +15038,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_1_we),
+    .wd     (targ_group_1_targets_1_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[1].targets.de),
@@ -15039,7 +15063,7 @@ module i3c_reg_top
 
   prim_subreg #(
     .DW      (7),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_targ_group_2_group_addr_2 (
@@ -15048,8 +15072,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_2_we),
+    .wd     (targ_group_2_group_addr_2_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[2].group_addr.de),
@@ -15067,7 +15091,7 @@ module i3c_reg_top
   //   F[targets_2]: 11:8
   prim_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
   ) u_targ_group_2_targets_2 (
@@ -15076,8 +15100,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_2_we),
+    .wd     (targ_group_2_targets_2_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[2].targets.de),
@@ -15101,7 +15125,7 @@ module i3c_reg_top
 
   prim_subreg #(
     .DW      (7),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_targ_group_3_group_addr_3 (
@@ -15110,8 +15134,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_3_we),
+    .wd     (targ_group_3_group_addr_3_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[3].group_addr.de),
@@ -15129,7 +15153,7 @@ module i3c_reg_top
   //   F[targets_3]: 11:8
   prim_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
   ) u_targ_group_3_targets_3 (
@@ -15138,8 +15162,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_3_we),
+    .wd     (targ_group_3_targets_3_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[3].targets.de),
@@ -15163,7 +15187,7 @@ module i3c_reg_top
 
   prim_subreg #(
     .DW      (7),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_targ_group_4_group_addr_4 (
@@ -15172,8 +15196,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_4_we),
+    .wd     (targ_group_4_group_addr_4_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[4].group_addr.de),
@@ -15191,7 +15215,7 @@ module i3c_reg_top
   //   F[targets_4]: 11:8
   prim_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
   ) u_targ_group_4_targets_4 (
@@ -15200,8 +15224,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_4_we),
+    .wd     (targ_group_4_targets_4_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[4].targets.de),
@@ -15225,7 +15249,7 @@ module i3c_reg_top
 
   prim_subreg #(
     .DW      (7),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_targ_group_5_group_addr_5 (
@@ -15234,8 +15258,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_5_we),
+    .wd     (targ_group_5_group_addr_5_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[5].group_addr.de),
@@ -15253,7 +15277,7 @@ module i3c_reg_top
   //   F[targets_5]: 11:8
   prim_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
   ) u_targ_group_5_targets_5 (
@@ -15262,8 +15286,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_5_we),
+    .wd     (targ_group_5_targets_5_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[5].targets.de),
@@ -15287,7 +15311,7 @@ module i3c_reg_top
 
   prim_subreg #(
     .DW      (7),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_targ_group_6_group_addr_6 (
@@ -15296,8 +15320,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_6_we),
+    .wd     (targ_group_6_group_addr_6_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[6].group_addr.de),
@@ -15315,7 +15339,7 @@ module i3c_reg_top
   //   F[targets_6]: 11:8
   prim_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
   ) u_targ_group_6_targets_6 (
@@ -15324,8 +15348,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_6_we),
+    .wd     (targ_group_6_targets_6_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[6].targets.de),
@@ -15349,7 +15373,7 @@ module i3c_reg_top
 
   prim_subreg #(
     .DW      (7),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (7'h0),
     .Mubi    (1'b0)
   ) u_targ_group_7_group_addr_7 (
@@ -15358,8 +15382,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_7_we),
+    .wd     (targ_group_7_group_addr_7_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[7].group_addr.de),
@@ -15377,7 +15401,7 @@ module i3c_reg_top
   //   F[targets_7]: 11:8
   prim_subreg #(
     .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (4'h0),
     .Mubi    (1'b0)
   ) u_targ_group_7_targets_7 (
@@ -15386,8 +15410,8 @@ module i3c_reg_top
     .reinit_i(tti_sw_reinit_i),
 
     // from register interface
-    .we     (1'b0),
-    .wd     ('0),
+    .we     (targ_group_7_we),
+    .wd     (targ_group_7_targets_7_wd),
 
     // from internal hardware
     .de     (hw2reg.targ_group[7].targets.de),
@@ -20174,6 +20198,46 @@ module i3c_reg_top
   assign targ_enable_enable_2_wd = reg_wdata[2];
 
   assign targ_enable_enable_3_wd = reg_wdata[3];
+  assign targ_group_0_we = racl_addr_hit_write[146] & reg_we & !reg_error;
+
+  assign targ_group_0_group_addr_0_wd = reg_wdata[6:0];
+
+  assign targ_group_0_targets_0_wd = reg_wdata[11:8];
+  assign targ_group_1_we = racl_addr_hit_write[147] & reg_we & !reg_error;
+
+  assign targ_group_1_group_addr_1_wd = reg_wdata[6:0];
+
+  assign targ_group_1_targets_1_wd = reg_wdata[11:8];
+  assign targ_group_2_we = racl_addr_hit_write[148] & reg_we & !reg_error;
+
+  assign targ_group_2_group_addr_2_wd = reg_wdata[6:0];
+
+  assign targ_group_2_targets_2_wd = reg_wdata[11:8];
+  assign targ_group_3_we = racl_addr_hit_write[149] & reg_we & !reg_error;
+
+  assign targ_group_3_group_addr_3_wd = reg_wdata[6:0];
+
+  assign targ_group_3_targets_3_wd = reg_wdata[11:8];
+  assign targ_group_4_we = racl_addr_hit_write[150] & reg_we & !reg_error;
+
+  assign targ_group_4_group_addr_4_wd = reg_wdata[6:0];
+
+  assign targ_group_4_targets_4_wd = reg_wdata[11:8];
+  assign targ_group_5_we = racl_addr_hit_write[151] & reg_we & !reg_error;
+
+  assign targ_group_5_group_addr_5_wd = reg_wdata[6:0];
+
+  assign targ_group_5_targets_5_wd = reg_wdata[11:8];
+  assign targ_group_6_we = racl_addr_hit_write[152] & reg_we & !reg_error;
+
+  assign targ_group_6_group_addr_6_wd = reg_wdata[6:0];
+
+  assign targ_group_6_targets_6_wd = reg_wdata[11:8];
+  assign targ_group_7_we = racl_addr_hit_write[153] & reg_we & !reg_error;
+
+  assign targ_group_7_group_addr_7_wd = reg_wdata[6:0];
+
+  assign targ_group_7_targets_7_wd = reg_wdata[11:8];
   assign targ_tx_thld_ctrl_0_we = racl_addr_hit_write[154] & reg_we & !reg_error;
 
   assign targ_tx_thld_ctrl_0_tx_buf_free_thld_0_wd = reg_wdata[11:0];
@@ -20521,14 +20585,14 @@ module i3c_reg_top
     reg_we_check[143] = 1'b0;
     reg_we_check[144] = 1'b0;
     reg_we_check[145] = targ_enable_we;
-    reg_we_check[146] = 1'b0;
-    reg_we_check[147] = 1'b0;
-    reg_we_check[148] = 1'b0;
-    reg_we_check[149] = 1'b0;
-    reg_we_check[150] = 1'b0;
-    reg_we_check[151] = 1'b0;
-    reg_we_check[152] = 1'b0;
-    reg_we_check[153] = 1'b0;
+    reg_we_check[146] = targ_group_0_we;
+    reg_we_check[147] = targ_group_1_we;
+    reg_we_check[148] = targ_group_2_we;
+    reg_we_check[149] = targ_group_3_we;
+    reg_we_check[150] = targ_group_4_we;
+    reg_we_check[151] = targ_group_5_we;
+    reg_we_check[152] = targ_group_6_we;
+    reg_we_check[153] = targ_group_7_we;
     reg_we_check[154] = targ_tx_thld_ctrl_0_we;
     reg_we_check[155] = targ_tx_thld_ctrl_1_we;
     reg_we_check[156] = targ_tx_thld_ctrl_2_we;
@@ -20621,9 +20685,9 @@ module i3c_reg_top
         reg_rdata_next[14:0] = targ_status_ext_info_qs;
         reg_rdata_next[15] = targ_status_ext_present_qs;
         reg_rdata_next[23:16] = targ_status_rstact_qs;
-        reg_rdata_next[24] = targ_status_rstact_virt_targ_det_qs;
-        reg_rdata_next[25] = targ_status_vtm_qs;
-        reg_rdata_next[26] = targ_status_protocol_error_qs;
+        reg_rdata_next[26:24] = targ_status_num_targets_qs;
+        reg_rdata_next[27] = targ_status_vtm_qs;
+        reg_rdata_next[28] = targ_status_protocol_error_qs;
         reg_rdata_next[29] = targ_status_connected_qs;
         reg_rdata_next[30] = targ_status_active_qs;
         reg_rdata_next[31] = targ_status_present_qs;

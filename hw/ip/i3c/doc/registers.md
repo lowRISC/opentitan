@@ -388,27 +388,26 @@ In this configuration the Controller-side logic must remain the Active Controlle
 ## TARG_STATUS
 Target-side Status register
 - Offset: `0x20`
-- Reset default: `0x80000000`
-- Reset mask: `0xe7ffffff`
+- Reset default: `0x82000000`
+- Reset mask: `0xffffffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "EXT_INFO", "bits": 15, "attr": ["rw"], "rotate": 0}, {"name": "EXT_PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RSTACT", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "RSTACT_VIRT_TARG_DET", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VTM", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PROTOCOL_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 2}, {"name": "CONNECTED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "EXT_INFO", "bits": 15, "attr": ["rw"], "rotate": 0}, {"name": "EXT_PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RSTACT", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "NUM_TARGETS", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "VTM", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PROTOCOL_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CONNECTED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                                                                                                                                               |
-|:------:|:------:|:-------:|:---------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|   31   |   ro   |   0x1   | PRESENT              | Indicates the presence of Target functionality.                                                                                                                                                                                                           |
-|   30   |   ro   |   0x0   | ACTIVE               | Indicates whether the Target logic is presently active, as opposed to under reset.                                                                                                                                                                        |
-|   29   |   ro   |   0x0   | CONNECTED            | Indicates whether the Target logic is connected to the bus and monitoring traffic.                                                                                                                                                                        |
-| 28:27  |        |         |                      | Reserved                                                                                                                                                                                                                                                  |
-|   26   |   ro   |   0x0   | PROTOCOL_ERROR       | Protocol error detected since the last GETSTATUS CCC to read this indicator.                                                                                                                                                                              |
-|   25   |   ro   |   0x0   | VTM                  | Vendor Test Mode active, in response to ENTTM.                                                                                                                                                                                                            |
-|   24   |   ro   |   0x0   | RSTACT_VIRT_TARG_DET | RSTACT Virtual Target Detect.                                                                                                                                                                                                                             |
-| 23:16  |   ro   |   0x0   | RSTACT               | Configured Target Reset action.                                                                                                                                                                                                                           |
-|   15   |   ro   |   0x0   | EXT_PRESENT          | Indicates whether one or more additional protocols is implemented in the Target hardware. Some protocols require a sufficiently fast response that software involvement is not possible. These may be implemented as an extension within the Target core. |
-|  14:0  |   rw   |   0x0   | EXT_INFO             | Extension-specific information.                                                                                                                                                                                                                           |
+|  Bits  |  Type  |  Reset  | Name           | Description                                                                                                                                                                                                                                               |
+|:------:|:------:|:-------:|:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|   31   |   ro   |   0x1   | PRESENT        | Indicates the presence of Target functionality.                                                                                                                                                                                                           |
+|   30   |   ro   |   0x0   | ACTIVE         | Indicates whether the Target logic is presently active, as opposed to under reset.                                                                                                                                                                        |
+|   29   |   ro   |   0x0   | CONNECTED      | Indicates whether the Target logic is connected to the bus and monitoring traffic.                                                                                                                                                                        |
+|   28   |   ro   |   0x0   | PROTOCOL_ERROR | Protocol error detected since the last GETSTATUS CCC to read this indicator.                                                                                                                                                                              |
+|   27   |   ro   |   0x0   | VTM            | Vendor Test Mode active, in response to ENTTM.                                                                                                                                                                                                            |
+| 26:24  |   ro   |   0x2   | NUM_TARGETS    | The number of Targets in this implementation.                                                                                                                                                                                                             |
+| 23:16  |   ro   |   0x0   | RSTACT         | Configured Target Reset action.                                                                                                                                                                                                                           |
+|   15   |   ro   |   0x0   | EXT_PRESENT    | Indicates whether one or more additional protocols is implemented in the Target hardware. Some protocols require a sufficiently fast response that software involvement is not possible. These may be implemented as an extension within the Target core. |
+|  14:0  |   rw   |   0x0   | EXT_INFO       | Extension-specific information.                                                                                                                                                                                                                           |
 
 ## TARG_SINK_CONTROL
 Target data sink control.
@@ -3176,15 +3175,15 @@ Group addressing configuration.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "GROUP_ADDR", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 1}, {"name": "TARGETS", "bits": 4, "attr": ["ro"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
+{"reg": [{"name": "GROUP_ADDR", "bits": 7, "attr": ["rw"], "rotate": 0}, {"bits": 1}, {"name": "TARGETS", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                         |
-|:------:|:------:|:-------:|:-----------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:12  |        |         |            | Reserved                                                                                                                                            |
-|  11:8  |   ro   |   0x0   | TARGETS    | The set of virtual targets subscribed to this group address. If zero, this entry in the list of group addresses is unused.                          |
-|   7    |        |         |            | Reserved                                                                                                                                            |
-|  6:0   |   ro   |   0x0   | GROUP_ADDR | Group address, iff the entry is used. If zero, and TARGETS is non-zero, all I3C traffic will be captured as if addressed to the selected Target(s). |
+|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                                                      |
+|:------:|:------:|:-------:|:-----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:12  |        |         |            | Reserved                                                                                                                                                                         |
+|  11:8  |   rw   |   0x0   | TARGETS    | The set of virtual targets subscribed to this group address. If zero, this entry in the list of group addresses is unused.                                                       |
+|   7    |        |         |            | Reserved                                                                                                                                                                         |
+|  6:0   |   rw   |   0x0   | GROUP_ADDR | Group address, iff the entry is used. If software sets this address to zero and TARGETS to non-zero, all I3C traffic will be captured as if addressed to the selected Target(s). |
 
 ## TARG_TX_THLD_CTRL
 Target control register for setting Tx thresholds.
