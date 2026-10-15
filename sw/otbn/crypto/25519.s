@@ -252,11 +252,9 @@ ed25519_verify_var:
        w18 <= [w17:w16] mod L = k mod L */
   jal      x1, sc_reduce
 
-  /* Compute (8 * k) mod L.
-       w3 <= (2 * (2 * (2 * w18) mod L) mod L) mod L = (8 * k) mod L */
-  bn.addm  w3, w18, w18
-  bn.addm  w3, w3, w3
-  bn.addm  w3, w3, w3
+  /* Save k mod L for later.
+       w3 <= w18 = k mod L */
+  bn.mov   w3, w18
 
   /* Load the 512-bit signature (R_ || S).
        w11 <= R_
@@ -341,12 +339,20 @@ ed25519_verify_var:
   bn.mov   w7, w11
   jal      x1, affine_to_ext
 
-  /* w28 <= w3 = (8 * k) mod L */
+  /* w28 <= w3 = k mod L */
   bn.wsrr  w28, URND /* pre-randomize */
   bn.mov   w28, w3
 
-  /* [w13:w10] <= w28 * [w9:w6] = [8][k]A */
+  /* [w13:w10] <= w28 * [w9:w6] = [k]A */
   jal      x1, ext_scmul
+
+  /* Compute [8][k]A with three doublings. */
+  /* [w13:w10] <= [w13:w10] + [w13:w10] = [2][k]A */
+  jal      x1, ext_double
+  /* [w13:w10] <= [w13:w10] + [w13:w10] = [4][k]A */
+  jal      x1, ext_double
+  /* [w13:w10] <= [w13:w10] + [w13:w10] = [8][k]A */
+  jal      x1, ext_double
 
   /* Convert R to extended coordinates.
        [w9:w6] <= extended(R) = (R.X, R.Y, R.Z, R.T) */
