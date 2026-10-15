@@ -14,18 +14,18 @@
 enum {
   // The size of the `ROT_CREATOR_AUTH_CODESIGN` partition ignoring the size of
   // the partition digest.
-  kAuthCodesignParitionSize =
+  kAuthCodesignPartitionSize =
       OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_SIZE -
       OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_DIGEST_SIZE,
 
-  kAuthCodesignParitionSizeInWords =
-      kAuthCodesignParitionSize / sizeof(uint32_t),
+  kAuthCodesignPartitionSizeInWords =
+      kAuthCodesignPartitionSize / sizeof(uint32_t),
 
   // The size of the `ROT_CREATOR_AUTH_CODESIGN` region used to store the key
   // material. This is the size of the partition minus the size of the HMAC
   // digest used to measure the integrity of the keys.
   kAuthcodesignPartitionMsgSize =
-      kAuthCodesignParitionSize - sizeof(hmac_digest_t),
+      kAuthCodesignPartitionSize - sizeof(hmac_digest_t),
 
   kAuthcodesignPartitionMsgSizeInWords =
       kAuthcodesignPartitionMsgSize / sizeof(uint32_t),
@@ -38,7 +38,7 @@ enum {
   kAuthStatePartitionSizeInWords = kAuthStatePartitionSize / sizeof(uint32_t),
 };
 
-static_assert(sizeof(sigverify_otp_keys_t) == kAuthCodesignParitionSize,
+static_assert(sizeof(sigverify_otp_keys_t) == kAuthCodesignPartitionSize,
               "Size of sigverify_otp_keys_t must match the size of the OTP "
               "partition");
 static_assert(
@@ -187,11 +187,11 @@ static rom_error_t key_is_valid(sigverify_key_type_t key_type,
 rom_error_t sigverify_otp_keys_init(sigverify_otp_key_ctx_t *ctx) {
   uint32_t *raw_buffer = (uint32_t *)&ctx->keys;
   size_t i;
-  for (i = 0; launder32(i) < kAuthCodesignParitionSizeInWords; ++i) {
+  for (i = 0; launder32(i) < kAuthCodesignPartitionSizeInWords; ++i) {
     raw_buffer[i] = otp_read32(OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET +
                                i * sizeof(uint32_t));
   }
-  HARDENED_CHECK_EQ(i, kAuthCodesignParitionSizeInWords);
+  HARDENED_CHECK_EQ(i, kAuthCodesignPartitionSizeInWords);
 
   uint32_t *raw_state = (uint32_t *)&ctx->states;
   for (i = 0; launder32(i) < kAuthStatePartitionSizeInWords; ++i) {
