@@ -25,7 +25,7 @@
  * - CP portion of the Device ID must be written to flash.
  *
  * Note: The test will skip all programming steps and succeed if the HW_CFG0/1
- * paritions are already locked. This is to facilitate test re-runs.
+ * partitions are already locked. This is to facilitate test re-runs.
  *
  * The caller should reset the device after calling this function and call
  * `manuf_individualize_device_hw_cfg_check()` afterwards to confirm that the
@@ -60,7 +60,7 @@ status_t manuf_individualize_device_hw_cfg_check(
  * - Device is in TEST_UNLOCKED lifecycle stage.
  *
  * Note: The test will skip all programming steps and succeed if the SECRET0
- * parition is already locked. This is to facilitate test re-runs.
+ * partition is already locked. This is to facilitate test re-runs.
  *
  * The caller should reset the device after calling this function and call
  * `manuf_individualize_device_secret0_check()` afterwards to confirm that the
