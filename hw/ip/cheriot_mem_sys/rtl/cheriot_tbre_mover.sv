@@ -269,7 +269,9 @@ module cheriot_tbre_mover #(
   );
 
   // Read response handling. A response with an error is marked so it is never invalidated. The
-  // FIFO holds a response for every word in flight, so it never refuses one.
+  // FIFO holds a response for every word in flight, so it never refuses one. It does not pass a
+  // response through: the register cuts the timing path from the read data, through the
+  // revocation lookup, to the tag clear.
   assign payload_fifo_in = '{
     rtag: r_tag_i,
     rerr: read_d_err || tl_err.read_tl || tl_err.read_tl_intg
@@ -277,6 +279,7 @@ module cheriot_tbre_mover #(
 
   prim_fifo_sync #(
     .Width($bits(payload_t)),
+    .Pass (1'b0),
     .Depth(MaxInflight)
   ) u_prim_fifo_sync_payload (
     .clk_i,

@@ -106,8 +106,9 @@ module cheriot_mem_sys
   localparam int unsigned CorePtrW        = prim_util_pkg::vbits(CoreOutstanding);
   // Core writes the revocation engine watches: the presented one and the outstanding ones
   localparam int unsigned NumSnoop        = CoreOutstanding + 32'd1;
-  // Words the revocation engine has in flight: the two words of one capability. Required
-  // to achieve full throughput.
+  // Words the revocation engine has in flight: the two words of one capability. As the engine
+  // registers each read response, it resolves a word two cycles after its read from the main
+  // SRAM, so it reads at most two words every three cycles.
   localparam int unsigned TbreInflight    = 32'd2;
 
   typedef struct packed {
