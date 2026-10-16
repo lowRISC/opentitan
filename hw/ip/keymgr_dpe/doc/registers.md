@@ -246,7 +246,10 @@ The remaining values (5 to 7) are invalid and make a generate operation fail wit
 Other values are reserved.
 
 ### CONTROL_SHADOWED . OPERATION
-Key manager DPE operation selection
+Key manager DPE operation selection.
+
+The remaining values (6 and 7) are invalid. Starting an operation with one of them
+makes it fail with `invalid_op` in every working state.
 
 | Value   | Name               | Description                                                                        |
 |:--------|:-------------------|:-----------------------------------------------------------------------------------|
