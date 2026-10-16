@@ -26,6 +26,7 @@ module ibex_dummy_instr import ibex_pkg::*; #(
   // Interface to IF stage
   input  logic        fetch_valid_i,
   input  logic        id_in_ready_i,
+  input  logic        insert_hold_i,
   output logic        insert_dummy_instr_o,
   output logic [31:0] dummy_instr_data_o
 );
@@ -99,8 +100,8 @@ module ibex_dummy_instr import ibex_pkg::*; #(
   // Clear the counter every time a new instruction is inserted
   assign dummy_cnt_d         = insert_dummy_instr ? '0 : dummy_cnt_incr;
   // Increment the counter for each executed instruction while dummy instructions are
-  // enabled.
-  assign dummy_cnt_en        = dummy_instr_en_i & id_in_ready_i &
+  // enabled. Freeze it while insertion is held, so a held dummy is delayed rather than skipped.
+  assign dummy_cnt_en        = dummy_instr_en_i & id_in_ready_i & ~insert_hold_i &
                                (fetch_valid_i | insert_dummy_instr);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -112,7 +113,8 @@ module ibex_dummy_instr import ibex_pkg::*; #(
   end
 
   // Insert a dummy instruction each time the counter hits the threshold
-  assign insert_dummy_instr = dummy_instr_en_i & (dummy_cnt_q == dummy_cnt_threshold);
+  assign insert_dummy_instr = dummy_instr_en_i & ~insert_hold_i &
+                              (dummy_cnt_q == dummy_cnt_threshold);
 
   // Encode instruction
   always_comb begin

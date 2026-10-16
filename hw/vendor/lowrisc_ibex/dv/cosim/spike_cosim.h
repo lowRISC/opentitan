@@ -88,7 +88,7 @@ class SpikeCosim : public simif_t, public Cosim {
 
   bool change_cpuctrlsts_sync_exc_seen(bool flag);
   void set_cpuctrlsts_double_fault_seen();
-  void handle_cpuctrl_exception_entry();
+  void handle_cpuctrl_exception_entry(bool debug_mode_at_trap);
 
   void initial_proc_setup(uint32_t start_pc, uint32_t start_mtvec,
                           uint32_t mhpm_counter_num, bool rv32b_enabled);

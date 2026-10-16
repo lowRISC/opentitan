@@ -116,9 +116,14 @@ class riscv_debug_rom_gen extends riscv_asm_program_gen;
   endfunction
 
   // Generate exception handling routine for debug ROM
-  // TODO(udinator) - remains empty for now, only a DRET
+  // Return through debug_end, which pops the frame pushed on debug ROM entry.
   virtual function void gen_debug_exception_handler();
-    str = {"dret"};
+    if (cfg.gen_debug_section) begin
+      str = {$sformatf("j %0sdebug_end", hart_prefix(hart))};
+    end else begin
+      // No debug section, so no frame to pop.
+      str = {"dret"};
+    end
     gen_section($sformatf("%0sdebug_exception", hart_prefix(hart)), str);
   endfunction
 
