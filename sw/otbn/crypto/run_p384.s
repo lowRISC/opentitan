@@ -492,7 +492,8 @@ base_point_mult:
 /**
  * Generate a secret key arithmetic sharing.
  *
- * The input is a Boolean-shared key (two 448-bit shares).
+ * The input is a Boolean-shared 384-bit key/seed in two 448-bit share buffers
+ * (bits at position 384 and above are ignored).
  *
  * This routine runs in constant time.
  *
