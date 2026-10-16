@@ -29,7 +29,6 @@ class csrng_base_vseq extends cip_base_vseq #(
   endtask
 
   virtual task dut_init(string reset_kind = "HARD");
-    cfg.otp_en_cs_sw_app_read_vif.drive(.val(cfg.otp_en_cs_sw_app_read));
     cfg.lc_hw_debug_en_vif.drive(.val(cfg.lc_hw_debug_en));
 
     super.dut_init(reset_kind);

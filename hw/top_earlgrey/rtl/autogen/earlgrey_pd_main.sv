@@ -817,7 +817,6 @@ module earlgrey_pd_main #(
   logic [31:0] rv_core_ibex_hart_id;
   logic [31:0] rv_core_ibex_boot_addr;
   otp_ctrl_part_pkg::otp_broadcast_t       otp_ctrl_otp_broadcast;
-  prim_mubi_pkg::mubi8_t       csrng_otp_en_csrng_sw_app_read;
   otp_ctrl_pkg::otp_device_id_t       lc_ctrl_otp_device_id;
   otp_ctrl_pkg::otp_manuf_state_t       lc_ctrl_otp_manuf_state;
   keymgr_dpe_pkg::keymgr_dpe_device_id_t       keymgr_dpe_device_id;
@@ -841,8 +840,6 @@ module earlgrey_pd_main #(
   // OTP HW_CFG* Broadcast signals.
   // TODO(#6713): The actual struct breakout and mapping currently needs to
   // be performed by hand.
-  assign csrng_otp_en_csrng_sw_app_read =
-      otp_ctrl_otp_broadcast.hw_cfg1_data.en_csrng_sw_app_read;
   assign sram_ctrl_main_otp_en_sram_ifetch =
       otp_ctrl_otp_broadcast.hw_cfg1_data.en_sram_ifetch;
   assign sram_ctrl_sec_otp_en_sram_ifetch =
@@ -2407,7 +2404,6 @@ module earlgrey_pd_main #(
     .csrng_cmd_o(csrng_csrng_cmd_rsp),
     .entropy_src_hw_if_o(csrng_entropy_src_hw_if_req),
     .entropy_src_hw_if_i(csrng_entropy_src_hw_if_rsp),
-    .otp_en_csrng_sw_app_read_i(csrng_otp_en_csrng_sw_app_read),
     .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),
     .tl_i(csrng_tl_req),
     .tl_o(csrng_tl_rsp)

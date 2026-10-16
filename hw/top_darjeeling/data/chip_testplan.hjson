@@ -1848,20 +1848,6 @@
       tests: ["chip_sw_entropy_src_csrng"]
     }
     {
-      name: chip_sw_csrng_fuse_en_sw_app_read
-      desc: '''Verify the fuse input to CSRNG.
-
-            - Issue an instantiate command to request entropy.
-            - Verify that SW can read the internal state values.
-
-             Note that this test has been simplified to just test the test_fuse_enable path,
-             since the HW has been updated to always hardwire the EN_CSRNG_SW_APP_READ
-             chicken switch to True. The chicken switch itself has been removed from OTP.
-            '''
-      stage: V2
-      tests: ["chip_sw_csrng_fuse_en_sw_app_read_test"]
-    }
-    {
       name: chip_sw_csrng_known_answer_tests
       desc: '''Verify our ability to run known-answer tests in SW.
 

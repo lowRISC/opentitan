@@ -1878,24 +1878,6 @@
               offset: 1744
             }
             {
-              name: EN_CSRNG_SW_APP_READ
-              size: 1
-              ismubi: true
-              inv_default: <random>
-              desc:
-                '''
-                Enablement of CSRNG software application interface. A
-                kMultiBitBool8True value enables, while all other values
-                disable. Enablement is required to extract output from
-                CSRNG via software.
-                '''
-              isdigest: false
-              iszer: false
-              iskeymgr_creator: false
-              iskeymgr_owner: false
-              offset: 1745
-            }
-            {
               name: DIS_RV_DM_LATE_DEBUG
               size: 1
               ismubi: true
@@ -1912,7 +1894,7 @@
               iszer: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1746
+              offset: 1745
             }
             {
               name: HW_CFG1_DIGEST

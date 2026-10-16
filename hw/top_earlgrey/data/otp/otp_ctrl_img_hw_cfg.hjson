@@ -28,12 +28,6 @@
             lock:  "True",
             items: [
                 {
-                    // Cryptolib and chip-level tests require access to the
-                    // CSRNG software interfaces.
-                    name:  "EN_CSRNG_SW_APP_READ",
-                    value: true,
-                },
-                {
                     // Use legacy behavior and disable late debug enable.
                     name:  "DIS_RV_DM_LATE_DEBUG",
                     value: true,

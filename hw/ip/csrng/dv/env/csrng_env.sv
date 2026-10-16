@@ -48,11 +48,6 @@ class csrng_env extends cip_base_env #(
                                            cfg.m_edn_agent_cfg[i]);
     end
 
-    if (!uvm_config_db#(virtual pins_if#(MuBi8Width))::get(this, "", "otp_en_cs_sw_app_read_vif",
-        cfg.otp_en_cs_sw_app_read_vif)) begin
-      `uvm_fatal(get_full_name(), "failed to get otp_en_cs_sw_app_read_vif from uvm_config_db")
-    end
-
     if (!uvm_config_db#(virtual pins_if#(MuBi4Width))::get(this, "", "lc_hw_debug_en_vif",
         cfg.lc_hw_debug_en_vif)) begin
       `uvm_fatal(get_full_name(), "failed to get lc_hw_debug_en_vif from uvm_config_db")
