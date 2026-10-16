@@ -99,16 +99,17 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
   // Instantiate the entropy source in FIPS mode.
   HARDENED_TRY(entropy_complex_init(kHardenedBoolTrue));
 
+#ifdef FIPS_MODE
+  OTCRYPTO_HEALTH_CHECK(kTestHashSha512Bit);
+  HARDENED_TRY(otcrypto_integrity_check());
+  OTCRYPTO_HEALTH_CHECK(kTestRngBit);
+#endif
+
   // The OTBN is still left with DMEM from the boot.
   HARDENED_TRY(otbn_dmem_sec_wipe());
   // Also clear the sideloaded keys for kmac and otbn.
   HARDENED_TRY(keymgr_dpe_sideload_clear_otbn());
   HARDENED_TRY(keymgr_dpe_sideload_clear_kmac());
-
-#ifdef FIPS_MODE
-  OTCRYPTO_HEALTH_CHECK(kTestHashSha512Bit);
-  HARDENED_TRY(otcrypto_integrity_check());
-#endif
 
   return OTCRYPTO_OK;
 }
