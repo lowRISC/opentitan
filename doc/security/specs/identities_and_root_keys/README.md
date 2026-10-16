@@ -78,7 +78,7 @@ hash function with collision checks to guarantee global uniqueness.
   </tr>
   <tr>
     <td>32</td>
-    <td>CRC-32 IEEE 802.3. covering the previous bytes.</td>
+    <td>Reserved. Set to 0</td>
   </tr>
 </table>
 
