@@ -932,6 +932,13 @@ status_t kmac_cshake_128(const otcrypto_const_byte_buf_t *message,
                          const unsigned char *func_name, size_t func_name_len,
                          const unsigned char *cust_str, size_t cust_str_len,
                          uint32_t *digest, size_t digest_len) {
+  // According to NIST SP 800-185 Section 3.2, when N and S are both empty
+  // strings, cSHAKE(X, L, N, S) is equivalent to SHAKE as defined in FIPS 202.
+  if (launder32(func_name_len) == 0 && launder32(cust_str_len) == 0) {
+    HARDENED_CHECK_EQ(func_name_len, 0);
+    HARDENED_CHECK_EQ(cust_str_len, 0);
+    return kmac_shake_128(message, digest, digest_len);
+  }
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
   HARDENED_TRY(
       kmac_set_prefix_regs(func_name, func_name_len, cust_str, cust_str_len));
@@ -943,6 +950,13 @@ status_t kmac_cshake_256(const otcrypto_const_byte_buf_t *message,
                          const unsigned char *func_name, size_t func_name_len,
                          const unsigned char *cust_str, size_t cust_str_len,
                          uint32_t *digest, size_t digest_len) {
+  // According to NIST SP 800-185 Section 3.2, when N and S are both empty
+  // strings, cSHAKE(X, L, N, S) is equivalent to SHAKE as defined in FIPS 202.
+  if (launder32(func_name_len) == 0 && launder32(cust_str_len) == 0) {
+    HARDENED_CHECK_EQ(func_name_len, 0);
+    HARDENED_CHECK_EQ(cust_str_len, 0);
+    return kmac_shake_256(message, digest, digest_len);
+  }
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
   HARDENED_TRY(
       kmac_set_prefix_regs(func_name, func_name_len, cust_str, cust_str_len));
