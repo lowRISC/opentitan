@@ -15,6 +15,7 @@
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
+#include "sw/device/lib/crypto/include/kmac.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/self_integrity.h"
 #include "sw/device/lib/runtime/ibex.h"
@@ -312,6 +313,40 @@ status_t test_fips_state_and_param_checks(void) {
   TRY_CHECK(status.value != kHardenedBoolTrue,
             "Expected SHA3-224 digest to be rejected for RSA-3072 in FIPS "
             "mode.");
+
+  // 4e. KMAC tag length < 32 bits (4 bytes) marks CMVP indicator not approved.
+  uint32_t kmac_keyblob[8] = {0};
+  uint32_t kmac_tag_word = 0;
+  otcrypto_blinded_key_t kmac_key = {
+      .config =
+          {
+              .version = otcrypto_lib_version(),
+              .key_mode = kOtcryptoKeyModeKmac128,
+              .key_length = 16,
+              .hw_backed = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = sizeof(kmac_keyblob),
+      .keyblob = kmac_keyblob,
+  };
+  kmac_key.checksum = otcrypto_integrity_blinded_checksum(&kmac_key);
+  otcrypto_word32_buf_t kmac_tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, &kmac_tag_word, 1);
+  status = otcrypto_kmac(&kmac_key, &pt, &aad, 3, &kmac_tag);
+  TRY_CHECK(status.value == kHardenedBoolTrue,
+            "Expected 24-bit KMAC tag generation to succeed.");
+  TRY_CHECK(status_ok(otcrypto_cmvp_service_indicator(&indicator)),
+            "Expected cmvp_service_indicator to succeed.");
+  TRY_CHECK(indicator == kOtcryptoCmvpNotApprovedService,
+            "Expected 24-bit KMAC tag to be marked not approved.");
+
+  status = otcrypto_kmac(&kmac_key, &pt, &aad, 4, &kmac_tag);
+  TRY_CHECK(status.value == kHardenedBoolTrue,
+            "Expected 32-bit KMAC tag generation to succeed.");
+  TRY_CHECK(status_ok(otcrypto_cmvp_service_indicator(&indicator)),
+            "Expected cmvp_service_indicator to succeed.");
+  TRY_CHECK(indicator == kOtcryptoCmvpApprovedService,
+            "Expected 32-bit KMAC tag to be marked approved.");
 
   state->kat_state = saved_kat_state;
 #endif

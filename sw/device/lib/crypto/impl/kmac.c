@@ -61,6 +61,12 @@ otcrypto_status_t otcrypto_kmac(
   }
 #endif
 
+  // Per NIST SP 800-185, KMAC tag length must be at least 32 bits (4 bytes)
+  // to be approved.
+  if (required_output_len < 4) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
+
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
   uint32_t hw_cleanup_guard __attribute__((cleanup(kmac_flush_guard))) = 1;

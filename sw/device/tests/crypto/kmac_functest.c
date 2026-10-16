@@ -382,6 +382,16 @@ static status_t run_negative_tests(void) {
                       &valid_tag)
             .value == OTCRYPTO_BAD_ARGS.value);
 
+  // Short tag length (< 4 bytes / 32 bits) is allowed but not CMVP-approved.
+  // Refresh checksum since earlier negative tests remasked `valid_keyblob`.
+  valid_key.checksum = otcrypto_integrity_blinded_checksum(&valid_key);
+  uint32_t short_tag_data[1] = {0};
+  otcrypto_word32_buf_t short_tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, short_tag_data, 1);
+  CHECK(
+      otcrypto_kmac(&valid_key, &valid_msg, &valid_cust, 3, &short_tag).value ==
+      OTCRYPTO_OK.value);
+
   // Set up valid buffers for all strict SHA3 lengths
   uint32_t digest_buf_224[7] = {0};   // 224 bits = 7 words
   uint32_t digest_buf_256[8] = {0};   // 256 bits = 8 words
