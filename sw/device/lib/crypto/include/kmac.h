@@ -37,7 +37,8 @@ extern "C" {
  * `required_output_len` bytes, rounded up to the nearest word, and then set
  * the `len` field of `tag` to the word length. If the word length is not long
  * enough to hold `required_output_len` bytes, then the function will return
- * `kOtcryptoStatusValueBadArgs`.
+ * `kOtcryptoStatusValueBadArgs`. For CMVP approval, `required_output_len` must
+ * be at least 4 bytes (32 bits).
  *
  * @param key Pointer to the blinded key struct with key shares.
  * @param input_message Input message to be hashed.
