@@ -56,8 +56,10 @@ typedef struct otcrypto_kmac_context {
  *
  * The caller should allocate enough space in the `tag` buffer to hold
  * `required_output_len` bytes, rounded up to the nearest word, and then set
- * the `len` field of `tag` to the word length. If the word length is not long
- * enough to hold `required_output_len` bytes, then the function will return
+ * the `len` field of `tag` to the word length. `required_output_len` must be
+ * at least 4 bytes (32 bits) per NIST SP 800-185. If the word length is not
+ * long enough to hold `required_output_len` bytes or `required_output_len` is
+ * less than 4 bytes, then the function will return
  * `kOtcryptoStatusValueBadArgs`.
  *
  * @param key Pointer to the blinded key struct with key shares.

@@ -443,6 +443,12 @@ static status_t run_negative_tests(void) {
   CHECK(
       otcrypto_kmac(&valid_key, &valid_msg, &valid_cust, 0, &valid_tag).value ==
       OTCRYPTO_BAD_ARGS.value);
+  uint32_t short_tag_data[1] = {0};
+  otcrypto_word32_buf_t short_tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, short_tag_data, 1);
+  CHECK(
+      otcrypto_kmac(&valid_key, &valid_msg, &valid_cust, 3, &short_tag).value ==
+      OTCRYPTO_BAD_ARGS.value);
 
   // Checksum and mode tests
   otcrypto_blinded_key_t bad_key_chk = {
