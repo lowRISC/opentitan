@@ -101,12 +101,12 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level,
   HARDENED_TRY(store_state(state));
 
   // Instantiate the entropy source in FIPS mode.
-  HARDENED_TRY(entropy_complex_start(kHardenedBoolTrue));
+  HARDENED_TRY(otcrypto_entropy_init());
 
 #ifdef FIPS_MODE
+  OTCRYPTO_HEALTH_CHECK(kTestRngBit);
   OTCRYPTO_HEALTH_CHECK(kTestHashSha512Bit);
   HARDENED_TRY(otcrypto_integrity_check());
-  OTCRYPTO_HEALTH_CHECK(kTestRngBit);
 #endif
 
   // The OTBN is still left with DMEM from the boot.
@@ -130,12 +130,12 @@ otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status) {
 #endif
 
   if (state->security_level != kOtcryptoKeySecurityLevelLow) {
+    // Verify the entropy source before leaving.
+    HARDENED_TRY(otcrypto_entropy_health_test_config_check());
+
     if (read_alert_registers()) {
       return OTCRYPTO_FATAL_ERR;
     }
-
-    // Verify the entropy source before leaving.
-    HARDENED_TRY(otcrypto_entropy_health_test_config_check());
   }
 
   return status;

@@ -282,7 +282,6 @@ cc_library(
         ":ecc_curve25519",
         ":ecc_p256",
         ":ecc_p384",
-        ":entropy_src",
         ":hmac",
         ":integrity",
         ":kats_hdrs",
@@ -294,6 +293,7 @@ cc_library(
         ":state",
         ":status",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:entropy_kat",
         "//sw/device/lib/crypto/include:datatypes",
     ],
@@ -661,8 +661,10 @@ cc_library(
     srcs = ["entropy_src.c"],
     hdrs = ["//sw/device/lib/crypto/include:entropy_src.h"],
     deps = [
+        ":state",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:entropy_kat",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )

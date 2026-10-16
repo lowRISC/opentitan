@@ -17,7 +17,6 @@
 #include "sw/device/lib/crypto/include/ecc_curve25519.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
-#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/hmac.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/kmac.h"
@@ -587,10 +586,8 @@ static status_t kat_sha512_hmac(void) {
 }
 
 static status_t kat_rng(void) {
-  HARDENED_TRY(entropy_src_sha3_conditioning_kat());
   HARDENED_TRY(entropy_csrng_kat());
-  HARDENED_TRY(otcrypto_entropy_init());
-  return OTCRYPTO_OK;
+  return entropy_csrng_uninstantiate();
 }
 
 static status_t kat_p256_sign(void) {
