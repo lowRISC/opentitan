@@ -91,8 +91,8 @@ otcrypto_status_t locked_state_check(void) {
     return res;
   }
 
-  // If we are in a locked state, return a fatal error
-  if (state->locked_state == kHardenedByteBoolTrue) {
+  // If we are in a locked state (hard or entropy-locked), return a fatal error
+  if (launder32(state->locked_state) != kHardenedByteBoolFalse) {
     return OTCRYPTO_FATAL_ERR;
   }
 
@@ -111,14 +111,15 @@ otcrypto_status_t stateful_health_check(kat_bits_t kat_bit) {
     return res;
   }
 
-  // If we are in a locked state, the health check returns a fatal error
-  if (state->locked_state == kHardenedByteBoolTrue) {
+  // If we are in a locked state (hard or entropy-locked), the health check
+  // returns a fatal error
+  if (launder32(state->locked_state) != kHardenedByteBoolFalse) {
     return OTCRYPTO_FATAL_ERR;
   }
 
-  // The self-integrity check uses SHA-2, so the SHA-2 KAT
+  // The self-integrity check uses SHA-2 and the RNG, so those KATs
   // must be allowed to execute before the self-integrity check has completed.
-  if (kat_bit != kTestHashSha512Bit &&
+  if (kat_bit != kTestHashSha512Bit && kat_bit != kTestRngBit &&
       state->self_check_state == kHardenedByteBoolFalse) {
     return OTCRYPTO_RECOV_ERR;
   }
