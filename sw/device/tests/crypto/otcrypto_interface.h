@@ -25,6 +25,7 @@ typedef struct otcrypto_interface_t {
   hardened_bool_t (*show_status)(const otcrypto_state_t *);
 
   // Build info
+  otcrypto_status_t (*module_name)(otcrypto_byte_buf_t *);
   otcrypto_status_t (*build_info)(uint32_t *, bool *, uint32_t *, uint32_t *);
   otcrypto_lib_version_t (*lib_version)(void);
   void (*version_decode)(uint32_t, uint32_t *, uint32_t *, uint32_t *);
