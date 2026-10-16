@@ -107,6 +107,10 @@ Full build information, including release status and truncated Git commit hash, 
 
 {{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_build_info }}
 
+The cryptolib module name (`otcrypto_earlgrey_cryptolib`) can be queried into a fixed-length byte buffer (`kOtcryptoModuleNameBytes`) with `otcrypto_module_name`:
+
+{{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_module_name }}
+
 The ROM version (stored in the `ROM_CTRL.EXP_DIGEST_1` register) can be read with `otcrypto_rom_version`:
 
 {{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_rom_version }}
