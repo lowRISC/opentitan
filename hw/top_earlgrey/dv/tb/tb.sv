@@ -442,6 +442,13 @@ module tb;
     uvm_config_db#(virtual tb_dpi_if)::set(
         null, "*.env", "tb_dpi_vif", u_tb_dpi_if);
 
+    // Number of Virtual Targets that each I3C instance implements. The CSRs describe
+    // `i3c_reg_pkg::MaxTargets` of them, so the RAL has to know which ones the RTL ties off.
+    uvm_config_db#(int unsigned)::set(
+        null, "uvm_test_top", "i3c0_num_targets", dut.top_earlgrey.I3c0NumTargets);
+    uvm_config_db#(int unsigned)::set(
+        null, "uvm_test_top", "i3c1_num_targets", dut.top_earlgrey.I3c1NumTargets);
+
     // Format time in microseconds losing no precision. The added "." makes it easier to determine
     // the order of magnitude without counting digits, as is needed if it was formatted as ps or ns.
     $timeformat(-6, 6, " us", 13);

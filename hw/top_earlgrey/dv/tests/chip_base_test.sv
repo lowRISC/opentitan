@@ -94,6 +94,17 @@ class chip_base_test extends cip_base_test #(
   virtual function void initialize_env_cfg();
     bit skip_middle;
 
+    // The number of Virtual Targets that each I3C instance implements is a per-instance parameter
+    // of the DUT, and `post_build_ral_settings()` needs it, so fetch it before the RAL is built.
+    if (!uvm_config_db#(int unsigned)::get(this, "", "i3c0_num_targets",
+                                           cfg.i3c0_num_targets)) begin
+      `uvm_fatal(`gfn, "Failed to get i3c0_num_targets from uvm_config_db.")
+    end
+    if (!uvm_config_db#(int unsigned)::get(this, "", "i3c1_num_targets",
+                                           cfg.i3c1_num_targets)) begin
+      `uvm_fatal(`gfn, "Failed to get i3c1_num_targets from uvm_config_db.")
+    end
+
     super.initialize_env_cfg();
 
     // Look up the +skip_middle_of_rom plusarg.

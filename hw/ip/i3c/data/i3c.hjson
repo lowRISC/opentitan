@@ -1542,9 +1542,12 @@
         swaccess: "ro",
         hwaccess: "hwo",
         hwext:    "true",
-        tags:     [// Reports live queue/buffer pointers and levels, which change with hardware activity.
-                   // Exclude from init and write-checks.
-                   "excl:CsrAllTests:CsrExclCheck"],
+        tags:     [// Reports live queue/buffer pointers, which change with hardware activity, so
+                   // exclude from write-checks. `i3c_core` initializes the pointers of every FIFO
+                   // to the reset values below, so the init check is kept; `chip_env_cfg` adjusts
+                   // it for the Virtual Targets that an instance does not implement, whose state
+                   // the RTL ties off.
+                   "excl:CsrNonInitTests:CsrExclWriteCheck"],
         // This default configuration using `multireg_idx` apportions the space among all of the
         // supported targets, rather than the number that are configured and supported by the IP.
         fields: [
@@ -1701,9 +1704,12 @@
         swaccess: "ro",
         hwaccess: "hwo",
         hwext:    "true",
-        tags:     [// Reports live queue/buffer pointers and levels, which change with hardware activity.
-                   // Exclude from init and write-checks.
-                   "excl:CsrAllTests:CsrExclCheck"],
+        tags:     [// Reports live queue/buffer pointers, which change with hardware activity, so
+                   // exclude from write-checks. `i3c_core` initializes the pointers of every FIFO
+                   // to the reset values below, so the init check is kept; `chip_env_cfg` adjusts
+                   // it for the Virtual Targets that an instance does not implement, whose state
+                   // the RTL ties off.
+                   "excl:CsrNonInitTests:CsrExclWriteCheck"],
         // This default configuration using `multireg_idx` apportions the space among all of the
         // supported targets, rather than the number that are configured and supported by the IP.
         fields: [
