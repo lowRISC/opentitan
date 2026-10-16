@@ -56,6 +56,11 @@ rsa_keygen:
   la x16, nlimbs_tmp
   sw x30, 0(x16)
 
+_rsa_keygen_restart:
+  # Load the limb count.
+  la x16, nlimbs_tmp
+  lw x30, 0(x16)
+
   # Generate the RSA primes.
   # dmem[rsa_p] <= p.
   # dmem[rsa_q] <= q.
@@ -77,6 +82,7 @@ rsa_keygen:
   lw x30, 0(x16)
 
   jal x1, gen_d
+  beq x2, x0, _rsa_keygen_restart
 
   ret
 
@@ -143,7 +149,7 @@ gen_d:
   bn.cmp w22, w31, FG0
   csrrs x16, FG0, x0
   andi x16, x16, 0x8
-  bne x16, x0, rsa_keygen
+  bne x16, x0, _gen_d_fail
 
   # dmem[rsa_h] <= (q - 1) * h
   la  x10, rsa_q
@@ -160,7 +166,7 @@ gen_d:
   bn.cmp w22, w31, FG0
   csrrs x16, FG0, x0
   andi x16, x16, 0x8
-  bne x16, x0, rsa_keygen
+  bne x16, x0, _gen_d_fail
 
   # Compute gcd(g * (p - 1), h * (q - 1)).
   # dmem[RR] <= 0.
@@ -195,7 +201,7 @@ gen_d:
     and    x2, x2, x3
 
   addi x30, x27, 0
-  beq  x2, x0, rsa_keygen
+  beq  x2, x0, _gen_d_fail
 
   # For the division (p - 1)*(q - 1)/gcd(p - 1 , q - 1), the denominator
   # gcd(p - 1, q - 1) needs to be inverted modulo 2^256 which requires the
@@ -279,7 +285,7 @@ _remove_even_factors_end:
   # If x2 != 0, then d is too small and we need to restart key generation.
   csrrs x2, FG0, x0
   andi  x2, x2, 8
-  bne   x2, x0, rsa_keygen
+  bne   x2, x0, _gen_d_fail
 
   # Restore p and q.
   la x10, rsa_p
@@ -305,6 +311,11 @@ _remove_even_factors_end:
     bn.xor  w31, w31, w31 # dummy instruction
     bn.sid  x9, 0(x13++)
 
+  li x2, 1
+  ret
+
+_gen_d_fail:
+  li x2, 0
   ret
 
 /**
