@@ -721,25 +721,6 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "csrng_fuse_en_sw_app_read",
-    srcs = ["csrng_fuse_en_sw_app_read.c"],
-    exec_env = {"//hw/top_earlgrey:sim_dv": None},
-    deps = [
-        "//hw/top:top_lib",
-        "//sw/device/lib/base:memory",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:base",
-        "//sw/device/lib/dif:csrng",
-        "//sw/device/lib/dif:rstmgr",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:csrng_testutils",
-        "//sw/device/lib/testing:otp_ctrl_testutils",
-        "//sw/device/lib/testing:rstmgr_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_test(
     name = "csrng_lc_hw_debug_en_test",
     srcs = ["csrng_lc_hw_debug_en_test.c"],
     exec_env = {"//hw/top_earlgrey:sim_dv": None},

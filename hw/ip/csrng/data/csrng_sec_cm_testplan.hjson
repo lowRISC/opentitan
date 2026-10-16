@@ -47,15 +47,6 @@
       tests: ["csrng_alert"]
     }
     {
-      name: sec_cm_intersig_mubi
-      desc: '''
-            Verify the countermeasure(s) INTERSIG.MUBI.
-            Verify that unless the otp_en_csrng_sw_app_read input signal is equal to MuBi8True and CTRL.SW_APP_ENABLE or CTRL.READ_INT_STATE is set to kMultiBitBool4True the DUT doesn't allow reading the genbits or the internal state from the GENBITS or INT_STATE_VAL register, respectively.
-            '''
-      stage: V2S
-      tests: ["csrng_stress_all"]
-    }
-    {
       name: sec_cm_main_sm_fsm_sparse
       desc: '''
             Verify the countermeasure(s) MAIN_SM.FSM.SPARSE.

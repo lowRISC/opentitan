@@ -301,10 +301,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
         if (genbits_valid || last_word) begin
           do_read_check = 1'b0;
           if (data_phase_read) begin
-            cov_vif.cg_csrng_otp_en_sw_app_read_sample(
+            cov_vif.cg_csrng_sw_app_read_sample(
               .read_int_state_val_reg(1'b0),
               .read_genbits_reg(1'b1),
-              .otp_en_cs_sw_app_read(cfg.otp_en_cs_sw_app_read),
               .read_int_state(ral.ctrl.read_int_state.get_mirrored_value()),
               .sw_app_enable(ral.ctrl.sw_app_enable.get_mirrored_value())
             );
@@ -340,10 +339,9 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       "int_state_val": begin
         do_read_check = 1'b0;
         if (data_phase_read) begin
-          cov_vif.cg_csrng_otp_en_sw_app_read_sample(
+          cov_vif.cg_csrng_sw_app_read_sample(
             .read_int_state_val_reg(1'b1),
             .read_genbits_reg(1'b0),
-            .otp_en_cs_sw_app_read(cfg.otp_en_cs_sw_app_read),
             .read_int_state(ral.ctrl.read_int_state.get_mirrored_value()),
             .sw_app_enable(ral.ctrl.sw_app_enable.get_mirrored_value())
           );
@@ -353,7 +351,6 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           // If read access is indeed enabled, the actual check is performed by the
           // check_internal_state() task.
           if (`gmv(ral.ctrl.read_int_state) != MuBi4True ||
-              cfg.otp_en_cs_sw_app_read != MuBi8True ||
               int_state_num >= cfg.m_num_apps ||
               int_state_read_enable[int_state_num] == 1'b0) begin
             `DV_CHECK_EQ_FATAL(item.d_data, 0)
@@ -546,8 +543,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       end
       output_block = block_encrypt(cfg.key[app], cfg.v[app]);
       genbits      = output_block;
-      if ((app != cfg.m_sw_app_idx) ||
-          ((cfg.sw_app_enable == MuBi4True) && (cfg.otp_en_cs_sw_app_read == MuBi8True))) begin
+      if ((app != cfg.m_sw_app_idx) || (cfg.sw_app_enable == MuBi4True)) begin
         prd_genbits_q[app].push_back(genbits);
       end
       else begin

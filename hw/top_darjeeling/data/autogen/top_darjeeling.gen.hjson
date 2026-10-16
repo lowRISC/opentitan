@@ -6126,18 +6126,6 @@
           index: -1
         }
         {
-          name: otp_en_csrng_sw_app_read
-          struct: mubi8
-          package: prim_mubi_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: prim_mubi_pkg::MuBi8True
-          inst_name: csrng
-          top_signame: csrng_otp_en_csrng_sw_app_read
-          index: -1
-        }
-        {
           name: lc_hw_debug_en
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -11946,7 +11934,6 @@
       rv_core_ibex.hart_id
       rv_core_ibex.boot_addr
       otp_ctrl.otp_broadcast
-      csrng.otp_en_csrng_sw_app_read
       soc_dbg_ctrl.soc_dbg_state
       lc_ctrl.otp_device_id
       lc_ctrl.otp_manuf_state
@@ -26011,18 +25998,6 @@
         index: -1
       }
       {
-        name: otp_en_csrng_sw_app_read
-        struct: mubi8
-        package: prim_mubi_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: prim_mubi_pkg::MuBi8True
-        inst_name: csrng
-        top_signame: csrng_otp_en_csrng_sw_app_read
-        index: -1
-      }
-      {
         name: lc_hw_debug_en
         struct: lc_tx
         package: lc_ctrl_pkg
@@ -36992,16 +36967,6 @@
         type: uni
         end_idx: -1
         default: "'0"
-      }
-      {
-        package: prim_mubi_pkg
-        struct: mubi8
-        signame: csrng_otp_en_csrng_sw_app_read
-        domain: Main
-        width: 1
-        type: uni
-        end_idx: -1
-        default: prim_mubi_pkg::MuBi8True
       }
       {
         package: lc_ctrl_state_pkg

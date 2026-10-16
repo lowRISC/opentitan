@@ -106,8 +106,7 @@ It has been generated with ./util/topgen.py -t hw/top_earlgrey/data/top_earlgrey
 |         |                           |            |              |      32bit       |                                 MANUF_STATE                                 |     0x6A8      |     32     |
 |         |                           |            |              |      64bit       |                   [HW_CFG0_DIGEST](#Reg_hw_cfg0_digest_0)                   |     0x6C8      |     8      |
 |    6    |          HW_CFG1          |     16     |      no      |      32bit       |                               EN_SRAM_IFETCH                                |     0x6D0      |     1      |
-|         |                           |            |              |      32bit       |                            EN_CSRNG_SW_APP_READ                             |     0x6D1      |     1      |
-|         |                           |            |              |      32bit       |                            DIS_RV_DM_LATE_DEBUG                             |     0x6D2      |     1      |
+|         |                           |            |              |      32bit       |                            DIS_RV_DM_LATE_DEBUG                             |     0x6D1      |     1      |
 |         |                           |            |              |      64bit       |                   [HW_CFG1_DIGEST](#Reg_hw_cfg1_digest_0)                   |     0x6D8      |     8      |
 |    7    |          SECRET0          |     40     |      no      |      64bit       |                              TEST_UNLOCK_TOKEN                              |     0x6E0      |     16     |
 |         |                           |            |              |      64bit       |                               TEST_EXIT_TOKEN                               |     0x6F0      |     16     |

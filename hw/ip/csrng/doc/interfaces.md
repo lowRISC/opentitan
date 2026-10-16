@@ -10,13 +10,12 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name                | Package::Struct                    | Type    | Act   |   Width | Description   |
-|:-------------------------|:-----------------------------------|:--------|:------|--------:|:--------------|
-| csrng_cmd                | csrng_pkg::csrng                   | req_rsp | rsp   |       2 |               |
-| entropy_src_hw_if        | entropy_src_pkg::entropy_src_hw_if | req_rsp | req   |       1 |               |
-| otp_en_csrng_sw_app_read | prim_mubi_pkg::mubi8               | uni     | rcv   |       1 |               |
-| lc_hw_debug_en           | lc_ctrl_pkg::lc_tx                 | uni     | rcv   |       1 |               |
-| tl                       | tlul_pkg::tl                       | req_rsp | rsp   |       1 |               |
+| Port Name         | Package::Struct                    | Type    | Act   |   Width | Description   |
+|:------------------|:-----------------------------------|:--------|:------|--------:|:--------------|
+| csrng_cmd         | csrng_pkg::csrng                   | req_rsp | rsp   |       2 |               |
+| entropy_src_hw_if | entropy_src_pkg::entropy_src_hw_if | req_rsp | req   |       1 |               |
+| lc_hw_debug_en    | lc_ctrl_pkg::lc_tx                 | uni     | rcv   |       1 |               |
+| tl                | tlul_pkg::tl                       | req_rsp | rsp   |       1 |               |
 
 ## Interrupts
 
@@ -40,7 +39,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:------------------------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | CSRNG.CONFIG.REGWEN                 | Registers are protected from writes.                                                                                                                                                                                                                                |
 | CSRNG.CONFIG.MUBI                   | Registers have multi-bit encoded fields.                                                                                                                                                                                                                            |
-| CSRNG.INTERSIG.MUBI                 | OTP signal used to enable software access to registers.                                                                                                                                                                                                             |
 | CSRNG.CMD_STAGE.FSM.SPARSE          | The CSRNG command stage state machines use a sparse state encoding.                                                                                                                                                                                                 |
 | CSRNG.MAIN_SM.FSM.SPARSE            | The CSRNG main state machine uses a sparse state encoding.                                                                                                                                                                                                          |
 | CSRNG.CTR_DRBG.FSM.SPARSE           | The CTR DRBG state machine uses a sparse state encoding.                                                                                                                                                                                                            |
@@ -65,7 +63,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 Signal                       | Direction        | Type                        | Description
 -----------------------------|------------------|-----------------------------|---------------
-`otp_en_csrng_sw_app_read_i` | `input `         | `otp_en_t `                 | An efuse that will enable firmware to access the NIST CTR_DRBG internal state and genbits through registers.
 `lc_hw_debug_en_i`           | `input`          | `lc_tx_t `                  | A life-cycle that will select which diversification value is used for xoring with the seed from ENTROPY_SRC.
 `entropy_src_hw_if_o`        | `output`         | `entropy_src_hw_if_req_t`   | Seed request made to the ENTROPY_SRC module.
 `entropy_src_hw_if_i`        | `input`          | `entropy_src_hw_if_rsp_t`   | Seed response from the ENTROPY_SRC module.

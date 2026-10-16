@@ -1563,22 +1563,10 @@
       default: "1",
       local: "true"
     },
-    { name: "EnCsrngSwAppReadOffset",
-      desc: "Offset of EN_CSRNG_SW_APP_READ",
-      type: "int",
-      default: "1745",
-      local: "true"
-    },
-    { name: "EnCsrngSwAppReadSize",
-      desc: "Size of EN_CSRNG_SW_APP_READ",
-      type: "int",
-      default: "1",
-      local: "true"
-    },
     { name: "DisRvDmLateDebugOffset",
       desc: "Offset of DIS_RV_DM_LATE_DEBUG",
       type: "int",
-      default: "1746",
+      default: "1745",
       local: "true"
     },
     { name: "DisRvDmLateDebugSize",
@@ -2147,9 +2135,7 @@
     }
     {
       name: "OTP_CTRL.ENTROPY_READ"
-      desc: '''Firmware can read entropy from ENTROPY_SRC block by configuring following field of HW_CFG* partition.
-        - EN_CSRNG_SW_APP_READ
-      '''
+      desc: "Firmware can read entropy from ENTROPY_SRC block."
     }
     {
       name: "OTP_CTRL.KEY_DERIVATION"
