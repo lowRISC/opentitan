@@ -74,7 +74,8 @@ otcrypto_status_t otcrypto_kmac(
   size_t required_output_words =
       (required_output_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
 
-  if (tag->len != required_output_words || required_output_len == 0) {
+  // Per NIST SP 800-185, KMAC tag length must be at least 32 bits (4 bytes).
+  if (tag->len != required_output_words || required_output_len < 4) {
     return OTCRYPTO_BAD_ARGS;
   }
 
