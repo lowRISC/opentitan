@@ -12,6 +12,7 @@ keyset(
     keys = {
         "unauthorized_0_spx.pem": "unauthorized_key_0",
     },
+    keytype = "spx",
     profile = "local",
     tool = "//signing/tokens:local",
 )

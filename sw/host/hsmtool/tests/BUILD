@@ -406,3 +406,41 @@ sh_test(
     },
     deps = [":test_lib"],
 )
+
+# Verify that hsmtool can accept SLH-DSA keys with RFC 9909 HashSLH-DSA
+# OIDs, since some exported PKCS#8/SPKI encoded keys might contain
+# algorithm OIDs describing key usage with HashSLH-DSA. This only tests
+# importing keys with these OIDs, not e.g. signing and verification.
+[
+    sh_test(
+        name = "hsmtool_hash_slh_dsa_key_test_{}".format(parameter_set),
+        srcs = ["hash_slh_dsa_key_test.sh"],
+        args = [
+            "$(rootpath :hash-slh-dsa-{}.pem)".format(parameter_set),
+            "$(rootpath :hash-slh-dsa-{}.pub.pem)".format(parameter_set),
+        ],
+        data = [
+            "hash-slh-dsa-{}.pem".format(parameter_set),
+            "hash-slh-dsa-{}.pub.pem".format(parameter_set),
+            "//signing/softhsm",
+            "//signing/softhsm:conf",
+            "//sw/host/hsmtool",
+            "@openssl",
+            "@softhsm2//:gen_dir",
+        ],
+        env = {
+            "OPENSSL": "$(rootpath @openssl)",
+            "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
+            "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
+        },
+        # hsmtool currently does not recognize the HashSLH-DSA algorithm identifiers
+        # (OIDs) in the PKCS#8/SPKI ASN.1 encodings, despite the fact that it supports
+        # use of the underlying `CKM_HASH_SLH_DSA` mechanism type.
+        tags = ["broken"],
+        deps = [":test_lib"],
+    )
+    for parameter_set in [
+        "sha2-128s",
+        "shake-128s",
+    ]
+]

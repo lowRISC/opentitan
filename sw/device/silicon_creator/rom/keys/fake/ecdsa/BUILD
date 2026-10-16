@@ -15,6 +15,7 @@ keyset(
         "prod_key_0_ecdsa_p256.der": "prod_key_0",
         "prod_key_1_ecdsa_p256.der": "prod_key_1",
     },
+    keytype = "ecdsa",
     profile = "local",
     tool = "//signing/tokens:local",
 )
