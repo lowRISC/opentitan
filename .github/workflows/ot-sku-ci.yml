@@ -2,23 +2,26 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+# This workflow runs manufacturing tests using the ot-sku repository as
+# an override. It can either be triggered by the cross-repo CI from ot-sku
+# or directly when running the normal opentitan CI.
 name: OT SKU CI
 on:
   workflow_dispatch:
     inputs:
       # Inputs provided by lowrisc-ci GitHub app
       repository:
-        description: Repository to check out.
+        description: OT-SKU repository to check out.
         default: lowRISC/ot-sku
         type: string
       pull_request:
         description: Pull request that triggers this workflow run (optional)
         type: string
       sha:
-        description: SHA to report status on
+        description: OT-SKU SHA to report status on
         type: string
       merge_sha:
-        description: SHA to run workflow on
+        description: OT-SKU SHA to run workflow on
         type: string
         default: main
       # Additional inputs
@@ -28,6 +31,20 @@ on:
       run_name:
         description: Name of the triggered workflow run
         type: string
+  workflow_call:
+    inputs:
+      repository:
+        description: OT-SKU repository to check out.
+        default: lowRISC/ot-sku
+        type: string
+      merge_sha:
+        description: OT-SKU SHA to run workflow on
+        type: string
+        default: main
+      continue-on-error:
+        description: Continue workflow in case of errors
+        type: boolean
+        default: false
 
 # Note that this might run untrusted code from PRs on ot-sku so be careful with
 # permissions.
@@ -49,6 +66,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Add summary about the job
+        # Only run when called using the cross-ci mechanism.
+        if: github.event_name == 'workflow_dispatch'
         run: |
           if [[ -n "${{ inputs.pull_request }}" ]]; then
             echo "Triggered by [#${{ inputs.pull_request }}](${{ github.server_url }}/${{ inputs.repository }}/pull/${{ inputs.pull_request }})" >> $GITHUB_STEP_SUMMARY
@@ -78,10 +97,11 @@ jobs:
           ref: ${{ inputs.merge_sha }}
           path: ot-sku
       - name: Execute tests
+        continue-on-error: ${{ inputs.continue-on-error }}
         run: |
           cd opentitan
           . util/build_consts.sh
-          module load "xilinx/vivado/${{ inputs.vivado_version }}"
+          module load "xilinx/vivado/$VIVADO_VERSION"
           # TODO: make set of tests configurable?
           ./bazelisk.sh test \
             --override_module=ot_provisioning_exts=${{ github.workspace }}/ot-sku \
