@@ -352,9 +352,6 @@ _gen_p_body:
   jal x1, fermat_test
   beq x2, x0, _gen_p_loop
 
-  # Set up Miller-Rabin loop counter.
-  addi x28, x0, 0
-
   jal x1, miller_rabin_test
   beq x2, x0, _gen_p_loop
 
@@ -425,9 +422,6 @@ _gen_q_body_inner:
 
   jal x1, fermat_test
   beq x2, x0, _gen_q_loop
-
-  # Set up Miller-Rabin loop counter.
-  addi x28, x0, 0
 
   jal x1, miller_rabin_test
   beq x2, x0, _gen_q_loop
