@@ -43,7 +43,7 @@ otcrypto_status_t otcrypto_kmac_kdf(
     const otcrypto_const_byte_buf_t *context,
     otcrypto_blinded_key_t *output_key_material) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_KMAC_KDF);
-  OTCRYPTO_HEALTH_CHECK(kTestKmac256Bit);
+  OTCRYPTO_HEALTH_CHECK(kTestKmacKdfBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check NULL pointers.
   if (key_derivation_key == NULL || key_derivation_key->keyblob == NULL ||
