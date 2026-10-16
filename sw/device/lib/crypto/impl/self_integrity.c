@@ -22,7 +22,7 @@ otcrypto_status_t otcrypto_integrity_check(void) {
   crypto_state_t state;
   HARDENED_TRY(read_state(&state));
 
-  if (state.locked_state == kHardenedByteBoolTrue) {
+  if (launder32(state.locked_state) != kHardenedByteBoolFalse) {
     otcrypto_cmvp_end_service();
     return OTCRYPTO_FATAL_ERR;
   }
