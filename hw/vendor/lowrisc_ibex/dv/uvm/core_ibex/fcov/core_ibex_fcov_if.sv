@@ -175,14 +175,20 @@ interface core_ibex_fcov_if import ibex_pkg::*; (
   `ASSERT(InstrCategoryBranchCorrect,
       id_instr_category == InstrCategoryBranch |-> id_stage_i.branch_in_dec)
 
+  // CHERIoT decodes jumps/loads/stores through separate signals instead of
+  // jump_in_dec/lsu_req_dec, so both have to be checked.
   `ASSERT(InstrCategoryJumpCorrect,
-      id_instr_category == InstrCategoryJump |-> id_stage_i.jump_in_dec)
+      id_instr_category == InstrCategoryJump |->
+      id_stage_i.jump_in_dec ||
+      id_stage_i.cheriot_operator_o.CJAL || id_stage_i.cheriot_operator_o.CJALR)
 
   `ASSERT(InstrCategoryLoadCorrect,
-      id_instr_category == InstrCategoryLoad |-> id_stage_i.lsu_req_dec && !id_stage_i.lsu_we)
+      id_instr_category == InstrCategoryLoad |->
+      (id_stage_i.lsu_req_dec || id_stage_i.cheriot_lsu_req_dec) && !id_stage_i.lsu_we)
 
   `ASSERT(InstrCategoryStoreCorrect,
-      id_instr_category == InstrCategoryStore |-> id_stage_i.lsu_req_dec && id_stage_i.lsu_we)
+      id_instr_category == InstrCategoryStore |->
+      (id_stage_i.lsu_req_dec || id_stage_i.cheriot_lsu_req_dec) && id_stage_i.lsu_we)
 
   `ASSERT(InstrCategoryCSRAccessCorrect,
       id_instr_category == InstrCategoryCSRAccess |-> id_stage_i.csr_access_o)

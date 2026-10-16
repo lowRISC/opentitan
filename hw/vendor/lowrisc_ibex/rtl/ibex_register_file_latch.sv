@@ -270,7 +270,7 @@ module ibex_register_file_latch import ibex_pkg::*; #(
 
     // In CHERIoT mode all register addresses are 4-bit (implicit E extension). Hence, the MSB must
     // never be set. The bank-select bit is anyway forced to 0.
-    `ASSERT(CheriotWaddrMSBClear,  cheriot_enabled |-> !waddr_a_i[4])
+    `ASSERT(CheriotWaddrMSBClear,  (cheriot_enabled && we_a_i) |-> !waddr_a_i[4])
     `ASSERT(CheriotRaddrAMSBClear, cheriot_enabled |-> !raddr_a_i[4])
     `ASSERT(CheriotRaddrBMSBClear, cheriot_enabled |-> !raddr_b_i[4])
 

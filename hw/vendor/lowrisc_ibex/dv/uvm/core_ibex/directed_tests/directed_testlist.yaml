@@ -77,6 +77,71 @@
   test_srcs: mcounteren_test/mcounteren_lock_test.S
   config: riscv-tests
 
+- test: zcmp_reserved_test
+  desc: >
+    Reserved Zcmp encodings trap as illegal instructions and are not
+    expanded. Cosim mismatches are not fatal because the cosim does not
+    enable Zcmp.
+  iterations: 1
+  test_srcs: zcmp_reserved_test/zcmp_reserved_test.S
+  config: riscv-tests
+  rtl_params:
+    PMPEnable: 1
+    RV32ZC: ["ibex_pkg::RV32ZcaZcmp", "ibex_pkg::RV32ZcaZcbZcmp"]
+  sim_opts: +disable_cosim=1
+
+- test: dummy_instr_minstret_test
+  desc: >
+    Dummy instructions must not be counted in minstret: the minstret delta
+    over a fixed block is the same with dummies off, on and off again.
+  iterations: 1
+  test_srcs: dummy_instr_test/dummy_instr_minstret_test.S
+  config: riscv-tests
+  rtl_params:
+    PMPEnable: 1
+    SecureIbex: 1
+
+- test: dummy_instr_zcmp_test
+  desc: >
+    Dummy instructions must not disturb an expanded Zcmp sequence. Cosim
+    mismatches are not fatal because the cosim does not enable Zcmp.
+  iterations: 1
+  test_srcs: dummy_instr_test/dummy_instr_zcmp_test.S
+  config: riscv-tests
+  rtl_params:
+    PMPEnable: 1
+    SecureIbex: 1
+    RV32ZC: ["ibex_pkg::RV32ZcaZcmp", "ibex_pkg::RV32ZcaZcbZcmp"]
+  sim_opts: +disable_cosim=1
+
+- test: dummy_instr_zcmp_debug_test
+  desc: >
+    dummy_instr_zcmp_test under random debug requests. Debug entry must
+    not split a Zcmp sequence.
+  iterations: 1
+  test_srcs: dummy_instr_test/dummy_instr_zcmp_test.S
+  config: riscv-tests
+  rtl_test: core_ibex_directed_stress_test
+  rtl_params:
+    PMPEnable: 1
+    SecureIbex: 1
+    RV32ZC: ["ibex_pkg::RV32ZcaZcmp", "ibex_pkg::RV32ZcaZcbZcmp"]
+  sim_opts: +disable_cosim=1 +enable_debug_seq=1 +max_interval=500
+
+- test: dummy_instr_zcmp_irq_test
+  desc: >
+    dummy_instr_zcmp_test under random interrupts. An interrupt must not
+    split the committing micro-ops of a Zcmp sequence.
+  iterations: 1
+  test_srcs: dummy_instr_test/dummy_instr_zcmp_test.S
+  config: riscv-tests
+  rtl_test: core_ibex_directed_stress_test
+  rtl_params:
+    PMPEnable: 1
+    SecureIbex: 1
+    RV32ZC: ["ibex_pkg::RV32ZcaZcmp", "ibex_pkg::RV32ZcaZcbZcmp"]
+  sim_opts: +disable_cosim=1 +enable_irq_single_seq=1
+
 - test: pmp_mseccfg_test_rlb1_l0_0_u0
   desc: >
     mseccfg test
@@ -475,18 +540,18 @@
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/scall.S
   config: riscv-tests
 
-- test: shamt
-  desc: >
-    riscv test - shamt
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/shamt.S
-  config: riscv-tests
-
 - test: sh-misaligned
   desc: >
     riscv test - sh-misaligned
   iterations: 1
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/sh-misaligned.S
+  config: riscv-tests
+
+- test: shamt
+  desc: >
+    riscv test - shamt
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32mi/shamt.S
   config: riscv-tests
 
 - test: sw-misaligned
@@ -524,6 +589,13 @@
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/divu.S
   config: riscv-tests
 
+- test: mul
+  desc: >
+    riscv test - mul
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/mul.S
+  config: riscv-tests
+
 - test: mulh
   desc: >
     riscv test - mulh
@@ -545,13 +617,6 @@
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/mulhu.S
   config: riscv-tests
 
-- test: mul
-  desc: >
-    riscv test - mul
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/mul.S
-  config: riscv-tests
-
 - test: rem
   desc: >
     riscv test - rem
@@ -566,13 +631,6 @@
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32um/remu.S
   config: riscv-tests
 
-- test: addi
-  desc: >
-    riscv test - addi
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/addi.S
-  config: riscv-tests
-
 - test: add
   desc: >
     riscv test - add
@@ -580,11 +638,11 @@
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/add.S
   config: riscv-tests
 
-- test: andi
+- test: addi
   desc: >
-    riscv test - andi
+    riscv test - addi
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/andi.S
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/addi.S
   config: riscv-tests
 
 - test: and
@@ -592,6 +650,13 @@
     riscv test - and
   iterations: 1
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/and.S
+  config: riscv-tests
+
+- test: andi
+  desc: >
+    riscv test - andi
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/andi.S
   config: riscv-tests
 
 - test: auipc
@@ -650,18 +715,18 @@
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/fence_i.S
   config: riscv-tests
 
-- test: jalr
-  desc: >
-    riscv test - jalr
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/jalr.S
-  config: riscv-tests
-
 - test: jal
   desc: >
     riscv test - jal
   iterations: 1
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/jal.S
+  config: riscv-tests
+
+- test: jalr
+  desc: >
+    riscv test - jalr
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/jalr.S
   config: riscv-tests
 
 - test: lb
@@ -706,18 +771,18 @@
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/lw.S
   config: riscv-tests
 
-- test: ori
-  desc: >
-    riscv test - ori
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/ori.S
-  config: riscv-tests
-
 - test: or
   desc: >
     riscv test - or
   iterations: 1
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/or.S
+  config: riscv-tests
+
+- test: ori
+  desc: >
+    riscv test - ori
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/ori.S
   config: riscv-tests
 
 - test: sb
@@ -741,6 +806,13 @@
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/simple.S
   config: riscv-tests
 
+- test: sll
+  desc: >
+    riscv test - sll
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/sll.S
+  config: riscv-tests
+
 - test: slli
   desc: >
     riscv test - slli
@@ -748,11 +820,11 @@
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/slli.S
   config: riscv-tests
 
-- test: sll
+- test: slt
   desc: >
-    riscv test - sll
+    riscv test - slt
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/sll.S
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/slt.S
   config: riscv-tests
 
 - test: slti
@@ -769,25 +841,11 @@
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/sltiu.S
   config: riscv-tests
 
-- test: slt
-  desc: >
-    riscv test - slt
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/slt.S
-  config: riscv-tests
-
 - test: sltu
   desc: >
     riscv test - sltu
   iterations: 1
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/sltu.S
-  config: riscv-tests
-
-- test: srai
-  desc: >
-    riscv test - srai
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/srai.S
   config: riscv-tests
 
 - test: sra
@@ -797,11 +855,11 @@
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/sra.S
   config: riscv-tests
 
-- test: srli
+- test: srai
   desc: >
-    riscv test - srli
+    riscv test - srai
   iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/srli.S
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/srai.S
   config: riscv-tests
 
 - test: srl
@@ -809,6 +867,13 @@
     riscv test - srl
   iterations: 1
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/srl.S
+  config: riscv-tests
+
+- test: srli
+  desc: >
+    riscv test - srli
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/srli.S
   config: riscv-tests
 
 - test: sub
@@ -825,18 +890,18 @@
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/sw.S
   config: riscv-tests
 
-- test: xori
-  desc: >
-    riscv test - xori
-  iterations: 1
-  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/xori.S
-  config: riscv-tests
-
 - test: xor
   desc: >
     riscv test - xor
   iterations: 1
   test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/xor.S
+  config: riscv-tests
+
+- test: xori
+  desc: >
+    riscv test - xori
+  iterations: 1
+  test_srcs: ../../../../vendor/riscv-tests/isa/rv32ui/xori.S
   config: riscv-tests
 
 # Test-suite: riscv-arch-tests

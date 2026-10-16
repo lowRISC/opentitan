@@ -218,6 +218,9 @@ bool SpikeCosim::step(uint32_t write_reg, uint32_t write_reg_data, uint32_t pc,
   // (If the current step causes a synchronous trap, it will be
   //  recorded against the current pc)
   initial_spike_pc = (processor->get_state()->pc & 0xffffffff);
+  // A trap on a stepped instruction enters debug mode within this step, but
+  // the cpuctrlsts update depends on the mode the trap was taken in.
+  bool initial_spike_debug_mode = processor->get_state()->debug_mode;
   processor->step(1);
 
   // ISS
@@ -278,7 +281,7 @@ bool SpikeCosim::step(uint32_t write_reg, uint32_t write_reg_data, uint32_t pc,
         return false;
       }
 
-      handle_cpuctrl_exception_entry();
+      handle_cpuctrl_exception_entry(initial_spike_debug_mode);
 
       // This is all the checking possible when consider a
       // synchronously-trapping instruction that never retired.
@@ -534,8 +537,8 @@ void SpikeCosim::leave_nmi_mode() {
 #endif
 }
 
-void SpikeCosim::handle_cpuctrl_exception_entry() {
-  if (!processor->get_state()->debug_mode) {
+void SpikeCosim::handle_cpuctrl_exception_entry(bool debug_mode_at_trap) {
+  if (!debug_mode_at_trap) {
     bool old_sync_exc_seen = change_cpuctrlsts_sync_exc_seen(true);
     if (old_sync_exc_seen) {
       set_cpuctrlsts_double_fault_seen();

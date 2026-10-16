@@ -50,11 +50,11 @@ module tb #(
 
   // DUT
   ibex_icache #(
-      .ICacheECC            (ICacheECC),
-      .ICacheTweakInfection (ICacheTweakInfection),
-      .BusSizeECC           (BusSizeECC),
-      .TagSizeECC           (TagSizeECC),
-      .LineSizeECC          (LineSizeECC)
+      .ICacheECC       (ICacheECC),
+      .TweakInfection  (ICacheTweakInfection),
+      .BusSizeECC      (BusSizeECC),
+      .TagSizeECC      (TagSizeECC),
+      .LineSizeECC     (LineSizeECC)
   ) dut (
       .clk_i               ( clk                        ),
       .rst_ni              ( rst_n                      ),
