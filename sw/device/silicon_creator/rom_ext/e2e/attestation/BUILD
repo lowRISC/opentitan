@@ -35,6 +35,7 @@ VARIANTS = {
         "variation": "dice_x509",
         # Don't load a new bitstream
         "bitstream": "//hw/bitstream/universal:none",
+        "clear_before_test": "False",
         "local_defines": ["POST_PROVISIONING_TESTS"],
         "tags": ["manual"],
     },
@@ -58,6 +59,7 @@ VARIANTS = {
         "variation": "dice_mldsa",
         # Don't load a new bitstream
         "bitstream": "//hw/bitstream/universal:none",
+        "clear_before_test": "False",
         "local_defines": ["POST_PROVISIONING_TESTS"],
         "tags": ["manual"],
     },
@@ -147,6 +149,7 @@ VARIANTS = {
             test_cmd = info["test_cmd"],
             test_harness = "//sw/host/tests/attestation:attestation_test",
             testopt_bootstrap = "False",
+            testopt_clear_before_test = info.get("clear_before_test", "True"),
         ),
         qemu = qemu_params(
             assemble = "{rom_ext}@{rom_ext_slot_a} {firmware}@{owner_slot_b}",
