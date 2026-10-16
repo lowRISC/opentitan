@@ -53,7 +53,9 @@ if {!([info exists ::env(CW340_DEBUG)] && [string is true -strict $::env(CW340_D
   # phys_opt_design: skip the post-placement optimization of timing-critical paths.
   set_property STEPS.PHYS_OPT_DESIGN.IS_ENABLED false [get_runs impl_1]
   # route_design keeps its default directive: it is timing driven and fixes hold violations,
-  # which Quick routing would not. The post-route hook checks that the design meets timing.
+  # which Quick routing would not. The post-route hook checks that the design meets timing; if
+  # it does not, the hook runs phys_opt_design on the routed design and, if that is not enough,
+  # routes it again.
 
   # The default strategies also write DRC, methodology, power, clock utilization and other
   # reports. Only keep the two that .github/workflows/bitstream.yml prints: the utilization after
