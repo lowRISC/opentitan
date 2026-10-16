@@ -2,11 +2,12 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, ensure};
+use anyhow::{Context, Result, bail, ensure};
 use rusb::{self, UsbContext};
+use std::fs;
 use std::time::{Duration, Instant};
 
-use crate::io::usb::{UsbContext as OtUsbContext, UsbDevice, desc::Configuration};
+use crate::io::usb::{UsbContext as OtUsbContext, UsbDevice, desc};
 use crate::transport::TransportError;
 
 /// Represents a device provided by the `rusb` crate.
@@ -14,6 +15,7 @@ pub struct RusbDevice {
     handle: rusb::DeviceHandle<rusb::Context>,
     serial_number: Option<String>,
     timeout: Duration,
+    device_desc: Vec<u8>,
     configurations: Vec<Vec<u8>>,
 }
 
@@ -211,7 +213,7 @@ impl OtUsbContext for RusbContext {
 }
 
 impl RusbDevice {
-    fn new(
+    pub fn new(
         handle: rusb::DeviceHandle<rusb::Context>,
         serial_number: Option<String>,
         timeout: Duration,
@@ -221,6 +223,23 @@ impl RusbDevice {
         // Unfortunately, rusb simply wraps around libusb which does not
         // give access to the raw configuration descriptor so we must
         // get it directly from the device.
+        let dev_desc_size = handle.device().device_descriptor()?.length() as usize;
+        let mut device_desc = vec![0u8; dev_desc_size];
+        let size = handle
+            .read_control(
+                0x80,   // Standard, device, IN
+                6,      // GET_DESCRIPTOR
+                1 << 8, // DEVICE
+                0,
+                &mut device_desc,
+                timeout,
+            )
+            .context("could not retrieve device descriptor")?;
+        ensure!(
+            size == dev_desc_size,
+            "Device did not return the full device descriptor"
+        );
+
         let nr_config = handle
             .device()
             .device_descriptor()
@@ -254,6 +273,7 @@ impl RusbDevice {
             handle,
             serial_number,
             timeout,
+            device_desc,
             configurations,
         })
     }
@@ -262,6 +282,22 @@ impl RusbDevice {
 impl UsbDevice for RusbDevice {
     fn get_timeout(&self) -> Duration {
         self.timeout
+    }
+
+    fn get_parent(&self) -> Result<Box<dyn UsbDevice>> {
+        let device = self
+            .handle
+            .device()
+            .get_parent()
+            .context("Unable to get parent USB device")?;
+        let handle = device.open().context(format!(
+            "Could not open device at bus={} address={}",
+            device.bus_number(),
+            device.address(),
+        ))?;
+        // We do not try to read the serial number of the parent because hubs generally do not have
+        // unique serial numbers.
+        Ok(Box::new(RusbDevice::new(handle, None, self.get_timeout())?))
     }
 
     fn get_vendor_id(&self) -> u16 {
@@ -317,14 +353,18 @@ impl UsbDevice for RusbDevice {
         self.handle.attach_kernel_driver(iface).context("USB error")
     }
 
-    fn active_configuration(&self) -> Result<Configuration> {
+    fn device_descriptor(&self) -> desc::Device<'_> {
+        desc::Device::new(&self.device_desc)
+    }
+
+    fn active_configuration(&self) -> Result<desc::Configuration> {
         let active_cfg_val = self
             .handle
             .active_configuration()
             .context("Cannot retrieve active configuration value")?;
         // Find the configuration matching the currently active one.
         for cfg in self.configurations.iter() {
-            let cfg = Configuration::new(cfg);
+            let cfg = desc::Configuration::new(cfg);
             if let Ok(desc) = cfg.descriptor() {
                 if desc.config_val == active_cfg_val {
                     return Ok(cfg);
@@ -336,6 +376,10 @@ impl UsbDevice for RusbDevice {
 
     fn bus_number(&self) -> u8 {
         self.handle.device().bus_number()
+    }
+
+    fn address(&self) -> u8 {
+        self.handle.device().address()
     }
 
     fn port_numbers(&self) -> Result<Vec<u8>> {
@@ -394,5 +438,177 @@ impl UsbDevice for RusbDevice {
             .write_bulk(endpoint, data, timeout)
             .context("USB error")?;
         Ok(len)
+    }
+}
+
+// Structure representing a USB hub. The device needs to have sufficient permission
+// to be opened.
+pub struct UsbHub {
+    handle: Box<dyn UsbDevice>,
+}
+
+// USB hub operation.
+#[derive(Debug, Copy, Clone)]
+pub enum UsbHubOp {
+    // Power-off a specific port.
+    PowerOff,
+    // Power-on a specific port.
+    PowerOn,
+    // Suspend a specific port.
+    Suspend,
+    // Suspend a specific port.
+    Resume,
+    // Reset a specific port.
+    Reset,
+}
+
+const PORT_SUSPEND: u16 = 2;
+const PORT_RESET: u16 = 4;
+const PORT_POWER: u16 = 8;
+
+impl UsbHub {
+    // Construct a hub from the parent of a device.
+    pub fn from_parent_device(dev: &dyn UsbDevice) -> Result<UsbHub> {
+        let handle = dev.get_parent().with_context(|| {
+            format!(
+                "Cannot access USB parent hub of device on bus {bus}, address {addr}\n\
+                If this test requires access to the HUB, you need to make sure that \
+                the program has sufficient permissions to access the hub\n\
+                See sw/host/tests/chip/usb/README.md for more information\n\
+                The following command may fix the issue:\n\
+                sudo chmod 0666 /dev/bus/usb/{bus:03}/ADDR\n\
+                where ADDR is the address of the hub",
+                bus = dev.bus_number(),
+                addr = dev.address(),
+            )
+        })?;
+        UsbHub::from_device(handle)
+    }
+
+    // Construct a hub from a device.
+    pub fn from_device(dev: Box<dyn UsbDevice>) -> Result<UsbHub> {
+        // Make sure the device is a hub.
+        let dev_desc = dev.device_descriptor().descriptor()?;
+        // Assume that if the device has the HUB class then Linux will already enforce
+        // that it follows the specification.
+        ensure!(
+            dev_desc.class == rusb::constants::LIBUSB_CLASS_HUB,
+            "device is not a hub"
+        );
+        Ok(UsbHub { handle: dev })
+    }
+
+    pub fn device(&self) -> &dyn UsbDevice {
+        &*self.handle
+    }
+
+    // Report the status of a port (only returns the port status, not the port change).
+    fn port_status(&self, port: u8, timeout: Duration) -> Result<u16> {
+        let req_type = rusb::constants::LIBUSB_RECIPIENT_OTHER
+            | rusb::constants::LIBUSB_REQUEST_TYPE_CLASS
+            | rusb::constants::LIBUSB_ENDPOINT_IN;
+        let mut status = [0u8; 4];
+        let _ = self.handle.read_control_timeout(
+            req_type,
+            rusb::constants::LIBUSB_REQUEST_GET_STATUS,
+            0,
+            port as u16,
+            &mut status,
+            timeout,
+        )?;
+        Ok(status[0] as u16 | (status[1] as u16) << 8)
+    }
+
+    fn try_sysfs_op(&self, op: UsbHubOp, port: u8) -> Result<()> {
+        let disable_content = match op {
+            UsbHubOp::PowerOn => b"0",
+            UsbHubOp::PowerOff => b"1",
+            _ => bail!("operation not supported by the kernel"),
+        };
+        // The device location string is <bus>-<port1>.<port2>...
+        let hub_ports = self
+            .handle
+            .port_numbers()?
+            .iter()
+            .map(|x| x.to_string())
+            .collect::<Vec<_>>()
+            .join(".");
+        let dev_loc = format!("{}-{}", self.handle.bus_number(), hub_ports);
+        let cfg = self.handle.active_configuration()?.descriptor()?.config_val;
+        let disable_file_path =
+            format!("/sys/bus/usb/devices/{dev_loc}:{cfg}.0/{dev_loc}-port{port}/disable");
+        ensure!(
+            fs::exists(&disable_file_path).unwrap_or(false),
+            "sysfs file {} not found, are you using a very old kernel?",
+            disable_file_path
+        );
+        fs::write(&disable_file_path, disable_content)
+            .with_context(|| format!("Unable to write {}", disable_file_path))?;
+        log::info!("Hub operation {op:?} performed using the sysfs interface");
+        Ok(())
+    }
+
+    // Perform an operation.
+    pub fn op(&self, op: UsbHubOp, port: u8, timeout: Duration, check_status: bool) -> Result<()> {
+        // For power-off/on operations, it is much better to go through the kernel interface
+        // if possible, otherwise the kernel might not notice that the device was connected/disconnected.
+        match self.try_sysfs_op(op, port) {
+            Ok(()) => return Ok(()),
+            Err(err) => {
+                log::error!(
+                    "Could not perform hub operation {op:?} using sysfs, falling back to direct hub operations: {err:#}"
+                );
+                log::error!(
+                    "This could lead to unexpected behaviours such as the kernel not properly detecting devices on this port, see sw/host/tests/chip/usb/README.md for more details"
+                );
+            }
+        }
+
+        let (feature_index, set_feature) = match op {
+            UsbHubOp::Suspend => (PORT_SUSPEND, true),
+            UsbHubOp::Resume => (PORT_SUSPEND, false),
+            UsbHubOp::Reset => (PORT_RESET, true),
+            UsbHubOp::PowerOn => (PORT_POWER, true),
+            UsbHubOp::PowerOff => (PORT_POWER, false),
+        };
+        let req = if set_feature {
+            rusb::constants::LIBUSB_REQUEST_SET_FEATURE
+        } else {
+            rusb::constants::LIBUSB_REQUEST_CLEAR_FEATURE
+        };
+        let req_type = rusb::constants::LIBUSB_RECIPIENT_OTHER
+            | rusb::constants::LIBUSB_REQUEST_TYPE_CLASS
+            | rusb::constants::LIBUSB_ENDPOINT_OUT;
+        // Expected port status after the operation.
+        let port_status_mask = 1u16 << feature_index;
+        let port_status_after = if set_feature { port_status_mask } else { 0u16 };
+
+        // Perform operation.
+        let _ = self.handle.write_control_timeout(
+            req_type,
+            req,
+            feature_index,
+            port as u16,
+            &[],
+            timeout,
+        )?;
+        // Wait until port has changed status.
+        if !check_status {
+            return Ok(());
+        }
+        let start = Instant::now();
+        loop {
+            let port_status = self.port_status(port, timeout)?;
+            if port_status & port_status_mask == port_status_after {
+                break;
+            }
+            ensure!(
+                start.elapsed() <= timeout,
+                "Trying to {op:?} port {port} but port did not change status (last status was {port_status:x})",
+            );
+        }
+        log::info!("Hub operation {op:?} performed in {:#?}", start.elapsed());
+
+        Ok(())
     }
 }

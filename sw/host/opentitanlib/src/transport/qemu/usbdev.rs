@@ -293,6 +293,10 @@ impl QemuUsbDevice {
 }
 
 impl UsbDevice for QemuUsbDevice {
+    fn get_parent(&self) -> anyhow::Result<Box<dyn UsbDevice>> {
+        Err(anyhow!("this is the root USB device"))
+    }
+
     fn get_vendor_id(&self) -> u16 {
         // This cannot fail, the device descriptor was parsed during enumeration.
         desc::DeviceDescriptor::ref_from_bytes(&self.dev_info.dev_desc)
@@ -361,6 +365,10 @@ impl UsbDevice for QemuUsbDevice {
         Ok(())
     }
 
+    fn device_descriptor(&self) -> desc::Device<'_> {
+        desc::Device::new(&self.dev_info.dev_desc)
+    }
+
     /// Return the currently active configuration's descriptor.
     fn active_configuration(&self) -> anyhow::Result<desc::Configuration> {
         Ok(desc::Configuration::new(
@@ -371,6 +379,10 @@ impl UsbDevice for QemuUsbDevice {
     /// Return the device's bus number.
     fn bus_number(&self) -> u8 {
         0
+    }
+
+    fn address(&self) -> u8 {
+        self.dev_info.address
     }
 
     /// Return the sequence of port numbers from the root down to the device.
