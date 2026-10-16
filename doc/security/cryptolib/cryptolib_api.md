@@ -105,6 +105,10 @@ Full build information, including release status and truncated Git commit hash, 
 
 {{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_build_info }}
 
+The cryptolib module name (`otcrypto_earlgrey_cryptolib`) can be queried into a fixed-length byte buffer (`kOtcryptoModuleNameBytes`) with `otcrypto_module_name`:
+
+{{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_module_name }}
+
 ### Key Structure Migration and Version Verification
 
 Secret keys (`otcrypto_blinded_key_t`) are masked/blinded in memory to protect against side-channel attacks.

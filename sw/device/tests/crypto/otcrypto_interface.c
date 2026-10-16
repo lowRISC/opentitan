@@ -14,6 +14,7 @@ volatile otcrypto_interface_t otcrypto = {
     .eval_exit = &otcrypto_eval_exit,
 
     // Build info.
+    .module_name = &otcrypto_module_name,
     .build_info = &otcrypto_build_info,
     .lib_version = &otcrypto_lib_version,
     .version_decode = &otcrypto_version_decode,

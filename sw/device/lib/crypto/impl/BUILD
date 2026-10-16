@@ -75,7 +75,11 @@ cc_library(
         "//conditions:default": ["CRYPTOLIB_IS_RELEASED=false"],
     }),
     deps = [
+        ":integrity",
         ":status",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:cryptolib_build_info",
         "//sw/device/lib/crypto/include:datatypes",
     ],
