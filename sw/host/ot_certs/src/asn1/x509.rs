@@ -174,9 +174,16 @@ impl X509 {
                         if let Some(subj_key_id) = &cert.subject_key_identifier {
                             Self::push_subject_key_id_ext(builder, subj_key_id)?;
                         }
-                        for ext in &cert.private_extensions {
-                            Self::push_cert_extension(builder, ext)?
-                        }
+                        builder.push_raw_or(
+                            Some("private_extensions".into()),
+                            &cert.private_extensions,
+                            |builder, list| {
+                                for ext in list {
+                                    Self::push_cert_extension(builder, ext)?;
+                                }
+                                Ok(())
+                            },
+                        )?;
                         Ok(())
                     })
                 },
