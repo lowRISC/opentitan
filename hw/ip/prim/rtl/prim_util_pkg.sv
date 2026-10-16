@@ -63,6 +63,28 @@ package prim_util_pkg;
     ceil_div = ((dividend % divisor) != 0) ? (dividend / divisor) + 1 : (dividend / divisor);
   endfunction
 
+  /**
+   * Computes the ceiling division of two unsigned values.
+   *
+   * This function is the unsigned counterpart of ceil_div. It suits operands that are unsigned by
+   * nature, such as frequencies and durations, without casts to and from signed types.
+   *
+   * @param dividend The unsigned dividend.
+   * @param divisor The unsigned divisor.
+   * @return The ceiling division result (dividend / divisor, rounded up).
+   *
+   * Example:
+   * ceil_udiv(10, 3) returns 4
+   * ceil_udiv(32'hFFFF_FFFF, 2) returns 32'h8000_0000
+   */
+  function automatic logic [31:0] ceil_udiv(input logic [31:0] dividend,
+                                            input logic [31:0] divisor);
+    logic [31:0] remainder;
+    // Keep the parentheses: the waivers in prim_util.waiver match this expression including them.
+    remainder = (dividend % divisor);
+    ceil_udiv = (remainder != '0) ? (dividend / divisor) + 32'd1 : (dividend / divisor);
+  endfunction
+
 `ifdef INC_ASSERT
   // Package-scoped variable to detect the end of simulation.
   //
