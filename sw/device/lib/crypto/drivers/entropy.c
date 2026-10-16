@@ -768,6 +768,12 @@ void entropy_complex_stop_all(void) {
   edn_stop(kBaseEdn1);
   abs_mmio_write32(kBaseCsrng + CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
   entropy_src_stop();
+
+  crypto_state_t *state = NULL;
+  if (status_ok(read_state_pointer(&state)) && state != NULL) {
+    state->csrng_instantiated = kHardenedByteBoolFalse;
+    state->csrng_is_default = kHardenedByteBoolFalse;
+  }
 }
 
 /**
@@ -866,6 +872,9 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
   HARDENED_CHECK_EQ(
       abs_mmio_read32(kBaseEntropySrc + ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET),
       alert_threshold);
+
+  // Clear the entropy_src recoverable alert status register.
+  abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET, 0);
 
   // Enable entropy_src.
   abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
@@ -980,6 +989,13 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
   if (exp_reg != abs_mmio_read32(kBaseEntropySrc +
                                  ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET)) {
     // COVERAGE (SW ERR) We only support a single alert threshold.
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  // Check recoverable alerts.
+  if (abs_mmio_read32(kBaseEntropySrc +
+                      ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET) != 0) {
+    // COVERAGE (HW ERR) This is only reached when we detect a HW alert.
     return OTCRYPTO_RECOV_ERR;
   }
 
