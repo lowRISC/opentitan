@@ -349,10 +349,11 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify(
     const otcrypto_hash_digest_t message_digest,
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P256_VERIFY);
   HARDENED_TRY(otcrypto_ecdsa_p256_verify_async_start(
       public_key, message_digest, signature));
-  return otcrypto_ecdsa_p256_verify_async_finalize(signature,
-                                                   verification_result);
+  return otcrypto_eval_exit(otcrypto_ecdsa_p256_verify_async_finalize(
+      signature, verification_result));
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_hash_sign_verify(
@@ -374,13 +375,14 @@ otcrypto_status_t otcrypto_ecdsa_p256_hash_verify(
     const otcrypto_const_byte_buf_t *message,
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P256_HASH_VERIFY);
   OTCRYPTO_HEALTH_CHECK(kTestP256VerifyBit);
   uint32_t digest_data[16];
   HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
   otcrypto_hash_digest_t digest;
   HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
-  return otcrypto_ecdsa_p256_verify(public_key, digest, signature,
-                                    verification_result);
+  return otcrypto_eval_exit(otcrypto_ecdsa_p256_verify(
+      public_key, digest, signature, verification_result));
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_sign_verify(
