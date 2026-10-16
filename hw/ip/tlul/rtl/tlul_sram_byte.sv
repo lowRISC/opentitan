@@ -173,7 +173,6 @@ module tlul_sram_byte import tlul_pkg::*; #(
     mubi4_t                   rdback_check_q, rdback_check_d;
     mubi4_t                   rdback_en_q, rdback_en_d;
     logic [31:0]              rdback_data_exp_q, rdback_data_exp_d;
-    logic [DataIntgWidth-1:0] rdback_data_exp_intg_q, rdback_data_exp_intg_d;
 
     if (EnableReadback) begin : gen_readback_logic
       logic rdback_chk_ok_unbuf;
@@ -220,17 +219,6 @@ module tlul_sram_byte import tlul_pkg::*; #(
         .q_o(rdback_data_exp_q)
       );
 
-      prim_flop #(
-        .Width(DataIntgWidth),
-        .ResetValue(0)
-      ) u_rdback_data_exp_intg (
-        .clk_i,
-        .rst_ni,
-
-        .d_i(rdback_data_exp_intg_d),
-        .q_o(rdback_data_exp_intg_q)
-      );
-
     // If the readback feature is enabled and we are currently in the readback phase,
     // no address collision should happen inside prim_ram_1p_scr. If this would be the
     // case, we would read from the holding register inside prim_ram_1p_scr instead of
@@ -252,12 +240,10 @@ module tlul_sram_byte import tlul_pkg::*; #(
       assign rdback_check_q         = MuBi4False;
       assign rdback_en_q            = MuBi4False;
       assign rdback_data_exp_q      = 1'b0;
-      assign rdback_data_exp_intg_q = 1'b0;
 
       logic unused_rdback;
 
-      assign unused_rdback = ^{rdback_check_d, rdback_data_exp_d, rdback_data_exp_intg_d,
-                               rdback_en_d};
+      assign unused_rdback = ^{rdback_check_d, rdback_data_exp_d, rdback_en_d};
     end
 
     // state machine handling
@@ -276,7 +262,6 @@ module tlul_sram_byte import tlul_pkg::*; #(
       rdback_check_d = rdback_check_q;
       rdback_en_d = rdback_en_q;
       rdback_data_exp_d  = rdback_data_exp_q;
-      rdback_data_exp_intg_d  = rdback_data_exp_intg_q;
 
       unique case (state_q)
         StPassThru: begin
@@ -336,7 +321,6 @@ module tlul_sram_byte import tlul_pkg::*; #(
             state_d = mubi4_test_true_loose(rdback_en_q) ? StByteWrReadBackInit : StPassThru;
             rdback_check_d         = mubi4_test_true_loose(rdback_en_q) ? MuBi4True : MuBi4False;
             rdback_data_exp_d      = tl_sram_o.a_data;
-            rdback_data_exp_intg_d = tl_sram_o.a_user.data_intg;
           end
         end
 
@@ -359,7 +343,6 @@ module tlul_sram_byte import tlul_pkg::*; #(
             // was sent.
             rdback_check_d         = mubi4_test_true_loose(rdback_en_q) ? MuBi4True : MuBi4False;
             rdback_data_exp_d      = held_data.a_data;
-            rdback_data_exp_intg_d = held_intg.a_user_data_intg;
             if (d_ack) begin
               // Got an immediate TL-UL write response. Wait for one cycle until the holding
               // register is flushed and then perform the readback.
@@ -487,7 +470,6 @@ module tlul_sram_byte import tlul_pkg::*; #(
               // Data for the readback check comes from the first read.
               rdback_check_d         = mubi4_test_true_loose(rdback_en_q) ? MuBi4True : MuBi4False;
               rdback_data_exp_d      = tl_o.d_data;
-              rdback_data_exp_intg_d = tl_o.d_user.data_intg;
             end else  begin
               // No response yet to the initial read, so go wait for it.
               state_d = StRdReadBackDWait;
@@ -510,7 +492,6 @@ module tlul_sram_byte import tlul_pkg::*; #(
             // Data for the readback check comes from the first read.
             rdback_check_d         = mubi4_test_true_loose(rdback_en_q) ? MuBi4True : MuBi4False;
             rdback_data_exp_d      = tl_o.d_data;
-            rdback_data_exp_intg_d = tl_o.d_user.data_intg;
           end
         end
 
