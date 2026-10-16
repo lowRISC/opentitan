@@ -4,9 +4,13 @@
 
 #include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/crypto/drivers/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "rom_ctrl_regs.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('c', 'b', 'i')
@@ -33,4 +37,11 @@ void otcrypto_version_decode(uint32_t version, uint32_t *major, uint32_t *minor,
   *major = (decoded >> 24) & 0xff;
   *minor = (decoded >> 16) & 0xff;
   *patch = (decoded >> 8) & 0xff;
+}
+
+otcrypto_status_t otcrypto_rom_version(uint32_t *rom_version) {
+  *rom_version = abs_mmio_read32(TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR +
+                                 ROM_CTRL_EXP_DIGEST_1_REG_OFFSET);
+
+  return LAUNDERED_OTCRYPTO_OK;
 }
