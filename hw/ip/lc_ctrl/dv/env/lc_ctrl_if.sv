@@ -34,6 +34,7 @@ interface lc_ctrl_if #(
   lc_tx_t lc_dft_en_o;
   lc_tx_t lc_nvm_debug_en_o;
   lc_tx_t lc_hw_debug_en_o;
+  lc_tx_t lc_hw_debug_clr_o;
   lc_tx_t lc_cpu_en_o;
   lc_tx_t lc_creator_seed_sw_rw_en_o;
   lc_tx_t lc_owner_seed_sw_rw_en_o;
