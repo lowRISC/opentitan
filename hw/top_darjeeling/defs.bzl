@@ -14,8 +14,7 @@ DARJEELING = opentitan_top(
     top_rtl = "//hw/top_darjeeling:rtl_files",
     top_verilator_core = ["lowrisc:dv:top_darjeeling_chip_verilator_sim"],
     top_verilator_binary = {
-        "binary": ["lowrisc_dv_top_darjeeling_chip_verilator_sim_0.1/sim-verilator/Vchip_sim_tb"],
-        "files_to_hash": ["lowrisc_dv_top_darjeeling_chip_verilator_sim_0.1/sim-verilator/src/"],
+        "binary": ["Vchip_sim_tb"],
     },
     top_ld = "//hw/top_darjeeling/sw/autogen:top_darjeeling_memory",
     otp_map = "//hw/top_darjeeling/data/otp:otp_ctrl_mmap.hjson",
