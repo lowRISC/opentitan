@@ -494,6 +494,12 @@ TEST_F(CmvpTest, SpecificationKeyRequirements) {
   EXPECT_FALSE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_HKDF_EXTRACT]);
   EXPECT_FALSE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_HKDF_EXPAND]);
 
+  // KDF-CTR-HMAC and KMAC-KDF are approved
+  EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_KDF_CTR_HMAC]);
+  EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_KMAC_KDF]);
+
+  // Hardware-backed keygen is not approved
+  EXPECT_FALSE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_HW_BACKED_KEYGEN]);
   // ECDSA hash_verify is approved, while pre-hashed verify is not
   EXPECT_TRUE(
       kCryptoFunctionApproved[OTCRYPTO_FUNCTION_ECDSA_P256_HASH_VERIFY]);
