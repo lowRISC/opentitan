@@ -182,6 +182,7 @@ module tb;
     .lc_dft_en_o               (lc_ctrl_if.lc_dft_en_o),
     .lc_raw_test_rma_o         (),
     .lc_nvm_debug_en_o         (lc_ctrl_if.lc_nvm_debug_en_o),
+    .lc_hw_debug_clr_o         (lc_ctrl_if.lc_hw_debug_clr_o),
     .lc_hw_debug_en_o          (lc_ctrl_if.lc_hw_debug_en_o),
     .lc_cpu_en_o               (lc_ctrl_if.lc_cpu_en_o),
     .lc_creator_seed_sw_rw_en_o(lc_ctrl_if.lc_creator_seed_sw_rw_en_o),
