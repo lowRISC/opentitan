@@ -20,6 +20,14 @@ waive -rules {CLOCK_USE INV_CLOCK} -location {i3c_patt_detector.sv} \
 waive -rules {CLOCK_USE INV_CLOCK} -location {i3c_target_trx.sv} \
       -regexp {'scl_i' is (used for some other purpose, and|inverted, used) as clock} \
       -comment "SDA edges sample SCL to detect START, Repeated START and STOP conditions."
+waive -rules {CLOCK_USE} -location {i3c.sv} \
+      -regexp {'cio_ctrl_bus_obs\.(scl|sda\[0\])' is connected to 'i3c_core' port 'ctrl_bus_obs_i\.(scl|sda\[0\])', and used as a clock} \
+      -comment "Controller and Target observe the same SCL and SDA lines. The Target transceiver has no free-running clock and is clocked by the Controller-supplied SCL, and by SDA to detect (Repeated) START and STOP conditions."
+
+## Clock edges
+waive -rules {CLOCK_EDGE DUAL_EDGE_CLOCK} -location {i3c_controller_trx.sv} \
+      -regexp {(Falling edge of clock 'clk_i' used here|Clock 'clk_i' uses falling edge here and rising edge at)} \
+      -comment "The half-cycle SCL extension (HalfCycleScl) places an SCL transition on the falling edge of clk_i, which a Mixed Fast Bus needs at a 96MHz IP clock (see #31679)."
 
 ## Asynchronous resets
 waive -rules {RESET_DRIVER} -location {i3c_core.sv} \
@@ -71,9 +79,12 @@ waive -rules {NEG_RANGE} -location {i3c_timing_pkg.sv} \
 waive -rules {CASE_SEL_EXPR} -location {i3c_controller_trx.sv} \
       -regexp {Expression '\{tx_load,trx_dreq_i\.req == CReqType_ArbAddr\}' as case selector encountered} \
       -comment "The concatenation selects how the transmit buffer is loaded."
-waive -rules {VAR_INDEX_RANGE} -location {i3c_target_trx.sv} \
-      -regexp {'(sel_targ_id|targ_id)' of length 2 is larger than the 1 bits required} \
+waive -rules {VAR_INDEX_RANGE} -location {i3c_target_trx.sv i3c_target_ccc.sv} \
+      -regexp {'(sel_targ_id|targ_id|ccc_req_i\.targ_id)' of length [0-9]+ is larger than the [0-9]+ bits required} \
       -comment "Target IDs also encode the Broadcast Address and the absence of a match, so they are wider than the index of the Virtual Targets. The logic checks them against NumTargets before indexing."
+waive -rules {VAR_INDEX_RANGE} -location {i3c_target_fsm.sv} \
+      -regexp {'tx_targ_id' of length [0-9]+ is larger than the [0-9]+ bits required to address 'tx_desc_rdata_i'} \
+      -comment "Virtual Target indices are reported to software in terms of MaxTargets, whereas a transmit descriptor queue exists only for each of the NumTargets implemented Virtual Targets."
 waive -rules {VAR_INDEX_RANGE} -location {i3c_controller_fsm.sv} \
       -regexp {'ccc_rsp\.reg_widx' of length 3 is larger than the 2 bits required} \
       -comment "The register index enum includes the CtrlCR_Count member, which is never used as an index."
@@ -100,6 +111,9 @@ waive -rules {CONST_FF} -location {i3c_stby_cr_regs.sv} \
 waive -rules {CONST_FF} -location {i3c_targ_async_events.sv} \
       -regexp {Flip-flop 'ccc_address' is driven by constant zeros} \
       -comment "The reporting of CCC activity is not specified completely yet (see #31337)."
+waive -rules {CONST_FF} -location {i3c_targ_async_events.sv} \
+      -regexp {Flip-flop 'ccc_targets\[[0-9]+:[0-9]+\]' is driven by constant zeros} \
+      -comment "The recorded set has a bit for each of the maximum number of Virtual Targets; bits above NumTargets are trimmed off by TargPresent."
 
 ## Unused signals
 waive -rules {INPUT_NOT_READ HIER_BRANCH_NOT_READ} \
