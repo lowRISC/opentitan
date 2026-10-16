@@ -132,6 +132,10 @@ class chip_env extends cip_base_env #(
 
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
+    // Like chip_scoreboard, do not check rom_ctrl's alert for signal integrity errors. When a low
+    // power group leaves low power, the alert handler re-initialises its alert channels, and the
+    // in-band init looks like one. The alert receivers check signal integrity in hardware.
+    m_rom_ctrl_env.scoreboard.check_alert_sig_int_err = 0;
     if (cfg.en_scb) begin
       m_jtag_riscv_agent.monitor.analysis_port.connect(scoreboard.jtag_fifo.analysis_export);
     end
