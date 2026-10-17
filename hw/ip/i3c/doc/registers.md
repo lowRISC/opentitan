@@ -522,8 +522,8 @@ Reset detector status.
 |  Bits  |  Type  |  Reset  | Name       | Description                                               |
 |:------:|:------:|:-------:|:-----------|:----------------------------------------------------------|
 |  31:4  |        |         |            | Reserved                                                  |
-|   3    |   ro   |   0x0   | RST_TARGET | Indicates that a Whole Target reset requst was received.  |
-|   2    |   ro   |   0x0   | RST_PERIPH | Indicates that a Peripheral request request was received. |
+|   3    |   ro   |   0x0   | RST_TARGET | Indicates that a Whole Target reset request was received. |
+|   2    |   ro   |   0x0   | RST_PERIPH | Indicates that a Peripheral reset request was received.   |
 |   1    |   ro   |   0x0   | WAKE_UP    | Indicates that a Wake Up request was received.            |
 |   0    |   ro   |   0x0   | ACTIVE     | Indicates whether the reset detector is active.           |
 
@@ -3268,7 +3268,7 @@ Target address on the I3C bus.
 |   31   |   rw   |   0x0   | DYNAMIC_ADDR_VALID | Dynamic Address is Valid. |
 | 30:23  |        |         |                    | Reserved                  |
 | 22:16  |   rw   |   0x0   | DYNAMIC_ADDR       | Device Dynamic Address.   |
-|   15   |   rw   |   0x0   | STATIC_ADDR_VALID  | Static Addres is Valid.   |
+|   15   |   rw   |   0x0   | STATIC_ADDR_VALID  | Static Address is Valid.  |
 |  14:7  |        |         |                    | Reserved                  |
 |  6:0   |   rw   |   0x0   | STATIC_ADDR        | Device Static Address.    |
 
