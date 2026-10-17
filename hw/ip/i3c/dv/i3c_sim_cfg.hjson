@@ -28,10 +28,14 @@
                 "{proj_root}/hw/dv/tools/dvsim/common_sim_cfg.hjson",
                 // Common CIP test lists
                 "{proj_root}/hw/dv/tools/dvsim/tests/csr_tests.hjson",
-                "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson"]
+                "{proj_root}/hw/dv/tools/dvsim/tests/mem_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/alert_test.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/intr_test.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/sec_cm_tests.hjson",
+                "{proj_root}/hw/dv/tools/dvsim/tests/tl_access_tests.hjson"]
 
   // Add additional tops for simulation.
-  sim_tops: ["i3c_bind"]
+  sim_tops: ["i3c_bind", "sec_cm_prim_onehot_check_bind"]
 
   // Default iterations for all tests - each test entry can override this.
   reseed: 1
@@ -66,6 +70,14 @@
     }
     {
       name: i3c_csr_mem_rw_with_rand_reset
+      run_opts: ["+en_board_pullup=1"]
+    }
+    {
+      name: i3c_tl_intg_err
+      run_opts: ["+en_board_pullup=1"]
+    }
+    {
+      name: i3c_sec_cm
       run_opts: ["+en_board_pullup=1"]
     }
   ]
