@@ -18,7 +18,7 @@ Five role configurations are intended to be supported:
 | Required I3C role(s)                                                                          | PrimaryCtrl | SecondaryCtrl | Target | Available |
 |-----------------------------------------------------------------------------------------------|-------------|---------------|--------|-----------|
 | Primary and Secondary Controller functionality; implies Target functionality and a single bus |      1      |       1       |    1   |     -     |
-| Primary Controller and Target; these may be on a single bus or separated buses                |      1      |       0       |    1   |    Yes    |
+| Primary Controller and Target on the same bus                                                 |      1      |       0       |    1   |    Yes    |
 | Primary controller only                                                                       |      1      |       0       |    0   |    Yes    |
 | Secondary Controller; implies Target functionality and a single bus                           |      0      |       1       |    1   |     -     |
 | Target only, no Controller logic                                                              |      0      |       0       |    1   |    Yes    |

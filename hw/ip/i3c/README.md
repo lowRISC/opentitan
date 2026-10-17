@@ -62,11 +62,13 @@ In summary, the IP block implements the following features:
 
 ## Description
 
-The I3C IP block provides both Controller and Target functionality, either on a single physical I3C bus or as two independent devices on two separate buses.
+The I3C IP block provides both Controller and Target functionality on a single I3C bus.
+The Controller and the Target share the SCL and SDA signals of the IP block, and software enables each of them independently.
+The IP block may thus operate as follows:
 
-- Single device on one I3C bus, implementing Primary or Secondary Controller role with the option of Controller Role Handoff to become a Standby Controller.
-- Two devices on separate I3C buses, implementing Primary Controller functionality on one bus and Target functionality on the second bus.
-  - In this mode of operation, the Controller must always remain the Active Controller and cannot become a Standby Controller.
+- As the Active Controller of the bus.
+- As a Target on a bus that another Controller controls.
+- As both, with the Target being a separate device on the bus of its own Controller.
 
 ## Compatibility
 
