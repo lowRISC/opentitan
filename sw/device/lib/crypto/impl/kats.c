@@ -20,7 +20,9 @@
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/hmac.h"
 #include "sw/device/lib/crypto/include/integrity.h"
+#include "sw/device/lib/crypto/include/kdf_ctr.h"
 #include "sw/device/lib/crypto/include/kmac.h"
+#include "sw/device/lib/crypto/include/kmac_kdf.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/crypto/include/sha3.h"
@@ -1250,6 +1252,177 @@ static status_t kat_ed25519_verify(void) {
   return OTCRYPTO_OK;
 }
 
+// NIST SP 800-108r1 KDF-CTR with HMAC-SHA256 (ACVP vsId = 4098935, tcId = 1)
+// KDK = 8991314c829a0499d743545e6faf970f5f993feff51ab170c9ae974e59ef30ac
+// Label = 4b44464c6162656c ("KDFLabel", no 0x00 bytes)
+// Context = 0102030405060708090a0b0c (12 bytes)
+// L = 384 bits (48 bytes)
+// fixedData = 4b44464c6162656c000102030405060708090a0b0c00000180
+static const uint8_t kdf_ctr_hmac_kdk[32] = {
+    0x89, 0x91, 0x31, 0x4c, 0x82, 0x9a, 0x04, 0x99, 0xd7, 0x43, 0x54,
+    0x5e, 0x6f, 0xaf, 0x97, 0x0f, 0x5f, 0x99, 0x3f, 0xef, 0xf5, 0x1a,
+    0xb1, 0x70, 0xc9, 0xae, 0x97, 0x4e, 0x59, 0xef, 0x30, 0xac};
+
+static const uint8_t kdf_ctr_hmac_label[8] = {0x4b, 0x44, 0x46, 0x4c,
+                                              0x61, 0x62, 0x65, 0x6c};
+
+static const uint8_t kdf_ctr_hmac_context[12] = {
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c};
+
+static const uint8_t kdf_ctr_hmac_ans[48] = {
+    0x38, 0x8b, 0x24, 0xc8, 0x38, 0x34, 0x33, 0x2d, 0x21, 0xa0, 0x3f, 0xb6,
+    0x01, 0x72, 0xb2, 0x71, 0xfd, 0x5e, 0x66, 0x89, 0xec, 0x71, 0x2e, 0xc1,
+    0xc0, 0xdc, 0x53, 0xb1, 0x40, 0x48, 0x0b, 0x13, 0x6a, 0x54, 0x29, 0xfd,
+    0x6f, 0x45, 0x5c, 0xde, 0xb4, 0x7b, 0xc4, 0x8c, 0xc5, 0xa8, 0xad, 0x6e};
+
+// NIST SP 800-108r1 KMAC-KDF with KMAC256 (ACVP vsId = 4098936, tcId = 1)
+// KDK = f5fe0847085742c8ebb438b12faccea9e9750084d4ef8f7d242f5d34eff009bc
+// Label = 75dd2606f127045583c529361f44fc50 (16 bytes)
+// Context = acfdabb618f6edb590c2a74f55941d9b (16 bytes)
+// L = 384 bits (48 bytes)
+static const uint8_t kmac_kdf_kdk[32] = {
+    0xf5, 0xfe, 0x08, 0x47, 0x08, 0x57, 0x42, 0xc8, 0xeb, 0xb4, 0x38,
+    0xb1, 0x2f, 0xac, 0xce, 0xa9, 0xe9, 0x75, 0x00, 0x84, 0xd4, 0xef,
+    0x8f, 0x7d, 0x24, 0x2f, 0x5d, 0x34, 0xef, 0xf0, 0x09, 0xbc};
+
+static const uint8_t kmac_kdf_label[16] = {0x75, 0xdd, 0x26, 0x06, 0xf1, 0x27,
+                                           0x04, 0x55, 0x83, 0xc5, 0x29, 0x36,
+                                           0x1f, 0x44, 0xfc, 0x50};
+
+static const uint8_t kmac_kdf_context[16] = {0xac, 0xfd, 0xab, 0xb6, 0x18, 0xf6,
+                                             0xed, 0xb5, 0x90, 0xc2, 0xa7, 0x4f,
+                                             0x55, 0x94, 0x1d, 0x9b};
+
+static const uint8_t kmac_kdf_ans[48] = {
+    0xbf, 0x8a, 0x4a, 0x29, 0x50, 0x20, 0x30, 0xde, 0x8b, 0xa9, 0xbd, 0xe2,
+    0x3d, 0x27, 0x67, 0xbc, 0x73, 0x2a, 0x2c, 0x8d, 0xa4, 0x79, 0xc2, 0xae,
+    0x17, 0xf5, 0xfa, 0x42, 0xf0, 0xb3, 0xa9, 0xf2, 0x05, 0x52, 0x64, 0xdc,
+    0x16, 0xa3, 0x07, 0x8d, 0x62, 0xd0, 0xb8, 0xb9, 0x23, 0xf6, 0xf7, 0xad};
+
+static status_t kat_kdf_ctr_hmac(void) {
+  const otcrypto_key_config_t kKdkConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeHmacSha256,
+      .key_length = sizeof(kdf_ctr_hmac_kdk),
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t kdk_words[8];
+  memcpy(kdk_words, kdf_ctr_hmac_kdk, sizeof(kdk_words));
+
+  uint32_t kdk_keyblob[keyblob_num_words(kKdkConfig)];
+  HARDENED_TRY(
+      keyblob_from_key_and_mask(kdk_words, kTestMask, kKdkConfig, kdk_keyblob));
+
+  otcrypto_blinded_key_t kdk = {
+      .config = kKdkConfig,
+      .keyblob = kdk_keyblob,
+      .keyblob_length = sizeof(kdk_keyblob),
+      .checksum = 0,
+  };
+  kdk.checksum = otcrypto_integrity_blinded_checksum(&kdk);
+
+  const otcrypto_key_config_t kOkmConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeHmacSha384,
+      .key_length = sizeof(kdf_ctr_hmac_ans),
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t okm_keyblob[keyblob_num_words(kOkmConfig)];
+  memset(okm_keyblob, 0, sizeof(okm_keyblob));
+  otcrypto_blinded_key_t okm = {
+      .config = kOkmConfig,
+      .keyblob = okm_keyblob,
+      .keyblob_length = sizeof(okm_keyblob),
+      .checksum = 0,
+  };
+
+  otcrypto_const_byte_buf_t label_buf = otcrypto_make_const_byte_buf(
+      kdf_ctr_hmac_label, sizeof(kdf_ctr_hmac_label));
+  otcrypto_const_byte_buf_t context_buf = otcrypto_make_const_byte_buf(
+      kdf_ctr_hmac_context, sizeof(kdf_ctr_hmac_context));
+
+  HARDENED_TRY(otcrypto_kdf_ctr_hmac(&kdk, &label_buf, &context_buf, &okm));
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(&okm),
+                    kHardenedBoolTrue);
+
+  uint32_t act_okm[12] = {0};
+  HARDENED_TRY(keyblob_key_unmask(&okm, ARRAYSIZE(act_okm), act_okm));
+
+  if (memcmp(act_okm, kdf_ctr_hmac_ans, sizeof(kdf_ctr_hmac_ans))) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  return OTCRYPTO_OK;
+}
+
+static status_t kat_kmac_kdf(void) {
+  const otcrypto_key_config_t kKdkConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeKdfKmac256,
+      .key_length = sizeof(kmac_kdf_kdk),
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t kdk_words[8];
+  memcpy(kdk_words, kmac_kdf_kdk, sizeof(kdk_words));
+
+  uint32_t kdk_keyblob[keyblob_num_words(kKdkConfig)];
+  HARDENED_TRY(
+      keyblob_from_key_and_mask(kdk_words, kTestMask, kKdkConfig, kdk_keyblob));
+
+  otcrypto_blinded_key_t kdk = {
+      .config = kKdkConfig,
+      .keyblob = kdk_keyblob,
+      .keyblob_length = sizeof(kdk_keyblob),
+      .checksum = 0,
+  };
+  kdk.checksum = otcrypto_integrity_blinded_checksum(&kdk);
+
+  const otcrypto_key_config_t kOkmConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeKdfKmac256,
+      .key_length = sizeof(kmac_kdf_ans),
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t okm_keyblob[keyblob_num_words(kOkmConfig)];
+  memset(okm_keyblob, 0, sizeof(okm_keyblob));
+  otcrypto_blinded_key_t okm = {
+      .config = kOkmConfig,
+      .keyblob = okm_keyblob,
+      .keyblob_length = sizeof(okm_keyblob),
+      .checksum = 0,
+  };
+
+  otcrypto_const_byte_buf_t label_buf =
+      otcrypto_make_const_byte_buf(kmac_kdf_label, sizeof(kmac_kdf_label));
+  otcrypto_const_byte_buf_t context_buf =
+      otcrypto_make_const_byte_buf(kmac_kdf_context, sizeof(kmac_kdf_context));
+
+  HARDENED_TRY(otcrypto_kmac_kdf(&kdk, &label_buf, &context_buf, &okm));
+  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(&okm),
+                    kHardenedBoolTrue);
+
+  uint32_t act_okm[12] = {0};
+  HARDENED_TRY(keyblob_key_unmask(&okm, ARRAYSIZE(act_okm), act_okm));
+
+  if (memcmp(act_okm, kmac_kdf_ans, sizeof(kmac_kdf_ans))) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t run_kats(kat_id_t tests) {
   if (tests.flags == 0 || tests.flags >= (1UL << kTestLastBit)) {
     return OTCRYPTO_BAD_ARGS;
@@ -1327,6 +1500,12 @@ otcrypto_status_t run_kats(kat_id_t tests) {
   }
   if ((tests.flags & OTCRYPTO_KAT_ED25519_VERIFY) != 0) {
     HARDENED_TRY(kat_ed25519_verify());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_KDF_CTR_HMAC) != 0) {
+    HARDENED_TRY(kat_kdf_ctr_hmac());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_KMAC_KDF) != 0) {
+    HARDENED_TRY(kat_kmac_kdf());
   }
 
   return OTCRYPTO_OK;
