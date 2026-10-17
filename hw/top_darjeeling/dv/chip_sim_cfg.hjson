@@ -404,7 +404,7 @@
       en_run_modes: ["sw_test_mode_common"]
       // The tests using this mode only require the ROM init check to succeed.
       // The example_test_from_rom test is sufficient.
-      sw_images: ["//sw/device/tests:example_test_from_rom:0:test_in_rom"]
+      sw_images: ["//sw/device/tests:example_test_from_rom:0:test_in_rom:new_rules"]
       run_opts: ["+create_jtag_riscv_map=1"]
       reseed: 5
     }
@@ -490,7 +490,7 @@
     {
       name: chip_sw_example_rom
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:example_test_from_rom:0:test_in_rom"]
+      sw_images: ["//sw/device/tests:example_test_from_rom:0:test_in_rom:new_rules"]
       en_run_modes: ["sw_test_mode_common"]
     }
     {
