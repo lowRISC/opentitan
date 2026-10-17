@@ -155,8 +155,10 @@ To that end, the TAP isolation logic in the pinmux samples the `lc_hw_debug_en` 
 This pulse is asserted once during boot (and not after an NDM reset).
 
 Note that DFT TAP selection is not affected by this since the TAP selection logic always consumes the live value for `lc_dft_en`.
-The TAP selection logic also invalidates the sampled `lc_hw_debug_en` whenever a life cycle transition is initiated or an escalation is triggered via `lc_escalate_en`.
+The TAP selection logic also clears the sampled `lc_hw_debug_en` whenever any of `lc_check_byp_en`, `lc_escalate_en` or `lc_hw_debug_clr` is not Off.
+`lc_check_byp_en` is asserted when a life cycle transition is initiated, and `lc_escalate_en` is asserted when an escalation is triggered.
 This ensures that the sampled `lc_hw_debug_en` value does not survive a life cycle transition.
+For `lc_hw_debug_clr`, see [HW_DEBUG_CLR](../../../../ip/lc_ctrl/doc/theory_of_operation.md#hw_debug_clr) in the life cycle controller documentation.
 
 Finally, note that there is secondary gating on the `rv_dm` and DFT TAPs that is always consuming live `lc_hw_debug_en` and `lc_dft_en` signals for added protection.
 
