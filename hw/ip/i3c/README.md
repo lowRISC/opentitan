@@ -8,7 +8,7 @@ This document specifies the I3C Controller/Target IP functionality.
 
 In summary, the IP block implements the following features:
 
-- I3C Controller (Primary and/or Secondary).
+- I3C Primary Controller.
 - I3C Target.
 - Host Controller Interface (HCI) in PIO mode.
 - Target Transaction Interface.
@@ -37,7 +37,7 @@ In summary, the IP block implements the following features:
   - No support for HDR-BT mode or Multi-Lane transfers.
   - I2C Fast Mode and Fast Mode Plus support for backwards compatibility with some I2C devices.
 - Primary Controller.
-  - Support for the Secondary Controller Role, Controller Role Handoff and operation as a Standby Controller is not yet included.
+  - This version of the IP block does not support the Secondary Controller role, Controller Role Handoff or operation as a Standby Controller ([#31308](https://github.com/lowRISC/opentitan/issues/31308)).
 
 ### Target-side features
 
@@ -69,6 +69,8 @@ The IP block may thus operate as follows:
 - As the Active Controller of the bus.
 - As a Target on a bus that another Controller controls.
 - As both, with the Target being a separate device on the bus of its own Controller.
+
+On a bus with several Controller-capable devices, the IP block operates either as the Primary Controller, which keeps the Controller role, or as a Target; it does not support the Secondary Controller role (see [Buses with several Controller-capable Devices](doc/theory_of_operation.md#buses-with-several-controller-capable-devices)).
 
 ## Compatibility
 

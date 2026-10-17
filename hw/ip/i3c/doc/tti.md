@@ -14,6 +14,7 @@ This IP block may be configured to implement additional Virtual Targets beyond t
 The TTI describes the behavior of all Virtual Targets, with each acting identically and in accordance with this specification.
 When Standby Controller support is enabled using [`TARG_CONTROL.STBY_CR_SUPPORT`](registers.md#targ_control--stby_cr_support), the first Virtual Target shall additionally implement the responsibilities of a Standby Controller as defined in the HCI and I3C Basic Specifications.
 In this role, configuration from the Standby Controller registers of the HCI override any TTI configuration for the first Virtual Target.
+This version of the IP block does not support the Standby Controller role ([#31308](https://github.com/lowRISC/opentitan/issues/31308)), so the first Virtual Target always operates as a dedicated Target device.
 
 ## General approach
 

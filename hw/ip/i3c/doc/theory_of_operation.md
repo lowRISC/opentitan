@@ -132,7 +132,9 @@ The IP block also presents diagnostic information about the current state of the
 When the role of Active Controller passes to another Controller on the I3C bus, a Controller may adopt the Standby Controller role.
 In this role the Standby Controller operates as a Target device on the I3C bus, whilst presenting a standard register interface to the driver software, allowing control of the bus to be reacquired later.
 
-The IP block incorporates the Standby Controller functionality as part of the first Virtual Target, presenting the required register API, but the IP currently does not support Controller Role Handoff and operation as a Standby Controller.
+This version of the IP block does not support the Standby Controller role, nor the Secondary Controller role and Controller Role Handoff that lead to it ([#31308](https://github.com/lowRISC/opentitan/issues/31308)).
+The registers of this Extended Capability are present, but [`HC_CAPABILITIES.STANDBY_CR_CAP`](registers.md#hc_capabilities) reads as zero, and software shall leave the Standby Controller disabled ([`STBY_CR_CONTROL.STBY_CR_ENABLE_INIT`](registers.md#stby_cr_control--stby_cr_enable_init) = 0).
+The first Virtual Target therefore always operates as a dedicated Target device.
 
 ### Target Extension (ID = implementation defined) Extended Capability
 
@@ -146,12 +148,24 @@ This is not a standardized interface but rather an opportunity to extend the fun
 
 Documentation on the specific TTI implemented by this IP block may be found in the [TTI](tti.md) documentation.
 
+## Buses with several Controller-capable Devices
+
+An I3C bus may contain several Controller-capable Devices: the Primary Controller, which is the Active Controller after bus initialization, and Secondary Controllers, which act as Targets until they obtain the Controller role.
+The Secondary Controller role is an optional feature of the I3C Basic Specification (Section 6.5).
+This version of the IP block supports neither the Secondary Controller role nor Controller Role Handoff ([#31308](https://github.com/lowRISC/opentitan/issues/31308)), so it can operate on such a bus in two ways:
+
+- As the Primary Controller.
+  The Controller remains the Active Controller: it rejects all Controller Role Requests and never hands the Controller role to another device, so the other Controller-capable Devices remain Targets.
+  The driver software is responsible for sending the DEFTGTS CCC, which the I3C Basic Specification requires on a bus with Secondary Controllers (Table 16), as a Broadcast CCC.
+- As a Target, with its Controller disabled, on a bus whose Active Controller is another device.
+  The IP block then cannot obtain the Controller role, neither through a Controller Role Request nor through Dead Bus Recovery, and the Target ignores the CCCs that concern Secondary Controllers, such as DEFTGTS and DEFGRPA.
+
 ## Virtual Targets
 
 The Target-side peripheral logic is capable of acting as a number of largely-independent targets on the I3C bus.
 In the I3C Basic Specification these are called Virtual Targets, and this IP block supports a parameterized number of Virtual Targets.
 
-The default configuration implements two Virtual Targets, the first of which also implements the Standby Controller functionality, but the parameter `NumTargets` may be altered if required, up to the present maximum of four (`MaxTargets`).
+The default configuration implements two Virtual Targets, but the parameter `NumTargets` may be altered if required, up to the present maximum of four (`MaxTargets`).
 
 The register map has been specified such that values of `NumTargets` up to `MaxTargets`, inclusive, will not modify the register API or address map.
 Increasing `MaxTargets` complicates the task of maintaining software compatibility.
@@ -164,8 +178,7 @@ This is handled automatically in the Target-side logic, with notifications being
 
 ## Sleep states, power and wakeup
 
-A Controller that has ceded the role of 'Active Controller' becomes a Standby Controller on the I3C bus.
-This is an I3C Target which has the capacity to control the bus, but it may now enter a low power state.
+When the IP block operates only as a Target, i.e. with its Controller disabled, it may enter a low power state.
 The I3C Basic Specification supports Targets, including Standby Controllers, entering what it calls a 'Deepest Sleep' state, in which the Target is unresponsive to any directed traffic on the bus.
 In this state, the I3C IP block may be powered down or its clock may be stopped.
 
