@@ -789,16 +789,17 @@ class MaskingAcceleratorInterface:
         if self.csrs.MAI_CTRL.has_reserved_bits(value):
             return False
 
+        # Every write must carry a valid operation, with or without the start bit.
+        if not self.csrs.MAI_CTRL.is_raw_op_valid(value):
+            return False
+
         # Changing the operation while the MAI is busy is a software error.
         if self.is_busy() and self.csrs.MAI_CTRL.would_change_raw_op(value):
             return False
 
-        # When start fires, the MAI must not be busy and the next operation value must be
-        # a valid choice.
+        # When start fires, the MAI must not be busy.
         if self.csrs.MAI_CTRL.would_set_start_bit(value):
             if not self.ready_to_start():
-                return False
-            if not self.csrs.MAI_CTRL.is_raw_op_valid(value):
                 return False
 
         return True
