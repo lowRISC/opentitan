@@ -49,6 +49,7 @@ In summary, the IP block implements the following features:
 - Signaling modes:
   - Single Data Rate (SDR), 12.5 Mbps peak signaling rate.
   - Double Data Rate (HDR-DDR), 25 Mbps peak signaling rate.
+  - Common Command Codes (CCCs) in SDR mode only; no support for CCCs in HDR-DDR mode.
 - Target Transaction Interface (TTI).
   - Modeled on the HCI, supporting:
     - Tx/Rx transfers, longer than the associated data buffers.
