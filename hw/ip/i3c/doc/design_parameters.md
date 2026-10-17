@@ -9,7 +9,7 @@ This critical design parameter specifies the frequency of the main clock into th
 The logic within the IP block uses this frequency to calculate default timing parameters (in terms of clock cycles) in order to comply with the strict timing requirements of the I3C Basic Specification without relying upon software to supply correct values.
 It is also important within the IP block for implementing appropriate time delays during I3C bus activity, and measuring intervals such as the 'Bus Idle' and 'Bus Available' conditions.
 
-The supported range of clock frequencies for maximum data rate ('SDR0' at 12.5MHz) is 50MHz-1.5GHz, both inclusive, but the timing parameters support operation down to 32MHz (exclusive) if a proportionate decrease in the maximum data rate is acceptable.
+The supported range of clock frequencies for maximum data rate ('SDR0' at 12.5 MHz) is 50 MHz-1.5 GHz, both inclusive, but the timing parameters support operation down to 32 MHz (exclusive) if a proportionate decrease in the maximum data rate is acceptable.
 
 ## I3C Role Configuration ('PrimaryCtrl', 'SecondaryCtrl' and 'Target')
 

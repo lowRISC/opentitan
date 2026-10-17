@@ -21,10 +21,10 @@ Both the Controller and the Target functionality within this IP block support th
 
  - Single Data Rate (SDR).
    This is broadly similar to the signaling of the I<sup>2</sup>C bus, including the same start (S), repeated start (Sr) and stop (P) signaling.
-   In SDR mode data may be transferred at a theoretical peak bandwidth of 11.1Mbps when operating at 12.5MHz.
+   In SDR mode data may be transferred at a theoretical peak bandwidth of 11.1 Mbps when operating at 12.5 MHz.
  - Double Data Rate (HDR-DDR).
    This mode is new to I3C and employs an entirely different logical protocol whilst also transferring data on both edges of the SCL clock signal.
-   HDR-DDR mode also includes error detection using parity and checksums, and offers a theoretical peak bandwidth of 20Mbps when operating at 12.5MHz.
+   HDR-DDR mode also includes error detection using parity and checksums, and offers a theoretical peak bandwidth of 20 Mbps when operating at 12.5 MHz.
 
 The Controller and Target sides of the IP block share the SCL and SDA signals, and software enables only one of them at a time.
 They also share the TL-UL register interface and in particular the message buffer.
@@ -32,12 +32,12 @@ They also share the TL-UL register interface and in particular the message buffe
 Also shared between the Controller and Target sides of the IP block is a single clock signal, upon which most of the design operates.
 The IP block is, however, designed to accommodate a number of different clock frequencies.
 
-In order to achieve low power operation, on frequencies as low as 50MHz, some of the Target-side bus-level logic operates directly on the Serial CLock (SCL) and Serial DAta (SDA) lines rather than relying upon an oversampling approach.
+In order to achieve low power operation, on frequencies as low as 50 MHz, some of the Target-side bus-level logic operates directly on the Serial CLock (SCL) and Serial DAta (SDA) lines rather than relying upon an oversampling approach.
 This logic performs the conversion between byte- and word-level parallel data and the serial data of the I3C bus itself, whilst the bulk of the Target-side logic operates on the higher frequency IP clock, in order to communicate synchronously with the register interface and the shared message buffer.
 
 ## Message buffer
 
-A single internal memory implements a number of logically-separate FIFOs because the data rate into each is substantially lower than the available memory bandwidth; the I3C bus transfers data at less than 25Mbps in HDR-DDR mode with a single data lane, but the internal SRAM is capable of transferring data at 1600Mbps even when operating on a 50MHz IP clock.
+A single internal memory implements a number of logically-separate FIFOs because the data rate into each is substantially lower than the available memory bandwidth; the I3C bus transfers data at less than 25 Mbps in HDR-DDR mode with a single data lane, but the internal SRAM is capable of transferring data at 1600 Mbps even when operating on a 50 MHz IP clock.
 
 Each FIFO is therefore allocated a portion of the single shared memory, and the logic accessing the FIFO employs `valid` and `ready` signals to accommodate the possibility of a slight delay before a read or write operation can occur.
 To mitigate the impact of any contention, a single word of read data is prefetched from the FIFO when the FIFO is not empty, thus ensuring that reads - being more performance critical, especially when transmitting over the I3C bus - will normally complete without delay.
@@ -49,10 +49,10 @@ To mitigate the impact of any contention, a single word of read data is prefetch
 To support the inclusion of the I3C block in low power, lower performance products such as mobile devices, the design is capable of operating on lower clock frequencies than most other I3C implementations.
 At the time of writing, existing I3C blocks typically rely upon oversampling the received data by a large factor in order to overcome metastability issues on the inputs and still be able to respond promptly; the turnaround time is an important requirement in the I3C protocol, supporting immediate acceptance or rejection of the current data item.
 
-The I3C bus supports signaling at up to 12.5MHz, with HDR-DDR supporting the transfer of data bits on both clock edges.
-With this in mind, the I3C IP block expects a clock frequency of 50MHz for most of its internal logic, which naturally lends itself to setup and hold states on each of the two clock edges of a 12.5MHz I3C clock signal ('SCL').
+The I3C bus supports signaling at up to 12.5 MHz, with HDR-DDR supporting the transfer of data bits on both clock edges.
+With this in mind, the I3C IP block expects a clock frequency of 50 MHz for most of its internal logic, which naturally lends itself to setup and hold states on each of the two clock edges of a 12.5 MHz I3C clock signal ('SCL').
 
-A frequency of 50MHz does not, however, permit a sufficiently prompt response to Controller signaling in the presence of the standard two-stage synchronizer approach to resolving metastability.
+A frequency of 50 MHz does not, however, permit a sufficiently prompt response to Controller signaling in the presence of the standard two-stage synchronizer approach to resolving metastability.
 For this reason, in addition to concerns over the power consumption of the 'Always On' domain in a sleep state, the Target-side logic operates directly on the Controller-supplied clock signal 'SCL'.
 As a result, once a complete data unit (SDR byte or 16-bit HDR-DDR word) has been collected/transmitted from/to the I3C Active Controller, the Target-side logic must transfer it across clock domains to/from the main Target-side logic of the I3C IP block.
 This crossing is performed by the `i3c_sync_data` module, which uses a toggle handshake rather than a conventional valid/ready CDC FIFO: the source domain flips a single-bit toggle signal each time it presents a new data word, and the destination domain synchronizes that toggle (via a two-flop synchronizer) to detect its arrival and capture the accompanying data word, which is held stable for long enough to cross safely.
@@ -64,21 +64,21 @@ This is achieved by forming the SCL output signal from a negative-edge triggered
 
 ## Supported clock frequency range
 
-Whilst the design is intended to operate at 50MHz, as described above, in some deployments there may be no suitable 50MHz clock signal, or it may not offer the requisite +/-2% accuracy to meet the very strict timing requirements that I3C imposes on the duration of the SCL high interval.
+Whilst the design is intended to operate at 50 MHz, as described above, in some deployments there may be no suitable 50 MHz clock signal, or it may not offer the requisite +/-2% accuracy to meet the very strict timing requirements that I3C imposes on the duration of the SCL high interval.
 
 To support such deployments, the Controller-side logic offers default timing parameters - specified in terms of IP clock cycles - that are derived from the IP top-level design parameter `ClkFreq`, allowing the logic to adapt to other frequencies.
 Additionally, any subset of these timing parameters may be overridden by software in order to tune the performance or to accommodate oscillator stability/accuracy issues.
 
-See Tables 48, 49 and 50 of the I3C Basic Specification v1.2 for the exact details of the timing requirements, but in outline the duration of the SCL high interval (tDIG_H) must lie between 32ns and 41ns.
+See Tables 48, 49 and 50 of the I3C Basic Specification v1.2 for the exact details of the timing requirements, but in outline the duration of the SCL high interval (tDIG_H) must lie between 32 ns and 41 ns.
 With this in mind, not all IP clock frequencies are suitable, but the design supports a number of different clock frequencies.
-The timing parameters and the rest of the IP block design are intended to support maximum signaling speed throughout the clock frequency range from 50MHz to 1.5GHz, both inclusive. More information may be found in the [integration notes](integration_notes.md).
+The timing parameters and the rest of the IP block design are intended to support maximum signaling speed throughout the clock frequency range from 50 MHz to 1.5 GHz, both inclusive. More information may be found in the [integration notes](integration_notes.md).
 
 ## Controller-side logic
 
 ![Controller-side logic](ctrl_data_flow.svg)
 
 The Controller operates entirely on the main clock of the IP block and is a fully synchronous design that, when operating as the Active Controller, drives the SCL line of the I3C bus and is thus in control of all the signal timing.
-In generating the SCL clock and driving or sampling SDA, the design cycles through four distinct phases, naturally lending itself to operation on a 50MHz IP clock in order to produce the maximum SCL frequency of 12.5MHz, but the number of IP clock cycles per phase may be varied, according to the configured IP clock frequency and/or software-programmed registers.
+In generating the SCL clock and driving or sampling SDA, the design cycles through four distinct phases, naturally lending itself to operation on a 50 MHz IP clock in order to produce the maximum SCL frequency of 12.5 MHz, but the number of IP clock cycles per phase may be varied, according to the configured IP clock frequency and/or software-programmed registers.
 
 The design thus supports a number of different oscillator frequencies and accuracies, with an additional accommodation that the SCL high pulse may optionally support an extension by half of the IP clock period.
 This is necessary at certain oscillator frequencies to support less stable oscillators without violating the very strict timing requirements imposed upon the duration of the SCL high interval by the I3C Basic Specification.
@@ -87,8 +87,8 @@ This is necessary at certain oscillator frequencies to support less stable oscil
 
 ![Target-side logic](targ_data_flow.svg)
 
-As noted above, the Target-side transmission and reception logic, including the Target Reset Detector that remains active in sleep states, must operate on the Controller-supplied SCL clock signal, which may be operating at up to 12.5MHz average.
-According to the specification it may briefly appear to be 12.9MHz on account of rise/fall times, skew etc.
+As noted above, the Target-side transmission and reception logic, including the Target Reset Detector that remains active in sleep states, must operate on the Controller-supplied SCL clock signal, which may be operating at up to 12.5 MHz average.
+According to the specification it may briefly appear to be 12.9 MHz on account of rise/fall times, skew etc.
 Since the I3C IP block supports HDR-DDR mode, it includes logic blocks that are triggered on the _negative_ edge of SCL, as well as the conventional _positive_-edge triggered logic.
 To this end, the input clock signal is run through an inverting clock buffer as well as a non-inverting clock buffer, to limit skew.
 
@@ -211,7 +211,7 @@ All instances of a given I<sup>2</sup>C device may therefore be blocked using a 
 
 ## Memory mapping of the message buffer
 
-Since the 2KiB-4KiB message buffer is a sizeable amount of memory in an embedded system, the IP block also has the ability to grant direct access to some or all of this memory by mapping it into the address space of the system bus.
+Since the 2 KiB-4 KiB message buffer is a sizeable amount of memory in an embedded system, the IP block also has the ability to grant direct access to some or all of this memory by mapping it into the address space of the system bus.
 This functionality is controlled by a configuration parameter to the design, and may be useful in donating extra SRAM to the system, whether or not the I3C block is transferring traffic.
 When the I3C block is not enabled, the entire message buffer may be used safely as RAM.
 When it is enabled and may perform transfers to/from the I3C bus, software shall be responsible for ensuring that there is no conflict between the address ranges used by the IP block and those donated to software.
