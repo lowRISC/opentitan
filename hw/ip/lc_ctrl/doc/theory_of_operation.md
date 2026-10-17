@@ -69,6 +69,7 @@ The employed one way function is a 128bit cSHAKE hash with the function name "" 
 ### Post Transition Handling
 
 After a transition request, whether it was unconditional or conditional, the life cycle controller always disables all of its decoded outputs and puts the system in an inert state.
+It also asserts [HW_DEBUG_CLR](#hw_debug_clr) so that modules clear any stored copy of HW_DEBUG_EN.
 The device is then expected to reboot before returning to a functional state.
 
 Note this happens for either successful or unsuccessful transitions.
@@ -83,6 +84,7 @@ Upon assertion of any of the two escalation actions, the life cycle state is **T
 I.e. when this escalation path is triggered, the life cycle state is transitioned into "ESCALATE", which behaves like a virtual "SCRAP" state (i.e. this state is not programmed into OTP).
 This causes [all decoded outputs](#life-cycle-decoded-outputs-and-controls) to be disabled until the next power cycle.
 In addition to that, the life cycle controller asserts the ESCALATE_EN life cycle signal which is distributed to all IPs in the design that expose an escalation action (like moving FSMs into terminal error states or clearing sensitive registers).
+The life cycle controller also asserts the [HW_DEBUG_CLR](#hw_debug_clr) life cycle signal.
 
 Whether to escalate to the life cycle controller or not is a software decision, please see the alert handler for more details.
 
@@ -145,6 +147,26 @@ If HW_DEBUG_EN is set to OFF, errors should return silently.
 
 Similar to DFT_EN, HW_DEBUG_EN is also used to isolate the processor TAP.
 When HW_DEBUG_EN is OFF, the TAP should not be able to perform its normal debug access, thus preventing an external entity from hijacking the processor.
+
+HW_DEBUG_EN is OFF while the life cycle controller is in reset.
+This includes non-debug-module (NDM) resets, which reset the life cycle controller.
+In order to keep a debug session alive during an NDM reset, modules can store HW_DEBUG_EN in a flop that is not reset by an NDM reset.
+Such a flop must be cleared as described in [HW_DEBUG_CLR](#hw_debug_clr).
+
+#### HW_DEBUG_CLR
+
+HW_DEBUG_CLR instructs modules that store HW_DEBUG_EN in a flop (see [HW_DEBUG_EN](#hw_debug_en)) to clear that flop.
+This is necessary because such a flop keeps its value when HW_DEBUG_EN turns OFF.
+A module must clear the flop whenever HW_DEBUG_CLR is not OFF.
+For example, see the [`pinmux`](../../../top_earlgrey/ip_autogen/pinmux/doc/theory_of_operation.md#non-debug-module-reset) and [`rv_dm`](../../rv_dm/doc/theory_of_operation.md#non-debug-module-reset-support) documentation.
+
+HW_DEBUG_CLR is asserted in the SCRAP, INVALID, POST_TRANSITION and ESCALATION states.
+HW_DEBUG_EN is OFF in all of these states.
+Once the life cycle controller has entered one of these states, it remains in one of them until it is reset, so HW_DEBUG_CLR remains asserted until then.
+
+HW_DEBUG_CLR is asserted in all states in which ESCALATE_EN is asserted by the life cycle controller.
+In addition, HW_DEBUG_CLR is asserted in the POST_TRANSITION state, in which ESCALATE_EN is not asserted.
+Note that the life cycle controller enters the POST_TRANSITION state after both successful and unsuccessful transitions (see [Post Transition Handling](#post-transition-handling)).
 
 #### CPU_EN
 
@@ -418,7 +440,7 @@ Note that this first escalation action does not affect the life cycle state.
 
 When the second channel `esc_scrap_state` is asserted, the life cycle controller moves the life cycle state into `EscalateSt`, which behaves like a "virtual" SCRAP life cycle state.
 This transition is not permanent, and will clear upon the next power cycle.
-Note that any scrap state (virtual or encoded in the life cycle state vector) will also cause the `lc_escalate_en` life cycle signal to be asserted.
+Note that any scrap state (virtual or encoded in the life cycle state vector) will also cause the `lc_escalate_en` and `lc_hw_debug_clr` life cycle signals to be asserted.
 
 #### FSM Glitch Countermeasures
 
