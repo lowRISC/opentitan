@@ -3,7 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "rram_ctrl"
-  // TODO: remove the common testplans if not applicable
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
@@ -11,49 +10,705 @@
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
                      "rram_ctrl_sec_cm_testplan.hjson"]
   testpoints: [
+    ////////////////////
+    // Basic datapath //
+    ////////////////////
     {
       name: smoke
       desc: '''
-            Smoke test accessing a major datapath within the rram_ctrl.
+            Smoke test exercising all three requesters of the RRAM (software controller, host and
+            OTP hardware interface) on randomized addresses.
 
             **Stimulus**:
-            - TBD
+            - Bring the DUT out of reset, wait for `PHY_STATUS.init_done`, then write `INIT.VAL`.
+              The OTP key agent responds with random address/data scrambling keys.
+            - Poll `STATUS.init_done` and `STATUS.keys_valid`.
+            - Program a random but legal memory protection configuration: a random subset of the
+              `MP_REGION_CFG`/`MP_REGION` registers, `DEFAULT_REGION` and `INFO_PAGE_CFG`, with
+              random `scramble_en` and `ecc_en`.
+            - Issue a random sequence of:
+              - Software controller reads, writes and rewrites through `CONTROL`/`ADDR` and the
+                FIFOs, on both the data and the info partition, with random `CONTROL.NUM`.
+              - Host reads of the data partition through `host_tl`.
+              - `Read`/`Write` commands on the OTP region through the `otp_macro` interface,
+                after an initial `Init` command.
+            - Completion of software operations is detected by polling `OP_STATUS.done`.
+            - Accesses mostly hit permitted regions. A small fraction is allowed to hit
+              protected regions to check that they are blocked.
 
             **Checks**:
-            - TBD
+            - The scoreboard keeps a model of the RRAM array and predicts the read data of every
+              software, host and OTP read.
+            - After each write the RRAM contents are checked through the backdoor, including
+              scrambling with the sideloaded keys, address-XOR and the OTP integrity page.
+            - Blocked accesses set `ERR_CODE.mp_err` and `ERR_ADDR`, return error on host
+              reads, and do not change the RRAM contents.
+            - `STATUS` and `OP_STATUS` match the predicted values.
             '''
       stage: V1
       tests: ["rram_ctrl_smoke"]
     }
     {
-      name: seed_read_validation
+      name: sw_op
       desc: '''
-            Verify the double-read validation of the creator and owner seeds.
+            Software controller operations on the data and info partitions.
 
-            After the address and data scrambling keys are obtained and provisioning
-            is enabled, the lifecycle manager reads each seed twice from its info
-            page. The first read stores the seed, the second read is compared word
-            by word against the stored value.
+            **Stimulus**:
+            - Read operations with `CONTROL.NUM` across the full range (1 to 1024 bus words),
+              including unaligned start addresses and transactions that cross page boundaries.
+            - Write operations with `CONTROL.NUM` a multiple of 4 bus words, 16-byte aligned, up
+              to 1024 bus words, including multi-page writes.
+            - Write `ADDR.START` values that are not 16-byte aligned to check the truncation to
+              the next lower RRAM word. Read addresses that are not bus-word aligned are
+              truncated to the next lower bus word.
+            - Interleave reads and writes to the same and to different pages.
+            - Randomize the timing of FIFO accesses: fill the write FIFO after setting
+              `CONTROL.START` with random delays, and drain the read FIFO slowly and quickly.
+
+            **Checks**:
+            - Read data matches the scoreboard model.
+            - Write data matches the backdoor contents.
+            - `OP_STATUS.done` is set once per operation, with `op_done` interrupt.
+            - FIFO status and levels (`STATUS`, `CURR_FIFO_LVL`) match the predicted values.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: rewrite_op
+      desc: '''
+            Verify the `Rewrite` operation (`CONTROL.OP = Rewrite`).
+
+            **Stimulus**:
+            - Preload RRAM words through the backdoor, optionally injecting a correctable
+              single-bit error into the stored word.
+            - Issue a rewrite on the affected address in both partitions, with random scrambling
+              and ECC configuration of the targeted region or page.
+            - Also target pages that software cannot write: the OTP region, `MP_REGION`s,
+              `DEFAULT_REGION` and info pages without `wr_en`, and every page of an enabled
+              emulated info window, both inside and outside its active subregions.
+
+            **Checks**:
+            - After the rewrite the backdoor contents match the original stored word, with the
+              error corrected.
+            - The read FIFO is not filled by the rewrite.
+            - Rewrites are not subject to memory protection: they complete without
+              `ERR_CODE.mp_err` on any page, whatever its region or page configuration, and leave
+              the stored data unchanged.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: host_read_direct
+      desc: '''
+            Back-to-back host reads through `host_tl`.
+
+            **Stimulus**:
+            - Issue back-to-back host reads with random address patterns: sequential, same RRAM
+              word, same page and random across the data partition.
+            - Randomize `d_ready` stalls on the host TL-UL interface, and keep up to
+              `NumOutstandingRdReq` reads outstanding.
+            - Randomize `scramble_en` and `ecc_en` of the regions being read.
+
+            **Checks**:
+            - Read data and response integrity match the scoreboard model.
+            - Requests are accepted while the read buffer has free or verified entries.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: rd_buf_eviction
+      desc: '''
+            Verify the read buffer invalidation on writes.
+
+            **Stimulus**:
+            - Issue a controller or host read to a certain address.
+            - Issue a controller write with new values to the same address.
+            - Repeat the first read right after the write completes.
+
+            **Checks**:
+            - The second read always returns the newly written value, never the old read
+              buffer entry.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    ///////////////////////
+    // Memory protection //
+    ///////////////////////
+    {
+      name: memory_protection
+      desc: '''
+            Verify the memory protection of the data and info partitions for software and host
+            accesses. This can be run as part of the smoke test with a higher rate of accesses
+            to protected regions.
+
+            **Stimulus**:
+            - Program random, possibly overlapping, data regions with random `en`, `rd_en`,
+              `wr_en`, `scramble_en` and `ecc_en`, and a random `DEFAULT_REGION`.
+            - Program random `INFO_PAGE_CFG` values for all info pages.
+            - Issue software reads and writes, and host reads, that hit enabled regions,
+              disabled regions, overlapping regions, the default region, and region boundaries
+              (first and last page of a region, accesses that start inside a region and end
+              outside of it). Rewrites bypass memory protection and are covered by `rewrite_op`.
+
+            **Checks**:
+            - When regions overlap, the lowest-indexed matching region applies.
+            - When no region matches, `DEFAULT_REGION` applies.
+            - Disallowed accesses set `ERR_CODE.mp_err` with the address of the first failing
+              word in `ERR_ADDR`, raise `recov_err`, and do not modify the RRAM.
+              Disallowed host reads return a TL-UL error response.
+            - For multi-word operations, words before the first failing word complete
+              normally.
+            - The data stored or read back uses the `scramble_en` and `ecc_en` of the region that
+              matched.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: otp_region_protection
+      desc: '''
+            Verify that software and the host cannot access the OTP region.
+
+            **Stimulus**:
+            - Program data regions and `DEFAULT_REGION` that cover the OTP data and integrity
+              pages with full read and write permission.
+            - Issue software reads and writes, and host reads, to the OTP region, including
+              multi-word operations that start below the OTP region and run into it.
+
+            **Checks**:
+            - All software reads and writes and host reads to the OTP region are rejected,
+              whatever the software-programmed configuration. Software accesses set
+              `ERR_CODE.mp_err` with the address in `ERR_ADDR`, and host reads return a TL-UL
+              error response.
+            - Words below the OTP region in the same operation complete normally.
+            - The OTP region contents are unchanged.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: seed_partition
+      desc: '''
+            Verify software access to the creator and owner seed info pages.
+
+            **Stimulus**:
+            - Randomize `lc_creator_seed_sw_rw_en` and `lc_owner_seed_sw_rw_en` (including
+              invalid multi-bit values) and the `INFO_PAGE_CFG` of the two pages.
+            - Issue software reads and writes to `CreatorInfoPage` and `OwnerInfoPage`.
+
+            **Checks**:
+            - Accesses are allowed only when the life cycle signal is `On` and the page config
+              allows them. Otherwise `ERR_CODE.mp_err` is set.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: isolation_partition
+      desc: '''
+            Verify software access to the isolated info page.
+
+            **Stimulus**:
+            - Randomize `lc_iso_part_sw_rd_en` and `lc_iso_part_sw_wr_en` (including invalid
+              multi-bit values) and the `INFO_PAGE_CFG` of `IsolatedInfoPage`.
+            - Issue software reads and writes to the isolated page.
+
+            **Checks**:
+            - Reads are allowed only when `lc_iso_part_sw_rd_en` is `On`, and writes only when
+              `lc_iso_part_sw_wr_en` is `On`, in both cases ANDed with the page config.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: emul_info_window
+      desc: '''
+            Verify the emulated info page windows (`EMUL_INFO_REGION`, `EMUL_INFO_REGWEN`) and how
+            windows and subregions rank against the other data partition regions.
+
+            **Stimulus**:
+            - Program both windows with random `BASE`/`SIZE` and random `EN`, including invalid
+              multi-bit values, and lock a random subset via `EMUL_INFO_REGWEN`.
+            - Include windows touching the start and the end of the data partition, single-page
+              windows, windows larger than the range `EMUL_INFO_SUBREGION.TOP` can reach (more
+              than 256 pages), and a window overlapping the OTP region.
+            - Program random, possibly overlapping, `MP_REGION`s and a random `DEFAULT_REGION`
+              that also cover the windows, including full access and permissions that differ
+              from the subregions'.
+            - Configure a random set of subregions with random permissions, leaving every window
+              with pages not covered by an active subregion. Include an active subregion that
+              grants full access to the OTP region.
+            - Issue software reads and writes, and host reads, across the whole data
+              partition: the first and last page of each window, the pages just outside it, and
+              random pages inside it, including multi-word operations that cross window and
+              subregion boundaries.
+
+            **Checks**:
+            - The fixed OTP exclusion ranks above everything: no subregion can grant software or
+              host access to the OTP region.
+            - A window whose `EN` is not `MuBi4True` has no effect: software and host accesses to
+              it are decided by the `MP_REGION`s and `DEFAULT_REGION` as if it did not exist.
+            - Inside a window whose `EN` is `MuBi4True`, the active subregion's permissions
+              apply, and every other page is denied to software, whether or not
+              `EMUL_INFO_REGWEN` is locked, regardless of any `MP_REGION` or `DEFAULT_REGION`
+              covering the same page. In particular, an enabled but unlocked window denies all
+              software accesses, since none of its subregions can be active.
+            - Host reads to any page of a window whose `EN` is `MuBi4True` return a TL-UL error
+              response, whatever its lock state and subregion configuration.
+            - Outside the enabled windows, software and host accesses follow `MP_REGION`s and
+              `DEFAULT_REGION` as checked in `memory_protection`.
+            - Pages of a window beyond what its subregions' 8-bit `TOP` can reach are always
+              denied.
+            - Disallowed software accesses set `ERR_CODE.mp_err` with the address of the first
+              failing word in `ERR_ADDR`, raise `recov_err`, and do not modify the RRAM. Words
+              before the first failing word complete normally.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: emul_info_subregion
+      desc: '''
+            Verify when an emulated info subregion becomes active and which pages it covers
+            (`EMUL_INFO_SUBREGION`, `EMUL_INFO_SUBREGION_REGWEN`).
+
+            **Stimulus**:
+            - Enable and lock both windows. Give every subregion `EMUL_INFO_SUBREGION_CFG` with
+              `rd_en` and `wr_en` set, so that whether it is active is visible through software
+              accesses rather than only through register readback.
+            - For each window, program `TOP` for a random number of its
+              `EmulInfoSubregionsPerRegion` subregions (none, one, a few, all) and lock their
+              placement in random order. Include:
+              - Strictly increasing `TOP` values within the window's `SIZE`, locked in index
+                order (the intended use).
+              - A subregion locked while a lower-indexed subregion of the same window is still
+                unlocked, and later locking that lower-indexed subregion.
+              - A subregion left at its reset `TOP` but locked.
+              - `TOP` equal to the window's `SIZE`, and `TOP` exceeding it.
+              - `TOP` values that are equal to or lower than an earlier subregion's `TOP`.
+            - Repeat with the window itself still unlocked while the subregions are locked, then
+              lock the window.
+            - Issue software reads and writes to the first and last page of every subregion's
+              expected range and of every remaining gap, including multi-word operations that
+              cross from one subregion into the next or into a gap.
+
+            **Checks**:
+            - A subregion is active only while its window's `EN` is `MuBi4True`, its window's
+              `EMUL_INFO_REGWEN` is locked, its own `EMUL_INFO_SUBREGION_REGWEN` and that of
+              every lower-indexed subregion of the same window are locked, and its `TOP` does
+              not exceed the window's `SIZE`. It becomes active as soon as the last of these
+              conditions is met.
+            - An active subregion covers window offsets from one past the highest `TOP` of the
+              active lower-indexed subregions in its window (from offset 0 if there is none) up
+              to its own `TOP`. A subregion whose `TOP` is not above that is fully shadowed and
+              grants nothing.
+            - A subregion with `TOP` exceeding the window's `SIZE` is inactive, but does not
+              break the lock chain of the higher-indexed subregions.
+            - Pages not covered by an active subregion are denied, as checked in
+              `emul_info_window`.
+            - Subregions of one window never affect accesses to the other window.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: emul_info_permissions
+      desc: '''
+            Verify the access attributes of active emulated info subregions
+            (`EMUL_INFO_SUBREGION_CFG`, `EMUL_INFO_SUBREGION_CFG_REGWEN`).
+
+            **Stimulus**:
+            - Fully configure and lock both windows and a random set of subregions.
+            - Program random `EMUL_INFO_SUBREGION_CFG` (`rd_en`, `wr_en`, `scramble_en`,
+              `ecc_en`), including invalid multi-bit values, before and after locking the
+              subregion's placement.
+            - Lock a random subset via `EMUL_INFO_SUBREGION_CFG_REGWEN`, and leave the rest
+              unlocked.
+            - Reprogram unlocked `EMUL_INFO_SUBREGION_CFG`s while their subregion is active.
+            - Issue software reads and writes to every active subregion, including multi-word
+              operations that cross into a neighboring subregion with different attributes.
+
+            **Checks**:
+            - Software reads are allowed only when `rd_en` is `MuBi4True`, and writes only when
+              `wr_en` is `MuBi4True`. Any other value denies the access.
+            - The data stored or read back uses the `scramble_en` and `ecc_en` of the subregion
+              each word falls into.
+            - A subregion is active whether or not its `EMUL_INFO_SUBREGION_CFG_REGWEN` is
+              locked, and changes to an unlocked `EMUL_INFO_SUBREGION_CFG` take effect on the
+              next access.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: emul_info_window_overlap
+      desc: '''
+            Verify that overlapping emulated info windows fail closed (see
+            `EMUL_INFO_REGION.EN`).
+
+            **Stimulus**:
+            - Program both windows so that they overlap by at least one page, with either both
+              windows enabled or only one of them (`EN` not `MuBi4True` on the other).
+            - Fully configure and lock subregions with full permissions in both windows.
+            - As a negative control, place two enabled windows exactly adjacent without
+              overlapping.
+            - Issue software reads and writes, and host reads, to the overlapping pages and to
+              the non-overlapping pages of each window.
+
+            **Checks**:
+            - While both windows are enabled and overlap, every subregion of both is inactive, so
+              every page of both windows (overlapping or not) is denied to software and host
+              accesses, and never falls through to `MP_REGION`s or `DEFAULT_REGION`.
+            - Overlap with a disabled window has no effect: the enabled window behaves as checked
+              in `emul_info_subregion`.
+            - Exactly adjacent windows behave as two independent windows.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //////////////////
+    // Seed reading //
+    //////////////////
+    {
+      name: seed_read
+      desc: '''
+            Verify the creator and owner seed read during initialization.
+
+            **Stimulus**:
+            - Preload random seeds into `CreatorInfoPage` and `OwnerInfoPage` through the
+              backdoor, with matching scrambling and ECC.
+            - Randomize `lc_seed_hw_rd_en` (including invalid multi-bit values).
+            - Trigger initialization through `INIT.VAL`.
+
+            **Checks**:
+            - When `lc_seed_hw_rd_en` is `On`, both seed pages are read twice and the seeds on
+              the `keymgr` interface match the preloaded values.
+            - When `lc_seed_hw_rd_en` is not `On`, no seed read is issued, the seeds keep their
+              default value, and `STATUS.init_done` is still set.
+            - `STATUS.init_done` is only set after the seed read completes.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    /////////
+    // OTP //
+    /////////
+    {
+      name: otp_standalone
+      desc: '''
+            Verify the OTP hardware interface on its own, with no software or host traffic.
+
+            **Stimulus**:
+            - Issue `Init` first, then a random sequence of `Read`, `Write`, `ReadRaw`,
+              `WriteRaw` and `Zeroize` commands with random sizes (16, 32 and 64 bits) and random
+              addresses across the OTP region.
+            - Writes set random bits on top of the current contents, so that read-set-write
+              semantics are respected.
+            - Randomize the request timing, including back-to-back commands.
+
+            **Checks**:
+            - The DV OTP model (e.g. with `rram_ctrl_otp_bkdr_util`) predicts read data and the
+              response error code of every command.
+            - `Write` and `Zeroize` update the integrity page at the matching offset. `ReadRaw`
+              and `WriteRaw` leave the integrity page unchanged.
+            - `Zeroize` returns the zeroized word, with all bits set.
+            - The OTP region is stored without scrambling and without address-XOR.
+            - Data and integrity pages match the backdoor contents after each write.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    /////////////////
+    // Arbitration //
+    /////////////////
+    {
+      name: host_controller_arb
+      desc: '''
+            Concurrent host and controller operations to the same addresses, to test the phy
+            arbiter between host and controller.
+
+            **Stimulus**:
+            - Run host reads in parallel with software reads, writes and rewrites, all targeting
+              a small set of pages so that accesses hit the same RRAM words.
+            - Randomize the relative timing so that host requests arrive just before, during and
+              just after a controller write.
+
+            **Checks**:
+            - Host reads are stalled while a controller write is pending or in progress.
+            - Each host read returns either the data before or the data after an overlapping
+              write, never a mix.
+            - No accesses are lost or duplicated.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: hw_sw_arb
+      desc: '''
+            Concurrent software and OTP operations, to test the arbiter in
+            `rram_ctrl_arb`.
+
+            **Stimulus**:
+            - Run software operations in parallel with OTP commands and host reads.
+
+            **Checks**:
+            - All operations complete without deadlocks.
+            - All operations return the right values.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    /////////
+    // RMA //
+    /////////
+    {
+      name: rma
+      desc: '''
+            Verify the RMA wipe through the life cycle interface.
+
+            **Stimulus**:
+            - Preload the RRAM with random data through the backdoor, including the OTP region
+              and all info pages.
+            - Assert `rma_req` with a random `rma_seed` at random points: before `INIT.VAL`,
+              during the key request, during the seed read, after initialization, and during
+              ongoing software and OTP operations.
+
+            **Checks**:
+            - Ongoing software and OTP operations complete before the wipe starts.
+            - `CreatorInfoPage`, `OwnerInfoPage`, `IsolatedInfoPage` and all non-OTP data pages
+              are overwritten with data that differs from the preloaded data.
+            - The OTP region and the other info pages are unchanged.
+            - `rma_ack` is set to `On` after the wipe.
+            - After the RMA, software controller and host accesses to the RRAM are blocked until
+              reset. Registers can still be accessed.
+            - OTP commands are still served after the RMA and return the correct data.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    ////////////////////////////
+    // Interrupts and status  //
+    ////////////////////////////
+    {
+      name: interrupts
+      desc: '''
+            Verify the functional behavior of all interrupts.
+
+            **Stimulus**:
+            - Randomize `FIFO_LVL.WR` and `FIFO_LVL.RD` and run read and write operations with
+              random FIFO access timing.
+            - Enable a random subset of interrupts.
+
+            **Checks**:
+            - `wr_empty`, `wr_lvl`, `rd_full` and `rd_lvl` follow the FIFO levels.
+            - `op_done` is raised at the end of each software operation, also on error.
+            - `corr1_err` and `corr2_err` are covered in `ecc_corr1_err` and `ecc_corr2_err`.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: idle
+      desc: '''
+            Verify the idle indication to the power manager.
+
+            **Checks**:
+            - `pwrmgr_o.nvm_idle` is deasserted during software writes, rewrites, OTP commands
+              and the RMA wipe, and asserted otherwise.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    /////////////////////////
+    // Error conditions    //
+    /////////////////////////
+    {
+      name: error_invalid_op
+      desc: '''
+            Start an operation with a reserved `CONTROL.OP` value.
+
+            **Checks**:
+            - `ERR_CODE.op_err` and `OP_STATUS.err` are set and `recov_err` fires.
+            - The RRAM is not accessed.
+            - The next valid operation completes normally.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: otp_write_blank_err
+      desc: '''
+            OTP writes that try to clear bits that are already set.
+
+            **Stimulus**:
+            - Preload OTP words with random data, then issue `Write` and `WriteRaw` commands
+              whose data clears at least one set bit, with random sizes (16, 32 and 64 bits).
+
+            **Checks**:
+            - The response is `MacroWriteBlankError`.
+            - The stored word becomes the OR of the old and the new data. Bits are never cleared.
+            - For `Write`, the integrity page holds the integrity of the stored word.
+            - No alert fires and the next command completes normally.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: otp_intg_err
+      desc: '''
+            Mismatch between an OTP data word and its integrity syndrome.
+
+            **Stimulus**:
+            - Through the backdoor, flip bits in an OTP data word or in its syndrome in the
+              integrity page, keeping the macro ECC valid.
+            - Issue `Read` and `ReadRaw` on that word.
+
+            **Checks**:
+            - `Read` returns `MacroEccUncorrError`.
+            - `ReadRaw` returns the raw stored data with `NoError`.
+            - Words that share the same integrity page word but were not corrupted still read
+              without error.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: otp_macro_ecc_err
+      desc: '''
+            Macro ECC errors in the OTP region.
+
+            **Stimulus**:
+            - Inject correctable and uncorrectable ECC errors into OTP data words and into the
+              integrity page through the backdoor.
+            - Issue all OTP commands on the affected words. Write commands also hit the error
+              during their read-set-write read.
+
+            **Checks**:
+            - Correctable errors are corrected transparently: the commands return the correct
+              data with `NoError`, and `CORR1_*` or `CORR2_*` are updated as for software and
+              host reads.
+            - Uncorrectable errors return `MacroError`. `FAULT_STATUS.otp_rd_err` or
+              `FAULT_STATUS.otp_wr_err` is set, `FAULT_STATUS.phy_relbl_err` is set, and
+              `fatal_err` fires.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ecc_corr1_err
+      desc: '''
+            Correctable single-bit ECC errors.
+
+            **Stimulus**:
+            - Through the backdoor, inject a single bit error into RRAM words in data and info
+              pages with `ecc_en` set. Include errors in the check bits.
+            - Read the affected words through the host and through the controller.
+            - Issue a `Rewrite` on the affected address, then read it again.
+
+            **Checks**:
+            - The read data is corrected, with valid bus integrity. `ERR_CODE` stays clear and
+              no alert fires.
+            - The `corr1_err` interrupt fires, `CORR1_ERR_CNT` increments and `CORR1_ERR_LOC`
+              holds the address and partition of the word.
+            - The counter increments once per RRAM read. A read buffer hit does not increment it.
+            - After the `Rewrite` the stored word is correct again, and the next read reports no
+              error.
+            - Pages with `ecc_en` false do not report an error and return the flipped data.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ecc_corr2_err
+      desc: '''
+            Correctable double-bit ECC errors.
+
+            **Stimulus**:
+            - Through the backdoor, inject a double bit error into RRAM words in data and info
+              pages with `ecc_en` set. Include errors in the check bits.
+              With the open-source macro, flip one bit in each 64-bit half. It protects each half
+              with its own Hamming(72,64) code, so two bits in the same half are uncorrectable.
+            - Read the affected words through the host and through the controller.
+            - Issue a `Rewrite` on the affected address, then read it again.
+
+            **Checks**:
+            - The read data is corrected, with valid bus integrity. `ERR_CODE` stays clear and
+              no alert fires.
+            - The `corr2_err` interrupt fires, `CORR2_ERR_CNT` increments and `CORR2_ERR_LOC`
+              holds the address and partition of the word.
+            - The counter increments once per RRAM read. A read buffer hit does not increment it.
+            - After the `Rewrite` the stored word is correct again, and the next read reports no
+              error.
+            - Pages with `ecc_en` false do not report an error and return the flipped data.
+
+            Note: with the vendor macro, about 16% of errors of three or more bits are
+            miscorrected and reported as corr1 or corr2 with wrong data. `rram_ctrl` cannot
+            detect this. DV checks that `rram_ctrl` passes the macro data and error class
+            through unchanged, which a response override on the macro interface can exercise.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ecc_uncorr_err
+      desc: '''
+            Uncorrectable ECC errors.
+
+            **Stimulus**:
+            - Through the backdoor, inject an uncorrectable error into RRAM words in data and
+              info pages with `ecc_en` set.
+            - Read the affected words through the controller and the host.
+
+            **Checks**:
+            - Controller reads set `ERR_CODE.rd_err` with the address in `ERR_ADDR`, and fire
+              `recov_err`. The read still returns `CONTROL.NUM + 1` words. The failing word and all
+              later words are all-ones with valid bus integrity.
+            - Host reads return a TL-UL error response.
+            - `FAULT_STATUS.phy_relbl_err` is set and `fatal_err` fires. Software can clear
+              `phy_relbl_err` by writing 0.
+            - With `DIS.RELBL_ERR_FATAL` false, the RRAM stays accessible. With
+              `DIS.RELBL_ERR_FATAL` set, the RRAM is disabled.
+            - The `CORR1_*` and `CORR2_*` registers are not updated.
+
+            Note: not all multi-bit errors are detectable. Some error patterns are miscorrected and
+            reported as error-free, `ecc_corr1_err` or `ecc_corr2_err`. The open-source model
+            detects all two-bit errors within one 64-bit half, but can also miscorrect errors of
+            three or more bits.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: seed_read_err
+      desc: '''
+            Errors during the double-read validation of the creator and owner seeds.
+
+            The lifecycle manager reads each seed twice from its info page. The first read stores
+            the seed, the second read is compared word by word against the stored value. The
+            error-free seed read is covered by `seed_read`.
 
             **Stimulus**:
             - Backdoor-load random creator and owner seeds into their info pages.
-            - Randomly select none, one or both seeds to corrupt and, for each
-              selected seed, corrupt a random word on the second (validation) read
-              only, e.g. by flipping a bit in the RRAM read data or by modifying
-              the page contents via backdoor between the two reads.
+            - Set `lc_seed_hw_rd_en` to `On` to enable seed reading during initialization.
+            - Corrupt a random word of one or both seeds on the second read only.
             - Also cover the case where a seed word returns an integrity error.
-            - Run with provisioning both enabled and disabled.
 
             **Checks**:
-            - For an uncorrupted seed, the seed value on `keymgr_creator_seed_o` /
-              `keymgr_owner_seed_o` matches the backdoor-loaded value and
-              `seed_valid` is set.
             - For a seed with a read mismatch, `FAULT_STATUS.SEED_ERR` is set.
             - For a seed with an integrity error, `STD_FAULT_STATUS.LCMGR_INTG_ERR` is set.
             - In both cases, a `fatal_err` / `fatal_std_err` alert is raised, the controller is
               locally escalated, and `seed_valid` of *both* seeds is low.
-            - With provisioning disabled, no seed reads are issued and both
-              `seed_valid` outputs stay low.
             '''
       stage: V2
       tests: []
@@ -103,8 +758,124 @@
 
   covergroups: [
     {
-      name: rram_ctrl_feature_cg
-      desc: '''Describe the functionality covered by this covergroup.'''
+      name: control_cg
+      desc: '''
+            Covers all `CONTROL.OP` values (including reserved ones) crossed with
+            `CONTROL.PARTITION`, and `CONTROL.NUM` in bins (1, small, page size, multi-page,
+            maximum).
+            '''
+    }
+    {
+      name: mp_region_cg
+      desc: '''
+            Covers, for software and host accesses, which region matched (region index or
+            default region) crossed with `rd_en`, `wr_en`, `scramble_en`, `ecc_en`, and whether
+            the access was allowed.
+            '''
+    }
+    {
+      name: emul_info_window_cg
+      desc: '''
+            Covers, per window, `EN` (`MuBi4True`, `MuBi4False`, invalid) crossed with
+            `EMUL_INFO_REGWEN`, window position (start of the data partition, end of the data
+            partition, elsewhere), and window size (one page, up to 256 pages, more than 256
+            pages).
+            '''
+    }
+    {
+      name: emul_info_subregion_cg
+      desc: '''
+            Covers, per window, the number of active subregions (0, 1, a few, all
+            `EmulInfoSubregionsPerRegion`), and for every subregion the reason it is inactive
+            (window disabled, window unlocked, own placement unlocked, a lower-indexed
+            placement unlocked, `TOP` exceeding `SIZE`, window overlap) or, when active,
+            whether it is fully shadowed by a lower-indexed subregion and whether its `TOP`
+            equals the window's `SIZE`.
+            '''
+    }
+    {
+      name: emul_info_permissions_cg
+      desc: '''
+            Covers, for accesses that hit an active subregion, `rd_en`, `wr_en`, `scramble_en`
+            and `ecc_en` (each `MuBi4True`, `MuBi4False`, invalid) crossed with operation type
+            and whether `EMUL_INFO_SUBREGION_CFG_REGWEN` is locked.
+            '''
+    }
+    {
+      name: emul_info_priority_cg
+      desc: '''
+            Covers, for every software and host access to the data partition, which entry
+            decided it (OTP exclusion, subregion, window gap, `MP_REGION`, `DEFAULT_REGION`)
+            crossed with requester, operation type, and whether the access was allowed.
+            '''
+    }
+    {
+      name: emul_info_window_overlap_cg
+      desc: '''
+            Covers whether the two windows overlap or are exactly adjacent, crossed with both
+            windows' `EN`.
+            '''
+    }
+    {
+      name: info_page_cg
+      desc: '''
+            Covers software accesses to every info page crossed with the page config and the
+            life cycle enable signals of the creator, owner and isolated pages.
+            '''
+    }
+    {
+      name: otp_cmd_cg
+      desc: '''
+            Covers all OTP commands crossed with the access size and the response error code.
+            '''
+    }
+    {
+      name: fifo_lvl_cg
+      desc: '''
+            Covers the `FIFO_LVL` settings and the read and write FIFO levels, including empty
+            and full, crossed with the matching interrupts.
+            '''
+    }
+    {
+      name: sw_err_cg
+      desc: '''
+            Covers the `ERR_CODE` bits `op_err`, `mp_err` and `rd_err` crossed with the
+            operation.
+            '''
+    }
+    {
+      name: arb_cg
+      desc: '''
+            Covers concurrent requests of software, host and OTP, and the case where they target
+            the same RRAM word or page.
+            '''
+    }
+    {
+      name: rd_buf_cg
+      desc: '''
+            Covers read buffer hits and misses and invalidation on writes, crossed with the
+            requester (host or controller).
+            '''
+    }
+    {
+      name: rma_cg
+      desc: '''
+            Covers the lcmgr state when `rma_req` arrives (idle, key request, seed read, wait)
+            and whether a software or OTP operation was ongoing.
+            '''
+    }
+    {
+      name: seed_cg
+      desc: '''
+            Covers `lc_seed_hw_rd_en` values.
+            '''
+    }
+    {
+      name: ecc_cg
+      desc: '''
+            Covers the ECC result of every RRAM read (none, corr1, corr2, uncorrectable), crossed
+            with the requester (host, software, OTP), the partition and `ecc_en`.
+            '''
     }
   ]
 }
