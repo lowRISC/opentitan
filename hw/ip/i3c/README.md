@@ -12,7 +12,7 @@ In summary, the IP block implements the following features:
 - I3C Target.
 - Host Controller Interface (HCI) in PIO mode.
 - Target Transaction Interface.
-- 2-4KiB message buffer.
+- 2-4 KiB message buffer.
   - Apportioned in software amongst Controller- and Target-side logical queues.
   - Queues may be sized appropriately for the use case.
   - The design uses a single-ported SRAM, which offers a considerable area saving.
@@ -21,7 +21,7 @@ In summary, the IP block implements the following features:
 
 ### Controller-side features
 
-- Designed for a 50MHz clock, supporting 4 phases for 12.5MHz signaling.
+- Designed for a 50 MHz clock, supporting 4 phases for 12.5 MHz signaling.
 - Design parameter supports other clock frequencies.
 - HCI implementation.
 - PIO mode only; no support for DMA.
@@ -31,9 +31,9 @@ In summary, the IP block implements the following features:
     - Dynamic Address Assignment (DAA) may be decomposed into multiple operations by firmware to support more targets.
 - Signaling modes:
   - Single Data Rate (SDR)
-    - 12.5Mbps theoretical peak.
+    - 12.5 Mbps theoretical peak.
   - Double Data Rate (HDR-DDR)
-    - 25Mbps theoretical peak; minus overheads this is 20Mbps throughput for long transfers.
+    - 25 Mbps theoretical peak; minus overheads this is 20 Mbps throughput for long transfers.
   - No support for HDR-BT mode or Multi-Lane transfers.
   - I2C Fast Mode and Fast Mode Plus support for backwards compatibility with some I2C devices.
 - Primary Controller.
@@ -41,13 +41,13 @@ In summary, the IP block implements the following features:
 
 ### Target-side features
 
-- Designed for 50MHz IP clock (shared with the Controller-side logic).
+- Designed for 50 MHz IP clock (shared with the Controller-side logic).
 - I3C transceiver logic is driven by the I3C SCL signal directly.
 - Support for 'Deepest Sleep' state, with wake-up detection being performed by the Target Reset detector.
   - Almost all logic powered-down, and no free-running clock required; clocked by I3C signaling.
 - Signaling modes:
-  - Single Data Rate (SDR), 12.5Mbps.
-  - Double Data Rate (HDR-DDR), 25Mbps signaling/20Mbps throughput.
+  - Single Data Rate (SDR), 12.5 Mbps.
+  - Double Data Rate (HDR-DDR), 25 Mbps signaling/20 Mbps throughput.
 - Target Transaction Interface (TTI).
   - Modeled on the HCI, supporting:
     - Tx/Rx transfers, longer than the associated data buffers.

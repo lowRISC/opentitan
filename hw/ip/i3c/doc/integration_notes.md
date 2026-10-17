@@ -16,29 +16,29 @@ The IP block offers a top-level design parameter `ClkFreq` which specifies the f
 Additionally there are timing parameter registers presented to software which may then specify the duration of critical time intervals in units of the IP clock period.
 
 | Pure Bus                 | Minimum | Maximum |
-|--------------------------|---------|---------|
-| High period of SCL Clock | 32ns    |   N/A   |
+|--------------------------|--------:|--------:|
+| High period of SCL Clock |   32 ns |     N/A |
 
 For a 'Pure Bus' there is no maximum duration for the SCL high interval, so any reasonable IP clock frequency may be accommodated simply by increasing the number of cycles for which SCL is driven high.
-A frequency range of *50MHz* (inclusive) to *1.5GHz* (inclusive) is supported by the IP block in this case, with frequencies down to _32MHz_ (exclusive) also being supported at the cost of a _proportionate decrease in the maximum signaling speed_.
+A frequency range of *50 MHz* (inclusive) to *1.5 GHz* (inclusive) is supported by the IP block in this case, with frequencies down to _32 MHz_ (exclusive) also being supported at the cost of a _proportionate decrease in the maximum signaling speed_.
 
 | Mixed Fast Bus           | Minimum | Maximum |
-|--------------------------|---------|---------|
-| High period of SCL Clock | 32ns    | 41ns    |
+|--------------------------|--------:|--------:|
+| High period of SCL Clock |   32 ns |   41 ns |
 
 Example clock frequencies and required tolerance:
 
-| Clock frequency | Tolerance  | SDR      | HDR-DDR  |
-|-----------------|------------|----------|----------|
-| 50MHz           |  +/-2%     | 11.1Mbps | 20Mbps   |
-| 55MHz           |  +/-10%    | 9.7Mbps  | 17.6Mbps |
-| 85MHz           |  +/-9%     | 10.8Mbps | 19.4Mbps |
+| Clock frequency | Tolerance |       SDR |   HDR-DDR |
+|----------------:|----------:|----------:|----------:|
+|          50 MHz |     +/-2% | 11.1 Mbps | 20.0 Mbps |
+|          55 MHz |    +/-10% |  9.7 Mbps | 17.6 Mbps |
+|          85 MHz |     +/-9% | 10.8 Mbps | 19.4 Mbps |
 
 As the above table shows there is a trade off between the frequency accuracy and the achievable data rates.
 Note that the quoted data rates are the effective rate of data transfer, assuming that read/write transfers are sufficiently large to mitigate the protocol overheads.
-The theoretical peak signaling speeds are 12.5Mbps for SDR and 25Mbps for HDR-DDR.
+The theoretical peak signaling speeds are 12.5 Mbps for SDR and 25 Mbps for HDR-DDR.
 
-It should also be observed that for frequencies between 50MHz and 100MHz there may be a requirement to reduce further the rate of data transfers to/from targets that have a large `tSCO` delay (time from SCL edge to SDA output).
+It should also be observed that for frequencies between 50 MHz and 100 MHz there may be a requirement to reduce further the rate of data transfers to/from targets that have a large `tSCO` delay (time from SCL edge to SDA output).
 This is because the Controller logic samples SDA an integral number of IP clock cycles after the SCL edge, and increasing the clock frequency extends the SCL low period to an odd number of clock cycles, moving the sampling points closer to the transitions on SCL.
 
 ## Half-cycle SCL high extension
@@ -47,9 +47,9 @@ The IP block may be parameterized to support an extension of the SCL high pulse 
 This increases the set of clock frequencies that may be used in deployments of the IP.
 The half-cycle extension is achieved by forming the SCL output signal of the Controller from contributions from two flip-flops, clocked on opposing edges of the IP clock.
 
-| Clock frequency | Tolerance  | SDR      | HDR-DDR  |
-|-----------------|------------|----------|----------|
-| 96MHz           |  +/-11%    | 10.6Mbps | 19.2Mbps |
+| Clock frequency | Tolerance |       SDR |   HDR-DDR |
+|----------------:|----------:|----------:|----------:|
+|          96 MHz |    +/-11% | 10.6 Mbps | 19.2 Mbps |
 
 The unavoidable combinational logic on the SCL output is kept as minimal as possible in the logical design and it is important at the physical level to ensure that this signal is free of glitches since SCL controls the I3C bus in its entirety.
 
@@ -62,14 +62,14 @@ These intervals require Open Drain driving of the SDA data lane(s), and the use 
 With that cautionary note stated, it should be understood that the use of 'Open Drain Timing' on a 'Mixed Fast Bus' imposes a number of constraints on the SCL Clock rise time (tCR), high period (tHIGH) and fall time (tCF) in order to ensure compatibility with I<sup>2</sup>C devices.
 All of these constraints must be met simultaneously:
 
- - SCL Clock Rise time (tCR) must be no more than 8ns for maximum signaling frequency (fSCL = 12.5MHz).
- - SCL Clock Fall time (tCF) must be <= 8ns also, again for 12.5MHz signaling.
- - SCL Clock High period (tHIGH) when employing 'Open Drain Timing' on a 'Mixed Fast Bus' must be <= 41ns.
- - SCL Clock High period when employing 'Push-Pull Timing' on a 'Mixed Fast Bus' (tDIG_H_MIXED) must be <= 45ns.
+ - SCL Clock Rise time (tCR) must be no more than 8 ns for maximum signaling frequency (fSCL = 12.5 MHz).
+ - SCL Clock Fall time (tCF) must be <= 8 ns also, again for 12.5 MHz signaling.
+ - SCL Clock High period (tHIGH) when employing 'Open Drain Timing' on a 'Mixed Fast Bus' must be <= 41 ns.
+ - SCL Clock High period when employing 'Push-Pull Timing' on a 'Mixed Fast Bus' (tDIG_H_MIXED) must be <= 45 ns.
    - This 'digital high' period is defined as tHIGH + tCF (see Figure 75 of I3C Basic Version 1.2).
 
 In order to satisfy all of these constraints, the duration of the SCL Clock High period may need to be shortened in order to ensure that I3C traffic remains invisible to I<sup>2</sup>C Targets.
-e.g. if only the worst case tCR and tCF can be met, tHIGH will need to be reduced accordingly to no more than 37ns (45ns - 8ns).
+e.g. if only the worst case tCR and tCF can be met, tHIGH will need to be reduced accordingly to no more than 37 ns (45 ns - 8 ns).
 
 The full details may be found in Tables 49 and 50 of the Specification for I3C Basic, Version 1.2.
 
@@ -119,13 +119,13 @@ In this case, the circuit designers may provide alternative high-keepers that me
 
 The signals provided by the IP block are described below:
 
-| Signal                 | Description                                                                 |
-|------------------------|-----------------------------------------------------------------------------|
-| `cio_ctrl_sda_pu_o`    | SDA pullup pin output; tied high                                            |
-| `cio_ctrl_sda_pu_en_o` | SDA pullup pin output enable; asserted while the SDA pullup is required     |
-| `ctrl_scl_pu_en_o`     | Enable for the SCL pullup                                                   |
-| `scl_hk_en_o`          | Enable for the SCL high-keeper (`PHY_CONFIG.SCL_HK_EN`)                     |
-| `sda_hk_en_o`          | Enable for the SDA high-keeper(s) (`PHY_CONFIG.SDA_HK_EN`)                  |
+| Signal                 | Description                                                             |
+|------------------------|-------------------------------------------------------------------------|
+| `cio_ctrl_sda_pu_o`    | SDA pullup pin output; tied high                                        |
+| `cio_ctrl_sda_pu_en_o` | SDA pullup pin output enable; asserted while the SDA pullup is required |
+| `ctrl_scl_pu_en_o`     | Enable for the SCL pullup                                               |
+| `scl_hk_en_o`          | Enable for the SCL high-keeper (`PHY_CONFIG.SCL_HK_EN`)                 |
+| `sda_hk_en_o`          | Enable for the SDA high-keeper(s) (`PHY_CONFIG.SDA_HK_EN`)              |
 
 The SDA pullup is presented as the CIO pin `ctrl_sda_pu`, so that it can drive an external pullup resistor that is connected between this pin and SDA ('external Pull-Up resistor driven by a pin', I3C Basic Specification v1.2, Table 46).
 The pin drives high while the pullup is required, and is high-impedance otherwise, so that the resistor does not load SDA during push-pull signaling.
