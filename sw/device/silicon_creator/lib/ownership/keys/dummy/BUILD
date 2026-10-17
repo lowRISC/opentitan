@@ -29,6 +29,11 @@ filegroup(
 )
 
 filegroup(
+    name = "activate_key_pub",
+    srcs = ["activate_ecdsa_p256.pub.der"],
+)
+
+filegroup(
     name = "unlock_key",
     srcs = ["unlock_ecdsa_p256.der"],
 )
@@ -51,6 +56,11 @@ filegroup(
 filegroup(
     name = "activate_key_spx",
     srcs = ["activate_spx.pem"],
+)
+
+filegroup(
+    name = "activate_key_spx_pub",
+    srcs = ["activate_spx.pub.pem"],
 )
 
 filegroup(
