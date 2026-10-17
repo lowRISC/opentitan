@@ -1,0 +1,60 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: OTBN Panopticon Nightly
+on:
+  schedule:
+    - cron: "00 02 * * *"
+      timezone: "Europe/London"
+  workflow_dispatch:
+    inputs:
+      branch:
+        description: "Branch to run OTBN Panopticon nightly on"
+        required: false
+        type: string
+        default: "earlgrey_1.0.0"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  otbn_panopticon_nightly:
+    name: OTBN Panopticon Nightly (FI + TVLA)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.branch || 'earlgrey_1.0.0' }}
+
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: "${{ secrets.BAZEL_CACHE_CREDS }}"
+
+      - name: Run OTBN Panopticon FI and TVLA tests
+        shell: bash
+        run: |
+          ./bazelisk.sh test \
+            --cache_test_results=no \
+            --test_tag_filters=nightly \
+            //sw/otbn/crypto/tests/fi/... \
+            //sw/otbn/crypto/tests/tvla/...
+
+      - uses: actions/checkout@v6
+        if: ${{ !cancelled() }}
+        with:
+          ref: master
+          path: "upload-branch"
+          fetch-depth: 1
+
+      - name: Publish Bazel test results
+        uses: ./upload-branch/.github/actions/publish-bazel-test-results
+        if: ${{ !cancelled() }}
+        with:
+          artifact-name: otbn-panopticon-report
+          upload-to-bucket: true
+          bucket-job-folder-name: "${{ github.job }}"
+          branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
