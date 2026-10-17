@@ -64,6 +64,11 @@ def get_clkmgr_params(top: ConfigT) -> ParamsT:
 
     clkmgr = find_module(top["module"], "clkmgr")
     ipgen_params = get_ipgen_params(clkmgr)
+
+    # The source clock of clkmgr's own primary clock.
+    primary_clk = clkmgr["clock_srcs"]["clk_i"]
+    if isinstance(primary_clk, dict):
+        primary_clk = primary_clk["clock"]
     ipgen_params.update({
         "src_clks":
         OrderedDict({name: _clock_src_vars(obj)
@@ -85,6 +90,8 @@ def get_clkmgr_params(top: ConfigT) -> ParamsT:
         len(clocks.groups),
         "with_alert_handler":
         with_alert_handler,
+        "primary_clk":
+        primary_clk,
     })
     return ipgen_params
 
