@@ -135,3 +135,14 @@ otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status) {
 
   return status;
 }
+
+hardened_bool_t otcrypto_show_status(void) {
+  crypto_state_t state;
+  if (!status_ok(read_state(&state))) {
+    return kHardenedBoolFalse;
+  }
+  if (state.locked_state == kHardenedByteBoolTrue) {
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
+}
