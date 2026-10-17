@@ -75,19 +75,22 @@
       package: "",
       type:    "uni",
       name:    "rstdet_enable",
-      act:     "req"
+      act:     "req",
+      desc:    "Enables the SCL/SDA inputs of the external Target Reset Detector (`i3c_reset_detector`); deasserted while the Target is disconnected from the bus."
     }
     { struct:  "i3c_rstdet",
       package: "i3c_pkg",
       type:    "req_rsp",
       name:    "rstdet",
-      act:     "req"
+      act:     "req",
+      desc:    "Control and status interface to the external Target Reset Detector (`i3c_reset_detector`)."
     }
     { struct:  "logic",
       package: "",
       type:    "uni",
       name:    "mbist_en",
-      act:     "rcv"
+      act:     "rcv",
+      desc:    "Memory built-in self-test enable (unused)."
     }
     // High-keepers and pull-ups
     { struct:  "logic",
@@ -116,19 +119,22 @@
       package: "prim_ram_1p_pkg",
       type:    "req_rsp",
       name:    "ram_cfg",
-      act:     "rsp"
+      act:     "rsp",
+      desc:    "RAM configuration of the message buffer memory."
     }
     { struct:  "ram_1p_cfg",
       package: "prim_ram_1p_pkg",
       type:    "req_rsp",
       name:    "dat_cfg",
-      act:     "rsp"
+      act:     "rsp",
+      desc:    "RAM configuration of the Device Address Table (DAT) memory."
     }
     { struct:  "ram_1p_cfg",
       package: "prim_ram_1p_pkg",
       type:    "req_rsp",
       name:    "dct_cfg",
-      act:     "rsp"
+      act:     "rsp",
+      desc:    "RAM configuration of the Device Characteristics Table (DCT) memory."
     }
     { struct:  "racl_policy_vec",
       type:    "uni",
