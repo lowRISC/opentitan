@@ -26,7 +26,8 @@ Both the Controller and the Target functionality within this IP block support th
    This mode is new to I3C and employs an entirely different logical protocol whilst also transferring data on both edges of the SCL clock signal.
    HDR-DDR mode also includes error detection using parity and checksums, and offers a theoretical peak bandwidth of 20Mbps when operating at 12.5MHz.
 
-The Controller and Target sides of the IP block are capable of operating independently, either on separate buses or on a shared bus, but they share the TL-UL register interface and in particular the message buffer.
+The Controller and Target sides of the IP block share the SCL and SDA signals, and software enables only one of them at a time.
+They also share the TL-UL register interface and in particular the message buffer.
 
 Also shared between the Controller and Target sides of the IP block is a single clock signal, upon which most of the design operates.
 The IP block is, however, designed to accommodate a number of different clock frequencies.
