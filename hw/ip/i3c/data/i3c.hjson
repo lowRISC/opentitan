@@ -609,7 +609,7 @@
           name:   "SLEEP_REQ",
           desc:   "Activate the reset detector prior to entry into 'Deepest Sleep' state.",
           resval: "0",
-          tags: [// Prevent usb wake functions from being turned on outside of directed tests
+          tags: [// Prevent the reset detector from being activated outside of directed tests
                  "excl:CsrNonInitTests:CsrExclWrite"]
         }
       ]
@@ -622,12 +622,12 @@
       fields: [
         { bits:   "3",
           name:   "RST_TARGET",
-          desc:   "Indicates that a Whole Target reset requst was received.",
+          desc:   "Indicates that a Whole Target reset request was received.",
           resval: "0"
         }
         { bits:   "2",
           name:   "RST_PERIPH",
-          desc:   "Indicates that a Peripheral request request was received.",
+          desc:   "Indicates that a Peripheral reset request was received.",
           resval: "0"
         }
         { bits:   "1",
@@ -3660,7 +3660,7 @@
     // ----- Target Transaction Interface 0xC8 (Extended Capability). -----
     // Nothing more than the possible existence of this Extended Capability is described
     // in the HCI specification. These registers follow a TTI defined for the OpenTitan
-    // IP block, as specified in ../docs/tti.md.
+    // IP block, as specified in ../doc/tti.md.
     //
     // It supports a configurable number of Virtual Targets, up to a maximum given by
     // `MaxTargets`, with the first Virtual Target also assuming the role of Standby
@@ -4552,7 +4552,7 @@
           }
           { bits:     "15",
             name:     "STATIC_ADDR_VALID",
-            desc:     "Static Addres is Valid.",
+            desc:     "Static Address is Valid.",
             hwaccess: "hro",
             resval:   "0"
           }
