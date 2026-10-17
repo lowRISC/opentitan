@@ -1910,7 +1910,10 @@
           name:     "BUS_ENABLE",
           desc:     "Host Controller Bus Enable.",
           hwqe:     "true",
-          resval:   "0"
+          resval:   "0",
+          tags:     [// Reads back the controller state, not the written value; after a write of 0
+                     // this remains set until the controller has become inactive.
+                     "excl:CsrNonInitTests:CsrExclWriteCheck"]
         },
         { bits:     "30",
           name:     "RESUME",
@@ -3260,14 +3263,20 @@
           desc:     "Dynamic Address is Valid.",
           swaccess: "ro",
           hwaccess: "hwo",
-          resval:   "0"
+          resval:   "0",
+          tags:   [// Takes the value written to CONTROLLER_DEVICE_ADDR while this is the Active
+                   // Controller.
+                   "excl:CsrNonInitTests:CsrExclCheck"]
         }
         { bits:     "22:16",
           name:     "DYNAMIC_ADDR",
           desc:     "Device Dynamic Address.",
           swaccess: "ro",
           hwaccess: "hwo",
-          resval:   "0"
+          resval:   "0",
+          tags:   [// Takes the value written to CONTROLLER_DEVICE_ADDR while this is the Active
+                   // Controller.
+                   "excl:CsrNonInitTests:CsrExclCheck"]
         }
         { bits:     "15",
           name:     "STATIC_ADDR_VALID",
@@ -4261,7 +4270,10 @@
         { bits:   "27:16",
           name:   "ASYNC_EVT_LVL",
           desc:   "The number of Asynchronous Event descriptors in the queue.",
-          resval: "0"
+          resval: "0",
+          tags:   [// Live queue level; e.g. a Bus Idle event adds a descriptor whilst the Target is
+                   // enabled.
+                   "excl:CsrNonInitTests:CsrExclCheck"]
         }
         { bits:   "7:0",
           name:   "RX_DESC_LVL",
