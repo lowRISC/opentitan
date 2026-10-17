@@ -419,9 +419,8 @@ It comes in two forms:
 1. Standard Hot-Join, in which the Target issues a Start Request, and then proceeds to drive out the address 7'h02.
 2. Passive Hot-Join, in which the Target drives 7'h02 into an Arbitrable Address Header.
 
-When the first Virtual Target is configured to operate as a Standby Controller, the Hot-Join capability is available via the HCI-specified [Standby Controller Control register](registers.md#stby_cr_control--stby_cr_enable_init).
-
-In the event that Standby Controller support is not enabled, or the Target peripheral is operating on a bus of its own, an equivalent capability is available via the [`TARG_CONTROL`](registers.md#targ_control--hj_request) register.
+Software requests a Hot-Join via the [`TARG_CONTROL`](registers.md#targ_control--hj_request) register.
+The HCI also specifies a Hot-Join capability via the [Standby Controller Control register](registers.md#stby_cr_control--stby_cr_enable_init), but this version of the IP block does not support the Standby Controller role.
 
 ## Handling of Common Command Codes
 
