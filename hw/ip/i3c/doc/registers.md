@@ -378,6 +378,7 @@ Standby Controller role supported.
 When set the Controller shall have the option of performing Controller Role Handoff and switching into Standby Controller mode.
 If this field is clear the Controller will refuse to hand off the bus when requested and will instead remain the Active Controller,
 thus freeing up the first Virtual Target to operate independently as a dedicated Target device.
+This version of the IP block does not support Controller Role Handoff.
 
 ### TARG_CONTROL . EN
 Target enable.

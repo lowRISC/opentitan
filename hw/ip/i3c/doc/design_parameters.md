@@ -23,7 +23,7 @@ Five role configurations are intended to be supported:
 | Secondary Controller; implies Target functionality and a single bus                           |      0      |       1       |    1   |     -     |
 | Target only, no Controller logic                                                              |      0      |       0       |    1   |    Yes    |
 
-It should be noted that in this first release, operation as a Secondary Controller is not supported, so not all of these configurations are yet available.
+This version of the IP block does not support the Secondary Controller role, so the configurations with `SecondaryCtrl` set are not available.
 Also, at the time of writing, the design has not been optimized to produce maximal area savings when Controller or Target functionality is excluded.
 
 ## Virtual Targets ('NumTargets' and 'MaxTargets')
