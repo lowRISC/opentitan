@@ -181,12 +181,13 @@ static void pinmux_init_test(void) {
         false, "GPIO 24 pull select");
   }
 
-  // UART RX (input 42) -> IOC3 (MIO pad 25)
+  // UART RX -> IOC3 (MIO pad 25)
   uint32_t insel_uartrx =
-      abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_42_REG_OFFSET);
+      abs_mmio_read32(kPinmuxBase + PINMUX_MIO_PERIPH_INSEL_0_REG_OFFSET +
+                      kTopEarlgreyPinmuxPeripheralInUart0Rx * sizeof(uint32_t));
   CHECK_EQ(insel_uartrx, kTopEarlgreyPinmuxInselIoc3, "UART Rx input selector");
 
-  // IOC4 (MIO pad 26) -> UART TX (output 42)
+  // IOC4 (MIO pad 26) -> UART TX
   uint32_t outsel_ioc4 =
       abs_mmio_read32(kPinmuxBase + PINMUX_MIO_OUTSEL_26_REG_OFFSET);
   CHECK_EQ(outsel_ioc4, kTopEarlgreyPinmuxOutselUart0Tx,
