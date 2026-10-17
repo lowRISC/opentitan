@@ -3,7 +3,8 @@
 // SPDX-License-Identifier: Apache-2.0
 {
   name: "i3c"
-  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson"]
+  import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/mem_testplan.hjson"]
   // Testpoints for the I3C functionality are yet to be added.
   testpoints: []
 }
