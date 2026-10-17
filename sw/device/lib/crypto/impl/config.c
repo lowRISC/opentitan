@@ -139,3 +139,14 @@ otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status) {
 
   return status;
 }
+
+hardened_bool_t otcrypto_show_status(const otcrypto_state_t *state) {
+  if (state == NULL) {
+    return kHardenedBoolFalse;
+  }
+  const crypto_state_t *internal_state = (const crypto_state_t *)state;
+  if (internal_state->locked_state == kHardenedByteBoolTrue) {
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
+}

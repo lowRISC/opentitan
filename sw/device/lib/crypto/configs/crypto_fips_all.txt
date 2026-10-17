@@ -4,6 +4,7 @@ otcrypto_disable_icache
 otcrypto_restore_icache
 otcrypto_init
 otcrypto_eval_exit
+otcrypto_show_status
 otcrypto_build_info
 otcrypto_lib_version
 otcrypto_version_decode

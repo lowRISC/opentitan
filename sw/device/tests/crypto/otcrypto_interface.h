@@ -22,6 +22,7 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*restore_icache)(hardened_bool_t);
   otcrypto_status_t (*init)(otcrypto_key_security_level_t, otcrypto_state_t *);
   otcrypto_status_t (*eval_exit)(otcrypto_status_t);
+  hardened_bool_t (*show_status)(const otcrypto_state_t *);
 
   // Build info
   otcrypto_status_t (*build_info)(uint32_t *, bool *, uint32_t *, uint32_t *);
