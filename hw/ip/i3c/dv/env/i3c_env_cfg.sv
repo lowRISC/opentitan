@@ -53,6 +53,20 @@ class i3c_env_cfg extends cip_base_env_cfg #(.RAL_T(i3c_reg_block));
     set_absent_targ_resets(i3c_ral);
     set_num_targets_reset(i3c_ral);
     add_queue_port_access_excls(i3c_ral);
+    set_mem_walk_excls(i3c_ral);
+  endfunction
+
+  // Exclude memory windows from the generic memory walk (`uvm_mem_walk_seq`).
+  //
+  // - HCI_PORTS and TTI_PORTS are queue ports, not storage: a read returns a queue entry rather
+  //   than the data written to the same address.
+  // - The DAT and the DCT do not store the reserved fields of their entries, which read as zero.
+  //   `i3c_csr_mem_walk_seq` walks them with a mask of the stored bits instead.
+  protected virtual function void set_mem_walk_excls(i3c_reg_block i3c_ral);
+    uvm_mem mems[$] = '{i3c_ral.hci_ports, i3c_ral.tti_ports, i3c_ral.dat, i3c_ral.dct};
+    foreach (mems[i]) begin
+      uvm_resource_db#(bit)::set({"REG::", mems[i].get_full_name()}, "NO_MEM_WALK_TEST", 1);
+    end
   endfunction
 
   // Exclude the register fields that accesses to the HCI and TTI queue ports change.

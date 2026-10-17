@@ -10,6 +10,12 @@ class i3c_common_vseq extends i3c_base_vseq;
   }
   `uvm_object_new
 
+  virtual task pre_start();
+    // Walk the DAT and the DCT with masks; see i3c_csr_mem_walk_seq.
+    csr_mem_walk_seq::type_id::set_type_override(i3c_csr_mem_walk_seq::get_type());
+    super.pre_start();
+  endtask : pre_start
+
   virtual task body();
     run_common_vseq_wrapper(num_trans);
   endtask : body
