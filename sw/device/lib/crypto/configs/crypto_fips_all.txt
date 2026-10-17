@@ -7,6 +7,7 @@ otcrypto_eval_exit
 otcrypto_build_info
 otcrypto_lib_version
 otcrypto_version_decode
+otcrypto_rom_version
 otcrypto_entropy_init
 otcrypto_entropy_check
 otcrypto_entropy_health_test_config_check

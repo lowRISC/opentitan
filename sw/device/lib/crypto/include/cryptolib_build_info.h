@@ -67,6 +67,17 @@ otcrypto_lib_version_t otcrypto_lib_version(void);
 void otcrypto_version_decode(uint32_t version, uint32_t *major, uint32_t *minor,
                              uint32_t *patch);
 
+/**
+ * Read the ROM version.
+ *
+ * Returns the ROM version stored in the `ROM_CTRL.EXP_DIGEST_1` register.
+ *
+ * @param[out] rom_version The ROM version.
+ * @return Status of the operation. Returns `kOtcryptoStatusValueOk` on
+ * success.
+ */
+otcrypto_status_t otcrypto_rom_version(uint32_t *rom_version);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

@@ -8,8 +8,12 @@
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "sw/device/lib/base/mock_abs_mmio.h"
 #include "sw/device/lib/crypto/include/cryptolib_build_info.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "rom_ctrl_regs.h"
 
 namespace integrity_unittest {
 namespace {
@@ -152,6 +156,18 @@ TEST(IntegrityTest, BuildInfoAndVersionDecode) {
   uint32_t major = 0, minor = 0, patch = 0;
   otcrypto_version_decode(version, &major, &minor, &patch);
   EXPECT_GT(major + minor + patch, 0u);
+}
+
+TEST(IntegrityTest, RomVersion) {
+  rom_test::MockAbsMmio mmio;
+  const uint32_t kExpectedRomVersion = 0x12345678u;
+  EXPECT_ABS_READ32(
+      TOP_EARLGREY_ROM_CTRL_REGS_BASE_ADDR + ROM_CTRL_EXP_DIGEST_1_REG_OFFSET,
+      kExpectedRomVersion);
+
+  uint32_t rom_version = 0;
+  EXPECT_EQ(otcrypto_rom_version(&rom_version).value, kOtcryptoStatusValueOk);
+  EXPECT_EQ(rom_version, kExpectedRomVersion);
 }
 
 }  // namespace
