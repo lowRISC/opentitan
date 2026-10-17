@@ -121,7 +121,48 @@ The descriptors, constants and behavior are described, but the TCRI does not spe
 
 The register API presented to software is defined in the higher-level Host Controller Interface specification which supports the creation of a portable software driver that may operate with little or no modification on other I3C Controller implementations built to this specification.
 
-A number of the 'Extended Capabilities' defined in the HCI specification are supported by the IP block, as described below.
+### Supported HCI and TCRI features
+
+The HCI and TCRI specifications define a number of optional features.
+The IP block supports the following ones:
+
+| Feature                                                                                            | Reference                        | Notes                                                                |
+|----------------------------------------------------------------------------------------------------|----------------------------------|----------------------------------------------------------------------|
+| PIO mode                                                                                           | HCI 6.5                          | The only supported mode.                                             |
+| Regular and Immediate Transfer Commands, 2-DWORD Command Descriptors                               | HCI 8.4.3, TCRI 7.1.2.1, 7.1.2.2 |                                                                      |
+| CCCs with Defining Byte                                                                            | HCI 6.10, TCRI 6.3               |                                                                      |
+| HDR-DDR transfers                                                                                  | HCI 7.4.4                        |                                                                      |
+| ENDXFER negotiation in HDR-DDR mode                                                                | HCI 6.8.6                        |                                                                      |
+| Legacy I2C transfers (Fast Mode and Fast Mode Plus)                                                | HCI 8.4.3                        |                                                                      |
+| Address Assignment Command (ENTDAA, SETDASA)                                                       | HCI 8.4.1                        |                                                                      |
+| Internal Control Commands, including Broadcast Address Enable and Target Reset Pattern with RSTACT | HCI 8.4.2                        |                                                                      |
+| In-Band Interrupts, including IBI payloads and Hot-Join control                                    | HCI 6.9.1, 8.6                   |                                                                      |
+| Periodic bus traffic for passive Hot-Join and IBI Targets                                          | -                                |                                                                      |
+| Abort, suspend and resume of command processing; halt on error                                     | HCI 6.5.6, 6.8.4                 |                                                                      |
+| Error detection and reporting                                                                      | HCI 6.13                         | See [Error detection and reporting](#error-detection-and-reporting). |
+| Hardware Identification Extended Capability (0x01)                                                 | HCI 7.7.2                        |                                                                      |
+| Controller Config Extended Capability (0x02)                                                       | HCI 7.7.3                        |                                                                      |
+| Debug Specific Extended Capability (0x0C)                                                          | HCI 7.7.7                        |                                                                      |
+| Target Transaction Interface Extended Capability (0xC8)                                            | HCI 7.7.13                       | Specific to this IP block, see [TTI](tti.md).                        |
+
+This version of the IP block does not support the following features:
+
+- DMA mode, including Ring Headers, Scatter-Gather and Device Contexts (HCI 6.2, 6.6).
+- Scheduled Commands (HCI 6.16).
+- Timing Control, HDR-BT and HDR-Ternary.
+- Standby Controller mode and Controller Role Handoff (HCI 6.17, 7.7.11).
+- Dead Bus Recovery (HCI 6.18, 7.7.6), which is useful only together with the Secondary Controller role.
+- Big-endian data byte order (HCI 6.8.3).
+
+Whether the IP block shall support the following optional features has not been decided yet:
+
+- Auto-Command (HCI 6.11).
+- Combo Transfer Command (TCRI 7.1.2.3).
+- Command sequence timeout (HCI 6.13.2).
+- IBI timestamping, IBI Data Abort and IBI Credit Counting (HCI 6.9.3-6.9.5).
+- Multi-Bus Instance Extended Capability (0x03, HCI 7.7.4).
+
+The Extended Capabilities of the IP block are described below.
 
 ### Hardware Identification (ID = 0x01) Extended Capability
 
@@ -135,8 +176,11 @@ The reported value depends upon how the IP block has been configured at its top 
 
 ### Dead Bus Recovery (ID = 0x0B) Extended Capability
 
-In the event of a 'dead' bus, meaning that the Active Controller does not respond to a 'start request' from a Target device, the IP block offers this extended capability, attempting to recover the bus and maybe take over the role of Active Controller.
-This mechanism may be employed whether or not the IP block is configured with Secondary Controller support, because a regular Target device is also able to request the attention of the Active Controller by sending an In-Band Interrupt or a Hot-Join request.
+In the event of a 'dead' bus, meaning that the Active Controller does not respond to a 'start request' from a Target device, Dead Bus Recovery allows a Controller-capable Device that is acting as a Target to take over the Controller role (I3C Basic Specification, Section 4.3.8.1.8; HCI Specification, Section 6.18).
+This version of the IP block supports neither the Secondary Controller role nor Controller Role Handoff, so it never acts as a Target that is capable of taking over the Controller role, and it does not support Dead Bus Recovery.
+
+The registers of this extended capability are present, but the IP block does not engage Dead Bus Recovery: [`DBR_ENGAGE`](registers.md#dbr_engage) has no effect, and the Internal Control Command 'Attempt DBR' completes with the error status `NOT_SUPPORTED`.
+The Target side detects a dead bus and counts it in [`TARG_ERROR.DBR`](registers.md#targ_error).
 
 ### Debug Specific (ID = 0x0C) Extended Capability
 
