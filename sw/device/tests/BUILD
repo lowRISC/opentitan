@@ -760,7 +760,9 @@ opentitan_test(
 )
 
 CHERIOT_SMOKETEST_DEPS = [
+    "//hw/top:cheriot_mem_sys_c_regs",
     "//hw/top:rv_core_ibex_c_regs",
+    "//hw/top:sram_ctrl_c_regs",
     "//hw/top:top_lib",
     "//hw/top:uart_c_regs",
     "//sw/device/lib/base:multibits",
@@ -816,6 +818,18 @@ opentitan_test(
         exit_failure = CHERIOT_SMOKETEST_FAILURE,
         exit_success = "ePMP PASS!\r\n",
     ),
+    deps = CHERIOT_SMOKETEST_DEPS,
+)
+
+opentitan_test(
+    name = "cheriot_tbre_revocation_test",
+    srcs = ["cheriot_tbre_revocation_test.S"],
+    dv = dv_params(
+        defines = ["DV_TEST_STATUS"],
+    ),
+    exec_env = CHERIOT_SMOKETEST_ENVS,
+    local_defines = ["TEST_ITERATION_COUNT=128"],
+    platform = CHERIOT_PLATFORM,
     deps = CHERIOT_SMOKETEST_DEPS,
 )
 
