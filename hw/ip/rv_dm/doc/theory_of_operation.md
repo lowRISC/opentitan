@@ -41,3 +41,5 @@ When using a dedicated JTAG TAP in the debug module, e.g., in Earlgrey, the debu
 The pinmux basically ensures that that signal is latched and kept stable while an NDM reset is taking place.
 See also [pinmux documentation](../../../top_earlgrey/ip_autogen/pinmux/doc/theory_of_operation.md#strap-sampling-and-tap-isolation).
 When using the debug module with the DMI interface, e.g., in Darjeeling, the debug module itself latches the debug enable signal while the NDM reset is taking place.
+In that case, the debug module clears the latched value whenever any of `lc_hw_debug_clr`, `lc_check_byp_en` or `lc_escalate_en` is not Off.
+See also [HW_DEBUG_CLR](../../lc_ctrl/doc/theory_of_operation.md#hw_debug_clr) in the life cycle controller documentation.
