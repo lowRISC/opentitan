@@ -135,6 +135,20 @@ To this end, the input clock signal is run through an inverting clock buffer as 
 
 An additional complication, that results from the use of I<sup>2</sup>C-compatible start (S)/stop (P) signaling in Single Data Rate (SDR) mode, is that the first lane of the I3C data (SDA) must also be used as a clock signal to drive some of the Target-side logic.
 
+### HDR Exit and HDR Restart detection
+
+Every I3C Target must detect the HDR Exit Pattern, even if it does not support any HDR mode, because the Active Controller uses it to end HDR transfers and to recover Targets from errors (I3C Basic Specification, Section 4.3.10.2).
+Targets that support HDR-DDR must also detect the HDR Restart Pattern, which continues HDR traffic in the same way that a Repeated START does in SDR mode (I3C Basic Specification, Section 6.1.2).
+
+The Target-side module `i3c_patt_detector` detects both patterns, following the combined detector of I3C Basic Specification, Section 6.1.2.1.
+Like the Target transceiver, it has no free-running clock but is clocked by the SCL and SDA signals.
+The HDR Exit detector is always enabled, whereas the HDR Restart detector is enabled only while the bus is in HDR-DDR mode.
+
+When it detects the HDR Exit Pattern, the Target transceiver returns to SDR mode, detects START and STOP conditions again, and stops ignoring the traffic of unsupported HDR modes.
+The Target does not yet act on the HDR Restart Pattern ([#31035](https://github.com/lowRISC/opentitan/issues/31035)).
+
+The Controller generates the HDR Exit and HDR Restart Patterns, as well as the Target Reset Pattern, but it does not need to detect them.
+
 ## Host Controller Interface
 
 The Controller logic has been built for compliance with the following two MIPI Alliance specifications:
