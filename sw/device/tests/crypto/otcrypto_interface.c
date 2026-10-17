@@ -12,6 +12,7 @@ volatile otcrypto_interface_t otcrypto = {
     .restore_icache = &otcrypto_restore_icache,
     .init = &otcrypto_init,
     .eval_exit = &otcrypto_eval_exit,
+    .show_status = &otcrypto_show_status,
 
     // Build info.
     .build_info = &otcrypto_build_info,
