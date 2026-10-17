@@ -8,6 +8,10 @@ function run() {
     "$@"
 }
 
+export HSMTOOL_TOKEN=fake_keys
+export HSMTOOL_USER=user
+export HSMTOOL_PIN=123456
+
 # SoftHSM2 doesn't like the symlinks bazel sets up.
 # Make a copy of the token and operate on the copy.
 if [[ -n "${SOFTHSM2_CONF:+x}" ]]; then
