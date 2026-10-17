@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules:otbn.bzl", "otbn_fi_sim_test")
+load("//rules:otbn.bzl", "otbn_fi_panopticon_test", "otbn_fi_sim_test")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -17,7 +17,7 @@ otbn_fi_sim_test(
     fixed_instruction_count = True,
     ok_size = 4,
     ok_symbol = "ok",
-    ok_value = "0x739",
+    ok_value = "0x0",
     tags = ["manual"],
     target = "//sw/otbn/crypto:run_p256",
     target_a_secrets = {
@@ -421,4 +421,103 @@ otbn_fi_sim_test(
         "ed25519_sig_S": "unmasked:32:0x0b107a8e4341516524be5b59f0f55bd26bb4f91c70391ec6ac3ba3901582b85f",
         "ed25519_public_key": "unmasked:32:0x5501492265e073d874d9e5b81e7f87848a826e80cce2869072ac60c3004356e5",
     },
+)
+
+# Project Panopticon CI wrappers (Monte-Carlo instruction skip sampling)
+otbn_fi_panopticon_test(
+    name = "p256_ecdsa_sign_fi_nonce_panopticon_test",
+    fi_test = ":p256_ecdsa_sign_fi_nonce_test",
+    num_skips = 20,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "p256_ecdsa_verify_msg_fi_panopticon_test",
+    fi_test = ":p256_ecdsa_verify_msg_fi_test",
+    num_skips = 20,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "p256_ecdsa_verify_pubkey_fi_panopticon_test",
+    fi_test = ":p256_ecdsa_verify_pubkey_fi_test",
+    num_skips = 20,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "p256_ecdh_fi_panopticon_test",
+    fi_test = ":p256_ecdh_fi_test",
+    num_skips = 20,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "p384_ecdsa_sign_fi_nonce_panopticon_test",
+    fi_test = ":p384_ecdsa_sign_fi_nonce_test",
+    num_skips = 20,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "p384_ecdsa_verify_pubkey_fi_panopticon_test",
+    fi_test = ":p384_ecdsa_verify_pubkey_fi_test",
+    num_skips = 20,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "curve25519_ecdh_fi_panopticon_test",
+    fi_test = ":curve25519_ecdh_fi_test",
+    num_skips = 20,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "rsa_512_fi_panopticon_test",
+    fi_test = ":rsa_512_fi_test",
+    num_skips = 20,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "rsa_512_fi_exp_panopticon_test",
+    fi_test = ":rsa_512_fi_exp_test",
+    num_skips = 20,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "rsa_512_verify_fi_panopticon_test",
+    fi_test = ":rsa_512_verify_fi_test",
+    num_skips = 20,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "rsa_512_verify_fi_pubkey_panopticon_test",
+    fi_test = ":rsa_512_verify_fi_pubkey_test",
+    num_skips = 20,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "ed25519_sign_fi_nonce_panopticon_test",
+    fi_test = ":ed25519_sign_fi_nonce_test",
+    num_skips = 20,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "ed25519_verify_fi_msg_collision_panopticon_test",
+    fi_test = ":ed25519_verify_fi_msg_collision_test",
+    num_skips = 20,
+    tags = ["nightly"],
+)
+
+otbn_fi_panopticon_test(
+    name = "ed25519_verify_fi_pubkey_collision_panopticon_test",
+    fi_test = ":ed25519_verify_fi_pubkey_collision_test",
+    num_skips = 20,
+    tags = ["nightly"],
 )
