@@ -602,6 +602,7 @@ ownership_transfer_test(
         "//sw/device/lib/base:status",
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
@@ -1317,6 +1318,7 @@ opentitan_test(
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
@@ -1406,6 +1408,7 @@ opentitan_test(
         "//sw/device/silicon_creator/lib:boot_data",
         "//sw/device/silicon_creator/lib:manifest",
         "//sw/device/silicon_creator/lib/boot_svc:boot_svc_msg",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
         "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
         "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
