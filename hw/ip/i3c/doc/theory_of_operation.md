@@ -98,6 +98,33 @@ In generating the SCL clock and driving or sampling SDA, the design cycles throu
 The design thus supports a number of different oscillator frequencies and accuracies, with an additional accommodation that the SCL high pulse may optionally support an extension by half of the IP clock period.
 This is necessary at certain oscillator frequencies to support less stable oscillators without violating the very strict timing requirements imposed upon the duration of the SCL high interval by the I3C Basic Specification.
 
+### Error detection and reporting
+
+The Controller reports the outcome of each transfer in a Response Descriptor, using the error status codes of the I3C TCRI Specification (Section 6.4.1).
+It always posts a Response Descriptor for a failed transfer, and for a successful transfer only if the Command Descriptor requests it (`WROC`).
+In addition, the Controller counts the SDR Controller Error Types of the I3C Basic Specification (Section 4.3.8.2, Table 44) in [`CTRL_ERROR`](registers.md#ctrl_error), and CE2 errors also in [`MX_ERROR_COUNTERS`](registers.md#mx_error_counters).
+
+The Controller reports, among others, the following error status codes:
+
+| Error status code | Reported when                                                                   |
+|-------------------|---------------------------------------------------------------------------------|
+| `SUCCESS`         | The transfer completed successfully.                                            |
+| `CRC`             | The CRC-5 of HDR-DDR read data does not match.                                  |
+| `PARITY`          | An HDR-DDR read Data Word has a parity error.                                   |
+| `NACK`            | The Target did not acknowledge its address within `DEV_NACK_RETRY_CNT` retries. |
+| `NOT_SUPPORTED`   | The Command Descriptor is invalid or requests an unsupported feature.           |
+
+The Controller Error Types are handled as follows:
+
+| Controller Error Type | Behavior                                                          |
+|-----------------------|-------------------------------------------------------------------|
+| CE0                   | Detected and counted.                                             |
+| CE1                   | Detected and counted.                                             |
+| CE2                   | Detected and counted; the Controller ends the transfer.           |
+| CE3                   | Not applicable, because Controller Role Handoff is not supported. |
+
+On an error, the Controller reports a transfer error interrupt ([`PIO_INTR_STATUS.TRANSFER_ERR_STAT`](registers.md#pio_intr_status)) and halts command processing until software resumes it (HCI Specification, Sections 6.8.4 and 6.13).
+
 ## Target-side logic
 
 ![Target-side logic](targ_data_flow.svg)
