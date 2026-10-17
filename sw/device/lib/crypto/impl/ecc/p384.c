@@ -86,19 +86,19 @@ enum {
    * The expected instruction counts for constant time functions.
    */
   kModeKeygenInsCnt = 1961351,
-  kModeKeygenSideloadInsCnt = 1961244,
+  kModeKeygenSideloadInsCnt = 1961249,
   kModeEcdhInsCnt = 1983982,
-  kModeEcdhSideloadInsCnt = 1984128,
+  kModeEcdhSideloadInsCnt = 1984133,
   kModeEcdsaSignConfigKInsCnt = 1600471,
   kModeEcdsaSignInsCnt = 1600692,
-  kModeEcdsaSignSideloadInsCnt = 1600838,
+  kModeEcdsaSignSideloadInsCnt = 1600843,
   kModePointOnCurveCheckInsCnt = 357,
   kModePointOnCurveCheckInvld1InsCnt = 348,
   kModePointOnCurveCheckInvld2InsCnt = 355,
   kModePointOnCurveCheckInvldXRangeInsCnt = 40,
   kModePointOnCurveCheckInvldYRangeInsCnt = 48,
   kModeBasePointMultInsCnt = 1961105,
-  kModeArithShareSecretKeyInsCnt = 308,
+  kModeArithShareSecretKeyInsCnt = 313,
 };
 
 OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p384_init_otbn(
