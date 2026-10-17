@@ -2403,9 +2403,12 @@
           name: lc_hw_debug_clr
           desc:
             '''
-            Clear HW debug functionality.
-            This signal is On when `lc_hw_debug_en` turns Off outside a reset of `lc_ctrl`.
-            Flops storing the value of `lc_hw_debug_en` (see below) must be cleared when this signal is On.
+            Clear HW debug functionality; see `HW_DEBUG_CLR` in the Theory of Operation doc for details.
+
+            This signal is used to clear stored copies of `lc_hw_debug_en` when HW debug functionality gets disabled outside a reset of `lc_ctrl`.
+            This signal is On in the SCRAP, INVALID, POST_TRANSITION and ESCALATION states, in which `lc_hw_debug_en` is Off.
+            Once On, it remains On until lc_ctrl is reset.
+            Flops storing the value of `lc_hw_debug_en` (see below) must be cleared whenever this signal is not Off.
             '''
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -2429,7 +2432,7 @@
 
             This signal is Off while lc_ctrl is in reset.
             In order to prevent a JTAG disconnect during non-debug-module (NDM) reset, this signal should be flopped outside the NDM reset domain.
-            Such a flop must be cleared when `lc_hw_debug_clr` is On; see above.
+            Such a flop must be cleared whenever `lc_hw_debug_clr` is not Off; see above.
             '''
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -24243,9 +24246,12 @@
         name: lc_hw_debug_clr
         desc:
           '''
-          Clear HW debug functionality.
-          This signal is On when `lc_hw_debug_en` turns Off outside a reset of `lc_ctrl`.
-          Flops storing the value of `lc_hw_debug_en` (see below) must be cleared when this signal is On.
+          Clear HW debug functionality; see `HW_DEBUG_CLR` in the Theory of Operation doc for details.
+
+          This signal is used to clear stored copies of `lc_hw_debug_en` when HW debug functionality gets disabled outside a reset of `lc_ctrl`.
+          This signal is On in the SCRAP, INVALID, POST_TRANSITION and ESCALATION states, in which `lc_hw_debug_en` is Off.
+          Once On, it remains On until lc_ctrl is reset.
+          Flops storing the value of `lc_hw_debug_en` (see below) must be cleared whenever this signal is not Off.
           '''
         struct: lc_tx
         package: lc_ctrl_pkg
@@ -24269,7 +24275,7 @@
 
           This signal is Off while lc_ctrl is in reset.
           In order to prevent a JTAG disconnect during non-debug-module (NDM) reset, this signal should be flopped outside the NDM reset domain.
-          Such a flop must be cleared when `lc_hw_debug_clr` is On; see above.
+          Such a flop must be cleared whenever `lc_hw_debug_clr` is not Off; see above.
           '''
         struct: lc_tx
         package: lc_ctrl_pkg
