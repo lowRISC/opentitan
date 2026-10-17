@@ -74,7 +74,7 @@ In order to support a larger set of IP clock frequencies and/or lower clock freq
 
 This half-cycle extension is achieved by also using the negative edge of the IP clock in the generation of the SCL signal, which has the disadvantage of introducing combinational logic into the SCL output path.
 An important design decision within the IP is that I3C bus signals shall come directly from flip-flops wherever possible, to eliminate the possibility of glitches, and this is especially true of the SCL output.
-Whilst this combinational logic is kept to a minimum, if - for a given deployment of the IP block - it is certain that the combination of clock frequency and frequency accuracy is sufficient to meet the constraints imposed upon the SCL high period, as described in HCI Tables 48, 49 and 50, then the half-cycle extension should not be enabled.
+Whilst this combinational logic is kept to a minimum, if - for a given deployment of the IP block - it is certain that the combination of clock frequency and frequency accuracy is sufficient to meet the constraints imposed upon the SCL high period, as described in Tables 48, 49 and 50 of the I3C Basic Specification v1.2, then the half-cycle extension should not be enabled.
 
 There is further information on this point in the [integration notes](integration_notes.md).
 
