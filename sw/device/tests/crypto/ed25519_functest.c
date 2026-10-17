@@ -466,6 +466,83 @@ static status_t run_negative_tests(void) {
   return OTCRYPTO_OK;
 }
 
+status_t ed25519_out_of_order_test(void) {
+  LOG_INFO("Running Ed25519 out of order test");
+
+  uint32_t keyblob[keyblob_num_words(kPrivateKeyConfig)];
+  CHECK_STATUS_OK(create_blinded_kat_keyblob(keyblob));
+
+  otcrypto_blinded_key_t private_key = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  otcrypto_const_byte_buf_t msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)kMessage,
+                        ARRAYSIZE(kMessage));
+
+  uint32_t sig_buf[kEd25519SignatureWords];
+  otcrypto_word32_buf_t sig =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_buf, kEd25519SignatureWords);
+
+  uint32_t s0_buf[kEd25519SignatureWords / 2];
+  uint32_t s1_buf[kEd25519SignatureWords / 2];
+  uint32_t r0_buf[kEd25519SignatureWords / 2];
+  uint32_t r1_buf[kEd25519SignatureWords / 2];
+
+  otcrypto_word32_buf_t s0 = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, s0_buf,
+                                               kEd25519SignatureWords / 2);
+  otcrypto_word32_buf_t s1 = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, s1_buf,
+                                               kEd25519SignatureWords / 2);
+  otcrypto_word32_buf_t r0 = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, r0_buf,
+                                               kEd25519SignatureWords / 2);
+  otcrypto_word32_buf_t r1 = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, r1_buf,
+                                               kEd25519SignatureWords / 2);
+
+  // Call part2 before part1
+  CHECK(otcrypto_ed25519_sign_part2_async_start(&private_key, &msg,
+                                                kOtcryptoEddsaSignModeEddsa,
+                                                &sig, &s0, &s1, &r0, &r1)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Call finalize before part1/part2
+  CHECK(otcrypto_ed25519_sign_async_finalize(&sig).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // Call part1 and then finalize directly (skip part2)
+  CHECK_STATUS_OK(otcrypto_ed25519_sign_part1_async_start(
+      &private_key, &msg, kOtcryptoEddsaSignModeEddsa, &s0, &s1, &r0, &r1));
+  CHECK(otcrypto_ed25519_sign_async_finalize(&sig).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  // Start part1 again (just to see if we can recover)
+  CHECK_STATUS_OK(otcrypto_ed25519_sign_part1_async_start(
+      &private_key, &msg, kOtcryptoEddsaSignModeEddsa, &s0, &s1, &r0, &r1));
+  CHECK_STATUS_OK(otcrypto_ed25519_sign_part2_async_start(
+      &private_key, &msg, kOtcryptoEddsaSignModeEddsa, &sig, &s0, &s1, &r0,
+      &r1));
+
+  // Start part2 again instead of finalize
+  CHECK(otcrypto_ed25519_sign_part2_async_start(&private_key, &msg,
+                                                kOtcryptoEddsaSignModeEddsa,
+                                                &sig, &s0, &s1, &r0, &r1)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Start over to finally finalize correctly
+  CHECK_STATUS_OK(otcrypto_ed25519_sign_part1_async_start(
+      &private_key, &msg, kOtcryptoEddsaSignModeEddsa, &s0, &s1, &r0, &r1));
+  CHECK_STATUS_OK(otcrypto_ed25519_sign_part2_async_start(
+      &private_key, &msg, kOtcryptoEddsaSignModeEddsa, &sig, &s0, &s1, &r0,
+      &r1));
+
+  // Finally finalize correctly
+  CHECK_STATUS_OK(otcrypto_ed25519_sign_async_finalize(&sig));
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -479,6 +556,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, sign_verify_test);
   EXECUTE_TEST(result, run_wycheproof_invalid_r_test);
   EXECUTE_TEST(result, run_negative_tests);
+  EXECUTE_TEST(result, ed25519_out_of_order_test);
 
   return status_ok(result);
 }
