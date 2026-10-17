@@ -520,9 +520,8 @@ TODO(#31128): Describe the behavior for RSTACT, ENDXFER and GETCAPS in detail on
 The I3C Basic Specification offers increased data rates and improved error detection through the use of a new signaling mode called HDR-DDR.
 Both the Controller side and the Target side of this IP block offer support for HDR-DDR signaling, although it is not widely supported among existing I3C devices at this time.
 
-<!-- link to `./registers.md#targ_control--en_hdr_ddr` when the register field is available.-->
-As a contingency in the event of compatibility issues, the Target side of this IP may be instructed not to declare support for HDR-DDR mode by clearing the `TARG_CONTROL.EN_HDR_DDR` bit.
-This bit should normally be left set, i.e., declaring HDR-DDR support, and it is then the decision of the Active Controller whether to employ HDR-DDR signaling.
+The Target side always declares support for HDR-DDR mode in its response to the GETCAPS CCC, and it is then the decision of the Active Controller whether to employ HDR-DDR signaling.
+A control that allows software to suppress this declaration, as a contingency in the event of compatibility issues, is planned ([#31337](https://github.com/lowRISC/opentitan/issues/31337)).
 
 On the Controller side of this IP block, the software driver is responsible for determining the signaling mode employed for all I3C transfers, and it is therefore able to avoid the use of HDR-DDR signaling to Target devices, should that prove necessary.
 
