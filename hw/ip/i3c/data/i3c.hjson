@@ -722,7 +722,7 @@
           desc:   '''Enable half-cycle SCL extension.
                   If the field `TCHS` has been set to something other than 0x3ff, this bit controls whether the half-cycle SCL extension is enabled.
                   If `TCHS` has all bits set then the hardware will determine this setting automatically.
-                  Extending SCL high by half a cycle of the IP clock enables support for other clock frequencies such as 96MHz.
+                  Extending SCL high by half a cycle of the IP clock enables support for other clock frequencies such as 96 MHz.
                   '''
           resval: "1"
         }
@@ -924,16 +924,16 @@
 
                  - interval_clks = (hw_default_us * clks_per_us) + (signed_adj << shift)
 
-                The granularity of the adjustment is timer-dependent because the intervals span a large range, from 1us to 50ms.
-                It is also scaled according to the clock frequency of the IP block, because the supported frequency range is 50MHz to 1.5GHz:
+                The granularity of the adjustment is timer-dependent because the intervals span a large range, from 1 us to 50 ms.
+                It is also scaled according to the clock frequency of the IP block, because the supported frequency range is 50 MHz to 1.5 GHz:
 
                 Clock frequencies:
-                 - 50MHz to 64MHz, both inclusive: base weighting applies.
-                 - From 64MHz (exclusive) to 128MHz (inclusive): adjustments have twice the base weighting.
-                 - From 128MHz (excl.) to 256MHz (incl.): adjustments have 4 times the base weighting.
-                 - From 256MHz (excl.) to 512MHz (incl.): adjustments have 8 times the base weighting.
-                 - From 512MHz (excl.) to 1024MHz (incl.): adjustments have 16 times the base weighting.
-                 - From 1024MHz (excl.) to 1500MHz (incl.): adjustments have 32 times the base weighting.
+                 - 50 MHz to 64 MHz, both inclusive: base weighting applies.
+                 - From 64 MHz (exclusive) to 128 MHz (inclusive): adjustments have twice the base weighting.
+                 - From 128 MHz (excl.) to 256 MHz (incl.): adjustments have 4 times the base weighting.
+                 - From 256 MHz (excl.) to 512 MHz (incl.): adjustments have 8 times the base weighting.
+                 - From 512 MHz (excl.) to 1024 MHz (incl.): adjustments have 16 times the base weighting.
+                 - From 1024 MHz (excl.) to 1500 MHz (incl.): adjustments have 32 times the base weighting.
 
                 This allows the default intervals (in microseconds) to be adjusted in terms of IP clock cycles to an accuracy of +/- 0.8% typically.
                 '''
@@ -983,7 +983,7 @@
                 Time intervals are specified as two's complement 8-bit signed adjustments to the default values calculated by the hardware.
 
                 The granularity of the adjustment is timer-dependent and clock frequency-dependent.
-                The weightings given here apply to the base case of an IP clock frequency up to 64MHz, inclusive.
+                The weightings given here apply to the base case of an IP clock frequency up to 64 MHz, inclusive.
                 See `INTERVAL_TIME0` for details.
                 '''
       swaccess: "rw",
@@ -1147,7 +1147,7 @@
           desc:     '''Supplies the high address bits when software performs direct accesses to the internal message buffer.
                     The IP may be configured to map part of its internal message buffer into the upper half of the IP address space.
                     This provides more RAM to a memory-limited system when the I3C is not being used, and may be diagnostically useful when it is used.
-                    Since half of the IP address space is typically 2KiB but the message buffer is larger, this field allows software-controlled paging.
+                    Since half of the IP address space is typically 2 KiB but the message buffer is larger, this field allows software-controlled paging.
                     '''
           swaccess: "rw",
           hwaccess: "hrw",
@@ -4844,7 +4844,7 @@
         byte-write: "true",
         unusual:    "false"
         swaccess:   "rw",
-        desc:       '''Software-managed 4KiB message buffer used for transmitting and receiving messages.
+        desc:       '''Software-managed 4 KiB message buffer used for transmitting and receiving messages.
 
                     This may be used diagnostically when the I3C Controller and/or Target(s) are enabled.
                     It may be employed as additional system RAM when the I3C block is completely disabled.

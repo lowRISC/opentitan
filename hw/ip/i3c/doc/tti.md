@@ -315,9 +315,9 @@ The bus events that may be reported are listed below:
 | 21    | ChksumCCC   | Checksum error occurred during CCC (HDR-DDR)      |
 | 20    | ParityCCC   | Parity error occurred during CCC (SDR, HDR-DDR)   |
 | 19    | TargetRst   | Target Reset pattern was received                 |
-| 18    | Idle        | Bus Idle condition (> 200us with no activity)     |
+| 18    | Idle        | Bus Idle condition (> 200 us with no activity)     |
 | 17    | DeadBus     | No response to Start Request on an idle bus       |
-| 16    | ReadNoSCL   | No change in SCL for > 150us during Read Transfer |
+| 16    | ReadNoSCL   | No change in SCL for > 150 us during Read Transfer |
 
 ## Target Characteristics
 
