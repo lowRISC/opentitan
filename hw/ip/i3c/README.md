@@ -31,9 +31,10 @@ In summary, the IP block implements the following features:
     - Dynamic Address Assignment (DAA) may be decomposed into multiple operations by firmware to support more targets.
 - Signaling modes:
   - Single Data Rate (SDR)
-    - 12.5 Mbps theoretical peak.
+    - 12.5 Mbps peak signaling rate.
   - Double Data Rate (HDR-DDR)
-    - 25 Mbps theoretical peak; minus overheads this is 20 Mbps throughput for long transfers.
+    - 25 Mbps peak signaling rate.
+  - The data rate is lower and depends on the IP clock frequency (see [Data rates](doc/theory_of_operation.md#data-rates)).
   - No support for HDR-BT mode or Multi-Lane transfers.
   - I2C Fast Mode and Fast Mode Plus support for backwards compatibility with some I2C devices.
 - Primary Controller.
@@ -46,8 +47,8 @@ In summary, the IP block implements the following features:
 - Support for 'Deepest Sleep' state, with wake-up detection being performed by the Target Reset detector.
   - Almost all logic powered-down, and no free-running clock required; clocked by I3C signaling.
 - Signaling modes:
-  - Single Data Rate (SDR), 12.5 Mbps.
-  - Double Data Rate (HDR-DDR), 25 Mbps signaling/20 Mbps throughput.
+  - Single Data Rate (SDR), 12.5 Mbps peak signaling rate.
+  - Double Data Rate (HDR-DDR), 25 Mbps peak signaling rate.
 - Target Transaction Interface (TTI).
   - Modeled on the HCI, supporting:
     - Tx/Rx transfers, longer than the associated data buffers.

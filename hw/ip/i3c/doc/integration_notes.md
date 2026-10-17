@@ -33,7 +33,7 @@ Example clock frequencies and required tolerance:
 
 As the above table shows there is a trade off between the frequency accuracy and the achievable data rates.
 Note that the quoted data rates are the effective rate of data transfer, assuming that read/write transfers are sufficiently large to mitigate the protocol overheads.
-The theoretical peak signaling speeds are 12.5 Mbps for SDR and 25 Mbps for HDR-DDR.
+The peak signaling rates are 12.5 Mbps for SDR and 25 Mbps for HDR-DDR.
 
 It should also be observed that for frequencies between 50 MHz and 100 MHz there may be a requirement to reduce further the rate of data transfers to/from targets that have a large `tSCO` delay (time from SCL edge to SDA output).
 This is because the Controller logic samples SDA an integral number of IP clock cycles after the SCL edge, and increasing the clock frequency extends the SCL low period to an odd number of clock cycles, moving the sampling points closer to the transitions on SCL.

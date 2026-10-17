@@ -21,10 +21,11 @@ Both the Controller and the Target functionality within this IP block support th
 
  - Single Data Rate (SDR).
    This is broadly similar to the signaling of the I<sup>2</sup>C bus, including the same start (S), repeated start (Sr) and stop (P) signaling.
-   In SDR mode data may be transferred at a theoretical peak bandwidth of 11.1 Mbps when operating at 12.5 MHz.
+   SDR transfers 8 data bits and a T-bit in 9 SCL cycles, so a 12.5 MHz SCL carries at most 11.1 Mbps of data.
  - Double Data Rate (HDR-DDR).
    This mode is new to I3C and employs an entirely different logical protocol whilst also transferring data on both edges of the SCL clock signal.
-   HDR-DDR mode also includes error detection using parity and checksums, and offers a theoretical peak bandwidth of 20 Mbps when operating at 12.5 MHz.
+   HDR-DDR mode also includes error detection using parity and checksums.
+   It transfers 16 data bits, a 2-bit preamble and 2 parity bits in 10 SCL cycles, so a 12.5 MHz SCL carries at most 20 Mbps of data.
 
 The Controller and Target sides of the IP block operate independently on the same bus, but they share the TL-UL register interface and in particular the message buffer.
 
@@ -71,6 +72,20 @@ Additionally, any subset of these timing parameters may be overridden by softwar
 See Tables 48, 49 and 50 of the I3C Basic Specification v1.2 for the exact details of the timing requirements, but in outline the duration of the SCL high interval (tDIG_H) must lie between 32 ns and 41 ns.
 With this in mind, not all IP clock frequencies are suitable, but the design supports a number of different clock frequencies.
 The timing parameters and the rest of the IP block design are intended to support maximum signaling speed throughout the clock frequency range from 50 MHz to 1.5 GHz, both inclusive. More information may be found in the [integration notes](integration_notes.md).
+
+## Data rates
+
+With SCL at 12.5 MHz, the peak signaling rate on the I3C bus is 12.5 Mbps for SDR and 25 Mbps for HDR-DDR.
+The data rate is lower, because of the protocol overheads described in the [Overview](#overview).
+When the IP block is the Active Controller, the data rate also depends on the IP clock frequency, because the Controller forms each SCL period from an integral number of IP clock cycles.
+The following table lists the data rates of long transfers for example IP clock frequencies; the [integration notes](integration_notes.md#ip-clock-frequency) list the clock tolerance that each of them requires.
+
+| IP clock frequency | Half-cycle SCL high extension |       SDR |   HDR-DDR |
+|-------------------:|:-----------------------------:|----------:|----------:|
+|             50 MHz |              No               | 11.1 Mbps | 20.0 Mbps |
+|             55 MHz |              No               |  9.7 Mbps | 17.6 Mbps |
+|             85 MHz |              No               | 10.8 Mbps | 19.4 Mbps |
+|             96 MHz |              Yes              | 10.6 Mbps | 19.2 Mbps |
 
 ## Controller-side logic
 
