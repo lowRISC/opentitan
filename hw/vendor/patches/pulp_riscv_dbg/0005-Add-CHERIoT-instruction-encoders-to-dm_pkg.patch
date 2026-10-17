@@ -1,0 +1,55 @@
+From 8825cc3142de304ce3d4c309551a70dadfa7041b Mon Sep 17 00:00:00 2001
+From: Samuel Riedel <sriedel@lowrisc.org>
+Date: Fri, 18 Sep 2026 17:13:48 +0200
+Subject: [PATCH 05/12] Add CHERIoT instruction encoders to dm_pkg
+
+Signed-off-by: Samuel Riedel <sriedel@lowrisc.org>
+---
+ src/dm_pkg.sv | 24 ++++++++++++++++++++++++
+ 1 file changed, 24 insertions(+)
+
+diff --git a/src/dm_pkg.sv b/src/dm_pkg.sv
+index a8a27d2..3816db7 100644
+--- a/src/dm_pkg.sv
++++ b/src/dm_pkg.sv
+@@ -329,6 +329,17 @@ package dm;
+     CSR_INSTRET        = 12'hC02
+   } csr_reg_t;
+ 
++  // CHERIoT Special Capability Registers (SCRs).
++  //
++  // In CHERIoT mode the debug scratch registers are capability registers reached with CSpecialRW
++  // rather than CSRs reached with CSRRW, and they are addressed by a five bit SCR index instead of
++  // a twelve bit CSR address. The RV32I CSR_DSCRATCH0/CSR_DSCRATCH1 entries above are deliberately
++  // kept. A debug module that supports both ISAs needs both encodings.
++  typedef enum logic [4:0] {
++    SCR_DSCRATCHC0 = 5'h19,
++    SCR_DSCRATCHC1 = 5'h1a
++  } spec_csr_e;
++
+   // SBA state
+   typedef enum logic [2:0] {
+     Idle,
+@@ -423,6 +434,19 @@ package dm;
+     return {csr, 5'h0, 3'h2, dest, 7'h73};
+   endfunction
+ 
++  // CHERIoT equivalents of csrw/csrr for the Special Capability Registers.
++  function automatic logic [31:0] cspecialw (spec_csr_e  csr,
++                                             logic [4:0] rs1);
++    // CSpecialRW c0, scr, csrc -> discards the read value
++    return {7'h01, csr, rs1, 3'h0, 5'h0, 7'h5b};
++  endfunction
++
++  function automatic logic [31:0] cspecialr (spec_csr_e  csr,
++                                             logic [4:0] dest);
++    // CSpecialRW cdest, scr, c0 -> leaves the register unchanged
++    return {7'h01, csr, 5'h0, 3'h0, dest, 7'h5b};
++  endfunction
++
+   function automatic logic [31:0] branch(logic [4:0]  src2,
+                                          logic [4:0]  src1,
+                                          logic [2:0]  funct3,
+-- 
+2.43.0
+

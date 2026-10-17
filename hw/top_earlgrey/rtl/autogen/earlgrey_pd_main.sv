@@ -1907,6 +1907,7 @@ module earlgrey_pd_main #(
     .next_dm_addr_i('0),
     .jtag_i(pinmux_rv_jtag_req_i),
     .jtag_o(pinmux_rv_jtag_rsp_o),
+    .cheriot_ena_i(rv_core_ibex_cheriot_ena),
     .lc_init_done_i(lc_ctrl_lc_init_done),
     .lc_hw_debug_clr_i(lc_ctrl_lc_hw_debug_clr),
     .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en),

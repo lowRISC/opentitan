@@ -1,0 +1,119 @@
+From 8b2dd9946ac73c998286eadc5e7c7513bf26a789 Mon Sep 17 00:00:00 2001
+From: Samuel Riedel <sriedel@lowrisc.org>
+Date: Fri, 18 Sep 2026 18:13:16 +0200
+Subject: [PATCH 10/12] Allow 64-bit abstract register access in CHERIoT mode
+
+Signed-off-by: Samuel Riedel <sriedel@lowrisc.org>
+---
+ src/dm_mem.sv | 45 ++++++++++++++++++++++++++++++++++++++-------
+ src/dm_pkg.sv |  4 ++--
+ 2 files changed, 40 insertions(+), 9 deletions(-)
+
+diff --git a/src/dm_mem.sv b/src/dm_mem.sv
+index ac0d630..a8034e5 100755
+--- a/src/dm_mem.sv
++++ b/src/dm_mem.sv
+@@ -103,6 +103,17 @@ module dm_mem #(
+   logic exception;
+   logic unsupported_command;
+ 
++  // Largest Access Register size accepted right now, in the same encoding as MaxAar:
++  // 3 means up to 32 bit, 4 means up to 64 bit.
++  //
++  // aarsize == 3 asks for a 64 bit register transfer, and two independent things can make that
++  // meaningful. One is a 64 bit register path, which MaxAar already describes statically from
++  // BusWidth. The other is CHERIoT mode, where the 64 bit encodings move a capability's address
++  // and metadata together on an otherwise 32 bit machine, and are how a debugger reaches
++  // capability metadata at all.
++  logic [31:0] max_aar;
++  assign max_aar = prim_mubi_pkg::mubi4_test_true_strict(cheriot_enable_i) ? 32'd4 : 32'(MaxAar);
++
+   logic [63:0] rom_rdata;
+   logic [63:0] rdata_d, rdata_q;
+   logic        word_enable32_q;
+@@ -462,7 +473,7 @@ module dm_mem #(
+       // Access Register
+       // --------------------
+       dm::AccessRegister: begin
+-        if (32'(ac_ar.aarsize) < MaxAar && ac_ar.transfer && ac_ar.write) begin
++        if (32'(ac_ar.aarsize) < max_aar && ac_ar.transfer && ac_ar.write) begin
+           // store a0 in dscratch1
+           abstract_cmd[0][31:0] = HasSndScratch ? scratch_write(cheriot_enable_i, 1'b1, 5'd10)
+                                                 : dm::nop();
+@@ -499,12 +510,22 @@ module dm_mem #(
+             abstract_cmd[2][31:0]  = scratch_write(cheriot_enable_i, 1'b0, 5'd8);
+             // load from data register
+             abstract_cmd[2][63:32] = dm::load(ac_ar.aarsize, 5'd8, LoadBaseAddr, dm::DataAddr);
+-            // and store it in the corresponding CSR
+-            abstract_cmd[3][31:0]  = dm::csrw(dm::csr_reg_t'(ac_ar.regno[11:0]), 5'd8);
++            // and store it in the corresponding CSR or SCR for 64 bit transfers in CHERIoT.
++            if (prim_mubi_pkg::mubi4_test_true_strict(cheriot_enable_i) &&
++                32'(ac_ar.aarsize) == 32'd3) begin
++              abstract_cmd[3][31:0] = dm::cspecialw(ac_ar.regno[4:0], 5'd8);
++              // Only regno 0x0-0x1f name an SCR.
++              if (ac_ar.regno[11:5] != '0) begin
++                abstract_cmd[0][31:0] = dm::ebreak(); // we leave asap
++                unsupported_command = 1'b1;
++              end
++            end else begin
++              abstract_cmd[3][31:0] = dm::csrw(dm::csr_reg_t'(ac_ar.regno[11:0]), 5'd8);
++            end
+             // restore s0 again from dscratch
+             abstract_cmd[3][63:32] = scratch_read(cheriot_enable_i, 1'b0, 5'd8);
+           end
+-        end else if (32'(ac_ar.aarsize) < MaxAar && ac_ar.transfer && !ac_ar.write) begin
++        end else if (32'(ac_ar.aarsize) < max_aar && ac_ar.transfer && !ac_ar.write) begin
+           // store a0 in dscratch1
+           abstract_cmd[0][31:0]  = HasSndScratch ?
+                                    scratch_write(cheriot_enable_i, 1'b1, LoadBaseAddr) :
+@@ -540,14 +561,24 @@ module dm_mem #(
+             // CSR register to data
+             // store s0 in dscratch
+             abstract_cmd[2][31:0]  = scratch_write(cheriot_enable_i, 1'b0, 5'd8);
+-            // read value from CSR into s0
+-            abstract_cmd[2][63:32] = dm::csrr(dm::csr_reg_t'(ac_ar.regno[11:0]), 5'd8);
++            // read value from CSR into s0, or from SCR for 64 bit transfer in CHERIoT.
++            if (prim_mubi_pkg::mubi4_test_true_strict(cheriot_enable_i) &&
++                32'(ac_ar.aarsize) == 32'd3) begin
++              abstract_cmd[2][63:32] = dm::cspecialr(ac_ar.regno[4:0], 5'd8);
++              // Only regno 0x0-0x1f name an SCR.
++              if (ac_ar.regno[11:5] != '0) begin
++                abstract_cmd[0][31:0] = dm::ebreak(); // we leave asap
++                unsupported_command = 1'b1;
++              end
++            end else begin
++              abstract_cmd[2][63:32] = dm::csrr(dm::csr_reg_t'(ac_ar.regno[11:0]), 5'd8);
++            end
+             // and store s0 into data section
+             abstract_cmd[3][31:0]  = dm::store(ac_ar.aarsize, 5'd8, LoadBaseAddr, dm::DataAddr);
+             // restore s0 again from dscratch
+             abstract_cmd[3][63:32] = scratch_read(cheriot_enable_i, 1'b0, 5'd8);
+           end
+-        end else if (32'(ac_ar.aarsize) >= MaxAar || ac_ar.aarpostincrement == 1'b1) begin
++        end else if (32'(ac_ar.aarsize) >= max_aar || ac_ar.aarpostincrement == 1'b1) begin
+           // this should happend when e.g. ac_ar.aarsize >= MaxAar
+           // Openocd will try to do an access with aarsize=64 bits
+           // first before falling back to 32 bits.
+diff --git a/src/dm_pkg.sv b/src/dm_pkg.sv
+index 3816db7..f902f91 100644
+--- a/src/dm_pkg.sv
++++ b/src/dm_pkg.sv
+@@ -435,13 +435,13 @@ package dm;
+   endfunction
+ 
+   // CHERIoT equivalents of csrw/csrr for the Special Capability Registers.
+-  function automatic logic [31:0] cspecialw (spec_csr_e  csr,
++  function automatic logic [31:0] cspecialw (logic [4:0] csr,
+                                              logic [4:0] rs1);
+     // CSpecialRW c0, scr, csrc -> discards the read value
+     return {7'h01, csr, rs1, 3'h0, 5'h0, 7'h5b};
+   endfunction
+ 
+-  function automatic logic [31:0] cspecialr (spec_csr_e  csr,
++  function automatic logic [31:0] cspecialr (logic [4:0] csr,
+                                              logic [4:0] dest);
+     // CSpecialRW cdest, scr, c0 -> leaves the register unchanged
+     return {7'h01, csr, 5'h0, 3'h0, dest, 7'h5b};
+-- 
+2.43.0
+

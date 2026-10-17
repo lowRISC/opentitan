@@ -27,6 +27,8 @@ module dm_mem #(
   input  logic                             rst_ni,      // debug module reset
 
   output logic [NrHarts-1:0]               debug_req_o,
+  // Select CHERIoT mode
+  input  prim_mubi_pkg::mubi4_t            cheriot_enable_i,
   input  logic                             ndmreset_i,
   input  logic [19:0]                      hartsel_i,
   // from Ctrl and Status register
@@ -100,6 +102,17 @@ module dm_mem #(
 
   logic exception;
   logic unsupported_command;
+
+  // Largest Access Register size accepted right now, in the same encoding as MaxAar:
+  // 3 means up to 32 bit, 4 means up to 64 bit.
+  //
+  // aarsize == 3 asks for a 64 bit register transfer, and two independent things can make that
+  // meaningful. One is a 64 bit register path, which MaxAar already describes statically from
+  // BusWidth. The other is CHERIoT mode, where the 64 bit encodings move a capability's address
+  // and metadata together on an otherwise 32 bit machine, and are how a debugger reaches
+  // capability metadata at all.
+  logic [31:0] max_aar;
+  assign max_aar = prim_mubi_pkg::mubi4_test_true_strict(cheriot_enable_i) ? 32'd4 : 32'(MaxAar);
 
   logic [63:0] rom_rdata;
   logic [63:0] rdata_d, rdata_q;
@@ -417,6 +430,23 @@ module dm_mem #(
 
   assign err_o = err_q;
 
+  // Access to the debug scratch registers, which the abstract command sequences use to spill and
+  // restore the two GPRs they need. In CHERIoT mode these are Special Capability Registers reached
+  // with CSpecialRW rather than CSRs reached with CSRRW.
+  function automatic logic [31:0] scratch_write(prim_mubi_pkg::mubi4_t cap_mode, logic scratch1,
+                                                logic [4:0] rs1);
+    return prim_mubi_pkg::mubi4_test_true_strict(cap_mode) ?
+           dm::cspecialw(scratch1 ? dm::SCR_DSCRATCHC1 : dm::SCR_DSCRATCHC0, rs1) :
+           dm::csrw(scratch1 ? dm::CSR_DSCRATCH1 : dm::CSR_DSCRATCH0, rs1);
+  endfunction
+
+  function automatic logic [31:0] scratch_read(prim_mubi_pkg::mubi4_t cap_mode, logic scratch1,
+                                               logic [4:0] dest);
+    return prim_mubi_pkg::mubi4_test_true_strict(cap_mode) ?
+           dm::cspecialr(scratch1 ? dm::SCR_DSCRATCHC1 : dm::SCR_DSCRATCHC0, dest) :
+           dm::csrr(scratch1 ? dm::CSR_DSCRATCH1 : dm::CSR_DSCRATCH0, dest);
+  endfunction
+
   always_comb begin : p_abstract_cmd_rom
     // this abstract command is currently unsupported
     unsupported_command = 1'b0;
@@ -432,7 +462,8 @@ module dm_mem #(
     abstract_cmd[2][63:32] = dm::nop();
     abstract_cmd[3][31:0]  = dm::nop();
     abstract_cmd[3][63:32] = dm::nop();
-    abstract_cmd[4][31:0]  = HasSndScratch ? dm::csrr(dm::CSR_DSCRATCH1, 5'd10) : dm::nop();
+    abstract_cmd[4][31:0]  = HasSndScratch ? scratch_read(cheriot_enable_i, 1'b1, 5'd10)
+                                           : dm::nop();
     abstract_cmd[4][63:32] = dm::ebreak();
     abstract_cmd[7:5]      = '0;
 
@@ -442,9 +473,10 @@ module dm_mem #(
       // Access Register
       // --------------------
       dm::AccessRegister: begin
-        if (32'(ac_ar.aarsize) < MaxAar && ac_ar.transfer && ac_ar.write) begin
+        if (32'(ac_ar.aarsize) < max_aar && ac_ar.transfer && ac_ar.write) begin
           // store a0 in dscratch1
-          abstract_cmd[0][31:0] = HasSndScratch ? dm::csrw(dm::CSR_DSCRATCH1, 5'd10) : dm::nop();
+          abstract_cmd[0][31:0] = HasSndScratch ? scratch_write(cheriot_enable_i, 1'b1, 5'd10)
+                                                : dm::nop();
           // this range is reserved
           if (ac_ar.regno[15:14] != '0) begin
             abstract_cmd[0][31:0] = dm::ebreak(); // we leave asap
@@ -454,13 +486,13 @@ module dm_mem #(
           end else if (HasSndScratch && ac_ar.regno[12] && (!ac_ar.regno[5]) &&
                       (ac_ar.regno[4:0] == 5'd10)) begin
             // store s0 in dscratch
-            abstract_cmd[2][31:0]  = dm::csrw(dm::CSR_DSCRATCH0, 5'd8);
+            abstract_cmd[2][31:0]  = scratch_write(cheriot_enable_i, 1'b0, 5'd8);
             // load from data register
             abstract_cmd[2][63:32] = dm::load(ac_ar.aarsize, 5'd8, LoadBaseAddr, dm::DataAddr);
             // and store it in the corresponding CSR
-            abstract_cmd[3][31:0]  = dm::csrw(dm::CSR_DSCRATCH1, 5'd8);
+            abstract_cmd[3][31:0]  = scratch_write(cheriot_enable_i, 1'b1, 5'd8);
             // restore s0 again from dscratch
-            abstract_cmd[3][63:32] = dm::csrr(dm::CSR_DSCRATCH0, 5'd8);
+            abstract_cmd[3][63:32] = scratch_read(cheriot_enable_i, 1'b0, 5'd8);
           // GPR/FPR access
           end else if (ac_ar.regno[12]) begin
             // determine whether we want to access the floating point register or not
@@ -475,18 +507,28 @@ module dm_mem #(
           end else begin
             // data register to CSR
             // store s0 in dscratch
-            abstract_cmd[2][31:0]  = dm::csrw(dm::CSR_DSCRATCH0, 5'd8);
+            abstract_cmd[2][31:0]  = scratch_write(cheriot_enable_i, 1'b0, 5'd8);
             // load from data register
             abstract_cmd[2][63:32] = dm::load(ac_ar.aarsize, 5'd8, LoadBaseAddr, dm::DataAddr);
-            // and store it in the corresponding CSR
-            abstract_cmd[3][31:0]  = dm::csrw(dm::csr_reg_t'(ac_ar.regno[11:0]), 5'd8);
+            // and store it in the corresponding CSR or SCR for 64 bit transfers in CHERIoT.
+            if (prim_mubi_pkg::mubi4_test_true_strict(cheriot_enable_i) &&
+                32'(ac_ar.aarsize) == 32'd3) begin
+              abstract_cmd[3][31:0] = dm::cspecialw(ac_ar.regno[4:0], 5'd8);
+              // Only regno 0x0-0x1f name an SCR.
+              if (ac_ar.regno[11:5] != '0) begin
+                abstract_cmd[0][31:0] = dm::ebreak(); // we leave asap
+                unsupported_command = 1'b1;
+              end
+            end else begin
+              abstract_cmd[3][31:0] = dm::csrw(dm::csr_reg_t'(ac_ar.regno[11:0]), 5'd8);
+            end
             // restore s0 again from dscratch
-            abstract_cmd[3][63:32] = dm::csrr(dm::CSR_DSCRATCH0, 5'd8);
+            abstract_cmd[3][63:32] = scratch_read(cheriot_enable_i, 1'b0, 5'd8);
           end
-        end else if (32'(ac_ar.aarsize) < MaxAar && ac_ar.transfer && !ac_ar.write) begin
+        end else if (32'(ac_ar.aarsize) < max_aar && ac_ar.transfer && !ac_ar.write) begin
           // store a0 in dscratch1
           abstract_cmd[0][31:0]  = HasSndScratch ?
-                                   dm::csrw(dm::CSR_DSCRATCH1, LoadBaseAddr) :
+                                   scratch_write(cheriot_enable_i, 1'b1, LoadBaseAddr) :
                                    dm::nop();
           // this range is reserved
           if (ac_ar.regno[15:14] != '0) begin
@@ -497,13 +539,13 @@ module dm_mem #(
           end else if (HasSndScratch && ac_ar.regno[12] && (!ac_ar.regno[5]) &&
                       (ac_ar.regno[4:0] == 5'd10)) begin
             // store s0 in dscratch
-            abstract_cmd[2][31:0]  = dm::csrw(dm::CSR_DSCRATCH0, 5'd8);
+            abstract_cmd[2][31:0]  = scratch_write(cheriot_enable_i, 1'b0, 5'd8);
             // read value from CSR into s0
-            abstract_cmd[2][63:32] = dm::csrr(dm::CSR_DSCRATCH1, 5'd8);
+            abstract_cmd[2][63:32] = scratch_read(cheriot_enable_i, 1'b1, 5'd8);
             // and store s0 into data section
             abstract_cmd[3][31:0]  = dm::store(ac_ar.aarsize, 5'd8, LoadBaseAddr, dm::DataAddr);
             // restore s0 again from dscratch
-            abstract_cmd[3][63:32] = dm::csrr(dm::CSR_DSCRATCH0, 5'd8);
+            abstract_cmd[3][63:32] = scratch_read(cheriot_enable_i, 1'b0, 5'd8);
           // GPR/FPR access
           end else if (ac_ar.regno[12]) begin
             // determine whether we want to access the floating point register or not
@@ -518,15 +560,25 @@ module dm_mem #(
           end else begin
             // CSR register to data
             // store s0 in dscratch
-            abstract_cmd[2][31:0]  = dm::csrw(dm::CSR_DSCRATCH0, 5'd8);
-            // read value from CSR into s0
-            abstract_cmd[2][63:32] = dm::csrr(dm::csr_reg_t'(ac_ar.regno[11:0]), 5'd8);
+            abstract_cmd[2][31:0]  = scratch_write(cheriot_enable_i, 1'b0, 5'd8);
+            // read value from CSR into s0, or from SCR for 64 bit transfer in CHERIoT.
+            if (prim_mubi_pkg::mubi4_test_true_strict(cheriot_enable_i) &&
+                32'(ac_ar.aarsize) == 32'd3) begin
+              abstract_cmd[2][63:32] = dm::cspecialr(ac_ar.regno[4:0], 5'd8);
+              // Only regno 0x0-0x1f name an SCR.
+              if (ac_ar.regno[11:5] != '0) begin
+                abstract_cmd[0][31:0] = dm::ebreak(); // we leave asap
+                unsupported_command = 1'b1;
+              end
+            end else begin
+              abstract_cmd[2][63:32] = dm::csrr(dm::csr_reg_t'(ac_ar.regno[11:0]), 5'd8);
+            end
             // and store s0 into data section
             abstract_cmd[3][31:0]  = dm::store(ac_ar.aarsize, 5'd8, LoadBaseAddr, dm::DataAddr);
             // restore s0 again from dscratch
-            abstract_cmd[3][63:32] = dm::csrr(dm::CSR_DSCRATCH0, 5'd8);
+            abstract_cmd[3][63:32] = scratch_read(cheriot_enable_i, 1'b0, 5'd8);
           end
-        end else if (32'(ac_ar.aarsize) >= MaxAar || ac_ar.aarpostincrement == 1'b1) begin
+        end else if (32'(ac_ar.aarsize) >= max_aar || ac_ar.aarpostincrement == 1'b1) begin
           // this should happend when e.g. ac_ar.aarsize >= MaxAar
           // Openocd will try to do an access with aarsize=64 bits
           // first before falling back to 32 bits.
@@ -563,17 +615,33 @@ module dm_mem #(
   // two registers per hart, hence we also need
   // two scratch registers.
   if (HasSndScratch) begin : gen_rom_snd_scratch
+    // Select between the RV32I or the CHERIoT ROM
+    logic [63:0] rom_rdata_rv32, rom_rdata_cheriot;
+
     debug_rom i_debug_rom (
       .clk_i,
       .rst_ni,
       .req_i,
-      .addr_i  ( rom_addr  ),
-      .rdata_o ( rom_rdata )
+      .addr_i  ( rom_addr       ),
+      .rdata_o ( rom_rdata_rv32 )
     );
+
+    debug_rom_cheriot i_debug_rom_cheriot (
+      .clk_i,
+      .rst_ni,
+      .req_i,
+      .addr_i  ( rom_addr          ),
+      .rdata_o ( rom_rdata_cheriot )
+    );
+
+    assign rom_rdata = prim_mubi_pkg::mubi4_test_true_strict(cheriot_enable_i) ? rom_rdata_cheriot
+                                                                               : rom_rdata_rv32;
   end else begin : gen_rom_one_scratch
     // It uses the zero register (`x0`) as the base
     // for its loads. The zero register does not need to
     // be saved.
+    //
+    // There is no CHERIoT counterpart to this ROM.
     debug_rom_one_scratch i_debug_rom (
       .clk_i,
       .rst_ni,

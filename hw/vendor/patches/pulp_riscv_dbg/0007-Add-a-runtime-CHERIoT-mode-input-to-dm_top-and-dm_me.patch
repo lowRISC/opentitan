@@ -1,0 +1,48 @@
+From bb2b878594eb7164e3cf4d18c0e7d0e63790087e Mon Sep 17 00:00:00 2001
+From: Samuel Riedel <sriedel@lowrisc.org>
+Date: Fri, 18 Sep 2026 18:07:51 +0200
+Subject: [PATCH 07/12] Add a runtime CHERIoT mode input to dm_top and dm_mem
+
+Signed-off-by: Samuel Riedel <sriedel@lowrisc.org>
+---
+ src/dm_mem.sv | 2 ++
+ src/dm_top.sv | 3 +++
+ 2 files changed, 5 insertions(+)
+
+diff --git a/src/dm_mem.sv b/src/dm_mem.sv
+index f7a5f7d..8c84730 100755
+--- a/src/dm_mem.sv
++++ b/src/dm_mem.sv
+@@ -27,6 +27,8 @@ module dm_mem #(
+   input  logic                             rst_ni,      // debug module reset
+ 
+   output logic [NrHarts-1:0]               debug_req_o,
++  // Select CHERIoT mode
++  input  prim_mubi_pkg::mubi4_t            cheriot_enable_i,
+   input  logic                             ndmreset_i,
+   input  logic [19:0]                      hartsel_i,
+   // from Ctrl and Status register
+diff --git a/src/dm_top.sv b/src/dm_top.sv
+index 87b480a..9b6dda0 100644
+--- a/src/dm_top.sv
++++ b/src/dm_top.sv
+@@ -36,6 +36,8 @@ module dm_top #(
+   // register is a word address and not a byte address. This value is passed in as a static signal
+   // so that it becomes possible to assign this value with chiplet tie-offs or straps, if needed.
+   input  logic [31:0]           next_dm_addr_i,
++  // Select CHERIoT mode
++  input  prim_mubi_pkg::mubi4_t cheriot_enable_i,
+   input  logic                  testmode_i,
+   output logic                  ndmreset_o,  // non-debug module reset
+   input  logic                  ndmreset_ack_i, // non-debug module reset acknowledgement pulse
+@@ -213,6 +215,7 @@ module dm_top #(
+     .clk_i,
+     .rst_ni,
+     .debug_req_o,
++    .cheriot_enable_i,
+     .ndmreset_i              ( ndmreset              ),
+     .hartsel_i               ( hartsel               ),
+     .haltreq_i               ( haltreq               ),
+-- 
+2.43.0
+

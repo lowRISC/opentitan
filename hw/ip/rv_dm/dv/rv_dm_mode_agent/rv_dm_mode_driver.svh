@@ -52,6 +52,10 @@ task rv_dm_mode_driver::get_and_drive();
       cfg.vif.scanmode_internal <= mubi4_t'(item.m_scanmode);
     end
 
+    if (item.m_has_cheriot_ena) begin
+      cfg.vif.cheriot_ena_internal <= mubi4_t'(item.m_cheriot_ena);
+    end
+
     seq_item_port.item_done(item);
   end
 endtask

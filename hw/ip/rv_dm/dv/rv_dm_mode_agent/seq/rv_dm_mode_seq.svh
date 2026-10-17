@@ -74,6 +74,13 @@ class rv_dm_mode_seq extends dv_base_seq #(.REQ (rv_dm_mode_seq_item),
   // arbitrary value other than MuBi4True.
   rand bit m_scanmode;
 
+  // CHERIoT mode signal ///////////////////////////////////////////////////////////////////////////
+  bit      m_has_cheriot_ena;
+
+  // If m_cheriot_ena is true, the item's m_cheriot_ena signal will be MuBi4True. If not, it will be
+  // an arbitrary value other than MuBi4True.
+  rand bit m_cheriot_ena;
+
   extern function new (string name="");
   extern virtual function void do_print(uvm_printer printer);
   extern virtual task body();
@@ -154,6 +161,12 @@ function void rv_dm_mode_seq::do_print(uvm_printer printer);
   end else begin
     printer.print_field_int("m_has_scanmode", m_has_scanmode, 1);
   end
+
+  if (m_has_cheriot_ena) begin
+    printer.print_field_int("m_cheriot_ena", m_cheriot_ena, 1);
+  end else begin
+    printer.print_field_int("m_has_cheriot_ena", m_has_cheriot_ena, 1);
+  end
 endfunction
 
 task rv_dm_mode_seq::body();
@@ -164,6 +177,7 @@ task rv_dm_mode_seq::body();
   bit [3:0] enc_pinmux_hw_debug_en;
   bit [7:0] enc_otp_dis_rv_dm_late_debug;
   bit [3:0] enc_scanmode;
+  bit [3:0] enc_cheriot_ena;
 
   item = rv_dm_mode_seq_item::type_id::create("item");
   item.m_has_next_dm_addr = m_has_next_dm_addr;
@@ -172,6 +186,7 @@ task rv_dm_mode_seq::body();
   item.m_has_pwrmgr_signals = m_has_pwrmgr_signals;
   item.m_has_otp_ctrl_signals = m_has_otp_ctrl_signals;
   item.m_has_scanmode = m_has_scanmode;
+  item.m_has_cheriot_ena = m_has_cheriot_ena;
 
   start_item(item);
 
@@ -196,6 +211,9 @@ task rv_dm_mode_seq::body();
   end
   if (m_has_scanmode) begin
     enc_scanmode = gen_mubi4_t_from_bool(1, m_scanmode);
+  end
+  if (m_has_cheriot_ena) begin
+    enc_cheriot_ena = gen_mubi4_t_from_bool(1, m_cheriot_ena);
   end
 
   if (!item.randomize() with {
@@ -222,6 +240,9 @@ task rv_dm_mode_seq::body();
           }
           if (m_has_scanmode) {
             item.m_scanmode == local::enc_scanmode;
+          }
+          if (m_has_cheriot_ena) {
+            item.m_cheriot_ena == local::enc_cheriot_ena;
           }
        }) begin
     `uvm_fatal(get_name(), "Failed to randomize item")

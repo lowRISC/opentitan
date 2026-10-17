@@ -1,5 +1,21 @@
 # Theory of Operation
 
+## CHERIoT Mode
+
+`rv_core_ibex` can switch from RV32I to CHERIoT once at runtime.
+The debug module follows this switch through `cheriot_ena_i`, which is synchronized and only selects CHERIoT on `MuBi4True`.
+In CHERIoT mode:
+
+- A separate CHERIoT park loop ROM is used.
+- Abstract commands save and restore their scratch registers with `CSpecialRW`, so borrowed capabilities keep their tags.
+- `aarsize == 3` is supported and transfers a full capability: address in `data0`, metadata in `data1`.
+
+Limitations:
+
+- Tags are not transported through `data0`/`data1`, so a capability written back by the debugger is untagged.
+- SBA bypasses the CHERIoT tag filter and does not clear tags on writes.
+- Switching modes while the hart is halted (e.g. via the program buffer) is not supported.
+
 ## Memory Maps
 
 ### TL-UL device
