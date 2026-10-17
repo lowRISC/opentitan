@@ -53,7 +53,25 @@ class i3c_env_cfg extends cip_base_env_cfg #(.RAL_T(i3c_reg_block));
     set_absent_targ_resets(i3c_ral);
     set_num_targets_reset(i3c_ral);
     add_queue_port_access_excls(i3c_ral);
+    narrow_pin_level_excls(i3c_ral);
     set_mem_walk_excls(i3c_ral);
+  endfunction
+
+  // Narrow the exclusions of the registers that reflect the SCL and SDA pin levels.
+  //
+  // i3c.hjson excludes PRESENT_STATE_DEBUG and TARG_STATE_DEBUG from all CSR checks, because the
+  // chip-level simulation does not drive the pins. In this testbench the bus model holds the pins
+  // at defined levels, so the reset values of these registers are deterministic. Replace the
+  // register exclusions with field exclusions that only apply to the non-init tests.
+  protected virtual function void narrow_pin_level_excls(i3c_reg_block i3c_ral);
+    csr_excl_item csr_excl = i3c_ral.get_excl_item();
+    dv_base_reg   regs[$]  = '{i3c_ral.present_state_debug, i3c_ral.targ_state_debug};
+    foreach (regs[i]) begin
+      dv_base_reg_field flds[$];
+      csr_excl.enable_excl(regs[i].get_full_name(), 1'b0);
+      regs[i].get_dv_base_reg_fields(flds);
+      foreach (flds[f]) csr_excl.add_excl(flds[f].get_full_name(), CsrExclCheck, CsrNonInitTests);
+    end
   endfunction
 
   // Exclude memory windows from the generic memory walk (`uvm_mem_walk_seq`).
@@ -93,21 +111,22 @@ class i3c_env_cfg extends cip_base_env_cfg #(.RAL_T(i3c_reg_block));
 
   // Align the RAL with the Virtual Targets that the DUT does not implement.
   //
-  // The CSRs describe the Tx buffer and Tx descriptor queue state of all `MaxTargets` Virtual
-  // Targets, and reggen derives a per-instance reset value for each pointer from the default
-  // apportioning of the message buffer. `i3c_core` ties the register view of that state off for
-  // the Virtual Targets that the DUT does not implement (`gen_no_targ_tx`), so they read as zero.
-  // This matches `chip_env_cfg::set_i3c_absent_targ_resets()`.
+  // The CSRs describe the Tx buffer and Tx descriptor queue state and free levels of all
+  // `MaxTargets` Virtual Targets, and their reset values derive from the default apportioning of
+  // the message buffer. `i3c_core` ties the register view of that state off for the Virtual
+  // Targets that the DUT does not implement (`gen_no_targ_tx`), so they read as zero. This matches
+  // `chip_env_cfg::set_i3c_absent_targ_resets()`.
   protected virtual function void set_absent_targ_resets(i3c_reg_block i3c_ral);
-    string state_regs[$] = {"targ_txbuf_state", "targ_txdesc_state"};
+    string state_regs[$] = {"targ_txbuf_state", "targ_txdesc_state", "targ_tx_queue_status_level"};
     `DV_CHECK_LE_FATAL(NumTargets, MaxTargets)
     foreach (state_regs[i]) begin
       for (uint t = NumTargets; t < MaxTargets; t++) begin
-        string  reg_name = $sformatf("%0s_%0d", state_regs[i], t);
-        uvm_reg rg       = i3c_ral.get_reg_by_name(reg_name);
+        string        reg_name = $sformatf("%0s_%0d", state_regs[i], t);
+        uvm_reg       rg       = i3c_ral.get_reg_by_name(reg_name);
+        uvm_reg_field flds[$];
         `DV_CHECK_FATAL(rg != null, $sformatf("No register %0s", reg_name))
-        rg.get_field_by_name("wptr").set_reset(0);
-        rg.get_field_by_name("rptr").set_reset(0);
+        rg.get_fields(flds);
+        foreach (flds[f]) flds[f].set_reset(0);
       end
     end
   endfunction

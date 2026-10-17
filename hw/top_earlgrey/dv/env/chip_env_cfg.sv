@@ -328,26 +328,27 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
   // Align the RAL with the Virtual Targets that an I3C instance does not implement.
   //
-  // The CSRs describe the Tx buffer and Tx descriptor queue state of all `I3cMaxTargets` Virtual
-  // Targets, and reggen derives a per-instance reset value for each pointer from the default
-  // apportioning of the message buffer. `i3c_buffer` initializes every pointer to that value, so
-  // the pointers of the Virtual Targets that the instance does implement can be checked after
-  // reset. For the remaining Virtual Targets, `i3c_core` ties the register view of that state off
+  // The CSRs describe the Tx buffer and Tx descriptor queue state and free levels of all
+  // `I3cMaxTargets` Virtual Targets, and their reset values derive from the default apportioning
+  // of the message buffer. `i3c_buffer` initializes every pointer to that value, so the state of
+  // the Virtual Targets that the instance does implement can be checked after reset. For the
+  // remaining Virtual Targets, `i3c_core` ties the register view of that state off
   // (`gen_no_targ_tx`), so they read as zero instead. Adjust their reset values here rather than
   // excluding the registers, which keeps them checked; an hjson tag could not do this, because it
   // applies to every instance of a multireg.
   protected virtual function void set_i3c_absent_targ_resets(dv_base_reg_block i3c_ral,
                                                              uint              num_targets);
-    string state_regs[$] = {"targ_txbuf_state", "targ_txdesc_state"};
+    string state_regs[$] = {"targ_txbuf_state", "targ_txdesc_state", "targ_tx_queue_status_level"};
     `DV_CHECK_LE_FATAL(num_targets, I3cMaxTargets, i3c_ral.get_full_name())
     foreach (state_regs[i]) begin
       for (uint t = num_targets; t < I3cMaxTargets; t++) begin
-        string  reg_name = $sformatf("%0s_%0d", state_regs[i], t);
-        uvm_reg rg       = i3c_ral.get_reg_by_name(reg_name);
+        string        reg_name = $sformatf("%0s_%0d", state_regs[i], t);
+        uvm_reg       rg       = i3c_ral.get_reg_by_name(reg_name);
+        uvm_reg_field flds[$];
         `DV_CHECK_FATAL(rg != null, $sformatf("%0s has no register %0s", i3c_ral.get_full_name(),
                                               reg_name))
-        rg.get_field_by_name("wptr").set_reset(0);
-        rg.get_field_by_name("rptr").set_reset(0);
+        rg.get_fields(flds);
+        foreach (flds[f]) flds[f].set_reset(0);
       end
     end
   endfunction

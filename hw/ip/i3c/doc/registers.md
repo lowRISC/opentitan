@@ -3020,7 +3020,7 @@ Target-side control register for setting buffer interrupt thresholds.
 ## TARG_BUF_STATUS_LEVEL
 Target-side data buffer levels.
 - Offset: `0x33c`
-- Reset default: `0x0`
+- Reset default: `0x400000`
 - Reset mask: `0xfff0fff`
 
 ### Fields
@@ -3032,7 +3032,7 @@ Target-side data buffer levels.
 |  Bits  |  Type  |  Reset  | Name         | Description                                              |
 |:------:|:------:|:-------:|:-------------|:---------------------------------------------------------|
 | 31:28  |        |         |              | Reserved                                                 |
-| 27:16  |   ro   |    x    | IBI_FREE_LVL | The available space (in DWORDs) in the Target IBI queue. |
+| 27:16  |   ro   |  0x40   | IBI_FREE_LVL | The available space (in DWORDs) in the Target IBI queue. |
 | 15:12  |        |         |              | Reserved                                                 |
 |  11:0  |   ro   |    x    | RX_BUF_LVL   | The number of DWORDs of data present in the Rx Buffer.   |
 
@@ -3216,7 +3216,7 @@ Target control register for setting Tx thresholds.
 
 ## TARG_TX_QUEUE_STATUS_LEVEL
 Target status register reporting transmit queue levels.
-- Reset default: `0x0`
+- Reset default: `0x80040`
 - Reset mask: `0xff0fff`
 
 ### Instances
@@ -3238,9 +3238,9 @@ Target status register reporting transmit queue levels.
 |  Bits  |  Type  |  Reset  | Name             | Description                                     |
 |:------:|:------:|:-------:|:-----------------|:------------------------------------------------|
 | 31:24  |        |         |                  | Reserved                                        |
-| 23:16  |   ro   |   0x0   | TX_DESC_FREE_LVL | The number of free Tx Descriptor Queue entries. |
+| 23:16  |   ro   |   0x8   | TX_DESC_FREE_LVL | The number of free Tx Descriptor Queue entries. |
 | 15:12  |        |         |                  | Reserved                                        |
-|  11:0  |   ro   |   0x0   | TX_BUF_FREE_LVL  | The number of free DWORDs in the Tx Buffer.     |
+|  11:0  |   ro   |  0x40   | TX_BUF_FREE_LVL  | The number of free DWORDs in the Tx Buffer.     |
 
 ## TARG_ADDR
 Target address on the I3C bus.

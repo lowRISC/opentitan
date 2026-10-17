@@ -444,8 +444,9 @@
           desc:     "Indicates whether the Target logic is presently active, as opposed to under reset.",
           hwaccess: "hwo",
           resval:   "0",
-          tags:   [// Live reset state of the Target transceiver; not at its reset value once out of reset.
-                   "excl:CsrAllTests:CsrExclCheck"]
+          tags:   [// Live reset state of the Target transceiver; changes with Target activity.
+                   // The reset value is deterministic, so only the non-init tests exclude it.
+                   "excl:CsrNonInitTests:CsrExclCheck"]
         }
         { bits:     "29",
           name:     "CONNECTED",
@@ -453,7 +454,8 @@
           hwaccess: "hwo",
           resval:   "0",
           tags:   [// Live bus-connection state of the Target transceiver.
-                   "excl:CsrAllTests:CsrExclCheck"]
+                   // The reset value is deterministic, so only the non-init tests exclude it.
+                   "excl:CsrNonInitTests:CsrExclCheck"]
         }
         { bits:     "28",
           name:     "PROTOCOL_ERROR",
@@ -545,8 +547,8 @@
     }
     { name:     "TARG_SINK_STATUS",
       tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "Target data sink status.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1201,8 +1203,8 @@
     }
     { name:     "CTRL_TXBUF_STATE",
       tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "Controller TX Buffer State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1257,8 +1259,8 @@
     }
     { name:     "CTRL_RXBUF_STATE",
       tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "Controller RX Buffer State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1313,8 +1315,8 @@
     }
     { name:     "COMMAND_QUEUE_STATE",
       tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "Command Queue State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1368,8 +1370,8 @@
     }
     { name:     "RESPONSE_QUEUE_STATE",
       tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "Response Queue State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1426,8 +1428,8 @@
     }
     { name:     "IBI_STATE",
       tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "In-Band Interrupt Queue State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1475,8 +1477,8 @@
     }
     { name:     "IBI_STAT_STATE",
       tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "In-Band Status Descriptor FIFO State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1594,8 +1596,8 @@
     }
     { name:     "TARG_RXBUF_STATE",
       tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "Target RX Buffer State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1643,8 +1645,8 @@
     }
     { name:     "TARG_IBI_STATE",
       tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "Target In-Band Interrupt Payload Queue State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1756,8 +1758,8 @@
     }
     { name:     "TARG_RXDESC_STATE",
       tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "Target Reception Descriptor Queue State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1805,8 +1807,8 @@
     }
     { name:     "TARG_IBIDESC_STATE",
       tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "Target In-Band Interrupt Descriptor Queue State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1854,8 +1856,8 @@
     }
     { name:     "TARG_ASYNC_STATE",
       tags: [// Reports live queue/buffer pointers and levels, which change with hardware activity.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "Target Asynchronous Event Queue State.",
       swaccess: "ro",
       hwaccess: "hwo",
@@ -2130,15 +2132,16 @@
           desc:   "Active Controller.",
           resval: "0",
           tags:   [// Live state; set when the Controller is enabled via HC_CONTROL.BUS_ENABLE.
-                   "excl:CsrAllTests:CsrExclCheck"]
+                   // The reset value is deterministic, so only the non-init tests exclude it.
+                   "excl:CsrNonInitTests:CsrExclCheck"]
         }
       ]
     },
     { reserved: "2" },
     { name:     "INTR_STATUS",
       tags: [// Hardware sets status bits (e.g. queue-ready events) independently of software accesses.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "Interrupt Status.",
       swaccess: "rw1c",
       hwaccess: "hrw",
@@ -2575,8 +2578,8 @@
       hwaccess: "hwo",
       hwext:   "true",
       tags:     [// Sizes mirror the *_CONFIG registers, which the CSR tests randomize.
-                 // Exclude from init and write-checks.
-                 "excl:CsrAllTests:CsrExclCheck"],
+                 // The reset value is deterministic, so only the non-init tests exclude it.
+                 "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         { bits:   "31:24",
           name:   "TX_DATA_BUFFER_SIZE",
@@ -2606,8 +2609,8 @@
       hwaccess: "hwo",
       hwext:    "true",
       tags:     [// Sizes mirror the *_CONFIG registers, which the CSR tests randomize.
-                 // Exclude from init and write-checks.
-                 "excl:CsrAllTests:CsrExclCheck"],
+                 // The reset value is deterministic, so only the non-init tests exclude it.
+                 "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         { bits:   "28",
           name:   "EXT_IBI_QUEUE_EN",
@@ -2628,8 +2631,8 @@
     }
     { name:     "PIO_INTR_STATUS",
       tags: [// Hardware sets status bits (e.g. queue-ready events) independently of software accesses.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "PIO Interrupt Status.",
       swaccess: "ro",
       hwaccess: "hrw",
@@ -3001,9 +3004,9 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
-      tags:     [// Free levels reflect the live queue depths, which differ from the generic reset values.
-                 // Exclude from init and write-checks.
-                 "excl:CsrAllTests:CsrExclCheck"],
+      tags:     [// Free levels reflect the live queue depths.
+                 // The reset value is deterministic, so only the non-init tests exclude it.
+                 "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         { bits:   "28:24",
           name:   "IBI_STATUS_CNT",
@@ -3033,9 +3036,9 @@
       swaccess: "ro",
       hwaccess: "hwo",
       hwext:    "true",
-      tags:     [// Free levels reflect the live buffer depths, which differ from the generic reset values.
-                 // Exclude from init and write-checks.
-                 "excl:CsrAllTests:CsrExclCheck"],
+      tags:     [// Free levels reflect the live buffer depths.
+                 // The reset value is deterministic, so only the non-init tests exclude it.
+                 "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         { bits:   "15:8",
           name:   "RX_BUF_LVL",
@@ -3410,8 +3413,8 @@
     }
     { name:     "STBY_CR_INTR_STATUS",
       tags: [// Hardware sets status bits (e.g. queue-ready events) independently of software accesses.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "Standby Controller Interrupt Status",
       swaccess: "rw1c",
       hwaccess: "hrw",
@@ -3695,8 +3698,8 @@
     }
     { name:     "TARG_INTR_STATUS",
       tags: [// Hardware sets status bits (e.g. queue-ready events) independently of software accesses.
-             // Exclude from init and write-checks.
-             "excl:CsrAllTests:CsrExclCheck"],
+             // The reset value is deterministic, so only the non-init tests exclude it.
+             "excl:CsrNonInitTests:CsrExclCheck"],
       desc:     "Target Interrupt Status.",
       swaccess: "ro",
       hwaccess: "hrw",
@@ -4311,12 +4314,14 @@
       hwaccess: "hwo",
       hwext:    "true",
       tags:     [// IBI_FREE_LVL reports the live free space of the IBI FIFO, which is non-zero after reset.
-                 // Exclude from init and write-checks.
-                 "excl:CsrAllTests:CsrExclCheck"],
+                 // The reset value is deterministic, so only the non-init tests exclude it.
+                 "excl:CsrNonInitTests:CsrExclCheck"],
       fields: [
         { bits:   "27:16",
           name:   "IBI_FREE_LVL",
-          desc:   "The available space (in DWORDs) in the Target IBI queue."
+          desc:   "The available space (in DWORDs) in the Target IBI queue.",
+          // Note: this value should be consistent with TARG_IBI_CONFIG
+          resval: "0x40"
         }
         { bits:   "11:0",
           name:   "RX_BUF_LVL",
@@ -4526,18 +4531,22 @@
         hwaccess: "hwo",
         hwext:    "true",
         tags:     [// Reports live free levels of the Tx FIFOs, which are non-zero after reset.
-                   // Exclude from init and write-checks.
-                   "excl:CsrAllTests:CsrExclCheck"],
+                   // The reset value is deterministic, so only the non-init tests exclude it;
+                   // `chip_env_cfg` adjusts it for the Virtual Targets that an instance does not
+                   // implement, whose state the RTL ties off.
+                   "excl:CsrNonInitTests:CsrExclCheck"],
         fields: [
           { bits:   "23:16",
             name:   "TX_DESC_FREE_LVL",
             desc:   "The number of free Tx Descriptor Queue entries.",
-            resval: "0"
+            // Note: this value should be consistent with TARG_TXDESC_CONFIG
+            resval: "8"
           }
           { bits:   "11:0",
             name:   "TX_BUF_FREE_LVL",
             desc:   "The number of free DWORDs in the Tx Buffer.",
-            resval: "0"
+            // Note: this value should be consistent with TARG_TXBUF_CONFIG
+            resval: "0x40"
           }
         ]
       }
