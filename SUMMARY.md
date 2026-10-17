@@ -409,7 +409,7 @@
     - [Design Verification]()
       - [Testplan]()
     - [Programmer's Guide](./hw/ip/i3c/doc/programmers_guide.md)
-    - [Hardware Interfaces]()
+    - [Hardware Interfaces](./hw/ip/i3c/doc/interfaces.md)
     - [Registers](./hw/ip/i3c/doc/registers.md)
     - [Device Interface Functions]()
     - [Checklist](./hw/ip/i3c/doc/checklist.md)

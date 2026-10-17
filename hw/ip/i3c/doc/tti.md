@@ -14,6 +14,7 @@ This IP block may be configured to implement additional Virtual Targets beyond t
 The TTI describes the behavior of all Virtual Targets, with each acting identically and in accordance with this specification.
 When Standby Controller support is enabled using [`TARG_CONTROL.STBY_CR_SUPPORT`](registers.md#targ_control--stby_cr_support), the first Virtual Target shall additionally implement the responsibilities of a Standby Controller as defined in the HCI and I3C Basic Specifications.
 In this role, configuration from the Standby Controller registers of the HCI override any TTI configuration for the first Virtual Target.
+This version of the IP block does not support the Standby Controller role ([#31308](https://github.com/lowRISC/opentitan/issues/31308)), so the first Virtual Target always operates as a dedicated Target device.
 
 ## General approach
 
@@ -314,9 +315,9 @@ The bus events that may be reported are listed below:
 | 21    | ChksumCCC   | Checksum error occurred during CCC (HDR-DDR)      |
 | 20    | ParityCCC   | Parity error occurred during CCC (SDR, HDR-DDR)   |
 | 19    | TargetRst   | Target Reset pattern was received                 |
-| 18    | Idle        | Bus Idle condition (> 200us with no activity)     |
+| 18    | Idle        | Bus Idle condition (> 200 us with no activity)     |
 | 17    | DeadBus     | No response to Start Request on an idle bus       |
-| 16    | ReadNoSCL   | No change in SCL for > 150us during Read Transfer |
+| 16    | ReadNoSCL   | No change in SCL for > 150 us during Read Transfer |
 
 ## Target Characteristics
 
@@ -425,15 +426,75 @@ In the event that Standby Controller support is not enabled, or the Target perip
 
 ## Handling of Common Command Codes
 
-The following subsections describe the behavior of the Virtual Targets with respect to some of the Common Command Codes (CCCs) of the I3C Basic Specification.
+The following subsections describe the behavior of the Virtual Targets with respect to the Common Command Codes (CCCs) of the I3C Basic Specification (Table 16).
+The Target-side hardware handles all supported CCCs autonomously, and it may report each of them to software via the [Asynchronous Event Queue](#type-0---notification-of-ccc-activity).
+
+### Supported CCCs
+
+The Virtual Targets support the following CCCs.
+They acknowledge only the Direct CCCs listed here, and do not acknowledge any other Direct CCC.
+CCCs are supported in SDR mode only.
+The Target does not support CCCs in HDR-DDR mode and declares this in its GETCAPS response (`GETCAP4`), so the Active Controller shall send CCCs to it in SDR mode (I3C Basic Specification, Section 6.1.3).
+
+| CCC                    | Broadcast | Direct    | Notes                                                                                                                                                                                                                                                                                                                 |
+|------------------------|-----------|-----------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ENEC, DISEC            | 0x00/0x01 | 0x80/0x81 | Enables/disables In-Band Interrupts, Controller Role Requests and Hot-Join.                                                                                                                                                                                                                                           |
+| ENTAS0-3               | 0x02-0x05 | -         | Records the Activity State.                                                                                                                                                                                                                                                                                           |
+| RSTDAA                 | 0x06      | -         | Clears the dynamic address and all group memberships.                                                                                                                                                                                                                                                                 |
+| SETMWL, SETMRL         | 0x09/0x0A | 0x89/0x8A | See [Maximum Read/Write Length](#maximum-readwrite-length).                                                                                                                                                                                                                                                           |
+| ENTTM                  | 0x0B      | -         | Defining Bytes 0x00 and 0x01 only.                                                                                                                                                                                                                                                                                    |
+| ENDXFER                | 0x12      | 0x92      | Partial: HDR-DDR transfer-ending options are incomplete ([#31065](https://github.com/lowRISC/opentitan/issues/31065)).                                                                                                                                                                                                |
+| ENTHDR0                | 0x20      | -         | Enters HDR-DDR mode.                                                                                                                                                                                                                                                                                                  |
+| ENTHDR1-7              | 0x21-0x27 | -         | Unsupported HDR modes; the Target ignores the bus until the HDR Exit Pattern.                                                                                                                                                                                                                                         |
+| SETAASA                | 0x29      | -         | See [Address Assignment](#address-assignment).                                                                                                                                                                                                                                                                        |
+| RSTACT                 | 0x2A      | 0x9A      | Partial: records the reset action; the GET form and most actions are incomplete ([#31128](https://github.com/lowRISC/opentitan/issues/31128)).                                                                                                                                                                        |
+| RSTGRPA                | 0x2C      | 0x9C      | Removes the Virtual Target(s) from groups.                                                                                                                                                                                                                                                                            |
+| SETDASA                | -         | 0x87      | See [Address Assignment](#address-assignment).                                                                                                                                                                                                                                                                        |
+| SETNEWDA               | -         | 0x88      | Changes the dynamic address.                                                                                                                                                                                                                                                                                          |
+| GETMWL, GETMRL         | -         | 0x8B/0x8C | See [Maximum Read/Write Length](#maximum-readwrite-length).                                                                                                                                                                                                                                                           |
+| GETPID, GETBCR, GETDCR | -         | 0x8D-0x8F | Returns the characteristics of the Virtual Target, see [Target Characteristics](#target-characteristics).                                                                                                                                                                                                             |
+| GETSTATUS              | -         | 0x90      | Partial: the pending interrupt field reads as zero ([#31128](https://github.com/lowRISC/opentitan/issues/31128)).                                                                                                                                                                                                     |
+| GETACCCR               | -         | 0x91      | Partial: acknowledged, although the Target cannot assume the Controller role ([#31128](https://github.com/lowRISC/opentitan/issues/31128)).                                                                                                                                                                           |
+| GETMXDS                | -         | 0x94      |                                                                                                                                                                                                                                                                                                                       |
+| GETCAPS                | -         | 0x95      | Partial: Format 1 and Format 2; `GETCAP2` declares the HDR-DDR Abort CRC and Write Abort capabilities ([#31065](https://github.com/lowRISC/opentitan/issues/31065)) and `GETCAP3` the Pending Read Notification capability ([#31337](https://github.com/lowRISC/opentitan/issues/31337)), which are not complete yet. |
+| SETGRPA                | -         | 0x9B      | See [Group Addressing](#group-addressing).                                                                                                                                                                                                                                                                            |
+
+### Planned CCCs
+
+The following CCCs are planned to be supported or completed.
+A question mark marks CCCs for which no decision has been made.
+
+| CCC                                        | Code(s)    | Status  | Notes                                                                                                                                                                             |
+|--------------------------------------------|------------|---------|-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ENTDAA                                     | 0x07       | Planned | Required by I3C Basic Table 16 for Targets without a Static Address or with Hot-Join support ([#31128](https://github.com/lowRISC/opentitan/issues/31128)).                       |
+| SETDASA                                    | 0x87       | Planned | Completion ([#31128](https://github.com/lowRISC/opentitan/issues/31128)).                                                                                                         |
+| RSTACT                                     | 0x2A, 0x9A | Planned | GET form and all reset actions ([#31128](https://github.com/lowRISC/opentitan/issues/31128), [#31337](https://github.com/lowRISC/opentitan/issues/31337)).                        |
+| GETSTATUS                                  | 0x90       | Planned | Pending interrupt field ([#31128](https://github.com/lowRISC/opentitan/issues/31128)).                                                                                            |
+| GETCAPS                                    | 0x95       | Planned | Capability values that match the implemented features ([#31065](https://github.com/lowRISC/opentitan/issues/31065), [#31337](https://github.com/lowRISC/opentitan/issues/31337)). |
+| ENDXFER                                    | 0x12, 0x92 | Planned | HDR-DDR transfer-ending options ([#31065](https://github.com/lowRISC/opentitan/issues/31065)).                                                                                    |
+| Direct SET CCCs to a Group Address         | -          | Planned | Respect the group membership of the Virtual Targets ([#31128](https://github.com/lowRISC/opentitan/issues/31128)).                                                                |
+| Broadcast and multi-target Direct SET CCCs | -          | Planned | Take effect also when terminated by a Repeated START ([#31128](https://github.com/lowRISC/opentitan/issues/31128)).                                                               |
+| GETACCCR                                   | 0x91       | Planned | NACK, because the Target cannot assume the Controller role ([#31128](https://github.com/lowRISC/opentitan/issues/31128)).                                                         |
+| GETSTATUS Format 2 (NASTAT, SCMSTAT)       | 0x90       | ?       | Defining Bytes 0xD7 and 0xD8 ([#31128](https://github.com/lowRISC/opentitan/issues/31128)).                                                                                       |
+| ENTAS0-3 (Direct)                          | 0x82-0x85  | ?       |                                                                                                                                                                                   |
+| SETBUSCON                                  | 0x0C       | ?       |                                                                                                                                                                                   |
+| SETROUTE                                   | 0x96       | ?       |                                                                                                                                                                                   |
+
+The following CCCs are not planned for this version of the IP block:
+
+- DEFTGTS (0x08) and DEFGRPA (0x2B), which belong to the Secondary Controller and Standby Controller roles ([#31308](https://github.com/lowRISC/opentitan/issues/31308)).
+- SETXTIME (0x28, 0x98) and GETXTIME (0x99), which belong to Timing Control.
+- MLANE (0x2D, 0x9D), which belongs to Multi-Lane operation.
+- Any CCC in HDR-DDR mode (I3C Basic Specification, Section 6.1.3); the Target supports CCCs in SDR mode only.
 
 ### Address Assignment
 
-Each of the Virtual Targets supports all of the specified methods of assigning dynamic addresses:
+Each of the Virtual Targets supports the following methods of assigning dynamic addresses:
 
-- ENTDAA (4.3.7.3.4) - Virtual Targets arbitrate for allocation of a dynamic address supplied by the Controller.
 - SETDASA (4.3.7.3.10) - Sets the dynamic address to be the same as the static address of the Virtual Target.
-- SETAASA (4.3.7.3.21) - As `SETDASA` but this CCC is broadcast to all supporting Virtual Targets.
+- SETAASA (4.3.7.3.21) - As `SETDASA` but this CCC is broadcast to all supporting Virtual Targets; it takes effect only if the Virtual Target has no dynamic address yet.
+
+Support for ENTDAA (4.3.7.3.4), in which Virtual Targets arbitrate for allocation of a dynamic address supplied by the Controller, is planned ([#31128](https://github.com/lowRISC/opentitan/issues/31128)).
 
 ### Maximum Read/Write Length
 
@@ -452,16 +513,15 @@ When a transfer is rejected in this manner, transmission from that Virtual Targe
 
 ### Other CCCs
 
-TODO(#31337): CAPS, ENTAS, ENDXFER and RSTACT in particular may warrant detailed descriptions here, once the feature set and priorities have stabilized, including the Virtual Target Detect behavior, since there is a separate BCR[4] bit for each Virtual Target, possibly offering support for declared and undeclared Virtual Targets.
+TODO(#31128): Describe the behavior for RSTACT, ENDXFER and GETCAPS in detail once their implementation is complete, including the Virtual Target Detect behavior, since there is a separate BCR[4] bit for each Virtual Target, possibly offering support for declared and undeclared Virtual Targets.
 
 ## Target Support for HDR-DDR Signaling
 
 The I3C Basic Specification offers increased data rates and improved error detection through the use of a new signaling mode called HDR-DDR.
 Both the Controller side and the Target side of this IP block offer support for HDR-DDR signaling, although it is not widely supported among existing I3C devices at this time.
 
-<!-- link to `./registers.md#targ_control--en_hdr_ddr` when the register field is available.-->
-As a contingency in the event of compatibility issues, the Target side of this IP may be instructed not to declare support for HDR-DDR mode by clearing the `TARG_CONTROL.EN_HDR_DDR` bit.
-This bit should normally be left set, i.e., declaring HDR-DDR support, and it is then the decision of the Active Controller whether to employ HDR-DDR signaling.
+The Target side always declares support for HDR-DDR mode in its response to the GETCAPS CCC, and it is then the decision of the Active Controller whether to employ HDR-DDR signaling.
+A control that allows software to suppress this declaration, as a contingency in the event of compatibility issues, is planned ([#31337](https://github.com/lowRISC/opentitan/issues/31337)).
 
 On the Controller side of this IP block, the software driver is responsible for determining the signaling mode employed for all I3C transfers, and it is therefore able to avoid the use of HDR-DDR signaling to Target devices, should that prove necessary.
 

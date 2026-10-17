@@ -75,19 +75,22 @@
       package: "",
       type:    "uni",
       name:    "rstdet_enable",
-      act:     "req"
+      act:     "req",
+      desc:    "Enables the SCL/SDA inputs of the external Target Reset Detector (`i3c_reset_detector`); deasserted while the Target is disconnected from the bus."
     }
     { struct:  "i3c_rstdet",
       package: "i3c_pkg",
       type:    "req_rsp",
       name:    "rstdet",
-      act:     "req"
+      act:     "req",
+      desc:    "Control and status interface to the external Target Reset Detector (`i3c_reset_detector`)."
     }
     { struct:  "logic",
       package: "",
       type:    "uni",
       name:    "mbist_en",
-      act:     "rcv"
+      act:     "rcv",
+      desc:    "Memory built-in self-test enable (currently unused)."
     }
     // High-keepers and pull-ups
     { struct:  "logic",
@@ -116,19 +119,22 @@
       package: "prim_ram_1p_pkg",
       type:    "req_rsp",
       name:    "ram_cfg",
-      act:     "rsp"
+      act:     "rsp",
+      desc:    "RAM configuration of the message buffer memory."
     }
     { struct:  "ram_1p_cfg",
       package: "prim_ram_1p_pkg",
       type:    "req_rsp",
       name:    "dat_cfg",
-      act:     "rsp"
+      act:     "rsp",
+      desc:    "RAM configuration of the Device Address Table (DAT) memory."
     }
     { struct:  "ram_1p_cfg",
       package: "prim_ram_1p_pkg",
       type:    "req_rsp",
       name:    "dct_cfg",
-      act:     "rsp"
+      act:     "rsp",
+      desc:    "RAM configuration of the Device Characteristics Table (DCT) memory."
     }
     { struct:  "racl_policy_vec",
       type:    "uni",
@@ -410,6 +416,7 @@
                     When set the Controller shall have the option of performing Controller Role Handoff and switching into Standby Controller mode.
                     If this field is clear the Controller will refuse to hand off the bus when requested and will instead remain the Active Controller,
                     thus freeing up the first Virtual Target to operate independently as a dedicated Target device.
+                    This version of the IP block does not support Controller Role Handoff.
                     '''
           swaccess: "rw",
           hwaccess: "hro",
@@ -609,7 +616,7 @@
           name:   "SLEEP_REQ",
           desc:   "Activate the reset detector prior to entry into 'Deepest Sleep' state.",
           resval: "0",
-          tags: [// Prevent usb wake functions from being turned on outside of directed tests
+          tags: [// Prevent the reset detector from being activated outside of directed tests
                  "excl:CsrNonInitTests:CsrExclWrite"]
         }
       ]
@@ -622,12 +629,12 @@
       fields: [
         { bits:   "3",
           name:   "RST_TARGET",
-          desc:   "Indicates that a Whole Target reset requst was received.",
+          desc:   "Indicates that a Whole Target reset request was received.",
           resval: "0"
         }
         { bits:   "2",
           name:   "RST_PERIPH",
-          desc:   "Indicates that a Peripheral request request was received.",
+          desc:   "Indicates that a Peripheral reset request was received.",
           resval: "0"
         }
         { bits:   "1",
@@ -715,7 +722,7 @@
           desc:   '''Enable half-cycle SCL extension.
                   If the field `TCHS` has been set to something other than 0x3ff, this bit controls whether the half-cycle SCL extension is enabled.
                   If `TCHS` has all bits set then the hardware will determine this setting automatically.
-                  Extending SCL high by half a cycle of the IP clock enables support for other clock frequencies such as 96MHz.
+                  Extending SCL high by half a cycle of the IP clock enables support for other clock frequencies such as 96 MHz.
                   '''
           resval: "1"
         }
@@ -917,16 +924,16 @@
 
                  - interval_clks = (hw_default_us * clks_per_us) + (signed_adj << shift)
 
-                The granularity of the adjustment is timer-dependent because the intervals span a large range, from 1us to 50ms.
-                It is also scaled according to the clock frequency of the IP block, because the supported frequency range is 50MHz to 1.5GHz:
+                The granularity of the adjustment is timer-dependent because the intervals span a large range, from 1 us to 50 ms.
+                It is also scaled according to the clock frequency of the IP block, because the supported frequency range is 50 MHz to 1.5 GHz:
 
                 Clock frequencies:
-                 - 50MHz to 64MHz, both inclusive: base weighting applies.
-                 - From 64MHz (exclusive) to 128MHz (inclusive): adjustments have twice the base weighting.
-                 - From 128MHz (excl.) to 256MHz (incl.): adjustments have 4 times the base weighting.
-                 - From 256MHz (excl.) to 512MHz (incl.): adjustments have 8 times the base weighting.
-                 - From 512MHz (excl.) to 1024MHz (incl.): adjustments have 16 times the base weighting.
-                 - From 1024MHz (excl.) to 1500MHz (incl.): adjustments have 32 times the base weighting.
+                 - 50 MHz to 64 MHz, both inclusive: base weighting applies.
+                 - From 64 MHz (exclusive) to 128 MHz (inclusive): adjustments have twice the base weighting.
+                 - From 128 MHz (excl.) to 256 MHz (incl.): adjustments have 4 times the base weighting.
+                 - From 256 MHz (excl.) to 512 MHz (incl.): adjustments have 8 times the base weighting.
+                 - From 512 MHz (excl.) to 1024 MHz (incl.): adjustments have 16 times the base weighting.
+                 - From 1024 MHz (excl.) to 1500 MHz (incl.): adjustments have 32 times the base weighting.
 
                 This allows the default intervals (in microseconds) to be adjusted in terms of IP clock cycles to an accuracy of +/- 0.8% typically.
                 '''
@@ -976,7 +983,7 @@
                 Time intervals are specified as two's complement 8-bit signed adjustments to the default values calculated by the hardware.
 
                 The granularity of the adjustment is timer-dependent and clock frequency-dependent.
-                The weightings given here apply to the base case of an IP clock frequency up to 64MHz, inclusive.
+                The weightings given here apply to the base case of an IP clock frequency up to 64 MHz, inclusive.
                 See `INTERVAL_TIME0` for details.
                 '''
       swaccess: "rw",
@@ -1140,7 +1147,7 @@
           desc:     '''Supplies the high address bits when software performs direct accesses to the internal message buffer.
                     The IP may be configured to map part of its internal message buffer into the upper half of the IP address space.
                     This provides more RAM to a memory-limited system when the I3C is not being used, and may be diagnostically useful when it is used.
-                    Since half of the IP address space is typically 2KiB but the message buffer is larger, this field allows software-controlled paging.
+                    Since half of the IP address space is typically 2 KiB but the message buffer is larger, this field allows software-controlled paging.
                     '''
           swaccess: "rw",
           hwaccess: "hrw",
@@ -3660,7 +3667,7 @@
     // ----- Target Transaction Interface 0xC8 (Extended Capability). -----
     // Nothing more than the possible existence of this Extended Capability is described
     // in the HCI specification. These registers follow a TTI defined for the OpenTitan
-    // IP block, as specified in ../docs/tti.md.
+    // IP block, as specified in ../doc/tti.md.
     //
     // It supports a configurable number of Virtual Targets, up to a maximum given by
     // `MaxTargets`, with the first Virtual Target also assuming the role of Standby
@@ -4552,7 +4559,7 @@
           }
           { bits:     "15",
             name:     "STATIC_ADDR_VALID",
-            desc:     "Static Addres is Valid.",
+            desc:     "Static Address is Valid.",
             hwaccess: "hro",
             resval:   "0"
           }
@@ -4837,7 +4844,7 @@
         byte-write: "true",
         unusual:    "false"
         swaccess:   "rw",
-        desc:       '''Software-managed 4KiB message buffer used for transmitting and receiving messages.
+        desc:       '''Software-managed 4 KiB message buffer used for transmitting and receiving messages.
 
                     This may be used diagnostically when the I3C Controller and/or Target(s) are enabled.
                     It may be employed as additional system RAM when the I3C block is completely disabled.

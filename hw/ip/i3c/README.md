@@ -8,11 +8,11 @@ This document specifies the I3C Controller/Target IP functionality.
 
 In summary, the IP block implements the following features:
 
-- I3C Controller (Primary and/or Secondary).
+- I3C Primary Controller.
 - I3C Target.
 - Host Controller Interface (HCI) in PIO mode.
 - Target Transaction Interface.
-- 2-4KiB message buffer.
+- 2-4 KiB message buffer.
   - Apportioned in software amongst Controller- and Target-side logical queues.
   - Queues may be sized appropriately for the use case.
   - The design uses a single-ported SRAM, which offers a considerable area saving.
@@ -21,7 +21,7 @@ In summary, the IP block implements the following features:
 
 ### Controller-side features
 
-- Designed for a 50MHz clock, supporting 4 phases for 12.5MHz signaling.
+- Designed for a 50 MHz clock, supporting 4 phases for 12.5 MHz signaling.
 - Design parameter supports other clock frequencies.
 - HCI implementation.
 - PIO mode only; no support for DMA.
@@ -31,23 +31,25 @@ In summary, the IP block implements the following features:
     - Dynamic Address Assignment (DAA) may be decomposed into multiple operations by firmware to support more targets.
 - Signaling modes:
   - Single Data Rate (SDR)
-    - 12.5Mbps theoretical peak.
+    - 12.5 Mbps peak signaling rate.
   - Double Data Rate (HDR-DDR)
-    - 25Mbps theoretical peak; minus overheads this is 20Mbps throughput for long transfers.
+    - 25 Mbps peak signaling rate.
+  - The data rate is lower and depends on the IP clock frequency (see [Data rates](doc/theory_of_operation.md#data-rates)).
   - No support for HDR-BT mode or Multi-Lane transfers.
   - I2C Fast Mode and Fast Mode Plus support for backwards compatibility with some I2C devices.
 - Primary Controller.
-  - Support for the Secondary Controller Role, Controller Role Handoff and operation as a Standby Controller is not yet included.
+  - This version of the IP block does not support the Secondary Controller role, Controller Role Handoff or operation as a Standby Controller ([#31308](https://github.com/lowRISC/opentitan/issues/31308)).
 
 ### Target-side features
 
-- Designed for 50MHz IP clock (shared with the Controller-side logic).
+- Designed for 50 MHz IP clock (shared with the Controller-side logic).
 - I3C transceiver logic is driven by the I3C SCL signal directly.
 - Support for 'Deepest Sleep' state, with wake-up detection being performed by the Target Reset detector.
   - Almost all logic powered-down, and no free-running clock required; clocked by I3C signaling.
 - Signaling modes:
-  - Single Data Rate (SDR), 12.5Mbps.
-  - Double Data Rate (HDR-DDR), 25Mbps signaling/20Mbps throughput.
+  - Single Data Rate (SDR), 12.5 Mbps peak signaling rate.
+  - Double Data Rate (HDR-DDR), 25 Mbps peak signaling rate.
+  - Common Command Codes (CCCs) in SDR mode only; no support for CCCs in HDR-DDR mode.
 - Target Transaction Interface (TTI).
   - Modeled on the HCI, supporting:
     - Tx/Rx transfers, longer than the associated data buffers.
@@ -62,11 +64,15 @@ In summary, the IP block implements the following features:
 
 ## Description
 
-The I3C IP block provides both Controller and Target functionality, either on a single physical I3C bus or as two independent devices on two separate buses.
+The I3C IP block provides both Controller and Target functionality on a single I3C bus.
+The Controller and the Target share the SCL and SDA signals of the IP block, and software enables each of them independently.
+The IP block may thus operate as follows:
 
-- Single device on one I3C bus, implementing Primary or Secondary Controller role with the option of Controller Role Handoff to become a Standby Controller.
-- Two devices on separate I3C buses, implementing Primary Controller functionality on one bus and Target functionality on the second bus.
-  - In this mode of operation, the Controller must always remain the Active Controller and cannot become a Standby Controller.
+- As the Active Controller of the bus.
+- As a Target on a bus that another Controller controls.
+- As both, with the Target being a separate device on the bus of its own Controller.
+
+On a bus with several Controller-capable devices, the IP block operates either as the Primary Controller, which keeps the Controller role, or as a Target; it does not support the Secondary Controller role (see [Buses with several Controller-capable Devices](doc/theory_of_operation.md#buses-with-several-controller-capable-devices)).
 
 ## Compatibility
 
