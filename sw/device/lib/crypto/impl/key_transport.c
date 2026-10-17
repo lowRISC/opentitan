@@ -32,6 +32,11 @@ otcrypto_status_t otcrypto_symmetric_keygen(
     return OTCRYPTO_BAD_ARGS;
   }
 
+  // Ensure that the key lengths are >= 112 bits.
+  if (key->config.key_length < 14) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   // Ensure that the key material is masked with XOR; this will fail on
   // hardware-backed or non-symmetric keys.
   HARDENED_TRY(keyblob_ensure_xor_masked(key->config));
