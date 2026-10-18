@@ -42,12 +42,12 @@ All common types and methods defined at the package level can be found in
 Some of them in use are:
 ```systemverilog
   typedef enum int {
-    WakeupSysrst,
-    WakeupDbgCable,
-    WakeupPin,
-    WakeupUsb,
-    WakeupAonTimer,
-    WakeupSensorCtrl
+% for wkup in Wkups:
+<%
+  wakeup_name = "".join(w.capitalize() for w in (wkup["module"] + "_" + wkup["name"]).split("_"))
+%>\
+    Wakeup${wakeup_name}${"" if loop.last else ","}
+% endfor
   } wakeup_e;
 
   typedef struct packed {
