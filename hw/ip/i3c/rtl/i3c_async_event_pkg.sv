@@ -24,6 +24,7 @@ package i3c_async_event_pkg;
   } i3c_tti_async_event_e;
 
   // The I3C Bus Events reported via the Asynchronous Event Queue.
+  // - these are bit _indexes_, not event codes.
   typedef enum logic [3:0] {
     TTIBusEv_ReadNoSCL   = 4'h0,  // No change in SCL for > 150us during a Read Transfer.
     TTIBusEv_DeadBus     = 4'h1,  // No response to Start request when the bus was idle.
@@ -44,8 +45,9 @@ package i3c_async_event_pkg;
   typedef struct packed {
     i3c_tti_async_event_e code;         // Specifies the type of this descriptor.
     i3c_ccc_e             ccc;          // Command Command Code received.
-    logic           [1:0] reserved;
+    logic                 reserved;
     logic                 has_defb;     // Does this CCC have a Defining Byte?
+    logic                 has_data;     // Has associated write data?
     logic                 has_length;   // Does `data_length` specify a data length?
     logic           [7:0] defb;         // The Defining Byte, if relevant.
     logic           [7:0] data_length;  // Single byte of write data, or number of bytes.
@@ -62,6 +64,7 @@ package i3c_async_event_pkg;
   } i3c_tti_async_txd_res_t;
 
   // Outcome of an IBI transmission attempt, reported as an Asynchronous Event.
+  // TODO(#31337): This structure is identical to the txd structure above.
   typedef struct packed {
     i3c_tti_async_event_e code;        // Specifies the type of this descriptor.
     i3c_err_status_e      err_status;  // Outcome of the IBI transmission attempt.
@@ -86,9 +89,9 @@ package i3c_async_event_pkg;
 
   // Bus Event reported as an Asynchronous Event.
   typedef struct packed {
-    i3c_tti_async_event_e       code;      // Specifies the type of this descriptor.
-    logic  [TTIBusEv_Count-1:0] evt;       // The Bus Event(s) observed.
-    logic [27-TTIBusEv_Count:0] reserved;
+    i3c_tti_async_event_e code;      // Specifies the type of this descriptor.
+    logic          [11:0] evt;       // The Bus Event(s) observed, as a bitfield.
+    logic          [15:0] reserved;
   } i3c_tti_async_busevt_t;
 
   // Asynchronous Event Descriptor; single DWORD.

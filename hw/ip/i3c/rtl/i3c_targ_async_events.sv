@@ -295,7 +295,7 @@ module i3c_targ_async_events
     async_evt[AsyncEv_IBISuspend].ibis.code = AsyncEv_IBISuspend;
 
     async_evt[AsyncEv_BusEvents].bus.code = AsyncEv_BusEvents;
-    async_evt[AsyncEv_BusEvents].bus.evt  = bus_events_q;
+    async_evt[AsyncEv_BusEvents].bus.evt  = 12'(bus_events_q);
   end
 
   // Report any failure to write into the Asynchronous Event Queue in a timely fashion.
@@ -342,6 +342,7 @@ module i3c_targ_async_events
 
   // TTI Async Event union size check.
   `ASSERT_INIT(TtiAsyncEvtWidthIsDataWidth_A, $bits(i3c_tti_async_event_t) == DataWidth)
+  `ASSERT_INIT(TtiAsyncEvtBusEvtCntFits_A, int'(AsyncEv_Count) <= 12)
 
   // Signals that the logic does not use (yet).
   // - TODO(#31337): reporting of CCC activity is not specified completely yet.
