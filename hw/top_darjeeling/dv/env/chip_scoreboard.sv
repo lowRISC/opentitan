@@ -98,4 +98,27 @@ class chip_scoreboard #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_b
     return super.predict_tl_err(item, channel, ral_name);
   endfunction
 
+  protected virtual function bit is_tl_mem_access_allowed(tl_seq_item       item,
+                                                          dv_base_reg_block block,
+                                                          output bit        mem_byte_access_err,
+                                                          output bit        mem_wo_err,
+                                                          output bit        mem_ro_err,
+                                                          output bit        custom_err);
+    uvm_reg_addr_t addr = block.get_normalized_addr(item.a_addr);
+    uvm_mem mem = block.default_map.get_mem_by_offset(addr);
+    bit allowed = super.is_tl_mem_access_allowed(item, block, mem_byte_access_err, mem_wo_err,
+                                                 mem_ro_err, custom_err);
+
+    // The CTN window is mostly empty in the chip wrapper: only the CTN RAM is backed, and every
+    // other address in the window returns d_error.
+    if (mem != null && mem.get_name() == "ctn" &&
+        !(addr inside {[TOP_DARJEELING_SOC_PROXY_RAM_CTN_BASE_ADDR :
+                        TOP_DARJEELING_SOC_PROXY_RAM_CTN_BASE_ADDR +
+                        TOP_DARJEELING_SOC_PROXY_RAM_CTN_SIZE_BYTES - 1]})) begin
+      custom_err = 1;
+      return 0;
+    end
+    return allowed;
+  endfunction
+
 endclass
