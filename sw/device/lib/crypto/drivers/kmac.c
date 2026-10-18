@@ -892,38 +892,38 @@ static status_t hash(kmac_operation_t operation, kmac_security_str_t strength,
                                  /*masked_digest=*/kHardenedBoolFalse);
 }
 
-inline status_t kmac_sha3_224(const otcrypto_const_byte_buf_t *message,
-                              uint32_t *digest) {
+status_t kmac_sha3_224(const otcrypto_const_byte_buf_t *message,
+                       uint32_t *digest) {
   return hash(kKmacOperationSha3, kKmacSecurityStrength224, message,
               kKmacSha3224DigestWords, digest);
 }
 
-inline status_t kmac_sha3_256(const otcrypto_const_byte_buf_t *message,
-                              uint32_t *digest) {
+status_t kmac_sha3_256(const otcrypto_const_byte_buf_t *message,
+                       uint32_t *digest) {
   return hash(kKmacOperationSha3, kKmacSecurityStrength256, message,
               kKmacSha3256DigestWords, digest);
 }
 
-inline status_t kmac_sha3_384(const otcrypto_const_byte_buf_t *message,
-                              uint32_t *digest) {
+status_t kmac_sha3_384(const otcrypto_const_byte_buf_t *message,
+                       uint32_t *digest) {
   return hash(kKmacOperationSha3, kKmacSecurityStrength384, message,
               kKmacSha3384DigestWords, digest);
 }
 
-inline status_t kmac_sha3_512(const otcrypto_const_byte_buf_t *message,
-                              uint32_t *digest) {
+status_t kmac_sha3_512(const otcrypto_const_byte_buf_t *message,
+                       uint32_t *digest) {
   return hash(kKmacOperationSha3, kKmacSecurityStrength512, message,
               kKmacSha3512DigestWords, digest);
 }
 
-inline status_t kmac_shake_128(const otcrypto_const_byte_buf_t *message,
-                               uint32_t *digest, size_t digest_len) {
+status_t kmac_shake_128(const otcrypto_const_byte_buf_t *message,
+                        uint32_t *digest, size_t digest_len) {
   return hash(kKmacOperationShake, kKmacSecurityStrength128, message,
               digest_len, digest);
 }
 
-inline status_t kmac_shake_256(const otcrypto_const_byte_buf_t *message,
-                               uint32_t *digest, size_t digest_len) {
+status_t kmac_shake_256(const otcrypto_const_byte_buf_t *message,
+                        uint32_t *digest, size_t digest_len) {
   return hash(kKmacOperationShake, kKmacSecurityStrength256, message,
               digest_len, digest);
 }
