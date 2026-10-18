@@ -458,29 +458,20 @@ package i3c_pkg;
 
   // Indicates whether the given address is an 'Error Type TE0' address (4.3.8.1.1).
   // - these are single-bit deviations from the I3C Broadcast Address 7'h7e.
-  // TODO(#31035): Target-side logic checking using this function also needs to catch 7'h7e/R except
-  // when handling ENTDAA (HCI 4.3.8.1.1).
   function automatic logic te0_invalid_addr(logic [6:0] addr);
     return (addr inside {7'h7f, 7'h7c, 7'h7a, 7'h76, 7'h6e, 7'h5e, 7'h3e});
   endfunction
 
   // Check whether the given I3C address is invalid before attempting to drive it out into an
-  // arbitrable address header. This is primarily a safeguard against addressing any I2C device(s)
-  // on the bus that are known to employ clock-stretching.
-  //
-  // TODO(#31304): Update this according to usage, include masks and parameterize for NumBlocked.
-  function automatic logic invalid_addr(logic [6:0] addr,
-                                        logic [6:0] blocked_addr0,
-                                        logic [6:0] blocked_addr1,
-                                        logic       target);
-    case (addr)
-      7'h00:         return 1'b1;
-      7'h02:         return !target;  // Hot-Join requests permissible only from Targets.
-      blocked_addr0: return 1'b1;
-      blocked_addr1: return 1'b1;
-      default:       return te0_invalid_addr(addr);
+  // arbitrable address header.
+  // TODO(#31035): Target-side logic checking using this function also needs to catch 7'h7e/R except
+  // when handling ENTDAA (HCI 4.3.8.1.1).
+  function automatic logic invalid_addr(logic [6:0] addr, logic target);
+    unique case (addr)
+      7'h00:   return 1'b1;
+      7'h02:   return !target;  // Hot-Join requests permissible only from Targets.
+      default: return te0_invalid_addr(addr);
     endcase
-    return 1'b0;
   endfunction
 
   // The use of some CCCs is absolutely prohibited in Command Descriptors (TCRI 6.2) because the
