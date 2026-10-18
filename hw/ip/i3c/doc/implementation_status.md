@@ -54,13 +54,6 @@ The following [CCCs](tti.md#supported-cccs) are not implemented or only partiall
 | Direct SET CCCs to a Group Address         | Partial         | The Virtual Targets do not respect their group membership.                                                                                       | [#31128](https://github.com/lowRISC/opentitan/issues/31128)                                                                |
 | Broadcast and multi-target Direct SET CCCs | Partial         | They take no effect when terminated by a Repeated START.                                                                                         | [#31128](https://github.com/lowRISC/opentitan/issues/31128)                                                                |
 
-### Asynchronous Event Queue
-
-The layouts of two [Asynchronous Event Descriptors](tti.md#asynchronous-event-types) differ from the TTI specification ([#31337](https://github.com/lowRISC/opentitan/issues/31337)):
-
-- Type 0 (CCC activity): the `Has Data` bit is missing, and `Has DEFB` is at bit 17 instead of bit 18.
-- Type 5 (bus events): the events are at bits 27:20 instead of bits 23:16.
-
 ### Other Target features
 
 - [Hot-Join](tti.md#hot-join-feature): the Target does not act on `TARG_CONTROL.HJ_REQUEST` ([#31337](https://github.com/lowRISC/opentitan/issues/31337)).
