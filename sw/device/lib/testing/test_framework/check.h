@@ -267,15 +267,15 @@
  */
 #define _LOG_ERROR_STATUS_DV(expr)                                         \
   do {                                                                     \
-    status_t status_ = expr;                                               \
+    status_t log_status_ = expr;                                           \
     const char *msg;                                                       \
     char mod_id[3] = {0};                                                  \
     int line;                                                              \
-    if (status_extract(status_, &msg, &line, mod_id)) {                    \
+    if (status_extract(log_status_, &msg, &line, mod_id)) {                \
       LOG_ERROR("CHECK-STATUS-fail: %c%c%c:%d = %s", mod_id[0], mod_id[1], \
                 mod_id[2], line, msg);                                     \
     } else {                                                               \
-      LOG_ERROR("CHECK-STATUS-fail: 0x%08x", status_);                     \
+      LOG_ERROR("CHECK-STATUS-fail: 0x%08x", log_status_);                 \
     }                                                                      \
   } while (false)
 

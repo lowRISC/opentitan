@@ -740,25 +740,25 @@ static void hmac_init(hmac_key_length_t key_len,
 }
 
 void hmac_hash_sha256_init(hmac_ctx_t *ctx) {
-  ctx->msg_block_wordlen = kHmacSha256BlockWords,
-  ctx->digest_wordlen = kHmacSha256DigestWords,
+  ctx->msg_block_wordlen = kHmacSha256BlockWords;
+  ctx->digest_wordlen = kHmacSha256DigestWords;
   sha2_init(kDigestLengthSha256, ctx);
 }
 
 void hmac_hash_sha384_init(hmac_ctx_t *ctx) {
-  ctx->msg_block_wordlen = kHmacSha384BlockWords,
-  ctx->digest_wordlen = kHmacSha384DigestWords,
+  ctx->msg_block_wordlen = kHmacSha384BlockWords;
+  ctx->digest_wordlen = kHmacSha384DigestWords;
   sha2_init(kDigestLengthSha384, ctx);
 }
 
 void hmac_hash_sha512_init(hmac_ctx_t *ctx) {
-  ctx->msg_block_wordlen = kHmacSha512BlockWords,
-  ctx->digest_wordlen = kHmacSha512DigestWords,
+  ctx->msg_block_wordlen = kHmacSha512BlockWords;
+  ctx->digest_wordlen = kHmacSha512DigestWords;
   sha2_init(kDigestLengthSha512, ctx);
 }
 
 void hmac_hmac_sha256_init_cl(const hmac_key_t key, hmac_ctx_t *ctx) {
-  ctx->msg_block_wordlen = kHmacSha256BlockWords,
+  ctx->msg_block_wordlen = kHmacSha256BlockWords;
   ctx->digest_wordlen = kHmacSha256DigestWords;
   ctx->key.key_len = key.key_len;
   ctx->key.checksum = key.checksum;
@@ -770,7 +770,7 @@ void hmac_hmac_sha256_init_cl(const hmac_key_t key, hmac_ctx_t *ctx) {
 }
 
 void hmac_hmac_sha384_init(const hmac_key_t key, hmac_ctx_t *ctx) {
-  ctx->msg_block_wordlen = kHmacSha384BlockWords,
+  ctx->msg_block_wordlen = kHmacSha384BlockWords;
   ctx->digest_wordlen = kHmacSha384DigestWords;
   ctx->key.key_len = key.key_len;
   ctx->key.checksum = key.checksum;
@@ -782,7 +782,7 @@ void hmac_hmac_sha384_init(const hmac_key_t key, hmac_ctx_t *ctx) {
 }
 
 void hmac_hmac_sha512_init(const hmac_key_t key, hmac_ctx_t *ctx) {
-  ctx->msg_block_wordlen = kHmacSha512BlockWords,
+  ctx->msg_block_wordlen = kHmacSha512BlockWords;
   ctx->digest_wordlen = kHmacSha512DigestWords;
   ctx->key.key_len = key.key_len;
   ctx->key.checksum = key.checksum;
