@@ -245,18 +245,20 @@ Configuration enable for wakeup_en register
 Bit mask for enabled wakeups
 - Offset: `0x20`
 - Reset default: `0x0`
-- Reset mask: `0x3f`
+- Reset mask: `0xff`
 - Register enable: [`WAKEUP_EN_REGWEN`](#wakeup_en_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "EN_0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_2", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_3", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_4", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_5", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "EN_0", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_1", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_2", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_3", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_4", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_5", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_6", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "EN_7", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                   |
 |:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:6  |        |         |        | Reserved                                                                                                                                                      |
+|  31:8  |        |         |        | Reserved                                                                                                                                                      |
+|   7    |   rw   |   0x0   | EN_7   | Whenever a particular bit is set to 1, that wakeup is also enabled. Whenever a particular bit is set to 0, that wakeup cannot wake the device from low power. |
+|   6    |   rw   |   0x0   | EN_6   | Whenever a particular bit is set to 1, that wakeup is also enabled. Whenever a particular bit is set to 0, that wakeup cannot wake the device from low power. |
 |   5    |   rw   |   0x0   | EN_5   | Whenever a particular bit is set to 1, that wakeup is also enabled. Whenever a particular bit is set to 0, that wakeup cannot wake the device from low power. |
 |   4    |   rw   |   0x0   | EN_4   | Whenever a particular bit is set to 1, that wakeup is also enabled. Whenever a particular bit is set to 0, that wakeup cannot wake the device from low power. |
 |   3    |   rw   |   0x0   | EN_3   | Whenever a particular bit is set to 1, that wakeup is also enabled. Whenever a particular bit is set to 0, that wakeup cannot wake the device from low power. |
@@ -268,17 +270,19 @@ Bit mask for enabled wakeups
 A read only register of all current wake requests post enable mask
 - Offset: `0x24`
 - Reset default: `0x0`
-- Reset mask: `0x3f`
+- Reset mask: `0xff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "VAL_0", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VAL_1", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VAL_2", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VAL_3", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VAL_4", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VAL_5", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 26}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "VAL_0", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VAL_1", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VAL_2", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VAL_3", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VAL_4", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VAL_5", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VAL_6", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VAL_7", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name   | Description                    |
 |:------:|:------:|:-------:|:-------|:-------------------------------|
-|  31:6  |        |         |        | Reserved                       |
+|  31:8  |        |         |        | Reserved                       |
+|   7    |   ro   |   0x0   | VAL_7  | Current value of wake requests |
+|   6    |   ro   |   0x0   | VAL_6  | Current value of wake requests |
 |   5    |   ro   |   0x0   | VAL_5  | Current value of wake requests |
 |   4    |   ro   |   0x0   | VAL_4  | Current value of wake requests |
 |   3    |   ro   |   0x0   | VAL_3  | Current value of wake requests |
@@ -385,20 +389,20 @@ This capture is continued until it is explicitly disabled through WAKE_INFO_CAPT
 This means it is possible to capture multiple wakeup reasons.
 - Offset: `0x3c`
 - Reset default: `0x0`
-- Reset mask: `0xff`
+- Reset mask: `0x3ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "REASONS", "bits": 6, "attr": ["rw1c"], "rotate": 0}, {"name": "FALL_THROUGH", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "ABORT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
+{"reg": [{"name": "REASONS", "bits": 8, "attr": ["rw1c"], "rotate": 0}, {"name": "FALL_THROUGH", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "ABORT", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                     |
 |:------:|:------:|:-------:|:-----------------------------------------|
-|  31:8  |        |         | Reserved                                 |
-|   7    |  rw1c  |   0x0   | [ABORT](#wake_info--abort)               |
-|   6    |  rw1c  |   0x0   | [FALL_THROUGH](#wake_info--fall_through) |
-|  5:0   |  rw1c  |   0x0   | [REASONS](#wake_info--reasons)           |
+| 31:10  |        |         | Reserved                                 |
+|   9    |  rw1c  |   0x0   | [ABORT](#wake_info--abort)               |
+|   8    |  rw1c  |   0x0   | [FALL_THROUGH](#wake_info--fall_through) |
+|  7:0   |  rw1c  |   0x0   | [REASONS](#wake_info--reasons)           |
 
 ### WAKE_INFO . ABORT
 The abort wakeup reason indicates that despite setting a WFI and providing a low power

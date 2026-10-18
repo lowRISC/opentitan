@@ -3749,6 +3749,13 @@ cc_library(
                 [],
             )
             for ip in PWRMGR_SUPPORTED_IPS
+        ] + [
+            # The I3C wake-up source is skipped, so it needs no DIF.
+            opentitan_if_ip(
+                "i3c",
+                ["HAS_I3C"],
+                [],
+            ),
         ],
     ),
     target_compatible_with = [OPENTITAN_CPU],

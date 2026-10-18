@@ -308,6 +308,10 @@ module top_earlgrey #(
   rv_core_ibex_pkg::cpu_crash_dump_t       rv_core_ibex_crash_dump;
   rv_core_ibex_pkg::cpu_pwrmgr_t       rv_core_ibex_pwrmgr;
   logic       rv_dm_ndmreset_req;
+  logic       pwrmgr_wakeups;
+  logic       i3c0_rstdet_enable;
+  i3c_pkg::i3c_rstdet_req_t       i3c0_rstdet_req;
+  i3c_pkg::i3c_rstdet_rsp_t       i3c0_rstdet_rsp;
   ast_intraip_pkg::s2p_t       ast_intraip_s2p;
   ast_intraip_pkg::p2s_t       ast_intraip_p2s;
   tlul_pkg::tl_h2d_t       pwrmgr_tl_req;
@@ -383,6 +387,8 @@ module top_earlgrey #(
   logic       cio_i3c1_sda_d2p;
   logic       cio_i3c1_sda_en_d2p;
   logic       cio_i3c1_sda_p2d;
+  logic       cio_i3c1_rstdet_scl_p2d;
+  logic       cio_i3c1_rstdet_sda_p2d;
   logic       cio_i3c1_ctrl_sda_pu_d2p;
   logic       cio_i3c1_ctrl_sda_pu_en_d2p;
   logic [3:0] cio_spi_host0_sd_d2p;
@@ -640,6 +646,10 @@ module top_earlgrey #(
     .rv_core_ibex_crash_dump_o         (rv_core_ibex_crash_dump  ),
     .rv_core_ibex_pwrmgr_o             (rv_core_ibex_pwrmgr      ),
     .rv_dm_ndmreset_req_o              (rv_dm_ndmreset_req       ),
+    .pwrmgr_wakeups_o                  (pwrmgr_wakeups           ),
+    .i3c0_rstdet_enable_o              (i3c0_rstdet_enable       ),
+    .i3c0_rstdet_req_o                 (i3c0_rstdet_req          ),
+    .i3c0_rstdet_rsp_i                 (i3c0_rstdet_rsp          ),
     .ast_intraip_s2p_i                 (ast_intraip_s2p          ),
     .ast_intraip_p2s_o                 (ast_intraip_p2s          ),
     .pwrmgr_tl_req_o                   (pwrmgr_tl_req            ),
@@ -715,6 +725,8 @@ module top_earlgrey #(
     .cio_i3c1_sda_d2p_o                (cio_i3c1_sda_d2p         ),
     .cio_i3c1_sda_en_d2p_o             (cio_i3c1_sda_en_d2p      ),
     .cio_i3c1_sda_p2d_i                (cio_i3c1_sda_p2d         ),
+    .cio_i3c1_rstdet_scl_p2d_i         (cio_i3c1_rstdet_scl_p2d  ),
+    .cio_i3c1_rstdet_sda_p2d_i         (cio_i3c1_rstdet_sda_p2d  ),
     .cio_i3c1_ctrl_sda_pu_d2p_o        (cio_i3c1_ctrl_sda_pu_d2p ),
     .cio_i3c1_ctrl_sda_pu_en_d2p_o     (cio_i3c1_ctrl_sda_pu_en_d2p),
     .cio_spi_host0_sd_d2p_o            (cio_spi_host0_sd_d2p     ),
@@ -859,6 +871,10 @@ module top_earlgrey #(
     .rv_core_ibex_crash_dump_i         (rv_core_ibex_crash_dump  ),
     .rv_core_ibex_pwrmgr_i             (rv_core_ibex_pwrmgr      ),
     .rv_dm_ndmreset_req_i              (rv_dm_ndmreset_req       ),
+    .pwrmgr_wakeups_i                  (pwrmgr_wakeups           ),
+    .i3c0_rstdet_enable_i              (i3c0_rstdet_enable       ),
+    .i3c0_rstdet_req_i                 (i3c0_rstdet_req          ),
+    .i3c0_rstdet_rsp_o                 (i3c0_rstdet_rsp          ),
     .ast_intraip_s2p_o                 (ast_intraip_s2p          ),
     .ast_intraip_p2s_i                 (ast_intraip_p2s          ),
     .pwrmgr_tl_req_i                   (pwrmgr_tl_req            ),
@@ -934,6 +950,8 @@ module top_earlgrey #(
     .cio_i3c1_sda_d2p_i                (cio_i3c1_sda_d2p         ),
     .cio_i3c1_sda_en_d2p_i             (cio_i3c1_sda_en_d2p      ),
     .cio_i3c1_sda_p2d_o                (cio_i3c1_sda_p2d         ),
+    .cio_i3c1_rstdet_scl_p2d_o         (cio_i3c1_rstdet_scl_p2d  ),
+    .cio_i3c1_rstdet_sda_p2d_o         (cio_i3c1_rstdet_sda_p2d  ),
     .cio_i3c1_ctrl_sda_pu_d2p_i        (cio_i3c1_ctrl_sda_pu_d2p ),
     .cio_i3c1_ctrl_sda_pu_en_d2p_i     (cio_i3c1_ctrl_sda_pu_en_d2p),
     .cio_spi_host0_sd_d2p_i            (cio_spi_host0_sd_d2p     ),

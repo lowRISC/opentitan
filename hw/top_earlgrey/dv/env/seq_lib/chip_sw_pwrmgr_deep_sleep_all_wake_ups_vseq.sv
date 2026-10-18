@@ -87,6 +87,12 @@ class chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq extends chip_sw_base_vseq;
 
     // Need to use hard coded string.
     // Loop with sformatf %d doesn't work
+    //
+    // The SW skips the I3C Target Reset Detector wake-ups (sources 0 and 1), so the rounds below
+    // wait for sources 2 to 4.
+    `DV_CHECK_EQ(pwrmgr_reg_pkg::SYSRST_CTRL_WKUP_REQ_IDX, 2)
+    `DV_CHECK_EQ(pwrmgr_reg_pkg::ADC_CTRL_WKUP_REQ_IDX, 3)
+    `DV_CHECK_EQ(pwrmgr_reg_pkg::PINMUX_PIN_WKUP_REQ_IDX, 4)
 
     // Add sample number for the future reference.
     // This is sampled from sv simulation and can be varied
@@ -94,40 +100,40 @@ class chip_sw_pwrmgr_deep_sleep_all_wake_ups_vseq extends chip_sw_base_vseq;
     // Total run time was 21ms.
     // @3.5ms
     repeat (repeat_count) begin
-      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Issue WFI to enter sleep 0");,
-                   "Timed out waiting for enter sleep 0", timeout_long)
+      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Issue WFI to enter sleep 2");,
+                   "Timed out waiting for enter sleep 2", timeout_long)
       wakeup_action(0);
       // @6.3ms
-      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Woke up by source 0");,
-                   "Timed out waiting for Woke up by source 0", timeout_long)
+      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Woke up by source 2");,
+                   "Timed out waiting for Woke up by source 2", timeout_long)
       release_action(0);
     end
     // @6.45ms
     repeat (repeat_count) begin
-      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Issue WFI to enter sleep 1");,
-                   "Timed out waiting for enter sleep 1", timeout_short)
+      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Issue WFI to enter sleep 3");,
+                   "Timed out waiting for enter sleep 3", timeout_short)
       wakeup_action(1);
       // @12.28ms
-      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Woke up by source 1");,
-                   "Timed out waiting for Woke up by source 1", timeout_long)
+      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Woke up by source 3");,
+                   "Timed out waiting for Woke up by source 3", timeout_long)
       release_action(1);
     end
     // @12.425
     repeat (repeat_count) begin
-      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Issue WFI to enter sleep 2");,
-                   "Timed out waiting for enter sleep 2", timeout_short)
+      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Issue WFI to enter sleep 4");,
+                   "Timed out waiting for enter sleep 4", timeout_short)
       wakeup_action(2);
       // @15.248
-      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Woke up by source 2");,
-                   "Timed out waiting for Woke up by source 2", timeout_long)
+      `DV_SPINWAIT(wait(cfg.sw_logger_vif.printed_log == "Woke up by source 4");,
+                   "Timed out waiting for Woke up by source 4", timeout_long)
       release_action(2);
     end
  endtask // body
 
   // Trigger wakeup signal for each test round
-  // Round 0 : input for sysrst ctrl
-  // Round 1 : input for adc ctrl (force)
-  // Round 2 : input for pinmux wakeup detector
+  // Round 0 : input for sysrst ctrl (wake-up source 2)
+  // Round 1 : input for adc ctrl (force, wake-up source 3)
+  // Round 2 : input for pinmux wakeup detector (wake-up source 4)
   task wakeup_action(int round);
      repeat(20) @(posedge cfg.ast_supply_vif.clk);
     case(round)

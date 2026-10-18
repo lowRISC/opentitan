@@ -22,10 +22,10 @@ CONNECTION, CLKMGR_PERI_CLK_I2C0_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr,cloc
 CONNECTION, CLKMGR_PERI_CLK_I2C1_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr,clocks_o.clk_io_div4_peri, top_earlgrey.earlgrey_pd_main.u_i2c1, clk_i
 CONNECTION, CLKMGR_PERI_CLK_I2C2_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr,clocks_o.clk_io_div4_peri, top_earlgrey.earlgrey_pd_main.u_i2c2, clk_i
 
-CONNECTION, CLKMGR_PERI_CLK_I3C0_CLK,      top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_peri,      top_earlgrey.earlgrey_pd_main.u_i3c0, clk_i
-CONNECTION, CLKMGR_PERI_CLK_I3C1_CLK,      top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_peri,      top_earlgrey.earlgrey_pd_main.u_i3c1, clk_i
-CONNECTION, CLKMGR_PERI_CLK_I3C0_SCAN_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div2_peri, top_earlgrey.earlgrey_pd_main.u_i3c0, scan_clk_i
-CONNECTION, CLKMGR_PERI_CLK_I3C1_SCAN_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div2_peri, top_earlgrey.earlgrey_pd_main.u_i3c1, scan_clk_i
+CONNECTION, CLKMGR_PERI_CLK_I3C0_CLK,      top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_peri,      top_earlgrey.earlgrey_pd_main.u_i3c0_part_primary, clk_i
+CONNECTION, CLKMGR_PERI_CLK_I3C1_CLK,      top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_peri,      top_earlgrey.earlgrey_pd_main.u_i3c1_part_primary, clk_i
+CONNECTION, CLKMGR_PERI_CLK_I3C0_SCAN_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div2_peri, top_earlgrey.earlgrey_pd_main.u_i3c0_part_primary, scan_clk_i
+CONNECTION, CLKMGR_PERI_CLK_I3C1_SCAN_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div2_peri, top_earlgrey.earlgrey_pd_main.u_i3c1_part_primary, scan_clk_i
 
 CONNECTION, CLKMGR_PERI_CLK_UART0_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div4_peri, top_earlgrey.earlgrey_pd_main.u_uart0, clk_i
 CONNECTION, CLKMGR_PERI_CLK_UART1_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div4_peri, top_earlgrey.earlgrey_pd_main.u_uart1, clk_i
@@ -39,5 +39,7 @@ CONNECTION, CLKMGR_PERI_CLK_ADC_CTRL_CLK_AON, top_earlgrey.earlgrey_pd_aon.u_clk
 
 CONNECTION, CLKMGR_PERI_CLK_USBDEV_AON_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_aon_peri, top_earlgrey.earlgrey_pd_main.u_usbdev,       clk_aon_i
 
-CONNECTION, CLKMGR_PERI_CLK_I3C0_AON_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_aon_peri, top_earlgrey.earlgrey_pd_main.u_i3c0, clk_aon_i
-CONNECTION, CLKMGR_PERI_CLK_I3C1_AON_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_aon_peri, top_earlgrey.earlgrey_pd_main.u_i3c1, clk_aon_i
+CONNECTION, CLKMGR_PERI_CLK_I3C0_AON_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_aon_peri, top_earlgrey.earlgrey_pd_main.u_i3c0_part_primary, clk_aon_i
+CONNECTION, CLKMGR_PERI_CLK_I3C1_AON_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_aon_peri, top_earlgrey.earlgrey_pd_main.u_i3c1_part_primary, clk_aon_i
+CONNECTION, CLKMGR_PERI_CLK_I3C0_RSTDET_AON_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_aon_peri, top_earlgrey.earlgrey_pd_aon.u_i3c0_part_secondary, clk_aon_i
+CONNECTION, CLKMGR_PERI_CLK_I3C1_RSTDET_AON_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_aon_peri, top_earlgrey.earlgrey_pd_main.u_i3c1_part_secondary, clk_aon_i

@@ -1435,18 +1435,22 @@ typedef enum top_earlgrey_pinmux_peripheral_in {
   kTopEarlgreyPinmuxPeripheralInUart1Rx = 47, /**< Peripheral Input 47 */
   kTopEarlgreyPinmuxPeripheralInUart2Rx = 48, /**< Peripheral Input 48 */
   kTopEarlgreyPinmuxPeripheralInUart3Rx = 49, /**< Peripheral Input 49 */
-  kTopEarlgreyPinmuxPeripheralInSpiDeviceTpmCsb = 50, /**< Peripheral Input 50 */
-  kTopEarlgreyPinmuxPeripheralInRramMacroTck = 51, /**< Peripheral Input 51 */
-  kTopEarlgreyPinmuxPeripheralInRramMacroTms = 52, /**< Peripheral Input 52 */
-  kTopEarlgreyPinmuxPeripheralInRramMacroTdi = 53, /**< Peripheral Input 53 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAcPresent = 54, /**< Peripheral Input 54 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey0In = 55, /**< Peripheral Input 55 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey1In = 56, /**< Peripheral Input 56 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey2In = 57, /**< Peripheral Input 57 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlPwrbIn = 58, /**< Peripheral Input 58 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlLidOpen = 59, /**< Peripheral Input 59 */
-  kTopEarlgreyPinmuxPeripheralInUsbdevSense = 60, /**< Peripheral Input 60 */
-  kTopEarlgreyPinmuxPeripheralInLast = 60, /**< \internal Last valid peripheral input */
+  kTopEarlgreyPinmuxPeripheralInI3c0RstdetScl = 50, /**< Peripheral Input 50 */
+  kTopEarlgreyPinmuxPeripheralInI3c0RstdetSda = 51, /**< Peripheral Input 51 */
+  kTopEarlgreyPinmuxPeripheralInI3c1RstdetScl = 52, /**< Peripheral Input 52 */
+  kTopEarlgreyPinmuxPeripheralInI3c1RstdetSda = 53, /**< Peripheral Input 53 */
+  kTopEarlgreyPinmuxPeripheralInSpiDeviceTpmCsb = 54, /**< Peripheral Input 54 */
+  kTopEarlgreyPinmuxPeripheralInRramMacroTck = 55, /**< Peripheral Input 55 */
+  kTopEarlgreyPinmuxPeripheralInRramMacroTms = 56, /**< Peripheral Input 56 */
+  kTopEarlgreyPinmuxPeripheralInRramMacroTdi = 57, /**< Peripheral Input 57 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAcPresent = 58, /**< Peripheral Input 58 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey0In = 59, /**< Peripheral Input 59 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey1In = 60, /**< Peripheral Input 60 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey2In = 61, /**< Peripheral Input 61 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlPwrbIn = 62, /**< Peripheral Input 62 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlLidOpen = 63, /**< Peripheral Input 63 */
+  kTopEarlgreyPinmuxPeripheralInUsbdevSense = 64, /**< Peripheral Input 64 */
+  kTopEarlgreyPinmuxPeripheralInLast = 64, /**< \internal Last valid peripheral input */
 } top_earlgrey_pinmux_peripheral_in_t;
 
 /**
@@ -1720,13 +1724,15 @@ typedef enum top_earlgrey_muxed_pads {
  * Power Manager Wakeup Signals
  */
 typedef enum top_earlgrey_power_manager_wake_ups {
-  kTopEarlgreyPowerManagerWakeUpsSysrstCtrlWkupReq = 0, /**<  */
-  kTopEarlgreyPowerManagerWakeUpsAdcCtrlWkupReq = 1, /**<  */
-  kTopEarlgreyPowerManagerWakeUpsPinmuxPinWkupReq = 2, /**<  */
-  kTopEarlgreyPowerManagerWakeUpsPinmuxUsbWkupReq = 3, /**<  */
-  kTopEarlgreyPowerManagerWakeUpsAonTimerWkupReq = 4, /**<  */
-  kTopEarlgreyPowerManagerWakeUpsSensorCtrlWkupReq = 5, /**<  */
-  kTopEarlgreyPowerManagerWakeUpsLast = 5, /**< \internal Last valid pwrmgr wakeup signal */
+  kTopEarlgreyPowerManagerWakeUpsI3c0RstdetWkupReq = 0, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsI3c1RstdetWkupReq = 1, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsSysrstCtrlWkupReq = 2, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsAdcCtrlWkupReq = 3, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsPinmuxPinWkupReq = 4, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsPinmuxUsbWkupReq = 5, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsAonTimerWkupReq = 6, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsSensorCtrlWkupReq = 7, /**<  */
+  kTopEarlgreyPowerManagerWakeUpsLast = 7, /**< \internal Last valid pwrmgr wakeup signal */
 } top_earlgrey_power_manager_wake_ups_t;
 
 /**
