@@ -684,6 +684,7 @@ module i3c_controller_fsm
       bus_state.mode      <= XferMode_SDR0;
       bus_state.i2c       <= 1'b0;
       cmdq_lo_valid       <= 1'b0;
+      cmdq_lo_data        <= 'b0;  // Not logically required, just for the HCI `SOFT_RST` action.
       cmd_state.available <= 1'b0;
       cmd_state.started   <= 1'b0;
       pio_bcst_addr_en    <= 1'b0;
@@ -698,10 +699,10 @@ module i3c_controller_fsm
             cmd_state.available <= cmd_dispatch;
             trans_type          <= cmd_dispatch ? TransType_Cmd : TransType_Intr;
           end
-          // Capture the DAT entry (read data from DAT could be altered by software access);
+          // DAT entry must be captured immediately (see `datf_re_q` below).
           // - note that we also wait here until the result from the previous command has been
           //   posted into the Response Queue.
-          DATCapt: if (datf_re_q) dat_entry <= dat_rdata_i;
+          DATCapt: begin end
           // Now that we have the captured DAT entry available to complete the command decoding,
           // we can proceed
           CmdDecode: begin
@@ -804,6 +805,9 @@ module i3c_controller_fsm
           trans_type          <= TransType_None;
         end
       end
+
+      // Capture the DAT entry immediately (read data from DAT could be altered by software access).
+      if (datf_re_q) dat_entry <= dat_rdata_i;
 
       // Remember whether a DAT read was performed.
       datf_re_q <= datf_re;
