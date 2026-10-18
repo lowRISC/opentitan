@@ -284,13 +284,15 @@ The I3C Basic Specification supports Targets, including Standby Controllers, ent
 In this state, the I3C IP block may be powered down or its clock may be stopped.
 
 Note that since I3C is a 'multi-drop' bus it is _not_ sufficient for a Target to respond to a state change at the pins; rather, to awaken a Target from 'Deepest Sleep' the Active Controller sends it a special signaling pattern called a 'Target Reset Pattern'.
-For this I3C implementation, that pattern is detected by the `i3c_reset_detector` module, instantiated in a separate power domain and thus outside of the I3C IP block itself.
+For this I3C implementation, that pattern is detected by the `i3c_reset_detector` module.
+It forms the secondary partition (`i3c_part_secondary`) of the I3C IP block, which may be instantiated in a different power domain than the primary partition (`i3c_part_primary`).
+See the [Integration Notes](integration_notes.md#target-reset-detector) for details.
 
 With the I3C IP block - and much of the System on Chip (SoC) that contains it - in a sleep state, the reset detector logic may continue to monitor the I3C bus for this special pattern, and then instruct another part of the SoC to awaken the SoC from sleep.
 Typically this will be a power management block.
 
 In order to minimize the power consumption whilst in this low power state, the reset detector logic does not require a free-running clock of its own, but is instead driven directly from the SCL and SDA signals of the I3C bus.
-The register interface of the IP block and the signaling to the power management hardware are expected to reside in the Always ON (AON) clock and power domain, so the module `i3c_reset_detector` does require clock and reset signals for those connections.
+The signaling to the register interface of the IP block and to the power management hardware is on the Always ON (AON) clock, so the module `i3c_reset_detector` does require clock and reset signals for those connections.
 
 ![Reset detector](reset_detector.svg)
 

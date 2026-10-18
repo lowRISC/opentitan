@@ -2,14 +2,16 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
-// I3C top level wrapper for OpenTitan.
+// I3C top level wrapper for OpenTitan, primary partition of the split IP.
 //
 // - OpenTitan compatibility, register interface and alert handling.
 // - TileLink Uncached Light (TL-UL) interface.
+//
+// The Target Reset Detector is in the secondary partition (`i3c_part_secondary`).
 
 `include "prim_assert.sv"
 
-module i3c
+module i3c_part_primary
   import i3c_io_pkg::*;
   import i3c_pkg::*;
   import i3c_reg_pkg::*;
@@ -85,7 +87,7 @@ module i3c
   output logic                              scl_hk_en_o,
   output logic                              sda_hk_en_o,
 
-  // Target Reset Detector request/response.
+  // Target Reset Detector (secondary partition) request/response.
   output                                    rstdet_enable_o,
   output i3c_rstdet_req_t                   rstdet_o,
   input  i3c_rstdet_rsp_t                   rstdet_i,

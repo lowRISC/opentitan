@@ -57,7 +57,8 @@ filesets:
       - rtl/i3c_reg_top.sv
       - rtl/i3c_reset_detector.sv
       - rtl/i3c_stby_cr_regs.sv
-      - rtl/i3c.sv
+      - rtl/i3c_part_primary.sv
+      - rtl/i3c_part_secondary.sv
       - rtl/i3c_sync_data.sv
       - rtl/i3c_targ_async_events.sv
       - rtl/i3c_target_ccc.sv
@@ -131,7 +132,7 @@ targets:
       - i3c_io_sep_drv_en   ? (files_rtl_io_sep)
       - "!i3c_io_sep_drv_en ? (files_rtl_io_vod)"
       - files_rtl_common
-    toplevel: i3c
+    toplevel: i3c_part_primary
 
   lint:
     <<: *default_target
@@ -149,4 +150,4 @@ targets:
     default_tool: icarus
     parameters:
       - SYNTHESIS=true
-    toplevel: i3c
+    toplevel: i3c_part_primary

@@ -93,6 +93,11 @@ Clock frequencies:
  - From 512 MHz (excl.) to 1024 MHz (incl.): adjustments have 16 times the base weighting.
  - From 1024 MHz (excl.) to 1500 MHz (incl.): adjustments have 32 times the base weighting; shifts are increased by 5.
 
+## Target Reset Detector pads
+
+The Target Reset Detector observes SCL and SDA through its own inputs, `rstdet_scl` and `rstdet_sda` (see the [Integration Notes](integration_notes.md#target-reset-detector)).
+Where these inputs are connected through a pin multiplexer, software must route them to the same pads as `scl` and `sda` before the detector is activated.
+
 # IBI Payload Fetching
 
 A number of I3C Targets are too slow to be able to return data for Private Read transfers at the full SDR0/HDR-DDR signaling speed.
