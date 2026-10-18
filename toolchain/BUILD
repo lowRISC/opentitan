@@ -75,6 +75,7 @@ cc_toolchain(
         ":feat_warnings_as_errors",
     ],
     known_features = [
+        ":feat_cryptolib_warnings",
         "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
         ":feat_warnings_as_errors",
         ":feat_guards",
@@ -488,4 +489,38 @@ cc_args(
     name = "no_jump_tables_args",
     actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
     args = ["-fno-jump-tables"],
+)
+
+cc_feature(
+    name = "feat_cryptolib_warnings",
+    args = [":cryptolib_warnings_args"],
+    feature_name = "cryptolib_warnings",
+)
+
+cc_args(
+    name = "cryptolib_warnings_args",
+    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
+    args = [
+        "-Wassign-enum",
+        "-Wcomma",
+        "-Wconditional-uninitialized",
+        "-Wflexible-array-extensions",
+        "-Wgnu-null-pointer-arithmetic",
+        "-Wgnu-union-cast",
+        "-Wnested-anon-types",
+        "-Wpointer-arith",
+        "-Wshadow-all",
+        "-Wshift-sign-overflow",
+        "-Wshorten-64-to-32",
+        "-Wsign-compare",
+        "-Wstatic-in-inline",
+        "-Wtautological-constant-in-range-compare",
+        "-Wtype-limits",
+        "-Wundef",
+        "-Wuninitialized",
+        "-Wunreachable-code-aggressive",
+        "-Wno-unreachable-code-break",
+        "-Wwrite-strings",
+        "-Wzero-as-null-pointer-constant",
+    ],
 )
