@@ -422,9 +422,9 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
   }
 
   uint32_t cmd_reg_addr;
-  uint32_t sts_reg_addr;
-  uint32_t rdy_bit_offset;
-  uint32_t reg_rdy_bit_offset;
+  uint32_t sts_reg_addr = 0;
+  uint32_t rdy_bit_offset = 0;
+  uint32_t reg_rdy_bit_offset = 0;
   uint32_t reg;
   bool ready;
 
@@ -895,15 +895,15 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
  * @param name Name of register (e.g. REPCNT, BUCKET).
  * @param exp Expected value of the FIPS_THRESH field.
  */
-#define VERIFY_FIPS_THRESH(name, exp)                                  \
-  do {                                                                 \
-    uint32_t reg = abs_mmio_read32(                                    \
-        kBaseEntropySrc + ENTROPY_SRC_##name##_THRESHOLDS_REG_OFFSET); \
-    uint32_t act = bitfield_field32_read(                              \
-        reg, ENTROPY_SRC_##name##_THRESHOLDS_FIPS_THRESH_FIELD);       \
-    if (act != exp) {                                                  \
-      return OTCRYPTO_RECOV_ERR;                                       \
-    }                                                                  \
+#define VERIFY_FIPS_THRESH(name, exp)                                   \
+  do {                                                                  \
+    uint32_t thresh_reg = abs_mmio_read32(                              \
+        kBaseEntropySrc + ENTROPY_SRC_##name##_THRESHOLDS_REG_OFFSET);  \
+    uint32_t act = bitfield_field32_read(                               \
+        thresh_reg, ENTROPY_SRC_##name##_THRESHOLDS_FIPS_THRESH_FIELD); \
+    if (act != exp) {                                                   \
+      return OTCRYPTO_RECOV_ERR;                                        \
+    }                                                                   \
   } while (false);
 // COVERAGE (HW ERR) This is only reached if the registers from the RNG were
 // faulted.

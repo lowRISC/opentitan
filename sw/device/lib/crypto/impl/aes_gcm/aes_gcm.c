@@ -532,19 +532,19 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx,
 
   // If this is the first part of the plaintext and we haven't finished the AAD
   // yet, process the remaining partial AAD and update the state.
-  size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
-  otcrypto_const_byte_buf_t partial_ghash_block_buf = OTCRYPTO_MAKE_BUF(
+  size_t partial_aad_block_len = ctx->aad_len % kGhashBlockNumBytes;
+  otcrypto_const_byte_buf_t partial_aad_block_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, (unsigned char *)ctx->partial_ghash_block.data,
-      partial_ghash_block_len);
-  if (ctx->input_len == 0 && partial_ghash_block_len != 0) {
+      partial_aad_block_len);
+  if (ctx->input_len == 0 && partial_aad_block_len != 0) {
     if (ctx->security_level != kOtcryptoKeySecurityLevelLow) {
       // To mitigate FI, perform the GHASH update twice and compare the result.
       HARDENED_TRY(
-          ghash_update_redundant(&ctx->ghash_ctx, &partial_ghash_block_buf));
+          ghash_update_redundant(&ctx->ghash_ctx, &partial_aad_block_buf));
     } else {
       HARDENED_CHECK_EQ(ctx->security_level,
                         launder32(kOtcryptoKeySecurityLevelLow));
-      ghash_update(&ctx->ghash_ctx, &partial_ghash_block_buf);
+      ghash_update(&ctx->ghash_ctx, &partial_aad_block_buf);
     }
   }
 
@@ -600,19 +600,19 @@ status_t aes_gcm_final(aes_gcm_context_t *ctx, otcrypto_word32_buf_t *tag,
                        size_t *output_len, otcrypto_byte_buf_t *output) {
   // If there was no input (we never entered the "update encrypted data"
   // stage), process the remaining partial AAD and update the state.
-  size_t partial_ghash_block_len = ctx->aad_len % kGhashBlockNumBytes;
-  otcrypto_const_byte_buf_t partial_ghash_block_buf = OTCRYPTO_MAKE_BUF(
+  size_t partial_aad_block_len = ctx->aad_len % kGhashBlockNumBytes;
+  otcrypto_const_byte_buf_t partial_aad_block_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, (unsigned char *)ctx->partial_ghash_block.data,
-      partial_ghash_block_len);
-  if (ctx->input_len == 0 && partial_ghash_block_len != 0) {
+      partial_aad_block_len);
+  if (ctx->input_len == 0 && partial_aad_block_len != 0) {
     if (ctx->security_level != kOtcryptoKeySecurityLevelLow) {
       // To mitigate FI, perform the GHASH update twice and compare the result.
       HARDENED_TRY(
-          ghash_update_redundant(&ctx->ghash_ctx, &partial_ghash_block_buf));
+          ghash_update_redundant(&ctx->ghash_ctx, &partial_aad_block_buf));
     } else {
       HARDENED_CHECK_EQ(ctx->security_level,
                         launder32(kOtcryptoKeySecurityLevelLow));
-      ghash_update(&ctx->ghash_ctx, &partial_ghash_block_buf);
+      ghash_update(&ctx->ghash_ctx, &partial_aad_block_buf);
     }
   }
 
