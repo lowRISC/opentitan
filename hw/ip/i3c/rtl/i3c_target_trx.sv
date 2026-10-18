@@ -45,10 +45,6 @@ module i3c_target_trx
   input  i3c_targ_dev_t     targ_dev_i[MaxTargets],
   // Group address descriptions.
   input  i3c_grp_addr_t     grp_addr_i[NumGroups],
-  // Blocked device addresses.
-  // TODO: Both currently unused.
-  input               [6:0] addr_blocked_i[NumBlocked],
-  input               [6:0] mask_blocked_i[NumBlocked],
 
   // Transmit data for Private Read transfers.
   input                     trx_dvalid_i[MaxTargets],
@@ -761,7 +757,7 @@ module i3c_target_trx
                       trans.defb     <= sdr_payload;
                       trans.has_defb <= 1'b1;
                     end
-                    default: ; // Payload bytes; do not disturb `trans`.
+                    default: begin end // Payload bytes have no impact on the transfer state.
                   endcase
                 default: begin end
               endcase
@@ -890,7 +886,7 @@ module i3c_target_trx
                                        : {sda_pq[0][0], sda_pq[0][0]});
 
   // Parity calculated on received/transmitted data.
-  logic       parity_sdr; // TODO: Currently unused
+  logic       parity_sdr;
   logic       upd_parity;
   logic       init_parity;
   assign parity_d = {(parity_q[1] & ~init_parity) ^ parcrc_bit[1],
@@ -903,7 +899,6 @@ module i3c_target_trx
   assign init_parity = (bit_idx == BitW'('d8));
   assign upd_parity = data_bit & (state_q inside {State_RxCmdDDR, State_RxDataDDR, State_TxDataDDR,
                                                   State_RxSDR});
-
 
   // CRC-5 calculated on received/transmitted data.
   logic init_crc, upd_crc;
@@ -940,13 +935,11 @@ module i3c_target_trx
   assign crc5_nq_emit = (state_q == State_TxDataDDR) & last_bit & !tx_avail;
 
   // Bit counting within data unit, and calculation of parity/CRC-5 on the data bits.
-  logic rx_sample_q; // TODO: Currently unused
   always_ff @(posedge scl_ni or negedge rst_ni) begin
     if (!rst_ni) begin
       crc5_q        <= '1;
       parity_q      <= 2'b01;
       bit_idx       <= '1;
-      rx_sample_q   <= 1'b0;
     end else begin
       if (starting | rep_starting) begin
         bit_idx <= BitW'('d8);
@@ -976,8 +969,6 @@ module i3c_target_trx
       // Conditionally update CRC-5 and parity.
       if (init_crc | upd_crc) crc5_q <= crc5_d ^ {3'b0, FICRC5, 1'b0};
       if (init_parity | upd_parity) parity_q <= parity_d ^ {1'b0, FIParity & parity_d[0]};
-
-      rx_sample_q   <= rx_sample & ~|bit_idx;
     end
   end
 
@@ -1009,7 +1000,7 @@ module i3c_target_trx
   // Disable push-pull driver on SCL rising edge.
   wire sdr_tx_t = (state_q == State_TxSDR) & last_bit;
 
-  // Ensure that the we set SDA to Hi-Z for SDR read T-bit.
+  // Ensure that we set SDA to Hi-Z for SDR read T-bit.
   logic sda_pp_en_pq, sda_od_en_pq;
   always_ff @(posedge scl_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -1213,14 +1204,6 @@ module i3c_target_trx
   end
 
   // Signals that the logic does not use (yet).
-  // - TODO(#31304): blocked addresses are not checked yet.
-  logic unused_blocked;
-  always_comb begin
-    unused_blocked = 1'b0;
-    for (int unsigned b = 0; b < NumBlocked; b++) begin
-      unused_blocked ^= ^{addr_blocked_i[b], mask_blocked_i[b]};
-    end
-  end
   // - early termination and NACK of writes are not implemented yet, and only the LSB of `rlast`
   //   is used.
   logic unused_targ_dev;
@@ -1237,6 +1220,6 @@ module i3c_target_trx
   logic unused_trx_signals;
   assign unused_trx_signals = ^{trx_areq_i.targ_id, trx_areq_i.rdata_nq, hdr_restart_det_i,
                                 scanmode_i, cmd_word.cmd_code, cmd_word.para, capture_all,
-                                trans.defb, trans.has_defb, prepen_bit, sda_mismatch, rx_sample_q};
+                                trans.defb, trans.has_defb, prepen_bit, sda_mismatch};
 
 endmodule

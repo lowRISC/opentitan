@@ -15,7 +15,7 @@ The following [HCI and TCRI features](theory_of_operation.md#supported-hci-and-t
 | Feature                                                        | Status          | Notes                                                                                                                                                                                          | Issue                                                       |
 |----------------------------------------------------------------|-----------------|------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|-------------------------------------------------------------|
 | Address Assignment Command (ENTDAA, SETDASA)                   | Partial         | The ENTDAA sequence is incomplete.                                                                                                                                                             | [#31304](https://github.com/lowRISC/opentitan/issues/31304) |
-| Internal Control Commands                                      | Partial         | Broadcast Address Enable; Target Reset Pattern only without RSTACT; Controller SDA Recovery is rejected with `NOT_SUPPORTED`.                                                                  | [#31304](https://github.com/lowRISC/opentitan/issues/31304) |
+| Internal Control Commands                                      | Partial         | Broadcast Address Enable; Target Reset Pattern only without RSTACT but presently may fail with `NOT_SUPPORTED`; Controller SDA Recovery is rejected with `NOT_SUPPORTED`.                      | [#31304](https://github.com/lowRISC/opentitan/issues/31304) |
 | In-Band Interrupts                                             | Partial         | No DISEC is issued after an IBI is rejected.                                                                                                                                                   | [#31304](https://github.com/lowRISC/opentitan/issues/31304) |
 | ENDXFER negotiation in HDR-DDR mode                            | Not implemented | The Internal Control Command is accepted without effect.                                                                                                                                       | [#31304](https://github.com/lowRISC/opentitan/issues/31304) |
 | Periodic bus traffic for passive Hot-Join and IBI Targets      | Not implemented |                                                                                                                                                                                                | [#31304](https://github.com/lowRISC/opentitan/issues/31304) |
@@ -25,7 +25,7 @@ The following [HCI and TCRI features](theory_of_operation.md#supported-hci-and-t
 
 ### Other Controller features
 
-- [Address blocking](theory_of_operation.md#address-blocking): [`BLOCKED_ADDR`](registers.md#blocked_addr) is present but not enforced ([#31307](https://github.com/lowRISC/opentitan/issues/31307)).
+- [Address blocking](theory_of_operation.md#address-blocking): [`BLOCKED_ADDR`](registers.md#blocked_addr) is present but not yet pervasively enforced ([#31307](https://github.com/lowRISC/opentitan/issues/31307)).
 
 ### Controller error reporting
 

@@ -12,7 +12,10 @@ module i3c_cmd_decode
   import i3c_consts_pkg::*;
   import i3c_controller_pkg::*;
   import i3c_pkg::*;
-(
+#(
+  // Number of blocked address settings supported.
+  parameter int unsigned NumBlocked = i3c_pkg::NumBlocked
+) (
   // No requirement for clock or reset.
 
   // Current command state.
@@ -23,7 +26,12 @@ module i3c_cmd_decode
   input  i3c_dat_mem_t              dat_entry_i,
 
   // Command Descriptor from the Command Queue.
-  input  logic               [63:0] cmd_queue_i,  // 2 DWORDs.
+  input                      [63:0] cmd_queue_i,  // 2 DWORDs.
+
+  // Configuration.
+  input                             use_bcst_addr_i,
+  input                       [6:0] addr_blocked_i[NumBlocked],
+  input                       [6:0] mask_blocked_i[NumBlocked],
 
   // Interpretations of the Command Descriptor.
   output i3c_xfer_cmd_intern_ctrl_t cmd_intn_o,   // Internal Control commands.
@@ -40,7 +48,10 @@ module i3c_cmd_decode
 
   // Indicates that the Command Descriptor is invalid for one or more reasons;
   // - the TCRI permits only 'NotSupported' in response to an invalid command.
-  output logic                      err_o
+  output logic                      err_o,
+
+  // Indicates that the Command Phase shall not proceed because the addressed Target is blocked.
+  output logic                      blocked_o
 
   // Additional information presented in the Controller-side registers may be of diagnostic use.
   // TODO(#31307): Supply additional information?
@@ -174,9 +185,6 @@ module i3c_cmd_decode
     // Default to acceptance, unless it's a CCC that's prohibited in Command Descriptors (TCRI 6.2).
     err_o = cmd_attrs_o.is_ccc & tcri_blocked_ccc(cmd_imm_o.cmd);
 
-    // TODO(#31305): Check the validity of the address being used, remembering that it may be the
-    // static address rather than the dynamic address.
-
     // The most significant field is the command type (`cmd_attr`).
     // - the validity of fields is type-specific.
     unique case (cmd_reg_o.cmd_attr)
@@ -217,9 +225,9 @@ module i3c_cmd_decode
         if (cmd_attrs_o.is_ccc & tcri_blocked_ccc(cmd_combo_o.cmd)) err_o = 1'b1;
       end
       CmdAttr_AddrAssignment: begin
-        cmd_attrs_o.mode    = XferMode_SDR0;
-        cmd_attrs_o.i2c     = 1'b0;
-        cmd_attrs_o.toc     = 1'b0;
+        cmd_attrs_o.mode = XferMode_SDR0;
+        cmd_attrs_o.i2c  = 1'b0;
+        cmd_attrs_o.toc  = 1'b0;
         // TODO(#31304): Dynamic address during the write phase, but this is possibly not required.
         cmd_attrs_o.data_len  = 'h1;
         // The first segment is a write operation, sending the CCC.
@@ -257,6 +265,53 @@ module i3c_cmd_decode
 
     // Derived properties.
     cmd_attrs_o.brd_ccc = cmd_attrs_o.is_ccc & broadcast_ccc(cmd_attrs_o.ccc);
+  end
+
+  // Determine the address to be used for this command phase and whether communication with that
+  // address has been blocked.
+  always_comb begin : gen_addr
+    logic [NumBlocked:0] addr_blocked;  // One extra for the invalid I3C addresses.
+    logic [6:0] addr_cand;
+
+    // Using I3C Broadcast Address to commence a transfer?
+    // - do NOT use the I3C Broadcast Address after a Repeated Start (Sr); for either CCC or Private
+    //   transfers. TODO(#31304): ENTDAA is an exception here.
+    cmd_attrs_o.addr_bcst = |{cmd_attrs_o.is_ccc, cmd_attrs_o.ddr, use_bcst_addr_i} &
+                             ~cmd_state_i.rep_start;
+
+    // Candidate Target/Group/I3C Broadcast Address.
+    /// - I3C Broadcast address is used for SDR Private Transfers iff explicitly requested.
+    addr_cand = dat_entry_i.dynamic_address[22:16];
+    if (cmd_attrs_o.addr_bcst) begin
+      addr_cand = Addr_Broadcast;
+    end else begin
+      // SETDASA is always sent to the programmed static address, and I2C devices have only static
+      // addresses.
+      if (cmd_attrs_o.ccc == SETDASA || cmd_attrs_o.i2c) begin  // HCI 6.3.1
+        addr_cand = dat_entry_i.static_address;
+      end
+    end
+
+    // Test whether this is _always_ an invalid address for the Controller to access, prohibited
+    // by the I3C spec
+    addr_blocked[NumBlocked] = invalid_addr(addr_cand, 1'b0);
+
+    // Address blocking prevents addressing of software-blacklisted addresses, e.g., I2C Targets
+    // that may try to employ clock stretching.
+    for (int unsigned b = 0; b < NumBlocked; b++) begin
+      addr_blocked[b] = ((addr_cand & mask_blocked_i[b]) == addr_blocked_i[b]);
+    end
+
+    // Indicate to the core FSM logic that the transfer shall not proceed.
+    // TODO(#31304): A later revision separates the address used in the header from the checked
+    // address:
+    // - there is scant reason to check the I3C Broadcast Address, but we _do_ want to check the
+    //   ensuing Target/Group address, and the DA being assigned in Addr Assignment commands.
+    // - address blocking is not appropriate for MIPI Internal Control Commands.
+    blocked_o = |addr_blocked;
+    // Address to be used, as required by CmdArb/CmdAddr, _iff not blocked_.
+    // - always W for I3C Broadcast Address) TODO(#31304): ENTDAA is an exception here.
+    cmd_attrs_o.addr_rnw = {addr_cand, cmd_attrs_o.rnw & ~cmd_attrs_o.addr_bcst};
   end
 
   // Signals that the logic does not use (yet).
