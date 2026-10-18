@@ -42,6 +42,8 @@ All common types and methods defined at the package level can be found in
 Some of them in use are:
 ```systemverilog
   typedef enum int {
+    WakeupI3c0RstdetWkupReq,
+    WakeupI3c1RstdetWkupReq,
     WakeupSysrstCtrlWkupReq,
     WakeupAdcCtrlWkupReq,
     WakeupPinmuxPinWkupReq,

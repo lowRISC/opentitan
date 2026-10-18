@@ -384,8 +384,11 @@ The board shall connect an external pull-up resistor between the `ctrl_sda_pu` p
 The Active Controller always drives SCL in push-pull mode, so SCL needs no pull-up.
 The high-keeper enables and the SCL pull-up enable of the peripherals are not connected, so the board shall provide passive high-keepers where the bus requires them.
 
-The I3C Target Reset Detectors (`i3c_reset_detector`) are not instantiated yet ([#31679](https://github.com/lowRISC/opentitan/issues/31679)).
-Therefore, the I3C Targets do not respond to the Target Reset Pattern, and they cannot wake the chip from a low power state.
+Each I3C peripheral has a Target Reset Detector in the secondary partition of the IP (`i3c_part_secondary`, see the [I3C integration notes](../../../ip/i3c/doc/integration_notes.md#target-reset-detector)).
+The detector of `i3c0` is in the `Aon` power domain, and the detector of `i3c1` is in the `Main` power domain.
+Both wake-up requests are connected to the [power manager](../../ip_autogen/pwrmgr/README.md), but only the one from `i3c0` can wake the chip from deep sleep.
+The detectors observe SCL and SDA through their own pinmux inputs, so software shall select the same pads for them as for the SCL and SDA inputs of their I3C peripheral ([#31841](https://github.com/lowRISC/opentitan/issues/31841)).
+The request of the detectors to reset their I3C peripheral is not connected yet ([#31839](https://github.com/lowRISC/opentitan/issues/31839)), and they do not expose a request to reset the whole chip.
 
 See the [I3C specification](../../../ip/i3c/README.md) for more details, and its [implementation status](../../../ip/i3c/doc/implementation_status.md) for the capabilities that the RTL does not implement yet.
 

@@ -2415,27 +2415,35 @@ pub enum PinmuxPeripheralIn {
     /// Peripheral Input 49
     Uart3Rx = 49,
     /// Peripheral Input 50
-    SpiDeviceTpmCsb = 50,
+    I3c0RstdetScl = 50,
     /// Peripheral Input 51
-    RramMacroTck = 51,
+    I3c0RstdetSda = 51,
     /// Peripheral Input 52
-    RramMacroTms = 52,
+    I3c1RstdetScl = 52,
     /// Peripheral Input 53
-    RramMacroTdi = 53,
+    I3c1RstdetSda = 53,
     /// Peripheral Input 54
-    SysrstCtrlAcPresent = 54,
+    SpiDeviceTpmCsb = 54,
     /// Peripheral Input 55
-    SysrstCtrlKey0In = 55,
+    RramMacroTck = 55,
     /// Peripheral Input 56
-    SysrstCtrlKey1In = 56,
+    RramMacroTms = 56,
     /// Peripheral Input 57
-    SysrstCtrlKey2In = 57,
+    RramMacroTdi = 57,
     /// Peripheral Input 58
-    SysrstCtrlPwrbIn = 58,
+    SysrstCtrlAcPresent = 58,
     /// Peripheral Input 59
-    SysrstCtrlLidOpen = 59,
+    SysrstCtrlKey0In = 59,
     /// Peripheral Input 60
-    UsbdevSense = 60,
+    SysrstCtrlKey1In = 60,
+    /// Peripheral Input 61
+    SysrstCtrlKey2In = 61,
+    /// Peripheral Input 62
+    SysrstCtrlPwrbIn = 62,
+    /// Peripheral Input 63
+    SysrstCtrlLidOpen = 63,
+    /// Peripheral Input 64
+    UsbdevSense = 64,
 }
 
 impl TryFrom<u32> for PinmuxPeripheralIn {
@@ -2492,17 +2500,21 @@ impl TryFrom<u32> for PinmuxPeripheralIn {
             47 => Ok(Self::Uart1Rx),
             48 => Ok(Self::Uart2Rx),
             49 => Ok(Self::Uart3Rx),
-            50 => Ok(Self::SpiDeviceTpmCsb),
-            51 => Ok(Self::RramMacroTck),
-            52 => Ok(Self::RramMacroTms),
-            53 => Ok(Self::RramMacroTdi),
-            54 => Ok(Self::SysrstCtrlAcPresent),
-            55 => Ok(Self::SysrstCtrlKey0In),
-            56 => Ok(Self::SysrstCtrlKey1In),
-            57 => Ok(Self::SysrstCtrlKey2In),
-            58 => Ok(Self::SysrstCtrlPwrbIn),
-            59 => Ok(Self::SysrstCtrlLidOpen),
-            60 => Ok(Self::UsbdevSense),
+            50 => Ok(Self::I3c0RstdetScl),
+            51 => Ok(Self::I3c0RstdetSda),
+            52 => Ok(Self::I3c1RstdetScl),
+            53 => Ok(Self::I3c1RstdetSda),
+            54 => Ok(Self::SpiDeviceTpmCsb),
+            55 => Ok(Self::RramMacroTck),
+            56 => Ok(Self::RramMacroTms),
+            57 => Ok(Self::RramMacroTdi),
+            58 => Ok(Self::SysrstCtrlAcPresent),
+            59 => Ok(Self::SysrstCtrlKey0In),
+            60 => Ok(Self::SysrstCtrlKey1In),
+            61 => Ok(Self::SysrstCtrlKey2In),
+            62 => Ok(Self::SysrstCtrlPwrbIn),
+            63 => Ok(Self::SysrstCtrlLidOpen),
+            64 => Ok(Self::UsbdevSense),
             _ => Err(val),
         }
     }
@@ -3220,12 +3232,14 @@ impl TryFrom<u32> for MuxedPads {
 #[derive(Copy, Clone, PartialEq, Eq)]
 #[repr(u32)]
 pub enum PowerManagerWakeUps {
-    SysrstCtrlWkupReq = 0,
-    AdcCtrlWkupReq = 1,
-    PinmuxPinWkupReq = 2,
-    PinmuxUsbWkupReq = 3,
-    AonTimerWkupReq = 4,
-    SensorCtrlWkupReq = 5,
+    I3c0RstdetWkupReq = 0,
+    I3c1RstdetWkupReq = 1,
+    SysrstCtrlWkupReq = 2,
+    AdcCtrlWkupReq = 3,
+    PinmuxPinWkupReq = 4,
+    PinmuxUsbWkupReq = 5,
+    AonTimerWkupReq = 6,
+    SensorCtrlWkupReq = 7,
 }
 
 /// Reset Manager Software Controlled Resets

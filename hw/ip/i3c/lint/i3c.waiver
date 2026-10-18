@@ -20,6 +20,20 @@ waive -rules {CLOCK_USE INV_CLOCK} -location {i3c_patt_detector.sv} \
 waive -rules {CLOCK_USE INV_CLOCK} -location {i3c_target_trx.sv} \
       -regexp {'scl_i' is (used for some other purpose, and|inverted, used) as clock} \
       -comment "SDA edges sample SCL to detect START, Repeated START and STOP conditions."
+
+## Target Reset Detector, which has no free-running clock
+waive -rules {CLOCK_MUX} -location {i3c_reset_detector.sv} \
+      -regexp {Clock '(scl_buf|sda_clk|sda_clk_n)' is driven by a multiplexer here|Clock '(scl_i|scan_clk_i)' reaches a multiplexer here} \
+      -comment "The Target Reset Detector input buffers gate SCL and SDA when disabled and select the scan clock in scan mode."
+waive -rules {CLOCK_USE INV_CLOCK} -location {i3c_reset_detector.sv} \
+      -regexp {'scl_buf' is (used for some other purpose, and|inverted, used) as clock} \
+      -comment "The SCL level qualifies the SDA-clocked pattern detection, and SCL high clears the SDA transition count (I3C Basic 4.3.9.3)."
+waive -rules {CLOCK_USE} -location {i3c_reset_detector.sv} \
+      -regexp {'sda_clk' is used for some other purpose, and as clock} \
+      -comment "The rising edge of SCL samples the SDA level to detect the Repeated START of the Target Reset Pattern."
+waive -rules {RESET_DRIVER} -location {i3c_reset_detector.sv} \
+      -regexp {'(reset_ni|reset_cnt_n|reset_srp_ni)' is driven here, and used as an asynchronous reset} \
+      -comment "The detector has no free-running clock, so firmware clears it, and SCL high and a detected pattern restart it, through asynchronous resets."
 waive -rules {CLOCK_USE} -location {i3c_part_primary.sv} \
       -regexp {'cio_ctrl_bus_obs\.(scl|sda\[0\])' is connected to 'i3c_core' port 'ctrl_bus_obs_i\.(scl|sda\[0\])', and used as a clock} \
       -comment "Controller and Target observe the same SCL and SDA lines. The Target transceiver has no free-running clock and is clocked by the Controller-supplied SCL, and by SDA to detect (Repeated) START and STOP conditions."

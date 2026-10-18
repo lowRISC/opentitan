@@ -233,6 +233,10 @@ module earlgrey_pd_main #(
   output rv_core_ibex_pkg::cpu_crash_dump_t       rv_core_ibex_crash_dump_o,
   output rv_core_ibex_pkg::cpu_pwrmgr_t       rv_core_ibex_pwrmgr_o,
   output logic       rv_dm_ndmreset_req_o,
+  output logic       pwrmgr_wakeups_o,
+  output logic       i3c0_rstdet_enable_o,
+  output i3c_pkg::i3c_rstdet_req_t       i3c0_rstdet_req_o,
+  input  i3c_pkg::i3c_rstdet_rsp_t       i3c0_rstdet_rsp_i,
   input  ast_intraip_pkg::s2p_t       ast_intraip_s2p_i,
   output ast_intraip_pkg::p2s_t       ast_intraip_p2s_o,
   output tlul_pkg::tl_h2d_t       pwrmgr_tl_req_o,
@@ -315,6 +319,8 @@ module earlgrey_pd_main #(
   output logic       cio_i3c1_sda_d2p_o,
   output logic       cio_i3c1_sda_en_d2p_o,
   input  logic       cio_i3c1_sda_p2d_i,
+  input  logic       cio_i3c1_rstdet_scl_p2d_i,
+  input  logic       cio_i3c1_rstdet_sda_p2d_i,
   output logic       cio_i3c1_ctrl_sda_pu_d2p_o,
   output logic       cio_i3c1_ctrl_sda_pu_en_d2p_o,
   output logic [3:0] cio_spi_host0_sd_d2p_o,
@@ -672,6 +678,9 @@ module earlgrey_pd_main #(
   tlul_pkg::tl_d2h_t       cheriot_mem_sys_meta_sram_tl_rsp;
   logic       cheriot_mem_sys_cored_tag_d2h;
   prim_mubi_pkg::mubi4_t       rv_core_ibex_cheriot_ena;
+  logic       i3c1_rstdet_enable;
+  i3c_pkg::i3c_rstdet_req_t       i3c1_rstdet_req;
+  i3c_pkg::i3c_rstdet_rsp_t       i3c1_rstdet_rsp;
   tlul_pkg::tl_h2d_t       main_tl_rv_core_ibex__corei_req;
   tlul_pkg::tl_d2h_t       main_tl_rv_core_ibex__corei_rsp;
   tlul_pkg::tl_h2d_t       main_tl_cheriot_mem_sys__cored_req;
@@ -892,84 +901,89 @@ module earlgrey_pd_main #(
   // peri_i3c0_Main
   assign lpg_cg_en[5] = clkmgr_cg_en_i.io_peri;
   assign lpg_rst_en[5] = rstmgr_rst_en_i.i3c0[rstmgr_pkg::DomainMainSel];
+  // peri_lc_aon_Aon
+  assign lpg_cg_en[6] = clkmgr_cg_en_i.aon_peri;
+  assign lpg_rst_en[6] = rstmgr_rst_en_i.lc_aon[rstmgr_pkg::DomainAonSel];
   // peri_i3c1_Main
-  assign lpg_cg_en[6] = clkmgr_cg_en_i.io_peri;
-  assign lpg_rst_en[6] = rstmgr_rst_en_i.i3c1[rstmgr_pkg::DomainMainSel];
+  assign lpg_cg_en[7] = clkmgr_cg_en_i.io_peri;
+  assign lpg_rst_en[7] = rstmgr_rst_en_i.i3c1[rstmgr_pkg::DomainMainSel];
+  // peri_lc_aon_Main
+  assign lpg_cg_en[8] = clkmgr_cg_en_i.aon_peri;
+  assign lpg_rst_en[8] = rstmgr_rst_en_i.lc_aon[rstmgr_pkg::DomainMainSel];
   // timers_lc_io_div4_Main
-  assign lpg_cg_en[7] = clkmgr_cg_en_i.io_div4_timers;
-  assign lpg_rst_en[7] = rstmgr_rst_en_i.lc_io_div4[rstmgr_pkg::DomainMainSel];
+  assign lpg_cg_en[9] = clkmgr_cg_en_i.io_div4_timers;
+  assign lpg_rst_en[9] = rstmgr_rst_en_i.lc_io_div4[rstmgr_pkg::DomainMainSel];
   // secure_lc_io_div4_Main
-  assign lpg_cg_en[8] = clkmgr_cg_en_i.io_div4_secure;
-  assign lpg_rst_en[8] = rstmgr_rst_en_i.lc_io_div4[rstmgr_pkg::DomainMainSel];
+  assign lpg_cg_en[10] = clkmgr_cg_en_i.io_div4_secure;
+  assign lpg_rst_en[10] = rstmgr_rst_en_i.lc_io_div4[rstmgr_pkg::DomainMainSel];
   // peri_spi_host0_Main
-  assign lpg_cg_en[9] = clkmgr_cg_en_i.io_peri;
-  assign lpg_rst_en[9] = rstmgr_rst_en_i.spi_host0[rstmgr_pkg::DomainMainSel];
+  assign lpg_cg_en[11] = clkmgr_cg_en_i.io_peri;
+  assign lpg_rst_en[11] = rstmgr_rst_en_i.spi_host0[rstmgr_pkg::DomainMainSel];
   // spi_host1_spi_host1_Main
-  assign lpg_cg_en[10] = clkmgr_cg_en_i.io_spi_host1;
-  assign lpg_rst_en[10] = rstmgr_rst_en_i.spi_host1[rstmgr_pkg::DomainMainSel];
+  assign lpg_cg_en[12] = clkmgr_cg_en_i.io_spi_host1;
+  assign lpg_rst_en[12] = rstmgr_rst_en_i.spi_host1[rstmgr_pkg::DomainMainSel];
   // peri_usb_Main
-  assign lpg_cg_en[11] = clkmgr_cg_en_i.usb_peri;
-  assign lpg_rst_en[11] = rstmgr_rst_en_i.usb[rstmgr_pkg::DomainMainSel];
+  assign lpg_cg_en[13] = clkmgr_cg_en_i.usb_peri;
+  assign lpg_rst_en[13] = rstmgr_rst_en_i.usb[rstmgr_pkg::DomainMainSel];
   // powerup_por_io_div4_Aon
-  assign lpg_cg_en[12] = clkmgr_cg_en_i.io_div4_powerup;
-  assign lpg_rst_en[12] = rstmgr_rst_en_i.por_io_div4[rstmgr_pkg::DomainAonSel];
+  assign lpg_cg_en[14] = clkmgr_cg_en_i.io_div4_powerup;
+  assign lpg_rst_en[14] = rstmgr_rst_en_i.por_io_div4[rstmgr_pkg::DomainAonSel];
   // powerup_lc_io_div4_Aon
-  assign lpg_cg_en[13] = clkmgr_cg_en_i.io_div4_powerup;
-  assign lpg_rst_en[13] = rstmgr_rst_en_i.lc_io_div4[rstmgr_pkg::DomainAonSel];
-  // secure_lc_io_div4_Aon
-  assign lpg_cg_en[14] = clkmgr_cg_en_i.io_div4_secure;
-  assign lpg_rst_en[14] = rstmgr_rst_en_i.lc_io_div4[rstmgr_pkg::DomainAonSel];
-  // peri_lc_io_div4_Aon
-  assign lpg_cg_en[15] = clkmgr_cg_en_i.io_div4_peri;
+  assign lpg_cg_en[15] = clkmgr_cg_en_i.io_div4_powerup;
   assign lpg_rst_en[15] = rstmgr_rst_en_i.lc_io_div4[rstmgr_pkg::DomainAonSel];
-  // timers_lc_io_div4_Aon
-  assign lpg_cg_en[16] = clkmgr_cg_en_i.io_div4_timers;
+  // secure_lc_io_div4_Aon
+  assign lpg_cg_en[16] = clkmgr_cg_en_i.io_div4_secure;
   assign lpg_rst_en[16] = rstmgr_rst_en_i.lc_io_div4[rstmgr_pkg::DomainAonSel];
-  // infra_lc_io_div4_Main
-  assign lpg_cg_en[17] = clkmgr_cg_en_i.io_div4_infra;
-  assign lpg_rst_en[17] = rstmgr_rst_en_i.lc_io_div4[rstmgr_pkg::DomainMainSel];
-  // infra_lc_io_div4_Aon
-  assign lpg_cg_en[18] = clkmgr_cg_en_i.io_div4_infra;
+  // peri_lc_io_div4_Aon
+  assign lpg_cg_en[17] = clkmgr_cg_en_i.io_div4_peri;
+  assign lpg_rst_en[17] = rstmgr_rst_en_i.lc_io_div4[rstmgr_pkg::DomainAonSel];
+  // timers_lc_io_div4_Aon
+  assign lpg_cg_en[18] = clkmgr_cg_en_i.io_div4_timers;
   assign lpg_rst_en[18] = rstmgr_rst_en_i.lc_io_div4[rstmgr_pkg::DomainAonSel];
+  // infra_lc_io_div4_Main
+  assign lpg_cg_en[19] = clkmgr_cg_en_i.io_div4_infra;
+  assign lpg_rst_en[19] = rstmgr_rst_en_i.lc_io_div4[rstmgr_pkg::DomainMainSel];
+  // infra_lc_io_div4_Aon
+  assign lpg_cg_en[20] = clkmgr_cg_en_i.io_div4_infra;
+  assign lpg_rst_en[20] = rstmgr_rst_en_i.lc_io_div4[rstmgr_pkg::DomainAonSel];
   // infra_lc_Main
-  assign lpg_cg_en[19] = clkmgr_cg_en_i.main_infra;
-  assign lpg_rst_en[19] = rstmgr_rst_en_i.lc[rstmgr_pkg::DomainMainSel];
-  // infra_sys_Main
-  assign lpg_cg_en[20] = clkmgr_cg_en_i.main_infra;
-  assign lpg_rst_en[20] = rstmgr_rst_en_i.sys[rstmgr_pkg::DomainMainSel];
-  // secure_lc_Main
-  assign lpg_cg_en[21] = clkmgr_cg_en_i.main_secure;
+  assign lpg_cg_en[21] = clkmgr_cg_en_i.main_infra;
   assign lpg_rst_en[21] = rstmgr_rst_en_i.lc[rstmgr_pkg::DomainMainSel];
-  // aes_trans_lc_Main
-  assign lpg_cg_en[22] = clkmgr_cg_en_i.main_aes;
-  assign lpg_rst_en[22] = rstmgr_rst_en_i.lc[rstmgr_pkg::DomainMainSel];
-  // hmac_trans_lc_Main
-  assign lpg_cg_en[23] = clkmgr_cg_en_i.main_hmac;
+  // infra_sys_Main
+  assign lpg_cg_en[22] = clkmgr_cg_en_i.main_infra;
+  assign lpg_rst_en[22] = rstmgr_rst_en_i.sys[rstmgr_pkg::DomainMainSel];
+  // secure_lc_Main
+  assign lpg_cg_en[23] = clkmgr_cg_en_i.main_secure;
   assign lpg_rst_en[23] = rstmgr_rst_en_i.lc[rstmgr_pkg::DomainMainSel];
-  // kmac_trans_lc_Main
-  assign lpg_cg_en[24] = clkmgr_cg_en_i.main_kmac;
+  // aes_trans_lc_Main
+  assign lpg_cg_en[24] = clkmgr_cg_en_i.main_aes;
   assign lpg_rst_en[24] = rstmgr_rst_en_i.lc[rstmgr_pkg::DomainMainSel];
-  // otbn_trans_lc_Main
-  assign lpg_cg_en[25] = clkmgr_cg_en_i.main_otbn;
+  // hmac_trans_lc_Main
+  assign lpg_cg_en[25] = clkmgr_cg_en_i.main_hmac;
   assign lpg_rst_en[25] = rstmgr_rst_en_i.lc[rstmgr_pkg::DomainMainSel];
+  // kmac_trans_lc_Main
+  assign lpg_cg_en[26] = clkmgr_cg_en_i.main_kmac;
+  assign lpg_rst_en[26] = rstmgr_rst_en_i.lc[rstmgr_pkg::DomainMainSel];
+  // otbn_trans_lc_Main
+  assign lpg_cg_en[27] = clkmgr_cg_en_i.main_otbn;
+  assign lpg_rst_en[27] = rstmgr_rst_en_i.lc[rstmgr_pkg::DomainMainSel];
 
 // Tie off unused clock- and reset enables
 //VCS coverage off
 // pragma coverage off
-  prim_mubi_pkg::mubi4_t [10:0] unused_cg_en;
-  prim_mubi_pkg::mubi4_t [37:0] unused_rst_en;
+  prim_mubi_pkg::mubi4_t [9:0] unused_cg_en;
+  prim_mubi_pkg::mubi4_t [35:0] unused_rst_en;
 
-  assign unused_cg_en[0] = clkmgr_cg_en_i.aon_peri;
-  assign unused_cg_en[1] = clkmgr_cg_en_i.aon_powerup;
-  assign unused_cg_en[2] = clkmgr_cg_en_i.aon_secure;
-  assign unused_cg_en[3] = clkmgr_cg_en_i.aon_timers;
-  assign unused_cg_en[4] = clkmgr_cg_en_i.io_div2_peri;
-  assign unused_cg_en[5] = clkmgr_cg_en_i.io_div2_powerup;
-  assign unused_cg_en[6] = clkmgr_cg_en_i.io_infra;
-  assign unused_cg_en[7] = clkmgr_cg_en_i.io_powerup;
-  assign unused_cg_en[8] = clkmgr_cg_en_i.main_powerup;
-  assign unused_cg_en[9] = clkmgr_cg_en_i.usb_infra;
-  assign unused_cg_en[10] = clkmgr_cg_en_i.usb_powerup;
+  assign unused_cg_en[0] = clkmgr_cg_en_i.aon_powerup;
+  assign unused_cg_en[1] = clkmgr_cg_en_i.aon_secure;
+  assign unused_cg_en[2] = clkmgr_cg_en_i.aon_timers;
+  assign unused_cg_en[3] = clkmgr_cg_en_i.io_div2_peri;
+  assign unused_cg_en[4] = clkmgr_cg_en_i.io_div2_powerup;
+  assign unused_cg_en[5] = clkmgr_cg_en_i.io_infra;
+  assign unused_cg_en[6] = clkmgr_cg_en_i.io_powerup;
+  assign unused_cg_en[7] = clkmgr_cg_en_i.main_powerup;
+  assign unused_cg_en[8] = clkmgr_cg_en_i.usb_infra;
+  assign unused_cg_en[9] = clkmgr_cg_en_i.usb_powerup;
 
   assign unused_rst_en[0] = rstmgr_rst_en_i.i2c0[rstmgr_pkg::DomainAonSel];
   assign unused_rst_en[1] = rstmgr_rst_en_i.i2c1[rstmgr_pkg::DomainAonSel];
@@ -977,38 +991,36 @@ module earlgrey_pd_main #(
   assign unused_rst_en[3] = rstmgr_rst_en_i.i3c0[rstmgr_pkg::DomainAonSel];
   assign unused_rst_en[4] = rstmgr_rst_en_i.i3c1[rstmgr_pkg::DomainAonSel];
   assign unused_rst_en[5] = rstmgr_rst_en_i.lc[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[6] = rstmgr_rst_en_i.lc_aon[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[7] = rstmgr_rst_en_i.lc_aon[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[8] = rstmgr_rst_en_i.lc_io[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[9] = rstmgr_rst_en_i.lc_io[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[10] = rstmgr_rst_en_i.lc_io_div2[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[11] = rstmgr_rst_en_i.lc_io_div2[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[12] = rstmgr_rst_en_i.lc_io_div4_shadowed[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[13] = rstmgr_rst_en_i.lc_io_div4_shadowed[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[14] = rstmgr_rst_en_i.lc_shadowed[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[15] = rstmgr_rst_en_i.lc_shadowed[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[16] = rstmgr_rst_en_i.lc_usb[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[17] = rstmgr_rst_en_i.lc_usb[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[18] = rstmgr_rst_en_i.por[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[19] = rstmgr_rst_en_i.por[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[20] = rstmgr_rst_en_i.por_aon[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[21] = rstmgr_rst_en_i.por_aon[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[22] = rstmgr_rst_en_i.por_io[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[23] = rstmgr_rst_en_i.por_io[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[24] = rstmgr_rst_en_i.por_io_div2[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[25] = rstmgr_rst_en_i.por_io_div2[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[26] = rstmgr_rst_en_i.por_io_div4[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[27] = rstmgr_rst_en_i.por_usb[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[28] = rstmgr_rst_en_i.por_usb[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[29] = rstmgr_rst_en_i.spi_device[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[30] = rstmgr_rst_en_i.spi_host0[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[31] = rstmgr_rst_en_i.spi_host1[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[32] = rstmgr_rst_en_i.sys[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[33] = rstmgr_rst_en_i.sys_io_div4[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[34] = rstmgr_rst_en_i.sys_io_div4[rstmgr_pkg::DomainMainSel];
-  assign unused_rst_en[35] = rstmgr_rst_en_i.usb[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[36] = rstmgr_rst_en_i.usb_aon[rstmgr_pkg::DomainAonSel];
-  assign unused_rst_en[37] = rstmgr_rst_en_i.usb_aon[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[6] = rstmgr_rst_en_i.lc_io[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[7] = rstmgr_rst_en_i.lc_io[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[8] = rstmgr_rst_en_i.lc_io_div2[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[9] = rstmgr_rst_en_i.lc_io_div2[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[10] = rstmgr_rst_en_i.lc_io_div4_shadowed[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[11] = rstmgr_rst_en_i.lc_io_div4_shadowed[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[12] = rstmgr_rst_en_i.lc_shadowed[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[13] = rstmgr_rst_en_i.lc_shadowed[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[14] = rstmgr_rst_en_i.lc_usb[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[15] = rstmgr_rst_en_i.lc_usb[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[16] = rstmgr_rst_en_i.por[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[17] = rstmgr_rst_en_i.por[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[18] = rstmgr_rst_en_i.por_aon[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[19] = rstmgr_rst_en_i.por_aon[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[20] = rstmgr_rst_en_i.por_io[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[21] = rstmgr_rst_en_i.por_io[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[22] = rstmgr_rst_en_i.por_io_div2[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[23] = rstmgr_rst_en_i.por_io_div2[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[24] = rstmgr_rst_en_i.por_io_div4[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[25] = rstmgr_rst_en_i.por_usb[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[26] = rstmgr_rst_en_i.por_usb[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[27] = rstmgr_rst_en_i.spi_device[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[28] = rstmgr_rst_en_i.spi_host0[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[29] = rstmgr_rst_en_i.spi_host1[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[30] = rstmgr_rst_en_i.sys[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[31] = rstmgr_rst_en_i.sys_io_div4[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[32] = rstmgr_rst_en_i.sys_io_div4[rstmgr_pkg::DomainMainSel];
+  assign unused_rst_en[33] = rstmgr_rst_en_i.usb[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[34] = rstmgr_rst_en_i.usb_aon[rstmgr_pkg::DomainAonSel];
+  assign unused_rst_en[35] = rstmgr_rst_en_i.usb_aon[rstmgr_pkg::DomainMainSel];
 // pragma coverage on
 //VCS coverage on
 
@@ -1456,7 +1468,7 @@ module earlgrey_pd_main #(
     .tl_o(i2c2_tl_rsp)
   );
 
-  i3c #(
+  i3c_part_primary #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[9]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .ClkFreq(I3c0ClkFreq),
@@ -1471,7 +1483,7 @@ module earlgrey_pd_main #(
     .CompType(I3c0CompType),
     .HalfCycleScl(I3c0HalfCycleScl),
     .TargetExt(I3c0TargetExt)
-  ) u_i3c0 (
+  ) u_i3c0_part_primary (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_io_peri),
     .clk_aon_i(clkmgr_clocks_i.clk_aon_peri),
@@ -1504,9 +1516,9 @@ module earlgrey_pd_main #(
     .cio_sda_en_o        (cio_i3c0_sda_en_d2p_o),
 
     // Inter-module signals
-    .rstdet_enable_o(),
-    .rstdet_o(),
-    .rstdet_i(i3c_pkg::I3C_RSTDET_RSP_DEFAULT),
+    .rstdet_enable_o(i3c0_rstdet_enable_o),
+    .rstdet_o(i3c0_rstdet_req_o),
+    .rstdet_i(i3c0_rstdet_rsp_i),
     .mbist_en_i('0),
     .scl_hk_en_o(),
     .sda_hk_en_o(),
@@ -1523,7 +1535,7 @@ module earlgrey_pd_main #(
     .tl_o(i3c0_tl_rsp)
   );
 
-  i3c #(
+  i3c_part_primary #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[10]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .ClkFreq(I3c1ClkFreq),
@@ -1538,7 +1550,7 @@ module earlgrey_pd_main #(
     .CompType(I3c1CompType),
     .HalfCycleScl(I3c1HalfCycleScl),
     .TargetExt(I3c1TargetExt)
-  ) u_i3c1 (
+  ) u_i3c1_part_primary (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_io_peri),
     .clk_aon_i(clkmgr_clocks_i.clk_aon_peri),
@@ -1571,9 +1583,9 @@ module earlgrey_pd_main #(
     .cio_sda_en_o        (cio_i3c1_sda_en_d2p_o),
 
     // Inter-module signals
-    .rstdet_enable_o(),
-    .rstdet_o(),
-    .rstdet_i(i3c_pkg::I3C_RSTDET_RSP_DEFAULT),
+    .rstdet_enable_o(i3c1_rstdet_enable),
+    .rstdet_o(i3c1_rstdet_req),
+    .rstdet_i(i3c1_rstdet_rsp),
     .mbist_en_i('0),
     .scl_hk_en_o(),
     .sda_hk_en_o(),
@@ -1588,6 +1600,24 @@ module earlgrey_pd_main #(
     .racl_error_o(),
     .tl_i(i3c1_tl_req),
     .tl_o(i3c1_tl_rsp)
+  );
+
+  i3c_part_secondary u_i3c1_part_secondary (
+    // Clock and reset connections
+    .clk_aon_i(clkmgr_clocks_i.clk_aon_peri),
+    .rst_aon_ni(rstmgr_resets_i.rst_lc_aon_n[rstmgr_pkg::DomainMainSel]),
+
+
+    // CIO inputs
+    .cio_rstdet_scl_i   (cio_i3c1_rstdet_scl_p2d_i),
+    .cio_rstdet_sda_i   (cio_i3c1_rstdet_sda_p2d_i),
+
+    // Inter-module signals
+    .rstdet_enable_i(i3c1_rstdet_enable),
+    .rstdet_i(i3c1_rstdet_req),
+    .rstdet_o(i3c1_rstdet_rsp),
+    .rstdet_wkup_req_o(pwrmgr_wakeups_o),
+    .rstdet_target_rst_o()
   );
 
   rv_timer #(
