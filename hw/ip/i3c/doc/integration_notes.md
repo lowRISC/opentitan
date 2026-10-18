@@ -1,7 +1,10 @@
 # Integration Notes
 
-These notes describe the integration of the IP top level `i3c`.
-It wraps the IP core, `i3c_core`, with the TL-UL register and memory interfaces, the alert sender and the CIO pins.
+These notes describe the integration of the I3C IP block.
+It is a split IP with two partitions, which the integration may place in different power domains:
+
+ - The primary partition, `i3c_part_primary`, wraps the IP core, `i3c_core`, with the TL-UL register and memory interfaces, the alert sender and the CIO pins of the bus.
+ - The secondary partition, `i3c_part_secondary`, contains the [Target Reset Detector](#target-reset-detector).
 
 ## IP Clock Frequency
 
@@ -82,6 +85,8 @@ The IP block presents the I3C bus as two Chip I/O (CIO) pins, `scl` and `sda`, w
  - `cio_sda_i`, `cio_sda_o` and `cio_sda_en_o` - Serial DAta (SDA).
    The IP block combines the SDA drivers of the Controller and the Target onto these signals; at most one of them drives SDA at any time.
 
+The Target Reset Detector in the secondary partition observes the bus through two further input pins, `rstdet_scl` and `rstdet_sda` (see [Target Reset Detector](#target-reset-detector)).
+
 Internally, the Controller and the Target present their driver outputs using SystemVerilog compound types from the package `i3c_io_pkg`, allowing the set of signals to be modified with reduced impact upon the RTL design.
 Two implementations of this package are available, and only _one_ of them shall be included in the build.
 FuseSoC selects the Virtual Open Drain style by default, and the Separated Enables style when the flag `i3c_io_sep_drv_en` is set.
@@ -140,17 +145,20 @@ The following diagram illustrates how the Controller and Target drivers may be i
 ## Target Reset Detector
 
 The Target Reset Detector, `i3c_reset_detector`, detects the Target Reset Pattern on the I3C bus.
-It is not part of the IP top level `i3c`; the integration instantiates it separately, typically in an Always-On power domain so that it can wake the system from 'Deepest Sleep' (see [Sleep states, power and wakeup](theory_of_operation.md#sleep-states-power-and-wakeup)).
-The integration connects it as follows:
+It forms the secondary partition of the IP block, `i3c_part_secondary`, so that the integration can place it in a different power domain than the primary partition, typically an Always-On power domain so that it can wake the system from 'Deepest Sleep' (see [Sleep states, power and wakeup](theory_of_operation.md#sleep-states-power-and-wakeup)).
+The integration connects the secondary partition as follows:
 
- - `clk_aon_i` and `rst_aon_ni` - the same clock and reset as the `clk_aon_i` and `rst_aon_ni` inputs of the IP block, which clock the reset detector registers.
- - `enable_i`, `req_i` and `rsp_o` - the `rstdet_enable` and `rstdet` inter-module signals of the IP block.
-   If the IP block may be powered down while the detector is active, these inputs may be isolated to fixed values, because in 'Deepest Sleep' the detector need only do nothing or issue a wake-up.
-   For a wake-up, `enable_i`, `req_i.activate` and `req_i.deep_sleep` are set and the other request bits are clear; otherwise all inputs are clear.
- - `scl_i` and `sda_i` - the SCL and SDA inputs from the pads, i.e. the same signals as `cio_scl_i` and `cio_sda_i` of the IP block.
- - `wake_up_o` - a wake-up request to the power manager; may be left unconnected if the Target need not wake the system.
- - `target_reset_o` - a reset of the I3C IP block only ('I3C Peripheral' reset).
- - `chip_reset_o` - a reset of the whole chip ('Whole Target' reset).
-   The I3C Basic Specification does not require a Whole Target reset to reset the whole chip, so an integration may instead leave this output unconnected or let it reset only the I3C IP block.
-   A Root of Trust should not allow an external I3C Controller to reset the whole chip.
- - `scan_clk_i` and `scanmode_i` - DFT signals.
+ - `clk_aon_i` and `rst_aon_ni`: the same clock and reset as the `clk_aon_i` and `rst_aon_ni` inputs of the primary partition, which clock the reset detector registers.
+ - `rstdet_enable_i`, `rstdet_i` and `rstdet_o`: the `rstdet_enable` and `rstdet` inter-module signals of the primary partition; topgen connects these intra-IP signals automatically.
+   If the primary partition may be powered down while the detector is active, these inputs may be isolated to fixed values, because in 'Deepest Sleep' the detector need only do nothing or issue a wake-up.
+   For a wake-up, `rstdet_enable_i`, `rstdet_i.activate` and `rstdet_i.deep_sleep` are set and the other request bits are clear; otherwise all inputs are clear.
+ - `cio_rstdet_scl_i` and `cio_rstdet_sda_i`: the SCL and SDA inputs from the pads.
+   They are separate from `cio_scl_i` and `cio_sda_i` of the primary partition, so that the detector does not depend upon the power domain of the primary partition.
+   Where the pads are connected through a pin multiplexer, software must route the same pads to these inputs as to `cio_scl_i` and `cio_sda_i` ([#31841](https://github.com/lowRISC/opentitan/issues/31841)).
+ - `rstdet_wkup_req_o`: a wake-up request to the power manager; may be left unconnected if the Target need not wake the system.
+ - `rstdet_target_rst_o`: a reset of the I3C IP block only ('I3C Peripheral' reset).
+
+The secondary partition does not expose the request for a reset of the whole chip ('Whole Target' reset).
+The I3C Basic Specification does not require a Whole Target reset to reset the whole chip, and a Root of Trust should not allow an external I3C Controller to reset the whole chip.
+
+The secondary partition has no DFT inputs; scan and DFT signals are only available in the primary partition ([#31335](https://github.com/lowRISC/opentitan/issues/31335)).

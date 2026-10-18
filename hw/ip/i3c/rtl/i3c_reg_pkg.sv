@@ -12,6 +12,8 @@ package i3c_reg_pkg;
   parameter int unsigned MaxTargets = 4;
   parameter int unsigned MaxGroups = 8;
   parameter int NumAlerts = 1;
+  parameter int NumAlertsPrimary = 1;
+  parameter int NumAlertsSecondary = 0;
 
   // Address widths within the block
   parameter int BlockAw = 13;

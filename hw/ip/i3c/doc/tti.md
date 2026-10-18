@@ -516,7 +516,7 @@ To comply with the I3C Specification, the Target logic supports a number of reco
  - Wake from 'Deepest Sleep' state.
  - No Reset or other action.
 
-Detection of the Target Reset pattern is performed by a small amount of logic that is external to the main IP block because it is expected to reside within a different power domain.
+Detection of the Target Reset pattern is performed by a small amount of logic, the Target Reset Detector, which forms a separate partition of the IP block because it is expected to reside within a different power domain (see the [Integration Notes](integration_notes.md#target-reset-detector)).
 
 This 'Target Reset' detector may be activated and deactivated by the Target under software control.
 The action to be taken upon detection of the Target Reset pattern may be reconfigured by the Active Controller at any time, by issuing the `RSTACT` Common Command Code.

@@ -67,8 +67,15 @@ The layouts of two [Asynchronous Event Descriptors](tti.md#asynchronous-event-ty
 - [HDR Restart Pattern](theory_of_operation.md#hdr-exit-and-hdr-restart-detection): the Target does not act on it ([#31035](https://github.com/lowRISC/opentitan/issues/31035)).
 - [Disabling HDR-DDR mode](tti.md#target-support-for-hdr-ddr-signaling): the field `TARG_CONTROL.EN_HDR_DDR` is not in the register map, so the Target always declares support for HDR-DDR mode in its GETCAPS response ([#31337](https://github.com/lowRISC/opentitan/issues/31337)).
 
-## IP top level
+## Primary partition
 
-- [Separated Enables output driver style](integration_notes.md#separated-enables-rtlio_sepi3c_io_pkgsv): the IP top level does not map its signals onto the CIO pins, so this style cannot be used ([#31762](https://github.com/lowRISC/opentitan/issues/31762)).
+- [Separated Enables output driver style](integration_notes.md#separated-enables-rtlio_sepi3c_io_pkgsv): the primary partition does not map its signals onto the CIO pins, so this style cannot be used ([#31762](https://github.com/lowRISC/opentitan/issues/31762)).
 - [Virtual Open Drain output driver style](integration_notes.md#virtual-open-drain-rtlio_vodi3c_io_pkgsv): the logic between the last flip-flops and `cio_sda_en_o` has not been checked yet for glitches, which could appear as START or STOP conditions while SCL is high ([#31762](https://github.com/lowRISC/opentitan/issues/31762)).
 - [`ctrl_scl_pu_en_o`](integration_notes.md#pullups-and-high-keepers) is always deasserted.
+
+## Target Reset Detector
+
+The [Target Reset Detector](integration_notes.md#target-reset-detector) in the secondary partition is incomplete:
+
+- The primary partition does not maintain the detector enable and configuration while it is in a sleep state, and the activation and deactivation of the detector with the slow AON clock have not been checked yet ([#31337](https://github.com/lowRISC/opentitan/issues/31337)).
+- The secondary partition ties the scan inputs of the detector off, so its flip-flops are not scanned ([#31335](https://github.com/lowRISC/opentitan/issues/31335)).
