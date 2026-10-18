@@ -27,11 +27,6 @@ module i3c_controller_trx
   input                         sw_reset_i,
   input                         hotjoin_ctrl_i,
 
-  // Blocked device addresses.
-  // TODO(#31307): Implement this debug/safety functionality.
-  input                   [6:0] addr_blocked_i[NumBlocked],
-  input                   [6:0] mask_blocked_i[NumBlocked],
-
   // Start request to the Controller core, on behalf of I3C Target(s).
   output                        trx_sreq_o,
 
@@ -1267,14 +1262,6 @@ module i3c_controller_trx
   end
 
   // Signals that the logic does not use (yet).
-  // - TODO(#31304): blocked addresses are not checked yet.
-  logic unused_blocked;
-  always_comb begin
-    unused_blocked = 1'b0;
-    for (int unsigned b = 0; b < NumBlocked; b++) begin
-      unused_blocked ^= ^{addr_blocked_i[b], mask_blocked_i[b]};
-    end
-  end
   // - the MSB of the halved Start/stoP timing parameters is dropped when doubling them.
   logic unused_misc;
   assign unused_misc = ^{hotjoin_ctrl_i, trx_dreq_i.i3c_first, tcas_d2_i[TmCycW-1],

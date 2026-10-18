@@ -1172,14 +1172,18 @@
 
                   This mask determines which bits of the device address will be tested and matched against the address in 'ADDR1'.
                   I2C devices are commonly configured with one of a small set of static addresses, differing in only one two address bits.
-                  If this field is zero then 'ADDR1' is implicitly not used.
                   '''
           resval: "0"
         }
         { bits:   "22:16",
           name:   "ADDR1",
-          desc:   "Second blocked address.",
-          resval: "0"
+          desc:   '''Second blocked address.
+
+                  Accesses to the target address (`TARG_ADDR`) will be blocked if the following expression matches:
+                    `(TARG_ADDR & MASK1) == ADDR1`
+                  The reset values of `MASK1` and `ADDR1` cannot yield a match, deactivating this check.
+                  '''
+          resval: "0x7f"
         }
         { bits:   "14:8",
           name:   "MASK0",
@@ -1187,14 +1191,18 @@
 
                   This mask determines which bits of the device address will be tested and matched against the address in 'ADDR0'.
                   I2C devices are commonly configured with one of a small set of static addresses, differing in only one two address bits.
-                  If this field is zero then 'ADDR0' is implicitly not used.
                   '''
           resval: "0"
         }
         { bits:   "6:0",
           name:   "ADDR0",
-          desc:   "First blocked address.",
-          resval: "0"
+          desc:   '''First blocked address.
+
+                  Accesses to the target address (`TARG_ADDR`) will be blocked if the following expression matches:
+                    `(TARG_ADDR & MASK0) == ADDR0`
+                  The reset values of `MASK0` and `ADDR0` cannot yield a match, deactivating this check.
+                  '''
+          resval: "0x7f"
         }
       ]
     }

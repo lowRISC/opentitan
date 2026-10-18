@@ -51,7 +51,6 @@ module i3c_controller_fsm
   input        [DCTAddrW-1:0] dct_idx_q_i,
 
   // Blocked device addresses.
-  // TODO(#31307): Implement this debug/safety functionality.
   input                 [6:0] addr_blocked_i[NumBlocked],
   input                 [6:0] mask_blocked_i[NumBlocked],
 
@@ -181,8 +180,16 @@ module i3c_controller_fsm
   // - this is valid from `CmdDecode` onwards because it depends upon the Device Address Table entry
   //   as well as the Command Descriptor.
   logic cmd_dec_err;
+  // Is the Target address for this command phase blocked?
+  logic cmd_addr_blocked;
   // Was the command `Nack`ed too many times?
   logic cmd_nack_excess;
+
+  // Enable Broadcast Address, in the 'Operating Context' of queued Transfer Commands (HCI 8.4.2.2).
+  // - the specification does not seems to state how this should interact with `IBA_INCLUDE.` The
+  //   point of this feature is to reduce the response latency to IBIs, so we play safe and use OR.
+  logic pio_bcst_addr_en;
+  wire use_bcst_addr = pio_bcst_addr_en | hc_control_i.iba_include.d;  // hwext, so use `d`.
 
   // Interpretations of the raw Command Descriptor DWORDs.
   i3c_xfer_cmd_intern_ctrl_t cmd_intn;
@@ -205,30 +212,39 @@ module i3c_controller_fsm
   // Command validation and decoding.
   // - commands come from the Command Queue and - at some point - Auto-Command handling.
   // - Scheduled Commands are presently not implemented at all.
-  i3c_cmd_decode u_cmd_decode (
+  i3c_cmd_decode #(
+    .NumBlocked    (NumBlocked)      // Number of blocked address settings supported.
+  ) u_cmd_decode (
     // Current command state, for phase-dependent command properties.
-    .cmd_state_i(cmd_state),
+    .cmd_state_i    (cmd_state),
     // Device Address Table entry; the transfer mode depends upon this.
-    .dat_entry_i(dat_entry),
+    .dat_entry_i    (dat_entry),
 
     // Raw command descriptor DWORDs from the Command Queue.
-    .cmd_queue_i(cmd_raw),
+    .cmd_queue_i    (cmd_raw),
+
+    // Configuration.
+    .use_bcst_addr_i(use_bcst_addr),
+    .addr_blocked_i (addr_blocked_i),
+    .mask_blocked_i (mask_blocked_i),
 
     // Initial validity check of a Command Descriptor.
-    .init_ok_o  (cmd_init_ok),
+    .init_ok_o      (cmd_init_ok),
 
     // Command attributes, derived combinationally from the Command Descriptor.
-    .cmd_attrs_o(cmd_attrs),
+    .cmd_attrs_o    (cmd_attrs),
 
     // Interpretations of the input Command Descriptor.
-    .cmd_intn_o (cmd_intn),
-    .cmd_daa_o  (cmd_daa),
-    .cmd_combo_o(cmd_combo),
-    .cmd_reg_o  (cmd_reg),
-    .cmd_imm_o  (cmd_imm),
+    .cmd_intn_o     (cmd_intn),
+    .cmd_daa_o      (cmd_daa),
+    .cmd_combo_o    (cmd_combo),
+    .cmd_reg_o      (cmd_reg),
+    .cmd_imm_o      (cmd_imm),
 
     // Response status; ErrStatus_OK iff the command is accepted by the decoder.
-    .err_o      (cmd_dec_err)
+    .err_o          (cmd_dec_err),
+    // Have accesses to the Target address of this command been blocked?
+    .blocked_o      (cmd_addr_blocked)
   );
 
   // Current and next states.
@@ -360,8 +376,9 @@ module i3c_controller_fsm
   // Command Queue enabled?
   // - software may choose to Run/Stop PIO Command Queue handling at any point.
   // - do not start command processing either when Disabled or when Abort requested.
-  wire cmd_enabled = reg2hw_i.pio_control.enable & reg2hw_i.pio_control.rs &
-                    !reg2hw_i.pio_control.abort;
+  // - note that there are two Abort mechanisms (Controller-global and PIO-local).
+  wire cmd_enabled = reg2hw_i.pio_control.enable.q & reg2hw_i.pio_control.rs.q &
+                    !reg2hw_i.pio_control.abort.q & !hc_control_i.abort.d;
 
   // Requests from the HCI Driver software; Command Descriptors are formed of two DWORDs.
   // Note: although we may know that there _are_ at least two DWORDs, there may be a delay in
@@ -412,14 +429,6 @@ module i3c_controller_fsm
   // - The open drain timing is more relaxed for the first I3C Broadcast address, so that I3C
   //   devices can see it even if they have spike filters enabled.
   logic i3c_first;
-  // Does the current command employ the I3C Broadcast Address (7'h7e)?
-  logic addr_bcst;
-
-  // Enable Broadcast Address, in the 'Operating Context' of queued Transfer Commands (HCI 8.4.2.2).
-  // - the specification does not seems to state how this should interact with `IBA_INCLUDE.` The
-  //   point of this feature is to reduce the response latency to IBIs, so we play safe and use OR.
-  logic pio_bcst_addr_en;
-  wire use_bcst_addr = pio_bcst_addr_en | hc_control_i.iba_include.d;  // hwext, so use `d`.
 
   logic hj_crr_captured;
 
@@ -530,7 +539,7 @@ module i3c_controller_fsm
       CmdBegin: state_d = DATCapt;
       DATCapt:  state_d = CmdDecode;
       CmdDecode: begin  // TODO(#31304): This probably wants tidying once the logic is finalized.
-        if (cmd_dec_err) state_d = CmdDecErr;
+        if (cmd_dec_err | cmd_addr_blocked) state_d = CmdDecErr;
         else begin
           // Here we need only handle the Command Descriptors that `i3c_cmd_decode` did not reject.
           unique case (cmd_attrs.attr)
@@ -553,9 +562,9 @@ module i3c_controller_fsm
                 default: state_d = CmdDecErr;
               endcase
             end
-            default: state_d = ((cmd_attrs.ddr & curr_ddr) ? CmdWord :
-                                                (curr_ddr  ? ExitHDR :
-                                      (cmd_state.rep_start ? CmdAddr : StartSDR)));
+            default: state_d = (cmd_attrs.ddr & curr_ddr) ? CmdWord :
+                                                curr_ddr  ? ExitHDR :
+                                      cmd_state.rep_start ? CmdAddr : StartSDR;
           endcase
         end
       end
@@ -577,14 +586,15 @@ module i3c_controller_fsm
       CmdAddr:  state_d = WaitAckb;
 
       // Awaiting Ack/Nack from the Target/Group.
-      WaitAckb: state_d = trx_arb_i.nack ? StopSDR :
-                        cmd_attrs.is_ccc ? CCC :
+      WaitAckb: state_d = trx_arb_i.nack ? StopSDR  :
+                        cmd_attrs.is_ccc ? CCC      :
              (cmd_attrs.ddr & !curr_ddr) ? EnterDDR :
-            (addr_bcst & !cmd_attrs.ddr) ? RepStPriv :  // Sr before Private Transfer, after 7'h7e.
-                           cmd_attrs.rnw ? RxData : TxData;
+             // Sr before Private Transfer, after 7'h7e?
+             (cmd_attrs.addr_bcst & !cmd_attrs.ddr) ? RepStPriv :
+                                      cmd_attrs.rnw ? RxData    : TxData;
 
       // Sending Ack/Nack to the Target when we lost arbitration, or did not contend.
-      SendAckb: state_d = hotjoin_req ? HotJoin :
+      SendAckb: state_d = hotjoin_req ? HotJoin  :
                               ibi_req ? IBICheck : CRR;
       EnterDDR: state_d = CmdWord;
       CmdWord:  state_d = cmd_attrs.rnw ? RxData : TxData;
@@ -746,7 +756,7 @@ module i3c_controller_fsm
           WaitAckb: begin
             // Once we've successfully issued the first I3C Broadcast Address we can transmit
             // faster.
-            if (addr_bcst & ~trx_arb_i.arb_lost) i3c_first <= 1'b0;
+            if (cmd_attrs.addr_bcst & ~trx_arb_i.arb_lost) i3c_first <= 1'b0;
           end
           // Track changes to the current bus mode.
           EnterDDR: begin
@@ -909,7 +919,7 @@ module i3c_controller_fsm
     // We may need to pad the final half-word with a 0 byte; half-words are transmitted as
     // big endian, though, so the final (non-existent) byte is bits [7:0] of the half-word.
     for (int unsigned ib = 0; ib < DataWidth; ib += 16) begin
-      // Data Words transmit the first byte within the MSBs.
+      // HDR-DDR 'Data Word's transmit the first byte within the MSBs.
       revh[DataWidth - ib - 16 +: 16] = {wdata[ib +: 8],
                                          wdata[ib + 8 +: 8] & {8{ib + 8 < bits_left}}};
     end
@@ -996,7 +1006,10 @@ module i3c_controller_fsm
   ) u_req_gen (
     // Configuration.
     .reg2hw_i       (reg2hw_i),
-    .use_bcst_addr_i(use_bcst_addr),
+
+    // Blocked addresses.
+    .addr_blocked_i (addr_blocked_i),
+    .mask_blocked_i (mask_blocked_i),
 
     // The current FSM state.
     .state_i        (state_q),
@@ -1023,8 +1036,6 @@ module i3c_controller_fsm
     .tcas_d2_o      (tcas_d2_o),
     .tcbp_d2_o      (tcbp_d2_o),
 
-    // Using I3C Broadcast Address?
-    .addr_bcst_o    (addr_bcst),
     // Request to the transceiver logic.
     .trx_dvalid_o   (trx_dvalid_o),
     .trx_dreq_o     (trx_dreq_o)
@@ -1211,7 +1222,7 @@ module i3c_controller_fsm
     dec_err = &{state_q == Idle, !direct_drive, !disable_now, cmd_reject} | (state_q == CmdDecErr);
     cmd_acked = &{state_q == WaitAckb, trx_avalid_i, !trx_arb_i.nack};
     // Is this acknowledgement for the Arbitrable I3C Broadcast Address of a Private SDR transfer?
-    bcst_priv = &{addr_bcst, ~cmd_attrs.is_ccc, ~cmd_attrs.ddr};
+    bcst_priv = &{cmd_attrs.addr_bcst, ~cmd_attrs.is_ccc, ~cmd_attrs.ddr};
 
     if (|{cmd_acked & ~bcst_priv, dec_err, cmd_nack_excess}) begin
       rsp_next.pending  = 1'b1;
@@ -1480,13 +1491,14 @@ module i3c_controller_fsm
       CmdWord:   bcl_tfr_ststat_o = BCLState_HDR;
       TxData:    bcl_tfr_ststat_o = BCLState_Wr;
       RxData:    bcl_tfr_ststat_o = BCLState_Rd;
-      CmdAddr:   bcl_tfr_ststat_o = addr_bcst ? (cmd_attrs.rnw ? BCLState_BcastRead
-                                                               : BCLState_BcastWrite)
-                                              : BCLState_Addr;
+      CmdAddr:   bcl_tfr_ststat_o = cmd_attrs.addr_bcst ? (cmd_attrs.rnw ? BCLState_BcastRead
+                                                                         : BCLState_BcastWrite)
+                                                        : BCLState_Addr;
       CmdArb,
-      WaitArb:   bcl_tfr_ststat_o = addr_bcst ?
-                               (cmd_attrs.rnw ? BCLState_BcastRead  : BCLState_BcastWrite) :
-                          (trx_arb_i.arb_lost ? BCLState_IBIAdrRead : BCLState_Addr);
+      WaitArb:   bcl_tfr_ststat_o = cmd_attrs.addr_bcst ? (cmd_attrs.rnw ? BCLState_BcastRead
+                                                                         : BCLState_BcastWrite)
+                                                        : (trx_arb_i.arb_lost ? BCLState_IBIAdrRead
+                                                                              : BCLState_Addr);
       CCC:       bcl_tfr_ststat_o = (cmd_attrs.attr == CmdAttr_AddrAssignment) ? BCLState_DAA
                                                                                : BCLState_CCC;
       CRR,
@@ -1502,7 +1514,8 @@ module i3c_controller_fsm
 
   // Detection and reporting of CE[3:0] error conditions.
   assign ctrl_error_o = {1'b0,
-                         &{state_q == WaitAckb, addr_bcst, trx_arb_i.nack},  // No ACK to 7'h7e.
+                         // No ACK in response to I3C Broadcast Address (7'h7e).
+                         &{state_q == WaitAckb, cmd_attrs.addr_bcst, trx_arb_i.nack},
                          1'b0,
                          1'b0};
 
