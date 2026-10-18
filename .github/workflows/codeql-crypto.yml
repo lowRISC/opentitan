@@ -1,0 +1,59 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "CodeQL Static Analysis"
+
+on:
+  pull_request:
+  push:
+    branches-ignore:
+      - "backport-*"
+    tags:
+      - "*"
+
+jobs:
+  analyze:
+    name: CodeQL C/C++ Security Scan
+    runs-on: ubuntu-22.04
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Prepare environment
+      uses: ./.github/actions/prepare-env
+
+    - name: Initialize CodeQL
+      uses: github/codeql-action/init@v3
+      with:
+        languages: cpp
+        # The 'security-and-quality' suite provides comprehensive static analysis
+        # for general C/C++ vulnerabilities (e.g. out-of-bounds access, UAF, uninitialized variables).
+        # We also include custom OpenTitan queries to analyze project-specific structs and memory helpers.
+        queries: security-and-quality, ./quality/codeql
+
+    - name: Build Target Modules
+      env:
+        # CodeQL must be explicitly configured to intercept the OpenTitan cross-compiler.
+        CODEQL_EXTRACTOR_CPP_COMPILER_MATCH: '.*riscv32-unknown-elf-clang.*'
+      run: |
+        # Compile target libraries and tests with CppCompile running locally.
+        # Passing a dedicated --copt ensures C/C++ compile actions are never skipped
+        # by the Bazel remote cache (so the CodeQL tracer observes every C/C++ file),
+        # while host tools (e.g. opentitantool) still benefit from remote caching.
+        # Filter tests to a single execution environment (sim_qemu_sival_rom_ext) to speed up compilation.
+        ./bazelisk.sh build //sw/device/lib/crypto:otcrypto \
+          $(./bazelisk.sh query 'attr(tags, "sim_qemu_sival_rom_ext", //sw/device/tests/crypto/...)') \
+          --strategy=CppCompile=local \
+          --nouse_action_cache \
+          --copt=-DCODEQL_TRACE
+
+    - name: Perform CodeQL Analysis
+      uses: github/codeql-action/analyze@v3
+      with:
+        category: "/language:cpp"
