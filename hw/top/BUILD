@@ -55,6 +55,7 @@ string_flag(
 ]
 
 # Config settings to test against top selection + IP presence in selected top.
+# This includes the `ip_constraints` coming from each top.
 [
     selects.config_setting_group(
         name = "is_{}_and_has_{}".format(
@@ -62,13 +63,15 @@ string_flag(
             ip,
         ),
         match_all = [":is_{}".format(top.name)] +
-                    ([] if has_ip(top, ip) else ["@platforms//:incompatible"]),
+                    ([] if has_ip(top, ip) else ["@platforms//:incompatible"]) +
+                    get_top_attr(top, "ip_constraints", False, {}).get(ip, []),
     )
     for top in ALL_TOPS
     for ip in ALL_IP_NAMES
 ]
 
 # Config setting to test against IP presence in the selected top.
+# This includes the `ip_constraints` coming from each top.
 [
     selects.config_setting_group(
         name = "has_{}".format(ip),

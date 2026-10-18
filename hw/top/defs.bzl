@@ -225,6 +225,18 @@ def opentitan_select_ip_attr(ipname, attr_name, required = True, default = None,
     `fn` will be called for each top that has this IP's attribute and the returned value will be
     inserted into the select expression. `fn` defaults to the identity function if not
     provided, returning the attribute itself.
+    Therefore informally the select will look like:
+    ```py
+    select({
+      <if top A has IP and requested attribute>: fn(<top A IP attr>),
+      <if top B has IP and requested attribute>: fn(<top B IP attr>),
+      .. and so on for all tops with the given attribute ..
+    })
+    ```
+    The condition expressing the presence of the IP in a top A is equivalent to a `target_compatible_with` built as follows:
+    ```
+    [@lowrisc_opentitan//hw/top:is_{top A}] + [{top A}.ip_constraints.get(ipname, [])]
+    ```
 
     If `required` is set to `True`, the selection expression will only contain branches
     for tops containing the (IP and the) IP attribute and an error message will be set in
