@@ -12,11 +12,16 @@ module i3c_ctrl_req_gen
   import i3c_reg_pkg::*;
 #(
   parameter int unsigned ClkFreq   = 50_000_000,
-  parameter int unsigned DataWidth = 32
+  parameter int unsigned DataWidth = 32,
+  // Number of blocked address settings supported.
+  parameter int unsigned NumBlocked = i3c_pkg::NumBlocked
 ) (
   // Configuration.
   input i3c_reg2hw_t          reg2hw_i,
-  input                       use_bcst_addr_i,
+
+  // Blocked device addresses.
+  input                 [6:0] addr_blocked_i[NumBlocked],
+  input                 [6:0] mask_blocked_i[NumBlocked],
 
   // The current FSM state.
   input i3c_ctrl_fsm_state_e  state_i,
@@ -43,14 +48,11 @@ module i3c_ctrl_req_gen
   output         [TmCycW-1:0] tcas_d2_o,
   output         [TmCycW-1:0] tcbp_d2_o,
 
-  // Using I3C Broadcast Address?
-  output                      addr_bcst_o,
   // Request to the transceiver logic.
   output                      trx_dvalid_o,
   output i3c_ctrl_trx_req_t   trx_dreq_o
 );
 
-  import i3c_consts_pkg::*;
   import i3c_timing_pkg::*;
 
   // Speed index for the current command.
@@ -58,7 +60,7 @@ module i3c_ctrl_req_gen
   logic [3:0] sn;
   always_comb begin
     if (&{state_i inside {CmdArb, WaitAckb, SendAckb},
-          trans_type_i == TransType_Cmd, addr_bcst_o}) begin
+          trans_type_i == TransType_Cmd, cmd_attrs_i.addr_bcst}) begin
       // Starting a Command-initiated transfer to the I3C Broadcast Address.
       // - if this is still our first attempt without success, we operate at the slower speed index
       //   so that I3C-capable devices receive the traffic and know to disable their spike filters.
@@ -257,26 +259,20 @@ module i3c_ctrl_req_gen
   assign tm_sel.hcext  = &tm_sw.tchs ? tm_hw.hcext : tm_sw.hcext;
   assign tm_sel.tclh   = &tm_sw.tclh ? tm_hw.tclh  : tm_sw.tclh;
 
-  // Using I3C Broadcast Address to commence a transfer?
-  // - do NOT use the I3C Broadcast Address after a Repeated Start (Sr); for either CCC or Private
-  //   transfers. TODO(#31304): ENTDAA is an exception here.
-  assign addr_bcst_o = |{cmd_attrs_i.is_ccc, cmd_attrs_i.ddr, use_bcst_addr_i} &
-                        ~cmd_state_i.rep_start;
-
-  // Target address as request write data (CmdArb or CmdAddr).
-  logic [DataWidth-1:0] addr_wdata;
-  always_comb begin : gen_addr_wdata
-    // Present the Broadcast/Target/Group address in the upper 7 bits.
-    /// - I3C Broadcast address is used for SDR Private Transfers iff explicitly requested.
-    addr_wdata = {dat_entry_i.dynamic_address[22:16], cmd_attrs_i.rnw} << (DataWidth - 8);
-    if (addr_bcst_o) begin
-      addr_wdata = Addr_Broadcast << (DataWidth - 7);
-    // SETDASA is always sent to the programmed static address, and I2C devices have only static
-    // addresses.
-    end else if (cmd_attrs_i.ccc == SETDASA || cmd_attrs_i.i2c) begin  // HCI 6.3.1
-      addr_wdata = {dat_entry_i.static_address, cmd_attrs_i.rnw} << (DataWidth - 8);
+  // Address blocking prevents addressing of software-blacklisted addresses, e.g., I2C Targets
+  // that may try to employ clock stretching. This is belt'n'braces logic; the command/phase should
+  // have been rejected in the Controller FSM, yielding an error.
+  logic blocked;
+  always_comb begin : gen_blocked
+    blocked = 1'b0;
+    for (int unsigned b = 0; b < NumBlocked; b++) begin
+      blocked |= ((cmd_attrs_i.addr_rnw[7:1] & mask_blocked_i[b]) == addr_blocked_i[b]);
     end
   end
+  // Target address and RnW bits, as request write data (CmdArb or CmdAddr).
+  // - as a backup ensure that we never issue a blocked address to the transceiver logic; instead
+  //   we effectively try to read from 7'h7f, yielding a NACK.
+  wire [DataWidth-1:0] addr_wdata = (cmd_attrs_i.addr_rnw | {8{blocked}}) << (DataWidth - 8);
 
   // TODO(#31304): Perhaps it would be more compact to list the states that do not send a request?
   assign trx_dvalid_o = |{state_i inside {StartSDR, StopSDR, RepStSDR,
@@ -446,16 +442,18 @@ module i3c_ctrl_req_gen
   //   request generation does not need.
   logic unused_req_inputs;
   assign unused_req_inputs = ^{cmd_state_i.available, cmd_state_i.dev_index,
-                               cmd_state_i.reps_left, cmd_state_i.retry_cnt,
+                               cmd_state_i.reps_left, cmd_state_i.retry_cnt, cmd_state_i.rep_start,
                                cmd_state_i.rst_csect, cmd_state_i.started, cmd_attrs_i.attr,
                                cmd_attrs_i.brd_ccc, cmd_attrs_i.data_len, cmd_attrs_i.defb,
                                cmd_attrs_i.dev_index, cmd_attrs_i.has_defb, cmd_attrs_i.reps_left,
                                cmd_attrs_i.retry_cnt, cmd_attrs_i.tid, cmd_attrs_i.toc,
                                cmd_attrs_i.wroc, dat_entry_i.autocmd_hdr_code,
+                               cmd_attrs_i.ccc, cmd_attrs_i.is_ccc,
                                dat_entry_i.autocmd_mask, dat_entry_i.autocmd_mode,
                                dat_entry_i.autocmd_value, dat_entry_i.crr_reject,
                                dat_entry_i.dev_nack_retry_cnt, dat_entry_i.device,
                                dat_entry_i.dynamic_address[23], dat_entry_i.ibi_payload,
+                               dat_entry_i.static_address,
                                dat_entry_i.ibi_reject, dat_entry_i.ring_id, dat_entry_i.ts,
                                ccc_rsp_i.done, ccc_rsp_i.err_status, ccc_rsp_i.inc_idx,
                                ccc_rsp_i.reg_wdata, ccc_rsp_i.reg_we, ccc_rsp_i.reg_widx,

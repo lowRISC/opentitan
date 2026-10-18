@@ -3775,7 +3775,7 @@ module i3c_reg_top
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (7'h0),
+    .RESVAL  (7'h7f),
     .Mubi    (1'b0)
   ) u_blocked_addr_addr0 (
     .clk_i   (clk_i),
@@ -3831,7 +3831,7 @@ module i3c_reg_top
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (7'h0),
+    .RESVAL  (7'h7f),
     .Mubi    (1'b0)
   ) u_blocked_addr_addr1 (
     .clk_i   (clk_i),

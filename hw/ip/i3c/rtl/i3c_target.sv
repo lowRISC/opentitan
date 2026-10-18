@@ -54,9 +54,6 @@ module i3c_target
   input               [7:0] stby_cr_bcr_i,
   input              [47:0] stby_cr_pid_i,
   input  i3c_rstact_e       rstact_i,
-  // Blocked device addresses.
-  input               [6:0] addr_blocked_i[NumBlocked],
-  input               [6:0] mask_blocked_i[NumBlocked],
 
   // Control outputs.
   output                    hdr_exit_det_en_o,
@@ -392,9 +389,6 @@ module i3c_target
     .stby_cr_bcr_i        (stby_cr_bcr_i),
     .stby_cr_pid_i        (stby_cr_pid_i),
     .rstact_i             (rstact_i),
-    // Blocked device addresses.
-    .addr_blocked_i       (addr_blocked_i),
-    .mask_blocked_i       (mask_blocked_i),
 
     // Status information.
     .dynaddr_de_o         (dynaddr_de_o),

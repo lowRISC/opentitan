@@ -41,10 +41,6 @@ module i3c_target_fsm
   input               [7:0] stby_cr_bcr_i,
   input              [47:0] stby_cr_pid_i,
   input  i3c_rstact_e       rstact_i, // TODO: Currently unused
-  // Blocked device addresses.
-  // TODO: Both currently unused
-  input               [6:0] addr_blocked_i[NumBlocked],
-  input               [6:0] mask_blocked_i[NumBlocked],
 
   // Updating configuration.
   output   [MaxTargets-1:0] dynaddr_de_o,
@@ -1340,14 +1336,6 @@ module i3c_target_fsm
   assign transfer_aborted_o = 1'b0;
 
   // Signals that the logic does not use (yet).
-  // - TODO(#31304): blocked addresses are not checked yet.
-  logic unused_blocked;
-  always_comb begin
-    unused_blocked = 1'b0;
-    for (int unsigned b = 0; b < NumBlocked; b++) begin
-      unused_blocked ^= ^{addr_blocked_i[b], mask_blocked_i[b]};
-    end
-  end
   // - Target device configuration, information and Tx Descriptor queue levels that the
   //   transceiver uses instead or that are not used yet, and Pending Read Notification fields that
   //   are not used yet.

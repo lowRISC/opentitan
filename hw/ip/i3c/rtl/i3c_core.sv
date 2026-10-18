@@ -368,9 +368,11 @@ module i3c_core
   assign scl_hk_en_o = reg2hw_i.phy_config.scl_hk_en.q;
   assign sda_hk_en_o = reg2hw_i.phy_config.sda_hk_en.q;
 
-  // List of blocked addresses with which neither the Controller nor the Target shall communicate;
-  // this is a safeguard against I2C devices that may use clock-stretching, but may also be of use
-  // diagnostically.
+  // List of blocked addresses with which the Controller shall not initiate communication; this is a
+  // safeguard against I2C devices that may use clock-stretching, but may also be of use
+  // diagnostically. The Target logic is unaffected since it only drives out its assigned
+  // address(es), making it the responsibility of the driver software and the I3C Controller to
+  // prevent collisions.
   logic [6:0] addr_blocked[NumBlocked];
   logic [6:0] mask_blocked[NumBlocked];  // Masks determine which address bits are tested.
   assign addr_blocked[1] = reg2hw_i.blocked_addr.addr1;
@@ -820,9 +822,6 @@ module i3c_core
     .stby_cr_pid_i        ({hw2reg_o.stby_cr_device_char.pid_hi.d, 1'b0,
                            hw2reg_o.stby_cr_device_pid_lo.d}),
     .rstact_i             (i3c_rstact_e'(hw2reg_o.stby_cr_ccc_config_rstact_params.rst_action.d)),
-    // Blocked device addresses.
-    .addr_blocked_i       (addr_blocked),
-    .mask_blocked_i       (mask_blocked),
 
     // Control outputs.
     .hdr_exit_det_en_o    (hdr_exit_det_en),
@@ -1467,10 +1466,6 @@ module i3c_core
     .sw_reset_i      (ctrl_sw_reset),
     .hotjoin_ctrl_i  (hw2reg_o.hc_control.hot_join_ctrl.d),
 
-    // Blocked addresses.
-    .addr_blocked_i  (addr_blocked),
-    .mask_blocked_i  (mask_blocked),
-
     // Start request to the Controller core.
     .trx_sreq_o      (ctrl_trx_sreq),
 
@@ -1526,9 +1521,6 @@ module i3c_core
     .targ_dev_i       (targ_dev),
     // Group address descriptions.
     .grp_addr_i       (grp_addr),
-    // Blocked addresses.
-    .addr_blocked_i   (addr_blocked),
-    .mask_blocked_i   (mask_blocked),
 
     // Transmit data for Private Read transfers, from the Target core.
     .trx_dvalid_i     (targ_trx_dvalid),

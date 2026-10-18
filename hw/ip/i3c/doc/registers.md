@@ -847,7 +847,7 @@ Blocked target addresses.
 The controller will raise an error if any attempt is made to access a blocked target address.
 This feature is intended to safeguard against inadvertent accesses to any I2C device that may try to employ clock-stretching, but it may also be of use diagnostically.
 - Offset: `0x68`
-- Reset default: `0x0`
+- Reset default: `0x7f007f`
 - Reset mask: `0x7f7f7f7f`
 
 ### Fields
@@ -861,31 +861,37 @@ This feature is intended to safeguard against inadvertent accesses to any I2C de
 |   31   |        |         | Reserved                      |
 | 30:24  |   rw   |   0x0   | [MASK1](#blocked_addr--mask1) |
 |   23   |        |         | Reserved                      |
-| 22:16  |   rw   |   0x0   | [ADDR1](#blocked_addr--addr1) |
+| 22:16  |   rw   |  0x7f   | [ADDR1](#blocked_addr--addr1) |
 |   15   |        |         | Reserved                      |
 |  14:8  |   rw   |   0x0   | [MASK0](#blocked_addr--mask0) |
 |   7    |        |         | Reserved                      |
-|  6:0   |   rw   |   0x0   | [ADDR0](#blocked_addr--addr0) |
+|  6:0   |   rw   |  0x7f   | [ADDR0](#blocked_addr--addr0) |
 
 ### BLOCKED_ADDR . MASK1
 Address mask for the second set of blocked addresses.
 
 This mask determines which bits of the device address will be tested and matched against the address in 'ADDR1'.
-I2C devices are commonly configured with one of a small set of static addresses, differing in only one two address bits.
-If this field is zero then 'ADDR1' is implicitly not used.
+I2C devices are commonly configured with one of a small set of static addresses, differing in only one or two address bits.
 
 ### BLOCKED_ADDR . ADDR1
 Second blocked address.
+
+Accesses to the target address (`TARG_ADDR`) will be blocked if the following expression matches:
+  `(TARG_ADDR & MASK1) == ADDR1`
+The reset values of `MASK1` and `ADDR1` cannot yield a match, deactivating this check.
 
 ### BLOCKED_ADDR . MASK0
 Address mask for the first set of blocked addresses.
 
 This mask determines which bits of the device address will be tested and matched against the address in 'ADDR0'.
-I2C devices are commonly configured with one of a small set of static addresses, differing in only one two address bits.
-If this field is zero then 'ADDR0' is implicitly not used.
+I2C devices are commonly configured with one of a small set of static addresses, differing in only one or two address bits.
 
 ### BLOCKED_ADDR . ADDR0
 First blocked address.
+
+Accesses to the target address (`TARG_ADDR`) will be blocked if the following expression matches:
+  `(TARG_ADDR & MASK0) == ADDR0`
+The reset values of `MASK0` and `ADDR0` cannot yield a match, deactivating this check.
 
 ## BUFFER_CTRL
 Buffer control
