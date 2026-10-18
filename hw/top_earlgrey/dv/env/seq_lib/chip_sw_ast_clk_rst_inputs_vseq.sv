@@ -12,7 +12,7 @@ class chip_sw_ast_clk_rst_inputs_vseq extends chip_sw_base_vseq;
 
   localparam string ADC_DATA_VALID = "tb.dut.top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary.adc_o.data_valid";
   localparam string ADC_POWERDOWN = "tb.dut.top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary.adc_i.pd";
-  localparam string ADC_CTRL_WAKEUP_REQ = "tb.dut.top_earlgrey.earlgrey_pd_aon.u_pwrmgr.wakeups_i[1]";
+  localparam string ADC_CTRL_WAKEUP_REQ = "tb.dut.top_earlgrey.earlgrey_pd_aon.u_adc_ctrl.wkup_req_o";
   localparam uint NUM_ADC_CHANNELS = 2;
   localparam uint NUM_LOW_POWER_SAMPLES = 3;
   localparam uint NUM_NORMAL_POWER_SAMPLES = 3;
