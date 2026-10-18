@@ -162,6 +162,11 @@ module i3c_part_primary
     $error("Driver style io_sep is not supported at the CIO interface yet.");
   end else begin : gen_cio_sda_from_vod_drv
     // Combination of Controller and Target SDA; each side's data only counts while it drives.
+    //
+    // Note: these are combinational functions of signals from two clocking domains (IP clock for
+    //       the Controller signals, and I3C SCL for the Target signals).
+    //       Each party guarantees that whilst it is disabled its outputs are stable, with `sda_en`
+    //       being 0 and `sda` being '1 (i.e., idle).
     assign cio_sda_o    = (cio_ctrl_bus_drv.sda[0] | ~cio_ctrl_bus_drv.sda_en[0]) &
                           (cio_targ_bus_drv.sda[0] | ~cio_targ_bus_drv.sda_en[0]);
     assign cio_sda_en_o = cio_ctrl_bus_drv.sda_en[0] | cio_targ_bus_drv.sda_en[0];
