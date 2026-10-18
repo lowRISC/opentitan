@@ -1070,7 +1070,7 @@ module i3c_controller_fsm
 
   // -------------------------------------- Data reception -----------------------------------------
 
-  logic rxbuf_wdata_accepted, ibi_data_accepted;
+  logic rx_data_accepted, rxbuf_wdata_accepted, ibi_data_accepted;
   logic rx_wvalid_q;
   logic [DataWidth-1:0] rx_data_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -1092,15 +1092,16 @@ module i3c_controller_fsm
             // manage to assign all `dev_count` addresses (HCI 8.4.1.1).
             rx_data_len   <= {15'b0, ~|cmd_state.reps_left};
           end
+          // Read data is steered to either the Rx Buffer or the IBI Data Buffer.
           default: begin
             if (trx_rdvalid_i | rx_wvalid_q) begin
-              // Read data is steered to either the Rx Buffer or the IBI Data Buffer.
-              rx_wvalid_q <= (trx_rdvalid_i | rx_wvalid_q) &
-                            ~(rxbuf_wdata_accepted | ibi_data_accepted);
-            end
-            if (trx_rdvalid_i & ~rx_wvalid_q) begin
-              // Keep old data rather than accept new, to avoid corrupting the transmitted data;
-              // TODO: this shall be reported as an error condition.
+              rx_wvalid_q <= (rx_wvalid_q & ~rx_data_accepted)  // Older data still pending.
+                           | (trx_rdvalid_i & (rx_wvalid_q | ~rx_data_accepted));  // New data.
+           end
+            // Keep old data rather than accept new, to avoid corrupting the transmitted data,
+            // but we must be sure to update `rx_data_len` even if the combinationally-forwarded
+            // data is accepted immediately.
+            if (trx_rdvalid_i & (rx_data_accepted | ~rx_wvalid_q)) begin
               rx_data_len <= rx_next_len;
               rx_data_q   <= rx_data;
             end
@@ -1160,16 +1161,26 @@ module i3c_controller_fsm
   //
   // Note: the write strobe remains asserted until the data is accepted; the shared message buffer
   // cannot always accept write data immediately even if there is space available for the data.
+  //
+  // To be slightly more robust against data loss, we provide a combinational path; remembering to
+  // prioritize the older data word (truncate rather than corrupt the data).
 
   // Write the data into the Rx Buffer.
-  assign rxbuf_wvalid_o = (rx_dest == RxDest_Buf) & (rx_wvalid_q | trx_rdvalid_i);
-  assign rxbuf_wdata_o  = trx_rdvalid_i ? rx_data : rx_data_q;
+  assign rxbuf_wvalid_o       = (rx_dest == RxDest_Buf) & (rx_wvalid_q | trx_rdvalid_i);
+  assign rxbuf_wdata_o        = rx_wvalid_q ? rx_data_q : rx_data;  // Keep older data.
   assign rxbuf_wdata_accepted = rxbuf_wvalid_o & rxbuf_wready_i;
 
   // We also need to support writing into the IBI data buffer.
-  assign ibi_data_wvalid_o = (rx_dest == RxDest_IBI) & (rx_wvalid_q | trx_rdvalid_i);
-  assign ibi_data_wdata_o  = trx_rdvalid_i ? rx_data : rx_data_q;
-  assign ibi_data_accepted = ibi_data_wvalid_o & ibi_data_wready_i;
+  assign ibi_data_wvalid_o    = (rx_dest == RxDest_IBI) & (rx_wvalid_q | trx_rdvalid_i);
+  assign ibi_data_wdata_o     = rx_wvalid_q ? rx_data_q : rx_data;  // Keep older data.
+  assign ibi_data_accepted    = ibi_data_wvalid_o & ibi_data_wready_i;
+
+  assign rx_data_accepted     = rxbuf_wdata_accepted | ibi_data_accepted;
+
+  // TODO(#31305): We should also report data loss somehow; the following are the raw events but
+  // we shall need to record these using sticky status bits.
+  wire rxbuf_data_loss = &{rx_dest == RxDest_Buf, rx_wvalid_q, trx_rdvalid_i, ~rxbuf_wready_i};
+  wire ibi_data_loss   = &{rx_dest == RxDest_IBI, rx_wvalid_q, trx_rdvalid_i, ~ibi_data_wready_i};
 
   // ------------------------------------ Response construction ------------------------------------
 
@@ -1204,8 +1215,8 @@ module i3c_controller_fsm
                            rsp_info.nack_det ? ErrStatus_NACK : trx_rsp_i.err_status;
         rsp.tid         <= rsp_info.tid;
         rsp.reserved    <= 'b0;  // Not used; pacify synthesis.
-        // TODO(#31304): The reported `DATA_LENGTH` field can be incorrect for early-terminated/
-        // writes.
+        // TODO(#31304): The reported `DATA_LENGTH` field may presently be incorrect for reads that
+        // suffer data loss, or writes that are terminated early.
         rsp.data_length <= (rsp_info.nack_det | ~rsp_info.rnw) ? data_len :  // From the command.
                                                  trx_rdvalid_i ? rx_next_len : rx_data_len;
       end
@@ -1547,6 +1558,9 @@ module i3c_controller_fsm
   logic unused_trx_rsp;
   assign unused_trx_rsp = ^{trx_rdata_i.rearly, trx_rdata_i.rerr, trx_rsp_i.wearly,
                             trx_rsp_i.werr, trx_rsp_i.wlen};
+  // - reporting of data loss not yet implemented.
+  logic unused_rxdata_loss;
+  assign unused_rxdata_loss = ^{rxbuf_data_loss, ibi_data_loss};
   // - fields of the Command Descriptor interpretations that the logic does not need.
   logic unused_cmd_desc;
   assign unused_cmd_desc = ^{cmd_intn.cmd_attr, cmd_intn.mipi_reserved[31:19], cmd_intn.tid,
