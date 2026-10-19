@@ -2025,6 +2025,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
          entropy_data_reg_en_pfa ||
          threshold_scope_pfa ||
          rng_bit_enable_pfa ||
+         threshold_oneway_pfa ||
          fw_ov_mode_pfa ||
          fw_ov_entropy_insert_pfa ||
          fw_ov_sha3_start_pfa ||
