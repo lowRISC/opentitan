@@ -111,6 +111,8 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
 
   if (ciphertext_semiblocks < 3) {
     // Ciphertext is too short.
+    // COVERAGE (SW ERR) Wrapped keys include metadata and are always at least
+    // 3 semiblocks long.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -182,12 +184,14 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
 
   if (launderw(is_bad) != 0) {
     *success = kHardenedBoolFalse;
+    HARDENED_TRY(hardened_memshred(r, ARRAYSIZE(r)));
     return aes_end(NULL);
   }
 
   // Copy the plaintext into the destination buffer.
   size_t plaintext_words = ceil_div(plaintext_len, sizeof(uint32_t));
   HARDENED_TRY(hardened_memcpy(plaintext, r, plaintext_words));
+  HARDENED_TRY(hardened_memshred(r, ARRAYSIZE(r)));
 
   // Return success.
   *success = kHardenedBoolTrue;
