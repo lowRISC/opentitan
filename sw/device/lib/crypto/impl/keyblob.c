@@ -56,6 +56,15 @@ size_t keyblob_num_words(const otcrypto_key_config_t config) {
     return kKeyblobHwBackedWords;
   }
   HARDENED_CHECK_NE(config.hw_backed, kHardenedBoolTrue);
+
+  // Get the key type from the top 16 bits of the full mode.
+  otcrypto_key_type_t key_type = (otcrypto_key_type_t)(config.key_mode >> 16);
+  if (launder32(key_type) == kOtcryptoKeyTypeRsa) {
+    // RSA private keyblobs store d0, d1, n, and a 32-bit checksum.
+    HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeRsa);
+    return 3 * keyblob_share_num_words(config) + 1;
+  }
+  HARDENED_CHECK_NE(config.key_mode >> 16, kOtcryptoKeyTypeRsa);
   return 2 * keyblob_share_num_words(config);
 }
 
