@@ -354,14 +354,10 @@ Threshold one way control register
 {"reg": [{"name": "THRESHOLD_ONEWAY", "bits": 4, "attr": ["rw1s"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                    |
-|:------:|:------:|:-------:|:--------------------------------------------------------|
-|  31:4  |        |         | Reserved                                                |
-|  3:0   |  rw1s  |   0x9   | [THRESHOLD_ONEWAY](#threshold_oneway--threshold_oneway) |
-
-### THRESHOLD_ONEWAY . THRESHOLD_ONEWAY
-Setting this field to `kMultiBitBool4True` will enable enable the one-way behavior of the health test threshold registers.
-After reset, this field reads as `kMultiBitBool4False` and the health test threshold registers can be configured without limitations.
+|  Bits  |  Type  |  Reset  | Name             | Description                                                                                                                                                                                                                                               |
+|:------:|:------:|:-------:|:-----------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |                  | Reserved                                                                                                                                                                                                                                                  |
+|  3:0   |  rw1s  |   0x9   | THRESHOLD_ONEWAY | Setting this field to `kMultiBitBool4True` will enable the one-way behavior of the health test threshold registers. After reset, this field reads as `kMultiBitBool4False` and the health test threshold registers can be configured without limitations. |
 
 ## REPCNT_THRESHOLD
 Repetition Count Test threshold register

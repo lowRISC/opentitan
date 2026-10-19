@@ -572,7 +572,7 @@
           hwaccess: "hro",
           name: "THRESHOLD_ONEWAY",
           desc: '''
-                Setting this field to `kMultiBitBool4True` will enable enable the one-way behavior of the health test threshold registers.
+                Setting this field to `kMultiBitBool4True` will enable the one-way behavior of the health test threshold registers.
                 After reset, this field reads as `kMultiBitBool4False` and the health test threshold registers can be configured without limitations.
                 '''
         },
