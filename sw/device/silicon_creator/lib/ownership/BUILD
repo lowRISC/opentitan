@@ -19,8 +19,6 @@ load(
 
 package(default_visibility = ["//visibility:public"])
 
-exports_files(["testdata/dummy_owner.json5"])
-
 cc_library(
     name = "datatypes",
     hdrs = ["datatypes.h"],

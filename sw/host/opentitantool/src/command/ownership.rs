@@ -290,7 +290,7 @@ impl CommandDispatch for OwnershipVerifyCommand {
 
         if parsed_config.ownership_key_alg.is_spx() {
             let spx_key = if let Some(key_file) = &self.spx_pub_key {
-                SpxPublicKey::read_pem_file(key_file)?
+                SpxPublicKey::from_pem_file(key_file)?
             } else {
                 let pubk = match parsed_config.owner_key {
                     KeyMaterial::Spx(ref raw_key) => raw_key,
