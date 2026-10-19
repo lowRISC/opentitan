@@ -260,6 +260,7 @@ readback enable.
 ### READBACK . EN
 Write kMultiBitBool4True to this field to enable the readback security feature for the SRAM.
 A readback of each memory write or read request will be performed and a comparison happens.
+Note that the internal read of the read-modify-write operation performed for sub-word writes is not read back.
 Any other value than kMultiBitBool4False written to this field is interpreted as kMultiBitBool4True.
 
 
