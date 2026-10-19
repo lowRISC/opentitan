@@ -2,6 +2,8 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
+
 package(default_visibility = ["//visibility:public"])
 
 exports_files([
@@ -10,6 +12,26 @@ exports_files([
     "dummy_owner.json5",
     "hybrid_owner.json5",
 ])
+
+pkg_files(
+    name = "dev_files",
+    testonly = True,
+    srcs = [
+        ":basic_owner.json5",
+        ":basic_owner_testdata.h",
+        ":dummy_owner.json5",
+        ":hybrid_owner.json5",
+    ],
+)
+
+pkg_filegroup(
+    name = "dev_pkg",
+    testonly = True,
+    srcs = [
+        ":dev_files",
+    ],
+    prefix = "owner_data",
+)
 
 genrule(
     name = "hybrid_owner_bin",

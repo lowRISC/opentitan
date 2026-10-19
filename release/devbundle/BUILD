@@ -126,7 +126,9 @@ pkg_tar(
         "//hw:package",
         "//hw/ip/otp_ctrl/data:package",
         "//sw/device/lib/testing/test_rom:package",
-        "//sw/device/silicon_creator/lib/ownership/keys/fake:fpga_dev_pkg",
+        "//sw/device/silicon_creator/lib/ownership/keys/dummy:dev_pkg",
+        "//sw/device/silicon_creator/lib/ownership/keys/fake:dev_pkg",
+        "//sw/device/silicon_creator/lib/ownership/testdata:dev_pkg",
         "//sw/device/silicon_creator/rom_ext:fpga_dev_pkg",
         # Note: a static build of hsmtool doesn't work because the PKCS#11
         # middleware libraries are typically dynamically linked and load
