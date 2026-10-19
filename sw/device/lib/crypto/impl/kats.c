@@ -456,7 +456,7 @@ static status_t kat_sha256_hash(void) {
   if (memcmp(act_digest, sha256_ans, 256 / 8)) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -480,7 +480,7 @@ static status_t kat_sha512_hash(void) {
   if (memcmp(act_digest, sha512_ans, 512 / 8)) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -530,7 +530,7 @@ static status_t kat_sha256_hmac(void) {
   if (memcmp(act_tag, hmac_sha256_ans, 32)) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -579,7 +579,7 @@ static status_t kat_sha512_hmac(void) {
   if (memcmp(act_tag, hmac_sha512_ans, 64)) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -630,7 +630,7 @@ static status_t kat_p256_sign(void) {
   if (memcmp(sig, p256_sig, 64)) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -664,7 +664,7 @@ static status_t kat_p256_base_point_mul(void) {
   if (memcmp(pk_act, p256_Q, 64)) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -687,12 +687,20 @@ static status_t kat_p256_verify(void) {
 
   HARDENED_TRY(otcrypto_ecdsa_p256_hash_verify(
       &public_key, kOtcryptoHashModeSha256, &msg_buf, &sig_buf, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  if (result != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   sig_data[15] ^= 0x1;
   HARDENED_TRY(otcrypto_ecdsa_p256_hash_verify(
       &public_key, kOtcryptoHashModeSha256, &msg_buf, &sig_buf, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolFalse);
+  if (result != kHardenedBoolFalse) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   return OTCRYPTO_OK;
 }
@@ -705,7 +713,11 @@ static status_t kat_p256_point_on_curve(void) {
   point.checksum = otcrypto_integrity_unblinded_checksum(&point);
 
   HARDENED_TRY(otcrypto_ecc_p256_point_on_curve(&point, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  if (result != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   uint32_t bad_point_data[16] = {0};
   memcpy(bad_point_data, p256_Q, 32);
@@ -717,7 +729,11 @@ static status_t kat_p256_point_on_curve(void) {
   bad_point.checksum = otcrypto_integrity_unblinded_checksum(&bad_point);
 
   HARDENED_TRY(otcrypto_ecc_p256_point_on_curve(&bad_point, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolFalse);
+  if (result != kHardenedBoolFalse) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   return OTCRYPTO_OK;
 }
@@ -763,7 +779,7 @@ static status_t kat_p384_sign(void) {
   if (memcmp(sig, p384_sig, 96)) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -800,7 +816,7 @@ static status_t kat_p384_base_point_mul(void) {
   if (memcmp(pk_act, p384_Q, 96)) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -823,12 +839,20 @@ static status_t kat_p384_verify(void) {
 
   HARDENED_TRY(otcrypto_ecdsa_p384_hash_verify(
       &public_key, kOtcryptoHashModeSha384, &msg_buf, &sig_buf, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  if (result != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   sig_data[23] ^= 0x1;
   HARDENED_TRY(otcrypto_ecdsa_p384_hash_verify(
       &public_key, kOtcryptoHashModeSha384, &msg_buf, &sig_buf, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolFalse);
+  if (result != kHardenedBoolFalse) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   return OTCRYPTO_OK;
 }
@@ -841,7 +865,11 @@ static status_t kat_p384_point_on_curve(void) {
   point.checksum = otcrypto_integrity_unblinded_checksum(&point);
 
   HARDENED_TRY(otcrypto_ecc_p384_point_on_curve(&point, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  if (result != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   uint32_t bad_point_data[24] = {0};
   memcpy(bad_point_data, p384_Q, 48);
@@ -853,7 +881,11 @@ static status_t kat_p384_point_on_curve(void) {
   bad_point.checksum = otcrypto_integrity_unblinded_checksum(&bad_point);
 
   HARDENED_TRY(otcrypto_ecc_p384_point_on_curve(&bad_point, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolFalse);
+  if (result != kHardenedBoolFalse) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   return OTCRYPTO_OK;
 }
@@ -881,7 +913,11 @@ static status_t kat_rsa2048_verify(void) {
   HARDENED_TRY(otcrypto_rsa_verify(&public_key, digest, kOtcryptoRsaPaddingPkcs,
                                    &sig_buf, &result));
 
-  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  if (result != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   return OTCRYPTO_OK;
 }
@@ -925,7 +961,7 @@ static status_t kat_rsa4096_sign(void) {
   if (memcmp(act_sig, rsa4096_sig, 512)) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -951,7 +987,11 @@ static status_t kat_rsa4096_verify(void) {
   hardened_bool_t result;
   HARDENED_TRY(otcrypto_rsa_verify(&public_key, digest, kOtcryptoRsaPaddingPkcs,
                                    &sig_buf, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  if (result != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   return OTCRYPTO_OK;
 }
@@ -996,12 +1036,12 @@ static status_t kat_aes_gcm_256_encrypt(void) {
   if (memcmp(ct_act, aes_gcm_256_ct, sizeof(aes_gcm_256_ct))) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
   if (memcmp(tag_act, aes_gcm_256_tag, sizeof(aes_gcm_256_tag))) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -1043,12 +1083,16 @@ static status_t kat_aes_gcm_256_decrypt(void) {
   HARDENED_TRY(otcrypto_aes_gcm_decrypt(&key, &ct_buf, &iv_buf, &aad_buf,
                                         kOtcryptoAesGcmTagLen128, &tag_buf,
                                         &pt_buf, &success));
-  HARDENED_CHECK_EQ(success, kHardenedBoolTrue);
+  if (success != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   if (memcmp(pt_act, aes_gcm_256_pt, sizeof(aes_gcm_256_pt))) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -1090,7 +1134,7 @@ static status_t kat_aes_ecb_256_decrypt(void) {
   if (memcmp(pt_act, aes_256_pt, 16)) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -1110,7 +1154,7 @@ static status_t kat_shake_256(void) {
   if (memcmp(act_digest, shake256_ans, 256 / 8)) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -1160,7 +1204,7 @@ static status_t kat_kmac_256(void) {
   if (memcmp(act_tag, kmac_256_ans, 64)) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -1237,7 +1281,7 @@ static status_t kat_ed25519_sign(void) {
   if (memcmp(sig_act, ed25519_sig, sizeof(ed25519_sig))) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -1266,14 +1310,22 @@ static status_t kat_ed25519_verify(void) {
 
   HARDENED_TRY(otcrypto_ed25519_verify(
       &public_key, &msg, kOtcryptoEddsaSignModeEddsa, &sig_buf, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  if (result != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   // Negative test: Modify a word in the signature array to ensure verification
   // fails
   sig_data[15] ^= 0x1;
   HARDENED_TRY(otcrypto_ed25519_verify(
       &public_key, &msg, kOtcryptoEddsaSignModeEddsa, &sig_buf, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolFalse);
+  if (result != kHardenedBoolFalse) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   return OTCRYPTO_OK;
 }
