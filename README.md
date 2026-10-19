@@ -2,7 +2,6 @@
 
 ![OpenTitan logo](./doc/opentitan-logo.png)
 
-
 ## About the project
 
 [OpenTitan](https://opentitan.org) is an open source silicon Root of Trust (RoT) project.
