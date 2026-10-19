@@ -47,6 +47,12 @@ static const uint32_t kPublicKeyAlice[] = {
     0x0d3abf0d, 0xf41a3826, 0x8ea9a4eb, 0x6a4e9baa,
 };
 
+// Private key of Bob.
+static const uint32_t kPrivateKeyBob[] = {
+    0x7e08ab5d, 0x4b8a4a62, 0x8b7fe179, 0xe60e8083,
+    0x29b13b6f, 0xfdb61826, 0x278b2f1c, 0xebe088ff,
+};
+
 // Public key of Bob.
 static const uint32_t kPublicKeyBob[] = {
     0x7ddb9ede, 0xb4c17d7b, 0xc2615bd3, 0x3735e4ec,
@@ -141,8 +147,8 @@ status_t x25519_kat_test(void) {
   return OTCRYPTO_OK;
 }
 
-status_t x25519_keygen_test(void) {
-  LOG_INFO("Running X25519 keygen Test");
+status_t x25519_public_key_from_private_test(void) {
+  LOG_INFO("Running X25519 public_key_from_private Test");
 
   uint32_t keyblob_alice[keyblob_num_words(kPrivateKeyConfig)];
   CHECK_STATUS_OK(create_blinded_kat_keyblob(keyblob_alice, kPrivateKeyAlice));
@@ -165,15 +171,104 @@ status_t x25519_keygen_test(void) {
   public_key_alice.checksum =
       otcrypto_integrity_unblinded_checksum(&public_key_alice);
 
-  // Run x25519 key generation.
-  CHECK_STATUS_OK(
-      otcrypto_x25519_keygen(&private_key_alice, &public_key_alice));
-  LOG_INFO("OTBN instruction count for keygen: 0x%08x",
+  // Run x25519 public key derivation.
+  CHECK_STATUS_OK(otcrypto_x25519_public_key_from_private(&private_key_alice,
+                                                          &public_key_alice));
+  LOG_INFO("OTBN instruction count for public_key_from_private: 0x%08x",
            otbn_instruction_count_get());
 
-  // Check the x25519 key generation result.
+  // Check the x25519 public key result for Alice.
   TRY_CHECK_ARRAYS_EQ(kPublicKeyAlice, public_key_alice.key,
                       kX25519PublicKeyWords);
+
+  // Also test Bob's RFC 7748 test vector.
+  uint32_t keyblob_bob[keyblob_num_words(kPrivateKeyConfig)];
+  CHECK_STATUS_OK(create_blinded_kat_keyblob(keyblob_bob, kPrivateKeyBob));
+  otcrypto_blinded_key_t private_key_bob = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob_bob),
+      .keyblob = keyblob_bob,
+  };
+  private_key_bob.checksum =
+      otcrypto_integrity_blinded_checksum(&private_key_bob);
+
+  uint32_t public_key_buf_bob[kX25519PublicKeyWords];
+  otcrypto_unblinded_key_t public_key_bob = {
+      .key_mode = kOtcryptoKeyModeX25519,
+      .key_length = kX25519PublicKeyBytes,
+      .key = public_key_buf_bob,
+  };
+
+  CHECK_STATUS_OK(otcrypto_x25519_public_key_from_private(&private_key_bob,
+                                                          &public_key_bob));
+  TRY_CHECK_ARRAYS_EQ(kPublicKeyBob, public_key_bob.key, kX25519PublicKeyWords);
+
+  return OTCRYPTO_OK;
+}
+
+status_t x25519_keygen_test(void) {
+  LOG_INFO("Running X25519 keygen Test");
+
+  uint32_t keyblob_a[keyblob_num_words(kPrivateKeyConfig)];
+  otcrypto_blinded_key_t private_key_a = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob_a),
+      .keyblob = keyblob_a,
+  };
+  uint32_t public_key_buf_a[kX25519PublicKeyWords];
+  otcrypto_unblinded_key_t public_key_a = {
+      .key_mode = kOtcryptoKeyModeX25519,
+      .key_length = kX25519PublicKeyBytes,
+      .key = public_key_buf_a,
+  };
+
+  uint32_t keyblob_b[keyblob_num_words(kPrivateKeyConfig)];
+  otcrypto_blinded_key_t private_key_b = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob_b),
+      .keyblob = keyblob_b,
+  };
+  uint32_t public_key_buf_b[kX25519PublicKeyWords];
+  otcrypto_unblinded_key_t public_key_b = {
+      .key_mode = kOtcryptoKeyModeX25519,
+      .key_length = kX25519PublicKeyBytes,
+      .key = public_key_buf_b,
+  };
+
+  CHECK_STATUS_OK(otcrypto_x25519_keygen(&private_key_a, &public_key_a));
+  CHECK_STATUS_OK(otcrypto_x25519_keygen(&private_key_b, &public_key_b));
+
+  TRY_CHECK_ARRAYS_NE(public_key_a.key, public_key_b.key,
+                      kX25519PublicKeyWords);
+
+  uint32_t shared_secret_blob_a[keyblob_num_words(kPrivateKeyConfig)];
+  otcrypto_blinded_key_t shared_secret_a = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(shared_secret_blob_a),
+      .keyblob = shared_secret_blob_a,
+  };
+  uint32_t shared_secret_blob_b[keyblob_num_words(kPrivateKeyConfig)];
+  otcrypto_blinded_key_t shared_secret_b = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(shared_secret_blob_b),
+      .keyblob = shared_secret_blob_b,
+  };
+
+  CHECK_STATUS_OK(
+      otcrypto_x25519(&private_key_a, &public_key_b, &shared_secret_a));
+  CHECK_STATUS_OK(
+      otcrypto_x25519(&private_key_b, &public_key_a, &shared_secret_b));
+
+  uint32_t unmasked_a[kX25519SharedSecretWords];
+  uint32_t unmasked_b[kX25519SharedSecretWords];
+  HARDENED_TRY(hardened_xor(shared_secret_a.keyblob,
+                            shared_secret_a.keyblob + kX25519SharedSecretWords,
+                            kX25519SharedSecretWords, unmasked_a));
+  HARDENED_TRY(hardened_xor(shared_secret_b.keyblob,
+                            shared_secret_b.keyblob + kX25519SharedSecretWords,
+                            kX25519SharedSecretWords, unmasked_b));
+
+  TRY_CHECK_ARRAYS_EQ(unmasked_a, unmasked_b, kX25519SharedSecretWords);
 
   return OTCRYPTO_OK;
 }
@@ -186,6 +281,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
 
   EXECUTE_TEST(result, x25519_kat_test);
+  EXECUTE_TEST(result, x25519_public_key_from_private_test);
   EXECUTE_TEST(result, x25519_keygen_test);
 
   return status_ok(result);
