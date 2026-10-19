@@ -27,3 +27,4 @@ Have a look at [CONTRIBUTING](CONTRIBUTING.md) and our [documentation on project
 ## Licensing
 
 Unless otherwise noted, everything in this repository is covered by the Apache License, Version 2.0 (see [LICENSE](https://github.com/lowRISC/opentitan/blob/master/LICENSE) for full text).
+
