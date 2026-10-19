@@ -1111,11 +1111,11 @@ module i3c_controller_trx
   // Signaling is simplified at present by not supporting HDR-BT mode.
   assign bus_drv_o.sda = sda_q;
   if (DrvSeparatedEn) begin : gen_sda_sep_en
-    // Driver Style 1 with two separate driver enables for SDA.
+    // Separated Enables output driver style with two separate driver enables for SDA.
     assign bus_drv_o.sda_pp_en = sda_drv_q.pp_en;
     assign bus_drv_o.sda_od_en = sda_drv_q.od_en;
   end else begin : gen_sda_vod_en
-    // Driver Style 2 with a single SDA driver enable and Virtual Open Drain.
+    // Virtual Open Drain output driver style with a single SDA driver enable.
     assign bus_drv_o.sda_en = sda_drv_q.en;
   end
 
