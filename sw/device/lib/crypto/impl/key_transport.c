@@ -212,9 +212,9 @@ otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
 #endif
   // Check that the total wrapped key length will fit in 32 bits.
   size_t config_num_words = sizeof(otcrypto_key_config_t) / sizeof(uint32_t);
-  if (keyblob_num_words(config) > UINT32_MAX - config_num_words - 2) {
+  if (keyblob_num_words(config) > UINT32_MAX - config_num_words - 5) {
     // COVERAGE (SW ERR) Since config.key_length is a uint32_t,
-    // keyblob_num_words(config) is at most 0x80000004 and cannot exceed this
+    // keyblob_num_words(config) is at most 0xc0000001 and cannot exceed this
     // bound.
     return OTCRYPTO_BAD_ARGS;
   }
@@ -231,8 +231,6 @@ otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
 
   // The number of words needs to be rounded up to the next multiple of 64 bits.
   if (*wrapped_num_words % 2 == 1) {
-    // COVERAGE (SW ERR) Currently all keyblob word lengths are even, and
-    // config_num_words + 4 is even, so *wrapped_num_words is always even.
     *wrapped_num_words += 1;
   }
 

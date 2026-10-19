@@ -46,6 +46,14 @@ static_assert(kOtcryptoRsa3072PrivateKeyblobBytes ==
 static_assert(kOtcryptoRsa4096PrivateKeyblobBytes ==
                   sizeof(rsa_4096_private_key_t),
               "RSA-4096 keyblob size mismatch.");
+static_assert(kOtcryptoWrappedKeyMaxWords ==
+                  sizeof(otcrypto_key_config_t) / sizeof(uint32_t) + 2 +
+                      kOtcryptoRsa4096PrivateKeyblobBytes / sizeof(uint32_t) +
+                      ((sizeof(otcrypto_key_config_t) / sizeof(uint32_t) + 1) %
+                       2) +
+                      2,
+              "kOtcryptoWrappedKeyMaxWords does not match wrapped RSA-4096 "
+              "private key size.");
 static_assert(offsetof(rsa_2048_private_key_t, d0) == 0 &&
                   offsetof(rsa_2048_private_key_t, d1) ==
                       kRsa2048NumWords * sizeof(uint32_t) &&
