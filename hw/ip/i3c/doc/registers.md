@@ -332,20 +332,22 @@ Controller Error counts.
 ## TARG_CONTROL
 Target Control register.
 - Offset: `0x1c`
-- Reset default: `0x2`
-- Reset mask: `0xc000001f`
+- Reset default: `0x102`
+- Reset mask: `0xc000011f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "STBY_CR_SUPPORT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CRHDLY1_AS", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "CRHDLY1_SET_AS", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 25}, {"name": "HJ_REQUEST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "SW_RESET", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "STBY_CR_SUPPORT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CRHDLY1_AS", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "CRHDLY1_SET_AS", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "EN_HDR_DDR", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 21}, {"name": "HJ_REQUEST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "SW_RESET", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                              |
 |:------:|:------:|:-------:|:--------------------------------------------------|
 |   31   |   wo   |   0x0   | [SW_RESET](#targ_control--sw_reset)               |
 |   30   |   rw   |   0x0   | [HJ_REQUEST](#targ_control--hj_request)           |
-|  29:5  |        |         | Reserved                                          |
+|  29:9  |        |         | Reserved                                          |
+|   8    |   rw   |   0x1   | [EN_HDR_DDR](#targ_control--en_hdr_ddr)           |
+|  7:5   |        |         | Reserved                                          |
 |   4    |   rw   |   0x0   | [CRHDLY1_SET_AS](#targ_control--crhdly1_set_as)   |
 |  3:2   |   rw   |   0x0   | [CRHDLY1_AS](#targ_control--crhdly1_as)           |
 |   1    |   rw   |   0x1   | [STBY_CR_SUPPORT](#targ_control--stby_cr_support) |
@@ -363,6 +365,13 @@ Issue Hot-Join request.
 
 This applies to all Virtual Targets since they share a single physical Target.
 Software shall set this to '1' to issue the request, and the hardware will clear it when the request has been sent and acknowledged.
+
+### TARG_CONTROL . EN_HDR_DDR
+Enable HDR-DDR mode signaling.
+
+HDR-DDR mode should normally be enabled, and the ability for software to deactivate HDR-DDR mode is included only as a contingency.
+This configuration bit shall be modified only before the Target is enabled.
+For the Controller, the issuing of HDR-DDR communications may be avoided in software by the construction of appropriate Command Descriptors.
 
 ### TARG_CONTROL . CRHDLY1_SET_AS
 Set Bus Activity State.

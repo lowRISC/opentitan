@@ -457,6 +457,18 @@
           hwaccess: "hrw",
           resval:   "0"
         }
+        { bits:     "8",
+          name:     "EN_HDR_DDR",
+          desc:     '''Enable HDR-DDR mode signaling.
+
+                    HDR-DDR mode should normally be enabled, and the ability for software to deactivate HDR-DDR mode is included only as a contingency.
+                    This configuration bit shall be modified only before the Target is enabled.
+                    For the Controller, the issuing of HDR-DDR communications may be avoided in software by the construction of appropriate Command Descriptors.
+                    '''
+          swaccess: "rw",
+          hwaccess: "hro",
+          resval:   "1"
+        }
         { bits:     "4",
           name:     "CRHDLY1_SET_AS",
           desc:     '''Set Bus Activity State.
