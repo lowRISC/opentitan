@@ -426,18 +426,20 @@ TEST(KeyTransport, KeyWrapUnwrapNegative) {
   // Unwrap with odd number of words (not a multiple of 64-bit semiblock)
   otcrypto_const_word32_buf_t odd_wrapped_buf = {
       .data = wrapped_data,
-      .len = 3,
+      .len = 11,
   };
   EXPECT_NOT_OK(
       otcrypto_key_unwrap(&odd_wrapped_buf, &kek_key, &success, &target_key));
 
-  // Unwrap with too few semiblocks (< 3 semiblocks = 6 words)
-  otcrypto_const_word32_buf_t short_wrapped_buf = {
-      .data = wrapped_data,
-      .len = 4,
-  };
-  EXPECT_NOT_OK(
-      otcrypto_key_unwrap(&short_wrapped_buf, &kek_key, &success, &target_key));
+  // Unwrap with wrapped_key->len below the minimum wrapped key header size
+  for (size_t short_len : {4u, 6u, 8u}) {
+    otcrypto_const_word32_buf_t short_wrapped_buf = {
+        .data = wrapped_data,
+        .len = short_len,
+    };
+    EXPECT_NOT_OK(otcrypto_key_unwrap(&short_wrapped_buf, &kek_key, &success,
+                                      &target_key));
+  }
 }
 
 TEST(KeyTransport, BlindedKeyMigrate) {
