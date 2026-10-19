@@ -17,6 +17,7 @@ volatile otcrypto_interface_t otcrypto = {
     .build_info = &otcrypto_build_info,
     .lib_version = &otcrypto_lib_version,
     .version_decode = &otcrypto_version_decode,
+    .rom_version = &otcrypto_rom_version,
 
     // CMVP service indicator.
     .cmvp_service_indicator = &otcrypto_cmvp_service_indicator,

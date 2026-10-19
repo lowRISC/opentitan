@@ -27,6 +27,7 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*build_info)(uint32_t *, bool *, uint32_t *, uint32_t *);
   otcrypto_lib_version_t (*lib_version)(void);
   void (*version_decode)(uint32_t, uint32_t *, uint32_t *, uint32_t *);
+  otcrypto_status_t (*rom_version)(uint32_t *);
 
   // CMVP service indicator
   otcrypto_status_t (*cmvp_service_indicator)(
