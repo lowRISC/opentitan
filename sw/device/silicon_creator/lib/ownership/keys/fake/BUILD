@@ -130,7 +130,7 @@ filegroup(
 )
 
 pkg_files(
-    name = "fpga_dev_files",
+    name = "dev_files",
     testonly = True,
     srcs = [
         ":app_dev_pub",
@@ -143,10 +143,10 @@ pkg_files(
 )
 
 pkg_filegroup(
-    name = "fpga_dev_pkg",
+    name = "dev_pkg",
     testonly = True,
     srcs = [
-        ":fpga_dev_files",
+        ":dev_files",
     ],
     prefix = "fake_keys",
 )
