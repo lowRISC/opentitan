@@ -1194,6 +1194,11 @@ status_t entropy_csrng_instantiate(
 
 status_t entropy_csrng_reseed(hardened_bool_t disable_trng_input,
                               const entropy_seed_material_t *seed_material) {
+  crypto_state_t *state = NULL;
+  if (status_ok(read_state_pointer(&state)) && state != NULL) {
+    state->csrng_is_default = kHardenedByteBoolFalse;
+  }
+
   return csrng_send_app_cmd(kBaseCsrng,
                             (entropy_csrng_cmd_t){
                                 .id = kEntropyDrbgOpReseed,
