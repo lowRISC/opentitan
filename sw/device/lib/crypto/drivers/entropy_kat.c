@@ -131,12 +131,19 @@ status_t entropy_csrng_kat(void) {
     return OTCRYPTO_OK;
   }
 
+  // Test vector: NIST CAVP SP 800-90A DRBG (`drbgtestvectors.zip` ->
+  // `drbgvectors_pr_true.zip` -> `CTR_DRBG.txt`, section `[AES-256 no df]`,
+  // `[PredictionResistance = True]`, `COUNT = 0`).
+  // https://csrc.nist.gov/CSRC/media/Projects/Cryptographic-Algorithm-Validation-Program/documents/drbg/drbgtestvectors.zip
+  // Seed and internal-state 32-bit words are in reversed word order relative
+  // to the NIST hex strings; `kExpectedOutput` is in forward word order
+  // because `entropy_csrng_generate_data_get()` reverses each 128-bit block.
   HARDENED_TRY(entropy_csrng_uninstantiate());
 
   const entropy_seed_material_t kEntropyInput = {
-      .data = {0x73bec010, 0x9262474c, 0x16a30f76, 0x531b51de, 0x2ee494e5,
-               0xdfec9db3, 0xcb7a879d, 0x5600419c, 0xca79b0b0, 0xdda33b5c,
-               0xa468649e, 0xdf5d73fa},
+      .data = {0xbac7d8e5, 0x5b74e091, 0xb5623381, 0x0e41c6af, 0x3ddf56c9,
+               0x587a4256, 0x4297557f, 0x6db9a7ba, 0x92247fac, 0xb6e33ce4,
+               0xc8afbc5a, 0xfaf346c9},
       .len = 12,
   };
   HARDENED_TRY(entropy_csrng_instantiate(
@@ -144,13 +151,32 @@ status_t entropy_csrng_kat(void) {
 
   const entropy_csrng_internal_state_t kExpectedStateInstantiate = {
       .reseed_counter = 0,
-      .v = {0x06b8f59e, 0x43c0b2c2, 0x21052502, 0x217b5214},
-      .key = {0x941709fd, 0xd8a25860, 0x861aecf3, 0x98a701a1, 0x0eb2c33b,
-              0x74c08fad, 0x632d5227, 0x8c52f901},
+      .v = {0xcfc1ed6b, 0x8ad6151f, 0x82c419f5, 0x7c21c565},
+      .key = {0x872ccbd1, 0x5f348785, 0x0ff73e11, 0xa31ee787, 0x56ef0c27,
+              0x1f808815, 0x0fea8ae3, 0xa9fccc32},
       .instantiated = true,
       .fips_compliance = false,
   };
   HARDENED_TRY(check_internal_state(&kExpectedStateInstantiate));
+
+  const entropy_seed_material_t kEntropyInputReseed1 = {
+      .data = {0x08011f2c, 0x15022610, 0x4c6faecd, 0x94828db8, 0x6cc4a61c,
+               0xe8592f6f, 0x238fefb4, 0x7ae403b5, 0xe1e348a0, 0x2713720a,
+               0x2d714692, 0xdfc11125},
+      .len = 12,
+  };
+  HARDENED_TRY(entropy_csrng_reseed(
+      /*disable_trng_input=*/kHardenedBoolTrue, &kEntropyInputReseed1));
+
+  const entropy_csrng_internal_state_t kExpectedStateReseed1 = {
+      .reseed_counter = 0,
+      .v = {0x72488149, 0xe0c7a002, 0x061a7547, 0x7759eaf5},
+      .key = {0xc2d77b37, 0x1d37a9ad, 0xcc781d26, 0x5632585a, 0xe86aa79d,
+              0x8d164cd0, 0x345d4ab7, 0x3e5aac1e},
+      .instantiated = true,
+      .fips_compliance = false,
+  };
+  HARDENED_TRY(check_internal_state(&kExpectedStateReseed1));
 
   enum {
     kExpectedOutputLen = 16,
@@ -160,27 +186,54 @@ status_t entropy_csrng_kat(void) {
   HARDENED_TRY(entropy_csrng_generate(/*seed_material=*/NULL, got,
                                       kExpectedOutputLen,
                                       /*fips_check=*/kHardenedBoolFalse));
+
+  const entropy_csrng_internal_state_t kExpectedStateGenerate1 = {
+      .reseed_counter = 1,
+      .v = {0x36e00b39, 0xbaf64294, 0x805dab58, 0x9ac50e38},
+      .key = {0xe23b54b0, 0x6176b445, 0x7109c439, 0x96d717cd, 0xd905aa43,
+              0xcf5b633a, 0x29c17b2c, 0x59ab2aa2},
+      .instantiated = true,
+      .fips_compliance = false,
+  };
+  HARDENED_TRY(check_internal_state(&kExpectedStateGenerate1));
+
+  const entropy_seed_material_t kEntropyInputReseed2 = {
+      .data = {0x5d328a90, 0xddabab04, 0xa8a9a6a9, 0x1aec7ada, 0x77069dad,
+               0x5040c02f, 0x9483fa5f, 0x1ca8ebea, 0xce79bc81, 0x47d44f4e,
+               0xb99c7723, 0x4528bac5},
+      .len = 12,
+  };
+  HARDENED_TRY(entropy_csrng_reseed(
+      /*disable_trng_input=*/kHardenedBoolTrue, &kEntropyInputReseed2));
+
+  const entropy_csrng_internal_state_t kExpectedStateReseed2 = {
+      .reseed_counter = 0,
+      .v = {0x2389b4ba, 0x99e18aa2, 0x04acd7ac, 0xcc911b3b},
+      .key = {0xe7f57744, 0xe1fa401c, 0x5148c995, 0xd334b7d1, 0xe9da54ff,
+              0x65a10e16, 0xf87af334, 0xb71fc243},
+      .instantiated = true,
+      .fips_compliance = false,
+  };
+  HARDENED_TRY(check_internal_state(&kExpectedStateReseed2));
+
   HARDENED_TRY(entropy_csrng_generate(/*seed_material=*/NULL, got,
                                       kExpectedOutputLen,
                                       /*fips_check=*/kHardenedBoolFalse));
 
-  const entropy_csrng_internal_state_t kExpectedStateGenerate = {
-      .reseed_counter = 2,
-      .v = {0xe73e3392, 0x7d2e92b1, 0x1a0bac9d, 0x53c78ac6},
-
-      .key = {0x66d1b85a, 0xc19d4dfd, 0x053b73e3, 0xe9dc0f90, 0x3f015bc8,
-              0x4436e5fd, 0x1cccc697, 0x1a1c6e5f},
+  const entropy_csrng_internal_state_t kExpectedStateGenerate2 = {
+      .reseed_counter = 1,
+      .v = {0x2ffc73ce, 0x9b8c226c, 0x5e3baf89, 0x24f48520},
+      .key = {0xf9dd8a6b, 0xe2715cd8, 0xa3b25b8b, 0xdccc84f2, 0xa5395afc,
+              0xe48a8588, 0xbc79c4bd, 0x48f4632b},
       .instantiated = true,
       .fips_compliance = false,
   };
-  HARDENED_TRY(check_internal_state(&kExpectedStateGenerate));
+  HARDENED_TRY(check_internal_state(&kExpectedStateGenerate2));
 
-  // Note that the word order here is reversed compared to the NIST test
-  // vectors.
   const uint32_t kExpectedOutput[kExpectedOutputLen] = {
-      0xd1c07cd9, 0x5af8a7f1, 0x1012c84c, 0xe48bb8cb, 0x87189e99, 0xd40fccb1,
-      0x771c619b, 0xdf82ab22, 0x80b1dc2f, 0x2581f391, 0x64f7ac0c, 0x510494b3,
-      0xa43c41b7, 0xdb17514c, 0x87b107ae, 0x793e01c5,
+      0xbc013dc8, 0x91db12c3, 0x4ad11944, 0x805bf13d, 0xfd67ff2c, 0x23176d83,
+      0xf5b396b6, 0x9e400042, 0x252e1181, 0x6c309542, 0x1137181a, 0x5d0ee37c,
+      0x83a339c5, 0x8d080946, 0xca90aa43, 0x7d50d9cf,
   };
 
   // Disable CSRNG internal state reading and lock the register.
