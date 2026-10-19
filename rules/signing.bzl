@@ -1012,8 +1012,14 @@ def _signature_test_impl(ctx):
     selected_ecdsa_key_path = ""
     selected_spx_key_path = ""
 
+    # If a `spx_domain` is specified, we always use that, no matter what the key declares.
+    # This allows testing with differing signature modes.
     if ctx.attr.spx_domain != "":
-        verify_args = "--spx --domain " + ctx.attr.spx_domain
+        verify_args += "--spx --domain " + ctx.attr.spx_domain
+    elif spx_key:
+        spx_domain = spx_key.config.get("domain", "Pure")
+        verify_args += "--spx --domain " + spx_domain
+
     if ecdsa_key:
         selected_ecdsa_key_path = ecdsa_key.file.short_path
         keys.append(ecdsa_key.file)
@@ -1064,7 +1070,7 @@ signature_test = rule(
         "spx_domain": attr.string(
             default = "",
             values = ["", "Pure", "PrehashedSha256"],
-            doc = "The SPHINCS+ / SLH-DSA signature mode to use for signing.",
+            doc = "The SPHINCS+ / SLH-DSA signature mode to use for signing. If unspecified, uses the key's mode instead.",
         ),
         "_script": attr.label(
             default = "//rules/scripts:sival_signature_test.template.sh",
