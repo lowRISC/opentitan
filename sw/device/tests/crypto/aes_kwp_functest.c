@@ -118,6 +118,56 @@ static status_t wrap_unwrap_random_test(void) {
   return run_wrap_unwrap(&kmac_key, &kek);
 }
 
+/**
+ * Test wrapping/unwrapping an RSA-4096 private keyblob (largest supported key).
+ */
+static status_t wrap_unwrap_rsa4096_test(void) {
+  const otcrypto_key_config_t kRsa4096KeyConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = 4096 / 8,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  // RSA-4096 private keyblob stores d0, d1, n (128 words each) and checksum (1
+  // word).
+  uint32_t rsa_keyblob[3 * (4096 / 32) + 1];
+  for (size_t i = 0; i < ARRAYSIZE(rsa_keyblob); i++) {
+    rsa_keyblob[i] = 0xa5a50000u ^ (uint32_t)i;
+  }
+  otcrypto_blinded_key_t rsa_key = {
+      .config = kRsa4096KeyConfig,
+      .keyblob_length = sizeof(rsa_keyblob),
+      .keyblob = rsa_keyblob,
+  };
+  rsa_key.checksum = otcrypto_integrity_blinded_checksum(&rsa_key);
+
+  // Import a 256-bit AES-KWP key encryption key.
+  const uint32_t kKekShare0[8] = {
+      0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f,
+      0x10111213, 0x14151617, 0x18191a1b, 0x1c1d1e1f,
+  };
+  const uint32_t kKekShare1[8] = {
+      0xf0f1f2f3, 0xf4f5f6f7, 0xf8f9fafb, 0xfcfdfeff,
+      0xe0e1e2e3, 0xe4e5e6e7, 0xe8e9eaeb, 0xecedeeef,
+  };
+  otcrypto_const_word32_buf_t kek_share0 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, kKekShare0, ARRAYSIZE(kKekShare0));
+  otcrypto_const_word32_buf_t kek_share1 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, kKekShare1, ARRAYSIZE(kKekShare1));
+  uint32_t kek_keyblob[(kWrappingKeyConfig.key_length * 2) / sizeof(uint32_t)];
+  otcrypto_blinded_key_t kek = {
+      .config = kWrappingKeyConfig,
+      .keyblob_length = sizeof(kek_keyblob),
+      .keyblob = kek_keyblob,
+  };
+  TRY(otcrypto_import_blinded_key(&kek_share0, &kek_share1, &kek));
+
+  return run_wrap_unwrap(&rsa_key, &kek);
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -126,6 +176,7 @@ bool test_main(void) {
   otcrypto_state_t state = {0};
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
   EXECUTE_TEST(result, wrap_unwrap_random_test);
+  EXECUTE_TEST(result, wrap_unwrap_rsa4096_test);
 
   return status_ok(result);
 }

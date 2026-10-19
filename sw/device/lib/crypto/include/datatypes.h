@@ -476,8 +476,10 @@ enum {
   sizeof(otcrypto_key_config_t) / sizeof(uint32_t) +
   /* checksum and keyblob_length fields */
   2 +
-  /* RSA-4096 keyblob: 2 shares of 512 bytes each */
-  2 * (4096 / 8 / sizeof(uint32_t)) +
+  /* RSA-4096 keyblob: d0, d1, n (512 bytes each) and 32-bit checksum */
+  3 * (4096 / 8 / sizeof(uint32_t)) + 1 +
+  /* AES-KWP 64-bit semiblock alignment padding */
+  1 +
   /* AES-KWP 64-bit integrity prefix */
   2,
 };

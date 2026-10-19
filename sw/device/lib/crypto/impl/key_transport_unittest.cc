@@ -465,5 +465,81 @@ TEST(KeyTransport, BlindedKeyMigrate) {
   EXPECT_NOT_OK(otcrypto_blinded_key_migrate(&hw_backed_key, &new_key));
 }
 
+TEST(KeyTransport, WrappedKeyLenRsa) {
+  const otcrypto_key_config_t kConfigRsa2048 = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = 256,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  const otcrypto_key_config_t kConfigRsa3072 = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeRsaSignPss,
+      .key_length = 384,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  const otcrypto_key_config_t kConfigRsa4096 = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeRsaEncryptOaep,
+      .key_length = 512,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  size_t wrapped_words_2048 = 0;
+  EXPECT_OK(otcrypto_wrapped_key_len(kConfigRsa2048, &wrapped_words_2048));
+  EXPECT_EQ(wrapped_words_2048, 204);
+  EXPECT_LE(wrapped_words_2048, kOtcryptoWrappedKeyMaxWords);
+
+  size_t wrapped_words_3072 = 0;
+  EXPECT_OK(otcrypto_wrapped_key_len(kConfigRsa3072, &wrapped_words_3072));
+  EXPECT_EQ(wrapped_words_3072, 300);
+  EXPECT_LE(wrapped_words_3072, kOtcryptoWrappedKeyMaxWords);
+
+  size_t wrapped_words_4096 = 0;
+  EXPECT_OK(otcrypto_wrapped_key_len(kConfigRsa4096, &wrapped_words_4096));
+  EXPECT_EQ(wrapped_words_4096, 396);
+  EXPECT_EQ(wrapped_words_4096, kOtcryptoWrappedKeyMaxWords);
+
+  // Verify otcrypto_key_wrap rejects an RSA-4096 key with the old (2-share)
+  // keyblob_length of 1024 bytes instead of 1540 bytes.
+  rom_test::NiceMockAbsMmio mmio;
+  ON_CALL(mmio, Read32(TOP_EARLGREY_AES_BASE_ADDR + AES_STATUS_REG_OFFSET))
+      .WillByDefault(testing::Return(1 << AES_STATUS_IDLE_BIT));
+  ON_CALL(mmio, Read32(TOP_EARLGREY_KEYMGR_BASE_ADDR +
+                       KEYMGR_SIDELOAD_CLEAR_REG_OFFSET))
+      .WillByDefault(testing::Return(KEYMGR_SIDELOAD_CLEAR_VAL_VALUE_AES));
+
+  uint32_t kek_keyblob[16] = {0};
+  otcrypto_blinded_key_t kek_key = {
+      .config = kConfigAesKwp256,
+      .keyblob_length = sizeof(kek_keyblob),
+      .keyblob = kek_keyblob,
+      .checksum = 0,
+  };
+  kek_key.checksum = otcrypto_integrity_blinded_checksum(&kek_key);
+
+  uint32_t rsa_keyblob[385] = {0};
+  otcrypto_blinded_key_t bad_rsa_key = {
+      .config = kConfigRsa4096,
+      .keyblob_length = 1024,
+      .keyblob = rsa_keyblob,
+      .checksum = 0,
+  };
+  bad_rsa_key.checksum = otcrypto_integrity_blinded_checksum(&bad_rsa_key);
+
+  uint32_t wrapped_data[kOtcryptoWrappedKeyMaxWords] = {0};
+  otcrypto_word32_buf_t wrapped_buf = {
+      .data = wrapped_data,
+      .len = wrapped_words_4096,
+  };
+  EXPECT_NOT_OK(otcrypto_key_wrap(&bad_rsa_key, &kek_key, &wrapped_buf));
+}
+
 }  // namespace
 }  // namespace key_transport_unittest
