@@ -1227,7 +1227,7 @@ ownership_transfer_test(
 
 owner_block_binary(
     name = "test_owner_config_bin",
-    src = "//sw/device/silicon_creator/lib/ownership:testdata/dummy_owner.json5",
+    src = "//sw/device/silicon_creator/lib/ownership/testdata:dummy_owner.json5",
     keys = [
         "//sw/device/silicon_creator/lib/ownership/keys/dummy:all_keys",
         "//sw/device/silicon_creator/lib/ownership/keys/fake:all_keys",
