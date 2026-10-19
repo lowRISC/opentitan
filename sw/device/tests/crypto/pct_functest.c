@@ -219,8 +219,7 @@ static status_t ed25519_pct_keygen_test(void) {
   };
 
   // Generate keypair with OTBN FIPS PCT active.
-  CHECK_STATUS_OK(
-      otcrypto_ed25519_public_key_from_private(&private_key, &public_key));
+  CHECK_STATUS_OK(otcrypto_ed25519_keygen(&private_key, &public_key));
 
   LOG_INFO("Ed25519 FIPS PCT Keygen test passed.");
   return OK_STATUS();

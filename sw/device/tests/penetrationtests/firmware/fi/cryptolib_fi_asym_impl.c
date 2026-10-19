@@ -1565,7 +1565,8 @@ status_t cryptolib_fi_x25519_base_mul_impl(
   if (uj_input.trigger) {
     pentest_set_trigger_high();
   }
-  HARDENED_TRY(otcrypto_x25519_keygen(&private_key, &public_key));
+  HARDENED_TRY(
+      otcrypto_x25519_public_key_from_private(&private_key, &public_key));
   if (uj_input.trigger) {
     pentest_set_trigger_low();
   }

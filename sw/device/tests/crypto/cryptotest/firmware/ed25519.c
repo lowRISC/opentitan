@@ -305,33 +305,26 @@ status_t handle_ed25519_sign(ujson_t *uj) {
 // Generates a fresh Ed25519 key pair and returns the unblinded seed d and
 // the derived public key q.
 status_t handle_ed25519_keygen(ujson_t *uj) {
-  // Generate the random seed using the hardware PRNG (URND).
-  uint32_t d_words[kEd25519SeedWords] = {0};
-  HARDENED_TRY(hardened_memshred(d_words, kEd25519SeedWords));
-
-  // Build a properly blinded keyblob: share0 = d - share1 (mod 2^256),
-  // share1 random. Padding words beyond kEd25519SeedWords stay zero.
   uint32_t keyblob[kEd25519MaskedScalarTotalShareWords] = {0};
-  uint32_t *share0 = keyblob;
-  uint32_t *share1 = keyblob + kEd25519MaskedScalarShareWords;
-  HARDENED_TRY(hardened_memshred(share1, kEd25519SeedWords));
-  HARDENED_TRY(hardened_sub(d_words, share1, kEd25519SeedWords, share0));
-
   otcrypto_blinded_key_t private_key = {
       .config = kEd25519PrivateKeyConfig,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
-  // Derive the public key.
   uint32_t public_key_buf[kEd25519PublicKeyWords];
   otcrypto_unblinded_key_t public_key = {
       .key_mode = kOtcryptoKeyModeEd25519,
       .key_length = ED25519_CMD_PUBLIC_KEY_BYTES,
       .key = public_key_buf,
   };
-  TRY(otcrypto_ed25519_public_key_from_private(&private_key, &public_key));
+  TRY(otcrypto_ed25519_keygen(&private_key, &public_key));
+
+  // Unmask the generated private key seed: d = share0 + share1 (mod 2^256).
+  uint32_t d_words[kEd25519SeedWords] = {0};
+  uint32_t *share0 = keyblob;
+  uint32_t *share1 = keyblob + kEd25519MaskedScalarShareWords;
+  HARDENED_TRY(hardened_add(share0, share1, kEd25519SeedWords, d_words));
 
   cryptotest_ed25519_keygen_resp_t uj_output;
   memset(uj_output.d, 0, ED25519_CMD_PRIVATE_KEY_SHARE_BYTES);

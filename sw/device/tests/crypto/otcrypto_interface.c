@@ -141,6 +141,7 @@ volatile otcrypto_interface_t otcrypto = {
     .cshake256 = &otcrypto_cshake256,
 
     // Ed25519 (blocking).
+    .ed25519_keygen = &otcrypto_ed25519_keygen,
     .ed25519_public_key_from_private =
         &otcrypto_ed25519_public_key_from_private,
     .ed25519_sign = &otcrypto_ed25519_sign,
@@ -148,6 +149,8 @@ volatile otcrypto_interface_t otcrypto = {
     .ed25519_verify = &otcrypto_ed25519_verify,
 
     // Ed25519 (async).
+    .ed25519_keygen_async_start = &otcrypto_ed25519_keygen_async_start,
+    .ed25519_keygen_async_finalize = &otcrypto_ed25519_keygen_async_finalize,
     .ed25519_public_key_from_private_async_start =
         &otcrypto_ed25519_public_key_from_private_async_start,
     .ed25519_public_key_from_private_async_finalize =
@@ -160,11 +163,16 @@ volatile otcrypto_interface_t otcrypto = {
 
     // X25519 (blocking).
     .x25519_keygen = &otcrypto_x25519_keygen,
+    .x25519_public_key_from_private = &otcrypto_x25519_public_key_from_private,
     .x25519 = &otcrypto_x25519,
 
     // X25519 (async).
     .x25519_keygen_async_start = &otcrypto_x25519_keygen_async_start,
     .x25519_keygen_async_finalize = &otcrypto_x25519_keygen_async_finalize,
+    .x25519_public_key_from_private_async_start =
+        &otcrypto_x25519_public_key_from_private_async_start,
+    .x25519_public_key_from_private_async_finalize =
+        &otcrypto_x25519_public_key_from_private_async_finalize,
     .x25519_async_start = &otcrypto_x25519_async_start,
     .x25519_async_finalize = &otcrypto_x25519_async_finalize,
 

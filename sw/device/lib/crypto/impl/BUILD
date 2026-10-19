@@ -141,6 +141,7 @@ cc_library(
         ":state",
         ":status",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl/ecc:curve25519",
         "//sw/device/lib/crypto/include:datatypes",
     ],
