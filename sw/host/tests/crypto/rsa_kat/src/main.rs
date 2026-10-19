@@ -5,6 +5,12 @@
 use anyhow::Result;
 use arrayvec::ArrayVec;
 use clap::Parser;
+use openssl::bn::BigNum;
+use openssl::encrypt::Decrypter;
+use openssl::hash::MessageDigest;
+use openssl::pkey::PKey;
+use openssl::rsa::{Padding, Rsa, RsaPrivateKeyBuilder};
+use openssl::sign::{RsaPssSaltlen, Verifier};
 use std::cmp::min;
 use std::fs;
 use std::time::Duration;
@@ -79,6 +85,86 @@ struct RsaTestCase {
     ciphertext: Vec<u8>,
 }
 
+fn openssl_md(hash_alg: &str) -> MessageDigest {
+    match hash_alg {
+        "sha-256" => MessageDigest::sha256(),
+        "sha-384" => MessageDigest::sha384(),
+        "sha-512" => MessageDigest::sha512(),
+        "sha3-256" => MessageDigest::sha3_256(),
+        "sha3-384" => MessageDigest::sha3_384(),
+        "sha3-512" => MessageDigest::sha3_512(),
+        _ => panic!("Invalid hashing mode"),
+    }
+}
+
+fn verify_rsa_signature_on_host(
+    n_be: &[u8],
+    e: u32,
+    padding: &str,
+    hash_alg: &str,
+    message: &[u8],
+    sig_be: &[u8],
+) -> Result<bool> {
+    let rsa_pub = Rsa::from_public_components(BigNum::from_slice(n_be)?, BigNum::from_u32(e)?)?;
+    let pkey = PKey::from_rsa(rsa_pub)?;
+    let md = openssl_md(hash_alg);
+    let mut verifier = Verifier::new(md, &pkey)?;
+    match padding {
+        "pkcs1_1.5" => {
+            verifier.set_rsa_padding(Padding::PKCS1)?;
+        }
+        "pss" => {
+            verifier.set_rsa_padding(Padding::PKCS1_PSS)?;
+            verifier.set_rsa_pss_saltlen(RsaPssSaltlen::DIGEST_LENGTH)?;
+            verifier.set_rsa_mgf1_md(md)?;
+        }
+        _ => panic!("Invalid signing padding mode"),
+    }
+    verifier.update(message)?;
+    Ok(verifier.verify(sig_be)?)
+}
+
+fn decrypt_rsa_oaep_on_host(
+    n_be: &[u8],
+    e: u32,
+    d_be: &[u8],
+    hash_alg: &str,
+    label: &[u8],
+    ct_be: &[u8],
+) -> Result<Vec<u8>> {
+    let rsa_priv = RsaPrivateKeyBuilder::new(
+        BigNum::from_slice(n_be)?,
+        BigNum::from_u32(e)?,
+        BigNum::from_slice(d_be)?,
+    )?
+    .build();
+    let pkey = PKey::from_rsa(rsa_priv)?;
+    let md = openssl_md(hash_alg);
+    let mut decrypter = Decrypter::new(&pkey)?;
+    decrypter.set_rsa_padding(Padding::PKCS1_OAEP)?;
+    decrypter.set_rsa_oaep_md(md)?;
+    decrypter.set_rsa_mgf1_md(md)?;
+    if !label.is_empty() {
+        decrypter.set_rsa_oaep_label(label)?;
+    }
+    let buf_len = decrypter.decrypt_len(ct_be)?;
+    let mut decrypted = vec![0u8; buf_len];
+    let dec_len = decrypter.decrypt(ct_be, &mut decrypted)?;
+    decrypted.truncate(dec_len);
+    Ok(decrypted)
+}
+
+fn normalize_le_key_bytes(raw_be: &[u8], expected_len: usize) -> Vec<u8> {
+    let mut le: Vec<_> = raw_be.iter().copied().rev().collect();
+    while le.len() > expected_len {
+        assert_eq!(le.pop(), Some(0));
+    }
+    if le.len() < expected_len {
+        le.resize(expected_len, 0);
+    }
+    le
+}
+
 fn run_rsa_testcase(
     test_case: &RsaTestCase,
     opts: &Opts,
@@ -106,13 +192,10 @@ fn run_rsa_testcase(
     };
 
     // Convert the inputs into the expected format for the CL.
-    let mut n: Vec<_> = test_case.n.iter().copied().rev().collect();
-    // n in the wycheproof vectors seem to start with a leading 0.
-    if n.len() * u8::BITS as usize != test_case.security_level {
-        // Remove it.
-        assert_eq!(n.pop(), Some(0));
-    }
-    assert_eq!(n.len() * u8::BITS as usize, test_case.security_level);
+    // n in the wycheproof vectors can start with a leading 0.
+    let n_bytes = test_case.security_level / (u8::BITS as usize);
+    let n = normalize_le_key_bytes(&test_case.n, n_bytes);
+    let n_be: Vec<_> = n.iter().copied().rev().collect();
 
     if test_case.e == 65537 {
         CryptotestCommand::Rsa.send(spi_console)?;
@@ -148,7 +231,7 @@ fn run_rsa_testcase(
                 RsaSubcommand::RsaSign.send(spi_console)?;
 
                 // Convert the inputs into the expected format for the CL.
-                let d: Vec<_> = test_case.d.iter().copied().rev().collect();
+                let d = normalize_le_key_bytes(&test_case.d, n_bytes);
 
                 // Assemble the input.
                 CryptotestRsaSign {
@@ -165,40 +248,37 @@ fn run_rsa_testcase(
                 }
                 .send(spi_console)?;
 
-                // Get the response.
+                // Get the response and convert device little-endian signature to big-endian.
                 let rsa_sign_resp =
                     CryptotestRsaSignResp::recv(spi_console, opts.timeout, false, false)?;
+                let sig_be: Vec<_> = rsa_sign_resp.signature[..rsa_sign_resp.signature_len]
+                    .iter()
+                    .copied()
+                    .rev()
+                    .collect();
 
-                // Verify the produced signature against the same key and message.
-                CryptotestCommand::Rsa.send(spi_console)?;
-                RsaSubcommand::RsaVerify.send(spi_console)?;
-
-                // The signature is already in device byte order; pass it as-is.
-                let sig = Vec::from(&rsa_sign_resp.signature[..rsa_sign_resp.signature_len]);
-
-                CryptotestRsaVerify {
-                    msg: ArrayVec::try_from(test_case.message.as_slice()).unwrap(),
-                    msg_len: test_case.message.len(),
-                    e: test_case.e,
-                    n: ArrayVec::try_from(n.as_slice()).unwrap(),
-                    security_level: test_case.security_level,
-                    sig: ArrayVec::try_from(sig.as_slice()).unwrap(),
-                    sig_len: rsa_sign_resp.signature_len,
-                    hashing,
-                    padding,
+                // PKCS#1 v1.5 signing is deterministic; compare against expected signature if present.
+                if test_case.padding == "pkcs1_1.5" && !test_case.signature.is_empty() {
+                    assert_eq!(sig_be, test_case.signature);
                 }
-                .send(spi_console)?;
 
-                let rsa_verify_resp =
-                    CryptotestRsaVerifyResp::recv(spi_console, opts.timeout, false, false)?;
-                assert!(rsa_verify_resp.result);
+                // Verify the device signature on the host against an independent library.
+                let verified = verify_rsa_signature_on_host(
+                    &n_be,
+                    test_case.e,
+                    &test_case.padding,
+                    &test_case.hash_alg,
+                    &test_case.message,
+                    &sig_be,
+                )?;
+                assert_eq!(verified, test_case.result);
             }
             "decrypt" => {
                 // Send RsaDecrypt command.
                 RsaSubcommand::RsaDecrypt.send(spi_console)?;
 
                 // Convert the inputs into the expected format for the CL.
-                let d: Vec<_> = test_case.d.iter().copied().rev().collect();
+                let d = normalize_le_key_bytes(&test_case.d, n_bytes);
                 let ctx: Vec<_> = test_case.ciphertext.iter().copied().rev().collect();
 
                 // Assemble the input.
@@ -224,6 +304,7 @@ fn run_rsa_testcase(
 
                 if test_case.result {
                     // Only check plaintext if the response is valid.
+                    assert_eq!(rsa_decrypt_resp.plaintext_len, test_case.message.len());
                     assert_eq!(
                         rsa_decrypt_resp.plaintext[0..test_case.message.len()],
                         test_case.message[0..test_case.message.len()]
@@ -234,12 +315,9 @@ fn run_rsa_testcase(
                 // Send RsaEncrypt command.
                 RsaSubcommand::RsaEncrypt.send(spi_console)?;
 
-                // Convert the inputs into the expected format for the CL.
-                let ptx: Vec<_> = test_case.message.iter().copied().rev().collect();
-
-                // Assemble the input.
+                // Plaintext is a raw byte array, not a little-endian integer.
                 CryptotestRsaEncrypt {
-                    plaintext: ArrayVec::try_from(ptx.as_slice()).unwrap(),
+                    plaintext: ArrayVec::try_from(test_case.message.as_slice()).unwrap(),
                     plaintext_len: test_case.message.len(),
                     e: test_case.e,
                     n: ArrayVec::try_from(n.as_slice()).unwrap(),
@@ -257,47 +335,25 @@ fn run_rsa_testcase(
                 // Check if the encryption was successful.
                 assert_eq!(rsa_encrypt_resp.result, test_case.result);
 
-                // Use the received ciphertext, decrypt it, and compare it to the
-                // plaintext in the test vector.
+                // Decrypt the received ciphertext on the host and compare against the plaintext.
                 if test_case.result {
-                    // Decrypt it again and check if the plaintext matches.
-                    // Send RsaDecrypt command.
-                    CryptotestCommand::Rsa.send(spi_console)?;
-                    RsaSubcommand::RsaDecrypt.send(spi_console)?;
-
-                    // Convert the inputs into the expected format for the CL.
-                    let d: Vec<_> = test_case.d.iter().copied().rev().collect();
-                    let ctx: Vec<_> =
-                        Vec::from(&rsa_encrypt_resp.ciphertext[..rsa_encrypt_resp.ciphertext_len]);
-
-                    // Assemble the input.
-                    CryptotestRsaDecrypt {
-                        ciphertext: ArrayVec::try_from(ctx.as_slice()).unwrap(),
-                        ciphertext_len: rsa_encrypt_resp.ciphertext_len,
-                        e: test_case.e,
-                        d: ArrayVec::try_from(d.as_slice()).unwrap(),
-                        n: ArrayVec::try_from(n.as_slice()).unwrap(),
-                        security_level: test_case.security_level,
-                        label: ArrayVec::try_from(test_case.label.as_slice()).unwrap(),
-                        label_len: test_case.label.len(),
-                        hashing,
-                        padding,
-                    }
-                    .send(spi_console)?;
-
-                    // Get and evaluate the response.
-                    let rsa_decrypt_resp =
-                        CryptotestRsaDecryptResp::recv(spi_console, opts.timeout, false, false)?;
-                    // Check if the decryption was successful.
-                    assert_eq!(rsa_decrypt_resp.result, test_case.result);
-
-                    if test_case.result {
-                        // Only check plaintext if the response is valid.
-                        assert_eq!(
-                            rsa_decrypt_resp.plaintext[0..test_case.message.len()],
-                            ptx[0..test_case.message.len()]
-                        );
-                    }
+                    let d = normalize_le_key_bytes(&test_case.d, n_bytes);
+                    let d_be: Vec<_> = d.iter().copied().rev().collect();
+                    let ct_be: Vec<_> = rsa_encrypt_resp.ciphertext
+                        [..rsa_encrypt_resp.ciphertext_len]
+                        .iter()
+                        .copied()
+                        .rev()
+                        .collect();
+                    let decrypted = decrypt_rsa_oaep_on_host(
+                        &n_be,
+                        test_case.e,
+                        &d_be,
+                        &test_case.hash_alg,
+                        &test_case.label,
+                        &ct_be,
+                    )?;
+                    assert_eq!(decrypted, test_case.message);
                 }
             }
             _ => panic!("Invalid operation"),
