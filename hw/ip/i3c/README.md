@@ -3,6 +3,7 @@
 # Overview
 
 This document specifies the I3C Controller/Target IP functionality.
+The [Earl Grey chip specification](../../top_earlgrey/doc/design/README.md#i3c) describes the integration of the IP block in Earl Grey.
 
 ## Features
 
