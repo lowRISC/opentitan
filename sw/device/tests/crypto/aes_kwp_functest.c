@@ -66,7 +66,21 @@ static status_t run_wrap_unwrap(const otcrypto_blinded_key_t *key_to_wrap,
   TRY_CHECK(unwrapped_key.keyblob_length == key_to_wrap->keyblob_length);
   TRY_CHECK(unwrapped_key.checksum == key_to_wrap->checksum);
 
-  // Unwrapping into a key struct with the wrong keyblob_length should fail.
+  // Unwrapping into a key struct with a larger keyblob_length should succeed
+  // and update keyblob_length to the exact keyblob size.
+  uint32_t larger_keyblob[keyblob_words + 2];
+  otcrypto_blinded_key_t larger_len_key = {
+      .keyblob_length = sizeof(larger_keyblob),
+      .keyblob = larger_keyblob,
+  };
+  TRY(otcrypto_key_unwrap(&wrapped_key_data_buf, key_kek, &success,
+                          &larger_len_key));
+  TRY_CHECK(success == kHardenedBoolTrue);
+  TRY_CHECK(larger_len_key.keyblob_length == keyblob_words * sizeof(uint32_t));
+  TRY_CHECK_ARRAYS_EQ(larger_len_key.keyblob, key_to_wrap->keyblob,
+                      keyblob_words);
+
+  // Unwrapping into a key struct with a too-small keyblob_length should fail.
   otcrypto_blinded_key_t bad_len_key = {
       .keyblob_length = (keyblob_words - 1) * sizeof(uint32_t),
       .keyblob = unwrapped_key_keyblob,
