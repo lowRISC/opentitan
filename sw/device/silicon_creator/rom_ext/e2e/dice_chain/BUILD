@@ -409,3 +409,35 @@ opentitan_test(
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
     ],
 )
+
+opentitan_test(
+    name = "watchdog_skip_cert_gen_test",
+    srcs = ["watchdog_skip_cert_gen_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
+    },
+    fpga = fpga_params(
+        exit_failure = "First boot[\\s\\S]*DICE cert cache miss[\\s\\S]*Second boot",
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a",
+    ),
+    qemu = qemu_params(
+        exit_failure = "First boot[\\s\\S]*DICE cert cache miss[\\s\\S]*Second boot",
+        rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a",
+    ),
+    slot_spec = ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
+    deps = [
+        "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/cert:ram_msg",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+        "//sw/device/silicon_creator/lib/drivers:rstmgr",
+        "//sw/device/silicon_creator/lib/drivers:watchdog",
+    ],
+)
