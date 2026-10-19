@@ -982,7 +982,8 @@ status_t cryptolib_sca_x25519_base_mul_impl(uint8_t scalar[X25519_CMD_BYTES],
   };
 
   pentest_set_trigger_high();
-  HARDENED_TRY(otcrypto_x25519_keygen(&private_key, &public_key));
+  HARDENED_TRY(
+      otcrypto_x25519_public_key_from_private(&private_key, &public_key));
   pentest_set_trigger_low();
 
   *cfg_out = 0;
