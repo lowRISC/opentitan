@@ -16,12 +16,12 @@ use opentitanlib::chip::boot_svc::{OwnershipActivateRequest, OwnershipUnlockRequ
 use opentitanlib::chip::helper::{OwnershipActivateParams, OwnershipUnlockParams};
 use opentitanlib::crypto::ecdsa::{EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawSignature};
 use opentitanlib::crypto::sha256::Sha256Digest;
-use opentitanlib::crypto::spx;
+use opentitanlib::crypto::spx::{self, SpxKeyLoadingMode};
 use opentitanlib::ownership::{
     DetachedSignature, DetachedSignatureCommand, GlobalFlags, KeyMaterial, OwnerBlock,
     OwnershipKeyAlg, TlvHeader,
 };
-use sphincsplus::{DecodeKey, SphincsPlus, SpxDomain, SpxPublicKey, SpxRawSignature};
+use sphincsplus::{SphincsPlus, SpxPublicKey, SpxRawSignature, SpxSignatureMode};
 
 #[derive(ValueEnum, Debug, Clone, Copy, PartialEq)]
 enum Format {
@@ -233,13 +233,19 @@ pub struct OwnershipVerifyCommand {
         help = "File containing the ECDSA public key to verify against"
     )]
     ecdsa_pub_key: Option<PathBuf>,
-    #[arg(long, help = "File containing the SPX public key to verify against")]
+    #[arg(
+        long,
+        help = "File containing the SPHINCS+ / SLH-DSA public key to verify against"
+    )]
     spx_pub_key: Option<PathBuf>,
     #[arg(long, help = "File containing the detached ECDSA signature")]
     ecdsa_sig: Option<PathBuf>,
-    #[arg(long, help = "File containing the detached SPX signature")]
+    #[arg(
+        long,
+        help = "File containing the detached SPHINCS+ / SLH-DSA signature"
+    )]
     spx_sig: Option<PathBuf>,
-    #[arg(long, default_value_t = SphincsPlus::Sha2128sSimple, help = "SPX algorithm")]
+    #[arg(long, default_value_t = SphincsPlus::Sha2128sSimple, help = "SPHINCS+ / SLH-DSA Parameter Set")]
     spx_algorithm: SphincsPlus,
 }
 
@@ -290,12 +296,16 @@ impl CommandDispatch for OwnershipVerifyCommand {
 
         if parsed_config.ownership_key_alg.is_spx() {
             let spx_key = if let Some(key_file) = &self.spx_pub_key {
-                SpxPublicKey::from_pem_file(key_file)?
+                spx::load_spx_public_key(key_file, SpxKeyLoadingMode::PublicOnly)?
             } else {
                 let pubk = match parsed_config.owner_key {
                     KeyMaterial::Spx(ref raw_key) => raw_key,
                     KeyMaterial::Hybrid(ref hybrid) => &hybrid.spx,
-                    _ => return Err(anyhow!("Owner key material does not contain an SPX key!")),
+                    _ => {
+                        return Err(anyhow!(
+                            "Owner key material does not contain a SPHINCS+ / SLH-DSA key!"
+                        ));
+                    }
                 };
                 let mut key_bytes = Vec::new();
                 pubk.write(&mut key_bytes)?;
@@ -304,19 +314,26 @@ impl CommandDispatch for OwnershipVerifyCommand {
 
             let sig_file = self.spx_sig.as_ref().ok_or_else(|| {
                 anyhow!(
-                    "Algorithm {} requires a detached SPX signature, please provide --spx-sig",
+                    "Algorithm {} requires a detached SPHINCS+ / SLH-DSA signature, please provide --spx-sig",
                     parsed_config.ownership_key_alg
                 )
             })?;
+
+            // FIXME: Ideally, we should just be able to use the algorithm from the public key. Because
+            // the input key might be the raw key material bytes, this information is lost, and must
+            // be passed out-of-band via `--spx-algorithm`. This should be refactored.
             let spx_sig_bytes = SpxRawSignature::read_from_file(sig_file, self.spx_algorithm)?;
 
             let (domain, msg) = if parsed_config.ownership_key_alg.is_prehashed() {
-                (SpxDomain::PreHashedSha256, digest.as_ref())
+                (SpxSignatureMode::PreHashedSha256, digest.as_ref())
             } else {
-                (SpxDomain::Pure, &input[..OwnerBlock::SIGNATURE_OFFSET])
+                (
+                    SpxSignatureMode::Pure,
+                    &input[..OwnerBlock::SIGNATURE_OFFSET],
+                )
             };
 
-            spx_key.verify(domain, spx_sig_bytes.as_bytes(), msg)?;
+            spx_key.verify(domain.into(), spx_sig_bytes.as_bytes(), msg)?;
         }
 
         Ok(None)
