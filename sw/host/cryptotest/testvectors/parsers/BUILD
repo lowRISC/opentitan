@@ -218,6 +218,16 @@ py_binary(
 )
 
 py_binary(
+    name = "random_rsa_generator",
+    srcs = ["random_rsa_generator.py"],
+    deps = [
+        ":cryptotest_util",
+        requirement("jsonschema"),
+        requirement("pycryptodome"),
+    ],
+)
+
+py_binary(
     name = "wycheproof_x25519_parser",
     srcs = ["wycheproof_x25519_parser.py"],
     deps = [
