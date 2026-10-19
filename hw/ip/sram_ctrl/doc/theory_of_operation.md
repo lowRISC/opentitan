@@ -115,6 +115,8 @@ Read accesses however always take 1 cycle, no matter whether the access is a ful
 Note that this has been implemented in this way to not overly complicate the design, and since it is assumed that sub-word write operations happen relatively infrequently.
 For full write throughput, a more elaborate write buffering scheme would be required.
 
+Note that the read part of this read-modify-write operation is not covered by the readback feature ([`READBACK`](registers.md#readback)) and its integrity is not checked.
+
 ### ECC Error Handling and Correction
 
 This memory utilizes a SECDED ECC code stored alongside the data in the underlying memory primitive to enhance data integrity.
