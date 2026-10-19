@@ -240,17 +240,17 @@ otcrypto_status_t otcrypto_drbg_generate(
     otcrypto_word32_buf_t *drbg_output) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_DRBG_GENERATE);
   OTCRYPTO_LOCKED_STATE_CHECK();
-  if (drbg_output->len == 0) {
-    // Nothing to do.
-    return OTCRYPTO_OK;
-  }
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (additional_input == NULL ||
+  if (additional_input == NULL || drbg_output == NULL ||
       (additional_input->len != 0 && additional_input->data == NULL) ||
-      drbg_output == NULL || drbg_output->data == NULL) {
+      (drbg_output->len != 0 && drbg_output->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+  if (drbg_output->len == 0) {
+    // Nothing to do.
+    return otcrypto_eval_exit(OTCRYPTO_OK);
+  }
 
   // Randomize destination buffer.
   HARDENED_TRY(hardened_memshred(drbg_output->data, drbg_output->len));
@@ -264,17 +264,17 @@ otcrypto_status_t otcrypto_drbg_manual_generate(
     otcrypto_word32_buf_t *drbg_output) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_DRBG_MANUAL_GENERATE);
   OTCRYPTO_LOCKED_STATE_CHECK();
-  if (drbg_output->len == 0) {
-    // Nothing to do.
-    return OTCRYPTO_OK;
-  }
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (additional_input == NULL ||
+  if (additional_input == NULL || drbg_output == NULL ||
       (additional_input->len != 0 && additional_input->data == NULL) ||
-      drbg_output == NULL || drbg_output->data == NULL) {
+      (drbg_output->len != 0 && drbg_output->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+  if (drbg_output->len == 0) {
+    // Nothing to do.
+    return otcrypto_eval_exit(OTCRYPTO_OK);
+  }
 
   return otcrypto_eval_exit(generate(/*fips_check=*/kHardenedBoolFalse,
                                      additional_input, drbg_output));
