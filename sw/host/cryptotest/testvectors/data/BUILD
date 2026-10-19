@@ -173,6 +173,29 @@ run_binary(
     tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_x25519_parser",
 )
 
+# Number of random Ed25519 key pairs (each generates 1 sign + 1 verify vector).
+ED25519_RANDOM_COUNT = 64
+
+run_binary(
+    name = "random_ed25519_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:ed25519_schema.json",
+    ],
+    outs = [":random_ed25519.json"],
+    args = [
+        "--dst",
+        "$(location :random_ed25519.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ed25519_schema.json)",
+        "--count",
+        str(ED25519_RANDOM_COUNT),
+    ],
+    # Do not cache these results in CI, so every run generates a new set of
+    # random test vectors.
+    tags = ["no-cache"],
+    tool = "//sw/host/cryptotest/testvectors/parsers:random_ed25519_generator",
+)
+
 # Number of tests per configuration (e.g. Verify P-256 SHA-256)
 ECDSA_RANDOM_COUNT = 128
 

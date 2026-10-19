@@ -350,6 +350,23 @@ cryptotest(
     test_vectors = ED25519_TESTVECTOR_TARGETS,
 )
 
+ED25519_RANDOM_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:random_ed25519_json",
+]
+
+ED25519_RANDOM_TESTVECTOR_ARGS = " ".join([
+    "--ed25519-json=\"$(rootpath {})\"".format(target)
+    for target in ED25519_RANDOM_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "ed25519_random_kat",
+    slow_test = True,
+    test_args = ED25519_RANDOM_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/ed25519_kat:harness",
+    test_vectors = ED25519_RANDOM_TESTVECTOR_TARGETS,
+)
+
 X25519_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_x25519_json",
 ]
@@ -1065,6 +1082,7 @@ test_suite(
         ":ecdh_kat",
         ":ecdsa_kat",
         ":ed25519_kat",
+        ":ed25519_random_kat",
         ":hmac_sha256_kat",
         ":hmac_sha384_kat",
         ":hmac_sha512_kat",
