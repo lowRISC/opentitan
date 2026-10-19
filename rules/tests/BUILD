@@ -43,7 +43,8 @@ signature_test(
     ],
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
     negative_test = True,
-    spx_domain = "PrehashedSha256",  # "Pure", "PrehashedSha256"
+    # `prod_key_0` should use "Pure" mode, so we use "PrehashedSha256" and check it errors.
+    spx_domain = "PrehashedSha256",
     spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
 )
 
