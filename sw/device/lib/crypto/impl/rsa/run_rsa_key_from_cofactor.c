@@ -23,7 +23,9 @@ OTBN_DECLARE_SYMBOL_ADDR(run_rsa_key_from_cofactor,
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_key_from_cofactor,
                          rsa_d1);  // Private exponent d1.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_key_from_cofactor,
-                         rsa_cofactor);  // Cofactor p or q.
+                         rsa_cofactor0);  // Cofactor share 0.
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa_key_from_cofactor,
+                         rsa_cofactor1);  // Cofactor share 1.
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa_key_from_cofactor,
                          ok);  // Status of the operation.
 
@@ -41,7 +43,8 @@ enum {
 
 status_t rsa_keygen_from_cofactor_start(rsa_size_t size,
                                         const uint32_t *public_key_n,
-                                        const uint32_t *cofactor) {
+                                        const uint32_t *cofactor_share0,
+                                        const uint32_t *cofactor_share1) {
   // Load the RSA key generation app. Fails if OTBN is non-idle.
   const otbn_app_t kOtbnAppRsaKeygen =
       OTBN_APP_T_INIT(run_rsa_key_from_cofactor);
@@ -82,10 +85,15 @@ status_t rsa_keygen_from_cofactor_start(rsa_size_t size,
   // size of the modulus.
   const otbn_addr_t kOtbnVarRsaN =
       OTBN_ADDR_T_INIT(run_rsa_key_from_cofactor, rsa_n);
-  const otbn_addr_t kOtbnVarRsaCofactor =
-      OTBN_ADDR_T_INIT(run_rsa_key_from_cofactor, rsa_cofactor);
+  const otbn_addr_t kOtbnVarRsaCofactor0 =
+      OTBN_ADDR_T_INIT(run_rsa_key_from_cofactor, rsa_cofactor0);
+  const otbn_addr_t kOtbnVarRsaCofactor1 =
+      OTBN_ADDR_T_INIT(run_rsa_key_from_cofactor, rsa_cofactor1);
   HARDENED_TRY(otbn_dmem_write(num_words, public_key_n, kOtbnVarRsaN));
-  HARDENED_TRY(otbn_dmem_write(num_words / 2, cofactor, kOtbnVarRsaCofactor));
+  HARDENED_TRY(
+      otbn_dmem_write(num_words / 2, cofactor_share0, kOtbnVarRsaCofactor0));
+  HARDENED_TRY(
+      otbn_dmem_write(num_words / 2, cofactor_share1, kOtbnVarRsaCofactor1));
 
   // Set mode and start OTBN.
   const otbn_addr_t kOtbnVarRsaMode =

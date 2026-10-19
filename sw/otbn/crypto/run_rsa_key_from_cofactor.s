@@ -49,13 +49,6 @@ start:
   /* Init all-zero register. */
   bn.xor  w31, w31, w31
 
-  /* Initialize the second key share to 0.
-     TODO: Remove once hardened keygen has arrived. */
-  la x2, rsa_d1
-  li x3, 31
-  loopi 16, 1
-    bn.sid x3, 0(x2++)
-
   /* Initialize the 'ok' flag to FALSE. */
   la      x2, ok
   addi    x3, x0, HARDENED_BOOL_FALSE
