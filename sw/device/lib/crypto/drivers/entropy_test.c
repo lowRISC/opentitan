@@ -46,7 +46,8 @@ static status_t run_negative_test(void) {
         OTCRYPTO_BAD_ARGS.value);
 
   // Test too large seed material lengths
-  entropy_seed_material_t bad_len_seed = {.len = 16, .data = {0}};
+  entropy_seed_material_t bad_len_seed = {.len = kEntropySeedWords + 1,
+                                          .data = {0}};
   CHECK(entropy_csrng_update(&bad_len_seed).value == OTCRYPTO_RECOV_ERR.value);
 
   // Test entropy_complex_check with a disabled CSRNG

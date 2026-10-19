@@ -494,7 +494,7 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
 
   uint32_t cmd_len = cmd.seed_material == NULL ? 0 : cmd.seed_material->len;
 
-  if (cmd_len & ~kAppCmdFieldCmdLen.mask) {
+  if (cmd_len > kEntropySeedWords) {
     return OTCRYPTO_RECOV_ERR;
   }
 
