@@ -15,7 +15,6 @@ This repository contains hardware, software and utilities written as part of the
 It is structured as monolithic repository, or "monorepo", where all components live in one repository.
 It exists to enable collaboration across partners participating in the OpenTitan project.
 
-
 ## Documentation
 
 The project contains comprehensive documentation of all IPs and tools.
