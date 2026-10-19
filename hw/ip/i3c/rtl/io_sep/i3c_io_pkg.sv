@@ -4,7 +4,7 @@
 //
 // I/O ports for I3C signaling using two mode-specific driver enables.
 //
-// Driver Style 1 (see ./doc/integration_notes.md)
+// Separated Enables output driver style (see ./doc/integration_notes.md)
 // - Separated Push-Pull and Open Drain enable outputs.
 
 package i3c_io_pkg;
