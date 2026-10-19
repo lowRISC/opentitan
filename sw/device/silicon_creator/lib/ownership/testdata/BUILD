@@ -7,6 +7,7 @@ package(default_visibility = ["//visibility:public"])
 exports_files([
     "basic_owner.json5",
     "basic_owner_testdata.h",
+    "dummy_owner.json5",
     "hybrid_owner.json5",
 ])
 
