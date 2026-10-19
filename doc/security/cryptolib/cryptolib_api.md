@@ -107,6 +107,10 @@ Full build information, including release status and truncated Git commit hash, 
 
 {{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_build_info }}
 
+The ROM version (stored in the `ROM_CTRL.EXP_DIGEST_1` register) can be read with `otcrypto_rom_version`:
+
+{{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_rom_version }}
+
 ### Key Structure Migration and Version Verification
 
 Secret keys (`otcrypto_blinded_key_t`) are masked/blinded in memory to protect against side-channel attacks.

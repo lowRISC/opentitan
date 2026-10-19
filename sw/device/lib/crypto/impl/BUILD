@@ -76,6 +76,9 @@ cc_library(
     }),
     deps = [
         ":status",
+        "//hw/top:rom_ctrl_c_regs",
+        "//hw/top/dt:rom_ctrl",
+        "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/crypto/drivers:cryptolib_build_info",
         "//sw/device/lib/crypto/include:datatypes",
     ],
@@ -284,6 +287,9 @@ cc_test(
     deps = [
         ":cryptolib_build_info",
         ":integrity",
+        "//hw/top:rom_ctrl_c_regs",
+        "//hw/top/dt:rom_ctrl",
+        "//sw/device/lib/base:abs_mmio",
         "@googletest//:gtest_main",
     ],
 )
