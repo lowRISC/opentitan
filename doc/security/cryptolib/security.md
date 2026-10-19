@@ -74,3 +74,8 @@ It is implemented as a constant-time Montgomery Ladder with Boolean-masked expon
 The combination of both countermeasures results in an exponentiation that is resistant against vertical and horizontal power analysis.
 This hardened exponentiation is reused in the primality check routine of the key generation algorithm rendering it equally hardened.
 The key generation hardening only applies to [otcrypto_rsa_keygen](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto/include/rsa.h#L100) and not [otcrypto_rsa_keypair_from_cofactor](https://github.com/lowRISC/opentitan/tree/master/sw/device/lib/crypto/include/rsa.h#L155).
+
+### ML-KEM
+
+The ML-KEM-1024 implementation is currently **not hardened** against side-channel analysis (SCA) or fault injection (FI) attacks.
+Although the secret key structure reserves two share slots each for the secret polynomial vector `s` and the implicit-rejection seed `z`, the OTBN routines do not yet implement masking or fault countermeasures.
