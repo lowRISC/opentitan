@@ -331,6 +331,10 @@ status_t aes_update(aes_block_t *dest, const aes_block_t *src) {
 }
 
 status_t aes_end(aes_block_t *iv) {
+  // Wait for the AES block to be idle before updating the control register or
+  // reading the final IV.
+  HARDENED_TRY(spin_until(AES_STATUS_IDLE_BIT));
+
   uint32_t ctrl_reg = AES_CTRL_SHADOWED_REG_RESVAL;
   ctrl_reg = bitfield_bit32_write(ctrl_reg,
                                   AES_CTRL_SHADOWED_MANUAL_OPERATION_BIT, true);
