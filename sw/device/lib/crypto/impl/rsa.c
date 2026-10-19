@@ -721,11 +721,6 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // TODO: RSA keys are currently unblinded, so combine the shares.
-  for (size_t i = 0; i < cofactor_share1->len; i++) {
-    ((uint32_t *)cofactor_share0->data)[i] ^= cofactor_share1->data[i];
-  }
-
   switch (launder32(size)) {
     case kOtcryptoRsaSize2048: {
       if (cofactor_share0->len !=
@@ -734,7 +729,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_start(
-          kRsaSize2048, modulus->data, cofactor_share0->data));
+          kRsaSize2048, modulus->data, cofactor_share0->data,
+          cofactor_share1->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize3072: {
@@ -745,7 +741,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_start(
-          kRsaSize3072, modulus->data, cofactor_share0->data));
+          kRsaSize3072, modulus->data, cofactor_share0->data,
+          cofactor_share1->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     case kOtcryptoRsaSize4096: {
@@ -756,7 +753,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_start(
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_TRY_WIPE_DMEM(rsa_keygen_from_cofactor_start(
-          kRsaSize4096, modulus->data, cofactor_share0->data));
+          kRsaSize4096, modulus->data, cofactor_share0->data,
+          cofactor_share1->data));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     }
     default:
