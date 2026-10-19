@@ -174,6 +174,10 @@ static status_t run_negative_tests(void) {
         OTCRYPTO_OK.value);
 
   // Null outputs
+  CHECK(otcrypto_drbg_generate(&kEmptyBuffer, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_drbg_manual_generate(&kEmptyBuffer, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_drbg_generate(&kEmptyBuffer, &null_out).value ==
         OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_drbg_manual_generate(&kEmptyBuffer, &null_out).value ==
