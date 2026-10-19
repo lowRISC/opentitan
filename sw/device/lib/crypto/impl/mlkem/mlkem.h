@@ -12,6 +12,14 @@
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
+/**
+ * @file
+ * @brief Internal ML-KEM-1024 implementation on OTBN.
+ *
+ * WARNING: This implementation is currently NOT hardened against side-channel
+ * analysis (SCA) or fault injection (FI) attacks.
+ */
+
 #ifdef __cplusplus
 extern "C" {
 #endif  // __cplusplus
