@@ -354,10 +354,23 @@ static status_t run_test_vector(void) {
       break;
     }
     case kKmacTestOperationKmac: {
-      otcrypto_word32_buf_t tag_buf =
-          OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, digest.data, digest.len);
-      run_kmac(tag_buf);
-      break;
+      const otcrypto_key_security_level_t kSecurityLevels[] = {
+          kOtcryptoKeySecurityLevelLow,
+          kOtcryptoKeySecurityLevelMedium,
+          kOtcryptoKeySecurityLevelHigh,
+      };
+      for (size_t i = 0; i < ARRAYSIZE(kSecurityLevels); i++) {
+        memset(digest_data, 0, sizeof(digest_data));
+        *(otcrypto_key_security_level_t *)&current_test_vector->key.config
+             .security_level = kSecurityLevels[i];
+        otcrypto_word32_buf_t tag_buf =
+            OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, digest.data, digest.len);
+        run_kmac(tag_buf);
+        TRY_CHECK_ARRAYS_EQ((unsigned char *)digest.data,
+                            current_test_vector->digest.data,
+                            current_test_vector->digest.len);
+      }
+      return OTCRYPTO_OK;
     }
     default: {
       LOG_INFO("Unrecognized `operation` field: 0x%04x",
