@@ -412,6 +412,7 @@
     - [Hardware Interfaces](./hw/ip/i3c/doc/interfaces.md)
     - [Registers](./hw/ip/i3c/doc/registers.md)
     - [Device Interface Functions]()
+    - [Implementation Status](./hw/ip/i3c/doc/implementation_status.md)
     - [Checklist](./hw/ip/i3c/doc/checklist.md)
   - [Key Manager](./hw/ip/keymgr/README.md)
   - [Key Manager DPE](./hw/ip/keymgr_dpe/README.md)

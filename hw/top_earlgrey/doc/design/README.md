@@ -387,7 +387,7 @@ The high-keeper enables and the SCL pull-up enable of the peripherals are not co
 The I3C Target Reset Detectors (`i3c_reset_detector`) are not instantiated yet ([#31679](https://github.com/lowRISC/opentitan/issues/31679)).
 Therefore, the I3C Targets do not respond to the Target Reset Pattern, and they cannot wake the chip from a low power state.
 
-See the [I3C specification](../../../ip/i3c/README.md) for more details.
+See the [I3C specification](../../../ip/i3c/README.md) for more details, and its [implementation status](../../../ip/i3c/doc/implementation_status.md) for the capabilities that the RTL does not implement yet.
 
 #### Security Peripherals
 
