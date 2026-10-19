@@ -18,6 +18,7 @@ load(
     "otp_hex",
     "otp_image",
     "otp_json",
+    "otp_json_immutable_rom_ext",
     "otp_partition",
 )
 load(
@@ -224,6 +225,70 @@ opentitan_test(
         # No longer relevant on RRAM; exclude all FPGA variants from CI entirely.
         # https://github.com/lowRISC/opentitan/issues/30897
         tags = ["skip_in_ci"],
+    ),
+)
+
+opentitan_binary(
+    name = "flash_exc_load_bin",
+    testonly = True,
+    srcs = ["flash_exc_load_test.c"],
+    ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
+    exec_env = [
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+    ],
+    linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_virtual",
+    spx_key = {"//sw/device/silicon_creator/rom/keys/fake/spx:spx_keyset": "prod_key_0"},
+    deps = [
+        "//hw/top:top_lib",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:multibits",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:nvm_ctrl",
+        "//sw/device/silicon_creator/lib/base:static_critical",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+otp_json_immutable_rom_ext(
+    name = "otp_json_flash_exc_load",
+    testonly = True,
+    partitions = [
+        otp_partition(
+            name = "CREATOR_SW_CFG",
+            items = {
+                "CREATOR_SW_CFG_IMMUTABLE_ROM_EXT_EN": otp_hex(CONST.HARDENED_TRUE),
+            },
+        ),
+    ],
+    rom_ext = ":flash_exc_load_bin",
+    visibility = ["//visibility:private"],
+)
+
+otp_image(
+    name = "otp_img_flash_exc_load",
+    testonly = True,
+    src = "//hw/top_earlgrey/data/otp:otp_json_prod",
+    overlays = STD_OTP_OVERLAYS + [
+        ":otp_json_flash_data_cfg_default_scr_and_ecc_enabled",
+        ":otp_json_flash_exc_load",
+    ],
+    visibility = ["//visibility:private"],
+)
+
+opentitan_test(
+    name = "flash_exc_load_test",
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+    },
+    fpga = fpga_params(
+        assemble = "{firmware}@{slot_a}",
+        binaries = {
+            ":flash_exc_load_bin": "firmware",
+        },
+        otp = ":otp_img_flash_exc_load",
+        slot_a = SLOTS["a"],
     ),
 )
 
