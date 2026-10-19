@@ -353,6 +353,42 @@ Each I2C peripheral has its own reset, which software can assert through the [re
 
 See the [I2C specification](../../../ip/i2c/README.md) for more details.
 
+##### I3C
+
+The chip contains two I3C peripherals (`i3c0` and `i3c1`).
+Each one can operate as an I3C Primary Controller or as an I3C Target.
+
+Both peripherals have the same configuration:
+
+| Parameter or feature           | Value                                                   |
+|--------------------------------|---------------------------------------------------------|
+| IP clock (`clk_i`, `ClkFreq`)  | `io` clock, 96 MHz                                      |
+| Half-cycle SCL high extension  | Enabled (`HalfCycleScl` = 1)                            |
+| Virtual Targets (`NumTargets`) | 2                                                       |
+| Message buffer                 | 4 KiB                                                   |
+| Device Address Table           | 32 entries                                              |
+| Device Characteristics Table   | 32 entries                                              |
+| Other clocks                   | `clk_aon_i`: `aon` clock; `scan_clk_i`: `io_div2` clock |
+
+Each I3C peripheral has its own reset, which software can assert through the [reset manager](../../ip_autogen/rstmgr/README.md).
+
+At 96 MHz, the Controller forms each SCL period from 8 IP clock cycles, i.e. 83.3 ns, so SCL runs at up to 12 MHz.
+The maximum data rates of long transfers are therefore 10.6 Mbps in SDR mode and 19.2 Mbps in HDR-DDR mode.
+On a Mixed Fast Bus, these rates require the `io` clock to be within +/-11% of 96 MHz (see the [I3C integration notes](../../../ip/i3c/doc/integration_notes.md#half-cycle-scl-high-extension)).
+For Targets with a large `tSCO` delay, the data rate may need to be lower (see the [I3C integration notes](../../../ip/i3c/doc/integration_notes.md#ip-clock-frequency)).
+
+The SCL, SDA and SDA pull-up (`ctrl_sda_pu`) signals of each I3C peripheral can be connected to the multiplexable IO (MIO) of the chip via the [pinmux](../../ip_autogen/pinmux/README.md).
+The chip uses the Virtual Open Drain output driver style of the I3C peripheral (`rtl/io_vod/i3c_io_pkg.sv`), in which the peripheral emulates open drain signaling on SDA.
+Software shall therefore leave the open drain and virtual open drain attributes of the I3C pads disabled in the pinmux (`MIO_PAD_ATTR.OD_EN` and `MIO_PAD_ATTR.VIRTUAL_OD_EN`).
+The board shall connect an external pull-up resistor between the `ctrl_sda_pu` pin and SDA; the peripheral drives this pin high while the SDA pull-up is required.
+The Active Controller always drives SCL in push-pull mode, so SCL needs no pull-up.
+The high-keeper enables and the SCL pull-up enable of the peripherals are not connected, so the board shall provide passive high-keepers where the bus requires them.
+
+The I3C Target Reset Detectors (`i3c_reset_detector`) are not instantiated yet ([#31679](https://github.com/lowRISC/opentitan/issues/31679)).
+Therefore, the I3C Targets do not respond to the Target Reset Pattern, and they cannot wake the chip from a low power state.
+
+See the [I3C specification](../../../ip/i3c/README.md) for more details.
+
 #### Security Peripherals
 
 ##### AES
