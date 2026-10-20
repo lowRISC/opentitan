@@ -43,6 +43,37 @@ foreach THIS_CLOCK $CDC_CONSTRAINT_CLOCKS {
     set_max_delay -from $OTHER_CLOCKS -to $THIS_CLOCK $CONSTRAINT
 }
 
+#####################
+# I3C               #
+#####################
+
+# The I3C bus-to-core crossings are bounded here rather than in the synthesis
+# SDC for the same reason as everything else
+# in this file: each bus clock forms a single-clock asynchronous group there,
+# and a clock-group exclusion outranks set_max_delay, so the bounds would be
+# dropped.
+#
+# The procedures come from the same file the synthesis SDC uses; it has already
+# been sourced by it when both are read into one session, so guard against a
+# redefinition.
+if {[llength [info procs i3c_set_cdc_bounds]] == 0} {
+    set I3C_CONSTRAINTS [file join [file dirname [info script]] .. .. \
+                                   ip i3c syn i3c_constraints.tcl]
+    if {[file exists ${I3C_CONSTRAINTS}]} {
+        source ${I3C_CONSTRAINTS}
+    } else {
+        puts "ERROR: cannot find ${I3C_CONSTRAINTS}"
+    }
+}
+
+if {[llength [info procs i3c_set_cdc_bounds]]} {
+    i3c_set_cdc_bounds top_earlgrey/earlgrey_pd_main/u_i3c0_part_primary \
+        I3C0 IO_CLK ${IO_TCK_PERIOD}
+    i3c_set_cdc_bounds top_earlgrey/earlgrey_pd_main/u_i3c1_part_primary \
+        I3C1 IO_CLK ${IO_TCK_PERIOD}
+    i3c_summary
+}
+
 # Although the alert channels should already be checked implicitly with the
 # constraints above, we also add an explicit, stricter check here.
 set MAX_DELAY [expr $MAIN_TCK_PERIOD * 0.9]
