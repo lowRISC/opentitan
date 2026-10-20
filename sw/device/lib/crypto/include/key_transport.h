@@ -63,8 +63,10 @@ otcrypto_status_t otcrypto_symmetric_keygen(
  * some choices of algorithm may result in errors.
  *
  * The caller should partially populate the blinded key struct; they should set
- * the full key configuration and the keyblob length (always 32 bytes), and
- * then allocate 32 bytes of space for the keyblob and set the keyblob pointer.
+ * the full key configuration and the keyblob length (32 bytes for sideloaded
+ * keys, or 64 bytes if the key will be passed to `ot_crypto_hw_backed_keygen`),
+ * and then allocate that amount of space for the keyblob and set the keyblob
+ * pointer.
  *
  * This function will populate the `checksum` field and copy the salt/version
  * data into the keyblob buffer in the specific order that the rest of
@@ -105,10 +107,11 @@ otcrypto_status_t otcrypto_hw_backed_attestation_key(
  * total of 16 words. The actual key is retrieved by the word-wise XOR of the
  * two shares.
  *
- * The key should first be passed to otcrypto_hw_backed_key when
- * attestation is kHardenedBoolFalse or otcrypto_hw_backed_attestation_key when
- * attestation is kHardenedBoolTrue, to set the key handle. These functions
- * ingest the version and salt.
+ * The caller must allocate 64 bytes (16 words) of space for the keyblob and
+ * set `key->keyblob_length` to 64 bytes before initializing the key handle
+ * with `otcrypto_hw_backed_key` (when `attestation` is `kHardenedBoolFalse`)
+ * or `otcrypto_hw_backed_attestation_key` (when `attestation` is
+ * `kHardenedBoolTrue`).
  *
  * @param attestation To either use the sealing ladder (kHardenedBoolFalse) or
  * the attestation ladder (kHardenedBoolTrue).

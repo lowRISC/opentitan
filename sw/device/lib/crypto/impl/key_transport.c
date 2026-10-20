@@ -80,7 +80,8 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
     // COVERAGE (MISSING) We do not cover null inputs
     return OTCRYPTO_BAD_ARGS;
   }
-  if (key->keyblob_length != 8 * sizeof(uint32_t) ||
+  if ((key->keyblob_length != kKeyblobHwBackedBytes &&
+       key->keyblob_length != kSwKeyblobHwBackedBytes) ||
       key->config.hw_backed != kHardenedBoolTrue) {
     // COVERAGE (MISSING) We do not cover bad length/hw_backed inputs
     return OTCRYPTO_BAD_ARGS;
@@ -95,6 +96,7 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
   }
 
   // Copy the version and salt into the keyblob.
+  memset(key->keyblob, 0, key->keyblob_length);
   key->keyblob[0] = version;
   memcpy(&key->keyblob[1], salt, 7 * sizeof(uint32_t));
 
@@ -112,12 +114,14 @@ otcrypto_status_t otcrypto_hw_backed_attestation_key(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  if (key->keyblob_length != 9 * sizeof(uint32_t) ||
+  if ((key->keyblob_length != kCdiKeyblobHwBackedBytes &&
+       key->keyblob_length != kSwKeyblobHwBackedBytes) ||
       key->config.hw_backed != kHardenedBoolTrue) {
     // COVERAGE (MISSING) We do not cover bad length/hw_backed inputs
     return OTCRYPTO_BAD_ARGS;
   }
 
+  memset(key->keyblob, 0, key->keyblob_length);
   key->keyblob[0] = version;
   memcpy(&key->keyblob[1], salt, 8 * sizeof(uint32_t));
 
@@ -132,6 +136,14 @@ otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_HW_BACKED_KEYGEN);
   OTCRYPTO_LOCKED_STATE_CHECK();
   if (key == NULL || key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Ensure the allocated share size and keyblob length match the key manager
+  // output.
+  size_t share_words = launder32(keyblob_share_num_words(key->config));
+  if (share_words != kKeymgrOutputShareNumWords ||
+      key->keyblob_length != kSwKeyblobHwBackedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -154,20 +166,10 @@ otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
   otcrypto_key_config_t *config_mut = (otcrypto_key_config_t *)&key->config;
   config_mut->hw_backed = kHardenedBoolFalse;
 
-  uint32_t keyblob_words = launder32(keyblob_num_words(key->config));
-  uint32_t *keyblob_length_mut = (uint32_t *)&key->keyblob_length;
-  *keyblob_length_mut = keyblob_words * sizeof(uint32_t);
-
   // Extract pointers to the shares.
   uint32_t *share0;
   uint32_t *share1;
   HARDENED_TRY(keyblob_to_shares(key, &share0, &share1));
-
-  // Ensure the allocated share size perfectly matches the key manager output.
-  size_t share_words = launder32(keyblob_share_num_words(key->config));
-  if (share_words != kKeymgrOutputShareNumWords) {
-    return OTCRYPTO_BAD_ARGS;
-  }
 
   // Preload the target key shares with randomness.
   HARDENED_TRY(hardened_memshred(share0, share_words));
