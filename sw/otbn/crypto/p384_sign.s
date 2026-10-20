@@ -97,17 +97,23 @@ p384_sign:
   /* call curve point test routine in P-384 lib */
   jal       x1, p384_isoncurve_check
 
-  /* store r of signature in dmem: dmem[dptr_r] <= r = R_x = [w26,w25] */
-  li        x2, 25
-  bn.sid    x2++, 0(x14)
-  bn.sid    x2++, 32(x14)
-
   /* load domain parameter n (order of base point)
      [w13, w12] <= n = dmem[p384_n] */
   li        x2, 12
   la        x3, p384_n
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
+
+  /* reduce r: [w28, w27] <= r = R_x mod n = [w26, w25] mod [w13, w12] */
+  bn.sub    w10, w25, w12
+  bn.subb   w11, w26, w13
+  bn.sel    w27, w25, w10, C
+  bn.sel    w28, w26, w11, C
+
+  /* store r of signature in dmem: dmem[dptr_r] <= r = [w28, w27] */
+  li        x2, 27
+  bn.sid    x2++, 0(x14)
+  bn.sid    x2++, 32(x14)
 
   /* Compute Solinas constant k for modulus n (we know it is only 191 bits, so
      no need to compute the high part):
