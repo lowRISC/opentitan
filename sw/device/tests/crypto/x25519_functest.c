@@ -135,8 +135,9 @@ status_t x25519_kat_test(void) {
 
   // Unmask the shared secret.
   uint32_t shared_secret_unmasked[kX25519SharedSecretWords];
-  uint32_t *share0 = shared_secret.keyblob;
-  uint32_t *share1 = shared_secret.keyblob + kX25519SharedSecretWords;
+  uint32_t *share0;
+  uint32_t *share1;
+  HARDENED_TRY(keyblob_to_shares(&shared_secret, &share0, &share1));
   HARDENED_TRY(hardened_xor(share0, share1, kX25519SharedSecretWords,
                             shared_secret_unmasked));
 
@@ -259,14 +260,19 @@ status_t x25519_keygen_test(void) {
   CHECK_STATUS_OK(
       otcrypto_x25519(&private_key_b, &public_key_a, &shared_secret_b));
 
+  uint32_t *share0_a;
+  uint32_t *share1_a;
+  HARDENED_TRY(keyblob_to_shares(&shared_secret_a, &share0_a, &share1_a));
+  uint32_t *share0_b;
+  uint32_t *share1_b;
+  HARDENED_TRY(keyblob_to_shares(&shared_secret_b, &share0_b, &share1_b));
+
   uint32_t unmasked_a[kX25519SharedSecretWords];
   uint32_t unmasked_b[kX25519SharedSecretWords];
-  HARDENED_TRY(hardened_xor(shared_secret_a.keyblob,
-                            shared_secret_a.keyblob + kX25519SharedSecretWords,
-                            kX25519SharedSecretWords, unmasked_a));
-  HARDENED_TRY(hardened_xor(shared_secret_b.keyblob,
-                            shared_secret_b.keyblob + kX25519SharedSecretWords,
-                            kX25519SharedSecretWords, unmasked_b));
+  HARDENED_TRY(
+      hardened_xor(share0_a, share1_a, kX25519SharedSecretWords, unmasked_a));
+  HARDENED_TRY(
+      hardened_xor(share0_b, share1_b, kX25519SharedSecretWords, unmasked_b));
 
   TRY_CHECK_ARRAYS_EQ(unmasked_a, unmasked_b, kX25519SharedSecretWords);
 
