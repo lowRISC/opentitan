@@ -105,8 +105,10 @@ status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
                           internal_ctx->key.key_len);
     hardened_xor_in_place((uint32_t *)internal_ctx->key.key_shares[1], mask,
                           internal_ctx->key.key_len);
-    // Update the checksum.
+    // Update the checksums.
     internal_ctx->key.checksum = aes_key_integrity_checksum(&internal_ctx->key);
+    internal_ctx->blinded_key->checksum =
+        otcrypto_integrity_blinded_checksum(internal_ctx->blinded_key);
   } else {
     HARDENED_CHECK_EQ(internal_ctx->key.sideload, kHardenedBoolTrue);
   }
@@ -426,6 +428,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
   aes_gcm_context_t internal_ctx
       __attribute__((cleanup(aes_gcm_context_shred)));
   internal_ctx.security_level = key->config.security_level;
+  internal_ctx.blinded_key = key;
   HARDENED_TRY(aes_gcm_encrypt_init(aes_key, iv, &internal_ctx));
 
   // Save the context.
@@ -467,6 +470,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
   aes_gcm_context_t internal_ctx
       __attribute__((cleanup(aes_gcm_context_shred)));
   internal_ctx.security_level = key->config.security_level;
+  internal_ctx.blinded_key = key;
   HARDENED_TRY(aes_gcm_decrypt_init(aes_key, iv, &internal_ctx));
 
   // Save the context.

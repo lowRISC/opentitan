@@ -31,6 +31,10 @@ typedef struct aes_gcm_context {
    */
   aes_key_t key;
   /**
+   * Pointer to the blinded key for updating its checksum on remasking.
+   */
+  otcrypto_blinded_key_t *blinded_key;
+  /**
    * Security level of the underlying AES-CTR key.
    */
   otcrypto_key_security_level_t security_level;
