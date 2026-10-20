@@ -103,6 +103,8 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
   OTCRYPTO_HEALTH_CHECK(kTestRngBit);
   OTCRYPTO_HEALTH_CHECK(kTestHashSha512Bit);
   HARDENED_TRY(otcrypto_integrity_check());
+  ((crypto_state_t *)state)->cmvp_service_indicator = kOtcryptoCmvpNoService;
+  ((crypto_state_t *)state)->cmvp_call_depth = 0;
 #endif
 
   // The OTBN is still left with DMEM from the boot.
