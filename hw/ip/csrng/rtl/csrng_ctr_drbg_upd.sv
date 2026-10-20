@@ -288,7 +288,8 @@ module csrng_ctr_drbg_upd #(
 
   // SEC_CM: DRBG_UPD.CTR.REDUN
   prim_count #(
-    .Width(CtrLen)
+    .Width(CtrLen),
+    .Saturate(1'b0)
   ) u_prim_count_ctr_drbg (
     .clk_i,
     .rst_ni,

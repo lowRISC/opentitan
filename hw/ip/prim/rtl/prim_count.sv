@@ -21,7 +21,8 @@
 //           committed.
 //
 // Note that if both incr_en_i and decr_en_i are asserted at the same time, the counter remains
-// unchanged. The counter is also protected against under- and overflows.
+// unchanged. By default, the counter is also protected against under- and overflows by saturating
+// at 0 and 2**Width-1. If Saturate is cleared, the counter wraps around modulo 2**Width instead.
 
 `include "prim_assert.sv"
 
@@ -35,6 +36,8 @@ module prim_count
   // This should only be disabled in special circumstances, for example
   // in non-comportable IPs where an error does not trigger an alert.
   parameter bit               EnableAlertTriggerSVA = 1,
+  // When set, the counter saturates at 0 and 2**Width-1. Otherwise, it wraps around.
+  parameter bit               Saturate = 1'b1,
 
   // We have some assertions below with preconditions that depend on particular input actions
   // (clear, set, incr, decr). If the design has instantiated prim_count with one of these actions
@@ -105,15 +108,16 @@ module prim_count
     assign oflow = incr_en && ext_cnt[Width];
     assign uflow = decr_en && ext_cnt[Width];
     logic [Width-1:0] cnt_sat;
-    assign cnt_sat = (uflow) ? '0            :
-                     (oflow) ? {Width{1'b1}} : ext_cnt[Width-1:0];
+    assign cnt_sat = (Saturate && uflow) ? '0            :
+                     (Saturate && oflow) ? {Width{1'b1}} : ext_cnt[Width-1:0];
 
     // Clock gate flops when in saturation, and do not
     // count if both incr_en and decr_en are asserted.
     logic cnt_en;
     assign cnt_en = (incr_en ^ decr_en) &&
-                    ((incr_en && !(&cnt_q[k])) ||
-                    (decr_en && !(cnt_q[k] == '0)));
+                    (!Saturate ||
+                     (incr_en && !(&cnt_q[k])) ||
+                     (decr_en && !(cnt_q[k] == '0)));
 
     // Counter muxes
     assign cnt_d[k] = (clr_i)  ? ResetValues[k] :
@@ -233,7 +237,7 @@ module prim_count
   end
 
   // Increment
-  if ((PossibleActions & Incr)) begin : g_check_incr
+  if ((PossibleActions & Incr) && Saturate) begin : g_check_incr
     `ASSERT(IncrUpCnt_A,
         rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) && commit_i
         |=>
@@ -258,8 +262,21 @@ module prim_count
         clk_i, err_d || fpv_err_present || !rst_ni)
   end
 
+  if ((PossibleActions & Incr) && !Saturate) begin : g_check_incr_wrap
+    `ASSERT(IncrUpCntWrap_A,
+        rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) && commit_i
+        |=>
+        cnt_o == Width'($past(cnt_o) + $past(step_i)),
+        clk_i, err_d || fpv_err_present || !rst_ni)
+    `ASSERT(IncrDnCntWrap_A,
+        rst_ni && incr_en_i && !(clr_i || set_i || decr_en_i) && commit_i
+        |=>
+        cnt_q[1] == Width'($past(cnt_q[1]) - $past(step_i)),
+        clk_i, err_d || fpv_err_present || !rst_ni)
+  end
+
   // Decrement
-  if ((PossibleActions & Decr)) begin : g_check_decr
+  if ((PossibleActions & Decr) && Saturate) begin : g_check_decr
     `ASSERT(DecrUpCnt_A,
         rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) && commit_i
         |=>
@@ -281,6 +298,19 @@ module prim_count
         cnt_q[1] == {Width{1'b1}}
         |=>
         $stable(cnt_q[1]),
+        clk_i, err_d || fpv_err_present || !rst_ni)
+  end
+
+  if ((PossibleActions & Decr) && !Saturate) begin : g_check_decr_wrap
+    `ASSERT(DecrUpCntWrap_A,
+        rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) && commit_i
+        |=>
+        cnt_o == Width'($past(cnt_o) - $past(step_i)),
+        clk_i, err_d || fpv_err_present || !rst_ni)
+    `ASSERT(DecrDnCntWrap_A,
+        rst_ni && decr_en_i && !(clr_i || set_i || incr_en_i) && commit_i
+        |=>
+        cnt_q[1] == Width'($past(cnt_q[1]) + $past(step_i)),
         clk_i, err_d || fpv_err_present || !rst_ni)
   end
 
