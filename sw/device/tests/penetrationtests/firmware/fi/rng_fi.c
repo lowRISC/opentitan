@@ -157,6 +157,8 @@ status_t handle_rng_fi_entropy_src_bias(ujson_t *uj) {
   const dif_entropy_src_config_t config = {
       .fips_enable = true,
       .route_to_firmware = true,
+      .bypass_conditioner = false,
+      .clear_esfinal_fifo_while_disabled = true,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .health_test_threshold_scope = false, /*default*/
       .health_test_window_size = 0x0200,    /*default*/

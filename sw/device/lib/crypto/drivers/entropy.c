@@ -172,6 +172,13 @@ typedef struct entropy_src_config {
    */
   multi_bit_bool_t bypass_conditioner;
   /**
+   * If set, the esfinal FIFO holding previously produced entropy seeds is
+   * cleared upon disabling the module. Otherwise, previously produced entropy
+   * seeds get served to CSRNG upon request or can alternatively get read out
+   * via ENTROPY_DATA CSR even after disabling the module.
+   */
+  multi_bit_bool_t clear_esfinal_fifo_while_disabled;
+  /**
    * Enables single bit entropy mode.
    */
   multi_bit_bool_t single_bit_mode;
@@ -270,6 +277,7 @@ static const entropy_complex_config_t
                         .rng_fips = kMultiBitBool4True,
                         .route_to_firmware = kMultiBitBool4False,
                         .bypass_conditioner = kMultiBitBool4False,
+                        .clear_esfinal_fifo_while_disabled = kMultiBitBool4True,
                         .single_bit_mode = kMultiBitBool4False,
                         .threshold_scope = kMultiBitBool4False,
                         .fips_test_window_size = 0x200,
@@ -351,6 +359,7 @@ static const entropy_complex_config_t
                     .rng_fips = kMultiBitBool4True,
                     .route_to_firmware = kMultiBitBool4False,
                     .bypass_conditioner = kMultiBitBool4False,
+                    .clear_esfinal_fifo_while_disabled = kMultiBitBool4True,
                     .single_bit_mode = kMultiBitBool4False,
                     .threshold_scope = kMultiBitBool4True,
                     .fips_test_window_size = 512,
@@ -819,6 +828,10 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
   entropy_control = bitfield_field32_write(
       entropy_control, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
       config->bypass_conditioner);
+  entropy_control = bitfield_field32_write(
+      entropy_control,
+      ENTROPY_SRC_ENTROPY_CONTROL_ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD,
+      config->clear_esfinal_fifo_while_disabled);
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
                    entropy_control);
 
@@ -948,7 +961,8 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
   //   1. CONF.FIPS_ENABLE = true
   //   2. CONF.RNG_BIT_ENABLE = false
   //   3. CONTROL.ES_TYPE = false
-  //   3. CONTROL.ES_ROUTE = false
+  //   4. CONTROL.ES_ROUTE = false
+  //   5. CONTROL.ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD = true
   reg = abs_mmio_read32(entropy_src_base() + ENTROPY_SRC_CONF_REG_OFFSET);
   uint32_t conf_fips_enable =
       bitfield_field32_read(reg, ENTROPY_SRC_CONF_FIPS_ENABLE_FIELD);
@@ -964,8 +978,11 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
       bitfield_field32_read(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD);
   uint32_t control_es_route =
       bitfield_field32_read(reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_ROUTE_FIELD);
+  uint32_t control_esfinal_fifo_clear_while_disabled = bitfield_field32_read(
+      reg, ENTROPY_SRC_ENTROPY_CONTROL_ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD);
   if (control_es_type != kMultiBitBool4False ||
-      control_es_route != kMultiBitBool4False) {
+      control_es_route != kMultiBitBool4False ||
+      control_esfinal_fifo_clear_while_disabled != kMultiBitBool4True) {
     return OTCRYPTO_RECOV_ERR;
   }
 

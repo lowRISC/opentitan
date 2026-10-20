@@ -297,6 +297,10 @@ static status_t entropy_src_kat_configure(void) {
   entropy_control = bitfield_field32_write(
       entropy_control, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
       kMultiBitBool4False);
+  entropy_control = bitfield_field32_write(
+      entropy_control,
+      ENTROPY_SRC_ENTROPY_CONTROL_ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD,
+      kMultiBitBool4True);
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
                    entropy_control);
 

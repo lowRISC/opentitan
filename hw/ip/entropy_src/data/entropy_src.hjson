@@ -507,6 +507,18 @@
                 '''
           resval: false
         },
+        { bits: "11:8",
+          name: "ESFINAL_FIFO_CLEAR_WHILE_DISABLED",
+          mubi: true,
+          desc: '''
+                When this field is `kMultiBitBool4True`, the esfinal FIFO is cleared while the ENTROPY_SRC block is disabled.
+                Any previously produced seeds are lost.
+                If the field is set to `kMultiBitBool4False`, previously produced seeds remain in the esfinal FIFO and keep getting served to the block hardware interface even while the ENTROPY_SRC block is disabled.
+                This allows extending the period during which the ENTROPY_SRC block is disabled while downstream entropy consumers remain active thereby improving energy efficiency and reducing aging of the PTRNG.
+                If needed, firmware can manually clear the esfinal FIFO while ENTROPY_SRC is disabled (e.g. when switching to a different configuration) by setting this field to `kMultiBitBool4True` and then back to `kMultiBitBool4False`.
+                '''
+          resval: true
+        },
       ]
     },
     { name: "ENTROPY_DATA",
@@ -1514,6 +1526,13 @@
           name: "RNG_FIPS_FIELD_ALERT",
           desc: '''
                 This bit is set when the RNG_FIPS field in the !!CONF register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "19",
+          name: "ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT",
+          desc: '''
+                This bit is set when the ESFINAL_FIFO_CLEAR_WHILE_DISABLED field in the !!ENTROPY_CONTROL register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }
