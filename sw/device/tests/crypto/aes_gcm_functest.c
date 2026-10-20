@@ -235,9 +235,6 @@ static status_t run_bad_args_test(void) {
   CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &pt, &short_ct, &written)
             .value == OTCRYPTO_BAD_ARGS.value);
 
-  // Update the key checksum because we remasked before
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
-
   // Test operation ordering
   otcrypto_aes_gcm_context_t ctx_aad_after_data;
   TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx_aad_after_data));
@@ -286,9 +283,6 @@ static status_t run_bad_args_test(void) {
             &ctx, &tag_const, kOtcryptoAesGcmTagLen128, &ct, &written, NULL)
             .value == OTCRYPTO_BAD_ARGS.value);
 
-  // Update the key checksum because we remasked before
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
-
   // Re-init context for decrypt to reset input_len for the partial block test
   TRY(otcrypto_aes_gcm_decrypt_init(&key, &iv, &ctx));
   TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &partial_pt, &ct,
@@ -301,7 +295,6 @@ static status_t run_bad_args_test(void) {
   // Edge Case & Fault Injection Coverage
 
   // Failed Decryption Tag Check
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
   TRY(otcrypto_aes_gcm_encrypt(&key, &pt, &iv, &aad, kOtcryptoAesGcmTagLen128,
                                &ct, &tag));
   ct.data[0] ^= 0x01;  // Corrupt ciphertext bit
@@ -329,7 +322,6 @@ static status_t run_bad_args_test(void) {
             .value != OTCRYPTO_OK.value);
 
   // Inner Driver Bounds & Overflows
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
   TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
 
   otcrypto_const_byte_buf_t buf_16 =
@@ -356,13 +348,11 @@ static status_t run_bad_args_test(void) {
             .value != OTCRYPTO_OK.value);
 
   // Final API NULL Checks
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
   TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
   CHECK(otcrypto_aes_gcm_encrypt_final(&ctx, kOtcryptoAesGcmTagLen128,
                                        &null_out_16, &written, &tag)
             .value != OTCRYPTO_OK.value);
 
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
   TRY(otcrypto_aes_gcm_decrypt_init(&key, &iv, &ctx));
   CHECK(otcrypto_aes_gcm_decrypt_final(&ctx, &tag_const,
                                        kOtcryptoAesGcmTagLen128, &null_out_16,
@@ -370,13 +360,11 @@ static status_t run_bad_args_test(void) {
             .value != OTCRYPTO_OK.value);
 
   // Fault Injection
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
   TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
   ctx.data[0] = 0xBADBAD;  // Corrupt is_encrypt boolean
   CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &buf_16, &out_16, &written)
             .value != OTCRYPTO_OK.value);
 
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
   TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
   ctx.data[1] = 0xBADBAD;  // Corrupt aes_key.mode enum
   CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &buf_16, &out_16, &written)
