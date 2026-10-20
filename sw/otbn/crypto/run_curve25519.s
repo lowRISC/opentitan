@@ -623,11 +623,11 @@ x25519_ok:
 x25519_public_key:
   .zero 32
 
-/* Shared key (256 bits). Output for ecdh. */
+/* Shared key (two 256-bit boolean shares). Output for ecdh. */
 .balign 32
 .globl x25519_shared_key
 x25519_shared_key:
-  .zero 32
+  .zero 64
 
 .ifdef FIPS_MODE
 /* Scratchpad buffer for PCT first-pass public key (256 bits) */
