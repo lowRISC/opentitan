@@ -117,8 +117,9 @@ package csrng_env_pkg;
     ACMD_FLAG0_FIELD_ALERT          = 3,
     CS_BUS_CMP_ALERT                = 12,
     CMD_STAGE_INVALID_ACMD_ALERT    = 13,
-    CMD_STAGE_INVALID_CMD_SEQ_ALERT = 14,
-    CMD_STAGE_RESEED_CNT_ALERT      = 15
+    CMD_STAGE_INVALID_GEN_CMD_ALERT = 14,
+    CMD_STAGE_INVALID_CMD_SEQ_ALERT = 15,
+    CMD_STAGE_RESEED_CNT_ALERT      = 16
   } recov_alert_bit_e;
 
   typedef enum int {

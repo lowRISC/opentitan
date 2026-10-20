@@ -180,6 +180,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                        cs_bus_cmp_alert;
   logic [NumApps-1:0]          invalid_cmd_seq_alert;
   logic [NumApps-1:0]          invalid_acmd_alert;
+  logic [NumApps-1:0]          invalid_gen_cmd_alert;
   logic [NumApps-1:0]          reseed_cnt_alert;
   logic [NumApps-1:0]          gen_abort_req;
   logic [NumApps-1:0]          gen_abort_invalid_alert;
@@ -394,6 +395,7 @@ module csrng_core import csrng_pkg::*; #(
          |reseed_cnt_alert ||
          |invalid_cmd_seq_alert ||
          |invalid_acmd_alert ||
+         |invalid_gen_cmd_alert ||
          |gen_abort_invalid_alert ||
          |gen_abort_field_alert ||
          cs_bus_cmp_alert;
@@ -544,6 +546,7 @@ module csrng_core import csrng_pkg::*; #(
       .reseed_cnt_alert_o           (reseed_cnt_alert[ai]),
       .invalid_cmd_seq_alert_o      (invalid_cmd_seq_alert[ai]),
       .invalid_acmd_alert_o         (invalid_acmd_alert[ai]),
+      .invalid_gen_cmd_alert_o      (invalid_gen_cmd_alert[ai]),
       .gen_abort_req_i              (gen_abort_req[ai]),
       .gen_abort_invalid_o          (gen_abort_invalid_alert[ai]),
       .cmd_arb_req_o                (cmd_arb_req[ai]),
@@ -670,6 +673,9 @@ module csrng_core import csrng_pkg::*; #(
 
   assign hw2reg.recov_alert_sts.cmd_stage_invalid_acmd_alert.de = |invalid_acmd_alert;
   assign hw2reg.recov_alert_sts.cmd_stage_invalid_acmd_alert.d  = |invalid_acmd_alert;
+
+  assign hw2reg.recov_alert_sts.cmd_stage_invalid_gen_cmd_alert.de = |invalid_gen_cmd_alert;
+  assign hw2reg.recov_alert_sts.cmd_stage_invalid_gen_cmd_alert.d  = |invalid_gen_cmd_alert;
 
   assign hw2reg.recov_alert_sts.cmd_stage_invalid_cmd_seq_alert.de = |invalid_cmd_seq_alert;
   assign hw2reg.recov_alert_sts.cmd_stage_invalid_cmd_seq_alert.d  = |invalid_cmd_seq_alert;

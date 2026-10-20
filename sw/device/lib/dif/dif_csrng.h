@@ -323,6 +323,11 @@ typedef enum dif_csrng_recoverable_alert {
   kDifCsrngRecoverableAlertBadCsrngCmd =
       1U << CSRNG_RECOV_ALERT_STS_CMD_STAGE_INVALID_ACMD_ALERT_BIT,
   /**
+   * Indicates a Generate command was issued with a `glen` field of zero.
+   */
+  kDifCsrngRecoverableAlertBadGenCmd =
+      1U << CSRNG_RECOV_ALERT_STS_CMD_STAGE_INVALID_GEN_CMD_ALERT_BIT,
+  /**
    * Indicates a supported CSRNG command was issued out of sequence.
    */
   kDifCsrngRecoverableAlertBadCsrngCmdSeq =

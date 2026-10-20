@@ -523,6 +523,10 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     // Only already instantiated instances can generate random bits.
     if (!cfg.status[app]) begin
       cmd_sts[app] = CMD_STS_INVALID_CMD_SEQ;
+    end else if (glen == 0) begin
+      // A Generate command with glen of zero is ignored.
+      cmd_sts[app] = CMD_STS_INVALID_GEN_CMD;
+      return;
     end else if (cfg.reseed_counter[app] == `gmv(ral.reseed_interval)) begin
       cmd_sts[app] = CMD_STS_RESEED_CNT_EXCEEDED;
     end

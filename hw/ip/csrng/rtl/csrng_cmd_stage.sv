@@ -20,6 +20,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
   output logic                       reseed_cnt_alert_o,
   output logic                       invalid_cmd_seq_alert_o,
   output logic                       invalid_acmd_alert_o,
+  output logic                       invalid_gen_cmd_alert_o,
   // Generate abort request signals.
   input logic                        gen_abort_req_i,
   output logic                       gen_abort_invalid_o,
@@ -94,6 +95,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
   logic                        reseed_cnt_exceeded;
   logic                        invalid_cmd_seq;
   logic                        invalid_acmd;
+  logic                        invalid_gen_cmd;
   logic                  [2:0] acmd;
   logic                        local_escalate;
 
@@ -311,6 +313,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
     reseed_cnt_exceeded = 1'b0;
     invalid_cmd_seq = 1'b0;
     invalid_acmd = 1'b0;
+    invalid_gen_cmd = 1'b0;
     instantiated_d = instantiated_q;
 
     if (state_q == Error) begin
@@ -351,9 +354,14 @@ module csrng_cmd_stage import csrng_pkg::*; (
               end
             end else if (acmd == GEN) begin
               if (instantiated_q) begin
-                // If the issued command is GEN and the reseed count has already been reached,
-                // send an ack with an error status response.
-                if ((acmd == GEN) && reseed_cnt_reached_i) begin
+                if (sfifo_cmd_rdata[12 +: GenBitsCtrWidth] == '0) begin
+                  // A GEN command must request at least one block.
+                  cmd_err_ack = 1'b1;
+                  invalid_gen_cmd = 1'b1;
+                  state_d = Idle;
+                end else if (reseed_cnt_reached_i) begin
+                  // If the issued command is GEN and the reseed count has already been reached,
+                  // send an ack with an error status response.
                   cmd_err_ack = 1'b1;
                   reseed_cnt_exceeded = 1'b1;
                   state_d = Idle;
@@ -583,6 +591,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
 
   assign err_sts = reseed_cnt_exceeded ? CMD_STS_RESEED_CNT_EXCEEDED :
                    invalid_cmd_seq     ? CMD_STS_INVALID_CMD_SEQ     :
+                   invalid_gen_cmd     ? CMD_STS_INVALID_GEN_CMD     :
                    invalid_acmd        ? CMD_STS_INVALID_ACMD        : CMD_STS_INVALID_ACMD;
 
   assign cmd_ack_sts_d =
@@ -597,6 +606,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
   assign reseed_cnt_alert_o = reseed_cnt_exceeded;
   assign invalid_cmd_seq_alert_o = invalid_cmd_seq;
   assign invalid_acmd_alert_o = invalid_acmd;
+  assign invalid_gen_cmd_alert_o = invalid_gen_cmd;
 
   // Make sure that the state machine has a stable error state. This means that after the error
   // state is entered it will not exit it unless a reset signal is received.

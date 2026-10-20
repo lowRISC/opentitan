@@ -403,9 +403,9 @@
             { value: "2",
               name: "INVALID_GEN_CMD",
               desc: '''
-                    Request completed with an invalid counter DRBG generation command error.
-                    This error indicates that CSRNG entropy was generated for a command that is not a Generate command.
-                    In this case the entropy should not be considered as valid.
+                    Request completed with an invalid Generate command error.
+                    This error indicates that a Generate command was issued with a `glen` field of zero.
+                    The command is ignored and no entropy is generated.
                     '''
             },
             { value: "3",
@@ -733,6 +733,14 @@
                 '''
         }
         { bits: "14",
+          name: "CMD_STAGE_INVALID_GEN_CMD_ALERT",
+          desc: '''
+                This bit is set when a Generate command is received with a `glen` field of zero.
+                The invalid command is ignored and CSRNG continues to operate.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "15",
           name: "CMD_STAGE_INVALID_CMD_SEQ_ALERT",
           desc: '''
                 This bit is set when an out of order command is received by the main state machine.
@@ -743,7 +751,7 @@
                 Writing a zero resets this status bit.
                 '''
         }
-        { bits: "15",
+        { bits: "16",
           name: "CMD_STAGE_RESEED_CNT_ALERT",
           desc: '''
                 This bit is set when the maximum number of generate requests between reseeds is
