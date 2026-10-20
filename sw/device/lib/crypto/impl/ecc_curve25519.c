@@ -77,14 +77,6 @@ static status_t curve25519_private_key_length_check(
   }
 #endif
 
-  if (private_key->config.hw_backed == kHardenedBoolTrue) {
-    // Skip the length check in this case; if the salt is the wrong length, the
-    // keyblob library will catch it before we sideload the key.
-    return OTCRYPTO_OK;
-  }
-  HARDENED_CHECK_NE(launder32(private_key->config.hw_backed),
-                    kHardenedBoolTrue);
-
   // Check the unmasked length.
   if (launder32(private_key->config.key_length) != kCurve25519KeyBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -104,6 +96,20 @@ static status_t curve25519_private_key_length_check(
   HARDENED_CHECK_EQ(
       launder32(otcrypto_integrity_blinded_key_check(private_key)),
       kHardenedBoolTrue);
+
+  if (private_key->config.hw_backed == kHardenedBoolTrue) {
+    // Skip the length check in this case; if the salt is the wrong length, the
+    // keyblob library will catch it before we sideload the key.
+    return OTCRYPTO_OK;
+  }
+  HARDENED_CHECK_NE(launder32(private_key->config.hw_backed),
+                    kHardenedBoolTrue);
+
+  // Check the keyblob length.
+  if (private_key->keyblob_length !=
+      keyblob_num_words(private_key->config) * sizeof(uint32_t)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   return OTCRYPTO_OK;
 }
@@ -1082,8 +1088,39 @@ otcrypto_status_t otcrypto_x25519_async_finalize(
     otcrypto_blinded_key_t *shared_secret) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_X25519_ASYNC_FINALIZE);
   OTCRYPTO_LOCKED_STATE_CHECK();
-  HARDENED_TRY_WIPE_DMEM(curve25519_x25519_finalize(shared_secret->keyblob));
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (shared_secret == NULL || shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  if (shared_secret->config.hw_backed != kHardenedBoolFalse ||
+      shared_secret->config.key_length != kCurve25519KeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  uint32_t *share0;
+  uint32_t *share1;
+  HARDENED_TRY(keyblob_to_shares(shared_secret, &share0, &share1));
+
+  // Randomize the output before computing it.
+  HARDENED_TRY(hardened_memshred(shared_secret->keyblob,
+                                 keyblob_num_words(shared_secret->config)));
+
+  uint32_t shares[kCurve25519MaskedPointWords];
+  HARDENED_TRY(hardened_memshred(shares, kCurve25519MaskedPointWords));
+  HARDENED_TRY_WIPE_DMEM(curve25519_x25519_finalize(shares));
+
+  HARDENED_TRY(hardened_memcpy(share0, shares, kCurve25519PointWords));
+  HARDENED_TRY(hardened_memcpy(share1, &shares[kCurve25519PointWords],
+                               kCurve25519PointWords));
+  HARDENED_CHECK_EQ(hardened_memeq(shares, share0, kCurve25519PointWords),
+                    kHardenedBoolTrue);
+
   shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
+
+  HARDENED_TRY(hardened_memshred(shares, kCurve25519MaskedPointWords));
+
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
   return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
 }
