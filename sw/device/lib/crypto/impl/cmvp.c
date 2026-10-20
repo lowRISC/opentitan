@@ -8,22 +8,37 @@
 
 #ifdef FIPS_MODE
 
-static void cmvp_start_service(otcrypto_cmvp_service_indicator_t indicator) {
+uint8_t otcrypto_cmvp_enter(otcrypto_cmvp_service_indicator_t indicator) {
   crypto_state_t *state = NULL;
   if (status_ok(read_state_pointer(&state)) && state != NULL) {
     if (state->cmvp_call_depth == 0) {
       state->cmvp_service_indicator = (uint8_t)indicator;
     }
     state->cmvp_call_depth++;
+    return state->cmvp_call_depth;
+  }
+  return 0;
+}
+
+void otcrypto_cmvp_cleanup(const uint8_t *expected_depth) {
+  if (expected_depth == NULL || *expected_depth == 0) {
+    return;
+  }
+  crypto_state_t *state = NULL;
+  if (status_ok(read_state_pointer(&state)) && state != NULL) {
+    if (state->cmvp_call_depth >= *expected_depth) {
+      state->cmvp_service_indicator = (uint8_t)kOtcryptoCmvpNotApprovedService;
+    }
+    state->cmvp_call_depth = (uint8_t)(*expected_depth - 1);
   }
 }
 
 void otcrypto_cmvp_start_approved(void) {
-  cmvp_start_service(kOtcryptoCmvpApprovedService);
+  (void)otcrypto_cmvp_enter(kOtcryptoCmvpApprovedService);
 }
 
 void otcrypto_cmvp_start_not_approved(void) {
-  cmvp_start_service(kOtcryptoCmvpNotApprovedService);
+  (void)otcrypto_cmvp_enter(kOtcryptoCmvpNotApprovedService);
 }
 
 void otcrypto_cmvp_override_not_approved(void) {

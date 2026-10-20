@@ -489,7 +489,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(
   if (aad->len == 0) {
     // Nothing to do.
     // COVERAGE (MISSING) We do not cover the length 0 aad on update.
-    return OTCRYPTO_OK;
+    return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
@@ -531,7 +531,7 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   if (input->len == 0) {
     // Nothing to do.
     // COVERAGE (MISSING) We do not cover the length 0 input on update.
-    return OTCRYPTO_OK;
+    return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
