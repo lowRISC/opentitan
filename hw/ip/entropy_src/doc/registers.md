@@ -260,21 +260,29 @@ Setting this field to `kMultiBitBool4False` selects the boot-time / bypass mode 
 ## ENTROPY_CONTROL
 Entropy control register
 - Offset: `0x20`
-- Reset default: `0x99`
-- Reset mask: `0xff`
+- Reset default: `0x699`
+- Reset mask: `0xfff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ES_ROUTE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ES_TYPE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
+{"reg": [{"name": "ES_ROUTE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ES_TYPE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ESFINAL_FIFO_CLEAR_WHILE_DISABLED", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 350}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                   |
-|:------:|:------:|:-------:|:---------------------------------------|
-|  31:8  |        |         | Reserved                               |
-|  7:4   |   rw   |   0x9   | [ES_TYPE](#entropy_control--es_type)   |
-|  3:0   |   rw   |   0x9   | [ES_ROUTE](#entropy_control--es_route) |
+|  Bits  |  Type  |  Reset  | Name                                                                                     |
+|:------:|:------:|:-------:|:-----------------------------------------------------------------------------------------|
+| 31:12  |        |         | Reserved                                                                                 |
+|  11:8  |   rw   |   0x6   | [ESFINAL_FIFO_CLEAR_WHILE_DISABLED](#entropy_control--esfinal_fifo_clear_while_disabled) |
+|  7:4   |   rw   |   0x9   | [ES_TYPE](#entropy_control--es_type)                                                     |
+|  3:0   |   rw   |   0x9   | [ES_ROUTE](#entropy_control--es_route)                                                   |
+
+### ENTROPY_CONTROL . ESFINAL_FIFO_CLEAR_WHILE_DISABLED
+When this field is `kMultiBitBool4True`, the esfinal FIFO is cleared while the ENTROPY_SRC block is disabled.
+Any previously produced seeds are lost.
+If the field is set to `kMultiBitBool4False`, previously produced seeds remain in the esfinal FIFO and keep getting served to the block hardware interface even while the ENTROPY_SRC block is disabled.
+This allows extending the period during which the ENTROPY_SRC block is disabled while downstream entropy consumers remain active thereby improving energy efficiency and reducing aging of the PTRNG.
+If needed, firmware can manually clear the esfinal FIFO while ENTROPY_SRC is disabled (e.g. when switching to a different configuration) by setting this field to `kMultiBitBool4True` and then back to `kMultiBitBool4False`.
 
 ### ENTROPY_CONTROL . ES_TYPE
 When this field is `kMultiBitBool4False`, the hardware conditioning inside the ENTROPY_SRC block is enabled.
@@ -1137,37 +1145,38 @@ Debug status register
 Recoverable alert status register
 - Offset: `0xbc`
 - Reset default: `0x0`
-- Reset mask: `0x8007ffbf`
+- Reset mask: `0x800fffbf`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ENTROPY_DATA_REG_EN_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "MODULE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_SCOPE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_ONEWAY_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_BIT_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 1}, {"name": "FW_OV_SHA3_START_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_ENTROPY_INSERT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_ROUTE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_TYPE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_THRESH_CFG_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_WR_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_DISABLE_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FLAG_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_FIPS_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 12}, {"name": "POSTHT_ENTROPY_DROP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 340}}
+{"reg": [{"name": "FIPS_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ENTROPY_DATA_REG_EN_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "MODULE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_SCOPE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_ONEWAY_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_BIT_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 1}, {"name": "FW_OV_SHA3_START_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_ENTROPY_INSERT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_ROUTE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_TYPE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_THRESH_CFG_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_WR_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_DISABLE_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FLAG_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_FIPS_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 11}, {"name": "POSTHT_ENTROPY_DROP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 470}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                                                                   |
-|:------:|:------:|:-------:|:---------------------------------------------------------------------------------------|
-|   31   |  rw0c  |   0x0   | [POSTHT_ENTROPY_DROP_ALERT](#recov_alert_sts--postht_entropy_drop_alert)               |
-| 30:19  |        |         | Reserved                                                                               |
-|   18   |  rw0c  |   0x0   | [RNG_FIPS_FIELD_ALERT](#recov_alert_sts--rng_fips_field_alert)                         |
-|   17   |  rw0c  |   0x0   | [FIPS_FLAG_FIELD_ALERT](#recov_alert_sts--fips_flag_field_alert)                       |
-|   16   |  rw0c  |   0x0   | [ES_FW_OV_DISABLE_ALERT](#recov_alert_sts--es_fw_ov_disable_alert)                     |
-|   15   |  rw0c  |   0x0   | [ES_FW_OV_WR_ALERT](#recov_alert_sts--es_fw_ov_wr_alert)                               |
-|   14   |  rw0c  |   0x0   | [ES_THRESH_CFG_ALERT](#recov_alert_sts--es_thresh_cfg_alert)                           |
-|   13   |  rw0c  |   0x0   | [ES_BUS_CMP_ALERT](#recov_alert_sts--es_bus_cmp_alert)                                 |
-|   12   |  rw0c  |   0x0   | [ES_MAIN_SM_ALERT](#recov_alert_sts--es_main_sm_alert)                                 |
-|   11   |  rw0c  |   0x0   | [ES_TYPE_FIELD_ALERT](#recov_alert_sts--es_type_field_alert)                           |
-|   10   |  rw0c  |   0x0   | [ES_ROUTE_FIELD_ALERT](#recov_alert_sts--es_route_field_alert)                         |
-|   9    |  rw0c  |   0x0   | [FW_OV_ENTROPY_INSERT_FIELD_ALERT](#recov_alert_sts--fw_ov_entropy_insert_field_alert) |
-|   8    |  rw0c  |   0x0   | [FW_OV_MODE_FIELD_ALERT](#recov_alert_sts--fw_ov_mode_field_alert)                     |
-|   7    |  rw0c  |   0x0   | [FW_OV_SHA3_START_FIELD_ALERT](#recov_alert_sts--fw_ov_sha3_start_field_alert)         |
-|   6    |        |         | Reserved                                                                               |
-|   5    |  rw0c  |   0x0   | [RNG_BIT_ENABLE_FIELD_ALERT](#recov_alert_sts--rng_bit_enable_field_alert)             |
-|   4    |  rw0c  |   0x0   | [THRESHOLD_ONEWAY_FIELD_ALERT](#recov_alert_sts--threshold_oneway_field_alert)         |
-|   3    |  rw0c  |   0x0   | [THRESHOLD_SCOPE_FIELD_ALERT](#recov_alert_sts--threshold_scope_field_alert)           |
-|   2    |  rw0c  |   0x0   | [MODULE_ENABLE_FIELD_ALERT](#recov_alert_sts--module_enable_field_alert)               |
-|   1    |  rw0c  |   0x0   | [ENTROPY_DATA_REG_EN_FIELD_ALERT](#recov_alert_sts--entropy_data_reg_en_field_alert)   |
-|   0    |  rw0c  |   0x0   | [FIPS_ENABLE_FIELD_ALERT](#recov_alert_sts--fips_enable_field_alert)                   |
+|  Bits  |  Type  |  Reset  | Name                                                                                                             |
+|:------:|:------:|:-------:|:-----------------------------------------------------------------------------------------------------------------|
+|   31   |  rw0c  |   0x0   | [POSTHT_ENTROPY_DROP_ALERT](#recov_alert_sts--postht_entropy_drop_alert)                                         |
+| 30:20  |        |         | Reserved                                                                                                         |
+|   19   |  rw0c  |   0x0   | [ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT](#recov_alert_sts--esfinal_fifo_clear_while_disabled_field_alert) |
+|   18   |  rw0c  |   0x0   | [RNG_FIPS_FIELD_ALERT](#recov_alert_sts--rng_fips_field_alert)                                                   |
+|   17   |  rw0c  |   0x0   | [FIPS_FLAG_FIELD_ALERT](#recov_alert_sts--fips_flag_field_alert)                                                 |
+|   16   |  rw0c  |   0x0   | [ES_FW_OV_DISABLE_ALERT](#recov_alert_sts--es_fw_ov_disable_alert)                                               |
+|   15   |  rw0c  |   0x0   | [ES_FW_OV_WR_ALERT](#recov_alert_sts--es_fw_ov_wr_alert)                                                         |
+|   14   |  rw0c  |   0x0   | [ES_THRESH_CFG_ALERT](#recov_alert_sts--es_thresh_cfg_alert)                                                     |
+|   13   |  rw0c  |   0x0   | [ES_BUS_CMP_ALERT](#recov_alert_sts--es_bus_cmp_alert)                                                           |
+|   12   |  rw0c  |   0x0   | [ES_MAIN_SM_ALERT](#recov_alert_sts--es_main_sm_alert)                                                           |
+|   11   |  rw0c  |   0x0   | [ES_TYPE_FIELD_ALERT](#recov_alert_sts--es_type_field_alert)                                                     |
+|   10   |  rw0c  |   0x0   | [ES_ROUTE_FIELD_ALERT](#recov_alert_sts--es_route_field_alert)                                                   |
+|   9    |  rw0c  |   0x0   | [FW_OV_ENTROPY_INSERT_FIELD_ALERT](#recov_alert_sts--fw_ov_entropy_insert_field_alert)                           |
+|   8    |  rw0c  |   0x0   | [FW_OV_MODE_FIELD_ALERT](#recov_alert_sts--fw_ov_mode_field_alert)                                               |
+|   7    |  rw0c  |   0x0   | [FW_OV_SHA3_START_FIELD_ALERT](#recov_alert_sts--fw_ov_sha3_start_field_alert)                                   |
+|   6    |        |         | Reserved                                                                                                         |
+|   5    |  rw0c  |   0x0   | [RNG_BIT_ENABLE_FIELD_ALERT](#recov_alert_sts--rng_bit_enable_field_alert)                                       |
+|   4    |  rw0c  |   0x0   | [THRESHOLD_ONEWAY_FIELD_ALERT](#recov_alert_sts--threshold_oneway_field_alert)                                   |
+|   3    |  rw0c  |   0x0   | [THRESHOLD_SCOPE_FIELD_ALERT](#recov_alert_sts--threshold_scope_field_alert)                                     |
+|   2    |  rw0c  |   0x0   | [MODULE_ENABLE_FIELD_ALERT](#recov_alert_sts--module_enable_field_alert)                                         |
+|   1    |  rw0c  |   0x0   | [ENTROPY_DATA_REG_EN_FIELD_ALERT](#recov_alert_sts--entropy_data_reg_en_field_alert)                             |
+|   0    |  rw0c  |   0x0   | [FIPS_ENABLE_FIELD_ALERT](#recov_alert_sts--fips_enable_field_alert)                                             |
 
 ### RECOV_ALERT_STS . POSTHT_ENTROPY_DROP_ALERT
 This bit is set when post-health test entropy bits are being dropped from the hardware pipeline.
@@ -1180,6 +1189,10 @@ But as the dropped bits are still tested, the effective test window increases be
 
 Software should check this bit when running in Firmware Override: Observe mode as dropping post-health test entropy bits in this mode may cause the entropy bits observed from the Observe FIFO to be non-contiguous.
 
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT
+This bit is set when the ESFINAL_FIFO_CLEAR_WHILE_DISABLED field in the [`ENTROPY_CONTROL`](#entropy_control) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
 Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . RNG_FIPS_FIELD_ALERT

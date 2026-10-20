@@ -124,9 +124,9 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     if (status != UVM_IS_OK) `uvm_error("write", "Writing MuBi4False to module_enable failed")
 
     // Disabling the module will clear the error state,
-    // as well as the observe and entropy_data FIFOs
-    // Clear all interrupts here
-    ral.intr_state.write(status, 32'hf);
+    // as well as the observe FIFO
+    // Clear all but the es_entropy_valid interrupt here
+    ral.intr_state.write(status, 32'he);
     if (cfg.under_reset) return;
     if (status != UVM_IS_OK) `uvm_error("write", "Writing '1 to intr_state failed")
 
@@ -183,6 +183,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     // Controls
     ral.entropy_control.es_type.set(newcfg.type_bypass);
     ral.entropy_control.es_route.set(newcfg.route_software);
+    ral.entropy_control.esfinal_fifo_clear_while_disabled.set(newcfg.esfinal_clr_while_dsbld);
     csr_update(.csr(ral.entropy_control));
     pause_until_reset_or_flag(pause, stop_early);
     if (stop_early || cfg.under_reset) return;
@@ -372,6 +373,7 @@ class entropy_src_base_vseq extends cip_base_vseq #(
 
     ral.entropy_control.es_type.set(MuBi4False);
     ral.entropy_control.es_route.set(MuBi4False);
+    ral.entropy_control.esfinal_fifo_clear_while_disabled.set(MuBi4True);
     csr_update(.csr(ral.entropy_control));
     if (cfg.under_reset) return;
 
