@@ -1564,6 +1564,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
       "intr_test": begin
       end
+      "alert_test": begin
+      end
       "sw_regupd": begin
       end
       "regwen": begin
@@ -1593,6 +1595,8 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
       end
       "health_test_windows": begin
         locked_reg_access = dut_reg_locked;
+      end
+      "threshold_oneway": begin
       end
       "repcnt_threshold": begin
         locked_reg_access   = dut_reg_locked;
@@ -1630,6 +1634,16 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
         threshold_increases = 0;
       end
       "markov_lo_threshold": begin
+        locked_reg_access = dut_reg_locked;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
+        threshold_increases = 1;
+      end
+      "extht_hi_threshold": begin
+        locked_reg_access = dut_reg_locked;
+        one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
+        threshold_increases = 0;
+      end
+      "extht_lo_threshold": begin
         locked_reg_access = dut_reg_locked;
         one_way_threshold   = `gmv(ral.threshold_oneway) != MuBi4False;
         threshold_increases = 1;
