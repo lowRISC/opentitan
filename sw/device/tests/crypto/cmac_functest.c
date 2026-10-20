@@ -227,6 +227,63 @@ static status_t streaming_test(void) {
   return OK_STATUS();
 }
 
+/**
+ * Negative tests for invalid key modes and lengths.
+ */
+static status_t negative_test(void) {
+  uint32_t act_tag[kTagLenWords];
+  otcrypto_word32_buf_t tag_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, act_tag, ARRAYSIZE(act_tag));
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
+  otcrypto_cmac_context_t ctx;
+
+  // Reject key with wrong key_mode (e.g., AES-CBC instead of AES-CMAC).
+  otcrypto_key_config_t bad_mode_config = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeAesCbc,
+      .key_length = sizeof(kAes128TestKey),
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = current_sec_level,
+  };
+  uint32_t bad_mode_keyblob[8] = {0};
+  otcrypto_blinded_key_t bad_mode_key = {
+      .config = bad_mode_config,
+      .keyblob = bad_mode_keyblob,
+      .keyblob_length = sizeof(bad_mode_keyblob),
+  };
+  bad_mode_key.checksum = otcrypto_integrity_blinded_checksum(&bad_mode_key);
+  TRY_CHECK(otcrypto_cmac(&bad_mode_key, &msg_buf, &tag_buf).value ==
+            OTCRYPTO_BAD_ARGS.value);
+  TRY_CHECK(otcrypto_cmac_init(&ctx, &bad_mode_key).value ==
+            OTCRYPTO_BAD_ARGS.value);
+
+  // Reject key with key_length > 32 bytes (must not overflow key_share
+  // buffers).
+  otcrypto_key_config_t oversize_config = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeAesCmac,
+      .key_length = 64,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = current_sec_level,
+  };
+  uint32_t oversize_keyblob[32] = {0};
+  otcrypto_blinded_key_t oversize_key = {
+      .config = oversize_config,
+      .keyblob = oversize_keyblob,
+      .keyblob_length = sizeof(oversize_keyblob),
+  };
+  oversize_key.checksum = otcrypto_integrity_blinded_checksum(&oversize_key);
+  TRY_CHECK(otcrypto_cmac(&oversize_key, &msg_buf, &tag_buf).value ==
+            OTCRYPTO_BAD_ARGS.value);
+  TRY_CHECK(otcrypto_cmac_init(&ctx, &oversize_key).value ==
+            OTCRYPTO_BAD_ARGS.value);
+
+  return OK_STATUS();
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 // Holds the test result.
@@ -248,6 +305,7 @@ bool test_main(void) {
     EXECUTE_TEST(test_result, one_block_test);
     EXECUTE_TEST(test_result, empty_test);
     EXECUTE_TEST(test_result, multi_block_test);
+    EXECUTE_TEST(test_result, negative_test);
 
     if (status_err(test_result)) {
       break;

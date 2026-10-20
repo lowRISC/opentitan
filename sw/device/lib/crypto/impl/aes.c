@@ -523,12 +523,12 @@ static otcrypto_status_t otcrypto_aes_impl(
   } else {
     HARDENED_TRY(aes_end(&aes_iv));
     HARDENED_TRY(hardened_memcpy(iv->data, aes_iv.data, kAesBlockNumWords));
+    HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
   }
 
   if (cipher_output != NULL) {
     HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(cipher_output));
   }
-  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(iv));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -655,9 +655,16 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
     // No FI protection with HARDENED_TRY() is needed as this is the redundant
     // IV.
     uint32_t iv_data[kAesBlockNumWords];
-    hardened_memcpy(iv_data, iv->data, kAesBlockNumWords);
-    otcrypto_word32_buf_t iv_redundant =
-        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, iv->len);
+    otcrypto_word32_buf_t iv_redundant = {0};
+    otcrypto_word32_buf_t *iv_redundant_ptr = NULL;
+    if (aes_mode != kOtcryptoAesModeEcb) {
+      if (iv->len != kAesBlockNumWords) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      hardened_memcpy(iv_data, iv->data, kAesBlockNumWords);
+      iv_redundant = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_data, iv->len);
+      iv_redundant_ptr = &iv_redundant;
+    }
 
     // First AES operation using the intended AES mode (encryption or
     // decryption).
@@ -684,7 +691,7 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
     // The first output is already whole blocks (it includes any padding), so
     // the inverse operation must not pad it again.
     HARDENED_TRY(otcrypto_aes_impl(
-        key, &iv_redundant, aes_mode, aes_operation_inverse,
+        key, iv_redundant_ptr, aes_mode, aes_operation_inverse,
         &cipher_input_redundant, kOtcryptoAesPaddingNull, NULL, &checksum2));
 
     // Comparison.
