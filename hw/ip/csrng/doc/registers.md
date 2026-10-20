@@ -253,7 +253,7 @@ To check whether a command was successful, wait for [`INTR_STATE.CS_CMD_REQ_DONE
 |:--------|:--------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0x0     | SUCCESS             | Request completed successfully.                                                                                                                                                                                                                                                                               |
 | 0x1     | INVALID_ACMD        | Request completed with an invalid application command error. This error indicates that the issued application command doesn't represent a valid operation.                                                                                                                                                    |
-| 0x2     | INVALID_GEN_CMD     | Request completed with an invalid counter DRBG generation command error. This error indicates that CSRNG entropy was generated for a command that is not a Generate command. In this case the entropy should not be considered as valid.                                                                      |
+| 0x2     | INVALID_GEN_CMD     | Request completed with an invalid Generate command error. This error indicates that a Generate command was issued with a `glen` field of zero. The command is ignored and no entropy is generated.                                                                                                            |
 | 0x3     | INVALID_CMD_SEQ     | This error indicates that the last command was issued out of sequence. This happens when a command other than Instantiate was issued without sending an Instantiate command first. This can also happen when an Uninstantiate command is sent without instantiating first.                                    |
 | 0x4     | RESEED_CNT_EXCEEDED | This error indicates that the number of generate requests between reseeds exceeded the maximum number allowed (see [`RESEED_INTERVAL`](#reseed_interval)). This happens only for Generate commands.                                                                                                           |
 | 0x5     | GEN_ABORTED         | This bit indicates that a Generate command for this instance was aborted via [`GEN_ABORT`](#gen_abort) before returning all requested genbits. The instance has been uninstantiated as a result and must be instantiated again before further commands will succeed. This happens only for Generate commands. |
@@ -543,19 +543,20 @@ resets the status bits.
 Recoverable alert status register
 - Offset: `0x6c`
 - Reset default: `0x0`
-- Reset mask: `0xf07f`
+- Reset mask: `0x1f07f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FORCE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_INVALID_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 5}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_ACMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_CMD_SEQ_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_RESEED_CNT_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 330}}
+{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FORCE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_INVALID_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 5}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_ACMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_GEN_CMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_CMD_SEQ_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_RESEED_CNT_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 15}], "config": {"lanes": 1, "fontsize": 10, "vspace": 330}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                                 |
 |:------:|:------:|:-------:|:-------------------------------------------------------------------------------------|
-| 31:16  |        |         | Reserved                                                                             |
-|   15   |  rw0c  |   0x0   | [CMD_STAGE_RESEED_CNT_ALERT](#recov_alert_sts--cmd_stage_reseed_cnt_alert)           |
-|   14   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_CMD_SEQ_ALERT](#recov_alert_sts--cmd_stage_invalid_cmd_seq_alert) |
+| 31:17  |        |         | Reserved                                                                             |
+|   16   |  rw0c  |   0x0   | [CMD_STAGE_RESEED_CNT_ALERT](#recov_alert_sts--cmd_stage_reseed_cnt_alert)           |
+|   15   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_CMD_SEQ_ALERT](#recov_alert_sts--cmd_stage_invalid_cmd_seq_alert) |
+|   14   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_GEN_CMD_ALERT](#recov_alert_sts--cmd_stage_invalid_gen_cmd_alert) |
 |   13   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_ACMD_ALERT](#recov_alert_sts--cmd_stage_invalid_acmd_alert)       |
 |   12   |  rw0c  |   0x0   | [CS_BUS_CMP_ALERT](#recov_alert_sts--cs_bus_cmp_alert)                               |
 |  11:7  |        |         | Reserved                                                                             |
@@ -578,6 +579,11 @@ This bit is set when an out of order command is received by the main state machi
 This happens when an instantiate command is sent for a state that was already
 instantiated or when any command other than instantiate is sent for a state that
 wasn't instantiated yet.
+The invalid command is ignored and CSRNG continues to operate.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . CMD_STAGE_INVALID_GEN_CMD_ALERT
+This bit is set when a Generate command is received with a `glen` field of zero.
 The invalid command is ignored and CSRNG continues to operate.
 Writing a zero resets this status bit.
 

@@ -242,6 +242,44 @@ class csrng_alert_vseq extends csrng_base_vseq;
 
   endtask
 
+  // Here we send a Generate command with glen = 0 to CSRNG to check that it is rejected with an
+  // error status response and that CMD_STAGE_INVALID_GEN_CMD_ALERT is triggered.
+  virtual task test_invalid_gen_cmd_alert();
+
+    `uvm_info(`gfn, $sformatf("Testing Generate with glen = 0 for app %d",
+        cfg.which_app_err_alert), UVM_MEDIUM)
+
+    // Instantiate first such that the Generate command is not rejected as out of sequence.
+    cs_item.acmd  = csrng_pkg::INS;
+    cs_item.clen  = 'h0;
+    cs_item.flags = MuBi4True;
+    cs_item.glen  = 'h0;
+    send_cmd_req(cfg.which_app_err_alert, cs_item);
+
+    cs_item.acmd  = csrng_pkg::GEN;
+    cs_item.clen  = clen;
+    cs_item.flags = get_rand_mubi4_val(.t_weight(4), .f_weight(4), .other_weight(0));
+    cs_item.glen  = 'h0;
+    // The additional data of the rejected command must be absorbed as well.
+    cs_item.cmd_data_q.delete();
+    repeat (clen) cs_item.cmd_data_q.push_back($urandom());
+    send_cmd_req(cfg.which_app_err_alert, cs_item, .exp_sts(CMD_STS_INVALID_GEN_CMD),
+                 .await_genbits(1'b0));
+
+    `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
+    cfg.m_alert_agent_cfgs["recov_alert"].vif.wait_ack_complete();
+
+    `uvm_info(`gfn, $sformatf("Checking RECOV_ALERT_STS register"), UVM_MEDIUM)
+    exp_recov_alert_sts = 32'b0;
+    exp_recov_alert_sts[ral.recov_alert_sts.cmd_stage_invalid_gen_cmd_alert.get_lsb_pos()] = 1;
+    csr_spinwait(.ptr(ral.recov_alert_sts), .exp_data(exp_recov_alert_sts));
+    // Since we already did a backdoor check, sampling with this value is sufficient.
+    cov_vif.cg_recov_alert_sample(.recov_alert(exp_recov_alert_sts));
+
+    reset_csrng_alert();
+
+  endtask
+
   // Here we send an out of sequence command to CSRNG to check that
   // cs_main_sm_invalid_cmd_seq is triggered.
   // Sending an out of sequence command results in an error status response from CSRNG.
@@ -369,6 +407,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     test_field_alerts();
     test_bus_cmp_alert();
     test_invalid_acmd_alert();
+    test_invalid_gen_cmd_alert();
     test_invalid_cmd_seq_alert();
     test_reseed_cnt_alert_alert();
 
