@@ -6852,6 +6852,36 @@ opentitan_test(
     ],
 )
 
+opentitan_test(
+    name = "i3c_loopback_test",
+    srcs = [
+        "i3c_loopback_test.c",
+    ],
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+    ),
+    fpga = fpga_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """
+#       test_harness = "//sw/host/tests/chip/i2c_target",
+    ),
+    silicon = silicon_params(
+        test_cmd = """
+            --bootstrap="{firmware}"
+        """
+#       test_harness = "//sw/host/tests/chip/i2c_target",
+    ),
+    deps = [
+        "//hw/top/dt",
+        "//sw/device/lib/dif:i3c",
+        "//sw/device/lib/dif:rv_plic",
+        "//sw/device/lib/testing:i3c_testutils",
+        "//sw/device/lib/testing/test_framework:ottf_main"
+    ],
+)
+
 _STATUS_REPORT_TEST_MSG = "\r\n".join([
     ".*ottf_main.c:.* Status reported by the test:",
     ".*ottf_main.c:.* - Aborted:\\[\\\"THK\\\",2.\\]",
