@@ -148,7 +148,8 @@ status_t keyblob_to_keymgr_dpe_diversification(
   }
   HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
 
-  if (key->keyblob_length != kKeyblobHwBackedBytes) {
+  if (key->keyblob_length != kKeyblobHwBackedBytes &&
+      key->keyblob_length != kSwKeyblobHwBackedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -170,7 +171,8 @@ status_t keyblob_to_keymgr_dpe_attestation_diversification(
   }
   HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
 
-  if (key->keyblob_length != kCdiKeyblobHwBackedBytes) {
+  if (key->keyblob_length != kCdiKeyblobHwBackedBytes &&
+      key->keyblob_length != kSwKeyblobHwBackedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
 
