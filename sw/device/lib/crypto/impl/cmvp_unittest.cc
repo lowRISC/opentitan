@@ -440,6 +440,25 @@ TEST_F(CmvpTest, NestedCallPreservesOuterNotApprovedStatus) {
   EXPECT_EQ(indicator, kOtcryptoCmvpNotApprovedService);
 }
 
+TEST_F(CmvpTest, EarlyReturnCleanupSetsNotApprovedAndResetsDepth) {
+  {
+    OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES);
+    // Simulate early error return without calling otcrypto_cmvp_end_service().
+  }
+
+  otcrypto_cmvp_service_indicator_t indicator = kOtcryptoCmvpApprovedService;
+  EXPECT_OK(otcrypto_cmvp_service_indicator(&indicator));
+  EXPECT_EQ(indicator, kOtcryptoCmvpNotApprovedService);
+
+  // Subsequent approved service that exits normally should be Approved.
+  {
+    OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES);
+    otcrypto_cmvp_end_service();
+  }
+  EXPECT_OK(otcrypto_cmvp_service_indicator(&indicator));
+  EXPECT_EQ(indicator, kOtcryptoCmvpApprovedService);
+}
+
 TEST_F(CmvpTest, QueryResetsCallDepth) {
   // Suppose an error occurred and end_service was missed (call depth > 0)
   otcrypto_cmvp_set_indicator(OTCRYPTO_FUNCTION_AES);

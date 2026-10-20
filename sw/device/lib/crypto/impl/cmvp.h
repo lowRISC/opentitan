@@ -390,13 +390,37 @@ void otcrypto_cmvp_override_not_approved(void);
  */
 void otcrypto_cmvp_end_service(void);
 
-#define OTCRYPTO_CMVP_DISPATCH_1 otcrypto_cmvp_start_approved()
-#define OTCRYPTO_CMVP_DISPATCH_0 otcrypto_cmvp_start_not_approved()
+/**
+ * Enters a CMVP service scope, updating the indicator if at the top level and
+ * incrementing `cmvp_call_depth`.
+ *
+ * @param indicator Initial approval status of the entered function.
+ * @return The new call depth (1-based), or 0 if state is uninitialized.
+ */
+uint8_t otcrypto_cmvp_enter(otcrypto_cmvp_service_indicator_t indicator);
+
+/**
+ * Scope cleanup handler for `OTCRYPTO_SET_CMVP_INDICATOR`.
+ *
+ * If the function returns early without completing `otcrypto_eval_exit` (so
+ * `cmvp_call_depth` was not decremented below `*expected_depth`), this marks
+ * the service indicator as not approved and restores `cmvp_call_depth`.
+ *
+ * @param expected_depth Pointer to the depth recorded by `otcrypto_cmvp_enter`.
+ */
+void otcrypto_cmvp_cleanup(const uint8_t *expected_depth);
+
+#define OTCRYPTO_CMVP_DISPATCH_1 \
+  otcrypto_cmvp_enter(kOtcryptoCmvpApprovedService)
+#define OTCRYPTO_CMVP_DISPATCH_0 \
+  otcrypto_cmvp_enter(kOtcryptoCmvpNotApprovedService)
 #define OTCRYPTO_CMVP_GLUE(a, b) a##b
 #define OTCRYPTO_CMVP_EXPAND_DISPATCH(approved) \
   OTCRYPTO_CMVP_GLUE(OTCRYPTO_CMVP_DISPATCH_, approved)
-#define OTCRYPTO_SET_CMVP_INDICATOR(func) \
-  OTCRYPTO_CMVP_EXPAND_DISPATCH(OTCRYPTO_IS_APPROVED_##func)
+#define OTCRYPTO_SET_CMVP_INDICATOR(func)                       \
+  const uint8_t _otcrypto_cmvp_depth                            \
+      __attribute__((cleanup(otcrypto_cmvp_cleanup), unused)) = \
+          OTCRYPTO_CMVP_EXPAND_DISPATCH(OTCRYPTO_IS_APPROVED_##func)
 
 #define OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED() \
   otcrypto_cmvp_override_not_approved()
