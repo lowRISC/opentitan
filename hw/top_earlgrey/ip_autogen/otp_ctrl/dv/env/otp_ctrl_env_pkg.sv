@@ -109,9 +109,9 @@ package otp_ctrl_env_pkg;
     -1, // This partition has no zeroized field.
     -1, // This partition has no zeroized field.
     -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1, // This partition has no zeroized field.
-    -1 // This partition has no zeroized field.
+    Secret0ZerOffset >> 2,
+    Secret1ZerOffset >> 2,
+    Secret2ZerOffset >> 2
   };
 
   // types
