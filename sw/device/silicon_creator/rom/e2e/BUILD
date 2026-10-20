@@ -94,7 +94,6 @@ opentitan_test(
             "//hw/top_darjeeling:sim_dv",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
-        slot = slot,
         deps = [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top/dt",
@@ -134,7 +133,6 @@ opentitan_test(
             "//hw/top_darjeeling:sim_dv",
         ],
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_{}".format(slot),
-        slot = slot,
         deps = [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top/dt",
@@ -163,7 +161,6 @@ opentitan_test(
         # We need to specify the manifest because the simulation environments do not
         # specify one by default.
         manifest = "//sw/device/silicon_creator/rom_ext:manifest",
-        slot = slot,
         deps = [
             "//hw/top:otp_ctrl_c_regs",
             "//hw/top/dt",
