@@ -473,5 +473,58 @@ TEST(KeyTransport, BlindedKeyMigrate) {
   EXPECT_NOT_OK(otcrypto_blinded_key_migrate(&hw_backed_key, &new_key));
 }
 
+TEST(KeyTransport, HwBackedKeygenNegative) {
+  const otcrypto_key_config_t kConfigHwBackedAesCtr256 = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeAesCtr,
+      .key_length = 256 / 8,
+      .hw_backed = kHardenedBoolTrue,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t test_version = 0;
+  std::array<uint32_t, 7> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
+                                       0x04050607, 0x08090a0b, 0x0c0d0e0f,
+                                       0x10111213};
+  std::array<uint32_t, 8> att_salt = {0x01234567, 0x89abcdef, 0x00010203,
+                                      0x04050607, 0x08090a0b, 0x0c0d0e0f,
+                                      0x10111213, 0x14151617};
+
+  // A 32-byte (8-word) sideload keyblob is too small for SW keygen (needs 64B).
+  uint32_t small_sealing_keyblob[8] = {0};
+  otcrypto_blinded_key_t small_sealing_key = {
+      .config = kConfigHwBackedAesCtr256,
+      .keyblob_length = sizeof(small_sealing_keyblob),
+      .keyblob = small_sealing_keyblob,
+  };
+  EXPECT_OK(otcrypto_hw_backed_key(test_version, test_salt.data(),
+                                   &small_sealing_key));
+  EXPECT_NOT_OK(
+      ot_crypto_hw_backed_keygen(kHardenedBoolFalse, &small_sealing_key));
+
+  // A 36-byte (9-word) attestation keyblob is too small for SW keygen (needs
+  // 64B).
+  uint32_t small_att_keyblob[9] = {0};
+  otcrypto_blinded_key_t small_att_key = {
+      .config = kConfigHwBackedAesCtr256,
+      .keyblob_length = sizeof(small_att_keyblob),
+      .keyblob = small_att_keyblob,
+  };
+  EXPECT_OK(otcrypto_hw_backed_attestation_key(test_version, att_salt.data(),
+                                               &small_att_key));
+  EXPECT_NOT_OK(ot_crypto_hw_backed_keygen(kHardenedBoolTrue, &small_att_key));
+
+  // A 128-bit key config does not match the 256-bit keymgr output share size.
+  uint32_t keyblob_64b[16] = {0};
+  otcrypto_blinded_key_t wrong_key_len = {
+      .config = kConfigHwBackedAesCtr128,
+      .keyblob_length = sizeof(keyblob_64b),
+      .keyblob = keyblob_64b,
+  };
+  EXPECT_OK(
+      otcrypto_hw_backed_key(test_version, test_salt.data(), &wrong_key_len));
+  EXPECT_NOT_OK(ot_crypto_hw_backed_keygen(kHardenedBoolFalse, &wrong_key_len));
+}
+
 }  // namespace
 }  // namespace key_transport_unittest
