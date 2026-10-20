@@ -321,9 +321,8 @@ def scramble_rram(ctx, **kwargs):
         src: The src File object.
         otp: The OTP settings.
         otp_mmap: The OTP memory mapping file.
-        slot: Which firmware slot `src` was linked for ("a" or "b"). This matters for bkdr loading
-        the NVM content to the RRAM because RRAM's address-infection and scrambling depend on the
-        absolute RRAM address.
+        slot: Which physical slot ("a" or "b") the output will be loaded into, required because
+        RRAM's address-infection and scrambling depend on the absolute RRAM address.
 
         top_secret_cfg: The secret configuration file.
         otp_data_perm: The OTP data permutation configuration.
@@ -341,8 +340,8 @@ def scramble_rram(ctx, **kwargs):
     src = get_override(ctx, "file.src", kwargs)
     otp = get_override(ctx, "file.otp", kwargs)
     slot = get_override(ctx, "attr.slot", kwargs)
-    if slot == "virtual":
-        fail("Cannot scramble an RRAM image for the \"virtual\" slot.")
+    if slot not in ("a", "b"):
+        fail("RRAM images can only be scrambled for physical slot 'a' or 'b', but asked for:", slot)
 
     output = ctx.actions.declare_file(output)
 

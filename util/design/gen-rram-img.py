@@ -337,11 +337,10 @@ def _reformat_rram_vmem(
     # Add addr-infection and potentially scramble, each RRAM word.
     #
     # `--in-rram-vmem` is produced from a raw (headerless) binary extracted from the firmware
-    # ELF, so it is always addressed starting at 0 regardless of which slot the firmware was
-    # actually linked for (slot B's linker script places it at the true absolute address, but
-    # that address is lost when the ELF is flattened to a raw .bin). `addr_offset` restores the
-    # true absolute address before address-infecting/scrambling, since both of those are a
-    # function of the word's real physical address in the (unified, slot-agnostic) RRAM array.
+    # ELF, and as such it will always be addressed starting at 0, regardless of the linked slot.
+    # The input `addr_offset` (derived from the `--slot` arg) ensures the absolute address of
+    # the correct physical slot is used before address infection / scrambling, since these
+    # both depend on the address in the unified RRAM array.
     reformatted_vmem_lines = []
     for line in rram_vmem_lines:
         line_items = line.split()
@@ -428,12 +427,10 @@ def main(argv: List[str]):
                         type=str,
                         choices=["a", "b"],
                         help="""
-                        Which firmware slot --in-rram-vmem was linked for. Required together with
-                        --in-rram-vmem/--out-rram-vmem: the input is a slot-relative (0-based) raw
-                        binary dump, but address-infection and scrambling need the word's true
-                        absolute address in the (unified, slot-agnostic) RRAM data partition.
-                        Slot A starts at word address 0; slot B starts halfway through the data
-                        partition.
+                        Which physical firmware slot the output will be loaded into. Required
+                        together with --in-rram-vmem/--out-rram-vmem, since address-infection
+                        and scrambling depend on each word's true absolute address. This is
+                        independent of the address the firmware was actually linked for.
                         """)
     parser.add_argument("--otp-data-perm",
                         type=vmem_permutation_string,
