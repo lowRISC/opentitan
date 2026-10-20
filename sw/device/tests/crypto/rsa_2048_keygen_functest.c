@@ -120,6 +120,119 @@ status_t keygen_then_sign_test(void) {
   return OK_STATUS();
 }
 
+static status_t deterministic_keygen_test(void) {
+  LOG_INFO("Running deterministic RSA-2048 keygen test...");
+
+  static const uint8_t kSeedA[48] = {
+      0x10, 0x11, 0x12, 0x13, 0x14, 0x15, 0x16, 0x17, 0x18, 0x19, 0x1a, 0x1b,
+      0x1c, 0x1d, 0x1e, 0x1f, 0x20, 0x21, 0x22, 0x23, 0x24, 0x25, 0x26, 0x27,
+      0x28, 0x29, 0x2a, 0x2b, 0x2c, 0x2d, 0x2e, 0x2f, 0x30, 0x31, 0x32, 0x33,
+      0x34, 0x35, 0x36, 0x37, 0x38, 0x39, 0x3a, 0x3b, 0x3c, 0x3d, 0x3e, 0x3f,
+  };
+  static const uint8_t kSeedB[48] = {
+      0x90, 0x91, 0x92, 0x93, 0x94, 0x95, 0x96, 0x97, 0x98, 0x99, 0x9a, 0x9b,
+      0x9c, 0x9d, 0x9e, 0x9f, 0xa0, 0xa1, 0xa2, 0xa3, 0xa4, 0xa5, 0xa6, 0xa7,
+      0xa8, 0xa9, 0xaa, 0xab, 0xac, 0xad, 0xae, 0xaf, 0xb0, 0xb1, 0xb2, 0xb3,
+      0xb4, 0xb5, 0xb6, 0xb7, 0xb8, 0xb9, 0xba, 0xbb, 0xbc, 0xbd, 0xbe, 0xbf,
+  };
+  otcrypto_const_byte_buf_t entropy_a =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kSeedA, sizeof(kSeedA));
+  otcrypto_const_byte_buf_t entropy_b =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kSeedB, sizeof(kSeedB));
+
+  uint32_t pub_data_1[kOtcryptoRsa2048PublicKeyBytes / sizeof(uint32_t)] = {0};
+  uint32_t pub_data_2[kOtcryptoRsa2048PublicKeyBytes / sizeof(uint32_t)] = {0};
+  uint32_t pub_data_3[kOtcryptoRsa2048PublicKeyBytes / sizeof(uint32_t)] = {0};
+  otcrypto_unblinded_key_t pub_1 = {
+      .key_mode = kTestKeyMode,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = pub_data_1,
+  };
+  otcrypto_unblinded_key_t pub_2 = {
+      .key_mode = kTestKeyMode,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = pub_data_2,
+  };
+  otcrypto_unblinded_key_t pub_3 = {
+      .key_mode = kTestKeyMode,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = pub_data_3,
+  };
+
+  size_t keyblob_words =
+      ceil_div(kOtcryptoRsa2048PrivateKeyblobBytes, sizeof(uint32_t));
+  uint32_t keyblob_1[keyblob_words];
+  uint32_t keyblob_2[keyblob_words];
+  uint32_t keyblob_3[keyblob_words];
+  otcrypto_key_config_t priv_cfg = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kTestKeyMode,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  otcrypto_blinded_key_t priv_1 = {
+      .config = priv_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = keyblob_1,
+  };
+  otcrypto_blinded_key_t priv_2 = {
+      .config = priv_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = keyblob_2,
+  };
+  otcrypto_blinded_key_t priv_3 = {
+      .config = priv_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = keyblob_3,
+  };
+
+  // First deterministic keygen with seed A.
+  TRY(otcrypto_rsa_keygen_deterministic(kOtcryptoRsaSize2048, &entropy_a,
+                                        &pub_1, &priv_1));
+  // Second deterministic keygen with the same seed A must produce the exact
+  // same public modulus n and private exponent d = d0 ^ d1.
+  TRY(otcrypto_rsa_keygen_deterministic(kOtcryptoRsaSize2048, &entropy_a,
+                                        &pub_2, &priv_2));
+  TRY_CHECK_ARRAYS_EQ(pub_data_1, pub_data_2, ARRAYSIZE(pub_data_1));
+
+  rsa_2048_private_key_t *sk_1 = (rsa_2048_private_key_t *)priv_1.keyblob;
+  rsa_2048_private_key_t *sk_2 = (rsa_2048_private_key_t *)priv_2.keyblob;
+  for (size_t i = 0; i < kRsa2048NumWords; i++) {
+    TRY_CHECK((sk_1->d0.data[i] ^ sk_1->d1.data[i]) ==
+              (sk_2->d0.data[i] ^ sk_2->d1.data[i]));
+  }
+
+  // Deterministic keygen with a different seed B must produce a different key.
+  TRY(otcrypto_rsa_keygen_deterministic(kOtcryptoRsaSize2048, &entropy_b,
+                                        &pub_3, &priv_3));
+  TRY_CHECK_ARRAYS_NE(pub_data_1, pub_data_3, ARRAYSIZE(pub_data_1));
+
+  // Sign with priv_1 and verify with pub_2.
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, kTestMessage, kTestMessageLen);
+  uint32_t msg_digest_data[256 / 32];
+  otcrypto_hash_digest_t msg_digest = {
+      .data = msg_digest_data,
+      .len = ARRAYSIZE(msg_digest_data),
+  };
+  TRY(otcrypto_sha2_256(&msg_buf, &msg_digest));
+
+  uint32_t sig[kRsa2048NumWords];
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa2048NumWords);
+  otcrypto_const_word32_buf_t const_sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, kRsa2048NumWords);
+  TRY(otcrypto_rsa_sign(&priv_1, msg_digest, kOtcryptoRsaPaddingPkcs,
+                        &sig_buf));
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  TRY(otcrypto_rsa_verify(&pub_2, msg_digest, kOtcryptoRsaPaddingPkcs,
+                          &const_sig_buf, &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolTrue);
+
+  return OK_STATUS();
+}
+
 static status_t run_keygen_negative_tests(void) {
   LOG_INFO("Running RSA keygen negative tests");
 
@@ -271,6 +384,7 @@ bool test_main(void) {
 
   status_t test_result = OK_STATUS();
   EXECUTE_TEST(test_result, keygen_then_sign_test);
+  EXECUTE_TEST(test_result, deterministic_keygen_test);
   EXECUTE_TEST(test_result, run_async_wrong_finalize_tests);
   // This test leaves the OTBN running, best call it at the end.
   EXECUTE_TEST(test_result, run_keygen_negative_tests);

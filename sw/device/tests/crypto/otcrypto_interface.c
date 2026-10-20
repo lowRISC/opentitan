@@ -183,6 +183,7 @@ volatile otcrypto_interface_t otcrypto = {
 
     // RSA key generation (blocking).
     .rsa_keygen = &otcrypto_rsa_keygen,
+    .rsa_keygen_deterministic = &otcrypto_rsa_keygen_deterministic,
     .rsa_keypair_from_cofactor = &otcrypto_rsa_keypair_from_cofactor,
 
     // RSA signatures (blocking).
