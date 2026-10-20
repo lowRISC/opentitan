@@ -40,7 +40,7 @@ class entropy_src_dut_cfg extends uvm_object;
                 rng_fips_pct, ht_threshold_scope_pct, rng_bit_enable_pct;
 
   // Constraint knobs for Boolean fields in ENTROPY_CONTROL register
-  uint          route_software_pct, type_bypass_pct;
+  uint          route_software_pct, type_bypass_pct, esfinal_clr_while_dsbld_pct;
 
   // Constraint knobs for Boolean fields in FW_OV_CONTROL register
   uint          fw_read_pct, fw_over_pct, fw_ov_insert_start_pct;
@@ -86,7 +86,8 @@ class entropy_src_dut_cfg extends uvm_object;
 
   rand prim_mubi_pkg::mubi4_t   module_enable, fips_enable, fips_flag, route_software, type_bypass,
                                 rng_fips, entropy_data_reg_enable, rng_bit_enable,
-                                ht_threshold_oneway, ht_threshold_scope;
+                                ht_threshold_oneway, ht_threshold_scope,
+                                esfinal_clr_while_dsbld;
 
   rand int                      observe_fifo_thresh;
 
@@ -207,6 +208,10 @@ class entropy_src_dut_cfg extends uvm_object;
   constraint bypass_c {type_bypass dist {
       prim_mubi_pkg::MuBi4True  :/ type_bypass_pct,
       prim_mubi_pkg::MuBi4False :/ (100 - type_bypass_pct) };}
+
+  constraint esfinal_clr_while_dsbld_c {esfinal_clr_while_dsbld dist {
+      prim_mubi_pkg::MuBi4True  :/ esfinal_clr_while_dsbld_pct,
+      prim_mubi_pkg::MuBi4False :/ (100 - esfinal_clr_while_dsbld_pct) };}
 
   constraint entropy_data_reg_enable_c {entropy_data_reg_enable dist {
       prim_mubi_pkg::MuBi4True  :/ entropy_data_reg_enable_pct,
@@ -410,6 +415,8 @@ class entropy_src_dut_cfg extends uvm_object;
                   route_software.name()),
         $sformatf("\n\t |***** type_bypass                 : %12s *****| \t",
                   type_bypass.name()),
+        $sformatf("\n\t |***** esfinal_clr_while_dsbld     : %12s *****| \t",
+                  esfinal_clr_while_dsbld.name()),
         $sformatf("\n\t |***** entropy_data_reg_enable     : %12s *****| \t",
                   entropy_data_reg_enable.name()),
         $sformatf("\n\t |***** rng_bit_enable              : %12s *****| \t",
@@ -460,6 +467,8 @@ class entropy_src_dut_cfg extends uvm_object;
                   route_software_pct),
         $sformatf("\n\t |***** type_bypass_pct             : %12d *****| \t",
                   type_bypass_pct),
+        $sformatf("\n\t |***** esfinal_clr_while_dsbld_pct : %12d *****| \t",
+                  esfinal_clr_while_dsbld_pct),
         $sformatf("\n\t |***** entropy_data_reg_enable_pct : %12d *****| \t",
                   entropy_data_reg_enable_pct),
         $sformatf("\n\t |***** rng_bit_enable_pct          : %12d *****| \t",
@@ -538,6 +547,7 @@ class entropy_src_dut_cfg extends uvm_object;
         invalid_fw_ov_insert_start: fw_ov_insert_start = invalid_mubi_val;
         invalid_es_route: route_software = invalid_mubi_val;
         invalid_es_type: type_bypass = invalid_mubi_val;
+        invalid_esfinal_clr_while_dsbld: esfinal_clr_while_dsbld = invalid_mubi_val;
         invalid_alert_threshold: begin
           // Let the alert_threshold_inv field take some
           // improper value.
@@ -577,6 +587,7 @@ class entropy_src_dut_cfg extends uvm_object;
     `DV_CHECK(rng_bit_enable_pct <= 100);
     `DV_CHECK(route_software_pct <= 100);
     `DV_CHECK(type_bypass_pct <= 100);
+    `DV_CHECK(esfinal_clr_while_dsbld_pct <= 100);
     `DV_CHECK(fw_read_pct <= 100);
     `DV_CHECK(fw_over_pct <= 100);
     `DV_CHECK(fw_ov_insert_start_pct <= 100);

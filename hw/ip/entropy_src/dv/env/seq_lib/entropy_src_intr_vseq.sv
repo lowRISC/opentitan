@@ -333,8 +333,9 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
                  .compare_value(alert_state));
     // Check if we can consume entropy via the entropy_data register.
     if (cfg.es_route_sw == MuBi4True) begin
+      // The scoreboard ensures we can only read 0.
       do_entropy_data_read(.max_bundles(1), .bundles_found(bundles_found));
-      `DV_CHECK(!bundles_found)
+      `DV_CHECK(bundles_found == 1)
     // Check if we can consume entropy via the CSRNG interface.
     end else begin
       // There should be 1 transaction left for m_csrng_pull_seq.
@@ -348,9 +349,13 @@ class entropy_src_intr_vseq extends entropy_src_base_vseq;
       cfg.m_rng_agent_cfg.clear_h_user_data();
       // Provide two windows worth of entropy to make sure m_csrng_pull_seq can finish no
       // matter what the configuration is.
-      m_rng_push_seq.num_trans = 3*cfg.dut_cfg.fips_window_size;
+      if (`gmv(ral.conf.fips_enable) == prim_mubi_pkg::MuBi4True) begin
+        m_rng_push_seq.num_trans = 3*cfg.dut_cfg.fips_window_size;
+      end else begin
+        m_rng_push_seq.num_trans = 3*384/`RNG_BUS_WIDTH;
+      end
       for (int i = 0; i < m_rng_push_seq.num_trans; i++) begin
-        rng_val = rng_arr[i%16];
+        rng_val = rng_arr[(i+8)%16];
         cfg.m_rng_agent_cfg.add_h_user_data(rng_val);
       end
       m_rng_push_seq.start(p_sequencer.rng_sequencer_h);

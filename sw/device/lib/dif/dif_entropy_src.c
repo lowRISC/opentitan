@@ -69,6 +69,11 @@ dif_result_t dif_entropy_src_configure(const dif_entropy_src_t *entropy_src,
   entropy_ctrl_reg = bitfield_field32_write(
       entropy_ctrl_reg, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
       config.bypass_conditioner ? kMultiBitBool4True : kMultiBitBool4False);
+  entropy_ctrl_reg = bitfield_field32_write(
+      entropy_ctrl_reg,
+      ENTROPY_SRC_ENTROPY_CONTROL_ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD,
+      config.clear_esfinal_fifo_while_disabled ? kMultiBitBool4True
+                                               : kMultiBitBool4False);
   mmio_region_write32(entropy_src->base_addr,
                       ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET, entropy_ctrl_reg);
 

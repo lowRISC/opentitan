@@ -135,6 +135,7 @@ status_t enable_loose_entropy_src_bypass_mode(void) {
       .fips_flag = false,
       .rng_fips = false,
       .bypass_conditioner = true,
+      .clear_esfinal_fifo_while_disabled = true,
       .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
       .health_test_threshold_scope = false,
       .health_test_window_size = 512,
