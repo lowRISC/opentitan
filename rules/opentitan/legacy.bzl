@@ -143,6 +143,7 @@ scramble_flash_vmem = rv_rule(
 
 def _scramble_rram_vmem_impl(ctx):
     outputs = [scramble_rram(ctx, suffix = "scr.vmem", name = ctx.attr.out or None)]
+
     return [
         DefaultInfo(
             files = depset(outputs),

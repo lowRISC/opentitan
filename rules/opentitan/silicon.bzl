@@ -11,8 +11,7 @@ load(
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
     "extract_software_logs",
-    "scramble_flash",
-    "scramble_rram",
+    "scramble_nvm",
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:util.bzl",
@@ -52,6 +51,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
       dict: A dict of fields to create in the provider.
     """
     hashfile = None
+    vmem_slot_b = None
     if ctx.attr.kind == "rom":
         (rom, hashfile) = convert_to_scrambled_rom_vmem(
             ctx,
@@ -76,7 +76,6 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     elif ctx.attr.kind in ("flash", "rram"):
         is_rram = ctx.attr.kind == "rram"
         word_size = 128 if is_rram else 64
-        scramble = scramble_rram if is_rram else scramble_flash
         scramble_tool = exec_env.rram_scramble_tool if is_rram else exec_env.flash_scramble_tool
 
         default = signed_bin if signed_bin else binary
@@ -90,10 +89,11 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             word_size = word_size,
             fill = "0x00" if is_rram else "0xff",
         )
-        vmem = scramble(
+        (vmem, vmem_slot_b) = scramble_nvm(
             ctx,
+            kind = ctx.attr.kind,
+            word_size = word_size,
             name = name,
-            suffix = "{}.scr.vmem".format(word_size),
             src = vmem_base,
             otp = get_fallback(ctx, "file.otp", exec_env),
             otp_mmap = exec_env.otp_mmap,
@@ -101,6 +101,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             otp_data_perm = exec_env.otp_data_perm,
             _tool = scramble_tool.files_to_run,
         )
+
     else:
         fail("Not implemented: kind ==", ctx.attr.kind)
 
@@ -120,6 +121,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
         "mapfile": mapfile,
         "hashfile": hashfile,
         "vmem": vmem,
+        "vmem_slot_b": vmem_slot_b,
         "logs": logs,
     }
 

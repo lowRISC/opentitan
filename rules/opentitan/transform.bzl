@@ -380,6 +380,53 @@ def scramble_rram(ctx, **kwargs):
     )
     return output
 
+def scramble_nvm(ctx, kind, word_size, **kwargs):
+    """Scramble a VMEM file for loading into some non-volatile memory (flash or RRAM).
+
+    This dispatches to the relevant `scramble_flash` or `scramble_rram` helper. RRAM scrambling
+    is dependent on the absolute address, and so in that case we always build an image for
+    both physical slots, where tooling can then decide which image to load.
+
+    Outputs:
+      - flash: <name>.<word_size>.scr.vmem
+      - rram: <name>.slot_a.<word_size>.scr.vmem
+          and <name>.slot_b.<word_size>.scr.vmem
+
+    Args:
+      ctx: The context object for this rule.
+      kind: The kind of the binary ("flash" or "rram").
+      word_size: The word size of the VMEM.
+      kwargs: Overrides passed through to `scramble_flash` or `scramble_rram`.
+
+    Returns:
+      (File, File): The scrambled image for flash or RRAM slot A, and then the scrambled image
+      for RRAM slot B, or `None` for flash.
+    """
+    for arg in ("output", "suffix", "slot"):
+        if arg in kwargs:
+            fail("Overriding '{}' is not allowed since this is implemented by `scramble_nvm`".format(arg))
+
+    if kind == "flash":
+        vmem = scramble_flash(ctx, suffix = "{}.scr.vmem".format(word_size), **kwargs)
+        return vmem, None
+
+    if kind == "rram":
+        vmem_slot_a = scramble_rram(
+            ctx,
+            suffix = "slot_a.{}.scr.vmem".format(word_size),
+            slot = "a",
+            **kwargs
+        )
+        vmem_slot_b = scramble_rram(
+            ctx,
+            suffix = "slot_b.{}.scr.vmem".format(word_size),
+            slot = "b",
+            **kwargs
+        )
+        return vmem_slot_a, vmem_slot_b
+
+    fail("Unknown kind '{}' for NVM images".format(kind))
+
 def rram_otp_image(ctx, exec_env, otp_attr):
     """Reformats an exec_env's `otp` attribute into the RRAM-native layout that backdoor-loading
     OTP into the RRAM data array expects.

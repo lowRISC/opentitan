@@ -554,6 +554,11 @@ def _opentitan_binary(ctx):
         if provides.get("rom32"):
             default_info.append(provides["rom32"])
 
+        # RRAM address-infection & scrambling depends on the physical slot,
+        # so we map slot A and slot B separately (see `scramble_rram()`).
+        if provides.get("vmem_slot_b"):
+            default_info.append(provides["vmem_slot_b"])
+
         groups.update(_as_group_info(exec_env.exec_env, signed))
         groups.update(_as_group_info(exec_env.exec_env, provides))
         ot_bin_env_info[exec_env.provider] = exec_env

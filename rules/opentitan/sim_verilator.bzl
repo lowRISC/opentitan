@@ -3,7 +3,12 @@
 # SPDX-License-Identifier: Apache-2.0
 
 load("@lowrisc_opentitan//rules/opentitan:providers.bzl", "SimVerilatorBinaryInfo")
-load("@lowrisc_opentitan//rules/opentitan:util.bzl", "get_fallback")
+load(
+    "@lowrisc_opentitan//rules/opentitan:util.bzl",
+    "assemble_for_test",
+    "get_fallback",
+    "recursive_format",
+)
 load(
     "//rules/opentitan:exec_env.bzl",
     "ExecEnvInfo",
@@ -88,7 +93,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             # Breakfast and Earl Grey but they are stored in the ConTrol
             # Network RAM on Darjeeling targets.
             word_size = 32 if exec_env.design == "darjeeling" else 64
-        vmem_base = convert_to_vmem(
+        vmem = convert_to_vmem(
             ctx,
             name = name,
             src = signed_bin if signed_bin else binary,
@@ -96,20 +101,10 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
             fill = "0x00" if is_rram else "0xff",
         )
         if is_rram and exec_env.rram_scramble_tool != None:
-            vmem = scramble_rram(
-                ctx,
-                name = name,
-                suffix = "128.scr.vmem",
-                src = vmem_base,
-                otp = get_fallback(ctx, "file.otp", exec_env),
-                otp_mmap = exec_env.otp_mmap,
-                top_secret_cfg = exec_env.top_secret_cfg,
-                otp_data_perm = exec_env.otp_data_perm,
-                _tool = exec_env.rram_scramble_tool.files_to_run,
-            )
+            # RRAM images are scrambled at load-time depending on the target slot.
+            default = signed_bin if signed_bin else binary
         else:
-            vmem = vmem_base
-        default = vmem
+            default = vmem
         rom = None
         rom32 = None
     else:
@@ -118,7 +113,7 @@ def _transform(ctx, exec_env, name, elf, binary, signed_bin, disassembly, mapfil
     return {
         "elf": elf,
         "binary": binary,
-        "default": vmem,
+        "default": default,
         "rom": rom,
         "signed_bin": signed_bin,
         "disassembly": disassembly,
@@ -153,6 +148,55 @@ def _test_dispatch(ctx, exec_env, firmware):
             data_files.append(rram_otp)
             param["otp"] = rram_otp.short_path
             action_param["otp"] = rram_otp.path
+
+    if ctx.attr.kind == "rram" and exec_env.rram_scramble_tool != None:
+        # RRAM images are loaded via a backdoor and scrambling is not currently supported in
+        # the Verilator model. Since RRAM scrambling depends on absolute addresses, we must
+        # scramble at load time when the physical slot is known (i.e. it depends on `assemble`).
+        if "assemble" in param:
+            assemble = recursive_format(param["assemble"], action_param)
+            assemble = ctx.expand_location(assemble, data_labels)
+            image = assemble_for_test(
+                ctx,
+                name = ctx.attr.name,
+                spec = assemble.strip().split(" "),
+                data_files = data_files,
+                opentitantool = exec_env._opentitantool,
+            )
+            vmem = convert_to_vmem(
+                ctx,
+                name = "{}_assembled".format(ctx.attr.name),
+                src = image,
+                word_size = 128,
+                fill = "0x00",
+            )
+            # TODO: This still does not exactly match the FPGA and silicon environments, which
+            # may skip pages (as per EEPROM SPI page programming) whilst bootstrapping that
+            # are all ones. But this is an edge case that needs more thought towards supporting.
+
+        elif firmware:
+            vmem = firmware.vmem
+        else:
+            vmem = None
+
+        # After assembling the test image, we simply scramble for slot A, which will
+        # create the correct address for images in either (or both) slots etc.
+        if vmem:
+            nvm = scramble_rram(
+                ctx,
+                name = ctx.attr.name,
+                suffix = "128.scr.vmem",
+                slot = "a",
+                src = vmem,
+                otp = get_fallback(ctx, "file.otp", exec_env),
+                otp_mmap = exec_env.otp_mmap,
+                top_secret_cfg = exec_env.top_secret_cfg,
+                otp_data_perm = exec_env.otp_data_perm,
+                _tool = exec_env.rram_scramble_tool.files_to_run,
+            )
+            param["firmware"] = nvm.short_path
+            action_param["firmware"] = nvm.path
+            data_files.append(nvm)
 
     # Perform all relevant substitutions on the test_cmd.
     test_cmd = get_fallback(ctx, "attr.test_cmd", exec_env)
