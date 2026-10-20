@@ -30,6 +30,14 @@ enum {
    * Number of bytes in an attestation key's keyblob.
    */
   kCdiKeyblobHwBackedBytes = kCdiKeyblobHwBackedWords * sizeof(uint32_t),
+  /**
+   * Number of 32-bit words in a software-visible hardware-backed key's keyblob.
+   */
+  kSwKeyblobHwBackedWords = 2 * kKeymgrOutputShareNumWords,
+  /**
+   * Number of bytes in a software-visible hardware-backed key's keyblob.
+   */
+  kSwKeyblobHwBackedBytes = kSwKeyblobHwBackedWords * sizeof(uint32_t),
 };
 
 /**
