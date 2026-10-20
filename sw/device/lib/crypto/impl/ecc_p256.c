@@ -361,13 +361,14 @@ otcrypto_status_t otcrypto_ecdsa_p256_hash_sign_verify(
     const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
     const otcrypto_const_byte_buf_t *message,
     otcrypto_word32_buf_t *signature) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P256_HASH_SIGN_VERIFY);
   OTCRYPTO_HEALTH_CHECK(kTestP256SignBit);
   uint32_t digest_data[16];
   HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
   otcrypto_hash_digest_t digest;
   HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
-  return otcrypto_ecdsa_p256_sign_verify(private_key, public_key, digest,
-                                         signature);
+  return otcrypto_eval_exit(otcrypto_ecdsa_p256_sign_verify(
+      private_key, public_key, digest, signature));
 }
 
 otcrypto_status_t otcrypto_ecdsa_p256_hash_verify(
