@@ -105,6 +105,28 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
                                       otcrypto_blinded_key_t *private_key);
 
 /**
+ * Performs deterministic RSA key generation from caller-provided entropy.
+ *
+ * Computes RSA private key (d) and the public key modulus (n) by seeding the
+ * CSRNG in deterministic mode with `entropy` and testing candidate primes p
+ * and q in a loop by writing each candidate into OTBN DMEM (`rsa_n`) via
+ * `otbn_dmem_write` and invoking the OTBN prime check routine that bypasses
+ * the EDN `RND` call during candidate generation.
+ *
+ * See `otcrypto_rsa_keygen` for details on the requirements for `public_key`
+ * and `private_key`.
+ *
+ * @param size RSA size parameter.
+ * @param entropy Caller-provided entropy seed material (1 to 48 bytes).
+ * @param[out] public_key Pointer to public key struct.
+ * @param[out] private_key Pointer to blinded private key struct.
+ * @return Result of the deterministic RSA key generation.
+ */
+otcrypto_status_t otcrypto_rsa_keygen_deterministic(
+    otcrypto_rsa_size_t size, const otcrypto_const_byte_buf_t *entropy,
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key);
+
+/**
  * Constructs an RSA public key from the modulus and public exponent.
  *
  * The caller should allocate space for the public key and set the `key` and

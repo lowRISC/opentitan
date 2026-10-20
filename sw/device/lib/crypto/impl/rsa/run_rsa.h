@@ -99,6 +99,16 @@ status_t rsa_modexp_finalize_size(rsa_size_t size, uint32_t *result);
 status_t rsa_keygen_start(rsa_size_t size);
 
 /**
+ * Starts an RSA key generation routine on OTBN (standard or deterministic).
+ *
+ * @param size RSA key size.
+ * @param deterministic Whether to run deterministic key generation.
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_keygen_init(rsa_size_t size, hardened_bool_t deterministic);
+
+/**
  * Waits for an RSA key generation to complete.
  *
  * Should be invoked only after `rsa_keygen_start`. Blocks until OTBN is

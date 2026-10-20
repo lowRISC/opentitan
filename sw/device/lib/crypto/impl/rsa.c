@@ -20,6 +20,7 @@
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 
 // Module ID for status codes.
@@ -299,7 +300,9 @@ static status_t public_key_structural_check(
   return rsa_mode_check(public_key->key_mode);
 }
 
-otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size) {
+OT_ALWAYS_INLINE
+static otcrypto_status_t rsa_keygen_async_start(otcrypto_rsa_size_t size,
+                                                hardened_bool_t deterministic) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_KEYGEN_ASYNC_START);
   OTCRYPTO_HEALTH_CHECK(kTestRsa4096SignBit);
   OTCRYPTO_HEALTH_CHECK(size == kOtcryptoRsaSize2048 ? kTestRsa2048VerifyBit
@@ -310,15 +313,15 @@ otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size) {
   switch (launder32(size)) {
     case kOtcryptoRsaSize2048:
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
-      HARDENED_TRY(rsa_keygen_start(kRsaSize2048));
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_init(kRsaSize2048, deterministic));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     case kOtcryptoRsaSize3072:
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
-      HARDENED_TRY(rsa_keygen_start(kRsaSize3072));
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_init(kRsaSize3072, deterministic));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     case kOtcryptoRsaSize4096:
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
-      HARDENED_TRY(rsa_keygen_start(kRsaSize4096));
+      HARDENED_TRY_WIPE_DMEM(rsa_keygen_init(kRsaSize4096, deterministic));
       return otcrypto_eval_exit(OTCRYPTO_OK);
     default:
       return OTCRYPTO_BAD_ARGS;
@@ -329,9 +332,15 @@ otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size) {
   return OTCRYPTO_FATAL_ERR;
 }
 
-otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
-                                      otcrypto_unblinded_key_t *public_key,
-                                      otcrypto_blinded_key_t *private_key) {
+otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size) {
+  return rsa_keygen_async_start(size, /*deterministic=*/kHardenedBoolFalse);
+}
+
+OT_ALWAYS_INLINE
+static otcrypto_status_t rsa_keygen(otcrypto_rsa_size_t size,
+                                    hardened_bool_t deterministic,
+                                    otcrypto_unblinded_key_t *public_key,
+                                    otcrypto_blinded_key_t *private_key) {
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (public_key == NULL || private_key == NULL) {
@@ -345,8 +354,27 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  HARDENED_TRY(otcrypto_rsa_keygen_async_start(size));
+  HARDENED_TRY(rsa_keygen_async_start(size, deterministic));
   return otcrypto_rsa_keygen_async_finalize(public_key, private_key);
+}
+
+otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
+                                      otcrypto_unblinded_key_t *public_key,
+                                      otcrypto_blinded_key_t *private_key) {
+  return rsa_keygen(size, /*deterministic=*/kHardenedBoolFalse, public_key,
+                    private_key);
+}
+
+otcrypto_status_t otcrypto_rsa_keygen_deterministic(
+    otcrypto_rsa_size_t size, const otcrypto_const_byte_buf_t *entropy,
+    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
+  otcrypto_const_byte_buf_t empty =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
+  HARDENED_TRY(otcrypto_drbg_uninstantiate());
+  HARDENED_TRY(otcrypto_drbg_manual_instantiate(entropy, &empty));
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_KEYGEN_DETERMINISTIC);
+  return otcrypto_eval_exit(rsa_keygen(
+      size, /*deterministic=*/kHardenedBoolTrue, public_key, private_key));
 }
 
 otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
