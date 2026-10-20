@@ -95,6 +95,26 @@ This agent will return random data as entropy after a random delay any time the 
 The KMAC testbench instantiates an array of [`kmac_app_agent`](../../../dv/sv/kmac_app_agent/README.md) to model the application interfaces used by other IP blocks to request a KMAC hash operation on some data.
 These interfaces are used to send in message data to the KMAC, and to receive an output digest.
 
+#### Response-ready policy configuration
+The response-ready policy controls when the KMAC app host agent asserts `rsp_ready`, allowing tests to add backpressure to response transfers.
+The default policy is `always`. Use these plusargs to select a policy globally or override it for an individual app interface:
+
+* `+kmac_app_rsp_ready_policy=<policy>` sets the default policy for all interfaces.
+* `+kmac_app_rsp_ready_policy_<index>=<policy>` overrides the policy for the "index"ed interface.
+* `+kmac_app_max_stall_cycles=<cycles>` sets the default maximum stall.
+* `+kmac_app_max_stall_cycles_<index>=<cycles>` overrides the maximum stall for the "index"ed interface.
+
+Interface indices are `0` = KeyMgr, `1` = LC_CTRL, `2` = ROM_CTRL, and `3` = OTBN.
+Indexed plusargs take precedence over the corresponding global plusargs.
+If no maximum-stall plusarg is provided, the agent configuration default is used.
+
+Supported policy names and behavior:
+
+* `always` - Keep `rsp_ready` asserted every cycle.
+* `always_with_dip` - Keep `rsp_ready` asserted except for one cycle after each response handshake.
+* `random` - When `rsp_valid` goes high, randomly assert `rsp_ready` according to `ready_pct`, forcing it high after the maximum stall.
+* `when_valid` - Assert `rsp_ready` for one cycle when `rsp_valid` first goes high, then wait for `rsp_valid` to go low before accepting another response.
+
 ### UVM RAL Model
 The KMAC RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
