@@ -41,8 +41,17 @@ Since interrupts are implemented as status bits, they are cleared by writing a '
 ### Aborting a Transfer
 
 Software can terminate an ongoing DMA transfer at any point by writing to the `abort` bit in the [`CONTROL`](registers.md#control) register.
-Aborting an operation happens immediately after writing the `abort` bit and does not require any further scheduling or waiting.
+The abort takes effect immediately after writing the `abort` bit, and software does not need to wait before starting the next transfer.
 The [`STATUS`](registers.md#status) indicates via the `aborted` bit that the DMA operation was aborted and the DMA stopped its operation.
+A bus request of the aborted transfer may still be awaiting its response at that point.
+If a request on the OpenTitan internal or SoC control TL-UL port is still awaiting its response when the abort takes effect, the DMA does not start the next transfer until that response has arrived.
+A SoC control target that never responds therefore stalls every later transfer until the DMA is reset.
+Until the next transfer starts, `STATUS.busy` stays clear and the configuration registers stay unlocked.
+`STATUS.aborted` also stays set until then, unless software clears it.
+Software must not change the configuration while `CONTROL.go` is set, because the registers are locked only once the transfer starts.
+To detect the end of that transfer, software should wait for `STATUS.done` rather than for `STATUS.busy` to clear.
+Requests on the SoC System Bus are not tracked ([#31929](https://github.com/lowRISC/opentitan/issues/31929)).
+A late response on that bus can be taken as the response of the next transfer that uses it.
 
 ## Chunked Data Transfers
 
