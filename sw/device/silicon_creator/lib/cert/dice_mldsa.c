@@ -513,7 +513,12 @@ static rom_error_t dice_attest_next_cdi(
   uint64_t cached_id;
   HARDENED_RETURN_IF_ERROR(
       dice_storage_get_key_id(params->key_id_index, &cached_id));
-  bool cache_valid = cached_id == expected_id;
+  // If CDI_0 was reissued, the page was written by someone else (e.g. an older
+  // ROM_EXT, which stores the CDI_0 key ID where we store the CDI_1 key ID), so
+  // the CDI_1 key ID check alone can't be trusted. (When attesting CDI_0
+  // itself, `cert_size` was zeroed above, so this has no effect.)
+  bool cache_valid =
+      cached_id == expected_id && static_dice_cdi_0.cert_size == 0;
   bool regenerate = dice_cert_needs_regenerate(cache_valid);
 
   if (regenerate) {

@@ -174,7 +174,11 @@ rom_error_t dice_chain_attestation_owner(
 
   uint64_t expected_cdi1_id = read_64(subject_pubkey_id.digest);
 
+  // If CDI_0 was reissued, the page was written by someone else (e.g. an older
+  // ROM_EXT, which stores the CDI_0 key ID where we store the CDI_1 key ID), so
+  // the CDI_1 key ID check alone can't be trusted. Rebuild the page.
   bool cache_valid =
+      static_dice_cdi_0.cert_size == 0 &&
       dice_page.cdi_key_ids[kDicePageKeyIdxCdi1] == expected_cdi1_id;
 
   if (!cache_valid) {
