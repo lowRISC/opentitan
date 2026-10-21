@@ -10,6 +10,7 @@ pub mod ecdsa_commands;
 pub mod ed25519_commands;
 pub mod hash_commands;
 pub mod hmac_commands;
+pub mod kdf_commands;
 pub mod kmac_commands;
 pub mod rsa_commands;
 pub mod sha_commands;

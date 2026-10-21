@@ -34,6 +34,7 @@ FIRMWARE_DEPS = [
     "//sw/device/tests/crypto/cryptotest/firmware:ed25519",
     "//sw/device/tests/crypto/cryptotest/firmware:hash",
     "//sw/device/tests/crypto/cryptotest/firmware:hmac",
+    "//sw/device/tests/crypto/cryptotest/firmware:kdf",
     "//sw/device/tests/crypto/cryptotest/firmware:kmac",
     "//sw/device/tests/crypto/cryptotest/firmware:rsa",
     "//sw/device/tests/crypto/cryptotest/firmware:sha",
