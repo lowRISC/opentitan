@@ -27,7 +27,7 @@
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
-static dif_gpio_t gpio;
+static dif_gpio_t gpios[kDtGpioCount];
 static dif_pinmux_t pinmux;
 static dif_uart_t uart0;
 static dif_rv_plic_t plic;
@@ -41,10 +41,10 @@ status_t command_processor(ujson_t *uj) {
     TRY(ujson_deserialize_test_command_t(uj, &command));
     switch (command) {
       case kTestCommandGpioSet:
-        RESP_ERR(uj, gpio_set(uj, &gpio));
+        RESP_ERR(uj, gpio_set(uj));
         break;
       case kTestCommandGpioGet:
-        RESP_ERR(uj, gpio_get(uj, &gpio));
+        RESP_ERR(uj, gpio_get(uj));
         break;
       case kTestCommandPinmuxConfig:
         RESP_ERR(uj, pinmux_config(uj, &pinmux));
@@ -70,12 +70,11 @@ void ottf_external_isr(uint32_t *exc_info) {
   CHECK_DIF_OK(
       dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0, &plic_irq_id));
   // Check if it is the right peripheral.
-  top_earlgrey_plic_peripheral_t peripheral = (top_earlgrey_plic_peripheral_t)
-      top_earlgrey_plic_interrupt_for_peripheral[plic_irq_id];
+  dt_instance_id_t inst_id = dt_plic_id_to_instance_id(plic_irq_id);
 
   // Hyper debug tests get uart interrupt by design.
   // Filter uart interrupt.
-  if (peripheral == kTopEarlgreyPlicPeripheralUart0) {
+  if (inst_id == dt_uart_instance_id(kDtUart0)) {
     // Complete the IRQ at PLIC.
     CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0,
                                           plic_irq_id));
@@ -85,9 +84,12 @@ void ottf_external_isr(uint32_t *exc_info) {
   // For each test, interrupt triggers in order.
   // Once all interrupts are triggered, `intr_index` will be set to 0 for the
   // next test.
-  if (peripheral == kTopEarlgreyPlicPeripheralGpio0) {
+  if (dt_device_type(inst_id) == kDtDeviceTypeGpio) {
     // Correlate the interrupt fired from GPIO.
-    uint32_t gpio_pin_irq_fired = plic_irq_id - kTopEarlgreyPlicIrqIdGpio0Gpio0;
+    dt_gpio_t gpio_dt = dt_gpio_from_instance_id(inst_id);
+    dif_gpio_t *gpio = &gpios[gpio_dt];
+    uint32_t gpio_pin_irq_fired =
+        dt_gpio_irq_from_plic_id(gpio_dt, plic_irq_id);
     CHECK(gpio_pin_irq_fired == kExpected_intr[intr_index],
           "Unexpected interrupt rcv:%d  exp:%d", gpio_pin_irq_fired,
           kExpected_intr[intr_index]);
@@ -101,9 +103,9 @@ void ottf_external_isr(uint32_t *exc_info) {
     // handler need to disable interrupt before it clear.
     // Interrupt is enabled by the host right before the test.
     // Disable and clear the interrupt at GPIO.
-    CHECK_DIF_OK(dif_gpio_irq_set_enabled(&gpio, gpio_pin_irq_fired,
-                                          kDifToggleDisabled));
-    CHECK_DIF_OK(dif_gpio_irq_acknowledge(&gpio, gpio_pin_irq_fired));
+    CHECK_DIF_OK(
+        dif_gpio_irq_set_enabled(gpio, gpio_pin_irq_fired, kDifToggleDisabled));
+    CHECK_DIF_OK(dif_gpio_irq_acknowledge(gpio, gpio_pin_irq_fired));
     CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0,
                                           plic_irq_id));
   }
@@ -112,16 +114,21 @@ void ottf_external_isr(uint32_t *exc_info) {
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
-  CHECK_DIF_OK(dif_gpio_init(
-      mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR), &gpio));
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
 
-  rv_plic_testutils_irq_range_enable(
-      &plic, kTopEarlgreyPlicTargetIbex0, kTopEarlgreyPlicIrqIdGpio0Gpio0,
-      kTopEarlgreyPlicIrqIdGpio0Gpio0 + kDifGpioNumPins);
+  // Route the interrupts of all GPIO instances to the hart. The host selects
+  // the instance under test with each command.
+  for (dt_gpio_t gpio_dt = 0; gpio_dt < kDtGpioCount; ++gpio_dt) {
+    CHECK_DIF_OK(dif_gpio_init_from_dt(gpio_dt, &gpios[gpio_dt]));
+    dt_plic_irq_id_t first_irq =
+        dt_gpio_irq_to_plic_id(gpio_dt, kDtGpioIrqGpio0);
+    rv_plic_testutils_irq_range_enable(&plic, kTopEarlgreyPlicTargetIbex0,
+                                       first_irq,
+                                       first_irq + kDifGpioNumPins - 1);
+  }
 
   // Anker for the host
   LOG_INFO("gpio_intr_test ");

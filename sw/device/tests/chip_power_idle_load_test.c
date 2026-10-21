@@ -43,26 +43,23 @@ static dif_otp_ctrl_t otp_ctrl;
 static dif_gpio_t gpio;
 
 static const dt_pwrmgr_t kPwrmgrDt = 0;
-static_assert(kDtPwrmgrCount == 1, "this library expects exactly one pwrmgr");
+static_assert(kDtPwrmgrCount == 1, "this test expects exactly one pwrmgr");
 static const dt_rv_core_ibex_t kRvCoreIbexDt = 0;
 static_assert(kDtRvCoreIbexCount == 1,
-              "this library expects exactly one rv_core_ibex");
+              "this test expects exactly one rv_core_ibex");
 static const dt_alert_handler_t kAlertHandlerDt = 0;
 static_assert(kDtAlertHandlerCount == 1,
-              "this library expects exactly one alert_handler");
+              "this test expects exactly one alert_handler");
 static const dt_rv_timer_t kRvTimerDt = 0;
-static_assert(kDtRvTimerCount >= 1,
-              "this library expects at least one rv_timer");
+static_assert(kDtRvTimerCount >= 1, "this test expects at least one rv_timer");
 static const dt_aon_timer_t kAonTimerDt = 0;
-static_assert(kDtAonTimerCount == 1,
-              "this library expects exactly one aon_timer");
+static_assert(kDtAonTimerCount == 1, "this test expects exactly one aon_timer");
 static const dt_pinmux_t kPinmuxDt = 0;
-static_assert(kDtPinmuxCount == 1, "this library expects exactly one pinmux");
-static const dt_gpio_t kGpioDt = 0;
-static_assert(kDtGpioCount == 1, "this library expects exactly one gpio");
+static_assert(kDtPinmuxCount == 1, "this test expects exactly one pinmux");
+static const dt_gpio_t kGpioDt = kDtGpioFirst;
+static_assert(kDtGpioCount >= 1, "this test expects at least one gpio");
 static const dt_otp_ctrl_t kOtpCtrlDt = 0;
-static_assert(kDtOtpCtrlCount == 1,
-              "this library expects exactly one otp_ctrl");
+static_assert(kDtOtpCtrlCount == 1, "this test expects exactly one otp_ctrl");
 
 OTTF_DEFINE_TEST_CONFIG();
 

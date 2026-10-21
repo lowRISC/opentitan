@@ -120,6 +120,11 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             dif::GPIO_INTR_ENABLE_REG_OFFSET,
         ),
         (
+            "gpio1",
+            top_earlgrey::GPIO1_BASE_ADDR,
+            dif::GPIO_INTR_ENABLE_REG_OFFSET,
+        ),
+        (
             "hmac",
             top_earlgrey::HMAC_BASE_ADDR,
             dif::HMAC_INTR_ENABLE_REG_OFFSET,

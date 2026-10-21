@@ -349,10 +349,10 @@ set_false_path -from [get_clocks clk_usb_48] -to [get_pins ${u_ast_primary}/u_us
 # software may still select others.
 #   I3C0: SCL = IOB10 (insel 21), SDA = IOB9  (insel 20)
 #   I3C1: SCL = IOB11 (insel 22), SDA = IOB12 (insel 23)
-set i3c0_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_38/q_reg
-set i3c0_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_39/q_reg
-set i3c1_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_40/q_reg
-set i3c1_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_41/q_reg
+set i3c0_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_70/q_reg
+set i3c0_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_71/q_reg
+set i3c1_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_72/q_reg
+set i3c1_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_73/q_reg
 
 # insel 21 = 6'b010101
 set_case_analysis 1 [get_pins [list ${i3c0_scl_insel}\[0\]/Q ${i3c0_scl_insel}\[2\]/Q \
@@ -375,10 +375,10 @@ set_case_analysis 0 [get_pins [list ${i3c1_sda_insel}\[3\]/Q ${i3c1_sda_insel}\[
 
 # The Target Reset Detectors are clocked by SCL and SDA too, through their own
 # pinmux inputs. Pin these to the same pads as the inputs of their I3C instance.
-set i3c0_rstdet_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_50/q_reg
-set i3c0_rstdet_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_51/q_reg
-set i3c1_rstdet_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_52/q_reg
-set i3c1_rstdet_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_53/q_reg
+set i3c0_rstdet_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_82/q_reg
+set i3c0_rstdet_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_83/q_reg
+set i3c1_rstdet_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_84/q_reg
+set i3c1_rstdet_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_85/q_reg
 
 # insel 21 = 6'b010101
 set_case_analysis 1 [get_pins [list ${i3c0_rstdet_scl_insel}\[0\]/Q \

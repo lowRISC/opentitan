@@ -14,6 +14,7 @@ CONNECTION, RSTMGR_LC_IO_DIV4_D0_UART1_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rs
 CONNECTION, RSTMGR_LC_IO_DIV4_D0_UART2_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_div4_n[1], top_earlgrey.earlgrey_pd_main.u_uart2, rst_ni
 CONNECTION, RSTMGR_LC_IO_DIV4_D0_UART3_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_div4_n[1], top_earlgrey.earlgrey_pd_main.u_uart3, rst_ni
 CONNECTION, RSTMGR_LC_IO_DIV4_D0_GPIO0_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_div4_n[1], top_earlgrey.earlgrey_pd_main.u_gpio0, rst_ni
+CONNECTION, RSTMGR_LC_IO_DIV4_D0_GPIO1_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_lc_io_div4_n[1], top_earlgrey.earlgrey_pd_main.u_gpio1, rst_ni
 CONNECTION, RSTMGR_SPI_DEVICE_D0_SPI_DEVICE_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_spi_device_n[1], top_earlgrey.earlgrey_pd_main.u_spi_device, rst_ni
 CONNECTION, RSTMGR_I2C0_D0_I2C0_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_i2c0_n[1], top_earlgrey.earlgrey_pd_main.u_i2c0, rst_ni
 CONNECTION, RSTMGR_I2C1_D0_I2C1_RST_NI, top_earlgrey.earlgrey_pd_aon.u_rstmgr, resets_o.rst_i2c1_n[1], top_earlgrey.earlgrey_pd_main.u_i2c1, rst_ni

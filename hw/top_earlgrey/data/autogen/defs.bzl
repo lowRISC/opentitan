@@ -89,6 +89,7 @@ EARLGREY_ALERTS = [
     "uart2_fatal_fault",
     "uart3_fatal_fault",
     "gpio0_fatal_fault",
+    "gpio1_fatal_fault",
     "spi_device_fatal_fault",
     "i2c0_fatal_fault",
     "i2c1_fatal_fault",

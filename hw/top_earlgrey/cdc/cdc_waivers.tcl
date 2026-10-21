@@ -51,7 +51,7 @@ set_rule_status -rule {W_DATA W_MASYNC} -status {Waived} \
 # Driving from PAD to gpio/ uart/ i2c
 set_rule_status -rule {W_MASYNC} -status {Waived}            \
   -expression {(Driver=~"IO*") &&                            \
-    (ReceivingFlop=~"*u_gpio0.gen_filter*prim_flop_2sync*")} \
+    (ReceivingFlop=~"*u_gpio*.gen_filter*prim_flop_2sync*")} \
   -comment {Other than PADS, other signals are static}
 set_rule_status -rule {W_MASYNC} -status {Waived}                         \
   -expression {(Driver=~"IO*") && (ReceivingFlop=~"*u_uart*.*u_sync_1*")} \

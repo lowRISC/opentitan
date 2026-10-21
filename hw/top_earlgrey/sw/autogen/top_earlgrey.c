@@ -16,12 +16,13 @@
  * `top_earlgrey_alert_peripheral_t`.
  */
 const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[68] = {
+    top_earlgrey_alert_for_peripheral[69] = {
   [kTopEarlgreyAlertIdUart0FatalFault] = kTopEarlgreyAlertPeripheralUart0,
   [kTopEarlgreyAlertIdUart1FatalFault] = kTopEarlgreyAlertPeripheralUart1,
   [kTopEarlgreyAlertIdUart2FatalFault] = kTopEarlgreyAlertPeripheralUart2,
   [kTopEarlgreyAlertIdUart3FatalFault] = kTopEarlgreyAlertPeripheralUart3,
   [kTopEarlgreyAlertIdGpio0FatalFault] = kTopEarlgreyAlertPeripheralGpio0,
+  [kTopEarlgreyAlertIdGpio1FatalFault] = kTopEarlgreyAlertPeripheralGpio1,
   [kTopEarlgreyAlertIdSpiDeviceFatalFault] = kTopEarlgreyAlertPeripheralSpiDevice,
   [kTopEarlgreyAlertIdI2c0FatalFault] = kTopEarlgreyAlertPeripheralI2c0,
   [kTopEarlgreyAlertIdI2c1FatalFault] = kTopEarlgreyAlertPeripheralI2c1,
@@ -94,7 +95,7 @@ const top_earlgrey_alert_peripheral_t
  * `top_earlgrey_plic_peripheral_t`.
  */
 const top_earlgrey_plic_peripheral_t
-    top_earlgrey_plic_interrupt_for_peripheral[190] = {
+    top_earlgrey_plic_interrupt_for_peripheral[222] = {
   [kTopEarlgreyPlicIrqIdNone] = kTopEarlgreyPlicPeripheralUnknown,
   [kTopEarlgreyPlicIrqIdUart0TxWatermark] = kTopEarlgreyPlicPeripheralUart0,
   [kTopEarlgreyPlicIrqIdUart0RxWatermark] = kTopEarlgreyPlicPeripheralUart0,
@@ -164,6 +165,38 @@ const top_earlgrey_plic_peripheral_t
   [kTopEarlgreyPlicIrqIdGpio0Gpio29] = kTopEarlgreyPlicPeripheralGpio0,
   [kTopEarlgreyPlicIrqIdGpio0Gpio30] = kTopEarlgreyPlicPeripheralGpio0,
   [kTopEarlgreyPlicIrqIdGpio0Gpio31] = kTopEarlgreyPlicPeripheralGpio0,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio0] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio1] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio2] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio3] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio4] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio5] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio6] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio7] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio8] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio9] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio10] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio11] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio12] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio13] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio14] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio15] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio16] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio17] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio18] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio19] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio20] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio21] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio22] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio23] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio24] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio25] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio26] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio27] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio28] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio29] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio30] = kTopEarlgreyPlicPeripheralGpio1,
+  [kTopEarlgreyPlicIrqIdGpio1Gpio31] = kTopEarlgreyPlicPeripheralGpio1,
   [kTopEarlgreyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty] = kTopEarlgreyPlicPeripheralSpiDevice,
   [kTopEarlgreyPlicIrqIdSpiDeviceUploadPayloadNotEmpty] = kTopEarlgreyPlicPeripheralSpiDevice,
   [kTopEarlgreyPlicIrqIdSpiDeviceUploadPayloadOverflow] = kTopEarlgreyPlicPeripheralSpiDevice,
