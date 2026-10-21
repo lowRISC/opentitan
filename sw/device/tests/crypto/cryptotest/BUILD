@@ -1005,6 +1005,30 @@ cryptotest(
     use_otbn_hash = True,
 )
 
+KDF_RANDOM_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:random_kdf_{}.json".format(config)
+    for config in [
+        "hkdf_sha256",
+        "hkdf_sha384",
+        "hkdf_sha512",
+        "kmac128",
+        "kmac256",
+    ]
+]
+
+KDF_RANDOM_TESTVECTOR_ARGS = " ".join([
+    "--kdf-json=\"$(rootpath {})\"".format(target)
+    for target in KDF_RANDOM_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "kdf_random_kat",
+    slow_test = True,
+    test_args = KDF_RANDOM_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/kdf_kat:harness",
+    test_vectors = KDF_RANDOM_TESTVECTOR_TARGETS,
+)
+
 KMAC_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_kmac_{}.json".format(config)
     for config in [
@@ -1086,6 +1110,7 @@ test_suite(
         ":hmac_sha256_kat",
         ":hmac_sha384_kat",
         ":hmac_sha512_kat",
+        ":kdf_random_kat",
         ":kmac_kat",
         ":mldsa_kat",
         ":mlkem_kat",

@@ -279,6 +279,42 @@ HMAC_RANDOM_COUNT = 64
     ]
 ]
 
+# Number of random KDF test vectors per (algorithm, mode) target.
+KDF_RANDOM_COUNT = 64
+
+[
+    run_binary(
+        name = "{}_json".format(cryptotest_name),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:kdf_schema.json",
+        ],
+        outs = [":{}.json".format(cryptotest_name)],
+        args = [
+            "--dst",
+            "$(location :{}.json)".format(cryptotest_name),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:kdf_schema.json)",
+            "--count",
+            str(KDF_RANDOM_COUNT),
+            "--algorithm",
+            algorithm,
+            "--mode",
+            mode,
+        ],
+        # Do not cache these results in CI, so every run generates a new set of
+        # random test vectors.
+        tags = ["no-cache"],
+        tool = "//sw/host/cryptotest/testvectors/parsers:random_kdf_generator",
+    )
+    for cryptotest_name, algorithm, mode in [
+        ("random_kdf_hkdf_sha256", "hkdf", "sha-256"),
+        ("random_kdf_hkdf_sha384", "hkdf", "sha-384"),
+        ("random_kdf_hkdf_sha512", "hkdf", "sha-512"),
+        ("random_kdf_kmac128", "kmac-kdf", "kmac-128"),
+        ("random_kdf_kmac256", "kmac-kdf", "kmac-256"),
+    ]
+]
+
 ################################################################################
 # SHA2, SHA3 - NIST CAVP KAT
 ################################################################################

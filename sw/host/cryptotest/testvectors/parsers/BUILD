@@ -272,3 +272,13 @@ py_binary(
         requirement("jsonschema"),
     ],
 )
+
+py_binary(
+    name = "random_kdf_generator",
+    srcs = ["random_kdf_generator.py"],
+    deps = [
+        ":cryptotest_util",
+        requirement("jsonschema"),
+        requirement("pycryptodome"),
+    ],
+)
