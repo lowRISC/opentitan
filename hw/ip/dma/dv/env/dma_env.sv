@@ -59,6 +59,8 @@ class dma_env extends cip_base_env #(
   function void connect_phase(uvm_phase phase);
     super.connect_phase(phase);
 
+    cfg.scoreboard_h = scoreboard;
+
     // Update virtual sequencer handles
     virtual_sequencer.tl_sequencer_dma_host_h = tl_agent_dma_host.sequencer;
     virtual_sequencer.tl_sequencer_dma_ctn_h = tl_agent_dma_ctn.sequencer;
