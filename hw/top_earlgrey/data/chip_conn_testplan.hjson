@@ -451,7 +451,7 @@
       desc: '''Verify clkmgr's `clk_io_div4_peri` is connected to the following blocks' clock
             input:
             - adc_ctrl clk_i
-            - gpio clk_i
+            - gpio0 clk_i
             - spi_device clk_i
             - i2c0 clk_i
             - i2c1 clk_i
@@ -1204,7 +1204,7 @@
     {
       name: rst_sys_io_div4_d0
       desc: '''Verify rstmgr's rst_sys_io_div4_n[1] is connected to the following:
-            - gpio's rst_ni
+            - gpio0's rst_ni
             - rv_timer's rst_ni
             - uart0's rst_ni
             - uart1's rst_ni

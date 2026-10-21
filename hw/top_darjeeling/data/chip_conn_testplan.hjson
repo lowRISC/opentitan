@@ -373,7 +373,7 @@
       name: clkmgr_clk_io_peri
       desc: '''Verify clkmgr's `clk_io_peri` is connected to the following blocks' clock
             input:
-            - gpio clk_i
+            - gpio0 clk_i
             - spi_device clk_i
             - spi_host clk_i
             - i2c0 clk_i
@@ -907,7 +907,7 @@
       name: rst_sys_io_d0
       desc: '''Verify rstmgr's rst_sys_io_n[1] is connected to the following:
             - flash_ctrl's rst_otp_ni
-            - gpio's rst_ni
+            - gpio0's rst_ni
             - rv_timer's rst_ni
             - uart0's rst_ni
             - xbar_main's rst_fixed_ni
