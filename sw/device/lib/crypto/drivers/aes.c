@@ -70,10 +70,17 @@ static status_t aes_write_key(aes_key_t key) {
   // corresponding parts too close together, which could risk power
   // side-channel leakage in the ALU. Before writing the key shares, initialize
   // the registers with random data.
-  hardened_memshred((uint32_t *)share0, kAesKeyWordLenMax);
-  hardened_memcpy((uint32_t *)share0, key.key_shares[0], key.key_len);
-  hardened_memshred((uint32_t *)share1, kAesKeyWordLenMax);
-  hardened_memcpy((uint32_t *)share1, key.key_shares[1], key.key_len);
+  uint32_t share0_buf[kAesKeyWordLenMax];
+  hardened_memshred(share0_buf, kAesKeyWordLenMax);
+  HARDENED_TRY(hardened_memcpy(share0_buf, key.key_shares[0], key.key_len));
+  HARDENED_TRY(
+      hardened_memcpy((uint32_t *)share0, share0_buf, kAesKeyWordLenMax));
+
+  uint32_t share1_buf[kAesKeyWordLenMax];
+  hardened_memshred(share1_buf, kAesKeyWordLenMax);
+  HARDENED_TRY(hardened_memcpy(share1_buf, key.key_shares[1], key.key_len));
+  HARDENED_TRY(
+      hardened_memcpy((uint32_t *)share1, share1_buf, kAesKeyWordLenMax));
 
   // Check the integrity of the key written to the AES core.
   HARDENED_CHECK_EQ(aes_key_integrity_checksum_check(&key), kHardenedBoolTrue);
