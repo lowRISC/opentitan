@@ -343,6 +343,7 @@ status_t i3c_testutils_private_read_setup(i3c_testutils_ctx_t *ctx, uint8_t idx,
  * @param ctx Context for this I3C instance.
  * @param rx_desc Receives the TTI reception descriptor.
  * @param buf Receives the write data from the Controller.
+ * @param bufsz Buffer size in DWORDs.
  * @param flags Flags describing the availability and current state of the
  *              Private Write transfer.
  * @return Status code indicating the result of this operation.
@@ -350,7 +351,7 @@ status_t i3c_testutils_private_read_setup(i3c_testutils_ctx_t *ctx, uint8_t idx,
 OT_WARN_UNUSED_RESULT
 status_t i3c_testutils_private_write_collect(
     i3c_testutils_ctx_t *ctx, dif_i3c_tti_rx_desc_t *rx_desc, uint32_t *buf,
-    i3c_testutils_privw_flags_t *flags);
+    uint16_t bufsz, i3c_testutils_privw_flags_t *flags);
 
 // TODO: Make `unsigned id` and `uint8_t idx` consistent!
 

@@ -479,16 +479,16 @@ typedef struct dif_i3c_tti_queue_levels {
  * Target-side (TTI) data buffer levels.
  */
 typedef struct dif_i3c_tti_buf_levels {
+  uint16_t rx_buf_level;
   uint8_t ibi_free;
-  uint8_t rx_buf_level;
 } dif_i3c_tti_buf_levels_t;
 
 /**
  * Virtual Target (TTI) Tx queue levels.
  */
 typedef struct dif_i3c_tti_tx_levels {
+  uint16_t tx_buf_free;
   uint8_t tx_desc_free;
-  uint8_t tx_buf_free;
 } dif_i3c_tti_tx_levels_t;
 
 // Controller Configuration.
@@ -864,9 +864,8 @@ dif_result_t dif_i3c_targ_buf_levels_read(const dif_i3c_t *i3c,
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-dif_result_t dif_i3c_targ_tx_queue_levels_read(const dif_i3c_t *i3c,
-                                               unsigned id,
-                                               dif_i3c_tti_tx_levels_t *levels);
+dif_result_t dif_i3c_targ_tx_levels_read(const dif_i3c_t *i3c, unsigned id,
+                                         dif_i3c_tti_tx_levels_t *levels);
 
 /**
  * Set the Controller Queue thresholds.

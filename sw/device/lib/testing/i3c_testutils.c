@@ -48,6 +48,11 @@ static inline void tid_release(i3c_testutils_ctx_t *ctx, uint8_t pid) {
   ctx->tid_used &= (uint16_t)~(1u << pid);
 }
 
+// Utility function to return the number of DWORDs required to transfer the specified number of bytes.
+static inline size_t ceil_dwords(uint16_t data_length) {
+  return (data_length + 3u) >> 2;
+}
+
 static status_t allocate_ranges(i3c_testutils_ctx_t *ctx,
                                 dif_i3c_phys_queue_t id, unsigned n,
                                 unsigned en) {
@@ -58,8 +63,7 @@ static status_t allocate_ranges(i3c_testutils_ctx_t *ctx,
   TRY(dif_i3c_config_queue_get(&ctx->i3c, id + I3C_MAX_VIRT_TARGETS - 1u, NULL,
                                &range_max, NULL));
 
-  LOG_INFO("ID %x range %x %x", id, range_min, range_max);
-
+  // Decide how much each enabled Virtual Target shall be allocated.
   unsigned range_each;
   if (!n) {
     // Just pretend that they're all enabled, and share it equally.
@@ -78,7 +82,6 @@ static status_t allocate_ranges(i3c_testutils_ctx_t *ctx,
     // lose space over time.
     unsigned last_addr =
         (en & 1u) ? ((en == 1u) ? range_max : max_addr) : min_addr;
-    LOG_INFO("t %x ID %x range %x %x", id, min_addr, last_addr);
     TRY(dif_i3c_config_queue_set(&ctx->i3c, id, min_addr, last_addr, 0u));
     if (en & 1u) {
       min_addr += range_each;
@@ -145,9 +148,12 @@ status_t i3c_testutils_init(i3c_testutils_ctx_t *ctx, unsigned instance,
   // Enable the Virtual Targets.
   TRY(dif_i3c_targ_enables_set(&ctx->i3c, target_enables));
 
-  // TODO: Presently, when the Target peripheral is enabled there is a 5us
-  // delay as it comes out of reset.
-  busy_spin_micros(6);
+  // When the Target peripheral is enabled there is a 5us delay as its
+  // transceiver comes out of reset.
+  // TODO: We could allow the caller to specify whether to delay here.
+  if (target_enables) {
+    busy_spin_micros(5);
+  }
 
   // Enable Status and Signals.
   // TODO: On the Controller side only for now; see `_isr` function which
@@ -206,8 +212,9 @@ status_t i3c_testutils_fin(i3c_testutils_ctx_t *ctx) {
     TRY(dif_i3c_intr_signal_enable_set(&ctx->i3c, &interrupts));
   }
 
-  TRY(dif_i3c_ctrl_mode_set(&ctx->i3c, kI3CCtrlMode_Disabled));
   TRY(dif_i3c_targ_enables_set(&ctx->i3c, 0u));
+  TRY(dif_i3c_ctrl_mode_set(&ctx->i3c, kI3CCtrlMode_Disabled));
+
   return OK_STATUS();
 }
 
@@ -516,10 +523,11 @@ void i3c_testutils_isr(i3c_testutils_ctx_t *ctx) {
 }
 
 // Foreground service routine, primarily for polling-driven operation.
+//
 // - service any transfers being performed by the Controller and Virtual
-// Targets.
-// - for interrupt-driven operation the foreground code is largely idle and this
-//   code need not be invoked.
+//   Targets.
+// - for interrupt-driven operation, the foreground code is largely idle and
+//   this code need not be invoked.
 void i3c_testutils_service(i3c_testutils_ctx_t *ctx) {
   if (ctx->use_interrupts) {
     // Interrupts keep the transfers going.
@@ -634,7 +642,14 @@ status_t i3c_testutils_write(i3c_testutils_ctx_t *ctx, uint8_t addr,
 status_t i3c_testutils_private_read_setup(i3c_testutils_ctx_t *ctx, uint8_t idx,
                                           const dif_i3c_tti_tx_desc_t *tx_desc,
                                           const uint32_t *data) {
-  // TODO: Need to check the available space.
+  // Check that there is sufficient space to add this data to the Tx Descriptor
+  // queue and the Tx Data buffer.
+  dif_i3c_tti_tx_levels_t levels;
+  TRY(dif_i3c_targ_tx_levels_read(&ctx->i3c, idx, &levels));
+  if (!levels.tx_desc_free || levels.tx_buf_free < ceil_dwords(tx_desc->tx.data_length)) {
+    return UNAVAILABLE();
+  }
+
   TRY(dif_i3c_targ_send(&ctx->i3c, idx, tx_desc, data,
                         tx_desc->tx.data_length));
   return OK_STATUS();
@@ -643,14 +658,24 @@ status_t i3c_testutils_private_read_setup(i3c_testutils_ctx_t *ctx, uint8_t idx,
 // Attempt to collect a Private Write transfer from the Active Controller.
 status_t i3c_testutils_private_write_collect(
     i3c_testutils_ctx_t *ctx, dif_i3c_tti_rx_desc_t *rx_desc, uint32_t *buf,
-    i3c_testutils_privw_flags_t *flags) {
+    uint16_t bufsz, i3c_testutils_privw_flags_t *flags) {
   dif_i3c_tti_queue_levels_t levels;
   TRY(dif_i3c_targ_queue_levels_read(&ctx->i3c, &levels));
 
   if (levels.rx_desc_level) {
     // Attempt to collect the Rx Descriptor.
     TRY(dif_i3c_targ_recv(&ctx->i3c, rx_desc, 1u));
-    // TODO: Need to check the amount of available data.
+
+    // TODO: We should consult the `start` and `complete` fields of the
+    // descriptor(s) here, since the TTI specification has now changed to
+    // describe a single Private Write Transfer using _one or more_ Rx
+    // descriptors.
+    size_t n = ceil_dwords(rx_desc->data_length);
+    if (bufsz < n || levels.rx_desc_level < n) {
+      // TODO: This should support streaming somehow, either by waiting here.
+      return UNAVAILABLE();
+    }   
+
     TRY(dif_i3c_targ_data_recv(&ctx->i3c, buf, rx_desc->data_length));
     *flags = kI3CTestUtilsPrivWFlags_Collected;
   } else {

@@ -9,6 +9,10 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/memory.h"
 
+#ifndef ARRAYSIZE
+#define ARRAYSIZE(array) (sizeof(array) / sizeof(array[0]))
+#endif
+
 /**
  * HCI Queues are mapped as a single memory window.
  */
@@ -165,10 +169,7 @@ dif_result_t dif_i3c_config_queue_get(const dif_i3c_t *i3c,
                                       dif_i3c_phys_queue_t id,
                                       unsigned *min_addr, unsigned *max_addr,
                                       unsigned *size_val) {
-  if (i3c == NULL ||
-      (id >=
-       sizeof(physq_config) /
-           sizeof(physq_config[0]))) {  // TODO: Is there a macro somewhere?
+  if (i3c == NULL || id >= ARRAYSIZE(physq_config)) {
     return kDifBadArg;
   }
 
@@ -192,7 +193,7 @@ dif_result_t dif_i3c_config_queue_set(const dif_i3c_t *i3c,
                                       dif_i3c_phys_queue_t id,
                                       unsigned min_addr, unsigned max_addr,
                                       unsigned size_val) {
-  if (i3c == NULL || (id >= sizeof(physq_config) / sizeof(physq_config[0]))) {
+  if (i3c == NULL || id >= ARRAYSIZE(physq_config)) {
     return kDifBadArg;
   }
 
@@ -465,10 +466,10 @@ dif_result_t dif_i3c_targ_buf_levels_read(const dif_i3c_t *i3c,
 
   uint32_t vals =
       mmio_region_read32(i3c->base_addr, I3C_TARG_BUF_STATUS_LEVEL_REG_OFFSET);
+  levels->rx_buf_level = (uint16_t)bitfield_field32_read(
+      vals, I3C_TARG_BUF_STATUS_LEVEL_RX_BUF_LVL_FIELD);
   levels->ibi_free = (uint8_t)bitfield_field32_read(
       vals, I3C_TARG_BUF_STATUS_LEVEL_IBI_FREE_LVL_FIELD);
-  levels->rx_buf_level = (uint8_t)bitfield_field32_read(
-      vals, I3C_TARG_BUF_STATUS_LEVEL_RX_BUF_LVL_FIELD);
   return kDifOk;
 }
 
@@ -482,10 +483,10 @@ dif_result_t dif_i3c_targ_tx_levels_read(const dif_i3c_t *i3c, unsigned id,
   uint32_t vals = mmio_region_read32(
       i3c->base_addr,
       I3C_TARG_TX_QUEUE_STATUS_LEVEL_0_REG_OFFSET + (ptrdiff_t)(id * 4u));
+  levels->tx_buf_free = (uint16_t)bitfield_field32_read(
+      vals, I3C_TARG_TX_QUEUE_STATUS_LEVEL_0_TX_BUF_FREE_LVL_0_FIELD);
   levels->tx_desc_free = (uint8_t)bitfield_field32_read(
       vals, I3C_TARG_TX_QUEUE_STATUS_LEVEL_0_TX_DESC_FREE_LVL_0_FIELD);
-  levels->tx_buf_free = (uint8_t)bitfield_field32_read(
-      vals, I3C_TARG_TX_QUEUE_STATUS_LEVEL_0_TX_BUF_FREE_LVL_0_FIELD);
   return kDifOk;
 }
 
