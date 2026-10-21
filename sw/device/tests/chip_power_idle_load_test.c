@@ -119,7 +119,7 @@ bool test_main(void) {
 
   CHECK_DIF_OK(
       dif_pinmux_output_select(&pinmux, (kTopEarlgreyPinmuxMioOutIoa0 + 2),
-                               (kTopEarlgreyPinmuxOutselGpioGpio0 + 2)));
+                               (kTopEarlgreyPinmuxOutselGpio0Gpio0 + 2)));
 
   // Set output modes of all GPIO pins
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, kGpioMask));

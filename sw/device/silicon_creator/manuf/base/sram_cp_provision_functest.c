@@ -48,7 +48,8 @@ static dif_pinmux_t pinmux;
  * Initializes all DIF handles used in this SRAM program.
  */
 static status_t peripheral_handles_init(void) {
-  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR),
+                    &gpio));
   TRY(dif_lc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_LC_CTRL_REGS_BASE_ADDR), &lc_ctrl));
   TRY(dif_otp_ctrl_init(
@@ -65,7 +66,7 @@ static status_t configure_ate_gpio_indicators(void) {
   // IOA5 / GPIO0 is for SPI console TX ready signal.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
+      kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinSpiConsoleTxReady));
   TRY(dif_gpio_output_set_enabled_all(&gpio, 0x1));  // Enable first GPIO.
   TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));   // Intialize all to 0.
   return OK_STATUS();

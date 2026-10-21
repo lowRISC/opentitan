@@ -96,7 +96,7 @@ The suggested default classification is detailed in the following table.
 | Uart1FatalFault              | 1    | X          | C      | C          | X     | X     | X       |
 | Uart2FatalFault              | 2    | X          | C      | C          | X     | X     | X       |
 | Uart3FatalFault              | 3    | X          | C      | C          | X     | X     | X       |
-| GpioFatalFault               | 4    | X          | C      | C          | X     | X     | X       |
+| Gpio0FatalFault              | 4    | X          | C      | C          | X     | X     | X       |
 | SpiDeviceFatalFault          | 5    | X          | C      | C          | X     | X     | X       |
 | SpiHost0FatalFault           | 6    | X          | C      | C          | D     | X     | X       |
 | SpiHost1FatalFault           | 7    | X          | C      | C          | D     | X     | X       |

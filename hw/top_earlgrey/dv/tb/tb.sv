@@ -826,7 +826,7 @@ module tb;
       forever @dut.chip_if.chip_padctrl_attributes_test_sva_disable begin
         if (dut.chip_if.chip_padctrl_attributes_test_sva_disable) begin
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_rram_ctrl);
-          $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio);
+          $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio0);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c0);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c1);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c2);
@@ -842,7 +842,7 @@ module tb;
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_usbdev);
         end else begin
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_rram_ctrl);
-          $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio);
+          $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio0);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c0);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c1);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c2);

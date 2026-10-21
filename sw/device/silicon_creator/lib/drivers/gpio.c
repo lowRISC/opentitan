@@ -18,7 +18,7 @@ static_assert(kGpioNumPins <= 32,
               "than or equal to 32");
 
 static inline uint32_t gpio_base_addr(void) {
-  return dt_gpio_primary_reg_block(kDtGpio);
+  return dt_gpio_primary_reg_block(kDtGpio0);
 }
 
 /**

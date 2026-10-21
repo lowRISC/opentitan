@@ -362,7 +362,7 @@
           nodes:
           [
             uart0
-            gpio
+            gpio0
             spi_device
             i2c0
             rv_timer
@@ -517,7 +517,7 @@
       generate_dif: true
     }
     {
-      name: gpio
+      name: gpio0
       type: gpio
       template_type: gpio
       clock_srcs:
@@ -558,7 +558,7 @@
           default: "1"
           local: "false"
           expose: "true"
-          name_top: GpioGpioAsyncOn
+          name_top: Gpio0GpioAsyncOn
         }
         {
           name: GpioAsHwStrapsEn
@@ -567,7 +567,7 @@
           default: "1"
           local: "false"
           expose: "true"
-          name_top: GpioGpioAsHwStrapsEn
+          name_top: Gpio0GpioAsHwStrapsEn
         }
       ]
       inter_signal_list:
@@ -584,7 +584,7 @@
           act: rcv
           width: 1
           default: 1'b0
-          inst_name: gpio
+          inst_name: gpio0
           package: ""
           domain: Main
           top_signame: pwrmgr_strap
@@ -601,7 +601,7 @@
           act: req
           width: 1
           default: "'0"
-          inst_name: gpio
+          inst_name: gpio0
           index: -1
         }
         {
@@ -616,7 +616,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: gpio
+          inst_name: gpio0
           index: -1
         }
         {
@@ -627,7 +627,7 @@
           type: uni
           act: req
           width: 1
-          inst_name: gpio
+          inst_name: gpio0
           index: -1
         }
         {
@@ -637,11 +637,11 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: gpio
+          inst_name: gpio0
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: gpio_tl
+          top_signame: gpio0_tl
           index: -1
         }
       ]
@@ -11307,7 +11307,7 @@
       ]
       pwrmgr.strap:
       [
-        gpio.strap_en
+        gpio0.strap_en
         rv_dm.strap_en
       ]
       pwrmgr.low_power:
@@ -11785,9 +11785,9 @@
       [
         peri.tl_i2c0
       ]
-      gpio.tl:
+      gpio0.tl:
       [
-        peri.tl_gpio
+        peri.tl_gpio0
       ]
       spi_host0.tl:
       [
@@ -13866,7 +13866,7 @@
         [
           uart0
           i2c0
-          gpio
+          gpio0
           spi_host0
           spi_device
           rv_timer
@@ -13943,7 +13943,7 @@
           req_fifo_pass: true
         }
         {
-          name: gpio
+          name: gpio0
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -14348,7 +14348,7 @@
           index: -1
         }
         {
-          name: tl_gpio
+          name: tl_gpio0
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -14357,7 +14357,7 @@
           width: 1
           default: ""
           domain: Main
-          top_signame: gpio_tl
+          top_signame: gpio0_tl
           index: -1
         }
         {
@@ -16240,7 +16240,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[0]
         connection: direct
         pad: GPIO0
@@ -16248,7 +16248,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[1]
         connection: direct
         pad: GPIO1
@@ -16256,7 +16256,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[2]
         connection: direct
         pad: GPIO2
@@ -16264,7 +16264,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[3]
         connection: direct
         pad: GPIO3
@@ -16272,7 +16272,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[4]
         connection: direct
         pad: GPIO4
@@ -16280,7 +16280,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[5]
         connection: direct
         pad: GPIO5
@@ -16288,7 +16288,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[6]
         connection: direct
         pad: GPIO6
@@ -16296,7 +16296,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[7]
         connection: direct
         pad: GPIO7
@@ -16304,7 +16304,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[8]
         connection: direct
         pad: GPIO8
@@ -16312,7 +16312,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[9]
         connection: direct
         pad: GPIO9
@@ -16320,7 +16320,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[10]
         connection: direct
         pad: GPIO10
@@ -16328,7 +16328,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[11]
         connection: direct
         pad: GPIO11
@@ -16336,7 +16336,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[12]
         connection: direct
         pad: GPIO12
@@ -16344,7 +16344,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[13]
         connection: direct
         pad: GPIO13
@@ -16352,7 +16352,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[14]
         connection: direct
         pad: GPIO14
@@ -16360,7 +16360,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[15]
         connection: direct
         pad: GPIO15
@@ -16368,7 +16368,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[16]
         connection: direct
         pad: GPIO16
@@ -16376,7 +16376,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[17]
         connection: direct
         pad: GPIO17
@@ -16384,7 +16384,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[18]
         connection: direct
         pad: GPIO18
@@ -16392,7 +16392,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[19]
         connection: direct
         pad: GPIO19
@@ -16400,7 +16400,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[20]
         connection: direct
         pad: GPIO20
@@ -16408,7 +16408,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[21]
         connection: direct
         pad: GPIO21
@@ -16416,7 +16416,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[22]
         connection: direct
         pad: GPIO22
@@ -16424,7 +16424,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[23]
         connection: direct
         pad: GPIO23
@@ -16432,7 +16432,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[24]
         connection: direct
         pad: GPIO24
@@ -16440,7 +16440,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[25]
         connection: direct
         pad: GPIO25
@@ -16448,7 +16448,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[26]
         connection: direct
         pad: GPIO26
@@ -16456,7 +16456,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[27]
         connection: direct
         pad: GPIO27
@@ -16464,7 +16464,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[28]
         connection: direct
         pad: GPIO28
@@ -16472,7 +16472,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[29]
         connection: direct
         pad: GPIO29
@@ -16480,7 +16480,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[30]
         connection: direct
         pad: GPIO30
@@ -16488,7 +16488,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[31]
         connection: direct
         pad: GPIO31
@@ -16887,7 +16887,7 @@
         glob_idx: 9
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 0
@@ -16899,7 +16899,7 @@
         glob_idx: 10
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 1
@@ -16911,7 +16911,7 @@
         glob_idx: 11
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 2
@@ -16923,7 +16923,7 @@
         glob_idx: 12
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 3
@@ -16935,7 +16935,7 @@
         glob_idx: 13
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 4
@@ -16947,7 +16947,7 @@
         glob_idx: 14
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 5
@@ -16959,7 +16959,7 @@
         glob_idx: 15
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 6
@@ -16971,7 +16971,7 @@
         glob_idx: 16
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 7
@@ -16983,7 +16983,7 @@
         glob_idx: 17
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 8
@@ -16995,7 +16995,7 @@
         glob_idx: 18
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 9
@@ -17007,7 +17007,7 @@
         glob_idx: 19
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 10
@@ -17019,7 +17019,7 @@
         glob_idx: 20
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 11
@@ -17031,7 +17031,7 @@
         glob_idx: 21
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 12
@@ -17043,7 +17043,7 @@
         glob_idx: 22
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 13
@@ -17055,7 +17055,7 @@
         glob_idx: 23
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 14
@@ -17067,7 +17067,7 @@
         glob_idx: 24
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 15
@@ -17079,7 +17079,7 @@
         glob_idx: 25
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 16
@@ -17091,7 +17091,7 @@
         glob_idx: 26
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 17
@@ -17103,7 +17103,7 @@
         glob_idx: 27
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 18
@@ -17115,7 +17115,7 @@
         glob_idx: 28
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 19
@@ -17127,7 +17127,7 @@
         glob_idx: 29
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 20
@@ -17139,7 +17139,7 @@
         glob_idx: 30
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 21
@@ -17151,7 +17151,7 @@
         glob_idx: 31
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 22
@@ -17163,7 +17163,7 @@
         glob_idx: 32
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 23
@@ -17175,7 +17175,7 @@
         glob_idx: 33
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 24
@@ -17187,7 +17187,7 @@
         glob_idx: 34
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 25
@@ -17199,7 +17199,7 @@
         glob_idx: 35
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 26
@@ -17211,7 +17211,7 @@
         glob_idx: 36
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 27
@@ -17223,7 +17223,7 @@
         glob_idx: 37
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 28
@@ -17235,7 +17235,7 @@
         glob_idx: 38
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 29
@@ -17247,7 +17247,7 @@
         glob_idx: 39
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 30
@@ -17259,7 +17259,7 @@
         glob_idx: 40
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 31
@@ -18451,13 +18451,13 @@
       lpg_idx: 0
     }
     {
-      name: gpio_fatal_fault
+      name: gpio0_fatal_fault
       width: 1
       type: alert
       async: "1"
       handler: alert_handler
-      module_name: gpio
-      desc: gpio fatal_fault alert
+      module_name: gpio0
+      desc: gpio0 fatal_fault alert
       lpg_name: peri_lc_io_Main
       lpg_idx: 0
     }
@@ -19408,11 +19408,11 @@
       outgoing: false
     }
     {
-      name: gpio_gpio
+      name: gpio0_gpio
       width: 32
       type: interrupt
-      module_name: gpio
-      desc: gpio gpio interrupt
+      module_name: gpio0
+      desc: gpio0 gpio interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -21253,7 +21253,7 @@
   alert_module:
   [
     uart0
-    gpio
+    gpio0
     spi_device
     i2c0
     rv_timer
@@ -21310,7 +21310,7 @@
         alert_handler[0]: fatal_fault
       ]
     }
-    module_gpio:
+    module_gpio0:
     {
       tx_expr: alert_tx[1]
       rx_expr: alert_rx[1]
@@ -21842,7 +21842,7 @@
   interrupt_module:
   [
     uart0
-    gpio
+    gpio0
     spi_device
     i2c0
     rv_timer
@@ -22380,7 +22380,7 @@
         act: rcv
         width: 1
         default: 1'b0
-        inst_name: gpio
+        inst_name: gpio0
         package: ""
         domain: Main
         top_signame: pwrmgr_strap
@@ -22397,7 +22397,7 @@
         act: req
         width: 1
         default: "'0"
-        inst_name: gpio
+        inst_name: gpio0
         index: -1
       }
       {
@@ -22412,7 +22412,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: gpio
+        inst_name: gpio0
         index: -1
       }
       {
@@ -22423,7 +22423,7 @@
         type: uni
         act: req
         width: 1
-        inst_name: gpio
+        inst_name: gpio0
         index: -1
       }
       {
@@ -22433,11 +22433,11 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: gpio
+        inst_name: gpio0
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: gpio_tl
+        top_signame: gpio0_tl
         index: -1
       }
       {
@@ -29614,7 +29614,7 @@
         index: -1
       }
       {
-        name: tl_gpio
+        name: tl_gpio0
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -29623,7 +29623,7 @@
         width: 1
         default: ""
         domain: Main
-        top_signame: gpio_tl
+        top_signame: gpio0_tl
         index: -1
       }
       {
@@ -36286,7 +36286,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
-        signame: gpio_tl_req
+        signame: gpio0_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -36298,7 +36298,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: Main
-        signame: gpio_tl_rsp
+        signame: gpio0_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

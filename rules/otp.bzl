@@ -482,7 +482,7 @@ def otp_alert_classification(alert_list, default = None, ordered_params = {}, **
             alert_list = EARLGREY_ALERTS,
             # The ordering is "prod, prod_end, dev, rma"
             default = "                   X, X, X, X",
-            gpio_fatal_fault = "          X, X, X, X",
+            gpio0_fatal_fault = "         X, X, X, X",
             i2c0_fatal_fault = "          X, X, X, X",
             otp_ctrl_fatal_macro_error = "X, X, X, X",
         ),

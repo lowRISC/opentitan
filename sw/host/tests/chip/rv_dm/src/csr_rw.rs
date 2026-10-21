@@ -115,8 +115,8 @@ fn test_csr_rw(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
             dif::ENTROPY_SRC_INTR_ENABLE_REG_OFFSET,
         ),
         (
-            "gpio",
-            top_earlgrey::GPIO_BASE_ADDR,
+            "gpio0",
+            top_earlgrey::GPIO0_BASE_ADDR,
             dif::GPIO_INTR_ENABLE_REG_OFFSET,
         ),
         (

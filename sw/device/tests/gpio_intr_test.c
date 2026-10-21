@@ -85,9 +85,9 @@ void ottf_external_isr(uint32_t *exc_info) {
   // For each test, interrupt triggers in order.
   // Once all interrupts are triggered, `intr_index` will be set to 0 for the
   // next test.
-  if (peripheral == kTopEarlgreyPlicPeripheralGpio) {
+  if (peripheral == kTopEarlgreyPlicPeripheralGpio0) {
     // Correlate the interrupt fired from GPIO.
-    uint32_t gpio_pin_irq_fired = plic_irq_id - kTopEarlgreyPlicIrqIdGpioGpio0;
+    uint32_t gpio_pin_irq_fired = plic_irq_id - kTopEarlgreyPlicIrqIdGpio0Gpio0;
     CHECK(gpio_pin_irq_fired == kExpected_intr[intr_index],
           "Unexpected interrupt rcv:%d  exp:%d", gpio_pin_irq_fired,
           kExpected_intr[intr_index]);
@@ -112,16 +112,16 @@ void ottf_external_isr(uint32_t *exc_info) {
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  CHECK_DIF_OK(dif_gpio_init(
+      mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR), &gpio));
   CHECK_DIF_OK(dif_rv_plic_init(
       mmio_region_from_addr(TOP_EARLGREY_RV_PLIC_BASE_ADDR), &plic));
   CHECK_DIF_OK(dif_uart_init(
       mmio_region_from_addr(TOP_EARLGREY_UART0_BASE_ADDR), &uart0));
 
   rv_plic_testutils_irq_range_enable(
-      &plic, kTopEarlgreyPlicTargetIbex0, kTopEarlgreyPlicIrqIdGpioGpio0,
-      kTopEarlgreyPlicIrqIdGpioGpio0 + kDifGpioNumPins);
+      &plic, kTopEarlgreyPlicTargetIbex0, kTopEarlgreyPlicIrqIdGpio0Gpio0,
+      kTopEarlgreyPlicIrqIdGpio0Gpio0 + kDifGpioNumPins);
 
   // Anker for the host
   LOG_INFO("gpio_intr_test ");
