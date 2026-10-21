@@ -247,7 +247,8 @@ otcrypto_status_t otcrypto_drbg_generate(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
-  if (drbg_output->len == 0) {
+  if (launder32(drbg_output->len) == 0) {
+    HARDENED_CHECK_EQ(drbg_output->len, 0);
     // Nothing to do.
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
@@ -271,7 +272,8 @@ otcrypto_status_t otcrypto_drbg_manual_generate(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
-  if (drbg_output->len == 0) {
+  if (launder32(drbg_output->len) == 0) {
+    HARDENED_CHECK_EQ(drbg_output->len, 0);
     // Nothing to do.
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
