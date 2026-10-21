@@ -168,7 +168,7 @@ bool test_main(void) {
       kDifPinmuxSleepModeHigh));
   LOG_INFO("Use IOA7 to let host know when sleep is active.");
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInGpioGpio0,
+                                       kTopEarlgreyPinmuxPeripheralInGpio0Gpio0,
                                        kTopEarlgreyPinmuxInselIoa8));
   CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(&pinmux, kTopEarlgreyMuxedPadsIoa7,
                                            kDifPinmuxPadKindMio,

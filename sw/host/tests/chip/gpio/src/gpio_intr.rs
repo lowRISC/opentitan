@@ -57,33 +57,33 @@ static CONFIG: LazyLock<HashMap<&'static str, Config>> = LazyLock::new(|| {
         // - IOR0-4: reserved for JTAG
         // - IOR8-9: dedicated IOs (for sysrst_ctrl)
         input: collection! {
-            PinmuxPeripheralIn::GpioGpio17 => PinmuxInsel::Ioc10,
-            PinmuxPeripheralIn::GpioGpio18 => PinmuxInsel::Ioc11,
-            PinmuxPeripheralIn::GpioGpio19 => PinmuxInsel::Ioc12,
+            PinmuxPeripheralIn::Gpio0Gpio17 => PinmuxInsel::Ioc10,
+            PinmuxPeripheralIn::Gpio0Gpio18 => PinmuxInsel::Ioc11,
+            PinmuxPeripheralIn::Gpio0Gpio19 => PinmuxInsel::Ioc12,
 
-            PinmuxPeripheralIn::GpioGpio20 => PinmuxInsel::Ior5,
-            PinmuxPeripheralIn::GpioGpio21 => PinmuxInsel::Ior6,
-            PinmuxPeripheralIn::GpioGpio22 => PinmuxInsel::Ior7,
+            PinmuxPeripheralIn::Gpio0Gpio20 => PinmuxInsel::Ior5,
+            PinmuxPeripheralIn::Gpio0Gpio21 => PinmuxInsel::Ior6,
+            PinmuxPeripheralIn::Gpio0Gpio22 => PinmuxInsel::Ior7,
 
-            PinmuxPeripheralIn::GpioGpio25 => PinmuxInsel::Ior10,
-            PinmuxPeripheralIn::GpioGpio26 => PinmuxInsel::Ior11,
-            PinmuxPeripheralIn::GpioGpio27 => PinmuxInsel::Ior12,
-            PinmuxPeripheralIn::GpioGpio28 => PinmuxInsel::Ior13,
+            PinmuxPeripheralIn::Gpio0Gpio25 => PinmuxInsel::Ior10,
+            PinmuxPeripheralIn::Gpio0Gpio26 => PinmuxInsel::Ior11,
+            PinmuxPeripheralIn::Gpio0Gpio27 => PinmuxInsel::Ior12,
+            PinmuxPeripheralIn::Gpio0Gpio28 => PinmuxInsel::Ior13,
         },
         output: collection! {
-            PinmuxMioOut::Ioc10 => PinmuxOutsel::GpioGpio17,
-            PinmuxMioOut::Ioc11 => PinmuxOutsel::GpioGpio18,
-            PinmuxMioOut::Ioc12 => PinmuxOutsel::GpioGpio19,
+            PinmuxMioOut::Ioc10 => PinmuxOutsel::Gpio0Gpio17,
+            PinmuxMioOut::Ioc11 => PinmuxOutsel::Gpio0Gpio18,
+            PinmuxMioOut::Ioc12 => PinmuxOutsel::Gpio0Gpio19,
 
 
-            PinmuxMioOut::Ior5 => PinmuxOutsel::GpioGpio20,
-            PinmuxMioOut::Ior6 => PinmuxOutsel::GpioGpio21,
-            PinmuxMioOut::Ior7 => PinmuxOutsel::GpioGpio22,
+            PinmuxMioOut::Ior5 => PinmuxOutsel::Gpio0Gpio20,
+            PinmuxMioOut::Ior6 => PinmuxOutsel::Gpio0Gpio21,
+            PinmuxMioOut::Ior7 => PinmuxOutsel::Gpio0Gpio22,
 
-            PinmuxMioOut::Ior10 => PinmuxOutsel::GpioGpio25,
-            PinmuxMioOut::Ior11 => PinmuxOutsel::GpioGpio26,
-            PinmuxMioOut::Ior12 => PinmuxOutsel::GpioGpio27,
-            PinmuxMioOut::Ior13 => PinmuxOutsel::GpioGpio28,
+            PinmuxMioOut::Ior10 => PinmuxOutsel::Gpio0Gpio25,
+            PinmuxMioOut::Ior11 => PinmuxOutsel::Gpio0Gpio26,
+            PinmuxMioOut::Ior12 => PinmuxOutsel::Gpio0Gpio27,
+            PinmuxMioOut::Ior13 => PinmuxOutsel::Gpio0Gpio28,
         },
     };
 
@@ -102,7 +102,7 @@ fn gpio_write(
     invert: u8,
 ) -> Result<()> {
     let mask = config.values().fold(0, |acc, v| {
-        let i = u32::from(*v) - u32::from(PinmuxOutsel::GpioGpio0);
+        let i = u32::from(*v) - u32::from(PinmuxOutsel::Gpio0Gpio0);
         acc | 1u32 << i
     });
     let masked_value = value & mask;
@@ -130,7 +130,7 @@ fn gpio_write(
         let mut result = 0u32;
         for (k, v) in config.iter() {
             let n = u32::from(transport.gpio_pin(&k.to_string())?.read()?);
-            let i = u32::from(*v) - u32::from(PinmuxOutsel::GpioGpio0);
+            let i = u32::from(*v) - u32::from(PinmuxOutsel::Gpio0Gpio0);
             result |= n << i;
         }
         if invert == 1 {
@@ -155,7 +155,7 @@ fn gpio_read(
         GpioGet::read_all(uart)?
     } else {
         config.keys().fold(0, |acc, k| {
-            let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::GpioGpio0);
+            let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::Gpio0Gpio0);
             acc | 1u32 << i
         })
     };
@@ -173,7 +173,7 @@ fn gpio_read(
         );
     } else {
         for (k, v) in config.iter() {
-            let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::GpioGpio0);
+            let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::Gpio0Gpio0);
             transport
                 .gpio_pin(&v.to_string())?
                 .write(((masked_value >> i) & 1) != invert)?;

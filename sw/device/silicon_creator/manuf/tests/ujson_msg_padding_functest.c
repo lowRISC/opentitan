@@ -44,7 +44,8 @@ OTTF_DEFINE_TEST_CONFIG(
             kGpioPinSpiConsoleTxReady);
 
 static status_t peripheral_handles_init(void) {
-  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  TRY(dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR),
+                    &gpio));
   TRY(dif_pinmux_init(mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR),
                       &pinmux));
   return OK_STATUS();
@@ -54,11 +55,11 @@ static status_t configure_ate_gpio_indicators(void) {
   // IOA6 / GPIO4 is for SPI console RX ready signal.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa6,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleRxReady));
+      kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinSpiConsoleRxReady));
   // IOA5 / GPIO3 is for SPI console TX ready signal.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
-      kTopEarlgreyPinmuxOutselGpioGpio0 + kGpioPinSpiConsoleTxReady));
+      kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinSpiConsoleTxReady));
   TRY(dif_gpio_output_set_enabled_all(&gpio, 0x3));  // Enable first 2 GPIOs.
   TRY(dif_gpio_write_all(&gpio, /*write_val=*/0));   // Intialize all to 0.
   return OK_STATUS();
