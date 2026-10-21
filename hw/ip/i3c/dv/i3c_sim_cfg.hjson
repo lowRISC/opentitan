@@ -6,7 +6,7 @@
   name: i3c
 
   // Top level dut name (sv module).
-  dut: i3c
+  dut: i3c_part_primary
 
   // Top level testbench name (sv module).
   tb: tb
