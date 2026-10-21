@@ -1125,6 +1125,10 @@ status_t cryptolib_fi_p384_sign_impl(
   uint32_t share0[kPentestP384MaskedPrivateKeyWords];
   uint32_t share1[kPentestP384MaskedPrivateKeyWords];
 
+  uint32_t sig[kPentestP384Words * 2] = {0};
+  otcrypto_word32_buf_t signature_mut;
+  memset(&signature_mut, 0, sizeof(signature_mut));
+
   memset(unmasked_val, 0, kPentestP384MaskedPrivateKeyBytes);
   memcpy(unmasked_val, uj_input.scalar, P384_CMD_BYTES);
 
@@ -1191,9 +1195,7 @@ status_t cryptolib_fi_p384_sign_impl(
   };
 
   // Set up the signature buffer.
-  uint32_t sig[kPentestP384Words * 2] = {0};
-  otcrypto_word32_buf_t signature_mut =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
+  signature_mut = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
 
   // Trigger window 1.
   if (uj_input.trigger == 1) {
@@ -1228,6 +1230,9 @@ status_t cryptolib_fi_p384_sign_impl(
 
   HARDENED_TRY(
       otcrypto_ecc_p384_public_key_export(&public_key, &out_x_buf, &out_y_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature_mut));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&out_x_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&out_y_buf));
 
   memcpy(uj_output->pubx, out_pub_x, P384_CMD_BYTES);
   memcpy(uj_output->puby, out_pub_y, P384_CMD_BYTES);

@@ -149,7 +149,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
         # Taken from the regular test
         cfg = 0
-        trigger = 0
+        trigger = 1
 
         # Directory for the trace log files
         pc_trace_file = os.path.join(log_dir, "p384_sign_pc_trace.log")
