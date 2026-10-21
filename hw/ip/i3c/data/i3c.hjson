@@ -1634,7 +1634,7 @@
     }
     { multireg: {
         name:     "TARG_TXBUF_STATE",
-        desc:     "Target 0 TX Buffer State.",
+        desc:     "Target TX Buffer State.",
         count:    "MaxTargets",
         cname:    "TARGET",
         swaccess: "ro",
@@ -1783,12 +1783,12 @@
         fields: [
           { bits:   "25:16",
             name:   "MAX_ADDR",
-            desc:   "Maximum address for Target 0 Tx Descriptor Queue use (inclusive).",
+            desc:   "Maximum address for Target Tx Descriptor Queue use (inclusive).",
             resval: "0x3b7 + (multireg_idx * 8)"
           }
           { bits:   "9:0",
             name:   "MIN_ADDR",
-            desc:   "Minimum address for Target 0 Tx Descriptor Queue use.",
+            desc:   "Minimum address for Target Tx Descriptor Queue use.",
             resval: "0x3b0 + (multireg_idx * 8)"
           }
         ]

@@ -50,10 +50,10 @@
 | i3c.[`TARG_TXBUF_CONFIG_1`](#targ_txbuf_config)                             | 0xa8     |        4 | Target TX Buffer Configuration.                                                     |
 | i3c.[`TARG_TXBUF_CONFIG_2`](#targ_txbuf_config)                             | 0xac     |        4 | Target TX Buffer Configuration.                                                     |
 | i3c.[`TARG_TXBUF_CONFIG_3`](#targ_txbuf_config)                             | 0xb0     |        4 | Target TX Buffer Configuration.                                                     |
-| i3c.[`TARG_TXBUF_STATE_0`](#targ_txbuf_state)                               | 0xb4     |        4 | Target 0 TX Buffer State.                                                           |
-| i3c.[`TARG_TXBUF_STATE_1`](#targ_txbuf_state)                               | 0xb8     |        4 | Target 0 TX Buffer State.                                                           |
-| i3c.[`TARG_TXBUF_STATE_2`](#targ_txbuf_state)                               | 0xbc     |        4 | Target 0 TX Buffer State.                                                           |
-| i3c.[`TARG_TXBUF_STATE_3`](#targ_txbuf_state)                               | 0xc0     |        4 | Target 0 TX Buffer State.                                                           |
+| i3c.[`TARG_TXBUF_STATE_0`](#targ_txbuf_state)                               | 0xb4     |        4 | Target TX Buffer State.                                                             |
+| i3c.[`TARG_TXBUF_STATE_1`](#targ_txbuf_state)                               | 0xb8     |        4 | Target TX Buffer State.                                                             |
+| i3c.[`TARG_TXBUF_STATE_2`](#targ_txbuf_state)                               | 0xbc     |        4 | Target TX Buffer State.                                                             |
+| i3c.[`TARG_TXBUF_STATE_3`](#targ_txbuf_state)                               | 0xc0     |        4 | Target TX Buffer State.                                                             |
 | i3c.[`TARG_RXBUF_CONFIG`](#targ_rxbuf_config)                               | 0xc4     |        4 | Target RX Buffer Configuration                                                      |
 | i3c.[`TARG_RXBUF_STATE`](#targ_rxbuf_state)                                 | 0xc8     |        4 | Target RX Buffer State.                                                             |
 | i3c.[`TARG_IBI_CONFIG`](#targ_ibi_config)                                   | 0xcc     |        4 | Target In-Band Interrupt Payload Queue Configuration                                |
@@ -1226,7 +1226,7 @@ Target TX Buffer Configuration.
 |  9:0   |   rw   |  0x1d0  | MIN_ADDR | Minimum address for Target TX use. The default addressing apportions the available storage space among the maximum number of Virtual Targets. For configurations employing fewer Virtual Targets, software should modify the configuration.             |
 
 ## TARG_TXBUF_STATE
-Target 0 TX Buffer State.
+Target TX Buffer State.
 - Reset default: `0x1d001d0`
 - Reset mask: `0xc3ff03ff`
 
@@ -1356,12 +1356,12 @@ Target Transmission Descriptor Queue Configuration.
 {"reg": [{"name": "MIN_ADDR", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}, {"name": "MAX_ADDR", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description                                                       |
-|:------:|:------:|:-------:|:---------|:------------------------------------------------------------------|
-| 31:26  |        |         |          | Reserved                                                          |
-| 25:16  |   rw   |  0x3b7  | MAX_ADDR | Maximum address for Target 0 Tx Descriptor Queue use (inclusive). |
-| 15:10  |        |         |          | Reserved                                                          |
-|  9:0   |   rw   |  0x3b0  | MIN_ADDR | Minimum address for Target 0 Tx Descriptor Queue use.             |
+|  Bits  |  Type  |  Reset  | Name     | Description                                                     |
+|:------:|:------:|:-------:|:---------|:----------------------------------------------------------------|
+| 31:26  |        |         |          | Reserved                                                        |
+| 25:16  |   rw   |  0x3b7  | MAX_ADDR | Maximum address for Target Tx Descriptor Queue use (inclusive). |
+| 15:10  |        |         |          | Reserved                                                        |
+|  9:0   |   rw   |  0x3b0  | MIN_ADDR | Minimum address for Target Tx Descriptor Queue use.             |
 
 ## TARG_TXDESC_STATE
 Target Transmission Descriptor Queue State.
