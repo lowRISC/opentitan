@@ -9,7 +9,7 @@
 
 # clkmgr peri clock connectivity
 
-CONNECTION, CLKMGR_PERI_CLK_GPIO_CLK, top_darjeeling.darjeeling_pd_aon.u_clkmgr, clocks_o.clk_io_peri, top_darjeeling.darjeeling_pd_main.u_gpio, clk_i
+CONNECTION, CLKMGR_PERI_CLK_GPIO_CLK, top_darjeeling.darjeeling_pd_aon.u_clkmgr, clocks_o.clk_io_peri, top_darjeeling.darjeeling_pd_main.u_gpio0, clk_i
 
 CONNECTION, CLKMGR_PERI_CLK_SPI_DEVICE_CLK,      top_darjeeling.darjeeling_pd_aon.u_clkmgr, clocks_o.clk_io_peri, top_darjeeling.darjeeling_pd_main.u_spi_device, clk_i
 CONNECTION, CLKMGR_PERI_CLK_SPI_DEVICE_SCAN_CLK, top_darjeeling.darjeeling_pd_aon.u_clkmgr, clocks_o.clk_io_peri, top_darjeeling.darjeeling_pd_main.u_spi_device, scan_clk_i
