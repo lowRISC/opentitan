@@ -3,12 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 #include <stdbool.h>
 
+#include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/lib/testing/test_framework/ujson_ottf.h"
 #include "sw/device/lib/ujson/ujson.h"
-#include "sw/device/tests/crypto/lib/crypto_test_lib.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -103,15 +103,11 @@ status_t process_cmd(ujson_t *uj) {
 }
 
 bool test_main(void) {
-  // We pick a random security level for the entire test run
-  otcrypto_key_security_level_t sec_level;
-  CHECK_STATUS_OK(determine_security_level(&sec_level));
-#ifdef OT_COVERAGE_INSTRUMENTED
-  // Coverage becomes flaky with the jittery clock and dummy operations.
-  sec_level = kOtcryptoKeySecurityLevelLow;
-#endif
   otcrypto_state_t state = {0};
-  CHECK_STATUS_OK(otcrypto_init(sec_level, &state));
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelHigh, &state));
+  // Disable Ibex dummy instructions (CSR_REG_CPUCTRL[2]) as they make the
+  // unbuffered SPI console flaky over long test runs.
+  CSR_CLEAR_BITS(CSR_REG_CPUCTRL, 0x4);
   ujson_t uj = ujson_ottf_console();
   return status_ok(process_cmd(&uj));
 }
