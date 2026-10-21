@@ -22,6 +22,7 @@ exports_files([
     "ed25519_schema.json",
     "hash_schema.json",
     "hmac_schema.json",
+    "kdf_schema.json",
     "kmac_schema.json",
     "rsa_schema.json",
     "sphincsplus_schema.json",

@@ -22,6 +22,7 @@
 #include "sw/device/tests/crypto/cryptotest/json/ed25519_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hash_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/hmac_commands.h"
+#include "sw/device/tests/crypto/cryptotest/json/kdf_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/kmac_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/rsa_commands.h"
 #include "sw/device/tests/crypto/cryptotest/json/sha_commands.h"
@@ -37,6 +38,7 @@
 #include "ed25519.h"
 #include "hash.h"
 #include "hmac.h"
+#include "kdf.h"
 #include "kmac.h"
 #include "rsa.h"
 #include "sha.h"
@@ -75,6 +77,9 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kCryptotestCommandHmac:
         RESP_ERR(uj, handle_hmac(uj));
+        break;
+      case kCryptotestCommandKdf:
+        RESP_ERR(uj, handle_kdf(uj));
         break;
       case kCryptotestCommandKmac:
         RESP_ERR(uj, handle_kmac(uj));

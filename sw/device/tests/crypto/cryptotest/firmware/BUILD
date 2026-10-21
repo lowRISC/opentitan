@@ -218,6 +218,23 @@ cc_library(
     ],
 )
 
+cc_library(
+    name = "kdf",
+    srcs = ["kdf.c"],
+    hdrs = ["kdf.h"],
+    deps = [
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/tests/crypto/cryptotest/json:kdf_commands",
+        "//sw/device/tests/crypto/lib:crypto_test_lib",
+    ],
+)
+
 FIRMWARE_DEPS = [
     ":aes",
     ":aes_gcm",
@@ -227,6 +244,7 @@ FIRMWARE_DEPS = [
     ":ed25519",
     ":hash",
     ":hmac",
+    ":kdf",
     ":kmac",
     ":rsa",
     ":sha",
