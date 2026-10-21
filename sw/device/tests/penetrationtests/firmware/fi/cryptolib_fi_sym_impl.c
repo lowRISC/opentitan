@@ -158,7 +158,7 @@ status_t cryptolib_fi_aes_impl(cryptolib_fi_sym_aes_in_t uj_input,
   uj_output->data_len = padded_len_bytes;
   uj_output->cfg = 0;
   memset(uj_output->data, 0, AES_CMD_MAX_MSG_BYTES);
-  memcpy(uj_output->data, output_buf, uj_output->data_len);
+  memcpy(uj_output->data, output.data, uj_output->data_len);
   uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
