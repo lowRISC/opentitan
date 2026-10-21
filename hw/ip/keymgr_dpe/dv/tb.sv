@@ -71,6 +71,7 @@ module tb;
     .creator_seed_i       (keymgr_dpe_if.creator_seed),
     .owner_seed_i         (keymgr_dpe_if.owner_seed),
     .device_id_i          (keymgr_dpe_if.otp_device_id),
+    .field_entropy_i      (keymgr_dpe_if.field_entropy),
     .rom_digest_i         (keymgr_dpe_if.rom_digests),
     .edn_o                (edn_if[0].req),
     .edn_i                ({edn_if[0].ack, edn_if[0].d_data}),

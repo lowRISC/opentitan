@@ -289,13 +289,13 @@
       name: use_excl_sw_binding_option
       desc: '''
             When deriving from the initial DPE slot, HW binding values from the life cycle state
-            are normally included in the KMAC message for the first, second, and third advance
-            calls. The excl_sw_binding flag suppresses these hw binding values.
+            are normally included in the KMAC message for the first, second, third and fourth
+            advance calls. The excl_sw_binding flag suppresses these hw binding values.
 
             Stimulus:
             - Bring keymgr_dpe out of the Reset state and into the Available state by
               issuing a single advance call.
-            - Perform three advance operations with the excl_sw_binding flag set.
+            - Perform four advance operations with the excl_sw_binding flag set.
 
             Checks:
             - Verify that the corresponding hw binding values on the KMAC interface are driven to
@@ -416,7 +416,7 @@
 
             Stimulus:
             - Drive all-zeros or all-ones on any of the following inputs: flash seeds, otp_key,
-              diversification ID, ROM digest, etc.
+              diversification ID, ROM digest, field_entropy, etc.
 
             Checks:
             - Verify that alert `recov_operation_err` is triggered and err_code is
@@ -530,7 +530,8 @@
             - All ones/zeros on ROM digest.
             - ROM digest valid is low.
             - All ones/zeros on flash creator seeds.
-            - All ones/zeros on flash owner seeds.'''
+            - All ones/zeros on flash owner seeds.
+            - All ones/zeros on field_entropy.'''
     }
     {
       name: key_version_compare_cg

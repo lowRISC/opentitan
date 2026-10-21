@@ -22,7 +22,7 @@ package keymgr_dpe_env_pkg;
 
   // Define default values for all blocklevel dv parameter
   `ifndef DEF_DV_BOOT_STAGES
-   `define DEF_DV_BOOT_STAGES 3
+   `define DEF_DV_BOOT_STAGES 4
   `endif
   `ifndef DEF_DV_DPE_NUM_SLOT
    `define DEF_DV_DPE_NUM_SLOT 4
@@ -44,7 +44,7 @@ package keymgr_dpe_env_pkg;
   //   - OTP device ID
   //   - LC keymgr diversification value
   //   - ROM digests
-  //   - Creator seed (only if boot stage equals two)
+  //   - Creator seed (only if DvBootStages == 2)
   parameter int DvDpeAdvDataWidth = keymgr_dpe_pkg::SwBindingWidth +
       keymgr_dpe_pkg::KeyWidth + keymgr_dpe_pkg::KeyWidth * (DvBootStages == 2) +
       lc_ctrl_pkg::LcKeymgrDivWidth + keymgr_dpe_pkg::DeviceIdWidth +

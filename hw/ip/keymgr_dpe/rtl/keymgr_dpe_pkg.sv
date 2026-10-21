@@ -174,6 +174,9 @@ package keymgr_dpe_pkg;
   // seed argument: --seed 7535201
   parameter seed_t RndCnstHmacSeedDefault =
     256'h64812715_c6be53f9_e159a531_3e2e534c_af6357aa_68dbd6a0_852693ca_490f6810;
+  // seed argument: --seed 7535202
+  parameter seed_t RndCnstFieldEntropySeedDefault =
+    256'h19669f9d_6d107781_779533fd_58546820_b8339f55_694f5a36_ee23e819_00f8fc6b;
 
 
   //////////////////////////////////////
@@ -187,6 +190,11 @@ package keymgr_dpe_pkg;
     logic [KeyWidth-1:0]  share1;
     logic                 share1_valid;
   } keymgr_dpe_creator_root_key_t;
+
+  typedef struct packed {
+    logic [KeyWidth-1:0]  secret;
+    logic                 secret_valid;
+  } keymgr_dpe_field_entropy_t;
 
   typedef struct packed {
     logic [KeyWidth-1:0]  seed;
@@ -203,6 +211,11 @@ package keymgr_dpe_pkg;
     share0_valid : 1'b1,
     share1       : 256'h56d24a00181de99e0f690b447a8dde2a1ffb8bc306707107aa6e2410f15cfc37,
     share1_valid : 1'b1
+  };
+
+  parameter keymgr_dpe_field_entropy_t KEYMGR_DPE_FIELD_ENTROPY_DEFAULT = '{
+    secret       : 256'h3b7828287b9f2de22908788d726f352f5b116ea077166140f5581458f7ac74b7,
+    secret_valid : 1'b1
   };
 
   parameter keymgr_dpe_creator_seed_t KEYMGR_DPE_CREATOR_SEED_DEFAULT = '{
@@ -249,12 +262,13 @@ package keymgr_dpe_pkg;
 
   // Enumeration for boot stage. In the BootStageRuntime stage, there is no limit on the number of
   // advance calls.
-  parameter int DpeBootStagesWidth = 2;
+  parameter int DpeBootStagesWidth = 3;
   typedef enum logic [DpeBootStagesWidth-1:0] {
-    BootStageCreator  = 0,
-    BootStageOwnerInt = 1,
-    BootStageOwner    = 2,
-    BootStageRuntime  = 3
+    BootStageCreator    = 0,
+    BootStageCreatorInt = 1,
+    BootStageOwnerInt   = 2,
+    BootStageOwner      = 3,
+    BootStageRuntime    = 4
   } keymgr_dpe_boot_stage_e;
 
   // An internal secret key slot

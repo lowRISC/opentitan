@@ -5974,6 +5974,16 @@
           index: -1
         }
         {
+          name: field_entropy
+          struct: keymgr_dpe_field_entropy
+          package: keymgr_dpe_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: keymgr_dpe
+          index: -1
+        }
+        {
           name: lc_keymgr_en
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -25890,6 +25900,16 @@
         inst_name: keymgr_dpe
         default: ""
         top_signame: keymgr_dpe_device_id
+        index: -1
+      }
+      {
+        name: field_entropy
+        struct: keymgr_dpe_field_entropy
+        package: keymgr_dpe_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: keymgr_dpe
         index: -1
       }
       {

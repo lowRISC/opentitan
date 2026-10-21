@@ -672,7 +672,7 @@ Entries at index `NumInstHwSlot` and above always read as 0.
 Together with [`METADATA_LOW`](#metadata_low), this register lets software inspect the non-secret
 metadata of the DPE context.
 - Reset default: `0x0`
-- Reset mask: `0x7f`
+- Reset mask: `0xff`
 
 ### Instances
 
@@ -691,17 +691,17 @@ metadata of the DPE context.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "BOOT_STAGE", "bits": 2, "attr": ["ro"], "rotate": -90}, {"name": "ALLOW_CHILD_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "EXPORTABLE_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RETAIN_PARENT_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALLOW_KEYGEN_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 25}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "VALID", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "BOOT_STAGE", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "ALLOW_CHILD_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "EXPORTABLE_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RETAIN_PARENT_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALLOW_KEYGEN_POLICY", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                         |
 |:------:|:------:|:-------:|:-------------------------------------------------------------|
-|  31:7  |        |         | Reserved                                                     |
-|   6    |   ro   |   0x0   | [ALLOW_KEYGEN_POLICY](#metadata_high--allow_keygen_policy)   |
-|   5    |   ro   |   0x0   | [RETAIN_PARENT_POLICY](#metadata_high--retain_parent_policy) |
-|   4    |   ro   |   0x0   | [EXPORTABLE_POLICY](#metadata_high--exportable_policy)       |
-|   3    |   ro   |   0x0   | [ALLOW_CHILD_POLICY](#metadata_high--allow_child_policy)     |
-|  2:1   |   ro   |   0x0   | [BOOT_STAGE](#metadata_high--boot_stage)                     |
+|  31:8  |        |         | Reserved                                                     |
+|   7    |   ro   |   0x0   | [ALLOW_KEYGEN_POLICY](#metadata_high--allow_keygen_policy)   |
+|   6    |   ro   |   0x0   | [RETAIN_PARENT_POLICY](#metadata_high--retain_parent_policy) |
+|   5    |   ro   |   0x0   | [EXPORTABLE_POLICY](#metadata_high--exportable_policy)       |
+|   4    |   ro   |   0x0   | [ALLOW_CHILD_POLICY](#metadata_high--allow_child_policy)     |
+|  3:1   |   ro   |   0x0   | [BOOT_STAGE](#metadata_high--boot_stage)                     |
 |   0    |   ro   |   0x0   | [VALID](#metadata_high--valid)                               |
 
 ### METADATA_HIGH . ALLOW_KEYGEN_POLICY
@@ -719,16 +719,17 @@ Read the `allow_child` policy applied to the DPE context in this slot.
 ### METADATA_HIGH . BOOT_STAGE
 Boot stage associated with the DPE context held in this slot.
 
-| Value | Boot stage        |
-|:-----:|:------------------|
-| 0     | BootStageCreator  |
-| 1     | BootStageOwnerInt |
-| 2     | BootStageOwner    |
-| 3     | BootStageRuntime  |
+| Value | Boot stage          |
+|:-----:|:--------------------|
+| 0     | BootStageCreator    |
+| 1     | BootStageCreatorInt |
+| 2     | BootStageOwnerInt   |
+| 3     | BootStageOwner      |
+| 4     | BootStageRuntime    |
 
 The naming indicates the next bootstage after a successful key derivation
 e.g. boot stage 1 means the context is the _CreatorRootKey_ and will be
-derived into the _OwnerIntKey_.
+derived into the _CreatorIntKey_.
 
 ### METADATA_HIGH . VALID
 Set if the DPE context held in this slot is valid.
@@ -798,26 +799,27 @@ The register holds some debug information that may be convenient if keymgr
 misbehaves.
 - Offset: `0x110`
 - Reset default: `0x0`
-- Reset mask: `0x1ff`
+- Reset mask: `0x3ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "INVALID_CREATOR_SEED", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_OWNER_SEED", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_DEV_ID", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_HEALTH_STATE", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_KEY_VERSION", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_KEY", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_DIGEST", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_ROOT_KEY", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INACTIVE_LC_EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 23}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "INVALID_CREATOR_SEED", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_OWNER_SEED", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_DEV_ID", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_HEALTH_STATE", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_KEY_VERSION", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_KEY", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_DIGEST", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_ROOT_KEY", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INACTIVE_LC_EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INVALID_FIELD_ENTROPY", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description                                                               |
-|:------:|:------:|:-------:|:---------------------|:--------------------------------------------------------------------------|
-|  31:9  |        |         |                      | Reserved                                                                  |
-|   8    |  rw0c  |   0x0   | INACTIVE_LC_EN       | Enable signal from LC ctrl is deactivated                                 |
-|   7    |  rw0c  |   0x0   | INVALID_ROOT_KEY     | OTP root key was invalid during the first advance                         |
-|   6    |  rw0c  |   0x0   | INVALID_DIGEST       | ROM digest failed input checks during operation                           |
-|   5    |  rw0c  |   0x0   | INVALID_KEY          | Key fed to kmac failed input checks during operation                      |
-|   4    |  rw0c  |   0x0   | INVALID_KEY_VERSION  | Key version failed input checks during operation                          |
-|   3    |  rw0c  |   0x0   | INVALID_HEALTH_STATE | Health state failed input checks during operation                         |
-|   2    |  rw0c  |   0x0   | INVALID_DEV_ID       | Device ID failed input checks during operation                            |
-|   1    |  rw0c  |   0x0   | INVALID_OWNER_SEED   | Owner seed was not marked valid or failed input checks during operation   |
-|   0    |  rw0c  |   0x0   | INVALID_CREATOR_SEED | Creator seed was not marked valid or failed input checks during operation |
+|  Bits  |  Type  |  Reset  | Name                  | Description                                                                                                                                                                                 |
+|:------:|:------:|:-------:|:----------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:10  |        |         |                       | Reserved                                                                                                                                                                                    |
+|   9    |  rw0c  |   0x0   | INVALID_FIELD_ENTROPY | Field entropy (or, if not marked valid, the netlist constant substitute) failed input checks. Only evaluated when `NumBootStages` equals 4, as the field entropy is not consumed otherwise. |
+|   8    |  rw0c  |   0x0   | INACTIVE_LC_EN        | Enable signal from LC ctrl is deactivated                                                                                                                                                   |
+|   7    |  rw0c  |   0x0   | INVALID_ROOT_KEY      | OTP root key was invalid during the first advance                                                                                                                                           |
+|   6    |  rw0c  |   0x0   | INVALID_DIGEST        | ROM digest failed input checks during operation                                                                                                                                             |
+|   5    |  rw0c  |   0x0   | INVALID_KEY           | Key fed to kmac failed input checks during operation                                                                                                                                        |
+|   4    |  rw0c  |   0x0   | INVALID_KEY_VERSION   | Key version failed input checks during operation                                                                                                                                            |
+|   3    |  rw0c  |   0x0   | INVALID_HEALTH_STATE  | Health state failed input checks during operation                                                                                                                                           |
+|   2    |  rw0c  |   0x0   | INVALID_DEV_ID        | Device ID failed input checks during operation                                                                                                                                              |
+|   1    |  rw0c  |   0x0   | INVALID_OWNER_SEED    | Owner seed was not marked valid or failed input checks during operation                                                                                                                     |
+|   0    |  rw0c  |   0x0   | INVALID_CREATOR_SEED  | Creator seed was not marked valid or failed input checks during operation                                                                                                                   |
 
 ## LOAD_ROOT_KEY_LOCK
 Register lock for the `load root key` operation, see [`CONTROL_SHADOWED.OPERATION.`](#control_shadowed)
@@ -858,7 +860,7 @@ Enforce using only sw binding value for context derivation.
 
 Once set no hw binding value can be consumed until the next reset.
 An advance operation from a parent whose boot stage consumes hw binding values
-(`boot_stage` 0 to 2, i.e. Creator, OwnerInt or Owner) without
+(`boot_stage` 0 to 3, i.e. Creator, CreatorInt, OwnerInt or Owner) without
 `CONTROL_SHADOWED.SW_BINDING_ONLY` set will fail with an `invalid_op` error without
 updating the destination slot.
 Advance operations from later boot stages are not affected.

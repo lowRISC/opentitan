@@ -9610,7 +9610,7 @@
       param_decl:
       {
         NumInstHwSlot: "4"
-        NumBootStages: "3"
+        NumBootStages: "4"
         NumRomDigestInputs: "1"
       }
       domain: Main
@@ -9644,7 +9644,7 @@
           name: NumBootStages
           desc: Number of available boot stage
           type: int
-          default: "3"
+          default: "4"
           local: "true"
           expose: "true"
           name_top: KeymgrDpeNumBootStages
@@ -9792,6 +9792,16 @@
           inst_name: keymgr_dpe
           default: ""
           top_signame: keymgr_dpe_device_id
+          index: -1
+        }
+        {
+          name: field_entropy
+          struct: keymgr_dpe_field_entropy
+          package: keymgr_dpe_pkg
+          type: uni
+          act: rcv
+          width: 1
+          inst_name: keymgr_dpe
           index: -1
         }
         {
@@ -30801,6 +30811,16 @@
         inst_name: keymgr_dpe
         default: ""
         top_signame: keymgr_dpe_device_id
+        index: -1
+      }
+      {
+        name: field_entropy
+        struct: keymgr_dpe_field_entropy
+        package: keymgr_dpe_pkg
+        type: uni
+        act: rcv
+        width: 1
+        inst_name: keymgr_dpe
         index: -1
       }
       {
