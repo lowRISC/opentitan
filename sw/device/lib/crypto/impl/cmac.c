@@ -66,12 +66,15 @@ enum {
 /**
  * AES cleanup guard.
  */
-static void aes_wipe_guard(uint32_t *dummy) { (void)aes_clear(); }
+OT_USED static void aes_wipe_guard(uint32_t *dummy) {
+  (void)dummy;
+  (void)aes_clear();
+}
 
 /**
  * Sideload cleanup guard.
  */
-static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
+OT_USED static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
   if (*is_sideloaded == kHardenedBoolTrue) {
     // COVERAGE (MISSING) Sideloaded keys for CMAC are not covered.
     (void)keymgr_dpe_sideload_clear_aes();

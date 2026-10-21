@@ -294,7 +294,8 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(
 /**
  * Hardware cleanup guard.
  */
-static void hw_wipe_guard(uint32_t *dummy) {
+OT_USED static void hw_wipe_guard(uint32_t *dummy) {
+  (void)dummy;
   (void)aes_clear();
   (void)keymgr_dpe_sideload_clear_aes();
 }

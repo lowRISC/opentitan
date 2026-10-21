@@ -198,9 +198,9 @@ static status_t streaming_test(void) {
   TRY(otcrypto_hmac_init(&ctx, &blinded_key));
   size_t offset = 0;
   for (; offset + chunk_size < msg_len; offset += chunk_size) {
-    otcrypto_const_byte_buf_t msg_buf =
+    otcrypto_const_byte_buf_t chunk_buf =
         OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg_bytes, chunk_size);
-    TRY(otcrypto_hmac_update(&ctx, &msg_buf));
+    TRY(otcrypto_hmac_update(&ctx, &chunk_buf));
     msg_bytes += chunk_size;
   }
   // One final update for any remaining data (may be 0-length).

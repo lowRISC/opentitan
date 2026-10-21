@@ -249,7 +249,7 @@ status_t entropy_csrng_kat(void) {
   return OTCRYPTO_FATAL_ERR;
 }
 
-static void csrng_ctrl_restore(uint32_t *old_ctrl) {
+OT_USED static void csrng_ctrl_restore(uint32_t *old_ctrl) {
   abs_mmio_write32(csrng_base() + CSRNG_CTRL_REG_OFFSET, *old_ctrl);
 }
 
