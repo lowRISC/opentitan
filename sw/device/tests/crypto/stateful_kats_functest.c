@@ -4,6 +4,7 @@
 
 #include <string.h>
 
+#include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/include/aes.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
@@ -348,7 +349,7 @@ status_t test_fips_state_and_param_checks(void) {
 bool test_main(void) {
   CHECK_STATUS_OK(test_pre_init_state_checks());
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelHigh));
-
+  CSR_CLEAR_BITS(CSR_REG_CPUCTRL, 0x4);
   CHECK_STATUS_OK(test_stateful_kat_execution());
   CHECK_STATUS_OK(test_fips_state_and_param_checks());
 
