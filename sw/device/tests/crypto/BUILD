@@ -245,7 +245,7 @@ opentitan_test(
             # This test expects constant cycle count which cannot be guaranteed # on the RRAM.
             # see https://github.com/lowRISC/opentitan/issues/30895
             "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "fpga_sival_skip_ci",
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "fpga_sival_skip_ci",
+            "//hw/top_earlgrey:fpga_cw340_rom": "fpga_sival_skip_ci",
         },
     ),
     fpga_sival_skip_ci = fpga_params(

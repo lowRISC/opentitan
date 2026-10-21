@@ -12,7 +12,7 @@ To run on an FPGA for testing, run:
 
 ```
 bazel run \
-  --//sw/host/provisioning/orchestrator/src:env=//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys \
+  --//sw/host/provisioning/orchestrator/src:env=//hw/top_earlgrey:fpga_cw340_rom \
   --//sw/host/provisioning/orchestrator/src:otp=//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty \
   //sw/host/provisioning/orchestrator/src:orchestrator -- \
     --sku-config=$(pwd)/sw/host/provisioning/orchestrator/configs/skus/emulation.hjson \
@@ -42,7 +42,7 @@ dependencies.
 
 ```
 bazel build \
-  --//sw/host/provisioning/orchestrator/src:env=//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys \
+  --//sw/host/provisioning/orchestrator/src:env=//hw/top_earlgrey:fpga_cw340_rom \
   --//sw/host/provisioning/orchestrator/src:otp=//hw/top_earlgrey/data/otp/emulation:otp_img_test_unlocked0_manuf_empty \
   //sw/host/provisioning/orchestrator/src:orchestrator.zip
 ```
