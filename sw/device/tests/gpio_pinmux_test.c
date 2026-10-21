@@ -21,7 +21,6 @@
 
 OTTF_DEFINE_TEST_CONFIG(.enable_uart_flow_control = true);
 
-static dif_gpio_t gpio;
 static dif_pinmux_t pinmux;
 
 status_t command_processor(ujson_t *uj) {
@@ -30,10 +29,10 @@ status_t command_processor(ujson_t *uj) {
     TRY(ujson_deserialize_test_command_t(uj, &command));
     switch (command) {
       case kTestCommandGpioSet:
-        RESP_ERR(uj, gpio_set(uj, &gpio));
+        RESP_ERR(uj, gpio_set(uj));
         break;
       case kTestCommandGpioGet:
-        RESP_ERR(uj, gpio_get(uj, &gpio));
+        RESP_ERR(uj, gpio_get(uj));
         break;
       case kTestCommandPinmuxConfig:
         RESP_ERR(uj, pinmux_config(uj, &pinmux));
@@ -50,8 +49,6 @@ status_t command_processor(ujson_t *uj) {
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
-  CHECK_DIF_OK(dif_gpio_init(
-      mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR), &gpio));
   ujson_t uj = ujson_ottf_console();
 
   status_t s = command_processor(&uj);

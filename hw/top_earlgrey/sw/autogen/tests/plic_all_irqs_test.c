@@ -99,6 +99,10 @@ static dif_entropy_src_t entropy_src;
 static dif_gpio_t gpio0;
 #endif
 
+#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
+static dif_gpio_t gpio1;
+#endif
+
 #if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
 static dif_hmac_t hmac;
 #endif
@@ -570,6 +574,29 @@ void ottf_external_isr(uint32_t *exc_info) {
             irq, snapshot);
 
       CHECK_DIF_OK(dif_gpio_irq_acknowledge(&gpio0, irq));
+      break;
+    }
+#endif
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
+    case kTopEarlgreyPlicPeripheralGpio1: {
+      dif_gpio_irq_t irq =
+          (dif_gpio_irq_t)(plic_irq_id -
+                           (dif_rv_plic_irq_id_t)
+                               kTopEarlgreyPlicIrqIdGpio1Gpio0);
+      CHECK(irq == gpio_irq_expected,
+            "Incorrect gpio1 IRQ triggered: exp = %d, obs = %d",
+            gpio_irq_expected, irq);
+      gpio_irq_serviced = irq;
+
+      dif_gpio_irq_state_snapshot_t snapshot;
+      CHECK_DIF_OK(dif_gpio_irq_get_state(&gpio1, &snapshot));
+      CHECK(snapshot == (dif_gpio_irq_state_snapshot_t)(1 << irq),
+            "Only gpio1 IRQ %d expected to fire. Actual interrupt "
+            "status = %x",
+            irq, snapshot);
+
+      CHECK_DIF_OK(dif_gpio_irq_acknowledge(&gpio1, irq));
       break;
     }
 #endif
@@ -1383,6 +1410,11 @@ static void peripherals_init(void) {
   CHECK_DIF_OK(dif_gpio_init(base_addr, &gpio0));
 #endif
 
+#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO1_BASE_ADDR);
+  CHECK_DIF_OK(dif_gpio_init(base_addr, &gpio1));
+#endif
+
 #if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
   base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
@@ -1540,6 +1572,10 @@ static void peripheral_irqs_clear(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_gpio_irq_acknowledge_all(&gpio0));
+#endif
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
+  CHECK_DIF_OK(dif_gpio_irq_acknowledge_all(&gpio1));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
@@ -1794,6 +1830,10 @@ static void peripheral_irqs_enable(void) {
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
   CHECK_DIF_OK(dif_gpio_irq_restore_all(&gpio0, &gpio_irqs));
+#endif
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
+  CHECK_DIF_OK(dif_gpio_irq_restore_all(&gpio1, &gpio_irqs));
 #endif
 
 #if TEST_MIN_IRQ_PERIPHERAL <= 8 && 8 < TEST_MAX_IRQ_PERIPHERAL
@@ -2058,6 +2098,21 @@ static void peripheral_irqs_trigger(void) {
     // entering the ISR.
     IBEX_SPIN_FOR(gpio_irq_serviced == irq, 1);
     LOG_INFO("IRQ %d from gpio0 is serviced.", irq);
+  }
+#endif
+
+#if TEST_MIN_IRQ_PERIPHERAL <= 7 && 7 < TEST_MAX_IRQ_PERIPHERAL
+  peripheral_expected = kTopEarlgreyPlicPeripheralGpio1;
+  for (dif_gpio_irq_t irq = kDifGpioIrqGpio0; irq <= kDifGpioIrqGpio31;
+       ++irq) {
+    gpio_irq_expected = irq;
+    LOG_INFO("Triggering gpio1 IRQ %d.", irq);
+    CHECK_DIF_OK(dif_gpio_irq_force(&gpio1, irq, true));
+
+    // This avoids a race where *irq_serviced is read before
+    // entering the ISR.
+    IBEX_SPIN_FOR(gpio_irq_serviced == irq, 1);
+    LOG_INFO("IRQ %d from gpio1 is serviced.", irq);
   }
 #endif
 

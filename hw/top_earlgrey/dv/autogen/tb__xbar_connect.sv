@@ -78,6 +78,7 @@ tl_if i2c0_tl_if(clk_io_div4, rst_n);
 tl_if i2c1_tl_if(clk_io_div4, rst_n);
 tl_if i2c2_tl_if(clk_io_div4, rst_n);
 tl_if gpio0_tl_if(clk_io_div4, rst_n);
+tl_if gpio1_tl_if(clk_io_div4, rst_n);
 tl_if spi_device_tl_if(clk_io_div4, rst_n);
 tl_if rv_timer_tl_if(clk_io_div4, rst_n);
 tl_if pwrmgr_tl_if(clk_io_div4, rst_n);
@@ -163,6 +164,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(i2c1, i2c1, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(i2c2, i2c2, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(gpio0, gpio0, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(gpio1, gpio1, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(spi_device, spi_device, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(pwrmgr, pwrmgr, tl, aon, clk_i)

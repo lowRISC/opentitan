@@ -452,6 +452,7 @@
             input:
             - adc_ctrl clk_i
             - gpio0 clk_i
+            - gpio1 clk_i
             - spi_device clk_i
             - i2c0 clk_i
             - i2c1 clk_i
@@ -464,6 +465,7 @@
       stage: V2
       tests: ["clkmgr_peri_clk_adc_ctrl_clk",
               "clkmgr_peri_clk_gpio0_clk",
+              "clkmgr_peri_clk_gpio1_clk",
               "clkmgr_peri_clk_spi_device_clk",
               "clkmgr_peri_clk_i2c0_clk",
               "clkmgr_peri_clk_i2c1_clk",
@@ -1205,6 +1207,7 @@
       name: rst_sys_io_div4_d0
       desc: '''Verify rstmgr's rst_sys_io_div4_n[1] is connected to the following:
             - gpio0's rst_ni
+            - gpio1's rst_ni
             - rv_timer's rst_ni
             - uart0's rst_ni
             - uart1's rst_ni
@@ -1215,6 +1218,7 @@
             '''
       stage: V2
       tests: ["rstmgr_sys_io_div4_d0_gpio0_rst_ni",
+              "rstmgr_sys_io_div4_d0_gpio1_rst_ni",
               "rstmgr_sys_io_div4_d0_rv_timer_rst_ni",
               "rstmgr_sys_io_div4_d0_uart0_rst_ni",
               "rstmgr_sys_io_div4_d0_uart1_rst_ni",

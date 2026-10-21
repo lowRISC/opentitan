@@ -94,9 +94,9 @@ waive -rules SAME_NAME_TYPE -location {i3c_reset_detector.sv prim_sync_reqack.sv
 # The I3C Target transceiver has no free-running clock: it is clocked by the Controller-supplied
 # SCL, and by SDA to detect START, Repeated START and STOP conditions. Both arrive through MIO
 # pads, so the pad inputs legitimately reach clock inputs.
-waive -rules {CLOCK_DRIVER} -location {earlgrey_pd_aon.sv} -regexp {'mio_p2d\[(38|39|40|41)\]' is driven by instance 'u_pinmux' of module 'pinmux', and used as a clock '(scl_i|sda0_clk_ni)' at} \
+waive -rules {CLOCK_DRIVER} -location {earlgrey_pd_aon.sv} -regexp {'mio_p2d\[(70|71|72|73)\]' is driven by instance 'u_pinmux' of module 'pinmux', and used as a clock '(scl_i|sda0_clk_ni)' at} \
       -comment "The I3C Target SCL and SDA pins clock the Target transceiver, which has no free-running clock."
-waive -rules {CLOCK_DRIVER} -location {earlgrey_pd_aon.sv} -regexp {'mio_p2d\[(50|51|52|53)\]' is driven by instance 'u_pinmux' of module 'pinmux', and used as a clock '(scl_buf|sda_clk_n)' at} \
+waive -rules {CLOCK_DRIVER} -location {earlgrey_pd_aon.sv} -regexp {'mio_p2d\[(82|83|84|85)\]' is driven by instance 'u_pinmux' of module 'pinmux', and used as a clock '(scl_buf|sda_clk_n)' at} \
       -comment "The SCL and SDA inputs of the I3C Target Reset Detectors clock the detectors, which have no free-running clock."
 
 waive -rules {LINE_LENGTH} -location {top_earlgrey.sv earlgrey_pd_main.sv earlgrey_pd_aon.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \

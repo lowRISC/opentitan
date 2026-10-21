@@ -63,7 +63,7 @@ static status_t peripheral_handles_init(void) {
  * Configure the ATE GPIO indicator pins.
  */
 static status_t configure_ate_gpio_indicators(void) {
-  // IOA5 / GPIO0 is for SPI console TX ready signal.
+  // IOA5 / gpio0 pin 0 is for SPI console TX ready signal.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
       kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinSpiConsoleTxReady));

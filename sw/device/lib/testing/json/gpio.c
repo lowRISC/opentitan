@@ -10,9 +10,23 @@
 
 #define MODULE_ID MAKE_MODULE_ID('j', 'g', 'p')
 
-status_t gpio_set(ujson_t *uj, const dif_gpio_t *gpio) {
-  gpio_set_t op;
+/**
+ * Initializes `gpio` for the GPIO instance with index `instance`.
+ */
+static status_t gpio_init_instance(uint8_t instance, dif_gpio_t *gpio) {
+  if (instance >= kDtGpioCount) {
+    return INVALID_ARGUMENT();
+  }
+  TRY(dif_gpio_init_from_dt((dt_gpio_t)instance, gpio));
+  return OK_STATUS();
+}
+
+status_t gpio_set(ujson_t *uj) {
+  gpio_set_t op = {0};
   TRY(ujson_deserialize_gpio_set_t(uj, &op));
+  dif_gpio_t gpio_handle;
+  TRY(gpio_init_instance(op.instance, &gpio_handle));
+  const dif_gpio_t *gpio = &gpio_handle;
   switch (op.action) {
     case kGpioActionWrite:
       TRY(dif_gpio_write(gpio, (dif_gpio_pin_t)op.pin_mask, (bool)op.state));
@@ -70,9 +84,13 @@ status_t gpio_set(ujson_t *uj, const dif_gpio_t *gpio) {
   return RESP_OK_STATUS(uj);
 }
 
-status_t gpio_get(ujson_t *uj, const dif_gpio_t *gpio) {
+status_t gpio_get(ujson_t *uj) {
+  gpio_get_request_t req = {0};
+  TRY(ujson_deserialize_gpio_get_request_t(uj, &req));
+  dif_gpio_t gpio;
+  TRY(gpio_init_instance(req.instance, &gpio));
   dif_gpio_state_t state;
-  TRY(dif_gpio_read_all(gpio, &state));
+  TRY(dif_gpio_read_all(&gpio, &state));
   gpio_get_t val = {state};
   return RESP_OK(ujson_serialize_gpio_get_t, uj, &val);
 }

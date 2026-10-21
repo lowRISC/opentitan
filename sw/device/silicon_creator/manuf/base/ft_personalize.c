@@ -1163,23 +1163,23 @@ static status_t finalize_otp_partitions(void) {
 }
 
 static status_t configure_ate_gpio_indicators(void) {
-  // IOA6 / GPIO4 is for SPI console RX ready signal.
+  // IOA6 / gpio0 pin 4 is for SPI console RX ready signal.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa6,
       kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinSpiConsoleRxReady));
-  // IOA5 / GPIO3 is for SPI console TX ready signal.
+  // IOA5 / gpio0 pin 3 is for SPI console TX ready signal.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
       kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinSpiConsoleTxReady));
-  // IOA0 / GPIO2 is for error reporting.
+  // IOA0 / gpio0 pin 2 is for error reporting.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa0,
       kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinTestError));
-  // IOA1 / GPIO1 is for test done reporting.
+  // IOA1 / gpio0 pin 1 is for test done reporting.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa1,
       kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinTestDone));
-  // IOA4 / GPIO0 is for test start reporting.
+  // IOA4 / gpio0 pin 0 is for test start reporting.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa4,
       kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinTestStart));

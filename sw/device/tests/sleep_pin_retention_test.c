@@ -33,8 +33,8 @@ static const dt_rv_plic_t kRvPlicDt = 0;
 static_assert(kDtRvPlicCount == 1, "this test expects exactly one rv_plic");
 static const dt_pinmux_t kPinmuxDt = 0;
 static_assert(kDtPinmuxCount == 1, "this test expects exactly one pinmux");
-static const dt_gpio_t kGpioDt = 0;
-static_assert(kDtGpioCount == 1, "this test expects exactly one gpio");
+static const dt_gpio_t kGpioDt = kDtGpioFirst;
+static_assert(kDtGpioCount >= 1, "this test expects at least one gpio");
 
 // SV randomizes the round of entering/exiting sleep then set this volatile
 // variable via backdoor_overwrite.

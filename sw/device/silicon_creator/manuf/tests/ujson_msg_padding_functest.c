@@ -52,11 +52,11 @@ static status_t peripheral_handles_init(void) {
 }
 
 static status_t configure_ate_gpio_indicators(void) {
-  // IOA6 / GPIO4 is for SPI console RX ready signal.
+  // IOA6 / gpio0 pin 1 is for SPI console RX ready signal.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa6,
       kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinSpiConsoleRxReady));
-  // IOA5 / GPIO3 is for SPI console TX ready signal.
+  // IOA5 / gpio0 pin 0 is for SPI console TX ready signal.
   TRY(dif_pinmux_output_select(
       &pinmux, kTopEarlgreyPinmuxMioOutIoa5,
       kTopEarlgreyPinmuxOutselGpio0Gpio0 + kGpioPinSpiConsoleTxReady));
