@@ -208,9 +208,9 @@ status_t keymgr_dpe_generate_key_sw(
   // Collect the output. To avoid side-channel leakage, first randomize the
   // destination buffers using memshred. Then copy the key using a hardened
   // memcpy.
-  uint32_t share0 =
+  uintptr_t share0 =
       keymgr_dpe_base() + KEYMGR_DPE_SW_SHARE0_OUTPUT_0_REG_OFFSET;
-  uint32_t share1 =
+  uintptr_t share1 =
       keymgr_dpe_base() + KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET;
   HARDENED_TRY(hardened_memshred(key->share0, kKeymgrDPEOutputShareNumWords));
   HARDENED_TRY(hardened_memcpy(key->share0, (uint32_t *)share0,

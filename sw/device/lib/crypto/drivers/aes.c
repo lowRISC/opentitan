@@ -70,8 +70,8 @@ static status_t aes_write_key(aes_key_t key) {
   }
   HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolFalse));
 
-  uint32_t share0 = aes_base() + AES_KEY_SHARE0_0_REG_OFFSET;
-  uint32_t share1 = aes_base() + AES_KEY_SHARE1_0_REG_OFFSET;
+  uintptr_t share0 = aes_base() + AES_KEY_SHARE0_0_REG_OFFSET;
+  uintptr_t share1 = aes_base() + AES_KEY_SHARE1_0_REG_OFFSET;
 
   // Handle key shares in two separate hardened_memcpys to avoid dealing with
   // corresponding parts too close together, which could risk power
@@ -323,7 +323,7 @@ status_t aes_update(aes_block_t *dest, const aes_block_t *src) {
 
     HARDENED_TRY(spin_until(AES_STATUS_OUTPUT_VALID_BIT));
 
-    uint32_t offset = aes_base() + AES_DATA_OUT_0_REG_OFFSET;
+    uintptr_t offset = aes_base() + AES_DATA_OUT_0_REG_OFFSET;
     HARDENED_TRY(hardened_memcpy(dest->data, (const uint32_t *)offset,
                                  ARRAYSIZE(dest->data)));
   }
@@ -331,7 +331,7 @@ status_t aes_update(aes_block_t *dest, const aes_block_t *src) {
   if (src != NULL) {
     HARDENED_TRY(spin_until(AES_STATUS_INPUT_READY_BIT));
 
-    uint32_t offset = aes_base() + AES_DATA_IN_0_REG_OFFSET;
+    uintptr_t offset = aes_base() + AES_DATA_IN_0_REG_OFFSET;
     HARDENED_TRY(
         hardened_memcpy((uint32_t *)offset, src->data, ARRAYSIZE(src->data)));
   }
