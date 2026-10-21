@@ -764,13 +764,16 @@ static void entropy_src_stop(void) {
  * See hw/ip/csrng/doc/_index.md#module-enable-and-disable for more details.
  */
 void entropy_complex_stop_all(void) {
+  crypto_state_t *state = NULL;
+  status_t res = read_state_pointer(&state);
+
   edn_stop(kBaseEdn0);
   edn_stop(kBaseEdn1);
   abs_mmio_write32(kBaseCsrng + CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
   entropy_src_stop();
 
-  crypto_state_t *state = NULL;
-  if (status_ok(read_state_pointer(&state)) && state != NULL) {
+  if (status_ok(res) && state != NULL) {
+    OT_DISCARD(store_state((otcrypto_state_t *)state).value);
     state->csrng_instantiated = kHardenedByteBoolFalse;
     state->csrng_is_default = kHardenedByteBoolFalse;
   }
