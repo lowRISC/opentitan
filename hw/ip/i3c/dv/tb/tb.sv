@@ -65,7 +65,7 @@ module tb;
   `DV_ALERT_IF_CONNECT()
 
   // dut
-  i3c #(
+  i3c_part_primary #(
     .ClkFreq      (ClkFreqMhz * 1_000_000),
     .NumTargets   (NumTargets),
     .HalfCycleScl (HalfCycleScl)

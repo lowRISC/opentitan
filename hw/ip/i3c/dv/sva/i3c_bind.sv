@@ -4,7 +4,7 @@
 
 module i3c_bind;
 
-  bind i3c tlul_assert #(
+  bind i3c_part_primary tlul_assert #(
     .EndpointType("Device")
   ) tlul_assert_device (
     .clk_i,
@@ -13,7 +13,7 @@ module i3c_bind;
     .d2h  (tl_o)
   );
 
-  bind i3c i3c_csr_assert_fpv i3c_csr_assert (
+  bind i3c_part_primary i3c_csr_assert_fpv i3c_csr_assert (
     .clk_i,
     .rst_ni,
     .h2d    (tl_i),
