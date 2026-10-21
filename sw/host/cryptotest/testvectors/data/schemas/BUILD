@@ -23,6 +23,7 @@ exports_files([
     "hash_schema.json",
     "hkdf_schema.json",
     "hmac_schema.json",
+    "kdf_schema.json",
     "kmac_schema.json",
     "mldsa_schema.json",
     "mlkem_schema.json",
