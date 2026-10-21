@@ -201,8 +201,8 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
   // Collect the output. To avoid side-channel lekage, first randomize the
   // destination buffers using memshred. Then copy the key using a hardened
   // memcpy.
-  uint32_t share0 = kBaseAddr + KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET;
-  uint32_t share1 = kBaseAddr + KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET;
+  uintptr_t share0 = kBaseAddr + KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET;
+  uintptr_t share1 = kBaseAddr + KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET;
   HARDENED_TRY(hardened_memshred(key->share0, kKeymgrOutputShareNumWords));
   HARDENED_TRY(hardened_memcpy(key->share0, (uint32_t *)share0,
                                kKeymgrOutputShareNumWords));

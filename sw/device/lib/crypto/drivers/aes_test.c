@@ -141,13 +141,6 @@ static status_t run_negative_test(void) {
   bad_key_len.checksum = aes_key_integrity_checksum(&bad_key_len);
   CHECK(aes_encrypt_begin(bad_key_len, &kIv).value == OTCRYPTO_BAD_ARGS.value);
 
-  aes_key_t valid_key = {
-      .mode = kAesCipherModeCtr,
-      .sideload = kHardenedBoolFalse,
-      .key_len = 4,
-      .key_shares = {share0, share1},
-  };
-
   // Attempt to read output without providing any input
   aes_key_t premature_output_key = base_key;
   premature_output_key.checksum =

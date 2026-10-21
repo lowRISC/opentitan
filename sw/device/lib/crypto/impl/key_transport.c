@@ -276,8 +276,8 @@ static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
  */
 static void hw_wipe_guard(uint32_t *dummy) {
   (void)dummy;
-  (void)aes_clear();
-  (void)keymgr_sideload_clear_aes();
+  OT_DISCARD(aes_clear().value);
+  OT_DISCARD(keymgr_sideload_clear_aes().value);
 }
 
 otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,

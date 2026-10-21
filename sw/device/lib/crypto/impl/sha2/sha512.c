@@ -310,7 +310,6 @@ static status_t process_message(sha512_state_t *state, const uint8_t *msg,
   // Read the final state from OTBN dmem. The state is still in the special
   // form the OTBN app uses, with the 64-bit state words aligned to wide-word
   // boundaries.
-  const otbn_addr_t kOtbnVarSha512State = OTBN_ADDR_T_INIT(run_sha512, state);
   otbn_addr_t state_read_addr = kOtbnVarSha512State;
   for (size_t i = 0; i + 1 < kSha512StateWords; i += 2) {
     HARDENED_TRY_WIPE_DMEM(
