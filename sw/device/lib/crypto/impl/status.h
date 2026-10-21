@@ -117,7 +117,6 @@ extern "C" {
       return (status_t){                                                \
           .value = (int32_t)(OT_UNSIGNED(status_.value) | 0x80000000)}; \
     }                                                                   \
-    status_.value;                                                      \
   } while (false)
 
 #endif  // OT_DISABLE_HARDENING

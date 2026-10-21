@@ -384,7 +384,7 @@ status_t entropy_src_sha3_conditioning_kat(void) {
   // Flush SHA3 conditioner.
   uint32_t zeroes[kEntropyFifoBufferSize] = {0};
   HARDENED_TRY(entropy_src_fifo_write(zeroes, kEntropyFifoBufferSize));
-  (void)entropy_src_fifo_read(NULL, kEntropyFifoBufferSize);
+  OT_DISCARD(entropy_src_fifo_read(NULL, kEntropyFifoBufferSize).value);
 
   // Run the KAT.
   const uint32_t kInputMsg[kEntropyFifoBufferSize] = {

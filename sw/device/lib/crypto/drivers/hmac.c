@@ -198,7 +198,7 @@ static void hmac_wipe_guard(uint32_t *dummy) {
  */
 static status_t key_write(const hmac_key_t *key) {
   if (key != NULL) {
-    uint32_t key_reg = kHmacBaseAddr + HMAC_KEY_0_REG_OFFSET;
+    uintptr_t key_reg = kHmacBaseAddr + HMAC_KEY_0_REG_OFFSET;
     HARDENED_TRY(
         hardened_memcpy((uint32_t *)key_reg, key->key_block, key->key_len));
     // We only check the integrity of the key when entering the CryptoLib. This
