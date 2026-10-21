@@ -46,10 +46,10 @@ static void aon_timer_watchdog_toggle(const dif_aon_timer_t *aon, bool enable) {
 }
 
 static void aon_timer_watchdog_lock(const dif_aon_timer_t *aon) {
-  // Clear bit to lock the watchdog configuration register until the next reset.
-  // Write one to clear the bit.
+  // Lock the watchdog configuration until the next reset. WDOG_REGWEN is rw0c,
+  // so clear the bit by writing zero.
   mmio_region_write32(aon->base_addr, AON_TIMER_WDOG_REGWEN_REG_OFFSET,
-                      0x00000001);
+                      0x00000000);
 }
 
 static bool aon_timer_watchdog_is_locked(const dif_aon_timer_t *aon) {
