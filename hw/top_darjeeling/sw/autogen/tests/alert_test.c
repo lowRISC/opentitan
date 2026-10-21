@@ -59,7 +59,7 @@ static dif_dma_t dma;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
-static dif_gpio_t gpio;
+static dif_gpio_t gpio0;
 static dif_hmac_t hmac;
 static dif_i2c_t i2c0;
 static dif_keymgr_dpe_t keymgr_dpe;
@@ -126,8 +126,8 @@ static void init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_DARJEELING_ENTROPY_SRC_BASE_ADDR);
   CHECK_DIF_OK(dif_entropy_src_init(base_addr, &entropy_src));
 
-  base_addr = mmio_region_from_addr(TOP_DARJEELING_GPIO_BASE_ADDR);
-  CHECK_DIF_OK(dif_gpio_init(base_addr, &gpio));
+  base_addr = mmio_region_from_addr(TOP_DARJEELING_GPIO0_BASE_ADDR);
+  CHECK_DIF_OK(dif_gpio_init(base_addr, &gpio0));
 
   base_addr = mmio_region_from_addr(TOP_DARJEELING_HMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
@@ -408,10 +408,10 @@ static void trigger_alert_test(void) {
 
   // Write gpio's alert_test reg and check alert_cause.
   for (dif_gpio_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_gpio_alert_force(&gpio, kDifGpioAlertFatalFault + i));
+    CHECK_DIF_OK(dif_gpio_alert_force(&gpio0, kDifGpioAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = (int)kTopDarjeelingAlertIdGpioFatalFault + i;
+    exp_alert = (int)kTopDarjeelingAlertIdGpio0FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

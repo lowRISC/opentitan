@@ -12,9 +12,9 @@
 
 module darjeeling_pd_main #(
   // Auto-inferred parameters
-  // parameters for gpio
-  parameter bit GpioGpioAsyncOn = 1,
-  parameter bit GpioGpioAsHwStrapsEn = 1,
+  // parameters for gpio0
+  parameter bit Gpio0GpioAsyncOn = 1,
+  parameter bit Gpio0GpioAsHwStrapsEn = 1,
   // parameters for spi_device
   parameter spi_device_pkg::sram_type_e SpiDeviceSramType = spi_device_pkg::SramType1r1w,
   // parameters for i2c0
@@ -363,10 +363,10 @@ module darjeeling_pd_main #(
   logic        cio_uart0_rx_p2d;
   logic        cio_uart0_tx_d2p;
   logic        cio_uart0_tx_en_d2p;
-  // gpio
-  logic [31:0] cio_gpio_gpio_p2d;
-  logic [31:0] cio_gpio_gpio_d2p;
-  logic [31:0] cio_gpio_gpio_en_d2p;
+  // gpio0
+  logic [31:0] cio_gpio0_gpio_p2d;
+  logic [31:0] cio_gpio0_gpio_d2p;
+  logic [31:0] cio_gpio0_gpio_en_d2p;
   // spi_device
   logic        cio_spi_device_sck_p2d;
   logic        cio_spi_device_csb_p2d;
@@ -440,7 +440,7 @@ module darjeeling_pd_main #(
   logic intr_uart0_rx_timeout;
   logic intr_uart0_rx_parity_err;
   logic intr_uart0_tx_empty;
-  logic [31:0] intr_gpio_gpio;
+  logic [31:0] intr_gpio0_gpio;
   logic intr_spi_device_upload_cmdfifo_not_empty;
   logic intr_spi_device_upload_payload_not_empty;
   logic intr_spi_device_upload_payload_overflow;
@@ -706,8 +706,8 @@ module darjeeling_pd_main #(
   tlul_pkg::tl_d2h_t       uart0_tl_rsp;
   tlul_pkg::tl_h2d_t       i2c0_tl_req;
   tlul_pkg::tl_d2h_t       i2c0_tl_rsp;
-  tlul_pkg::tl_h2d_t       gpio_tl_req;
-  tlul_pkg::tl_d2h_t       gpio_tl_rsp;
+  tlul_pkg::tl_h2d_t       gpio0_tl_req;
+  tlul_pkg::tl_d2h_t       gpio0_tl_rsp;
   tlul_pkg::tl_h2d_t       spi_host0_tl_req;
   tlul_pkg::tl_d2h_t       spi_host0_tl_rsp;
   tlul_pkg::tl_h2d_t       spi_device_tl_req;
@@ -980,34 +980,34 @@ module darjeeling_pd_main #(
   gpio #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[1]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .GpioAsyncOn(GpioGpioAsyncOn),
-    .GpioAsHwStrapsEn(GpioGpioAsHwStrapsEn)
-  ) u_gpio (
+    .GpioAsyncOn(Gpio0GpioAsyncOn),
+    .GpioAsHwStrapsEn(Gpio0GpioAsHwStrapsEn)
+  ) u_gpio0 (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_io_peri),
     .rst_ni(rstmgr_resets_i.rst_lc_io_n[rstmgr_pkg::DomainMainSel]),
 
     // Interrupts
-    .intr_gpio_o(intr_gpio_gpio),
+    .intr_gpio_o(intr_gpio0_gpio),
 
     // alert_handler[1]: fatal_fault
     .alert_tx_o(alert_tx[1]),
     .alert_rx_i(alert_rx[1]),
 
     // CIO inputs
-    .cio_gpio_i   (cio_gpio_gpio_p2d),
+    .cio_gpio_i   (cio_gpio0_gpio_p2d),
 
     // CIO outputs
-    .cio_gpio_o   (cio_gpio_gpio_d2p),
-    .cio_gpio_en_o(cio_gpio_gpio_en_d2p),
+    .cio_gpio_o   (cio_gpio0_gpio_d2p),
+    .cio_gpio_en_o(cio_gpio0_gpio_en_d2p),
 
     // Inter-module signals
     .strap_en_i(pwrmgr_strap_i),
     .sampled_straps_o(),
     .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
     .racl_error_o(),
-    .tl_i(gpio_tl_req),
-    .tl_o(gpio_tl_rsp)
+    .tl_i(gpio0_tl_req),
+    .tl_o(gpio0_tl_rsp)
   );
 
   spi_device #(
@@ -2718,7 +2718,7 @@ module darjeeling_pd_main #(
     intr_spi_device_upload_payload_overflow,  // ID 44
     intr_spi_device_upload_payload_not_empty, // ID 43
     intr_spi_device_upload_cmdfifo_not_empty, // ID 42
-    intr_gpio_gpio,                           // IDs [10 +: 32]
+    intr_gpio0_gpio,                          // IDs [10 +: 32]
     intr_uart0_tx_empty,                      // ID 9
     intr_uart0_rx_parity_err,                 // ID 8
     intr_uart0_rx_timeout,                    // ID 7
@@ -2953,9 +2953,9 @@ module darjeeling_pd_main #(
     .tl_i2c0_o(i2c0_tl_req),
     .tl_i2c0_i(i2c0_tl_rsp),
 
-    // port: tl_gpio
-    .tl_gpio_o(gpio_tl_req),
-    .tl_gpio_i(gpio_tl_rsp),
+    // port: tl_gpio0
+    .tl_gpio0_o(gpio0_tl_req),
+    .tl_gpio0_i(gpio0_tl_rsp),
 
     // port: tl_spi_host0
     .tl_spi_host0_o(spi_host0_tl_req),
@@ -3143,38 +3143,38 @@ module darjeeling_pd_main #(
   assign cio_spi_device_sd_p2d[3] = dio_p2d[DioSpiDeviceSd3];
   assign cio_i2c0_scl_p2d = dio_p2d[DioI2c0Scl];
   assign cio_i2c0_sda_p2d = dio_p2d[DioI2c0Sda];
-  assign cio_gpio_gpio_p2d[0] = dio_p2d[DioGpioGpio0];
-  assign cio_gpio_gpio_p2d[1] = dio_p2d[DioGpioGpio1];
-  assign cio_gpio_gpio_p2d[2] = dio_p2d[DioGpioGpio2];
-  assign cio_gpio_gpio_p2d[3] = dio_p2d[DioGpioGpio3];
-  assign cio_gpio_gpio_p2d[4] = dio_p2d[DioGpioGpio4];
-  assign cio_gpio_gpio_p2d[5] = dio_p2d[DioGpioGpio5];
-  assign cio_gpio_gpio_p2d[6] = dio_p2d[DioGpioGpio6];
-  assign cio_gpio_gpio_p2d[7] = dio_p2d[DioGpioGpio7];
-  assign cio_gpio_gpio_p2d[8] = dio_p2d[DioGpioGpio8];
-  assign cio_gpio_gpio_p2d[9] = dio_p2d[DioGpioGpio9];
-  assign cio_gpio_gpio_p2d[10] = dio_p2d[DioGpioGpio10];
-  assign cio_gpio_gpio_p2d[11] = dio_p2d[DioGpioGpio11];
-  assign cio_gpio_gpio_p2d[12] = dio_p2d[DioGpioGpio12];
-  assign cio_gpio_gpio_p2d[13] = dio_p2d[DioGpioGpio13];
-  assign cio_gpio_gpio_p2d[14] = dio_p2d[DioGpioGpio14];
-  assign cio_gpio_gpio_p2d[15] = dio_p2d[DioGpioGpio15];
-  assign cio_gpio_gpio_p2d[16] = dio_p2d[DioGpioGpio16];
-  assign cio_gpio_gpio_p2d[17] = dio_p2d[DioGpioGpio17];
-  assign cio_gpio_gpio_p2d[18] = dio_p2d[DioGpioGpio18];
-  assign cio_gpio_gpio_p2d[19] = dio_p2d[DioGpioGpio19];
-  assign cio_gpio_gpio_p2d[20] = dio_p2d[DioGpioGpio20];
-  assign cio_gpio_gpio_p2d[21] = dio_p2d[DioGpioGpio21];
-  assign cio_gpio_gpio_p2d[22] = dio_p2d[DioGpioGpio22];
-  assign cio_gpio_gpio_p2d[23] = dio_p2d[DioGpioGpio23];
-  assign cio_gpio_gpio_p2d[24] = dio_p2d[DioGpioGpio24];
-  assign cio_gpio_gpio_p2d[25] = dio_p2d[DioGpioGpio25];
-  assign cio_gpio_gpio_p2d[26] = dio_p2d[DioGpioGpio26];
-  assign cio_gpio_gpio_p2d[27] = dio_p2d[DioGpioGpio27];
-  assign cio_gpio_gpio_p2d[28] = dio_p2d[DioGpioGpio28];
-  assign cio_gpio_gpio_p2d[29] = dio_p2d[DioGpioGpio29];
-  assign cio_gpio_gpio_p2d[30] = dio_p2d[DioGpioGpio30];
-  assign cio_gpio_gpio_p2d[31] = dio_p2d[DioGpioGpio31];
+  assign cio_gpio0_gpio_p2d[0] = dio_p2d[DioGpio0Gpio0];
+  assign cio_gpio0_gpio_p2d[1] = dio_p2d[DioGpio0Gpio1];
+  assign cio_gpio0_gpio_p2d[2] = dio_p2d[DioGpio0Gpio2];
+  assign cio_gpio0_gpio_p2d[3] = dio_p2d[DioGpio0Gpio3];
+  assign cio_gpio0_gpio_p2d[4] = dio_p2d[DioGpio0Gpio4];
+  assign cio_gpio0_gpio_p2d[5] = dio_p2d[DioGpio0Gpio5];
+  assign cio_gpio0_gpio_p2d[6] = dio_p2d[DioGpio0Gpio6];
+  assign cio_gpio0_gpio_p2d[7] = dio_p2d[DioGpio0Gpio7];
+  assign cio_gpio0_gpio_p2d[8] = dio_p2d[DioGpio0Gpio8];
+  assign cio_gpio0_gpio_p2d[9] = dio_p2d[DioGpio0Gpio9];
+  assign cio_gpio0_gpio_p2d[10] = dio_p2d[DioGpio0Gpio10];
+  assign cio_gpio0_gpio_p2d[11] = dio_p2d[DioGpio0Gpio11];
+  assign cio_gpio0_gpio_p2d[12] = dio_p2d[DioGpio0Gpio12];
+  assign cio_gpio0_gpio_p2d[13] = dio_p2d[DioGpio0Gpio13];
+  assign cio_gpio0_gpio_p2d[14] = dio_p2d[DioGpio0Gpio14];
+  assign cio_gpio0_gpio_p2d[15] = dio_p2d[DioGpio0Gpio15];
+  assign cio_gpio0_gpio_p2d[16] = dio_p2d[DioGpio0Gpio16];
+  assign cio_gpio0_gpio_p2d[17] = dio_p2d[DioGpio0Gpio17];
+  assign cio_gpio0_gpio_p2d[18] = dio_p2d[DioGpio0Gpio18];
+  assign cio_gpio0_gpio_p2d[19] = dio_p2d[DioGpio0Gpio19];
+  assign cio_gpio0_gpio_p2d[20] = dio_p2d[DioGpio0Gpio20];
+  assign cio_gpio0_gpio_p2d[21] = dio_p2d[DioGpio0Gpio21];
+  assign cio_gpio0_gpio_p2d[22] = dio_p2d[DioGpio0Gpio22];
+  assign cio_gpio0_gpio_p2d[23] = dio_p2d[DioGpio0Gpio23];
+  assign cio_gpio0_gpio_p2d[24] = dio_p2d[DioGpio0Gpio24];
+  assign cio_gpio0_gpio_p2d[25] = dio_p2d[DioGpio0Gpio25];
+  assign cio_gpio0_gpio_p2d[26] = dio_p2d[DioGpio0Gpio26];
+  assign cio_gpio0_gpio_p2d[27] = dio_p2d[DioGpio0Gpio27];
+  assign cio_gpio0_gpio_p2d[28] = dio_p2d[DioGpio0Gpio28];
+  assign cio_gpio0_gpio_p2d[29] = dio_p2d[DioGpio0Gpio29];
+  assign cio_gpio0_gpio_p2d[30] = dio_p2d[DioGpio0Gpio30];
+  assign cio_gpio0_gpio_p2d[31] = dio_p2d[DioGpio0Gpio31];
   assign cio_spi_device_sck_p2d = dio_p2d[DioSpiDeviceSck];
   assign cio_spi_device_csb_p2d = dio_p2d[DioSpiDeviceCsb];
   assign cio_spi_device_tpm_csb_p2d = dio_p2d[DioSpiDeviceTpmCsb];
@@ -3203,38 +3203,38 @@ module darjeeling_pd_main #(
   assign dio_d2p[DioSpiDeviceSd3] = cio_spi_device_sd_d2p[3];
   assign dio_d2p[DioI2c0Scl] = cio_i2c0_scl_d2p;
   assign dio_d2p[DioI2c0Sda] = cio_i2c0_sda_d2p;
-  assign dio_d2p[DioGpioGpio0] = cio_gpio_gpio_d2p[0];
-  assign dio_d2p[DioGpioGpio1] = cio_gpio_gpio_d2p[1];
-  assign dio_d2p[DioGpioGpio2] = cio_gpio_gpio_d2p[2];
-  assign dio_d2p[DioGpioGpio3] = cio_gpio_gpio_d2p[3];
-  assign dio_d2p[DioGpioGpio4] = cio_gpio_gpio_d2p[4];
-  assign dio_d2p[DioGpioGpio5] = cio_gpio_gpio_d2p[5];
-  assign dio_d2p[DioGpioGpio6] = cio_gpio_gpio_d2p[6];
-  assign dio_d2p[DioGpioGpio7] = cio_gpio_gpio_d2p[7];
-  assign dio_d2p[DioGpioGpio8] = cio_gpio_gpio_d2p[8];
-  assign dio_d2p[DioGpioGpio9] = cio_gpio_gpio_d2p[9];
-  assign dio_d2p[DioGpioGpio10] = cio_gpio_gpio_d2p[10];
-  assign dio_d2p[DioGpioGpio11] = cio_gpio_gpio_d2p[11];
-  assign dio_d2p[DioGpioGpio12] = cio_gpio_gpio_d2p[12];
-  assign dio_d2p[DioGpioGpio13] = cio_gpio_gpio_d2p[13];
-  assign dio_d2p[DioGpioGpio14] = cio_gpio_gpio_d2p[14];
-  assign dio_d2p[DioGpioGpio15] = cio_gpio_gpio_d2p[15];
-  assign dio_d2p[DioGpioGpio16] = cio_gpio_gpio_d2p[16];
-  assign dio_d2p[DioGpioGpio17] = cio_gpio_gpio_d2p[17];
-  assign dio_d2p[DioGpioGpio18] = cio_gpio_gpio_d2p[18];
-  assign dio_d2p[DioGpioGpio19] = cio_gpio_gpio_d2p[19];
-  assign dio_d2p[DioGpioGpio20] = cio_gpio_gpio_d2p[20];
-  assign dio_d2p[DioGpioGpio21] = cio_gpio_gpio_d2p[21];
-  assign dio_d2p[DioGpioGpio22] = cio_gpio_gpio_d2p[22];
-  assign dio_d2p[DioGpioGpio23] = cio_gpio_gpio_d2p[23];
-  assign dio_d2p[DioGpioGpio24] = cio_gpio_gpio_d2p[24];
-  assign dio_d2p[DioGpioGpio25] = cio_gpio_gpio_d2p[25];
-  assign dio_d2p[DioGpioGpio26] = cio_gpio_gpio_d2p[26];
-  assign dio_d2p[DioGpioGpio27] = cio_gpio_gpio_d2p[27];
-  assign dio_d2p[DioGpioGpio28] = cio_gpio_gpio_d2p[28];
-  assign dio_d2p[DioGpioGpio29] = cio_gpio_gpio_d2p[29];
-  assign dio_d2p[DioGpioGpio30] = cio_gpio_gpio_d2p[30];
-  assign dio_d2p[DioGpioGpio31] = cio_gpio_gpio_d2p[31];
+  assign dio_d2p[DioGpio0Gpio0] = cio_gpio0_gpio_d2p[0];
+  assign dio_d2p[DioGpio0Gpio1] = cio_gpio0_gpio_d2p[1];
+  assign dio_d2p[DioGpio0Gpio2] = cio_gpio0_gpio_d2p[2];
+  assign dio_d2p[DioGpio0Gpio3] = cio_gpio0_gpio_d2p[3];
+  assign dio_d2p[DioGpio0Gpio4] = cio_gpio0_gpio_d2p[4];
+  assign dio_d2p[DioGpio0Gpio5] = cio_gpio0_gpio_d2p[5];
+  assign dio_d2p[DioGpio0Gpio6] = cio_gpio0_gpio_d2p[6];
+  assign dio_d2p[DioGpio0Gpio7] = cio_gpio0_gpio_d2p[7];
+  assign dio_d2p[DioGpio0Gpio8] = cio_gpio0_gpio_d2p[8];
+  assign dio_d2p[DioGpio0Gpio9] = cio_gpio0_gpio_d2p[9];
+  assign dio_d2p[DioGpio0Gpio10] = cio_gpio0_gpio_d2p[10];
+  assign dio_d2p[DioGpio0Gpio11] = cio_gpio0_gpio_d2p[11];
+  assign dio_d2p[DioGpio0Gpio12] = cio_gpio0_gpio_d2p[12];
+  assign dio_d2p[DioGpio0Gpio13] = cio_gpio0_gpio_d2p[13];
+  assign dio_d2p[DioGpio0Gpio14] = cio_gpio0_gpio_d2p[14];
+  assign dio_d2p[DioGpio0Gpio15] = cio_gpio0_gpio_d2p[15];
+  assign dio_d2p[DioGpio0Gpio16] = cio_gpio0_gpio_d2p[16];
+  assign dio_d2p[DioGpio0Gpio17] = cio_gpio0_gpio_d2p[17];
+  assign dio_d2p[DioGpio0Gpio18] = cio_gpio0_gpio_d2p[18];
+  assign dio_d2p[DioGpio0Gpio19] = cio_gpio0_gpio_d2p[19];
+  assign dio_d2p[DioGpio0Gpio20] = cio_gpio0_gpio_d2p[20];
+  assign dio_d2p[DioGpio0Gpio21] = cio_gpio0_gpio_d2p[21];
+  assign dio_d2p[DioGpio0Gpio22] = cio_gpio0_gpio_d2p[22];
+  assign dio_d2p[DioGpio0Gpio23] = cio_gpio0_gpio_d2p[23];
+  assign dio_d2p[DioGpio0Gpio24] = cio_gpio0_gpio_d2p[24];
+  assign dio_d2p[DioGpio0Gpio25] = cio_gpio0_gpio_d2p[25];
+  assign dio_d2p[DioGpio0Gpio26] = cio_gpio0_gpio_d2p[26];
+  assign dio_d2p[DioGpio0Gpio27] = cio_gpio0_gpio_d2p[27];
+  assign dio_d2p[DioGpio0Gpio28] = cio_gpio0_gpio_d2p[28];
+  assign dio_d2p[DioGpio0Gpio29] = cio_gpio0_gpio_d2p[29];
+  assign dio_d2p[DioGpio0Gpio30] = cio_gpio0_gpio_d2p[30];
+  assign dio_d2p[DioGpio0Gpio31] = cio_gpio0_gpio_d2p[31];
   assign dio_d2p[DioSpiDeviceSck] = 1'b0;
   assign dio_d2p[DioSpiDeviceCsb] = 1'b0;
   assign dio_d2p[DioSpiDeviceTpmCsb] = 1'b0;
@@ -3278,38 +3278,38 @@ module darjeeling_pd_main #(
   assign dio_en_d2p[DioSpiDeviceSd3] = cio_spi_device_sd_en_d2p[3];
   assign dio_en_d2p[DioI2c0Scl] = cio_i2c0_scl_en_d2p;
   assign dio_en_d2p[DioI2c0Sda] = cio_i2c0_sda_en_d2p;
-  assign dio_en_d2p[DioGpioGpio0] = cio_gpio_gpio_en_d2p[0];
-  assign dio_en_d2p[DioGpioGpio1] = cio_gpio_gpio_en_d2p[1];
-  assign dio_en_d2p[DioGpioGpio2] = cio_gpio_gpio_en_d2p[2];
-  assign dio_en_d2p[DioGpioGpio3] = cio_gpio_gpio_en_d2p[3];
-  assign dio_en_d2p[DioGpioGpio4] = cio_gpio_gpio_en_d2p[4];
-  assign dio_en_d2p[DioGpioGpio5] = cio_gpio_gpio_en_d2p[5];
-  assign dio_en_d2p[DioGpioGpio6] = cio_gpio_gpio_en_d2p[6];
-  assign dio_en_d2p[DioGpioGpio7] = cio_gpio_gpio_en_d2p[7];
-  assign dio_en_d2p[DioGpioGpio8] = cio_gpio_gpio_en_d2p[8];
-  assign dio_en_d2p[DioGpioGpio9] = cio_gpio_gpio_en_d2p[9];
-  assign dio_en_d2p[DioGpioGpio10] = cio_gpio_gpio_en_d2p[10];
-  assign dio_en_d2p[DioGpioGpio11] = cio_gpio_gpio_en_d2p[11];
-  assign dio_en_d2p[DioGpioGpio12] = cio_gpio_gpio_en_d2p[12];
-  assign dio_en_d2p[DioGpioGpio13] = cio_gpio_gpio_en_d2p[13];
-  assign dio_en_d2p[DioGpioGpio14] = cio_gpio_gpio_en_d2p[14];
-  assign dio_en_d2p[DioGpioGpio15] = cio_gpio_gpio_en_d2p[15];
-  assign dio_en_d2p[DioGpioGpio16] = cio_gpio_gpio_en_d2p[16];
-  assign dio_en_d2p[DioGpioGpio17] = cio_gpio_gpio_en_d2p[17];
-  assign dio_en_d2p[DioGpioGpio18] = cio_gpio_gpio_en_d2p[18];
-  assign dio_en_d2p[DioGpioGpio19] = cio_gpio_gpio_en_d2p[19];
-  assign dio_en_d2p[DioGpioGpio20] = cio_gpio_gpio_en_d2p[20];
-  assign dio_en_d2p[DioGpioGpio21] = cio_gpio_gpio_en_d2p[21];
-  assign dio_en_d2p[DioGpioGpio22] = cio_gpio_gpio_en_d2p[22];
-  assign dio_en_d2p[DioGpioGpio23] = cio_gpio_gpio_en_d2p[23];
-  assign dio_en_d2p[DioGpioGpio24] = cio_gpio_gpio_en_d2p[24];
-  assign dio_en_d2p[DioGpioGpio25] = cio_gpio_gpio_en_d2p[25];
-  assign dio_en_d2p[DioGpioGpio26] = cio_gpio_gpio_en_d2p[26];
-  assign dio_en_d2p[DioGpioGpio27] = cio_gpio_gpio_en_d2p[27];
-  assign dio_en_d2p[DioGpioGpio28] = cio_gpio_gpio_en_d2p[28];
-  assign dio_en_d2p[DioGpioGpio29] = cio_gpio_gpio_en_d2p[29];
-  assign dio_en_d2p[DioGpioGpio30] = cio_gpio_gpio_en_d2p[30];
-  assign dio_en_d2p[DioGpioGpio31] = cio_gpio_gpio_en_d2p[31];
+  assign dio_en_d2p[DioGpio0Gpio0] = cio_gpio0_gpio_en_d2p[0];
+  assign dio_en_d2p[DioGpio0Gpio1] = cio_gpio0_gpio_en_d2p[1];
+  assign dio_en_d2p[DioGpio0Gpio2] = cio_gpio0_gpio_en_d2p[2];
+  assign dio_en_d2p[DioGpio0Gpio3] = cio_gpio0_gpio_en_d2p[3];
+  assign dio_en_d2p[DioGpio0Gpio4] = cio_gpio0_gpio_en_d2p[4];
+  assign dio_en_d2p[DioGpio0Gpio5] = cio_gpio0_gpio_en_d2p[5];
+  assign dio_en_d2p[DioGpio0Gpio6] = cio_gpio0_gpio_en_d2p[6];
+  assign dio_en_d2p[DioGpio0Gpio7] = cio_gpio0_gpio_en_d2p[7];
+  assign dio_en_d2p[DioGpio0Gpio8] = cio_gpio0_gpio_en_d2p[8];
+  assign dio_en_d2p[DioGpio0Gpio9] = cio_gpio0_gpio_en_d2p[9];
+  assign dio_en_d2p[DioGpio0Gpio10] = cio_gpio0_gpio_en_d2p[10];
+  assign dio_en_d2p[DioGpio0Gpio11] = cio_gpio0_gpio_en_d2p[11];
+  assign dio_en_d2p[DioGpio0Gpio12] = cio_gpio0_gpio_en_d2p[12];
+  assign dio_en_d2p[DioGpio0Gpio13] = cio_gpio0_gpio_en_d2p[13];
+  assign dio_en_d2p[DioGpio0Gpio14] = cio_gpio0_gpio_en_d2p[14];
+  assign dio_en_d2p[DioGpio0Gpio15] = cio_gpio0_gpio_en_d2p[15];
+  assign dio_en_d2p[DioGpio0Gpio16] = cio_gpio0_gpio_en_d2p[16];
+  assign dio_en_d2p[DioGpio0Gpio17] = cio_gpio0_gpio_en_d2p[17];
+  assign dio_en_d2p[DioGpio0Gpio18] = cio_gpio0_gpio_en_d2p[18];
+  assign dio_en_d2p[DioGpio0Gpio19] = cio_gpio0_gpio_en_d2p[19];
+  assign dio_en_d2p[DioGpio0Gpio20] = cio_gpio0_gpio_en_d2p[20];
+  assign dio_en_d2p[DioGpio0Gpio21] = cio_gpio0_gpio_en_d2p[21];
+  assign dio_en_d2p[DioGpio0Gpio22] = cio_gpio0_gpio_en_d2p[22];
+  assign dio_en_d2p[DioGpio0Gpio23] = cio_gpio0_gpio_en_d2p[23];
+  assign dio_en_d2p[DioGpio0Gpio24] = cio_gpio0_gpio_en_d2p[24];
+  assign dio_en_d2p[DioGpio0Gpio25] = cio_gpio0_gpio_en_d2p[25];
+  assign dio_en_d2p[DioGpio0Gpio26] = cio_gpio0_gpio_en_d2p[26];
+  assign dio_en_d2p[DioGpio0Gpio27] = cio_gpio0_gpio_en_d2p[27];
+  assign dio_en_d2p[DioGpio0Gpio28] = cio_gpio0_gpio_en_d2p[28];
+  assign dio_en_d2p[DioGpio0Gpio29] = cio_gpio0_gpio_en_d2p[29];
+  assign dio_en_d2p[DioGpio0Gpio30] = cio_gpio0_gpio_en_d2p[30];
+  assign dio_en_d2p[DioGpio0Gpio31] = cio_gpio0_gpio_en_d2p[31];
   assign dio_en_d2p[DioSpiDeviceSck] = 1'b0;
   assign dio_en_d2p[DioSpiDeviceCsb] = 1'b0;
   assign dio_en_d2p[DioSpiDeviceTpmCsb] = 1'b0;

@@ -38,38 +38,38 @@ module chip_darjeeling_asic #(
   inout UART_TX, // Dedicated Pad for uart0_tx
   inout I2C_SCL, // Dedicated Pad for i2c0_scl
   inout I2C_SDA, // Dedicated Pad for i2c0_sda
-  inout GPIO0, // Dedicated Pad for gpio_gpio
-  inout GPIO1, // Dedicated Pad for gpio_gpio
-  inout GPIO2, // Dedicated Pad for gpio_gpio
-  inout GPIO3, // Dedicated Pad for gpio_gpio
-  inout GPIO4, // Dedicated Pad for gpio_gpio
-  inout GPIO5, // Dedicated Pad for gpio_gpio
-  inout GPIO6, // Dedicated Pad for gpio_gpio
-  inout GPIO7, // Dedicated Pad for gpio_gpio
-  inout GPIO8, // Dedicated Pad for gpio_gpio
-  inout GPIO9, // Dedicated Pad for gpio_gpio
-  inout GPIO10, // Dedicated Pad for gpio_gpio
-  inout GPIO11, // Dedicated Pad for gpio_gpio
-  inout GPIO12, // Dedicated Pad for gpio_gpio
-  inout GPIO13, // Dedicated Pad for gpio_gpio
-  inout GPIO14, // Dedicated Pad for gpio_gpio
-  inout GPIO15, // Dedicated Pad for gpio_gpio
-  inout GPIO16, // Dedicated Pad for gpio_gpio
-  inout GPIO17, // Dedicated Pad for gpio_gpio
-  inout GPIO18, // Dedicated Pad for gpio_gpio
-  inout GPIO19, // Dedicated Pad for gpio_gpio
-  inout GPIO20, // Dedicated Pad for gpio_gpio
-  inout GPIO21, // Dedicated Pad for gpio_gpio
-  inout GPIO22, // Dedicated Pad for gpio_gpio
-  inout GPIO23, // Dedicated Pad for gpio_gpio
-  inout GPIO24, // Dedicated Pad for gpio_gpio
-  inout GPIO25, // Dedicated Pad for gpio_gpio
-  inout GPIO26, // Dedicated Pad for gpio_gpio
-  inout GPIO27, // Dedicated Pad for gpio_gpio
-  inout GPIO28, // Dedicated Pad for gpio_gpio
-  inout GPIO29, // Dedicated Pad for gpio_gpio
-  inout GPIO30, // Dedicated Pad for gpio_gpio
-  inout GPIO31, // Dedicated Pad for gpio_gpio
+  inout GPIO0, // Dedicated Pad for gpio0_gpio
+  inout GPIO1, // Dedicated Pad for gpio0_gpio
+  inout GPIO2, // Dedicated Pad for gpio0_gpio
+  inout GPIO3, // Dedicated Pad for gpio0_gpio
+  inout GPIO4, // Dedicated Pad for gpio0_gpio
+  inout GPIO5, // Dedicated Pad for gpio0_gpio
+  inout GPIO6, // Dedicated Pad for gpio0_gpio
+  inout GPIO7, // Dedicated Pad for gpio0_gpio
+  inout GPIO8, // Dedicated Pad for gpio0_gpio
+  inout GPIO9, // Dedicated Pad for gpio0_gpio
+  inout GPIO10, // Dedicated Pad for gpio0_gpio
+  inout GPIO11, // Dedicated Pad for gpio0_gpio
+  inout GPIO12, // Dedicated Pad for gpio0_gpio
+  inout GPIO13, // Dedicated Pad for gpio0_gpio
+  inout GPIO14, // Dedicated Pad for gpio0_gpio
+  inout GPIO15, // Dedicated Pad for gpio0_gpio
+  inout GPIO16, // Dedicated Pad for gpio0_gpio
+  inout GPIO17, // Dedicated Pad for gpio0_gpio
+  inout GPIO18, // Dedicated Pad for gpio0_gpio
+  inout GPIO19, // Dedicated Pad for gpio0_gpio
+  inout GPIO20, // Dedicated Pad for gpio0_gpio
+  inout GPIO21, // Dedicated Pad for gpio0_gpio
+  inout GPIO22, // Dedicated Pad for gpio0_gpio
+  inout GPIO23, // Dedicated Pad for gpio0_gpio
+  inout GPIO24, // Dedicated Pad for gpio0_gpio
+  inout GPIO25, // Dedicated Pad for gpio0_gpio
+  inout GPIO26, // Dedicated Pad for gpio0_gpio
+  inout GPIO27, // Dedicated Pad for gpio0_gpio
+  inout GPIO28, // Dedicated Pad for gpio0_gpio
+  inout GPIO29, // Dedicated Pad for gpio0_gpio
+  inout GPIO30, // Dedicated Pad for gpio0_gpio
+  inout GPIO31, // Dedicated Pad for gpio0_gpio
   inout SOC_GPI0, // Dedicated Pad for soc_proxy_soc_gpi
   inout SOC_GPI1, // Dedicated Pad for soc_proxy_soc_gpi
   inout SOC_GPI2, // Dedicated Pad for soc_proxy_soc_gpi
@@ -149,38 +149,38 @@ module chip_darjeeling_asic #(
       InputStd, // DIO spi_device_tpm_csb
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
       BidirStd, // DIO i2c0_sda
       BidirStd, // DIO i2c0_scl
       BidirStd, // DIO spi_device_sd
@@ -239,38 +239,38 @@ module chip_darjeeling_asic #(
       scan_role_pkg::DioPadSpiDevTpmCsLScanRole, // DIO spi_device_tpm_csb
       scan_role_pkg::DioPadSpiDevCsLScanRole, // DIO spi_device_csb
       scan_role_pkg::DioPadSpiDevClkScanRole, // DIO spi_device_sck
-      scan_role_pkg::DioPadGpio31ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio30ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio29ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio28ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio27ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio26ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio25ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio24ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio23ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio22ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio21ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio20ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio19ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio18ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio17ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio16ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio15ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio14ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio13ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio12ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio11ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio10ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio9ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio8ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio7ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio6ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio5ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio4ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio3ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio2ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio1ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio0ScanRole, // DIO gpio_gpio
+      scan_role_pkg::DioPadGpio31ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio30ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio29ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio28ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio27ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio26ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio25ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio24ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio23ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio22ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio21ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio20ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio19ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio18ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio17ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio16ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio15ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio14ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio13ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio12ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio11ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio10ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio9ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio8ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio7ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio6ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio5ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio4ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio3ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio2ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio1ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio0ScanRole, // DIO gpio0_gpio
       scan_role_pkg::DioPadI2cSdaScanRole, // DIO i2c0_sda
       scan_role_pkg::DioPadI2cSclScanRole, // DIO i2c0_scl
       scan_role_pkg::DioPadSpiDevD3ScanRole, // DIO spi_device_sd
@@ -867,38 +867,38 @@ module chip_darjeeling_asic #(
         dio_in[DioSocProxySocGpi2],
         dio_in[DioSocProxySocGpi1],
         dio_in[DioSocProxySocGpi0],
-        dio_in[DioGpioGpio31],
-        dio_in[DioGpioGpio30],
-        dio_in[DioGpioGpio29],
-        dio_in[DioGpioGpio28],
-        dio_in[DioGpioGpio27],
-        dio_in[DioGpioGpio26],
-        dio_in[DioGpioGpio25],
-        dio_in[DioGpioGpio24],
-        dio_in[DioGpioGpio23],
-        dio_in[DioGpioGpio22],
-        dio_in[DioGpioGpio21],
-        dio_in[DioGpioGpio20],
-        dio_in[DioGpioGpio19],
-        dio_in[DioGpioGpio18],
-        dio_in[DioGpioGpio17],
-        dio_in[DioGpioGpio16],
-        dio_in[DioGpioGpio15],
-        dio_in[DioGpioGpio14],
-        dio_in[DioGpioGpio13],
-        dio_in[DioGpioGpio12],
-        dio_in[DioGpioGpio11],
-        dio_in[DioGpioGpio10],
-        dio_in[DioGpioGpio9],
-        dio_in[DioGpioGpio8],
-        dio_in[DioGpioGpio7],
-        dio_in[DioGpioGpio6],
-        dio_in[DioGpioGpio5],
-        dio_in[DioGpioGpio4],
-        dio_in[DioGpioGpio3],
-        dio_in[DioGpioGpio2],
-        dio_in[DioGpioGpio1],
-        dio_in[DioGpioGpio0],
+        dio_in[DioGpio0Gpio31],
+        dio_in[DioGpio0Gpio30],
+        dio_in[DioGpio0Gpio29],
+        dio_in[DioGpio0Gpio28],
+        dio_in[DioGpio0Gpio27],
+        dio_in[DioGpio0Gpio26],
+        dio_in[DioGpio0Gpio25],
+        dio_in[DioGpio0Gpio24],
+        dio_in[DioGpio0Gpio23],
+        dio_in[DioGpio0Gpio22],
+        dio_in[DioGpio0Gpio21],
+        dio_in[DioGpio0Gpio20],
+        dio_in[DioGpio0Gpio19],
+        dio_in[DioGpio0Gpio18],
+        dio_in[DioGpio0Gpio17],
+        dio_in[DioGpio0Gpio16],
+        dio_in[DioGpio0Gpio15],
+        dio_in[DioGpio0Gpio14],
+        dio_in[DioGpio0Gpio13],
+        dio_in[DioGpio0Gpio12],
+        dio_in[DioGpio0Gpio11],
+        dio_in[DioGpio0Gpio10],
+        dio_in[DioGpio0Gpio9],
+        dio_in[DioGpio0Gpio8],
+        dio_in[DioGpio0Gpio7],
+        dio_in[DioGpio0Gpio6],
+        dio_in[DioGpio0Gpio5],
+        dio_in[DioGpio0Gpio4],
+        dio_in[DioGpio0Gpio3],
+        dio_in[DioGpio0Gpio2],
+        dio_in[DioGpio0Gpio1],
+        dio_in[DioGpio0Gpio0],
         dio_in[DioI2c0Sda],
         dio_in[DioI2c0Scl],
         dio_in[DioUart0Tx],
@@ -949,38 +949,38 @@ module chip_darjeeling_asic #(
         dio_out[DioSocProxySocGpi2],
         dio_out[DioSocProxySocGpi1],
         dio_out[DioSocProxySocGpi0],
-        dio_out[DioGpioGpio31],
-        dio_out[DioGpioGpio30],
-        dio_out[DioGpioGpio29],
-        dio_out[DioGpioGpio28],
-        dio_out[DioGpioGpio27],
-        dio_out[DioGpioGpio26],
-        dio_out[DioGpioGpio25],
-        dio_out[DioGpioGpio24],
-        dio_out[DioGpioGpio23],
-        dio_out[DioGpioGpio22],
-        dio_out[DioGpioGpio21],
-        dio_out[DioGpioGpio20],
-        dio_out[DioGpioGpio19],
-        dio_out[DioGpioGpio18],
-        dio_out[DioGpioGpio17],
-        dio_out[DioGpioGpio16],
-        dio_out[DioGpioGpio15],
-        dio_out[DioGpioGpio14],
-        dio_out[DioGpioGpio13],
-        dio_out[DioGpioGpio12],
-        dio_out[DioGpioGpio11],
-        dio_out[DioGpioGpio10],
-        dio_out[DioGpioGpio9],
-        dio_out[DioGpioGpio8],
-        dio_out[DioGpioGpio7],
-        dio_out[DioGpioGpio6],
-        dio_out[DioGpioGpio5],
-        dio_out[DioGpioGpio4],
-        dio_out[DioGpioGpio3],
-        dio_out[DioGpioGpio2],
-        dio_out[DioGpioGpio1],
-        dio_out[DioGpioGpio0],
+        dio_out[DioGpio0Gpio31],
+        dio_out[DioGpio0Gpio30],
+        dio_out[DioGpio0Gpio29],
+        dio_out[DioGpio0Gpio28],
+        dio_out[DioGpio0Gpio27],
+        dio_out[DioGpio0Gpio26],
+        dio_out[DioGpio0Gpio25],
+        dio_out[DioGpio0Gpio24],
+        dio_out[DioGpio0Gpio23],
+        dio_out[DioGpio0Gpio22],
+        dio_out[DioGpio0Gpio21],
+        dio_out[DioGpio0Gpio20],
+        dio_out[DioGpio0Gpio19],
+        dio_out[DioGpio0Gpio18],
+        dio_out[DioGpio0Gpio17],
+        dio_out[DioGpio0Gpio16],
+        dio_out[DioGpio0Gpio15],
+        dio_out[DioGpio0Gpio14],
+        dio_out[DioGpio0Gpio13],
+        dio_out[DioGpio0Gpio12],
+        dio_out[DioGpio0Gpio11],
+        dio_out[DioGpio0Gpio10],
+        dio_out[DioGpio0Gpio9],
+        dio_out[DioGpio0Gpio8],
+        dio_out[DioGpio0Gpio7],
+        dio_out[DioGpio0Gpio6],
+        dio_out[DioGpio0Gpio5],
+        dio_out[DioGpio0Gpio4],
+        dio_out[DioGpio0Gpio3],
+        dio_out[DioGpio0Gpio2],
+        dio_out[DioGpio0Gpio1],
+        dio_out[DioGpio0Gpio0],
         dio_out[DioI2c0Sda],
         dio_out[DioI2c0Scl],
         dio_out[DioUart0Tx],
@@ -1031,38 +1031,38 @@ module chip_darjeeling_asic #(
         dio_oe[DioSocProxySocGpi2],
         dio_oe[DioSocProxySocGpi1],
         dio_oe[DioSocProxySocGpi0],
-        dio_oe[DioGpioGpio31],
-        dio_oe[DioGpioGpio30],
-        dio_oe[DioGpioGpio29],
-        dio_oe[DioGpioGpio28],
-        dio_oe[DioGpioGpio27],
-        dio_oe[DioGpioGpio26],
-        dio_oe[DioGpioGpio25],
-        dio_oe[DioGpioGpio24],
-        dio_oe[DioGpioGpio23],
-        dio_oe[DioGpioGpio22],
-        dio_oe[DioGpioGpio21],
-        dio_oe[DioGpioGpio20],
-        dio_oe[DioGpioGpio19],
-        dio_oe[DioGpioGpio18],
-        dio_oe[DioGpioGpio17],
-        dio_oe[DioGpioGpio16],
-        dio_oe[DioGpioGpio15],
-        dio_oe[DioGpioGpio14],
-        dio_oe[DioGpioGpio13],
-        dio_oe[DioGpioGpio12],
-        dio_oe[DioGpioGpio11],
-        dio_oe[DioGpioGpio10],
-        dio_oe[DioGpioGpio9],
-        dio_oe[DioGpioGpio8],
-        dio_oe[DioGpioGpio7],
-        dio_oe[DioGpioGpio6],
-        dio_oe[DioGpioGpio5],
-        dio_oe[DioGpioGpio4],
-        dio_oe[DioGpioGpio3],
-        dio_oe[DioGpioGpio2],
-        dio_oe[DioGpioGpio1],
-        dio_oe[DioGpioGpio0],
+        dio_oe[DioGpio0Gpio31],
+        dio_oe[DioGpio0Gpio30],
+        dio_oe[DioGpio0Gpio29],
+        dio_oe[DioGpio0Gpio28],
+        dio_oe[DioGpio0Gpio27],
+        dio_oe[DioGpio0Gpio26],
+        dio_oe[DioGpio0Gpio25],
+        dio_oe[DioGpio0Gpio24],
+        dio_oe[DioGpio0Gpio23],
+        dio_oe[DioGpio0Gpio22],
+        dio_oe[DioGpio0Gpio21],
+        dio_oe[DioGpio0Gpio20],
+        dio_oe[DioGpio0Gpio19],
+        dio_oe[DioGpio0Gpio18],
+        dio_oe[DioGpio0Gpio17],
+        dio_oe[DioGpio0Gpio16],
+        dio_oe[DioGpio0Gpio15],
+        dio_oe[DioGpio0Gpio14],
+        dio_oe[DioGpio0Gpio13],
+        dio_oe[DioGpio0Gpio12],
+        dio_oe[DioGpio0Gpio11],
+        dio_oe[DioGpio0Gpio10],
+        dio_oe[DioGpio0Gpio9],
+        dio_oe[DioGpio0Gpio8],
+        dio_oe[DioGpio0Gpio7],
+        dio_oe[DioGpio0Gpio6],
+        dio_oe[DioGpio0Gpio5],
+        dio_oe[DioGpio0Gpio4],
+        dio_oe[DioGpio0Gpio3],
+        dio_oe[DioGpio0Gpio2],
+        dio_oe[DioGpio0Gpio1],
+        dio_oe[DioGpio0Gpio0],
         dio_oe[DioI2c0Sda],
         dio_oe[DioI2c0Scl],
         dio_oe[DioUart0Tx],
@@ -1113,38 +1113,38 @@ module chip_darjeeling_asic #(
         dio_attr[DioSocProxySocGpi2],
         dio_attr[DioSocProxySocGpi1],
         dio_attr[DioSocProxySocGpi0],
-        dio_attr[DioGpioGpio31],
-        dio_attr[DioGpioGpio30],
-        dio_attr[DioGpioGpio29],
-        dio_attr[DioGpioGpio28],
-        dio_attr[DioGpioGpio27],
-        dio_attr[DioGpioGpio26],
-        dio_attr[DioGpioGpio25],
-        dio_attr[DioGpioGpio24],
-        dio_attr[DioGpioGpio23],
-        dio_attr[DioGpioGpio22],
-        dio_attr[DioGpioGpio21],
-        dio_attr[DioGpioGpio20],
-        dio_attr[DioGpioGpio19],
-        dio_attr[DioGpioGpio18],
-        dio_attr[DioGpioGpio17],
-        dio_attr[DioGpioGpio16],
-        dio_attr[DioGpioGpio15],
-        dio_attr[DioGpioGpio14],
-        dio_attr[DioGpioGpio13],
-        dio_attr[DioGpioGpio12],
-        dio_attr[DioGpioGpio11],
-        dio_attr[DioGpioGpio10],
-        dio_attr[DioGpioGpio9],
-        dio_attr[DioGpioGpio8],
-        dio_attr[DioGpioGpio7],
-        dio_attr[DioGpioGpio6],
-        dio_attr[DioGpioGpio5],
-        dio_attr[DioGpioGpio4],
-        dio_attr[DioGpioGpio3],
-        dio_attr[DioGpioGpio2],
-        dio_attr[DioGpioGpio1],
-        dio_attr[DioGpioGpio0],
+        dio_attr[DioGpio0Gpio31],
+        dio_attr[DioGpio0Gpio30],
+        dio_attr[DioGpio0Gpio29],
+        dio_attr[DioGpio0Gpio28],
+        dio_attr[DioGpio0Gpio27],
+        dio_attr[DioGpio0Gpio26],
+        dio_attr[DioGpio0Gpio25],
+        dio_attr[DioGpio0Gpio24],
+        dio_attr[DioGpio0Gpio23],
+        dio_attr[DioGpio0Gpio22],
+        dio_attr[DioGpio0Gpio21],
+        dio_attr[DioGpio0Gpio20],
+        dio_attr[DioGpio0Gpio19],
+        dio_attr[DioGpio0Gpio18],
+        dio_attr[DioGpio0Gpio17],
+        dio_attr[DioGpio0Gpio16],
+        dio_attr[DioGpio0Gpio15],
+        dio_attr[DioGpio0Gpio14],
+        dio_attr[DioGpio0Gpio13],
+        dio_attr[DioGpio0Gpio12],
+        dio_attr[DioGpio0Gpio11],
+        dio_attr[DioGpio0Gpio10],
+        dio_attr[DioGpio0Gpio9],
+        dio_attr[DioGpio0Gpio8],
+        dio_attr[DioGpio0Gpio7],
+        dio_attr[DioGpio0Gpio6],
+        dio_attr[DioGpio0Gpio5],
+        dio_attr[DioGpio0Gpio4],
+        dio_attr[DioGpio0Gpio3],
+        dio_attr[DioGpio0Gpio2],
+        dio_attr[DioGpio0Gpio1],
+        dio_attr[DioGpio0Gpio0],
         dio_attr[DioI2c0Sda],
         dio_attr[DioI2c0Scl],
         dio_attr[DioUart0Tx],

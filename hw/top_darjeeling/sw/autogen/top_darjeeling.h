@@ -49,22 +49,22 @@ extern "C" {
 #define TOP_DARJEELING_UART0_SIZE_BYTES 0x40u
 
 /**
- * Peripheral base address for gpio in top darjeeling.
+ * Peripheral base address for gpio0 in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_DARJEELING_GPIO_BASE_ADDR 0x30000000u
+#define TOP_DARJEELING_GPIO0_BASE_ADDR 0x30000000u
 
 /**
- * Peripheral size for gpio in top darjeeling.
+ * Peripheral size for gpio0 in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_DARJEELING_GPIO_BASE_ADDR and
- * `TOP_DARJEELING_GPIO_BASE_ADDR + TOP_DARJEELING_GPIO_SIZE_BYTES`.
+ * address between #TOP_DARJEELING_GPIO0_BASE_ADDR and
+ * `TOP_DARJEELING_GPIO0_BASE_ADDR + TOP_DARJEELING_GPIO0_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_GPIO_SIZE_BYTES 0x100u
+#define TOP_DARJEELING_GPIO0_SIZE_BYTES 0x100u
 
 /**
  * Peripheral base address for spi_device in top darjeeling.
@@ -947,7 +947,7 @@ extern "C" {
 typedef enum top_darjeeling_plic_peripheral {
   kTopDarjeelingPlicPeripheralUnknown = 0, /**< Unknown Peripheral */
   kTopDarjeelingPlicPeripheralUart0 = 1, /**< uart0 */
-  kTopDarjeelingPlicPeripheralGpio = 2, /**< gpio */
+  kTopDarjeelingPlicPeripheralGpio0 = 2, /**< gpio0 */
   kTopDarjeelingPlicPeripheralSpiDevice = 3, /**< spi_device */
   kTopDarjeelingPlicPeripheralI2c0 = 4, /**< i2c0 */
   kTopDarjeelingPlicPeripheralRvTimer = 5, /**< rv_timer */
@@ -997,38 +997,38 @@ typedef enum top_darjeeling_plic_irq_id {
   kTopDarjeelingPlicIrqIdUart0RxTimeout = 7, /**< uart0_rx_timeout */
   kTopDarjeelingPlicIrqIdUart0RxParityErr = 8, /**< uart0_rx_parity_err */
   kTopDarjeelingPlicIrqIdUart0TxEmpty = 9, /**< uart0_tx_empty */
-  kTopDarjeelingPlicIrqIdGpioGpio0 = 10, /**< gpio_gpio 0 */
-  kTopDarjeelingPlicIrqIdGpioGpio1 = 11, /**< gpio_gpio 1 */
-  kTopDarjeelingPlicIrqIdGpioGpio2 = 12, /**< gpio_gpio 2 */
-  kTopDarjeelingPlicIrqIdGpioGpio3 = 13, /**< gpio_gpio 3 */
-  kTopDarjeelingPlicIrqIdGpioGpio4 = 14, /**< gpio_gpio 4 */
-  kTopDarjeelingPlicIrqIdGpioGpio5 = 15, /**< gpio_gpio 5 */
-  kTopDarjeelingPlicIrqIdGpioGpio6 = 16, /**< gpio_gpio 6 */
-  kTopDarjeelingPlicIrqIdGpioGpio7 = 17, /**< gpio_gpio 7 */
-  kTopDarjeelingPlicIrqIdGpioGpio8 = 18, /**< gpio_gpio 8 */
-  kTopDarjeelingPlicIrqIdGpioGpio9 = 19, /**< gpio_gpio 9 */
-  kTopDarjeelingPlicIrqIdGpioGpio10 = 20, /**< gpio_gpio 10 */
-  kTopDarjeelingPlicIrqIdGpioGpio11 = 21, /**< gpio_gpio 11 */
-  kTopDarjeelingPlicIrqIdGpioGpio12 = 22, /**< gpio_gpio 12 */
-  kTopDarjeelingPlicIrqIdGpioGpio13 = 23, /**< gpio_gpio 13 */
-  kTopDarjeelingPlicIrqIdGpioGpio14 = 24, /**< gpio_gpio 14 */
-  kTopDarjeelingPlicIrqIdGpioGpio15 = 25, /**< gpio_gpio 15 */
-  kTopDarjeelingPlicIrqIdGpioGpio16 = 26, /**< gpio_gpio 16 */
-  kTopDarjeelingPlicIrqIdGpioGpio17 = 27, /**< gpio_gpio 17 */
-  kTopDarjeelingPlicIrqIdGpioGpio18 = 28, /**< gpio_gpio 18 */
-  kTopDarjeelingPlicIrqIdGpioGpio19 = 29, /**< gpio_gpio 19 */
-  kTopDarjeelingPlicIrqIdGpioGpio20 = 30, /**< gpio_gpio 20 */
-  kTopDarjeelingPlicIrqIdGpioGpio21 = 31, /**< gpio_gpio 21 */
-  kTopDarjeelingPlicIrqIdGpioGpio22 = 32, /**< gpio_gpio 22 */
-  kTopDarjeelingPlicIrqIdGpioGpio23 = 33, /**< gpio_gpio 23 */
-  kTopDarjeelingPlicIrqIdGpioGpio24 = 34, /**< gpio_gpio 24 */
-  kTopDarjeelingPlicIrqIdGpioGpio25 = 35, /**< gpio_gpio 25 */
-  kTopDarjeelingPlicIrqIdGpioGpio26 = 36, /**< gpio_gpio 26 */
-  kTopDarjeelingPlicIrqIdGpioGpio27 = 37, /**< gpio_gpio 27 */
-  kTopDarjeelingPlicIrqIdGpioGpio28 = 38, /**< gpio_gpio 28 */
-  kTopDarjeelingPlicIrqIdGpioGpio29 = 39, /**< gpio_gpio 29 */
-  kTopDarjeelingPlicIrqIdGpioGpio30 = 40, /**< gpio_gpio 30 */
-  kTopDarjeelingPlicIrqIdGpioGpio31 = 41, /**< gpio_gpio 31 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio0 = 10, /**< gpio0_gpio 0 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio1 = 11, /**< gpio0_gpio 1 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio2 = 12, /**< gpio0_gpio 2 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio3 = 13, /**< gpio0_gpio 3 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio4 = 14, /**< gpio0_gpio 4 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio5 = 15, /**< gpio0_gpio 5 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio6 = 16, /**< gpio0_gpio 6 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio7 = 17, /**< gpio0_gpio 7 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio8 = 18, /**< gpio0_gpio 8 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio9 = 19, /**< gpio0_gpio 9 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio10 = 20, /**< gpio0_gpio 10 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio11 = 21, /**< gpio0_gpio 11 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio12 = 22, /**< gpio0_gpio 12 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio13 = 23, /**< gpio0_gpio 13 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio14 = 24, /**< gpio0_gpio 14 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio15 = 25, /**< gpio0_gpio 15 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio16 = 26, /**< gpio0_gpio 16 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio17 = 27, /**< gpio0_gpio 17 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio18 = 28, /**< gpio0_gpio 18 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio19 = 29, /**< gpio0_gpio 19 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio20 = 30, /**< gpio0_gpio 20 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio21 = 31, /**< gpio0_gpio 21 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio22 = 32, /**< gpio0_gpio 22 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio23 = 33, /**< gpio0_gpio 23 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio24 = 34, /**< gpio0_gpio 24 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio25 = 35, /**< gpio0_gpio 25 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio26 = 36, /**< gpio0_gpio 26 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio27 = 37, /**< gpio0_gpio 27 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio28 = 38, /**< gpio0_gpio 28 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio29 = 39, /**< gpio0_gpio 29 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio30 = 40, /**< gpio0_gpio 30 */
+  kTopDarjeelingPlicIrqIdGpio0Gpio31 = 41, /**< gpio0_gpio 31 */
   kTopDarjeelingPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty = 42, /**< spi_device_upload_cmdfifo_not_empty */
   kTopDarjeelingPlicIrqIdSpiDeviceUploadPayloadNotEmpty = 43, /**< spi_device_upload_payload_not_empty */
   kTopDarjeelingPlicIrqIdSpiDeviceUploadPayloadOverflow = 44, /**< spi_device_upload_payload_overflow */
@@ -1152,7 +1152,7 @@ typedef enum top_darjeeling_plic_target {
 typedef enum top_darjeeling_alert_peripheral {
   kTopDarjeelingAlertPeripheralExternal = 0, /**< External Peripheral */
   kTopDarjeelingAlertPeripheralUart0 = 1, /**< uart0 */
-  kTopDarjeelingAlertPeripheralGpio = 2, /**< gpio */
+  kTopDarjeelingAlertPeripheralGpio0 = 2, /**< gpio0 */
   kTopDarjeelingAlertPeripheralSpiDevice = 3, /**< spi_device */
   kTopDarjeelingAlertPeripheralI2c0 = 4, /**< i2c0 */
   kTopDarjeelingAlertPeripheralRvTimer = 5, /**< rv_timer */
@@ -1207,7 +1207,7 @@ typedef enum top_darjeeling_alert_peripheral {
  */
 typedef enum top_darjeeling_alert_id {
   kTopDarjeelingAlertIdUart0FatalFault = 0, /**< uart0_fatal_fault */
-  kTopDarjeelingAlertIdGpioFatalFault = 1, /**< gpio_fatal_fault */
+  kTopDarjeelingAlertIdGpio0FatalFault = 1, /**< gpio0_fatal_fault */
   kTopDarjeelingAlertIdSpiDeviceFatalFault = 2, /**< spi_device_fatal_fault */
   kTopDarjeelingAlertIdI2c0FatalFault = 3, /**< i2c0_fatal_fault */
   kTopDarjeelingAlertIdRvTimerFatalFault = 4, /**< rv_timer_fatal_fault */
@@ -1384,38 +1384,38 @@ typedef enum top_darjeeling_direct_pads {
   kTopDarjeelingDirectPadsSpiDeviceSd3 = 7, /**<  */
   kTopDarjeelingDirectPadsI2c0Scl = 8, /**<  */
   kTopDarjeelingDirectPadsI2c0Sda = 9, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio0 = 10, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio1 = 11, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio2 = 12, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio3 = 13, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio4 = 14, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio5 = 15, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio6 = 16, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio7 = 17, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio8 = 18, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio9 = 19, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio10 = 20, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio11 = 21, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio12 = 22, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio13 = 23, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio14 = 24, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio15 = 25, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio16 = 26, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio17 = 27, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio18 = 28, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio19 = 29, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio20 = 30, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio21 = 31, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio22 = 32, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio23 = 33, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio24 = 34, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio25 = 35, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio26 = 36, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio27 = 37, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio28 = 38, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio29 = 39, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio30 = 40, /**<  */
-  kTopDarjeelingDirectPadsGpioGpio31 = 41, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio0 = 10, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio1 = 11, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio2 = 12, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio3 = 13, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio4 = 14, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio5 = 15, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio6 = 16, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio7 = 17, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio8 = 18, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio9 = 19, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio10 = 20, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio11 = 21, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio12 = 22, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio13 = 23, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio14 = 24, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio15 = 25, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio16 = 26, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio17 = 27, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio18 = 28, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio19 = 29, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio20 = 30, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio21 = 31, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio22 = 32, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio23 = 33, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio24 = 34, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio25 = 35, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio26 = 36, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio27 = 37, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio28 = 38, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio29 = 39, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio30 = 40, /**<  */
+  kTopDarjeelingDirectPadsGpio0Gpio31 = 41, /**<  */
   kTopDarjeelingDirectPadsSpiDeviceSck = 42, /**<  */
   kTopDarjeelingDirectPadsSpiDeviceCsb = 43, /**<  */
   kTopDarjeelingDirectPadsSpiDeviceTpmCsb = 44, /**<  */
