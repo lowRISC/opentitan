@@ -4,6 +4,7 @@
 
 #include <string.h>
 
+#include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/crypto/impl/kats.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -48,6 +49,7 @@ status_t test_run_kats(void) {
 bool test_main(void) {
   CHECK_STATUS_OK(
       otcrypto_init(kOtcryptoKeySecurityLevelHigh, &test_cryptolib_state));
+  CSR_CLEAR_BITS(CSR_REG_CPUCTRL, 0x4);
 
   CHECK_STATUS_OK(test_run_kats());
 
