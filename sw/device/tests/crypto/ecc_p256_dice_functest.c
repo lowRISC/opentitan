@@ -26,9 +26,6 @@
 #include "sw/device/silicon_creator/manuf/base/perso_tlv_data.h"
 #include "sw/device/silicon_creator/manuf/lib/flash_info_fields.h"
 
-// Keymgr handle for this test.
-static dif_keymgr_t keymgr;
-
 OTTF_DEFINE_TEST_CONFIG();
 
 static status_t get_stored_certificate(
@@ -147,7 +144,6 @@ status_t dice_test(void) {
 
   // Read the attestation seed from flash.
   uint32_t kAttestationSeedWords = 10;
-  uint32_t kAttestationSeedBytes = kAttestationSeedWords * sizeof(uint32_t);
   uint32_t attestation_data[10] = {0};
   TRY(read_attestation_seed_configured(attestation_data));
   otcrypto_const_word32_buf_t attestation_seed = OTCRYPTO_MAKE_BUF(

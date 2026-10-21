@@ -63,7 +63,7 @@ static inline void block_inc32(aes_block_t *block) {
  *
  * @param block AES block to shred.
  */
-static void aes_block_shred(aes_block_t *block) {
+OT_USED static void aes_block_shred(aes_block_t *block) {
   hardened_memshred(block->data, kAesBlockNumWords);
 }
 

@@ -267,7 +267,7 @@ void hmac_hash_sha512_init(hmac_ctx_t *ctx);
  * @param key The key used for HMAC.
  * @param[out] ctx Initialized context object.
  */
-void hmac_hmac_sha256_init_cl(const hmac_key_t key, hmac_ctx_t *ctx);
+void hmac_hmac_sha256_init_cl(const hmac_key_t *key, hmac_ctx_t *ctx);
 
 /**
  * Initializes the context for a streaming HMAC-SHA384 computation.
@@ -278,7 +278,7 @@ void hmac_hmac_sha256_init_cl(const hmac_key_t key, hmac_ctx_t *ctx);
  * @param key The key used for HMAC.
  * @param[out] ctx Initialized context object.
  */
-void hmac_hmac_sha384_init(const hmac_key_t key, hmac_ctx_t *ctx);
+void hmac_hmac_sha384_init(const hmac_key_t *key, hmac_ctx_t *ctx);
 
 /**
  * Initializes the context for a streaming HMAC-SHA512 computation.
@@ -289,7 +289,7 @@ void hmac_hmac_sha384_init(const hmac_key_t key, hmac_ctx_t *ctx);
  * @param key The key used for HMAC.
  * @param[out] ctx Initialized context object.
  */
-void hmac_hmac_sha512_init(const hmac_key_t key, hmac_ctx_t *ctx);
+void hmac_hmac_sha512_init(const hmac_key_t *key, hmac_ctx_t *ctx);
 
 /**
  * Redundant implementation for the streaming SHA256 init function.
@@ -312,7 +312,8 @@ void hmac_hmac_sha512_init(const hmac_key_t key, hmac_ctx_t *ctx);
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha256_init_redundant(hmac_key_t key, hmac_ctx_t *ctx);
+status_t hmac_hmac_sha256_init_redundant(const hmac_key_t *key,
+                                         hmac_ctx_t *ctx);
 
 /**
  * Redundant implementation for the streaming SHA384 init function.
@@ -335,7 +336,8 @@ status_t hmac_hmac_sha256_init_redundant(hmac_key_t key, hmac_ctx_t *ctx);
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha384_init_redundant(hmac_key_t key, hmac_ctx_t *ctx);
+status_t hmac_hmac_sha384_init_redundant(const hmac_key_t *key,
+                                         hmac_ctx_t *ctx);
 
 /**
  * Redundant implementation for the streaming SHA512 init function.
@@ -358,7 +360,8 @@ status_t hmac_hmac_sha384_init_redundant(hmac_key_t key, hmac_ctx_t *ctx);
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-status_t hmac_hmac_sha512_init_redundant(hmac_key_t key, hmac_ctx_t *ctx);
+status_t hmac_hmac_sha512_init_redundant(const hmac_key_t *key,
+                                         hmac_ctx_t *ctx);
 
 /**
  * Redundant implementation for the streaming SHA256 final function.
