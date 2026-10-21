@@ -373,14 +373,14 @@
       name: clkmgr_clk_io_peri
       desc: '''Verify clkmgr's `clk_io_peri` is connected to the following blocks' clock
             input:
-            - gpio clk_i
+            - gpio0 clk_i
             - spi_device clk_i
             - spi_host clk_i
             - i2c0 clk_i
             - uart0 clk_i
             '''
       stage: V2
-      tests: ["clkmgr_peri_clk_gpio_clk",
+      tests: ["clkmgr_peri_clk_gpio0_clk",
               "clkmgr_peri_clk_spi_device_clk",
               "clkmgr_peri_clk_spi_host0_clk",
               "clkmgr_peri_clk_i2c0_clk",
@@ -907,7 +907,7 @@
       name: rst_sys_io_d0
       desc: '''Verify rstmgr's rst_sys_io_n[1] is connected to the following:
             - flash_ctrl's rst_otp_ni
-            - gpio's rst_ni
+            - gpio0's rst_ni
             - rv_timer's rst_ni
             - uart0's rst_ni
             - xbar_main's rst_fixed_ni
@@ -916,7 +916,7 @@
             '''
       stage: V2
       tests: ["rstmgr_sys_io_d0_flash_ctrl_rst_otp_ni",
-              "rstmgr_sys_io_d0_gpio_rst_ni",
+              "rstmgr_sys_io_d0_gpio0_rst_ni",
               "rstmgr_sys_io_d0_rv_timer_rst_ni",
               "rstmgr_sys_io_d0_uart0_rst_ni",
               "rstmgr_sys_io_d0_xbar_main_rst_fixed_ni",

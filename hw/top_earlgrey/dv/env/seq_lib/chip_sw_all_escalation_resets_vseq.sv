@@ -41,7 +41,7 @@ class chip_sw_all_escalation_resets_vseq extends chip_sw_base_vseq;
     // fault_status-specific trigger.
     // '{"rram_ctrl", "", TopEarlgreyAlertIdRramCtrlFatalErr},
     '{"rram_macro", "", TopEarlgreyAlertIdRramCtrlFatalMacroErr},
-    '{"gpio", "", TopEarlgreyAlertIdGpioFatalFault},
+    '{"gpio0", "", TopEarlgreyAlertIdGpio0FatalFault},
     '{"hmac", "", TopEarlgreyAlertIdHmacFatalFault},
     '{"i2c0", "", TopEarlgreyAlertIdI2c0FatalFault},
     '{"i2c1", "", TopEarlgreyAlertIdI2c1FatalFault},

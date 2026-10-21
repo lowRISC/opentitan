@@ -15,7 +15,7 @@
 #include "hw/top/gpio_regs.h"
 #include "hw/top/otp_ctrl_regs.h"
 
-static const dt_gpio_t kGpioDt = kDtGpio;
+static const dt_gpio_t kGpioDt = kDtGpio0;
 
 rom_error_t bootstrap_chip_erase(void) { return nvm_ctrl_chip_erase(); }
 

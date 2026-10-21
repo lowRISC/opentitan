@@ -37,38 +37,38 @@ struct Config {
 }
 
 static GPIOS: [(PinmuxPeripheralIn, PinmuxOutsel); 32] = [
-    (PinmuxPeripheralIn::GpioGpio0, PinmuxOutsel::GpioGpio0),
-    (PinmuxPeripheralIn::GpioGpio1, PinmuxOutsel::GpioGpio1),
-    (PinmuxPeripheralIn::GpioGpio2, PinmuxOutsel::GpioGpio2),
-    (PinmuxPeripheralIn::GpioGpio3, PinmuxOutsel::GpioGpio3),
-    (PinmuxPeripheralIn::GpioGpio4, PinmuxOutsel::GpioGpio4),
-    (PinmuxPeripheralIn::GpioGpio5, PinmuxOutsel::GpioGpio5),
-    (PinmuxPeripheralIn::GpioGpio6, PinmuxOutsel::GpioGpio6),
-    (PinmuxPeripheralIn::GpioGpio7, PinmuxOutsel::GpioGpio7),
-    (PinmuxPeripheralIn::GpioGpio8, PinmuxOutsel::GpioGpio8),
-    (PinmuxPeripheralIn::GpioGpio9, PinmuxOutsel::GpioGpio9),
-    (PinmuxPeripheralIn::GpioGpio10, PinmuxOutsel::GpioGpio10),
-    (PinmuxPeripheralIn::GpioGpio11, PinmuxOutsel::GpioGpio11),
-    (PinmuxPeripheralIn::GpioGpio12, PinmuxOutsel::GpioGpio12),
-    (PinmuxPeripheralIn::GpioGpio13, PinmuxOutsel::GpioGpio13),
-    (PinmuxPeripheralIn::GpioGpio14, PinmuxOutsel::GpioGpio14),
-    (PinmuxPeripheralIn::GpioGpio15, PinmuxOutsel::GpioGpio15),
-    (PinmuxPeripheralIn::GpioGpio16, PinmuxOutsel::GpioGpio16),
-    (PinmuxPeripheralIn::GpioGpio17, PinmuxOutsel::GpioGpio17),
-    (PinmuxPeripheralIn::GpioGpio18, PinmuxOutsel::GpioGpio18),
-    (PinmuxPeripheralIn::GpioGpio19, PinmuxOutsel::GpioGpio19),
-    (PinmuxPeripheralIn::GpioGpio20, PinmuxOutsel::GpioGpio20),
-    (PinmuxPeripheralIn::GpioGpio21, PinmuxOutsel::GpioGpio21),
-    (PinmuxPeripheralIn::GpioGpio22, PinmuxOutsel::GpioGpio22),
-    (PinmuxPeripheralIn::GpioGpio23, PinmuxOutsel::GpioGpio23),
-    (PinmuxPeripheralIn::GpioGpio24, PinmuxOutsel::GpioGpio24),
-    (PinmuxPeripheralIn::GpioGpio25, PinmuxOutsel::GpioGpio25),
-    (PinmuxPeripheralIn::GpioGpio26, PinmuxOutsel::GpioGpio26),
-    (PinmuxPeripheralIn::GpioGpio27, PinmuxOutsel::GpioGpio27),
-    (PinmuxPeripheralIn::GpioGpio28, PinmuxOutsel::GpioGpio28),
-    (PinmuxPeripheralIn::GpioGpio29, PinmuxOutsel::GpioGpio29),
-    (PinmuxPeripheralIn::GpioGpio30, PinmuxOutsel::GpioGpio30),
-    (PinmuxPeripheralIn::GpioGpio31, PinmuxOutsel::GpioGpio31),
+    (PinmuxPeripheralIn::Gpio0Gpio0, PinmuxOutsel::Gpio0Gpio0),
+    (PinmuxPeripheralIn::Gpio0Gpio1, PinmuxOutsel::Gpio0Gpio1),
+    (PinmuxPeripheralIn::Gpio0Gpio2, PinmuxOutsel::Gpio0Gpio2),
+    (PinmuxPeripheralIn::Gpio0Gpio3, PinmuxOutsel::Gpio0Gpio3),
+    (PinmuxPeripheralIn::Gpio0Gpio4, PinmuxOutsel::Gpio0Gpio4),
+    (PinmuxPeripheralIn::Gpio0Gpio5, PinmuxOutsel::Gpio0Gpio5),
+    (PinmuxPeripheralIn::Gpio0Gpio6, PinmuxOutsel::Gpio0Gpio6),
+    (PinmuxPeripheralIn::Gpio0Gpio7, PinmuxOutsel::Gpio0Gpio7),
+    (PinmuxPeripheralIn::Gpio0Gpio8, PinmuxOutsel::Gpio0Gpio8),
+    (PinmuxPeripheralIn::Gpio0Gpio9, PinmuxOutsel::Gpio0Gpio9),
+    (PinmuxPeripheralIn::Gpio0Gpio10, PinmuxOutsel::Gpio0Gpio10),
+    (PinmuxPeripheralIn::Gpio0Gpio11, PinmuxOutsel::Gpio0Gpio11),
+    (PinmuxPeripheralIn::Gpio0Gpio12, PinmuxOutsel::Gpio0Gpio12),
+    (PinmuxPeripheralIn::Gpio0Gpio13, PinmuxOutsel::Gpio0Gpio13),
+    (PinmuxPeripheralIn::Gpio0Gpio14, PinmuxOutsel::Gpio0Gpio14),
+    (PinmuxPeripheralIn::Gpio0Gpio15, PinmuxOutsel::Gpio0Gpio15),
+    (PinmuxPeripheralIn::Gpio0Gpio16, PinmuxOutsel::Gpio0Gpio16),
+    (PinmuxPeripheralIn::Gpio0Gpio17, PinmuxOutsel::Gpio0Gpio17),
+    (PinmuxPeripheralIn::Gpio0Gpio18, PinmuxOutsel::Gpio0Gpio18),
+    (PinmuxPeripheralIn::Gpio0Gpio19, PinmuxOutsel::Gpio0Gpio19),
+    (PinmuxPeripheralIn::Gpio0Gpio20, PinmuxOutsel::Gpio0Gpio20),
+    (PinmuxPeripheralIn::Gpio0Gpio21, PinmuxOutsel::Gpio0Gpio21),
+    (PinmuxPeripheralIn::Gpio0Gpio22, PinmuxOutsel::Gpio0Gpio22),
+    (PinmuxPeripheralIn::Gpio0Gpio23, PinmuxOutsel::Gpio0Gpio23),
+    (PinmuxPeripheralIn::Gpio0Gpio24, PinmuxOutsel::Gpio0Gpio24),
+    (PinmuxPeripheralIn::Gpio0Gpio25, PinmuxOutsel::Gpio0Gpio25),
+    (PinmuxPeripheralIn::Gpio0Gpio26, PinmuxOutsel::Gpio0Gpio26),
+    (PinmuxPeripheralIn::Gpio0Gpio27, PinmuxOutsel::Gpio0Gpio27),
+    (PinmuxPeripheralIn::Gpio0Gpio28, PinmuxOutsel::Gpio0Gpio28),
+    (PinmuxPeripheralIn::Gpio0Gpio29, PinmuxOutsel::Gpio0Gpio29),
+    (PinmuxPeripheralIn::Gpio0Gpio30, PinmuxOutsel::Gpio0Gpio30),
+    (PinmuxPeripheralIn::Gpio0Gpio31, PinmuxOutsel::Gpio0Gpio31),
 ];
 
 static SUPPORTS_OD: [PinmuxMioOut; 14] = [
@@ -132,7 +132,7 @@ fn write_all_verify(
     config: &HashMap<PinmuxMioOut, PinmuxOutsel>,
 ) -> Result<()> {
     let mask = config.values().fold(0, |acc, v| {
-        let i = u32::from(*v) - u32::from(PinmuxOutsel::GpioGpio0);
+        let i = u32::from(*v) - u32::from(PinmuxOutsel::Gpio0Gpio0);
         acc | 1u32 << i
     });
 
@@ -154,7 +154,7 @@ fn write_all_verify(
     let mut result = 0u32;
     for (k, v) in config.iter() {
         let n = u32::from(transport.gpio_pin(&k.to_string())?.read()?);
-        let i = u32::from(*v) - u32::from(PinmuxOutsel::GpioGpio0);
+        let i = u32::from(*v) - u32::from(PinmuxOutsel::Gpio0Gpio0);
         result |= n << i;
     }
 
@@ -172,7 +172,7 @@ fn read_all_verify(
     config: &HashMap<PinmuxPeripheralIn, PinmuxInsel>,
 ) -> Result<()> {
     let mask = config.keys().fold(0, |acc, k| {
-        let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::GpioGpio0);
+        let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::Gpio0Gpio0);
         acc | 1u32 << i
     });
 
@@ -190,7 +190,7 @@ fn read_all_verify(
     }
 
     for (k, v) in config.iter() {
-        let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::GpioGpio0);
+        let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::Gpio0Gpio0);
         transport
             .gpio_pin(&v.to_string())?
             .write((masked_write >> i) & 1 != 0)?;

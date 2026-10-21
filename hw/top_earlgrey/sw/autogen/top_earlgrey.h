@@ -103,22 +103,22 @@ extern "C" {
 #define TOP_EARLGREY_UART3_SIZE_BYTES 0x40u
 
 /**
- * Peripheral base address for gpio in top earlgrey.
+ * Peripheral base address for gpio0 in top earlgrey.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_GPIO_BASE_ADDR 0x40040000u
+#define TOP_EARLGREY_GPIO0_BASE_ADDR 0x40040000u
 
 /**
- * Peripheral size for gpio in top earlgrey.
+ * Peripheral size for gpio0 in top earlgrey.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_EARLGREY_GPIO_BASE_ADDR and
- * `TOP_EARLGREY_GPIO_BASE_ADDR + TOP_EARLGREY_GPIO_SIZE_BYTES`.
+ * address between #TOP_EARLGREY_GPIO0_BASE_ADDR and
+ * `TOP_EARLGREY_GPIO0_BASE_ADDR + TOP_EARLGREY_GPIO0_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_GPIO_SIZE_BYTES 0x400u
+#define TOP_EARLGREY_GPIO0_SIZE_BYTES 0x400u
 
 /**
  * Peripheral base address for spi_device in top earlgrey.
@@ -978,7 +978,7 @@ typedef enum top_earlgrey_plic_peripheral {
   kTopEarlgreyPlicPeripheralUart1 = 2, /**< uart1 */
   kTopEarlgreyPlicPeripheralUart2 = 3, /**< uart2 */
   kTopEarlgreyPlicPeripheralUart3 = 4, /**< uart3 */
-  kTopEarlgreyPlicPeripheralGpio = 5, /**< gpio */
+  kTopEarlgreyPlicPeripheralGpio0 = 5, /**< gpio0 */
   kTopEarlgreyPlicPeripheralSpiDevice = 6, /**< spi_device */
   kTopEarlgreyPlicPeripheralI2c0 = 7, /**< i2c0 */
   kTopEarlgreyPlicPeripheralI2c1 = 8, /**< i2c1 */
@@ -1053,38 +1053,38 @@ typedef enum top_earlgrey_plic_irq_id {
   kTopEarlgreyPlicIrqIdUart3RxTimeout = 34, /**< uart3_rx_timeout */
   kTopEarlgreyPlicIrqIdUart3RxParityErr = 35, /**< uart3_rx_parity_err */
   kTopEarlgreyPlicIrqIdUart3TxEmpty = 36, /**< uart3_tx_empty */
-  kTopEarlgreyPlicIrqIdGpioGpio0 = 37, /**< gpio_gpio 0 */
-  kTopEarlgreyPlicIrqIdGpioGpio1 = 38, /**< gpio_gpio 1 */
-  kTopEarlgreyPlicIrqIdGpioGpio2 = 39, /**< gpio_gpio 2 */
-  kTopEarlgreyPlicIrqIdGpioGpio3 = 40, /**< gpio_gpio 3 */
-  kTopEarlgreyPlicIrqIdGpioGpio4 = 41, /**< gpio_gpio 4 */
-  kTopEarlgreyPlicIrqIdGpioGpio5 = 42, /**< gpio_gpio 5 */
-  kTopEarlgreyPlicIrqIdGpioGpio6 = 43, /**< gpio_gpio 6 */
-  kTopEarlgreyPlicIrqIdGpioGpio7 = 44, /**< gpio_gpio 7 */
-  kTopEarlgreyPlicIrqIdGpioGpio8 = 45, /**< gpio_gpio 8 */
-  kTopEarlgreyPlicIrqIdGpioGpio9 = 46, /**< gpio_gpio 9 */
-  kTopEarlgreyPlicIrqIdGpioGpio10 = 47, /**< gpio_gpio 10 */
-  kTopEarlgreyPlicIrqIdGpioGpio11 = 48, /**< gpio_gpio 11 */
-  kTopEarlgreyPlicIrqIdGpioGpio12 = 49, /**< gpio_gpio 12 */
-  kTopEarlgreyPlicIrqIdGpioGpio13 = 50, /**< gpio_gpio 13 */
-  kTopEarlgreyPlicIrqIdGpioGpio14 = 51, /**< gpio_gpio 14 */
-  kTopEarlgreyPlicIrqIdGpioGpio15 = 52, /**< gpio_gpio 15 */
-  kTopEarlgreyPlicIrqIdGpioGpio16 = 53, /**< gpio_gpio 16 */
-  kTopEarlgreyPlicIrqIdGpioGpio17 = 54, /**< gpio_gpio 17 */
-  kTopEarlgreyPlicIrqIdGpioGpio18 = 55, /**< gpio_gpio 18 */
-  kTopEarlgreyPlicIrqIdGpioGpio19 = 56, /**< gpio_gpio 19 */
-  kTopEarlgreyPlicIrqIdGpioGpio20 = 57, /**< gpio_gpio 20 */
-  kTopEarlgreyPlicIrqIdGpioGpio21 = 58, /**< gpio_gpio 21 */
-  kTopEarlgreyPlicIrqIdGpioGpio22 = 59, /**< gpio_gpio 22 */
-  kTopEarlgreyPlicIrqIdGpioGpio23 = 60, /**< gpio_gpio 23 */
-  kTopEarlgreyPlicIrqIdGpioGpio24 = 61, /**< gpio_gpio 24 */
-  kTopEarlgreyPlicIrqIdGpioGpio25 = 62, /**< gpio_gpio 25 */
-  kTopEarlgreyPlicIrqIdGpioGpio26 = 63, /**< gpio_gpio 26 */
-  kTopEarlgreyPlicIrqIdGpioGpio27 = 64, /**< gpio_gpio 27 */
-  kTopEarlgreyPlicIrqIdGpioGpio28 = 65, /**< gpio_gpio 28 */
-  kTopEarlgreyPlicIrqIdGpioGpio29 = 66, /**< gpio_gpio 29 */
-  kTopEarlgreyPlicIrqIdGpioGpio30 = 67, /**< gpio_gpio 30 */
-  kTopEarlgreyPlicIrqIdGpioGpio31 = 68, /**< gpio_gpio 31 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio0 = 37, /**< gpio0_gpio 0 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio1 = 38, /**< gpio0_gpio 1 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio2 = 39, /**< gpio0_gpio 2 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio3 = 40, /**< gpio0_gpio 3 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio4 = 41, /**< gpio0_gpio 4 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio5 = 42, /**< gpio0_gpio 5 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio6 = 43, /**< gpio0_gpio 6 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio7 = 44, /**< gpio0_gpio 7 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio8 = 45, /**< gpio0_gpio 8 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio9 = 46, /**< gpio0_gpio 9 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio10 = 47, /**< gpio0_gpio 10 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio11 = 48, /**< gpio0_gpio 11 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio12 = 49, /**< gpio0_gpio 12 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio13 = 50, /**< gpio0_gpio 13 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio14 = 51, /**< gpio0_gpio 14 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio15 = 52, /**< gpio0_gpio 15 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio16 = 53, /**< gpio0_gpio 16 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio17 = 54, /**< gpio0_gpio 17 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio18 = 55, /**< gpio0_gpio 18 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio19 = 56, /**< gpio0_gpio 19 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio20 = 57, /**< gpio0_gpio 20 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio21 = 58, /**< gpio0_gpio 21 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio22 = 59, /**< gpio0_gpio 22 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio23 = 60, /**< gpio0_gpio 23 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio24 = 61, /**< gpio0_gpio 24 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio25 = 62, /**< gpio0_gpio 25 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio26 = 63, /**< gpio0_gpio 26 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio27 = 64, /**< gpio0_gpio 27 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio28 = 65, /**< gpio0_gpio 28 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio29 = 66, /**< gpio0_gpio 29 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio30 = 67, /**< gpio0_gpio 30 */
+  kTopEarlgreyPlicIrqIdGpio0Gpio31 = 68, /**< gpio0_gpio 31 */
   kTopEarlgreyPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty = 69, /**< spi_device_upload_cmdfifo_not_empty */
   kTopEarlgreyPlicIrqIdSpiDeviceUploadPayloadNotEmpty = 70, /**< spi_device_upload_payload_not_empty */
   kTopEarlgreyPlicIrqIdSpiDeviceUploadPayloadOverflow = 71, /**< spi_device_upload_payload_overflow */
@@ -1242,7 +1242,7 @@ typedef enum top_earlgrey_alert_peripheral {
   kTopEarlgreyAlertPeripheralUart1 = 2, /**< uart1 */
   kTopEarlgreyAlertPeripheralUart2 = 3, /**< uart2 */
   kTopEarlgreyAlertPeripheralUart3 = 4, /**< uart3 */
-  kTopEarlgreyAlertPeripheralGpio = 5, /**< gpio */
+  kTopEarlgreyAlertPeripheralGpio0 = 5, /**< gpio0 */
   kTopEarlgreyAlertPeripheralSpiDevice = 6, /**< spi_device */
   kTopEarlgreyAlertPeripheralI2c0 = 7, /**< i2c0 */
   kTopEarlgreyAlertPeripheralI2c1 = 8, /**< i2c1 */
@@ -1296,7 +1296,7 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdUart1FatalFault = 1, /**< uart1_fatal_fault */
   kTopEarlgreyAlertIdUart2FatalFault = 2, /**< uart2_fatal_fault */
   kTopEarlgreyAlertIdUart3FatalFault = 3, /**< uart3_fatal_fault */
-  kTopEarlgreyAlertIdGpioFatalFault = 4, /**< gpio_fatal_fault */
+  kTopEarlgreyAlertIdGpio0FatalFault = 4, /**< gpio0_fatal_fault */
   kTopEarlgreyAlertIdSpiDeviceFatalFault = 5, /**< spi_device_fatal_fault */
   kTopEarlgreyAlertIdI2c0FatalFault = 6, /**< i2c0_fatal_fault */
   kTopEarlgreyAlertIdI2c1FatalFault = 7, /**< i2c1_fatal_fault */
@@ -1385,38 +1385,38 @@ extern const top_earlgrey_alert_peripheral_t
  * Pinmux Peripheral Input.
  */
 typedef enum top_earlgrey_pinmux_peripheral_in {
-  kTopEarlgreyPinmuxPeripheralInGpioGpio0 = 0, /**< Peripheral Input 0 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio1 = 1, /**< Peripheral Input 1 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio2 = 2, /**< Peripheral Input 2 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio3 = 3, /**< Peripheral Input 3 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio4 = 4, /**< Peripheral Input 4 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio5 = 5, /**< Peripheral Input 5 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio6 = 6, /**< Peripheral Input 6 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio7 = 7, /**< Peripheral Input 7 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio8 = 8, /**< Peripheral Input 8 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio9 = 9, /**< Peripheral Input 9 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio10 = 10, /**< Peripheral Input 10 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio11 = 11, /**< Peripheral Input 11 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio12 = 12, /**< Peripheral Input 12 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio13 = 13, /**< Peripheral Input 13 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio14 = 14, /**< Peripheral Input 14 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio15 = 15, /**< Peripheral Input 15 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio16 = 16, /**< Peripheral Input 16 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio17 = 17, /**< Peripheral Input 17 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio18 = 18, /**< Peripheral Input 18 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio19 = 19, /**< Peripheral Input 19 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio20 = 20, /**< Peripheral Input 20 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio21 = 21, /**< Peripheral Input 21 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio22 = 22, /**< Peripheral Input 22 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio23 = 23, /**< Peripheral Input 23 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio24 = 24, /**< Peripheral Input 24 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio25 = 25, /**< Peripheral Input 25 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio26 = 26, /**< Peripheral Input 26 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio27 = 27, /**< Peripheral Input 27 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio28 = 28, /**< Peripheral Input 28 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio29 = 29, /**< Peripheral Input 29 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio30 = 30, /**< Peripheral Input 30 */
-  kTopEarlgreyPinmuxPeripheralInGpioGpio31 = 31, /**< Peripheral Input 31 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio0 = 0, /**< Peripheral Input 0 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio1 = 1, /**< Peripheral Input 1 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio2 = 2, /**< Peripheral Input 2 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio3 = 3, /**< Peripheral Input 3 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio4 = 4, /**< Peripheral Input 4 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio5 = 5, /**< Peripheral Input 5 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio6 = 6, /**< Peripheral Input 6 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio7 = 7, /**< Peripheral Input 7 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio8 = 8, /**< Peripheral Input 8 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio9 = 9, /**< Peripheral Input 9 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio10 = 10, /**< Peripheral Input 10 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio11 = 11, /**< Peripheral Input 11 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio12 = 12, /**< Peripheral Input 12 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio13 = 13, /**< Peripheral Input 13 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio14 = 14, /**< Peripheral Input 14 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio15 = 15, /**< Peripheral Input 15 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio16 = 16, /**< Peripheral Input 16 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio17 = 17, /**< Peripheral Input 17 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio18 = 18, /**< Peripheral Input 18 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio19 = 19, /**< Peripheral Input 19 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio20 = 20, /**< Peripheral Input 20 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio21 = 21, /**< Peripheral Input 21 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio22 = 22, /**< Peripheral Input 22 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio23 = 23, /**< Peripheral Input 23 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio24 = 24, /**< Peripheral Input 24 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio25 = 25, /**< Peripheral Input 25 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio26 = 26, /**< Peripheral Input 26 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio27 = 27, /**< Peripheral Input 27 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio28 = 28, /**< Peripheral Input 28 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio29 = 29, /**< Peripheral Input 29 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio30 = 30, /**< Peripheral Input 30 */
+  kTopEarlgreyPinmuxPeripheralInGpio0Gpio31 = 31, /**< Peripheral Input 31 */
   kTopEarlgreyPinmuxPeripheralInI2c0Sda = 32, /**< Peripheral Input 32 */
   kTopEarlgreyPinmuxPeripheralInI2c0Scl = 33, /**< Peripheral Input 33 */
   kTopEarlgreyPinmuxPeripheralInI2c1Sda = 34, /**< Peripheral Input 34 */
@@ -1570,38 +1570,38 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselConstantZero = 0, /**< Tie constantly to zero */
   kTopEarlgreyPinmuxOutselConstantOne = 1, /**< Tie constantly to one */
   kTopEarlgreyPinmuxOutselConstantHighZ = 2, /**< Tie constantly to high-Z */
-  kTopEarlgreyPinmuxOutselGpioGpio0 = 3, /**< Peripheral Output 0 */
-  kTopEarlgreyPinmuxOutselGpioGpio1 = 4, /**< Peripheral Output 1 */
-  kTopEarlgreyPinmuxOutselGpioGpio2 = 5, /**< Peripheral Output 2 */
-  kTopEarlgreyPinmuxOutselGpioGpio3 = 6, /**< Peripheral Output 3 */
-  kTopEarlgreyPinmuxOutselGpioGpio4 = 7, /**< Peripheral Output 4 */
-  kTopEarlgreyPinmuxOutselGpioGpio5 = 8, /**< Peripheral Output 5 */
-  kTopEarlgreyPinmuxOutselGpioGpio6 = 9, /**< Peripheral Output 6 */
-  kTopEarlgreyPinmuxOutselGpioGpio7 = 10, /**< Peripheral Output 7 */
-  kTopEarlgreyPinmuxOutselGpioGpio8 = 11, /**< Peripheral Output 8 */
-  kTopEarlgreyPinmuxOutselGpioGpio9 = 12, /**< Peripheral Output 9 */
-  kTopEarlgreyPinmuxOutselGpioGpio10 = 13, /**< Peripheral Output 10 */
-  kTopEarlgreyPinmuxOutselGpioGpio11 = 14, /**< Peripheral Output 11 */
-  kTopEarlgreyPinmuxOutselGpioGpio12 = 15, /**< Peripheral Output 12 */
-  kTopEarlgreyPinmuxOutselGpioGpio13 = 16, /**< Peripheral Output 13 */
-  kTopEarlgreyPinmuxOutselGpioGpio14 = 17, /**< Peripheral Output 14 */
-  kTopEarlgreyPinmuxOutselGpioGpio15 = 18, /**< Peripheral Output 15 */
-  kTopEarlgreyPinmuxOutselGpioGpio16 = 19, /**< Peripheral Output 16 */
-  kTopEarlgreyPinmuxOutselGpioGpio17 = 20, /**< Peripheral Output 17 */
-  kTopEarlgreyPinmuxOutselGpioGpio18 = 21, /**< Peripheral Output 18 */
-  kTopEarlgreyPinmuxOutselGpioGpio19 = 22, /**< Peripheral Output 19 */
-  kTopEarlgreyPinmuxOutselGpioGpio20 = 23, /**< Peripheral Output 20 */
-  kTopEarlgreyPinmuxOutselGpioGpio21 = 24, /**< Peripheral Output 21 */
-  kTopEarlgreyPinmuxOutselGpioGpio22 = 25, /**< Peripheral Output 22 */
-  kTopEarlgreyPinmuxOutselGpioGpio23 = 26, /**< Peripheral Output 23 */
-  kTopEarlgreyPinmuxOutselGpioGpio24 = 27, /**< Peripheral Output 24 */
-  kTopEarlgreyPinmuxOutselGpioGpio25 = 28, /**< Peripheral Output 25 */
-  kTopEarlgreyPinmuxOutselGpioGpio26 = 29, /**< Peripheral Output 26 */
-  kTopEarlgreyPinmuxOutselGpioGpio27 = 30, /**< Peripheral Output 27 */
-  kTopEarlgreyPinmuxOutselGpioGpio28 = 31, /**< Peripheral Output 28 */
-  kTopEarlgreyPinmuxOutselGpioGpio29 = 32, /**< Peripheral Output 29 */
-  kTopEarlgreyPinmuxOutselGpioGpio30 = 33, /**< Peripheral Output 30 */
-  kTopEarlgreyPinmuxOutselGpioGpio31 = 34, /**< Peripheral Output 31 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio0 = 3, /**< Peripheral Output 0 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio1 = 4, /**< Peripheral Output 1 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio2 = 5, /**< Peripheral Output 2 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio3 = 6, /**< Peripheral Output 3 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio4 = 7, /**< Peripheral Output 4 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio5 = 8, /**< Peripheral Output 5 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio6 = 9, /**< Peripheral Output 6 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio7 = 10, /**< Peripheral Output 7 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio8 = 11, /**< Peripheral Output 8 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio9 = 12, /**< Peripheral Output 9 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio10 = 13, /**< Peripheral Output 10 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio11 = 14, /**< Peripheral Output 11 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio12 = 15, /**< Peripheral Output 12 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio13 = 16, /**< Peripheral Output 13 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio14 = 17, /**< Peripheral Output 14 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio15 = 18, /**< Peripheral Output 15 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio16 = 19, /**< Peripheral Output 16 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio17 = 20, /**< Peripheral Output 17 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio18 = 21, /**< Peripheral Output 18 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio19 = 22, /**< Peripheral Output 19 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio20 = 23, /**< Peripheral Output 20 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio21 = 24, /**< Peripheral Output 21 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio22 = 25, /**< Peripheral Output 22 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio23 = 26, /**< Peripheral Output 23 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio24 = 27, /**< Peripheral Output 24 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio25 = 28, /**< Peripheral Output 25 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio26 = 29, /**< Peripheral Output 26 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio27 = 30, /**< Peripheral Output 27 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio28 = 31, /**< Peripheral Output 28 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio29 = 32, /**< Peripheral Output 29 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio30 = 33, /**< Peripheral Output 30 */
+  kTopEarlgreyPinmuxOutselGpio0Gpio31 = 34, /**< Peripheral Output 31 */
   kTopEarlgreyPinmuxOutselI2c0Sda = 35, /**< Peripheral Output 32 */
   kTopEarlgreyPinmuxOutselI2c0Scl = 36, /**< Peripheral Output 33 */
   kTopEarlgreyPinmuxOutselI2c1Sda = 37, /**< Peripheral Output 34 */

@@ -158,17 +158,17 @@ void gpio_init(const dif_pinmux_t *pinmux, const dif_gpio_t *gpio) {
   for (int i = 0; i < num_gpio_pads; i++) {
     CHECK_DIF_OK(dif_pinmux_input_select(
         pinmux,
-        (dif_pinmux_index_t)(kTopEarlgreyPinmuxPeripheralInGpioGpio0 + i),
+        (dif_pinmux_index_t)(kTopEarlgreyPinmuxPeripheralInGpio0Gpio0 + i),
         (dif_pinmux_index_t)(first_gpio_pin + i)));
     CHECK_DIF_OK(dif_pinmux_output_select(
         pinmux, (dif_pinmux_index_t)(first_gpio_pin + i),
-        (dif_pinmux_index_t)(kTopEarlgreyPinmuxOutselGpioGpio0 + i)));
+        (dif_pinmux_index_t)(kTopEarlgreyPinmuxOutselGpio0Gpio0 + i)));
   }
 
   // Configure PINMUX an additional GPIO pin for the SiVal host to sync with
   // the device and indicate the round can end.
   CHECK_DIF_OK(dif_pinmux_input_select(
-      pinmux, (dif_pinmux_index_t)kTopEarlgreyPinmuxPeripheralInGpioGpio8,
+      pinmux, (dif_pinmux_index_t)kTopEarlgreyPinmuxPeripheralInGpio0Gpio8,
       (dif_pinmux_index_t)kTopEarlgreyPinmuxInselIor11));
 }
 

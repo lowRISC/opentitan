@@ -50,7 +50,7 @@ tl_if sram_ctrl_main__regs_tl_if(clk_main, rst_n);
 tl_if sram_ctrl_main__ram_tl_if(clk_main, rst_n);
 tl_if uart0_tl_if(clk_io_div4, rst_n);
 tl_if uart1_tl_if(clk_io_div4, rst_n);
-tl_if gpio_tl_if(clk_io_div4, rst_n);
+tl_if gpio0_tl_if(clk_io_div4, rst_n);
 tl_if spi_device_tl_if(clk_io_div4, rst_n);
 tl_if spi_host0_tl_if(clk_io, rst_n);
 tl_if rv_timer_tl_if(clk_io_div4, rst_n);
@@ -101,7 +101,7 @@ initial begin
     `DRIVE_CHIP_TL_DEVICE_IF(sram_ctrl_main__ram, sram_ctrl_main, ram_tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(uart0, uart0, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(uart1, uart1, tl, main, clk_i)
-    `DRIVE_CHIP_TL_DEVICE_IF(gpio, gpio, tl, main, clk_i)
+    `DRIVE_CHIP_TL_DEVICE_IF(gpio0, gpio0, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(spi_device, spi_device, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(spi_host0, spi_host0, tl, main, clk_i)
     `DRIVE_CHIP_TL_DEVICE_IF(rv_timer, rv_timer, tl, main, clk_i)

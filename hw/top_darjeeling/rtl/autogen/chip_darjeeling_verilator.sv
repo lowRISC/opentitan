@@ -57,38 +57,38 @@ module chip_darjeeling_verilator #(
       InputStd, // DIO spi_device_tpm_csb
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
-      BidirStd, // DIO gpio_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
+      BidirStd, // DIO gpio0_gpio
       BidirStd, // DIO i2c0_sda
       BidirStd, // DIO i2c0_scl
       BidirStd, // DIO spi_device_sd
@@ -147,38 +147,38 @@ module chip_darjeeling_verilator #(
       scan_role_pkg::DioPadSpiDevTpmCsLScanRole, // DIO spi_device_tpm_csb
       scan_role_pkg::DioPadSpiDevCsLScanRole, // DIO spi_device_csb
       scan_role_pkg::DioPadSpiDevClkScanRole, // DIO spi_device_sck
-      scan_role_pkg::DioPadGpio31ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio30ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio29ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio28ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio27ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio26ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio25ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio24ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio23ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio22ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio21ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio20ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio19ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio18ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio17ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio16ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio15ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio14ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio13ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio12ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio11ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio10ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio9ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio8ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio7ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio6ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio5ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio4ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio3ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio2ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio1ScanRole, // DIO gpio_gpio
-      scan_role_pkg::DioPadGpio0ScanRole, // DIO gpio_gpio
+      scan_role_pkg::DioPadGpio31ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio30ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio29ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio28ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio27ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio26ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio25ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio24ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio23ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio22ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio21ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio20ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio19ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio18ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio17ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio16ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio15ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio14ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio13ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio12ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio11ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio10ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio9ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio8ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio7ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio6ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio5ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio4ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio3ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio2ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio1ScanRole, // DIO gpio0_gpio
+      scan_role_pkg::DioPadGpio0ScanRole, // DIO gpio0_gpio
       scan_role_pkg::DioPadI2cSdaScanRole, // DIO i2c0_sda
       scan_role_pkg::DioPadI2cSclScanRole, // DIO i2c0_scl
       scan_role_pkg::DioPadSpiDevD3ScanRole, // DIO spi_device_sd

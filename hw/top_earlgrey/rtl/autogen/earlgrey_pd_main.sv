@@ -12,9 +12,9 @@
 
 module earlgrey_pd_main #(
   // Auto-inferred parameters
-  // parameters for gpio
-  parameter bit GpioGpioAsyncOn = 1,
-  parameter bit GpioGpioAsHwStrapsEn = 0,
+  // parameters for gpio0
+  parameter bit Gpio0GpioAsyncOn = 1,
+  parameter bit Gpio0GpioAsHwStrapsEn = 0,
   // parameters for spi_device
   parameter spi_device_pkg::sram_type_e SpiDeviceSramType = spi_device_pkg::SramType1r1w,
   // parameters for i2c0
@@ -278,9 +278,9 @@ module earlgrey_pd_main #(
   input  logic       cio_uart3_rx_p2d_i,
   output logic       cio_uart3_tx_d2p_o,
   output logic       cio_uart3_tx_en_d2p_o,
-  output logic [31:0] cio_gpio_gpio_d2p_o,
-  output logic [31:0] cio_gpio_gpio_en_d2p_o,
-  input  logic [31:0] cio_gpio_gpio_p2d_i,
+  output logic [31:0] cio_gpio0_gpio_d2p_o,
+  output logic [31:0] cio_gpio0_gpio_en_d2p_o,
+  input  logic [31:0] cio_gpio0_gpio_p2d_i,
   output logic [3:0] cio_spi_device_sd_d2p_o,
   output logic [3:0] cio_spi_device_sd_en_d2p_o,
   input  logic [3:0] cio_spi_device_sd_p2d_i,
@@ -460,7 +460,7 @@ module earlgrey_pd_main #(
   logic intr_uart3_rx_timeout;
   logic intr_uart3_rx_parity_err;
   logic intr_uart3_tx_empty;
-  logic [31:0] intr_gpio_gpio;
+  logic [31:0] intr_gpio0_gpio;
   logic intr_spi_device_upload_cmdfifo_not_empty;
   logic intr_spi_device_upload_payload_not_empty;
   logic intr_spi_device_upload_payload_overflow;
@@ -765,8 +765,8 @@ module earlgrey_pd_main #(
   tlul_pkg::tl_d2h_t       i2c1_tl_rsp;
   tlul_pkg::tl_h2d_t       i2c2_tl_req;
   tlul_pkg::tl_d2h_t       i2c2_tl_rsp;
-  tlul_pkg::tl_h2d_t       gpio_tl_req;
-  tlul_pkg::tl_d2h_t       gpio_tl_rsp;
+  tlul_pkg::tl_h2d_t       gpio0_tl_req;
+  tlul_pkg::tl_d2h_t       gpio0_tl_rsp;
   tlul_pkg::tl_h2d_t       spi_device_tl_req;
   tlul_pkg::tl_d2h_t       spi_device_tl_rsp;
   tlul_pkg::tl_h2d_t       rv_timer_tl_req;
@@ -1235,34 +1235,34 @@ module earlgrey_pd_main #(
   gpio #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[4]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
-    .GpioAsyncOn(GpioGpioAsyncOn),
-    .GpioAsHwStrapsEn(GpioGpioAsHwStrapsEn)
-  ) u_gpio (
+    .GpioAsyncOn(Gpio0GpioAsyncOn),
+    .GpioAsHwStrapsEn(Gpio0GpioAsHwStrapsEn)
+  ) u_gpio0 (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_io_div4_peri),
     .rst_ni(rstmgr_resets_i.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
 
     // Interrupts
-    .intr_gpio_o(intr_gpio_gpio),
+    .intr_gpio_o(intr_gpio0_gpio),
 
     // alert_handler[4]: fatal_fault
     .alert_tx_o(alert_tx[4]),
     .alert_rx_i(alert_rx[4]),
 
     // CIO inputs
-    .cio_gpio_i   (cio_gpio_gpio_p2d_i),
+    .cio_gpio_i   (cio_gpio0_gpio_p2d_i),
 
     // CIO outputs
-    .cio_gpio_o   (cio_gpio_gpio_d2p_o),
-    .cio_gpio_en_o(cio_gpio_gpio_en_d2p_o),
+    .cio_gpio_o   (cio_gpio0_gpio_d2p_o),
+    .cio_gpio_en_o(cio_gpio0_gpio_en_d2p_o),
 
     // Inter-module signals
     .strap_en_i(1'b0),
     .sampled_straps_o(),
     .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
     .racl_error_o(),
-    .tl_i(gpio_tl_req),
-    .tl_o(gpio_tl_rsp)
+    .tl_i(gpio0_tl_req),
+    .tl_o(gpio0_tl_rsp)
   );
 
   spi_device #(
@@ -2975,7 +2975,7 @@ module earlgrey_pd_main #(
     intr_spi_device_upload_payload_overflow,  // ID 71
     intr_spi_device_upload_payload_not_empty, // ID 70
     intr_spi_device_upload_cmdfifo_not_empty, // ID 69
-    intr_gpio_gpio,                           // IDs [37 +: 32]
+    intr_gpio0_gpio,                          // IDs [37 +: 32]
     intr_uart3_tx_empty,                      // ID 36
     intr_uart3_rx_parity_err,                 // ID 35
     intr_uart3_rx_timeout,                    // ID 34
@@ -3205,9 +3205,9 @@ module earlgrey_pd_main #(
     .tl_i2c2_o(i2c2_tl_req),
     .tl_i2c2_i(i2c2_tl_rsp),
 
-    // port: tl_gpio
-    .tl_gpio_o(gpio_tl_req),
-    .tl_gpio_i(gpio_tl_rsp),
+    // port: tl_gpio0
+    .tl_gpio0_o(gpio0_tl_req),
+    .tl_gpio0_i(gpio0_tl_rsp),
 
     // port: tl_spi_device
     .tl_spi_device_o(spi_device_tl_req),

@@ -7,7 +7,7 @@
 parameter uint NUM_ALERTS = 77;
 parameter string LIST_OF_ALERTS[NUM_ALERTS] = {
   "uart0_fatal_fault",
-  "gpio_fatal_fault",
+  "gpio0_fatal_fault",
   "spi_device_fatal_fault",
   "i2c0_fatal_fault",
   "rv_timer_fatal_fault",

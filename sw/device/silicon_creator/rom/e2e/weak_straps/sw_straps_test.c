@@ -52,8 +52,8 @@ status_t command_processor(ujson_t *uj) {
 bool test_main(void) {
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  CHECK_DIF_OK(dif_gpio_init(
+      mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR), &gpio));
 
   uint32_t strap = pinmux_testutils_read_straps(&pinmux, &gpio);
   LOG_INFO("Initial sw_strap=%d", strap);
