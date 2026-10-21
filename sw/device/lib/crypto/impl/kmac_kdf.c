@@ -23,7 +23,7 @@
 /**
  * KMAC cleanup guard.
  */
-static void kmac_flush_guard(uint32_t *dummy) {
+OT_USED static void kmac_flush_guard(uint32_t *dummy) {
   (void)dummy;
   (void)kmac_fifo_flush();
 }
@@ -31,7 +31,7 @@ static void kmac_flush_guard(uint32_t *dummy) {
 /**
  * Sideload cleanup guard.
  */
-static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
+OT_USED static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
   if (*is_sideloaded == kHardenedBoolTrue) {
     (void)keymgr_sideload_clear_kmac();
   }

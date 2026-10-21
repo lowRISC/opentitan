@@ -24,7 +24,7 @@ static const uint32_t kKeyMask[8] = {
 };
 
 // Global pointer to the current test.
-static const aes_test_t *test = NULL;
+static const aes_test_t *current_test = NULL;
 
 enum {
   kAesBlockBytes = 128 / 8,
@@ -241,14 +241,15 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming,
  * Test one-shot AES encryption.
  */
 static status_t encrypt_test(void) {
-  return run_encrypt(test, /*streaming=*/false);
+  return run_encrypt(current_test, /*streaming=*/false);
 }
 
 /**
  * Test one-shot AES decryption.
  */
 static status_t decrypt_test(void) {
-  return run_decrypt(test, /*streaming=*/false, kOtcryptoKeySecurityLevelLow);
+  return run_decrypt(current_test, /*streaming=*/false,
+                     kOtcryptoKeySecurityLevelLow);
 }
 
 /**
@@ -258,21 +259,23 @@ static status_t decrypt_test(void) {
  * as a fault injection check.
  */
 static status_t decrypt_high_test(void) {
-  return run_decrypt(test, /*streaming=*/false, kOtcryptoKeySecurityLevelHigh);
+  return run_decrypt(current_test, /*streaming=*/false,
+                     kOtcryptoKeySecurityLevelHigh);
 }
 
 /**
  * Test streaming AES encryption.
  */
 static status_t encrypt_streaming_test(void) {
-  return run_encrypt(test, /*streaming=*/true);
+  return run_encrypt(current_test, /*streaming=*/true);
 }
 
 /**
  * Test streaming AES decryption.
  */
 static status_t decrypt_streaming_test(void) {
-  return run_decrypt(test, /*streaming=*/true, kOtcryptoKeySecurityLevelLow);
+  return run_decrypt(current_test, /*streaming=*/true,
+                     kOtcryptoKeySecurityLevelLow);
 }
 
 /**
@@ -379,7 +382,7 @@ bool test_main(void) {
 
   for (size_t i = 0; i < ARRAYSIZE(kAesTests); i++) {
     LOG_INFO("Starting AES test %d of %d...", i + 1, ARRAYSIZE(kAesTests));
-    test = &kAesTests[i];
+    current_test = &kAesTests[i];
     EXECUTE_TEST(result, encrypt_test);
     EXECUTE_TEST(result, decrypt_test);
     EXECUTE_TEST(result, encrypt_streaming_test);

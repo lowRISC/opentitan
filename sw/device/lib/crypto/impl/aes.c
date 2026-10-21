@@ -296,7 +296,7 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(
 /**
  * Hardware cleanup guard.
  */
-static void hw_wipe_guard(uint32_t *dummy) {
+OT_USED static void hw_wipe_guard(uint32_t *dummy) {
   (void)dummy;
   (void)aes_clear();
   (void)keymgr_sideload_clear_aes();
@@ -382,10 +382,10 @@ static otcrypto_status_t otcrypto_aes_impl(
   // Construct the IV and check its length. ECB mode will ignore the IV, so in
   // this case it is left uninitialized.
   aes_block_t aes_iv;
-  if (launder32(aes_mode) == kAesCipherModeEcb) {
-    HARDENED_CHECK_EQ(aes_mode, kAesCipherModeEcb);
+  if (launder32(aes_mode) == kOtcryptoAesModeEcb) {
+    HARDENED_CHECK_EQ(aes_mode, kOtcryptoAesModeEcb);
   } else {
-    HARDENED_CHECK_NE(launder32(aes_mode), kAesCipherModeEcb);
+    HARDENED_CHECK_NE(launder32(aes_mode), kOtcryptoAesModeEcb);
 
     // The IV must be exactly one block long.
     if (launder32(iv->len) != kAesBlockNumWords) {
@@ -518,7 +518,7 @@ static otcrypto_status_t otcrypto_aes_impl(
   HARDENED_TRY(aes_verify_ctrl_aux_reg());
 
   // Deinitialize the AES block and update the IV (in ECB mode, skip the IV).
-  if (aes_mode == kAesCipherModeEcb) {
+  if (aes_mode == kOtcryptoAesModeEcb) {
     HARDENED_TRY(aes_end(NULL));
   } else {
     HARDENED_TRY(aes_end(&aes_iv));

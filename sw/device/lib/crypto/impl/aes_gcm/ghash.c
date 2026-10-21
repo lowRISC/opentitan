@@ -283,7 +283,7 @@ static void galois_mul_state_key(const ghash_block_t *state,
  *
  * @param block GHASH block to shred.
  */
-static void ghash_block_shred(ghash_block_t *block) {
+OT_USED static void ghash_block_shred(ghash_block_t *block) {
   hardened_memshred(block->data, kGhashBlockNumWords);
 }
 
@@ -292,7 +292,7 @@ static void ghash_block_shred(ghash_block_t *block) {
  *
  * @param tbl GHASH product table to shred.
  */
-static void ghash_table_shred(ghash_block_t (*tbl)[16]) {
+OT_USED static void ghash_table_shred(ghash_block_t (*tbl)[16]) {
   hardened_memshred((*tbl)[0].data, 16 * kGhashBlockNumWords);
 }
 
@@ -301,7 +301,7 @@ static void ghash_table_shred(ghash_block_t (*tbl)[16]) {
  *
  * @param ctx GHASH context to shred.
  */
-static void ghash_context_shred(ghash_context_t *ctx) {
+OT_USED static void ghash_context_shred(ghash_context_t *ctx) {
   hardened_memshred((uint32_t *)ctx,
                     sizeof(ghash_context_t) / sizeof(uint32_t));
 }
@@ -332,7 +332,7 @@ typedef struct ghash_scratch {
  *
  * @param scratch Temporaries to shred.
  */
-static void ghash_scratch_shred(ghash_scratch_t *scratch) {
+OT_USED static void ghash_scratch_shred(ghash_scratch_t *scratch) {
   hardened_memshred((uint32_t *)scratch,
                     sizeof(ghash_scratch_t) / sizeof(uint32_t));
 }

@@ -21,7 +21,7 @@
 /**
  * HMAC cleanup guard.
  */
-static void hmac_flush_guard(uint32_t *dummy) {
+OT_USED static void hmac_flush_guard(uint32_t *dummy) {
   (void)dummy;
   (void)hmac_fifo_flush();
 }
@@ -363,8 +363,8 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
   hmac_key_t hmac_key;
   otcrypto_hmac_key_mode_t key_mode_used = launder32(0);
 
-  void (*init_fn)(const hmac_key_t, hmac_ctx_t *) = NULL;
-  status_t (*init_redundant_fn)(hmac_key_t, hmac_ctx_t *) = NULL;
+  void (*init_fn)(const hmac_key_t *, hmac_ctx_t *) = NULL;
+  status_t (*init_redundant_fn)(const hmac_key_t *, hmac_ctx_t *) = NULL;
   size_t block_words = 0;
 
   switch (launder32(key->config.key_mode)) {
@@ -394,7 +394,7 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
   HARDENED_CHECK_EQ(launder32(key_mode_used), key->config.key_mode);
 
   HARDENED_TRY(hmac_key_construct(key, block_words, &hmac_key));
-  init_fn(hmac_key, &primary_ctx);
+  init_fn(&hmac_key, &primary_ctx);
 
   if (launder32(key->config.security_level) == kOtcryptoKeySecurityLevelLow) {
     HARDENED_CHECK_EQ(launder32(key->config.security_level),
@@ -404,11 +404,11 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
     // For a medium security level, call the init function a second time.
     HARDENED_CHECK_EQ(launder32(key->config.security_level),
                       kOtcryptoKeySecurityLevelMedium);
-    init_fn(hmac_key, &redundant_ctx);
+    init_fn(&hmac_key, &redundant_ctx);
   } else {
     // For a high security level, the redundant init is done using a
     // different implementation approach.
-    HARDENED_TRY(init_redundant_fn(hmac_key, &redundant_ctx));
+    HARDENED_TRY(init_redundant_fn(&hmac_key, &redundant_ctx));
   }
 
   ctx->data[kCtxSecurityLevelOffset] = (uint32_t)key->config.security_level;

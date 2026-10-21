@@ -156,7 +156,7 @@ OT_ASSERT_ENUM_VALUE(32, KMAC_PREFIX_PREFIX_FIELD_WIDTH);
 /**
  * Hardware wipe guard.
  */
-static void kmac_wipe_guard(uint32_t *dummy) {
+OT_USED static void kmac_wipe_guard(uint32_t *dummy) {
   (void)dummy;
   uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
   cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
@@ -650,8 +650,8 @@ static status_t kmac_process_msg_blocks(
 
   // Begin by writing a one byte at a time until the data is aligned.
   size_t i = 0;
-  for (; misalignment32_of((uintptr_t)(&message->data[i])) > 0 &&
-         i < message->len;
+  for (; i < message->len &&
+         misalignment32_of((uintptr_t)(&message->data[i])) > 0;
        i++) {
     HARDENED_TRY(wait_status_bit(KMAC_STATUS_FIFO_FULL_BIT, 0));
     abs_mmio_write8(kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET, message->data[i]);
