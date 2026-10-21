@@ -38,11 +38,11 @@ status_t hardened_memcpy(uint32_t *restrict dest, const uint32_t *restrict src,
     barrierw(byte_idx);
 
     // Calculate pointers.
-    void *src = (void *)launderw(src_addr + byte_idx);
-    void *dest = (void *)launderw(dest_addr + byte_idx);
+    void *src_word = (void *)launderw(src_addr + byte_idx);
+    void *dest_word = (void *)launderw(dest_addr + byte_idx);
 
     // Perform the copy, without performing a typed dereference operation.
-    write_32(read_32(src), dest);
+    write_32(read_32(src_word), dest_word);
   }
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, word_len);

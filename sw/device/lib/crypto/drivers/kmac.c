@@ -657,8 +657,8 @@ static status_t kmac_msg_fifo_write(const otcrypto_const_byte_buf_t *message) {
 
   // Begin by writing a one byte at a time until the data is aligned.
   size_t i = 0;
-  for (; misalignment32_of((uintptr_t)(&message->data[i])) > 0 &&
-         i < message->len;
+  for (; i < message->len &&
+         misalignment32_of((uintptr_t)(&message->data[i])) > 0;
        i++) {
     HARDENED_TRY(wait_status_bit(KMAC_STATUS_FIFO_FULL_BIT, 0));
     abs_mmio_write8(kBase + KMAC_MSG_FIFO_REG_OFFSET, message->data[i]);

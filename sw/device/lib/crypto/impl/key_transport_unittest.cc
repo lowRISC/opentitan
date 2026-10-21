@@ -463,13 +463,12 @@ TEST(KeyTransport, BlindedKeyMigrate) {
 
   // Modify version to something other than Version1.
   otcrypto_blinded_key_t bad_version_key = old_key;
-  *(otcrypto_lib_version_t *)&bad_version_key.config.version =
-      kOtcryptoLibVersion2;
+  bad_version_key.config.version = kOtcryptoLibVersion2;
   EXPECT_NOT_OK(otcrypto_blinded_key_migrate(&bad_version_key, &new_key));
 
   // Hardware-backed keys cannot be migrated.
   otcrypto_blinded_key_t hw_backed_key = old_key;
-  *(hardened_bool_t *)&hw_backed_key.config.hw_backed = kHardenedBoolTrue;
+  hw_backed_key.config.hw_backed = kHardenedBoolTrue;
   EXPECT_NOT_OK(otcrypto_blinded_key_migrate(&hw_backed_key, &new_key));
 }
 

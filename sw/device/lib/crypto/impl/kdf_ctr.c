@@ -142,13 +142,11 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   size_t required_byte_len = output_key_material->config.key_length;
   size_t required_word_len = ceil_div(required_byte_len, sizeof(uint32_t));
   size_t num_iterations = ceil_div(required_word_len, digest_word_len);
-  if (launder32(num_iterations) > UINT32_MAX ||
-      launder32(required_byte_len) > UINT32_MAX / 8) {
+  if (launder32(required_byte_len) > UINT32_MAX / 8) {
     // COVERAGE (FI CM) Redundant check; keyblob_ensure_xor_masked already
     // bounds key_length.
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_LE(num_iterations, UINT32_MAX);
   HARDENED_CHECK_LE(required_byte_len, UINT32_MAX / 8);
   uint32_t required_bit_len = __builtin_bswap32(required_byte_len * 8);
 

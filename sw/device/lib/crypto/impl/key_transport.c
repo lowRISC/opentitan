@@ -158,8 +158,7 @@ otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
   HARDENED_TRY(keymgr_dpe_generate_key_sw(diversification, &output));
 
   // Morph the key into a software-backed key.
-  otcrypto_key_config_t *config_mut = (otcrypto_key_config_t *)&key->config;
-  config_mut->hw_backed = kHardenedBoolFalse;
+  key->config.hw_backed = kHardenedBoolFalse;
 
   // Extract pointers to the shares.
   uint32_t *share0;
@@ -175,6 +174,7 @@ otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
 
   // Wipe the sensitive key material.
   HARDENED_TRY(hardened_memshred(output.share0, share_words));
+  HARDENED_TRY(hardened_memshred(output.share1, share_words));
 
   key->checksum = otcrypto_integrity_blinded_checksum(key);
 
@@ -273,7 +273,7 @@ static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
 /**
  * Hardware cleanup guard.
  */
-static void hw_wipe_guard(uint32_t *dummy) {
+OT_USED static void hw_wipe_guard(uint32_t *dummy) {
   (void)dummy;
   (void)aes_clear();
   (void)keymgr_dpe_sideload_clear_aes();
@@ -430,8 +430,7 @@ otcrypto_status_t otcrypto_key_unwrap(
     HARDENED_TRY(hardened_memshred(plaintext, ARRAYSIZE(plaintext)));
     return OTCRYPTO_BAD_ARGS;
   }
-  uint32_t *keyblob_length_mut = (uint32_t *)&unwrapped_key->keyblob_length;
-  *keyblob_length_mut = keyblob_words * sizeof(uint32_t);
+  unwrapped_key->keyblob_length = keyblob_words * sizeof(uint32_t);
   HARDENED_TRY(hardened_memcpy(unwrapped_key->keyblob,
                                plaintext + config_words + 2, keyblob_words));
   HARDENED_TRY(hardened_memshred(plaintext, ARRAYSIZE(plaintext)));

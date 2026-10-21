@@ -424,10 +424,9 @@ static const entropy_complex_config_t
 // passes to CSRNG. In this case, the check_completion argument should only be
 // true for non-generate commands issued to the SW register.
 OT_WARN_UNUSED_RESULT
-static status_t csrng_send_app_cmd(uint32_t base_address,
-                                   entropy_csrng_cmd_t cmd,
-                                   entropy_csrng_send_app_cmd_type_t cmd_type,
-                                   bool check_completion) {
+OT_USED static status_t csrng_send_app_cmd(
+    uint32_t base_address, entropy_csrng_cmd_t cmd,
+    entropy_csrng_send_app_cmd_type_t cmd_type, bool check_completion) {
   enum {
     // This is to maintain full compliance with NIST SP 800-90A, which requires
     // the max generate output to be constrained to gen < 2 ^ 12 bits or 0x800
@@ -619,7 +618,7 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
  * Enables the CSRNG block with the SW application and internal state registers
  * enabled, and FIPS flag forcing disabled.
  */
-static void csrng_configure(void) {
+OT_USED static void csrng_configure(void) {
   uint32_t reg =
       bitfield_field32_write(0, CSRNG_CTRL_ENABLE_FIELD, kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_SW_APP_ENABLE_FIELD,
@@ -674,7 +673,7 @@ static void edn_stop(uint32_t edn_address) {
  * @returns an error if the EDN error status bit is set.
  */
 OT_WARN_UNUSED_RESULT
-static status_t edn_ready_block(uint32_t edn_address) {
+OT_USED static status_t edn_ready_block(uint32_t edn_address) {
   uint32_t reg;
   uint32_t timeout = kEntropyPollReadyTimeout;
   do {
@@ -700,7 +699,7 @@ static status_t edn_ready_block(uint32_t edn_address) {
  * @returns error on failure.
  */
 OT_WARN_UNUSED_RESULT
-static status_t edn_configure(const edn_config_t *config) {
+OT_USED static status_t edn_configure(const edn_config_t *config) {
   // Determine which EDN instance this is based on the config pointer
   uint32_t base_address;
   if (config ==
@@ -806,7 +805,8 @@ void entropy_complex_stop_all(void) {
  * @return error on failure.
  */
 OT_WARN_UNUSED_RESULT
-static status_t entropy_src_configure(const entropy_src_config_t *config) {
+OT_USED static status_t entropy_src_configure(
+    const entropy_src_config_t *config) {
   if (config->bypass_conditioner != kMultiBitBool4False) {
     HARDENED_CHECK_NE(config->bypass_conditioner, kMultiBitBool4False);
     // Bypassing the conditioner is not supported.
@@ -926,7 +926,7 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
  * @return error on failure.
  */
 OT_WARN_UNUSED_RESULT
-static status_t entropy_src_check(const entropy_src_config_t *config) {
+OT_USED static status_t entropy_src_check(const entropy_src_config_t *config) {
   if (config->fips_enable != kMultiBitBool4True ||
       config->bypass_conditioner != kMultiBitBool4False ||
       config->route_to_firmware != kMultiBitBool4False) {
@@ -1061,7 +1061,7 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
  * @return error on failure.
  */
 OT_WARN_UNUSED_RESULT
-static status_t csrng_check(void) {
+OT_USED static status_t csrng_check(void) {
   uint32_t reg = abs_mmio_read32(csrng_base() + CSRNG_CTRL_REG_OFFSET);
   uint32_t enable = bitfield_field32_read(reg, CSRNG_CTRL_ENABLE_FIELD);
   if (enable == kMultiBitBool4True) {
@@ -1080,7 +1080,7 @@ static status_t csrng_check(void) {
  * @return error on failure.
  */
 OT_WARN_UNUSED_RESULT
-static status_t edn_check(const edn_config_t *config) {
+OT_USED static status_t edn_check(const edn_config_t *config) {
   // Determine which EDN instance this is based on the config pointer
   uint32_t base_address;
   if (config ==

@@ -312,7 +312,7 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
   // Array to hold T(i) from the previous loop iteration.
   uint32_t prev_t[kHmacMaxDigestWords];
 
-  for (uint8_t i = 0; i < num_iterations; i++) {
+  for (size_t i = 0; i < num_iterations; i++) {
     otcrypto_hmac_context_t ctx;
     HARDENED_TRY(otcrypto_hmac_init(&ctx, prk));
     if (launder32(i) != 0) {
@@ -324,7 +324,7 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
 
     HARDENED_TRY(otcrypto_hmac_update(&ctx, info));
 
-    uint8_t counter_val = i + 1;
+    uint8_t counter_val = (uint8_t)(i + 1);
     otcrypto_const_byte_buf_t counter_buf =
         OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, &counter_val, 1);
     HARDENED_TRY(otcrypto_hmac_update(&ctx, &counter_buf));
