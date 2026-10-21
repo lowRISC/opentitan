@@ -1180,6 +1180,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/base:csr",
         "//sw/device/lib/crypto",
         "//sw/device/lib/crypto/impl:state",
         "//sw/device/lib/crypto/include:crypto_hdrs",
@@ -1209,6 +1210,7 @@ opentitan_test(
         timeout = "long",
     ),
     deps = [
+        "//sw/device/lib/base:csr",
         "//sw/device/lib/crypto",
         "//sw/device/lib/crypto/include:crypto_hdrs",
         "//sw/device/lib/runtime:log",
