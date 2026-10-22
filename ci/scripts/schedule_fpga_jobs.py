@@ -247,7 +247,7 @@ def main():
             new_job["id"] += "" if split == 1 else "_{}".format(idx)
             jobs.append(new_job)
 
-    sched("Manufacturing", "cw340", "cw340_manuf", ["manuf", "cw340"])
+    sched("Manufacturing", "cw340", "cw340_manuf", ["manuf", "cw340"], split=2)
     sched("SiVal ROM_EXT", "cw340", "cw340_sival_rom_ext", ["cw340_sival_rom_ext"], split=4)
     sched("SiVal", "cw340", "cw340_sival", ["cw340_sival"])
     # There are too many ROM_EXT tests to fit in one job so we split out the ownership and rescue
