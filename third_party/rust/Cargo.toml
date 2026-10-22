@@ -53,6 +53,8 @@ humantime-serde = "1.1"
 indicatif = "0.17.6"
 inventory = "0.3.17"
 itertools = "0.13.0"
+libafl = { version = "0.15.4", default-features = false, features = ["std", "derive", "rand_trait", "prelude"] }
+libafl_bolts = { version = "0.15.4", default-features = false, features = ["std", "derive", "rand_trait", "prelude"] }
 log = "0.4"
 memchr = "2.6.4"
 memoffset = "0.9.0"
