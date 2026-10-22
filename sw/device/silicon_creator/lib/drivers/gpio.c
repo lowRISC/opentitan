@@ -14,11 +14,11 @@
 #include "hw/top/gpio_regs.h"  // Generated.
 
 static_assert(kGpioNumPins <= 32,
-              "This implementation assumes that the number of pins is less "
-              "than or equal to 32");
+              "This implementation assumes that the number of pins per each "
+              "GPIO instance is less than or equal to 32");
 
-static inline uint32_t gpio_base_addr(void) {
-  return dt_gpio_primary_reg_block(kDtGpio0);
+static inline uint32_t gpio_base_addr(dt_gpio_t gpio) {
+  return dt_gpio_primary_reg_block(gpio);
 }
 
 /**
@@ -30,6 +30,7 @@ static inline uint32_t gpio_base_addr(void) {
  * to perform only one write since it never needs to access both halves of a
  * register.
  *
+ * @param gpio GPIO instance.
  * @param reg_lower_offset Offset of the masked access register that corresponds
  * to the lower half of the actual register.
  * @param reg_upper_offset Offset of the masked access register that corresponds
@@ -38,9 +39,13 @@ static inline uint32_t gpio_base_addr(void) {
  * @param val Value to write.
  */
 OT_WARN_UNUSED_RESULT
-static rom_error_t gpio_masked_bit_write(ptrdiff_t reg_lower_offset,
+static rom_error_t gpio_masked_bit_write(dt_gpio_t gpio,
+                                         ptrdiff_t reg_lower_offset,
                                          ptrdiff_t reg_upper_offset,
                                          uint32_t index, bool val) {
+  if ((uint32_t)gpio >= (uint32_t)kDtGpioCount) {
+    return kErrorGpioInvalidInstance;
+  }
   if (index >= kGpioNumPins) {
     return kErrorGpioInvalidPin;
   }
@@ -51,32 +56,35 @@ static rom_error_t gpio_masked_bit_write(ptrdiff_t reg_lower_offset,
   // Since masked access writes to half of a register, index mod 16 gives the
   // index of the bit in the half-word mask.
   const uint32_t mask = 1u << (index % 16);
-  abs_mmio_write32(gpio_base_addr() + (uint32_t)offset,
+  abs_mmio_write32(gpio_base_addr(gpio) + (uint32_t)offset,
                    (mask << 16) | (val ? mask : 0u));
 
   return kErrorOk;
 }
 
 OT_WARN_UNUSED_RESULT
-rom_error_t gpio_read(gpio_pin_t pin, bool *state) {
+rom_error_t gpio_read(dt_gpio_t gpio, gpio_pin_t pin, bool *state) {
+  if ((uint32_t)gpio >= (uint32_t)kDtGpioCount) {
+    return kErrorGpioInvalidInstance;
+  }
   if (state == NULL || pin >= kGpioNumPins) {
     return kErrorGpioInvalidPin;
   }
 
   *state = bitfield_bit32_read(
-      abs_mmio_read32(gpio_base_addr() + GPIO_DATA_IN_REG_OFFSET), pin);
+      abs_mmio_read32(gpio_base_addr(gpio) + GPIO_DATA_IN_REG_OFFSET), pin);
 
   return kErrorOk;
 }
 
 OT_WARN_UNUSED_RESULT
-rom_error_t gpio_write(gpio_pin_t pin, bool state) {
-  return gpio_masked_bit_write(GPIO_MASKED_OUT_LOWER_REG_OFFSET,
+rom_error_t gpio_write(dt_gpio_t gpio, gpio_pin_t pin, bool state) {
+  return gpio_masked_bit_write(gpio, GPIO_MASKED_OUT_LOWER_REG_OFFSET,
                                GPIO_MASKED_OUT_UPPER_REG_OFFSET, pin, state);
 }
 
 OT_WARN_UNUSED_RESULT
-rom_error_t gpio_set_output_mode(gpio_pin_t pin, bool output) {
-  return gpio_masked_bit_write(GPIO_MASKED_OE_LOWER_REG_OFFSET,
+rom_error_t gpio_set_output_mode(dt_gpio_t gpio, gpio_pin_t pin, bool output) {
+  return gpio_masked_bit_write(gpio, GPIO_MASKED_OE_LOWER_REG_OFFSET,
                                GPIO_MASKED_OE_UPPER_REG_OFFSET, pin, output);
 }
