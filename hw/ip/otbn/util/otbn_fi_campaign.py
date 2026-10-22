@@ -562,6 +562,9 @@ def main() -> int:
 
     offsets = get_symbol_offsets(args.elf, sizes.keys())
 
+    with open(args.elf, "rb") as ef:
+        elf_sha256 = hashlib.sha256(ef.read()).hexdigest()
+    print(f"ELF SHA256: {elf_sha256}")
     print("Extracting DWARF info from ELF")
     dwarf_map = build_pc_to_line_map(args.elf)
 
@@ -652,6 +655,10 @@ def main() -> int:
         pc_counts = Counter(parse_trace_for_pcs(active_trace))
         if args.attack_mode == "bypass":
             baseline_insn_count = sum(pc_counts.values())
+        total_attack_points = sum(
+            min(MAX_PC_DEPTH, total) for total in pc_counts.values()
+        )
+        print(f"Total attack points: {total_attack_points}")
 
         if args.num_skips > 0:
             sampled_pcs = random.sample(
@@ -872,8 +879,6 @@ def main() -> int:
             f"Campaign Complete. Successful Attacks: {successful_attacks}", flush=True
         )
         if args.dump_json:
-            with open(args.elf, "rb") as ef:
-                elf_sha256 = hashlib.sha256(ef.read()).hexdigest()
             out_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR", ".")
             with open(os.path.join(out_dir, "fi_results.json"), "w") as f:
                 json.dump(
