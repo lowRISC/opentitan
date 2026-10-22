@@ -670,6 +670,10 @@ def main() -> int:
         "random_bg_secrets": parse_secret_args(args.random_bg_secret),
     }
 
+    with open(args.elf, "rb") as ef:
+        elf_sha256 = hashlib.sha256(ef.read()).hexdigest()
+    print(f"ELF SHA256: {elf_sha256}", flush=True)
+
     # Extract DWARF map
     dwarf_map = build_pc_to_line_map(args.elf)
 
@@ -772,8 +776,6 @@ def main() -> int:
     )
 
     if args.dump_json:
-        with open(args.elf, "rb") as ef:
-            elf_sha256 = hashlib.sha256(ef.read()).hexdigest()
         out_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR", ".")
         with open(os.path.join(out_dir, "tvla_accumulators.json"), "w") as f:
             json.dump(
