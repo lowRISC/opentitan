@@ -65,6 +65,7 @@ module rram_phy_rd
   // Error signals
   /////////////////////////////////
   logic valid_err, req_err, cmd_intg_err;
+  logic buf_state_err_any;
 
   /////////////////////////////////
   // Descrambling signals
@@ -129,6 +130,7 @@ module rram_phy_rd
   logic [NumRdBuf-1:0] buf_valid;
   logic [NumRdBuf-1:0] buf_verified;
   logic [NumRdBuf-1:0] buf_intg_err;
+  logic [NumRdBuf-1:0] buf_state_err;
   logic [NumRdBuf-1:0] buf_dependency;
   logic [NumRdBuf-1:0] buf_invalid_alloc;
   logic [NumRdBuf-1:0] buf_verified_alloc;
@@ -253,6 +255,7 @@ module rram_phy_rd
       .update_i       (update[i]),
       .invalidate_i   (buf_invalidate[i]),
       .verify_i       (verify[i]),
+      .read_i         (meta_q.buf_sel[i] & rd_buf_hit),
       .addr_i         (rram_word_addr),
       .part_i         (part_i),
       .descramble_en_i(descramble_en_i),
@@ -261,7 +264,8 @@ module rram_phy_rd
       .data_i         (rram_data_packed_intg),
       .err_i          (rd_fifo_q.err),
       .rd_buf_o       (rd_buf[i]),
-      .intg_err_o     (buf_intg_err[i])
+      .intg_err_o     (buf_intg_err[i]),
+      .state_err_o    (buf_state_err[i])
     );
   end
 
@@ -652,9 +656,11 @@ module rram_phy_rd
   // - a rd_buf hit
   // - a rd_buf_update as it is forwarded to the output
   assign data_valid_o = (rd_data_valid & rd_buf_update) | rd_buf_hit;
+  // Read buffer operation in an illegal buffer state
+  assign buf_state_err_any = |buf_state_err;
   // Select right bus word and return
   assign data_o     = (data_valid_o & ~data_err_o) ? muxed_data[meta_q.word_sel] : inv_data;
-  assign data_err_o = data_valid_o ? muxed_err | cmd_intg_err : 1'b0;
+  assign data_err_o = data_valid_o ? muxed_err | cmd_intg_err | buf_state_err_any : 1'b0;
 
   // The read module is idle when there are no outstanding transactions to process
   // (the meta fifo is empty) and no new requests enter the pipeline or no new shadow requests are
@@ -704,7 +710,7 @@ module rram_phy_rd
 
   // SEC_CM: PHY_RD_RSP.CTRL.INTEGRITY
   // Control flow error if any of the above errors is set
-  assign ctrl_err_o = valid_err | req_err | cmd_intg_err;
+  assign ctrl_err_o = valid_err | req_err | cmd_intg_err | buf_state_err_any;
 
   // If any fifo shows an integrity error
   assign fifo_err_o = |{meta_fifo_err, rd_fifo_err, mask_fifo_err};
