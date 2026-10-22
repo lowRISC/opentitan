@@ -608,6 +608,11 @@ status_t cryptolib_fi_p256_ecdh_impl(
   uint32_t share0[kPentestP256MaskedPrivateKeyWords];
   uint32_t share1[kPentestP256MaskedPrivateKeyWords];
 
+  otcrypto_word32_buf_t ss_share0_buf;
+  otcrypto_word32_buf_t ss_share1_buf;
+  memset(&ss_share0_buf, 0, sizeof(ss_share0_buf));
+  memset(&ss_share1_buf, 0, sizeof(ss_share1_buf));
+
   memset(unmasked_val, 0, kPentestP256MaskedPrivateKeyBytes);
   memcpy(unmasked_val, uj_input.private_key, P256_CMD_BYTES);
 
@@ -673,13 +678,15 @@ status_t cryptolib_fi_p256_ecdh_impl(
 
   uint32_t ss_share0[kPentestP256SharedSecretWords];
   uint32_t ss_share1[kPentestP256SharedSecretWords];
-  otcrypto_word32_buf_t ss_share0_buf =
+  ss_share0_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, ARRAYSIZE(ss_share0));
-  otcrypto_word32_buf_t ss_share1_buf =
+  ss_share1_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, ARRAYSIZE(ss_share1));
   uint32_t ss[kPentestP256SharedSecretWords];
   HARDENED_TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
                                            &ss_share1_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share0_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share1_buf));
   for (size_t i = 0; i < kPentestP256SharedSecretWords; i++) {
     ss[i] = ss_share0[i] ^ ss_share1[i];
   }
@@ -1010,6 +1017,11 @@ status_t cryptolib_fi_p384_ecdh_impl(
   uint32_t share0[kPentestP384MaskedPrivateKeyWords];
   uint32_t share1[kPentestP384MaskedPrivateKeyWords];
 
+  otcrypto_word32_buf_t ss_share0_buf;
+  otcrypto_word32_buf_t ss_share1_buf;
+  memset(&ss_share0_buf, 0, sizeof(ss_share0_buf));
+  memset(&ss_share1_buf, 0, sizeof(ss_share1_buf));
+
   memset(unmasked_val, 0, kPentestP384MaskedPrivateKeyBytes);
   memcpy(unmasked_val, uj_input.private_key, P384_CMD_BYTES);
 
@@ -1075,13 +1087,15 @@ status_t cryptolib_fi_p384_ecdh_impl(
 
   uint32_t ss_share0[kPentestP384SharedSecretWords];
   uint32_t ss_share1[kPentestP384SharedSecretWords];
-  otcrypto_word32_buf_t ss_share0_buf =
+  ss_share0_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, ARRAYSIZE(ss_share0));
-  otcrypto_word32_buf_t ss_share1_buf =
+  ss_share1_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, ARRAYSIZE(ss_share1));
   uint32_t ss[kPentestP384SharedSecretWords];
   HARDENED_TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
                                            &ss_share1_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share0_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share1_buf));
   for (size_t i = 0; i < kPentestP384SharedSecretWords; i++) {
     ss[i] = ss_share0[i] ^ ss_share1[i];
   }
