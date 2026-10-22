@@ -305,6 +305,20 @@ def build_pc_to_line_map(elf_path: str) -> Dict[int, Tuple[str, int]]:
     return pc_map
 
 
+def dump_dwarf_source_map(
+    elf_path: str, dwarf_map: Dict[int, Tuple[str, int]]
+) -> None:
+    """Prints DWARF PC-to-source-line disassembly map for Panopticon."""
+    sim = StandaloneSim()
+    load_elf(sim, elf_path)
+    for idx, insn in enumerate(sim.program):
+        pc = idx * 4
+        if pc in dwarf_map:
+            filepath, lineno = dwarf_map[pc]
+            fname = os.path.basename(filepath)
+            print(f"DWARF | 0x{pc:04x} | {fname}:{lineno} | {insn.disassemble(pc)}")
+
+
 def parse_trace_for_pcs(trace_file: str) -> List[int]:
     pc_list = []
     with open(trace_file, "r") as f:
@@ -564,9 +578,13 @@ def main() -> int:
 
     with open(args.elf, "rb") as ef:
         elf_sha256 = hashlib.sha256(ef.read()).hexdigest()
+    elf_bin_name = os.path.splitext(os.path.basename(args.elf))[0]
+    print(f"ELF Binary: {elf_bin_name}")
     print(f"ELF SHA256: {elf_sha256}")
     print("Extracting DWARF info from ELF")
     dwarf_map = build_pc_to_line_map(args.elf)
+    if args.dump_json:
+        dump_dwarf_source_map(args.elf, dwarf_map)
 
     shm_dir = "/dev/shm" if os.path.exists("/dev/shm") else None
     dmem_a_fd, dmem_a_path = tempfile.mkstemp(dir=shm_dir, suffix=".json")

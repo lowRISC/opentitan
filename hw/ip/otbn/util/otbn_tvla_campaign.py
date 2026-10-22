@@ -672,6 +672,8 @@ def main() -> int:
 
     with open(args.elf, "rb") as ef:
         elf_sha256 = hashlib.sha256(ef.read()).hexdigest()
+    elf_bin_name = os.path.splitext(os.path.basename(args.elf))[0]
+    print(f"ELF Binary: {elf_bin_name}", flush=True)
     print(f"ELF SHA256: {elf_sha256}", flush=True)
 
     # Extract DWARF map
