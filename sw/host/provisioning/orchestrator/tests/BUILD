@@ -87,7 +87,6 @@ orchestrator_cw340_test_settings_transition(
             "exclusive",
             "fpga",
             "manuf",
-            "skip_in_ci",
         ] + [fpga],
     )
     for fpga in [
@@ -115,7 +114,6 @@ orchestrator_cw340_test_settings_transition(
             "exclusive",
             "fpga",
             "manuf",
-            "skip_in_ci",
         ] + [fpga],
     )
     for fpga in [

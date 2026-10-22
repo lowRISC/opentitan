@@ -344,10 +344,7 @@ opentitan_binary(
             },
             needs_jtag = True,
             otp = ":otp_img_rom_exec_disabled_{}".format(init_lc_state.lower()),
-            tags = [
-                "manuf",
-                "skip_in_ci",
-            ],
+            tags = ["manuf"],
             target_lc_state = target_lc_state,  # will be expanded in test_cmd
             test_cmd = """
                 --bootstrap={firmware}
@@ -431,10 +428,7 @@ opentitan_binary(
             },
             needs_jtag = True,
             otp = ":otp_img_rom_exec_disabled_{}".format(lc_state.lower()),
-            tags = [
-                "manuf",
-                "skip_in_ci",
-            ],
+            tags = ["manuf"],
             test_cmd = """
                 --elf={sram_program}
             """,
