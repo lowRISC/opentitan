@@ -1139,7 +1139,7 @@ impl TransportWrapper {
 
         // Hold the JTAG TAP in reset for as long as the main reset is asserted. This works around
         // suspected corruption of the `dmi_jtag` clock domain crossing in `bkdr_loader`.
-        // See lowrisc/opentitan#30922 and lowrisc/opentitan#29555.
+        // See lowrisc/opentitan#30834.
         let trst = self.optional_pin_strapping("TRST")?;
         if let Some(trst) = &trst {
             log::info!("Asserting TRST strapping");
