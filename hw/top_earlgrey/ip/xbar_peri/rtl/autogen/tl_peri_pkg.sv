@@ -14,7 +14,7 @@ package tl_peri_pkg;
   localparam logic [31:0] ADDR_SPACE_I2C1                = 32'h 40090000;
   localparam logic [31:0] ADDR_SPACE_I2C2                = 32'h 400a0000;
   localparam logic [31:0] ADDR_SPACE_GPIO0               = 32'h 40040000;
-  localparam logic [31:0] ADDR_SPACE_SPI_DEVICE          = 32'h 40050000;
+  localparam logic [31:0] ADDR_SPACE_SPI_DEVICE          = 32'h 40060000;
   localparam logic [31:0] ADDR_SPACE_RV_TIMER            = 32'h 40100000;
   localparam logic [31:0] ADDR_SPACE_PWRMGR              = 32'h 40400000;
   localparam logic [31:0] ADDR_SPACE_RSTMGR              = 32'h 40410000;

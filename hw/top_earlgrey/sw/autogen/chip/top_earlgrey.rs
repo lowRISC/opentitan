@@ -95,7 +95,7 @@ pub const GPIO0_SIZE_BYTES: usize = 0x400;
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const SPI_DEVICE_BASE_ADDR: usize = 0x40050000;
+pub const SPI_DEVICE_BASE_ADDR: usize = 0x40060000;
 
 /// Peripheral size for spi_device in top earlgrey.
 ///

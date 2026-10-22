@@ -126,7 +126,7 @@ extern "C" {
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_EARLGREY_SPI_DEVICE_BASE_ADDR 0x40050000u
+#define TOP_EARLGREY_SPI_DEVICE_BASE_ADDR 0x40060000u
 
 /**
  * Peripheral size for spi_device in top earlgrey.

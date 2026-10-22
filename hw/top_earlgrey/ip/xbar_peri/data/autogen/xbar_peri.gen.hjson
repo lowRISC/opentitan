@@ -252,7 +252,7 @@
         {
           base_addrs:
           {
-            hart: 0x40050000
+            hart: 0x40060000
           }
           size_byte: 0x2000
         }
