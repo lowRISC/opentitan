@@ -52,10 +52,11 @@ static status_t test_on_demand_refresh(void) {
 
   if (bitfield_bit32_read(retram->creator.reset_reasons,
                           kRstmgrReasonPowerOn)) {
-    LOG_INFO("First boot (Cold): verifying certificates are NOT generated");
+    LOG_INFO("First boot (Cold): verifying ECDSA generated, ML-DSA deferred");
 
-    // In On-Demand mode, flash page should be empty on first boot.
-    TRY(is_flash_page_empty() ? OK_STATUS() : INTERNAL());
+    // ECDSA certificates are generated on first boot, so flash page is NOT
+    // empty.
+    TRY(!is_flash_page_empty() ? OK_STATUS() : INTERNAL());
 
     // In Hybrid mode, msg type should be kDiceCertGenIds on cold boot.
     TRY(msg->hdr.type == kDiceCertGenIds ? OK_STATUS() : INTERNAL());

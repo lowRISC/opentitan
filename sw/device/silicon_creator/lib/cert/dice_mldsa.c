@@ -359,12 +359,12 @@ OT_WARN_UNUSED_RESULT static rom_error_t dice_mldsa_derive_seed(
 }
 
 /**
- * Determines whether a DICE certificate needs to be regenerated.
+ * Determines whether an ML-DSA DICE certificate needs to be regenerated.
  *
  * @param cache_valid True if the cached certificate is valid.
  * @return True if the certificate needs to be regenerated.
  */
-static bool dice_cert_needs_regenerate(bool cache_valid) {
+static bool dice_mldsa_cert_needs_regenerate(bool cache_valid) {
   retention_sram_t *retram = retention_sram_get();
   if (bitfield_bit32_read(retram->creator.reset_reasons,
                           kRstmgrReasonWatchdog)) {
@@ -543,17 +543,24 @@ rom_error_t dice_attest_next_cdi_impl(
   hmac_digest_t *subject_mldsa_id = params->subject_mldsa_key_id_out;
   get_mldsa_id((const hmac_key_t *)&subject_mldsa_seed, subject_mldsa_id);
 
-  uint64_t expected_id = read_64(subject_ecdsa_pubkey_id->digest);
-  uint64_t cached_id;
+  uint64_t expected_ecdsa_id = read_64(subject_ecdsa_pubkey_id->digest);
+  uint64_t cached_ecdsa_id;
   HARDENED_RETURN_IF_ERROR(
-      dice_storage_get_key_id(params->key_id_index, &cached_id));
-  bool cache_valid = cached_id == expected_id;
-  bool regenerate = dice_cert_needs_regenerate(cache_valid);
+      dice_storage_get_key_id(params->key_id_index, &cached_ecdsa_id));
+  bool ecdsa_cache_valid = cached_ecdsa_id == expected_ecdsa_id;
+  bool ecdsa_regenerate = !ecdsa_cache_valid;
 
-  if (regenerate) {
-    cdi_hybrid_tbs_values_t tbs_values;
-    memset(&tbs_values, 0, sizeof(tbs_values));
+  uint64_t expected_mldsa_id = read_64(subject_mldsa_id->digest);
+  uint64_t cached_mldsa_id;
+  HARDENED_RETURN_IF_ERROR(
+      dice_storage_get_mldsa_key_id(params->key_id_index, &cached_mldsa_id));
+  bool mldsa_cache_valid = cached_mldsa_id == expected_mldsa_id;
+  bool mldsa_regenerate = dice_mldsa_cert_needs_regenerate(mldsa_cache_valid);
 
+  cdi_hybrid_tbs_values_t tbs_values;
+  memset(&tbs_values, 0, sizeof(tbs_values));
+
+  if (ecdsa_regenerate) {
     if (exts_size > kCdiHybridMaxRawPrivateExtensionsSizeBytes) {
       return kErrorCertInvalidSize;
     }
@@ -588,7 +595,9 @@ rom_error_t dice_attest_next_cdi_impl(
     memcpy(params->ecdsa_cert_out, params->mldsa_cert_out,
            generated_ecdsa_size);
     *params->ecdsa_cert_size_out = (uint32_t)generated_ecdsa_size;
+  }
 
+  if (mldsa_regenerate) {
     // Build ML-DSA Cert
     mldsa44_tiny_pub_from_seed(pubkey_buffer,
                                (const uint8_t *)subject_mldsa_seed.data);
@@ -653,7 +662,7 @@ static rom_error_t dice_attest_next_cdi(
  */
 static rom_error_t dice_mldsa_uds_pubkey_populate(void) {
   static_dice_mldsa_cdi.uds_pub_size = 0;
-  if (!dice_cert_needs_regenerate(/*cache_valid=*/true)) {
+  if (!dice_mldsa_cert_needs_regenerate(/*cache_valid=*/true)) {
     return kErrorOk;
   }
 
