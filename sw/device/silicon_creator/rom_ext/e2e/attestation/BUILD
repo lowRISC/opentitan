@@ -63,20 +63,8 @@ VARIANTS = {
         "local_defines": ["POST_PROVISIONING_TESTS"],
         "tags": ["manual"],
     },
-    "print_flash_storage_mldsa_certs": {
-        "manifest": "//sw/device/silicon_owner:manifest_mldsa_on_flash",
-        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_flash_storage_dice_mldsa",
-        "test_cmd": """
-            --bootstrap={firmware}
-            --timeout=60s
-            --test-mldsa
-            --assert-mldsa-flash-storage
-        """,
-        "variation": "dice_mldsa",
-    },
-    "print_flash_storage_mldsa_certs_overlapped": {
-        "manifest": "//sw/device/silicon_owner:manifest_mldsa_on_flash",
-        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_flash_storage_dice_mldsa",
+    "print_mldsa_certs_overlapped": {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a",
         "slot_spec": {
             # force bank B + 64K placement for overlapped slot
             "owner_slot_b": "0x90000",

@@ -44,10 +44,6 @@ struct Opts {
     #[arg(long)]
     post_provisioning_tests: bool,
 
-    /// Assert that ML-DSA certificates are handed over from Flash storage.
-    #[arg(long)]
-    assert_mldsa_flash_storage: bool,
-
     /// Assert that ML-DSA flash region is reported as occupied warning.
     #[arg(long)]
     assert_mldsa_overlapped: bool,
@@ -187,8 +183,13 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper, owner_history: &[
     log::info!("OpenSSL EC-DSA verification successful!");
 
     if opts.test_mldsa {
-        verify_mldsa_certs(&capture[0], uds.as_ref(), &cdi0, &cdi1)?;
-        check_mldsa_storage_mode(&capture[0], opts.assert_mldsa_flash_storage)?;
+        verify_mldsa_certs(
+            &capture[0],
+            uds.as_ref(),
+            &cdi0,
+            &cdi1,
+            opts.assert_mldsa_overlapped,
+        )?;
         check_mldsa_flash_overlapped(&capture[0], opts.assert_mldsa_overlapped)?;
     }
 
@@ -303,18 +304,6 @@ fn compare_certs_except_keys(cert1: &Certificate, cert2: &Certificate) -> Result
     Ok(())
 }
 
-fn check_mldsa_storage_mode(console_output: &str, assert_flash: bool) -> Result<()> {
-    let expected_mode = if assert_flash { "Flash" } else { "RAM" };
-    let rx = Regex::new(&format!(r"DICE cert storage mode: {expected_mode}"))?;
-    if !rx.is_match(console_output) {
-        return Err(anyhow!(
-            "Expected 'DICE cert storage mode: {expected_mode}' log message not found in console output"
-        ));
-    }
-    log::info!("DICE cert storage mode assertion passed ({expected_mode})!");
-    Ok(())
-}
-
 fn check_mldsa_flash_overlapped(console_output: &str, assert_overlapped: bool) -> Result<()> {
     let rx_overlapped = Regex::new("warning: ML-DSA flash region occupied")?;
     if assert_overlapped {
@@ -419,6 +408,7 @@ fn verify_mldsa_certs(
     uds_ecdsa: Option<&Certificate>,
     cdi0_ecdsa: &Certificate,
     cdi1_ecdsa: &Certificate,
+    assert_overlapped: bool,
 ) -> Result<()> {
     log::info!("ML-DSA verification requested. Performing verification...");
     let uds_mldsa_bin = uds_ecdsa
@@ -426,6 +416,20 @@ fn verify_mldsa_certs(
         .transpose()?;
     let cdi0_mldsa_bin = get_base64_blob(console_output, r"(?msR)CDI_0_MLDSA: (.*?)$")?;
     let cdi1_mldsa_bin = get_base64_blob(console_output, r"(?msR)CDI_1_MLDSA: (.*?)$")?;
+
+    if assert_overlapped {
+        if !cdi0_mldsa_bin.is_empty() {
+            bail!(
+                "Expected CDI_0 ML-DSA certificate to be omitted due to flash overlap, but found certificate data!"
+            );
+        }
+        if !cdi1_mldsa_bin.is_empty() {
+            bail!(
+                "Expected CDI_1 ML-DSA certificate to be omitted due to flash overlap, but found certificate data!"
+            );
+        }
+        return Ok(());
+    }
 
     let uds_mldsa = uds_mldsa_bin
         .as_ref()
