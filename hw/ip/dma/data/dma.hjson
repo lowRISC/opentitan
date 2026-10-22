@@ -128,7 +128,7 @@
       type: "status"
     }
     { name: "dma_error"
-      desc: "DMA error has occurred. DMA_STATUS.error_code register shows the details."
+      desc: "DMA error has occurred. ERROR_CODE register shows the details."
       type: "status"
     }
   ]
@@ -631,7 +631,6 @@
           name: "error"
           resval: 0x0
           hwaccess: "hrw"
-          hwqe: "true"
           desc: '''
                 Error occurred during the operation.
                 ERROR_CODE register denotes the source of the error.

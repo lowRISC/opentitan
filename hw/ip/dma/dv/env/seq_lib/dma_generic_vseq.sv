@@ -112,8 +112,17 @@ class dma_generic_vseq extends dma_base_vseq;
     csr_rd(ral.status, status);
     if (get_field_val(ral.status.error, status)) begin
       bit [31:0] error_code;
+      bit wr_status_first;
       csr_rd(ral.error_code, error_code);
       `uvm_info(`gfn, $sformatf("ERROR_CODE is 0x%0x", error_code), UVM_MEDIUM)
+      // A STATUS write that leaves the error flag set must not change ERROR_CODE.
+      `DV_CHECK_STD_RANDOMIZE_FATAL(wr_status_first)
+      if (wr_status_first) begin
+        bit [31:0] error_code_now;
+        csr_wr(ral.status, '0);
+        csr_rd(ral.error_code, error_code_now);
+        `DV_CHECK_EQ(error_code_now, error_code)
+      end
       // Bus errors may occur whether or not the configuration is valid; all others should be
       // only the product of an invalid configuration.
       error_code[DmaBusErr] = 1'b0;
@@ -123,6 +132,8 @@ class dma_generic_vseq extends dma_base_vseq;
       end
       ral.status.error.set(1'b1);
       csr_update(ral.status);
+      // Clearing the error flag also clears ERROR_CODE.
+      csr_rd_check(.ptr(ral.error_code), .compare_value(0));
     end
   endtask
 
