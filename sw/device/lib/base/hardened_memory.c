@@ -115,6 +115,7 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
   RANDOM_ORDER_HARDENED_CHECK_DONE(order);
 
   HARDENED_CHECK_EQ(count, word_len);
+  HARDENED_CHECK_NE(lhs_addr, rhs_addr);
   if (launder32(zeros) == 0) {
     HARDENED_CHECK_EQ(ones, UINT32_MAX);
     return kHardenedBoolTrue;
