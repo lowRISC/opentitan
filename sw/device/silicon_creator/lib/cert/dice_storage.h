@@ -22,7 +22,8 @@ extern "C" {
 
 enum {
   kDiceStoragePageDataSize = FLASH_CTRL_PARAM_BYTES_PER_PAGE -
-                             (2 * sizeof(uint64_t) + sizeof(hmac_digest_t)),
+                             (sizeof(hmac_digest_t) + 2 * sizeof(uint64_t) +
+                              2 * sizeof(uint64_t) + sizeof(hmac_digest_t)),
 };
 
 typedef struct dice_storage_header {
@@ -74,11 +75,15 @@ typedef enum dice_key_id_index {
  */
 typedef struct dice_storage_page {
   uint8_t data[kDiceStoragePageDataSize];
+  hmac_digest_t mldsa_digest;
+  uint64_t mldsa_cdi_key_ids[2];
   uint64_t cdi_key_ids[2];
   hmac_digest_t digest;
 } dice_storage_page_t;
 
 OT_ASSERT_MEMBER_OFFSET(dice_storage_page_t, data, 0);
+OT_ASSERT_MEMBER_OFFSET(dice_storage_page_t, mldsa_digest, 1952);
+OT_ASSERT_MEMBER_OFFSET(dice_storage_page_t, mldsa_cdi_key_ids, 1984);
 OT_ASSERT_MEMBER_OFFSET(dice_storage_page_t, cdi_key_ids, 2000);
 OT_ASSERT_MEMBER_OFFSET(dice_storage_page_t, digest, 2016);
 OT_ASSERT_SIZE(dice_storage_page_t, FLASH_CTRL_PARAM_BYTES_PER_PAGE);
@@ -129,15 +134,21 @@ OT_ASSERT_SIZE(dice_storage_page_t, FLASH_CTRL_PARAM_BYTES_PER_PAGE);
  * | | Padding: Padded to 936 B                                             | |
  * | +----------------------------------------------------------------------+ |
  * +--------------------------------------------------------------------------+
- * | Gap / Reserved (128 B)                                                   |
+ * | Gap / Reserved (80 B)                                                    |
  * +--------------------------------------------------------------------------+
- * | Metadata Block: dice_page_meta_t (48 B)                                  |
+ * | Metadata Block (96 B)                                                    |
+ * | +----------------------------------------------------------------------+ |
+ * | | mldsa_digest (32 B): Integrity check for PQC slots in data flash     | |
+ * | +----------------------------------------------------------------------+ |
+ * | | mldsa_cdi_1_key_id (8 B): Cache ID to skip regeneration              | |
+ * | +----------------------------------------------------------------------+ |
+ * | | mldsa_cdi_0_key_id (8 B): Cache ID to skip regeneration              | |
  * | +----------------------------------------------------------------------+ |
  * | | cdi_1_key_id (8 B): Cache ID to skip regeneration                    | |
  * | +----------------------------------------------------------------------+ |
  * | | cdi_0_key_id (8 B): Cache ID to skip regeneration                    | |
  * | +----------------------------------------------------------------------+ |
- * | | digest (32 B): Integrity check for corruption or interrupted write   | |
+ * | | digest (32 B): Integrity check for info page contents                | |
  * | +----------------------------------------------------------------------+ |
  * +--------------------------------------------------------------------------+
  */
@@ -198,6 +209,17 @@ rom_error_t dice_storage_get_key_id(dice_key_id_index_t index,
                                     uint64_t *key_id);
 
 /**
+ * Read an ML-DSA DICE key ID from flash.
+ *
+ * @param index Key ID index (CDI_0 or CDI_1).
+ * @param key_id Destination buffer.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_storage_get_mldsa_key_id(dice_key_id_index_t index,
+                                          uint64_t *key_id);
+
+/**
  * Initialize a slot in the page buffer with its default header.
  *
  * @param layout Slot layout.
@@ -217,7 +239,7 @@ void dice_storage_set_cert_size(const dice_storage_slot_t *layout,
                                 size_t cert_size, dice_storage_page_t *page);
 
 /**
- * Calculate the SHA256 digest of the certificates page.
+ * Calculate the SHA256 digest of the certificates info page.
  *
  * @param page Page data.
  * @param digest_out Destination buffer for the digest.
@@ -305,6 +327,20 @@ OT_WARN_UNUSED_RESULT
 rom_error_t dice_storage_write_cert_tlv_v1(const dice_storage_slot_v1_t *slot,
                                            const uint8_t *cert_data,
                                            size_t cert_size);
+
+/**
+ * Update the HMAC-SHA256 digest computation with the contents of a slot_v1 in
+ * data flash.
+ *
+ * Configures flash memory protection for the slot's data partition region as
+ * read-only, and hashes the slot's storage_size bytes into the digest.
+ * The caller must call `hmac_sha256_init()` before this.
+ *
+ * @param slot Slot template layout.
+ * @return Error code.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_storage_digest_slot_v1(const dice_storage_slot_v1_t *slot);
 
 /**
  * Check if the owner software manifest overlaps with rom_ext_size.

@@ -44,6 +44,15 @@ rom_error_t dice_storage_get_key_id(dice_key_id_index_t index,
       sizeof(uint64_t) / sizeof(uint32_t), key_id);
 }
 
+rom_error_t dice_storage_get_mldsa_key_id(dice_key_id_index_t index,
+                                          uint64_t *key_id) {
+  return flash_ctrl_info_read_zeros_on_read_error(
+      &kFlashCtrlInfoPageDiceCerts,
+      offsetof(dice_storage_page_t, mldsa_cdi_key_ids) +
+          index * sizeof(uint64_t),
+      sizeof(uint64_t) / sizeof(uint32_t), key_id);
+}
+
 void dice_storage_slot_init(const dice_storage_slot_t *layout,
                             dice_storage_page_t *page) {
   uint8_t *header_ptr = (uint8_t *)dice_storage_slot_header(layout, page);
@@ -73,6 +82,33 @@ rom_error_t dice_storage_check_digest(const dice_storage_page_t *page) {
     return kErrorDicePageCorrupted;
   }
 
+  return kErrorOk;
+}
+
+rom_error_t dice_storage_digest_slot_v1(const dice_storage_slot_v1_t *slot) {
+  size_t storage_size =
+      (uintptr_t)_rom_ext_size - (uintptr_t)_rom_ext_protected_size;
+  if (storage_size == 0) {
+    return kErrorOk;
+  }
+
+  uint32_t flash_offset = dice_storage_slot_v1_offset(slot);
+  uint32_t page_offset = flash_offset / FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+  size_t num_pages = storage_size / FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+
+  flash_ctrl_cfg_t cfg = flash_ctrl_data_default_cfg_get();
+  flash_ctrl_perms_t read_perms = {
+      .read = kMultiBitBool4True,
+      .write = kMultiBitBool4False,
+      .erase = kMultiBitBool4False,
+  };
+  flash_ctrl_data_region_protect(1, page_offset, (uint32_t)num_pages,
+                                 read_perms, cfg, kHardenedBoolFalse);
+
+  hmac_sha256_update(
+      (const void *)((uintptr_t)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
+                     flash_offset),
+      storage_size);
   return kErrorOk;
 }
 
