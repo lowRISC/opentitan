@@ -1555,6 +1555,7 @@
                   - a mismatch of command request integrity and command response integrity.
                   - a spurious valid.
                   - a spurious rram read request.
+                  - a read-buffer update, verify or hit in an illegal read-buffer state.
                   '''
           },
           { bits: "12",

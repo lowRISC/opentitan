@@ -1149,6 +1149,7 @@ The RRAM phy detected one of the following errors:
 - a mismatch of command request integrity and command response integrity.
 - a spurious valid.
 - a spurious rram read request.
+- a read-buffer update, verify or hit in an illegal read-buffer state.
 
 ### FAULT_STATUS . phy_rd_intg_err
 The RRAM phy encountered an integrity error. The shadow response was not identical to the original response.

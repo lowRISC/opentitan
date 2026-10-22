@@ -632,6 +632,9 @@ Each entry contains the following fields (`rd_buf_t`):
 
 An entry progresses through states: `Invalid` -> `Alloc` (address reserved, data not yet arrived) -> `Valid` (data stored after first RRAM read) -> `Verified` (shadow read matched, entry is trusted for future hits).
 If the shadow read does not match the `Valid` entry, the entry is invalidated and `rd_intg_err` is raised.
+Each operation on an entry is only legal in specific states: an update requires `Alloc`, a verify requires `Valid`, and a read-buffer hit requires `Valid` or `Verified`.
+Any other combination indicates a fault on the read pipeline control (e.g. on the `buf_sel`, `update` or `verify` fields of the metadata FIFO) and raises `phy_rd_ctrl_err`, a fatal error.
+The affected response is returned with an error instead of data.
 The fields `addr`, `part`, `descramble_en`, `ecc_en`, and `addr_xor_en` are retained in the entry specifically to replay an identical request for the shadow read.
 The verify pass still switches which PRINCE cipher instance descrambles the data.
 See [RRAM Scrambling](#rram-scrambling) for details.
