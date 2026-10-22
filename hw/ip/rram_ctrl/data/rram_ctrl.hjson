@@ -312,6 +312,12 @@
     { name: "PHY_RD_BUF.CTRL.INTEGRITY",
       desc: "If the verify operation does not return the same data as the original read, it is an error."
     }
+    { name: "PHY_RD_BUF.CTRL.CONSISTENCY",
+      desc: '''
+            Operations on a read-buffer are only legal in specific read-buffer states.
+            It is an error if an update is performed on a read-buffer that is not allocated, if a verify is performed on a read-buffer that is not valid, or if a read-buffer hit is served from a read-buffer that is neither valid nor verified.
+            '''
+    }
     { name: "FIFO.CTR.REDUN",
       desc: "The FIFO pointers of several FIFOs are implemented with duplicate counters."
     }
