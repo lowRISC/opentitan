@@ -885,7 +885,6 @@ module chip_englishbreakfast_cw305 #(
     .UsbdevStub(1'b1),
     .RvCoreIbexSecureIbex(0),
     .RomCtrlBootRomInitFile(BootRomInitFile),
-    .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .SramCtrlMainInstrExec(1),
     .PinmuxTargetCfg(PinmuxTargetCfg)
   ) top_englishbreakfast (

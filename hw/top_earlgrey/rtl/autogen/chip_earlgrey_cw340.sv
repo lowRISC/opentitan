@@ -914,7 +914,6 @@ module chip_earlgrey_cw340 #(
     .KeymgrDpeKmacEnMasking(1),
     .RvCoreIbexSecureIbex(1),
     .RomCtrlBootRomInitFile(BootRomInitFile),
-    .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .SramCtrlMainInstrExec(1),
     .PinmuxTargetCfg(PinmuxTargetCfg)
   ) top_earlgrey (

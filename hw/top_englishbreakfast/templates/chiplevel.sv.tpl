@@ -1282,8 +1282,9 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecAesAllowForcingMasks(1'b1),
     .SramCtrlMainInstrExec(1),
 % else:
+    ## Ibex keeps the default RegFileFF: RegFileFPGA is not reset, which breaks the
+    ## SecureIbex shadow ECC. Do not switch back before lowRISC/ibex#2539 is fixed.
     .RomCtrlBootRomInitFile(BootRomInitFile),
-    .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .SramCtrlMainInstrExec(1),
 % endif
     .PinmuxTargetCfg(PinmuxTargetCfg)
