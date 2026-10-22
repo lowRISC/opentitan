@@ -96,13 +96,6 @@
       act:     "req"
       package: "entropy_src_pkg"
     }
-    { struct:  "mubi8"
-      type:    "uni"
-      name:    "otp_en_csrng_sw_app_read"
-      act:     "rcv"
-      package: "prim_mubi_pkg"
-      default: "prim_mubi_pkg::MuBi8True"
-    }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_hw_debug_en"
@@ -117,7 +110,7 @@
       desc: '''
             CSRNG has an application interface for the software to interact with.
 
-            Note that for software to actually retrieve random numbers from this interface, the otp_en_csrng_sw_app_read input from OTP needs to be `kMultiBitBool8True` and !!CTRL.SW_APP_ENABLE needs to be set to `kMultiBitBool4True`.
+            Note that for software to actually retrieve random numbers from this interface, !!CTRL.SW_APP_ENABLE needs to be set to `kMultiBitBool4True`.
             Otherwise the !!GENBITS register always reads 0.
             '''
     }
@@ -142,8 +135,6 @@
       desc: '''
             CSRNG allows reading the internal state of the three CTR_DRBG instances corresponding to the three interfaces.
             This is useful for debugging and validation testing.
-
-            Note that for this to work the `otp_en_csrng_sw_app_read` input from OTP needs to be `kMultiBitBool8True`.
             '''
     }
     {
@@ -161,9 +152,6 @@
     }
     { name: "CONFIG.MUBI"
       desc: "Registers have multi-bit encoded fields."
-    }
-    { name: "INTERSIG.MUBI"
-      desc: "OTP signal used to enable software access to registers."
     }
     { name: "CMD_STAGE.FSM.SPARSE"
       desc: "The CSRNG command stage state machines use a sparse state encoding."
@@ -274,8 +262,6 @@
             mubi: true
             desc: '''
                   Setting this field to kMultiBitBool4True will enable reading from the !!GENBITS register.
-                  This application interface for software (register based) will be enabled
-                  only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
                   '''
           resval: false
         },
@@ -285,8 +271,6 @@
             mubi: true
             desc: '''
                   Setting this field to kMultiBitBool4True will enable reading from the !!INT_STATE_VAL register.
-                  Reading the internal state of the enable instances will be enabled
-                  only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
                   Also, the !!INT_STATE_READ_ENABLE bit of the selected instance needs to be set to true for this to work.
                   '''
           resval: false
@@ -485,7 +469,6 @@
                 a `clen` value of 4 requires this register to be read 16 times to get all
                 of the data out of the FIFO path.
                 Note that for !!GENBITS to be able to deliver random numbers, also !!CTRL.SW_APP_ENABLE needs to be set to `kMultiBitBool4True`.
-                In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
                 Otherwise, the register reads as 0.
                 '''
         }
@@ -519,7 +502,6 @@
                 Per-instance internal state read enable.
                 Defines whether the internal state of the corresponding instance is readable via !!INT_STATE_VAL.
                 Note that for !!INT_STATE_VAL to provide read access to the internal state, also !!CTRL.READ_INT_STATE needs to be set to `kMultiBitBool4True`.
-                In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
                 '''
           resval: 0x7
         }
@@ -566,7 +548,6 @@
                 can be re-written at this time (internal read pointer is also reset), and then
                 another internal state field can be read.
                 Note that for !!INT_STATE_VAL to provide read access to the internal state, also !!CTRL.READ_INT_STATE needs to be set to `kMultiBitBool4True`.
-                In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
                 Also, the !!INT_STATE_READ_ENABLE bit of the selected instance needs to be set to true for this to work.
                 Otherwise, the register reads as 0.
                 '''

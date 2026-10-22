@@ -12,11 +12,14 @@ volatile otcrypto_interface_t otcrypto = {
     .restore_icache = &otcrypto_restore_icache,
     .init = &otcrypto_init,
     .eval_exit = &otcrypto_eval_exit,
+    .show_status = &otcrypto_show_status,
 
     // Build info.
+    .module_name = &otcrypto_module_name,
     .build_info = &otcrypto_build_info,
     .lib_version = &otcrypto_lib_version,
     .version_decode = &otcrypto_version_decode,
+    .rom_version = &otcrypto_rom_version,
 
     // CMVP service indicator.
     .cmvp_service_indicator = &otcrypto_cmvp_service_indicator,
@@ -139,6 +142,7 @@ volatile otcrypto_interface_t otcrypto = {
     .cshake256 = &otcrypto_cshake256,
 
     // Ed25519 (blocking).
+    .ed25519_keygen = &otcrypto_ed25519_keygen,
     .ed25519_public_key_from_private =
         &otcrypto_ed25519_public_key_from_private,
     .ed25519_sign = &otcrypto_ed25519_sign,
@@ -146,6 +150,8 @@ volatile otcrypto_interface_t otcrypto = {
     .ed25519_verify = &otcrypto_ed25519_verify,
 
     // Ed25519 (async).
+    .ed25519_keygen_async_start = &otcrypto_ed25519_keygen_async_start,
+    .ed25519_keygen_async_finalize = &otcrypto_ed25519_keygen_async_finalize,
     .ed25519_public_key_from_private_async_start =
         &otcrypto_ed25519_public_key_from_private_async_start,
     .ed25519_public_key_from_private_async_finalize =
@@ -158,11 +164,16 @@ volatile otcrypto_interface_t otcrypto = {
 
     // X25519 (blocking).
     .x25519_keygen = &otcrypto_x25519_keygen,
+    .x25519_public_key_from_private = &otcrypto_x25519_public_key_from_private,
     .x25519 = &otcrypto_x25519,
 
     // X25519 (async).
     .x25519_keygen_async_start = &otcrypto_x25519_keygen_async_start,
     .x25519_keygen_async_finalize = &otcrypto_x25519_keygen_async_finalize,
+    .x25519_public_key_from_private_async_start =
+        &otcrypto_x25519_public_key_from_private_async_start,
+    .x25519_public_key_from_private_async_finalize =
+        &otcrypto_x25519_public_key_from_private_async_finalize,
     .x25519_async_start = &otcrypto_x25519_async_start,
     .x25519_async_finalize = &otcrypto_x25519_async_finalize,
 
@@ -172,6 +183,7 @@ volatile otcrypto_interface_t otcrypto = {
 
     // RSA key generation (blocking).
     .rsa_keygen = &otcrypto_rsa_keygen,
+    .rsa_keygen_deterministic = &otcrypto_rsa_keygen_deterministic,
     .rsa_keypair_from_cofactor = &otcrypto_rsa_keypair_from_cofactor,
 
     // RSA key generation (async).

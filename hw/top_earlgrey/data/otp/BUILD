@@ -226,9 +226,6 @@ otp_json(
             items = {
                 # Enable code execution from SRAM in PROD state.
                 "EN_SRAM_IFETCH": True,
-                # Cryptolib and chip-level tests require access to the CSRNG
-                # software interfaces.
-                "EN_CSRNG_SW_APP_READ": True,
                 # Use legacy behavior and disable late debug enable.
                 "DIS_RV_DM_LATE_DEBUG": True,
             },

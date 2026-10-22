@@ -26,10 +26,6 @@ module csrng
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
 
-  // OTP Interface
-  // SEC_CM: INTERSIG.MUBI
-  input  prim_mubi_pkg::mubi8_t otp_en_csrng_sw_app_read_i,
-
   // Life Cycle Broadcast Inputs
   input  lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
 
@@ -86,7 +82,6 @@ module csrng
     .hw2reg,
 
     // misc inputs
-    .otp_en_csrng_sw_app_read_i(otp_en_csrng_sw_app_read_i),
     .lc_hw_debug_en_i,
 
     // Entropy Interface

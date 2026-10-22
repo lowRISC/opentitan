@@ -173,6 +173,29 @@ run_binary(
     tool = "//sw/host/cryptotest/testvectors/parsers:wycheproof_x25519_parser",
 )
 
+# Number of random Ed25519 key pairs (each generates 1 sign + 1 verify vector).
+ED25519_RANDOM_COUNT = 64
+
+run_binary(
+    name = "random_ed25519_json",
+    srcs = [
+        "//sw/host/cryptotest/testvectors/data/schemas:ed25519_schema.json",
+    ],
+    outs = [":random_ed25519.json"],
+    args = [
+        "--dst",
+        "$(location :random_ed25519.json)",
+        "--schema",
+        "$(location //sw/host/cryptotest/testvectors/data/schemas:ed25519_schema.json)",
+        "--count",
+        str(ED25519_RANDOM_COUNT),
+    ],
+    # Do not cache these results in CI, so every run generates a new set of
+    # random test vectors.
+    tags = ["no-cache"],
+    tool = "//sw/host/cryptotest/testvectors/parsers:random_ed25519_generator",
+)
+
 # Number of tests per configuration (e.g. Verify P-256 SHA-256)
 ECDSA_RANDOM_COUNT = 128
 
@@ -899,6 +922,72 @@ WYCHEPROOF_RSA_OAEP_SIGN_SOURCES = {
     )
     for src_name, cryptotest_name, security_level in [
         ("rsa_3072_verify_hardcoded.hjson", "manual_rsa_3072", 3072),
+    ]
+]
+
+# Number of random RSA key pairs per (padding, security_level, hash_alg) target.
+# Each key pair generates 2 test vectors (sign+verify or encrypt+decrypt).
+RSA_RANDOM_COUNTS = {
+    2048: 8,
+    3072: 4,
+    4096: 2,
+}
+
+[
+    run_binary(
+        name = "random_rsa_{}_{}_{}_json".format(
+            padding_mode,
+            security_level,
+            hash_suffix,
+        ),
+        srcs = [
+            "//sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json",
+        ],
+        outs = [":random_rsa_{}_{}_{}.json".format(
+            padding_mode,
+            security_level,
+            hash_suffix,
+        )],
+        args = [
+            "--dst",
+            "$(location :random_rsa_{}_{}_{}.json)".format(
+                padding_mode,
+                security_level,
+                hash_suffix,
+            ),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:rsa_schema.json)",
+            "--count",
+            str(RSA_RANDOM_COUNTS[security_level]),
+            "--padding",
+            padding_mode,
+            "--security_level",
+            str(security_level),
+            "--hash_alg",
+            hash_alg,
+        ],
+        # Do not cache these results in CI, so every run generates a new set of
+        # random test vectors.
+        tags = ["no-cache"],
+        tool = "//sw/host/cryptotest/testvectors/parsers:random_rsa_generator",
+    )
+    for security_level in [
+        2048,
+        3072,
+        4096,
+    ]
+    for padding_mode in [
+        "pkcs1_1.5",
+        "pss",
+        "oaep",
+    ]
+    for hash_suffix, hash_alg in [
+        ("sha256", "sha-256"),
+        ("sha384", "sha-384"),
+        ("sha512", "sha-512"),
+        ("sha3_256", "sha3-256"),
+        ("sha3_384", "sha3-384"),
+        ("sha3_512", "sha3-512"),
     ]
 ]
 

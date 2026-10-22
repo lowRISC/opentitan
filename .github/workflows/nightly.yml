@@ -140,3 +140,37 @@ jobs:
         if: ${{ !cancelled() }}
         with:
           artifact-name: slow_otbn_crypto_tests-test-results
+
+  otbn_panopticon_nightly:
+    name: OTBN Panopticon Nightly (FI + TVLA)
+    runs-on: ubuntu-22.04
+    timeout-minutes: 180
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.branch || 'earlgrey_1.0.0' }}
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: "${{ secrets.BAZEL_CACHE_CREDS }}"
+      - name: Run the tests
+        run: |
+          ./bazelisk.sh test \
+            --cache_test_results=no \
+            --test_tag_filters=nightly \
+            //sw/otbn/crypto/tests/fi/... \
+            //sw/otbn/crypto/tests/tvla/...
+      - uses: actions/checkout@v6
+        if: ${{ !cancelled() }}
+        with:
+          ref: ${{ github.ref }}
+          path: "upload-branch"
+          fetch-depth: 1
+      - name: Publish Bazel test results
+        uses: ./upload-branch/.github/actions/publish-bazel-test-results
+        if: ${{ !cancelled() }}
+        with:
+          artifact-name: otbn_panopticon_nightly-test-results
+          upload-to-bucket: true
+          bucket-job-folder-name: "${{ github.job }}"
+          branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"

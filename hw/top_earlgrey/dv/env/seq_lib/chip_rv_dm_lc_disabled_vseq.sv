@@ -95,7 +95,6 @@ class chip_rv_dm_lc_disabled_vseq extends chip_stub_cpu_base_vseq;
     otp_write_hw_cfg1_partition(
       .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
       .en_sram_ifetch(prim_mubi_pkg::MuBi8False),
-      .en_csrng_sw_app_read(prim_mubi_pkg::MuBi8True),
       .dis_rv_dm_late_debug(dis_late_dbg));
   endfunction
 

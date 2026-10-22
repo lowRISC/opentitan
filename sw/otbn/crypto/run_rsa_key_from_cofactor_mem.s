@@ -36,8 +36,13 @@ rsa_d1:
  * work buffer. */
 .balign 32
 .globl rsa_cofactor
+.globl rsa_cofactor0
 rsa_cofactor:
-.zero 512
+rsa_cofactor0:
+.zero 256
+.globl rsa_cofactor1
+rsa_cofactor1:
+.zero 256
 
 /* Montgomery constant R^2 (up to 2048 bits). */
 .balign 32

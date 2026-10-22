@@ -125,8 +125,7 @@ interface csrng_cov_if (
   endgroup : csrng_sfifo_depth_cross_cg
 
 
-  covergroup csrng_cfg_cg with function sample(bit [7:0] otp_en_cs_sw_app_read,
-                                               bit [3:0] lc_hw_debug_en,
+  covergroup csrng_cfg_cg with function sample(bit [3:0] lc_hw_debug_en,
                                                mubi4_t   sw_app_enable,
                                                mubi4_t   read_int_state,
                                                bit       regwen,
@@ -140,11 +139,6 @@ interface csrng_cov_if (
       bins mubi_false = { MuBi4False };
       bins mubi_inval = { [0:$] } with (!(item inside { MuBi4True, MuBi4False }));
     }
-    cp_sw_app_read:    coverpoint otp_en_cs_sw_app_read {
-      bins mubi_true  = { MuBi8True };
-      bins mubi_false = { MuBi8False };
-      bins mubi_inval = { [0:$] } with (!(item inside { MuBi8True, MuBi8False }));
-    }
     cp_lc_hw_debug_en: coverpoint lc_hw_debug_en {
       bins lc_on    = { lc_ctrl_pkg::On };
       bins lc_off   = { lc_ctrl_pkg::Off };
@@ -153,8 +147,6 @@ interface csrng_cov_if (
     cp_sw_app_enable:  coverpoint sw_app_enable;
     cp_read_int_state: coverpoint read_int_state;
     cp_regwen:         coverpoint regwen;
-
-    sw_app_read_sw_app_enable_cross: cross cp_sw_app_read, cp_sw_app_enable;
   endgroup : csrng_cfg_cg
 
   // Return a queue of masks that gives all the masks with just a single bit set, with num_hw_apps
@@ -389,16 +381,15 @@ interface csrng_cov_if (
     cmd_flag0_transition_app_cross: cross cp_flags_transition, cp_app;
   endgroup : csrng_cmds_cg
 
-  // Covergroup to sample otp_en_cs_sw_app_read feature
-  covergroup csrng_otp_en_sw_app_read_cg with function sample(
+  // Covergroup to sample SW reads of GENBITS and INT_STATE_VAL
+  covergroup csrng_sw_app_read_cg with function sample(
     bit read_int_state_val_reg,
     bit read_genbits_reg,
-    bit [7:0] otp_en_cs_sw_app_read,
     bit [3:0] read_int_state,
     bit [3:0] sw_app_enable
   );
     option.per_instance  = 1;
-    option.name          = "csrng_otp_en_sw_app_read_cg";
+    option.name          = "csrng_sw_app_read_cg";
     // Coverpoint for register read to INT_STATE_VAL
     cp_read_int_state_val: coverpoint read_int_state_val_reg {
       bins read = { 1'b1 };
@@ -406,12 +397,6 @@ interface csrng_cov_if (
     // Coverpoint for register read to GENBITS
     cp_read_genbits_reg: coverpoint read_genbits_reg {
       bins read = { 1'b1 };
-    }
-    // Cover values of OTP_EN_CSRNG_SW_APP_READ signal
-    cp_otp_en_cs_sw_app_read: coverpoint otp_en_cs_sw_app_read {
-      bins mubi_true  = { MuBi8True };
-      bins mubi_false = { MuBi8False };
-      bins mubi_inval = { [0:$] } with (!(item inside { MuBi8True, MuBi8False }));
     }
     // Cover values of field CTRL.SW_APP_ENABLE
     cp_sw_app_read: coverpoint sw_app_enable {
@@ -425,15 +410,6 @@ interface csrng_cov_if (
       bins mubi_false = { MuBi4False };
       bins mubi_inval = { [0:$] } with (!(item inside { MuBi4True, MuBi4False }));
     }
-    // Cover a scenario where INT_STATE_VAL register is read with a combination of
-    // CTRL.READ_INT_STATE field and OTP_EN_CS_SW_APP_READ pin values
-    cross_read_int_state_x_otp_en_cs_sw_app_read: cross cp_read_int_state,
-                                             cp_otp_en_cs_sw_app_read iff (read_int_state_val_reg);
-
-    // Cover a scenario where GENBITS register is read with a combination of
-    // CTRL.SW_APP_ENABLE field and OTP_EN_CS_SW_APP_READ pin values
-    cross_sw_app_enable_x_otp_en_cs_sw_app_read: cross cp_sw_app_read, cp_otp_en_cs_sw_app_read
-                                                    iff(read_genbits_reg);
   endgroup
 
   covergroup csrng_genbits_cg with function sample(bit genbits_fips,
@@ -551,7 +527,7 @@ interface csrng_cov_if (
   `DV_FCOV_INSTANTIATE_CG(csrng_err_code_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_err_code_test_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_recov_alert_sts_cg, en_full_cov)
-  `DV_FCOV_INSTANTIATE_CG(csrng_otp_en_sw_app_read_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(csrng_sw_app_read_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_genbits_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_state_db_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(csrng_es_sample_cg, en_full_cov)
@@ -574,8 +550,7 @@ interface csrng_cov_if (
 
   // Sample functions needed for xcelium
   function automatic void cg_cfg_sample(csrng_env_cfg cfg);
-    csrng_cfg_cg_inst.sample(cfg.otp_en_cs_sw_app_read,
-                             cfg.lc_hw_debug_en,
+    csrng_cfg_cg_inst.sample(cfg.lc_hw_debug_en,
                              cfg.sw_app_enable,
                              cfg.read_int_state,
                              cfg.regwen,
@@ -617,17 +592,15 @@ interface csrng_cov_if (
     csrng_recov_alert_sts_cg_inst.sample(recov_alert_bit_e'($clog2(recov_alert)));
   endfunction
 
-  function automatic void cg_csrng_otp_en_sw_app_read_sample(
+  function automatic void cg_csrng_sw_app_read_sample(
     bit read_int_state_val_reg,
     bit read_genbits_reg,
-    bit [7:0] otp_en_cs_sw_app_read,
     bit [3:0] read_int_state,
     bit [3:0] sw_app_enable
   );
-    csrng_otp_en_sw_app_read_cg_inst.sample(
+    csrng_sw_app_read_cg_inst.sample(
       read_int_state_val_reg,
       read_genbits_reg,
-      otp_en_cs_sw_app_read,
       read_int_state,
       sw_app_enable
     );

@@ -206,7 +206,6 @@ pub enum DaiParam {
     DeviceId,
     ManufState,
     EnSramIfetch,
-    EnCsrngSwAppRead,
     // SECRET0
     TestUnlockToken,
     TestExitToken,
@@ -241,10 +240,6 @@ impl DaiParam {
     pub const EN_SRAM_IFETCH: OtpParamMmap = OtpParamMmap {
         byte_addr: dif::OTP_CTRL_PARAM_EN_SRAM_IFETCH_OFFSET,
         size: dif::OTP_CTRL_PARAM_EN_SRAM_IFETCH_SIZE,
-    };
-    pub const EN_CSRNG_SW_APP_READ: OtpParamMmap = OtpParamMmap {
-        byte_addr: dif::OTP_CTRL_PARAM_EN_CSRNG_SW_APP_READ_OFFSET,
-        size: dif::OTP_CTRL_PARAM_EN_CSRNG_SW_APP_READ_SIZE,
     };
     pub const TEST_UNLOCK_TOKEN: OtpParamMmap = OtpParamMmap {
         byte_addr: dif::OTP_CTRL_PARAM_TEST_UNLOCK_TOKEN_OFFSET,
@@ -287,7 +282,6 @@ impl DaiParam {
             Self::DeviceId => Self::DEVICE_ID,
             Self::ManufState => Self::MANUF_STATE,
             Self::EnSramIfetch => Self::EN_SRAM_IFETCH,
-            Self::EnCsrngSwAppRead => Self::EN_CSRNG_SW_APP_READ,
             Self::TestUnlockToken => Self::TEST_UNLOCK_TOKEN,
             Self::TestExitToken => Self::TEST_EXIT_TOKEN,
             Self::NvmAddrKeySeed => Self::NVM_ADDR_KEY_SEED,
@@ -307,7 +301,6 @@ impl DaiParam {
             Self::DeviceId => Partition::HW_CFG0,
             Self::ManufState => Partition::HW_CFG0,
             Self::EnSramIfetch => Partition::HW_CFG0,
-            Self::EnCsrngSwAppRead => Partition::HW_CFG0,
             Self::TestUnlockToken => Partition::SECRET0,
             Self::TestExitToken => Partition::SECRET0,
             Self::NvmAddrKeySeed => Partition::SECRET1,

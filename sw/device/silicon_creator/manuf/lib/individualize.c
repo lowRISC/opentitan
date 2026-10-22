@@ -28,11 +28,6 @@ typedef struct hw_cfg1_settings {
    */
   multi_bit_bool_t en_sram_ifetch;
   /**
-   * This input efuse is used to enable access to the NIST internal state per
-   * instance.
-   */
-  multi_bit_bool_t en_csrng_sw_app_read;
-  /**
    * This efuse is to disable the RV_DM late debug enable behavior
    */
   multi_bit_bool_t dis_rv_dm_late_debug;
@@ -43,10 +38,8 @@ typedef struct hw_cfg1_settings {
 //
 // - en_sram_ifetch: required to enable SRAM code execution during
 //   manufacturing.
-// - en_csrng_sw_app_read: required to be able to extract output from CSRNG.
 const hw_cfg1_settings_t kHwCfg1Settings = {
     .en_sram_ifetch = kMultiBitBool8True,
-    .en_csrng_sw_app_read = kMultiBitBool8True,
     .dis_rv_dm_late_debug = kMultiBitBool8True,
 };
 
@@ -60,8 +53,6 @@ OT_WARN_UNUSED_RESULT
 static status_t hw_cfg1_enable_knobs_set(const dif_otp_ctrl_t *otp_ctrl) {
   uint32_t val =
       bitfield_field32_write(0, kSramFetch, kHwCfg1Settings.en_sram_ifetch);
-  val = bitfield_field32_write(val, kCsrngAppRead,
-                               kHwCfg1Settings.en_csrng_sw_app_read);
   val = bitfield_field32_write(val, kDisRvDmLateDebug,
                                kHwCfg1Settings.dis_rv_dm_late_debug);
 

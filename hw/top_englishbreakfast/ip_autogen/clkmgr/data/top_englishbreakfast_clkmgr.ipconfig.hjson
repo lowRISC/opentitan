@@ -236,6 +236,7 @@
     exported_clks: {}
     number_of_clock_groups: 8
     with_alert_handler: false
+    primary_clk: io_div4
     topname: englishbreakfast
     uniquified_modules: {}
     ext_clk_bypass: true

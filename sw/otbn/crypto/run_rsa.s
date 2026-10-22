@@ -29,6 +29,9 @@
 .equ MODE_RSA_2048_KEYGEN, 0x799
 .equ MODE_RSA_3072_KEYGEN, 0x4e0
 .equ MODE_RSA_4096_KEYGEN, 0x3ca
+.equ MODE_RSA_2048_KEYGEN_DET, 0x643
+.equ MODE_RSA_3072_KEYGEN_DET, 0x426
+.equ MODE_RSA_4096_KEYGEN_DET, 0x734
 
 # Encryption/Signature modes
 
@@ -66,6 +69,9 @@
 .globl MODE_RSA_2048_KEYGEN
 .globl MODE_RSA_3072_KEYGEN
 .globl MODE_RSA_4096_KEYGEN
+.globl MODE_RSA_2048_KEYGEN_DET
+.globl MODE_RSA_3072_KEYGEN_DET
+.globl MODE_RSA_4096_KEYGEN_DET
 .globl MODE_RSA_512_MODEXP
 .globl MODE_RSA_512_MODEXP_F4
 .globl MODE_RSA_1024_MODEXP
@@ -157,6 +163,15 @@ start:
   addi    x3, x0, MODE_RSA_4096_MODEXP_E
   beq     x2, x3, rsa_4096_modexp_e
 
+  addi    x3, x0, MODE_RSA_2048_KEYGEN_DET
+  beq     x2, x3, rsa_2048_keygen_det
+
+  addi    x3, x0, MODE_RSA_3072_KEYGEN_DET
+  beq     x2, x3, rsa_3072_keygen_det
+
+  addi    x3, x0, MODE_RSA_4096_KEYGEN_DET
+  beq     x2, x3, rsa_4096_keygen_det
+
   /* Unsupported mode; fail. */
   unimp
   unimp
@@ -189,6 +204,19 @@ rsa_4096_keygen:
 
   /* Tail-call keygen. */
   jal     x0, do_keygen
+  unimp
+
+rsa_2048_keygen_det:
+  li      x30, 8
+  jal     x0, do_keygen_det
+
+rsa_3072_keygen_det:
+  li      x30, 12
+  jal     x0, do_keygen_det
+
+rsa_4096_keygen_det:
+  li      x30, 16
+  jal     x0, do_keygen_det
 
 rsa_512_modexp:
   /* Enable message blinding. */
@@ -362,9 +390,10 @@ do_keygen:
   jal x1, rsa_keygen
 
   # Restore mode indicator from the scratchpad.
-  la x16, mode
   la x17, mode_tmp
   lw x18, 0(x17)
+_do_keygen_set_mode:
+  la x16, mode
   sw x18, 0(x16)
 
   # Move the Miller-Rabin counter from the scratchpad.
@@ -387,6 +416,24 @@ do_keygen:
   sw       x3, 0(x2)
 
   ecall
+  unimp
+
+do_keygen_det:
+  la x16, mode
+  la x17, mode_tmp
+  lw x18, 0(x16)
+  sw x18, 0(x17)
+
+  jal x1, rsa_keygen_det
+
+  li x16, 8
+  addi x18, x0, MODE_RSA_2048_KEYGEN
+  beq x30, x16, _do_keygen_set_mode
+  li x16, 12
+  addi x18, x0, MODE_RSA_3072_KEYGEN
+  beq x30, x16, _do_keygen_set_mode
+  addi x18, x0, MODE_RSA_4096_KEYGEN
+  jal x0, _do_keygen_set_mode
 
 /**
  * Precompute constants and call modular exponentiation.

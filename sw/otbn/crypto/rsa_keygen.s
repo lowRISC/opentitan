@@ -36,6 +36,7 @@
 
 .text
 .globl rsa_keygen
+.globl rsa_keygen_det
 .globl gen_d
 
 # Exposed for testing only.
@@ -56,6 +57,11 @@ rsa_keygen:
   la x16, nlimbs_tmp
   sw x30, 0(x16)
 
+_rsa_keygen_restart:
+  # Load the limb count.
+  la x16, nlimbs_tmp
+  lw x30, 0(x16)
+
   # Generate the RSA primes.
   # dmem[rsa_p] <= p.
   # dmem[rsa_q] <= q.
@@ -63,6 +69,7 @@ rsa_keygen:
   jal x1, gen_p
   jal x1, gen_q
 
+_gen_g_h_d:
   # Generate the 512-bit auxiliary primes.
   # dmem[rsa_g] <= g.
   # dmem[rsa_h] <= h.
@@ -77,6 +84,7 @@ rsa_keygen:
   lw x30, 0(x16)
 
   jal x1, gen_d
+  beq x2, x0, _rsa_keygen_restart
 
   ret
 
@@ -143,7 +151,7 @@ gen_d:
   bn.cmp w22, w31, FG0
   csrrs x16, FG0, x0
   andi x16, x16, 0x8
-  bne x16, x0, rsa_keygen
+  bne x16, x0, _gen_d_fail
 
   # dmem[rsa_h] <= (q - 1) * h
   la  x10, rsa_q
@@ -160,7 +168,7 @@ gen_d:
   bn.cmp w22, w31, FG0
   csrrs x16, FG0, x0
   andi x16, x16, 0x8
-  bne x16, x0, rsa_keygen
+  bne x16, x0, _gen_d_fail
 
   # Compute gcd(g * (p - 1), h * (q - 1)).
   # dmem[RR] <= 0.
@@ -195,7 +203,7 @@ gen_d:
     and    x2, x2, x3
 
   addi x30, x27, 0
-  beq  x2, x0, rsa_keygen
+  beq  x2, x0, _gen_d_fail
 
   # For the division (p - 1)*(q - 1)/gcd(p - 1 , q - 1), the denominator
   # gcd(p - 1, q - 1) needs to be inverted modulo 2^256 which requires the
@@ -279,7 +287,7 @@ _remove_even_factors_end:
   # If x2 != 0, then d is too small and we need to restart key generation.
   csrrs x2, FG0, x0
   andi  x2, x2, 8
-  bne   x2, x0, rsa_keygen
+  bne   x2, x0, _gen_d_fail
 
   # Restore p and q.
   la x10, rsa_p
@@ -305,6 +313,11 @@ _remove_even_factors_end:
     bn.xor  w31, w31, w31 # dummy instruction
     bn.sid  x9, 0(x13++)
 
+  li x2, 1
+  ret
+
+_gen_d_fail:
+  li x2, 0
   ret
 
 /**
@@ -349,11 +362,9 @@ _gen_p_body:
   la x16, rsa_n
   jal x1, gen_prime_candidate
 
+_gen_p_check:
   jal x1, fermat_test
   beq x2, x0, _gen_p_loop
-
-  # Set up Miller-Rabin loop counter.
-  addi x28, x0, 0
 
   jal x1, miller_rabin_test
   beq x2, x0, _gen_p_loop
@@ -423,11 +434,9 @@ _gen_q_body_inner:
   jal x1, distance_test
   beq x2, x0, _gen_q_body_inner
 
+_gen_q_check:
   jal x1, fermat_test
   beq x2, x0, _gen_q_loop
-
-  # Set up Miller-Rabin loop counter.
-  addi x28, x0, 0
 
   jal x1, miller_rabin_test
   beq x2, x0, _gen_q_loop
@@ -658,6 +667,39 @@ mul256_w24xw25:
   bn.mulqacc.so  w27.L, w24.2, w25.3, 64
   bn.mulqacc.so  w27.U, w24.3, w25.3,  0
   ret
+  unimp
+
+/**
+ * Deterministic RSA prime step and key generation.
+ *
+ * Expects raw random candidate words in `dmem[rsa_n]` and `dmem[rsa_p]`
+ * zeroed before the first call. Checks one candidate per call: first for `p`
+ * (`dmem[rsa_p] == 0`), then for `q` (`dmem[rsa_p] != 0`), and once `q` is
+ * found, generates auxiliary primes `g`, `h` and private exponent `d`.
+ *
+ * @param[in] x30: n, number of limbs in the modulus and key.
+ */
+rsa_keygen_det:
+  la x16, nlimbs_tmp
+  sw x30, 0(x16)
+  srl x30, x30, 1
+  li x26, 0
+  la x16, rsa_n
+  jal x1, fix_prime_candidate
+  la x16, rsa_p
+  lw x2, 0(x16)
+  bne x2, x0, _det_gen_q
+  jal x1, _gen_p_check
+  jal x0, _rsa_keygen_fail
+_det_gen_q:
+  jal x1, distance_test
+  beq x2, x0, _rsa_keygen_fail
+  jal x1, _gen_q_check
+  jal x0, _gen_g_h_d
 
 _rsa_keygen_fail:
+  la x16, mode
+  la x17, mode_tmp
+  lw x18, 0(x17)
+  sw x18, 0(x16)
   ecall

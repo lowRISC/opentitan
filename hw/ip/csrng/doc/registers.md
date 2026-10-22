@@ -146,32 +146,13 @@ Control register
 {"reg": [{"name": "ENABLE", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "SW_APP_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "READ_INT_STATE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "FIPS_FORCE_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                          |
-|:------:|:------:|:-------:|:----------------------------------------------|
-| 31:16  |        |         | Reserved                                      |
-| 15:12  |   rw   |   0x9   | [FIPS_FORCE_ENABLE](#ctrl--fips_force_enable) |
-|  11:8  |   rw   |   0x9   | [READ_INT_STATE](#ctrl--read_int_state)       |
-|  7:4   |   rw   |   0x9   | [SW_APP_ENABLE](#ctrl--sw_app_enable)         |
-|  3:0   |   rw   |   0x9   | [ENABLE](#ctrl--enable)                       |
-
-### CTRL . FIPS_FORCE_ENABLE
-Setting this field to kMultiBitBool4True enables forcing the FIPS/CC compliance flag to true via the [`FIPS_FORCE`](#fips_force) register.
-
-### CTRL . READ_INT_STATE
-Setting this field to kMultiBitBool4True will enable reading from the [`INT_STATE_VAL`](#int_state_val) register.
-Reading the internal state of the enable instances will be enabled
-only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
-Also, the [`INT_STATE_READ_ENABLE`](#int_state_read_enable) bit of the selected instance needs to be set to true for this to work.
-
-### CTRL . SW_APP_ENABLE
-Setting this field to kMultiBitBool4True will enable reading from the [`GENBITS`](#genbits) register.
-This application interface for software (register based) will be enabled
-only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
-
-### CTRL . ENABLE
-Setting this field to kMultiBitBool4True will enable the CSRNG module. The modules
-of the entropy complex may only be enabled and disabled in a specific order, see
-Programmers Guide for details.
+|  Bits  |  Type  |  Reset  | Name              | Description                                                                                                                                                                                                                                          |
+|:------:|:------:|:-------:|:------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:16  |        |         |                   | Reserved                                                                                                                                                                                                                                             |
+| 15:12  |   rw   |   0x9   | FIPS_FORCE_ENABLE | Setting this field to kMultiBitBool4True enables forcing the FIPS/CC compliance flag to true via the [`FIPS_FORCE`](#fips_force) register.                                                                                                           |
+|  11:8  |   rw   |   0x9   | READ_INT_STATE    | Setting this field to kMultiBitBool4True will enable reading from the [`INT_STATE_VAL`](#int_state_val) register. Also, the [`INT_STATE_READ_ENABLE`](#int_state_read_enable) bit of the selected instance needs to be set to true for this to work. |
+|  7:4   |   rw   |   0x9   | SW_APP_ENABLE     | Setting this field to kMultiBitBool4True will enable reading from the [`GENBITS`](#genbits) register.                                                                                                                                                |
+|  3:0   |   rw   |   0x9   | ENABLE            | Setting this field to kMultiBitBool4True will enable the CSRNG module. The modules of the entropy complex may only be enabled and disabled in a specific order, see Programmers Guide for details.                                                   |
 
 ## CMD_REQ
 Command request register
@@ -334,7 +315,6 @@ made. For example, an application command generate request with
 a `clen` value of 4 requires this register to be read 16 times to get all
 of the data out of the FIFO path.
 Note that for [`GENBITS`](#genbits) to be able to deliver random numbers, also [`CTRL.SW_APP_ENABLE`](#ctrl) needs to be set to `kMultiBitBool4True`.
-In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
 Otherwise, the register reads as 0.
 
 ## INT_STATE_READ_ENABLE_REGWEN
@@ -376,7 +356,6 @@ Internal state read enable register
 Per-instance internal state read enable.
 Defines whether the internal state of the corresponding instance is readable via [`INT_STATE_VAL.`](#int_state_val)
 Note that for [`INT_STATE_VAL`](#int_state_val) to provide read access to the internal state, also [`CTRL.READ_INT_STATE`](#ctrl) needs to be set to `kMultiBitBool4True`.
-In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
 
 ## INT_STATE_NUM
 Internal state number register
@@ -430,7 +409,6 @@ pointer (selects 32 bits of the 448 bit field) will reset to zero. The [`INT_STA
 can be re-written at this time (internal read pointer is also reset), and then
 another internal state field can be read.
 Note that for [`INT_STATE_VAL`](#int_state_val) to provide read access to the internal state, also [`CTRL.READ_INT_STATE`](#ctrl) needs to be set to `kMultiBitBool4True`.
-In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
 Also, the [`INT_STATE_READ_ENABLE`](#int_state_read_enable) bit of the selected instance needs to be set to true for this to work.
 Otherwise, the register reads as 0.
 

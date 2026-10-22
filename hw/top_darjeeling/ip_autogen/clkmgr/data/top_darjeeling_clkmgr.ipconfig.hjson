@@ -160,6 +160,7 @@
     exported_clks: {}
     number_of_clock_groups: 7
     with_alert_handler: true
+    primary_clk: io
     topname: darjeeling
     uniquified_modules: {}
     module_instance_name: clkmgr

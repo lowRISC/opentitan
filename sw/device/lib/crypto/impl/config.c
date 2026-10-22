@@ -97,18 +97,24 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
   HARDENED_TRY(init_state(security_level));
 
   // Instantiate the entropy source in FIPS mode.
-  HARDENED_TRY(entropy_complex_init(kHardenedBoolTrue));
+  HARDENED_TRY(otcrypto_entropy_init());
+
+#ifdef FIPS_MODE
+  OTCRYPTO_HEALTH_CHECK(kTestRngBit);
+  OTCRYPTO_HEALTH_CHECK(kTestHashSha512Bit);
+  HARDENED_TRY(otcrypto_integrity_check());
+  crypto_state_t state;
+  HARDENED_TRY(read_state(&state));
+  state.cmvp_service_indicator = kOtcryptoCmvpNoService;
+  state.cmvp_call_depth = 0;
+  HARDENED_TRY(store_state(&state));
+#endif
 
   // The OTBN is still left with DMEM from the boot.
   HARDENED_TRY(otbn_dmem_sec_wipe());
   // Also clear the sideloaded keys for kmac and otbn.
   HARDENED_TRY(keymgr_dpe_sideload_clear_otbn());
   HARDENED_TRY(keymgr_dpe_sideload_clear_kmac());
-
-#ifdef FIPS_MODE
-  OTCRYPTO_HEALTH_CHECK(kTestHashSha512Bit);
-  HARDENED_TRY(otcrypto_integrity_check());
-#endif
 
   return OTCRYPTO_OK;
 }
@@ -125,13 +131,24 @@ otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status) {
 #endif
 
   if (state.security_level != kOtcryptoKeySecurityLevelLow) {
+    // Verify the entropy source before leaving.
+    HARDENED_TRY(otcrypto_entropy_health_test_config_check());
+
     if (read_alert_registers()) {
       return OTCRYPTO_FATAL_ERR;
     }
-
-    // Verify the entropy source before leaving.
-    HARDENED_TRY(otcrypto_entropy_health_test_config_check());
   }
 
   return status;
+}
+
+hardened_bool_t otcrypto_show_status(void) {
+  crypto_state_t state;
+  if (!status_ok(read_state(&state))) {
+    return kHardenedBoolFalse;
+  }
+  if (state.locked_state == kHardenedByteBoolTrue) {
+    return kHardenedBoolTrue;
+  }
+  return kHardenedBoolFalse;
 }

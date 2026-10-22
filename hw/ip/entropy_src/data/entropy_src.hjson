@@ -342,20 +342,6 @@
 
   regwidth: "32",
   registers: [
-    { name: "ME_REGWEN",
-      desc: "Register write enable for module enable register",
-      swaccess: "rw0c",
-      hwaccess: "none",
-      fields: [
-        {
-            bits: "0",
-            desc: ''' When true, the !!MODULE_ENABLE register can be modified.
-            When false, it becomes read-only.
-            '''
-            resval: 1
-        }
-      ]
-    },
     { name: "SW_REGUPD",
       desc: "Register write enable for control and threshold registers",
       swaccess: "rw0c",
@@ -395,7 +381,6 @@
       desc: "Module enable register",
       swaccess: "rw",
       hwaccess: "hro",
-      regwen:   "ME_REGWEN",
       tags: [// Exclude from writes to these field because they cause side affects.
              "excl:CsrAllTests:CsrExclAll"]
       fields: [
@@ -587,7 +572,7 @@
           hwaccess: "hro",
           name: "THRESHOLD_ONEWAY",
           desc: '''
-                Setting this field to `kMultiBitBool4True` will enable enable the one-way behavior of the health test threshold registers.
+                Setting this field to `kMultiBitBool4True` will enable the one-way behavior of the health test threshold registers.
                 After reset, this field reads as `kMultiBitBool4False` and the health test threshold registers can be configured without limitations.
                 '''
         },

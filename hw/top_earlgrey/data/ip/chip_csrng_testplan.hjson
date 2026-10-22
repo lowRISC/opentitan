@@ -32,31 +32,6 @@
       ]
     }
     {
-      name: chip_sw_csrng_fuse_en_sw_app_read
-      desc: '''Verify the fuse input to CSRNG.
-
-            - Initialize the OTP with the fuse that control whether the SW can read the CSRNG state
-              enabled.
-            - Issue an instantiate command to request entropy.
-            - Verify that SW can read the internal state values.
-            - Reset the chip and repeat the steps above, but this time, initialized the OTP with
-              fuse disabled.
-            - Verify that the SW reads back all zeros when reading the internal state values.
-
-            Notes for silicon targets:
-            - The current understanding is that the en_csrng_sw_app_read OTP switch controlling the CSRNG.READ_INT_STATE feature will need to be enabled also in the PROD life-cycle state for validation and known-answer testing.
-              Thus, burning the en_csrng_sw_app_read OTP fuses is not advisable for silicon validation.
-            '''
-      features: [
-        "CSRNG.INTERFACE.SOFTWARE",
-        "CSRNG.READ_INT_STATE",
-      ]
-      stage: V2
-      si_stage: NA
-      lc_states: ["PROD"]
-      tests: ["chip_sw_csrng_fuse_en_sw_app_read_test"]
-    }
-    {
       name: chip_sw_csrng_lc_hw_debug_en
       desc: '''Verify the effect of LC HW debug enable on CSRNG.
 
@@ -97,9 +72,7 @@
             - Compare the results to test expectations.
 
             Notes for silicon targets:
-            - For the INT_STATE_VAL register to provide read access to the internal K and V state, the en_csrng_sw_app_read OTP switch needs to be in the `kMultiBitBool8True` position.
-              The current understanding is that this will need to be enabled also in the PROD life-cycle state for validation and known-answer testing.
-              Thus, the test doesn't need to be run in a secure environment.
+            - The test doesn't need to be run in a secure environment.
             '''
       features: [
         "CSRNG.INTERFACE.SOFTWARE",

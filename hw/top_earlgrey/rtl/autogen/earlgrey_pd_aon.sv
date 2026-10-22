@@ -84,6 +84,10 @@ module earlgrey_pd_aon #(
   input  rv_core_ibex_pkg::cpu_crash_dump_t       rv_core_ibex_crash_dump_i,
   input  rv_core_ibex_pkg::cpu_pwrmgr_t       rv_core_ibex_pwrmgr_i,
   input  logic       rv_dm_ndmreset_req_i,
+  input  logic       pwrmgr_wakeups_i,
+  input  logic       i3c0_rstdet_enable_i,
+  input  i3c_pkg::i3c_rstdet_req_t       i3c0_rstdet_req_i,
+  output i3c_pkg::i3c_rstdet_rsp_t       i3c0_rstdet_rsp_o,
   output ast_intraip_pkg::s2p_t       ast_intraip_s2p_o,
   input  ast_intraip_pkg::p2s_t       ast_intraip_p2s_i,
   input  tlul_pkg::tl_h2d_t       pwrmgr_tl_req_i,
@@ -178,6 +182,8 @@ module earlgrey_pd_aon #(
   input  logic       cio_i3c1_sda_d2p_i,
   input  logic       cio_i3c1_sda_en_d2p_i,
   output logic       cio_i3c1_sda_p2d_o,
+  output logic       cio_i3c1_rstdet_scl_p2d_o,
+  output logic       cio_i3c1_rstdet_sda_p2d_o,
   input  logic       cio_i3c1_ctrl_sda_pu_d2p_i,
   input  logic       cio_i3c1_ctrl_sda_pu_en_d2p_i,
   input  logic [3:0] cio_spi_host0_sd_d2p_i,
@@ -256,12 +262,15 @@ module earlgrey_pd_aon #(
   localparam int SramCtrlRetOutstanding = 2;
 
   // Signals
-  logic [60:0] mio_p2d;
+  logic [64:0] mio_p2d;
   logic [69:0] mio_d2p;
   logic [69:0] mio_en_d2p;
   logic [15:0] dio_p2d;
   logic [15:0] dio_d2p;
   logic [15:0] dio_en_d2p;
+  // i3c0
+  logic        cio_i3c0_rstdet_scl_p2d;
+  logic        cio_i3c0_rstdet_sda_p2d;
   // pwrmgr
   // rstmgr
   // clkmgr
@@ -335,7 +344,7 @@ module earlgrey_pd_aon #(
   logic       pwrmgr_low_power;
   prim_mubi_pkg::mubi4_t       rstmgr_sw_rst_req;
   logic [1:0] rstmgr_por_n;
-  logic [5:0] pwrmgr_wakeups;
+  logic [7:0] pwrmgr_wakeups;
   logic [1:0] pwrmgr_rstreqs;
   clkmgr_pkg::clkmgr_out_t       clkmgr_clocks;
   logic       ast_clk_src_aon;
@@ -354,12 +363,31 @@ module earlgrey_pd_aon #(
   assign clkmgr_all_clk_byp_req_o = clkmgr_all_clk_byp_req;
   assign clkmgr_io_clk_byp_req_o = clkmgr_io_clk_byp_req;
   assign clkmgr_hi_speed_sel_o = clkmgr_hi_speed_sel;
+  assign pwrmgr_wakeups[1] = pwrmgr_wakeups_i;
   assign ast_clk_osc_byp = clk_osc_byp_pd_aon_i;
 
 
 
 
   // Instantiation of IPs
+  i3c_part_secondary u_i3c0_part_secondary (
+    // Clock and reset connections
+    .clk_aon_i(clkmgr_clocks.clk_aon_peri),
+    .rst_aon_ni(rstmgr_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
+
+
+    // CIO inputs
+    .cio_rstdet_scl_i   (cio_i3c0_rstdet_scl_p2d),
+    .cio_rstdet_sda_i   (cio_i3c0_rstdet_sda_p2d),
+
+    // Inter-module signals
+    .rstdet_enable_i(i3c0_rstdet_enable_i),
+    .rstdet_i(i3c0_rstdet_req_i),
+    .rstdet_o(i3c0_rstdet_rsp_o),
+    .rstdet_wkup_req_o(pwrmgr_wakeups[0]),
+    .rstdet_target_rst_o()
+  );
+
   pwrmgr #(
     .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[23]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
@@ -553,7 +581,7 @@ module earlgrey_pd_aon #(
     .cio_flash_wp_l_en_o (cio_sysrst_ctrl_flash_wp_l_en_d2p),
 
     // Inter-module signals
-    .wkup_req_o(pwrmgr_wakeups[0]),
+    .wkup_req_o(pwrmgr_wakeups[2]),
     .rst_req_o(pwrmgr_rstreqs[0]),
     .tl_i(sysrst_ctrl_tl_req_i),
     .tl_o(sysrst_ctrl_tl_rsp_o)
@@ -579,7 +607,7 @@ module earlgrey_pd_aon #(
     // Inter-module signals
     .adc_o(ast_adc_req),
     .adc_i(ast_adc_rsp),
-    .wkup_req_o(pwrmgr_wakeups[1]),
+    .wkup_req_o(pwrmgr_wakeups[3]),
     .tl_i(adc_ctrl_tl_req_i),
     .tl_o(adc_ctrl_tl_rsp_o)
   );
@@ -622,12 +650,12 @@ module earlgrey_pd_aon #(
     .sleep_en_i(pwrmgr_low_power),
     .strap_en_i(pwrmgr_strap),
     .strap_en_override_i(lc_ctrl_strap_en_override_i),
-    .pin_wkup_req_o(pwrmgr_wakeups[2]),
+    .pin_wkup_req_o(pwrmgr_wakeups[4]),
     .usbdev_dppullup_en_i(usbdev_usb_dp_pullup_i),
     .usbdev_dnpullup_en_i(usbdev_usb_dn_pullup_i),
     .usb_dppullup_en_o(usb_dp_pullup_en_o),
     .usb_dnpullup_en_o(usb_dn_pullup_en_o),
-    .usb_wkup_req_o(pwrmgr_wakeups[3]),
+    .usb_wkup_req_o(pwrmgr_wakeups[5]),
     .usbdev_suspend_req_i(usbdev_usb_aon_suspend_req_i),
     .usbdev_wake_ack_i(usbdev_usb_aon_wake_ack_i),
     .usbdev_bus_not_idle_o(usbdev_usb_aon_bus_not_idle_o),
@@ -676,7 +704,7 @@ module earlgrey_pd_aon #(
 
     // Inter-module signals
     .nmi_wdog_timer_bark_o(aon_timer_nmi_wdog_timer_bark_o),
-    .wkup_req_o(pwrmgr_wakeups[4]),
+    .wkup_req_o(pwrmgr_wakeups[6]),
     .aon_timer_rst_req_o(pwrmgr_rstreqs[1]),
     .lc_escalate_en_i(lc_ctrl_lc_escalate_en_i),
     .sleep_mode_i(pwrmgr_low_power),
@@ -785,7 +813,7 @@ module earlgrey_pd_aon #(
     .ast_status_i(ast_io_pwr_st),
     .ast_init_done_i(ast_init_done_i),
     .ast2pinmux_i(ast_ast2padmux),
-    .wkup_req_o(pwrmgr_wakeups[5]),
+    .wkup_req_o(pwrmgr_wakeups[7]),
     .manual_pad_attr_o(sensor_ctrl_manual_pad_attr_o),
     .tl_i(sensor_ctrl_tl_req_i),
     .tl_o(sensor_ctrl_tl_rsp_o)
@@ -903,6 +931,10 @@ module earlgrey_pd_aon #(
   assign cio_uart1_rx_p2d_o = mio_p2d[MioInUart1Rx];
   assign cio_uart2_rx_p2d_o = mio_p2d[MioInUart2Rx];
   assign cio_uart3_rx_p2d_o = mio_p2d[MioInUart3Rx];
+  assign cio_i3c0_rstdet_scl_p2d = mio_p2d[MioInI3c0RstdetScl];
+  assign cio_i3c0_rstdet_sda_p2d = mio_p2d[MioInI3c0RstdetSda];
+  assign cio_i3c1_rstdet_scl_p2d_o = mio_p2d[MioInI3c1RstdetScl];
+  assign cio_i3c1_rstdet_sda_p2d_o = mio_p2d[MioInI3c1RstdetSda];
   assign cio_spi_device_tpm_csb_p2d_o = mio_p2d[MioInSpiDeviceTpmCsb];
   assign cio_rram_macro_tck_p2d_o = mio_p2d[MioInRramMacroTck];
   assign cio_rram_macro_tms_p2d_o = mio_p2d[MioInRramMacroTms];

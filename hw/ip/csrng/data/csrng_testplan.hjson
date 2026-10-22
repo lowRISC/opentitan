@@ -74,7 +74,7 @@
             Verify main_sm_state for sw/hw apps.
             Verify that genbits generates the amount specified by glen.
             Verify fips bit is set to the inverse of flag0 that was used on the last initialize or reseed.
-            Verify that if otp_en_csrng_sw_app_read is set, genbits and int_state_value registers are readable, and unreadable otherwise.
+            Verify that if CTRL.SW_APP_ENABLE and CTRL.READ_INT_STATE are set, genbits and int_state_value registers are readable, respectively, and unreadable otherwise.
             Verify commands with continuous/non-continuous valid.
             Verify that if FIPS bit drops at input from entropy source that the generated block also has FIPS low.
             '''
@@ -106,7 +106,6 @@
       desc: '''
             Covers that all csrng configuration options have been tested.
             Individual config settings that will be covered include:
-            - otp_en_cs_sw_app_read
             - sw_app_enable
             - read_int_state
             - enable
@@ -183,14 +182,13 @@
             '''
     }
     {
-      name: csrng_otp_en_sw_app_read_cg
+      name: csrng_sw_app_read_cg
       desc: '''
-            Covers otp_en_csrng_sw_app_read feature
-            - read_int_state_val_cp : Covers read of INT_STATE_VAL register
-            - read_genbits_reg_cp : Covers for read of GENBITS register
-            - cp_sw_app_read : Covers values supported by otp_en_csrng_sw_app_read
-            - cp_read_int_state_x_sw_app_enable : Cross register read of INT_STATE_VAL in combination with read_int_state field and otp_en_csrng_sw_app_read
-            - cp_read_genbits_x_sw_app_enable : Cross register read of GENBITS  in combination with read_int_state field and otp_en_csrng_sw_app_read
+            Covers SW reads of the GENBITS and INT_STATE_VAL registers
+            - cp_read_int_state_val : Covers read of INT_STATE_VAL register
+            - cp_read_genbits_reg : Covers read of GENBITS register
+            - cp_sw_app_read : Covers values of CTRL.SW_APP_ENABLE
+            - cp_read_int_state : Covers values of CTRL.READ_INT_STATE
             '''
     }
     {

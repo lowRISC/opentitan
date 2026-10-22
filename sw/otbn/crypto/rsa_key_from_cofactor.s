@@ -44,18 +44,22 @@ rsa_key_from_cofactor:
   li       x20, 20
   li       x21, 21
 
-  /* Get a pointer to the middle of the cofactor.
-       x2 <= rsa_cofactor + n*32 */
-  slli     x2, x30, 5
-  la       x3, rsa_cofactor
-  add      x2, x2, x3
+  /* Combine the cofactor shares and clear the second share. */
+  la       x2, rsa_cofactor0
+  la       x3, rsa_cofactor1
+  li       x4, 31
+  loop     x30, 5
+    bn.lid   x20, 0(x2)
+    bn.lid   x21, 0(x3)
+    bn.xor   w20, w20, w21
+    bn.sid   x20, 0(x2++)
+    bn.sid   x4, 0(x3++)
 
-  # Set the second half of the cofactor buffer to zero, so the cofactor is the
-  #    same size as the modulus for division.
-  #     dmem[rsa_cofactor+n*32..rsa_cofactor+n*2*32] <= 0
-  li       x3, 31
+  /* Set the second half of the cofactor buffer to zero, so the cofactor is the
+     same size as the modulus for division.
+       dmem[rsa_cofactor+n*32..rsa_cofactor+n*2*32] <= 0 */
   loop     x30, 1
-    bn.sid   x3, 0(x2++)
+    bn.sid   x4, 0(x2++)
 
   /* Update the number of limbs for division.
        x30 <= n*2 */
@@ -154,6 +158,19 @@ derive_d:
   la x26, rsa_cofactor
   addi x27, x30, 0
   jal x1, modinv_f4
+
+  /* Boolean-mask d0 and d1 with fresh URND bits. */
+  li       x20, 20
+  li       x21, 21
+  la       x12, rsa_d0
+  la       x13, rsa_d1
+  loop     x30, 6
+    bn.lid   x20, 0(x12)
+    bn.wsrr  w21, URND
+    bn.xor   w20, w20, w21
+    bn.sid   x20, 0(x12++)
+    bn.xor   w31, w31, w31 /* dummy instruction */
+    bn.sid   x21, 0(x13++)
 
   # Reset the limb count.
   #      x30 <= (n*2) >> 1 = n

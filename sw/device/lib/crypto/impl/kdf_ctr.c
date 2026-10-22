@@ -75,7 +75,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     const otcrypto_const_byte_buf_t *context,
     otcrypto_blinded_key_t *output_key_material) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_KDF_CTR_HMAC);
-  OTCRYPTO_LOCKED_STATE_CHECK();
+  OTCRYPTO_HEALTH_CHECK(kTestKdfCtrHmacBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check NULL pointers.
   if (output_key_material == NULL || output_key_material->keyblob == NULL ||

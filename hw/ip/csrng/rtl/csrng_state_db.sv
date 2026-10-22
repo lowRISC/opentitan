@@ -30,7 +30,7 @@ module csrng_state_db
   input  csrng_core_data_t       wr_data_i,
 
   // State dump interface via register access
-  input  logic                   reg_rd_otp_en_i,
+  input  logic                   reg_rd_en_i,
   input  logic     [NumApps-1:0] reg_rd_regfile_en_i,
 
   input  logic                   reg_rd_id_vld_i,
@@ -92,7 +92,7 @@ module csrng_state_db
   // Reset the regfile read pointer when a new instance is selected for readout
   always_comb begin
     reg_rd_ptr_d = reg_rd_ptr_q;
-    if (!enable_i || !reg_rd_otp_en_i) begin
+    if (!enable_i || !reg_rd_en_i) begin
       reg_rd_ptr_d = '1;
     end else if (reg_rd_id_vld_i || (reg_rd_ptr_q == NumRegState)) begin
       reg_rd_ptr_d = '0;
@@ -107,7 +107,7 @@ module csrng_state_db
 
   always_comb begin
     reg_rd_val_o = '0;
-    if (reg_rd_otp_en_i && (reg_rd_id_q < NumApps ? reg_rd_regfile_en_i[reg_rd_id_q] : 1'b0) &&
+    if (reg_rd_en_i && (reg_rd_id_q < NumApps ? reg_rd_regfile_en_i[reg_rd_id_q] : 1'b0) &&
         (reg_rd_ptr_q < NumRegState)) begin
       reg_rd_val_o = state_reg_readout[reg_rd_ptr_q * RegWidth +: RegWidth];
     end

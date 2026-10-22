@@ -2,7 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-package(default_visibility = ["//visibility:public"])
+package(
+    default_visibility = ["//visibility:public"],
+    features = ["cryptolib_warnings"],
+)
 
 load("//hw/top:defs.bzl", "opentitan_require_top")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
@@ -75,7 +78,14 @@ cc_library(
         "//conditions:default": ["CRYPTOLIB_IS_RELEASED=false"],
     }),
     deps = [
+        ":integrity",
         ":status",
+        "//hw/top:rom_ctrl_c_regs",
+        "//hw/top/dt:rom_ctrl",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:cryptolib_build_info",
         "//sw/device/lib/crypto/include:datatypes",
     ],
@@ -138,6 +148,7 @@ cc_library(
         ":state",
         ":status",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/impl/ecc:curve25519",
         "//sw/device/lib/crypto/include:datatypes",
     ],
@@ -284,6 +295,9 @@ cc_test(
     deps = [
         ":cryptolib_build_info",
         ":integrity",
+        "//hw/top:rom_ctrl_c_regs",
+        "//hw/top/dt:rom_ctrl",
+        "//sw/device/lib/base:abs_mmio",
         "@googletest//:gtest_main",
     ],
 )
@@ -310,18 +324,20 @@ cc_library(
         ":ecc_curve25519",
         ":ecc_p256",
         ":ecc_p384",
-        ":entropy_src",
         ":hmac",
         ":integrity",
         ":kats_hdrs",
+        ":kdf_ctr",
         ":keyblob",
         ":kmac",
+        ":kmac_kdf",
         ":rsa",
         ":sha2",
         ":sha3",
         ":state",
         ":status",
         "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:entropy_kat",
         "//sw/device/lib/crypto/include:datatypes",
     ],
@@ -439,6 +455,7 @@ cc_library(
     deps = [
         ":cmvp",
         ":config",
+        ":drbg",
         ":hash",
         ":integrity",
         ":state",
@@ -696,6 +713,7 @@ cc_library(
         ":state",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/drivers:entropy",
+        "//sw/device/lib/crypto/drivers:entropy_kat",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )

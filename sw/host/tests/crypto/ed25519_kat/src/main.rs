@@ -5,6 +5,8 @@
 use anyhow::Result;
 use arrayvec::ArrayVec;
 use clap::Parser;
+use openssl::pkey::{Id, PKey};
+use openssl::sign::Verifier;
 use serde::Deserialize;
 use std::cmp::min;
 use std::fs;
@@ -13,8 +15,8 @@ use std::time::Duration;
 use cryptotest_commands::commands::CryptotestCommand;
 use cryptotest_commands::ed25519_commands::{
     CryptotestEd25519Message, CryptotestEd25519Operation, CryptotestEd25519PrivateKey,
-    CryptotestEd25519PublicKey, CryptotestEd25519SignMode, CryptotestEd25519Signature,
-    CryptotestEd25519VerifyOutput,
+    CryptotestEd25519PublicKey, CryptotestEd25519SignMode, CryptotestEd25519SignResp,
+    CryptotestEd25519Signature, CryptotestEd25519VerifyOutput,
 };
 
 use opentitanlib::app::TransportWrapper;
@@ -75,6 +77,16 @@ const RANDOM_MASK_ED25519: [u8; ED25519_PRIVATE_KEY_SEED_BYTES] = [
     0xe0, 0xa1, 0xd7, 0x3c, 0x5b, 0x2e, 0x8f, 0x4a, 0x96, 0xd0, 0xc7, 0x1b, 0x38, 0xe4, 0xf2, 0x5a,
 ];
 
+fn verify_ed25519_signature_on_host(
+    public_key: &[u8],
+    message: &[u8],
+    signature: &[u8],
+) -> Result<bool> {
+    let pkey = PKey::public_key_from_raw_bytes(public_key, Id::ED25519)?;
+    let mut verifier = Verifier::new_without_digest(&pkey)?;
+    Ok(verifier.verify_oneshot(signature, message)?)
+}
+
 fn run_ed25519_testcase(
     test_case: &Ed25519TestCase,
     opts: &Opts,
@@ -87,7 +99,7 @@ fn run_ed25519_testcase(
 
     let operation = match test_case.operation.as_str() {
         "verify" => CryptotestEd25519Operation::Verify,
-        "sign" => CryptotestEd25519Operation::SignCheck,
+        "sign" => CryptotestEd25519Operation::Sign,
         _ => panic!("Unsupported Ed25519 operation: {}", test_case.operation),
     };
 
@@ -99,7 +111,7 @@ fn run_ed25519_testcase(
         test_case.public_key.len(),
     );
 
-    // Wycheproof Ed25519 test vectors use pure EdDSA.
+    // Wycheproof and random Ed25519 test vectors use pure EdDSA.
     let sign_mode = CryptotestEd25519SignMode::Eddsa;
 
     CryptotestCommand::Ed25519.send(spi_console)?;
@@ -113,28 +125,26 @@ fn run_ed25519_testcase(
     }
     .send(spi_console)?;
 
-    // For verify: send the actual signature (R component reversed for device byte
-    // ordering). For sign: the firmware ignores this field; send an empty buffer.
-    let mut signature_bytes = test_case.signature.clone();
-    if matches!(operation, CryptotestEd25519Operation::Verify)
-        && signature_bytes.len() >= ED25519_SIGNATURE_BYTES / 2
-    {
-        signature_bytes[..ED25519_SIGNATURE_BYTES / 2].reverse();
-    }
-    CryptotestEd25519Signature {
-        signature: ArrayVec::try_from(signature_bytes.as_slice())
-            .expect("Ed25519 signature had unexpected length."),
-        signature_len: signature_bytes.len(),
-    }
-    .send(spi_console)?;
+    if matches!(operation, CryptotestEd25519Operation::Verify) {
+        // Send the signature with the R component reversed for device byte ordering.
+        let mut signature_bytes = test_case.signature.clone();
+        if signature_bytes.len() >= ED25519_SIGNATURE_BYTES / 2 {
+            signature_bytes[..ED25519_SIGNATURE_BYTES / 2].reverse();
+        }
+        CryptotestEd25519Signature {
+            signature: ArrayVec::try_from(signature_bytes.as_slice())
+                .expect("Ed25519 signature had unexpected length."),
+            signature_len: signature_bytes.len(),
+        }
+        .send(spi_console)?;
 
-    // Public key is used by verify; firmware derives it from the private key for sign.
-    CryptotestEd25519PublicKey {
-        public_key: ArrayVec::try_from(test_case.public_key.as_slice())
-            .expect("Ed25519 public key had unexpected length."),
-        public_key_len: test_case.public_key.len(),
+        CryptotestEd25519PublicKey {
+            public_key: ArrayVec::try_from(test_case.public_key.as_slice())
+                .expect("Ed25519 public key had unexpected length."),
+            public_key_len: test_case.public_key.len(),
+        }
+        .send(spi_console)?;
     }
-    .send(spi_console)?;
 
     // For sign: additively mask the private key seed (seed = d0 + d1 mod 2^256).
     // For verify: the firmware ignores the private key; send empty shares.
@@ -169,9 +179,7 @@ fn run_ed25519_testcase(
     .send(spi_console)?;
 
     let success = match operation {
-        CryptotestEd25519Operation::Verify
-        | CryptotestEd25519Operation::Sign
-        | CryptotestEd25519Operation::SignCheck => {
+        CryptotestEd25519Operation::Verify | CryptotestEd25519Operation::SignCheck => {
             let output =
                 CryptotestEd25519VerifyOutput::recv(spi_console, opts.timeout, false, false)?;
             match output {
@@ -181,6 +189,22 @@ fn run_ed25519_testcase(
                     panic!("Invalid Ed25519 result: {}", i)
                 }
             }
+        }
+        CryptotestEd25519Operation::Sign => {
+            let resp = CryptotestEd25519SignResp::recv(spi_console, opts.timeout, false, false)?;
+            assert_eq!(resp.signature_len, ED25519_SIGNATURE_BYTES);
+            assert_eq!(resp.public_key_len, ED25519_PUBLIC_KEY_BYTES);
+
+            // Convert the R component (first 32 bytes) from device byte order to RFC 8032 order.
+            let mut sig = resp.signature[..resp.signature_len].to_vec();
+            sig[..ED25519_SIGNATURE_BYTES / 2].reverse();
+
+            let pk_matches =
+                &resp.public_key[..resp.public_key_len] == test_case.public_key.as_slice();
+            let sig_matches = test_case.signature.is_empty() || sig == test_case.signature;
+            let host_verified =
+                verify_ed25519_signature_on_host(&test_case.public_key, &test_case.message, &sig)?;
+            pk_matches && sig_matches && host_verified
         }
         CryptotestEd25519Operation::KeyGen => {
             unreachable!("KeyGen is not used in KAT tests")

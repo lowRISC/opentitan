@@ -350,6 +350,23 @@ cryptotest(
     test_vectors = ED25519_TESTVECTOR_TARGETS,
 )
 
+ED25519_RANDOM_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:random_ed25519_json",
+]
+
+ED25519_RANDOM_TESTVECTOR_ARGS = " ".join([
+    "--ed25519-json=\"$(rootpath {})\"".format(target)
+    for target in ED25519_RANDOM_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "ed25519_random_kat",
+    slow_test = True,
+    test_args = ED25519_RANDOM_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/ed25519_kat:harness",
+    test_vectors = ED25519_RANDOM_TESTVECTOR_TARGETS,
+)
+
 X25519_TESTVECTOR_TARGETS = [
     "//sw/host/cryptotest/testvectors/data:wycheproof_x25519_json",
 ]
@@ -524,6 +541,45 @@ cryptotest(
     test_args = RSA_TESTVECTOR_ARGS,
     test_harness = "//sw/host/tests/crypto/rsa_kat:harness",
     test_vectors = RSA_TESTVECTOR_TARGETS,
+)
+
+RSA_RANDOM_TESTVECTOR_TARGETS = [
+    "//sw/host/cryptotest/testvectors/data:random_rsa_{}_{}_{}.json".format(
+        padding_mode,
+        security_level,
+        hash_suffix,
+    )
+    for security_level in [
+        2048,
+        3072,
+        4096,
+    ]
+    for padding_mode in [
+        "pkcs1_1.5",
+        "pss",
+        "oaep",
+    ]
+    for hash_suffix in [
+        "sha256",
+        "sha384",
+        "sha512",
+        "sha3_256",
+        "sha3_384",
+        "sha3_512",
+    ]
+]
+
+RSA_RANDOM_TESTVECTOR_ARGS = " ".join([
+    "--rsa-json=\"$(rootpath {})\"".format(target)
+    for target in RSA_RANDOM_TESTVECTOR_TARGETS
+])
+
+cryptotest(
+    name = "rsa_random_kat",
+    slow_test = True,
+    test_args = RSA_RANDOM_TESTVECTOR_ARGS,
+    test_harness = "//sw/host/tests/crypto/rsa_kat:harness",
+    test_vectors = RSA_RANDOM_TESTVECTOR_TARGETS,
 )
 
 cryptotest(
@@ -1026,6 +1082,7 @@ test_suite(
         ":ecdh_kat",
         ":ecdsa_kat",
         ":ed25519_kat",
+        ":ed25519_random_kat",
         ":hmac_sha256_kat",
         ":hmac_sha384_kat",
         ":hmac_sha512_kat",
@@ -1033,6 +1090,7 @@ test_suite(
         ":mldsa_kat",
         ":mlkem_kat",
         ":rsa_kat",
+        ":rsa_random_kat",
         ":sha256_kat",
         ":sha384_kat",
         ":sha3_224_kat",

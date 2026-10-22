@@ -13,6 +13,7 @@
 #include "sw/device/lib/crypto/include/ecc_curve25519.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
+#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/rsa.h"
@@ -195,7 +196,36 @@ status_t test_fips_state_and_param_checks(void) {
   TRY_CHECK(status.value != kHardenedBoolTrue,
             "Expected locked_state_check to fail when locked.");
 
+  status = otcrypto_entropy_init();
+  TRY_CHECK(status.value != kHardenedBoolTrue,
+            "Expected otcrypto_entropy_init to fail when hard-locked.");
   TRY(read_state(&state));
+  TRY_CHECK(state.locked_state == kHardenedByteBoolTrue,
+            "Expected hard lock to remain after otcrypto_entropy_init.");
+
+  // 3b. Test entropy-locked state (0xd6) blocks crypto calls and unlocks via
+  // otcrypto_entropy_init().
+  enum { kTestLockStateEntropy = 0xd6 };
+  state.locked_state = kTestLockStateEntropy;
+  TRY(store_state(&state));
+
+  status = otcrypto_aes(NULL, NULL, kOtcryptoAesModeCbc,
+                        kOtcryptoAesOperationEncrypt, NULL,
+                        kOtcryptoAesPaddingNull, NULL);
+  TRY_CHECK(status.value != kHardenedBoolTrue,
+            "Expected stateful_health_check to fail when entropy-locked.");
+
+  status = otcrypto_ed25519_public_key_from_private(NULL, NULL);
+  TRY_CHECK(status.value != kHardenedBoolTrue,
+            "Expected locked_state_check to fail when entropy-locked.");
+
+  status = otcrypto_entropy_init();
+  TRY_CHECK(status.value == kHardenedBoolTrue,
+            "Expected otcrypto_entropy_init to recover from entropy lock.");
+  TRY(read_state(&state));
+  TRY_CHECK(state.locked_state == kHardenedByteBoolFalse,
+            "Expected locked_state to return to unlocked after recovery.");
+
   state.locked_state = saved_locked;
   TRY(store_state(&state));
 

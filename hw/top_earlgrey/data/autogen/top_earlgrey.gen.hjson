@@ -1697,19 +1697,38 @@
           domain: Main
         }
       }
+      domain: Main
+      domain_secondary: Aon
       param_decl:
       {
         ClkFreq: "96000000"
         HalfCycleScl: "1"
         NumTargets: "2"
       }
-      domain: Main
+      clock_srcs_secondary:
+      {
+        clk_aon_i: aon
+      }
+      clock_group_secondary: peri
+      reset_connections_secondary:
+      {
+        rst_aon_ni:
+        {
+          name: lc_aon
+          domain: Aon
+        }
+      }
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_io_peri
         clk_aon_i: clkmgr_clocks_i.clk_aon_peri
         scan_clk_i: clkmgr_clocks_i.clk_io_div2_peri
       }
+      clock_connections_secondary:
+      {
+        clk_aon_i: clkmgr_clocks.clk_aon_peri
+      }
+      is_split_ip: true
       memory: {}
       param_list:
       [
@@ -1836,25 +1855,101 @@
       [
         {
           name: rstdet_enable
+          desc: Enables the SCL/SDA inputs of the Target Reset Detector in the secondary partition; deasserted while the Target is disconnected from the bus.
           struct: logic
           type: uni
           act: req
           width: 1
           inst_name: i3c0
+          default: ""
+          package: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: i3c0_rstdet_enable
           index: -1
+          external: true
+          conn_type: false
+        }
+        {
+          name: rstdet_enable
+          desc: Enables the SCL/SDA inputs of the Target Reset Detector; deasserted while the Target is disconnected from the bus.
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          partition: secondary
+          inst_name: i3c0
+          default: ""
+          package: ""
+          domain: Aon
+          top_signame: i3c0_rstdet_enable
+          index: -1
+          external: true
+          conn_type: false
         }
         {
           name: rstdet
+          desc: Control and status interface to the Target Reset Detector in the secondary partition.
           struct: i3c_rstdet
           package: i3c_pkg
           type: req_rsp
           act: req
           width: 1
           inst_name: i3c0
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: i3c0_rstdet
+          index: -1
+          external: true
+          conn_type: false
+        }
+        {
+          name: rstdet
+          desc: Control and status interface of the Target Reset Detector to the primary partition.
+          struct: i3c_rstdet
+          package: i3c_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          partition: secondary
+          inst_name: i3c0
+          default: ""
+          domain: Aon
+          top_signame: i3c0_rstdet
+          index: -1
+          external: true
+          conn_type: false
+        }
+        {
+          name: rstdet_wkup_req
+          desc: Wake-up request on detection of the Target Reset Pattern.
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          partition: secondary
+          inst_name: i3c0
+          default: ""
+          package: ""
+          domain: Aon
+          top_signame: pwrmgr_wakeups
+          index: 0
+        }
+        {
+          name: rstdet_target_rst
+          desc: Reset request for the I3C peripheral on detection of the Target Reset Pattern.
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          partition: secondary
+          inst_name: i3c0
           index: -1
         }
         {
           name: mbist_en
+          desc: Memory built-in self-test enable (unused).
           struct: logic
           type: uni
           act: rcv
@@ -1894,6 +1989,7 @@
         }
         {
           name: ram_cfg
+          desc: RAM configuration of the message buffer memory.
           struct: ram_1p_cfg
           package: prim_ram_1p_pkg
           type: req_rsp
@@ -1906,6 +2002,7 @@
         }
         {
           name: dat_cfg
+          desc: RAM configuration of the Device Address Table (DAT) memory.
           struct: ram_1p_cfg
           package: prim_ram_1p_pkg
           type: req_rsp
@@ -1918,6 +2015,7 @@
         }
         {
           name: dct_cfg
+          desc: RAM configuration of the Device Characteristics Table (DCT) memory.
           struct: ram_1p_cfg
           package: prim_ram_1p_pkg
           type: req_rsp
@@ -2001,19 +2099,38 @@
           domain: Main
         }
       }
+      domain: Main
+      domain_secondary: Main
       param_decl:
       {
         ClkFreq: "96000000"
         HalfCycleScl: "1"
         NumTargets: "2"
       }
-      domain: Main
+      clock_srcs_secondary:
+      {
+        clk_aon_i: aon
+      }
+      clock_group_secondary: peri
+      reset_connections_secondary:
+      {
+        rst_aon_ni:
+        {
+          name: lc_aon
+          domain: Main
+        }
+      }
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_io_peri
         clk_aon_i: clkmgr_clocks_i.clk_aon_peri
         scan_clk_i: clkmgr_clocks_i.clk_io_div2_peri
       }
+      clock_connections_secondary:
+      {
+        clk_aon_i: clkmgr_clocks_i.clk_aon_peri
+      }
+      is_split_ip: true
       memory: {}
       param_list:
       [
@@ -2140,25 +2257,95 @@
       [
         {
           name: rstdet_enable
+          desc: Enables the SCL/SDA inputs of the Target Reset Detector in the secondary partition; deasserted while the Target is disconnected from the bus.
           struct: logic
           type: uni
           act: req
           width: 1
           inst_name: i3c1
+          default: ""
+          package: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: i3c1_rstdet_enable
+          index: -1
+        }
+        {
+          name: rstdet_enable
+          desc: Enables the SCL/SDA inputs of the Target Reset Detector; deasserted while the Target is disconnected from the bus.
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          partition: secondary
+          inst_name: i3c1
+          default: ""
+          package: ""
+          domain: Main
+          top_signame: i3c1_rstdet_enable
           index: -1
         }
         {
           name: rstdet
+          desc: Control and status interface to the Target Reset Detector in the secondary partition.
           struct: i3c_rstdet
           package: i3c_pkg
           type: req_rsp
           act: req
           width: 1
           inst_name: i3c1
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: i3c1_rstdet
+          index: -1
+        }
+        {
+          name: rstdet
+          desc: Control and status interface of the Target Reset Detector to the primary partition.
+          struct: i3c_rstdet
+          package: i3c_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          partition: secondary
+          inst_name: i3c1
+          default: ""
+          domain: Main
+          top_signame: i3c1_rstdet
+          index: -1
+        }
+        {
+          name: rstdet_wkup_req
+          desc: Wake-up request on detection of the Target Reset Pattern.
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          partition: secondary
+          inst_name: i3c1
+          default: ""
+          package: ""
+          domain: Main
+          top_signame: pwrmgr_wakeups
+          index: -1
+          external: true
+          conn_type: false
+        }
+        {
+          name: rstdet_target_rst
+          desc: Reset request for the I3C peripheral on detection of the Target Reset Pattern.
+          struct: logic
+          type: uni
+          act: req
+          width: 1
+          partition: secondary
+          inst_name: i3c1
           index: -1
         }
         {
           name: mbist_en
+          desc: Memory built-in self-test enable (unused).
           struct: logic
           type: uni
           act: rcv
@@ -2198,6 +2385,7 @@
         }
         {
           name: ram_cfg
+          desc: RAM configuration of the message buffer memory.
           struct: ram_1p_cfg
           package: prim_ram_1p_pkg
           type: req_rsp
@@ -2210,6 +2398,7 @@
         }
         {
           name: dat_cfg
+          desc: RAM configuration of the Device Address Table (DAT) memory.
           struct: ram_1p_cfg
           package: prim_ram_1p_pkg
           type: req_rsp
@@ -2222,6 +2411,7 @@
         }
         {
           name: dct_cfg
+          desc: RAM configuration of the Device Characteristics Table (DCT) memory.
           struct: ram_1p_cfg
           package: prim_ram_1p_pkg
           type: req_rsp
@@ -4328,14 +4518,16 @@
           struct: logic
           type: uni
           act: rcv
-          width: 6
+          width: 8
           inst_name: pwrmgr
           default: ""
           package: ""
           end_idx: -1
           top_type: one-to-N
           top_signame: pwrmgr_wakeups
-          index: -1
+          index: 1
+          external: true
+          conn_type: true
         }
         {
           name: rstreqs
@@ -5114,7 +5306,7 @@
           package: ""
           domain: Aon
           top_signame: pwrmgr_wakeups
-          index: 0
+          index: 2
         }
         {
           name: rst_req
@@ -5212,7 +5404,7 @@
           package: ""
           domain: Aon
           top_signame: pwrmgr_wakeups
-          index: 1
+          index: 3
         }
         {
           name: tl
@@ -5562,7 +5754,7 @@
           package: ""
           domain: Aon
           top_signame: pwrmgr_wakeups
-          index: 2
+          index: 4
         }
         {
           name: usbdev_dppullup_en
@@ -5638,7 +5830,7 @@
           package: ""
           domain: Aon
           top_signame: pwrmgr_wakeups
-          index: 3
+          index: 5
         }
         {
           name: usbdev_suspend_req
@@ -5823,7 +6015,7 @@
           package: ""
           domain: Aon
           top_signame: pwrmgr_wakeups
-          index: 4
+          index: 6
         }
         {
           name: aon_timer_rst_req
@@ -7211,7 +7403,7 @@
           package: ""
           domain: Aon
           top_signame: pwrmgr_wakeups
-          index: 5
+          index: 7
         }
         {
           name: manual_pad_attr
@@ -9565,6 +9757,17 @@
           index: -1
         }
         {
+          name: secondary_root_key
+          struct: keymgr_dpe_creator_root_key
+          package: keymgr_dpe_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: keymgr_dpe_pkg::KEYMGR_DPE_SECONDARY_ROOT_KEY_DEFAULT
+          inst_name: keymgr_dpe
+          index: -1
+        }
+        {
           name: creator_seed
           struct: keymgr_dpe_creator_seed
           package: keymgr_dpe_pkg
@@ -9751,18 +9954,6 @@
           end_idx: -1
           top_type: one-to-one
           top_signame: csrng_entropy_src_hw_if
-          index: -1
-        }
-        {
-          name: otp_en_csrng_sw_app_read
-          struct: mubi8
-          package: prim_mubi_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: prim_mubi_pkg::MuBi8True
-          inst_name: csrng
-          top_signame: csrng_otp_en_csrng_sw_app_read
           index: -1
         }
         {
@@ -12919,6 +13110,8 @@
       ]
       pwrmgr.wakeups:
       [
+        i3c0.rstdet_wkup_req.secondary
+        i3c1.rstdet_wkup_req.secondary
         sysrst_ctrl.wkup_req
         adc_ctrl.wkup_req
         pinmux.pin_wkup_req
@@ -12930,6 +13123,22 @@
       [
         sysrst_ctrl.rst_req
         aon_timer.aon_timer_rst_req
+      ]
+      i3c0.rstdet_enable.primary:
+      [
+        i3c0.rstdet_enable.secondary
+      ]
+      i3c0.rstdet.primary:
+      [
+        i3c0.rstdet.secondary
+      ]
+      i3c1.rstdet_enable.primary:
+      [
+        i3c1.rstdet_enable.secondary
+      ]
+      i3c1.rstdet.primary:
+      [
+        i3c1.rstdet.secondary
       ]
       ast.intraip_s2p.secondary:
       [
@@ -13213,7 +13422,6 @@
       rv_core_ibex.boot_addr
       pinmux.dft_jtag
       otp_ctrl.otp_broadcast
-      csrng.otp_en_csrng_sw_app_read
       lc_ctrl.otp_device_id
       lc_ctrl.otp_manuf_state
       keymgr_dpe.device_id
@@ -17259,6 +17467,58 @@
         glob_idx: 49
       }
       {
+        name: i3c0_rstdet_scl
+        width: 1
+        type: input
+        partition: secondary
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Aon
+        glob_idx: 50
+      }
+      {
+        name: i3c0_rstdet_sda
+        width: 1
+        type: input
+        partition: secondary
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Aon
+        glob_idx: 51
+      }
+      {
+        name: i3c1_rstdet_scl
+        width: 1
+        type: input
+        partition: secondary
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 52
+      }
+      {
+        name: i3c1_rstdet_sda
+        width: 1
+        type: input
+        partition: secondary
+        idx: -1
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 53
+      }
+      {
         name: spi_device_tpm_csb
         width: 1
         type: input
@@ -17268,7 +17528,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 50
+        glob_idx: 54
       }
       {
         name: rram_macro_tck
@@ -17280,7 +17540,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 51
+        glob_idx: 55
       }
       {
         name: rram_macro_tms
@@ -17292,7 +17552,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 52
+        glob_idx: 56
       }
       {
         name: rram_macro_tdi
@@ -17304,7 +17564,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 53
+        glob_idx: 57
       }
       {
         name: sysrst_ctrl_ac_present
@@ -17316,7 +17576,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 54
+        glob_idx: 58
       }
       {
         name: sysrst_ctrl_key0_in
@@ -17328,7 +17588,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 55
+        glob_idx: 59
       }
       {
         name: sysrst_ctrl_key1_in
@@ -17340,7 +17600,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 56
+        glob_idx: 60
       }
       {
         name: sysrst_ctrl_key2_in
@@ -17352,7 +17612,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 57
+        glob_idx: 61
       }
       {
         name: sysrst_ctrl_pwrb_in
@@ -17364,7 +17624,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 58
+        glob_idx: 62
       }
       {
         name: sysrst_ctrl_lid_open
@@ -17376,7 +17636,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 59
+        glob_idx: 63
       }
       {
         name: usbdev_sense
@@ -17388,7 +17648,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 60
+        glob_idx: 64
       }
       {
         name: spi_host0_sck
@@ -17715,7 +17975,7 @@
       muxed:
       {
         inouts: 46
-        inputs: 15
+        inputs: 19
         outputs: 24
         pads: 47
       }
@@ -18221,6 +18481,16 @@
   wakeups:
   [
     {
+      name: rstdet_wkup_req
+      width: "1"
+      module: i3c0
+    }
+    {
+      name: rstdet_wkup_req
+      width: "1"
+      module: i3c1
+    }
+    {
       name: wkup_req
       width: "1"
       module: sysrst_ctrl
@@ -18374,7 +18644,7 @@
       module_name: i3c1
       desc: i3c1 fatal_fault alert
       lpg_name: peri_i3c1_Main
-      lpg_idx: 6
+      lpg_idx: 7
     }
     {
       name: rv_timer_fatal_fault
@@ -18385,7 +18655,7 @@
       module_name: rv_timer
       desc: rv_timer fatal_fault alert
       lpg_name: timers_lc_io_div4_Main
-      lpg_idx: 7
+      lpg_idx: 9
     }
     {
       name: otp_ctrl_fatal_macro_error
@@ -18396,7 +18666,7 @@
       module_name: otp_ctrl
       desc: otp_ctrl fatal_macro_error alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 8
+      lpg_idx: 10
     }
     {
       name: otp_ctrl_fatal_check_error
@@ -18407,7 +18677,7 @@
       module_name: otp_ctrl
       desc: otp_ctrl fatal_check_error alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 8
+      lpg_idx: 10
     }
     {
       name: otp_ctrl_fatal_bus_integ_error
@@ -18418,7 +18688,7 @@
       module_name: otp_ctrl
       desc: otp_ctrl fatal_bus_integ_error alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 8
+      lpg_idx: 10
     }
     {
       name: otp_ctrl_fatal_prim_otp_alert
@@ -18429,7 +18699,7 @@
       module_name: otp_ctrl
       desc: otp_ctrl fatal_prim_otp_alert alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 8
+      lpg_idx: 10
     }
     {
       name: otp_ctrl_recov_prim_otp_alert
@@ -18440,7 +18710,7 @@
       module_name: otp_ctrl
       desc: otp_ctrl recov_prim_otp_alert alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 8
+      lpg_idx: 10
     }
     {
       name: lc_ctrl_fatal_prog_error
@@ -18451,7 +18721,7 @@
       module_name: lc_ctrl
       desc: lc_ctrl fatal_prog_error alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 8
+      lpg_idx: 10
     }
     {
       name: lc_ctrl_fatal_state_error
@@ -18462,7 +18732,7 @@
       module_name: lc_ctrl
       desc: lc_ctrl fatal_state_error alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 8
+      lpg_idx: 10
     }
     {
       name: lc_ctrl_fatal_bus_integ_error
@@ -18473,7 +18743,7 @@
       module_name: lc_ctrl
       desc: lc_ctrl fatal_bus_integ_error alert
       lpg_name: secure_lc_io_div4_Main
-      lpg_idx: 8
+      lpg_idx: 10
     }
     {
       name: spi_host0_fatal_fault
@@ -18484,7 +18754,7 @@
       module_name: spi_host0
       desc: spi_host0 fatal_fault alert
       lpg_name: peri_spi_host0_Main
-      lpg_idx: 9
+      lpg_idx: 11
     }
     {
       name: spi_host1_fatal_fault
@@ -18495,7 +18765,7 @@
       module_name: spi_host1
       desc: spi_host1 fatal_fault alert
       lpg_name: spi_host1_spi_host1_Main
-      lpg_idx: 10
+      lpg_idx: 12
     }
     {
       name: usbdev_fatal_fault
@@ -18506,7 +18776,7 @@
       module_name: usbdev
       desc: usbdev fatal_fault alert
       lpg_name: peri_usb_Main
-      lpg_idx: 11
+      lpg_idx: 13
     }
     {
       name: pwrmgr_fatal_fault
@@ -18517,7 +18787,7 @@
       module_name: pwrmgr
       desc: pwrmgr fatal_fault alert
       lpg_name: powerup_por_io_div4_Aon
-      lpg_idx: 12
+      lpg_idx: 14
     }
     {
       name: rstmgr_fatal_fault
@@ -18528,7 +18798,7 @@
       module_name: rstmgr
       desc: rstmgr fatal_fault alert
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 13
+      lpg_idx: 15
     }
     {
       name: rstmgr_fatal_cnsty_fault
@@ -18539,7 +18809,7 @@
       module_name: rstmgr
       desc: rstmgr fatal_cnsty_fault alert
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 13
+      lpg_idx: 15
     }
     {
       name: clkmgr_recov_fault
@@ -18550,7 +18820,7 @@
       module_name: clkmgr
       desc: clkmgr recov_fault alert
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 13
+      lpg_idx: 15
     }
     {
       name: clkmgr_fatal_fault
@@ -18561,7 +18831,7 @@
       module_name: clkmgr
       desc: clkmgr fatal_fault alert
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 13
+      lpg_idx: 15
     }
     {
       name: sysrst_ctrl_fatal_fault
@@ -18572,7 +18842,7 @@
       module_name: sysrst_ctrl
       desc: sysrst_ctrl fatal_fault alert
       lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 14
+      lpg_idx: 16
     }
     {
       name: adc_ctrl_fatal_fault
@@ -18583,7 +18853,7 @@
       module_name: adc_ctrl
       desc: adc_ctrl fatal_fault alert
       lpg_name: peri_lc_io_div4_Aon
-      lpg_idx: 15
+      lpg_idx: 17
     }
     {
       name: pinmux_fatal_fault
@@ -18594,7 +18864,7 @@
       module_name: pinmux
       desc: pinmux fatal_fault alert
       lpg_name: powerup_lc_io_div4_Aon
-      lpg_idx: 13
+      lpg_idx: 15
     }
     {
       name: aon_timer_fatal_fault
@@ -18605,7 +18875,7 @@
       module_name: aon_timer
       desc: aon_timer fatal_fault alert
       lpg_name: timers_lc_io_div4_Aon
-      lpg_idx: 16
+      lpg_idx: 18
     }
     {
       name: sensor_ctrl_recov_alert
@@ -18616,7 +18886,7 @@
       module_name: sensor_ctrl
       desc: sensor_ctrl recov_alert alert
       lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 14
+      lpg_idx: 16
     }
     {
       name: sensor_ctrl_fatal_alert
@@ -18627,7 +18897,7 @@
       module_name: sensor_ctrl
       desc: sensor_ctrl fatal_alert alert
       lpg_name: secure_lc_io_div4_Aon
-      lpg_idx: 14
+      lpg_idx: 16
     }
     {
       name: sram_ctrl_ret_fatal_error
@@ -18638,7 +18908,7 @@
       module_name: sram_ctrl_ret
       desc: sram_ctrl_ret fatal_error alert
       lpg_name: infra_lc_io_div4_Aon
-      lpg_idx: 18
+      lpg_idx: 20
     }
     {
       name: rram_ctrl_recov_err
@@ -18649,7 +18919,7 @@
       module_name: rram_ctrl
       desc: rram_ctrl recov_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: rram_ctrl_fatal_std_err
@@ -18660,7 +18930,7 @@
       module_name: rram_ctrl
       desc: rram_ctrl fatal_std_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: rram_ctrl_fatal_err
@@ -18671,7 +18941,7 @@
       module_name: rram_ctrl
       desc: rram_ctrl fatal_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: rram_ctrl_fatal_macro_err
@@ -18682,7 +18952,7 @@
       module_name: rram_ctrl
       desc: rram_ctrl fatal_macro_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: rram_ctrl_recov_macro_err
@@ -18693,7 +18963,7 @@
       module_name: rram_ctrl
       desc: rram_ctrl recov_macro_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: rv_dm_fatal_fault
@@ -18704,7 +18974,7 @@
       module_name: rv_dm
       desc: rv_dm fatal_fault alert
       lpg_name: infra_sys_Main
-      lpg_idx: 20
+      lpg_idx: 22
     }
     {
       name: rv_plic_fatal_fault
@@ -18715,7 +18985,7 @@
       module_name: rv_plic
       desc: rv_plic fatal_fault alert
       lpg_name: secure_lc_Main
-      lpg_idx: 21
+      lpg_idx: 23
     }
     {
       name: aes_recov_ctrl_update_err
@@ -18726,7 +18996,7 @@
       module_name: aes
       desc: aes recov_ctrl_update_err alert
       lpg_name: aes_trans_lc_Main
-      lpg_idx: 22
+      lpg_idx: 24
     }
     {
       name: aes_fatal_fault
@@ -18737,7 +19007,7 @@
       module_name: aes
       desc: aes fatal_fault alert
       lpg_name: aes_trans_lc_Main
-      lpg_idx: 22
+      lpg_idx: 24
     }
     {
       name: hmac_fatal_fault
@@ -18748,7 +19018,7 @@
       module_name: hmac
       desc: hmac fatal_fault alert
       lpg_name: hmac_trans_lc_Main
-      lpg_idx: 23
+      lpg_idx: 25
     }
     {
       name: kmac_recov_operation_err
@@ -18759,7 +19029,7 @@
       module_name: kmac
       desc: kmac recov_operation_err alert
       lpg_name: kmac_trans_lc_Main
-      lpg_idx: 24
+      lpg_idx: 26
     }
     {
       name: kmac_fatal_fault_err
@@ -18770,7 +19040,7 @@
       module_name: kmac
       desc: kmac fatal_fault_err alert
       lpg_name: kmac_trans_lc_Main
-      lpg_idx: 24
+      lpg_idx: 26
     }
     {
       name: otbn_fatal
@@ -18781,7 +19051,7 @@
       module_name: otbn
       desc: otbn fatal alert
       lpg_name: otbn_trans_lc_Main
-      lpg_idx: 25
+      lpg_idx: 27
     }
     {
       name: otbn_recov
@@ -18792,7 +19062,7 @@
       module_name: otbn
       desc: otbn recov alert
       lpg_name: otbn_trans_lc_Main
-      lpg_idx: 25
+      lpg_idx: 27
     }
     {
       name: keymgr_dpe_recov_operation_err
@@ -18803,7 +19073,7 @@
       module_name: keymgr_dpe
       desc: keymgr_dpe recov_operation_err alert
       lpg_name: secure_lc_Main
-      lpg_idx: 21
+      lpg_idx: 23
     }
     {
       name: keymgr_dpe_fatal_fault_err
@@ -18814,7 +19084,7 @@
       module_name: keymgr_dpe
       desc: keymgr_dpe fatal_fault_err alert
       lpg_name: secure_lc_Main
-      lpg_idx: 21
+      lpg_idx: 23
     }
     {
       name: csrng_recov_alert
@@ -18825,7 +19095,7 @@
       module_name: csrng
       desc: csrng recov_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 21
+      lpg_idx: 23
     }
     {
       name: csrng_fatal_alert
@@ -18836,7 +19106,7 @@
       module_name: csrng
       desc: csrng fatal_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 21
+      lpg_idx: 23
     }
     {
       name: entropy_src_recov_alert
@@ -18847,7 +19117,7 @@
       module_name: entropy_src
       desc: entropy_src recov_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 21
+      lpg_idx: 23
     }
     {
       name: entropy_src_fatal_alert
@@ -18858,7 +19128,7 @@
       module_name: entropy_src
       desc: entropy_src fatal_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 21
+      lpg_idx: 23
     }
     {
       name: edn0_recov_alert
@@ -18869,7 +19139,7 @@
       module_name: edn0
       desc: edn0 recov_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 21
+      lpg_idx: 23
     }
     {
       name: edn0_fatal_alert
@@ -18880,7 +19150,7 @@
       module_name: edn0
       desc: edn0 fatal_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 21
+      lpg_idx: 23
     }
     {
       name: edn1_recov_alert
@@ -18891,7 +19161,7 @@
       module_name: edn1
       desc: edn1 recov_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 21
+      lpg_idx: 23
     }
     {
       name: edn1_fatal_alert
@@ -18902,7 +19172,7 @@
       module_name: edn1
       desc: edn1 fatal_alert alert
       lpg_name: secure_lc_Main
-      lpg_idx: 21
+      lpg_idx: 23
     }
     {
       name: sram_ctrl_main_fatal_error
@@ -18913,7 +19183,7 @@
       module_name: sram_ctrl_main
       desc: sram_ctrl_main fatal_error alert
       lpg_name: infra_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: sram_ctrl_sec_fatal_error
@@ -18924,7 +19194,7 @@
       module_name: sram_ctrl_sec
       desc: sram_ctrl_sec fatal_error alert
       lpg_name: infra_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: rom_ctrl_fatal
@@ -18935,7 +19205,7 @@
       module_name: rom_ctrl
       desc: rom_ctrl fatal alert
       lpg_name: infra_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: rv_core_ibex_fatal_sw_err
@@ -18946,7 +19216,7 @@
       module_name: rv_core_ibex
       desc: rv_core_ibex fatal_sw_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: rv_core_ibex_recov_sw_err
@@ -18957,7 +19227,7 @@
       module_name: rv_core_ibex
       desc: rv_core_ibex recov_sw_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: rv_core_ibex_fatal_hw_err
@@ -18968,7 +19238,7 @@
       module_name: rv_core_ibex
       desc: rv_core_ibex fatal_hw_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: rv_core_ibex_recov_hw_err
@@ -18979,7 +19249,7 @@
       module_name: rv_core_ibex
       desc: rv_core_ibex recov_hw_err alert
       lpg_name: infra_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: cheriot_mem_sys_fatal_fault
@@ -18990,7 +19260,7 @@
       module_name: cheriot_mem_sys
       desc: cheriot_mem_sys fatal_fault alert
       lpg_name: infra_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
     {
       name: sram_ctrl_meta_fatal_error
@@ -19001,7 +19271,7 @@
       module_name: sram_ctrl_meta
       desc: sram_ctrl_meta fatal_error alert
       lpg_name: infra_lc_Main
-      lpg_idx: 19
+      lpg_idx: 21
     }
   ]
   outgoing_alert: {}
@@ -21720,6 +21990,54 @@
         default: 1'b0
       }
       {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: pwrmgr_wakeups
+        width: 1
+        type: uni
+        end_idx: -1
+        act: rcv
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: i3c0_rstdet_enable
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
+      }
+      {
+        package: i3c_pkg
+        struct: i3c_rstdet_req
+        domain: chip
+        signame: i3c0_rstdet_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
+        default: i3c_pkg::I3C_RSTDET_REQ_DEFAULT
+      }
+      {
+        package: i3c_pkg
+        struct: i3c_rstdet_rsp
+        domain: chip
+        signame: i3c0_rstdet_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
+        default: i3c_pkg::I3C_RSTDET_RSP_DEFAULT
+      }
+      {
         package: ast_intraip_pkg
         struct: s2p
         domain: chip
@@ -22612,6 +22930,30 @@
         struct: logic
         domain: chip
         signame: cio_i3c1_sda_p2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_rstdet_scl_p2d
+        width: 1
+        type: uni
+        end_idx: -1
+        act: ""
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: chip
+        signame: cio_i3c1_rstdet_sda_p2d
         width: 1
         type: uni
         end_idx: -1
@@ -23773,6 +24115,32 @@
       }
     }
     {
+      name: peri_lc_aon_Aon
+      clock_group:
+      {
+        name: peri
+        src: top
+        sw_cg: yes
+        unique: no
+        clocks:
+        {
+          clk_io_div4_peri: io_div4
+          clk_io_div2_peri: io_div2
+          clk_io_peri: io
+          clk_aon_peri: aon
+          clk_usb_peri: usb
+        }
+      }
+      clock_connection: clkmgr_clocks.clk_aon_peri
+      unmanaged_clock: false
+      unmanaged_reset: false
+      reset_connection:
+      {
+        name: lc_aon
+        domain: Aon
+      }
+    }
+    {
       name: peri_i3c1_Main
       clock_group:
       {
@@ -23795,6 +24163,32 @@
       reset_connection:
       {
         name: i3c1
+        domain: Main
+      }
+    }
+    {
+      name: peri_lc_aon_Main
+      clock_group:
+      {
+        name: peri
+        src: top
+        sw_cg: yes
+        unique: no
+        clocks:
+        {
+          clk_io_div4_peri: io_div4
+          clk_io_div2_peri: io_div2
+          clk_io_peri: io
+          clk_aon_peri: aon
+          clk_usb_peri: usb
+        }
+      }
+      clock_connection: clkmgr_clocks_i.clk_aon_peri
+      unmanaged_clock: false
+      unmanaged_reset: false
+      reset_connection:
+      {
+        name: lc_aon
         domain: Main
       }
     }
@@ -24862,25 +25256,101 @@
       }
       {
         name: rstdet_enable
+        desc: Enables the SCL/SDA inputs of the Target Reset Detector in the secondary partition; deasserted while the Target is disconnected from the bus.
         struct: logic
         type: uni
         act: req
         width: 1
         inst_name: i3c0
+        default: ""
+        package: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: i3c0_rstdet_enable
         index: -1
+        external: true
+        conn_type: false
+      }
+      {
+        name: rstdet_enable
+        desc: Enables the SCL/SDA inputs of the Target Reset Detector; deasserted while the Target is disconnected from the bus.
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        partition: secondary
+        inst_name: i3c0
+        default: ""
+        package: ""
+        domain: Aon
+        top_signame: i3c0_rstdet_enable
+        index: -1
+        external: true
+        conn_type: false
       }
       {
         name: rstdet
+        desc: Control and status interface to the Target Reset Detector in the secondary partition.
         struct: i3c_rstdet
         package: i3c_pkg
         type: req_rsp
         act: req
         width: 1
         inst_name: i3c0
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: i3c0_rstdet
+        index: -1
+        external: true
+        conn_type: false
+      }
+      {
+        name: rstdet
+        desc: Control and status interface of the Target Reset Detector to the primary partition.
+        struct: i3c_rstdet
+        package: i3c_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        partition: secondary
+        inst_name: i3c0
+        default: ""
+        domain: Aon
+        top_signame: i3c0_rstdet
+        index: -1
+        external: true
+        conn_type: false
+      }
+      {
+        name: rstdet_wkup_req
+        desc: Wake-up request on detection of the Target Reset Pattern.
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        partition: secondary
+        inst_name: i3c0
+        default: ""
+        package: ""
+        domain: Aon
+        top_signame: pwrmgr_wakeups
+        index: 0
+      }
+      {
+        name: rstdet_target_rst
+        desc: Reset request for the I3C peripheral on detection of the Target Reset Pattern.
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        partition: secondary
+        inst_name: i3c0
         index: -1
       }
       {
         name: mbist_en
+        desc: Memory built-in self-test enable (unused).
         struct: logic
         type: uni
         act: rcv
@@ -24920,6 +25390,7 @@
       }
       {
         name: ram_cfg
+        desc: RAM configuration of the message buffer memory.
         struct: ram_1p_cfg
         package: prim_ram_1p_pkg
         type: req_rsp
@@ -24932,6 +25403,7 @@
       }
       {
         name: dat_cfg
+        desc: RAM configuration of the Device Address Table (DAT) memory.
         struct: ram_1p_cfg
         package: prim_ram_1p_pkg
         type: req_rsp
@@ -24944,6 +25416,7 @@
       }
       {
         name: dct_cfg
+        desc: RAM configuration of the Device Characteristics Table (DCT) memory.
         struct: ram_1p_cfg
         package: prim_ram_1p_pkg
         type: req_rsp
@@ -24996,25 +25469,95 @@
       }
       {
         name: rstdet_enable
+        desc: Enables the SCL/SDA inputs of the Target Reset Detector in the secondary partition; deasserted while the Target is disconnected from the bus.
         struct: logic
         type: uni
         act: req
         width: 1
         inst_name: i3c1
+        default: ""
+        package: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: i3c1_rstdet_enable
+        index: -1
+      }
+      {
+        name: rstdet_enable
+        desc: Enables the SCL/SDA inputs of the Target Reset Detector; deasserted while the Target is disconnected from the bus.
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        partition: secondary
+        inst_name: i3c1
+        default: ""
+        package: ""
+        domain: Main
+        top_signame: i3c1_rstdet_enable
         index: -1
       }
       {
         name: rstdet
+        desc: Control and status interface to the Target Reset Detector in the secondary partition.
         struct: i3c_rstdet
         package: i3c_pkg
         type: req_rsp
         act: req
         width: 1
         inst_name: i3c1
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: i3c1_rstdet
+        index: -1
+      }
+      {
+        name: rstdet
+        desc: Control and status interface of the Target Reset Detector to the primary partition.
+        struct: i3c_rstdet
+        package: i3c_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        partition: secondary
+        inst_name: i3c1
+        default: ""
+        domain: Main
+        top_signame: i3c1_rstdet
+        index: -1
+      }
+      {
+        name: rstdet_wkup_req
+        desc: Wake-up request on detection of the Target Reset Pattern.
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        partition: secondary
+        inst_name: i3c1
+        default: ""
+        package: ""
+        domain: Main
+        top_signame: pwrmgr_wakeups
+        index: -1
+        external: true
+        conn_type: false
+      }
+      {
+        name: rstdet_target_rst
+        desc: Reset request for the I3C peripheral on detection of the Target Reset Pattern.
+        struct: logic
+        type: uni
+        act: req
+        width: 1
+        partition: secondary
+        inst_name: i3c1
         index: -1
       }
       {
         name: mbist_en
+        desc: Memory built-in self-test enable (unused).
         struct: logic
         type: uni
         act: rcv
@@ -25054,6 +25597,7 @@
       }
       {
         name: ram_cfg
+        desc: RAM configuration of the message buffer memory.
         struct: ram_1p_cfg
         package: prim_ram_1p_pkg
         type: req_rsp
@@ -25066,6 +25610,7 @@
       }
       {
         name: dat_cfg
+        desc: RAM configuration of the Device Address Table (DAT) memory.
         struct: ram_1p_cfg
         package: prim_ram_1p_pkg
         type: req_rsp
@@ -25078,6 +25623,7 @@
       }
       {
         name: dct_cfg
+        desc: RAM configuration of the Device Characteristics Table (DCT) memory.
         struct: ram_1p_cfg
         package: prim_ram_1p_pkg
         type: req_rsp
@@ -26633,14 +27179,16 @@
         struct: logic
         type: uni
         act: rcv
-        width: 6
+        width: 8
         inst_name: pwrmgr
         default: ""
         package: ""
         end_idx: -1
         top_type: one-to-N
         top_signame: pwrmgr_wakeups
-        index: -1
+        index: 1
+        external: true
+        conn_type: true
       }
       {
         name: rstreqs
@@ -27169,7 +27717,7 @@
         package: ""
         domain: Aon
         top_signame: pwrmgr_wakeups
-        index: 0
+        index: 2
       }
       {
         name: rst_req
@@ -27224,7 +27772,7 @@
         package: ""
         domain: Aon
         top_signame: pwrmgr_wakeups
-        index: 1
+        index: 3
       }
       {
         name: tl
@@ -27493,7 +28041,7 @@
         package: ""
         domain: Aon
         top_signame: pwrmgr_wakeups
-        index: 2
+        index: 4
       }
       {
         name: usbdev_dppullup_en
@@ -27569,7 +28117,7 @@
         package: ""
         domain: Aon
         top_signame: pwrmgr_wakeups
-        index: 3
+        index: 5
       }
       {
         name: usbdev_suspend_req
@@ -27711,7 +28259,7 @@
         package: ""
         domain: Aon
         top_signame: pwrmgr_wakeups
-        index: 4
+        index: 6
       }
       {
         name: aon_timer_rst_req
@@ -28869,7 +29417,7 @@
         package: ""
         domain: Aon
         top_signame: pwrmgr_wakeups
-        index: 5
+        index: 7
       }
       {
         name: manual_pad_attr
@@ -30229,6 +30777,17 @@
         index: -1
       }
       {
+        name: secondary_root_key
+        struct: keymgr_dpe_creator_root_key
+        package: keymgr_dpe_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: keymgr_dpe_pkg::KEYMGR_DPE_SECONDARY_ROOT_KEY_DEFAULT
+        inst_name: keymgr_dpe
+        index: -1
+      }
+      {
         name: creator_seed
         struct: keymgr_dpe_creator_seed
         package: keymgr_dpe_pkg
@@ -30368,18 +30927,6 @@
         end_idx: -1
         top_type: one-to-one
         top_signame: csrng_entropy_src_hw_if
-        index: -1
-      }
-      {
-        name: otp_en_csrng_sw_app_read
-        struct: mubi8
-        package: prim_mubi_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: prim_mubi_pkg::MuBi8True
-        inst_name: csrng
-        top_signame: csrng_otp_en_csrng_sw_app_read
         index: -1
       }
       {
@@ -34527,6 +35074,166 @@
         netname: rv_dm_ndmreset_req
       }
       {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: pwrmgr_wakeups_i
+        signame_chip:
+        {
+          asic: pwrmgr_wakeups
+          verilator: pwrmgr_wakeups
+          cw340: pwrmgr_wakeups
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: true
+        index: 1
+        netname: pwrmgr_wakeups
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: pwrmgr_wakeups_o
+        signame_chip:
+        {
+          asic: pwrmgr_wakeups
+          verilator: pwrmgr_wakeups
+          cw340: pwrmgr_wakeups
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: 1
+        netname: pwrmgr_wakeups
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: i3c0_rstdet_enable_o
+        signame_chip:
+        {
+          asic: i3c0_rstdet_enable
+          verilator: i3c0_rstdet_enable
+          cw340: i3c0_rstdet_enable
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: i3c0_rstdet_enable
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: i3c0_rstdet_enable_i
+        signame_chip:
+        {
+          asic: i3c0_rstdet_enable
+          verilator: i3c0_rstdet_enable
+          cw340: i3c0_rstdet_enable
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: i3c0_rstdet_enable
+      }
+      {
+        package: i3c_pkg
+        struct: i3c_rstdet_req
+        domain: Main
+        inter_pd: true
+        signame: i3c0_rstdet_req_o
+        signame_chip:
+        {
+          asic: i3c0_rstdet_req
+          verilator: i3c0_rstdet_req
+          cw340: i3c0_rstdet_req
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: i3c0_rstdet_req
+      }
+      {
+        package: i3c_pkg
+        struct: i3c_rstdet_rsp
+        domain: Main
+        inter_pd: true
+        signame: i3c0_rstdet_rsp_i
+        signame_chip:
+        {
+          asic: i3c0_rstdet_rsp
+          verilator: i3c0_rstdet_rsp
+          cw340: i3c0_rstdet_rsp
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: i3c0_rstdet_rsp
+      }
+      {
+        package: i3c_pkg
+        struct: i3c_rstdet_req
+        domain: Aon
+        inter_pd: true
+        signame: i3c0_rstdet_req_i
+        signame_chip:
+        {
+          asic: i3c0_rstdet_req
+          verilator: i3c0_rstdet_req
+          cw340: i3c0_rstdet_req
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: i3c0_rstdet_req
+      }
+      {
+        package: i3c_pkg
+        struct: i3c_rstdet_rsp
+        domain: Aon
+        inter_pd: true
+        signame: i3c0_rstdet_rsp_o
+        signame_chip:
+        {
+          asic: i3c0_rstdet_rsp
+          verilator: i3c0_rstdet_rsp
+          cw340: i3c0_rstdet_rsp
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: i3c0_rstdet_rsp
+      }
+      {
         package: ast_intraip_pkg
         struct: s2p
         domain: Aon
@@ -38073,6 +38780,86 @@
         struct: logic
         domain: Main
         inter_pd: true
+        signame: cio_i3c1_rstdet_scl_p2d_i
+        signame_chip:
+        {
+          asic: cio_i3c1_rstdet_scl_p2d
+          verilator: cio_i3c1_rstdet_scl_p2d
+          cw340: cio_i3c1_rstdet_scl_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_rstdet_scl_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_rstdet_scl_p2d_o
+        signame_chip:
+        {
+          asic: cio_i3c1_rstdet_scl_p2d
+          verilator: cio_i3c1_rstdet_scl_p2d
+          cw340: cio_i3c1_rstdet_scl_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_rstdet_scl_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
+        signame: cio_i3c1_rstdet_sda_p2d_i
+        signame_chip:
+        {
+          asic: cio_i3c1_rstdet_sda_p2d
+          verilator: cio_i3c1_rstdet_sda_p2d
+          cw340: cio_i3c1_rstdet_sda_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: in
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_rstdet_sda_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: true
+        signame: cio_i3c1_rstdet_sda_p2d_o
+        signame_chip:
+        {
+          asic: cio_i3c1_rstdet_sda_p2d
+          verilator: cio_i3c1_rstdet_sda_p2d
+          cw340: cio_i3c1_rstdet_sda_p2d
+        }
+        width: 1
+        type: uni
+        default: "'0"
+        direction: out
+        conn_type: false
+        index: -1
+        netname: cio_i3c1_rstdet_sda_p2d
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        inter_pd: true
         signame: cio_i3c1_ctrl_sda_pu_d2p_o
         signame_chip:
         {
@@ -40513,7 +41300,7 @@
         struct: logic
         domain: Aon
         signame: pwrmgr_wakeups
-        width: 6
+        width: 8
         type: uni
         end_idx: -1
         act: rcv
@@ -40531,6 +41318,42 @@
         act: rcv
         suffix: ""
         default: "'0"
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        signame: i3c1_rstdet_enable
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
+      }
+      {
+        package: i3c_pkg
+        struct: i3c_rstdet_req
+        domain: Main
+        signame: i3c1_rstdet_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
+        default: ""
+      }
+      {
+        package: i3c_pkg
+        struct: i3c_rstdet_rsp
+        domain: Main
+        signame: i3c1_rstdet_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
+        default: i3c_pkg::I3C_RSTDET_RSP_DEFAULT
       }
       {
         package: tlul_pkg
@@ -42417,16 +43240,6 @@
         type: uni
         end_idx: -1
         default: "'0"
-      }
-      {
-        package: prim_mubi_pkg
-        struct: mubi8
-        signame: csrng_otp_en_csrng_sw_app_read
-        domain: Main
-        width: 1
-        type: uni
-        end_idx: -1
-        default: prim_mubi_pkg::MuBi8True
       }
       {
         package: otp_ctrl_pkg

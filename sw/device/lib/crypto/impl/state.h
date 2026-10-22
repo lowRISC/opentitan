@@ -29,6 +29,18 @@ static_assert(sizeof(crypto_state_t) == 16,
               "crypto_state_t size must be 128 bits (16 bytes)");
 
 /**
+ * Lock state value indicating the cryptolib is locked specifically due to an
+ * entropy source health test failure.
+ *
+ * Unlike a hard lock (`kHardenedByteBoolTrue`), this state allows recovery
+ * by calling `otcrypto_entropy_init()`, which re-executes the RNG startup
+ * tests.
+ */
+enum {
+  kOtcryptoLockStateEntropy = 0xd6,
+};
+
+/**
  * Initializes the state structure and stores it in the OTBN scratch registers.
  *
  * @param security_level The security level that is used for the cryptolib

@@ -72,7 +72,8 @@ status_t generate_random_key(uint32_t *key) {
   return OTCRYPTO_RECOV_ERR;
 }
 
-// Generate a random 448-bit Boolean-shared shared seed.
+// Generate a random 384-bit seed in two 448-bit Boolean shares (with random
+// noise in the ignored upper 64 bits of each share).
 status_t generate_random_seed(uint32_t *share0, uint32_t *share1) {
   otcrypto_word32_buf_t key_buf0 = OTCRYPTO_MAKE_BUF(
       otcrypto_word32_buf_t, share0, kP384MaskedScalarShareWords);
@@ -96,18 +97,25 @@ status_t arith_share_private_key_test(bool seed) {
   uint32_t key_share0[kP384MaskedScalarShareWords] = {0};
   uint32_t key_share1[kP384MaskedScalarShareWords] = {0};
 
-  // Either generate a 448-bit Boolean-shared seed that is converted to an
-  // 448-bit arithmetically shared key or generate a 384-bit unshared key in
-  // the interval [1, n-1] according to FIPS 186-5 and expand it to 448-bit
-  // Boolean shares before the conversion to arithmetic shares.
+  // Either generate a 384-bit Boolean-shared seed in 448-bit buffers or
+  // generate a 384-bit unshared key in the interval [1, n-1] according to
+  // FIPS 186-5 and mask it in 448-bit Boolean shares. In both cases, bits
+  // [447:384] are nonzero random bits that must be ignored.
   if (seed) {
     TRY(generate_random_seed(key_share0, key_share1));
   } else {
     TRY(generate_random_key(key_share0));
-    // Share the key
+    // Share the key across all 448 bits of the share buffers.
     TRY(hardened_memshred(key_share1, kP384MaskedScalarShareWords));
     TRY(hardened_xor_in_place(key_share0, key_share1,
                               kP384MaskedScalarShareWords));
+  }
+
+  // Reconstruct the expected 384-bit input (ignoring the upper 2 words).
+  uint32_t unmasked_key_384[kP384MaskedScalarShareWords] = {0};
+  uint32_t zero_share[kP384MaskedScalarShareWords] = {0};
+  for (size_t i = 0; i < kP384ScalarWords; i++) {
+    unmasked_key_384[i] = key_share0[i] ^ key_share1[i];
   }
 
   otcrypto_const_word32_buf_t private_key_share0 = OTCRYPTO_MAKE_BUF(
@@ -126,7 +134,8 @@ status_t arith_share_private_key_test(bool seed) {
   CHECK_STATUS_OK(otcrypto_ecc_p384_arith_share_private_key(
       &private_key_share0, &private_key_share1, &arith_shared_private_key));
 
-  // Part 2: Derive the public key with a base point multiplication.
+  // Part 2: Derive the public key with a base point multiplication and check
+  // that it matches the public key of the unmasked 384-bit input.
 
   uint32_t public_key_blob[kP384PublicKeyWords] = {0};
   otcrypto_unblinded_key_t public_key = {
@@ -138,6 +147,31 @@ status_t arith_share_private_key_test(bool seed) {
   LOG_INFO("Calculating the public key...");
   CHECK_STATUS_OK(otcrypto_ecc_p384_base_point_mult(&arith_shared_private_key,
                                                     &public_key));
+
+  otcrypto_const_word32_buf_t unmasked_share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, unmasked_key_384,
+                        kP384MaskedScalarShareWords);
+  otcrypto_const_word32_buf_t unmasked_share1 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, zero_share, kP384MaskedScalarShareWords);
+  uint32_t expected_priv_blob[kP384MaskedScalarTotalShareWords] = {0};
+  otcrypto_blinded_key_t expected_priv_key = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(expected_priv_blob),
+      .keyblob = expected_priv_blob,
+  };
+  CHECK_STATUS_OK(otcrypto_ecc_p384_private_key_import(
+      unmasked_share0, unmasked_share1, &expected_priv_key));
+
+  uint32_t expected_public_key_blob[kP384PublicKeyWords] = {0};
+  otcrypto_unblinded_key_t expected_public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = sizeof(expected_public_key_blob),
+      .key = expected_public_key_blob,
+  };
+  CHECK_STATUS_OK(otcrypto_ecc_p384_base_point_mult(&expected_priv_key,
+                                                    &expected_public_key));
+  CHECK_ARRAYS_EQ(public_key_blob, expected_public_key_blob,
+                  kP384PublicKeyWords);
 
   // Part 3: Sign a message with the arithmetically shared key.
 

@@ -18,9 +18,6 @@ module csrng_core import csrng_pkg::*; #(
   input  csrng_reg_pkg::csrng_reg2hw_t            reg2hw,
   output csrng_reg_pkg::csrng_hw2reg_t            hw2reg,
 
-  // OTP Interface
-  input  prim_mubi_pkg::mubi8_t                   otp_en_csrng_sw_app_read_i,
-
   // Lifecycle broadcast inputs
   input  lc_ctrl_pkg::lc_tx_t                     lc_hw_debug_en_i,
 
@@ -188,11 +185,9 @@ module csrng_core import csrng_pkg::*; #(
   logic [NumApps-1:0]          gen_abort_invalid_alert;
   logic [NumApps-1:0]          gen_abort_field_alert;
   logic                        sw_gen_abort_ack;
-  logic [1:0]                  otp_sw_app_read_en;
 
   logic [NumApps-1:0][31:0]    reseed_counter;
 
-  prim_mubi_pkg::mubi8_t                [1:0] otp_sw_app_read_en_mubi;
   prim_mubi_pkg::mubi4_t [CsEnableCopies-1:0] mubi_cs_enable_fanout;
   prim_mubi_pkg::mubi4_t    [Flag0Copies-1:0] mubi_flag0_fanout;
 
@@ -616,21 +611,8 @@ module csrng_core import csrng_pkg::*; #(
   // genbits
   assign hw2reg.genbits_vld.genbits_vld.d = genbits_stage_vld_sw;
   assign hw2reg.genbits_vld.genbits_fips.d = genbits_stage_fips_sw_q;
-  assign hw2reg.genbits.d = (sw_app_enable && otp_sw_app_read_en[0]) ? genbits_stage_bus_sw : '0;
+  assign hw2reg.genbits.d = sw_app_enable ? genbits_stage_bus_sw : '0;
   assign genbits_stage_bus_rd_sw = reg2hw.genbits.re;
-
-  assign otp_sw_app_read_en[0] = prim_mubi_pkg::mubi8_test_true_strict(otp_sw_app_read_en_mubi[0]);
-  assign otp_sw_app_read_en[1] = prim_mubi_pkg::mubi8_test_true_strict(otp_sw_app_read_en_mubi[1]);
-
-  prim_mubi8_sync #(
-    .NumCopies(2),
-    .AsyncOn(1)
-  ) u_prim_mubi8_sync_sw_app_read (
-    .clk_i,
-    .rst_ni,
-    .mubi_i(otp_en_csrng_sw_app_read_i),
-    .mubi_o(otp_sw_app_read_en_mubi)
-  );
 
   // Signal to clear SW genbits fifo on GEN abort.
   assign sw_gen_abort_ack = cmd_stage_ack[NumApps-1] &&
@@ -881,7 +863,7 @@ module csrng_core import csrng_pkg::*; #(
   //-------------------------------------
   // Holds the internal state of each csrng instance. Gets updated after every command.
 
-  assign state_db_reg_read_en = cs_enable_fo[40] && read_int_state && otp_sw_app_read_en[1];
+  assign state_db_reg_read_en = cs_enable_fo[40] && read_int_state;
 
   csrng_state_db u_csrng_state_db (
     .clk_i   (clk_i),
@@ -894,7 +876,7 @@ module csrng_core import csrng_pkg::*; #(
     .wr_vld_i   (state_db_wr_vld),
     .wr_data_i  (ctr_drbg_rsp_data),
 
-    .reg_rd_otp_en_i    (state_db_reg_read_en),
+    .reg_rd_en_i        (state_db_reg_read_en),
     .reg_rd_regfile_en_i(reg2hw.int_state_read_enable.q),
 
     .reg_rd_id_vld_i(reg2hw.int_state_num.qe),

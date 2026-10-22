@@ -314,9 +314,9 @@ The bus events that may be reported are listed below:
 | 21    | ChksumCCC   | Checksum error occurred during CCC (HDR-DDR)      |
 | 20    | ParityCCC   | Parity error occurred during CCC (SDR, HDR-DDR)   |
 | 19    | TargetRst   | Target Reset pattern was received                 |
-| 18    | Idle        | Bus Idle condition (> 200us with no activity)     |
+| 18    | Idle        | Bus Idle condition (> 200 us with no activity)     |
 | 17    | DeadBus     | No response to Start Request on an idle bus       |
-| 16    | ReadNoSCL   | No change in SCL for > 150us during Read Transfer |
+| 16    | ReadNoSCL   | No change in SCL for > 150 us during Read Transfer |
 
 ## Target Characteristics
 
@@ -419,13 +419,55 @@ It comes in two forms:
 1. Standard Hot-Join, in which the Target issues a Start Request, and then proceeds to drive out the address 7'h02.
 2. Passive Hot-Join, in which the Target drives 7'h02 into an Arbitrable Address Header.
 
-When the first Virtual Target is configured to operate as a Standby Controller, the Hot-Join capability is available via the HCI-specified [Standby Controller Control register](registers.md#stby_cr_control--stby_cr_enable_init).
-
-In the event that Standby Controller support is not enabled, or the Target peripheral is operating on a bus of its own, an equivalent capability is available via the [`TARG_CONTROL`](registers.md#targ_control--hj_request) register.
+Software requests a Hot-Join via the [`TARG_CONTROL`](registers.md#targ_control--hj_request) register.
+A Target that supports Hot-Join must also support the ENTDAA CCC (I3C Basic Specification, Table 16), which the Virtual Targets support (see [Address Assignment](#address-assignment)).
+The HCI also specifies a Hot-Join capability via the [Standby Controller Control register](registers.md#stby_cr_control--stby_cr_enable_init), but this version of the IP block does not support the Standby Controller role.
 
 ## Handling of Common Command Codes
 
-The following subsections describe the behavior of the Virtual Targets with respect to some of the Common Command Codes (CCCs) of the I3C Basic Specification.
+The following subsections describe the behavior of the Virtual Targets with respect to the Common Command Codes (CCCs) of the I3C Basic Specification (Table 16).
+The Target-side hardware handles all supported CCCs autonomously, and it may report each of them to software via the [Asynchronous Event Queue](#type-0---notification-of-ccc-activity).
+
+### Supported CCCs
+
+The Virtual Targets support the following CCCs.
+They acknowledge only the Direct CCCs listed here, and do not acknowledge any other Direct CCC.
+The Target does not support CCCs in HDR-DDR mode and declares this in its GETCAPS response (`GETCAP4`), so the Active Controller shall send CCCs to it in SDR mode (I3C Basic Specification, Section 6.1.3).
+
+| CCC                    | Broadcast | Direct    | Notes                                                                                                                                                  |
+|------------------------|-----------|-----------|--------------------------------------------------------------------------------------------------------------------------------------------------------|
+| ENEC, DISEC            | 0x00/0x01 | 0x80/0x81 | Enables/disables In-Band Interrupts, Controller Role Requests and Hot-Join.                                                                            |
+| ENTAS0-3               | 0x02-0x05 | 0x82-0x85 | Records the Activity State.                                                                                                                            |
+| RSTDAA                 | 0x06      | -         | Clears the dynamic address and all group memberships.                                                                                                  |
+| ENTDAA                 | 0x07      | -         | See [Address Assignment](#address-assignment).                                                                                                         |
+| SETMWL, SETMRL         | 0x09/0x0A | 0x89/0x8A | See [Maximum Read/Write Length](#maximum-readwrite-length).                                                                                            |
+| ENTTM                  | 0x0B      | -         | Defining Bytes 0x00 and 0x01 only.                                                                                                                     |
+| ENDXFER                | 0x12      | 0x92      | Negotiates the options for ending HDR-DDR transfers.                                                                                                   |
+| ENTHDR0                | 0x20      | -         | Enters HDR-DDR mode.                                                                                                                                   |
+| ENTHDR1-7              | 0x21-0x27 | -         | Unsupported HDR modes; the Target ignores the bus until the HDR Exit Pattern.                                                                          |
+| SETAASA                | 0x29      | -         | See [Address Assignment](#address-assignment).                                                                                                         |
+| RSTACT                 | 0x2A      | 0x9A      | Configures and returns the reset action, see [Target Reset Detector](#target-reset-detector).                                                          |
+| RSTGRPA                | 0x2C      | 0x9C      | Removes the Virtual Target(s) from groups.                                                                                                             |
+| SETDASA                | -         | 0x87      | See [Address Assignment](#address-assignment).                                                                                                         |
+| SETNEWDA               | -         | 0x88      | Changes the dynamic address.                                                                                                                           |
+| GETMWL, GETMRL         | -         | 0x8B/0x8C | See [Maximum Read/Write Length](#maximum-readwrite-length).                                                                                            |
+| GETPID, GETBCR, GETDCR | -         | 0x8D-0x8F | Returns the characteristics of the Virtual Target, see [Target Characteristics](#target-characteristics).                                              |
+| GETSTATUS              | -         | 0x90      | Format 1, including the pending interrupt field.                                                                                                       |
+| GETMXDS                | -         | 0x94      |                                                                                                                                                        |
+| GETCAPS                | -         | 0x95      | Format 1 and Format 2; the declared capabilities match the configuration of the Target, e.g. [HDR-DDR support](#target-support-for-hdr-ddr-signaling). |
+| SETGRPA                | -         | 0x9B      | See [Group Addressing](#group-addressing).                                                                                                             |
+
+A Direct SET CCC that is sent to a Group Address applies to the Virtual Targets that are members of that group.
+Broadcast CCCs and Direct SET CCCs that address several Virtual Targets take effect also when they are terminated by a Repeated START.
+The Virtual Targets do not acknowledge GETACCCR (0x91), because the Target cannot assume the Controller role.
+
+The Virtual Targets do not support the following CCCs:
+
+- DEFTGTS (0x08) and DEFGRPA (0x2B), which belong to the Secondary Controller and Standby Controller roles.
+- SETXTIME (0x28, 0x98) and GETXTIME (0x99), which belong to Timing Control.
+- MLANE (0x2D, 0x9D), which belongs to Multi-Lane operation.
+- GETSTATUS Format 2 (0x90 with Defining Bytes 0xD7 and 0xD8), SETBUSCON (0x0C) and SETROUTE (0x96), which are not supported by this version of the IP block.
+- Any CCC in HDR-DDR mode (I3C Basic Specification, Section 6.1.3); the Target supports CCCs in SDR mode only.
 
 ### Address Assignment
 
@@ -433,7 +475,7 @@ Each of the Virtual Targets supports all of the specified methods of assigning d
 
 - ENTDAA (4.3.7.3.4) - Virtual Targets arbitrate for allocation of a dynamic address supplied by the Controller.
 - SETDASA (4.3.7.3.10) - Sets the dynamic address to be the same as the static address of the Virtual Target.
-- SETAASA (4.3.7.3.21) - As `SETDASA` but this CCC is broadcast to all supporting Virtual Targets.
+- SETAASA (4.3.7.3.21) - As `SETDASA` but this CCC is broadcast to all supporting Virtual Targets; it takes effect only if the Virtual Target has no dynamic address yet.
 
 ### Maximum Read/Write Length
 
@@ -452,7 +494,7 @@ When a transfer is rejected in this manner, transmission from that Virtual Targe
 
 ### Other CCCs
 
-TODO(#31337): CAPS, ENTAS, ENDXFER and RSTACT in particular may warrant detailed descriptions here, once the feature set and priorities have stabilized, including the Virtual Target Detect behavior, since there is a separate BCR[4] bit for each Virtual Target, possibly offering support for declared and undeclared Virtual Targets.
+TODO(#31128): Describe the behavior for RSTACT, ENDXFER and GETCAPS in detail once their implementation is complete, including the Virtual Target Detect behavior, since there is a separate BCR[4] bit for each Virtual Target, possibly offering support for declared and undeclared Virtual Targets.
 
 ## Target Support for HDR-DDR Signaling
 
@@ -474,7 +516,7 @@ To comply with the I3C Specification, the Target logic supports a number of reco
  - Wake from 'Deepest Sleep' state.
  - No Reset or other action.
 
-Detection of the Target Reset pattern is performed by a small amount of logic that is external to the main IP block because it is expected to reside within a different power domain.
+Detection of the Target Reset pattern is performed by a small amount of logic, the Target Reset Detector, which forms a separate partition of the IP block because it is expected to reside within a different power domain (see the [Integration Notes](integration_notes.md#target-reset-detector)).
 
 This 'Target Reset' detector may be activated and deactivated by the Target under software control.
 The action to be taken upon detection of the Target Reset pattern may be reconfigured by the Active Controller at any time, by issuing the `RSTACT` Common Command Code.

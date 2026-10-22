@@ -515,9 +515,8 @@ package otp_ctrl_part_pkg;
   } otp_hw_cfg0_data_t;
   typedef struct packed {
     logic [63:0] hw_cfg1_digest;
-    logic [15:0] unallocated;
+    logic [23:0] unallocated;
     prim_mubi_pkg::mubi8_t en_sram_ifetch;
-    prim_mubi_pkg::mubi8_t en_csrng_sw_app_read;
     logic [31:0] soc_dbg_state;
   } otp_hw_cfg1_data_t;
 

@@ -140,6 +140,15 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level);
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status);
 
+/**
+ * Show the locked status of the cryptographic library.
+ *
+ * @return kHardenedBoolTrue if the cryptolib is locked, kHardenedBoolFalse
+ * otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+hardened_bool_t otcrypto_show_status(void);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

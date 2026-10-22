@@ -357,12 +357,12 @@ static const entropy_complex_config_t
                     .alert_threshold = 4,
                     .repcnt_threshold = 81,
                     .repcnts_threshold = 21,
-                    .adaptp_hi_threshold = 1591,
-                    .adaptp_lo_threshold = 2048 - 1591,  // 457
+                    .adaptp_hi_threshold = 1592,
+                    .adaptp_lo_threshold = 2048 - 1592,  // 456
                     .adaptps_threshold = 201,
-                    .bucket_threshold = 201,
-                    .markov_hi_threshold = 824,
-                    .markov_lo_threshold = 1024 - 824,  // 200
+                    .bucket_threshold = 202,
+                    .markov_hi_threshold = 825,
+                    .markov_lo_threshold = 1024 - 825,  // 199
                     .extht_hi_threshold = 0xffff,
                     .extht_lo_threshold = 0x0,
                 },
@@ -439,9 +439,9 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
   }
 
   uint32_t cmd_reg_addr;
-  uint32_t sts_reg_addr;
-  uint32_t rdy_bit_offset;
-  uint32_t reg_rdy_bit_offset;
+  uint32_t sts_reg_addr = 0;
+  uint32_t rdy_bit_offset = 0;
+  uint32_t reg_rdy_bit_offset = 0;
   uint32_t reg;
   bool ready;
 
@@ -508,7 +508,7 @@ static status_t csrng_send_app_cmd(uint32_t base_address,
 
   uint32_t cmd_len = cmd.seed_material == NULL ? 0 : cmd.seed_material->len;
 
-  if (cmd_len & ~kAppCmdFieldCmdLen.mask) {
+  if (cmd_len > kEntropySeedWords) {
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -790,6 +790,13 @@ void entropy_complex_stop_all(void) {
   edn_stop(edn1_base());
   abs_mmio_write32(csrng_base() + CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
   entropy_src_stop();
+
+  crypto_state_t state;
+  if (status_ok(read_state(&state))) {
+    state.csrng_instantiated = kHardenedByteBoolFalse;
+    state.csrng_is_default = kHardenedByteBoolFalse;
+    (void)store_state(&state);
+  }
 }
 
 /**
@@ -893,6 +900,10 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
                                     ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET),
                     alert_threshold);
 
+  // Clear the entropy_src recoverable alert status register.
+  abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET,
+                   0);
+
   // Enable entropy_src.
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
                    kMultiBitBool4True);
@@ -976,6 +987,13 @@ static status_t entropy_src_check(const entropy_src_config_t *config) {
       ~(uint32_t)config->alert_threshold);
   if (exp_reg != abs_mmio_read32(entropy_src_base() +
                                  ENTROPY_SRC_ALERT_THRESHOLD_REG_OFFSET)) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  // Check recoverable alerts.
+  if (abs_mmio_read32(entropy_src_base() +
+                      ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET) != 0) {
+    // COVERAGE (HW ERR) This is only reached when we detect a HW alert.
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -1264,6 +1282,12 @@ status_t entropy_csrng_instantiate(
 
 status_t entropy_csrng_reseed(hardened_bool_t disable_trng_input,
                               const entropy_seed_material_t *seed_material) {
+  crypto_state_t state;
+  if (status_ok(read_state(&state))) {
+    state.csrng_is_default = kHardenedByteBoolFalse;
+    HARDENED_TRY(store_state(&state));
+  }
+
   return csrng_send_app_cmd(csrng_base(),
                             (entropy_csrng_cmd_t){
                                 .id = kEntropyDrbgOpReseed,

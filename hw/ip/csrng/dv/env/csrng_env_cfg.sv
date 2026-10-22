@@ -33,7 +33,6 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   // set_num_hw_apps.
   rand csrng_agent_cfg m_edn_agent_cfg[$];
 
-  virtual pins_if#(MuBi8Width)   otp_en_cs_sw_app_read_vif;
   virtual pins_if#(MuBi4Width)   lc_hw_debug_en_vif;
 
   virtual csrng_assert_if csrng_assert_vif; // handle to csrng assert interface
@@ -43,7 +42,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   virtual csrng_agents_if csrng_agents_vif;
 
   // Knobs & Weights
-  uint otp_en_cs_sw_app_read_pct, otp_en_cs_sw_app_read_inval_pct, lc_hw_debug_en_pct, regwen_pct,
+  uint lc_hw_debug_en_pct, regwen_pct,
        int_state_read_enable_pct, int_state_read_enable_regwen_pct,
        enable_pct, sw_app_enable_pct, read_int_state_pct, fips_force_enable_pct, force_state_pct,
        check_int_state_pct, num_cmds_min, num_cmds_max,
@@ -63,7 +62,6 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
   rand mubi4_t   enable, sw_app_enable, read_int_state, fips_force_enable;
   rand bit [3:0] lc_hw_debug_en;
-  rand bit [7:0] otp_en_cs_sw_app_read;
 
   rand bit       int_state_read_enable_regwen;
 
@@ -110,13 +108,6 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
 
   rand uint   which_sp2v;
   constraint  which_sp2v_c { which_sp2v inside {[0:Sp2VWidth-1]};}
-
-  constraint otp_en_cs_sw_app_read_c {
-    `DV_MUBI8_DIST(otp_en_cs_sw_app_read,
-                   otp_en_cs_sw_app_read_pct,
-                   100 - otp_en_cs_sw_app_read_pct - otp_en_cs_sw_app_read_inval_pct,
-                   otp_en_cs_sw_app_read_inval_pct)
-  }
 
   constraint lc_hw_debug_en_c { `DV_LC_TX_DIST(lc_hw_debug_en, lc_hw_debug_en_pct,
                                 (100 - lc_hw_debug_en_pct) / 2,  (100 - lc_hw_debug_en_pct) / 2)}
@@ -360,8 +351,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     if (compare) begin
       // The dedicated RESEED_COUNTER CSR is always readable.
       `DV_CHECK_EQ_FATAL(csr_reseed_counter, reseed_counter[app])
-      if ((read_int_state == MuBi4True) && (otp_en_cs_sw_app_read == MuBi8True) &&
-          (csr_int_state_read_enable[app] == 1'b1)) begin
+      if ((read_int_state == MuBi4True) && (csr_int_state_read_enable[app] == 1'b1)) begin
         `DV_CHECK_EQ_FATAL(hw_reseed_counter, reseed_counter[app])
         `DV_CHECK_EQ_FATAL(hw_v, v[app])
         `DV_CHECK_EQ_FATAL(hw_key, key[app])
@@ -380,8 +370,6 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     string str = "";
     str = {str, "\n"};
     str = {str,  $sformatf("\n\t |**************** csrng_env_cfg *************************| \t")};
-    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read           :       'h%02h *****| \t",
-           otp_en_cs_sw_app_read)};
     str = {str,  $sformatf("\n\t |***** lc_hw_debug_en                  :       'h%02h *****| \t",
            lc_hw_debug_en)};
     str = {str,  $sformatf("\n\t |***** enable                          : %10s *****| \t",
@@ -401,10 +389,6 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     str = {str,  $sformatf("\n\t |***** fips_force_enable               : %10d *****| \t",
            fips_force_enable)};
     str = {str,  $sformatf("\n\t |---------------- knobs ---------------------------------| \t")};
-    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read_pct       : %10d *****| \t",
-           otp_en_cs_sw_app_read_pct) };
-    str = {str,  $sformatf("\n\t |***** otp_en_cs_sw_app_read_inval_pct : %10d *****| \t",
-           otp_en_cs_sw_app_read_pct) };
     str = {str,  $sformatf("\n\t |***** lc_hw_debug_en_pct              : %10d *****| \t",
            lc_hw_debug_en_pct) };
     str = {str,  $sformatf("\n\t |***** enable_pct                      : %10d *****| \t",

@@ -4,7 +4,7 @@
 //
 // I/O ports for I3C signaling using Virtual Open Drain.
 //
-// Driver Style 2 (see ./doc/integration_notes.md)
+// Virtual Open Drain output driver style (see ./doc/integration_notes.md)
 // - Virtual Open Drain with single output enable per SDA lane.
 
 package i3c_io_pkg;

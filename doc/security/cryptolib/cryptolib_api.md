@@ -14,6 +14,7 @@ This page:
   - [Message authentication](#message-authentication)
   - [RSA operations](#rsa)
   - [Elliptic curve cryptography](#elliptic-curve-cryptography)
+  - [ML-KEM operations](#ml-kem)
   - [Deterministic random bit generation (DRBG)](#deterministic-random-bit-generation)
   - [Key derivation functions (KDF)](#key-derivation)
   - [Key transport](#key-transport)
@@ -34,6 +35,7 @@ For more details, see later sections (links in the "category" column).
 | [**Message authentication**](#message-authentication) | HMAC-SHA{256,384,512}<br>KMAC{128,256}<br>AES-CMAC |
 | [**RSA**](#rsa) | RSA-{2048,3072,4096} |
 | [**Elliptic curve cryptography**](#elliptic-curve-cryptography) | ECDSA-{P256,P384}<br>ECDH-{P256,P384}<br>Ed25519<br>X25519 |
+| [**ML-KEM**](#ml-kem) | ML-KEM-1024 |
 | [**Deterministic random bit generation**](#deterministic-random-bit-generation) | AES-CTR-DRBG |
 | [**Key derivation**](#key-derivation) | HKDF-SHA{256,384,512}<br>HMAC-KDF-CTR<br>KMAC-KDF-CTR |
 
@@ -104,6 +106,14 @@ Callers can decode any version integer into its major, minor, and patch componen
 Full build information, including release status and truncated Git commit hash, can be queried with `otcrypto_build_info`:
 
 {{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_build_info }}
+
+The cryptolib module name (`otcrypto_earlgrey_cryptolib`) can be queried into a fixed-length byte buffer (`kOtcryptoModuleNameBytes`) with `otcrypto_module_name`:
+
+{{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_module_name }}
+
+The ROM version (stored in the `ROM_CTRL.EXP_DIGEST_1` register) can be read with `otcrypto_rom_version`:
+
+{{#header-snippet sw/device/lib/crypto/include/cryptolib_build_info.h otcrypto_rom_version }}
 
 ### Key Structure Migration and Version Verification
 
@@ -293,6 +303,7 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_rsa_key_mode }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_ecc_key_mode }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_kdf_key_mode }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_pqc_key_mode }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_key_mode }}
 
 ### Algorithm-specific data structures
@@ -667,8 +678,9 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 #### Ed25519
 
-For Ed25519 (a curve-specialized version of EdDSA, the Edwards curve digital signature algorithm), the cryptography library supports keypair generation, signature generation, and signature verification.
+For Ed25519 (a curve-specialized version of EdDSA, the Edwards curve digital signature algorithm), the cryptography library supports keypair generation, public key derivation from an existing private key, signature generation, and signature verification.
 
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_public_key_from_private }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_sign }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_verify }}
@@ -680,6 +692,7 @@ For x25519 key exchange, the cryptography library supports keypair generation an
 Each party should generate a key pair, exchange public keys, and then generate the shared key using their own private key and the other party's public key.
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_x25519_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_x25519_public_key_from_private }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_x25519 }}
 
 ### ECC Asynchronous API
@@ -728,6 +741,9 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 #### Ed25519
 
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_keygen_async_finalize }}
+
 {{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_public_key_from_private_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_public_key_from_private_async_finalize }}
 
@@ -742,6 +758,9 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_x25519_keygen_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_x25519_keygen_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_x25519_public_key_from_private_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_x25519_public_key_from_private_async_finalize }}
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_x25519_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_x25519_async_finalize }}
@@ -771,6 +790,40 @@ Cryptolib also offers helper functions to check a given point as well as perform
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecc_p384_point_on_curve }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecc_p384_base_point_mult }}
+
+## ML-KEM
+
+ML-KEM (Module-Lattice-Based Key-Encapsulation Mechanism), standardized in [FIPS 203][fips-203], is a post-quantum key-encapsulation mechanism based on the Module Learning With Errors (MLWE) problem.
+OpenTitan uses the [OpenTitan Big Number Accelerator][otbn] to speed up ML-KEM operations.
+
+OpenTitan supports ML-KEM-1024 key generation, encapsulation, and decapsulation.
+All ML-KEM operations may be run [asynchronously](#asynchronous-operations) through a dedicated [asynchronous API](#ml-kem-asynchronous-api).
+
+### Security considerations
+
+The ML-KEM-1024 implementation in the cryptolib is currently **not hardened** against side-channel analysis (SCA) or fault injection (FI) attacks.
+Do not use this implementation in threat models where an attacker has physical side-channel or fault-injection capabilities against secret decapsulation keys or encapsulation randomness.
+
+Although the secret key blob (`kOtcryptoMlkem1024SkBytes` = 4736 bytes) reserves two share slots each for the secret polynomial vector `s` and the implicit-rejection seed `z` (making it larger than the 3168-byte FIPS 203 decapsulation key), the underlying OTBN routines are not yet masked or fault-hardened.
+
+| Parameter set | NIST security category | Public key (bytes) | Secret key blob (bytes) | Ciphertext (bytes) | Shared secret (bytes) |
+|---------------|------------------------|--------------------|-------------------------|--------------------|-----------------------|
+| ML-KEM-1024   | Category 5 (256-bit)   | 1568               | 4736                    | 1568               | 32                    |
+
+### ML-KEM Synchronous API
+
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem1024_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem1024_encaps }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem1024_decaps }}
+
+### ML-KEM Asynchronous API
+
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem1024_keygen_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem1024_keygen_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem1024_encaps_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem1024_encaps_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem1024_decaps_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/mlkem.h otcrypto_mlkem1024_decaps_async_finalize }}
 
 ## Deterministic random bit generation
 
@@ -849,7 +902,7 @@ Single-shot OTBN execution natively handles `ikm_len <= 96` bytes (SHA-256) or `
 ## Key transport
 
 This is the interface for generating, importing, and exporting crypto library symmetric keys.
-Asymmetric schemes (e.g. RSA or elliptic-curve cryptography) use algorithm-specific routines for key generation; refer to the RSA and ECC sections instead to generate, import, or export asymmetric keys.
+Asymmetric schemes (e.g. RSA, elliptic-curve cryptography, or ML-KEM) use algorithm-specific routines for key generation; refer to the RSA, ECC, and ML-KEM sections instead to generate, import, or export asymmetric keys.
 
 The crypto library represents private keys in masked form ("blinded keys").
 The internal structure of blinded keys is opaque to the user and may change in subsequent versions of the crypto library.
@@ -958,6 +1011,7 @@ The following operations can run asynchronously:
 | Ed25519  | keygen, sign, verify |
 | X25519   | keygen, key exchange |
 | RSA      | keygen, sign, verify |
+| ML-KEM   | keygen, encaps, decaps |
 
 
 ## Security Strength
@@ -993,6 +1047,7 @@ The table below summarizes the security strength for the supported [cryptographi
 | ECC            | NIST P-256     | 128                              |                                                       |
 | ECC            | NIST P-384     | 192                              |                                                       |
 | ECC            | X25519/Ed25519 | 128                              |                                                       |
+| KEM            | ML-KEM-1024    | 256                              | NIST Security Category 5 (FIPS 203); not hardened against SCA/FI |
 | DRBG           | CTR_DRBG       | 256                              | Based on AES-CTR-256                                  |
 | KDF            | KDF_CTR        | 128                              | With HMAC or KMAC as PRF                              |
 
@@ -1037,6 +1092,9 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 9. [IETF RFC 8032][eddsa-rfc]: Edwards-Curve Digital Signature Algorithm (EdDSA)
 10. [NIST SP800-186][nist-ecc-domain-params]: Recommendations for Discrete Logarithm-Based Cryptography: Elliptic Curve Domain Parameters
 
+**Key encapsulation (Post-quantum cryptography)**
+1. [FIPS 203][fips-203]: Module-Lattice-Based Key-Encapsulation Mechanism Standard
+
 **Deterministic random bit generation**
 1. [NIST SP800-90A][nist-drbg-spec]: Recommendation for Random Number Generation Using Deterministic Random Bit Generators
 2. [NIST SP800-90B][nist-entropy-spec]: Recommendation for the Entropy Sources Used for Random Bit Generation
@@ -1064,6 +1122,7 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 [eddsa-rfc]: https://datatracker.ietf.org/doc/html/rfc8032
 [entropy-src]:  ../../../hw/ip/entropy_src/README.md
 [fips-186]: https://csrc.nist.gov/publications/detail/fips/186/5/final
+[fips-203]: https://csrc.nist.gov/pubs/fips/203/final
 [gcm-spec]: https://csrc.nist.gov/publications/detail/sp/800-38d/final
 [hkdf-rfc]: https://datatracker.ietf.org/doc/html/rfc5869
 [hmac]:  ../../../hw/ip/hmac/README.md
