@@ -252,11 +252,7 @@ cc_library(
         fpga = fpga_params(
             needs_jtag = True,
             otp = ":otp_img_sram_exec_en_{}".format(lc_state.lower()),
-            tags = [
-                "manuf",
-                # Flaky in CI and locally, see #29555.
-                "broken",
-            ],
+            tags = ["manuf"],
             test_cmd = "--elf={firmware}",
             test_harness = "//sw/host/tests/manuf/manuf_sram_program_crc_check",
             testopt_bootstrap = "False",
