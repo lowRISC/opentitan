@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use std::collections::VecDeque;
 use std::fmt::LowerHex;
 use std::io::{BufRead, BufReader, Write};
 use std::mem::size_of;
@@ -9,6 +10,8 @@ use std::net::TcpStream;
 use std::os::unix::process::CommandExt;
 use std::path::Path;
 use std::process::{Child, Command, Stdio};
+use std::sync::{Arc, Mutex};
+use std::thread::JoinHandle;
 use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result, bail, ensure};
@@ -32,6 +35,10 @@ pub struct OpenOcd {
     reader: BufReader<TcpStream>,
     /// Sending side of the stream to the telnet interface of OpenOCD.
     writer: TcpStream,
+    /// The last lines OpenOCD wrote to stderr, reported if it exits unexpectedly.
+    stderr_tail: Arc<Mutex<VecDeque<String>>>,
+    /// Thread draining OpenOCD's stderr; it ends when OpenOCD closes stderr.
+    stderr_thread: Option<JoinHandle<()>>,
 }
 
 impl Drop for OpenOcd {
@@ -43,6 +50,10 @@ impl Drop for OpenOcd {
 impl OpenOcd {
     /// How long to wait for OpenOCD to get ready to accept a TCL connection.
     const OPENOCD_TCL_READY_TMO: Duration = Duration::from_secs(30);
+    /// How many of OpenOCD's last stderr lines to keep for error reports.
+    const STDERR_TAIL_LINES: usize = 20;
+    /// How long to wait for OpenOCD to be reaped after its socket closed.
+    const EXIT_STATUS_TMO: Duration = Duration::from_secs(1);
 
     /// Wait until we see a particular message on the output.
     fn wait_until_regex_match<'a>(
@@ -126,7 +137,7 @@ impl OpenOcd {
         )
         .context("OpenOCD was not ready in time to accept a connection")?;
         let openocd_port: u16 = regex_captures.get(1).unwrap().as_str().parse()?;
-        // Print stdout and stderr with log
+        // Print stdout with log
         if log_stdio {
             std::thread::spawn(move || {
                 printer::accumulate(
@@ -135,14 +146,31 @@ impl OpenOcd {
                     Default::default(),
                 )
             });
-            std::thread::spawn(move || {
-                printer::accumulate(
-                    stderr,
-                    concat!(module_path!(), "::stderr"),
-                    Default::default(),
-                )
-            });
         }
+        // Always drain stderr, so OpenOCD never blocks on a full pipe, and keep its
+        // last lines: OpenOCD reports errors there, and they explain a later exit.
+        let stderr_tail = Arc::new(Mutex::new(VecDeque::with_capacity(Self::STDERR_TAIL_LINES)));
+        let tail = Arc::clone(&stderr_tail);
+        let stderr_thread = std::thread::spawn(move || {
+            // Read raw lines, so a line that is not valid UTF-8 does not end the drain.
+            let mut buf = Vec::new();
+            while let Ok(n) = stderr.read_until(b'\n', &mut buf)
+                && n > 0
+            {
+                let line = String::from_utf8_lossy(&buf)
+                    .trim_end_matches(['\r', '\n'])
+                    .to_string();
+                buf.clear();
+                if log_stdio {
+                    log::info!(target: concat!(module_path!(), "::stderr"), "{line}");
+                }
+                let mut tail = tail.lock().unwrap();
+                if tail.len() == Self::STDERR_TAIL_LINES {
+                    tail.pop_front();
+                }
+                tail.push_back(line);
+            }
+        });
 
         let kill_guard = scopeguard::guard(child, |mut child| {
             let _ = child.kill();
@@ -164,6 +192,8 @@ impl OpenOcd {
             server_process: scopeguard::ScopeGuard::into_inner(kill_guard),
             reader: BufReader::new(stream.try_clone()?),
             writer: stream,
+            stderr_tail,
+            stderr_thread: Some(stderr_thread),
         };
 
         // Test the connection by asking for OpenOCD's version.
@@ -197,12 +227,50 @@ impl OpenOcd {
         let mut buf = Vec::new();
         self.reader.read_until(0x1A, &mut buf)?;
         if !buf.ends_with(b"\x1A") {
-            bail!(OpenOcdError::PrematureExit(
-                String::from_utf8_lossy(&buf).to_string()
-            ));
+            let partial = String::from_utf8_lossy(&buf).to_string();
+            let report = self.exit_report();
+            bail!(OpenOcdError::PrematureExit(if partial.is_empty() {
+                report
+            } else {
+                format!("{partial}; {report}")
+            }));
         }
         buf.pop();
         String::from_utf8(buf).context("failed to parse OpenOCD response as UTF-8")
+    }
+
+    /// Describe how OpenOCD ended (exit code or signal) and what it last printed.
+    fn exit_report(&mut self) -> String {
+        // The socket can close a moment before the process can be reaped.
+        let deadline = Instant::now() + Self::EXIT_STATUS_TMO;
+        let status = loop {
+            match self.server_process.try_wait() {
+                Ok(None) if Instant::now() < deadline => {
+                    std::thread::sleep(Duration::from_millis(10))
+                }
+                Ok(status) => break status,
+                Err(_) => break None,
+            }
+        };
+        // Once OpenOCD is gone its stderr is closed: let the thread read the rest.
+        if status.is_some()
+            && let Some(thread) = self.stderr_thread.take()
+        {
+            let _ = thread.join();
+        }
+        let tail = self.stderr_tail.lock().unwrap();
+        let mut report = match status {
+            Some(status) => format!("process ended with {status}"),
+            None => "process still running".to_string(),
+        };
+        if !tail.is_empty() {
+            report.push_str("\nLast OpenOCD output:");
+            for line in tail.iter() {
+                report.push_str("\n  ");
+                report.push_str(line);
+            }
+        }
+        report
     }
 
     pub fn shutdown(mut self) -> Result<()> {
@@ -292,6 +360,12 @@ impl JtagChain for OpenOcdJtagChain {
         let resp = self.openocd.execute("capture init")?;
         if resp.contains("JTAG scan chain interrogation failed") {
             bail!(OpenOcdError::InitializeFailure(resp));
+        }
+        // OpenOCD carries on with a target it could not examine (e.g. "Hart 0 failed
+        // to halt during examine()"), and later commands then fail in confusing ways.
+        // Only the RISC-V TAP has a debug module to examine (see #28588).
+        if tap == JtagTap::RiscvTap && resp.contains("examination failed") {
+            log::warn!("OpenOCD could not examine the target during init:\n{resp}");
         }
 
         Ok(Box::new(OpenOcdJtagTap {
