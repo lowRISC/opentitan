@@ -80,6 +80,7 @@ module keccak_2share_fpv #(
           update_state = 1'b1;
         end else begin
           keccak_st_d = StPhase1;
+        end
       end
       StPhase2Cycle1: begin
         sel_mux = MuBi4True;
