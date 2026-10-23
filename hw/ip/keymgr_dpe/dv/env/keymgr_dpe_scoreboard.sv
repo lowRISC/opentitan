@@ -885,7 +885,19 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                     void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
                     post_disable_compare_key_slots = 1;
                   end
-                  default: ;
+                  // TODO(#31746): Support `OpDpeLoadRootKey` in blocklevel dv
+                  default: begin
+                    // An unknown operation is rejected without touching the key slots
+                    current_op_status = keymgr_dpe_pkg::OpDoneFail;
+                    // No KDF issued, done interrupt/alert is triggered in next cycle
+                    void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+                    if (cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) fork
+                      begin
+                        cfg.clk_rst_vif.wait_clks(1);
+                        process_error_n_alert();
+                      end
+                    join_none
+                  end
                 endcase
               end
               keymgr_dpe_pkg::StWorkDpeDisabled, keymgr_dpe_pkg::StWorkDpeInvalid: begin
@@ -1263,7 +1275,12 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               return 1;
             return 0;
           end
+          keymgr_dpe_pkg::OpDpeLoadRootKey: begin
+            // TODO(#31746): Support `OpDpeLoadRootKey` in blocklevel dv
+            return 1;
+          end
           default: begin
+            return 1;
           end
         endcase
       end
@@ -1654,13 +1671,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     end
   endfunction
 
-  // if it's not defined operation, treat as OpDpeDisable
+  // Use a static cast so that unknown encodings are preserved, they are rejected by the DUT as
+  // invalid operations.
   virtual function keymgr_dpe_pkg::keymgr_dpe_ops_e get_operation();
-    keymgr_dpe_pkg::keymgr_dpe_ops_e op;
-    int op_int_val = `gmv(ral.control_shadowed.operation);
-
-    if (!$cast(op, op_int_val)) op = keymgr_dpe_pkg::OpDpeDisable;
-    return op;
+    return keymgr_dpe_pkg::keymgr_dpe_ops_e'(`gmv(ral.control_shadowed.operation));
   endfunction
 
   virtual function void get_key_slots();

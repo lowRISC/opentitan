@@ -125,6 +125,8 @@ During each state, there are 6 valid commands software can issue:
 The software is able to select a command and trigger the key manager FSM to process one of the commands.
 If a command is valid during the current working state, it is processed and acknowledged when complete.
 If a command is invalid, the requested operation is rejected and the values in key slots remain unmodified.
+An encoding of `CONTROL_SHADOWED.OPERATION` that does not map to any command is invalid in every working state.
+Such a request completes immediately with `OP_STATUS` set to `DONE_FAIL` and `ERR_CODE.INVALID_OP` set.
 More details about command interactions can be found in Programmers Guide.
 
 ### Advance
