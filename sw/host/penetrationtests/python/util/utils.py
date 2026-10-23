@@ -3,6 +3,11 @@
 # SPDX-License-Identifier: Apache-2.0
 
 import argparse
+import hashlib
+import json
+import os
+import random
+import re
 import struct
 import sys
 
@@ -127,6 +132,18 @@ def add_test_selection_args(parser: argparse.ArgumentParser):
         default=False,
         help="List all available tests in this suite and exit",
     )
+    parser.add_argument(
+        "--num-skips",
+        type=int,
+        default=0,
+        help="Number of random instruction skips to perform (0 for exhaustive)",
+    )
+    parser.add_argument(
+        "--dump-json",
+        action="store_true",
+        default=False,
+        help="Dump FI campaign results and metadata to JSON",
+    )
 
 
 def resolve_test_name(requested_name: str, available_tests: list):
@@ -236,3 +253,291 @@ def get_selected_test_argv(
         return [sys.argv[0], f"{test_class.__name__}.{matched}"]
 
     return [sys.argv[0]]
+
+
+class _StdoutSpy:
+    def __init__(self, stream, campaign):
+        self._stream = stream
+        self._campaign = campaign
+        self._buf = ""
+
+    def write(self, data):
+        res = self._stream.write(data)
+        self._buf += data
+        while "\n" in self._buf:
+            line, self._buf = self._buf.split("\n", 1)
+            self._campaign.observe_line(line)
+        return res
+
+    def flush(self):
+        return self._stream.flush()
+
+    def __getattr__(self, name):
+        return getattr(self._stream, name)
+
+
+class _FICampaign:
+    def __init__(self, pc_count_dict, max_skips_per_loop, num_skips=0):
+        self.pc_count_dict = pc_count_dict
+        self.max_skips_per_loop = max_skips_per_loop
+        self.num_skips = num_skips
+        self.plan = []
+        if num_skips and num_skips > 0:
+            all_pcs = list(pc_count_dict.keys())
+            random.shuffle(all_pcs)
+            for pc in all_pcs:
+                max_occ = min(max(max_skips_per_loop, 3), pc_count_dict[pc])
+                self.plan.append((pc, [random.randrange(max_occ)]))
+        else:
+            for pc, count in pc_count_dict.items():
+                self.plan.append((pc, list(range(min(max_skips_per_loop, count)))))
+
+        self.current_point = None
+        self._current_hit = False
+        self._partial_hits = 0
+        self.attempts = 0
+        self.executed_points = []
+        self.results = {}
+        self.outcomes = {}
+        self.orig_stdout = sys.stdout
+        sys.stdout = _StdoutSpy(sys.stdout, self)
+
+    def mark_hit(self):
+        if self.current_point is not None and not self._current_hit:
+            self._current_hit = True
+            pc_int, occ = self.current_point
+            self.executed_points.append((pc_int, occ))
+            self.results.setdefault(pc_int, {})[occ] = False
+            self.outcomes.setdefault((pc_int, occ), "No fault")
+
+    def record_partial(self, hits):
+        if hits and hits > 0:
+            self._partial_hits = hits
+
+    def items(self):
+        for pc, occs in self.plan:
+            if (self.num_skips and self.num_skips > 0 and
+                    len(self.executed_points) >= self.num_skips):
+                break
+            yield pc, self._iter_occs(pc, occs)
+
+    def _iter_occs(self, pc, occs):
+        pc_int = int(pc, 16)
+        for occ in occs:
+            if (self.num_skips and self.num_skips > 0 and
+                    len(self.executed_points) >= self.num_skips):
+                break
+            self.attempts += 1
+            self.current_point = (pc_int, occ)
+            self._current_hit = False
+            self._partial_hits = 0
+            if not (self.num_skips and self.num_skips > 0):
+                self.mark_hit()
+            yield occ
+            if (
+                self.num_skips and
+                self.num_skips > 0 and
+                not self._current_hit and
+                self._partial_hits > 0
+            ):
+                max_fb = min(max(self.max_skips_per_loop, 3), self._partial_hits)
+                fallback_occ = random.randrange(max_fb)
+                self.attempts += 1
+                self.current_point = (pc_int, fallback_occ)
+                self._current_hit = False
+                self._partial_hits = 0
+                yield fallback_occ
+
+    def observe_line(self, line):
+        if self.current_point is None or not self._current_hit:
+            return
+        pc_int, occ = self.current_point
+        if "Successful FI attack!" in line:
+            self.results.setdefault(pc_int, {})[occ] = True
+            self.outcomes[(pc_int, occ)] = "Successful corruption (FI attack)"
+        elif self.outcomes.get((pc_int, occ)) != "Successful corruption (FI attack)":
+            if "Crash detected" in line:
+                self.outcomes[(pc_int, occ)] = "Caught (crash)"
+            elif "Target did not respond" in line:
+                self.outcomes[(pc_int, occ)] = "Caught (timeout)"
+
+
+_active_campaign = None
+
+
+def mark_skip_hit():
+    if _active_campaign is not None:
+        _active_campaign.mark_hit()
+
+
+def record_partial_hits(hits):
+    if _active_campaign is not None:
+        _active_campaign.record_partial(hits)
+
+
+def select_fi_skips(pc_count_dict, max_skips_per_loop, num_skips=0):
+    """Selects (PC, occurrence) pairs for an FI campaign (exhaustive or Monte-Carlo)."""
+    global _active_campaign
+    _active_campaign = _FICampaign(pc_count_dict, max_skips_per_loop, num_skips)
+    return _active_campaign
+
+
+_HEX_ADDR_RE = re.compile(r"\b([0-9a-f]{8})\b")
+_LO12_MEM_RE = re.compile(r"-?[0-9]+\(([a-z0-9]+)\)")
+_LO12_ADDI_RE = re.compile(r"^([a-z0-9]+),([a-z0-9]+),-?[0-9]+$")
+
+
+def _compute_campaign_sha256(insns, pc_counts):
+    """Computes a relocation-invariant SHA-256 over the functions touched by the campaign."""
+    if not insns or not pc_counts:
+        return ""
+    func_start = {}
+    cur_fn, cur_start = None, 0
+    for pc, info in insns.items():
+        fn = info.get("func", "")
+        if fn != cur_fn:
+            cur_fn, cur_start = fn, pc
+        func_start[pc] = cur_start
+
+    touched_starts = {
+        func_start[pc] for pc in pc_counts if pc in func_start and insns[pc].get("func")
+    }
+    entries = []
+    auipc_regs = set()
+    prev_start = None
+    for pc, info in insns.items():
+        f_start = func_start[pc]
+        if pc not in pc_counts and f_start not in touched_starts:
+            continue
+        if f_start != prev_start:
+            auipc_regs.clear()
+            prev_start = f_start
+        mnem = info.get("mnemonic", "")
+        ops = info.get("operands", "")
+        if mnem == "auipc":
+            rd = ops.split(",")[0].strip()
+            ops = f"{rd},<auipc>"
+            auipc_regs.add(rd)
+        else:
+            ops = _HEX_ADDR_RE.sub(
+                lambda m: (
+                    f"{insns[int(m.group(1), 16)].get('func', '')}+"
+                    f"{int(m.group(1), 16) - func_start[int(m.group(1), 16)]:x}"
+                    if int(m.group(1), 16) in insns
+                    else m.group(0)
+                ),
+                ops,
+            )
+            if auipc_regs:
+                m_addi = _LO12_ADDI_RE.match(ops)
+                m_mem = _LO12_MEM_RE.search(ops)
+                if m_addi and m_addi.group(2) in auipc_regs:
+                    ops = f"{m_addi.group(1)},{m_addi.group(2)},<lo12>"
+                    if m_addi.group(1) != m_addi.group(2):
+                        auipc_regs.discard(m_addi.group(1))
+                elif m_mem and m_mem.group(1) in auipc_regs:
+                    ops = _LO12_MEM_RE.sub(r"<lo12>(\1)", ops)
+        c_line = info.get("text", "").partition("/*")[2]
+        entries.append((
+            info.get("func", ""),
+            info.get("filepath", ""),
+            pc - f_start,
+            info.get("lineno", 0),
+            mnem,
+            ops,
+            c_line,
+        ))
+    entries.sort(key=lambda e: (e[0], e[1], e[2]))
+    code_hasher = hashlib.sha256()
+    for fn, fp, rel_pc, ln, mnem, ops, c_line in entries:
+        code_hasher.update(
+            f"{fn}+{rel_pc:x}|{fp}:{ln}|{mnem} {ops}|{c_line}\n".encode("utf-8")
+        )
+    return code_hasher.hexdigest()
+
+
+def finish_fi_campaign(dis_parser, successful_faults, args, elf_path=None):
+    """Prints Panopticon FI campaign summary and optionally dumps fi_results.json."""
+    global _active_campaign
+    campaign = _active_campaign
+    _active_campaign = None
+    if campaign is None:
+        return
+    if isinstance(sys.stdout, _StdoutSpy):
+        sys.stdout = campaign.orig_stdout
+
+    if elf_path is None and dis_parser is not None:
+        elf_path = re.sub(r"\.dis$", ".elf", dis_parser.dis_file_path)
+
+    elf_sha256 = ""
+    elf_bin_name = "unknown"
+    if elf_path and os.path.exists(elf_path):
+        with open(elf_path, "rb") as ef:
+            elf_sha256 = hashlib.sha256(ef.read()).hexdigest()
+        elf_bin_name = os.path.splitext(os.path.basename(elf_path))[0]
+
+    insns = dis_parser.parse_all_instructions() if dis_parser else {}
+    pc_counts = {int(pc, 16): count for pc, count in campaign.pc_count_dict.items()}
+    elf_sha256 = _compute_campaign_sha256(insns, pc_counts) or elf_sha256
+    touched_funcs = {
+        insns[pc]["func"]
+        for pc in pc_counts
+        if pc in insns and insns[pc].get("func")
+    }
+    dwarf_map = {}
+    for pc, info in insns.items():
+        if (
+            pc in pc_counts or
+            info.get("func") in touched_funcs
+        ) and info.get("filepath"):
+            dwarf_map[pc] = (info["filepath"], info["lineno"])
+
+    print(f"ELF Binary: {elf_bin_name}")
+    print(f"ELF SHA256: {elf_sha256}")
+    if getattr(args, "dump_json", False):
+        print("Extracting DWARF info from ELF")
+        for pc in sorted(dwarf_map.keys()):
+            filepath, lineno = dwarf_map[pc]
+            fname = os.path.basename(filepath)
+            disasm = insns[pc]["text"] if pc in insns else ""
+            print(f"DWARF | 0x{pc:08x} | {fname}:{lineno} | {disasm}")
+
+    baseline_insn_count = sum(pc_counts.values())
+    total_attack_points = sum(
+        min(campaign.max_skips_per_loop, c) for c in pc_counts.values()
+    )
+    total_attacks = len(campaign.executed_points)
+    print(f"Baseline instruction count: {baseline_insn_count}")
+    print(f"Total attack points: {total_attack_points}")
+    print(f"--- Starting fault simulation ({total_attacks} attacks) ---")
+
+    for idx, (pc, occ) in enumerate(campaign.executed_points, 1):
+        dwarf_str = "unknown_src"
+        if pc in dwarf_map:
+            filepath, lineno = dwarf_map[pc]
+            dwarf_str = f"{os.path.basename(filepath)}:{lineno}"
+        outcome = campaign.outcomes.get((pc, occ), "No fault")
+        print(
+            f"[{idx:4}/{total_attacks}] "
+            f"PC {hex(pc):<10} [{dwarf_str:<30}] (occ {occ}): {outcome}"
+        )
+
+    print(
+        f"Campaign Complete. Successful Attacks: {successful_faults}",
+        flush=True,
+    )
+
+    if getattr(args, "dump_json", False):
+        out_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR", ".")
+        with open(os.path.join(out_dir, "fi_results.json"), "w") as f:
+            json.dump(
+                {
+                    "target": os.environ.get("TEST_TARGET", ""),
+                    "elf": elf_path or "",
+                    "elf_sha256": elf_sha256,
+                    "dwarf_map": dwarf_map,
+                    "pc_counts": pc_counts,
+                    "results": campaign.results,
+                },
+                f,
+            )

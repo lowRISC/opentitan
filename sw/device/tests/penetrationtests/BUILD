@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(":pentest.bzl", "pentest_cryptolib_fi_asym", "pentest_cryptolib_fi_gdb_asym", "pentest_cryptolib_fi_gdb_sym", "pentest_cryptolib_fi_sym", "pentest_cryptolib_sca_asym", "pentest_cryptolib_sca_gdb_asym", "pentest_cryptolib_sca_gdb_sym", "pentest_cryptolib_sca_sym", "pentest_fi", "pentest_fi_ibex", "pentest_fi_otbn", "pentest_gdb_unit", "pentest_owner_rollback_fi_gdb", "pentest_owner_upgrade_fi_gdb", "pentest_owner_upgrade_self_signed_fi_gdb", "pentest_rom_ext_fi_gdb", "pentest_rom_ext_flash_rollback_fi_gdb", "pentest_rom_ext_imm_skip_fi_gdb", "pentest_rom_ext_rollback_fi_gdb", "pentest_rom_fi_gdb", "pentest_rom_rollback_fi_gdb", "pentest_sca")
+load(":pentest.bzl", "pentest_cryptolib_fi_asym", "pentest_cryptolib_fi_gdb_asym", "pentest_cryptolib_fi_gdb_sym", "pentest_cryptolib_fi_sym", "pentest_cryptolib_sca_asym", "pentest_cryptolib_sca_gdb_asym", "pentest_cryptolib_sca_gdb_sym", "pentest_cryptolib_sca_sym", "pentest_fi", "pentest_fi_gdb_panopticon_test", "pentest_fi_ibex", "pentest_fi_otbn", "pentest_gdb_unit", "pentest_owner_rollback_fi_gdb", "pentest_owner_upgrade_fi_gdb", "pentest_owner_upgrade_self_signed_fi_gdb", "pentest_rom_ext_fi_gdb", "pentest_rom_ext_flash_rollback_fi_gdb", "pentest_rom_ext_imm_skip_fi_gdb", "pentest_rom_ext_rollback_fi_gdb", "pentest_rom_fi_gdb", "pentest_rom_rollback_fi_gdb", "pentest_sca")
 load("@ot_python_deps//:requirements.bzl", "requirement")
 
 package(default_visibility = ["//visibility:public"])
@@ -724,4 +724,181 @@ test_suite(
         "sca_sha3",
         "sca_sha3_python_test",
     ],
+)
+
+# Project Panopticon CI wrappers (Monte-Carlo GDB instruction skip sampling in QEMU)
+pentest_fi_gdb_panopticon_test(
+    name = "fi_sym_cryptolib_hmac_gdb_panopticon_test",
+    fi_test = ":fi_sym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "hmac",
+)
+
+pentest_fi_gdb_panopticon_test(
+    name = "fi_sym_cryptolib_aes_gdb_panopticon_test",
+    fi_test = ":fi_sym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "aes",
+)
+
+pentest_fi_gdb_panopticon_test(
+    name = "fi_sym_cryptolib_drbg_generate_gdb_panopticon_test",
+    fi_test = ":fi_sym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "drbg_generate",
+)
+
+pentest_fi_gdb_panopticon_test(
+    name = "fi_sym_cryptolib_drbg_reseed_gdb_panopticon_test",
+    fi_test = ":fi_sym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "drbg_reseed",
+)
+
+pentest_fi_gdb_panopticon_test(
+    name = "fi_sym_cryptolib_gcm_gdb_panopticon_test",
+    fi_test = ":fi_sym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "gcm",
+)
+
+pentest_fi_gdb_panopticon_test(
+    name = "fi_sym_cryptolib_cmac_gdb_panopticon_test",
+    fi_test = ":fi_sym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "cmac",
+)
+
+pentest_fi_gdb_panopticon_test(
+    name = "fi_asym_cryptolib_p384_sign_gdb_panopticon_test",
+    fi_test = ":fi_asym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "p384_sign",
+)
+
+pentest_fi_gdb_panopticon_test(
+    name = "fi_asym_cryptolib_p384_verify_gdb_panopticon_test",
+    fi_test = ":fi_asym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "p384_verify",
+)
+
+pentest_fi_gdb_panopticon_test(
+    name = "fi_asym_cryptolib_p384_ecdh_gdb_panopticon_test",
+    fi_test = ":fi_asym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "p384_ecdh",
+)
+
+pentest_fi_gdb_panopticon_test(
+    name = "fi_asym_cryptolib_p256_verify_gdb_panopticon_test",
+    fi_test = ":fi_asym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "p256_verify",
+)
+
+pentest_fi_gdb_panopticon_test(
+    name = "fi_asym_cryptolib_p256_ecdh_gdb_panopticon_test",
+    fi_test = ":fi_asym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "p256_ecdh",
+)
+
+pentest_fi_gdb_panopticon_test(
+    name = "fi_asym_cryptolib_rsa_pkcs1v15_verify_gdb_panopticon_test",
+    fi_test = ":fi_asym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "rsa_pkcs1v15_verify",
+)
+
+pentest_fi_gdb_panopticon_test(
+    name = "fi_asym_cryptolib_rsa_pss_verify_gdb_panopticon_test",
+    fi_test = ":fi_asym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "rsa_pss_verify",
+)
+
+pentest_fi_gdb_panopticon_test(
+    name = "fi_asym_cryptolib_rsa_sign_gdb_panopticon_test",
+    fi_test = ":fi_asym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "rsa_sign",
+)
+
+pentest_fi_gdb_panopticon_test(
+    name = "fi_asym_cryptolib_x25519_ecdh_gdb_panopticon_test",
+    fi_test = ":fi_asym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "x25519_ecdh",
+)
+
+pentest_fi_gdb_panopticon_test(
+    name = "fi_asym_cryptolib_ed25519_verify_gdb_panopticon_test",
+    fi_test = ":fi_asym_cryptolib_python_gdb_test_sim_qemu_rom_ext",
+    num_skips = 300,
+    tags = [
+        "nightly",
+        "qemu",
+    ],
+    test_case = "ed25519_verify",
 )

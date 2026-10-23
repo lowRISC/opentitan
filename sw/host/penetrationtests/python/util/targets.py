@@ -187,6 +187,9 @@ class Target:
             if len(read_line) > 0:
                 if "RESP_OK" in read_line:
                     return read_line.split("RESP_OK:")[1].split(" CRC:")[0]
+            elif (getattr(self.target, "_faulted", False) or
+                    getattr(self.target, "_timed_out", False)):
+                return ""
         print("read_response: maximum attempts reached without a valid response", flush=True)
         return ""
 
