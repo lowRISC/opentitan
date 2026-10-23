@@ -106,6 +106,9 @@ Every write operation must:
 - Start at a 16-byte aligned address.
 - Transfer a number of bus words that is a multiple of 4 (i.e. a whole number of RRAM words).
 
+A write whose number of bus words is not a multiple of 4 is rejected without accessing the RRAM.
+It completes with [`OP_STATUS.err`](registers.md#op_status) and [`ERR_CODE.op_err`](registers.md#err_code) set.
+
 To modify less than a full RRAM word, software must perform a read-modify-write: read the full word, update the desired bytes, and write the word back.
 
 ## Issuing a Rewrite Operation
