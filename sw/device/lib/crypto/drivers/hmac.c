@@ -327,33 +327,32 @@ static status_t hmac_context_wipe(hmac_ctx_t *ctx) {
  * Write given byte array into the `MSG_FIFO`. This function should only be
  * called when HMAC HWIP is already running and expecting further message bytes.
  *
- * @param message The incoming message buffer to be fed into HMAC_FIFO.
- * @param message_len The length of `message` in bytes.
+ * @param msg The incoming message buffer to be fed into HMAC_FIFO.
  * @return Result of the operation.
  */
-static status_t msg_fifo_write(const uint8_t *message, size_t message_len) {
+static status_t msg_fifo_write(const otcrypto_const_byte_buf_t *msg) {
   // TODO(#23191): Should we handle backpressure here?
   // Begin by writing a one byte at a time until the data is aligned.
   size_t i = 0;
-  for (; misalignment32_of((uintptr_t)(&message[i])) > 0 &&
-         launder32(i) < message_len;
+  for (; misalignment32_of((uintptr_t)(&msg->data[i])) > 0 &&
+         launder32(i) < msg->len;
        i++) {
-    abs_mmio_write8(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, message[i]);
+    abs_mmio_write8(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, msg->data[i]);
   }
 
   // Write one word at a time as long as there is a full word available.
-  for (; launder32(i + sizeof(uint32_t)) <= message_len;
-       i += sizeof(uint32_t)) {
-    uint32_t next_word = read_32(&message[i]);
+  for (; launder32(i + sizeof(uint32_t)) <= msg->len; i += sizeof(uint32_t)) {
+    uint32_t next_word = read_32(&msg->data[i]);
     abs_mmio_write32(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, next_word);
   }
 
   // For the last few bytes, we need to write one byte at a time again.
-  for (; launder32(i) < message_len; i++) {
-    abs_mmio_write8(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, message[i]);
+  for (; launder32(i) < msg->len; i++) {
+    abs_mmio_write8(kHmacBaseAddr + HMAC_MSG_FIFO_REG_OFFSET, msg->data[i]);
   }
   // Check that the loops ran for the correct number of iterations.
-  HARDENED_CHECK_EQ(i, message_len);
+  HARDENED_CHECK_EQ(i, msg->len);
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(msg));
 
   return LAUNDERED_OTCRYPTO_OK;
 }
@@ -468,7 +467,7 @@ static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
   abs_mmio_write32(kHmacBaseAddr + HMAC_CMD_REG_OFFSET, cmd);
 
   // Write the message.
-  HARDENED_TRY(msg_fifo_write(msg->data, msg->len));
+  HARDENED_TRY(msg_fifo_write(msg));
 
   // Send the PROCESS command.
   cmd = bitfield_bit32_write(HMAC_CMD_REG_RESVAL, HMAC_CMD_HASH_PROCESS_BIT, 1);
@@ -873,9 +872,13 @@ status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
   HARDENED_TRY(context_restore(ctx));
 
   // Write the partial block, then the new bytes.
-  HARDENED_TRY(msg_fifo_write((unsigned char *)ctx->partial_block,
-                              ctx->partial_block_bytelen));
-  HARDENED_TRY(msg_fifo_write(data->data, data->len - leftover_len));
+  otcrypto_const_byte_buf_t partial_block_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const uint8_t *)ctx->partial_block,
+      ctx->partial_block_bytelen);
+  HARDENED_TRY(msg_fifo_write(&partial_block_buf));
+  otcrypto_const_byte_buf_t data_blocks_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, data->data, data->len - leftover_len);
+  HARDENED_TRY(msg_fifo_write(&data_blocks_buf));
 
   /*
    * TODO should be uncommented once the issue #24767 will be solved in the HW
@@ -916,8 +919,10 @@ status_t hmac_final(hmac_ctx_t *ctx, otcrypto_word32_buf_t *digest) {
   HARDENED_TRY(context_restore(ctx));
 
   // Feed the final leftover bytes to HMAC HWIP.
-  HARDENED_TRY(msg_fifo_write((unsigned char *)ctx->partial_block,
-                              ctx->partial_block_bytelen));
+  otcrypto_const_byte_buf_t partial_block_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const uint8_t *)ctx->partial_block,
+      ctx->partial_block_bytelen);
+  HARDENED_TRY(msg_fifo_write(&partial_block_buf));
 
   // All message bytes are fed, now hit the process button.
   uint32_t cmd =
