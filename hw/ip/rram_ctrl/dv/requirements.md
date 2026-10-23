@@ -1188,7 +1188,7 @@ The prefix `RRAM_CTRL.` is omitted.
 
   Source for requirement: I
 
-- **13.6* (Sparse FSMs): `CTRL.FSM.SPARSE` (lcmgr, otp, arb, rd/wr), `PHY_WR.FSM.SPARSE`, `HOST_TL_LC_GATE.FSM.SPARSE`, `WR_TL_LC_GATE.FSM.SPARSE`
+- **13.6** (Sparse FSMs): `CTRL.FSM.SPARSE` (lcmgr, otp, arb, rd/wr), `PHY_WR.FSM.SPARSE`, `HOST_TL_LC_GATE.FSM.SPARSE`, `WR_TL_LC_GATE.FSM.SPARSE`
 
   Source for requirement: I
 
