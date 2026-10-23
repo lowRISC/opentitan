@@ -11,7 +11,7 @@ module entropy_src_core import entropy_src_pkg::*; #(
   parameter int RngBusBitSelWidth     = 2,
   parameter int HealthTestWindowWidth = 18,
   parameter int EsFifoDepth           = 3,
-  parameter int DistrFifoDepth        = 2,
+  parameter int DistrFifoDepth        = 3,
   parameter int BucketHtDataWidth     = 4,
   parameter int NumBucketHtInst       = prim_util_pkg::ceil_div(RngBusWidth, BucketHtDataWidth)
 ) (
