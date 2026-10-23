@@ -20,38 +20,38 @@ extern "C" {
 // clang-format off
 
 #define TOP_EARLGREY_PINMUX_PERIPHERAL_IN(_, value) \
-    value(_, GpioGpio0, kTopEarlgreyPinmuxPeripheralInGpioGpio0) \
-    value(_, GpioGpio1, kTopEarlgreyPinmuxPeripheralInGpioGpio1) \
-    value(_, GpioGpio2, kTopEarlgreyPinmuxPeripheralInGpioGpio2) \
-    value(_, GpioGpio3, kTopEarlgreyPinmuxPeripheralInGpioGpio3) \
-    value(_, GpioGpio4, kTopEarlgreyPinmuxPeripheralInGpioGpio4) \
-    value(_, GpioGpio5, kTopEarlgreyPinmuxPeripheralInGpioGpio5) \
-    value(_, GpioGpio6, kTopEarlgreyPinmuxPeripheralInGpioGpio6) \
-    value(_, GpioGpio7, kTopEarlgreyPinmuxPeripheralInGpioGpio7) \
-    value(_, GpioGpio8, kTopEarlgreyPinmuxPeripheralInGpioGpio8) \
-    value(_, GpioGpio9, kTopEarlgreyPinmuxPeripheralInGpioGpio9) \
-    value(_, GpioGpio10, kTopEarlgreyPinmuxPeripheralInGpioGpio10) \
-    value(_, GpioGpio11, kTopEarlgreyPinmuxPeripheralInGpioGpio11) \
-    value(_, GpioGpio12, kTopEarlgreyPinmuxPeripheralInGpioGpio12) \
-    value(_, GpioGpio13, kTopEarlgreyPinmuxPeripheralInGpioGpio13) \
-    value(_, GpioGpio14, kTopEarlgreyPinmuxPeripheralInGpioGpio14) \
-    value(_, GpioGpio15, kTopEarlgreyPinmuxPeripheralInGpioGpio15) \
-    value(_, GpioGpio16, kTopEarlgreyPinmuxPeripheralInGpioGpio16) \
-    value(_, GpioGpio17, kTopEarlgreyPinmuxPeripheralInGpioGpio17) \
-    value(_, GpioGpio18, kTopEarlgreyPinmuxPeripheralInGpioGpio18) \
-    value(_, GpioGpio19, kTopEarlgreyPinmuxPeripheralInGpioGpio19) \
-    value(_, GpioGpio20, kTopEarlgreyPinmuxPeripheralInGpioGpio20) \
-    value(_, GpioGpio21, kTopEarlgreyPinmuxPeripheralInGpioGpio21) \
-    value(_, GpioGpio22, kTopEarlgreyPinmuxPeripheralInGpioGpio22) \
-    value(_, GpioGpio23, kTopEarlgreyPinmuxPeripheralInGpioGpio23) \
-    value(_, GpioGpio24, kTopEarlgreyPinmuxPeripheralInGpioGpio24) \
-    value(_, GpioGpio25, kTopEarlgreyPinmuxPeripheralInGpioGpio25) \
-    value(_, GpioGpio26, kTopEarlgreyPinmuxPeripheralInGpioGpio26) \
-    value(_, GpioGpio27, kTopEarlgreyPinmuxPeripheralInGpioGpio27) \
-    value(_, GpioGpio28, kTopEarlgreyPinmuxPeripheralInGpioGpio28) \
-    value(_, GpioGpio29, kTopEarlgreyPinmuxPeripheralInGpioGpio29) \
-    value(_, GpioGpio30, kTopEarlgreyPinmuxPeripheralInGpioGpio30) \
-    value(_, GpioGpio31, kTopEarlgreyPinmuxPeripheralInGpioGpio31) \
+    value(_, Gpio0Gpio0, kTopEarlgreyPinmuxPeripheralInGpio0Gpio0) \
+    value(_, Gpio0Gpio1, kTopEarlgreyPinmuxPeripheralInGpio0Gpio1) \
+    value(_, Gpio0Gpio2, kTopEarlgreyPinmuxPeripheralInGpio0Gpio2) \
+    value(_, Gpio0Gpio3, kTopEarlgreyPinmuxPeripheralInGpio0Gpio3) \
+    value(_, Gpio0Gpio4, kTopEarlgreyPinmuxPeripheralInGpio0Gpio4) \
+    value(_, Gpio0Gpio5, kTopEarlgreyPinmuxPeripheralInGpio0Gpio5) \
+    value(_, Gpio0Gpio6, kTopEarlgreyPinmuxPeripheralInGpio0Gpio6) \
+    value(_, Gpio0Gpio7, kTopEarlgreyPinmuxPeripheralInGpio0Gpio7) \
+    value(_, Gpio0Gpio8, kTopEarlgreyPinmuxPeripheralInGpio0Gpio8) \
+    value(_, Gpio0Gpio9, kTopEarlgreyPinmuxPeripheralInGpio0Gpio9) \
+    value(_, Gpio0Gpio10, kTopEarlgreyPinmuxPeripheralInGpio0Gpio10) \
+    value(_, Gpio0Gpio11, kTopEarlgreyPinmuxPeripheralInGpio0Gpio11) \
+    value(_, Gpio0Gpio12, kTopEarlgreyPinmuxPeripheralInGpio0Gpio12) \
+    value(_, Gpio0Gpio13, kTopEarlgreyPinmuxPeripheralInGpio0Gpio13) \
+    value(_, Gpio0Gpio14, kTopEarlgreyPinmuxPeripheralInGpio0Gpio14) \
+    value(_, Gpio0Gpio15, kTopEarlgreyPinmuxPeripheralInGpio0Gpio15) \
+    value(_, Gpio0Gpio16, kTopEarlgreyPinmuxPeripheralInGpio0Gpio16) \
+    value(_, Gpio0Gpio17, kTopEarlgreyPinmuxPeripheralInGpio0Gpio17) \
+    value(_, Gpio0Gpio18, kTopEarlgreyPinmuxPeripheralInGpio0Gpio18) \
+    value(_, Gpio0Gpio19, kTopEarlgreyPinmuxPeripheralInGpio0Gpio19) \
+    value(_, Gpio0Gpio20, kTopEarlgreyPinmuxPeripheralInGpio0Gpio20) \
+    value(_, Gpio0Gpio21, kTopEarlgreyPinmuxPeripheralInGpio0Gpio21) \
+    value(_, Gpio0Gpio22, kTopEarlgreyPinmuxPeripheralInGpio0Gpio22) \
+    value(_, Gpio0Gpio23, kTopEarlgreyPinmuxPeripheralInGpio0Gpio23) \
+    value(_, Gpio0Gpio24, kTopEarlgreyPinmuxPeripheralInGpio0Gpio24) \
+    value(_, Gpio0Gpio25, kTopEarlgreyPinmuxPeripheralInGpio0Gpio25) \
+    value(_, Gpio0Gpio26, kTopEarlgreyPinmuxPeripheralInGpio0Gpio26) \
+    value(_, Gpio0Gpio27, kTopEarlgreyPinmuxPeripheralInGpio0Gpio27) \
+    value(_, Gpio0Gpio28, kTopEarlgreyPinmuxPeripheralInGpio0Gpio28) \
+    value(_, Gpio0Gpio29, kTopEarlgreyPinmuxPeripheralInGpio0Gpio29) \
+    value(_, Gpio0Gpio30, kTopEarlgreyPinmuxPeripheralInGpio0Gpio30) \
+    value(_, Gpio0Gpio31, kTopEarlgreyPinmuxPeripheralInGpio0Gpio31) \
     value(_, I2c0Sda, kTopEarlgreyPinmuxPeripheralInI2c0Sda) \
     value(_, I2c0Scl, kTopEarlgreyPinmuxPeripheralInI2c0Scl) \
     value(_, I2c1Sda, kTopEarlgreyPinmuxPeripheralInI2c1Sda) \
@@ -188,38 +188,38 @@ C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_EARLGREY_PINMUX_MIO_
     value(_, ConstantZero, kTopEarlgreyPinmuxOutselConstantZero) \
     value(_, ConstantOne, kTopEarlgreyPinmuxOutselConstantOne) \
     value(_, ConstantHighZ, kTopEarlgreyPinmuxOutselConstantHighZ) \
-    value(_, GpioGpio0, kTopEarlgreyPinmuxOutselGpioGpio0) \
-    value(_, GpioGpio1, kTopEarlgreyPinmuxOutselGpioGpio1) \
-    value(_, GpioGpio2, kTopEarlgreyPinmuxOutselGpioGpio2) \
-    value(_, GpioGpio3, kTopEarlgreyPinmuxOutselGpioGpio3) \
-    value(_, GpioGpio4, kTopEarlgreyPinmuxOutselGpioGpio4) \
-    value(_, GpioGpio5, kTopEarlgreyPinmuxOutselGpioGpio5) \
-    value(_, GpioGpio6, kTopEarlgreyPinmuxOutselGpioGpio6) \
-    value(_, GpioGpio7, kTopEarlgreyPinmuxOutselGpioGpio7) \
-    value(_, GpioGpio8, kTopEarlgreyPinmuxOutselGpioGpio8) \
-    value(_, GpioGpio9, kTopEarlgreyPinmuxOutselGpioGpio9) \
-    value(_, GpioGpio10, kTopEarlgreyPinmuxOutselGpioGpio10) \
-    value(_, GpioGpio11, kTopEarlgreyPinmuxOutselGpioGpio11) \
-    value(_, GpioGpio12, kTopEarlgreyPinmuxOutselGpioGpio12) \
-    value(_, GpioGpio13, kTopEarlgreyPinmuxOutselGpioGpio13) \
-    value(_, GpioGpio14, kTopEarlgreyPinmuxOutselGpioGpio14) \
-    value(_, GpioGpio15, kTopEarlgreyPinmuxOutselGpioGpio15) \
-    value(_, GpioGpio16, kTopEarlgreyPinmuxOutselGpioGpio16) \
-    value(_, GpioGpio17, kTopEarlgreyPinmuxOutselGpioGpio17) \
-    value(_, GpioGpio18, kTopEarlgreyPinmuxOutselGpioGpio18) \
-    value(_, GpioGpio19, kTopEarlgreyPinmuxOutselGpioGpio19) \
-    value(_, GpioGpio20, kTopEarlgreyPinmuxOutselGpioGpio20) \
-    value(_, GpioGpio21, kTopEarlgreyPinmuxOutselGpioGpio21) \
-    value(_, GpioGpio22, kTopEarlgreyPinmuxOutselGpioGpio22) \
-    value(_, GpioGpio23, kTopEarlgreyPinmuxOutselGpioGpio23) \
-    value(_, GpioGpio24, kTopEarlgreyPinmuxOutselGpioGpio24) \
-    value(_, GpioGpio25, kTopEarlgreyPinmuxOutselGpioGpio25) \
-    value(_, GpioGpio26, kTopEarlgreyPinmuxOutselGpioGpio26) \
-    value(_, GpioGpio27, kTopEarlgreyPinmuxOutselGpioGpio27) \
-    value(_, GpioGpio28, kTopEarlgreyPinmuxOutselGpioGpio28) \
-    value(_, GpioGpio29, kTopEarlgreyPinmuxOutselGpioGpio29) \
-    value(_, GpioGpio30, kTopEarlgreyPinmuxOutselGpioGpio30) \
-    value(_, GpioGpio31, kTopEarlgreyPinmuxOutselGpioGpio31) \
+    value(_, Gpio0Gpio0, kTopEarlgreyPinmuxOutselGpio0Gpio0) \
+    value(_, Gpio0Gpio1, kTopEarlgreyPinmuxOutselGpio0Gpio1) \
+    value(_, Gpio0Gpio2, kTopEarlgreyPinmuxOutselGpio0Gpio2) \
+    value(_, Gpio0Gpio3, kTopEarlgreyPinmuxOutselGpio0Gpio3) \
+    value(_, Gpio0Gpio4, kTopEarlgreyPinmuxOutselGpio0Gpio4) \
+    value(_, Gpio0Gpio5, kTopEarlgreyPinmuxOutselGpio0Gpio5) \
+    value(_, Gpio0Gpio6, kTopEarlgreyPinmuxOutselGpio0Gpio6) \
+    value(_, Gpio0Gpio7, kTopEarlgreyPinmuxOutselGpio0Gpio7) \
+    value(_, Gpio0Gpio8, kTopEarlgreyPinmuxOutselGpio0Gpio8) \
+    value(_, Gpio0Gpio9, kTopEarlgreyPinmuxOutselGpio0Gpio9) \
+    value(_, Gpio0Gpio10, kTopEarlgreyPinmuxOutselGpio0Gpio10) \
+    value(_, Gpio0Gpio11, kTopEarlgreyPinmuxOutselGpio0Gpio11) \
+    value(_, Gpio0Gpio12, kTopEarlgreyPinmuxOutselGpio0Gpio12) \
+    value(_, Gpio0Gpio13, kTopEarlgreyPinmuxOutselGpio0Gpio13) \
+    value(_, Gpio0Gpio14, kTopEarlgreyPinmuxOutselGpio0Gpio14) \
+    value(_, Gpio0Gpio15, kTopEarlgreyPinmuxOutselGpio0Gpio15) \
+    value(_, Gpio0Gpio16, kTopEarlgreyPinmuxOutselGpio0Gpio16) \
+    value(_, Gpio0Gpio17, kTopEarlgreyPinmuxOutselGpio0Gpio17) \
+    value(_, Gpio0Gpio18, kTopEarlgreyPinmuxOutselGpio0Gpio18) \
+    value(_, Gpio0Gpio19, kTopEarlgreyPinmuxOutselGpio0Gpio19) \
+    value(_, Gpio0Gpio20, kTopEarlgreyPinmuxOutselGpio0Gpio20) \
+    value(_, Gpio0Gpio21, kTopEarlgreyPinmuxOutselGpio0Gpio21) \
+    value(_, Gpio0Gpio22, kTopEarlgreyPinmuxOutselGpio0Gpio22) \
+    value(_, Gpio0Gpio23, kTopEarlgreyPinmuxOutselGpio0Gpio23) \
+    value(_, Gpio0Gpio24, kTopEarlgreyPinmuxOutselGpio0Gpio24) \
+    value(_, Gpio0Gpio25, kTopEarlgreyPinmuxOutselGpio0Gpio25) \
+    value(_, Gpio0Gpio26, kTopEarlgreyPinmuxOutselGpio0Gpio26) \
+    value(_, Gpio0Gpio27, kTopEarlgreyPinmuxOutselGpio0Gpio27) \
+    value(_, Gpio0Gpio28, kTopEarlgreyPinmuxOutselGpio0Gpio28) \
+    value(_, Gpio0Gpio29, kTopEarlgreyPinmuxOutselGpio0Gpio29) \
+    value(_, Gpio0Gpio30, kTopEarlgreyPinmuxOutselGpio0Gpio30) \
+    value(_, Gpio0Gpio31, kTopEarlgreyPinmuxOutselGpio0Gpio31) \
     value(_, I2c0Sda, kTopEarlgreyPinmuxOutselI2c0Sda) \
     value(_, I2c0Scl, kTopEarlgreyPinmuxOutselI2c0Scl) \
     value(_, I2c1Sda, kTopEarlgreyPinmuxOutselI2c1Sda) \

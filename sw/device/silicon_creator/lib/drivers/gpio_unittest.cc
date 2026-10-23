@@ -24,7 +24,7 @@ uint32_t AllOnesExcept(uint32_t index) { return ~AllZerosExcept(index); }
 
 class GpioTest : public rom_test::RomTest {
  protected:
-  uint32_t base_ = dt_gpio_primary_reg_block(kDtGpio);
+  uint32_t base_ = dt_gpio_primary_reg_block(kDtGpio0);
   rom_test::MockAbsMmio abs_mmio_;
 };
 

@@ -77,19 +77,19 @@ pub const UART3_BASE_ADDR: usize = 0x40030000;
 /// `UART3_BASE_ADDR + UART3_SIZE_BYTES`.
 pub const UART3_SIZE_BYTES: usize = 0x40;
 
-/// Peripheral base address for gpio in top earlgrey.
+/// Peripheral base address for gpio0 in top earlgrey.
 ///
 /// This should be used with #mmio_region_from_addr to access the memory-mapped
 /// registers associated with the peripheral (usually via a DIF).
-pub const GPIO_BASE_ADDR: usize = 0x40040000;
+pub const GPIO0_BASE_ADDR: usize = 0x40040000;
 
-/// Peripheral size for gpio in top earlgrey.
+/// Peripheral size for gpio0 in top earlgrey.
 ///
 /// This is the size (in bytes) of the peripheral's reserved memory area. All
 /// memory-mapped registers associated with this peripheral should have an
-/// address between #GPIO_BASE_ADDR and
-/// `GPIO_BASE_ADDR + GPIO_SIZE_BYTES`.
-pub const GPIO_SIZE_BYTES: usize = 0x400;
+/// address between #GPIO0_BASE_ADDR and
+/// `GPIO0_BASE_ADDR + GPIO0_SIZE_BYTES`.
+pub const GPIO0_SIZE_BYTES: usize = 0x400;
 
 /// Peripheral base address for spi_device in top earlgrey.
 ///
@@ -752,8 +752,8 @@ pub enum PlicPeripheral {
     Uart2 = 3,
     /// uart3
     Uart3 = 4,
-    /// gpio
-    Gpio = 5,
+    /// gpio0
+    Gpio0 = 5,
     /// spi_device
     SpiDevice = 6,
     /// i2c0
@@ -819,7 +819,7 @@ impl TryFrom<u32> for PlicPeripheral {
             2 => Ok(Self::Uart1),
             3 => Ok(Self::Uart2),
             4 => Ok(Self::Uart3),
-            5 => Ok(Self::Gpio),
+            5 => Ok(Self::Gpio0),
             6 => Ok(Self::SpiDevice),
             7 => Ok(Self::I2c0),
             8 => Ok(Self::I2c1),
@@ -933,70 +933,70 @@ pub enum PlicIrqId {
     Uart3RxParityErr = 35,
     /// uart3_tx_empty
     Uart3TxEmpty = 36,
-    /// gpio_gpio 0
-    GpioGpio0 = 37,
-    /// gpio_gpio 1
-    GpioGpio1 = 38,
-    /// gpio_gpio 2
-    GpioGpio2 = 39,
-    /// gpio_gpio 3
-    GpioGpio3 = 40,
-    /// gpio_gpio 4
-    GpioGpio4 = 41,
-    /// gpio_gpio 5
-    GpioGpio5 = 42,
-    /// gpio_gpio 6
-    GpioGpio6 = 43,
-    /// gpio_gpio 7
-    GpioGpio7 = 44,
-    /// gpio_gpio 8
-    GpioGpio8 = 45,
-    /// gpio_gpio 9
-    GpioGpio9 = 46,
-    /// gpio_gpio 10
-    GpioGpio10 = 47,
-    /// gpio_gpio 11
-    GpioGpio11 = 48,
-    /// gpio_gpio 12
-    GpioGpio12 = 49,
-    /// gpio_gpio 13
-    GpioGpio13 = 50,
-    /// gpio_gpio 14
-    GpioGpio14 = 51,
-    /// gpio_gpio 15
-    GpioGpio15 = 52,
-    /// gpio_gpio 16
-    GpioGpio16 = 53,
-    /// gpio_gpio 17
-    GpioGpio17 = 54,
-    /// gpio_gpio 18
-    GpioGpio18 = 55,
-    /// gpio_gpio 19
-    GpioGpio19 = 56,
-    /// gpio_gpio 20
-    GpioGpio20 = 57,
-    /// gpio_gpio 21
-    GpioGpio21 = 58,
-    /// gpio_gpio 22
-    GpioGpio22 = 59,
-    /// gpio_gpio 23
-    GpioGpio23 = 60,
-    /// gpio_gpio 24
-    GpioGpio24 = 61,
-    /// gpio_gpio 25
-    GpioGpio25 = 62,
-    /// gpio_gpio 26
-    GpioGpio26 = 63,
-    /// gpio_gpio 27
-    GpioGpio27 = 64,
-    /// gpio_gpio 28
-    GpioGpio28 = 65,
-    /// gpio_gpio 29
-    GpioGpio29 = 66,
-    /// gpio_gpio 30
-    GpioGpio30 = 67,
-    /// gpio_gpio 31
-    GpioGpio31 = 68,
+    /// gpio0_gpio 0
+    Gpio0Gpio0 = 37,
+    /// gpio0_gpio 1
+    Gpio0Gpio1 = 38,
+    /// gpio0_gpio 2
+    Gpio0Gpio2 = 39,
+    /// gpio0_gpio 3
+    Gpio0Gpio3 = 40,
+    /// gpio0_gpio 4
+    Gpio0Gpio4 = 41,
+    /// gpio0_gpio 5
+    Gpio0Gpio5 = 42,
+    /// gpio0_gpio 6
+    Gpio0Gpio6 = 43,
+    /// gpio0_gpio 7
+    Gpio0Gpio7 = 44,
+    /// gpio0_gpio 8
+    Gpio0Gpio8 = 45,
+    /// gpio0_gpio 9
+    Gpio0Gpio9 = 46,
+    /// gpio0_gpio 10
+    Gpio0Gpio10 = 47,
+    /// gpio0_gpio 11
+    Gpio0Gpio11 = 48,
+    /// gpio0_gpio 12
+    Gpio0Gpio12 = 49,
+    /// gpio0_gpio 13
+    Gpio0Gpio13 = 50,
+    /// gpio0_gpio 14
+    Gpio0Gpio14 = 51,
+    /// gpio0_gpio 15
+    Gpio0Gpio15 = 52,
+    /// gpio0_gpio 16
+    Gpio0Gpio16 = 53,
+    /// gpio0_gpio 17
+    Gpio0Gpio17 = 54,
+    /// gpio0_gpio 18
+    Gpio0Gpio18 = 55,
+    /// gpio0_gpio 19
+    Gpio0Gpio19 = 56,
+    /// gpio0_gpio 20
+    Gpio0Gpio20 = 57,
+    /// gpio0_gpio 21
+    Gpio0Gpio21 = 58,
+    /// gpio0_gpio 22
+    Gpio0Gpio22 = 59,
+    /// gpio0_gpio 23
+    Gpio0Gpio23 = 60,
+    /// gpio0_gpio 24
+    Gpio0Gpio24 = 61,
+    /// gpio0_gpio 25
+    Gpio0Gpio25 = 62,
+    /// gpio0_gpio 26
+    Gpio0Gpio26 = 63,
+    /// gpio0_gpio 27
+    Gpio0Gpio27 = 64,
+    /// gpio0_gpio 28
+    Gpio0Gpio28 = 65,
+    /// gpio0_gpio 29
+    Gpio0Gpio29 = 66,
+    /// gpio0_gpio 30
+    Gpio0Gpio30 = 67,
+    /// gpio0_gpio 31
+    Gpio0Gpio31 = 68,
     /// spi_device_upload_cmdfifo_not_empty
     SpiDeviceUploadCmdfifoNotEmpty = 69,
     /// spi_device_upload_payload_not_empty
@@ -1282,38 +1282,38 @@ impl TryFrom<u32> for PlicIrqId {
             34 => Ok(Self::Uart3RxTimeout),
             35 => Ok(Self::Uart3RxParityErr),
             36 => Ok(Self::Uart3TxEmpty),
-            37 => Ok(Self::GpioGpio0),
-            38 => Ok(Self::GpioGpio1),
-            39 => Ok(Self::GpioGpio2),
-            40 => Ok(Self::GpioGpio3),
-            41 => Ok(Self::GpioGpio4),
-            42 => Ok(Self::GpioGpio5),
-            43 => Ok(Self::GpioGpio6),
-            44 => Ok(Self::GpioGpio7),
-            45 => Ok(Self::GpioGpio8),
-            46 => Ok(Self::GpioGpio9),
-            47 => Ok(Self::GpioGpio10),
-            48 => Ok(Self::GpioGpio11),
-            49 => Ok(Self::GpioGpio12),
-            50 => Ok(Self::GpioGpio13),
-            51 => Ok(Self::GpioGpio14),
-            52 => Ok(Self::GpioGpio15),
-            53 => Ok(Self::GpioGpio16),
-            54 => Ok(Self::GpioGpio17),
-            55 => Ok(Self::GpioGpio18),
-            56 => Ok(Self::GpioGpio19),
-            57 => Ok(Self::GpioGpio20),
-            58 => Ok(Self::GpioGpio21),
-            59 => Ok(Self::GpioGpio22),
-            60 => Ok(Self::GpioGpio23),
-            61 => Ok(Self::GpioGpio24),
-            62 => Ok(Self::GpioGpio25),
-            63 => Ok(Self::GpioGpio26),
-            64 => Ok(Self::GpioGpio27),
-            65 => Ok(Self::GpioGpio28),
-            66 => Ok(Self::GpioGpio29),
-            67 => Ok(Self::GpioGpio30),
-            68 => Ok(Self::GpioGpio31),
+            37 => Ok(Self::Gpio0Gpio0),
+            38 => Ok(Self::Gpio0Gpio1),
+            39 => Ok(Self::Gpio0Gpio2),
+            40 => Ok(Self::Gpio0Gpio3),
+            41 => Ok(Self::Gpio0Gpio4),
+            42 => Ok(Self::Gpio0Gpio5),
+            43 => Ok(Self::Gpio0Gpio6),
+            44 => Ok(Self::Gpio0Gpio7),
+            45 => Ok(Self::Gpio0Gpio8),
+            46 => Ok(Self::Gpio0Gpio9),
+            47 => Ok(Self::Gpio0Gpio10),
+            48 => Ok(Self::Gpio0Gpio11),
+            49 => Ok(Self::Gpio0Gpio12),
+            50 => Ok(Self::Gpio0Gpio13),
+            51 => Ok(Self::Gpio0Gpio14),
+            52 => Ok(Self::Gpio0Gpio15),
+            53 => Ok(Self::Gpio0Gpio16),
+            54 => Ok(Self::Gpio0Gpio17),
+            55 => Ok(Self::Gpio0Gpio18),
+            56 => Ok(Self::Gpio0Gpio19),
+            57 => Ok(Self::Gpio0Gpio20),
+            58 => Ok(Self::Gpio0Gpio21),
+            59 => Ok(Self::Gpio0Gpio22),
+            60 => Ok(Self::Gpio0Gpio23),
+            61 => Ok(Self::Gpio0Gpio24),
+            62 => Ok(Self::Gpio0Gpio25),
+            63 => Ok(Self::Gpio0Gpio26),
+            64 => Ok(Self::Gpio0Gpio27),
+            65 => Ok(Self::Gpio0Gpio28),
+            66 => Ok(Self::Gpio0Gpio29),
+            67 => Ok(Self::Gpio0Gpio30),
+            68 => Ok(Self::Gpio0Gpio31),
             69 => Ok(Self::SpiDeviceUploadCmdfifoNotEmpty),
             70 => Ok(Self::SpiDeviceUploadPayloadNotEmpty),
             71 => Ok(Self::SpiDeviceUploadPayloadOverflow),
@@ -1530,70 +1530,70 @@ pub const PLIC_INTERRUPT_FOR_PERIPHERAL: [PlicPeripheral; 190] = [
     PlicPeripheral::Uart3,
     // Uart3TxEmpty -> PlicPeripheral::Uart3
     PlicPeripheral::Uart3,
-    // GpioGpio0 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio1 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio2 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio3 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio4 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio5 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio6 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio7 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio8 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio9 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio10 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio11 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio12 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio13 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio14 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio15 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio16 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio17 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio18 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio19 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio20 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio21 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio22 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio23 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio24 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio25 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio26 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio27 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio28 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio29 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio30 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
-    // GpioGpio31 -> PlicPeripheral::Gpio
-    PlicPeripheral::Gpio,
+    // Gpio0Gpio0 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio1 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio2 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio3 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio4 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio5 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio6 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio7 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio8 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio9 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio10 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio11 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio12 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio13 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio14 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio15 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio16 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio17 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio18 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio19 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio20 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio21 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio22 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio23 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio24 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio25 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio26 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio27 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio28 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio29 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio30 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
+    // Gpio0Gpio31 -> PlicPeripheral::Gpio0
+    PlicPeripheral::Gpio0,
     // SpiDeviceUploadCmdfifoNotEmpty -> PlicPeripheral::SpiDevice
     PlicPeripheral::SpiDevice,
     // SpiDeviceUploadPayloadNotEmpty -> PlicPeripheral::SpiDevice
@@ -1855,8 +1855,8 @@ pub enum AlertPeripheral {
     Uart2 = 3,
     /// uart3
     Uart3 = 4,
-    /// gpio
-    Gpio = 5,
+    /// gpio0
+    Gpio0 = 5,
     /// spi_device
     SpiDevice = 6,
     /// i2c0
@@ -1952,8 +1952,8 @@ pub enum AlertId {
     Uart2FatalFault = 2,
     /// uart3_fatal_fault
     Uart3FatalFault = 3,
-    /// gpio_fatal_fault
-    GpioFatalFault = 4,
+    /// gpio0_fatal_fault
+    Gpio0FatalFault = 4,
     /// spi_device_fatal_fault
     SpiDeviceFatalFault = 5,
     /// i2c0_fatal_fault
@@ -2090,7 +2090,7 @@ impl TryFrom<u32> for AlertId {
             1 => Ok(Self::Uart1FatalFault),
             2 => Ok(Self::Uart2FatalFault),
             3 => Ok(Self::Uart3FatalFault),
-            4 => Ok(Self::GpioFatalFault),
+            4 => Ok(Self::Gpio0FatalFault),
             5 => Ok(Self::SpiDeviceFatalFault),
             6 => Ok(Self::I2c0FatalFault),
             7 => Ok(Self::I2c1FatalFault),
@@ -2172,8 +2172,8 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 68] = [
     AlertPeripheral::Uart2,
     // Uart3FatalFault -> AlertPeripheral::Uart3
     AlertPeripheral::Uart3,
-    // GpioFatalFault -> AlertPeripheral::Gpio
-    AlertPeripheral::Gpio,
+    // Gpio0FatalFault -> AlertPeripheral::Gpio0
+    AlertPeripheral::Gpio0,
     // SpiDeviceFatalFault -> AlertPeripheral::SpiDevice
     AlertPeripheral::SpiDevice,
     // I2c0FatalFault -> AlertPeripheral::I2c0
@@ -2315,69 +2315,69 @@ pub const PINMUX_PERIPH_OUTSEL_IDX_OFFSET: usize = 3;
 #[repr(u32)]
 pub enum PinmuxPeripheralIn {
     /// Peripheral Input 0
-    GpioGpio0 = 0,
+    Gpio0Gpio0 = 0,
     /// Peripheral Input 1
-    GpioGpio1 = 1,
+    Gpio0Gpio1 = 1,
     /// Peripheral Input 2
-    GpioGpio2 = 2,
+    Gpio0Gpio2 = 2,
     /// Peripheral Input 3
-    GpioGpio3 = 3,
+    Gpio0Gpio3 = 3,
     /// Peripheral Input 4
-    GpioGpio4 = 4,
+    Gpio0Gpio4 = 4,
     /// Peripheral Input 5
-    GpioGpio5 = 5,
+    Gpio0Gpio5 = 5,
     /// Peripheral Input 6
-    GpioGpio6 = 6,
+    Gpio0Gpio6 = 6,
     /// Peripheral Input 7
-    GpioGpio7 = 7,
+    Gpio0Gpio7 = 7,
     /// Peripheral Input 8
-    GpioGpio8 = 8,
+    Gpio0Gpio8 = 8,
     /// Peripheral Input 9
-    GpioGpio9 = 9,
+    Gpio0Gpio9 = 9,
     /// Peripheral Input 10
-    GpioGpio10 = 10,
+    Gpio0Gpio10 = 10,
     /// Peripheral Input 11
-    GpioGpio11 = 11,
+    Gpio0Gpio11 = 11,
     /// Peripheral Input 12
-    GpioGpio12 = 12,
+    Gpio0Gpio12 = 12,
     /// Peripheral Input 13
-    GpioGpio13 = 13,
+    Gpio0Gpio13 = 13,
     /// Peripheral Input 14
-    GpioGpio14 = 14,
+    Gpio0Gpio14 = 14,
     /// Peripheral Input 15
-    GpioGpio15 = 15,
+    Gpio0Gpio15 = 15,
     /// Peripheral Input 16
-    GpioGpio16 = 16,
+    Gpio0Gpio16 = 16,
     /// Peripheral Input 17
-    GpioGpio17 = 17,
+    Gpio0Gpio17 = 17,
     /// Peripheral Input 18
-    GpioGpio18 = 18,
+    Gpio0Gpio18 = 18,
     /// Peripheral Input 19
-    GpioGpio19 = 19,
+    Gpio0Gpio19 = 19,
     /// Peripheral Input 20
-    GpioGpio20 = 20,
+    Gpio0Gpio20 = 20,
     /// Peripheral Input 21
-    GpioGpio21 = 21,
+    Gpio0Gpio21 = 21,
     /// Peripheral Input 22
-    GpioGpio22 = 22,
+    Gpio0Gpio22 = 22,
     /// Peripheral Input 23
-    GpioGpio23 = 23,
+    Gpio0Gpio23 = 23,
     /// Peripheral Input 24
-    GpioGpio24 = 24,
+    Gpio0Gpio24 = 24,
     /// Peripheral Input 25
-    GpioGpio25 = 25,
+    Gpio0Gpio25 = 25,
     /// Peripheral Input 26
-    GpioGpio26 = 26,
+    Gpio0Gpio26 = 26,
     /// Peripheral Input 27
-    GpioGpio27 = 27,
+    Gpio0Gpio27 = 27,
     /// Peripheral Input 28
-    GpioGpio28 = 28,
+    Gpio0Gpio28 = 28,
     /// Peripheral Input 29
-    GpioGpio29 = 29,
+    Gpio0Gpio29 = 29,
     /// Peripheral Input 30
-    GpioGpio30 = 30,
+    Gpio0Gpio30 = 30,
     /// Peripheral Input 31
-    GpioGpio31 = 31,
+    Gpio0Gpio31 = 31,
     /// Peripheral Input 32
     I2c0Sda = 32,
     /// Peripheral Input 33
@@ -2450,38 +2450,38 @@ impl TryFrom<u32> for PinmuxPeripheralIn {
     type Error = u32;
     fn try_from(val: u32) -> Result<Self, Self::Error> {
         match val {
-            0 => Ok(Self::GpioGpio0),
-            1 => Ok(Self::GpioGpio1),
-            2 => Ok(Self::GpioGpio2),
-            3 => Ok(Self::GpioGpio3),
-            4 => Ok(Self::GpioGpio4),
-            5 => Ok(Self::GpioGpio5),
-            6 => Ok(Self::GpioGpio6),
-            7 => Ok(Self::GpioGpio7),
-            8 => Ok(Self::GpioGpio8),
-            9 => Ok(Self::GpioGpio9),
-            10 => Ok(Self::GpioGpio10),
-            11 => Ok(Self::GpioGpio11),
-            12 => Ok(Self::GpioGpio12),
-            13 => Ok(Self::GpioGpio13),
-            14 => Ok(Self::GpioGpio14),
-            15 => Ok(Self::GpioGpio15),
-            16 => Ok(Self::GpioGpio16),
-            17 => Ok(Self::GpioGpio17),
-            18 => Ok(Self::GpioGpio18),
-            19 => Ok(Self::GpioGpio19),
-            20 => Ok(Self::GpioGpio20),
-            21 => Ok(Self::GpioGpio21),
-            22 => Ok(Self::GpioGpio22),
-            23 => Ok(Self::GpioGpio23),
-            24 => Ok(Self::GpioGpio24),
-            25 => Ok(Self::GpioGpio25),
-            26 => Ok(Self::GpioGpio26),
-            27 => Ok(Self::GpioGpio27),
-            28 => Ok(Self::GpioGpio28),
-            29 => Ok(Self::GpioGpio29),
-            30 => Ok(Self::GpioGpio30),
-            31 => Ok(Self::GpioGpio31),
+            0 => Ok(Self::Gpio0Gpio0),
+            1 => Ok(Self::Gpio0Gpio1),
+            2 => Ok(Self::Gpio0Gpio2),
+            3 => Ok(Self::Gpio0Gpio3),
+            4 => Ok(Self::Gpio0Gpio4),
+            5 => Ok(Self::Gpio0Gpio5),
+            6 => Ok(Self::Gpio0Gpio6),
+            7 => Ok(Self::Gpio0Gpio7),
+            8 => Ok(Self::Gpio0Gpio8),
+            9 => Ok(Self::Gpio0Gpio9),
+            10 => Ok(Self::Gpio0Gpio10),
+            11 => Ok(Self::Gpio0Gpio11),
+            12 => Ok(Self::Gpio0Gpio12),
+            13 => Ok(Self::Gpio0Gpio13),
+            14 => Ok(Self::Gpio0Gpio14),
+            15 => Ok(Self::Gpio0Gpio15),
+            16 => Ok(Self::Gpio0Gpio16),
+            17 => Ok(Self::Gpio0Gpio17),
+            18 => Ok(Self::Gpio0Gpio18),
+            19 => Ok(Self::Gpio0Gpio19),
+            20 => Ok(Self::Gpio0Gpio20),
+            21 => Ok(Self::Gpio0Gpio21),
+            22 => Ok(Self::Gpio0Gpio22),
+            23 => Ok(Self::Gpio0Gpio23),
+            24 => Ok(Self::Gpio0Gpio24),
+            25 => Ok(Self::Gpio0Gpio25),
+            26 => Ok(Self::Gpio0Gpio26),
+            27 => Ok(Self::Gpio0Gpio27),
+            28 => Ok(Self::Gpio0Gpio28),
+            29 => Ok(Self::Gpio0Gpio29),
+            30 => Ok(Self::Gpio0Gpio30),
+            31 => Ok(Self::Gpio0Gpio31),
             32 => Ok(Self::I2c0Sda),
             33 => Ok(Self::I2c0Scl),
             34 => Ok(Self::I2c1Sda),
@@ -2849,69 +2849,69 @@ pub enum PinmuxOutsel {
     /// Tie constantly to high-Z
     ConstantHighZ = 2,
     /// Peripheral Output 0
-    GpioGpio0 = 3,
+    Gpio0Gpio0 = 3,
     /// Peripheral Output 1
-    GpioGpio1 = 4,
+    Gpio0Gpio1 = 4,
     /// Peripheral Output 2
-    GpioGpio2 = 5,
+    Gpio0Gpio2 = 5,
     /// Peripheral Output 3
-    GpioGpio3 = 6,
+    Gpio0Gpio3 = 6,
     /// Peripheral Output 4
-    GpioGpio4 = 7,
+    Gpio0Gpio4 = 7,
     /// Peripheral Output 5
-    GpioGpio5 = 8,
+    Gpio0Gpio5 = 8,
     /// Peripheral Output 6
-    GpioGpio6 = 9,
+    Gpio0Gpio6 = 9,
     /// Peripheral Output 7
-    GpioGpio7 = 10,
+    Gpio0Gpio7 = 10,
     /// Peripheral Output 8
-    GpioGpio8 = 11,
+    Gpio0Gpio8 = 11,
     /// Peripheral Output 9
-    GpioGpio9 = 12,
+    Gpio0Gpio9 = 12,
     /// Peripheral Output 10
-    GpioGpio10 = 13,
+    Gpio0Gpio10 = 13,
     /// Peripheral Output 11
-    GpioGpio11 = 14,
+    Gpio0Gpio11 = 14,
     /// Peripheral Output 12
-    GpioGpio12 = 15,
+    Gpio0Gpio12 = 15,
     /// Peripheral Output 13
-    GpioGpio13 = 16,
+    Gpio0Gpio13 = 16,
     /// Peripheral Output 14
-    GpioGpio14 = 17,
+    Gpio0Gpio14 = 17,
     /// Peripheral Output 15
-    GpioGpio15 = 18,
+    Gpio0Gpio15 = 18,
     /// Peripheral Output 16
-    GpioGpio16 = 19,
+    Gpio0Gpio16 = 19,
     /// Peripheral Output 17
-    GpioGpio17 = 20,
+    Gpio0Gpio17 = 20,
     /// Peripheral Output 18
-    GpioGpio18 = 21,
+    Gpio0Gpio18 = 21,
     /// Peripheral Output 19
-    GpioGpio19 = 22,
+    Gpio0Gpio19 = 22,
     /// Peripheral Output 20
-    GpioGpio20 = 23,
+    Gpio0Gpio20 = 23,
     /// Peripheral Output 21
-    GpioGpio21 = 24,
+    Gpio0Gpio21 = 24,
     /// Peripheral Output 22
-    GpioGpio22 = 25,
+    Gpio0Gpio22 = 25,
     /// Peripheral Output 23
-    GpioGpio23 = 26,
+    Gpio0Gpio23 = 26,
     /// Peripheral Output 24
-    GpioGpio24 = 27,
+    Gpio0Gpio24 = 27,
     /// Peripheral Output 25
-    GpioGpio25 = 28,
+    Gpio0Gpio25 = 28,
     /// Peripheral Output 26
-    GpioGpio26 = 29,
+    Gpio0Gpio26 = 29,
     /// Peripheral Output 27
-    GpioGpio27 = 30,
+    Gpio0Gpio27 = 30,
     /// Peripheral Output 28
-    GpioGpio28 = 31,
+    Gpio0Gpio28 = 31,
     /// Peripheral Output 29
-    GpioGpio29 = 32,
+    Gpio0Gpio29 = 32,
     /// Peripheral Output 30
-    GpioGpio30 = 33,
+    Gpio0Gpio30 = 33,
     /// Peripheral Output 31
-    GpioGpio31 = 34,
+    Gpio0Gpio31 = 34,
     /// Peripheral Output 32
     I2c0Sda = 35,
     /// Peripheral Output 33
@@ -2997,38 +2997,38 @@ impl TryFrom<u32> for PinmuxOutsel {
             0 => Ok(Self::ConstantZero),
             1 => Ok(Self::ConstantOne),
             2 => Ok(Self::ConstantHighZ),
-            3 => Ok(Self::GpioGpio0),
-            4 => Ok(Self::GpioGpio1),
-            5 => Ok(Self::GpioGpio2),
-            6 => Ok(Self::GpioGpio3),
-            7 => Ok(Self::GpioGpio4),
-            8 => Ok(Self::GpioGpio5),
-            9 => Ok(Self::GpioGpio6),
-            10 => Ok(Self::GpioGpio7),
-            11 => Ok(Self::GpioGpio8),
-            12 => Ok(Self::GpioGpio9),
-            13 => Ok(Self::GpioGpio10),
-            14 => Ok(Self::GpioGpio11),
-            15 => Ok(Self::GpioGpio12),
-            16 => Ok(Self::GpioGpio13),
-            17 => Ok(Self::GpioGpio14),
-            18 => Ok(Self::GpioGpio15),
-            19 => Ok(Self::GpioGpio16),
-            20 => Ok(Self::GpioGpio17),
-            21 => Ok(Self::GpioGpio18),
-            22 => Ok(Self::GpioGpio19),
-            23 => Ok(Self::GpioGpio20),
-            24 => Ok(Self::GpioGpio21),
-            25 => Ok(Self::GpioGpio22),
-            26 => Ok(Self::GpioGpio23),
-            27 => Ok(Self::GpioGpio24),
-            28 => Ok(Self::GpioGpio25),
-            29 => Ok(Self::GpioGpio26),
-            30 => Ok(Self::GpioGpio27),
-            31 => Ok(Self::GpioGpio28),
-            32 => Ok(Self::GpioGpio29),
-            33 => Ok(Self::GpioGpio30),
-            34 => Ok(Self::GpioGpio31),
+            3 => Ok(Self::Gpio0Gpio0),
+            4 => Ok(Self::Gpio0Gpio1),
+            5 => Ok(Self::Gpio0Gpio2),
+            6 => Ok(Self::Gpio0Gpio3),
+            7 => Ok(Self::Gpio0Gpio4),
+            8 => Ok(Self::Gpio0Gpio5),
+            9 => Ok(Self::Gpio0Gpio6),
+            10 => Ok(Self::Gpio0Gpio7),
+            11 => Ok(Self::Gpio0Gpio8),
+            12 => Ok(Self::Gpio0Gpio9),
+            13 => Ok(Self::Gpio0Gpio10),
+            14 => Ok(Self::Gpio0Gpio11),
+            15 => Ok(Self::Gpio0Gpio12),
+            16 => Ok(Self::Gpio0Gpio13),
+            17 => Ok(Self::Gpio0Gpio14),
+            18 => Ok(Self::Gpio0Gpio15),
+            19 => Ok(Self::Gpio0Gpio16),
+            20 => Ok(Self::Gpio0Gpio17),
+            21 => Ok(Self::Gpio0Gpio18),
+            22 => Ok(Self::Gpio0Gpio19),
+            23 => Ok(Self::Gpio0Gpio20),
+            24 => Ok(Self::Gpio0Gpio21),
+            25 => Ok(Self::Gpio0Gpio22),
+            26 => Ok(Self::Gpio0Gpio23),
+            27 => Ok(Self::Gpio0Gpio24),
+            28 => Ok(Self::Gpio0Gpio25),
+            29 => Ok(Self::Gpio0Gpio26),
+            30 => Ok(Self::Gpio0Gpio27),
+            31 => Ok(Self::Gpio0Gpio28),
+            32 => Ok(Self::Gpio0Gpio29),
+            33 => Ok(Self::Gpio0Gpio30),
+            34 => Ok(Self::Gpio0Gpio31),
             35 => Ok(Self::I2c0Sda),
             36 => Ok(Self::I2c0Scl),
             37 => Ok(Self::I2c1Sda),

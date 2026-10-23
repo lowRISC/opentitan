@@ -12,9 +12,9 @@
 // This wrapper hosts all power domain wrappers and the connections between them for earlgrey.
 module top_earlgrey #(
   // Auto-inferred parameters
-  // parameters for gpio
-  parameter bit GpioGpioAsyncOn = 1,
-  parameter bit GpioGpioAsHwStrapsEn = 0,
+  // parameters for gpio0
+  parameter bit Gpio0GpioAsyncOn = 1,
+  parameter bit Gpio0GpioAsHwStrapsEn = 0,
   // parameters for spi_device
   parameter spi_device_pkg::sram_type_e SpiDeviceSramType = spi_device_pkg::SramType1r1w,
   // parameters for i2c0
@@ -346,9 +346,9 @@ module top_earlgrey #(
   logic       cio_uart3_rx_p2d;
   logic       cio_uart3_tx_d2p;
   logic       cio_uart3_tx_en_d2p;
-  logic [31:0] cio_gpio_gpio_d2p;
-  logic [31:0] cio_gpio_gpio_en_d2p;
-  logic [31:0] cio_gpio_gpio_p2d;
+  logic [31:0] cio_gpio0_gpio_d2p;
+  logic [31:0] cio_gpio0_gpio_en_d2p;
+  logic [31:0] cio_gpio0_gpio_p2d;
   logic [3:0] cio_spi_device_sd_d2p;
   logic [3:0] cio_spi_device_sd_en_d2p;
   logic [3:0] cio_spi_device_sd_p2d;
@@ -437,8 +437,8 @@ module top_earlgrey #(
   ///////////////////////////
   earlgrey_pd_main #(
   // Auto-inferred parameters
-  .GpioGpioAsyncOn(GpioGpioAsyncOn),
-  .GpioGpioAsHwStrapsEn(GpioGpioAsHwStrapsEn),
+  .Gpio0GpioAsyncOn(Gpio0GpioAsyncOn),
+  .Gpio0GpioAsHwStrapsEn(Gpio0GpioAsHwStrapsEn),
   .SpiDeviceSramType(SpiDeviceSramType),
   .I2c0InputDelayCycles(I2c0InputDelayCycles),
   .I2c1InputDelayCycles(I2c1InputDelayCycles),
@@ -684,9 +684,9 @@ module top_earlgrey #(
     .cio_uart3_rx_p2d_i                (cio_uart3_rx_p2d         ),
     .cio_uart3_tx_d2p_o                (cio_uart3_tx_d2p         ),
     .cio_uart3_tx_en_d2p_o             (cio_uart3_tx_en_d2p      ),
-    .cio_gpio_gpio_d2p_o               (cio_gpio_gpio_d2p        ),
-    .cio_gpio_gpio_en_d2p_o            (cio_gpio_gpio_en_d2p     ),
-    .cio_gpio_gpio_p2d_i               (cio_gpio_gpio_p2d        ),
+    .cio_gpio0_gpio_d2p_o              (cio_gpio0_gpio_d2p       ),
+    .cio_gpio0_gpio_en_d2p_o           (cio_gpio0_gpio_en_d2p    ),
+    .cio_gpio0_gpio_p2d_i              (cio_gpio0_gpio_p2d       ),
     .cio_spi_device_sd_d2p_o           (cio_spi_device_sd_d2p    ),
     .cio_spi_device_sd_en_d2p_o        (cio_spi_device_sd_en_d2p ),
     .cio_spi_device_sd_p2d_i           (cio_spi_device_sd_p2d    ),
@@ -909,9 +909,9 @@ module top_earlgrey #(
     .cio_uart3_rx_p2d_o                (cio_uart3_rx_p2d         ),
     .cio_uart3_tx_d2p_i                (cio_uart3_tx_d2p         ),
     .cio_uart3_tx_en_d2p_i             (cio_uart3_tx_en_d2p      ),
-    .cio_gpio_gpio_d2p_i               (cio_gpio_gpio_d2p        ),
-    .cio_gpio_gpio_en_d2p_i            (cio_gpio_gpio_en_d2p     ),
-    .cio_gpio_gpio_p2d_o               (cio_gpio_gpio_p2d        ),
+    .cio_gpio0_gpio_d2p_i              (cio_gpio0_gpio_d2p       ),
+    .cio_gpio0_gpio_en_d2p_i           (cio_gpio0_gpio_en_d2p    ),
+    .cio_gpio0_gpio_p2d_o              (cio_gpio0_gpio_p2d       ),
     .cio_spi_device_sd_d2p_i           (cio_spi_device_sd_d2p    ),
     .cio_spi_device_sd_en_d2p_i        (cio_spi_device_sd_en_d2p ),
     .cio_spi_device_sd_p2d_o           (cio_spi_device_sd_p2d    ),

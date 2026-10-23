@@ -626,7 +626,7 @@
             uart1
             uart2
             uart3
-            gpio
+            gpio0
             spi_device
             i2c0
             i2c1
@@ -1036,7 +1036,7 @@
       generate_dif: true
     }
     {
-      name: gpio
+      name: gpio0
       type: gpio
       template_type: gpio
       clock_srcs:
@@ -1077,7 +1077,7 @@
           default: "1"
           local: "false"
           expose: "true"
-          name_top: GpioGpioAsyncOn
+          name_top: Gpio0GpioAsyncOn
         }
         {
           name: GpioAsHwStrapsEn
@@ -1086,7 +1086,7 @@
           default: "0"
           local: "false"
           expose: "true"
-          name_top: GpioGpioAsHwStrapsEn
+          name_top: Gpio0GpioAsHwStrapsEn
         }
       ]
       inter_signal_list:
@@ -1103,7 +1103,7 @@
           act: rcv
           width: 1
           default: 1'b0
-          inst_name: gpio
+          inst_name: gpio0
           index: -1
         }
         {
@@ -1115,7 +1115,7 @@
           act: req
           width: 1
           default: "'0"
-          inst_name: gpio
+          inst_name: gpio0
           index: -1
         }
         {
@@ -1130,7 +1130,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: gpio
+          inst_name: gpio0
           index: -1
         }
         {
@@ -1141,7 +1141,7 @@
           type: uni
           act: req
           width: 1
-          inst_name: gpio
+          inst_name: gpio0
           index: -1
         }
         {
@@ -1151,11 +1151,11 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: gpio
+          inst_name: gpio0
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: gpio_tl
+          top_signame: gpio0_tl
           index: -1
         }
       ]
@@ -13316,9 +13316,9 @@
       [
         peri.tl_i2c2
       ]
-      gpio.tl:
+      gpio0.tl:
       [
-        peri.tl_gpio
+        peri.tl_gpio0
       ]
       spi_device.tl:
       [
@@ -14832,7 +14832,7 @@
           i2c0
           i2c1
           i2c2
-          gpio
+          gpio0
           spi_device
           rv_timer
           pwrmgr
@@ -15014,7 +15014,7 @@
           req_fifo_pass: true
         }
         {
-          name: gpio
+          name: gpio0
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -15484,7 +15484,7 @@
           index: -1
         }
         {
-          name: tl_gpio
+          name: tl_gpio0
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -15493,7 +15493,7 @@
           width: 1
           default: ""
           domain: Main
-          top_signame: gpio_tl
+          top_signame: gpio0_tl
           index: -1
         }
         {
@@ -16460,7 +16460,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: ""
         connection: muxed
         pad: ""
@@ -16819,7 +16819,7 @@
         glob_idx: 9
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 0
@@ -16831,7 +16831,7 @@
         glob_idx: 0
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 1
@@ -16843,7 +16843,7 @@
         glob_idx: 1
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 2
@@ -16855,7 +16855,7 @@
         glob_idx: 2
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 3
@@ -16867,7 +16867,7 @@
         glob_idx: 3
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 4
@@ -16879,7 +16879,7 @@
         glob_idx: 4
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 5
@@ -16891,7 +16891,7 @@
         glob_idx: 5
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 6
@@ -16903,7 +16903,7 @@
         glob_idx: 6
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 7
@@ -16915,7 +16915,7 @@
         glob_idx: 7
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 8
@@ -16927,7 +16927,7 @@
         glob_idx: 8
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 9
@@ -16939,7 +16939,7 @@
         glob_idx: 9
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 10
@@ -16951,7 +16951,7 @@
         glob_idx: 10
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 11
@@ -16963,7 +16963,7 @@
         glob_idx: 11
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 12
@@ -16975,7 +16975,7 @@
         glob_idx: 12
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 13
@@ -16987,7 +16987,7 @@
         glob_idx: 13
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 14
@@ -16999,7 +16999,7 @@
         glob_idx: 14
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 15
@@ -17011,7 +17011,7 @@
         glob_idx: 15
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 16
@@ -17023,7 +17023,7 @@
         glob_idx: 16
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 17
@@ -17035,7 +17035,7 @@
         glob_idx: 17
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 18
@@ -17047,7 +17047,7 @@
         glob_idx: 18
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 19
@@ -17059,7 +17059,7 @@
         glob_idx: 19
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 20
@@ -17071,7 +17071,7 @@
         glob_idx: 20
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 21
@@ -17083,7 +17083,7 @@
         glob_idx: 21
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 22
@@ -17095,7 +17095,7 @@
         glob_idx: 22
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 23
@@ -17107,7 +17107,7 @@
         glob_idx: 23
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 24
@@ -17119,7 +17119,7 @@
         glob_idx: 24
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 25
@@ -17131,7 +17131,7 @@
         glob_idx: 25
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 26
@@ -17143,7 +17143,7 @@
         glob_idx: 26
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 27
@@ -17155,7 +17155,7 @@
         glob_idx: 27
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 28
@@ -17167,7 +17167,7 @@
         glob_idx: 28
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 29
@@ -17179,7 +17179,7 @@
         glob_idx: 29
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 30
@@ -17191,7 +17191,7 @@
         glob_idx: 30
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 31
@@ -18570,13 +18570,13 @@
       lpg_idx: 0
     }
     {
-      name: gpio_fatal_fault
+      name: gpio0_fatal_fault
       width: 1
       type: alert
       async: "1"
       handler: alert_handler
-      module_name: gpio
-      desc: gpio fatal_fault alert
+      module_name: gpio0
+      desc: gpio0 fatal_fault alert
       lpg_name: peri_lc_io_div4_Main
       lpg_idx: 0
     }
@@ -19746,11 +19746,11 @@
       outgoing: false
     }
     {
-      name: gpio_gpio
+      name: gpio0_gpio
       width: 32
       type: interrupt
-      module_name: gpio
-      desc: gpio gpio interrupt
+      module_name: gpio0
+      desc: gpio0 gpio interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -22449,7 +22449,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_gpio_gpio_d2p
+        signame: cio_gpio0_gpio_d2p
         width: 32
         type: uni
         end_idx: -1
@@ -22461,7 +22461,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_gpio_gpio_en_d2p
+        signame: cio_gpio0_gpio_en_d2p
         width: 32
         type: uni
         end_idx: -1
@@ -22473,7 +22473,7 @@
         package: ""
         struct: logic
         domain: chip
-        signame: cio_gpio_gpio_p2d
+        signame: cio_gpio0_gpio_p2d
         width: 32
         type: uni
         end_idx: -1
@@ -23335,7 +23335,7 @@
     uart1
     uart2
     uart3
-    gpio
+    gpio0
     spi_device
     i2c0
     i2c1
@@ -23418,7 +23418,7 @@
         alert_handler[3]: fatal_fault
       ]
     }
-    module_gpio:
+    module_gpio0:
     {
       tx_expr: alert_tx[4]
       rx_expr: alert_rx[4]
@@ -23925,7 +23925,7 @@
     uart1
     uart2
     uart3
-    gpio
+    gpio0
     spi_device
     i2c0
     i2c1
@@ -24898,7 +24898,7 @@
         act: rcv
         width: 1
         default: 1'b0
-        inst_name: gpio
+        inst_name: gpio0
         index: -1
       }
       {
@@ -24910,7 +24910,7 @@
         act: req
         width: 1
         default: "'0"
-        inst_name: gpio
+        inst_name: gpio0
         index: -1
       }
       {
@@ -24925,7 +24925,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: gpio
+        inst_name: gpio0
         index: -1
       }
       {
@@ -24936,7 +24936,7 @@
         type: uni
         act: req
         width: 1
-        inst_name: gpio
+        inst_name: gpio0
         index: -1
       }
       {
@@ -24946,11 +24946,11 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: gpio
+        inst_name: gpio0
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: gpio_tl
+        top_signame: gpio0_tl
         index: -1
       }
       {
@@ -32830,7 +32830,7 @@
         index: -1
       }
       {
-        name: tl_gpio
+        name: tl_gpio0
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -32839,7 +32839,7 @@
         width: 1
         default: ""
         domain: Main
-        top_signame: gpio_tl
+        top_signame: gpio0_tl
         index: -1
       }
       {
@@ -37140,12 +37140,12 @@
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_gpio_gpio_d2p_o
+        signame: cio_gpio0_gpio_d2p_o
         signame_chip:
         {
-          asic: cio_gpio_gpio_d2p
-          verilator: cio_gpio_gpio_d2p
-          cw340: cio_gpio_gpio_d2p
+          asic: cio_gpio0_gpio_d2p
+          verilator: cio_gpio0_gpio_d2p
+          cw340: cio_gpio0_gpio_d2p
         }
         width: 32
         type: uni
@@ -37153,19 +37153,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_gpio_gpio_d2p
+        netname: cio_gpio0_gpio_d2p
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_gpio_gpio_d2p_i
+        signame: cio_gpio0_gpio_d2p_i
         signame_chip:
         {
-          asic: cio_gpio_gpio_d2p
-          verilator: cio_gpio_gpio_d2p
-          cw340: cio_gpio_gpio_d2p
+          asic: cio_gpio0_gpio_d2p
+          verilator: cio_gpio0_gpio_d2p
+          cw340: cio_gpio0_gpio_d2p
         }
         width: 32
         type: uni
@@ -37173,19 +37173,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_gpio_gpio_d2p
+        netname: cio_gpio0_gpio_d2p
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_gpio_gpio_en_d2p_o
+        signame: cio_gpio0_gpio_en_d2p_o
         signame_chip:
         {
-          asic: cio_gpio_gpio_en_d2p
-          verilator: cio_gpio_gpio_en_d2p
-          cw340: cio_gpio_gpio_en_d2p
+          asic: cio_gpio0_gpio_en_d2p
+          verilator: cio_gpio0_gpio_en_d2p
+          cw340: cio_gpio0_gpio_en_d2p
         }
         width: 32
         type: uni
@@ -37193,19 +37193,19 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_gpio_gpio_en_d2p
+        netname: cio_gpio0_gpio_en_d2p
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_gpio_gpio_en_d2p_i
+        signame: cio_gpio0_gpio_en_d2p_i
         signame_chip:
         {
-          asic: cio_gpio_gpio_en_d2p
-          verilator: cio_gpio_gpio_en_d2p
-          cw340: cio_gpio_gpio_en_d2p
+          asic: cio_gpio0_gpio_en_d2p
+          verilator: cio_gpio0_gpio_en_d2p
+          cw340: cio_gpio0_gpio_en_d2p
         }
         width: 32
         type: uni
@@ -37213,19 +37213,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_gpio_gpio_en_d2p
+        netname: cio_gpio0_gpio_en_d2p
       }
       {
         package: ""
         struct: logic
         domain: Main
         inter_pd: true
-        signame: cio_gpio_gpio_p2d_i
+        signame: cio_gpio0_gpio_p2d_i
         signame_chip:
         {
-          asic: cio_gpio_gpio_p2d
-          verilator: cio_gpio_gpio_p2d
-          cw340: cio_gpio_gpio_p2d
+          asic: cio_gpio0_gpio_p2d
+          verilator: cio_gpio0_gpio_p2d
+          cw340: cio_gpio0_gpio_p2d
         }
         width: 32
         type: uni
@@ -37233,19 +37233,19 @@
         direction: in
         conn_type: false
         index: -1
-        netname: cio_gpio_gpio_p2d
+        netname: cio_gpio0_gpio_p2d
       }
       {
         package: ""
         struct: logic
         domain: Aon
         inter_pd: true
-        signame: cio_gpio_gpio_p2d_o
+        signame: cio_gpio0_gpio_p2d_o
         signame_chip:
         {
-          asic: cio_gpio_gpio_p2d
-          verilator: cio_gpio_gpio_p2d
-          cw340: cio_gpio_gpio_p2d
+          asic: cio_gpio0_gpio_p2d
+          verilator: cio_gpio0_gpio_p2d
+          cw340: cio_gpio0_gpio_p2d
         }
         width: 32
         type: uni
@@ -37253,7 +37253,7 @@
         direction: out
         conn_type: false
         index: -1
-        netname: cio_gpio_gpio_p2d
+        netname: cio_gpio0_gpio_p2d
       }
       {
         package: ""
@@ -42367,7 +42367,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
-        signame: gpio_tl_req
+        signame: gpio0_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -42379,7 +42379,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: Main
-        signame: gpio_tl_rsp
+        signame: gpio0_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1

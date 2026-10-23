@@ -15,7 +15,7 @@
 //     -> i2c0
 //     -> i2c1
 //     -> i2c2
-//     -> gpio
+//     -> gpio0
 //     -> spi_device
 //     -> rv_timer
 //     -> pwrmgr
@@ -56,8 +56,8 @@ module xbar_peri (
   input  tlul_pkg::tl_d2h_t tl_i2c1_i,
   output tlul_pkg::tl_h2d_t tl_i2c2_o,
   input  tlul_pkg::tl_d2h_t tl_i2c2_i,
-  output tlul_pkg::tl_h2d_t tl_gpio_o,
-  input  tlul_pkg::tl_d2h_t tl_gpio_i,
+  output tlul_pkg::tl_h2d_t tl_gpio0_o,
+  input  tlul_pkg::tl_d2h_t tl_gpio0_i,
   output tlul_pkg::tl_h2d_t tl_spi_device_o,
   input  tlul_pkg::tl_d2h_t tl_spi_device_i,
   output tlul_pkg::tl_h2d_t tl_rv_timer_o,
@@ -135,8 +135,8 @@ module xbar_peri (
   assign tl_i2c2_o = tl_s1n_25_ds_h2d[6];
   assign tl_s1n_25_ds_d2h[6] = tl_i2c2_i;
 
-  assign tl_gpio_o = tl_s1n_25_ds_h2d[7];
-  assign tl_s1n_25_ds_d2h[7] = tl_gpio_i;
+  assign tl_gpio0_o = tl_s1n_25_ds_h2d[7];
+  assign tl_s1n_25_ds_d2h[7] = tl_gpio0_i;
 
   assign tl_spi_device_o = tl_s1n_25_ds_h2d[8];
   assign tl_s1n_25_ds_d2h[8] = tl_spi_device_i;
@@ -221,7 +221,7 @@ module xbar_peri (
       dev_sel_s1n_25 = 5'd6;
 
     end else if ((tl_s1n_25_us_h2d.a_address &
-                  ~(ADDR_MASK_GPIO)) == ADDR_SPACE_GPIO) begin
+                  ~(ADDR_MASK_GPIO0)) == ADDR_SPACE_GPIO0) begin
       dev_sel_s1n_25 = 5'd7;
 
     end else if ((tl_s1n_25_us_h2d.a_address &

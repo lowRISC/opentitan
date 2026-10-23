@@ -452,11 +452,11 @@ void ottf_console_configure_spi_device(ottf_console_t *console,
   if (tx_ready_enable) {
     console->data.spi.tx_ready_gpio = tx_ready_gpio;
 
-    CHECK_DIF_OK(dif_gpio_init_from_dt(kDtGpioFirst, &ottf_console_gpio));
+    CHECK_DIF_OK(dif_gpio_init_from_dt(kDtGpio0, &ottf_console_gpio));
     CHECK_DIF_OK(dif_pinmux_init_from_dt(kDtPinmuxFirst, &ottf_console_pinmux));
     CHECK_DIF_OK(dif_pinmux_mio_select_output(
         &ottf_console_pinmux, tx_ready_mio,
-        dt_gpio_periph_io(kDtGpioFirst, kDtGpioPeriphIoGpio0 + tx_ready_gpio)));
+        dt_gpio_periph_io(kDtGpio0, kDtGpioPeriphIoGpio0 + tx_ready_gpio)));
     CHECK_DIF_OK(dif_gpio_write(&ottf_console_gpio, tx_ready_gpio, false));
     CHECK_DIF_OK(
         dif_gpio_output_set_enabled(&ottf_console_gpio, tx_ready_gpio, true));

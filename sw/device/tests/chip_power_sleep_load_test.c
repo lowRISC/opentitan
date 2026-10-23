@@ -131,8 +131,8 @@ bool test_main(void) {
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
   CHECK_DIF_OK(dif_otp_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_OTP_CTRL_CORE_BASE_ADDR), &otp_ctrl));
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  CHECK_DIF_OK(dif_gpio_init(
+      mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR), &gpio));
   CHECK_DIF_OK(dif_adc_ctrl_init(
       mmio_region_from_addr(TOP_EARLGREY_ADC_CTRL_BASE_ADDR), &adc_ctrl));
 
@@ -146,7 +146,7 @@ bool test_main(void) {
   // PINMUX.
   CHECK_DIF_OK(
       dif_pinmux_output_select(&pinmux, (kTopEarlgreyPinmuxMioOutIoa0 + 2),
-                               (kTopEarlgreyPinmuxOutselGpioGpio0 + 2)));
+                               (kTopEarlgreyPinmuxOutselGpio0Gpio0 + 2)));
 
   // Set output modes of all GPIO pins.
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, kGpioMask));
