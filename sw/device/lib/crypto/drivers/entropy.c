@@ -1299,10 +1299,19 @@ status_t entropy_csrng_reseed(hardened_bool_t disable_trng_input,
                               const entropy_seed_material_t *seed_material) {
   crypto_state_t state;
   if (status_ok(read_state(&state))) {
+    // Re-instantiate when switching between manual and non-manual modes to
+    // flush the CSRNG state registers and avoid mixing approved and
+    // non-approved data.
     if (launder32(disable_trng_input) == kHardenedBoolFalse) {
       HARDENED_CHECK_EQ(disable_trng_input, kHardenedBoolFalse);
+      if (state.csrng_is_manual == kHardenedByteBoolTrue) {
+        return entropy_csrng_instantiate(disable_trng_input, seed_material);
+      }
       state.csrng_is_manual = kHardenedByteBoolFalse;
     } else {
+      if (state.csrng_is_manual == kHardenedByteBoolFalse) {
+        return entropy_csrng_instantiate(disable_trng_input, seed_material);
+      }
       state.csrng_is_manual = kHardenedByteBoolTrue;
     }
     HARDENED_TRY(store_state(&state));
@@ -1356,6 +1365,16 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
                                          hardened_bool_t fips_check) {
   static_assert(kEntropyCsrngBitsBufferNumWords == 4,
                 "kEntropyCsrngBitsBufferNumWords must be 4.");
+  crypto_state_t state;
+  bool has_state = status_ok(read_state(&state));
+  if (has_state) {
+    if (launder32(fips_check) == kHardenedBoolFalse) {
+      HARDENED_CHECK_EQ(fips_check, kHardenedBoolFalse);
+      state.csrng_is_manual = kHardenedByteBoolTrue;
+      HARDENED_TRY(store_state(&state));
+    }
+  }
+
   size_t nblocks = ceil_div(len, 4);
   status_t res = OTCRYPTO_OK;
   for (size_t block_idx = 0; block_idx < nblocks; ++block_idx) {
@@ -1374,7 +1393,8 @@ status_t entropy_csrng_generate_data_get(uint32_t *buf, size_t len,
     }
 
     if (fips_check != kHardenedBoolFalse &&
-        !bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_FIPS_BIT)) {
+        (!bitfield_bit32_read(reg, CSRNG_GENBITS_VLD_GENBITS_FIPS_BIT) ||
+         (has_state && state.csrng_is_manual == kHardenedByteBoolTrue))) {
       // Entropy isn't FIPS-compatible, so we should return an error when
       // done. However, we still need to read the result to clear CSRNG's FIFO.
       res = OTCRYPTO_RECOV_ERR;
