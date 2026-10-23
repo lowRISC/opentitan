@@ -184,10 +184,6 @@ dif_result_t dif_keymgr_dpe_initialize(const dif_keymgr_dpe_t *keymgr_dpe,
     return kDifLocked;
   }
 
-  // TODO(#30667): Verify if the max key version needs to be written here too!
-  //              When loading the UDS the RTL fetches the max key version from
-  //              the SW register. Verify that the lock is released when the
-  //              version register is locked.
   uint32_t reg_control = bitfield_field32_write(
       KEYMGR_DPE_CONTROL_SHADOWED_REG_RESVAL,
       KEYMGR_DPE_CONTROL_SHADOWED_SLOT_DST_SEL_FIELD, slot_dst_sel);

@@ -228,7 +228,6 @@
             Checks:
             - Verify that the resulting slot policies match the RTL-defined defaults from the
               keymgr_dpe package, not the values programmed via the SLOT_POLICY register.
-            - Verify that max_key_version is correctly copied from the MAX_KEY_VER_SHADOWED
               register.
             '''
       stage: V2
