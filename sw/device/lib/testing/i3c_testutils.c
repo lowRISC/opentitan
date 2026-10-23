@@ -48,7 +48,8 @@ static inline void tid_release(i3c_testutils_ctx_t *ctx, uint8_t pid) {
   ctx->tid_used &= (uint16_t)~(1u << pid);
 }
 
-// Utility function to return the number of DWORDs required to transfer the specified number of bytes.
+// Utility function to return the number of DWORDs required to transfer the
+// specified number of bytes.
 static inline size_t ceil_dwords(uint16_t data_length) {
   return (data_length + 3u) >> 2;
 }
@@ -646,7 +647,8 @@ status_t i3c_testutils_private_read_setup(i3c_testutils_ctx_t *ctx, uint8_t idx,
   // queue and the Tx Data buffer.
   dif_i3c_tti_tx_levels_t levels;
   TRY(dif_i3c_targ_tx_levels_read(&ctx->i3c, idx, &levels));
-  if (!levels.tx_desc_free || levels.tx_buf_free < ceil_dwords(tx_desc->tx.data_length)) {
+  if (!levels.tx_desc_free ||
+      levels.tx_buf_free < ceil_dwords(tx_desc->tx.data_length)) {
     return UNAVAILABLE();
   }
 
@@ -670,13 +672,29 @@ status_t i3c_testutils_private_write_collect(
     // descriptor(s) here, since the TTI specification has now changed to
     // describe a single Private Write Transfer using _one or more_ Rx
     // descriptors.
-    size_t n = ceil_dwords(rx_desc->data_length);
-    if (bufsz < n || levels.rx_desc_level < n) {
-      // TODO: This should support streaming somehow, either by waiting here.
+    if (bufsz < ceil_dwords(rx_desc->data_length)) {
       return UNAVAILABLE();
-    }   
+    }
 
-    TRY(dif_i3c_targ_data_recv(&ctx->i3c, buf, rx_desc->data_length));
+    // TODO: Chunked transfers offer some support here for longer Private Write
+    // transfers; in general we should move this code into `targ_service` in
+    // order to keep both Controller- and Target-side transfers going.
+    size_t n = rx_desc->data_length;
+    while (n > 0) {
+      dif_i3c_tti_buf_levels_t buf_levels;
+      TRY(dif_i3c_targ_buf_levels_read(&ctx->i3c, &buf_levels));
+
+      // Non-final chunks will be 4i bytes.
+      size_t chunk_bytes = n;
+      if (chunk_bytes > buf_levels.rx_buf_level * 4u) {
+        chunk_bytes = buf_levels.rx_buf_level * 4u;
+      }
+
+      TRY(dif_i3c_targ_data_recv(&ctx->i3c, buf, (uint16_t)chunk_bytes));
+      buf += chunk_bytes >> 2;
+      n -= chunk_bytes;
+    }
+
     *flags = kI3CTestUtilsPrivWFlags_Collected;
   } else {
     *flags = 0;

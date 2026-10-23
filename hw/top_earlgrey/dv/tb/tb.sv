@@ -106,6 +106,8 @@ module tb;
 
   bind chip_earlgrey_asic chip_if chip_if();
 
+`define I3C_LOOPBACK
+
 `ifdef DISABLE_ROM_INTEGRITY_CHECK
   chip_earlgrey_asic #(
     // This is to be used carefully, and should never be on for synthesis.
@@ -163,8 +165,13 @@ module tb;
     .IOB6(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob6]),
     .IOB7(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob7]),
     .IOB8(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob8]),
+`ifdef I3C_LOOPBACK
+    .IOB9(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob11]),
+    .IOB10(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob12]),
+`else
     .IOB9(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob9]),
     .IOB10(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob10]),
+`endif
     .IOB11(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob11]),
     .IOB12(dut.chip_if.mios[top_earlgrey_pkg::MioPadIob12]),
     .IOC0(dut.chip_if.mios[top_earlgrey_pkg::MioPadIoc0]),
@@ -193,6 +200,30 @@ module tb;
     .IOR12(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor12]),
     .IOR13(dut.chip_if.mios[top_earlgrey_pkg::MioPadIor13])
   );
+
+`ifdef I3C_LOOPBACK
+  // TODO: I3C bring up; migrate this to an interface, `i3c_if`, to be shared with block level DV.
+  // High-keepers.
+  assign (weak0, weak1) dut.chip_if.mios[top_earlgrey_pkg::MioPadIob9]  = 1'b1;  // I3C1 SCL
+  assign (weak0, weak1) dut.chip_if.mios[top_earlgrey_pkg::MioPadIob10] = 1'b1;  // I3C1 SDA
+  assign (weak0, weak1) dut.chip_if.mios[top_earlgrey_pkg::MioPadIob11] = 1'b1;  // I3C0 SCL
+  assign (weak0, weak1) dut.chip_if.mios[top_earlgrey_pkg::MioPadIob12] = 1'b1;  // I3C0 SDA
+  // Pull-ups On SDA; IOB7 and IOB8 are undriven, or driven to 1 to pull up the corresponding SDA.
+  // assign (weak0, pull1) dut.chip_if.mios[top_earlgrey_pkg::MioPadIob10] =
+  //                       dut.chip_if.mios[top_earlgrey_pkg::MioPadIob7];
+  // TODO: Presently, to put the two instances on a single bus we're having to join them by
+  // modifiying `chip_if`!
+  assign (weak0, pull1) dut.chip_if.mios[top_earlgrey_pkg::MioPadIob12] =
+                        dut.chip_if.mios[top_earlgrey_pkg::MioPadIob7];
+  assign (weak0, pull1) dut.chip_if.mios[top_earlgrey_pkg::MioPadIob12] =
+                        dut.chip_if.mios[top_earlgrey_pkg::MioPadIob8];
+
+  // Connect the I3C instances together.
+  // assign dut.chip_if.mios[top_earlgrey_pkg::MioPadIob11] =
+  //        dut.chip_if.mios[top_earlgrey_pkg::MioPadIob9];
+  // assign dut.chip_if.mios[top_earlgrey_pkg::MioPadIob12] =
+  //        dut.chip_if.mios[top_earlgrey_pkg::MioPadIob10];
+`endif
 
   // Knob to skip ROM backdoor logging (for sims that use ROM macro). Set below.
   logic skip_rom_bkdr_load;

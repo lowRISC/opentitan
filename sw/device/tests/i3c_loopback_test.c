@@ -145,7 +145,8 @@ bool test_main(void) {
       return false;
   }
 
-  // Connect the two I3C instances using the pinmux, and wiring in the test bench.
+  // Connect the two I3C instances using the pinmux, and wiring in the test
+  // bench.
   CHECK_DIF_OK(dif_pinmux_init(
       mmio_region_from_addr(TOP_EARLGREY_PINMUX_BASE_ADDR), &pinmux));
   pinmux_testutils_init(&pinmux);
@@ -161,8 +162,8 @@ bool test_main(void) {
     dt_periph_io_t scl_periph_io = dt_i3c_periph_io(i3c_dt, kDtI3cPeriphIoScl);
 
     // Get the appropriate pads for this I3C instance and platform
-    // TODO: This should be sufficient for now but more generally we should be platform-agnostic
-    // and able to handle a different instance count.
+    // TODO: This should be sufficient for now but more generally we should be
+    // platform-agnostic and able to handle a different instance count.
     dt_pad_t sda_pu_pad, sda_pad, scl_pad;
     switch (i3c) {
       // I3C0 is on IOB11 (SCL) and IOB12 (SDA) only
@@ -189,9 +190,11 @@ bool test_main(void) {
     dif_pinmux_pad_attr_t sda_pad_attrs;
     CHECK_DIF_OK(dif_pinmux_pad_get_attrs_dt(&pinmux, sda_pad, &sda_pad_attrs));
     sda_pad_attrs.drive_strength = 1u;  // `strong` drive strength.
-    CHECK_DIF_OK(dif_pinmux_pad_write_attrs_dt(&pinmux, sda_pad, sda_pad_attrs, &sda_pad_attrs));
+    CHECK_DIF_OK(dif_pinmux_pad_write_attrs_dt(&pinmux, sda_pad, sda_pad_attrs,
+                                               &sda_pad_attrs));
 
-    // Ensure that Open Drain support is disabled for all pins; remove kDifPinmuxPadAttrOpenDrain.
+    // Ensure that Open Drain support is disabled for all pins; remove
+    // kDifPinmuxPadAttrOpenDrain.
     pinmux_pad_attributes_t pad_attrs[2];
     pad_attrs[0].pad = scl_pad;
     pad_attrs[0].flags = 0u;
@@ -242,12 +245,11 @@ bool test_main(void) {
 
       i3c_testutils_privw_flags_t rx_flags;
       dif_i3c_tti_rx_desc_t rx_desc;
+      // TODO: The collection of a Private Write Transfer needs updating to
+      // support streaming, by using the modified Rx Descriptor format.
       do {
-        // TODO: This API requires that we specify the maximum received data
-        // too.
-        CHECK_STATUS_OK(i3c_testutils_private_write_collect(&ctx_targ, &rx_desc,
-                                                            buf, TEST_BUF_WORDS,
-                                                            &rx_flags));
+        CHECK_STATUS_OK(i3c_testutils_private_write_collect(
+            &ctx_targ, &rx_desc, buf, TEST_BUF_WORDS, &rx_flags));
       } while (!(rx_flags & kI3CTestUtilsPrivWFlags_Collected));
 
       // Check the received data matches.
