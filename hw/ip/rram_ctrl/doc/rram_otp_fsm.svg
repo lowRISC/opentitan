@@ -26,10 +26,10 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     showgrid="false"
-     inkscape:zoom="1.4795888"
-     inkscape:cx="398.08357"
-     inkscape:cy="246.35223"
+     showgrid="true"
+     inkscape:zoom="2.0924545"
+     inkscape:cx="303.47135"
+     inkscape:cy="243.49394"
      inkscape:window-width="1720"
      inkscape:window-height="1368"
      inkscape:window-x="1720"
@@ -423,6 +423,25 @@
          style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
          d="M 5.77,0 -2.88,5 V -5 Z"
          id="path135-2-2-7-2-0-7-1-54-8-6-9" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="TriangleStart-9-9-9-1-4-0-7"
+       refX="0"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="TriangleStart"
+       markerWidth="5.3244081"
+       markerHeight="6.155385"
+       viewBox="0 0 5.3244081 6.1553851"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.5)"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:context-stroke;stroke-width:1pt"
+         d="M 5.77,0 -2.88,5 V -5 Z"
+         id="path135-2-2-7-2-7-2-7" />
     </marker>
   </defs>
   <g
@@ -890,6 +909,40 @@
          x="37.800022"
          y="71.842819"
          id="tspan57924-1-9">Error</tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:3.175px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264999;stroke-opacity:1"
+       x="67.632301"
+       y="57.723984"
+       id="text7023-8-4-0-9-7-6"><tspan
+         sodipodi:role="line"
+         style="font-size:3.175px;stroke-width:0.265"
+         x="67.632301"
+         y="57.723984"
+         id="tspan2222-3">disable</tspan></text>
+    <path
+       style="fill:none;fill-opacity:1;stroke:#000000;stroke-width:0.264999;stroke-opacity:1;marker-end:url(#TriangleStart-9-9-9-1-4-0-7)"
+       d="m 64.690415,58.584485 3.561011,6.105927"
+       id="path7079-0-2-3-9-3-3-6"
+       sodipodi:nodetypes="cc" />
+    <ellipse
+       style="fill:#006496;fill-opacity:1;stroke:#000000;stroke-width:0.264999;stroke-opacity:1"
+       id="path7473-8-7-2-6-6-8-5"
+       cx="72.760414"
+       cy="71.4375"
+       rx="7.9375"
+       ry="6.614583" />
+    <text
+       xml:space="preserve"
+       style="font-size:3.175px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264999;stroke-opacity:1"
+       x="66.355949"
+       y="72.052895"
+       id="text1751-6-5-5-2-1-2-0-7-6"><tspan
+         sodipodi:role="line"
+         style="font-size:3.175px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.265"
+         x="66.355949"
+         y="72.052895"
+         id="tspan57924-1-9-3">Disabled</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:3.175px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.264999;stroke-opacity:1"
