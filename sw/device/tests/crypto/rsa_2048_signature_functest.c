@@ -765,6 +765,125 @@ status_t custom_exp_sign_verify_test(void) {
   return OK_STATUS();
 }
 
+// 2048-bit modulus n = 751 * q (q prime). 751 is the largest prime that must
+// be rejected by the small-factor check (NIST SP 800-89, Section 5.3.3).
+static const uint32_t kTestModulusFactor751[kRsa2048NumWords] = {
+    0xfaab90b9, 0x870437c7, 0xe86d669c, 0x2599a119, 0xf01fb3f8, 0xc1f534c7,
+    0xdf971d35, 0x3d6cfaff, 0x6cc2d548, 0x679383bb, 0x16fa9606, 0x23ee880e,
+    0xeb0950b5, 0xb29efe7e, 0x2b18576f, 0xb85b2e76, 0xd7f211cd, 0x8a04ed66,
+    0x16a4509e, 0x64f56fc6, 0x6a9ce958, 0x2eb8af8d, 0x01380f31, 0x36c6aefc,
+    0xb6dfcd07, 0xa0f64e93, 0x8f30d5e6, 0x17eccc75, 0x006feebc, 0x9c452ea4,
+    0x02569c4b, 0xdf3d9559, 0xab3fc69f, 0x9acbb030, 0xcb08cbee, 0x1420e530,
+    0x42b8def0, 0xbdd506aa, 0xb95ecf83, 0x4225cb21, 0xf2405279, 0xe2294940,
+    0x0e0506b0, 0x79b65270, 0x8a978849, 0x77a426c1, 0x8ade3645, 0xb749e66a,
+    0x72926818, 0xc72157b5, 0x55cdc53f, 0x1353830e, 0x16e00e5a, 0xfe2aaac4,
+    0x316354b6, 0x1ebbe646, 0x6ecd587f, 0x02faf7e9, 0xbea015bb, 0xf475064d,
+    0xdd6a048f, 0xfd359f95, 0xd78c86ef, 0xa603ba75,
+};
+
+// 2048-bit modulus n = 757 * q (q prime). 757 is the smallest prime above the
+// small-factor bound, so this modulus must pass the small-factor check.
+static const uint32_t kTestModulusFactor757[kRsa2048NumWords] = {
+    0x2f628df9, 0xbab4ed5f, 0x7ae98c6e, 0x2edfd47e, 0xd3cc5297, 0x83b10d77,
+    0xe0ac6722, 0xb703e1a8, 0xefd4d847, 0x2e74efba, 0x6de728c6, 0x206b2a4d,
+    0x6abfe528, 0x179cc82c, 0xfa712ceb, 0xb866141c, 0x095e274c, 0x5063d42e,
+    0xe4e05851, 0xc663fb27, 0x4179600e, 0x017d4eb6, 0xb986737c, 0xa3fdf618,
+    0x09db4fc7, 0x66a8e38e, 0xef4383b6, 0x8294bca1, 0xaa510c45, 0xc5d48cc5,
+    0x55708e16, 0xc5eb4882, 0x9a093636, 0x534cf802, 0x3b310db3, 0xd09916e5,
+    0x69ef16fb, 0x971264b7, 0x1d150877, 0x823e647f, 0x8439352c, 0xda70e490,
+    0xc038728d, 0x0bd3ab8a, 0x9f65da4c, 0x2ec3ff71, 0xfd2942a2, 0x27663e57,
+    0xa197d208, 0xb6f624a0, 0xdfbdce09, 0x1b7f6f1f, 0xd331237f, 0x46b71f49,
+    0x2cfd6458, 0x84e6f34a, 0x1d835758, 0x4d2826b8, 0x842d7308, 0xb8f700cc,
+    0x79532938, 0x718a44e7, 0xffc72b42, 0xcb605263,
+};
+
+/**
+ * Run `otcrypto_rsa_hash_verify` on a hand-built public key.
+ *
+ * The key is built without `otcrypto_rsa_public_key_construct`, so the
+ * modulus checks in `otcrypto_rsa_hash_verify` are the only ones applied.
+ */
+static otcrypto_status_t hash_verify_with_modulus(
+    const uint32_t *modulus, hardened_bool_t *verification_result) {
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes,
+                                    sizeof(uint32_t))];
+  memcpy(public_key_data, modulus, kRsa2048NumBytes);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = public_key_data,
+  };
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, kTestMessage, kTestMessageLen);
+  otcrypto_const_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kValidSignaturePkcs1v15,
+                        ARRAYSIZE(kValidSignaturePkcs1v15));
+  return otcrypto_rsa_hash_verify(&public_key, kOtcryptoHashModeSha256,
+                                  &msg_buf, kOtcryptoRsaPaddingPkcs, &sig_buf,
+                                  verification_result);
+}
+
+status_t hash_verify_modulus_check_test(void) {
+  LOG_INFO("Running RSA hash_verify modulus check tests");
+  hardened_bool_t verification_result;
+  uint32_t modulus[kRsa2048NumWords];
+
+  // Valid modulus: passes the checks and verifies the signature.
+  verification_result = kHardenedBoolFalse;
+  TRY(hash_verify_with_modulus(kTestModulus, &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolTrue);
+
+  // Even modulus.
+  memcpy(modulus, kTestModulus, sizeof(modulus));
+  modulus[0] ^= 1;
+  TRY_CHECK(hash_verify_with_modulus(modulus, &verification_result).value ==
+            OTCRYPTO_BAD_ARGS.value);
+
+  // Modulus shorter than 2048 bits (most significant bit clear).
+  memcpy(modulus, kTestModulus, sizeof(modulus));
+  modulus[kRsa2048NumWords - 1] &= 0x7fffffff;
+  TRY_CHECK(hash_verify_with_modulus(modulus, &verification_result).value ==
+            OTCRYPTO_BAD_ARGS.value);
+
+  // Modulus with a prime factor smaller than 752.
+  TRY_CHECK(
+      hash_verify_with_modulus(kTestModulusFactor751, &verification_result)
+          .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Modulus whose smallest prime factor is above the bound: the key is
+  // accepted, but the signature is not valid for it.
+  verification_result = kHardenedBoolTrue;
+  TRY(hash_verify_with_modulus(kTestModulusFactor757, &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolFalse);
+
+  // The non-approved verify API does not apply the modulus checks.
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes,
+                                    sizeof(uint32_t))];
+  memcpy(public_key_data, kTestModulusFactor751, kRsa2048NumBytes);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = public_key_data,
+  };
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, kTestMessage, kTestMessageLen);
+  uint32_t msg_digest_data[256 / 32];
+  otcrypto_hash_digest_t msg_digest = {.data = msg_digest_data};
+  TRY(compute_digest(&msg_buf, kOtcryptoHashModeSha256, &msg_digest));
+  otcrypto_const_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kValidSignaturePkcs1v15,
+                        ARRAYSIZE(kValidSignaturePkcs1v15));
+  verification_result = kHardenedBoolTrue;
+  TRY(otcrypto_rsa_verify(&public_key, msg_digest, kOtcryptoRsaPaddingPkcs,
+                          &sig_buf, &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolFalse);
+
+  return OK_STATUS();
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -779,5 +898,6 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, all_hashes_sign_verify_test);
   EXECUTE_TEST(test_result, run_signature_negative_tests);
   EXECUTE_TEST(test_result, custom_exp_sign_verify_test);
+  EXECUTE_TEST(test_result, hash_verify_modulus_check_test);
   return status_ok(test_result);
 }
