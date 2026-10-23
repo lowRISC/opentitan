@@ -145,10 +145,17 @@ import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_control_reg_t;
 
   assign sw_req    = sw_ctrl_i.start.q & (sw_ctrl_i.op.q inside {RramOpRead, RramOpWrite});
   assign rw_sw_req = sw_ctrl_i.start.q & (sw_ctrl_i.op.q == RramOpRewrite);
-  // A software operation is rejected with an error if it is undefined or if the controller has not
-  // completed its initialization yet
+  // A software write must cover whole RRAM words, i.e. it must start at an RRAM word boundary and
+  // the number of bus words (NUM + 1) must be a multiple of WidthMultiple
+  logic sw_wr_align_err;
+  assign sw_wr_align_err = (sw_ctrl_i.op.q == RramOpWrite) &
+                           ((sw_ctrl_i.num.q[WordSelW-1:0] != '1) |
+                            (sw_addr_i[BusByteWidth +: WordSelW] != '0));
+
+  // A software operation is rejected with an error if it is undefined, if it is a write that does
+  // not cover whole RRAM words, or if the controller has not completed its initialization yet
   assign sw_inv_req = sw_ctrl_i.start.q &
-                      (~ctrl_init_done_i |
+                      (~ctrl_init_done_i | sw_wr_align_err |
                        ~(sw_ctrl_i.op.q inside {RramOpRead, RramOpWrite, RramOpRewrite}));
 
   // Operations already in progress when sw_disable_i asserts complete normally. Only new software
