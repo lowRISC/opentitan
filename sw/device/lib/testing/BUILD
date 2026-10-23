@@ -308,6 +308,22 @@ cc_library(
 )
 
 cc_library(
+    name = "i3c_testutils",
+    srcs = ["i3c_testutils.c"],
+    hdrs = ["i3c_testutils.h"],
+    target_compatible_with = [OPENTITAN_CPU],
+    deps = [
+        "//hw/top:i3c_c_regs",
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/dif:i3c",
+        "//sw/device/lib/dif:pinmux",
+        "//sw/device/lib/runtime:ibex",
+        "//sw/device/lib/testing:pinmux_testutils",
+        "//sw/device/lib/testing/test_framework:check",
+    ],
+)
+
+cc_library(
     name = "keymgr_dpe_testutils",
     srcs = ["keymgr_dpe_testutils.c"],
     hdrs = ["keymgr_dpe_testutils.h"],

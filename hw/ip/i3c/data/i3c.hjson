@@ -457,6 +457,18 @@
           hwaccess: "hrw",
           resval:   "0"
         }
+        { bits:     "8",
+          name:     "EN_HDR_DDR",
+          desc:     '''Enable HDR-DDR mode signaling.
+
+                    HDR-DDR mode should normally be enabled, and the ability for software to deactivate HDR-DDR mode is included only as a contingency.
+                    This configuration bit shall be modified only before the Target is enabled.
+                    For the Controller, the issuing of HDR-DDR communications may be avoided in software by the construction of appropriate Command Descriptors.
+                    '''
+          swaccess: "rw",
+          hwaccess: "hro",
+          resval:   "1"
+        }
         { bits:     "4",
           name:     "CRHDLY1_SET_AS",
           desc:     '''Set Bus Activity State.
@@ -1172,14 +1184,18 @@
 
                   This mask determines which bits of the device address will be tested and matched against the address in 'ADDR1'.
                   I2C devices are commonly configured with one of a small set of static addresses, differing in only one two address bits.
-                  If this field is zero then 'ADDR1' is implicitly not used.
                   '''
           resval: "0"
         }
         { bits:   "22:16",
           name:   "ADDR1",
-          desc:   "Second blocked address.",
-          resval: "0"
+          desc:   '''Second blocked address.
+
+                  Accesses to the target address (`TARG_ADDR`) will be blocked if the following expression matches:
+                    `(TARG_ADDR & MASK1) == ADDR1`
+                  The reset values of `MASK1` and `ADDR1` cannot yield a match, deactivating this check.
+                  '''
+          resval: "0x7f"
         }
         { bits:   "14:8",
           name:   "MASK0",
@@ -1187,14 +1203,18 @@
 
                   This mask determines which bits of the device address will be tested and matched against the address in 'ADDR0'.
                   I2C devices are commonly configured with one of a small set of static addresses, differing in only one two address bits.
-                  If this field is zero then 'ADDR0' is implicitly not used.
                   '''
           resval: "0"
         }
         { bits:   "6:0",
           name:   "ADDR0",
-          desc:   "First blocked address.",
-          resval: "0"
+          desc:   '''First blocked address.
+
+                  Accesses to the target address (`TARG_ADDR`) will be blocked if the following expression matches:
+                    `(TARG_ADDR & MASK0) == ADDR0`
+                  The reset values of `MASK0` and `ADDR0` cannot yield a match, deactivating this check.
+                  '''
+          resval: "0x7f"
         }
       ]
     }
@@ -1614,7 +1634,7 @@
     }
     { multireg: {
         name:     "TARG_TXBUF_STATE",
-        desc:     "Target 0 TX Buffer State.",
+        desc:     "Target TX Buffer State.",
         count:    "MaxTargets",
         cname:    "TARGET",
         swaccess: "ro",
@@ -1763,12 +1783,12 @@
         fields: [
           { bits:   "25:16",
             name:   "MAX_ADDR",
-            desc:   "Maximum address for Target 0 Tx Descriptor Queue use (inclusive).",
+            desc:   "Maximum address for Target Tx Descriptor Queue use (inclusive).",
             resval: "0x3b7 + (multireg_idx * 8)"
           }
           { bits:   "9:0",
             name:   "MIN_ADDR",
-            desc:   "Minimum address for Target 0 Tx Descriptor Queue use.",
+            desc:   "Minimum address for Target Tx Descriptor Queue use.",
             resval: "0x3b0 + (multireg_idx * 8)"
           }
         ]

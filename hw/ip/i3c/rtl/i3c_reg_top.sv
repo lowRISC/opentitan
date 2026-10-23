@@ -241,6 +241,8 @@ module i3c_reg_top
   logic [1:0] targ_control_crhdly1_as_wd;
   logic targ_control_crhdly1_set_as_qs;
   logic targ_control_crhdly1_set_as_wd;
+  logic targ_control_en_hdr_ddr_qs;
+  logic targ_control_en_hdr_ddr_wd;
   logic targ_control_hj_request_qs;
   logic targ_control_hj_request_wd;
   logic targ_control_sw_reset_wd;
@@ -1987,7 +1989,7 @@ module i3c_reg_top
 
   // R[targ_control]: V(False)
   logic targ_control_qe;
-  logic [5:0] targ_control_flds_we;
+  logic [6:0] targ_control_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -2112,6 +2114,34 @@ module i3c_reg_top
     .qs     (targ_control_crhdly1_set_as_qs)
   );
 
+  //   F[en_hdr_ddr]: 8:8
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_targ_control_en_hdr_ddr (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_control_we),
+    .wd     (targ_control_en_hdr_ddr_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (targ_control_flds_we[4]),
+    .q      (reg2hw.targ_control.en_hdr_ddr.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (targ_control_en_hdr_ddr_qs)
+  );
+
   //   F[hj_request]: 30:30
   prim_subreg #(
     .DW      (1),
@@ -2132,7 +2162,7 @@ module i3c_reg_top
     .d      (hw2reg.targ_control.hj_request.d),
 
     // to internal hardware
-    .qe     (targ_control_flds_we[4]),
+    .qe     (targ_control_flds_we[5]),
     .q      (reg2hw.targ_control.hj_request.q),
     .ds     (),
 
@@ -2161,7 +2191,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_control_flds_we[5]),
+    .qe     (targ_control_flds_we[6]),
     .q      (reg2hw.targ_control.sw_reset.q),
     .ds     (),
 
@@ -3775,7 +3805,7 @@ module i3c_reg_top
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (7'h0),
+    .RESVAL  (7'h7f),
     .Mubi    (1'b0)
   ) u_blocked_addr_addr0 (
     .clk_i   (clk_i),
@@ -3831,7 +3861,7 @@ module i3c_reg_top
   prim_subreg #(
     .DW      (7),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (7'h0),
+    .RESVAL  (7'h7f),
     .Mubi    (1'b0)
   ) u_blocked_addr_addr1 (
     .clk_i   (clk_i),
@@ -19399,6 +19429,8 @@ module i3c_reg_top
 
   assign targ_control_crhdly1_set_as_wd = reg_wdata[4];
 
+  assign targ_control_en_hdr_ddr_wd = reg_wdata[8];
+
   assign targ_control_hj_request_wd = reg_wdata[30];
 
   assign targ_control_sw_reset_wd = reg_wdata[31];
@@ -20676,6 +20708,7 @@ module i3c_reg_top
         reg_rdata_next[1] = targ_control_stby_cr_support_qs;
         reg_rdata_next[3:2] = targ_control_crhdly1_as_qs;
         reg_rdata_next[4] = targ_control_crhdly1_set_as_qs;
+        reg_rdata_next[8] = targ_control_en_hdr_ddr_qs;
         reg_rdata_next[30] = targ_control_hj_request_qs;
         reg_rdata_next[31] = '0;
       end

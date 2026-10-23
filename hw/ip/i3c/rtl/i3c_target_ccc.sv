@@ -288,11 +288,12 @@ module i3c_target_ccc
         RData_PID5: rdata[t] = reg2hw_i.targ_pid_lo[t].q[7:0];
         RData_BCR:  rdata[t] = reg2hw_i.targ_char[t].bcr.q;
         RData_DCR:  rdata[t] = reg2hw_i.targ_char[t].dcr.q;
-        RData_GETCAP1: rdata[t] = 8'h1;
+        // Software has the option of disabling HDR-DDR mode if required.
+        RData_GETCAP1: rdata[t] = {7'b0, reg2hw_i.targ_control.en_hdr_ddr.q};
         RData_GETCAP2: rdata[t] = 8'hf2;  // Max support, I3C Basic V1.2.
         // TODO(#31128): This is quite likely to need revising.
         RData_GETCAP3: rdata[t] = 8'h58;
-        RData_GETCAP4: rdata[t] = 8'h00;
+        RData_GETCAP4: rdata[t] = 8'h00;  // HDR-DDR CCCs _not_ supported.
         RData_TGTSTAT0: rdata[t] = 8'h00;
         // GETSTATUS Format 1, LSB byte (Table 27). A Controller-capable Device reports its
         // readiness to participate in Controller Role Handoff via the Activity Mode field, so that
@@ -327,7 +328,7 @@ module i3c_target_ccc
             // Standby Controller to assume control of the bus. We therefore return an invalid
             // address for any Virtual Target incapable of assuming the role of Active Controller.
             // TODO(#31128): This must be handled in the transceiver. The 0-data here does not hurt,
-            //               but the incapability must be signalled through a NACK.
+            //               but the incapacity must be signaled through a NACK.
             rdata[t] = 8'h00;
           end else begin
             // Figure 42: Return dynamic address and ~XOR parity of it in bit 0
@@ -471,7 +472,8 @@ module i3c_target_ccc
       // TODO(31128): TargCRsn_Sr is currently unreachable.
       TargCRsn_Sr: wr_commit = ccc_req_i.sr;
       TargCRsn_P:  wr_commit = 1'b1;
-      default: ;  // All cases are covered above; outputs are defaulted at the top.
+      // All cases are covered above; `default` clause not logically required.
+      default: begin end
     endcase
   end
 
