@@ -14,8 +14,17 @@
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+#include "sw/device/lib/testing/test_framework/ottf_utils.h"
 
-static const dt_gpio_t kGpioDt = kDtGpio0;
+/**
+ * Index of the GPIO instance under test.
+ *
+ * Overwritten by the testbench (chip_sw_gpio_vseq.sv) via backdoor to select
+ * the GPIO instances.
+ */
+OTTF_BACKDOOR_VAR_DV uint8_t gpio_idx_dv = 0;
+
+static dt_gpio_t gpio_dt;
 static const dt_pinmux_t kPinmuxDt = kDtPinmux;
 static const dt_rv_plic_t kRvPlicDt = kDtRvPlic;
 
@@ -194,12 +203,12 @@ void ottf_external_isr(uint32_t *exc_info) {
 
   // Check if it is the right peripheral.
   dt_instance_id_t inst_id = dt_plic_id_to_instance_id(plic_irq_id);
-  CHECK(inst_id == dt_gpio_instance_id(kGpioDt),
-        "Interrupt from incorrect peripheral: (exp: %d, obs: %s)",
-        dt_gpio_instance_id(kGpioDt), inst_id);
+  CHECK(inst_id == dt_gpio_instance_id(gpio_dt),
+        "Interrupt from incorrect peripheral: (exp: %d, obs: %d)",
+        dt_gpio_instance_id(gpio_dt), inst_id);
 
   // Correlate the interrupt fired from GPIO.
-  uint32_t gpio_pin_irq_fired = dt_gpio_irq_from_plic_id(kGpioDt, plic_irq_id);
+  uint32_t gpio_pin_irq_fired = dt_gpio_irq_from_plic_id(gpio_dt, plic_irq_id);
 
   // Check if we did expect the right GPIO IRQ to fire.
   CHECK(gpio_pin_irq_fired == expected_gpio_pin_irq,
@@ -234,7 +243,7 @@ void configure_pinmux(void) {
   for (size_t i = 0; i < kDifGpioNumPins; ++i) {
     // Assume that the pins in dt_gpio_pin_t are numbered 0, 1, and so on.
     dt_periph_io_t periph_io =
-        dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio0 + i);
+        dt_gpio_periph_io(gpio_dt, kDtGpioPeriphIoGpio0 + i);
     dt_pad_t pad = kPinmuxTestutilsGpioPads[i];
     CHECK_STATUS_OK(
         pinmux_testutils_connect(&pinmux, periph_io, kDtPeriphIoDirInout, pad));
@@ -242,19 +251,24 @@ void configure_pinmux(void) {
 }
 
 bool test_main(void) {
+  CHECK(gpio_idx_dv < kDtGpioCount, "Invalid GPIO instance index %d",
+        gpio_idx_dv);
+  gpio_dt = (dt_gpio_t)gpio_idx_dv;
+  LOG_INFO("Testing gpio instance %d", gpio_dt);
+
   // Initialize the pinmux.
   CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
   pinmux_testutils_init(&pinmux);
   configure_pinmux();
 
   // Initialize the GPIO.
-  CHECK_DIF_OK(dif_gpio_init_from_dt(kGpioDt, &gpio));
+  CHECK_DIF_OK(dif_gpio_init_from_dt(gpio_dt, &gpio));
 
   // Initialize the PLIC.
   CHECK_DIF_OK(dif_rv_plic_init_from_dt(kRvPlicDt, &plic));
   // Here we assume that the IRQs are numbered 0, 1, so that they correspond to
   // GPIO numbers.
-  dt_plic_irq_id_t first_irq = dt_gpio_irq_to_plic_id(kGpioDt, kDtGpioIrqGpio0);
+  dt_plic_irq_id_t first_irq = dt_gpio_irq_to_plic_id(gpio_dt, kDtGpioIrqGpio0);
   rv_plic_testutils_irq_range_enable(&plic, kPlicTarget, first_irq,
                                      first_irq + kDifGpioNumPins - 1);
 

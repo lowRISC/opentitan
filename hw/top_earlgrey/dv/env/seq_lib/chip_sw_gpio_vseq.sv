@@ -7,8 +7,22 @@ class chip_sw_gpio_vseq extends chip_sw_base_vseq;
 
     bit [NUM_GPIOS-1:0] gpios_mask = {NUM_GPIOS{1'b1}};
     uint                timeout_ns = 2_000_000;
+    // The GPIO instance to test, selected via the plusarg '+gpio_idx'.
+    uint                gpio_idx = 0;
 
   `uvm_object_new
+
+  // Override the base-class impl to pass the GPIO instance to test to SW via the backdoor.
+  virtual task cpu_init();
+    bit [7:0] gpio_idx_arr[1];
+
+    void'($value$plusargs("gpio_idx=%0d", gpio_idx));
+    `DV_CHECK(gpio_idx inside {[0 : NUM_GPIO_INSTS-1]})
+    gpio_idx_arr = '{gpio_idx[7:0]};
+
+    super.cpu_init();
+    sw_symbol_backdoor_overwrite("gpio_idx_dv", gpio_idx_arr);
+  endtask
 
   virtual task body();
     super.body();

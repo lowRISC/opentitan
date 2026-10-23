@@ -13,7 +13,6 @@
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 
-static const dt_gpio_t kGpioDt = kDtGpio0;
 static const dt_pinmux_t kPinmuxDt = kDtPinmux;
 
 static dif_gpio_t gpio;
@@ -68,22 +67,21 @@ static void test_gpio_write(uint32_t write_val, uint32_t compare_mask) {
  * Performs a loopback test by writing various values and reading them back.
  * NOTE: This test can currently run only on FPGA and DV.
  */
-bool test_main(void) {
-  uint32_t gpio_mask = pinmux_testutils_get_testable_gpios_mask();
-  CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
-  // Assign GPIOs in the pinmux
+static void test_gpio_instance(dt_gpio_t gpio_dt, uint32_t gpio_mask) {
+  LOG_INFO("Testing gpio instance %d", gpio_dt);
+  // Assign GPIOs in the pinmux.
   for (size_t i = 0; i < kDifGpioNumPins; ++i) {
     if (gpio_mask & (1u << i)) {
       // Assume that the I/Os in dt_gpio_periph_io_t are numbered 0, 1, and so
       // on.
       dt_periph_io_t periph_io =
-          dt_gpio_periph_io(kGpioDt, kDtGpioPeriphIoGpio0 + i);
+          dt_gpio_periph_io(gpio_dt, kDtGpioPeriphIoGpio0 + i);
       dt_pad_t pad = kPinmuxTestutilsGpioPads[i];
       CHECK_STATUS_OK(pinmux_testutils_connect(&pinmux, periph_io,
                                                kDtPeriphIoDirInout, pad));
     }
   }
-  CHECK_DIF_OK(dif_gpio_init_from_dt(kGpioDt, &gpio));
+  CHECK_DIF_OK(dif_gpio_init_from_dt(gpio_dt, &gpio));
   CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, gpio_mask));
 
   for (uint8_t i = 0; i < ARRAYSIZE(kGpioVals); ++i) {
@@ -95,6 +93,18 @@ bool test_main(void) {
   for (uint32_t i = 1; i > 0; i <<= 1) {
     test_gpio_write(i, gpio_mask);
     test_gpio_write(~i, gpio_mask);
+  }
+
+  CHECK_DIF_OK(dif_gpio_output_set_enabled_all(&gpio, 0));
+}
+
+bool test_main(void) {
+  uint32_t gpio_mask = pinmux_testutils_get_testable_gpios_mask();
+  CHECK_DIF_OK(dif_pinmux_init_from_dt(kPinmuxDt, &pinmux));
+
+  // Iterate over all available gpio ports
+  for (dt_gpio_t gpio_dt = 0; gpio_dt < kDtGpioCount; ++gpio_dt) {
+    test_gpio_instance(gpio_dt, gpio_mask);
   }
 
   return true;
