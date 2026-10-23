@@ -375,16 +375,20 @@ interface otbn_trace_if
                                      gen_mai.u_otbn_mai.sec_wipe_ispr_mai_res_s0_i;
   assign ispr_write[IsprMaiResS1]  = gen_mai.u_otbn_mai.ispr_mai_res_s1_wr_i |
                                      gen_mai.u_otbn_mai.sec_wipe_ispr_mai_res_s1_i;
-  assign ispr_write[IsprMaiIn0S0]  = gen_mai.u_otbn_mai.ispr_mai_in0_s0_wr_i |
+  assign ispr_write[IsprMaiIn0S0]  = (gen_mai.u_otbn_mai.ispr_mai_in0_s0_wr_i &
+                                      gen_mai.u_otbn_mai.ma_wsr_wr_en) |
                                      gen_mai.u_otbn_mai.sec_wipe_ispr_mai_in0_s0_i;
-  assign ispr_write[IsprMaiIn0S1]  = gen_mai.u_otbn_mai.ispr_mai_in0_s1_wr_i |
+  assign ispr_write[IsprMaiIn0S1]  = (gen_mai.u_otbn_mai.ispr_mai_in0_s1_wr_i &
+                                      gen_mai.u_otbn_mai.ma_wsr_wr_en) |
                                      gen_mai.u_otbn_mai.sec_wipe_ispr_mai_in0_s1_i;
-  assign ispr_write[IsprMaiIn1S0]  = gen_mai.u_otbn_mai.ispr_mai_in1_s0_wr_i |
+  assign ispr_write[IsprMaiIn1S0]  = (gen_mai.u_otbn_mai.ispr_mai_in1_s0_wr_i &
+                                      gen_mai.u_otbn_mai.ma_wsr_wr_en) |
                                      gen_mai.u_otbn_mai.sec_wipe_ispr_mai_in1_s0_i;
-  assign ispr_write[IsprMaiIn1S1]  = gen_mai.u_otbn_mai.ispr_mai_in1_s1_wr_i |
+  assign ispr_write[IsprMaiIn1S1]  = (gen_mai.u_otbn_mai.ispr_mai_in1_s1_wr_i &
+                                      gen_mai.u_otbn_mai.ma_wsr_wr_en) |
                                      gen_mai.u_otbn_mai.sec_wipe_ispr_mai_in1_s1_i;
 
-  assign ispr_write[IsprMaiCtrl]   = gen_mai.u_otbn_mai.ispr_mai_ctrl_wr_i;
+  assign ispr_write[IsprMaiCtrl]   = gen_mai.u_otbn_mai.ma_ctrl_wr;
   assign ispr_write[IsprMaiStatus] = 1'b0;
 
   for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : gen_mai_ispr_write_words
