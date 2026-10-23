@@ -36,7 +36,7 @@ typedef struct test_crypto_state_layout {
   uint8_t self_check_state;
   uint8_t locked_state;
   uint8_t csrng_instantiated;
-  uint8_t csrng_is_default;
+  uint8_t csrng_is_manual;
   uint8_t cmvp_service_indicator;
   uint8_t cmvp_call_depth;
 } test_crypto_state_layout_t;

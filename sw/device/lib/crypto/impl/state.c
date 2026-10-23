@@ -21,7 +21,7 @@ otcrypto_status_t init_state(otcrypto_state_t *state,
   internal_state->locked_state = kHardenedByteBoolFalse;
   internal_state->self_check_state = kHardenedByteBoolFalse;
   internal_state->csrng_instantiated = kHardenedByteBoolFalse;
-  internal_state->csrng_is_default = kHardenedByteBoolFalse;
+  internal_state->csrng_is_manual = kHardenedByteBoolFalse;
 #ifdef FIPS_MODE
   internal_state->cmvp_service_indicator = kOtcryptoCmvpNoService;
   internal_state->cmvp_call_depth = 0;
