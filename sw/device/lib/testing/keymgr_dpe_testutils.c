@@ -392,10 +392,6 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
  * policy register) then these locks are not removed after the initial advance
  * call completes.
  */
-// TODO(#30665): Verify if the max key version needs to be written here too!
-// When loading the UDS the RTL fetches the max key version from the SW
-// register. Verify that the lock is released when the version register is
-// locked.
 status_t keymgr_dpe_testutils_initial_load_uds(
     const dif_keymgr_dpe_t *keymgr_dpe,
     const dif_keymgr_dpe_advance_params_t *params) {

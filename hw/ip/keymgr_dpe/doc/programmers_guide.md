@@ -24,6 +24,7 @@ Keymgr_DPE is initialized by configuring the following CSR:
 At the end of the successful first advance call, the UDS is latched into the specified destination slot.
 If `SLOT_DST_SEL` is at or above `NumInstHwSlot`, the call is rejected with `ERR_CODE.INVALID_OP` and keymgr_dpe remains in `Reset` state.
 SW can then correct `SLOT_DST_SEL` and retry.
+Like for the [load root key operations](#load-root-key--load-secondary-root-key), the slot receives the default UDS policy (`allow_child = 1`, `retain_parent = 0`, `allow_keygen = 0`, `exportable = 0`) and the default max key version (`0`), ignoring `SLOT_POLICY` and `MAX_KEY_VER_SHADOWED`.
 
 ## Advance
 
@@ -100,12 +101,13 @@ The destination slot must be empty, so erase it first if it currently holds a DP
 Invoking the load operation on a valid slot fails with `ERR_CODE.INVALID_OP`.
 
 SW needs to configure the following registers to load a root key:
-*  Set `MAX_KEY_VER_SHADOWED`.
 *  Set `CONTROL_SHADOWED.OPERATION` to `Load root key` or `Load secondary root key`.
 *  Set `CONTROL_SHADOWED.SLOT_DST_SEL` to the empty slot that should store the root key.
+*  Neither `MAX_KEY_VER_SHADOWED` nor `SLOT_POLICY` needs to be configured, as both are ignored by these operations.
 *  Set `START` to initiate the operation.
 
-At the end of a successful load operation, the destination slot holds the root key with `boot_stage = 0` and the default UDS policy.
+At the end of a successful load operation, the destination slot holds the root key with `boot_stage = 0`, the default UDS policy and the default max key version.
+As `allow_keygen = 0`, no key can be generated from this slot, hence its `max_key_version` is irrelevant.
 As `retain_parent = 0`, the first advance from this slot must be an in-place update (`SLOT_SRC_SEL = SLOT_DST_SEL`).
 
 Once a root key is no longer needed in the current boot, SW should write 1 to `LOAD_ROOT_KEY_LOCK` or `LOAD_SECONDARY_ROOT_KEY_LOCK` respectively.

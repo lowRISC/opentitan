@@ -74,6 +74,8 @@ package keymgr_dpe_pkg;
     allow_child   : 1'b1
   };
 
+  localparam logic [KeyVersionWidth-1:0] DEFAULT_UDS_MAX_KEY_VERSION = '0;
+
 
   /////////////////////
   // Keymgr_dpe: FSM //

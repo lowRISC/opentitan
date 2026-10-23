@@ -464,10 +464,6 @@ void sc_keymgr_dpe_lock_uds(void) {
 /**
  * Load the UDS into the provided destination slot.
  */
-// TODO(#30667): Verify if the max key version needs to be written here too!
-//              When loading the UDS the RTL fetches the max key version from
-//              the SW register. Verify that the lock is released when the
-//              version register is locked.
 rom_error_t sc_keymgr_dpe_load_uds(uint32_t sel_dst_slot) {
   // Set the control register entries
   sc_keymgr_dpe_control_reg_set(
@@ -484,10 +480,6 @@ rom_error_t sc_keymgr_dpe_load_uds(uint32_t sel_dst_slot) {
  * Executes the first advance call to load the UDS in the selected slot and
  * sets the keymgr_dpe FSM to available.
  */
-// TODO(#30667): Verify if the max key version needs to be written here too!
-//              When loading the UDS the RTL fetches the max key version from
-//              the SW register. Verify that the lock is released when the
-//              version register is locked.
 rom_error_t sc_keymgr_dpe_advance_initial(const uint32_t sel_dst_slot_uds) {
   // Verify the reset state
   HARDENED_RETURN_IF_ERROR(expected_state_check(kScKeymgrDPEStateReset));
