@@ -563,6 +563,18 @@ typedef struct otcrypto_state {
 } otcrypto_state_t;
 
 /**
+ * Lock state value indicating the cryptolib is locked specifically due to an
+ * entropy source health test failure.
+ *
+ * Unlike a hard lock (`kHardenedByteBoolTrue`), this state allows recovery
+ * by calling `otcrypto_entropy_init()`, which re-executes the RNG startup
+ * tests.
+ */
+enum {
+  kOtcryptoLockStateEntropy = 0xd6,
+};
+
+/**
  * CMVP service indicator states.
  */
 typedef enum otcrypto_cmvp_service_indicator {
