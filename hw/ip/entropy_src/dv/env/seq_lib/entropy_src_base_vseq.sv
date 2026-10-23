@@ -194,6 +194,11 @@ class entropy_src_base_vseq extends cip_base_vseq #(
     pause_until_reset_or_flag(pause, stop_early);
     if (stop_early || cfg.under_reset) return;
 
+    ral.threshold_oneway.set(newcfg.ht_threshold_oneway);
+    csr_update(.csr(ral.threshold_oneway));
+    pause_until_reset_or_flag(pause, stop_early);
+    if (stop_early || cfg.under_reset) return;
+
     // Thresholds for the continuous health checks:
     // REPCNT and REPCNTS
 
