@@ -514,7 +514,7 @@ extern "C" {
  * address between #TOP_DARJEELING_CSRNG_BASE_ADDR and
  * `TOP_DARJEELING_CSRNG_BASE_ADDR + TOP_DARJEELING_CSRNG_SIZE_BYTES`.
  */
-#define TOP_DARJEELING_CSRNG_SIZE_BYTES 0x80u
+#define TOP_DARJEELING_CSRNG_SIZE_BYTES 0x100u
 
 /**
  * Peripheral base address for entropy_src in top darjeeling.

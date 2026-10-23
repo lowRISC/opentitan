@@ -730,7 +730,7 @@ extern "C" {
  * address between #TOP_EARLGREY_CSRNG_BASE_ADDR and
  * `TOP_EARLGREY_CSRNG_BASE_ADDR + TOP_EARLGREY_CSRNG_SIZE_BYTES`.
  */
-#define TOP_EARLGREY_CSRNG_SIZE_BYTES 0x80u
+#define TOP_EARLGREY_CSRNG_SIZE_BYTES 0x100u
 
 /**
  * Peripheral base address for entropy_src in top earlgrey.

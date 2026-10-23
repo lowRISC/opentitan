@@ -52,11 +52,6 @@ interface csrng_path_if
             ".add_rk_sel_o"};
   endfunction // aes_cipher_ctrl_err_path
 
-  function automatic string cmd_gen_cnt_err_path(int app);
-    return {core_path, $sformatf(".gen_cmd_stage[%0d]", app),
-            ".u_csrng_cmd_stage.u_prim_count_cmd_gen_cntr.cnt_q[1]"};
-  endfunction // cmd_gen_cnt_err_path
-
   function automatic string ctr_drbg_ctr_err_path();
     return {core_path, ".u_csrng_ctr_drbg.u_prim_count_ctr_drbg.cnt_q[1]"};
   endfunction // ctr_drbg_ctr_err_path
