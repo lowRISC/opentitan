@@ -37,9 +37,8 @@
     # Provides mkEdaShell (the EDA devshell builder)
     lowrisc-nix.url = "github:lowRISC/lowrisc-nix/ded9720f4960e3da2ffcb7d88dfa5fd51cbe4021";
 
-    # Yosys 0.69 with slang, cached on cache.nixos.org (do not override).
-    nixpkgs-yosys.url = "github:nixos/nixpkgs/8edc0c72e3a38faf5434e40d1f19431125fe4b30";
-
+    # Yosys from cache.nixos.org (do not override).
+    nixpkgs-yosys.url = "github:nixos/nixpkgs/nixos-unstable";
     ihp-pdk = {
       url = "github:IHP-GmbH/IHP-Open-PDK/dev";
       flake = false;
