@@ -733,6 +733,16 @@ static void entropy_src_stop(void) {
   abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
                    ENTROPY_SRC_MODULE_ENABLE_REG_RESVAL);
 
+  // Wait for the entropy_src state machine to become idle before writing
+  // REGWEN-protected configuration registers.
+  uint32_t timeout = kEntropyPollReadyTimeout;
+  while (
+      !bitfield_bit32_read(abs_mmio_read32(kBaseEntropySrc +
+                                           ENTROPY_SRC_DEBUG_STATUS_REG_OFFSET),
+                           ENTROPY_SRC_DEBUG_STATUS_MAIN_SM_IDLE_BIT) &&
+      --timeout > 0) {
+  }
+
   // Set default values for other critical registers to avoid synchronization
   // issues.
   abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
@@ -766,6 +776,9 @@ void entropy_complex_stop_all(void) {
   edn_stop(kBaseEdn0);
   edn_stop(kBaseEdn1);
   abs_mmio_write32(kBaseCsrng + CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
+  // Read back CSRNG state to synchronize the disable write on the bus and
+  // ensure any in-flight block encryption drains while CSRNG is disabled.
+  OT_DISCARD(abs_mmio_read32(kBaseCsrng + CSRNG_MAIN_SM_STATE_REG_OFFSET));
   entropy_src_stop();
 
   crypto_state_t *state = NULL;
