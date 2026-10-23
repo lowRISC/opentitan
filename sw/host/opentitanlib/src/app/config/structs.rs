@@ -147,6 +147,21 @@ pub struct I2cConfiguration {
     pub alias_of: Option<String>,
 }
 
+/// Configuration of clock frequencies, in Hz.
+#[derive(Default, Deserialize, Clone, Debug)]
+pub struct ClockFreqConfiguration {
+    /// Clock frequency of the CPU, in Hz.
+    pub cpu: Option<u64>,
+    /// Clock frequency of high speed peripherals, in Hz.
+    pub hi_speed_peripheral: Option<u64>,
+    /// Clock frequency of other peripherals, in Hz.
+    pub peripheral: Option<u64>,
+    /// Clock frequency for USB, in Hz.
+    pub usb: Option<u64>,
+    /// Clock frequency for always-on hardware, in Hz.
+    pub aon: Option<u64>,
+}
+
 /// Representation of the complete and unresolved content of a single
 /// confguration file.
 #[derive(Deserialize, Clone, Debug)]
@@ -189,4 +204,7 @@ pub struct ConfigurationFile {
     /// List of GPIO pins.
     #[serde(default)]
     pub gpios: Vec<String>,
+    /// Struct of clock frequencies for parts of the chip.
+    #[serde(default)]
+    pub clock_frequencies: ClockFreqConfiguration,
 }

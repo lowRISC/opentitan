@@ -217,6 +217,7 @@ pub struct TransportWrapperBuilder {
     strapping_conf_map: HashMap<String, Vec<(String, PinConfiguration)>>,
     io_expander_conf_map: HashMap<String, config::IoExpander>,
     gpio_conf: HashSet<String>,
+    clock_freq_conf: config::ClockFreqConfiguration,
 }
 
 // This is the structure to be passed to each Command implementation,
@@ -236,6 +237,7 @@ pub struct TransportWrapper {
     i2c_conf_map: HashMap<String, I2cConfiguration>,
     strapping_conf_map: HashMap<String, HashMap<String, PinConfiguration>>,
     gpio_conf: HashSet<String>,
+    clock_freq_conf: config::ClockFreqConfiguration,
     //
     // Below fields are lazily populated, as instances are requested.
     //
@@ -269,6 +271,7 @@ impl TransportWrapperBuilder {
             strapping_conf_map: HashMap::new(),
             io_expander_conf_map: HashMap::new(),
             gpio_conf: HashSet::new(),
+            clock_freq_conf: config::ClockFreqConfiguration::default(),
         }
     }
 
@@ -357,6 +360,21 @@ impl TransportWrapperBuilder {
         merge_field(&mut entry.address, &i2c_conf.address)?;
         merge_field(&mut entry.bits_per_sec, &i2c_conf.bits_per_sec)?;
         merge_field(&mut entry.alias_of, &i2c_conf.alias_of)?;
+        Ok(())
+    }
+
+    fn record_clock_freq_conf(
+        clock_freq_conf: &mut config::ClockFreqConfiguration,
+        new_conf: &config::ClockFreqConfiguration,
+    ) -> Result<(), ()> {
+        merge_field(&mut clock_freq_conf.cpu, &new_conf.cpu)?;
+        merge_field(
+            &mut clock_freq_conf.hi_speed_peripheral,
+            &new_conf.hi_speed_peripheral,
+        )?;
+        merge_field(&mut clock_freq_conf.peripheral, &new_conf.peripheral)?;
+        merge_field(&mut clock_freq_conf.usb, &new_conf.usb)?;
+        merge_field(&mut clock_freq_conf.aon, &new_conf.aon)?;
         Ok(())
     }
 
@@ -476,6 +494,14 @@ impl TransportWrapperBuilder {
         for pin in file.gpios {
             self.gpio_conf.insert(pin);
         }
+        Self::record_clock_freq_conf(&mut self.clock_freq_conf, &file.clock_frequencies).map_err(
+            |_| {
+                TransportError::InconsistentConf(
+                    TransportInterfaceType::ClockFrequency,
+                    "clock_frequencies".to_string(),
+                )
+            },
+        )?;
         Ok(())
     }
 
@@ -732,6 +758,7 @@ impl TransportWrapperBuilder {
             i2c_conf_map,
             strapping_conf_map,
             gpio_conf: self.gpio_conf,
+            clock_freq_conf: self.clock_freq_conf,
             pin_instance_map: RefCell::new(HashMap::new()),
             spi_physical_map: RefCell::new(HashMap::new()),
             spi_logical_map: RefCell::new(HashMap::new()),
@@ -981,6 +1008,11 @@ impl TransportWrapper {
     /// Returns a [`GpioBitbanging`] implementation.
     pub fn gpio_bitbanging(&self) -> Result<Rc<dyn GpioBitbanging>> {
         self.transport.gpio_bitbanging()
+    }
+
+    /// Returns the clock frequencies declared by the transport configuration, in Hz.
+    pub fn clock_frequencies(&self) -> &config::ClockFreqConfiguration {
+        &self.clock_freq_conf
     }
 
     /// Returns the [`PinStrapping`] of the given name, or `None` if the transport configuration
