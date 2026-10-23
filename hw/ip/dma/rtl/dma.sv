@@ -144,10 +144,15 @@ module dma
   logic sw_reg_wr_extended;
   assign sw_reg_wr_extended = sw_reg_wr || sw_reg_wr1 || sw_reg_wr2;
 
+  // A TL-UL request may still await its response after an abort has returned the FSM to DmaIdle.
+  // Keep the clock running until that response has arrived.
+  logic tlul_req_outstanding;
+
   logic gated_clk_en, gated_clk;
   assign gated_clk_en = reg2hw.control.go.q       ||
                         (ctrl_state_q != DmaIdle) ||
-                        sw_reg_wr_extended;
+                        sw_reg_wr_extended        ||
+                        tlul_req_outstanding;
 
   prim_clock_gating #(
     .FpgaBufGlobal(1'b0) // Instantiate a local instead of a global clock buffer on FPGAs
@@ -255,6 +260,28 @@ module dma
     .tl_o           ( ctn_tl_h2d_o                     ),
     .tl_i           ( ctn_tl_d2h_i                     )
   );
+
+  // Track the single request that each TL-UL host adapter may have outstanding.
+  // Requests on the SoC System interface are not tracked.
+  logic host_req_outstanding_d, host_req_outstanding_q;
+  logic ctn_req_outstanding_d,  ctn_req_outstanding_q;
+  assign host_req_outstanding_d = (dma_host_tlul_req_valid && dma_host_tlul_gnt) ?
+                                  (host_req_outstanding_q || !dma_host_tlul_rsp_valid) :
+                                  (host_req_outstanding_q && !dma_host_tlul_rsp_valid);
+  assign ctn_req_outstanding_d  = (dma_ctn_tlul_req_valid && dma_ctn_tlul_gnt) ?
+                                  (ctn_req_outstanding_q || !dma_ctn_tlul_rsp_valid) :
+                                  (ctn_req_outstanding_q && !dma_ctn_tlul_rsp_valid);
+
+  prim_flop #(
+    .Width(2)
+  ) u_tlul_req_outstanding (
+    .clk_i ( gated_clk                                        ),
+    .rst_ni( rst_ni                                           ),
+    .d_i   ( {host_req_outstanding_d, ctn_req_outstanding_d} ),
+    .q_o   ( {host_req_outstanding_q, ctn_req_outstanding_q} )
+  );
+
+  assign tlul_req_outstanding = host_req_outstanding_q || ctn_req_outstanding_q;
 
   // Masking incoming handshake triggers with their enables
   lsio_trigger_t lsio_trigger;
@@ -658,8 +685,9 @@ module dma
           end
           // else, we are doing a roundtrip, and signaling is covered by the default assignment
 
-          // Wait for `go` bit to be set to proceed with data movement
-          if (reg2hw.control.go.q || reg2hw.status.busy.q) begin
+          // Wait for `go` bit to be set to proceed with data movement. Do not start before the
+          // response to an aborted request has arrived, because it would be taken as our own.
+          if ((reg2hw.control.go.q || reg2hw.status.busy.q) && !tlul_req_outstanding) begin
             // Clear the transferred bytes only on the very first iteration
             if (reg2hw.control.initial_transfer.q && !reg2hw.status.busy.q) begin
               transfer_byte_d       = '0;
