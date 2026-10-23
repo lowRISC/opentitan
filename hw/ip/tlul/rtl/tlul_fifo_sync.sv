@@ -129,8 +129,7 @@ module tlul_fifo_sync #(
                      tl_d_i.d_size  ,
                      tl_d_i.d_source,
                      tl_d_i.d_sink  ,
-                     (tl_d_i.d_opcode == tlul_pkg::AccessAckData) ? tl_d_i.d_data :
-                                                                    {top_pkg::TL_DW{1'b0}} ,
+                     tl_d_i.d_data  ,
                      tl_d_i.d_error ,
                      spare_rsp_i}),
     .rvalid_o      (tl_h_o.d_valid),
