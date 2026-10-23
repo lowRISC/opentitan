@@ -230,6 +230,8 @@ cc_library(
         ],
         "spi_device": ["//sw/device/lib/dif:spi_device"],
         "uart": [
+            "//hw/top/dt:api",
+            "//hw/top/dt:uart",
             "//sw/device/lib/dif:uart",
             "//sw/device/lib/runtime:print_uart",
         ],

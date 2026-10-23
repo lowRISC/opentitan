@@ -117,6 +117,8 @@ static void init_pinmux(void) {
 #ifndef HAS_UART
 static inline void init_uart(void) {}
 #else
+#include "hw/top/dt/api.h"   // Generated
+#include "hw/top/dt/uart.h"  // Generated
 #include "sw/device/lib/dif/dif_uart.h"
 #include "sw/device/lib/runtime/print_uart.h"
 
@@ -127,12 +129,11 @@ static inline void init_uart(void) {
   static_assert(kDtUartCount >= 1, "Expected one or more uart IPs");
   CHECK_DIF_OK(dif_uart_init_from_dt(kDtUartFirst, &uart0));
   CHECK(kUartBaudrate <= UINT32_MAX, "kUartBaudrate must fit in uint32_t");
-  CHECK(kClockFreqPeripheralHz <= UINT32_MAX,
-        "kClockFreqPeripheralHz must fit in uint32_t");
   CHECK_DIF_OK(dif_uart_configure(
       &uart0, (dif_uart_config_t){
                   .baudrate = (uint32_t)kUartBaudrate,
-                  .clk_freq_hz = (uint32_t)kClockFreqPeripheralHz,
+                  .clk_freq_hz = dt_clock_frequency(
+                      dt_uart_clock(kDtUartFirst, kDtUartClockClk)),
                   .parity_enable = kDifToggleDisabled,
                   .parity = kDifUartParityEven,
                   .tx_enable = kDifToggleEnabled,

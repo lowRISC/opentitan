@@ -61,8 +61,9 @@ module chip_sim_tb (
 
   // UART DPI
   // The baud rate set to match FPGA implementation; the frequency is "artificial". Both baud rate
-  // frequency must match the settings used in the on-chip software at
-  // `sw/device/lib/arch/device_sim_verilator.c`.
+  // frequency must match the settings used in the on-chip software: the baud rate at
+  // `sw/device/lib/arch/device_sim_verilator.c` and the io clock at
+  // `hw/top_darjeeling/sw/dt/sim_verilator.c`.
   uartdpi #(
     .BAUD('d7_200),
     .FREQ('d500_000)
