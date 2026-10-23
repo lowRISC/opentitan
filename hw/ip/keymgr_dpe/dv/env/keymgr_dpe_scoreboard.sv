@@ -1084,7 +1084,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     end
     current_internal_key[current_key_slot.dst_slot].valid = 1;
     current_internal_key[current_key_slot.dst_slot].boot_stage = keymgr_dpe_pkg::BootStageCreator;
-    current_internal_key[current_key_slot.dst_slot].max_key_version = max_key_version;
+    current_internal_key[current_key_slot.dst_slot].max_key_version =
+        keymgr_dpe_pkg::DEFAULT_UDS_MAX_KEY_VERSION;
     // This call loads the "true" UDS without the randomness present in the
     // HW slot. The problem is that when this function is invoked (when writing into the start
     // register for the first time) the randomness in the HW slot is not yet generated.

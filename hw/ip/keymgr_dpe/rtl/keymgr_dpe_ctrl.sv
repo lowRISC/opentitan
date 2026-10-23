@@ -345,7 +345,7 @@ module keymgr_dpe_ctrl
         key_slots_d[slot_dst_sel_i].boot_stage = BootStageCreator;
         key_slots_d[slot_dst_sel_i].key[0] ^= root_key_i.key[0];
         key_slots_d[slot_dst_sel_i].key[1] ^= root_key_i.key[1];
-        key_slots_d[slot_dst_sel_i].max_key_version = max_key_version_i;
+        key_slots_d[slot_dst_sel_i].max_key_version = DEFAULT_UDS_MAX_KEY_VERSION;
         key_slots_d[slot_dst_sel_i].key_policy = DEFAULT_UDS_POLICY;
       end
 
@@ -357,7 +357,7 @@ module keymgr_dpe_ctrl
         key_slots_d[slot_dst_sel_i].boot_stage = BootStageCreator;
         key_slots_d[slot_dst_sel_i].key[0] ^= secondary_root_key_i.key[0];
         key_slots_d[slot_dst_sel_i].key[1] ^= secondary_root_key_i.key[1];
-        key_slots_d[slot_dst_sel_i].max_key_version = max_key_version_i;
+        key_slots_d[slot_dst_sel_i].max_key_version = DEFAULT_UDS_MAX_KEY_VERSION;
         key_slots_d[slot_dst_sel_i].key_policy = DEFAULT_UDS_POLICY;
       end
 
