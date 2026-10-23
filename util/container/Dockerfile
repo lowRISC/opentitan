@@ -10,10 +10,10 @@ ARG VERILATOR_VERSION=4.210
 ARG VERIBLE_VERSION=v0.0-3622-g07b310a3
 # The RISCV toolchain version should match the release tag used in GitHub.
 ARG RISCV_TOOLCHAIN_TAR_VERSION=20220210-1
-# This should match the version in bazelish.sh.
+# This should match the version in `bazelisk.sh`.
 ARG BAZELISK_VERSION=v1.24.1
 # This should match the version of the lowRISC RISC-V toolchain.
-ARG CLANG_VERSION=16
+ARG CLANG_VERSION=21
 
 # Main container image.
 FROM ubuntu:22.04 AS opentitan
