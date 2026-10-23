@@ -69,7 +69,7 @@
             Note that this alert is not always fatal.
             The underlying error bits in the !!FAULT_STATUS register remain set until reset, meaning the alert keeps firing.
             This doesn't hold for !!FAULT_STATUS.PHY_RELBL_ERR.
-            To enable firmware dealing with multi-bit ECC errors during firmware selection and verification, these error bits can be cleared.
+            To enable firmware to deal with multi-bit ECC errors during firmware selection and verification, these error bits can be cleared.
             After passing this stage, it is recommended that firmware classifies the corresponding alert as fatal on the receiver end, i.e, inside the alert handler.
             '''
     },
@@ -587,15 +587,16 @@
       },
 
       { name: "EXEC",
-        desc: "Controls whether RRAM can be used for code execution fetches",
+        desc: "Controls whether instructions can be fetched from RRAM through host_tl",
         swaccess: "rw",
         hwaccess: "hro",
         fields: [
           { bits: "31:0",
             name: "EN",
             desc: '''
-                  A value of 0xa26a38f7 allows RRAM to be used for code execution.
-                  Any other value prevents code execution.
+                  A value of 0xa26a38f7 allows instruction fetches from RRAM through host_tl.
+                  Any other value blocks instruction fetches.
+                  Data reads are not affected.
                   '''
             resval: 0
           },
@@ -610,7 +611,7 @@
           { bits: "0",
             name: "VAL",
             desc: '''
-                  Initializes the RRAM controller.
+                  Write a '1' to initialize the RRAM controller.
                   During the initialization process, the RRAM controller requests the address and data scramble keys and reads out the root seeds stored in RRAM before allowing other usage of the RRAM controller.
                   '''
             resval: "0"
@@ -704,8 +705,9 @@
           { bits: "25:16",
             name: "NUM",
             desc: '''
-                  One fewer than the number of bus words the RRAM operation should read or write.
+                  One less than the number of bus words the RRAM operation should read or write.
                   For write operations, the number of bus words must be a multiple of 4.
+                  Otherwise the write is rejected with !!ERR_CODE.OP_ERR without accessing the RRAM.
                   For example, to read 10 words, software should program this field with the value 9.
                   To write 16 words, the software should program this field to 15.
                   '''
@@ -751,7 +753,11 @@
               { bits: "0",
                 name: "REGION",
                 resval: "1"
-                desc: "Region register write enable. Once set to 0, it can no longer be configured to 1.",
+                desc: '''
+                      Region register write enable.
+                      !!REGION_CFG_REGWEN[i] locks !!MP_REGION_CFG[i] and !!MP_REGION[i].
+                      Once set to 0, it can no longer be configured to 1.
+                      ''',
                 enum: [
                   { value: "0",
                     name: "Region locked",
@@ -774,7 +780,10 @@
       { multireg: {
           cname: "RRAM_CTRL",
           name: "MP_REGION_CFG",
-          desc: "Memory property configuration for data partition",
+          desc: '''
+                Memory property configuration for data partition.
+                All fields are MuBi4 values.
+                '''
           count: "NumRegions",
           swaccess: "rw",
           hwaccess: "hro",
@@ -785,8 +794,9 @@
                 name: "EN",
                 mubi: true,
                 desc: '''
-                      Region enabled, following fields apply.
-                      If region is disabled, it is not matched against any incoming transaction.
+                      Region enabled.
+                      If enabled, the other fields of this register apply.
+                      If disabled, the region is not matched against any incoming transaction.
                       ''',
                 resval: false
               },
@@ -810,7 +820,7 @@
                 name: "SCRAMBLE_EN",
                 mubi: true,
                 desc: '''
-                      Region is scramble enabled.
+                      Data in the region is scrambled, see [RRAM Scrambling](theory_of_operation.md#rram-scrambling).
                       ''',
                 resval: false
               }
@@ -858,7 +868,10 @@
 
       // Default region properties for data partition
       { name: "DEFAULT_REGION",
-        desc: "Default region properties",
+        desc: '''
+              Default region properties.
+              All fields are MuBi4 values.
+              ''',
         swaccess: "rw",
         hwaccess: "hro",
         fields: [
@@ -882,7 +895,7 @@
             name: "SCRAMBLE_EN",
             mubi: true,
             desc: '''
-                  Region is scramble enabled.
+                  Data in the region is scrambled, see [RRAM Scrambling](theory_of_operation.md#rram-scrambling).
                   ''',
             resval: false
           }
@@ -911,7 +924,8 @@
                 name: "REGION",
                 resval: "1"
                 desc: '''
-                      Info page write enable.
+                      Info page configuration write enable.
+                      !!INFO_REGWEN[i] locks !!INFO_PAGE_CFG[i].
                       Once set to 0, it can no longer be configured to 1.
                       '''
                 enum: [
@@ -939,6 +953,7 @@
           desc: '''
                 Memory property configuration for info partition.
                 Unlike data partition, each page is individually configured.
+                All fields are MuBi4 values.
                 '''
           count: "NumInfoPages",
           swaccess: "rw",
@@ -950,7 +965,8 @@
               name: "EN",
               mubi: true,
               desc: '''
-                    Region is enabled, the following fields apply.
+                    Info page enabled.
+                    If enabled, the other fields of this register apply.
                     ''',
               resval: false
             },
@@ -974,7 +990,7 @@
               name: "SCRAMBLE_EN",
               mubi: true,
               desc: '''
-                    Region is scramble enabled.
+                    Data in the info page is scrambled, see [RRAM Scrambling](theory_of_operation.md#rram-scrambling).
                     ''',
               resval: false
             }
@@ -1032,7 +1048,8 @@
                 Base and size configuration for an emulated info page region (window).
                 Unlike !!MP_REGION, this register carries no access permissions of its own.
                 See !!EMUL_INFO_SUBREGION_CFG for per-subregion permissions.
-                Host access to this window is always blocked in hardware.
+                Host access through host_tl to this window is always blocked in hardware.
+                Software can access it through the controller (core_tl and the FIFOs), subject to the subregion configuration.
                 Once EN is set, any access to the window that is not covered by an enabled subregion is denied.
                 Enabling this and locking it via !!EMUL_INFO_REGWEN is a precondition for using any subregions configured through !!EMUL_INFO_SUBREGION and !!EMUL_INFO_SUBREGION_CFG within this window.
                 '''
@@ -1184,6 +1201,7 @@
                 There is no separate EN field.
                 Bits 3:0 are reserved, so RD_EN, WR_EN, SCRAMBLE_EN, and ECC_EN sit at the same bit positions as in !!MP_REGION_CFG and !!INFO_PAGE_CFG.
                 See !!EMUL_INFO_SUBREGION for the full conditions under which a subregion is enabled.
+                All fields are MuBi4 values.
                 '''
           count: "NumEmulInfoSubregions",
           swaccess: "rw",
@@ -1211,7 +1229,7 @@
               name: "SCRAMBLE_EN",
               mubi: true,
               desc: '''
-                    Subregion is scramble enabled.
+                    Data in the subregion is scrambled, see [RRAM Scrambling](theory_of_operation.md#rram-scrambling).
                     ''',
               resval: false
             }
@@ -1228,7 +1246,11 @@
       },
 
       { name: "HW_INFO_CFG_OVERRIDE",
-        desc: "HW interface info configuration rule overrides",
+        desc: '''
+              HW interface info configuration rule overrides.
+              The hardwired rules apply to the info page accesses of the life cycle manager: the creator and owner seed reads during initialization and the RMA wipe of the creator, owner and isolated pages.
+              All fields are MuBi4 values.
+              ''',
         swaccess: "rw",
         hwaccess: "hro",
         fields: [
@@ -1236,10 +1258,10 @@
             name: "SCRAMBLE_DIS",
             mubi: true,
             desc: '''
-                  The hardwired hardware info configuration rules for scramble enable are logically AND'd with this field.
-                  If the hardware rules hardwires scramble to enable, we can disable via software if needed.
+                  The scramble enable of the hardwired info page rules is logically AND'd with the inverse of this field.
+                  Setting this field to MuBi4True disables scrambling for these accesses.
 
-                  By default this field is false.
+                  By default this field is MuBi4False.
                   ''',
             resval: false
           }
@@ -1247,10 +1269,10 @@
             name: "ECC_DIS",
             mubi: true,
             desc: '''
-                  The hardwired hardware info configuration rules for ECC enable are logically AND'd with this field.
-                  If the hardware rules hardwires ECC to enable, we can disable via software if needed.
+                  The ECC enable of the hardwired info page rules is logically AND'd with the inverse of this field.
+                  Setting this field to MuBi4True disables ECC for these accesses.
 
-                  By default this field is false.
+                  By default this field is MuBi4False.
                   ''',
             resval: false
           }
@@ -1306,6 +1328,7 @@
                   Software has supplied an undefined operation.
                   See !!CONTROL.OP for list of valid operations.
                   This error is also set if a software operation is started before the initialization has completed, see !!STATUS.INIT_DONE and !!STATUS.KEYS_VALID, or while software access is disabled from the start of the RMA entry process.
+                  It is also set for a write whose number of bus words (!!CONTROL.NUM + 1) is not a multiple of 4.
                   '''
           },
           { bits: "1",
@@ -1313,24 +1336,24 @@
             desc: '''
                   RRAM access has encountered an access permission error.
                   Please see !!ERR_ADDR for exact address.
-                  This is a synchronous error.
+                  It is set when the software operation that caused it completes, together with !!OP_STATUS.ERR.
                   '''
           },
           { bits: "2",
             name: "rd_err",
             desc: '''
-                  RRAM read has an error.
+                  An RRAM read had an error.
                   This could be a reliability ECC error or integrity error encountered during a software issued controller read, see !!STD_FAULT_STATUS.
                   See !!ERR_ADDR for exact address.
-                  This is a synchronous error.
+                  It is set when the software operation that caused it completes, together with !!OP_STATUS.ERR.
                   '''
           },
           { bits: "3",
             name: "wr_err",
             desc: '''
-                  RRAM write has an error.
+                  An RRAM write had an error.
                   This could be a write integrity error, see !!STD_FAULT_STATUS.
-                  This is a synchronous error.
+                  It is set when the software operation that caused it completes, together with !!OP_STATUS.ERR.
                   '''
           },
         ]
@@ -1517,7 +1540,7 @@
             desc: '''
                   The RRAM macro encountered a reliability ECC error that cannot be corrected.
 
-                  Note that this error bit can be cleared to allow firmware dealing with multi-bit ECC errors during firmware selection and verification.
+                  Note that this error bit can be cleared to allow firmware to deal with multi-bit ECC errors during firmware selection and verification.
                   After passing this stage, it is recommended that firmware classifies the corresponding alert as fatal on the receiver end, i.e, inside the alert handler.
                   Clearing this bit does not revoke a local escalation it has already caused while !!DIS.LOCAL_ESC_RELBL_ERR was set.
                   '''
@@ -1557,7 +1580,10 @@
       },
 
       { name: "ERR_ADDR",
-        desc: "Synchronous error address",
+        desc: '''
+              Address of the first error of the last software operation that ended with !!ERR_CODE.MP_ERR, !!ERR_CODE.RD_ERR or !!ERR_CODE.WR_ERR.
+              Every such operation overwrites it, so after two failing operations it holds the first error address of the second one.
+              ''',
         swaccess: "ro",
         hwaccess: "hwo",
         fields: [
@@ -1648,7 +1674,10 @@
       },
 
       { name: "SCRATCH",
-        desc: "RRAM Controller Scratch",
+        desc: '''
+              RRAM controller scratch register.
+              It has no hardware function and can be used by software, e.g. for a basic register access check.
+              ''',
         swaccess: "rw",
         fields: [
           { bits: "31:0", name: "data",  desc: "RRAM controller scratch register" },
@@ -1664,7 +1693,9 @@
             name: "WR",
             desc: '''
                   When the write FIFO drains to this level, trigger an interrupt.
-                  Default value is set such that interrupt does not trigger at reset.
+                  The wr_lvl interrupt is a status interrupt that stays asserted while the write FIFO level is at or below this value.
+                  Since the write FIFO is empty after reset, !!INTR_STATE.WR_LVL is set from reset for any value of this field.
+                  It only reaches the processor if it is enabled in !!INTR_ENABLE.
                   '''
             resval: "0xF"
           },
@@ -1689,14 +1720,14 @@
           { bits: "0",
             name: "WR",
             desc: '''
-                  This will clear the content of the controller write fifo.
+                  Writing 1 clears the content of the controller write FIFO. Writing 0 has no effect.
                   '''
             resval: "0"
           },
           { bits: "1",
             name: "RD",
             desc: '''
-                  This will clear the content of the controller read fifo.
+                  Writing 1 clears the content of the controller read FIFO. Writing 0 has no effect.
                   '''
             resval: "0"
           },
