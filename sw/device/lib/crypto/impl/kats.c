@@ -1426,8 +1426,11 @@ static status_t kat_kdf_ctr_hmac(void) {
       kdf_ctr_hmac_context, sizeof(kdf_ctr_hmac_context));
 
   HARDENED_TRY(otcrypto_kdf_ctr_hmac(&kdk, &label_buf, &context_buf, &okm));
-  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(&okm),
-                    kHardenedBoolTrue);
+  if (otcrypto_integrity_blinded_key_check(&okm) != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   uint32_t act_okm[12] = {0};
   HARDENED_TRY(keyblob_key_unmask(&okm, ARRAYSIZE(act_okm), act_okm));
@@ -1435,7 +1438,7 @@ static status_t kat_kdf_ctr_hmac(void) {
   if (memcmp(act_okm, kdf_ctr_hmac_ans, sizeof(kdf_ctr_hmac_ans))) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -1488,8 +1491,11 @@ static status_t kat_kmac_kdf(void) {
       otcrypto_make_const_byte_buf(kmac_kdf_context, sizeof(kmac_kdf_context));
 
   HARDENED_TRY(otcrypto_kmac_kdf(&kdk, &label_buf, &context_buf, &okm));
-  HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(&okm),
-                    kHardenedBoolTrue);
+  if (otcrypto_integrity_blinded_key_check(&okm) != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   uint32_t act_okm[12] = {0};
   HARDENED_TRY(keyblob_key_unmask(&okm, ARRAYSIZE(act_okm), act_okm));
@@ -1497,7 +1503,7 @@ static status_t kat_kmac_kdf(void) {
   if (memcmp(act_okm, kmac_kdf_ans, sizeof(kmac_kdf_ans))) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
-    return OTCRYPTO_BAD_ARGS;
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
