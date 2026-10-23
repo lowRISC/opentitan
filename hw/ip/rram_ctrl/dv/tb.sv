@@ -8,10 +8,14 @@ module tb;
   import dv_utils_pkg::*;
   import rram_ctrl_env_pkg::*;
   import rram_ctrl_test_pkg::*;
+  import rram_ctrl_bkdr_util_pkg::*;
 
   // Macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
+  // Defines `RRAM_DATA_MEM_PATH`/`RRAM_INFO_MEM_PATH`, resolved to whichever rram_ctrl_bkdr_util
+  // implementation is mapped in.
+  `include "rram_ctrl_bkdr_util_hier.svh"
 
   wire                          clk;
   wire                          rst_n;
@@ -27,16 +31,12 @@ module tb;
   tl_if                         tl_host_if    (.clk(clk),     .rst_n(rst_n));
   tl_if                         tl_prim_if    (.clk(clk),     .rst_n(rst_n));
   rram_ctrl_otp_key_if          otp_key_if    (.clk(clk_otp), .rst_n(rst_otp_n));
+  rram_ctrl_otp_macro_if        otp_macro_if  (.clk(clk_otp), .rst_n(rst_otp_n));
+  rram_ctrl_misc_io_if          misc_if       (.clk(clk),     .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if       (interrupts);
 
   rram_ctrl_pkg::rram_macro_req_t rram_req;
   rram_ctrl_pkg::rram_macro_rsp_t rram_rsp;
-
-  otp_ctrl_macro_pkg::otp_ctrl_macro_req_t otp_macro_req;
-  otp_ctrl_macro_pkg::otp_ctrl_macro_rsp_t otp_macro_rsp;
-
-  // Not driven by anything real yet - the DUT never sees a macro response.
-  assign otp_macro_req = '{valid: 1'b0, cmd: otp_ctrl_macro_pkg::Init, default: '0};
 
   `DV_ALERT_IF_CONNECT()
 
@@ -64,30 +64,30 @@ module tb;
     .host_tl_o(tl_host_if.d2h),
 
     // otp interface
-    .otp_macro_i(otp_macro_req),
-    .otp_macro_o(otp_macro_rsp),
+    .otp_macro_i(otp_macro_if.req),
+    .otp_macro_o(otp_macro_if.rsp),
     .otp_key_i  (otp_key_if.otp_key_rsp),
     .otp_key_o  (otp_key_if.otp_key_req),
 
-    // various life cycle decode signals - fixed, not exercised by any test yet
-    .lc_creator_seed_sw_rw_en_i(lc_ctrl_pkg::On),
-    .lc_owner_seed_sw_rw_en_i  (lc_ctrl_pkg::On),
-    .lc_iso_part_sw_rd_en_i    (lc_ctrl_pkg::On),
-    .lc_iso_part_sw_wr_en_i    (lc_ctrl_pkg::On),
-    .lc_seed_hw_rd_en_i        (lc_ctrl_pkg::Off),
-    .lc_escalate_en_i          (lc_ctrl_pkg::Off),
+    // various life cycle decode signals
+    .lc_creator_seed_sw_rw_en_i(misc_if.lc_creator_seed_sw_rw_en),
+    .lc_owner_seed_sw_rw_en_i  (misc_if.lc_owner_seed_sw_rw_en),
+    .lc_iso_part_sw_rd_en_i    (misc_if.lc_iso_part_sw_rd_en),
+    .lc_iso_part_sw_wr_en_i    (misc_if.lc_iso_part_sw_wr_en),
+    .lc_seed_hw_rd_en_i        (misc_if.lc_seed_hw_rd_en),
+    .lc_escalate_en_i          (misc_if.lc_escalate_en),
 
-    // life cycle rma handling - fixed, not exercised by any test yet
-    .rma_req_i (lc_ctrl_pkg::Off),
-    .rma_seed_i(lc_ctrl_pkg::LC_NVM_RMA_SEED_DEFAULT),
-    .rma_ack_o (),
+    // life cycle rma handling
+    .rma_req_i (misc_if.rma_req),
+    .rma_seed_i(misc_if.rma_seed),
+    .rma_ack_o (misc_if.rma_ack),
 
     // seeds for keymgr_dpe
-    .keymgr_creator_seed_o(),
-    .keymgr_owner_seed_o(),
+    .keymgr_creator_seed_o(misc_if.keymgr_creator_seed),
+    .keymgr_owner_seed_o  (misc_if.keymgr_owner_seed),
 
     // power manager indication
-    .pwrmgr_o(),
+    .pwrmgr_o(misc_if.pwrmgr),
 
     // alerts and interrupts
     .intr_wr_empty_o (interrupts[WrEmpty]),
@@ -120,7 +120,7 @@ module tb;
     .cio_tms_i          ('0),
     .cio_tdo_o          (),
     .cio_tdo_en_o       (),
-    .lc_nvm_debug_en_i  (lc_ctrl_pkg::Off),
+    .lc_nvm_debug_en_i  (misc_if.lc_nvm_debug_en),
     .scanmode_i         (prim_mubi_pkg::MuBi4False),
     .scan_en_i          (1'b0),
     .scan_rst_ni        (1'b0),
@@ -133,6 +133,36 @@ module tb;
 
   // TODO(#31287): connect to something meaningful
   assign (pull1, pull0) rram_test_analog = 1'b0;
+
+  // Backdoor access to the RRAM arrays. Unlike the chip testbench, the data array utility covers
+  // the OTP pages too, so that tests can check the OTP integrity page.
+  `define RRAM_DATA_MEM_HIER u_rram_macro.`RRAM_DATA_MEM_PATH
+  `define RRAM_INFO_MEM_HIER u_rram_macro.`RRAM_INFO_MEM_PATH
+
+  initial begin
+    // Xcelium does not understand typed constructors, so assign to local variables first.
+    rram_ctrl_bkdr_util     data, info;
+    rram_ctrl_otp_bkdr_util otp;
+
+    data = new(.name                ("data_bkdr_util"),
+               .path                (`DV_STRINGIFY(tb.`RRAM_DATA_MEM_HIER)),
+               .depth               ($size(`RRAM_DATA_MEM_HIER)),
+               .n_bits              ($bits(`RRAM_DATA_MEM_HIER)),
+               .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
+    info = new(.name                ("info_bkdr_util"),
+               .path                (`DV_STRINGIFY(tb.`RRAM_INFO_MEM_HIER)),
+               .depth               ($size(`RRAM_INFO_MEM_HIER)),
+               .n_bits              ($bits(`RRAM_INFO_MEM_HIER)),
+               .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
+    otp  = new(.name                ("otp_bkdr_util"),
+               .path                (`DV_STRINGIFY(tb.`RRAM_DATA_MEM_HIER)),
+               .depth               ($size(`RRAM_DATA_MEM_HIER)),
+               .n_bits              ($bits(`RRAM_DATA_MEM_HIER)),
+               .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
+    uvm_config_db#(rram_ctrl_bkdr_util)::set(null, "*.env", data.get_name(), data);
+    uvm_config_db#(rram_ctrl_bkdr_util)::set(null, "*.env", info.get_name(), info);
+    uvm_config_db#(rram_ctrl_otp_bkdr_util)::set(null, "*.env", otp.get_name(), otp);
+  end
 
   initial begin
     otp_clk_rst_if.set_freq_mhz(OTP_CLK_FREQ_MHZ);
@@ -150,6 +180,8 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_prim*", "vif", tl_prim_if);
     uvm_config_db#(otp_key_vif_t)::set(null, "*.env.m_otp_*_key_driver", "otp_key_vif",
                                         otp_key_if);
+    uvm_config_db#(misc_vif_t)::set(null, "*.env", "misc_vif", misc_if);
+    uvm_config_db#(otp_macro_vif_t)::set(null, "*.env", "otp_macro_vif", otp_macro_if);
     uvm_config_db#(int unsigned)::set(null, "*.env", "WrFifoDepth", WrFifoDepth);
     uvm_config_db#(int unsigned)::set(null, "*.env", "RdFifoDepth", RdFifoDepth);
     $timeformat(-12, 0, " ps", 12);

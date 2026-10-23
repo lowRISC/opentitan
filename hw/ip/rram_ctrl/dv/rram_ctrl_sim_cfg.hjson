@@ -17,6 +17,10 @@
   // Fusesoc core file used for building the file list.
   fusesoc_core: lowrisc:dv:rram_ctrl_sim:0.1
 
+  // Select the backdoor utility for the open-source rram_macro. The imported common cfg already
+  // supplies the prim mapping, and dvsim appends this list rather than replacing it.
+  sv_flist_gen_flags: ["--mapping=lowrisc:dv:rram_ctrl_bkdr_util:0.1"]
+
   // Testplan hjson file.
   testplan: "{proj_root}/hw/ip/rram_ctrl/data/rram_ctrl_testplan.hjson"
 
