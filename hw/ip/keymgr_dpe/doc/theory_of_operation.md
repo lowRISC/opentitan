@@ -176,10 +176,12 @@ In other words, `retain_parent = false` forces SW to request in-place update, wh
 
 When there is no fault and the enable signal is active by life cycle controller, the validity of an advance operation is defined as follows:
 
-* If keymgr_dpe is in `Reset` state (i.e. the first advance call that latches UDS), then an advance operation is valid if:
+* If keymgr_dpe is in `Reset` state (i.e. the first advance call that latches UDS), then an advance operation is valid if all of the following conditions are satisfied (AND clause):
+  * `CONTROL_SHADOWED.SLOT_DST_SEL` is below `NumInstHwSlot`.
   * The OTP creator root key is valid during the clock cycle keymgr_DPE tries to latch it.
 * If keymgr_dpe is in `Available` state, then an advance operation is valid if all of the following conditions are satisfied (AND clause):
   * Keymgr_DPE is in `Available` state.
+  * `CONTROL_SHADOWED.SLOT_SRC_SEL` and `CONTROL_SHADOWED.SLOT_DST_SEL` are both below `NumInstHwSlot`.
   * `valid = true` for the source slot.
   * `allow_child = true` for the source slot.
   * If `retain_parent = true`, then the source and the destination slots are different.
@@ -209,6 +211,7 @@ The only difference is that the input messages are 0-padded to another length pa
 
 Key generation request is valid if all of the following conditions are satisfied (AND clause):
 * The internal FSM is in `Available` state. Namely, keymgr_dpe rejects key generation requests during `Invalid`/`Disabled` as they are inactive states, and during `Reset` for not having latched the UDS key yet.
+* The selected source slot is below `NumInstHwSlot`.
 * The selected source slot is valid.
 * `allow_keygen = true` for the source slot.
 * `KEY_VERSION` is less than or equal to `max_key_version` of the source slot.
@@ -216,13 +219,14 @@ Key generation request is valid if all of the following conditions are satisfied
 
 ### Erase slot
 
-Erasing operation can be used to clear the DICE context from a destination slot. This is done by selecting the slot with `CONTROL_SHADOWED.DST_SEL`, and then configuring and initiating the operation. At the end of a successful erase, the DPE context is removed from the destination slot.
+Erasing operation can be used to clear the DICE context from a destination slot. This is done by selecting the slot with `CONTROL_SHADOWED.SLOT_DST_SEL`, and then configuring and initiating the operation. At the end of a successful erase, the DPE context is removed from the destination slot.
 
 Note that the slots with `retain_parent = false` policy do not require explicit erase calls, as they are automatically erased when advanced.
 However, HW does not specifically block such an erase request.
 Meanwhile, the slots with `retain_parent = true` can only be destroyed with explicit erase calls, as advance calls will reject overwriting these slots.
 
 Erase request is valid if the following conditions are satisfied:
+* `CONTROL_SHADOWED.SLOT_DST_SEL` is below `NumInstHwSlot`.
 * The destination slot is valid (i.e. not empty).
 * keymgr_dpe FSM's working state is `Available`.
 
