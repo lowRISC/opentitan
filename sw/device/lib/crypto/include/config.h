@@ -143,11 +143,12 @@ otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status);
 /**
  * Show the locked status of the cryptographic library.
  *
- * @return kHardenedBoolTrue if the cryptolib is locked, kHardenedBoolFalse
- * otherwise.
+ * @return The lock state magic value (`kHardenedByteBoolFalse` when unlocked,
+ * `kHardenedByteBoolTrue` when hard-locked, or `kOtcryptoLockStateEntropy`
+ * when locked due to an entropy health test failure).
  */
 OT_WARN_UNUSED_RESULT
-hardened_bool_t otcrypto_show_status(void);
+uint8_t otcrypto_show_status(void);
 
 #ifdef __cplusplus
 }  // extern "C"
