@@ -46,7 +46,7 @@
   sim_tops: ["rram_ctrl_bind"]
 
   // Default iterations for all tests - each test entry can override this.
-  reseed: 1
+  reseed: 50
 
   // Default UVM test and seq class name.
   uvm_test: rram_ctrl_base_test
@@ -58,6 +58,36 @@
       name: rram_ctrl_smoke
       uvm_test_seq: rram_ctrl_smoke_vseq
     }
+    {
+      name: rram_ctrl_smoke_mp_err
+      uvm_test_seq: rram_ctrl_smoke_vseq
+      run_opts: ["+reg_en_pct=10", "+rd_en_pct=10", "+wr_en_pct=10"]
+    }
+    {
+      name: rram_ctrl_data_hazard
+      uvm_test_seq: rram_ctrl_data_hazard_vseq
+    }
+    {
+      name: rram_ctrl_concurrent_rd_wr
+      uvm_test_seq: rram_ctrl_concurrent_rd_wr_vseq
+    }
+    {
+      name: rram_ctrl_read_seed
+      uvm_test_seq: rram_ctrl_read_seed_vseq
+      run_opts: ["+skip_lc_init=1"]
+      reseed: 5
+    }
+    {
+      name: rram_ctrl_rma
+      uvm_test_seq: rram_ctrl_rma_vseq
+      run_opts: ["+test_timeout_ns=300_000_000_000"]
+      reseed: 5
+    }
+    {
+      name: rram_ctrl_otp
+      uvm_test_seq: rram_ctrl_otp_vseq
+      reseed: 5
+    }
   ]
 
   // List of regressions.
@@ -65,6 +95,17 @@
     {
       name: smoke
       tests: ["rram_ctrl_smoke"]
+    }
+    {
+      name: basic
+      tests: ["rram_ctrl_smoke", "rram_ctrl_data_hazard", "rram_ctrl_concurrent_rd_wr",
+              "rram_ctrl_otp"]
+    }
+    {
+      name: full_func
+      tests: ["rram_ctrl_smoke", "rram_ctrl_smoke_mp_err", "rram_ctrl_data_hazard",
+              "rram_ctrl_concurrent_rd_wr", "rram_ctrl_read_seed", "rram_ctrl_rma",
+              "rram_ctrl_otp"]
     }
   ]
 }

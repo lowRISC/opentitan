@@ -31,8 +31,13 @@ In addition, the testbench instantiates the following interfaces, connects them 
 * [TileLink host interface for the prim registers](../../../dv/sv/tl_agent/README.md) (the RRAM macro's `tl_prim` interface)
 * Alerts ([`alert_esc_if`](../../../dv/sv/alert_agent/README.md))
 * `rram_ctrl_otp_key_if`: the `otp_ctrl` scrambling-key request/response handshake, driven by `rram_ctrl_otp_key_driver` (see [OTP key driver](#otp-key-driver) below)
+* `rram_ctrl_otp_macro_if`: the `otp_ctrl` macro interface in the OTP clock domain, through which `otp_ctrl` stores OTP data in the RRAM.
+  Its `send()` task issues one command and waits for the response.
+* `rram_ctrl_misc_io_if`: the life cycle qualifiers, the RMA handshake, the key manager seeds and the power manager indication.
+  All DUT inputs on it are driven to known values from time zero.
 
-The DUT's other input-only signals (life cycle qualifiers, the RMA handshake) are not yet exercised by any test and are tied to fixed values directly in `tb.sv`.
+It also creates the backdoor utilities of `hw/ip/rram_ctrl/dv/bkdr` for the data array, the info array and the OTP region of the data array, and sets them into `uvm_config_db`.
+Unlike in the chip testbench, the data array utility covers the OTP pages too, so that tests can check the OTP integrity page.
 
 ### Common DV utility components
 The following utilities provide generic helper tasks and functions to perform activities that are common across the project:
@@ -77,8 +82,10 @@ The alert_agents provide the ability to drive and independently monitor alert ha
 ### OTP key driver
 `rram_ctrl_otp_key_if` (see above) has two independent DUT key-request lines, address and data scrambling, that never fire at the same time.
 `rram_ctrl_env` instantiates two `rram_ctrl_otp_key_driver` instances (one per line, both bound to the same interface).
-Each driver randomizes its own `key`/`rand_key` pair once in `run_phase` and answers every request on its line with that same pair for the life of the test, matching real OTP key-derivation semantics (the derived key doesn't change without a full re-provisioning).
+Each driver randomizes its own `key`/`rand_key` pair once in `build_phase` and answers every request on its line with that same pair for the life of the test, matching real OTP key-derivation semantics (the derived key doesn't change without a full re-provisioning).
 Address and data key material are independent, since each driver randomizes separately.
+`rram_ctrl_env` copies both keys into `rram_ctrl_env_cfg`, which needs them to scramble and descramble data through the backdoor.
+The key stays in place after the ack, since the DUT only samples it once the ack has crossed into its own clock domain.
 
 The req/ack handshake is driven through `vif.host_cb`, a clocking block synced to `vif.clk` (the DUT's `clk_otp_i`), rather than raw signal reads/writes.
 The DUT's `u_addr_sync_reqack`/`u_data_sync_reqack` (`prim_sync_reqack`) assert every `clk_otp_i` cycle that ack is never high while req is low, which constrains how req is sampled and how ack's deassertion is timed:
@@ -98,7 +105,7 @@ The DUT's `u_addr_sync_reqack`/`u_data_sync_reqack` (`prim_sync_reqack`) assert 
   race the DUT's same-edge update the way sampling req does: NBA guarantees the DUT's read of
   ack for the handshake-latching edge sees the pre-write value regardless of process order.
 
-`run_phase` races handling one request (`main_thread`) against `@(negedge vif.rst_n)` (`reset_kill`) via `fork`/`join_any`/`disable fork`.
+`run_phase` races handling requests against `wait (!vif.rst_n)` (`reset_kill`) via `fork`/`join_any`/`disable fork`.
 On reset, this kills any in-flight request handling, redrives all outputs to idle, and restarts.
 
 ### UVM RAL Model
@@ -119,7 +126,10 @@ This helps increase the likelihood of hitting the design corners that would othe
 
 This object aims to provide such run-time controls.
 `rram_ctrl` does not currently define one.
-`rram_ctrl_base_vseq` relies on `cip_base_vseq`'s knobs directly.
+Instead, `rram_ctrl_env_cfg` holds a few knobs that `rram_ctrl_base_test` reads from plusargs:
+* `scr_en_pct`, `reg_en_pct`, `wr_en_pct`, `rd_en_pct`, `ecc_en_pct`: the probability in percent that a randomly configured region or page gets the corresponding property enabled
+* `skip_init_data_array`, `skip_init_info_array`: skip zeroing the arrays through the backdoor during initialization
+* `skip_lc_init`: skip starting the controller's initialization, so that a test can do it itself
 
 #### Env cfg
 The `rram_ctrl_env_cfg`, environment configuration object provides access to the following elements:
@@ -128,6 +138,8 @@ The `rram_ctrl_env_cfg`, environment configuration object provides access to the
   * This includes the `tl_agent_cfg` objects for both TL interfaces
 * All virtual interfaces that connect to the DUT listed above (retrieved from the `uvm_config_db`)
 * A sequence configuration object, once one is added (see above)
+* The backdoor utilities, together with `rram_bkdr_word_read()`/`rram_bkdr_word_write()`/`rram_bkdr_mem_read()`/`rram_bkdr_mem_write()`, which add or remove the address infection and scrambling the controller applies, and `otp_bkdr_read()`, which also checks the OTP integrity
+* `mp_model`, the memory protection model (see [Scoreboard](#scoreboard) below)
 
 All environment components contain a handle to an instance of this class (that was created in the test class via the parent `dv_base_test`).
 By housing all of the above, all pertinent information is more easily shared with all environment components.
@@ -139,8 +151,13 @@ The `rram_ctrl_base_vseq` virtual sequence is extended from `cip_base_vseq` and 
 All test sequences are extended from `rram_ctrl_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
 Some of the most commonly used tasks / functions are as follows, from `hw/ip/rram_ctrl/dv/env/seq_lib/rram_ctrl_base_vseq.sv`:
-* `dut_init()`: resets the DUT and calls `rram_ctrl_init()`
-* `rram_ctrl_init()`: brings the controller out of reset, polls the phy's own init, then triggers and polls the controller's INIT sequence (lc key derivation etc), without which the arbiter never grants software/host access
+* `dut_init()`: resets the DUT, calls `rram_ctrl_init()` and sends the OTP Init command
+* `rram_ctrl_init()`: polls the phy's own init, zeroes the arrays through the backdoor, then triggers and polls the controller's INIT sequence (lc key derivation etc), without which the arbiter never grants software/host access
+* `update_default_region_cfg()`, `update_mp_region()`, `update_info_page_cfg()`: configure memory protection
+* `rram_ctrl_write()`, `rram_ctrl_read()`, `rram_ctrl_rewrite()`: run an operation on the controller interface and check the data against the backdoor contents and the memory protection model
+* `rram_host_read()`: reads a word through the host interface
+* `otp_read()`, `otp_write()`, `otp_zeroize()`: run a command on the OTP macro interface and check the result against the backdoor contents
+* `rma_req()`: requests RMA entry and waits for its acknowledgement
 * `apply_reset()` / `apply_resets_concurrently()`: reset both the core and OTP clock domains together, since each clock generator blocks on its own domain's reset
 
 #### Functional coverage
@@ -169,6 +186,15 @@ This has to happen upstream of the predictor: `uvm_reg_predictor::write()` calls
 Without the filter, error-injection traffic (e.g. from `run_tl_errors_vseq`) mispredicts rejected writes as successful, and an errored read (`d_data` is undefined per TileLink on `d_error=1`) can corrupt even read-only fields via `UVM_PREDICT_READ`, which overwrites the mirror unconditionally regardless of access policy.
 `on_mem_access()` covers the core regfile's `wr_fifo`/`rd_fifo` windows and is currently an empty stub (real FIFO-occupancy tracking is future work).
 An unmapped address should be unreachable: `cip_base_scoreboard`'s own `predict_tl_err()` already predicts and checks `d_error` for unmapped addresses generically, before `process_tl_access()` is even called, so `process_tl_core_access()` just flags it with a `uvm_error` inline rather than dispatching to a dedicated handler.
+
+The scoreboard also predicts memory protection errors on the host interface.
+`rram_ctrl_mp_model` holds the effective configuration of every page for software and host requests, mirroring `rram_ctrl_region_cfg.sv` and `rram_ctrl_mp.sv`.
+This covers the OTP exclusion, the emulated info page windows and subregions, the memory protection regions, the default region and the info pages, including their life cycle gating.
+It is derived from the mirrored values of the core RAL model.
+Whenever `on_reg_access()` sees a write to a register that affects the data pages, it flags the model as stale, and the model recomputes the pages on its next lookup.
+`is_tl_mem_access_allowed()` uses the model to add an error for host reads of pages without read permission.
+Once a test requests RMA entry, host accesses are no longer checked, since the DUT then denies all accesses from a point in time the model cannot predict.
+The test sequences use the same model to compute the expected data of controller operations.
 
 #### Assertions
 * TLUL assertions: The `hw/ip/rram_ctrl/dv/sva/rram_ctrl_bind.sv` binds the `tlul_assert` [assertions](../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
