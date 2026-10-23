@@ -808,7 +808,7 @@ void entropy_complex_stop_all(void) {
 
   if (status_ok(res)) {
     state.csrng_instantiated = kHardenedByteBoolFalse;
-    state.csrng_is_default = kHardenedByteBoolFalse;
+    state.csrng_is_manual = kHardenedByteBoolFalse;
     OT_DISCARD(store_state(&state).value);
   }
 }
@@ -1249,21 +1249,21 @@ status_t entropy_csrng_instantiate(
   crypto_state_t state;
   bool has_state = status_ok(read_state(&state));
 
-  uint8_t is_default = kHardenedByteBoolFalse;
-  if (launder32(disable_trng_input) == kHardenedBoolFalse &&
-      (seed_material == NULL || seed_material->len == 0)) {
+  uint8_t is_manual = kHardenedByteBoolTrue;
+  if (launder32(disable_trng_input) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(disable_trng_input, kHardenedBoolFalse);
-    is_default = kHardenedByteBoolTrue;
+    is_manual = kHardenedByteBoolFalse;
   }
 
   hardened_bool_t skip_inst = kHardenedBoolFalse;
   if (has_state) {
-    if (launder32(is_default) == kHardenedByteBoolTrue &&
+    if ((seed_material == NULL || seed_material->len == 0) &&
+        launder32(is_manual) == kHardenedByteBoolFalse &&
         launder32(state.csrng_instantiated) == kHardenedByteBoolTrue &&
-        launder32(state.csrng_is_default) == kHardenedByteBoolTrue) {
-      HARDENED_CHECK_EQ(is_default, kHardenedByteBoolTrue);
+        launder32(state.csrng_is_manual) == kHardenedByteBoolFalse) {
+      HARDENED_CHECK_EQ(is_manual, kHardenedByteBoolFalse);
       HARDENED_CHECK_EQ(state.csrng_instantiated, kHardenedByteBoolTrue);
-      HARDENED_CHECK_EQ(state.csrng_is_default, kHardenedByteBoolTrue);
+      HARDENED_CHECK_EQ(state.csrng_is_manual, kHardenedByteBoolFalse);
       skip_inst = kHardenedBoolTrue;
     }
   }
@@ -1288,7 +1288,7 @@ status_t entropy_csrng_instantiate(
 
   if (has_state) {
     state.csrng_instantiated = kHardenedByteBoolTrue;
-    state.csrng_is_default = is_default;
+    state.csrng_is_manual = is_manual;
     HARDENED_TRY(store_state(&state));
   }
 
@@ -1299,7 +1299,12 @@ status_t entropy_csrng_reseed(hardened_bool_t disable_trng_input,
                               const entropy_seed_material_t *seed_material) {
   crypto_state_t state;
   if (status_ok(read_state(&state))) {
-    state.csrng_is_default = kHardenedByteBoolFalse;
+    if (launder32(disable_trng_input) == kHardenedBoolFalse) {
+      HARDENED_CHECK_EQ(disable_trng_input, kHardenedBoolFalse);
+      state.csrng_is_manual = kHardenedByteBoolFalse;
+    } else {
+      state.csrng_is_manual = kHardenedByteBoolTrue;
+    }
     HARDENED_TRY(store_state(&state));
   }
 
@@ -1415,7 +1420,7 @@ status_t entropy_csrng_uninstantiate(void) {
   // Check whether the state is present and use it if so
   if (status_ok(read_state(&state))) {
     state.csrng_instantiated = kHardenedByteBoolFalse;
-    state.csrng_is_default = kHardenedByteBoolFalse;
+    state.csrng_is_manual = kHardenedByteBoolFalse;
     HARDENED_TRY(store_state(&state));
   }
 
