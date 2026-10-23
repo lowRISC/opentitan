@@ -87,6 +87,31 @@ You **MUST** not edit those files.
 
 The following steps require manual edits or creation of files and only need to be done once (though the content of some files may require future edits).
 
+### Creating the top description
+
+You must create a description of your top, following the [documentation](top_desc.md).
+It is recommended to put it in a `defs.bzl` file in the directory of the newly created top.
+```py
+# In hw/top_matcha/defs.bzl
+load("//rules/opentitan:hw.bzl", "opentitan_top")
+load("//hw/topmatcha/data/autogen:defs.bzl", "MATCHA_IPS")
+
+MATCHA = opentitan_top(
+    # The name of the top
+    name = "matcha",
+    # A list of arbitrary attributes
+    hjson = "//hw/top_matcha/data/autogen:top_matcha.gen.hjson",
+    # ... more attributes
+    # List of IPS: use the automatically generated list.
+    ips = MATCHA_IPS,
+    # Platforms: you must declare at least a default platform (platform key = "default")
+    platforms = {
+        # Point to a manually created platform (see execution environments below)
+        "default": "//hw/top_matcha:platform",
+    },
+)
+```
+
 ### Adding your top to the build system
 
 The first step is to make the build system aware of your top so you can use the [top-selection mechanism](../README.md).
@@ -119,7 +144,9 @@ Once done, your top can be selected using `--//hw/top=matcha` when building targ
 
 ### Declaring execution environment
 
-In order to build and run tests, the build system requires you to declare execution environments which describe the necessary steps required to build images. At minimum, you will want to declare a DV environment. To do so, create (or edit) a `BUILD` file in your top's root directory and add the following:
+In order to build and run tests, the build system requires you to declare execution environments which describe the necessary steps required to build images.
+At minimum, you will want to declare a DV environment.
+To do so, create (or edit) a `BUILD` file in your top's root directory and add the following:
 ```py
 # In hw/top_matcha/BUILD:
 load(
@@ -137,25 +164,31 @@ package(default_visibility = ["//visibility:public"])
 ###########################################################################
 sim_dv(
     name = "sim_dv_base",
+    # Name of the top, this is passed to various tools.
     design = "matcha",
+    # Name of the execution environment, affects the artifact names.
     exec_env = "sim_dv",
     extract_sw_logs = "//util/device_sw_utils:extract_sw_logs_db",
-    flash_scramble_tool = "//util/design:gen-flash-img",
+    # Libraries to be linked to create binaries.
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:sim_dv",
         "//hw/top_matcha/sw/dt:sim_dv",
     ],
+    # Default linker script.
     linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
+    # ROM scrambling configuration.
     rom_scramble_config = "//hw/top_matcha/data/autogen:top_matcha.secrets.testing.gen.hjson",
-    # Only needed for tops that feature RRAM; the example top above does not,
-    # so this would normally be omitted here.
-    rram_scramble_tool = "//util/design:gen-rram-img",
+    # Many more attributes can be specified here depending on the need.
+    ...
+    # Optional: specify a platform key (it must be listed in the top description)
+    platform_key = "my_sim_platform",
 )
 
 sim_dv(
     name = "sim_dv",
     testonly = True,
+    # You can inherit attributes from another execution environment.
     base = ":sim_dv_base",
     exec_env = "sim_dv",
     rom = "//sw/device/lib/testing/test_rom:test_rom",
@@ -164,6 +197,47 @@ sim_dv(
 For concrete examples see [Darjeeling (simple)](https://github.com/lowRISC/opentitan/blob/master/hw/top_darjeeling/BUILD) or [Earlgrey (very complex)](https://github.com/lowRISC/opentitan/blob/master/hw/top_earlgrey/BUILD).
 
 **Important note:** creating an execution environment does not automatically enroll tests, those must manually be enabled for your execution environment.
+
+### Declaring platforms
+
+Bazel has the concept of [platforms](https://bazel.build/concepts/platforms) to encode in the build system the important properties of the hardware it is building for.
+Each execution environment must specify which platform it wants to use.
+A level of indirection is introduced via the notion of platform keys.
+Each execution environment specifies a key using the `platform_key` attribute (which defaults to `"default"`).
+Each top specifies the mapping from platform keys to actual platforms, using the `platforms` attribute in the top description.
+
+It is recommended to declare platforms in the `BUILD` file in your top's root directory.
+The simplest option is to make the platform inherit from one of the base OpenTitan platforms:
+```py
+# In hw/top_matcha/BUILD
+load(
+    "//rules/opentitan:defs.bzl",
+    "OPENTITAN_BASE_PLATFORM",
+    "CHERIOT_PLATFORM",
+)
+
+# Declare a platform which is just the base RISC-V OpenTitan platform.
+platform(
+    name = "platform",
+    parents = [OPENTITAN_BASE_PLATFORM],
+)
+
+# Example: declare a RISC-V platform with custom toolchain flags.
+platform(
+    name = "no_bitmanip_platform",
+    flags = [
+        "--features=-rv32_bitmanip",
+    ],
+    parents = [OPENTITAN_BASE_PLATFORM],
+)
+
+# Example: declare a CherIoT platform.
+platform(
+    name = "cheriot_platform",
+    parents = [CHERIOT_PLATFORM],
+)
+```
+Remember that in order to use a platform, it must be listed in the `platforms` attribute of the top description and execution environments must select it using the `platform_key` attribute.
 
 ### Build the test ROM for your top
 

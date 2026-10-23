@@ -51,6 +51,8 @@ The following attributes have a well-defined meaning in the codebase.
 - `top_ld`: label string of the top's `ld_library` created by `topgen`. This library contains all the top-specific linker constants.
 - `ip_constraints`: a dictionary of additional constraints for IPs, the format is the same as for `target_compatible_with`.
   See the section on [using the top description](#Using-the-top-description) for more details.
+- `platforms`: a dictionary mapping arbitrary strings (called platform keys) to the label strings of platforms.
+  See the documentation of [binary and test rules](/rules/opentitan/README.md).
 
 Example for Earlgrey:
 ```py
@@ -60,6 +62,9 @@ EARLGREY = opentitan_top(
     top_lib = "//hw/top_earlgrey/sw/autogen:top_earlgrey",
     top_ld = "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
     ips = [...],
+    platforms = {
+      "": "//hw/top_earlgrey:platform",
+    }
 )
 ```
 

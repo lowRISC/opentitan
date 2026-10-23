@@ -6,6 +6,7 @@ load(
     "//rules/opentitan:defs.bzl",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
+    "OPENTITAN_BASE_PLATFORM",
     "sim_dv",
     "sim_verilator",
 )
@@ -117,4 +118,9 @@ sim_dv(
     base = ":sim_dv_base",
     exec_env = "sim_dv",
     rom = "//sw/device/lib/testing/test_rom:test_rom",
+)
+
+platform(
+    name = "platform",
+    parents = [OPENTITAN_BASE_PLATFORM],
 )

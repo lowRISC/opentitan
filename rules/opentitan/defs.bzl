@@ -7,16 +7,15 @@
 load("@bazel_skylib//lib:sets.bzl", "sets")
 load(
     "@lowrisc_opentitan//rules:rv.bzl",
-    _CHERIOT_PLATFORM = "CHERIOT_PLATFORM",
-    _OPENTITAN_CPU = "OPENTITAN_CPU",
-    _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
     _opentitan_transition = "opentitan_transition",
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:cc.bzl",
+    "opentitan_binary_merge",
+    "opentitan_merge_test",
     _opentitan_binary = "opentitan_binary",
     _opentitan_binary_blob = "opentitan_binary_blob",
-    _opentitan_test = "opentitan_test",
+    _opentitan_test_rule = "opentitan_test_rule",
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:fpga.bzl",
@@ -77,10 +76,13 @@ load("//rules/opentitan:providers.bzl", "OpenTitanTestInfo")
 # and opentitan_binary rules.
 CLEAR_KEY_SET = {"//signing:none_key": "none_key"}
 
+OPENTITAN_CPU = "@platforms//cpu:riscv32"
+OPENTITAN_BASE_PLATFORM = "//toolchain:opentitan_platform"
+
+# FIXME: should be renamed to base platform and handle fallout
+CHERIOT_PLATFORM = "//toolchain:cheriot_platform"
+
 # Re-exports of names from transition.bzl
-OPENTITAN_CPU = _OPENTITAN_CPU
-OPENTITAN_PLATFORM = _OPENTITAN_PLATFORM
-CHERIOT_PLATFORM = _CHERIOT_PLATFORM
 opentitan_transition = _opentitan_transition
 
 opentitan_binary_blob = _opentitan_binary_blob
@@ -287,16 +289,54 @@ def opentitan_binary(name, exec_env, kind = None, **kwargs):
             ["@platforms//:incompatible"],
         )
 
+    tags = kwargs.pop("tags", [])
+
     # Default `kind` to "rram" on earlgrey, same as opentitan_test(), unless
     # the caller passes an explicit `kind`.
     if kind == None:
         kind = opentitan_select_top({"earlgrey": _default_kind_for_top("earlgrey")}, "flash")
 
-    _opentitan_binary(
+    # Create one target per platform key in any top, then merge everything.
+    # This the list of execution environment is a bunch of select(), we can't filter
+    # it by removing exec env per platform key, the filtering is done in the
+    # _opentitan_binary rule. This leads to potential false dependencies on
+    # _opentitan_binary targets which will filter everything out.
+    all_platform_keys = list(set([
+        key
+        for top in ALL_TOPS
+        for key in get_top_attr(top, "platforms").keys()
+    ]))
+
+    for key in all_platform_keys:
+        _opentitan_binary(
+            name = "{}_{}".format(name, key),
+            # To avoid having artifact names with strange names, override the output name prefix.
+            out_name = name,
+            platform_key = key,
+            exec_env = opentitan_select_top(select_map, []),
+            kind = kind,
+            # This is an internal target, don't build it by default.
+            tags = ["manual"],
+            **kwargs
+        )
+
+    # Not all tops have all platforms keys so avoid listing them all. Doing so would result in
+    # a lot of dependencies on binary targets producing no binaries but still requiring bazel to
+    # pull in a huge build graph for no reason.
+    binaries = opentitan_select_top({
+        top.name: {
+            key: ":{}_{}".format(name, key)
+            for key in get_top_attr(top, "platforms").keys()
+        }
+        for top in ALL_TOPS
+    }, {})
+
+    opentitan_binary_merge(
         name = name,
+        binaries = binaries,
         exec_env = opentitan_select_top(select_map, []),
-        kind = kind,
-        **kwargs
+        testonly = kwargs.get("testonly", False),
+        tags = tags,
     )
 
 # Note about multitop behaviour:
@@ -505,26 +545,57 @@ def opentitan_test(
                 test_kwargs[arg] = opentitan_select_top(select_args, default)
 
         test_name = "{}_{}".format(name, suffix)
-        all_tests.append(":" + test_name)
-        _opentitan_test(
+
+        # We need to provide a platform key to transition to the correct platform but we cannot know which
+        # key to use for each execution environment in a macro (since we need access to the provider).
+        # Instead, we produce one test per platform key and then merge the resulting tests (only one will be
+        # valid per exec env). Also be smart and only list platform keys which can potentially be relevant
+        # for each execution environment.
+        all_platform_keys = set([
+            key
+            for top in ALL_TOPS
+            for env in env_list
+            if top.name == ev_to_top_map[env]
+            for key in get_top_attr(top, "platforms").keys()
+        ])
+
+        timeout = test_kwargs.pop("timeout", None)
+        for platform_key in all_platform_keys:
+            _opentitan_test_rule(
+                name = "{}_{}".format(test_name, platform_key),
+                srcs = srcs,
+                deps = deps,
+                copts = copts,
+                local_defines = local_defines,
+                includes = includes,
+                linker_script = linker_script,
+                platform = platform,
+                linkopts = linkopts,
+                naming_convention = "{name}",
+                ecdsa_key = ecdsa_key,
+                rsa_key = rsa_key,
+                spx_key = spx_key,
+                manifest = manifest,
+                platform_key = platform_key,
+                # Point to test suite created below.
+                test_suite = str(Label(":{}".format(name))),
+                testonly = True,
+                # Note that the tags are kept so that they get into the OpenTitanTestInfo provider.
+                **test_kwargs
+            )
+
+        opentitan_merge_test(
             name = test_name,
-            srcs = srcs,
-            deps = deps,
-            copts = copts,
-            local_defines = local_defines,
-            includes = includes,
-            linker_script = linker_script,
-            platform = platform,
-            linkopts = linkopts,
-            naming_convention = "{name}",
-            ecdsa_key = ecdsa_key,
-            rsa_key = rsa_key,
-            spx_key = spx_key,
-            manifest = manifest,
-            # Point to test suite created below.
-            test_suite = str(Label(":{}".format(name))),
-            **test_kwargs
+            tests = [
+                ":{}_{}".format(test_name, platform_key)
+                for platform_key in all_platform_keys
+            ],
+            # Copy the tags so that tag-based filtering works.
+            tags = test_kwargs["tags"],
+            timeout = timeout,
         )
+
+        all_tests.append(":" + test_name)
 
     native.test_suite(
         name = name,
