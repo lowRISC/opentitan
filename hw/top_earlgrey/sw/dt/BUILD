@@ -7,6 +7,7 @@ load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
 package(default_visibility = ["//visibility:public"])
 
 TARGETS = [
+    "fpga_cw305",
     "fpga_cw340",
     "sim_dv",
     "sim_qemu",
