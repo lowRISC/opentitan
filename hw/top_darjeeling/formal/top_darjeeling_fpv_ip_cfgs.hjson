@@ -22,30 +22,30 @@
              {
                name: pinmux_fpv
                dut: pinmux_tb
-               fusesoc_core: lowrisc:fpv:pinmux_fpv
+               fusesoc_core: lowrisc:darjeeling_fpv:pinmux_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               rel_path: "hw/ip/pinmux/{sub_flow}/{tool}"
+               rel_path: "hw/{top_chip}/ip_autogen/pinmux/{sub_flow}/{tool}"
                defines: "FPV_ALERT_NO_SIGINT_ERR"
-               exp_fail_hjson: "{proj_root}/hw/ip/pinmux/fpv/pinmux_expected_failure.hjson"
+               exp_fail_hjson: "{proj_root}/hw/{top_chip}/ip_autogen/pinmux/fpv/pinmux_expected_failure.hjson"
                cov: true
              }
 
              // Use chip_darjeeling_asic parameters to verify pinmux.
              {
                name: pinmux_chip_fpv
-               dut: pinmux_tb
-               fusesoc_core: lowrisc:systems:pinmux_chip_fpv
+               dut: pinmux_chip_tb
+               fusesoc_core: lowrisc:darjeeling_systems:pinmux_chip_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
-               rel_path: "hw/{top_chip}/ip/pinmux/{sub_flow}/{tool}"
+               rel_path: "hw/{top_chip}/ip_autogen/pinmux/{sub_flow}/{tool}"
                defines: "FPV_ALERT_NO_SIGINT_ERR"
                cov: true
-               exp_fail_hjson: "{proj_root}/hw/{top_chip}/ip/pinmux/fpv/pinmux_expected_failure.hjson"
+               exp_fail_hjson: "{proj_root}/hw/{top_chip}/ip_autogen/pinmux/fpv/pinmux_chip_expected_failure.hjson"
              }
 
              {
                name: rv_plic_fpv
                dut: rv_plic_tb
-               fusesoc_core: lowrisc:darjeeling_fpv:rv_plic_fpv
+               fusesoc_core: lowrisc:darjeeling_ip:rv_plic_fpv
                import_cfgs: ["{proj_root}/hw/formal/tools/dvsim/common_fpv_cfg.hjson"]
                rel_path: "hw/{top_chip}/ip_autogen/rv_plic/{sub_flow}/{tool}"
                cov: true
