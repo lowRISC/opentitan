@@ -829,14 +829,14 @@ module i3c_controller_trx
       state_q       <= State_Reset;
       bit_idx       <= '1;
       tx_data_bit_q <= 1'b0;
-    end else if (sw_reset_i) begin
-      crc5_q        <= '1;
-      parity_q      <= 2'b01;
+    end else if (sw_reset_i | ~enable_i) begin
+      // When the Controller logic is disabled it must stop driving the SCL line and rely upon the
+      // high-keeper to hold the line high; `i3c_controller_state` disables the Controller logic
+      // in a controlled fashion without disrupting I3C traffic.
       cnt           <= '0;
       state_q       <= State_Reset;
       bit_idx       <= '1;
-      tx_data_bit_q <= 1'b0;
-    end else if (enable_i) begin
+    end else begin
       if (req_starting) begin
         // Behavior specific to the new data unit.
         unique case (trx_dreq_i.req)
