@@ -38,14 +38,20 @@ module csrng_state_db
   input  logic                   reg_rd_strb_i,
   output logic    [RegWidth-1:0] reg_rd_val_o,
 
-  output logic [NumApps-1:0][RsCtrWidth-1:0] reseed_counter_o
+  output logic [NumApps-1:0][RsCtrWidth-1:0]      reseed_counter_o,
+  output logic [NumApps-1:0]                      inst_state_o,
+  output logic [NumApps-1:0][GenBitsCtrWidth-1:0] gen_cnt_o,
+  output logic [NumApps-1:0]                      gen_flag_o
 );
 
-  // Number of registers per state with synthesis-friendly $ceil(StateWidth / RegWidth)
-  localparam int unsigned NumRegState   = (StateWidth + RegWidth - 1) / RegWidth;
+  // Only the fields up to and including fips are readable via the register interface.
+  localparam int unsigned RegStateWidth = RsCtrWidth + BlkLen + KeyLen + 2;
+
+  // Number of registers per state with synthesis-friendly $ceil(RegStateWidth / RegWidth)
+  localparam int unsigned NumRegState   = (RegStateWidth + RegWidth - 1) / RegWidth;
   localparam int unsigned NumRegStateLg = $clog2(NumRegState);
   localparam int unsigned NumRegTotBits = NumRegState * RegWidth;
-  localparam int unsigned NumRegPadBits = NumRegTotBits - StateWidth;
+  localparam int unsigned NumRegPadBits = NumRegTotBits - RegStateWidth;
 
   // Internal signals
   logic                     write_en;
@@ -103,7 +109,12 @@ module csrng_state_db
 
   // Pad the logic representation of the selected state with zeros to the next multiple of 32
   assign state_reg_readout = (reg_rd_id_q < NumApps) ?
-                             {{NumRegPadBits{1'b0}}, state_q[reg_rd_id_q]} : '0;
+                             {{NumRegPadBits{1'b0}},
+                              state_q[reg_rd_id_q].fips,
+                              state_q[reg_rd_id_q].inst_state,
+                              state_q[reg_rd_id_q].key_v,
+                              state_q[reg_rd_id_q].rs_ctr} :
+                             '0;
 
   always_comb begin
     reg_rd_val_o = '0;
@@ -113,9 +124,13 @@ module csrng_state_db
     end
   end
 
-  // The reseed counters are always readable via register interface.
+  // The reseed counters are always readable via register interface. The instantiated and generate
+  // command state is used by the command stages.
   for (genvar i = 0; i < NumApps; i++) begin : gen_reseed_counter
     assign reseed_counter_o[i] = state_q[i].rs_ctr;
+    assign inst_state_o[i]     = state_q[i].inst_state;
+    assign gen_cnt_o[i]        = state_q[i].gen_ctr;
+    assign gen_flag_o[i]       = state_q[i].gen_flag;
   end
 
   //--------------------------------------------
@@ -135,11 +150,14 @@ module csrng_state_db
       state_d = '0;
     end else if (write_en && (wr_data_i.inst_id < NumApps)) begin
       state_d[wr_data_i.inst_id] = '{
-        fips:       wr_data_i.fips,
-        key:        wr_data_i.key,
-        v:          wr_data_i.v,
-        rs_ctr:     wr_data_i.rs_ctr,
-        inst_state: instance_state
+        gen_adata_vld: wr_data_i.gen_adata_vld,
+        gen_adata:     wr_data_i.gen_adata,
+        gen_flag:      wr_data_i.gen_flag,
+        gen_ctr:       wr_data_i.gen_ctr,
+        fips:          wr_data_i.fips,
+        key_v:         wr_data_i.key_v,
+        rs_ctr:        wr_data_i.rs_ctr,
+        inst_state:    instance_state
       };
     end
   end

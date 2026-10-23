@@ -162,9 +162,6 @@
     { name: "CTR_DRBG.FSM.SPARSE"
       desc: "The CTR DRBG state machine uses a sparse state encoding."
     }
-    { name: "GEN_CMD.CTR.REDUN"
-      desc: "The generate command uses a counter that is protected by a second counter that counts in the opposite direction."
-    }
     { name: "CTR_DRBG.CTR.REDUN"
       desc: "The ctr_drbg algorithm uses a counter that is protected by a second counter that counts in the opposite direction."
     }

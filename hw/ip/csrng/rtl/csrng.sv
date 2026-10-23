@@ -157,10 +157,6 @@ module csrng
     alert_tx_o[1])
 
   for (genvar i = 0; i < NumHwApps + 1; i++) begin : gen_cnt_asserts
-    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(CntAlertCheck_A,
-      u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.u_prim_count_cmd_gen_cntr,
-      alert_tx_o[1])
-
     `ASSERT_PRIM_FSM_ERROR_TRIGGER_ALERT(DrbgCmdFsmCheck_A,
       u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.u_state_regs,
       alert_tx_o[1])
