@@ -2,16 +2,21 @@
 
 ## Goals
 * **DV**
-  * Verify the OTBN processor by running dynamic simulations with a SV/UVM based testbench
-  * These simulations are grouped in tests listed in the [testplan](#testplan) below.
+  * Verify the OTBN processor with a SV/UVM based testbench using simulations described in the the [testplan](#testplan) below.
   * Close code and functional coverage on the IP and all of its sub-modules
 * **FPV**
-  * Verify TileLink device protocol compliance with an SVA based testbench
+  * Verify TileLink protocol compliance and OTBN submodule interfaces with SVA based testbenches
 
 ## Current status
 * [Design & verification stage](../../../README.md)
   * [HW development stages](../../../../doc/project_governance/development_stages.md)
 * [Simulation results](https://reports.opentitan.org/hw/ip/otbn/dv/uvm/latest/report.html)
+
+The DV testbench currently runs all tests from the first generation of the OTBN processor. In addition, it is running basic smoke tests for the new KMAC, masking accelerator, URND control interfaces, and WFI instruction design feature.
+
+It does not have a KMAC agent instantiated within yet; and the scoreboard is missing full functionality for the new design features
+
+A basic FPV testbench has been created for the KMAC and masking accelerator interfaces, with main functional properties running.
 
 ## Design features
 
@@ -29,7 +34,7 @@ OTBN testing makes use of a DPI-based model called `otbn_core_model`.
 This is shown in the block diagram.
 The dotted interfaces in the `otbn` block are bound in by the model to access internal signals (register file and memory contents).
 
-![Block diagram](./doc/tb.svg)
+![Block diagram](./doc/tb_diagram.svg)
 
 ### Top level testbench
 
@@ -48,6 +53,7 @@ OTBN has the following interfaces:
 - An OTP: for example, see earlgrey's [OTP](../../../top_earlgrey/ip_autogen/otp_ctrl/README.md) connection
 - Two [EDN](../../edn/README.md) connections
 - A RAM configuration interface, which is passed through to the SRAM macros
+- A KMAC application interface for OTBN to send messages through and receive digest data
 
 The idle and interrupt signals are modelled with the basic
 [`pins_if`](../../../dv/sv/common_ifs/README.md#pins_if) interface.
@@ -68,6 +74,8 @@ The monitor for the agent generates transactions when it sees a start signal or 
 
 The start signal is important because we "cheat" and pull it out of the DUT.
 To make sure that the processor is starting when we expect, we check start transactions against TL writes in the scoreboard.
+
+The new feature WFI and URND control signals are driven dynamically through the model agent by snooping CTRL writes in the DUT.
 
 ### Reference models
 
@@ -118,7 +126,9 @@ Core TLUL protocol assertions are checked by binding the [TL-UL protocol checker
 Outputs are also checked for `'X` values by assertions in the design RTL.
 The design RTL contains other assertions defined by the designers, which will be checked in simulation (and won't have been checked by the pre-DV Verilator simulations).
 
-Finally, the `otbn_idle_checker` checks that the `idle_o` output correctly matches the running state that you'd expect, based on writes to the `CMD` register and responses that will appear in the `DONE` interrupt.
+The `otbn_idle_checker` checks that the `idle_o` output correctly matches the running state that you'd expect, based on writes to the `CMD` register and responses that will appear in the `DONE` interrupt.
+
+Finally, the KMAC application interface and Masking Accelerator interface utilised in OTBN are covered by assertions in their own respective FPV testbenches. These environments focus on verifying the control path through the submodules (FSM coverage, error handling, secure wipe testing) leaving the datapath testing for the otbn_core_model. In depth descriptions of the FPV environments and how to run them will follow as they are added.
 
 ## Building and running tests
 
