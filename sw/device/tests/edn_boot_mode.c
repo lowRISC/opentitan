@@ -46,6 +46,7 @@ dif_entropy_src_config_t entropy_src_config = {
     .rng_fips = false,
     .route_to_firmware = false,
     .bypass_conditioner = false,
+    .clear_esfinal_fifo_while_disabled = true,
     .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
     .health_test_window_size = 0x0200,
     .alert_threshold = 2,

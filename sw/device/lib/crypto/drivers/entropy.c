@@ -172,6 +172,13 @@ typedef struct entropy_src_config {
    */
   multi_bit_bool_t bypass_conditioner;
   /**
+   * If set, the esfinal FIFO holding previously produced entropy seeds is
+   * cleared upon disabling the module. Otherwise, previously produced entropy
+   * seeds get served to CSRNG upon request or can alternatively get read out
+   * via ENTROPY_DATA CSR even after disabling the module.
+   */
+  multi_bit_bool_t clear_esfinal_fifo_while_disabled;
+  /**
    * Enables single bit entropy mode.
    */
   multi_bit_bool_t single_bit_mode;
@@ -270,6 +277,8 @@ static const entropy_complex_config_t
                         .rng_fips = kMultiBitBool4True,
                         .route_to_firmware = kMultiBitBool4False,
                         .bypass_conditioner = kMultiBitBool4False,
+                        .clear_esfinal_fifo_while_disabled =
+                            kMultiBitBool4False,
                         .single_bit_mode = kMultiBitBool4False,
                         .threshold_scope = kMultiBitBool4False,
                         .fips_test_window_size = 0x200,
@@ -351,6 +360,7 @@ static const entropy_complex_config_t
                     .rng_fips = kMultiBitBool4True,
                     .route_to_firmware = kMultiBitBool4False,
                     .bypass_conditioner = kMultiBitBool4False,
+                    .clear_esfinal_fifo_while_disabled = kMultiBitBool4False,
                     .single_bit_mode = kMultiBitBool4False,
                     .threshold_scope = kMultiBitBool4True,
                     .fips_test_window_size = 512,
@@ -819,6 +829,10 @@ static status_t entropy_src_configure(const entropy_src_config_t *config) {
   entropy_control = bitfield_field32_write(
       entropy_control, ENTROPY_SRC_ENTROPY_CONTROL_ES_TYPE_FIELD,
       config->bypass_conditioner);
+  entropy_control = bitfield_field32_write(
+      entropy_control,
+      ENTROPY_SRC_ENTROPY_CONTROL_ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD,
+      config->clear_esfinal_fifo_while_disabled);
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_ENTROPY_CONTROL_REG_OFFSET,
                    entropy_control);
 
