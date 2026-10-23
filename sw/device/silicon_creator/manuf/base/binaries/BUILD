@@ -15,6 +15,7 @@ copy_files(
     ],
     filter = [
         "ft_personalize_sival",
+        "ft_flash_scramble_sival",
     ],
     relative_to = ":BUILD",
     tags = ["manual"],
