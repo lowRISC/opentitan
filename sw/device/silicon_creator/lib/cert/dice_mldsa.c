@@ -394,12 +394,12 @@ OT_WARN_UNUSED_RESULT static rom_error_t dice_mldsa_derive_seed(
 }
 
 /**
- * Determines whether a DICE certificate needs to be regenerated.
+ * Determines whether an ML-DSA DICE certificate needs to be regenerated.
  *
  * @param cache_valid True if the cached certificate is valid.
  * @return True if the certificate needs to be regenerated.
  */
-static bool dice_cert_needs_regenerate(bool cache_valid) {
+static bool dice_mldsa_cert_needs_regenerate(bool cache_valid) {
   retention_sram_t *retram = retention_sram_get();
   if (bitfield_bit32_read(retram->creator.reset_reasons,
                           kRstmgrReasonWatchdog)) {
@@ -414,22 +414,56 @@ static bool dice_cert_needs_regenerate(bool cache_valid) {
 }
 
 /**
+ * Checks whether an ML-DSA key ID represents a cached certificate.
+ *
+ * @param key_id The key ID to check.
+ * @return True if the key ID is neither 0 nor UINT64_MAX.
+ */
+static inline bool dice_mldsa_key_id_is_cached(uint64_t key_id) {
+  return key_id != 0 && key_id != UINT64_MAX;
+}
+
+/**
+ * Updates the digest with a data flash slot if cached, or extends uint32 0.
+ *
+ * @param slot The slot to digest.
+ * @param key_idx Key ID index for the slot.
+ * @return Result of the operation.
+ */
+static rom_error_t dice_mldsa_digest_slot(const dice_storage_slot_v1_t *slot,
+                                          dice_key_id_index_t key_idx) {
+  if (dice_mldsa_key_id_is_cached(dice_page.mldsa_cdi_key_ids[key_idx])) {
+    return dice_storage_digest_slot_v1(slot);
+  }
+  const uint32_t zero = 0;
+  hmac_sha256_update(&zero, sizeof(zero));
+  return kErrorOk;
+}
+
+/**
+ * Computes the digest covering both ML-DSA PQC flash slots.
+ *
+ * @param digest_out The output HMAC digest.
+ * @return The result of the operation.
+ */
+static rom_error_t dice_mldsa_digest_pqc_slots(hmac_digest_t *digest_out) {
+  hmac_sha256_init();
+  HARDENED_RETURN_IF_ERROR(
+      dice_mldsa_digest_slot(&kDiceStorageSlotPqCdi0, kDicePageKeyIdxCdi0));
+  HARDENED_RETURN_IF_ERROR(
+      dice_mldsa_digest_slot(&kDiceStorageSlotPqCdi1, kDicePageKeyIdxCdi1));
+  hmac_sha256_process();
+  hmac_sha256_final(digest_out);
+  return kErrorOk;
+}
+
+/**
  * Determines whether the DICE certificates stored in flash info are valid
  * and erases the page if a corruption is detected.
  *
  * @return The result of the operation.
  */
 static rom_error_t dice_page_rom_ext_check(void) {
-  // If we won't regenerate, skip the validity check.
-  if (!dice_cert_needs_regenerate(/*cache_valid=*/false)) {
-    return kErrorOk;
-  }
-  // If a CDI_0 certificate is issued, the entire cache will be rebuilt, so
-  // the digest check can be skipped.
-  if (static_dice_cdi_0.cert_size != 0) {
-    return kErrorOk;
-  }
-
   RETURN_IF_ERROR(dice_storage_load_page(&dice_page));
 
   rom_error_t status = dice_storage_check_digest(&dice_page);
@@ -437,7 +471,32 @@ static rom_error_t dice_page_rom_ext_check(void) {
     dbg_printf("warning: corrupted DICE page; erasing\r\n");
     RETURN_IF_ERROR(flash_ctrl_info_erase(&kFlashCtrlInfoPageDiceCerts,
                                           kFlashCtrlEraseTypePage));
-    rstmgr_reset();
+    if (static_dice_cdi_0.cert_size == 0) {
+      rstmgr_reset();
+    }
+    memset(&dice_page, 0xff, sizeof(dice_page));
+    return kErrorOk;
+  }
+
+  bool cdi0_cached = dice_mldsa_key_id_is_cached(
+      dice_page.mldsa_cdi_key_ids[kDicePageKeyIdxCdi0]);
+  bool cdi1_cached = dice_mldsa_key_id_is_cached(
+      dice_page.mldsa_cdi_key_ids[kDicePageKeyIdxCdi1]);
+  if (cdi0_cached || cdi1_cached) {
+    hmac_digest_t actual;
+    HARDENED_RETURN_IF_ERROR(dice_mldsa_digest_pqc_slots(&actual));
+    if (memcmp(&actual, &dice_page.mldsa_digest, sizeof(hmac_digest_t)) != 0) {
+      dbg_printf("warning: corrupted ML-DSA certs; invalidating cache\r\n");
+      memset(
+          &dice_page.mldsa_digest, 0xff,
+          sizeof(dice_page.mldsa_digest) + sizeof(dice_page.mldsa_cdi_key_ids));
+      dice_storage_digest_page(&dice_page, &dice_page.digest);
+      RETURN_IF_ERROR(dice_storage_flush_page(&dice_page));
+      if (static_dice_mldsa_cdi.cdi_0_cert_size == 0 &&
+          rom_ext_manifest()->on_demand_dice != kHardenedBoolTrue) {
+        rstmgr_reset();
+      }
+    }
   }
   return kErrorOk;
 }
@@ -509,17 +568,24 @@ static rom_error_t dice_attest_next_cdi(
   hmac_digest_t *subject_mldsa_id = params->subject_mldsa_key_id_out;
   get_mldsa_id((const hmac_key_t *)&subject_mldsa_seed, subject_mldsa_id);
 
-  uint64_t expected_id = read_64(subject_ecdsa_pubkey_id->digest);
-  uint64_t cached_id;
+  uint64_t expected_ecdsa_id = read_64(subject_ecdsa_pubkey_id->digest);
+  uint64_t cached_ecdsa_id;
   HARDENED_RETURN_IF_ERROR(
-      dice_storage_get_key_id(params->key_id_index, &cached_id));
-  bool cache_valid = cached_id == expected_id;
-  bool regenerate = dice_cert_needs_regenerate(cache_valid);
+      dice_storage_get_key_id(params->key_id_index, &cached_ecdsa_id));
+  bool ecdsa_cache_valid = cached_ecdsa_id == expected_ecdsa_id;
+  bool ecdsa_regenerate = !ecdsa_cache_valid;
 
-  if (regenerate) {
-    uint32_t *stack_top =
-        (uint32_t *)((uint8_t *)params->scratch_buf + params->scratch_buf_size);
+  uint64_t expected_mldsa_id = read_64(subject_mldsa_id->digest);
+  uint64_t cached_mldsa_id;
+  HARDENED_RETURN_IF_ERROR(
+      dice_storage_get_mldsa_key_id(params->key_id_index, &cached_mldsa_id));
+  bool mldsa_cache_valid = cached_mldsa_id == expected_mldsa_id;
+  bool mldsa_regenerate = dice_mldsa_cert_needs_regenerate(mldsa_cache_valid);
 
+  uint32_t *stack_top =
+      (uint32_t *)((uint8_t *)params->scratch_buf + params->scratch_buf_size);
+
+  if (ecdsa_regenerate) {
     // Build ECDSA Cert
     tbs_values->key_alg = kCdiHybridKeyAlgEcdsa;
     TEMPLATE_SET(*tbs_values, CdiHybrid, PubKeyEcX, subject_ecdsa_pubkey.x);
@@ -548,7 +614,9 @@ static rom_error_t dice_attest_next_cdi(
     memcpy(params->ecdsa_cert_out, params->mldsa_cert_out,
            generated_ecdsa_size);
     *params->ecdsa_cert_size_out = (uint32_t)generated_ecdsa_size;
+  }
 
+  if (mldsa_regenerate) {
     // Build ML-DSA Cert
     mldsa44_tiny_pub_from_seed_with_stack(
         pubkey_buffer, (const uint8_t *)subject_mldsa_seed.data, stack_top);
@@ -598,7 +666,7 @@ static rom_error_t dice_attest_next_cdi(
  */
 static rom_error_t dice_mldsa_uds_pubkey_populate(void) {
   static_dice_mldsa_cdi.uds_pub_size = 0;
-  if (!dice_cert_needs_regenerate(/*cache_valid=*/true)) {
+  if (!dice_mldsa_cert_needs_regenerate(/*cache_valid=*/true)) {
     return kErrorOk;
   }
 
@@ -710,11 +778,9 @@ rom_error_t dice_attest_cdi_1(const manifest_t *owner_manifest,
   write_64(read_64(cdi1_mldsa_id.digest), msg->ids.mldsa_cdi1_id);
 
   // Handover results to OwnerSw
-  if (cdi1_ecdsa_size != 0) {
+  bool ecdsa_updated = (cdi1_ecdsa_size != 0);
+  if (ecdsa_updated) {
     dbg_puts("info: DICE cert cache miss; updating\r\n");
-
-    // Populating ECDSA certs to flash info page.
-    RETURN_IF_ERROR(dice_storage_load_page(&dice_page));
 
     if (static_dice_cdi_0.cert_size != 0) {
       dice_storage_slot_init(&kDiceStorageCdi0Ecdsa, &dice_page);
@@ -732,17 +798,14 @@ rom_error_t dice_attest_cdi_1(const manifest_t *owner_manifest,
     dice_storage_set_cert_size(&kDiceStorageCdi1Ecdsa, cdi1_ecdsa_size,
                                &dice_page);
     dice_page.cdi_key_ids[kDicePageKeyIdxCdi1] = read_64(cdi1_ecdsa_id.digest);
+  }
 
-    dice_storage_digest_page(&dice_page, &dice_page.digest);
-    HARDENED_RETURN_IF_ERROR(dice_storage_flush_page(&dice_page));
-
+  bool mldsa_updated = (static_dice_mldsa_cdi.cdi_0_cert_size != 0) ||
+                       (static_dice_mldsa_cdi.cdi_1_cert_size != 0);
+  if (mldsa_updated) {
     // Populating ML-DSA certs handover response
     msg->res.mldsa_uds_pub = (uint32_t)&static_dice_mldsa_cdi.uds_pub;
     msg->res.mldsa_uds_pub_len = static_dice_mldsa_cdi.uds_pub_size;
-
-    bool flash_storage_mode =
-        rom_ext_manifest()->dice_cert_storage_mode == kDiceCertMldsaOnFlash &&
-        owner_manifest->dice_cert_storage_mode == kDiceCertMldsaOnFlash;
 
     bool is_overlapped =
         (rom_ext_boot_policy_slot_a_manifest_status == kErrorOk &&
@@ -751,30 +814,39 @@ rom_error_t dice_attest_cdi_1(const manifest_t *owner_manifest,
         (rom_ext_boot_policy_slot_b_manifest_status == kErrorOk &&
          dice_storage_slot_v1_overlapped(rom_ext_boot_policy_slot_b_manifest));
 
-    if (flash_storage_mode && !is_overlapped) {
+    if (!is_overlapped) {
       if (static_dice_mldsa_cdi.cdi_0_cert_size != 0) {
+        watchdog_pet();
         RETURN_IF_ERROR(dice_storage_write_cert_tlv_v1(
             &kDiceStorageSlotPqCdi0, static_dice_mldsa_cdi.cdi_0_cert,
             static_dice_mldsa_cdi.cdi_0_cert_size));
+        dice_page.mldsa_cdi_key_ids[kDicePageKeyIdxCdi0] =
+            read_64(msg->ids.mldsa_cdi0_id);
       }
-      RETURN_IF_ERROR(dice_storage_write_cert_tlv_v1(
-          &kDiceStorageSlotPqCdi1, static_dice_mldsa_cdi.cdi_1_cert,
-          static_dice_mldsa_cdi.cdi_1_cert_size));
-
       msg->res.mldsa_cdi0_cert =
           (uint32_t)dice_storage_slot_v1_data(&kDiceStorageSlotPqCdi0);
+      msg->res.mldsa_cdi0_cert_len = static_dice_mldsa_cdi.cdi_0_cert_size;
+
+      if (static_dice_mldsa_cdi.cdi_1_cert_size != 0) {
+        watchdog_pet();
+        RETURN_IF_ERROR(dice_storage_write_cert_tlv_v1(
+            &kDiceStorageSlotPqCdi1, static_dice_mldsa_cdi.cdi_1_cert,
+            static_dice_mldsa_cdi.cdi_1_cert_size));
+        dice_page.mldsa_cdi_key_ids[kDicePageKeyIdxCdi1] =
+            read_64(msg->ids.mldsa_cdi1_id);
+      }
       msg->res.mldsa_cdi1_cert =
           (uint32_t)dice_storage_slot_v1_data(&kDiceStorageSlotPqCdi1);
+      msg->res.mldsa_cdi1_cert_len = static_dice_mldsa_cdi.cdi_1_cert_size;
     } else {
-      if (is_overlapped) {
-        dbg_puts("warning: ML-DSA flash region occupied\r\n");
-      }
-      msg->res.mldsa_cdi0_cert = (uint32_t)static_dice_mldsa_cdi.cdi_0_cert;
-      msg->res.mldsa_cdi1_cert = (uint32_t)static_dice_mldsa_cdi.cdi_1_cert;
+      dbg_puts("warning: ML-DSA flash region occupied\r\n");
+      dice_page.mldsa_cdi_key_ids[kDicePageKeyIdxCdi0] = UINT64_MAX;
+      dice_page.mldsa_cdi_key_ids[kDicePageKeyIdxCdi1] = UINT64_MAX;
+      msg->res.mldsa_cdi0_cert = 0;
+      msg->res.mldsa_cdi0_cert_len = 0;
+      msg->res.mldsa_cdi1_cert = 0;
+      msg->res.mldsa_cdi1_cert_len = 0;
     }
-
-    msg->res.mldsa_cdi0_cert_len = static_dice_mldsa_cdi.cdi_0_cert_size;
-    msg->res.mldsa_cdi1_cert_len = static_dice_mldsa_cdi.cdi_1_cert_size;
 
     // Update type to response.
     msg->res.hdr.type = kDiceCertGenResponse;
@@ -784,12 +856,20 @@ rom_error_t dice_attest_cdi_1(const manifest_t *owner_manifest,
     // pointers).
     msg->res.crc32 =
         crc32(&msg->res, sizeof(dice_cert_gen_res_t) - sizeof(uint32_t));
+
+    HARDENED_RETURN_IF_ERROR(
+        dice_mldsa_digest_pqc_slots(&dice_page.mldsa_digest));
   } else {
     // Populating ML-DSA IDs only handover response
 
     // Update type to IDs (the values are already populated).
     msg->ids.hdr.type = kDiceCertGenIds;
     msg->ids.hdr.version = 0;
+  }
+
+  if (ecdsa_updated || mldsa_updated) {
+    dice_storage_digest_page(&dice_page, &dice_page.digest);
+    HARDENED_RETURN_IF_ERROR(dice_storage_flush_page(&dice_page));
   }
 
   return kErrorOk;
