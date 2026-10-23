@@ -829,6 +829,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
         enable_dut();
       end
 
+      // The threshold_oneway CSR is RW1S. Don't set invalid MuBi values to this CSR as they would
+      // be sticky.
+      if (altcfg.which_invalid_mubi == invalid_threshold_oneway) begin
+        altcfg.ht_threshold_oneway = MuBi4False;
+      end
+
       entropy_src_init(.newcfg(altcfg),
                        .completed(reconfig_complete),
                        .regwen(regwen));
