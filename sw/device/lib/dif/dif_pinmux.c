@@ -48,21 +48,11 @@ static bool dif_pinmux_get_sleep_status_bit(dif_pinmux_pad_kind_t kind,
   switch (kind) {
     case kDifPinmuxPadKindMio:
       num_pads = PINMUX_PARAM_N_MIO_PADS;
-      // Only platforms with few MIOs, there is a single register with no index.
-#ifdef PINMUX_MIO_PAD_SLEEP_STATUS_0_REG_OFFSET
       reg_base = PINMUX_MIO_PAD_SLEEP_STATUS_0_REG_OFFSET;
-#else
-      reg_base = PINMUX_MIO_PAD_SLEEP_STATUS_REG_OFFSET;
-#endif
       break;
     case kDifPinmuxPadKindDio:
       num_pads = PINMUX_PARAM_N_DIO_PADS;
-      // Only platforms with few DIOs, there is a single register with no index.
-#ifdef PINMUX_DIO_PAD_SLEEP_STATUS_0_REG_OFFSET
       reg_base = PINMUX_DIO_PAD_SLEEP_STATUS_0_REG_OFFSET;
-#else
-      reg_base = PINMUX_DIO_PAD_SLEEP_STATUS_REG_OFFSET;
-#endif
       break;
     default:
       return false;

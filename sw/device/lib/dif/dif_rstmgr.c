@@ -80,11 +80,7 @@ static bool cpu_capture_is_locked(mmio_region_t base_addr) {
 }
 
 static inline ptrdiff_t get_regwen_reg_offset(dif_rstmgr_peripheral_t p) {
-#if RSTMGR_SW_RST_REGWEN_MULTIREG_COUNT > 1
   return RSTMGR_SW_RST_REGWEN_0_REG_OFFSET + 4 * (ptrdiff_t)p;
-#else
-  return RSTMGR_SW_RST_REGWEN_REG_OFFSET + 4 * (ptrdiff_t)p;
-#endif
 }
 
 /**
@@ -96,11 +92,7 @@ static bool rstmgr_software_reset_is_locked(
 }
 
 static inline ptrdiff_t get_ctrl_n_reg_offset(dif_rstmgr_peripheral_t p) {
-#if RSTMGR_SW_RST_CTRL_N_MULTIREG_COUNT > 1
   return RSTMGR_SW_RST_CTRL_N_0_REG_OFFSET + 4 * (ptrdiff_t)p;
-#else
-  return RSTMGR_SW_RST_CTRL_N_REG_OFFSET + 4 * (ptrdiff_t)p;
-#endif
 }
 
 /**
