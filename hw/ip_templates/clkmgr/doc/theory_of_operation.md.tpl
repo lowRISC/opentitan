@@ -299,3 +299,12 @@ Clock too slow is registered when the clock cycle count is less than the softwar
 Clock time-out is registered when the clock stops toggling and the timeout threshold is reached.
 
 As these are all software supplied values, the entire measurement control can be locked from further programming through [`MEASURE_CTRL_REGWEN`](registers.md#measure_ctrl_regwen).
+
+% if ext_clk_bypass:
+The measurements are only meaningful while the clocks are calibrated, which the `calib_rdy_i` input indicates.
+When `calib_rdy_i` is `MuBi4False`, hardware sets [`MEASURE_CTRL_REGWEN`](registers.md#measure_ctrl_regwen) to 1 and disables all measurements by clearing the measurement enables, such as [`IO_MEAS_CTRL_EN`](registers.md#io_meas_ctrl_en).
+No measurement errors are registered while calibration is lost, and software can reprogram the thresholds before re-enabling the measurements.
+% else:
+This clock manager has no calibration-ready input.
+The clocks are always treated as calibrated, so hardware never unlocks [`MEASURE_CTRL_REGWEN`](registers.md#measure_ctrl_regwen) or disables the measurements on its own.
+% endif

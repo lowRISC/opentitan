@@ -78,6 +78,11 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
     super.post_randomize();
   endfunction
 
+  // Whether the DUT treats its clocks as calibrated, i.e., runs measurements.
+  local function bit clocks_calibrated();
+    return calib_rdy != MuBi4False;
+  endfunction
+
   // Keep saturating the count on aon negedges if needed.
   local task maybe_saturate_count(bit saturate, clk_mesr_e clk_tested);
     forever begin
@@ -174,7 +179,7 @@ class clkmgr_frequency_vseq extends clkmgr_base_vseq;
         if (clk == clk_tested) begin
           min_threshold = expected + min_offset;
           max_threshold = expected + max_offset;
-          if (calib_rdy != MuBi4False &&
+          if (clocks_calibrated() &&
               (min_threshold > expected || max_threshold < expected - 1 || cause_saturation)) begin
             `uvm_info(`gfn, $sformatf(
                       "Expect %0s to get a %0s error%0s",
