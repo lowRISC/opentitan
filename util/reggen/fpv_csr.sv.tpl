@@ -298,12 +298,14 @@ module ${mod_base}_csr_assert_fpv import tlul_pkg::*;
            pend_trans[d_source_idx].addr == ${addr_width}'h${reg_addr_hex}) |->
           (d2h.d_error ||
            (d2h.d_data & 'h${reg_mask_hex}) ==
-            (exp_vals[${hro_map.get(reg_addr)[0]}] & 'h${reg_mask_hex})))
+            (exp_vals[${hro_map.get(reg_addr)[0]}] & 'h${reg_mask_hex})),
+          clk_i, !rst_ni || disable_sva)
     % endif
   % endfor
 % endif
 
-  `ASSERT(TlulOOBAddrErr_A, oob_addr_err |-> s_eventually(d2h.d_valid && d2h.d_error))
+  `ASSERT(TlulOOBAddrErr_A, oob_addr_err |-> s_eventually(d2h.d_valid && d2h.d_error),
+          clk_i, !rst_ni || disable_sva)
 
   `ifdef UVM
     initial forever begin
