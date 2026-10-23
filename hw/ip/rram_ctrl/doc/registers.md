@@ -958,11 +958,29 @@ HW interface info configuration rule overrides
 {"reg": [{"name": "SCRAMBLE_DIS", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ECC_DIS", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 140}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name         | Description                                                                                                                                                                                                                         |
-|:------:|:------:|:-------:|:-------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:8  |        |         |              | Reserved                                                                                                                                                                                                                            |
-|  7:4   |   rw   |   0x9   | ECC_DIS      | The hardwired hardware info configuration rules for ECC enable are logically AND'd with this field. If the hardware rules hardwires ECC to enable, we can disable via software if needed. By default this field is false.           |
-|  3:0   |   rw   |   0x9   | SCRAMBLE_DIS | The hardwired hardware info configuration rules for scramble enable are logically AND'd with this field. If the hardware rules hardwires scramble to enable, we can disable via software if needed. By default this field is false. |
+|  Bits  |  Type  |  Reset  | Name                                                |
+|:------:|:------:|:-------:|:----------------------------------------------------|
+|  31:8  |        |         | Reserved                                            |
+|  7:4   |   rw   |   0x9   | [ECC_DIS](#hw_info_cfg_override--ecc_dis)           |
+|  3:0   |   rw   |   0x9   | [SCRAMBLE_DIS](#hw_info_cfg_override--scramble_dis) |
+
+### HW_INFO_CFG_OVERRIDE . ECC_DIS
+If this field is MuBi4True, ECC calculation and checks are disabled for the lcmgr info page.
+If this field is MuBi4False, the use of ECC is controlled by the hardwired hardware info configuration rules.
+This allows software to disable ECC checks if needed.
+
+The behaviour is not specified when this field is not a valid MuBi4 value.
+
+By default this field is MuBi4False.
+
+### HW_INFO_CFG_OVERRIDE . SCRAMBLE_DIS
+If this field is MuBi4True, scrambling is disabled for the lcmgr info page.
+If this field is MuBi4False, scrambling is controlled by the hardwired hardware info configuration rules.
+This allows software to disable scrambling if needed.
+
+The behaviour is not specified when this field is not a valid MuBi4 value.
+
+By default this field is MuBi4False.
 
 ## OP_STATUS
 RRAM Operation Status
