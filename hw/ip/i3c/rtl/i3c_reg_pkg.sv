@@ -92,6 +92,9 @@ package i3c_reg_pkg;
     } hj_request;
     struct packed {
       logic        q;
+    } en_hdr_ddr;
+    struct packed {
+      logic        q;
     } crhdly1_set_as;
     struct packed {
       logic [1:0]  q;
@@ -2723,12 +2726,12 @@ package i3c_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    i3c_reg2hw_intr_state_reg_t intr_state; // [2296:2295]
-    i3c_reg2hw_intr_enable_reg_t intr_enable; // [2294:2293]
-    i3c_reg2hw_intr_test_reg_t intr_test; // [2292:2289]
-    i3c_reg2hw_alert_test_reg_t alert_test; // [2288:2287]
-    i3c_reg2hw_ctrl_error_reg_t ctrl_error; // [2286:2270]
-    i3c_reg2hw_targ_control_reg_t targ_control; // [2269:2260]
+    i3c_reg2hw_intr_state_reg_t intr_state; // [2297:2296]
+    i3c_reg2hw_intr_enable_reg_t intr_enable; // [2295:2294]
+    i3c_reg2hw_intr_test_reg_t intr_test; // [2293:2290]
+    i3c_reg2hw_alert_test_reg_t alert_test; // [2289:2288]
+    i3c_reg2hw_ctrl_error_reg_t ctrl_error; // [2287:2271]
+    i3c_reg2hw_targ_control_reg_t targ_control; // [2270:2260]
     i3c_reg2hw_targ_status_reg_t targ_status; // [2259:2242]
     i3c_reg2hw_targ_sink_control_reg_t targ_sink_control; // [2241:2225]
     i3c_reg2hw_reset_det_ctrl_reg_t reset_det_ctrl; // [2224:2217]
