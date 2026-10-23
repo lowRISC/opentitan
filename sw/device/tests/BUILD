@@ -140,7 +140,7 @@ opentitan_test(
         dicts.omit(
             EARLGREY_TEST_ENVS,
             [
-                "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+                "//hw/top_earlgrey:fpga_cw340_rom",
                 "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
             ],
         ),
@@ -771,7 +771,7 @@ CHERIOT_SMOKETEST_ENVS = {
     "//hw/top_earlgrey:sim_dv": None,
     "//hw/top_earlgrey:sim_verilator": None,
     "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
-    "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+    "//hw/top_earlgrey:fpga_cw340_rom": None,
     "//hw/top_earlgrey:fpga_cw340_test_rom": None,
 }
 
@@ -901,13 +901,13 @@ opentitan_test(
     name = "clkmgr_external_clk_src_for_sw_fast_test",
     srcs = ["clkmgr_external_clk_src_for_sw_fast_test.c"],
     exec_env = dicts.add(
-        # Exclude fpga_*_rom_with_fake_keys because they are signed with
+        # Exclude fpga_*_rom because they are signed with
         # RMA keys, while we need DEV, and the infrastructure doesn't allow
         # changing the key for a single environment.
         dicts.omit(
             EARLGREY_TEST_ENVS,
             [
-                "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+                "//hw/top_earlgrey:fpga_cw340_rom",
             ],
         ),
         {
@@ -1401,7 +1401,7 @@ opentitan_test(
         dicts.omit(
             EARLGREY_TEST_ENVS,
             [
-                "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+                "//hw/top_earlgrey:fpga_cw340_rom",
                 "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
             ],
         ),
@@ -1877,10 +1877,10 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         {
             # No longer relevant on RRAM; exclude the FPGA sival_rom_ext and
-            # rom_with_fake_keys variants from CI entirely.
+            # rom variants from CI entirely.
             # https://github.com/lowRISC/opentitan/issues/30897
             "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": "fpga_skip_ci",
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "fpga_skip_ci",
+            "//hw/top_earlgrey:fpga_cw340_rom": "fpga_skip_ci",
         },
     ),
     fpga_skip_ci = fpga_params(
@@ -1972,9 +1972,9 @@ _FLASH_CTRL_INFO_ACCESS_LC_STATES = get_lc_items(
             lc_state_val,
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
             "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:sim_qemu_rom": None,
         },
         fpga = fpga_params(
             otp = "//hw/top_earlgrey/data/otp:img_{}".format(lc_state),
@@ -2431,7 +2431,7 @@ opentitan_test(
     # Run in both Owner and non-Owner envs to test the keymgr initialization
     run_in_ci = [
         "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "//hw/top_earlgrey:fpga_cw340_rom",
     ],
     verilator = verilator_params(timeout = "long"),
     deps = [
@@ -2498,9 +2498,9 @@ opentitan_test(
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
             "//hw/top_earlgrey:fpga_cw340_test_rom": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
             "//hw/top_earlgrey:fpga_cw340_sival": None,
-            "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:sim_qemu_rom": None,
             # This test is not expected to run on silicon, as it would require a very specific OTP configuration that is only useful for this test.
         },
     ),
@@ -2565,7 +2565,7 @@ opentitan_test(
     # Run in both Owner and non-Owner envs to test the keymgr initialization
     run_in_ci = [
         "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "//hw/top_earlgrey:fpga_cw340_rom",
     ],
     deps = [
         "//hw/top:aes_c_regs",
@@ -2606,7 +2606,7 @@ opentitan_test(
     # Run in both Owner and non-Owner envs to test the keymgr initialization
     run_in_ci = [
         "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "//hw/top_earlgrey:fpga_cw340_rom",
     ],
     verilator = verilator_params(timeout = "long"),
     deps = [
@@ -2644,7 +2644,7 @@ opentitan_test(
     # Run in both Owner and non-Owner envs to test the keymgr initialization
     run_in_ci = [
         "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "//hw/top_earlgrey:fpga_cw340_rom",
     ],
     verilator = verilator_params(timeout = "long"),
     deps = [
@@ -2684,7 +2684,7 @@ opentitan_test(
     # Run in both Owner and non-Owner envs to test the keymgr initialization
     run_in_ci = [
         "//hw/top_earlgrey:fpga_cw340_sival_rom_ext",
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "//hw/top_earlgrey:fpga_cw340_rom",
     ],
     verilator = verilator_params(timeout = "long"),
     deps = [
@@ -2759,7 +2759,7 @@ _KMAC_APP_ROM_LIST = [
     ),
     (
         "//sw/device/silicon_creator/rom:mask_rom_fpga_cw340_hashfile",
-        "fpga_cw340_rom_with_fake_keys",
+        "fpga_cw340_rom",
         ["//hw/top_earlgrey"],
     ),
     (
@@ -3385,7 +3385,7 @@ opentitan_test(
     exec_env = {
         # This test needs to program OTP which is blocked by rom_ext.
         "//hw/top_earlgrey:fpga_cw340_sival": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
         "//hw/top_darjeeling:sim_dv": None,
@@ -4323,7 +4323,7 @@ opentitan_test(
         EARLGREY_CW340_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
         },
     ),
     fpga = fpga_params(
@@ -4620,7 +4620,7 @@ opentitan_test(
             EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         ),
         # TODO (#26100): QEMU's `flashgen.py` script does not like this test.
-        ["//hw/top_earlgrey:sim_qemu_rom_with_fake_keys"],
+        ["//hw/top_earlgrey:sim_qemu_rom"],
     ),
     deps = [
         "//hw/top/dt",
@@ -4659,7 +4659,7 @@ opentitan_test(
     name = "ottf_console_with_gpio_tx_indicator_test",
     srcs = ["ottf_console_with_gpio_tx_indicator_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
     },
     fpga = fpga_params(
         test_cmd = "{firmware:elf}",
@@ -4681,7 +4681,7 @@ opentitan_test(
     exec_env = dicts.add(
         {
             "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
         },
         EARLGREY_CW340_TEST_ENVS,
     ),
@@ -4707,7 +4707,7 @@ opentitan_test(
     exec_env = dicts.add(
         {
             "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
         },
         EARLGREY_CW340_TEST_ENVS,
     ),
@@ -5831,7 +5831,7 @@ opentitan_test(
     exec_env = {
         # This test needs access address translation unit which is blocked by rom_ext.
         "//hw/top_earlgrey:fpga_cw340_sival": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
         "//hw/top_earlgrey:sim_dv": None,
         "//hw/top_earlgrey:sim_verilator": None,
         "//hw/top_darjeeling:sim_dv": None,
@@ -6722,7 +6722,7 @@ opentitan_test(
     exec_env = {
         "//hw/top_earlgrey:fpga_cw340_sival": None,
         "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
     },
     fpga = fpga_params(
         needs_jtag = True,
@@ -7253,7 +7253,7 @@ opentitan_binary(
         "rv_core_ibex_isa_test.c",
     ],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
     },
     kind = "ram",
     linker_script = "//sw/device/silicon_creator/manuf/lib:sram_program_linker_script",
@@ -7357,7 +7357,7 @@ opentitan_binary(
     ],
     exec_env = dicts.add(
         {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
         },
         DARJEELING_TEST_ENVS,
     ),
@@ -7393,7 +7393,7 @@ opentitan_test(
             "//hw/top_earlgrey:silicon_creator": None,
             # See #23468, currently broken on SAM3X execution environments.
             "//hw/top_earlgrey:fpga_cw340_test_rom": "broken",
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_earlgrey:fpga_cw340_rom": "broken",
         },
     ),
     fpga = fpga_params(
@@ -7485,7 +7485,7 @@ opentitan_binary(
     testonly = True,
     srcs = ["rv_core_ibex_mem_test.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     kind = "ram",
@@ -7594,7 +7594,7 @@ opentitan_test(
         {
             # See #23468: currently broken over the SAM3X interface.
             "//hw/top_earlgrey:fpga_cw340_test_rom": "broken",
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_earlgrey:fpga_cw340_rom": "broken",
         },
     ),
     fpga = fpga_params(
@@ -7678,7 +7678,7 @@ opentitan_test(
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             # See #23468: currently broken over the SAM3X interface.
             "//hw/top_earlgrey:fpga_cw340_test_rom": "broken",
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_earlgrey:fpga_cw340_rom": "broken",
         },
     ),
     fpga = fpga_params(
@@ -7864,7 +7864,7 @@ opentitan_test(
         {
             # See #23468, currently broken in SAM3X execution environments.
             "//hw/top_earlgrey:fpga_cw340_test_rom": "broken",
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "broken",
+            "//hw/top_earlgrey:fpga_cw340_rom": "broken",
         },
     ),
     fpga = fpga_params(
