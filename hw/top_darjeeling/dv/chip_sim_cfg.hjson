@@ -404,7 +404,7 @@
       en_run_modes: ["sw_test_mode_common"]
       // The tests using this mode only require the ROM init check to succeed.
       // The example_test_from_rom test is sufficient.
-      sw_images: ["//sw/device/tests:example_test_from_rom:0:test_in_rom"]
+      sw_images: ["//sw/device/tests:example_test_from_rom:0:test_in_rom:new_rules"]
       run_opts: ["+create_jtag_riscv_map=1"]
       reseed: 5
     }
@@ -490,7 +490,7 @@
     {
       name: chip_sw_example_rom
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:example_test_from_rom:0:test_in_rom"]
+      sw_images: ["//sw/device/tests:example_test_from_rom:0:test_in_rom:new_rules"]
       en_run_modes: ["sw_test_mode_common"]
     }
     {
@@ -1181,6 +1181,38 @@
       run_opts: ["+sw_test_timeout_ns=18_000_000"]
     }
     {
+      name: chip_sw_edn_auto_mode
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:edn_auto_mode:6:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom", "fast_sim"]
+      // Set rng_srate_value=5 to shorten the time it takes for entropy to be delivered.
+      run_opts: ["+sw_test_timeout_ns=18_000_000", "+rng_srate_value=5"]
+    }
+    {
+      name: chip_sw_edn_boot_mode
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:edn_boot_mode:6:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom", "fast_sim"]
+      // Set rng_srate_value=5 to shorten the time it takes for entropy to be delivered.
+      run_opts: ["+sw_test_timeout_ns=18_000_000", "+rng_srate_value=5"]
+    }
+    {
+      name: chip_sw_edn_kat
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:edn_kat:6:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom", "fast_sim"]
+      run_opts: ["+sw_test_timeout_ns=18_000_000",
+                 "+rng_srate_value=5",
+                 "+disable_assert_edn_output_diff_from_prev=1"]
+    }
+    {
+      name: chip_sw_edn_sw_mode
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:edn_sw_mode:6:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=18_000_000"]
+    }
+    {
       name: chip_sw_entropy_src_csrng
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:entropy_src_csrng_test:6:new_rules"]
@@ -1326,7 +1358,7 @@
     {
       name: chip_sw_sram_ctrl_scrambled_access_jitter_en
       uvm_test_seq: chip_sw_sram_ctrl_scrambled_access_vseq
-      sw_images: ["//sw/device/tests/sim_dv:sram_ctrl_scrambled_access_test:6:new_rules"]
+      sw_images: ["//sw/device/tests:sram_ctrl_scrambled_access_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=12_000_000", "+bypass_alert_ready_to_end_check=1",
                  "+en_jitter=1", "+en_scb_tl_err_chk=0"]
