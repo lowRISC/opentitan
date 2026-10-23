@@ -249,26 +249,38 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
 status_t cryptolib_fi_rsa_sign_impl(
     cryptolib_fi_asym_rsa_sign_in_t uj_input,
     cryptolib_fi_asym_rsa_sign_out_t *uj_output) {
+  uint32_t sig[kPentestRsaMaxMsgWords] = {0};
+  otcrypto_word32_buf_t sig_buf;
+  memset(&sig_buf, 0, sizeof(sig_buf));
+  uj_output->cfg = 0;
+  memset(uj_output->sig, 0, RSA_CMD_MAX_SIGNATURE_BYTES);
+  memset(uj_output->n, 0, RSA_CMD_MAX_N_BYTES);
+  memset(uj_output->d, 0, RSA_CMD_MAX_N_BYTES);
+
   size_t private_key_bytes;
   size_t private_key_blob_bytes;
+  size_t public_key_bytes;
   size_t num_words;
   otcrypto_rsa_size_t rsa_size;
   switch (uj_input.n_len) {
     case kPentestRsa2048NumBytes:
       private_key_bytes = kOtcryptoRsa2048PrivateKeyBytes;
       private_key_blob_bytes = kOtcryptoRsa2048PrivateKeyblobBytes;
+      public_key_bytes = kOtcryptoRsa2048PublicKeyBytes;
       num_words = kPentestRsa2048NumWords;
       rsa_size = kOtcryptoRsaSize2048;
       break;
     case kPentestRsa3072NumBytes:
       private_key_bytes = kOtcryptoRsa3072PrivateKeyBytes;
       private_key_blob_bytes = kOtcryptoRsa3072PrivateKeyblobBytes;
+      public_key_bytes = kOtcryptoRsa3072PublicKeyBytes;
       num_words = kPentestRsa3072NumWords;
       rsa_size = kOtcryptoRsaSize3072;
       break;
     case kPentestRsa4096NumBytes:
       private_key_bytes = kOtcryptoRsa4096PrivateKeyBytes;
       private_key_blob_bytes = kOtcryptoRsa4096PrivateKeyblobBytes;
+      public_key_bytes = kOtcryptoRsa4096PublicKeyBytes;
       num_words = kPentestRsa4096NumWords;
       rsa_size = kOtcryptoRsaSize4096;
       break;
@@ -294,19 +306,15 @@ status_t cryptolib_fi_rsa_sign_impl(
   };
 
   otcrypto_hash_mode_t hash_mode;
-  size_t hash_digest_words;
   switch (uj_input.hashing) {
     case kPentestRsaHashmodeSha256:
       hash_mode = kOtcryptoHashModeSha256;
-      hash_digest_words = kPentestSha256DigestWords;
       break;
     case kPentestRsaHashmodeSha384:
       hash_mode = kOtcryptoHashModeSha384;
-      hash_digest_words = kPentestSha384DigestWords;
       break;
     case kPentestRsaHashmodeSha512:
       hash_mode = kOtcryptoHashModeSha512;
-      hash_digest_words = kPentestSha512DigestWords;
       break;
     default:
       LOG_ERROR("Unsupported RSA hash mode: %d", uj_input.hashing);
@@ -349,12 +357,22 @@ status_t cryptolib_fi_rsa_sign_impl(
   otcrypto_const_word32_buf_t modulus =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, n_buf, num_words);
 
+  // Create the public key.
+  uint32_t public_key_data[ceil_div(public_key_bytes, sizeof(uint32_t))];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = key_mode,
+      .key_length = public_key_bytes,
+      .key = public_key_data,
+  };
+
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
   HARDENED_TRY(otcrypto_rsa_private_key_from_exponents(
       rsa_size, &modulus, &d_share0, &d_share1, &private_key));
+  HARDENED_TRY(
+      otcrypto_rsa_public_key_construct(rsa_size, &modulus, &public_key));
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
@@ -365,40 +383,15 @@ status_t cryptolib_fi_rsa_sign_impl(
   otcrypto_const_byte_buf_t msg_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, uj_input.data_len);
 
-  // Buffer to store the digest.
-  uint32_t msg_digest_data[hash_digest_words];
-  otcrypto_hash_digest_t msg_digest = {
-      .data = msg_digest_data,
-      .len = ARRAYSIZE(msg_digest_data),
-      .mode = hash_mode,
-  };
-  // Trigger window.
-  if (uj_input.trigger & kPentestTrigger2) {
-    pentest_set_trigger_high();
-  }
-  // Hash the message.
-  if (hash_mode == kOtcryptoHashModeSha256) {
-    HARDENED_TRY(otcrypto_sha2_256(&msg_buf, &msg_digest));
-  } else if (hash_mode == kOtcryptoHashModeSha384) {
-    HARDENED_TRY(otcrypto_sha2_384(&msg_buf, &msg_digest));
-  } else {
-    HARDENED_TRY(otcrypto_sha2_512(&msg_buf, &msg_digest));
-  }
-  if (uj_input.trigger & kPentestTrigger2) {
-    pentest_set_trigger_low();
-  }
-
-  uint32_t sig[kPentestRsaMaxMsgWords];
-  otcrypto_word32_buf_t sig_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, num_words);
+  sig_buf = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, num_words);
 
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger3) {
     PENTEST_MARKER_LABEL(PENTEST_MARKER_RSA_SIGN_START);
     pentest_set_trigger_high();
   }
-  HARDENED_TRY(
-      otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, &sig_buf));
+  HARDENED_TRY(otcrypto_rsa_hash_sign_verify(
+      &private_key, &public_key, hash_mode, &msg_buf, padding_mode, &sig_buf));
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
@@ -408,15 +401,11 @@ status_t cryptolib_fi_rsa_sign_impl(
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&sig_buf));
 
   // Return data back to host.
-  uj_output->sig_len = uj_input.n_len;
-  uj_output->cfg = 0;
-  memset(uj_output->sig, 0, RSA_CMD_MAX_SIGNATURE_BYTES);
-  memcpy(uj_output->sig, sig, uj_output->sig_len);
+  uj_output->sig_len = sig_buf.len * sizeof(uint32_t);
+  memcpy(uj_output->sig, sig_buf.data, uj_output->sig_len);
   // Return received n and d back to host.
   uj_output->n_len = uj_input.n_len;
-  memset(uj_output->n, 0, RSA_CMD_MAX_N_BYTES);
   memcpy(uj_output->n, uj_input.n, uj_input.n_len);
-  memset(uj_output->d, 0, RSA_CMD_MAX_N_BYTES);
   memcpy(uj_output->d, uj_input.d, uj_input.n_len);
   uj_output->magic = kOutputComplete;
 
