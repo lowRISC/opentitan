@@ -721,6 +721,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        ecdh_output = [None, None]
                         # Search for collisions in outputs between the ecdh instances
                         for i in range(2):
                             print("-" * 80)
@@ -1162,6 +1163,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        ecdh_output = [None, None]
                         # Search for collisions in outputs between the ecdh instances
                         for i in range(2):
                             print("-" * 80)
@@ -2164,6 +2166,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        ecdh_output = [None, None]
                         # Search for collisions in outputs between the ecdh instances
                         for i in range(2):
                             print("-" * 80)

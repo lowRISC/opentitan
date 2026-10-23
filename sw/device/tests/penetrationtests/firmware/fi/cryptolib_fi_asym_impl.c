@@ -1591,6 +1591,11 @@ status_t cryptolib_fi_x25519_base_mul_impl(
 status_t cryptolib_fi_x25519_ecdh_impl(
     cryptolib_fi_asym_x25519_ecdh_in_t uj_input,
     cryptolib_fi_asym_x25519_ecdh_out_t *uj_output) {
+  otcrypto_word32_buf_t ss_share0_buf;
+  otcrypto_word32_buf_t ss_share1_buf;
+  memset(&ss_share0_buf, 0, sizeof(ss_share0_buf));
+  memset(&ss_share1_buf, 0, sizeof(ss_share1_buf));
+
   // Use the Ed25519 masked size since both use the exact same 256-bit curve
   uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
   memset(private_keyblob, 0, sizeof(private_keyblob));
@@ -1658,13 +1663,13 @@ status_t cryptolib_fi_x25519_ecdh_impl(
 
   uint32_t ss_share0[8];
   uint32_t ss_share1[8];
-  otcrypto_word32_buf_t ss_share0_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, 8);
-  otcrypto_word32_buf_t ss_share1_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, 8);
+  ss_share0_buf = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, 8);
+  ss_share1_buf = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, 8);
 
   HARDENED_TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
                                            &ss_share1_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share0_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share1_buf));
 
   uint32_t ss_unmasked[8];
   HARDENED_TRY(hardened_xor(ss_share0, ss_share1, 8, ss_unmasked));
@@ -1680,6 +1685,11 @@ status_t cryptolib_fi_x25519_ecdh_impl(
 status_t cryptolib_fi_x25519_point_mul_impl(
     cryptolib_fi_asym_x25519_point_mul_in_t uj_input,
     cryptolib_fi_asym_x25519_point_mul_out_t *uj_output) {
+  otcrypto_word32_buf_t ss_share0_buf;
+  otcrypto_word32_buf_t ss_share1_buf;
+  memset(&ss_share0_buf, 0, sizeof(ss_share0_buf));
+  memset(&ss_share1_buf, 0, sizeof(ss_share1_buf));
+
   // Use the Ed25519 masked size since both use the exact same 256-bit curve
   uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
   memset(private_keyblob, 0, sizeof(private_keyblob));
@@ -1747,13 +1757,13 @@ status_t cryptolib_fi_x25519_point_mul_impl(
 
   uint32_t ss_share0[8];
   uint32_t ss_share1[8];
-  otcrypto_word32_buf_t ss_share0_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, 8);
-  otcrypto_word32_buf_t ss_share1_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, 8);
+  ss_share0_buf = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, 8);
+  ss_share1_buf = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, 8);
 
   HARDENED_TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
                                            &ss_share1_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share0_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share1_buf));
 
   uint32_t ss_unmasked[8];
   HARDENED_TRY(hardened_xor(ss_share0, ss_share1, 8, ss_unmasked));
