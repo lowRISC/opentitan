@@ -1,5 +1,31 @@
 # Theory of Operation
 
+## CHERIoT Mode
+
+`rv_core_ibex` can switch from RV32I to CHERIoT once at runtime.
+The debug module follows this switch through `cheriot_ena_i`, which is synchronized and only selects CHERIoT on `MuBi4True`.
+In CHERIoT mode:
+
+- A separate CHERIoT debug ROM is used.
+- Abstract commands save and restore their scratch registers with `CSpecialRW`, so borrowed capabilities keep their tags.
+- `aarsize == 3` is supported and transfers a full capability: address in `data0`, metadata in `data1`.
+
+Register mapping for `aarsize == 3` in CHERIoT mode:
+
+- A GPR (`regno` 0x1000 to 0x101f) transfers the full capability held in that register.
+- `regno` 0x0 to 0x1f accesses the Special Capability Register (SCR). Higher `regno` values in the CSR range are rejected as unsupported.
+
+This follows the abstract command interface of the CHERIoT-Platform `cheriot-dbg-module`, so the debugger must be CHERIoT-aware.
+OpenTitan's host tooling (`util/openocd/`, `opentitanlib`) does not support CHERIoT mode yet.
+Stock OpenOCD is incompatible with CHERIoT mode: its 64-bit probe read of `s0` succeeds, so it treats the hart as RV64.
+However, already connecting OpenOCD before the mode switch allows for debugging with the following limitations.
+
+Limitations:
+
+- Tags are not transported through `data0`/`data1`, so a capability written back by the debugger is untagged.
+- SBA bypasses the CHERIoT tag filter and does not clear tags on writes. It is currently not designed to protect capabilities and must never be used in a system that reliees on capabilities to protect production assets.
+- Switching modes while the hart is halted (e.g. via the program buffer) is not supported.
+
 ## Memory Maps
 
 ### TL-UL device
