@@ -479,10 +479,12 @@ module rram_phy_rd
   assign meta_d.verify   = shadow_sel;
   assign meta_d.word_sel = shadow_sel ? '0 : addr_i[WordSelW-1:0];
 
-  // Command integrity of incoming requests (stored in meta fifo and checked with response)
+  // Command integrity of incoming requests (stored in meta fifo and checked with response).
+  // Also covers buf_sel, update and verify to detect faults on these meta fifo fields.
   logic [31:0] unused_cmd_data0;
   prim_secded_inv_39_32_enc u_cmd_intg_req_gen (
-    .data_i(32'({ecc_en_i, descramble_en_i, addr_xor_en_i, addr_i, part_i})),
+    .data_i(32'({meta_d.buf_sel, meta_d.update, meta_d.verify,
+                 ecc_en_i, descramble_en_i, addr_xor_en_i, addr_i, part_i})),
     .data_o({meta_d.cmd_intg, unused_cmd_data0})
   );
 
@@ -674,10 +676,6 @@ module rram_phy_rd
     .in_i (meta_q),
     .out_o(meta_q_buf)
   );
-  // some fields of meta_q_buf are not used for the check.
-  logic unused_meta_q_buf;
-  assign unused_meta_q_buf = (^meta_q_buf.update) ^ (^meta_q_buf.buf_sel);
-
   // valid cannot be one if:
   // - meta_fifo is empty
   // - the current operation is a verify operation
@@ -695,7 +693,8 @@ module rram_phy_rd
 
   // Command integrity of response
   prim_secded_inv_39_32_enc u_cmd_intg_rsp_gen (
-    .data_i(32'({rd_buf_ecc_en, rd_buf_descramble_en, rd_buf_addr_xor_en,
+    .data_i(32'({meta_q_buf.buf_sel, meta_q_buf.update, meta_q_buf.verify,
+                 rd_buf_ecc_en, rd_buf_descramble_en, rd_buf_addr_xor_en,
                  rd_buf_addr, meta_q_buf.word_sel, rd_buf_part})),
     .data_o({cmd_rsp_intg, unused_cmd_data1})
   );
@@ -731,5 +730,10 @@ module rram_phy_rd
 
   // Abort when an integrity error is seen
   `ASSERT(IntgError, (buf_intg_err == '0))
+
+  // The command fields protected by the command integrity must fit into its 32 data bits.
+  `ASSERT_INIT(CmdIntgWidth_A,
+               $bits({meta_d.buf_sel, meta_d.update, meta_d.verify, ecc_en_i, descramble_en_i,
+                      addr_xor_en_i, addr_i, part_i}) <= 32)
 
 endmodule // rram_phy_rd
