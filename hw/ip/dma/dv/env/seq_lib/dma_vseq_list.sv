@@ -20,3 +20,4 @@
 `include "dma_longer_transfer_vseq.sv"
 `include "dma_config_lock_vseq.sv"
 `include "dma_mem_enabled_vseq.sv"
+`include "dma_mem_range_limit_vseq.sv"

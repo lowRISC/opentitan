@@ -863,13 +863,15 @@ module dma
           // If data from the SOC system bus or the control bus is transferred
           // to the OT internal memory, we must check if the destination address range falls into
           // the DMA enabled memory region.
+          // The limit is inclusive, so the exclusive chunk end may reach limit + 1. Widening to
+          // SYS_ADDR_WIDTH avoids overflow of both sides for a limit of 0xFFFF_FFFF.
           if ((src_asid inside {SocControlAddr, SocSystemAddr}) && (dst_asid == OtInternalAddr) &&
               // Out-of-bound check
               ((reg2hw.dst_addr_lo.q > control_q.enabled_memory_range_limit) ||
                 (reg2hw.dst_addr_lo.q < control_q.enabled_memory_range_base) ||
                 ((SYS_ADDR_WIDTH'(reg2hw.dst_addr_lo.q) +
                   SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
-                  SYS_ADDR_WIDTH'(control_q.enabled_memory_range_limit)))) begin
+                  (SYS_ADDR_WIDTH'(control_q.enabled_memory_range_limit) + 1'b1)))) begin
             next_error[DmaDstAddrErr] = 1'b1;
           end
 
@@ -882,7 +884,7 @@ module dma
                 (reg2hw.src_addr_lo.q < control_q.enabled_memory_range_base)   ||
                 ((SYS_ADDR_WIDTH'(reg2hw.src_addr_lo.q) +
                   SYS_ADDR_WIDTH'(reg2hw.chunk_data_size.q)) >
-                  SYS_ADDR_WIDTH'(control_q.enabled_memory_range_limit)))) begin
+                  (SYS_ADDR_WIDTH'(control_q.enabled_memory_range_limit) + 1'b1)))) begin
             next_error[DmaSrcAddrErr] = 1'b1;
           end
 
