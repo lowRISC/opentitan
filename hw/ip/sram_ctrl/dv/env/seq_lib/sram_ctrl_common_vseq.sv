@@ -17,6 +17,9 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
   string path_sram_key = {`DUT_HIER_STR, ".key_q"};
   string path_sram_nonce = {`DUT_HIER_STR, ".nonce_q"};
 
+  `define SRAM_ADAPTER tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram
+  `define HIER_PATH(prefix, suffix) `"prefix.suffix`"
+
   // adjust delay to issue reset for stress_all_with_rand_reset test,
   // as sram_ctrl tests usually don't run very long
   constraint rand_reset_delay_c {
@@ -79,8 +82,8 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
     // their counters. This avoids a problem where we generate a spurious request when the FIFO was
     // actually empty and lots of signals in the design become X. This will let the fifos error
     // signal stuck at X. Zeroing the backing memory avoids that problem.
-    splat_fifo_storage("tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_reqfifo", 2);
-    splat_fifo_storage("tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_sramreqfifo", 2);
+    splat_fifo_storage(`HIER_PATH(`SRAM_ADAPTER, gen_no_sec_u_reqfifo.u_reqfifo), 2);
+    splat_fifo_storage(`HIER_PATH(`SRAM_ADAPTER, gen_no_sec_u_sramreqfifo.u_sramreqfifo), 2);
 
     super.dut_init(reset_kind);
   endtask
@@ -141,10 +144,9 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
   // If returning 1, this also writes to in_req_fifo output argument, setting the bit if this is a
   // request fifo.
   function bit is_ptr_in_adapters_fifo(string path, output bit in_req_fifo);
-    string adapter_path = {"tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram"};
-    string fifo_paths[] = '{{adapter_path, ".u_reqfifo"},
-                            {adapter_path, ".u_sramreqfifo"},
-                            {adapter_path, ".u_rspfifo"}};
+    string fifo_paths[] = '{`HIER_PATH(`SRAM_ADAPTER, gen_no_sec_u_reqfifo.u_reqfifo),
+                            `HIER_PATH(`SRAM_ADAPTER, gen_no_sec_u_sramreqfifo.u_sramreqfifo),
+                            `HIER_PATH(`SRAM_ADAPTER, gen_no_sec_u_rspfifo.u_rspfifo)};
 
     foreach (fifo_paths[i]) begin
       if (is_ptr_in_prim_counts_fifo(path, fifo_paths[i])) begin
@@ -168,13 +170,13 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
       if (is_ptr_in_adapters_fifo(if_proxy.path, touching_req_fifo)) begin
         if (!enable) begin
           `uvm_info(`gfn, "Doing FI on a prim_fifo_sync. Disabling related assertions", UVM_HIGH)
-          $assertoff(0, "tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_reqfifo");
-          $assertoff(0, "tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_sramreqfifo");
-          $assertoff(0, "tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_rspfifo");
+          $assertoff(0, `HIER_PATH(`SRAM_ADAPTER, gen_no_sec_u_reqfifo.u_reqfifo));
+          $assertoff(0, `HIER_PATH(`SRAM_ADAPTER, gen_no_sec_u_sramreqfifo.u_sramreqfifo));
+          $assertoff(0, `HIER_PATH(`SRAM_ADAPTER, gen_no_sec_u_rspfifo.u_rspfifo));
         end else begin
-          $asserton(0, "tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_reqfifo");
-          $asserton(0, "tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_sramreqfifo");
-          $asserton(0, "tb.dut.u_tlul_adapter_sram_racl.tlul_adapter_sram.u_rspfifo");
+          $asserton(0, `HIER_PATH(`SRAM_ADAPTER, gen_no_sec_u_reqfifo.u_reqfifo));
+          $asserton(0, `HIER_PATH(`SRAM_ADAPTER, gen_no_sec_u_sramreqfifo.u_sramreqfifo));
+          $asserton(0, `HIER_PATH(`SRAM_ADAPTER, gen_no_sec_u_rspfifo.u_rspfifo));
         end
 
         // Disable assertions that we expect to fail if we corrupt a request FIFO. This causes us to
@@ -222,5 +224,8 @@ class sram_ctrl_common_vseq extends sram_ctrl_base_vseq;
 
     check_sram_access_blocked_after_fi();
   endtask : check_tl_intg_error_response
+
+  `undef SRAM_ADAPTER
+  `undef HIER_PATH
 
 endclass
