@@ -1236,10 +1236,13 @@
             name: "SCRAMBLE_DIS",
             mubi: true,
             desc: '''
-                  The hardwired hardware info configuration rules for scramble enable are logically AND'd with this field.
-                  If the hardware rules hardwires scramble to enable, we can disable via software if needed.
+                  If this field is MuBi4True, scrambling is disabled for the lcmgr info page.
+                  If this field is MuBi4False, scrambling is controlled by the hardwired hardware info configuration rules.
+                  This allows software to disable scrambling if needed.
 
-                  By default this field is false.
+                  The behaviour is not specified when this field is not a valid MuBi4 value.
+
+                  By default this field is MuBi4False.
                   ''',
             resval: false
           }
@@ -1247,10 +1250,13 @@
             name: "ECC_DIS",
             mubi: true,
             desc: '''
-                  The hardwired hardware info configuration rules for ECC enable are logically AND'd with this field.
-                  If the hardware rules hardwires ECC to enable, we can disable via software if needed.
+                  If this field is MuBi4True, ECC calculation and checks are disabled for the lcmgr info page.
+                  If this field is MuBi4False, the use of ECC is controlled by the hardwired hardware info configuration rules.
+                  This allows software to disable ECC checks if needed.
 
-                  By default this field is false.
+                  The behaviour is not specified when this field is not a valid MuBi4 value.
+
+                  By default this field is MuBi4False.
                   ''',
             resval: false
           }
