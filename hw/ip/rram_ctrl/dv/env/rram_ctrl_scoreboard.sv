@@ -34,6 +34,20 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
                                      tl_phase_e tl_phase);
   extern function void configure_csr_check_exclusions();
   extern function void reset(string kind = "HARD");
+
+  // Adds memory protection errors on the host interface, predicted by cfg.mp_model, to the
+  // errors the base class predicts.
+  // Skips the checks of host accesses once an RMA was requested, see rram_ctrl_mp_model.
+  extern protected virtual function bit predict_tl_err(tl_seq_item   item,
+                                                       tl_channels_e channel,
+                                                       string        ral_name);
+
+  extern protected virtual function bit is_tl_mem_access_allowed(tl_seq_item       item,
+                                                                 dv_base_reg_block block,
+                                                                 output bit mem_byte_access_err,
+                                                                 output bit mem_wo_err,
+                                                                 output bit mem_ro_err,
+                                                                 output bit custom_err);
 endclass : rram_ctrl_scoreboard
 
 
@@ -109,7 +123,8 @@ task rram_ctrl_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e cha
   end else if (ral_name == cfg.prim_ral_name) begin
     process_tl_prim_access(item, csr_addr, tl_phase);
   end else if (ral_name == cfg.host_ral_name) begin
-    // TODO(#31289): predict tl errors based on mp configuration.
+    // Memory protection errors are predicted in is_tl_mem_access_allowed().
+    // TODO: check the read data against the RRAM contents.
   end else begin
     `uvm_fatal(`gfn, $sformatf("Specified RAL name %0s doesn't exist!", ral_name))
   end
@@ -134,6 +149,12 @@ endtask : process_tl_core_access
 
 function void rram_ctrl_scoreboard::on_reg_access(tl_seq_item item, tl_phase_e tl_phase,
                                                   uvm_reg csr);
+  // The predictor has already updated the mirrored value by the time the data channel item gets
+  // here, since it is connected directly to the TL monitor. A write to a region register can
+  // change the permissions of many pages, so the memory protection model recomputes them on its
+  // next lookup.
+  if (tl_phase == DataWrite && cfg.mp_model.is_data_cfg_reg(csr)) cfg.mp_model.invalidate();
+
   // Prediction and the read-value check both happen automatically via
   // m_tl_core_reg_predictor (see configure_csr_check_exclusions()). Fields excluded from that
   // check (tagged CsrExclCheck, e.g. PHY_STATUS.init_done) get no check at all today.
@@ -153,9 +174,41 @@ endtask : process_tl_prim_access
 function void rram_ctrl_scoreboard::reset(string kind = "HARD");
   super.reset(kind);
   // Reset local fifos queues and variables
+  cfg.mp_model.invalidate();
+  cfg.mp_model.rma_requested = 1'b0;
 endfunction : reset
 
 function void rram_ctrl_scoreboard::check_phase(uvm_phase phase);
   super.check_phase(phase);
   // Post test checks: ensure that all local fifos and queues are empty
 endfunction : check_phase
+
+function bit rram_ctrl_scoreboard::is_tl_mem_access_allowed(tl_seq_item       item,
+                                                            dv_base_reg_block block,
+                                                            output bit        mem_byte_access_err,
+                                                            output bit        mem_wo_err,
+                                                            output bit        mem_ro_err,
+                                                            output bit        custom_err);
+  bit allowed = super.is_tl_mem_access_allowed(item, block, mem_byte_access_err, mem_wo_err,
+                                               mem_ro_err, custom_err);
+
+  // Host reads of a page without read permission return an error.
+  if (block == cfg.ral_models[cfg.host_ral_name] && item.a_opcode == tlul_pkg::Get) begin
+    int unsigned page = cfg.get_page(block.get_normalized_addr(item.a_addr));
+    if (!cfg.mp_model.host_rd_allowed(page)) begin
+      `uvm_info(`gfn, $sformatf("Host read of page %0d denied by memory protection", page),
+                UVM_HIGH)
+      custom_err = 1'b1;
+      allowed    = 1'b0;
+    end
+  end
+  return allowed;
+endfunction : is_tl_mem_access_allowed
+
+function bit rram_ctrl_scoreboard::predict_tl_err(tl_seq_item   item,
+                                                  tl_channels_e channel,
+                                                  string        ral_name);
+  // Returning 1 tells the base class that the item has been handled as an error.
+  if (ral_name == cfg.host_ral_name && cfg.mp_model.rma_requested) return 1'b1;
+  return super.predict_tl_err(item, channel, ral_name);
+endfunction : predict_tl_err
