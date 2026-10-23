@@ -23,7 +23,7 @@
  * can be disabled using this library.
  *
  * Ibex PMP Documentation:
- * https://ibex-core.readthedocs.io/en/latest/03_reference/pmp.html
+ * https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/pmp.html
  */
 
 /**
