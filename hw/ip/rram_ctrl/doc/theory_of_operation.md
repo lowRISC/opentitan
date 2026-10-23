@@ -555,6 +555,10 @@ RRAM access can be disabled through escalation (global or local) or directly by 
 Once any of these sources disables RRAM access, the only way to restore normal operation is a full system reset.
 
 When RRAM access is disabled by any of the above, the `rram_disable` bus is asserted: all host and controller requests are blocked, and the scrambling engine swaps its key to a random key.
+The OTP hardware plug (`rram_ctrl_otp`) can no longer reach the RRAM either.
+It moves to a terminal disabled state and, instead of waiting for the RRAM, answers the command that was in progress (if any) and every new command from `otp_ctrl` with `MacroError`.
+Its terminal error state, reached on a fault in `rram_ctrl_otp` itself, answers commands the same way and additionally reports the fault.
+`otp_ctrl` treats `MacroError` as a fatal macro error, so the disable is visible on the OTP side as an error rather than a command that never completes.
 
 RRAM controller registers remain accessible after disable to allow software to read status and error information.
 
