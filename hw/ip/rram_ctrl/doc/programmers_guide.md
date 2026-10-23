@@ -95,6 +95,12 @@ To write RRAM, software must:
 5. Push data into the write FIFO by writing to [`wr_fifo`](registers.md#wr_fifo).
    Data must be pushed after the start has been sent.
 
+Writes to [`wr_fifo`](registers.md#wr_fifo) while no software operation is in progress are discarded.
+The TL-UL write completes normally, without an error response, and the data does not reach the FIFO.
+This prevents stray writes from filling the FIFO and stalling the bus.
+
+Once RRAM access is disabled (see [RRAM Escalation & Disable](theory_of_operation.md#rram-escalation--disable)), writes to [`wr_fifo`](registers.md#wr_fifo) return a TL-UL error.
+
 If the total write count exceeds the write FIFO depth, the controller stalls automatically when the FIFO is empty and resumes when data is available.
 Software can use the `wr_empty` or `wr_lvl` interrupts to pace FIFO filling.
 When all words have been programmed, the controller sets [`OP_STATUS.done`](registers.md#op_status) and asserts the `op_done` interrupt.
@@ -112,6 +118,9 @@ To modify less than a full RRAM word, software must perform a read-modify-write:
 
 A degraded RRAM word can be restored with a rewrite operation, typically after a `corr1_err` or `corr2_err` interrupt.
 See [Correctable ECC Errors](#correctable-ecc-errors) for details.
+
+A rewrite is only supported on pages with ECC enabled, i.e. where `ECC_EN` is set in the matching [`MP_REGION_CFG`](registers.md#mp_region_cfg), [`DEFAULT_REGION`](registers.md#default_region), [`EMUL_INFO_SUBREGION_CFG`](registers.md#emul_info_subregion_cfg) or [`INFO_PAGE_CFG`](registers.md#info_page_cfg).
+
 To issue a rewrite, software must:
 
 1. Wait for any previous operation to complete.

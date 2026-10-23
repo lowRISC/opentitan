@@ -1354,6 +1354,7 @@ Current write and read fifo level
 RRAM write FIFO.
 
 The FIFO is 4 entries of 4B words. This FIFO can only be programmed by software after a write operation has been initiated via the [`CONTROL`](#control) register.
+Writes while no software operation is in progress complete without an error response and the data is discarded.
 This ensures accidental programming of the write FIFO cannot lock up the system.
 
 - Word Aligned Offset Range: `0x2b4`to`0x2b4`
