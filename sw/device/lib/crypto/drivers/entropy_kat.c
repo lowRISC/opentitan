@@ -30,6 +30,18 @@ static inline uint32_t entropy_src_base(void) {
   return dt_entropy_src_primary_reg_block(kEntropySrcDt);
 }
 
+enum {
+  /**
+   * Timeout for polling ENTROPY_SRC status and FIFO registers during KATs.
+   */
+  kEntropySrcKatTimeout = 100000,
+
+  /**
+   * Sparse FSM encoding for FWInsertStart in entropy_src_main_sm_pkg.sv.
+   */
+  kEntropySrcMainSmStateFWInsertStart = 0x0c3,
+};
+
 /**
  * CSRNG internal state selector ID.
  */
@@ -255,7 +267,7 @@ OT_USED static void csrng_ctrl_restore(uint32_t *old_ctrl) {
 
 OT_WARN_UNUSED_RESULT
 static status_t entropy_src_wait_idle(void) {
-  uint32_t cycles_to_wait = 100000;
+  uint32_t cycles_to_wait = kEntropySrcKatTimeout;
   do {
     uint32_t debug_status = abs_mmio_read32(
         entropy_src_base() + ENTROPY_SRC_DEBUG_STATUS_REG_OFFSET);
@@ -319,6 +331,20 @@ static status_t entropy_src_kat_configure(void) {
 }
 
 OT_WARN_UNUSED_RESULT
+OT_USED static status_t entropy_src_fw_ov_fifo_wait_not_full(void) {
+  uint32_t timeout = kEntropySrcKatTimeout;
+  while (abs_mmio_read32(entropy_src_base() +
+                         ENTROPY_SRC_FW_OV_WR_FIFO_FULL_REG_OFFSET) &&
+         --timeout > 0) {
+  }
+  if (timeout == 0) {
+    // COVERAGE (HW ERR) Timeout only reached if ENTROPY_SRC FIFO stalls.
+    return OTCRYPTO_FATAL_ERR;
+  }
+  return OTCRYPTO_OK;
+}
+
+OT_WARN_UNUSED_RESULT
 static status_t entropy_src_fifo_write(const uint32_t *data, size_t len) {
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_FW_OV_SHA3_START_REG_OFFSET,
                    bitfield_field32_write(
@@ -326,19 +352,14 @@ static status_t entropy_src_fifo_write(const uint32_t *data, size_t len) {
                        kMultiBitBool4True));
 
   for (size_t i = 0; i < len; ++i) {
-    uint32_t timeout = 100000;
-    while (abs_mmio_read32(entropy_src_base() +
-                           ENTROPY_SRC_FW_OV_WR_FIFO_FULL_REG_OFFSET) &&
-           --timeout > 0) {
-    }
-    if (timeout == 0) {
-      // COVERAGE (HW ERR) Timeout only reached if ENTROPY_SRC FIFO stalls.
-      return OTCRYPTO_FATAL_ERR;
-    }
+    HARDENED_TRY(entropy_src_fw_ov_fifo_wait_not_full());
     abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_FW_OV_WR_DATA_REG_OFFSET,
                      data[i]);
   }
 
+  // Wait for the packer FIFO to drain before clearing FW_OV_SHA3_START so
+  // ES_FW_OV_DISABLE_ALERT is not triggered.
+  HARDENED_TRY(entropy_src_fw_ov_fifo_wait_not_full());
   abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_FW_OV_SHA3_START_REG_OFFSET,
                    bitfield_field32_write(
                        0, ENTROPY_SRC_FW_OV_SHA3_START_FW_OV_INSERT_START_FIELD,
@@ -350,7 +371,7 @@ static status_t entropy_src_fifo_write(const uint32_t *data, size_t len) {
 OT_WARN_UNUSED_RESULT
 static status_t entropy_src_fifo_read(uint32_t *data, size_t len) {
   for (size_t i = 0; i < len; ++i) {
-    uint32_t timeout = 1000000;
+    uint32_t timeout = kEntropySrcKatTimeout;
     while (!(abs_mmio_read32(entropy_src_base() +
                              ENTROPY_SRC_INTR_STATE_REG_OFFSET) &
              (1U << ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT)) &&
@@ -375,6 +396,32 @@ static status_t entropy_src_fifo_read(uint32_t *data, size_t len) {
   return OTCRYPTO_OK;
 }
 
+OT_WARN_UNUSED_RESULT
+OT_USED static status_t entropy_src_sha3_flush(size_t len) {
+  uint32_t zeroes[12] = {0};
+  HARDENED_TRY(entropy_src_fifo_write(zeroes, len));
+
+  // Wait for the SHA-3 conditioner to finish processing the flush block and
+  // return to FWInsertStart before checking if output data is available.
+  uint32_t timeout = kEntropySrcKatTimeout;
+  while (abs_mmio_read32(entropy_src_base() +
+                         ENTROPY_SRC_MAIN_SM_STATE_REG_OFFSET) !=
+             kEntropySrcMainSmStateFWInsertStart &&
+         --timeout > 0) {
+  }
+  if (timeout == 0) {
+    // COVERAGE (HW ERR) Timeout only reached if ENTROPY_SRC state machine
+    // stalls.
+    return OTCRYPTO_FATAL_ERR;
+  }
+
+  if (abs_mmio_read32(entropy_src_base() + ENTROPY_SRC_INTR_STATE_REG_OFFSET) &
+      (1U << ENTROPY_SRC_INTR_STATE_ES_ENTROPY_VALID_BIT)) {
+    HARDENED_TRY(entropy_src_fifo_read(NULL, len));
+  }
+  return OTCRYPTO_OK;
+}
+
 status_t entropy_src_sha3_conditioning_kat(void) {
   enum {
     kEntropyFifoBufferSize = 12,
@@ -395,9 +442,7 @@ status_t entropy_src_sha3_conditioning_kat(void) {
   HARDENED_TRY(entropy_src_kat_configure());
 
   // Flush SHA3 conditioner.
-  uint32_t zeroes[kEntropyFifoBufferSize] = {0};
-  HARDENED_TRY(entropy_src_fifo_write(zeroes, kEntropyFifoBufferSize));
-  (void)entropy_src_fifo_read(NULL, kEntropyFifoBufferSize);
+  HARDENED_TRY(entropy_src_sha3_flush(kEntropyFifoBufferSize));
 
   // Run the KAT.
   const uint32_t kInputMsg[kEntropyFifoBufferSize] = {
@@ -415,8 +460,9 @@ status_t entropy_src_sha3_conditioning_kat(void) {
   };
 
   if (memcmp(got, kExpectedDigest, sizeof(kExpectedDigest)) == 0) {
-    abs_mmio_write32(
-        entropy_src_base() + ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET, 0);
+    abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
+                     ENTROPY_SRC_MODULE_ENABLE_REG_RESVAL);
+    HARDENED_TRY(entropy_src_wait_idle());
     abs_mmio_write32(entropy_src_base() + ENTROPY_SRC_FW_OV_CONTROL_REG_OFFSET,
                      ENTROPY_SRC_FW_OV_CONTROL_REG_RESVAL);
     return OTCRYPTO_OK;
