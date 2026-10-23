@@ -1772,12 +1772,11 @@ class AsymCryptolibFiSim(unittest.TestCase):
         n_len = 256
         d = [x for x in (key.d).to_bytes(256, "little")]
 
-        # Create a second set of inputs with a single bit flipped to check for collisions
-        data1 = [i for i in range(16)]
-        data2 = data1.copy()
-        data2[0] ^= 1
+        # We prepare two data inputs and check for collisions between them
+        data_len = 16
+        data1 = [i for i in range(data_len)]
+        data2 = [data_len - i for i in range(data_len)]
         data_inputs = [data1, data2]
-        data_len = len(data1)
 
         cfg = 0
         trigger = 0x4
@@ -1917,6 +1916,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        sign_output = [None, None]
                         # Search for collisions in outputs between the sign instances
                         for i in range(2):
                             print("-" * 80)
