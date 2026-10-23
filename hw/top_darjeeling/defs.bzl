@@ -25,4 +25,7 @@ DARJEELING = opentitan_top(
     secret_cfgs = {
         "testing": "//hw/top_darjeeling/data/autogen:top_darjeeling.secrets.testing.gen.hjson",
     },
+    platforms = {
+        "": "//hw/top_darjeeling:platform",
+    },
 )

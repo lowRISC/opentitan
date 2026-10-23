@@ -26,6 +26,10 @@ EARLGREY = opentitan_top(
         "testing": "//hw/top_earlgrey/data/autogen:top_earlgrey.secrets.testing.gen.hjson",
     },
     silicon_creator_hooks = "//hw/top_earlgrey/sw/device/silicon_creator:hooks",
+    platforms = {
+        "": "//hw/top_earlgrey:platform",
+        "other": "//hw/top_earlgrey:other_platform",
+    },
 )
 
 EARLGREY_SLOTS_NORMAL = {

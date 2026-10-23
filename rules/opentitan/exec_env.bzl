@@ -37,6 +37,7 @@ _FIELDS = {
     "openocd": ("attr.openocd", False),
     "openocd_adapter_config": ("attr.openocd_adapter_config", False),
     "slot_spec": ("attr.slot_spec", False),
+    "platform_key": ("attr.platform_key", False),
 }
 
 _NESTED_FIELDS = {
@@ -250,6 +251,10 @@ def exec_env_common_attrs(**kwargs):
             default = kwargs.get("openocd_adapter_config", None),
             allow_single_file = True,
             doc = "OpenOCD adapter configuration for this environment",
+        ),
+        "platform_key": attr.string(
+            default = "",
+            doc = "This key indicates which platform to use in the dictionary given by the `platforms` attribute of the top",
         ),
     }
 

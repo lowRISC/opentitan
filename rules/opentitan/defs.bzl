@@ -7,13 +7,11 @@
 load("@bazel_skylib//lib:sets.bzl", "sets")
 load(
     "@lowrisc_opentitan//rules:rv.bzl",
-    _CHERIOT_PLATFORM = "CHERIOT_PLATFORM",
-    _OPENTITAN_CPU = "OPENTITAN_CPU",
-    _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
     _opentitan_transition = "opentitan_transition",
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:cc.bzl",
+    "opentitan_binary_merge",
     _opentitan_binary = "opentitan_binary",
     _opentitan_binary_blob = "opentitan_binary_blob",
     _opentitan_test = "opentitan_test",
@@ -77,10 +75,13 @@ load("//rules/opentitan:providers.bzl", "OpenTitanTestInfo")
 # and opentitan_binary rules.
 CLEAR_KEY_SET = {"//signing:none_key": "none_key"}
 
+OPENTITAN_CPU = "@platforms//cpu:riscv32"
+OPENTITAN_BASE_PLATFORM = "//toolchain:opentitan_platform"
+
+# FIXME: should be renamed to base platform and handle fallout
+CHERIOT_PLATFORM = "//toolchain:cheriot_platform"
+
 # Re-exports of names from transition.bzl
-OPENTITAN_CPU = _OPENTITAN_CPU
-OPENTITAN_PLATFORM = _OPENTITAN_PLATFORM
-CHERIOT_PLATFORM = _CHERIOT_PLATFORM
 opentitan_transition = _opentitan_transition
 
 opentitan_binary_blob = _opentitan_binary_blob
@@ -287,16 +288,53 @@ def opentitan_binary(name, exec_env, kind = None, **kwargs):
             ["@platforms//:incompatible"],
         )
 
+    tags = kwargs.pop("tags", [])
+
     # Default `kind` to "rram" on earlgrey, same as opentitan_test(), unless
     # the caller passes an explicit `kind`.
     if kind == None:
         kind = opentitan_select_top({"earlgrey": _default_kind_for_top("earlgrey")}, "flash")
 
-    _opentitan_binary(
+    # Create one target per platform key in any top, then merge everything.
+    # This the list of execution environment is a bunch of select(), we can't filter
+    # it by removing exec env per platform key, the filtering is done in the
+    # _opentitan_binary rule. This leads to potential false dependencies on
+    # _opentitan_binary targets which will filter everything out.
+    all_platform_keys = list(set([
+        key
+        for top in ALL_TOPS
+        for key in get_top_attr(top, "platforms").keys()
+    ]))
+
+    for key in all_platform_keys:
+        _opentitan_binary(
+            name = "{}_{}".format(name, key),
+            # To avoid having artifact names with strange names, override the output name prefix.
+            out_name = name,
+            platform_key = key,
+            exec_env = opentitan_select_top(select_map, []),
+            kind = kind,
+            # This is an internal target, don't build it by default.
+            tags = ["manual"],
+            **kwargs
+        )
+
+    # Not all tops have all platforms keys so avoid listing them all. Doing so would result in
+    # a lot of dependencies on binary targets producing not binary but still requiring bazel to
+    # pull through a huge build graph for no reason.
+    binaries = opentitan_select_top({
+        top.name: [
+            ":{}_{}".format(name, key)
+            for key in get_top_attr(top, "platforms").keys()
+        ]
+        for top in ALL_TOPS
+    }, [])
+
+    opentitan_binary_merge(
         name = name,
-        exec_env = opentitan_select_top(select_map, []),
-        kind = kind,
-        **kwargs
+        binaries = binaries,
+        testonly = kwargs.get("testonly", False),
+        tags = tags,
     )
 
 # Note about multitop behaviour:
