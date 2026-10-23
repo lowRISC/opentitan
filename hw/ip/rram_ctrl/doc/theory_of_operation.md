@@ -501,6 +501,9 @@ Transmission integrity failures can manifest differently on each:
 
 2. **Host / Software Initiated Access to RRAM Macro**
 
+   A `host_tl` request with invalid command integrity is not forwarded to the RRAM and receives an error response.
+   It sets [`STD_FAULT_STATUS.reg_intg_err`](registers.md#std_fault_status), which asserts `fatal_std_err` and triggers local escalation, see [RRAM Escalation & Disable](#rram-escalation--disable).
+
    Reads go through two separate checks: data returned from the RRAM macro into the read buffer is verified by the shadow-read mechanism (see [RRAM Read Buffer](#rram-read-buffer)), and a mismatch raises `fatal_err`, regardless of whether the read was initiated via `core_tl` or `host_tl`.
    Data leaving the read buffer toward the requester already carries bus integrity bits, computed once when the data was written into the buffer.
 
