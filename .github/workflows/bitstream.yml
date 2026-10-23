@@ -10,6 +10,9 @@ on:
         type: string
       design_suffix:
         type: string
+      use_gh_cache:
+        type: boolean
+        default: true
       vivado_version:
         default: "2021.1"
         type: string
@@ -22,16 +25,16 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0 # Required by get-bitstream-strategy.sh
+          fetch-depth: 0 # Required by check-bitstream-gcs-cache.sh
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
           service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
 
-      - name: Configure bitstream strategy
-        id: strategy
+      - name: Find reusable bitstream in GCS cache
+        id: gcs-cache
         run: |
-          ci/scripts/get-bitstream-strategy.sh "chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}" \
+          ci/scripts/check-bitstream-gcs-cache.sh "chip_${{ inputs.top_name }}_${{ inputs.design_suffix }}" \
             ':!/third_party/rust/' \
             ':!/sw/' \
             ':!/*.hjson' \
@@ -46,8 +49,8 @@ jobs:
             ':!/hw/**/generic_dv/*' \
             ':!/hw/dv/'
 
-      - name: Extract cached bitstream
-        if: steps.strategy.outputs.bitstreamStrategy == 'cached'
+      - name: Extract cached bitstream from GCS cache
+        if: steps.gcs-cache.outputs.cache-hit == 'true'
         run: |
           . util/build_consts.sh
           bazel_package="//hw/bitstream"
@@ -57,8 +60,35 @@ jobs:
           bitstream_archive=$(./bazelisk.sh outquery "${cached_archive}")
           cp -Lv ${bitstream_archive} build-bin.tar
 
+      # If we cannot find a usable bitstream in the GCS cache, we look into the GitHub cache.
+      # This cache is only used to skip bitstream rebuilds when pushing a "trivial" update to a PR.
+      # "Trivial" here means that the PR update doesn't touch the bitstream sources.
+
+      # Build the key that identifies the cache entry.
+      - name: Compute the GitHub cache key
+        id: gh-cache-key
+        if: steps.gcs-cache.outputs.cache-hit != 'true'
+        run: |
+          hash_gen_command="//hw/bitstream/vivado:fpga_${{ inputs.design_suffix }}_hash"
+          ./bazelisk.sh build "${hash_gen_command}"
+          hash_file=$(./bazelisk.sh cquery "${hash_gen_command}")
+          hash=$(cat "${hash_file}")
+          echo "GitHub cache key is \"${hash}\""
+          echo "ghCacheKey=${hash}" >> $GITHUB_OUTPUT
+
+      # Try to retrieve build-bin.tar from the GitHub cache.
+      - name: Extract cached bitstream from GitHub cache
+        id: gh-cache
+        if: inputs.use_gh_cache && steps.gcs-cache.outputs.cache-hit != 'true'
+        uses: actions/cache@v6
+        with:
+          path: build-bin.tar
+          key: ${{ steps.gh-cache-key.outputs.ghCacheKey }}
+
       - name: Build base bitstream with Vivado
-        if: steps.strategy.outputs.bitstreamStrategy != 'cached'
+        if: >
+          steps.gcs-cache.outputs.cache-hit != 'true' &&
+          steps.gh-cache.outputs.cache-hit != 'true'
         run: |
           bazel_package=//hw/bitstream/vivado
           bitstream_target=${bazel_package}:fpga_${{ inputs.design_suffix }}
@@ -76,11 +106,13 @@ jobs:
           }
 
           . util/build_consts.sh
-          module load "xilinx/vivado/${{inputs.vivado_version }}"
+          module load "xilinx/vivado/${{ inputs.vivado_version }}"
           ./bazelisk.sh build ${archive_target}
 
       - name: Display synthesis & implementation logs
-        if: steps.strategy.outputs.bitstreamStrategy != 'cached'
+        if: >
+          steps.gcs-cache.outputs.cache-hit != 'true' &&
+          steps.gh-cache.outputs.cache-hit != 'true'
         run: |
           . util/build_consts.sh
 
