@@ -191,6 +191,9 @@ status_t test_fips_state_and_param_checks(void) {
   // 3. Test locked_state == kHardenedByteBoolTrue.
   uint8_t saved_locked = state->locked_state;
   state->locked_state = kHardenedByteBoolTrue;
+  TRY_CHECK(
+      otcrypto_show_status(&test_cryptolib_state) == kHardenedByteBoolTrue,
+      "Expected otcrypto_show_status to report hard-locked.");
 
   status = otcrypto_integrity_check();
   TRY_CHECK(status.value != kHardenedBoolTrue,
@@ -214,8 +217,10 @@ status_t test_fips_state_and_param_checks(void) {
 
   // 3b. Test entropy-locked state (0xd6) blocks crypto calls and unlocks via
   // otcrypto_entropy_init().
-  enum { kTestLockStateEntropy = 0xd6 };
-  state->locked_state = kTestLockStateEntropy;
+  state->locked_state = kOtcryptoLockStateEntropy;
+  TRY_CHECK(
+      otcrypto_show_status(&test_cryptolib_state) == kOtcryptoLockStateEntropy,
+      "Expected otcrypto_show_status to report entropy lock.");
 
   status = otcrypto_aes(NULL, NULL, kOtcryptoAesModeCbc,
                         kOtcryptoAesOperationEncrypt, NULL,
@@ -232,6 +237,9 @@ status_t test_fips_state_and_param_checks(void) {
             "Expected otcrypto_entropy_init to recover from entropy lock.");
   TRY_CHECK(state->locked_state == kHardenedByteBoolFalse,
             "Expected locked_state to return to unlocked after recovery.");
+  TRY_CHECK(
+      otcrypto_show_status(&test_cryptolib_state) == kHardenedByteBoolFalse,
+      "Expected otcrypto_show_status to report unlocked after recovery.");
 
   state->locked_state = saved_locked;
 

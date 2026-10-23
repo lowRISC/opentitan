@@ -31,18 +31,6 @@ static_assert(sizeof(otcrypto_state_t) >= sizeof(crypto_state_t),
               "Unmatching size of internal and external state definition");
 
 /**
- * Lock state value indicating the cryptolib is locked specifically due to an
- * entropy source health test failure.
- *
- * Unlike a hard lock (`kHardenedByteBoolTrue`), this state allows recovery
- * by calling `otcrypto_entropy_init()`, which re-executes the RNG startup
- * tests.
- */
-enum {
-  kOtcryptoLockStateEntropy = 0xd6,
-};
-
-/**
  * Initializes the state structure.
  *
  * @param state Pointer to the state to initialize.
