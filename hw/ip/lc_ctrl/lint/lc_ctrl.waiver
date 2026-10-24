@@ -30,3 +30,10 @@ waive -rules RESET_USE -location {lc_ctrl.sv} \
 waive -rules RESET_USE -location {lc_ctrl.sv} \
       -msg {'rst_ni' is connected to 'dmi_jtag' port 'rst_ni', and used as an asynchronous reset or set at lc_ctrl} \
       -comment "This message arises since due to reset synchronization inside the dmi_jtag module."
+
+waive -rules CLOCK_EDGE -location {dmi_jtag_tap.sv} \
+      -msg {Falling edge of clock 'tck_i' used here, should use rising edge} \
+      -comment "JTAG drives on the falling edge of tck"
+
+waive -rules DUAL_EDGE_CLOCK -location {dmi_jtag_tap.sv} -regexp {.*} \
+      -comment "JTAG drives on the falling edge of tck"
