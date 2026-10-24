@@ -139,6 +139,7 @@ class sw_type_e(Enum):
     SwTypeOtbn = 3       # Otbn SW
     SwTypeOtp = 4        # Customized OTP image
     SwTypeDebug = 5      # Debug SW - injected into SRAM.
+    SwTypeMultiSlot = 6  # Ibex SW - multi-slot SW payload.
 
 
 class BazelRunner:
