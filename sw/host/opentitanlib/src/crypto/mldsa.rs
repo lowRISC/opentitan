@@ -250,6 +250,22 @@ pub fn mldsa_sign<P: MlDsaParams>(
         .map_err(|_| anyhow!("ML-DSA signature generation failed"))
 }
 
+/// Verifies the encoded `signature` of `msg` under the `context` string (pure mode).
+pub fn mldsa_verify<P: MlDsaParams>(
+    key: &VerifyingKey<P>,
+    context: &[u8],
+    signature: &[u8],
+    msg: &[u8],
+) -> Result<()> {
+    let signature = Signature::<P>::try_from(signature)
+        .map_err(|_| anyhow!("Malformed ML-DSA signature of length {}", signature.len()))?;
+    ensure!(
+        key.verify_with_context(msg, context, &signature),
+        "ML-DSA signature did not pass verification"
+    );
+    Ok(())
+}
+
 #[cfg(test)]
 mod test {
     use super::*;
@@ -306,6 +322,22 @@ mod test {
     }
 
     #[test]
+    fn sign_verify() -> Result<()> {
+        let sk = SigningKey::<MlDsa87>::try_generate()?;
+        let pk = sk.verifying_key();
+        let sig = mldsa_sign(&sk, b"context", b"message")?.encode();
+        mldsa_verify(&pk, b"context", &sig, b"message")?;
+        assert!(mldsa_verify(&pk, b"other", &sig, b"message").is_err());
+        assert!(mldsa_verify(&pk, b"context", &sig, b"other").is_err());
+        assert!(mldsa_verify(&pk, b"context", &sig[1..], b"message").is_err());
+
+        // The context string may be at most 255 bytes long.
+        mldsa_sign(&sk, &[0x5a; 255], b"message")?;
+        assert!(mldsa_sign(&sk, &[0x5a; 256], b"message").is_err());
+        Ok(())
+    }
+
+    #[test]
     fn parameter_set() {
         let oid = MlDsa87::ALGORITHM_IDENTIFIER.oid;
         assert_eq!(
@@ -316,6 +348,18 @@ mod test {
             "ml-dsa-87".parse::<MldsaParameterSet>(),
             Ok(MldsaParameterSet::Mldsa87)
         );
+    }
+
+    /// Known answer test vector: generated with OpenSSL 3.5.
+    const KAT_MESSAGE: &[u8] = b"The quick brown fox jumps over the lazy dog";
+    const KAT_CONTEXT: &[u8] = b"OpenTitan";
+
+    #[test]
+    fn known_answer() -> Result<()> {
+        let public = std::fs::read(testdata("mldsa/mldsa87.pub.pem"))?;
+        let signature = std::fs::read(testdata("mldsa/mldsa87.sig"))?;
+        let pk = mldsa_public_key_from_bytes::<MlDsa87>(&public)?;
+        mldsa_verify(&pk, KAT_CONTEXT, &signature, KAT_MESSAGE)
     }
 
     #[test]

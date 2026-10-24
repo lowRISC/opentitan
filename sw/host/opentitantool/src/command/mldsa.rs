@@ -13,8 +13,8 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::crypto::mldsa::{
     MldsaKeyFormat, MldsaParameterSet, MldsaPkcs8Params, mldsa_key_from_der,
-    mldsa_parameter_set_from_der, mldsa_private_key_from_bytes, mldsa_sign, read_mldsa_key_file,
-    save_mldsa_private_key, save_mldsa_public_key,
+    mldsa_parameter_set_from_der, mldsa_private_key_from_bytes, mldsa_public_key_from_bytes,
+    mldsa_sign, mldsa_verify, read_mldsa_key_file, save_mldsa_private_key, save_mldsa_public_key,
 };
 
 /// Calls the generic function `$f` instantiated for the ML-DSA `$parameter_set`.
@@ -182,6 +182,55 @@ impl CommandDispatch for MldsaSignCommand {
     }
 }
 
+/// Verify an ML-DSA signature of a message (pure mode).
+#[derive(Debug, Args)]
+pub struct MldsaVerifyCommand {
+    /// The context string as a hex string (at most 255 bytes).
+    #[arg(long, default_value = "")]
+    context: String,
+    /// The file containing the ML-DSA public key (PEM or DER).
+    #[arg(value_name = "KEY")]
+    public_key: PathBuf,
+    /// Message file to verify the signature against.
+    message: PathBuf,
+    /// ML-DSA signature file to verify (raw binary).
+    signature: PathBuf,
+}
+
+/// Verifies `signature` of `message` under `context` with the DER encoded ML-DSA public key `der`.
+fn verify<P: MldsaPkcs8Params>(
+    der: &[u8],
+    context: &[u8],
+    signature: &[u8],
+    message: &[u8],
+) -> Result<()> {
+    mldsa_verify(
+        &mldsa_public_key_from_bytes::<P>(der)?,
+        context,
+        signature,
+        message,
+    )
+}
+
+impl CommandDispatch for MldsaVerifyCommand {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        _transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        let context = hex::decode(&self.context)?;
+        let message = std::fs::read(&self.message)?;
+        let signature = std::fs::read(&self.signature)?;
+        let doc = read_mldsa_key_file(&self.public_key)?;
+        let parameter_set = mldsa_parameter_set_from_der(doc.as_bytes())?;
+        with_mldsa_params!(
+            parameter_set,
+            verify(doc.as_bytes(), &context, &signature, &message)
+        )?;
+        Ok(None)
+    }
+}
+
 /// Commands for interacting with ML-DSA keys.
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum MldsaKeySubcommands {
@@ -195,4 +244,5 @@ pub enum Mldsa {
     #[command(subcommand)]
     Key(MldsaKeySubcommands),
     Sign(MldsaSignCommand),
+    Verify(MldsaVerifyCommand),
 }
