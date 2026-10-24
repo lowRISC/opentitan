@@ -13,8 +13,8 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
 use opentitanlib::crypto::mldsa::{
     MldsaKeyFormat, MldsaParameterSet, MldsaPkcs8Params, mldsa_key_from_der,
-    mldsa_parameter_set_from_der, read_mldsa_key_file, save_mldsa_private_key,
-    save_mldsa_public_key,
+    mldsa_parameter_set_from_der, mldsa_private_key_from_bytes, mldsa_sign, read_mldsa_key_file,
+    save_mldsa_private_key, save_mldsa_public_key,
 };
 
 /// Calls the generic function `$f` instantiated for the ML-DSA `$parameter_set`.
@@ -131,6 +131,57 @@ impl CommandDispatch for MldsaKeyGenerateCommand {
     }
 }
 
+#[derive(Annotate)]
+pub struct MldsaSignResult {
+    #[serde(with = "serde_bytes")]
+    #[annotate(format = hexstr)]
+    pub signature: Vec<u8>,
+}
+
+/// Sign a message with an ML-DSA private key (pure mode).
+#[derive(Debug, Args)]
+pub struct MldsaSignCommand {
+    /// The context string as a hex string (at most 255 bytes).
+    #[arg(long, default_value = "")]
+    context: String,
+    /// The filename for the message to sign.
+    message: PathBuf,
+    /// The file containing the ML-DSA private key (PEM or DER).
+    #[arg(value_name = "KEY_FILE")]
+    private_key: PathBuf,
+    /// The filename to write the signature to.
+    #[arg(short, long)]
+    output: Option<PathBuf>,
+}
+
+/// Signs `message` under `context` with the DER encoded ML-DSA private key `der`.
+fn sign<P: MldsaPkcs8Params>(der: &[u8], context: &[u8], message: &[u8]) -> Result<Vec<u8>> {
+    let private_key = mldsa_private_key_from_bytes::<P>(der)?;
+    Ok(mldsa_sign(&private_key, context, message)?
+        .encode()
+        .to_vec())
+}
+
+impl CommandDispatch for MldsaSignCommand {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        _transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        let message = std::fs::read(&self.message)?;
+        let context = hex::decode(&self.context)?;
+        let doc = read_mldsa_key_file(&self.private_key)?;
+        let parameter_set = mldsa_parameter_set_from_der(doc.as_bytes())?;
+        let signature =
+            with_mldsa_params!(parameter_set, sign(doc.as_bytes(), &context, &message))?;
+        if let Some(output) = &self.output {
+            std::fs::write(output, &signature)?;
+            return Ok(None);
+        }
+        Ok(Some(Box::new(MldsaSignResult { signature })))
+    }
+}
+
 /// Commands for interacting with ML-DSA keys.
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum MldsaKeySubcommands {
@@ -143,4 +194,5 @@ pub enum MldsaKeySubcommands {
 pub enum Mldsa {
     #[command(subcommand)]
     Key(MldsaKeySubcommands),
+    Sign(MldsaSignCommand),
 }

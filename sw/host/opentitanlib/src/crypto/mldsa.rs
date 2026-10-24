@@ -5,6 +5,7 @@
 use std::path::Path;
 
 use anyhow::{Context, Result, anyhow, bail, ensure};
+use ml_dsa::common::getrandom::SysRng;
 use ml_dsa::pkcs8::der::asn1::OctetStringRef;
 use ml_dsa::pkcs8::der::oid::db::fips204;
 use ml_dsa::pkcs8::der::zeroize::Zeroizing;
@@ -14,7 +15,7 @@ use ml_dsa::pkcs8::{
     DecodePublicKey, EncodePrivateKey, EncodePublicKey, LineEnding, ObjectIdentifier,
     PrivateKeyInfoRef, SecretDocument, SubjectPublicKeyInfoRef,
 };
-use ml_dsa::{Keypair, MlDsaParams, Seed, SigningKey, VerifyingKey};
+use ml_dsa::{Keypair, MlDsaParams, Seed, Signature, SigningKey, VerifyingKey};
 use strum::{Display, EnumString};
 
 /// ML-DSA parameter sets with PKCS#8 / SubjectPublicKeyInfo support.
@@ -236,6 +237,17 @@ pub fn mldsa_parameter_set_from_der(der: &[u8]) -> Result<MldsaParameterSet> {
         Err(_) => PrivateKeyInfoRef::from_der(der)?.algorithm.oid,
     };
     MldsaParameterSet::from_oid(oid).ok_or_else(|| anyhow!("Not an ML-DSA key: {oid}"))
+}
+
+/// Signs `msg` under the `context` string (pure mode).
+pub fn mldsa_sign<P: MlDsaParams>(
+    key: &SigningKey<P>,
+    context: &[u8],
+    msg: &[u8],
+) -> Result<Signature<P>> {
+    key.expanded_key()
+        .sign_randomized(msg, context, &mut SysRng)
+        .map_err(|_| anyhow!("ML-DSA signature generation failed"))
 }
 
 #[cfg(test)]
