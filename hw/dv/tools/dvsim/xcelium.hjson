@@ -107,7 +107,7 @@
   supported_wave_formats: ["shm", "fsdb", "vcd"]
 
   // Default tcl script used when running the sim. Override if needed.
-  run_script: "{dv_root}/tools/sim.tcl"
+  run_script: "{dv_root}/tools/tcl/sim.tcl"
 
   // Coverage related.
   // By default, collect all coverage metrics: block:expr:fsm:toggle:functional.
