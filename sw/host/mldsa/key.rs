@@ -100,6 +100,11 @@ impl MldsaSecretKey {
         }
     }
 
+    /// Signs the given message with the key under the given context string (pure mode).
+    pub fn sign(&self, context: &[u8], msg: &[u8]) -> Result<Vec<u8>, MldsaError> {
+        self.parameter_set.sign(&self.seed, context, msg)
+    }
+
     /// Decodes the seed from an ML-DSA-PrivateKey, which is either the seed,
     /// the expanded key or both.
     fn decode_seed(
@@ -258,6 +263,7 @@ impl From<&MldsaSecretKey> for MldsaPublicKey {
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::variants::MAX_CONTEXT_LEN;
 
     #[test]
     fn key_encoding() -> Result<(), MldsaError> {
@@ -313,6 +319,22 @@ mod test {
         assert!(matches!(
             MldsaSecretKey::from_der(&to_pkcs8_v2(&sk, &other.public_key())?),
             Err(MldsaError::ParseError(_))
+        ));
+        Ok(())
+    }
+
+    #[test]
+    fn sign() -> Result<(), MldsaError> {
+        let parameter_set = MldsaParameterSet::Mldsa87;
+        let sk = MldsaSecretKey::generate(parameter_set)?;
+        let sig = sk.sign(b"context", b"message")?;
+        assert_eq!(sig.len(), parameter_set.signature_len());
+
+        // The context string may be at most 255 bytes long.
+        sk.sign(&[0x5au8; MAX_CONTEXT_LEN], b"message")?;
+        assert!(matches!(
+            sk.sign(&[0u8; MAX_CONTEXT_LEN + 1], b"message"),
+            Err(MldsaError::BadContextLength(_))
         ));
         Ok(())
     }

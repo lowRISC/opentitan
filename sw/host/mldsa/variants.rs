@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+use crate::MldsaError;
+use ml_dsa::common::getrandom::SysRng;
 use ml_dsa::{
     EncodedSignature, EncodedVerifyingKey, ExpandedSigningKeyBytes, MlDsa44, MlDsa65, MlDsa87,
     MlDsaParams, Seed, SigningKey,
@@ -10,6 +12,9 @@ use pkcs8::ObjectIdentifier;
 use pkcs8::spki::AssociatedAlgorithmIdentifier;
 use std::mem::size_of;
 use strum::{Display, EnumString};
+
+/// Maximum length of the context string (FIPS 204).
+pub(crate) const MAX_CONTEXT_LEN: usize = 255;
 
 /// ML-DSA parameter sets (FIPS 204).
 #[derive(Copy, Clone, PartialEq, Eq, PartialOrd, Ord, Hash, Debug, EnumString, Display)]
@@ -76,6 +81,23 @@ impl MldsaParameterSet {
             Self::Mldsa87 => expanded_key::<MlDsa87>(seed),
         }
     }
+
+    /// Signs `msg` under `context` with the key derived from `seed` (pure mode).
+    pub(crate) fn sign(
+        &self,
+        seed: &Seed,
+        context: &[u8],
+        msg: &[u8],
+    ) -> Result<Vec<u8>, MldsaError> {
+        if context.len() > MAX_CONTEXT_LEN {
+            return Err(MldsaError::BadContextLength(context.len()));
+        }
+        match *self {
+            Self::Mldsa44 => sign::<MlDsa44>(seed, context, msg),
+            Self::Mldsa65 => sign::<MlDsa65>(seed, context, msg),
+            Self::Mldsa87 => sign::<MlDsa87>(seed, context, msg),
+        }
+    }
 }
 
 fn public_key<P: MlDsaParams>(seed: &Seed) -> Vec<u8> {
@@ -96,6 +118,14 @@ fn expanded_key<P: MlDsaParams>(seed: &Seed) -> zeroize::Zeroizing<Vec<u8>> {
     let key = zeroize::Zeroizing::new(expanded.to_vec());
     zeroize::Zeroize::zeroize(expanded.as_mut_slice());
     key
+}
+
+fn sign<P: MlDsaParams>(seed: &Seed, context: &[u8], msg: &[u8]) -> Result<Vec<u8>, MldsaError> {
+    let signature = SigningKey::<P>::from_seed(seed)
+        .expanded_key()
+        .sign_randomized(msg, context, &mut SysRng)
+        .map_err(|_| MldsaError::SigGen)?;
+    Ok(signature.encode().to_vec())
 }
 
 #[cfg(test)]

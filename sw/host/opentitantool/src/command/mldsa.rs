@@ -105,6 +105,47 @@ impl CommandDispatch for MldsaKeyGenerateCommand {
     }
 }
 
+#[derive(Annotate)]
+pub struct MldsaSignResult {
+    #[serde(with = "serde_bytes")]
+    #[annotate(format = hexstr)]
+    pub signature: Vec<u8>,
+}
+
+/// Sign a message with an ML-DSA private key (pure mode).
+#[derive(Debug, Args)]
+pub struct MldsaSignCommand {
+    /// The context string as a hex string (at most 255 bytes).
+    #[arg(long, default_value = "")]
+    context: String,
+    /// The filename for the message to sign.
+    message: PathBuf,
+    /// The file containing the ML-DSA private key (PEM or DER).
+    #[arg(value_name = "KEY_FILE")]
+    private_key: PathBuf,
+    /// The filename to write the signature to.
+    #[arg(short, long)]
+    output: Option<PathBuf>,
+}
+
+impl CommandDispatch for MldsaSignCommand {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        _transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        let message = std::fs::read(&self.message)?;
+        let private_key = MldsaSecretKey::from_file(&self.private_key)?;
+        let context = hex::decode(&self.context)?;
+        let signature = private_key.sign(&context, &message)?;
+        if let Some(output) = &self.output {
+            std::fs::write(output, &signature)?;
+            return Ok(None);
+        }
+        Ok(Some(Box::new(MldsaSignResult { signature })))
+    }
+}
+
 /// Commands for interacting with ML-DSA keys.
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum MldsaKeySubcommands {
@@ -117,4 +158,5 @@ pub enum MldsaKeySubcommands {
 pub enum Mldsa {
     #[command(subcommand)]
     Key(MldsaKeySubcommands),
+    Sign(MldsaSignCommand),
 }

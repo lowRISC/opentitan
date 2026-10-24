@@ -6,6 +6,12 @@ use thiserror::Error;
 
 #[derive(Debug, Error)]
 pub enum MldsaError {
+    #[error("ML-DSA signature generation failed")]
+    SigGen,
+
+    #[error("Unexpected context length {0}; must be at most 255 bytes")]
+    BadContextLength(usize),
+
     #[error("Unexpected key length {0}")]
     BadKeyLength(usize),
 
