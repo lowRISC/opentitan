@@ -11,6 +11,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -37,11 +38,12 @@ static_assert(kAesBlockNumBytes == (1 << kAesBlockLog2NumBytes),
  * reverse the bytes of the 32-bit word, then increment, then reverse it back.
  *
  * @param word Input word in big-endian form.
- * @returns (word + 1) mod 2^32 in big-endian form.
+ * @param inc Increment value.
+ * @returns (word + inc) mod 2^32 in big-endian form.
  */
-static inline uint32_t word_inc32(const uint32_t word) {
+static inline uint32_t word_inc32(const uint32_t word, const uint32_t inc) {
   // Reverse the bytes, increment, and reverse back.
-  return __builtin_bswap32(__builtin_bswap32(word) + 1);
+  return __builtin_bswap32(__builtin_bswap32(word) + inc);
 }
 
 /**
@@ -54,8 +56,19 @@ static inline uint32_t word_inc32(const uint32_t word) {
  */
 static inline void block_inc32(aes_block_t *block) {
   // Set the last word to the incremented value.
-  block->data[kAesBlockNumWords - 1] =
-      word_inc32(block->data[kAesBlockNumWords - 1]);
+  random_order_t order;
+  random_order_init(&order, kAesBlockNumWords);
+
+  size_t count = 0;
+  for (; launderw(count) < kAesBlockNumWords; count = launderw(count) + 1) {
+    size_t idx = launderw(random_order_advance(&order));
+    barrierw(idx);
+
+    uint32_t inc = idx / (kAesBlockNumWords - 1);
+    block->data[idx] = word_inc32(block->data[idx], inc);
+  }
+  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
+  HARDENED_CHECK_EQ(count, kAesBlockNumWords);
 }
 
 /**
