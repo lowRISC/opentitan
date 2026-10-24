@@ -248,14 +248,9 @@ static status_t context_restore(hmac_ctx_t *ctx) {
 
     // For SHA-256 and HMAC-256, we do not need to write to the second half of
     // DIGEST registers, but we do it anyway to keep the driver simple.
-    size_t i = 0;
-    for (; launder32(i) < kHmacMaxDigestWords; i++) {
-      abs_mmio_write32(
-          kHmacBaseAddr + HMAC_DIGEST_0_REG_OFFSET + sizeof(uint32_t) * i,
-          ctx->H[i]);
-    }
-    // Check that the loop ran for the correct number of iterations.
-    HARDENED_CHECK_EQ(i, kHmacMaxDigestWords);
+    HARDENED_TRY(
+        hardened_memcpy((uint32_t *)(kHmacBaseAddr + HMAC_DIGEST_0_REG_OFFSET),
+                        ctx->H, kHmacMaxDigestWords));
     abs_mmio_write32(kHmacBaseAddr + HMAC_MSG_LENGTH_LOWER_REG_OFFSET,
                      ctx->lower);
     abs_mmio_write32(kHmacBaseAddr + HMAC_MSG_LENGTH_UPPER_REG_OFFSET,
