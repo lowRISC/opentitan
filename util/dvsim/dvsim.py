@@ -34,6 +34,7 @@ import Launcher
 import LauncherFactory
 import LocalLauncher
 import SgeLauncher
+import SlurmLauncher
 from CfgFactory import make_cfg
 from Deploy import RunTest
 from Timer import Timer
@@ -276,9 +277,9 @@ def parse_args():
         # Disable it pending more verbose and automatic solution and document in
         # help message
         usage='%(prog)s {} [-h] [options]'.format(cfg_metavar),
-        epilog="Either place the positional argument ahead of the optional args:\n" \
-               "eg. `dvsim.py {} -i ITEM ITEM` \n" \
-               "or end a sequence of optional args with `--`:\n" \
+        epilog="Either place the positional argument ahead of the optional args:\n"
+               "eg. `dvsim.py {} -i ITEM ITEM` \n"
+               "or end a sequence of optional args with `--`:\n"
                "eg. `dvsim.py -i ITEM ITEM -- {}`\n".format(cfg_metavar, cfg_metavar))
 
     parser.add_argument("cfg",
@@ -722,6 +723,7 @@ def main():
     # Register the common deploy settings.
     Timer.print_interval = args.print_interval
     LocalLauncher.LocalLauncher.max_parallel = args.max_parallel
+    SlurmLauncher.SlurmLauncher.max_parallel = args.max_parallel
     SgeLauncher.SgeLauncher.max_parallel = args.max_parallel
     Launcher.Launcher.max_odirs = args.max_odirs
     LauncherFactory.set_launcher_type(args.local)
