@@ -9,7 +9,7 @@ set -e
 . util/build_consts.sh
 
 function usage() {
-    echo >&2 "Usage: run-fpga-tests.sh [--mode=(coverage|test)] <fpga> <target_pattern_file>"
+    echo >&2 "Usage: run-fpga-tests.sh [--mode=(coverage|test)] <fpga> <target_pattern_file> [bazel options...]"
     echo >&2 "E.g. ./run-fpga-tests.sh cw310 list_of_test.txt"
     echo >&2 "E.g. ./run-fpga-tests.sh --mode=coverage cw310 list_of_test.txt"
 }
@@ -17,7 +17,7 @@ function usage() {
 mode="test"
 
 # Parse arguments
-TEMP=$(getopt -o '' --long mode: -n 'run-fpga-tests.sh' -- "$@")
+TEMP=$(getopt -o '+' --long mode: -n 'run-fpga-tests.sh' -- "$@")
 eval set -- "$TEMP"
 
 while true; do
@@ -35,6 +35,7 @@ fi
 
 fpga="$1"
 target_pattern_file="$2"
+shift 2
 
 echo "Running $mode with $fpga on $target_pattern_file"
 
@@ -71,12 +72,12 @@ trap './bazelisk.sh run //sw/host/opentitantool -- --rcfile= --interface=${fpga}
 TEST_ARGS=(
     --define DISABLE_VERILATOR_BUILD=true
     --nokeep_going
-    --test_timeout_filters="short,moderate"
     --test_output=all
     --build_tests_only
     --define "${fpga}=lowrisc"
     --flaky_test_attempts=2
     --target_pattern_file="${target_pattern_file}"
+    --test_env=CRYPTOTEST_SKIP_STRIDE=10
     --//sw/host/provisioning/cert_lib:enable_mldsa_signing_for_test
 )
 
@@ -87,7 +88,7 @@ if [[ "${mode}" == "coverage" ]]; then
   )
 fi
 
-./bazelisk.sh "${mode}" "${TEST_ARGS[@]}"
+./bazelisk.sh "${mode}" "${TEST_ARGS[@]}" "$@"
 
 # Ensure all generated sources are available.
 if [[ "${mode}" == "coverage" ]]; then

@@ -70,7 +70,7 @@ jobs:
           # Execute a query to find all targets that match the test tags and store them in a file.
           ci/scripts/run-bazel-test-query.sh \
             target_pattern_file.txt \
-            "${{ inputs.tag_filters }}",-manual,-broken,-skip_in_ci \
+            "${{ inputs.tag_filters }}",-manual,-broken,-slow_test,-skip_in_ci \
             //... @manufacturer_test_hooks//...
 
           # Run FPGA tests

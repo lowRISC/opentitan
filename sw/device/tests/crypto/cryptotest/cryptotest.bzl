@@ -51,7 +51,7 @@ FIRMWARE_DEPS = [
     "//sw/device/tests/crypto/cryptotest/json:commands",
 ]
 
-def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False):
+def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False, skip_stride = None):
     """A macro for defining a CryptoTest test case.
 
     Args:
@@ -60,8 +60,14 @@ def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False):
         test_args: additional arguments to pass to the test.
         test_harness: the test harness to use.
         slow_test: indicate if the test should be run in the nightly CI.
+        skip_stride: optional stride factor to reduce the number of test vectors run.
     """
     tags = ["slow_test"] if slow_test else []
+    if test_args:
+        if skip_stride != None:
+            test_args = "{} --skip-stride={}".format(test_args, skip_stride)
+        else:
+            test_args = "{} --skip-stride=$((CRYPTOTEST_SKIP_STRIDE+0))".format(test_args)
     opentitan_test(
         name = name,
         srcs = ["//sw/device/tests/crypto/cryptotest/firmware:firmware.c"],
