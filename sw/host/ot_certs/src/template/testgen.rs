@@ -14,7 +14,9 @@ use openssl::nid::Nid;
 use openssl::pkey::Private;
 
 use crate::template::subst::{SubstData, SubstValue};
-use crate::template::{EcCurve, EcPublicKeyInfo, SubjectPublicKeyInfo, Template, Value, Variable};
+use crate::template::{
+    EcCurve, EcPublicKeyInfo, MldsaPublicKeyInfo, SubjectPublicKeyInfo, Template, Value, Variable,
+};
 
 // Convert a template curve name to an openssl one.
 fn ecgroup_from_curve(curve: &EcCurve) -> EcGroup {
@@ -115,7 +117,30 @@ impl Template {
     fn random_public_key(&self) -> Result<SubstData> {
         match &self.certificate.subject_public_key_info {
             SubjectPublicKeyInfo::EcPublicKey(ec) => Self::random_ec_public_key(ec),
+            SubjectPublicKeyInfo::Mldsa44(mldsa) => Self::random_mldsa_public_key(mldsa, 1312),
+            SubjectPublicKeyInfo::Mldsa65(mldsa) => Self::random_mldsa_public_key(mldsa, 1952),
+            SubjectPublicKeyInfo::Mldsa87(mldsa) => Self::random_mldsa_public_key(mldsa, 2592),
         }
+    }
+
+    fn random_mldsa_public_key(
+        mldsa_pubkey: &MldsaPublicKeyInfo,
+        size: usize,
+    ) -> Result<SubstData> {
+        use rand::Rng;
+        let mut data = SubstData::new();
+        if let Value::Variable(Variable { name, convert }) = &mldsa_pubkey.public_key {
+            ensure!(
+                convert.is_none(),
+                "cannot generate a random public key if 'public_key' is a variable with conversion"
+            );
+            let mut rng = rand::thread_rng();
+            let mut bytes = vec![0u8; size];
+            rng.fill(&mut bytes[..]);
+            data.values
+                .insert(name.clone(), SubstValue::ByteArray(bytes));
+        }
+        Ok(data)
     }
 
     fn random_ec_public_key(ec_pubkey: &EcPublicKeyInfo) -> Result<SubstData> {
