@@ -31,6 +31,7 @@ module prim_diff_encode (
   assign diff_n = ~req;
 
   // This prevents further tool optimizations of the differential signal.
+  logic diff_p_buf, diff_n_buf;
   prim_sec_anchor_buf #(
     .Width(2)
   ) u_prim_buf_ack (
