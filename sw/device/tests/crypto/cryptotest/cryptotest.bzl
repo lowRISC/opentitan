@@ -57,7 +57,7 @@ FIRMWARE_OTBN_DEPS = [
     for dep in FIRMWARE_DEPS
 ]
 
-def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False, use_otbn_hash = False):
+def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False, use_otbn_hash = False, skip_stride = None):
     """A macro for defining a CryptoTest test case.
 
     Args:
@@ -67,8 +67,14 @@ def cryptotest(name, test_vectors, test_args, test_harness, slow_test = False, u
         test_harness: the test harness to use.
         slow_test: indicate if the test should be run in the nightly CI.
         use_otbn_hash: whether to link hash_otbn instead of hash.
+        skip_stride: optional stride factor to reduce the number of test vectors run.
     """
     tags = ["slow_test"] if slow_test else []
+    if test_args:
+        if skip_stride != None:
+            test_args = "{} --skip-stride={}".format(test_args, skip_stride)
+        else:
+            test_args = "{} --skip-stride=$((CRYPTOTEST_SKIP_STRIDE+0))".format(test_args)
     deps = FIRMWARE_OTBN_DEPS if use_otbn_hash else FIRMWARE_DEPS
     opentitan_test(
         name = name,
