@@ -21,7 +21,7 @@ pub struct DediprogSpi {
 
 #[allow(dead_code, reason = "unused variants")]
 #[repr(u8)]
-enum ReadMode {
+enum FlashMode {
     ReadStandard = 1,
     ReadFast = 2,
     ReadAtmel45 = 3,
@@ -139,13 +139,13 @@ impl DediprogSpi {
             }
             ([SpiFlash::READ], 3, 0) => {
                 // Standard read, 3-byte address
-                usbcmd[3] = ReadMode::ReadStandard as u8;
+                usbcmd[3] = FlashMode::ReadStandard as u8;
                 usbcmd[4] = SpiFlash::READ;
             }
             ([SpiFlash::READ], 4, 0) => {
                 // Standard read, 4-byte address.  Dediprog may not support 4 byte address on
                 // standard read, do 4b fast read instead.
-                usbcmd[3] = ReadMode::Read4bAddrFast as u8;
+                usbcmd[3] = FlashMode::Read4bAddrFast as u8;
                 usbcmd[4] = SpiFlash::FAST_READ;
             }
             _ => bail!(SpiError::InvalidTransferMode(
