@@ -15,6 +15,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_dpe_binding_value.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
+#include "sw/device/silicon_creator/lib/sigverify/mldsa87_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/spx_key.h"
 
@@ -395,6 +396,8 @@ enum {
   kManifestExtIdSpxKey = 0x94ac01ec,
   kManifestExtIdSpxSignature = 0xad77f84a,
   kManifestExtIdSecVerWrite = 0x3f086a41,
+  kManifestExtIdMldsa87Key = 0xa3e247b8,
+  kManifestExtIdMldsa87Signature = 0x4714ac7d,
 
   /**
    * ASCII "ISFB".
@@ -409,13 +412,21 @@ enum {
    */
   kManifestExtIdIsfbErase = 0x45465349,
   /**
-   * ASCII "EXT0.
+   * ASCII "EXT0".
    */
   kManifestExtNameSpxKey = 0x30545845,
   /**
-   * ASCII "EXT1.
+   * ASCII "EXT1".
    */
   kManifestExtNameSpxSignature = 0x31545845,
+  /**
+   * ASCII "EXT6".
+   */
+  kManifestExtNameMldsa87Key = 0x36545845,
+  /**
+   * ASCII "EXT7".
+   */
+  kManifestExtNameMldsa87Signature = 0x37545845,
 };
 
 /**
@@ -445,6 +456,36 @@ typedef struct manifest_ext_spx_signature {
    */
   sigverify_spx_signature_t signature;
 } manifest_ext_spx_signature_t;
+
+/**
+ * Manifest extension: ML-DSA-87 public key.
+ */
+typedef struct manifest_ext_mldsa87_key {
+  /**
+   * Required manifest header.
+   */
+  manifest_ext_header_t header;
+  /**
+   * ML-DSA-87 public key used to sign the image.
+   */
+  sigverify_mldsa87_key_t key;
+} manifest_ext_mldsa87_key_t;
+OT_ASSERT_SIZE(manifest_ext_mldsa87_key_t, 2600);
+
+/**
+ * Manifest extension: ML-DSA-87 signature.
+ */
+typedef struct manifest_ext_mldsa87_signature {
+  /**
+   * Required manifest header.
+   */
+  manifest_ext_header_t header;
+  /**
+   * ML-DSA-87 signature of the image.
+   */
+  sigverify_mldsa87_signature_t signature;
+} manifest_ext_mldsa87_signature_t;
+OT_ASSERT_SIZE(manifest_ext_mldsa87_signature_t, 4636);
 
 /**
  * Manifest extension: Write the securty version.
@@ -547,14 +588,19 @@ typedef struct manifest_ext_isfb_erase {
  * Table of manifest extensions.
  *
  * Columns: Table index, type name, extenstion name, identifier, signed or not.
+ *
+ * Indices 0 to 5 are fixed by Earl Grey 1.0.0 and must not be reused. Index 5
+ * is the `owner_transfer_blob` extension on the `earlgrey_1.0.0` branch.
  */
 // clang-format off
 #define MANIFEST_EXTENSIONS(X) \
-  X(0, manifest_ext_spx_key_t,       spx_key,       kManifestExtIdSpxKey,       true ) \
-  X(1, manifest_ext_spx_signature_t, spx_signature, kManifestExtIdSpxSignature, false) \
-  X(2, manifest_ext_secver_write_t,  secver_write,  kManifestExtIdSecVerWrite,  true)  \
-  X(3, manifest_ext_isfb_t,          isfb,          kManifestExtIdIsfb,         true)  \
-  X(4, manifest_ext_isfb_erase_t,    isfb_erase,    kManifestExtIdIsfbErase,    true)
+  X(0, manifest_ext_spx_key_t,           spx_key,           kManifestExtIdSpxKey,           true ) \
+  X(1, manifest_ext_spx_signature_t,     spx_signature,     kManifestExtIdSpxSignature,     false) \
+  X(2, manifest_ext_secver_write_t,      secver_write,      kManifestExtIdSecVerWrite,      true)  \
+  X(3, manifest_ext_isfb_t,              isfb,              kManifestExtIdIsfb,             true)  \
+  X(4, manifest_ext_isfb_erase_t,        isfb_erase,        kManifestExtIdIsfbErase,        true)  \
+  X(6, manifest_ext_mldsa87_key_t,       mldsa87_key,       kManifestExtIdMldsa87Key,       true ) \
+  X(7, manifest_ext_mldsa87_signature_t, mldsa87_signature, kManifestExtIdMldsa87Signature, false)
 // clang-format on
 
 #if defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
@@ -724,6 +770,11 @@ rom_error_t manifest_ext_get_isfb(const manifest_t *manifest,
                                   const manifest_ext_isfb_t **isfb);
 rom_error_t manifest_ext_get_isfb_erase(
     const manifest_t *manifest, const manifest_ext_isfb_erase_t **isfb_erase);
+rom_error_t manifest_ext_get_mldsa87_key(
+    const manifest_t *manifest, const manifest_ext_mldsa87_key_t **mldsa87_key);
+rom_error_t manifest_ext_get_mldsa87_signature(
+    const manifest_t *manifest,
+    const manifest_ext_mldsa87_signature_t **mldsa87_signature);
 
 #endif  // defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
 
