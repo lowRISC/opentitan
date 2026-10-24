@@ -1,0 +1,171 @@
+{
+  "project": "opentitan",
+  "tops": [
+    {
+      "name": "darjeeling",
+      "path": "hw/top_darjeeling"
+    },
+    {
+      "name": "earlgrey",
+      "path": "hw/top_earlgrey"
+    },
+    {
+      "name": "englishbreakfast",
+      "path": "hw/top_englishbreakfast"
+    }
+  ],
+  "ips": [
+    {
+      "name": "adc_ctrl",
+      "path": "hw/ip/adc_ctrl"
+    },
+    {
+      "name": "aes",
+      "path": "hw/ip/aes"
+    },
+    {
+      "name": "aon_timer",
+      "path": "hw/ip/aon_timer"
+    },
+    {
+      "name": "ascon",
+      "path": "hw/ip/ascon"
+    },
+    {
+      "name": "csrng",
+      "path": "hw/ip/csrng"
+    },
+    {
+      "name": "dma",
+      "path": "hw/ip/dma"
+    },
+    {
+      "name": "edn",
+      "path": "hw/ip/edn"
+    },
+    {
+      "name": "entropy_src",
+      "path": "hw/ip/entropy_src"
+    },
+    {
+      "name": "flash_ctrl",
+      "path": "hw/ip/flash_ctrl"
+    },
+    {
+      "name": "hmac",
+      "path": "hw/ip/hmac"
+    },
+    {
+      "name": "i2c",
+      "path": "hw/ip/i2c"
+    },
+    {
+      "name": "keymgr",
+      "path": "hw/ip/keymgr"
+    },
+    {
+      "name": "keymgr_dpe",
+      "path": "hw/ip/keymgr_dpe"
+    },
+    {
+      "name": "kmac",
+      "path": "hw/ip/kmac"
+    },
+    {
+      "name": "lc_ctrl",
+      "path": "hw/ip/lc_ctrl"
+    },
+    {
+      "name": "mbx",
+      "path": "hw/ip/mbx"
+    },
+    {
+      "name": "otbn",
+      "path": "hw/ip/otbn"
+    },
+    {
+      "name": "otp_ctrl",
+      "path": "hw/ip/otp_ctrl"
+    },
+    {
+      "name": "otp_macro",
+      "path": "hw/ip/otp_macro"
+    },
+    {
+      "name": "pattgen",
+      "path": "hw/ip/pattgen"
+    },
+    {
+      "name": "prim",
+      "path": "hw/ip/prim"
+    },
+    {
+      "name": "prim_asap7",
+      "path": "hw/ip/prim_asap7"
+    },
+    {
+      "name": "prim_generic",
+      "path": "hw/ip/prim_generic"
+    },
+    {
+      "name": "prim_xilinx",
+      "path": "hw/ip/prim_xilinx"
+    },
+    {
+      "name": "prim_xilinx_ultrascale",
+      "path": "hw/ip/prim_xilinx_ultrascale"
+    },
+    {
+      "name": "racl_ctrl",
+      "path": "hw/ip/racl_ctrl"
+    },
+    {
+      "name": "rom_ctrl",
+      "path": "hw/ip/rom_ctrl"
+    },
+    {
+      "name": "rv_core_ibex",
+      "path": "hw/ip/rv_core_ibex"
+    },
+    {
+      "name": "rv_dm",
+      "path": "hw/ip/rv_dm"
+    },
+    {
+      "name": "rv_timer",
+      "path": "hw/ip/rv_timer"
+    },
+    {
+      "name": "soc_dbg_ctrl",
+      "path": "hw/ip/soc_dbg_ctrl"
+    },
+    {
+      "name": "spi_device",
+      "path": "hw/ip/spi_device"
+    },
+    {
+      "name": "spi_host",
+      "path": "hw/ip/spi_host"
+    },
+    {
+      "name": "sram_ctrl",
+      "path": "hw/ip/sram_ctrl"
+    },
+    {
+      "name": "sysrst_ctrl",
+      "path": "hw/ip/sysrst_ctrl"
+    },
+    {
+      "name": "tlul",
+      "path": "hw/ip/tlul"
+    },
+    {
+      "name": "uart",
+      "path": "hw/ip/uart"
+    },
+    {
+      "name": "usbdev",
+      "path": "hw/ip/usbdev"
+    }
+  ]
+}

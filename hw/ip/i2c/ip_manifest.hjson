@@ -1,0 +1,10 @@
+{
+  "name": "i2c",
+  "sim": [
+    {
+      "cfg": "dv/i2c_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

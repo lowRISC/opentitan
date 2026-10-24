@@ -1,0 +1,10 @@
+{
+  "name": "pattgen",
+  "sim": [
+    {
+      "cfg": "dv/pattgen_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

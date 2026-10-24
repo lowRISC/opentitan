@@ -1,0 +1,9 @@
+{
+  "name": "englishbreakfast",
+  "ips": [],
+  "sim": [],
+  "lint": [
+    "lint/top_englishbreakfast_lint_cfgs.hjson"
+  ],
+  "formal": []
+}

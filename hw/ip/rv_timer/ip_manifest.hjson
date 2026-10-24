@@ -1,0 +1,10 @@
+{
+  "name": "rv_timer",
+  "sim": [
+    {
+      "cfg": "dv/rv_timer_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}
