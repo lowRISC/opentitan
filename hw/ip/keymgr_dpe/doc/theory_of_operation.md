@@ -61,8 +61,9 @@ Otherwise all advance requests are rejected that specify this slot as its source
 Otherwise, after the derivation of a child slot, the DPE context of the parent slot is removed automatically.
 *  If `allow_keygen` is set to `true`/`1`, then key generation operations (both SW and sideload outputs) can be requested from this slot (assuming there are no other invalidating preconditions).
 
-The slot holding the UDS is an exception, as its `key_policy` is not taken from `SLOT_POLICY` but fixed by HW to `allow_child = 1`, `exportable = 0`, `retain_parent = 0` and `allow_keygen = 0`.
-Hence, no key can be generated directly from the UDS, and SW must advance the UDS slot at least once before it can generate keys.
+A slot populated with a `root key` is an exception, as neither its `key_policy` nor its `max_key_version` is taken from the corresponding CSR.
+Instead, both are fixed by HW to their defaults: `key_policy` is set to `DEFAULT_UDS_POLICY` (`allow_child = 1`, `exportable = 0`, `retain_parent = 0` and `allow_keygen = 0`) and `max_key_version` is set to `DEFAULT_UDS_MAX_KEY_VERSION`.
+Since `allow_keygen = 0`, no key can be generated directly from such a slot, and SW must advance it at least once before it can generate keys, therefore the value of `max_key_version` is irrelevant for these slots.
 
 With the exception of the secret key itself, software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` subfields at any time through the `METADATA_LOW` and `METADATA_HIGH` registers.
 Both registers are replicated `NumMaxHwSlot` times but only indices below `NumInstHwSlot` correspond to an actual hardware slot, the remaining slots are bound to `0`.
@@ -133,7 +134,8 @@ Advancing a keymgr_dpe slot (also referred to as _deriving a child_) uses multip
 In particular, since there are multiple slots inside keymgr_dpe, source and destination parameters need to be passed to advance calls.
 
 The very first advance call only latches the OTP creator root key (UDS), therefore most of these registers are ignored during the first call.
-The only relevant registers (or register fields) during the first advance call are: `CONTROL_SHADOWED.OPERATION`, `MAX_KEY_VER_SHADOWED`, `CONTROL_SHADOWED.SLOT_DST_SEL` and `START`.
+The only relevant registers (or register fields) during the first advance call are: `CONTROL_SHADOWED.OPERATION`, `CONTROL_SHADOWED.SLOT_DST_SEL` and `START`.
+In particular, `MAX_KEY_VER_SHADOWED` and `SLOT_POLICY` are not consumed, as the UDS slot receives the fixed defaults described in [Key Manager Slots](#key-manager-slots).
 
 In particular, the destination slot for the UDS is chosen by SW, and there is no designated special slot for it.
 Moreover, since the destination slot for this first advance call has no parent, its `boot_stage` value is not incremented but initialized to `0`.
@@ -244,7 +246,7 @@ They do not involve a KMAC transaction and complete within a single cycle.
 At the end of a successful load operation, the following updates are made for the destination slot:
 * `valid` bit is set to 1.
 * `boot_stage` is initialized to `0` (Creator).
-* `max_key_version` is updated with `MAX_KEY_VERSION`.
+* `max_key_version` is set to the fixed default `DEFAULT_UDS_MAX_KEY_VERSION`, independent of `MAX_KEY_VER_SHADOWED`.
 * `key_policy` is set to the fixed default UDS policy (`allow_child = 1`, `retain_parent = 0`, `allow_keygen = 0`, `exportable = 0`), independent of `SLOT_POLICY`.
 * `key` is updated with the root key: each share of the root key is XORed on top of the corresponding share of the slot's `key` field.
 
