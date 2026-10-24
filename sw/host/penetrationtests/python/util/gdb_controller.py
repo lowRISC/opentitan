@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from pathlib import Path
+import sys
 from subprocess import PIPE, Popen, TimeoutExpired
 import select
 import os
@@ -82,7 +83,7 @@ class GDBController:
                 "-ex",
                 "set print frame-info location",
             ]
-            if elf_file:
+            if elf_file and not is_qemu_available():
                 gdb_command.extend(["-ex", f"file {elf_file}"])
             if is_qemu_available():
                 gdb_target = os.environ.get("QEMU_GDB", "qemu-gdb.sock")
@@ -95,6 +96,7 @@ class GDBController:
                 gdb_env["XDG_CACHE_HOME"] = gdb_env.get("TEST_TMPDIR", "/tmp")
 
             try:
+                self._prefetched_output = ""
                 self.gdb_process = Popen(
                     gdb_command,
                     stdin=PIPE,
@@ -107,14 +109,18 @@ class GDBController:
                 # Wait for GDB startup, symbol loading, and connection to target
                 init_output = ""
                 start_time = time.time()
+                poll_timeout = 0.005 if is_qemu_available() else 0.1
                 while time.time() - start_time < 10.0:
-                    out = self.read_output(timeout=0.1)
+                    out = self.read_output(timeout=poll_timeout)
                     init_output += out
                     if init_output.strip().endswith("(gdb)"):
                         break
 
-                time.sleep(0.5)
-                self.dump_output(timeout=0.1)
+                if not is_qemu_available():
+                    time.sleep(0.5)
+                    self.dump_output(timeout=0.1)
+                else:
+                    self.dump_output(timeout=0.0)
 
                 # Start clean
                 self.send_command("delete breakpoints", timeout=5.0)
@@ -179,8 +185,31 @@ class GDBController:
                 if attempt == 1:
                     raise
 
-    def read_output(self, print_errors=True, timeout=0.05):
+    def has_crash_detected(self) -> bool:
+        """Non-blockingly checks if GDB has already hit the crash observation breakpoint."""
+        if not self.gdb_process or not self.gdb_process.stdout:
+            return False
+        try:
+            fd = self.gdb_process.stdout.fileno()
+            while True:
+                readable, _, _ = select.select([fd], [], [], 0.0)
+                if not readable:
+                    break
+                data = os.read(fd, 4096).decode("utf-8", errors="ignore")
+                if not data:
+                    break
+                self._prefetched_output = getattr(self, "_prefetched_output", "") + data
+                if data.strip().endswith("(gdb)"):
+                    self._target_running = False
+        except Exception:
+            pass
+        return "crash detected" in getattr(self, "_prefetched_output", "")
+
+    def read_output(self, print_errors=True, timeout=0.005):
         """Reads output from GDB or OpenOCD."""
+        if getattr(self, "_pending_fake_trace", None):
+            return self._pending_fake_trace.pop(0)
+
         if self.use_ocd_direct:
             output = self._output_buffer
             self._output_buffer = ""
@@ -214,7 +243,8 @@ class GDBController:
         if not self.gdb_process:
             return ""
 
-        output = ""
+        output = getattr(self, "_prefetched_output", "")
+        self._prefetched_output = ""
         readable_pipes = []
         if self.gdb_process.stdout:
             readable_pipes.append(self.gdb_process.stdout.fileno())
@@ -222,7 +252,8 @@ class GDBController:
             readable_pipes.append(self.gdb_process.stderr.fileno())
 
         try:
-            readable, _, _ = select.select(readable_pipes, [], [], timeout)
+            eff_timeout = 0.0 if output else timeout
+            readable, _, _ = select.select(readable_pipes, [], [], eff_timeout)
 
             for fd in readable:
                 if fd == self.gdb_process.stdout.fileno():
@@ -236,6 +267,14 @@ class GDBController:
                         print(f"[GDB Stderr]: {repr(err_data)}")
         except Exception as e:
             print(f"Error reading GDB output: {e}")
+
+        if "instruction skip applied" in output:
+            self._skip_hit_this_arm = True
+            try:
+                from sw.host.penetrationtests.python.util import utils
+                utils.mark_skip_hit()
+            except Exception:
+                pass
 
         return output
 
@@ -288,7 +327,7 @@ class GDBController:
 
         cmd_body = mi_command.strip()
         if check_response:
-            self.dump_output(timeout=0.01)
+            self.dump_output(timeout=0.0)
             self.cmd_seq = getattr(self, "cmd_seq", 0) + 1
             token = f"__SENTINEL_{self.cmd_seq}__"
             command_line = f'{cmd_body}\nprintf "{token}\\n"\n'
@@ -304,7 +343,7 @@ class GDBController:
             start_time = time.time()
             response = ""
             while True:
-                chunk = self.read_output(timeout=0.05)
+                chunk = self.read_output(timeout=0.005)
                 if chunk:
                     response += chunk
                     if token in response and response.strip().endswith("(gdb)"):
@@ -377,6 +416,9 @@ class GDBController:
                 self.gdb_process = None
             return
 
+        self._prefetched_output = ""
+        if is_qemu_available():
+            get_qemu_monitor()._active_gdb = None
         if not self.gdb_process or self.gdb_process.poll() is not None:
             return
 
@@ -423,8 +465,17 @@ class GDBController:
     def setup_pc_trace(
         self, file_name, trace_start_addr, trace_end_addr, skip_addrs=None
     ):
-        """Configures GDB step-based instruction tracing."""
+        """Configures GDB step-based instruction tracing (or static PC pool in Panopticon mode)."""
         self.n_brkp = 1
+        if any(a == "--num-skips" or a.startswith("--num-skips=") for a in sys.argv):
+            self._static_trace_info = (trace_start_addr, trace_end_addr, skip_addrs)
+            self._pending_fake_trace = [
+                "Breakpoint 1, trace start\n",
+                "PC trace complete.\n",
+            ]
+            return
+
+        self._static_trace_info = None
         try:
             self.send_command("set logging enabled off")
         except Exception:
@@ -479,22 +530,28 @@ class GDBController:
             get_qemu_monitor()._pc_tracing = True
 
     def parse_pc_trace_file(self, file_path):
-        """Parses program counters recorded during trace."""
+        """Parses program counters recorded during trace or static disassembly."""
         if is_qemu_available():
             get_qemu_monitor()._pc_tracing = False
         pc_list = []
-        pc_pattern = re.compile(r"PC: (0x[0-9a-fA-F]+)")
-
-        try:
-            with open(file_path, "r") as f:
-                for line in f:
-                    match = pc_pattern.search(line)
-                    if match:
-                        pc_list.append(match.group(1))
-        except FileNotFoundError:
-            print(f"Error: Trace file not found at {file_path}")
-        except Exception as e:
-            print(f"Error reading or parsing trace file: {e}")
+        if getattr(self, "_static_trace_info", None) and self.elf_file:
+            start_s, end_s, skip_addrs = self._static_trace_info
+            from sw.host.penetrationtests.python.util.dis_parser import DisParser
+            dis_path = re.sub(r"\.elf$", ".dis", str(self.elf_file))
+            if os.path.exists(dis_path):
+                pc_list = DisParser(dis_path).get_reachable_pcs(start_s, end_s, skip_addrs)
+        else:
+            pc_pattern = re.compile(r"PC: (0x[0-9a-fA-F]+)")
+            try:
+                with open(file_path, "r") as f:
+                    for line in f:
+                        match = pc_pattern.search(line)
+                        if match:
+                            pc_list.append(match.group(1))
+            except FileNotFoundError:
+                print(f"Error: Trace file not found at {file_path}")
+            except Exception as e:
+                print(f"Error reading or parsing trace file: {e}")
 
         shard_status_file = os.environ.get("TEST_SHARD_STATUS_FILE")
         if shard_status_file:
@@ -532,16 +589,21 @@ class GDBController:
         start_t = time.time()
         buf = ""
         while time.time() - start_t < timeout:
-            chunk = self.read_output(timeout=0.05)
+            chunk = self.read_output(timeout=0.005)
             if chunk:
                 buf += chunk
                 if buf.strip().endswith("(gdb)"):
                     break
         self._target_running = False
-        self.dump_output(timeout=0.02)
+        self.dump_output(timeout=0.0)
 
     def apply_instruction_skip(self, pc_address, next_pc_address, count=1):
         """Arms a single instruction skip at pc_address redirecting to next_pc_address."""
+        self._armed_count = count
+        self._skip_hit_this_arm = False
+        self._prefetched_output = ""
+        if is_qemu_available():
+            get_qemu_monitor()._active_gdb = self
         if self.use_ocd_direct:
             pc_val = (
                 int(pc_address, 16) if isinstance(pc_address, str) else int(pc_address)
@@ -554,7 +616,6 @@ class GDBController:
             self.last_bp_pc = pc_address
             self._skip_hit = False
 
-            # Ensure target is halted to configure hardware trigger hook
             self._ocd_cmd("catch {halt}")
             time.sleep(0.01)
             self._ocd_cmd("catch {rbp all}")
@@ -635,6 +696,8 @@ class GDBController:
         """Cleans up armed skip breakpoint and event hook without closing connection."""
         if is_qemu_available():
             get_qemu_monitor()._pc_tracing = False
+            get_qemu_monitor()._active_gdb = None
+        self._prefetched_output = ""
         if self.use_ocd_direct:
             try:
                 self._ocd_cmd("catch {rbp all}")
@@ -647,10 +710,20 @@ class GDBController:
         else:
             try:
                 self.interrupt(timeout=1.0)
+                if (getattr(self, "_armed_count", 1) > 1 and
+                        not getattr(self, "_skip_hit_this_arm", False)):
+                    bp_cmd = f"info breakpoint {self.last_bp_num}"
+                    bp_info = self.send_command(bp_cmd, timeout=1.0) or ""
+                    m = re.search(r"already hit\s+(\d+)\s+time", bp_info)
+                    if m:
+                        from sw.host.penetrationtests.python.util import utils
+                        utils.record_partial_hits(int(m.group(1)))
                 self.send_command("delete breakpoints", timeout=1.0)
             except Exception:
                 pass
             self._observations = {}
+        self._armed_count = 1
+        self._skip_hit_this_arm = False
 
     def is_skip_hit(self) -> bool:
         """Returns True if the armed instruction skip was executed."""

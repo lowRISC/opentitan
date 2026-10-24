@@ -379,6 +379,11 @@ class QemuSerialProxy:
             if not raw:
                 if self._qemu.monitor._pc_tracing:
                     return b""
+                active_gdb = getattr(self._qemu.monitor, "_active_gdb", None)
+                if active_gdb is not None and active_gdb.has_crash_detected():
+                    self._qemu._faulted = True
+                    self._qemu.serial.timeout = 0
+                    return b""
                 self._empty_reads += 1
                 if self._empty_reads >= 300:
                     if not self._qemu.monitor.is_running():

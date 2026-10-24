@@ -74,9 +74,7 @@ def reset_gdb(gdb):
     if gdb and getattr(gdb, "gdb_process", None) and gdb.gdb_process.poll() is None:
         try:
             gdb.cleanup_skip()
-            ping = gdb.send_command("p 1", timeout=1.0)
-            if ping and ("= 1" in ping):
-                return gdb
+            return gdb
         except Exception:
             pass
     if gdb:
@@ -98,10 +96,11 @@ def reset_target_and_gdb(gdb):
         except Exception:
             pass
     target.reset_target()
-    time.sleep(0.05)
-    target.start_openocd(startup_delay=0.3, print_output=False)
-    target.dump_all()
+    if not targets.is_qemu_available():
+        time.sleep(0.05)
+        target.start_openocd(startup_delay=0.3, print_output=False)
     trigger_testos_init(print_output=False)
+    target.dump_all()
     return GDBController(
         gdb_path=GDB_PATH,
         gdb_port=GDB_PORT,
@@ -247,8 +246,10 @@ class SymCryptolibFiSim(unittest.TestCase):
                 data_out = [None, None]
 
                 started = True
-                for pc, count in pc_count_dict.items():
-                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                for pc, occ_list in utils.select_fi_skips(
+                    pc_count_dict, MAX_SKIPS_PER_LOOP, args.num_skips
+                ).items():
+                    for i_count in occ_list:
                         # Search for collisions in outputs between the hmac instances
                         for i in range(2):
                             print("-" * 80)
@@ -287,6 +288,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                     if crash_observation in gdb_response:
                                         print("Crash detected, resetting", flush=True)
                                         gdb = reset_target_and_gdb(gdb)
+                                        break
                                     else:
                                         testos_response_json = json.loads(testos_response)
                                         print("Output:", testos_response_json, flush=True)
@@ -321,15 +323,16 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         gdb = reset_target_and_gdb(gdb)
                                     else:
                                         gdb = reset_gdb(gdb)
+                                        break
 
-                            except json.JSONDecodeError:
+                            except (json.JSONDecodeError, IndexError, KeyError, TypeError):
                                 print(
                                     "Error: JSON decoding failed. Invalid response format",
                                     flush=True,
                                 )
                                 try:
                                     gdb = reset_target_and_gdb(gdb)
-                                except TimeoutError:
+                                except (TimeoutError, IndexError):
                                     gdb = re_initialize(gdb)
 
                             except TimeoutError as e:
@@ -337,7 +340,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                 print(e, flush=True)
                                 try:
                                     gdb = reset_target_and_gdb(gdb)
-                                except TimeoutError:
+                                except (TimeoutError, IndexError):
                                     gdb = re_initialize(gdb)
 
             finally:
@@ -348,7 +351,9 @@ class SymCryptolibFiSim(unittest.TestCase):
                     gdb.close_gdb()
                 target.close_openocd()
                 sys.stdout = original_stdout
-                self.assertEqual(successful_faults, 0)
+                utils.finish_fi_campaign(parser, successful_faults, args)
+                if not (args.num_skips > 0 or args.dump_json):
+                    self.assertEqual(successful_faults, 0)
                 self.assertEqual(started, True)
 
     def test_aes(self):
@@ -483,8 +488,10 @@ class SymCryptolibFiSim(unittest.TestCase):
                 data_out = [None, None]
 
                 started = True
-                for pc, count in pc_count_dict.items():
-                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                for pc, occ_list in utils.select_fi_skips(
+                    pc_count_dict, MAX_SKIPS_PER_LOOP, args.num_skips
+                ).items():
+                    for i_count in occ_list:
                         # Search for collisions in outputs between the hmac instances
                         for i in range(2):
                             print("-" * 80)
@@ -532,6 +539,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                     if crash_observation in gdb_response:
                                         print("Crash detected, resetting", flush=True)
                                         gdb = reset_target_and_gdb(gdb)
+                                        break
                                     else:
                                         testos_response_json = json.loads(testos_response)
                                         print("Output:", testos_response_json, flush=True)
@@ -566,15 +574,16 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         gdb = reset_target_and_gdb(gdb)
                                     else:
                                         gdb = reset_gdb(gdb)
+                                        break
 
-                            except json.JSONDecodeError:
+                            except (json.JSONDecodeError, IndexError, KeyError, TypeError):
                                 print(
                                     "Error: JSON decoding failed. Invalid response format",
                                     flush=True,
                                 )
                                 try:
                                     gdb = reset_target_and_gdb(gdb)
-                                except TimeoutError:
+                                except (TimeoutError, IndexError):
                                     gdb = re_initialize(gdb)
 
                             except TimeoutError as e:
@@ -582,7 +591,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                 print(e, flush=True)
                                 try:
                                     gdb = reset_target_and_gdb(gdb)
-                                except TimeoutError:
+                                except (TimeoutError, IndexError):
                                     gdb = re_initialize(gdb)
 
             finally:
@@ -593,7 +602,9 @@ class SymCryptolibFiSim(unittest.TestCase):
                     gdb.close_gdb()
                 target.close_openocd()
                 sys.stdout = original_stdout
-                self.assertEqual(successful_faults, 0)
+                utils.finish_fi_campaign(parser, successful_faults, args)
+                if not (args.num_skips > 0 or args.dump_json):
+                    self.assertEqual(successful_faults, 0)
                 self.assertEqual(started, True)
 
     def test_drbg_generate(self):
@@ -728,8 +739,10 @@ class SymCryptolibFiSim(unittest.TestCase):
                 gdb = reset_target_and_gdb(gdb)
 
                 started = True
-                for pc, count in pc_count_dict.items():
-                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                for pc, occ_list in utils.select_fi_skips(
+                    pc_count_dict, MAX_SKIPS_PER_LOOP, args.num_skips
+                ).items():
+                    for i_count in occ_list:
                         # Search for collisions in outputs between the drbg instances
                         for i in range(2):
                             print("-" * 80)
@@ -777,6 +790,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                     if crash_observation in gdb_response:
                                         print("Crash detected, resetting", flush=True)
                                         gdb = reset_target_and_gdb(gdb)
+                                        break
                                     else:
                                         testos_response_json = json.loads(testos_response)
                                         print("Output:", testos_response_json, flush=True)
@@ -811,15 +825,16 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         gdb = reset_target_and_gdb(gdb)
                                     else:
                                         gdb = reset_gdb(gdb)
+                                        break
 
-                            except json.JSONDecodeError:
+                            except (json.JSONDecodeError, IndexError, KeyError, TypeError):
                                 print(
                                     "Error: JSON decoding failed. Invalid response format",
                                     flush=True,
                                 )
                                 try:
                                     gdb = reset_target_and_gdb(gdb)
-                                except TimeoutError:
+                                except (TimeoutError, IndexError):
                                     gdb = re_initialize(gdb)
 
                             except TimeoutError as e:
@@ -827,7 +842,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                 print(e, flush=True)
                                 try:
                                     gdb = reset_target_and_gdb(gdb)
-                                except TimeoutError:
+                                except (TimeoutError, IndexError):
                                     gdb = re_initialize(gdb)
 
             finally:
@@ -838,7 +853,9 @@ class SymCryptolibFiSim(unittest.TestCase):
                     gdb.close_gdb()
                 target.close_openocd()
                 sys.stdout = original_stdout
-                self.assertEqual(successful_faults, 0)
+                utils.finish_fi_campaign(parser, successful_faults, args)
+                if not (args.num_skips > 0 or args.dump_json):
+                    self.assertEqual(successful_faults, 0)
                 self.assertEqual(started, True)
 
     def test_drbg_reseed(self):
@@ -980,8 +997,10 @@ class SymCryptolibFiSim(unittest.TestCase):
                 gdb = reset_target_and_gdb(gdb)
 
                 started = True
-                for pc, count in pc_count_dict.items():
-                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                for pc, occ_list in utils.select_fi_skips(
+                    pc_count_dict, MAX_SKIPS_PER_LOOP, args.num_skips
+                ).items():
+                    for i_count in occ_list:
                         # Search for collisions in outputs between the drbg instances
                         for i in range(2):
                             print("-" * 80)
@@ -1028,6 +1047,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                     if crash_observation in gdb_response:
                                         print("Crash detected, resetting", flush=True)
                                         gdb = reset_target_and_gdb(gdb)
+                                        break
                                     else:
                                         testos_response_json = json.loads(testos_response)
                                         print("Output:", testos_response_json, flush=True)
@@ -1062,15 +1082,16 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         gdb = reset_target_and_gdb(gdb)
                                     else:
                                         gdb = reset_gdb(gdb)
+                                        break
 
-                            except json.JSONDecodeError:
+                            except (json.JSONDecodeError, IndexError, KeyError, TypeError):
                                 print(
                                     "Error: JSON decoding failed. Invalid response format",
                                     flush=True,
                                 )
                                 try:
                                     gdb = reset_target_and_gdb(gdb)
-                                except TimeoutError:
+                                except (TimeoutError, IndexError):
                                     gdb = re_initialize(gdb)
 
                             except TimeoutError as e:
@@ -1078,7 +1099,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                 print(e, flush=True)
                                 try:
                                     gdb = reset_target_and_gdb(gdb)
-                                except TimeoutError:
+                                except (TimeoutError, IndexError):
                                     gdb = re_initialize(gdb)
 
             finally:
@@ -1089,7 +1110,9 @@ class SymCryptolibFiSim(unittest.TestCase):
                     gdb.close_gdb()
                 target.close_openocd()
                 sys.stdout = original_stdout
-                self.assertEqual(successful_faults, 0)
+                utils.finish_fi_campaign(parser, successful_faults, args)
+                if not (args.num_skips > 0 or args.dump_json):
+                    self.assertEqual(successful_faults, 0)
                 self.assertEqual(started, True)
 
     def test_gcm(self):
@@ -1282,8 +1305,10 @@ class SymCryptolibFiSim(unittest.TestCase):
                 gdb = reset_target_and_gdb(gdb)
 
                 started = True
-                for pc, count in pc_count_dict.items():
-                    for i_count in range(min(MAX_SKIPS_PER_LOOP_GCM, count)):
+                for pc, occ_list in utils.select_fi_skips(
+                    pc_count_dict, MAX_SKIPS_PER_LOOP_GCM, args.num_skips
+                ).items():
+                    for i_count in occ_list:
                         # Search for collisions in outputs between the gcm instances
                         for i in range(2):
                             print("-" * 80)
@@ -1331,6 +1356,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                     if crash_observation in gdb_response:
                                         print("Crash detected, resetting", flush=True)
                                         gdb = reset_target_and_gdb(gdb)
+                                        break
                                     else:
                                         testos_response_json = json.loads(testos_response)
                                         print("Output:", testos_response_json, flush=True)
@@ -1365,15 +1391,16 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         gdb = reset_target_and_gdb(gdb)
                                     else:
                                         gdb = reset_gdb(gdb)
+                                        break
 
-                            except json.JSONDecodeError:
+                            except (json.JSONDecodeError, IndexError, KeyError, TypeError):
                                 print(
                                     "Error: JSON decoding failed. Invalid response format",
                                     flush=True,
                                 )
                                 try:
                                     gdb = reset_target_and_gdb(gdb)
-                                except TimeoutError:
+                                except (TimeoutError, IndexError):
                                     gdb = re_initialize(gdb)
 
                             except TimeoutError as e:
@@ -1381,7 +1408,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                 print(e, flush=True)
                                 try:
                                     gdb = reset_target_and_gdb(gdb)
-                                except TimeoutError:
+                                except (TimeoutError, IndexError):
                                     gdb = re_initialize(gdb)
 
             finally:
@@ -1392,7 +1419,9 @@ class SymCryptolibFiSim(unittest.TestCase):
                     gdb.close_gdb()
                 target.close_openocd()
                 sys.stdout = original_stdout
-                self.assertEqual(successful_faults, 0)
+                utils.finish_fi_campaign(parser, successful_faults, args)
+                if not (args.num_skips > 0 or args.dump_json):
+                    self.assertEqual(successful_faults, 0)
                 self.assertEqual(started, True)
 
     def test_cmac(self):
@@ -1523,8 +1552,10 @@ class SymCryptolibFiSim(unittest.TestCase):
                 data_out = [None, None]
 
                 started = True
-                for pc, count in pc_count_dict.items():
-                    for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                for pc, occ_list in utils.select_fi_skips(
+                    pc_count_dict, MAX_SKIPS_PER_LOOP, args.num_skips
+                ).items():
+                    for i_count in occ_list:
                         # Search for collisions in outputs between the cmac instances
                         for i in range(2):
                             print("-" * 80)
@@ -1573,6 +1604,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                     if crash_observation in gdb_response:
                                         print("Crash detected, resetting", flush=True)
                                         gdb = reset_target_and_gdb(gdb)
+                                        break
                                     else:
                                         testos_response_json = json.loads(testos_response)
                                         print("Output:", testos_response_json, flush=True)
@@ -1612,15 +1644,16 @@ class SymCryptolibFiSim(unittest.TestCase):
                                         gdb = reset_target_and_gdb(gdb)
                                     else:
                                         gdb = reset_gdb(gdb)
+                                        break
 
-                            except json.JSONDecodeError:
+                            except (json.JSONDecodeError, IndexError, KeyError, TypeError):
                                 print(
                                     "Error: JSON decoding failed. Invalid response format",
                                     flush=True,
                                 )
                                 try:
                                     gdb = reset_target_and_gdb(gdb)
-                                except TimeoutError:
+                                except (TimeoutError, IndexError):
                                     gdb = re_initialize(gdb)
 
                             except TimeoutError as e:
@@ -1628,7 +1661,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                 print(e, flush=True)
                                 try:
                                     gdb = reset_target_and_gdb(gdb)
-                                except TimeoutError:
+                                except (TimeoutError, IndexError):
                                     gdb = re_initialize(gdb)
 
             finally:
@@ -1639,7 +1672,9 @@ class SymCryptolibFiSim(unittest.TestCase):
                     gdb.close_gdb()
                 target.close_openocd()
                 sys.stdout = original_stdout
-                self.assertEqual(successful_faults, 0)
+                utils.finish_fi_campaign(parser, successful_faults, args)
+                if not (args.num_skips > 0 or args.dump_json):
+                    self.assertEqual(successful_faults, 0)
                 self.assertEqual(started, True)
 
 
