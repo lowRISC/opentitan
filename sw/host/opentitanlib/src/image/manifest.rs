@@ -46,12 +46,16 @@ pub const MANIFEST_EXT_ID_IMAGE_TYPE: u32 = 0x494d4754;
 pub const MANIFEST_EXT_ID_SECVER_WRITE: u32 = 0x3f086a41;
 pub const MANIFEST_EXT_ID_ISFB: u32 = 0x42465349;
 pub const MANIFEST_EXT_ID_ISFB_ERASE: u32 = 0x45465349;
+pub const MANIFEST_EXT_ID_MLDSA87_KEY: u32 = 0xa3e247b8;
+pub const MANIFEST_EXT_ID_MLDSA87_SIGNATURE: u32 = 0x4714ac7d;
 pub const MANIFEST_EXT_NAME_SPX_KEY: u32 = 0x30545845;
 pub const MANIFEST_EXT_NAME_SPX_SIGNATURE: u32 = 0x31545845;
 pub const MANIFEST_EXT_NAME_IMAGE_TYPE: u32 = 0x494d4754;
 pub const MANIFEST_EXT_NAME_SECVER_WRITE: u32 = 0x56434553;
 pub const MANIFEST_EXT_NAME_ISFB: u32 = 0x42465349;
 pub const MANIFEST_EXT_NAME_ISFB_ERASE: u32 = 0x45465349;
+pub const MANIFEST_EXT_NAME_MLDSA87_KEY: u32 = 0x36545845;
+pub const MANIFEST_EXT_NAME_MLDSA87_SIGNATURE: u32 = 0x37545845;
 pub const CHIP_ROM_EXT_IDENTIFIER: u32 = 0x4552544f;
 pub const CHIP_BL0_IDENTIFIER: u32 = 0x3042544f;
 pub const CHIP_ROM_EXT_SIZE_MIN: u32 = 8788;
@@ -171,6 +175,57 @@ pub struct SigverifySpxKey {
 pub struct ManifestExtSpxKey {
     pub header: ManifestExtHeader,
     pub key: SigverifySpxKey,
+}
+
+/// Size of an ML-DSA-87 public key in bytes (FIPS-204).
+pub const MLDSA87_PUBLIC_KEY_BYTES: usize = 2592;
+/// Size of an ML-DSA-87 signature in bytes (FIPS-204).
+pub const MLDSA87_SIGNATURE_BYTES: usize = 4627;
+
+/// A type that holds an ML-DSA-87 signature, zero-padded to a whole number of 32-bit words.
+#[repr(C)]
+#[derive(Immutable, IntoBytes, FromBytes, Debug, Copy, Clone)]
+pub struct SigverifyMldsa87Signature {
+    pub data: [u32; MLDSA87_SIGNATURE_BYTES.div_ceil(size_of::<u32>())],
+}
+
+impl Default for SigverifyMldsa87Signature {
+    fn default() -> Self {
+        Self {
+            data: [0; MLDSA87_SIGNATURE_BYTES.div_ceil(size_of::<u32>())],
+        }
+    }
+}
+
+/// ML-DSA-87 signature manifest extension.
+#[repr(C)]
+#[derive(Immutable, IntoBytes, FromBytes, Debug, Default)]
+pub struct ManifestExtMldsa87Signature {
+    pub header: ManifestExtHeader,
+    pub signature: SigverifyMldsa87Signature,
+}
+
+/// A type that holds an ML-DSA-87 public key as 32-bit words.
+#[repr(C)]
+#[derive(Immutable, IntoBytes, FromBytes, Debug, Copy, Clone)]
+pub struct SigverifyMldsa87Key {
+    pub data: [u32; MLDSA87_PUBLIC_KEY_BYTES / size_of::<u32>()],
+}
+
+impl Default for SigverifyMldsa87Key {
+    fn default() -> Self {
+        Self {
+            data: [0; MLDSA87_PUBLIC_KEY_BYTES / size_of::<u32>()],
+        }
+    }
+}
+
+/// ML-DSA-87 public key manifest extension.
+#[repr(C)]
+#[derive(Immutable, IntoBytes, FromBytes, Debug, Default)]
+pub struct ManifestExtMldsa87Key {
+    pub header: ManifestExtHeader,
+    pub key: SigverifyMldsa87Key,
 }
 
 /// A type that holds 16 32-bit words for ECDSA-P256.
