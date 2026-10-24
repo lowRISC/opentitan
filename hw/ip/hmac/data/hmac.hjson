@@ -414,7 +414,7 @@
     { name: "WIPE_SECRET",
       desc: '''Clear internal secret registers.
 
-            If CPU writes a value into the register, the value is used to clear the internal variables such as the secret key, internal state machine, or hash value.
+            If the CPU writes a value into the register, the value is used to clear some internal variables such as the secret key, intermediate hash results, digest and internal message scheduling array.
             The clear secret operation overwrites the internal variables with the provided 32-bit value.
             For SHA-2 384/512 that work with 64-bit words, the 32-bit value is duplicated and concatenated to generate the 64-bit value.
             It is recommended to use a value extracted from an entropy source.
