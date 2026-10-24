@@ -225,9 +225,9 @@ status_t handle_gdb_if_test(ujson_t *uj) {
   pentest_set_trigger_high();
 
   // Cases best use magic values.
-  if (launder32(if_check) == kHardenedBoolFalse) {
+  if (launder32(if_check) == launder32(kHardenedBoolFalse)) {
     // In an if loop, check the case again via a HARDENED_CHECK_EQ.
-    HARDENED_CHECK_EQ(if_check, kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(if_check, kHardenedBoolFalse);
     // The desired state for the attacker.
     uj_output.result = false;
   }

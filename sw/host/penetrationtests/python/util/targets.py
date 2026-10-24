@@ -185,6 +185,8 @@ class Target:
         for _ in range(max_tries):
             read_line = str(self.readline().decode(errors="replace").strip())
             if len(read_line) > 0:
+                if "FAULT" in read_line:
+                    break
                 if "RESP_OK" in read_line:
                     return read_line.split("RESP_OK:")[1].split(" CRC:")[0]
             elif (getattr(self.target, "_faulted", False) or
