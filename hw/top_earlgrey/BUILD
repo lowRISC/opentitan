@@ -12,6 +12,7 @@ load(
     "CLEAR_TEST_CMD",
     "DEFAULT_TEST_FAILURE_MSG",
     "DEFAULT_TEST_SUCCESS_MSG",
+    "OPENTITAN_BASE_PLATFORM",
     "fpga_cw305",
     "fpga_cw340",
     "silicon",
@@ -430,6 +431,7 @@ sim_dv(
     otp = "//hw/top_earlgrey/data/otp:img_rma",
     otp_data_perm = "//util/design/data:data_perm",
     otp_mmap = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
+    platform_key = "other",
     rram_scramble_tool = "//util/design:gen-rram-img",
     slot_spec = EARLGREY_SLOTS,
 )
@@ -440,4 +442,14 @@ sim_dv(
     base = ":sim_dv_base",
     exec_env = "sim_dv",
     rom = "//sw/device/lib/testing/test_rom:test_rom",
+)
+
+platform(
+    name = "platform",
+    parents = [OPENTITAN_BASE_PLATFORM],
+)
+
+platform(
+    name = "other_platform",
+    parents = [OPENTITAN_BASE_PLATFORM],
 )

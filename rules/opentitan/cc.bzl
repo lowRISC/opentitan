@@ -2,13 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(
-    "@lowrisc_opentitan//rules:rv.bzl",
-    "rv_rule",
-    _OPENTITAN_CPU = "OPENTITAN_CPU",
-    _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
-    _opentitan_transition = "opentitan_transition",
-)
+load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
     "convert_to_vmem",
@@ -163,7 +157,8 @@ def _binary_name(ctx, exec_env):
       str: The name.
     """
     return ctx.attr.naming_convention.format(
-        name = ctx.attr.name,
+        # opentitan_binary allows overriding the name.
+        name = getattr(ctx.attr, "out_name", None) or ctx.attr.name,
         exec_env = exec_env.exec_env,
     )
 
@@ -518,7 +513,15 @@ def _opentitan_binary(ctx):
     ot_bin_env_info = {}
     validations = []
     runfiles = ctx.runfiles()
-    for exec_env_target in ctx.attr.exec_env:
+
+    # Filter execution environments by platform key.
+    exec_envs = [
+        ev
+        for ev in ctx.attr.exec_env
+        if ev[ExecEnvInfo].platform_key == ctx.attr.platform_key
+    ]
+
+    for exec_env_target in exec_envs:
         exec_env = exec_env_target[ExecEnvInfo]
         name = _binary_name(ctx, exec_env)
         deps = ctx.attr.deps + exec_env.libs
@@ -746,7 +749,10 @@ opentitan_binary = rv_rule(
     attrs = dict(common_binary_attrs.items() + {
         "exec_env": attr.label_list(
             providers = [ExecEnvInfo],
-            doc = "List of execution environments for this target.",
+            doc = "List of execution environments for this target. This list will be filtered to only keep the ones match the `platform_key` attribute",
+        ),
+        "out_name": attr.string(
+            doc = "By default, all artifact are prefixed by ctx.attr.name. This can be changed with this attribute.",
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_modid_check": attr.label(
@@ -995,5 +1001,43 @@ exec_env_filegroup = rule(
             doc = "Dictionary of execution environments for this target.",
         ),
         "kind": attr.string(default = "flash", doc = "The kind of binary"),
+    },
+)
+
+def _opentitan_binary_merge(ctx):
+    # Merge the various binary providers together.
+    providers = []
+    groups = {}
+    ot_bin_env_info = {}
+    default_info = []
+    runfiles = []
+    for bin in ctx.attr.binaries:
+        for (prov, ev) in bin[OpenTitanBinaryInfo].exec_env.items():
+            ot_bin_env_info[prov] = ev
+            providers.append(bin[prov])
+            for og in bin[OutputGroupInfo]:
+                groups[og] = groups.get(og, []) + [getattr(bin[OutputGroupInfo], og)]
+            default_info.append(bin[DefaultInfo].files)
+            runfiles.append(bin[DefaultInfo].default_runfiles)
+
+    groups = {
+        og: depset(transitive = files)
+        for (og, files) in groups.items()
+    }
+
+    providers.append(DefaultInfo(files = depset(transitive = default_info), runfiles = ctx.runfiles().merge_all(runfiles)))
+    providers.append(OutputGroupInfo(**groups))
+    providers.append(OpenTitanBinaryInfo(exec_env = ot_bin_env_info))
+    return providers
+
+opentitan_binary_merge = rule(
+    implementation = _opentitan_binary_merge,
+    doc = "Merge the OpenTitan binary providers of several binary targets",
+    attrs = {
+        "binaries": attr.label_list(
+            mandatory = True,
+            providers = [OpenTitanBinaryInfo],
+            doc = "Binaries to merge",
+        ),
     },
 )
