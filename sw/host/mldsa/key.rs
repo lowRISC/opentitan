@@ -218,6 +218,13 @@ impl MldsaPublicKey {
     pub fn as_bytes(&self) -> &[u8] {
         self.key.as_slice()
     }
+
+    /// Verifies the signature and message with the public key under the given
+    /// context string (pure ML-DSA).
+    pub fn verify(&self, context: &[u8], signature: &[u8], msg: &[u8]) -> Result<(), MldsaError> {
+        self.parameter_set
+            .verify(&self.key, context, signature, msg)
+    }
 }
 
 impl DecodeKey for MldsaPublicKey {
@@ -324,19 +331,50 @@ mod test {
     }
 
     #[test]
-    fn sign() -> Result<(), MldsaError> {
+    fn sign_verify() -> Result<(), MldsaError> {
         let parameter_set = MldsaParameterSet::Mldsa87;
         let sk = MldsaSecretKey::generate(parameter_set)?;
+        let pk = sk.public_key();
         let sig = sk.sign(b"context", b"message")?;
         assert_eq!(sig.len(), parameter_set.signature_len());
+        pk.verify(b"context", &sig, b"message")?;
+        assert!(matches!(
+            pk.verify(b"other", &sig, b"message"),
+            Err(MldsaError::BadSignature)
+        ));
+        assert!(matches!(
+            pk.verify(b"context", &sig, b"other"),
+            Err(MldsaError::BadSignature)
+        ));
+        assert!(matches!(
+            pk.verify(b"context", &sig[1..], b"message"),
+            Err(MldsaError::BadSigLength(_))
+        ));
 
         // The context string may be at most 255 bytes long.
-        sk.sign(&[0x5au8; MAX_CONTEXT_LEN], b"message")?;
+        let context = [0x5au8; MAX_CONTEXT_LEN];
+        let sig = sk.sign(&context, b"message")?;
+        pk.verify(&context, &sig, b"message")?;
         assert!(matches!(
             sk.sign(&[0u8; MAX_CONTEXT_LEN + 1], b"message"),
             Err(MldsaError::BadContextLength(_))
         ));
+        assert!(matches!(
+            pk.verify(&[0u8; MAX_CONTEXT_LEN + 1], &sig, b"message"),
+            Err(MldsaError::BadContextLength(_))
+        ));
         Ok(())
+    }
+
+    /// Known answer test vector: generated with OpenSSL 3.5.
+    const KAT_MESSAGE: &[u8] = b"The quick brown fox jumps over the lazy dog";
+    const KAT_CONTEXT: &[u8] = b"OpenTitan";
+    const KAT_PUBLIC: &str = include_str!("testdata/mldsa87.pub.pem");
+    const KAT_SIGNATURE: &[u8] = include_bytes!("testdata/mldsa87.sig");
+
+    #[test]
+    fn known_answer() -> Result<(), MldsaError> {
+        MldsaPublicKey::from_pem(KAT_PUBLIC)?.verify(KAT_CONTEXT, KAT_SIGNATURE, KAT_MESSAGE)
     }
 
     /// Private keys generated with OpenSSL 3.5 in its three output formats.

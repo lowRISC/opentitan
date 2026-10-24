@@ -9,6 +9,12 @@ pub enum MldsaError {
     #[error("ML-DSA signature generation failed")]
     SigGen,
 
+    #[error("Unexpected signature length {0}")]
+    BadSigLength(usize),
+
+    #[error("Signature did not pass verification")]
+    BadSignature,
+
     #[error("Unexpected context length {0}; must be at most 255 bytes")]
     BadContextLength(usize),
 

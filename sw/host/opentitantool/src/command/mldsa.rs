@@ -146,6 +146,36 @@ impl CommandDispatch for MldsaSignCommand {
     }
 }
 
+/// Verify an ML-DSA signature of a message (pure mode).
+#[derive(Debug, Args)]
+pub struct MldsaVerifyCommand {
+    /// The context string as a hex string (at most 255 bytes).
+    #[arg(long, default_value = "")]
+    context: String,
+    /// The file containing the ML-DSA public key (PEM or DER).
+    #[arg(value_name = "KEY")]
+    public_key: PathBuf,
+    /// Message file to verify the signature against.
+    message: PathBuf,
+    /// ML-DSA signature file to verify (raw binary).
+    signature: PathBuf,
+}
+
+impl CommandDispatch for MldsaVerifyCommand {
+    fn run(
+        &self,
+        _context: &dyn Any,
+        _transport: &TransportWrapper,
+    ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        let context = hex::decode(&self.context)?;
+        let message = std::fs::read(&self.message)?;
+        let signature = std::fs::read(&self.signature)?;
+        let public_key = MldsaPublicKey::from_file(&self.public_key)?;
+        public_key.verify(&context, &signature, &message)?;
+        Ok(None)
+    }
+}
+
 /// Commands for interacting with ML-DSA keys.
 #[derive(Debug, Subcommand, CommandDispatch)]
 pub enum MldsaKeySubcommands {
@@ -159,4 +189,5 @@ pub enum Mldsa {
     #[command(subcommand)]
     Key(MldsaKeySubcommands),
     Sign(MldsaSignCommand),
+    Verify(MldsaVerifyCommand),
 }

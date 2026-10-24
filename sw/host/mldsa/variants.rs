@@ -6,14 +6,14 @@ use crate::MldsaError;
 use ml_dsa::common::getrandom::SysRng;
 use ml_dsa::{
     EncodedSignature, EncodedVerifyingKey, ExpandedSigningKeyBytes, MlDsa44, MlDsa65, MlDsa87,
-    MlDsaParams, Seed, SigningKey,
+    MlDsaParams, Seed, Signature, SigningKey, VerifyingKey,
 };
 use pkcs8::ObjectIdentifier;
 use pkcs8::spki::AssociatedAlgorithmIdentifier;
 use std::mem::size_of;
 use strum::{Display, EnumString};
 
-/// Maximum length of the context string (FIPS 204).
+/// Maximum length of the context string (FIPS-204).
 pub(crate) const MAX_CONTEXT_LEN: usize = 255;
 
 /// ML-DSA parameter sets (FIPS 204).
@@ -98,6 +98,35 @@ impl MldsaParameterSet {
             Self::Mldsa87 => sign::<MlDsa87>(seed, context, msg),
         }
     }
+
+    /// Verifies `signature` of `msg` under `context` with the encoded public
+    /// key `pk` (pure mode).
+    pub(crate) fn verify(
+        &self,
+        pk: &[u8],
+        context: &[u8],
+        signature: &[u8],
+        msg: &[u8],
+    ) -> Result<(), MldsaError> {
+        if pk.len() != self.public_key_len() {
+            return Err(MldsaError::BadKeyLength(pk.len()));
+        }
+        if context.len() > MAX_CONTEXT_LEN {
+            return Err(MldsaError::BadContextLength(context.len()));
+        }
+        if signature.len() != self.signature_len() {
+            return Err(MldsaError::BadSigLength(signature.len()));
+        }
+        let valid = match *self {
+            Self::Mldsa44 => verify::<MlDsa44>(pk, context, signature, msg),
+            Self::Mldsa65 => verify::<MlDsa65>(pk, context, signature, msg),
+            Self::Mldsa87 => verify::<MlDsa87>(pk, context, signature, msg),
+        };
+        if !valid {
+            return Err(MldsaError::BadSignature);
+        }
+        Ok(())
+    }
 }
 
 fn public_key<P: MlDsaParams>(seed: &Seed) -> Vec<u8> {
@@ -126,6 +155,20 @@ fn sign<P: MlDsaParams>(seed: &Seed, context: &[u8], msg: &[u8]) -> Result<Vec<u
         .sign_randomized(msg, context, &mut SysRng)
         .map_err(|_| MldsaError::SigGen)?;
     Ok(signature.encode().to_vec())
+}
+
+fn verify<P: MlDsaParams>(pk: &[u8], context: &[u8], signature: &[u8], msg: &[u8]) -> bool {
+    // The lengths have been checked by the caller.
+    let (Ok(pk), Ok(signature)) = (
+        EncodedVerifyingKey::<P>::try_from(pk),
+        EncodedSignature::<P>::try_from(signature),
+    ) else {
+        return false;
+    };
+    let Some(signature) = Signature::<P>::decode(&signature) else {
+        return false;
+    };
+    VerifyingKey::<P>::decode(&pk).verify_with_context(msg, context, &signature)
 }
 
 #[cfg(test)]
