@@ -6,7 +6,7 @@ load(
     "@bazel_skylib//lib:dicts.bzl",
     "dicts",
 )
-load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_alias_top_attr", "opentitan_if_ip", "opentitan_require_ip", "opentitan_require_top", "opentitan_select_top")
+load("//hw/top:defs.bzl", "ALL_IP_NAMES", "opentitan_alias_top_attr", "opentitan_for_ip", "opentitan_require_ip", "opentitan_require_top", "opentitan_select_top")
 load("//rules:autogen.bzl", "autogen_build_info")
 load("//rules:cross_platform.bzl", "dual_cc_device_library_of", "dual_cc_library", "dual_inputs")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
@@ -394,11 +394,9 @@ dual_cc_library(
         host = ["mock_shutdown.h"],
         shared = ["shutdown.h"],
     ),
-    defines = opentitan_if_ip(
-        "keymgr_dpe",
-        ["HAS_KEYMGR_DPE"],
-        [],
-    ),
+    defines = opentitan_for_ip({
+        "keymgr_dpe": ["HAS_KEYMGR_DPE"],
+    }),
     deps = dual_inputs(
         device = [
             ":nvm_ctrl",
@@ -435,19 +433,13 @@ dual_cc_library(
             "//sw/device/lib/base:stdasm",
             "//sw/device/silicon_creator/lib/drivers:alert",
             "//sw/device/silicon_creator/lib/drivers:otp",
-        ] + opentitan_if_ip(
-            "flash_ctrl",
-            [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")],
-            [],
-        ) + opentitan_if_ip(
-            "rram_ctrl",
-            ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
-            [],
-        ) + opentitan_if_ip(
-            "keymgr_dpe",
-            ["//sw/device/silicon_creator/lib/drivers:keymgr_dpe"],
-            [],
-        ),
+        ] + opentitan_for_ip({
+            "flash_ctrl": [
+                dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl"),
+            ],
+            "rram_ctrl": ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
+            "keymgr_dpe": ["//sw/device/silicon_creator/lib/drivers:keymgr_dpe"],
+        }),
     ),
 )
 
@@ -542,7 +534,10 @@ cc_library(
 
 dual_cc_library(
     name = "nvm_ctrl",
-    srcs = dual_inputs(shared = ["nvm_ctrl.c"]),
+    srcs = dual_inputs(shared = [
+        "nvm_ctrl.c",
+        "nvm_data.c",
+    ]),
     hdrs = dual_inputs(shared = ["nvm_ctrl.h"]),
     # Selects which NVM backend nvm_ctrl.h/.c compile against.
     defines = dual_inputs(
@@ -566,40 +561,26 @@ dual_cc_library(
         # Links whichever backend driver(s) the top actually has, matching
         # USE_FLASH/USE_RRAM above. Gated on IP presence (not hardcoded)
         # so this keeps working once a top drops one of the two IPs.
-        device = opentitan_if_ip(
-            "flash_ctrl",
-            [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")],
-            [],
-        ) + opentitan_if_ip(
-            "rram_ctrl",
-            ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
-            [],
-        ),
+        device = opentitan_for_ip({
+            "flash_ctrl": [dual_cc_device_library_of("//sw/device/silicon_creator/lib/drivers:flash_ctrl")],
+            "rram_ctrl": ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
+        }),
         # Same as above, but linking each backend's mock for host tests.
-        host = opentitan_if_ip(
-            "flash_ctrl",
-            ["//sw/device/silicon_creator/lib/drivers:flash_ctrl"],
-            [],
-        ) + opentitan_if_ip(
-            "rram_ctrl",
-            ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
-            [],
-        ),
+        host = opentitan_for_ip({
+            "flash_ctrl": ["//sw/device/silicon_creator/lib/drivers:flash_ctrl"],
+            "rram_ctrl": ["//sw/device/silicon_creator/lib/drivers:rram_ctrl"],
+        }),
         shared = [
             ":error",
             "//hw/top:top_lib",
             "//sw/device/lib/base:hardened",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:multibits",
-        ] + opentitan_if_ip(
-            "flash_ctrl",
-            ["//hw/top:flash_ctrl_c_regs"],
-            [],
-        ) + opentitan_if_ip(
-            "rram_ctrl",
-            ["//hw/top:rram_ctrl_c_regs"],
-            [],
-        ),
+            "//sw/device/silicon_creator/lib/base:chip",
+        ] + opentitan_for_ip({
+            "flash_ctrl": ["//hw/top:flash_ctrl_c_regs"],
+            "rram_ctrl": ["//hw/top:rram_ctrl_c_regs"],
+        }),
     ),
 )
 

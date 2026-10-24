@@ -117,16 +117,23 @@ TEST_P(ManifestOrderTest, ManifestsGet) {
       .security_version = param.version_b.security,
   };
 
-  EXPECT_CALL(boot_policy_ptrs_, ManifestA).WillOnce(Return(&manifest_a));
-  EXPECT_CALL(boot_policy_ptrs_, ManifestB).WillOnce(Return(&manifest_b));
+  EXPECT_CALL(boot_policy_ptrs_, LoadManifestA).WillOnce(Return(&manifest_a));
+  EXPECT_CALL(boot_policy_ptrs_, LoadManifestB).WillOnce(Return(&manifest_b));
+  EXPECT_CALL(boot_policy_ptrs_, UnloadManifestA).WillOnce(Return());
+  EXPECT_CALL(boot_policy_ptrs_, UnloadManifestB).WillOnce(Return());
 
-  boot_policy_manifests_t res = boot_policy_manifests_get();
+  boot_policy_t res;
+  rom_error_t error = boot_policy_choose_slot(&res);
+  EXPECT_EQ(error, kErrorOk);
+
+  boot_slot_t first_choice = boot_policy_get_first_choice(res);
+  boot_slot_t second_choice = boot_policy_get_second_choice(res);
   if (param.is_a_first) {
-    EXPECT_EQ(res.ordered[0], &manifest_a);
-    EXPECT_EQ(res.ordered[1], &manifest_b);
+    EXPECT_EQ(first_choice, kBootSlotA);
+    EXPECT_EQ(second_choice, kBootSlotB);
   } else {
-    EXPECT_EQ(res.ordered[0], &manifest_b);
-    EXPECT_EQ(res.ordered[1], &manifest_a);
+    EXPECT_EQ(first_choice, kBootSlotB);
+    EXPECT_EQ(second_choice, kBootSlotA);
   }
 }
 

@@ -157,6 +157,7 @@ enum module_ {
   X(kErrorBootPolicyBadIdentifier,    ERROR_(1, kModuleBootPolicy, kInternal)), \
   X(kErrorBootPolicyBadLength,        ERROR_(2, kModuleBootPolicy, kInternal)), \
   X(kErrorBootPolicyRollback,         ERROR_(3, kModuleBootPolicy, kInternal)), \
+  X(kErrorBootPolicyLoadFailure,      ERROR_(4, kModuleBootPolicy, kInternal)), \
   \
   X(kErrorBootstrapEraseAddress,      ERROR_(1, kModuleBootstrap, kInvalidArgument)), \
   X(kErrorBootstrapProgramAddress,    ERROR_(2, kModuleBootstrap, kInvalidArgument)), \
@@ -277,7 +278,8 @@ enum module_ {
   X(kErrorUsbBadSetup,                ERROR_(0, kModuleUsb, kInvalidArgument)), \
   X(kErrorUsbBadEndpointNumber,       ERROR_(1, kModuleUsb, kInvalidArgument)), \
   \
-  X(kErrorNvmCtrlInvalidInfoPage,     ERROR_(1, kModuleNvmCtrl, kInvalidArgument)), \
+  X(kErrorNvmCtrlInvalidInfoPage,     ERROR_(0, kModuleNvmCtrl, kInvalidArgument)), \
+  X(kErrorNvmNotFinished,             ERROR_(1, kModuleNvmCtrl, kUnavailable)), \
   \
   /* This comment prevent clang from trying to format the macro. */
 

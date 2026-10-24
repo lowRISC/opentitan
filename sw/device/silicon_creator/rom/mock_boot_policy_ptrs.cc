@@ -6,12 +6,20 @@
 
 namespace rom_test {
 extern "C" {
-const manifest_t *boot_policy_manifest_a_get() {
-  return MockBootPolicyPtrs::Instance().ManifestA();
+const manifest_t *boot_policy_manifest_a_load() {
+  return MockBootPolicyPtrs::Instance().LoadManifestA();
 }
 
-const manifest_t *boot_policy_manifest_b_get() {
-  return MockBootPolicyPtrs::Instance().ManifestB();
+const manifest_t *boot_policy_manifest_b_load() {
+  return MockBootPolicyPtrs::Instance().LoadManifestB();
+}
+
+void boot_policy_manifest_a_unload() {
+  MockBootPolicyPtrs::Instance().UnloadManifestA();
+}
+
+void boot_policy_manifest_b_unload() {
+  MockBootPolicyPtrs::Instance().UnloadManifestB();
 }
 }  // extern "C"
 }  // namespace rom_test
