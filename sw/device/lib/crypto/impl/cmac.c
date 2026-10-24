@@ -174,12 +174,12 @@ static status_t generate_subkey(const aes_block_t *in, aes_block_t *out) {
   uint8_t *in_bytes = (uint8_t *)in_buf;
   uint8_t *out_bytes = (uint8_t *)out_buf;
 
-  uint8_t msb = in_bytes[0] >> 7;
   size_t i;
   for (i = 0; launder32(i) < kAesBlockNumBytes - 1; ++i) {
     out_bytes[i] = (uint8_t)((in_bytes[i] << 1) | (in_bytes[i + 1] >> 7));
   }
   HARDENED_CHECK_EQ(i, kAesBlockNumBytes - 1);
+  uint8_t msb = in_bytes[0] >> 7;
 
   out_bytes[kAesBlockNumBytes - 1] =
       (uint8_t)(in_bytes[kAesBlockNumBytes - 1] << 1) ^
@@ -205,9 +205,9 @@ static status_t cmac_init_core(cmac_ctx_t *ctx) {
   HARDENED_TRY(aes_update(&L, NULL));
   HARDENED_TRY(aes_end(NULL));
 
-  HARDENED_TRY(generate_subkey(&L, &ctx->k1));
-  HARDENED_TRY(generate_subkey(&ctx->k1, &ctx->k2));
-
+  HARDENED_TRY(hardened_memshred(ctx->k1.data, kAesBlockNumWords));
+  HARDENED_TRY(
+      hardened_xor(L.data, ctx->k1.data, kAesBlockNumWords, ctx->k2.data));
   HARDENED_TRY(hardened_memshred(L.data, ARRAYSIZE(L.data)));
 
   size_t i;
@@ -306,16 +306,15 @@ static status_t cmac_final_core(cmac_ctx_t *ctx, otcrypto_word32_buf_t *tag) {
   uint8_t *final_block = (uint8_t *)final_block_words;
   uint8_t *partial_bytes = (uint8_t *)ctx->partial_block;
 
+  aes_block_t subkey_share0;
+  aes_block_t subkey_share1;
+  HARDENED_TRY(generate_subkey(&ctx->k1, &subkey_share0));
+  HARDENED_TRY(generate_subkey(&ctx->k2, &subkey_share1));
+
   if (launder32(ctx->partial_block_len) == kAesBlockNumBytes) {
     HARDENED_CHECK_EQ(ctx->partial_block_len, kAesBlockNumBytes);
     HARDENED_TRY(hardened_memcpy(final_block_words, ctx->partial_block,
                                  kAesBlockNumWords));
-
-    size_t i;
-    for (i = 0; launder32(i) < kAesBlockNumBytes; i++) {
-      final_block[i] ^= ((uint8_t *)ctx->k1.data)[i];
-    }
-    HARDENED_CHECK_EQ(i, kAesBlockNumBytes);
   } else {
     HARDENED_CHECK_LT(ctx->partial_block_len, kAesBlockNumBytes);
     HARDENED_TRY(randomized_bytecopy(final_block, partial_bytes,
@@ -333,12 +332,14 @@ static status_t cmac_final_core(cmac_ctx_t *ctx, otcrypto_word32_buf_t *tag) {
       HARDENED_CHECK_EQ(i, padding_len);
     }
 
-    size_t i;
-    for (i = 0; launder32(i) < kAesBlockNumBytes; i++) {
-      final_block[i] ^= ((uint8_t *)ctx->k2.data)[i];
-    }
-    HARDENED_CHECK_EQ(i, kAesBlockNumBytes);
+    HARDENED_TRY(generate_subkey(&subkey_share0, &subkey_share0));
+    HARDENED_TRY(generate_subkey(&subkey_share1, &subkey_share1));
   }
+
+  HARDENED_TRY(hardened_xor_in_place(final_block_words, subkey_share0.data,
+                                     kAesBlockNumWords));
+  HARDENED_TRY(hardened_xor_in_place(final_block_words, subkey_share1.data,
+                                     kAesBlockNumWords));
 
   HARDENED_TRY(
       hardened_memcpy(block_in.data, final_block_words, kAesBlockNumWords));
