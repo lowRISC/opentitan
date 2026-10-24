@@ -1,0 +1,10 @@
+The Ibex Project
+Copyright 2024 lowRISC contributors.
+
+This product includes hardware and/or software developed as part of the
+Ibex(R) (https://github.com/lowRISC/ibex) and OpenTitan(R) projects.
+
+Ibex was originally developed by the PULP team at ETH Zurich and University of
+Bologna under the name zero-riscy. Ibex verification, performance enhancement
+and security hardening have been supported by the OpenTitan project
+(https://www.opentitan.org).
