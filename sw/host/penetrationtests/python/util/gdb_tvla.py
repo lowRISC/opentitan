@@ -509,6 +509,45 @@ class IbexRFTraceEvaluator:
 _RF_TRACE_RE = re.compile(
     r"RF_TRACE(?:_END)?:\s+([0-9a-fA-F]+)((?:\s+[0-9a-fA-F]+){31})"
 )
+_QEMU_TRACE_RE = re.compile(
+    r" pc\s+([0-9a-f]+)[^x]+x0/zero\s+[0-9a-f]+" +
+    "".join(r"\s+x\d+/\S+\s+([0-9a-f]+)" for _ in range(31))
+)
+
+
+def _parse_qemu_cpu_log_trace(
+    raw_log: str,
+    window: "TraceWindow",
+    end_entry: Optional[Tuple[int, Tuple[int, ...]]],
+) -> List[Tuple[int, Tuple[int, ...]]]:
+    """Parse QEMU ``log cpu,nochain`` output for a single trace window."""
+    end_pc = int(window.end_address, 16)
+    skip_pcs = {
+        int(addr, 16) for addr in window.skip_addresses if addr.startswith("0x")
+    }
+    trace: List[Tuple[int, Tuple[int, ...]]] = []
+    skip_until_pc: Optional[int] = None
+
+    for idx, m in enumerate(_QEMU_TRACE_RE.finditer(raw_log)):
+        pc = int(m.group(1), 16)
+        if pc == end_pc:
+            break
+        if idx == 0 and window.name.startswith("trigger:"):
+            skip_until_pc = int(m.group(2), 16)  # x1 (ra)
+            continue
+        if skip_until_pc is not None:
+            if pc != skip_until_pc:
+                continue
+            skip_until_pc = None
+        if idx > 0 and pc in skip_pcs:
+            skip_until_pc = int(m.group(2), 16)  # x1 (ra)
+            continue
+        regs = tuple(int(g, 16) for g in m.groups()[1:])
+        trace.append((pc, regs))
+
+    if end_entry is not None:
+        trace.append(end_entry)
+    return trace
 
 
 @dataclass
@@ -842,6 +881,8 @@ class GDBTVLACampaign:
         self._gdb_buffer = ""
         self._gdb_scan_pos = 0
         self._pending_groups: List[int] = []
+        self._qemu_log_path: Optional[str] = None
+        self._qemu_log_offset: int = 0
 
     def reset_stats(self) -> None:
         """Clear accumulated TVLA traces and pending groups."""
@@ -1075,7 +1116,38 @@ class GDBTVLACampaign:
         if idle_addr:
             while_cond += f" && ($pc != {idle_addr})"
 
-        gdb_script = f"""
+        if is_qemu_available() and window.end_address.startswith("0x"):
+            self._qemu_log_path = os.path.abspath(
+                os.environ.get("QEMU_LOG", "qemu.log")
+            )
+            self._qemu_log_offset = (
+                os.path.getsize(self._qemu_log_path)
+                if os.path.exists(self._qemu_log_path)
+                else 0
+            )
+            end_bps = [window.end_address] + ([exc_addr] if exc_addr else [])
+            end_bp_cmds = "\n".join(
+                f"b *({addr})\ncommands\n    silent\n    monitor log nochain\n"
+                f'    printf "\\nRF_TRACE_END: {reg_fmt}\\n", {reg_args}\nend'
+                for addr in end_bps
+            )
+            gdb_script = f"""
+set print frame-info short-location
+set print frame-arguments none
+monitor logfile {self._qemu_log_path}
+monitor one-insn-per-tb on
+monitor log nochain
+b *({window.start_address})
+commands
+    silent
+    monitor log cpu,nochain
+    c
+end
+{end_bp_cmds}
+"""
+        else:
+            self._qemu_log_path = None
+            gdb_script = f"""
 set print frame-info short-location
 set print frame-arguments none
 define rf_traceloop
@@ -1156,17 +1228,27 @@ end
             self._gdb_buffer = self._gdb_buffer[prompt_pos + len("(gdb)"):]
             self._gdb_scan_pos = 0
 
+            raw_qemu_log = ""
+            if self._qemu_log_path and self._active_window is not None:
+                with open(self._qemu_log_path, "r", errors="replace") as f_log:
+                    f_log.seek(self._qemu_log_offset)
+                    raw_qemu_log = f_log.read()
+                    self._qemu_log_offset = f_log.tell()
+
             # Resume GDB now that it has returned to the (gdb) prompt.
             self.gdb.send_command("c", check_response=False)
 
             if "RF_TRACE_START" in segment_chunk:
                 segment_chunk = segment_chunk.split("RF_TRACE_START", 1)[1]
 
-            trace: List[Tuple[int, Tuple[int, ...]]] = []
-            for m in _RF_TRACE_RE.finditer(segment_chunk):
-                pc = int(m.group(1), 16)
-                regs = tuple(int(x, 16) for x in m.group(2).split())
-                trace.append((pc, regs))
+            trace: List[Tuple[int, Tuple[int, ...]]] = [
+                (int(m.group(1), 16), tuple(int(x, 16) for x in m.group(2).split()))
+                for m in _RF_TRACE_RE.finditer(segment_chunk)
+            ]
+            if self._qemu_log_path and self._active_window is not None:
+                trace = _parse_qemu_cpu_log_trace(
+                    raw_qemu_log, self._active_window, trace[-1] if trace else None
+                )
 
             group = pending_groups.pop(0) if pending_groups else 0
             if trace:
