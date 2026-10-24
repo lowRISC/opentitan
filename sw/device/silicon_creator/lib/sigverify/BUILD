@@ -34,6 +34,14 @@ cc_library(
 )
 
 cc_library(
+    name = "mldsa87_key",
+    hdrs = ["mldsa87_key.h"],
+    deps = [
+        "//sw/device/lib/base:macros",
+    ],
+)
+
+cc_library(
     name = "rsa_key",
     srcs = ["rsa_key.c"],
     hdrs = ["rsa_key.h"],

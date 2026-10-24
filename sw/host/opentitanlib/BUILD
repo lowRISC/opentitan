@@ -242,6 +242,7 @@ rust_library(
         "openocd_fpga_backdoor_target_cfg": "$(location //util/openocd/target:lowrisc-earlgrey-fpga-backdoor.cfg)",
     },
     deps = [
+        "//sw/host/mldsa",
         "//sw/host/opentitanlib/bindgen",
         "//sw/host/opentitanlib/util",
         "//sw/host/ot_hal",

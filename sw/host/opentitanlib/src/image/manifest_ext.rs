@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{Result, ensure};
 use serde::{self, Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
@@ -13,6 +13,7 @@ use crate::image::manifest::*;
 use crate::image::manifest_def::le_bytes_to_word_arr;
 use crate::util::num_de::HexEncoded;
 use crate::with_unknown;
+use mldsa::{MldsaParameterSet, MldsaPublicKey};
 use sphincsplus::{DecodeKey, SpxPublicKey};
 
 #[derive(Debug, Error)]
@@ -31,6 +32,8 @@ with_unknown! {
         secver_write = MANIFEST_EXT_ID_SECVER_WRITE,
         isfb = MANIFEST_EXT_ID_ISFB,
         isfb_erase = MANIFEST_EXT_ID_ISFB_ERASE,
+        mldsa87_key = MANIFEST_EXT_ID_MLDSA87_KEY,
+        mldsa87_signature = MANIFEST_EXT_ID_MLDSA87_SIGNATURE,
     }
 }
 
@@ -95,6 +98,8 @@ pub enum ManifestExtEntrySpec {
 pub enum ManifestExtEntry {
     SpxKey(ManifestExtSpxKey),
     SpxSignature(Box<ManifestExtSpxSignature>),
+    Mldsa87Key(Box<ManifestExtMldsa87Key>),
+    Mldsa87Signature(Box<ManifestExtMldsa87Signature>),
     ImageType(ManifestExtImageType),
     SecVerWrite(ManifestExtSecVerWrite),
     Isfb(ManifestExtIsfb),
@@ -173,6 +178,41 @@ impl ManifestExtEntry {
                     name: MANIFEST_EXT_NAME_SPX_SIGNATURE,
                 },
                 signature: SigverifySpxSignature {
+                    data: le_bytes_to_word_arr(signature)?,
+                },
+            },
+        )))
+    }
+
+    /// Creates a new manifest extension from a given ML-DSA-87 `key`.
+    pub fn new_mldsa87_key_entry(key: &MldsaPublicKey) -> Result<Self> {
+        ensure!(
+            key.parameter_set() == MldsaParameterSet::Mldsa87,
+            "Only ML-DSA-87 keys are supported, got {}",
+            key.parameter_set()
+        );
+        Ok(ManifestExtEntry::Mldsa87Key(Box::new(
+            ManifestExtMldsa87Key {
+                header: ManifestExtHeader {
+                    identifier: MANIFEST_EXT_ID_MLDSA87_KEY,
+                    name: MANIFEST_EXT_NAME_MLDSA87_KEY,
+                },
+                key: SigverifyMldsa87Key {
+                    data: le_bytes_to_word_arr(key.as_bytes())?,
+                },
+            },
+        )))
+    }
+
+    /// Creates a new manifest extension from a given ML-DSA-87 `signature`.
+    pub fn new_mldsa87_signature_entry(signature: &[u8]) -> Result<Self> {
+        Ok(ManifestExtEntry::Mldsa87Signature(Box::new(
+            ManifestExtMldsa87Signature {
+                header: ManifestExtHeader {
+                    identifier: MANIFEST_EXT_ID_MLDSA87_SIGNATURE,
+                    name: MANIFEST_EXT_NAME_MLDSA87_SIGNATURE,
+                },
+                signature: SigverifyMldsa87Signature {
                     data: le_bytes_to_word_arr(signature)?,
                 },
             },
@@ -287,6 +327,8 @@ impl ManifestExtEntry {
         match self {
             ManifestExtEntry::SpxKey(key) => &key.header,
             ManifestExtEntry::SpxSignature(sig) => &sig.header,
+            ManifestExtEntry::Mldsa87Key(key) => &key.header,
+            ManifestExtEntry::Mldsa87Signature(sig) => &sig.header,
             ManifestExtEntry::ImageType(image_type) => &image_type.header,
             ManifestExtEntry::SecVerWrite(sv) => &sv.header,
             ManifestExtEntry::Isfb(isfb) => &isfb.header,
@@ -300,6 +342,8 @@ impl ManifestExtEntry {
         match self {
             ManifestExtEntry::SpxKey(key) => key.as_bytes().to_vec(),
             ManifestExtEntry::SpxSignature(sig) => sig.as_bytes().to_vec(),
+            ManifestExtEntry::Mldsa87Key(key) => key.as_bytes().to_vec(),
+            ManifestExtEntry::Mldsa87Signature(sig) => sig.as_bytes().to_vec(),
             ManifestExtEntry::ImageType(image_type) => image_type.as_bytes().to_vec(),
             ManifestExtEntry::SecVerWrite(sv) => sv.as_bytes().to_vec(),
             ManifestExtEntry::Isfb(isfb) => isfb.to_vec().unwrap(),

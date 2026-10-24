@@ -11,6 +11,7 @@ use std::mem::{align_of, offset_of, size_of};
 use std::path::{Path, PathBuf};
 
 use anyhow::{Result, bail, ensure};
+use mldsa::{MldsaParameterSet, MldsaPublicKey};
 use sphincsplus::{SphincsPlus, SpxDomain, SpxPublicKey};
 use thiserror::Error;
 use zerocopy::FromBytes;
@@ -19,8 +20,9 @@ use crate::crypto::ecdsa::{EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature}
 use crate::crypto::sha256::Sha256Digest;
 use crate::image::manifest::{
     CHIP_MANIFEST_VERSION_MAJOR2, CHIP_ROM_EXT_IDENTIFIER, CHIP_ROM_EXT_SIZE_MAX,
-    MANIFEST_EXT_ID_SPX_KEY, MANIFEST_EXT_ID_SPX_SIGNATURE, Manifest, ManifestKind,
-    SigverifySpxSignature,
+    MANIFEST_EXT_ID_MLDSA87_KEY, MANIFEST_EXT_ID_MLDSA87_SIGNATURE, MANIFEST_EXT_ID_SPX_KEY,
+    MANIFEST_EXT_ID_SPX_SIGNATURE, MLDSA87_PUBLIC_KEY_BYTES, MLDSA87_SIGNATURE_BYTES, Manifest,
+    ManifestExtHeader, ManifestKind, SigverifySpxSignature,
 };
 use crate::image::manifest_def::{ManifestSigverifyBuffer, ManifestSpec};
 use crate::image::manifest_ext::{ManifestExtEntry, ManifestExtEntrySpec};
@@ -56,11 +58,17 @@ pub struct SpxSignatureParams {
     signature: [u8; 7856],
 }
 
-// Binary image is signed either RSA or ECDSA. SPX+ signature could be added as
-// an extension.
+pub struct Mldsa87SignatureParams {
+    key: MldsaPublicKey,
+    signature: [u8; MLDSA87_SIGNATURE_BYTES],
+}
+
+// Binary image is signed either RSA or ECDSA. SPX+ and ML-DSA-87 signatures
+// could be added as extensions.
 pub struct SigverifyParams {
     pub main_sig_params: MainSignatureParams,
     pub spx_sig_params: Option<SpxSignatureParams>,
+    pub mldsa87_sig_params: Option<Mldsa87SignatureParams>,
     pub spx_hash_reversal_bug: bool,
 }
 
@@ -68,10 +76,12 @@ impl SigverifyParams {
     pub fn new(
         main_sig_params: MainSignatureParams,
         spx_sig_params: Option<SpxSignatureParams>,
+        mldsa87_sig_params: Option<Mldsa87SignatureParams>,
     ) -> Self {
         SigverifyParams {
             main_sig_params,
             spx_sig_params,
+            mldsa87_sig_params,
             spx_hash_reversal_bug: false,
         }
     }
@@ -105,6 +115,17 @@ impl SigverifyParams {
             spx.key.verify(domain, &spx.signature, &msg)?;
         } else {
             bail!("No SPX signature found");
+        }
+
+        Ok(())
+    }
+
+    // Verify the optional ML-DSA-87 signature (pure mode).
+    pub fn mldsa87_verify(&self, b: &[u8]) -> Result<()> {
+        if let Some(mldsa) = &self.mldsa87_sig_params {
+            mldsa.key.verify(&[], &mldsa.signature, b)?;
+        } else {
+            bail!("No ML-DSA-87 signature found");
         }
 
         Ok(())
@@ -238,11 +259,39 @@ impl Image {
         }
     }
 
+    fn get_mldsa87_signature(&self) -> Result<Option<Mldsa87SignatureParams>> {
+        let ext_tab = self.borrow_manifest()?.extensions.entries;
+        let key_o = ext_tab
+            .iter()
+            .find(|e| e.identifier == MANIFEST_EXT_ID_MLDSA87_KEY);
+        let sig_o = ext_tab
+            .iter()
+            .find(|e| e.identifier == MANIFEST_EXT_ID_MLDSA87_SIGNATURE);
+
+        match (key_o, sig_o) {
+            (Some(key_e), Some(sig_e)) => {
+                let mut signature = [0u8; MLDSA87_SIGNATURE_BYTES];
+                let k_ofs = key_e.offset as usize + size_of::<ManifestExtHeader>();
+                let s_ofs = sig_e.offset as usize + size_of::<ManifestExtHeader>();
+
+                signature.copy_from_slice(&self.data.bytes[s_ofs..s_ofs + MLDSA87_SIGNATURE_BYTES]);
+                let key = MldsaPublicKey::from_bytes(
+                    MldsaParameterSet::Mldsa87,
+                    &self.data.bytes[k_ofs..k_ofs + MLDSA87_PUBLIC_KEY_BYTES],
+                )?;
+
+                Ok(Some(Mldsa87SignatureParams { key, signature }))
+            }
+            (_, _) => Ok(None),
+        }
+    }
+
     pub fn get_sigverify_params_from_manifest(&self) -> Result<SigverifyParams> {
         let manifest = self.borrow_manifest()?;
         let manifest_def: ManifestSpec = manifest.try_into()?;
 
         let spx_sig_params = self.get_spx_signature()?;
+        let mldsa87_sig_params = self.get_mldsa87_signature()?;
 
         let pub_key = manifest_def
             .pub_key()
@@ -260,6 +309,7 @@ impl Image {
         Ok(SigverifyParams::new(
             MainSignatureParams::Ecdsa(ecdsa_pub_key, ecdsa_sig),
             spx_sig_params,
+            mldsa87_sig_params,
         ))
     }
 
