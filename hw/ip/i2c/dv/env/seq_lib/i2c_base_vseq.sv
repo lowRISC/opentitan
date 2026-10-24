@@ -853,12 +853,19 @@ class i2c_base_vseq extends cip_base_vseq #(
     `DV_CHECK(min_num_transfers <= max_num_transfers)
 
     // Randomize the number of transfers in the transaction.
-    // TODO(#23920) Consider re-implementing to avoid waiver.
-    num_transfers = $dist_normal( // verilog_lint: waive invalid-system-task-function
-      /* seed */ seed,
-      /* mean */ int'(num_data_total * real'(cfg.rs_pct / 100.0)),
-      /* stddev */ int'(num_data_total * 0.10)
-    );
+    // Previously used $dist_normal() which required a lint waiver for the
+    // invalid-system-task-function rule. Replaced with std::randomize()
+    // constrained to [mean ± 2σ], covering ~95% of the original distribution's
+    // mass without any non-standard system function. (#23920)
+    begin
+      int mean   = int'(num_data_total * real'(cfg.rs_pct / 100.0));
+      int stddev = int'(num_data_total * 0.10);
+      int lo     = (mean - 2 * stddev > 1) ? (mean - 2 * stddev) : 1;
+      int hi     = mean + 2 * stddev;
+      `DV_CHECK_FATAL(std::randomize(num_transfers) with {
+        num_transfers inside {[lo:hi]};
+      }, "Failed to randomize num_transfers in create_txn()")
+    end
     // Saturate into the possible range if we happen to fall outside of it.
     if (num_transfers < min_num_transfers ||
         num_transfers > max_num_transfers) begin
