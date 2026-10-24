@@ -12,15 +12,19 @@ use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 
+use ml_dsa::{MlDsa87, SigningKey};
 use opentitanlib::app::TransportWrapper;
 use opentitanlib::app::command::CommandDispatch;
 
 use opentitanlib::crypto::ecdsa::{
     EcdsaPrivateKey, EcdsaPublicKey, EcdsaRawPublicKey, EcdsaRawSignature,
 };
+use opentitanlib::crypto::mldsa::{load_mldsa_key, mldsa_sign};
 use opentitanlib::crypto::sha256::Sha256Digest;
 use opentitanlib::image::image::{self, ImageAssembler};
-use opentitanlib::image::manifest::{ManifestExtSpxSignature, ManifestKind};
+use opentitanlib::image::manifest::{
+    MLDSA87_IMAGE_CONTEXT, ManifestExtMldsa87Signature, ManifestExtSpxSignature, ManifestKind,
+};
 use opentitanlib::image::manifest_def::ManifestSpec;
 use opentitanlib::image::manifest_ext::{ManifestExtEntry, ManifestExtId};
 use opentitanlib::util::file::{FromReader, ToWriter};
@@ -127,6 +131,12 @@ pub struct ManifestUpdateCommand {
     /// Filename for an external SPHINCS+ signature file.
     #[arg(short, long)]
     spx_signature: Option<PathBuf>,
+    /// Filename for an external ML-DSA-87 signature file.
+    ///
+    /// The signature is over the signed region of the image (see `image message`)
+    /// with the context string "OT-MLDSA-IMAGE" (pure mode).
+    #[arg(long)]
+    mldsa_signature: Option<PathBuf>,
     /// Filename for the ECDSA key corresponding to the signature.
     ///
     /// Passing a private key indicates the key will be used for signing.
@@ -137,6 +147,11 @@ pub struct ManifestUpdateCommand {
     /// Passing a private key indicates the key will be used for signing.
     #[arg(long)]
     spx_key: Option<PathBuf>,
+    /// Filename for the ML-DSA-87 key corresponding to the signature.
+    ///
+    /// Passing a private key indicates the key will be used for signing.
+    #[arg(long)]
+    mldsa_key: Option<PathBuf>,
     /// The signature domain (None, Pure, PreHashedSha256)
     #[arg(long, default_value_t = SpxDomain::default())]
     domain: SpxDomain,
@@ -162,6 +177,25 @@ fn load_ecdsa_key(key_file: &Path) -> Result<(EcdsaPublicKey, Option<EcdsaPrivat
             Err(e) => Err(e),
         },
     }
+}
+
+/// Allocates space for the signature extension `id` unless it is already present.
+fn allocate_signature_extension(
+    image: &mut image::Image,
+    id: ManifestExtId,
+    size: usize,
+) -> Result<()> {
+    let id = u32::from(id);
+    if !image
+        .borrow_manifest()?
+        .extensions
+        .entries
+        .iter()
+        .any(|e| e.identifier == id && e.offset != 0)
+    {
+        image.allocate_manifest_extension(id, size)?;
+    }
+    Ok(())
 }
 
 impl CommandDispatch for ManifestUpdateCommand {
@@ -221,22 +255,32 @@ impl CommandDispatch for ManifestUpdateCommand {
             let key_ext = ManifestExtEntry::new_spx_key_entry(&pk)?;
             image.add_manifest_extension(key_ext)?;
             spx_private_key = sk;
+        }
 
-            if !image
-                .borrow_manifest()?
-                .extensions
-                .entries
-                .iter()
-                .any(|e| e.identifier == u32::from(ManifestExtId::spx_signature) && e.offset != 0)
-            {
-                // Allocate space for `spx_signature` (this impacts the manifest
-                // `length` field which is in the signed region of the image).
-                // Adding this facilitates offline signing.
-                image.allocate_manifest_extension(
-                    ManifestExtId::spx_signature.into(),
-                    std::mem::size_of::<ManifestExtSpxSignature>(),
-                )?;
-            }
+        // Load / write the ML-DSA-87 public key.
+        let mut mldsa_private_key: Option<SigningKey<MlDsa87>> = None;
+        if let Some(key) = &self.mldsa_key {
+            let (pk, sk) = load_mldsa_key::<MlDsa87>(key)?;
+            image.add_manifest_extension(ManifestExtEntry::new_mldsa87_key_entry(&pk)?)?;
+            mldsa_private_key = sk;
+        }
+
+        // Allocate space for the signatures (this impacts the manifest `length`
+        // field which is in the signed region of the image). Adding this
+        // facilitates offline signing.
+        if self.spx_key.is_some() {
+            allocate_signature_extension(
+                &mut image,
+                ManifestExtId::spx_signature,
+                std::mem::size_of::<ManifestExtSpxSignature>(),
+            )?;
+        }
+        if self.mldsa_key.is_some() {
+            allocate_signature_extension(
+                &mut image,
+                ManifestExtId::mldsa87_signature,
+                std::mem::size_of::<ManifestExtMldsa87Signature>(),
+            )?;
         }
 
         // Update the manifest fields that are in the unsigned region.
@@ -257,6 +301,7 @@ impl CommandDispatch for ManifestUpdateCommand {
             .map(|e| e.id())
             .chain(vec![
                 ManifestExtId::spx_key.into(),
+                ManifestExtId::mldsa87_key.into(),
                 ManifestExtId::secver_write.into(),
                 ManifestExtId::isfb.into(),
                 ManifestExtId::isfb_erase.into(),
@@ -296,6 +341,14 @@ impl CommandDispatch for ManifestUpdateCommand {
                     &sig_bytes,
                 )?)?;
             }
+            // Sign with ML-DSA-87 (pure mode).
+            if let Some(key) = mldsa_private_key {
+                let sig_bytes = image
+                    .map_signed_region(|buf| mldsa_sign(&key, MLDSA87_IMAGE_CONTEXT, buf))??;
+                image.add_manifest_extension(ManifestExtEntry::new_mldsa87_signature_entry(
+                    &sig_bytes.encode(),
+                )?)?;
+            }
         }
 
         // Offline signing takes place if signatures are provided.
@@ -309,6 +362,14 @@ impl CommandDispatch for ManifestUpdateCommand {
             let signature = SpxRawSignature::read_from_file(spx_signature, self.spx_algorithm)?;
             image.add_manifest_extension(ManifestExtEntry::new_spx_signature_entry(
                 signature.as_bytes(),
+            )?)?;
+        }
+
+        // Attach ML-DSA-87 signature.
+        if let Some(mldsa_signature) = &self.mldsa_signature {
+            let signature = std::fs::read(mldsa_signature)?;
+            image.add_manifest_extension(ManifestExtEntry::new_mldsa87_signature_entry(
+                &signature,
             )?)?;
         }
 
@@ -331,6 +392,9 @@ pub struct ManifestVerifyCommand {
     /// The SPX signature was created with a reversed hash.
     #[arg(long, default_value_t = false)]
     spx_hash_reversal_bug: bool,
+    /// Run verification for ML-DSA-87.
+    #[arg(long)]
+    mldsa: bool,
 }
 
 impl CommandDispatch for ManifestVerifyCommand {
@@ -358,6 +422,14 @@ impl CommandDispatch for ManifestVerifyCommand {
                             self.domain
                         );
                     })
+            })??;
+        }
+
+        if self.mldsa {
+            image.map_signed_region(|b| {
+                sigverify_params
+                    .mldsa87_verify(b)
+                    .inspect_err(|_| eprintln!("ML-DSA-87 signature verification failed"))
             })??;
         }
 
@@ -398,9 +470,10 @@ impl CommandDispatch for DigestCommand {
     }
 }
 
-/// Compute spx-message command.
+/// Extract the signed region of the image, i.e. the message signed in pure
+/// mode.
 #[derive(Debug, Args)]
-pub struct SpxMessageCommand {
+pub struct MessageCommand {
     /// Filename for the image to calculate the digest for.
     image: PathBuf,
     /// Filename for an output bin file.
@@ -408,7 +481,7 @@ pub struct SpxMessageCommand {
     output: PathBuf,
 }
 
-impl CommandDispatch for SpxMessageCommand {
+impl CommandDispatch for MessageCommand {
     fn run(
         &self,
         _context: &dyn Any,
@@ -439,5 +512,6 @@ pub enum Image {
     #[command(subcommand)]
     Manifest(ManifestCommand),
     Digest(DigestCommand),
-    SpxMessage(SpxMessageCommand),
+    #[command(alias = "spx-message")]
+    Message(MessageCommand),
 }
