@@ -311,25 +311,15 @@ static void ctx_free(struct tcp_server_ctx *ctx) {
 }
 
 /**
- * Thread function to create a new server instance
+ * Thread function to process server events
  *
  * @param ctx_void context object
  * @return Always returns NULL
  */
-static void *server_create(void *ctx_void) {
+static void *server_process(void *ctx_void) {
   // Cast to a server struct
   struct tcp_server_ctx *ctx = (struct tcp_server_ctx *)ctx_void;
   struct timeval timeout;
-
-  // Start the server
-  int rv = start(ctx);
-  if (rv != 0) {
-    fprintf(stderr, "%s: Unable to create TCP server on port %d\n",
-            ctx->display_name, ctx->listen_port);
-    goto err_cleanup_return;
-  }
-
-  // Initialise fd_set
 
   // Start waiting for connection / data
   char xfer_data;
@@ -352,7 +342,7 @@ static void *server_create(void *ctx_void) {
     timeout.tv_usec = 50;
 
     // Wait for socket activity or timeout
-    rv = select(mfd + 1, &read_fds, NULL, NULL, &timeout);
+    int rv = select(mfd + 1, &read_fds, NULL, NULL, &timeout);
 
     if (rv < 0) {
       if (errno == EINTR) {
@@ -416,7 +406,19 @@ struct tcp_server_ctx *tcp_server_create(const char *display_name,
   ctx->display_name = strdup(display_name);
   assert(ctx->display_name);
 
-  if (pthread_create(&ctx->sock_thread, NULL, server_create, (void *)ctx) !=
+  // Open the listening socket synchronously
+  int rv = start(ctx);
+  if (rv != 0) {
+    fprintf(stderr, "%s: Unable to create TCP server on port %d\n",
+            ctx->display_name, ctx->listen_port);
+    // Failing to create the listening socket is treated as a fatal
+    // error. If the creation of this socket is not important, it
+    // should not even be attempted.
+    exit(1);
+  }
+
+  // Start a thread to accept connections and transfer data
+  if (pthread_create(&ctx->sock_thread, NULL, server_process, (void *)ctx) !=
       0) {
     fprintf(stderr, "%s: Unable to create TCP socket thread\n",
             ctx->display_name);
