@@ -1128,7 +1128,10 @@ status_t entropy_complex_health_test_config_check(hardened_bool_t fips) {
 
   // Check recoverable alerts
   if (abs_mmio_read32(kBaseEntropySrc +
-                      ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET) != 0) {
+                      ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET) != 0 ||
+      abs_mmio_read32(kBaseCsrng + CSRNG_RECOV_ALERT_STS_REG_OFFSET) != 0 ||
+      abs_mmio_read32(kBaseEdn0 + EDN_RECOV_ALERT_STS_REG_OFFSET) != 0 ||
+      abs_mmio_read32(kBaseEdn1 + EDN_RECOV_ALERT_STS_REG_OFFSET) != 0) {
     // COVERAGE (HW ERR) This is only reached when we detect a HW alert.
     return OTCRYPTO_RECOV_ERR;
   }
