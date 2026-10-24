@@ -698,3 +698,8 @@ When enabled using the [`SRAM_CTRL.READBACK`](../sram_ctrl/doc/registers.md#read
 On an integrity failure, for example caused by a fault injection attack, a fatal alert is raised and the alert register [`STATUS.READBACK_ERROR`](../sram_ctrl/doc/registers.md#status--readback_error) is set.
 When the host issues a read, the `tlul_sram_byte` module performs the read, internally stores the received data from the memory, issues a second read, and compares the values of the first and second reads.
 Similarily, on a write, the module temporarily stores the data to write, performs the write, issues a readback, and compares the read back value to the temporarily stored write data to ensure that the data correctly got written into the memory.
+
+Note that the readback mode does not cover the read part of the read-modify-write operation that is used to perform sub-word (partial) writes.
+For such a write, tlul_sram_byte first reads the full word from memory, merges the bytes to write into it, recomputes the integrity bits over the merged word, and writes it back.
+In readback mode, only the final write is read back and compared against the merged word.
+The initial read is neither read back nor checked for integrity, and its integrity bits are discarded.
