@@ -1,9 +1,7 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
-
 module uart_bind;
-
   bind uart tlul_assert #(
     .EndpointType("Device")
   ) tlul_assert_device (
@@ -18,6 +16,15 @@ module uart_bind;
     .rst_ni,
     .h2d    (tl_i),
     .d2h    (tl_o)
-);
-
+  );
+  bind uart_tx uart_tx_sva uart_tx_sva_inst (
+    .clk_i,
+    .rst_ni,
+    .tx_enable_i  (tx_enable),
+    .tx_o         (tx),
+    .idle_o       (idle),
+    .bit_cnt_q,
+    .parity_enable_i (parity_enable),
+    .wr_i         (wr)
+  );
 endmodule
