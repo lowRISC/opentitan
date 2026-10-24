@@ -66,7 +66,8 @@ def trigger_testos_init(print_output=True):
 
 def read_testos_output():
     # Read the output from the operation
-    response = target.read_response(max_tries=1000)
+    max_tries = 1000 if targets.is_qemu_available() else 2
+    response = target.read_response(max_tries=max_tries)
     return response
 
 
@@ -1016,7 +1017,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                     cfg,
                                     trigger,
                                 )
-                                target.read_response()
+                                read_testos_output()
                                 symfi.handle_drbg_generate([0], 0, data_len, mode, cfg, trigger)
                                 testos_response = read_testos_output()
 
