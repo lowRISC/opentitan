@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/entropy_kat.h"
+#include "sw/device/lib/crypto/impl/hash.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -128,11 +129,6 @@ static const uint8_t p256_Q[64] = {
     0x93, 0xca, 0xb7, 0x6d, 0xe0, 0x13, 0x61, 0x0e, 0x2c, 0xdb, 0x1f, 0x1a,
     0xa2, 0xf9, 0x11, 0x88, 0xc6, 0x14, 0x40, 0xce};
 
-static const uint8_t p256_msg_digest[32] = {
-    0x44, 0xac, 0xf6, 0xb7, 0xe3, 0x6c, 0x13, 0x42, 0xc2, 0xc5, 0x89,
-    0x72, 0x04, 0xfe, 0x09, 0x50, 0x4e, 0x1e, 0x2e, 0xfb, 0x1a, 0x90,
-    0x03, 0x77, 0xdb, 0xc4, 0xe7, 0xa6, 0xa1, 0x33, 0xec, 0x56};
-
 static const uint8_t p256_sig[64] = {
     // R (Reversed)
     0xac, 0xc2, 0xc8, 0x79, 0x6f, 0x5e, 0xbb, 0xca, 0x7a, 0x5a, 0x55, 0x6a,
@@ -198,12 +194,6 @@ static const uint8_t p384_Q[96] = {
     0xc5, 0x81, 0xee, 0x8a, 0xe5, 0x8a, 0x75, 0x6a, 0xa7, 0x16, 0x96, 0x51,
     0x3c, 0x74, 0xa0, 0xed, 0x66, 0x38, 0x22, 0xa8, 0x06, 0x79, 0x25, 0x37};
 
-static const uint8_t p384_msg_digest[48] = {
-    0x31, 0xa4, 0x52, 0xd6, 0x16, 0x4d, 0x90, 0x4b, 0xb5, 0x72, 0x4c, 0x87,
-    0x82, 0x80, 0x23, 0x1e, 0xae, 0x70, 0x5c, 0x29, 0xce, 0x9d, 0x4b, 0xc7,
-    0xd5, 0x8e, 0x02, 0x0e, 0x10, 0x85, 0xf1, 0x7e, 0xeb, 0xcc, 0x1a, 0x38,
-    0xf0, 0xed, 0x0b, 0xf2, 0xb3, 0x44, 0xd8, 0x1f, 0xbd, 0x89, 0x68, 0x25};
-
 static const uint8_t p384_sig[96] = {
     // R (Reversed)
     0x32, 0x6e, 0x94, 0x9b, 0xe6, 0xdf, 0x1d, 0x9e, 0x8f, 0xf1, 0xec, 0x14,
@@ -245,10 +235,9 @@ static const uint32_t rsa2048_sig[64] = {
     0x50692a42, 0x41e94a74, 0x0a6f79eb, 0x1c405c66,
 };
 
-static const uint32_t rsa2048_digest[8] = {
-    0x7a99dab2, 0x7ce06e96, 0x83f0e143, 0x88e57c80,
-    0xcaa4c04b, 0xca023bd1, 0x18a172dc, 0x1709b520,
-};
+// Message = "Test message."
+static const uint8_t rsa_msg[13] = {0x54, 0x65, 0x73, 0x74, 0x20, 0x6d, 0x65,
+                                    0x73, 0x73, 0x61, 0x67, 0x65, 0x2e};
 
 // Test vector comes from the rsa_4096_signature_functest
 static const uint32_t rsa4096_mod[128] = {
@@ -324,12 +313,6 @@ static const uint32_t rsa4096_sig[128] = {
     0xbae35f12, 0xd2cf54e8, 0xe0b58909, 0xa2ae9943, 0x1eb03456, 0x5dcac40b,
     0x05bf5fa0, 0xc745d2c2, 0x624004fb, 0x445c1918, 0x3853399d, 0x738f2ae2,
     0xd31ca0a5, 0x2daf5e53,
-};
-
-static const uint32_t rsa4096_digest[16] = {
-    0xb893ca9d, 0xf40ba12b, 0x09e4aa43, 0x8c33b554, 0xeec01007, 0x64192c43,
-    0xf0513d70, 0x7bc41f0e, 0x46196723, 0x94549bc2, 0xc35e1539, 0x371599ad,
-    0x5203c922, 0x43577df0, 0xbd4c7513, 0x43267c48,
 };
 
 // NIST CAVP vector
@@ -431,16 +414,6 @@ static inline otcrypto_unblinded_key_t make_unblinded_key(
   k.key = (uint32_t *)key;
   k.checksum = 0;
   return k;
-}
-
-// Helper function to make the data be loaded dynamically making the code PIC
-static inline otcrypto_hash_digest_t make_hash_digest(
-    const uint32_t *data, size_t len, otcrypto_hash_mode_t mode) {
-  otcrypto_hash_digest_t d;
-  d.data = (uint32_t *)data;
-  d.len = len;
-  d.mode = mode;
-  return d;
 }
 
 // The functions to run the kats
@@ -621,8 +594,13 @@ static status_t kat_p256_sign(void) {
   memcpy(keyblob_scalar, p256_k, 32);
   secret_scalar.checksum = otcrypto_integrity_blinded_checksum(&secret_scalar);
 
-  otcrypto_hash_digest_t digest = make_hash_digest(
-      (const uint32_t *)p256_msg_digest, 8, kOtcryptoHashModeSha256);
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(p256_msg, sizeof(p256_msg));
+  uint32_t digest_data[8] = {0};
+  otcrypto_hash_digest_t digest;
+  HARDENED_TRY(
+      hash_message(kOtcryptoHashModeSha256, &msg_buf, digest_data, &digest));
+
   uint32_t sig[16];
   otcrypto_word32_buf_t sig_buf = otcrypto_make_word32_buf(sig, 16);
 
@@ -770,8 +748,13 @@ static status_t kat_p384_sign(void) {
   memcpy(keyblob_scalar, p384_k, 48);
   secret_scalar.checksum = otcrypto_integrity_blinded_checksum(&secret_scalar);
 
-  otcrypto_hash_digest_t digest = make_hash_digest(
-      (const uint32_t *)p384_msg_digest, 12, kOtcryptoHashModeSha384);
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(p384_msg, sizeof(p384_msg));
+  uint32_t digest_data[12] = {0};
+  otcrypto_hash_digest_t digest;
+  HARDENED_TRY(
+      hash_message(kOtcryptoHashModeSha384, &msg_buf, digest_data, &digest));
+
   uint32_t sig[24];
   otcrypto_word32_buf_t sig_buf = otcrypto_make_word32_buf(sig, 24);
 
@@ -906,14 +889,15 @@ static status_t kat_rsa2048_verify(void) {
   HARDENED_TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048,
                                                  &modulus_buf, &public_key));
 
-  otcrypto_hash_digest_t digest =
-      make_hash_digest(rsa2048_digest, 8, kOtcryptoHashModeSha256);
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(rsa_msg, sizeof(rsa_msg));
   otcrypto_const_word32_buf_t sig_buf =
       otcrypto_make_const_word32_buf(rsa2048_sig, 64);
 
   hardened_bool_t result = kHardenedBoolFalse;
-  HARDENED_TRY(otcrypto_rsa_verify(&public_key, digest, kOtcryptoRsaPaddingPkcs,
-                                   &sig_buf, &result));
+  HARDENED_TRY(otcrypto_rsa_hash_verify(&public_key, kOtcryptoHashModeSha256,
+                                        &msg_buf, kOtcryptoRsaPaddingPkcs,
+                                        &sig_buf, &result));
 
   if (result != kHardenedBoolTrue) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
@@ -952,13 +936,23 @@ static status_t kat_rsa4096_sign(void) {
   HARDENED_TRY(otcrypto_rsa_private_key_from_exponents(
       kOtcryptoRsaSize4096, &modulus, &d_share0, &d_share1, &private_key));
 
-  otcrypto_hash_digest_t digest_struct =
-      make_hash_digest(rsa4096_digest, 16, kOtcryptoHashModeSha512);
+  uint32_t public_key_data[kOtcryptoRsa4096PublicKeyBytes / 4];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa4096PublicKeyBytes,
+      .key = public_key_data,
+  };
+  HARDENED_TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize4096, &modulus,
+                                                 &public_key));
+
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(rsa_msg, sizeof(rsa_msg));
   uint32_t act_sig[128];
   otcrypto_word32_buf_t sig_buf = otcrypto_make_word32_buf(act_sig, 128);
 
-  HARDENED_TRY(otcrypto_rsa_sign(&private_key, digest_struct,
-                                 kOtcryptoRsaPaddingPkcs, &sig_buf));
+  HARDENED_TRY(otcrypto_rsa_hash_sign_verify(
+      &private_key, &public_key, kOtcryptoHashModeSha512, &msg_buf,
+      kOtcryptoRsaPaddingPkcs, &sig_buf));
 
   if (memcmp(act_sig, rsa4096_sig, 512)) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
@@ -981,14 +975,15 @@ static status_t kat_rsa4096_verify(void) {
   HARDENED_TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize4096,
                                                  &modulus_buf, &public_key));
 
-  otcrypto_hash_digest_t digest =
-      make_hash_digest(rsa4096_digest, 16, kOtcryptoHashModeSha512);
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(rsa_msg, sizeof(rsa_msg));
   otcrypto_const_word32_buf_t sig_buf =
       otcrypto_make_const_word32_buf(rsa4096_sig, 128);
 
-  hardened_bool_t result;
-  HARDENED_TRY(otcrypto_rsa_verify(&public_key, digest, kOtcryptoRsaPaddingPkcs,
-                                   &sig_buf, &result));
+  hardened_bool_t result = kHardenedBoolFalse;
+  HARDENED_TRY(otcrypto_rsa_hash_verify(&public_key, kOtcryptoHashModeSha512,
+                                        &msg_buf, kOtcryptoRsaPaddingPkcs,
+                                        &sig_buf, &result));
   if (result != kHardenedBoolTrue) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
     // FI.
