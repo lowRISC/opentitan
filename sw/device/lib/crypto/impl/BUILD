@@ -324,6 +324,7 @@ cc_library(
         ":ecc_curve25519",
         ":ecc_p256",
         ":ecc_p384",
+        ":hash",
         ":hmac",
         ":integrity",
         ":kats_hdrs",
