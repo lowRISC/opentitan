@@ -26,6 +26,7 @@ rust_binary(
         "src/command/image.rs",
         "src/command/lc.rs",
         "src/command/load_bitstream.rs",
+        "src/command/mldsa.rs",
         "src/command/mod.rs",
         "src/command/otp.rs",
         "src/command/ownership.rs",
@@ -53,6 +54,7 @@ rust_binary(
     # stamping is necessary because opentitantool builds version.rs that needs it
     stamp = -1,
     deps = [
+        "//sw/host/mldsa",
         "//sw/host/opentitanlib",
         "//sw/host/ot_certs",
         "//sw/host/ot_hal",
