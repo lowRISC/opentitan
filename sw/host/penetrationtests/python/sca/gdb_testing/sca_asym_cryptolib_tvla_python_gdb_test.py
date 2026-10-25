@@ -4,12 +4,14 @@
 
 import argparse
 import json
+import math
 import os
 import random
 import unittest
 from Crypto.Cipher import PKCS1_OAEP
 from Crypto.Hash import SHA256
 from Crypto.PublicKey import ECC, RSA
+from Crypto.Util.number import isPrime
 from python.runfiles import Runfiles
 from sw.host.penetrationtests.python.sca.communication.sca_asym_cryptolib_commands import (
     OTAsymCrypto,
@@ -61,9 +63,31 @@ class AsymCryptolibScaTvlaGdbTest(unittest.TestCase):
             raise RuntimeError("Target failed to initialize.")
         target.initialize_target()
         OTAsymCrypto(target).init()
-        cls.rsa_key = RSA.generate(
-            2048, randfunc=random.Random(42).randbytes
-        )
+        # Construct p = 2*g*u + 1 and q = 2*g*v + 1 with a shared 512-bit
+        # factor g in (p - 1) and (q - 1) so lambda(n) = lcm(p - 1, q - 1) =
+        # 2*g*u*v is ~1536 bits. This gives ~2^512 equivalent 2048-bit private
+        # exponents d = d_base + k * lambda(n) for the same public key (n, e),
+        # allowing Fixed-vs-Random TVLA on d with fixed public inputs.
+        rng = random.Random(42)
+        e = 65537
+        g = rng.getrandbits(512) | (1 << 511) | 1
+        u_min, u_max = (3 << 1021) // g, (1 << 1023) // g
+        primes = []
+        while len(primes) < 2:
+            u = rng.randrange(u_min, u_max) | 1
+            p = 2 * g * u + 1
+            if (
+                p % e != 1 and
+                isPrime(p) and
+                all(math.gcd(u, u0) == 1 for _, u0 in primes)
+            ):
+                primes.append((p, u))
+        (p, u), (q, v) = primes
+        n = p * q
+        cls.rsa_lambda = 2 * g * u * v
+        cls.rsa_d_base = pow(e, -1, cls.rsa_lambda)
+        cls.rsa_max_k = ((1 << 2048) - 1 - cls.rsa_d_base) // cls.rsa_lambda
+        cls.rsa_key = RSA.construct((n, e, cls.rsa_d_base, p, q))
 
     def setUp(self):
         if getattr(getattr(target, "target", None), "_faulted", False):
@@ -493,8 +517,13 @@ class AsymCryptolibScaTvlaGdbTest(unittest.TestCase):
         self.assertGreater(len(campaign.accumulator.sites), 0)
         self.assertEqual(len(leaks), 0)
 
+    def _random_rsa_d(self, rng):
+        """Sample a random 2048-bit private exponent equivalent modulo lambda(n)."""
+        d = self.rsa_d_base + rng.randrange(1, self.rsa_max_k) * self.rsa_lambda
+        return list(d.to_bytes(256, "little"))
+
     def test_char_rsa_sign_tvla(self):
-        """Run Fixed-vs-Random TVLA on cryptolib RSA-2048 signing message encoding."""
+        """Run Fixed-vs-Random TVLA on cryptolib RSA-2048 signing private key handling."""
         campaign.reset_stats()
         asymsca = OTAsymCrypto(target)
         asymsca.init()
@@ -502,23 +531,19 @@ class AsymCryptolibScaTvlaGdbTest(unittest.TestCase):
         rng = random.Random(42)
         n_len = 256
         e = self.rsa_key.e
-        d = [x for x in self.rsa_key.d.to_bytes(256, "little")]
+        fixed_d = [x for x in self.rsa_key.d.to_bytes(256, "little")]
         n = [x for x in self.rsa_key.n.to_bytes(256, "little")]
         data_len = 16
-        fixed_data = list((12988).to_bytes(data_len, "little"))
+        data = list((12988).to_bytes(data_len, "little"))
         padding = 0  # kPentestRsaPaddingPkcs
         hashing = 0  # kPentestRsaHashmodeSha256
         cfg = 0
         trigger = 4  # kPentestTrigger3 around otcrypto_rsa_sign
         schedule = self._single_schedule(NUM_TRACES)
 
-        with campaign.hook(target, function="message_encode"):
+        with campaign.hook(target):
             for group in schedule:
-                data = (
-                    fixed_data
-                    if group == 0
-                    else [rng.randint(0, 255) for _ in range(data_len)]
-                )
+                d = fixed_d if group == 0 else self._random_rsa_d(rng)
                 campaign.expect_group(group)
                 asymsca.handle_rsa_sign(
                     data,
@@ -541,7 +566,7 @@ class AsymCryptolibScaTvlaGdbTest(unittest.TestCase):
         self.assertEqual(len(leaks), 0)
 
     def test_char_rsa_dec_tvla(self):
-        """Run Fixed-vs-Random TVLA on cryptolib RSA-2048 OAEP decryption."""
+        """Run Fixed-vs-Random TVLA on cryptolib RSA-2048 OAEP decryption private key handling."""
         campaign.reset_stats()
         asymsca = OTAsymCrypto(target)
         asymsca.init()
@@ -549,7 +574,7 @@ class AsymCryptolibScaTvlaGdbTest(unittest.TestCase):
         rng = random.Random(593)
         n_len = 256
         e = self.rsa_key.e
-        d = [x for x in self.rsa_key.d.to_bytes(256, "little")]
+        fixed_d = [x for x in self.rsa_key.d.to_bytes(256, "little")]
         n = [x for x in self.rsa_key.n.to_bytes(256, "little")]
         padding = 0  # OAEP
         hashing = 0  # kPentestRsaHashmodeSha256
@@ -564,15 +589,11 @@ class AsymCryptolibScaTvlaGdbTest(unittest.TestCase):
             label=b"Test label.",
             randfunc=rng.randbytes,
         )
-        fixed_ct = list(reversed(oaep_cipher.encrypt(bytes([0] * 16))))
+        ct = list(reversed(oaep_cipher.encrypt(bytes([0] * 16))))
 
-        with campaign.hook(target, function="bignum_lt"):
+        with campaign.hook(target):
             for group in schedule:
-                if group == 0:
-                    ct = fixed_ct
-                else:
-                    rnd_msg = bytes(rng.randint(0, 255) for _ in range(16))
-                    ct = list(reversed(oaep_cipher.encrypt(rnd_msg)))
+                d = fixed_d if group == 0 else self._random_rsa_d(rng)
                 campaign.expect_group(group)
                 asymsca.handle_rsa_dec(
                     ct,
