@@ -340,6 +340,42 @@ static status_t sign_verify_test(void) {
 }
 
 /**
+ * Test the Ed25519 point-on-curve check.
+ */
+static status_t point_on_curve_test(void) {
+  LOG_INFO("Running point_on_curve test");
+
+  uint32_t point_buf[kEd25519PublicKeyWords];
+  memcpy(point_buf, kPublicKey, kEd25519PublicKeyBytes);
+  otcrypto_unblinded_key_t point = {
+      .key_mode = kOtcryptoKeyModeEd25519,
+      .key_length = kEd25519PublicKeyBytes,
+      .key = point_buf,
+  };
+  point.checksum = otcrypto_integrity_unblinded_checksum(&point);
+
+  hardened_bool_t result = kHardenedBoolFalse;
+  CHECK_STATUS_OK(otcrypto_ed25519_point_on_curve(&point, &result));
+  TRY_CHECK(result == kHardenedBoolTrue);
+
+  // Modify the encoded point so that y^2 - 1 / (d * y^2 + 1) is not a square.
+  point_buf[7] ^= 0x1;
+  point.checksum = otcrypto_integrity_unblinded_checksum(&point);
+  result = kHardenedBoolTrue;
+  CHECK_STATUS_OK(otcrypto_ed25519_point_on_curve(&point, &result));
+  TRY_CHECK(result == kHardenedBoolFalse);
+
+  // Test a non-canonical point (y >= p).
+  memset(point_buf, 0xff, sizeof(point_buf));
+  point.checksum = otcrypto_integrity_unblinded_checksum(&point);
+  result = kHardenedBoolTrue;
+  CHECK_STATUS_OK(otcrypto_ed25519_point_on_curve(&point, &result));
+  TRY_CHECK(result == kHardenedBoolFalse);
+
+  return OTCRYPTO_OK;
+}
+
+/**
  * Wycheproof Test Case 61: "invalid R"
  *
  */
@@ -536,6 +572,16 @@ static status_t run_negative_tests(void) {
                                 &bad_const_sig, &verify_res)
             .value == OTCRYPTO_BAD_ARGS.value);
 
+  // Negative tests for otcrypto_ed25519_point_on_curve
+  CHECK(otcrypto_ed25519_point_on_curve(NULL, &verify_res).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ed25519_point_on_curve(&valid_pub, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  otcrypto_unblinded_key_t bad_pub_len = valid_pub;
+  bad_pub_len.key_length = kEd25519PublicKeyBytes - 1;
+  CHECK(otcrypto_ed25519_point_on_curve(&bad_pub_len, &verify_res).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
   return OTCRYPTO_OK;
 }
 
@@ -628,6 +674,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, ed25519_keygen_test);
   EXECUTE_TEST(result, hasheddsa_test);
   EXECUTE_TEST(result, sign_verify_test);
+  EXECUTE_TEST(result, point_on_curve_test);
   EXECUTE_TEST(result, run_wycheproof_invalid_r_test);
   EXECUTE_TEST(result, run_negative_tests);
   EXECUTE_TEST(result, ed25519_out_of_order_test);

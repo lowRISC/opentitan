@@ -125,6 +125,19 @@ otcrypto_status_t otcrypto_ed25519_verify(
     hardened_bool_t *verification_result);
 
 /**
+ * Checks whether a given encoded point is on the Ed25519 curve.
+ *
+ * The `point` will be verified whether it is a valid Ed25519 point or not.
+ *
+ * @param point Key object wrapping the 32-byte encoded Ed25519 point.
+ * @param[out] check_result Result of the point on curve check.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ed25519_point_on_curve(
+    const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result);
+
+/**
  * Generates an Ed25519 signature and verifies the signature
  * before releasing it to mitigate fault injection attacks.
  *
