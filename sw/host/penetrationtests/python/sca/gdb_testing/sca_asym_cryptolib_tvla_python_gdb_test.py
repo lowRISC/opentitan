@@ -237,17 +237,16 @@ class AsymCryptolibScaTvlaGdbTest(unittest.TestCase):
         self.assertEqual(len(leaks), 0)
 
     def test_char_p256_ecdh_tvla(self):
-        """Run Fixed-vs-Random TVLA on cryptolib P-256 ECDH public key handling."""
+        """Run Fixed-vs-Random TVLA on cryptolib P-256 ECDH private key handling."""
         campaign.reset_stats()
         asymsca = OTAsymCrypto(target)
         asymsca.init()
 
         rng = random.Random(42)
-        private_key = ECC.construct(curve="P-256", d=2)
-        private_key_array = [x for x in private_key.d.to_bytes(32, "little")]
+        fixed_priv = [x for x in (2).to_bytes(32, "little")]
         fixed_pub = ECC.construct(curve="P-256", d=9856).pointQ
-        fixed_x = [x for x in fixed_pub.x.to_bytes(32, "little")]
-        fixed_y = [x for x in fixed_pub.y.to_bytes(32, "little")]
+        pub_x = [x for x in fixed_pub.x.to_bytes(32, "little")]
+        pub_y = [x for x in fixed_pub.y.to_bytes(32, "little")]
         cfg = 0
         trigger = 0
         schedule = self._single_schedule(NUM_TRACES)
@@ -255,13 +254,14 @@ class AsymCryptolibScaTvlaGdbTest(unittest.TestCase):
         with campaign.hook(target):
             for group in schedule:
                 if group == 0:
-                    pub_x, pub_y = fixed_x, fixed_y
+                    private_key_array = fixed_priv
                 else:
-                    rnd_pub = ECC.construct(
-                        curve="P-256", d=rng.randrange(1, 1 << 254)
-                    ).pointQ
-                    pub_x = [x for x in rnd_pub.x.to_bytes(32, "little")]
-                    pub_y = [x for x in rnd_pub.y.to_bytes(32, "little")]
+                    private_key_array = [
+                        x
+                        for x in rng.randrange(1, 1 << 254).to_bytes(
+                            32, "little"
+                        )
+                    ]
                 campaign.expect_group(group)
                 asymsca.handle_p256_ecdh(
                     private_key_array, pub_x, pub_y, cfg, trigger
@@ -275,28 +275,32 @@ class AsymCryptolibScaTvlaGdbTest(unittest.TestCase):
         self.assertEqual(len(leaks), 0)
 
     def test_char_p256_sign_tvla(self):
-        """Run Fixed-vs-Random TVLA on cryptolib P-256 ECDSA message digest handling."""
+        """Run Fixed-vs-Random TVLA on cryptolib P-256 ECDSA private key handling."""
         campaign.reset_stats()
         asymsca = OTAsymCrypto(target)
         asymsca.init()
 
         rng = random.Random(42)
-        key = ECC.construct(curve="P-256", d=2)
-        scalar = [x for x in key.d.to_bytes(32, "little")]
-        pubx = [x for x in key.pointQ.x.to_bytes(32, "little")]
-        puby = [x for x in key.pointQ.y.to_bytes(32, "little")]
-        fixed_msg = [0 for _ in range(32)]
+        fixed_key = ECC.construct(curve="P-256", d=2)
+        fixed_scalar = [x for x in fixed_key.d.to_bytes(32, "little")]
+        fixed_pubx = [x for x in fixed_key.pointQ.x.to_bytes(32, "little")]
+        fixed_puby = [x for x in fixed_key.pointQ.y.to_bytes(32, "little")]
+        msg = [0 for _ in range(32)]
         cfg = 0
         trigger = 1
         schedule = self._single_schedule(NUM_TRACES)
 
         with campaign.hook(target):
             for group in schedule:
-                msg = (
-                    fixed_msg
-                    if group == 0
-                    else [rng.randint(0, 255) for _ in range(32)]
-                )
+                if group == 0:
+                    scalar, pubx, puby = fixed_scalar, fixed_pubx, fixed_puby
+                else:
+                    rnd_key = ECC.construct(
+                        curve="P-256", d=rng.randrange(1, 1 << 254)
+                    )
+                    scalar = [x for x in rnd_key.d.to_bytes(32, "little")]
+                    pubx = [x for x in rnd_key.pointQ.x.to_bytes(32, "little")]
+                    puby = [x for x in rnd_key.pointQ.y.to_bytes(32, "little")]
                 campaign.expect_group(group)
                 asymsca.handle_p256_sign(scalar, pubx, puby, msg, cfg, trigger)
                 resp_json = json.loads(target.read_response())
@@ -308,17 +312,16 @@ class AsymCryptolibScaTvlaGdbTest(unittest.TestCase):
         self.assertEqual(len(leaks), 0)
 
     def test_char_p384_ecdh_tvla(self):
-        """Run Fixed-vs-Random TVLA on cryptolib P-384 ECDH public key handling."""
+        """Run Fixed-vs-Random TVLA on cryptolib P-384 ECDH private key handling."""
         campaign.reset_stats()
         asymsca = OTAsymCrypto(target)
         asymsca.init()
 
         rng = random.Random(3)
-        private_key = ECC.construct(curve="P-384", d=2)
-        private_key_array = [x for x in private_key.d.to_bytes(48, "little")]
+        fixed_priv = [x for x in (2).to_bytes(48, "little")]
         fixed_pub = ECC.construct(curve="P-384", d=4833).pointQ
-        fixed_x = [x for x in fixed_pub.x.to_bytes(48, "little")]
-        fixed_y = [x for x in fixed_pub.y.to_bytes(48, "little")]
+        pub_x = [x for x in fixed_pub.x.to_bytes(48, "little")]
+        pub_y = [x for x in fixed_pub.y.to_bytes(48, "little")]
         cfg = 0
         trigger = 0
         schedule = self._single_schedule(NUM_TRACES)
@@ -326,13 +329,14 @@ class AsymCryptolibScaTvlaGdbTest(unittest.TestCase):
         with campaign.hook(target):
             for group in schedule:
                 if group == 0:
-                    pub_x, pub_y = fixed_x, fixed_y
+                    private_key_array = fixed_priv
                 else:
-                    rnd_pub = ECC.construct(
-                        curve="P-384", d=rng.randrange(1, 1 << 382)
-                    ).pointQ
-                    pub_x = [x for x in rnd_pub.x.to_bytes(48, "little")]
-                    pub_y = [x for x in rnd_pub.y.to_bytes(48, "little")]
+                    private_key_array = [
+                        x
+                        for x in rng.randrange(1, 1 << 382).to_bytes(
+                            48, "little"
+                        )
+                    ]
                 campaign.expect_group(group)
                 asymsca.handle_p384_ecdh(
                     private_key_array, pub_x, pub_y, cfg, trigger
@@ -346,28 +350,32 @@ class AsymCryptolibScaTvlaGdbTest(unittest.TestCase):
         self.assertEqual(len(leaks), 0)
 
     def test_char_p384_sign_tvla(self):
-        """Run Fixed-vs-Random TVLA on cryptolib P-384 ECDSA message digest handling."""
+        """Run Fixed-vs-Random TVLA on cryptolib P-384 ECDSA private key handling."""
         campaign.reset_stats()
         asymsca = OTAsymCrypto(target)
         asymsca.init()
 
         rng = random.Random(42)
-        key = ECC.construct(curve="P-384", d=2)
-        scalar = [x for x in key.d.to_bytes(48, "little")]
-        pubx = [x for x in key.pointQ.x.to_bytes(48, "little")]
-        puby = [x for x in key.pointQ.y.to_bytes(48, "little")]
-        fixed_msg = [0 for _ in range(48)]
+        fixed_key = ECC.construct(curve="P-384", d=2)
+        fixed_scalar = [x for x in fixed_key.d.to_bytes(48, "little")]
+        fixed_pubx = [x for x in fixed_key.pointQ.x.to_bytes(48, "little")]
+        fixed_puby = [x for x in fixed_key.pointQ.y.to_bytes(48, "little")]
+        msg = [0 for _ in range(48)]
         cfg = 0
         trigger = 1
         schedule = self._single_schedule(NUM_TRACES)
 
         with campaign.hook(target):
             for group in schedule:
-                msg = (
-                    fixed_msg
-                    if group == 0
-                    else [rng.randint(0, 255) for _ in range(48)]
-                )
+                if group == 0:
+                    scalar, pubx, puby = fixed_scalar, fixed_pubx, fixed_puby
+                else:
+                    rnd_key = ECC.construct(
+                        curve="P-384", d=rng.randrange(1, 1 << 382)
+                    )
+                    scalar = [x for x in rnd_key.d.to_bytes(48, "little")]
+                    pubx = [x for x in rnd_key.pointQ.x.to_bytes(48, "little")]
+                    puby = [x for x in rnd_key.pointQ.y.to_bytes(48, "little")]
                 campaign.expect_group(group)
                 asymsca.handle_p384_sign(scalar, pubx, puby, msg, cfg, trigger)
                 resp_json = json.loads(target.read_response())
@@ -413,18 +421,18 @@ class AsymCryptolibScaTvlaGdbTest(unittest.TestCase):
         self.assertEqual(len(leaks), 0)
 
     def test_char_x25519_ecdh_tvla(self):
-        """Run Fixed-vs-Random TVLA on cryptolib X25519 ECDH public key handling."""
+        """Run Fixed-vs-Random TVLA on cryptolib X25519 ECDH private key handling."""
         campaign.reset_stats()
         asymsca = OTAsymCrypto(target)
         asymsca.init()
 
         rng = random.Random(42)
-        private_key = list(
+        fixed_private_key = list(
             bytes.fromhex(
                 "77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a"
             )
         )
-        fixed_public_x = [9] + [0] * 31
+        public_x = [9] + [0] * 31
         public_y = [0] * 32
         cfg = 0
         trigger = 0
@@ -432,10 +440,10 @@ class AsymCryptolibScaTvlaGdbTest(unittest.TestCase):
 
         with campaign.hook(target):
             for group in schedule:
-                public_x = (
-                    fixed_public_x
+                private_key = (
+                    fixed_private_key
                     if group == 0
-                    else self._x25519_public_key(rng.randbytes(32))
+                    else [rng.randint(0, 255) for _ in range(32)]
                 )
                 campaign.expect_group(group)
                 asymsca.handle_x25519_ecdh(
@@ -456,22 +464,22 @@ class AsymCryptolibScaTvlaGdbTest(unittest.TestCase):
         asymsca.init()
 
         rng = random.Random(42)
-        scalar_alice = list(
+        fixed_scalar_alice = list(
             bytes.fromhex(
                 "77076d0a7318a57d3c16c17251b26645df4c2f87ebc0992ab177fba51db92c2a"
             )
         )
-        fixed_scalar_bob = [9] + [0] * 31
+        scalar_bob = [9] + [0] * 31
         cfg = 0
         trigger = 0
         schedule = self._single_schedule(NUM_TRACES)
 
         with campaign.hook(target):
             for group in schedule:
-                scalar_bob = (
-                    fixed_scalar_bob
+                scalar_alice = (
+                    fixed_scalar_alice
                     if group == 0
-                    else self._x25519_public_key(rng.randbytes(32))
+                    else [rng.randint(0, 255) for _ in range(32)]
                 )
                 campaign.expect_group(group)
                 asymsca.handle_x25519_point_mult(
