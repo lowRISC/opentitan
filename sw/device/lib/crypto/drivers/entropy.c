@@ -613,6 +613,9 @@ OT_USED static status_t csrng_send_app_cmd(
  * enabled, and FIPS flag forcing disabled.
  */
 OT_USED static void csrng_configure(void) {
+  // Clear the CSRNG recoverable alert status register.
+  abs_mmio_write32(kBaseCsrng + CSRNG_RECOV_ALERT_STS_REG_OFFSET, 0);
+
   uint32_t reg =
       bitfield_field32_write(0, CSRNG_CTRL_ENABLE_FIELD, kMultiBitBool4True);
   reg = bitfield_field32_write(reg, CSRNG_CTRL_SW_APP_ENABLE_FIELD,
@@ -1141,7 +1144,10 @@ status_t entropy_complex_health_test_config_check(hardened_bool_t fips) {
 
   // Check recoverable alerts
   if (abs_mmio_read32(kBaseEntropySrc +
-                      ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET) != 0) {
+                      ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET) != 0 ||
+      abs_mmio_read32(kBaseCsrng + CSRNG_RECOV_ALERT_STS_REG_OFFSET) != 0 ||
+      abs_mmio_read32(kBaseEdn0 + EDN_RECOV_ALERT_STS_REG_OFFSET) != 0 ||
+      abs_mmio_read32(kBaseEdn1 + EDN_RECOV_ALERT_STS_REG_OFFSET) != 0) {
     // COVERAGE (HW ERR) This is only reached when we detect a HW alert.
     return OTCRYPTO_RECOV_ERR;
   }
