@@ -2,7 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::{Context, Result, bail};
+use anyhow::{Context, Result, bail, ensure};
 use clap::{Args, Subcommand};
 use serde_annotate::Annotate;
 use std::any::Any;
@@ -383,6 +383,9 @@ impl CommandDispatch for ManifestUpdateCommand {
 pub struct ManifestVerifyCommand {
     /// Filename for the image to verify.
     image: PathBuf,
+    /// Run verification for ECDSA.
+    #[arg(long, action = clap::ArgAction::Set, default_value = "true")]
+    ecdsa: bool,
     /// Run verification for SPHINCS+.
     #[arg(short, long)]
     spx: bool,
@@ -403,6 +406,11 @@ impl CommandDispatch for ManifestVerifyCommand {
         _context: &dyn Any,
         _transport: &TransportWrapper,
     ) -> Result<Option<Box<dyn erased_serde::Serialize>>> {
+        // Do not silently skip all verification.
+        ensure!(
+            self.ecdsa || self.spx || self.mldsa,
+            "No signature to verify: --ecdsa=false requires --spx or --mldsa"
+        );
         let image = image::Image::read_from_file(&self.image)?;
         let digest = image.compute_digest()?;
 
@@ -410,7 +418,9 @@ impl CommandDispatch for ManifestVerifyCommand {
         let sigverify_params = image
             .get_sigverify_params_from_manifest()?
             .with_hash_reversal_bug(self.spx_hash_reversal_bug);
-        sigverify_params.verify(&digest)?;
+        if self.ecdsa {
+            sigverify_params.verify(&digest)?;
+        }
 
         if self.spx {
             image.map_signed_region(|b| {
