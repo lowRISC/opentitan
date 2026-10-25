@@ -453,6 +453,24 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "ecc_ed25519_point_on_curve_check_functest",
+    srcs = ["ecc_ed25519_point_on_curve_check_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:ecc_curve25519",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "ecc_p256_point_on_curve_check_functest",
     srcs = ["ecc_p256_point_on_curve_check_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -1889,6 +1907,7 @@ test_suite(
         ":cmac_functest",
         ":config_functest",
         ":drbg_functest",
+        ":ecc_ed25519_point_on_curve_check_functest",
         ":ecc_p256_arith_share_private_key_functest",
         ":ecc_p256_base_point_mult_functest",
         ":ecc_p256_dice_functest",

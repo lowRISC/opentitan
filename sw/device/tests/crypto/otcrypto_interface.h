@@ -245,6 +245,8 @@ typedef struct otcrypto_interface_t {
                                       otcrypto_eddsa_sign_mode_t,
                                       const otcrypto_const_word32_buf_t *,
                                       hardened_bool_t *);
+  otcrypto_status_t (*ed25519_point_on_curve)(const otcrypto_unblinded_key_t *,
+                                              hardened_bool_t *);
   otcrypto_status_t (*ed25519_keygen_async_start)(otcrypto_blinded_key_t *);
   otcrypto_status_t (*ed25519_keygen_async_finalize)(
       otcrypto_blinded_key_t *, otcrypto_unblinded_key_t *);
