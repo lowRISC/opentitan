@@ -312,6 +312,20 @@ OT_WARN_UNUSED_RESULT
 status_t curve25519_verify_finalize(hardened_bool_t *result);
 
 /**
+ * Check if a given encoded point is on the Ed25519 curve.
+ *
+ * Verify if an encoded point falls onto the Ed25519 curve. Notice that this
+ * routine executes synchronously.
+ *
+ * @param point Encoded point to check (256 bits).
+ * @param[out] result True if the point is on the curve, false otherwise.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t curve25519_point_on_curve_check(
+    const uint32_t point[kCurve25519PointWords], hardened_bool_t *result);
+
+/**
  * Start an async X25519 key exchange operation on OTBN.
  *
  * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.

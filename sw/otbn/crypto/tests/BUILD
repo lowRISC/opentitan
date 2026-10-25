@@ -84,6 +84,24 @@ otbn_consttime_test(
     ],
 )
 
+otbn_consttime_test(
+    name = "ed25519_check_isoncurve_consttime",
+    subroutine = "ed25519_check_isoncurve",
+    deps = [
+        "//sw/otbn/crypto:run_curve25519",
+    ],
+)
+
+otbn_sim_test_suite(
+    name = "ed25519_check_isoncurve_test",
+    binary = "//sw/otbn/crypto:run_curve25519",
+    tests = [
+        "ed25519_check_isoncurve_not_on_curve.hjson",
+        "ed25519_check_isoncurve_valid.hjson",
+        "ed25519_check_isoncurve_y_too_large.hjson",
+    ],
+)
+
 otbn_sim_test(
     name = "ed25519_ext_is_on_curve_test",
     srcs = [
@@ -1147,6 +1165,8 @@ test_suite(
         ":ed25519_sc_reduce_test",
         ":ed25519_sign_test",
         ":ed25519_verify_test",
+        ":ed25519_check_isoncurve_consttime",
+        ":ed25519_check_isoncurve_test",
         ":ed25519_ext_is_on_curve_test",
 
         # X25519,

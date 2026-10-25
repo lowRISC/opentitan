@@ -783,6 +783,8 @@ Cryptolib also offers helper functions to check a given point as well as perform
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecc_p384_point_on_curve }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecc_p384_base_point_mult }}
 
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_point_on_curve }}
+
 ## Deterministic random bit generation
 
 OpenTitan's random bit generator, [CSRNG][csrng] (Cryptographically Secure Random Number Generator) uses a block cipher based deterministic random bit generation (DRBG) mechanism (AES-CTR-DRBG) as specified in [NIST SP800-90A][nist-drbg-spec].

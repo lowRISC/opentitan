@@ -148,6 +148,7 @@ volatile otcrypto_interface_t otcrypto = {
     .ed25519_sign = &otcrypto_ed25519_sign,
     .ed25519_sign_verify = &otcrypto_ed25519_sign_verify,
     .ed25519_verify = &otcrypto_ed25519_verify,
+    .ed25519_point_on_curve = &otcrypto_ed25519_point_on_curve,
 
     // Ed25519 (async).
     .ed25519_keygen_async_start = &otcrypto_ed25519_keygen_async_start,
