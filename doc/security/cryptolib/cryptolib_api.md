@@ -791,6 +791,8 @@ Cryptolib also offers helper functions to check a given point as well as perform
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecc_p384_point_on_curve }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecc_p384_base_point_mult }}
 
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_ed25519_point_on_curve }}
+
 ## ML-KEM
 
 ML-KEM (Module-Lattice-Based Key-Encapsulation Mechanism), standardized in [FIPS 203][fips-203], is a post-quantum key-encapsulation mechanism based on the Module Learning With Errors (MLWE) problem.

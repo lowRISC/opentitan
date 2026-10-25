@@ -600,6 +600,25 @@ otcrypto_status_t otcrypto_ed25519_verify(
   return otcrypto_ed25519_verify_async_finalize(verification_result);
 }
 
+otcrypto_status_t otcrypto_ed25519_point_on_curve(
+    const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_POINT_ON_CURVE);
+  OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (point == NULL || point->key == NULL || check_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  if (launder32(point->key_length) != kCurve25519PointBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(point->key_length, kCurve25519PointBytes);
+
+  HARDENED_TRY(curve25519_point_on_curve_check(point->key, check_result));
+
+  return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
 otcrypto_status_t otcrypto_ed25519_sign_verify(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_unblinded_key_t *public_key,

@@ -55,6 +55,7 @@ OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519);
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_SIDELOAD);
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_KEYGEN_SIDELOAD);
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_POINTONCRV_CHECK);
 
 enum {
 /*
@@ -73,6 +74,7 @@ enum {
   kModeX25519SideloadInsCnt = 362940,
   kModeKeygenInsCnt = 342100,
   kModeEd25519VerifyInsCnt = 333861,
+  kModePointOnCurveCheckInsCnt = 6957,
 };
 
 /**
@@ -357,6 +359,40 @@ status_t curve25519_verify_finalize(hardened_bool_t *result) {
   HARDENED_CHECK_NE(rhs_bits_or, 0);
 
   *result = hardened_memeq(lhs, rhs, kCurve25519PointWords);
+
+  // Wipe DMEM.
+  return otbn_dmem_sec_wipe();
+}
+
+status_t curve25519_point_on_curve_check(
+    const uint32_t point[kCurve25519PointWords], hardened_bool_t *result) {
+  // Load the Curve25519 app. Fails if OTBN is non-idle.
+  const otbn_app_t kOtbnAppCurve25519 = OTBN_APP_T_INIT(run_curve25519);
+  HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
+
+  // Set mode so start() will jump to the isoncurve check routine.
+  uint32_t mode = OTBN_ADDR_T_INIT(run_curve25519, MODE_POINTONCRV_CHECK);
+  const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
+  HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
+
+  // Set the encoded point to be checked.
+  const otbn_addr_t kOtbnVarPubKey =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_public_key);
+  HARDENED_TRY(otbn_dmem_write(kCurve25519PointWords, point, kOtbnVarPubKey));
+
+  // Start the OTBN routine.
+  HARDENED_TRY(otbn_execute());
+
+  // Spin here waiting for OTBN to complete.
+  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+
+  // Check the instruction count.
+  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModePointOnCurveCheckInsCnt);
+
+  // Read the result of the check (1 word).
+  const otbn_addr_t kOtbnVarVerifyRes =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_verify_result);
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarVerifyRes, result));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
