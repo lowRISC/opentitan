@@ -149,7 +149,10 @@ fn run_ed25519_testcase(
     // For sign: additively mask the private key seed (seed = d0 + d1 mod 2^256).
     // For verify: the firmware ignores the private key; send empty shares.
     let (d0_bytes, d1_bytes): (Vec<u8>, Vec<u8>) =
-        if matches!(operation, CryptotestEd25519Operation::SignCheck) {
+        if matches!(
+            operation,
+            CryptotestEd25519Operation::Sign | CryptotestEd25519Operation::SignCheck
+        ) {
             assert_eq!(
                 test_case.private_key.len(),
                 ED25519_PRIVATE_KEY_SEED_BYTES,
