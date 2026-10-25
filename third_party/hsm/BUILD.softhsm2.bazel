@@ -33,6 +33,13 @@ cmake(
         "CMAKE_INSTALL_LOCALSTATEDIR": ".",
         "CMAKE_INSTALL_SYSCONFDIR": ".",
         "PROJECT_BINARY_DIR": ".",
+
+        # Ensure the necessary standard libraries are linked
+        "CMAKE_CXX_STANDARD_LIBRARIES": "-lstdc++ -lm",
+
+        # GNUInstallDirs uses lib64 on some systems (e.g. NixOS),
+        # but out_shared_libs below expects the library under lib.
+        "CMAKE_INSTALL_LIBDIR": "lib",
     },
     # Set up SoftHSM to provide useful debug messages during testing.
     copts = [
