@@ -123,10 +123,10 @@ otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status) {
   crypto_state_t state;
   HARDENED_TRY(read_state(&state));
 
-  if (state.security_level != kOtcryptoKeySecurityLevelLow) {
-    // Verify the entropy source before leaving.
-    HARDENED_TRY(otcrypto_entropy_health_test_config_check());
+  // Verify the entropy source before leaving.
+  HARDENED_TRY(otcrypto_entropy_health_test_config_check());
 
+  if (state.security_level != kOtcryptoKeySecurityLevelLow) {
     if (read_alert_registers()) {
       return OTCRYPTO_FATAL_ERR;
     }
