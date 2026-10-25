@@ -327,6 +327,7 @@ static status_t ed25519_mask_scalar(uint32_t *scalar, size_t scalar_len,
 
   // Compute share0 = share + share1.
   HARDENED_TRY(hardened_add(buf, share1, share_len, share0));
+  HARDENED_TRY(hardened_memshred(buf, share_len));
 
   return OTCRYPTO_OK;
 }
@@ -379,6 +380,7 @@ static otcrypto_status_t ed25519_compute_scalar_and_prefix(
   HARDENED_TRY(ed25519_mask_scalar(key_digest->data, kCurve25519ScalarWords,
                                    masked_s->share0, masked_s->share1,
                                    kCurve25519MaskedScalarSWords));
+  HARDENED_TRY(hardened_memshred(key_digest->data, kCurve25519ScalarWords));
 
   return OTCRYPTO_OK;
 }
