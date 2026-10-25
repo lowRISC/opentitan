@@ -148,28 +148,30 @@ fn run_ed25519_testcase(
 
     // For sign: additively mask the private key seed (seed = d0 + d1 mod 2^256).
     // For verify: the firmware ignores the private key; send empty shares.
-    let (d0_bytes, d1_bytes): (Vec<u8>, Vec<u8>) =
-        if matches!(operation, CryptotestEd25519Operation::SignCheck) {
-            assert_eq!(
-                test_case.private_key.len(),
-                ED25519_PRIVATE_KEY_SEED_BYTES,
-                "Ed25519 private key must be exactly {} bytes (got {})",
-                ED25519_PRIVATE_KEY_SEED_BYTES,
-                test_case.private_key.len(),
-            );
-            let seed = &test_case.private_key;
-            let d0 = RANDOM_MASK_ED25519;
-            let mut d1 = [0u8; ED25519_PRIVATE_KEY_SEED_BYTES];
-            let mut borrow: i16 = 0;
-            for i in 0..ED25519_PRIVATE_KEY_SEED_BYTES {
-                let diff = seed[i] as i16 - d0[i] as i16 - borrow;
-                d1[i] = diff as u8;
-                borrow = if diff < 0 { 1 } else { 0 };
-            }
-            (d0.to_vec(), d1.to_vec())
-        } else {
-            (vec![], vec![])
-        };
+    let (d0_bytes, d1_bytes): (Vec<u8>, Vec<u8>) = if matches!(
+        operation,
+        CryptotestEd25519Operation::Sign | CryptotestEd25519Operation::SignCheck
+    ) {
+        assert_eq!(
+            test_case.private_key.len(),
+            ED25519_PRIVATE_KEY_SEED_BYTES,
+            "Ed25519 private key must be exactly {} bytes (got {})",
+            ED25519_PRIVATE_KEY_SEED_BYTES,
+            test_case.private_key.len(),
+        );
+        let seed = &test_case.private_key;
+        let d0 = RANDOM_MASK_ED25519;
+        let mut d1 = [0u8; ED25519_PRIVATE_KEY_SEED_BYTES];
+        let mut borrow: i16 = 0;
+        for i in 0..ED25519_PRIVATE_KEY_SEED_BYTES {
+            let diff = seed[i] as i16 - d0[i] as i16 - borrow;
+            d1[i] = diff as u8;
+            borrow = if diff < 0 { 1 } else { 0 };
+        }
+        (d0.to_vec(), d1.to_vec())
+    } else {
+        (vec![], vec![])
+    };
     CryptotestEd25519PrivateKey {
         d0: ArrayVec::try_from(d0_bytes.as_slice()).unwrap(),
         d0_len: d0_bytes.len(),
