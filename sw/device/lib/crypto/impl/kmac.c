@@ -69,14 +69,14 @@ static status_t kmac_key_construct(otcrypto_blinded_key_t *key, size_t key_len,
     HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
     HARDENED_TRY(keymgr_generate_key_kmac(diversification));
   } else if (key->config.hw_backed == kHardenedBoolFalse) {
-    // Remask the key.
-    HARDENED_TRY(keyblob_remask(key));
-
     // Check `key_len` matches `keyblob_length`.
     if (key->keyblob_length != 2 * key->config.key_length) {
       // COVERAGE (MISSING) We do not cover bad key_len inputs
       return OTCRYPTO_BAD_ARGS;
     }
+
+    // Remask the key.
+    HARDENED_TRY(keyblob_remask(key));
     HARDENED_TRY(keyblob_to_shares(key, &kmac_key->share0, &kmac_key->share1));
     // Set the checksum of the key.
     kmac_key->checksum = kmac_key_integrity_checksum(kmac_key);
@@ -132,7 +132,7 @@ otcrypto_status_t otcrypto_kmac(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  size_t key_len = keyblob_share_num_words(key->config) * sizeof(uint32_t);
+  size_t key_len = key->config.key_length;
 
   // Check `key_len` is valid/supported by KMAC HWIP.
   HARDENED_TRY(kmac_key_length_check(key_len));
@@ -144,9 +144,6 @@ otcrypto_status_t otcrypto_kmac(
   }
   HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(key),
                     kHardenedBoolTrue);
-
-  kmac_blinded_key_t kmac_key;
-  HARDENED_TRY(kmac_key_construct(key, key_len, &is_sideloaded, &kmac_key));
 
   status_t (*kmac_fn)(kmac_blinded_key_t *, hardened_bool_t,
                       const otcrypto_const_byte_buf_t *, const unsigned char *,
@@ -167,6 +164,9 @@ otcrypto_status_t otcrypto_kmac(
   // Check if we landed in the correct case statement. Use ORs for this to
   // avoid that multiple cases were executed.
   HARDENED_CHECK_EQ(launder32(key_mode_used), key->config.key_mode);
+
+  kmac_blinded_key_t kmac_key;
+  HARDENED_TRY(kmac_key_construct(key, key_len, &is_sideloaded, &kmac_key));
 
   // Preload the tag with randomness.
   HARDENED_TRY(hardened_memshred(tag->data, tag->len));
