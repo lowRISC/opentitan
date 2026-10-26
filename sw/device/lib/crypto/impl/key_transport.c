@@ -189,6 +189,12 @@ otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
 otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
                                            size_t *wrapped_num_words) {
   OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (wrapped_num_words == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
   // Check that the total wrapped key length will fit in 32 bits.
   size_t config_num_words = sizeof(otcrypto_key_config_t) / sizeof(uint32_t);
   if (keyblob_num_words(config) > UINT32_MAX - config_num_words - 5) {
@@ -213,7 +219,7 @@ otcrypto_status_t otcrypto_wrapped_key_len(const otcrypto_key_config_t config,
     *wrapped_num_words += 1;
   }
 
-  return otcrypto_eval_exit(OTCRYPTO_OK);
+  return OTCRYPTO_OK;
 }
 
 /**

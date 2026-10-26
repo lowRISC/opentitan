@@ -492,6 +492,8 @@ TEST(KeyTransport, WrappedKeyLenRsa) {
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
 
+  EXPECT_NOT_OK(otcrypto_wrapped_key_len(kConfigRsa2048, nullptr));
+
   size_t wrapped_words_2048 = 0;
   EXPECT_OK(otcrypto_wrapped_key_len(kConfigRsa2048, &wrapped_words_2048));
   EXPECT_EQ(wrapped_words_2048, 204);
