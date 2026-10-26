@@ -83,8 +83,7 @@ To write RRAM, software must:
 
 1. Wait for any previous operation to complete.
 2. Write the byte address of the first RRAM word to write into [`ADDR`](registers.md#addr).
-   The address must be 16-byte (128-bit) aligned.
-   The controller truncates to the nearest lower 16-byte boundary.
+   The address must be 16-byte (128-bit) aligned, see [Write Alignment](#write-alignment).
 3. Write [`CONTROL`](registers.md#control) with:
    - `OP = Write`
    - `NUM` = (number of bus words to write) - 1.
@@ -112,6 +111,9 @@ Every write operation must:
 - Start at a 16-byte aligned address.
 - Transfer a number of bus words that is a multiple of 4 (i.e. a whole number of RRAM words).
 
+A write that violates either rule is rejected without accessing the RRAM.
+It completes with [`OP_STATUS.err`](registers.md#op_status) and [`ERR_CODE.op_err`](registers.md#err_code) set.
+
 To modify less than a full RRAM word, software must perform a read-modify-write: read the full word, update the desired bytes, and write the word back.
 
 ## Issuing a Rewrite Operation
@@ -125,6 +127,8 @@ To issue a rewrite, software must:
 
 1. Wait for any previous operation to complete.
 2. Write the byte address of the word to rewrite into [`ADDR`](registers.md#addr), typically taken from [`CORR1_ERR_LOC`](registers.md#corr1_err_loc) or [`CORR2_ERR_LOC`](registers.md#corr2_err_loc), matching whichever interrupt fired.
+   The address must be 16-byte (128-bit) aligned.
+   Otherwise the rewrite is rejected without accessing the RRAM, with [`OP_STATUS.err`](registers.md#op_status) and [`ERR_CODE.op_err`](registers.md#err_code) set.
 3. Write [`CONTROL`](registers.md#control) with:
    - `OP = Rewrite`
    - `PARTITION = 0` for the data partition, `1` for the info partition
@@ -225,7 +229,7 @@ When a controller operation completes with [`OP_STATUS.err`](registers.md#op_sta
 
 | Field | Meaning |
 |---|---|
-| `op_err` | Undefined operation supplied in `CONTROL.OP` (see register description for valid values) |
+| `op_err` | Operation rejected without accessing the RRAM: undefined `CONTROL.OP`, operation started before initialization completed or while software access is disabled for RMA entry, or a write or Rewrite that does not cover whole RRAM words (see [`ERR_CODE.op_err`](registers.md#err_code)) |
 | `mp_err` | Memory protection violation |
 | `rd_err` | RRAM read error (ECC or integrity failure) |
 | `wr_err` | RRAM write error |
