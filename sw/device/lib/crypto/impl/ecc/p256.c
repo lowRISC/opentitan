@@ -422,6 +422,8 @@ status_t p256_ecdsa_verify_start(const p256_ecdsa_signature_t *signature,
 
 status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
                                     hardened_bool_t *result) {
+  *result = kHardenedBoolFalse;
+
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
 
