@@ -259,15 +259,18 @@ class csrng_intr_vseq extends csrng_base_vseq;
             force_path_err(aes_fsm_path, value3, ral.intr_state.cs_fatal_err, 1'b1);
           end
           ctrl_sparse: begin
-            // We force one rail of one of the mux control signals to another valid encoding.
-            value3 = {3'b000, {aes_pkg::ADD_RK_INIT}};
+            // We force one rail of one of the mux control signals to another valid encoding. The
+            // AES cipher core is idle here and already drives ADD_RK_INIT, so pick an encoding
+            // that differs from the current value of the rail.
             if (aes_pkg::SP2V_LOGIC_HIGH[cfg.which_sp2v] == 1'b1) begin
               path = cfg.csrng_path_vif.aes_cipher_ctrl_err_path(cfg.which_sp2v, "p");
-              force_path_err(path, value3, ral.intr_state.cs_fatal_err, 1'b1);
             end else begin
               path = cfg.csrng_path_vif.aes_cipher_ctrl_err_path(cfg.which_sp2v, "n");
-              force_path_err(path, value3, ral.intr_state.cs_fatal_err, 1'b1);
             end
+            `DV_CHECK(uvm_hdl_read(path, value3))
+            value3 = (value3 == {3'b000, {aes_pkg::ADD_RK_INIT}}) ?
+                     {3'b000, {aes_pkg::ADD_RK_ROUND}} : {3'b000, {aes_pkg::ADD_RK_INIT}};
+            force_path_err(path, value3, ral.intr_state.cs_fatal_err, 1'b1);
           end
           ctr_redun: begin
             value4 = 4'hf;
