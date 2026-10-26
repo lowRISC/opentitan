@@ -78,11 +78,21 @@ def assemble_for_test(ctx, name, spec, data_files, opentitantool, size = None):
       spec: A list of strings specifying the assembly parameters.
             e.g.: ["rom_ext_path@0x0", "test_path@0x10000"].
       data_files: A list of files needed by the spec.
+                  Will be filtered to only the files that are needed.
       opentitantool: The opentitantool executable.
       size: The size of the image to be assembled (e.g. "0x200000").
     Returns:
       File: the assembled image.
     """
+
+    # Filter so that we only depend on files named in the spec
+    spec_items = [s.rsplit("@", 1)[0] for s in spec if s]
+    inputs = [f for f in data_files if f.path in spec_items]
+    input_paths = [f.path for f in inputs]
+    missing = [p for p in spec_items if p not in input_paths]
+    if missing:
+        fail("`assemble` specification references files that were not given:", missing)
+
     image = ctx.actions.declare_file(name + ".img")
     args = [
         "--rcfile=",
@@ -97,7 +107,7 @@ def assemble_for_test(ctx, name, spec, data_files, opentitantool, size = None):
 
     ctx.actions.run(
         outputs = [image],
-        inputs = data_files,
+        inputs = inputs,
         arguments = args,
         executable = opentitantool,
     )
