@@ -1212,6 +1212,11 @@ status_t entropy_csrng_reseed(hardened_bool_t disable_trng_input,
                               const entropy_seed_material_t *seed_material) {
   crypto_state_t *state = NULL;
   if (status_ok(read_state_pointer(&state)) && state != NULL) {
+    if (state->csrng_instantiated != kHardenedByteBoolTrue) {
+      // COVERAGE (SW ERR) Internal callers instantiate CSRNG before reseeding.
+      return OTCRYPTO_RECOV_ERR;
+    }
+
     // Re-instantiate when switching between manual and non-manual modes to
     // flush the CSRNG state registers and avoid mixing approved and
     // non-approved data.
