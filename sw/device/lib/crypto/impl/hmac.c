@@ -366,9 +366,9 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
                             ? kTestHmacSha256Bit
                             : kTestHmacSha512Bit);
 
-  hmac_ctx_t primary_ctx;
-  hmac_ctx_t redundant_ctx;
-  hmac_key_t hmac_key;
+  hmac_ctx_t primary_ctx = {0};
+  hmac_ctx_t redundant_ctx = {0};
+  hmac_key_t hmac_key = {0};
   otcrypto_hmac_key_mode_t key_mode_used = launder32(0);
 
   void (*init_fn)(const hmac_key_t *, hmac_ctx_t *) = NULL;
@@ -444,6 +444,26 @@ otcrypto_status_t otcrypto_hmac_init(otcrypto_hmac_context_t *ctx,
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
+/**
+ * Check that the message, digest, partial block, and key sizes in a context
+ * are safe.
+ *
+ * @param hmac_ctx HMAC context object.
+ * @return OK or error.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t check_lengths(const hmac_ctx_t *hmac_ctx) {
+  if (hmac_ctx->msg_block_wordlen == 0 ||
+      hmac_ctx->msg_block_wordlen > kHmacMaxBlockWords ||
+      hmac_ctx->digest_wordlen > kHmacMaxDigestWords ||
+      hmac_ctx->partial_block_bytelen >=
+          hmac_ctx->msg_block_wordlen * sizeof(uint32_t) ||
+      hmac_ctx->key.key_len > kHmacMaxBlockWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t otcrypto_hmac_update(
     otcrypto_hmac_context_t *const ctx,
     const otcrypto_const_byte_buf_t *input_message) {
@@ -470,6 +490,7 @@ otcrypto_status_t otcrypto_hmac_update(
   HARDENED_TRY(hardened_memcpy((uint32_t *)&primary_ctx,
                                (const uint32_t *)&ctx->data[kCtxPrimaryOffset],
                                sizeof(hmac_ctx_t) / sizeof(uint32_t)));
+  HARDENED_TRY(check_lengths(&primary_ctx));
   HARDENED_TRY(hmac_update(&primary_ctx, input_message));
   randomized_bytecopy(&ctx->data[kCtxPrimaryOffset], &primary_ctx,
                       sizeof(hmac_ctx_t));
@@ -488,6 +509,7 @@ otcrypto_status_t otcrypto_hmac_update(
         hardened_memcpy((uint32_t *)&redundant_ctx,
                         (const uint32_t *)&ctx->data[kCtxRedundantOffset],
                         sizeof(hmac_ctx_t) / sizeof(uint32_t)));
+    HARDENED_TRY(check_lengths(&redundant_ctx));
     HARDENED_TRY(hmac_update(&redundant_ctx, input_message));
     randomized_bytecopy(&ctx->data[kCtxRedundantOffset], &redundant_ctx,
                         sizeof(hmac_ctx_t));
@@ -523,6 +545,8 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
                                (const uint32_t *)&ctx->data[kCtxPrimaryOffset],
                                sizeof(hmac_ctx_t) / sizeof(uint32_t)));
 
+  HARDENED_TRY(check_lengths(&primary_ctx));
+
   // Check the digest length.
   if (launder32(tag->len) != primary_ctx.digest_wordlen) {
     return OTCRYPTO_BAD_ARGS;
@@ -544,6 +568,7 @@ otcrypto_status_t otcrypto_hmac_final(otcrypto_hmac_context_t *const ctx,
       hardened_memcpy((uint32_t *)&redundant_ctx,
                       (const uint32_t *)&ctx->data[kCtxRedundantOffset],
                       sizeof(hmac_ctx_t) / sizeof(uint32_t)));
+  HARDENED_TRY(check_lengths(&redundant_ctx));
 
   uint32_t tag_redundant_data[kHmacMaxDigestWords];
   otcrypto_word32_buf_t tag_redundant =
