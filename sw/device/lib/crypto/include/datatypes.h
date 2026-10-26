@@ -310,8 +310,6 @@ typedef enum otcrypto_ecc_key_mode {
  * Values are hardened.
  */
 typedef enum otcrypto_kdf_key_mode {
-  /// Mode KDF-CTR with HMAC as PRF.
-  kOtcryptoKdfKeyModeCtrHmac = 0x12f,
   /// Mode KDF-KMAC with KMAC128 as PRF.
   kOtcryptoKdfKeyModeKmac128 = 0xe5e,
   /// Mode KDF-KMAC with KMAC256 as PRF.
@@ -401,9 +399,6 @@ typedef enum otcrypto_key_mode {
   /// Key is intended for X25519 mode.
   kOtcryptoKeyModeX25519 =
       kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeX25519,
-  /// Key is intended for KDF-CTR with HMAC as PRF.
-  kOtcryptoKeyModeKdfCtrHmac =
-      kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeCtrHmac,
   /// Key is intended for KDF with KMAC128 as PRF.
   kOtcryptoKeyModeKdfKmac128 =
       kOtcryptoKeyTypeKdf << 16 | kOtcryptoKdfKeyModeKmac128,
