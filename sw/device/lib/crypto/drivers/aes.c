@@ -58,6 +58,8 @@ static status_t spin_until(uint32_t bit) {
 static status_t aes_write_key(aes_key_t key) {
   if (key.sideload != kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolTrue));
+    HARDENED_CHECK_EQ(aes_key_integrity_checksum_check(&key),
+                      kHardenedBoolTrue);
     // Nothing to be done; key must be separately loaded from keymgr.
     return OTCRYPTO_OK;
   }
@@ -374,12 +376,15 @@ uint32_t aes_key_integrity_checksum(const aes_key_t *key) {
   crc32_add32(&ctx, key->mode);
   crc32_add32(&ctx, key->sideload);
   crc32_add32(&ctx, key->key_len);
-  // Compute the checksum only over a single share to avoid side-channel
-  // leakage. From a FI perspective only covering one key share is fine as
-  // (a) manipulating the second share with FI has only limited use to an
-  // adversary and (b) when manipulating the entire pointer to the key structure
-  // the checksum check fails.
-  crc32_add(&ctx, (unsigned char *)key->key_shares[0], key->key_len);
+  if (key->sideload == kHardenedBoolFalse) {
+    // Compute the checksum only over a single share to avoid side-channel
+    // leakage. From a FI perspective only covering one key share is fine as
+    // (a) manipulating the second share with FI has only limited use to an
+    // adversary and (b) when manipulating the entire pointer to the key
+    // structure the checksum check fails.
+    crc32_add(&ctx, (const unsigned char *)key->key_shares[0],
+              key->key_len * sizeof(uint32_t));
+  }
   return crc32_finish(&ctx);
 }
 
