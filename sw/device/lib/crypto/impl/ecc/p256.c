@@ -206,7 +206,7 @@ uint32_t p256_masked_scalar_checksum(const p256_masked_scalar_t *scalar) {
   // (a) manipulating the second share with FI has only limited use to an
   // adversary and (b) when manipulating the entire pointer to the key structure
   // the checksum check fails.
-  crc32_add(&ctx, (unsigned char *)scalar->share0, kP256CoordBytes);
+  crc32_add(&ctx, (unsigned char *)scalar->share0, kP256MaskedScalarShareBytes);
   return crc32_finish(&ctx);
 }
 
