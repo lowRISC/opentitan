@@ -4,9 +4,10 @@
 # SPDX-License-Identifier: Apache-2.0
 """Unit tests for OpenTitan's PRINCE64 cipher implementation."""
 
+import random
 import unittest
 
-from prince import PRINCE_SBOX4, PRINCE_SBOX4_INV, prince, sbox
+from prince import PRINCE_SBOX4, PRINCE_SBOX4_INV, prince, prince_no_lookup, sbox
 
 # PRINCE test vectors (plaintext, key, half-rounds, ciphertext).
 # OpenTitan uses the original PRINCE (i.e. not PRINCEv2), with a modified
@@ -35,6 +36,16 @@ class TestPrince(unittest.TestCase):
         """Test a mixture of Known Answer Test vectors."""
         for data, key, rounds, expected in KAT_VECTORS:
             self.assertEqual(prince(data, key, rounds), expected,
+                             msg=f"data={data:#x} key={key:#x}, rounds={rounds}")
+
+    def test_t_table_equivalence(self) -> None:
+        """Test the T-table (LUT) implementation matches the step-by-step reference."""
+        rng = random.Random(0)
+        for _ in range(25000):
+            data = rng.getrandbits(64)
+            key = rng.getrandbits(128)
+            rounds = rng.randint(0, 5)
+            self.assertEqual(prince(data, key, rounds), prince_no_lookup(data, key, rounds),
                              msg=f"data={data:#x} key={key:#x}, rounds={rounds}")
 
     def test_invalid_arguments(self) -> None:
