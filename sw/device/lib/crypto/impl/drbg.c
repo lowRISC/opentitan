@@ -87,11 +87,11 @@ static status_t seed_material_construct(
 static otcrypto_status_t seed_material_xor(
     const otcrypto_const_byte_buf_t *value,
     entropy_seed_material_t *seed_material) {
+  if (value == NULL || value->len == 0) {
+    return OTCRYPTO_OK;
+  }
   if (value->len > kEntropySeedBytes) {
     return OTCRYPTO_BAD_ARGS;
-  }
-  if (value->len == 0) {
-    return OTCRYPTO_OK;
   }
 
   // Copy into a word-aligned buffer. This allows us to use a XOR that is more
@@ -161,10 +161,11 @@ otcrypto_status_t otcrypto_drbg_manual_instantiate(
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers or bad length.
-  if (perso_string->len != 0 && perso_string->data == NULL) {
+  if (perso_string == NULL ||
+      (perso_string->len != 0 && perso_string->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (entropy->data == NULL) {
+  if (entropy == NULL || entropy->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
