@@ -156,8 +156,10 @@ jobs:
       - name: Run the tests
         run: |
           ./bazelisk.sh test \
+            --build_tests_only \
             --cache_test_results=no \
             --test_tag_filters=nightly \
+            //sw/device/tests/penetrationtests/... \
             //sw/otbn/crypto/tests/fi/... \
             //sw/otbn/crypto/tests/tvla/...
       - uses: actions/checkout@v6
