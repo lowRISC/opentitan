@@ -1032,7 +1032,9 @@
               name: "Disabled",
               desc: '''
                 Key manager currently disabled. Please reset the key manager.
-                Sideload keys are still valid.
+                Sideload keys stay valid after a software disable.
+                This value is also reported while a fault or a life cycle deactivation wipes
+                the keys on the way to Invalid.
               '''
             },
             { value: "3",

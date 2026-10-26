@@ -592,12 +592,12 @@ This is a readout of the current key manager working state
 ### WORKING_STATE . STATE
 Key manager control state
 
-| Value   | Name      | Description                                                                                               |
-|:--------|:----------|:----------------------------------------------------------------------------------------------------------|
-| 0x0     | Reset     | Key manager control is still in reset.  Please wait for initialization complete before issuing operations |
-| 0x1     | Available | Key manager control has finished latching OTP root key and will now accept software commands.             |
-| 0x2     | Disabled  | Key manager currently disabled. Please reset the key manager. Sideload keys are still valid.              |
-| 0x3     | Invalid   | Key manager currently invalid. Please reset the key manager. Sideload keys are no longer valid.           |
+| Value   | Name      | Description                                                                                                                                                                                                                   |
+|:--------|:----------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | Reset     | Key manager control is still in reset.  Please wait for initialization complete before issuing operations                                                                                                                     |
+| 0x1     | Available | Key manager control has finished latching OTP root key and will now accept software commands.                                                                                                                                 |
+| 0x2     | Disabled  | Key manager currently disabled. Please reset the key manager. Sideload keys stay valid after a software disable. This value is also reported while a fault or a life cycle deactivation wipes the keys on the way to Invalid. |
+| 0x3     | Invalid   | Key manager currently invalid. Please reset the key manager. Sideload keys are no longer valid.                                                                                                                               |
 
 
 ## OP_STATUS

@@ -52,6 +52,7 @@ At the end of a successful operation, the slot selected by `SLOT_DST_SEL` is loa
 The slot `SLOT_SRC_SEL` remains unmodified (unless `SLOT_SRC_SEL = SLOT_DST_SEL` required by `retain_parent = false`).
 
 A non-successful operation does not update any of the slots.
+The exception is a fault or a life cycle deactivation, which moves key manager to the `Invalid` state and leaves no key in any slot.
 
 The software is able to read the current state of key manager, however it never has access to the associated internal key.
 

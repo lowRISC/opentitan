@@ -208,12 +208,14 @@ module keymgr_dpe_ctrl
 
   // req from main control fsm to key update controls
   logic wipe_req;
+  logic inv_state;
   logic random_req;
   logic random_ack;
 
   // wipe and initialize take precedence
   assign update_sel = wipe_req                         ? SlotWipeAll        :
                       (state_q == StCtrlDpeRandom)     ? SlotDestRandomize  :
+                      init_o & inv_state               ? SlotUpdateIdle     :
                       init_o & en_i & root_key_i.valid ? SlotLoadRoot       : op_update_sel;
 
   // operations fsm update precedence
@@ -447,7 +449,6 @@ module keymgr_dpe_ctrl
   // TODO(#384): Make sure that:
   // 1) inv_state is correctly computed
   // 2) inv_state is correctly consumed by FSM
-  logic inv_state;
   assign inv_state = |fault_o;
 
   // SEC_CM: CTRL.FSM.SPARSE
@@ -545,7 +546,7 @@ module keymgr_dpe_ctrl
         // If en_i goes low at this cycle, then mark the ongoing advance operation as invalid
         invalid_op = ~en_i;
 
-        // Latching the root key requires both: 1) en_i is up, 2) root_key is valid
+        // Latching the root key requires: 1) en_i is up, 2) root_key is valid, 3) no fault
         // otherwise do not latch the key
         init_o = 1'b1;
         // Since we did not store the root key, we do not have to wipe it.
@@ -610,7 +611,7 @@ module keymgr_dpe_ctrl
         // During disabled, any incoming operation is rejected.
         invalid_op = op_start_i;
 
-        if (!en_i) begin
+        if (!en_i | inv_state) begin
           state_d = StCtrlDpeWipe;
         end
       end

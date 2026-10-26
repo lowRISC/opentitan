@@ -529,6 +529,29 @@ interface keymgr_dpe_if(input clk, input rst_n);
   endtask
 
   bit [2:0] prev_cmds;
+  // Wait until the control FSM is in `state`, then raise a register integrity error until the next
+  // clock edge has passed. The resulting fault stays latched until reset.
+  task automatic inject_regfile_intg_err(keymgr_dpe_pkg::keymgr_dpe_working_state_e state);
+    `DV_WAIT(tb.dut.u_ctrl.state_q == state, $sformatf("wait for %s", state.name), 1_000_000,
+             msg_id)
+    `uvm_info(msg_id, $sformatf("injecting regfile_intg_err in %s", state.name), UVM_LOW)
+    force tb.dut.u_ctrl.regfile_intg_err_i = 1'b1;
+    @(posedge clk);
+    @(negedge clk);
+    release tb.dut.u_ctrl.regfile_intg_err_i;
+  endtask
+
+  // Wait until the control FSM leaves the root key state, then return the internal key slots as
+  // the root key load left them, before the next clock edge can change them.
+  task automatic get_slots_after_root_key(
+      output keymgr_dpe_pkg::keymgr_dpe_slot_t [DvNumInstHwSlot-1:0] slots);
+    `DV_SPINWAIT(wait (tb.dut.u_ctrl.state_q == keymgr_dpe_pkg::StCtrlDpeRootKey);
+                 wait (tb.dut.u_ctrl.state_q != keymgr_dpe_pkg::StCtrlDpeRootKey);,
+                 "wait for the root key load", 1_000_000, msg_id)
+    @(negedge clk);
+    slots = internal_key_slots;
+  endtask
+
   task automatic inject_cmd_err(bit[2:0] force_cmds);
     prev_cmds = op_enables;
     `uvm_info(msg_id, $sformatf("Force cmd (gen_en/id_en/adv_en) from %3b to %3b",
