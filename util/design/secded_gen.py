@@ -21,7 +21,7 @@ import random
 import sys
 import hjson
 import subprocess
-from typing import Any, Dict, List, Tuple
+from typing import Dict, List, Tuple
 from pathlib import Path
 
 from mako.template import Template
@@ -569,7 +569,7 @@ def print_dec(n, k, m, codes, codetype, print_type="logic"):
 
 def verify(cfgs):
     error = 0
-    for cfg in cfgs['cfgs']:
+    for cfg in cfgs:
         if (cfg['k'] <= 1 or cfg['k'] > 256):
             error += 1
             log.error("Current tool doesn't support the value k (%d)", cfg['k'])
@@ -594,13 +594,10 @@ def verify(cfgs):
     return error
 
 
-def _ecc_pick_code(config: Dict[str, Any], codetype: str, k: int) -> Tuple[int, List[int], int]:
-    # first check to see if bit width is supported among configuration
-
-    codes = None
-    bitmasks = None
-    m = None
-    for cfg in config['cfgs']:
+@functools.lru_cache(maxsize=None)
+def _ecc_pick_code(codetype: str, k: int) -> Tuple[int, Tuple[int, ...], int]:
+    # First check to see if the bit width is supported among the valid configurations.
+    for cfg in load_secded_configs():
         if cfg['k'] == k and cfg['code_type'] == codetype:
             m = cfg['m']
             codes = gen_code(codetype, k, m)
@@ -614,7 +611,7 @@ def _ecc_pick_code(config: Dict[str, Any], codetype: str, k: int) -> Tuple[int, 
 
 @functools.lru_cache(maxsize=None)
 def _ecc_encode(k: int,
-                m: int, bitmasks: List[int], invert: int,
+                m: int, bitmasks: Tuple[int, ...], invert: int,
                 dataword: int) -> int:
     assert 0 <= dataword < (1 << k)
 
@@ -639,8 +636,8 @@ def _ecc_encode(k: int,
     return codeword
 
 
-def ecc_encode(config: Dict[str, Any], codetype: str, k: int, dataword: int) -> Tuple[int, int]:
-    m, bitmasks, invert = _ecc_pick_code(config, codetype, k)
+def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
+    m, bitmasks, invert = _ecc_pick_code(codetype, k)
     codeword = _ecc_encode(k, m, bitmasks, invert, dataword)
 
     # Debug printouts
@@ -649,11 +646,8 @@ def ecc_encode(config: Dict[str, Any], codetype: str, k: int, dataword: int) -> 
     return codeword, m
 
 
-def ecc_encode_some(config: Dict[str, Any],
-                    codetype: str,
-                    k: int,
-                    datawords: int) -> Tuple[List[int], int]:
-    m, bitmasks, invert = _ecc_pick_code(config, codetype, k)
+def ecc_encode_some(codetype: str, k: int, datawords: List[int]) -> Tuple[List[int], int]:
+    m, bitmasks, invert = _ecc_pick_code(codetype, k)
     codewords = [int(_ecc_encode(k, m, bitmasks, invert, w), 2)
                  for w in datawords]
     return codewords, m
@@ -690,7 +684,7 @@ def generate(cfgs, args):
         f.write(f"// util/design/secded_gen.py from {SECDED_CFG_FILE}\n")
         f.write(C_H_TOP)
 
-    for cfg in cfgs['cfgs']:
+    for cfg in cfgs:
         log.debug("Working on {}".format(cfg))
         k = cfg['k']
         m = cfg['m']
@@ -724,7 +718,7 @@ def generate(cfgs, args):
     format_c_files(c_src_filename, c_h_filename)
 
     # create enum of various ECC types - useful for DV purposes in mem_bkdr_if
-    enum_str, inc_str = print_secded_enum_and_util_fns(cfgs['cfgs'])
+    enum_str, inc_str = print_secded_enum_and_util_fns(cfgs)
     # write out package file
     full_pkg_str = enum_str + pkg_type_str + pkg_out_str
     write_pkg_file(args.outdir, full_pkg_str)
@@ -1230,8 +1224,10 @@ targets:
         f.write(outstr)
 
 
-def load_secded_config() -> Dict[str, Any]:
-    return hjson.load(SECDED_CFG_PATH.open())
+def load_secded_configs() -> List[Dict[str, int | str]]:
+    """Load the supported secded configurations from the `SECDED_CFG_PATH`."""
+    with SECDED_CFG_PATH.open() as f:
+        return hjson.load(f)
 
 
 def main():
@@ -1270,8 +1266,7 @@ def main():
     else:
         log.basicConfig(format="%(levelname)s: %(message)s")
 
-    with open(SECDED_CFG_FILE, 'r') as infile:
-        config = hjson.load(infile)
+    config = load_secded_configs()
 
     # Error checking
     error = verify(config)

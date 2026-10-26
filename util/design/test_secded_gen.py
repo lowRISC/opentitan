@@ -9,16 +9,8 @@ import unittest
 
 import secded_gen
 
-_CONFIG = secded_gen.load_secded_config()
+_CONFIGS = secded_gen.load_secded_configs()
 _TEST_RND_SEED = 123
-
-
-def _configs() -> list[dict[str, int | str]]:
-    return _CONFIG["cfgs"]
-
-
-def _encode(codetype: str, k: int, dataword: int) -> tuple[int, int]:
-    return secded_gen.ecc_encode(_CONFIG, codetype, k, dataword)
 
 
 def _get_test_words(k: int, rnd: random.Random, count: int) -> list[int]:
@@ -47,19 +39,19 @@ class TestSecdedEccEncode(unittest.TestCase):
             ("inv_hsiao", 32, 0xffffffff, 0x2affffffff),
         ]
         for codetype, k, word, expected in vectors:
-            encoded = _encode(codetype, k, word)[0]
+            encoded = secded_gen.ecc_encode(codetype, k, word)[0]
             self.assertEqual(encoded, expected, msg=f"{codetype} k={k} word={word:#x}")
 
     def test_encoded_layout(self) -> None:
         """Test that the check bits prefix the data bits, which are unchanged."""
         rnd = random.Random(_TEST_RND_SEED)
-        for cfg in _configs():
+        for cfg in _CONFIGS:
             codetype = cfg["code_type"]
             k = cfg["k"]
             m = cfg["m"]
             for word in _get_test_words(k, rnd, 20):
                 error_context = f"{codetype} k={k} word={word:#x}"
-                codeword, check_bits = _encode(codetype, k, word)
+                codeword, check_bits = secded_gen.ecc_encode(codetype, k, word)
                 self.assertEqual(check_bits, m, msg=error_context)
                 self.assertEqual(codeword & ((1 << k) - 1), word, msg=error_context)
                 self.assertLess(codeword, 1 << (k + m), msg=error_context)
@@ -67,41 +59,41 @@ class TestSecdedEccEncode(unittest.TestCase):
     def test_detects_single_and_double_bit_errors(self) -> None:
         """Test SECDED detection: single or double errors should not produce the same encoding."""
         rnd = random.Random(_TEST_RND_SEED + 1)
-        for cfg in _configs():
+        for cfg in _CONFIGS:
             codetype = cfg["code_type"]
             k = cfg["k"]
             m = cfg["m"]
             num_bits = k + m
             data_mask = (1 << k) - 1
             for word in _get_test_words(k, rnd, 2):
-                codeword = _encode(codetype, k, word)[0]
+                codeword = secded_gen.ecc_encode(codetype, k, word)[0]
                 for num_flips in (1, 2):
                     for _ in range(25):
                         flips = rnd.sample((range(num_bits)), num_flips)
                         corrupted = codeword
                         for index in flips:
                             corrupted ^= (1 << index)
-                        re_encoded = _encode(codetype, k, corrupted & data_mask)[0]
+                        re_encoded = secded_gen.ecc_encode(codetype, k, corrupted & data_mask)[0]
                         self.assertNotEqual(corrupted, re_encoded,
                                             msg=f"{codetype} k={k} word={word:#x} flips={flips}")
 
     def test_unsupported_code(self) -> None:
         """Test that unsupported code types or key sizes appropriately error."""
         with self.assertRaises(Exception):
-            _encode("hamming", 17, 0)
+            secded_gen.ecc_encode("hamming", 17, 0)
         with self.assertRaises(Exception):
-            _encode("hamming", 15, 0)
+            secded_gen.ecc_encode("hamming", 15, 0)
         with self.assertRaises(Exception):
-            _encode("invalid", 64, 0)
+            secded_gen.ecc_encode("invalid", 64, 0)
         with self.assertRaises(Exception):
-            _encode("_hamming", 16, 0)
+            secded_gen.ecc_encode("_hamming", 16, 0)
 
     def test_invalid_input_word(self) -> None:
         """Test that invalid data words appropriately error."""
         with self.assertRaises(AssertionError):
-            _encode("hamming", 64, 1 << 64)
+            secded_gen.ecc_encode("hamming", 64, 1 << 64)
         with self.assertRaises(AssertionError):
-            _encode("hamming", 64, -1)
+            secded_gen.ecc_encode("hamming", 64, -1)
 
 
 if __name__ == "__main__":
