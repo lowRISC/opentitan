@@ -19,6 +19,15 @@
 #define MODULE_ID MAKE_MODULE_ID('p', '2', '5')
 
 /**
+ * Sideload cleanup guard.
+ */
+OT_USED static void sideload_wipe_guard(hardened_bool_t *should_wipe) {
+  if (*should_wipe == kHardenedBoolTrue) {
+    (void)keymgr_dpe_sideload_clear_otbn();
+  }
+}
+
+/**
  * Extracts and verifies a P-256 masked scalar from a blinded key struct.
  *
  * This safely copies the blinded key material (two shares) from the opaque
@@ -213,8 +222,12 @@ static status_t internal_p256_keygen_start(
     const otcrypto_blinded_key_t *private_key) {
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
+    hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+        kHardenedBoolTrue;
     HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
-    return otcrypto_eval_exit(p256_sideload_keygen_start());
+    HARDENED_TRY(p256_sideload_keygen_start());
+    should_wipe = kHardenedBoolFalse;
+    return otcrypto_eval_exit(OTCRYPTO_OK);
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
     return otcrypto_eval_exit(p256_keygen_start());
@@ -549,6 +562,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
   OTCRYPTO_SET_CMVP_INDICATOR(
       OTCRYPTO_FUNCTION_ECDSA_P256_KEYGEN_ASYNC_FINALIZE);
   OTCRYPTO_LOCKED_STATE_CHECK();
+  hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolTrue;
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for any NULL pointers.
   if (private_key == NULL || public_key == NULL ||
@@ -567,6 +582,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
 
   HARDENED_TRY_WIPE_DMEM(
       internal_p256_keygen_finalize(private_key, public_key));
+  should_wipe = kHardenedBoolFalse;
 
 #ifdef FIPS_MODE
   // Perform FIPS Pairwise Consistency Test (PCT).
@@ -596,9 +612,12 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_keygen_async_start(
   }
   HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdsaP256);
 
+  hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolTrue;
   HARDENED_TRY(load_attestation_diversification(private_key));
   HARDENED_TRY_WIPE_DMEM(
       p256_sideload_attestation_keygen_start(attestation_seed));
+  should_wipe = kHardenedBoolFalse;
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -671,8 +690,11 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     // Load the key and start in sideloaded-key mode.
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
+    hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+        kHardenedBoolTrue;
     HARDENED_TRY_WIPE_DMEM(keyblob_sideload_key_otbn(private_key));
     HARDENED_TRY_WIPE_DMEM(p256_ecdsa_sideload_sign_start(message_digest.data));
+    should_wipe = kHardenedBoolFalse;
   } else {
     // Invalid value for private_key->hw_backed.
     return OTCRYPTO_BAD_ARGS;
@@ -692,6 +714,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
     otcrypto_word32_buf_t *signature) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P256_SIGN_ASYNC_FINALIZE);
   OTCRYPTO_LOCKED_STATE_CHECK();
+  hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolTrue;
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -707,6 +731,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_finalize(
   // point then the signature would be unrecoverable. This should be the
   // last potentially error-causing line before returning to the caller.
   HARDENED_TRY_WIPE_DMEM(p256_ecdsa_sign_finalize(sig_p256));
+  should_wipe = kHardenedBoolFalse;
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -744,10 +769,13 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
   keymgr_dpe_diversification_t diversification;
   HARDENED_TRY(keyblob_to_keymgr_dpe_attestation_diversification(
       private_key, &diversification));
+  hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolTrue;
   HARDENED_TRY(keymgr_dpe_generate_key_otbn(diversification));
 
   HARDENED_TRY_WIPE_DMEM(p256_sideload_attestation_sign_start(
       message_digest.data, attestation_seed));
+  should_wipe = kHardenedBoolFalse;
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -902,6 +930,8 @@ otcrypto_status_t otcrypto_ecdh_p256_keygen_async_finalize(
   OTCRYPTO_SET_CMVP_INDICATOR(
       OTCRYPTO_FUNCTION_ECDH_P256_KEYGEN_ASYNC_FINALIZE);
   OTCRYPTO_LOCKED_STATE_CHECK();
+  hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolTrue;
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for any NULL pointers.
   if (private_key == NULL || public_key == NULL ||
@@ -918,6 +948,7 @@ otcrypto_status_t otcrypto_ecdh_p256_keygen_async_finalize(
   HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdhP256);
   HARDENED_TRY_WIPE_DMEM(
       internal_p256_keygen_finalize(private_key, public_key));
+  should_wipe = kHardenedBoolFalse;
 
 #ifdef FIPS_MODE
   // Perform FIPS Pairwise Consistency Test (PCT).
@@ -967,8 +998,11 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
 
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
+    hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+        kHardenedBoolTrue;
     HARDENED_TRY_WIPE_DMEM(keyblob_sideload_key_otbn(private_key));
     HARDENED_TRY_WIPE_DMEM(p256_sideload_ecdh_start(pk));
+    should_wipe = kHardenedBoolFalse;
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
     p256_masked_scalar_t private_scalar;
@@ -997,6 +1031,8 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
     otcrypto_blinded_key_t *shared_secret) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDH_P256_ASYNC_FINALIZE);
   OTCRYPTO_LOCKED_STATE_CHECK();
+  hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolTrue;
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (shared_secret == NULL || shared_secret->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -1036,6 +1072,7 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   HARDENED_TRY(hardened_memshred(ss.y_share0, ARRAYSIZE(ss.y_share0)));
   HARDENED_TRY(hardened_memshred(ss.y_share1, ARRAYSIZE(ss.y_share1)));
   HARDENED_TRY_WIPE_DMEM(p256_ecdh_finalize(&ss));
+  should_wipe = kHardenedBoolFalse;
   HARDENED_CHECK_EQ(p256_ecdh_shared_key_checksum_check(&ss),
                     kHardenedBoolTrue);
 
