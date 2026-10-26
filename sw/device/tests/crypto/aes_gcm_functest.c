@@ -292,6 +292,16 @@ static status_t run_bad_args_test(void) {
                                        &too_short_ct_final, &written, &success)
             .value == OTCRYPTO_BAD_ARGS.value);
 
+  // Encrypt/decrypt direction mismatch checks in final
+  TRY(otcrypto_aes_gcm_decrypt_init(&key, &iv, &ctx));
+  CHECK(otcrypto_aes_gcm_encrypt_final(&ctx, kOtcryptoAesGcmTagLen128, &ct,
+                                       &written, &tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
+  CHECK(otcrypto_aes_gcm_decrypt_final(
+            &ctx, &tag_const, kOtcryptoAesGcmTagLen128, &ct, &written, &success)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
   // Edge Case & Fault Injection Coverage
 
   // Failed Decryption Tag Check

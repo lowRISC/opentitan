@@ -611,6 +611,9 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   aes_gcm_context_t internal_ctx
       __attribute__((cleanup(aes_gcm_context_shred)));
   HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
+  if (internal_ctx.is_encrypt != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (launder32(internal_ctx.key.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
   }
@@ -666,6 +669,9 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   aes_gcm_context_t internal_ctx
       __attribute__((cleanup(aes_gcm_context_shred)));
   HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
+  if (internal_ctx.is_encrypt != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   if (launder32(internal_ctx.key.sideload) == kHardenedBoolTrue) {
     // COVERAGE (MISSING) Sideloaded keys with streaming decrypt_final are not
     // covered.
