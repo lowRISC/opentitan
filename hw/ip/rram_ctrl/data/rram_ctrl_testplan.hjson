@@ -58,9 +58,8 @@
               including unaligned start addresses and transactions that cross page boundaries.
             - Write operations with `CONTROL.NUM` a multiple of 4 bus words, 16-byte aligned, up
               to 1024 bus words, including multi-page writes.
-            - Write `ADDR.START` values that are not 16-byte aligned to check the truncation to
-              the next lower RRAM word. Read addresses that are not bus-word aligned are
-              truncated to the next lower bus word.
+            - Read `ADDR.START` values that are not bus-word aligned to check the truncation to
+              the next lower bus word.
             - Interleave reads and writes to the same and to different pages.
             - Randomize the timing of FIFO accesses: fill the write FIFO after setting
               `CONTROL.START` with random delays, and drain the read FIFO slowly and quickly.
@@ -99,6 +98,28 @@
             Note: with the open-source macro, a double bit error must be injected by flipping
             one bit in each 64-bit half. This is because the macro protects each half with its
             own Hamming(72,64) code and two bits in the same half are uncorrectable.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: sw_op_misaligned
+      desc: '''
+            Verify that software writes and Rewrites that do not cover whole RRAM words are
+            rejected.
+
+            **Stimulus**:
+            - Write operations whose number of bus words (`CONTROL.NUM` + 1) is not a multiple
+              of 4.
+            - Write and Rewrite operations whose `ADDR.START` is not 16-byte aligned.
+            - For writes, push data into the write FIFO after setting `CONTROL.START`.
+            - Follow each rejected operation with a valid write to a different page.
+
+            **Checks**:
+            - The rejected operation completes with `OP_STATUS.err` and `ERR_CODE.op_err` set.
+            - The RRAM contents are unchanged, as checked through the backdoor.
+            - A valid write issued after the rejected operation writes only its own data, i.e.
+              no data from the rejected operation is left in the controller and committed with it.
             '''
       stage: V2
       tests: []
