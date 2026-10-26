@@ -1308,7 +1308,7 @@ static otcrypto_status_t rsa_decrypt_exp_async_start(
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
   if (private_key == NULL || private_key->keyblob == NULL ||
-      ciphertext->data == NULL) {
+      ciphertext == NULL || ciphertext->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
@@ -1427,7 +1427,7 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (plaintext == NULL || plaintext->data == NULL || label == NULL ||
-      label->data == NULL || plaintext_bytelen == NULL) {
+      (label->data == NULL && label->len != 0) || plaintext_bytelen == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
