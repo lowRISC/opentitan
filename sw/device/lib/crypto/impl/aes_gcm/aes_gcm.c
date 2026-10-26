@@ -482,6 +482,13 @@ status_t aes_gcm_encrypt_init(const aes_key_t key,
 
 status_t aes_gcm_update_aad(aes_gcm_context_t *ctx,
                             const otcrypto_const_byte_buf_t *aad) {
+  // Check for null pointers and ensure we are in the expected state. Once
+  // we've started accumulating encrypted data, we can't add more associated
+  // data because of the structure of the tag's GHASH operation.
+  if (ctx == NULL || aad == NULL || ctx->input_len > 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   // If the length is 0, we have nothing to do.
   if (aad->len == 0) {
     return OTCRYPTO_OK;
@@ -491,13 +498,6 @@ status_t aes_gcm_update_aad(aes_gcm_context_t *ctx,
   // NIST requires, but SP800-38D also allows implementations to stipulate
   // lower length limits.
   if (aad->len > UINT32_MAX - ctx->aad_len) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Check for null pointers and ensure we are in the expected state. Once
-  // we've started accumulating encrypted data, we can't add more associated
-  // data because of the structure of the tag's GHASH operation.
-  if (ctx == NULL || aad == NULL || ctx->input_len > 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 

@@ -291,8 +291,8 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
-  if (key == NULL || iv == NULL || iv->data == NULL || auth_tag == NULL ||
-      auth_tag->data == NULL) {
+  if (key == NULL || key->keyblob == NULL || iv == NULL || iv->data == NULL ||
+      auth_tag == NULL || auth_tag->data == NULL) {
     // COVERAGE (MISSING) We do not cover NULL inputs.
     return OTCRYPTO_BAD_ARGS;
   }
@@ -353,7 +353,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
   // Check for NULL pointers in input pointers and required-nonzero-length data
   // buffers.
   if (key == NULL || key->keyblob == NULL || iv == NULL || iv->data == NULL ||
-      auth_tag == NULL || auth_tag->data == NULL) {
+      auth_tag == NULL || auth_tag->data == NULL || success == NULL) {
     // COVERAGE (MISSING) Null required input pointers in decrypt are not
     // covered.
     return OTCRYPTO_BAD_ARGS;
@@ -368,6 +368,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+  *success = kHardenedBoolFalse;
 
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
@@ -485,16 +486,10 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_UPDATE_AAD);
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (ctx == NULL || aad == NULL || aad->data == NULL) {
+  if (ctx == NULL || aad == NULL || (aad->len != 0 && aad->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
-
-  if (aad->len == 0) {
-    // Nothing to do.
-    // COVERAGE (MISSING) We do not cover the length 0 aad on update.
-    return otcrypto_eval_exit(OTCRYPTO_OK);
-  }
 
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
@@ -505,6 +500,14 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(
   aes_gcm_context_t internal_ctx
       __attribute__((cleanup(aes_gcm_context_shred)));
   HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
+  if (internal_ctx.input_len > 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (aad->len == 0) {
+    // Nothing to do.
+    // COVERAGE (MISSING) We do not cover the length 0 aad on update.
+    return otcrypto_eval_exit(OTCRYPTO_OK);
+  }
   if (launder32(internal_ctx.key.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
   }
@@ -525,18 +528,16 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_AES_GCM_UPDATE_ENCRYPTED_DATA);
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (ctx == NULL || input == NULL || input->data == NULL || output == NULL ||
-      output->data == NULL || output_bytes_written == NULL) {
+  if (ctx == NULL || input == NULL || output == NULL ||
+      output_bytes_written == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if ((input->len != 0 && input->data == NULL) ||
+      (output->len != 0 && output->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
   *output_bytes_written = 0;
-
-  if (input->len == 0) {
-    // Nothing to do.
-    // COVERAGE (MISSING) We do not cover the length 0 input on update.
-    return otcrypto_eval_exit(OTCRYPTO_OK);
-  }
 
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
@@ -547,6 +548,11 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   aes_gcm_context_t internal_ctx
       __attribute__((cleanup(aes_gcm_context_shred)));
   HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
+  if (input->len == 0) {
+    // Nothing to do.
+    // COVERAGE (MISSING) We do not cover the length 0 input on update.
+    return otcrypto_eval_exit(OTCRYPTO_OK);
+  }
   if (launder32(internal_ctx.key.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
   }
