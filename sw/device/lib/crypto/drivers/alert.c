@@ -49,11 +49,11 @@ status_t clear_alert_class_accum(void) {
   // Check whether we can write to the class accumulators
   uint32_t regwen = abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
                                     ALERT_HANDLER_CLASSA_CLR_REGWEN_REG_OFFSET);
-  regwen |= abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
+  regwen &= abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
                             ALERT_HANDLER_CLASSB_CLR_REGWEN_REG_OFFSET);
-  regwen |= abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
+  regwen &= abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
                             ALERT_HANDLER_CLASSC_CLR_REGWEN_REG_OFFSET);
-  regwen |= abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
+  regwen &= abs_mmio_read32(TOP_EARLGREY_ALERT_HANDLER_BASE_ADDR +
                             ALERT_HANDLER_CLASSD_CLR_REGWEN_REG_OFFSET);
   if ((regwen & 0x1) != 1) {
     return OTCRYPTO_FATAL_ERR;
