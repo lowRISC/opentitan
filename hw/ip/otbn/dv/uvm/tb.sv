@@ -16,6 +16,7 @@ module tb;
   import edn_pkg::*;
   import otp_ctrl_pkg::*;
   import keymgr_dpe_pkg::*;
+  import kmac_pkg::*;
 
   // macro includes
   `include "uvm_macros.svh"
@@ -31,6 +32,11 @@ module tb;
   otbn_escalate_if              escalate_if (.clk_i (clk), .rst_ni (rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if     (interrupts);
   assign interrupts[0] = {intr_done};
+
+  wire kmac_pkg::app_req_t kmac_data_out;
+  wire kmac_pkg::app_rsp_t kmac_data_in;
+
+  kmac_app_if kmac_app_if(.clk_i(clk), .rst_ni(rst_n), .req(kmac_data_out), .rsp(kmac_data_in));
 
   wide_hw_key_req_t sideload_key;
   key_sideload_if#(keymgr_dpe_pkg::wide_hw_key_req_t) keymgr_if (
@@ -127,7 +133,10 @@ module tb;
     .otbn_otp_key_o(otp_key_req),
     .otbn_otp_key_i(otp_key_rsp),
 
-    .keymgr_key_i(sideload_key)
+    .keymgr_key_i(sideload_key),
+
+    .kmac_data_o(kmac_data_out),
+    .kmac_data_i(kmac_data_in)
   );
 
   bind dut.u_otbn_core otbn_trace_if #(
@@ -324,6 +333,8 @@ module tb;
 
     uvm_config_db#(otp_key_vif)::set(
       null, "*.env.key_agent*", "vif", otp_key_if);
+
+    uvm_config_db#(virtual kmac_app_if)::set(null, "*.env.m_kmac_agent*", "vif", kmac_app_if);
 
     uvm_config_db#(virtual otbn_trace_if)::set(null, "*.env", "trace_vif",
                                                dut.u_otbn_core.i_otbn_trace_if);
