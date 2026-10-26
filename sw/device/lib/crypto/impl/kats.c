@@ -1220,14 +1220,14 @@ static const uint32_t ed25519_pk[] = {
 
 static const uint32_t ed25519_sig[] = {
     // R
-    0xebdb69da,
-    0xb3762223,
-    0x16503f8f,
-    0xa2b27b54,
-    0x5f642540,
-    0x720e820b,
-    0xf0d4cab8,
-    0x92a009a9,
+    0xa909a092,
+    0xb8cad4f0,
+    0x0b820e72,
+    0x4025645f,
+    0x547bb2a2,
+    0x8f3f5016,
+    0x232276b3,
+    0xda69dbeb,
     // S
     0xe4c15a08,
     0x6e99153e,
