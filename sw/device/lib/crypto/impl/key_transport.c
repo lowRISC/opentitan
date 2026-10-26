@@ -75,9 +75,12 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
                                          const uint32_t salt[7],
                                          otcrypto_blinded_key_t *key) {
   OTCRYPTO_LOCKED_STATE_CHECK();
-  if (key == NULL || key->keyblob == NULL) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (key == NULL || key->keyblob == NULL || salt == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
   if ((key->keyblob_length != kKeyblobHwBackedBytes &&
        key->keyblob_length != kSwKeyblobHwBackedBytes) ||
       key->config.hw_backed != kHardenedBoolTrue) {
@@ -106,13 +109,24 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
 otcrypto_status_t otcrypto_hw_backed_attestation_key(
     uint32_t version, const uint32_t salt[8], otcrypto_blinded_key_t *key) {
   OTCRYPTO_LOCKED_STATE_CHECK();
-  if (key == NULL || key->keyblob == NULL) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (key == NULL || key->keyblob == NULL || salt == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   if ((key->keyblob_length != kCdiKeyblobHwBackedBytes &&
        key->keyblob_length != kSwKeyblobHwBackedBytes) ||
       key->config.hw_backed != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Get the key type from the top 16 bits of the full mode and ensure that it
+  // is not RSA. All other key types are acceptable for hardware-backed keys.
+  otcrypto_key_type_t key_type =
+      (otcrypto_key_type_t)(key->config.key_mode >> 16);
+  if (key_type == kOtcryptoKeyTypeRsa) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -123,14 +137,20 @@ otcrypto_status_t otcrypto_hw_backed_attestation_key(
   // Set the checksum.
   key->checksum = otcrypto_integrity_blinded_checksum(key);
 
-  return OTCRYPTO_OK;
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
                                              otcrypto_blinded_key_t *key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_HW_BACKED_KEYGEN);
   OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key == NULL || key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  if (otcrypto_integrity_blinded_key_check(key) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -451,10 +471,14 @@ otcrypto_status_t otcrypto_import_blinded_key(
     const otcrypto_const_word32_buf_t *key_share1,
     otcrypto_blinded_key_t *blinded_key) {
   OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (blinded_key == NULL || blinded_key->keyblob == NULL ||
-      key_share0->data == NULL || key_share1->data == NULL) {
+      key_share0 == NULL || key_share0->data == NULL || key_share1 == NULL ||
+      key_share1->data == NULL) {
+    // COVERAGE (MISSING) We do not cover null inputs
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Ensure the key is symmetric and not hardware-backed.
   HARDENED_TRY(keyblob_ensure_xor_masked(blinded_key->config));
@@ -490,10 +514,13 @@ otcrypto_status_t otcrypto_export_blinded_key(
     const otcrypto_blinded_key_t *blinded_key,
     otcrypto_word32_buf_t *key_share0, otcrypto_word32_buf_t *key_share1) {
   OTCRYPTO_LOCKED_STATE_CHECK();
-  if (blinded_key->keyblob == NULL || key_share0->data == NULL ||
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (blinded_key == NULL || blinded_key->keyblob == NULL ||
+      key_share0 == NULL || key_share0->data == NULL || key_share1 == NULL ||
       key_share1->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Check key integrity.
   if (launder32(otcrypto_integrity_blinded_key_check(blinded_key)) !=
