@@ -553,7 +553,7 @@ static otcrypto_status_t otcrypto_aes_impl(
     HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(cipher_output));
   }
 
-  return otcrypto_eval_exit(OTCRYPTO_OK);
+  return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_aes_padding_strip(
