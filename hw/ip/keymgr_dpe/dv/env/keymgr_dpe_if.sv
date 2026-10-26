@@ -126,7 +126,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
     end
     // Load the default value for all seed's
     local_creator_root_key = keymgr_dpe_pkg::KEYMGR_DPE_CREATOR_ROOT_KEY_DEFAULT;
-    local_secondary_root_key = keymgr_dpe_pkg::KEYMGR_DPE_CREATOR_ROOT_KEY_DEFAULT;
+    local_secondary_root_key = keymgr_dpe_pkg::KEYMGR_DPE_SECONDARY_ROOT_KEY_DEFAULT;
     creator_seed = keymgr_dpe_pkg::KEYMGR_DPE_CREATOR_SEED_DEFAULT;
     owner_seed = keymgr_dpe_pkg::KEYMGR_DPE_OWNER_SEED_DEFAULT;
     // If requested randomize the creator_root_key
@@ -144,10 +144,9 @@ interface keymgr_dpe_if(input clk, input rst_n);
     end
     creator_root_key = local_creator_root_key;
 
-    // Modify the default value such that the creator root key and the secondary root key will not
-    // generate the same secrets.
-    local_secondary_root_key.share0 = ~local_secondary_root_key.share0;
     // If requested randomize the secondary_root_key
+    local_secondary_root_key.share0_valid = 1'b1;
+    local_secondary_root_key.share1_valid = 1'b1;
     if (rand_secondary_root_key) begin
       `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(local_secondary_root_key,
                                          local_secondary_root_key.share0_valid == 1;
