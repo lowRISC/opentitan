@@ -221,9 +221,6 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
   uint32_t hw_cleanup_guard __attribute__((cleanup(hmac_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
 
-  // Preload the tag with randomness.
-  HARDENED_TRY(hardened_memshred(tag->data, tag->len));
-
   OTCRYPTO_HEALTH_CHECK(key->config.key_mode == kOtcryptoKeyModeHmacSha256
                             ? kTestHmacSha256Bit
                             : kTestHmacSha512Bit);
@@ -273,6 +270,9 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(tag->len, digest_words);
+
+  // Preload the tag with randomness.
+  HARDENED_TRY(hardened_memshred(tag->data, tag->len));
 
   hmac_key_t hmac_key;
   HARDENED_TRY(hmac_key_construct(key, block_words, &hmac_key));
