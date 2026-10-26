@@ -387,6 +387,7 @@ Control register
 ### CONTROL . NUM
 One fewer than the number of bus words the RRAM operation should read or write.
 For write operations, the number of bus words must be a multiple of 4.
+Otherwise the write is rejected with [`ERR_CODE.OP_ERR`](#err_code) without accessing the RRAM.
 For example, to read 10 words, software should program this field with the value 9.
 To write 16 words, the software should program this field to 15.
 
@@ -436,8 +437,8 @@ I.e., an address of 0 will access address 0 of the requested partition.
 For read operations, the RRAM controller will truncate to the closest, lower word aligned address.
 For example, if 0x13 is supplied, the controller will perform a read at address 0x10.
 
-For write operations, the RRAM controller will truncate to the closest, lower RRAM-word (128b).
-For example, if 0x2F is supplied, the controller will perform a write at address 0x20.
+For write and Rewrite operations, the address must be aligned to an RRAM word (128b).
+Otherwise the operation is rejected with [`ERR_CODE.OP_ERR`](#err_code) without accessing the RRAM.
 
 ## REGION_CFG_REGWEN
 Memory region registers configuration enable.
@@ -1068,6 +1069,7 @@ This is a synchronous error.
 Software has supplied an undefined operation.
 See [`CONTROL.OP`](#control) for list of valid operations.
 This error is also set if a software operation is started before the initialization has completed, see [`STATUS.INIT_DONE`](#status) and [`STATUS.KEYS_VALID`](#status), or while software access is disabled from the start of the RMA entry process.
+It is also set for a write or Rewrite whose start address in [`ADDR`](#addr) is not aligned to an RRAM word, and for a write whose number of bus words ([`CONTROL.NUM`](#control) + 1) is not a multiple of 4.
 
 ## STD_FAULT_STATUS
 This register tabulates standard fault status of the RRAM.
