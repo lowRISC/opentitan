@@ -12,7 +12,7 @@ It is implemented this way because the access window supports transaction back-p
 | rram_ctrl.[`INTR_ENABLE`](#intr_enable)                                          | 0x4      |        4 | Interrupt Enable Register                                                                        |
 | rram_ctrl.[`INTR_TEST`](#intr_test)                                              | 0x8      |        4 | Interrupt Test Register                                                                          |
 | rram_ctrl.[`ALERT_TEST`](#alert_test)                                            | 0xc      |        4 | Alert Test Register                                                                              |
-| rram_ctrl.[`DIS`](#dis)                                                          | 0x10     |        4 | Disable RRAM functionality                                                                       |
+| rram_ctrl.[`DIS`](#dis)                                                          | 0x10     |        4 | Disable RRAM functionality.                                                                      |
 | rram_ctrl.[`EXEC`](#exec)                                                        | 0x14     |        4 | Controls whether RRAM can be used for code execution fetches                                     |
 | rram_ctrl.[`INIT`](#init)                                                        | 0x18     |        4 | Controller init register                                                                         |
 | rram_ctrl.[`CTRL_REGWEN`](#ctrl_regwen)                                          | 0x1c     |        4 | Controls the configurability of the [`CONTROL`](#control) register.                              |
@@ -276,7 +276,9 @@ Alert Test Register
 |   0    |   wo   |   0x0   | recov_err       | Write 1 to trigger one alert event of this kind.       |
 
 ## DIS
-Disable RRAM functionality
+Disable RRAM functionality.
+Each write is merged into both fields.
+To leave a field unchanged, write MuBi4False to it.
 - Offset: `0x10`
 - Reset default: `0x99`
 - Reset mask: `0xff`

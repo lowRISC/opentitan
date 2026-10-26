@@ -554,7 +554,11 @@
   registers: {
     core: [
       { name: "DIS",
-        desc: "Disable RRAM functionality",
+        desc: '''
+              Disable RRAM functionality.
+              Each write is merged into both fields.
+              To leave a field unchanged, write MuBi4False to it.
+              ''',
         swaccess: "rw1s",
         hwaccess: "hro",
         fields: [
