@@ -624,8 +624,6 @@ def _ecc_encode(k: int,
     codeword = word_bin
     for k, mask in enumerate(bitmasks):
         bit = 0
-        log.debug(f'codeword: {codeword}')
-        log.debug(f'mask: {hex(mask)}')
         mask = (format(mask, '0' + str(k + m) + 'b'))
 
         # reverse codeword for index selection
@@ -642,15 +640,13 @@ def _ecc_encode(k: int,
 
 
 def ecc_encode(config: Dict[str, Any], codetype: str, k: int, dataword: int) -> Tuple[int, int]:
-    log.info(f"Encoding ECC for {hex(dataword)}")
-
     m, bitmasks, invert = _ecc_pick_code(config, codetype, k)
     codeword = _ecc_encode(k, m, bitmasks, invert, dataword)
 
     # Debug printouts
-    log.debug(f'original hex: {hex(dataword)}')
-    log.debug(f'codeword hex: {hex(int(codeword, 2))}')
-    return int(codeword, 2), m
+    codeword = int(codeword, 2)
+    log.debug("Encoding ECC for %x -> %x", dataword, codeword)
+    return codeword, m
 
 
 def ecc_encode_some(config: Dict[str, Any],
