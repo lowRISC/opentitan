@@ -611,11 +611,11 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
       consttime_memeq_byte(seed, encoded_message_bytes + 1, sizeof(seed)),
       kHardenedBoolTrue);
   HARDENED_TRY(randomized_bytecopy(encoded_message_bytes + 1 + sizeof(seed), db,
-                                   sizeof(db)));
+                                   db_bytelen));
   // Check whether a FI tampered copying the bytes.
   HARDENED_CHECK_EQ(
       consttime_memeq_byte(db, encoded_message_bytes + 1 + sizeof(seed),
-                           sizeof(db)),
+                           db_bytelen),
       kHardenedBoolTrue);
 
   // Reverse the byte-order.
