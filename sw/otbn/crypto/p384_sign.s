@@ -94,6 +94,15 @@ p384_sign:
   jal       x1, scalar_mult_int_p384
   jal       x1, proj_to_affine_p384
 
+  /* store the affine coordinates into dmem for is on curve check */
+  li        x2, 25
+  la        x20, x
+  bn.sid    x2++, 0(x20)
+  bn.sid    x2++, 32(x20)
+  la        x21, y
+  bn.sid    x2++, 0(x21)
+  bn.sid    x2++, 32(x21)
+
   /* call curve point test routine in P-384 lib */
   jal       x1, p384_isoncurve_check
 
