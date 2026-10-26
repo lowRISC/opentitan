@@ -306,6 +306,8 @@ status_t curve25519_verify_start(
 }
 
 status_t curve25519_verify_finalize(hardened_bool_t *result) {
+  *result = kHardenedBoolFalse;
+
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
 

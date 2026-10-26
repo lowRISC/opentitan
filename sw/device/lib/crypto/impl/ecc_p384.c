@@ -255,6 +255,12 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify(
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P384_VERIFY);
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (verification_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  *verification_result = kHardenedBoolFalse;
   HARDENED_TRY(otcrypto_ecdsa_p384_verify_async_start(
       public_key, message_digest, signature));
   return otcrypto_eval_exit(otcrypto_ecdsa_p384_verify_async_finalize(
@@ -283,6 +289,12 @@ otcrypto_status_t otcrypto_ecdsa_p384_hash_verify(
     hardened_bool_t *verification_result) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P384_HASH_VERIFY);
   OTCRYPTO_HEALTH_CHECK(kTestP384VerifyBit);
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (verification_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  *verification_result = kHardenedBoolFalse;
   uint32_t digest_data[16];
   HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
   otcrypto_hash_digest_t digest;
@@ -663,6 +675,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+  *verification_result = kHardenedBoolFalse;
 
   // Verify the input buffer
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
