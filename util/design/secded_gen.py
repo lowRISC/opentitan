@@ -98,6 +98,9 @@ SECDED_CFG_PATH = Path(PROJ_ROOT) / SECDED_CFG_FILE
 # to choose constants for Hsiao codes.
 _RND_SEED = 123
 
+# Arbitrary cache size -- keep it relatively small and it should be performant.
+_ECC_ENCODING_CACHE_SIZE = 4096
+
 
 def min_paritysize(k):
     # SECDED --> Hamming distance 'd': 4
@@ -622,81 +625,80 @@ def _ecc_pick_code(codetype: str, k: int) -> Tuple[int, Tuple[int, ...], int]:
     raise Exception(f'ECC for length {k} of type {codetype} unsupported')
 
 
-@functools.lru_cache(maxsize=None)
-def _ecc_encode(k: int,
-                m: int, bitmasks: Tuple[int, ...], invert: int,
-                dataword: int) -> str:
+def _ecc_encode(k: int, bitmasks: Tuple[int, ...], invert: int, dataword: int) -> int:
     """Encode a dataword into a codeword with added ECC.
 
     Args:
         k: The number of data bits
-        m: The number of check (parity) bits.
-        bitmasks: The tuple of `m` integers describing how codeword bits
-        are XORed to produce parity bits for each check bit.
+        bitmasks: The tuple of integers (one per check bit) describing how
+        codeword bits are XORed to produce parity bits for each check bit.
         invert: Inversion to apply to the ECC bits (1 or 0).
         dataword: The data word to encode.
 
     Returns:
-        The encoded codeword integer as a binary string.
+        The encoded codeword integer.
     """
     assert 0 <= dataword < (1 << k)
 
-    # represent supplied dataword as a binary string
-    word_bin = format(dataword, '0' + str(k) + 'b')
+    codeword = dataword
+    for idx, mask in enumerate(bitmasks):
+        # Each ECC bit is the parity of masked bits (may include previous ECC bits).
+        bit = (codeword & mask).bit_count() & 1
+        # Add ECC bit inversion if needed (see the comment in `print_enc`)
+        bit ^= invert & idx % 2
+        codeword |= bit << (k + idx)
 
-    codeword = word_bin
-    for k, mask in enumerate(bitmasks):
-        bit = 0
-        mask = (format(mask, '0' + str(k + m) + 'b'))
-
-        # reverse codeword for index selection
-        # This is because the LSB is the farthest entry in the string
-        codeword_rev = codeword[::-1]
-        for idx, f in enumerate(mask[::-1]):
-            if int(f):
-                bit ^= int(codeword_rev[idx])
-
-        # Add ECC bit inversion if needed (see print_enc function).
-        bit ^= (invert & k % 2)
-        codeword = str(bit) + codeword
     return codeword
 
 
-def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
+def ecc_encode(codetype: str, k: int, dataword: int,
+               cache: bool = False) -> Tuple[int, int]:
     """Encode a data word into a codeword with added ECC using a given code type.
 
     Args:
         codetype: The name of the code type to use.
         k: The number of data bits. Must be a valid configuration for `codetype`.
         dataword: The data word to encode.
+        cache: Enable caching, for use when data words are likely to repeat.
 
     Returns:
         The encoded codeword integer, followed by the number of check bits.
     """
-    m, bitmasks, invert = _ecc_pick_code(codetype, k)
-    codeword = _ecc_encode(k, m, bitmasks, invert, dataword)
+    if cache:
+        return _ecc_encode_cached(codetype, k, dataword)
 
-    # Debug printouts
-    codeword = int(codeword, 2)
+    m, bitmasks, invert = _ecc_pick_code(codetype, k)
+    assert len(bitmasks) == m
+    codeword = _ecc_encode(k, bitmasks, invert, dataword)
     log.debug("Encoding ECC for %x -> %x", dataword, codeword)
     return codeword, m
 
 
-def ecc_encode_many(codetype: str, k: int, datawords: List[int]) -> Tuple[List[int], int]:
+@functools.lru_cache(maxsize=_ECC_ENCODING_CACHE_SIZE)
+def _ecc_encode_cached(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
+    return ecc_encode(codetype, k, dataword)
+
+
+def ecc_encode_many(codetype: str, k: int, datawords: List[int],
+                    cache: bool = False) -> Tuple[List[int], int]:
     """Encode multiple data words into codewords with added ECC using a given code type.
 
     Args:
         codetype: The name of the code type to use.
         k: The number of data bits per word. Must be a valid configuration for `codetype`.
         datawords: The list of data words to encode.
+        cache: Enable caching, for use when data words are likely to repeat.
 
     Returns:
         The list of encoded codeword integers, followed by the number of check bits.
     """
+    if cache:
+        return ([_ecc_encode_cached(codetype, k, w)[0] for w in datawords],
+                _ecc_pick_code(codetype, k)[0])
+
     m, bitmasks, invert = _ecc_pick_code(codetype, k)
-    codewords = [int(_ecc_encode(k, m, bitmasks, invert, w), 2)
-                 for w in datawords]
-    return codewords, m
+    assert len(bitmasks) == m
+    return [_ecc_encode(k, bitmasks, invert, w) for w in datawords], m
 
 
 def gen_code(codetype, k, m):

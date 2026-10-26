@@ -108,10 +108,11 @@ def _rram_ecc(data: int) -> int:
     """
     data_lo = data & ((1 << 64) - 1)
     data_hi = (data >> 64) & ((1 << 64) - 1)
-    # ecc_encode returns {ECC bits, data bits}.
-    # The syndrome is the top 8 bits.
-    codeword_lo, _ = secded_gen.ecc_encode("hamming", 64, data_lo)
-    codeword_hi, _ = secded_gen.ecc_encode("hamming", 64, data_hi)
+    # ecc_encode returns {ECC bits, data bits}. The syndrome is the top 8 bits.
+    # Except for OTP (only 6 pages), the data partition uses address infection,
+    # so we don't expect ECC encoding caching to help.
+    codeword_lo, _ = secded_gen.ecc_encode("hamming", 64, data_lo, cache=False)
+    codeword_hi, _ = secded_gen.ecc_encode("hamming", 64, data_hi, cache=False)
     ecc_lo = (codeword_lo >> 64) & 0xFF
     ecc_hi = (codeword_hi >> 64) & 0xFF
     return (ecc_hi << 8) | ecc_lo
@@ -274,7 +275,8 @@ def _gen_otp_rram_vmem_lines(otp_vmem_file: str,
         for half in range(RRAM_WORD_SIZE // INTG_CHUNK_SIZE):
             chunk = (row >> (half * INTG_CHUNK_SIZE)) & ((1 << INTG_CHUNK_SIZE) - 1)
             # ecc_encode returns {ECC bits, data bits}; the syndrome is the top 8 bits.
-            codeword, _ = secded_gen.ecc_encode("hamming", INTG_CHUNK_SIZE, chunk)
+            # OTP is not address-infected, but we don't cache encodings as it's very small.
+            codeword, _ = secded_gen.ecc_encode("hamming", INTG_CHUNK_SIZE, chunk, cache=False)
             intg = (codeword >> INTG_CHUNK_SIZE) & 0xFF
             # chunk_idx counts 64b chunks from the start of OTP data; it doubles as the byte
             # offset into the integrity page, since that page stores exactly one byte per chunk.
