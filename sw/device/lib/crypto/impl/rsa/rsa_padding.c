@@ -154,6 +154,11 @@ static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
                                    size_t *num_words) {
   hash_info_t info;
   HARDENED_TRY(hash_info_get(hash_mode, &info));
+  if (info.der_oid == NULL) {
+    // Unsupported or unrecognized hash function.
+    // COVERAGE (MISSING) We do not cover bad padding modes.
+    return OTCRYPTO_BAD_ARGS;
+  }
   *num_words = info.digest_wordlen;
   HARDENED_CHECK_GT(*num_words, 0);
   return OTCRYPTO_OK;
