@@ -9,6 +9,7 @@
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
+#include "sw/device/lib/crypto/impl/aes_kwp/aes_kwp.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/cryptolib_build_info.h"
@@ -593,6 +594,51 @@ TEST(KeyTransport, HwBackedKeygenNegative) {
   EXPECT_OK(
       otcrypto_hw_backed_key(test_version, test_salt.data(), &wrong_key_len));
   EXPECT_NOT_OK(ot_crypto_hw_backed_keygen(kHardenedBoolFalse, &wrong_key_len));
+}
+
+TEST(KeyTransport, AesKwpNegative) {
+  uint32_t share0[8] = {0};
+  uint32_t share1[8] = {0};
+  aes_key_t ecb_kek = {
+      .mode = kAesCipherModeEcb,
+      .sideload = kHardenedBoolFalse,
+      .key_len = 8,
+      .key_shares = {share0, share1},
+      .checksum = 0,
+  };
+  ecb_kek.checksum = aes_key_integrity_checksum(&ecb_kek);
+
+  aes_key_t ctr_kek = ecb_kek;
+  ctr_kek.mode = kAesCipherModeCtr;
+  ctr_kek.checksum = aes_key_integrity_checksum(&ctr_kek);
+
+  uint32_t buf[16] = {0};
+  hardened_bool_t success = kHardenedBoolFalse;
+  size_t plaintext_len = 0;
+
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  // Null pointer checks for aes_kwp_wrap and aes_kwp_unwrap.
+  EXPECT_NOT_OK(aes_kwp_wrap(ecb_kek, nullptr, 32, buf));
+  EXPECT_NOT_OK(aes_kwp_wrap(ecb_kek, buf, 32, nullptr));
+  EXPECT_NOT_OK(
+      aes_kwp_unwrap(ecb_kek, nullptr, 32, &success, buf, &plaintext_len));
+  EXPECT_NOT_OK(aes_kwp_unwrap(ecb_kek, buf, 32, nullptr, buf, &plaintext_len));
+  EXPECT_NOT_OK(
+      aes_kwp_unwrap(ecb_kek, buf, 32, &success, nullptr, &plaintext_len));
+  EXPECT_NOT_OK(aes_kwp_unwrap(ecb_kek, buf, 32, &success, buf, nullptr));
+#endif
+
+  // Non-ECB mode must be rejected before calling aes_encrypt_begin /
+  // aes_decrypt_begin with iv = NULL.
+  EXPECT_NOT_OK(aes_kwp_wrap(ctr_kek, buf, 32, buf));
+  EXPECT_NOT_OK(
+      aes_kwp_unwrap(ctr_kek, buf, 32, &success, buf, &plaintext_len));
+
+  // Ciphertext length exceeding maximum wrapped key size must be rejected
+  // before allocating the stack working buffer.
+  size_t over_max_bytes = (kOtcryptoWrappedKeyMaxWords + 2) * sizeof(uint32_t);
+  EXPECT_NOT_OK(aes_kwp_unwrap(ecb_kek, buf, over_max_bytes, &success, buf,
+                               &plaintext_len));
 }
 
 }  // namespace
