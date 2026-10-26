@@ -24,8 +24,5 @@
     {k: 64,   m: 8,  code_type: "inv_hamming"},
     {k: 68,   m: 8,  code_type: "inv_hamming"},
     {k: 128,  m: 9,  code_type: "inv_hamming"},
-  ],
-  // This seed can be changed here if re-generation of ECC RTL
-  // with a different seed is desired.
-  seed: 1592631616
+  ]
 }
