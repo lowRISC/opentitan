@@ -548,15 +548,16 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx,
     }
   }
 
-  // Process any full blocks of input with GCTR to generate more ciphertext.
+  // Process any full blocks of input with GCTR and accumulate any new
+  // ciphertext to the GHASH context. The ciphertext is the output for
+  // encryption, and the input for decryption.
   size_t partial_aes_block_len = ctx->input_len % kAesBlockNumBytes;
-  HARDENED_TRY(aes_gcm_gctr(ctx->key, &ctx->gctr_iv, partial_aes_block_len,
-                            &ctx->partial_aes_block, input->len, input->data,
-                            ctx->security_level, bytes_written, output->data));
-
-  // Accumulate any new ciphertext to the GHASH context. The ciphertext is the
-  // output for encryption, and the input for decryption.
   if (ctx->is_encrypt == kHardenedBoolTrue) {
+    HARDENED_TRY(aes_gcm_gctr(ctx->key, &ctx->gctr_iv, partial_aes_block_len,
+                              &ctx->partial_aes_block, input->len, input->data,
+                              ctx->security_level, bytes_written,
+                              output->data));
+
     // Since we only generate ciphertext in full-block increments, no partial
     // blocks are possible in this case.
     if (*bytes_written % kGhashBlockNumBytes != 0) {
@@ -570,10 +571,16 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx,
                                            &ctx->partial_ghash_block,
                                            &written_buf));
   } else if (ctx->is_encrypt == kHardenedBoolFalse) {
+    // Accumulate the input ciphertext into GHASH before calling GCTR so that
+    // in-place decryption does not overwrite the ciphertext before hashing.
     size_t partial_ghash_block_len = ctx->input_len % kGhashBlockNumBytes;
     HARDENED_TRY(ghash_process_full_blocks(&ctx->ghash_ctx,
                                            partial_ghash_block_len,
                                            &ctx->partial_ghash_block, input));
+    HARDENED_TRY(aes_gcm_gctr(ctx->key, &ctx->gctr_iv, partial_aes_block_len,
+                              &ctx->partial_aes_block, input->len, input->data,
+                              ctx->security_level, bytes_written,
+                              output->data));
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
