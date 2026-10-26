@@ -244,29 +244,25 @@ static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
   // Set the mode of the underlying AES key to ECB (since this is the
   // underlying block cipher mode for KWP).
   aes_key->mode = kAesCipherModeEcb;
+  aes_key->sideload = key_kek->config.hw_backed;
+  aes_key->key_len = keyblob_share_num_words(key_kek->config);
 
   if (key_kek->config.hw_backed == kHardenedBoolTrue) {
     // Call keymgr to sideload the key into AES.
     keymgr_diversification_t diversification;
     HARDENED_TRY(keyblob_to_keymgr_diversification(key_kek, &diversification));
     HARDENED_TRY(keymgr_generate_key_aes(diversification));
-  } else if (key_kek->config.hw_backed != kHardenedBoolFalse) {
+  } else if (key_kek->config.hw_backed == kHardenedBoolFalse) {
+    // Get pointers to the individual shares.
+    uint32_t *share0;
+    uint32_t *share1;
+    HARDENED_TRY(keyblob_to_shares(key_kek, &share0, &share1));
+    aes_key->key_shares[0] = share0;
+    aes_key->key_shares[1] = share1;
+    aes_key->checksum = aes_key_integrity_checksum(aes_key);
+  } else {
     return OTCRYPTO_BAD_ARGS;
   }
-  aes_key->sideload = key_kek->config.hw_backed;
-
-  // Set the AES key length (in words).
-  aes_key->key_len = keyblob_share_num_words(key_kek->config);
-
-  // Get pointers to the individual shares.
-  uint32_t *share0;
-  uint32_t *share1;
-  HARDENED_TRY(keyblob_to_shares(key_kek, &share0, &share1));
-  aes_key->key_shares[0] = share0;
-  aes_key->key_shares[1] = share1;
-
-  // Create the checksum of the key and store it in the key structure.
-  aes_key->checksum = aes_key_integrity_checksum(aes_key);
 
   return OTCRYPTO_OK;
 }
