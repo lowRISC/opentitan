@@ -100,7 +100,7 @@ otcrypto_status_t otcrypto_sha2_init(otcrypto_hash_mode_t hash_mode,
   }
 #endif
 
-  hmac_ctx_t hmac_ctx;
+  hmac_ctx_t hmac_ctx = {0};
   otcrypto_hash_mode_t hash_mode_used = launder32(0);
   switch (launder32(hash_mode)) {
     case kOtcryptoHashModeSha256: {
@@ -144,14 +144,16 @@ otcrypto_status_t otcrypto_sha2_init(otcrypto_hash_mode_t hash_mode,
  * @return OK or error.
  */
 OT_WARN_UNUSED_RESULT
-static status_t check_lengths(hmac_ctx_t *hmac_ctx) {
-  if (launder32(hmac_ctx->msg_block_wordlen) > kHmacMaxBlockWords ||
-      launder32(hmac_ctx->digest_wordlen) > kHmacMaxDigestWords) {
+static status_t check_lengths(const hmac_ctx_t *hmac_ctx) {
+  if (hmac_ctx->msg_block_wordlen == 0 ||
+      hmac_ctx->msg_block_wordlen > kHmacMaxBlockWords ||
+      hmac_ctx->digest_wordlen > kHmacMaxDigestWords ||
+      hmac_ctx->partial_block_bytelen >=
+          hmac_ctx->msg_block_wordlen * sizeof(uint32_t) ||
+      hmac_ctx->key.key_len > kHmacMaxBlockWords) {
     // COVERAGE (MISSING) We do not cover badly encoded contexts.
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_LE(hmac_ctx->msg_block_wordlen, kHmacMaxBlockWords);
-  HARDENED_CHECK_LE(hmac_ctx->digest_wordlen, kHmacMaxDigestWords);
   return OTCRYPTO_OK;
 }
 
