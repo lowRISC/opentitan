@@ -369,6 +369,39 @@ static status_t run_negative_tests(void) {
                      kOtcryptoAesPaddingNull, &output)
             .value == OTCRYPTO_BAD_ARGS.value);
 
+  // Test padded plaintext length NULL pointer, invalid enum, and overflow.
+  size_t padded_len = 0;
+  CHECK(otcrypto_aes_padded_plaintext_length(16, kOtcryptoAesPaddingPkcs7, NULL)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_padded_plaintext_length(
+            16, (otcrypto_aes_padding_t)0xdeadbeef, &padded_len)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_padded_plaintext_length(UINT32_MAX - kAesBlockBytes + 1,
+                                             kOtcryptoAesPaddingPkcs7,
+                                             &padded_len)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_padded_plaintext_length(
+            UINT32_MAX, kOtcryptoAesPaddingIso9797M2, &padded_len)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Test 0-byte plaintext: rejected with null padding or decryption, accepted
+  // when encrypting with non-null padding.
+  otcrypto_const_byte_buf_t empty_input =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
+  CHECK(otcrypto_aes(&key, &iv, kOtcryptoAesModeCbc,
+                     kOtcryptoAesOperationEncrypt, &empty_input,
+                     kOtcryptoAesPaddingNull, &output)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes(&key, &iv, kOtcryptoAesModeCbc,
+                     kOtcryptoAesOperationDecrypt, &empty_input,
+                     kOtcryptoAesPaddingPkcs7, &output)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  TRY(otcrypto_aes_padded_plaintext_length(0, kOtcryptoAesPaddingPkcs7,
+                                           &padded_len));
+  TRY_CHECK(padded_len == kAesBlockBytes);
+  TRY(otcrypto_aes(&key, &iv, kOtcryptoAesModeCbc, kOtcryptoAesOperationEncrypt,
+                   &empty_input, kOtcryptoAesPaddingPkcs7, &output));
+
   return OTCRYPTO_OK;
 }
 

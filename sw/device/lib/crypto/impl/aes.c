@@ -200,20 +200,41 @@ static status_t num_padded_blocks_get(size_t plaintext_len,
                                       size_t *num_blocks) {
   size_t num_full_blocks = plaintext_len / kAesBlockNumBytes;
 
-  if (padding == kOtcryptoAesPaddingNull) {
-    // If no padding mode is given, the last block must be full.
-    if (num_full_blocks * kAesBlockNumBytes != plaintext_len) {
+  otcrypto_aes_padding_t padding_used = launder32(0);
+  switch (launder32(padding)) {
+    case kOtcryptoAesPaddingPkcs7:
+      // For non-null padding modes, we append a full block of padding if the
+      // last block is full, so the value is always <full blocks> + 1.
+      if (plaintext_len > UINT32_MAX - kAesBlockNumBytes) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      *num_blocks = num_full_blocks + 1;
+      padding_used = launder32(padding_used) | kOtcryptoAesPaddingPkcs7;
+      break;
+    case kOtcryptoAesPaddingIso9797M2:
+      // For non-null padding modes, we append a full block of padding if the
+      // last block is full, so the value is always <full blocks> + 1.
+      if (plaintext_len > UINT32_MAX - kAesBlockNumBytes) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      *num_blocks = num_full_blocks + 1;
+      padding_used = launder32(padding_used) | kOtcryptoAesPaddingIso9797M2;
+      break;
+    case kOtcryptoAesPaddingNull:
+      // If no padding mode is given, the last block must be full.
+      if (num_full_blocks * kAesBlockNumBytes != plaintext_len) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      *num_blocks = num_full_blocks;
+      padding_used = launder32(padding_used) | kOtcryptoAesPaddingNull;
+      break;
+    default:
       return OTCRYPTO_BAD_ARGS;
-    }
-
-    *num_blocks = num_full_blocks;
-    return OTCRYPTO_OK;
   }
-  HARDENED_CHECK_NE(padding, kOtcryptoAesPaddingNull);
+  // Check if we landed in the correct case statement. Use ORs for this to
+  // avoid that multiple cases were executed.
+  HARDENED_CHECK_EQ(launder32(padding_used), padding);
 
-  // For non-null padding modes, we append a full block of padding if the last
-  // block is full, so the value is always <full blocks> + 1.
-  *num_blocks = num_full_blocks + 1;
   return OTCRYPTO_OK;
 }
 
@@ -284,6 +305,11 @@ otcrypto_status_t otcrypto_aes_padded_plaintext_length(
     size_t plaintext_len, otcrypto_aes_padding_t aes_padding,
     size_t *padded_len) {
   OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (padded_len == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
   size_t padded_nblocks;
   HARDENED_TRY(
       num_padded_blocks_get(plaintext_len, aes_padding, &padded_nblocks));
@@ -363,15 +389,15 @@ static otcrypto_status_t otcrypto_aes_impl(
 
   // Check input/output lengths.
   if (cipher_output != NULL) {
-    if (cipher_input->len == 0 ||
+    if (input_nblocks == 0 ||
         launder32(cipher_output->len) != input_nblocks * kAesBlockNumBytes) {
       return OTCRYPTO_BAD_ARGS;
     }
     HARDENED_CHECK_EQ(cipher_output->len, input_nblocks * kAesBlockNumBytes);
   } else {
-    if (cipher_input->len == 0) {
+    if (input_nblocks == 0) {
       // COVERAGE (FI CM) Redundant check when cipher_output is NULL during
-      // redundant execution; cipher_input->len was already checked in the
+      // redundant execution; input_nblocks was already checked in the
       // primary execution.
       return OTCRYPTO_BAD_ARGS;
     }
@@ -630,7 +656,8 @@ otcrypto_status_t otcrypto_aes(otcrypto_blinded_key_t *key,
   // Check for NULL pointers in input pointers and data buffers.
   if (key == NULL || key->keyblob == NULL ||
       (aes_mode != kOtcryptoAesModeEcb && (iv == NULL || iv->data == NULL)) ||
-      (cipher_input == NULL || cipher_input->data == NULL) ||
+      (cipher_input == NULL ||
+       (cipher_input->data == NULL && cipher_input->len != 0)) ||
       (cipher_output == NULL || cipher_output->data == NULL)) {
     return OTCRYPTO_BAD_ARGS;
   }
