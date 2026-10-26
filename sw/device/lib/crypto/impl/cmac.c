@@ -81,6 +81,13 @@ OT_USED static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
 }
 
 /**
+ * CMAC context cleanup guard.
+ */
+OT_USED static void cmac_ctx_shred(cmac_ctx_t *ctx) {
+  (void)hardened_memshred((uint32_t *)ctx, kOtcryptoCmacCtxStructWords);
+}
+
+/**
  * Checks for NULL pointers or invalid settings in the blinded key.
  */
 static status_t check_key(const otcrypto_blinded_key_t *key) {
@@ -400,7 +407,7 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
     HARDENED_TRY(keymgr_generate_key_aes(diversification));
   }
 
-  cmac_ctx_t primary_ctx;
+  cmac_ctx_t primary_ctx __attribute__((cleanup(cmac_ctx_shred)));
   HARDENED_TRY(cmac_key_construct(key, &primary_ctx));
 
   if (launder32(key->config.security_level) == kOtcryptoKeySecurityLevelLow) {
@@ -424,7 +431,7 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
     uint32_t tag_redundant_data[kAesBlockNumWords];
     otcrypto_word32_buf_t tag_redundant =
         OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_redundant_data, tag->len);
-    cmac_ctx_t redundant_ctx;
+    cmac_ctx_t redundant_ctx __attribute__((cleanup(cmac_ctx_shred)));
     HARDENED_TRY(cmac_key_construct(key, &redundant_ctx));
     HARDENED_TRY(cmac_init_core(&redundant_ctx));
     HARDENED_TRY(cmac_update_core(&redundant_ctx, input_message));
@@ -436,9 +443,6 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
     return otcrypto_eval_exit(OTCRYPTO_OK);
 
   } else {
-    HARDENED_CHECK_EQ(launder32(key->config.security_level),
-                      kOtcryptoKeySecurityLevelHigh);
-
     // First invocation
     HARDENED_TRY(cmac_init_core(&primary_ctx));
     HARDENED_TRY(cmac_update_core(&primary_ctx, input_message));
@@ -448,7 +452,7 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
     uint32_t tag_redundant_data[kAesBlockNumWords];
     otcrypto_word32_buf_t tag_redundant =
         OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_redundant_data, tag->len);
-    cmac_ctx_t redundant_ctx;
+    cmac_ctx_t redundant_ctx __attribute__((cleanup(cmac_ctx_shred)));
     HARDENED_TRY(cmac_key_construct(key, &redundant_ctx));
     HARDENED_TRY(cmac_init_core(&redundant_ctx));
     HARDENED_TRY(cmac_update_core(&redundant_ctx, input_message));
@@ -494,8 +498,8 @@ otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
     HARDENED_TRY(keymgr_generate_key_aes(diversification));
   }
 
-  cmac_ctx_t primary_ctx;
-  cmac_ctx_t redundant_ctx;
+  cmac_ctx_t primary_ctx __attribute__((cleanup(cmac_ctx_shred)));
+  cmac_ctx_t redundant_ctx __attribute__((cleanup(cmac_ctx_shred)));
 
   HARDENED_TRY(cmac_key_construct(key, &primary_ctx));
   HARDENED_TRY(cmac_init_core(&primary_ctx));
@@ -510,8 +514,6 @@ otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
     HARDENED_TRY(cmac_key_construct(key, &redundant_ctx));
     HARDENED_TRY(cmac_init_core(&redundant_ctx));
   } else {
-    HARDENED_CHECK_EQ(launder32(key->config.security_level),
-                      kOtcryptoKeySecurityLevelHigh);
     HARDENED_TRY(cmac_key_construct(key, &redundant_ctx));
     HARDENED_TRY(cmac_init_core(&redundant_ctx));
   }
@@ -562,7 +564,7 @@ otcrypto_status_t otcrypto_cmac_update(
   otcrypto_key_security_level_t security_level =
       (otcrypto_key_security_level_t)ctx->data[kCtxSecurityLevelOffset];
 
-  cmac_ctx_t primary_ctx;
+  cmac_ctx_t primary_ctx __attribute__((cleanup(cmac_ctx_shred)));
   HARDENED_TRY(hardened_memcpy((uint32_t *)&primary_ctx,
                                (const uint32_t *)&ctx->data[kCtxPrimaryOffset],
                                kOtcryptoCmacCtxStructWords));
@@ -586,7 +588,7 @@ otcrypto_status_t otcrypto_cmac_update(
       kHardenedBoolTrue);
 
   if (launder32(security_level) != kOtcryptoKeySecurityLevelLow) {
-    cmac_ctx_t redundant_ctx;
+    cmac_ctx_t redundant_ctx __attribute__((cleanup(cmac_ctx_shred)));
     HARDENED_TRY(
         hardened_memcpy((uint32_t *)&redundant_ctx,
                         (const uint32_t *)&ctx->data[kCtxRedundantOffset],
@@ -633,7 +635,7 @@ otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
   otcrypto_key_security_level_t security_level =
       (otcrypto_key_security_level_t)ctx->data[kCtxSecurityLevelOffset];
 
-  cmac_ctx_t primary_ctx;
+  cmac_ctx_t primary_ctx __attribute__((cleanup(cmac_ctx_shred)));
   HARDENED_TRY(hardened_memcpy((uint32_t *)&primary_ctx,
                                (const uint32_t *)&ctx->data[kCtxPrimaryOffset],
                                kOtcryptoCmacCtxStructWords));
@@ -649,12 +651,14 @@ otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
 
   if (launder32(security_level) == kOtcryptoKeySecurityLevelLow) {
     HARDENED_CHECK_EQ(launder32(security_level), kOtcryptoKeySecurityLevelLow);
-    return otcrypto_eval_exit(cmac_final_core(&primary_ctx, tag));
+    HARDENED_TRY(cmac_final_core(&primary_ctx, tag));
+    HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
+    return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
   HARDENED_TRY(cmac_final_core(&primary_ctx, tag));
 
-  cmac_ctx_t redundant_ctx;
+  cmac_ctx_t redundant_ctx __attribute__((cleanup(cmac_ctx_shred)));
   HARDENED_TRY(
       hardened_memcpy((uint32_t *)&redundant_ctx,
                       (const uint32_t *)&ctx->data[kCtxRedundantOffset],
@@ -669,11 +673,11 @@ otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
                       kOtcryptoKeySecurityLevelMedium);
     HARDENED_TRY(cmac_final_core(&redundant_ctx, &tag_redundant));
   } else {
-    HARDENED_CHECK_EQ(launder32(security_level), kOtcryptoKeySecurityLevelHigh);
     HARDENED_TRY(cmac_final_core(&redundant_ctx, &tag_redundant));
   }
 
   HARDENED_CHECK_EQ(hardened_memeq(tag->data, tag_redundant.data, tag->len),
                     kHardenedBoolTrue);
+  HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
