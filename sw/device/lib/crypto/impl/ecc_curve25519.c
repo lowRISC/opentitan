@@ -568,6 +568,7 @@ otcrypto_status_t otcrypto_ed25519_verify(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+  *verification_result = kHardenedBoolFalse;
 
   uint32_t prehash_buffer[kCurve25519HashWords];
   otcrypto_byte_buf_t message_ph;
@@ -908,6 +909,12 @@ otcrypto_status_t otcrypto_ed25519_verify_async_finalize(
     hardened_bool_t *verification_result) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_VERIFY_ASYNC_FINALIZE);
   OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (verification_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  *verification_result = kHardenedBoolFalse;
   // Finalize the verify operation and retrieve the verification result.
   HARDENED_TRY_WIPE_DMEM(curve25519_verify_finalize(verification_result));
   return otcrypto_eval_exit(OTCRYPTO_OK);
