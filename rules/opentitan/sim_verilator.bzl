@@ -162,6 +162,7 @@ def _test_dispatch(ctx, exec_env, firmware):
                 spec = assemble.strip().split(" "),
                 data_files = data_files,
                 opentitantool = exec_env._opentitantool,
+                size = exec_env.slot_spec.get("nvm_size"),
             )
             vmem = convert_to_vmem(
                 ctx,

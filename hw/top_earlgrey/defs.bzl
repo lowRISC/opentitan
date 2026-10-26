@@ -28,7 +28,15 @@ EARLGREY = opentitan_top(
     silicon_creator_hooks = "//hw/top_earlgrey/sw/device/silicon_creator:hooks",
 )
 
+# These sizes should match the sizes in `hw/ip/rram_ctrl/rtl/rram_ctrl_pkg.sv`:
+#   TotalBytes     = 2*1024*1024; // 2 MiB
+#   TotalOtpBytes  = 2*1024 + 512 + 512; // (2.5 KiB data + 0.5 KiB integrity)
+# _EARLGREY_NVM_SIZE = TotalBytes - TotalOtpBytes = 0x1FF400
+# Info pages (real or emulated) are not OTP and are considered part of the NVM.
+_EARLGREY_NVM_SIZE = "0x1FF400"
+
 EARLGREY_SLOTS_NORMAL = {
+    "nvm_size": _EARLGREY_NVM_SIZE,
     "rom_ext_slot_a": "0x0",
     "rom_ext_slot_b": "0x100000",
     "owner_slot_a": "0x10000",
@@ -37,6 +45,7 @@ EARLGREY_SLOTS_NORMAL = {
 }
 
 EARLGREY_SLOTS_COVERAGE = {
+    "nvm_size": _EARLGREY_NVM_SIZE,
     "rom_ext_slot_a": "0x0",
     "rom_ext_slot_b": "0x100000",
     "owner_slot_a": "0x20000",

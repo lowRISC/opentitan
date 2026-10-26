@@ -910,13 +910,14 @@ def _opentitan_binary_assemble_impl(ctx):
             spec.append("{}@{}".format(binary[exec_env_provider].default.path, offset))
         action_param = {}
         action_param.update(exec_env.slot_spec)
+        nvm_size = exec_env.slot_spec.get("nvm_size")
 
         spec = " ".join(spec)
         spec = recursive_format(spec, action_param)
         spec = spec.split(" ")
 
         # Generate the multislot bin.
-        bin = assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool)
+        bin = assemble_for_test(ctx, name, spec, input_bins, tc.tools.opentitantool, nvm_size)
 
         # Generate unscrambled VMEM files.
         #
