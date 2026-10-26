@@ -88,32 +88,37 @@ static inline status_t gcm_context_restore(otcrypto_aes_gcm_context_t *api_ctx,
 }
 
 /**
- * Remask the key if it is not sideloaded.
+ * Remask the key in the context if it is not sideloaded.
  *
- * Generate a fresh mask and apply it to the current key.
+ * Verifies the existing key checksum and length, generates a fresh mask, and
+ * applies it in-place to the context's key shares.
  *
  * @param[in,out] internal_ctx Internal context object.
  * @return Result of the operation.
  */
 status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
-  if (launder32(internal_ctx->key.sideload) == kHardenedBoolFalse) {
-    HARDENED_CHECK_EQ(internal_ctx->key.sideload, kHardenedBoolFalse);
+  HARDENED_CHECK_LE(internal_ctx->key_len,
+                    ARRAYSIZE(internal_ctx->key_shares[0]));
+  aes_key_t key = aes_gcm_context_key(internal_ctx);
+  HARDENED_CHECK_EQ(aes_key_integrity_checksum_check(&key), kHardenedBoolTrue);
+
+  if (launder32(internal_ctx->sideload) == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ(internal_ctx->sideload, kHardenedBoolFalse);
 
     // Generate a fresh mask the size of one share.
-    uint32_t mask[internal_ctx->key.key_len];
-    HARDENED_TRY(hardened_memshred(mask, internal_ctx->key.key_len));
+    uint32_t mask[ARRAYSIZE(internal_ctx->key_shares[0])];
+    HARDENED_TRY(hardened_memshred(mask, internal_ctx->key_len));
 
     // XOR each share with the mask.
-    hardened_xor_in_place((uint32_t *)internal_ctx->key.key_shares[0], mask,
-                          internal_ctx->key.key_len);
-    hardened_xor_in_place((uint32_t *)internal_ctx->key.key_shares[1], mask,
-                          internal_ctx->key.key_len);
-    // Update the checksums.
-    internal_ctx->key.checksum = aes_key_integrity_checksum(&internal_ctx->key);
-    internal_ctx->blinded_key->checksum =
-        otcrypto_integrity_blinded_checksum(internal_ctx->blinded_key);
+    hardened_xor_in_place(internal_ctx->key_shares[0], mask,
+                          internal_ctx->key_len);
+    hardened_xor_in_place(internal_ctx->key_shares[1], mask,
+                          internal_ctx->key_len);
+    // Update the checksum.
+    key = aes_gcm_context_key(internal_ctx);
+    internal_ctx->key_checksum = aes_key_integrity_checksum(&key);
   } else {
-    HARDENED_CHECK_EQ(internal_ctx->key.sideload, kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(internal_ctx->sideload, kHardenedBoolTrue);
   }
 
   return OTCRYPTO_OK;
@@ -433,7 +438,6 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
   aes_gcm_context_t internal_ctx
       __attribute__((cleanup(aes_gcm_context_shred)));
   internal_ctx.security_level = key->config.security_level;
-  internal_ctx.blinded_key = key;
   HARDENED_TRY(aes_gcm_encrypt_init(aes_key, iv, &internal_ctx));
 
   // Save the context.
@@ -475,7 +479,6 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
   aes_gcm_context_t internal_ctx
       __attribute__((cleanup(aes_gcm_context_shred)));
   internal_ctx.security_level = key->config.security_level;
-  internal_ctx.blinded_key = key;
   HARDENED_TRY(aes_gcm_decrypt_init(aes_key, iv, &internal_ctx));
 
   // Save the context.
@@ -511,10 +514,10 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(
     // COVERAGE (MISSING) We do not cover the length 0 aad on update.
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
-  if (launder32(internal_ctx.key.sideload) == kHardenedBoolTrue) {
+  if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
   }
-  HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
+  HARDENED_TRY(load_key_if_sideloaded(aes_gcm_context_key(&internal_ctx)));
 
   // Call the internal update operation.
   HARDENED_TRY(aes_gcm_update_aad(&internal_ctx, aad));
@@ -556,10 +559,10 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
     // COVERAGE (MISSING) We do not cover the length 0 input on update.
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
-  if (launder32(internal_ctx.key.sideload) == kHardenedBoolTrue) {
+  if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
   }
-  HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
+  HARDENED_TRY(load_key_if_sideloaded(aes_gcm_context_key(&internal_ctx)));
   // Remask the key if it is not sideloaded.
   HARDENED_TRY(gcm_remask_key(&internal_ctx));
 
@@ -622,10 +625,10 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   if (internal_ctx.is_encrypt != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (launder32(internal_ctx.key.sideload) == kHardenedBoolTrue) {
+  if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
   }
-  HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
+  HARDENED_TRY(load_key_if_sideloaded(aes_gcm_context_key(&internal_ctx)));
   // Remask the key if it is not sideloaded.
   HARDENED_TRY(gcm_remask_key(&internal_ctx));
 
@@ -680,12 +683,12 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   if (internal_ctx.is_encrypt != kHardenedBoolFalse) {
     return OTCRYPTO_BAD_ARGS;
   }
-  if (launder32(internal_ctx.key.sideload) == kHardenedBoolTrue) {
+  if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
     // COVERAGE (MISSING) Sideloaded keys with streaming decrypt_final are not
     // covered.
     is_sideloaded = kHardenedBoolTrue;
   }
-  HARDENED_TRY(load_key_if_sideloaded(internal_ctx.key));
+  HARDENED_TRY(load_key_if_sideloaded(aes_gcm_context_key(&internal_ctx)));
   // Remask the key if it is not sideloaded.
   HARDENED_TRY(gcm_remask_key(&internal_ctx));
 

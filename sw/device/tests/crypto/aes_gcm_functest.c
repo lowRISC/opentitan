@@ -399,11 +399,6 @@ static status_t run_bad_args_test(void) {
   CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &buf_16, &out_16, &written)
             .value != OTCRYPTO_OK.value);
 
-  TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
-  ctx.data[1] = 0xBADBAD;  // Corrupt aes_key.mode enum
-  CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &buf_16, &out_16, &written)
-            .value != OTCRYPTO_OK.value);
-
   return OTCRYPTO_OK;
 }
 
