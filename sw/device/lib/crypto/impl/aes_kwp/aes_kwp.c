@@ -14,6 +14,7 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('k', 'w', 'p')
@@ -27,6 +28,15 @@ enum {
 
 status_t aes_kwp_wrap(const aes_key_t kek, const uint32_t *plaintext,
                       const size_t plaintext_len, uint32_t *ciphertext) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (plaintext == NULL || ciphertext == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  if (kek.mode != kAesCipherModeEcb) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   // The plaintext length must be non-empty and not overflow semiblock rounding.
   if (plaintext_len > UINT32_MAX - kSemiblockBytes || plaintext_len == 0) {
     // COVERAGE (SW ERR) Internal callers always pass a valid non-zero
@@ -98,11 +108,21 @@ status_t aes_kwp_wrap(const aes_key_t kek, const uint32_t *plaintext,
 
 status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
                         const size_t ciphertext_len, hardened_bool_t *success,
-                        uint32_t *plaintext) {
-  // The ciphertext length is expected to be nonempty, at most 2^32 - 8 bytes,
-  // and a multiple of the semiblock size.
-  if (ciphertext_len > UINT32_MAX - kSemiblockBytes || ciphertext_len == 0 ||
-      ciphertext_len % kSemiblockBytes != 0) {
+                        uint32_t *plaintext, size_t *plaintext_len) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (ciphertext == NULL || success == NULL || plaintext == NULL ||
+      plaintext_len == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  if (kek.mode != kAesCipherModeEcb) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // The ciphertext length is expected to be nonempty, bounded by the maximum
+  // wrapped key size, and a multiple of the semiblock size.
+  if (ciphertext_len > kOtcryptoWrappedKeyMaxWords * sizeof(uint32_t) ||
+      ciphertext_len == 0 || ciphertext_len % kSemiblockBytes != 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -160,16 +180,16 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
   is_bad |= (block.data[0] ^ 0xa65959a6);
 
   // Decode the next 32 bits of A as the plaintext length.
-  size_t plaintext_len = __builtin_bswap32(block.data[1]);
+  size_t ptext_len = __builtin_bswap32(block.data[1]);
   size_t total_len = kSemiblockBytes * (ciphertext_semiblocks - 1);
-  size_t pad_len = total_len - plaintext_len;
+  size_t pad_len = total_len - ptext_len;
 
   // Check that the padding length is valid.
   // If invalid, mark bad and clamp pad_len to 0.
   ct_boolw_t valid_pad = ct_sltuw(pad_len, kSemiblockBytes);
   is_bad |= ~valid_pad;
   pad_len = ct_cmovw(valid_pad, pad_len, 0);
-  plaintext_len = ct_cmovw(valid_pad, plaintext_len, total_len);
+  ptext_len = ct_cmovw(valid_pad, ptext_len, total_len);
 
   // Check that the padding bytes are zero.
   unsigned char *tail = ((unsigned char *)r) + total_len - kSemiblockBytes;
@@ -184,16 +204,18 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
 
   if (launderw(is_bad) != 0) {
     *success = kHardenedBoolFalse;
+    *plaintext_len = 0;
     HARDENED_TRY(hardened_memshred(r, ARRAYSIZE(r)));
     return aes_end(NULL);
   }
 
   // Copy the plaintext into the destination buffer.
-  size_t plaintext_words = ceil_div(plaintext_len, sizeof(uint32_t));
+  size_t plaintext_words = ceil_div(ptext_len, sizeof(uint32_t));
   HARDENED_TRY(hardened_memcpy(plaintext, r, plaintext_words));
   HARDENED_TRY(hardened_memshred(r, ARRAYSIZE(r)));
 
   // Return success.
   *success = kHardenedBoolTrue;
+  *plaintext_len = ptext_len;
   return aes_end(NULL);
 }
