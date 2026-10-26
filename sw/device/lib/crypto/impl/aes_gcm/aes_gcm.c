@@ -411,15 +411,15 @@ static status_t aes_gcm_init(const aes_key_t key,
   HARDENED_TRY(aes_gcm_hash_subkey(key, ctx->security_level, &ctx->ghash_ctx));
 
   // Compute the counter block (called J0 in the NIST specification).
-  HARDENED_TRY(
-      aes_gcm_counter(iv, &ctx->ghash_ctx, &ctx->initial_counter_block));
+  aes_block_t initial_counter_block;
+  HARDENED_TRY(aes_gcm_counter(iv, &ctx->ghash_ctx, &initial_counter_block));
 
   // Create the encrypted initial counter block S.
   aes_block_t zero;
   memset(zero.data, 0, kAesBlockNumBytes);
   aes_block_t enc_initial_counter_block
       __attribute__((cleanup(aes_block_shred)));
-  HARDENED_TRY(aes_encrypt_block(key, &ctx->initial_counter_block, &zero,
+  HARDENED_TRY(aes_encrypt_block(key, &initial_counter_block, &zero,
                                  &enc_initial_counter_block,
                                  ctx->security_level));
 
@@ -443,7 +443,7 @@ static status_t aes_gcm_init(const aes_key_t key,
 
   // Set the initial IV for GCTR to inc32(J0).
   // The eventual ciphertext is C = GCTR(K, inc32(J0), plaintext).
-  randomized_bytecopy(ctx->gctr_iv.data, ctx->initial_counter_block.data,
+  randomized_bytecopy(ctx->gctr_iv.data, initial_counter_block.data,
                       kAesBlockNumBytes);
   block_inc32(&ctx->gctr_iv);
 
@@ -460,7 +460,22 @@ static status_t aes_gcm_init(const aes_key_t key,
   HARDENED_TRY(ghash_init(&ctx->ghash_ctx));
 
   // Initialize the key and lengths.
-  HARDENED_TRY(randomized_bytecopy(&ctx->key, &key, sizeof(aes_key_t)));
+  HARDENED_CHECK_LE(key.key_len, ARRAYSIZE(ctx->key_shares[0]));
+  ctx->key_mode = key.mode;
+  ctx->sideload = key.sideload;
+  ctx->key_len = (uint32_t)key.key_len;
+  ctx->key_checksum = key.checksum;
+  if (launder32(key.sideload) == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ(key.sideload, kHardenedBoolFalse);
+    HARDENED_TRY(
+        hardened_memcpy(ctx->key_shares[0], key.key_shares[0], key.key_len));
+    HARDENED_TRY(
+        hardened_memcpy(ctx->key_shares[1], key.key_shares[1], key.key_len));
+  } else {
+    HARDENED_CHECK_EQ(key.sideload, kHardenedBoolTrue);
+    HARDENED_TRY(hardened_memcpy(ctx->key_shares[0], key.key_shares[0],
+                                 ARRAYSIZE(ctx->key_shares[0])));
+  }
   ctx->aad_len = 0;
   ctx->input_len = 0;
 
@@ -553,10 +568,10 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx,
   // encryption, and the input for decryption.
   size_t partial_aes_block_len = ctx->input_len % kAesBlockNumBytes;
   if (ctx->is_encrypt == kHardenedBoolTrue) {
-    HARDENED_TRY(aes_gcm_gctr(ctx->key, &ctx->gctr_iv, partial_aes_block_len,
-                              &ctx->partial_aes_block, input->len, input->data,
-                              ctx->security_level, bytes_written,
-                              output->data));
+    HARDENED_TRY(aes_gcm_gctr(aes_gcm_context_key(ctx), &ctx->gctr_iv,
+                              partial_aes_block_len, &ctx->partial_aes_block,
+                              input->len, input->data, ctx->security_level,
+                              bytes_written, output->data));
 
     // Since we only generate ciphertext in full-block increments, no partial
     // blocks are possible in this case.
@@ -577,10 +592,10 @@ status_t aes_gcm_update_encrypted_data(aes_gcm_context_t *ctx,
     HARDENED_TRY(ghash_process_full_blocks(&ctx->ghash_ctx,
                                            partial_ghash_block_len,
                                            &ctx->partial_ghash_block, input));
-    HARDENED_TRY(aes_gcm_gctr(ctx->key, &ctx->gctr_iv, partial_aes_block_len,
-                              &ctx->partial_aes_block, input->len, input->data,
-                              ctx->security_level, bytes_written,
-                              output->data));
+    HARDENED_TRY(aes_gcm_gctr(aes_gcm_context_key(ctx), &ctx->gctr_iv,
+                              partial_aes_block_len, &ctx->partial_aes_block,
+                              input->len, input->data, ctx->security_level,
+                              bytes_written, output->data));
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
@@ -636,7 +651,7 @@ status_t aes_gcm_final(aes_gcm_context_t *ctx, otcrypto_word32_buf_t *tag,
     memset(partial_aes_block_bytes + partial_aes_block_len, 0,
            kAesBlockNumBytes - partial_aes_block_len);
     aes_block_t block_out;
-    HARDENED_TRY(gctr_process_block(ctx->key, &ctx->gctr_iv,
+    HARDENED_TRY(gctr_process_block(aes_gcm_context_key(ctx), &ctx->gctr_iv,
                                     &ctx->partial_aes_block,
                                     ctx->security_level, &block_out));
     HARDENED_TRY(
