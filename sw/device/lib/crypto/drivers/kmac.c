@@ -449,7 +449,8 @@ static status_t kmac_set_prefix_regs(const unsigned char *func_name,
   uint32_t prefix_buffer[kKmacPrefixRegCount] = {0x0};
   unsigned char *prefix_buf_ptr = (unsigned char *)prefix_buffer;
 
-  if (func_name_len + cust_str_len > kKmacPrefixMaxSize) {
+  if (func_name_len > kKmacPrefixMaxSize ||
+      cust_str_len > kKmacPrefixMaxSize - func_name_len) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -637,8 +638,8 @@ static status_t kmac_process_msg_blocks(
   // Block until KMAC is idle.
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_IDLE_BIT, 1));
 
-  size_t digest_len_words =
-      (digest_len_bytes + sizeof(uint32_t) - 1) / sizeof(uint32_t);
+  size_t digest_len_words = (digest_len_bytes / sizeof(uint32_t)) +
+                            (digest_len_bytes % sizeof(uint32_t) != 0);
 
   // Issue the start command, so that messages written to MSG_FIFO are forwarded
   // to Keccak
@@ -693,8 +694,10 @@ static status_t kmac_process_msg_blocks(
     uint8_t bytes_written;
     HARDENED_TRY(little_endian_encode(digest_len_bits, buf, &bytes_written));
     buf[bytes_written] = bytes_written;
-    uint8_t *fifo_dst = (uint8_t *)(kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET);
-    memcpy(fifo_dst, buf, bytes_written + 1);
+    for (size_t j = 0; j < (size_t)bytes_written + 1; j++) {
+      HARDENED_TRY(wait_status_bit(KMAC_STATUS_FIFO_FULL_BIT, 0));
+      abs_mmio_write8(kKmacBaseAddr + KMAC_MSG_FIFO_REG_OFFSET, buf[j]);
+    }
   }
 
   // Issue the process command, so that squeezing phase can start
@@ -807,7 +810,8 @@ static status_t hash(kmac_operation_t operation, kmac_security_str_t strength,
                      size_t digest_wordlen, uint32_t *digest) {
   // Note: to save code size, we check for null pointers here instead of
   // separately for every different Keccak hash operation.
-  if (digest == NULL || (message->data == NULL && message->len != 0)) {
+  if (digest == NULL || (message->data == NULL && message->len != 0) ||
+      digest_wordlen > SIZE_MAX / sizeof(uint32_t)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
