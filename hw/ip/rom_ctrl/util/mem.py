@@ -47,14 +47,18 @@ class MemChunk:
                 toks.append(f'{word:0{word_chars}X}')
             outfile.write(' '.join(toks) + '\n')
 
-    def add_ecc32(self) -> None:
+    def add_ecc32(self, *, expect_repeats: bool = True) -> None:
         '''Add ECC32 integrity bits
 
         This extends the input words (which are assumed to be 32-bit) by 7
         bits, to make 39-bit words.
 
+        `expect_repeats` indicates whether repeated ROM words should be
+        expected. This is typically the case if ROM is not already scrambled.
+        This setting only impacts ECC encoding performance.
+
         '''
-        self.words = ecc_encode_many('inv_hsiao', 32, self.words)[0]
+        self.words = ecc_encode_many('inv_hsiao', 32, self.words, cache=expect_repeats)[0]
 
 
 class MemFile:
@@ -310,16 +314,20 @@ class MemFile:
 
         return MemFile(self.width, [acc])
 
-    def add_ecc32(self) -> None:
+    def add_ecc32(self, *, expect_repeats: bool = True) -> None:
         '''Add ECC32 integrity bits
 
         This extends the input words (which are assumed to be 32-bit) by 7
         bits, to make 39-bit words.
 
+        `expect_repeats` indicates whether repeated ROM words should be
+        expected. This is typically the case if ROM is not already scrambled.
+        This setting only impacts ECC encoding performance.
+
         '''
         assert self.width <= 32
         for chunk in self.chunks:
-            chunk.add_ecc32()
+            chunk.add_ecc32(expect_repeats=expect_repeats)
         self.width = 39
 
     def collisions(self) -> list[tuple[int, int]]:

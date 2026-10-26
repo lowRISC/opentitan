@@ -583,8 +583,9 @@ def main() -> int:
         clr_flat.write_vmem(args.outfile)
         return 0
 
-    # Extend from 32 bits to 39 by adding Hsiao (39,32) ECC bits.
-    clr_flat.add_ecc32()
+    # Extend from 32 bits to 39 by adding Hsiao (39,32) ECC bits. ROM is not
+    # yet scrambled, so we expect repeated words (padding, zeroes).
+    clr_flat.add_ecc32(expect_repeats=True)
     assert clr_flat.width == 39
 
     # Scramble the memory
