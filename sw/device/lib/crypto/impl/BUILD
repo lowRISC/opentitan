@@ -419,6 +419,7 @@ cc_test(
         "//hw/top:keymgr_dpe_c_regs",
         "//hw/top:top_lib",
         "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/crypto/impl/aes_kwp",
         "@googletest//:gtest_main",
     ],
 )

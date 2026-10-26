@@ -56,8 +56,8 @@ status_t aes_kwp_wrap(const aes_key_t kek, const uint32_t *plaintext,
  * The key material must be aligned to 32-bit word boundaries for hardening
  * purposes. The length is still given in bytes and bytes higher than the given
  * length are ignored (although they may be copied, so they should not be
- * uninitialized). The ciphertext must be at least 24 bytes long, and must be
- * shorter than 2^32 bytes.
+ * uninitialized). The ciphertext must be at least 24 bytes long, and at most
+ * `kOtcryptoWrappedKeyMaxWords * sizeof(uint32_t)` bytes.
  *
  * The output buffer should be the same length as the ciphertext, even if the
  * plaintext is not expected to be as long; this is because the implementation
@@ -73,12 +73,13 @@ status_t aes_kwp_wrap(const aes_key_t kek, const uint32_t *plaintext,
  * @param ciphertext_len Ciphertext length in bytes.
  * @param[out] success Whether the ciphertext was valid.
  * @param[out] plaintext Output buffer, same length as ciphertext
+ * @param[out] plaintext_len Authenticated plaintext length in bytes.
  * @return Error status; OK if no errors
  */
 OT_WARN_UNUSED_RESULT
 status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
                         const size_t ciphertext_len, hardened_bool_t *success,
-                        uint32_t *plaintext);
+                        uint32_t *plaintext, size_t *plaintext_len);
 
 #ifdef __cplusplus
 }  // extern "C"
