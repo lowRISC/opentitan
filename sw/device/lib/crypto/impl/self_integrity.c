@@ -24,7 +24,6 @@ otcrypto_status_t otcrypto_integrity_check(void) {
   HARDENED_TRY(read_state_pointer(&state));
 
   if (launder32(state->locked_state) != kHardenedByteBoolFalse) {
-    otcrypto_cmvp_end_service();
     return OTCRYPTO_FATAL_ERR;
   }
 
@@ -76,7 +75,6 @@ otcrypto_status_t otcrypto_integrity_check(void) {
   if (diff != 0) {
     // Lock the cryptolib if the self-integrity check failed
     state->locked_state = kHardenedByteBoolTrue;
-    otcrypto_cmvp_end_service();
     return OTCRYPTO_FATAL_ERR;
   }
 #endif  // OTCRYPTO_BINARY_BLOB
