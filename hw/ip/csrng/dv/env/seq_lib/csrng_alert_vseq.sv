@@ -246,6 +246,9 @@ class csrng_alert_vseq extends csrng_base_vseq;
   // error status response and that CMD_STAGE_INVALID_GEN_CMD_ALERT is triggered.
   virtual task test_invalid_gen_cmd_alert();
 
+    bit hw_app = cfg.which_app_err_alert != cfg.m_sw_app_idx;
+    bit zero_delays;
+
     `uvm_info(`gfn, $sformatf("Testing Generate with glen = 0 for app %d",
         cfg.which_app_err_alert), UVM_MEDIUM)
 
@@ -256,15 +259,28 @@ class csrng_alert_vseq extends csrng_base_vseq;
     cs_item.glen  = 'h0;
     send_cmd_req(cfg.which_app_err_alert, cs_item);
 
+    // The additional data of the rejected command is only absorbed if it arrives back-to-back
+    // with the header, later words would be interpreted as new commands. The SW app can't send
+    // back-to-back, so only HW apps send additional data, with zero delays.
     cs_item.acmd  = csrng_pkg::GEN;
-    cs_item.clen  = clen;
+    cs_item.clen  = hw_app ? clen : 'h0;
     cs_item.flags = get_rand_mubi4_val(.t_weight(4), .f_weight(4), .other_weight(0));
     cs_item.glen  = 'h0;
-    // The additional data of the rejected command must be absorbed as well.
     cs_item.cmd_data_q.delete();
-    repeat (clen) cs_item.cmd_data_q.push_back($urandom());
+    repeat (cs_item.clen) cs_item.cmd_data_q.push_back($urandom());
+    if (hw_app) begin
+      // Save the zero delays setting, it's restored once the command has been sent.
+      zero_delays = cfg.m_edn_agent_cfg[cfg.which_app_err_alert].m_cmd_push_agent_cfg.zero_delays;
+      cfg.m_edn_agent_cfg[cfg.which_app_err_alert].m_cmd_push_agent_cfg.zero_delays = 1'b1;
+    end
     send_cmd_req(cfg.which_app_err_alert, cs_item, .exp_sts(CMD_STS_INVALID_GEN_CMD),
                  .await_genbits(1'b0));
+    if (hw_app) begin
+      // The command is acked before all of its additional data has been sent.
+      m_edn_push_seq[cfg.which_app_err_alert].wait_for_sequence_state(UVM_FINISHED);
+      // Restore the zero delays setting.
+      cfg.m_edn_agent_cfg[cfg.which_app_err_alert].m_cmd_push_agent_cfg.zero_delays = zero_delays;
+    end
 
     `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
     cfg.m_alert_agent_cfgs["recov_alert"].vif.wait_ack_complete();
