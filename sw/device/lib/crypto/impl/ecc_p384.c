@@ -382,6 +382,7 @@ otcrypto_status_t otcrypto_ecc_p384_point_on_curve(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+  HARDENED_TRY(p384_public_key_length_check(point));
 
   p384_point_t *pt = (p384_point_t *)point->key;
   HARDENED_TRY(p384_point_on_curve_check(pt, check_result));
@@ -395,13 +396,23 @@ status_t otcrypto_ecc_p384_base_point_mult(
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECC_P384_BASE_POINT_MULT);
   OTCRYPTO_HEALTH_CHECK(kTestP384BasePointMulBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (private_key == NULL || public_key == NULL) {
+  if (private_key == NULL || public_key == NULL ||
+      private_key->keyblob == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
 
+  if (otcrypto_integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(private_key),
                     kHardenedBoolTrue);
+  if (launder32(private_key->config.hw_backed) != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
+  HARDENED_TRY(p384_private_key_length_check(private_key));
+  HARDENED_TRY(p384_public_key_length_check(public_key));
 
   p384_masked_scalar_t private_scalar;
   HARDENED_TRY(load_private_scalar(private_key, &private_scalar));
@@ -510,9 +521,11 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k_async_start(
   OTCRYPTO_SET_CMVP_INDICATOR(
       OTCRYPTO_FUNCTION_ECDSA_P384_SIGN_CONFIG_K_ASYNC_START);
   OTCRYPTO_HEALTH_CHECK(kTestP384SignBit);
-  // Do initial checks on the private key and digest.
+  // Do initial checks on the private key, secret scalar, and digest.
   HARDENED_TRY(
       otcrypto_ecdsa_p384_sign_async_start_setup(private_key, message_digest));
+  HARDENED_TRY(otcrypto_ecdsa_p384_sign_async_start_setup(secret_scalar,
+                                                          message_digest));
 
   // Load the secret key d.
   HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),

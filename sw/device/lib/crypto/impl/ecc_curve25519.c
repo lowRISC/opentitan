@@ -496,6 +496,10 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+  if (launder32(public_key->key_mode) != kOtcryptoKeyModeEd25519 ||
+      public_key->key_length != kCurve25519KeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   // Start the execution of the key generation.
   HARDENED_TRY(
       otcrypto_ed25519_public_key_from_private_async_start(private_key));
