@@ -37,7 +37,7 @@ enum {
 enum {
   kOtbnInsnCountKeygen = 0x8c15e,
   kOtbnInsnCountKeySave = 0x69,
-  kOtbnInsnCountEndorse = 0x94365,
+  kOtbnInsnCountEndorse = 0x94375,
 };
 
 /**
