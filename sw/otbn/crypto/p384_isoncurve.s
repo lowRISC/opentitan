@@ -16,6 +16,12 @@
 
  .section .text
 
+.globl trigger_fault_if_fg0_not_z
+trigger_fault_if_fg0_not_z:
+  csrrw     x2, FG0, x0
+  andi      x2, x2, 8
+  jal       x0, _trigger_fault_tail
+
 /**
  * Trigger a fault if the FG0.Z flag is 0.
  *
@@ -39,6 +45,7 @@ trigger_fault_if_fg0_z:
   csrrw     x2, FG0, x0
   andi      x2, x2, 8
   xori      x2, x2, 8
+_trigger_fault_tail:
   addi      x2, x2, 31
 
   /* The `bn.lid` instruction causes an `ILLEGAL_INSN` error if the index of the
