@@ -187,22 +187,6 @@ static status_t ed25519_signature_check(otcrypto_word32_buf_t *signature) {
 }
 
 /**
- * Copy a byte array from src to dst in reverse order.
- *
- * @param dst Destination address.
- * @param src Source address.
- * @param len Array length.
- * @return OK.
- */
-static status_t reverse_bytecpy(uint8_t *dst, const uint8_t *src, size_t len) {
-  for (size_t i = 0; i < len; i++) {
-    dst[i] = src[len - 1 - i];
-  }
-
-  return LAUNDERED_OTCRYPTO_OK;
-}
-
-/**
  * Calculate the message prehash.
  *
  * If sign_mode is kOtcryptoEddsaSignModeEddsa, the prehash function is
@@ -813,8 +797,8 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
   uint32_t public_key_buf[kCurve25519PointWords];
   HARDENED_TRY_WIPE_DMEM(
       curve25519_sign_stage1_finalize(&sig_curve25519, public_key_buf));
-  reverse_bytecpy((uint8_t *)signature->data, (uint8_t *)sig_curve25519.r,
-                  kCurve25519PointBytes);
+  HARDENED_TRY(hardened_memcpy(signature->data, sig_curve25519.r,
+                               kCurve25519PointWords));
 
   // Compute SHA512(R || A || PH(M))
   otcrypto_sha2_context_t ctx;
@@ -901,8 +885,8 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
 
   // Compute SHA512(R || A || PH(M)).
   curve25519_signature_t sig_curve25519;
-  reverse_bytecpy((uint8_t *)sig_curve25519.r, (uint8_t *)signature->data,
-                  kCurve25519PointBytes);
+  HARDENED_TRY(hardened_memcpy(sig_curve25519.r, signature->data,
+                               kCurve25519PointWords));
   memcpy(sig_curve25519.s, &signature->data[kCurve25519PointWords],
          kCurve25519ScalarBytes);
 

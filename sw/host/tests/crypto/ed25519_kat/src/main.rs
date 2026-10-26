@@ -126,15 +126,10 @@ fn run_ed25519_testcase(
     .send(spi_console)?;
 
     if matches!(operation, CryptotestEd25519Operation::Verify) {
-        // Send the signature with the R component reversed for device byte ordering.
-        let mut signature_bytes = test_case.signature.clone();
-        if signature_bytes.len() >= ED25519_SIGNATURE_BYTES / 2 {
-            signature_bytes[..ED25519_SIGNATURE_BYTES / 2].reverse();
-        }
         CryptotestEd25519Signature {
-            signature: ArrayVec::try_from(signature_bytes.as_slice())
+            signature: ArrayVec::try_from(test_case.signature.as_slice())
                 .expect("Ed25519 signature had unexpected length."),
-            signature_len: signature_bytes.len(),
+            signature_len: test_case.signature.len(),
         }
         .send(spi_console)?;
 
@@ -198,9 +193,7 @@ fn run_ed25519_testcase(
             assert_eq!(resp.signature_len, ED25519_SIGNATURE_BYTES);
             assert_eq!(resp.public_key_len, ED25519_PUBLIC_KEY_BYTES);
 
-            // Convert the R component (first 32 bytes) from device byte order to RFC 8032 order.
-            let mut sig = resp.signature[..resp.signature_len].to_vec();
-            sig[..ED25519_SIGNATURE_BYTES / 2].reverse();
+            let sig = resp.signature[..resp.signature_len].to_vec();
 
             let pk_matches =
                 &resp.public_key[..resp.public_key_len] == test_case.public_key.as_slice();
