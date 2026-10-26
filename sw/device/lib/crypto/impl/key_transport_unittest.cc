@@ -126,6 +126,15 @@ TEST(KeyTransport, HwBackedRsaKeyFails) {
   EXPECT_EQ(
       status_ok(otcrypto_hw_backed_key(test_version, test_salt.data(), &key)),
       false);
+
+  std::array<uint32_t, 8> att_salt = {0};
+  otcrypto_blinded_key_t att_key = {
+      .config = kConfigRsaInvalid,
+      .keyblob_length = 36,
+      .keyblob = keyblob,
+  };
+  EXPECT_NOT_OK(otcrypto_hw_backed_attestation_key(test_version,
+                                                   att_salt.data(), &att_key));
 }
 
 TEST(KeyTransport, BlindedKeyImportExport) {
@@ -596,6 +605,18 @@ TEST(KeyTransport, HwBackedKeygenNegative) {
   EXPECT_OK(
       otcrypto_hw_backed_key(test_version, test_salt.data(), &wrong_key_len));
   EXPECT_NOT_OK(ot_crypto_hw_backed_keygen(kHardenedBoolFalse, &wrong_key_len));
+
+  // Corrupted checksum should be rejected before keygen.
+  otcrypto_blinded_key_t bad_checksum_key = {
+      .config = kConfigHwBackedAesCtr256,
+      .keyblob_length = sizeof(keyblob_64b),
+      .keyblob = keyblob_64b,
+  };
+  EXPECT_OK(otcrypto_hw_backed_key(test_version, test_salt.data(),
+                                   &bad_checksum_key));
+  bad_checksum_key.checksum ^= 0xffffffff;
+  EXPECT_NOT_OK(
+      ot_crypto_hw_backed_keygen(kHardenedBoolFalse, &bad_checksum_key));
 }
 
 TEST(KeyTransport, AesKwpNegative) {
