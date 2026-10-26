@@ -398,6 +398,8 @@ TEST(KeyTransport, KeyWrapUnwrapNegative) {
   EXPECT_NOT_OK(otcrypto_key_unwrap(&const_wrapped_buf, &bad_kek_hw, &success,
                                     &target_key));
 
+  EXPECT_NOT_OK(otcrypto_wrapped_key_len(target_key.config, nullptr));
+
   // Mismatched key_to_wrap->keyblob_length when wrapped_buf.len == exp_len
   size_t exp_wrapped_words = 0;
   EXPECT_OK(otcrypto_wrapped_key_len(target_key.config, &exp_wrapped_words));
