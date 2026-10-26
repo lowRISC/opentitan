@@ -614,16 +614,20 @@ static otcrypto_status_t rsa_pct_verify(
       return OTCRYPTO_BAD_ARGS;
   }
 
-  otcrypto_rsa_padding_t padding_mode = kOtcryptoRsaPaddingPkcs;
-  if (private_key->config.key_mode == kOtcryptoKeyModeRsaSignPss) {
-    // COVERAGE (MISSING) RSA-PSS keygen PCT is not covered.
-    padding_mode = kOtcryptoRsaPaddingPss;
-  }
+  otcrypto_unblinded_key_t pct_public_key = *public_key;
+  pct_public_key.key_mode = kOtcryptoKeyModeRsaSignPkcs;
+  pct_public_key.checksum =
+      otcrypto_integrity_unblinded_checksum(&pct_public_key);
+
+  otcrypto_blinded_key_t pct_private_key = *private_key;
+  pct_private_key.config.key_mode = kOtcryptoKeyModeRsaSignPkcs;
+  pct_private_key.checksum =
+      otcrypto_integrity_blinded_checksum(&pct_private_key);
 
   otcrypto_word32_buf_t sig = otcrypto_make_word32_buf(sig_data, sig_words);
-  return otcrypto_rsa_hash_sign_verify(private_key, public_key,
-                                       kOtcryptoHashModeSha256, &msg,
-                                       padding_mode, &sig);
+  return otcrypto_rsa_hash_sign_verify(&pct_private_key, &pct_public_key,
+                                       kOtcryptoHashModeSha512, &msg,
+                                       kOtcryptoRsaPaddingPkcs, &sig);
 }
 #endif
 
