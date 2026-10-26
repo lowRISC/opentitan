@@ -450,6 +450,115 @@ static status_t run_sideload_test(void) {
   return OTCRYPTO_OK;
 }
 
+/**
+ * Test in-place encryption and decryption (both one-shot and streaming).
+ */
+static status_t run_in_place_test(void) {
+  LOG_INFO("Running AES-GCM in-place test.");
+
+  uint32_t keyMask[8] = {
+      0x01234567, 0x89abcdef, 0x00010203, 0x04050607,
+      0x08090a0b, 0x0c0d0e0f, 0x10111213, 0x14151617,
+  };
+  otcrypto_key_config_t config = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeAesGcm,
+      .key_length = sizeof(kKey256),
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t keyblob[16];
+  TRY(keyblob_from_key_and_mask(kKey256, keyMask, config, keyblob));
+  otcrypto_blinded_key_t key = {
+      .config = config,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
+
+  uint8_t iv_bytes[16] = {0xc5, 0x8a, 0xde, 0xd2, 0xe1, 0xbb, 0xec, 0xba,
+                          0x8b, 0x16, 0xa5, 0x75, 0x7e, 0x54, 0x75, 0xbd};
+  uint32_t iv_data[4];
+  memcpy(iv_data, iv_bytes, sizeof(iv_bytes));
+  otcrypto_const_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, iv_data, 4);
+
+  otcrypto_const_byte_buf_t aad =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kAad, sizeof(kAad));
+
+  uint8_t expected_tag[16] = {0x32, 0x48, 0x95, 0xb3, 0xd2, 0xf6, 0x56, 0xe4,
+                              0xfa, 0x2f, 0x8c, 0xe0, 0x56, 0x13, 0x70, 0x61};
+
+  // 1. One-shot in-place encrypt and decrypt on full blocks (32 bytes).
+  uint8_t buf[sizeof(kPlaintext)];
+  memcpy(buf, kPlaintext, sizeof(kPlaintext));
+  otcrypto_const_byte_buf_t in_place_const =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, buf, sizeof(buf));
+  otcrypto_byte_buf_t in_place_mut =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, buf, sizeof(buf));
+
+  uint32_t tag_data[4] = {0};
+  otcrypto_word32_buf_t tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, 4);
+  otcrypto_const_word32_buf_t tag_const =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, tag_data, 4);
+
+  TRY(otcrypto_aes_gcm_encrypt(&key, &in_place_const, &iv, &aad,
+                               kOtcryptoAesGcmTagLen128, &in_place_mut, &tag));
+  TRY_CHECK_ARRAYS_EQ(buf, kCiphertext256, sizeof(kCiphertext256));
+  TRY_CHECK_ARRAYS_EQ((unsigned char *)tag_data, expected_tag,
+                      sizeof(expected_tag));
+
+  hardened_bool_t success = kHardenedBoolFalse;
+  TRY(otcrypto_aes_gcm_decrypt(&key, &in_place_const, &iv, &aad,
+                               kOtcryptoAesGcmTagLen128, &tag_const,
+                               &in_place_mut, &success));
+  TRY_CHECK(success == kHardenedBoolTrue);
+  TRY_CHECK_ARRAYS_EQ(buf, kPlaintext, sizeof(kPlaintext));
+
+  // 2. Streaming in-place encrypt and decrypt on full + partial blocks (25
+  // bytes = 1 full block + 9-byte partial block).
+  enum { kPartialTestLen = 25 };
+  memcpy(buf, kPlaintext, kPartialTestLen);
+  otcrypto_const_byte_buf_t stream_in =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, buf, kPartialTestLen);
+  otcrypto_byte_buf_t stream_out =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, buf, kPartialTestLen);
+
+  otcrypto_aes_gcm_context_t ctx;
+  size_t bytes_written = 0;
+  size_t final_written = 0;
+  TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
+  TRY(otcrypto_aes_gcm_update_aad(&ctx, &aad));
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &stream_in, &stream_out,
+                                             &bytes_written));
+  otcrypto_byte_buf_t stream_out_final =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, buf + bytes_written,
+                        kPartialTestLen - bytes_written);
+  TRY(otcrypto_aes_gcm_encrypt_final(&ctx, kOtcryptoAesGcmTagLen128,
+                                     &stream_out_final, &final_written, &tag));
+  TRY_CHECK(bytes_written + final_written == kPartialTestLen);
+  TRY_CHECK_ARRAYS_EQ(buf, kCiphertext256, kPartialTestLen);
+
+  success = kHardenedBoolFalse;
+  bytes_written = 0;
+  final_written = 0;
+  TRY(otcrypto_aes_gcm_decrypt_init(&key, &iv, &ctx));
+  TRY(otcrypto_aes_gcm_update_aad(&ctx, &aad));
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &stream_in, &stream_out,
+                                             &bytes_written));
+  stream_out_final = OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, buf + bytes_written,
+                                       kPartialTestLen - bytes_written);
+  TRY(otcrypto_aes_gcm_decrypt_final(&ctx, &tag_const, kOtcryptoAesGcmTagLen128,
+                                     &stream_out_final, &final_written,
+                                     &success));
+  TRY_CHECK(success == kHardenedBoolTrue);
+  TRY_CHECK(bytes_written + final_written == kPartialTestLen);
+  TRY_CHECK_ARRAYS_EQ(buf, kPlaintext, kPartialTestLen);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -488,6 +597,7 @@ bool test_main(void) {
 
   EXECUTE_TEST(result, run_sideload_test);
   EXECUTE_TEST(result, run_bad_args_test);
+  EXECUTE_TEST(result, run_in_place_test);
 
   return status_ok(result);
 }
