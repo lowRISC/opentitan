@@ -20,6 +20,15 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('e', '2', '5')
 
+/**
+ * Sideload cleanup guard.
+ */
+OT_USED static void sideload_wipe_guard(hardened_bool_t *should_wipe) {
+  if (*should_wipe == kHardenedBoolTrue) {
+    (void)keymgr_sideload_clear_otbn();
+  }
+}
+
 // RFC 8032 dom2(1, "") prefix for Ed25519ph (HashEdDSA)
 static const uint8_t kDom2Prefix[34] = {
     'S', 'i', 'g', 'E', 'd', '2', '5', '5', '1', '9', ' ', 'n',
@@ -1022,10 +1031,13 @@ otcrypto_status_t otcrypto_x25519_public_key_from_private_async_start(
 
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
+    hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+        kHardenedBoolTrue;
 
     HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
-
-    return otcrypto_eval_exit(curve25519_x25519_keygen_sideload_start());
+    HARDENED_TRY(curve25519_x25519_keygen_sideload_start());
+    should_wipe = kHardenedBoolFalse;
+    return otcrypto_eval_exit(OTCRYPTO_OK);
   } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
     curve25519_masked_scalar_t private_scalar;
     HARDENED_TRY(load_private_scalar(private_key, &private_scalar));
@@ -1047,6 +1059,8 @@ otcrypto_status_t otcrypto_x25519_public_key_from_private_async_finalize(
   OTCRYPTO_SET_CMVP_INDICATOR(
       OTCRYPTO_FUNCTION_X25519_PUBLIC_KEY_FROM_PRIVATE_ASYNC_FINALIZE);
   OTCRYPTO_LOCKED_STATE_CHECK();
+  hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolTrue;
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (public_key == NULL || public_key->key == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -1060,6 +1074,7 @@ otcrypto_status_t otcrypto_x25519_public_key_from_private_async_finalize(
 
   HARDENED_TRY_WIPE_DMEM(curve25519_x25519_keygen_finalize(public_key->key));
   public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
+  should_wipe = kHardenedBoolFalse;
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
   return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
 }
@@ -1078,12 +1093,13 @@ otcrypto_status_t otcrypto_x25519_async_start(
 
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
+    hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+        kHardenedBoolTrue;
 
     HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
-
-    return otcrypto_eval_exit(
-        curve25519_x25519_sideload_start(public_key->key));
-
+    HARDENED_TRY(curve25519_x25519_sideload_start(public_key->key));
+    should_wipe = kHardenedBoolFalse;
+    return otcrypto_eval_exit(OTCRYPTO_OK);
   } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
     curve25519_masked_scalar_t private_scalar;
     HARDENED_TRY(load_private_scalar(private_key, &private_scalar));
@@ -1104,6 +1120,8 @@ otcrypto_status_t otcrypto_x25519_async_finalize(
     otcrypto_blinded_key_t *shared_secret) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_X25519_ASYNC_FINALIZE);
   OTCRYPTO_LOCKED_STATE_CHECK();
+  hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolTrue;
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (shared_secret == NULL || shared_secret->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
@@ -1136,6 +1154,7 @@ otcrypto_status_t otcrypto_x25519_async_finalize(
   shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
 
   HARDENED_TRY(hardened_memshred(shares, kCurve25519MaskedPointWords));
+  should_wipe = kHardenedBoolFalse;
 
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
   return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
