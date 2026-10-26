@@ -129,6 +129,13 @@ derive_d:
   la       x10, rsa_p
   la       x11, rsa_q
 
+  /* Check that both p and q are odd (LSB of both must be 1). */
+  lw       x2, 0(x10)
+  lw       x3, 0(x11)
+  and      x2, x2, x3
+  andi     x2, x2, 1
+  beq      x2, x0, _derive_d_fail
+
   # Subtract 1 from p in-place (no carry from lowest limb since p is odd).
   #      dmem[rsa_p..rsa_p+(n*32)] <= p - 1
   bn.lid   x20, 0(x10)
@@ -159,6 +166,11 @@ derive_d:
   addi x27, x30, 0
   jal x1, modinv_f4
 
+  /* modinv_f4 stores (-LCM(p-1,q-1)^(e-2) mod e) at 0(x26).
+     If this is 0, e = 65537 divides LCM(p-1,q-1) and d has no inverse. */
+  lw       x2, 0(x26)
+  beq      x2, x0, _derive_d_fail_restore_x30
+
   /* Boolean-mask d0 and d1 with fresh URND bits. */
   li       x20, 20
   li       x21, 21
@@ -181,4 +193,10 @@ derive_d:
   addi     x3, x0, HARDENED_BOOL_TRUE
   sw       x3, 0(x2)
 
+  ret
+
+_derive_d_fail_restore_x30:
+  /* Restore limb count x30 <= n and abort with ok = FALSE. */
+  srli     x30, x30, 1
+_derive_d_fail:
   ret
