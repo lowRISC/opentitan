@@ -897,7 +897,7 @@ status_t hmac_update(hmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *data) {
    * context_save(ctx);
    */
 
-  tmp_avoid_hw_hang(ctx);
+  HARDENED_TRY(tmp_avoid_hw_hang(ctx));
 
   // Write leftover bytes to `partial_block`, so that future update/final call
   // can feed them to HMAC HWIP.
