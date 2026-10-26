@@ -147,6 +147,10 @@ static status_t run_negative_tests(void) {
   CHECK(otcrypto_drbg_reseed(&null_data_buf).value == OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_drbg_reseed(&too_long_buf).value == OTCRYPTO_BAD_ARGS.value);
 
+  CHECK(otcrypto_drbg_manual_instantiate(NULL, &kEmptyBuffer).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_drbg_manual_instantiate(&valid_entropy, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
   CHECK(
       otcrypto_drbg_manual_instantiate(&valid_entropy, &null_data_buf).value ==
       OTCRYPTO_BAD_ARGS.value);
