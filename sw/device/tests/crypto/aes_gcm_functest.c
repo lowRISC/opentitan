@@ -102,6 +102,11 @@ static status_t run_bad_args_test(void) {
   CHECK(otcrypto_aes_gcm_encrypt(NULL, &pt, &iv, &aad, kOtcryptoAesGcmTagLen128,
                                  &ct, &tag)
             .value == OTCRYPTO_BAD_ARGS.value);
+  otcrypto_blinded_key_t null_keyblob_key = key;
+  null_keyblob_key.keyblob = NULL;
+  CHECK(otcrypto_aes_gcm_encrypt(&null_keyblob_key, &pt, &iv, &aad,
+                                 kOtcryptoAesGcmTagLen128, &ct, &tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
   otcrypto_word32_buf_t null_tag =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, 4);
   CHECK(otcrypto_aes_gcm_encrypt(&key, &pt, &iv, &aad, kOtcryptoAesGcmTagLen128,
@@ -235,6 +240,12 @@ static status_t run_bad_args_test(void) {
   CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &pt, &short_ct, &written)
             .value == OTCRYPTO_BAD_ARGS.value);
 
+  // Empty {NULL, 0} buffers are valid in streaming update functions
+  otcrypto_byte_buf_t empty_ct =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, NULL, 0);
+  TRY(otcrypto_aes_gcm_update_aad(&ctx, &aad));
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &aad, &empty_ct, &written));
+
   // Test operation ordering
   otcrypto_aes_gcm_context_t ctx_aad_after_data;
   TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx_aad_after_data));
@@ -242,6 +253,8 @@ static status_t run_bad_args_test(void) {
                                              &written));
   // Adding AAD after data has already been accumulated must return BAD_ARGS
   CHECK(otcrypto_aes_gcm_update_aad(&ctx_aad_after_data, &valid_aad).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_update_aad(&ctx_aad_after_data, &aad).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // Encrypt final checks
@@ -320,6 +333,13 @@ static status_t run_bad_args_test(void) {
                                  kOtcryptoAesGcmTagLen128, &tag_const, &ct,
                                  &success)
             .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_aes_gcm_decrypt(&null_keyblob_key, &pt, &iv, &aad,
+                                 kOtcryptoAesGcmTagLen128, &tag_const, &ct,
+                                 &success)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_decrypt(&key, &pt, &iv, &aad, kOtcryptoAesGcmTagLen128,
+                                 &tag_const, &ct, NULL)
+            .value == OTCRYPTO_BAD_ARGS.value);
 
   // Inner Driver Bounds & Overflows
   TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
