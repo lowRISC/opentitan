@@ -226,6 +226,11 @@ static status_t cmac_init_core(cmac_ctx_t *ctx) {
  */
 static status_t cmac_update_core(
     cmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *input_message) {
+  if (launder32(ctx->partial_block_len) > kAesBlockNumBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_LE(ctx->partial_block_len, kAesBlockNumBytes);
+
   if (input_message->len == 0) {
     return OTCRYPTO_OK;
   }
@@ -238,11 +243,11 @@ static status_t cmac_update_core(
   uint8_t *partial_bytes = (uint8_t *)ctx->partial_block;
 
   if (launder32(ctx->partial_block_len) > 0 &&
-      (launder32(ctx->partial_block_len + input_message->len) >
-       kAesBlockNumBytes)) {
+      (launder32(input_message->len) >
+       kAesBlockNumBytes - ctx->partial_block_len)) {
     HARDENED_CHECK_GT(ctx->partial_block_len, 0);
-    HARDENED_CHECK_GT(ctx->partial_block_len + input_message->len,
-                      kAesBlockNumBytes);
+    HARDENED_CHECK_GT(input_message->len,
+                      kAesBlockNumBytes - ctx->partial_block_len);
 
     size_t copy_len = kAesBlockNumBytes - ctx->partial_block_len;
     HARDENED_TRY(randomized_bytecopy(partial_bytes + ctx->partial_block_len,
@@ -283,6 +288,7 @@ static status_t cmac_update_core(
   size_t remaining = input_message->len - offset;
   if (launder32(remaining) > 0) {
     HARDENED_CHECK_GT(remaining, 0);
+    HARDENED_CHECK_LE(remaining, kAesBlockNumBytes - ctx->partial_block_len);
     HARDENED_TRY(randomized_bytecopy(partial_bytes + ctx->partial_block_len,
                                      input_message->data + offset, remaining));
     ctx->partial_block_len += remaining;
@@ -296,6 +302,11 @@ static status_t cmac_update_core(
  * Core final operation.
  */
 static status_t cmac_final_core(cmac_ctx_t *ctx, otcrypto_word32_buf_t *tag) {
+  if (launder32(ctx->partial_block_len) > kAesBlockNumBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_LE(ctx->partial_block_len, kAesBlockNumBytes);
+
   aes_key_t aes_key;
   HARDENED_TRY(build_aes_key(ctx, &aes_key));
   HARDENED_TRY(aes_encrypt_begin(aes_key, &ctx->iv));
