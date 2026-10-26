@@ -85,6 +85,9 @@ static status_t check_keyblob_length(const otcrypto_blinded_key_t *key) {
 
 status_t keyblob_to_shares(const otcrypto_blinded_key_t *key, uint32_t **share0,
                            uint32_t **share1) {
+  if (key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   // Double-check the length of the keyblob.
   HARDENED_TRY(check_keyblob_length(key));
 
