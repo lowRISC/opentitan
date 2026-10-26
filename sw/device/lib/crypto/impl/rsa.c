@@ -496,6 +496,44 @@ otcrypto_status_t otcrypto_rsa_sign(const otcrypto_blinded_key_t *private_key,
   return otcrypto_rsa_sign_async_finalize(signature);
 }
 
+/**
+ * Ensure that the key mode matches the RSA sign padding mode.
+ *
+ * Only works for RSA signing keys; do not use with encryption keys.
+ *
+ * @param key_mode Mode for the RSA key.
+ * @param padding_mode RSA signature padding scheme.
+ */
+static status_t key_mode_padding_check(otcrypto_key_mode_t key_mode,
+                                       otcrypto_rsa_padding_t padding_mode) {
+  switch (launder32(padding_mode)) {
+    case kOtcryptoRsaPaddingPkcs:
+      HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingPkcs);
+      if (launder32(key_mode) != kOtcryptoKeyModeRsaSignPkcs) {
+        // COVERAGE (MISSING) We do not cover mismatching key_mode and
+        // padding_modes.
+        return OTCRYPTO_BAD_ARGS;
+      }
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaSignPkcs);
+      return OTCRYPTO_OK;
+    case kOtcryptoRsaPaddingPss:
+      HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingPss);
+      if (launder32(key_mode) != kOtcryptoKeyModeRsaSignPss) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaSignPss);
+      return OTCRYPTO_OK;
+    default:
+      // Invalid padding mode.
+      return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Should be unreachable.
+  HARDENED_TRAP();
+  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
+  return OTCRYPTO_FATAL_ERR;
+}
+
 otcrypto_status_t otcrypto_rsa_verify(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_hash_digest_t message_digest,
@@ -503,6 +541,7 @@ otcrypto_status_t otcrypto_rsa_verify(
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
   HARDENED_TRY(otcrypto_rsa_verify_async_start(public_key, signature));
+  HARDENED_TRY(key_mode_padding_check(public_key->key_mode, padding_mode));
   return otcrypto_rsa_verify_async_finalize(message_digest, padding_mode,
                                             verification_result);
 }
@@ -871,41 +910,6 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
-/**
- * Ensure that the key mode matches the RSA sign padding mode.
- *
- * Only works for RSA signing keys; do not use with encryption keys.
- *
- * @param key_mode Mode for the RSA key.
- * @param padding_mode RSA signature padding scheme.
- */
-static status_t key_mode_padding_check(otcrypto_key_mode_t key_mode,
-                                       otcrypto_rsa_padding_t padding_mode) {
-  switch (launder32(padding_mode)) {
-    case kOtcryptoRsaPaddingPkcs:
-      HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingPkcs);
-      if (launder32(key_mode) != kOtcryptoKeyModeRsaSignPkcs) {
-        return OTCRYPTO_BAD_ARGS;
-      }
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaSignPkcs);
-      return OTCRYPTO_OK;
-    case kOtcryptoRsaPaddingPss:
-      HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingPss);
-      if (launder32(key_mode) != kOtcryptoKeyModeRsaSignPss) {
-        return OTCRYPTO_BAD_ARGS;
-      }
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaSignPss);
-      return OTCRYPTO_OK;
-    default:
-      // Invalid padding mode.
-      return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Should be unreachable.
-  HARDENED_TRAP();
-  return OTCRYPTO_FATAL_ERR;
-}
-
 static otcrypto_status_t rsa_sign_exp_async_start(
     const otcrypto_blinded_key_t *private_key, uint32_t exponent,
     const otcrypto_hash_digest_t message_digest,
@@ -1042,6 +1046,9 @@ static otcrypto_status_t rsa_verify_exp_async_start(
 
   // Check the caller-provided public key buffer.
   HARDENED_TRY(public_key_structural_check(public_key));
+  if (launder32(public_key->key_mode) == kOtcryptoKeyModeRsaEncryptOaep) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   // Verify the checksum.
   if (otcrypto_integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
@@ -1445,6 +1452,7 @@ otcrypto_status_t otcrypto_rsa_verify_exp(
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_VERIFY_EXP);
   HARDENED_TRY(public_exponent_check(exponent));
   HARDENED_TRY(rsa_verify_exp_async_start(public_key, exponent, signature));
+  HARDENED_TRY(key_mode_padding_check(public_key->key_mode, padding_mode));
   return otcrypto_eval_exit(otcrypto_rsa_verify_async_finalize(
       message_digest, padding_mode, verification_result));
 }
