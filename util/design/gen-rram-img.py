@@ -97,7 +97,7 @@ def _vmem_format_str(word_size_bits: int) -> str:
     return " {:0" + f"{word_size_bits // 4}" + "X}"
 
 
-def _rram_ecc(ecc_configs, data: int) -> int:
+def _rram_ecc(data: int) -> int:
     """Computes rram_macro's own 16-bit physical ECC for a 128-bit RRAM word: two independent
     Hamming(72,64) codes, one per 64-bit half, matching rram_macro.sv's own encode path (two
     prim_secded_hamming_72_64_enc instances, one per half). See
@@ -110,8 +110,8 @@ def _rram_ecc(ecc_configs, data: int) -> int:
     data_hi = (data >> 64) & ((1 << 64) - 1)
     # ecc_encode returns {ECC bits, data bits}.
     # The syndrome is the top 8 bits.
-    codeword_lo, _ = secded_gen.ecc_encode(ecc_configs, "hamming", 64, data_lo)
-    codeword_hi, _ = secded_gen.ecc_encode(ecc_configs, "hamming", 64, data_hi)
+    codeword_lo, _ = secded_gen.ecc_encode("hamming", 64, data_lo)
+    codeword_hi, _ = secded_gen.ecc_encode("hamming", 64, data_hi)
     ecc_lo = (codeword_lo >> 64) & 0xFF
     ecc_hi = (codeword_hi >> 64) & 0xFF
     return (ecc_hi << 8) | ecc_lo
@@ -214,11 +214,6 @@ def _gen_otp_rram_vmem_lines(otp_vmem_file: str,
     except IOError:
         raise Exception(f"Unable to open {otp_vmem_file}")
 
-    # Load project SECDED configuration, for the Hamming(72,64) integrity syndrome below and
-    # rram_macro's own physical ECC (see _rram_ecc()).
-    # It is the same config either way, since both use the same "hamming" scheme.
-    ecc_configs = secded_gen.load_secded_config()
-
     # Read every native 16b OTP word into a dict keyed by its native word address, dropping the
     # old otp_macro-specific Hamming(22,16) ECC bits. Also keep the field names.
     data_words = {}
@@ -279,7 +274,7 @@ def _gen_otp_rram_vmem_lines(otp_vmem_file: str,
         for half in range(RRAM_WORD_SIZE // INTG_CHUNK_SIZE):
             chunk = (row >> (half * INTG_CHUNK_SIZE)) & ((1 << INTG_CHUNK_SIZE) - 1)
             # ecc_encode returns {ECC bits, data bits}; the syndrome is the top 8 bits.
-            codeword, _ = secded_gen.ecc_encode(ecc_configs, "hamming", INTG_CHUNK_SIZE, chunk)
+            codeword, _ = secded_gen.ecc_encode("hamming", INTG_CHUNK_SIZE, chunk)
             intg = (codeword >> INTG_CHUNK_SIZE) & 0xFF
             # chunk_idx counts 64b chunks from the start of OTP data; it doubles as the byte
             # offset into the integrity page, since that page stores exactly one byte per chunk.
@@ -309,7 +304,7 @@ def _gen_otp_rram_vmem_lines(otp_vmem_file: str,
     fmt = _vmem_format_str(RRAM_WORD_SIZE + RRAM_PHYS_ECC_SIZE)
     lines = []
     for addr, val in sorted(rows.items()):
-        val |= _rram_ecc(ecc_configs, val) << RRAM_WORD_SIZE
+        val |= _rram_ecc(val) << RRAM_WORD_SIZE
         line = f"@{addr:06x}" + str.format(fmt, val)
         if comments.get(addr):
             line += f"  // {comments[addr]}"
@@ -324,7 +319,6 @@ def _reformat_rram_vmem(
     """See _gen_otp_rram_vmem_lines()'s physical-ECC paragraph.
     Same applies here, applied to the firmware data partition's rows instead of OTP's.
     """
-    ecc_configs = secded_gen.load_secded_config()
     fmt = _vmem_format_str(RRAM_WORD_SIZE + RRAM_PHYS_ECC_SIZE)
 
     # Open (raw) RRAM VMEM file and read into memory, skipping comment lines.
@@ -379,7 +373,7 @@ def _reformat_rram_vmem(
                     data = _xex_scramble(data, address + address_offset,
                                          scrambling_configs.addr_key,
                                          scrambling_configs.data_key)
-                data |= _rram_ecc(ecc_configs, data) << RRAM_WORD_SIZE
+                data |= _rram_ecc(data) << RRAM_WORD_SIZE
                 reformatted_line += str.format(fmt, data)
                 address_offset += 1
 

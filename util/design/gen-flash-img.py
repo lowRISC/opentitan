@@ -79,9 +79,6 @@ def _reformat_flash_vmem(
         raise Exception(f"Unable to open {flash_vmem_file}")
     flash_vmem_lines = re.findall(r"^@.*$", flash_vmem, flags=re.MULTILINE)
 
-    # Load project SECDED configuration.
-    ecc_configs = secded_gen.load_secded_config()
-
     # Add integrity/reliability ECC, and potentially scramble, each flash word.
     reformatted_vmem_lines = []
     for line in flash_vmem_lines:
@@ -101,7 +98,7 @@ def _reformat_flash_vmem(
                 data = int(item, 16)
                 # `data_w_intg_ecc` will be in format {ECC bits, data bits}.
                 data_w_intg_ecc, _ = secded_gen.ecc_encode(
-                    ecc_configs, "hamming", FLASH_WORD_SIZE, data)
+                    "hamming", FLASH_WORD_SIZE, data)
                 # Due to storage constraints the first nibble of ECC is dropped.
                 data_w_intg_ecc &= 0xF_FFFF_FFFF_FFFF_FFFF
                 if scrambling_configs.scrambling_enabled:
@@ -113,7 +110,7 @@ def _reformat_flash_vmem(
                 # `data_w_full_ecc` will be in format {reliability ECC bits,
                 # integrity ECC bits, data bits}.
                 data_w_full_ecc, _ = secded_gen.ecc_encode(
-                    ecc_configs, "hamming",
+                    "hamming",
                     FLASH_WORD_SIZE + FLASH_INTEGRITY_ECC_SIZE,
                     data_w_intg_ecc)
                 reformatted_line += str.format(VMEM_FORMAT_STR,
