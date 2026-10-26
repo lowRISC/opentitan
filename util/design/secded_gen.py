@@ -596,6 +596,19 @@ def verify(cfgs):
 
 @functools.lru_cache(maxsize=None)
 def _ecc_pick_code(codetype: str, k: int) -> Tuple[int, Tuple[int, ...], int]:
+    """Load the parameters for configuring a given ECC code.
+
+    Args:
+        codetype: The name of the code type to use.
+        k: The number of data bits to add ECC to.
+
+    Returns:
+        A tuple containing the number of check bits ("m"), followed by a
+        tuple of `m` bitmasks (each one describing the codeword bits which
+        are masked to produce each check bit), followed by either `1` for
+        inverted code types, or `0` for regular code types.
+    """
+
     # First check to see if the bit width is supported among the valid configurations.
     for cfg in load_secded_configs():
         if cfg['k'] == k and cfg['code_type'] == codetype:
@@ -612,7 +625,20 @@ def _ecc_pick_code(codetype: str, k: int) -> Tuple[int, Tuple[int, ...], int]:
 @functools.lru_cache(maxsize=None)
 def _ecc_encode(k: int,
                 m: int, bitmasks: Tuple[int, ...], invert: int,
-                dataword: int) -> int:
+                dataword: int) -> str:
+    """Encode a dataword into a codeword with added ECC.
+
+    Args:
+        k: The number of data bits
+        m: The number of check (parity) bits.
+        bitmasks: The tuple of `m` integers describing how codeword bits
+        are XORed to produce parity bits for each check bit.
+        invert: Inversion to apply to the ECC bits (1 or 0).
+        dataword: The data word to encode.
+
+    Returns:
+        The encoded codeword integer as a binary string.
+    """
     assert 0 <= dataword < (1 << k)
 
     # represent supplied dataword as a binary string
@@ -637,6 +663,16 @@ def _ecc_encode(k: int,
 
 
 def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
+    """Encode a data word into a codeword with added ECC using a given code type.
+
+    Args:
+        codetype: The name of the code type to use.
+        k: The number of data bits. Must be a valid configuration for `codetype`.
+        dataword: The data word to encode.
+
+    Returns:
+        The encoded codeword integer, followed by the number of check bits.
+    """
     m, bitmasks, invert = _ecc_pick_code(codetype, k)
     codeword = _ecc_encode(k, m, bitmasks, invert, dataword)
 
@@ -646,7 +682,17 @@ def ecc_encode(codetype: str, k: int, dataword: int) -> Tuple[int, int]:
     return codeword, m
 
 
-def ecc_encode_some(codetype: str, k: int, datawords: List[int]) -> Tuple[List[int], int]:
+def ecc_encode_many(codetype: str, k: int, datawords: List[int]) -> Tuple[List[int], int]:
+    """Encode multiple data words into codewords with added ECC using a given code type.
+
+    Args:
+        codetype: The name of the code type to use.
+        k: The number of data bits per word. Must be a valid configuration for `codetype`.
+        datawords: The list of data words to encode.
+
+    Returns:
+        The list of encoded codeword integers, followed by the number of check bits.
+    """
     m, bitmasks, invert = _ecc_pick_code(codetype, k)
     codewords = [int(_ecc_encode(k, m, bitmasks, invert, w), 2)
                  for w in datawords]

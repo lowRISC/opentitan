@@ -14,7 +14,7 @@ from Crypto.Hash import cSHAKE256
 
 from mem import MemChunk, MemFile
 from util.design.prince import prince, sbox  # type: ignore
-from util.design.secded_gen import ecc_encode_some  # type: ignore
+from util.design.secded_gen import ecc_encode_many  # type: ignore
 
 
 class ScramblingMode(Enum):
@@ -540,7 +540,7 @@ class Scrambler:
                 w39 = w32 | (chk_bits << 32)
                 clr39 = self.unscramble_word(39, log_addr, w39)
                 clr32 = clr39 & mask32
-                exp39 = ecc_encode_some('inv_hsiao', 32, [clr32])[0][0]
+                exp39 = ecc_encode_many('inv_hsiao', 32, [clr32])[0][0]
                 if clr39 != exp39:
                     # The checksum doesn't match. Excellent!
                     found_mismatch = True
