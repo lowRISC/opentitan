@@ -256,7 +256,7 @@ The OpenTitan Earl Grey 2 architecture supports the following key features:
             </li>
             <li>3x I2C (on muxed pins)</li>
             <li>4x UART (on muxed pins)</li>
-            <li>32x GPIO (on muxed pins)</li>
+            <li>2x GPIO with 32 pins each (on muxed pins)</li>
             <li>Pin Multiplexer</li>
             <li>ADC Controller</li>
             <li>System Reset Controller</li>
