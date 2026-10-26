@@ -325,6 +325,10 @@ p384_sign:
   bn.mov    w4, w16
   bn.mov    w5, w17
 
+  /* Fail if r == 0, k == 0 mod n, or d == 0 mod n. */
+  bn.or     w10, w4, w5
+  jal       x1, trigger_fault_if_fg0_not_z
+
   /* [w17, w16] <= k^(-1) * msg =
                    = (k*alpha)^(-1) * msg*alpha =
                    = [w3, w2]*[w1, w0] mod n */
@@ -349,6 +353,10 @@ p384_sign:
   bn.sel    w27, w25, w10, C
   bn.sel    w28, w26, w11, C
   bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
+
+  /* Fail if s == 0. */
+  bn.or     w10, w27, w28
+  jal       x1, trigger_fault_if_fg0_not_z
 
   /* store s of signature in dmem: dmem[dptr_s] <= s = [w28, w27] */
   li        x2, 27
