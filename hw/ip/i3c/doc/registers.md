@@ -2888,12 +2888,12 @@ Target Interrupt Force.
 Target PIO mode Control register.
 - Offset: `0x324`
 - Reset default: `0x0`
-- Reset mask: `0xf0f0003`
+- Reset mask: `0xf0ffc03`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "IBI_SUSPENDED", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IBI_ABORT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 14}, {"name": "SUSPENDED", "bits": 4, "attr": ["rw1c"], "rotate": -90}, {"bits": 4}, {"name": "ABORT", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
+{"reg": [{"name": "IBI_SUSPENDED", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IBI_ABORT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 8}, {"name": "RXBUF_CLEAR", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "IBIBUF_CLEAR", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TXBUF_CLEAR", "bits": 4, "attr": ["wo"], "rotate": -90}, {"name": "SUSPENDED", "bits": 4, "attr": ["rw1c"], "rotate": -90}, {"bits": 4}, {"name": "ABORT", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                              |
@@ -2902,7 +2902,10 @@ Target PIO mode Control register.
 | 27:24  |   rw   |   0x0   | [ABORT](#targ_pio_control--abort)                 |
 | 23:20  |        |         | Reserved                                          |
 | 19:16  |  rw1c  |   0x0   | [SUSPENDED](#targ_pio_control--suspended)         |
-|  15:2  |        |         | Reserved                                          |
+| 15:12  |   wo   |   0x0   | [TXBUF_CLEAR](#targ_pio_control--txbuf_clear)     |
+|   11   |   wo   |   0x0   | [IBIBUF_CLEAR](#targ_pio_control--ibibuf_clear)   |
+|   10   |   wo   |   0x0   | [RXBUF_CLEAR](#targ_pio_control--rxbuf_clear)     |
+|  9:2   |        |         | Reserved                                          |
 |   1    |   rw   |   0x0   | [IBI_ABORT](#targ_pio_control--ibi_abort)         |
 |   0    |  rw1c  |   0x0   | [IBI_SUSPENDED](#targ_pio_control--ibi_suspended) |
 
@@ -2916,6 +2919,26 @@ Indicates, for each Virtual Target in turn, whether transmission has been suspen
 If an error occurs during transmission, the corresponding bit will be set automatically by hardware.
 Software use of the Abort mechanism described above also causes this bit to become set.
 It remains asserted until the software writes a 1 to clear this bit.
+
+### TARG_PIO_CONTROL . TXBUF_CLEAR
+Clears the transmission buffers of a Virtual Target.
+
+If software writes a '1' to a bit, then the transmission data buffer and descriptor queue for the corresponding Virtual Target will both be emptied.
+This is a recovery mechanism that is only available when transmission has been suspended.
+It provides an instantaneous way to discard any transfer and data already queued for transmission, in the event that software deems such action appropriate.
+If some or all of the queued descriptor(s) and/or data must be retained, the 'Data Sink' feature should be used instead.
+
+### TARG_PIO_CONTROL . IBIBUF_CLEAR
+Reset the IBI transmission buffers.
+
+This bit clears the IBI transmission buffer and descriptor queue in the same manner as described for `TXBUF_CLEAR` above.
+This facility is only available when IBI transmission has been suspended (see `IBI_SUSPENDED` below).
+
+### TARG_PIO_CONTROL . RXBUF_CLEAR
+Reset the reception buffers.
+
+If software writes a '1' to a bit, then the reception data buffer and descriptor queue will both be emptied.
+This is a recovery mechanism that shall only be used when the Target is unable to receive new transfers, e.g., when handling an error condition or when there are no Virtual Targets enabled.
 
 ### TARG_PIO_CONTROL . IBI_ABORT
 Allows software to abort transmission of In-Band Interrupts.

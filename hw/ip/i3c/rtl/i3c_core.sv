@@ -1078,15 +1078,33 @@ module i3c_core
   assign fifo_rst[FIFO_RxBuf]  = (reg2hw_i.reset_control.rx_fifo_rst.qe &
                                   reg2hw_i.reset_control.rx_fifo_rst.q) | hci_buf_clear;
 
-  assign fifo_rst[FIFO_RxTarg]    = tti_buf_clear;
-  assign fifo_rst[FIFO_IBITarg]   = tti_buf_clear;
-  assign fifo_rst[FIFO_RxDTarg]   = tti_buf_clear;
-  assign fifo_rst[FIFO_IBIDTarg]  = tti_buf_clear;
-  assign fifo_rst[FIFO_AsyncTarg] = tti_buf_clear | async_evt_rst;
+  // Target-side FIFOs may be reset under software control; for the transmission paths they must be
+  // suspended. For the receive path it is the responsibility of software to ensure that reset is
+  // used only as documented.
+  assign fifo_rst[FIFO_RxTarg]    = (reg2hw_i.targ_pio_control.rxbuf_clear.qe &
+                                     reg2hw_i.targ_pio_control.rxbuf_clear.q) | tti_buf_clear;
+  assign fifo_rst[FIFO_RxDTarg]   = (reg2hw_i.targ_pio_control.rxbuf_clear.qe &
+                                     reg2hw_i.targ_pio_control.rxbuf_clear.q) | tti_buf_clear;
+  assign fifo_rst[FIFO_IBITarg]   = &{reg2hw_i.targ_pio_control.ibibuf_clear.qe,
+                                      reg2hw_i.targ_pio_control.ibibuf_clear.q,
+                                      reg2hw_i.targ_pio_control.ibi_suspended.q} |
+                                    tti_buf_clear;
+  assign fifo_rst[FIFO_IBIDTarg]  = &{reg2hw_i.targ_pio_control.ibibuf_clear.qe,
+                                      reg2hw_i.targ_pio_control.ibibuf_clear.q,
+                                      reg2hw_i.targ_pio_control.ibi_suspended.q} |
+                                    tti_buf_clear;
+  // The Asynchronous Event Queues offers a software reset via its own control register.
+  assign fifo_rst[FIFO_AsyncTarg] = async_evt_rst | tti_buf_clear;
 
   for (genvar t = 0; t < MaxTargets; t++) begin : gen_targ_fifo_rst
-    assign fifo_rst[FIFO_TxTarg0  + t] = tti_buf_clear;
-    assign fifo_rst[FIFO_TxDTarg0 + t] = tti_buf_clear;
+    assign fifo_rst[FIFO_TxTarg0  + t] = &{reg2hw_i.targ_pio_control.txbuf_clear.qe,
+                                           reg2hw_i.targ_pio_control.txbuf_clear.q[t],
+                                           reg2hw_i.targ_pio_control.suspended.q[t]} |
+                                         tti_buf_clear;
+    assign fifo_rst[FIFO_TxDTarg0 + t] = &{reg2hw_i.targ_pio_control.txbuf_clear.qe,
+                                           reg2hw_i.targ_pio_control.txbuf_clear.q[t],
+                                           reg2hw_i.targ_pio_control.suspended.q[t]} |
+                                         tti_buf_clear;
   end
 
   // Diagnostic information about the virtual FIFOs is presented in the register API.

@@ -4186,7 +4186,6 @@
     }
     { name:     "TARG_PIO_CONTROL",
       desc:     "Target PIO mode Control register.",
-      hwaccess: "hrw",
       hwqe:     "true",
       reinit:   "tti_sw_reinit_i",
       fields: [
@@ -4197,6 +4196,7 @@
                     Transmission will enter the Suspended state and will not resume until the Suspended state is cleared.
                     ''',
           swaccess: "rw",
+          hwaccess: "hrw",
           resval:   "0"
         }
         { bits:     "19:16",
@@ -4207,6 +4207,45 @@
                     It remains asserted until the software writes a 1 to clear this bit.
                     ''',
           swaccess: "rw1c",
+          hwaccess: "hrw",
+          resval:   "0"
+        }
+        { bits:     "15:12",
+          name:     "TXBUF_CLEAR",
+          desc:     '''Clears the transmission buffers of a Virtual Target.
+
+                    If software writes a '1' to a bit, then the transmission data buffer and descriptor queue for the corresponding Virtual Target will both be emptied.
+                    This is a recovery mechanism that is only available when transmission has been suspended.
+                    It provides an instantaneous way to discard any transfer and data already queued for transmission, in the event that software deems such action appropriate.
+                    If some or all of the queued descriptor(s) and/or data must be retained, the 'Data Sink' feature should be used instead.
+                    ''',
+          swaccess: "wo",
+          hwaccess: "hro",
+          hwqe:     "true",
+          resval:   "0"
+        }
+        { bits:     "11",
+          name:     "IBIBUF_CLEAR",
+          desc:     '''Reset the IBI transmission buffers.
+
+                    This bit clears the IBI transmission buffer and descriptor queue in the same manner as described for `TXBUF_CLEAR` above.
+                    This facility is only available when IBI transmission has been suspended (see `IBI_SUSPENDED` below).
+                    '''
+          swaccess: "wo",
+          hwaccess: "hro",
+          hwqe:     "true",
+          resval:   "0"
+        }
+        { bits:     "10",
+          name:     "RXBUF_CLEAR",
+          desc:     '''Reset the reception buffers.
+
+                    If software writes a '1' to a bit, then the reception data buffer and descriptor queue will both be emptied.
+                    This is a recovery mechanism that shall only be used when the Target is unable to receive new transfers, e.g., when handling an error condition or when there are no Virtual Targets enabled.
+                    '''
+          swaccess: "wo",
+          hwaccess: "hro",
+          hwqe:     "true",
           resval:   "0"
         }
         { bits:     "1",
@@ -4216,6 +4255,7 @@
                     IBI transmission will enter the Suspended stateand will not resume until the Suspended state is cleared.
                     ''',
           swaccess: "rw",
+          hwaccess: "hrw",
           resval:   "0"
         }
         { bits:     "0",
@@ -4226,6 +4266,7 @@
                     It remains asserted until the software writes a 1 to clear this bit.
                     ''',
           swaccess: "rw1c",
+          hwaccess: "hrw",
           resval:   "0"
         }
       ]
