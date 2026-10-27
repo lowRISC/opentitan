@@ -456,6 +456,7 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/crypto/impl:cmac",
+        "//sw/device/lib/crypto/impl:cmac_kdf",
         "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/runtime:log",

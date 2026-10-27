@@ -8,6 +8,7 @@
 #include "aes.h"
 #include "aes_gcm.h"
 #include "cmac.h"
+#include "cmac_kdf.h"
 #include "cmvp.h"
 #include "config.h"
 #include "cryptolib_build_info.h"
