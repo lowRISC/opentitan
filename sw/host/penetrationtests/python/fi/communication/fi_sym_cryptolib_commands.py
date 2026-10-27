@@ -122,6 +122,37 @@ class OTFISymCrypto:
         }
         self.target.write(json.dumps(input_data).encode("ascii"))
 
+    def handle_cmac_kdf(
+        self, label, label_len, context, context_len, key, key_len, out_len, cfg, trigger
+    ) -> None:
+        """Call the cryptolib CMAC-KDF.
+
+        Args:
+            label: Array of max 64 bytes of label data.
+            label_len: Input label length.
+            context: Array of max 64 bytes of context data.
+            context_len: Input context length.
+            key: Array of max 32 bytes of key data.
+            key_len: Input key length.
+            out_len: Derived key output length.
+            cfg: Integer for configuration.
+            trigger: Integer specifying which triggers to set.
+        """
+        self._ujson_sym_crypto_fi_cmd()
+        self.target.write(json.dumps("CmacKdf").encode("ascii"))
+        input_data = {
+            "label": label,
+            "label_len": label_len,
+            "context": context,
+            "context_len": context_len,
+            "key": key,
+            "key_len": key_len,
+            "out_len": out_len,
+            "cfg": cfg,
+            "trigger": trigger,
+        }
+        self.target.write(json.dumps(input_data).encode("ascii"))
+
     def handle_gcm(
         self, data, data_len, key, key_len, aad, aad_len, tag, tag_len, iv, cfg, trigger
     ) -> None:

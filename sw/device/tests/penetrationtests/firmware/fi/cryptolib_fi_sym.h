@@ -36,6 +36,18 @@ status_t handle_cryptolib_fi_sym_aes(ujson_t *uj);
 status_t handle_cryptolib_fi_sym_cmac(ujson_t *uj);
 
 /**
+ * The cryptolib fi cmac kdf handler.
+ *
+ * This command derives a key using CMAC-KDF in counter mode.
+ *
+ * See cryptolib_fi_sym_commands.h for inputs and outputs.
+ *
+ * @param uj An initialized uJSON context.
+ * @return OK or error.
+ */
+status_t handle_cryptolib_fi_sym_cmac_kdf(ujson_t *uj);
+
+/**
  * The cryptolib fi gcm handler.
  *
  * This command generates a ciphertext and a tag which is verified using GCM.

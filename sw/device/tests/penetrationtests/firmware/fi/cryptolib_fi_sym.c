@@ -130,6 +130,56 @@ status_t handle_cryptolib_fi_sym_cmac(ujson_t *uj) {
   return OK_STATUS();
 }
 
+status_t handle_cryptolib_fi_sym_cmac_kdf(ujson_t *uj) {
+  cryptolib_fi_sym_cmac_kdf_in_t uj_input;
+  TRY(ujson_deserialize_cryptolib_fi_sym_cmac_kdf_in_t(uj, &uj_input));
+
+  // Clear registered alerts in alert handler.
+  pentest_registered_alerts_t reg_alerts = pentest_get_triggered_alerts();
+  // Clear registered local alerts in alert handler.
+  pentest_registered_loc_alerts_t reg_loc_alerts =
+      pentest_get_triggered_loc_alerts();
+  // Clear the AST recoverable alerts.
+  pentest_clear_sensor_recov_alerts();
+  // Configure Ibex to allow reading ERR_STATUS register.
+  TRY(dif_rv_core_ibex_init(
+      mmio_region_from_addr(TOP_EARLGREY_RV_CORE_IBEX_CFG_BASE_ADDR),
+      &rv_core_ibex));
+
+  cryptolib_fi_sym_cmac_kdf_out_t uj_output;
+  memset(&uj_output, 0, sizeof(uj_output));
+
+  uj_output.status = kUnknown;
+  uj_output.magic = kOutputPending;
+  uj_output.status =
+      (size_t)cryptolib_fi_cmac_kdf_impl(uj_input, &uj_output).value;
+
+  if (uj_output.status == OK_STATUS().value) {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputComplete);
+  } else {
+    HARDENED_CHECK_EQ(uj_output.magic, kOutputPending);
+  }
+
+  // Get registered alerts from alert handler.
+  reg_alerts = pentest_get_triggered_alerts();
+  // Get registered local alerts from alert handler.
+  reg_loc_alerts = pentest_get_triggered_loc_alerts();
+  // Get fatal and recoverable AST alerts from sensor controller.
+  pentest_sensor_alerts_t sensor_alerts = pentest_get_sensor_alerts();
+  // Read ERR_STATUS register.
+  dif_rv_core_ibex_error_status_t codes;
+  TRY(dif_rv_core_ibex_get_error_status(&rv_core_ibex, &codes));
+  uj_output.err_status = codes;
+  memcpy(uj_output.alerts, reg_alerts.alerts, sizeof(reg_alerts.alerts));
+  uj_output.loc_alerts = reg_loc_alerts.loc_alerts;
+  memcpy(uj_output.ast_alerts, sensor_alerts.alerts,
+         sizeof(sensor_alerts.alerts));
+
+  RESP_OK(ujson_serialize_cryptolib_fi_sym_cmac_kdf_out_t, uj, &uj_output);
+
+  return OK_STATUS();
+}
+
 status_t handle_cryptolib_fi_sym_gcm(ujson_t *uj) {
   cryptolib_fi_sym_gcm_in_t uj_input;
   TRY(ujson_deserialize_cryptolib_fi_sym_gcm_in_t(uj, &uj_input));
@@ -522,6 +572,8 @@ status_t handle_cryptolib_fi_sym(ujson_t *uj) {
       return handle_cryptolib_fi_sym_aes(uj);
     case kCryptoLibFiSymSubcommandCmac:
       return handle_cryptolib_fi_sym_cmac(uj);
+    case kCryptoLibFiSymSubcommandCmacKdf:
+      return handle_cryptolib_fi_sym_cmac_kdf(uj);
     case kCryptoLibFiSymSubcommandGcm:
       return handle_cryptolib_fi_sym_gcm(uj);
     case kCryptoLibFiSymSubcommandTdes:
