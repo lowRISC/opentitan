@@ -220,6 +220,10 @@ status_t keyblob_ensure_xor_masked(const otcrypto_key_config_t config) {
       key_type_used = launder32(key_type_used) | kOtcryptoKeyTypeAes;
       result ^= launder32(kOtcryptoKeyTypeAes);
       break;
+    case kOtcryptoKeyTypeTdes:
+      key_type_used = launder32(key_type_used) | kOtcryptoKeyTypeTdes;
+      result ^= launder32(kOtcryptoKeyTypeTdes);
+      break;
     case kOtcryptoKeyTypeHmac:
       key_type_used = launder32(key_type_used) | kOtcryptoKeyTypeHmac;
       result ^= launder32(kOtcryptoKeyTypeHmac);

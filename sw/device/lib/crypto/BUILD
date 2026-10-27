@@ -47,6 +47,7 @@ cc_library(
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl:sha3",
         "//sw/device/lib/crypto/impl:state",
+        "//sw/device/lib/crypto/impl:tdes",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )

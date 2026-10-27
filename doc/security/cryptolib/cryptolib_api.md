@@ -10,6 +10,7 @@ This page:
 - Enumerates all of the cryptolib's [data structures](#data-structures)
 - Shows and explains the interfaces for:
   - [AES-based operations](#aes)
+  - [TDES-based operations (not FI/SCA protected)](#tdes)
   - [Hash functions](#hash-functions)
   - [Message authentication](#message-authentication)
   - [RSA operations](#rsa)
@@ -31,6 +32,7 @@ For more details, see later sections (links in the "category" column).
 | Category        | Supported schemes         |
 |-----------------|---------------------------|
 | [**AES**](#aes) | AES-{ECB,CBC,CFB,OFB,CTR}<br>AES-KWP<br>AES-GCM |
+| [**TDES**](#tdes) | TDES-{ECB,CBC,CFB,OFB,CTR} *(plain software; not FI/SCA protected)* |
 | [**Hash functions**](#hash-functions) | SHA2-{256,384,512}<br>SHA3-{224,256,384,512}<br>SHAKE{128,256} (XOF)<br>cSHAKE{128,256} (XOF) |
 | [**Message authentication**](#message-authentication) | HMAC-SHA{256,384,512}<br>KMAC{128,256}<br>AES-CMAC |
 | [**RSA**](#rsa) | RSA-{2048,3072,4096} |
@@ -298,6 +300,7 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_key_type }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_aes_key_mode }}
+{{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_tdes_key_mode }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_hmac_key_mode }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_kmac_key_mode }}
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_rsa_key_mode }}
@@ -314,6 +317,14 @@ Data structures for key types and modes help the cryptolib recognize and prevent
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_operation }}
 {{#header-snippet sw/device/lib/crypto/include/aes.h otcrypto_aes_padding }}
 {{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_tag_len }}
+
+#### TDES data structures
+
+> **Warning:** TDES is a plain software implementation and is **not** protected against fault injection (FI) or side-channel analysis (SCA) attacks.
+
+{{#header-snippet sw/device/lib/crypto/include/tdes.h otcrypto_tdes_mode }}
+{{#header-snippet sw/device/lib/crypto/include/tdes.h otcrypto_tdes_operation }}
+{{#header-snippet sw/device/lib/crypto/include/tdes.h otcrypto_tdes_padding }}
 
 #### Elliptic curve data structures
 
@@ -457,6 +468,102 @@ In streaming mode, it is strongly recommended not to process the decrypted data 
 {{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_update_encrypted_data }}
 {{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_encrypt_final }}
 {{#header-snippet sw/device/lib/crypto/include/aes_gcm.h otcrypto_aes_gcm_decrypt_final }}
+
+## TDES
+
+OpenTitan does not include a hardware Triple DES (TDES) accelerator.
+Instead, the cryptography library provides a **plain software implementation** of TDES supporting five block cipher modes (ECB, CBC, CFB, OFB, and CTR) over 64-bit (8-byte) blocks with 2-key (16-byte with parity, or 14-byte packed 56-bit) and 3-key (24-byte with parity, or 21-byte packed 56-bit) keys, as specified in [NIST SP800-67][tdes-spec] and [NIST SP800-38A][aes-basic-modes-spec].
+Padding schemes are defined in the **otcrypto\_tdes\_padding\_t** structure from [this section](#tdes-data-structures).
+
+> **Security Warning (Not FI/SCA Protected):** The TDES implementation (`otcrypto_tdes`, `otcrypto_tdes_padded_plaintext_length`, and `otcrypto_tdes_padding_strip`) is a **plain software implementation and is NOT protected against fault injection (FI) or side-channel analysis (SCA) attacks**, regardless of the `security_level` configured in `otcrypto_key_config_t` or `otcrypto_init`. Key shares in `otcrypto_blinded_key_t` are unmasked into software memory during execution, DES rounds are computed using standard table lookups without masking or FI redundancy, and hardware-backed sideload keys (`hw_backed = kHardenedBoolTrue`) are not supported. Furthermore, TDES is not a FIPS-approved service (`kOtcryptoCmvpNotApprovedService`). Do not use TDES in security-critical contexts where FI or SCA resistance is required.
+
+### Block Cipher
+
+A one-shot API initializes the required TDES block cipher mode of operation (ECB, CBC, CFB, OFB, or CTR) and performs the required encryption or decryption.
+
+{{#header-snippet sw/device/lib/crypto/include/tdes.h otcrypto_tdes_padded_plaintext_length }}
+{{#header-snippet sw/device/lib/crypto/include/tdes.h otcrypto_tdes_padding_strip }}
+{{#header-snippet sw/device/lib/crypto/include/tdes.h otcrypto_tdes }}
+
+#### Usage
+
+The following example shows how a message can be encrypted and decrypted using the cryptolib TDES API.
+
+```c
+enum {
+  // Plaintext is 20 bytes: not a multiple of the 8-byte TDES block size.
+  kPlaintextLen = 20,
+};
+
+// Two key shares that XOR to the actual 192-bit (24-byte, 3-key) TDES key.
+static const uint32_t kKeyShare0[6] = {
+    0x533b154d, 0xb3a32729, 0x12784d00, 0x5560457a, 0x0ec17ad8, 0x9a6f7317};
+static const uint32_t kKeyShare1[6] = {0, 0, 0, 0, 0, 0};
+
+bool tdes_encrypt_decrypt_example(void) {
+  // --- Initialize the system for the cryptolib execution ---
+  otcrypto_state_t state = {0};
+  TRY(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
+
+  // --- Build the blinded TDES-ECB key (plain software; not FI/SCA protected) ---
+  otcrypto_key_config_t key_config = {
+    .version        = otcrypto_lib_version(),
+    .key_mode       = kOtcryptoKeyModeTdesEcb,
+    .key_length     = 24,
+    .hw_backed      = kHardenedBoolFalse,
+    .exportable     = kHardenedBoolFalse,
+    .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t keyblob[12];
+  otcrypto_blinded_key_t key = {
+    .config         = key_config,
+    .keyblob_length = sizeof(keyblob),
+    .keyblob        = keyblob,
+  };
+  otcrypto_const_word32_buf_t share0 =
+    OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kKeyShare0, 6);
+  otcrypto_const_word32_buf_t share1 =
+    OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kKeyShare1, 6);
+  TRY(otcrypto_import_blinded_key(&share0, &share1, &key));
+
+  // --- Plaintext: 20 bytes, not a multiple of the 8-byte block size ---
+  static const uint8_t kPlaintext[kPlaintextLen] = "Hello, OpenTitan!!!";
+
+  // --- Query padded length, then allocate output buffers ---
+  size_t padded_len;
+  TRY(otcrypto_tdes_padded_plaintext_length(
+    kPlaintextLen, kOtcryptoTdesPaddingPkcs7, &padded_len));
+
+  uint8_t ciphertext[padded_len];
+  uint8_t decrypted[padded_len];
+
+  // --- Encrypt ---
+  otcrypto_const_byte_buf_t plaintext_buf =
+    OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kPlaintext, kPlaintextLen);
+  otcrypto_byte_buf_t ciphertext_buf =
+    OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, ciphertext, padded_len);
+  TRY(otcrypto_tdes(&key, /*iv=*/NULL, kOtcryptoTdesModeEcb,
+                    kOtcryptoTdesOperationEncrypt, &plaintext_buf,
+                    kOtcryptoTdesPaddingPkcs7, &ciphertext_buf));
+
+  // --- Decrypt ---
+  otcrypto_const_byte_buf_t ciphertext_in =
+    OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, ciphertext, padded_len);
+  otcrypto_byte_buf_t decrypted_buf =
+    OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, decrypted, padded_len);
+  TRY(otcrypto_tdes(&key, /*iv=*/NULL, kOtcryptoTdesModeEcb,
+                    kOtcryptoTdesOperationDecrypt, &ciphertext_in,
+                    kOtcryptoTdesPaddingPkcs7, &decrypted_buf));
+
+  // --- Strip padding ---
+  size_t recovered_len;
+  TRY(otcrypto_tdes_padding_strip(
+    &decrypted_buf, kOtcryptoTdesPaddingPkcs7, &recovered_len));
+
+  // --- Compare ---
+  return memcmp(kPlaintext, decrypted, recovered_len) == 0;
+}
+```
 
 ## Hash functions
 
@@ -1085,6 +1192,8 @@ The table below summarizes the security strength for the supported [cryptographi
 | Block cipher   | AES128         | 128                              |                                                       |
 | Block cipher   | AES192         | 192                              |                                                       |
 | Block cipher   | AES256         | 256                              |                                                       |
+| Block cipher   | TDES (2-key)   | <= 80                            | Legacy; plain software (not FI/SCA protected)         |
+| Block cipher   | TDES (3-key)   | 112                              | Legacy; plain software (not FI/SCA protected)         |
 | Hash function  | SHA256         | 128                              | 128 bits collision, 256 bits preimage                 |
 | Hash function  | SHA384         | 192                              | 192 bits collision, 384 bits preimage                 |
 | Hash function  | SHA512         | 256                              | 256 bits collision, 512 bits preimage                 |
@@ -1122,6 +1231,10 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 2. [NIST SP800-38A][aes-basic-modes-spec]: Recommendation for Block Cipher Modes of Operation: Methods and Techniques
 3. [NIST SP800-38D][gcm-spec]: Recommendation for Block Cipher Modes of Operation: Galois/Counter Mode (GCM) and GMAC
 4. [NIST SP800-38F][kwp-spec]: Recommendation for Block Cipher Modes of Operation: Methods for Key wrapping
+
+**TDES**
+1. [NIST SP800-67][tdes-spec]: Recommendation for the Triple Data Encryption Algorithm (TDEA) Block Cipher
+2. [NIST SP800-38A][aes-basic-modes-spec]: Recommendation for Block Cipher Modes of Operation: Methods and Techniques
 
 **Hash Functions**
 1. [FIPS 180-4][sha2-spec]: Secure Hash Standard
@@ -1206,6 +1319,7 @@ The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] a
 [sec1]: https://www.secg.org/sec1-v2.pdf
 [sec2]: https://www.secg.org/sec2-v2.pdf
 [sha2-spec]: https://csrc.nist.gov/publications/detail/fips/180/4/final
+[tdes-spec]: https://csrc.nist.gov/publications/detail/sp/800-67/rev-2/final
 [sha3-spec]: https://csrc.nist.gov/publications/detail/fips/202/final
 [sha3-derived-spec]: https://csrc.nist.gov/publications/detail/sp/800-185/final
 [crypto-tests]: https://github.com/lowRISC/opentitan/tree/earlgrey_1.0.0/sw/device/tests/crypto
