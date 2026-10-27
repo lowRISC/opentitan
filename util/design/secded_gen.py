@@ -608,8 +608,8 @@ def _ecc_pick_code(codetype: str, k: int) -> Tuple[int, Tuple[int, ...], int]:
     Returns:
         A tuple containing the number of check bits ("m"), followed by a
         tuple of `m` bitmasks (each one describing the codeword bits which
-        are masked to produce each check bit), followed by either `1` for
-        inverted code types, or `0` for regular code types.
+        are masked to produce each check bit), followed by a mask of bits
+        to invert (if any).
     """
 
     # First check to see if the bit width is supported among the valid configurations.
@@ -618,21 +618,26 @@ def _ecc_pick_code(codetype: str, k: int) -> Tuple[int, Tuple[int, ...], int]:
             m = cfg['m']
             codes = gen_code(codetype, k, m)
             bitmasks = calc_bitmasks(k, m, codes, False)
-            invert = 1 if codetype in ['inv_hsiao', 'inv_hamming'] else 0
-            return (m, bitmasks, invert)
+            invert_mask = 0
+            if codetype in ['inv_hsiao', 'inv_hamming']:
+                # For inverted encodings, only odd bits are inverted to avoid all-0 / all-1
+                # encodings, which works for most encodings with fanin balanced.
+                # To guarantee, FPV assertions should prove this if an inverted code is used.
+                invert_mask = sum(1 << (k + idx) for idx in range(1, m, 2))
+            return (m, bitmasks, invert_mask)
 
     # error if k not supported
     raise Exception(f'ECC for length {k} of type {codetype} unsupported')
 
 
-def _ecc_encode(k: int, bitmasks: Tuple[int, ...], invert: int, dataword: int) -> int:
+def _ecc_encode(k: int, bitmasks: Tuple[int, ...], invert_mask: int, dataword: int) -> int:
     """Encode a dataword into a codeword with added ECC.
 
     Args:
         k: The number of data bits
         bitmasks: The tuple of integers (one per check bit) describing how
         codeword bits are XORed to produce parity bits for each check bit.
-        invert: Inversion to apply to the ECC bits (1 or 0).
+        invert_mask: The bitmask of bits to invert, if any.
         dataword: The data word to encode.
 
     Returns:
@@ -644,11 +649,10 @@ def _ecc_encode(k: int, bitmasks: Tuple[int, ...], invert: int, dataword: int) -
     for idx, mask in enumerate(bitmasks):
         # Each ECC bit is the parity of masked bits (may include previous ECC bits).
         bit = (codeword & mask).bit_count() & 1
-        # Add ECC bit inversion if needed (see the comment in `print_enc`)
-        bit ^= invert & idx % 2
         codeword |= bit << (k + idx)
 
-    return codeword
+    # Inversion only takes place after all parity bits have been generated.
+    return codeword ^ invert_mask
 
 
 def ecc_encode(codetype: str, k: int, dataword: int,
@@ -667,9 +671,9 @@ def ecc_encode(codetype: str, k: int, dataword: int,
     if cache:
         return _ecc_encode_cached(codetype, k, dataword)
 
-    m, bitmasks, invert = _ecc_pick_code(codetype, k)
+    m, bitmasks, invert_mask = _ecc_pick_code(codetype, k)
     assert len(bitmasks) == m
-    codeword = _ecc_encode(k, bitmasks, invert, dataword)
+    codeword = _ecc_encode(k, bitmasks, invert_mask, dataword)
     log.debug("Encoding ECC for %x -> %x", dataword, codeword)
     return codeword, m
 
@@ -696,9 +700,9 @@ def ecc_encode_many(codetype: str, k: int, datawords: List[int],
         return ([_ecc_encode_cached(codetype, k, w)[0] for w in datawords],
                 _ecc_pick_code(codetype, k)[0])
 
-    m, bitmasks, invert = _ecc_pick_code(codetype, k)
+    m, bitmasks, invert_mask = _ecc_pick_code(codetype, k)
     assert len(bitmasks) == m
-    return [_ecc_encode(k, bitmasks, invert, w) for w in datawords], m
+    return [_ecc_encode(k, bitmasks, invert_mask, w) for w in datawords], m
 
 
 def gen_code(codetype, k, m):

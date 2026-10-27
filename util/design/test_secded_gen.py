@@ -37,6 +37,7 @@ class TestSecdedEccEncode(unittest.TestCase):
             ("hamming", 68, 0xf0123456789abcdef, 0x9cf0123456789abcdef),
             ("inv_hsiao", 32, 0x89abcdef, 0x3e89abcdef),
             ("inv_hsiao", 32, 0xffffffff, 0x2affffffff),
+            ("inv_hamming", 64, 0x0123456789abcdef, 0x360123456789abcdef),
         ]
         for codetype, k, word, expected in vectors:
             encoded = secded_gen.ecc_encode(codetype, k, word)[0]
