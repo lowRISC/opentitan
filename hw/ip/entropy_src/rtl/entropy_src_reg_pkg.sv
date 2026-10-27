@@ -100,13 +100,13 @@ package entropy_src_reg_pkg;
     } rng_bit_sel;
     struct packed {
       logic [3:0]  q;
-    } threshold_scope;
-    struct packed {
-      logic [3:0]  q;
     } rng_bit_enable;
     struct packed {
       logic [3:0]  q;
     } rng_fips;
+    struct packed {
+      logic [3:0]  q;
+    } threshold_scope;
     struct packed {
       logic [3:0]  q;
     } fips_flag;
@@ -463,15 +463,11 @@ package entropy_src_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } esfinal_fifo_clear_while_disabled_field_alert;
+    } es_bus_cmp_alert;
     struct packed {
       logic        d;
       logic        de;
-    } rng_fips_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } fips_flag_field_alert;
+    } es_main_sm_alert;
     struct packed {
       logic        d;
       logic        de;
@@ -483,23 +479,7 @@ package entropy_src_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } es_thresh_cfg_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } es_bus_cmp_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } es_main_sm_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } es_type_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } es_route_field_alert;
+    } fw_ov_sha3_start_field_alert;
     struct packed {
       logic        d;
       logic        de;
@@ -511,11 +491,7 @@ package entropy_src_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } fw_ov_sha3_start_field_alert;
-    struct packed {
-      logic        d;
-      logic        de;
-    } rng_bit_enable_field_alert;
+    } es_thresh_cfg_alert;
     struct packed {
       logic        d;
       logic        de;
@@ -523,11 +499,15 @@ package entropy_src_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
-    } threshold_scope_field_alert;
+    } entropy_data_request_field_alert;
     struct packed {
       logic        d;
       logic        de;
-    } module_enable_field_alert;
+    } esfinal_fifo_clear_while_disabled_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } bypass_conditioning_field_alert;
     struct packed {
       logic        d;
       logic        de;
@@ -535,7 +515,27 @@ package entropy_src_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } rng_bit_enable_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rng_fips_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } threshold_scope_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } fips_flag_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
     } fips_enable_field_alert;
+    struct packed {
+      logic        d;
+      logic        de;
+    } module_enable_field_alert;
   } entropy_src_hw2reg_recov_alert_sts_reg_t;
 
   typedef struct packed {

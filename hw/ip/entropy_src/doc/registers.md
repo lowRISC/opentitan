@@ -200,29 +200,36 @@ The modules of the entropy complex may only be enabled and disabled in a specifi
 ## CONF
 Configuration register
 - Offset: `0x1c`
-- Reset default: `0x99999`
-- Reset mask: `0xff0fffff`
+- Reset default: `0x990999`
+- Reset mask: `0xffff0fff`
 - Register enable: [`REGWEN`](#regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "FIPS_FLAG", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "RNG_FIPS", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "RNG_BIT_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "THRESHOLD_SCOPE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "RNG_BIT_SEL", "bits": 8, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"name": "FIPS_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "FIPS_FLAG", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "THRESHOLD_SCOPE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "RNG_FIPS", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "RNG_BIT_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "RNG_BIT_SEL", "bits": 8, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                      |
 |:------:|:------:|:-------:|:------------------------------------------|
 | 31:24  |   rw   |   0x0   | [RNG_BIT_SEL](#conf--rng_bit_sel)         |
-| 23:20  |        |         | Reserved                                  |
-| 19:16  |   rw   |   0x9   | [THRESHOLD_SCOPE](#conf--threshold_scope) |
-| 15:12  |   rw   |   0x9   | [RNG_BIT_ENABLE](#conf--rng_bit_enable)   |
-|  11:8  |   rw   |   0x9   | [RNG_FIPS](#conf--rng_fips)               |
+| 23:20  |   rw   |   0x9   | [RNG_BIT_ENABLE](#conf--rng_bit_enable)   |
+| 19:16  |   rw   |   0x9   | [RNG_FIPS](#conf--rng_fips)               |
+| 15:12  |        |         | Reserved                                  |
+|  11:8  |   rw   |   0x9   | [THRESHOLD_SCOPE](#conf--threshold_scope) |
 |  7:4   |   rw   |   0x9   | [FIPS_FLAG](#conf--fips_flag)             |
 |  3:0   |   rw   |   0x9   | [FIPS_ENABLE](#conf--fips_enable)         |
 
 ### CONF . RNG_BIT_SEL
 When [`CONF.RNG_BIT_ENABLE`](#conf) is set, this field selects which bit from the RNG bus will be processed.
 If the IP is parameterized for a bus width less than 256 bits, the upper, unused bits of this register are ignored.
+
+### CONF . RNG_BIT_ENABLE
+Setting this field to `kMultiBitBool4True` enables the single RNG bit mode, where only one bit is sampled per symbol.
+
+### CONF . RNG_FIPS
+Setting this field to `kMultiBitBool4True` sets the analog RNG into a conservative operation mode that may reduce the bit rate.
+In this mode, the RNG potentially outputs entropy with higher entropy per bit and with a simpler sampling mechanism.
 
 ### CONF . THRESHOLD_SCOPE
 This field controls the scope (either by-line or by-sum) of the Adaptive Proportion and the Markov health tests.
@@ -234,13 +241,6 @@ If set to `kMultiBitBool4True`, the individual, line-based test results are summ
 This allows lowering the likelihood for coincidental test failures (higher alpha).
 
 Note that the value of THRESHOLD_SCOPE needs to be considered when defining the health test thresholds.
-
-### CONF . RNG_BIT_ENABLE
-Setting this field to `kMultiBitBool4True` enables the single RNG bit mode, where only one bit is sampled per symbol.
-
-### CONF . RNG_FIPS
-Setting this field to `kMultiBitBool4True` sets the analog RNG into a conservative operation mode that may reduce the bit rate.
-In this mode, the RNG potentially outputs entropy with higher entropy per bit and with a simpler sampling mechanism.
 
 ### CONF . FIPS_FLAG
 This flag indicates that the ENTROPY_SRC is setup with the configuration used for FIPS/CC validation.
@@ -1214,38 +1214,37 @@ Debug status register
 Recoverable alert status register
 - Offset: `0xc4`
 - Reset default: `0x0`
-- Reset mask: `0x800fffbf`
+- Reset mask: `0x8007ffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "FIPS_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ENTROPY_DATA_REG_EN_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "MODULE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_SCOPE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_ONEWAY_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_BIT_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 1}, {"name": "FW_OV_SHA3_START_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_ENTROPY_INSERT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_ROUTE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_TYPE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_THRESH_CFG_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_WR_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_DISABLE_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FLAG_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_FIPS_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 11}, {"name": "POSTHT_ENTROPY_DROP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 470}}
+{"reg": [{"name": "MODULE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FLAG_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_SCOPE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_FIPS_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "RNG_BIT_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ENTROPY_DATA_REG_EN_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "BYPASS_CONDITIONING_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ENTROPY_DATA_REQUEST_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "THRESHOLD_ONEWAY_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_THRESH_CFG_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_MODE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_ENTROPY_INSERT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FW_OV_SHA3_START_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_WR_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_FW_OV_DISABLE_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_MAIN_SM_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ES_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 12}, {"name": "POSTHT_ENTROPY_DROP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 470}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                                                             |
 |:------:|:------:|:-------:|:-----------------------------------------------------------------------------------------------------------------|
 |   31   |  rw0c  |   0x0   | [POSTHT_ENTROPY_DROP_ALERT](#recov_alert_sts--postht_entropy_drop_alert)                                         |
-| 30:20  |        |         | Reserved                                                                                                         |
-|   19   |  rw0c  |   0x0   | [ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT](#recov_alert_sts--esfinal_fifo_clear_while_disabled_field_alert) |
-|   18   |  rw0c  |   0x0   | [RNG_FIPS_FIELD_ALERT](#recov_alert_sts--rng_fips_field_alert)                                                   |
-|   17   |  rw0c  |   0x0   | [FIPS_FLAG_FIELD_ALERT](#recov_alert_sts--fips_flag_field_alert)                                                 |
+| 30:19  |        |         | Reserved                                                                                                         |
+|   18   |  rw0c  |   0x0   | [ES_BUS_CMP_ALERT](#recov_alert_sts--es_bus_cmp_alert)                                                           |
+|   17   |  rw0c  |   0x0   | [ES_MAIN_SM_ALERT](#recov_alert_sts--es_main_sm_alert)                                                           |
 |   16   |  rw0c  |   0x0   | [ES_FW_OV_DISABLE_ALERT](#recov_alert_sts--es_fw_ov_disable_alert)                                               |
 |   15   |  rw0c  |   0x0   | [ES_FW_OV_WR_ALERT](#recov_alert_sts--es_fw_ov_wr_alert)                                                         |
-|   14   |  rw0c  |   0x0   | [ES_THRESH_CFG_ALERT](#recov_alert_sts--es_thresh_cfg_alert)                                                     |
-|   13   |  rw0c  |   0x0   | [ES_BUS_CMP_ALERT](#recov_alert_sts--es_bus_cmp_alert)                                                           |
-|   12   |  rw0c  |   0x0   | [ES_MAIN_SM_ALERT](#recov_alert_sts--es_main_sm_alert)                                                           |
-|   11   |  rw0c  |   0x0   | [ES_TYPE_FIELD_ALERT](#recov_alert_sts--es_type_field_alert)                                                     |
-|   10   |  rw0c  |   0x0   | [ES_ROUTE_FIELD_ALERT](#recov_alert_sts--es_route_field_alert)                                                   |
-|   9    |  rw0c  |   0x0   | [FW_OV_ENTROPY_INSERT_FIELD_ALERT](#recov_alert_sts--fw_ov_entropy_insert_field_alert)                           |
-|   8    |  rw0c  |   0x0   | [FW_OV_MODE_FIELD_ALERT](#recov_alert_sts--fw_ov_mode_field_alert)                                               |
-|   7    |  rw0c  |   0x0   | [FW_OV_SHA3_START_FIELD_ALERT](#recov_alert_sts--fw_ov_sha3_start_field_alert)                                   |
-|   6    |        |         | Reserved                                                                                                         |
+|   14   |  rw0c  |   0x0   | [FW_OV_SHA3_START_FIELD_ALERT](#recov_alert_sts--fw_ov_sha3_start_field_alert)                                   |
+|   13   |  rw0c  |   0x0   | [FW_OV_ENTROPY_INSERT_FIELD_ALERT](#recov_alert_sts--fw_ov_entropy_insert_field_alert)                           |
+|   12   |  rw0c  |   0x0   | [FW_OV_MODE_FIELD_ALERT](#recov_alert_sts--fw_ov_mode_field_alert)                                               |
+|   11   |  rw0c  |   0x0   | [ES_THRESH_CFG_ALERT](#recov_alert_sts--es_thresh_cfg_alert)                                                     |
+|   10   |  rw0c  |   0x0   | [THRESHOLD_ONEWAY_FIELD_ALERT](#recov_alert_sts--threshold_oneway_field_alert)                                   |
+|   9    |  rw0c  |   0x0   | [ENTROPY_DATA_REQUEST_FIELD_ALERT](#recov_alert_sts--entropy_data_request_field_alert)                           |
+|   8    |  rw0c  |   0x0   | [ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT](#recov_alert_sts--esfinal_fifo_clear_while_disabled_field_alert) |
+|   7    |  rw0c  |   0x0   | [BYPASS_CONDITIONING_FIELD_ALERT](#recov_alert_sts--bypass_conditioning_field_alert)                             |
+|   6    |  rw0c  |   0x0   | [ENTROPY_DATA_REG_EN_FIELD_ALERT](#recov_alert_sts--entropy_data_reg_en_field_alert)                             |
 |   5    |  rw0c  |   0x0   | [RNG_BIT_ENABLE_FIELD_ALERT](#recov_alert_sts--rng_bit_enable_field_alert)                                       |
-|   4    |  rw0c  |   0x0   | [THRESHOLD_ONEWAY_FIELD_ALERT](#recov_alert_sts--threshold_oneway_field_alert)                                   |
+|   4    |  rw0c  |   0x0   | [RNG_FIPS_FIELD_ALERT](#recov_alert_sts--rng_fips_field_alert)                                                   |
 |   3    |  rw0c  |   0x0   | [THRESHOLD_SCOPE_FIELD_ALERT](#recov_alert_sts--threshold_scope_field_alert)                                     |
-|   2    |  rw0c  |   0x0   | [MODULE_ENABLE_FIELD_ALERT](#recov_alert_sts--module_enable_field_alert)                                         |
-|   1    |  rw0c  |   0x0   | [ENTROPY_DATA_REG_EN_FIELD_ALERT](#recov_alert_sts--entropy_data_reg_en_field_alert)                             |
-|   0    |  rw0c  |   0x0   | [FIPS_ENABLE_FIELD_ALERT](#recov_alert_sts--fips_enable_field_alert)                                             |
+|   2    |  rw0c  |   0x0   | [FIPS_FLAG_FIELD_ALERT](#recov_alert_sts--fips_flag_field_alert)                                                 |
+|   1    |  rw0c  |   0x0   | [FIPS_ENABLE_FIELD_ALERT](#recov_alert_sts--fips_enable_field_alert)                                             |
+|   0    |  rw0c  |   0x0   | [MODULE_ENABLE_FIELD_ALERT](#recov_alert_sts--module_enable_field_alert)                                         |
 
 ### RECOV_ALERT_STS . POSTHT_ENTROPY_DROP_ALERT
 This bit is set when post-health test entropy bits are being dropped from the hardware pipeline.
@@ -1260,16 +1259,13 @@ Software should check this bit when running in Firmware Override: Observe mode a
 
 Writing a zero resets this status bit.
 
-### RECOV_ALERT_STS . ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT
-This bit is set when the ESFINAL_FIFO_CLEAR_WHILE_DISABLED field in the [`ENTROPY_CONTROL`](#entropy_control) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+### RECOV_ALERT_STS . ES_BUS_CMP_ALERT
+This bit is set when the internal entropy bus value is equal to the prior
+valid value on the bus, indicating a possible attack.
 Writing a zero resets this status bit.
 
-### RECOV_ALERT_STS . RNG_FIPS_FIELD_ALERT
-This bit is set when the RNG_FIPS field in the [`CONF`](#conf) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
-Writing a zero resets this status bit.
-
-### RECOV_ALERT_STS . FIPS_FLAG_FIELD_ALERT
-This bit is set when the FIPS_FLAG field in the [`CONF`](#conf) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+### RECOV_ALERT_STS . ES_MAIN_SM_ALERT
+This bit is set when the main state machine detects a threshold failure state.
 Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . ES_FW_OV_DISABLE_ALERT
@@ -1287,62 +1283,65 @@ This alert would normally be the result of not monitoring the [`FW_OV_WR_FIFO_FU
 register before each write to the [`FW_OV_WR_DATA`](#fw_ov_wr_data) register.
 Writing a zero resets this status bit.
 
+### RECOV_ALERT_STS . FW_OV_SHA3_START_FIELD_ALERT
+This bit is set when the [`FW_OV_SHA3_START.FW_OV_SHA3_START`](#fw_ov_sha3_start) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . FW_OV_ENTROPY_INSERT_FIELD_ALERT
+This bit is set when the [`FW_OV_CONTROL.FW_OV_ENTROPY_INSERT`](#fw_ov_control) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . FW_OV_MODE_FIELD_ALERT
+This bit is set when the [`FW_OV_CONTROL.FW_OV_MODE`](#fw_ov_control) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+Writing a zero resets this status bit.
+
 ### RECOV_ALERT_STS . ES_THRESH_CFG_ALERT
 This bit is set when the [`ALERT_THRESHOLD`](#alert_threshold) register is not configured properly.
 The upper field must be the exact inverse of the lower field.
 Writing a zero resets this status bit.
 
-### RECOV_ALERT_STS . ES_BUS_CMP_ALERT
-This bit is set when the internal entropy bus value is equal to the prior
-valid value on the bus, indicating a possible attack.
-Writing a zero resets this status bit.
-
-### RECOV_ALERT_STS . ES_MAIN_SM_ALERT
-This bit is set when the main state machine detects a threshold failure state.
-Writing a zero resets this status bit.
-
-### RECOV_ALERT_STS . ES_TYPE_FIELD_ALERT
-This bit is set when the ES_TYPE field in the [`ENTROPY_CONTROL`](#entropy_control) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
-Writing a zero resets this status bit.
-
-### RECOV_ALERT_STS . ES_ROUTE_FIELD_ALERT
-This bit is set when the ES_ROUTE field in the [`ENTROPY_CONTROL`](#entropy_control) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
-Writing a zero resets this status bit.
-
-### RECOV_ALERT_STS . FW_OV_ENTROPY_INSERT_FIELD_ALERT
-This bit is set when the FW_OV_ENTROPY_INSERT field in the [`FW_OV_CONTROL`](#fw_ov_control) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
-Writing a zero resets this status bit.
-
-### RECOV_ALERT_STS . FW_OV_MODE_FIELD_ALERT
-This bit is set when the FW_OV_MODE field in the [`FW_OV_CONTROL`](#fw_ov_control) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
-Writing a zero resets this status bit.
-
-### RECOV_ALERT_STS . FW_OV_SHA3_START_FIELD_ALERT
-This bit is set when the FW_OV_SHA3_START field in the [`FW_OV_SHA3_START`](#fw_ov_sha3_start) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
-Writing a zero resets this status bit.
-
-### RECOV_ALERT_STS . RNG_BIT_ENABLE_FIELD_ALERT
-This bit is set when the RNG_BIT_ENABLE field in the [`CONF`](#conf) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
-Writing a zero resets this status bit.
-
 ### RECOV_ALERT_STS . THRESHOLD_ONEWAY_FIELD_ALERT
-This bit is set when the [`THRESHOLD_ONEWAY`](#threshold_oneway) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+This bit is set when the [`THRESHOLD_ONEWAY.THRESHOLD_ONEWAY`](#threshold_oneway) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
 Writing a zero resets this status bit.
 
-### RECOV_ALERT_STS . THRESHOLD_SCOPE_FIELD_ALERT
-This bit is set when the THRESHOLD_SCOPE field in the [`CONF`](#conf) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+### RECOV_ALERT_STS . ENTROPY_DATA_REQUEST_FIELD_ALERT
+This bit is set when the [`ENTROPY_DATA_REQUEST.ENTROPY_DATA_REQUEST`](#entropy_data_request) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
 Writing a zero resets this status bit.
 
-### RECOV_ALERT_STS . MODULE_ENABLE_FIELD_ALERT
-This bit is set when the MODULE_ENABLE field in the [`MODULE_ENABLE`](#module_enable) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+### RECOV_ALERT_STS . ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT
+This bit is set when the [`ENTROPY_CONTROL.ESFINAL_FIFO_CLEAR_WHILE_DISABLED`](#entropy_control) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . BYPASS_CONDITIONING_FIELD_ALERT
+This bit is set when the [`ENTROPY_CONTROL.BYPASS_CONDITIONING`](#entropy_control) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
 Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . ENTROPY_DATA_REG_EN_FIELD_ALERT
-This bit is set when the ENTROPY_DATA_REG_ENABLE field in the [`ENTROPY_CONTROL`](#entropy_control) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+This bit is set when the [`ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE`](#entropy_control) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . RNG_BIT_ENABLE_FIELD_ALERT
+This bit is set when the [`CONF.RNG_BIT_ENABLE`](#conf) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . RNG_FIPS_FIELD_ALERT
+This bit is set when the [`CONF.RNG_FIPS`](#conf) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . THRESHOLD_SCOPE_FIELD_ALERT
+This bit is set when the [`CONF.THRESHOLD_SCOPE`](#conf) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . FIPS_FLAG_FIELD_ALERT
+This bit is set when the [`CONF.FIPS_FLAG`](#conf) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
 Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . FIPS_ENABLE_FIELD_ALERT
-This bit is set when the FIPS_ENABLE field in the [`CONF`](#conf) register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+This bit is set when the [`CONF.FIPS_ENABLE`](#conf) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . MODULE_ENABLE_FIELD_ALERT
+This bit is set when the [`MODULE_ENABLE.MODULE_ENABLE`](#module_enable) field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
 Writing a zero resets this status bit.
 
 ## ERR_CODE
