@@ -125,6 +125,36 @@ coverage_view_test(
 )
 
 opentitan_test(
+    name = "tdes_functest",
+    srcs = ["tdes_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+        # This test can take > 60 minutes, so mark it manual as it shouldn't
+        # run in CI/nightlies.
+        tags = ["manual"],
+    ),
+    deps = [
+        ":tdes_testvectors",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:entropy_src",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:tdes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+cc_library(
+    name = "tdes_testvectors",
+    srcs = ["tdes_testvectors.h"],
+    deps = [
+        "//sw/device/lib/crypto/impl:tdes",
+    ],
+)
+
+opentitan_test(
     name = "aes_functest",
     srcs = ["aes_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -1805,6 +1835,7 @@ test_suite(
         ":sha512_functest",
         ":status_functest",
         ":symmetric_keygen_functest",
+        ":tdes_functest",
         ":x25519_functest",
         ":x25519_sideload_functest",
     ],
