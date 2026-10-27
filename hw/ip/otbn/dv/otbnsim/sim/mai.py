@@ -417,6 +417,8 @@ class _MaskingAccelerator:
         # Completed (s0_32, s1_32) results ready for writeback. Not reset between
         # batches so that writeback can drain while the next batch is already starting.
         self._output_queue: List[Tuple[int, int]] = []
+        # B2A only: output register that delays each result by one cycle.
+        self._b2a_out_reg: Optional[Tuple[int, int]] = None
         self._reset_batch()
 
     def _reset_batch(self) -> None:
@@ -451,6 +453,10 @@ class _MaskingAccelerator:
 
     def step(self, rand: int, stall: bool = False) -> None:
         """Advance the pipeline one cycle."""
+        if self._b2a_out_reg is not None:
+            self._output_queue.append(self._b2a_out_reg)
+            self._b2a_out_reg = None
+
         if stall:
             return
 
@@ -514,7 +520,7 @@ class _MaskingAccelerator:
             return True
         if self._adder._num_in_flight > 0:
             return True
-        return bool(self._pass1_buf or self._output_queue)
+        return bool(self._pass1_buf or self._output_queue or self._b2a_out_reg)
 
     def _modulus(self) -> int:
         return self._mod_wsr.read_unsigned() & _MASK32
@@ -623,7 +629,10 @@ class _MaskingAccelerator:
         else:
             result = (s0 & _MASK32, s1 & _MASK32)
         self._check_unmasked_result(result)
-        self._output_queue.append(result)
+        if self._mode == MaiOperation.B2A:
+            self._b2a_out_reg = result
+        else:
+            self._output_queue.append(result)
 
 
 class MaskingAcceleratorInterface:
@@ -663,10 +672,6 @@ class MaskingAcceleratorInterface:
         # and must survive the on_start() call so that the first MAI operation
         # uses the correct element ordering.
 
-        # Deferred busy clear: set True when the last output is written, cleared
-        # in the following step() to model the one-cycle register-update latency.
-        self._pending_busy_clear = False
-
     def on_sec_wipe_zero_step(self) -> None:
         '''Called during the secure-wipe zero step to latch the initial counter.'''
         # We take the URND's pending value because we need the next cycle value of URND. And this
@@ -683,11 +688,6 @@ class MaskingAcceleratorInterface:
         # is different compared to how CRSs are updated when an instruction writes to them.
         # Setting values "immediately" simplifies the status flag handling because the abort case
         # must not be considered.
-
-        # Apply deferred busy clear from the previous cycle.
-        if self._pending_busy_clear:
-            self._pending_busy_clear = False
-            self.csrs.MAI_STATUS.update_busy_bit(False)
 
         # Idle fast-path: if nothing is active and no new start is pending,
         # skip all pipeline/writeback work.
@@ -711,14 +711,14 @@ class MaskingAcceleratorInterface:
             self.wsrs.MAI_RES_S1.set_32bit_unsigned(res_s1, wb_idx)
             self._writeback_idx += 1
 
-        # Detect if we finished writing back. Defer the busy clear by one cycle
-        # to model the one-cycle register-update latency. Update _wb_cnt from
-        # _cnt so the next operation's writeback uses the cnt latched at the
-        # end of this operation's dispatch.
+        # Detect if we finished writing back. The RTL clears the busy bit on the
+        # clock edge that writes the last result, so clear it in this cycle too.
+        # Update _wb_cnt from _cnt so the next operation's writeback uses the
+        # cnt latched at the end of this operation's dispatch.
         if self._writeback_idx >= _MaskingAccelerator.VEC_SIZE:
             self._writeback_idx = 0
             self._wb_cnt = self._cnt
-            self._pending_busy_clear = True
+            self.csrs.MAI_STATUS.update_busy_bit(False)
 
         # Advance the accelerator pipeline
         self._accel.step(rand)
