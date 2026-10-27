@@ -135,20 +135,16 @@ package i3c_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
-      logic        qe;
     } rst_target_en;
     struct packed {
       logic        q;
-      logic        qe;
     } rst_periph_en;
     struct packed {
       logic        q;
-      logic        qe;
-    } wake_ack;
+    } sleep_req;
     struct packed {
       logic        q;
-      logic        qe;
-    } sleep_req;
+    } activate;
   } i3c_reg2hw_reset_det_ctrl_reg_t;
 
   typedef struct packed {
@@ -2758,15 +2754,15 @@ package i3c_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    i3c_reg2hw_intr_state_reg_t intr_state; // [2312:2311]
-    i3c_reg2hw_intr_enable_reg_t intr_enable; // [2310:2309]
-    i3c_reg2hw_intr_test_reg_t intr_test; // [2308:2305]
-    i3c_reg2hw_alert_test_reg_t alert_test; // [2304:2303]
-    i3c_reg2hw_ctrl_error_reg_t ctrl_error; // [2302:2286]
-    i3c_reg2hw_targ_control_reg_t targ_control; // [2285:2275]
-    i3c_reg2hw_targ_status_reg_t targ_status; // [2274:2257]
-    i3c_reg2hw_targ_sink_control_reg_t targ_sink_control; // [2256:2239]
-    i3c_reg2hw_reset_det_ctrl_reg_t reset_det_ctrl; // [2238:2231]
+    i3c_reg2hw_intr_state_reg_t intr_state; // [2308:2307]
+    i3c_reg2hw_intr_enable_reg_t intr_enable; // [2306:2305]
+    i3c_reg2hw_intr_test_reg_t intr_test; // [2304:2301]
+    i3c_reg2hw_alert_test_reg_t alert_test; // [2300:2299]
+    i3c_reg2hw_ctrl_error_reg_t ctrl_error; // [2298:2282]
+    i3c_reg2hw_targ_control_reg_t targ_control; // [2281:2271]
+    i3c_reg2hw_targ_status_reg_t targ_status; // [2270:2253]
+    i3c_reg2hw_targ_sink_control_reg_t targ_sink_control; // [2252:2235]
+    i3c_reg2hw_reset_det_ctrl_reg_t reset_det_ctrl; // [2234:2231]
     i3c_reg2hw_ctrl_time_sp_reg_t ctrl_time_sp; // [2230:2211]
     i3c_reg2hw_ctrl_time_od_reg_t ctrl_time_od; // [2210:2191]
     i3c_reg2hw_ctrl_time_pp_reg_t ctrl_time_pp; // [2190:2170]
@@ -3151,11 +3147,6 @@ package i3c_reg_pkg;
   parameter logic [0:0] I3C_TARG_SINK_STATUS_ACTIVE_RESVAL = 1'h 0;
   parameter logic [0:0] I3C_TARG_SINK_STATUS_ERROR_RESVAL = 1'h 0;
   parameter logic [10:0] I3C_TARG_SINK_STATUS_LENGTH_RESVAL = 11'h 0;
-  parameter logic [21:0] I3C_RESET_DET_CTRL_RESVAL = 22'h 0;
-  parameter logic [0:0] I3C_RESET_DET_CTRL_SLEEP_REQ_RESVAL = 1'h 0;
-  parameter logic [0:0] I3C_RESET_DET_CTRL_WAKE_ACK_RESVAL = 1'h 0;
-  parameter logic [0:0] I3C_RESET_DET_CTRL_RST_PERIPH_EN_RESVAL = 1'h 0;
-  parameter logic [0:0] I3C_RESET_DET_CTRL_RST_TARGET_EN_RESVAL = 1'h 0;
   parameter logic [31:0] I3C_BUFFER_CTRL_RESVAL = 32'h 0;
   parameter logic [1:0] I3C_BUFFER_CTRL_SW_ADDR_HI_RESVAL = 2'h 0;
   parameter logic [0:0] I3C_BUFFER_CTRL_CLEAR_RESVAL = 1'h 0;
@@ -3696,7 +3687,7 @@ package i3c_reg_pkg;
     4'b 1111, // index[  9] I3C_TARG_SINK_CONTROL
     4'b 1111, // index[ 10] I3C_TARG_SINK_STATUS
     4'b 0111, // index[ 11] I3C_RESET_DET_CTRL
-    4'b 0001, // index[ 12] I3C_RESET_DET_STATUS
+    4'b 0111, // index[ 12] I3C_RESET_DET_STATUS
     4'b 1111, // index[ 13] I3C_CTRL_TIME_SP
     4'b 1111, // index[ 14] I3C_CTRL_TIME_OD
     4'b 1111, // index[ 15] I3C_CTRL_TIME_PP

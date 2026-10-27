@@ -279,7 +279,7 @@ module i3c_target
     };
   end
 
-  // This module handles the CDC transitions between the Core FSM which operates on the main IP
+  // This module also handles the CDC transitions between the Core FSM which operates on the main IP
   // clock, and the Transceiver logic which operates on the Controller-supplied I3C clock (SCL).
   //
   // It is important to note that the SCL clock does not run continuously, operates with variable
@@ -328,9 +328,12 @@ module i3c_target
   );
 
   // Target Reset Detector request.
-  // TODO(#31128): Needs to interact with the RSTACT CCC handling when that exists.
+  // TODO(#31128): Needs to interact with the RSTACT CCC handling when that exists; this logic is
+  // enough to provide a basic initial configuration for the detector.
+  // TODO(#31337): Note: `RESET_DET_CTRL` register is in the AON clock domain, whereas `enable_i`
+  // and `rstact_i` are on the IP clock.
   assign rstdet_req_o = '{
-    activate:   enable_i, // TODO(#31128): This is incomplete.
+    activate:   enable_i & reg2hw_i.reset_det_ctrl.activate.q,
     deep_sleep: reg2hw_i.reset_det_ctrl.sleep_req.q,
     rst_periph: reg2hw_i.reset_det_ctrl.rst_periph_en.q && (rstact_i == RstAct_ResetPeripheral),
     rst_target: reg2hw_i.reset_det_ctrl.rst_target_en.q && (rstact_i == RstAct_ResetTarget)

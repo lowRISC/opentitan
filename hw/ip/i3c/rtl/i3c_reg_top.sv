@@ -272,7 +272,7 @@ module i3c_reg_top
   logic reset_det_ctrl_we;
   logic [21:0] reset_det_ctrl_qs;
   logic reset_det_ctrl_busy;
-  logic [3:0] reset_det_status_qs;
+  logic [21:0] reset_det_status_qs;
   logic reset_det_status_busy;
   logic ctrl_time_sp_we;
   logic [9:0] ctrl_time_sp_tcbp_div2_qs;
@@ -1507,7 +1507,7 @@ module i3c_reg_top
   prim_reg_cdc #(
     .DataWidth(22),
     .ResetVal(22'h0),
-    .BitMask(22'h310002),
+    .BitMask(22'h310001),
     .DstWrReq(0)
   ) u_reset_det_ctrl_cdc (
     .clk_src_i    (clk_i),
@@ -1539,27 +1539,27 @@ module i3c_reg_top
   logic  aon_reset_det_status_rst_periph_qs_int;
   logic  aon_reset_det_status_rst_target_ds_int;
   logic  aon_reset_det_status_rst_target_qs_int;
-  logic [3:0] aon_reset_det_status_ds;
+  logic [21:0] aon_reset_det_status_ds;
   logic aon_reset_det_status_qe;
-  logic [3:0] aon_reset_det_status_qs;
+  logic [21:0] aon_reset_det_status_qs;
 
   always_comb begin
-    aon_reset_det_status_qs = 4'h0;
-    aon_reset_det_status_ds = 4'h0;
+    aon_reset_det_status_qs = 22'h0;
+    aon_reset_det_status_ds = 22'h0;
     aon_reset_det_status_ds[0] = aon_reset_det_status_active_ds_int;
     aon_reset_det_status_qs[0] = aon_reset_det_status_active_qs_int;
-    aon_reset_det_status_ds[1] = aon_reset_det_status_wake_up_ds_int;
-    aon_reset_det_status_qs[1] = aon_reset_det_status_wake_up_qs_int;
-    aon_reset_det_status_ds[2] = aon_reset_det_status_rst_periph_ds_int;
-    aon_reset_det_status_qs[2] = aon_reset_det_status_rst_periph_qs_int;
-    aon_reset_det_status_ds[3] = aon_reset_det_status_rst_target_ds_int;
-    aon_reset_det_status_qs[3] = aon_reset_det_status_rst_target_qs_int;
+    aon_reset_det_status_ds[16] = aon_reset_det_status_wake_up_ds_int;
+    aon_reset_det_status_qs[16] = aon_reset_det_status_wake_up_qs_int;
+    aon_reset_det_status_ds[20] = aon_reset_det_status_rst_periph_ds_int;
+    aon_reset_det_status_qs[20] = aon_reset_det_status_rst_periph_qs_int;
+    aon_reset_det_status_ds[21] = aon_reset_det_status_rst_target_ds_int;
+    aon_reset_det_status_qs[21] = aon_reset_det_status_rst_target_qs_int;
   end
 
   prim_reg_cdc #(
-    .DataWidth(4),
-    .ResetVal(4'h0),
-    .BitMask(4'hf),
+    .DataWidth(22),
+    .ResetVal(22'h0),
+    .BitMask(22'h310001),
     .DstWrReq(1)
   ) u_reset_det_status_cdc (
     .clk_src_i    (clk_i),
@@ -2519,73 +2519,118 @@ module i3c_reg_top
   );
 
 
-  // R[reset_det_ctrl]: V(True)
-  logic reset_det_ctrl_qe;
-  logic [3:0] reset_det_ctrl_flds_we;
-  assign reset_det_ctrl_qe = &reset_det_ctrl_flds_we;
-  //   F[sleep_req]: 1:1
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_reset_det_ctrl_sleep_req (
-    .re     (1'b0),
+  // R[reset_det_ctrl]: V(False)
+  //   F[activate]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_reset_det_ctrl_activate (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
     .we     (aon_reset_det_ctrl_we),
-    .wd     (aon_reset_det_ctrl_wdata[1]),
+    .wd     (aon_reset_det_ctrl_wdata[0]),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
-    .qe     (reset_det_ctrl_flds_we[0]),
-    .q      (reg2hw.reset_det_ctrl.sleep_req.q),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.reset_det_ctrl.activate.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.reset_det_ctrl.sleep_req.qe = reset_det_ctrl_qe;
 
-  //   F[wake_ack]: 16:16
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_reset_det_ctrl_wake_ack (
-    .re     (1'b0),
+  //   F[sleep_req]: 16:16
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_reset_det_ctrl_sleep_req (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
     .we     (aon_reset_det_ctrl_we),
     .wd     (aon_reset_det_ctrl_wdata[16]),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
-    .qe     (reset_det_ctrl_flds_we[1]),
-    .q      (reg2hw.reset_det_ctrl.wake_ack.q),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.reset_det_ctrl.sleep_req.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.reset_det_ctrl.wake_ack.qe = reset_det_ctrl_qe;
 
   //   F[rst_periph_en]: 20:20
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_reset_det_ctrl_rst_periph_en (
-    .re     (1'b0),
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
     .we     (aon_reset_det_ctrl_we),
     .wd     (aon_reset_det_ctrl_wdata[20]),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
-    .qe     (reset_det_ctrl_flds_we[2]),
+
+    // to internal hardware
+    .qe     (),
     .q      (reg2hw.reset_det_ctrl.rst_periph_en.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.reset_det_ctrl.rst_periph_en.qe = reset_det_ctrl_qe;
 
   //   F[rst_target_en]: 21:21
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_reset_det_ctrl_rst_target_en (
-    .re     (1'b0),
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
     .we     (aon_reset_det_ctrl_we),
     .wd     (aon_reset_det_ctrl_wdata[21]),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
-    .qe     (reset_det_ctrl_flds_we[3]),
+
+    // to internal hardware
+    .qe     (),
     .q      (reg2hw.reset_det_ctrl.rst_target_en.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.reset_det_ctrl.rst_target_en.qe = reset_det_ctrl_qe;
 
 
   // R[reset_det_status]: V(False)
@@ -2619,7 +2664,7 @@ module i3c_reg_top
     .qs     (aon_reset_det_status_active_qs_int)
   );
 
-  //   F[wake_up]: 1:1
+  //   F[wake_up]: 16:16
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2647,7 +2692,7 @@ module i3c_reg_top
     .qs     (aon_reset_det_status_wake_up_qs_int)
   );
 
-  //   F[rst_periph]: 2:2
+  //   F[rst_periph]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2675,7 +2720,7 @@ module i3c_reg_top
     .qs     (aon_reset_det_status_rst_periph_qs_int)
   );
 
-  //   F[rst_target]: 3:3
+  //   F[rst_target]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
