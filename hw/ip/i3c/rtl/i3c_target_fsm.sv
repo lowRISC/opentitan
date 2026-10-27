@@ -730,8 +730,8 @@ module i3c_target_fsm
 
   // TODO(#31337): Status outcomes.
   i3c_err_status_e txd_status, ibi_status;
-  assign txd_status = ErrStatus_OK;
-  assign ibi_status = ErrStatus_OK;
+  assign txd_status = ErrStatus_SUCCESS;
+  assign ibi_status = ErrStatus_SUCCESS;
 
   // TODO(#31337): Remaining byte count; this is multiplexed from the various transmission paths.
   logic [15:0] tx_bytes_left;
