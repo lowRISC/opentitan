@@ -2752,12 +2752,12 @@ Target Transaction Interface Extended Capability Header
 Target Interrupt Status.
 - Offset: `0x314`
 - Reset default: `0x0`
-- Reset mask: `0x800f0f7f`
+- Reset mask: `0x800f0fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "RX_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "IBI_STATUS_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ASYNC_EVT_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSFER_ABORT_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSFER_ERR_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RX_BUFFER_OVF_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "TX0_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX1_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX2_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX3_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX1_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX2_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX3_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 11}, {"name": "TE_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "RX_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "IBI_STATUS_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ASYNC_EVT_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSFER_ABORT_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSFER_ERR_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RX_DESC_OVF_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RX_BUFFER_OVF_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX0_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX1_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX2_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX3_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX1_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX2_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX3_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 11}, {"name": "TE_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                                                              |
@@ -2773,9 +2773,9 @@ Target Interrupt Status.
 |   10   |   ro   |   0x0   | TX2_THLD_STAT        | Target 2 Tx Data Buffer Threshold Status. Asserted when the requested amount of space is available in the Tx Data Buffer, see `TARG_TX_THLD_CTRL.TX_BUF_FREE_THLD`.      |
 |   9    |   ro   |   0x0   | TX1_THLD_STAT        | Target 1 Tx Data Buffer Threshold Status. Asserted when the requested amount of space is available in the Tx Data Buffer, see `TARG_TX_THLD_CTRL.TX_BUF_FREE_THLD`.      |
 |   8    |   ro   |   0x0   | TX0_THLD_STAT        | Target 0 Tx Data Buffer Threshold Status. Asserted when the requested amount of space is available in the Tx Data Buffer, see `TARG_TX_THLD_CTRL.TX_BUF_FREE_THLD`.      |
-|   7    |        |         |                      | Reserved                                                                                                                                                                 |
-|   6    |   ro   |   0x0   | ASYNC_EVT_OVF_STAT   | Asynchronous Event Queue Overflow Status.                                                                                                                                |
-|   5    |   ro   |   0x0   | RX_BUFFER_OVF_STAT   | Rx Data Buffer Overflow Status.                                                                                                                                          |
+|   7    |   ro   |   0x0   | ASYNC_EVT_OVF_STAT   | Asynchronous Event Queue Overflow Status.                                                                                                                                |
+|   6    |   ro   |   0x0   | RX_BUFFER_OVF_STAT   | Rx Data Buffer Overflow Status.                                                                                                                                          |
+|   5    |   ro   |   0x0   | RX_DESC_OVF_STAT     | Rx Desc Queue Overflow Status.                                                                                                                                           |
 |   4    |   ro   |   0x0   | TRANSFER_ERR_STAT    | Transfer Error Status.                                                                                                                                                   |
 |   3    |   ro   |   0x0   | TRANSFER_ABORT_STAT  | Transfer Abort Status.                                                                                                                                                   |
 |   2    |   ro   |   0x0   | ASYNC_EVT_READY_STAT | Asynchronous Event Queue Ready Status.                                                                                                                                   |
@@ -2786,12 +2786,12 @@ Target Interrupt Status.
 Target Interrupt Status Enable.
 - Offset: `0x318`
 - Reset default: `0x0`
-- Reset mask: `0x800f0f7f`
+- Reset mask: `0x800f0fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "RX_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_STATUS_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ABORT_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ERR_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RX_BUFFER_OVF_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "TX0_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 11}, {"name": "TE_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
+{"reg": [{"name": "RX_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_STATUS_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ABORT_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ERR_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RX_DESC_OVF_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RX_BUFFER_OVF_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX0_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 11}, {"name": "TE_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                    | Description                                       |
@@ -2807,9 +2807,9 @@ Target Interrupt Status Enable.
 |   10   |   rw   |   0x0   | TX2_THLD_STAT_EN        | Target 2 Tx Data Buffer Threshold Status Enable.  |
 |   9    |   rw   |   0x0   | TX1_THLD_STAT_EN        | Target 1 Tx Data Buffer Threshold Status Enable.  |
 |   8    |   rw   |   0x0   | TX0_THLD_STAT_EN        | Target 0 Tx Data Buffer Threshold Status Enable.  |
-|   7    |        |         |                         | Reserved                                          |
-|   6    |   rw   |   0x0   | ASYNC_EVT_OVF_STAT_EN   | Asynchronous Event Queue Overflow Status Enable.  |
-|   5    |   rw   |   0x0   | RX_BUFFER_OVF_STAT_EN   | Rx Data Buffer Overflow Status Enable.            |
+|   7    |   rw   |   0x0   | ASYNC_EVT_OVF_STAT_EN   | Asynchronous Event Queue Overflow Status Enable.  |
+|   6    |   rw   |   0x0   | RX_BUFFER_OVF_STAT_EN   | Rx Data Buffer Overflow Status Enable.            |
+|   5    |   rw   |   0x0   | RX_DESC_OVF_STAT_EN     | Rx Desc Queue Overflow Status Enable.             |
 |   4    |   rw   |   0x0   | TRANSFER_ERR_STAT_EN    | Transfer Error Status Enable.                     |
 |   3    |   rw   |   0x0   | TRANSFER_ABORT_STAT_EN  | Transfer Abort Status Enable.                     |
 |   2    |   rw   |   0x0   | ASYNC_EVT_READY_STAT_EN | Asynchronous Event Queue Ready Status Enable.     |
@@ -2820,12 +2820,12 @@ Target Interrupt Status Enable.
 Target Interrupt Signal Enable.
 - Offset: `0x31c`
 - Reset default: `0x0`
-- Reset mask: `0x800f0f7f`
+- Reset mask: `0x800f0fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "RX_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_STATUS_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ABORT_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ERR_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RX_BUFFER_OVF_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "TX0_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 11}, {"name": "TE_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 270}}
+{"reg": [{"name": "RX_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_STATUS_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ABORT_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ERR_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RX_DESC_OVF_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RX_BUFFER_OVF_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX0_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 11}, {"name": "TE_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 270}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                      | Description                                       |
@@ -2841,9 +2841,9 @@ Target Interrupt Signal Enable.
 |   10   |   rw   |   0x0   | TX2_THLD_SIGNAL_EN        | Target 2 Tx Data Buffer Threshold Signal Enable.  |
 |   9    |   rw   |   0x0   | TX1_THLD_SIGNAL_EN        | Target 1 Tx Data Buffer Threshold Signal Enable.  |
 |   8    |   rw   |   0x0   | TX0_THLD_SIGNAL_EN        | Target 0 Tx Data Buffer Threshold Signal Enable.  |
-|   7    |        |         |                           | Reserved                                          |
-|   6    |   rw   |   0x0   | ASYNC_EVT_OVF_SIGNAL_EN   | Asynchronous Event Queue Overflow Signal Enable.  |
-|   5    |   rw   |   0x0   | RX_BUFFER_OVF_SIGNAL_EN   | Rx Data Buffer Overflow Signal Enable.            |
+|   7    |   rw   |   0x0   | ASYNC_EVT_OVF_SIGNAL_EN   | Asynchronous Event Queue Overflow Signal Enable.  |
+|   6    |   rw   |   0x0   | RX_BUFFER_OVF_SIGNAL_EN   | Rx Data Buffer Overflow Signal Enable.            |
+|   5    |   rw   |   0x0   | RX_DESC_OVF_SIGNAL_EN     | Rx Desc Queue Overflow Signal Enable.             |
 |   4    |   rw   |   0x0   | TRANSFER_ERR_SIGNAL_EN    | Transfer Error Signal Enable.                     |
 |   3    |   rw   |   0x0   | TRANSFER_ABORT_SIGNAL_EN  | Transfer Abort Signal Enable.                     |
 |   2    |   rw   |   0x0   | ASYNC_EVT_READY_SIGNAL_EN | Asynchronous Event Queue Ready Signal Enable.     |
@@ -2854,12 +2854,12 @@ Target Interrupt Signal Enable.
 Target Interrupt Force.
 - Offset: `0x320`
 - Reset default: `0x0`
-- Reset mask: `0x800f0f7f`
+- Reset mask: `0x800f0fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "RX_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "IBI_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "ASYNC_EVT_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TRANSFER_ABORT_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TRANSFER_ERR_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "RX_BUFFER_OVF_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 1}, {"name": "TX0_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX1_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX2_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX3_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX1_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX2_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX3_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 11}, {"name": "TE_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+{"reg": [{"name": "RX_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "IBI_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "ASYNC_EVT_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TRANSFER_ABORT_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TRANSFER_ERR_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "RX_DESC_OVF_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "RX_BUFFER_OVF_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX0_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX1_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX2_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX3_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX1_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX2_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX3_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 11}, {"name": "TE_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                  | Description                               |
@@ -2875,9 +2875,9 @@ Target Interrupt Force.
 |   10   |   wo   |   0x0   | TX2_THLD_FORCE        | Force Target 2 Tx Data Buffer Threshold.  |
 |   9    |   wo   |   0x0   | TX1_THLD_FORCE        | Force Target 1 Tx Data Buffer Threshold.  |
 |   8    |   wo   |   0x0   | TX0_THLD_FORCE        | Force Target 0 Tx Data Buffer Threshold.  |
-|   7    |        |         |                       | Reserved                                  |
-|   6    |   wo   |   0x0   | ASYNC_EVT_OVF_FORCE   | Force Asynchronous Event Queue Overflow.  |
-|   5    |   wo   |   0x0   | RX_BUFFER_OVF_FORCE   | Force Rx Data Buffer Overflow.            |
+|   7    |   wo   |   0x0   | ASYNC_EVT_OVF_FORCE   | Force Asynchronous Event Queue Overflow.  |
+|   6    |   wo   |   0x0   | RX_BUFFER_OVF_FORCE   | Force Rx Data Buffer Overflow.            |
+|   5    |   wo   |   0x0   | RX_DESC_OVF_FORCE     | Force Rx Desc Queue Overflow.             |
 |   4    |   wo   |   0x0   | TRANSFER_ERR_FORCE    | Force Transfer Error.                     |
 |   3    |   wo   |   0x0   | TRANSFER_ABORT_FORCE  | Force Transfer Abort.                     |
 |   2    |   wo   |   0x0   | ASYNC_EVT_READY_FORCE | Force Asynchronous Event Queue Ready.     |

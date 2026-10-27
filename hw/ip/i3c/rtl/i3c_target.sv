@@ -358,9 +358,9 @@ module i3c_target
   i3c_targ_trx_rxd_t trx_rxd;
 
   // Error events reported by the Target core.
-  logic async_evt_ovl;
-  logic rx_buffer_ovl;
-  logic rx_desc_ovl;
+  logic async_evt_ovf;
+  logic rx_buffer_ovf;
+  logic rx_desc_ovf;
   logic transfer_err;
   logic transfer_aborted;
 
@@ -521,9 +521,9 @@ module i3c_target
     .stby_bcst_wready_i   (stby_bcst_wready_i),
 
     // Error events.
-    .async_evt_ovl_o      (async_evt_ovl),
-    .rx_buffer_ovl_o      (rx_buffer_ovl),
-    .rx_desc_ovl_o        (rx_desc_ovl),
+    .async_evt_ovf_o      (async_evt_ovf),
+    .rx_buffer_ovf_o      (rx_buffer_ovf),
+    .rx_desc_ovf_o        (rx_desc_ovf),
     .transfer_err_o       (transfer_err),
     .transfer_aborted_o   (transfer_aborted),
 
@@ -645,9 +645,9 @@ module i3c_target
     intr_o.async_evt_ready = !async_empty_i;  // TODO: Need to reconsider if CCC becomes multi-desc?
     intr_o.transfer_abort  = transfer_aborted;
     intr_o.transfer_err    = transfer_err;
-    // TODO: Make a separate interrupt for rx_desc_ovl.
-    intr_o.rx_buffer_ovl   = rx_buffer_ovl | rx_desc_ovl;
-    intr_o.async_evt_ovl   = async_evt_ovl;
+    intr_o.rx_desc_ovf     = rx_desc_ovf;
+    intr_o.rx_buffer_ovf   = rx_buffer_ovf;
+    intr_o.async_evt_ovf   = async_evt_ovf;
 
     // Transmission requires per-Target buffers.
     for (int unsigned t = 0; t < NumTargets; t++) begin
