@@ -40,6 +40,7 @@ cc_library(
         "//sw/device/lib/crypto/impl:kmac_kdf",
         "//sw/device/lib/crypto/impl:rsa",
         "//sw/device/lib/crypto/impl:self_integrity",
+        "//sw/device/lib/crypto/impl:sha1",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl:sha3",
         "//sw/device/lib/crypto/impl:state",

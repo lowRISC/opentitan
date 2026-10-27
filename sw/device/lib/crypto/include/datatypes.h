@@ -259,6 +259,8 @@ typedef enum otcrypto_tdes_key_mode {
  * Values are hardened.
  */
 typedef enum otcrypto_hmac_key_mode {
+  /// Mode HMAC SHA1 (plain software; not FI/SCA protected).
+  kOtcryptoHmacKeyModeSha1 = 0x16a,
   /// Mode HMAC SHA256.
   kOtcryptoHmacKeyModeSha256 = 0x7fd,
   /// Mode HMAC SHA384.
@@ -378,6 +380,9 @@ typedef enum otcrypto_key_mode {
   /// Key is intended for TDES CTR mode.
   kOtcryptoKeyModeTdesCtr =
       kOtcryptoKeyTypeTdes << 16 | kOtcryptoTdesKeyModeCtr,
+  /// Key is intended for HMAC SHA1 mode (plain software; not FI/SCA protected).
+  kOtcryptoKeyModeHmacSha1 =
+      kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha1,
   /// Key is intended for HMAC SHA256 mode.
   kOtcryptoKeyModeHmacSha256 =
       kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha256,
@@ -554,6 +559,8 @@ typedef struct otcrypto_blinded_key {
  * Values are hardened.
  */
 typedef enum otcrypto_hash_mode {
+  /// SHA-1 mode (plain software; not FI/SCA protected).
+  kOtcryptoHashModeSha1 = 0x3ef,
   /// SHA2-256 mode.
   kOtcryptoHashModeSha256 = 0x69b,
   /// SHA2-384 mode.
