@@ -573,7 +573,12 @@
         }
         { bits:     "23:16",
           name:     "RSTACT",
-          desc:     "Configured Target Reset action."
+          desc:     '''Configured Target Reset action.
+
+                    The reset value of this field is 'NoReset' (0) as per the HCI Standby Controller specification.
+                    When enabled, the default response to receipt of the Target Reset pattern is a reset of the I3C Peripheral only.
+                    This response must still be enabled by software, however.
+                    ''',
           hwaccess: "hwo",
           resval:   "0"
         }
@@ -692,30 +697,28 @@
       desc:     "Reset detector control.",
       swaccess: "wo",
       hwaccess: "hro",
-      hwext:    "true",
-      hwqe:     "true",
       async:    "clk_aon_i",
       fields: [
         { bits:   "21",
           name:   "RST_TARGET_EN",
-          desc:   "Enable response to a Whole Target reset request.",
+          desc:   "Enable response to a Whole Target reset request, when RSTACT has been set accordingly.",
           resval: "0"
         }
         { bits:   "20",
           name:   "RST_PERIPH_EN",
-          desc:   "Enable response to a Peripheral reset request.",
+          desc:   "Enable response to a Peripheral reset request, when RSTACT has been set accordingly.",
           resval: "0"
         }
         { bits:   "16",
-          name:   "WAKE_ACK",
-          desc:   "Wake acknowledgement.",
-          resval: "0"
-        }
-        { bits:   "1",
           name:   "SLEEP_REQ",
-          desc:   "Activate the reset detector prior to entry into 'Deepest Sleep' state.",
+          desc:   "Enable wake up signaling, prior to entering 'Deepest Sleep' state.",
           resval: "0",
-          tags: [// Prevent the reset detector from being activated outside of directed tests
+        }
+        { bits:   "0",
+          name:   "ACTIVATE",
+          desc:   "Activate the reset detector logic.",
+          resval: "0",
+          tags: [// Prevent wake/reset functions from being turned on outside of directed tests
                  "excl:CsrNonInitTests:CsrExclWrite"]
         }
       ]
@@ -726,17 +729,17 @@
       hwaccess: "hwo",
       async:    "clk_aon_i",
       fields: [
-        { bits:   "3",
+        { bits:   "21",
           name:   "RST_TARGET",
           desc:   "Indicates that a Whole Target reset request was received.",
           resval: "0"
         }
-        { bits:   "2",
+        { bits:   "20",
           name:   "RST_PERIPH",
           desc:   "Indicates that a Peripheral reset request was received.",
           resval: "0"
         }
-        { bits:   "1",
+        { bits:   "16",
           name:   "WAKE_UP",
           desc:   "Indicates that a Wake Up request was received.",
           resval: "0"

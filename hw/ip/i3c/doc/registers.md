@@ -407,18 +407,58 @@ Target-side Status register
 {"reg": [{"name": "EXT_INFO", "bits": 15, "attr": ["rw"], "rotate": 0}, {"name": "EXT_PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RSTACT", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "RSTACT_VIRT_TARG_DET", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VTM", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PROTOCOL_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TARGETS", "bits": 2, "attr": ["ro"], "rotate": -90}, {"name": "CONNECTED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                                                                                                                                               |
-|:------:|:------:|:-------:|:---------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|   31   |   ro   |   0x1   | PRESENT              | Indicates the presence of Target functionality.                                                                                                                                                                                                           |
-|   30   |   ro   |   0x0   | ACTIVE               | Indicates whether the Target logic is presently active, as opposed to under reset.                                                                                                                                                                        |
-|   29   |   ro   |   0x0   | CONNECTED            | Indicates whether the Target logic is connected to the bus and monitoring traffic.                                                                                                                                                                        |
-| 28:27  |   ro   |   0x1   | TARGETS              | Indicates the number of extra Virtual Targets present. If PRESENT is 1, this is the number of Targets in this implementation minus 1. If PRESENT is 0, this field is also zero.                                                                           |
-|   26   |   ro   |   0x0   | PROTOCOL_ERROR       | Protocol error detected since the last GETSTATUS CCC to read this indicator.                                                                                                                                                                              |
-|   25   |   ro   |   0x0   | VTM                  | Vendor Test Mode active, in response to ENTTM.                                                                                                                                                                                                            |
-|   24   |   ro   |   0x0   | RSTACT_VIRT_TARG_DET | RSTACT Virtual Target Detect.                                                                                                                                                                                                                             |
-| 23:16  |   ro   |   0x0   | RSTACT               | Configured Target Reset action.                                                                                                                                                                                                                           |
-|   15   |   ro   |   0x0   | EXT_PRESENT          | Indicates whether one or more additional protocols is implemented in the Target hardware. Some protocols require a sufficiently fast response that software involvement is not possible. These may be implemented as an extension within the Target core. |
-|  14:0  |   rw   |   0x0   | EXT_INFO             | Extension-specific information.                                                                                                                                                                                                                           |
+|  Bits  |  Type  |  Reset  | Name                                                       |
+|:------:|:------:|:-------:|:-----------------------------------------------------------|
+|   31   |   ro   |   0x1   | [PRESENT](#targ_status--present)                           |
+|   30   |   ro   |   0x0   | [ACTIVE](#targ_status--active)                             |
+|   29   |   ro   |   0x0   | [CONNECTED](#targ_status--connected)                       |
+| 28:27  |   ro   |   0x1   | [TARGETS](#targ_status--targets)                           |
+|   26   |   ro   |   0x0   | [PROTOCOL_ERROR](#targ_status--protocol_error)             |
+|   25   |   ro   |   0x0   | [VTM](#targ_status--vtm)                                   |
+|   24   |   ro   |   0x0   | [RSTACT_VIRT_TARG_DET](#targ_status--rstact_virt_targ_det) |
+| 23:16  |   ro   |   0x0   | [RSTACT](#targ_status--rstact)                             |
+|   15   |   ro   |   0x0   | [EXT_PRESENT](#targ_status--ext_present)                   |
+|  14:0  |   rw   |   0x0   | [EXT_INFO](#targ_status--ext_info)                         |
+
+### TARG_STATUS . PRESENT
+Indicates the presence of Target functionality.
+
+### TARG_STATUS . ACTIVE
+Indicates whether the Target logic is presently active, as opposed to under reset.
+
+### TARG_STATUS . CONNECTED
+Indicates whether the Target logic is connected to the bus and monitoring traffic.
+
+### TARG_STATUS . TARGETS
+Indicates the number of extra Virtual Targets present.
+
+If PRESENT is 1, this is the number of Targets in this implementation minus 1.
+If PRESENT is 0, this field is also zero.
+
+### TARG_STATUS . PROTOCOL_ERROR
+Protocol error detected since the last GETSTATUS CCC to read this indicator.
+
+### TARG_STATUS . VTM
+Vendor Test Mode active, in response to ENTTM.
+
+### TARG_STATUS . RSTACT_VIRT_TARG_DET
+RSTACT Virtual Target Detect.
+
+### TARG_STATUS . RSTACT
+Configured Target Reset action.
+
+The reset value of this field is 'NoReset' (0) as per the HCI Standby Controller specification.
+When enabled, the default response to receipt of the Target Reset pattern is a reset of the I3C Peripheral only.
+This response must still be enabled by software, however.
+
+### TARG_STATUS . EXT_PRESENT
+Indicates whether one or more additional protocols is implemented in the Target hardware.
+
+Some protocols require a sufficiently fast response that software involvement is not possible.
+These may be implemented as an extension within the Target core.
+
+### TARG_STATUS . EXT_INFO
+Extension-specific information.
 
 ## TARG_SINK_CONTROL
 Target data sink control.
@@ -508,42 +548,44 @@ This bit becomes set when the operation is started and will be cleared at most a
 Reset detector control.
 - Offset: `0x2c`
 - Reset default: `0x0`
-- Reset mask: `0x310002`
+- Reset mask: `0x310001`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"bits": 1}, {"name": "SLEEP_REQ", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 14}, {"name": "WAKE_ACK", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 3}, {"name": "RST_PERIPH_EN", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "RST_TARGET_EN", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 10}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
+{"reg": [{"name": "ACTIVATE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 15}, {"name": "SLEEP_REQ", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 3}, {"name": "RST_PERIPH_EN", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "RST_TARGET_EN", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 10}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name          | Description                                                            |
-|:------:|:------:|:-------:|:--------------|:-----------------------------------------------------------------------|
-| 31:22  |        |         |               | Reserved                                                               |
-|   21   |   wo   |   0x0   | RST_TARGET_EN | Enable response to a Whole Target reset request.                       |
-|   20   |   wo   |   0x0   | RST_PERIPH_EN | Enable response to a Peripheral reset request.                         |
-| 19:17  |        |         |               | Reserved                                                               |
-|   16   |   wo   |   0x0   | WAKE_ACK      | Wake acknowledgement.                                                  |
-|  15:2  |        |         |               | Reserved                                                               |
-|   1    |   wo   |   0x0   | SLEEP_REQ     | Activate the reset detector prior to entry into 'Deepest Sleep' state. |
+|  Bits  |  Type  |  Reset  | Name          | Description                                                                            |
+|:------:|:------:|:-------:|:--------------|:---------------------------------------------------------------------------------------|
+| 31:22  |        |         |               | Reserved                                                                               |
+|   21   |   wo   |   0x0   | RST_TARGET_EN | Enable response to a Whole Target reset request, when RSTACT has been set accordingly. |
+|   20   |   wo   |   0x0   | RST_PERIPH_EN | Enable response to a Peripheral reset request, when RSTACT has been set accordingly.   |
+| 19:17  |        |         |               | Reserved                                                                               |
+|   16   |   wo   |   0x0   | SLEEP_REQ     | Enable wake up signaling, prior to entering 'Deepest Sleep' state.                     |
+|  15:1  |        |         |               | Reserved                                                                               |
+|   0    |   wo   |   0x0   | ACTIVATE      | Activate the reset detector logic.                                                     |
 
 ## RESET_DET_STATUS
 Reset detector status.
 - Offset: `0x30`
 - Reset default: `0x0`
-- Reset mask: `0xf`
+- Reset mask: `0x310001`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "WAKE_UP", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RST_PERIPH", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RST_TARGET", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 15}, {"name": "WAKE_UP", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 3}, {"name": "RST_PERIPH", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RST_TARGET", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 10}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name       | Description                                               |
 |:------:|:------:|:-------:|:-----------|:----------------------------------------------------------|
-|  31:4  |        |         |            | Reserved                                                  |
-|   3    |   ro   |   0x0   | RST_TARGET | Indicates that a Whole Target reset request was received. |
-|   2    |   ro   |   0x0   | RST_PERIPH | Indicates that a Peripheral reset request was received.   |
-|   1    |   ro   |   0x0   | WAKE_UP    | Indicates that a Wake Up request was received.            |
+| 31:22  |        |         |            | Reserved                                                  |
+|   21   |   ro   |   0x0   | RST_TARGET | Indicates that a Whole Target reset request was received. |
+|   20   |   ro   |   0x0   | RST_PERIPH | Indicates that a Peripheral reset request was received.   |
+| 19:17  |        |         |            | Reserved                                                  |
+|   16   |   ro   |   0x0   | WAKE_UP    | Indicates that a Wake Up request was received.            |
+|  15:1  |        |         |            | Reserved                                                  |
 |   0    |   ro   |   0x0   | ACTIVE     | Indicates whether the reset detector is active.           |
 
 ## CTRL_TIME_SP
