@@ -276,6 +276,8 @@ static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
     keymgr_diversification_t diversification;
     HARDENED_TRY(keyblob_to_keymgr_diversification(key_kek, &diversification));
     HARDENED_TRY(keymgr_generate_key_aes(diversification));
+    aes_key->key_shares[0] = NULL;
+    aes_key->key_shares[1] = NULL;
   } else if (key_kek->config.hw_backed == kHardenedBoolFalse) {
     // Get pointers to the individual shares.
     uint32_t *share0;
@@ -283,10 +285,12 @@ static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
     HARDENED_TRY(keyblob_to_shares(key_kek, &share0, &share1));
     aes_key->key_shares[0] = share0;
     aes_key->key_shares[1] = share1;
-    aes_key->checksum = aes_key_integrity_checksum(aes_key);
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Create the checksum of the key and store it in the key structure.
+  aes_key->checksum = aes_key_integrity_checksum(aes_key);
 
   return OTCRYPTO_OK;
 }
