@@ -24,6 +24,9 @@
             of the implemented instructions. The unchanging binaries should
             mean this basic test is particularly appropriate for CI.
 
+            SIMD instructions: Basic functional coverage comes from
+            otbn_smoke_vectorized.
+
             '''
       stage: V1
       tests: ["otbn_smoke", "otbn_smoke_vectorized"]
@@ -80,16 +83,27 @@
     }
 
     {
-      name: wfi
+      name: wfi_random
       desc: '''
-            Test the WFI instruction and its behavior
+            Test the WFI instruction and the paused state against the model
 
-            Check the regular use case as well as the following edge cases:
-            - Escalation whilst OTBN is paused or gets paused
-            - Multiple WFI instructions executed back-to-back
+            - Normal use: host DMEM access while paused, then RESUME.
+            Check the STATUS sequence, the done interrupt on each WFI.
+            - Include multiple and back-to-back WFIs.
+            - Escalation while paused or as WFI executes, ending in LOCKED
+
+            - INSN_CNT is continuous across a resume.
+            - Disabled WFI (CTRL.wfi_enabled = 0): ILLEGAL_INSN, recoverable or fatal
+            according to software_errs_fatal.
+            - Host accesses while paused: DMEM access is allowed, IMEM access is a fatal
+            ILLEGAL_BUS_ACCESS, and writes to CTRL, the EXECUTE and memory wipe commands,
+            and the ERR_BITS and INSN_CNT clears are ignored.
+            - Secure wipe or reset while paused or about to pause.
+            - WFI at the end of a hardware loop.
+            - WFI with MAI or KMAC activity in flight.
             '''
       stage: V2
-      tests: ["otbn_wfi_smoke", "otbn_wfi_sec_wipe", "otbn_wfi_back_to_back"]
+      tests: []
     }
 
     {
@@ -133,29 +147,250 @@
       tests: ["otbn_stress_all"]
     }
     {
-      name: mai
+      name: mai_random_ops
       desc: '''
-            Exercise the masking accelerator interface (MAI)
+            Random programs using the MAI through its ISPRs (MAI_CTRL, MAI_STATUS,
+            MAI_IN0/IN1 shares, MAI_RES shares). Compare results and ISPR contents with the
+            model across all operation types (secAdd, secAddMod, A2B, B2A), with back-to-back
+            operations and varied delays between dispatch and readback.
 
-            Drive and read the `MAI_CTRL`/`MAI_STATUS` CSRs and the `MAI_IN0`/`MAI_IN1`/`MAI_RES`
-            WSRs to run secAdd, secAddMod, A2B, and B2A operations through the masking
-            accelerator, comparing results against the reference model across a range of operand
-            values, including edge cases such as zero, all-ones, and operands that exercise the
-            secAddMod modulus reduction.
+            Cover a range of operand values, including edge cases such as:
+            - zero,
+            - all-ones,
+            - random input value 1, fixed input value 2 (and vice-versa) and
+            - operands that exercise modulus reduction (secAddMod, A2B, B2A).
 
-            Also check `MAI_STATUS` busy/done reporting, and that issuing a new operation or
-            accessing the result WSRs while the accelerator is still busy is correctly flagged as
-            an illegal SW interaction (`MAI_SOFTWARE_ERROR`).
+            Randomize the MOD WSR for the operations.
 
-            Additionally, trigger a secure wipe while an operation of each type is in flight,
-            including B2A, whose rejection sampling normally makes its latency nondeterministic
-            but is disabled during a secure wipe to bound its duration. Check that the MAI is
-            allowed to finish dispatching its inputs into the accelerator, that the resulting
-            output is discarded rather than used, and that the wipe still completes within the
-            expected bound (23 cycles, the longest possible operation latency).
+            Also check MAI_STATUS for BUSY/INPUT_READY reporting.
+
+            Cover overlap input refill and result readback scenarios: refill only
+            after INPUT_READY, and start the next operation only after BUSY clears,
+            and read the previous result within the documented window for the same operation.
+
+            Test B2A rejection sampling, which makes latency data dependent. Hit the
+            no-rejection path, single rejections and multiple consecutive rejections.
+            Check that:
+            - MAI_STATUS stays busy until all eight words are processed, with the busy period
+            extended by each rejection
+            - the result and random-value consumption match the model.
+            Explicitly hit an
+            mask_mod == 0, and the accept/reject boundary around MOD.
             '''
       stage: V2
-      tests: ["otbn_mai"]
+      tests: []
+    }
+    {
+      name: mai_errors
+      desc: '''
+            Trigger mai_software_error under these conditions:
+            - MAI_CTRL write while MAI is busy
+            - input MAI_INx_Sy writes while MAI is NOT_READY
+            - writes to nonzero reserved bits
+            - invalid operation in a MAI_CTRL write, with and without START set
+            and check that it is flagged as an illegal SW interaction
+            (MAI_SOFTWARE_ERROR in ERR_BITS) and the recoverable/fatal behaviour
+            with software_errs_fatal. The faulting MAI_CTRL write (invalid
+            operation, write while busy, reserved bit set) has no effect on the
+            MAI.
+
+            Inject ISPR integrity errors (mai_reg_intg_violation) through:
+            1. mai_reg_intg_violation_err.in0_s0
+            2. mai_reg_intg_violation_err.in0_s1
+            3. mai_reg_intg_violation_err.in1_s0
+            4. mai_reg_intg_violation_err.in1_s1
+            5. mai_reg_intg_violation_err.mod
+
+            Inject MAI counter/FIFO state errors through:
+            1. ctr_err_o from the masking accelerator
+            2. mask_fifo_err_o from the masking accelerator
+            3. u_prim_count_input_word_select from the input word-select counter
+            4. u_prim_count_output_word_select from the output word-select counter
+            and check the fatal alert.
+
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: mai_secure_wipe
+      desc: '''
+            Secure wipe and escalation during active MAI operations. The MAI has no special wipe
+            handling, so the WSRs and CSRs follow the regular wipe behaviour:
+            - the MAI WSRs (MAI_IN0/IN1 and MAI_RES shares) are overwritten with randomness;
+            - the MAI CSRs (MAI_CTRL, MAI_STATUS) are reset to their default values.
+            A new run must start clean.
+
+            WSR/CSR clearing begins only after at least 32 cycles. Check that the full wipe
+            completes, that the MAI WSRs no longer hold their old values, and that the MAI CSRs
+            read their defaults.
+
+
+            Test the MAI drain separately from the full wipe. Trigger a secure wipe while an
+            operation of each type is in flight. B2A rejection sampling is disabled during the
+            wipe, so any operation in flight must finish within 23 cycles of the wipe starting
+            (secure_wipe_running first high), including B2A operations that had already
+            rejected one or more samples before the wipe.
+            Check that the MAI finishes dispatching its inputs and that the result
+            is discarded, not used.
+
+            Check additionally the scenario that a secure wipe starts mid-operation,
+            at each operation stage.
+
+            '''
+      stage: V2S
+      tests: []
+    }
+    {
+      name: mai_fpv
+      desc: '''
+            Dispatch/writeback sequencing, fixed pipeline latency for SecAdd, SecAddMod and A2B
+            (B2A latency depends on rejection sampling and is checked in simulation testpoints),
+            sec_wipe clears every ISPR, and the error outputs for each error condition.
+
+            Scope: protocol and timing only. Data-path correctness
+            (inputs generate the expected sum / A2B / B2A result)
+            is not proved in FPV and is checked in simulation against the model (mai_random_ops).
+
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: keymgr_if_random
+      desc: '''
+            Randomised traffic on the keymgr app interface
+
+            Run randomly-generated OTBN programs that use the keymgr interface
+            (KEYMGR_CTRL, KEYMGR_STATUS and the KEYMGR_MSG_* WSRs), while a
+            keymgr agent drives the interface with randomised traffic.
+
+            Agent randomises:
+            - message length, from empty to many beats
+            - Strobe of the last beat
+            - Gaps between beats and delay before the first beat after START
+            - Data payload and share 1 value
+
+            The programs randomly choose to follow the receive and respond flow -
+            start-of-session check of RECEIVING/SENDING, integrity-priming write,
+            START, poll MSG_VALID, check MSG_COMPLETE, read STRB, read S0_L.
+            They respond with SEND or SEND_ERROR, and run several sessions back-to-back.
+
+            The generator also occasionally breaks protocol intentionally:
+            - START mid-session,
+            - SEND or SEND_ERROR before MSG_COMPLETE
+            - both response commands together
+            - writes to reserved KEYMGR_CTRL bits
+            - reading or sending from WSRs without an integrity-priming write
+
+            Compare all CSR/WSR values, received data and response (digest shares and
+            error flag against the model after every instruction).
+
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: keymgr_if_secure_wipe
+      desc: '''
+            Secure wipe and errors during a keymgr session
+
+            Reuse the random keymgr traffic testpoint but trigger a secure wipe at a random
+            time within the session. The triggers are an OTBN software error, a fatal
+            error, otbn_escalate, and a lock-down request. Wipes that start while the
+            interface is idle, mid-receive, in ResponsePending, in SendingResponse, or
+            before or after rsp_ready all occur by randomisation.
+
+            Check that:
+            - remaining beats are drained but never captured
+            - if a session is open when the wipe starts, the response is an error response
+            and the session terminates (the agent sees the response and the interface
+            returns to idle). If no session is open, no response is sent.
+            - all four message WSRs are overwritten
+            - no fatal error is raised due to a wipe alone, such as an integrity error on
+            the response WSRs
+            - a program started while the keymgr is still holding the response sees
+            RECEIVING / SENDING set at start-up and waits for the keymgr to accept
+            the response.
+
+            The accepted corner case, where a wipe changes the data under a pending response
+            with the error flag set, is checked as part of the same flow.
+            '''
+      stage: V2S
+      tests: []
+    }
+    {
+      name: keymgr_if_fault_inj
+      desc: '''
+            Fault injection on the keymgr interface
+
+            During random keymgr sessions, inject at a random time one of: a flipped bit
+            in a response WSR (data or integrity bits) before the response is sent, a corrupt
+            keymgr FSM state, or a wipe request for the message WSRs while no secure wipe is
+            running. Check that the correct fatal alert is raised and that
+            reg_intg_violation is not raised by a wipe alone.
+            '''
+      stage: V2S
+      tests: []
+    }
+    {
+      name: keymgr_if_reset
+      desc: '''
+            Reset during a keymgr session
+
+            Extend otbn_reset, so that the reset lands at a random point in a keymgr session.
+            Check that the interface returns to idle and that the next program and a
+            fresh session work correctly, with the keymgr agent dropping any in-flight
+            transaction and pending expectation on reset.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: keymgr_if_fpv
+      desc: '''
+            Formal verification of otbn_keymgr_if
+
+            Prove the FSM and handshake properties exhaustively
+            Prove that:
+            - the FSM only takes transitions and TerminalError is sticky
+            - START is ignored unless the FSM is idle
+            - SEND and SEND_ERROR are ignored unless MSG_COMPLETE is 1, and SEND_ERROR has priority
+            - req_ready is only asserted when a beat can be taken (or a wipe is draining
+            the message), never after the last beat until the response is accepted
+            - while a wipe is running or has been detected, req_ready may be asserted
+            to drain the message, but no beat is captured: the message WSRs, MSG_VALID
+            and STRB are not written
+            - after a wipe in the middle of a message, the remaining beats are received
+            and discarded, and only then is the error response sent
+            - MSG_VALID is set by a capture, cleared by a read of S0_L,
+            and cleared by a wipe or the end of a session
+            - MSG_COMPLETE holds from the last beat until the response is accepted
+            - rsp_valid is only asserted in SendingResponse, with the payload stable
+            until rsp_ready (apart from the accepted wipe exception), and rsp_finish
+            is always 0
+            - the error flag is set for SEND_ERROR, a wipe, or an integrity failure
+            - a wipe clears every message WSR, a WSR wipe request never occurs outside
+            a running wipe, and the interface always returns to idle
+            - an integrity error is suppressed during a wipe and raised otherwise
+
+            Scope is protocol and timing only. Data-path correctness (ECC of the captured
+            beat, response contents, STRB values) is checked in simulation by
+            keymgr_if_random.
+
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: sensitive_key_wipe
+      desc: '''
+            Secure wipe behaviour when a sensitive key is provided through
+            the key sideload interface. The spec does not yet define this
+            behaviour #548.
+            '''
+      stage: V2S
+      tests: []
     }
     {
       name: lc_escalation
@@ -214,9 +449,303 @@
           - sec_wipe_base in otbn_core
           - sec_wipe_wdr_q in otbn_core
           - sec_wipe_stack_reset_i in otbn_rf_base
+
+          Additional signals that are worth tracking and are yet to be added to
+          otbn_partial_wipe.vseq are:
+
       '''
       stage: V2S
       tests: ["otbn_partial_wipe"]
+    }
+    {
+      name: otbn_non_sec_partial_wipe_intfs
+      desc: '''
+
+          See a local wipe signal be raised when a secure wipe is not running. When this happens, we
+          expect the RTL to stop with a fatal alert. The signals tracked
+          in this test point are:
+
+          - sec_wipe_mai_{in0,in1,res}_{s0,s1}_urnd in otbn_core (MAI ISPRs)
+          - sec_wipe_mac_urnd in otbn_core (MAC)
+          - sec_wipe_kmac_data_{s0,s1}_urnd in otbn_core (KMAC data ISPRs)
+          - sec_wipe_keymgr_msg_{s0,s1}_{l,h}_urnd in otbn_core
+
+        This testpoint has a dependency on #32599
+      '''
+      stage: V2S
+      tests: []
+    }
+    {
+      name: kmac_app_random
+      desc: '''
+
+            Randomised test of the KMAC app interface. Run random OTBN programs against
+            the KMAC agent/model, and randomise:
+            - the message length and contents,
+            - the gaps between requests,
+            - MODE/STRENGTH/EN_XOF,
+            - whether and when the agent returns an error response,
+            - the cycle at which an escalation or reset is injected mid-transaction.
+            Compare with the model's KMAC handling.
+
+            Also cover error behaviour:
+            - commands out of order,
+            - invalid MODE/STRENGTH/EN_XOF combinations (SHA3 and KMAC require EN_XOF = 0),
+            - the RSP_ERROR, MSG_WRITE_ERROR and CTRL_ERROR flags (including W1C and
+            collisions of SW writes with digest responses.)
+
+            Also check session flow:
+            - digest reading through both shares (KMAC output length being 512 bits, 8 beats),
+            - the exact number of response beats per mode (including the half-valid last beat
+            of SHA3-224),
+            - DONE clearing RSP_VALID, the finish response, CLOSE and back-to-back sessions
+            - Request and response stalls
+            - Secure wipe with and without an open session
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: kmac_app_escalation
+      desc: '''
+
+            Check the KMAC app interface when a secure wipe or escalation happens during a
+            session: the interface recovers and gracefully terminates any ongoing session,
+            and is usable again afterwards.
+
+            Non-fatal secure wipe (normal ECALL, or a recoverable software error with
+            software_errs_fatal = 0), so OTBN returns to idle:
+            - Short stall: the stall ends and the old session terminates before the next
+            program starts, which then finds the interface ready and runs normally.
+            - Long stall: the session is still open when the secure wipe ends. The next
+            program sees KMAC_STATUS.READY = 0 and waits. When the stall ends, the old session
+            finishes and the program can start a new session that completes correctly.
+
+            Fatal escalation:
+            - With the KMAC agent stalled, check that OTBN reaches LOCKED state,
+            and that the interface drains once the agent resumes accepting requests.
+            Drain does not need to finish before LOCKED state.
+
+            Reset:
+            - Check that reset returns the OTBN-side KMAC FSM to Idle, and that the KMAC
+            agent clears all in-flight requests and responses on reset.
+
+            Randomise the point at which the session is interrupted and the stall length.
+            Release the stall before the end of test, so no session is left open.
+            '''
+      stage: V2S
+      tests: []
+    }
+    {
+      name: kmac_if_fpv
+      desc: '''
+
+            Handshake properties on the OTBN/KMAC app interface:
+            - valid held until accepted
+            - payload stable until accepted (except the data field changing when a secure wipe
+            wipes the data WSRs under an in-flight beat)
+            - no dropped or duplicated data,
+            - a single outstanding request
+            - recovery after abort or error
+
+            During a secure wipe, check that an in-flight beat's valid stays asserted until
+            accepted, that no further beats are sent, that termination proceeds gracefully,
+            and that any digest is discarded.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: insn_cnt_csr_sw_read
+      desc: '''
+            Read the INSN_CNT CSR from OTBN software at random points, and compare with the model.
+            Check that the host-visible INSN_CNT register matches the model after a run.
+            Saturation is covered by the existing InsnCntSaturated_C cover property.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: urnd_ctrl_random
+      desc: '''
+            Test the URND control interface (URND_CTRL, URND_STATUS, URND_STATE) against the
+            model, including all status flags (STOPPED, RESTORING, USED_WHILE_STOPPED,
+            URND_CTRL_ENABLED). Randomize SecSkipUrndReseedAtStart.
+
+            Start and stop:
+            - STOP/START, with START taking priority when both are written, and the documented
+              URND timing after each.
+            - Start when already running, stop when already stopped, and stop then immediate
+              restart (back-to-back instructions).
+            - Using URND while stopped (software read, BN.MULV/BN.MULVM, MAI) advances the
+              state and sets USED_WHILE_STOPPED.
+
+            Save and restore:
+            - Save and restore the URND context, and check the same random stream follows. The
+              number of restore words is derived from URND_STATE_WIDTH and URND_RESTORE_WIDTH.
+            - Software can read back the restored state before URND is started again.
+            - A restored all-zero state raises a fatal error on the next state update.
+            - Termination, secure wipe or reset during a RESTORE.
+
+            Enable bit:
+            - Writes to CTRL.urnd_ctrl_enabled outside idle do not change the effective bit.
+            - With URND control disabled, URND_CTRL commands have no effect and URND_STATE reads
+              zero.
+            '''
+      stage: V2
+      tests: []
+    }
+  ]
+
+  covergroups: [
+    {
+      name: mai_b2a_sampling_cg
+      desc: '''
+            Covers the number of rejections per B2A operation (0, 1, 2, >2), plus:
+              - accepted mask_mod == 0
+              - the accept/reject boundary around MOD: sampled values of MOD-1 (accepted),
+                MOD (rejected) and MOD+1 (rejected).
+            '''
+    }
+    {
+      name: mai_errors_cg
+      desc: '''
+            Covers the MAI error paths of mai_errors:
+              - each software error trigger (invalid operation with and without
+              START, MAI_CTRL write while busy, input WSR write while not ready,
+              reserved bit set in a MAI_CTRL write), crossed with whether
+              software_errs_fatal is set (recoverable vs fatal);
+              - each injected mai_reg_intg_violation source crossed with operation type.
+              Only the sources checked by that operation are valid:
+                - in0_s0, in0_s1: SecAdd, SecAddMod, A2B, B2A
+                - in1_s0, in1_s1: SecAdd, SecAddMod
+                - mod: SecAddMod, A2B, B2A
+              - each injected mai_state_err source:
+                - ma_cnt, ma_fifo (from the masking accelerator),
+                - in_cnt (input word-select counter) and
+                - output word-select counter
+            '''
+    }
+    {
+      name: mai_secure_wipe_cg
+      desc: '''
+            Covers the MAI operation that was in flight when a secure wipe started
+            (mai_secure_wipe):
+              - the operation type (secAdd, secAddMod, A2B, B2A), with none in flight as the
+                baseline;
+              - the stage of the operation at wipe start (inputs still being dispatched,
+                accelerator running, result ready but unread);
+              - for B2A, whether the wipe landed during a rejection resample.
+            '''
+    }
+    {
+      name: mai_ops_cg
+      desc: '''
+            Covers the MAI operations of mai_random_ops:
+              - the operation type (secAdd, secAddMod, A2B, B2A), crossed with back-to-back or
+                isolated operation;
+              - the delay between dispatch and readback;
+              - operand edge cases (zero, all-ones, secAddMod modulus reduction).
+              - shuffled start index: all eight values (0 to 7)
+            '''
+    }
+    {
+      name: keymgr_session_cg
+      desc: '''
+            Covers the keymgr session end (when a response is accepted)
+              - the number of beats: 1(including empty message), 2, 3-4, 5-16, > 16
+              - the last strobe: the legal contiguous LSB-aligned values
+              - gap between beats and the delay to first beat
+              - response type: SEND, SEND_ERROR
+            '''
+    }
+    {
+      name: keymgr_cmd_cg
+      desc: '''
+            Covers writes to KEYMGR_CTRL (legal and protocol breaking)
+              - commands START, SEND, SEND_ERROR, SEND with SEND_ERROR, reserved bits set
+              - the FSM state when the command arrives
+              - cross between cmd and FSM state. This covers START mid-session, SEND/SEND_ERROR
+              before MSG_COMPLETE, and also legal cases
+              - a read of S0_L when MSG_VALID is 0, 1, when MSG_COMPLETE IS 1,
+              and in same cycles as a new beat
+              - response sent with and without a prior priming write to each
+              of the four message WSRs
+            '''
+    }
+    {
+      name: keymgr_wipe_cg
+      desc: '''
+            Covers when a keymgr secure wipe starts
+              - state when wipe occurs: Idle, Receiving, ResponsePending, SendingResponse(before
+              and after rsp_ready), SecWipe.
+              - the wipe trigger: software error, fatal error, otbn_escalate, lock-down
+              - cross between the state and wipe trigger
+              - wipe beats: a beat on the bus when wipe starts,
+              - stale session
+            '''
+    }
+    {
+      name: keymgr_fault_cg
+      desc: '''
+            Covers when a keymgr fatal error is flagged
+              - the fault: WSR data bit flip, WSR integrity bit flip, FSM state corruption,
+              spurious message-WSR wipe request
+              - which of the four message WSRs was hit
+              - cross between the fault and message WSR
+            '''
+    }
+    {
+      name: urnd_ctrl_cg
+      desc: '''
+            Cover the URND control interface (urnd_ctrl):
+            - the commands issued (STOP, START, RESTORE), including START and STOP back to back
+            and a command that has no effect (start when running, stop when stopped);
+            - each URND_STATUS flag seen set and clear (STOPPED, RESTORING, USED_WHILE_STOPPED,
+            URND_CTRL_ENABLED);
+            - the point at which a RESTORE was interrupted (termination, secure wipe, reset);
+            - a write attempt to CTRL.urnd_ctrl_enabled in idle and outside idle;
+            - whether URND was read by software while the interface was enabled and while it
+            was disabled.
+            '''
+    }
+    {
+      name: kmac_app_cg
+      desc: '''
+            Covers the KMAC app interface (kmac_app_random):
+              - the KMAC configuration (MODE, STRENGTH, EN_XOF),
+              including invalid combinations;
+              - each software-error case: out-of-order command, invalid combination,
+              RSP_ERROR, MSG_WRITE_ERROR, CTRL_ERROR.
+              - the message length (including empty, a partial single write (1-31 bytes),
+              exactly one 32-byte write, multiple writes);
+              - the gap between back-to-back requests;
+              - the KMAC response (success or error);
+              - the point in the transaction at which an escalation or reset was injected,
+                crossed with the error response.
+            '''
+    }
+    {
+      name: wfi_cg
+      desc: '''
+            Covers the WFI instruction (wfi):
+              - normal pause and resume;
+              - WFI while disabled (CTRL.wfi_enabled = 0), crossed with
+              software_errs_fatal (recoverable vs fatal);
+              - host actions while paused (DMEM/IMEM accesses, CTRL/command/clear writes,
+              ERR_BITS/INSN_CNT clears)
+              - WFI in a hardware loop;
+              - WFI with MAI or KMAC activity;
+              - WFI with an escalation while paused or about to pause;
+              - back-to-back WFIs.
+            '''
+    }
+    {
+      name: partial_wipe_cg
+      desc: '''
+            Covers the local wipe signals injected by otbn_non_sec_partial_wipe: each signal in
+            the testpoint list (including the MAI, MAC and KMAC data ones)
+            '''
     }
   ]
 }
