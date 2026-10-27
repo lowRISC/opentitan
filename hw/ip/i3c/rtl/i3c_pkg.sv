@@ -171,8 +171,9 @@ package i3c_pkg;
     logic te;
     logic [MaxTargets-1:0] tx_desc_ready;
     logic [MaxTargets-1:0] tx_thld;
-    logic async_evt_ovl;
-    logic rx_buffer_ovl;
+    logic async_evt_ovf;
+    logic rx_buffer_ovf;
+    logic rx_desc_ovf;
     logic transfer_err;
     logic transfer_abort;
     logic async_evt_ready;
@@ -468,10 +469,12 @@ package i3c_pkg;
   // Check whether the given I3C address is invalid before attempting to drive it out into an
   // arbitrable address header.
   // TODO(#31035): Target-side logic checking using this function also needs to catch 7'h7e/R except
-  // when handling ENTDAA (HCI 4.3.8.1.1).
+  // when handling ENTDAA (4.3.8.1.1).
   function automatic logic invalid_addr(logic [6:0] addr, logic target);
+    // See Table 10.
     unique case (addr)
       7'h00:   return 1'b1;
+      // 7'h01 permissible, for supporting Minimal Bus Point-to-Point Communication.
       7'h02:   return !target;  // Hot-Join requests permissible only from Targets.
       default: return te0_invalid_addr(addr);
     endcase
@@ -492,7 +495,7 @@ package i3c_pkg;
     return !ccc[7];
   endfunction
 
-  // Direct Get, as opposed to Direct Set or Broadcast CCC?
+  // Direct GET, as opposed to Direct Set or Broadcast CCC?
   function automatic logic direct_get(logic [7:0] ccc);
     return ccc[7] & (ccc inside {GETMWL, GETMRL, GETPID, GETBCR, GETDCR, GETSTATUS,
                                  GETACCCR, GETMXDS, GETCAPS, GETXTIME});
