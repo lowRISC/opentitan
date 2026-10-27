@@ -72,6 +72,11 @@ module tb;
     // passthrough i/o
     .passthrough_i        (passthrough_i),
     .passthrough_o        (passthrough_o),
+    // lsio trigger to the DMA
+    .lsio_trigger_o       (),
+    // racl i/o
+    .racl_policies_i      (top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
+    .racl_error_o         (),
     // intr i/f
     .intr_error_o         (intr_error),
     .intr_spi_event_o     (intr_event)
