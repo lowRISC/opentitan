@@ -592,14 +592,14 @@ module i3c_core
   logic hdr_restart_det_en;  // Enable HDR Restart Pattern detector.
 
   // Target device descriptions.
-  i3c_targ_dev_t      targ_dev[MaxTargets];
+  i3c_targ_dev_t      targ_dev[NumTargets];
   // Group address descriptions.
   i3c_grp_addr_t      grp_addr[NumGroups];
 
   // Interface between Target logic and transceiver.
-  logic               targ_trx_dvalid[MaxTargets];
-  logic               targ_trx_dready[MaxTargets];
-  i3c_targ_trx_txd_t  targ_trx_dreq[MaxTargets];
+  logic               targ_trx_dvalid[NumTargets];
+  logic               targ_trx_dready[NumTargets];
+  i3c_targ_trx_txd_t  targ_trx_dreq[NumTargets];
 
   // Direct Read CCC data for all Targets is carried as a single unit.
   logic               targ_trx_ctvalid;
@@ -645,7 +645,7 @@ module i3c_core
   logic [FIFODepthW:0]  targ_buf_ravail[NumTargets];
 
   always_comb begin
-    // Read access to the message buffer for the configured, extant Virtual Targets.
+    // Read access to the message buffer for the configured, existing Virtual Targets.
     for (int unsigned t = 0; t < NumTargets; t++) begin
       fifo_in[FIFO_TxDTarg0 + t].rready = targ_tx_desc_rready[t];
       fifo_in[FIFO_TxTarg0  + t].rready = targ_buf_rready[t];
@@ -661,7 +661,7 @@ module i3c_core
       targ_buf_rused[t]  = fifo_state[FIFO_TxTarg0 + t].used;
       targ_buf_ravail[t] = fifo_state[FIFO_TxTarg0 + t].avail;
     end
-    // Non-extant Virtual Targets.
+    // Any Virtual Targets that are excluded from the design.
     for (int unsigned t = NumTargets; t < MaxTargets; t++) begin
       fifo_in[FIFO_TxDTarg0 + t].rready = 1'b0;
       fifo_in[FIFO_TxTarg0  + t].rready = 1'b0;
@@ -669,23 +669,24 @@ module i3c_core
   end
 
   // Suspend transmission from Virtual Targets.
-  logic [MaxTargets-1:0] targ_suspend_tx;
+  logic [NumTargets-1:0] targ_suspend_tx;
   assign hw2reg_o.targ_pio_control.suspended.de = |targ_suspend_tx;
   assign hw2reg_o.targ_pio_control.suspended.d  = reg2hw_i.targ_pio_control.suspended.q
-                                                | targ_suspend_tx;
+                                                | MaxTargets'(targ_suspend_tx);
   // Suspend IBI Transmission from target; hardware only ever sets the 'suspended' bit.
   assign hw2reg_o.targ_pio_control.ibi_suspended.d = 1'b1;
   // Abort clearing.
-  logic [MaxTargets-1:0] targ_abort_clr;
+  logic [NumTargets-1:0] targ_abort_clr;
+  wire  [MaxTargets-1:0] maxtarg_abort_clr = MaxTargets'(targ_abort_clr);
   assign hw2reg_o.targ_pio_control.abort.de = |targ_abort_clr;
-  assign hw2reg_o.targ_pio_control.abort.d  = reg2hw_i.targ_pio_control.abort.q
-                                            & ~targ_abort_clr;
+  assign hw2reg_o.targ_pio_control.abort.d  = reg2hw_i.targ_pio_control.abort.q &
+                                             ~maxtarg_abort_clr;
   assign hw2reg_o.targ_pio_control.ibi_abort.d = 1'b0;  // Hardware only ever clears the 'abort'.
 
   // Shared configuration/status for all Virtual Targets.
-  logic [MaxTargets-1:0] targ_mwl_de;
-  logic [MaxTargets-1:0] targ_mrl_de;
-  logic [MaxTargets-1:0] targ_ibi_de;
+  logic [NumTargets-1:0] targ_mwl_de;
+  logic [NumTargets-1:0] targ_mrl_de;
+  logic [NumTargets-1:0] targ_ibi_de;
   logic           [15:0] targ_mwl_d;
   logic           [15:0] targ_mrl_d;
   logic            [7:0] targ_ibi_d;
@@ -711,9 +712,9 @@ module i3c_core
   end
 
   // Updating of Target dynamic addresses.
-  logic [MaxTargets-1:0] targ_dynaddr_de;
+  logic [NumTargets-1:0] targ_dynaddr_de;
   logic                  targ_dynaddr_valid_d;
-  logic            [6:0] targ_dynaddr_d[MaxTargets];
+  logic            [6:0] targ_dynaddr_d[NumTargets];
   always_comb begin
     for (int unsigned t = 0; t < MaxTargets; t++) begin
       if (t < NumTargets) begin
@@ -727,12 +728,12 @@ module i3c_core
   end
 
   // Updating of Target Activity State (ENTASn) and ENDXFER configuration.
-  logic [MaxTargets-1:0] targ_act_state_de;
+  logic [NumTargets-1:0] targ_act_state_de;
   logic            [1:0] targ_act_state_d;
-  logic [MaxTargets-1:0] targ_endxfer_cand_de;
+  logic [NumTargets-1:0] targ_endxfer_cand_de;
   logic            [2:0] targ_endxfer_cand_d;
-  logic [MaxTargets-1:0] targ_endxfer_de;
-  logic            [2:0] targ_endxfer_d[MaxTargets];
+  logic [NumTargets-1:0] targ_endxfer_de;
+  logic            [2:0] targ_endxfer_d[NumTargets];
   always_comb begin
     for (int unsigned t = 0; t < MaxTargets; t++) begin
       if (t < NumTargets) begin
@@ -1032,7 +1033,7 @@ module i3c_core
   assign fifo_cfg[FIFO_AsyncTarg].max_addr = BufAddrW'(reg2hw_i.targ_async_config.max_addr.q);
   assign fifo_cfg[FIFO_AsyncTarg].size     = fifo_size(fifo_cfg[FIFO_AsyncTarg]);
 
-  // The number of extant Virtual Targets may be configured; extract their buffer configuration.
+  // The number of existing Virtual Targets may be configured; extract their buffer configuration.
   for (genvar t = 0; t < NumTargets; t++) begin : gen_vt_buf_config
     assign fifo_cfg[FIFO_TxTarg0 + t].min_addr =
         BufAddrW'(reg2hw_i.targ_txbuf_config[t].min_addr.q);
@@ -1138,7 +1139,7 @@ module i3c_core
   assign hw2reg_o.targ_rxdesc_state.full.d    = fifo_state[FIFO_RxDTarg].full;
   assign hw2reg_o.targ_ibidesc_state.full.d   = fifo_state[FIFO_IBIDTarg].full;
   assign hw2reg_o.targ_async_state.full.d     = fifo_state[FIFO_AsyncTarg].full;
-  // The number of extant Virtual Targets may be configured; group their diagnostic state here.
+  // The number of existing Virtual Targets may be configured; group their diagnostic state here.
   for (genvar t = 0; t < NumTargets; t++) begin : gen_targ_tx
     assign hw2reg_o.targ_txbuf_state[t].wptr.d  = fifo_state[FIFO_TxTarg0  + t].wptr;
     assign hw2reg_o.targ_txdesc_state[t].wptr.d = fifo_state[FIFO_TxDTarg0 + t].wptr;
@@ -1565,10 +1566,7 @@ module i3c_core
     // Diagnostic visibility into Target transceiver state, bus mode and Target Errors.
     .trx_state_o      (targ_trx_state),
     .bus_mode_o       (targ_bus_mode),
-    .te_o             (targ_trx_te),
-
-    // DFT-related controls.
-    .scanmode_i       (scanmode)
+    .te_o             (targ_trx_te)
   );
 
   // Interval timers driven by the IP block, reporting on timed events related to bus activity or
@@ -2311,7 +2309,7 @@ module i3c_core
   // - register fields of all Virtual Targets.
   logic [MaxTargets-1:0] unused_targ_reg2hw;
   for (genvar t = 0; t < MaxTargets; t++) begin : gen_unused_targ_reg2hw
-    if (t < NumTargets) begin : gen_extant
+    if (t < NumTargets) begin : gen_vt_cfg
       assign unused_targ_reg2hw[t] = ^{
         reg2hw_i.targ_addr[t].reinit, reg2hw_i.targ_caps[t].reinit,
         reg2hw_i.targ_char[t].reinit, reg2hw_i.targ_enable[t].reinit,
@@ -2320,8 +2318,8 @@ module i3c_core
         reg2hw_i.targ_pid_lo[t].reinit, reg2hw_i.targ_rw_len[t].reinit,
         reg2hw_i.targ_tx_thld_ctrl[t].reinit
       };
-    end else begin : gen_non_extant
-      // Non-extant Virtual Targets.
+    end else begin : gen_no_vt_cfg
+      // Non-existing Virtual Targets.
       assign unused_targ_reg2hw[t] = ^{
         reg2hw_i.targ_addr[t], reg2hw_i.targ_caps[t], reg2hw_i.targ_char[t],
         reg2hw_i.targ_enable[t], reg2hw_i.targ_event_enable[t], reg2hw_i.targ_ibi_len[t],
@@ -2343,12 +2341,9 @@ module i3c_core
   always_comb begin
     unused_absent_vt = 1'b0;
     for (int unsigned t = NumTargets; t < MaxTargets; t++) begin
-      unused_absent_vt ^= ^{targ_mwl_de[t], targ_mrl_de[t], targ_ibi_de[t],
-                            targ_endis_evt.enint[t], targ_endis_evt.disint[t],
+      unused_absent_vt ^= ^{targ_endis_evt.enint[t], targ_endis_evt.disint[t],
                             targ_endis_evt.encr[t], targ_endis_evt.discr[t],
-                            targ_endis_evt.enhj[t], targ_endis_evt.dishj[t],
-                            targ_dynaddr_de[t], targ_dynaddr_d[t], targ_act_state_de[t],
-                            targ_endxfer_cand_de[t], targ_endxfer_de[t], targ_endxfer_d[t]};
+                            targ_endis_evt.enhj[t], targ_endis_evt.dishj[t]};
     end
   end
   // - FIFO status that is not presented to software or the Controller/Target logic.

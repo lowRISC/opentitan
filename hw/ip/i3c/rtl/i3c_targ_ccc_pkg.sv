@@ -5,8 +5,8 @@
 // Target-side CCC handling definitions.
 
 package i3c_targ_ccc_pkg;
-  import i3c_pkg::*;
   import i3c_consts_pkg::*;
+  import i3c_pkg::*;
   import i3c_reg_pkg::*;
 
   // Width of the registers devoted to Target CCC handling.

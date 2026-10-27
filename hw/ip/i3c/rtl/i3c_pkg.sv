@@ -432,9 +432,12 @@ package i3c_pkg;
   // Group address description.
   typedef struct packed {
     logic            [6:0] addr;
-    logic                  addr_valid;
     // Subset of Virtual Targets presently subscribed to this group address.
+    // - if this is zero, the group description is invalid and shall be ignored.
     logic [MaxTargets-1:0] targets;
+    // The VT set in the register always has MaxTarget bits; being defensive, we treat this group
+    // as valid iff a configured and present VT is subscribed.
+    logic                  valid;
   } i3c_grp_addr_t;
 
   // Set maximum read, write, IBI length.
