@@ -26,6 +26,7 @@
 #include "kmac_kdf.h"
 #include "rsa.h"
 #include "self_integrity.h"
+#include "sha1.h"
 #include "sha2.h"
 #include "sha3.h"
 #include "tdes.h"

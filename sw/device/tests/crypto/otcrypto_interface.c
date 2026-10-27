@@ -115,6 +115,12 @@ volatile otcrypto_interface_t otcrypto = {
     .hmac_update = &otcrypto_hmac_update,
     .hmac_final = &otcrypto_hmac_final,
 
+    // HMAC-SHA-1 (one-shot and streaming).
+    .hmac_sha1 = &otcrypto_hmac_sha1,
+    .hmac_sha1_init = &otcrypto_hmac_sha1_init,
+    .hmac_sha1_update = &otcrypto_hmac_sha1_update,
+    .hmac_sha1_final = &otcrypto_hmac_sha1_final,
+
     // KDF-CTR with HMAC
     .kdf_ctr_hmac = &otcrypto_kdf_ctr_hmac,
 
@@ -123,6 +129,12 @@ volatile otcrypto_interface_t otcrypto = {
 
     // KMAC-KDF
     .kmac_kdf = &otcrypto_kmac_kdf,
+
+    // SHA-1 (one-shot and streaming).
+    .sha1 = &otcrypto_sha1,
+    .sha1_init = &otcrypto_sha1_init,
+    .sha1_update = &otcrypto_sha1_update,
+    .sha1_final = &otcrypto_sha1_final,
 
     // SHA-2 (one-shot).
     .sha2_256 = &otcrypto_sha2_256,
