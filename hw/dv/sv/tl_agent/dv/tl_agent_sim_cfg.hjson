@@ -54,13 +54,19 @@
       uvm_test_seq: tl_agent_base_vseq
       en_run_modes: ["{tool}_disable_cg_mode"]
     }
+    {
+      name: tl_reg_adapter_status
+      uvm_test_seq: tl_reg_adapter_vseq
+      reseed: 1
+      en_run_modes: ["{tool}_disable_cg_mode"]
+    }
   ]
 
   // List of regressions.
   regressions: [
     {
       name: smoke
-      tests: ["tl_agent_smoke"]
+      tests: ["tl_agent_smoke", "tl_reg_adapter_status"]
     }
   ]
 }
