@@ -354,8 +354,9 @@ dif_result_t dif_keymgr_dpe_generate(
 /**
  * Gets the operational status of keymgr_dpe.
  *
- * This function also clears OP_STATUS and ERR_CODE registers after reading
- * them.
+ * If keymgr_dpe is busy, this function only reports that and leaves the
+ * registers unchanged. Otherwise it also clears OP_STATUS and ERR_CODE after
+ * reading them.
  *
  * @param keymgr_dpe A key manager handle.
  * @param[out] status_codes Out-param for key manager status codes.
