@@ -482,11 +482,8 @@ status_t p384_point_on_curve_check(const p384_point_t *point,
   // Set the point.
   HARDENED_TRY(set_public_key(point));
 
-  // Start the OTBN routine.
-  HARDENED_TRY(otbn_execute());
-
-  // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  // Run the OTBN routine synchronously.
+  HARDENED_TRY(otbn_execute_sync());
 
   // Check if we executed the expected number of OTBN instructions.
   uint32_t ins_cnt = otbn_instruction_count_get();
@@ -520,11 +517,8 @@ status_t p384_base_point_mult(p384_masked_scalar_t *private_key,
   const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p384, d1_io);
   HARDENED_TRY(p384_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
 
-  // Start the OTBN routine.
-  HARDENED_TRY(otbn_execute());
-
-  // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  // Run the OTBN routine synchronously.
+  HARDENED_TRY(otbn_execute_sync());
 
   // Check if we executed the expected number of OTBN instructions.
   HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeBasePointMultInsCnt);
@@ -548,11 +542,8 @@ status_t p384_arith_share_private_key(p384_masked_scalar_t *boolean_private_key,
   HARDENED_TRY(
       p384_masked_scalar_write(boolean_private_key, kOtbnVarD0, kOtbnVarD1));
 
-  // Start the OTBN routine.
-  HARDENED_TRY(otbn_execute());
-
-  // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  // Run the OTBN routine synchronously.
+  HARDENED_TRY(otbn_execute_sync());
 
   // Check if we executed the expected number of OTBN instructions.
   HARDENED_CHECK_EQ(otbn_instruction_count_get(),

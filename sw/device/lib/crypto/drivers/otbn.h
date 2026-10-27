@@ -342,6 +342,18 @@ status_t otbn_dmem_read(size_t num_words, otbn_addr_t src, uint32_t *dest);
 status_t otbn_execute(void);
 
 /**
+ * Start the execution of the application loaded into OTBN and block until it
+ * is idle.
+ *
+ * Temporarily masks `OTBN_INTR_ENABLE` during execution and clears
+ * `OTBN_INTR_STATE.done` upon completion so synchronous internal OTBN calls do
+ * not trigger spurious external `otbn_done` interrupts.
+ *
+ * @return Result of the operation.
+ */
+status_t otbn_execute_sync(void);
+
+/**
  * Blocks until OTBN is idle.
  *
  * If OTBN is or becomes locked, an error will occur.
