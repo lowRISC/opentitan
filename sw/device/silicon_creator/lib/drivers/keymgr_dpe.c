@@ -688,8 +688,9 @@ rom_error_t sc_keymgr_dpe_check_metadata(
  * sideloaded interface are continuously scrambled.
  */
 rom_error_t sc_keymgr_dpe_disable(void) {
-  // Check if we are in the available state (Stalls until all ops are done)
-  HARDENED_RETURN_IF_ERROR(expected_state_check(kScKeymgrDPEStateAvailable));
+  // Wait until all operations are done and clear any stale status. Lock down
+  // even if this check fails, as the callers cannot handle an error.
+  OT_DISCARD(expected_state_check(kScKeymgrDPEStateAvailable));
 
   // According to the documentation for the SIDELOAD_CLEAR register, an invalid
   // destination will enable continuous clearing of all destinations.

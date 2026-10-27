@@ -164,6 +164,19 @@ class KeymgrDpeTest : public rom_test::RomTest {
   }
 
   /**
+   * Expects the sideload clear and disable writes of `sc_keymgr_dpe_disable()`.
+   */
+  void ExpectDisableLockdown() {
+    EXPECT_ABS_WRITE32(base_ + KEYMGR_DPE_SIDELOAD_CLEAR_REG_OFFSET,
+                       std::numeric_limits<uint32_t>::max());
+    ExpectControlRegSet(/*sw_binding_only=*/true,
+                        KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_DISABLE,
+                        KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+                        /*src_slot=*/0, /*dst_slot=*/0);
+    ExpectStartOperation();
+  }
+
+  /**
    * Expects a `sc_keymgr_dpe_get_metadata()` sequence.
    */
   void ExpectGetMetadata(uint32_t slot, uint32_t max_key_version, bool valid,
@@ -915,6 +928,52 @@ TEST_F(KeymgrDpeTest, Disable) {
                     /*err_code=*/0u);
 
   EXPECT_EQ(sc_keymgr_dpe_disable(), kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, DisableAfterFailedOperation) {
+  // A stale error must not skip the lockdown. The first status check clears
+  // it, and the disable operation still runs.
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_ERROR,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    1 << KEYMGR_DPE_ERR_CODE_INVALID_OP_BIT);
+  ExpectDisableLockdown();
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_WIP);
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_DISABLED,
+                    /*err_code=*/0u);
+
+  EXPECT_EQ(sc_keymgr_dpe_disable(), kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, DisableWithIdleShadowUpdateError) {
+  // A shadow register update error is raised outside of any operation, so it
+  // can be pending while OP_STATUS is IDLE.
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    1 << KEYMGR_DPE_ERR_CODE_INVALID_SHADOW_UPDATE_BIT);
+  ExpectDisableLockdown();
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_WIP);
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_DISABLED,
+                    /*err_code=*/0u);
+
+  EXPECT_EQ(sc_keymgr_dpe_disable(), kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, DisableInResetFails) {
+  // The lockdown is still attempted, but the hardware rejects the disable in
+  // the Reset state and the function must report it.
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_RESET,
+                    /*err_code=*/0u);
+  ExpectDisableLockdown();
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_ERROR,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_RESET,
+                    1 << KEYMGR_DPE_ERR_CODE_INVALID_OP_BIT);
+
+  EXPECT_EQ(sc_keymgr_dpe_disable(), kErrorKeymgrInternal);
 }
 
 }  // namespace

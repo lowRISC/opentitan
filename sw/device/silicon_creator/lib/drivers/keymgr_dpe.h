@@ -563,6 +563,7 @@ rom_error_t sc_keymgr_dpe_check_metadata(
  * Advances the keymgr dpe into the disable state.
  *
  * All keys stored in the sideloaded interface are continuously scrambled.
+ * This happens even if keymgr_dpe reports an error before the disable.
  *
  * @return OK or error.
  */
