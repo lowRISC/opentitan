@@ -200,6 +200,8 @@ typedef enum otcrypto_key_type {
   kOtcryptoKeyTypeKdf = 0xb87,
   // Key type PQC.
   kOtcryptoKeyTypePqc = 0xabc,
+  /// Key type TDES (plain software implementation; not FI/SCA protected).
+  kOtcryptoKeyTypeTdes = 0x5d1,
 } otcrypto_key_type_t;
 
 /**
@@ -228,6 +230,30 @@ typedef enum otcrypto_aes_key_mode {
   /// Mode AES CMAC.
   kOtcryptoAesKeyModeCmac = 0x1a2,
 } otcrypto_aes_key_mode_t;
+
+/**
+ * Enum to specify the TDES modes that use a key.
+ *
+ * This will be used in the `otcrypto_key_mode_t` struct to indicate the mode
+ * for which the provided key is intended for.
+ *
+ * Note: TDES is a plain software implementation and is NOT protected against
+ * fault injection (FI) or side-channel analysis (SCA) attacks.
+ *
+ * Values are hardened.
+ */
+typedef enum otcrypto_tdes_key_mode {
+  /// Mode TDES ECB.
+  kOtcryptoTdesKeyModeEcb = 0x62d,
+  /// Mode TDES CBC.
+  kOtcryptoTdesKeyModeCbc = 0x9c3,
+  /// Mode TDES CFB.
+  kOtcryptoTdesKeyModeCfb = 0x38e,
+  /// Mode TDES OFB.
+  kOtcryptoTdesKeyModeOfb = 0xc14,
+  /// Mode TDES CTR.
+  kOtcryptoTdesKeyModeCtr = 0x0a7,
+} otcrypto_tdes_key_mode_t;
 
 /**
  * Enum to specify the HMAC modes that use a key.
@@ -359,6 +385,21 @@ typedef enum otcrypto_key_mode {
   kOtcryptoKeyModeAesKwp = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeKwp,
   /// Key is intended for AES CMAC mode.
   kOtcryptoKeyModeAesCmac = kOtcryptoKeyTypeAes << 16 | kOtcryptoAesKeyModeCmac,
+  /// Key is intended for TDES ECB mode.
+  kOtcryptoKeyModeTdesEcb =
+      kOtcryptoKeyTypeTdes << 16 | kOtcryptoTdesKeyModeEcb,
+  /// Key is intended for TDES CBC mode.
+  kOtcryptoKeyModeTdesCbc =
+      kOtcryptoKeyTypeTdes << 16 | kOtcryptoTdesKeyModeCbc,
+  /// Key is intended for TDES CFB mode.
+  kOtcryptoKeyModeTdesCfb =
+      kOtcryptoKeyTypeTdes << 16 | kOtcryptoTdesKeyModeCfb,
+  /// Key is intended for TDES OFB mode.
+  kOtcryptoKeyModeTdesOfb =
+      kOtcryptoKeyTypeTdes << 16 | kOtcryptoTdesKeyModeOfb,
+  /// Key is intended for TDES CTR mode.
+  kOtcryptoKeyModeTdesCtr =
+      kOtcryptoKeyTypeTdes << 16 | kOtcryptoTdesKeyModeCtr,
   /// Key is intended for HMAC SHA256 mode.
   kOtcryptoKeyModeHmacSha256 =
       kOtcryptoKeyTypeHmac << 16 | kOtcryptoHmacKeyModeSha256,

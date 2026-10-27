@@ -32,6 +32,9 @@ otcrypto_key_wrap
 otcrypto_key_unwrap
 otcrypto_aes
 otcrypto_aes_padded_plaintext_length
+otcrypto_tdes
+otcrypto_tdes_padded_plaintext_length
+otcrypto_tdes_padding_strip
 otcrypto_aes_gcm_encrypt
 otcrypto_aes_gcm_decrypt
 otcrypto_aes_gcm_encrypt_init

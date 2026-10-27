@@ -65,6 +65,11 @@ volatile otcrypto_interface_t otcrypto = {
     .aes = &otcrypto_aes,
     .aes_padded_plaintext_length = &otcrypto_aes_padded_plaintext_length,
 
+    // TDES
+    .tdes = &otcrypto_tdes,
+    .tdes_padded_plaintext_length = &otcrypto_tdes_padded_plaintext_length,
+    .tdes_padding_strip = &otcrypto_tdes_padding_strip,
+
     // AES-GCM (one-shot).
     .aes_gcm_encrypt = &otcrypto_aes_gcm_encrypt,
     .aes_gcm_decrypt = &otcrypto_aes_gcm_decrypt,
