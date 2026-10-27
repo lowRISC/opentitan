@@ -41,6 +41,15 @@ Reducing the configured number of Virtual Targets (`NumTargets`) to be less than
 Each of the configured Virtual Targets has an independent enable bit in the [`TARG_ENABLE`](registers.md#targ_enable) register.
 A Virtual Target that is disabled does not participate on the I3C, i.e., it will ignore address assignment commands and I3C Broadcast CCCs etc.
 
+### Virtual Target Detect
+
+The Specification for I3C Basic describes a 'Virtual Target Detect' bit (4.3.7.3.23.2) and requires that its state be inaccessible to the application level, along with not propagating RSTACT CCCs with a Defining Byte of 0x04 or 0x84.
+This keeps the application level agnostic as to whether it has dedicated peripheral logic or is sharing with other Targets.
+
+This TTI specification chooses to present the [Virtual Target Detect bit](registers.md#targ_status--rstact_virt_targ_det) to system-level software, since it is diagnostically useful.
+Also, granting application level software direct access to the TTI registers makes the other Virtual Targets visible in numerous other ways.
+System-level software shall be responsible for enforcing this isolation requirement.
+
 ### Transmission Descriptors
 
 Transmissions from a Virtual Target are described by adding transmission descriptors into a per-Virtual Target queue.
