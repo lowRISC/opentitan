@@ -133,29 +133,62 @@
       tests: ["otbn_stress_all"]
     }
     {
-      name: mai
+      name: mai_random_ops
       desc: '''
-            Exercise the masking accelerator interface (MAI)
+            [SIM] Random programs using the MAI through its ISPRs (MAI_CTRL, MAI_STATUS,
+            MAI_IN0/IN1 shares, MAI_RES shares). Compare results and ISPR contents with the
+            model across all operation types (secAdd, secAddMod, A2B, B2A), with back-to-back
+            operations and varied delays between dispatch and readback.
 
-            Drive and read the `MAI_CTRL`/`MAI_STATUS` CSRs and the `MAI_IN0`/`MAI_IN1`/`MAI_RES`
-            WSRs to run secAdd, secAddMod, A2B, and B2A operations through the masking
-            accelerator, comparing results against the reference model across a range of operand
-            values, including edge cases such as zero, all-ones, and operands that exercise the
-            secAddMod modulus reduction.
-
-            Also check `MAI_STATUS` busy/done reporting, and that issuing a new operation or
-            accessing the result WSRs while the accelerator is still busy is correctly flagged as
-            an illegal SW interaction (`MAI_SOFTWARE_ERROR`).
-
-            Additionally, trigger a secure wipe while an operation of each type is in flight,
-            including B2A, whose rejection sampling normally makes its latency nondeterministic
-            but is disabled during a secure wipe to bound its duration. Check that the MAI is
-            allowed to finish dispatching its inputs into the accelerator, that the resulting
-            output is discarded rather than used, and that the wipe still completes within the
-            expected bound (23 cycles, the longest possible operation latency).
+            Cover a range of operand values, including edge cases such as zero, all-ones, and
+            operands that exercise the secAddMod modulus reduction. Also check MAI_STATUS
+            busy/done reporting.
             '''
       stage: V2
-      tests: ["otbn_mai"]
+      tests: ["otbn_mai_random"]
+    }
+    {
+      name: mai_error_paths
+      desc: '''
+            [SIM] Trigger mai_software_error (issuing a new operation or accessing the result
+            WSRs while the accelerator is still busy, writing during a running op) and check
+            that it is flagged as an illegal SW interaction (MAI_ERROR in ERR_BITS) and the
+            recoverable/fatal behaviour with software_errs_fatal. Inject ISPR integrity errors
+            (mai_reg_intg_violation) and MAI FSM state errors (mai_state_err) and check the
+            fatal alert.
+            '''
+      stage: V2
+      tests: ["otbn_mai_err"]
+    }
+    {
+      name: mai_secure_wipe
+      desc: '''
+            [SIM] Secure wipe and escalation during active MAI operations: all MAI ISPRs must be
+            cleared, and a new run must start clean.
+
+            Trigger a secure wipe while an operation of each type is in flight, including B2A,
+            whose rejection sampling normally makes its latency nondeterministic but is disabled
+            during a secure wipe to bound its duration. Check that the MAI is allowed to finish
+            dispatching its inputs into the accelerator, that the resulting output is discarded
+            rather than used, and that the wipe still completes within the expected bound (23
+            cycles, the longest possible operation latency).
+            '''
+      stage: V2S
+      tests: ["otbn_mai_wipe"]
+    }
+    {
+      name: mai_fpv
+      desc: '''
+            Dispatch/writeback sequencing, fixed
+            pipeline latency, sec_wipe clears every ISPR, and the error outputs for each error
+            condition.
+
+            Scope: protocol and timing only. Data-path correctness (shares combine to the
+            expected sum / A2B / B2A result) is not proved in FPV and is checked in simulation
+            against the model (mai_random_ops).
+            '''
+      stage: V2
+      tests: ["otbn_mai_fpv"]
     }
     {
       name: lc_escalation
@@ -214,9 +247,53 @@
           - sec_wipe_base in otbn_core
           - sec_wipe_wdr_q in otbn_core
           - sec_wipe_stack_reset_i in otbn_rf_base
+          - sec_wipe_mai_{in0,in1,res}_{s0,s1}_urnd in otbn_core (MAI ISPRs)
       '''
       stage: V2S
       tests: ["otbn_partial_wipe"]
+    }
+    {
+      name: kmac_app_directed
+      desc: '''
+            [SIM] Drive the KMAC app interface from OTBN programs against the KMAC agent/model:
+            full message sequences of varied lengths, back-to-back requests, backpressure on
+            ready, KMAC error responses, and escalation/reset mid-transaction. Compare with
+            the model's kmac handling.
+            '''
+      stage: V2
+      tests: ["otbn_kmac_app"]
+    }
+    {
+      name: kmac_if_fpv
+      desc: '''
+            [FPV] Handshake properties on the OTBN/KMAC app interface: payload stable until
+            accepted, no dropped or duplicated data, a single outstanding request, and recovery
+            after abort or error.
+            '''
+      stage: V2
+      tests: ["otbn_kmac_if_fpv"]
+    }
+    {
+      name: insn_cnt_csr_sw_read
+      desc: '''
+            [SIM] Read the INSN_CNT CSR from OTBN software at random points in random programs
+            and compare to the model. Check that it is cleared at start, that instructions
+            triggering an error are not counted, and the saturation behaviour. Also check the
+            host-visible INSN_CNT register still agrees.
+            '''
+      stage: V2
+      tests: ["otbn_insn_cnt_sw"]
+    }
+    {
+      name: urnd_ctrl_directed
+      desc: '''
+            [SIM] Toggle the new CTRL bit before and during a run. Check the effect on URND
+            advance and on values read by software against the model, in combination with
+            SecMuteUrnd and SecSkipUrndReseedAtStart, and that the existing CTRL behaviour is
+            unchanged.
+            '''
+      stage: V2
+      tests: ["otbn_urnd_ctrl"]
     }
   ]
 }
