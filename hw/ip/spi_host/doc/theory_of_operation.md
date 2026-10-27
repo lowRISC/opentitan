@@ -557,9 +557,9 @@ The SPI_HOST IP supports interrupts for the following SPI events:
 - `IDLE`: The SPI_HOST is idle.
 - `READY`: The SPI_HOST is ready to accept a new command.
 - `RXFULL`: The SPI_HOST has run out of room in the RXFIFO.
-- `RXWM`: The number of 32-bit words in the RXFIFO currently exceeds the value set in [`CONTROL.RX_WATERMARK`](registers.md#control).
+- `RXWM`: The number of 32-bit words in the RXFIFO is currently greater than or equal to the value set in [`CONTROL.RX_WATERMARK`](registers.md#control).
 - `TXEMPTY`: The SPI_HOST has transmitted all the data in the TX FIFO.
-- `TXWM`: The number of 32-bit words in the TX FIFO currently is currently less than the value set in [`CONTROL.TX_WATERMARK`](registers.md#control)
+- `TXWM`: The number of 32-bit words in the TX FIFO is currently less than the value set in [`CONTROL.TX_WATERMARK`](registers.md#control)
 
 Most SPI events signal a particular condition that persists until it is fixed, and these conditions can be detected by polling the corresponding field in the [`STATUS`](registers.md#status) register.
 
