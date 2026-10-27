@@ -181,9 +181,9 @@ module i3c_target_fsm
   input                     stby_bcst_wready_i, // TODO: Currently unused.
 
   // Error events.
-  output                    async_evt_ovl_o,
-  output                    rx_buffer_ovl_o,
-  output                    rx_desc_ovl_o,
+  output                    async_evt_ovf_o,
+  output                    rx_buffer_ovf_o,
+  output                    rx_desc_ovf_o,
   output                    transfer_err_o,
   output                    transfer_aborted_o,
 
@@ -826,7 +826,7 @@ module i3c_target_fsm
     rx_desc_d.start       = 1'b1;
     rx_desc_d.complete    = 1'b1;
     // Only the loss of received _data_ is reported here; an inability to write the descriptor
-    // itself is reported via `rx_desc_ovl_o` and must not be attributed to this transfer, which
+    // itself is reported via `rx_desc_ovf_o` and must not be attributed to this transfer, which
     // is a later one than the transfer whose descriptor was lost.
     rx_desc_d.status      = rx_flood_q ? TTIRxStatus_RxOverflow : trx_rxd_i.status;
     rx_desc_d.targets     = (trx_rxd_i.targ_id < NumTargets) ? MaxTargets'('b1 << trx_rxd_i.targ_id)
@@ -906,13 +906,13 @@ module i3c_target_fsm
   assign rx_desc_wdata_o  = rx_desc_q;
 
   // Raise an error interrupt when flooding first occurs.
-  assign rx_buffer_ovl_o = enable_i & rx_flood & !rx_flood_q;
+  assign rx_buffer_ovf_o = enable_i & rx_flood & !rx_flood_q;
 
   // Report the loss of an Rx Descriptor; the transfer had completed but the descriptor describing
   // it could not be written because the previous descriptor was still awaiting acceptance.
   // Note that the associated data has already been dropped, since `rx_desc_stall` is a term into
   // `rx_drop`. This is necessary in order for the descriptor and data streams to remain in step.
-  assign rx_desc_ovl_o = enable_i & rx_flush & rx_desc_stall;
+  assign rx_desc_ovf_o = enable_i & rx_flush & rx_desc_stall;
 
   // Collect received bytes to form complete DWORDs for buffer writing.
   i3c_dword_collector u_dword_collect (
@@ -1185,7 +1185,7 @@ module i3c_target_fsm
     .wready_i        (async_wready_i),
 
     // Error events.
-    .evt_lost_o      (async_evt_ovl_o)
+    .evt_lost_o      (async_evt_ovf_o)
   );
 
   // Group Addressing.

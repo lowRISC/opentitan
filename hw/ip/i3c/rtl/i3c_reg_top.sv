@@ -991,6 +991,7 @@ module i3c_reg_top
   logic targ_intr_status_async_evt_ready_stat_qs;
   logic targ_intr_status_transfer_abort_stat_qs;
   logic targ_intr_status_transfer_err_stat_qs;
+  logic targ_intr_status_rx_desc_ovf_stat_qs;
   logic targ_intr_status_rx_buffer_ovf_stat_qs;
   logic targ_intr_status_async_evt_ovf_stat_qs;
   logic targ_intr_status_tx0_thld_stat_qs;
@@ -1013,6 +1014,8 @@ module i3c_reg_top
   logic targ_intr_status_enable_transfer_abort_stat_en_wd;
   logic targ_intr_status_enable_transfer_err_stat_en_qs;
   logic targ_intr_status_enable_transfer_err_stat_en_wd;
+  logic targ_intr_status_enable_rx_desc_ovf_stat_en_qs;
+  logic targ_intr_status_enable_rx_desc_ovf_stat_en_wd;
   logic targ_intr_status_enable_rx_buffer_ovf_stat_en_qs;
   logic targ_intr_status_enable_rx_buffer_ovf_stat_en_wd;
   logic targ_intr_status_enable_async_evt_ovf_stat_en_qs;
@@ -1046,6 +1049,8 @@ module i3c_reg_top
   logic targ_intr_signal_enable_transfer_abort_signal_en_wd;
   logic targ_intr_signal_enable_transfer_err_signal_en_qs;
   logic targ_intr_signal_enable_transfer_err_signal_en_wd;
+  logic targ_intr_signal_enable_rx_desc_ovf_signal_en_qs;
+  logic targ_intr_signal_enable_rx_desc_ovf_signal_en_wd;
   logic targ_intr_signal_enable_rx_buffer_ovf_signal_en_qs;
   logic targ_intr_signal_enable_rx_buffer_ovf_signal_en_wd;
   logic targ_intr_signal_enable_async_evt_ovf_signal_en_qs;
@@ -1074,6 +1079,7 @@ module i3c_reg_top
   logic targ_intr_force_async_evt_ready_force_wd;
   logic targ_intr_force_transfer_abort_force_wd;
   logic targ_intr_force_transfer_err_force_wd;
+  logic targ_intr_force_rx_desc_ovf_force_wd;
   logic targ_intr_force_rx_buffer_ovf_force_wd;
   logic targ_intr_force_async_evt_ovf_force_wd;
   logic targ_intr_force_tx0_thld_force_wd;
@@ -11472,7 +11478,35 @@ module i3c_reg_top
     .qs     (targ_intr_status_transfer_err_stat_qs)
   );
 
-  //   F[rx_buffer_ovf_stat]: 5:5
+  //   F[rx_desc_ovf_stat]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_intr_status_rx_desc_ovf_stat (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.targ_intr_status.rx_desc_ovf_stat.de),
+    .d      (hw2reg.targ_intr_status.rx_desc_ovf_stat.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.targ_intr_status.rx_desc_ovf_stat.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (targ_intr_status_rx_desc_ovf_stat_qs)
+  );
+
+  //   F[rx_buffer_ovf_stat]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -11500,7 +11534,7 @@ module i3c_reg_top
     .qs     (targ_intr_status_rx_buffer_ovf_stat_qs)
   );
 
-  //   F[async_evt_ovf_stat]: 6:6
+  //   F[async_evt_ovf_stat]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -11925,7 +11959,35 @@ module i3c_reg_top
     .qs     (targ_intr_status_enable_transfer_err_stat_en_qs)
   );
 
-  //   F[rx_buffer_ovf_stat_en]: 5:5
+  //   F[rx_desc_ovf_stat_en]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_intr_status_enable_rx_desc_ovf_stat_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_intr_status_enable_we),
+    .wd     (targ_intr_status_enable_rx_desc_ovf_stat_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.targ_intr_status_enable.rx_desc_ovf_stat_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (targ_intr_status_enable_rx_desc_ovf_stat_en_qs)
+  );
+
+  //   F[rx_buffer_ovf_stat_en]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11953,7 +12015,7 @@ module i3c_reg_top
     .qs     (targ_intr_status_enable_rx_buffer_ovf_stat_en_qs)
   );
 
-  //   F[async_evt_ovf_stat_en]: 6:6
+  //   F[async_evt_ovf_stat_en]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12378,7 +12440,35 @@ module i3c_reg_top
     .qs     (targ_intr_signal_enable_transfer_err_signal_en_qs)
   );
 
-  //   F[rx_buffer_ovf_signal_en]: 5:5
+  //   F[rx_desc_ovf_signal_en]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_intr_signal_enable_rx_desc_ovf_signal_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_intr_signal_enable_we),
+    .wd     (targ_intr_signal_enable_rx_desc_ovf_signal_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.targ_intr_signal_enable.rx_desc_ovf_signal_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (targ_intr_signal_enable_rx_desc_ovf_signal_en_qs)
+  );
+
+  //   F[rx_buffer_ovf_signal_en]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12406,7 +12496,7 @@ module i3c_reg_top
     .qs     (targ_intr_signal_enable_rx_buffer_ovf_signal_en_qs)
   );
 
-  //   F[async_evt_ovf_signal_en]: 6:6
+  //   F[async_evt_ovf_signal_en]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12689,7 +12779,7 @@ module i3c_reg_top
 
   // R[targ_intr_force]: V(False)
   logic targ_intr_force_qe;
-  logic [15:0] targ_intr_force_flds_we;
+  logic [16:0] targ_intr_force_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -12847,7 +12937,36 @@ module i3c_reg_top
   );
   assign reg2hw.targ_intr_force.transfer_err_force.qe = targ_intr_force_qe;
 
-  //   F[rx_buffer_ovf_force]: 5:5
+  //   F[rx_desc_ovf_force]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_intr_force_rx_desc_ovf_force (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_intr_force_we),
+    .wd     (targ_intr_force_rx_desc_ovf_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (targ_intr_force_flds_we[5]),
+    .q      (reg2hw.targ_intr_force.rx_desc_ovf_force.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     ()
+  );
+  assign reg2hw.targ_intr_force.rx_desc_ovf_force.qe = targ_intr_force_qe;
+
+  //   F[rx_buffer_ovf_force]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
@@ -12867,7 +12986,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[5]),
+    .qe     (targ_intr_force_flds_we[6]),
     .q      (reg2hw.targ_intr_force.rx_buffer_ovf_force.q),
     .ds     (),
 
@@ -12876,7 +12995,7 @@ module i3c_reg_top
   );
   assign reg2hw.targ_intr_force.rx_buffer_ovf_force.qe = targ_intr_force_qe;
 
-  //   F[async_evt_ovf_force]: 6:6
+  //   F[async_evt_ovf_force]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
@@ -12896,7 +13015,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[6]),
+    .qe     (targ_intr_force_flds_we[7]),
     .q      (reg2hw.targ_intr_force.async_evt_ovf_force.q),
     .ds     (),
 
@@ -12925,7 +13044,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[7]),
+    .qe     (targ_intr_force_flds_we[8]),
     .q      (reg2hw.targ_intr_force.tx0_thld_force.q),
     .ds     (),
 
@@ -12954,7 +13073,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[8]),
+    .qe     (targ_intr_force_flds_we[9]),
     .q      (reg2hw.targ_intr_force.tx1_thld_force.q),
     .ds     (),
 
@@ -12983,7 +13102,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[9]),
+    .qe     (targ_intr_force_flds_we[10]),
     .q      (reg2hw.targ_intr_force.tx2_thld_force.q),
     .ds     (),
 
@@ -13012,7 +13131,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[10]),
+    .qe     (targ_intr_force_flds_we[11]),
     .q      (reg2hw.targ_intr_force.tx3_thld_force.q),
     .ds     (),
 
@@ -13041,7 +13160,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[11]),
+    .qe     (targ_intr_force_flds_we[12]),
     .q      (reg2hw.targ_intr_force.tx0_desc_ready_force.q),
     .ds     (),
 
@@ -13070,7 +13189,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[12]),
+    .qe     (targ_intr_force_flds_we[13]),
     .q      (reg2hw.targ_intr_force.tx1_desc_ready_force.q),
     .ds     (),
 
@@ -13099,7 +13218,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[13]),
+    .qe     (targ_intr_force_flds_we[14]),
     .q      (reg2hw.targ_intr_force.tx2_desc_ready_force.q),
     .ds     (),
 
@@ -13128,7 +13247,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[14]),
+    .qe     (targ_intr_force_flds_we[15]),
     .q      (reg2hw.targ_intr_force.tx3_desc_ready_force.q),
     .ds     (),
 
@@ -13157,7 +13276,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[15]),
+    .qe     (targ_intr_force_flds_we[16]),
     .q      (reg2hw.targ_intr_force.te_force.q),
     .ds     (),
 
@@ -20046,9 +20165,11 @@ module i3c_reg_top
 
   assign targ_intr_status_enable_transfer_err_stat_en_wd = reg_wdata[4];
 
-  assign targ_intr_status_enable_rx_buffer_ovf_stat_en_wd = reg_wdata[5];
+  assign targ_intr_status_enable_rx_desc_ovf_stat_en_wd = reg_wdata[5];
 
-  assign targ_intr_status_enable_async_evt_ovf_stat_en_wd = reg_wdata[6];
+  assign targ_intr_status_enable_rx_buffer_ovf_stat_en_wd = reg_wdata[6];
+
+  assign targ_intr_status_enable_async_evt_ovf_stat_en_wd = reg_wdata[7];
 
   assign targ_intr_status_enable_tx0_thld_stat_en_wd = reg_wdata[8];
 
@@ -20079,9 +20200,11 @@ module i3c_reg_top
 
   assign targ_intr_signal_enable_transfer_err_signal_en_wd = reg_wdata[4];
 
-  assign targ_intr_signal_enable_rx_buffer_ovf_signal_en_wd = reg_wdata[5];
+  assign targ_intr_signal_enable_rx_desc_ovf_signal_en_wd = reg_wdata[5];
 
-  assign targ_intr_signal_enable_async_evt_ovf_signal_en_wd = reg_wdata[6];
+  assign targ_intr_signal_enable_rx_buffer_ovf_signal_en_wd = reg_wdata[6];
+
+  assign targ_intr_signal_enable_async_evt_ovf_signal_en_wd = reg_wdata[7];
 
   assign targ_intr_signal_enable_tx0_thld_signal_en_wd = reg_wdata[8];
 
@@ -20112,9 +20235,11 @@ module i3c_reg_top
 
   assign targ_intr_force_transfer_err_force_wd = reg_wdata[4];
 
-  assign targ_intr_force_rx_buffer_ovf_force_wd = reg_wdata[5];
+  assign targ_intr_force_rx_desc_ovf_force_wd = reg_wdata[5];
 
-  assign targ_intr_force_async_evt_ovf_force_wd = reg_wdata[6];
+  assign targ_intr_force_rx_buffer_ovf_force_wd = reg_wdata[6];
+
+  assign targ_intr_force_async_evt_ovf_force_wd = reg_wdata[7];
 
   assign targ_intr_force_tx0_thld_force_wd = reg_wdata[8];
 
@@ -21479,8 +21604,9 @@ module i3c_reg_top
         reg_rdata_next[2] = targ_intr_status_async_evt_ready_stat_qs;
         reg_rdata_next[3] = targ_intr_status_transfer_abort_stat_qs;
         reg_rdata_next[4] = targ_intr_status_transfer_err_stat_qs;
-        reg_rdata_next[5] = targ_intr_status_rx_buffer_ovf_stat_qs;
-        reg_rdata_next[6] = targ_intr_status_async_evt_ovf_stat_qs;
+        reg_rdata_next[5] = targ_intr_status_rx_desc_ovf_stat_qs;
+        reg_rdata_next[6] = targ_intr_status_rx_buffer_ovf_stat_qs;
+        reg_rdata_next[7] = targ_intr_status_async_evt_ovf_stat_qs;
         reg_rdata_next[8] = targ_intr_status_tx0_thld_stat_qs;
         reg_rdata_next[9] = targ_intr_status_tx1_thld_stat_qs;
         reg_rdata_next[10] = targ_intr_status_tx2_thld_stat_qs;
@@ -21498,8 +21624,9 @@ module i3c_reg_top
         reg_rdata_next[2] = targ_intr_status_enable_async_evt_ready_stat_en_qs;
         reg_rdata_next[3] = targ_intr_status_enable_transfer_abort_stat_en_qs;
         reg_rdata_next[4] = targ_intr_status_enable_transfer_err_stat_en_qs;
-        reg_rdata_next[5] = targ_intr_status_enable_rx_buffer_ovf_stat_en_qs;
-        reg_rdata_next[6] = targ_intr_status_enable_async_evt_ovf_stat_en_qs;
+        reg_rdata_next[5] = targ_intr_status_enable_rx_desc_ovf_stat_en_qs;
+        reg_rdata_next[6] = targ_intr_status_enable_rx_buffer_ovf_stat_en_qs;
+        reg_rdata_next[7] = targ_intr_status_enable_async_evt_ovf_stat_en_qs;
         reg_rdata_next[8] = targ_intr_status_enable_tx0_thld_stat_en_qs;
         reg_rdata_next[9] = targ_intr_status_enable_tx1_thld_stat_en_qs;
         reg_rdata_next[10] = targ_intr_status_enable_tx2_thld_stat_en_qs;
@@ -21517,8 +21644,9 @@ module i3c_reg_top
         reg_rdata_next[2] = targ_intr_signal_enable_async_evt_ready_signal_en_qs;
         reg_rdata_next[3] = targ_intr_signal_enable_transfer_abort_signal_en_qs;
         reg_rdata_next[4] = targ_intr_signal_enable_transfer_err_signal_en_qs;
-        reg_rdata_next[5] = targ_intr_signal_enable_rx_buffer_ovf_signal_en_qs;
-        reg_rdata_next[6] = targ_intr_signal_enable_async_evt_ovf_signal_en_qs;
+        reg_rdata_next[5] = targ_intr_signal_enable_rx_desc_ovf_signal_en_qs;
+        reg_rdata_next[6] = targ_intr_signal_enable_rx_buffer_ovf_signal_en_qs;
+        reg_rdata_next[7] = targ_intr_signal_enable_async_evt_ovf_signal_en_qs;
         reg_rdata_next[8] = targ_intr_signal_enable_tx0_thld_signal_en_qs;
         reg_rdata_next[9] = targ_intr_signal_enable_tx1_thld_signal_en_qs;
         reg_rdata_next[10] = targ_intr_signal_enable_tx2_thld_signal_en_qs;
@@ -21538,6 +21666,7 @@ module i3c_reg_top
         reg_rdata_next[4] = '0;
         reg_rdata_next[5] = '0;
         reg_rdata_next[6] = '0;
+        reg_rdata_next[7] = '0;
         reg_rdata_next[8] = '0;
         reg_rdata_next[9] = '0;
         reg_rdata_next[10] = '0;

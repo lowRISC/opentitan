@@ -3862,14 +3862,19 @@
                     '''
           resval:   "0"
         }
-        { bits:     "6",
+        { bits:     "7",
           name:     "ASYNC_EVT_OVF_STAT",
           desc:     "Asynchronous Event Queue Overflow Status.",
           resval:   "0"
         }
-        { bits:     "5",
+        { bits:     "6",
           name:     "RX_BUFFER_OVF_STAT",
           desc:     "Rx Data Buffer Overflow Status.",
+          resval:   "0"
+        }
+        { bits:     "5",
+          name:     "RX_DESC_OVF_STAT",
+          desc:     "Rx Desc Queue Overflow Status.",
           resval:   "0"
         }
         { bits:     "4",
@@ -3950,14 +3955,19 @@
           desc:   "Target 0 Tx Data Buffer Threshold Status Enable.",
           resval: "0"
         }
-        { bits:   "6",
+        { bits:   "7",
           name:   "ASYNC_EVT_OVF_STAT_EN",
           desc:   "Asynchronous Event Queue Overflow Status Enable.",
           resval: "0"
         }
-        { bits:   "5",
+        { bits:   "6",
           name:   "RX_BUFFER_OVF_STAT_EN",
           desc:   "Rx Data Buffer Overflow Status Enable.",
+          resval: "0"
+        }
+        { bits:   "5",
+          name:   "RX_DESC_OVF_STAT_EN",
+          desc:   "Rx Desc Queue Overflow Status Enable.",
           resval: "0"
         }
         { bits:   "4",
@@ -4038,14 +4048,19 @@
           desc:   "Target 0 Tx Data Buffer Threshold Signal Enable.",
           resval: "0"
         }
-        { bits:   "6",
+        { bits:   "7",
           name:   "ASYNC_EVT_OVF_SIGNAL_EN",
           desc:   "Asynchronous Event Queue Overflow Signal Enable.",
           resval: "0"
         }
-        { bits:   "5",
+        { bits:   "6",
           name:   "RX_BUFFER_OVF_SIGNAL_EN",
           desc:   "Rx Data Buffer Overflow Signal Enable.",
+          resval: "0"
+        }
+        { bits:   "5",
+          name:   "RX_DESC_OVF_SIGNAL_EN",
+          desc:   "Rx Desc Queue Overflow Signal Enable.",
           resval: "0"
         }
         { bits:   "4",
@@ -4127,14 +4142,19 @@
           desc:   "Force Target 0 Tx Data Buffer Threshold.",
           resval: "0"
         }
-        { bits:   "6",
+        { bits:   "7",
           name:   "ASYNC_EVT_OVF_FORCE",
           desc:   "Force Asynchronous Event Queue Overflow.",
           resval: "0"
         }
-        { bits:   "5",
+        { bits:   "6",
           name:   "RX_BUFFER_OVF_FORCE",
           desc:   "Force Rx Data Buffer Overflow.",
+          resval: "0"
+        }
+        { bits:   "5",
+          name:   "RX_DESC_OVF_FORCE",
+          desc:   "Force Rx Desc Queue Overflow.",
           resval: "0"
         }
         { bits:   "4",
