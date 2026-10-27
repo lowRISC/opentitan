@@ -67,7 +67,7 @@ waive -rules {PARAM_NOT_USED} -location {i3c_controller.sv i3c_controller_trx.sv
 
 ## Coding style
 waive -rules {ONE_BIT_MEM_WIDTH} -location {i3c_part_primary.sv i3c_core.sv i3c_target.sv} \
-      -regexp {Memory '(bufq_(req|gnt|we|rvalid)|(hci|tti)_(wvalid|rready)|fifo_rst|targ_trx_(dvalid|dready)|targ_tx_desc_(rready|rvalid)|targ_buf_(rready|rvalid|rempty)|targ_grp_(addr|targ)_de|txd_toggle_(in|out))' has word width which is single bit wide} \
+      -regexp {Memory '(bufq_(req|gnt|we|rvalid)|(hci|tti)_(wvalid|rready)|fifo_rst|targ_trx_(dvalid|dready)|targ_tx_desc_(rready|rvalid|rempty)|targ_buf_(rready|rvalid|rempty)|targ_grp_(addr|targ)_de|txd_toggle_(in|out))' has word width which is single bit wide} \
       -comment "These unpacked arrays hold one valid, ready or enable signal per queue, FIFO, group or Virtual Target, in line with the arrays of the corresponding data."
 waive -rules {CALC_NEXT_STATE} -location {i3c_controller_trx.sv} \
       -regexp {Next state register 'state_d' is assigned a non-constant expression 'state_next_req'} \

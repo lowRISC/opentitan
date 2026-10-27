@@ -617,13 +617,22 @@
           hwaccess: "hro",
           resval:   "0"
         }
-        { bits:     "14:12",
+        { bits:     "15:12",
           name:     "BUFFER",
           desc:     '''Specifies the transmission buffer from which DWORDs are to be removed.
 
                     0 - IBI Data buffer.
-                    1 - Virtual Target 0 Tx buffer
-                    2 - Virtual Target 1 Tx buffer...
+                    1 - IBI Descriptor queue.
+                    2 - Virtual Target 0 Tx Data buffer.
+                    3 - Virtual Target 0 Tx Descriptor queue.
+                    4 - Virtual Target 1 Tx Data buffer.
+                    5 - Virtual Target 1 Tx Descriptor queue.
+                    6 - Virtual Target 2 Tx Data buffer.
+                    7 - Virtual Target 2 Tx Descriptor queue.
+                    8 - Virtual Target 3 Tx Data buffer.
+                    9 - Virtual Target 3 Tx Descriptor queue.
+
+                    Other values are invalid.
                     ''',
           hwaccess: "hro",
           resval:   "0"
