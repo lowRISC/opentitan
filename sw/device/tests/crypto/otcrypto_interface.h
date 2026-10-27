@@ -183,6 +183,17 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*hmac_final)(otcrypto_hmac_context_t *const,
                                   otcrypto_word32_buf_t *);
 
+  // HMAC-SHA-1
+  otcrypto_status_t (*hmac_sha1)(const otcrypto_blinded_key_t *,
+                                 const otcrypto_const_byte_buf_t *,
+                                 otcrypto_word32_buf_t *);
+  otcrypto_status_t (*hmac_sha1_init)(otcrypto_hmac_sha1_context_t *,
+                                      const otcrypto_blinded_key_t *);
+  otcrypto_status_t (*hmac_sha1_update)(otcrypto_hmac_sha1_context_t *,
+                                        const otcrypto_const_byte_buf_t *);
+  otcrypto_status_t (*hmac_sha1_final)(otcrypto_hmac_sha1_context_t *,
+                                       otcrypto_word32_buf_t *);
+
   // KDF-CTR
   otcrypto_status_t (*kdf_ctr_hmac)(const otcrypto_blinded_key_t *,
                                     const otcrypto_const_byte_buf_t *,
@@ -200,6 +211,15 @@ typedef struct otcrypto_interface_t {
                                 const otcrypto_const_byte_buf_t *,
                                 const otcrypto_const_byte_buf_t *,
                                 otcrypto_blinded_key_t *);
+
+  // SHA-1
+  otcrypto_status_t (*sha1)(const otcrypto_const_byte_buf_t *,
+                            otcrypto_hash_digest_t *);
+  otcrypto_status_t (*sha1_init)(otcrypto_sha1_context_t *);
+  otcrypto_status_t (*sha1_update)(otcrypto_sha1_context_t *,
+                                   const otcrypto_const_byte_buf_t *);
+  otcrypto_status_t (*sha1_final)(otcrypto_sha1_context_t *,
+                                  otcrypto_hash_digest_t *);
 
   // SHA-2
   otcrypto_status_t (*sha2_256)(const otcrypto_const_byte_buf_t *,
