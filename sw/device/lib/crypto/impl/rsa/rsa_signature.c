@@ -188,24 +188,8 @@ status_t rsa_signature_generate_start(
     const otcrypto_hash_digest_t message_digest,
     const rsa_signature_padding_t padding_mode) {
   size_t num_words = 0;
-  switch (launder32(size)) {
-    case kRsaSize2048:
-      HARDENED_CHECK_EQ(size, kRsaSize2048);
-      num_words = kRsa2048NumWords;
-      break;
-    case kRsaSize3072:
-      HARDENED_CHECK_EQ(size, kRsaSize3072);
-      num_words = kRsa3072NumWords;
-      break;
-    case kRsaSize4096:
-      HARDENED_CHECK_EQ(size, kRsaSize4096);
-      num_words = kRsa4096NumWords;
-      break;
-    default:
-      HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
-      return OTCRYPTO_FATAL_ERR;
-  }
+  HARDENED_TRY(rsa_size_to_num_words(size, &num_words));
+  HARDENED_CHECK_NE(num_words, 0);
 
   // Allocate maximum possible size to avoid VLAs. We allocate enough for
   // 4096, but will only utilize `num_words`.
@@ -240,45 +224,10 @@ status_t rsa_signature_verify_finalize(
   size_t num_words;
   HARDENED_TRY(rsa_modexp_wait(&num_words));
 
-  // Call the appropriate `finalize()` operation to get the recovered encoded
-  // message.
-  switch (launder32(num_words)) {
-    case kRsa2048NumWords: {
-      HARDENED_CHECK_EQ(num_words, kRsa2048NumWords);
-      rsa_2048_int_t recovered_message;
-      HARDENED_TRY(
-          rsa_modexp_finalize_size(kRsaSize2048, recovered_message.data));
-      return encoded_message_verify(
-          message_digest, padding_mode, recovered_message.data,
-          ARRAYSIZE(recovered_message.data), verification_result);
-    }
-    case kRsa3072NumWords: {
-      HARDENED_CHECK_EQ(num_words, kRsa3072NumWords);
-      rsa_3072_int_t recovered_message;
-      HARDENED_TRY(
-          rsa_modexp_finalize_size(kRsaSize3072, recovered_message.data));
-      return encoded_message_verify(
-          message_digest, padding_mode, recovered_message.data,
-          ARRAYSIZE(recovered_message.data), verification_result);
-    }
-    case kRsa4096NumWords: {
-      HARDENED_CHECK_EQ(num_words, kRsa4096NumWords);
-      rsa_4096_int_t recovered_message;
-      HARDENED_TRY(
-          rsa_modexp_finalize_size(kRsaSize4096, recovered_message.data));
-      return encoded_message_verify(
-          message_digest, padding_mode, recovered_message.data,
-          ARRAYSIZE(recovered_message.data), verification_result);
-    }
-    default:
-      // Unexpected number of words; should never get here.
-      // COVERAGE (SW ERR) This is an internal function that is only given
-      // correctly encoded inputs.
-      return OTCRYPTO_FATAL_ERR;
-  }
-
-  // Should be unreachable.
-  HARDENED_TRAP();
-  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
-  return OTCRYPTO_FATAL_ERR;
+  // Finalize the modexp operation to get the recovered encoded message.
+  HARDENED_CHECK_LE(num_words, kRsa4096NumWords);
+  uint32_t recovered_message[kRsa4096NumWords];
+  HARDENED_TRY(rsa_modexp_finalize(num_words, recovered_message));
+  return encoded_message_verify(message_digest, padding_mode, recovered_message,
+                                num_words, verification_result);
 }
