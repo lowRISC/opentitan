@@ -1614,6 +1614,29 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "hmac_sha1_functest",
+    srcs = ["hmac_sha1_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:cryptolib_build_info",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
+        "//sw/device/lib/crypto/impl:sha1",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "hmac_sha256_functest",
     srcs = ["hmac_sha256_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -1695,6 +1718,25 @@ py_binary(
         "//util/design/lib:common",
         requirement("hjson"),
         requirement("mako"),
+    ],
+)
+
+opentitan_test(
+    name = "sha1_functest",
+    srcs = ["sha1_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:sha1",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
 
@@ -1810,6 +1852,7 @@ test_suite(
         ":hkdf_functest",
         ":hmac_functest",
         ":hmac_multistream_functest",
+        ":hmac_sha1_functest",
         ":hmac_sha256_functest",
         ":hmac_sha384_functest",
         ":hmac_sha512_functest",
@@ -1830,6 +1873,7 @@ test_suite(
         ":rsa_4096_encryption_functest",
         ":rsa_4096_key_from_cofactor_functest",
         ":rsa_4096_signature_functest",
+        ":sha1_functest",
         ":sha256_functest",
         ":sha384_functest",
         ":sha512_functest",

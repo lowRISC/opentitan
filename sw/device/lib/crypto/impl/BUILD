@@ -570,6 +570,27 @@ cc_library(
 )
 
 cc_library(
+    name = "sha1",
+    srcs = ["sha1.c"],
+    hdrs = [
+        "//sw/device/lib/crypto/include:sha1.h",
+    ],
+    deps = [
+        ":cmvp",
+        ":config",
+        ":integrity",
+        ":keyblob",
+        ":state",
+        ":status",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "sha2",
     srcs = ["sha2.c"],
     hdrs = [
