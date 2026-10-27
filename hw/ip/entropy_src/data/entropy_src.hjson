@@ -227,12 +227,10 @@
       desc: '''
             The FIPS/CC compliant mode is the primary mode of operation in which ENTROPY_SRC can generate entropy compliant with NIST SP 800-90B and AIS31 recommendations.
             In this mode, once the raw entropy has been health tested, it is passed into the hardware conditioner block which compresses the bits to ideally improve the min-entropy value compared to the digital noise source / physical true random number generator (PTRNG).
-            The window size for the health tests and the conditioning is configurable by firmware with a default of 2048 bits.
+            The window size for the health tests and the conditioning is configurable by firmware with a default of 512 samples.
 
             Note that ENTROPY_SRC uses the `es_fips` bit of the hardware interface to indicate whether the generated entropy is indeed FIPS/CC compliant.
-            For this to be true the following prerequisites must be met in addition to running in FIPS/CC compliant mode:
-            - !!CONF.RNG_BIT_ENABLE must be set to `kMultiBitBool4False` (see ENTROPY_SRC.RNG_BIT_ENABLE).
-            - At most one of the !!ENTROPY_CONTROL.ES_ROUTE and !!ENTROPY_CONTROL.ES_TYPE fields needs to be set to `kMultiBitBool4True` but not both (see ENTROPY_SRC.ROUTE_TO_FIRMWARE).
+            For this bit to be set, firmware needs to configure the ENTROPY_SRC block with the configuration used for FIPS/CC validation and set the !!CONF.FIPS_FLAG field to `kMultiBitBool4True`.
             '''
     },
     {
