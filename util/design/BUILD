@@ -12,6 +12,13 @@ py_library(
     srcs = ["prince.py"],
 )
 
+py_test(
+    name = "prince_test",
+    srcs = ["test_prince.py"],
+    main = "test_prince.py",
+    deps = [":prince"],
+)
+
 py_library(
     name = "secded_gen",
     srcs = ["secded_gen.py"],
