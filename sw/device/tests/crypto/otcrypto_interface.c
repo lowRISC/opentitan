@@ -85,6 +85,9 @@ volatile otcrypto_interface_t otcrypto = {
     .cmac_update = &otcrypto_cmac_update,
     .cmac_final = &otcrypto_cmac_final,
 
+    // CMAC-KDF
+    .cmac_kdf = &otcrypto_cmac_kdf,
+
     // DRBG
     .drbg_instantiate = &otcrypto_drbg_instantiate,
     .drbg_reseed = &otcrypto_drbg_reseed,

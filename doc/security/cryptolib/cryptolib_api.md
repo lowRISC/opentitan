@@ -35,7 +35,7 @@ For more details, see later sections (links in the "category" column).
 | [**RSA**](#rsa) | RSA-{2048,3072,4096} |
 | [**Elliptic curve cryptography**](#elliptic-curve-cryptography) | ECDSA-{P256,P384}<br>ECDH-{P256,P384}<br>Ed25519<br>X25519 |
 | [**Deterministic random bit generation**](#deterministic-random-bit-generation) | AES-CTR-DRBG |
-| [**Key derivation**](#key-derivation) | HKDF<br>HMAC-KDF-CTR<br>KMAC-KDF-CTR |
+| [**Key derivation**](#key-derivation) | HKDF<br>HMAC-KDF-CTR<br>KMAC-KDF-CTR<br>AES-CMAC-KDF-CTR |
 
 ## Cryptolib Initialization
 
@@ -828,7 +828,7 @@ Key derivation functions (KDFs) generate a new key from an existing key.
 ### Supported Modes
 
 OpenTitan supports two different key derivation methods:
-- KDF-CTR following [NIST SP800-108][kdf-prf-spec] with HMAC or KMAC as the PRF
+- KDF-CTR following [NIST SP800-108][kdf-prf-spec] with HMAC, KMAC, or AES-CMAC as the PRF
 - HKDF following [IETF RFC 5869][hkdf-rfc], which is special case of [NIST SP800-56C][nist-kdf-key-establishment]
 
 To learn more about PRFs, various key derivation mechanisms and security considerations, please refer to the links in the [reference](#reference) section.
@@ -848,6 +848,10 @@ To learn more about PRFs, various key derivation mechanisms and security conside
 #### KMAC-KDF
 
 {{#header-snippet sw/device/lib/crypto/include/kmac_kdf.h otcrypto_kmac_kdf }}
+
+#### CMAC-KDF
+
+{{#header-snippet sw/device/lib/crypto/include/cmac_kdf.h otcrypto_cmac_kdf }}
 
 ## Key transport
 
@@ -997,7 +1001,7 @@ The table below summarizes the security strength for the supported [cryptographi
 | ECC            | NIST P-384     | 192                              |                                                       |
 | ECC            | X25519/Ed25519 | 128                              |                                                       |
 | DRBG           | CTR_DRBG       | 256                              | Based on AES-CTR-256                                  |
-| KDF            | KDF_CTR        | 128                              | With HMAC or KMAC as PRF                              |
+| KDF            | KDF_CTR        | 128                              | With HMAC, KMAC, or AES-CMAC as PRF                   |
 
 Over time the cryptographic algorithms may become more vulnerable to successful attacks, requiring a transition to stronger algorithms or longer key lengths over time.
 The table below is a recommendation from [NIST SP800-57 Part 1][nist-sp800-57] about concrete time frames for different security strengths.

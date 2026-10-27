@@ -136,6 +136,12 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*cmac_final)(otcrypto_cmac_context_t *const,
                                   otcrypto_word32_buf_t *);
 
+  // CMAC-KDF
+  otcrypto_status_t (*cmac_kdf)(const otcrypto_blinded_key_t *,
+                                const otcrypto_const_byte_buf_t *,
+                                const otcrypto_const_byte_buf_t *,
+                                otcrypto_blinded_key_t *);
+
   // DRBG
   otcrypto_status_t (*drbg_instantiate)(const otcrypto_const_byte_buf_t *);
   otcrypto_status_t (*drbg_reseed)(const otcrypto_const_byte_buf_t *);
