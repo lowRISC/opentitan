@@ -24,6 +24,14 @@ class KeymgrDpeTest : public testing::Test, public mock_mmio::MmioTest {
   dif_keymgr_dpe_t keymgr_dpe_ = {.base_addr = dev().region()};
 };
 
+class EraseSlotTest : public KeymgrDpeTest {};
+
+TEST_F(EraseSlotTest, NullArgs) {
+  dif_keymgr_dpe_erase_params_t params = {.slot_dst_sel = 1};
+  EXPECT_DIF_BADARG(dif_keymgr_dpe_erase_slot(nullptr, &params));
+  EXPECT_DIF_BADARG(dif_keymgr_dpe_erase_slot(&keymgr_dpe_, nullptr));
+}
+
 class GetStatusCodesTest : public KeymgrDpeTest {};
 
 TEST_F(GetStatusCodesTest, Wip) {
