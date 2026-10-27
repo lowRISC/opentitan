@@ -42,6 +42,9 @@ module i3c_target_fsm
   input              [47:0] stby_cr_pid_i,
   input  i3c_rstact_e       rstact_i, // TODO: Currently unused
 
+  // Status information.
+  output logic              virt_targ_det_o,
+
   // Updating configuration.
   //
   // - for the majority of cases, only the state information pertaining to existing
@@ -264,12 +267,14 @@ module i3c_target_fsm
   logic virt_targ_det;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) virt_targ_det <= 1'b0;
+    else if (sw_reset_i) virt_targ_det <= 1'b0;
     // TODO(#31337): Other conditions can modify the programmed Reset Action.
     else if (rstact_de_o && rstact_d_o inside {RstAct_VirtualTargDet, RstAct_NoReset}) begin
       if (rstact_d_o == RstAct_NoReset)             virt_targ_det <= 1'b0; // Clear reset action
       else if (rstact_d_o == RstAct_VirtualTargDet) virt_targ_det <= 1'b1; // Set reset action
     end
   end
+  assign virt_targ_det_o = virt_targ_det;
 
   // Vendor Test Mode active/inactive?
   // - this state bit is the only part implemented in hardware; the provision of a random PID is the

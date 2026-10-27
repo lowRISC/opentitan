@@ -231,10 +231,12 @@ module i3c_core
   // Indicate to software whether the Target transceiver logic is connected to the bus and
   // monitoring traffic.
   assign hw2reg_o.targ_status.connected.d = targ_trx_rst_n & inbuf_enable;
-  // Report the number of Targets supported, because any software driver will need this information.
-  assign hw2reg_o.targ_status.num_targets.d = (Target | SecondaryCtrl) ? 3'(NumTargets) : 3'b000;
+  // Report the number of additional Virtual Targets supported, because any software driver will
+  // need this information. This augments the `PRESENT` field and reports 0 in the event that
+  // PRESENT is clear (no Targets at all).
+  assign hw2reg_o.targ_status.targets.d = (Target | SecondaryCtrl) ? 2'(NumTargets - 1) : 2'b00;
 
-  // We measure tAVAL from the most recently bus active _and_ the most recent transceiver reset.
+  // We measure tAVAL from the most recent bus activity _and_ the most recent transceiver reset.
   assign targ_rst_bus_avail = targ_bus_active | !targ_trx_rst_n;
 
   // Report measured duration of bus inactivity, for diagnostic use.
@@ -255,7 +257,7 @@ module i3c_core
   // Reset generation for SCL-driven logic
   // - since SCL is supplied by whichever Controller is actively driving the bus, it is asynchronous
   //   with respect to any asynchronous reset, sw-initiated reset or recovery mechanism that is
-  //   required, so we re-enable the buffers only when we the bus has been idle for tAVAL (4.3.3.2).
+  //   required, so we re-enable the buffers only when the bus has been idle for tAVAL (4.3.3.2).
   i3c_target_rst u_targ_rst(
     // Main IP clock and reset.
     .clk_i      (clk_i),
@@ -842,6 +844,7 @@ module i3c_core
     .dynaddr_de_o         (targ_dynaddr_de),
     .dynaddr_valid_d_o    (targ_dynaddr_valid_d),
     .dynaddr_d_o          (targ_dynaddr_d),
+    .virt_targ_det_o      (hw2reg_o.targ_status.rstact_virt_targ_det.d),  // I3C Basic 4.3.7.3.23.2.
     .mwl_de_o             (targ_mwl_de),
     .mrl_de_o             (targ_mrl_de),
     .ibi_de_o             (targ_ibi_de),
