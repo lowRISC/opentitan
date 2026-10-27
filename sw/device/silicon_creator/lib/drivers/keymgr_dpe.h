@@ -431,10 +431,11 @@ void sc_keymgr_dpe_lock_uds(void);
  * Load the UDS into an empty hw slot.
  *
  * Load the UDS into the selected hw slot. If the selected hw slot is not
- * empty then the keymgr_dpe will throw an error.
+ * empty then the keymgr_dpe will throw an error. This function waits for any
+ * previous operation to finish, and fails if keymgr_dpe is not available.
  *
  * @param sel_dst_slot empty destination slot for the UDS.
- * @return `kErrorOk`
+ * @return The result of the load call.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_load_uds(uint32_t sel_dst_slot);
@@ -516,7 +517,8 @@ rom_error_t sc_keymgr_dpe_advance_owner(
 /**
  * Erase the DPE context of any slot
  *
- * This function blocks until the advance operation was successfully.
+ * This function waits for any previous operation to finish, and fails if
+ * keymgr_dpe is not available. It then blocks until the erase has finished.
  *
  * @param sel_dst_slot selected DPE context to erase.
  * @return The result of the erase call.
