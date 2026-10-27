@@ -83,9 +83,8 @@ static status_t process_message_buffer(sha256_otbn_ctx_t *ctx) {
   HARDENED_TRY(
       otbn_dmem_write(1, &ctx->num_blocks, kOtbnVarSha256NumMsgChunks));
 
-  // Run the OTBN program.
-  HARDENED_TRY(otbn_execute());
-  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  // Run the OTBN program synchronously.
+  HARDENED_TRY_WIPE_DMEM(otbn_execute_sync());
 
   // Reset the message buffer counter.
   ctx->num_blocks = 0;

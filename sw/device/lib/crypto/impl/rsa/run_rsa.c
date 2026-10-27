@@ -549,8 +549,7 @@ status_t rsa_keygen_init(rsa_size_t size, hardened_bool_t deterministic) {
         /*fips_check=*/kHardenedBoolFalse));
     HARDENED_TRY(otbn_dmem_write(prime_words, candidate,
                                  OTBN_ADDR_T_INIT(run_rsa, rsa_n)));
-    HARDENED_TRY(otbn_execute());
-    HARDENED_TRY(otbn_busy_wait_for_done());
+    HARDENED_TRY(otbn_execute_sync());
     uint32_t ok = 0;
     HARDENED_TRY(otbn_dmem_read(1, OTBN_ADDR_T_INIT(run_rsa, ok), &ok));
     if (launder32(ok) == kHardenedBoolTrue) {
