@@ -1096,6 +1096,9 @@ module i3c_reg_top
   logic targ_pio_control_ibi_suspended_wd;
   logic targ_pio_control_ibi_abort_qs;
   logic targ_pio_control_ibi_abort_wd;
+  logic targ_pio_control_rxbuf_clear_wd;
+  logic targ_pio_control_ibibuf_clear_wd;
+  logic [3:0] targ_pio_control_txbuf_clear_wd;
   logic [3:0] targ_pio_control_suspended_qs;
   logic [3:0] targ_pio_control_suspended_wd;
   logic [3:0] targ_pio_control_abort_qs;
@@ -13288,7 +13291,7 @@ module i3c_reg_top
 
   // R[targ_pio_control]: V(False)
   logic targ_pio_control_qe;
-  logic [3:0] targ_pio_control_flds_we;
+  logic [6:0] targ_pio_control_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -13359,6 +13362,93 @@ module i3c_reg_top
   );
   assign reg2hw.targ_pio_control.ibi_abort.qe = targ_pio_control_qe;
 
+  //   F[rxbuf_clear]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_pio_control_rxbuf_clear (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_pio_control_we),
+    .wd     (targ_pio_control_rxbuf_clear_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (targ_pio_control_flds_we[2]),
+    .q      (reg2hw.targ_pio_control.rxbuf_clear.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     ()
+  );
+  assign reg2hw.targ_pio_control.rxbuf_clear.qe = targ_pio_control_qe;
+
+  //   F[ibibuf_clear]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_pio_control_ibibuf_clear (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_pio_control_we),
+    .wd     (targ_pio_control_ibibuf_clear_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (targ_pio_control_flds_we[3]),
+    .q      (reg2hw.targ_pio_control.ibibuf_clear.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     ()
+  );
+  assign reg2hw.targ_pio_control.ibibuf_clear.qe = targ_pio_control_qe;
+
+  //   F[txbuf_clear]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (4'h0),
+    .Mubi    (1'b0)
+  ) u_targ_pio_control_txbuf_clear (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_pio_control_we),
+    .wd     (targ_pio_control_txbuf_clear_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (targ_pio_control_flds_we[4]),
+    .q      (reg2hw.targ_pio_control.txbuf_clear.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     ()
+  );
+  assign reg2hw.targ_pio_control.txbuf_clear.qe = targ_pio_control_qe;
+
   //   F[suspended]: 19:16
   prim_subreg #(
     .DW      (4),
@@ -13379,7 +13469,7 @@ module i3c_reg_top
     .d      (hw2reg.targ_pio_control.suspended.d),
 
     // to internal hardware
-    .qe     (targ_pio_control_flds_we[2]),
+    .qe     (targ_pio_control_flds_we[5]),
     .q      (reg2hw.targ_pio_control.suspended.q),
     .ds     (),
 
@@ -13408,7 +13498,7 @@ module i3c_reg_top
     .d      (hw2reg.targ_pio_control.abort.d),
 
     // to internal hardware
-    .qe     (targ_pio_control_flds_we[3]),
+    .qe     (targ_pio_control_flds_we[6]),
     .q      (reg2hw.targ_pio_control.abort.q),
     .ds     (),
 
@@ -20264,6 +20354,12 @@ module i3c_reg_top
 
   assign targ_pio_control_ibi_abort_wd = reg_wdata[1];
 
+  assign targ_pio_control_rxbuf_clear_wd = reg_wdata[10];
+
+  assign targ_pio_control_ibibuf_clear_wd = reg_wdata[11];
+
+  assign targ_pio_control_txbuf_clear_wd = reg_wdata[15:12];
+
   assign targ_pio_control_suspended_wd = reg_wdata[19:16];
 
   assign targ_pio_control_abort_wd = reg_wdata[27:24];
@@ -21681,6 +21777,9 @@ module i3c_reg_top
       racl_addr_hit_read[128]: begin
         reg_rdata_next[0] = targ_pio_control_ibi_suspended_qs;
         reg_rdata_next[1] = targ_pio_control_ibi_abort_qs;
+        reg_rdata_next[10] = '0;
+        reg_rdata_next[11] = '0;
+        reg_rdata_next[15:12] = '0;
         reg_rdata_next[19:16] = targ_pio_control_suspended_qs;
         reg_rdata_next[27:24] = targ_pio_control_abort_qs;
       end
