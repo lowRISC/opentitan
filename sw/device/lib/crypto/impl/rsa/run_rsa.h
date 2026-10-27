@@ -87,6 +87,25 @@ status_t rsa_modexp_vartime_start(rsa_size_t size, const uint32_t *base,
 status_t rsa_modexp_finalize_size(rsa_size_t size, uint32_t *result);
 
 /**
+ * Finalizes a modular exponentiation given the expected word length.
+ *
+ * @param num_words Expected number of 32-bit words for the modexp result.
+ * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
+ * @return Status of the operation (OK or error).
+ */
+status_t rsa_modexp_finalize(size_t num_words, uint32_t *result);
+
+/**
+ * Converts an internal `rsa_size_t` to the corresponding word length.
+ *
+ * @param size RSA size parameter.
+ * @param[out] num_words Number of 32-bit words in the modulus.
+ * @return Status of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_size_to_num_words(rsa_size_t size, size_t *num_words);
+
+/**
  * Starts an RSA key generation operation; returns immediately.
  *
  * The key exponent is always F4=65537; no other exponents are supported.
