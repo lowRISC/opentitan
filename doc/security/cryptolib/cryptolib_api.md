@@ -258,7 +258,7 @@ Public keys are represented in plain, "unblinded" form, but include a checksum t
 The checksum is implementation-specific and may change over time.
 The caller should use algorithm-specific routines to construct unblinded keys; see e.g. the ECC and RSA sections for details.
 
-Because memory allocation for all key structures (including `otcrypto_blinded_key_t`, `otcrypto_unblinded_key_t`, and their underlying `keyblob`/`key` buffers) is managed by the caller, key destruction and zeroization of RAM-allocated key material is the responsibility of the caller once keys are no longer needed.
+Because memory allocation for all key structures (including `otcrypto_blinded_key_t`, `otcrypto_unblinded_key_t`, and their underlying `keyblob`/`key` buffers) is managed by the caller, key destruction and randomization of RAM-allocated key material is the responsibility of the caller once keys are no longer needed.
 See [Key destruction and zeroization](#key-destruction-and-zeroization) for details.
 
 {{#header-snippet sw/device/lib/crypto/include/datatypes.h otcrypto_unblinded_key }}
@@ -1069,19 +1069,19 @@ The crypto library will always refuse to export these keys.
 
 Cryptographic key material in the OpenTitan cryptography library is managed using a combination of automatic hardware zeroization and caller-managed memory destruction.
 
-### Software Key Destruction and Zeroization
+### Software Key Destruction and Randomization
 
 As documented in [Data structures](#key-data-structures), memory allocation for keys (`otcrypto_blinded_key_t`, `otcrypto_unblinded_key_t`, `keyblob` arrays, and user-provided share buffers) is left to the caller.
 The cryptolib does not dynamically allocate or manage memory for key material in RAM.
 
 Consequently:
-- **Caller Responsibility:** Destruction and zeroization of software key material stored in RAM (such as the contents of `blinded_key.keyblob` or `unblinded_key.key`) is the responsibility of the caller when a key is no longer needed.
-- **Recommended Procedure:** Callers should securely zeroize all key buffers in RAM (for example, using `hardened_memshred`) when the key structure is not longer needed.
+- **Caller Responsibility:** Destruction and randomization of software key material stored in RAM (such as the contents of `blinded_key.keyblob` or `unblinded_key.key`) is the responsibility of the caller when a key is no longer needed.
+- **Recommended Procedure:** Callers should securely randomize all key buffers in RAM (for example, using `hardened_memshred`) when the key structure is not longer needed.
 
-### Context and State Zeroization
+### Context and State Zeroization and Randomization
 
 - **DRBG Uninstantiation:** To destroy and zeroize the internal state of the Deterministic Random Bit Generator, callers can invoke `otcrypto_drbg_uninstantiate()`, which clears the internal DRBG context.
-- **Streaming Contexts:** Intermediate states and keys held in streaming operation contexts (such as `otcrypto_hmac_context_t`, `otcrypto_cmac_context_t`, and `otcrypto_aes_gcm_context_t`) are zeroized automatically when finalization routines (`*_final`) finish.
+- **Streaming Contexts:** Intermediate states and keys held in streaming operation contexts (such as `otcrypto_hmac_context_t`, `otcrypto_cmac_context_t`, and `otcrypto_aes_gcm_context_t`) are randomized automatically when finalization routines (`*_final`) finish.
 
 ## Asynchronous operations
 
