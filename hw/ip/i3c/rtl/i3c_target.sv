@@ -123,6 +123,7 @@ module i3c_target
   output                    tx_desc_rready_o[NumTargets],
   input                     tx_desc_rvalid_i[NumTargets],
   input     [DataWidth-1:0] tx_desc_rdata_i[NumTargets],
+  input                     tx_desc_rempty_i[NumTargets],
   input      [FIFODepthW:0] tx_desc_rused_i[NumTargets],
   input      [FIFODepthW:0] tx_desc_ravail_i[NumTargets],
 
@@ -137,6 +138,7 @@ module i3c_target
   output                    ibi_desc_rready_o,
   input                     ibi_desc_rvalid_i,
   input     [DataWidth-1:0] ibi_desc_rdata_i,
+  input                     ibi_desc_rempty_i,
   input      [FIFODepthW:0] ibi_desc_ravail_i,
 
   // Buffer reading.
@@ -451,6 +453,7 @@ module i3c_target
     .tx_desc_rready_o     (tx_desc_rready_o),
     .tx_desc_rvalid_i     (tx_desc_rvalid_i),
     .tx_desc_rdata_i      (tx_desc_rdata_i),
+    .tx_desc_rempty_i     (tx_desc_rempty_i),
     .tx_desc_rused_i      (tx_desc_rused_i),
     .tx_desc_ravail_i     (tx_desc_ravail_i),
 
@@ -465,6 +468,7 @@ module i3c_target
     .ibi_desc_rready_o    (ibi_desc_rready_o),
     .ibi_desc_rvalid_i    (ibi_desc_rvalid_i),
     .ibi_desc_rdata_i     (ibi_desc_rdata_i),
+    .ibi_desc_rempty_i    (ibi_desc_rempty_i),
 
     // Buffer reading.
     .buf_rready_o         (buf_rready_o),

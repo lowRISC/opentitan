@@ -423,12 +423,12 @@ Target-side Status register
 Target data sink control.
 - Offset: `0x24`
 - Reset default: `0x0`
-- Reset mask: `0x87ff7000`
+- Reset mask: `0x87fff000`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"bits": 12}, {"name": "BUFFER", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "LENGTH", "bits": 11, "attr": ["rw"], "rotate": 0}, {"bits": 4}, {"name": "START", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"bits": 12}, {"name": "BUFFER", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "LENGTH", "bits": 11, "attr": ["rw"], "rotate": 0}, {"bits": 4}, {"name": "START", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                 |
@@ -436,8 +436,7 @@ Target data sink control.
 |   31   |   wo   |   0x0   | [START](#targ_sink_control--start)   |
 | 30:27  |        |         | Reserved                             |
 | 26:16  |   rw   |   0x0   | [LENGTH](#targ_sink_control--length) |
-|   15   |        |         | Reserved                             |
-| 14:12  |   rw   |   0x0   | [BUFFER](#targ_sink_control--buffer) |
+| 15:12  |   rw   |   0x0   | [BUFFER](#targ_sink_control--buffer) |
 |  11:0  |        |         | Reserved                             |
 
 ### TARG_SINK_CONTROL . START
@@ -457,8 +456,17 @@ Software shall program 'n-1' into this field to remove 'n' DWORDs.
 Specifies the transmission buffer from which DWORDs are to be removed.
 
 0 - IBI Data buffer.
-1 - Virtual Target 0 Tx buffer
-2 - Virtual Target 1 Tx buffer...
+1 - IBI Descriptor queue.
+2 - Virtual Target 0 Tx Data buffer.
+3 - Virtual Target 0 Tx Descriptor queue.
+4 - Virtual Target 1 Tx Data buffer.
+5 - Virtual Target 1 Tx Descriptor queue.
+6 - Virtual Target 2 Tx Data buffer.
+7 - Virtual Target 2 Tx Descriptor queue.
+8 - Virtual Target 3 Tx Data buffer.
+9 - Virtual Target 3 Tx Descriptor queue.
+
+Other values are invalid.
 
 ## TARG_SINK_STATUS
 Target data sink status.

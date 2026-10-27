@@ -259,8 +259,8 @@ module i3c_reg_top
   logic targ_status_active_qs;
   logic targ_status_present_qs;
   logic targ_sink_control_we;
-  logic [2:0] targ_sink_control_buffer_qs;
-  logic [2:0] targ_sink_control_buffer_wd;
+  logic [3:0] targ_sink_control_buffer_qs;
+  logic [3:0] targ_sink_control_buffer_wd;
   logic [10:0] targ_sink_control_length_qs;
   logic [10:0] targ_sink_control_length_wd;
   logic targ_sink_control_start_wd;
@@ -2367,14 +2367,14 @@ module i3c_reg_top
     .d_i(&targ_sink_control_flds_we),
     .q_o(targ_sink_control_qe)
   );
-  //   F[buffer]: 14:12
+  //   F[buffer]: 15:12
   // Reinit
   assign reg2hw.targ_sink_control.reinit = tti_sw_reinit_i;
 
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h0),
+    .RESVAL  (4'h0),
     .Mubi    (1'b0)
   ) u_targ_sink_control_buffer (
     .clk_i   (clk_i),
@@ -19649,7 +19649,7 @@ module i3c_reg_top
   assign targ_status_ext_info_wd = reg_wdata[14:0];
   assign targ_sink_control_we = racl_addr_hit_write[9] & reg_we & !reg_error;
 
-  assign targ_sink_control_buffer_wd = reg_wdata[14:12];
+  assign targ_sink_control_buffer_wd = reg_wdata[15:12];
 
   assign targ_sink_control_length_wd = reg_wdata[26:16];
 
@@ -20947,7 +20947,7 @@ module i3c_reg_top
       end
 
       racl_addr_hit_read[9]: begin
-        reg_rdata_next[14:12] = targ_sink_control_buffer_qs;
+        reg_rdata_next[15:12] = targ_sink_control_buffer_qs;
         reg_rdata_next[26:16] = targ_sink_control_length_qs;
         reg_rdata_next[31] = '0;
       end

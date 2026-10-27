@@ -108,6 +108,7 @@ module i3c_target_fsm
   output                    tx_desc_rready_o[NumTargets],
   input                     tx_desc_rvalid_i[NumTargets],
   input     [DataWidth-1:0] tx_desc_rdata_i[NumTargets],
+  input                     tx_desc_rempty_i[NumTargets],
   // TODO: rused/ravail below currently unused.
   input      [FIFODepthW:0] tx_desc_rused_i[NumTargets],
   input      [FIFODepthW:0] tx_desc_ravail_i[NumTargets],
@@ -124,6 +125,7 @@ module i3c_target_fsm
   output                    ibi_desc_rready_o,
   input                     ibi_desc_rvalid_i,
   input     [DataWidth-1:0] ibi_desc_rdata_i,
+  input                     ibi_desc_rempty_i,
 
   // Buffer reading.
   output                    buf_rready_o[NumTargets],
@@ -300,9 +302,12 @@ module i3c_target_fsm
   assign protocol_error_de = protocol_error_de_ccc;
   assign protocol_error_d  = protocol_error_d_ccc;
 
-  // Under software control, the hardware may read and drop DWORDs from any transmit buffer.
+  // Under software control, the hardware may read and drop DWORDs from any transmit data buffer or
+  // descriptor queue.
+  // - for each transmission path, the data buffer is at the even-numbered index and the descriptor
+  //   queue is odd-indexed.
   // - IBI is source 0, so that it does not vary with the number of configured targets.
-  localparam int unsigned SinkBuffers = NumTargets + 1;  // One extra for IBI, at offset 0.
+  localparam int unsigned SinkBuffers = (MaxTargets + 1) * 2;  // One extra pair for IBI; offset 0.
   logic [SinkBuffers-1:0] sink_rready;
 
   // Are there any Pending Read Notifications?
@@ -385,7 +390,7 @@ module i3c_target_fsm
 
     // Collect DWORD from buffer.
     assign buf_rready_o[t] = &{enable_i, tx_rvalid, !unit_valid, tx_start | tx_active} |
-                              (enable_i & sink_rready[t + 1]);
+                              (enable_i & sink_rready[2 * (t + 1)]);  // Data Sink.
 
     // Since we are driving data into an irregularly-clocked domain, new data is supplied by
     // inverting a toggle signal and waiting for it to be echoed back to us.
@@ -441,8 +446,10 @@ module i3c_target_fsm
     // TODO(#31337): We must receive some kind of verdict from the transceiver, not just wait until
     // accepted
     assign tx_desc_consumed = tx_rvalid & (tx_suspended | &{tx_active, rlast, unit_ready});
-    assign tx_desc_rready_o[t] = tx_desc_consumed |                  // Private Read transfer.
-                                (arb_toggle_edge & arb_gnt_q[t+2]);  // Pending Read Notification.
+    assign tx_desc_rready_o[t] = enable_i &
+                               |{tx_desc_consumed,                  // Private Read transfer.
+                                 arb_toggle_edge & arb_gnt_q[t+2],  // Pending Read Notification.
+                                 sink_rready[2 * (t + 1) + 1]};     // Data Sink.
 
     // Suspend transmissions from this Virtual Target in the event of an error.
     assign suspend_tx_o[t] = tx_rvalid & !tx_desc_valid[t];
@@ -941,7 +948,7 @@ module i3c_target_fsm
   */
 
   // Remove the IBI Status Descriptor from the FIFO once we've been granted the bus.
-  assign ibi_desc_rready_o = enable_i & arb_toggle_edge & arb_gnt_q[0];
+  assign ibi_desc_rready_o = enable_i & ((arb_toggle_edge & arb_gnt_q[0]) | sink_rready[1]);
   // TODO(#31337): Drop the IBI data immediately for now...
   assign ibi_rready_o = enable_i & ((ibi_desc_rvalid_i & ibi_rvalid_i) | sink_rready[0]);
 
@@ -1253,15 +1260,24 @@ module i3c_target_fsm
   // Supply the 'data available' indications to the data sink.
   logic [SinkBuffers-1:0] sink_rvalid;
   for (genvar t = 0; t < NumTargets; t++) begin : gen_sink_rvalid
-    assign sink_rvalid[t + 1] = buf_rvalid_i[t];
+    assign sink_rvalid[2*t + 2] = buf_rvalid_i[t];
+    assign sink_rvalid[2*t + 3] = tx_desc_rvalid_i[t];
   end
   assign sink_rvalid[0] = ibi_rvalid_i;
+  assign sink_rvalid[1] = ibi_desc_rvalid_i;
   // Supply the 'buffer empty' indications to the data sink.
   logic [SinkBuffers-1:0] sink_empty;
   for (genvar t = 0; t < NumTargets; t++) begin : gen_sink_empty
-    assign sink_empty[t + 1] = buf_rempty_i[t];
+    assign sink_empty[2*t + 2] = buf_rempty_i[t];
+    assign sink_empty[2*t + 3] = tx_desc_rempty_i[t];
   end
   assign sink_empty[0] = ibi_rempty_i;
+  assign sink_empty[1] = ibi_desc_rempty_i;
+  // Virtual Targets that are not present.
+  for (genvar t = NumTargets; t < MaxTargets; t++) begin : gen_sink_no_vt
+    assign sink_rvalid[2*t + 3 -: 2] = 2'b00;
+    assign sink_empty[2*t + 3 -: 2] = 2'b11;  // This will raise an error if sw attempts to use it.
+  end
 
   // Software starts the data sink operation.
   wire sink_start = reg2hw_i.targ_sink_control.start.qe & reg2hw_i.targ_sink_control.start.q;
@@ -1351,7 +1367,7 @@ module i3c_target_fsm
     end
     // - the Direct Read CCC data of the Virtual Targets that are not implemented.
     for (int unsigned t = NumTargets; t < MaxTargets; t++) begin
-      unused_targ_dev ^= ^ccc_rsp.req_cdata[t];
+      unused_targ_dev ^= ^{ccc_rsp.req_cdata[t], sink_rready[2*t + 3 -: 2]};
     end
   end
   // - group descriptions are defined in a package, including non-existent Virtual Targets.

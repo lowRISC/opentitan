@@ -128,7 +128,7 @@ package i3c_reg_pkg;
       logic [10:0] q;
     } length;
     struct packed {
-      logic [2:0]  q;
+      logic [3:0]  q;
     } buffer;
   } i3c_reg2hw_targ_sink_control_reg_t;
 
@@ -2755,14 +2755,14 @@ package i3c_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    i3c_reg2hw_intr_state_reg_t intr_state; // [2311:2310]
-    i3c_reg2hw_intr_enable_reg_t intr_enable; // [2309:2308]
-    i3c_reg2hw_intr_test_reg_t intr_test; // [2307:2304]
-    i3c_reg2hw_alert_test_reg_t alert_test; // [2303:2302]
-    i3c_reg2hw_ctrl_error_reg_t ctrl_error; // [2301:2285]
-    i3c_reg2hw_targ_control_reg_t targ_control; // [2284:2274]
-    i3c_reg2hw_targ_status_reg_t targ_status; // [2273:2256]
-    i3c_reg2hw_targ_sink_control_reg_t targ_sink_control; // [2255:2239]
+    i3c_reg2hw_intr_state_reg_t intr_state; // [2312:2311]
+    i3c_reg2hw_intr_enable_reg_t intr_enable; // [2310:2309]
+    i3c_reg2hw_intr_test_reg_t intr_test; // [2308:2305]
+    i3c_reg2hw_alert_test_reg_t alert_test; // [2304:2303]
+    i3c_reg2hw_ctrl_error_reg_t ctrl_error; // [2302:2286]
+    i3c_reg2hw_targ_control_reg_t targ_control; // [2285:2275]
+    i3c_reg2hw_targ_status_reg_t targ_status; // [2274:2257]
+    i3c_reg2hw_targ_sink_control_reg_t targ_sink_control; // [2256:2239]
     i3c_reg2hw_reset_det_ctrl_reg_t reset_det_ctrl; // [2238:2231]
     i3c_reg2hw_ctrl_time_sp_reg_t ctrl_time_sp; // [2230:2211]
     i3c_reg2hw_ctrl_time_od_reg_t ctrl_time_od; // [2210:2191]
