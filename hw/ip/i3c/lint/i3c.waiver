@@ -110,6 +110,9 @@ waive -rules {CONST_FF} -location {i3c_controller_fsm.sv i3c_target_fsm.sv} \
 waive -rules {CONST_FF} -location {i3c_target_fsm.sv} \
       -regexp {Flip-flop 'rx_desc_q\.targets\[3:2\]' is driven by constant zeros} \
       -comment "The descriptor has a bit for each of the maximum number of Virtual Targets; bits above NumTargets are zero."
+waive -rules {CONST_FF} -location {i3c_target_trx.sv} \
+      -regexp {Flip-flop 'trans\.targ_id\[1]|trans\.targ_set\[3:2\]' is driven by constant zero?} \
+      -comment "Target ID and set have been sized for the maximum number of Virtual Targets; only 'NumTargets' VTs are present."
 waive -rules {CONST_FF} -location {i3c_controller_fsm.sv i3c_target_trx.sv} \
       -regexp {Flip-flop '(state_q\[5\]|trx_rxd_o\.dtype\[4\])' is driven by constant zero} \
       -comment "None of the enum values that the logic assigns to this flop sets this bit."
@@ -125,9 +128,6 @@ waive -rules {CONST_FF} -location {i3c_stby_cr_regs.sv} \
 waive -rules {CONST_FF} -location {i3c_targ_async_events.sv} \
       -regexp {Flip-flop 'ccc_address' is driven by constant zeros} \
       -comment "The reporting of CCC activity is not specified completely yet (see #31337)."
-waive -rules {CONST_FF} -location {i3c_targ_async_events.sv} \
-      -regexp {Flip-flop 'ccc_targets\[[0-9]+:[0-9]+\]' is driven by constant zeros} \
-      -comment "The recorded set has a bit for each of the maximum number of Virtual Targets; bits above NumTargets are trimmed off by TargPresent."
 
 ## Unused signals
 waive -rules {INPUT_NOT_READ HIER_BRANCH_NOT_READ} \

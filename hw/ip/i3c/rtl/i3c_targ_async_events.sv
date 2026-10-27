@@ -23,8 +23,7 @@ module i3c_targ_async_events
   parameter int unsigned DataWidth  = 32,
 
   // Derived parameters.
-  // Mask of the Virtual Targets implemented by this instance.
-  localparam logic [MaxTargets-1:0] TargPresent = MaxTargets'({NumTargets{1'b1}})
+  localparam int unsigned Log2NT = prim_util_pkg::vbits(NumTargets)
 ) (
   input                       clk_i,
   input                       rst_ni,
@@ -39,18 +38,18 @@ module i3c_targ_async_events
   // Transmission outcomes.
   input                       txd_result_i,
   input  i3c_err_status_e     txd_status_i,
-  input          [Log2MT-1:0] txd_targ_id_i,
+  input          [Log2NT-1:0] txd_targ_id_i,
   input                 [3:0] txd_tid_i,
   input                [15:0] txd_data_left_i,
 
   input                       ibi_result_i,
   input  i3c_err_status_e     ibi_status_i,
-  input          [Log2MT-1:0] ibi_targ_id_i,
+  input          [Log2NT-1:0] ibi_targ_id_i,
   input                 [3:0] ibi_tid_i,
   input                [15:0] ibi_data_left_i,
 
   // Suspending transmission.
-  input      [MaxTargets-1:0] suspend_tx_i,
+  input      [NumTargets-1:0] suspend_tx_i,
   input                       ibi_suspend_tx_i,
 
   // CCC request and current state of CCC handling.
@@ -117,7 +116,7 @@ module i3c_targ_async_events
   //
   // - the aim is to report CCC activity to one or more targets, so that software is notified of any
   //   resultant configuration change.
-  logic [MaxTargets-1:0] ccc_targets;
+  logic [NumTargets-1:0] ccc_targets;
   logic [6:0] ccc_address;
 
   typedef struct packed {
@@ -136,8 +135,7 @@ module i3c_targ_async_events
     else begin
       // Latch ccc_targets and ccc_info together, once per qualifying CCC.
       if (capture[AsyncEv_CCC] & (!(|ccc_targets) | evt_captured[AsyncEv_CCC])) begin
-        // Virtual Targets that are not present are trimmed off the recorded set.
-        ccc_targets <= r_i[TargCR_Targets][MaxTargets-1:0] & TargPresent;
+        ccc_targets <= NumTargets'(r_i[TargCR_Targets]);
         ccc_address <= '0; // TODO(#31337) Reporting of CCC activity incompletely specified.
         ccc_info    <= '{
           ccc:      ccc,
@@ -154,7 +152,7 @@ module i3c_targ_async_events
   // - only a single outcome is retained because they are temporally well-separated.
   logic               txd_result_q;
   i3c_err_status_e    txd_status_q;
-  logic  [Log2MT-1:0] txd_targ_id_q;
+  logic  [Log2NT-1:0] txd_targ_id_q;
   logic         [3:0] txd_tid_q;
   logic        [15:0] txd_data_left_q;
 
@@ -185,7 +183,7 @@ module i3c_targ_async_events
   // Capture IBI transmission outcomes.
   logic               ibi_result_q;
   i3c_err_status_e    ibi_status_q;
-  logic  [Log2MT-1:0] ibi_targ_id_q;
+  logic  [Log2NT-1:0] ibi_targ_id_q;
   logic         [3:0] ibi_tid_q;
   logic        [15:0] ibi_data_left_q;
 
@@ -193,9 +191,9 @@ module i3c_targ_async_events
     if (!rst_ni) begin
       ibi_result_q    <= 1'b0;
       ibi_status_q    <= ErrStatus_OK;
-      ibi_targ_id_q   <= '0;
-      ibi_tid_q       <= '0;
-      ibi_data_left_q <= '0;
+      ibi_targ_id_q   <= 'b0;
+      ibi_tid_q       <= 'b0;
+      ibi_data_left_q <= 'b0;
     end else if (sw_reset_i) begin
       ibi_result_q    <= 1'b0;
     end else begin
@@ -215,7 +213,7 @@ module i3c_targ_async_events
 
   // Capture transmission suspensions.
   // - these may be captured incrementally until arbitration is won.
-  logic [MaxTargets-1:0] suspend_tx_q;
+  logic [NumTargets-1:0] suspend_tx_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) suspend_tx_q <= '0;
     else if (sw_reset_i) suspend_tx_q <= '0;
@@ -279,18 +277,18 @@ module i3c_targ_async_events
 
     async_evt[AsyncEv_NotifyTx].txdr.code       = AsyncEv_NotifyTx;
     async_evt[AsyncEv_NotifyTx].txdr.err_status = txd_status_q;
-    async_evt[AsyncEv_NotifyTx].txdr.targ_id    = txd_targ_id_q;
+    async_evt[AsyncEv_NotifyTx].txdr.targ_id    = Log2MT'(txd_targ_id_q);
     async_evt[AsyncEv_NotifyTx].txdr.tid        = txd_tid_q;
     async_evt[AsyncEv_NotifyTx].txdr.data_left  = txd_data_left_q;
 
     async_evt[AsyncEv_NotifyIBI].ibir.code       = AsyncEv_NotifyIBI;
     async_evt[AsyncEv_NotifyIBI].ibir.err_status = ibi_status_q;
-    async_evt[AsyncEv_NotifyIBI].ibir.targ_id    = ibi_targ_id_q;
+    async_evt[AsyncEv_NotifyIBI].ibir.targ_id    = Log2MT'(ibi_targ_id_q);
     async_evt[AsyncEv_NotifyIBI].ibir.tid        = ibi_tid_q;
     async_evt[AsyncEv_NotifyIBI].ibir.data_left  = ibi_data_left_q;
 
     async_evt[AsyncEv_TxSuspend].txds.code    = AsyncEv_TxSuspend;
-    async_evt[AsyncEv_TxSuspend].txds.targets = suspend_tx_q;
+    async_evt[AsyncEv_TxSuspend].txds.targets = MaxTargets'(suspend_tx_q);
 
     async_evt[AsyncEv_IBISuspend].ibis.code = AsyncEv_IBISuspend;
 
