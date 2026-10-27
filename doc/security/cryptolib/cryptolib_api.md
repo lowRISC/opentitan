@@ -962,6 +962,63 @@ The following operations can run asynchronously:
 | X25519   | keygen, key exchange |
 | RSA      | keygen, sign, verify |
 
+### Receiving the OTBN Completion Interrupt
+
+The cryptolib does not configure the RISC-V Platform-Level Interrupt Controller (PLIC) or enable `OTBN_INTR_ENABLE`, leaving interrupt routing and ISR registration under the control of the caller.
+
+Internally, the cryptolib OTBN driver ensures that `OTBN_INTR_STATE.done` only signals the completion of the asynchronous operation itself:
+- Synchronous OTBN operations performed inside `*_async_start` and `*_async_finalize` (such as IMEM/DMEM secure wipes, curve-point validation, arithmetic key sharing, or intermediate SHA-2 hashing) temporarily mask `OTBN_INTR_ENABLE` and clear `OTBN_INTR_STATE.done` before returning.
+- Right before `<algorithm>_async_start` launches the asynchronous OTBN program, `otbn_execute()` clears any stale `OTBN_INTR_STATE.done` bit.
+- When `<algorithm>_async_finalize` runs, `otbn_busy_wait_for_done()` clears `OTBN_INTR_STATE.done` once OTBN is idle.
+
+*(Note: Ed25519 signing is split across two asynchronous OTBN stages—`otcrypto_ed25519_sign_part1_async_start`, `otcrypto_ed25519_sign_part2_async_start`, and `otcrypto_ed25519_sign_async_finalize`—so OTBN raises one `done` interrupt when Part 1 finishes and a second `done` interrupt when Part 2 finishes.)*
+
+To use interrupt-driven completion with the asynchronous API:
+
+1. **Configure OTBN and the PLIC (one-time setup):**
+   - Enable the `done` interrupt on OTBN by setting bit `OTBN_INTR_ENABLE_DONE_BIT` (`0`) in `OTBN_INTR_ENABLE` (for example, via `dif_otbn_irq_set_enabled(&otbn, kDifOtbnIrqDone, kDifToggleEnabled)`).
+   - Enable and set a non-zero priority for PLIC IRQ `kTopEarlgreyPlicIrqIdOtbnDone` (peripheral `kTopEarlgreyPlicPeripheralOtbn`) on `kTopEarlgreyPlicTargetIbex0`, and enable external interrupts on Ibex (`irq_global_ctrl(true)` and `irq_external_ctrl(true)`).
+2. **Acknowledge the interrupt in your ISR:**
+   - Claim the interrupt from the PLIC (`dif_rv_plic_irq_claim`).
+   - Clear `OTBN_INTR_STATE.done` (`rw1c`) by calling `dif_otbn_irq_acknowledge(&otbn, kDifOtbnIrqDone)` (or writing `1u << OTBN_INTR_STATE_DONE_BIT` to `OTBN_INTR_STATE_REG_OFFSET`).
+   - Complete the PLIC interrupt (`dif_rv_plic_irq_complete`) and signal your application state machine or scheduler.
+3. **Run the asynchronous operation:**
+   - Clear your completion flag and call `<algorithm>_async_start(...)`.
+   - Perform other CPU work or sleep (`wait_for_interrupt()`) until the ISR sets the completion flag.
+   - Call `<algorithm>_async_finalize(...)` to verify the execution status, read the result, and wipe OTBN DMEM.
+
+```c
+static volatile bool otbn_async_done = false;
+
+// Example ISR handling kTopEarlgreyPlicIrqIdOtbnDone:
+void external_isr(void) {
+  dif_rv_plic_irq_id_t irq_id;
+  CHECK_DIF_OK(dif_rv_plic_irq_claim(&plic, kTopEarlgreyPlicTargetIbex0, &irq_id));
+  if (irq_id == kTopEarlgreyPlicIrqIdOtbnDone) {
+    CHECK_DIF_OK(dif_otbn_irq_acknowledge(&otbn, kDifOtbnIrqDone));
+    otbn_async_done = true;
+  }
+  CHECK_DIF_OK(dif_rv_plic_irq_complete(&plic, kTopEarlgreyPlicTargetIbex0, irq_id));
+}
+
+// Example asynchronous ECDSA P-256 sign call:
+otcrypto_status_t sign_with_irq(const otcrypto_blinded_key_t *private_key,
+                                const otcrypto_hash_digest_t message_digest,
+                                otcrypto_word32_buf_t *signature) {
+  // Enable OTBN done interrupt (can also be left enabled across calls).
+  CHECK_DIF_OK(
+      dif_otbn_irq_set_enabled(&otbn, kDifOtbnIrqDone, kDifToggleEnabled));
+
+  otbn_async_done = false;
+  HARDENED_TRY(otcrypto_ecdsa_p256_sign_async_start(private_key, message_digest));
+
+  // Do other work on Ibex or sleep until the OTBN done interrupt fires.
+  ATOMIC_WAIT_FOR_INTERRUPT(otbn_async_done);
+
+  return otcrypto_ecdsa_p256_sign_async_finalize(signature);
+}
+```
+
 
 ## Security Strength
 

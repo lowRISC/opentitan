@@ -372,11 +372,8 @@ status_t curve25519_point_on_curve_check(
       OTBN_ADDR_T_INIT(run_curve25519, ed25519_public_key);
   HARDENED_TRY(otbn_dmem_write(kCurve25519PointWords, point, kOtbnVarPubKey));
 
-  // Start the OTBN routine.
-  HARDENED_TRY(otbn_execute());
-
-  // Spin here waiting for OTBN to complete.
-  HARDENED_TRY_WIPE_DMEM(otbn_busy_wait_for_done());
+  // Run the OTBN routine synchronously.
+  HARDENED_TRY_WIPE_DMEM(otbn_execute_sync());
 
   // Check the instruction count.
   HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModePointOnCurveCheckInsCnt);
