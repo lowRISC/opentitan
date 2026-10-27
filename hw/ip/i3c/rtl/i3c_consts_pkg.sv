@@ -125,7 +125,7 @@ package i3c_consts_pkg;
 
   // Error Status Codes (TCRI 6.4.1)
   typedef enum logic [3:0] {
-    ErrStatus_OK = 4'h0,
+    ErrStatus_SUCCESS = 4'h0,
     ErrStatus_CRC,
     ErrStatus_Parity,
     ErrStatus_Frame,

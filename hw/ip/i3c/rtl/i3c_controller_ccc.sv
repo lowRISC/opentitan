@@ -86,7 +86,7 @@ module i3c_controller_ccc
               // TODO(#31304): At this point we should be accepting/responding to ACK/NACK.
               // We must send Sr at this point, the command is continuing.
               ccc_rsp_o.done       = 1'b1;
-              ccc_rsp_o.err_status = ErrStatus_OK;
+              ccc_rsp_o.err_status = ErrStatus_SUCCESS;
             end
             default: begin
               // We can receive 4 bytes from the transceiver at a time; transfer the 8 bytes of
@@ -108,7 +108,7 @@ module i3c_controller_ccc
               // We must send Sr at this point, the command is continuing.
               // return.
               ccc_rsp_o.done       = 1'b1;
-              ccc_rsp_o.err_status = ErrStatus_OK;
+              ccc_rsp_o.err_status = ErrStatus_SUCCESS;
             end
             default: begin
               // TODO(#31304): Sending the Static and Dynamic Addresses with Open Drain signaling.
@@ -146,7 +146,7 @@ module i3c_controller_ccc
                 ccc_rsp_o.txd_req = 1'b1;
               end else begin
                 ccc_rsp_o.done       = 1'b1;
-                ccc_rsp_o.err_status = ErrStatus_OK;
+                ccc_rsp_o.err_status = ErrStatus_SUCCESS;
               end
             //
             default: begin

@@ -159,7 +159,7 @@ module i3c_targ_async_events
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       txd_result_q    <= 1'b0;
-      txd_status_q    <= ErrStatus_OK;
+      txd_status_q    <= ErrStatus_SUCCESS;
       txd_targ_id_q   <= 'b0;
       txd_tid_q       <= 'b0;
       txd_data_left_q <= 'b0;
@@ -190,7 +190,7 @@ module i3c_targ_async_events
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       ibi_result_q    <= 1'b0;
-      ibi_status_q    <= ErrStatus_OK;
+      ibi_status_q    <= ErrStatus_SUCCESS;
       ibi_targ_id_q   <= 'b0;
       ibi_tid_q       <= 'b0;
       ibi_data_left_q <= 'b0;
