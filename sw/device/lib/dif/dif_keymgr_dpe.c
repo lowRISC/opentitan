@@ -278,7 +278,7 @@ dif_result_t dif_keymgr_dpe_advance_state(
 dif_result_t dif_keymgr_dpe_erase_slot(
     const dif_keymgr_dpe_t *keymgr_dpe,
     const dif_keymgr_dpe_erase_params_t *params) {
-  if (keymgr_dpe == NULL) {
+  if (keymgr_dpe == NULL || params == NULL) {
     return kDifBadArg;
   }
 
