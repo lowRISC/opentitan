@@ -1653,14 +1653,17 @@ package i3c_reg_pkg;
       logic        d;
     } connected;
     struct packed {
+      logic [1:0]  d;
+    } targets;
+    struct packed {
       logic        d;
     } protocol_error;
     struct packed {
       logic        d;
     } vtm;
     struct packed {
-      logic [2:0]  d;
-    } num_targets;
+      logic        d;
+    } rstact_virt_targ_det;
     struct packed {
       logic [7:0]  d;
     } rstact;
@@ -3133,13 +3136,14 @@ package i3c_reg_pkg;
   parameter logic [10:0] I3C_INFO_BUF_DWORD_MAX_RESVAL = 11'h 3ff;
   parameter logic [31:0] I3C_CTRL_STATUS_RESVAL = 32'h 80000000;
   parameter logic [0:0] I3C_CTRL_STATUS_PRESENT_RESVAL = 1'h 1;
-  parameter logic [31:0] I3C_TARG_STATUS_RESVAL = 32'h 82000000;
+  parameter logic [31:0] I3C_TARG_STATUS_RESVAL = 32'h 88000000;
   parameter logic [14:0] I3C_TARG_STATUS_EXT_INFO_RESVAL = 15'h 0;
   parameter logic [0:0] I3C_TARG_STATUS_EXT_PRESENT_RESVAL = 1'h 0;
   parameter logic [7:0] I3C_TARG_STATUS_RSTACT_RESVAL = 8'h 0;
-  parameter logic [2:0] I3C_TARG_STATUS_NUM_TARGETS_RESVAL = 3'h 2;
+  parameter logic [0:0] I3C_TARG_STATUS_RSTACT_VIRT_TARG_DET_RESVAL = 1'h 0;
   parameter logic [0:0] I3C_TARG_STATUS_VTM_RESVAL = 1'h 0;
   parameter logic [0:0] I3C_TARG_STATUS_PROTOCOL_ERROR_RESVAL = 1'h 0;
+  parameter logic [1:0] I3C_TARG_STATUS_TARGETS_RESVAL = 2'h 1;
   parameter logic [0:0] I3C_TARG_STATUS_CONNECTED_RESVAL = 1'h 0;
   parameter logic [0:0] I3C_TARG_STATUS_ACTIVE_RESVAL = 1'h 0;
   parameter logic [0:0] I3C_TARG_STATUS_PRESENT_RESVAL = 1'h 1;

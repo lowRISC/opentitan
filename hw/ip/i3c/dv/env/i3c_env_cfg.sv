@@ -131,9 +131,10 @@ class i3c_env_cfg extends cip_base_env_cfg #(.RAL_T(i3c_reg_block));
     end
   endfunction
 
-  // `TARG_STATUS.NUM_TARGETS` reports the `NumTargets` parameter of the DUT.
+  // `TARG_STATUS.TARGETS` reports the `NumTargets` parameter of the DUT minus 1.
   protected virtual function void set_num_targets_reset(i3c_reg_block i3c_ral);
-    i3c_ral.targ_status.num_targets.set_reset(NumTargets);
+    `DV_CHECK_FATAL(NumTargets > 0, "DUT does not presently support zero Targets")
+    i3c_ral.targ_status.targets.set_reset(NumTargets - 1);
   endfunction
 
 endclass
