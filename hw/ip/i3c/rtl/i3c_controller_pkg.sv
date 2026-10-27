@@ -215,6 +215,8 @@ package i3c_controller_pkg;
 
     // Fields that may be modified by the command type.
     i3c_xfer_mode_e      mode;       // Transfer mode.
+    logic                addr_bcst;  // Using the I3C Broadcast Address (7'h7e)?
+    logic          [7:0] addr_rnw;   // Address for this command phase, with (modified) RnW bit.
     logic                rnw;        // Read, not Write in this command phase?
     logic                toc;        // Terminate On Completion (send stoP as opposed to Sr)?
     logic                i2c;        // I2C device, rather than I3C?
@@ -230,7 +232,7 @@ package i3c_controller_pkg;
   } i3c_ctrl_cmd_attrs_t;
 
   // Stored properties of the current HCI Command Descriptor, and properties preserved from earlier
-  // Command Descriptor(s) forming a single Common Command Code transfer.
+  // Command Descriptor(s) forming a single sequence.
   //
   // - Command Descriptors may operate together to form a single CCC operation.
   // - Address Assignment commands require iteration, to assign a number of dynamic addresses.
