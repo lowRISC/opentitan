@@ -109,11 +109,13 @@ The same holds for [`EXTHT_FAIL_COUNTS`](registers.md#extht_fail_counts) which r
 ### Routing Entropy to Firmware
 
 Firmware has a path to read entropy from the ENTROPY_SRC block.
-The [`ES_ROUTE`](registers.md#entropy_control--es_route) field in the [`ENTROPY_CONTROL`](registers.md#entropy_control) register allows firmware to set the internal multiplexers to steer entropy data to the [`ENTROPY_DATA`](registers.md#entropy_data) register.
-When enabled, no entropy is being passed to the block hardware interface.
-The control field [`ES_TYPE`](registers.md#entropy_control--es_type) sets whether the entropy will come from the conditioning block or be sourced through the bypass path.
-A status bit will be set that can either be polled or generate an interrupt when the entropy bits are available to be read from the [`ENTROPY_DATA`](registers.md#entropy_data) register.
-The firmware needs to read the [`ENTROPY_DATA`](registers.md#entropy_data) register twelve times in order to cleanly evacuate the 384-bit seed from the hardware path (12 * 32 bits = 384 bits in total).
+The [`ENTROPY_CONTROL.entropy_data_reg_enable`](registers.md#entropy_control--entropy_data_reg_enable) setting  allows firmware to request the routing of individual seeds from the esfinal FIFO to the [`ENTROPY_DATA`](registers.md#entropy_data) register.
+To place such a request, firmware can write the [`ENTROPY_DATA_REQUEST`](registers.md#entropy_data_request) register.
+When the requested seed can be read from the [`ENTROPY_DATA`](registers.md#entropy_data) register, this is indicated in the [`ENTROPY_DATA_VALID`](registers.md#entropy_data_valid) register and with a interrupt.
+Firmware then needs to read the [`ENTROPY_DATA`](registers.md#entropy_data) register twelve times in order to cleanly evacuate the 384-bit seed from the hardware path (12 * 32 bits = 384 bits in total).
+
+The control field [`ENTROPY_CONTROL.bypass_conditioning`](registers.md#entropy_control--bypass_conditioning) sets whether the entropy will come from the conditioning block or be sourced through the bypass path.
+If this setting is enabled when running in FIPS/CC compliant mode, no entropy is passed to the hardware block interface.
 
 ### Disabling
 
