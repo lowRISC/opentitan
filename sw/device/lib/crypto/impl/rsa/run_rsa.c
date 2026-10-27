@@ -190,7 +190,7 @@ status_t rsa_modexp_wait(size_t *num_words) {
  * @param[out] result Result of the modexp operation.
  * @return Status of the operation (OK or error).
  */
-static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
+status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
   // Wait for OTBN to complete and get the result size.
   size_t num_words_inferred;
   HARDENED_TRY(rsa_modexp_wait(&num_words_inferred));
@@ -463,25 +463,35 @@ status_t rsa_modexp_vartime_start(rsa_size_t size, const uint32_t *base,
   return otbn_execute();
 }
 
-status_t rsa_modexp_finalize_size(rsa_size_t size, uint32_t *result) {
-  size_t expected_words = 0;
+status_t rsa_size_to_num_words(rsa_size_t size, size_t *num_words) {
+  *num_words = 0;
   switch (launder32(size)) {
     case kRsaSize2048:
       HARDENED_CHECK_EQ(size, kRsaSize2048);
-      expected_words = kRsa2048NumWords;
-      break;
+      *num_words = kRsa2048NumWords;
+      return OTCRYPTO_OK;
     case kRsaSize3072:
       HARDENED_CHECK_EQ(size, kRsaSize3072);
-      expected_words = kRsa3072NumWords;
-      break;
+      *num_words = kRsa3072NumWords;
+      return OTCRYPTO_OK;
     case kRsaSize4096:
       HARDENED_CHECK_EQ(size, kRsaSize4096);
-      expected_words = kRsa4096NumWords;
-      break;
+      *num_words = kRsa4096NumWords;
+      return OTCRYPTO_OK;
     default:
       HARDENED_TRAP();
       return OTCRYPTO_FATAL_ERR;
   }
+
+  // Should be unreachable.
+  HARDENED_TRAP();
+  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
+  return OTCRYPTO_FATAL_ERR;
+}
+
+status_t rsa_modexp_finalize_size(rsa_size_t size, uint32_t *result) {
+  size_t expected_words = 0;
+  HARDENED_TRY(rsa_size_to_num_words(size, &expected_words));
   return rsa_modexp_finalize(expected_words, result);
 }
 
