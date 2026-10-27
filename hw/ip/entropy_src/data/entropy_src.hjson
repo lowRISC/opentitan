@@ -409,7 +409,7 @@
                 The ENTROPY_SRC block will use the FIPS_WINDOW value of the !!HEALTH_TEST_WINDOWS register.
                 Whether the ENTROPY_SRC block is indeed running with the configuration used for FIPS/CC validation is under the control of firmware.
                 Thus, firmware must explicitly mark the produced entropy as FIPS qualified using the !!CONF.FIPS_FLAG field.
-                Note that the hardware conditioning can still be disabled in FIPS mode by setting both !!ENTROPY_CONTROL.ES_ROUTE and !!ENTROPY_CONTROL.ES_TYPE fields to `kMultiBitBool4True`.
+                Note that the hardware conditioning can still be disabled in FIPS mode by setting the !!ENTROPY_CONTROL.BYPASS_CONDITIONING field to `kMultiBitBool4True`.
                 However, no entropy is being passed to the block hardware interface in this mode.
 
                 Setting this field to `kMultiBitBool4False` selects the boot-time / bypass mode in which the hardware conditioning is bypassed.
@@ -458,14 +458,6 @@
                 '''
           resval: false
         },
-        { bits: "23:20",
-          name: "ENTROPY_DATA_REG_ENABLE",
-          mubi: true,
-          desc: '''
-                Setting this field to `kMultiBitBool4True` will enable reading entropy values from the !!ENTROPY_DATA register.
-                '''
-          resval: false
-        }
         { bits: "31:24",
           name: "RNG_BIT_SEL",
           desc: '''
@@ -480,28 +472,27 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "REGWEN",
-      tags: [// Exclude from writes to these field because they cause side affects.
+      tags: [// Exclude from writes to these field because they cause side effects.
              "excl:CsrAllTests:CsrExclAll"]
       fields: [
         { bits: "3:0",
-          name: "ES_ROUTE",
+          name: "ENTROPY_DATA_REG_ENABLE",
           mubi: true,
           desc: '''
-                When this field is `kMultiBitBool4False`, the generated entropy will be forwarded out of this module to the hardware interface.
-                Setting this field to `kMultiBitBool4True` routes the generated entropy to the !!ENTROPY_DATA register to be read by firmware.
-                Note that for !!ENTROPY_DATA to become readable, also !!CONF.ENTROPY_DATA_REG_ENABLE needs to be set to `kMultiBitBool4True`.
+                Setting this field to `kMultiBitBool4True` will enable reading entropy values from the !!ENTROPY_DATA register.
                 '''
           resval: false
-        },
+        }
         { bits: "7:4",
-          name: "ES_TYPE",
+          name: "BYPASS_CONDITIONING",
           mubi: true,
           desc: '''
-                When this field is `kMultiBitBool4False`, the hardware conditioning inside the ENTROPY_SRC block is enabled.
+                When this field is `kMultiBitBool4False`, the hardware conditioning inside the ENTROPY_SRC block is enabled when running in FIPS/CC compliance mode.
                 Setting this field to `kMultiBitBool4True` will bypass the hardware conditioning.
-                For this to work, also !!ENTROPY_CONTROL.ES_ROUTE needs to be set to `kMultiBitBool4True` to route the unconditioned, raw entropy to the !!ENTROPY_DATA register.
+                In this case, no entropy is being passed to the block hardware interface, but firmware can request the reading of unconditioned, raw entropy from the !!ENTROPY_DATA register via the !!ENTROPY_DATA_REQUEST register.
+
                 Alternatively, the hardware conditioning can be bypassed by setting !!CONF.FIPS_ENABLE to `kMultiBitBool4False`.
-                This enables the bypass / boot-time mode.
+                This enables the bypass / boot-time mode in which the ENTROPY_SRC block will pass a single seed's worth of entropy to the block hardware interface only.
                 '''
           resval: false
         },
@@ -519,6 +510,50 @@
         },
       ]
     },
+    { name: "ENTROPY_DATA_REQUEST",
+      desc: "Entropy data request register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true"
+      tags: [// Exclude from writes to these field because they cause side effects.
+             "excl:CsrAllTests:CsrExclAll"]
+      fields: [
+        { bits: "3:0",
+          mubi: true,
+          desc: '''
+                Firmware can write `kMultiBitBool4True` to this field to request the routing of the next 384-bit seed from the esfinal FIFO to the !!ENTROPY_DATA register.
+                For this to work, !!ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE needs to be set to `kMultiBitBool4True`.
+                Otherwise, this field keeps reading as `kMultiBitBool4False` and the request is ignored.
+
+                If the esfinal FIFO is not empty while firmware writes `kMultiBitBool4True` to this field, the field immediately sets back to `kMultiBitBool4False` and !!ENTROPY_DATA_VALID switches to `kMultiBitBool4True` to indicate that the seed can now be read from the !!ENTROPY_DATA register.
+
+                Note that as long as this field or !!ENTROPY_DATA_VALID read as `kMultiBitBool4True`, no entropy is being passed to the block hardware interface.
+                '''
+          resval: false
+        },
+      ]
+    },
+    { name: "ENTROPY_DATA_VALID",
+      desc: "Entropy data valid register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      tags: [// Exclude from writes to these field because they cause side effects.
+             "excl:CsrAllTests:CsrExclAll"]
+      fields: [
+        { bits: "3:0",
+          mubi: true,
+          desc: '''
+                When this field is `kMultiBitBool4True`, the !!ENTROPY_DATA register contains a valid 384-bit seed readable by firmware, and no entropy is being passed to the block hardware interface.
+
+                After firmware has read the entire seed by reading !!ENTROPY_DATA register 12 times, this field drops back to `kMultiBitBool4False`, and entropy is again passed to the block hardware interface (unless !!ENTROPY_CONTROL.BYPASS_CONDITIONING is set to `kMultiBitBool4True` and !!CONF.FIPS_ENABLE is set to `kMultiBitBool4True`).
+
+                Setting this field to `kMultiBitBool4True` routes the generated entropy to the !!ENTROPY_DATA register to be read by firmware.
+                Note that for !!ENTROPY_DATA to become readable, also !!ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE needs to be set to `kMultiBitBool4True`.
+                '''
+          resval: false
+        },
+      ]
+    },
     { name: "ENTROPY_DATA",
       desc: "Entropy data bits",
       swaccess: "ro",
@@ -529,7 +564,10 @@
         { bits: "31:0",
           desc: '''
                 A read of this register provides generated entropy bits to firmware.
-                For this to work also !!CONF.ENTROPY_DATA_REG_ENABLE needs to be set to `kMultiBitBool4True`.
+                For this to work also !!ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE needs to be set to `kMultiBitBool4True`.
+
+                Before reading the register, firmware has to request the routing of the next 384-bit seed to this register via !!ENTROPY_DATA_REQUEST and wait for the seed to be ready by checking !!ENTROPY_DATA_VALID.
+                Otherwise, the register reads as 0.
                 '''
         }
       ]
@@ -1402,7 +1440,7 @@
         { bits: "1",
           name: "ENTROPY_DATA_REG_EN_FIELD_ALERT",
           desc: '''
-                This bit is set when the ENTROPY_DATA_REG_ENABLE field in the !!CONF register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                This bit is set when the ENTROPY_DATA_REG_ENABLE field in the !!ENTROPY_CONTROL register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }
