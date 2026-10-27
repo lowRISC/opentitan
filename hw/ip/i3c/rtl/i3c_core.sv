@@ -635,6 +635,7 @@ module i3c_core
 
   logic                 targ_tx_desc_rvalid[NumTargets];
   logic [DataWidth-1:0] targ_tx_desc_rdata[NumTargets];
+  logic                 targ_tx_desc_rempty[NumTargets];
   logic [FIFODepthW:0]  targ_tx_desc_rused[NumTargets];
   logic [FIFODepthW:0]  targ_tx_desc_ravail[NumTargets];
 
@@ -652,6 +653,7 @@ module i3c_core
 
       targ_tx_desc_rvalid[t] = fifo_out[FIFO_TxDTarg0 + t].rvalid;
       targ_tx_desc_rdata[t]  = fifo_out[FIFO_TxDTarg0 + t].rdata;
+      targ_tx_desc_rempty[t] = fifo_state[FIFO_TxDTarg0 + t].empty;
       targ_tx_desc_rused[t]  = fifo_state[FIFO_TxDTarg0 + t].used;
       targ_tx_desc_ravail[t] = fifo_state[FIFO_TxDTarg0 + t].avail;
 
@@ -892,6 +894,7 @@ module i3c_core
     .tx_desc_rready_o     (targ_tx_desc_rready),
     .tx_desc_rvalid_i     (targ_tx_desc_rvalid),
     .tx_desc_rdata_i      (targ_tx_desc_rdata),
+    .tx_desc_rempty_i     (targ_tx_desc_rempty),
     .tx_desc_rused_i      (targ_tx_desc_rused),
     .tx_desc_ravail_i     (targ_tx_desc_ravail),
 
@@ -906,6 +909,7 @@ module i3c_core
     .ibi_desc_rready_o    (fifo_in[FIFO_IBIDTarg].rready),
     .ibi_desc_rvalid_i    (fifo_out[FIFO_IBIDTarg].rvalid),
     .ibi_desc_rdata_i     (fifo_out[FIFO_IBIDTarg].rdata),
+    .ibi_desc_rempty_i    (fifo_state[FIFO_IBIDTarg].empty),
     .ibi_desc_ravail_i    (fifo_state[FIFO_IBIDTarg].avail),
 
     // Buffer reading.
