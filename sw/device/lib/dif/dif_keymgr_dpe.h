@@ -234,14 +234,14 @@ typedef enum dif_keymgr_dpe_status_code {
    */
   kDifKeymgrDpeStatusCodeInvalidKmacInput = 1 << 2,
   /**
-   * Key manager encountered invalid state.
+   * Key manager observed an error during a shadow register update.
    */
   kDifKeymgrDpeStatusCodeInvalidState = 1 << 3,
 
 } dif_keymgr_dpe_status_code_t;
 
 /**
- * Define mask for error fields of `dif_keymgr_dpe_status_code_t`.
+ * Define mask for idle field of `dif_keymgr_dpe_status_code_t`.
  */
 static const bitfield_field32_t kIdleBitfield = (bitfield_field32_t){
     .mask = 0x1,
@@ -249,7 +249,7 @@ static const bitfield_field32_t kIdleBitfield = (bitfield_field32_t){
 };
 
 /**
- * Define mask for idle field of `dif_keymgr_dpe_status_code_t`.
+ * Define mask for error fields of `dif_keymgr_dpe_status_code_t`.
  */
 static const bitfield_field32_t kErrorBitfield = (bitfield_field32_t){
     .mask = 0x7,
@@ -329,9 +329,9 @@ dif_result_t dif_keymgr_dpe_get_metadata(const dif_keymgr_dpe_t *keymgr_dpe,
  * Disables key manager dpe.
  *
  * This function disables keymgr dpe until the next power cycle by making
- * it transition to the "disabled" state. The "disabled" state is a terminal
- * state where the keymgr dpe is no longer operational and its secret values
- * are wiped.
+ * it transition to the "disabled" state. In this state keymgr dpe rejects
+ * further operations and its internal key slots are wiped, but the sideload
+ * keys and the software key are kept.
  *
  * @param keymgr_dpe A key manager handle.
  * @return The result of the operation.

@@ -100,8 +100,9 @@ void sc_keymgr_dpe_start_operation(void) {
  * operation, reads and clears the error code and returns
  * `kErrorKeymgrInternal`.
  *
- * @return `kErrorOk` if the status is either "idle" or the operation
- * finished with "done_successfully", `kErrorKeymgrInternal` otherwise.
+ * @return `kErrorOk` if the operation finished with "done_successfully",
+ * `kErrorKeymgrInternal` if it finished with "done_error". Any other status,
+ * including "idle", traps, as the caller must have started an operation.
  */
 rom_error_t sc_keymgr_dpe_wait_until_done(void) {
   // Poll the OP_STATUS register until it is different than "WIP".
