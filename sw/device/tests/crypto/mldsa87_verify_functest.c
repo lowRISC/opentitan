@@ -28,8 +28,17 @@ static status_t run_mldsa87_verify(const mldsa87_verify_testvector_t *vector) {
       otcrypto_const_byte_buf_t, vector->ctx, vector->ctx_len);
 
   hardened_bool_t verification_result;
-  CHECK_STATUS_OK(otcrypto_mldsa87_verify(
-      &pk, &msg, &ctx, &sig, vector->hash_mode, &verification_result));
+  if (vector->mu != NULL) {
+    otcrypto_hash_digest_t mu = {
+        .data = (uint32_t *)vector->mu,
+        .len = kOtcryptoMldsa87MuWords,
+    };
+    CHECK_STATUS_OK(otcrypto_mldsa87_verify_external_mu(&pk, &mu, &sig,
+                                                        &verification_result));
+  } else {
+    CHECK_STATUS_OK(otcrypto_mldsa87_verify(
+        &pk, &msg, &ctx, &sig, vector->hash_mode, &verification_result));
+  }
 
   CHECK(verification_result == kHardenedBoolTrue);
 
@@ -52,6 +61,14 @@ static status_t mldsa87_verify_pre_hash_test(void) {
       &mldsa87_verify_testvectors[kMldsa87VerifyNistAcvp79PreHashSha3_224]);
 }
 
+/**
+ * Precomputed message hash mu.
+ */
+static status_t mldsa87_verify_external_mu_test(void) {
+  return run_mldsa87_verify(
+      &mldsa87_verify_testvectors[kMldsa87VerifyNistAcvp63ExternalMu]);
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -63,6 +80,7 @@ bool test_main(void) {
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, mldsa87_verify_pure_test);
   EXECUTE_TEST(result, mldsa87_verify_pre_hash_test);
+  EXECUTE_TEST(result, mldsa87_verify_external_mu_test);
 
   return status_ok(result);
 }
