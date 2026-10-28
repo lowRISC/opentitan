@@ -145,7 +145,7 @@ jobs:
   otbn_panopticon_nightly:
     name: OTBN Panopticon Nightly (FI + TVLA)
     runs-on: ubuntu-22.04
-    timeout-minutes: 180
+    timeout-minutes: 300
     steps:
       - uses: actions/checkout@v6
         with:
