@@ -37,10 +37,6 @@ enum {
    */
   kOtcryptoMldsa87CtxMaxBytes = 255,
   /**
-   * Maximum size of a ML-DSA message.
-   */
-  kOtcryptoMldsa87MsgMaxBytes = 8192,
-  /**
    * Size of the ML-DSA-87 message hash mu.
    */
   kOtcryptoMldsa87MuBytes = 64,
