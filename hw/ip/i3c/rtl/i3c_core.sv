@@ -2104,7 +2104,7 @@ module i3c_core
   assign hw2reg_o.hc_capabilities.hdr_ts_en.d             = 1'b0;  // HDR-Ternary not in I3C Basic.
   assign hw2reg_o.hc_capabilities.hdr_ddr_en.d            = 1'b1;
   assign hw2reg_o.hc_capabilities.standby_cr_cap.d        = SecondaryCtrl;
-  assign hw2reg_o.hc_capabilities.auto_command.d          = 1'b1;
+  assign hw2reg_o.hc_capabilities.auto_command.d          = 1'b0;  // TODO(#31304): Not yet decided.
   assign hw2reg_o.hc_capabilities.combo_command.d         = 1'b0;  // Not supported presently.
   // Active Controller indication.
   assign hw2reg_o.present_state.d = ac_current_own;
@@ -2124,7 +2124,7 @@ module i3c_core
                                                           BASE_OFFSET);
   // Internal Control Command Subtype Support.
   assign hw2reg_o.int_ctrl_cmds_en.icc_support.d         = 1'b1;
-  assign hw2reg_o.int_ctrl_cmds_en.mipi_cmds_supported.d = 'h107a;
+  assign hw2reg_o.int_ctrl_cmds_en.mipi_cmds_supported.d = 'h2a;
   // Device Context Base Address (applicable only to DMA).
   assign hw2reg_o.dev_ctx_base_lo.d      = '0;
   assign hw2reg_o.dev_ctx_base_hi.d      = '0;
