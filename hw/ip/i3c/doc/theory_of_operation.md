@@ -179,6 +179,7 @@ The IP block supports the following ones:
 | Internal Control Commands, including Broadcast Address Enable and Target Reset Pattern with RSTACT | HCI 8.4.2                        |                                                                      |
 | In-Band Interrupts, including IBI payloads and Hot-Join control                                    | HCI 6.9.1, 8.6                   |                                                                      |
 | Periodic bus traffic for passive Hot-Join and IBI Targets                                          | -                                |                                                                      |
+| Auto-Command, for fetching Private Read data automatically after an In-Band Interrupt request      | HCI 6.11                         |                                                                      |
 | Abort, suspend and resume of command processing; halt on error                                     | HCI 6.5.6, 6.8.4                 |                                                                      |
 | Error detection and reporting                                                                      | HCI 6.13                         | See [Error detection and reporting](#error-detection-and-reporting). |
 | Hardware Identification Extended Capability (0x01)                                                 | HCI 7.7.2                        |                                                                      |
@@ -197,7 +198,6 @@ This version of the IP block does not support the following features:
 
 Whether the IP block shall support the following optional features has not been decided yet:
 
-- Auto-Command (HCI 6.11).
 - Combo Transfer Command (TCRI 7.1.2.3).
 - Command sequence timeout (HCI 6.13.2).
 - IBI timestamping, IBI Data Abort and IBI Credit Counting (HCI 6.9.3-6.9.5).

@@ -1631,7 +1631,7 @@ Controller Device Address.
 ## HC_CAPABILITIES
 Host Controller Capabilities.
 - Offset: `0x18c`
-- Reset default: `0x448`
+- Reset default: `0x440`
 - Reset mask: `0x70303cec`
 
 ### Fields
@@ -1658,7 +1658,7 @@ Host Controller Capabilities.
 |   6    |   ro   |   0x1   | HDR_DDR_EN            | Defines whether the Host Controller supports HDR-DDR transfers.                                        |
 |   5    |   ro   |   0x0   | STANDBY_CR_CAP        | Defines whether the Host Controller supports handoff of the Active Controller role.                    |
 |   4    |        |         |                       | Reserved                                                                                               |
-|   3    |   ro   |   0x1   | AUTO_COMMAND          | Defines whether the Host Controller supports Auto-Command functionality.                               |
+|   3    |   ro   |   0x0   | AUTO_COMMAND          | Defines whether the Host Controller supports Auto-Command functionality.                               |
 |   2    |   ro   |   0x0   | COMBO_COMMAND         | Defines whether the Host Controller supports Combo Transfer Command transfers.                         |
 |  1:0   |        |         |                       | Reserved                                                                                               |
 
@@ -1883,7 +1883,7 @@ Extended Capabilities Section Offset.
 ## INT_CTRL_CMDS_EN
 Internal Control Command Subtype Support.
 - Offset: `0x1cc`
-- Reset default: `0x20f5`
+- Reset default: `0x55`
 - Reset mask: `0xffff`
 
 ### Fields
@@ -1895,7 +1895,7 @@ Internal Control Command Subtype Support.
 |  Bits  |  Type  |  Reset  | Name                | Description                          |
 |:------:|:------:|:-------:|:--------------------|:-------------------------------------|
 | 31:16  |        |         |                     | Reserved                             |
-|  15:1  |   ro   | 0x107a  | MIPI_CMDS_SUPPORTED | MIPI Alliance Commands Supported.    |
+|  15:1  |   ro   |  0x2a   | MIPI_CMDS_SUPPORTED | MIPI Alliance Commands Supported.    |
 |   0    |   ro   |   0x1   | ICC_SUPPORT         | Internal Control Commands Supported. |
 
 ## IBI_NOTIFY_CTRL
@@ -3105,7 +3105,7 @@ Target-side control register for setting buffer interrupt thresholds.
 |   31   |        |         |                 | Reserved                                                                                                                                                                                                                                             |
 | 30:28  |   rw   |   0x1   | RX_START_THLD   | Receive Start Threshold in DWORDs. Wait until there are at least 2^(N+1) DWORD available before accepting a Private Write transfer. If the Active Controller attempts to perform a write transfer when this condition is not met, it will be NACKed. |
 | 27:12  |        |         |                 | Reserved                                                                                                                                                                                                                                             |
-|  11:0  |   rw   |   0x1   | RX_SEGMENT_SIZE | Maximum length of received data segment, minus 1. Received data is divided into DWORDs of no more than this length.                                                                                                                                  |
+|  11:0  |   rw   |   0x1   | RX_SEGMENT_SIZE | Maximum length of received data segment, minus 1. Received data is divided into DWORDs of no more than the maximum length.                                                                                                                           |
 
 ## TARG_BUF_STATUS_LEVEL
 Target-side data buffer levels.
