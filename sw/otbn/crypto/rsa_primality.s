@@ -7,7 +7,6 @@
 
 .text
 .globl gen_prime_candidate
-.globl fix_prime_candidate
 .globl fermat_test
 .globl miller_rabin_test
 
@@ -273,10 +272,6 @@ gen_prime_candidate:
     bn.wsrr w21, URND     # w21 <= URND()
     bn.xor  w20, w20, w21 # w20 <= w20 ^ w21
     bn.sid  x20, 0(x2++)  # dmem[x2] <= w20
-
-fix_prime_candidate:
-  # Constant wide register index.
-  li x20, 20
 
   # Fix the lowest 3 bits to 1 so the number is always 7 mod 8.
   # dmem[x16] <= dmem[x16] | 7

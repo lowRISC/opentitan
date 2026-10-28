@@ -307,9 +307,12 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*rsa_keygen)(otcrypto_rsa_size_t,
                                   otcrypto_unblinded_key_t *,
                                   otcrypto_blinded_key_t *);
-  otcrypto_status_t (*rsa_keygen_deterministic)(
-      otcrypto_rsa_size_t, const otcrypto_const_byte_buf_t *,
-      otcrypto_unblinded_key_t *, otcrypto_blinded_key_t *);
+  otcrypto_status_t (*rsa_prime_check)(otcrypto_rsa_size_t,
+                                       const otcrypto_const_word32_buf_t *,
+                                       hardened_bool_t *);
+  otcrypto_status_t (*rsa_create_n_from_primes)(
+      otcrypto_rsa_size_t, const otcrypto_const_word32_buf_t *,
+      const otcrypto_const_word32_buf_t *, otcrypto_word32_buf_t *);
   otcrypto_status_t (*rsa_public_key_construct)(
       otcrypto_rsa_size_t, const otcrypto_const_word32_buf_t *,
       otcrypto_unblinded_key_t *);

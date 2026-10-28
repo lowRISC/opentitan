@@ -118,14 +118,30 @@ status_t rsa_size_to_num_words(rsa_size_t size, size_t *num_words);
 status_t rsa_keygen_start(rsa_size_t size);
 
 /**
- * Starts an RSA key generation routine on OTBN (standard or deterministic).
+ * Checks whether a candidate prime is a probable RSA prime on OTBN.
  *
  * @param size RSA key size.
- * @param deterministic Whether to run deterministic key generation.
+ * @param prime_candidate Candidate prime buffer (half the modulus word length).
+ * @param[out] prime_ok Whether the candidate passed primality testing.
  * @return Result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_keygen_init(rsa_size_t size, hardened_bool_t deterministic);
+status_t rsa_prime_check(rsa_size_t size, const uint32_t *prime_candidate,
+                         hardened_bool_t *prime_ok);
+
+/**
+ * Multiplies two prime factors p and q on OTBN to compute the modulus n = p *
+ * q.
+ *
+ * @param size RSA size parameter.
+ * @param prime_p First prime factor p.
+ * @param prime_q Second prime factor q.
+ * @param[out] modulus Output buffer for the modulus n = p * q.
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_create_n_from_primes(rsa_size_t size, const uint32_t *prime_p,
+                                  const uint32_t *prime_q, uint32_t *modulus);
 
 /**
  * Waits for an RSA key generation to complete.

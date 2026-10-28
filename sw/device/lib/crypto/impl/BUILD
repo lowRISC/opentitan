@@ -441,7 +441,6 @@ cc_library(
     deps = [
         ":cmvp",
         ":config",
-        ":drbg",
         ":hash",
         ":integrity",
         ":state",
