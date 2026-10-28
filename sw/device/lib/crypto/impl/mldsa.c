@@ -333,7 +333,7 @@ otcrypto_status_t otcrypto_mldsa87_sign_async_start(
   // Check the integrity and length of the input buffers.
   HARDENED_TRY(check_blinded_key(private_key));
   HARDENED_TRY(check_byte_buf(context, kOtcryptoMldsa87CtxMaxBytes));
-  HARDENED_TRY(check_byte_buf(message, kOtcryptoMldsa87MsgMaxBytes));
+  HARDENED_TRY(check_byte_buf(message, SIZE_MAX));
 
   // Allocate the 64-byte mu digest.
   uint32_t mu_data[kOtcryptoMldsa87MuWords] = {0};
@@ -358,7 +358,7 @@ otcrypto_status_t otcrypto_mldsa87_sign_async_start(
   // Check the buffers again before exiting.
   HARDENED_TRY(check_blinded_key(private_key));
   HARDENED_TRY(check_byte_buf(context, kOtcryptoMldsa87CtxMaxBytes));
-  HARDENED_TRY(check_byte_buf(message, kOtcryptoMldsa87MsgMaxBytes));
+  HARDENED_TRY(check_byte_buf(message, SIZE_MAX));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -429,7 +429,7 @@ otcrypto_status_t otcrypto_mldsa87_verify_async_start(
   // Check the integrity and length of the input buffers.
   HARDENED_TRY(check_unblinded_key(public_key));
   HARDENED_TRY(check_byte_buf(context, kOtcryptoMldsa87CtxMaxBytes));
-  HARDENED_TRY(check_byte_buf(message, kOtcryptoMldsa87MsgMaxBytes));
+  HARDENED_TRY(check_byte_buf(message, SIZE_MAX));
   HARDENED_TRY(check_word32_buf(signature, kOtcryptoMldsa87SigWords));
 
   // Compute the public key hash tr = SHAKE256(pk, 64).
@@ -462,7 +462,7 @@ otcrypto_status_t otcrypto_mldsa87_verify_async_start(
   // Check the buffers again before exiting.
   HARDENED_TRY(check_unblinded_key(public_key));
   HARDENED_TRY(check_byte_buf(context, kOtcryptoMldsa87CtxMaxBytes));
-  HARDENED_TRY(check_byte_buf(message, kOtcryptoMldsa87MsgMaxBytes));
+  HARDENED_TRY(check_byte_buf(message, SIZE_MAX));
   HARDENED_TRY(check_word32_buf(signature, kOtcryptoMldsa87SigWords));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
