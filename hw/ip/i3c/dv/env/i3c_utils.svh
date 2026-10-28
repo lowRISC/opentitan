@@ -27,7 +27,7 @@ function automatic bit [4:0] update_crc5(bit data[], bit [4:0] crc5 = 5'h1F);
 endfunction
 
 // Report the contents of a Device Address Table entry.
-function automatic void report_dat_entry(int unsigned idx, i3c_pkg::i3c_dat_entry_t dat);
+function automatic void report_dat_entry(int unsigned idx, i3c_hci_pkg::i3c_dat_entry_t dat);
   $display("%02x: STAT_ADDR %02x IBI_PAYLOAD %d IBI_REJECT %d CRR_REJECT %d TS %d DYN_ADDR %02x",
            idx, dat.static_address, dat.ibi_payload, dat.ibi_reject, dat.crr_reject, dat.ts,
            dat.dynamic_address);
@@ -37,7 +37,7 @@ function automatic void report_dat_entry(int unsigned idx, i3c_pkg::i3c_dat_entr
 endfunction
 
 // Report the contents of a Device Characteristics Table entry.
-function automatic void report_dct_entry(int unsigned idx, i3c_pkg::i3c_dct_entry_t dct);
+function automatic void report_dct_entry(int unsigned idx, i3c_hci_pkg::i3c_dct_entry_t dct);
   $display("%02x: PID %08x%04x DCR %02x BCR %02x DYN_ADDR %02x", idx,
            dct.pid_hi, dct.pid_lo, dct.dcr, dct.bcr, dct.dynamic_address);
 endfunction

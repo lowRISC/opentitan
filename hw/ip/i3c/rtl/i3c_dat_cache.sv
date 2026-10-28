@@ -7,6 +7,7 @@
 module i3c_dat_cache
   import i3c_consts_pkg::*;
   import i3c_controller_pkg::*;
+  import i3c_hci_pkg::*;
   import i3c_pkg::*;
 #(
   // Number of entries in the DAT.

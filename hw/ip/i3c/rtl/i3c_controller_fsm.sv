@@ -8,6 +8,7 @@
 module i3c_controller_fsm
   import i3c_controller_pkg::*;
   import i3c_fifo_pkg::*;
+  import i3c_hci_pkg::*;
   import i3c_pkg::*;
   import i3c_reg_pkg::*;
 #(
