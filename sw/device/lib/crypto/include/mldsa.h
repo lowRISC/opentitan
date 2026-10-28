@@ -40,6 +40,11 @@ enum {
    * Maximum size of a ML-DSA message.
    */
   kOtcryptoMldsa87MsgMaxBytes = 8192,
+  /**
+   * Size of the ML-DSA-87 message hash mu.
+   */
+  kOtcryptoMldsa87MuBytes = 64,
+  kOtcryptoMldsa87MuWords = kOtcryptoMldsa87MuBytes / sizeof(uint32_t),
 };
 
 /**
@@ -188,6 +193,44 @@ otcrypto_status_t otcrypto_mldsa87_verify(
     otcrypto_mldsa_hash_mode_t hash_mode, hardened_bool_t *verification_result);
 
 /**
+ * Generates a ML-DSA-87 digital signature from a precomputed message hash mu.
+ *
+ * The caller computes mu = SHAKE256(tr || M', 64) with tr = SHAKE256(pk, 64)
+ * and M' formatted according to the pure or pre-hash mode.
+ *
+ * See `otcrypto_mldsa87_sign` for the signature format.
+ *
+ * @param private_key Pointer to the partially shared private key struct.
+ * @param mu The message hash (64 bytes).
+ * @param sign_mode ML-DSA signing mode (random or deterministic).
+ * @param[out] signature Pointer to the ML-DSA-87 signature.
+ * @return Result of the ML-DSA-87 signature.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_mldsa87_sign_external_mu(
+    const otcrypto_blinded_key_t *private_key, const otcrypto_hash_digest_t *mu,
+    otcrypto_mldsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature);
+
+/**
+ * Verifies a ML-DSA-87 signature against a precomputed message hash mu.
+ *
+ * See `otcrypto_mldsa87_sign_external_mu` for the computation of mu and
+ * `otcrypto_mldsa87_verify` for how to interpret the result.
+ *
+ * @param public_key Pointer to the unshared public key.
+ * @param mu The message hash (64 bytes).
+ * @param signature Pointer to the signature to be verified.
+ * @param[out] verification_result Whether the signature passed verification.
+ * @return Result of the ML-DSA-87 verification operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_mldsa87_verify_external_mu(
+    const otcrypto_unblinded_key_t *public_key,
+    const otcrypto_hash_digest_t *mu,
+    const otcrypto_const_word32_buf_t *signature,
+    hardened_bool_t *verification_result);
+
+/**
  * Verifies whether the public and private key belong together (WIP not yet
  * finalized).
  *
@@ -256,6 +299,24 @@ otcrypto_status_t otcrypto_mldsa87_sign_async_start(
     otcrypto_mldsa_hash_mode_t hash_mode, otcrypto_mldsa_sign_mode_t sign_mode);
 
 /**
+ * Starts asynchronous signature generation for ML-DSA-87 from a precomputed
+ * message hash mu.
+ *
+ * See `otcrypto_mldsa87_sign_external_mu` for requirements on the input
+ * values. Finalize with `otcrypto_mldsa87_sign_async_finalize` or
+ * `otcrypto_mldsa87_double_sign_async_finalize`.
+ *
+ * @param private_key Pointer to the partially shared private key struct.
+ * @param mu The message hash (64 bytes).
+ * @param sign_mode ML-DSA signing mode (random or deterministic).
+ * @return Result of the ML-DSA-87 signature generation start operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_mldsa87_sign_external_mu_async_start(
+    const otcrypto_blinded_key_t *private_key, const otcrypto_hash_digest_t *mu,
+    otcrypto_mldsa_sign_mode_t sign_mode);
+
+/**
  * Finalizes asynchronous signature generation for ML-DSA-87.
  *
  * See `otcrypto_mldsa87_sign` for requirements on the input values.
@@ -305,6 +366,24 @@ otcrypto_status_t otcrypto_mldsa87_verify_async_start(
     const otcrypto_const_byte_buf_t *context,
     const otcrypto_const_word32_buf_t *signature,
     otcrypto_mldsa_hash_mode_t hash_mode);
+
+/**
+ * Starts asynchronous signature verification for ML-DSA-87 from a precomputed
+ * message hash mu.
+ *
+ * See `otcrypto_mldsa87_verify_external_mu` for requirements on input values.
+ * Finalize with `otcrypto_mldsa87_verify_async_finalize`.
+ *
+ * @param public_key Pointer to the unshared public key.
+ * @param mu The message hash (64 bytes).
+ * @param signature Pointer to the signature to be verified.
+ * @return Result of the ML-DSA-87 signature verification start operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_mldsa87_verify_external_mu_async_start(
+    const otcrypto_unblinded_key_t *public_key,
+    const otcrypto_hash_digest_t *mu,
+    const otcrypto_const_word32_buf_t *signature);
 
 /**
  * Finalizes asynchronous signature verification for ML-DSA-87.
