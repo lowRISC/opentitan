@@ -47,7 +47,7 @@ opentitan_binary(
     testonly = True,
     srcs = ["sram_cp_provision.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     kind = "ram",
@@ -85,7 +85,7 @@ opentitan_binary(
     testonly = True,
     srcs = ["sram_cp_provision_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
         "//hw/top_earlgrey:silicon_creator": None,
     },
     kind = "ram",
@@ -123,7 +123,7 @@ opentitan_binary(
 opentitan_test(
     name = "cp_provision_functest",
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
     },
     fpga = fpga_params(
         timeout = "long",
@@ -159,7 +159,7 @@ opentitan_test(
         testonly = True,
         srcs = ["sram_ft_individualize.c"],
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
             "//hw/top_earlgrey:silicon_creator": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
@@ -302,7 +302,7 @@ manifest(d = {
         srcs = ["ft_personalize.c"],
         ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
             "//hw/top_earlgrey:silicon_creator": None,
         },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_creator_slot_a",
@@ -369,7 +369,7 @@ manifest(d = {
             config["owner_fw"]: OWNER_SLOTS["b"],
         },
         exec_env = [
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+            "//hw/top_earlgrey:fpga_cw340_rom",
             "//hw/top_earlgrey:silicon_creator",
         ],
     )

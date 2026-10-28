@@ -593,7 +593,7 @@ STACK_UTILIZATION_FPGA_PARAMS = {
         binaries = {
             "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0": "good_a",
             "//sw/device/silicon_creator/rom/e2e:empty_test_slot_b_prod_key_0": "good_b",
-            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0_corrupted_fpga_{}_rom_with_fake_keys_signed_bin".format(fpga): "bad_a",
+            "//sw/device/silicon_creator/rom/e2e:empty_test_slot_a_prod_key_0_corrupted_fpga_{}_rom_signed_bin".format(fpga): "bad_a",
             ":empty_flash": "empty",
         },
         stack_usage = "STK:[0-9A-Fa-f/]+\r\n",
@@ -655,6 +655,6 @@ opentitan_test(
     name = "stack_utilization_test",
     cw340 = STACK_UTILIZATION_FPGA_PARAMS["cw340"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "cw340",
+        "//hw/top_earlgrey:fpga_cw340_rom": "cw340",
     },
 )

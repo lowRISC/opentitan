@@ -58,7 +58,7 @@ jobs:
       bitstream: chip_earlgrey_cw340
       board: cw340
       interface: cw340
-      tag_filters: cw340_rom_with_fake_keys,-broken,-manual
+      tag_filters: cw340_rom,-broken,-manual
       add_default_filters: false
       cache_test_results: false
       upload_to_bucket: true
