@@ -6,7 +6,6 @@
 
 #include "sw/device/lib/base/crc32.h"
 #include "sw/device/lib/base/hardened_memory.h"
-#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 
 // Module ID for status codes.
@@ -37,9 +36,6 @@ OTBN_DECLARE_SYMBOL_ADDR(run_rsa, rsa_q);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_2048_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_3072_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_4096_KEYGEN);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_2048_KEYGEN_DET);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_3072_KEYGEN_DET);
-OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_4096_KEYGEN_DET);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_2048_MODEXP);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_2048_MODEXP_F4);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_2048_MODEXP_DE);
@@ -472,19 +468,24 @@ status_t rsa_modexp_vartime_start(rsa_size_t size, const uint32_t *base,
   return otbn_execute();
 }
 
-status_t rsa_size_to_num_words(rsa_size_t size, size_t *num_words) {
+static status_t keygen_size_to_params(rsa_size_t size, uint32_t *mode,
+                                      size_t *num_words) {
+  *mode = 0;
   *num_words = 0;
   switch (launder32(size)) {
     case kRsaSize2048:
       HARDENED_CHECK_EQ(size, kRsaSize2048);
+      *mode = OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_KEYGEN);
       *num_words = kRsa2048NumWords;
       return OTCRYPTO_OK;
     case kRsaSize3072:
       HARDENED_CHECK_EQ(size, kRsaSize3072);
+      *mode = OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_KEYGEN);
       *num_words = kRsa3072NumWords;
       return OTCRYPTO_OK;
     case kRsaSize4096:
       HARDENED_CHECK_EQ(size, kRsaSize4096);
+      *mode = OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_KEYGEN);
       *num_words = kRsa4096NumWords;
       return OTCRYPTO_OK;
     default:
@@ -499,114 +500,104 @@ status_t rsa_size_to_num_words(rsa_size_t size, size_t *num_words) {
   return OTCRYPTO_FATAL_ERR;
 }
 
+status_t rsa_size_to_num_words(rsa_size_t size, size_t *num_words) {
+  uint32_t unused_mode = 0;
+  return keygen_size_to_params(size, &unused_mode, num_words);
+}
+
 status_t rsa_modexp_finalize_size(rsa_size_t size, uint32_t *result) {
   size_t expected_words = 0;
   HARDENED_TRY(rsa_size_to_num_words(size, &expected_words));
   return rsa_modexp_finalize(expected_words, result);
 }
 
-status_t rsa_keygen_init(rsa_size_t size, hardened_bool_t deterministic) {
+status_t rsa_keygen_start(rsa_size_t size) {
   uint32_t mode = 0;
-  uint32_t mode_det = 0;
-  size_t prime_words = 0;
-  switch (launder32(size)) {
-    case kRsaSize2048:
-      HARDENED_CHECK_EQ(size, kRsaSize2048);
-      const uint32_t kMode2048Keygen =
-          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_KEYGEN);
-      mode = kMode2048Keygen;
-      mode_det = OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_KEYGEN_DET);
-      prime_words = kRsa2048NumWords / 2;
-      break;
-    case kRsaSize3072:
-      HARDENED_CHECK_EQ(size, kRsaSize3072);
-      const uint32_t kMode3072Keygen =
-          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_KEYGEN);
-      mode = kMode3072Keygen;
-      mode_det = OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_KEYGEN_DET);
-      prime_words = kRsa3072NumWords / 2;
-      break;
-    case kRsaSize4096:
-      HARDENED_CHECK_EQ(size, kRsaSize4096);
-      const uint32_t kMode4096Keygen =
-          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_KEYGEN);
-      mode = kMode4096Keygen;
-      mode_det = OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_KEYGEN_DET);
-      prime_words = kRsa4096NumWords / 2;
-      break;
-    default:
-      HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
-      return OTCRYPTO_FATAL_ERR;
-  }
-
-  // Call the generic `keygen_start()` operation.
-  if (launder32(deterministic) == kHardenedBoolFalse) {
-    HARDENED_CHECK_EQ(deterministic, kHardenedBoolFalse);
-    return keygen_start(mode);
-  }
-  HARDENED_CHECK_EQ(deterministic, kHardenedBoolTrue);
-
-  HARDENED_TRY(otbn_load_app(OTBN_APP_T_INIT(run_rsa)));
-  HARDENED_TRY(otbn_dmem_write(1, &mode_det, OTBN_ADDR_T_INIT(run_rsa, mode)));
-  HARDENED_TRY(otbn_dmem_set(1, 0, OTBN_ADDR_T_INIT(run_rsa, rsa_p)));
-
-  uint32_t candidate[kRsa4096NumWords / 2];
-  size_t i = 0;
-  for (; launder32(i) < 2 * 10 * prime_words * 32; ++i) {
-    HARDENED_TRY(entropy_csrng_generate(
-        /*additional_input=*/NULL, candidate, prime_words,
-        /*fips_check=*/kHardenedBoolFalse));
-    HARDENED_TRY(otbn_dmem_write(prime_words, candidate,
-                                 OTBN_ADDR_T_INIT(run_rsa, rsa_n)));
-    HARDENED_TRY(otbn_execute_sync());
-    uint32_t ok = 0;
-    HARDENED_TRY(otbn_dmem_read(1, OTBN_ADDR_T_INIT(run_rsa, ok), &ok));
-    if (launder32(ok) == kHardenedBoolTrue) {
-      HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
-      return OTCRYPTO_OK;
-    }
-  }
-  HARDENED_CHECK_EQ(i, 2 * 10 * prime_words * 32);
-  return OTCRYPTO_RECOV_ERR;
+  size_t unused_words = 0;
+  HARDENED_TRY(keygen_size_to_params(size, &mode, &unused_words));
+  return keygen_start(mode);
 }
 
-status_t rsa_keygen_start(rsa_size_t size) {
-  return rsa_keygen_init(size, /*deterministic=*/kHardenedBoolFalse);
+status_t rsa_prime_check(rsa_size_t size, const uint32_t *prime_candidate,
+                         hardened_bool_t *prime_ok) {
+  *prime_ok = kHardenedBoolFalse;
+  uint32_t mode = 0;
+  size_t num_words = 0;
+  HARDENED_TRY(keygen_size_to_params(size, &mode, &num_words));
+  size_t prime_words = num_words / 2;
+
+  uint32_t det = kHardenedBoolTrue;
+  HARDENED_TRY(otbn_load_app(OTBN_APP_T_INIT(run_rsa)));
+  HARDENED_TRY(otbn_dmem_write(1, &mode, OTBN_ADDR_T_INIT(run_rsa, mode)));
+  HARDENED_TRY(otbn_dmem_write(1, &det, OTBN_ADDR_T_INIT(run_rsa, rsa_e)));
+  HARDENED_TRY(otbn_dmem_set(1, 0, OTBN_ADDR_T_INIT(run_rsa, rsa_p)));
+  HARDENED_TRY(otbn_dmem_write(prime_words, prime_candidate,
+                               OTBN_ADDR_T_INIT(run_rsa, rsa_n)));
+  HARDENED_TRY(otbn_execute_sync());
+
+  uint32_t act_mode = 0;
+  HARDENED_TRY(otbn_dmem_read(1, OTBN_ADDR_T_INIT(run_rsa, mode), &act_mode));
+  if (launder32(act_mode) != mode) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+  HARDENED_CHECK_EQ(act_mode, mode);
+
+  uint32_t ok = 0;
+  HARDENED_TRY(otbn_dmem_read(1, OTBN_ADDR_T_INIT(run_rsa, ok), &ok));
+  uint32_t mr_iters = 0;
+  HARDENED_TRY(
+      otbn_dmem_read(1, OTBN_ADDR_T_INIT(run_rsa, mr_iter_p), &mr_iters));
+  HARDENED_TRY(otbn_dmem_sec_wipe());
+
+  if (launder32(ok) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
+    if (launder32(mr_iters) != kMrIters) {
+      return OTCRYPTO_FATAL_ERR;
+    }
+    HARDENED_CHECK_EQ(mr_iters, kMrIters);
+    *prime_ok = kHardenedBoolTrue;
+  } else {
+    HARDENED_CHECK_NE(ok, kHardenedBoolTrue);
+    *prime_ok = kHardenedBoolFalse;
+  }
+  return OTCRYPTO_OK;
+}
+
+status_t rsa_create_n_from_primes(rsa_size_t size, const uint32_t *prime_p,
+                                  const uint32_t *prime_q, uint32_t *modulus) {
+  uint32_t mode = 0;
+  size_t num_words = 0;
+  HARDENED_TRY(keygen_size_to_params(size, &mode, &num_words));
+  size_t prime_words = num_words / 2;
+
+  uint32_t det = kHardenedBoolTrue;
+  HARDENED_TRY(otbn_load_app(OTBN_APP_T_INIT(run_rsa)));
+  HARDENED_TRY(otbn_dmem_write(1, &mode, OTBN_ADDR_T_INIT(run_rsa, mode)));
+  HARDENED_TRY(otbn_dmem_write(1, &det, OTBN_ADDR_T_INIT(run_rsa, rsa_e)));
+  HARDENED_TRY(
+      otbn_dmem_write(prime_words, prime_p, OTBN_ADDR_T_INIT(run_rsa, rsa_p)));
+  HARDENED_TRY(
+      otbn_dmem_write(prime_words, prime_q, OTBN_ADDR_T_INIT(run_rsa, rsa_q)));
+  HARDENED_TRY(otbn_execute_sync());
+
+  HARDENED_TRY(rsa_check_otbn_status());
+
+  uint32_t act_mode = 0;
+  HARDENED_TRY(otbn_dmem_read(1, OTBN_ADDR_T_INIT(run_rsa, mode), &act_mode));
+  if (launder32(act_mode) != mode) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+  HARDENED_CHECK_EQ(act_mode, mode);
+
+  HARDENED_TRY(
+      otbn_dmem_read(num_words, OTBN_ADDR_T_INIT(run_rsa, rsa_n), modulus));
+  return otbn_dmem_sec_wipe();
 }
 
 status_t rsa_keygen_finalize_size(rsa_size_t size, uint32_t *n, uint32_t *d0,
                                   uint32_t *d1, uint32_t *p, uint32_t *q) {
   uint32_t mode = 0;
   size_t expected_words = 0;
-
-  switch (launder32(size)) {
-    case kRsaSize2048:
-      HARDENED_CHECK_EQ(size, kRsaSize2048);
-      const uint32_t kMode2048Keygen =
-          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_KEYGEN);
-      mode = kMode2048Keygen;
-      expected_words = kRsa2048NumWords;
-      break;
-    case kRsaSize3072:
-      HARDENED_CHECK_EQ(size, kRsaSize3072);
-      const uint32_t kMode3072Keygen =
-          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_KEYGEN);
-      mode = kMode3072Keygen;
-      expected_words = kRsa3072NumWords;
-      break;
-    case kRsaSize4096:
-      HARDENED_CHECK_EQ(size, kRsaSize4096);
-      const uint32_t kMode4096Keygen =
-          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_KEYGEN);
-      mode = kMode4096Keygen;
-      expected_words = kRsa4096NumWords;
-      break;
-    default:
-      HARDENED_TRAP();
-      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
-      return OTCRYPTO_FATAL_ERR;
-  }
-
+  HARDENED_TRY(keygen_size_to_params(size, &mode, &expected_words));
   return keygen_finalize(mode, expected_words, n, d0, d1, p, q);
 }
