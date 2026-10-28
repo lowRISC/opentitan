@@ -1645,7 +1645,7 @@ class TopGen:
         i = 0
         for pad in pinout_info['pads']:
             if pad['connection'] == 'muxed':
-                insel.add_constant(Name([pad['name']]),
+                insel.add_constant(Name.from_snake_case(pad['name']),
                                    docstring='MIO Pad {}'.format(i))
                 i += 1
         if isinstance(insel, RustEnum):
