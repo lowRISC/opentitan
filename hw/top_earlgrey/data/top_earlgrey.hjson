@@ -740,6 +740,10 @@
             clock: "main",
             group: "secure"
           },
+          clk_ast_rng_i: {
+            clock: "main",
+            group: "secure"
+          },
           clk_ast_usb_i: {
             clock: "usb",
             group: "peri"
@@ -754,22 +758,6 @@
           clk_ast_alert_i: {
             clock: "io_div4",
             group: "secure"
-          },
-          clk_ast_es_i: {
-            clock: "main",
-            group: "secure"
-          },
-          clk_ast_rng_i: {
-            clock: "main",
-            group: "secure"
-          },
-          clk_ast_tlul_i: {
-            clock: "io_div4",
-            group: "infra"
-          },
-          clk_ast_usb_i: {
-            clock: "usb",
-            group: "peri"
           },
           clk_ast_ext_i: "ast_ext",
         },
@@ -789,6 +777,10 @@
             name: "lc",
             domain: "Main",
           },
+          rst_ast_rng_ni: {
+            name: "lc",
+            domain: "Main",
+          },
           rst_ast_usb_ni: {
             name: "usb",
             domain: "Main"
@@ -803,22 +795,6 @@
             name: "lc_io_div4",
             domain: "Main",
           },
-          rst_ast_es_ni: {
-            name: "lc",
-            domain: "Main",
-          },
-          rst_ast_rng_ni: {
-            name: "lc",
-            domain: "Main",
-          },
-          rst_ast_tlul_ni: {
-            name: "lc_io_div4",
-            domain: "Main",
-          },
-          rst_ast_usb_ni: {
-            name: "usb",
-            domain: "Main"
-          }
         },
       },
       domain: "Main",
@@ -1285,18 +1261,14 @@
                                    'sensor_ctrl.ast_init_done'],
       'ast.ast2padmux'          : ['sensor_ctrl.ast2pinmux'],
       'ast.io_pwr_st'           : ['sensor_ctrl.ast_status'],
-      'spi_device.sck_monitor'  : ['ast.sns_spi_ext_clk'],
       'usbdev.usb_ref_pulse'    : ['ast.usb_ref_pulse'],
       'usbdev.usb_ref_val'      : ['ast.usb_ref_val'],
       'pinmux.dft_strap_test'   : ['ast.dft_strap_test'],
-      'clkmgr.all_clk_byp_req'  : ['ast.all_clk_byp_req.primary', // TODO: is unused in secondary.
-                                   'ast.all_clk_byp_req.secondary'],
+      'clkmgr.all_clk_byp_req'  : ['ast.all_clk_byp_req'],
       'clkmgr.all_clk_byp_ack'  : ['ast.all_clk_byp_ack'],
-      'clkmgr.io_clk_byp_req'   : ['ast.io_clk_byp_req.primary',  // TODO: is unused in secondary.
-                                   'ast.io_clk_byp_req.secondary'],
+      'clkmgr.io_clk_byp_req'   : ['ast.io_clk_byp_req'],
       'clkmgr.io_clk_byp_ack'   : ['ast.io_clk_byp_ack'],
-      'clkmgr.hi_speed_sel'     : ['ast.ext_freq_is_96m.primary',
-                                   'ast.ext_freq_is_96m.secondary'],
+      'clkmgr.hi_speed_sel'     : ['ast.ext_freq_is_96m'],
       'clkmgr.div_step_down_req': ['ast.clk_src_io_48m'],
       'sensor_ctrl.ast_alert'   : ['ast.alert'],
 
@@ -1494,7 +1466,6 @@
 
         // Net for bypass clock for FPGA
         'ast.clk_osc_byp.primary',
-        'ast.clk_osc_byp.secondary',
 
         // Memory configurations for main PD
         'ast.mem_cfg.primary',
@@ -1568,8 +1539,7 @@
         'ast.adc_a1_a'                       : '',
         'ast.ast2pad_t0_a'                   : 'ast2pad_t0_a',
         'ast.ast2pad_t1_a'                   : 'ast2pad_t1_a',
-        'ast.clk_osc_byp.primary'            : 'clk_osc_byp_pd_main',
-        'ast.clk_osc_byp.secondary'          : 'clk_osc_byp_pd_aon',
+        'ast.clk_osc_byp.primary'            : 'clks_osc_byp',
         'ast.ast_pwst_h'                     : 'ast_pwst_h',
         'pinmux.dft_hold_tap_sel'            : 'dft_hold_tap_sel',
         'pinmux.usb_dppullup_en'             : 'usb_dp_pullup_en',
