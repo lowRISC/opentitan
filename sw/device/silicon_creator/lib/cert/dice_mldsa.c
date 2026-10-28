@@ -266,13 +266,11 @@ static void get_attest_binding(const uint8_t *exts, size_t exts_size,
  * @param[out] cert The generated certificate.
  * @param[in,out] cert_size The size of the certificate buffer on input, and
  *                          the size of the generated certificate on output.
- * @param stack_top Top of the dedicate stack to use for ML-DSA operations.
  */
 static rom_error_t dice_cdi_hybrid_cert_build(
     cdi_hybrid_tbs_values_t *tbs_values,
     const ecdsa_p256_public_key_t *signer_ecdsa_pubkey,
-    const uint8_t *signer_mldsa_seed, uint8_t *cert, size_t *cert_size,
-    void *stack_top) {
+    const uint8_t *signer_mldsa_seed, uint8_t *cert, size_t *cert_size) {
   // Construct X509 TBS payload.
   size_t tbs_size = sizeof(tbs_buffer);
   HARDENED_RETURN_IF_ERROR(
@@ -287,9 +285,8 @@ static rom_error_t dice_cdi_hybrid_cert_build(
         hardened_memshred(randomizer, ARRAYSIZE(randomizer)).value,
         kHardenedBoolTrue);
     watchdog_pet();
-    mldsa44_tiny_sign_with_stack(curr_mldsa_sig, signer_mldsa_seed,
-                                 (const uint8_t *)randomizer, tbs_buffer,
-                                 tbs_size, stack_top);
+    mldsa44_tiny_sign(curr_mldsa_sig, signer_mldsa_seed,
+                      (const uint8_t *)randomizer, tbs_buffer, tbs_size);
     watchdog_pet();
     HARDENED_CHECK_EQ(
         hardened_memshred(randomizer, ARRAYSIZE(randomizer)).value,
@@ -411,15 +408,21 @@ static rom_error_t dice_page_rom_ext_check(void) {
 }
 
 /**
- * Attests the next-stage CDI certificates.
+ * Switches the stack to `stack_top` and calls `dice_attest_next_cdi_impl`.
  *
- * @param params Parameters for the attestation.
- * @param sealing_binding Keymgr sealing binding value.
- * @param max_key_version Maximum key version allowed for key derivation.
- * @param exts Pointer to the private extensions DER buffer.
- * @param exts_size Size of the private extensions DER buffer.
+ * Refer to `dice_attest_next_cdi()` for details and parameter descriptions.
  */
-static rom_error_t dice_attest_next_cdi(
+rom_error_t dice_attest_next_cdi_impl_with_stack(
+    const attest_params_t *params,
+    const keymgr_binding_value_t *sealing_binding, uint32_t max_key_version,
+    const uint8_t *exts, size_t exts_size, void *stack_top);
+
+/**
+ * Attests the next-stage CDI certificates (internal implementation).
+ *
+ * Runs on the scratch stack. Refer to `dice_attest_next_cdi()` for details.
+ */
+rom_error_t dice_attest_next_cdi_impl(
     const attest_params_t *params,
     const keymgr_binding_value_t *sealing_binding, uint32_t max_key_version,
     const uint8_t *exts, size_t exts_size) {
@@ -486,9 +489,6 @@ static rom_error_t dice_attest_next_cdi(
   bool regenerate = dice_cert_needs_regenerate(cache_valid);
 
   if (regenerate) {
-    uint32_t *stack_top =
-        (uint32_t *)((uint8_t *)params->scratch_buf + params->scratch_buf_size);
-
     cdi_hybrid_tbs_values_t tbs_values;
     memset(&tbs_values, 0, sizeof(tbs_values));
 
@@ -518,7 +518,7 @@ static rom_error_t dice_attest_next_cdi(
     size_t generated_ecdsa_size = params->mldsa_cert_max_size;
     HARDENED_RETURN_IF_ERROR(dice_cdi_hybrid_cert_build(
         &tbs_values, &issuer_ecdsa_pubkey, /*signer_mldsa_seed=*/NULL,
-        params->mldsa_cert_out, &generated_ecdsa_size, stack_top));
+        params->mldsa_cert_out, &generated_ecdsa_size));
 
     if (generated_ecdsa_size > params->ecdsa_cert_max_size) {
       return kErrorCertInvalidSize;
@@ -528,8 +528,8 @@ static rom_error_t dice_attest_next_cdi(
     *params->ecdsa_cert_size_out = (uint32_t)generated_ecdsa_size;
 
     // Build ML-DSA Cert
-    mldsa44_tiny_pub_from_seed_with_stack(
-        pubkey_buffer, (const uint8_t *)subject_mldsa_seed.data, stack_top);
+    mldsa44_tiny_pub_from_seed(pubkey_buffer,
+                               (const uint8_t *)subject_mldsa_seed.data);
 
     tbs_values.key_alg = kCdiHybridKeyAlgMldsa44;
     TEMPLATE_SET(tbs_values, CdiHybrid, PubKeyMldsa, pubkey_buffer);
@@ -542,7 +542,7 @@ static rom_error_t dice_attest_next_cdi(
     HARDENED_RETURN_IF_ERROR(dice_cdi_hybrid_cert_build(
         &tbs_values, /*signer_ecdsa_pubkey=*/NULL,
         (const uint8_t *)issuer_mldsa_seed.data, params->mldsa_cert_out,
-        &generated_mldsa_size, stack_top));
+        &generated_mldsa_size));
 
     if (generated_mldsa_size > params->mldsa_cert_max_size) {
       return kErrorCertInvalidSize;
@@ -550,26 +550,41 @@ static rom_error_t dice_attest_next_cdi(
     *params->mldsa_cert_size_out = (uint32_t)generated_mldsa_size;
   }
 
-  // Cleanup
-  HARDENED_CHECK_EQ(
-      hardened_memshred((uint32_t *)&issuer_mldsa_seed,
-                        sizeof(issuer_mldsa_seed) / sizeof(uint32_t))
-          .value,
-      kHardenedBoolTrue);
-  HARDENED_CHECK_EQ(
-      hardened_memshred((uint32_t *)&subject_mldsa_seed,
-                        sizeof(subject_mldsa_seed) / sizeof(uint32_t))
-          .value,
-      kHardenedBoolTrue);
+  sc_keymgr_sw_binding_unlock_wait();
+  watchdog_pet();
+  return kErrorOk;
+}
+
+/**
+ * Attests the next-stage CDI certificates.
+ *
+ * Switches to `params->scratch_buf` as the stack before calling
+ * `dice_attest_next_cdi_impl`, and shreds the stack buffer before returning.
+ *
+ * @param params Parameters for the attestation.
+ * @param sealing_binding Keymgr sealing binding value.
+ * @param max_key_version Maximum key version allowed for key derivation.
+ * @param exts Pointer to the private extensions DER buffer.
+ * @param exts_size Size of the private extensions DER buffer.
+ */
+static rom_error_t dice_attest_next_cdi(
+    const attest_params_t *params,
+    const keymgr_binding_value_t *sealing_binding, uint32_t max_key_version,
+    const uint8_t *exts, size_t exts_size) {
+  if (params->scratch_buf_size < kDiceMldsaRomExtAttestationScratchBufferSize) {
+    return kErrorCertInvalidSize;
+  }
+
+  void *stack_top =
+      (void *)((uint8_t *)params->scratch_buf + params->scratch_buf_size);
+  rom_error_t err = dice_attest_next_cdi_impl_with_stack(
+      params, sealing_binding, max_key_version, exts, exts_size, stack_top);
   HARDENED_CHECK_EQ(
       hardened_memshred((uint32_t *)params->scratch_buf,
                         params->scratch_buf_size / sizeof(uint32_t))
           .value,
       kHardenedBoolTrue);
-
-  sc_keymgr_sw_binding_unlock_wait();
-  watchdog_pet();
-  return kErrorOk;
+  return err;
 }
 /**
  * Populates the UDS ML-DSA public key to static_dice_mldsa_cdi.

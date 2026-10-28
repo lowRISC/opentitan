@@ -17,25 +17,26 @@ cc_library(
 )
 
 cc_library(
+    name = "mldsa_caller_common",
+    hdrs = ["mldsa_caller_common.h"],
+)
+
+cc_library(
     name = "mldsa44_tiny_caller",
-    srcs = [
-        "mldsa44_tiny_caller.S",
-        "mldsa_caller_common.h",
-    ],
+    srcs = ["mldsa44_tiny_caller.S"],
     hdrs = ["mldsa44_tiny_caller.h"],
     deps = [
+        ":mldsa_caller_common",
         "//third_party/embedpqc:mldsa44_tiny",
     ],
 )
 
 cc_library(
     name = "mldsa87_tiny_caller",
-    srcs = [
-        "mldsa87_tiny_caller.S",
-        "mldsa_caller_common.h",
-    ],
+    srcs = ["mldsa87_tiny_caller.S"],
     hdrs = ["mldsa87_tiny_caller.h"],
     deps = [
+        ":mldsa_caller_common",
         "//third_party/embedpqc:mldsa87_tiny",
     ],
 )

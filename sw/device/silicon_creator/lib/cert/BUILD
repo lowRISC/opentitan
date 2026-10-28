@@ -240,7 +240,10 @@ cc_library(
 
 cc_library(
     name = "dice_mldsa",
-    srcs = ["dice_mldsa.c"],
+    srcs = [
+        "dice_mldsa.c",
+        "dice_mldsa_caller.S",
+    ],
     deps = [
         ":cert",
         ":dice_api",
@@ -276,6 +279,7 @@ cc_library(
         "//third_party/embedpqc:mldsa44_tiny",
         "//third_party/embedpqc/ports:mldsa44_tiny_caller",
         "//third_party/embedpqc/ports:mldsa87_tiny_caller",
+        "//third_party/embedpqc/ports:mldsa_caller_common",
     ],
 )
 
