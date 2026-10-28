@@ -10,7 +10,7 @@
 ## Current status
 * [Design & verification stage](../../../../README.md)
   * [HW development stages](../../../../doc/project_governance/development_stages.md)
-* [Simulation results](https://reports.opentitan.org/hw/ip/rram_ctrl/dv/latest/report.html)
+* [Simulation results](https://reports.opentitan.org/hw/ip/rram_ctrl/dv/uvm/latest/report.html)
 
 ## Design features
 For detailed information on `rram_ctrl` design features, please see the [`rram_ctrl` HWIP technical specification](../README.md).
@@ -22,7 +22,7 @@ The `rram_ctrl` UVM DV testbench has been constructed based on the [CIP testbenc
 ![Block diagram](../doc/dv/tb.svg)
 
 ### Top level testbench
-Top level testbench is located at `hw/ip/rram_ctrl/dv/tb.sv`.
+Top level testbench is located at `hw/ip/rram_ctrl/dv/uvm/tb.sv`.
 It instantiates the `rram_ctrl` DUT module `hw/ip/rram_ctrl/rtl/rram_ctrl.sv`.
 In addition, the testbench instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface](../../../dv/sv/common_ifs/README.md), one for the core clock domain and one for the OTP clock domain
@@ -134,11 +134,11 @@ By housing all of the above, all pertinent information is more easily shared wit
 
 ### Stimulus strategy
 #### Test sequences
-All test sequences reside in `hw/ip/rram_ctrl/dv/env/seq_lib`.
+All test sequences reside in `hw/ip/rram_ctrl/dv/uvm/env/seq_lib`.
 The `rram_ctrl_base_vseq` virtual sequence is extended from `cip_base_vseq` and serves as a starting point.
 All test sequences are extended from `rram_ctrl_base_vseq`.
 It provides commonly used handles, variables, functions and tasks that the test sequences can simple use / call.
-Some of the most commonly used tasks / functions are as follows, from `hw/ip/rram_ctrl/dv/env/seq_lib/rram_ctrl_base_vseq.sv`:
+Some of the most commonly used tasks / functions are as follows, from `hw/ip/rram_ctrl/dv/uvm/env/seq_lib/rram_ctrl_base_vseq.sv`:
 * `dut_init()`: resets the DUT and calls `rram_ctrl_init()`
 * `rram_ctrl_init()`: brings the controller out of reset, polls the phy's own init, then triggers and polls the controller's INIT sequence (lc key derivation etc), without which the arbiter never grants software/host access
 * `apply_reset()` / `apply_resets_concurrently()`: reset both the core and OTP clock domains together, since each clock generator blocks on its own domain's reset
@@ -171,7 +171,7 @@ Without the filter, error-injection traffic (e.g. from `run_tl_errors_vseq`) mis
 An unmapped address should be unreachable: `cip_base_scoreboard`'s own `predict_tl_err()` already predicts and checks `d_error` for unmapped addresses generically, before `process_tl_access()` is even called, so `process_tl_core_access()` just flags it with a `uvm_error` inline rather than dispatching to a dedicated handler.
 
 #### Assertions
-* TLUL assertions: The `hw/ip/rram_ctrl/dv/sva/rram_ctrl_bind.sv` binds the `tlul_assert` [assertions](../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `hw/ip/rram_ctrl/dv/uvm/sva/rram_ctrl_bind.sv` binds the `tlul_assert` [assertions](../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 * No block-specific assertion properties have been added yet.
 
@@ -181,7 +181,7 @@ Please take a look at the link for detailed information on the usage, capabiliti
 Here's how to run a smoke test:
 ```console
 $ cd $REPO_TOP
-$ dvsim hw/ip/rram_ctrl/dv/rram_ctrl_sim_cfg.hjson -i rram_ctrl_smoke
+$ dvsim hw/ip/rram_ctrl/dv/uvm/rram_ctrl_sim_cfg.hjson -i rram_ctrl_smoke
 ```
 
 ## Testplan

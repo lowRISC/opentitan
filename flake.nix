@@ -44,6 +44,32 @@
       url = "github:IHP-GmbH/IHP-Open-PDK/dev";
       flake = false;
     };
+
+    psgen = {
+      # Note: This is a clone of the upstream version from mndstrmr, but with versions bumped to
+      # avoid strange errors about deprecated Darwin backends.
+      url = "github:rswarbrick/psgen";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.flake-utils.follows = "flake-utils";
+    };
+
+    yosys-slang = {
+      url = "https://github.com/rswarbrick/yosys-slang";
+      type = "git";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    lowrisc-yosys-formal = {
+      url = "https://github.com/rswarbrick/lowrisc-yosys-formal";
+      type = "git";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    fpv-conductor = {
+      url = "https://github.com/rswarbrick/fpv-conductor";
+      type = "git";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   nixConfig = {
@@ -60,6 +86,10 @@
     lowrisc-nix,
     nixpkgs-yosys,
     ihp-pdk,
+    psgen,
+    yosys-slang,
+    lowrisc-yosys-formal,
+    fpv-conductor,
     ...
   }:
     flake-utils.lib.eachDefaultSystem (system: let
@@ -170,12 +200,35 @@
           export IHP_PDK_ROOT=${ihp-pdk}/ihp-sg13cmos5l
         '';
       });
+
+      # yosys-slang is a module that can be imported by Yosys to allow it to use slang as a
+      # frontend. Supply the correct version of yosys against which to build it.
+      yosys-slang-pkg =
+        yosys-slang.packages.${system}.default.overrideAttrs (_: {
+        });
+
+      # lowrisc-yosys-formal is a module that can be imported by Yosys to give it extra tools for
+      # formal proofs. Supply the correct version of yosys against which to build it.
+      lowrisc-yosys-formal-pkg =
+        lowrisc-yosys-formal.packages.${system}.default.overrideAttrs (_: {
+        });
     in {
       packages.pythonEnv = pythonEnv;
 
       devShells = {
         inherit eda elab;
         default = eda;
+
+        oss-fpv = pkgs.mkShellNoCC {
+          packages = [
+            pkgs.yosys
+            psgen.packages.${system}.default
+            pythonEnv
+            yosys-slang.packages.${system}.default
+            lowrisc-yosys-formal.packages.${system}.default
+            fpv-conductor.packages.${system}.default
+          ];
+        };
       };
 
       # `nix run .#eda` (or `nix run .`) drops into the EDA sandbox in your

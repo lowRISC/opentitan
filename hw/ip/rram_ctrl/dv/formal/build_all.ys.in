@@ -1,0 +1,63 @@
+# Copyright lowRISC contributors.
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+# A template that gets expanded to use the correct build directories. Template arguments:
+#
+#   @fusesoc-dir@    The directory where fusesoc created its .scr file
+#   @fusesoc-scr@    The scr file itself
+#   @formal-src@     The directory that contains this template and also the handwritten .sv files
+#   @build@          The directory in which to create output files
+
+# Parse and lower the Ibex and specification RTL.
+read_slang                      \
+  --top tb -DSYNTHESIS -DYOSYS  \
+  -I @build@                    \
+  -F @fusesoc-scr@              \
+  @formal-src@/tb.sv            \
+  --single-unit                 \
+  --no-proc
+
+# setattr -set keep 1 n:\\* # Keep all named wires. FIXME: Is this still necessary?
+proc
+
+# Custom pass (global_clock.cc in the lowrisc_yosys_formal module) which blindly enforces a
+# formal-suitable global clock
+global_clk \clk_i
+
+# Custom fork of opt_muxtree (opt_muxtree.cc in the lowrisc_yosys_formal module)
+opt_muxtree_2
+
+opt_clean
+
+memory_nordff
+delete */t:$print
+setundef -undriven -anyseq
+memory_map -formal
+delete -output
+
+# Expose all public signals as outputs so they don't get optimised out
+expose n:\\*
+
+opt_muxtree_2
+opt_expr
+opt_dff
+opt_clean
+techmap
+simplemap
+dffunmap
+opt_clean
+setundef -undriven -anyseq
+
+# Helpful for yosys-smtbmc
+write_smt2 @build@/all.smt2
+
+# Way faster than abc -g AND -fast
+aigmap
+
+# A custom pass from the lowrisc_yosys_formal module that writes an aiger representation of the
+# design.
+write_aiger_2 -I -B -zinit -no-startoffset \
+   -ywmap @build@/all.ywmap                \
+   -vmap @build@/all.vmap                  \
+  @build@/all.aig
