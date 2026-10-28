@@ -114,7 +114,7 @@ waive -rules {CONST_FF} -location {i3c_target_trx.sv} \
       -regexp {Flip-flop '(trans\.targ_id\[1]|trans\.targ_set\[3:2\])' is driven by constant zeros?} \
       -comment "Target ID and set have been sized for the maximum number of Virtual Targets; only 'NumTargets' VTs are present."
 waive -rules {CONST_FF} -location {i3c_controller_fsm.sv i3c_target_trx.sv} \
-      -regexp {Flip-flop '(state_q\[5\]|trx_rxd_o\.dtype\[4\])' is driven by constant zero} \
+      -regexp {Flip-flop 'state_q\[5\]' is driven by constant zero} \
       -comment "None of the enum values that the logic assigns to this flop sets this bit."
 waive -rules {CONST_FF} -location {i3c_target_trx.sv} \
       -regexp {Flip-flop 'trx_rxd_o\.status\[2\]' is driven by constant zero} \

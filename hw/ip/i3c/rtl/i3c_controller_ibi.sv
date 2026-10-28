@@ -7,6 +7,7 @@
 `include "prim_assert.sv"
 
 module i3c_controller_ibi
+  import i3c_hci_pkg::*;
   import i3c_pkg::*;
 #(
   parameter int unsigned Log2DBW = 2  // log2(Data width in bytes)

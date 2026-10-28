@@ -160,6 +160,7 @@ module i3c_controller
 );
 
   import i3c_consts_pkg::*;
+  import i3c_hci_pkg::*;
 
   // Number of byte write strobes per DCT entry.
   localparam int unsigned DCTMaskW = ($bits(i3c_dct_mem_t) + 7) / 8;

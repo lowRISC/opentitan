@@ -8,6 +8,7 @@ module i3c_ctrl_req_gen
   import i3c_consts_pkg::*;
   import i3c_controller_pkg::*;
   import i3c_ctrl_ccc_pkg::*;
+  import i3c_hci_pkg::*;
   import i3c_pkg::*;
   import i3c_reg_pkg::*;
 #(
