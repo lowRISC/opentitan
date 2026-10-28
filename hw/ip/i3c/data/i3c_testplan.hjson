@@ -2,6 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 //
+// The `MIPI CTS v1.2:` lists name the procedures of the MIPI Conformance Test
+// Suite for I3C v1.2 (public edition) that a testpoint covers. They are
+// informative; "partial" says which part of the procedure the testpoint does
+// not name.
 {
   name: "i3c"
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
@@ -134,6 +138,11 @@
               - Assigned addresses are unique and match the DAT entries.
               - The DCT records the identities of the assigned Targets.
               - The responses report the number of assigned Targets.
+
+            MIPI CTS v1.2:
+              - 1.2.4 Broadcast CCC: ENTDAA
+              - 1.2.5 Broadcast CCC: SETAASA
+              - 1.2.8 Direct CCC: SETDASA
             '''
       stage: V2
       tests: []
@@ -177,6 +186,15 @@
               - The old address is retired after SETNEWDA and RSTDAA.
               - The DUT reports its identity on the bus as configured.
               - Illegal requests are handled as specified and do not change the address.
+
+            MIPI CTS v1.2:
+              - 2.1.4 I3C Bus STOP - Target (Test Case 2; partial: STOP as the exit
+                from DAA is not named)
+              - 2.1.5 I3C Bus ACK/NACK Behavior - Target (partial: the handover and
+                the timing sweep are not named)
+              - 2.1.9 Target Address Header Frame
+              - 2.1.10 Target Dynamic Address Assignment (partial: arbitration loss
+                during DAA is not named)
             '''
       stage: V2
       tests: []
@@ -243,6 +261,11 @@
               - Check the read data, actual lengths, status and order of the responses.
               - Check all byte lanes of the data queues.
               - The DUT recovers from each failure and the next transfer succeeds.
+
+            MIPI CTS v1.2:
+              - 1.1.7 I3C Bus ACK/NACK Behavior - Controller (Test Case 1)
+              - 1.1.8 I3C Bus Transition Bit (T-Bit) - Controller
+              - 1.1.10 Controller Read/Write Frame
             '''
       stage: V2
       tests: []
@@ -280,6 +303,16 @@
             Checking:
               - The accepted bytes and returned data agree with the TTI.
               - Early terminations are reported as specified and the DUT recovers.
+
+            MIPI CTS v1.2:
+              - 2.1.2 I3C Bus START - Target (partial: START timing at the
+                specification limits is not named)
+              - 2.1.3 I3C Bus Repeated START - Target (partial: Repeated START
+                timing at the specification limits and a misaligned START are not
+                named)
+              - 2.1.6 I3C Bus Transition Bit (T-Bit) - Target (partial: the T-bit
+                and the write parity are not named)
+              - 2.1.11 Target Read/Write Frame
             '''
       stage: V2
       tests: []
@@ -349,6 +382,14 @@
               - Check the opcode, defining byte, addressing and payload on the bus.
               - Check the responses and the state changes recorded by the DUT.
               - Unaddressed Targets are not affected.
+
+            MIPI CTS v1.2:
+              - 1.2.1 Broadcast CCC: ENEC
+              - 1.2.2 Broadcast CCC: DISEC
+              - 1.2.6 Direct CCC: ENEC
+              - 1.2.7 Direct CCC: DISEC
+              - 1.2.9 Direct CCC: SETNEWDA
+              - 1.2.13 Direct CCC: GETSTATUS
             '''
       stage: V2
       tests: []
@@ -369,6 +410,12 @@
                 documented.
               - Check the Asynchronous Events reported for CCC activity.
               - Unaddressed Virtual Targets are not affected.
+
+            MIPI CTS v1.2:
+              - 2.1.4 I3C Bus STOP - Target (Test Case 1; partial: STOP as the exit
+                from a Direct CCC is not named)
+              - 2.2.1 Broadcast CCC Tests
+              - 2.2.2 Direct CCC Tests
             '''
       stage: V2
       tests: []
@@ -394,6 +441,9 @@
               - The expected count for Direct GETs with DAT=2/3 is undecided, because
                 HCI Section 6.10.1 and TCRI Section 6.3 differ from I3C Basic
                 Section 4.3.7.2.3.
+
+            MIPI CTS v1.2:
+              - 1.2.14 Controller Retry Model Action
             '''
       stage: V2
       tests: []
@@ -418,6 +468,11 @@
               - SETMRL and GETMRL apply under the conditions of the I3C Basic
                 Specification: a variable read limit above 16 bytes, or an IBI payload of
                 more than one byte.
+
+            MIPI CTS v1.2:
+              - 1.2.10 Direct CCC: GETPID
+              - 1.2.11 Direct CCC: GETBCR
+              - 1.2.12 Direct CCC: GETDCR
             '''
       stage: V2
       tests: []
@@ -481,6 +536,12 @@
               - No lost IBI is reported as successful.
               - A Target agent that retries a NACKed IBI is handled as the DAT configures.
               - The next transfer succeeds.
+
+            MIPI CTS v1.2:
+              - 1.1.9 Controller SDA Arbitration Management (partial: arbitration
+                between the DUT's own address header and a Target's request is not
+                named)
+              - 1.1.11 Controller IBI Handling
             '''
       stage: V2
       tests: []
@@ -547,6 +608,10 @@
                 in bit 0 of the command word, data parity and CRC.
               - Check the HDR Restart and Exit patterns and the return to SDR.
               - Check the response data and status.
+
+            MIPI CTS v1.2:
+              - 1.1.12 Controller HDR Exit Pattern Generation
+              - 1.1.13 Controller HDR Restart Pattern Generation
             '''
       stage: V2
       tests: []
@@ -623,6 +688,13 @@
             Checking:
               - The DUT does not ACK, consume data or change state until HDR Exit.
               - The DUT responds to the SDR transfer after HDR Exit.
+
+            MIPI CTS v1.2:
+              - 2.1.12 Target Enter HDR Detection
+              - 2.1.13 Target HDR Exit Pattern Detection
+              - 2.1.14 Target HDR Tolerance
+              - 2.1.15 Target HDR Restart Pattern Tolerance (partial: the HDR
+                Restart Pattern is not named)
             '''
       stage: V2
       tests: []
@@ -647,6 +719,16 @@
                 Events.
               - The DUT changes no state beyond that specified.
               - The DUT recovers and the next transfer succeeds.
+
+            MIPI CTS v1.2:
+              - 2.1.7 I3C Bus Parity Bit - Target
+              - 2.2.3 Target Retry Model Response
+              - 2.3.1 Error Type TE0
+              - 2.3.2 Error Type TE1
+              - 2.3.3 Error Type TE2
+              - 2.3.4 Error Type TE3
+              - 2.3.5 Error Type TE4
+              - 2.3.6 Error Type TE5
             '''
       stage: V2
       tests: []
@@ -663,6 +745,15 @@
 
             Checking:
               - Check bus release, status and the next valid transfer.
+
+            MIPI CTS v1.2:
+              - 2.1.7 I3C Bus Parity Bit - Target
+              - 2.3.1 Error Type TE0
+              - 2.3.2 Error Type TE1
+              - 2.3.3 Error Type TE2
+              - 2.3.4 Error Type TE3
+              - 2.3.5 Error Type TE4
+              - 2.3.6 Error Type TE5
             '''
       stage: V2
       tests: []
@@ -681,6 +772,12 @@
               - Each CE error is classified and reported in the response status.
               - Each transfer is accounted for.
               - The Controller returns to service and the next command succeeds.
+
+            MIPI CTS v1.2:
+              - 1.1.7 I3C Bus ACK/NACK Behavior - Controller (Test Case 2)
+              - 1.1.14 Controller Target Error Detection and Escalation Handling
+              - 1.3.1 Error Type CE0
+              - 1.3.2 Error Type CE2
             '''
       stage: V2
       tests: []
@@ -698,6 +795,13 @@
             Checking:
               - Check command accounting, status, bus release and the queued traffic that
                 follows.
+
+            MIPI CTS v1.2:
+              - 1.1.14 Controller Target Error Detection and Escalation Handling
+                (partial: the escalation order, repeated START, then STOP, then HDR
+                Exit, is not named)
+              - 1.3.1 Error Type CE0
+              - 1.3.2 Error Type CE2
             '''
       stage: V2
       tests: []
@@ -718,6 +822,9 @@
             Checking:
               - The configured reset action persists and is triggered by the exact pattern.
               - Check the reset scope and the subsequent addressing and data traffic.
+
+            MIPI CTS v1.2:
+              - 2.4.1 No Reset On Target Reset Pattern
             '''
       stage: V2
       tests: []
@@ -1054,6 +1161,17 @@
               - Measure the bus timing and check it against the programmed values and
                 the I3C Basic limits.
               - Check SDA ownership changes and the absence of contention.
+
+            MIPI CTS v1.2:
+              - 1.1.1 Open Drain Pull-Up (partial: the open-drain rise time is
+                analog)
+              - 1.1.3 Bus Free
+              - 1.1.4 I3C Bus START - Controller (partial: voltages and rise/fall
+                times are analog)
+              - 1.1.5 I3C Bus Repeated START - Controller (partial: voltages and
+                rise/fall times are analog)
+              - 1.1.6 I3C Bus STOP - Controller (partial: voltages and rise/fall
+                times are analog)
             '''
       stage: V2
       tests: []
@@ -1132,6 +1250,9 @@
               - No 0x86 appears on the bus, and the request is rejected as specified.
               - Broadcast RSTDAA resets the dynamic addresses.
               - The following valid traffic succeeds.
+
+            MIPI CTS v1.2:
+              - 1.2.3 Broadcast CCC: RSTDAA
             '''
       stage: V2
       tests: []
