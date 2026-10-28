@@ -10,6 +10,10 @@ on:
         type: string
       design_suffix:
         type: string
+      branch:
+        default: "${{ github.ref }}"
+        type: string
+        description: Branch to checkout
       vivado_version:
         default: "2021.1"
         type: string
@@ -22,6 +26,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
+          ref: ${{ inputs.branch }}
           fetch-depth: 0 # Required by get-bitstream-strategy.sh
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
