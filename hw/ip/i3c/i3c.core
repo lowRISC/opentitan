@@ -18,6 +18,7 @@ filesets:
       - lowrisc:ip:i3c_pkg
       - lowrisc:virtual_constants:top_racl_pkg
     files:
+      - rtl/i3c_hci_pkg.sv
       - rtl/i3c_tti_pkg.sv
       - rtl/i3c_async_event_pkg.sv
       - rtl/i3c_fifo_pkg.sv

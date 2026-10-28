@@ -487,9 +487,9 @@ module i3c_target_fsm
   // Direct Read CCC data for all Targets.
   always_comb begin : drv_txc_data
     // Slices belonging to Virtual Targets that are not present keep this default of zero.
+    // Note: we do not support CCC handling in HDR-DDR mode, just SDR modes.
     txc_data_o = '0;
     for (int unsigned t = 0; t < NumTargets; t++) begin
-      // TODO(#31337): rdata_first is hardcoded to 1'b0, which fails DDR CCC reads
       fmt_data_out(txc_data_o.rdata_nq[t], txc_data_o.rdata_pq[t], txc_data_o.rlast[t],
                    {8'b0, ccc_rsp.req_cdata[t]}, 1'b0, {1'b0, ccc_rsp.req_clast});
     end
@@ -820,8 +820,8 @@ module i3c_target_fsm
   // TODO(#31337): Provide up-front indication to the transceiver of max DDR length transmission?
   logic rx_drop, rx_flush;
 
-  wire dtype_crc  = (trx_rxd_i.dtype == I3CDType_CRCWord);
-  wire dtype_data = (trx_rxd_i.dtype inside {I3CDType_DataWord, I3CDType_SDRBytes});
+  wire dtype_crc  = (trx_rxd_i.dtype == TDType_CRCWord);
+  wire dtype_data = (trx_rxd_i.dtype inside {TDType_DataWord, TDType_SDRBytes});
   // TODO(#31337): trx_rready_o is currently OR-wired to prv_rvalid
   wire rx_data_beat = prv_rvalid & dtype_data & trx_rready_o;
   wire rx_accepted  = rx_data_beat & !rx_drop;
@@ -884,7 +884,7 @@ module i3c_target_fsm
   // TODO(#31337): tx downcounting and rx upcounting could probably be combined if careful,
   // certainly the adder and perhaps the storage too? We'd have to accommodate the prefetching,
   // probably by keeping the descriptor available, but we may want that for 'wroc' et al anyway.
-  assign next_data_len = rx_data_len + ((trx_rxd_i.dtype == I3CDType_SDRBytes) ? 14'h1 : 14'h2);
+  assign next_data_len = rx_data_len + ((trx_rxd_i.dtype == TDType_SDRBytes) ? 14'h1 : 14'h2);
 
   // Track the number of bytes of received data and then emit the TTI Rx Descriptor.
   always_ff @(posedge clk_i or negedge rst_ni) begin

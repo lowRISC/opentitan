@@ -1151,12 +1151,12 @@ module i3c_target_trx
       State_RxCmdDDR,
       State_RxDataDDR: begin
         rxd.wdata = ddr_payload;
-        rxd.dtype = (state_q == State_RxDataDDR) ? I3CDType_DataWord : I3CDType_CommandWord;
+        rxd.dtype = (state_q == State_RxDataDDR) ? TDType_DataWord : TDType_CommandWord;
       end
-      State_RxCRCDDR: rxd.dtype = I3CDType_CRCWord;
+      State_RxCRCDDR: rxd.dtype = TDType_CRCWord;
       default: begin
         rxd.wdata[7:0] = sdr_payload;
-        rxd.dtype = I3CDType_SDRBytes;
+        rxd.dtype = TDType_SDRBytes;
       end
     endcase
   end
