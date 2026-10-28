@@ -56,6 +56,10 @@ interface csrng_path_if
     return {core_path, ".u_csrng_ctr_drbg.u_prim_count_ctr_drbg.cnt_q[1]"};
   endfunction // ctr_drbg_ctr_err_path
 
+  function automatic string state_db_reg_ptr_err_path();
+    return {core_path, ".u_csrng_state_db.u_prim_count_reg_ptr.cnt_q[1]"};
+  endfunction // state_db_reg_ptr_err_path
+
   function automatic string csrng_core_path(string path_ext);
     return {core_path, ".", path_ext};
   endfunction // core_path

@@ -140,6 +140,11 @@ package csrng_env_pkg;
     ctr_redun   = 3
   } which_aes_cm_e;
 
+  typedef enum int {
+    ctr_drbg_cnt     = 0,
+    state_db_reg_ptr = 1
+  } which_cnt_e;
+
   // functions
 
   // package sources

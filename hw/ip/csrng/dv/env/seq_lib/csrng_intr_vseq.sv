@@ -288,7 +288,8 @@ class csrng_intr_vseq extends csrng_base_vseq;
         `DV_CHECK_EQ(aes_fsm_state, aes_pkg::CIPHER_CTRL_ERROR)
       end
       ctr_error: begin
-        path = cfg.csrng_path_vif.ctr_drbg_ctr_err_path();
+        path = (cfg.which_cnt == ctr_drbg_cnt) ? cfg.csrng_path_vif.ctr_drbg_ctr_err_path() :
+                                                 cfg.csrng_path_vif.state_db_reg_ptr_err_path();
         force_path_err(path, 8'h01, ral.intr_state.cs_fatal_err, 1'b1);
       end
       fifo_write_error, fifo_read_error, fifo_state_error: begin
