@@ -256,6 +256,22 @@
       tests: ["spi_host_status_stall"]
     }
     {
+      name: segment_length
+      desc: '''
+            Check segments across the full range of COMMAND.LEN
+
+            Stimulus:
+              - Data segments from 1 byte up to several KiB, including segments longer than the
+                TX/RX FIFOs, so the FIFOs are refilled/drained while the segment is ongoing
+
+            Checking:
+              - Scoreboard checks every byte transmitted and received
+              - Properties covering correct behaviour over the full range of LEN are proven
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: Idlecsbactive
       desc: '''
             Stimulus:
