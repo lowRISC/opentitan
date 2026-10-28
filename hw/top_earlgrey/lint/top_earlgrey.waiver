@@ -22,13 +22,6 @@ waive -rules {CLOCK_USE} -location {top_earlgrey.sv} -regexp {'clk_ast_ext_i' is
 waive -rules {CLOCK_USE} -location {top_earlgrey.sv} -regexp {'clkmgr_clocks..*' is connected to '(earlgrey_pd_main|earlgrey_pd_aon)' port '(clkmgr_clocks_(i|o)..*)', and used as a clock} \
       -comment "Clock struct feedthrough across the wrapper into the power domains."
 
-# clkmgr_clocks.clk_usb_peri is flagged as it is only assigned to the unused-signal assignment in the open-source AST.
-waive -rules {CLOCK_USE} -location {earlgrey_pd_aon.sv} -regexp {'clkmgr_clocks.clk_usb_peri' is connected to 'ast_part_secondary' port 'clk_ast_usb_i', and used as a clock} \
-      -comment "Clock struct distribution inside the power domain."
-
-waive -rules {CLOCK_USE} -location {top_earlgrey.sv} -regexp {'ast_intraip_s2p.clk_rst.clk_ast_es' is connected to 'earlgrey_pd_main' port 'ast_intraip_s2p_i.clk_rst.clk_ast_es', and used as a clock} \
-      -comment "This is a clock passed to the other partition."
-
 waive -rules {RESET_USE} -location {top_earlgrey.sv} -regexp {'rstmgr_resets..*' is connected to '(earlgrey_pd_main|earlgrey_pd_aon)' port '(rstmgr_resets_(i|o)..*)', and used as an asynchronous reset or set} \
       -comment "Reset struct feedthrough across the wrapper into the power domains."
 
@@ -39,14 +32,11 @@ waive -rules {RESET_USE} -location {earlgrey_pd_aon.sv} -regexp {'rstmgr_resets.
 waive -rules {CLOCK_USE} -location {earlgrey_pd_aon.sv} -regexp {'ast_sns_clks..*' is connected to 'ast_part_secondary' port 'sns_clks_i..*', and used as a clock} \
       -comment "These clocks are fed back to AST for sensing purposes."
 
-waive -rules {CLOCK_USE} -location {top_earlgrey.sv} -regexp {'spi_device_sck_monitor' is connected to 'earlgrey_pd_aon' port 'spi_device_sck_monitor_i', and used as a clock} \
-      -comment "This clock is fed back to AST for sensing purposes."
-
 waive -rules {RESET_USE} -location {earlgrey_pd_aon.sv} -regexp {'ast_sns_rsts..*' is connected to 'ast_part_secondary' port 'sns_rsts_i..*', and used as an asynchronous reset or set} \
       -comment "These resets are fed back to AST for sensing purposes."
 
 # Clock MUXs
-waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {'ast_intraip_s2p.clk_rst.clk_ast_tlul' is driven by a multiplexer here} \
+waive -rules CLOCK_MUX -location {top_earlgrey.sv} -regexp {'ast_intraip_p2s.clk_rst.clk_ast_tlul' is driven by a multiplexer here} \
       -comment "This is an actual clock signal originating from a DFT clock mux"
 
 waive -rules CLOCK_MUX -location {top_earlgrey.sv earlgrey_pd_aon.sv} -regexp {'ast_clk_src_io.*' reaches a multiplexer here, used as a clock} \
