@@ -30,6 +30,7 @@ jobs:
     with:
       top_name: earlgrey
       design_suffix: cw340
+      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
 
   execute_fpga_cw340_test_rom_tests:
     name: CW340 Test ROM Tests
