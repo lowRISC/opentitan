@@ -37,7 +37,6 @@ module ast (
   // sensed clocks / resets
   input clkmgr_pkg::clkmgr_out_t sns_clks_i,  // Sensed Clocks
   input rstmgr_pkg::rstmgr_out_t sns_rsts_i,  // Sensed Resets
-  input sns_spi_ext_clk_i,                    // Sensed SPI External Clock
 `ifdef AST_BYPASS_CLK
   // Clocks' Oschillator bypass for OS FPGA
   input ast_pkg::clks_osc_byp_t clk_osc_byp_i,  // Clocks' Oschillator bypass for OS FPGA/VERILATOR
@@ -51,7 +50,6 @@ module ast (
   input vcmain_supp_i,                        // VCMAIN Supply Test for OS FPGA
   input vioa_supp_i,                          // VIOA Rail Supply Test for OS FPGA
   input viob_supp_i,                          // VIOB Rail Supply Test for OS FPGA
-  output ast_pkg::ast_pwst_t ast_pwst_o,      // AON, MAIN, IO-0 Rail, IO-1 Rail Power OK @1.1V
   output ast_pkg::ast_pwst_t ast_pwst_h_o,    // AON, MAIN, IO-9 Rail, IO-1 Rail Power OK @3.3V
 
   // Power and IO pin connections
@@ -267,7 +265,7 @@ assign clk_src_aon_val_o = pwrmgr_rsp.slow_clk_val;
 assign clk_src_io_val_o  = pwrmgr_rsp.io_clk_val;
 assign clk_src_usb_val_o = pwrmgr_rsp.usb_clk_val;
 assign clk_src_sys_val_o = pwrmgr_rsp.core_clk_val;
-// pwrmgr_rsp.main_pok goes via ast_pwst_o.
+// pwrmgr_rsp.main_pok is not used by this wrapper.
 logic unused_rsp_main_pok;
 assign unused_rsp_main_pok = pwrmgr_rsp.main_pok;
 
@@ -285,19 +283,11 @@ ast_part_secondary #(
   .rst_ast_adc_ni          ( rst_ast_adc_ni ),
   .clk_ast_alert_i         ( clk_ast_alert_i ),
   .rst_ast_alert_ni        ( rst_ast_alert_ni ),
-  .clk_ast_es_i            ( clk_ast_es_i ),
-  .rst_ast_es_ni           ( rst_ast_es_ni ),
-  .clk_ast_rng_i           ( clk_ast_rng_i ),
-  .rst_ast_rng_ni          ( rst_ast_rng_ni ),
-  .clk_ast_tlul_i          ( clk_ast_tlul_i ),
-  .rst_ast_tlul_ni         ( rst_ast_tlul_ni ),
   .clk_ast_ext_i           ( clk_ast_ext_i ),
   .por_n_i                 ( por_ni ),
   .sns_clks_i              ( sns_clks_i ),
   .sns_rsts_i              ( sns_rsts_i ),
-  .sns_spi_ext_clk_i       ( sns_spi_ext_clk_i ),
   .vx_supp_i               ( vx_supp ),
-  .ast_pwst_o              ( ast_pwst_o ),
   .ast_pwst_h_o            ( ast_pwst_h_o ),
   .rstmgr_por_n_o          ( ), // Unused - part of ast_pwst
   .io_pwr_st_o             ( ), // Unused
@@ -308,10 +298,6 @@ ast_part_secondary #(
   .otp_power_seq_i         ( otp_power_seq_i ),
   .otp_power_seq_h_o       ( otp_power_seq_h_o ),
   .clk_src_aon_o           ( clk_src_aon_o ),
-  .usb_ref_pulse_i         ( usb_ref_pulse_i ),
-  .usb_ref_val_i           ( usb_ref_val_i ),
-  .clk_ast_usb_i           ( clk_ast_usb_i ),
-  .rst_ast_usb_ni          ( rst_ast_usb_ni ),
   .usb_io_pu_cal_o         ( usb_io_pu_cal_o ),
   .adc_i                   ( adc_req ),
   .adc_o                   ( adc_rsp ),
@@ -328,10 +314,6 @@ ast_part_secondary #(
   .mux_iob_sel_o           ( mux_iob_sel_o ),
   .ast2pad_t0_a_o          ( ast2pad_t0_ao ),
   .ast2pad_t1_a_o          ( ast2pad_t1_ao ),
-  .ext_freq_is_96m_i       ( ext_freq_is_96m_i ),
-  .all_clk_byp_req_i       ( all_clk_byp_req_i ),
-  .io_clk_byp_req_i        ( io_clk_byp_req_i ),
-  .clk_osc_byp_i           ( clk_osc_byp ),
   .flash_bist_en_o         ( flash_bist_en_o ),
   .mem_cfg_o               ( mem_cfg_secondary_req ),
   .mem_cfg_i               ( mem_cfg_secondary_rsp ),
@@ -360,6 +342,8 @@ ast_part_primary #(
   .clk_src_sys_jen_i       ( clk_src_sys_jen_i ),
   .clk_ast_es_i            ( clk_ast_es_i ),
   .rst_ast_es_ni           ( rst_ast_es_ni ),
+  .clk_ast_rng_i           ( clk_ast_rng_i ),
+  .rst_ast_rng_ni          ( rst_ast_rng_ni ),
   .intraip_s2p_i           ( intraip_s2p ),
   .intraip_p2s_o           ( intraip_p2s ),
   // Clock bypass interface
@@ -370,6 +354,8 @@ ast_part_primary #(
   .all_clk_byp_req_i       ( all_clk_byp_req_i ),
   .ext_freq_is_96m_i       ( ext_freq_is_96m_i ),
   .clk_osc_byp_i           ( clk_osc_byp ),
+  .usb_ref_pulse_i         ( usb_ref_pulse_i ),
+  .usb_ref_val_i           ( usb_ref_val_i ),
   .clk_src_sys_o           ( clk_src_sys_o ),
   .clk_src_io_o            ( clk_src_io_o ),
   .clk_src_io_48m_o        ( clk_src_io_48m_o ),

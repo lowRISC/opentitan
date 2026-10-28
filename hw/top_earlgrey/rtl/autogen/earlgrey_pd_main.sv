@@ -186,9 +186,6 @@ module earlgrey_pd_main #(
   input  ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl_i,
   input  prim_mubi_pkg::mubi4_t       ast_clk_src_sys_jen_i,
   output prim_mubi_pkg::mubi4_t       ast_init_done_o,
-  output logic       spi_device_sck_monitor_o,
-  output logic       usbdev_usb_ref_pulse_o,
-  output logic       usbdev_usb_ref_val_o,
   input  prim_mubi_pkg::mubi4_t       clkmgr_all_clk_byp_req_i,
   output prim_mubi_pkg::mubi4_t       clkmgr_all_clk_byp_ack_o,
   input  prim_mubi_pkg::mubi4_t       clkmgr_io_clk_byp_req_i,
@@ -259,7 +256,7 @@ module earlgrey_pd_main #(
   input  tlul_pkg::tl_d2h_t       sysrst_ctrl_tl_rsp_i,
   output tlul_pkg::tl_h2d_t       adc_ctrl_tl_req_o,
   input  tlul_pkg::tl_d2h_t       adc_ctrl_tl_rsp_i,
-  input  ast_pkg::clks_osc_byp_t       clk_osc_byp_pd_main_i,
+  input  ast_pkg::clks_osc_byp_t       clks_osc_byp_i,
   inout         rram_test_analog_io,
   input  logic       usbdev_usb_rx_d_i,
   output logic       usbdev_usb_tx_d_o,
@@ -611,6 +608,8 @@ module earlgrey_pd_main #(
   logic       entropy_src_entropy_src_rng_enable;
   logic       entropy_src_rng_fips;
   logic       ast_rng_val;
+  logic       usbdev_usb_ref_pulse;
+  logic       usbdev_usb_ref_val;
   prim_esc_pkg::esc_rx_t [3:0] alert_handler_esc_rx;
   prim_esc_pkg::esc_tx_t [3:0] alert_handler_esc_tx;
   csrng_pkg::csrng_req_t [1:0] csrng_csrng_cmd_req;
@@ -843,7 +842,7 @@ module earlgrey_pd_main #(
   assign lc_ctrl_lc_hw_debug_en_o = lc_ctrl_lc_hw_debug_en;
   assign lc_ctrl_lc_escalate_en_o = lc_ctrl_lc_escalate_en;
   assign lc_ctrl_lc_check_byp_en_o = lc_ctrl_lc_check_byp_en;
-  assign ast_clk_osc_byp = clk_osc_byp_pd_main_i;
+  assign ast_clk_osc_byp = clks_osc_byp_i;
 
 
   // OTP HW_CFG* Broadcast signals.
@@ -1311,7 +1310,7 @@ module earlgrey_pd_main #(
     .passthrough_o(spi_device_passthrough_req),
     .passthrough_i(spi_device_passthrough_rsp),
     .mbist_en_i('0),
-    .sck_monitor_o(spi_device_sck_monitor_o),
+    .sck_monitor_o(),
     .racl_policies_i(top_racl_pkg::RACL_POLICY_VEC_DEFAULT),
     .racl_error_o(),
     .tl_i(spi_device_tl_req),
@@ -1962,8 +1961,8 @@ module earlgrey_pd_main #(
     .usb_dp_pullup_o(usbdev_usb_dp_pullup_o),
     .usb_dn_pullup_o(usbdev_usb_dn_pullup_o),
     .usb_rx_enable_o(usbdev_usb_rx_enable_o),
-    .usb_ref_val_o(usbdev_usb_ref_val_o),
-    .usb_ref_pulse_o(usbdev_usb_ref_pulse_o),
+    .usb_ref_val_o(usbdev_usb_ref_val),
+    .usb_ref_pulse_o(usbdev_usb_ref_pulse),
     .usb_aon_suspend_req_o(usbdev_usb_aon_suspend_req_o),
     .usb_aon_wake_ack_o(usbdev_usb_aon_wake_ack_o),
     .usb_aon_bus_reset_i(usbdev_usb_aon_bus_reset_i),
@@ -1982,10 +1981,12 @@ module earlgrey_pd_main #(
     // Clock and reset connections
     .clk_ast_tlul_i(clkmgr_clocks_i.clk_io_div4_infra),
     .clk_ast_es_i(clkmgr_clocks_i.clk_main_secure),
+    .clk_ast_rng_i(clkmgr_clocks_i.clk_main_secure),
     .clk_ast_usb_i(clkmgr_clocks_i.clk_usb_peri),
     .clk_ast_ext_i(clk_ast_ext_i),
     .rst_ast_tlul_ni(rstmgr_resets_i.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
     .rst_ast_es_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_rng_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .rst_ast_usb_ni(rstmgr_resets_i.rst_usb_n[rstmgr_pkg::DomainMainSel]),
 
 
@@ -2004,6 +2005,8 @@ module earlgrey_pd_main #(
     .clk_src_usb_o(ast_clk_src_usb_o),
     .io_clk_byp_ack_o(clkmgr_io_clk_byp_ack_o),
     .all_clk_byp_ack_o(clkmgr_all_clk_byp_ack_o),
+    .usb_ref_pulse_i(usbdev_usb_ref_pulse),
+    .usb_ref_val_i(usbdev_usb_ref_val),
     .mem_cfg_o(ast_mem_cfg_req),
     .mem_cfg_i(ast_mem_cfg_rsp),
     .clk_osc_byp_i(ast_clk_osc_byp),

@@ -141,7 +141,7 @@ waive -rules CLOCK_USE -location {ast_part_secondary.sv} \
       -comment {This is a valid clock signal and the LFSR runs on the bus clock here.}
 
 waive -rules CLOCK_USE -location {ast_part_primary.sv} \
-      -regexp {'intraip_s2p_i.clk_rst.clk_ast_tlul' is connected to 'ast_clks_byp_primary' port 'clk_ast_tlul_i', and used as a clock} \
+      -regexp {'clk_ast_tlul_i' is connected to 'ast_clks_byp_primary' port 'clk_ast_tlul_i', and used as a clock} \
       -comment {This is a valid clock signal and the LFSR runs on the bus clock here.}
 
 waive -rules CLOCK_USE -location {ast_part_secondary.sv} \
