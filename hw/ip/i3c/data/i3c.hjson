@@ -2188,7 +2188,7 @@
         { bits:   "3",
           name:   "AUTO_COMMAND",
           desc:   "Defines whether the Host Controller supports Auto-Command functionality.",
-          resval: "1"
+          resval: "0"
         }
         { bits:   "2",
           name:   "COMBO_COMMAND",
@@ -2496,7 +2496,7 @@
         { bits:     "15:1",
           name:     "MIPI_CMDS_SUPPORTED",
           desc:     "MIPI Alliance Commands Supported.",
-          resval:   "0x107a"
+          resval:   "0x2a"
         }
         { bits:     "0",
           name:     "ICC_SUPPORT",
@@ -4481,7 +4481,7 @@
         { bits:   "11:0",
           name:   "RX_SEGMENT_SIZE",
           desc:   '''Maximum length of received data segment, minus 1.
-                  Received data is divided into DWORDs of no more than this length.
+                  Received data is divided into DWORDs of no more than the maximum length.
                   '''
           resval: "1"
         }
@@ -4964,7 +4964,7 @@
       }
     }
     // ----- Target Extension 0xC0 (Extended Capability). -----
-    // TODO: This is a placeholder; Open Compute Project Firmware Recovery Protocol is
+    // Note: This is a placeholder; Open Compute Project Firmware Recovery Protocol is
     // anticipated to implement its register interface here.
     { name:     "TARGEXT_EXTCAP_HEADER",
       desc:     "Target Extension Extended Capability Header",
