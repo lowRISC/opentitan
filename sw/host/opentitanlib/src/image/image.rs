@@ -48,6 +48,8 @@ pub enum ImageError {
     MisplacedSignedExtension(u32),
     #[error("Invalid manifest major version: {0}. ECDSA support requires major version {1}.")]
     InvalidManifestVersionforEcdsa(u16, u16),
+    #[error("Invalid signed region end 0x{0:x}.")]
+    BadSignedRegionEnd(u32),
 }
 
 pub enum MainSignatureParams {
@@ -581,8 +583,13 @@ impl Image {
     where
         F: FnOnce(&[u8]) -> R,
     {
-        Ok(f(&self.data.bytes[offset_of!(Manifest, usage_constraints)
-            ..self.borrow_manifest()?.signed_region_end as usize]))
+        let end = self.borrow_manifest()?.signed_region_end;
+        let region = self
+            .data
+            .bytes
+            .get(offset_of!(Manifest, usage_constraints)..end as usize)
+            .ok_or(ImageError::BadSignedRegionEnd(end))?;
+        Ok(f(region))
     }
 
     /// Compute the SHA256 digest for the signed portion of the `Image`.
@@ -597,8 +604,12 @@ impl SubImage<'_> {
     where
         F: FnOnce(&[u8]) -> R,
     {
-        Ok(f(&self.data[offset_of!(Manifest, usage_constraints)
-            ..self.manifest.signed_region_end as usize]))
+        let end = self.manifest.signed_region_end;
+        let region = self
+            .data
+            .get(offset_of!(Manifest, usage_constraints)..end as usize)
+            .ok_or(ImageError::BadSignedRegionEnd(end))?;
+        Ok(f(region))
     }
 
     /// Compute the SHA256 digest for the signed portion of the `Image`.
