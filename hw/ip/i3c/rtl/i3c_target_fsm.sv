@@ -30,7 +30,7 @@ module i3c_target_fsm
 
   // Control inputs.
   input                     enable_i,
-  input                     sw_reset_i, // TODO: Not used/connected to all required flops.
+  input                     sw_reset_i,
   input                     async_evt_rst_i,
 
   // Configuration.
@@ -407,6 +407,9 @@ module i3c_target_fsm
       if (!rst_ni) begin
         prev_txd_toggle <= 1'b0;
         rdata_first <= 1'b1;
+      end else if (sw_reset_i) begin
+        prev_txd_toggle <= 1'b0;
+        rdata_first <= 1'b1;
       end else if (unit_valid & unit_ready) begin
         prev_txd_toggle <= !prev_txd_toggle;
         rdata_first <= 1'b0;
@@ -425,16 +428,21 @@ module i3c_target_fsm
       if (!rst_ni) begin
         tx_active   <= 1'b0;
         tx_data_len <= '0;
-      end else if (&{tx_rvalid, tx_desc_valid[t], tx_start, !tx_active}) begin
-        tx_active   <= 1'b1;
-        tx_data_len <= tx_desc[t].tx.data_length;
-      end else if (tx_active & unit_ready) begin
-        // This ensures that `tx_data_len` returns to zero, even if the requested data length is not
-        // a multiple of the transfer unit.
-        tx_data_len <= {16{!rlast}} & (tx_data_len - unit_bytes);
-        // TODO(#31337): I guess we don't have a verdict until there's a reply from the transceiver,
-        // so keep tx_active asserted?
-        tx_active   <= !rlast;
+      end else if (sw_reset_i) begin
+        tx_active   <= 1'b0;
+        // Tx data length will be collected when we have something to transmit.
+      end else if (enable_i) begin
+        if (&{tx_rvalid, tx_desc_valid[t], tx_start, !tx_active}) begin
+          tx_active   <= 1'b1;
+          tx_data_len <= tx_desc[t].tx.data_length;
+        end else if (tx_active & unit_ready) begin
+          // This ensures that `tx_data_len` returns to zero, even if the requested data length is
+          // not a multiple of the transfer unit.
+          tx_data_len <= {16{!rlast}} & (tx_data_len - unit_bytes);
+          // TODO(#31337): I guess we don't have a verdict until there's a reply from the
+          // transceiver, so keep tx_active asserted?
+          tx_active   <= !rlast;
+        end
       end
     end
 
@@ -472,7 +480,8 @@ module i3c_target_fsm
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) prev_txc_toggle <= 1'b0;
-    else if (ccc_rsp.req_cvalid & ccc_unit_ready) prev_txc_toggle <= !prev_txc_toggle;
+    else if (sw_reset_i) prev_txc_toggle <= 1'b0;
+    else if (enable_i & ccc_rsp.req_cvalid & ccc_unit_ready) prev_txc_toggle <= !prev_txc_toggle;
   end
 
   // Direct Read CCC data for all Targets.
@@ -583,7 +592,7 @@ module i3c_target_fsm
     end else if (sw_reset_i) begin
       state_q <= Inactive;
       ccc_txd_idx <= 'b0;
-    end else if (proceed) begin  // The progress of the state machine is conditional.
+    end else if (enable_i & proceed) begin  // The progress of the state machine is conditional.
       state_q <= state_d;
       // We must track the current position within transmitted data, for the CCC decoding to use.
       ccc_txd_idx <= ccc_tx_start ? 'b1 : (ccc_txd_idx + ccc_unit_ready);
@@ -653,7 +662,7 @@ module i3c_target_fsm
     if (!rst_ni) begin
       // Register state is zero-initialized but nothing shall depend upon it; no sw reset required.
       for (int unsigned r = 0; r < TargCR_Count; r++) reg_state[r] <= '0;
-    end else if (ccc_rsp.reg_we) begin
+    end else if (enable_i & ccc_rsp.reg_we) begin
       // Update the selected register.
       reg_state[ccc_rsp.reg_widx] <= ccc_rsp.reg_wdata;
       // When capturing the CCC or DEFB we also need to modify other state; since this is true for
@@ -791,7 +800,8 @@ module i3c_target_fsm
       buf_wdata_q  <= '0;
     end else if (sw_reset_i) begin
       buf_wvalid_q <= 1'b0;
-    end else begin
+      // No need to initialize the write data.
+    end else if (enable_i) begin
       if (buf_wvalid | buf_wready_i) buf_wvalid_q <= buf_wvalid;
       if (buf_wvalid) buf_wdata_q <= buf_wmask_full & buf_wdata;
     end
@@ -1080,12 +1090,14 @@ module i3c_target_fsm
       arb_data_o        <= '0;
       arb_gnt_q         <= '0;
       prev_arb_toggle   <= 1'b0;
-    end else if (ibi_arb_valid & (arb_toggle_o == prev_arb_toggle)) begin
-      arb_toggle_o      <= !arb_toggle_o;
-      arb_data_o        <= ibi_arb_data;
-      arb_gnt_q         <= ibi_arb_gnt;
-    end else if (arb_toggle_edge) begin
-      prev_arb_toggle   <= arb_toggle_o;
+    end else if (enable_i) begin
+      if (ibi_arb_valid & (arb_toggle_o == prev_arb_toggle)) begin
+        arb_toggle_o      <= !arb_toggle_o;
+        arb_data_o        <= ibi_arb_data;
+        arb_gnt_q         <= ibi_arb_gnt;
+      end else if (arb_toggle_edge) begin
+        prev_arb_toggle   <= arb_toggle_o;
+      end
     end
   end
 
