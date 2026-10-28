@@ -20,9 +20,6 @@ enum {
   // Size of the truncated public-key hash tr.
   kOtcryptoMldsaTrBytes = 64,
   kOtcryptoMldsaTrWords = kOtcryptoMldsaTrBytes / sizeof(uint32_t),
-  // Size of the message hash mu.
-  kOtcryptoMldsaMuBytes = 64,
-  kOtcryptoMldsaMuWords = kOtcryptoMldsaMuBytes / sizeof(uint32_t),
   // Maximum size of a pre-hash message digest.
   kOtcryptoMldsaPhMaxWords = 16,
   // Size of the rnd string.
@@ -129,6 +126,15 @@ static otcrypto_status_t check_word32_buf(
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_NE(buf->len == len, 0);
+  return OTCRYPTO_OK;
+}
+
+// Check the length of the message hash mu.
+static otcrypto_status_t check_mu(const otcrypto_hash_digest_t *mu) {
+  if (mu->len != kOtcryptoMldsa87MuWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(mu->len, kOtcryptoMldsa87MuWords);
   return OTCRYPTO_OK;
 }
 
@@ -262,6 +268,26 @@ otcrypto_status_t otcrypto_mldsa87_verify(
   return otcrypto_mldsa87_verify_async_finalize(signature, verification_result);
 }
 
+otcrypto_status_t otcrypto_mldsa87_sign_external_mu(
+    const otcrypto_blinded_key_t *private_key, const otcrypto_hash_digest_t *mu,
+    otcrypto_mldsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature) {
+  HARDENED_TRY(otcrypto_mldsa87_sign_external_mu_async_start(private_key, mu,
+                                                             sign_mode));
+  HARDENED_TRY(otcrypto_mldsa87_double_sign_async_finalize(signature));
+
+  return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_mldsa87_verify_external_mu(
+    const otcrypto_unblinded_key_t *public_key,
+    const otcrypto_hash_digest_t *mu,
+    const otcrypto_const_word32_buf_t *signature,
+    hardened_bool_t *verification_result) {
+  HARDENED_TRY(otcrypto_mldsa87_verify_external_mu_async_start(public_key, mu,
+                                                               signature));
+  return otcrypto_mldsa87_verify_async_finalize(signature, verification_result);
+}
+
 otcrypto_status_t otcrypto_mldsa87_keycheck(
     const otcrypto_unblinded_key_t *public_key,
     const otcrypto_blinded_key_t *private_key,
@@ -310,10 +336,10 @@ otcrypto_status_t otcrypto_mldsa87_sign_async_start(
   HARDENED_TRY(check_byte_buf(message, kOtcryptoMldsa87MsgMaxBytes));
 
   // Allocate the 64-byte mu digest.
-  uint32_t mu_data[kOtcryptoMldsaMuWords] = {0};
+  uint32_t mu_data[kOtcryptoMldsa87MuWords] = {0};
   otcrypto_hash_digest_t mu = {
       .data = mu_data,
-      .len = kOtcryptoMldsaMuWords,
+      .len = kOtcryptoMldsa87MuWords,
   };
 
   // Extract tr from the secret key.
@@ -333,6 +359,28 @@ otcrypto_status_t otcrypto_mldsa87_sign_async_start(
   HARDENED_TRY(check_blinded_key(private_key));
   HARDENED_TRY(check_byte_buf(context, kOtcryptoMldsa87CtxMaxBytes));
   HARDENED_TRY(check_byte_buf(message, kOtcryptoMldsa87MsgMaxBytes));
+
+  return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
+otcrypto_status_t otcrypto_mldsa87_sign_external_mu_async_start(
+    const otcrypto_blinded_key_t *private_key, const otcrypto_hash_digest_t *mu,
+    otcrypto_mldsa_sign_mode_t sign_mode) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (private_key == NULL || private_key->keyblob == NULL || mu == NULL ||
+      mu->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  HARDENED_TRY(check_blinded_key(private_key));
+  HARDENED_TRY(check_mu(mu));
+
+  HARDENED_TRY_WIPE_DMEM(
+      mldsa87_sign_internal_start(private_key, mu, sign_mode));
+
+  HARDENED_TRY(check_blinded_key(private_key));
+  HARDENED_TRY(check_mu(mu));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -399,10 +447,10 @@ otcrypto_status_t otcrypto_mldsa87_verify_async_start(
   };
   HARDENED_TRY(otcrypto_shake256(&pk_buf, &tr));
 
-  uint32_t mu_data[kOtcryptoMldsaMuWords] = {0};
+  uint32_t mu_data[kOtcryptoMldsa87MuWords] = {0};
   otcrypto_hash_digest_t mu = {
       .data = mu_data,
-      .len = kOtcryptoMldsaMuWords,
+      .len = kOtcryptoMldsa87MuWords,
   };
 
   HARDENED_TRY(compute_mu(&tr, context, message, hash_mode, &mu));
@@ -420,11 +468,37 @@ otcrypto_status_t otcrypto_mldsa87_verify_async_start(
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
+otcrypto_status_t otcrypto_mldsa87_verify_external_mu_async_start(
+    const otcrypto_unblinded_key_t *public_key,
+    const otcrypto_hash_digest_t *mu,
+    const otcrypto_const_word32_buf_t *signature) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (public_key == NULL || public_key->key == NULL || mu == NULL ||
+      mu->data == NULL || signature == NULL || signature->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  HARDENED_TRY(check_unblinded_key(public_key));
+  HARDENED_TRY(check_mu(mu));
+  HARDENED_TRY(check_word32_buf(signature, kOtcryptoMldsa87SigWords));
+
+  HARDENED_TRY_WIPE_DMEM(
+      mldsa87_verify_internal_start(public_key, signature, mu));
+
+  HARDENED_TRY(check_unblinded_key(public_key));
+  HARDENED_TRY(check_mu(mu));
+  HARDENED_TRY(check_word32_buf(signature, kOtcryptoMldsa87SigWords));
+
+  return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
 otcrypto_status_t otcrypto_mldsa87_verify_async_finalize(
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (signature == NULL || signature->data == NULL) {
+  if (signature == NULL || signature->data == NULL ||
+      verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
