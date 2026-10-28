@@ -5,6 +5,7 @@
 def _orchestrator_hyper310_settings_impl(settings, attr):
     return {
         "//hw/bitstream/universal:otp": "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_test_unlocked0_manuf_empty",
+        "//hw/bitstream/universal:rom": "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
         "//hw/bitstream/universal:env": "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys",
     }
 
@@ -13,6 +14,7 @@ _orchestrator_hyper310_settings = transition(
     inputs = [],
     outputs = [
         "//hw/bitstream/universal:otp",
+        "//hw/bitstream/universal:rom",
         "//hw/bitstream/universal:env",
     ],
 )
@@ -20,6 +22,7 @@ _orchestrator_hyper310_settings = transition(
 def _orchestrator_cw340_settings_impl(settings, attr):
     return {
         "//hw/bitstream/universal:otp": "//hw/ip/otp_ctrl/data/earlgrey_skus/emulation:otp_img_test_unlocked0_manuf_empty",
+        "//hw/bitstream/universal:rom": "//sw/device/silicon_creator/rom/binaries/earlgrey_a2:mask_rom",
         "//hw/bitstream/universal:env": "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
     }
 
@@ -28,6 +31,7 @@ _orchestrator_cw340_settings = transition(
     inputs = [],
     outputs = [
         "//hw/bitstream/universal:otp",
+        "//hw/bitstream/universal:rom",
         "//hw/bitstream/universal:env",
     ],
 )
