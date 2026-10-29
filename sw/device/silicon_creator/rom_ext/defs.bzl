@@ -53,6 +53,8 @@ ROM_EXT_VARIATIONS = {
             "dice_attest_next_cdi",
             "mldsa44_tiny_pub_from_seed",
             "mldsa44_tiny_sign",
+            "mldsa87_tiny_pub_from_seed",
+            "mldsa87_tiny_sign",
         ],
     ),
 }

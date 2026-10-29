@@ -17,7 +17,7 @@
 
 enum {
   // Shared scratch buffer size to use for ML-DSA operations
-  kDiceMldsaRomExtAttestationScratchBufferSize = 32 * 1024,
+  kDiceMldsaRomExtAttestationScratchBufferSize = 48 * 1024,
   kDiceMldsaPersoScratchBufferSize = 24 * 1024,
 };
 

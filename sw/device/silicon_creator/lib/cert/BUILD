@@ -277,6 +277,7 @@ cc_library(
         "//sw/device/silicon_creator/rom_ext:rom_ext_boot_policy_ptrs",
         "//sw/device/silicon_creator/rom_ext:rom_ext_manifest",
         "//third_party/embedpqc:mldsa44_tiny",
+        "//third_party/embedpqc:mldsa87_tiny",
         "//third_party/embedpqc/ports:mldsa44_tiny_caller",
         "//third_party/embedpqc/ports:mldsa87_tiny_caller",
         "//third_party/embedpqc/ports:mldsa_caller_common",
