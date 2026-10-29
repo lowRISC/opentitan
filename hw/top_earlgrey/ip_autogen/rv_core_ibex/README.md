@@ -36,6 +36,11 @@ The wrapper holds the [execution mode switch](doc/theory_of_operation.md#executi
 The capability tag of each data access travels as a [multi-bit encoded sideband](doc/theory_of_operation.md#capability-tag-sideband) next to the data port.
 The pipelining of the bus adapters is configurable.
 
+## Supported Parameter Sets
+
+The configuration signed off in Earl Grey uses the template parameters `num_regions=2`, `cheriot_available=true` and `racl_support=false`.
+Ibex uses the `opentitan` [supported parameter set](https://ibex-core.readthedocs.io/en/latest/02_user/configuration.html#supported-parameter-sets) with `MHPMCounterNum=2`.
+
 ## Compatibility
 
 Ibex is a compliant RV32 RISC-V CPU core, as [documented in the Ibex documentation](https://ibex-core.readthedocs.io/en/latest/01_overview/compliance.html).
