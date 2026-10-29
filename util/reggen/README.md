@@ -1097,6 +1097,7 @@ A register that must be reinitialized to its reset state by this port is then de
 The value associated with the `reinit` key of a register must appear in the `reinit_list`.
 
 Reinitialization is not supported for shadowed registers, regwen registers, regwen-controlled registers or registers that have special clocking requirements (i.e., those registers that employ `sync` or `async` keys).
+It is also rejected for registers that neither software nor hardware can write, because such a register always holds its reset value.
 
 For registers outside of the auto-generated logic (`hwext`) a reinitialization signal may be specified, and will be presented to the peripheral IP, only if one or more fields is readable by the IP (i.e., there are output signal(s), `q`, present).
 For other types of `hwext` register requiring reinitialization, the peripheral IP logic is responsible for managing that itself.

@@ -335,9 +335,6 @@ class Register(RegBase):
             if sync_clk is not None or async_clk is not None:
                 raise ValueError(f'{name} register has special clocking requirements '
                                  'and does not support reinit.')
-            if hwext and not hwaccess.allows_read():
-                raise ValueError(f'{name} register cannot support reinit because it '
-                                 'is external and does not support hw reads.')
             reinit_str = str(reinit)
 
         raw_regwen = rd.get('regwen', '')
@@ -409,6 +406,24 @@ class Register(RegBase):
 
             used_bits |= field.bits.bitmask()
             fields.append(field)
+
+        # These reinit checks need the parsed fields, because each field may
+        # override the hwaccess and swaccess of its register.
+        if reinit is not None:
+            if hwext:
+                # The reinit signal of an external register is presented to
+                # the peripheral logic alongside its `q` outputs, so at least
+                # one field must be readable by hardware.
+                if not any(field.hwaccess.allows_read() for field in fields):
+                    raise ValueError(f'{name} register cannot support reinit '
+                                     'because it is external and none of its '
+                                     'fields supports hw reads.')
+            elif not any(field.swaccess.allows_write() or
+                         field.hwaccess.allows_write() for field in fields):
+                raise ValueError(f'{name} register cannot support reinit '
+                                 'because none of its fields can be written '
+                                 'by software or hardware, so it always holds '
+                                 'its reset value.')
 
         raw_uea = rd.get('update_err_alert')
         if raw_uea is None:
