@@ -54,10 +54,11 @@
             Software controller operations on the data and info partitions.
 
             **Stimulus**:
-            - Read operations with `CONTROL.NUM` values across the full range (1 to 1024 bus words),
-              including unaligned start addresses and transactions that cross page boundaries.
-            - Write operations with `CONTROL.NUM` a multiple of 4 bus words, 16-byte aligned, up
-              to 1024 bus words, including multi-page writes.
+            - Read operations of 1 to 1024 bus words (the full `CONTROL.NUM` range), including start
+              addresses that are not aligned to an RRAM word and transactions that cross page
+              boundaries.
+            - Write operations of a multiple of 4 bus words up to 1024 bus words, starting at an
+              RRAM-word aligned address, including multi-page writes.
             - Read `ADDR.START` values that are not bus-word aligned to check the truncation to
               the next lower bus word.
             - Interleave reads and writes to the same and to different pages.
@@ -111,7 +112,7 @@
             **Stimulus**:
             - Write operations whose number of bus words (`CONTROL.NUM` + 1) is not a multiple
               of 4.
-            - Write and Rewrite operations whose `ADDR.START` is not 16-byte aligned.
+            - Write and Rewrite operations whose start address is not 16-byte aligned.
             - For writes, push data into the write FIFO after setting `CONTROL.START`.
             - Follow each rejected operation with a valid write to a different page.
 
