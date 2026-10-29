@@ -207,6 +207,27 @@
       tests: ["lc_ctrl_volatile_unlock_smoke"]
     }
     {
+      name: lc_hw_debug_clr
+      desc: '''
+            Check the lc_hw_debug_clr_o output.
+
+            **Stimulus**:
+            - Initialize lc_ctrl into random valid LC states, and into SCRAP and invalid states.
+            - Drive lc_ctrl into a terminal state through successful and failed transitions,
+              escalation, and internal errors.
+
+            **Checks**:
+            - lc_hw_debug_clr_o is Off while lc_ctrl is in reset and until initialization
+              completes.
+            - After initialization, lc_hw_debug_clr_o is Off for valid LC states other than
+              SCRAP, and On for SCRAP and invalid states.
+            - lc_hw_debug_clr_o is On once lc_ctrl has entered a terminal state, and stays On
+              until the next reset.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: stress_all
       desc: '''
             - Combine above sequences in one test to run sequentially, except csr sequence.
