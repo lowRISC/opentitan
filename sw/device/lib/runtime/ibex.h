@@ -98,7 +98,7 @@ inline uint64_t ibex_mcycle_read(void) {
  * in mcause register.
  *
  * A list of the exception codes can be found at:
- * https://ibex-core.readthedocs.io/en/latest/03_reference/
+ * https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/
  * exception_interrupts.html#exceptions
  */
 OT_WARN_UNUSED_RESULT
@@ -112,7 +112,7 @@ uint32_t ibex_mcause_read(void);
  * trap.
  *
  * From the Ibex documentation (found at
- * https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html)
+ * https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/cs_registers.html)
  * - In the case of errors in the load-store unit mtval holds the address of
  * the transaction causing the error.
  *
@@ -135,7 +135,7 @@ uint32_t ibex_mtval_read(void);
  * is executed, the value from mepc replaces the current program counter.
  *
  * From the Ibex documentation (found at
- * https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html)
+ * https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/cs_registers.html)
  *
  * Please note that in case of a fault, mepc must be modified to hold the
  * address of the next instruction, which can be at the 2byte (16bit) or 4byte
@@ -155,7 +155,7 @@ uint32_t ibex_mepc_read(void);
  * is executed, the value from mepc replaces the current program counter.
  *
  * From the Ibex documentation (found at
- * https://ibex-core.readthedocs.io/en/latest/03_reference/cs_registers.html)
+ * https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/cs_registers.html)
  *
  * Please note that in case of a fault, mepc must be modified to hold the
  * address of the next instruction, which can be at the 2byte (16bit) or 4byte

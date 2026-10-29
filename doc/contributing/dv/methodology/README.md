@@ -167,7 +167,7 @@ The [UART DV document](../../../../hw/ip/uart/dv/README.md) documentation can be
 ### Core Ibex Level DV
 
 The RISC-V CPU core Ibex used in OpenTitan has its own DV testbench and it is verified to full coverage closure.
-Please see the [Ibex DV documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification.html) for more details.
+Please see the [Ibex DV documentation](https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/verification.html) for more details.
 
 ### Chip Level DV
 

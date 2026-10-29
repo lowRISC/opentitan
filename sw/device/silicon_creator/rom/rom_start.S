@@ -69,7 +69,7 @@
    * interrupt vector and can be thought of as an extra entry.
    *
    * More information about Ibex's interrupts can be found here:
-   *   https://ibex-core.readthedocs.io/en/latest/03_reference/exception_interrupts.html
+   *   https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/exception_interrupts.html
    */
   .section .vectors, "ax"
   .balignl 256, UNIMP

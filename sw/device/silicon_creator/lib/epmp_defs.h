@@ -12,7 +12,7 @@
  * See the Ibex Physical Memory Protection documentation for more
  * details:
  *
- * https://ibex-core.readthedocs.io/en/latest/03_reference/pmp.html
+ * https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/pmp.html
  *
  * Note: this file must be usable from assembly, C and C++ files and
  * should therefore only contain constant definitions.
