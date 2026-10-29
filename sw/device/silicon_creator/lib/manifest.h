@@ -420,13 +420,13 @@ enum {
    */
   kManifestExtNameSpxSignature = 0x31545845,
   /**
-   * ASCII "EXT6".
+   * ASCII "ML8K".
    */
-  kManifestExtNameMldsa87Key = 0x36545845,
+  kManifestExtNameMldsa87Key = 0x4b384c4d,
   /**
-   * ASCII "EXT7".
+   * ASCII "ML8S".
    */
-  kManifestExtNameMldsa87Signature = 0x37545845,
+  kManifestExtNameMldsa87Signature = 0x53384c4d,
 };
 
 /**
