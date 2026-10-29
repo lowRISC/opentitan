@@ -163,7 +163,7 @@ def _manifest_impl(ctx):
         "secver_write",
         "isfb",
         "isfb_erase",
-        None,
+        "owner_transfer_blob",
         "mldsa87_key",
         "mldsa87_signature",
         None,
@@ -180,12 +180,6 @@ def _manifest_impl(ctx):
         manifest_dependent_files.append(ctx.file.owner_transfer_block)
         if ctx.file.owner_transfer_detached_signature:
             manifest_dependent_files.append(ctx.file.owner_transfer_detached_signature)
-
-        # Inject owner_transfer_blob into extensions array if not already present
-        if "owner_transfer_blob" not in extensions:
-            if None not in extensions:
-                fail("No free slot in extensions table for owner_transfer_blob.")
-            extensions[extensions.index(None)] = "owner_transfer_blob"
 
     mf["extensions"] = extensions
     mf["extension_params"] = []
