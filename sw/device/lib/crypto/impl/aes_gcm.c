@@ -257,33 +257,6 @@ status_t aes_gcm_check_tag_length(size_t word_len,
   return OTCRYPTO_OK;
 }
 
-/**
- * Actuate the key manager to generate a sideloaded AES-GCM key.
- *
- * The AES driver will not load or clear sideloaded keys by itself, so we need
- * to do it separately at each stage of the AES-GCM operation.
- *
- * Sideloaded keys are stored in the `aes_key_t` struct in a format specific to
- * this AES-GCM implementation: the first "key share" is the diversification
- * data as it would be stored in a blinded keyblob, and the second "share" is
- * completely ignored.
- *
- * If the key is not a sideloaded key, this function does nothing.
- *
- * @param key Key to load.
- * @return OK or errror.
- */
-static status_t load_key_if_sideloaded(const aes_key_t key) {
-  if (launder32(key.sideload) == kHardenedBoolFalse) {
-    return OTCRYPTO_OK;
-  }
-  HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolTrue));
-  keymgr_diversification_t diversification;
-  HARDENED_TRY(keyblob_buffer_to_keymgr_diversification(
-      key.key_shares[0], kOtcryptoKeyModeAesGcm, &diversification));
-  return keymgr_generate_key_aes(diversification);
-}
-
 otcrypto_status_t otcrypto_aes_gcm_encrypt(
     otcrypto_blinded_key_t *key, const otcrypto_const_byte_buf_t *plaintext,
     const otcrypto_const_word32_buf_t *iv, const otcrypto_const_byte_buf_t *aad,
@@ -335,7 +308,6 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
   if (launder32(aes_key.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
   }
-  HARDENED_TRY(load_key_if_sideloaded(aes_key));
 
   // Call the core encryption operation.
   HARDENED_TRY(aes_gcm_encrypt(aes_key, iv, plaintext, aad, auth_tag,
@@ -386,7 +358,6 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt(
   if (launder32(aes_key.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
   }
-  HARDENED_TRY(load_key_if_sideloaded(aes_key));
 
   // Ensure the plaintext and ciphertext lengths match.
   if (launder32(ciphertext->len) != plaintext->len) {
@@ -429,7 +400,6 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_init(
   if (launder32(aes_key.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
   }
-  HARDENED_TRY(load_key_if_sideloaded(aes_key));
 
   // Call the internal init operation.
   aes_gcm_context_t internal_ctx
@@ -470,7 +440,6 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_init(
     // covered.
     is_sideloaded = kHardenedBoolTrue;
   }
-  HARDENED_TRY(load_key_if_sideloaded(aes_key));
 
   // Call the internal init operation.
   aes_gcm_context_t internal_ctx
@@ -514,7 +483,6 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(
   if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
   }
-  HARDENED_TRY(load_key_if_sideloaded(aes_gcm_context_key(&internal_ctx)));
 
   // Call the internal update operation.
   HARDENED_TRY(aes_gcm_update_aad(&internal_ctx, aad));
@@ -559,7 +527,6 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
   }
-  HARDENED_TRY(load_key_if_sideloaded(aes_gcm_context_key(&internal_ctx)));
   // Remask the key if it is not sideloaded.
   HARDENED_TRY(gcm_remask_key(&internal_ctx));
 
@@ -626,7 +593,6 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
   }
-  HARDENED_TRY(load_key_if_sideloaded(aes_gcm_context_key(&internal_ctx)));
   // Remask the key if it is not sideloaded.
   HARDENED_TRY(gcm_remask_key(&internal_ctx));
 
@@ -686,7 +652,6 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
     // covered.
     is_sideloaded = kHardenedBoolTrue;
   }
-  HARDENED_TRY(load_key_if_sideloaded(aes_gcm_context_key(&internal_ctx)));
   // Remask the key if it is not sideloaded.
   HARDENED_TRY(gcm_remask_key(&internal_ctx));
 

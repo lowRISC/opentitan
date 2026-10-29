@@ -18,8 +18,10 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:random_order",
         "//sw/device/lib/crypto/drivers:aes",
+        "//sw/device/lib/crypto/drivers:keymgr",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
