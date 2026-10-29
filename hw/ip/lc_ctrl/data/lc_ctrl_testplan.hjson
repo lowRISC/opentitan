@@ -207,6 +207,37 @@
       tests: ["lc_ctrl_volatile_unlock_smoke"]
     }
     {
+      name: lc_hw_debug
+      desc: '''
+            Check the interaction between lc_hw_debug_clr_o and lc_hw_debug_en_o.
+
+            **Stimulus**:
+            - Initialize lc_ctrl into all valid LC states, SCRAP and invalid states.
+            - From each valid non-SCRAP LC state, enter a terminal state through a successful
+              transition, a failed transition, a rejected volatile RAW unlock (no ClkMux),
+              escalation and an internal error. This includes TEST_UNLOCKED*, DEV and RMA,
+              where lc_hw_debug_en_o is On.
+            - Perform a successful volatile RAW unlock.
+            - Reset lc_ctrl from a terminal state and re-initialize into a state where
+              lc_hw_debug_en_o is On.
+
+            **Checks**:
+            - Both outputs are Off in reset and until the LC state has been read from OTP.
+            - lc_hw_debug_clr_o is Off in valid non-SCRAP states, including during transitions
+              and after a successful volatile RAW unlock.
+            - In POST_TRANSITION, SCRAP, ESCALATE and INVALID, lc_hw_debug_clr_o is On and
+              lc_hw_debug_en_o is Off until reset.
+            - Outside reset, lc_hw_debug_en_o only leaves On in the cycle lc_hw_debug_clr_o
+              turns On (assertion).
+            - lc_hw_debug_en_o is never On while lc_hw_debug_clr_o is not Off (assertion).
+            - A model of a consumer flop, set by lc_hw_debug_en_o and cleared by
+              lc_hw_debug_clr_o, is Off one cycle after lc_hw_debug_clr_o leaves Off and stays
+              Off until reset. Cover that the model was On when lc_hw_debug_clr_o left Off.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: stress_all
       desc: '''
             - Combine above sequences in one test to run sequentially, except csr sequence.
@@ -235,6 +266,13 @@
       name: volatile_raw_unlock_cg
       desc: '''
         Cover volatile_raw_unlock transition success and fail cases.
+      '''
+    }
+    {
+      name: lc_hw_debug_cg
+      desc: '''
+        Cover each legal {lc_hw_debug_en_o, lc_hw_debug_clr_o} pair and each change between
+        them, split by whether the change happened through reset.
       '''
     }
   ]
