@@ -88,4 +88,5 @@ pub enum TransportInterfaceType {
     IoExpander,
     Provides,
     Usb,
+    ClockFrequency,
 }
