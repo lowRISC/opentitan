@@ -252,15 +252,16 @@ module i3c_reg_top
   logic [14:0] targ_status_ext_info_wd;
   logic targ_status_ext_present_qs;
   logic [7:0] targ_status_rstact_qs;
-  logic [2:0] targ_status_num_targets_qs;
+  logic targ_status_rstact_virt_targ_det_qs;
   logic targ_status_vtm_qs;
   logic targ_status_protocol_error_qs;
+  logic [1:0] targ_status_targets_qs;
   logic targ_status_connected_qs;
   logic targ_status_active_qs;
   logic targ_status_present_qs;
   logic targ_sink_control_we;
-  logic [2:0] targ_sink_control_buffer_qs;
-  logic [2:0] targ_sink_control_buffer_wd;
+  logic [3:0] targ_sink_control_buffer_qs;
+  logic [3:0] targ_sink_control_buffer_wd;
   logic [10:0] targ_sink_control_length_qs;
   logic [10:0] targ_sink_control_length_wd;
   logic targ_sink_control_start_wd;
@@ -271,7 +272,7 @@ module i3c_reg_top
   logic reset_det_ctrl_we;
   logic [21:0] reset_det_ctrl_qs;
   logic reset_det_ctrl_busy;
-  logic [3:0] reset_det_status_qs;
+  logic [21:0] reset_det_status_qs;
   logic reset_det_status_busy;
   logic ctrl_time_sp_we;
   logic [9:0] ctrl_time_sp_tcbp_div2_qs;
@@ -991,6 +992,7 @@ module i3c_reg_top
   logic targ_intr_status_async_evt_ready_stat_qs;
   logic targ_intr_status_transfer_abort_stat_qs;
   logic targ_intr_status_transfer_err_stat_qs;
+  logic targ_intr_status_rx_desc_ovf_stat_qs;
   logic targ_intr_status_rx_buffer_ovf_stat_qs;
   logic targ_intr_status_async_evt_ovf_stat_qs;
   logic targ_intr_status_tx0_thld_stat_qs;
@@ -1013,6 +1015,8 @@ module i3c_reg_top
   logic targ_intr_status_enable_transfer_abort_stat_en_wd;
   logic targ_intr_status_enable_transfer_err_stat_en_qs;
   logic targ_intr_status_enable_transfer_err_stat_en_wd;
+  logic targ_intr_status_enable_rx_desc_ovf_stat_en_qs;
+  logic targ_intr_status_enable_rx_desc_ovf_stat_en_wd;
   logic targ_intr_status_enable_rx_buffer_ovf_stat_en_qs;
   logic targ_intr_status_enable_rx_buffer_ovf_stat_en_wd;
   logic targ_intr_status_enable_async_evt_ovf_stat_en_qs;
@@ -1046,6 +1050,8 @@ module i3c_reg_top
   logic targ_intr_signal_enable_transfer_abort_signal_en_wd;
   logic targ_intr_signal_enable_transfer_err_signal_en_qs;
   logic targ_intr_signal_enable_transfer_err_signal_en_wd;
+  logic targ_intr_signal_enable_rx_desc_ovf_signal_en_qs;
+  logic targ_intr_signal_enable_rx_desc_ovf_signal_en_wd;
   logic targ_intr_signal_enable_rx_buffer_ovf_signal_en_qs;
   logic targ_intr_signal_enable_rx_buffer_ovf_signal_en_wd;
   logic targ_intr_signal_enable_async_evt_ovf_signal_en_qs;
@@ -1074,6 +1080,7 @@ module i3c_reg_top
   logic targ_intr_force_async_evt_ready_force_wd;
   logic targ_intr_force_transfer_abort_force_wd;
   logic targ_intr_force_transfer_err_force_wd;
+  logic targ_intr_force_rx_desc_ovf_force_wd;
   logic targ_intr_force_rx_buffer_ovf_force_wd;
   logic targ_intr_force_async_evt_ovf_force_wd;
   logic targ_intr_force_tx0_thld_force_wd;
@@ -1090,6 +1097,9 @@ module i3c_reg_top
   logic targ_pio_control_ibi_suspended_wd;
   logic targ_pio_control_ibi_abort_qs;
   logic targ_pio_control_ibi_abort_wd;
+  logic targ_pio_control_rxbuf_clear_wd;
+  logic targ_pio_control_ibibuf_clear_wd;
+  logic [3:0] targ_pio_control_txbuf_clear_wd;
   logic [3:0] targ_pio_control_suspended_qs;
   logic [3:0] targ_pio_control_suspended_wd;
   logic [3:0] targ_pio_control_abort_qs;
@@ -1497,7 +1507,7 @@ module i3c_reg_top
   prim_reg_cdc #(
     .DataWidth(22),
     .ResetVal(22'h0),
-    .BitMask(22'h310002),
+    .BitMask(22'h310001),
     .DstWrReq(0)
   ) u_reset_det_ctrl_cdc (
     .clk_src_i    (clk_i),
@@ -1529,27 +1539,27 @@ module i3c_reg_top
   logic  aon_reset_det_status_rst_periph_qs_int;
   logic  aon_reset_det_status_rst_target_ds_int;
   logic  aon_reset_det_status_rst_target_qs_int;
-  logic [3:0] aon_reset_det_status_ds;
+  logic [21:0] aon_reset_det_status_ds;
   logic aon_reset_det_status_qe;
-  logic [3:0] aon_reset_det_status_qs;
+  logic [21:0] aon_reset_det_status_qs;
 
   always_comb begin
-    aon_reset_det_status_qs = 4'h0;
-    aon_reset_det_status_ds = 4'h0;
+    aon_reset_det_status_qs = 22'h0;
+    aon_reset_det_status_ds = 22'h0;
     aon_reset_det_status_ds[0] = aon_reset_det_status_active_ds_int;
     aon_reset_det_status_qs[0] = aon_reset_det_status_active_qs_int;
-    aon_reset_det_status_ds[1] = aon_reset_det_status_wake_up_ds_int;
-    aon_reset_det_status_qs[1] = aon_reset_det_status_wake_up_qs_int;
-    aon_reset_det_status_ds[2] = aon_reset_det_status_rst_periph_ds_int;
-    aon_reset_det_status_qs[2] = aon_reset_det_status_rst_periph_qs_int;
-    aon_reset_det_status_ds[3] = aon_reset_det_status_rst_target_ds_int;
-    aon_reset_det_status_qs[3] = aon_reset_det_status_rst_target_qs_int;
+    aon_reset_det_status_ds[16] = aon_reset_det_status_wake_up_ds_int;
+    aon_reset_det_status_qs[16] = aon_reset_det_status_wake_up_qs_int;
+    aon_reset_det_status_ds[20] = aon_reset_det_status_rst_periph_ds_int;
+    aon_reset_det_status_qs[20] = aon_reset_det_status_rst_periph_qs_int;
+    aon_reset_det_status_ds[21] = aon_reset_det_status_rst_target_ds_int;
+    aon_reset_det_status_qs[21] = aon_reset_det_status_rst_target_qs_int;
   end
 
   prim_reg_cdc #(
-    .DataWidth(4),
-    .ResetVal(4'h0),
-    .BitMask(4'hf),
+    .DataWidth(22),
+    .ResetVal(22'h0),
+    .BitMask(22'h310001),
     .DstWrReq(1)
   ) u_reset_det_status_cdc (
     .clk_src_i    (clk_i),
@@ -2203,11 +2213,11 @@ module i3c_reg_top
 
   // R[targ_status]: V(True)
   logic targ_status_qe;
-  logic [8:0] targ_status_flds_we;
+  logic [9:0] targ_status_flds_we;
   // This ignores QEs that are set to constant 0 due to read-only fields.
   logic unused_targ_status_flds_we;
-  assign unused_targ_status_flds_we = ^(targ_status_flds_we & 9'h1fe);
-  assign targ_status_qe = &(targ_status_flds_we | 9'h1fe);
+  assign unused_targ_status_flds_we = ^(targ_status_flds_we & 10'h3fe);
+  assign targ_status_qe = &(targ_status_flds_we | 10'h3fe);
   //   F[ext_info]: 14:0
   prim_subreg_ext #(
     .DW    (15)
@@ -2254,22 +2264,22 @@ module i3c_reg_top
     .qs     (targ_status_rstact_qs)
   );
 
-  //   F[num_targets]: 26:24
+  //   F[rstact_virt_targ_det]: 24:24
   prim_subreg_ext #(
-    .DW    (3)
-  ) u_targ_status_num_targets (
+    .DW    (1)
+  ) u_targ_status_rstact_virt_targ_det (
     .re     (targ_status_re),
     .we     (1'b0),
     .wd     ('0),
-    .d      (hw2reg.targ_status.num_targets.d),
+    .d      (hw2reg.targ_status.rstact_virt_targ_det.d),
     .qre    (),
     .qe     (targ_status_flds_we[3]),
     .q      (),
     .ds     (),
-    .qs     (targ_status_num_targets_qs)
+    .qs     (targ_status_rstact_virt_targ_det_qs)
   );
 
-  //   F[vtm]: 27:27
+  //   F[vtm]: 25:25
   prim_subreg_ext #(
     .DW    (1)
   ) u_targ_status_vtm (
@@ -2284,7 +2294,7 @@ module i3c_reg_top
     .qs     (targ_status_vtm_qs)
   );
 
-  //   F[protocol_error]: 28:28
+  //   F[protocol_error]: 26:26
   prim_subreg_ext #(
     .DW    (1)
   ) u_targ_status_protocol_error (
@@ -2300,6 +2310,21 @@ module i3c_reg_top
   );
   assign reg2hw.targ_status.protocol_error.qe = targ_status_qe;
 
+  //   F[targets]: 28:27
+  prim_subreg_ext #(
+    .DW    (2)
+  ) u_targ_status_targets (
+    .re     (targ_status_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.targ_status.targets.d),
+    .qre    (),
+    .qe     (targ_status_flds_we[6]),
+    .q      (),
+    .ds     (),
+    .qs     (targ_status_targets_qs)
+  );
+
   //   F[connected]: 29:29
   prim_subreg_ext #(
     .DW    (1)
@@ -2309,7 +2334,7 @@ module i3c_reg_top
     .wd     ('0),
     .d      (hw2reg.targ_status.connected.d),
     .qre    (),
-    .qe     (targ_status_flds_we[6]),
+    .qe     (targ_status_flds_we[7]),
     .q      (),
     .ds     (),
     .qs     (targ_status_connected_qs)
@@ -2324,7 +2349,7 @@ module i3c_reg_top
     .wd     ('0),
     .d      (hw2reg.targ_status.active.d),
     .qre    (),
-    .qe     (targ_status_flds_we[7]),
+    .qe     (targ_status_flds_we[8]),
     .q      (),
     .ds     (),
     .qs     (targ_status_active_qs)
@@ -2339,7 +2364,7 @@ module i3c_reg_top
     .wd     ('0),
     .d      (hw2reg.targ_status.present.d),
     .qre    (),
-    .qe     (targ_status_flds_we[8]),
+    .qe     (targ_status_flds_we[9]),
     .q      (),
     .ds     (),
     .qs     (targ_status_present_qs)
@@ -2358,14 +2383,14 @@ module i3c_reg_top
     .d_i(&targ_sink_control_flds_we),
     .q_o(targ_sink_control_qe)
   );
-  //   F[buffer]: 14:12
+  //   F[buffer]: 15:12
   // Reinit
   assign reg2hw.targ_sink_control.reinit = tti_sw_reinit_i;
 
   prim_subreg #(
-    .DW      (3),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (3'h0),
+    .RESVAL  (4'h0),
     .Mubi    (1'b0)
   ) u_targ_sink_control_buffer (
     .clk_i   (clk_i),
@@ -2494,73 +2519,118 @@ module i3c_reg_top
   );
 
 
-  // R[reset_det_ctrl]: V(True)
-  logic reset_det_ctrl_qe;
-  logic [3:0] reset_det_ctrl_flds_we;
-  assign reset_det_ctrl_qe = &reset_det_ctrl_flds_we;
-  //   F[sleep_req]: 1:1
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_reset_det_ctrl_sleep_req (
-    .re     (1'b0),
+  // R[reset_det_ctrl]: V(False)
+  //   F[activate]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_reset_det_ctrl_activate (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
     .we     (aon_reset_det_ctrl_we),
-    .wd     (aon_reset_det_ctrl_wdata[1]),
+    .wd     (aon_reset_det_ctrl_wdata[0]),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
-    .qe     (reset_det_ctrl_flds_we[0]),
-    .q      (reg2hw.reset_det_ctrl.sleep_req.q),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.reset_det_ctrl.activate.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.reset_det_ctrl.sleep_req.qe = reset_det_ctrl_qe;
 
-  //   F[wake_ack]: 16:16
-  prim_subreg_ext #(
-    .DW    (1)
-  ) u_reset_det_ctrl_wake_ack (
-    .re     (1'b0),
+  //   F[sleep_req]: 16:16
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_reset_det_ctrl_sleep_req (
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
     .we     (aon_reset_det_ctrl_we),
     .wd     (aon_reset_det_ctrl_wdata[16]),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
-    .qe     (reset_det_ctrl_flds_we[1]),
-    .q      (reg2hw.reset_det_ctrl.wake_ack.q),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.reset_det_ctrl.sleep_req.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.reset_det_ctrl.wake_ack.qe = reset_det_ctrl_qe;
 
   //   F[rst_periph_en]: 20:20
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_reset_det_ctrl_rst_periph_en (
-    .re     (1'b0),
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
     .we     (aon_reset_det_ctrl_we),
     .wd     (aon_reset_det_ctrl_wdata[20]),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
-    .qe     (reset_det_ctrl_flds_we[2]),
+
+    // to internal hardware
+    .qe     (),
     .q      (reg2hw.reset_det_ctrl.rst_periph_en.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.reset_det_ctrl.rst_periph_en.qe = reset_det_ctrl_qe;
 
   //   F[rst_target_en]: 21:21
-  prim_subreg_ext #(
-    .DW    (1)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
   ) u_reset_det_ctrl_rst_target_en (
-    .re     (1'b0),
+    .clk_i   (clk_aon_i),
+    .rst_ni  (rst_aon_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
     .we     (aon_reset_det_ctrl_we),
     .wd     (aon_reset_det_ctrl_wdata[21]),
+
+    // from internal hardware
+    .de     (1'b0),
     .d      ('0),
-    .qre    (),
-    .qe     (reset_det_ctrl_flds_we[3]),
+
+    // to internal hardware
+    .qe     (),
     .q      (reg2hw.reset_det_ctrl.rst_target_en.q),
     .ds     (),
+
+    // to register interface (read)
     .qs     ()
   );
-  assign reg2hw.reset_det_ctrl.rst_target_en.qe = reset_det_ctrl_qe;
 
 
   // R[reset_det_status]: V(False)
@@ -2594,7 +2664,7 @@ module i3c_reg_top
     .qs     (aon_reset_det_status_active_qs_int)
   );
 
-  //   F[wake_up]: 1:1
+  //   F[wake_up]: 16:16
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2622,7 +2692,7 @@ module i3c_reg_top
     .qs     (aon_reset_det_status_wake_up_qs_int)
   );
 
-  //   F[rst_periph]: 2:2
+  //   F[rst_periph]: 20:20
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -2650,7 +2720,7 @@ module i3c_reg_top
     .qs     (aon_reset_det_status_rst_periph_qs_int)
   );
 
-  //   F[rst_target]: 3:3
+  //   F[rst_target]: 21:21
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -11472,7 +11542,35 @@ module i3c_reg_top
     .qs     (targ_intr_status_transfer_err_stat_qs)
   );
 
-  //   F[rx_buffer_ovf_stat]: 5:5
+  //   F[rx_desc_ovf_stat]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_intr_status_rx_desc_ovf_stat (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.targ_intr_status.rx_desc_ovf_stat.de),
+    .d      (hw2reg.targ_intr_status.rx_desc_ovf_stat.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.targ_intr_status.rx_desc_ovf_stat.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (targ_intr_status_rx_desc_ovf_stat_qs)
+  );
+
+  //   F[rx_buffer_ovf_stat]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -11500,7 +11598,7 @@ module i3c_reg_top
     .qs     (targ_intr_status_rx_buffer_ovf_stat_qs)
   );
 
-  //   F[async_evt_ovf_stat]: 6:6
+  //   F[async_evt_ovf_stat]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
@@ -11925,7 +12023,35 @@ module i3c_reg_top
     .qs     (targ_intr_status_enable_transfer_err_stat_en_qs)
   );
 
-  //   F[rx_buffer_ovf_stat_en]: 5:5
+  //   F[rx_desc_ovf_stat_en]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_intr_status_enable_rx_desc_ovf_stat_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_intr_status_enable_we),
+    .wd     (targ_intr_status_enable_rx_desc_ovf_stat_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.targ_intr_status_enable.rx_desc_ovf_stat_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (targ_intr_status_enable_rx_desc_ovf_stat_en_qs)
+  );
+
+  //   F[rx_buffer_ovf_stat_en]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -11953,7 +12079,7 @@ module i3c_reg_top
     .qs     (targ_intr_status_enable_rx_buffer_ovf_stat_en_qs)
   );
 
-  //   F[async_evt_ovf_stat_en]: 6:6
+  //   F[async_evt_ovf_stat_en]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12378,7 +12504,35 @@ module i3c_reg_top
     .qs     (targ_intr_signal_enable_transfer_err_signal_en_qs)
   );
 
-  //   F[rx_buffer_ovf_signal_en]: 5:5
+  //   F[rx_desc_ovf_signal_en]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_intr_signal_enable_rx_desc_ovf_signal_en (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_intr_signal_enable_we),
+    .wd     (targ_intr_signal_enable_rx_desc_ovf_signal_en_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.targ_intr_signal_enable.rx_desc_ovf_signal_en.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (targ_intr_signal_enable_rx_desc_ovf_signal_en_qs)
+  );
+
+  //   F[rx_buffer_ovf_signal_en]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12406,7 +12560,7 @@ module i3c_reg_top
     .qs     (targ_intr_signal_enable_rx_buffer_ovf_signal_en_qs)
   );
 
-  //   F[async_evt_ovf_signal_en]: 6:6
+  //   F[async_evt_ovf_signal_en]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
@@ -12689,7 +12843,7 @@ module i3c_reg_top
 
   // R[targ_intr_force]: V(False)
   logic targ_intr_force_qe;
-  logic [15:0] targ_intr_force_flds_we;
+  logic [16:0] targ_intr_force_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -12847,7 +13001,36 @@ module i3c_reg_top
   );
   assign reg2hw.targ_intr_force.transfer_err_force.qe = targ_intr_force_qe;
 
-  //   F[rx_buffer_ovf_force]: 5:5
+  //   F[rx_desc_ovf_force]: 5:5
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_intr_force_rx_desc_ovf_force (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_intr_force_we),
+    .wd     (targ_intr_force_rx_desc_ovf_force_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (targ_intr_force_flds_we[5]),
+    .q      (reg2hw.targ_intr_force.rx_desc_ovf_force.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     ()
+  );
+  assign reg2hw.targ_intr_force.rx_desc_ovf_force.qe = targ_intr_force_qe;
+
+  //   F[rx_buffer_ovf_force]: 6:6
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
@@ -12867,7 +13050,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[5]),
+    .qe     (targ_intr_force_flds_we[6]),
     .q      (reg2hw.targ_intr_force.rx_buffer_ovf_force.q),
     .ds     (),
 
@@ -12876,7 +13059,7 @@ module i3c_reg_top
   );
   assign reg2hw.targ_intr_force.rx_buffer_ovf_force.qe = targ_intr_force_qe;
 
-  //   F[async_evt_ovf_force]: 6:6
+  //   F[async_evt_ovf_force]: 7:7
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
@@ -12896,7 +13079,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[6]),
+    .qe     (targ_intr_force_flds_we[7]),
     .q      (reg2hw.targ_intr_force.async_evt_ovf_force.q),
     .ds     (),
 
@@ -12925,7 +13108,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[7]),
+    .qe     (targ_intr_force_flds_we[8]),
     .q      (reg2hw.targ_intr_force.tx0_thld_force.q),
     .ds     (),
 
@@ -12954,7 +13137,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[8]),
+    .qe     (targ_intr_force_flds_we[9]),
     .q      (reg2hw.targ_intr_force.tx1_thld_force.q),
     .ds     (),
 
@@ -12983,7 +13166,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[9]),
+    .qe     (targ_intr_force_flds_we[10]),
     .q      (reg2hw.targ_intr_force.tx2_thld_force.q),
     .ds     (),
 
@@ -13012,7 +13195,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[10]),
+    .qe     (targ_intr_force_flds_we[11]),
     .q      (reg2hw.targ_intr_force.tx3_thld_force.q),
     .ds     (),
 
@@ -13041,7 +13224,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[11]),
+    .qe     (targ_intr_force_flds_we[12]),
     .q      (reg2hw.targ_intr_force.tx0_desc_ready_force.q),
     .ds     (),
 
@@ -13070,7 +13253,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[12]),
+    .qe     (targ_intr_force_flds_we[13]),
     .q      (reg2hw.targ_intr_force.tx1_desc_ready_force.q),
     .ds     (),
 
@@ -13099,7 +13282,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[13]),
+    .qe     (targ_intr_force_flds_we[14]),
     .q      (reg2hw.targ_intr_force.tx2_desc_ready_force.q),
     .ds     (),
 
@@ -13128,7 +13311,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[14]),
+    .qe     (targ_intr_force_flds_we[15]),
     .q      (reg2hw.targ_intr_force.tx3_desc_ready_force.q),
     .ds     (),
 
@@ -13157,7 +13340,7 @@ module i3c_reg_top
     .d      ('0),
 
     // to internal hardware
-    .qe     (targ_intr_force_flds_we[15]),
+    .qe     (targ_intr_force_flds_we[16]),
     .q      (reg2hw.targ_intr_force.te_force.q),
     .ds     (),
 
@@ -13169,7 +13352,7 @@ module i3c_reg_top
 
   // R[targ_pio_control]: V(False)
   logic targ_pio_control_qe;
-  logic [3:0] targ_pio_control_flds_we;
+  logic [6:0] targ_pio_control_flds_we;
   prim_flop #(
     .Width(1),
     .ResetValue(0)
@@ -13240,6 +13423,93 @@ module i3c_reg_top
   );
   assign reg2hw.targ_pio_control.ibi_abort.qe = targ_pio_control_qe;
 
+  //   F[rxbuf_clear]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_pio_control_rxbuf_clear (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_pio_control_we),
+    .wd     (targ_pio_control_rxbuf_clear_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (targ_pio_control_flds_we[2]),
+    .q      (reg2hw.targ_pio_control.rxbuf_clear.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     ()
+  );
+  assign reg2hw.targ_pio_control.rxbuf_clear.qe = targ_pio_control_qe;
+
+  //   F[ibibuf_clear]: 11:11
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_targ_pio_control_ibibuf_clear (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_pio_control_we),
+    .wd     (targ_pio_control_ibibuf_clear_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (targ_pio_control_flds_we[3]),
+    .q      (reg2hw.targ_pio_control.ibibuf_clear.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     ()
+  );
+  assign reg2hw.targ_pio_control.ibibuf_clear.qe = targ_pio_control_qe;
+
+  //   F[txbuf_clear]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .RESVAL  (4'h0),
+    .Mubi    (1'b0)
+  ) u_targ_pio_control_txbuf_clear (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(tti_sw_reinit_i),
+
+    // from register interface
+    .we     (targ_pio_control_we),
+    .wd     (targ_pio_control_txbuf_clear_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (targ_pio_control_flds_we[4]),
+    .q      (reg2hw.targ_pio_control.txbuf_clear.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     ()
+  );
+  assign reg2hw.targ_pio_control.txbuf_clear.qe = targ_pio_control_qe;
+
   //   F[suspended]: 19:16
   prim_subreg #(
     .DW      (4),
@@ -13260,7 +13530,7 @@ module i3c_reg_top
     .d      (hw2reg.targ_pio_control.suspended.d),
 
     // to internal hardware
-    .qe     (targ_pio_control_flds_we[2]),
+    .qe     (targ_pio_control_flds_we[5]),
     .q      (reg2hw.targ_pio_control.suspended.q),
     .ds     (),
 
@@ -13289,7 +13559,7 @@ module i3c_reg_top
     .d      (hw2reg.targ_pio_control.abort.d),
 
     // to internal hardware
-    .qe     (targ_pio_control_flds_we[3]),
+    .qe     (targ_pio_control_flds_we[6]),
     .q      (reg2hw.targ_pio_control.abort.q),
     .ds     (),
 
@@ -19440,7 +19710,7 @@ module i3c_reg_top
   assign targ_status_ext_info_wd = reg_wdata[14:0];
   assign targ_sink_control_we = racl_addr_hit_write[9] & reg_we & !reg_error;
 
-  assign targ_sink_control_buffer_wd = reg_wdata[14:12];
+  assign targ_sink_control_buffer_wd = reg_wdata[15:12];
 
   assign targ_sink_control_length_wd = reg_wdata[26:16];
 
@@ -20046,9 +20316,11 @@ module i3c_reg_top
 
   assign targ_intr_status_enable_transfer_err_stat_en_wd = reg_wdata[4];
 
-  assign targ_intr_status_enable_rx_buffer_ovf_stat_en_wd = reg_wdata[5];
+  assign targ_intr_status_enable_rx_desc_ovf_stat_en_wd = reg_wdata[5];
 
-  assign targ_intr_status_enable_async_evt_ovf_stat_en_wd = reg_wdata[6];
+  assign targ_intr_status_enable_rx_buffer_ovf_stat_en_wd = reg_wdata[6];
+
+  assign targ_intr_status_enable_async_evt_ovf_stat_en_wd = reg_wdata[7];
 
   assign targ_intr_status_enable_tx0_thld_stat_en_wd = reg_wdata[8];
 
@@ -20079,9 +20351,11 @@ module i3c_reg_top
 
   assign targ_intr_signal_enable_transfer_err_signal_en_wd = reg_wdata[4];
 
-  assign targ_intr_signal_enable_rx_buffer_ovf_signal_en_wd = reg_wdata[5];
+  assign targ_intr_signal_enable_rx_desc_ovf_signal_en_wd = reg_wdata[5];
 
-  assign targ_intr_signal_enable_async_evt_ovf_signal_en_wd = reg_wdata[6];
+  assign targ_intr_signal_enable_rx_buffer_ovf_signal_en_wd = reg_wdata[6];
+
+  assign targ_intr_signal_enable_async_evt_ovf_signal_en_wd = reg_wdata[7];
 
   assign targ_intr_signal_enable_tx0_thld_signal_en_wd = reg_wdata[8];
 
@@ -20112,9 +20386,11 @@ module i3c_reg_top
 
   assign targ_intr_force_transfer_err_force_wd = reg_wdata[4];
 
-  assign targ_intr_force_rx_buffer_ovf_force_wd = reg_wdata[5];
+  assign targ_intr_force_rx_desc_ovf_force_wd = reg_wdata[5];
 
-  assign targ_intr_force_async_evt_ovf_force_wd = reg_wdata[6];
+  assign targ_intr_force_rx_buffer_ovf_force_wd = reg_wdata[6];
+
+  assign targ_intr_force_async_evt_ovf_force_wd = reg_wdata[7];
 
   assign targ_intr_force_tx0_thld_force_wd = reg_wdata[8];
 
@@ -20138,6 +20414,12 @@ module i3c_reg_top
   assign targ_pio_control_ibi_suspended_wd = reg_wdata[0];
 
   assign targ_pio_control_ibi_abort_wd = reg_wdata[1];
+
+  assign targ_pio_control_rxbuf_clear_wd = reg_wdata[10];
+
+  assign targ_pio_control_ibibuf_clear_wd = reg_wdata[11];
+
+  assign targ_pio_control_txbuf_clear_wd = reg_wdata[15:12];
 
   assign targ_pio_control_suspended_wd = reg_wdata[19:16];
 
@@ -20717,16 +20999,17 @@ module i3c_reg_top
         reg_rdata_next[14:0] = targ_status_ext_info_qs;
         reg_rdata_next[15] = targ_status_ext_present_qs;
         reg_rdata_next[23:16] = targ_status_rstact_qs;
-        reg_rdata_next[26:24] = targ_status_num_targets_qs;
-        reg_rdata_next[27] = targ_status_vtm_qs;
-        reg_rdata_next[28] = targ_status_protocol_error_qs;
+        reg_rdata_next[24] = targ_status_rstact_virt_targ_det_qs;
+        reg_rdata_next[25] = targ_status_vtm_qs;
+        reg_rdata_next[26] = targ_status_protocol_error_qs;
+        reg_rdata_next[28:27] = targ_status_targets_qs;
         reg_rdata_next[29] = targ_status_connected_qs;
         reg_rdata_next[30] = targ_status_active_qs;
         reg_rdata_next[31] = targ_status_present_qs;
       end
 
       racl_addr_hit_read[9]: begin
-        reg_rdata_next[14:12] = targ_sink_control_buffer_qs;
+        reg_rdata_next[15:12] = targ_sink_control_buffer_qs;
         reg_rdata_next[26:16] = targ_sink_control_length_qs;
         reg_rdata_next[31] = '0;
       end
@@ -21479,8 +21762,9 @@ module i3c_reg_top
         reg_rdata_next[2] = targ_intr_status_async_evt_ready_stat_qs;
         reg_rdata_next[3] = targ_intr_status_transfer_abort_stat_qs;
         reg_rdata_next[4] = targ_intr_status_transfer_err_stat_qs;
-        reg_rdata_next[5] = targ_intr_status_rx_buffer_ovf_stat_qs;
-        reg_rdata_next[6] = targ_intr_status_async_evt_ovf_stat_qs;
+        reg_rdata_next[5] = targ_intr_status_rx_desc_ovf_stat_qs;
+        reg_rdata_next[6] = targ_intr_status_rx_buffer_ovf_stat_qs;
+        reg_rdata_next[7] = targ_intr_status_async_evt_ovf_stat_qs;
         reg_rdata_next[8] = targ_intr_status_tx0_thld_stat_qs;
         reg_rdata_next[9] = targ_intr_status_tx1_thld_stat_qs;
         reg_rdata_next[10] = targ_intr_status_tx2_thld_stat_qs;
@@ -21498,8 +21782,9 @@ module i3c_reg_top
         reg_rdata_next[2] = targ_intr_status_enable_async_evt_ready_stat_en_qs;
         reg_rdata_next[3] = targ_intr_status_enable_transfer_abort_stat_en_qs;
         reg_rdata_next[4] = targ_intr_status_enable_transfer_err_stat_en_qs;
-        reg_rdata_next[5] = targ_intr_status_enable_rx_buffer_ovf_stat_en_qs;
-        reg_rdata_next[6] = targ_intr_status_enable_async_evt_ovf_stat_en_qs;
+        reg_rdata_next[5] = targ_intr_status_enable_rx_desc_ovf_stat_en_qs;
+        reg_rdata_next[6] = targ_intr_status_enable_rx_buffer_ovf_stat_en_qs;
+        reg_rdata_next[7] = targ_intr_status_enable_async_evt_ovf_stat_en_qs;
         reg_rdata_next[8] = targ_intr_status_enable_tx0_thld_stat_en_qs;
         reg_rdata_next[9] = targ_intr_status_enable_tx1_thld_stat_en_qs;
         reg_rdata_next[10] = targ_intr_status_enable_tx2_thld_stat_en_qs;
@@ -21517,8 +21802,9 @@ module i3c_reg_top
         reg_rdata_next[2] = targ_intr_signal_enable_async_evt_ready_signal_en_qs;
         reg_rdata_next[3] = targ_intr_signal_enable_transfer_abort_signal_en_qs;
         reg_rdata_next[4] = targ_intr_signal_enable_transfer_err_signal_en_qs;
-        reg_rdata_next[5] = targ_intr_signal_enable_rx_buffer_ovf_signal_en_qs;
-        reg_rdata_next[6] = targ_intr_signal_enable_async_evt_ovf_signal_en_qs;
+        reg_rdata_next[5] = targ_intr_signal_enable_rx_desc_ovf_signal_en_qs;
+        reg_rdata_next[6] = targ_intr_signal_enable_rx_buffer_ovf_signal_en_qs;
+        reg_rdata_next[7] = targ_intr_signal_enable_async_evt_ovf_signal_en_qs;
         reg_rdata_next[8] = targ_intr_signal_enable_tx0_thld_signal_en_qs;
         reg_rdata_next[9] = targ_intr_signal_enable_tx1_thld_signal_en_qs;
         reg_rdata_next[10] = targ_intr_signal_enable_tx2_thld_signal_en_qs;
@@ -21538,6 +21824,7 @@ module i3c_reg_top
         reg_rdata_next[4] = '0;
         reg_rdata_next[5] = '0;
         reg_rdata_next[6] = '0;
+        reg_rdata_next[7] = '0;
         reg_rdata_next[8] = '0;
         reg_rdata_next[9] = '0;
         reg_rdata_next[10] = '0;
@@ -21552,6 +21839,9 @@ module i3c_reg_top
       racl_addr_hit_read[128]: begin
         reg_rdata_next[0] = targ_pio_control_ibi_suspended_qs;
         reg_rdata_next[1] = targ_pio_control_ibi_abort_qs;
+        reg_rdata_next[10] = '0;
+        reg_rdata_next[11] = '0;
+        reg_rdata_next[15:12] = '0;
         reg_rdata_next[19:16] = targ_pio_control_suspended_qs;
         reg_rdata_next[27:24] = targ_pio_control_abort_qs;
       end

@@ -542,28 +542,43 @@
                    // The reset value is deterministic, so only the non-init tests exclude it.
                    "excl:CsrNonInitTests:CsrExclCheck"]
         }
-        { bits:     "28",
+        { bits:     "28:27",
+          name:     "TARGETS",
+          desc:     '''Indicates the number of extra Virtual Targets present.
+
+                    If PRESENT is 1, this is the number of Targets in this implementation minus 1.
+                    If PRESENT is 0, this field is also zero.
+                    ''',
+          hwaccess: "hwo",
+          resval:   "1"
+        }
+        { bits:     "26",
           name:     "PROTOCOL_ERROR",
           desc:     "Protocol error detected since the last GETSTATUS CCC to read this indicator.",
           hwaccess: "hrw",
           hwqe:     "true",
           resval:   "0"
         }
-        { bits:     "27",
+        { bits:     "25",
           name:     "VTM",
           desc:     "Vendor Test Mode active, in response to ENTTM.",
           hwaccess: "hwo",
           resval:   "0"
         }
-        { bits:     "26:24",
-          name:     "NUM_TARGETS",
-          desc:     "The number of Targets in this implementation.",
+        { bits:     "24",
+          name:     "RSTACT_VIRT_TARG_DET",
+          desc:     "RSTACT Virtual Target Detect.",
           hwaccess: "hwo",
-          resval:   "2"
+          resval:   "0"
         }
         { bits:     "23:16",
           name:     "RSTACT",
-          desc:     "Configured Target Reset action.",
+          desc:     '''Configured Target Reset action.
+
+                    The reset value of this field is 'NoReset' (0) as per the HCI Standby Controller specification.
+                    When enabled, the default response to receipt of the Target Reset pattern is a reset of the I3C Peripheral only.
+                    This response must still be enabled by software, however.
+                    ''',
           hwaccess: "hwo",
           resval:   "0"
         }
@@ -617,13 +632,22 @@
           hwaccess: "hro",
           resval:   "0"
         }
-        { bits:     "14:12",
+        { bits:     "15:12",
           name:     "BUFFER",
           desc:     '''Specifies the transmission buffer from which DWORDs are to be removed.
 
                     0 - IBI Data buffer.
-                    1 - Virtual Target 0 Tx buffer
-                    2 - Virtual Target 1 Tx buffer...
+                    1 - IBI Descriptor queue.
+                    2 - Virtual Target 0 Tx Data buffer.
+                    3 - Virtual Target 0 Tx Descriptor queue.
+                    4 - Virtual Target 1 Tx Data buffer.
+                    5 - Virtual Target 1 Tx Descriptor queue.
+                    6 - Virtual Target 2 Tx Data buffer.
+                    7 - Virtual Target 2 Tx Descriptor queue.
+                    8 - Virtual Target 3 Tx Data buffer.
+                    9 - Virtual Target 3 Tx Descriptor queue.
+
+                    Other values are invalid.
                     ''',
           hwaccess: "hro",
           resval:   "0"
@@ -673,30 +697,28 @@
       desc:     "Reset detector control.",
       swaccess: "wo",
       hwaccess: "hro",
-      hwext:    "true",
-      hwqe:     "true",
       async:    "clk_aon_i",
       fields: [
         { bits:   "21",
           name:   "RST_TARGET_EN",
-          desc:   "Enable response to a Whole Target reset request.",
+          desc:   "Enable response to a Whole Target reset request, when RSTACT has been set accordingly.",
           resval: "0"
         }
         { bits:   "20",
           name:   "RST_PERIPH_EN",
-          desc:   "Enable response to a Peripheral reset request.",
+          desc:   "Enable response to a Peripheral reset request, when RSTACT has been set accordingly.",
           resval: "0"
         }
         { bits:   "16",
-          name:   "WAKE_ACK",
-          desc:   "Wake acknowledgement.",
-          resval: "0"
-        }
-        { bits:   "1",
           name:   "SLEEP_REQ",
-          desc:   "Activate the reset detector prior to entry into 'Deepest Sleep' state.",
+          desc:   "Enable wake up signaling, prior to entering 'Deepest Sleep' state.",
           resval: "0",
-          tags: [// Prevent the reset detector from being activated outside of directed tests
+        }
+        { bits:   "0",
+          name:   "ACTIVATE",
+          desc:   "Activate the reset detector logic.",
+          resval: "0",
+          tags: [// Prevent wake/reset functions from being turned on outside of directed tests
                  "excl:CsrNonInitTests:CsrExclWrite"]
         }
       ]
@@ -707,17 +729,17 @@
       hwaccess: "hwo",
       async:    "clk_aon_i",
       fields: [
-        { bits:   "3",
+        { bits:   "21",
           name:   "RST_TARGET",
           desc:   "Indicates that a Whole Target reset request was received.",
           resval: "0"
         }
-        { bits:   "2",
+        { bits:   "20",
           name:   "RST_PERIPH",
           desc:   "Indicates that a Peripheral reset request was received.",
           resval: "0"
         }
-        { bits:   "1",
+        { bits:   "16",
           name:   "WAKE_UP",
           desc:   "Indicates that a Wake Up request was received.",
           resval: "0"
@@ -2166,7 +2188,7 @@
         { bits:   "3",
           name:   "AUTO_COMMAND",
           desc:   "Defines whether the Host Controller supports Auto-Command functionality.",
-          resval: "1"
+          resval: "0"
         }
         { bits:   "2",
           name:   "COMBO_COMMAND",
@@ -2474,7 +2496,7 @@
         { bits:     "15:1",
           name:     "MIPI_CMDS_SUPPORTED",
           desc:     "MIPI Alliance Commands Supported.",
-          resval:   "0x107a"
+          resval:   "0x2a"
         }
         { bits:     "0",
           name:     "ICC_SUPPORT",
@@ -3862,14 +3884,19 @@
                     '''
           resval:   "0"
         }
-        { bits:     "6",
+        { bits:     "7",
           name:     "ASYNC_EVT_OVF_STAT",
           desc:     "Asynchronous Event Queue Overflow Status.",
           resval:   "0"
         }
-        { bits:     "5",
+        { bits:     "6",
           name:     "RX_BUFFER_OVF_STAT",
           desc:     "Rx Data Buffer Overflow Status.",
+          resval:   "0"
+        }
+        { bits:     "5",
+          name:     "RX_DESC_OVF_STAT",
+          desc:     "Rx Desc Queue Overflow Status.",
           resval:   "0"
         }
         { bits:     "4",
@@ -3950,14 +3977,19 @@
           desc:   "Target 0 Tx Data Buffer Threshold Status Enable.",
           resval: "0"
         }
-        { bits:   "6",
+        { bits:   "7",
           name:   "ASYNC_EVT_OVF_STAT_EN",
           desc:   "Asynchronous Event Queue Overflow Status Enable.",
           resval: "0"
         }
-        { bits:   "5",
+        { bits:   "6",
           name:   "RX_BUFFER_OVF_STAT_EN",
           desc:   "Rx Data Buffer Overflow Status Enable.",
+          resval: "0"
+        }
+        { bits:   "5",
+          name:   "RX_DESC_OVF_STAT_EN",
+          desc:   "Rx Desc Queue Overflow Status Enable.",
           resval: "0"
         }
         { bits:   "4",
@@ -4038,14 +4070,19 @@
           desc:   "Target 0 Tx Data Buffer Threshold Signal Enable.",
           resval: "0"
         }
-        { bits:   "6",
+        { bits:   "7",
           name:   "ASYNC_EVT_OVF_SIGNAL_EN",
           desc:   "Asynchronous Event Queue Overflow Signal Enable.",
           resval: "0"
         }
-        { bits:   "5",
+        { bits:   "6",
           name:   "RX_BUFFER_OVF_SIGNAL_EN",
           desc:   "Rx Data Buffer Overflow Signal Enable.",
+          resval: "0"
+        }
+        { bits:   "5",
+          name:   "RX_DESC_OVF_SIGNAL_EN",
+          desc:   "Rx Desc Queue Overflow Signal Enable.",
           resval: "0"
         }
         { bits:   "4",
@@ -4127,14 +4164,19 @@
           desc:   "Force Target 0 Tx Data Buffer Threshold.",
           resval: "0"
         }
-        { bits:   "6",
+        { bits:   "7",
           name:   "ASYNC_EVT_OVF_FORCE",
           desc:   "Force Asynchronous Event Queue Overflow.",
           resval: "0"
         }
-        { bits:   "5",
+        { bits:   "6",
           name:   "RX_BUFFER_OVF_FORCE",
           desc:   "Force Rx Data Buffer Overflow.",
+          resval: "0"
+        }
+        { bits:   "5",
+          name:   "RX_DESC_OVF_FORCE",
+          desc:   "Force Rx Desc Queue Overflow.",
           resval: "0"
         }
         { bits:   "4",
@@ -4166,7 +4208,6 @@
     }
     { name:     "TARG_PIO_CONTROL",
       desc:     "Target PIO mode Control register.",
-      hwaccess: "hrw",
       hwqe:     "true",
       reinit:   "tti_sw_reinit_i",
       fields: [
@@ -4177,6 +4218,7 @@
                     Transmission will enter the Suspended state and will not resume until the Suspended state is cleared.
                     ''',
           swaccess: "rw",
+          hwaccess: "hrw",
           resval:   "0"
         }
         { bits:     "19:16",
@@ -4187,6 +4229,45 @@
                     It remains asserted until the software writes a 1 to clear this bit.
                     ''',
           swaccess: "rw1c",
+          hwaccess: "hrw",
+          resval:   "0"
+        }
+        { bits:     "15:12",
+          name:     "TXBUF_CLEAR",
+          desc:     '''Clears the transmission buffers of a Virtual Target.
+
+                    If software writes a '1' to a bit, then the transmission data buffer and descriptor queue for the corresponding Virtual Target will both be emptied.
+                    This is a recovery mechanism that is only available when transmission has been suspended.
+                    It provides an instantaneous way to discard any transfer and data already queued for transmission, in the event that software deems such action appropriate.
+                    If some or all of the queued descriptor(s) and/or data must be retained, the 'Data Sink' feature should be used instead.
+                    ''',
+          swaccess: "wo",
+          hwaccess: "hro",
+          hwqe:     "true",
+          resval:   "0"
+        }
+        { bits:     "11",
+          name:     "IBIBUF_CLEAR",
+          desc:     '''Reset the IBI transmission buffers.
+
+                    This bit clears the IBI transmission buffer and descriptor queue in the same manner as described for `TXBUF_CLEAR` above.
+                    This facility is only available when IBI transmission has been suspended (see `IBI_SUSPENDED` below).
+                    '''
+          swaccess: "wo",
+          hwaccess: "hro",
+          hwqe:     "true",
+          resval:   "0"
+        }
+        { bits:     "10",
+          name:     "RXBUF_CLEAR",
+          desc:     '''Reset the reception buffers.
+
+                    If software writes a '1' to a bit, then the reception data buffer and descriptor queue will both be emptied.
+                    This is a recovery mechanism that shall only be used when the Target is unable to receive new transfers, e.g., when handling an error condition or when there are no Virtual Targets enabled.
+                    '''
+          swaccess: "wo",
+          hwaccess: "hro",
+          hwqe:     "true",
           resval:   "0"
         }
         { bits:     "1",
@@ -4196,6 +4277,7 @@
                     IBI transmission will enter the Suspended stateand will not resume until the Suspended state is cleared.
                     ''',
           swaccess: "rw",
+          hwaccess: "hrw",
           resval:   "0"
         }
         { bits:     "0",
@@ -4206,6 +4288,7 @@
                     It remains asserted until the software writes a 1 to clear this bit.
                     ''',
           swaccess: "rw1c",
+          hwaccess: "hrw",
           resval:   "0"
         }
       ]
@@ -4398,7 +4481,7 @@
         { bits:   "11:0",
           name:   "RX_SEGMENT_SIZE",
           desc:   '''Maximum length of received data segment, minus 1.
-                  Received data is divided into DWORDs of no more than this length.
+                  Received data is divided into DWORDs of no more than the maximum length.
                   '''
           resval: "1"
         }
@@ -4881,7 +4964,7 @@
       }
     }
     // ----- Target Extension 0xC0 (Extended Capability). -----
-    // TODO: This is a placeholder; Open Compute Project Firmware Recovery Protocol is
+    // Note: This is a placeholder; Open Compute Project Firmware Recovery Protocol is
     // anticipated to implement its register interface here.
     { name:     "TARGEXT_EXTCAP_HEADER",
       desc:     "Target Extension Extended Capability Header",

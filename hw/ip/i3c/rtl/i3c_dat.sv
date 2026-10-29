@@ -8,6 +8,7 @@
 //   hardware.
 // - hardware requires only read access and has highest priority.
 module i3c_dat
+  import i3c_hci_pkg::*;
   import i3c_pkg::*;
   import prim_ram_1p_pkg::*;
 #(

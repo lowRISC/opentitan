@@ -109,6 +109,9 @@ module i3c_stby_cr_regs
     reset_dynamic_addr:    '{d: I3C_STBY_CR_CCC_CONFIG_RSTACT_PARAMS_RESET_DYNAMIC_ADDR_RESVAL},
     reset_time_target:     '{d: I3C_STBY_CR_CCC_CONFIG_RSTACT_PARAMS_RESET_TIME_TARGET_RESVAL},
     reset_time_peripheral: '{d: I3C_STBY_CR_CCC_CONFIG_RSTACT_PARAMS_RESET_TIME_PERIPHERAL_RESVAL},
+    // TODO(#31337): The reset value comes from the HCI Standby Controller specification, but when
+    // I3C becomes enabled, the default response to a Target Reset pattern is supposed to be a
+    // Peripheral Reset (Table 38 and Figure 66).
     rst_action:            '{d: I3C_STBY_CR_CCC_CONFIG_RSTACT_PARAMS_RST_ACTION_RESVAL}
   };
 

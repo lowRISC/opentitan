@@ -9,6 +9,11 @@ package i3c_target_pkg;
   import i3c_reg_pkg::*;
   import i3c_tti_pkg::*;
 
+  // The Target must also respond to the I3C Broadcast Address (7'h7e), and an additional encoding
+  // is used within the Target transceiver logic to indicate the address did not match anything.
+  localparam int unsigned TargIDW = $clog2(MaxTargets + 2);
+  localparam bit [TargIDW-1:0] TargIDNoMatch   = TargIDW'(MaxTargets);
+  localparam bit [TargIDW-1:0] TargIDBroadcast = TargIDW'(MaxTargets+1);
   // We need a small number of states here for tracking transfer framing, in particular CCCs
   // in HDR-DDR mode if/when completed (HCI v1.2 does not support their use).
   // Most of the CCC handling is kept within the Target Core logic, operating on the IP block.
@@ -46,6 +51,36 @@ package i3c_target_pkg;
     logic  [7:0] bcr;  // Bus Characteristics Register.
   } i3c_targ_info_t;
 
+  // Group address description.
+  typedef struct packed {
+    logic            [6:0] addr;
+    // Subset of Virtual Targets presently subscribed to this group address.
+    // - if this is zero, the group description is invalid and shall be ignored.
+    logic [MaxTargets-1:0] targets;
+    // The VT set in the register always has MaxTarget bits; being defensive, we treat this group
+    // as valid iff a configured and present VT is subscribed.
+    logic                  valid;
+  } i3c_grp_addr_t;
+
+  // Set maximum read, write, IBI length.
+  typedef struct packed {
+    logic                  setmwl;   // As opposed to SETMRL.
+    logic                  setibi;   // Optional, SETMRL only.
+    logic [MaxTargets-1:0] targets;  // Set of affected Targets.
+    logic           [15:0] mwrl;     // Length for SETMW|RL.
+    logic            [7:0] ibil;     // Optional max IBI payload length.
+  } i3c_setml_t;
+
+  // Enable/Disable Target-side IBI generation.
+  typedef struct packed {
+    logic [MaxTargets-1:0] enint;   // Regular In-Band Interrupts.
+    logic [MaxTargets-1:0] disint;
+    logic [MaxTargets-1:0] encr;    // Controller Role requests.
+    logic [MaxTargets-1:0] discr;
+    logic [MaxTargets-1:0] enhj;    // Hot-Join requests.
+    logic [MaxTargets-1:0] dishj;
+  } i3c_endis_event_t;
+
   // Description of a Target transceiver prefetch request.
   typedef struct packed {
     // Target being addressed.
@@ -70,7 +105,7 @@ package i3c_target_pkg;
   } i3c_targ_trx_txd_t;
 
   // Description of transmit data for Direct Read CCCs.
-  // - data for all Targets is carried as a single unit.
+  // - data for all Targets is carried as a single unit to simplify the CDC into the SCL domain.
   typedef struct packed {
     // Read data (from the perspective of the Controller).
     logic [MaxTargets-1:0][8:0] rdata_nq;  // Odd-indexed bits of HDR-DDR word, or SDR byte.
@@ -91,6 +126,18 @@ package i3c_target_pkg;
     logic         [8:0] rdata_nq;  // SDR word for transmission, including 'last' bit.
   } i3c_targ_trx_arb_t;
 
+  // Type of data unit/event to be actioned by the Target core.
+  typedef enum logic [2:0] {
+    // Control flow.
+    TDType_RepStart,
+    // HDR-DDR Words.
+    TDType_CommandWord,
+    TDType_DataWord,
+    TDType_CRCWord,
+    // SDR signaling.
+    TDType_SDRBytes
+  } i3c_targ_dtype_e;
+
   // Description of a Target transceiver response.
   // TODO: This is a bit heavy-handed; obvious application for a union.
   // - We need to signal:
@@ -101,6 +148,7 @@ package i3c_target_pkg;
   //   - target(s) involved; surely we don't need single target ID, target set and address?
   //
   typedef struct packed {
+    // TODO: Fold 'sr' into 'dtype'...see above.
     logic                   sr;  // Repeated Start has precedence over the other fields.
     i3c_targ_ccc_state_e    ccc_state;
     logic             [3:0] ccc_idx;
@@ -108,8 +156,7 @@ package i3c_target_pkg;
     // Response type.
     i3c_tti_rx_status_e     status;
     // Data type.
-    // TODO: See note where `i3c_dtype_e` is defined; if split as suggested, can be include `sr`.
-    i3c_dtype_e             dtype;
+    i3c_targ_dtype_e        dtype;
     logic     [TargIDW-1:0] targ_id;
     logic  [MaxTargets-1:0] targ_set;
     logic             [6:0] addr;

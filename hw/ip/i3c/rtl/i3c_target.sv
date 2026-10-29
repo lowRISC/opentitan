@@ -18,11 +18,7 @@ module i3c_target
   parameter int unsigned NumTargets = 2,
   parameter int unsigned DataWidth  = 32,
   parameter int unsigned FIFODepthW = i3c_fifo_pkg::DepthW,
-  parameter bit          TargetExt  = 1'b0,
-
-  // Derived parameters.
-  // Mask of the Virtual Targets implemented by this instance.
-  localparam logic [MaxTargets-1:0] TargPresent = MaxTargets'({NumTargets{1'b1}})
+  parameter bit          TargetExt  = 1'b0
 ) (
   // Clock and reset for system interface.
   input                     clk_i,
@@ -66,12 +62,16 @@ module i3c_target
   input                     bus_idle_i,
 
   // State information, presented via TTI.
-  output   [MaxTargets-1:0] dynaddr_de_o,
+  //
+  // - for the majority of cases, only the state information pertaining to existing
+  //   Virtual Targets is consulted or modified.
+  output   [NumTargets-1:0] dynaddr_de_o,
   output                    dynaddr_valid_d_o,
-  output              [6:0] dynaddr_d_o[MaxTargets],
-  output   [MaxTargets-1:0] mwl_de_o,
-  output   [MaxTargets-1:0] mrl_de_o,
-  output   [MaxTargets-1:0] ibi_de_o,
+  output              [6:0] dynaddr_d_o[NumTargets],
+  output                    virt_targ_det_o,
+  output   [NumTargets-1:0] mwl_de_o,
+  output   [NumTargets-1:0] mrl_de_o,
+  output   [NumTargets-1:0] ibi_de_o,
   output             [15:0] mwl_d_o,
   output             [15:0] mrl_d_o,
   output              [7:0] ibi_d_o,
@@ -82,13 +82,13 @@ module i3c_target
   output                    grp_addr_de_o[MaxGroups],
   output                    grp_targ_de_o[MaxGroups],
   output              [6:0] grp_addr_d_o[MaxGroups],
-  output   [MaxTargets-1:0] grp_targ_d_o[MaxGroups],
-  output   [MaxTargets-1:0] act_state_de_o,
+  output   [MaxTargets-1:0] grp_targ_d_o[MaxGroups],  // All VTs, present or not.
+  output   [NumTargets-1:0] act_state_de_o,
   output              [1:0] act_state_d_o,
-  output   [MaxTargets-1:0] endxfer_cand_de_o,
+  output   [NumTargets-1:0] endxfer_cand_de_o,
   output              [2:0] endxfer_cand_d_o,
-  output   [MaxTargets-1:0] endxfer_de_o,
-  output              [2:0] endxfer_d_o[MaxTargets],
+  output   [NumTargets-1:0] endxfer_de_o,
+  output              [2:0] endxfer_d_o[NumTargets],
   output                    vend_test_mode_o,
   output                    protocol_error_o,
   output                    hj_request_clear_o,
@@ -97,7 +97,7 @@ module i3c_target
   output i3c_targ_intr_t    intr_o,
 
   // Target device descriptions to the transceiver.
-  output i3c_targ_dev_t     targ_dev_o[MaxTargets],
+  output i3c_targ_dev_t     targ_dev_o[NumTargets],
   // Group address descriptions to the transceiver.
   output i3c_grp_addr_t     grp_addr_o[NumGroups],
 
@@ -113,17 +113,18 @@ module i3c_target
   input                     ddr_mode_i,
 
   // Transmission from Virtual Target(s) suspended.
-  output   [MaxTargets-1:0] suspend_tx_o,
+  output   [NumTargets-1:0] suspend_tx_o,
   // IBI Transmission suspended.
   output                    ibi_suspend_tx_o,
   // Clear the Abort status when transmission is resumed.
-  output   [MaxTargets-1:0] abort_clr_o,
+  output   [NumTargets-1:0] abort_clr_o,
   output                    ibi_abort_clr_o,
 
   // Transmission Descriptor access.
   output                    tx_desc_rready_o[NumTargets],
   input                     tx_desc_rvalid_i[NumTargets],
   input     [DataWidth-1:0] tx_desc_rdata_i[NumTargets],
+  input                     tx_desc_rempty_i[NumTargets],
   input      [FIFODepthW:0] tx_desc_rused_i[NumTargets],
   input      [FIFODepthW:0] tx_desc_ravail_i[NumTargets],
 
@@ -138,6 +139,7 @@ module i3c_target
   output                    ibi_desc_rready_o,
   input                     ibi_desc_rvalid_i,
   input     [DataWidth-1:0] ibi_desc_rdata_i,
+  input                     ibi_desc_rempty_i,
   input      [FIFODepthW:0] ibi_desc_ravail_i,
 
   // Buffer reading.
@@ -156,9 +158,9 @@ module i3c_target
   input      [FIFODepthW:0] ibi_rused_i,
 
   // Transmit data to the transceiver, for Private Read transfers.
-  output logic              trx_dvalid_o[MaxTargets],
-  input                     trx_dready_i[MaxTargets],
-  output i3c_targ_trx_txd_t trx_dreq_o[MaxTargets],
+  output logic              trx_dvalid_o[NumTargets],
+  input                     trx_dready_i[NumTargets],
+  output i3c_targ_trx_txd_t trx_dreq_o[NumTargets],
 
   // Transmit data for Direct Read CCCs.
   output logic              trx_ctvalid_o,
@@ -233,9 +235,7 @@ module i3c_target
                                                 {7{stby_cr_staddr_valid}} & stby_cr_staddr_i[6:0];
 
   // Device description for each Target in turn.
-  // Note: Descriptions of Virtual Targets that this instance does not implement stay at zero, so
-  //       they are never enabled and therefore never match an address in the transceiver logic.
-  i3c_targ_dev_t targ_dev[MaxTargets];
+  i3c_targ_dev_t targ_dev[NumTargets];
   always_comb begin
     // Ensure that all target descriptions have been initialized.
     // - use a valid static address only until a valid dynamic address has been supplied.
@@ -266,16 +266,20 @@ module i3c_target
   end
   assign targ_dev_o = targ_dev;
 
+  // Mask of the Virtual Targets implemented by this instance.
+  localparam logic [MaxTargets-1:0] TargPresent = MaxTargets'({NumTargets{1'b1}});
   // Group membership description for each group in turn.
-  for (genvar g = 0; g < NumGroups; g++) begin : g_assign_grp_addr
+  for (genvar g = 0; g < NumGroups; g++) begin : gen_grp_addr
+    // A group description is valid iff a non-empty set of Targets is subscribed; being defensive,
+    // we consider only the subset of configured Targets, rather than all `MaxTargets` bits.
     assign grp_addr_o[g] = '{
-      addr:       reg2hw_i.targ_group[g].group_addr.q,
-      addr_valid: |(reg2hw_i.targ_group[g].targets.q & TargPresent),
-      targets:      reg2hw_i.targ_group[g].targets.q & TargPresent
+      addr:     reg2hw_i.targ_group[g].group_addr.q,
+      targets:  reg2hw_i.targ_group[g].targets.q & TargPresent,
+      valid:  |(reg2hw_i.targ_group[g].targets.q & TargPresent)
     };
   end
 
-  // This module handles the CDC transitions between the Core FSM which operates on the main IP
+  // This module also handles the CDC transitions between the Core FSM which operates on the main IP
   // clock, and the Transceiver logic which operates on the Controller-supplied I3C clock (SCL).
   //
   // It is important to note that the SCL clock does not run continuously, operates with variable
@@ -324,9 +328,12 @@ module i3c_target
   );
 
   // Target Reset Detector request.
-  // TODO(#31128): Needs to interact with the RSTACT CCC handling when that exists.
+  // TODO(#31128): Needs to interact with the RSTACT CCC handling when that exists; this logic is
+  // enough to provide a basic initial configuration for the detector.
+  // TODO(#31337): Note: `RESET_DET_CTRL` register is in the AON clock domain, whereas `enable_i`
+  // and `rstact_i` are on the IP clock.
   assign rstdet_req_o = '{
-    activate:   enable_i, // TODO(#31128): This is incomplete.
+    activate:   enable_i & reg2hw_i.reset_det_ctrl.activate.q,
     deep_sleep: reg2hw_i.reset_det_ctrl.sleep_req.q,
     rst_periph: reg2hw_i.reset_det_ctrl.rst_periph_en.q && (rstact_i == RstAct_ResetPeripheral),
     rst_target: reg2hw_i.reset_det_ctrl.rst_target_en.q && (rstact_i == RstAct_ResetTarget)
@@ -338,9 +345,9 @@ module i3c_target
   // - subsequent reads can rely upon the transmission time giving enough time to respond.
   //
   // Private Read transfers.
-  logic txd_toggle_out[MaxTargets];
-  logic txd_toggle_in[MaxTargets];
-  i3c_targ_trx_txd_t txd_data_out[MaxTargets];
+  logic txd_toggle_out[NumTargets];
+  logic txd_toggle_in[NumTargets];
+  i3c_targ_trx_txd_t txd_data_out[NumTargets];
   // Direct Read CCCs.
   // - to ensure that there is no skew amongst the targets we use a single synchronizer and a wider
   //   data bus.
@@ -357,9 +364,9 @@ module i3c_target
   i3c_targ_trx_rxd_t trx_rxd;
 
   // Error events reported by the Target core.
-  logic async_evt_ovl;
-  logic rx_buffer_ovl;
-  logic rx_desc_ovl;
+  logic async_evt_ovf;
+  logic rx_buffer_ovf;
+  logic rx_desc_ovf;
   logic transfer_err;
   logic transfer_aborted;
 
@@ -394,6 +401,7 @@ module i3c_target
     .dynaddr_de_o         (dynaddr_de_o),
     .dynaddr_valid_d_o    (dynaddr_valid_d_o),
     .dynaddr_d_o          (dynaddr_d_o),
+    .virt_targ_det_o      (virt_targ_det_o),
     .mwl_de_o             (mwl_de_o),
     .mrl_de_o             (mrl_de_o),
     .ibi_de_o             (ibi_de_o),
@@ -450,6 +458,7 @@ module i3c_target
     .tx_desc_rready_o     (tx_desc_rready_o),
     .tx_desc_rvalid_i     (tx_desc_rvalid_i),
     .tx_desc_rdata_i      (tx_desc_rdata_i),
+    .tx_desc_rempty_i     (tx_desc_rempty_i),
     .tx_desc_rused_i      (tx_desc_rused_i),
     .tx_desc_ravail_i     (tx_desc_ravail_i),
 
@@ -464,6 +473,7 @@ module i3c_target
     .ibi_desc_rready_o    (ibi_desc_rready_o),
     .ibi_desc_rvalid_i    (ibi_desc_rvalid_i),
     .ibi_desc_rdata_i     (ibi_desc_rdata_i),
+    .ibi_desc_rempty_i    (ibi_desc_rempty_i),
 
     // Buffer reading.
     .buf_rready_o         (buf_rready_o),
@@ -520,9 +530,9 @@ module i3c_target
     .stby_bcst_wready_i   (stby_bcst_wready_i),
 
     // Error events.
-    .async_evt_ovl_o      (async_evt_ovl),
-    .rx_buffer_ovl_o      (rx_buffer_ovl),
-    .rx_desc_ovl_o        (rx_desc_ovl),
+    .async_evt_ovf_o      (async_evt_ovf),
+    .rx_buffer_ovf_o      (rx_buffer_ovf),
+    .rx_desc_ovf_o        (rx_desc_ovf),
     .transfer_err_o       (transfer_err),
     .transfer_aborted_o   (transfer_aborted),
 
@@ -565,13 +575,6 @@ module i3c_target
       .dst_data_o    (trx_dreq_o[t]),
       .dst_dataloss_o()
     );
-  end
-
-  // Virtual Targets that this instance does not implement have no transmit path.
-  for (genvar t = NumTargets; t < MaxTargets; t++) begin : gen_no_targ_txd_sync
-    assign txd_toggle_in[t] = 1'b0;
-    assign trx_dvalid_o[t]  = 1'b0;
-    assign trx_dreq_o[t]    = '0;
   end
 
   // Direct Read CCCs; all targets share a single synchronizer so that there is no skew amongst
@@ -651,9 +654,9 @@ module i3c_target
     intr_o.async_evt_ready = !async_empty_i;  // TODO: Need to reconsider if CCC becomes multi-desc?
     intr_o.transfer_abort  = transfer_aborted;
     intr_o.transfer_err    = transfer_err;
-    // TODO: Make a separate interrupt for rx_desc_ovl.
-    intr_o.rx_buffer_ovl   = rx_buffer_ovl | rx_desc_ovl;
-    intr_o.async_evt_ovl   = async_evt_ovl;
+    intr_o.rx_desc_ovf     = rx_desc_ovf;
+    intr_o.rx_buffer_ovf   = rx_buffer_ovf;
+    intr_o.async_evt_ovf   = async_evt_ovf;
 
     // Transmission requires per-Target buffers.
     for (int unsigned t = 0; t < NumTargets; t++) begin
@@ -691,14 +694,5 @@ module i3c_target
   // - TODO: `rstdet_rsp_sync` and `buf_wused_i` are not used yet (see above).
   logic unused_targ_inputs;
   assign unused_targ_inputs = ^{hdr_exit_det_i, hdr_restart_det_i, buf_wused_i, rstdet_rsp_sync};
-  // - the transmit data and handshake of the Virtual Targets that are not implemented. The Target
-  //   core ties the data off and no synchronizer is instantiated for them.
-  logic unused_absent_vt;
-  always_comb begin
-    unused_absent_vt = 1'b0;
-    for (int unsigned t = NumTargets; t < MaxTargets; t++) begin
-      unused_absent_vt ^= ^{trx_dready_i[t], txd_toggle_out[t], txd_data_out[t]};
-    end
-  end
 
 endmodule

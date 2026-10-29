@@ -11,6 +11,7 @@
 module i3c_cmd_decode
   import i3c_consts_pkg::*;
   import i3c_controller_pkg::*;
+  import i3c_hci_pkg::*;
   import i3c_pkg::*;
 #(
   // Number of blocked address settings supported.

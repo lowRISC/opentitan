@@ -47,12 +47,6 @@ package i3c_pkg;
   // Maximum number of groups to which a Target may be added.
   localparam int unsigned NumGroups = 8;
 
-  // The Target must also respond to the I3C Broadcast Address (7'h7e), and an additional encoding
-  // is used within the Target transceiver logic to indicate the address did not match anything.
-  localparam int unsigned TargIDW = $clog2(MaxTargets + 2);
-  localparam bit [TargIDW-1:0] TargIDNoMatch   = TargIDW'(MaxTargets);
-  localparam bit [TargIDW-1:0] TargIDBroadcast = TargIDW'(MaxTargets+1);
-
   // Number of blocked addresses supported; this is a safeguard against I2C devices that may use
   // clock-stretching, but may also be of use diagnostically.
   localparam int unsigned NumBlocked = 2;
@@ -64,66 +58,6 @@ package i3c_pkg;
   // Maximum width of the data received by the Target-side logic; HDR-DDR words.
   localparam int unsigned TargDW  = 16;
   localparam int unsigned Log2TDW = $clog2(TargDW);
-
-  // --- HCI/TCRI structure descriptions ---
-
-  // Full DAT Entry as per the HCI Specification (HCI 8.1).
-  typedef struct packed {
-    logic [63:59] reserved2;
-    logic [58:51] autocmd_hdr_code;
-    logic [50:48] autocmd_mode;
-    logic [47:40] autocmd_value;
-    logic [39:32] autocmd_mask;
-    logic         device;
-    logic [30:29] dev_nack_retry_cnt;
-    logic [28:26] ring_id;
-    logic [25:24] reserved1;
-    logic [23:16] dynamic_address;
-    logic         ts;
-    logic         crr_reject;
-    logic         ibi_reject;
-    logic         ibi_payload;
-    logic [11:7]  reserved0;
-    logic [6:0]   static_address;
-  } i3c_dat_entry_t;
-
-  // Packed DAT Entry as stored internally; as above but without the reserved fields.
-  typedef struct packed {
-    logic [58:51] autocmd_hdr_code;
-    logic [50:48] autocmd_mode;
-    logic [47:40] autocmd_value;
-    logic [39:32] autocmd_mask;
-    logic         device;
-    logic [30:29] dev_nack_retry_cnt;
-    logic [28:26] ring_id;
-    logic [23:16] dynamic_address;
-    logic         ts;
-    logic         crr_reject;
-    logic         ibi_reject;
-    logic         ibi_payload;
-    logic [6:0]   static_address;
-  } i3c_dat_mem_t;
-
-  // Full DCT Entry as per the HCI Specification (HCI 8.2).
-  typedef struct packed {
-    logic [127:104] reserved2;
-    logic [103:96]  dynamic_address;
-    logic [95:80]   reserved1;
-    logic [79:72]   bcr;
-    logic [71:64]   dcr;
-    logic [63:48]   reserved0;
-    logic [47:32]   pid_lo;
-    logic [31:0]    pid_hi;
-  } i3c_dct_entry_t;
-
-  // Packed DCT Entry as stored internally; as above but without the reserved fields.
-  typedef struct packed {
-    logic [103:96]  dynamic_address;
-    logic [79:72]   bcr;
-    logic [71:64]   dcr;
-    logic [47:32]   pid_lo;
-    logic [31:0]    pid_hi;
-  } i3c_dct_mem_t;
 
   // General Host Controller interrupts.
   typedef struct packed {
@@ -171,119 +105,15 @@ package i3c_pkg;
     logic te;
     logic [MaxTargets-1:0] tx_desc_ready;
     logic [MaxTargets-1:0] tx_thld;
-    logic async_evt_ovl;
-    logic rx_buffer_ovl;
+    logic async_evt_ovf;
+    logic rx_buffer_ovf;
+    logic rx_desc_ovf;
     logic transfer_err;
     logic transfer_abort;
     logic async_evt_ready;
     logic ibi_status_thld;
     logic rx_desc_ready;
   } i3c_targ_intr_t;
-
-  // Immediate Data Transfer Command. Format 1 (TCRI 7.1.2.1).
-  // - many fields are present in all command types; annotated here.
-  typedef struct packed {
-    logic     [7:0] data_byte_4;
-    logic     [7:0] data_byte_3;
-    logic     [7:0] data_byte_2;
-    logic     [7:0] data_byte_1;
-    logic           toc;        // Terminate On Completion.
-    logic           wroc;       // Write Response On Completion.
-    logic           rnw;        // Direction (Read, not Write).
-    i3c_xfer_mode_e mode;       // Mode and Speed.
-    logic     [2:0] dtt;        // Data Transfer Type and byte count.
-    logic     [1:0] reserved;
-    logic     [4:0] dev_index;  // Index into DAT, to retrieve device/group properties.
-    logic           cp;         // Command Present.
-    i3c_ccc_e       cmd;        // Command, used for CCC or HDR Command Word, iff `cp` set.
-    logic     [3:0] tid;        // Transaction ID.
-    i3c_cmd_attr_e  cmd_attr;   // Command Attribute (specifies command type).
-  } i3c_xfer_cmd_imm_t;
-
-  // Regular Transfer Command. Format 1 (TCRI 7.1.2.2).
-  typedef struct packed {
-    logic    [15:0] data_length;
-    logic     [7:0] reserved1;
-    logic     [7:0] def_byte;        // Defining Byte, if used.
-    logic           toc;
-    logic           wroc;
-    logic           rnw;
-    i3c_xfer_mode_e mode;
-    logic           dbp;             // Defining Byte Present.
-    logic           short_read_err;  // Short Read is Error; fewer bytes not allowed.
-    logic     [2:0] reserved;
-    logic     [4:0] dev_index;
-    logic           cp;
-    i3c_ccc_e       cmd;
-    logic     [3:0] tid;
-    i3c_cmd_attr_e  cmd_attr;
-  } i3c_xfer_cmd_reg_t;
-
-  // Combo Transfer Command. Format 1 (TCRI 7.1.2.3).
-  typedef struct packed {
-    logic    [15:0] data_length;
-    logic    [15:0] offset;
-    logic           toc;
-    logic           wroc;
-    logic           rnw;
-    i3c_xfer_mode_e mode;
-    logic           suboff_16b;
-    logic           fpm;
-    logic     [1:0] dlp;
-    logic           reserved;
-    logic     [4:0] dev_index;
-    logic           cp;
-    i3c_ccc_e       cmd;
-    logic     [3:0] tid;
-    i3c_cmd_attr_e  cmd_attr;
-  } i3c_xfer_cmd_combo_t;
-
-  // Address Assignment Command. (HCI 8.4.1).
-  typedef struct packed {
-    logic    [31:0] reserved2;
-    logic           toc;
-    logic           wroc;
-    logic     [3:0] dev_count;
-    logic     [4:0] reserved1;
-    logic     [4:0] dev_index;
-    logic           reserved;
-    i3c_ccc_e       cmd;
-    logic     [3:0] tid;
-    i3c_cmd_attr_e  cmd_attr;
-  } i3c_xfer_cmd_addr_assgn_t;
-
-  // Internal Control Command (HCI 8.4.2).
-  typedef struct packed {
-    logic    [31:0] vendor_specific;
-    logic   [31:12] mipi_reserved;
-    i3c_mipi_cmd_e  mipi_cmd;
-    logic           vend_info_present;
-    logic     [3:0] tid;
-    i3c_cmd_attr_e  cmd_attr;
-  } i3c_xfer_cmd_intern_ctrl_t;
-
-  // Response Descriptor (TCRI 7.1.3).
-  typedef struct packed {
-    i3c_err_status_e err_status;
-    logic      [3:0] tid;
-    logic      [7:0] reserved;
-    logic     [15:0] data_length;
-  } i3c_xfer_rsp_t;
-
-  // IBI Status Descriptor (HCI 8.6).
-  typedef struct packed {
-    logic             ibi_sts;
-    logic             error;
-    i3c_ibi_status_e  status_type;
-    logic             reserved;
-    logic             ts;
-    logic             last_status;
-    logic       [7:0] chunks;
-    logic       [7:0] ibi_id;
-    logic       [7:0] data_length;
-  } i3c_ibi_status_t;
-
-  // --- End of HCI/TCRI structure descriptions ---
 
   // --- HDR-DDR structure descriptions ---
 
@@ -395,67 +225,6 @@ package i3c_pkg;
 
   localparam int unsigned TmCycW = 10;  // Width of cycle counter in Controller transceiver.
 
-  // Type of data unit transferred/request to be actioned.
-  // TODO(#31035): It's likely that there's some benefit to splitting this into two types.
-  // Then move them into controller/target_pkg.
-  typedef enum logic [4:0] {
-    // Time interval.
-    I3CDType_TimedDelay   = 5'b00000,  // TODO(#31035): This seemed useful but presently is unused.
-    // HDR-DDR Words; bits [1:0] are the Preamble bits.
-    I3CDType_CommandWord  = 5'b00001,
-    I3CDType_DataWord     = 5'b00011,
-    I3CDType_CRCWord      = 5'b00101,
-    // Arbitrable Address Header.
-    I3CDType_ArbAddr      = 5'b00010,
-    // Ack/Nack bit of arbitrable address header.
-    I3CDType_AckNack      = 5'b00100,
-    // Arbitrable Dynamic Address Allocation phase.
-    I3CDType_ArbDAA       = 5'b00110,
-    I3CDType_DynAddr      = 5'b00111,
-    // Non-arbitrable Address Header.
-    I3CDType_Address      = 5'b01000,
-    // SDR signaling.
-    I3CDType_SDRBytes     = 5'b01001,
-    // SDRStop
-    I3CDType_SDRStart     = 5'b01010,
-    I3CDType_SDRStop      = 5'b01011,
-    I3CDType_SDRRepStart  = 5'b01100,
-    // HDR Restart/Exit signaling.
-    I3CDType_HDRRestart   = 5'b01101,
-    I3CDType_HDRExit      = 5'b01110,
-    // Direct drive of SCL and SDA by software.
-    I3CDType_DirectDrive  = 5'b01111,
-    // Target Resdet signaling.
-    I3CDType_TargetReset  = 5'b10000
-  } i3c_dtype_e;
-
-  // Group address description.
-  typedef struct packed {
-    logic            [6:0] addr;
-    logic                  addr_valid;
-    // Subset of Virtual Targets presently subscribed to this group address.
-    logic [MaxTargets-1:0] targets;
-  } i3c_grp_addr_t;
-
-  // Set maximum read, write, IBI length.
-  typedef struct packed {
-    logic                  setmwl;   // As opposed to SETMRL.
-    logic                  setibi;   // Optional, SETMRL only.
-    logic [MaxTargets-1:0] targets;  // Set of affected Targets.
-    logic           [15:0] mwrl;     // Length for SETMW|RL.
-    logic            [7:0] ibil;     // Optional max IBI payload length.
-  } i3c_setml_t;
-
-  // Enable/Disable Target-side IBI generation.
-  typedef struct packed {
-    logic [MaxTargets-1:0] enint;   // Regular In-Band Interrupts.
-    logic [MaxTargets-1:0] disint;
-    logic [MaxTargets-1:0] encr;    // Controller Role requests.
-    logic [MaxTargets-1:0] discr;
-    logic [MaxTargets-1:0] enhj;    // Hot-Join requests.
-    logic [MaxTargets-1:0] dishj;
-  } i3c_endis_event_t;
-
   // Indicates whether the given address is an 'Error Type TE0' address (4.3.8.1.1).
   // - these are single-bit deviations from the I3C Broadcast Address 7'h7e.
   function automatic logic te0_invalid_addr(logic [6:0] addr);
@@ -465,10 +234,12 @@ package i3c_pkg;
   // Check whether the given I3C address is invalid before attempting to drive it out into an
   // arbitrable address header.
   // TODO(#31035): Target-side logic checking using this function also needs to catch 7'h7e/R except
-  // when handling ENTDAA (HCI 4.3.8.1.1).
+  // when handling ENTDAA (4.3.8.1.1).
   function automatic logic invalid_addr(logic [6:0] addr, logic target);
+    // See Table 10.
     unique case (addr)
       7'h00:   return 1'b1;
+      // 7'h01 permissible, for supporting Minimal Bus Point-to-Point Communication.
       7'h02:   return !target;  // Hot-Join requests permissible only from Targets.
       default: return te0_invalid_addr(addr);
     endcase
@@ -489,7 +260,7 @@ package i3c_pkg;
     return !ccc[7];
   endfunction
 
-  // Direct Get, as opposed to Direct Set or Broadcast CCC?
+  // Direct GET, as opposed to Direct Set or Broadcast CCC?
   function automatic logic direct_get(logic [7:0] ccc);
     return ccc[7] & (ccc inside {GETMWL, GETMRL, GETPID, GETBCR, GETDCR, GETSTATUS,
                                  GETACCCR, GETMXDS, GETCAPS, GETXTIME});

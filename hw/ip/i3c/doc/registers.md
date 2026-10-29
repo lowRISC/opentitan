@@ -398,37 +398,78 @@ In this configuration the Controller-side logic must remain the Active Controlle
 ## TARG_STATUS
 Target-side Status register
 - Offset: `0x20`
-- Reset default: `0x82000000`
+- Reset default: `0x88000000`
 - Reset mask: `0xffffffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "EXT_INFO", "bits": 15, "attr": ["rw"], "rotate": 0}, {"name": "EXT_PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RSTACT", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "NUM_TARGETS", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "VTM", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PROTOCOL_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CONNECTED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
+{"reg": [{"name": "EXT_INFO", "bits": 15, "attr": ["rw"], "rotate": 0}, {"name": "EXT_PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RSTACT", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "RSTACT_VIRT_TARG_DET", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VTM", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PROTOCOL_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TARGETS", "bits": 2, "attr": ["ro"], "rotate": -90}, {"name": "CONNECTED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description                                                                                                                                                                                                                                               |
-|:------:|:------:|:-------:|:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|   31   |   ro   |   0x1   | PRESENT        | Indicates the presence of Target functionality.                                                                                                                                                                                                           |
-|   30   |   ro   |   0x0   | ACTIVE         | Indicates whether the Target logic is presently active, as opposed to under reset.                                                                                                                                                                        |
-|   29   |   ro   |   0x0   | CONNECTED      | Indicates whether the Target logic is connected to the bus and monitoring traffic.                                                                                                                                                                        |
-|   28   |   ro   |   0x0   | PROTOCOL_ERROR | Protocol error detected since the last GETSTATUS CCC to read this indicator.                                                                                                                                                                              |
-|   27   |   ro   |   0x0   | VTM            | Vendor Test Mode active, in response to ENTTM.                                                                                                                                                                                                            |
-| 26:24  |   ro   |   0x2   | NUM_TARGETS    | The number of Targets in this implementation.                                                                                                                                                                                                             |
-| 23:16  |   ro   |   0x0   | RSTACT         | Configured Target Reset action.                                                                                                                                                                                                                           |
-|   15   |   ro   |   0x0   | EXT_PRESENT    | Indicates whether one or more additional protocols is implemented in the Target hardware. Some protocols require a sufficiently fast response that software involvement is not possible. These may be implemented as an extension within the Target core. |
-|  14:0  |   rw   |   0x0   | EXT_INFO       | Extension-specific information.                                                                                                                                                                                                                           |
+|  Bits  |  Type  |  Reset  | Name                                                       |
+|:------:|:------:|:-------:|:-----------------------------------------------------------|
+|   31   |   ro   |   0x1   | [PRESENT](#targ_status--present)                           |
+|   30   |   ro   |   0x0   | [ACTIVE](#targ_status--active)                             |
+|   29   |   ro   |   0x0   | [CONNECTED](#targ_status--connected)                       |
+| 28:27  |   ro   |   0x1   | [TARGETS](#targ_status--targets)                           |
+|   26   |   ro   |   0x0   | [PROTOCOL_ERROR](#targ_status--protocol_error)             |
+|   25   |   ro   |   0x0   | [VTM](#targ_status--vtm)                                   |
+|   24   |   ro   |   0x0   | [RSTACT_VIRT_TARG_DET](#targ_status--rstact_virt_targ_det) |
+| 23:16  |   ro   |   0x0   | [RSTACT](#targ_status--rstact)                             |
+|   15   |   ro   |   0x0   | [EXT_PRESENT](#targ_status--ext_present)                   |
+|  14:0  |   rw   |   0x0   | [EXT_INFO](#targ_status--ext_info)                         |
+
+### TARG_STATUS . PRESENT
+Indicates the presence of Target functionality.
+
+### TARG_STATUS . ACTIVE
+Indicates whether the Target logic is presently active, as opposed to under reset.
+
+### TARG_STATUS . CONNECTED
+Indicates whether the Target logic is connected to the bus and monitoring traffic.
+
+### TARG_STATUS . TARGETS
+Indicates the number of extra Virtual Targets present.
+
+If PRESENT is 1, this is the number of Targets in this implementation minus 1.
+If PRESENT is 0, this field is also zero.
+
+### TARG_STATUS . PROTOCOL_ERROR
+Protocol error detected since the last GETSTATUS CCC to read this indicator.
+
+### TARG_STATUS . VTM
+Vendor Test Mode active, in response to ENTTM.
+
+### TARG_STATUS . RSTACT_VIRT_TARG_DET
+RSTACT Virtual Target Detect.
+
+### TARG_STATUS . RSTACT
+Configured Target Reset action.
+
+The reset value of this field is 'NoReset' (0) as per the HCI Standby Controller specification.
+When enabled, the default response to receipt of the Target Reset pattern is a reset of the I3C Peripheral only.
+This response must still be enabled by software, however.
+
+### TARG_STATUS . EXT_PRESENT
+Indicates whether one or more additional protocols is implemented in the Target hardware.
+
+Some protocols require a sufficiently fast response that software involvement is not possible.
+These may be implemented as an extension within the Target core.
+
+### TARG_STATUS . EXT_INFO
+Extension-specific information.
 
 ## TARG_SINK_CONTROL
 Target data sink control.
 - Offset: `0x24`
 - Reset default: `0x0`
-- Reset mask: `0x87ff7000`
+- Reset mask: `0x87fff000`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"bits": 12}, {"name": "BUFFER", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "LENGTH", "bits": 11, "attr": ["rw"], "rotate": 0}, {"bits": 4}, {"name": "START", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"bits": 12}, {"name": "BUFFER", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "LENGTH", "bits": 11, "attr": ["rw"], "rotate": 0}, {"bits": 4}, {"name": "START", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                 |
@@ -436,8 +477,7 @@ Target data sink control.
 |   31   |   wo   |   0x0   | [START](#targ_sink_control--start)   |
 | 30:27  |        |         | Reserved                             |
 | 26:16  |   rw   |   0x0   | [LENGTH](#targ_sink_control--length) |
-|   15   |        |         | Reserved                             |
-| 14:12  |   rw   |   0x0   | [BUFFER](#targ_sink_control--buffer) |
+| 15:12  |   rw   |   0x0   | [BUFFER](#targ_sink_control--buffer) |
 |  11:0  |        |         | Reserved                             |
 
 ### TARG_SINK_CONTROL . START
@@ -457,8 +497,17 @@ Software shall program 'n-1' into this field to remove 'n' DWORDs.
 Specifies the transmission buffer from which DWORDs are to be removed.
 
 0 - IBI Data buffer.
-1 - Virtual Target 0 Tx buffer
-2 - Virtual Target 1 Tx buffer...
+1 - IBI Descriptor queue.
+2 - Virtual Target 0 Tx Data buffer.
+3 - Virtual Target 0 Tx Descriptor queue.
+4 - Virtual Target 1 Tx Data buffer.
+5 - Virtual Target 1 Tx Descriptor queue.
+6 - Virtual Target 2 Tx Data buffer.
+7 - Virtual Target 2 Tx Descriptor queue.
+8 - Virtual Target 3 Tx Data buffer.
+9 - Virtual Target 3 Tx Descriptor queue.
+
+Other values are invalid.
 
 ## TARG_SINK_STATUS
 Target data sink status.
@@ -499,42 +548,44 @@ This bit becomes set when the operation is started and will be cleared at most a
 Reset detector control.
 - Offset: `0x2c`
 - Reset default: `0x0`
-- Reset mask: `0x310002`
+- Reset mask: `0x310001`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"bits": 1}, {"name": "SLEEP_REQ", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 14}, {"name": "WAKE_ACK", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 3}, {"name": "RST_PERIPH_EN", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "RST_TARGET_EN", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 10}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
+{"reg": [{"name": "ACTIVATE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 15}, {"name": "SLEEP_REQ", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 3}, {"name": "RST_PERIPH_EN", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "RST_TARGET_EN", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 10}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name          | Description                                                            |
-|:------:|:------:|:-------:|:--------------|:-----------------------------------------------------------------------|
-| 31:22  |        |         |               | Reserved                                                               |
-|   21   |   wo   |   0x0   | RST_TARGET_EN | Enable response to a Whole Target reset request.                       |
-|   20   |   wo   |   0x0   | RST_PERIPH_EN | Enable response to a Peripheral reset request.                         |
-| 19:17  |        |         |               | Reserved                                                               |
-|   16   |   wo   |   0x0   | WAKE_ACK      | Wake acknowledgement.                                                  |
-|  15:2  |        |         |               | Reserved                                                               |
-|   1    |   wo   |   0x0   | SLEEP_REQ     | Activate the reset detector prior to entry into 'Deepest Sleep' state. |
+|  Bits  |  Type  |  Reset  | Name          | Description                                                                            |
+|:------:|:------:|:-------:|:--------------|:---------------------------------------------------------------------------------------|
+| 31:22  |        |         |               | Reserved                                                                               |
+|   21   |   wo   |   0x0   | RST_TARGET_EN | Enable response to a Whole Target reset request, when RSTACT has been set accordingly. |
+|   20   |   wo   |   0x0   | RST_PERIPH_EN | Enable response to a Peripheral reset request, when RSTACT has been set accordingly.   |
+| 19:17  |        |         |               | Reserved                                                                               |
+|   16   |   wo   |   0x0   | SLEEP_REQ     | Enable wake up signaling, prior to entering 'Deepest Sleep' state.                     |
+|  15:1  |        |         |               | Reserved                                                                               |
+|   0    |   wo   |   0x0   | ACTIVATE      | Activate the reset detector logic.                                                     |
 
 ## RESET_DET_STATUS
 Reset detector status.
 - Offset: `0x30`
 - Reset default: `0x0`
-- Reset mask: `0xf`
+- Reset mask: `0x310001`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "WAKE_UP", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RST_PERIPH", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RST_TARGET", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 15}, {"name": "WAKE_UP", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 3}, {"name": "RST_PERIPH", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RST_TARGET", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 10}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name       | Description                                               |
 |:------:|:------:|:-------:|:-----------|:----------------------------------------------------------|
-|  31:4  |        |         |            | Reserved                                                  |
-|   3    |   ro   |   0x0   | RST_TARGET | Indicates that a Whole Target reset request was received. |
-|   2    |   ro   |   0x0   | RST_PERIPH | Indicates that a Peripheral reset request was received.   |
-|   1    |   ro   |   0x0   | WAKE_UP    | Indicates that a Wake Up request was received.            |
+| 31:22  |        |         |            | Reserved                                                  |
+|   21   |   ro   |   0x0   | RST_TARGET | Indicates that a Whole Target reset request was received. |
+|   20   |   ro   |   0x0   | RST_PERIPH | Indicates that a Peripheral reset request was received.   |
+| 19:17  |        |         |            | Reserved                                                  |
+|   16   |   ro   |   0x0   | WAKE_UP    | Indicates that a Wake Up request was received.            |
+|  15:1  |        |         |            | Reserved                                                  |
 |   0    |   ro   |   0x0   | ACTIVE     | Indicates whether the reset detector is active.           |
 
 ## CTRL_TIME_SP
@@ -1580,7 +1631,7 @@ Controller Device Address.
 ## HC_CAPABILITIES
 Host Controller Capabilities.
 - Offset: `0x18c`
-- Reset default: `0x448`
+- Reset default: `0x440`
 - Reset mask: `0x70303cec`
 
 ### Fields
@@ -1607,7 +1658,7 @@ Host Controller Capabilities.
 |   6    |   ro   |   0x1   | HDR_DDR_EN            | Defines whether the Host Controller supports HDR-DDR transfers.                                        |
 |   5    |   ro   |   0x0   | STANDBY_CR_CAP        | Defines whether the Host Controller supports handoff of the Active Controller role.                    |
 |   4    |        |         |                       | Reserved                                                                                               |
-|   3    |   ro   |   0x1   | AUTO_COMMAND          | Defines whether the Host Controller supports Auto-Command functionality.                               |
+|   3    |   ro   |   0x0   | AUTO_COMMAND          | Defines whether the Host Controller supports Auto-Command functionality.                               |
 |   2    |   ro   |   0x0   | COMBO_COMMAND         | Defines whether the Host Controller supports Combo Transfer Command transfers.                         |
 |  1:0   |        |         |                       | Reserved                                                                                               |
 
@@ -1832,7 +1883,7 @@ Extended Capabilities Section Offset.
 ## INT_CTRL_CMDS_EN
 Internal Control Command Subtype Support.
 - Offset: `0x1cc`
-- Reset default: `0x20f5`
+- Reset default: `0x55`
 - Reset mask: `0xffff`
 
 ### Fields
@@ -1844,7 +1895,7 @@ Internal Control Command Subtype Support.
 |  Bits  |  Type  |  Reset  | Name                | Description                          |
 |:------:|:------:|:-------:|:--------------------|:-------------------------------------|
 | 31:16  |        |         |                     | Reserved                             |
-|  15:1  |   ro   | 0x107a  | MIPI_CMDS_SUPPORTED | MIPI Alliance Commands Supported.    |
+|  15:1  |   ro   |  0x2a   | MIPI_CMDS_SUPPORTED | MIPI Alliance Commands Supported.    |
 |   0    |   ro   |   0x1   | ICC_SUPPORT         | Internal Control Commands Supported. |
 
 ## IBI_NOTIFY_CTRL
@@ -2752,12 +2803,12 @@ Target Transaction Interface Extended Capability Header
 Target Interrupt Status.
 - Offset: `0x314`
 - Reset default: `0x0`
-- Reset mask: `0x800f0f7f`
+- Reset mask: `0x800f0fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "RX_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "IBI_STATUS_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ASYNC_EVT_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSFER_ABORT_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSFER_ERR_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RX_BUFFER_OVF_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "TX0_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX1_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX2_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX3_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX1_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX2_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX3_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 11}, {"name": "TE_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "RX_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "IBI_STATUS_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ASYNC_EVT_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSFER_ABORT_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TRANSFER_ERR_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RX_DESC_OVF_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RX_BUFFER_OVF_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX0_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX1_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX2_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX3_THLD_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX1_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX2_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "TX3_DESC_READY_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 11}, {"name": "TE_STAT", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                                                              |
@@ -2773,9 +2824,9 @@ Target Interrupt Status.
 |   10   |   ro   |   0x0   | TX2_THLD_STAT        | Target 2 Tx Data Buffer Threshold Status. Asserted when the requested amount of space is available in the Tx Data Buffer, see `TARG_TX_THLD_CTRL.TX_BUF_FREE_THLD`.      |
 |   9    |   ro   |   0x0   | TX1_THLD_STAT        | Target 1 Tx Data Buffer Threshold Status. Asserted when the requested amount of space is available in the Tx Data Buffer, see `TARG_TX_THLD_CTRL.TX_BUF_FREE_THLD`.      |
 |   8    |   ro   |   0x0   | TX0_THLD_STAT        | Target 0 Tx Data Buffer Threshold Status. Asserted when the requested amount of space is available in the Tx Data Buffer, see `TARG_TX_THLD_CTRL.TX_BUF_FREE_THLD`.      |
-|   7    |        |         |                      | Reserved                                                                                                                                                                 |
-|   6    |   ro   |   0x0   | ASYNC_EVT_OVF_STAT   | Asynchronous Event Queue Overflow Status.                                                                                                                                |
-|   5    |   ro   |   0x0   | RX_BUFFER_OVF_STAT   | Rx Data Buffer Overflow Status.                                                                                                                                          |
+|   7    |   ro   |   0x0   | ASYNC_EVT_OVF_STAT   | Asynchronous Event Queue Overflow Status.                                                                                                                                |
+|   6    |   ro   |   0x0   | RX_BUFFER_OVF_STAT   | Rx Data Buffer Overflow Status.                                                                                                                                          |
+|   5    |   ro   |   0x0   | RX_DESC_OVF_STAT     | Rx Desc Queue Overflow Status.                                                                                                                                           |
 |   4    |   ro   |   0x0   | TRANSFER_ERR_STAT    | Transfer Error Status.                                                                                                                                                   |
 |   3    |   ro   |   0x0   | TRANSFER_ABORT_STAT  | Transfer Abort Status.                                                                                                                                                   |
 |   2    |   ro   |   0x0   | ASYNC_EVT_READY_STAT | Asynchronous Event Queue Ready Status.                                                                                                                                   |
@@ -2786,12 +2837,12 @@ Target Interrupt Status.
 Target Interrupt Status Enable.
 - Offset: `0x318`
 - Reset default: `0x0`
-- Reset mask: `0x800f0f7f`
+- Reset mask: `0x800f0fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "RX_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_STATUS_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ABORT_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ERR_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RX_BUFFER_OVF_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "TX0_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 11}, {"name": "TE_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
+{"reg": [{"name": "RX_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_STATUS_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ABORT_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ERR_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RX_DESC_OVF_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RX_BUFFER_OVF_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX0_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_THLD_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_DESC_READY_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 11}, {"name": "TE_STAT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 250}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                    | Description                                       |
@@ -2807,9 +2858,9 @@ Target Interrupt Status Enable.
 |   10   |   rw   |   0x0   | TX2_THLD_STAT_EN        | Target 2 Tx Data Buffer Threshold Status Enable.  |
 |   9    |   rw   |   0x0   | TX1_THLD_STAT_EN        | Target 1 Tx Data Buffer Threshold Status Enable.  |
 |   8    |   rw   |   0x0   | TX0_THLD_STAT_EN        | Target 0 Tx Data Buffer Threshold Status Enable.  |
-|   7    |        |         |                         | Reserved                                          |
-|   6    |   rw   |   0x0   | ASYNC_EVT_OVF_STAT_EN   | Asynchronous Event Queue Overflow Status Enable.  |
-|   5    |   rw   |   0x0   | RX_BUFFER_OVF_STAT_EN   | Rx Data Buffer Overflow Status Enable.            |
+|   7    |   rw   |   0x0   | ASYNC_EVT_OVF_STAT_EN   | Asynchronous Event Queue Overflow Status Enable.  |
+|   6    |   rw   |   0x0   | RX_BUFFER_OVF_STAT_EN   | Rx Data Buffer Overflow Status Enable.            |
+|   5    |   rw   |   0x0   | RX_DESC_OVF_STAT_EN     | Rx Desc Queue Overflow Status Enable.             |
 |   4    |   rw   |   0x0   | TRANSFER_ERR_STAT_EN    | Transfer Error Status Enable.                     |
 |   3    |   rw   |   0x0   | TRANSFER_ABORT_STAT_EN  | Transfer Abort Status Enable.                     |
 |   2    |   rw   |   0x0   | ASYNC_EVT_READY_STAT_EN | Asynchronous Event Queue Ready Status Enable.     |
@@ -2820,12 +2871,12 @@ Target Interrupt Status Enable.
 Target Interrupt Signal Enable.
 - Offset: `0x31c`
 - Reset default: `0x0`
-- Reset mask: `0x800f0f7f`
+- Reset mask: `0x800f0fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "RX_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_STATUS_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ABORT_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ERR_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RX_BUFFER_OVF_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "TX0_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 11}, {"name": "TE_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 270}}
+{"reg": [{"name": "RX_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_STATUS_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ABORT_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TRANSFER_ERR_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RX_DESC_OVF_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RX_BUFFER_OVF_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX0_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_THLD_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX1_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX2_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX3_DESC_READY_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 11}, {"name": "TE_SIGNAL_EN", "bits": 1, "attr": ["rw"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 270}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                      | Description                                       |
@@ -2841,9 +2892,9 @@ Target Interrupt Signal Enable.
 |   10   |   rw   |   0x0   | TX2_THLD_SIGNAL_EN        | Target 2 Tx Data Buffer Threshold Signal Enable.  |
 |   9    |   rw   |   0x0   | TX1_THLD_SIGNAL_EN        | Target 1 Tx Data Buffer Threshold Signal Enable.  |
 |   8    |   rw   |   0x0   | TX0_THLD_SIGNAL_EN        | Target 0 Tx Data Buffer Threshold Signal Enable.  |
-|   7    |        |         |                           | Reserved                                          |
-|   6    |   rw   |   0x0   | ASYNC_EVT_OVF_SIGNAL_EN   | Asynchronous Event Queue Overflow Signal Enable.  |
-|   5    |   rw   |   0x0   | RX_BUFFER_OVF_SIGNAL_EN   | Rx Data Buffer Overflow Signal Enable.            |
+|   7    |   rw   |   0x0   | ASYNC_EVT_OVF_SIGNAL_EN   | Asynchronous Event Queue Overflow Signal Enable.  |
+|   6    |   rw   |   0x0   | RX_BUFFER_OVF_SIGNAL_EN   | Rx Data Buffer Overflow Signal Enable.            |
+|   5    |   rw   |   0x0   | RX_DESC_OVF_SIGNAL_EN     | Rx Desc Queue Overflow Signal Enable.             |
 |   4    |   rw   |   0x0   | TRANSFER_ERR_SIGNAL_EN    | Transfer Error Signal Enable.                     |
 |   3    |   rw   |   0x0   | TRANSFER_ABORT_SIGNAL_EN  | Transfer Abort Signal Enable.                     |
 |   2    |   rw   |   0x0   | ASYNC_EVT_READY_SIGNAL_EN | Asynchronous Event Queue Ready Signal Enable.     |
@@ -2854,12 +2905,12 @@ Target Interrupt Signal Enable.
 Target Interrupt Force.
 - Offset: `0x320`
 - Reset default: `0x0`
-- Reset mask: `0x800f0f7f`
+- Reset mask: `0x800f0fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "RX_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "IBI_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "ASYNC_EVT_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TRANSFER_ABORT_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TRANSFER_ERR_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "RX_BUFFER_OVF_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 1}, {"name": "TX0_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX1_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX2_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX3_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX1_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX2_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX3_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 11}, {"name": "TE_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+{"reg": [{"name": "RX_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "IBI_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "ASYNC_EVT_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TRANSFER_ABORT_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TRANSFER_ERR_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "RX_DESC_OVF_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "RX_BUFFER_OVF_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "ASYNC_EVT_OVF_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX0_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX1_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX2_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX3_THLD_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 4}, {"name": "TX0_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX1_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX2_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TX3_DESC_READY_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 11}, {"name": "TE_FORCE", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                  | Description                               |
@@ -2875,9 +2926,9 @@ Target Interrupt Force.
 |   10   |   wo   |   0x0   | TX2_THLD_FORCE        | Force Target 2 Tx Data Buffer Threshold.  |
 |   9    |   wo   |   0x0   | TX1_THLD_FORCE        | Force Target 1 Tx Data Buffer Threshold.  |
 |   8    |   wo   |   0x0   | TX0_THLD_FORCE        | Force Target 0 Tx Data Buffer Threshold.  |
-|   7    |        |         |                       | Reserved                                  |
-|   6    |   wo   |   0x0   | ASYNC_EVT_OVF_FORCE   | Force Asynchronous Event Queue Overflow.  |
-|   5    |   wo   |   0x0   | RX_BUFFER_OVF_FORCE   | Force Rx Data Buffer Overflow.            |
+|   7    |   wo   |   0x0   | ASYNC_EVT_OVF_FORCE   | Force Asynchronous Event Queue Overflow.  |
+|   6    |   wo   |   0x0   | RX_BUFFER_OVF_FORCE   | Force Rx Data Buffer Overflow.            |
+|   5    |   wo   |   0x0   | RX_DESC_OVF_FORCE     | Force Rx Desc Queue Overflow.             |
 |   4    |   wo   |   0x0   | TRANSFER_ERR_FORCE    | Force Transfer Error.                     |
 |   3    |   wo   |   0x0   | TRANSFER_ABORT_FORCE  | Force Transfer Abort.                     |
 |   2    |   wo   |   0x0   | ASYNC_EVT_READY_FORCE | Force Asynchronous Event Queue Ready.     |
@@ -2888,12 +2939,12 @@ Target Interrupt Force.
 Target PIO mode Control register.
 - Offset: `0x324`
 - Reset default: `0x0`
-- Reset mask: `0xf0f0003`
+- Reset mask: `0xf0ffc03`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "IBI_SUSPENDED", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IBI_ABORT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 14}, {"name": "SUSPENDED", "bits": 4, "attr": ["rw1c"], "rotate": -90}, {"bits": 4}, {"name": "ABORT", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
+{"reg": [{"name": "IBI_SUSPENDED", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "IBI_ABORT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 8}, {"name": "RXBUF_CLEAR", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "IBIBUF_CLEAR", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "TXBUF_CLEAR", "bits": 4, "attr": ["wo"], "rotate": -90}, {"name": "SUSPENDED", "bits": 4, "attr": ["rw1c"], "rotate": -90}, {"bits": 4}, {"name": "ABORT", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 4}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                              |
@@ -2902,7 +2953,10 @@ Target PIO mode Control register.
 | 27:24  |   rw   |   0x0   | [ABORT](#targ_pio_control--abort)                 |
 | 23:20  |        |         | Reserved                                          |
 | 19:16  |  rw1c  |   0x0   | [SUSPENDED](#targ_pio_control--suspended)         |
-|  15:2  |        |         | Reserved                                          |
+| 15:12  |   wo   |   0x0   | [TXBUF_CLEAR](#targ_pio_control--txbuf_clear)     |
+|   11   |   wo   |   0x0   | [IBIBUF_CLEAR](#targ_pio_control--ibibuf_clear)   |
+|   10   |   wo   |   0x0   | [RXBUF_CLEAR](#targ_pio_control--rxbuf_clear)     |
+|  9:2   |        |         | Reserved                                          |
 |   1    |   rw   |   0x0   | [IBI_ABORT](#targ_pio_control--ibi_abort)         |
 |   0    |  rw1c  |   0x0   | [IBI_SUSPENDED](#targ_pio_control--ibi_suspended) |
 
@@ -2916,6 +2970,26 @@ Indicates, for each Virtual Target in turn, whether transmission has been suspen
 If an error occurs during transmission, the corresponding bit will be set automatically by hardware.
 Software use of the Abort mechanism described above also causes this bit to become set.
 It remains asserted until the software writes a 1 to clear this bit.
+
+### TARG_PIO_CONTROL . TXBUF_CLEAR
+Clears the transmission buffers of a Virtual Target.
+
+If software writes a '1' to a bit, then the transmission data buffer and descriptor queue for the corresponding Virtual Target will both be emptied.
+This is a recovery mechanism that is only available when transmission has been suspended.
+It provides an instantaneous way to discard any transfer and data already queued for transmission, in the event that software deems such action appropriate.
+If some or all of the queued descriptor(s) and/or data must be retained, the 'Data Sink' feature should be used instead.
+
+### TARG_PIO_CONTROL . IBIBUF_CLEAR
+Reset the IBI transmission buffers.
+
+This bit clears the IBI transmission buffer and descriptor queue in the same manner as described for `TXBUF_CLEAR` above.
+This facility is only available when IBI transmission has been suspended (see `IBI_SUSPENDED` below).
+
+### TARG_PIO_CONTROL . RXBUF_CLEAR
+Reset the reception buffers.
+
+If software writes a '1' to a bit, then the reception data buffer and descriptor queue will both be emptied.
+This is a recovery mechanism that shall only be used when the Target is unable to receive new transfers, e.g., when handling an error condition or when there are no Virtual Targets enabled.
 
 ### TARG_PIO_CONTROL . IBI_ABORT
 Allows software to abort transmission of In-Band Interrupts.
@@ -3031,7 +3105,7 @@ Target-side control register for setting buffer interrupt thresholds.
 |   31   |        |         |                 | Reserved                                                                                                                                                                                                                                             |
 | 30:28  |   rw   |   0x1   | RX_START_THLD   | Receive Start Threshold in DWORDs. Wait until there are at least 2^(N+1) DWORD available before accepting a Private Write transfer. If the Active Controller attempts to perform a write transfer when this condition is not met, it will be NACKed. |
 | 27:12  |        |         |                 | Reserved                                                                                                                                                                                                                                             |
-|  11:0  |   rw   |   0x1   | RX_SEGMENT_SIZE | Maximum length of received data segment, minus 1. Received data is divided into DWORDs of no more than this length.                                                                                                                                  |
+|  11:0  |   rw   |   0x1   | RX_SEGMENT_SIZE | Maximum length of received data segment, minus 1. Received data is divided into DWORDs of no more than the maximum length.                                                                                                                           |
 
 ## TARG_BUF_STATUS_LEVEL
 Target-side data buffer levels.

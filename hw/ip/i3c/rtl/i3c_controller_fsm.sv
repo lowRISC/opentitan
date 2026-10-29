@@ -8,6 +8,7 @@
 module i3c_controller_fsm
   import i3c_controller_pkg::*;
   import i3c_fifo_pkg::*;
+  import i3c_hci_pkg::*;
   import i3c_pkg::*;
   import i3c_reg_pkg::*;
 #(
@@ -241,7 +242,7 @@ module i3c_controller_fsm
     .cmd_reg_o      (cmd_reg),
     .cmd_imm_o      (cmd_imm),
 
-    // Response status; ErrStatus_OK iff the command is accepted by the decoder.
+    // Response status.
     .err_o          (cmd_dec_err),
     // Have accesses to the Target address of this command been blocked?
     .blocked_o      (cmd_addr_blocked)
@@ -617,7 +618,7 @@ module i3c_controller_fsm
       // or otherwise.
       CCC: begin
         unique case (ccc_rsp.err_status)
-          ErrStatus_OK: state_d = cmd_attrs.toc ? StopSDR : RepStSDR;
+          ErrStatus_SUCCESS: state_d = cmd_attrs.toc ? StopSDR : RepStSDR;
           default: state_d = ErrFatal;
         endcase
       end
@@ -1194,7 +1195,7 @@ module i3c_controller_fsm
   // - this response indicates the success/failure of the transfer, including any error information.
   // - do not create a response for an IBI payload read.
   wire rsp_received = (rx_dest != RxDest_IBI) & trx_rvalid_i;
-  wire rsp_success = (trx_rsp_i.err_status == ErrStatus_OK);
+  wire rsp_success = (trx_rsp_i.err_status == ErrStatus_SUCCESS);
   wire rsp_post = rsp_info.pending & |{rsp_received & rsp_info.wroc,  // From transceiver.
                                        rsp_received & !rsp_success,   // All errors are posted.
                                        rsp_info.dec_err,              // From command decode.
@@ -1310,7 +1311,7 @@ module i3c_controller_fsm
         // Hot-Join requests do not consult the DAT cache and cannot be rejected.
         ibi_stat_desc.ibi_sts     = nacked;
         // CRR and Hot-Join requests shall always return 1'b0 for these two fields (HCI 8.6.3).
-        ibi_stat_desc.error       = (trx_rsp_i.err_status != ErrStatus_OK) & ~ibi_capt_crr_hj;
+        ibi_stat_desc.error       = (trx_rsp_i.err_status != ErrStatus_SUCCESS) & ~ibi_capt_crr_hj;
         ibi_stat_desc.last_status = ibi_rlast & ~ibi_capt_crr_hj;
       end
       // Notes: IBIStatus_StbyCrBastCCC required when Controller Role Handoff is implemented.

@@ -66,7 +66,7 @@ package i3c_env_pkg;
   // Masks of the bits that the Device Address Table (DAT) stores in each word of an entry. The
   // reserved fields of the HCI specification are not stored and read as zero.
   function automatic void get_dat_word_masks(output uvm_reg_data_t masks[$]);
-    i3c_pkg::i3c_dat_entry_t entry = '1;
+    i3c_hci_pkg::i3c_dat_entry_t entry = '1;
     bit [1:0][TL_DW-1:0]     words;
     entry.reserved0 = '0;
     entry.reserved1 = '0;
@@ -78,7 +78,7 @@ package i3c_env_pkg;
   // Masks of the bits that the Device Characteristics Table (DCT) stores in each word of an entry,
   // as for get_dat_word_masks().
   function automatic void get_dct_word_masks(output uvm_reg_data_t masks[$]);
-    i3c_pkg::i3c_dct_entry_t entry = '1;
+    i3c_hci_pkg::i3c_dct_entry_t entry = '1;
     bit [3:0][TL_DW-1:0]     words;
     entry.reserved0 = '0;
     entry.reserved1 = '0;
