@@ -12,7 +12,12 @@ module pwm_core #(
   input                           clk_core_i,
   input                           rst_core_ni,
 
-  input pwm_reg_pkg::pwm_reg2hw_t reg2hw,
+  input pwm_reg_pkg::pwm_reg2hw_cfg_reg_t                         cfg_i,
+  input pwm_reg_pkg::pwm_reg2hw_pwm_en_mreg_t      [NOutputs-1:0] pwm_en_i,
+  input pwm_reg_pkg::pwm_reg2hw_invert_mreg_t      [NOutputs-1:0] invert_i,
+  input pwm_reg_pkg::pwm_reg2hw_pwm_param_mreg_t   [NOutputs-1:0] pwm_param_i,
+  input pwm_reg_pkg::pwm_reg2hw_duty_cycle_mreg_t  [NOutputs-1:0] duty_cycle_i,
+  input pwm_reg_pkg::pwm_reg2hw_blink_param_mreg_t [NOutputs-1:0] blink_param_i,
 
   output logic [NOutputs-1:0]     pwm_o
 );
@@ -28,7 +33,7 @@ module pwm_core #(
   logic                clr_phase_cntr;
   logic [NOutputs-1:0] clr_chan_cntr;
 
-  assign clr_phase_cntr = reg2hw.cfg.cntr_en.qe & reg2hw.cfg.cntr_en.q & ~cntr_en_q;
+  assign clr_phase_cntr = cfg_i.cntr_en.qe & cfg_i.cntr_en.q & ~cntr_en_q;
 
   // Capture channel state, in order to determine which channel(s) shall be reset when a shared
   // register is updated.
@@ -40,10 +45,10 @@ module pwm_core #(
       invert_q  <= '0;
     end else begin
       for (int unsigned ii = 0; ii < NOutputs; ii++) begin
-        if (reg2hw.pwm_en[ii].qe) pwm_en_q[ii] <= reg2hw.pwm_en[ii].q;
+        if (pwm_en_i[ii].qe) pwm_en_q[ii] <= pwm_en_i[ii].q;
       end
       for (int unsigned ii = 0; ii < NOutputs; ii++) begin
-        if (reg2hw.invert[ii].qe) invert_q[ii] <= reg2hw.invert[ii].q;
+        if (invert_i[ii].qe) invert_q[ii] <= invert_i[ii].q;
       end
     end
   end
@@ -56,15 +61,15 @@ module pwm_core #(
     // we perform this reset only when a channel becomes enabled (important for starting them
     // synchronized) or its inversion state is modified.
 
-    assign clr_chan_cntr[ii] = (reg2hw.pwm_en[ii].qe & reg2hw.pwm_en[ii].q & ~pwm_en_q[ii]) |
-                               (reg2hw.invert[ii].qe & (reg2hw.invert[ii].q ^ invert_q[ii])) |
-                                reg2hw.pwm_param[ii].phase_delay.qe |
-                                reg2hw.pwm_param[ii].htbt_en.qe |
-                                reg2hw.pwm_param[ii].blink_en.qe |
-                                reg2hw.duty_cycle[ii].a.qe |
-                                reg2hw.duty_cycle[ii].b.qe |
-                                reg2hw.blink_param[ii].x.qe |
-                                reg2hw.blink_param[ii].y.qe;
+    assign clr_chan_cntr[ii] = (pwm_en_i[ii].qe & pwm_en_i[ii].q & ~pwm_en_q[ii]) |
+                               (invert_i[ii].qe & (invert_i[ii].q ^ invert_q[ii])) |
+                                pwm_param_i[ii].phase_delay.qe |
+                                pwm_param_i[ii].htbt_en.qe |
+                                pwm_param_i[ii].blink_en.qe |
+                                duty_cycle_i[ii].a.qe |
+                                duty_cycle_i[ii].b.qe |
+                                blink_param_i[ii].x.qe |
+                                blink_param_i[ii].y.qe;
 
   end : gen_chan_clr
 
@@ -97,22 +102,22 @@ module pwm_core #(
       dc_resn_q <= '0;
     end else begin
       // Enabled state may be changed at any time.
-      if (reg2hw.cfg.cntr_en.qe) cntr_en_q <= reg2hw.cfg.cntr_en.q;
+      if (cfg_i.cntr_en.qe) cntr_en_q <= cfg_i.cntr_en.q;
       // Phase counter configuration is updated only when becoming enabled.
       if (clr_phase_cntr) begin
-        clk_div_q <= reg2hw.cfg.clk_div.q;
-        dc_resn_q <= reg2hw.cfg.dc_resn.q;
+        clk_div_q <= cfg_i.clk_div.q;
+        dc_resn_q <= cfg_i.dc_resn.q;
       end
     end
   end
 
-  assign cntr_en = reg2hw.cfg.cntr_en.qe ? reg2hw.cfg.cntr_en.q : cntr_en_q;
-  assign dc_resn = clr_phase_cntr        ? reg2hw.cfg.dc_resn.q : dc_resn_q;
-  assign clk_div = clr_phase_cntr        ? reg2hw.cfg.clk_div.q : clk_div_q;
+  assign cntr_en = cfg_i.cntr_en.qe ? cfg_i.cntr_en.q : cntr_en_q;
+  assign dc_resn = clr_phase_cntr   ? cfg_i.dc_resn.q : dc_resn_q;
+  assign clk_div = clr_phase_cntr   ? cfg_i.clk_div.q : clk_div_q;
 
   // Write strobes are not used.
   logic unused_qe;
-  assign unused_qe = ^{reg2hw.cfg.dc_resn.qe, reg2hw.cfg.clk_div.qe};
+  assign unused_qe = ^{cfg_i.dc_resn.qe, cfg_i.clk_div.qe};
 
   assign beat_ctr_d = (clr_phase_cntr) ? '0 :
                       (beat_ctr_q == clk_div) ? '0 : (beat_ctr_q + 1'b1);
@@ -152,15 +157,15 @@ module pwm_core #(
     pwm_chan #(.CntDw(PhaseCntDw)) u_chan (
       .clk_i            (clk_core_i),
       .rst_ni           (rst_core_ni),
-      .pwm_en_i         (reg2hw.pwm_en[ii].q),
-      .invert_i         (reg2hw.invert[ii].q),
-      .phase_delay_i    (reg2hw.pwm_param[ii].phase_delay.q),
-      .blink_en_i       (reg2hw.pwm_param[ii].blink_en.q),
-      .htbt_en_i        (reg2hw.pwm_param[ii].htbt_en.q),
-      .duty_cycle_a_i   (reg2hw.duty_cycle[ii].a.q),
-      .duty_cycle_b_i   (reg2hw.duty_cycle[ii].b.q),
-      .blink_param_x_i  (reg2hw.blink_param[ii].x.q),
-      .blink_param_y_i  (reg2hw.blink_param[ii].y.q),
+      .pwm_en_i         (pwm_en_i[ii].q),
+      .invert_i         (invert_i[ii].q),
+      .phase_delay_i    (pwm_param_i[ii].phase_delay.q),
+      .blink_en_i       (pwm_param_i[ii].blink_en.q),
+      .htbt_en_i        (pwm_param_i[ii].htbt_en.q),
+      .duty_cycle_a_i   (duty_cycle_i[ii].a.q),
+      .duty_cycle_b_i   (duty_cycle_i[ii].b.q),
+      .blink_param_x_i  (blink_param_i[ii].x.q),
+      .blink_param_y_i  (blink_param_i[ii].y.q),
       .phase_ctr_i      (phase_ctr_q),
       .phase_ctr_next_i (phase_ctr_next),
       .cycle_end_i      (cycle_end),
@@ -170,9 +175,5 @@ module pwm_core #(
     );
 
   end : gen_chan_insts
-
-  // unused register configuration
-  logic unused_reg;
-  assign unused_reg = ^reg2hw.alert_test;
 
 endmodule : pwm_core

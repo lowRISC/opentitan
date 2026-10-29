@@ -1,6 +1,14 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+// The RTL in ../rtl is hand-maintained, not generated from this file. It takes
+// NOutputs as a module parameter, which reggen cannot express. Running reggen,
+// ipgen or topgen over this block replaces it, and this file, with a fixed-count
+// render. Do not regenerate this directory.
+//
+// This file is kept only as the register reference (fields, reset values,
+// descriptions) and as the point of comparison with upstream
+// hw/ip_templates/pwm when the fork is rebased. NOutputs below is a default.
 {
   name:               "pwm",
   human_name:         "Pulse Width Modulator",
