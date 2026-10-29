@@ -161,6 +161,8 @@ CONST = struct(
     ),
     DICE = struct(
         MLDSA_ON_FLASH = 0x35bbf70d,
+        ALG_P256_MLDSA44 = 0xa5a5a5a5,
+        ALG_P256_MLDSA87 = 0xfdf79255,
     ),
 )
 

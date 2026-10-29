@@ -17,6 +17,14 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
+typedef struct test_scratchpad {
+  uint32_t magic;
+} test_scratchpad_t;
+
+enum {
+  kTestScratchPadMagic = 0x57444753,  // "WDGS" (Watchdog Skip)
+};
+
 static uint32_t compute_ticks_per_ms(uint64_t hz) {
   const uint64_t kTicksPerMs = udiv64_slow(hz, 1000, NULL);
   CHECK(kTicksPerMs <= UINT32_MAX, "kTicksPerMs exceeds UINT32_MAX");
@@ -39,17 +47,25 @@ static void trigger_watchdog_reset(void) {
 bool test_main(void) {
   retention_sram_t *retram = retention_sram_get();
   dice_cert_gen_msg_t *msg = &retram->creator.dice_cert_gen;
+  test_scratchpad_t *scratch = (test_scratchpad_t *)retram->owner.reserved;
 
   if (bitfield_bit32_read(retram->creator.reset_reasons,
                           kRstmgrReasonPowerOn)) {
     LOG_INFO(
         "First boot (PowerOn): requesting cert gen and triggering watchdog "
         "reset...");
+    scratch->magic = kTestScratchPadMagic;
     msg->hdr.type = kDiceCertGenRequest;
     msg->hdr.version = 0;
     trigger_watchdog_reset();
     return false;
   }
+
+  CHECK(scratch->magic == kTestScratchPadMagic,
+        "Expected magic 0x%08x from previous boot, got 0x%08x (reboot not "
+        "triggered by test)",
+        kTestScratchPadMagic, scratch->magic);
+  scratch->magic = 0;
 
   CHECK(
       bitfield_bit32_read(retram->creator.reset_reasons, kRstmgrReasonWatchdog),

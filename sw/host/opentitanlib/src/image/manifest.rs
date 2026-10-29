@@ -106,7 +106,8 @@ pub struct Manifest {
     pub usage_constraints: ManifestUsageConstraints,
     pub pub_key: SigverifyBuffer,
     pub reserved_public_key: ReservedBuffer<160>,
-    pub reserved: ReservedBuffer<148>,
+    pub reserved: ReservedBuffer<144>,
+    pub dice_alg: u32,
     pub dice_cert_storage_mode: u32,
     pub on_demand_dice: u32,
     pub manifest_base_address: u32,
@@ -330,6 +331,9 @@ mod tests {
         assert_eq!(offset_of!(Manifest, pub_key), 432);
         assert_eq!(offset_of!(Manifest, reserved_public_key), 496);
         assert_eq!(offset_of!(Manifest, reserved), 656);
+        assert_eq!(offset_of!(Manifest, dice_alg), 800);
+        assert_eq!(offset_of!(Manifest, dice_cert_storage_mode), 804);
+        assert_eq!(offset_of!(Manifest, on_demand_dice), 808);
         assert_eq!(offset_of!(Manifest, manifest_base_address), 812);
         assert_eq!(offset_of!(Manifest, address_translation), 816);
         assert_eq!(offset_of!(Manifest, identifier), 820);
