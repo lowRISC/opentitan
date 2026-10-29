@@ -124,7 +124,13 @@ static status_t build_aes_key(const cmac_ctx_t *ctx, aes_key_t *aes_key) {
   if (launder32(ctx->sideload) == kHardenedBoolTrue) {
     // COVERAGE (MISSING) Sideloaded keys for CMAC are not covered.
     HARDENED_CHECK_EQ(ctx->sideload, kHardenedBoolTrue);
-    aes_key->key_shares[0] = (uint32_t *)ctx->key_share0;
+    keymgr_dpe_diversification_t diversification;
+    HARDENED_TRY(keyblob_buffer_to_keymgr_dpe_diversification(
+        ctx->key_share0, ctx->keymgr_dpe_slot_idx, kOtcryptoKeyModeAesCmac,
+        &diversification));
+    HARDENED_TRY(keymgr_dpe_sideload_clear_aes());
+    HARDENED_TRY(keymgr_dpe_generate_key_aes(diversification));
+    aes_key->key_shares[0] = NULL;
     aes_key->key_shares[1] = NULL;
   } else if (launder32(ctx->sideload) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(ctx->sideload, kHardenedBoolFalse);
@@ -416,9 +422,6 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
     // COVERAGE (MISSING) Sideloaded keys for CMAC are not covered.
     HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
     is_sideloaded = kHardenedBoolTrue;
-    keymgr_dpe_diversification_t diversification;
-    HARDENED_TRY(keyblob_to_keymgr_dpe_diversification(key, &diversification));
-    HARDENED_TRY(keymgr_dpe_generate_key_aes(diversification));
   }
 
   cmac_ctx_t primary_ctx __attribute__((cleanup(cmac_ctx_shred)));
@@ -507,9 +510,6 @@ otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
     // COVERAGE (MISSING) Sideloaded keys for CMAC are not covered.
     HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
     is_sideloaded = kHardenedBoolTrue;
-    keymgr_dpe_diversification_t diversification;
-    HARDENED_TRY(keyblob_to_keymgr_dpe_diversification(key, &diversification));
-    HARDENED_TRY(keymgr_dpe_generate_key_aes(diversification));
   }
 
   cmac_ctx_t primary_ctx __attribute__((cleanup(cmac_ctx_shred)));
@@ -583,13 +583,8 @@ otcrypto_status_t otcrypto_cmac_update(
                                (const uint32_t *)&ctx->data[kCtxPrimaryOffset],
                                kOtcryptoCmacCtxStructWords));
 
-  if (primary_ctx.sideload == kHardenedBoolTrue) {
+  if (launder32(primary_ctx.sideload) == kHardenedBoolTrue) {
     is_sideloaded = kHardenedBoolTrue;
-    keymgr_dpe_diversification_t diversification;
-    HARDENED_TRY(keyblob_buffer_to_keymgr_dpe_diversification(
-        primary_ctx.key_share0, primary_ctx.keymgr_dpe_slot_idx,
-        kOtcryptoKeyModeAesCmac, &diversification));
-    HARDENED_TRY(keymgr_dpe_generate_key_aes(diversification));
   }
 
   HARDENED_TRY(cmac_update_core(&primary_ctx, input_message));
@@ -610,6 +605,10 @@ otcrypto_status_t otcrypto_cmac_update(
                         kOtcryptoCmacCtxStructWords));
 
     HARDENED_TRY(cmac_update_core(&redundant_ctx, input_message));
+
+    HARDENED_CHECK_EQ(hardened_memeq(primary_ctx.iv.data, redundant_ctx.iv.data,
+                                     kAesBlockNumWords),
+                      kHardenedBoolTrue);
 
     HARDENED_TRY(randomized_bytecopy((uint8_t *)&ctx->data[kCtxRedundantOffset],
                                      (uint8_t *)&redundant_ctx,
@@ -657,11 +656,6 @@ otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
   if (launder32(primary_ctx.sideload) == kHardenedBoolTrue) {
     // COVERAGE (MISSING) Sideloaded keys for CMAC are not covered.
     is_sideloaded = kHardenedBoolTrue;
-    keymgr_dpe_diversification_t diversification;
-    HARDENED_TRY(keyblob_buffer_to_keymgr_dpe_diversification(
-        primary_ctx.key_share0, primary_ctx.keymgr_dpe_slot_idx,
-        kOtcryptoKeyModeAesCmac, &diversification));
-    HARDENED_TRY(keymgr_dpe_generate_key_aes(diversification));
   }
 
   if (launder32(security_level) == kOtcryptoKeySecurityLevelLow) {
