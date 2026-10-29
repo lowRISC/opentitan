@@ -324,11 +324,7 @@ impl ManifestPacked<Manifest> for ManifestSpec {
             pub_key: self.pub_key.unpack("pub_key")?.try_into()?,
             reserved_public_key: Default::default(),
             reserved: Default::default(),
-            dice_alg: self
-                .dice_alg
-                .0
-                .map(|v| v.0)
-                .unwrap_or(0xa5a5a5a5),
+            dice_alg: self.dice_alg.0.map(|v| v.0).unwrap_or(0xa5a5a5a5),
             dice_cert_storage_mode: self
                 .dice_cert_storage_mode
                 .0

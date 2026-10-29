@@ -47,6 +47,10 @@ struct Opts {
     /// Assert that ML-DSA flash region is reported as occupied warning.
     #[arg(long)]
     assert_mldsa_overlapped: bool,
+
+    /// Assert that ML-DSA certificates use ML-DSA-87 rather than ML-DSA-44.
+    #[arg(long)]
+    assert_mldsa87: bool,
 }
 
 // A helper trait for extracting data out of the `Value` type.
@@ -189,6 +193,7 @@ fn attestation_test(opts: &Opts, transport: &TransportWrapper, owner_history: &[
             &cdi0,
             &cdi1,
             opts.assert_mldsa_overlapped,
+            opts.assert_mldsa87,
         )?;
         check_mldsa_flash_overlapped(&capture[0], opts.assert_mldsa_overlapped)?;
     }
@@ -402,6 +407,40 @@ fn verify_cert_partial_chain(chain_certs_b64: &[&str]) -> Result<()> {
     }
 }
 
+fn check_mldsa_algorithm_openssl(cert_b64: &str, name: &str, expected_alg: &str) -> Result<()> {
+    let openssl_bin = find_openssl_bin()?;
+    let pem = format!("-----BEGIN CERTIFICATE-----\n{cert_b64}\n-----END CERTIFICATE-----\n");
+    let mut child = std::process::Command::new(openssl_bin)
+        .args(["x509", "-text", "-noout"])
+        .stdin(std::process::Stdio::piped())
+        .stdout(std::process::Stdio::piped())
+        .stderr(std::process::Stdio::piped())
+        .spawn()?;
+
+    if let Some(mut stdin) = child.stdin.take() {
+        use std::io::Write;
+        stdin.write_all(pem.as_bytes())?;
+    }
+
+    let output = child.wait_with_output()?;
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr);
+        bail!("Failed to parse {name} certificate with OpenSSL: {stderr}");
+    }
+
+    let text = String::from_utf8_lossy(&output.stdout);
+    let expected_sig = format!("Signature Algorithm: {expected_alg}");
+    let expected_pk = format!("Public Key Algorithm: {expected_alg}");
+    if !text.contains(&expected_sig) {
+        bail!("{name} certificate does not contain expected '{expected_sig}'");
+    }
+    if !text.contains(&expected_pk) {
+        bail!("{name} certificate does not contain expected '{expected_pk}'");
+    }
+    log::info!("{name} verified with OpenSSL as {expected_alg}!");
+    Ok(())
+}
+
 /// Verify ML-DSA certificates if requested and structurally compare them to ECDSA certs.
 fn verify_mldsa_certs(
     console_output: &str,
@@ -409,6 +448,7 @@ fn verify_mldsa_certs(
     cdi0_ecdsa: &Certificate,
     cdi1_ecdsa: &Certificate,
     assert_overlapped: bool,
+    assert_mldsa87: bool,
 ) -> Result<()> {
     log::info!("ML-DSA verification requested. Performing verification...");
     let uds_mldsa_bin = uds_ecdsa
@@ -443,6 +483,17 @@ fn verify_mldsa_certs(
         .transpose()?;
     let cdi0_mldsa_b64 = get_base64_str(console_output, r"(?msR)CDI_0_MLDSA: (.*?)$")?;
     let cdi1_mldsa_b64 = get_base64_str(console_output, r"(?msR)CDI_1_MLDSA: (.*?)$")?;
+
+    let expected_alg = if assert_mldsa87 {
+        "ML-DSA-87"
+    } else {
+        "ML-DSA-44"
+    };
+    check_mldsa_algorithm_openssl(&cdi0_mldsa_b64, "CDI_0", expected_alg)?;
+    check_mldsa_algorithm_openssl(&cdi1_mldsa_b64, "CDI_1", expected_alg)?;
+    if let Some(uds_b64) = &uds_mldsa_b64 {
+        check_mldsa_algorithm_openssl(uds_b64, "UDS", expected_alg)?;
+    }
 
     log::info!("Verifying ML-DSA chain with OpenSSL...");
     if let Some(uds_mldsa_b64) = uds_mldsa_b64 {
