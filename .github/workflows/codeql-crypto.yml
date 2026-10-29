@@ -6,11 +6,19 @@ name: "CodeQL Static Analysis"
 
 on:
   pull_request:
+    paths:
+      - "sw/device/lib/crypto/**"
+      - "quality/codeql/**"
+      - ".github/workflows/codeql-crypto.yml"
   push:
     branches-ignore:
       - "backport-*"
     tags:
       - "*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   analyze:
@@ -23,13 +31,13 @@ jobs:
 
     steps:
     - name: Checkout repository
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Prepare environment
       uses: ./.github/actions/prepare-env
 
     - name: Initialize CodeQL
-      uses: github/codeql-action/init@v3
+      uses: github/codeql-action/init@v4
       with:
         languages: cpp
         # The 'security-and-quality' suite provides comprehensive static analysis
@@ -42,18 +50,16 @@ jobs:
         # CodeQL must be explicitly configured to intercept the OpenTitan cross-compiler.
         CODEQL_EXTRACTOR_CPP_COMPILER_MATCH: '.*riscv32-unknown-elf-clang.*'
       run: |
-        # Compile target libraries and tests with CppCompile running locally.
+        # Compile target library with CppCompile running locally.
         # Passing a dedicated --copt ensures C/C++ compile actions are never skipped
         # by the Bazel remote cache (so the CodeQL tracer observes every C/C++ file),
-        # while host tools (e.g. opentitantool) still benefit from remote caching.
-        # Filter tests to a single execution environment (sim_qemu_sival_rom_ext) to speed up compilation.
+        # while host tools still benefit from remote caching.
         ./bazelisk.sh build //sw/device/lib/crypto:otcrypto \
-          $(./bazelisk.sh query 'attr(tags, "sim_qemu_sival_rom_ext", //sw/device/tests/crypto/...)') \
           --strategy=CppCompile=local \
           --nouse_action_cache \
           --copt=-DCODEQL_TRACE
 
     - name: Perform CodeQL Analysis
-      uses: github/codeql-action/analyze@v3
+      uses: github/codeql-action/analyze@v4
       with:
         category: "/language:cpp"
