@@ -139,7 +139,7 @@
                excluding rstmgr connections.
             '''
       stage: V2
-      tests: ["ast_rst_por_in"]
+      tests: ["ast_rst_por_in", "ast_rst_pora_in"]
       si_stage: NA
       tags: ["conn"]
     }

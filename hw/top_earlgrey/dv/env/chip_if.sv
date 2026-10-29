@@ -96,8 +96,9 @@ interface chip_if;
   pins_if#(.Width(top_earlgrey_pkg::MioPadCount), .PullStrength("Weak")) mios_if(.pins(mios));
   pins_if#(.Width(top_earlgrey_pkg::DioPadCount), .PullStrength("Weak")) dios_if(.pins(dios));
 
-  //Allow pull up from testbench on POR pad
+  //Allow pull up from testbench on POR and PORA pads
   bit por_external_pu = 1;
+  bit pora_external_pu = 1;
   // Weak pulls for DIOs.
   //
   // These weak pulls enable all DIOs to reflect a legal value. Active low signals are pulled up,
@@ -119,6 +120,10 @@ interface chip_if;
       void'($value$plusargs("por_external_pu=%0b", por_external_pu));
       if (por_external_pu) begin
         dios_if.pins_pu[top_earlgrey_pkg::DioPadPorN] = 1;
+      end
+      void'($value$plusargs("pora_external_pu=%0b", pora_external_pu));
+      if (pora_external_pu) begin
+        dios_if.pins_pu[top_earlgrey_pkg::DioPadPoraN] = 1;
       end
       dios_if.pins_pu[top_earlgrey_pkg::DioPadUsbP] = 1;
       dios_if.pins_pu[top_earlgrey_pkg::DioPadIor8] = 1;
@@ -183,6 +188,14 @@ interface chip_if;
 
   // Functional (dedicated) interface (input): power on reset input.
   pins_if #(.Width(1), .PullStrength("Weak")) por_n_if(.pins(dios[top_earlgrey_pkg::DioPadPorN]));
+
+  // Functional (dedicated) interface (input): VIOA power on reset input.
+  pins_if #(.Width(1), .PullStrength("Weak")) pora_n_if(
+    .pins(dios[top_earlgrey_pkg::DioPadPoraN])
+  );
+
+  // The chip is only released from power on reset if both POR_N and PORA_N are high.
+  wire chip_por_n = dios[top_earlgrey_pkg::DioPadPorN] & dios[top_earlgrey_pkg::DioPadPoraN];
 
   // Functional (dedicated) interface (inout): USB.
   // TODO!
@@ -544,8 +557,8 @@ interface chip_if;
   //
   // The reset port is passive only.
   clk_rst_if ext_clk_if(
-     .clk (mios[top_earlgrey_pkg::MioPadIoc6]),
-    .rst_n(dios[top_earlgrey_pkg::DioPadPorN])
+    .clk (mios[top_earlgrey_pkg::MioPadIoc6]),
+    .rst_n(chip_por_n)
   );
 
   // Internal probes / monitors.
@@ -943,8 +956,8 @@ interface chip_if;
   // Disconnects all interfaces from chip IOs.
   //
   // Provides the test sequence a fresh start to connect specific interfaces needed by the test.
-  // The por_n_if is exempt from this. The disconnection of default pulls using dios_if is
-  // conditioned on the `disconnect_default_pulls` arg.
+  // The por_n_if and pora_n_if are exempt from this. The disconnection of default pulls using
+  // dios_if is conditioned on the `disconnect_default_pulls` arg.
   function automatic void disconnect_all_interfaces(bit disconnect_default_pulls);
     `uvm_info(MsgId, "Disconnecting all interfaces from the chip IOs", UVM_LOW)
     if (disconnect_default_pulls) dios_if.disconnect();

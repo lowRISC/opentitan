@@ -336,7 +336,7 @@ module chip_earlgrey_cw340 #(
   /////////////////////////
 
   // Only signals going to non-custom pads need to be tied off.
-  logic [66:0] unused_sig;
+  logic [67:0] unused_sig;
   //////////////////////
   // Padring Instance //
   //////////////////////
@@ -939,7 +939,7 @@ module chip_earlgrey_cw340 #(
     .dio_attr_o(dio_attr),
 
     // Regular ports (auto-generated)
-    .manual_in_por_n_i            (rst_n              ),
+    .chip_por_n_i                 (rst_n              ),
     .scanmode_o                   (scanmode           ),
     .scan_en_o                    (                   ),
     .scan_rst_n_o                 (                   ),

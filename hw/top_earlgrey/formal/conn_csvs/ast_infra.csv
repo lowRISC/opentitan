@@ -110,7 +110,12 @@ CONDITION, top_earlgrey.earlgrey_pd_aon.u_pinmux, rst_ni, 1'b1, 1'b0
 #################################
 # Other resets
 #################################
+# Check that each POR reaches AST independently of the other POR.
+# TODO: The case where both PORs are low is not checked.
 CONNECTION, AST_RST_POR_IN, , POR_N, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, por_n_i
+CONDITION, , PORA_N, 1'b1
+CONNECTION, AST_RST_PORA_IN, , PORA_N, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, por_n_i
+CONDITION, , POR_N, 1'b1
 
 #################################
 # Other power related signals

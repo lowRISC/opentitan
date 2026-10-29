@@ -53,8 +53,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
   // Initialize the chip to enable SW to boot up and execute code.
   //
   // Backdoor load the sw test image, initialize memories, sw logger and test status interfaces.
-  // Note that this function is called the moment POR_N asserts. The chip resources including the
-  // CPU are brought out of reset much later, after the pwrmgr has gone through the wakeup sequence.
+  // Note that this function is called the moment the power on reset asserts. The chip resources
+  // including the CPU are brought out of reset much later, after the pwrmgr has gone through the
+  // wakeup sequence.
   // Invoke cfg.chip_vif.cpu_clk_rst_vif.wait_for_reset() to bring the simulation to the point where
   // the CPU is out of reset and ready to execute code.
   virtual task cpu_init();
@@ -1288,11 +1289,11 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
   task assert_por_reset_deep_sleep (int delay = 0);
     repeat (delay) @cfg.chip_vif.pwrmgr_low_power_if.cb;
-    cfg.chip_vif.por_n_if.drive(0);
+    assert_por_pins();
     repeat (6) @cfg.chip_vif.pwrmgr_low_power_if.cb;
 
     cfg.clk_rst_vif.wait_clks(10);
-    cfg.chip_vif.por_n_if.drive(1);
+    release_por_pins();
   endtask : assert_por_reset_deep_sleep
 
   // push button 50us;
