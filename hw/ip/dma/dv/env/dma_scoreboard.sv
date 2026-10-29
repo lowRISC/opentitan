@@ -140,7 +140,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
     `uvm_info(`gfn, $sformatf("%s access to 0x%0x, exp 0x%0x, fixed_addr %d, restricted %d",
                               check_type, addr, exp_addr, fixed_addr, restricted), UVM_DEBUG)
     `uvm_info(`gfn,
-              $sformatf("  (%s range is [0x%0x,0x%0x) and DMA-enabled range is [0x%0x,0x%0x))",
+              $sformatf("  (%s range is [0x%0x,0x%0x) and DMA-enabled range is [0x%0x,0x%0x])",
                         check_type, range_start, range_end,
                         dma_config.mem_range_base, dma_config.mem_range_limit), UVM_DEBUG)
 
@@ -161,9 +161,10 @@ class dma_scoreboard extends cip_base_scoreboard #(
     end
 
     // Check that this address lies within the DMA-enabled memory range, where applicable.
+    // The limit is inclusive.
     if (restricted) begin
-      `DV_CHECK(addr >= dma_config.mem_range_base && addr < dma_config.mem_range_limit,
-                $sformatf("%s addr 0x%0x does not lie within the DMA-enabled range [0x%0x,0x%0x)",
+      `DV_CHECK(addr >= dma_config.mem_range_base && addr <= dma_config.mem_range_limit,
+                $sformatf("%s addr 0x%0x does not lie within the DMA-enabled range [0x%0x,0x%0x]",
                           check_type, addr, dma_config.mem_range_base,
                           dma_config.mem_range_limit))
     end

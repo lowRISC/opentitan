@@ -368,7 +368,7 @@ class dma_seq_item extends uvm_sequence_item;
     // later be invalidated. We do this even if not waiving full testing because in that case they
     // shall simply be ignored.
     solve soc_system_src_base_addr, soc_system_dst_base_addr, mem_range_base before mem_range_limit;
-    // For valid DMA config, [mem_range_base, mem_range_limit) describes the addressable memory
+    // For valid DMA config, [mem_range_base, mem_range_limit] describes the addressable memory
     // window, but it need not always be enabled, and only applies to transfers crossing the divide
     // (importing to/exporting from OT)
     if (valid_dma_config && mem_range_valid) {
