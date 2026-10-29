@@ -236,7 +236,7 @@ static status_t context_restore(hmac_ctx_t *ctx) {
   abs_mmio_write32(kHmacBaseAddr + HMAC_CFG_REG_OFFSET, cfg);
 
   // Write to KEY registers for HMAC operations. If the operation is SHA-2,
-  // `key_wordlen` is set to 0 during `ctx` initialization.
+  // `key_len` is 0 or the hardware ignores the KEY registers.
   HARDENED_TRY(key_write(&ctx->key));
 
   uint32_t cmd = HMAC_CMD_REG_RESVAL;
