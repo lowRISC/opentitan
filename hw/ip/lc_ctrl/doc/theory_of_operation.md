@@ -97,7 +97,7 @@ The core function of life cycle is how various functions of the design are modul
 The signals have been split into two summary tables in the sections below.
 The first table contains all control signals that enable certain functionality in the system, whereas the second table contains all signals that change access to certain elements in the flash and OTP memories.
 
-All life cycle control signals are 4-bits, with only `4'b1010` as a valid enable value, and all others meaning "disable".
+All life cycle control signals are 4-bit multibit values of type `lc_tx_t`, where `4'b0101` means ON and `4'b1010` means OFF; any other value is invalid.
 A `"Y"` mark means the function is directly enabled by hardware during that
 state.
 A `"grey"` box means a particular function is not available during that
