@@ -1913,8 +1913,8 @@
           name: lc_init_done
           desc:
             '''
-            A signal that is On after lifecycle initialization is done.
-            This signal is On when lifecycle initialization is complete and life cycle controller broadcast signals are valid.
+            Indicates that life cycle initialization is complete and the broadcast signals are valid; see `INIT_DONE` in the Theory of Operation doc for details.
+            This signal is Off while lc_ctrl is in reset.
             '''
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -23269,8 +23269,8 @@
         name: lc_init_done
         desc:
           '''
-          A signal that is On after lifecycle initialization is done.
-          This signal is On when lifecycle initialization is complete and life cycle controller broadcast signals are valid.
+          Indicates that life cycle initialization is complete and the broadcast signals are valid; see `INIT_DONE` in the Theory of Operation doc for details.
+          This signal is Off while lc_ctrl is in reset.
           '''
         struct: lc_tx
         package: lc_ctrl_pkg
