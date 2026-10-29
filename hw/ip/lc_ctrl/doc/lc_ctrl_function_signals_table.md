@@ -7,7 +7,7 @@
     <td><strong>CPU_EN</strong></td>
     <td><strong>KEYMGR_EN</strong></td>
     <td><strong>CLK_BYP_REQ</strong></td>
-    <td><strong>FLASH_RMA_REQ</strong></td>
+    <td><strong>NVM_RMA_REQ</strong></td>
     <td><strong>CHECK_BYP_EN</strong></td>
     <td><strong>ESCALATE_EN</strong></td>
     <td><strong>HW_DEBUG_CLR</strong></td>
