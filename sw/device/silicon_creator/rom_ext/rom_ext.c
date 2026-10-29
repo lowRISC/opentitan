@@ -214,12 +214,6 @@ static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   // Configure UART0 as stdout.
   uart_init(kUartNCOValue);
 
-  // Reclaim entries 0 ~ 7 from ROM and ROM_EXT IMM_SECTION.
-  for (int8_t i = 7; i >= 0; --i) {
-    epmp_clear((uint8_t)i);
-  }
-  HARDENED_RETURN_IF_ERROR(epmp_state_check());
-
   // Check that the retention RAM is initialized.
   // TODO(lowrisc#22387): Check if return-if-error here is a potential
   // boot-loop.
@@ -293,6 +287,13 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   HARDENED_RETURN_IF_ERROR(dice_attest_cdi_1(
       manifest, &boot_measurements.bl0, &owner_measurement, &owner_history_hash,
       &sealing_binding, key->key_domain));
+
+  // Reclaim entries 0 ~ 7 from ROM and ROM_EXT IMM_SECTION now that
+  // CDI_1 attestation using imm_section is complete.
+  for (int8_t i = 7; i >= 0; --i) {
+    epmp_clear((uint8_t)i);
+  }
+  HARDENED_RETURN_IF_ERROR(epmp_state_check());
 
   // Configure and lockdown rom_ext flash settings over the full rom_ext_size
   // range (or up to manifest offset for the inactive slot).
