@@ -179,6 +179,16 @@ enum {
 };
 
 /**
+ * DICE algorithm configuration constants for `dice_alg`.
+ */
+typedef enum dice_alg {
+  /** ECDSA P-256 + ML-DSA-44 (Default / Legacy mode). */
+  kDiceAlgP256Mldsa44 = 0xa5a5a5a5,
+  /** ECDSA P-256 + ML-DSA-87. */
+  kDiceAlgP256Mldsa87 = 0xfdf79255,
+} dice_alg_t;
+
+/**
  * DICE certificate storage mode constants for `dice_cert_storage_mode`.
  */
 typedef enum dice_cert_storage_mode {
@@ -257,7 +267,14 @@ typedef struct manifest {
    * When allocating reserved bytes, please allocate from the end of this field
    * to allow for the potential size expansion of the public key field above.
    */
-  uint32_t reserved[37];
+  uint32_t reserved[36];
+  /**
+   * DICE algorithm configuration.
+   *
+   * Governs whether DICE certificates are generated with ML-DSA-44 or
+   * ML-DSA-87 in the `dice_mldsa` module.
+   */
+  uint32_t dice_alg;
   /**
    * DICE certificate storage mode.
    *
@@ -367,6 +384,7 @@ OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 384);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, ecdsa_public_key, 432);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved_public_key, 496);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved, 656);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, dice_alg, 800);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, dice_cert_storage_mode, 804);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, on_demand_dice, 808);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, manifest_base_address, 812);
