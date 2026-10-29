@@ -233,59 +233,78 @@ module bkdr_loader
 
 
   ///////////
+  // Reset //
+  ///////////
+
+  // rst_ni is asynchronous to clk_i. Asserting it changes the backdoor address (and, coming from
+  // MISSION, the backdoor enable) at an arbitrary point in the cycle, violating BRAM setup/hold,
+  // which can corrupt BRAM contents even on a read. Assert and release the reset synchronously to
+  // clk_i instead; this requires clk_i to keep running during reset (clkgen never resets the MMCM).
+  (* ASYNC_REG = "TRUE" *) logic rst_sync_q, rst_sync_q2;
+  logic rst_sync_n;
+
+  always_ff @(posedge clk_i) begin : proc_rst_sync
+    rst_sync_q  <= rst_ni;
+    rst_sync_q2 <= rst_sync_q;
+  end
+
+  assign rst_sync_n = rst_sync_q2;
+
+
+  ///////////
   // State //
   ///////////
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_store_state
-    if(!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_sync_n) begin : proc_store_state
+    if(!rst_sync_n) begin
       state_q <= PRELOAD;
     end else begin
       state_q <= state_d;
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_store_mission_delay
-    if(!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_sync_n) begin : proc_store_mission_delay
+    if(!rst_sync_n) begin
       mission_mode_dly_q <= '0;
     end else begin
       mission_mode_dly_q <= mission_mode_dly_d;
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_jtag_bkdr_en
-    if(!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_sync_n) begin : proc_jtag_bkdr_en
+    if(!rst_sync_n) begin
       bkdr_en_q <= 1'b1;
     end else begin
       bkdr_en_q <= bkdr_en_d;
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_sample_bkdr_ena_sampled
-    if(!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_sync_n) begin : proc_sample_bkdr_ena_sampled
+    if(!rst_sync_n) begin
       bkdr_ena_sampled_q <= 1'b0;
     end else begin
       bkdr_ena_sampled_q <= 1'b1;
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_rst_no_flop
-    if(!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_sync_n) begin : proc_rst_no_flop
+    if(!rst_sync_n) begin
       bkdr_rst_nq <= 1'b0;
     end else begin
       bkdr_rst_nq <= bkdr_rst_nd;
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_store_clear_state
-    if(!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_sync_n) begin : proc_store_clear_state
+    if(!rst_sync_n) begin
       clear_state_q <= IDLE;
     end else begin
       clear_state_q <= clear_state_d;
     end
   end
 
-  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_store_clear_addr
-    if(!rst_ni) begin
+  always_ff @(posedge clk_i or negedge rst_sync_n) begin : proc_store_clear_addr
+    if(!rst_sync_n) begin
       clear_addr_q <= '0;
     end else begin
       clear_addr_q <= clear_addr_d;
@@ -304,7 +323,7 @@ module bkdr_loader
     .NumDmiByteAbits(bkdr_loader_reg_pkg::RegsAw)
   ) u_tlul_jtag_dtm (
     .clk_i,
-    .rst_ni,
+    .rst_ni     (rst_sync_n),
     .jtag_i     (jtag_bkdr_req),
     .jtag_o     (jtag_bkdr_rsp),
     .scan_rst_ni(1'b0),
@@ -320,7 +339,7 @@ module bkdr_loader
 
   bkdr_loader_regs_reg_top u_regs_reg_top (
     .clk_i,
-    .rst_ni,
+    .rst_ni    (rst_sync_n),
     .tl_i      (regs_tl_h2d),
     .tl_o      (regs_tl_d2h),
     .reg2hw,
