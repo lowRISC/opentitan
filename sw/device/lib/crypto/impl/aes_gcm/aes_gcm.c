@@ -13,7 +13,9 @@
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/random_order.h"
 #include "sw/device/lib/crypto/drivers/aes.h"
+#include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/impl/aes_gcm/ghash.h"
+#include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 
@@ -81,6 +83,21 @@ OT_USED static void aes_block_shred(aes_block_t *block) {
 }
 
 /**
+ * Actuate the key manager to generate a sideloaded AES-GCM key if needed.
+ */
+static status_t load_key_if_sideloaded(const aes_key_t key) {
+  if (launder32(key.sideload) == kHardenedBoolFalse) {
+    return OTCRYPTO_OK;
+  }
+  HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolTrue));
+  keymgr_diversification_t diversification;
+  HARDENED_TRY(keyblob_buffer_to_keymgr_diversification(
+      key.key_shares[0], kOtcryptoKeyModeAesGcm, &diversification));
+  HARDENED_TRY(keymgr_sideload_clear_aes());
+  return keymgr_generate_key_aes(diversification);
+}
+
+/**
  * One-shot version of the AES encryption API for a single block.
  */
 OT_WARN_UNUSED_RESULT
@@ -90,6 +107,7 @@ static status_t aes_encrypt_block(
   if (launder32(security_level) == kOtcryptoKeySecurityLevelLow) {
     HARDENED_CHECK_EQ(security_level, kOtcryptoKeySecurityLevelLow);
     // No additional FI protection.
+    HARDENED_TRY(load_key_if_sideloaded(key));
     HARDENED_TRY(aes_encrypt_begin(key, iv));
     HARDENED_TRY(aes_update(/*dest=*/NULL, input));
     HARDENED_TRY(aes_update(output, /*src=*/NULL));
@@ -98,6 +116,7 @@ static status_t aes_encrypt_block(
     HARDENED_CHECK_NE(security_level, kOtcryptoKeySecurityLevelLow);
     // Additional FI hardening.
     // First AES operation. Encrypt the input.
+    HARDENED_TRY(load_key_if_sideloaded(key));
     HARDENED_TRY(aes_encrypt_begin(key, iv));
     HARDENED_TRY(aes_update(/*dest=*/NULL, input));
     HARDENED_TRY(aes_update(output, /*src=*/NULL));
@@ -105,10 +124,12 @@ static status_t aes_encrypt_block(
     // Verify the CTRL and CTRL_AUX registers of the encryption.
     HARDENED_TRY(aes_verify_ctrl_reg(key, kHardenedBoolTrue));
     HARDENED_TRY(aes_verify_ctrl_aux_reg());
+    HARDENED_TRY(aes_end(NULL));
 
     // Second AES operation. Decrypt the output of the first AES operation and
     // check whether the same input is retrieved.
     aes_block_t input_recalculated = (aes_block_t){.data = {0}};
+    HARDENED_TRY(load_key_if_sideloaded(key));
     HARDENED_TRY(aes_decrypt_begin(key, iv));
     HARDENED_TRY(aes_update(/*dest=*/NULL, output));
     HARDENED_TRY(aes_update(&input_recalculated, /*src=*/NULL));
