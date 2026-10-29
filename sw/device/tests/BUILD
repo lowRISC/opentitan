@@ -1783,6 +1783,7 @@ opentitan_test(
         "//sw/device/lib/testing:isr_testutils",
         "//sw/device/lib/testing:rv_plic_testutils",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
     ],
 )
 
@@ -1933,6 +1934,7 @@ opentitan_test(
         "//sw/device/lib/testing:rand_testutils",
         "//sw/device/lib/testing/test_framework:check",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
     ],
 )
 
@@ -1966,6 +1968,7 @@ opentitan_test(
         "//sw/device/lib/testing:flash_ctrl_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:epmp",
     ],
 )
 
