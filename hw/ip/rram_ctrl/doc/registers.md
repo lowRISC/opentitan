@@ -1,188 +1,182 @@
-# Registers
-
-The RRAM controller maintains two separate access windows for the FIFOs.
-It is implemented this way because the access window supports transaction back-pressure should the FIFO become full (in case of write) or empty (in case of read).
-
-<!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/rram_ctrl/data/rram_ctrl.hjson -->
 ## Summary
 
-| Name                                                                             | Offset   |   Length | Description                                                                                      |
-|:---------------------------------------------------------------------------------|:---------|---------:|:-------------------------------------------------------------------------------------------------|
-| rram_ctrl.[`INTR_STATE`](#intr_state)                                            | 0x0      |        4 | Interrupt State Register                                                                         |
-| rram_ctrl.[`INTR_ENABLE`](#intr_enable)                                          | 0x4      |        4 | Interrupt Enable Register                                                                        |
-| rram_ctrl.[`INTR_TEST`](#intr_test)                                              | 0x8      |        4 | Interrupt Test Register                                                                          |
-| rram_ctrl.[`ALERT_TEST`](#alert_test)                                            | 0xc      |        4 | Alert Test Register                                                                              |
-| rram_ctrl.[`DIS`](#dis)                                                          | 0x10     |        4 | Disable RRAM functionality.                                                                      |
-| rram_ctrl.[`EXEC`](#exec)                                                        | 0x14     |        4 | Controls whether RRAM can be used for code execution fetches                                     |
-| rram_ctrl.[`INIT`](#init)                                                        | 0x18     |        4 | Controller init register                                                                         |
-| rram_ctrl.[`CTRL_REGWEN`](#ctrl_regwen)                                          | 0x1c     |        4 | Controls the configurability of the [`CONTROL`](#control) register.                              |
-| rram_ctrl.[`CONTROL`](#control)                                                  | 0x20     |        4 | Control register                                                                                 |
-| rram_ctrl.[`ADDR`](#addr)                                                        | 0x24     |        4 | Address for RRAM operation                                                                       |
-| rram_ctrl.[`REGION_CFG_REGWEN_0`](#region_cfg_regwen)                            | 0x28     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`REGION_CFG_REGWEN_1`](#region_cfg_regwen)                            | 0x2c     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`REGION_CFG_REGWEN_2`](#region_cfg_regwen)                            | 0x30     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`REGION_CFG_REGWEN_3`](#region_cfg_regwen)                            | 0x34     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`REGION_CFG_REGWEN_4`](#region_cfg_regwen)                            | 0x38     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`REGION_CFG_REGWEN_5`](#region_cfg_regwen)                            | 0x3c     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`REGION_CFG_REGWEN_6`](#region_cfg_regwen)                            | 0x40     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`REGION_CFG_REGWEN_7`](#region_cfg_regwen)                            | 0x44     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`REGION_CFG_REGWEN_8`](#region_cfg_regwen)                            | 0x48     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`REGION_CFG_REGWEN_9`](#region_cfg_regwen)                            | 0x4c     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`MP_REGION_CFG_0`](#mp_region_cfg)                                    | 0x50     |        4 | Memory property configuration for data partition                                                 |
-| rram_ctrl.[`MP_REGION_CFG_1`](#mp_region_cfg)                                    | 0x54     |        4 | Memory property configuration for data partition                                                 |
-| rram_ctrl.[`MP_REGION_CFG_2`](#mp_region_cfg)                                    | 0x58     |        4 | Memory property configuration for data partition                                                 |
-| rram_ctrl.[`MP_REGION_CFG_3`](#mp_region_cfg)                                    | 0x5c     |        4 | Memory property configuration for data partition                                                 |
-| rram_ctrl.[`MP_REGION_CFG_4`](#mp_region_cfg)                                    | 0x60     |        4 | Memory property configuration for data partition                                                 |
-| rram_ctrl.[`MP_REGION_CFG_5`](#mp_region_cfg)                                    | 0x64     |        4 | Memory property configuration for data partition                                                 |
-| rram_ctrl.[`MP_REGION_CFG_6`](#mp_region_cfg)                                    | 0x68     |        4 | Memory property configuration for data partition                                                 |
-| rram_ctrl.[`MP_REGION_CFG_7`](#mp_region_cfg)                                    | 0x6c     |        4 | Memory property configuration for data partition                                                 |
-| rram_ctrl.[`MP_REGION_CFG_8`](#mp_region_cfg)                                    | 0x70     |        4 | Memory property configuration for data partition                                                 |
-| rram_ctrl.[`MP_REGION_CFG_9`](#mp_region_cfg)                                    | 0x74     |        4 | Memory property configuration for data partition                                                 |
-| rram_ctrl.[`MP_REGION_0`](#mp_region)                                            | 0x78     |        4 | Memory base and size configuration for data partition                                            |
-| rram_ctrl.[`MP_REGION_1`](#mp_region)                                            | 0x7c     |        4 | Memory base and size configuration for data partition                                            |
-| rram_ctrl.[`MP_REGION_2`](#mp_region)                                            | 0x80     |        4 | Memory base and size configuration for data partition                                            |
-| rram_ctrl.[`MP_REGION_3`](#mp_region)                                            | 0x84     |        4 | Memory base and size configuration for data partition                                            |
-| rram_ctrl.[`MP_REGION_4`](#mp_region)                                            | 0x88     |        4 | Memory base and size configuration for data partition                                            |
-| rram_ctrl.[`MP_REGION_5`](#mp_region)                                            | 0x8c     |        4 | Memory base and size configuration for data partition                                            |
-| rram_ctrl.[`MP_REGION_6`](#mp_region)                                            | 0x90     |        4 | Memory base and size configuration for data partition                                            |
-| rram_ctrl.[`MP_REGION_7`](#mp_region)                                            | 0x94     |        4 | Memory base and size configuration for data partition                                            |
-| rram_ctrl.[`MP_REGION_8`](#mp_region)                                            | 0x98     |        4 | Memory base and size configuration for data partition                                            |
-| rram_ctrl.[`MP_REGION_9`](#mp_region)                                            | 0x9c     |        4 | Memory base and size configuration for data partition                                            |
-| rram_ctrl.[`DEFAULT_REGION`](#default_region)                                    | 0xa0     |        4 | Default region properties                                                                        |
-| rram_ctrl.[`INFO_REGWEN_0`](#info_regwen)                                        | 0xa4     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`INFO_REGWEN_1`](#info_regwen)                                        | 0xa8     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`INFO_REGWEN_2`](#info_regwen)                                        | 0xac     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`INFO_REGWEN_3`](#info_regwen)                                        | 0xb0     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`INFO_REGWEN_4`](#info_regwen)                                        | 0xb4     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`INFO_REGWEN_5`](#info_regwen)                                        | 0xb8     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`INFO_REGWEN_6`](#info_regwen)                                        | 0xbc     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`INFO_REGWEN_7`](#info_regwen)                                        | 0xc0     |        4 | Memory region registers configuration enable.                                                    |
-| rram_ctrl.[`INFO_PAGE_CFG_0`](#info_page_cfg)                                    | 0xc4     |        4 | Memory property configuration for info partition.                                                |
-| rram_ctrl.[`INFO_PAGE_CFG_1`](#info_page_cfg)                                    | 0xc8     |        4 | Memory property configuration for info partition.                                                |
-| rram_ctrl.[`INFO_PAGE_CFG_2`](#info_page_cfg)                                    | 0xcc     |        4 | Memory property configuration for info partition.                                                |
-| rram_ctrl.[`INFO_PAGE_CFG_3`](#info_page_cfg)                                    | 0xd0     |        4 | Memory property configuration for info partition.                                                |
-| rram_ctrl.[`INFO_PAGE_CFG_4`](#info_page_cfg)                                    | 0xd4     |        4 | Memory property configuration for info partition.                                                |
-| rram_ctrl.[`INFO_PAGE_CFG_5`](#info_page_cfg)                                    | 0xd8     |        4 | Memory property configuration for info partition.                                                |
-| rram_ctrl.[`INFO_PAGE_CFG_6`](#info_page_cfg)                                    | 0xdc     |        4 | Memory property configuration for info partition.                                                |
-| rram_ctrl.[`INFO_PAGE_CFG_7`](#info_page_cfg)                                    | 0xe0     |        4 | Memory property configuration for info partition.                                                |
-| rram_ctrl.[`EMUL_INFO_REGWEN_0`](#emul_info_regwen)                              | 0xe4     |        4 | Emulated info region registers configuration enable.                                             |
-| rram_ctrl.[`EMUL_INFO_REGWEN_1`](#emul_info_regwen)                              | 0xe8     |        4 | Emulated info region registers configuration enable.                                             |
-| rram_ctrl.[`EMUL_INFO_REGION_0`](#emul_info_region)                              | 0xec     |        4 | Base and size configuration for an emulated info page region (window).                           |
-| rram_ctrl.[`EMUL_INFO_REGION_1`](#emul_info_region)                              | 0xf0     |        4 | Base and size configuration for an emulated info page region (window).                           |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_0`](#emul_info_subregion_regwen)          | 0xf4     |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_1`](#emul_info_subregion_regwen)          | 0xf8     |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_2`](#emul_info_subregion_regwen)          | 0xfc     |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_3`](#emul_info_subregion_regwen)          | 0x100    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_4`](#emul_info_subregion_regwen)          | 0x104    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_5`](#emul_info_subregion_regwen)          | 0x108    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_6`](#emul_info_subregion_regwen)          | 0x10c    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_7`](#emul_info_subregion_regwen)          | 0x110    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_8`](#emul_info_subregion_regwen)          | 0x114    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_9`](#emul_info_subregion_regwen)          | 0x118    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_10`](#emul_info_subregion_regwen)         | 0x11c    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_11`](#emul_info_subregion_regwen)         | 0x120    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_12`](#emul_info_subregion_regwen)         | 0x124    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_13`](#emul_info_subregion_regwen)         | 0x128    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_14`](#emul_info_subregion_regwen)         | 0x12c    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_15`](#emul_info_subregion_regwen)         | 0x130    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_16`](#emul_info_subregion_regwen)         | 0x134    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_17`](#emul_info_subregion_regwen)         | 0x138    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_18`](#emul_info_subregion_regwen)         | 0x13c    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_19`](#emul_info_subregion_regwen)         | 0x140    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_20`](#emul_info_subregion_regwen)         | 0x144    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_21`](#emul_info_subregion_regwen)         | 0x148    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_22`](#emul_info_subregion_regwen)         | 0x14c    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_23`](#emul_info_subregion_regwen)         | 0x150    |        4 | Emulated info subregion size registers configuration enable.                                     |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_0`](#emul_info_subregion)                        | 0x154    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_1`](#emul_info_subregion)                        | 0x158    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_2`](#emul_info_subregion)                        | 0x15c    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_3`](#emul_info_subregion)                        | 0x160    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_4`](#emul_info_subregion)                        | 0x164    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_5`](#emul_info_subregion)                        | 0x168    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_6`](#emul_info_subregion)                        | 0x16c    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_7`](#emul_info_subregion)                        | 0x170    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_8`](#emul_info_subregion)                        | 0x174    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_9`](#emul_info_subregion)                        | 0x178    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_10`](#emul_info_subregion)                       | 0x17c    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_11`](#emul_info_subregion)                       | 0x180    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_12`](#emul_info_subregion)                       | 0x184    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_13`](#emul_info_subregion)                       | 0x188    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_14`](#emul_info_subregion)                       | 0x18c    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_15`](#emul_info_subregion)                       | 0x190    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_16`](#emul_info_subregion)                       | 0x194    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_17`](#emul_info_subregion)                       | 0x198    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_18`](#emul_info_subregion)                       | 0x19c    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_19`](#emul_info_subregion)                       | 0x1a0    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_20`](#emul_info_subregion)                       | 0x1a4    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_21`](#emul_info_subregion)                       | 0x1a8    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_22`](#emul_info_subregion)                       | 0x1ac    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_23`](#emul_info_subregion)                       | 0x1b0    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base. |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_0`](#emul_info_subregion_cfg_regwen)  | 0x1b4    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_1`](#emul_info_subregion_cfg_regwen)  | 0x1b8    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_2`](#emul_info_subregion_cfg_regwen)  | 0x1bc    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_3`](#emul_info_subregion_cfg_regwen)  | 0x1c0    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_4`](#emul_info_subregion_cfg_regwen)  | 0x1c4    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_5`](#emul_info_subregion_cfg_regwen)  | 0x1c8    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_6`](#emul_info_subregion_cfg_regwen)  | 0x1cc    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_7`](#emul_info_subregion_cfg_regwen)  | 0x1d0    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_8`](#emul_info_subregion_cfg_regwen)  | 0x1d4    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_9`](#emul_info_subregion_cfg_regwen)  | 0x1d8    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_10`](#emul_info_subregion_cfg_regwen) | 0x1dc    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_11`](#emul_info_subregion_cfg_regwen) | 0x1e0    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_12`](#emul_info_subregion_cfg_regwen) | 0x1e4    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_13`](#emul_info_subregion_cfg_regwen) | 0x1e8    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_14`](#emul_info_subregion_cfg_regwen) | 0x1ec    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_15`](#emul_info_subregion_cfg_regwen) | 0x1f0    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_16`](#emul_info_subregion_cfg_regwen) | 0x1f4    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_17`](#emul_info_subregion_cfg_regwen) | 0x1f8    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_18`](#emul_info_subregion_cfg_regwen) | 0x1fc    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_19`](#emul_info_subregion_cfg_regwen) | 0x200    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_20`](#emul_info_subregion_cfg_regwen) | 0x204    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_21`](#emul_info_subregion_cfg_regwen) | 0x208    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_22`](#emul_info_subregion_cfg_regwen) | 0x20c    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_23`](#emul_info_subregion_cfg_regwen) | 0x210    |        4 | Emulated info subregion permission registers configuration enable.                               |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_0`](#emul_info_subregion_cfg)                | 0x214    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_1`](#emul_info_subregion_cfg)                | 0x218    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_2`](#emul_info_subregion_cfg)                | 0x21c    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_3`](#emul_info_subregion_cfg)                | 0x220    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_4`](#emul_info_subregion_cfg)                | 0x224    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_5`](#emul_info_subregion_cfg)                | 0x228    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_6`](#emul_info_subregion_cfg)                | 0x22c    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_7`](#emul_info_subregion_cfg)                | 0x230    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_8`](#emul_info_subregion_cfg)                | 0x234    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_9`](#emul_info_subregion_cfg)                | 0x238    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_10`](#emul_info_subregion_cfg)               | 0x23c    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_11`](#emul_info_subregion_cfg)               | 0x240    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_12`](#emul_info_subregion_cfg)               | 0x244    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_13`](#emul_info_subregion_cfg)               | 0x248    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_14`](#emul_info_subregion_cfg)               | 0x24c    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_15`](#emul_info_subregion_cfg)               | 0x250    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_16`](#emul_info_subregion_cfg)               | 0x254    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_17`](#emul_info_subregion_cfg)               | 0x258    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_18`](#emul_info_subregion_cfg)               | 0x25c    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_19`](#emul_info_subregion_cfg)               | 0x260    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_20`](#emul_info_subregion_cfg)               | 0x264    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_21`](#emul_info_subregion_cfg)               | 0x268    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_22`](#emul_info_subregion_cfg)               | 0x26c    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_23`](#emul_info_subregion_cfg)               | 0x270    |        4 | Memory property configuration for an emulated info subregion.                                    |
-| rram_ctrl.[`HW_INFO_CFG_OVERRIDE`](#hw_info_cfg_override)                        | 0x274    |        4 | HW interface info configuration rule overrides                                                   |
-| rram_ctrl.[`OP_STATUS`](#op_status)                                              | 0x278    |        4 | RRAM Operation Status                                                                            |
-| rram_ctrl.[`STATUS`](#status)                                                    | 0x27c    |        4 | RRAM Controller Status                                                                           |
-| rram_ctrl.[`ERR_CODE`](#err_code)                                                | 0x280    |        4 | RRAM error code register.                                                                        |
-| rram_ctrl.[`STD_FAULT_STATUS`](#std_fault_status)                                | 0x284    |        4 | This register tabulates standard fault status of the RRAM.                                       |
-| rram_ctrl.[`FAULT_STATUS`](#fault_status)                                        | 0x288    |        4 | This register tabulates customized fault status of the RRAM.                                     |
-| rram_ctrl.[`ERR_ADDR`](#err_addr)                                                | 0x28c    |        4 | Synchronous error address                                                                        |
-| rram_ctrl.[`CORR1_ERR_CNT`](#corr1_err_cnt)                                      | 0x290    |        4 | Count of correctable single-bit ECC errors                                                       |
-| rram_ctrl.[`CORR2_ERR_CNT`](#corr2_err_cnt)                                      | 0x294    |        4 | Count of correctable double-bit ECC errors                                                       |
-| rram_ctrl.[`CORR1_ERR_LOC`](#corr1_err_loc)                                      | 0x298    |        4 | Last address that was corrected by the ECC decoder with a single-bit error                       |
-| rram_ctrl.[`CORR2_ERR_LOC`](#corr2_err_loc)                                      | 0x29c    |        4 | Last address that was corrected by the ECC decoder with a double-bit error                       |
-| rram_ctrl.[`PHY_STATUS`](#phy_status)                                            | 0x2a0    |        4 | RRAM Phy Status                                                                                  |
-| rram_ctrl.[`SCRATCH`](#scratch)                                                  | 0x2a4    |        4 | RRAM Controller Scratch                                                                          |
-| rram_ctrl.[`FIFO_LVL`](#fifo_lvl)                                                | 0x2a8    |        4 | Programmable depth where FIFOs should generate interrupts                                        |
-| rram_ctrl.[`FIFO_CLR`](#fifo_clr)                                                | 0x2ac    |        4 | Clears RRAM controller FIFOs                                                                     |
-| rram_ctrl.[`CURR_FIFO_LVL`](#curr_fifo_lvl)                                      | 0x2b0    |        4 | Current write and read fifo level                                                                |
-| rram_ctrl.[`wr_fifo`](#wr_fifo)                                                  | 0x2b4    |        4 | RRAM write FIFO.                                                                                 |
-| rram_ctrl.[`rd_fifo`](#rd_fifo)                                                  | 0x2b8    |        4 | RRAM read FIFO.                                                                                  |
+| Name                                                                             | Offset   |   Length | Description                                                                                                                                                    |
+|:---------------------------------------------------------------------------------|:---------|---------:|:---------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| rram_ctrl.[`INTR_STATE`](#intr_state)                                            | 0x0      |        4 | Interrupt State Register                                                                                                                                       |
+| rram_ctrl.[`INTR_ENABLE`](#intr_enable)                                          | 0x4      |        4 | Interrupt Enable Register                                                                                                                                      |
+| rram_ctrl.[`INTR_TEST`](#intr_test)                                              | 0x8      |        4 | Interrupt Test Register                                                                                                                                        |
+| rram_ctrl.[`ALERT_TEST`](#alert_test)                                            | 0xc      |        4 | Alert Test Register                                                                                                                                            |
+| rram_ctrl.[`DIS`](#dis)                                                          | 0x10     |        4 | Disable RRAM functionality.                                                                                                                                    |
+| rram_ctrl.[`EXEC`](#exec)                                                        | 0x14     |        4 | Controls whether instructions can be fetched through host_tl                                                                                                   |
+| rram_ctrl.[`INIT`](#init)                                                        | 0x18     |        4 | Controller init register                                                                                                                                       |
+| rram_ctrl.[`CTRL_REGWEN`](#ctrl_regwen)                                          | 0x1c     |        4 | Controls the configurability of the [`CONTROL`](#control) register.                                                                                            |
+| rram_ctrl.[`CONTROL`](#control)                                                  | 0x20     |        4 | Control register                                                                                                                                               |
+| rram_ctrl.[`ADDR`](#addr)                                                        | 0x24     |        4 | Address for RRAM operation                                                                                                                                     |
+| rram_ctrl.[`REGION_CFG_REGWEN_0`](#region_cfg_regwen)                            | 0x28     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`REGION_CFG_REGWEN_1`](#region_cfg_regwen)                            | 0x2c     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`REGION_CFG_REGWEN_2`](#region_cfg_regwen)                            | 0x30     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`REGION_CFG_REGWEN_3`](#region_cfg_regwen)                            | 0x34     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`REGION_CFG_REGWEN_4`](#region_cfg_regwen)                            | 0x38     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`REGION_CFG_REGWEN_5`](#region_cfg_regwen)                            | 0x3c     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`REGION_CFG_REGWEN_6`](#region_cfg_regwen)                            | 0x40     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`REGION_CFG_REGWEN_7`](#region_cfg_regwen)                            | 0x44     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`REGION_CFG_REGWEN_8`](#region_cfg_regwen)                            | 0x48     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`REGION_CFG_REGWEN_9`](#region_cfg_regwen)                            | 0x4c     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`MP_REGION_CFG_0`](#mp_region_cfg)                                    | 0x50     |        4 | Memory property configuration for data partition.                                                                                                              |
+| rram_ctrl.[`MP_REGION_CFG_1`](#mp_region_cfg)                                    | 0x54     |        4 | Memory property configuration for data partition.                                                                                                              |
+| rram_ctrl.[`MP_REGION_CFG_2`](#mp_region_cfg)                                    | 0x58     |        4 | Memory property configuration for data partition.                                                                                                              |
+| rram_ctrl.[`MP_REGION_CFG_3`](#mp_region_cfg)                                    | 0x5c     |        4 | Memory property configuration for data partition.                                                                                                              |
+| rram_ctrl.[`MP_REGION_CFG_4`](#mp_region_cfg)                                    | 0x60     |        4 | Memory property configuration for data partition.                                                                                                              |
+| rram_ctrl.[`MP_REGION_CFG_5`](#mp_region_cfg)                                    | 0x64     |        4 | Memory property configuration for data partition.                                                                                                              |
+| rram_ctrl.[`MP_REGION_CFG_6`](#mp_region_cfg)                                    | 0x68     |        4 | Memory property configuration for data partition.                                                                                                              |
+| rram_ctrl.[`MP_REGION_CFG_7`](#mp_region_cfg)                                    | 0x6c     |        4 | Memory property configuration for data partition.                                                                                                              |
+| rram_ctrl.[`MP_REGION_CFG_8`](#mp_region_cfg)                                    | 0x70     |        4 | Memory property configuration for data partition.                                                                                                              |
+| rram_ctrl.[`MP_REGION_CFG_9`](#mp_region_cfg)                                    | 0x74     |        4 | Memory property configuration for data partition.                                                                                                              |
+| rram_ctrl.[`MP_REGION_0`](#mp_region)                                            | 0x78     |        4 | Memory base and size configuration for data partition                                                                                                          |
+| rram_ctrl.[`MP_REGION_1`](#mp_region)                                            | 0x7c     |        4 | Memory base and size configuration for data partition                                                                                                          |
+| rram_ctrl.[`MP_REGION_2`](#mp_region)                                            | 0x80     |        4 | Memory base and size configuration for data partition                                                                                                          |
+| rram_ctrl.[`MP_REGION_3`](#mp_region)                                            | 0x84     |        4 | Memory base and size configuration for data partition                                                                                                          |
+| rram_ctrl.[`MP_REGION_4`](#mp_region)                                            | 0x88     |        4 | Memory base and size configuration for data partition                                                                                                          |
+| rram_ctrl.[`MP_REGION_5`](#mp_region)                                            | 0x8c     |        4 | Memory base and size configuration for data partition                                                                                                          |
+| rram_ctrl.[`MP_REGION_6`](#mp_region)                                            | 0x90     |        4 | Memory base and size configuration for data partition                                                                                                          |
+| rram_ctrl.[`MP_REGION_7`](#mp_region)                                            | 0x94     |        4 | Memory base and size configuration for data partition                                                                                                          |
+| rram_ctrl.[`MP_REGION_8`](#mp_region)                                            | 0x98     |        4 | Memory base and size configuration for data partition                                                                                                          |
+| rram_ctrl.[`MP_REGION_9`](#mp_region)                                            | 0x9c     |        4 | Memory base and size configuration for data partition                                                                                                          |
+| rram_ctrl.[`DEFAULT_REGION`](#default_region)                                    | 0xa0     |        4 | Default region properties.                                                                                                                                     |
+| rram_ctrl.[`INFO_REGWEN_0`](#info_regwen)                                        | 0xa4     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`INFO_REGWEN_1`](#info_regwen)                                        | 0xa8     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`INFO_REGWEN_2`](#info_regwen)                                        | 0xac     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`INFO_REGWEN_3`](#info_regwen)                                        | 0xb0     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`INFO_REGWEN_4`](#info_regwen)                                        | 0xb4     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`INFO_REGWEN_5`](#info_regwen)                                        | 0xb8     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`INFO_REGWEN_6`](#info_regwen)                                        | 0xbc     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`INFO_REGWEN_7`](#info_regwen)                                        | 0xc0     |        4 | Memory region registers configuration enable.                                                                                                                  |
+| rram_ctrl.[`INFO_PAGE_CFG_0`](#info_page_cfg)                                    | 0xc4     |        4 | Memory property configuration for info partition.                                                                                                              |
+| rram_ctrl.[`INFO_PAGE_CFG_1`](#info_page_cfg)                                    | 0xc8     |        4 | Memory property configuration for info partition.                                                                                                              |
+| rram_ctrl.[`INFO_PAGE_CFG_2`](#info_page_cfg)                                    | 0xcc     |        4 | Memory property configuration for info partition.                                                                                                              |
+| rram_ctrl.[`INFO_PAGE_CFG_3`](#info_page_cfg)                                    | 0xd0     |        4 | Memory property configuration for info partition.                                                                                                              |
+| rram_ctrl.[`INFO_PAGE_CFG_4`](#info_page_cfg)                                    | 0xd4     |        4 | Memory property configuration for info partition.                                                                                                              |
+| rram_ctrl.[`INFO_PAGE_CFG_5`](#info_page_cfg)                                    | 0xd8     |        4 | Memory property configuration for info partition.                                                                                                              |
+| rram_ctrl.[`INFO_PAGE_CFG_6`](#info_page_cfg)                                    | 0xdc     |        4 | Memory property configuration for info partition.                                                                                                              |
+| rram_ctrl.[`INFO_PAGE_CFG_7`](#info_page_cfg)                                    | 0xe0     |        4 | Memory property configuration for info partition.                                                                                                              |
+| rram_ctrl.[`EMUL_INFO_REGWEN_0`](#emul_info_regwen)                              | 0xe4     |        4 | Emulated info region registers configuration enable.                                                                                                           |
+| rram_ctrl.[`EMUL_INFO_REGWEN_1`](#emul_info_regwen)                              | 0xe8     |        4 | Emulated info region registers configuration enable.                                                                                                           |
+| rram_ctrl.[`EMUL_INFO_REGION_0`](#emul_info_region)                              | 0xec     |        4 | Base and size configuration for an emulated info page region (window).                                                                                         |
+| rram_ctrl.[`EMUL_INFO_REGION_1`](#emul_info_region)                              | 0xf0     |        4 | Base and size configuration for an emulated info page region (window).                                                                                         |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_0`](#emul_info_subregion_regwen)          | 0xf4     |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_1`](#emul_info_subregion_regwen)          | 0xf8     |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_2`](#emul_info_subregion_regwen)          | 0xfc     |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_3`](#emul_info_subregion_regwen)          | 0x100    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_4`](#emul_info_subregion_regwen)          | 0x104    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_5`](#emul_info_subregion_regwen)          | 0x108    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_6`](#emul_info_subregion_regwen)          | 0x10c    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_7`](#emul_info_subregion_regwen)          | 0x110    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_8`](#emul_info_subregion_regwen)          | 0x114    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_9`](#emul_info_subregion_regwen)          | 0x118    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_10`](#emul_info_subregion_regwen)         | 0x11c    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_11`](#emul_info_subregion_regwen)         | 0x120    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_12`](#emul_info_subregion_regwen)         | 0x124    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_13`](#emul_info_subregion_regwen)         | 0x128    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_14`](#emul_info_subregion_regwen)         | 0x12c    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_15`](#emul_info_subregion_regwen)         | 0x130    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_16`](#emul_info_subregion_regwen)         | 0x134    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_17`](#emul_info_subregion_regwen)         | 0x138    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_18`](#emul_info_subregion_regwen)         | 0x13c    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_19`](#emul_info_subregion_regwen)         | 0x140    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_20`](#emul_info_subregion_regwen)         | 0x144    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_21`](#emul_info_subregion_regwen)         | 0x148    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_22`](#emul_info_subregion_regwen)         | 0x14c    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_REGWEN_23`](#emul_info_subregion_regwen)         | 0x150    |        4 | Emulated info subregion size registers configuration enable.                                                                                                   |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_0`](#emul_info_subregion)                        | 0x154    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_1`](#emul_info_subregion)                        | 0x158    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_2`](#emul_info_subregion)                        | 0x15c    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_3`](#emul_info_subregion)                        | 0x160    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_4`](#emul_info_subregion)                        | 0x164    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_5`](#emul_info_subregion)                        | 0x168    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_6`](#emul_info_subregion)                        | 0x16c    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_7`](#emul_info_subregion)                        | 0x170    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_8`](#emul_info_subregion)                        | 0x174    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_9`](#emul_info_subregion)                        | 0x178    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_10`](#emul_info_subregion)                       | 0x17c    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_11`](#emul_info_subregion)                       | 0x180    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_12`](#emul_info_subregion)                       | 0x184    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_13`](#emul_info_subregion)                       | 0x188    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_14`](#emul_info_subregion)                       | 0x18c    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_15`](#emul_info_subregion)                       | 0x190    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_16`](#emul_info_subregion)                       | 0x194    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_17`](#emul_info_subregion)                       | 0x198    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_18`](#emul_info_subregion)                       | 0x19c    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_19`](#emul_info_subregion)                       | 0x1a0    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_20`](#emul_info_subregion)                       | 0x1a4    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_21`](#emul_info_subregion)                       | 0x1a8    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_22`](#emul_info_subregion)                       | 0x1ac    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_23`](#emul_info_subregion)                       | 0x1b0    |        4 | Subregions are configured with TOR (top of range) addressing, but relative to the window's base.                                                               |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_0`](#emul_info_subregion_cfg_regwen)  | 0x1b4    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_1`](#emul_info_subregion_cfg_regwen)  | 0x1b8    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_2`](#emul_info_subregion_cfg_regwen)  | 0x1bc    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_3`](#emul_info_subregion_cfg_regwen)  | 0x1c0    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_4`](#emul_info_subregion_cfg_regwen)  | 0x1c4    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_5`](#emul_info_subregion_cfg_regwen)  | 0x1c8    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_6`](#emul_info_subregion_cfg_regwen)  | 0x1cc    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_7`](#emul_info_subregion_cfg_regwen)  | 0x1d0    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_8`](#emul_info_subregion_cfg_regwen)  | 0x1d4    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_9`](#emul_info_subregion_cfg_regwen)  | 0x1d8    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_10`](#emul_info_subregion_cfg_regwen) | 0x1dc    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_11`](#emul_info_subregion_cfg_regwen) | 0x1e0    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_12`](#emul_info_subregion_cfg_regwen) | 0x1e4    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_13`](#emul_info_subregion_cfg_regwen) | 0x1e8    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_14`](#emul_info_subregion_cfg_regwen) | 0x1ec    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_15`](#emul_info_subregion_cfg_regwen) | 0x1f0    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_16`](#emul_info_subregion_cfg_regwen) | 0x1f4    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_17`](#emul_info_subregion_cfg_regwen) | 0x1f8    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_18`](#emul_info_subregion_cfg_regwen) | 0x1fc    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_19`](#emul_info_subregion_cfg_regwen) | 0x200    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_20`](#emul_info_subregion_cfg_regwen) | 0x204    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_21`](#emul_info_subregion_cfg_regwen) | 0x208    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_22`](#emul_info_subregion_cfg_regwen) | 0x20c    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_REGWEN_23`](#emul_info_subregion_cfg_regwen) | 0x210    |        4 | Emulated info subregion permission registers configuration enable.                                                                                             |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_0`](#emul_info_subregion_cfg)                | 0x214    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_1`](#emul_info_subregion_cfg)                | 0x218    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_2`](#emul_info_subregion_cfg)                | 0x21c    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_3`](#emul_info_subregion_cfg)                | 0x220    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_4`](#emul_info_subregion_cfg)                | 0x224    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_5`](#emul_info_subregion_cfg)                | 0x228    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_6`](#emul_info_subregion_cfg)                | 0x22c    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_7`](#emul_info_subregion_cfg)                | 0x230    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_8`](#emul_info_subregion_cfg)                | 0x234    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_9`](#emul_info_subregion_cfg)                | 0x238    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_10`](#emul_info_subregion_cfg)               | 0x23c    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_11`](#emul_info_subregion_cfg)               | 0x240    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_12`](#emul_info_subregion_cfg)               | 0x244    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_13`](#emul_info_subregion_cfg)               | 0x248    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_14`](#emul_info_subregion_cfg)               | 0x24c    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_15`](#emul_info_subregion_cfg)               | 0x250    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_16`](#emul_info_subregion_cfg)               | 0x254    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_17`](#emul_info_subregion_cfg)               | 0x258    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_18`](#emul_info_subregion_cfg)               | 0x25c    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_19`](#emul_info_subregion_cfg)               | 0x260    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_20`](#emul_info_subregion_cfg)               | 0x264    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_21`](#emul_info_subregion_cfg)               | 0x268    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_22`](#emul_info_subregion_cfg)               | 0x26c    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`EMUL_INFO_SUBREGION_CFG_23`](#emul_info_subregion_cfg)               | 0x270    |        4 | Memory property configuration for an emulated info subregion.                                                                                                  |
+| rram_ctrl.[`HW_INFO_CFG_OVERRIDE`](#hw_info_cfg_override)                        | 0x274    |        4 | HW interface info configuration rule overrides.                                                                                                                |
+| rram_ctrl.[`OP_STATUS`](#op_status)                                              | 0x278    |        4 | RRAM Operation Status                                                                                                                                          |
+| rram_ctrl.[`STATUS`](#status)                                                    | 0x27c    |        4 | RRAM Controller Status                                                                                                                                         |
+| rram_ctrl.[`ERR_CODE`](#err_code)                                                | 0x280    |        4 | RRAM error code register.                                                                                                                                      |
+| rram_ctrl.[`STD_FAULT_STATUS`](#std_fault_status)                                | 0x284    |        4 | This register tabulates standard fault status of the RRAM.                                                                                                     |
+| rram_ctrl.[`FAULT_STATUS`](#fault_status)                                        | 0x288    |        4 | This register tabulates customized fault status of the RRAM.                                                                                                   |
+| rram_ctrl.[`ERR_ADDR`](#err_addr)                                                | 0x28c    |        4 | This register is set whenever a software operation ends with [`ERR_CODE.MP_ERR`](#err_code), [`ERR_CODE.RD_ERR`](#err_code) or [`ERR_CODE.WR_ERR.`](#err_code) |
+| rram_ctrl.[`CORR1_ERR_CNT`](#corr1_err_cnt)                                      | 0x290    |        4 | Count of correctable single-bit ECC errors                                                                                                                     |
+| rram_ctrl.[`CORR2_ERR_CNT`](#corr2_err_cnt)                                      | 0x294    |        4 | Count of correctable double-bit ECC errors                                                                                                                     |
+| rram_ctrl.[`CORR1_ERR_LOC`](#corr1_err_loc)                                      | 0x298    |        4 | Last address that was corrected by the ECC decoder with a single-bit error                                                                                     |
+| rram_ctrl.[`CORR2_ERR_LOC`](#corr2_err_loc)                                      | 0x29c    |        4 | Last address that was corrected by the ECC decoder with a double-bit error                                                                                     |
+| rram_ctrl.[`PHY_STATUS`](#phy_status)                                            | 0x2a0    |        4 | RRAM Phy Status                                                                                                                                                |
+| rram_ctrl.[`SCRATCH`](#scratch)                                                  | 0x2a4    |        4 | RRAM controller scratch register.                                                                                                                              |
+| rram_ctrl.[`FIFO_LVL`](#fifo_lvl)                                                | 0x2a8    |        4 | Programmable depth where FIFOs should generate interrupts                                                                                                      |
+| rram_ctrl.[`FIFO_CLR`](#fifo_clr)                                                | 0x2ac    |        4 | Clears RRAM controller FIFOs                                                                                                                                   |
+| rram_ctrl.[`CURR_FIFO_LVL`](#curr_fifo_lvl)                                      | 0x2b0    |        4 | Current write and read fifo level                                                                                                                              |
+| rram_ctrl.[`wr_fifo`](#wr_fifo)                                                  | 0x2b4    |        4 | RRAM write FIFO.                                                                                                                                               |
+| rram_ctrl.[`rd_fifo`](#rd_fifo)                                                  | 0x2b8    |        4 | RRAM read FIFO.                                                                                                                                                |
 
 ## INTR_STATE
 Interrupt State Register
@@ -309,7 +303,7 @@ Since this register is rw1s instead of rw, to disable, write the value MuBi4True
 Once disabled, RRAM functionality cannot be re-enabled until the next reset.
 
 ## EXEC
-Controls whether RRAM can be used for code execution fetches
+Controls whether instructions can be fetched through host_tl
 - Offset: `0x14`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -320,9 +314,9 @@ Controls whether RRAM can be used for code execution fetches
 {"reg": [{"name": "EN", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                               |
-|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------|
-|  31:0  |   rw   |   0x0   | EN     | A value of 0xa26a38f7 allows RRAM to be used for code execution. Any other value prevents code execution. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:0  |   rw   |   0x0   | EN     | A value of 0xa26a38f7 allows instruction fetches through host_tl. Any other value blocks instruction fetches. Data reads through host_tl are not affected. |
 
 ## INIT
 Controller init register
@@ -336,10 +330,10 @@ Controller init register
 {"reg": [{"name": "VAL", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                         |
-|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                                                                                                                                                                                            |
-|   0    |  rw1s  |   0x0   | VAL    | Initializes the RRAM controller. During the initialization process, the RRAM controller requests the address and data scramble keys and reads out the root seeds stored in RRAM before allowing other usage of the RRAM controller. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                                       |
+|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                                                                                          |
+|   0    |  rw1s  |   0x0   | VAL    | Write a '1' to initialize the RRAM controller. During the initialization process, the RRAM controller requests the address and data scramble keys and reads out the root seeds stored in RRAM before allowing other usage of the RRAM controller. |
 
 ## CTRL_REGWEN
 Controls the configurability of the [`CONTROL`](#control) register.
@@ -385,9 +379,10 @@ Control register
 |   0    |   rw   |   0x0   | [START](#control--start)         |
 
 ### CONTROL . NUM
-One fewer than the number of bus words the RRAM operation should read or write.
+One less than the number of bus words the RRAM operation should read or write.
 For write operations, the number of bus words must be a multiple of 4.
-Otherwise the write is rejected with [`ERR_CODE.OP_ERR`](#err_code) without accessing the RRAM.
+Otherwise the write is rejected without accessing the RRAM.
+[`OP_STATUS.ERR`](#op_status) and [`ERR_CODE.OP_ERR`](#err_code) are set when the write completes.
 For example, to read 10 words, software should program this field with the value 9.
 To write 16 words, the software should program this field to 15.
 
@@ -438,7 +433,8 @@ For read operations, the RRAM controller will truncate to the closest, lower wor
 For example, if 0x13 is supplied, the controller will perform a read at address 0x10.
 
 For write and Rewrite operations, the address must be aligned to an RRAM word (128b).
-Otherwise the operation is rejected with [`ERR_CODE.OP_ERR`](#err_code) without accessing the RRAM.
+Otherwise the operation is rejected without accessing the RRAM.
+[`OP_STATUS.ERR`](#op_status) and [`ERR_CODE.OP_ERR`](#err_code) are set when the operation completes.
 
 ## REGION_CFG_REGWEN
 Memory region registers configuration enable.
@@ -473,7 +469,9 @@ Memory region registers configuration enable.
 |   0    |  rw0c  |   0x1   | [REGION](#region_cfg_regwen--region) |
 
 ### REGION_CFG_REGWEN . REGION
-Region register write enable. Once set to 0, it can no longer be configured to 1.
+Region register write enable.
+[`REGION_CFG_REGWEN`](#region_cfg_regwen)[i] locks [`MP_REGION_CFG`](#mp_region_cfg)[i] and [`MP_REGION`](#mp_region)[i].
+Once set to 0, it can no longer be configured to 1.
 
 | Value   | Name           | Description                                          |
 |:--------|:---------------|:-----------------------------------------------------|
@@ -482,7 +480,8 @@ Region register write enable. Once set to 0, it can no longer be configured to 1
 
 
 ## MP_REGION_CFG
-Memory property configuration for data partition
+Memory property configuration for data partition.
+All fields are MuBi4 values.
 - Reset default: `0x99999`
 - Reset mask: `0xfffff`
 - Register enable: [`REGION_CFG_REGWEN`](#region_cfg_regwen)
@@ -509,14 +508,32 @@ Memory property configuration for data partition
 {"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "RD_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "WR_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "SCRAMBLE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ECC_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name        | Description                                                                                                        |
-|:------:|:------:|:-------:|:------------|:-------------------------------------------------------------------------------------------------------------------|
-| 31:20  |        |         |             | Reserved                                                                                                           |
-| 19:16  |   rw   |   0x9   | ECC_EN      | Region is integrity checked and reliability ECC enabled.                                                           |
-| 15:12  |   rw   |   0x9   | SCRAMBLE_EN | Region is scramble enabled.                                                                                        |
-|  11:8  |   rw   |   0x9   | WR_EN       | Region can be written.                                                                                             |
-|  7:4   |   rw   |   0x9   | RD_EN       | Region can be read.                                                                                                |
-|  3:0   |   rw   |   0x9   | EN          | Region enabled, following fields apply. If region is disabled, it is not matched against any incoming transaction. |
+|  Bits  |  Type  |  Reset  | Name                                       |
+|:------:|:------:|:-------:|:-------------------------------------------|
+| 31:20  |        |         | Reserved                                   |
+| 19:16  |   rw   |   0x9   | [ECC_EN](#mp_region_cfg--ecc_en)           |
+| 15:12  |   rw   |   0x9   | [SCRAMBLE_EN](#mp_region_cfg--scramble_en) |
+|  11:8  |   rw   |   0x9   | [WR_EN](#mp_region_cfg--wr_en)             |
+|  7:4   |   rw   |   0x9   | [RD_EN](#mp_region_cfg--rd_en)             |
+|  3:0   |   rw   |   0x9   | [EN](#mp_region_cfg--en)                   |
+
+### MP_REGION_CFG . ECC_EN
+Region is integrity checked and reliability ECC enabled.
+
+### MP_REGION_CFG . SCRAMBLE_EN
+Data in the region is scrambled.
+See [RRAM Scrambling](theory_of_operation.md#rram-scrambling).
+
+### MP_REGION_CFG . WR_EN
+Region can be written.
+
+### MP_REGION_CFG . RD_EN
+Region can be read.
+
+### MP_REGION_CFG . EN
+Write MuBi4True to enable the region.
+While the region is enabled, the permissions and attributes in the other fields of this register apply to accesses within it.
+With any other value, the region is disabled and not matched against any incoming transaction.
 
 ## MP_REGION
 Memory base and size configuration for data partition
@@ -553,7 +570,8 @@ Memory base and size configuration for data partition
 |  11:0  |   rw   |   0x0   | BASE   | Region base page. Note the granularity is page, not byte or word.                                                                                                                                      |
 
 ## DEFAULT_REGION
-Default region properties
+Default region properties.
+All fields are MuBi4 values.
 - Offset: `0xa0`
 - Reset default: `0x9999`
 - Reset mask: `0xffff`
@@ -564,13 +582,13 @@ Default region properties
 {"reg": [{"name": "RD_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "WR_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "SCRAMBLE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ECC_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name        | Description                                                 |
-|:------:|:------:|:-------:|:------------|:------------------------------------------------------------|
-| 31:16  |        |         |             | Reserved                                                    |
-| 15:12  |   rw   |   0x9   | ECC_EN      | Region is ECC enabled (both integrity and reliability ECC). |
-|  11:8  |   rw   |   0x9   | SCRAMBLE_EN | Region is scramble enabled.                                 |
-|  7:4   |   rw   |   0x9   | WR_EN       | Region can be written                                       |
-|  3:0   |   rw   |   0x9   | RD_EN       | Region can be read                                          |
+|  Bits  |  Type  |  Reset  | Name        | Description                                                                                     |
+|:------:|:------:|:-------:|:------------|:------------------------------------------------------------------------------------------------|
+| 31:16  |        |         |             | Reserved                                                                                        |
+| 15:12  |   rw   |   0x9   | ECC_EN      | Region is ECC enabled (both integrity and reliability ECC).                                     |
+|  11:8  |   rw   |   0x9   | SCRAMBLE_EN | Data in the region is scrambled. See [RRAM Scrambling](theory_of_operation.md#rram-scrambling). |
+|  7:4   |   rw   |   0x9   | WR_EN       | Region can be written                                                                           |
+|  3:0   |   rw   |   0x9   | RD_EN       | Region can be read                                                                              |
 
 ## INFO_REGWEN
 Memory region registers configuration enable.
@@ -603,7 +621,8 @@ Memory region registers configuration enable.
 |   0    |  rw0c  |   0x1   | [REGION](#info_regwen--region) |
 
 ### INFO_REGWEN . REGION
-Info page write enable.
+Info page configuration write enable.
+[`INFO_REGWEN`](#info_regwen)[i] locks [`INFO_PAGE_CFG`](#info_page_cfg)[i].
 Once set to 0, it can no longer be configured to 1.
 
 | Value   | Name         | Description                                          |
@@ -615,6 +634,7 @@ Once set to 0, it can no longer be configured to 1.
 ## INFO_PAGE_CFG
 Memory property configuration for info partition.
 Unlike data partition, each page is individually configured.
+All fields are MuBi4 values.
 - Reset default: `0x99999`
 - Reset mask: `0xfffff`
 - Register enable: [`INFO_REGWEN`](#info_regwen)
@@ -639,14 +659,14 @@ Unlike data partition, each page is individually configured.
 {"reg": [{"name": "EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "RD_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "WR_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "SCRAMBLE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ECC_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name        | Description                                                 |
-|:------:|:------:|:-------:|:------------|:------------------------------------------------------------|
-| 31:20  |        |         |             | Reserved                                                    |
-| 19:16  |   rw   |   0x9   | ECC_EN      | Region is ECC enabled (both integrity and reliability ECC). |
-| 15:12  |   rw   |   0x9   | SCRAMBLE_EN | Region is scramble enabled.                                 |
-|  11:8  |   rw   |   0x9   | WR_EN       | Region can be written.                                      |
-|  7:4   |   rw   |   0x9   | RD_EN       | Region can be read.                                         |
-|  3:0   |   rw   |   0x9   | EN          | Region is enabled, the following fields apply.              |
+|  Bits  |  Type  |  Reset  | Name        | Description                                                                                                                                                                                                                                              |
+|:------:|:------:|:-------:|:------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:20  |        |         |             | Reserved                                                                                                                                                                                                                                                 |
+| 19:16  |   rw   |   0x9   | ECC_EN      | Region is ECC enabled (both integrity and reliability ECC).                                                                                                                                                                                              |
+| 15:12  |   rw   |   0x9   | SCRAMBLE_EN | Data in the info page is scrambled. See [RRAM Scrambling](theory_of_operation.md#rram-scrambling).                                                                                                                                                       |
+|  11:8  |   rw   |   0x9   | WR_EN       | Region can be written.                                                                                                                                                                                                                                   |
+|  7:4   |   rw   |   0x9   | RD_EN       | Region can be read.                                                                                                                                                                                                                                      |
+|  3:0   |   rw   |   0x9   | EN          | Write MuBi4True to enable the info page. While the info page is enabled, the permissions and attributes in the other fields of this register apply to accesses to it. With any other value, the info page is disabled and all accesses to it are denied. |
 
 ## EMUL_INFO_REGWEN
 Emulated info region registers configuration enable.
@@ -686,7 +706,8 @@ Region register write enable. Once set to 0, it can no longer be configured to 1
 Base and size configuration for an emulated info page region (window).
 Unlike [`MP_REGION`](#mp_region), this register carries no access permissions of its own.
 See [`EMUL_INFO_SUBREGION_CFG`](#emul_info_subregion_cfg) for per-subregion permissions.
-Host access to this window is always blocked in hardware.
+Host access to this window through host_tl is always blocked in hardware.
+Software can access it through the controller (core_tl and the FIFOs) if allowed by the subregion configuration.
 Once EN is set, any access to the window that is not covered by an enabled subregion is denied.
 Enabling this and locking it via [`EMUL_INFO_REGWEN`](#emul_info_regwen) is a precondition for using any subregions configured through [`EMUL_INFO_SUBREGION`](#emul_info_subregion) and [`EMUL_INFO_SUBREGION_CFG`](#emul_info_subregion_cfg) within this window.
 - Reset default: `0x9000000`
@@ -900,6 +921,7 @@ Memory property configuration for an emulated info subregion.
 There is no separate EN field.
 Bits 3:0 are reserved, so RD_EN, WR_EN, SCRAMBLE_EN, and ECC_EN sit at the same bit positions as in [`MP_REGION_CFG`](#mp_region_cfg) and [`INFO_PAGE_CFG.`](#info_page_cfg)
 See [`EMUL_INFO_SUBREGION`](#emul_info_subregion) for the full conditions under which a subregion is enabled.
+All fields are MuBi4 values.
 - Reset default: `0x99990`
 - Reset mask: `0xffff0`
 - Register enable: [`EMUL_INFO_SUBREGION_CFG_REGWEN`](#emul_info_subregion_cfg_regwen)
@@ -940,17 +962,19 @@ See [`EMUL_INFO_SUBREGION`](#emul_info_subregion) for the full conditions under 
 {"reg": [{"bits": 4}, {"name": "RD_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "WR_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "SCRAMBLE_EN", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "ECC_EN", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name        | Description                                                    |
-|:------:|:------:|:-------:|:------------|:---------------------------------------------------------------|
-| 31:20  |        |         |             | Reserved                                                       |
-| 19:16  |   rw   |   0x9   | ECC_EN      | Subregion is ECC enabled (both integrity and reliability ECC). |
-| 15:12  |   rw   |   0x9   | SCRAMBLE_EN | Subregion is scramble enabled.                                 |
-|  11:8  |   rw   |   0x9   | WR_EN       | Subregion can be written.                                      |
-|  7:4   |   rw   |   0x9   | RD_EN       | Subregion can be read.                                         |
-|  3:0   |        |         |             | Reserved                                                       |
+|  Bits  |  Type  |  Reset  | Name        | Description                                                                                        |
+|:------:|:------:|:-------:|:------------|:---------------------------------------------------------------------------------------------------|
+| 31:20  |        |         |             | Reserved                                                                                           |
+| 19:16  |   rw   |   0x9   | ECC_EN      | Subregion is ECC enabled (both integrity and reliability ECC).                                     |
+| 15:12  |   rw   |   0x9   | SCRAMBLE_EN | Data in the subregion is scrambled. See [RRAM Scrambling](theory_of_operation.md#rram-scrambling). |
+|  11:8  |   rw   |   0x9   | WR_EN       | Subregion can be written.                                                                          |
+|  7:4   |   rw   |   0x9   | RD_EN       | Subregion can be read.                                                                             |
+|  3:0   |        |         |             | Reserved                                                                                           |
 
 ## HW_INFO_CFG_OVERRIDE
-HW interface info configuration rule overrides
+HW interface info configuration rule overrides.
+The hardwired rules apply to the info page accesses of the life cycle manager: the creator and owner seed reads during initialization and the RMA wipe of the creator, owner and isolated pages.
+All fields are MuBi4 values.
 - Offset: `0x274`
 - Reset default: `0x99`
 - Reset mask: `0xff`
@@ -1050,20 +1074,20 @@ Note, all errors in this register are considered recoverable errors, i.e., error
 |   0    |  rw1c  |   0x0   | [op_err](#err_code--op_err) |
 
 ### ERR_CODE . wr_err
-RRAM write has an error.
+An RRAM write had an error.
 This could be a write integrity error, see [`STD_FAULT_STATUS.`](#std_fault_status)
-This is a synchronous error.
+This and [`OP_STATUS.ERR`](#op_status) are set when the software operation causing the error completes.
 
 ### ERR_CODE . rd_err
-RRAM read has an error.
+An RRAM read had an error.
 This could be a reliability ECC error or integrity error encountered during a software issued controller read, see [`STD_FAULT_STATUS.`](#std_fault_status)
 See [`ERR_ADDR`](#err_addr) for exact address.
-This is a synchronous error.
+This and [`OP_STATUS.ERR`](#op_status) are set when the software operation causing the error completes.
 
 ### ERR_CODE . mp_err
 RRAM access has encountered an access permission error.
 Please see [`ERR_ADDR`](#err_addr) for exact address.
-This is a synchronous error.
+This and [`OP_STATUS.ERR`](#op_status) are set when the software operation causing the error completes.
 
 ### ERR_CODE . op_err
 Software has supplied an undefined operation.
@@ -1157,7 +1181,7 @@ The RRAM phy encountered an integrity error. The shadow response was not identic
 ### FAULT_STATUS . phy_relbl_err
 The RRAM macro encountered a reliability ECC error that cannot be corrected.
 
-Note that this error bit can be cleared to allow firmware dealing with multi-bit ECC errors during firmware selection and verification.
+Note that this error bit can be cleared to allow firmware to deal with multi-bit ECC errors during firmware selection and verification.
 After passing this stage, it is recommended that firmware classifies the corresponding alert as fatal on the receiver end, i.e, inside the alert handler.
 Clearing this bit does not revoke a local escalation it has already caused while [`DIS.LOCAL_ESC_RELBL_ERR`](#dis) was set.
 
@@ -1195,7 +1219,8 @@ The RRAM life cycle management interface has supplied an undefined operation.
 See [`CONTROL.OP`](#control) for list of valid operations.
 
 ## ERR_ADDR
-Synchronous error address
+This register is set whenever a software operation ends with [`ERR_CODE.MP_ERR`](#err_code), [`ERR_CODE.RD_ERR`](#err_code) or [`ERR_CODE.WR_ERR.`](#err_code)
+It contains the address of the first word to cause an error for the operation.
 - Offset: `0x28c`
 - Reset default: `0x0`
 - Reset mask: `0x1fffff`
@@ -1302,7 +1327,8 @@ RRAM Phy Status
 |   0    |   ro   |   0x0   | wr_busy   | RRAM phy is currently writing to RRAM    |
 
 ## SCRATCH
-RRAM Controller Scratch
+RRAM controller scratch register.
+It has no hardware function and can be used by software, e.g. for a basic register access check.
 - Offset: `0x2a4`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -1329,12 +1355,22 @@ Programmable depth where FIFOs should generate interrupts
 {"reg": [{"name": "WR", "bits": 5, "attr": ["rw"], "rotate": 0}, {"bits": 3}, {"name": "RD", "bits": 5, "attr": ["rw"], "rotate": 0}, {"bits": 19}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                         |
-|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------------------------------------------------------|
-| 31:13  |        |         |        | Reserved                                                                                                                            |
-|  12:8  |   rw   |   0xf   | RD     | When the read FIFO fills to this level, trigger an interrupt. Default value is set such that interrupt does not trigger at reset.   |
-|  7:5   |        |         |        | Reserved                                                                                                                            |
-|  4:0   |   rw   |   0xf   | WR     | When the write FIFO drains to this level, trigger an interrupt. Default value is set such that interrupt does not trigger at reset. |
+|  Bits  |  Type  |  Reset  | Name                |
+|:------:|:------:|:-------:|:--------------------|
+| 31:13  |        |         | Reserved            |
+|  12:8  |   rw   |   0xf   | [RD](#fifo_lvl--rd) |
+|  7:5   |        |         | Reserved            |
+|  4:0   |   rw   |   0xf   | [WR](#fifo_lvl--wr) |
+
+### FIFO_LVL . RD
+When the read FIFO fills to this level, trigger an interrupt.
+Default value is set such that interrupt does not trigger at reset.
+
+### FIFO_LVL . WR
+When the write FIFO drains to this level, trigger an interrupt.
+The wr_lvl interrupt is a status interrupt that stays asserted while the write FIFO level is at or below this value.
+Since the write FIFO is empty after reset, [`INTR_STATE.WR_LVL`](#intr_state) is set from reset for any value of this field.
+The interrupt only reaches the processor if it is enabled in [`INTR_ENABLE.`](#intr_enable)
 
 ## FIFO_CLR
 Clears RRAM controller FIFOs
@@ -1348,11 +1384,11 @@ Clears RRAM controller FIFOs
 {"reg": [{"name": "WR", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "RD", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                               |
-|:------:|:------:|:-------:|:-------|:----------------------------------------------------------|
-|  31:2  |        |         |        | Reserved                                                  |
-|   1    |   wo   |   0x0   | RD     | This will clear the content of the controller read fifo.  |
-|   0    |   wo   |   0x0   | WR     | This will clear the content of the controller write fifo. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                         |
+|:------:|:------:|:-------:|:-------|:------------------------------------------------------------------------------------|
+|  31:2  |        |         |        | Reserved                                                                            |
+|   1    |   wo   |   0x0   | RD     | Writing 1 clears the content of the controller read FIFO. Writing 0 has no effect.  |
+|   0    |   wo   |   0x0   | WR     | Writing 1 clears the content of the controller write FIFO. Writing 0 has no effect. |
 
 ## CURR_FIFO_LVL
 Current write and read fifo level
@@ -1394,6 +1430,3 @@ The FIFO is 16 entries of 4B words.
 - Size (words): `1`
 - Access: `ro`
 - Byte writes are *not* supported.
-
-
-<!-- END CMDGEN -->
