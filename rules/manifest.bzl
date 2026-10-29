@@ -157,13 +157,16 @@ def _manifest_impl(ctx):
 
     mf["usage_constraints"] = uc
 
+    # Since the ROM / ROM_EXT definitions hardcode a single extension per slot,
+    # the order of these extensions must follow the `MANIFEST_EXTENSIONS` table
+    # defined in `/sw/device/silicon_creator/lib/manifest.h`.
     extensions = [e or None for e in ctx.attr.extensions] if ctx.attr.extensions else [
         "spx_key",
         "spx_signature",
         "secver_write",
         "isfb",
         "isfb_erase",
-        None,
+        "owner_transfer_blob",
         "mldsa87_key",
         "mldsa87_signature",
         None,
@@ -180,12 +183,6 @@ def _manifest_impl(ctx):
         manifest_dependent_files.append(ctx.file.owner_transfer_block)
         if ctx.file.owner_transfer_detached_signature:
             manifest_dependent_files.append(ctx.file.owner_transfer_detached_signature)
-
-        # Inject owner_transfer_blob into extensions array if not already present
-        if "owner_transfer_blob" not in extensions:
-            if None not in extensions:
-                fail("No free slot in extensions table for owner_transfer_blob.")
-            extensions[extensions.index(None)] = "owner_transfer_blob"
 
     mf["extensions"] = extensions
     mf["extension_params"] = []
