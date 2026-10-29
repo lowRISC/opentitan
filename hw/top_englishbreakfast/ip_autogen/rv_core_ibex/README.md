@@ -30,6 +30,10 @@ The Ibex RISC-V Core Wrapper instantiates an [Ibex RV32 CPU Core](https://github
 All configuration parameters of Ibex are passed through, except for the CHERIoT ports and parameters (signals and parameters starting with `trvk_`, plus `BaseIsa`), which are not yet exposed.
 The pipelining of the bus adapters is configurable.
 
+## Supported Parameter Sets
+
+This instance is generated with the template parameters `num_regions=2`, `cheriot_available=false` and `racl_support=false`.
+
 ## Compatibility
 
 Ibex is a compliant RV32 RISC-V CPU core, as [documented in the Ibex documentation](https://ibex-core.readthedocs.io/en/latest/01_overview/compliance.html).

@@ -37,6 +37,18 @@ All configuration parameters of Ibex are passed through, except for the CHERIoT 
 % endif
 The pipelining of the bus adapters is configurable.
 
+<%text>## Supported Parameter Sets</%text>
+
+% if topname == 'earlgrey':
+The configuration signed off in Earl Grey uses the template parameters `num_regions=${num_regions}`, `cheriot_available=${str(cheriot_available).lower()}` and `racl_support=${str(racl_support).lower()}`.
+Ibex uses the `opentitan` [supported parameter set](https://ibex-core.readthedocs.io/en/latest/02_user/configuration.html#supported-parameter-sets) with `MHPMCounterNum=2`.
+% else:
+This instance is generated with the template parameters `num_regions=${num_regions}`, `cheriot_available=${str(cheriot_available).lower()}` and `racl_support=${str(racl_support).lower()}`.
+% if topname == 'darjeeling':
+Ibex uses the `opentitan` [supported parameter set](https://ibex-core.readthedocs.io/en/latest/02_user/configuration.html#supported-parameter-sets) with `MHPMCounterNum=10` and without CHERIoT.
+% endif
+% endif
+
 <%text>## Compatibility</%text>
 
 Ibex is a compliant RV32 RISC-V CPU core, as [documented in the Ibex documentation](https://ibex-core.readthedocs.io/en/latest/01_overview/compliance.html).

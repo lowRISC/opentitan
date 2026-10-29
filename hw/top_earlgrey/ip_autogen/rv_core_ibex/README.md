@@ -35,6 +35,11 @@ All configuration parameters of Ibex are passed through, except for the TRVK por
 `BaseIsa` is not exposed: it is fixed to the CHERIoT-capable base ISA, and the wrapper holds the [execution mode switch](doc/theory_of_operation.md#execution-mode-switch) that selects between ePMP and CHERIoT mode at runtime.
 The pipelining of the bus adapters is configurable.
 
+## Supported Parameter Sets
+
+The configuration signed off in Earl Grey uses the template parameters `num_regions=2`, `cheriot_available=true` and `racl_support=false`.
+Ibex uses the `opentitan` [supported parameter set](https://ibex-core.readthedocs.io/en/latest/02_user/configuration.html#supported-parameter-sets) with `MHPMCounterNum=2`.
+
 ## Compatibility
 
 Ibex is a compliant RV32 RISC-V CPU core, as [documented in the Ibex documentation](https://ibex-core.readthedocs.io/en/latest/01_overview/compliance.html).
