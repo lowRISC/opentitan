@@ -202,24 +202,28 @@ static status_t aes_gcm_gctr(const aes_key_t key, aes_block_t *iv,
     aes_block_t block_out;
     HARDENED_TRY(
         gctr_process_block(key, iv, partial, security_level, &block_out));
-    randomized_bytecopy(output, block_out.data, kAesBlockNumBytes);
-    output += kAesBlockNumBytes;
     *output_len = kAesBlockNumBytes;
 
-    // Process any remaining full blocks of input.
-    while (input_len >= kAesBlockNumBytes) {
+    // Process any remaining full blocks of input. Read the next input block
+    // into `partial` before writing `block_out` to `output` so that in-place
+    // operation (`output == input`) with `partial_len > 0` does not overwrite
+    // unread input bytes.
+    while (launder32(input_len) >= kAesBlockNumBytes) {
       randomized_bytecopy(partial->data, input, kAesBlockNumBytes);
-      HARDENED_TRY(
-          gctr_process_block(key, iv, partial, security_level, &block_out));
-      randomized_bytecopy(output, block_out.data, kAesBlockNumBytes);
-      output += kAesBlockNumBytes;
-      *output_len += kAesBlockNumBytes;
       input += kAesBlockNumBytes;
       input_len -= kAesBlockNumBytes;
+      randomized_bytecopy(output, block_out.data, kAesBlockNumBytes);
+      output += kAesBlockNumBytes;
+      HARDENED_TRY(
+          gctr_process_block(key, iv, partial, security_level, &block_out));
+      *output_len += kAesBlockNumBytes;
     }
+    HARDENED_CHECK_LT(input_len, kAesBlockNumBytes);
 
-    // Copy any remaining input into the partial block.
+    // Copy any remaining input into the partial block before writing the final
+    // full output block.
     randomized_bytecopy(partial->data, input, input_len);
+    randomized_bytecopy(output, block_out.data, kAesBlockNumBytes);
   }
 
   return OTCRYPTO_OK;

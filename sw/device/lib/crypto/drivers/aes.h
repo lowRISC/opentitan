@@ -141,7 +141,7 @@ status_t aes_decrypt_begin(const aes_key_t key, const aes_block_t *iv);
  * 1. The contents of `src` are fed into the hardware (unless it is null, in
  *    which case this step is skipped).
  * 2. The contents of `dest` are filled with the hardware's output (again,
- *    unless it is null). `dest` may overlap with `src`.
+ *    unless it is null).
  *
  * Operation of the driver will look something like this:
  * ```
