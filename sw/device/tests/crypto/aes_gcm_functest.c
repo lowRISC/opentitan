@@ -540,13 +540,20 @@ static status_t run_in_place_test(void) {
   TRY_CHECK(success == kHardenedBoolTrue);
   TRY_CHECK_ARRAYS_EQ(buf, kPlaintext, sizeof(kPlaintext));
 
-  // 2. Streaming in-place encrypt and decrypt on full + partial blocks (25
-  // bytes = 1 full block + 9-byte partial block).
-  enum { kPartialTestLen = 25 };
-  memcpy(buf, kPlaintext, kPartialTestLen);
-  otcrypto_const_byte_buf_t stream_in =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, buf, kPartialTestLen);
-  otcrypto_byte_buf_t stream_out =
+  // 2. Streaming in-place encrypt and decrypt across two unaligned chunks
+  // (10 bytes + 15 bytes = 25 bytes = 1 full block + 9-byte partial block).
+  enum {
+    kChunk1Len = 10,
+    kChunk2Len = 15,
+    kPartialTestLen = kChunk1Len + kChunk2Len,
+  };
+  otcrypto_const_byte_buf_t chunk1_in =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, buf, kChunk1Len);
+  otcrypto_byte_buf_t chunk1_out =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, buf, kChunk1Len);
+  otcrypto_const_byte_buf_t chunk2_in =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, buf, kChunk2Len);
+  otcrypto_byte_buf_t chunk2_out =
       OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, buf, kPartialTestLen);
 
   otcrypto_aes_gcm_context_t ctx;
@@ -554,8 +561,17 @@ static status_t run_in_place_test(void) {
   size_t final_written = 0;
   TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
   TRY(otcrypto_aes_gcm_update_aad(&ctx, &aad));
-  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &stream_in, &stream_out,
+
+  memcpy(buf, kPlaintext, kChunk1Len);
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &chunk1_in, &chunk1_out,
                                              &bytes_written));
+  TRY_CHECK(bytes_written == 0);
+
+  memcpy(buf, kPlaintext + kChunk1Len, kChunk2Len);
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &chunk2_in, &chunk2_out,
+                                             &bytes_written));
+  TRY_CHECK(bytes_written == kAesBlockNumBytes);
+
   otcrypto_byte_buf_t stream_out_final =
       OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, buf + bytes_written,
                         kPartialTestLen - bytes_written);
@@ -565,14 +581,19 @@ static status_t run_in_place_test(void) {
   TRY_CHECK_ARRAYS_EQ(buf, kCiphertext256, kPartialTestLen);
 
   success = kHardenedBoolFalse;
-  bytes_written = 0;
-  final_written = 0;
   TRY(otcrypto_aes_gcm_decrypt_init(&key, &iv, &ctx));
   TRY(otcrypto_aes_gcm_update_aad(&ctx, &aad));
-  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &stream_in, &stream_out,
+
+  memcpy(buf, kCiphertext256, kChunk1Len);
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &chunk1_in, &chunk1_out,
                                              &bytes_written));
-  stream_out_final = OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, buf + bytes_written,
-                                       kPartialTestLen - bytes_written);
+  TRY_CHECK(bytes_written == 0);
+
+  memcpy(buf, kCiphertext256 + kChunk1Len, kChunk2Len);
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &chunk2_in, &chunk2_out,
+                                             &bytes_written));
+  TRY_CHECK(bytes_written == kAesBlockNumBytes);
+
   TRY(otcrypto_aes_gcm_decrypt_final(&ctx, &tag_const, kOtcryptoAesGcmTagLen128,
                                      &stream_out_final, &final_written,
                                      &success));

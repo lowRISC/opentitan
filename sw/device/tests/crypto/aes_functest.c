@@ -77,8 +77,10 @@ static otcrypto_key_config_t make_key_config(
  *
  * @param test Test vector to run.
  * @param streaming Whether to run in streaming mode.
+ * @param in_place Whether to use the same buffer for input and output.
  */
-static status_t run_encrypt(const aes_test_t *test, bool streaming) {
+static status_t run_encrypt(const aes_test_t *test, bool streaming,
+                            bool in_place) {
   // Determine the key configuration.
   otcrypto_key_config_t config =
       make_key_config(test, kOtcryptoKeySecurityLevelLow);
@@ -108,12 +110,17 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
 
   // Create buffer for ciphertext.
   uint32_t ciphertext_data[padded_len_bytes / sizeof(uint32_t)];
+  if (in_place) {
+    memcpy(ciphertext_data, test->plaintext, test->plaintext_len);
+  }
 
   // If in streaming mode, encrypt one block at a time with null padding until
   // there is at most 1 block of input remaining.
   size_t plaintext_len = test->plaintext_len;
   size_t ciphertext_len = sizeof(ciphertext_data);
-  const unsigned char *plaintext = (const unsigned char *)test->plaintext;
+  const unsigned char *plaintext = in_place
+                                       ? (const unsigned char *)ciphertext_data
+                                       : (const unsigned char *)test->plaintext;
   unsigned char *ciphertext = (unsigned char *)ciphertext_data;
   if (streaming) {
     while (plaintext_len > kAesBlockBytes) {
@@ -152,9 +159,11 @@ static status_t run_encrypt(const aes_test_t *test, bool streaming) {
  *
  * @param test Test vector to run.
  * @param streaming Whether to run in streaming mode.
+ * @param in_place Whether to use the same buffer for input and output.
  * @param security_level Security level of the key.
  */
 static status_t run_decrypt(const aes_test_t *test, bool streaming,
+                            bool in_place,
                             otcrypto_key_security_level_t security_level) {
   // Determine the key configuration.
   otcrypto_key_config_t config = make_key_config(test, security_level);
@@ -187,6 +196,10 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming,
   size_t padded_len_words = padded_len_bytes / sizeof(uint32_t);
   uint32_t recovered_plaintext_data[padded_len_words];
   memset(recovered_plaintext_data, 0, sizeof(recovered_plaintext_data));
+  if (in_place) {
+    memcpy(recovered_plaintext_data, test->exp_ciphertext,
+           sizeof(recovered_plaintext_data));
+  }
   otcrypto_byte_buf_t recovered_plaintext_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t,
                         (uint8_t *)recovered_plaintext_data, padded_len_bytes);
@@ -194,7 +207,9 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming,
   // If in streaming mode, decrypt one block at a time with null padding until
   // there is only 1 block of input remaining.
   size_t len = sizeof(recovered_plaintext_data);
-  const unsigned char *ciphertext = (const unsigned char *)test->exp_ciphertext;
+  const unsigned char *ciphertext =
+      in_place ? (const unsigned char *)recovered_plaintext_data
+               : (const unsigned char *)test->exp_ciphertext;
   unsigned char *recovered_plaintext =
       (unsigned char *)recovered_plaintext_data;
   if (streaming) {
@@ -241,14 +256,14 @@ static status_t run_decrypt(const aes_test_t *test, bool streaming,
  * Test one-shot AES encryption.
  */
 static status_t encrypt_test(void) {
-  return run_encrypt(current_test, /*streaming=*/false);
+  return run_encrypt(current_test, /*streaming=*/false, /*in_place=*/false);
 }
 
 /**
  * Test one-shot AES decryption.
  */
 static status_t decrypt_test(void) {
-  return run_decrypt(current_test, /*streaming=*/false,
+  return run_decrypt(current_test, /*streaming=*/false, /*in_place=*/false,
                      kOtcryptoKeySecurityLevelLow);
 }
 
@@ -259,7 +274,7 @@ static status_t decrypt_test(void) {
  * as a fault injection check.
  */
 static status_t decrypt_high_test(void) {
-  return run_decrypt(current_test, /*streaming=*/false,
+  return run_decrypt(current_test, /*streaming=*/false, /*in_place=*/false,
                      kOtcryptoKeySecurityLevelHigh);
 }
 
@@ -267,17 +282,26 @@ static status_t decrypt_high_test(void) {
  * Test streaming AES encryption.
  */
 static status_t encrypt_streaming_test(void) {
-  return run_encrypt(current_test, /*streaming=*/true);
+  return run_encrypt(current_test, /*streaming=*/true, /*in_place=*/false);
 }
 
 /**
  * Test streaming AES decryption.
  */
 static status_t decrypt_streaming_test(void) {
-  return run_decrypt(current_test, /*streaming=*/true,
+  return run_decrypt(current_test, /*streaming=*/true, /*in_place=*/false,
                      kOtcryptoKeySecurityLevelLow);
 }
 
+/**
+ * Test in-place AES encryption and decryption (`cipher_output ==
+ * cipher_input`).
+ */
+static status_t in_place_test(void) {
+  TRY(run_encrypt(current_test, /*streaming=*/false, /*in_place=*/true));
+  return run_decrypt(current_test, /*streaming=*/false, /*in_place=*/true,
+                     kOtcryptoKeySecurityLevelHigh);
+}
 /**
  * Negative tests.
  */
@@ -421,6 +445,7 @@ bool test_main(void) {
     EXECUTE_TEST(result, encrypt_streaming_test);
     EXECUTE_TEST(result, decrypt_streaming_test);
     EXECUTE_TEST(result, decrypt_high_test);
+    EXECUTE_TEST(result, in_place_test);
     LOG_INFO("Finished AES test %d.", i + 1);
   }
 
