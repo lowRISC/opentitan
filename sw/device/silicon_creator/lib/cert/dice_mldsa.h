@@ -42,6 +42,17 @@ rom_error_t dice_attest_next_cdi(const attest_params_t *params,
                                  uint32_t max_key_version, const uint8_t *exts,
                                  size_t exts_size);
 
+/**
+ * Attests the next-stage CDI certificates (exported from imm_section).
+ *
+ * Refer to `dice_attest_next_cdi()` for details and parameter descriptions.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t imm_shared_dice_attest_next_cdi(
+    const attest_params_t *params,
+    const keymgr_binding_value_t *sealing_binding, uint32_t max_key_version,
+    const uint8_t *exts, size_t exts_size);
+
 // `key_ids->endorsement` must already be populated
 OT_WARN_UNUSED_RESULT
 rom_error_t dice_uds_mldsa_tbs_cert_generate_and_build(

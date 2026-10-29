@@ -759,7 +759,7 @@ rom_error_t dice_attest_cdi_1(const manifest_t *owner_manifest,
   HARDENED_RETURN_IF_ERROR(
       cdi_1_exts_build_private_exts(&cdi1_exts_values, exts_buf, &exts_size));
 
-  HARDENED_RETURN_IF_ERROR(dice_attest_next_cdi(
+  HARDENED_RETURN_IF_ERROR(imm_shared_dice_attest_next_cdi(
       &kCdi1AttestParams, sealing_binding, owner_manifest->max_key_version,
       exts_buf, exts_size));
 
