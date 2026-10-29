@@ -63,6 +63,16 @@ VARIANTS = {
         "local_defines": ["POST_PROVISIONING_TESTS"],
         "tags": ["manual"],
     },
+    "print_mldsa87_certs": {
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa87",
+        "test_cmd": """
+            --bootstrap={firmware}
+            --timeout=60s
+            --test-mldsa
+            --assert-mldsa87
+        """,
+        "variation": "dice_mldsa",
+    },
     "print_mldsa_certs_overlapped": {
         "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a",
         "slot_spec": {

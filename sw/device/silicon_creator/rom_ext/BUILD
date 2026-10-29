@@ -325,6 +325,16 @@ manifest(d = {
     "security_version": ROM_EXT_VERSION.SECURITY,
 })
 
+manifest(d = {
+    "name": "manifest_mldsa87",
+    "identifier": hex(CONST.ROM_EXT),
+    "visibility": ["//visibility:public"],
+    "version_major": ROM_EXT_VERSION.MAJOR,
+    "version_minor": ROM_EXT_VERSION.MINOR,
+    "security_version": ROM_EXT_VERSION.SECURITY,
+    "dice_alg": hex(CONST.DICE.ALG_P256_MLDSA87),
+})
+
 [
     opentitan_binary(
         name = "rom_ext_{}_slot_{}".format(variation_name, slot),
