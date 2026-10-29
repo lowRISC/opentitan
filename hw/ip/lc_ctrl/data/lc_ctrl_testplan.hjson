@@ -238,6 +238,30 @@
       tests: []
     }
     {
+      name: lc_init_done
+      desc: '''
+            Check the lc_init_done_o output.
+
+            **Stimulus**:
+            - Request initialization with otp_lc_data_i.valid high, in random LC states including
+              SCRAP and invalid states.
+            - Request initialization with otp_lc_data_i.valid held low.
+            - Trigger escalation or an FSM error before initialization.
+            - After initialization, drop otp_lc_data_i.valid, trigger escalation, or move lc_ctrl
+              into a terminal state.
+
+            **Checks**:
+            - lc_init_done_o is Off until lc_ctrl initializes with otp_lc_data_i.valid high.
+            - lc_init_done_o stays Off until reset if lc_ctrl escalates or hits an error before
+              that.
+            - lc_init_done_o turns On together with the other broadcast outputs, for any LC state.
+            - Once On, lc_init_done_o stays On until the next reset, even if the LC state becomes
+              invalid.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
       name: stress_all
       desc: '''
             - Combine above sequences in one test to run sequentially, except csr sequence.
