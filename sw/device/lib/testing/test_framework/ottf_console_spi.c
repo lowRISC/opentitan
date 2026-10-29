@@ -214,6 +214,15 @@ static size_t spi_device_send_frame(ottf_console_t *console, const char *buf,
   // reads out the entire frame. Clear the TX-ready indicator pin before
   // continuing.
   if (console->data.spi.tx_ready_gpio != kOttfSpiNoTxGpio) {
+    // Wait for CSB to be deasserted (idle high) from any previous transaction
+    // before asserting TX-ready GPIO to avoid false-edge detection.
+    bool cs_idle = false;
+    do {
+      if (dif_spi_device_get_csb_status(spi_device, &cs_idle) != kDifOk) {
+        return 0;
+      }
+    } while (!cs_idle);
+
     OT_DISCARD(dif_gpio_write(&ottf_console_gpio,
                               console->data.spi.tx_ready_gpio, true));
     bool cs_state = true;
