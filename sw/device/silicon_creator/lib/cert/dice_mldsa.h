@@ -12,6 +12,7 @@
 #include "sw/device/silicon_creator/lib/cert/cert.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
+#include "sw/device/silicon_creator/lib/keymgr_binding_value.h"
 #include "sw/device/silicon_creator/lib/sigverify/mldsa_key.h"
 
 enum {
@@ -19,6 +20,27 @@ enum {
   kDiceMldsaRomExtAttestationScratchBufferSize = 32 * 1024,
   kDiceMldsaPersoScratchBufferSize = 24 * 1024,
 };
+
+typedef struct attest_params attest_params_t;
+
+/**
+ * Attests the next-stage CDI certificates.
+ *
+ * Switches to `params->scratch_buf` as the stack before calling
+ * `dice_attest_next_cdi_impl`, and shreds the stack buffer before returning.
+ *
+ * @param params Parameters for the attestation.
+ * @param sealing_binding Keymgr sealing binding value.
+ * @param max_key_version Maximum key version allowed for key derivation.
+ * @param exts Pointer to the private extensions DER buffer.
+ * @param exts_size Size of the private extensions DER buffer.
+ * @return The result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t dice_attest_next_cdi(const attest_params_t *params,
+                                 const keymgr_binding_value_t *sealing_binding,
+                                 uint32_t max_key_version, const uint8_t *exts,
+                                 size_t exts_size);
 
 // `key_ids->endorsement` must already be populated
 OT_WARN_UNUSED_RESULT
