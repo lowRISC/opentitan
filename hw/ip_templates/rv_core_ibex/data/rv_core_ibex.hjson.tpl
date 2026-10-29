@@ -730,11 +730,6 @@
   ],
 
   countermeasures: [
-% if cheriot_available:
-    { name: "CHERIOT_SWITCH.FSM.SPARSE",
-      desc: "The write-once ePMP/CHERIoT execution mode switch FSM is sparsely encoded."
-    }
-% endif
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
@@ -816,6 +811,9 @@
       '''
     }
 % if cheriot_available:
+    { name: "CHERIOT_SWITCH.FSM.SPARSE",
+      desc: "The write-once ePMP/CHERIoT execution mode switch FSM is sparsely encoded."
+    }
     { name: "CHERIOT_ENABLE.CTRL.MUBI"
       desc: '''
         The cheriot_enable input is MuBi and checked for a valid MuBi encoding in Ibex.

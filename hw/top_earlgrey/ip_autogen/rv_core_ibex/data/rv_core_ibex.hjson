@@ -693,9 +693,6 @@
   ],
 
   countermeasures: [
-    { name: "CHERIOT_SWITCH.FSM.SPARSE",
-      desc: "The write-once ePMP/CHERIoT execution mode switch FSM is sparsely encoded."
-    }
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
     }
@@ -775,6 +772,9 @@
       desc: '''
         Use MuBI signals for critical control signals such as `mcounteren_writable`.
       '''
+    }
+    { name: "CHERIOT_SWITCH.FSM.SPARSE",
+      desc: "The write-once ePMP/CHERIoT execution mode switch FSM is sparsely encoded."
     }
     { name: "CHERIOT_ENABLE.CTRL.MUBI"
       desc: '''
