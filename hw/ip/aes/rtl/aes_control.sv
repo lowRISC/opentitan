@@ -214,6 +214,7 @@ module aes_control
   logic          [Sp2VWidth-1:0] mr_prng_update;
   logic          [Sp2VWidth-1:0] mr_prng_reseed_req;
   logic          [Sp2VWidth-1:0] mr_start_we;
+  logic          [Sp2VWidth-1:0] mr_key_iv_data_in_clear;
   logic          [Sp2VWidth-1:0] mr_key_iv_data_in_clear_we;
   logic          [Sp2VWidth-1:0] mr_data_out_clear_we;
   logic          [Sp2VWidth-1:0] mr_prng_reseed;
@@ -361,6 +362,7 @@ module aes_control
         .prng_reseed_ack_i         ( prng_reseed_ack_i             ),
 
         .start_we_o                ( mr_start_we[i]                ), // OR-combine
+        .key_iv_data_in_clear_o    ( mr_key_iv_data_in_clear[i]    ), // OR-combine
         .key_iv_data_in_clear_we_o ( mr_key_iv_data_in_clear_we[i] ), // AND-combine
         .data_out_clear_we_o       ( mr_data_out_clear_we[i]       ), // AND-combine
         .prng_reseed_o             ( mr_prng_reseed[i]             ), // OR-combine
@@ -466,6 +468,7 @@ module aes_control
         .prng_reseed_ack_i         ( prng_reseed_ack_i             ),
 
         .start_we_o                ( mr_start_we[i]                ), // OR-combine
+        .key_iv_data_in_clear_o    ( mr_key_iv_data_in_clear[i]    ), // OR-combine
         .key_iv_data_in_clear_we_o ( mr_key_iv_data_in_clear_we[i] ), // AND-combine
         .data_out_clear_we_o       ( mr_data_out_clear_we[i]       ), // AND-combine
         .prng_reseed_o             ( mr_prng_reseed[i]             ), // OR-combine
@@ -508,6 +511,7 @@ module aes_control
   assign prng_update_o             = |mr_prng_update;
   assign prng_reseed_req_o         = |mr_prng_reseed_req;
   assign start_we_o                = |mr_start_we;
+  assign key_iv_data_in_clear_o    = |mr_key_iv_data_in_clear;
   assign prng_reseed_o             = |mr_prng_reseed;
   assign prng_reseed_we_o          = |mr_prng_reseed_we;
 
@@ -643,7 +647,6 @@ module aes_control
   //////////////////////
   // Most triggers are only ever cleared by control.
   assign start_o                   = 1'b0;
-  assign key_iv_data_in_clear_o    = 1'b0;
   assign data_out_clear_o          = 1'b0;
 
 endmodule

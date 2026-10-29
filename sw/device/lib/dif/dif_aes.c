@@ -241,6 +241,10 @@ dif_result_t dif_aes_start(const dif_aes_t *aes,
     return result;
   }
 
+  // Wait for the IDLE bit in STATUS to become 1, i.e. wait for the AES
+  // unit handle any triggers resulting from writing the main control register.
+  AES_WAIT_FOR_STATUS(aes, AES_STATUS_IDLE_BIT, true);
+
   if (transaction->mode == kDifAesModeGcm) {
     // Put AES-GCM into init mode.
     DIF_RETURN_IF_ERROR(dif_aes_set_gcm_phase(

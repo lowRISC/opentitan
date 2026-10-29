@@ -401,6 +401,12 @@ class aes_base_vseq extends cip_base_vseq #(
     end
   endtask // read_data
 
+  virtual task wait_for_idle_if_sideload_en_and_update(ref bit sideload_en);
+    if (sideload_en) begin
+      csr_spinwait(.ptr(ral.status.idle), .exp_data(1'b1));
+      csr_rd(.ptr(ral.ctrl_shadowed.sideload), .value(sideload_en), .backdoor(1));
+    end
+  endtask
 
   ///////////////////////////////////////
   // ADVANCED TASKS                    //
@@ -415,6 +421,8 @@ class aes_base_vseq extends cip_base_vseq #(
     bit control_update_error = 0;
     // Index of the field which shall trigger the control update error.
     int idx_error_field = 0;
+    // Whether sideload is enabled (1) or not (0).
+    bit sideload_en = 0;
     `DV_CHECK_STD_RANDOMIZE_FATAL(setup_mode)
     if ($urandom_range(1, 100) > 95) control_update_error = 1;
     idx_error_field = $urandom_range(0, 5);
@@ -425,12 +433,22 @@ class aes_base_vseq extends cip_base_vseq #(
     // further updates to the control register until AES becomes idle again. For simplicity, we
     // just disable sideload here and then update the sideload bit last.
     ral.ctrl_shadowed.sideload.set(0);
+    // Similarly, if sideload is already enabled, any successful update to the shadow control
+    // register will trigger the clearing of key, IV and data input registers. In this case, we
+    // have to wait for AES to finish the clearing and become idle again. The first CSR write below
+    // will actually disable it, so we just have to wait for that to happen.
+    csr_rd(.ptr(ral.ctrl_shadowed.sideload), .value(sideload_en), .backdoor(1));
     if (!setup_mode) begin
       set_operation(item.operation);
+      wait_for_idle_if_sideload_en_and_update(sideload_en);
       set_mode(item.aes_mode);
+      wait_for_idle_if_sideload_en_and_update(sideload_en);
       set_key_len(item.key_len);
+      wait_for_idle_if_sideload_en_and_update(sideload_en);
       set_manual_operation(item.manual_op);
+      wait_for_idle_if_sideload_en_and_update(sideload_en);
       set_prng_reseed_rate(prs_rate_e'(item.reseed_rate));
+      wait_for_idle_if_sideload_en_and_update(sideload_en);
       set_sideload(item.sideload_en);
       if (cfg.under_reset) return;
     end else begin
