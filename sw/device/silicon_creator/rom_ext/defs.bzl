@@ -84,6 +84,12 @@ TEST_OWNER_CONFIGS = {
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
         "owner_defines": [],
     },
+    "dice_mldsa87": {
+        "dice_variation": "dice_mldsa",
+        "manifest": ":manifest_mldsa87",
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+        "owner_defines": [],
+    },
     "boot_svc_after_wakeup": {
         "owner_defines": ["TEST_OWNER_BOOT_SVC_AFTER_WAKEUP=kHardenedBoolTrue"],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
