@@ -297,7 +297,6 @@ The OpenTitan Earl Grey 2 architecture supports the following key features:
 - Target frequency for main/fast clock domain: ~150 MHz
 - I/O clock domains frequency:
   - IO: 96 MHz
-  - IO_DIV2: 48 MHz
   - IO_DIV4: 24 MHz
   - USB: 48 MHz
 - Always-on clock domain frequency: 200 kHz

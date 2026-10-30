@@ -34,9 +34,6 @@ set clks_aon_unbuf [get_clocks -of_objects [get_pin ${clkgen}/CLKOUT4]]
 ## This is not really recommended per Vivado's guidelines, but hopefully these clocks are slow enough and their
 ## destination flops few enough.
 
-set u_div2 ${u_clkmgr}/u_no_scan_io_div2_div
-create_generated_clock -name clk_io_div2 -divide_by 2 -source ${clk_io_pin} [get_pin ${u_div2}/gen_div2.u_div2/q_o[0]]
-
 # TODO: Use pin names explicitly exist from the source instead of the ones
 # after synthesis.
 set u_div4 ${u_clkmgr}/u_no_scan_io_div4_div
@@ -51,17 +48,6 @@ set_clock_sense -positive \
   [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
     [get_nets -segments -of_objects \
       [get_pins ${ast_src_io}/u_clk_div_buf/gen_fpga_buf.gen_bufg.bufg_i/I] \
-    ] \
-  ]
-
-# the step-down mux is implemented with a LUT right now and the mux switches on the falling edge.
-# therefore, Vivado propagates both clock edges down the clock network.
-# this implementation is not ideal - but we can at least tell Vivado to only honour the rising edge for
-# timing analysis.
-set_clock_sense -positive \
-  [get_pins -filter {DIRECTION == OUT && IS_LEAF} -of_objects \
-    [get_nets -segments -of_objects \
-      [get_pins ${u_clkmgr}/u_no_scan_io_div2_div/u_clk_div_buf/gen_fpga_buf.gen_bufg.bufg_i/I] \
     ] \
   ]
 
@@ -274,7 +260,6 @@ set_clock_groups -asynchronous \
     -group clk_usb_48 \
     -group clk_aon \
     -group {clk_io clk_spi_host0} \
-    -group clk_io_div2 \
     -group clk_io_div4 \
     -group [get_clocks -include_generated_clocks jtag_tck] \
     -group {clk_spi clk_spi_in clk_spi_out clk_spi_pt clk_spid_csb clk_spi_tpm clk_spi_tpm_in clk_spi_tpm_out} \

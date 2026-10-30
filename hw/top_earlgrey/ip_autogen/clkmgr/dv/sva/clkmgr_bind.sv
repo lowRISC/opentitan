@@ -43,15 +43,6 @@ module clkmgr_bind;
     .gated_clk(clocks_o.clk_io_div4_peri)
   );
 
-  bind clkmgr clkmgr_gated_clock_sva_if clkmgr_io_div2_peri_sva_if (
-    .clk(clocks_o.clk_io_div2_powerup),
-    .rst_n(rst_io_div2_ni),
-    .ip_clk_en(pwr_i.io_ip_clk_en),
-    .sw_clk_en(clk_io_div2_peri_sw_en),
-    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True),
-    .gated_clk(clocks_o.clk_io_div2_peri)
-  );
-
   bind clkmgr clkmgr_gated_clock_sva_if clkmgr_io_peri_sva_if (
     .clk(clocks_o.clk_io_powerup),
     .rst_n(rst_io_ni),
@@ -133,16 +124,6 @@ module clkmgr_bind;
   );
 
   bind clkmgr clkmgr_div_sva_if #(
-    .DIV(2)
-  ) clkmgr_div2_sva_if (
-    .clk(clocks_o.clk_io_powerup),
-    .rst_n(rst_ni),
-    .maybe_divided_clk(clocks_o.clk_io_div2_powerup),
-    .div_step_down_req_i(div_step_down_req_i == prim_mubi_pkg::MuBi4True),
-    .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True)
-  );
-
-  bind clkmgr clkmgr_div_sva_if #(
     .DIV(4)
   ) clkmgr_div4_sva_if (
     .clk(clocks_o.clk_io_powerup),
@@ -167,10 +148,6 @@ module clkmgr_bind;
 
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_aon_timers (
     .cg_en(cg_en_o.aon_timers == prim_mubi_pkg::MuBi4True)
-  );
-
-  bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_io_div2_powerup (
-    .cg_en(cg_en_o.io_div2_powerup == prim_mubi_pkg::MuBi4True)
   );
 
   bind clkmgr clkmgr_aon_cg_en_sva_if clkmgr_aon_cg_io_div4_powerup (
@@ -261,15 +238,6 @@ module clkmgr_bind;
     .sw_clk_en(clk_io_div4_peri_sw_en),
     .scanmode(prim_mubi_pkg::MuBi4False),
     .cg_en(cg_en_o.io_div4_peri == prim_mubi_pkg::MuBi4True)
-  );
-
-  bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_div2_peri (
-    .clk(clk_io_div2),
-    .rst_n(rst_io_div2_ni),
-    .ip_clk_en(clk_io_div2_en),
-    .sw_clk_en(clk_io_div2_peri_sw_en),
-    .scanmode(prim_mubi_pkg::MuBi4False),
-    .cg_en(cg_en_o.io_div2_peri == prim_mubi_pkg::MuBi4True)
   );
 
   bind clkmgr clkmgr_cg_en_sva_if clkmgr_cg_io_peri (
@@ -373,7 +341,7 @@ module clkmgr_bind;
   );
 
   bind clkmgr clkmgr_sec_cm_checker_assert #(
-    .NumDivClks(2)
+    .NumDivClks(1)
   ) clkmgr_sec_cm_checker_assert (
     .clk_i,
     .rst_ni,

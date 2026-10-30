@@ -31,10 +31,9 @@ static_assert(kDtPwrmgrCount == 1, "this test expects a pwrmgr");
 /**
  * The peripherals used to test when the peri clocks are disabled are
  * bit 0: clk_io_div4_peri: uart0
- * bit 1: clk_io_div2_peri: none (only clocks spi_device's scan clock)
- * bit 2: clk_io_peri: spi_host0
- * bit 3: clk_usb_peri: usbdev
- * bit 4: clk_io_spi_host1: spi_host1
+ * bit 1: clk_io_peri: spi_host0
+ * bit 2: clk_usb_peri: usbdev
+ * bit 3: clk_io_spi_host1: spi_host1
  *
  * Clocks without a peripheral are skipped, since no CSR access can show that
  * they are disabled.
@@ -84,7 +83,6 @@ peri_context_t peri_context[kTopEarlgreyGateableClocksLast + 1] = {
     [kTopEarlgreyGateableClocksIoDiv4Peri] = {"uart0", uart0_csr_access,
                                               TOP_EARLGREY_UART0_BASE_ADDR +
                                                   UART_INTR_STATE_REG_OFFSET},
-    [kTopEarlgreyGateableClocksIoDiv2Peri] = {"none", NULL, 0},
     [kTopEarlgreyGateableClocksIoPeri] = {"spi_host0", spi_host0_csr_access,
                                           TOP_EARLGREY_SPI_HOST0_BASE_ADDR +
                                               SPI_HOST_INTR_STATE_REG_OFFSET},

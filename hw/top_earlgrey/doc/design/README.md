@@ -39,7 +39,7 @@ Clocks and resets are supplied from the Analog Sensor Top, referred to as [ast](
 These clocks are then divided down and distributed to the rest of the system.
 See [clock manager](../../ip_autogen/clkmgr/README.md) for more details.
 
-In the low-speed external clock mode and during the life cycle clock bypass, the `io` clock drops to 48 MHz, while the clock manager steps down its dividers so that `io_div2` and `io_div4` keep their nominal frequencies (see [clock manager](../../ip_autogen/clkmgr/doc/theory_of_operation.md#clock-frequency-summary)).
+In the low-speed external clock mode and during the life cycle clock bypass, the `io` clock drops to 48 MHz, while the clock manager steps down its dividers so that `io_div4` keeps its nominal frequency (see [clock manager](../../ip_autogen/clkmgr/doc/theory_of_operation.md#clock-frequency-summary)).
 Peripherals on `io`, such as SPI_HOST0 and SPI_HOST1, therefore run at half their nominal frequency in these modes, and software must account for this when it configures their clock dividers.
 
 `ast` also supplies a number of power-okay signals to `top_earlgrey`, and these are used as asynchronous root resets.
@@ -368,7 +368,7 @@ Both peripherals have the same configuration:
 | Message buffer                 | 4 KiB                                                   |
 | Device Address Table           | 32 entries                                              |
 | Device Characteristics Table   | 32 entries                                              |
-| Other clocks                   | `clk_aon_i`: `aon` clock; `scan_clk_i`: `io_div2` clock |
+| Other clocks                   | `clk_aon_i`: `aon` clock; `scan_clk_i`: `io_div4` clock |
 
 Each I3C peripheral has its own reset, which software can assert through the [reset manager](../../ip_autogen/rstmgr/README.md).
 
