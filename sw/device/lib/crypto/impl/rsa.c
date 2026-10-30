@@ -550,8 +550,13 @@ otcrypto_status_t otcrypto_rsa_verify(
     otcrypto_rsa_padding_t padding_mode,
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
-  HARDENED_TRY(otcrypto_rsa_verify_async_start(public_key, signature));
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (public_key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
   HARDENED_TRY(key_mode_padding_check(public_key->key_mode, padding_mode));
+  HARDENED_TRY(otcrypto_rsa_verify_async_start(public_key, signature));
   return otcrypto_rsa_verify_async_finalize(message_digest, padding_mode,
                                             verification_result);
 }
@@ -1162,9 +1167,14 @@ otcrypto_status_t otcrypto_rsa_verify_exp(
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_VERIFY_EXP);
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (public_key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
   HARDENED_TRY(public_exponent_check(exponent));
-  HARDENED_TRY(rsa_verify_exp_async_start(public_key, exponent, signature));
   HARDENED_TRY(key_mode_padding_check(public_key->key_mode, padding_mode));
+  HARDENED_TRY(rsa_verify_exp_async_start(public_key, exponent, signature));
   return otcrypto_eval_exit(otcrypto_rsa_verify_async_finalize(
       message_digest, padding_mode, verification_result));
 }
