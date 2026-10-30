@@ -332,15 +332,15 @@ module earlgrey_pd_main #(
   input  logic [3:0] cio_spi_host0_sd_p2d_i,
   output logic       cio_spi_host0_sck_d2p_o,
   output logic       cio_spi_host0_sck_en_d2p_o,
-  output logic       cio_spi_host0_csb_d2p_o,
-  output logic       cio_spi_host0_csb_en_d2p_o,
+  output logic [2:0] cio_spi_host0_csb_d2p_o,
+  output logic [2:0] cio_spi_host0_csb_en_d2p_o,
   output logic [3:0] cio_spi_host1_sd_d2p_o,
   output logic [3:0] cio_spi_host1_sd_en_d2p_o,
   input  logic [3:0] cio_spi_host1_sd_p2d_i,
   output logic       cio_spi_host1_sck_d2p_o,
   output logic       cio_spi_host1_sck_en_d2p_o,
-  output logic       cio_spi_host1_csb_d2p_o,
-  output logic       cio_spi_host1_csb_en_d2p_o,
+  output logic [2:0] cio_spi_host1_csb_d2p_o,
+  output logic [2:0] cio_spi_host1_csb_en_d2p_o,
   output logic       cio_usbdev_usb_dp_d2p_o,
   output logic       cio_usbdev_usb_dp_en_d2p_o,
   input  logic       cio_usbdev_usb_dp_p2d_i,
@@ -390,9 +390,9 @@ module earlgrey_pd_main #(
   // local parameters for lc_ctrl
   localparam int LcCtrlNumRmaAckSigs = 2;
   // local parameters for spi_host0
-  localparam int SpiHost0NumCS = 1;
+  localparam int SpiHost0NumCS = 3;
   // local parameters for spi_host1
-  localparam int SpiHost1NumCS = 1;
+  localparam int SpiHost1NumCS = 3;
   // local parameters for ast
   localparam int unsigned AstEntropyStreams = 4;
   // local parameters for rram_macro

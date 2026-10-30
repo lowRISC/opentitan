@@ -3881,12 +3881,15 @@
           domain: Main
         }
       }
+      param_decl:
+      {
+        NumCS: "3"
+      }
       domain: Main
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_io_peri
       }
-      param_decl: {}
       memory: {}
       param_list:
       [
@@ -3894,7 +3897,7 @@
           name: NumCS
           desc: The number of active-low chip select (cs_n) lines to create.
           type: int
-          default: "1"
+          default: "3"
           local: "true"
           expose: "true"
           name_top: SpiHost0NumCS
@@ -3995,12 +3998,15 @@
           domain: Main
         }
       }
+      param_decl:
+      {
+        NumCS: "3"
+      }
       domain: Main
       clock_connections:
       {
         clk_i: clkmgr_clocks_i.clk_io_spi_host1
       }
-      param_decl: {}
       memory: {}
       param_list:
       [
@@ -4008,7 +4014,7 @@
           name: NumCS
           desc: The number of active-low chip select (cs_n) lines to create.
           type: int
-          default: "1"
+          default: "3"
           local: "true"
           expose: "true"
           name_top: SpiHost1NumCS
@@ -16502,7 +16508,7 @@
       }
       {
         instance: spi_host0
-        port: csb
+        port: csb[0]
         connection: direct
         pad: SPI_HOST_CS_L
         desc: ""
@@ -16679,6 +16685,22 @@
       {
         instance: spi_device
         port: tpm_csb
+        connection: muxed
+        pad: ""
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host0
+        port: csb[1]
+        connection: muxed
+        pad: ""
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host0
+        port: csb[2]
         connection: muxed
         pad: ""
         desc: ""
@@ -18185,9 +18207,9 @@
       }
       {
         name: spi_host0_csb
-        width: 1
+        width: 3
         type: output
-        idx: -1
+        idx: 0
         pad: SPI_HOST_CS_L
         attr: BidirStd
         connection: direct
@@ -18268,10 +18290,10 @@
         glob_idx: 83
       }
       {
-        name: spi_host1_sck
-        width: 1
+        name: spi_host0_csb
+        width: 3
         type: output
-        idx: -1
+        idx: 1
         pad: ""
         attr: ""
         connection: muxed
@@ -18280,10 +18302,10 @@
         glob_idx: 84
       }
       {
-        name: spi_host1_csb
-        width: 1
+        name: spi_host0_csb
+        width: 3
         type: output
-        idx: -1
+        idx: 2
         pad: ""
         attr: ""
         connection: muxed
@@ -18292,7 +18314,7 @@
         glob_idx: 85
       }
       {
-        name: rram_macro_tdo
+        name: spi_host1_sck
         width: 1
         type: output
         idx: -1
@@ -18304,58 +18326,58 @@
         glob_idx: 86
       }
       {
-        name: sensor_ctrl_ast_debug_out
-        width: 9
+        name: spi_host1_csb
+        width: 3
         type: output
         idx: 0
         pad: ""
         attr: ""
         connection: muxed
         desc: ""
-        domain: Aon
+        domain: Main
         glob_idx: 87
       }
       {
-        name: sensor_ctrl_ast_debug_out
-        width: 9
+        name: spi_host1_csb
+        width: 3
         type: output
         idx: 1
         pad: ""
         attr: ""
         connection: muxed
         desc: ""
-        domain: Aon
+        domain: Main
         glob_idx: 88
       }
       {
-        name: sensor_ctrl_ast_debug_out
-        width: 9
+        name: spi_host1_csb
+        width: 3
         type: output
         idx: 2
         pad: ""
         attr: ""
         connection: muxed
         desc: ""
-        domain: Aon
+        domain: Main
         glob_idx: 89
       }
       {
-        name: sensor_ctrl_ast_debug_out
-        width: 9
+        name: rram_macro_tdo
+        width: 1
         type: output
-        idx: 3
+        idx: -1
         pad: ""
         attr: ""
         connection: muxed
         desc: ""
-        domain: Aon
+        domain: Main
         glob_idx: 90
       }
       {
         name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
-        idx: 4
+        idx: 0
         pad: ""
         attr: ""
         connection: muxed
@@ -18367,7 +18389,7 @@
         name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
-        idx: 5
+        idx: 1
         pad: ""
         attr: ""
         connection: muxed
@@ -18379,7 +18401,7 @@
         name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
-        idx: 6
+        idx: 2
         pad: ""
         attr: ""
         connection: muxed
@@ -18391,7 +18413,7 @@
         name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
-        idx: 7
+        idx: 3
         pad: ""
         attr: ""
         connection: muxed
@@ -18403,13 +18425,61 @@
         name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
-        idx: 8
+        idx: 4
         pad: ""
         attr: ""
         connection: muxed
         desc: ""
         domain: Aon
         glob_idx: 95
+      }
+      {
+        name: sensor_ctrl_ast_debug_out
+        width: 9
+        type: output
+        idx: 5
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Aon
+        glob_idx: 96
+      }
+      {
+        name: sensor_ctrl_ast_debug_out
+        width: 9
+        type: output
+        idx: 6
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Aon
+        glob_idx: 97
+      }
+      {
+        name: sensor_ctrl_ast_debug_out
+        width: 9
+        type: output
+        idx: 7
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Aon
+        glob_idx: 98
+      }
+      {
+        name: sensor_ctrl_ast_debug_out
+        width: 9
+        type: output
+        idx: 8
+        pad: ""
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Aon
+        glob_idx: 99
       }
       {
         name: sysrst_ctrl_bat_disable
@@ -18421,7 +18491,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 96
+        glob_idx: 100
       }
       {
         name: sysrst_ctrl_key0_out
@@ -18433,7 +18503,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 97
+        glob_idx: 101
       }
       {
         name: sysrst_ctrl_key1_out
@@ -18445,7 +18515,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 98
+        glob_idx: 102
       }
       {
         name: sysrst_ctrl_key2_out
@@ -18457,7 +18527,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 99
+        glob_idx: 103
       }
       {
         name: sysrst_ctrl_pwrb_out
@@ -18469,7 +18539,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 100
+        glob_idx: 104
       }
       {
         name: sysrst_ctrl_z3_wakeup
@@ -18481,7 +18551,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 101
+        glob_idx: 105
       }
     ]
     io_counts:
@@ -18497,7 +18567,7 @@
       {
         inouts: 78
         inputs: 19
-        outputs: 24
+        outputs: 28
         pads: 47
       }
     }
@@ -23595,7 +23665,7 @@
         struct: logic
         domain: chip
         signame: cio_spi_host0_csb_d2p
-        width: 1
+        width: 3
         type: uni
         end_idx: -1
         act: ""
@@ -23607,7 +23677,7 @@
         struct: logic
         domain: chip
         signame: cio_spi_host0_csb_en_d2p
-        width: 1
+        width: 3
         type: uni
         end_idx: -1
         act: ""
@@ -23679,7 +23749,7 @@
         struct: logic
         domain: chip
         signame: cio_spi_host1_csb_d2p
-        width: 1
+        width: 3
         type: uni
         end_idx: -1
         act: ""
@@ -23691,7 +23761,7 @@
         struct: logic
         domain: chip
         signame: cio_spi_host1_csb_en_d2p
-        width: 1
+        width: 3
         type: uni
         end_idx: -1
         act: ""
@@ -39743,7 +39813,7 @@
           verilator: cio_spi_host0_csb_d2p
           cw340: cio_spi_host0_csb_d2p
         }
-        width: 1
+        width: 3
         type: uni
         default: "'0"
         direction: out
@@ -39763,7 +39833,7 @@
           verilator: cio_spi_host0_csb_d2p
           cw340: cio_spi_host0_csb_d2p
         }
-        width: 1
+        width: 3
         type: uni
         default: "'0"
         direction: in
@@ -39783,7 +39853,7 @@
           verilator: cio_spi_host0_csb_en_d2p
           cw340: cio_spi_host0_csb_en_d2p
         }
-        width: 1
+        width: 3
         type: uni
         default: "'0"
         direction: out
@@ -39803,7 +39873,7 @@
           verilator: cio_spi_host0_csb_en_d2p
           cw340: cio_spi_host0_csb_en_d2p
         }
-        width: 1
+        width: 3
         type: uni
         default: "'0"
         direction: in
@@ -40023,7 +40093,7 @@
           verilator: cio_spi_host1_csb_d2p
           cw340: cio_spi_host1_csb_d2p
         }
-        width: 1
+        width: 3
         type: uni
         default: "'0"
         direction: out
@@ -40043,7 +40113,7 @@
           verilator: cio_spi_host1_csb_d2p
           cw340: cio_spi_host1_csb_d2p
         }
-        width: 1
+        width: 3
         type: uni
         default: "'0"
         direction: in
@@ -40063,7 +40133,7 @@
           verilator: cio_spi_host1_csb_en_d2p
           cw340: cio_spi_host1_csb_en_d2p
         }
-        width: 1
+        width: 3
         type: uni
         default: "'0"
         direction: out
@@ -40083,7 +40153,7 @@
           verilator: cio_spi_host1_csb_en_d2p
           cw340: cio_spi_host1_csb_en_d2p
         }
-        width: 1
+        width: 3
         type: uni
         default: "'0"
         direction: in

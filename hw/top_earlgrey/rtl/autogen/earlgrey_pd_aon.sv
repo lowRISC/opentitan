@@ -190,15 +190,15 @@ module earlgrey_pd_aon #(
   output logic [3:0] cio_spi_host0_sd_p2d_o,
   input  logic       cio_spi_host0_sck_d2p_i,
   input  logic       cio_spi_host0_sck_en_d2p_i,
-  input  logic       cio_spi_host0_csb_d2p_i,
-  input  logic       cio_spi_host0_csb_en_d2p_i,
+  input  logic [2:0] cio_spi_host0_csb_d2p_i,
+  input  logic [2:0] cio_spi_host0_csb_en_d2p_i,
   input  logic [3:0] cio_spi_host1_sd_d2p_i,
   input  logic [3:0] cio_spi_host1_sd_en_d2p_i,
   output logic [3:0] cio_spi_host1_sd_p2d_o,
   input  logic       cio_spi_host1_sck_d2p_i,
   input  logic       cio_spi_host1_sck_en_d2p_i,
-  input  logic       cio_spi_host1_csb_d2p_i,
-  input  logic       cio_spi_host1_csb_en_d2p_i,
+  input  logic [2:0] cio_spi_host1_csb_d2p_i,
+  input  logic [2:0] cio_spi_host1_csb_en_d2p_i,
   input  logic       cio_usbdev_usb_dp_d2p_i,
   input  logic       cio_usbdev_usb_dp_en_d2p_i,
   output logic       cio_usbdev_usb_dp_p2d_o,
@@ -262,8 +262,8 @@ module earlgrey_pd_aon #(
 
   // Signals
   logic [96:0] mio_p2d;
-  logic [101:0] mio_d2p;
-  logic [101:0] mio_en_d2p;
+  logic [105:0] mio_d2p;
+  logic [105:0] mio_en_d2p;
   logic [15:0] dio_p2d;
   logic [15:0] dio_d2p;
   logic [15:0] dio_en_d2p;
@@ -1039,8 +1039,12 @@ module earlgrey_pd_aon #(
   assign mio_d2p[MioOutUart3Tx] = cio_uart3_tx_d2p_i;
   assign mio_d2p[MioOutI3c0CtrlSdaPu] = cio_i3c0_ctrl_sda_pu_d2p_i;
   assign mio_d2p[MioOutI3c1CtrlSdaPu] = cio_i3c1_ctrl_sda_pu_d2p_i;
+  assign mio_d2p[MioOutSpiHost0Csb1] = cio_spi_host0_csb_d2p_i[1];
+  assign mio_d2p[MioOutSpiHost0Csb2] = cio_spi_host0_csb_d2p_i[2];
   assign mio_d2p[MioOutSpiHost1Sck] = cio_spi_host1_sck_d2p_i;
-  assign mio_d2p[MioOutSpiHost1Csb] = cio_spi_host1_csb_d2p_i;
+  assign mio_d2p[MioOutSpiHost1Csb0] = cio_spi_host1_csb_d2p_i[0];
+  assign mio_d2p[MioOutSpiHost1Csb1] = cio_spi_host1_csb_d2p_i[1];
+  assign mio_d2p[MioOutSpiHost1Csb2] = cio_spi_host1_csb_d2p_i[2];
   assign mio_d2p[MioOutRramMacroTdo] = cio_rram_macro_tdo_d2p_i;
   assign mio_d2p[MioOutSensorCtrlAstDebugOut0] = cio_sensor_ctrl_ast_debug_out_d2p[0];
   assign mio_d2p[MioOutSensorCtrlAstDebugOut1] = cio_sensor_ctrl_ast_debug_out_d2p[1];
@@ -1143,8 +1147,12 @@ module earlgrey_pd_aon #(
   assign mio_en_d2p[MioOutUart3Tx] = cio_uart3_tx_en_d2p_i;
   assign mio_en_d2p[MioOutI3c0CtrlSdaPu] = cio_i3c0_ctrl_sda_pu_en_d2p_i;
   assign mio_en_d2p[MioOutI3c1CtrlSdaPu] = cio_i3c1_ctrl_sda_pu_en_d2p_i;
+  assign mio_en_d2p[MioOutSpiHost0Csb1] = cio_spi_host0_csb_en_d2p_i[1];
+  assign mio_en_d2p[MioOutSpiHost0Csb2] = cio_spi_host0_csb_en_d2p_i[2];
   assign mio_en_d2p[MioOutSpiHost1Sck] = cio_spi_host1_sck_en_d2p_i;
-  assign mio_en_d2p[MioOutSpiHost1Csb] = cio_spi_host1_csb_en_d2p_i;
+  assign mio_en_d2p[MioOutSpiHost1Csb0] = cio_spi_host1_csb_en_d2p_i[0];
+  assign mio_en_d2p[MioOutSpiHost1Csb1] = cio_spi_host1_csb_en_d2p_i[1];
+  assign mio_en_d2p[MioOutSpiHost1Csb2] = cio_spi_host1_csb_en_d2p_i[2];
   assign mio_en_d2p[MioOutRramMacroTdo] = cio_rram_macro_tdo_en_d2p_i;
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut0] = cio_sensor_ctrl_ast_debug_out_en_d2p[0];
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut1] = cio_sensor_ctrl_ast_debug_out_en_d2p[1];
@@ -1196,7 +1204,7 @@ module earlgrey_pd_aon #(
   assign dio_d2p[DioSpiDeviceSck] = 1'b0;
   assign dio_d2p[DioSpiDeviceCsb] = 1'b0;
   assign dio_d2p[DioSpiHost0Sck] = cio_spi_host0_sck_d2p_i;
-  assign dio_d2p[DioSpiHost0Csb] = cio_spi_host0_csb_d2p_i;
+  assign dio_d2p[DioSpiHost0Csb0] = cio_spi_host0_csb_d2p_i[0];
 
   // All dedicated output enables
   assign dio_en_d2p[DioUsbdevUsbDp] = cio_usbdev_usb_dp_en_d2p_i;
@@ -1214,7 +1222,7 @@ module earlgrey_pd_aon #(
   assign dio_en_d2p[DioSpiDeviceSck] = 1'b0;
   assign dio_en_d2p[DioSpiDeviceCsb] = 1'b0;
   assign dio_en_d2p[DioSpiHost0Sck] = cio_spi_host0_sck_en_d2p_i;
-  assign dio_en_d2p[DioSpiHost0Csb] = cio_spi_host0_csb_en_d2p_i;
+  assign dio_en_d2p[DioSpiHost0Csb0] = cio_spi_host0_csb_en_d2p_i[0];
 
   // Connect clkmgr to top-level signals for other power domains
   assign clkmgr_clocks_o = clkmgr_clocks;

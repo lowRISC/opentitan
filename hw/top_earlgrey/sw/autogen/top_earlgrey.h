@@ -1739,25 +1739,29 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselUart3Tx = 84, /**< Peripheral Output 81 */
   kTopEarlgreyPinmuxOutselI3c0CtrlSdaPu = 85, /**< Peripheral Output 82 */
   kTopEarlgreyPinmuxOutselI3c1CtrlSdaPu = 86, /**< Peripheral Output 83 */
-  kTopEarlgreyPinmuxOutselSpiHost1Sck = 87, /**< Peripheral Output 84 */
-  kTopEarlgreyPinmuxOutselSpiHost1Csb = 88, /**< Peripheral Output 85 */
-  kTopEarlgreyPinmuxOutselRramMacroTdo = 89, /**< Peripheral Output 86 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut0 = 90, /**< Peripheral Output 87 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut1 = 91, /**< Peripheral Output 88 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut2 = 92, /**< Peripheral Output 89 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut3 = 93, /**< Peripheral Output 90 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut4 = 94, /**< Peripheral Output 91 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut5 = 95, /**< Peripheral Output 92 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut6 = 96, /**< Peripheral Output 93 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut7 = 97, /**< Peripheral Output 94 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut8 = 98, /**< Peripheral Output 95 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlBatDisable = 99, /**< Peripheral Output 96 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlKey0Out = 100, /**< Peripheral Output 97 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlKey1Out = 101, /**< Peripheral Output 98 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlKey2Out = 102, /**< Peripheral Output 99 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlPwrbOut = 103, /**< Peripheral Output 100 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlZ3Wakeup = 104, /**< Peripheral Output 101 */
-  kTopEarlgreyPinmuxOutselLast = 104, /**< \internal Last valid outsel value */
+  kTopEarlgreyPinmuxOutselSpiHost0Csb1 = 87, /**< Peripheral Output 84 */
+  kTopEarlgreyPinmuxOutselSpiHost0Csb2 = 88, /**< Peripheral Output 85 */
+  kTopEarlgreyPinmuxOutselSpiHost1Sck = 89, /**< Peripheral Output 86 */
+  kTopEarlgreyPinmuxOutselSpiHost1Csb0 = 90, /**< Peripheral Output 87 */
+  kTopEarlgreyPinmuxOutselSpiHost1Csb1 = 91, /**< Peripheral Output 88 */
+  kTopEarlgreyPinmuxOutselSpiHost1Csb2 = 92, /**< Peripheral Output 89 */
+  kTopEarlgreyPinmuxOutselRramMacroTdo = 93, /**< Peripheral Output 90 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut0 = 94, /**< Peripheral Output 91 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut1 = 95, /**< Peripheral Output 92 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut2 = 96, /**< Peripheral Output 93 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut3 = 97, /**< Peripheral Output 94 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut4 = 98, /**< Peripheral Output 95 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut5 = 99, /**< Peripheral Output 96 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut6 = 100, /**< Peripheral Output 97 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut7 = 101, /**< Peripheral Output 98 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut8 = 102, /**< Peripheral Output 99 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlBatDisable = 103, /**< Peripheral Output 100 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlKey0Out = 104, /**< Peripheral Output 101 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlKey1Out = 105, /**< Peripheral Output 102 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlKey2Out = 106, /**< Peripheral Output 103 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlPwrbOut = 107, /**< Peripheral Output 104 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlZ3Wakeup = 108, /**< Peripheral Output 105 */
+  kTopEarlgreyPinmuxOutselLast = 108, /**< \internal Last valid outsel value */
 } top_earlgrey_pinmux_outsel_t;
 
 /**
@@ -1779,7 +1783,7 @@ typedef enum top_earlgrey_direct_pads {
   kTopEarlgreyDirectPadsSpiDeviceSck = 12, /**<  */
   kTopEarlgreyDirectPadsSpiDeviceCsb = 13, /**<  */
   kTopEarlgreyDirectPadsSpiHost0Sck = 14, /**<  */
-  kTopEarlgreyDirectPadsSpiHost0Csb = 15, /**<  */
+  kTopEarlgreyDirectPadsSpiHost0Csb0 = 15, /**<  */
   kTopEarlgreyDirectPadsLast = 15, /**< \internal Last valid direct pad */
 } top_earlgrey_direct_pads_t;
 

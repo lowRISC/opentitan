@@ -77,7 +77,7 @@ static const pinmux_select_t pinmux_out_config[] = {
     },
     {
         .pad = kTopEarlgreyPinmuxMioOutIob1,
-        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Csb,  // CSB
+        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Csb0,  // CSB
     },
     {
         .pad = kTopEarlgreyPinmuxMioOutIob3,

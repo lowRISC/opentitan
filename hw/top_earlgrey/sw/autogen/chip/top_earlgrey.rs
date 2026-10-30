@@ -3297,41 +3297,49 @@ pub enum PinmuxOutsel {
     /// Peripheral Output 83
     I3c1CtrlSdaPu = 86,
     /// Peripheral Output 84
-    SpiHost1Sck = 87,
+    SpiHost0Csb1 = 87,
     /// Peripheral Output 85
-    SpiHost1Csb = 88,
+    SpiHost0Csb2 = 88,
     /// Peripheral Output 86
-    RramMacroTdo = 89,
+    SpiHost1Sck = 89,
     /// Peripheral Output 87
-    SensorCtrlAstDebugOut0 = 90,
+    SpiHost1Csb0 = 90,
     /// Peripheral Output 88
-    SensorCtrlAstDebugOut1 = 91,
+    SpiHost1Csb1 = 91,
     /// Peripheral Output 89
-    SensorCtrlAstDebugOut2 = 92,
+    SpiHost1Csb2 = 92,
     /// Peripheral Output 90
-    SensorCtrlAstDebugOut3 = 93,
+    RramMacroTdo = 93,
     /// Peripheral Output 91
-    SensorCtrlAstDebugOut4 = 94,
+    SensorCtrlAstDebugOut0 = 94,
     /// Peripheral Output 92
-    SensorCtrlAstDebugOut5 = 95,
+    SensorCtrlAstDebugOut1 = 95,
     /// Peripheral Output 93
-    SensorCtrlAstDebugOut6 = 96,
+    SensorCtrlAstDebugOut2 = 96,
     /// Peripheral Output 94
-    SensorCtrlAstDebugOut7 = 97,
+    SensorCtrlAstDebugOut3 = 97,
     /// Peripheral Output 95
-    SensorCtrlAstDebugOut8 = 98,
+    SensorCtrlAstDebugOut4 = 98,
     /// Peripheral Output 96
-    SysrstCtrlBatDisable = 99,
+    SensorCtrlAstDebugOut5 = 99,
     /// Peripheral Output 97
-    SysrstCtrlKey0Out = 100,
+    SensorCtrlAstDebugOut6 = 100,
     /// Peripheral Output 98
-    SysrstCtrlKey1Out = 101,
+    SensorCtrlAstDebugOut7 = 101,
     /// Peripheral Output 99
-    SysrstCtrlKey2Out = 102,
+    SensorCtrlAstDebugOut8 = 102,
     /// Peripheral Output 100
-    SysrstCtrlPwrbOut = 103,
+    SysrstCtrlBatDisable = 103,
     /// Peripheral Output 101
-    SysrstCtrlZ3Wakeup = 104,
+    SysrstCtrlKey0Out = 104,
+    /// Peripheral Output 102
+    SysrstCtrlKey1Out = 105,
+    /// Peripheral Output 103
+    SysrstCtrlKey2Out = 106,
+    /// Peripheral Output 104
+    SysrstCtrlPwrbOut = 107,
+    /// Peripheral Output 105
+    SysrstCtrlZ3Wakeup = 108,
 }
 
 impl TryFrom<u32> for PinmuxOutsel {
@@ -3425,24 +3433,28 @@ impl TryFrom<u32> for PinmuxOutsel {
             84 => Ok(Self::Uart3Tx),
             85 => Ok(Self::I3c0CtrlSdaPu),
             86 => Ok(Self::I3c1CtrlSdaPu),
-            87 => Ok(Self::SpiHost1Sck),
-            88 => Ok(Self::SpiHost1Csb),
-            89 => Ok(Self::RramMacroTdo),
-            90 => Ok(Self::SensorCtrlAstDebugOut0),
-            91 => Ok(Self::SensorCtrlAstDebugOut1),
-            92 => Ok(Self::SensorCtrlAstDebugOut2),
-            93 => Ok(Self::SensorCtrlAstDebugOut3),
-            94 => Ok(Self::SensorCtrlAstDebugOut4),
-            95 => Ok(Self::SensorCtrlAstDebugOut5),
-            96 => Ok(Self::SensorCtrlAstDebugOut6),
-            97 => Ok(Self::SensorCtrlAstDebugOut7),
-            98 => Ok(Self::SensorCtrlAstDebugOut8),
-            99 => Ok(Self::SysrstCtrlBatDisable),
-            100 => Ok(Self::SysrstCtrlKey0Out),
-            101 => Ok(Self::SysrstCtrlKey1Out),
-            102 => Ok(Self::SysrstCtrlKey2Out),
-            103 => Ok(Self::SysrstCtrlPwrbOut),
-            104 => Ok(Self::SysrstCtrlZ3Wakeup),
+            87 => Ok(Self::SpiHost0Csb1),
+            88 => Ok(Self::SpiHost0Csb2),
+            89 => Ok(Self::SpiHost1Sck),
+            90 => Ok(Self::SpiHost1Csb0),
+            91 => Ok(Self::SpiHost1Csb1),
+            92 => Ok(Self::SpiHost1Csb2),
+            93 => Ok(Self::RramMacroTdo),
+            94 => Ok(Self::SensorCtrlAstDebugOut0),
+            95 => Ok(Self::SensorCtrlAstDebugOut1),
+            96 => Ok(Self::SensorCtrlAstDebugOut2),
+            97 => Ok(Self::SensorCtrlAstDebugOut3),
+            98 => Ok(Self::SensorCtrlAstDebugOut4),
+            99 => Ok(Self::SensorCtrlAstDebugOut5),
+            100 => Ok(Self::SensorCtrlAstDebugOut6),
+            101 => Ok(Self::SensorCtrlAstDebugOut7),
+            102 => Ok(Self::SensorCtrlAstDebugOut8),
+            103 => Ok(Self::SysrstCtrlBatDisable),
+            104 => Ok(Self::SysrstCtrlKey0Out),
+            105 => Ok(Self::SysrstCtrlKey1Out),
+            106 => Ok(Self::SysrstCtrlKey2Out),
+            107 => Ok(Self::SysrstCtrlPwrbOut),
+            108 => Ok(Self::SysrstCtrlZ3Wakeup),
             _ => Err(val),
         }
     }
@@ -3467,7 +3479,7 @@ pub enum DirectPads {
     SpiDeviceSck = 12,
     SpiDeviceCsb = 13,
     SpiHost0Sck = 14,
-    SpiHost0Csb = 15,
+    SpiHost0Csb0 = 15,
 }
 
 impl TryFrom<u32> for DirectPads {
@@ -3489,7 +3501,7 @@ impl TryFrom<u32> for DirectPads {
             12 => Ok(Self::SpiDeviceSck),
             13 => Ok(Self::SpiDeviceCsb),
             14 => Ok(Self::SpiHost0Sck),
-            15 => Ok(Self::SpiHost0Csb),
+            15 => Ok(Self::SpiHost0Csb0),
             _ => Err(val),
         }
     }

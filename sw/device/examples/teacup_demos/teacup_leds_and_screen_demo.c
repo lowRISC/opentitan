@@ -128,7 +128,7 @@ static status_t peripheral_init(void) {
 
   // Initialize pinmux for Screen SPI (CS, SCK, data out).
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa2,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Csb));
+                                        kTopEarlgreyPinmuxOutselSpiHost1Csb0));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob7,
                                         kTopEarlgreyPinmuxOutselSpiHost1Sck));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob2,
