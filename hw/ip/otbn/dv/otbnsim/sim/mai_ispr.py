@@ -87,6 +87,10 @@ class MaiCtrlCSR(DumbISPR):
         self._next_value = None
         self._pending_write = False
 
+    def is_start_pending(self) -> bool:
+        '''Return whether a write that sets the start bit commits in this cycle.'''
+        return self._next_value is not None and self._extract_start_bit(self._next_value)
+
     def has_reserved_bits(self, value: int) -> bool:
         '''Return True if value has any bits set outside the defined [5:0] field.
 
