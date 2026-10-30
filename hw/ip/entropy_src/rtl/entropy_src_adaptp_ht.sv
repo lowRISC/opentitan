@@ -131,8 +131,11 @@ module entropy_src_adaptp_ht #(
                          test_cnt_min;
 
   // the pulses will be only one clock in length
-  assign test_fail_hi_pulse_o = active_i && window_wrap_pulse_i && (test_cnt_hi_o > thresh_hi_i);
-  assign test_fail_lo_pulse_o = active_i && window_wrap_pulse_i && (test_cnt_lo_o < thresh_lo_i);
+  // A high threshold of all ones or a low threshold of zero disables the respective test.
+  assign test_fail_hi_pulse_o = active_i && window_wrap_pulse_i && (thresh_hi_i != '1) &&
+                                (test_cnt_hi_o >= thresh_hi_i);
+  assign test_fail_lo_pulse_o = active_i && window_wrap_pulse_i && (thresh_lo_i != '0) &&
+                                (test_cnt_lo_o <= thresh_lo_i);
   assign count_err_o = |test_cnt_err;
 
 endmodule

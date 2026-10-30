@@ -90,7 +90,8 @@ module entropy_src_repcnt_ht #(
       .err_o(rep_cntr_err[sh])
     );
 
-    assign rep_cnt_fail[sh] = (rep_cntr[sh] >= thresh_i);
+    // A threshold of all ones disables the test.
+    assign rep_cnt_fail[sh] = (thresh_i != '1) && (rep_cntr[sh] >= thresh_i);
 
   end : gen_cntrs
 

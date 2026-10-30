@@ -387,6 +387,8 @@ Repetition Count Test threshold register
 
 ### REPCNT_THRESHOLD . REPCNT_THRESHOLD
 This is the threshold for the Repetition Count Test.
+   The test fails if the count is greater than or equal to this value.
+   A value of 0xFFFF disables the test.
    This register must be written before the module is enabled.
    If [`THRESHOLD_ONEWAY`](#threshold_oneway) is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
    A read from this register always reflects the current value.
@@ -411,6 +413,8 @@ Repetition Count Symbol Test threshold register
 
 ### REPCNTS_THRESHOLD . REPCNTS_THRESHOLD
 This is the threshold for the Repetition Count Symbol Test.
+   The test fails if the count is greater than or equal to this value.
+   A value of 0xFFFF disables the test.
    This register must be written before the module is enabled.
    If [`THRESHOLD_ONEWAY`](#threshold_oneway) is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
    A read from this register always reflects the current value.
@@ -435,6 +439,8 @@ Adaptive Proportion Test high threshold register
 
 ### ADAPTP_HI_THRESHOLD . ADAPTP_HI_THRESHOLD
 This is the threshold for the Adaptive Proportion Test.
+   The test fails if the count is greater than or equal to this value.
+   A value of 0xFFFF disables the test.
    This register must be written before the module is enabled.
    If [`THRESHOLD_ONEWAY`](#threshold_oneway) is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
    A read from this register always reflects the current value.
@@ -459,6 +465,8 @@ Adaptive Proportion Test low threshold register
 
 ### ADAPTP_LO_THRESHOLD . ADAPTP_LO_THRESHOLD
 This is the threshold for the Adaptive Proportion Test.
+   The test fails if the count is less than or equal to this value.
+   A value of 0 disables the test.
    This register must be written before the module is enabled.
    If [`THRESHOLD_ONEWAY`](#threshold_oneway) is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is greater than the current value of this register.
    A read from this register always reflects the current value.
@@ -483,6 +491,8 @@ Adaptive Proportion Symbol Test threshold register
 
 ### ADAPTPS_THRESHOLD . ADAPTPS_THRESHOLD
 This is the threshold for the Adaptive Proportion Symbol Test.
+   The test fails if the count is greater than or equal to this value.
+   A value of 0xFFFF disables the test.
    This register must be written before the module is enabled.
    If [`THRESHOLD_ONEWAY`](#threshold_oneway) is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
    A read from this register always reflects the current value.
@@ -507,6 +517,8 @@ Bucket test threshold register
 
 ### BUCKET_THRESHOLD . BUCKET_THRESHOLD
 This is the threshold size for the bucket health test.
+   The test fails if any bucket count is greater than or equal to this value.
+   A value of 0xFFFF disables the test.
    This register must be written before the module is enabled.
    If [`THRESHOLD_ONEWAY`](#threshold_oneway) is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
    A read from this register always reflects the current value.
@@ -531,6 +543,8 @@ Markov test high threshold register
 
 ### MARKOV_HI_THRESHOLD . MARKOV_HI_THRESHOLD
 This is the threshold size for the Markov health test.
+   The test fails if the count is greater than or equal to this value.
+   A value of 0xFFFF disables the test.
    This register must be written before the module is enabled.
    If [`THRESHOLD_ONEWAY`](#threshold_oneway) is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
    A read from this register always reflects the current value.
@@ -555,6 +569,8 @@ Markov test low threshold register
 
 ### MARKOV_LO_THRESHOLD . MARKOV_LO_THRESHOLD
 This is the threshold size for the Markov health test.
+   The test fails if the count is less than or equal to this value.
+   A value of 0 disables the test.
    This register must be written before the module is enabled.
    If [`THRESHOLD_ONEWAY`](#threshold_oneway) is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is greater than the current value of this register.
    A read from this register always reflects the current value.

@@ -65,7 +65,8 @@ module entropy_src_bucket_ht #(
       .cnt_after_commit_o(),
       .err_o(bin_cntr_err[i])
     );
-    assign bin_cnt_exceeds_thresh[i] = (bin_cntr[i] > thresh_i);
+    // A threshold of all ones disables the test.
+    assign bin_cnt_exceeds_thresh[i] = (thresh_i != '1) && (bin_cntr[i] >= thresh_i);
   end : gen_symbol_match
 
   prim_max_tree #(

@@ -81,7 +81,8 @@ module entropy_src_repcnts_ht #(
     .err_o(rep_cntr_err)
   );
 
-  assign rep_cnt_fail = (rep_cntr >= thresh_i);
+  // A threshold of all ones disables the test.
+  assign rep_cnt_fail = (thresh_i != '1) && (rep_cntr >= thresh_i);
 
   // For the purposes of failure pulse generation, we want to sample
   // the test output for only one cycle and do it immediately after

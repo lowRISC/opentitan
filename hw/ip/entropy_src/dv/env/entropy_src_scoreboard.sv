@@ -652,27 +652,22 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
     uvm_reg_field threshold_field;
 
     int        threshold_val;
-    bit        continuous_test;
     bit        failure;
     bit        low_test;
     string     fmt, msg;
 
     validate_test_name(test);
-    low_test             = is_low_test(test);
-    continuous_test      = (test == "repcnt") || (test == "repcnts");
+    low_test = is_low_test(test);
 
     threshold_reg_name  = $sformatf("%s_threshold", test);
     threshold_reg    = ral.get_reg_by_name(threshold_reg_name);
     threshold_val = threshold_reg.get_mirrored_value();
 
-    // Continuous tests are more rigorous about holding to the '>=' specified in NIST
-    // 800-90B. Meanwhile the windowed tests use "<" or ">" as this allows these tests
-    // to be temporarily disabled at boot, by choosing the maximal window size.
-    // TODO: Document this
-    if (continuous_test) begin
-      failure = (low_test && value <= threshold_val) || (!low_test && value >= threshold_val);
+    // A high threshold of all ones or a low threshold of zero disables the test.
+    if (low_test) begin
+      failure = (threshold_val != 0) && (value <= threshold_val);
     end else begin
-      failure = (low_test && value < threshold_val) || (!low_test && value > threshold_val);
+      failure = (threshold_val != 16'hFFFF) && (value >= threshold_val);
     end
 
     fmt = "Threshold for \"%s\" test: %04h";
