@@ -23,11 +23,11 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Interrupts
 
-| Interrupt Name   | Type   | Description                                                               |
-|:-----------------|:-------|:--------------------------------------------------------------------------|
-| dma_done         | Status | DMA operation has been completed.                                         |
-| dma_chunk_done   | Status | Indicates the transfer of a single chunk has been completed.              |
-| dma_error        | Status | DMA error has occurred. DMA_STATUS.error_code register shows the details. |
+| Interrupt Name   | Type   | Description                                                    |
+|:-----------------|:-------|:---------------------------------------------------------------|
+| dma_done         | Status | DMA operation has been completed.                              |
+| dma_chunk_done   | Status | Indicates the transfer of a single chunk has been completed.   |
+| dma_error        | Status | DMA error has occurred. ERROR_CODE register shows the details. |
 
 ## Security Alerts
 

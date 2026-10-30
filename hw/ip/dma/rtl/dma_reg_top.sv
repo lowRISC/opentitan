@@ -1504,7 +1504,6 @@ module dma_reg_top
     // to register interface (read)
     .qs     (status_error_qs)
   );
-  assign reg2hw.status.error.qe = status_qe;
 
   //   F[sha2_digest_valid]: 4:4
   prim_subreg #(
