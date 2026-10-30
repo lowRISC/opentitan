@@ -32,7 +32,9 @@ module keymgr_dpe
   // Number of available boot stages
   parameter int unsigned NumBootStages         = 3,
   // Number of ROM digest inputs
-  parameter int unsigned NumRomDigestInputs    = 1
+  parameter int unsigned NumRomDigestInputs    = 1,
+  // Define which kdf engine is supported
+  parameter kdf_engine_sel_e KdfEngineSel      = KdfEngineKmac
 ) (
   input clk_i,
   input rst_ni,
@@ -50,9 +52,14 @@ module keymgr_dpe
   output wide_hw_key_req_t hmac_key_o,
   output wide_hw_key_req_t otbn_key_o,
 
-  // data interface to/from crypto modules
-  output kmac_pkg::app_req_t kmac_data_o,
-  input  kmac_pkg::app_rsp_t kmac_data_i,
+  // Application interface when KMAC is used as hashing engine
+  output kmac_pkg::app_req_t kmac_app_o,
+  input  kmac_pkg::app_rsp_t kmac_app_i,
+
+  // Application interface when OTBN is used as hashing engine
+  output kmac_pkg::app_req_t otbn_app_o,
+  input  kmac_pkg::app_rsp_t otbn_app_i,
+  output mubi4_t             sensitive_key_o,
 
   // whether kmac is masked
   // Note this input is not driving ANY logic directly.  Instead it is only used
@@ -109,6 +116,40 @@ module keymgr_dpe
   import lc_ctrl_pkg::lc_tx_test_false_loose;
   import lc_ctrl_pkg::lc_tx_t;
 
+  // TODO(#915): Connect keymgr_dpe and otbn - app interface (req)
+  localparam int NumOutBufBitsOtbnApp = $bits(kmac_pkg::app_req_t);
+  prim_buf #(
+    .Width  (NumOutBufBitsOtbnApp)
+  ) u_anchor_buf_app_req (
+    .in_i   ('0),
+    .out_o  (otbn_app_o)
+  );
+
+  // TODO(#915): Connect keymgr_dpe and otbn - app interface (rsp)
+  localparam int NumInBufBitsOtbnApp = $bits(kmac_pkg::app_rsp_t);
+  kmac_pkg::app_rsp_t unused_rsp;
+  prim_buf #(
+    .Width  (NumInBufBitsOtbnApp)
+  ) u_anchor_buf_app_rsp (
+    .in_i   (otbn_app_i),
+    .out_o  (unused_rsp)
+  );
+
+  // TODO(#915): Connect keymgr_dpe and otbn - sensitive key indicator
+  localparam int NumOutBufBitsSensKey = $bits(mubi4_t);
+  logic [NumOutBufBitsSensKey-1:0] sensitive_key_buf;
+  prim_buf #(
+    .Width  (NumOutBufBitsSensKey)
+  ) u_anchor_buf_sens_key (
+    .in_i   (MuBi4False),
+    .out_o  (sensitive_key_buf)
+  );
+  assign sensitive_key_o = mubi4_t'(sensitive_key_buf);
+
+  // TODO(#915): read unassigned parameter to avoid linter error
+  logic unused_parameter;
+  assign unused_parameter = ^KdfEngineSel;
+
   /////////////////////////////////////
   // Anchor incoming seeds and constants
   /////////////////////////////////////
@@ -155,7 +196,7 @@ module keymgr_dpe
   // SEC_CM: BUS.INTEGRITY
   // SEC_CM: CONFIG.SHADOW
   // SEC_CM: OP.CONFIG.REGWEN, RESEED.CONFIG.REGWEN, SW_BINDING.CONFIG.REGWEN
-  // SEC_CM: MAX_KEY_VER.CONFIG.REGWEN
+  // SEC_CM: KDF_ENGINE.CONFIG.REGWEN, MAX_KEY_VER.CONFIG.REGWEN
   keymgr_dpe_reg_top u_reg (
     .clk_i,
     .rst_ni,
@@ -307,6 +348,11 @@ module keymgr_dpe
     end
   end
 
+  // Verify mubi signal is correctly encoded
+  // SEC_CM: KDF_ENGINE.CTRL.MUBI
+  logic kdf_engine_mubi_err;
+  assign kdf_engine_mubi_err = mubi4_test_invalid(mubi4_t'(reg2hw.kdf_engine_shadowed.q));
+
   for (genvar i = 0; i < Shares; i++) begin : gen_truncate_data
     assign kmac_data_truncated[i] = kmac_data[i][KeyWidth-1:0];
   end
@@ -374,6 +420,7 @@ module keymgr_dpe
     .reseed_cnt_err_i(reseed_cnt_err),
     .sideload_sel_err_i(sideload_sel_err),
     .sideload_fsm_err_i(sideload_fsm_err),
+    .kdf_engine_mubi_err_i(kdf_engine_mubi_err),
     .prng_reseed_req_o(reseed_req),
     .prng_reseed_ack_i(reseed_ack),
     .prng_reseed_done_i(reseed_done),
@@ -786,8 +833,8 @@ module keymgr_dpe
     .gen_en_i(gen_en),
     .done_o(kmac_done),
     .data_o(kmac_data),
-    .kmac_data_o,
-    .kmac_data_i,
+    .kmac_data_o(kmac_app_o),
+    .kmac_data_i(kmac_app_i),
     .entropy_i(data_rand),
     .fsm_error_o(kmac_fsm_err),
     .kmac_error_o(kmac_op_err),
@@ -809,6 +856,7 @@ module keymgr_dpe
     .wipe_key_i(wipe_key),
     .dest_sel_i(dest_sel),
     .hw_key_sel_i(hw_key_sel),
+    .otbn_as_kdf_engine_i(mubi4_t'(reg2hw.kdf_engine_shadowed.q)),
     // SEC_CM: OUTPUT_KEYS.CTRL.REDUN
     .data_en_i(data_hw_en),
     .data_valid_i(data_valid),
@@ -993,7 +1041,9 @@ module keymgr_dpe
   `ASSERT_KNOWN(KmacKeyKnownO_A, kmac_key_o)
   `ASSERT_KNOWN(HmacKeyKnownO_A, hmac_key_o)
   `ASSERT_KNOWN(OtbnKeyKnownO_A, otbn_key_o)
-  `ASSERT_KNOWN(KmacDataKnownO_A, kmac_data_o)
+  `ASSERT_KNOWN(KmacAppKnownO_A, kmac_app_o)
+  `ASSERT_KNOWN(OtbnAppKnownO_A, otbn_app_o)
+  `ASSERT_KNOWN(SensitiveKeyKnownO_A, sensitive_key_o)
 
 
   // kmac parameter consistency
@@ -1007,6 +1057,10 @@ module keymgr_dpe
   logic [KeyVersionWidth-1:0] unused_active_key_version;
   assign unused_active_policy = active_key_slot.key_policy;
   assign unused_active_key_version = active_key_slot.max_key_version;
+
+  // Verify the kdf engine selection parameter
+  `ASSERT_INIT(InvalidKdfEngineSelection_A,
+      KdfEngineSel inside {KdfEngineKmac, KdfEngineOtbn, KdfEngineBoth})
 
   // Verify supported number of boot stage
   `ASSERT_INIT(InvalidNumOfBootStage_A, NumBootStages inside {2, 3})
