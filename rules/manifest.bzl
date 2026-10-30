@@ -109,6 +109,9 @@ def _manifest_impl(ctx):
     if ctx.attr.on_demand_dice:
         mf["on_demand_dice"] = ctx.attr.on_demand_dice
 
+    if ctx.attr.dice_alg:
+        mf["dice_alg"] = ctx.attr.dice_alg
+
     if ctx.attr.dice_cert_storage_mode:
         mf["dice_cert_storage_mode"] = ctx.attr.dice_cert_storage_mode
 
@@ -262,6 +265,7 @@ _manifest = rule(
         "address_translation": attr.string(doc = "Whether this image uses address translation as a 0x-prefixed hex-encoded string"),
         "manifest_base_address": attr.string(doc = "Manifest base address as a 0x-prefixed hex-encoded string"),
         "on_demand_dice": attr.string(doc = "Whether to use on-demand DICE, only effective for ROM_EXT's manifest"),
+        "dice_alg": attr.string(doc = "DICE algorithm configuration (e.g. P256+ML-DSA-44 or P256+ML-DSA-87)"),
         "dice_cert_storage_mode": attr.string(doc = "DICE certificate storage mode (RAM or Flash data partition)"),
         "identifier": attr.string(doc = "Manifest identifier as a 0x-prefixed hex-encoded string"),
         "manifest_version_major": attr.string(doc = "Manifest major version as a 0x-prefixed hex-encoded string"),

@@ -226,7 +226,7 @@ rom_error_t otbn_boot_attestation_key_clear(void) {
   // Backup the app read-only data from OTBN before wiping.
   // The data is embedded in and loaded by ROM. It is not embedded in ROM_EXT
   // to save firmware size, so we need to back it up from DMEM first.
-  static uint32_t dmem_backup[kOtbnBootDmemDataWords];
+  uint32_t dmem_backup[kOtbnBootDmemDataWords];
   HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_read(
       kOtbnBootDmemDataWords, kOtbnAppBoot.dmem_data_start_addr, dmem_backup));
 

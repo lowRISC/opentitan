@@ -8,7 +8,7 @@
     variables: {
         key_alg: {
             type: "selector",
-            num_choices: 2,
+            num_choices: 3,
         },
         pub_key_id: {
             type: "byte-array",
@@ -32,6 +32,10 @@
             type: "byte-array",
             exact-size: 1312,
         },
+        pub_key_mldsa_87: {
+            type: "byte-array",
+            exact-size: 2592,
+        },
         cert_signature_r: {
             type: "integer",
             range-size: [24, 32],
@@ -43,6 +47,10 @@
         cert_signature_mldsa: {
             type: "byte-array",
             exact-size: 2420,
+        },
+        cert_signature_mldsa_87: {
+            type: "byte-array",
+            exact-size: 4627,
         },
         raw_private_extensions: {
             type: "byte-array",
@@ -74,6 +82,10 @@
                 {
                     algorithm: "mldsa-44",
                     public_key: { var: "pub_key_mldsa" },
+                },
+                {
+                    algorithm: "mldsa-87",
+                    public_key: { var: "pub_key_mldsa_87" },
                 }
             ]
         },
@@ -95,6 +107,10 @@
                 {
                     algorithm: "mldsa-44",
                     value: { var: "cert_signature_mldsa" }
+                },
+                {
+                    algorithm: "mldsa-87",
+                    value: { var: "cert_signature_mldsa_87" }
                 }
             ]
         }
