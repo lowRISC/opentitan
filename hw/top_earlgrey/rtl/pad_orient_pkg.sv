@@ -11,6 +11,7 @@ package pad_orient_pkg;
 
   parameter pad_orient_e DioPadAstMiscPadOrient        = OrientH;
   parameter pad_orient_e DioPadPorNPadOrient           = OrientH;
+  parameter pad_orient_e DioPadPoraNPadOrient          = OrientH;
   parameter pad_orient_e DioPadSpiHostD0PadOrient      = OrientH;
   parameter pad_orient_e DioPadSpiHostD1PadOrient      = OrientH;
   parameter pad_orient_e DioPadSpiHostD2PadOrient      = OrientH;

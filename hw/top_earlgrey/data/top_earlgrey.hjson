@@ -1577,7 +1577,7 @@
 
     // ext is to create port in the top.
     'external': {
-        'ast.por_n'                          : 'manual_in_por_n',
+        'ast.por_n'                          : 'chip_por_n',
         'ast.dft_scan_md'                    : 'scanmode',
         'ast.scan_shift_en'                  : 'scan_en',
         'ast.scan_reset_n'                   : 'scan_rst_n',
@@ -1660,7 +1660,8 @@
     // where the ports have to be switched to a real type when the ANALOGSIM macro is defined).
     pads: [
       // Special manually connected pads
-      { name: 'POR_N'           , type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'System reset'},
+      { name: 'POR_N'           , type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'System reset based on VCC'},
+      { name: 'PORA_N'          , type: 'InputStd',     bank: 'VIOA', connection: 'manual', desc: 'System reset based on VIOA'},
       { name: 'USB_P'           , type: 'DualBidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB P signal'},
       { name: 'USB_N'           , type: 'DualBidirTol', bank: 'VCC' , connection: 'manual', desc: 'USB N signal'},
       { name: 'CC1'             , type: 'BidirTol',     bank: 'AVCC', connection: 'manual', desc: 'ADC input 1', port_type: '`INOUT_AI'},
@@ -2004,6 +2005,8 @@
       pinout: {
         remove_ports: [],
         remove_pads: [
+          // The FPGA reset is solely based on POR_N
+          'PORA_N',
           'CC1', 'CC2',
           'RRAM_ANALOG',
           'USB_P', 'USB_N'

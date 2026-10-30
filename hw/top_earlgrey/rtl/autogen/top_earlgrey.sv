@@ -226,7 +226,7 @@ module top_earlgrey #(
   output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NDioPads-1:0] dio_attr_o,
 
   // Inter-module Signal External type
-  input  logic       manual_in_por_n_i,
+  input  logic       chip_por_n_i,
   output prim_mubi_pkg::mubi4_t       scanmode_o,
   output logic       scan_en_o,
   output logic       scan_rst_n_o,
@@ -1001,7 +1001,7 @@ module top_earlgrey #(
     .ast_clk_src_usb_i                 (ast_clk_src_usb          ),
 
     // Regular ports (auto-generated)
-    .manual_in_por_n_i,
+    .chip_por_n_i,
     .scanmode_o,
     .scan_en_o,
     .scan_rst_n_o,

@@ -3,7 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // This test causes the rstmgr's por_n_i to be asserted, both due to AON power glitches and to the
-// chip's POR_N input. These resets are sent at random delays.
+// chip's POR_N and PORA_N inputs. These resets are sent at random delays.
 class chip_sw_full_aon_reset_vseq extends chip_sw_base_vseq;
   `uvm_object_utils(chip_sw_full_aon_reset_vseq)
 

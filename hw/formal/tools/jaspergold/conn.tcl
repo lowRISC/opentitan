@@ -55,11 +55,13 @@ if {$env(DUT_TOP) == "chip_earlgrey_asic"} {
   # avoid the clock and reset inputs from being driven internally. Any logic
   # driving these signals is not included in the analysis. This includes e.g.:
   # - The disablement of the AST external clock input on IOC6. This is an MIO.
-  # - The pull-up functionality on the power-on reset input pin which is
+  # - The pull-up functionality on the power-on reset input pins which is
   #   enabled by default.
   stopat -env IOC6
   clock IOC6
   stopat -env POR_N
+  stopat -env PORA_N
+  # TODO: How to handle PORA_N?
   reset -expr {POR_N}
   # Add this assumption to avoid a false functional loop.
   assume -env {top_earlgrey.earlgrey_pd_aon.u_pinmux.reg2hw.mio_pad_sleep_status == '1}

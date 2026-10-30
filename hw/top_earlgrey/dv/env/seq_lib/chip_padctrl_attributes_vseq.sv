@@ -206,8 +206,8 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
       // and their pad attributes are tied off. We only perform a rudimentary pull-up/down/high-z
       // here since these signals do not have any effect in the open-source (these DIOs are
       // connected to closed source functionality and hence tested elsewhere in the closed source
-      // DV environment). The POR_N pin is not tested here since that one is tested implicitly by
-      // all tests asserting a reset.
+      // DV environment). The POR_N and PORA_N pins are not tested here since they are tested
+      // implicitly by all tests asserting a reset.
       begin : manual_dio_test
         // Make sure nothing drives these pins before testing the pull values.
         cfg.chip_vif.cc_if.disconnect();

@@ -7,7 +7,8 @@
     // PWRMGR tests:
     {
       name: chip_sw_pwrmgr_external_full_reset
-      desc: '''Verify the cold boot sequence by wiggling of chip's `POR_N`.
+      desc: '''Verify the cold boot sequence by wiggling of chip's `POR_N` and/or `PORA_N`
+            (randomly selected).
 
             This ensures that both FSMs are properly reset on the POR signal. The check is that
             the processor ends up running. Also verify, the rstmgr recorded POR in `reset_info` CSR
@@ -387,7 +388,8 @@
     {
       name: chip_sw_pwrmgr_b2b_sleep_reset_req
       desc: '''Verify that the pwrmgr sequences sleep_req and reset req coming in almost at the same
-            time, one after the other. Use POR_N PAD to trigger reset.
+            time, one after the other. Use the POR_N and/or PORA_N PADs (randomly selected) to trigger
+            reset.
             '''
       stage: V2
       si_stage: NA

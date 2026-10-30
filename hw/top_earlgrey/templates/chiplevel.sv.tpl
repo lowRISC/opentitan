@@ -756,6 +756,8 @@ module chip_${top["name"]}_${target["name"]} #(
 
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
+  assign manual_out_pora_n = 1'b0;
+  assign manual_oe_pora_n = 1'b0;
 
   assign manual_out_cc1 = 1'b0;
   assign manual_oe_cc1 = 1'b0;
@@ -765,8 +767,17 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_out_rram_analog = 1'b0;
   assign manual_oe_rram_analog = 1'b0;
 
-  // Enable schmitt trigger on POR for better signal integrity.
-  assign manual_attr_por_n = '{schmitt_en: 1'b1, pull_en: 1'b1, pull_select: 1'b1, default: '0};
+  // POR_N and PORA_N together produce the reset
+  logic chip_por_n;
+  prim_and2 u_chip_por_n_and (
+    .in0_i(manual_in_por_n),
+    .in1_i(manual_in_pora_n),
+    .out_o(chip_por_n)
+  );
+
+  // Enable schmitt trigger on the POR pads for better signal integrity.
+  assign manual_attr_por_n  = '{schmitt_en: 1'b1, pull_en: 1'b1, pull_select: 1'b1, default: '0};
+  assign manual_attr_pora_n = '{schmitt_en: 1'b1, pull_en: 1'b1, pull_select: 1'b1, default: '0};
 
   // These pad attributes are controlled through sensor_ctrl.  Update the description of
   // `MANUAL_PAD_ATTR` in `sensor_ctrl.hjson` when you change or extend the mapping below.
