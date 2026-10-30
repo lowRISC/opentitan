@@ -25,139 +25,199 @@
   testpoints: [
     {
       name: sec_cm_reg_bus_integrity
-      desc: "Verify the countermeasure(s) REG.BUS.INTEGRITY."
+      desc: '''Verify the countermeasure(s) REG.BUS.INTEGRITY.
+
+            This is tracked as requirement 2.8.
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_host_bus_integrity
-      desc: "Verify the countermeasure(s) HOST.BUS.INTEGRITY."
+      desc: '''Verify the countermeasure(s) HOST.BUS.INTEGRITY.
+
+            This is tracked as requirement 2.8.
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_mem_bus_integrity
-      desc: "Verify the countermeasure(s) MEM.BUS.INTEGRITY."
+      desc: '''Verify the countermeasure(s) MEM.BUS.INTEGRITY.
+
+            This is tracked as requirement 5.15.
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_mem_addr_infection
-      desc: "Verify the countermeasure(s) MEM.ADDR_INFECTION."
+      desc: '''Verify the countermeasure(s) MEM.ADDR_INFECTION.
+
+            This is tracked as requirement 2.6.
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_scramble_key_sideload
-      desc: "Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD."
+      desc: '''Verify the countermeasure(s) SCRAMBLE.KEY.SIDELOAD.
+
+            This is tracked as requirement 5.2.
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_lc_ctrl_intersig_mubi
-      desc: "Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI."
+      desc: '''Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI.
+
+            This is tracked as requirement 7b.2.
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctrl_config_regwen
-      desc: "Verify the countermeasure(s) CTRL.CONFIG.REGWEN."
+      desc: '''Verify the countermeasure(s) CTRL.CONFIG.REGWEN.
+
+            This is tracked as requirement 3.6.
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_data_regions_config_regwen
-      desc: "Verify the countermeasure(s) DATA_REGIONS.CONFIG.REGWEN."
+      desc: '''Verify the countermeasure(s) DATA_REGIONS.CONFIG.REGWEN.
+
+            This is tracked as requirement 4.5.
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_info_page_config_regwen
-      desc: "Verify the countermeasure(s) INFO_PAGE.CONFIG.REGWEN."
+      desc: '''Verify the countermeasure(s) INFO_PAGE.CONFIG.REGWEN.
+
+            This is tracked as requirement 4.5.
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_mem_ctrl_global_esc
-      desc: "Verify the countermeasure(s) MEM.CTRL.GLOBAL_ESC."
+      desc: '''Verify the countermeasure(s) MEM.CTRL.GLOBAL_ESC.
+
+            This is tracked as requirement 12.4.
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_mem_ctrl_local_esc
-      desc: "Verify the countermeasure(s) MEM.CTRL.LOCAL_ESC."
+      desc: '''Verify the countermeasure(s) MEM.CTRL.LOCAL_ESC.
+
+            This is tracked as requirement 12.5.
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_mem_disable_config_mubi
-      desc: "Verify the countermeasure(s) MEM_DISABLE.CONFIG.MUBI."
+      desc: '''Verify the countermeasure(s) MEM_DISABLE.CONFIG.MUBI.
+
+            This is tracked as requirement 12.1.
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_exec_config_redun
-      desc: "Verify the countermeasure(s) EXEC.CONFIG.REDUN."
+      desc: '''Verify the countermeasure(s) EXEC.CONFIG.REDUN.
+
+            This is tracked as requirement 12.3
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_mem_scramble
-      desc: "Verify the countermeasure(s) MEM.SCRAMBLE."
+      desc: '''Verify the countermeasure(s) MEM.SCRAMBLE.
+
+            This is tracked in requirement 5.1.
+            '''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_rma_entry_mem_sec_wipe
-      desc: "Verify the countermeasure(s) RMA_ENTRY.MEM.SEC_WIPE."
+      desc: '''Verify the countermeasure(s) RMA_ENTRY.MEM.SEC_WIPE.
+
+            This is tracked in requirement 7c.1.'''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctrl_fsm_sparse
-      desc: "Verify the countermeasure(s) CTRL.FSM.SPARSE."
+      desc: '''Verify the countermeasure(s) CTRL.FSM.SPARSE.
+
+            This is tracked in requirement 13.6.'''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_phy_wr_fsm_sparse
-      desc: "Verify the countermeasure(s) PHY_WR.FSM.SPARSE."
+      desc: '''Verify the countermeasure(s) PHY_WR.FSM.SPARSE.
+
+            This is tracked in requirement 13.6.'''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_ctr_redun
-      desc: "Verify the countermeasure(s) CTR.REDUN."
+      desc: '''Verify the countermeasure(s) CTR.REDUN.
+
+            This is tracked in requirement 13.7.'''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_phy_arbiter_ctrl_redun
-      desc: "Verify the countermeasure(s) PHY_ARBITER.CTRL.REDUN."
+      desc: '''Verify the countermeasure(s) PHY_ARBITER.CTRL.REDUN.
+
+            This is tracked in requirement 13.7.'''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_phy_host_grant_ctrl_consistency
-      desc: "Verify the countermeasure(s) PHY_HOST_GRANT.CTRL.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) PHY_HOST_GRANT.CTRL.CONSISTENCY.
+
+            This is tracked in requirement 13.8.'''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_phy_rsp_ctrl_consistency
-      desc: "Verify the countermeasure(s) PHY_RSP.CTRL.CONSISTENCY."
+      desc: '''Verify the countermeasure(s) PHY_RSP.CTRL.CONSISTENCY.
+
+            This is tracked in requirement 13.8.'''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_phy_rd_rsp_ctrl_integrity
-      desc: "Verify the countermeasure(s) PHY_RD_RSP.CTRL.INTEGRITY."
+      desc: '''Verify the countermeasure(s) PHY_RD_RSP.CTRL.INTEGRITY.
+
+            This is tracked in requirement 13.8.'''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_phy_rd_buf_ctrl_integrity
-      desc: "Verify the countermeasure(s) PHY_RD_BUF.CTRL.INTEGRITY."
+      desc: '''Verify the countermeasure(s) PHY_RD_BUF.CTRL.INTEGRITY.
+
+            This is tracked in requirement 13.8.'''
       stage: V2S
       tests: []
     }
@@ -169,37 +229,49 @@
     }
     {
       name: sec_cm_fifo_ctr_redun
-      desc: "Verify the countermeasure(s) FIFO.CTR.REDUN."
+      desc: '''Verify the countermeasure(s) FIFO.CTR.REDUN.
+
+            This is tracked in requirement 13.7.'''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_host_tl_lc_gate_fsm_sparse
-      desc: "Verify the countermeasure(s) HOST_TL_LC_GATE.FSM.SPARSE."
+      desc: '''Verify the countermeasure(s) HOST_TL_LC_GATE.FSM.SPARSE.
+
+            This is tracked in requirement 13.6.'''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_wr_tl_lc_gate_fsm_sparse
-      desc: "Verify the countermeasure(s) WR_TL_LC_GATE.FSM.SPARSE."
+      desc: '''Verify the countermeasure(s) WR_TL_LC_GATE.FSM.SPARSE.
+
+            This is tracked in requirement 13.6.'''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_mem_readback
-      desc: "Verify the countermeasure(s) MEM.READBACK."
+      desc: '''Verify the countermeasure(s) MEM.READBACK.
+
+            This is tracked in requirement 6.4.'''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_mem_integrity
-      desc: "Verify the countermeasure(s) MEM.INTEGRITY."
+      desc: '''Verify the countermeasure(s) MEM.INTEGRITY.
+
+            This is tracked in requirement 5.5.'''
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_otp_mem_integrity
-      desc: "Verify the countermeasure(s) OTP.MEM.INTEGRITY."
+      desc: '''Verify the countermeasure(s) OTP.MEM.INTEGRITY.
+
+            This is tracked in requirement 6.3.'''
       stage: V2S
       tests: []
     }

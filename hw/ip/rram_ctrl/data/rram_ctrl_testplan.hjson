@@ -4,7 +4,6 @@
 {
   name: "rram_ctrl"
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
-                     "hw/dv/tools/dvsim/testplans/mem_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
@@ -59,16 +58,23 @@
               boundaries.
             - Write operations of a multiple of 4 bus words up to 1024 bus words, starting at an
               RRAM-word aligned address, including multi-page writes.
-            - Read `ADDR.START` values that are not bus-word aligned to check the truncation to
-              the next lower bus word.
+            - Read operations with `ADDR.START` values that are not bus-word aligned to check the
+              truncation to the next lower bus word.
+            - Write operations where `ADDR.START` is not 16-byte aligned. These operations should
+              fail, setting `OP_STATUS.err` and `ERR_CODE.op_err` and not modifying RRAM.
+            - Write operations with invalid lengths (so `CONTROL.NUM` is not 3 mod 4). Again, the
+              operations should fail, set `OP_STATUS.err` and `ERR_CODE.op_err`, and not modify
+              RRAM.
             - Interleave reads and writes to the same and to different pages.
             - Randomize the timing of FIFO accesses: fill the write FIFO after setting
               `CONTROL.START` with random delays, and drain the read FIFO slowly and quickly.
 
             **Checks**:
-            - Read data matches the scoreboard model.
-            - Write data matches the backdoor contents.
             - `OP_STATUS.done` is set once per operation, with `op_done` interrupt.
+            - Read data matches the scoreboard model.
+            - Write data on an operation that should succeed matches the backdoor contents.
+            - No data is written on an operation that should fail and `OP_STATUS.err` and
+              `ERR_CODE.op_err` are as expected.
             - FIFO status and levels (`STATUS`, `CURR_FIFO_LVL`) match the predicted values.
             '''
       stage: V2
@@ -84,17 +90,27 @@
               single-bit or double-bit error into a few of the stored words.
             - Issue a rewrite on the address of each corrupted RRAM word and of some intact
               words, with random scrambling and ECC configuration of the targeted region or page.
+            - Among these, issue some Rewrite operations that are not 16-byte aligned.
+            - Wait for each operation to finish (either by polling `OP_STATUS.done` or by waiting for
+              the op_done interrupt).
             - Also target pages that software cannot write: the OTP region, `MP_REGION`s,
               `DEFAULT_REGION` and info pages without `wr_en`, and every page of an enabled
               emulated info window, both inside and outside its active subregions.
+            - Run a second "round of rewriting", but where the macro model will respond to one of
+              the operations with an error.
+            - Read `OP_STATUS.err` to see this happen and then read `ERR_CODE` and `ERR_ADDR`.
 
             **Checks**:
-            - After the rewrite the backdoor contents match the original stored word, with the
-              error corrected.
-            - The read FIFO is not filled by the rewrite.
+            - After an aligned rewrite the backdoor contents match the original stored word, with
+              the error corrected.
+            - A misaligned rewrite should set `OP_STATUS.err` and `ERR_CODE.op_err` and should not
+              alter RRAM.
+            - The read FIFO is not filled by rewrites.
             - Rewrites are not subject to memory protection: they complete without
               `ERR_CODE.mp_err` on any page, whatever its region or page configuration, and leave
               the stored data unchanged.
+            - When there is an error on the second round, `ERR_CODE` and `ERR_ADDR` should match the
+              operation and place the error was sent.
 
             Note: with the open-source macro, a double bit error must be injected by flipping
             one bit in each 64-bit half. This is because the macro protects each half with its
@@ -132,13 +148,15 @@
 
             **Stimulus**:
             - Issue back-to-back host reads with random address patterns: sequential, same RRAM
-              word, same page and random across the data partition.
+              word, looping over the number of words in the buffer and random across the data
+              partition.
             - Randomize `d_ready` stalls on the host TL-UL interface, and keep up to
               `NumOutstandingRdReq` reads outstanding.
             - Randomize `scramble_en` and `ecc_en` of the regions being read.
 
             **Checks**:
             - Read data and response integrity match the scoreboard model.
+            - Predicted buffer hits will not cause extra RRAM read requests.
             - `host_tl` does not back-pressure read requests while the read buffer has a free or
               verified entry.
             '''
@@ -192,6 +210,8 @@
               normally.
             - The data stored or read back uses the `scramble_en` and `ecc_en` of the region that
               matched.
+            - Requests to scrambled regions get responses in the same order as the requests were
+              made (which checks the queuing for the scrambler).
             '''
       stage: V2
       tests: []
@@ -439,6 +459,8 @@
             - Writes set random bits on top of the current contents, so that read-set-write
               semantics are respected.
             - Randomize the request timing, including back-to-back commands.
+            - For the last value that will be written, add a backdoor access to change a bit of
+              value being written, which will cause the post-write readback comparison fail.
 
             **Checks**:
             - The DV OTP model predicts read data and the response error code of every command.
@@ -543,18 +565,6 @@
       stage: V2
       tests: []
     }
-    {
-      name: idle
-      desc: '''
-            Verify the idle indication to the power manager.
-
-            **Checks**:
-            - `pwrmgr_o.nvm_idle` is deasserted during software writes, rewrites, OTP commands
-              and the RMA wipe, and asserted otherwise.
-            '''
-      stage: V2
-      tests: []
-    }
 
     /////////////////////////
     // Error conditions    //
@@ -564,12 +574,40 @@
       desc: '''
             Start an operation with a reserved `CONTROL.OP` value.
 
+            Note: This is probably easier to address with FPV, but we'll keep this testpoint until
+            that's implemented to make sure we don't forget the "next valid operation" part of the
+            check.
+
             **Checks**:
             - `ERR_CODE.op_err` and `OP_STATUS.err` are set and `recov_err` fires.
             - The RRAM is not accessed.
             - The next valid operation completes normally.
             '''
       stage: V2
+      tests: []
+    }
+    {
+      name: write_intg_err
+      desc: '''
+            Cause a data integrity error on the write path
+
+            **Stimulus**:
+            - Write a word through the software interface.
+            - Inject a fault on the word being read from the write FIFO, which causes the ECC check
+              to fail.
+            - Wait for the operation to complete.
+            - Read `OP_STATUS`, `ERR_CODE`, `STD_FAULT_STATUS` and `ERR_ADDR`.
+            - Write a second word through the software interface (with no injected fault).
+            - Read `ERR_CODE` again.
+
+            **Checks**:
+            - The `OP_STATUS.err` and `ERR_CODE.wr_err` flags should be set.
+            - `STD_FAULT_STATUS.phy_wr_intg_err` should be set.
+            - The address that was being written should be in `ERR_ADDR`.
+            - A fatal alert should be generated.
+            - The `ERR_CODE.wr_err` flag should still be set on the second read.
+            '''
+      stage: V2S
       tests: []
     }
     {
@@ -620,11 +658,10 @@
             - Issue all OTP commands on the affected words.
 
             **Checks**:
-            - Correctable errors are corrected transparently: the commands return the correct
-              data with `NoError`.
-            - Each corrected OTP word raises the `corr1_err` or `corr2_err` interrupt, increments
-              `CORR1_ERR_CNT` or `CORR2_ERR_CNT`, and updates `CORR1_ERR_LOC` or `CORR2_ERR_LOC`
-              with the address of the word, as for software and host reads.
+
+            - Correctable errors are corrected transparently: the commands return the correct data
+              with `NoError`. The corr1_err and corr2_err interrupts should not be asserted and the
+              corresponding counts should remain unchanged.
             - Uncorrectable errors return `MacroError`. `FAULT_STATUS.otp_rd_err` or
               `FAULT_STATUS.otp_wr_err` is set, `FAULT_STATUS.phy_relbl_err` is set, and
               `fatal_err` fires.
@@ -642,6 +679,8 @@
               pages with `ecc_en` set. Include errors in the check bits.
             - Read the corrupted words through the host and through the controller.
             - Issue a `Rewrite` on the address of each corrupted RRAM word, then read it again.
+            - Repeat this in a loop, occasionally writing to `CORR1_ERR_CNT`, and make sure we see
+              the counter saturate.
 
             **Checks**:
             - The read data is corrected, with valid bus integrity. `ERR_CODE` stays clear and
@@ -666,6 +705,8 @@
               pages with `ecc_en` set. Include errors in the check bits.
             - Read the corrupted words through the host and through the controller.
             - Issue a `Rewrite` on the address of each corrupted RRAM word, then read it again.
+            - Repeat this in a loop, occasionally writing to `CORR1_ERR_CNT`, and make sure we see
+              the counter saturate.
 
             **Checks**:
             - The read data is corrected, with valid bus integrity. `ERR_CODE` stays clear and
@@ -701,8 +742,8 @@
             - Host reads return a TL-UL error response.
             - `FAULT_STATUS.phy_relbl_err` is set and `fatal_err` fires. Software can clear
               `phy_relbl_err` by writing 0.
-            - With `DIS.RELBL_ERR_FATAL` false, the RRAM stays accessible. With
-              `DIS.RELBL_ERR_FATAL` set, the RRAM is disabled.
+            - With `DIS.LOCAL_ESC_RELBL_ERR` false, the RRAM stays accessible. With
+              `DIS.LOCAL_ESC_RELBL_ERR` set, the RRAM is disabled.
             - The `CORR1_*` and `CORR2_*` registers are not updated.
 
             Note: not all multi-bit errors are detectable. Some error patterns are miscorrected and
@@ -782,6 +823,47 @@
 
   covergroups: [
     {
+      name: data_page_access_cg
+      desc: '''
+            See successful accesses to the extreme pages and an internal page for each of the three
+            interfaces that can access the data partition (host, SW and lcmgr-hw-if).
+            '''
+    }
+    {
+      name: otp_page_access_cg
+      desc: '''
+            See successful accesses to the OTP integrity page (at OtpIntgStartAddr), which should
+            work when accessed through otp-hw-if and should be rejected from the host and SW
+            sources.
+
+            Also see successful accesses to each of the other OTP pages (4091-4095) through
+            otp-hw-if, together with failed accesses to the top page (the top address in the
+            partition) from host and SW.
+            '''
+    }
+    {
+      name: info_page_access_cg
+      desc: '''
+            See successful accesses to info pages 0, 5, 6 and 7 (extreme pages and each named page),
+            crossed with the access method: SW and lcmgr-hw-if.
+
+            Also see an unsuccessful access to an info page from the host interface.
+            '''
+    }
+    {
+      name: fifo_backpressure_cg
+      desc: '''
+            See access through each FIFO's window being back-pressured.
+            '''
+    }
+    {
+      name: core_tl_cg
+      desc: '''
+            See successful accesses through `core_tl` that target registers, FIFO windows and both
+            RRAM partitions.
+            '''
+    }
+    {
       name: control_cg
       desc: '''
             Covers all `CONTROL.OP` values (including reserved ones) crossed with
@@ -790,54 +872,45 @@
             '''
     }
     {
+      name: write_size_cg
+      desc: '''
+            See writes with lengths that are not 3 mod 4 (requesting a write that is not a multiple
+            of 4 bus words).
+            '''
+    }
+    {
+      name: sw_op_addr_cg
+      desc: '''
+            See SW operations (Read, Write and Rewrite) with each alignment. Read addresses are rounded
+            down to word alignment (4 bytes). Misaligned writes and rewrites will cause errors.
+            '''
+    }
+    {
+      name: op_status_cg
+      desc: '''
+            See reads of OP_STATUS when the done and err fields are each true and false. See each
+            field field true, then false (cleared by a write).
+            '''
+    }
+    {
       name: mp_region_cg
       desc: '''
             Covers, for software and host accesses, which region matched (region index or
-            default region) crossed with `rd_en`, `wr_en`, `scramble_en`, `ecc_en`, and whether
-            the access was allowed.
+            default region) crossed with `rd_en`, `wr_en`, `scramble_en`, `ecc_en`.
+
+            See the matched region having the minimum and maximum possible size, and see examples
+            where the matched region overflows the top of the partition.
             '''
     }
     {
-      name: emul_info_window_cg
+      name: mp_disabled_region_cg
       desc: '''
-            Covers, per window, `EN` (`MuBi4True`, `MuBi4False`, invalid) crossed with
-            `EMUL_INFO_REGWEN`, window position (start of the data partition, end of the data
-            partition, elsewhere), and window size (one page, up to 256 pages, more than 256
-            pages).
-            '''
-    }
-    {
-      name: emul_info_subregion_cg
-      desc: '''
-            Covers, per window, the number of active subregions (0, 1, a few, all
-            `EmulInfoSubregionsPerRegion`), and for every subregion the reason it is inactive
-            (window disabled, window unlocked, own placement unlocked, a lower-indexed
-            placement unlocked, `TOP` exceeding `SIZE`, window overlap) or, when active,
-            whether it is fully shadowed by a lower-indexed subregion and whether its `TOP`
-            equals the window's `SIZE`.
-            '''
-    }
-    {
-      name: emul_info_permissions_cg
-      desc: '''
-            Covers, for accesses that hit an active subregion, `rd_en`, `wr_en`, `scramble_en`
-            and `ecc_en` (each `MuBi4True`, `MuBi4False`, invalid) crossed with operation type
-            and whether `EMUL_INFO_SUBREGION_CFG_REGWEN` is locked.
-            '''
-    }
-    {
-      name: emul_info_priority_cg
-      desc: '''
-            Covers, for every software and host access to the data partition, which entry
-            decided it (OTP exclusion, subregion, window gap, `MP_REGION`, `DEFAULT_REGION`)
-            crossed with requester, operation type, and whether the access was allowed.
-            '''
-    }
-    {
-      name: emul_info_window_overlap_cg
-      desc: '''
-            Covers whether the two windows overlap or are exactly adjacent, crossed with both
-            windows' `EN`.
+            See an operation where there is a disabled region that would match if enabled (based on
+            start address and size) but has not matched, because the result of the access is
+            different from if it had matched.
+
+            See this in both directions: the access is allowed (and not stopped by the disabled
+            region) and the access is disallowed (and not enabled by the disabled region).
             '''
     }
     {
@@ -848,9 +921,53 @@
             '''
     }
     {
+      name: op_after_uncorr_cg
+      desc: '''
+            See an operation after an uncorrectable error, crossed with the value of
+            DIS.LOCAL_ESC_RELBL_ERR (which controls whether RRAM is disabled by the error).
+            '''
+    }
+    {
       name: otp_cmd_cg
       desc: '''
-            Covers all OTP commands crossed with the access size and the response error code.
+            See each OTP command, access size (16, 32, 64) and response error code.
+
+            Cross command, access size and error code, except for `OtpInit` (where the size has no
+            effect).
+            '''
+    }
+    {
+      name: fault_status_err_cg
+      desc: '''
+            See each of the errors reported in FAULT_STATUS.
+            '''
+    }
+    {
+      name: std_fault_status_err_cg
+      desc: '''
+            See each of the errors reported in FAULT_STATUS.
+            '''
+    }
+    {
+      name: macro_req_cg
+      desc: '''
+            See both values for every bit in the request structure when a macro request is asserted.
+            '''
+    }
+    {
+      name: macro_rsp_cg
+      desc: '''
+            See rram_ctrl getting all possible responses from the macro:
+            - See each of the standard single-bit signals asserted (ack, done, init_done).
+            - Toggle coverage for rd_data when responding to reads.
+            - See each of the one-hot ecc_err signal values.
+            - See each of the other error signals (fatal_err, recov_err) asserted.
+            '''
+    }
+    {
+      name: interrupts_cg
+      desc: '''
+            See each interrupt be asserted, but not when caused by INTR_TEST.
             '''
     }
     {
@@ -863,15 +980,8 @@
     {
       name: sw_err_cg
       desc: '''
-            Covers the `ERR_CODE` bits `op_err`, `mp_err` and `rd_err` crossed with the
+            Covers the `ERR_CODE` bits `op_err`, `mp_err`, `rd_err` and `wr_err` crossed with the
             operation.
-            '''
-    }
-    {
-      name: arb_cg
-      desc: '''
-            Covers concurrent requests of software, host and OTP, and the case where they target
-            the same RRAM word or page.
             '''
     }
     {
@@ -898,7 +1008,17 @@
       name: ecc_cg
       desc: '''
             Covers the ECC result of every RRAM read (none, corr1, corr2, uncorrectable), crossed
-            with the requester (host, software, OTP), the partition and `ecc_en`.
+            with the requester (host, software, OTP) and the partition.
+            '''
+    }
+    {
+      name: scrambler_queue_cg
+      desc: '''
+            See Read and Write operations to scrambled memory where both are requesting the
+            scrambler at the same time.
+
+            Because reasoning about the timing of commands will be tricky, this is probably best to
+            sample from an internal signal with a bound interface.
             '''
     }
   ]
