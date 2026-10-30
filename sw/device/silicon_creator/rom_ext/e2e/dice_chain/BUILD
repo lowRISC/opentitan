@@ -63,6 +63,7 @@ _NO_REFRESH_VARIATIONS |= {
             exit_failure = "Rebooting[\\s\\S]*DICE cert cache miss[\\s\\S]*Rebooted",
             exit_success = "Rebooted\r\n",
             rom_ext = variation["rom_ext"],
+            testopt_clear_before_test = "True",
         ),
         qemu = qemu_params(
             exit_failure = "Rebooting[\\s\\S]*DICE cert cache miss[\\s\\S]*Rebooted",
@@ -451,6 +452,7 @@ opentitan_test(
     fpga = fpga_params(
         exit_failure = "First boot[\\s\\S]*DICE cert cache miss[\\s\\S]*Second boot",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a",
+        testopt_clear_before_test = "True",
     ),
     qemu = qemu_params(
         exit_failure = "First boot[\\s\\S]*DICE cert cache miss[\\s\\S]*Second boot",
