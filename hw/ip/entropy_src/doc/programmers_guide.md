@@ -44,13 +44,6 @@ To this end, firmware has to:
 1. Set the `FW_OV_MODE` field in the [`FW_OV_CONTROL`](registers.md#fw_ov_control) register to `kMultiBitBool4True`.
 1. Set the `FW_OV_ENTROPY_INSERT` field in the [`FW_OV_CONTROL`](registers.md#fw_ov_control) register to `kMultiBitBool4True`.
 
-If firmware wants to use hardware conditioning for the inserted entropy bits, it also has to:
-1. Set the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4True`.
-1. Set `ES_TYPE` or `ES_ROUTE` (or both) in [`ENTROPY_CONTROL`](registers.md#entropy_control) to `kMultiBitBool4False`.
-
-It further has to set the `FW_OV_INSERT_START` field in the [`FW_OV_SHA3_START`](registers.md#fw_ov_sha3_start) register to `kMultiBitBool4True`.
-Once all entropy bits have been written to the [`FW_OV_WR_DATA`](registers.md#fw_ov_wr_data) register, firmware can set `FW_OV_INSERT_START` to `kMultiBitBool4False` to trigger the hardware conditioning mechanism.
-
 Note that if the `FW_OV_ENTROPY_INSERT` field is set to `kMultiBitBool4True`, post-health test entropy bits do NOT continue to flow through the hardware pipeline.
 The observe FIFO will collect 1 kBit of contiguous entropy bits.
 Any entropy bits arriving after the observe FIFO is full are being discarded.
@@ -59,11 +52,24 @@ Only entropy bits inserted by firmware by writing the [`FW_OV_WR_DATA`](register
 
 Also, the hardware startup health testing is skipped and firmware becomes responsible for performing any startup health testing.
 
+The remaining configuration and the procedure for inserting entropy bits back into the entropy flow depend on whether firmware wants to use hardware conditioning for the inserted entropy bits.
+
+#### Using Hardware Conditioning for Inserted Entropy Bits
+
+If firmware wants to use hardware conditioning for the inserted entropy bits, it also has to:
+1. Set the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4True`.
+1. Set `ES_TYPE` or `ES_ROUTE` (or both) in [`ENTROPY_CONTROL`](registers.md#entropy_control) to `kMultiBitBool4False`.
+
+It further has to set the `FW_OV_INSERT_START` field in the [`FW_OV_SHA3_START`](registers.md#fw_ov_sha3_start) register to `kMultiBitBool4True`.
+Once all entropy bits have been written to the [`FW_OV_WR_DATA`](registers.md#fw_ov_wr_data) register, firmware can set `FW_OV_INSERT_START` to `kMultiBitBool4False` to trigger the hardware conditioning mechanism.
+
+#### Bypassing Hardware Conditioning for Inserted Entropy Bits
+
 If firmware does not want to use hardware conditioning for the inserted entropy bits, it has to do one of the two following points:
 1. Set the `FIPS_ENABLE` field in the [`CONF`](registers.md#conf) register to `kMultiBitBool4False`.
 In this case, the entropy is routed to the hardware endpoints.
 1. Set `ES_TYPE` and `ES_ROUTE` in [`ENTROPY_CONTROL`](registers.md#entropy_control) to `kMultiBitBool4True`.
-In this case, the unconditioned entropy is not routed to the hardware endpoints but instead to the  [`ENTROPY_DATA`](registers.md#entropy_data) register.
+In this case, the unconditioned entropy is not routed to the hardware endpoints but instead to the [`ENTROPY_DATA`](registers.md#entropy_data) register.
 
 ### Hardware Conditioning Bypass
 

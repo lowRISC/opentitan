@@ -227,12 +227,10 @@
       desc: '''
             The FIPS/CC compliant mode is the primary mode of operation in which ENTROPY_SRC can generate entropy compliant with NIST SP 800-90B and AIS31 recommendations.
             In this mode, once the raw entropy has been health tested, it is passed into the hardware conditioner block which compresses the bits to ideally improve the min-entropy value compared to the digital noise source / physical true random number generator (PTRNG).
-            The window size for the health tests and the conditioning is configurable by firmware with a default of 2048 bits.
+            The window size for the health tests and the conditioning is configurable by firmware with a default of 512 samples.
 
             Note that ENTROPY_SRC uses the `es_fips` bit of the hardware interface to indicate whether the generated entropy is indeed FIPS/CC compliant.
-            For this to be true the following prerequisites must be met in addition to running in FIPS/CC compliant mode:
-            - !!CONF.RNG_BIT_ENABLE must be set to `kMultiBitBool4False` (see ENTROPY_SRC.RNG_BIT_ENABLE).
-            - At most one of the !!ENTROPY_CONTROL.ES_ROUTE and !!ENTROPY_CONTROL.ES_TYPE fields needs to be set to `kMultiBitBool4True` but not both (see ENTROPY_SRC.ROUTE_TO_FIRMWARE).
+            For this bit to be set, firmware needs to configure the ENTROPY_SRC block with the configuration used for FIPS/CC validation and set the !!CONF.FIPS_FLAG field to `kMultiBitBool4True`.
             '''
     },
     {
@@ -411,7 +409,7 @@
                 The ENTROPY_SRC block will use the FIPS_WINDOW value of the !!HEALTH_TEST_WINDOWS register.
                 Whether the ENTROPY_SRC block is indeed running with the configuration used for FIPS/CC validation is under the control of firmware.
                 Thus, firmware must explicitly mark the produced entropy as FIPS qualified using the !!CONF.FIPS_FLAG field.
-                Note that the hardware conditioning can still be disabled in FIPS mode by setting both !!ENTROPY_CONTROL.ES_ROUTE and !!ENTROPY_CONTROL.ES_TYPE fields to `kMultiBitBool4True`.
+                Note that the hardware conditioning can still be disabled in FIPS mode by setting the !!ENTROPY_CONTROL.BYPASS_CONDITIONING field to `kMultiBitBool4True`.
                 However, no entropy is being passed to the block hardware interface in this mode.
 
                 Setting this field to `kMultiBitBool4False` selects the boot-time / bypass mode in which the hardware conditioning is bypassed.
@@ -428,23 +426,6 @@
           resval: false
         },
         { bits: "11:8",
-          name: "RNG_FIPS",
-          mubi: true,
-          desc: '''
-                Setting this field to `kMultiBitBool4True` sets the analog RNG into a conservative operation mode that may reduce the bit rate.
-                In this mode, the RNG potentially outputs entropy with higher entropy per bit and with a simpler sampling mechanism.
-                '''
-          resval: false
-        },
-        { bits: "15:12",
-          name: "RNG_BIT_ENABLE",
-          mubi: true,
-          desc: '''
-                Setting this field to `kMultiBitBool4True` enables the single RNG bit mode, where only one bit is sampled per symbol.
-                '''
-          resval: false
-        },
-        { bits: "19:16",
           name: "THRESHOLD_SCOPE",
           mubi: true,
           desc: '''
@@ -460,14 +441,23 @@
                 '''
           resval: false
         },
-        { bits: "23:20",
-          name: "ENTROPY_DATA_REG_ENABLE",
+        { bits: "19:16",
+          name: "RNG_FIPS",
           mubi: true,
           desc: '''
-                Setting this field to `kMultiBitBool4True` will enable reading entropy values from the !!ENTROPY_DATA register.
+                Setting this field to `kMultiBitBool4True` sets the analog RNG into a conservative operation mode that may reduce the bit rate.
+                In this mode, the RNG potentially outputs entropy with higher entropy per bit and with a simpler sampling mechanism.
                 '''
           resval: false
-        }
+        },
+        { bits: "23:20",
+          name: "RNG_BIT_ENABLE",
+          mubi: true,
+          desc: '''
+                Setting this field to `kMultiBitBool4True` enables the single RNG bit mode, where only one bit is sampled per symbol.
+                '''
+          resval: false
+        },
         { bits: "31:24",
           name: "RNG_BIT_SEL",
           desc: '''
@@ -482,28 +472,27 @@
       swaccess: "rw",
       hwaccess: "hro",
       regwen:   "REGWEN",
-      tags: [// Exclude from writes to these field because they cause side affects.
+      tags: [// Exclude from writes to these field because they cause side effects.
              "excl:CsrAllTests:CsrExclAll"]
       fields: [
         { bits: "3:0",
-          name: "ES_ROUTE",
+          name: "ENTROPY_DATA_REG_ENABLE",
           mubi: true,
           desc: '''
-                When this field is `kMultiBitBool4False`, the generated entropy will be forwarded out of this module to the hardware interface.
-                Setting this field to `kMultiBitBool4True` routes the generated entropy to the !!ENTROPY_DATA register to be read by firmware.
-                Note that for !!ENTROPY_DATA to become readable, also !!CONF.ENTROPY_DATA_REG_ENABLE needs to be set to `kMultiBitBool4True`.
+                Setting this field to `kMultiBitBool4True` will enable reading entropy values from the !!ENTROPY_DATA register.
                 '''
           resval: false
-        },
+        }
         { bits: "7:4",
-          name: "ES_TYPE",
+          name: "BYPASS_CONDITIONING",
           mubi: true,
           desc: '''
-                When this field is `kMultiBitBool4False`, the hardware conditioning inside the ENTROPY_SRC block is enabled.
+                When this field is `kMultiBitBool4False`, the hardware conditioning inside the ENTROPY_SRC block is enabled when running in FIPS/CC compliance mode.
                 Setting this field to `kMultiBitBool4True` will bypass the hardware conditioning.
-                For this to work, also !!ENTROPY_CONTROL.ES_ROUTE needs to be set to `kMultiBitBool4True` to route the unconditioned, raw entropy to the !!ENTROPY_DATA register.
+                In this case, no entropy is being passed to the block hardware interface, but firmware can request the reading of unconditioned, raw entropy from the !!ENTROPY_DATA register via the !!ENTROPY_DATA_REQUEST register.
+
                 Alternatively, the hardware conditioning can be bypassed by setting !!CONF.FIPS_ENABLE to `kMultiBitBool4False`.
-                This enables the bypass / boot-time mode.
+                This enables the bypass / boot-time mode in which the ENTROPY_SRC block will pass a single seed's worth of entropy to the block hardware interface only.
                 '''
           resval: false
         },
@@ -521,6 +510,50 @@
         },
       ]
     },
+    { name: "ENTROPY_DATA_REQUEST",
+      desc: "Entropy data request register",
+      swaccess: "rw",
+      hwaccess: "hrw",
+      hwext: "true"
+      tags: [// Exclude from writes to these field because they cause side effects.
+             "excl:CsrAllTests:CsrExclAll"]
+      fields: [
+        { bits: "3:0",
+          mubi: true,
+          desc: '''
+                Firmware can write `kMultiBitBool4True` to this field to request the routing of the next 384-bit seed from the esfinal FIFO to the !!ENTROPY_DATA register.
+                For this to work, !!ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE needs to be set to `kMultiBitBool4True`.
+                Otherwise, this field keeps reading as `kMultiBitBool4False` and the request is ignored.
+
+                If the esfinal FIFO is not empty while firmware writes `kMultiBitBool4True` to this field, the field immediately sets back to `kMultiBitBool4False` and !!ENTROPY_DATA_VALID switches to `kMultiBitBool4True` to indicate that the seed can now be read from the !!ENTROPY_DATA register.
+
+                Note that as long as this field or !!ENTROPY_DATA_VALID read as `kMultiBitBool4True`, no entropy is being passed to the block hardware interface.
+                '''
+          resval: false
+        },
+      ]
+    },
+    { name: "ENTROPY_DATA_VALID",
+      desc: "Entropy data valid register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      tags: [// Exclude from writes to these field because they cause side effects.
+             "excl:CsrAllTests:CsrExclAll"]
+      fields: [
+        { bits: "3:0",
+          mubi: true,
+          desc: '''
+                When this field is `kMultiBitBool4True`, the !!ENTROPY_DATA register contains a valid 384-bit seed readable by firmware, and no entropy is being passed to the block hardware interface.
+
+                After firmware has read the entire seed by reading !!ENTROPY_DATA register 12 times, this field drops back to `kMultiBitBool4False`, and entropy is again passed to the block hardware interface (unless !!ENTROPY_CONTROL.BYPASS_CONDITIONING is set to `kMultiBitBool4True` and !!CONF.FIPS_ENABLE is set to `kMultiBitBool4True`).
+
+                Setting this field to `kMultiBitBool4True` routes the generated entropy to the !!ENTROPY_DATA register to be read by firmware.
+                Note that for !!ENTROPY_DATA to become readable, also !!ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE needs to be set to `kMultiBitBool4True`.
+                '''
+          resval: false
+        },
+      ]
+    },
     { name: "ENTROPY_DATA",
       desc: "Entropy data bits",
       swaccess: "ro",
@@ -531,7 +564,10 @@
         { bits: "31:0",
           desc: '''
                 A read of this register provides generated entropy bits to firmware.
-                For this to work also !!CONF.ENTROPY_DATA_REG_ENABLE needs to be set to `kMultiBitBool4True`.
+                For this to work also !!ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE needs to be set to `kMultiBitBool4True`.
+
+                Before reading the register, firmware has to request the routing of the next 384-bit seed to this register via !!ENTROPY_DATA_REQUEST and wait for the seed to be ready by checking !!ENTROPY_DATA_VALID.
+                Otherwise, the register reads as 0.
                 '''
         }
       ]
@@ -1395,102 +1431,108 @@
       hwaccess: "hwo",
       fields: [
         { bits: "0",
-          name: "FIPS_ENABLE_FIELD_ALERT",
+          name: "MODULE_ENABLE_FIELD_ALERT",
           desc: '''
-                This bit is set when the FIPS_ENABLE field in the !!CONF register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                This bit is set when the !!MODULE_ENABLE.MODULE_ENABLE field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }
         { bits: "1",
-          name: "ENTROPY_DATA_REG_EN_FIELD_ALERT",
+          name: "FIPS_ENABLE_FIELD_ALERT",
           desc: '''
-                This bit is set when the ENTROPY_DATA_REG_ENABLE field in the !!CONF register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                This bit is set when the !!CONF.FIPS_ENABLE field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }
         { bits: "2",
-          name: "MODULE_ENABLE_FIELD_ALERT",
+          name: "FIPS_FLAG_FIELD_ALERT",
           desc: '''
-                This bit is set when the MODULE_ENABLE field in the !!MODULE_ENABLE register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                This bit is set when the !!CONF.FIPS_FLAG field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }
         { bits: "3",
           name: "THRESHOLD_SCOPE_FIELD_ALERT",
           desc: '''
-                This bit is set when the THRESHOLD_SCOPE field in the !!CONF register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                This bit is set when the !!CONF.THRESHOLD_SCOPE field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }
         { bits: "4",
-          name: "THRESHOLD_ONEWAY_FIELD_ALERT",
+          name: "RNG_FIPS_FIELD_ALERT",
           desc: '''
-                This bit is set when the !!THRESHOLD_ONEWAY register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                This bit is set when the !!CONF.RNG_FIPS field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }
         { bits: "5",
           name: "RNG_BIT_ENABLE_FIELD_ALERT",
           desc: '''
-                This bit is set when the RNG_BIT_ENABLE field in the !!CONF register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                This bit is set when the !!CONF.RNG_BIT_ENABLE field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "6",
+          name: "ENTROPY_DATA_REG_EN_FIELD_ALERT",
+          desc: '''
+                This bit is set when the !!ENTROPY_CONTROL.ENTROPY_DATA_REG_ENABLE field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }
         { bits: "7",
-          name: "FW_OV_SHA3_START_FIELD_ALERT",
+          name: "BYPASS_CONDITIONING_FIELD_ALERT",
           desc: '''
-                This bit is set when the FW_OV_SHA3_START field in the !!FW_OV_SHA3_START register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                This bit is set when the !!ENTROPY_CONTROL.BYPASS_CONDITIONING field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }
         { bits: "8",
-          name: "FW_OV_MODE_FIELD_ALERT",
+          name: "ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT",
           desc: '''
-                This bit is set when the FW_OV_MODE field in the !!FW_OV_CONTROL register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                This bit is set when the !!ENTROPY_CONTROL.ESFINAL_FIFO_CLEAR_WHILE_DISABLED field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }
         { bits: "9",
-          name: "FW_OV_ENTROPY_INSERT_FIELD_ALERT",
+          name: "ENTROPY_DATA_REQUEST_FIELD_ALERT",
           desc: '''
-                This bit is set when the FW_OV_ENTROPY_INSERT field in the !!FW_OV_CONTROL register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                This bit is set when the !!ENTROPY_DATA_REQUEST.ENTROPY_DATA_REQUEST field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }
         { bits: "10",
-          name: "ES_ROUTE_FIELD_ALERT",
+          name: "THRESHOLD_ONEWAY_FIELD_ALERT",
           desc: '''
-                This bit is set when the ES_ROUTE field in the !!ENTROPY_CONTROL register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                This bit is set when the !!THRESHOLD_ONEWAY.THRESHOLD_ONEWAY field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }
         { bits: "11",
-          name: "ES_TYPE_FIELD_ALERT",
-          desc: '''
-                This bit is set when the ES_TYPE field in the !!ENTROPY_CONTROL register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
-                Writing a zero resets this status bit.
-                '''
-        }
-        { bits: "12",
-          name: "ES_MAIN_SM_ALERT",
-          desc: '''
-                This bit is set when the main state machine detects a threshold failure state.
-                Writing a zero resets this status bit.
-                '''
-        }
-        { bits: "13",
-          name: "ES_BUS_CMP_ALERT",
-          desc: '''
-                This bit is set when the internal entropy bus value is equal to the prior
-                valid value on the bus, indicating a possible attack.
-                Writing a zero resets this status bit.
-                '''
-        }
-        { bits: "14",
           name: "ES_THRESH_CFG_ALERT",
           desc: '''
                 This bit is set when the !!ALERT_THRESHOLD register is not configured properly.
                 The upper field must be the exact inverse of the lower field.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "12",
+          name: "FW_OV_MODE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the !!FW_OV_CONTROL.FW_OV_MODE field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "13",
+          name: "FW_OV_ENTROPY_INSERT_FIELD_ALERT",
+          desc: '''
+                This bit is set when the !!FW_OV_CONTROL.FW_OV_ENTROPY_INSERT field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "14",
+          name: "FW_OV_SHA3_START_FIELD_ALERT",
+          desc: '''
+                This bit is set when the !!FW_OV_SHA3_START.FW_OV_SHA3_START field is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -1516,23 +1558,17 @@
                 '''
         }
         { bits: "17",
-          name: "FIPS_FLAG_FIELD_ALERT",
+          name: "ES_MAIN_SM_ALERT",
           desc: '''
-                This bit is set when the FIPS_FLAG field in the !!CONF register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                This bit is set when the main state machine detects a threshold failure state.
                 Writing a zero resets this status bit.
                 '''
         }
         { bits: "18",
-          name: "RNG_FIPS_FIELD_ALERT",
+          name: "ES_BUS_CMP_ALERT",
           desc: '''
-                This bit is set when the RNG_FIPS field in the !!CONF register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
-                Writing a zero resets this status bit.
-                '''
-        }
-        { bits: "19",
-          name: "ESFINAL_FIFO_CLEAR_WHILE_DISABLED_FIELD_ALERT",
-          desc: '''
-                This bit is set when the ESFINAL_FIFO_CLEAR_WHILE_DISABLED field in the !!ENTROPY_CONTROL register is set to a value other than `kMultiBitBool4False` or `kMultiBitBool4True`.
+                This bit is set when the internal entropy bus value is equal to the prior
+                valid value on the bus, indicating a possible attack.
                 Writing a zero resets this status bit.
                 '''
         }
