@@ -1351,13 +1351,11 @@ class entropy_src_scoreboard extends cip_base_scoreboard#(
 
     for (int i = 0; i < `RNG_BUS_WIDTH; i++) begin
       `uvm_info(`gfn, "Set REPCNTS cntr", UVM_DEBUG)
-      repcnt[i] = (rst_type == HardReset) ? 0 :
-                  (rst_type == Enable) ? 1 :
-                  repcnt[i];
+      repcnt[i] = (rst_type inside {HardReset, Enable}) ? 0 : repcnt[i];
     end
-    repcnt_symbol     = 1;
 
-    prev_rng_val      = '0;
+    repcnt_symbol = 0;
+    prev_rng_val = '0;
 
     // Clear records of repcnt/repnts failures
     continuous_fail_count     = 0;

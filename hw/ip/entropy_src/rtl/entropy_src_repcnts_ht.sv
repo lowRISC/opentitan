@@ -30,6 +30,8 @@ module entropy_src_repcnts_ht #(
   logic [RegWidth-1:0]    rep_cntr;
   logic                   rep_cntr_err;
   logic                   fail_sampled;
+  logic                   test_clr;
+  logic [RegWidth-1:0]    rep_cntr_set_val;
 
   // flops
   logic [RngBusWidth-1:0] prev_sample_q, prev_sample_d;
@@ -48,12 +50,18 @@ module entropy_src_repcnts_ht #(
   // Repetitive Count Test for symbols
   //
   // Test operation
-  //  This test will look for catastrophic stuck bit failures. The rep_cntr
-  //  uses one as the starting value, just as the NIST algorithm does.
+  //  This test will look for catastrophic stuck bit failures. The rep_cntr is one after
+  //  the first sample: it is cleared to zero and the first sample counts as one.
 
+  // Clear the previous sample and the counter when the test is inactive or cleared.
+  assign test_clr = !active_i || clear_i;
+
+  // At the beginning of testing we start counting after the first sample.
+  // From this point on each samples_no_match_pulse resets the count to 1.
+  assign rep_cntr_set_val = test_clr ? RegWidth'(0) : RegWidth'(1);
 
   // NIST A sample
-  assign prev_sample_d = (!active_i || clear_i) ? '0 :
+  assign prev_sample_d = test_clr ? '0 :
                          entropy_bit_vld_i ? entropy_bit_i :
                          prev_sample_q;
 
@@ -70,8 +78,8 @@ module entropy_src_repcnts_ht #(
     .clk_i,
     .rst_ni,
     .clr_i(1'b0),
-    .set_i(!active_i || clear_i || samples_no_match_pulse),
-    .set_cnt_i(RegWidth'(1)),
+    .set_i(test_clr || samples_no_match_pulse),
+    .set_cnt_i(rep_cntr_set_val),
     .incr_en_i(samples_match_pulse),
     .decr_en_i(1'b0),
     .step_i(RegWidth'(1)),
