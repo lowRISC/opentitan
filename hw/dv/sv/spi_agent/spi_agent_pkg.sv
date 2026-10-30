@@ -15,7 +15,7 @@ package spi_agent_pkg;
 
   // parameter
   parameter uint TPM_START_MAX_WAIT_TIME_NS = 10_000_000; // 10ms
-  parameter uint CSB_WIDTH = 2;
+  parameter uint CSB_WIDTH = 4;
   parameter uint NUM_CSB = CSB_WIDTH ** 2;
   parameter time TIME_SCK_STABLE_TO_CSB_NS = 10ns;
   parameter uint TPM_ADDR_WIDTH      = 24;

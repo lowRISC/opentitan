@@ -108,9 +108,14 @@ module tb;
     assign sio[i]  = (cio_sd_en_o[i]) ? cio_sd_o[i] : 'z;
     assign (highz0, pull1) sio[i] = !cio_sd_en_o[i];
     assign si_pulldown[i] = sio[i];
+  end
 
-    if (i < SPI_HOST_NUM_CS) begin : gen_drive_csb
+  // Chip select lines of the SPI agent that the DUT does not have are inactive.
+  for (genvar i = 0; i < spi_agent_pkg::CSB_WIDTH; i++) begin : gen_drive_csb
+    if (i < SPI_HOST_NUM_CS) begin : gen_dut_csb
       assign spi_if.csb[i] = cio_csb_en_o[i] ? cio_csb_o[i] : 1'b1;
+    end else begin : gen_unused_csb
+      assign spi_if.csb[i] = 1'b1;
     end
   end
 
@@ -139,9 +144,15 @@ module tb;
   `ASSERT(Sck_A,   passthrough_i.passthrough_en -> passthrough_i.sck == cio_sck_o, clk, !rst_n)
   `ASSERT(Sck_En_A,passthrough_i.passthrough_en -> passthrough_i.sck_en == cio_sck_en_o,
           clk, !rst_n)
-  `ASSERT(Csb_A,   passthrough_i.passthrough_en -> passthrough_i.csb == cio_csb_o, clk, !rst_n)
-  `ASSERT(Csb_En_A,passthrough_i.passthrough_en -> passthrough_i.csb_en == cio_csb_en_o,
+  `ASSERT(Csb_A,   passthrough_i.passthrough_en -> passthrough_i.csb == cio_csb_o[0], clk, !rst_n)
+  `ASSERT(Csb_En_A,passthrough_i.passthrough_en -> passthrough_i.csb_en == cio_csb_en_o[0],
           clk, !rst_n)
+  // Passthrough uses CSB[0] only, so the other CSB lines are inactive.  The passthrough_mode vseq
+  // checks that their output enables follow CONTROL.OUTPUT_EN.
+  if (SPI_HOST_NUM_CS > 1) begin : gen_other_csb_asserts
+    `ASSERT(OtherCsb_A,   passthrough_i.passthrough_en -> &cio_csb_o[SPI_HOST_NUM_CS-1:1],
+            clk, !rst_n)
+  end
   `ASSERT(S_En_A,  passthrough_i.passthrough_en -> passthrough_i.s_en == cio_sd_en_o, clk, !rst_n)
   `ASSERT(Sd_O_A,  passthrough_i.passthrough_en -> passthrough_i.s == cio_sd_o, clk, !rst_n)
   `ASSERT(Sd_I_A,  passthrough_i.passthrough_en -> passthrough_o.s == cio_sd_i, clk, !rst_n)

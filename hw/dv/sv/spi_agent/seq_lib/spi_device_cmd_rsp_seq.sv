@@ -49,15 +49,16 @@ class spi_device_cmd_rsp_seq extends spi_device_seq;
         fork
           get_nxt_req(item);
           begin
-            // If CSB goes inactive, cleanup then go back to waiting for the next txn
-            @(posedge cfg.vif.csb[0]);
+            // If CSB goes inactive, cleanup then go back to waiting for the next txn.  At most one
+            // CSB line is active at a time, so this responds on any of them.
+            @(posedge (&cfg.vif.csb));
             spi_state = SpiIdle;
             rsp_q.delete();
           end
         join_any
         disable fork;
       end: iso_fork join
-      if (cfg.vif.csb[0] == 1'b1) continue;
+      if ((&cfg.vif.csb) == 1'b1) continue;
 
       // Check for start of transaction.
       if (item.first_byte) begin
