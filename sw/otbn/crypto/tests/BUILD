@@ -318,6 +318,14 @@ otbn_consttime_test(
 )
 
 otbn_consttime_test(
+    name = "p256_check_isoncurve_consttime",
+    subroutine = "p256_check_isoncurve",
+    deps = [
+        "//sw/otbn/crypto:run_p256",
+    ],
+)
+
+otbn_consttime_test(
     name = "p256_key_from_seed_consttime",
     subroutine = "p256_key_from_seed",
     deps = [
@@ -528,6 +536,7 @@ otbn_sim_test_suite(
     name = "p256_test",
     binary = "//sw/otbn/crypto:run_p256",
     tests = [
+        "p256_check_isoncurve_x_reduces_to_valid.hjson",
         "p256_check_public_key_not_on_curve.hjson",
         "p256_check_public_key_valid.hjson",
         "p256_check_public_key_x_too_large.hjson",
@@ -1176,6 +1185,7 @@ test_suite(
         # P256
         ":p256_base_mult_test",
         ":p256_base_mult_consttime",
+        ":p256_check_isoncurve_consttime",
         ":p256_isoncurve_consttime",
         ":p256_key_from_seed_consttime",
         ":p256_key_from_seed_test",
