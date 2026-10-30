@@ -42,7 +42,7 @@ All common types and methods defined at the package level can be found in
 `clkmgr_env_pkg`. Some of them in use are:
 
 ```systemverilog
-  localparam int NUM_PERI = 4;
+  localparam int NUM_PERI = 3;
   localparam int NUM_TRANS = 1;
   localparam int NUM_ALERTS = 2;
 
@@ -53,7 +53,6 @@ All common types and methods defined at the package level can be found in
   typedef virtual clk_rst_if clk_rst_vif;
   typedef enum int {
     PeriIoDiv4,
-    PeriIoDiv2,
     PeriIo,
     PeriUsb
   } peri_e;
@@ -87,7 +86,7 @@ All test sequences are extended from `clkmgr_base_vseq`, and are described below
 
 #### clkmgr_peri_vseq
 
-The sequence `clkmgr_peri_vseq` randomizes the stimuli that drive the peripheral clocks (4 in total).
+The sequence `clkmgr_peri_vseq` randomizes the stimuli that drive the peripheral clocks (3 in total).
 These clocks are mutually independent so they are tested in parallel.
 They depend on
 * The `clk_enables` CSR, which has a dedicated enable for each peripheral clock
@@ -109,7 +108,7 @@ Units are considered busy when their corresponding `idle_i` value is not `mubi_p
 The sequence `clkmgr_extclk_vseq` randomizes the stimuli that drive the external clock selection.
 The selection is controlled by software if the `extclk_ctrl.sel` CSR is `prim_mubi_pkg::MuBi4True`, provided the `lc_hw_debug_en_i` input is also set to `lc_ctrl_pkg::On`.
 Alternatively, the external clock is selected by the life cycle controller if the `lc_ctrl_byp_req_i` input is `lc_ctrl_pkg::On`.
-When the external clock is selected and `scanmode_i` is not set to `prim_mubi_pkg::MuBi4True`, the clock dividers for the clk_io_div2 and clk_io_div4 output clocks are stepped down:
+When the external clock is selected and `scanmode_i` is not set to `prim_mubi_pkg::MuBi4True`, the clock divider for the clk_io_div4 output clock is stepped down:
 * If `lc_ctrl_byp_req_i` is on, or
 * If `extclk_ctrl.hi_speed_sel` CSR is `prim_mubi_pkg::MuBi4True`, when the selection is enabled by software.
 
@@ -168,10 +167,10 @@ The `jitter_en_o` output is checked to match the `jitter_enable` CSR.
 * Pwrmgr enable-status assertions: Interface `clkmgr_pwrmgr_sva_if` contains concurrent SVA that checks that edges of the various ip_clk_en are followed by corresponding edges of their clk_status.
   The clocks checked are `main`, `io`, and `usb`.
 * Gated clock assertions: Interface `clkmgr_gated_clock_sva_if` contains concurrent SVA that checks each gated clock is either running or stopped based on their control logic.
-  There is one assertion for each peripheral clock (4 in total) and each hintable clock (1 in total).
+  There is one assertion for each peripheral clock (3 in total) and each hintable clock (1 in total).
 * Transactional clock assertions: Interface `clkmgr_trans_sva_if` contains concurrent SVA that checks each transactional clock is either running or stopped based on their control logic.
   There is one assertion for each hintable clock (1 in total).
-* Clock divider assertions: Interface `clkmgr_div_sva_if` contains concurrent SVA that checks the `io_div2` and `io_div4` clocks are running at nominal frequency, or are divided by two each in response to the `extclk` logic.
+* Clock divider assertions: Interface `clkmgr_div_sva_if` contains concurrent SVA that checks the `io_div4` clock is running at nominal frequency, or is divided by two in response to the `extclk` logic.
 * External clock assertions: Interface `clkmgr_extclk_sva_if` contains concurrent SVA that checks the external control outputs respond correctly to the various CSR or inputs that control them.
 * Clock gating assertions: Interface `clkmgr_cg_en_sva_if` contains concurrent assertions that check a clock's cg_en output is active when the clock is disabled, and viceversa.
   As a special case, interface `clkmgr_cg_en_sva_if` checks cg_en is never active for an aon clock.

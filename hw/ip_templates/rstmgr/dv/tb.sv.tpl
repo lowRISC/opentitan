@@ -68,8 +68,8 @@ module tb;
     .clk_i        (clk),
     .rst_ni       (rstmgr_if.resets_o.${preferred_rst_n}[rstmgr_pkg::DomainMainSel]),
 % for clk in sorted(list(clk_freqs.keys())):
-<% spaces = len("io_div2") - len(clk) %>\
-    .clk_${clk}_i${" " * spaces}(clk_${clk}),
+<% port = f".clk_{clk}_i" %>\
+    ${port.ljust(14)}(clk_${clk}),
 % endfor
     .clk_por_i    (clk_${preferred_domain}),
     .rst_por_ni   (rstmgr_if.resets_o.${preferred_por_n}[rstmgr_pkg::DomainAonSel]),

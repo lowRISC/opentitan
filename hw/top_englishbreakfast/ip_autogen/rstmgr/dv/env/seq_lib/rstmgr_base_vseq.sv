@@ -17,7 +17,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   // too slow and could slow testing down for no good reason.
   localparam int AON_FREQ_MHZ = 3;
   localparam int IO_FREQ_MHZ = 96;
-  localparam int IO_DIV2_FREQ_MHZ = 48;
   localparam int IO_DIV4_FREQ_MHZ = 24;
   localparam int MAIN_FREQ_MHZ = 100;
   localparam int USB_FREQ_MHZ = 48;
@@ -94,7 +93,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
   // This is used to randomize the delays for the clocks to start and stop.
   typedef struct {
     bit [5:0] io_delay;
-    bit [5:0] io_div2_delay;
     bit [5:0] io_div4_delay;
     bit [5:0] main_delay;
     bit [5:0] usb_delay;
@@ -337,13 +335,11 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     `DV_CHECK_STD_RANDOMIZE_FATAL(delays)
     if (enable) fork
       #(delays.io_delay * 1ns) cfg.io_clk_rst_vif.start_clk();
-      #(delays.io_div2_delay * 1ns) cfg.io_div2_clk_rst_vif.start_clk();
       #(delays.io_div4_delay * 1ns) cfg.io_div4_clk_rst_vif.start_clk();
       #(delays.main_delay * 1ns) cfg.main_clk_rst_vif.start_clk();
       #(delays.usb_delay * 1ns) cfg.usb_clk_rst_vif.start_clk();
     join else fork
       #(delays.io_delay * 1ns) cfg.io_clk_rst_vif.stop_clk();
-      #(delays.io_div2_delay * 1ns) cfg.io_div2_clk_rst_vif.stop_clk();
       #(delays.io_div4_delay * 1ns) cfg.io_div4_clk_rst_vif.stop_clk();
       #(delays.main_delay * 1ns) cfg.main_clk_rst_vif.stop_clk();
       #(delays.usb_delay * 1ns) cfg.usb_clk_rst_vif.stop_clk();
@@ -464,7 +460,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     fork
       cfg.aon_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
       cfg.io_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
-      cfg.io_div2_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
       cfg.io_div4_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
       cfg.main_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
       cfg.usb_clk_rst_vif.apply_reset(.reset_width_clks(BOGUS_RESET_CLK_CYCLES));
@@ -526,7 +521,6 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     cfg.clk_rst_vif.set_freq_mhz(IO_DIV4_FREQ_MHZ);
     cfg.aon_clk_rst_vif.set_freq_mhz(AON_FREQ_MHZ);
     cfg.io_clk_rst_vif.set_freq_mhz(IO_FREQ_MHZ);
-    cfg.io_div2_clk_rst_vif.set_freq_mhz(IO_DIV2_FREQ_MHZ);
     cfg.io_div4_clk_rst_vif.set_freq_mhz(IO_DIV4_FREQ_MHZ);
     cfg.main_clk_rst_vif.set_freq_mhz(MAIN_FREQ_MHZ);
     cfg.usb_clk_rst_vif.set_freq_mhz(USB_FREQ_MHZ);
