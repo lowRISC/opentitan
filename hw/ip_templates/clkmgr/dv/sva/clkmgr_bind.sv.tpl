@@ -71,14 +71,10 @@ module clkmgr_bind;
 % endif
 
 % for name, dc in derived_clks.items():
-<% ref_clk = f"io_div{int(dc['div'] / 2)}" if dc['div'] > 2 else "io" %>\
-  % if dc['div'] > 2:
-  // The div${int(dc['div'] / 2)} clk also steps, so not a good reference. Instead, check it always tracks ${ref_clk}.
-  % endif
   bind clkmgr clkmgr_div_sva_if #(
     .DIV(${dc['div']})
   ) clkmgr_div${dc['div']}_sva_if (
-    .clk(clocks_o.clk_${ref_clk}_powerup),
+    .clk(clocks_o.clk_${dc['src']['name']}_powerup),
     .rst_n(rst_ni),
     .maybe_divided_clk(clocks_o.clk_${dc['name']}_powerup),
     .div_step_down_req_i(div_step_down_req_i == prim_mubi_pkg::MuBi4True),
