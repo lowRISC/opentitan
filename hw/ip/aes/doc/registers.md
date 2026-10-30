@@ -406,7 +406,7 @@ Trigger Register.
 Each bit is individually cleared to zero when executing the corresponding trigger.
 While executing any of the triggered operations, the AES unit will set the IDLE bit in the Status Register to zero.
 The processor must check the Status Register before triggering further actions.
-For example, writes to Initial Key and IV Registers are ignored while the AES unit is busy.
+For example, writes to Control and GCM Control, Initial Key and IV Registers are ignored while the AES unit is busy.
 Writes to the Input Data Registers are not ignored but the data will be cleared if a KEY_IV_DATA_IN_CLEAR operation is pending.
 - Offset: `0x80`
 - Reset default: `0xe`
@@ -415,16 +415,16 @@ Writes to the Input Data Registers are not ignored but the data will be cleared 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "START", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "KEY_IV_DATA_IN_CLEAR", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "DATA_OUT_CLEAR", "bits": 1, "attr": ["wo"], "rotate": -90}, {"name": "PRNG_RESEED", "bits": 1, "attr": ["wo"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "START", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"name": "KEY_IV_DATA_IN_CLEAR", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"name": "DATA_OUT_CLEAR", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"name": "PRNG_RESEED", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                   |
 |:------:|:------:|:-------:|:-------------------------------------------------------|
 |  31:4  |        |         | Reserved                                               |
-|   3    |   wo   |   0x1   | [PRNG_RESEED](#trigger--prng_reseed)                   |
-|   2    |   wo   |   0x1   | [DATA_OUT_CLEAR](#trigger--data_out_clear)             |
-|   1    |   wo   |   0x1   | [KEY_IV_DATA_IN_CLEAR](#trigger--key_iv_data_in_clear) |
-|   0    |   wo   |   0x0   | [START](#trigger--start)                               |
+|   3    |  rw1s  |   0x1   | [PRNG_RESEED](#trigger--prng_reseed)                   |
+|   2    |  rw1s  |   0x1   | [DATA_OUT_CLEAR](#trigger--data_out_clear)             |
+|   1    |  rw1s  |   0x1   | [KEY_IV_DATA_IN_CLEAR](#trigger--key_iv_data_in_clear) |
+|   0    |  rw1s  |   0x0   | [START](#trigger--start)                               |
 
 ### TRIGGER . PRNG_RESEED
 Keep continuing with the current states of the internal pseudo-random number generators used for register clearing and masking (0) or perform a reseed of the internal states from the connected entropy source (1).
