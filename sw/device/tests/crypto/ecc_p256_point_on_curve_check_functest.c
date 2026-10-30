@@ -79,6 +79,65 @@ status_t point_valid_test(void) {
   return OTCRYPTO_OK;
 }
 
+status_t point_x_out_of_range_test(void) {
+  // x = p (the field prime): x >= p, so the range check must reject it before
+  // the isoncurve check runs.
+  p256_point_t point_raw = {
+      .x = {0xffffffff, 0xffffffff, 0xffffffff, 0x00000000, 0x00000000,
+            0x00000000, 0x00000001, 0xffffffff},
+      // y is a valid coordinate for a different point; irrelevant since x is
+      // rejected first.
+      .y = {0x9e008c2e, 0xa8707058, 0xab9c6924, 0x7f7a11d0, 0xb53a17fa,
+            0x43dd09ea, 0x1f31c143, 0x42a1c697},
+  };
+
+  uint32_t pt_buf[kP256PointWords];
+  memcpy(pt_buf, &point_raw, sizeof(point_raw));
+  otcrypto_unblinded_key_t point = {
+      .key_length = sizeof(pt_buf),
+      .key = pt_buf,
+  };
+
+  hardened_bool_t result;
+  TRY(otcrypto_ecc_p256_point_on_curve(&point, &result));
+
+  if (result != kHardenedBoolFalse) {
+    LOG_ERROR("Point with x >= p passed the point check.");
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  return OTCRYPTO_OK;
+}
+
+status_t point_y_out_of_range_test(void) {
+  // y = p (the field prime): y >= p, so the range check must reject it after
+  // x passes.
+  p256_point_t point_raw = {
+      // x is a valid in-range coordinate so the x range check passes.
+      .x = {0xbfa8c334, 0x9773b7b3, 0xf36b0689, 0x6ec0c0b2, 0xdb6c8bf3,
+            0x1628ce58, 0xfacdc546, 0xb5511a6a},
+      .y = {0xffffffff, 0xffffffff, 0xffffffff, 0x00000000, 0x00000000,
+            0x00000000, 0x00000001, 0xffffffff},
+  };
+
+  uint32_t pt_buf[kP256PointWords];
+  memcpy(pt_buf, &point_raw, sizeof(point_raw));
+  otcrypto_unblinded_key_t point = {
+      .key_length = sizeof(pt_buf),
+      .key = pt_buf,
+  };
+
+  hardened_bool_t result;
+  TRY(otcrypto_ecc_p256_point_on_curve(&point, &result));
+
+  if (result != kHardenedBoolFalse) {
+    LOG_ERROR("Point with y >= p passed the point check.");
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -91,6 +150,22 @@ bool test_main(void) {
     LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
     LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
     // Print the error.
+    CHECK_STATUS_OK(err);
+    return false;
+  }
+
+  err = point_x_out_of_range_test();
+  if (!status_ok(err)) {
+    LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
+    LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
+    CHECK_STATUS_OK(err);
+    return false;
+  }
+
+  err = point_y_out_of_range_test();
+  if (!status_ok(err)) {
+    LOG_INFO("OTBN error bits: 0x%08x", otbn_err_bits_get());
+    LOG_INFO("OTBN instruction count: 0x%08x", otbn_instruction_count_get());
     CHECK_STATUS_OK(err);
     return false;
   }

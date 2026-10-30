@@ -82,6 +82,10 @@ p256_shared_key:
        w19 <= (y^2) mod p */
   jal      x1, p256_isoncurve_proj
 
+  /* Fail if z == 0 mod p (b * z^3 mod p in w27 is 0). */
+  bn.or    w0, w27, w31
+  jal      x1, trigger_fault_if_fg0_not_z
+
   /* Compare the two sides of the equation to check if the result
      is a valid point as an FI countermeasure.
      The check fails if both sides are not equal.
