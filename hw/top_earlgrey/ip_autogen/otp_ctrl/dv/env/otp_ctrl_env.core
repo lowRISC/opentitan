@@ -16,8 +16,8 @@ filesets:
       - lowrisc:ip:otp_macro_pkg
       - lowrisc:dv:otp_macro_env
       - lowrisc:prim:prim_pkg
+      - lowrisc:earlgrey_dv:otp_ctrl_mem_bkdr_util:0.1
     files:
-      - otp_scrambler_pkg.sv
       - otp_ctrl_env_pkg.sv
       - otp_ctrl_if.sv
       - otp_ctrl_ast_inputs_cfg.sv: {is_include_file: true}
@@ -31,6 +31,7 @@ filesets:
       - seq_lib/otp_ctrl_base_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_common_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_wake_up_vseq.sv: {is_include_file: true}
+      - seq_lib/otp_ctrl_bkdr_write_partitions_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_partition_walk_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_low_freq_read_vseq.sv: {is_include_file: true}
