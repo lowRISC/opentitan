@@ -23,6 +23,8 @@
 
             Checking:
               - Ensure transactions are transmitted/received correctly
+              - Ensure the active CSB line is the one that CSID selected when the command was
+                written
             '''
       stage: V1
       tests: ["spi_host_smoke"]
@@ -144,9 +146,18 @@
             - Verify the function of spi_host in passthrough_mode
 
             Stimulus:
+              - Randomly set CONTROL.OUTPUT_EN
+              - If NumCS > 1, usually hold a CSB line other than CSB[0] active with a CSAAT
+                command before enabling Passthrough Mode
               - Enable Passthrough Mode
             Checking:
               - Ensure Host to Device and Device to Host paths are switched to Passthrough ports
+              - Ensure CSB[0] follows the passthrough port
+              - If NumCS > 1, ensure the other CSB lines are inactive and their output enables
+                follow CONTROL.OUTPUT_EN, and that the held CSB line is active again when
+                Passthrough Mode is disabled
+
+            The spi_host_3cs sim cfg variant runs all tests with NumCS = 3.
       '''
       stage: V2
       tests: ["spi_host_passthrough_mode"]
@@ -375,7 +386,7 @@
     {
       name: csid_cg
       desc: '''
-            Collect coverage that different IDs are used.
+            Collect coverage that each CSB line is active during a segment.
             '''
     }
     {

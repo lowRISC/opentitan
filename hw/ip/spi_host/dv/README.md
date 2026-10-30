@@ -41,10 +41,11 @@ The following utilities provide generic helper tasks and functions to perform ac
 ### Compile-time configurations
 [list compile time configurations, if any and what are they used for]
 ```systemverilog
-  // sets the number of spi devices
-  parameter int NumCS = 1;
+  // The number of chip select lines of the DUT (spi_host_env_cfg_pkg)
+  parameter integer unsigned SPI_HOST_NUM_CS = `SPI_HOST_NUM_CS;
 ```
-Currently there verification only covers NumCS = 1 since this is the configuration that will be used in tapeout.
+`SPI_HOST_NUM_CS` defaults to 1.
+The `spi_host_3cs` sim cfg variant (`spi_host_3cs_sim_cfg.hjson`) sets it to 3 and runs all tests with three chip select lines.
 Endianness implemented and verified is only Little Endian with ByteOrder set to 1
 
 ### Global types & methods

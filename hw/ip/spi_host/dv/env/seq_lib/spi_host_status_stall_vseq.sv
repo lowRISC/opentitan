@@ -47,7 +47,7 @@ class spi_host_status_stall_vseq extends spi_host_tx_rx_vseq;
             // check if it fills up
             csr_rd(.ptr(ral.status.rxqd), .value(current_rxqd), .backdoor(1));
             if ((rxqd + 1) == SPI_HOST_RX_DEPTH &&
-                cfg.m_spi_agent_cfg.vif.csb[0] === 0 // active spi txn
+                (&cfg.m_spi_agent_cfg.vif.csb) === 0 // active spi txn
                 ) begin
               cfg.m_spi_agent_cfg.vif.wait_for_clks(1);
               csr_rd(.ptr(ral.status.rxqd), .value(current_rxqd), .backdoor(1));

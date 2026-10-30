@@ -82,8 +82,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     wait (cfg.en_scb == 1);
     forever begin
       wait(cfg.clk_rst_vif.rst_n && !spi_ctrl_reg.sw_rst);
-      // Wait until CSB signal has the enable set
-      wait (cfg.spi_passthrough_vif.cio_csb_en_o === 1);
+      // Wait until the CSB signals have the enable set
+      wait ((&cfg.spi_passthrough_vif.cio_csb_en_o) === 1);
       `DV_SPINWAIT_EXIT(
         fork
           compare_tx_trans();
@@ -109,7 +109,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     forever begin
 
       wait (spi_ctrl_reg.sw_rst === 0);
-      @(posedge cfg.m_spi_agent_cfg.vif.csb[0]);
+      @(posedge (&cfg.m_spi_agent_cfg.vif.csb));
 
       if (cfg.force_spi_fsm_vif.fast_mode == 1)
         continue;
@@ -119,7 +119,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       // Spec says 'configot.idle' is the minimum amount of half SCK cycles before the next command
       for(int i = 0; i < num_quarter_cycles; i++) begin
         #(quarter_period * 1ps);
-        if (cfg.m_spi_agent_cfg.vif.csb[0] === 0) begin
+        if ((&cfg.m_spi_agent_cfg.vif.csb) === 0) begin
           `uvm_error(`gfn, {$sformatf("(CONFIGOPTS.csnidle*2=%0d) > %0d 1/4 cycles since CSB=0x1.",
                                       num_quarter_cycles, i),
                             "... and CSB has just being deasserted which is against the spec"})
@@ -142,7 +142,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     // Threads set timestamps of moments in which CSB became active and first spi cycle.
     // We then check the amount of spi half cycles isn't greater than the CSNLEAD register value
     forever begin
-      @(negedge cfg.m_spi_agent_cfg.vif.csb[0]);
+      @(negedge (&cfg.m_spi_agent_cfg.vif.csb));
       `uvm_info(`gfn, "CSB went low", UVM_DEBUG)
       if (cfg.force_spi_fsm_vif.fast_mode == 1)
         continue;
@@ -152,7 +152,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
             begin
               start_time = $time;
               `uvm_info(`gfn, $sformatf("%m - NEGEDGE of CSB"), UVM_DEBUG)
-              @(posedge cfg.m_spi_agent_cfg.vif.csb[0]);
+              @(posedge (&cfg.m_spi_agent_cfg.vif.csb));
               `uvm_info(`gfn, $sformatf("%m - POSEDGE of CSB: exiting thread"), UVM_DEBUG)
             end
             begin
@@ -303,6 +303,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     // indication that this is a new transaction
     string             txt = "";
     bit [7:0]          host_data, device_data, extracted_data;
+    bit [CSB_WIDTH-1:0] active_csb;
 
     forever begin
       // Get predicted item
@@ -314,8 +315,15 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
       for (int i=0; i < exp_segment.command_reg.len+1; i++) begin
 
         wait(&cfg.m_spi_agent_cfg.vif.csb == 0);
+        // The active CSB line must be the one that the CSID of the command selects.
+        active_csb = cfg.m_spi_agent_cfg.vif.get_active_csb();
+        `DV_CHECK_EQ(active_csb, exp_segment.csid,
+                     "Active CSB line does not match the CSID of the command")
+        if (cfg.en_cov && i == 0) begin
+          cov.csid_cg.sample(active_csb);
+        end
         // After the sampling edge the plain_item should've been populated
-        cfg.m_spi_agent_cfg.wait_sck_edge(SamplingEdge, cfg.m_spi_agent_cfg.vif.get_active_csb());
+        cfg.m_spi_agent_cfg.wait_sck_edge(SamplingEdge, active_csb);
 
         // Extract data based on segment: task below blocks if data has not yet been fully sampled
         extract_data_for_segment(exp_segment.command_reg, host_data, device_data);
@@ -376,7 +384,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
   // 'num_times' is scaled to account for sys_clk cycles (plus 1 extra), otherwise the check may
   // miss some spi_en or stalling conditions if the spi_clk is too slow.
   //
-  // Note: Only 1 csb line is currently supported, hence checks reference csb as "vif.CSB[0]"
+  // Note: At most one CSB line is active at a time, so the checks use the AND of all CSB lines.
   virtual task check_csaat(bit csaat);
     int num_times = ((curr_spi_configopts.csntrail + 1 + 1) *
                       (curr_spi_configopts.clkdiv + 1)) + 1;
@@ -413,7 +421,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
                                   status.txstall, status.rxstall)}, UVM_DEBUG)
             end
 
-            if (cfg.m_spi_agent_cfg.vif.csb[0] !== csaat) begin
+            if ((&cfg.m_spi_agent_cfg.vif.csb) !== csaat) begin
               break;
             end
             // Consuming the delays programmed into configopts.CSNTRAIL as a factor of sys cycles
@@ -434,7 +442,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
           #(spi_clk_half_period/2 * 1ps);
 
           // Checking after the number of half SCK cycles the CSB line is at the expected value
-          if (cfg.m_spi_agent_cfg.vif.csb[0] === csaat) begin
+          if ((&cfg.m_spi_agent_cfg.vif.csb) === csaat) begin
             `uvm_fatal(`gfn, {"CSB still low since last data sent",
                        $sformatf("There's been %0d half SCK cycles (time, no ticks)",num_times)})
           end
@@ -450,7 +458,7 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
           `uvm_fatal(`gfn, $sformatf("%m - Clock kept ticking"))
         end
         begin
-          wait (cfg.m_spi_agent_cfg.vif.csb[0] === 1);
+          wait ((&cfg.m_spi_agent_cfg.vif.csb) === 1);
           `uvm_info(`gfn, $sformatf("%m - CSB has been set to 1 - killing CSAAT check"), UVM_DEBUG)
         end
       join_any
@@ -466,8 +474,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
     `uvm_info(`gfn, $sformatf("CONFIGOPTS written - %p\nValue will be updated on CSB change",
                               next_spi_configopts),UVM_DEBUG)
     // Wait for CSB to be low to update the current value
-    if (!initialise_configopts && cfg.m_spi_agent_cfg.vif.csb[0] === 0) begin
-      @(cfg.m_spi_agent_cfg.vif.csb[0]);
+    if (!initialise_configopts && (&cfg.m_spi_agent_cfg.vif.csb) === 0) begin
+      @((&cfg.m_spi_agent_cfg.vif.csb));
       `uvm_info(`gfn, "CSB changed, wait delay ebfore updating configopts", UVM_DEBUG)
       // Delay before updating the config to avoid colliding with the ongoing
       // idle/trail/lead checks
@@ -656,6 +664,8 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
           host_wr_segment.command_reg.direction = spi_cmd_reg.direction;
           host_wr_segment.command_reg.mode      = spi_cmd_reg.mode;
           host_wr_segment.command_reg.csaat     = spi_cmd_reg.csaat;
+          // The DUT latches the CSID register with each command.
+          host_wr_segment.csid                  = spi_ctrl_reg.csid;
           if (write) begin
             `downcast(wr_segment, host_wr_segment.clone());
 
@@ -700,9 +710,6 @@ class spi_host_scoreboard extends cip_base_scoreboard #(
         end
         "csid": begin
           spi_ctrl_reg.csid = item.a_data;
-          if (cfg.en_cov) begin
-            cov.csid_cg.sample(spi_ctrl_reg);
-          end
         end
         "error_enable": begin
           spi_error_enable_reg.csidinval     = bit'(get_field_val(ral.error_enable.csidinval,

@@ -216,7 +216,7 @@ interface chip_if;
       dios[top_darjeeling_pkg::DioPadSpiHostClk] : 1'bz;
 
   assign spi_device0_if.csb = __enable_spi_device[0] ?
-      {'1, dios[top_darjeeling_pkg::DioPadSpiHostCsL]} : '1;
+      {{(spi_agent_pkg::CSB_WIDTH-1){1'b1}}, dios[top_darjeeling_pkg::DioPadSpiHostCsL]} : '1;
 
   initial begin
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_device_agents0*", "vif", spi_device0_if);

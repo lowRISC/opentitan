@@ -1,0 +1,24 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+{
+  // Name of the sim cfg variant: SPI_HOST with three chip select lines
+  variant: 3cs
+
+  // Import the default spi_host sim_cfg file
+  import_cfgs: ["{proj_root}/hw/ip/spi_host/dv/spi_host_sim_cfg.hjson"]
+
+  build_opts: ["+define+SPI_HOST_NUM_CS=3"]
+
+  overrides: [
+    // Override the default scratch directory and rel_path to take variant into account
+    {
+      name: scratch_path
+      value: "{scratch_base_path}/{name}_{variant}-{flow}-{tool}"
+    }
+    {
+      name: rel_path
+      value: "hw/ip/{name}_{variant}/dv"
+    }
+  ]
+}

@@ -10,6 +10,7 @@ filesets:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
       - lowrisc:dv:spi_agent
+      - lowrisc:dv:spi_host_env_cfg_pkg
       - lowrisc:ip:spi_host
     files:
       - spi_host_env_pkg.sv

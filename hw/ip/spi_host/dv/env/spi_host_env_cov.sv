@@ -96,9 +96,10 @@ class spi_host_env_cov extends cip_base_env_cov #(.CFG_T(spi_host_env_cfg));
     tx_qd_cp : coverpoint spi_status_reg.tx_qd;
   endgroup
 
-  covergroup csid_cg with function sample(spi_host_ctrl_t spi_ctrl_reg);
-    csid_cp : coverpoint spi_ctrl_reg.csid {
-      bins csids = {[0:SPI_HOST_NUM_CS-1]};
+  // Sampled with the CSB line that is active during a segment
+  covergroup csid_cg with function sample(int unsigned csid);
+    csid_cp : coverpoint csid {
+      bins csids[] = {[0:SPI_HOST_NUM_CS-1]};
     }
   endgroup
 
