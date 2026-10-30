@@ -394,9 +394,9 @@ package entropy_src_env_pkg;
         test inside {adaptps_ht, bucket_ht} ? 0 : $floor(mean - desired_sigma * stddev);
     upper_threshold = $ceil(mean + desired_sigma * stddev);
     // For large values of sigma, the gaussian approximation can recommend thresholds larger than
-    // the total number of trials.   In such cases we cap the threshold at the total number of
-    // trials for the given test.
-    upper_threshold = (upper_threshold > n) ? n : upper_threshold;
+    // the total number of trials.   In such cases we cap the threshold at one above the total
+    // number of trials for the given test, such that the test can never fail.
+    upper_threshold = (upper_threshold > n) ? n + 1 : upper_threshold;
     lower_threshold = (lower_threshold < 0) ? 0 : lower_threshold;
 
     result = (hi_low == high_test) ? upper_threshold : lower_threshold;
