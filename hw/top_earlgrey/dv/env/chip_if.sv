@@ -697,7 +697,6 @@ interface chip_if;
 
   wire usbdev_clk_is_enabled = 0;
   wire io_clk_is_enabled = 0;
-  wire io_div2_clk_is_enabled = 0;
   wire io_div4_clk_is_enabled = 0;
 `else
   wire aes_clk_is_enabled = `CLKMGR_HIER.u_reg.hw2reg.clk_hints_status.clk_main_aes_val.d;
@@ -707,7 +706,6 @@ interface chip_if;
 
   wire usbdev_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_usb_peri_en.q;
   wire io_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_peri_en.q;
-  wire io_div2_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div2_peri_en.q;
   wire io_div4_clk_is_enabled = `CLKMGR_HIER.u_reg.reg2hw.clk_enables.clk_io_div4_peri_en.q;
 `endif
   // Ibex monitors.

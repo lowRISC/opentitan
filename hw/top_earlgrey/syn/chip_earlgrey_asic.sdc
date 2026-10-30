@@ -142,17 +142,12 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
 # This requires knowledge of actual port name
 set CLK_DST_NAME $CLK_DST_PIN
 
-# generated clocks (div2/div4)
-set CLK_PATH top_earlgrey/earlgrey_pd_aon/u_clkmgr/u_no_scan_io_div2_div
-create_generated_clock -name IO_DIV2_CLK  \
-    -source [get_pins ${IO_CLK_PIN}] -divide_by 2 [get_pins ${CLK_PATH}/${CLK_DST_NAME}] -master IO_CLK -add
-
+# generated clocks (div4)
 set CLK_PATH top_earlgrey/earlgrey_pd_aon/u_clkmgr/u_no_scan_io_div4_div
 create_generated_clock -name IO_DIV4_CLK  \
     -source [get_pins ${IO_CLK_PIN}] -divide_by 4 [get_pins ${CLK_PATH}/${CLK_DST_NAME}] -master IO_CLK -add
 
 # Define these variables for later use
-set IO_DIV2_TCK_PERIOD [expr $IO_TCK_PERIOD * 2]
 set IO_DIV4_TCK_PERIOD [expr $IO_TCK_PERIOD * 4]
 
 # note that due to the muxing, additional timing views with set_case_analysis may be needed.
@@ -1669,7 +1664,6 @@ set_clock_groups -name group1 -async                                  \
     -group [get_clocks USB_CLK                                      ] \
     -group [get_clocks "${SPI_DEV_CLKS} ${SPI_DEV_HC_CLKS} ${SPI_DEV_SLOW_PASS_CLKS} ${SPI_DEV_FAST_PASS_CLKS} ${SPI_TPM_CLKS}"] \
     -group [get_clocks {IO_CLK SPI_HOST_CLK SPI_HOST1_CLK SPI_HOST1_INTERNAL_CLK}] \
-    -group [get_clocks IO_DIV2_CLK                                  ] \
     -group [get_clocks IO_DIV4_CLK                                  ] \
     -group [get_clocks "JTAG_TCK RV_JTAG_TCK LC_JTAG_TCK"           ] \
     -group [get_clocks AON_CLK                                      ]
@@ -1740,5 +1734,4 @@ if { $synopsys_program_name  == "pt_shell" } {
   set_max_delay -from ${IO_BANKS} -to ${IO_BANKS} -through [get_cells top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl/*] ${SYSRST_MAXDELAY} -probe
 }
 
-set_clock_uncertainty -setup  ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_DIV2_CLK]
 set_clock_uncertainty -setup  ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_DIV4_CLK]

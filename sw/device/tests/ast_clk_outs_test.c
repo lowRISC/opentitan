@@ -25,7 +25,7 @@ OTTF_DEFINE_TEST_CONFIG();
  * After 100 measurements, this configures the clock counters per external
  * clock and low speed settings before entering low-power mode, where all but
  * the aon clock are off. The expectation is that main and io clocks will
- * report errors, but div2 and div4 should not.
+ * report errors, but io_div4 should not.
  *
  * When the dut wakes up, another 100 measurements are done before the
  * test finishes.
