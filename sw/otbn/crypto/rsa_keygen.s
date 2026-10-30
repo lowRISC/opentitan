@@ -36,7 +36,6 @@
 
 .text
 .globl rsa_keygen
-.globl rsa_keygen_det
 .globl gen_d
 
 # Exposed for testing only.
@@ -52,7 +51,14 @@
  * @param[out] dmem[rsa_d0]: rsa_d0, first share of secret exponent
  * @param[out] dmem[rsa_d1]: rsa_d1, second share of secret exponent
  */
+.equ HARDENED_BOOL_TRUE, 0x739
+
 rsa_keygen:
+  la   x16, rsa_e
+  lw   x2, 0(x16)
+  addi x3, x0, HARDENED_BOOL_TRUE
+  beq  x2, x3, _det_keygen
+
   # Temporarily store the limb count in DMEM.
   la x16, nlimbs_tmp
   sw x30, 0(x16)
@@ -69,7 +75,6 @@ _rsa_keygen_restart:
   jal x1, gen_p
   jal x1, gen_q
 
-_gen_g_h_d:
   # Generate the 512-bit auxiliary primes.
   # dmem[rsa_g] <= g.
   # dmem[rsa_h] <= h.
@@ -434,7 +439,6 @@ _gen_q_body_inner:
   jal x1, distance_test
   beq x2, x0, _gen_q_body_inner
 
-_gen_q_check:
   jal x1, fermat_test
   beq x2, x0, _gen_q_loop
 
@@ -669,33 +673,20 @@ mul256_w24xw25:
   ret
   unimp
 
-/**
- * Deterministic RSA prime step and key generation.
- *
- * Expects raw random candidate words in `dmem[rsa_n]` and `dmem[rsa_p]`
- * zeroed before the first call. Checks one candidate per call: first for `p`
- * (`dmem[rsa_p] == 0`), then for `q` (`dmem[rsa_p] != 0`), and once `q` is
- * found, generates auxiliary primes `g`, `h` and private exponent `d`.
- *
- * @param[in] x30: n, number of limbs in the modulus and key.
- */
-rsa_keygen_det:
-  la x16, nlimbs_tmp
-  sw x30, 0(x16)
-  srl x30, x30, 1
-  li x26, 0
-  la x16, rsa_n
-  jal x1, fix_prime_candidate
-  la x16, rsa_p
-  lw x2, 0(x16)
-  bne x2, x0, _det_gen_q
-  jal x1, _gen_p_check
-  jal x0, _rsa_keygen_fail
-_det_gen_q:
-  jal x1, distance_test
-  beq x2, x0, _rsa_keygen_fail
-  jal x1, _gen_q_check
-  jal x0, _gen_g_h_d
+_det_keygen:
+  srl  x30, x30, 1
+  la   x16, rsa_p
+  lw   x2, 0(x16)
+  bne  x2, x0, _det_mul_pq
+  li   x26, 0
+  jal  x0, _gen_p_check
+
+_det_mul_pq:
+  la   x10, rsa_p
+  la   x11, rsa_q
+  la   x12, rsa_n
+  addi x31, x30, 0
+  jal  x0, bignum_mul
 
 _rsa_keygen_fail:
   la x16, mode

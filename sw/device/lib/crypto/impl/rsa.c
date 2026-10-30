@@ -20,7 +20,6 @@
 #include "sw/device/lib/crypto/impl/status.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
-#include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 
 // Module ID for status codes.
@@ -350,9 +349,7 @@ static status_t public_key_structural_check(
   return rsa_mode_check(public_key->key_mode);
 }
 
-OT_ALWAYS_INLINE
-static otcrypto_status_t rsa_keygen_async_start(otcrypto_rsa_size_t size,
-                                                hardened_bool_t deterministic) {
+otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_KEYGEN_ASYNC_START);
   OTCRYPTO_HEALTH_CHECK(kTestRsa4096SignBit);
   OTCRYPTO_HEALTH_CHECK(size == kOtcryptoRsaSize2048 ? kTestRsa2048VerifyBit
@@ -363,19 +360,13 @@ static otcrypto_status_t rsa_keygen_async_start(otcrypto_rsa_size_t size,
   rsa_size_t rsa_size = (rsa_size_t)0;
   size_t num_words = 0;
   HARDENED_TRY(rsa_size_to_params(size, &rsa_size, &num_words));
-  HARDENED_TRY_WIPE_DMEM(rsa_keygen_init(rsa_size, deterministic));
+  HARDENED_TRY(rsa_keygen_start(rsa_size));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
-otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size) {
-  return rsa_keygen_async_start(size, /*deterministic=*/kHardenedBoolFalse);
-}
-
-OT_ALWAYS_INLINE
-static otcrypto_status_t rsa_keygen(otcrypto_rsa_size_t size,
-                                    hardened_bool_t deterministic,
-                                    otcrypto_unblinded_key_t *public_key,
-                                    otcrypto_blinded_key_t *private_key) {
+otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
+                                      otcrypto_unblinded_key_t *public_key,
+                                      otcrypto_blinded_key_t *private_key) {
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (public_key == NULL || private_key == NULL) {
@@ -389,27 +380,80 @@ static otcrypto_status_t rsa_keygen(otcrypto_rsa_size_t size,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  HARDENED_TRY(rsa_keygen_async_start(size, deterministic));
+  HARDENED_TRY(otcrypto_rsa_keygen_async_start(size));
   return otcrypto_rsa_keygen_async_finalize(public_key, private_key);
 }
 
-otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
-                                      otcrypto_unblinded_key_t *public_key,
-                                      otcrypto_blinded_key_t *private_key) {
-  return rsa_keygen(size, /*deterministic=*/kHardenedBoolFalse, public_key,
-                    private_key);
+otcrypto_status_t otcrypto_rsa_prime_check(
+    otcrypto_rsa_size_t size,
+    const otcrypto_const_word32_buf_t *prime_candidate,
+    hardened_bool_t *prime_ok) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_PRIME_CHECK);
+  OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (prime_candidate == NULL || prime_candidate->data == NULL ||
+      prime_ok == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  *prime_ok = kHardenedBoolFalse;
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(prime_candidate));
+
+  rsa_size_t rsa_size = (rsa_size_t)0;
+  size_t num_words = 0;
+  HARDENED_TRY(rsa_size_to_params(size, &rsa_size, &num_words));
+  size_t prime_words = num_words / 2;
+  if (prime_candidate->len != prime_words) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(prime_candidate->len, prime_words);
+
+  // The OTBN Miller-Rabin routine requires p = 3 (mod 4) and the MSB set.
+  if ((prime_candidate->data[0] & 3) != 3 ||
+      (prime_candidate->data[prime_words - 1] >> 31) == 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY_WIPE_DMEM(
+      rsa_prime_check(rsa_size, prime_candidate->data, prime_ok));
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
-otcrypto_status_t otcrypto_rsa_keygen_deterministic(
-    otcrypto_rsa_size_t size, const otcrypto_const_byte_buf_t *entropy,
-    otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
-  otcrypto_const_byte_buf_t empty =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
-  HARDENED_TRY(otcrypto_drbg_uninstantiate());
-  HARDENED_TRY(otcrypto_drbg_manual_instantiate(entropy, &empty));
-  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_KEYGEN_DETERMINISTIC);
-  return otcrypto_eval_exit(rsa_keygen(
-      size, /*deterministic=*/kHardenedBoolTrue, public_key, private_key));
+otcrypto_status_t otcrypto_rsa_create_n_from_primes(
+    otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *prime_p,
+    const otcrypto_const_word32_buf_t *prime_q,
+    otcrypto_word32_buf_t *modulus) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_CREATE_N_FROM_PRIMES);
+  OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (prime_p == NULL || prime_p->data == NULL || prime_q == NULL ||
+      prime_q->data == NULL || modulus == NULL || modulus->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(prime_p));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(prime_q));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(modulus));
+
+  rsa_size_t rsa_size = (rsa_size_t)0;
+  size_t num_words = 0;
+  HARDENED_TRY(rsa_size_to_params(size, &rsa_size, &num_words));
+  size_t prime_words = num_words / 2;
+  if (prime_p->len != prime_words || prime_q->len != prime_words ||
+      modulus->len != num_words) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(prime_p->len, prime_words);
+  HARDENED_CHECK_EQ(prime_q->len, prime_words);
+  HARDENED_CHECK_EQ(modulus->len, num_words);
+
+  if (is_even(prime_p->data[0]) || is_even(prime_q->data[0])) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY_WIPE_DMEM(rsa_create_n_from_primes(
+      rsa_size, prime_p->data, prime_q->data, modulus->data));
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
