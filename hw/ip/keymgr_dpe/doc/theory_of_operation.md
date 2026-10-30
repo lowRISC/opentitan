@@ -98,8 +98,8 @@ However, previously generated sideload key slots and the software key stored in 
 This allows the software to keep the last valid keys while preventing keymgr_DPE to compute further versioned keys.
 
 ### Invalid
-`Invalid` state is entered whenever key manager is deactivated through the [life cycle connection](#life-cycle-connection) or when an operation encounters a [fault](#faults-and-operational-faults).
-Upon `Invalid` entry, the internal key, the sideload key slots and the software key are all wiped.
+`Invalid` state is entered whenever key manager is deactivated through the [life cycle connection](#life-cycle-connection) or when it detects a [fault](registers.md#fault_status), whether or not an operation is ongoing.
+Upon `Invalid` entry, any key held in the internal key slots, the sideload key slots or the software key is wiped.
 
 ### Invalid and Disabled State
 
@@ -141,6 +141,7 @@ In particular, the destination slot for the UDS is chosen by SW, and there is no
 Moreover, since the destination slot for this first advance call has no parent, its `boot_stage` value is not incremented but initialized to `0`.
 This initial latching can be repeated with the [_Load Root Key_](#load-root-key-and-load-secondary-root-key) operation unless locked with the `LOAD_ROOT_KEY_LOCK` register.
 If the OTP creator root key is not valid during the latching cycle, keymgr_dpe moves to `Invalid` state.
+A fault detected by then also stops the latching and moves keymgr_dpe to `Invalid` state.
 
 Further advance calls use the key stored in the specified `CONTROL_SHADOWED.SLOT_SRC_SEL` slot (equally referred to as _parent_ or _source_ slot) , and the result of the derivation updates the slot specified by `CONTROL_SHADOWED.SLOT_DST_SEL`  (referred to as _destination_ or _child_ slot).
 Assuming that `key_policy`, `boot_stage` or `valid` bits of the parent context permit, the child secret is derived from the parent secret through a key derivation function during advance operation.
