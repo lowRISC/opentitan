@@ -1,0 +1,80 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+#include <stdbool.h>
+
+#include "hw/top/dt/rv_core_ibex.h"
+#include "sw/device/lib/arch/device.h"
+
+#include "hw/top/rv_core_ibex_regs.h"
+
+// Use the first dt_rv_core_ibex_t enum, i.e. the first Ibex core instance.
+static const dt_rv_core_ibex_t kRvCoreIbexDt = (dt_rv_core_ibex_t)0;
+static_assert(kDtRvCoreIbexCount == 1, "Only single core tops are supported");
+
+static inline uintptr_t rv_core_ibex_base(void) {
+  return (uintptr_t)dt_rv_core_ibex_primary_reg_block(kRvCoreIbexDt);
+}
+
+/**
+ * Device-specific symbol definitions for the Darjeeling DV simulation device.
+ *
+ * The clock frequencies are the calibrated power-up frequencies of the AST
+ * oscillator models in `hw/top_darjeeling/ip/ast/rtl/{sys,io,aon}_osc.sv` and
+ * must match the DV clock table in `hw/top_darjeeling/sw/dt/sim_dv.c`. As on
+ * Earlgrey, they do not track bench run-time options that change the system
+ * clock (`+cal_sys_clk_70mhz`, `+en_jitter`): the same image is used for
+ * those run modes.
+ */
+
+const device_type_t kDeviceType = kDeviceSimDV;
+
+// TODO: DV testbench completely randomizes these. Need to add code to
+// retrieve these from a preloaded memory location set by the testbench.
+
+const uint64_t kClockFreqCpuMhz = 1000;
+
+const uint64_t kClockFreqCpuHz = kClockFreqCpuMhz * 1000 * 1000;
+
+uint64_t to_cpu_cycles(uint64_t usec) { return usec * kClockFreqCpuMhz; }
+
+// Darjeeling has no derived IO clocks: every IO peripheral runs on the
+// undivided io clock.
+const uint64_t kClockFreqHiSpeedPeripheralHz = 250 * 1000 * 1000;  // 250MHz
+
+const uint64_t kClockFreqPeripheralHz = 250 * 1000 * 1000;  // 250MHz
+
+// Darjeeling has no USB clock.
+const uint64_t kClockFreqUsbHz = 0;
+
+const uint64_t kClockFreqAonHz = 625 * 100 * 1000;  // 62.5MHz
+
+const uint64_t kUartBaudrate = 1 * 1000 * 1000;  // 1Mbps
+
+const uint32_t kUartNCOValue =
+    CALCULATE_UART_NCO(kUartBaudrate, kClockFreqPeripheralHz);
+
+const uint32_t kUartBaud115K =
+    CALCULATE_UART_NCO(115200, kClockFreqPeripheralHz);
+const uint32_t kUartBaud230K =
+    CALCULATE_UART_NCO(115200 * 2, kClockFreqPeripheralHz);
+const uint32_t kUartBaud460K =
+    CALCULATE_UART_NCO(115200 * 4, kClockFreqPeripheralHz);
+const uint32_t kUartBaud921K =
+    CALCULATE_UART_NCO(115200 * 8, kClockFreqPeripheralHz);
+const uint32_t kUartBaud1M33 =
+    CALCULATE_UART_NCO(1333333, kClockFreqPeripheralHz);
+const uint32_t kUartBaud1M50 =
+    CALCULATE_UART_NCO(1500000, kClockFreqPeripheralHz);
+
+const uint32_t kAstCheckPollCpuCycles =
+    CALCULATE_AST_CHECK_POLL_CPU_CYCLES(kClockFreqCpuHz);
+
+uintptr_t device_test_status_address(void) {
+  return rv_core_ibex_base() + RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET;
+}
+
+uintptr_t device_log_bypass_uart_address(void) {
+  return rv_core_ibex_base() + RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET + 0x04;
+}
