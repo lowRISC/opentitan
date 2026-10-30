@@ -123,7 +123,7 @@ Control and Status Registers (CSRs) are 32b wide registers used for "special" pu
 they are not related to the GPRs.
 CSRs can be accessed through dedicated instructions, {{#otbn-insn-ref CSRRS}} and {{#otbn-insn-ref CSRRW}}.
 Writes to read-only (RO) registers are ignored; they do not signal an error.
-All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is written to [`CMD.start`](doc/registers.md#cmd)).
+All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is written to [`CMD.start`](doc/registers.md#cmd)), except `MAI_CTRL.OPERATION`, which starts as secAdd because 0 is not a valid operation.
 
 <!-- This list of CSRs is replicated in otbn_env_cov.sv, csr.py, wsr.py, the
      RTL and in rig/model.py. If editing one, edit the other five as well. -->
@@ -626,13 +626,13 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             <tr>
               <td>0</td>
               <td>
-                START: Writing 1 to this bit starts the MAI operation. Writing it when MAI is busy will cause a MAI_ERROR software error.
+                START: Writing 1 to this bit starts the MAI operation. Writing it when MAI is busy will cause a MAI_SOFTWARE_ERROR.
               </td>
             </tr>
             <tr>
               <td>5:1</td>
               <td>
-                OPERATION: This field defines which type of operation is to be performed. Invalid values and writing to these bits when MAI is busy will cause a MAI_ERROR software error.
+                OPERATION: This field defines which type of operation is to be performed. Invalid values and writing to these bits when MAI is busy will cause a MAI_SOFTWARE_ERROR.
                 <p>Values:</p><ul>
                   <li>11: A2B</li>
                   <li>16: B2A</li>
@@ -644,7 +644,7 @@ All read-write (RW) CSRs are set to 0 when OTBN starts an operation (when 1 is w
             <tr>
               <td>31:6</td>
               <td>
-                Reserved. Any write is ignored. Always reads as 0.
+                Reserved. Writing a non-zero value will cause a MAI_SOFTWARE_ERROR. Always reads as 0.
               </td>
             </tr>
           </tbody>
@@ -978,7 +978,7 @@ The `KMAC` and `MAI` related WSRs are cleared with randomness when an operations
       <td>
         This WSR transfers share 0 of the first input secrets towards the MAI.
         The inputs are considered as eight 32-bit values.
-        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+        Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
       </td>
     </tr>
     <tr>
@@ -988,7 +988,7 @@ The `KMAC` and `MAI` related WSRs are cleared with randomness when an operations
       <td>
         This WSR transfers share 1 of the first input secrets towards the MAI.
         The inputs are considered as eight 32-bit values.
-        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+        Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
       </td>
     </tr>
     <tr>
@@ -998,7 +998,7 @@ The `KMAC` and `MAI` related WSRs are cleared with randomness when an operations
       <td>
         This WSR transfers share 0 of the second input secrets towards the MAI.
         The inputs are considered as eight 32-bit values.
-        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+        Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
       </td>
     </tr>
     <tr>
@@ -1008,7 +1008,7 @@ The `KMAC` and `MAI` related WSRs are cleared with randomness when an operations
       <td>
         This WSR transfers share 1 of the second input secrets towards the MAI.
         The inputs are considered as eight 32-bit values.
-        Writing to this WSR while MAI is not ready will cause a MAI_ERROR software error.
+        Writing to this WSR while MAI is not ready will cause a MAI_SOFTWARE_ERROR.
       </td>
     </tr>
     <tr>

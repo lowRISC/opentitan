@@ -780,25 +780,19 @@ class MaskingAcceleratorInterface:
     def ready_for_inputs(self) -> bool:
         return self.is_input_ready()
 
-    def ready_to_start(self) -> bool:
-        return not self.is_busy()
-
     def is_valid_ctrl_change(self, value: int) -> bool:
         '''Return whether writing value to the MAI_CTRL CSR is currently allowed.'''
         # Bits [31:6] are reserved; any non-zero bits there are a software error.
         if self.csrs.MAI_CTRL.has_reserved_bits(value):
             return False
 
-        # Changing the operation while the MAI is busy is a software error.
-        if self.is_busy() and self.csrs.MAI_CTRL.would_change_raw_op(value):
+        # Every write must carry a valid operation, with or without the start bit.
+        if not self.csrs.MAI_CTRL.is_raw_op_valid(value):
             return False
 
-        # When start fires, the MAI must not be busy and the next operation value must be
-        # a valid choice.
-        if self.csrs.MAI_CTRL.would_set_start_bit(value):
-            if not self.ready_to_start():
-                return False
-            if not self.csrs.MAI_CTRL.is_raw_op_valid(value):
-                return False
+        # Any write to MAI_CTRL while the MAI is busy is a software error, even if it does not
+        # change the operation.
+        if self.is_busy():
+            return False
 
         return True
