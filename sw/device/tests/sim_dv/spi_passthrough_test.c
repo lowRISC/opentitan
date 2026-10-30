@@ -108,6 +108,18 @@ typedef struct pinmux_select {
 } pinmux_select_t;
 
 static const pinmux_select_t pinmux_out_config[] = {
+    // Passthrough uses CSB[0] of spi_host0.  The testbench checks that the
+    // other chip select lines of spi_host0 stay inactive.
+    {
+        .pad = kDtPadIoa3,
+        .peripheral_dt = kDtSpiHost0,
+        .peripheral_sig = kDtSpiHostPeriphIoCsb1,
+    },
+    {
+        .pad = kDtPadIoa6,
+        .peripheral_dt = kDtSpiHost0,
+        .peripheral_sig = kDtSpiHostPeriphIoCsb2,
+    },
     {
         .pad = kDtPadIob0,
         .peripheral_dt = kDtSpiHost1,

@@ -12,6 +12,7 @@ package chip_common_pkg;
   parameter dv_utils_pkg::uint NUM_GPIO_INSTS = 2;
   parameter dv_utils_pkg::uint NUM_UARTS = 4;
   parameter dv_utils_pkg::uint NUM_SPI_HOSTS = 2;
+  parameter dv_utils_pkg::uint NUM_SPI_HOST_CSBS = 3;
   parameter dv_utils_pkg::uint NUM_I2CS = 3;
 
   // SW constants - use unmapped address space with at least 32 bytes.

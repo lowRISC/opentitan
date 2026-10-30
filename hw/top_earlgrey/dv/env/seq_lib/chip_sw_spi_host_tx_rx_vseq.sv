@@ -8,19 +8,26 @@ class chip_sw_spi_host_tx_rx_vseq extends chip_sw_base_vseq;
   `uvm_object_new
 
   rand int spi_host_idx;
+  rand int spi_host_csid;
 
   constraint spi_host_idx_c {
     spi_host_idx inside {[0:NUM_SPI_HOSTS-1]};
   }
 
+  constraint spi_host_csid_c {
+    spi_host_csid inside {[0:NUM_SPI_HOST_CSBS-1]};
+  }
+
   task pre_start();
-    // Use plusarg '+spi_host_idx' to choose a spi_host instance explicitly
-    // if required, otherwise one will be chosen randomly.
+    // Use plusargs '+spi_host_idx' and '+spi_host_csid' to choose a spi_host instance and chip
+    // select line explicitly if required, otherwise they will be chosen randomly.
     void'($value$plusargs("spi_host_idx=%0d", spi_host_idx));
     `DV_CHECK_FATAL(spi_host_idx inside {[0:NUM_SPI_HOSTS-1]})
+    void'($value$plusargs("spi_host_csid=%0d", spi_host_csid));
+    `DV_CHECK_FATAL(spi_host_csid inside {[0:NUM_SPI_HOST_CSBS-1]})
 
-    // Select the first Csb for communication.
-    cfg.m_spi_device_agent_cfgs[spi_host_idx].csid = '0;
+    // Select the chip select line for communication.
+    cfg.m_spi_device_agent_cfgs[spi_host_idx].csid = spi_host_csid;
 
     // While the selection of this value seems arbitrary, it is not.
     // The spi agent has a concept of "transaction size" that is used by the
@@ -44,15 +51,18 @@ class chip_sw_spi_host_tx_rx_vseq extends chip_sw_base_vseq;
   virtual task cpu_init();
     // sw_symbol_backdoor_overwrite takes an array as the input
     bit [7:0] spi_host_idx_data[] = {spi_host_idx};
+    bit [7:0] spi_host_csid_data[] = {spi_host_csid};
 
     super.cpu_init();
     sw_symbol_backdoor_overwrite("kSPIHostIdx", spi_host_idx_data);
+    sw_symbol_backdoor_overwrite("kSPIHostCsid", spi_host_csid_data);
   endtask
 
   virtual task body();
     spi_device_seq m_device_seq;
     super.body();
-    `uvm_info(`gfn, $sformatf("Testing with spi host %0d", spi_host_idx), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("Testing with spi host %0d, csid %0d", spi_host_idx, spi_host_csid),
+              UVM_LOW)
 
     // enable spi agent
     cfg.chip_vif.enable_spi_device(.inst_num(spi_host_idx), .enable(1));
