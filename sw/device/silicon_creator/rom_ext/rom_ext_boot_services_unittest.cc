@@ -582,7 +582,7 @@ TEST_F(RomExtBootServicesTest, BootSvcOwnershipActivate) {
       .WillOnce(Return(kErrorOk));
 
   if (boot_data.ownership_state != kOwnershipStateUnlockedSelf) {
-    EXPECT_CALL(mock_ownership_key_, secret_new(_, _))
+    EXPECT_CALL(mock_ownership_key_, secret_update(&boot_data))
         .WillOnce(Return(kErrorOk));
   }
 

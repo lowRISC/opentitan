@@ -34,5 +34,9 @@ rom_error_t ownership_secret_new(uint32_t prior_key_alg,
                                                  prior_owner_key);
 }
 
+rom_error_t ownership_secret_update(boot_data_t *bootdata) {
+  return MockOwnershipKey::Instance().secret_update(bootdata);
+}
+
 }  // extern "C"
 }  // namespace rom_test
