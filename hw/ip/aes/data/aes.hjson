@@ -912,10 +912,10 @@
       Each bit is individually cleared to zero when executing the corresponding trigger.
       While executing any of the triggered operations, the AES unit will set the IDLE bit in the Status Register to zero.
       The processor must check the Status Register before triggering further actions.
-      For example, writes to Initial Key and IV Registers are ignored while the AES unit is busy.
+      For example, writes to Control and GCM Control, Initial Key and IV Registers are ignored while the AES unit is busy.
       Writes to the Input Data Registers are not ignored but the data will be cleared if a KEY_IV_DATA_IN_CLEAR operation is pending.
     '''
-    swaccess: "wo",
+    swaccess: "rw1s",
     hwaccess: "hrw",
     # Tag info (CSR test exclusions):
     #  Updated by the HW.
