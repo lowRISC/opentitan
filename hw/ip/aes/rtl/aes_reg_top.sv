@@ -226,9 +226,13 @@ module aes_reg_top (
   logic ctrl_aux_regwen_qs;
   logic ctrl_aux_regwen_wd;
   logic trigger_we;
+  logic trigger_start_qs;
   logic trigger_start_wd;
+  logic trigger_key_iv_data_in_clear_qs;
   logic trigger_key_iv_data_in_clear_wd;
+  logic trigger_data_out_clear_qs;
   logic trigger_data_out_clear_wd;
+  logic trigger_prng_reseed_qs;
   logic trigger_prng_reseed_wd;
   logic status_idle_qs;
   logic status_stall_qs;
@@ -1216,7 +1220,7 @@ module aes_reg_top (
   //   F[start]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_trigger_start (
@@ -1238,13 +1242,13 @@ module aes_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (trigger_start_qs)
   );
 
   //   F[key_iv_data_in_clear]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
   ) u_trigger_key_iv_data_in_clear (
@@ -1266,13 +1270,13 @@ module aes_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (trigger_key_iv_data_in_clear_qs)
   );
 
   //   F[data_out_clear]: 2:2
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
   ) u_trigger_data_out_clear (
@@ -1294,13 +1298,13 @@ module aes_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (trigger_data_out_clear_qs)
   );
 
   //   F[prng_reseed]: 3:3
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessWO),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
     .RESVAL  (1'h1),
     .Mubi    (1'b0)
   ) u_trigger_prng_reseed (
@@ -1322,7 +1326,7 @@ module aes_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     ()
+    .qs     (trigger_prng_reseed_qs)
   );
 
 
@@ -1953,10 +1957,10 @@ module aes_reg_top (
       end
 
       addr_hit[32]: begin
-        reg_rdata_next[0] = '0;
-        reg_rdata_next[1] = '0;
-        reg_rdata_next[2] = '0;
-        reg_rdata_next[3] = '0;
+        reg_rdata_next[0] = trigger_start_qs;
+        reg_rdata_next[1] = trigger_key_iv_data_in_clear_qs;
+        reg_rdata_next[2] = trigger_data_out_clear_qs;
+        reg_rdata_next[3] = trigger_prng_reseed_qs;
       end
 
       addr_hit[33]: begin
