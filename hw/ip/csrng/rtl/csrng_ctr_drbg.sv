@@ -201,6 +201,7 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   // SEC_CM: CTR_DRBG.CTR.REDUN
   prim_count #(
     .Width(CtrLen),
+    .Saturate(1'b0),
     .PossibleActions(prim_count_pkg::Clr |
                      prim_count_pkg::Set |
                      prim_count_pkg::Incr)

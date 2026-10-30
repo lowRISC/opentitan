@@ -76,6 +76,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   rand which_fifo_err_e which_fifo_err;
   rand invalid_mubi_e   which_invalid_mubi;
   rand which_aes_cm_e   which_aes_cm;
+  rand which_cnt_e      which_cnt;
 
   bit                                    compliance[MaxNumApps], status[MaxNumApps];
   bit [csrng_env_pkg::KEY_LEN-1:0]       key[MaxNumApps];

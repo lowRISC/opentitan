@@ -178,8 +178,13 @@ class csrng_err_vseq extends csrng_base_vseq;
         logic [csrng_pkg::MainSmStateWidth-1:0] sm_state;
         string sm_state_path = cfg.csrng_path_vif.sm_err_path("main_sm", cfg.which_app_err_alert);
         fld = csr.get_field_by_name(fld_name);
-        path = cfg.csrng_path_vif.ctr_drbg_ctr_err_path();
-        force_cnt_err(path, fld, 1'b1, csrng_pkg::CtrLen);
+        if (cfg.which_cnt == ctr_drbg_cnt) begin
+          path = cfg.csrng_path_vif.ctr_drbg_ctr_err_path();
+          force_cnt_err(path, fld, 1'b1, csrng_pkg::CtrLen);
+        end else begin
+          path = cfg.csrng_path_vif.state_db_reg_ptr_err_path();
+          force_cnt_err(path, fld, 1'b1, csrng_pkg::StateDbRegPtrWidth);
+        end
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
         // Check that the `csrng_main_sm` FSM, which observes the errors of the faulted counter, has
