@@ -1024,6 +1024,18 @@
                  "+bypass_alert_ready_to_end_check=1"]
     }
     {
+      name: chip_sw_otbn_mai
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:otbn_mai_test:6:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_sw_otbn_wfi
+      uvm_test_seq: chip_sw_base_vseq
+      sw_images: ["//sw/device/tests:otbn_wfi_test:6:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
       name: chip_sw_rv_core_ibex_rnd
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["sw/device/tests:rv_core_ibex_rnd_test:6:new_rules"]
