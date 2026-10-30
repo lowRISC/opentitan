@@ -7,6 +7,7 @@
 #include <string>
 #include <vector>
 
+#include "ecc32_mem_area.h"
 #include "verilated_toplevel.h"
 #include "verilator_memutil.h"
 #include "verilator_sim_ctrl.h"
@@ -33,8 +34,9 @@ int main(int argc, char **argv) {
                0x10000 / 4, 4);
   MemArea ram(top_scope + ".u_ram1p_ram_main." + ram1p_adv_scope, 0x20000 / 4,
               4);
-  MemArea ctn_ram(dut_scope + ".u_prim_ram_1p_adv_ctn." + ram_name,
-                  0x100000 / 4, 4);
+  // The CTN SRAM stores the TL-UL data integrity bits next to each word.
+  Ecc32MemArea ctn_ram(dut_scope + ".u_prim_ram_1p_adv_ctn." + ram_name,
+                       0x100000 / 4, 1);
   MemArea otp(top_scope + ".u_otp_macro." + ram1p_adv_scope, 0x10000 / 4, 4);
 
   memutil.RegisterMemoryArea("rom0", 0x8000, &rom0);
