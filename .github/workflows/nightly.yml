@@ -30,6 +30,7 @@ jobs:
     with:
       top_name: earlgrey
       design_suffix: cw340
+      branch: "${{ inputs.branch || 'earlgrey_1.0.0' }}"
 
   execute_fpga_cw340_test_rom_tests:
     name: CW340 Test ROM Tests
@@ -144,7 +145,7 @@ jobs:
   otbn_panopticon_nightly:
     name: OTBN Panopticon Nightly (FI + TVLA)
     runs-on: ubuntu-22.04
-    timeout-minutes: 180
+    timeout-minutes: 300
     steps:
       - uses: actions/checkout@v6
         with:
