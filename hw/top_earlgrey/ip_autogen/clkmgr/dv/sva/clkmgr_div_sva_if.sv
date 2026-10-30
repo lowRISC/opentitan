@@ -6,8 +6,11 @@
 // - For div2 (DIV == 2) the reference clk is io clock, which is never stepped.
 //   So when step_down check that the divided clock tracks the reference. This
 //   means we check at negedge, or we would see nothing interesting.
-// - For div4 (DIV == 4) the reference clk is io_div2 clock, which is also stepped.
-//   So check it is always twice as slow, except during transitions.
+// - For div4 (DIV == 4) the reference clk is io clock too. The divided clock
+//   toggles at every second reference negedge, or at every negedge when
+//   step_down. Transitions are not checked.
+// - Only divide by 2 and 4 are available: elaboration stops for other dividers,
+//   and the interface needs extending for higher ratios.
 //
 // All checks at negedges for simplicity.
 interface clkmgr_div_sva_if #(
@@ -47,7 +50,7 @@ interface clkmgr_div_sva_if #(
             $fell(step_down) ##1 !step_down [* WAIT_CYCLES] |-> WholeLeadLow_S or WholeLeadHigh_S,
             !clk, !rst_n)
 
-  end else begin : g_div4
+  end else if (DIV == 4) begin : g_div4
 
     sequence StepLeadHigh_S;
       step_up || maybe_divided_clk ##1 step_up || !maybe_divided_clk;
@@ -57,12 +60,38 @@ interface clkmgr_div_sva_if #(
       step_up || !maybe_divided_clk ##1 step_up || maybe_divided_clk;
     endsequence
 
+    // The divided clock toggles at every second reference negedge when not stepped
+    // down, in any of four phases.
+    sequence HalfRateHHLL_S;
+      step_down || maybe_divided_clk ##1 step_down || maybe_divided_clk ##1
+      step_down || !maybe_divided_clk ##1 step_down || !maybe_divided_clk;
+    endsequence
+
+    sequence HalfRateLHHL_S;
+      step_down || !maybe_divided_clk ##1 step_down || maybe_divided_clk ##1
+      step_down || maybe_divided_clk ##1 step_down || !maybe_divided_clk;
+    endsequence
+
+    sequence HalfRateLLHH_S;
+      step_down || !maybe_divided_clk ##1 step_down || !maybe_divided_clk ##1
+      step_down || maybe_divided_clk ##1 step_down || maybe_divided_clk;
+    endsequence
+
+    sequence HalfRateHLLH_S;
+      step_down || maybe_divided_clk ##1 step_down || !maybe_divided_clk ##1
+      step_down || !maybe_divided_clk ##1 step_down || maybe_divided_clk;
+    endsequence
+
     `ASSERT(Div4Stepped_A,
             $rose(step_down) ##1 step_down [* WAIT_CYCLES] |-> StepLeadLow_S or StepLeadHigh_S,
             !clk, !rst_n)
     `ASSERT(Div4Whole_A,
-            $fell(step_down) ##1 !step_down [* WAIT_CYCLES] |-> WholeLeadLow_S or WholeLeadHigh_S,
+            $fell(step_down) ##1 !step_down [* WAIT_CYCLES] |->
+            HalfRateHHLL_S or HalfRateLHHL_S or HalfRateLLHH_S or HalfRateHLLH_S,
             !clk, !rst_n)
 
+  end else begin : g_unsupported_div
+    $error("clkmgr_div_sva_if: DIV %0d: only divide by 2 and 4 are available, %s", DIV,
+           "please extend the interface for higher ratios.");
   end
 endinterface

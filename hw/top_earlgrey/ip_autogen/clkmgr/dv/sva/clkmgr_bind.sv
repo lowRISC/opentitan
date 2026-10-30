@@ -142,11 +142,10 @@ module clkmgr_bind;
     .scanmode(scanmode_i == prim_mubi_pkg::MuBi4True)
   );
 
-  // The div2 clk also steps, so not a good reference. Instead, check it always tracks io_div2.
   bind clkmgr clkmgr_div_sva_if #(
     .DIV(4)
   ) clkmgr_div4_sva_if (
-    .clk(clocks_o.clk_io_div2_powerup),
+    .clk(clocks_o.clk_io_powerup),
     .rst_n(rst_ni),
     .maybe_divided_clk(clocks_o.clk_io_div4_powerup),
     .div_step_down_req_i(div_step_down_req_i == prim_mubi_pkg::MuBi4True),
