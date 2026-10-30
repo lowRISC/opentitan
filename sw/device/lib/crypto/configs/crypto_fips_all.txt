@@ -182,6 +182,7 @@ otcrypto_cmac
 otcrypto_cmac_init
 otcrypto_cmac_update
 otcrypto_cmac_final
+otcrypto_cmac_kdf
 otcrypto_ecdsa_p256_hash_sign_verify
 otcrypto_ecdsa_p256_hash_verify
 otcrypto_ecdsa_p384_hash_sign_verify

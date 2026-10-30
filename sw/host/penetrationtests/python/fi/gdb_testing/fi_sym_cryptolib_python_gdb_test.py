@@ -1646,6 +1646,313 @@ class SymCryptolibFiSim(unittest.TestCase):
                 self.assertEqual(successful_faults, 0)
                 self.assertEqual(started, True)
 
+    def test_cmac_kdf(self):
+        print("Starting the cmac_kdf test")
+        label_len = 16
+        # Non-zero bytes for label and context since 0x00 is the SP 800-108 delimiter
+        label1 = [i + 1 for i in range(label_len)]
+        label2 = [label_len - i for i in range(label_len)]
+        labels = [label1, label2]
+        context_len = 16
+        context = [i + 1 for i in range(context_len)]
+        key_len = 16
+        key = [i for i in range(key_len)]
+        out_len = 32
+        cfg = 0
+        trigger = 0
+
+        # Directory for the trace log files
+        pc_trace_file = os.path.join(log_dir, "cmac_kdf_pc_trace.log")
+        # Directory for the log of the campaign
+        campaign_file = os.path.join(log_dir, "cmac_kdf_test_campaign.log")
+
+        successful_faults = 0
+        total_attacks = 0
+
+        gdb = None
+        started = False
+        with open(campaign_file, "w", buffering=1) as campaign:
+            print(f"Switching terminal output to {campaign_file}", flush=True)
+            sys.stdout = campaign
+            try:
+                # Program the bitstream, flash the target, and set up OpenOCD
+                target.initialize_target()
+
+                # Initialize the testOS
+                trigger_testos_init()
+
+                # Connect to GDB
+                gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+
+                # We provide the name of the unique marker in the pentest framework
+                function_name = "PENTEST_MARKER_CMAC_KDF"
+                # Exclude inner CMAC and low-level memory helpers already tested separately
+                ibex_rnd32_read_address = parser.get_function_start_address("ibex_rnd32_read")
+                otcrypto_cmac_init_address = parser.get_function_start_address("otcrypto_cmac_init")
+                otcrypto_cmac_update_address = parser.get_function_start_address(
+                    "otcrypto_cmac_update"
+                )
+                otcrypto_cmac_final_address = parser.get_function_start_address(
+                    "otcrypto_cmac_final"
+                )
+                hardened_memcpy_address = parser.get_function_start_address("hardened_memcpy")
+                hardened_memshred_address = parser.get_function_start_address("hardened_memshred")
+                hardened_xor_address = parser.get_function_start_address("hardened_xor")
+                skip_addrs = [
+                    ibex_rnd32_read_address,
+                    otcrypto_cmac_init_address,
+                    otcrypto_cmac_update_address,
+                    otcrypto_cmac_final_address,
+                    hardened_memcpy_address,
+                    hardened_memshred_address,
+                    hardened_xor_address,
+                ]
+                # Gives back an array of hits where the function is called
+                trace_address = parser.get_marker_addresses(function_name)
+                print("Start and stop addresses of ", function_name, ": ", trace_address)
+
+                crash_observation_address = parser.get_function_start_address(
+                    "ottf_exception_handler"
+                )
+
+                # Start the tracing
+                # We set a short timeout to detect whether GDB has connected properly
+                # and a long timeout for the entire tracing
+                initial_timeout = 10
+                total_timeout = 60 * 60 * 5
+
+                gdb.setup_pc_trace(
+                    pc_trace_file,
+                    trace_address[0],
+                    trace_address[1],
+                    skip_addrs=skip_addrs,
+                )
+                gdb.send_command("c", check_response=False)
+                time.sleep(0.1)
+                target.dump_all()
+
+                # Trigger cmac_kdf from the testOS (we do not read its output)
+                symfi.handle_cmac_kdf(
+                    labels[0],
+                    label_len,
+                    context,
+                    context_len,
+                    key,
+                    key_len,
+                    out_len,
+                    cfg,
+                    trigger,
+                )
+
+                start_time = time.time()
+                initial_timeout_stopped = False
+                total_timeout_stopped = False
+
+                # Run the tracing to get the trace log
+                while time.time() - start_time < initial_timeout:
+                    output = gdb.read_output()
+                    if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                        initial_timeout_stopped = True
+                        break
+                if not initial_timeout_stopped:
+                    print(
+                        "Initial break point not hit on first attempt, retrying with reset...",
+                        flush=True,
+                    )
+                    print("Target UART:", repr(target.read_all()), flush=True)
+                    gdb = reset_target_and_gdb(gdb)
+                    gdb.setup_pc_trace(
+                        pc_trace_file,
+                        trace_address[0],
+                        trace_address[1],
+                        skip_addrs=skip_addrs,
+                    )
+                    gdb.send_command("c", check_response=False)
+                    time.sleep(0.1)
+                    target.dump_all()
+                    symfi.handle_cmac_kdf(
+                        labels[0],
+                        label_len,
+                        context,
+                        context_len,
+                        key,
+                        key_len,
+                        out_len,
+                        cfg,
+                        trigger,
+                    )
+                    start_time = time.time()
+                    while time.time() - start_time < initial_timeout:
+                        output = gdb.read_output()
+                        if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                            initial_timeout_stopped = True
+                            break
+                if not initial_timeout_stopped:
+                    print("No initial break point found, can be a misfire, try again", flush=True)
+                    print("Target UART:", repr(target.read_all()), flush=True)
+                    if gdb:
+                        gdb.interrupt(timeout=1.0)
+                        print("GDB PC:", gdb.get_program_counter(), flush=True)
+                        print("GDB Backtrace:", gdb.send_command("bt"), flush=True)
+                    sys.exit(1)
+                while time.time() - start_time < total_timeout:
+                    output = gdb.read_output()
+                    if "PC trace complete" in output:
+                        print("\nTrace complete")
+                        total_timeout_stopped = True
+                        break
+                if not total_timeout_stopped:
+                    print("Final tracing timeout reached")
+                    sys.exit(1)
+
+                # Parse and truncate the trace log to get all PCs in a list
+                pc_list = gdb.parse_pc_trace_file(pc_trace_file)
+                # Get the unique PCs and annotate their occurrence count
+                pc_count_dict = Counter(pc_list)
+                if len(pc_count_dict) <= 0:
+                    print("Found no tracing, stopping")
+                    sys.exit(1)
+                print("Trace data is logged in ", pc_trace_file)
+                print(
+                    "Tracing has a total of",
+                    len(pc_count_dict),
+                    "unique PCs",
+                    flush=True,
+                )
+
+                # Reset the target, flush the output, and close gdb
+                gdb = reset_target_and_gdb(gdb)
+
+                data_out = [None, None]
+
+                started = True
+                for pc, occ_list in utils.select_fi_skips(
+                    pc_count_dict, MAX_SKIPS_PER_LOOP, args.num_skips
+                ).items():
+                    for i_count in occ_list:
+                        # Search for collisions in outputs between the cmac_kdf instances
+                        for i in range(2):
+                            print("-" * 80)
+                            print(
+                                "Applying instruction skip in ",
+                                pc,
+                                "occurrence",
+                                i_count,
+                                "data",
+                                i,
+                            )
+                            print("-" * 80)
+
+                            crash_observation = "crash detected"
+
+                            try:
+                                # The observation points
+                                observations = {
+                                    # Crash check
+                                    crash_observation_address: f"{crash_observation}",
+                                }
+                                gdb.add_observation(observations)
+
+                                gdb.apply_instruction_skip(
+                                    pc, parser.parse_next_instruction(pc), i_count
+                                )
+                                gdb.send_command("c", check_response=False)
+
+                                # The instruction skip loop
+                                symfi.handle_cmac_kdf(
+                                    labels[i],
+                                    label_len,
+                                    context,
+                                    context_len,
+                                    key,
+                                    key_len,
+                                    out_len,
+                                    cfg,
+                                    trigger,
+                                )
+                                testos_response = read_testos_output()
+
+                                gdb_response = gdb.read_output()
+                                data_out[i] = None
+                                if "instruction skip applied" in gdb_response:
+                                    total_attacks += 1
+
+                                    if crash_observation in gdb_response:
+                                        print("Crash detected, resetting", flush=True)
+                                        gdb = reset_target_and_gdb(gdb)
+                                        break
+                                    else:
+                                        testos_response_json = json.loads(testos_response)
+                                        print("Output:", testos_response_json, flush=True)
+                                        if testos_response_json["status"] == 0:
+                                            data_out[i] = tuple(testos_response_json["data"])
+
+                                            if (
+                                                utils.is_partial_collision(
+                                                    data_out[0],
+                                                    data_out[1],
+                                                    match_threshold_ratio=0.75,
+                                                    valid_len=out_len,
+                                                )
+                                            ) or utils.is_majority_zeros(
+                                                data_out[i], total_length=out_len
+                                            ):
+                                                successful_faults += 1
+                                                print("-" * 80)
+                                                print("Successful FI attack!")
+                                                print(
+                                                    "Location:",
+                                                    pc,
+                                                    "iteration",
+                                                    i_count,
+                                                )
+                                                print(gdb_response)
+                                                print("Response:", testos_response_json)
+                                                print("-" * 80)
+                                        # Reset GDB by closing and opening again
+                                        gdb = reset_gdb(gdb)
+                                else:
+                                    # Breakpoint not reached (e.g. untaken branch)
+                                    if not testos_response:
+                                        print(
+                                            "Target did not respond, resetting target", flush=True
+                                        )
+                                        gdb = reset_target_and_gdb(gdb)
+                                    else:
+                                        gdb = reset_gdb(gdb)
+                                        break
+
+                            except (json.JSONDecodeError, IndexError, KeyError, TypeError):
+                                print(
+                                    "Error: JSON decoding failed. Invalid response format",
+                                    flush=True,
+                                )
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except (TimeoutError, IndexError):
+                                    gdb = re_initialize(gdb)
+
+                            except TimeoutError as e:
+                                print("Timeout error, retrying", flush=True)
+                                print(e, flush=True)
+                                try:
+                                    gdb = reset_target_and_gdb(gdb)
+                                except (TimeoutError, IndexError):
+                                    gdb = re_initialize(gdb)
+
+            finally:
+                print("-" * 80)
+                print(f"Total attacks {total_attacks}, successful attacks {successful_faults}")
+                # Close the OpenOCD and GDB connection at the end
+                if gdb:
+                    gdb.close_gdb()
+                target.close_openocd()
+                sys.stdout = original_stdout
+                utils.finish_fi_campaign(parser, successful_faults, args)
+                if not (args.num_skips > 0 or args.dump_json):
+                    self.assertEqual(successful_faults, 0)
+                self.assertEqual(started, True)
+
 
 if __name__ == "__main__":
     unittest_argv = utils.get_selected_test_argv(
