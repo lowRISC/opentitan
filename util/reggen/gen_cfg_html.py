@@ -17,10 +17,7 @@ def genout(outfile: TextIO, msg: str) -> None:
 
 
 def name_width(x: Signal) -> str:
-    if x.bits.width() == 1:
-        return x.name
-
-    return '{}[{}:0]'.format(x.name, x.bits.msb)
+    return x.name_width()
 
 
 def gen_kv(outfile: TextIO, key: str, value: str) -> None:

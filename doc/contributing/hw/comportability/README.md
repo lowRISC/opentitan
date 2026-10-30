@@ -201,6 +201,9 @@ These can be skipped, or contain an empty list `[]`, or a comma-separated list o
 Items on the input list of the form `name` incur a module input of the form `cio_name_i`.
 Items on the output list of the form `name` incur a module output of the form `cio_name_o` as well as an output enable `cio_name_en_o`.
 Items on the inout list of the form `name` incur all three.
+An item can have a `width` field to make it a bus.
+The `width` field of an item can also name a parameter of the peripheral with `expose: "true"`.
+Each instance of the peripheral then sets the width of the bus through the `param_decl` field of the top-level configuration.
 
 #### Multiplexing Feature and Pad Control
 

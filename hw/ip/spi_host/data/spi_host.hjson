@@ -119,8 +119,8 @@
       desc:  "SPI Clock"
     },
     { name:  "csb"
-      desc:  '''Chip Select# (One hot, active low).  The size of this port should match NumCS.'''
-      width: "1"
+      desc:  '''Chip Select# (One hot, active low).  There is one line per chip select.'''
+      width: "NumCS"
     }
   ],
   available_inout_list: [

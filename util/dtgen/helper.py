@@ -879,10 +879,17 @@ class IpHelper:
 
     def _init_periph_io(self):
         inouts, inputs, outputs = self.ip.xputs
+        instances = [m for m in self.top["module"] if m["type"] == self.ip.name]
         self._device_signals = OrderedDict()
+        self._periph_io_sigs = {}
         for sig in inputs + outputs + inouts:
-            if sig.bits.width() > 1:
-                for bit in range(sig.bits.width()):
+            self._periph_io_sigs[sig.name] = sig
+            # The width of a signal can depend on a parameter of each instance, so use the
+            # largest width among all instances.
+            width = max((sig.width(m.get("param_decl")) for m in instances),
+                        default=sig.bits.width())
+            if width > 1:
+                for bit in range(width):
                     self._device_signals[sig.name + str(bit)] = (sig.name, bit)
             else:
                 self._device_signals[sig.name] = (sig.name, -1)
@@ -1186,9 +1193,16 @@ This value is undefined if the block is not connected to the Alert Handler."""
         if self.has_periph_io():
             periph_ios = OrderedDict()
             for (sig, (port, idx)) in self._device_signals.items():
+                # The signal of this instance can be narrower than the widest instance.  Bits
+                # beyond its width do not exist, and topgen connects a 1-bit signal with index -1.
+                inst_width = self._periph_io_sigs[port].width(m.get("param_decl"))
+                if idx >= inst_width:
+                    periph_ios[Name.from_snake_case(sig)] = self._create_periph_io_missing_desc()
+                    continue
+                conn_idx = -1 if inst_width == 1 else idx
                 found = False
                 for conn in self.top.get("pinmux", {}).get("ios", []):
-                    if conn["name"] != m["name"] + "_" + port or idx != conn["idx"]:
+                    if conn["name"] != m["name"] + "_" + port or conn_idx != conn["idx"]:
                         continue
                     if found:
                         logging.warning(
