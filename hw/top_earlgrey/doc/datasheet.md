@@ -235,7 +235,7 @@ The OpenTitan Earl Grey 2 architecture supports the following key features:
                     <li>SCK at 48 MHz max (96 MHz internally)</li>
                     <li>fixed pins</li>
                     <li>3 chip select (1 on fixed pin, 2 on muxed pins)</li>
-                    <li>Passthrough mode from SPI Device</li>
+                    <li>Passthrough mode from SPI Device (on the fixed-pin chip select)</li>
                   </ul>
                 </li>
                 <li>SPI Host 1:

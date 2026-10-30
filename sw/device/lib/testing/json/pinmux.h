@@ -298,8 +298,12 @@ C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_EARLGREY_PINMUX_MIO_
     value(_, Uart1Tx, kTopEarlgreyPinmuxOutselUart1Tx) \
     value(_, Uart2Tx, kTopEarlgreyPinmuxOutselUart2Tx) \
     value(_, Uart3Tx, kTopEarlgreyPinmuxOutselUart3Tx) \
+    value(_, SpiHost0Csb1, kTopEarlgreyPinmuxOutselSpiHost0Csb1) \
+    value(_, SpiHost0Csb2, kTopEarlgreyPinmuxOutselSpiHost0Csb2) \
     value(_, SpiHost1Sck, kTopEarlgreyPinmuxOutselSpiHost1Sck) \
-    value(_, SpiHost1Csb, kTopEarlgreyPinmuxOutselSpiHost1Csb) \
+    value(_, SpiHost1Csb0, kTopEarlgreyPinmuxOutselSpiHost1Csb0) \
+    value(_, SpiHost1Csb1, kTopEarlgreyPinmuxOutselSpiHost1Csb1) \
+    value(_, SpiHost1Csb2, kTopEarlgreyPinmuxOutselSpiHost1Csb2) \
     value(_, RramMacroTdo, kTopEarlgreyPinmuxOutselRramMacroTdo) \
     value(_, SensorCtrlAstDebugOut0, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut0) \
     value(_, SensorCtrlAstDebugOut1, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut1) \
@@ -335,7 +339,7 @@ C_ONLY(UJSON_SERDE_ENUM(PinmuxOutsel, pinmux_outsel_t, TOP_EARLGREY_PINMUX_OUTSE
     value(_, SpiDeviceSck, kTopEarlgreyDirectPadsSpiDeviceSck) \
     value(_, SpiDeviceCsb, kTopEarlgreyDirectPadsSpiDeviceCsb) \
     value(_, SpiHost0Sck, kTopEarlgreyDirectPadsSpiHost0Sck) \
-    value(_, SpiHost0Csb, kTopEarlgreyDirectPadsSpiHost0Csb) \
+    value(_, SpiHost0Csb0, kTopEarlgreyDirectPadsSpiHost0Csb0) \
     value(_, End, kTopEarlgreyDirectPadsLast + 1)
 C_ONLY(UJSON_SERDE_ENUM(DirectPads, direct_pads_t, TOP_EARLGREY_DIRECT_PADS, WITH_UNKNOWN));
 

@@ -111,7 +111,7 @@ static const pinmux_select_t pinmux_out_config[] = {
     {
         .pad = kDtPadIob0,
         .peripheral_dt = kDtSpiHost1,
-        .peripheral_sig = kDtSpiHostPeriphIoCsb,
+        .peripheral_sig = kDtSpiHostPeriphIoCsb0,
     },
     {
         .pad = kDtPadIob2,

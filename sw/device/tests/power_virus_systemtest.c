@@ -473,8 +473,9 @@ static void configure_pinmux(void) {
     //    SD1 on IOR11
     //    SD2 on IOR12
     //    SD3 on IOR13
-    CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob0,
-                                          kTopEarlgreyPinmuxOutselSpiHost1Csb));
+    CHECK_DIF_OK(
+        dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob0,
+                                 kTopEarlgreyPinmuxOutselSpiHost1Csb0));
     CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob3,
                                           kTopEarlgreyPinmuxOutselSpiHost1Sck));
     CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIoa2,
@@ -570,7 +571,7 @@ static void configure_pinmux_sim(void) {
   //    SD2 on IOB5
   //    SD3 on IOB6
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob1,
-                                        kTopEarlgreyPinmuxOutselSpiHost1Csb));
+                                        kTopEarlgreyPinmuxOutselSpiHost1Csb0));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob0,
                                         kTopEarlgreyPinmuxOutselSpiHost1Sck));
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob3,

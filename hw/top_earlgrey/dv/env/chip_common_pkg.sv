@@ -113,7 +113,7 @@ package chip_common_pkg;
     top_earlgrey_pkg::DioPadSpiDevClk,  /* DioSpiDeviceSck */
     top_earlgrey_pkg::DioPadSpiDevCsL,  /* DioSpiDeviceCsb */
     top_earlgrey_pkg::DioPadSpiHostClk, /* DioSpiHost0Sck */
-    top_earlgrey_pkg::DioPadSpiHostCsL  /* DioSpiHost0Csb */
+    top_earlgrey_pkg::DioPadSpiHostCsL  /* DioSpiHost0Csb0 */
   };
 
   typedef struct packed {

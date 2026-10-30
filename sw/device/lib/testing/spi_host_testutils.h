@@ -21,7 +21,7 @@ typedef enum spi_pinmux_platform_id {
 } spi_pinmux_platform_id_t;
 
 /**
- * Configure the pad attributes of SPI Host 0.
+ * Configure the pad attributes of the dedicated pads of SPI Host 0.
  *
  * @return A status_t indicating success or failure configuring the pad
  * attributes.
