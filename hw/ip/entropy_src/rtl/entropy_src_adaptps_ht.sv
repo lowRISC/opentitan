@@ -82,6 +82,7 @@ module entropy_src_adaptps_ht #(
   );
 
   // Failures for all window-based tests are signaled as a pulse.
-  assign test_fail_pulse_o = (test_cnt_o >= thresh_i) & window_wrap_pulse_i;
+  // A threshold of all ones disables the test.
+  assign test_fail_pulse_o = (thresh_i != '1) & (test_cnt_o >= thresh_i) & window_wrap_pulse_i;
 
 endmodule

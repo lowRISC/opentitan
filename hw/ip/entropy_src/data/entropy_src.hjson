@@ -602,6 +602,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold for the Repetition Count Test.
+                   The test fails if the count is greater than or equal to this value.
+                   A value of 0xFFFF disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
@@ -622,6 +624,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold for the Repetition Count Symbol Test.
+                   The test fails if the count is greater than or equal to this value.
+                   A value of 0xFFFF disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
@@ -642,6 +646,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold for the Adaptive Proportion Test.
+                   The test fails if the count is greater than or equal to this value.
+                   A value of 0xFFFF disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
@@ -662,6 +668,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold for the Adaptive Proportion Test.
+                   The test fails if the count is less than or equal to this value.
+                   A value of 0 disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is greater than the current value of this register.
                    A read from this register always reflects the current value.
@@ -682,6 +690,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold for the Adaptive Proportion Symbol Test.
+                   The test fails if the count is greater than or equal to this value.
+                   A value of 0xFFFF disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
@@ -702,6 +712,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold size for the bucket health test.
+                   The test fails if any bucket count is greater than or equal to this value.
+                   A value of 0xFFFF disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
@@ -722,6 +734,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold size for the Markov health test.
+                   The test fails if the count is greater than or equal to this value.
+                   A value of 0xFFFF disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is less than the current value of this register.
                    A read from this register always reflects the current value.
@@ -742,6 +756,8 @@
       fields: [
         { bits: "15:0",
           desc: '''This is the threshold size for the Markov health test.
+                   The test fails if the count is less than or equal to this value.
+                   A value of 0 disables the test.
                    This register must be written before the module is enabled.
                    If !!THRESHOLD_ONEWAY is set to `kMultiBitBool4True`, writing to this register will only update the register if the written value is greater than the current value of this register.
                    A read from this register always reflects the current value.
