@@ -297,7 +297,9 @@ module clkmgr_bind;
     .meas_ctrl_en(u_reg.usb_meas_ctrl_en_qs)
   );
 
-  bind clkmgr clkmgr_sec_cm_checker_assert clkmgr_sec_cm_checker_assert (
+  bind clkmgr clkmgr_sec_cm_checker_assert #(
+    .NumDivClks(2)
+  ) clkmgr_sec_cm_checker_assert (
     .clk_i,
     .rst_ni,
     .all_clk_byp_req_o,

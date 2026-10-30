@@ -147,7 +147,9 @@ module clkmgr_bind;
   );
 
 % endfor
-  bind clkmgr clkmgr_sec_cm_checker_assert clkmgr_sec_cm_checker_assert (
+  bind clkmgr clkmgr_sec_cm_checker_assert #(
+    .NumDivClks(${len(derived_clks)})
+  ) clkmgr_sec_cm_checker_assert (
     .clk_i,
     .rst_ni,
     .all_clk_byp_req_o,
