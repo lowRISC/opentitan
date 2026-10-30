@@ -100,8 +100,9 @@ void sc_keymgr_dpe_start_operation(void) {
  * operation, reads and clears the error code and returns
  * `kErrorKeymgrInternal`.
  *
- * @return `kErrorOk` if the status is either "idle" or the operation
- * finished with "done_successfully", `kErrorKeymgrInternal` otherwise.
+ * @return `kErrorOk` if the operation finished with "done_successfully",
+ * `kErrorKeymgrInternal` if it finished with "done_error". Any other status,
+ * including "idle", traps, as the caller must have started an operation.
  */
 rom_error_t sc_keymgr_dpe_wait_until_done(void) {
   // Poll the OP_STATUS register until it is different than "WIP".
@@ -469,6 +470,10 @@ void sc_keymgr_dpe_lock_uds(void) {
 //              the SW register. Verify that the lock is released when the
 //              version register is locked.
 rom_error_t sc_keymgr_dpe_load_uds(uint32_t sel_dst_slot) {
+  // Wait until any previous operation has finished, because CFG_REGWEN drops
+  // the writes below while an operation is running.
+  HARDENED_RETURN_IF_ERROR(expected_state_check(kScKeymgrDPEStateAvailable));
+
   // Set the control register entries
   sc_keymgr_dpe_control_reg_set(
       kScKeymgrDPEUseAdditionalHwBinding,
@@ -597,6 +602,10 @@ rom_error_t sc_keymgr_dpe_advance_owner(
  * Erase the DPE context of any slot.
  */
 rom_error_t sc_keymgr_dpe_erase_slot(uint32_t sel_dst_slot) {
+  // Wait until any previous operation has finished, because CFG_REGWEN drops
+  // the writes below while an operation is running.
+  HARDENED_RETURN_IF_ERROR(expected_state_check(kScKeymgrDPEStateAvailable));
+
   // Set the control register entries
   sc_keymgr_dpe_control_reg_set(
       kScKeymgrDPEUseAdditionalHwBinding,
@@ -680,8 +689,9 @@ rom_error_t sc_keymgr_dpe_check_metadata(
  * sideloaded interface are continuously scrambled.
  */
 rom_error_t sc_keymgr_dpe_disable(void) {
-  // Check if we are in the available state (Stalls until all ops are done)
-  HARDENED_RETURN_IF_ERROR(expected_state_check(kScKeymgrDPEStateAvailable));
+  // Wait until all operations are done and clear any stale status. Lock down
+  // even if this check fails, as the callers cannot handle an error.
+  OT_DISCARD(expected_state_check(kScKeymgrDPEStateAvailable));
 
   // According to the documentation for the SIDELOAD_CLEAR register, an invalid
   // destination will enable continuous clearing of all destinations.

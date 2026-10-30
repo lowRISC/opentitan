@@ -150,6 +150,9 @@ class KeymgrDpeTest : public rom_test::RomTest {
    * Expects a `sc_keymgr_dpe_load_uds()` sequence.
    */
   void ExpectLoadUds(uint32_t dst_slot) {
+    ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                      KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                      /*err_code=*/0u);
     ExpectControlRegSet(
         /*sw_binding_only=*/false,
         KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_LOAD_ROOT_KEY,
@@ -158,6 +161,19 @@ class KeymgrDpeTest : public rom_test::RomTest {
     ExpectStartOperation();
     ExpectWaitUntilDone(/*busy_cycles=*/1,
                         KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+  }
+
+  /**
+   * Expects the sideload clear and disable writes of `sc_keymgr_dpe_disable()`.
+   */
+  void ExpectDisableLockdown() {
+    EXPECT_ABS_WRITE32(base_ + KEYMGR_DPE_SIDELOAD_CLEAR_REG_OFFSET,
+                       std::numeric_limits<uint32_t>::max());
+    ExpectControlRegSet(/*sw_binding_only=*/true,
+                        KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_DISABLE,
+                        KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+                        /*src_slot=*/0, /*dst_slot=*/0);
+    ExpectStartOperation();
   }
 
   /**
@@ -502,7 +518,26 @@ TEST_F(KeymgrDpeTest, LoadUds) {
   EXPECT_EQ(sc_keymgr_dpe_load_uds(/*sel_dst_slot=*/1), kErrorOk);
 }
 
+TEST_F(KeymgrDpeTest, LoadUdsWaitsForOngoingOperation) {
+  // The load must not start while a previous operation is still running,
+  // because the CONTROL and START writes would be dropped.
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_WIP);
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+  ExpectLoadUds(/*dst_slot=*/1);
+  EXPECT_EQ(sc_keymgr_dpe_load_uds(/*sel_dst_slot=*/1), kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, LoadUdsBadState) {
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_DISABLED,
+                    /*err_code=*/0u);
+  EXPECT_EQ(sc_keymgr_dpe_load_uds(/*sel_dst_slot=*/1), kErrorKeymgrInternal);
+}
+
 TEST_F(KeymgrDpeTest, LoadUdsError) {
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    /*err_code=*/0u);
   ExpectControlRegSet(
       /*sw_binding_only=*/false,
       KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_LOAD_ROOT_KEY,
@@ -703,6 +738,9 @@ TEST_F(KeymgrDpeTest, AdvanceOwnerBadSlots) {
 }
 
 TEST_F(KeymgrDpeTest, EraseSlot) {
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    /*err_code=*/0u);
   ExpectControlRegSet(/*sw_binding_only=*/false,
                       KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_ERASE_SLOT,
                       KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
@@ -712,6 +750,33 @@ TEST_F(KeymgrDpeTest, EraseSlot) {
                       KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
 
   EXPECT_EQ(sc_keymgr_dpe_erase_slot(/*sel_dst_slot=*/2), kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, EraseSlotWaitsForOngoingOperation) {
+  // The erase must not start while a previous operation is still running,
+  // because the CONTROL and START writes would be dropped.
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_WIP);
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    /*err_code=*/0u);
+  ExpectControlRegSet(/*sw_binding_only=*/false,
+                      KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_ERASE_SLOT,
+                      KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+                      /*src_slot=*/0, /*dst_slot=*/2);
+  ExpectStartOperation();
+  ExpectWaitUntilDone(/*busy_cycles=*/1,
+                      KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+
+  EXPECT_EQ(sc_keymgr_dpe_erase_slot(/*sel_dst_slot=*/2), kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, EraseSlotBadState) {
+  // A failed previous operation is reported instead of starting the erase.
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_ERROR,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    1 << KEYMGR_DPE_ERR_CODE_INVALID_OP_BIT);
+  EXPECT_EQ(sc_keymgr_dpe_erase_slot(/*sel_dst_slot=*/2), kErrorKeymgrInternal);
 }
 
 TEST_F(KeymgrDpeTest, GetMetadata) {
@@ -863,6 +928,52 @@ TEST_F(KeymgrDpeTest, Disable) {
                     /*err_code=*/0u);
 
   EXPECT_EQ(sc_keymgr_dpe_disable(), kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, DisableAfterFailedOperation) {
+  // A stale error must not skip the lockdown. The first status check clears
+  // it, and the disable operation still runs.
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_ERROR,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    1 << KEYMGR_DPE_ERR_CODE_INVALID_OP_BIT);
+  ExpectDisableLockdown();
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_WIP);
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_DISABLED,
+                    /*err_code=*/0u);
+
+  EXPECT_EQ(sc_keymgr_dpe_disable(), kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, DisableWithIdleShadowUpdateError) {
+  // A shadow register update error is raised outside of any operation, so it
+  // can be pending while OP_STATUS is IDLE.
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    1 << KEYMGR_DPE_ERR_CODE_INVALID_SHADOW_UPDATE_BIT);
+  ExpectDisableLockdown();
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_WIP);
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_DISABLED,
+                    /*err_code=*/0u);
+
+  EXPECT_EQ(sc_keymgr_dpe_disable(), kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, DisableInResetFails) {
+  // The lockdown is still attempted, but the hardware rejects the disable in
+  // the Reset state and the function must report it.
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_RESET,
+                    /*err_code=*/0u);
+  ExpectDisableLockdown();
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_ERROR,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_RESET,
+                    1 << KEYMGR_DPE_ERR_CODE_INVALID_OP_BIT);
+
+  EXPECT_EQ(sc_keymgr_dpe_disable(), kErrorKeymgrInternal);
 }
 
 }  // namespace

@@ -278,7 +278,7 @@ dif_result_t dif_keymgr_dpe_advance_state(
 dif_result_t dif_keymgr_dpe_erase_slot(
     const dif_keymgr_dpe_t *keymgr_dpe,
     const dif_keymgr_dpe_erase_params_t *params) {
-  if (keymgr_dpe == NULL) {
+  if (keymgr_dpe == NULL || params == NULL) {
     return kDifBadArg;
   }
 
@@ -438,7 +438,6 @@ dif_result_t dif_keymgr_dpe_get_status_codes(
                                               KEYMGR_DPE_OP_STATUS_REG_OFFSET);
 
   bool is_idle = false;
-  bool has_error = false;
   switch (reg_op_status) {
     case KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE:
       is_idle = true;
@@ -450,7 +449,6 @@ dif_result_t dif_keymgr_dpe_get_status_codes(
       break;
     case KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_ERROR:
       is_idle = true;
-      has_error = true;
       mmio_region_write32(keymgr_dpe->base_addr,
                           KEYMGR_DPE_OP_STATUS_REG_OFFSET, reg_op_status);
       break;
@@ -465,8 +463,9 @@ dif_result_t dif_keymgr_dpe_get_status_codes(
   *status_codes = (dif_keymgr_dpe_status_codes_t)bitfield_field32_write(
       0, kIdleBitfield, is_idle);
 
-  if (has_error) {
-    // Read and clear ERR_CODE register (rw1c).
+  if (is_idle) {
+    // Read and clear ERR_CODE register (rw1c). It can also hold an asynchronous
+    // error that was raised outside of an operation.
     uint32_t reg_err_code = mmio_region_read32(keymgr_dpe->base_addr,
                                                KEYMGR_DPE_ERR_CODE_REG_OFFSET);
     mmio_region_write32(keymgr_dpe->base_addr, KEYMGR_DPE_ERR_CODE_REG_OFFSET,
