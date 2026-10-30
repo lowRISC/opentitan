@@ -375,8 +375,8 @@ Each `CSB` line can be routed either to a single peripheral or to a daisy-chain 
 Whenever a segment description is written to the [`COMMAND`](registers.md#command) register, the  [`CSID`](registers.md#csid) is sent along with [`COMMAND`](registers.md#command) and [`CONFIGOPTS`](registers.md#configopts) to indicate which device is meant to receive the command.
 The SPI_HOST core typically then manages the details of asserting and deasserting the proper `CSB` line, subject to the timing parameters expressed in [`CONFIGOPTS.CSNLEAD`](registers.md#configopts), [`CONFIGOPTS.CSNTRAIL`](registers.md#configopts), and [`CONFIGOPTS.CSNIDLE`](registers.md#configopts).
 
-If [Pass-through mode](#pass-through-mode) is enabled then the `CSB` lines are controlled by *neither* the SPI_HOST hardware nor the firmware register.
-In Pass-though mode, control of the `CSB` lines passes directly to the inter-module port, `passthrough_i.csb`.
+If [Pass-through mode](#pass-through-mode) is enabled, the SPI_HOST hardware does not control the `CSB` lines.
+`CSB[0]` then follows the inter-module port `passthrough_i.csb`, and all other `CSB` lines are held inactive (high).
 
 ### Back-to-back Segments
 
@@ -542,6 +542,20 @@ The SPI_HOST IP also supports a special "Pass-through" mode, which allows for th
 This feature is entirely controlled by intermodule signals `passthrough_i` and `passthrough_o`, which control a set of multiplexers.
 If `passthrough_i.passthrough_en` is asserted the SPI_HOST peripheral bus signals reflect the corresponding signals in the `passthrough_i` structure.
 Otherwise, the peripheral signals are controlled by the SPI_HOST FSM and the internal shift register.
+
+Pass-through mode always uses `CSB[0]`, so the device that SPI_DEVICE passes through to must be attached to `CSB[0]`.
+If `NumCS` is larger than 1, all other `CSB` lines are held inactive (high) while `passthrough_i.passthrough_en` is asserted.
+This ensures that no other device on the shared `SCK` and `SD` lines is selected.
+The output enables of these lines remain controlled by [`CONTROL.OUTPUT_EN`](registers.md#control):
+
+- If `CONTROL.OUTPUT_EN` is set, the SPI_HOST drives these lines high.
+- If `CONTROL.OUTPUT_EN` is clear, the SPI_HOST does not drive these lines, so they need pull-ups (in the pads or on the board) to stay inactive.
+
+SPI_DEVICE can assert and deassert `passthrough_i.passthrough_en` between the transactions of its upstream host.
+For example, SPI_DEVICE blocks pass-through while its `BUSY` status bit is set, and it resumes pass-through at the end of the next upstream transaction after firmware has cleared that bit (see [SPI_DEVICE Status Control](../../spi_device/doc/theory_of_operation.md#status-control)).
+While pass-through is blocked, firmware can use the SPI_HOST on any `CSB` line.
+Firmware must complete all SPI_HOST transactions before it allows pass-through to resume, because pass-through takes over the bus immediately and cuts off any ongoing transaction.
+As [`CONTROL.OUTPUT_EN`](registers.md#control) controls all SPI_HOST outputs, firmware that wants the `CSB` lines other than `CSB[0]` to be undriven during pass-through must clear [`CONTROL.OUTPUT_EN`](registers.md#control) before it allows pass-through to resume.
 
 ## Interrupt Aggregation
 
