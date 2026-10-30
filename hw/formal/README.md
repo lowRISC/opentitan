@@ -264,6 +264,27 @@ To run formal property verification for all prim modules, type:
 This script generates a report of all FPV runs.
 The report is printed at the end of the run, which lists the total number of assertions and the number of proven, vacuous, covered and failing assertions for each block. CRASH identifies modules that fail to run VC Formal.
 
+### Expected failures
+
+Set `exp_fail_hjson` in an FPV configuration to an Hjson file of expected failures.
+Group waivers by engine so that engine-specific property names apply only to that engine:
+
+```hjson
+{
+  jaspergold: {
+    unreachable: [
+      pinmux_tb.dut.FpvSecCmRegWeOnehotCheck_A:precondition1
+    ]
+  }
+}
+```
+
+The supported engine names are `jaspergold` and `vcformal`.
+A file with categories directly at the top level remains supported and applies to both engines.
+Each property name must uniquely match one message in its category.
+Invalid files, stale entries and ambiguous names emit errors that fail the DVSim build.
+The report retains the raw messages and adjusts only the summary counts.
+
 ## Running Connectivity Tests
 Connectivity tests use formal method to exhaustively verify system-level connections, which are specified in a high-level format (for example: CSV format for JasperGold).
 
