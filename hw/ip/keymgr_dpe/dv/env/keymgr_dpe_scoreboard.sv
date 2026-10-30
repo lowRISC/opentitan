@@ -692,7 +692,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                                       cfg.keymgr_dpe_vif.hmac_key))
             end
 
-            if (cfg.keymgr_dpe_vif.kmac_key_exp != cfg.keymgr_dpe_vif.kmac_key) begin
+            // The DUT drives the internal key on kmac_key during each KMAC operation, then falls
+            // back to the KMAC sideload slot. keymgr_dpe_if mirrors this, but with no sideload key
+            // loaded it only clears kmac_key_exp.valid, so the key bits are stale. Compare them
+            // only while valid.
+            if (cfg.keymgr_dpe_vif.kmac_key_exp.valid != cfg.keymgr_dpe_vif.kmac_key.valid ||
+                (cfg.keymgr_dpe_vif.kmac_key_exp.valid &&
+                 cfg.keymgr_dpe_vif.kmac_key_exp.key != cfg.keymgr_dpe_vif.kmac_key.key)) begin
                 `uvm_error(`gfn,
                            $sformatf({"After a disable kmac sideload key was not preserved ",
                                       "exp 'h%0h vs. act 'h%0h"},
