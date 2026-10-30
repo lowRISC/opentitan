@@ -118,7 +118,7 @@ ${"####"} clkmgr_extclk_vseq
 The sequence `clkmgr_extclk_vseq` randomizes the stimuli that drive the external clock selection.
 The selection is controlled by software if the `extclk_ctrl.sel` CSR is `prim_mubi_pkg::MuBi4True`, provided the `lc_hw_debug_en_i` input is also set to `lc_ctrl_pkg::On`.
 Alternatively, the external clock is selected by the life cycle controller if the `lc_ctrl_byp_req_i` input is `lc_ctrl_pkg::On`.
-When the external clock is selected and `scanmode_i` is not set to `prim_mubi_pkg::MuBi4True`, the clock dividers for the clk_io_div2 and clk_io_div4 output clocks are stepped down:
+When the external clock is selected and `scanmode_i` is not set to `prim_mubi_pkg::MuBi4True`, the clock divider${'s' if len(derived_clks) > 1 else ''} for the ${' and '.join('clk_' + n for n in derived_clks)} output clock${'s are' if len(derived_clks) > 1 else ' is'} stepped down:
 * If `lc_ctrl_byp_req_i` is on, or
 * If `extclk_ctrl.hi_speed_sel` CSR is `prim_mubi_pkg::MuBi4True`, when the selection is enabled by software.
 
@@ -183,7 +183,11 @@ ${"###"} Assertions
   There is one assertion for each peripheral clock (${len(typed_clocks['sw_clks'])} in total) and each hintable clock (${len(hint_names)} in total).
 * Transactional clock assertions: Interface `clkmgr_trans_sva_if` contains concurrent SVA that checks each transactional clock is either running or stopped based on their control logic.
   There is one assertion for each hintable clock (${len(hint_names)} in total).
-* Clock divider assertions: Interface `clkmgr_div_sva_if` contains concurrent SVA that checks the `io_div2` and `io_div4` clocks are running at nominal frequency, or are divided by two each in response to the `extclk` logic.
+% if derived_clks:
+* Clock divider assertions: Interface `clkmgr_div_sva_if` contains concurrent SVA that checks the ${' and '.join('`' + n + '`' for n in derived_clks)} clock${'s are' if len(derived_clks) > 1 else ' is'} running at nominal frequency, or ${'are divided by two each' if len(derived_clks) > 1 else 'is divided by two'} in response to the `extclk` logic.
+% else:
+* Clock divider assertions: Interface `clkmgr_div_sva_if` contains concurrent SVA for clock dividers; it is unused, since there are no divided clocks.
+% endif
 * External clock assertions: Interface `clkmgr_extclk_sva_if` contains concurrent SVA that checks the external control outputs respond correctly to the various CSR or inputs that control them.
 * Clock gating assertions: Interface `clkmgr_cg_en_sva_if` contains concurrent assertions that check a clock's cg_en output is active when the clock is disabled, and viceversa.
   As a special case, interface `clkmgr_cg_en_sva_if` checks cg_en is never active for an aon clock.

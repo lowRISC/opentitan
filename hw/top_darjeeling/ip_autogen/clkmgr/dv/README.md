@@ -158,7 +158,7 @@ The `jitter_en_o` output is checked to match the `jitter_enable` CSR.
   There is one assertion for each peripheral clock (1 in total) and each hintable clock (4 in total).
 * Transactional clock assertions: Interface `clkmgr_trans_sva_if` contains concurrent SVA that checks each transactional clock is either running or stopped based on their control logic.
   There is one assertion for each hintable clock (4 in total).
-* Clock divider assertions: Interface `clkmgr_div_sva_if` contains concurrent SVA that checks the `io_div2` and `io_div4` clocks are running at nominal frequency, or are divided by two each in response to the `extclk` logic.
+* Clock divider assertions: Interface `clkmgr_div_sva_if` contains concurrent SVA for clock dividers; it is unused, since there are no divided clocks.
 * External clock assertions: Interface `clkmgr_extclk_sva_if` contains concurrent SVA that checks the external control outputs respond correctly to the various CSR or inputs that control them.
 * Clock gating assertions: Interface `clkmgr_cg_en_sva_if` contains concurrent assertions that check a clock's cg_en output is active when the clock is disabled, and viceversa.
   As a special case, interface `clkmgr_cg_en_sva_if` checks cg_en is never active for an aon clock.

@@ -192,7 +192,6 @@ if {($env(DUT_TOP) == "pinmux_tb") || ($env(DUT_TOP) == "pinmux_chip_tb")} {
   clock clk_main_i
   clock clk_i -both_edges
   clock clk_io_i -factor 1
-  clock clk_io_div2_i -factor 1
   clock clk_io_div4_i -factor 1
   clock clk_usb_i -factor 1
   clock clk_aon_i -factor 2

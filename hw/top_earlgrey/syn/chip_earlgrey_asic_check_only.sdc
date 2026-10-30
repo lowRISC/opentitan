@@ -18,7 +18,6 @@
 set CDC_CONSTRAINT_CLOCKS { MAIN_CLK    \
                             USB_CLK     \
                             IO_CLK      \
-                            IO_DIV2_CLK \
                             IO_DIV4_CLK \
                             JTAG_TCK    \
                             AON_CLK }
@@ -26,7 +25,6 @@ set CDC_CONSTRAINT_CLOCKS { MAIN_CLK    \
 set CDC_CONSTRAINT_PERIODS { $MAIN_TCK_PERIOD    \
                              $USB_TCK_PERIOD     \
                              $IO_TCK_PERIOD      \
-                             $IO_DIV2_TCK_PERIOD \
                              $IO_DIV4_TCK_PERIOD \
                              $JTAG_TCK_PERIOD    \
                              $AON_TCK_PERIOD }
