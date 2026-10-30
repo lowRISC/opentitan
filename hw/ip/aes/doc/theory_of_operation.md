@@ -274,9 +274,13 @@ Alternatively, the processor can configure the AES unit to use an initial key pr
 To this end, the processor has to set the SIDELOAD bit in [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) to `1`.
 Any write operations of the processor to the Initial Key registers [`KEY_SHARE0_0`](registers.md#key_share0) - [`KEY_SHARE1_7`](registers.md#key_share1) are then ignored.
 In normal/automatic mode, the AES unit only starts encryption/decryption if the sideload key is marked as valid.
-To update the sideload key, the processor has to 1) wait for the AES unit to become idle, 2) wait for the key manager to update the sideload key and assert the valid signal, and 3) write to the [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) register to start a new message.
-After using a sideload key, the processor has to trigger the clearing of all key registers inside the AES unit (see [De-Initialization](programmers_guide.md#de-initialization) below).
+In manual mode, the AES unit will start encryption/decryption even if the sideload key is not marked as valid.
+However, it then doesn't load the sideload key but instead uses the current content of the Initial Key registers.
 
+To update the sideload key, the processor has to 1) wait for the AES unit to become idle, 2) wait for the key manager to update the sideload key and assert the valid signal, and 3) write to the [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) register to start a new message.
+The AES unit will then load the sideload key, and if the KEY_TOUCH_FORCES_RESEED bit in [`CTRL_AUX_SHADOWED`](registers.md#ctrl_aux_shadowed) is set, it will trigger a reseed operation of the internal pseudo-random number generators (PRNGs).
+
+After using a sideload key, the AES unit will automatically trigger the clearing of all internal key registers upon writing the [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) register.
 
 # Security Hardening
 

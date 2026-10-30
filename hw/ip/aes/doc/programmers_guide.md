@@ -17,7 +17,7 @@ Before initialization, software must ensure that the AES unit is idle by checkin
 If the AES unit is not idle, write operations to [`CTRL_SHADOWED`](registers.md#ctrl_shadowed), the Initial Key registers [`KEY_SHARE0_0`](registers.md#key_share0) - [`KEY_SHARE1_7`](registers.md#key_share1) and initialization vector (IV) registers [`IV_0`](registers.md#iv) - [`IV_3`](registers.md#iv) are ignored.
 
 To initialize the AES unit, software must first provide the configuration to the [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) register.
-Since writing this register may initiate the reseeding of the internal PRNGs, software must check that the AES unit is idle before providing the initial key.
+Since writing this register may initiate the clearing of internal registers and/or the reseeding of the internal PRNGs, software must check that the AES unit is idle before providing the initial key.
 Then software must write the initial key to the Initial Key registers [`KEY_SHARE0_0`](registers.md#key_share0) - [`KEY_SHARE1_7`](registers.md#key_share1).
 The key is provided in two shares:
 The first share is written to [`KEY_SHARE0_0`](registers.md#key_share0) - [`KEY_SHARE0_7`](registers.md#key_share0) and the second share is written to [`KEY_SHARE1_0`](registers.md#key_share1) - [`KEY_SHARE1_7`](registers.md#key_share1).
@@ -83,6 +83,10 @@ The code snippet below shows how to perform block operation.
       0x0 << AES_CTRL_SHADOWED_MANUAL_OPERATION_OFFSET;
   REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
   REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
+
+  // Wait for IDLE bit.
+  while (!((REG32(AES_STATUS(0)) >> AES_STATUS_IDLE) & 0x1)) {
+  }
 
   // Write key - Note: All registers are little-endian.
   for (int j = 0; j < 8; j++) {
@@ -260,18 +264,11 @@ It is recommended that software discards the padding bits after reading the outp
 
 ## De-Initialization
 
-After finishing operation, software must:
-1. Disable the AES unit to no longer automatically start encryption/decryption by setting the MANUAL_OPERATION bit in [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) to `1`.
-1. Clear all key registers, IV registers as well as the Input Data and the Output Data registers with pseudo-random data by setting the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR bits in [`TRIGGER`](registers.md#trigger) to `1`.
+After finishing operation, software must clear all key registers, IV registers as well as the Input Data and the Output Data registers with pseudo-random data by setting the KEY_IV_DATA_IN_CLEAR and DATA_OUT_CLEAR bits in [`TRIGGER`](registers.md#trigger) to `1`.
 
 The code snippet below shows how to perform this task.
 
 ```c
-  // Disable autostart. Note the control register is shadowed and thus needs to be written twice.
-  uint32_t aes_ctrl_val = 0x1 << AES_CTRL_SHADOWED_MANUAL_OPERATION;
-  REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
-  REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
-
   // Clear all key, IV, Input Data and Output Data registers.
   REG32(AES_TRIGGER(0)) =
       (0x1 << AES_TRIGGER_KEY_IV_DATA_IN_CLEAR) |
