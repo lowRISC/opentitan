@@ -448,6 +448,13 @@ static status_t run_signature_negative_tests(void) {
   CHECK(otcrypto_rsa_sign_async_start(&valid_priv, valid_digest,
                                       kOtcryptoRsaPaddingPss)
             .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_rsa_verify(&valid_pub, valid_digest, kOtcryptoRsaPaddingPss,
+                            &valid_const_sig, &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_verify_exp(&valid_pub, 65537, valid_digest,
+                                kOtcryptoRsaPaddingPss, &valid_const_sig,
+                                &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
 
   // Verify negative tests
 
