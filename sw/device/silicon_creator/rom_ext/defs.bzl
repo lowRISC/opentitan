@@ -35,18 +35,25 @@ ROM_EXT_VARIATIONS = {
             "//sw/device/silicon_creator/lib/cert:dice",
         ],
         slot_spec = {},
+        imm_exports = [],
     ),
     "dice_cwt": struct(
         deps = [
             "//sw/device/silicon_creator/lib/cert:dice_cwt",
         ],
         slot_spec = {},
+        imm_exports = [],
     ),
     "dice_mldsa": struct(
         deps = [
             "//sw/device/silicon_creator/lib/cert:dice_mldsa",
         ],
         slot_spec = EARLGREY_MLDSA_SLOTS,
+        imm_exports = [
+            "dice_attest_next_cdi",
+            "mldsa44_tiny_pub_from_seed",
+            "mldsa44_tiny_sign",
+        ],
     ),
 }
 

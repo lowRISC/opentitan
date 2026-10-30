@@ -110,11 +110,6 @@ enum {
 // Local dice page buffer.
 static dice_storage_page_t dice_page;
 
-// Shared static buffers for `dice_attest_next_cdi` operation.
-static uint8_t curr_mldsa_sig[MLDSA44_SIGNATURE_BYTES];
-static uint8_t tbs_buffer[kCdiHybridMaxTbsSizeBytes];
-static uint8_t pubkey_buffer[kCdiHybridExactPubKeyMldsaSizeBytes];
-
 // Both stacks need to be word aligned as well for `hardened_memshred`
 // operations
 static uint8_t dice_mldsa_rom_ext_scratch_stack
@@ -271,6 +266,9 @@ static rom_error_t dice_cdi_hybrid_cert_build(
     cdi_hybrid_tbs_values_t *tbs_values,
     const ecdsa_p256_public_key_t *signer_ecdsa_pubkey,
     const uint8_t *signer_mldsa_seed, uint8_t *cert, size_t *cert_size) {
+  uint8_t curr_mldsa_sig[MLDSA44_SIGNATURE_BYTES];
+  uint8_t tbs_buffer[kCdiHybridMaxTbsSizeBytes];
+
   // Construct X509 TBS payload.
   size_t tbs_size = sizeof(tbs_buffer);
   HARDENED_RETURN_IF_ERROR(
@@ -488,6 +486,7 @@ rom_error_t dice_attest_next_cdi_impl(
     const attest_params_t *params,
     const keymgr_binding_value_t *sealing_binding, uint32_t max_key_version,
     const uint8_t *exts, size_t exts_size) {
+  uint8_t pubkey_buffer[kCdiHybridExactPubKeyMldsaSizeBytes];
   watchdog_pet();
   *params->ecdsa_cert_size_out = 0;
   *params->mldsa_cert_size_out = 0;
@@ -638,10 +637,10 @@ rom_error_t dice_attest_next_cdi_impl(
  * @param exts Pointer to the private extensions DER buffer.
  * @param exts_size Size of the private extensions DER buffer.
  */
-static rom_error_t dice_attest_next_cdi(
-    const attest_params_t *params,
-    const keymgr_binding_value_t *sealing_binding, uint32_t max_key_version,
-    const uint8_t *exts, size_t exts_size) {
+rom_error_t dice_attest_next_cdi(const attest_params_t *params,
+                                 const keymgr_binding_value_t *sealing_binding,
+                                 uint32_t max_key_version, const uint8_t *exts,
+                                 size_t exts_size) {
   if (params->scratch_buf_size < kDiceMldsaRomExtAttestationScratchBufferSize) {
     return kErrorCertInvalidSize;
   }
@@ -760,7 +759,7 @@ rom_error_t dice_attest_cdi_1(const manifest_t *owner_manifest,
   HARDENED_RETURN_IF_ERROR(
       cdi_1_exts_build_private_exts(&cdi1_exts_values, exts_buf, &exts_size));
 
-  HARDENED_RETURN_IF_ERROR(dice_attest_next_cdi(
+  HARDENED_RETURN_IF_ERROR(imm_shared_dice_attest_next_cdi(
       &kCdi1AttestParams, sealing_binding, owner_manifest->max_key_version,
       exts_buf, exts_size));
 
