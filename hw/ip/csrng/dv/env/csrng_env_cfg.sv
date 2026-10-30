@@ -347,7 +347,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
     `uvm_info(`gfn, $sformatf("cfg.compliance/status = 0b%b", {compliance[app], status[app]}),
         UVM_DEBUG)
     `uvm_info(`gfn, $sformatf("******************************************\n"), UVM_DEBUG)
-    if (compare) begin
+    if (compare && !under_reset) begin
       // The dedicated RESEED_COUNTER CSR is always readable.
       `DV_CHECK_EQ_FATAL(csr_reseed_counter, reseed_counter[app])
       if ((read_int_state == MuBi4True) && (csr_int_state_read_enable[app] == 1'b1)) begin

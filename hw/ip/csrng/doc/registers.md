@@ -36,6 +36,10 @@
 | csrng.[`ERR_CODE`](#err_code)                                         | 0x70     |        4 | Hardware detection of error conditions status register                     |
 | csrng.[`ERR_CODE_TEST`](#err_code_test)                               | 0x74     |        4 | Test error conditions register                                             |
 | csrng.[`MAIN_SM_STATE`](#main_sm_state)                               | 0x78     |        4 | Main state machine state debug register                                    |
+| csrng.[`INT_STATE_HALT_ENABLE_REGWEN`](#int_state_halt_enable_regwen) | 0x7c     |        4 | Internal state halt enable REGWEN register                                 |
+| csrng.[`INT_STATE_HALT_ENABLE`](#int_state_halt_enable)               | 0x80     |        4 | Internal state halt enable register                                        |
+| csrng.[`INT_STATE_HALT`](#int_state_halt)                             | 0x84     |        4 | Internal state halt register                                               |
+| csrng.[`INT_STATE_STS`](#int_state_sts)                               | 0x88     |        4 | Internal state halt status register                                        |
 
 ## INTR_STATE
 Interrupt State Register
@@ -55,7 +59,7 @@ Interrupt State Register
 |   3    |  rw1c  |   0x0   | cs_fatal_err    | Asserted when a FIFO error or a fatal alert occurs. Check the [`ERR_CODE`](#err_code) register to get more information. |
 |   2    |  rw1c  |   0x0   | cs_hw_inst_exc  | Asserted when a hardware-attached CSRNG instance encounters a command exception                                         |
 |   1    |  rw1c  |   0x0   | cs_entropy_req  | Asserted when a request for entropy has been made.                                                                      |
-|   0    |  rw1c  |   0x0   | cs_cmd_req_done | Asserted when a command request is completed.                                                                           |
+|   0    |  rw1c  |   0x0   | cs_cmd_req_done | Asserted when a command request is completed, or when a CSRNG instance halted via INT_STATE_HALT has quiesced.          |
 
 ## INTR_ENABLE
 Interrupt Enable Register
@@ -384,6 +388,7 @@ will be zero. Writing this register will also reset the internal read
 pointer for the [`INT_STATE_VAL`](#int_state_val) register.
 Note: This register should be read back after being written to ensure
 that the [`INT_STATE_VAL`](#int_state_val) read back is accurate.
+This field also selects the instance targeted by [`INT_STATE_HALT`](#int_state_halt) and [`INT_STATE_STS.`](#int_state_sts)
 
 ## INT_STATE_VAL
 Internal state read access register
@@ -408,6 +413,7 @@ register to gather the entire field. Once 14 reads have been done, the internal 
 pointer (selects 32 bits of the 448 bit field) will reset to zero. The [`INT_STATE_NUM`](#int_state_num)
 can be re-written at this time (internal read pointer is also reset), and then
 another internal state field can be read.
+To get a consistent snapshot, halt the instance via [`INT_STATE_HALT`](#int_state_halt) first.
 Note that for [`INT_STATE_VAL`](#int_state_val) to provide read access to the internal state, also [`CTRL.READ_INT_STATE`](#ctrl) needs to be set to `kMultiBitBool4True`.
 Also, the [`INT_STATE_READ_ENABLE`](#int_state_read_enable) bit of the selected instance needs to be set to true for this to work.
 Otherwise, the register reads as 0.
@@ -543,12 +549,12 @@ resets the status bits.
 Recoverable alert status register
 - Offset: `0x6c`
 - Reset default: `0x0`
-- Reset mask: `0x1f07f`
+- Reset mask: `0x1f0ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FORCE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_INVALID_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 5}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_ACMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_GEN_CMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_CMD_SEQ_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_RESEED_CNT_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 15}], "config": {"lanes": 1, "fontsize": 10, "vspace": 330}}
+{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FORCE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_INVALID_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INT_STATE_HALT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 4}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_ACMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_GEN_CMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_CMD_SEQ_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_RESEED_CNT_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 15}], "config": {"lanes": 1, "fontsize": 10, "vspace": 330}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                                 |
@@ -559,7 +565,8 @@ Recoverable alert status register
 |   14   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_GEN_CMD_ALERT](#recov_alert_sts--cmd_stage_invalid_gen_cmd_alert) |
 |   13   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_ACMD_ALERT](#recov_alert_sts--cmd_stage_invalid_acmd_alert)       |
 |   12   |  rw0c  |   0x0   | [CS_BUS_CMP_ALERT](#recov_alert_sts--cs_bus_cmp_alert)                               |
-|  11:7  |        |         | Reserved                                                                             |
+|  11:8  |        |         | Reserved                                                                             |
+|   7    |  rw0c  |   0x0   | [INT_STATE_HALT_FIELD_ALERT](#recov_alert_sts--int_state_halt_field_alert)           |
 |   6    |  rw0c  |   0x0   | [GEN_ABORT_FIELD_ALERT](#recov_alert_sts--gen_abort_field_alert)                     |
 |   5    |  rw0c  |   0x0   | [GEN_ABORT_INVALID_ALERT](#recov_alert_sts--gen_abort_invalid_alert)                 |
 |   4    |  rw0c  |   0x0   | [ACMD_FLAG0_FIELD_ALERT](#recov_alert_sts--acmd_flag0_field_alert)                   |
@@ -596,6 +603,11 @@ Writing a zero resets this status bit.
 ### RECOV_ALERT_STS . CS_BUS_CMP_ALERT
 This bit is set when the software application port genbits bus value is equal
 to the prior valid value on the bus, indicating a possible attack.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . INT_STATE_HALT_FIELD_ALERT
+This bit is set when the [`INT_STATE_HALT`](#int_state_halt) register is set to a value other than
+kMultiBitBool4True or kMultiBitBool4False.
 Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . GEN_ABORT_FIELD_ALERT
@@ -761,6 +773,90 @@ Main state machine state debug register
 |:------:|:------:|:-------:|:--------------|:-------------------------------------------------------------------------------------------------------------------|
 |  31:6  |        |         |               | Reserved                                                                                                           |
 |  5:0   |   ro   |  0x37   | MAIN_SM_STATE | This is the state of the CSRNG main state machine. See the RTL file `csrng_main_sm` for the meaning of the values. |
+
+## INT_STATE_HALT_ENABLE_REGWEN
+Internal state halt enable REGWEN register
+- Offset: `0x7c`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "INT_STATE_HALT_ENABLE_REGWEN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 300}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                         | Description                                                                                                                                     |
+|:------:|:------:|:-------:|:-----------------------------|:------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                              | Reserved                                                                                                                                        |
+|   0    |  rw0c  |   0x1   | INT_STATE_HALT_ENABLE_REGWEN | INT_STATE_HALT_ENABLE register configuration enable bit. If this is cleared to 0, the INT_STATE_HALT_ENABLE register cannot be written anymore. |
+
+## INT_STATE_HALT_ENABLE
+Internal state halt enable register
+- Offset: `0x80`
+- Reset default: `0x7`
+- Reset mask: `0x7`
+- Register enable: [`INT_STATE_HALT_ENABLE_REGWEN`](#int_state_halt_enable_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "INT_STATE_HALT_ENABLE", "bits": 3, "attr": ["rw"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 230}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                  | Description                                                                                                                                                                                                                               |
+|:------:|:------:|:-------:|:----------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:3  |        |         |                       | Reserved                                                                                                                                                                                                                                  |
+|  2:0   |   rw   |   0x7   | INT_STATE_HALT_ENABLE | Per-instance internal state halt enable. Defines whether the corresponding instance can be halted via [`INT_STATE_HALT.`](#int_state_halt) Setting [`INT_STATE_HALT`](#int_state_halt) has no effect on an instance whose bit is cleared. |
+
+## INT_STATE_HALT
+Internal state halt register
+- Offset: `0x84`
+- Reset default: `0x9`
+- Reset mask: `0xf`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "INT_STATE_HALT", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                                              |
+|:------:|:------:|:-------:|:--------------------------------------------------|
+|  31:4  |        |         | Reserved                                          |
+|  3:0   |   rw   |   0x9   | [INT_STATE_HALT](#int_state_halt--int_state_halt) |
+
+### INT_STATE_HALT . INT_STATE_HALT
+While this field is set to kMultiBitBool4True, the instance selected by [`INT_STATE_NUM`](#int_state_num) halts.
+The instance first completes the command in progress and any commands already queued for it.
+A Generate command is instead halted as soon as the block currently being generated is complete.
+If this is the final block, the command is acknowledged after resuming, once the block has been read out.
+While halted, the instance accepts no new commands: EDN requests are back-pressured and [`SW_CMD_STS.CMD_RDY`](#sw_cmd_sts) is low for the software instance.
+This requires the bit of the selected instance in [`INT_STATE_HALT_ENABLE`](#int_state_halt_enable) to be set, otherwise the instance is not halted.
+Poll [`INT_STATE_STS.HALTED`](#int_state_sts), or wait for [`INTR_STATE.CS_CMD_REQ_DONE`](#intr_state), to know when the instance has halted.
+Setting this field to kMultiBitBool4False resumes the command processing of the instance.
+
+## INT_STATE_STS
+Internal state halt status register
+- Offset: `0x88`
+- Reset default: `0x0`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "HALTED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                             |
+|:------:|:------:|:-------:|:---------------------------------|
+|  31:1  |        |         | Reserved                         |
+|   0    |   ro   |   0x0   | [HALTED](#int_state_sts--halted) |
+
+### INT_STATE_STS . HALTED
+Reflects whether the instance selected by [`INT_STATE_NUM`](#int_state_num) has quiesced following [`INT_STATE_HALT`](#int_state_halt), such that its internal state stays constant while it is read via [`INT_STATE_VAL.`](#int_state_val)
+Reads as 0 if [`INT_STATE_NUM`](#int_state_num) selects a reserved instance.
+Also see [`INTR_STATE.CS_CMD_REQ_DONE`](#intr_state), which fires when an instance has halted.
 
 
 <!-- END CMDGEN -->
