@@ -410,6 +410,9 @@ static status_t negative_test(void) {
   TRY_CHECK(
       otcrypto_cmac_kdf(&valid_kdk, &zero_byte_buf, &msg_buf, &km).value ==
       OTCRYPTO_BAD_ARGS.value);
+  TRY_CHECK(
+      otcrypto_cmac_kdf(&valid_kdk, &msg_buf, &zero_byte_buf, &km).value ==
+      OTCRYPTO_OK.value);
 
   return OK_STATUS();
 }
