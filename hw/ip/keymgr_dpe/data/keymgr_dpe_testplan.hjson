@@ -16,363 +16,341 @@
     {
       name: smoke
       desc: '''
-            Smoke test exercising the major datapath within keymgr_dpe.
-            Tests operations (advance, gen-sw-out, gen-hw-out) at every stage.
+            Smoke test exercises the base commands implemented in keymgr_dpe:
+            - Advance
+            - Versioned key generation (namely: Generate HW output and Generate SW output)
+            - Erase
+            - Disable
+
+            Two points:
+            - Also, exportable policy bit is not implemented yet so setting / unsetting creates no
+            effect.
+            - Randomly set kmac_en_masking input in keymgr_dpe at the start of the test.
 
             Stimulus:
-            - Randomly select a destination slot x and issue an advance call
-              (which should latch the root key into slot x).
-            - At each stage, issue gen-hw-out and gen-sw-out using the previously loaded key slot.
-            - At each stage, advance to the next stage by randomly picking a new destination slot y,
-              and advancing to it from slot x (x = y is also allowed).
-            - Use fixed values for max_key_version = 0 / policy.allow_child = 1 /
-              policy.allow_keygen = 1 during advance calls.
-            - Use default/fixed values for HW/SW inputs. Use key_version = 0 during key generation.
-            - During some erase and disable operations, hold the decoy data of the KMAC interface at
-              all zeros or all ones.
+            - Randomly select a destination slot x and issue an advance operation (which should
+              latch the root key into slot x). Update the SLOT_POLICY register field with the
+              default root key policy i.e. allow_keygen=0, retain_parent=0, exportable=0, and
+              allow_child=1.
+            - Request another advance operation for the same slot (due to retain_parent=0 of the
+              root key slot). Set allow_child and allow_keygen policy bits to true. Randomly set
+              retain_parent field. Use random values for HW / SW bindings.
+            - If retain_parent policy of the previously advanced slot is true, then issue an erase
+              command on a random selection.
+            - To generate version keys for HW sideload ports, issue Generate HW Output command to a
+              random dest_sel inside {AES, HMAC, KMAC, OTBN).
+            - To generate version keys for SW CSRs, issue Generate SW Output command. The results
+              are going to be loaded in SW_SHARE0_OUTPUT and SW_SHARE1_OUTPUT.
+            - Repeat the above steps a couple of times with randomly picking a valid parent slot. If
+              retain_parent policy bit of the parent slot is true then randomly choose a different
+              invalid child slot. Otherwise derive the secrets to the parent slot.
+            - Issue the disable command at the end which will wipe all the slots.
+            - Wipe all the HW sideload key ports and SW_SHARE*_OUTPUT register.
 
             Checks:
-            - Check the STATUS register after each operation.
-            - Check that the `op_done` interrupt is triggered when an operation completes.
-            - Check that `err` and alert `recov_operation_err` are triggered after an invalid operation.
-            - Check that the valid bit is set to 1 in the destination slot.
-            - Check that the policy field is correctly updated from the SLOT_POLICY CSR.
-            - Check KMAC key, KMAC data, and SW output data for correctness.
-            - Check that constant decoy data does not raise the `KMAC_OUT` fault.
+            - Check INTR_STATE.op_done field to check the completion of the operation
+            - Check OP_STATUS.status field to see if the operation was successful.
+            - Check DPE context in METADATA_HIGH register.
+            - Before issuing disable operation, check that the METADATA_* register fields for slots
+              greater than equal to NumInstHwSlot are read back to 0.
+            - Check the key stored in a slot for correctness.
+            - Check that the HW sideload key slots and SW_SHARE*_OUTPUT registers are updated with
+              the correct keys.
             '''
+
       stage: V1
       tests: ["keymgr_dpe_smoke"]
     }
     {
-      name: random_sw_input
+      name: load_key_command
       desc: '''
-            Extends the smoke test by randomizing all SW input data.
-            - Fully randomize SW inputs: rom_ext_desc_*, software_binding_*, salt_*, max_*_key_ver,
-              *_key_ver_regwen.
-            - Randomize key_version to any value less than max_*_key_ver, to avoid triggering
-              the `invalid_kmac_input` error.
-            - Fully randomize HW inputs from flash, OTP, and life cycle.
-            - Randomize *sw_binding_regwen. Verify that this gates *_sw_binding writes and that
-              it is cleared after a successful advance operation.
+            Similar to smoke test but it also issues load root key and load root secondary key
+            commands
 
-            Stimulus and checks are the same as smoke.
+            Stimulus:
+            - Randomly select a destination slot x and issue an advance operation (which should
+              latch the root key into slot x). Update the SLOT_POLICY register field with the
+              default root key policy i.e. allow_keygen=0, retain_parent=0, exportable=0, and
+              allow_child=1.
+            - Request another advance operation for the same slot (due to retain_parent=0 of the
+              root key slot). Set allow_child and allow_keygen policy bits to true. Randomly set
+              retain_parent field. Use random values for HW / SW bindings.
+            - If retain_parent policy of the previously advanced slot is true, then issue an erase
+              command on a random selection.
+            - To generate version keys for HW sideload ports, issue Generate HW Output command to a
+              random dest_sel inside {AES, HMAC, KMAC, OTBN).
+            - To generate version keys for SW CSRs, issue Generate SW Output command. The results
+              are going to be loaded in SW_SHARE0_OUTPUT and SW_SHARE1_OUTPUT.
+            - On a random selection, load either of the root key or secondary root key and set the
+              slot DPE context with default root policy fields.
+            - Repeat the steps 2-6 couple of times with randomly picking a valid parent slot. If
+              retain_parent policy bit of the parent slot is true then randomly choose a different
+              invalid slot. Otherwise derive the secrets to the parent slot.
+            - Issue the disable command at the end which will wipe all the slots.
+            - Wipe all the HW sideload key ports and SW_SHARE*_OUTPUT register.
+
+            Checks:
+            Same as smoke test.
             '''
+
       stage: V1
-      tests: [/*TODO(#30753) Implement test: "keymgr_dpe_random_sw_input"*/]
+      tests: ["keymgr_dpe_load_key"]
     }
     {
-      name: cfgen_during_op
+      name: random_commands
       desc: '''
-            `cfg_regwen` is a read-only register that gates a number of write accesses to other
-            registers, which is not tested in common CSR tests. When a operation is started,
-            register protected by this EN (e.g. SW Binding registers) are not longer modifiable
-            until the operation completes.
-
-            Stimulus and checks:
-            Verify that commands and register accesses gated by `cfg_regwen` are ignored while
-            an operation is in progress.
-            '''
-      stage: V2
-      tests: [/*TODO(#30753) Implement test: "keymgr_dpe_cfg_regwen"*/]
-    }
-    {
-      name: sideload
-      desc: '''
-            keymgr_dpe exposes hardware sideload interfaces that deliver keys to KMAC, AES,
-            and OTBN. After each exposure clear the key from the sideload interface.
+            Issue random commands to keymgr_dpe.
 
             Stimulus:
-            - Generate a keymgr_dpe output to each HW sideload interface, exercising all three.
-            - After each key generation clear the corresponding interface by writing into the
-              SIDELOAD_CLEAR register.
-            - Reset the clear mechanism by writing 0 into the SIDELOAD_CLEAR register.
+            - Send random operations to keymgr_dpe in random order in available state.
+            - To request LOAD_*_KEY commands multiple times within the test, avoid setting the
+              corresponding root key's LOAD_*_KEY_LOCK registers.
 
             Checks:
-            - Verify that the sideload interfaces deliver the requested keys.
-            - Verify the clear operation on the interface port.
+            Similar to smoke test.
             '''
-      stage: V2
-      tests: [/*TODO(#30753) Define + Implement Test(s)*/]
-    }
-    {
-      name: invalid_hw_slot_overwrite
-      desc: '''
-            Stimulus:
-            - Attempt to derive a DPE context into an already-occupied hardware slot
 
-            Checks:
-            - Verify 'INVALID_OP' is raised.
-            - Verify the content of the hardware slot is unchanged.
-            '''
-      stage: V2
-      tests: [/*TODO(#30753) Define + Implement Test(s)*/]
+      stage: V1
+      tests: ["keymgr_dpe_rand_cmds"]
     }
     {
-      name: invalid_parent_policy
+      name: csr_testing
       desc: '''
-            The parent policy of a DPE context determines whether a derived child context must
-            overwrite the parent hardware slot (retain_parent == 0) or must target a different,
-            empty slot (retain_parent == 1).
+            Checks that keymgr_dpe performs the operations correctly based on the contents of a
+            particular CSR.
 
             Stimulus:
-            - Derive a DPE context with retain_parent == 1, then attempt to overwrite
-              the parent slot.
-            - Derive a DPE context with retain_parent == 0, then attempt to advance the child
-              into a different (empty) slot.
+            - Randomly set the fields in SIDELOAD_CLEAR, ENFFORCE_SW_BINDING,
+              RESEED_INTERVAL_SHADOWED, and  LOAD_*_LOCK registers.
+            - Issue regular operations via keymgr_dpe_rand_cmds test.
 
             Checks:
-            - Verify that 'INVALID_OP' is raised in both cases.
-            - Verify the content of the source hardware slot is unchanged.
-            - Verify the content of the destination hardware slot is unchanged.
-            - Verify the empty slot remains empty and invalid.
-            '''
+            - Check that the sideload ports are continuously cleared after the GENERATE_HW_OUTPUT
+              operation based on SIDELOAD_CLEAR.val field.
+            - Check that sideload ports cleared with entropy.
+            - Check that the HW bindings are suppressed when ENFORCE_SW_BINDING.enforce field is
+              set.
+            - Check that the LOAD_*_KEY operation is rejected when the corresponding
+              LOAD_*_LOCK.lock field is set. In this scenario, check ERR_CODE.invalid_op field is
+              set.
+            - Check that a reseed is requested after RESEED_INTERVAL_SHADOWED.val counter hits in
+              keymgr_dpe.
+
       stage: V2
-      tests: [/*TODO(#30753) Define + Implement Test(s)*/]
+      tests: ["keymgr_dpe_csr_testing"]
     }
     {
-      name: invalid_keygen_policy
+      name: regwen
       desc: '''
-            Verify that key generation (sideload and SW-visible) is rejected when the allow_keygen
-            policy bit is false.
+            Verify that the registers gated by *regwen.EN are correctly passing through or ignoring
+            their accesses based on their respective *regwen.EN register field.
 
             Stimulus:
-            - Generate a sideload key for any of the sideload ports.
-            - Generate a SW-visible key.
-            - Derive a DPE context with allow_keygen == 0.
-            - Attempt to generate a sideload key for the same sideload port as before.
-            - Attempt to generate a SW-visible key.
+            - Write to *regwen register to either enable and disable the writes to their respective
+              gated registers.
+            - After that, write to a register which is gated by *regwen.
+            - Meanwhile during an operation, access a register that cannot be modified during an
+              operation.
 
             Checks:
-            - Verify that 'INVALID_OP' is raised twice.
-            - Verify the key is unchanged on the sideload port and in the SW output register.
+            - Expect to see a register either updated its contents or ignored the access based on
+              its respective *regwen.EN.
+            - Expect some related registers are non-modifiable during an operation.
             '''
+
       stage: V2
-      tests: [/*TODO(#30753) Define + Implement Test(s)*/]
+      tests: ["keymgr_dpe_regwen"]
     }
     {
-      name: invalid_child_policy
+      name: lc_disable
       desc: '''
-            Verify that deriving a child context is rejected when the allow_child policy bit
-            is false.
+            Inject disable through life cycle control at random durations while running the
+            keymgr_dpe_rand_cmds test in parallel.
+
+            Checks:
+            - Expect to see DEBUG.inactive_lc_en in case of LC disable.
+            - Expect state to be INVALID in WORKING_STATE.state field.
+            - Expect to see all the HW sideload ports, SW keys in SW_SHARE*_OUTPUT registers and all
+              the slots wiped in an INVALID state.
+            '''
+
+      stage: V2
+      tests: ["keymgr_dpe_rand_disable"]
+    }
+    {
+      name: stress_all
+      desc: '''
+            - Combine the non-error sequences (smoke, load_key_command, and random_commands) into a
+              single test that runs them sequentially for multiple iterations.
+            '''
+
+      stage: V2
+      tests: ["keymgr_dpe_stress_all"]
+    }
+    {
+      name: invalid_hw_bindings
+      desc: '''
+            Issue all-ones or all-zeros as HW binding and check the ERR_CODE and FAULT_STATUS
+            registers.
 
             Stimulus:
-            - Derive a DPE context with allow_child == 0.
-            - Attempt to derive a child context from it.
+            - Once the keymgr_dpe comes into an available state, inject all-ones, all-zeros, or
+              combination of them as HW bindings for key derivation function.
 
             Checks:
-            - Verify that 'INVALID_OP' is raised.
-            - Verify the content of the hardware slot is unchanged.
+            - Check INTR_STATE.op_done field to check the completion of the operation.
+            - Expect DEBUG register fields to trigger on invalid HW bindings.
+            - Expect to see ERR_CODE.invalid_kmac_input.
+            - Expect the slot to be invalid after the operation.
+            - For valid HW bindings, check OP_STATUS.status field to see if the operation was
+              successful.
             '''
+
       stage: V2
-      tests: [/*TODO(#30753) Define + Implement Test(s)*/]
+      tests: ["keymgr_dpe_invalid_hw_msgs"]
     }
     {
-      name: erase_dpe_context
+      name: invalid_sw_input
       desc: '''
-            Erase a DPE context from a hardware slot using a software command.
+            Perform commands with invalid SW inputs.
 
             Stimulus:
-            - Derive a DPE context into a slot, then issue an erase command.
+            - Randomize the contents that are required in an operation to bad values.
+              Examples are:
+              - Generating version key when KEY_VERSION > MAX_KEY_VERSION.
+              - Derive a non-existing slot such that
+                CONTROL_SHADOWED.slot_src_sel / CONTROL_SHADOWED.slot_dst_sel >= NumInstHwSlot.
+              - Send an undefined command.
+              - Write CONTROL_SHADOWED.dest_sel with undefined enumerated value.
 
             Checks:
-            - Verify that the destination slot is no longer marked as valid.
-            - Verify the stored key is overwritten with randomness.
+            - Expect to see ERR_CODE.invalid_op.
             '''
+
       stage: V2
-      tests: [/*TODO(#30753) Define + Implement Test(s)*/]
+      tests: ["keymgr_dpe_sw_invalid_input"]
     }
     {
-      name: erase_empty_dpe_context
+      name: invalid_slot_operations
       desc: '''
-            Attempt to erase a DPE context from a hardware slot that is not occupied.
+            Derive a secret from an empty/invalid slot to an occupied/valid slot.
 
             Stimulus:
-            Issue an erase command targeting an empty slot.
+            This list of stimuli includes:
+            - Request an advance operation from an invalid slot or to a valid slot or both.
+            - Request a version key generation operation from an invalid slot or to a valid slot or
+              both.
+            - Request an erase operation for an invalid slot.
 
             Checks:
-            - Verify that 'INVALID_OP' is raised.
-            - Verify the content of the hardware slot is unchanged.
+            - Check ERR_CODE.invalid_op field is set as an evidence of triggering this testpoint.
+            - Verify the METADATA registers are unchanged.
             '''
+
       stage: V2
-      tests: [/*TODO(#30753) Define + Implement Test(s)*/]
+      tests: ["keymgr_dpe_invalid_slot_ops"]
     }
     {
-      name: load_uds_command
+      name: invalid_parent_policy_operations
       desc: '''
-            Reload the UDS into an empty hardware slot after keymgr_dpe has already reached
-            the Available state.
+            The parent policy of a DPE context determines how the operation on the child slot would
+            be carried out. Whether a parent slot can derive secrets, generate a version key, derive
+            a secret to its own slot or a different slot, etc depends on the parent's key_policy
+            bits. Note that exportable policy bit is not implemented so setting / unsetting that
+            creates no effect.
 
             Stimulus:
-            - Bring keymgr_dpe out of the Reset state and into the Available state by
-              issuing a single advance call.
-            - Issue the corresponding software command to load the UDS a second time.
+            The list of stimuli includes:
+            - Request an advance operation from a slot having policy bit allow_child=false.
+            - Request a versioned key generation operation from a slot having policy bit
+              allow_keygen=false.
+            - Request an advance operation for a different child slot with parent policy bit
+              retain_parent=false
+            - Request an advance operation for the same slot with parent policy bit
+              retain_parent=true.
 
             Checks:
-            - Verify that the second load successfully populates the hardware slot with the UDS.
+            - Check ERR_CODE.invalid_op field is set as an evidence of triggering this testpoint.
+            - Verify the METADATA registers are unchanged.
+            - Verify that the sideload ports and SW_SHARE*_OUTPUT registers are unchanged.
             '''
+
       stage: V2
-      tests: [/*TODO(#30753) Define + Implement Test(s)*/]
+      tests: ["keymgr_dpe_invalid_parent_policy_ops"]
     }
     {
-      name: load_uds_command_without_default_policy
+      name: load_key_without_default_policy
       desc: '''
-            Reload the UDS into an empty hardware slot after keymgr_dpe has reached the
-            Available state, with SLOT_POLICY programmed to values that differ from the
-            RTL-defined defaults.
+            Perform the loading operation of root / secondary root key (either in reset or via load
+            commands) without the default UDS policy bits. The slot policy should not be updated by
+            the non-default values written by SW.
 
             Stimulus:
-            - Bring keymgr_dpe out of the Reset state and into the Available state by
-              issuing a single advance call.
-            - Issue the corresponding software command to load the UDS a second time.
+            - Write the SLOT_POLICY register with some non-default slot policy.
 
             Checks:
-            - Verify that the resulting slot policies match the RTL-defined defaults from the
-              keymgr_dpe package, not the values programmed via the SLOT_POLICY register.
-            - Verify that max_key_version is correctly copied from the MAX_KEY_VER_SHADOWED
-              register.
+            - Expect the slot to be valid by reading METADATA_HIGH.valid field.
+            - Expect the METADATA_HIGH slot policy fields to return default values.
             '''
+
       stage: V2
-      tests: [/*TODO(#30753) Define + Implement Test(s)*/]
+      tests: ["keymgr_dpe_invalid_load_key_op"]
     }
     {
-      name: load_uds_command_in_occupied_slot
+      name: load_key_command_in_valid_slot
       desc: '''
-            Attempt to reload the UDS into an already-occupied hardware slot.
+            Attempt to reload the root or secondary root key into a valid hardware slot.
 
             Stimulus:
-            - Bring keymgr_dpe out of the Reset state and into the Available state by
-              issuing a single advance call.
-            - Attempt to load the UDS into the exact same hardware slot.
+            - Send load root / secondary-root key command and select valid slot as destination.
 
             Checks:
-            - Verify that 'INVALID_OP' is raised.
-            - Verify the content of the hardware slot is unchanged.
+            - Check ERR_CODE.invalid_op field is set as an evidence of triggering this testpoint.
+            - Verify the METADATA registers are unchanged.
             '''
+
       stage: V2
-      tests: [/*TODO(#30753) Define + Implement Test(s)*/]
+      tests: ["keymgr_dpe_invalid_load_key_op"]
     }
     {
-      name: lock_loading_uds_command
+      name: lock_loading_key_command
       desc: '''
-            Attempt to load the UDS when the `load_root_key_lock` register is set.
+            Attempt to load the root or secondary root key when their respective lock registers
+            (LOAD_ROOT_KEY_LOCK and LOAD_SECONDARY_ROOT_KEY_LOCK) are set.
 
             Stimulus:
-            - Bring keymgr_dpe out of the Reset state and into the Available state by
-              issuing a single advance call.
-            - Set the `load_root_key_lock` register, then attempt to issue the load UDS command.
+            - Set the lock register, then attempt to issue the load command.
 
             Checks:
-            - Verify that 'INVALID_OP' is raised.
-            - Verify the content of the hardware slot is unchanged.
+            - Check ERR_CODE.invalid_op field is set as an evidence of triggering this testpoint.
+            - Verify the METADATA registers are unchanged.
             '''
+
       stage: V2
-      tests: [/*TODO(#30753) Define + Implement Test(s)*/]
+      tests: ["keymgr_dpe_invalid_load_key_op"]
     }
     {
-      name: invalid_uds
+      name: invalid_root_key
       desc: '''
-            Verify keymgr_dpe behavior when the valid signal of the uds is false.
+            Verify keymgr_dpe behavior when either of the root keys contains all-zeros / all-ones or
+            driving their METADATA_HIGH.valid = 0 in the HW after loading it. This should cover both
+            scenarios of latching the root key when WORKING_STATE.state = RESET or reloading root /
+            secondary root key via their respective commands in WORKING_STATE.state=AVAILABLE state.
 
             Stimulus:
-            - Drive the valid signal for the uds low
-            - Bring keymgr_dpe out of the Reset state and into the Available state by
-              issuing a single advance call.
+            The stimuli includes:
+            - Driving all-zeros / all_ones to either of the root keys during the latching cycle or
+              between a reloading command.
+            - Invalidate either of the root key's in HW so that their METADATA_HIGH.valid field
+              reads back as zero.
 
             Checks:
-            - Verify the keymgr_dpe enters the Invalid state.
-            - Verify the corresponding INVALID_ROOT_KEY entry inside the debug register is set.
+            - Expect to see DEBUG.invalid_root_key or DEBUG.invalid_secondary_root_key fields.
+            - Expect to see METADATA_HIGH.valid=0.
             '''
+
       stage: V2
-      tests: [/*TODO(#30753) Implement test: "keymgr_dpe_invalid_uds"*/]
-    }
-    {
-      name: use_excl_sw_binding_option
-      desc: '''
-            When deriving from the initial DPE slot, HW binding values from the life cycle state
-            are normally included in the KMAC message for the first, second, and third advance
-            calls. The excl_sw_binding flag suppresses these hw binding values.
-
-            Stimulus:
-            - Bring keymgr_dpe out of the Reset state and into the Available state by
-              issuing a single advance call.
-            - Perform three advance operations with the excl_sw_binding flag set.
-
-            Checks:
-            - Verify that the corresponding hw binding values on the KMAC interface are driven to
-              zero when the flag is set, and carry their expected non-zero values when it is
-              cleared.
-            - Generate a SW readable key from the derived DPE context and compare it against a
-              known golden model.
-            '''
-      stage: V2
-      tests: [/*TODO(#30753) Define + Implement Test(s)*/]
-    }
-    {
-      name: direct_to_disabled_state
-      desc: '''
-            Issue the disable command from each reachable state and verify that keymgr_dpe
-            correctly enters the `StDisabled` state.
-            '''
-      stage: V2
-      tests: [/*TODO(#30753) Implement test: "keymgr_dpe_direct_to_disabled"*/]
-    }
-    {
-      name: check_lc_reset_state
-      desc: '''
-            The life cycle controller can deactivate / activate the keymgr_dpe.
-
-            Stimulus:
-            - Deactivate the keymgr_dpe by the LC controller
-            - Issue a single advance call
-            - Activate the keymgr_dpe by the LC controller
-            - Issue a single advance call
-
-            Checks:
-            - Verify that 'INVALID_OP' is raised by the first advance call.
-            - Verify the keymgr_dpe transition into the Available state with the second advance call.
-            '''
-      stage: V2
-      tests: [/*TODO(#30753) Implement test: "keymgr_dpe_check_lc_reset_state"*/]
-    }
-    {
-      name: check_lc_available_state
-      desc: '''
-            The life cycle controller can deactivate the keymgr_dpe, causing it to wipe all secret
-            key material immediately.
-
-            Stimulus:
-            - Bring keymgr_dpe out of the Reset state and into the Available state by
-              issuing a single advance call.
-            - Assert LC deactivation
-
-            Checks:
-            - Verify that all sideload ports are immediately wiped and that SW output is invalid
-              after the operation completes.
-            - Verify the keymgr_dpe transition into the Invalid state.
-            '''
-      stage: V2
-      tests: [/*TODO(#30753) Implement test: "keymgr_dpe_check_lc_available_state"*/]
-    }
-    {
-      name: check_lc_disable_state
-      desc: '''
-            The life cycle controller can deactivate the keymgr_dpe, causing it to wipe all secret
-            key material immediately.
-
-            Stimulus:
-            - Bring keymgr_dpe out of the Reset state and into the Available state by
-              issuing a single advance call.
-            - Issue a disable operation with the register interface
-            - Assert LC deactivation
-
-            Checks:
-            - Verify the keymgr_dpe transition into the Disabled state.
-            - Verify that all sideload ports are immediately wiped and that SW output is invalid
-              after the operation completes.
-            - Verify the keymgr_dpe transition into the Invalid state.
-            '''
-      stage: V2
-      tests: [/*TODO(#30753) Implement test: "keymgr_dpe_check_lc_disable_state"*/]
+      tests: ["keymgr_dpe_invalid_load_key_op"]
     }
     {
       name: kmac_error_response
@@ -386,171 +364,271 @@
               the output validity check.
 
             Checks:
-            - Verify that `KMAC_OP` inside the `fault_status` is updated correctly.
+            - Expect to see FAULT_STATUS.kmac_op field set.
             '''
+
       stage: V2
-      tests: [/*TODO(#30753) Implement test: "keymgr_dpe_kmac_error_response"*/]
+      tests: ["keymgr_dpe_kmac_err_rsp"]
     }
     {
-      name: invalid_sw_input
+      name: debug_reg
       desc: '''
-            Verify keymgr_dpe behavior when KEY_VERSION exceeds MAX_KEY_VER for the selected
-            source slot.
+            Perform operations that can trigger fields in the DEBUG register.
 
             Stimulus:
-            Randomize KEY_VERSION and MAX_KEY_VER registers such that KEY_VERSION > MAX_KEY_VER.
+            Stimulus could be anything that can set fields in the DEBUG register. Few examples are
+            listed below:
+            - Invalidate either of the root key's in HW so that their METADATA_HIGH.valid field
+              reads back as zero.
+            - Write invalid content in the root keys.
+            - Disable LC control that will deactivate the keymgr_dpe block.
+            - Send invalid HW bindings mentioned in "invalid_hw_sw_bindings" testpoint.
 
             Checks:
-            - Verify that alert `recov_operation_err` is triggered and err_code is
-              `INVALID_KMAC_INPUT`.
-            - Verify the content of the destination hardware slot is unchanged.
+            - Check corresponding DEBUG register fields.
+            - Check WORKING_STATE.state field in case of INVALID / DISABLED states.
             '''
+
       stage: V2
-      tests: [/*TODO(#30753) Implement test: "keymgr_dpe_sw_invalid_input"*/]
+      tests: ["keymgr_dpe_debug_reg"]
     }
     {
-      name: invalid_hw_input
+      name: err_code_reg
       desc: '''
-            Verify keymgr_dpe behavior when hardware-supplied inputs contain invalid data
-            patterns (all zeros or all ones).
+            Perform operations that can trigger fields in ERR_CODE register.
 
             Stimulus:
-            - Drive all-zeros or all-ones on any of the following inputs: flash seeds, otp_key,
-              diversification ID, ROM digest, etc.
+            The list of stimuli includes:
+            - Send an invalid operation. Examples:
+              - "invalid_parent_policy_operations" test.
+              - "invalid_slot_operations" test.
+              - requesting a versioned key generation from a root key slot.
+              - Issue an operation with CONTROL_SHADOWED.sw_binding_only=0 when
+                ENFORCE_SW_BINDING.enforce is set.
+            - Send an invalid KMAC input. One of the example can be "invalid_hw_bindings" test.
+            - After an operation, overwrite a *shadowed register and expect to see
+              ERR_CODE.invalid_shadow_update.
+            - Issue operations when WORKING_STATE.state inside {RESET, DISABLED, INVALID}.
 
             Checks:
-            - Verify that alert `recov_operation_err` is triggered and err_code is
-              `INVALID_KMAC_INPUT`.
-            - Verify the content of the destination hardware slot is unchanged.
-            - Verify the corresponding invalid entry inside the debug register is set.
+            - Expect to see the corresponding field in the ERR_CODE register be set.
             '''
+
       stage: V2
-      tests: [/*TODO(#30753) Implement test: "keymgr_dpe_hw_invalid_input"*/]
+      tests: ["keymgr_dpe_err_code_reg"]
     }
     {
-      name: sync_async_fault_cross
+      name: fault_status_reg
       desc: '''
-            Verify keymgr_dpe behavior when synchronous and asynchronous faults are triggered
-            in combination.
+            Perform operations in a way that will trigger synchronous and asynchronous fatal faults.
 
             Stimulus:
-            Create the following two direct tests:
-            - A sync (transactional) fault occurs, followed by an async (non-transactional) fault.
-            - An async (non-transactional) fault occurs, followed by a sync (transactional) fault.
+            Examples of stimuli to trigger fatal faults are:
+            - Drive invalid data to KMAC, sideload control, reseed_counter and control FSM.
+            - Drive a register integrity and shadow copy errors.
+            - Drive the reseed counter to a bad value.
+            - Inject a METADATA ECC error.
+            - Drive a non-onehot command to KMAC interface.
+            - Drive bad response from KMAC.
 
             Checks:
-            - Check alert `fatal_fault_err` is triggered on the first fault.
-            - Verify that `fault_status` register is updated correctly with both faults.
+            - Check that the alert is triggered.
+            - Check both ERR_CODE and FAULT_STATUS bits to verify the register fields wiring with
+              errors.
             '''
-      stage: V2
-      tests: [/*TODO(#30753) Implement test: "keymgr_dpe_sync_async_fault_cross"*/]
-    }
-    {
-      name: stress_all
-      desc: '''
-            - Combine the sequences above into a single test that runs them sequentially,
-              excluding the CSR sequence and keymgr_dpe_cfg_regwen (which requires zero delays).
-            - Randomly insert a hardware reset between sequences.
-            '''
-      stage: V2
-      tests: [/*TODO(#30753) Implement test: "keymgr_dpe_stress_all"*/]
-    }
-    {
-      name: sec_cm_additional_check
-      desc: '''
-            Verify the behavior of keymgr_dpe when faults are injected into its security
-            countermeasures.
 
-            Stimulus:
-            Follow the stimulus described in `prim_count_check`, `prim_one_hot_check`, and
-            `prim_fsm_check`.
-
-            Checks:
-            - In addition to checking the alert and `fault_status`, issue an operation after
-              fault injection and verify that `op_status` reports failure and the design
-              enters `StInvalid`.
-            '''
-      stage: V2S
-      tests: [/*TODO(#30753) Implement test: "keymgr_dpe_sec_cm"*/]
+      stage: V2
+      tests: ["keymgr_dpe_fault_status"]
     }
   ]
   covergroups: [
     {
-      name: state_and_op_cg
+      name: operation_cg
       desc: '''
-            - Cover all operations crossed with `cdi_sel`, `dest_sel`, and `op_status`
-              (success or failure) across all working states.
-            - Sampled once each operation completes.'''
+            - Cover all operations crossed with all slots picked as source and destination, all
+              boot stages included, and all working states.
+            - Generate versioned key for all the HW sideload ports crossed with
+              CONTROL_SHADOWED.dest_sel.
+            - Sample with both DONE_SUCCESS and DONE_ERROR statuses in OP_STATUS.status.
+            - Sample once each operation completes.
+            '''
     }
     {
       name: lc_disable_cg
       desc: '''
-             - Cover LC disable events occurring in each working state and during each
-               operation type.
-             - Sampled when LC disables keymgr_dpe.'''
+             - Cover LC disable events during each operation type.
+             - Sample when LC disables keymgr_dpe.
+             '''
     }
     {
       name: sideload_clear_cg
       desc: '''
-            - Cover all SIDELOAD_CLEAR values used after each operation type and in each
-              working state.
-            - Cross with every combination of sideload interface availability across the
-              three interfaces.
-            - Sampled when SIDELOAD_CLEAR is programmed after an operation.'''
+            - Cover all possible values for SIDELOAD_CLEAR.val used after versioned key generation
+              for HW.
+            - Cross it with the list of enumerated values outside the allowed list to see if all the
+              sideload ports are continuously cleared.
+            - Cross with every combination of sideload interface (AES, HMAC, KMAC, OTBN).
+            - Cross it with both WORKING_STATE.state inside {AVAILABLE, DISABLED} (In DISABLED
+              state, the SW and sideload keys are preserved).
+            - Sample after Generate HW Output operation for HW.
+            '''
     }
     {
       name: reseed_interval_cg
       desc: '''
-            - Cover small RESEED_INTERVAL values so that the testbench can verify that EDN
-              requests are issued at the correct frequency.
-            - Also cover large values to ensure all register bits are toggled.'''
+            - Cover small PRNG intervals in RESEED_INTERVAL that the testbench can verify that EDN
+              requests are issued frequently.
+            - Also cover large values to ensure all register bits are toggled.
+            '''
     }
     {
-      name: keymgr_dpe_sw_input_cg
+      name: wipe_keys_cg
       desc: '''
-            - Cover toggle of all bits across SW input registers.
-            - SW inputs include: `sw_binding`, `salt`, `key_version` and `max_key_ver*`.
+            - Covers that the SW keys in SW_SHARE*_OUTPUT registers and sideload ports are wiped
+              only in invalid state.
+            - Cross it with WORKING_STATE.state inside {DISABLED, INVALID}.
+            '''
+    }
+    {
+      name: wipe_slots_only_cg
+      desc: '''
+            - Covers that the slots are wiped and SW keys in SW_SHARE*_OUTPUT registers and sideload
+              ports are preserved only in DISABLED state.
+            - Cross it with WORKING_STATE.state inside {DISABLED, INVALID}.
+            '''
+    }
+    {
+      name: hw_sw_invalid_bindings_cg
+      desc: '''
+            - Cover toggle of all bits across HW / SW input registers:
+              - SW_BINDING
+              - SALT
+              - KEY_VERSION
+              - MAX_KEY_VERSION
+              - All ones/zeros on the OTP root key.
+              - All ones/zeros on ROM digest.
+              - All ones/zeros on creator seed.
+              - All ones/zeros on owner seed.
             - Cross with the corresponding regwen value, confirm writes are attempted
-              while the regwen allows the write (unlocked) and while it blocks it (locked).'''
+              while the regwen allows the write (unlocked) and while it blocks it (locked).
+            '''
     }
     {
-      name: err_code_cg
+      name: enforce_sw_bindings_cg
       desc: '''
-            - Cover all `err_code` values except `invalid_shadow_update`, which is tested in
-              a common direct test.
-            - Sampled when `err_code` is read.'''
+            - Covers an advance operation that uses SW binding only as input messages for KMAC key
+              derivation function.
+            - Cross with advance operation, CONTROL_SHADOWED.sw_binding_only and all boot stages.
+            '''
     }
     {
-      name: hw_invalid_input_cg
+      name: non_existing_slot_cg
       desc: '''
-            Cover all HW invalid input scenarios, including:
-            - All ones/zeros on the OTP root key.
-            - OTP root key valid is low.
-            - All ones/zeros on the LC keymgr_dpe health state.
-            - All ones/zeros on ROM digest.
-            - ROM digest valid is low.
-            - All ones/zeros on flash creator seeds.
-            - All ones/zeros on flash owner seeds.'''
+            Cover a scenario:
+              CONTROL_SHADOWED.slot_src_sel / CONTROL_SHADOWED.slot_dst_sel > NumInstHwSlot.
+            Cross with each operation.
+            '''
     }
     {
       name: key_version_compare_cg
       desc: '''
             - Cover all comparison outcomes (equal, less than, greater than) between
-              key_version and the current max_key_version.
-            - Crossed with the working state and operation type (gen-sw-out or gen-hw-out).'''
+              KEY_VERSION and the MAX_KEY_VER_SHADOWED registers.
+            - Crossed with operation type GEN_SW_OUTPUT and GEN_HW_OUTPUT.
+            '''
+    }
+    {
+      name: kmac_err_rsp_cg
+      desc: '''
+            Cover a scenario where KMAC responds with an error that will trigger *kmac* fields in
+            ERR_CODE and FAULT_STATUS registers.
+            Cross it with advance, gen_sw_output and gen_hw_output commands.
+            '''
+    }
+    {
+      name: load_key_with_lock_cg
+      desc: '''
+            Load root / secondary root key when their respective *LOCK.lock register field is set.
+            '''
+    }
+    {
+      name: retain_parent_cg
+      desc: '''
+            - Cover SLOT_POLICY.retain_parent set / unset.
+            - Cross it with CONTROL_SHADOWED.SLOT_SRC_SEL == CONTROL_SHADWED.SLOT_DST_SEL when
+              retain_parent field is set and vice versa
+            - Cross it with METADATA_HIGH.valid = false.
+            '''
+    }
+    {
+      name: allow_child_cg
+      desc: '''
+            - Cover SLOT_POLICY.allow_child = false, with a valid source slot, and an Advance
+              operation issued.
+            '''
+    }
+    {
+      name: allow_keygen_cg
+      desc: '''
+            - Cover SLOT_POLICY.allow_keygen = false, with a valid source slot, and gen_sw_out or
+              gen_hw_out operations issued.
+            '''
+    }
+    {
+      name: invalid_sw_input_cg
+      desc: '''
+            Write SW registers such as CONTROL_SHADOWED, MAX_KEY_VER_SHADOWED, KEY_VERSION, and
+            SLOT_POLICY with invalid contents. Example:
+            - Generating version key when KEY_VERSION > MAX_KEY_VERSION.
+              CONTROL_SHADOWED.slot_src_sel / CONTROL_SHADOWED.slot_dst_sel > NumInstHwSlot.
+            - Send a bad command.
+            - Set bad content to SLOT_POLICY fields.
+            - Write CONTROL_SHADOWED.dest_sel with undefined enumerated value.
+            '''
+    }
+    {
+      name: invalid_slot_op_cg
+      desc: '''
+            - Cover scenarios where an operations use invalid parent slot or valid child slot.
+            - Cross it with every operation.
+            '''
+    }
+    {
+      name: invalid_kmac_command_cg
+      desc: '''
+            On KMAC interface, the commands issued by keymgr_dpe are onehot encoded. Send a
+            non-onehot command to KMAC
+            '''
+    }
+    {
+      name: invalid_root_key_cg
+      desc: '''
+            - Cover the root keys (both root and secondary root) with either containing all-zeros /
+              all-ones or METADATA_HIGH.valid field is low.
+            - Cross it with WORKING_STATE.state inside {RESET, AVAILABLE} and operations inside
+              {ADVANCE, LOAD_ROOT_KEY, LOAD_ROOT_SECONDARY_KEY}
+            '''
+    }
+    {
+      name: err_code_cg
+      desc: '''
+            - Cover all ERR_CODE register fields.
+            - Sampled when ERR_CODE register is read.
+            '''
     }
     {
       name: fault_status_cg
       desc: '''
-            - Cover all `fault_status` bit values
-            - Sampled when `fault_status` is read.'''
+            - Cover all FAULT_STATUS register fields.
+            - Sampled when FAULT_STATUS is read.
+            '''
     }
     {
-      name: sync_async_fault_cross_cg
+      name: debug_cg
       desc: '''
-            - Cover both orderings of a sync/async fault cross: sync fault occurring first,
-              and async fault occurring first.
-            - Sampled after `fault_status` is read in the cross-fault sequence.'''
+            - Cover all DEBUG register fields.
+            - Sampled when DEBUG is read.
+            '''
     }
   ]
 }
