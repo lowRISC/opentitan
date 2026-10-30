@@ -29,25 +29,37 @@ OTTF_DEFINE_TEST_CONFIG();
  */
 static volatile const uint8_t kSPIHostIdx = 0x0;
 
+/**
+ * Indicates the chip select line under test.
+ *
+ * This constant is backdoor_overwritten by the vseq.
+ */
+static volatile const uint8_t kSPIHostCsid = 0x0;
+
 #define DATA_SET_SIZE 16
 
 static dif_spi_host_t spi_host;
 static dif_pinmux_t pinmux;
 
 // pinmap defined in chip_if.sv (spi_device1_if)
-static const top_earlgrey_muxed_pads_t spi_host1_muxed_pads[6] = {
-    kTopEarlgreyMuxedPadsIob0,  // sck
-    kTopEarlgreyMuxedPadsIob1,  // csb
-    kTopEarlgreyMuxedPadsIob6,  // sio[3]
-    kTopEarlgreyMuxedPadsIob5,  // sio[2]
-    kTopEarlgreyMuxedPadsIob4,  // sio[1]
-    kTopEarlgreyMuxedPadsIob3,  // sio[0]
+static const top_earlgrey_muxed_pads_t spi_host1_muxed_pads[8] = {
+    kTopEarlgreyMuxedPadsIob0,   // sck
+    kTopEarlgreyMuxedPadsIob1,   // csb[0]
+    kTopEarlgreyMuxedPadsIob7,   // csb[1]
+    kTopEarlgreyMuxedPadsIoc10,  // csb[2]
+    kTopEarlgreyMuxedPadsIob6,   // sio[3]
+    kTopEarlgreyMuxedPadsIob5,   // sio[2]
+    kTopEarlgreyMuxedPadsIob4,   // sio[1]
+    kTopEarlgreyMuxedPadsIob3,   // sio[0]
 };
 
 // For spi_host1
 // sck       output
-// csb       output
+// csb[0:2]  output
 // sio[0:3]  bidir (input+output)
+//
+// For spi_host0, csb[0] is on a dedicated pad and csb[1:2] are muxed (pinmap
+// defined in chip_if.sv (spi_device0_if)).
 
 /** To setup the pinmux using the enum's in top_earlgrey.h ...
  *
@@ -70,6 +82,15 @@ typedef struct pinmux_select {
 } pinmux_select_t;
 
 static const pinmux_select_t pinmux_out_config[] = {
+    // spi_host0
+    {
+        .pad = kTopEarlgreyPinmuxMioOutIoa3,
+        .peripheral = kTopEarlgreyPinmuxOutselSpiHost0Csb1,  // CSB[1]
+    },
+    {
+        .pad = kTopEarlgreyPinmuxMioOutIoa6,
+        .peripheral = kTopEarlgreyPinmuxOutselSpiHost0Csb2,  // CSB[2]
+    },
     // spi_host1
     {
         .pad = kTopEarlgreyPinmuxMioOutIob0,
@@ -77,7 +98,15 @@ static const pinmux_select_t pinmux_out_config[] = {
     },
     {
         .pad = kTopEarlgreyPinmuxMioOutIob1,
-        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Csb0,  // CSB
+        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Csb0,  // CSB[0]
+    },
+    {
+        .pad = kTopEarlgreyPinmuxMioOutIob7,
+        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Csb1,  // CSB[1]
+    },
+    {
+        .pad = kTopEarlgreyPinmuxMioOutIoc10,
+        .peripheral = kTopEarlgreyPinmuxOutselSpiHost1Csb2,  // CSB[2]
     },
     {
         .pad = kTopEarlgreyPinmuxMioOutIob3,
@@ -135,9 +164,10 @@ void init_spi_host(dif_spi_host_t *spi_host,
 }
 
 /**
- * Setup pads and pinmux for spi_host0
+ * Setup pads and pinmux for spi_host1, and pinmux for the muxed chip select
+ * lines of spi_host0.
  *
- * This peripheral is 'muxed', so configure the pinmux as well as pads.
+ * spi_host1 is 'muxed', so configure the pinmux as well as pads.
  */
 void setup_pinmux_pads_spi_host1(void) {
   // Set weak pull-ups, fast slew rate and strong drive strengh for the pads
@@ -202,7 +232,7 @@ bool test_main(void) {
   setup_pinmux_pads_spi_host1();                               // muxed
 
   // Setup spi host configuration
-  LOG_INFO("Testing spi_host%0d", kSPIHostIdx);
+  LOG_INFO("Testing spi_host%0d, csid %0d", kSPIHostIdx, kSPIHostCsid);
   uintptr_t base_addr;
   uint64_t clkHz;
   switch (kSPIHostIdx) {
@@ -256,8 +286,8 @@ bool test_main(void) {
   };
 
   // Issue the transaction
-  CHECK_DIF_OK(dif_spi_host_transaction(&spi_host, /*csid=*/0, host_operations,
-                                        ARRAYSIZE(host_operations)));
+  CHECK_DIF_OK(dif_spi_host_transaction(
+      &spi_host, kSPIHostCsid, host_operations, ARRAYSIZE(host_operations)));
 
   CHECK_ARRAYS_EQ(received_data, expected_data, ARRAYSIZE(expected_data));
 

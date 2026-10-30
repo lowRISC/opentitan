@@ -68,6 +68,15 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
     test_opcodes.shuffle();
   endfunction
 
+  // Assert that the chip select lines of spi_host0 other than CSB[0] never assert.  Passthrough
+  // uses CSB[0] only, and the SW test does not use the other lines.
+  virtual task monitor_spi_host0_other_csbs();
+    spi_agent_cfg agent_cfg = cfg.m_spi_device_agent_cfgs[0];
+    wait (agent_cfg.vif.rst_n && (agent_cfg.vif.csb[NUM_SPI_HOST_CSBS-1:1] !== '1));
+    `uvm_fatal(`gfn, $sformatf("Observed CSB[%0d:1] = 0x%0h on spi_host0, which should be inactive",
+                               NUM_SPI_HOST_CSBS-1, agent_cfg.vif.csb[NUM_SPI_HOST_CSBS-1:1]))
+  endtask
+
   // Assert that spi_host does not send any transactions.
   virtual task monitor_unused_spi_host();
     spi_agent_cfg agent_cfg = cfg.m_spi_device_agent_cfgs[1];
@@ -223,6 +232,9 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
         monitor_unused_spi_host();
       join_none
     end
+    fork
+      monitor_spi_host0_other_csbs();
+    join_none
 
     cfg.m_spi_host_agent_cfg.sck_period_ps = sck_period_ps;
     generate_spi_flash_sequence();

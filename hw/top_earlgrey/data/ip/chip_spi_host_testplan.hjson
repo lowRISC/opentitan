@@ -15,7 +15,7 @@
               interrupts.
             - Run with min and max SPI clk frequencies and with single, dual and quad SPI modes.
 
-            Verify all SPI host instances in the chip.
+            Verify all SPI host instances in the chip, and all chip select lines of each instance.
 
             Notes for silicon targets:
             - The testbench that mimics a physical SPI device should measure the clock to verify that the frequencies for each speed mode is correct.
