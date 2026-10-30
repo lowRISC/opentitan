@@ -264,6 +264,26 @@
         tests: ["dma_abort"]
       }
       {
+        name: dma_abort_inflight_read
+        desc: '''
+              Test that a restarted transfer does not take the late response of an aborted read or write
+
+              Stimulus:
+              - Configure DMA to perform a single-chunk 'memory-to-memory' copy from the OT internal or the SoC control interface
+              - Delay the response to the first read of the transfer, or in some iterations the response to its first write, with the destination on the other TL-UL port
+              - Abort the DMA operation once that request has been accepted
+              - Wait for STATUS.aborted, then restart the transfer at once with new source data
+              - In some iterations, first restart with a new configuration and abort that transfer too
+
+              Checking:
+              - Check that the restarted transfer completes and writes only the new source data
+              - Check that exactly one response of an aborted transfer is dropped per iteration, and that its request was the access the aborted transfer expected next
+              - Check that this response arrives after a restart, so a restart happened while the request was still pending
+              '''
+        stage: V2
+        tests: ["dma_abort_inflight_read"]
+      }
+      {
         name: dma_stress_all
         desc: '''
               Run the other tests in random order while injecting TL errors and running automated CSR tests in parallel.
