@@ -105,11 +105,10 @@ otcrypto_status_t otcrypto_cmac_kdf(
   HARDENED_CHECK_LE(required_byte_len, UINT32_MAX / 8);
   uint32_t required_bit_len = __builtin_bswap32(required_byte_len * 8);
 
-  // Check if label or context contain 0x00 bytes. Since 0x00 is used as the
+  // Check if label contains 0x00 bytes. Since 0x00 is used as the
   // delimiter between label and context, there shouldn't be multiple instances
-  // of them in input data.
+  // of it in the label data.
   HARDENED_TRY(check_zero_byte(label));
-  HARDENED_TRY(check_zero_byte(context));
 
   // Setup
   uint8_t zero = 0x00;
