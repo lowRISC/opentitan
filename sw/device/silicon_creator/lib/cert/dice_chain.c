@@ -394,6 +394,8 @@ rom_error_t dice_chain_attestation_owner_int(
   SEC_MMIO_WRITE_INCREMENT(2 * (kScKeymgrDPESecMmioSwBindingSet +
                                 kScKeymgrDPESecMmioMaxVerSet +
                                 kScKeymgrDPESecMmioSlotPolicy));
+  // The driver verifies the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold keys
+  // with boot stage set to BootStageOwner (2).
   HARDENED_RETURN_IF_ERROR(
       sc_keymgr_dpe_advance_owner_int(adv_sealing_data, adv_attestation_data));
 
@@ -571,6 +573,8 @@ rom_error_t dice_chain_attestation_owner(
   SEC_MMIO_WRITE_INCREMENT(2 * (kScKeymgrDPESecMmioSwBindingSet +
                                 kScKeymgrDPESecMmioMaxVerSet +
                                 kScKeymgrDPESecMmioSlotPolicy));
+  // The driver verifies the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold keys
+  // with boot stage set to BootStageRuntime (3).
   HARDENED_RETURN_IF_ERROR(
       sc_keymgr_dpe_advance_owner(adv_sealing_data, adv_attestation_data));
 
