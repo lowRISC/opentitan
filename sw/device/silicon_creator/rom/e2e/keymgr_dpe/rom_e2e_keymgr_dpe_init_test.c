@@ -104,8 +104,8 @@ bool test_main(void) {
       &keymgr_dpe, kDifKeymgrDpeStateAvailable));
 
   // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot hold
-  // keys with boot stage set to BootStageOwnerInt (1). (Note: Current bootstage
-  // + 1)
+  // keys with boot stage set to BootStageCreatorInt (1). (Note: Current
+  // bootstage + 1)
 
   const manifest_t *manifest = manifest_def_get();
 

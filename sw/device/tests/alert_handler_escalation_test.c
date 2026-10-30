@@ -167,6 +167,8 @@ bool test_main(void) {
 
     // Initialize keymgr dpe with otp contents
     CHECK_STATUS_OK(
+        keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kCreatorIntKeyParams));
+    CHECK_STATUS_OK(
         keymgr_dpe_testutils_advance_state(&keymgr_dpe, &kOwnerIntKeyParams));
 
     // DO NOT REMOVE, DV sync message

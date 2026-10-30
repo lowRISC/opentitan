@@ -734,7 +734,7 @@ static rom_error_t rom_boot(const manifest_t *manifest,
           adv_sealing_data, adv_attestation_data));
 
       // TODO(#30759): Verify the kKeymgrDPESealSlot / kKeymgrDPEAttestSlot
-      // hold keys with boot stage set to BootStageOwnerInt (1). (Note:
+      // hold keys with boot stage set to BootStageCreatorInt (1). (Note:
       // Current bootstage + 1)
 
     } else {

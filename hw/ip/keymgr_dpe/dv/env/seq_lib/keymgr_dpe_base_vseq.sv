@@ -31,6 +31,8 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   rand bit do_invalid_otp_key;
   rand bit do_rand_secondary_root_key;
   rand bit do_invalid_secondary_root_key;
+  rand bit do_rand_field_entropy;
+  rand bit do_invalid_field_entropy;
   rand keymgr_dpe_pkg::keymgr_dpe_policy_t policy;
   rand keymgr_dpe_env_pkg::dv_keymgr_dpe_slot_idx_e src_slot;
   rand keymgr_dpe_env_pkg::dv_keymgr_dpe_slot_idx_e dst_slot;
@@ -57,6 +59,11 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     do_invalid_secondary_root_key == 0;
   }
 
+  constraint field_entropy_c {
+    do_rand_field_entropy == 0;
+    do_invalid_field_entropy == 0;
+  }
+
   constraint gen_operation_c {
     gen_operation inside {
       keymgr_dpe_pkg::OpDpeGenSwOut,
@@ -79,7 +86,8 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     op_before_enable_keymgr();
 
     cfg.keymgr_dpe_vif.init(do_rand_otp_key, do_invalid_otp_key, do_rand_secondary_root_key,
-                            do_invalid_secondary_root_key);
+                            do_invalid_secondary_root_key, do_rand_field_entropy,
+                            do_invalid_field_entropy);
     delay_after_reset_before_access_csr();
 
     if (do_keymgr_dpe_init) keymgr_dpe_init();

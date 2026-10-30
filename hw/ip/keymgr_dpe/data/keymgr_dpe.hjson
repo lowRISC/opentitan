@@ -114,6 +114,12 @@
       act:     "rcv",
       package: "keymgr_dpe_pkg",
     },
+    { struct:  "keymgr_dpe_field_entropy",
+      type:    "uni",
+      name:    "field_entropy",
+      act:     "rcv",
+      package: "keymgr_dpe_pkg",
+    },
     { struct:  "lc_tx",
       type:    "uni",
       name:    "lc_keymgr_en",
@@ -218,6 +224,13 @@
       randtype:  "data",
     },
 
+    { name:      "RndCnstFieldEntropySeed",
+      desc:      "Compile-time random bits as a field entropy alternative seed",
+      type:      "keymgr_dpe_pkg::seed_t"
+      randcount: "256",
+      randtype:  "data",
+    },
+
     { name:      "RndCnstNoneSeed",
       desc:      "Compile-time random bits for generation seed when no destination selected",
       type:      "keymgr_dpe_pkg::seed_t"
@@ -267,7 +280,7 @@
     { name: "NumBootStages",
       desc: "Number of available boot stage",
       type: "int",
-      default: "3",
+      default: "4",
       expose:  "true"
     },
     { name: "NumRomDigestInputs",
@@ -1154,46 +1167,47 @@
               ''',
               resval: "0"
             },
-            { bits: "2:1",
+            { bits: "3:1",
               name: "BOOT_STAGE",
               desc: '''
                 Boot stage associated with the DPE context held in this slot.
 
-                | Value | Boot stage        |
-                |:-----:|:------------------|
-                | 0     | BootStageCreator  |
-                | 1     | BootStageOwnerInt |
-                | 2     | BootStageOwner    |
-                | 3     | BootStageRuntime  |
+                | Value | Boot stage          |
+                |:-----:|:--------------------|
+                | 0     | BootStageCreator    |
+                | 1     | BootStageCreatorInt |
+                | 2     | BootStageOwnerInt   |
+                | 3     | BootStageOwner      |
+                | 4     | BootStageRuntime    |
 
                 The naming indicates the next bootstage after a successful key derivation
                 e.g. boot stage 1 means the context is the _CreatorRootKey_ and will be
-                derived into the _OwnerIntKey_.
+                derived into the _CreatorIntKey_.
               ''',
               resval: "0"
             },
-            { bits: "3",
+            { bits: "4",
               name: "ALLOW_CHILD_POLICY",
               resval: "0"
               desc: '''
                 Read the `allow_child` policy applied to the DPE context in this slot.
               '''
             },
-            { bits: "4",
+            { bits: "5",
               name: "EXPORTABLE_POLICY",
               resval: "0"
               desc: '''
                 Read the `exportable` policy applied to the DPE context in this slot.
               '''
             },
-            { bits: "5",
+            { bits: "6",
               name: "RETAIN_PARENT_POLICY",
               resval: "0"
               desc: '''
                 Read the `retain_parent` policy applied to the DPE context in this slot.
               '''
             },
-            { bits: "6",
+            { bits: "7",
               name: "ALLOW_KEYGEN_POLICY",
               resval: "0"
               desc: '''
@@ -1378,6 +1392,14 @@
           resval: "0x0"
           desc: "Secondary root key was invalid during a `load secondary root key` operation",
         },
+        { bits: "10",
+          name: "INVALID_FIELD_ENTROPY",
+          resval: "0x0"
+          desc: '''
+            Field entropy (or, if not marked valid, the netlist constant substitute) failed input checks.
+            Only evaluated when `NumBootStages` equals 4, as the field entropy is not consumed otherwise.
+          ''',
+        },
       ]
     },
 
@@ -1431,7 +1453,7 @@
 
           Once set no hw binding value can be consumed until the next reset.
           An advance operation from a parent whose boot stage consumes hw binding values
-          (`boot_stage` 0 to 2, i.e. Creator, OwnerInt or Owner) without
+          (`boot_stage` 0 to 3, i.e. Creator, CreatorInt, OwnerInt or Owner) without
           `CONTROL_SHADOWED.SW_BINDING_ONLY` set will fail with an `invalid_op` error without
           updating the destination slot.
           Advance operations from later boot stages are not affected.
