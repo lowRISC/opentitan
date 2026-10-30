@@ -77,12 +77,12 @@ enum {
    */
   kModeKeygenInsCnt = 573922,
   kModeKeygenSideloadInsCnt = 573814,
-  kModeEcdhInsCnt = 588956,
-  kModeEcdhSideloadInsCnt = 589021,
+  kModeEcdhInsCnt = 588964,
+  kModeEcdhSideloadInsCnt = 589029,
   kModeEcdsaSignConfigKInsCnt = 606962,
   kModeEcdsaSignInsCnt = 607112,
   kModeEcdsaSignSideloadInsCnt = 607177,
-  kModePointOnCurveCheckInsCnt = 224,
+  kModePointOnCurveCheckInsCnt = 245,
   kModeBasePointMultInsCnt = 573756,
   kModeArithShareSecretKeyInsCnt = 147,
 };
