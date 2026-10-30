@@ -33,8 +33,8 @@ For more details, see later sections (links in the "category" column).
 |-----------------|---------------------------|
 | [**AES**](#aes) | AES-{ECB,CBC,CFB,OFB,CTR}<br>AES-KWP<br>AES-GCM |
 | [**TDES**](#tdes) | TDES-{ECB,CBC,CFB,OFB,CTR} *(plain software; not FI/SCA protected)* |
-| [**Hash functions**](#hash-functions) | SHA2-{256,384,512}<br>SHA3-{224,256,384,512}<br>SHAKE{128,256} (XOF)<br>cSHAKE{128,256} (XOF) |
-| [**Message authentication**](#message-authentication) | HMAC-SHA{256,384,512}<br>KMAC{128,256}<br>AES-CMAC |
+| [**Hash functions**](#hash-functions) | SHA-1 *(plain software; not FI/SCA protected)*<br>SHA2-{256,384,512}<br>SHA3-{224,256,384,512}<br>SHAKE{128,256} (XOF)<br>cSHAKE{128,256} (XOF) |
+| [**Message authentication**](#message-authentication) | HMAC-SHA-1 *(plain software; not FI/SCA protected)*<br>HMAC-SHA{256,384,512}<br>KMAC{128,256}<br>AES-CMAC |
 | [**RSA**](#rsa) | RSA-{2048,3072,4096} |
 | [**Elliptic curve cryptography**](#elliptic-curve-cryptography) | ECDSA-{P256,P384}<br>ECDH-{P256,P384}<br>Ed25519<br>X25519 |
 | [**ML-KEM**](#ml-kem) | ML-KEM-1024 |
@@ -346,8 +346,10 @@ The following data structures are considered implementation specific.
 The caller knows their size and must allocate space for them.
 However, they are essentially scratchpad space for the underlying implementation and should not be modified directly.
 
+{{#header-snippet sw/device/lib/crypto/include/sha1.h otcrypto_sha1_context }}
 {{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_context }}
 {{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_context }}
+{{#header-snippet sw/device/lib/crypto/include/sha1.h otcrypto_hmac_sha1_context }}
 {{#header-snippet sw/device/lib/crypto/include/cmac.h otcrypto_cmac_context }}
 
 ## AES
@@ -571,12 +573,17 @@ OpenTitan's [KMAC block][kmac] supports the fixed digest length SHA3\[224, 256, 
 
 SHA-2 functions are supported by the [HMAC block][hmac].
 The OpenTitan cryptolib supports SHA2-256, SHA2-384, and SHA2-512.
-For **SHA2 only**, the hash API supports both one-shot and streaming modes of operation.
+For legacy compatibility, the cryptolib also provides a plain software implementation of **SHA-1** (`otcrypto_sha1`, `otcrypto_sha1_init`, `otcrypto_sha1_update`, `otcrypto_sha1_final`).
+
+> **Security warning:** The SHA-1 implementation runs in plain software without hardware acceleration and is **not** protected against fault injection (FI) or side-channel analysis (SCA) attacks.
+
+For **SHA-1 and SHA-2**, the hash API supports both one-shot and streaming modes of operation.
 
 ### One-shot mode
 
 This mode is used when the entire data to be hashed is available upfront.
 
+{{#header-snippet sw/device/lib/crypto/include/sha1.h otcrypto_sha1 }}
 {{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_256 }}
 {{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_384 }}
 {{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_512 }}
@@ -596,8 +603,11 @@ To avoid locking up the KMAC block, only a one-shot mode is supported.
 ### Streaming mode
 
 The streaming mode API is used for incremental hashing, where the data to be hashed is split and passed in multiple blocks.
-Streaming is supported **only for SHA2** hash modes (SHA256, SHA384, SHA512), because the SHA-3 hardware does not support saving and restoring a hash context.
+Streaming is supported for **SHA-1** (in plain software; not FI/SCA protected) and **SHA-2** hash modes (SHA256, SHA384, SHA512), because the SHA-3 hardware does not support saving and restoring a hash context.
 
+{{#header-snippet sw/device/lib/crypto/include/sha1.h otcrypto_sha1_init }}
+{{#header-snippet sw/device/lib/crypto/include/sha1.h otcrypto_sha1_update }}
+{{#header-snippet sw/device/lib/crypto/include/sha1.h otcrypto_sha1_final }}
 {{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_init }}
 {{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_update }}
 {{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_final }}
@@ -618,13 +628,18 @@ OpenTitan supports two kinds of message authentication codes (MACs):
 - KMAC, a Keccak-based MAC
 - AES-CMAC, a block cipher-based MAC
 
-OpenTitan's [HMAC block][hmac] supports HMAC-SHA256 with a key length of 256 bits.
+OpenTitan's [HMAC block][hmac] supports HMAC-SHA256, HMAC-SHA384, and HMAC-SHA512.
+For legacy compatibility, the cryptolib also provides a plain software implementation of **HMAC-SHA-1** (`otcrypto_hmac_sha1`, `otcrypto_hmac_sha1_init`, `otcrypto_hmac_sha1_update`, `otcrypto_hmac_sha1_final`).
+
+> **Security warning:** The HMAC-SHA-1 implementation runs in plain software without hardware acceleration and is **not** protected against fault injection (FI) or side-channel analysis (SCA) attacks. Key shares are unmasked in software memory and no SCA/FI countermeasures are applied regardless of the configured `security_level`.
+
 The [KMAC block][kmac] supports KMAC128 and KMAC256, with a key length of 128, 192, 256, 384, or 512 bits.
 AES-CMAC uses the AES block cipher and supports a key length of 128, 192, or 256 bits, as specified in NIST SP 800-38B. The output tag length must be between 64 and 128 bits (2 to 4 words).
 
 ### One-shot mode
 
 {{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac }}
+{{#header-snippet sw/device/lib/crypto/include/sha1.h otcrypto_hmac_sha1 }}
 {{#header-snippet sw/device/lib/crypto/include/kmac.h otcrypto_kmac }}
 {{#header-snippet sw/device/lib/crypto/include/cmac.h otcrypto_cmac }}
 
@@ -632,12 +647,15 @@ AES-CMAC uses the AES block cipher and supports a key length of 128, 192, or 256
 
 The streaming mode API is used for incremental hashing use-case, where the data to be hashed is split and passed in multiple blocks.
 
-To avoid locking up the KMAC hardware, the streaming mode is supported only for HMAC and CMAC.
+To avoid locking up the KMAC hardware, the streaming mode is supported only for HMAC (including HMAC-SHA-1) and CMAC.
 
 #### HMAC
 {{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_init }}
 {{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_update }}
 {{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_final }}
+{{#header-snippet sw/device/lib/crypto/include/sha1.h otcrypto_hmac_sha1_init }}
+{{#header-snippet sw/device/lib/crypto/include/sha1.h otcrypto_hmac_sha1_update }}
+{{#header-snippet sw/device/lib/crypto/include/sha1.h otcrypto_hmac_sha1_final }}
 
 #### CMAC
 {{#header-snippet sw/device/lib/crypto/include/cmac.h otcrypto_cmac_init }}
@@ -1194,6 +1212,7 @@ The table below summarizes the security strength for the supported [cryptographi
 | Block cipher   | AES256         | 256                              |                                                       |
 | Block cipher   | TDES (2-key)   | <= 80                            | Legacy; plain software (not FI/SCA protected)         |
 | Block cipher   | TDES (3-key)   | 112                              | Legacy; plain software (not FI/SCA protected)         |
+| Hash function  | SHA-1          | < 80                             | Legacy only; plain software (not FI/SCA protected)    |
 | Hash function  | SHA256         | 128                              | 128 bits collision, 256 bits preimage                 |
 | Hash function  | SHA384         | 192                              | 192 bits collision, 384 bits preimage                 |
 | Hash function  | SHA512         | 256                              | 256 bits collision, 512 bits preimage                 |
@@ -1205,6 +1224,7 @@ The table below summarizes the security strength for the supported [cryptographi
 | Hash-XOF       | SHAKE256       | `min(d/2, 256)`                  | `min(d/2, 256)` collision; preimage >= `min(d, 256)`  |
 | Hash-XOF       | cSHAKE128      | `min(d/2, 128)`                  | `min(d/2, 128)` collision; preimage >= `min(d, 128)`  |
 | Hash-XOF       | cSHAKE256      | `min(d/2, 256)`                  | `min(d/2, 256)` collision; preimage >= `min(d, 256)`  |
+| MAC            | HMAC-SHA-1     | <= 160                           | Legacy only; plain software (not FI/SCA protected)    |
 | MAC            | HMAC-SHA256    | 256                              |                                                       |
 | MAC            | KMAC128        | 128                              |                                                       |
 | MAC            | KMAC256        | 256                              |                                                       |
