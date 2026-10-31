@@ -31,6 +31,9 @@ module ast_part_primary #(
   // Entropy source clock/reset
   input logic clk_ast_es_i,
   input logic rst_ast_es_ni,
+  // RNG clock/reset
+  input logic clk_ast_rng_i,
+  input logic rst_ast_rng_ni,
   input prim_mubi_pkg::mubi4_t clk_src_sys_jen_i,
   // Inter-domain communication
   input ast_intraip_pkg::s2p_t intraip_s2p_i,
@@ -42,6 +45,10 @@ module ast_part_primary #(
   input  prim_mubi_pkg::mubi4_t io_clk_byp_req_i,
   input  prim_mubi_pkg::mubi4_t all_clk_byp_req_i,
   input  prim_mubi_pkg::mubi4_t ext_freq_is_96m_i,
+
+  // USB reference
+  input  logic usb_ref_pulse_i,                    // USB Reference Pulse
+  input  logic usb_ref_val_i,                      // USB Reference Valid
 
   // Clocks' Oscillator bypass for OS FPGA
   input ast_pkg::clks_osc_byp_t clk_osc_byp_i,  // Clocks' Oscillator bypass for OS FPGA/VERILATOR
@@ -224,8 +231,8 @@ usb_clk u_usb_clk (
   .clk_usb_pd_ni ( clk_usb_pd_n ),
   .rst_usb_clk_ni ( rst_usb_clk_n ),
   .clk_src_usb_en_i ( intraip_s2p_i.pwrmgr_req.clk_src_usb_en ),
-  .usb_ref_val_i ( intraip_s2p_i.clk_osc.usb_ref_val ),
-  .usb_ref_pulse_i ( intraip_s2p_i.clk_osc.usb_ref_pulse ),
+  .usb_ref_val_i ( usb_ref_val_i ),
+  .usb_ref_pulse_i ( usb_ref_pulse_i ),
   .clk_ast_usb_i ( clk_ast_usb_i ),
   .rst_ast_usb_ni ( rst_ast_usb_ni ),
   .scan_mode_i ( intraip_s2p_i.scan_mode ),
@@ -254,7 +261,7 @@ ast_clks_byp_primary u_ast_clks_byp_primary (
   .deep_sleep_i ( intraip_s2p_i.clk_osc.deep_sleep ),
   .scan_mode_i ( intraip_s2p_i.scan_mode ),
   .scan_reset_ni ( intraip_s2p_i.scan_reset_n ),
-  .clk_ast_tlul_i ( intraip_s2p_i.clk_rst.clk_ast_tlul ),
+  .clk_ast_tlul_i ( clk_ast_tlul_i ),
   .dft_clks_byp_i ( 1'b0 ),
   .dft_ext_is_96m_i ( 1'b1 ),
   .clk_src_io_pre_occ_i ( clk_osc_io ),
@@ -358,10 +365,10 @@ ast_entropy u_entropy (
 rng #(
   .EntropyStreams ( EntropyStreams )
 ) u_rng (
-  .clk_i ( intraip_s2p_i.clk_rst.clk_ast_tlul ),
-  .rst_ni ( intraip_s2p_i.clk_rst.rst_ast_tlul_n ),
-  .clk_ast_rng_i ( intraip_s2p_i.clk_rst.clk_ast_rng ),
-  .rst_ast_rng_ni ( intraip_s2p_i.clk_rst.rst_ast_rng_n ),
+  .clk_i ( clk_ast_tlul_i ),
+  .rst_ni ( rst_ast_tlul_ni ),
+  .clk_ast_rng_i ( clk_ast_rng_i ),
+  .rst_ast_rng_ni ( rst_ast_rng_ni ),
   .rng_en_i ( rng_en_i ),
   .rng_fips_i ( rng_fips_i ),
   .scan_mode_i ( intraip_s2p_i.scan_mode ),
@@ -381,6 +388,10 @@ assign intraip_p2s_o.mem_cfg_rsp = mem_cfg_i;
 // Clock bypass interface to secondary partition
 assign intraip_p2s_o.clks_byp = clks_byp_p2s;
 
+// Bus clock and reset for the secondary partition's register bits
+assign intraip_p2s_o.clk_rst.clk_ast_tlul = clk_ast_tlul_i;
+assign intraip_p2s_o.clk_rst.rst_ast_tlul_n = rst_ast_tlul_ni;
+
 // Alert source from TLUL integrity error
 assign intraip_p2s_o.ot0_alert_src = '{p: intg_err, n: ~intg_err};
 
@@ -399,10 +410,8 @@ assign intraip_p2s_o.ot0_alert_src = '{p: intg_err, n: ~intg_err};
 `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ERR(RegWeOnehot_A,
    u_reg, intraip_p2s_o.ot0_alert_src.p, , , clk_ast_tlul_i, rst_ast_tlul_ni)
 // RNG
-`ASSERT_KNOWN(RngBKnownO_A, rng_b_o, intraip_s2p_i.clk_rst.clk_ast_rng,
-              intraip_s2p_i.clk_rst.rst_ast_rng_n)
-`ASSERT_KNOWN(RngValKnownO_A, rng_val_o, intraip_s2p_i.clk_rst.clk_ast_rng,
-              intraip_s2p_i.clk_rst.rst_ast_rng_n)
+`ASSERT_KNOWN(RngBKnownO_A, rng_b_o, clk_ast_rng_i, rst_ast_rng_ni)
+`ASSERT_KNOWN(RngValKnownO_A, rng_val_o, clk_ast_rng_i, rst_ast_rng_ni)
 // ES
 `ASSERT_KNOWN(EntropyReeqKnownO_A, edn_o, clk_ast_es_i,rst_ast_es_ni)
 //
@@ -431,11 +440,6 @@ assign intraip_p2s_o.ot0_alert_src = '{p: intg_err, n: ~intg_err};
 logic unused_sigs;
 
 assign unused_sigs = ^{ intraip_s2p_i.clk_rst.clk_aon,
-                        intraip_s2p_i.clk_rst.clk_ast_es,
-                        intraip_s2p_i.clk_rst.rst_ast_es_n,
-                        intraip_s2p_i.clk_rst.rst_io_clk_n,
-                        intraip_s2p_i.clk_rst.rst_sys_clk_n,
-                        intraip_s2p_i.clk_rst.rst_usb_clk_n,
                         intraip_s2p_i.pwr.vcaon_pok,
                         intraip_s2p_i.pwr.vcc_pok_str,
                         reg2hw.rega0,

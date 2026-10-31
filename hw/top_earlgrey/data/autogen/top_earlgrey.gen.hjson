@@ -1398,14 +1398,7 @@
           act: req
           width: 1
           inst_name: spi_device
-          default: ""
-          package: ""
-          end_idx: -1
-          top_type: broadcast
-          top_signame: spi_device_sck_monitor
           index: -1
-          external: true
-          conn_type: false
         }
         {
           name: racl_policies
@@ -4276,8 +4269,6 @@
           top_type: broadcast
           top_signame: usbdev_usb_ref_val
           index: -1
-          external: true
-          conn_type: false
         }
         {
           name: usb_ref_pulse
@@ -4293,8 +4284,6 @@
           top_type: broadcast
           top_signame: usbdev_usb_ref_pulse
           index: -1
-          external: true
-          conn_type: false
         }
         {
           name: usb_aon_suspend_req
@@ -5201,7 +5190,7 @@
           top_signame: clkmgr_io_clk_byp_req
           index: -1
           external: true
-          conn_type: true
+          conn_type: false
         }
         {
           name: io_clk_byp_ack
@@ -5233,7 +5222,7 @@
           top_signame: clkmgr_all_clk_byp_req
           index: -1
           external: true
-          conn_type: true
+          conn_type: false
         }
         {
           name: all_clk_byp_ack
@@ -5265,7 +5254,7 @@
           top_signame: clkmgr_hi_speed_sel
           index: -1
           external: true
-          conn_type: true
+          conn_type: false
         }
         {
           name: div_step_down_req
@@ -6262,6 +6251,11 @@
           clock: main
           group: secure
         }
+        clk_ast_rng_i:
+        {
+          clock: main
+          group: secure
+        }
         clk_ast_usb_i:
         {
           clock: usb
@@ -6278,6 +6272,11 @@
           domain: Main
         }
         rst_ast_es_ni:
+        {
+          name: lc
+          domain: Main
+        }
+        rst_ast_rng_ni:
         {
           name: lc
           domain: Main
@@ -6303,26 +6302,6 @@
           clock: io_div4
           group: secure
         }
-        clk_ast_es_i:
-        {
-          clock: main
-          group: secure
-        }
-        clk_ast_rng_i:
-        {
-          clock: main
-          group: secure
-        }
-        clk_ast_tlul_i:
-        {
-          clock: io_div4
-          group: infra
-        }
-        clk_ast_usb_i:
-        {
-          clock: usb
-          group: peri
-        }
         clk_ast_ext_i: ast_ext
       }
       clock_group_secondary: secure
@@ -6338,31 +6317,12 @@
           name: lc_io_div4
           domain: Main
         }
-        rst_ast_es_ni:
-        {
-          name: lc
-          domain: Main
-        }
-        rst_ast_rng_ni:
-        {
-          name: lc
-          domain: Main
-        }
-        rst_ast_tlul_ni:
-        {
-          name: lc_io_div4
-          domain: Main
-        }
-        rst_ast_usb_ni:
-        {
-          name: usb
-          domain: Main
-        }
       }
       clock_connections:
       {
         clk_ast_tlul_i: clkmgr_clocks_i.clk_io_div4_infra
         clk_ast_es_i: clkmgr_clocks_i.clk_main_secure
+        clk_ast_rng_i: clkmgr_clocks_i.clk_main_secure
         clk_ast_usb_i: clkmgr_clocks_i.clk_usb_peri
         clk_ast_ext_i: clk_ast_ext_i
       }
@@ -6370,10 +6330,6 @@
       {
         clk_ast_adc_i: clkmgr_clocks.clk_aon_peri
         clk_ast_alert_i: clkmgr_clocks.clk_io_div4_secure
-        clk_ast_es_i: clkmgr_clocks.clk_main_secure
-        clk_ast_rng_i: clkmgr_clocks.clk_main_secure
-        clk_ast_tlul_i: clkmgr_clocks.clk_io_div4_infra
-        clk_ast_usb_i: clkmgr_clocks.clk_usb_peri
         clk_ast_ext_i: clk_ast_ext_i
       }
       param_decl: {}
@@ -6842,23 +6798,6 @@
           index: -1
         }
         {
-          name: sns_spi_ext_clk
-          desc: Sensed SPI external clock
-          struct: logic
-          type: uni
-          act: rcv
-          width: 1
-          partition: secondary
-          inst_name: ast
-          default: ""
-          package: ""
-          domain: Aon
-          top_signame: spi_device_sck_monitor
-          index: -1
-          external: true
-          conn_type: false
-        }
-        {
           name: vx_supp
           desc: Supply voltage tests for OS FPGA
           struct: ast_vx_supp
@@ -6873,18 +6812,6 @@
           conn_type: false
           index: -1
           top_signame: ast_vx_supp
-        }
-        {
-          name: ast_pwst
-          desc: AON, MAIN, IO-0 rail, IO-1 rail power OK @1.1V
-          struct: ast_pwst
-          package: ast_pkg
-          type: uni
-          act: req
-          width: 1
-          partition: secondary
-          inst_name: ast
-          index: -1
         }
         {
           name: ast_pwst_h
@@ -7013,15 +6940,12 @@
           type: uni
           act: rcv
           width: 1
-          partition: secondary
           inst_name: ast
           default: ""
           package: ""
-          domain: Aon
+          domain: Main
           top_signame: usbdev_usb_ref_pulse
           index: -1
-          external: true
-          conn_type: false
         }
         {
           name: usb_ref_val
@@ -7030,15 +6954,12 @@
           type: uni
           act: rcv
           width: 1
-          partition: secondary
           inst_name: ast
           default: ""
           package: ""
-          domain: Aon
+          domain: Main
           top_signame: usbdev_usb_ref_val
           index: -1
-          external: true
-          conn_type: false
         }
         {
           name: alert
@@ -7240,22 +7161,6 @@
           conn_type: true
         }
         {
-          name: clk_osc_byp
-          desc: Clocks' oscillator bypass for OS FPGA/Verilator (AST_BYPASS_CLK only)
-          struct: clks_osc_byp
-          package: ast_pkg
-          type: uni
-          act: rcv
-          width: 1
-          partition: secondary
-          inst_name: ast
-          default: ""
-          top_signame: ast_clk_osc_byp
-          index: -1
-          external: true
-          conn_type: true
-        }
-        {
           name: ext_freq_is_96m
           desc: External clock frequency is 96MHz
           struct: mubi4
@@ -7270,21 +7175,6 @@
           index: -1
           external: true
           conn_type: false
-        }
-        {
-          name: ext_freq_is_96m
-          desc: External clock frequency is 96MHz
-          struct: mubi4
-          package: prim_mubi_pkg
-          type: uni
-          act: rcv
-          width: 1
-          partition: secondary
-          inst_name: ast
-          default: ""
-          domain: Aon
-          top_signame: clkmgr_hi_speed_sel
-          index: -1
         }
         {
           name: all_clk_byp_req
@@ -7303,21 +7193,6 @@
           conn_type: false
         }
         {
-          name: all_clk_byp_req
-          desc: All clocks bypass request
-          struct: mubi4
-          package: prim_mubi_pkg
-          type: uni
-          act: rcv
-          width: 1
-          partition: secondary
-          inst_name: ast
-          default: ""
-          domain: Aon
-          top_signame: clkmgr_all_clk_byp_req
-          index: -1
-        }
-        {
           name: io_clk_byp_req
           desc: IO clock bypass request (for OTP bootstrap)
           struct: mubi4
@@ -7332,21 +7207,6 @@
           index: -1
           external: true
           conn_type: false
-        }
-        {
-          name: io_clk_byp_req
-          desc: IO clock bypass request (for OTP bootstrap)
-          struct: mubi4
-          package: prim_mubi_pkg
-          type: uni
-          act: rcv
-          width: 1
-          partition: secondary
-          inst_name: ast
-          default: ""
-          domain: Aon
-          top_signame: clkmgr_io_clk_byp_req
-          index: -1
         }
         {
           name: intraip_s2p
@@ -12840,10 +12700,6 @@
       [
         sensor_ctrl.ast_status
       ]
-      spi_device.sck_monitor:
-      [
-        ast.sns_spi_ext_clk
-      ]
       usbdev.usb_ref_pulse:
       [
         ast.usb_ref_pulse
@@ -12858,8 +12714,7 @@
       ]
       clkmgr.all_clk_byp_req:
       [
-        ast.all_clk_byp_req.primary
-        ast.all_clk_byp_req.secondary
+        ast.all_clk_byp_req
       ]
       clkmgr.all_clk_byp_ack:
       [
@@ -12867,8 +12722,7 @@
       ]
       clkmgr.io_clk_byp_req:
       [
-        ast.io_clk_byp_req.primary
-        ast.io_clk_byp_req.secondary
+        ast.io_clk_byp_req
       ]
       clkmgr.io_clk_byp_ack:
       [
@@ -12876,8 +12730,7 @@
       ]
       clkmgr.hi_speed_sel:
       [
-        ast.ext_freq_is_96m.primary
-        ast.ext_freq_is_96m.secondary
+        ast.ext_freq_is_96m
       ]
       clkmgr.div_step_down_req:
       [
@@ -13561,7 +13414,6 @@
       clkmgr.clocks
       ast.clk_src_aon
       ast.clk_osc_byp.primary
-      ast.clk_osc_byp.secondary
       ast.mem_cfg.primary
       otbn.ram_cfg_imem
       otbn.ram_cfg_dmem
@@ -13615,8 +13467,7 @@
       ast.adc_a1_a: ""
       ast.ast2pad_t0_a: ast2pad_t0_a
       ast.ast2pad_t1_a: ast2pad_t1_a
-      ast.clk_osc_byp.primary: clk_osc_byp_pd_main
-      ast.clk_osc_byp.secondary: clk_osc_byp_pd_aon
+      ast.clk_osc_byp.primary: clks_osc_byp
       ast.ast_pwst_h: ast_pwst_h
       pinmux.dft_hold_tap_sel: dft_hold_tap_sel
       pinmux.usb_dppullup_en: usb_dp_pullup_en
@@ -22048,42 +21899,6 @@
         default: prim_mubi_pkg::MUBI4_DEFAULT
       }
       {
-        package: ""
-        struct: logic
-        domain: chip
-        signame: spi_device_sck_monitor
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: 1'b0
-      }
-      {
-        package: ""
-        struct: logic
-        domain: chip
-        signame: usbdev_usb_ref_pulse
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: 1'b0
-      }
-      {
-        package: ""
-        struct: logic
-        domain: chip
-        signame: usbdev_usb_ref_val
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: 1'b0
-      }
-      {
         package: prim_mubi_pkg
         struct: mubi4
         domain: chip
@@ -25744,14 +25559,7 @@
         act: req
         width: 1
         inst_name: spi_device
-        default: ""
-        package: ""
-        end_idx: -1
-        top_type: broadcast
-        top_signame: spi_device_sck_monitor
         index: -1
-        external: true
-        conn_type: false
       }
       {
         name: racl_policies
@@ -27632,8 +27440,6 @@
         top_type: broadcast
         top_signame: usbdev_usb_ref_val
         index: -1
-        external: true
-        conn_type: false
       }
       {
         name: usb_ref_pulse
@@ -27649,8 +27455,6 @@
         top_type: broadcast
         top_signame: usbdev_usb_ref_pulse
         index: -1
-        external: true
-        conn_type: false
       }
       {
         name: usb_aon_suspend_req
@@ -28258,7 +28062,7 @@
         top_signame: clkmgr_io_clk_byp_req
         index: -1
         external: true
-        conn_type: true
+        conn_type: false
       }
       {
         name: io_clk_byp_ack
@@ -28290,7 +28094,7 @@
         top_signame: clkmgr_all_clk_byp_req
         index: -1
         external: true
-        conn_type: true
+        conn_type: false
       }
       {
         name: all_clk_byp_ack
@@ -28322,7 +28126,7 @@
         top_signame: clkmgr_hi_speed_sel
         index: -1
         external: true
-        conn_type: true
+        conn_type: false
       }
       {
         name: div_step_down_req
@@ -29503,23 +29307,6 @@
         index: -1
       }
       {
-        name: sns_spi_ext_clk
-        desc: Sensed SPI external clock
-        struct: logic
-        type: uni
-        act: rcv
-        width: 1
-        partition: secondary
-        inst_name: ast
-        default: ""
-        package: ""
-        domain: Aon
-        top_signame: spi_device_sck_monitor
-        index: -1
-        external: true
-        conn_type: false
-      }
-      {
         name: vx_supp
         desc: Supply voltage tests for OS FPGA
         struct: ast_vx_supp
@@ -29534,18 +29321,6 @@
         conn_type: false
         index: -1
         top_signame: ast_vx_supp
-      }
-      {
-        name: ast_pwst
-        desc: AON, MAIN, IO-0 rail, IO-1 rail power OK @1.1V
-        struct: ast_pwst
-        package: ast_pkg
-        type: uni
-        act: req
-        width: 1
-        partition: secondary
-        inst_name: ast
-        index: -1
       }
       {
         name: ast_pwst_h
@@ -29674,15 +29449,12 @@
         type: uni
         act: rcv
         width: 1
-        partition: secondary
         inst_name: ast
         default: ""
         package: ""
-        domain: Aon
+        domain: Main
         top_signame: usbdev_usb_ref_pulse
         index: -1
-        external: true
-        conn_type: false
       }
       {
         name: usb_ref_val
@@ -29691,15 +29463,12 @@
         type: uni
         act: rcv
         width: 1
-        partition: secondary
         inst_name: ast
         default: ""
         package: ""
-        domain: Aon
+        domain: Main
         top_signame: usbdev_usb_ref_val
         index: -1
-        external: true
-        conn_type: false
       }
       {
         name: alert
@@ -29901,22 +29670,6 @@
         conn_type: true
       }
       {
-        name: clk_osc_byp
-        desc: Clocks' oscillator bypass for OS FPGA/Verilator (AST_BYPASS_CLK only)
-        struct: clks_osc_byp
-        package: ast_pkg
-        type: uni
-        act: rcv
-        width: 1
-        partition: secondary
-        inst_name: ast
-        default: ""
-        top_signame: ast_clk_osc_byp
-        index: -1
-        external: true
-        conn_type: true
-      }
-      {
         name: ext_freq_is_96m
         desc: External clock frequency is 96MHz
         struct: mubi4
@@ -29931,21 +29684,6 @@
         index: -1
         external: true
         conn_type: false
-      }
-      {
-        name: ext_freq_is_96m
-        desc: External clock frequency is 96MHz
-        struct: mubi4
-        package: prim_mubi_pkg
-        type: uni
-        act: rcv
-        width: 1
-        partition: secondary
-        inst_name: ast
-        default: ""
-        domain: Aon
-        top_signame: clkmgr_hi_speed_sel
-        index: -1
       }
       {
         name: all_clk_byp_req
@@ -29964,21 +29702,6 @@
         conn_type: false
       }
       {
-        name: all_clk_byp_req
-        desc: All clocks bypass request
-        struct: mubi4
-        package: prim_mubi_pkg
-        type: uni
-        act: rcv
-        width: 1
-        partition: secondary
-        inst_name: ast
-        default: ""
-        domain: Aon
-        top_signame: clkmgr_all_clk_byp_req
-        index: -1
-      }
-      {
         name: io_clk_byp_req
         desc: IO clock bypass request (for OTP bootstrap)
         struct: mubi4
@@ -29993,21 +29716,6 @@
         index: -1
         external: true
         conn_type: false
-      }
-      {
-        name: io_clk_byp_req
-        desc: IO clock bypass request (for OTP bootstrap)
-        struct: mubi4
-        package: prim_mubi_pkg
-        type: uni
-        act: rcv
-        width: 1
-        partition: secondary
-        inst_name: ast
-        default: ""
-        domain: Aon
-        top_signame: clkmgr_io_clk_byp_req
-        index: -1
       }
       {
         name: intraip_s2p
@@ -33966,126 +33674,6 @@
         netname: ast_init_done
       }
       {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: spi_device_sck_monitor_o
-        signame_chip:
-        {
-          asic: spi_device_sck_monitor
-          verilator: spi_device_sck_monitor
-          cw340: spi_device_sck_monitor
-        }
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: spi_device_sck_monitor
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: spi_device_sck_monitor_i
-        signame_chip:
-        {
-          asic: spi_device_sck_monitor
-          verilator: spi_device_sck_monitor
-          cw340: spi_device_sck_monitor
-        }
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: spi_device_sck_monitor
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: usbdev_usb_ref_pulse_o
-        signame_chip:
-        {
-          asic: usbdev_usb_ref_pulse
-          verilator: usbdev_usb_ref_pulse
-          cw340: usbdev_usb_ref_pulse
-        }
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: usbdev_usb_ref_pulse
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: usbdev_usb_ref_pulse_i
-        signame_chip:
-        {
-          asic: usbdev_usb_ref_pulse
-          verilator: usbdev_usb_ref_pulse
-          cw340: usbdev_usb_ref_pulse
-        }
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: usbdev_usb_ref_pulse
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: usbdev_usb_ref_val_o
-        signame_chip:
-        {
-          asic: usbdev_usb_ref_val
-          verilator: usbdev_usb_ref_val
-          cw340: usbdev_usb_ref_val
-        }
-        width: 1
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: usbdev_usb_ref_val
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: usbdev_usb_ref_val_i
-        signame_chip:
-        {
-          asic: usbdev_usb_ref_val
-          verilator: usbdev_usb_ref_val
-          cw340: usbdev_usb_ref_val
-        }
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: usbdev_usb_ref_val
-      }
-      {
         package: prim_mubi_pkg
         struct: mubi4
         domain: Aon
@@ -34101,7 +33689,7 @@
         type: uni
         default: ""
         direction: out
-        conn_type: true
+        conn_type: false
         index: -1
         netname: clkmgr_all_clk_byp_req
       }
@@ -34181,7 +33769,7 @@
         type: uni
         default: ""
         direction: out
-        conn_type: true
+        conn_type: false
         index: -1
         netname: clkmgr_io_clk_byp_req
       }
@@ -34261,7 +33849,7 @@
         type: uni
         default: ""
         direction: out
-        conn_type: true
+        conn_type: false
         index: -1
         netname: clkmgr_hi_speed_sel
       }
@@ -37172,32 +36760,12 @@
         struct: clks_osc_byp
         domain: Main
         inter_pd: false
-        signame: clk_osc_byp_pd_main_i
+        signame: clks_osc_byp_i
         signame_chip:
         {
-          asic: clk_osc_byp_pd_main
-          verilator: clk_osc_byp_pd_main
-          cw340: clk_osc_byp_pd_main
-        }
-        width: 1
-        type: uni
-        default: ""
-        direction: in
-        conn_type: true
-        index: -1
-        netname: ast_clk_osc_byp
-      }
-      {
-        package: ast_pkg
-        struct: clks_osc_byp
-        domain: Aon
-        inter_pd: false
-        signame: clk_osc_byp_pd_aon_i
-        signame_chip:
-        {
-          asic: clk_osc_byp_pd_aon
-          verilator: clk_osc_byp_pd_aon
-          cw340: clk_osc_byp_pd_aon
+          asic: clks_osc_byp
+          verilator: clks_osc_byp
+          cw340: clks_osc_byp
         }
         width: 1
         type: uni
@@ -41132,6 +40700,30 @@
         default: ast_pkg::AST_STATUS_DEFAULT
       }
       {
+        package: ""
+        struct: logic
+        domain: Main
+        signame: usbdev_usb_ref_pulse
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Main
+        signame: usbdev_usb_ref_val
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: 1'b0
+      }
+      {
         package: pinmux_pkg
         struct: dft_strap_test_req
         domain: Aon
@@ -41142,42 +40734,6 @@
         act: req
         suffix: ""
         default: "'0"
-      }
-      {
-        package: prim_mubi_pkg
-        struct: mubi4
-        domain: Aon
-        signame: clkmgr_all_clk_byp_req
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: prim_mubi_pkg::MUBI4_DEFAULT
-      }
-      {
-        package: prim_mubi_pkg
-        struct: mubi4
-        domain: Aon
-        signame: clkmgr_io_clk_byp_req
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: prim_mubi_pkg::MUBI4_DEFAULT
-      }
-      {
-        package: prim_mubi_pkg
-        struct: mubi4
-        domain: Aon
-        signame: clkmgr_hi_speed_sel
-        width: 1
-        type: uni
-        end_idx: -1
-        act: req
-        suffix: ""
-        default: prim_mubi_pkg::MUBI4_DEFAULT
       }
       {
         package: ast_pkg
@@ -43472,16 +43028,6 @@
         struct: clks_osc_byp
         signame: ast_clk_osc_byp
         domain: Main
-        width: 1
-        type: uni
-        end_idx: -1
-        default: ""
-      }
-      {
-        package: ast_pkg
-        struct: clks_osc_byp
-        signame: ast_clk_osc_byp
-        domain: Aon
         width: 1
         type: uni
         end_idx: -1

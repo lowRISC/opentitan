@@ -37,9 +37,6 @@ module earlgrey_pd_aon #(
   output ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl_o,
   output prim_mubi_pkg::mubi4_t       ast_clk_src_sys_jen_o,
   input  prim_mubi_pkg::mubi4_t       ast_init_done_i,
-  input  logic       spi_device_sck_monitor_i,
-  input  logic       usbdev_usb_ref_pulse_i,
-  input  logic       usbdev_usb_ref_val_i,
   output prim_mubi_pkg::mubi4_t       clkmgr_all_clk_byp_req_o,
   input  prim_mubi_pkg::mubi4_t       clkmgr_all_clk_byp_ack_i,
   output prim_mubi_pkg::mubi4_t       clkmgr_io_clk_byp_req_o,
@@ -123,7 +120,6 @@ module earlgrey_pd_aon #(
   input  ast_pkg::awire_t       ast_adc_a1_a_i,
   output ast_pkg::awire_t       ast2pad_t0_a_o,
   output ast_pkg::awire_t       ast2pad_t1_a_o,
-  input  ast_pkg::clks_osc_byp_t       clk_osc_byp_pd_aon_i,
   output ast_pkg::ast_pwst_t       ast_pwst_h_o,
   input  logic       dft_hold_tap_sel_i,
   output logic       usb_dp_pullup_en_o,
@@ -332,9 +328,6 @@ module earlgrey_pd_aon #(
   logic [AstAst2PadOutWidth-1:0] ast_ast2padmux;
   ast_pkg::ast_status_t       ast_io_pwr_st;
   pinmux_pkg::dft_strap_test_req_t       pinmux_dft_strap_test;
-  prim_mubi_pkg::mubi4_t       clkmgr_all_clk_byp_req;
-  prim_mubi_pkg::mubi4_t       clkmgr_io_clk_byp_req;
-  prim_mubi_pkg::mubi4_t       clkmgr_hi_speed_sel;
   ast_pkg::ast_alert_req_t       sensor_ctrl_ast_alert_req;
   ast_pkg::ast_alert_rsp_t       sensor_ctrl_ast_alert_rsp;
   pwrmgr_pkg::pwr_ast_req_t       pwrmgr_pwr_ast_req;
@@ -351,7 +344,6 @@ module earlgrey_pd_aon #(
   logic [1:0] pwrmgr_rstreqs;
   clkmgr_pkg::clkmgr_out_t       clkmgr_clocks;
   logic       ast_clk_src_aon;
-  ast_pkg::clks_osc_byp_t       ast_clk_osc_byp;
   ast_pkg::ast_mem_cfg_secondary_req_t       ast_mem_cfg_req;
   ast_pkg::ast_mem_cfg_secondary_rsp_t       ast_mem_cfg_rsp;
   prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlRetNumRamInst-1:0] sram_ctrl_ret_ram_cfg_req;
@@ -363,11 +355,7 @@ module earlgrey_pd_aon #(
   jtag_pkg::jtag_rsp_t       pinmux_dft_jtag_rsp;
 
   // Create mixed connections to ports
-  assign clkmgr_all_clk_byp_req_o = clkmgr_all_clk_byp_req;
-  assign clkmgr_io_clk_byp_req_o = clkmgr_io_clk_byp_req;
-  assign clkmgr_hi_speed_sel_o = clkmgr_hi_speed_sel;
   assign pwrmgr_wakeups[1] = pwrmgr_wakeups_i;
-  assign ast_clk_osc_byp = clk_osc_byp_pd_aon_i;
 
 
 
@@ -521,11 +509,11 @@ module earlgrey_pd_aon #(
     .clocks_o(clkmgr_clocks),
     .cg_en_o(clkmgr_cg_en),
     .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en_i),
-    .io_clk_byp_req_o(clkmgr_io_clk_byp_req),
+    .io_clk_byp_req_o(clkmgr_io_clk_byp_req_o),
     .io_clk_byp_ack_i(clkmgr_io_clk_byp_ack_i),
-    .all_clk_byp_req_o(clkmgr_all_clk_byp_req),
+    .all_clk_byp_req_o(clkmgr_all_clk_byp_req_o),
     .all_clk_byp_ack_i(clkmgr_all_clk_byp_ack_i),
-    .hi_speed_sel_o(clkmgr_hi_speed_sel),
+    .hi_speed_sel_o(clkmgr_hi_speed_sel_o),
     .div_step_down_req_i(clkmgr_div_step_down_req_i),
     .lc_clk_byp_req_i(lc_ctrl_lc_clk_byp_req_i),
     .lc_clk_byp_ack_o(lc_ctrl_lc_clk_byp_ack_o),
@@ -725,17 +713,9 @@ module earlgrey_pd_aon #(
     // Clock and reset connections
     .clk_ast_adc_i(clkmgr_clocks.clk_aon_peri),
     .clk_ast_alert_i(clkmgr_clocks.clk_io_div4_secure),
-    .clk_ast_es_i(clkmgr_clocks.clk_main_secure),
-    .clk_ast_rng_i(clkmgr_clocks.clk_main_secure),
-    .clk_ast_tlul_i(clkmgr_clocks.clk_io_div4_infra),
-    .clk_ast_usb_i(clkmgr_clocks.clk_usb_peri),
     .clk_ast_ext_i(clk_ast_ext_i),
     .rst_ast_adc_ni(rstmgr_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
     .rst_ast_alert_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_es_ni(rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_rng_ni(rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_tlul_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
-    .rst_ast_usb_ni(rstmgr_resets.rst_usb_n[rstmgr_pkg::DomainMainSel]),
 
 
     // Inter-module signals
@@ -751,9 +731,7 @@ module earlgrey_pd_aon #(
     .por_n_i(manual_in_por_n_i),
     .sns_clks_i(ast_sns_clks),
     .sns_rsts_i(ast_sns_rsts),
-    .sns_spi_ext_clk_i(spi_device_sck_monitor_i),
     .vx_supp_i(ast_vx_supp_i),
-    .ast_pwst_o(),
     .ast_pwst_h_o(ast_pwst_h_o),
     .rstmgr_por_n_o(rstmgr_por_n),
     .io_pwr_st_o(ast_io_pwr_st),
@@ -764,8 +742,6 @@ module earlgrey_pd_aon #(
     .otp_power_seq_i('0),
     .otp_power_seq_h_o(),
     .clk_src_aon_o(ast_clk_src_aon),
-    .usb_ref_pulse_i(usbdev_usb_ref_pulse_i),
-    .usb_ref_val_i(usbdev_usb_ref_val_i),
     .alert_o(sensor_ctrl_ast_alert_req),
     .alert_i(sensor_ctrl_ast_alert_rsp),
     .dft_strap_test_i(pinmux_dft_strap_test),
@@ -779,10 +755,6 @@ module earlgrey_pd_aon #(
     .scan_reset_n_o(scan_rst_n_o),
     .mem_cfg_o(ast_mem_cfg_req),
     .mem_cfg_i(ast_mem_cfg_rsp),
-    .clk_osc_byp_i(ast_clk_osc_byp),
-    .ext_freq_is_96m_i(clkmgr_hi_speed_sel),
-    .all_clk_byp_req_i(clkmgr_all_clk_byp_req),
-    .io_clk_byp_req_i(clkmgr_io_clk_byp_req),
     .intraip_s2p_o(ast_intraip_s2p_o),
     .intraip_p2s_i(ast_intraip_p2s_i)
   );
