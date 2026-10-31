@@ -49,6 +49,10 @@ The following attributes have a well-defined meaning in the codebase.
 - `hjson`: label string of the complete Hjson description file of the top created by `topgen`.
 - `top_lib`: label string of the top's `cc_library` created by `topgen`. This library contains all the top-specific constants.
 - `top_ld`: label string of the top's `ld_library` created by `topgen`. This library contains all the top-specific linker constants.
+- `ip_constraints`: a dictionary of additional constraints for IPs, the format is the same as for `target_compatible_with`.
+  See the section on [using the top description](#Using-the-top-description) for more details.
+- `platforms`: a dictionary mapping arbitrary strings (called platform keys) to the label strings of platforms.
+  See the documentation of [binary and test rules](/rules/opentitan/README.md).
 
 Example for Earlgrey:
 ```py
@@ -58,6 +62,9 @@ EARLGREY = opentitan_top(
     top_lib = "//hw/top_earlgrey/sw/autogen:top_earlgrey",
     top_ld = "//hw/top_earlgrey/sw/autogen:top_earlgrey_memory",
     ips = [...],
+    platforms = {
+      "": "//hw/top_earlgrey:platform",
+    }
 )
 ```
 
@@ -112,6 +119,8 @@ For more details, look at the documentation in `//hw/top:defs.bzl`
   This can be done using `opentitan_alias_top_attr(name, attr_name, required = True, default = None, fn = None)` which works similarly to `opentitan_select_top_attr` but creates an `alias` target instead.
 
 A similar set of API exists for IP attributes, see `opentitan_select_ip_attr`, `opentitan_if_ip_attr` and `opentitan_require_ip_attr`.
+The difference is that the select expressions are conditioned on the presence of the IP in the currently selected top.
+Additional, per-IP, constraints can be specified using the `ip_constraints` top attribute.
 
 ### Examples
 

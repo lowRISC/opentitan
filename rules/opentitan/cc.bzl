@@ -2,13 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(
-    "@lowrisc_opentitan//rules:rv.bzl",
-    "rv_rule",
-    _OPENTITAN_CPU = "OPENTITAN_CPU",
-    _OPENTITAN_PLATFORM = "OPENTITAN_PLATFORM",
-    _opentitan_transition = "opentitan_transition",
-)
+load("@lowrisc_opentitan//rules:rv.bzl", "rv_rule")
 load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
     "convert_to_vmem",
@@ -163,7 +157,8 @@ def _binary_name(ctx, exec_env):
       str: The name.
     """
     return ctx.attr.naming_convention.format(
-        name = ctx.attr.name,
+        # opentitan_binary allows overriding the name.
+        name = getattr(ctx.attr, "out_name", None) or ctx.attr.name,
         exec_env = exec_env.exec_env,
     )
 
@@ -518,7 +513,15 @@ def _opentitan_binary(ctx):
     ot_bin_env_info = {}
     validations = []
     runfiles = ctx.runfiles()
-    for exec_env_target in ctx.attr.exec_env:
+
+    # Filter execution environments by platform key.
+    exec_envs = [
+        exec_env
+        for exec_env in ctx.attr.exec_env
+        if exec_env[ExecEnvInfo].platform_key == ctx.attr.platform_key
+    ]
+
+    for exec_env_target in exec_envs:
         exec_env = exec_env_target[ExecEnvInfo]
         name = _binary_name(ctx, exec_env)
         deps = ctx.attr.deps + exec_env.libs
@@ -746,7 +749,10 @@ opentitan_binary = rv_rule(
     attrs = dict(common_binary_attrs.items() + {
         "exec_env": attr.label_list(
             providers = [ExecEnvInfo],
-            doc = "List of execution environments for this target.",
+            doc = "List of execution environments for this target. This list will be filtered to only keep the ones matching the `platform_key` attribute",
+        ),
+        "out_name": attr.string(
+            doc = "By default, all artifacts are prefixed by ctx.attr.name. This can be changed with this attribute.",
         ),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
         "_modid_check": attr.label(
@@ -761,6 +767,19 @@ opentitan_binary = rv_rule(
 
 def _opentitan_test(ctx):
     exec_env = ctx.attr.exec_env[ExecEnvInfo]
+
+    # If the platform key does not match, return a dummy executble and not provider.
+    if exec_env.platform_key != ctx.attr.platform_key:
+        dummy_executable = ctx.actions.declare_file(ctx.attr.name + "_dummy.sh")
+        ctx.actions.write(
+            dummy_executable,
+            """#!/bin/bash
+            echo "This test is not runnable, the platform key '{}' does match that of the execution environment {} (which is '{}')"
+            exit 1
+            """.format(ctx.attr.platform_key, exec_env.label, exec_env.platform_key),
+            is_executable = True,
+        )
+        return [DefaultInfo(executable = dummy_executable)]
 
     if ctx.attr.srcs or ctx.attr.deps:
         name = _binary_name(ctx, exec_env)
@@ -795,12 +814,12 @@ def _opentitan_test(ctx):
         ),
     ]
 
-opentitan_test = rv_rule(
+opentitan_test_rule = rv_rule(
     implementation = _opentitan_test,
     attrs = dict(common_binary_attrs.items() + {
         "exec_env": attr.label(
             providers = [ExecEnvInfo],
-            doc = "List of exeuction environments for this target.",
+            doc = "Execution environment for this target. If it doesn't match the `platform_key`, a dummy executable will be returned and no OpenTitanTestInfo provider will be created.",
         ),
         "test_harness": attr.label(
             executable = True,
@@ -878,6 +897,46 @@ opentitan_test = rv_rule(
     }.items()),
     fragments = ["cpp"],
     toolchains = ["@rules_cc//cc:toolchain_type", LOCALTOOLS_TOOLCHAIN],
+    # Note that this is not declared as a test rule. This because the output of this rule is then
+    # fed into opentitan_merge_test which is marked as a test rule. Otherwise, some tests would appear
+    # more than once when doing queries.
+)
+
+def _opentitan_merge_test(ctx):
+    PROVIDERS = [RunEnvironmentInfo, OutputGroupInfo, InstrumentedFilesInfo, OpenTitanTestInfo]
+
+    # We expect only one test to actually be valid, which we can detect by the presence of the OpenTitanTestInfo provider.
+    valid_tests = [test for test in ctx.attr.tests if OpenTitanTestInfo in test]
+    if len(valid_tests) != 1:
+        fail("{}: exactly one test listed in the `test` attributes must be valid, the followed were valid: {}".format(
+            ctx.label,
+            valid_tests,
+        ))
+
+    actual = valid_tests[0]
+    executable = ctx.actions.declare_file(ctx.attr.name)
+    ctx.actions.symlink(output = executable, target_file = actual[DefaultInfo].files_to_run.executable, is_executable = True)
+
+    result = [DefaultInfo(
+        runfiles = actual[DefaultInfo].default_runfiles,
+        files = actual[DefaultInfo].files,
+        executable = executable,
+    )]
+    result += [actual[prov] for prov in PROVIDERS if prov in actual]
+    return result
+
+opentitan_merge_test = rule(
+    implementation = _opentitan_merge_test,
+    doc = """
+        Merge the OpenTitan test providers of several test targets, keeping the only one with a valid OpenTitanTestInfo.
+        This effectively acts as an alias.
+    """,
+    attrs = {
+        "tests": attr.label_list(
+            mandatory = True,
+            doc = "Tests to merge",
+        ),
+    },
     test = True,
 )
 
@@ -995,5 +1054,90 @@ exec_env_filegroup = rule(
             doc = "Dictionary of execution environments for this target.",
         ),
         "kind": attr.string(default = "flash", doc = "The kind of binary"),
+    },
+)
+
+def _opentitan_binary_merge(ctx):
+    # List of execution environment providers to accumulate.
+    providers = []
+
+    # List of output groupes to merge into the final OutputGroupInfo
+    groups = {}
+
+    # Final mapping for the OpenTitanBinaryInfo
+    ot_bin_env_info = {}
+
+    # Accumulation of default info and runfiles for all binaries.
+    default_info = []
+    runfiles = []
+
+    # Set of all execution environments found in the providers binaries
+    built_ev = set()
+
+    # Here we go through the binaries one by one and accumulate the providers, or their
+    # content.
+    for (platform_key, bin) in ctx.attr.binaries.items():
+        # The OpenTitanBinaryInfo provider gives the list of execution environment providers
+        # exported by this binary.
+        for (prov, ev) in bin[OpenTitanBinaryInfo].exec_env.items():
+            built_ev.add(ev.label)
+
+            # Remember this exec env in the final mapping.
+            ot_bin_env_info[prov] = ev
+
+            # Extract the provider from the binary.
+            providers.append(bin[prov])
+
+            # We need to collect the output groups of all binaries. Note that those are may not be
+            # disjoint, such as _validation.
+            for og in bin[OutputGroupInfo]:
+                groups[og] = groups.get(og, []) + [getattr(bin[OutputGroupInfo], og)]
+
+            # Accumulate default info and runfiles.
+            default_info.append(bin[DefaultInfo].files)
+            runfiles.append(bin[DefaultInfo].default_runfiles)
+
+    # Do some cross-checking: all requested execution environment appear in binaries.
+    for ev in ctx.attr.exec_env:
+        # Simple check to avoid user error: the platform key does not exist.
+        # This error could happen if for example a developer used a platform key in an execution environment
+        # which is not listed in the `platforms` attribute of the top.
+        if ev[ExecEnvInfo].platform_key not in ctx.attr.binaries:
+            fail("In {}: execution environment {} requests platform key '{}' but no binary provided was built with this key. Keys for which binaries were built: {}".format(
+                ctx.label,
+                ev.label,
+                ev[ExecEnvInfo].platform_key,
+                ctx.attr.binaries,
+            ))
+        if ev.label not in built_ev:
+            fail("In {}: execution environment {} was requested but not built. Execution environment built: {}".format(
+                ctx.label,
+                ev.label,
+                list(built_ev),
+            ))
+
+    groups = {
+        og: depset(transitive = files)
+        for (og, files) in groups.items()
+    }
+
+    providers.append(DefaultInfo(files = depset(transitive = default_info), runfiles = ctx.runfiles().merge_all(runfiles)))
+    providers.append(OutputGroupInfo(**groups))
+    providers.append(OpenTitanBinaryInfo(exec_env = ot_bin_env_info))
+    return providers
+
+opentitan_binary_merge = rule(
+    implementation = _opentitan_binary_merge,
+    doc = "Merge the OpenTitan binary providers of several binary targets",
+    attrs = {
+        "binaries": attr.string_keyed_label_dict(
+            mandatory = True,
+            providers = [OpenTitanBinaryInfo],
+            doc = "Binaries to merge, keyed by the platform key",
+        ),
+        "exec_env": attr.label_list(
+            providers = [ExecEnvInfo],
+            doc = "List of execution environments, used for cross-checking.",
+        ),
     },
 )
