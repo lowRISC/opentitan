@@ -210,7 +210,7 @@ class TypedClocks(NamedTuple):
     # The key for each is root clock, while the list contains all the clocks
     # of the family, inclusive of itself.
     # For example
-    # 'io': ['io', 'io_div2', 'io_div4']
+    # 'io': ['io', 'io_div4']
     parent_child_clks: Dict[str, List]
 
     def all_clocks(self) -> Dict[str, ClockSignal]:

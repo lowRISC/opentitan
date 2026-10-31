@@ -107,8 +107,8 @@
             - Notice writes to the `extclk_ctrl.sel` register are ignored unless
               the CSR `extclk_ctrl_regwen` is 1.
             - A successful switch to external clocks due to `lc_clk_byl_req_i`
-              will cause the clkmgr to undo a divide by 2 for io_div4 and
-              io_div2 clocks except when `(scanmode_i == prim_mubi_pkg::MuBi4True)`.
+              will cause the clkmgr to undo a divide by 2 for the
+              ${' and '.join(derived_clks)} clock${'s' if len(derived_clks) > 1 else ''} except when `(scanmode_i == prim_mubi_pkg::MuBi4True)`.
             - A software triggered switch to external clock will undo divides
               by 2 if `extclk_ctrl.hi_speed_sel` is set to `prim_mubi_pkg::MuBi4True`.
 
@@ -122,15 +122,15 @@
             Clock divider checks are done with SVA assertions.
             - When the external clock is selected (and not defeated by
               `scanmode_i` for scoreboard checks):
-              - The `clk_io_div2_powerup` output matches the `clk_io_powerup`
-                 output.
-              - The `clk_io_div4_powerup` output matches the `clk_io_powerup`
-                 output at half its frequency.
+% for name, dc in derived_clks.items():
+              - The `clk_${name}_powerup` output matches the `clk_${dc['src']['name']}_powerup`
+                output${'' if dc['div'] == 2 else ' at half its frequency'}.
+% endfor
             - When the external clock is not selected or division is defeated:
-              - The `clk_io_div2_powerup` output matches the `clk_io_powerup`
-                output at half its frequency.
-              - The `clk_io_div4_powerup` output matches the `clk_io_powerup`
-                 output at a quarter of its frequency.
+% for name, dc in derived_clks.items():
+              - The `clk_${name}_powerup` output matches the `clk_${dc['src']['name']}_powerup`
+                output at ${'half' if dc['div'] == 2 else 'a quarter of'} its frequency.
+% endfor
             LC / AST handshake:
             - When the external clock functionality is triggered the
               `ast_clk_byp_req_o` output pin is set to `lc_ctrl_pkg::On`.

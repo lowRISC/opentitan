@@ -47,8 +47,8 @@ void execute_clkmgr_external_clk_src_for_sw_test(bool fast_ext_clk) {
   CHECK(err_codes == 0, "Unexpected non-zero clkmgr recoverable error code");
 
   // Configure external clock:
-  // - at low speed (48 MHz) both main and io clocks count are the nominal
-  //   IoDiv2's.
+  // - at low speed (48 MHz) both main and io clocks count half the nominal
+  //   Io count.
   // - at high speed (96 MHz) the main clock count is the nominal Io's.
   LOG_INFO("Selecting external clock and %s speed clocks",
            (fast_ext_clk ? "fast" : "slow"));

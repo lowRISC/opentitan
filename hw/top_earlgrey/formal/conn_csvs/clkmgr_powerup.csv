@@ -22,5 +22,4 @@ CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_CLK,  top_earlgrey.earlgrey_pd_aon.u_clkmg
 CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_MAIN_CLK, top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_main_powerup,    top_earlgrey.earlgrey_pd_aon.u_rstmgr, clk_main_i
 CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_IO_CLK,   top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_powerup,      top_earlgrey.earlgrey_pd_aon.u_rstmgr, clk_io_i
 CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_USB_CLK,  top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_usb_powerup,     top_earlgrey.earlgrey_pd_aon.u_rstmgr, clk_usb_i
-CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_IO2_CLK,  top_earlgrey.earlgrey_pd_aon.u_clkmgr, clocks_o.clk_io_div2_powerup, top_earlgrey.earlgrey_pd_aon.u_rstmgr, clk_io_div2_i
 CONNECTION, CLKMGR_POWERUP_CLK_RSTMGR_IO4_CLK,  top_earlgrey.earlgrey_pd_aon.u_clkmgr,clocks_o.clk_io_div4_powerup,  top_earlgrey.earlgrey_pd_aon.u_rstmgr, clk_io_div4_i

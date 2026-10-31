@@ -44,11 +44,6 @@ module tb;
     .rst_n(rst_usb_n)
   );
 
-  wire rst_io_div2_n;
-  clk_rst_if io_div2_clk_rst_if (
-    .clk  (),
-    .rst_n(rst_io_div2_n)
-  );
   wire rst_io_div4_n;
   clk_rst_if io_div4_clk_rst_if (
     .clk  (),
@@ -61,10 +56,6 @@ module tb;
   clk_rst_if root_io_clk_rst_if (
     .clk  (),
     .rst_n(rst_root_io_n)
-  );
-  clk_rst_if root_io_div2_clk_rst_if (
-    .clk  (),
-    .rst_n(rst_root_io_div2_n)
   );
   clk_rst_if root_io_div4_clk_rst_if (
     .clk  (),
@@ -110,7 +101,6 @@ module tb;
     .clk_enables({
         reg2hw.clk_enables.clk_usb_peri_en.q,
         reg2hw.clk_enables.clk_io_peri_en.q,
-        reg2hw.clk_enables.clk_io_div2_peri_en.q,
         reg2hw.clk_enables.clk_io_div4_peri_en.q}),
     .clk_hints({
         reg2hw.clk_hints.clk_main_otbn_hint.q,
@@ -132,11 +122,9 @@ module tb;
     io_clk_rst_if.set_active();
     main_clk_rst_if.set_active();
     usb_clk_rst_if.set_active();
-    io_div2_clk_rst_if.set_active();
     io_div4_clk_rst_if.set_active();
     root_main_clk_rst_if.set_active();
     root_io_clk_rst_if.set_active();
-    root_io_div2_clk_rst_if.set_active();
     root_io_div4_clk_rst_if.set_active();
     root_usb_clk_rst_if.set_active();
   end
@@ -157,13 +145,11 @@ module tb;
     .rst_main_ni(rst_main_n),
     .clk_usb_i (clk_usb),
     .rst_usb_ni(rst_usb_n),
-    .rst_io_div2_ni(rst_io_div2_n),
     .rst_io_div4_ni(rst_io_div4_n),
     // ICEBOX(#17934): differentiate the root resets as mentioned for rst_io_ni above.
     .rst_root_ni(rst_root_io_n),
     .rst_root_main_ni(rst_root_main_n),
     .rst_root_io_ni(rst_root_io_n),
-    .rst_root_io_div2_ni(rst_root_io_div2_n),
     .rst_root_io_div4_ni(rst_root_io_div4_n),
     .rst_root_usb_ni(rst_root_usb_n),
 
@@ -203,16 +189,12 @@ module tb;
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_clk_rst_vif", io_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "main_clk_rst_vif", main_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "usb_clk_rst_vif", usb_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_div2_clk_rst_vif",
-                                            io_div2_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "io_div4_clk_rst_vif",
                                             io_div4_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "root_main_clk_rst_vif",
                                             root_main_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "root_io_clk_rst_vif",
                                             root_io_clk_rst_if);
-    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "root_io_div2_clk_rst_vif",
-                                            root_io_div2_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "root_io_div4_clk_rst_vif",
                                             root_io_div4_clk_rst_if);
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "root_usb_clk_rst_vif",
