@@ -462,6 +462,63 @@ interface otbn_trace_if
   assign ispr_write_data[IsprKmacStrb] = {{(WLEN - 32'd32){1'b0}},
                                           u_otbn_kmac_if.ispr_kmac_strb_wdata_i};
 
+  // Keymgr interface
+  // TODO: These ISPRs are not traced until there is a simulator implementation
+  assign ispr_read[IsprKeymgrMsgS0L] = '0; // any_ispr_read & (ispr_addr == IsprKeymgrMsgS0L);
+  assign ispr_read[IsprKeymgrMsgS0H] = '0; // any_ispr_read & (ispr_addr == IsprKeymgrMsgS0H);
+  assign ispr_read[IsprKeymgrMsgS1L] = '0; // any_ispr_read & (ispr_addr == IsprKeymgrMsgS1L);
+  assign ispr_read[IsprKeymgrMsgS1H] = '0; // any_ispr_read & (ispr_addr == IsprKeymgrMsgS1H);
+  assign ispr_read[IsprKeymgrStatus] = '0; // any_ispr_read & (ispr_addr == IsprKeymgrStatus);
+  assign ispr_read[IsprKeymgrCtrl]   = '0; // any_ispr_read & (ispr_addr == IsprKeymgrCtrl);
+
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : gen_keymgr_ispr_read_words
+    assign ispr_read_data[IsprKeymgrMsgS0L][i_word*32+:32] =
+          u_otbn_keymgr_if.ispr_keymgr_msg_s0_l_rdata_o[i_word*39+:32];
+    assign ispr_read_data[IsprKeymgrMsgS0H][i_word*32+:32] =
+          u_otbn_keymgr_if.ispr_keymgr_msg_s0_h_rdata_o[i_word*39+:32];
+    assign ispr_read_data[IsprKeymgrMsgS1L][i_word*32+:32] =
+          u_otbn_keymgr_if.ispr_keymgr_msg_s1_l_rdata_o[i_word*39+:32];
+    assign ispr_read_data[IsprKeymgrMsgS1H][i_word*32+:32] =
+          u_otbn_keymgr_if.ispr_keymgr_msg_s1_h_rdata_o[i_word*39+:32];
+  end
+
+  assign ispr_read_data[IsprKeymgrStatus] = {{(WLEN - 32'd32){1'b0}},
+                                             u_otbn_keymgr_if.ispr_keymgr_status_rdata_o};
+  assign ispr_read_data[IsprKeymgrCtrl]   = '0;
+
+  // TODO: The request update is not considered as write. Do we need to model this?
+  for (genvar i_word = 0; i_word < BaseWordsPerWLEN; i_word++) begin : gen_keymgr_ispr_write_words
+    assign ispr_write_data[IsprKeymgrMsgS0L][i_word*32+:32] =
+        u_otbn_keymgr_if.ispr_keymgr_msg_s0_l_d[i_word].word;
+    assign ispr_write_data[IsprKeymgrMsgS0H][i_word*32+:32] =
+        u_otbn_keymgr_if.ispr_keymgr_msg_s0_h_d[i_word].word;
+    assign ispr_write_data[IsprKeymgrMsgS1L][i_word*32+:32] =
+        u_otbn_keymgr_if.ispr_keymgr_msg_s1_l_d[i_word].word;
+    assign ispr_write_data[IsprKeymgrMsgS1H][i_word*32+:32] =
+        u_otbn_keymgr_if.ispr_keymgr_msg_s1_h_d[i_word].word;
+  end
+
+  // TODO: These ISPRs are not traced until there is a simulator implementation
+  assign ispr_write[IsprKeymgrMsgS0L] = '0; // u_otbn_keymgr_if.ispr_keymgr_msg_s0_l_wr_i ||
+                                        // u_otbn_keymgr_if.sec_wipe_ispr_keymgr_msg_s0_l_i;
+  assign ispr_write[IsprKeymgrMsgS0H] = '0; // u_otbn_keymgr_if.ispr_keymgr_msg_s0_h_wr_i ||
+                                        // u_otbn_keymgr_if.sec_wipe_ispr_keymgr_msg_s0_h_i;
+  assign ispr_write[IsprKeymgrMsgS1L] = '0; // u_otbn_keymgr_if.ispr_keymgr_msg_s1_l_wr_i ||
+                                        // u_otbn_keymgr_if.sec_wipe_ispr_keymgr_msg_s1_l_i;
+  assign ispr_write[IsprKeymgrMsgS1H] = '0; // u_otbn_keymgr_if.ispr_keymgr_msg_s1_h_wr_i ||
+                                        // u_otbn_keymgr_if.sec_wipe_ispr_keymgr_msg_s1_h_i;
+
+  // This is read only
+  assign ispr_write[IsprKeymgrStatus]      = '0;
+  assign ispr_write_data[IsprKeymgrStatus] = '0;
+
+  // There is no direct secure wipe.
+  // TODO: This ISPR is not traced until there is a simulator implementation
+  assign ispr_write[IsprKeymgrCtrl]      = '0; // u_otbn_keymgr_if.ispr_keymgr_ctrl_wr_i;
+  assign ispr_write_data[IsprKeymgrCtrl] = {{(WLEN - 32'd32){1'b0}},
+                                            u_otbn_keymgr_if.ispr_keymgr_ctrl_wdata_i};
+
+  // Instruction counter
   assign ispr_write[IsprInsnCnt] = 1'b0;
   assign ispr_write_data[IsprInsnCnt] = '0;
 
