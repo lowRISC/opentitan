@@ -339,11 +339,11 @@ static const entropy_complex_config_t
                     .alert_threshold = 4,
                     .repcnt_threshold = 81,
                     .repcnts_threshold = 21,
-                    .adaptp_hi_threshold = 1592,
-                    .adaptp_lo_threshold = 2048 - 1592,  // 456
-                    .bucket_threshold = 202,
-                    .markov_hi_threshold = 825,
-                    .markov_lo_threshold = 1024 - 825,  // 199
+                    .adaptp_hi_threshold = 1590,
+                    .adaptp_lo_threshold = 2048 - 1590,  // 458
+                    .bucket_threshold = 200,
+                    .markov_hi_threshold = 823,
+                    .markov_lo_threshold = 1024 - 823,  // 201
                     .extht_hi_threshold = 0xffff,
                     .extht_lo_threshold = 0x0,
                 },
