@@ -1206,14 +1206,15 @@ static status_t run_hmac_kdf_negative_tests(void) {
   CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &valid_buf, &bad_km_huge)
             .value == OTCRYPTO_BAD_ARGS.value);
 
-  // Zero byte delimiter tests
+  // Zero byte delimiter tests: 0x00 is rejected in label, but allowed in
+  // binary context.
   uint8_t zero_data[] = {0x01, 0x00, 0x02};
   otcrypto_const_byte_buf_t buf_with_zero =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, zero_data, 3);
   CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &buf_with_zero, &valid_buf, &valid_km)
             .value == OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &buf_with_zero, &valid_km)
-            .value == OTCRYPTO_BAD_ARGS.value);
+            .value == OTCRYPTO_OK.value);
 
   return OTCRYPTO_OK;
 }
