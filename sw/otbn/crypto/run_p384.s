@@ -88,15 +88,20 @@ start:
   addi  x3, x0, MODE_POINTONCRV_CHECK
   beq   x2, x3, point_on_curve_check
 
-  /* Copy the caller-provided secret key shares into scratchpad memory.
+  /* Copy the caller-provided secret key shares into scratchpad memory and
+     zero the most significant 256 bits of each 96-byte share buffer.
        dmem[d0] <= dmem[d0_io]
        dmem[d1] <= dmem[d1_io] */
+  li       x11, 31
+  bn.xor   w31, w31, w31
   la       x13, d0_io
   la       x14, d0
   jal      x1, copy_share
+  bn.sid   x11, 64(x14)
   la       x13, d1_io
   la       x14, d1
   jal      x1, copy_share
+  bn.sid   x11, 64(x14)
 
   addi  x3, x0, MODE_SIGN
   beq   x2, x3, ecdsa_sign
@@ -139,7 +144,7 @@ start:
  * @param      dmem[dptr_src..dptr_src+64]: source data
  * @param[out] dmem[dptr_dst..dptr_dst+64]: copied data
  *
- * clobbered registers: x10, w10, w31
+ * clobbered registers: x10, w10
  * clobbered flag groups: none
  */
 copy_share:
@@ -152,11 +157,6 @@ copy_share:
   bn.sid   x10, 0(x14)
   bn.lid   x10, 32(x13)
   bn.sid   x10, 32(x14)
-
-  /* Write zero to the most significant 256 bits of the share. */
-  li       x10, 31
-  bn.xor   w31, w31, w31
-  bn.sid   x10, 64(x14)
   ret
 
 /**
