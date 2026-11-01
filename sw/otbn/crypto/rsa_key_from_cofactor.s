@@ -161,7 +161,7 @@ derive_d:
      requires one working buffer, which we construct from `rsa_cofactor`.
        dmem[rsa_d..rsa_d+(n*2*32)] <= (65537^-1) mod dmem[x12..x12+(n*2*32)] */
   la x24, tmp_scratchpad
-  la x25, rsa_d0
+  la x25, rsa_d
   la x26, rsa_cofactor
   addi x27, x30, 0
   jal x1, modinv_f4
