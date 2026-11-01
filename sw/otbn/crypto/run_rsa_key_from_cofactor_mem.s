@@ -14,12 +14,19 @@
 rsa_n:
 .zero 512
 
+/* Extra label marking the start of d0 || d1 in memory. The `modinv_f4`
+   routine requires an (n + 1)-limb (up to 544-byte) output buffer before `d`
+   is split into Boolean shares, so `rsa_d0` and `rsa_d1` must be contiguous
+   in memory. */
+.balign 32
+.globl rsa_d
+rsa_d:
+
 /*
  * RSA first Boolean share of the private exponent (d) for decryption and
  * signing, up to 4096 bits.
  */
 .globl rsa_d0
-.balign 32
 rsa_d0:
 .zero 512
 
