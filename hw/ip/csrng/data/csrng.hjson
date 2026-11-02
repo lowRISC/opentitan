@@ -295,6 +295,7 @@
                 Writing this request with defined CSRNG commands will initiate all
                 possible CSRNG actions. The application interface must wait for the
                 "ack" to return before issuing new commands.
+                Before writing each word of a command, !!SW_CMD_STS.CMD_RDY needs to be polled.
                 '''
         }
       ]
@@ -354,10 +355,11 @@
         { bits: "1",
           name: "CMD_RDY",
           desc: '''
-                This bit indicates when the command interface is ready to accept commands.
-                Before starting to write a new command to !!SW_CMD_REQ, this field needs to be polled.
-                0b0: CSRNG is not ready to accept commands or the last command hasn't been acked yet.
-                0b1: CSRNG is ready to accept the next command.
+                This bit indicates when the command interface is ready to accept the next command word.
+                Before writing each word of a command to !!CMD_REQ, this field needs to be polled.
+                Words written while this field is low are dropped.
+                0b0: CSRNG is not ready to accept the next command word or the last command hasn't been acked yet.
+                0b1: CSRNG is ready to accept the next command word.
                 '''
           resval: "0"
         }
