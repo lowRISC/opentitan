@@ -114,7 +114,6 @@ package csrng_pkg;
   typedef struct packed {
     logic                       gen_adata_vld;
     logic         [SeedLen-1:0] gen_adata;
-    logic                       gen_flag;
     logic [GenBitsCtrWidth-1:0] gen_ctr;
     logic                       fips;
     logic      [RsCtrWidth-1:0] rs_ctr;

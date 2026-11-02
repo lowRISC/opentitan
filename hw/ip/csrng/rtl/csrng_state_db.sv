@@ -41,6 +41,7 @@ module csrng_state_db
   output logic [NumApps-1:0][RsCtrWidth-1:0]      reseed_counter_o,
   output logic [NumApps-1:0]                      inst_state_o,
   output logic [NumApps-1:0][GenBitsCtrWidth-1:0] gen_cnt_o,
+  input  logic [NumApps-1:0]                      gen_flag_i,
   output logic [NumApps-1:0]                      gen_flag_o,
 
   output logic                                    reg_ptr_err_o
@@ -162,6 +163,10 @@ module csrng_state_db
 
   always_comb begin
     state_d = state_q;
+    // The GEN flag is updated by the cmd stage.
+    for (int i = 0; i < NumApps; i++) begin
+      state_d[i].gen_flag = gen_flag_i[i];
+    end
 
     if (!enable_i) begin
       state_d = '0;
@@ -169,7 +174,7 @@ module csrng_state_db
       state_d[wr_data_i.inst_id] = '{
         gen_adata_vld: wr_data_i.gen_adata_vld,
         gen_adata:     wr_data_i.gen_adata,
-        gen_flag:      wr_data_i.gen_flag,
+        gen_flag:      gen_flag_i[wr_data_i.inst_id],
         gen_ctr:       wr_data_i.gen_ctr,
         fips:          wr_data_i.fips,
         key_v:         wr_data_i.key_v,
