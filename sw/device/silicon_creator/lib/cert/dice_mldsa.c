@@ -520,14 +520,16 @@ rom_error_t dice_attest_next_cdi_impl(
     SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                              kScKeymgrSecMmioOwnerMaxVerSet);
     HARDENED_RETURN_IF_ERROR(sc_keymgr_owner_advance(
-        (keymgr_binding_value_t *)sealing_binding,
-        (keymgr_binding_value_t *)&attest_measurement, max_key_version));
+        /*sealing_binding=*/(keymgr_binding_value_t *)sealing_binding,
+        /*attest_binding=*/(keymgr_binding_value_t *)&attest_measurement,
+        max_key_version));
   } else {
     SEC_MMIO_WRITE_INCREMENT(kScKeymgrSecMmioSwBindingSet +
                              kScKeymgrSecMmioOwnerIntMaxVerSet);
     HARDENED_RETURN_IF_ERROR(sc_keymgr_owner_int_advance(
-        (keymgr_binding_value_t *)&attest_measurement,
-        (keymgr_binding_value_t *)sealing_binding, max_key_version));
+        /*sealing_binding=*/(keymgr_binding_value_t *)sealing_binding,
+        /*attest_binding=*/(keymgr_binding_value_t *)&attest_measurement,
+        max_key_version));
   }
 
   // Derive Subject Key & IDs.
