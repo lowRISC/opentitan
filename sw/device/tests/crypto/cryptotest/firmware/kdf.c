@@ -151,7 +151,7 @@ status_t handle_kdf(ujson_t *uj) {
       .config =
           {
               .version = otcrypto_lib_version(),
-              .key_mode = kOtcryptoKeyModeAesCtr,
+              .key_mode = kOtcryptoKeyModeHmacSha256,
               .key_length = req_out_len,
               .hw_backed = kHardenedBoolFalse,
               .exportable = kHardenedBoolTrue,
