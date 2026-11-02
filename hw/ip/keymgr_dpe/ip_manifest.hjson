@@ -1,0 +1,10 @@
+{
+  "name": "keymgr_dpe",
+  "sim": [
+    {
+      "cfg": "dv/keymgr_dpe_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

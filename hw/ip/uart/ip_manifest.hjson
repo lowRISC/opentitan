@@ -1,0 +1,10 @@
+{
+  "name": "uart",
+  "sim": [
+    {
+      "cfg": "dv/uart_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}

@@ -1,0 +1,10 @@
+{
+  "name": "spi_host",
+  "sim": [
+    {
+      "cfg": "dv/spi_host_sim_cfg.hjson"
+    }
+  ],
+  "lint": [],
+  "formal": []
+}
