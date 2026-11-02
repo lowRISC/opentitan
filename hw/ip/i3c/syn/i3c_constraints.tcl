@@ -910,6 +910,111 @@ proc i3c_set_cdc_bounds {inst prefix clk_name clk_period} {
 }
 
 #############################
+# Reset detector            #
+#############################
+
+# Constrain the secondary partition, which holds the Target Reset Detector.
+# It observes the same pads as the primary partition through its own pinmux
+# inputs and has its own SCL/SDA clock trees. Its configuration comes from the
+# primary partition's clk_i and is captured with SDA; its detection result
+# crosses into the AON clock.
+#
+#   inst       path to the i3c_part_secondary instance
+#   prefix     clock name prefix of the instance it belongs to, e.g. I3C0
+#   clk_name   name of the main clock of the primary partition (`clk_i`)
+#
+# Note that the two partitions may sit in different power domains and use
+# different AON resets, so the request and response signals that run between
+# them may go across both a reset- and a clock domain crossing.
+#
+# The domain-crossing bounds belong in the check-only flow, see
+# i3c_set_rstdet_cdc_bounds.
+proc i3c_constrain_rstdet {inst prefix clk_name} {
+  set det ${inst}/u_reset_detector
+  set inbufs ${det}/u_targ_inbufs
+
+  # The detector has its own SDA clock buffers, separate from the primary
+  # partition's, so the clock declared there does not reach them. SCL needs no
+  # equivalent because it is declared on the pad and so reaches both.
+  set sda_clk_pins [i3c_sda_clock_pins "${prefix} rstdet" $inbufs]
+  if {[llength $sda_clk_pins]} {
+    create_clock -name ${prefix}_RSTDET_SDA -period $::i3c_cfg(scl_ext_period) \
+        $sda_clk_pins -add
+    set_clock_groups -name ${prefix}_RSTDET_SDA_ASYNC -asynchronous \
+        -group [get_clocks ${prefix}_RSTDET_SDA]
+  }
+
+  # The generated SCL reaches the detector through the pad as well, so it needs
+  # the same loopback cut as the Target; see i3c_create_clocks. Its only
+  # crossing with clk_i is the configuration coming in, of which `activate`
+  # also resets the SCL-clocked stage asynchronously.
+  if {$::i3c_cfg(bus_io_delays)} {
+    i3c_try "cut the ${prefix} rstdet SCL loopback" {
+      # The configuration is the detector's only crossing with clk_i. Where
+      # the hierarchy is gone the port pin is too, and any path from clk_i
+      # into the detector is that same crossing, so its cells will do.
+      set xing [i3c_get_through "${prefix} rstdet configuration input" \
+          [list pins ${det}/req_i* cells ${det}/*]]
+      if {[llength $xing]} {
+        set_false_path -from [get_clocks $clk_name] \
+            -to [get_clocks ${prefix}_SCL_INT] -through $xing
+      }
+    }
+  }
+
+  # Only three of the buffers are used: the detector leaves the inverted SCL
+  # and the buffered SDA data outputs open, so those are trimmed. Their enable
+  # is the primary partition's buffer enable, which i3c_set_internal_paths
+  # already keeps out of timing.
+  foreach buf {u_scl_buf u_sda0_clk u_sda0_clk_n} {
+    # The secondary partition ties scanmode off, so the mux may already be
+    # trimmed; pin it where it survives.
+    i3c_case_if_present 0 ${inbufs}/${buf}/u_mux/sel_i 1
+  }
+}
+
+# Bounds for the crossings of the Target Reset Detector. Call this from the
+# check-only flow, for the same reason as i3c_set_cdc_bounds: the asynchronous
+# group on RSTDET_SDA would otherwise take precedence.
+#
+#   inst       path to the i3c_part_secondary instance
+#   prefix     clock name prefix of the instance it belongs to, e.g. I3C0
+#   aon_period period of the AON clock
+proc i3c_set_rstdet_cdc_bounds {inst prefix aon_period} {
+  set det ${inst}/u_reset_detector
+
+  # The detector samples SCL with SDA-clocked flops and SDA with an SCL-clocked
+  # flop, and derives its resets from both. Those are clock-as-data paths
+  # between two asynchronous bus clocks, so they get the same explicit window as
+  # the Target's START/STOP detectors.
+  foreach node {rst_cnt cnt_met poss_reset_pend poss_reset_start reset_detected
+                wake_up_q target_reset_q chip_reset_q} {
+    i3c_try "${prefix} rstdet ${node}" {
+      set cells [i3c_get_cells "${prefix} rstdet ${node}" ${det}/${node}_reg*]
+      if {[llength $cells]} {
+        set_max_delay $::i3c_cfg(start_stop_max) -to $cells
+      }
+    }
+  }
+
+  # Crossings into and out of the detector, each against the clock that
+  # captures it: the configuration is captured with SDA, the detection result
+  # with the AON clock.
+  foreach {sync dst_period} [list \
+      u_cfg_sync $::i3c_cfg(scl_ext_period) \
+      u_out_sync $aon_period] {
+    i3c_try "${prefix} rstdet ${sync}" {
+      set endpoints [i3c_get_cells "${prefix} rstdet ${sync}" \
+          ${det}/${sync}/$::i3c_cfg(sync_flop)]
+      if {[llength $endpoints]} {
+        set_max_delay [expr {$dst_period * $::i3c_cfg(cdc_fraction)}] \
+            -to $endpoints
+      }
+    }
+  }
+}
+
+#############################
 # Entry point               #
 #############################
 

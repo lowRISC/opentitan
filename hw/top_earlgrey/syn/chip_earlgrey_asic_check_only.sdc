@@ -47,8 +47,8 @@ foreach THIS_CLOCK $CDC_CONSTRAINT_CLOCKS {
 # I3C               #
 #####################
 
-# The I3C bus-to-core crossings are bounded here rather than in the synthesis
-# SDC for the same reason as everything else
+# The I3C bus-to-core crossings, and those of the reset detectors, are bounded
+# here rather than in the synthesis SDC for the same reason as everything else
 # in this file: each bus clock forms a single-clock asynchronous group there,
 # and a clock-group exclusion outranks set_max_delay, so the bounds would be
 # dropped.
@@ -71,6 +71,10 @@ if {[llength [info procs i3c_set_cdc_bounds]]} {
         I3C0 IO_CLK ${IO_TCK_PERIOD}
     i3c_set_cdc_bounds top_earlgrey/earlgrey_pd_main/u_i3c1_part_primary \
         I3C1 IO_CLK ${IO_TCK_PERIOD}
+    i3c_set_rstdet_cdc_bounds \
+        top_earlgrey/earlgrey_pd_aon/u_i3c0_part_secondary I3C0 ${AON_TCK_PERIOD}
+    i3c_set_rstdet_cdc_bounds \
+        top_earlgrey/earlgrey_pd_main/u_i3c1_part_secondary I3C1 ${AON_TCK_PERIOD}
     i3c_summary
 }
 

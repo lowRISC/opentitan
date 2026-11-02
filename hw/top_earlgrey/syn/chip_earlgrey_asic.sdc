@@ -1732,6 +1732,15 @@ i3c_constrain top_earlgrey/earlgrey_pd_main/u_i3c0_part_primary IOB10 IOB9 \
 i3c_constrain top_earlgrey/earlgrey_pd_main/u_i3c1_part_primary IOB11 IOB12 \
     I3C1 ${IO_CLK_PIN} IO_CLK ${IO_TCK_PERIOD}
 
+# The reset detectors are the secondary partitions. i3c0 can wake the chip from
+# deep sleep, so its detector sits in the AON power domain while i3c1's stays
+# in the Main domain. Both run on the AON peripheral clock; their crossings are
+# bounded in chip_earlgrey_asic_check_only.sdc.
+i3c_constrain_rstdet top_earlgrey/earlgrey_pd_aon/u_i3c0_part_secondary \
+    I3C0 IO_CLK
+i3c_constrain_rstdet top_earlgrey/earlgrey_pd_main/u_i3c1_part_secondary \
+    I3C1 IO_CLK
+
 i3c_summary
 
 
