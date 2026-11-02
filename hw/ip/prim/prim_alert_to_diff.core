@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:diff_encode
       - lowrisc:prim:alert
+      - lowrisc:prim:mubi_pkg
     files:
       - rtl/prim_alert_to_diff.sv
     file_type: systemVerilogSource

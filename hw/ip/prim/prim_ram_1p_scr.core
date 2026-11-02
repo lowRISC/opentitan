@@ -10,11 +10,13 @@ filesets:
     depend:
       - lowrisc:prim:assert
       - lowrisc:prim:util
+      - lowrisc:prim:mubi_pkg
       - lowrisc:prim:ram_1p_adv
-      - lowrisc:prim:lfsr
       - lowrisc:prim:buf
+      - lowrisc:prim:flop
       - lowrisc:prim:cipher
       - lowrisc:prim:util_get_scramble_params
+      - lowrisc:prim:ram_1p_pkg
     files:
       - rtl/prim_ram_1p_scr.sv
     file_type: systemVerilogSource

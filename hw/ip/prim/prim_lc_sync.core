@@ -10,7 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:assert
       - lowrisc:prim:flop_2sync
-      - lowrisc:prim:buf
+      - lowrisc:prim:sec_anchor
       - lowrisc:ip:lc_ctrl_pkg
     files:
       - rtl/prim_lc_sync.sv

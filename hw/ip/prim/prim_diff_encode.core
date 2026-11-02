@@ -8,6 +8,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:flop
+      - lowrisc:prim:sec_anchor
     files:
       - rtl/prim_diff_encode.sv
     file_type: systemVerilogSource

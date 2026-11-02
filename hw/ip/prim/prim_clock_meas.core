@@ -8,9 +8,12 @@ description: "Clock measurement"
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:all
       - lowrisc:prim:flop_2sync
       - lowrisc:prim:assert
+      - lowrisc:prim:flop
+      - lowrisc:prim:pulse_sync
+      - lowrisc:prim:sync_reqack
+      - lowrisc:prim:util
     files:
       - rtl/prim_clock_meas.sv
       - rtl/prim_clock_timeout.sv
