@@ -141,6 +141,14 @@ otcrypto_status_t otcrypto_ed25519_point_on_curve(
  * Generates an Ed25519 signature and verifies the signature
  * before releasing it to mitigate fault injection attacks.
  *
+ * The caller must ensure that `private_key` and `public_key` belong to the
+ * same Ed25519 keypair. A signature verification failure (including from a
+ * mismatched keypair) is treated as a fault and immediately traps the CPU via
+ * `HARDENED_CHECK_EQ`. To verify that the keys match beforehand, derive the
+ * public key with `otcrypto_ed25519_public_key_from_private_async_start` and
+ * `otcrypto_ed25519_public_key_from_private_async_finalize` and compare it
+ * against `public_key->key`.
+ *
  * @param private_key Pointer to the blinded private key struct which is shared
  * into d0, d1 such that d = d0 + d1 mod 2^256.
  * @param public_key Pointer to the unblinded public key struct.

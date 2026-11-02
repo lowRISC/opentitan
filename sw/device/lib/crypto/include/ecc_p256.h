@@ -120,6 +120,14 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign(
  * the curve, but in some cases it may be truncated. See FIPS 186-5 for
  * details.
  *
+ * The caller must ensure that `private_key` and `public_key` belong to the
+ * same P-256 keypair. A signature verification failure (including from a
+ * mismatched keypair) is treated as a fault or pairwise consistency failure,
+ * which locks the cryptolib state and returns `kOtcryptoStatusValueFatalError`
+ * (or traps the CPU if checked via `HARDENED_TRY`). To verify that the keys
+ * match beforehand, derive the public key with
+ * `otcrypto_ecc_p256_base_point_mult` and compare it against `public_key->key`.
+ *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
  * @param message_digest Message digest to be signed (pre-hashed).
@@ -173,6 +181,14 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify(
  * The hash function specified by `hash_mode` must produce a 256-bit digest
  * (e.g. `kOtcryptoHashModeSha256` or `kOtcryptoHashModeSha3_256`). Other hash
  * modes will return `OTCRYPTO_BAD_ARGS`.
+ *
+ * The caller must ensure that `private_key` and `public_key` belong to the
+ * same P-256 keypair. A signature verification failure (including from a
+ * mismatched keypair) is treated as a fault or pairwise consistency failure,
+ * which locks the cryptolib state and returns `kOtcryptoStatusValueFatalError`
+ * (or traps the CPU if checked via `HARDENED_TRY`). To verify that the keys
+ * match beforehand, derive the public key with
+ * `otcrypto_ecc_p256_base_point_mult` and compare it against `public_key->key`.
  *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
