@@ -200,6 +200,7 @@ static hardened_bool_t bignum_lt(const uint32_t *a, const uint32_t *b,
 otcrypto_status_t otcrypto_rsa_public_key_construct(
     otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *modulus,
     otcrypto_unblinded_key_t *public_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_PUBLIC_KEY_CONSTRUCT);
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (modulus == NULL || modulus->data == NULL || public_key == NULL ||
@@ -359,6 +360,10 @@ otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size) {
 otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
                                       otcrypto_unblinded_key_t *public_key,
                                       otcrypto_blinded_key_t *private_key) {
+  // Default to not-approved in case of an early return; this service is
+  // approved (for 3072/4096-bit keys) and `otcrypto_rsa_keygen_async_start`
+  // sets the indicator accordingly once reached.
+  OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (public_key == NULL || private_key == NULL) {
@@ -453,6 +458,7 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
     const otcrypto_const_word32_buf_t *d_share0,
     const otcrypto_const_word32_buf_t *d_share1,
     otcrypto_blinded_key_t *private_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_PRIVATE_KEY_FROM_EXPONENTS);
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (modulus == NULL || modulus->data == NULL || d_share0 == NULL ||
@@ -514,6 +520,7 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor(
     const otcrypto_const_word32_buf_t *cofactor_share0,
     const otcrypto_const_word32_buf_t *cofactor_share1,
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *private_key) {
+  OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (public_key == NULL || private_key == NULL) {
@@ -558,6 +565,7 @@ static status_t key_mode_padding_check(otcrypto_key_mode_t key_mode,
       if (launder32(key_mode) != kOtcryptoKeyModeRsaSignPkcs) {
         // COVERAGE (MISSING) We do not cover mismatching key_mode and
         // padding_modes.
+        OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaSignPkcs);
@@ -565,12 +573,14 @@ static status_t key_mode_padding_check(otcrypto_key_mode_t key_mode,
     case kOtcryptoRsaPaddingPss:
       HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingPss);
       if (launder32(key_mode) != kOtcryptoKeyModeRsaSignPss) {
+        OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaSignPss);
       return OTCRYPTO_OK;
     default:
       // Invalid padding mode.
+      OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
       return OTCRYPTO_BAD_ARGS;
   }
 
@@ -588,6 +598,7 @@ otcrypto_status_t otcrypto_rsa_verify(
     hardened_bool_t *verification_result) {
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (public_key == NULL) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
