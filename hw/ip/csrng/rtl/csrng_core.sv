@@ -140,6 +140,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [NumApps-1:0]          cmd_stage_sfifo_cmd_err_wr;
   logic [NumApps-1:0]          cmd_stage_sfifo_cmd_err_rd;
   logic [NumApps-1:0]          cmd_stage_sfifo_cmd_err_st;
+  logic [NumApps-1:0]          cmd_stage_word_dropped;
   logic [2:0]                  cmd_stage_sfifo_genbits_err[NumApps];
   logic [NumApps-1:0]          cmd_stage_sfifo_genbits_err_sum;
   logic [NumApps-1:0]          cmd_stage_sfifo_genbits_err_wr;
@@ -664,6 +665,9 @@ module csrng_core import csrng_pkg::*; #(
   assign cmd_stage_bus[NumApps-1]  = reg2hw.cmd_req.q;
   assign cmd_stage_shid[NumApps-1] = InstIdWidth'(NumApps-1);
 
+  // The SW interface doesn't wait for a handshake, a word written while not ready is dropped.
+  assign cmd_stage_word_dropped[NumApps-1] = cmd_stage_vld[NumApps-1] && !cmd_stage_rdy[NumApps-1];
+
   assign hw2reg.sw_cmd_sts.cmd_rdy.de = 1'b1;
   assign hw2reg.sw_cmd_sts.cmd_rdy.d  = !cmd_stage_vld[NumApps-1] && sw_rdy_sts_q;
 
@@ -765,6 +769,7 @@ module csrng_core import csrng_pkg::*; #(
   for (genvar hai = 0; hai < (NumApps-1); hai = hai+1) begin : gen_app_if
     // cmd req
     assign cmd_stage_vld[hai]  = csrng_cmd_i[hai].csrng_req_valid;
+    assign cmd_stage_word_dropped[hai] = 1'b0;
     assign cmd_stage_shid[hai] = hai;
     assign cmd_stage_bus[hai]  = csrng_cmd_i[hai].csrng_req_bus;
     assign csrng_cmd_o[hai].csrng_req_ready = cmd_stage_rdy[hai];
@@ -790,8 +795,10 @@ module csrng_core import csrng_pkg::*; #(
   // set fifo err status bits
   for (genvar i = 0; i < NumApps; i = i+1) begin : gen_fifo_sts
     assign cmd_stage_sfifo_cmd_err_sum[i] = (|cmd_stage_sfifo_cmd_err[i] ||
+                                             cmd_stage_word_dropped[i] ||
                                              err_code_test_bit[0]);
-    assign cmd_stage_sfifo_cmd_err_wr[i] = cmd_stage_sfifo_cmd_err[i][2];
+    assign cmd_stage_sfifo_cmd_err_wr[i] = cmd_stage_sfifo_cmd_err[i][2] ||
+                                           cmd_stage_word_dropped[i];
     assign cmd_stage_sfifo_cmd_err_rd[i] = cmd_stage_sfifo_cmd_err[i][1];
     assign cmd_stage_sfifo_cmd_err_st[i] = cmd_stage_sfifo_cmd_err[i][0];
     assign cmd_stage_sfifo_genbits_err_sum[i] = (|cmd_stage_sfifo_genbits_err[i] ||
