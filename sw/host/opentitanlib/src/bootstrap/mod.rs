@@ -69,6 +69,7 @@ trait UpdateProtocol {
         transport: &TransportWrapper,
         payload: &[u8],
         progress: &dyn ProgressIndicator,
+        check_jedec_id: bool,
     ) -> Result<()>;
 }
 
@@ -99,6 +100,9 @@ pub struct BootstrapOptions {
     /// Duration of the flash-erase delay.
     #[arg(long, value_parser = parse_duration)]
     pub flash_erase_delay: Option<Duration>,
+    /// Check the SPI slave Jedec ID before proceeding.
+    #[arg(long, default_value_t = true, action = clap::ArgAction::Set)]
+    pub check_jedec_id: bool,
 }
 
 /// Bootstrap wraps and drives the various bootstrap protocols.
@@ -163,7 +167,7 @@ impl<'a> Bootstrap<'a> {
             leave_in_reset: options.leave_in_reset,
             leave_in_bootstrap: options.leave_in_bootstrap,
         }
-        .do_update(updater, transport, payload, progress)
+        .do_update(updater, transport, payload, progress, options.check_jedec_id)
     }
 
     fn do_update(
@@ -172,6 +176,7 @@ impl<'a> Bootstrap<'a> {
         transport: &TransportWrapper,
         payload: &[u8],
         progress: &dyn ProgressIndicator,
+        check_jedec_id: bool,
     ) -> Result<()> {
         updater.verify_capabilities(self, transport)?;
         let perform_bootstrap_reset = updater.uses_common_bootstrap_reset();
@@ -187,7 +192,7 @@ impl<'a> Bootstrap<'a> {
             transport.reset(uart_rx)?;
             log::info!("Performing bootstrap...");
         }
-        let result = updater.update(self, transport, payload, progress);
+        let result = updater.update(self, transport, payload, progress, check_jedec_id);
 
         if !self.leave_in_bootstrap && perform_bootstrap_reset {
             if self.leave_in_reset {
