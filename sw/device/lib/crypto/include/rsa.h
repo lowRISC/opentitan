@@ -246,6 +246,15 @@ otcrypto_status_t otcrypto_rsa_verify(
  * Computes and verifies the digital signature on the input message data by
  * hashing first.
  *
+ * The caller must ensure that `private_key` and `public_key` belong to the
+ * same RSA keypair. A signature verification failure (including from a
+ * mismatched keypair) is treated as a fault or pairwise consistency failure,
+ * which locks the cryptolib state and returns `kOtcryptoStatusValueFatalError`
+ * (or traps the CPU if checked via `HARDENED_TRY`). To verify that the keys
+ * share the same modulus `n` beforehand, compare the `num_words`
+ * (`public_key->key_length / sizeof(uint32_t)`) words at `public_key->key`
+ * against `&private_key->keyblob[2 * num_words]`.
+ *
  * @param private_key Pointer to blinded private key struct.
  * @param public_key Pointer to public key struct.
  * @param hash_mode Hash algorithm to use for message hashing.
