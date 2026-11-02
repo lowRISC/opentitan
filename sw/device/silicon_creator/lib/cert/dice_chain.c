@@ -103,6 +103,9 @@ rom_error_t dice_chain_attestation_creator(
         static_dice_cdi_0.cert_data, &static_dice_cdi_0.cert_size));
   }
 
+  // Clear all secrets in the scratchpad.
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_clear());
+
   sc_keymgr_sw_binding_unlock_wait();
 
   return kErrorOk;
@@ -211,6 +214,9 @@ rom_error_t dice_chain_attestation_owner(
     // Flush page to flash.
     RETURN_IF_ERROR(dice_storage_flush_page(&dice_page));
   }
+
+  // Clear all secrets in the scratchpad.
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_clear());
 
   sc_keymgr_sw_binding_unlock_wait();
 
