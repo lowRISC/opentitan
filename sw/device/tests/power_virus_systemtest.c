@@ -320,6 +320,8 @@ static void log_entropy_src_alert_failures(void) {
         LOG_INFO("High Fails (Mailbox): %d", counts.high_fails[i]);
         LOG_INFO("Low Fails (Mailbox): %d", counts.low_fails[i]);
         break;
+      default:
+        break;
     }
   }
 }
