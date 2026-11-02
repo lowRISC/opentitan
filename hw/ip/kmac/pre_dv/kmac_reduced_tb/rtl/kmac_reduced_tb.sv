@@ -107,8 +107,6 @@ module kmac_reduced_tb #(
     // Entropy reseed control
     .entropy_seed_update_i('0),                 // drive to 0
     .entropy_seed_data_i('0),                   // drive to 0
-    .wait_timer_prescaler_i('0),                // drive to 0
-    .wait_timer_limit_i({EdnWaitTimerW{1'b1}}), // drive to EdnWaitTimerW'1
 
     // Signals primarily kept to prevent them from being optimized away during synthesis.
     // State output

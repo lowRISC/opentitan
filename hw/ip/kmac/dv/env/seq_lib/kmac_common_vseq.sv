@@ -12,7 +12,6 @@ class kmac_common_vseq extends kmac_base_vseq;
 
   virtual task pre_start();
     do_kmac_init = 1'b0;
-    entropy_mode_c.constraint_mode(0);
     super.pre_start();
 
     if (common_seq_type inside {"shadow_reg_errors", "shadow_reg_errors_with_csr_rw"}) begin
@@ -79,7 +78,6 @@ class kmac_common_vseq extends kmac_base_vseq;
   virtual function void set_kmac_csr_assert_en(bit enable);
     if (!enable) begin
       $assertoff(0, "tb.dut.kmac_csr_assert.intr_enable_rd_A");
-      $assertoff(0, "tb.dut.kmac_csr_assert.entropy_period_rd_A");
       $assertoff(0, "tb.dut.kmac_csr_assert.prefix_0_rd_A");
       $assertoff(0, "tb.dut.kmac_csr_assert.prefix_1_rd_A");
       $assertoff(0, "tb.dut.kmac_csr_assert.prefix_2_rd_A");
@@ -93,7 +91,6 @@ class kmac_common_vseq extends kmac_base_vseq;
       $assertoff(0, "tb.dut.kmac_csr_assert.prefix_10_rd_A");
     end else begin
       $asserton(0, "tb.dut.kmac_csr_assert.intr_enable_rd_A");
-      $asserton(0, "tb.dut.kmac_csr_assert.entropy_period_rd_A");
       $asserton(0, "tb.dut.kmac_csr_assert.prefix_0_rd_A");
       $asserton(0, "tb.dut.kmac_csr_assert.prefix_1_rd_A");
       $asserton(0, "tb.dut.kmac_csr_assert.prefix_2_rd_A");

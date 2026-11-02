@@ -83,7 +83,7 @@ no_of_always_random_inputs
 
 % number of primary inputs during the initialization
 no_of_initial_inputs
-27
+25
 
 % number of clock cycles to initiate the run (start of encryption)
 no_of_initial_clock_cycles
@@ -111,8 +111,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -140,8 +138,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -169,8 +165,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -198,8 +192,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -227,8 +219,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -256,8 +246,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -285,8 +273,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -314,8 +300,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -343,8 +327,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -372,8 +354,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -401,8 +381,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -430,8 +408,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -459,8 +435,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -488,8 +462,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -517,8 +489,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -546,8 +516,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010
@@ -575,8 +543,6 @@ no_of_initial_clock_cycles
             entropy_in_keyblock_i     1'b1
             entropy_seed_update_i     1'b0
 [31:0]      entropy_seed_data_i       32'h00000000
-[9:0]       wait_timer_prescaler_i    10'b0000000000
-[15:0]      wait_timer_limit_i        16'hFFFF
 [9:0]       entropy_hash_threshold_i  10'b1111111111
             entropy_hash_clr_i        1'b0
 [3:0]       lc_escalate_en_i          4'b1010

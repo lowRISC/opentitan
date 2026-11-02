@@ -12,6 +12,8 @@ These determine the byte order of incoming messages (msg_endianness) and the Kec
 This section describes the expected software process to run the KMAC/SHA3 HWIP.
 At first, the software configures [`CFG_SHADOWED.kmac_en`](registers.md#cfg_shadowed) for KMAC operation.
 If KMAC is enabled, the software should configure [`CFG_SHADOWED.mode`](registers.md#cfg_shadowed) to cSHAKE and [`CFG_SHADOWED.kstrength`](registers.md#cfg_shadowed) to 128 or 256 bit security strength.
+If KMAC is enabled, software must also set [`ENTROPY_CFG_SHADOWED.entropy_boot_mode`](registers.md#entropy_cfg_shadowed--entropy_boot_mode) to 0 and it is recommended to enable the EDN Mode (see #edn-entropy-mode for details).
+Software must then wait for the [`STATUS.entropy_ready`](registers.md#status--entropy_ready) bit to go high.
 The software also updates [`PREFIX`](registers.md#prefix) registers if cSHAKE mode is used.
 Current design does not convert cSHAKE mode to SHAKE even if [`PREFIX`](registers.md#prefix) is empty string.
 It is the software's responsibility to change the [`CFG_SHADOWED.mode`](registers.md#cfg_shadowed) to SHAKE in case of empty [`PREFIX`](registers.md#prefix).
@@ -63,126 +65,68 @@ The software writes `0x4d4b2001` into [`PREFIX0`](registers.md#prefix) and `0x??
 Upper 2 bytes can vary depending on the customization input string `S`.
 
 
+## Entropy Configuration
+
+The internal pseudo-random number generator (PRNG) can be configured in different modes.
+
+## Entropy Boot Mode
+
+This is mode is enabled when the [`ENTROPY_CFG_SHADOWED.entropy_boot_mode`](registers.md#entropy_cfg_shadowed--entropy_boot_mode) bit reads as 0 which is always the case after reset.
+The sole purpose of the Entropy Boot Mode is to enable the KMAC HWIP block to perform the [initial ROM integrity check](../../rom_ctrl/doc/theory_of_operation.md#the-startup-rom-check) directly after system reset.
+
+Before the module can operate in KMAC operation, software has to disable the Entropy Boot Mode by setting the [`ENTROPY_CFG_SHADOWED.entropy_boot_mode`](registers.md#entropy_cfg_shadowed--entropy_boot_mode) bit to 0 and enabling either enabling the EDN or Software Entropy Mode using the [`ENTROPY_CFG_SHADOWED.entropy_mode`](registers.md#entropy_cfg_shadowed--entropy_mode) bit.
+Once the Entropy Boot Mode is disabled, it cannot be re-enabled again until the next reset.
+
 ## EDN Entropy Mode
 
-For regular operation, [`CFG_SHADOWED.entropy_mode`](registers.md#cfg_shadowed--entropy_mode) should be set to EDN mode.
-In this mode, the module automatically reseeds the internal PRNG with fresh entropy from EDN after every [`ENTROPY_REFRESH_THRESHOLD_SHADOWED`](registers.md#entropy_refresh_threshold_shadowed) key absorption phases in KMAC mode.
+For regular operation, [`ENTROPY_CFG_SHADOWED.entropy_mode`](registers.md#entropy_cfg_shadowed--entropy_mode) should be set to EDN Mode.
+To actually enable this mode, [`ENTROPY_CFG_SHADOWED.entropy_boot_mode`](registers.md#entropy_cfg_shadowed--entropy_boot_mode) needs to read as 0.
+In this mode, the module automatically reseeds the internal PRNG with fresh entropy from EDN after every [`ENTROPY_CFG_SHADOWED.edn_mode_refresh_threshold`](registers.md#entropy_cfg_shadowed) key absorption phases in KMAC mode ([`CFG_SHADOWED.kmac_en`](registers.md#cfg_shadowed--kmac_en) set to 1).
 Alternatively, software can manually initiate reseeding operations using the [`CMD.entropy_req`](registers.md#cmd--entropy_req) bit while the module is idle.
 
+While previous versions of the OpenTitan KMAC hardware IP block could deadlock the system due to the Message FIFO running full while the KMAC HWIP was waiting for fresh entropy from EDN, this version of the KMAC HWIP is entirely deadlock free.
+In particular:
+- Irrespective of the configured entropy mode, any operation including KMAC mode operations will finish without blocking the SHA3 engine.
+- Even if a PRNG reseed operation is triggered after the key absorption phase in KMAC mode or during the message absorption phase, the PRNG can continue providing randomness to the SHA3 engine.
+- This means software can always push data into the Message FIFO.
+  In case the Message FIFO is full, software is stalled for at most 100 clock cycles.
 
-### Preventing potential deadlocks in EDN mode
+The only thing that software needs to ensure before starting an operation in KMAC mode is that the [`STATUS.entropy_ready`](registers.md#status) bit reads as 1, indicating that the previous reseed operation has finished and the PRNG is ready to provide randomness to the SHA3 engine.
+If this bit doesn't read as 1 upon starting a KMAC mode operation, a `ErrSwHashingWithoutEntropyReady` error is returned to software, while application interfaces return a service rejected error.
 
-Under normal operating conditions, the SHA3 engine will process data a lot faster than software can push it to the Message FIFO.
-However, the Message FIFO may run full while the SHA3 engine is busy.
-In particular, this might happen because KMAC is waiting for fresh entropy from EDN.
-If software then tries to push further data to the Message FIFO, the processor will get stalled and if the entropy is not delivered (on time), the system may deadlock (see [Empty and Full status](theory_of_operation.md#empty-and-full-status) for details).
+## Software Entropy Mode
 
-To avoid this deadlock scenario, software should either:
-- Manually trigger PRNG reseed operations after ensuring the entropy complex is up and running (recommended), or
-- Check the Message FIFO depth before pushing data.
+As an alternative to the EDN Mode, [`ENTROPY_CFG_SHADOWED.entropy_mode`](registers.md#entropy_cfg_shadowed--entropy_mode) can be set to Software Mode.
+To actually enable this mode, [`ENTROPY_CFG_SHADOWED.entropy_boot_mode`](registers.md#entropy_cfg_shadowed--entropy_boot_mode) needs to read as 0.
+Software then has wait for the [`STATUS.entropy_reseeding`](registers.md#status--entropy_reseeding) bit to get set to provide an initial seed to the PRNG by writing the [`ENTROPY_SEED`](registers.md#entropy_seed) register 6 times.
 
-Since the latter option can be inconvenient for software, especially when processing long messages, manually triggering PRNG reseed operations is the recommended approach.
-In the following, both approaches are outlined in more detail.
+Unlike previous versions of the OpenTitan KMAC hardware IP block, this version of the KMAC HWIP allows to move out of the Software Entropy Mode as well as to reseed the PRNG at a later point, unless [the entropy configuration is locked down](#locking-down-the-entropy-configuration).
 
+## Manually triggering PRNG reseeds
 
-#### Manually triggering PRNG reseeds
+If the value of [`ENTROPY_REFRESH_HASH_CNT`](registers.md#entropy_refresh_hash_cnt) gets sufficiently close to what software considers the maximum value, it should:
 
-Since automatic reseeds of the internal PRNG are always triggered after the key absorption phase in KMAC mode ([`CFG_SHADOWED.kmac_en`](registers.md#cfg_shadowed--kmac_en) set to 1), and since every message in KMAC mode has only one such phase, it is sufficient for software to check the [`ENTROPY_REFRESH_HASH_CNT`](registers.md#entropy_refresh_hash_cnt) register after finishing a KMAC message.
-
-If the value of [`ENTROPY_REFRESH_HASH_CNT`](registers.md#entropy_refresh_hash_cnt) gets sufficiently close to the value of [`ENTROPY_REFRESH_THRESHOLD_SHADOWED`](registers.md#entropy_refresh_threshold_shadowed), software should:
-
-1. Ensure that the entropy complex is running.
+1. Ensure that the entropy complex is running (only required when running in EDN Mode).
 2. Check that the KMAC module is idle by reading the [`STATUS.sha3_idle`](registers.md#status--sha3_idle) bit.
 3. Trigger a manual reseed operation by setting the [`CMD.entropy_req`](registers.md#cmd--entropy_req) bit.
 4. Wait for the [`STATUS.entropy_reseeding`](registers.md#status--entropy_reseeding) bit to get set.
    Due to the ongoing reseed operation, the [`STATUS.entropy_reseeding`](registers.md#status--entropy_reseeding) bit should remain 1 for an extended period of time.
-5. Wait for the [`STATUS.entropy_reseeding`](registers.md#status--entropy_reseeding) bit to get cleared and the [`STATUS.entropy_ready`](registers.md#status--entropy_ready) bit to get set.
+5. Wait for the [`STATUS.entropy_reseeding`](registers.md#status--entropy_reseeding) bit to get cleared and the [`STATUS.entropy_ready`](registers.md#status--entropy_ready) bit to get set when running in EDN Mode.
+   When running in Software Mode, provide 6 times 32 bits of entropy via the [`ENTROPY_SEED`](registers.md#entropy_seed) register.
+   After the last write operation the [`STATUS.entropy_ready`](registers.md#status--entropy_ready) bit will get set back to 1.
 
 The [`ENTROPY_REFRESH_HASH_CNT`](registers.md#entropy_refresh_hash_cnt) register should now read as 0.
 
+## Locking down the Entropy Configuration
 
-#### Checking Message FIFO depth before pushing data
+In some cases, it may be desirable for software to lock down the entropy configuration and even prevent further reseed operations, e.g., if later software stages aren't trusted.
+To lock the entropy configuration, software should:
 
-Alternatively, software can avoid ever pushing data into the Message FIFO while the FIFO is full by regularly checking the FIFO depth.
-In particular, software can then:
+1. Ensure the proper configuration is set in  [`ENTROPY_CFG_SHADOWED`](registers.md#entropy_cfg_shadowed).
+   In particular, if software wants to prevent further reseed operations, [`ENTROPY_CFG_SHADOWED.edn_mode_refresh_threshold`](registers.md#entropy_cfg_shadowed--edn_mode_refresh_threshold) must be set to 0 to disable automatic reseed operations in EDN Mode and [`ENTROPY_CFG_SHADOWED.ignore_cmd_entropy_req`](registers.md#entropy_cfg_shadowed--ignore_cmd_entropy_req) must be set to 0 to ignore manual reseed requests in both EDN and Software Mode.
+2. Set the [`ENTROPY_CFG_LOCK`](registers.md#entropy_cfg_lock) register to 1.
 
-1. Check the FIFO depth [`STATUS.fifo_depth`](registers.md#status--fifo_depth).
-   This represents the number of entry slots currently occupied in the FIFO.
-2. Calculate the remaining size as (`<max number of FIFO entries> - <STATUS.fifo_depth>) * <entry size>`.
-3. Write data to fill at most the calculated remaining size.
-4. Repeat until all data is written.
-   In case the FIFO runs full (check [`STATUS.fifo_full`](registers.md#status--fifo_full)), software should check the entropy complex is running and can then optionally wait for the `fifo_empty` status interrupt before continuing.
-
-In code, this looks something like:
-```c
-/**
- * Absorb input data into the Keccak computation.
- *
- * Assumes that the KMAC block is in the "absorb" state; it is the caller's
- * responsibility to check before calling.
- *
- * @param in Input buffer.
- * @param in_len Length of input buffer (bytes).
- * @return Number of bytes written.
- */
-size_t kmac_absorb(const uint8_t *in, size_t in_len) {
-    // Read FIFO depth from the status register.
-    uint32_t status = abs_mmio_read32(kBase + KMAC_STATUS_REG_OFFSET);
-    uint32_t fifo_depth =
-        bitfield_field32_read(status, KMAC_STATUS_FIFO_DEPTH_FIELD);
-
-    // Calculate the remaining space in the FIFO using auto-generated KMAC
-    // parameters and take the minimum of that space and the input length.
-    size_t free_entries = (KMAC_PARAM_NUM_ENTRIES_MSG_FIFO - fifo_depth);
-    size_t max_len = free_entries * KMAC_PARAM_NUM_BYTES_MSG_FIFO_ENTRY;
-    size_t write_len = (in_len < max_len) ? in_len : max_len;
-
-    // Note: this example uses byte-writes for simplicity, but in practice it
-    // would be more efficient to use word-writes for aligned full words and
-    // byte-writes only as needed at the beginning and end of the input.
-    for (size_t i = 0; i < write_len; i++) {
-      abs_mmio_write8(kBase + KMAC_MSG_FIFO_REG_OFFSET, in[i]);
-    }
-
-    return write_len;
-}
-```
-
-Note that for modes other than KMAC, i.e., if [`CFG_SHADOWED.kmac_en`](registers.md#cfg_shadowed--kmac_en) is 0, the KMAC module will not increment the [`ENTROPY_REFRESH_HASH_CNT`](registers.md#entropy_refresh_hash_cnt) register and thus not trigger automatic reseeds.
-It is safe to push to the Message FIFO without checking the [`STATUS.fifo_depth`](registers.md#status--fifo_depth) register.
-
-
-### Configuring ENTROPY_PERIOD
-
-The [`ENTROPY_PERIOD`](registers.md#entropy_period) register defines how long the module should wait for entropy during a PRNG reseed before triggering an error.
-The configuration value should be carefully chosen based on how the entropy complex is operated.
-
-If CSRNG is running in [fully deterministic mode](../../csrng/doc/programmers_guide.md#fully-deterministic-mode), any EDN request will be answered fairly quickly.
-An [`ENTROPY_PERIOD.wait_timer`](registers.md#entropy_period--wait_timer) value of 5000 in combination with an [`ENTROPY_PERIOD.prescaler`](registers.md#entropy_period--prescaler) value of 0 is adequate.
-
-If CSRNG is running in [regular, non-deterministic mode](../../csrng/doc/programmers_guide.md#regular-non-deterministic-mode), it can happen that the PRNG reseed request of the KMAC module triggers a reseed request from EDN0 to CSRNG.
-For [Top Earlgrey](../../../top_earlgrey/README.md), producing a single CSRNG seed value is expected to take roughly 5ms.
-In the worst case, ENTROPY_SRC must first generate two more seeds to reseed all the other two CSRNG instances.
-In this case, the PRNG reseed request of KMAC should get served after roughly 15ms.
-If the ENTROPY_SRC is disabled, the interrupt latency and the delay for the startup health testing of the ENTROPY_SRC also need to be factored in to define the [`ENTROPY_PERIOD`](registers.md#entropy_period) configuration value.
-
-
-### Leaving EDN mode
-
-If the entropy complex becomes unavailable, software can cause the module to leave EDN mode as follows.
-Note that for this to work reliably, it is recommended to configure the [`ENTROPY_PERIOD`](registers.md#entropy_period) register to a non-zero value (see [`Configuring ENTROPY_PERIOD`](#configuring-entropy_period)).
-Otherwise, an already ongoing reseed operation may prevent the following procedure from working.
-
-1. Configure the [`ENTROPY_PERIOD`](registers.md#entropy_period) to a sufficiently small value such as `wait_timer` equals 1 and `prescaler` equals 0, or disable EDN0 which interfaces KMAC.
-2. Check that the KMAC module is idle by reading the [`STATUS.sha3_idle`](registers.md#status--sha3_idle) bit.
-3. Trigger a PRNG reseed operation via the [`CMD.entropy_req`](registers.md#cmd--entropy_req) bit.
-4. Wait for the entropy request to timeout and the `kmac_err` interrupt to fire.
-   The [`ERR_CODE`](registers.md#err_code) should now read `ErrWaitTimerExpired`.
-5. De-assert the [`CFG_SHADOWED.entropy_ready`](registers.md#cfg_shadowed--entropy_ready) bit.
-6. Set the [`CMD.err_processed`](registers.md#cmd--err_processed) bit to signal the processing of the error condition (see also [Error Handling](#error-handling)).
-
-The FSM controlling the PRNG then goes back into its reset state and software can re-configure the desired mode in the [`CFG_SHADOWED.entropy_mode`](registers.md#cfg_shadowed--entropy_mode) field and set the [`CFG_SHADOWED.entropy_ready`](registers.md#cfg_shadowed--entropy_ready) bit afterwards to latch the configuration.
-
+After that point, the entropy configuration is locked until the next reset. 
 
 ## Error Handling
 
@@ -252,8 +196,9 @@ No other command is accepted in that state.
 
 To resume a previously saved context, KMAC HWIP must be idle, and software needs to follow this procedure:
 1. Restore [`CFG_SHADOWED`](registers.md#cfg_shadowed) to the configuration that was used when the context was saved.
-1. In KMAC mode with masking enabled, ensure the entropy is configured by setting [`CFG_SHADOWED.entropy_mode`](registers.md#cfg_shadowed--entropy_mode) and [`CFG_SHADOWED.entropy_ready`](registers.md#cfg_shadowed--entropy_ready), as for the `start` command.
+1. In KMAC mode with masking enabled, ensure the entropy is configured by setting [`ENTROPY_CFG_SHADOWED.entropy_boot_mode`](registers.md#entropy_cfg_shadowed--entropy_boot_mode) to 0 and [`ENTROPY_CFG_SHADOWED.entropy_mode`](registers.md#entropy_cfg_shadowed--entropymode), as for the `start` command.
    Otherwise, the `continue` command is discarded and `ErrSwHashingWithoutEntropyReady` is reported.
+1. Wait for the [`STATUS.entropy_ready`](registers.md#status--entropy_ready) bit to be set.
 1. Write the `state_write` command into [`CMD`](registers.md#cmd).
 1. Poll [`STATUS.state_write`](registers.md#status--state_write) until it is set, or until the `kmac_err` interrupt is raised (see below).
 1. Write the saved context back into [`STATE`](registers.md#state).
@@ -293,7 +238,7 @@ The following errors are reported in [`ERR_CODE`](registers.md#err_code) if the 
 | `ErrSwSaveRestoreSideload` | The `stop`, `state_write` or `continue` command was issued while a sideloaded key is selected. |
 | `ErrSwIssuedCmdInAppActive` | A command, for example `state_write`, was issued while a hardware application interface was using the block. |
 | `ErrSwCmdSequence` | A command was issued that is not allowed in the current state, e.g. `run` after the `stop` command, or `continue` without a preceding `state_write` command. |
-| `ErrSwHashingWithoutEntropyReady` | The `continue` command was issued in KMAC mode while masking is enabled, but the entropy was not configured. As for the `start` command, the command is discarded. |
+| `ErrSwHashingWithoutEntropyReady` | The `continue` command was issued in KMAC mode while masking is enabled, but the PRNG is not ready and needs to be reseeded. As for the `start` command, the command is discarded. |
 
 ## Device Interface Functions (DIFs)
 

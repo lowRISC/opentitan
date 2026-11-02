@@ -87,8 +87,6 @@ module kmac_reduced
   // Entropy reseed control
   input logic                       entropy_seed_update_i,  // drive to 0
   input logic [31:0]                entropy_seed_data_i,    // drive to 0
-  input logic [TimerPrescalerW-1:0] wait_timer_prescaler_i, // drive to 0
-  input logic [EdnWaitTimerW-1:0]   wait_timer_limit_i,     // drive to EdnWaitTimerW'1
 
   // Signals primarily kept to prevent them from being optimized away during synthesis.
   // State output
@@ -319,8 +317,6 @@ module kmac_reduced
     .entropy_refresh_req_i (entropy_refresh_req_i),
     .seed_update_i         (entropy_seed_update_i),
     .seed_data_i           (entropy_seed_data_i),
-    .wait_timer_prescaler_i(wait_timer_prescaler_i),
-    .wait_timer_limit_i    (wait_timer_limit_i),
 
     // Status
     .hash_threshold_i(entropy_hash_threshold_i),

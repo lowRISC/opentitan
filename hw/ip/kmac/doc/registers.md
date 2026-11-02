@@ -3,67 +3,68 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/kmac/data/kmac.hjson -->
 ## Summary
 
-| Name                                                                             | Offset   |   Length | Description                                                               |
-|:---------------------------------------------------------------------------------|:---------|---------:|:--------------------------------------------------------------------------|
-| kmac.[`INTR_STATE`](#intr_state)                                                 | 0x0      |        4 | Interrupt State Register                                                  |
-| kmac.[`INTR_ENABLE`](#intr_enable)                                               | 0x4      |        4 | Interrupt Enable Register                                                 |
-| kmac.[`INTR_TEST`](#intr_test)                                                   | 0x8      |        4 | Interrupt Test Register                                                   |
-| kmac.[`ALERT_TEST`](#alert_test)                                                 | 0xc      |        4 | Alert Test Register                                                       |
-| kmac.[`CFG_REGWEN`](#cfg_regwen)                                                 | 0x10     |        4 | Controls the configurability of [`CFG_SHADOWED`](#cfg_shadowed) register. |
-| kmac.[`CFG_SHADOWED`](#cfg_shadowed)                                             | 0x14     |        4 | KMAC Configuration register.                                              |
-| kmac.[`CMD`](#cmd)                                                               | 0x18     |        4 | KMAC/ SHA3 command register.                                              |
-| kmac.[`STATUS`](#status)                                                         | 0x1c     |        4 | KMAC/SHA3 Status register.                                                |
-| kmac.[`ENTROPY_PERIOD`](#entropy_period)                                         | 0x20     |        4 | Entropy Timer Periods.                                                    |
-| kmac.[`ENTROPY_REFRESH_HASH_CNT`](#entropy_refresh_hash_cnt)                     | 0x24     |        4 | Entropy Refresh Counter                                                   |
-| kmac.[`ENTROPY_REFRESH_THRESHOLD_SHADOWED`](#entropy_refresh_threshold_shadowed) | 0x28     |        4 | Entropy Refresh Threshold                                                 |
-| kmac.[`ENTROPY_SEED`](#entropy_seed)                                             | 0x2c     |        4 | Entropy Seed                                                              |
-| kmac.[`KEY_SHARE0_0`](#key_share0)                                               | 0x30     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE0_1`](#key_share0)                                               | 0x34     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE0_2`](#key_share0)                                               | 0x38     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE0_3`](#key_share0)                                               | 0x3c     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE0_4`](#key_share0)                                               | 0x40     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE0_5`](#key_share0)                                               | 0x44     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE0_6`](#key_share0)                                               | 0x48     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE0_7`](#key_share0)                                               | 0x4c     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE0_8`](#key_share0)                                               | 0x50     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE0_9`](#key_share0)                                               | 0x54     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE0_10`](#key_share0)                                              | 0x58     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE0_11`](#key_share0)                                              | 0x5c     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE0_12`](#key_share0)                                              | 0x60     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE0_13`](#key_share0)                                              | 0x64     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE0_14`](#key_share0)                                              | 0x68     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE0_15`](#key_share0)                                              | 0x6c     |        4 | KMAC Secret Key                                                           |
-| kmac.[`KEY_SHARE1_0`](#key_share1)                                               | 0x70     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_SHARE1_1`](#key_share1)                                               | 0x74     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_SHARE1_2`](#key_share1)                                               | 0x78     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_SHARE1_3`](#key_share1)                                               | 0x7c     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_SHARE1_4`](#key_share1)                                               | 0x80     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_SHARE1_5`](#key_share1)                                               | 0x84     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_SHARE1_6`](#key_share1)                                               | 0x88     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_SHARE1_7`](#key_share1)                                               | 0x8c     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_SHARE1_8`](#key_share1)                                               | 0x90     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_SHARE1_9`](#key_share1)                                               | 0x94     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_SHARE1_10`](#key_share1)                                              | 0x98     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_SHARE1_11`](#key_share1)                                              | 0x9c     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_SHARE1_12`](#key_share1)                                              | 0xa0     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_SHARE1_13`](#key_share1)                                              | 0xa4     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_SHARE1_14`](#key_share1)                                              | 0xa8     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_SHARE1_15`](#key_share1)                                              | 0xac     |        4 | KMAC Secret Key, 2nd share.                                               |
-| kmac.[`KEY_LEN`](#key_len)                                                       | 0xb0     |        4 | Secret Key length in bit.                                                 |
-| kmac.[`PREFIX_0`](#prefix)                                                       | 0xb4     |        4 | cSHAKE Prefix register.                                                   |
-| kmac.[`PREFIX_1`](#prefix)                                                       | 0xb8     |        4 | cSHAKE Prefix register.                                                   |
-| kmac.[`PREFIX_2`](#prefix)                                                       | 0xbc     |        4 | cSHAKE Prefix register.                                                   |
-| kmac.[`PREFIX_3`](#prefix)                                                       | 0xc0     |        4 | cSHAKE Prefix register.                                                   |
-| kmac.[`PREFIX_4`](#prefix)                                                       | 0xc4     |        4 | cSHAKE Prefix register.                                                   |
-| kmac.[`PREFIX_5`](#prefix)                                                       | 0xc8     |        4 | cSHAKE Prefix register.                                                   |
-| kmac.[`PREFIX_6`](#prefix)                                                       | 0xcc     |        4 | cSHAKE Prefix register.                                                   |
-| kmac.[`PREFIX_7`](#prefix)                                                       | 0xd0     |        4 | cSHAKE Prefix register.                                                   |
-| kmac.[`PREFIX_8`](#prefix)                                                       | 0xd4     |        4 | cSHAKE Prefix register.                                                   |
-| kmac.[`PREFIX_9`](#prefix)                                                       | 0xd8     |        4 | cSHAKE Prefix register.                                                   |
-| kmac.[`PREFIX_10`](#prefix)                                                      | 0xdc     |        4 | cSHAKE Prefix register.                                                   |
-| kmac.[`ERR_CODE`](#err_code)                                                     | 0xe0     |        4 | KMAC/SHA3 Error Code                                                      |
-| kmac.[`STATE`](#state)                                                           | 0x400    |      512 | Keccak State (1600 bit) memory.                                           |
-| kmac.[`MSG_FIFO`](#msg_fifo)                                                     | 0x800    |     2048 | Message FIFO.                                                             |
+| Name                                                         | Offset   |   Length | Description                                                                         |
+|:-------------------------------------------------------------|:---------|---------:|:------------------------------------------------------------------------------------|
+| kmac.[`INTR_STATE`](#intr_state)                             | 0x0      |        4 | Interrupt State Register                                                            |
+| kmac.[`INTR_ENABLE`](#intr_enable)                           | 0x4      |        4 | Interrupt Enable Register                                                           |
+| kmac.[`INTR_TEST`](#intr_test)                               | 0x8      |        4 | Interrupt Test Register                                                             |
+| kmac.[`ALERT_TEST`](#alert_test)                             | 0xc      |        4 | Alert Test Register                                                                 |
+| kmac.[`CFG_REGWEN`](#cfg_regwen)                             | 0x10     |        4 | Controls the configurability of [`CFG_SHADOWED`](#cfg_shadowed) register.           |
+| kmac.[`CFG_SHADOWED`](#cfg_shadowed)                         | 0x14     |        4 | KMAC Configuration register.                                                        |
+| kmac.[`CMD`](#cmd)                                           | 0x18     |        4 | KMAC/ SHA3 command register.                                                        |
+| kmac.[`STATUS`](#status)                                     | 0x1c     |        4 | KMAC/SHA3 Status register.                                                          |
+| kmac.[`ENTROPY_CFG_LOCK`](#entropy_cfg_lock)                 | 0x20     |        4 | Software lock for the [`ENTROPY_CFG_SHADOWED`](#entropy_cfg_shadowed) register.     |
+| kmac.[`ENTROPY_CFG_REGWEN`](#entropy_cfg_regwen)             | 0x24     |        4 | Register write enable for [`ENTROPY_CFG_SHADOWED`](#entropy_cfg_shadowed) register. |
+| kmac.[`ENTROPY_CFG_SHADOWED`](#entropy_cfg_shadowed)         | 0x28     |        4 | Entropy Configuration register.                                                     |
+| kmac.[`ENTROPY_SEED`](#entropy_seed)                         | 0x2c     |        4 | Entropy Seed                                                                        |
+| kmac.[`ENTROPY_REFRESH_HASH_CNT`](#entropy_refresh_hash_cnt) | 0x30     |        4 | Entropy Refresh Counter                                                             |
+| kmac.[`KEY_SHARE0_0`](#key_share0)                           | 0x34     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE0_1`](#key_share0)                           | 0x38     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE0_2`](#key_share0)                           | 0x3c     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE0_3`](#key_share0)                           | 0x40     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE0_4`](#key_share0)                           | 0x44     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE0_5`](#key_share0)                           | 0x48     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE0_6`](#key_share0)                           | 0x4c     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE0_7`](#key_share0)                           | 0x50     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE0_8`](#key_share0)                           | 0x54     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE0_9`](#key_share0)                           | 0x58     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE0_10`](#key_share0)                          | 0x5c     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE0_11`](#key_share0)                          | 0x60     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE0_12`](#key_share0)                          | 0x64     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE0_13`](#key_share0)                          | 0x68     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE0_14`](#key_share0)                          | 0x6c     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE0_15`](#key_share0)                          | 0x70     |        4 | KMAC Secret Key                                                                     |
+| kmac.[`KEY_SHARE1_0`](#key_share1)                           | 0x74     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_SHARE1_1`](#key_share1)                           | 0x78     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_SHARE1_2`](#key_share1)                           | 0x7c     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_SHARE1_3`](#key_share1)                           | 0x80     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_SHARE1_4`](#key_share1)                           | 0x84     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_SHARE1_5`](#key_share1)                           | 0x88     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_SHARE1_6`](#key_share1)                           | 0x8c     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_SHARE1_7`](#key_share1)                           | 0x90     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_SHARE1_8`](#key_share1)                           | 0x94     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_SHARE1_9`](#key_share1)                           | 0x98     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_SHARE1_10`](#key_share1)                          | 0x9c     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_SHARE1_11`](#key_share1)                          | 0xa0     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_SHARE1_12`](#key_share1)                          | 0xa4     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_SHARE1_13`](#key_share1)                          | 0xa8     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_SHARE1_14`](#key_share1)                          | 0xac     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_SHARE1_15`](#key_share1)                          | 0xb0     |        4 | KMAC Secret Key, 2nd share.                                                         |
+| kmac.[`KEY_LEN`](#key_len)                                   | 0xb4     |        4 | Secret Key length in bit.                                                           |
+| kmac.[`PREFIX_0`](#prefix)                                   | 0xb8     |        4 | cSHAKE Prefix register.                                                             |
+| kmac.[`PREFIX_1`](#prefix)                                   | 0xbc     |        4 | cSHAKE Prefix register.                                                             |
+| kmac.[`PREFIX_2`](#prefix)                                   | 0xc0     |        4 | cSHAKE Prefix register.                                                             |
+| kmac.[`PREFIX_3`](#prefix)                                   | 0xc4     |        4 | cSHAKE Prefix register.                                                             |
+| kmac.[`PREFIX_4`](#prefix)                                   | 0xc8     |        4 | cSHAKE Prefix register.                                                             |
+| kmac.[`PREFIX_5`](#prefix)                                   | 0xcc     |        4 | cSHAKE Prefix register.                                                             |
+| kmac.[`PREFIX_6`](#prefix)                                   | 0xd0     |        4 | cSHAKE Prefix register.                                                             |
+| kmac.[`PREFIX_7`](#prefix)                                   | 0xd4     |        4 | cSHAKE Prefix register.                                                             |
+| kmac.[`PREFIX_8`](#prefix)                                   | 0xd8     |        4 | cSHAKE Prefix register.                                                             |
+| kmac.[`PREFIX_9`](#prefix)                                   | 0xdc     |        4 | cSHAKE Prefix register.                                                             |
+| kmac.[`PREFIX_10`](#prefix)                                  | 0xe0     |        4 | cSHAKE Prefix register.                                                             |
+| kmac.[`ERR_CODE`](#err_code)                                 | 0xe4     |        4 | KMAC/SHA3 Error Code                                                                |
+| kmac.[`STATE`](#state)                                       | 0x400    |      512 | Keccak State (1600 bit) memory.                                                     |
+| kmac.[`MSG_FIFO`](#msg_fifo)                                 | 0x800    |     2048 | Message FIFO.                                                                       |
 
 ## INTR_STATE
 Interrupt State Register
@@ -179,32 +180,28 @@ changed by the software while the KMAC/SHA3 is in operation mode.
 ## CFG_SHADOWED
 KMAC Configuration register.
 
-This register is  updated when the hashing engine is in Idle.
-If the software updates the register while the engine computes, the
-updated value will be discarded.
+This register can only be updated when the Keccak core is in idle.
+This is indicated by [`CFG_REGWEN`](#cfg_regwen) reading as 1.
+If [`CFG_REGWEN`](#cfg_regwen) reads as 0 (meaning the Keccak core is busy), writes to this register are ignored.
 - Offset: `0x14`
 - Reset default: `0x0`
-- Reset mask: `0x51b133f`
+- Reset mask: `0x418133f`
 - Register enable: [`CFG_REGWEN`](#cfg_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "kmac_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "kstrength", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "mode", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "msg_endianness", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "state_endianness", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "sideload", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "entropy_mode", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "entropy_fast_process", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "msg_mask", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "entropy_ready", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "en_unsupported_modestrength", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 5}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
+{"reg": [{"name": "kmac_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "kstrength", "bits": 3, "attr": ["rw"], "rotate": -90}, {"name": "mode", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "msg_endianness", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "state_endianness", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "sideload", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 6}, {"name": "entropy_fast_process", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "msg_mask", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 5}, {"name": "en_unsupported_modestrength", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 5}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                      |
 |:------:|:------:|:-------:|:--------------------------------------------------------------------------|
 | 31:27  |        |         | Reserved                                                                  |
 |   26   |   rw   |   0x0   | [en_unsupported_modestrength](#cfg_shadowed--en_unsupported_modestrength) |
-|   25   |        |         | Reserved                                                                  |
-|   24   |   rw   |   0x0   | [entropy_ready](#cfg_shadowed--entropy_ready)                             |
-| 23:21  |        |         | Reserved                                                                  |
+| 25:21  |        |         | Reserved                                                                  |
 |   20   |   rw   |   0x0   | [msg_mask](#cfg_shadowed--msg_mask)                                       |
 |   19   |   rw   |   0x0   | [entropy_fast_process](#cfg_shadowed--entropy_fast_process)               |
-|   18   |        |         | Reserved                                                                  |
-| 17:16  |   rw   |   0x0   | [entropy_mode](#cfg_shadowed--entropy_mode)                               |
-| 15:13  |        |         | Reserved                                                                  |
+| 18:13  |        |         | Reserved                                                                  |
 |   12   |   rw   |   0x0   | [sideload](#cfg_shadowed--sideload)                                       |
 | 11:10  |        |         | Reserved                                                                  |
 |   9    |   rw   |   0x0   | [state_endianness](#cfg_shadowed--state_endianness)                       |
@@ -223,12 +220,6 @@ Keccak Mode and Strength configurations, such as cSHAKE512.
 If not set, KMAC won't propagate the SW command (CmdStart) to the
 rest of the blocks (AppIntf, KMAC Core, SHA3).
 
-### CFG_SHADOWED . entropy_ready
-Entropy Ready status.
-
-Software sets this field to allow the entropy generator in KMAC to
-fetch the entropy and run.
-
 ### CFG_SHADOWED . msg_mask
 Message Masking with PRNG.
 
@@ -244,22 +235,6 @@ expand the entropy when it is consumed. Only it refreshes the
 entropy while processing the secret key block. This process should
 not be used if SCA resistance is required because it may cause side
 channel leakage.
-
-### CFG_SHADOWED . entropy_mode
-Entropy Mode
-
-Using this field, software can configure mode of operation of the internal pseudo-random number generator (PRNG).
-
-Note that once software has configured a value different from `idle_mode` after reset, and set the [`CFG_SHADOWED.entropy_ready`](#cfg_shadowed) bit afterwards, the PRNG configuration cannot be changed anymore (unless an EDN request timeout occurs when running in EDN mode).
-Further writes to this field will change the value received upon reading the register, but they will be ignored by the internal hardware.
-
-| Value   | Name      | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                           |
-|:--------|:----------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 0x0     | idle_mode | Default mode after reset. The sole purpose of this mode is to enable ROM_CTRL operation right after coming out of reset. The internal PRNG is not reseeded with fresh entropy, nor updated while the core operates. It should therefore not be used after this very initial stage. Software should setup a different mode and set [`CFG_SHADOWED.entropy_ready`](#cfg_shadowed) as early as possible.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                 |
-| 0x1     | edn_mode  | Receive fresh entropy from EDN for reseeding the internal PRNG. This entropy mode is to be used for regular operation. Once the [`CFG_SHADOWED.entropy_ready`](#cfg_shadowed) bit is set after reset, the module requests fresh entropy from EDN for reseeding the internal PRNG. Only after that, the module can start processing commands. Depending on [`CFG_SHADOWED`](#cfg_shadowed), the internal PRNG is then used for (re-)masking inputs (prefix, key, message) and intermediate results of the Keccak core. The module will then automatically reseed the internal PRNG with fresh entropy from EDN every [`ENTROPY_REFRESH_THRESHOLD_SHADOWED`](#entropy_refresh_threshold_shadowed) messages in KMAC mode. More precisely, automatic reseed operations are always triggered directly after the key absorption phase. How close the module is to automatically trigger a reseed operation can be inferred from [`ENTROPY_REFRESH_HASH_CNT.`](#entropy_refresh_hash_cnt) Alternatively, software can manually initiate reseeding operations using [`CMD.entropy_req`](#cmd) while the module is idle. This will also clear [`ENTROPY_REFRESH_HASH_CNT.`](#entropy_refresh_hash_cnt) Depending on the state of the system, it may take a very long or even indefinite time for the entropy to be delivered. As such, the configuration values for the [`ENTROPY_REFRESH_THRESHOLD_SHADOWED`](#entropy_refresh_threshold_shadowed) and [`ENTROPY_PERIOD`](#entropy_period) registers should be chosen carefully. Also, if the entropy complex becomes unavailable, there is a way to leave this mode and enter the fall-back software mode. For guidance, refer to [EDN Entropy Mode](programmers_guide.md#edn-entropy-mode). |
-| 0x2     | sw_mode   | Receive initial entropy from software for reseeding the internal PRNG. This entropy mode is a fall-back option to be used if the entropy complex is not available. Once the [`CFG_SHADOWED.entropy_ready`](#cfg_shadowed) bit is set after reset, the module will wait for software to write the [`ENTROPY_SEED`](#entropy_seed) register 6 times. Upon each write, the written value is loaded into the corresponding state chunk of the entropy generator. Only after that, the module can start processing commands. Depending on [`CFG_SHADOWED`](#cfg_shadowed), the internal PRNG is then used for (re-)masking inputs (prefix, key, message) and intermediate results of the Keccak core. After this point, the PRNG can no longer be reseeded by software. Without a full reset of the KMAC block, there is no way to further change the configured mode. Further writes to this field only change the value received upon reading the register. The changes are ignored by the internal hardware.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                            |
-
-Other values are reserved.
 
 ### CFG_SHADOWED . sideload
 Sideloaded Key.
@@ -367,11 +342,12 @@ When error occurs and one of the state machine stays at
 Software can set this bit to 1 to manually clear [`ENTROPY_REFRESH_HASH_CNT.`](#entropy_refresh_hash_cnt)
 
 ### CMD . entropy_req
-Software can set this bit to 1 to manually trigger the reseeding of the internal PRNG when running in EDN mode.
+Software can set this bit to 1 to manually trigger the reseeding of the internal PRNG when running in EDN Mode or in Software Mode.
 This will also clear [`ENTROPY_REFRESH_HASH_CNT.`](#entropy_refresh_hash_cnt)
 
 After setting this bit, the [`STATUS.entropy_ready`](#status) bit should read as 0 and the [`STATUS.entropy_reseeding`](#status) bit as 1 indicating that a reseed operation is ongoing.
 
+If [`ENTROPY_CFG_SHADOWED.ignore_cmd_entropy_req`](#entropy_cfg_shadowed) is set, this bit is ignored.
 If masking is disabled, this bit is ignored.
 
 ### CMD . cmd
@@ -444,9 +420,12 @@ If masking is disabled, this bit always reads as 0.
 
 ### STATUS . entropy_ready
 If 1, the internal PRNG is ready.
-If 0, the internal PRNG is either not configured in EDN mode or software mode, or currently performing a reseed operation via EDN or waiting for software to provide a new seed.
+If 0, the internal PRNG is either not configured in EDN mode or software mode, or currently performing a reseed operation via EDN or waiting for software to provide a new seed via [`ENTROPY_SEED.`](#entropy_seed)
+While this bit reads 0, the module will reject KMAC mode operation:
+- If software tries to trigger a KMAC mode operation, a `ErrSwHashingWithoutEntropyReady` error is returned.
+- If an application interface tries to trigger a KMAC mode operation, a `service rejected error` is returned.
 
-If masking is disabled, this bit mirrors the [`CFG_SHADOWED.entropy_ready`](#cfg_shadowed) bit.
+If masking is disabled, this bit matches the inverse of the [`ENTROPY_CFG_SHADOWED.entropy_boot_mode`](#entropy_cfg_shadowed) bit.
 
 ### STATUS . fifo_full
 Message FIFO Full indicator
@@ -491,108 +470,129 @@ If 1, SHA3 is receiving message stream and processing it
 ### STATUS . sha3_idle
 If 1, SHA3 hashing engine is in idle state.
 
-## ENTROPY_PERIOD
-Entropy Timer Periods.
+## ENTROPY_CFG_LOCK
+Software lock for the [`ENTROPY_CFG_SHADOWED`](#entropy_cfg_shadowed) register.
+
+By setting this register to 1, software can lock the current content of the [`ENTROPY_CFG_SHADOWED`](#entropy_cfg_shadowed) register until the next reset.
 - Offset: `0x20`
 - Reset default: `0x0`
-- Reset mask: `0xffff03ff`
-- Register enable: [`CFG_REGWEN`](#cfg_regwen)
+- Reset mask: `0x1`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "prescaler", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}, {"name": "wait_timer", "bits": 16, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "ENTROPY_CFG_LOCK", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 180}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                      |
-|:------:|:------:|:-------:|:------------------------------------------|
-| 31:16  |   rw   |   0x0   | [wait_timer](#entropy_period--wait_timer) |
-| 15:10  |        |         | Reserved                                  |
-|  9:0   |   rw   |   0x0   | [prescaler](#entropy_period--prescaler)   |
+|  Bits  |  Type  |  Reset  | Name                                                    |
+|:------:|:------:|:-------:|:--------------------------------------------------------|
+|  31:1  |        |         | Reserved                                                |
+|   0    |  rw1s  |   0x0   | [ENTROPY_CFG_LOCK](#entropy_cfg_lock--entropy_cfg_lock) |
 
-### ENTROPY_PERIOD . wait_timer
-EDN request wait timer.
+### ENTROPY_CFG_LOCK . ENTROPY_CFG_LOCK
+This bit indicates whether software has locked the current content of the [`ENTROPY_CFG_SHADOWED`](#entropy_cfg_shadowed) register (1) or not (0).
+Whether the [`ENTROPY_CFG_SHADOWED`](#entropy_cfg_shadowed) register can be updated, is indicated in [`ENTROPY_CFG_REGWEN.`](#entropy_cfg_regwen)
+Once this bit is set to 1, [`ENTROPY_CFG_REGWEN`](#entropy_cfg_regwen) keeps reading as 0 until the next reset.
 
-The entropy module in KMAC waits up to this field in the timer pulse
-after it sends request to EDN module. If the timer expires, the
-entropy module moves to an error state and notifies to the system.
-
-If there is a pending EDN request during wait timer update, then this update is delayed until the EDN request is complete.
-
-If 0, the entropy module waits the EDN response always. If EDN does
-not respond in this configuration, the software shall reset the IP.
-
-### ENTROPY_PERIOD . prescaler
-EDN Wait timer prescaler.
-
-EDN Wait timer has 16 bit value. The timer value is increased when the timer pulse is generated. Timer pulse is raises when the number of the clock cycles hit this prescaler value.
-
-The exact period of the timer pulse is unknown as the KMAC input clock may contain jitters.
-
-## ENTROPY_REFRESH_HASH_CNT
-Entropy Refresh Counter
-
-KMAC entropy can be refreshed after the given threshold KMAC operations
-run. If the KMAC hash counter [`ENTROPY_REFRESH_HASH_CNT`](#entropy_refresh_hash_cnt) hits (GTE) the
-configured threshold [`ENTROPY_REFRESH_THRESHOLD_SHADOWED`](#entropy_refresh_threshold_shadowed), the entropy
-module in the KMAC IP requests new seed to EDN and reset the KMAC
-hash counter.
-
-If the threshold is 0, the refresh by the counter does not work. And the
-counter is only reset by the CMD.hash_cnt_clr CSR bit.
+## ENTROPY_CFG_REGWEN
+Register write enable for [`ENTROPY_CFG_SHADOWED`](#entropy_cfg_shadowed) register.
 - Offset: `0x24`
-- Reset default: `0x0`
-- Reset mask: `0x3ff`
+- Reset default: `0x1`
+- Reset mask: `0x1`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "hash_cnt", "bits": 10, "attr": ["ro"], "rotate": 0}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "ENTROPY_CFG_REGWEN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description         |
-|:------:|:------:|:-------:|:---------|:--------------------|
-| 31:10  |        |         |          | Reserved            |
-|  9:0   |   ro   |   0x0   | hash_cnt | Hash (KMAC) counter |
+|  Bits  |  Type  |  Reset  | Name                                                          |
+|:------:|:------:|:-------:|:--------------------------------------------------------------|
+|  31:1  |        |         | Reserved                                                      |
+|   0    |   ro   |   0x1   | [ENTROPY_CFG_REGWEN](#entropy_cfg_regwen--entropy_cfg_regwen) |
 
-## ENTROPY_REFRESH_THRESHOLD_SHADOWED
-Entropy Refresh Threshold
+### ENTROPY_CFG_REGWEN . ENTROPY_CFG_REGWEN
+This bit indicates whether the [`ENTROPY_CFG_SHADOWED`](#entropy_cfg_shadowed) register can be updated by software (1) or not (0).
+If [`ENTROPY_CFG_LOCK`](#entropy_cfg_lock) is 1, this bit reads as 0.
+This bit also reads 0 if the internal PRNG is currently being reseeded or if the Keccak core is operating as indicated in the [`STATUS`](#status) register.
 
-KMAC entropy can be refreshed after the given threshold KMAC operations
-run. If the KMAC hash counter [`ENTROPY_REFRESH_HASH_CNT`](#entropy_refresh_hash_cnt) hits (GTE) the
-configured threshold [`ENTROPY_REFRESH_THRESHOLD_SHADOWED`](#entropy_refresh_threshold_shadowed), the entropy
-module in the KMAC IP requests new seed to EDN and reset the KMAC
-hash counter.
+## ENTROPY_CFG_SHADOWED
+Entropy Configuration register.
 
-If the threshold is 0, the refresh by the counter does not work. And the
-counter is only reset by the CMD.hash_cnt_clr CSR bit.
+This register is updated when the hashing engine is in Idle.
+If the software updates the register while the engine computes, the
+updated value will be discarded.
+
+This register can only be updated when the Keccak core is in idle and if write access has not yet been locked down.
+This is indicated by [`ENTROPY_CFG_REGWEN`](#entropy_cfg_regwen) reading as 1.
+If [`ENTROPY_CFG_REGWEN`](#entropy_cfg_regwen) reads as 0 (meaning the Keccak core is busy and/or write access has been locked down), writes to this register are ignored.
+
+If masking is disabled, this register is ignored.
 - Offset: `0x28`
-- Reset default: `0x0`
-- Reset mask: `0x3ff`
-- Register enable: [`CFG_REGWEN`](#cfg_regwen)
+- Reset default: `0x1`
+- Reset mask: `0x3ff0007`
+- Register enable: [`ENTROPY_CFG_REGWEN`](#entropy_cfg_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "threshold", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "entropy_boot_mode", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "entropy_mode", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "ignore_cmd_entropy_req", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 13}, {"name": "edn_mode_refresh_threshold", "bits": 10, "attr": ["rw"], "rotate": -90}, {"bits": 6}], "config": {"lanes": 1, "fontsize": 10, "vspace": 280}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name      | Description    |
-|:------:|:------:|:-------:|:----------|:---------------|
-| 31:10  |        |         |           | Reserved       |
-|  9:0   |   rw   |   0x0   | threshold | Hash Threshold |
+|  Bits  |  Type  |  Reset  | Name                                                                            |
+|:------:|:------:|:-------:|:--------------------------------------------------------------------------------|
+| 31:26  |        |         | Reserved                                                                        |
+| 25:16  |   rw   |   0x0   | [edn_mode_refresh_threshold](#entropy_cfg_shadowed--edn_mode_refresh_threshold) |
+|  15:3  |        |         | Reserved                                                                        |
+|   2    |   rw   |   0x0   | [ignore_cmd_entropy_req](#entropy_cfg_shadowed--ignore_cmd_entropy_req)         |
+|   1    |   rw   |   0x0   | [entropy_mode](#entropy_cfg_shadowed--entropy_mode)                             |
+|   0    |  rw0c  |   0x1   | [entropy_boot_mode](#entropy_cfg_shadowed--entropy_boot_mode)                   |
+
+### ENTROPY_CFG_SHADOWED . edn_mode_refresh_threshold
+EDN Mode Refresh Threshold
+
+The number of KMAC messages after which the module automatically triggers a reseed operation when running in EDN Mode.
+Note that the automatic reseed operation is not triggered when ending the message processing, but after processing the KMAC key block.
+If an automatic reseed operation is triggered, the Keccak core can continue processing the message in parallel to the reseed operation.
+
+If this field reads as 0, no automatic reseed operations are triggered in EDN Mode.
+
+### ENTROPY_CFG_SHADOWED . ignore_cmd_entropy_req
+If this bit is set, writes to [`CMD.entropy_req`](#cmd) are ignored.
+This can be useful for locking down the PRNG configuration and prevent further reseed operations, e.g., if later software stages aren't trusted.
+
+### ENTROPY_CFG_SHADOWED . entropy_mode
+Entropy Mode
+
+Using this field, software can configure the non-boot mode of operation of the internal pseudo-random number generator (PRNG).
+
+The value of this field is only relevant if [`ENTROPY_CFG.entropy_boot_mode`](#entropy_cfg) reads as 0.
+
+| Value   | Name     | Description                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+|:--------|:---------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 0x0     | edn_mode | Receive fresh entropy from EDN for reseeding the internal PRNG. This entropy mode is to be used for regular operation. Once this mode is configured after reset, the [`STATUS.entropy_reseeding`](#status) bit is set to 1 and the module requests fresh entropy from EDN for reseeding the internal PRNG. When the reseed operation finishes, the [`STATUS.entropy_ready`](#status) bit is set to 1 and the module can start processing commands. Depending on [`CFG_SHADOWED`](#cfg_shadowed), the internal PRNG is then used for (re-)masking inputs (prefix, key, message) and intermediate results of the Keccak core. The module will then automatically reseed the internal PRNG with fresh entropy from EDN every [`ENTROPY_CFG_SHADOWED.edn_mode_refresh_threshold`](#entropy_cfg_shadowed) messages in KMAC mode. More precisely, automatic reseed operations are always triggered directly after the key absorption phase. How close the module is to automatically trigger a reseed operation can be inferred from [`ENTROPY_REFRESH_HASH_CNT.`](#entropy_refresh_hash_cnt) Alternatively, software can manually initiate reseeding operations using [`CMD.entropy_req`](#cmd) while the module is idle. This will also clear [`ENTROPY_REFRESH_HASH_CNT.`](#entropy_refresh_hash_cnt) Depending on the state of the system, it may take a very long or even indefinite time for the entropy to be delivered. For guidance, refer to [EDN Entropy Mode](programmers_guide.md#edn-entropy-mode). To change from this mode to `sw_mode`, software has to first configure the mode and then trigger reseed operation using [`CMD.entropy_req.`](#cmd) |
+| 0x1     | sw_mode  | Receive entropy from software for reseeding the internal PRNG. This entropy mode is a fall-back option to be used if the entropy complex is not available. Once this mode is configured after reset, the [`STATUS.entropy_reseeding`](#status) bit is set to 1 and the module waits for software to write the [`ENTROPY_SEED`](#entropy_seed) register 6 times. Upon each write, the written value is loaded into the corresponding state chunk of the PRNG. After the last write operation, the [`STATUS.entropy_ready`](#status) bit is set to 1 and the module can start processing commands. Depending on [`CFG_SHADOWED`](#cfg_shadowed), the internal PRNG is then used for (re-)masking inputs (prefix, key, message) and intermediate results of the Keccak core. After this point, software can manually initiate reseeding operations using [`CMD.entropy_req`](#cmd) while the module is idle. This will also clear [`ENTROPY_REFRESH_HASH_CNT.`](#entropy_refresh_hash_cnt) To change from this mode to `edn_mode`, software has to first configure the mode and then trigger reseed operation using [`CMD.entropy_req.`](#cmd)                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    |
+
+
+### ENTROPY_CFG_SHADOWED . entropy_boot_mode
+Entropy Boot Mode
+
+If this field reads 1, the internal pseudo-random number generator (PRNG) is operated in boot mode irrespective of the value of [`ENTROPY_CFG.entropy_mode.`](#entropy_cfg)
+The sole purpose of the Entropy Boot Mode is to enable the initial ROM_CTRL operation right after coming out of reset.
+
+In this mode, the internal PRNG is not reseeded with fresh entropy, nor updated while the Keccak core operates.
+It should therefore not be used after this very initial boot phase and software should disable the Entropy Boot Mode and configure the desired [`ENTROPY_CFG.entropy_mode`](#entropy_cfg) value as early as possible.
 
 ## ENTROPY_SEED
 Entropy Seed
 
-Entropy seed register for the integrated entropy generator.
+Entropy seed register for the internal PRNG.
 
-If [`CFG_SHADOWED.entropy_mode`](#cfg_shadowed) is set to sw_mode, software first needs to set [`CFG_SHADOWED.entropy_ready.`](#cfg_shadowed)
-Then, software needs to write the [`ENTROPY_SEED`](#entropy_seed) register 6 times.
-Upon each write, the written value is loaded into the corresponding state chunk of the entropy generator.
+If [`ENTROPY_CFG_SHADOWED.entropy_boot_mode`](#entropy_cfg_shadowed) reads 0, if [`ENTROPY_CFG_SHADOWED.entropy_mode`](#entropy_cfg_shadowed) is set to `sw_mode`, and if [`STATUS.entropy_reseeding`](#status) reads 1, software can write this register 6 times.
+Upon each write, the written value is loaded into the corresponding state chunk of the internal PRNG.
 
-After writing the [`ENTROPY_SEED`](#entropy_seed) register 6 times, the entropy generator will start its operation.
-After this point, writing this register has no longer any effect.
+After writing the register 6 times, the [`STATUS.entropy_reseeding`](#status) bit drops to 0, the PRNG is ready to deliver randomness to the Keccak core which is indicated by the [`STATUS.entropy_ready`](#status) bit being set.
+After this point, another reseed operation can be initiated via [`CMD.entropy_req.`](#cmd)
 - Offset: `0x2c`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
@@ -606,6 +606,32 @@ After this point, writing this register has no longer any effect.
 |  Bits  |  Type  |  Reset  | Name   | Description                                |
 |:------:|:------:|:-------:|:-------|:-------------------------------------------|
 |  31:0  |   wo   |    x    | seed   | 32-bit chunk of the entropy generator seed |
+
+## ENTROPY_REFRESH_HASH_CNT
+Entropy Refresh Counter
+
+KMAC entropy can be refreshed after the given threshold KMAC operations
+run. If the KMAC hash counter [`ENTROPY_REFRESH_HASH_CNT`](#entropy_refresh_hash_cnt) hits (GTE) the
+configured threshold [`ENTROPY_CFG_SHADOWED.edn_mode_refresh_threshold`](#entropy_cfg_shadowed), the entropy
+module in the KMAC IP requests new seed to EDN and reset the KMAC
+hash counter.
+
+If the threshold is 0, the refresh by the counter does not work. And the
+counter is only reset by the CMD.hash_cnt_clr CSR bit.
+- Offset: `0x30`
+- Reset default: `0x0`
+- Reset mask: `0x3ff`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "hash_cnt", "bits": 10, "attr": ["ro"], "rotate": 0}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name     | Description         |
+|:------:|:------:|:-------:|:---------|:--------------------|
+| 31:10  |        |         |          | Reserved            |
+|  9:0   |   ro   |   0x0   | hash_cnt | Hash (KMAC) counter |
 
 ## KEY_SHARE0
 KMAC Secret Key
@@ -628,22 +654,22 @@ responsibility to keep upper bits of the secret key to 0.
 
 | Name          | Offset   |
 |:--------------|:---------|
-| KEY_SHARE0_0  | 0x30     |
-| KEY_SHARE0_1  | 0x34     |
-| KEY_SHARE0_2  | 0x38     |
-| KEY_SHARE0_3  | 0x3c     |
-| KEY_SHARE0_4  | 0x40     |
-| KEY_SHARE0_5  | 0x44     |
-| KEY_SHARE0_6  | 0x48     |
-| KEY_SHARE0_7  | 0x4c     |
-| KEY_SHARE0_8  | 0x50     |
-| KEY_SHARE0_9  | 0x54     |
-| KEY_SHARE0_10 | 0x58     |
-| KEY_SHARE0_11 | 0x5c     |
-| KEY_SHARE0_12 | 0x60     |
-| KEY_SHARE0_13 | 0x64     |
-| KEY_SHARE0_14 | 0x68     |
-| KEY_SHARE0_15 | 0x6c     |
+| KEY_SHARE0_0  | 0x34     |
+| KEY_SHARE0_1  | 0x38     |
+| KEY_SHARE0_2  | 0x3c     |
+| KEY_SHARE0_3  | 0x40     |
+| KEY_SHARE0_4  | 0x44     |
+| KEY_SHARE0_5  | 0x48     |
+| KEY_SHARE0_6  | 0x4c     |
+| KEY_SHARE0_7  | 0x50     |
+| KEY_SHARE0_8  | 0x54     |
+| KEY_SHARE0_9  | 0x58     |
+| KEY_SHARE0_10 | 0x5c     |
+| KEY_SHARE0_11 | 0x60     |
+| KEY_SHARE0_12 | 0x64     |
+| KEY_SHARE0_13 | 0x68     |
+| KEY_SHARE0_14 | 0x6c     |
+| KEY_SHARE0_15 | 0x70     |
 
 
 ### Fields
@@ -677,22 +703,22 @@ responsibility to keep upper bits of the secret key to 0.
 
 | Name          | Offset   |
 |:--------------|:---------|
-| KEY_SHARE1_0  | 0x70     |
-| KEY_SHARE1_1  | 0x74     |
-| KEY_SHARE1_2  | 0x78     |
-| KEY_SHARE1_3  | 0x7c     |
-| KEY_SHARE1_4  | 0x80     |
-| KEY_SHARE1_5  | 0x84     |
-| KEY_SHARE1_6  | 0x88     |
-| KEY_SHARE1_7  | 0x8c     |
-| KEY_SHARE1_8  | 0x90     |
-| KEY_SHARE1_9  | 0x94     |
-| KEY_SHARE1_10 | 0x98     |
-| KEY_SHARE1_11 | 0x9c     |
-| KEY_SHARE1_12 | 0xa0     |
-| KEY_SHARE1_13 | 0xa4     |
-| KEY_SHARE1_14 | 0xa8     |
-| KEY_SHARE1_15 | 0xac     |
+| KEY_SHARE1_0  | 0x74     |
+| KEY_SHARE1_1  | 0x78     |
+| KEY_SHARE1_2  | 0x7c     |
+| KEY_SHARE1_3  | 0x80     |
+| KEY_SHARE1_4  | 0x84     |
+| KEY_SHARE1_5  | 0x88     |
+| KEY_SHARE1_6  | 0x8c     |
+| KEY_SHARE1_7  | 0x90     |
+| KEY_SHARE1_8  | 0x94     |
+| KEY_SHARE1_9  | 0x98     |
+| KEY_SHARE1_10 | 0x9c     |
+| KEY_SHARE1_11 | 0xa0     |
+| KEY_SHARE1_12 | 0xa4     |
+| KEY_SHARE1_13 | 0xa8     |
+| KEY_SHARE1_14 | 0xac     |
+| KEY_SHARE1_15 | 0xb0     |
 
 
 ### Fields
@@ -711,7 +737,7 @@ Secret Key length in bit.
 This value is used to make encoded secret key in KMAC.
 KMAC supports certain lengths of the secret key. Currently it
 supports 128b, 192b, 256b, 384b, and 512b secret keys.
-- Offset: `0xb0`
+- Offset: `0xb4`
 - Reset default: `0x0`
 - Reset mask: `0x7`
 - Register enable: [`CFG_REGWEN`](#cfg_regwen)
@@ -768,17 +794,17 @@ and report an error.
 
 | Name      | Offset   |
 |:----------|:---------|
-| PREFIX_0  | 0xb4     |
-| PREFIX_1  | 0xb8     |
-| PREFIX_2  | 0xbc     |
-| PREFIX_3  | 0xc0     |
-| PREFIX_4  | 0xc4     |
-| PREFIX_5  | 0xc8     |
-| PREFIX_6  | 0xcc     |
-| PREFIX_7  | 0xd0     |
-| PREFIX_8  | 0xd4     |
-| PREFIX_9  | 0xd8     |
-| PREFIX_10 | 0xdc     |
+| PREFIX_0  | 0xb8     |
+| PREFIX_1  | 0xbc     |
+| PREFIX_2  | 0xc0     |
+| PREFIX_3  | 0xc4     |
+| PREFIX_4  | 0xc8     |
+| PREFIX_5  | 0xcc     |
+| PREFIX_6  | 0xd0     |
+| PREFIX_7  | 0xd4     |
+| PREFIX_8  | 0xd8     |
+| PREFIX_9  | 0xdc     |
+| PREFIX_10 | 0xe0     |
 
 
 ### Fields
@@ -793,7 +819,7 @@ and report an error.
 
 ## ERR_CODE
 KMAC/SHA3 Error Code
-- Offset: `0xe0`
+- Offset: `0xe4`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 

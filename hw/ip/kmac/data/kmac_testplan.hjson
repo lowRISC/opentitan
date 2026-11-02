@@ -203,35 +203,6 @@
       tests: ["{name}_sideload_invalid"]
     }
     {
-      name: edn_timeout_error
-      desc: ''' Test kmac responses correctly when EDN response timeout.
-            Based on kmac app sequence, this sequence configures kmac to ensure an EDN timeout
-            error by writing `entropy_period.wait_timer` and `entropy_period.prescaler` registers.
-            **Check**:
-            - Check error related registers including `err_code`, `status`, and `interrupt`.
-            - Check keymgr interface responses with error bit sets to 1.
-            - Check kmac can resume normal functionalities after processing this error case.
-            - Check timeout error will not trigger if the `entropy_mode` is set to SW, or masking
-              is disabled.
-            '''
-      stage: V2
-      tests: ["{name}_edn_timeout_error"]
-    }
-    {
-      name: entropy_mode_error
-      desc: ''' Test kmac responses correctly when entropy mode is configured incorrectly.
-            Based on kmac edn_timeout sequence, this sequence write incorrect
-            `ral.cfg_shadowed.entropy_mode` before entropy is fetched.
-            **Check**:
-            - Check error related registers including `err_code`, `status`, and `interrupt`.
-            - Check keymgr interface responses with error bit sets to 1.
-            - Check kmac can resume normal functionalities after processing this error case.
-            - Check timeout error will not trigger if masking is disabled.
-            '''
-      stage: V2
-      tests: ["{name}_entropy_mode_error"]
-   }
-    {
       name: entropy_ready_error
       desc: ''' Test kmac responses correctly when entropy_ready field is not set.
             Based on kmac app sequence, this sequence does not write `1` to
@@ -392,13 +363,6 @@
             '''
    }
    {
-      name: entropy_timer_cg
-      desc: '''
-            Cover the values for the entropy_period register's `prescaler` and `wait_timer` fields.
-            Cross these field ranges with whether the entropy EDN mode is on or off.
-            '''
-   }
-   {
       name: error_cg
       desc: '''
             Covers all error scenarios:
@@ -406,8 +370,6 @@
             - ErrSwPushedMsgFifo: covers that SW writes the msgfifo while App interface is active
             - ErrSwIssuedCmdInAppActive: covers that SW writes all possible commands to the KMAC
                                          while App interface is active
-            - ErrWaitTimerExpired: covers that the KMAC timed out while waiting for EDN entropy
-            - ErrIncorrectEntropyMode: covers that incorrect entropy modes are detected by the KMAC
             - ErrUnexpectedModeStrength: covers that 128-bit strength is seen for SHA3, and all but
                                          128/256 bit strengths are seen for XOF functions
             - ErrIncorrectFunctionName: covers that the function name is configured incorrectly

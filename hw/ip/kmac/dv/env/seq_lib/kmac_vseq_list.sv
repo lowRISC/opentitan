@@ -20,8 +20,6 @@
 `include "kmac_entropy_refresh_vseq.sv"
 `include "kmac_error_vseq.sv"
 `include "kmac_key_error_vseq.sv"
-`include "kmac_edn_timeout_error_vseq.sv"
-`include "kmac_entropy_mode_error_vseq.sv"
 `include "kmac_entropy_ready_error_vseq.sv"
 `include "kmac_lc_escalation_vseq.sv"
 `include "kmac_stress_all_vseq.sv"
