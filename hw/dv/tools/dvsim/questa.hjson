@@ -81,7 +81,31 @@
       run_opts: ["-gui"]
     }
     {
+      name: questa_dpi_build_opts
+      is_sim_mode: 1
+    }
+    {
+      name: questa_aes_model_build_opts
+      is_sim_mode: 1
+    }
+    {
+      name: questa_memutil_dpi_scrambled_build_opts
+      is_sim_mode: 1
+    }
+    {
+      name: questa_otbn_tracer_build_opts
+      is_sim_mode: 1
+    }
+    {
+      name: questa_otbn_memutil_build_opts
+      is_sim_mode: 1
+    }
+    {
       name: questa_waves
+      is_sim_mode: 1
+    }
+    {
+      name: questa_waves_off
       is_sim_mode: 1
     }
     // TODO Questa coverage only currently supported in the GUI with no merging
