@@ -1707,17 +1707,27 @@ set ::i3c_cfg(board_dly_min) 0.1
 source ${I3C_CONSTRAINTS}
 
 # Entries are {peripheral_input peripheral_output mio_pad}, using the MioIn* /
-# MioOut* / MioPad* indices of top_earlgrey_pkg.sv.
+# MioOut* / MioPad* indices of top_earlgrey_pkg.sv. The reset detectors observe
+# the same pads through their own peripheral inputs and have no peripheral
+# output of their own (hence the dashes in the middle column).
 # Keep the list below as
-# {MioInI3c0Scl MioOutI3c0Scl MioPadIob10}
-# {MioInI3c0Sda MioOutI3c0Sda MioPadIob9 }
-# {MioInI3c1Scl MioOutI3c1Scl MioPadIob11}
-# {MioInI3c1Sda MioOutI3c1Sda MioPadIob12}
+# {MioInI3c0Scl       MioOutI3c0Scl MioPadIob10}
+# {MioInI3c0Sda       MioOutI3c0Sda MioPadIob9 }
+# {MioInI3c1Scl       MioOutI3c1Scl MioPadIob11}
+# {MioInI3c1Sda       MioOutI3c1Sda MioPadIob12}
+# {MioInI3c0RstdetScl       -       MioPadIob10}
+# {MioInI3c0RstdetSda       -       MioPadIob9 }
+# {MioInI3c1RstdetScl       -       MioPadIob11}
+# {MioInI3c1RstdetSda       -       MioPadIob12}
 set I3C_PINMUX {
     {70 70 19}
     {71 71 18}
     {72 72 20}
     {73 73 21}
+    {82  - 19}
+    {83  - 18}
+    {84  - 20}
+    {85  - 21}
 }
 i3c_pinmux_case_analysis top_earlgrey/earlgrey_pd_aon/u_pinmux ${I3C_PINMUX}
 
@@ -1735,6 +1745,15 @@ i3c_constrain top_earlgrey/earlgrey_pd_main/u_i3c0_part_primary IOB10 IOB9 \
     I3C0 ${IO_CLK_PIN} IO_CLK ${IO_TCK_PERIOD}
 i3c_constrain top_earlgrey/earlgrey_pd_main/u_i3c1_part_primary IOB11 IOB12 \
     I3C1 ${IO_CLK_PIN} IO_CLK ${IO_TCK_PERIOD}
+
+# The reset detectors are the secondary partitions. i3c0 can wake the chip from
+# deep sleep, so its detector sits in the AON power domain while i3c1's stays
+# in the Main domain. Both run on the AON peripheral clock; their crossings are
+# bounded in chip_earlgrey_asic_check_only.sdc.
+i3c_constrain_rstdet top_earlgrey/earlgrey_pd_aon/u_i3c0_part_secondary \
+    I3C0 IO_CLK
+i3c_constrain_rstdet top_earlgrey/earlgrey_pd_main/u_i3c1_part_secondary \
+    I3C1 IO_CLK
 
 i3c_summary
 
@@ -1765,8 +1784,8 @@ set_false_path -from [get_ports IOC7] -to [get_ports IOR*]
 # Pads can be routed into sysrst_ctrl and from there combinationally out to any
 # other pad. The I3C bus I/O delays only describe the I3C pads talking to the
 # I3C IPs, so cut them through sysrst_ctrl in both directions.
-set I3C_BUS_CLKS [get_clocks {I3C0_SCL_INT I3C0_SCL_EXT I3C0_SDA
-                              I3C1_SCL_INT I3C1_SCL_EXT I3C1_SDA}]
+set I3C_BUS_CLKS [get_clocks {I3C0_SCL_INT I3C0_SCL_EXT I3C0_SDA I3C0_RSTDET_SDA
+                              I3C1_SCL_INT I3C1_SCL_EXT I3C1_SDA I3C1_RSTDET_SDA}]
 set_false_path -from ${I3C_BUS_CLKS} -through [get_pins top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl/*]
 set_false_path -to   ${I3C_BUS_CLKS} -through [get_pins top_earlgrey/earlgrey_pd_aon/u_sysrst_ctrl/*]
 
