@@ -201,8 +201,72 @@
 
   covergroups: [
     {
-      name: foo_cg
+      name: rx_fifo_level_cg
       desc: '''
+            Covers all RX FIFO fill levels (0 to RxFifoDepth) and whether a FIFO reset
+            occurred at each level. Cross coverage ensures reset is tested at every
+            possible fill level.
+            '''
+    }
+    {
+      name: tx_fifo_level_cg
+      desc: '''
+            Covers all TX FIFO fill levels (0 to TxFifoDepth) and whether a FIFO reset
+            occurred at each level. Cross coverage ensures reset is tested at every
+            possible fill level.
+            '''
+    }
+    {
+      name: baud_rate_w_core_clk_cg
+      desc: '''
+            Covers all supported baud rates crossed with all supported core clock
+            frequencies (24, 25, 48, 50, 100 MHz). Ensures every valid baud rate and
+            clock combination is exercised. Unsupported combination of BaudRate1p5Mbps
+            with 24 MHz clock is excluded.
+            '''
+    }
+    {
+      name: tx_watermark_cg
+      desc: '''
+            Covers all valid TX FIFO watermark levels to ensure the watermark interrupt
+            is tested at every programmable threshold.
+            '''
+    }
+    {
+      name: rx_watermark_cg
+      desc: '''
+            Covers all valid RX FIFO watermark levels to ensure the watermark interrupt
+            is tested at every programmable threshold.
+            '''
+    }
+    {
+      name: rx_break_err_cg
+      desc: '''
+            Covers all programmable break detection levels (0 to 3) to ensure the
+            break error interrupt is tested at every possible setting.
+            '''
+    }
+    {
+      name: rx_timeout_cg
+      desc: '''
+            Covers small (0-20), medium (20-50) and large (50+) timeout values
+            programmed in the timeout_ctrl register to ensure the timeout interrupt
+            fires correctly across the full range.
+            '''
+    }
+    {
+      name: rx_parity_err_cg
+      desc: '''
+            Covers both even and odd parity settings when a parity error is injected
+            on RX to ensure the parity error interrupt is raised in both cases.
+            '''
+    }
+    {
+      name: noise_filter_cg
+      desc: '''
+            Covers all 8 combinations of 3 consecutive RX sample values
+            (rx_sync, rx_sync_q1, rx_sync_q2) to ensure noise filter behavior
+            is tested for all possible glitch patterns.
             '''
     }
   ]
