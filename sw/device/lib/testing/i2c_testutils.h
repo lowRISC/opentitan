@@ -66,7 +66,7 @@ status_t i2c_testutils_target_check_end(const dif_i2c_t *i2c,
                                         uint8_t *cont_byte);
 
 /**
- * Prepare for, and respond to, an I2C read as an I2C device.
+ * Prepare for, and respond to, an I2C read as an I2C target.
  *
  * @param i2c An I2C DIF handle.
  * @param byte_count The number of bytes to be read.
@@ -78,7 +78,7 @@ status_t i2c_testutils_target_read(const dif_i2c_t *i2c, uint16_t byte_count,
                                    const uint8_t *data);
 
 /**
- * Check completion of an I2C read as an I2C device.
+ * Check completion of an I2C read as an I2C target.
  *
  * @param i2c An I2C DIF handle.
  * @param[out] addr Address that received the I2C read.
@@ -93,7 +93,7 @@ status_t i2c_testutils_target_check_read(const dif_i2c_t *i2c, uint8_t *addr,
                                          uint8_t *cont_byte);
 
 /**
- * Prepare for an I2C write as an I2C device.
+ * Prepare for an I2C write as an I2C target.
  *
  * @param i2c A I2C DIF handle.
  * @param byte_count The number of bytes to be written.
@@ -103,7 +103,7 @@ OT_WARN_UNUSED_RESULT
 status_t i2c_testutils_target_write(const dif_i2c_t *i2c, uint16_t byte_count);
 
 /**
- * Check completion of an I2C write as an I2C device.
+ * Check completion of an I2C write as an I2C target.
  *
  * @param i2c A I2C DIF handle.
  * @param byte_count The number of bytes to be written.
