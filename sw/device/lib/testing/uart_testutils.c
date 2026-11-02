@@ -59,8 +59,8 @@ static const pinmux_testutils_mio_pin_t
                 .insel = kTopEarlgreyPinmuxInselIoc3,
             },
         [kUartPinmuxChannelDut] = {
-            .mio_out = kTopEarlgreyPinmuxMioOutIob5,
-            .insel = kTopEarlgreyPinmuxInselIob4,
+            .mio_out = kTopEarlgreyPinmuxMioOutIoa1,
+            .insel = kTopEarlgreyPinmuxInselIoa0,
         }};
 
 /**
