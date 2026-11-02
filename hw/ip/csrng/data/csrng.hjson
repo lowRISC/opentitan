@@ -786,6 +786,7 @@
                 This bit will be set to one when an error has been detected for the
                 command stage command FIFO. The type of error is reflected in the type status
                 bits (bits 28 through 30 of this register).
+                This includes words written to !!CMD_REQ while !!SW_CMD_STS.CMD_RDY is low.
                 This bit will stay set until the next reset.
                 '''
         }
@@ -847,7 +848,8 @@
           desc: '''
                 This bit will be set to one when any of the source bits (bits 0 through 15 of this
                 this register) are asserted as a result of an error pulse generated from
-                any full FIFO that has been received a write pulse.
+                any full FIFO that has received a write pulse, or from a word written to
+                !!CMD_REQ while !!SW_CMD_STS.CMD_RDY is low.
                 This bit will stay set until the next reset.
                 '''
         }
