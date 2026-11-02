@@ -284,6 +284,7 @@ otcrypto_status_t otcrypto_drbg_manual_generate(
 }
 
 otcrypto_status_t otcrypto_drbg_uninstantiate(void) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_DRBG_UNINSTANTIATE);
   OTCRYPTO_LOCKED_STATE_CHECK();
   return otcrypto_eval_exit(entropy_csrng_uninstantiate());
 }
