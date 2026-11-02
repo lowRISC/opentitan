@@ -40,6 +40,7 @@
 #include "sw/device/silicon_creator/lib/epmp_state.h"
 #include "sw/device/silicon_creator/lib/manifest.h"
 #include "sw/device/silicon_creator/lib/manifest_def.h"
+#include "sw/device/silicon_creator/lib/otbn_boot_services.h"
 #include "sw/device/silicon_creator/lib/ownership/isfb.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_verify.h"
@@ -207,6 +208,10 @@ static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   // Check that secret OTP partitions that are expected to be provisioned have
   // a non-zero digest.
   HARDENED_RETURN_IF_ERROR(otp_secret_partitions_check(lc_state));
+
+  // Defensive clear to be sure no key material is left after the immutable
+  // ROM_EXT section.
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_clear());
 
   flash_ecc_exc_handler_en = otp_read32(
       OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN_OFFSET);

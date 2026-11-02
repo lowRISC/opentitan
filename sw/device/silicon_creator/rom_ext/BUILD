@@ -281,6 +281,7 @@ asm_library_with_coverage(
             "//sw/device/silicon_creator/lib:dbg_print",
             "//sw/device/silicon_creator/lib:manifest",
             "//sw/device/silicon_creator/lib:manifest_def",
+            "//sw/device/silicon_creator/lib:otbn_boot_services",
             "//sw/device/silicon_creator/lib:shutdown",
             "//sw/device/silicon_creator/lib/base:chip",
             "//sw/device/silicon_creator/lib/base:sec_mmio",

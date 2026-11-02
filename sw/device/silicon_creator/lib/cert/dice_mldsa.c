@@ -717,11 +717,13 @@ rom_error_t dice_attest_next_cdi(const attest_params_t *params,
       (void *)((uint8_t *)params->scratch_buf + params->scratch_buf_size);
   rom_error_t err = dice_attest_next_cdi_impl_with_stack(
       params, sealing_binding, max_key_version, exts, exts_size, stack_top);
+  rom_error_t err2 = otbn_boot_attestation_key_clear();
   HARDENED_CHECK_EQ(
       hardened_memshred((uint32_t *)params->scratch_buf,
                         params->scratch_buf_size / sizeof(uint32_t))
           .value,
       kHardenedBoolTrue);
+  HARDENED_RETURN_IF_ERROR(err2);
   return err;
 }
 /**
