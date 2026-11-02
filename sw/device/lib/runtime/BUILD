@@ -115,3 +115,32 @@ cc_test(
         "@googletest//:gtest_main",
     ],
 )
+
+# Power-safety sleep-entry validation utility.
+#
+# This library provides pwr_safety_check_sleep_readiness(), which gates
+# low-power sleep entry on the absence of active Alert Handler escalation
+# states and latched power-manager fatal errors.  See pwr_safety.h for the
+# full security rationale.
+cc_library(
+    name = "pwr_safety",
+    srcs = ["pwr_safety.c"],
+    hdrs = ["pwr_safety.h"],
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:pwrmgr",
+    ],
+)
+
+cc_test(
+    name = "pwr_safety_unittest",
+    srcs = ["pwr_safety_unittest.cc"],
+    deps = [
+        ":pwr_safety",
+        "//sw/device/lib/base:mock_mmio",
+        "//sw/device/lib/dif:alert_handler",
+        "//sw/device/lib/dif:pwrmgr",
+        "@googletest//:gtest_main",
+    ],
+)
