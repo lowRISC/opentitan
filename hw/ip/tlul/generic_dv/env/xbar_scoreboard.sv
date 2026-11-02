@@ -100,8 +100,8 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
     tl_seq_item modified_tr;
     if (is_access_to_mapped_addr(tr, port_name)) begin
       modified_tr = modify_source_id(tr);
-      // d_data is 0, when it's a write
-      if (modified_tr.d_opcode == tlul_pkg::AccessAck) modified_tr.d_data = 0;
+      // d_data is forwarded unchanged by the fabric for all response opcodes
+      // (tlul_fifo_sync no longer zeroes write-response data).
       transformed_tr = {modified_tr};
     end else begin
       cip_tl_seq_item rsp;
@@ -109,13 +109,12 @@ class xbar_scoreboard extends scoreboard_pkg::scoreboard #(.ITEM_T(tl_seq_item),
       rsp.d_source    = tr.a_source;
       rsp.d_size      = tr.a_size;
       rsp.d_error     = 1;
-      if (rsp.a_opcode == tlul_pkg::Get) begin
+      begin
         tlul_pkg::tl_a_user_t a_user = tlul_pkg::tl_a_user_t'(rsp.a_user);
-        // if an error occurs, when it's an instruction, return all 0
-        // since it's an illegal instruction, otherwise, return all 1s
+        // tlul_err_resp returns all 0 for instruction fetches and all 1s
+        // otherwise (DataWhenInstrError / DataWhenError); the fabric
+        // forwards the response data unchanged.
         rsp.d_data = a_user.instr_type == prim_mubi_pkg::MuBi4True ? 0 : '1;
-      end else begin
-        rsp.d_data = 0;
       end
       rsp.d_opcode    = rsp.a_opcode == tlul_pkg::Get ?
                         tlul_pkg::AccessAckData : tlul_pkg::AccessAck;
