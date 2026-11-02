@@ -113,12 +113,13 @@ def gen_define(name: str,
 
 
 def gen_cdefine_register(outstr: TextIO, reg: Register, comp: str, width: int,
-                         rnames: Set[str], existing_defines: Set[str]) -> None:
+                         rnames: Set[str], existing_defines: Set[str],
+                         alt_name: Optional[str] = None) -> None:
 
     def uint_literal(n: int) -> str:
         return hex(n) + 'u'
 
-    rname = reg.name
+    rname = alt_name or reg.name
     offset = reg.offset
 
     genout(outstr, format_comment(first_line(reg.desc)))
@@ -350,6 +351,15 @@ def gen_cdefine_multireg(outstr: TextIO, multireg: MultiRegister,
     else:
         log.warning("Fieldless multireg " + preg.name +
                     " skip multireg specific data generation.")
+
+    # Multireg sub-register i-th is given the name REGNAME_i, except when the multireg
+    # has size 1. In that case, it is given the name REGNAME, i.e. the '_0' suffix
+    # is omitted. Here we generate extra defines with the _0 suffix included.
+    if len(multireg.cregs) == 1:
+        subreg0 = multireg.cregs[0]
+        subreg0_alt_name = subreg0.name + '_0'
+        gen_cdefine_register(outstr, subreg0, component, regwidth, rnames,
+                             existing_defines, subreg0_alt_name)
 
     for subreg in multireg.cregs:
         gen_cdefine_register(outstr, subreg, component, regwidth, rnames,
