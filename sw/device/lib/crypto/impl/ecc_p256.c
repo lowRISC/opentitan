@@ -323,6 +323,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k(
     const otcrypto_blinded_key_t *secret_scalar,
     const otcrypto_hash_digest_t message_digest,
     otcrypto_word32_buf_t *signature) {
+  OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   OTCRYPTO_HEALTH_CHECK(kTestP256SignBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (signature->data == NULL || private_key == NULL ||
@@ -347,11 +348,13 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign(
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (signature->data == NULL || private_key == NULL ||
       private_key->keyblob == NULL) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
   if (!status_ok(p256_signature_length_check(signature->len)) ||
       !status_ok(p256_private_key_length_check(private_key))) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_TRY(
