@@ -420,10 +420,11 @@ static status_t hmac_sha1_init_internal(otcrypto_hmac_sha1_context_t *ctx,
 #endif
 
   // Key must be configured for HMAC-SHA-1, reside in software (not sideloaded),
-  // and have a non-zero key length.
+  // and have a non-zero, bounded key length.
   if (key->config.key_mode != kOtcryptoKeyModeHmacSha1 ||
       key->config.hw_backed != kHardenedBoolFalse ||
-      key->config.key_length == 0) {
+      key->config.key_length == 0 ||
+      key->config.key_length > kOtcryptoWrappedKeyMaxWords * sizeof(uint32_t)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -458,7 +459,7 @@ static status_t hmac_sha1_init_internal(otcrypto_hmac_sha1_context_t *ctx,
   if (key->config.key_length > kSha1BlockBytes) {
     // Keys longer than the SHA-1 block size (64 bytes) are hashed with SHA-1
     // to a 20-byte key first, then zero-padded to 64 bytes (RFC 2104).
-    uint32_t unmasked_key[key_words];
+    uint32_t unmasked_key[kOtcryptoWrappedKeyMaxWords];
     HARDENED_TRY(keyblob_key_unmask(key, key_words, unmasked_key));
 
     sha1_state_t key_hash_state;
@@ -467,9 +468,9 @@ static status_t hmac_sha1_init_internal(otcrypto_hmac_sha1_context_t *ctx,
                                    (const uint8_t *)unmasked_key,
                                    key->config.key_length));
     HARDENED_TRY(sha1_state_final(&key_hash_state, k0_words));
-    memset(unmasked_key, 0, sizeof(unmasked_key));
+    memset(unmasked_key, 0, key_words * sizeof(uint32_t));
   } else {
-    uint32_t unmasked_key[key_words];
+    uint32_t unmasked_key[kSha1BlockWords];
     HARDENED_TRY(keyblob_key_unmask(key, key_words, unmasked_key));
     memcpy(k0_bytes, unmasked_key, key->config.key_length);
     memset(unmasked_key, 0, sizeof(unmasked_key));

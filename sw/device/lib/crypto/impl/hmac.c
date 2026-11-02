@@ -84,7 +84,11 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
                                    hmac_key_t *hmac_key) {
   // HMAC HWIP does not support masking, so we need to unmask the key.
   size_t unmasked_key_len = keyblob_share_num_words(key->config);
-  uint32_t unmasked_key[unmasked_key_len];
+  if (unmasked_key_len == 0 || unmasked_key_len > kOtcryptoWrappedKeyMaxWords ||
+      key_block_wordlen > kHmacMaxBlockWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  uint32_t unmasked_key[kOtcryptoWrappedKeyMaxWords];
 
   otcrypto_const_byte_buf_t unmasked_key_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
@@ -123,8 +127,8 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
     } else {
       // Create an inverted copy of the input key and run the real sha and
       // inverted one in a random order.
-      uint32_t key_copy[key_block_wordlen];
-      uint32_t random_unmasked_key[unmasked_key_len];
+      uint32_t key_copy[kHmacMaxBlockWords];
+      uint32_t random_unmasked_key[kOtcryptoWrappedKeyMaxWords];
       otcrypto_const_byte_buf_t random_unmasked_key_buf = OTCRYPTO_MAKE_BUF(
           otcrypto_const_byte_buf_t, (unsigned char *)random_unmasked_key,
           key->config.key_length);
@@ -187,6 +191,17 @@ static status_t check_key(const otcrypto_blinded_key_t *key) {
   if (key->config.hw_backed != kHardenedBoolFalse) {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  // Reject zero-length keys and bound the key length to the maximum supported
+  // keyblob size.
+  if (launder32(key->config.key_length) == 0 ||
+      launder32(key->config.key_length) >
+          kOtcryptoWrappedKeyMaxWords * sizeof(uint32_t)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_GT(key->config.key_length, 0);
+  HARDENED_CHECK_LE(key->config.key_length,
+                    kOtcryptoWrappedKeyMaxWords * sizeof(uint32_t));
 
   // Check the integrity of the key.
   if (launder32(otcrypto_integrity_blinded_key_check(key)) !=
