@@ -2,26 +2,56 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 {
-  build_cmd:  "{job_prefix} {QUESTA_HOME}/questasim/linux_x86_64/qrun -optimize"
-  run_cmd:    "{job_prefix} {QUESTA_HOME}/questasim/linux_x86_64/qrun -simulate"
+  build_cmd:  "{job_prefix} {QUESTA_HOME}/linux_x86_64/qrun -optimize"
+  run_cmd:    "{job_prefix} {QUESTA_HOME}/linux_x86_64/qrun -simulate"
 
 
   build_opts: [ "-timescale 1ns/1ps",
                 "-outdir {build_dir}/qrun.out",
-                "-uvm -uvmhome {QUESTA_HOME}/questasim/verilog_src/uvm-1.2",
+				"+incdir+{QUESTA_HOME}/verilog_src/uvm-1.2/src",
+				"+incdir+{QUESTA_HOME}/verilog_src/uvm-1.2/src/mentor",
+                "{QUESTA_HOME}/verilog_src/uvm-1.2/src/uvm_pkg.sv",
+                "-uvm -uvmhome {QUESTA_HOME}/verilog_src/uvm-1.2",
                 "-mfcu",
+                "-sv",
+                "-svext=hierbinsof",
+                // Questa throws error on some LRM violations & restrictions. We demoted these errors since they will not impact the flow:
+                  //2744: It shall be illegal to have an import statement directory within a class scope.
+                  //      [DOC: IEEE Std 1800-2009 Verilog LRM - Section 26.3 "Referencing data in packages"]
+                  //2912: The specified port cannot be connected by name because it does not exist.
+                  //7070: An expression of string type can be assigned directly to a variable of string type.
+                  //      Values of integral type can be assigned to a string variable, but require a cast.
+                  //      [DOC: IEEE Std 1800-2012 Verilog LRM - 6.16 String Data Type]
+                  //7034: The strict rule for unpacked array assignment/comparison requires that the packed elements must match exactly as do the keys for associative arrays.
+                  //7033: In SystemVerilog, a variable assigned inside an always_comb, always_latch, or always_ff may not be assigned by any other process.
+                  //2244: An explicit static keyword shall be required when an initialization value is specified as part of a static variable's declaration to indicate the user's intent of executing that initialization only once at the beginning of simulation.
+                  //      The static keyword shall be optional where it would not be legal to declare the variables as automatic.
+                  //      [DOC: IEEE Std 1800-2009 Verilog LRM - 6.21 Scope and Lifetime] Variable initialized in its declaration in a static task, function or procedural block requires an explicit static keyword.
+                  //7041: The strict rule for string type assignment requires a cast if a string type is assigned to a packed type or a packed type is assigned to a string type.
+                  //      Note that a string literal is not the same as a string type.
+                "-suppress 2744,2912,7070,7034,7033,2244,7041",
                 "-f {sv_flist}",
                 // List multiple tops for the simulation. Prepend each top level with `-top`.
                 "{eval_cmd} echo {sim_tops} | sed -E 's/(\\S+)/-top \\1/g'",
-                "-voptargs=\"+acc=nr\""
+                "-voptargs=\"-access=rw+/. -svext=cbos\""
               ]
 
   run_opts:   [ "-outdir {build_dir}/qrun.out",
                 "-sv_seed {seed}",
-                // dv_macros.svh has a macro printing null using %0d
-                // format specifier, Questa throws an error on this
-                // we demote this error in Questa
-                "-suppress vsim-8323",
+                "-c",
+                "-sv_lib {QUESTA_HOME}/uvm-1.2/linux_x86_64/uvm_dpi",
+                // Questa throws error on some LRM violations & restrictions. We demoted these errors since they will not impact the flow:
+                  //8323: dv_macros.svh has a macro printing null using %0d format specifier, Questa throws an error on this.
+                  //7034: The strict rule for unpacked array assignment/comparison requires that the packed elements must match exactly as do the keys for associative arrays.
+                  //7033: In SystemVerilog, a variable assigned inside an always_comb, always_latch, or always_ff may not be assigned by any other process.
+                  //7041: The strict rule for string type assignment requires a cast if a string type is assigned to a packed type or a packed type is assigned to a string type.
+                  //      Note that a string literal is not the same as a string type.
+                  //7067: Index out of bounds for unpacked array of packed elements in constraint.
+                  //8111: The path specified is incorrect.
+                  //16133,16132:  It is missing +acc/-access in vopt which is necessary for the uvm_reg_pkg backdoor calls to work.
+                  //              Using +acc or -access for the target objects in vopt so that they can be found by the
+                  //              uvm_reg_pkg::uvm_hdl_read() function for backdoor register access.
+                "-suppress 8323,7034,7033,7067,8111,16133,16132,7041",
                 // Questa forces all declared virtual interfaces to be allocated,
                 // even in classes that are not even created at runtime. The switch
                 // below demotes the associated error thrown.
@@ -84,6 +114,10 @@
       name: questa_waves
       is_sim_mode: 1
     }
+    {
+      name: questa_waves_off
+      is_sim_mode: 1
+    }
     // TODO Questa coverage only currently supported in the GUI with no merging
     {
       name: questa_cov
@@ -94,6 +128,12 @@
     // TODO support profiling for questa
     {
       name: questa_profile
+      is_sim_mode: 1
+      build_opts: []
+      run_opts:   []
+    }
+    {
+      name: questa_gui_debug
       is_sim_mode: 1
       build_opts: []
       run_opts:   []
