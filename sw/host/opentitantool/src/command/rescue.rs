@@ -46,6 +46,13 @@ pub struct Firmware {
         help = "Method to reset for rescue mode",
     )]
     reset_target: EntryMode,
+    #[arg(
+        long,
+        default_value_t = true,
+        action = clap::ArgAction::Set,
+        help = "Render unbootable the slot not being programmed"
+    )]
+    erase_other_slot: bool,
     #[arg(value_name = "FILE")]
     filename: PathBuf,
 }
@@ -85,6 +92,14 @@ impl CommandDispatch for Firmware {
             prev_baudrate = rescue.set_speed(rate)?;
         }
         rescue.update_firmware(self.slot, payload)?;
+        if self.erase_other_slot {
+            // Erase the other slot by programming an empty blob.
+            if self.slot == BootSlot::SlotB {
+                rescue.update_firmware(BootSlot::SlotA, &[])?;
+            } else {
+                rescue.update_firmware(BootSlot::SlotB, &[])?;
+            }
+        }
         if self.rate.is_some() {
             rescue.set_speed(prev_baudrate)?;
         }
