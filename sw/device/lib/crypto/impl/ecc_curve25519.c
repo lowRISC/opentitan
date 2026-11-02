@@ -528,6 +528,10 @@ otcrypto_status_t otcrypto_ed25519_sign(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_const_byte_buf_t *input_message,
     otcrypto_eddsa_sign_mode_t sign_mode, otcrypto_word32_buf_t *signature) {
+  // Default to not-approved in case of an early return; this service is
+  // approved and `otcrypto_ed25519_sign_part1_async_start` sets the indicator
+  // to approved once reached.
+  OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   OTCRYPTO_HEALTH_CHECK(kTestEd25519SignBit);
   // Validate signature buffer
   HARDENED_TRY(ed25519_signature_check(signature));
@@ -576,6 +580,10 @@ otcrypto_status_t otcrypto_ed25519_verify(
     otcrypto_eddsa_sign_mode_t sign_mode,
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
+  // Default to not-approved in case of an early return; this service is
+  // approved and `otcrypto_ed25519_verify_async_start` sets the indicator to
+  // approved once reached.
+  OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   OTCRYPTO_HEALTH_CHECK(kTestEd25519VerifyBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (verification_result == NULL) {
