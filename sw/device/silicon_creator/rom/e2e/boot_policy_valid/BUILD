@@ -39,7 +39,7 @@ BOOT_POLICY_VALID_CASES = [
     },
     {
         "desc": "bad",
-        "suffix": "_corrupted_fpga_cw340_rom_with_fake_keys_signed_bin",
+        "suffix": "_corrupted_fpga_cw340_rom_signed_bin",
     },
 ]
 
@@ -60,7 +60,7 @@ BOOT_POLICY_VALID_CASES = [
             b["desc"],
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
         },
         fpga = fpga_params(
             assemble = "{{slot_a}}@{} {{slot_b}}@{}".format(

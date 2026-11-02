@@ -87,7 +87,7 @@ bazel build //hw/bitstream/vivado:fpga_${BOARD}_test_rom
 To build an FPGA bitstream with the _ROM_ for the chosen board, use:
 ```sh
 cd $REPO_TOP
-bazel build //hw/bitstream/vivado:fpga_${BOARD}_rom_with_fake_keys
+bazel build //hw/bitstream/vivado:fpga_${BOARD}_rom
 ```
 
 >**Note**: Building these bitstreams will require Vivado to be installed on your system, with access to the proper (paid) licenses, described [here](./install_vivado/README.md).
@@ -320,7 +320,7 @@ bazel run //sw/host/opentitantool -- --interface=${INTERFACE} fpga set-pll
 Check that it's working by [running the demo](#bootstrapping-the-demo-software) or a test, such as the `uart_smoketest` below.
 ```sh
 cd $REPO_TOP
-bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
+bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom
 ```
 
 ### Troubleshooting
@@ -383,7 +383,7 @@ bazel test --test_tag_filters=${BOARD} --test_output=streamed //sw/device/tests:
 or
 ```sh
 cd $REPO_TOP
-bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
+bazel test --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom
 ```
 
 Under the hood, Bazel conveniently dispatches `opentitantool` to:
@@ -398,14 +398,14 @@ To get a better understanding of the `opentitantool` functions Bazel invokes aut
 By default, the above invocations of `bazel test ...` use the pre-built (Internet downloaded) FPGA bitstream.
 To instruct bazel to load the bitstream built earlier, or to have bazel build an FPGA bitstream on the fly, and load that bitstream onto the FPGA, add the `--define bitstream=vivado` flag to either of the above Bazel commands, for example, run:
 ```sh
-bazel test --define bitstream=vivado --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
+bazel test --define bitstream=vivado --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom
 ```
 
 #### Configuring Bazel to skip loading a bitstream
 
 Alternatively, if you would like to instruct Bazel to skip loading any bitstream at all, and simply use the bitstream that is already loaded, add the `--define bitstream=skip` flag, for example, run:
 ```sh
-bazel test --define bitstream=skip --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
+bazel test --define bitstream=skip --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom
 ```
 
 ### Configuring Bazel to load a custom bitstream
@@ -503,7 +503,7 @@ Therefore, you must connect the Hyperdebug to one of the USB ports of the CW340 
 The CW310 does not have an internal hub so an external hub must be used in this case.
 
 ```sh
-bazel test --test_arg=--usb-serial=123456789012 --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
+bazel test --test_arg=--usb-serial=123456789012 --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom
 ```
 
 You can list the serial numbers of all connected ChipWhisperer boards by running `lsusb -v -d 2b3e: | grep -B14 iSerial`.
@@ -519,7 +519,7 @@ test:a2 --test_arg=--usb-serial=987654321098
 Then run the test with the corresponding config:
 
 ```sh
-bazel test --config=fpga --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom_with_fake_keys
+bazel test --config=fpga --test_output=streamed //sw/device/tests:uart_smoketest_fpga_${BOARD}_rom
 ```
 
 ### Manually loading FPGA bitstreams and bootstrapping OpenTitan software with `opentitantool`
@@ -769,7 +769,7 @@ First, make sure the device software has been built with debug symbols (by defau
 For example, to build and test the UART smoke test with debug symbols, you can add `--copt=-g` flag to the `bazel test ...` command:
 ```sh
 cd $REPO_TOP
-bazel test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw340_rom_with_fake_keys
+bazel test --copt=-g --test_output=streamed //sw/device/tests:uart_smoketest_fpga_cw340_rom
 ```
 
 Then a connection between OpenOCD and GDB may be established with:

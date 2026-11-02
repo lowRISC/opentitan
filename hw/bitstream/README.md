@@ -43,7 +43,7 @@ opentitan_test(
     name = "individualize_sw_cfg_functest",
     srcs = ["individualize_sw_cfg_functest.c"],
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
     },
     fpga = fpga_params(
         # If the test changes the stored OTP values during execution, it should use this flag
@@ -95,7 +95,7 @@ opentitan_test(
         tags = ["manuf"],
     ),
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
     },
     deps = [
         ":individualize_sw_cfg_earlgrey_sku_sival",

@@ -94,7 +94,7 @@ opentitan_binary(
         CONST.LCV.RMA,
     ),
     exec_env = [
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys",
+        "//hw/top_earlgrey:fpga_cw340_rom",
         "//hw/top_earlgrey:sim_dv",
         "//hw/top_earlgrey:sim_verilator",
     ],
@@ -156,7 +156,7 @@ opentitan_binary(
             lc_state_val,
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
         },
         fpga = fpga_params(
             exit_success = t["exit_success"][lc_state],
@@ -203,7 +203,7 @@ opentitan_test(
         "//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_1",
     },
     exec_env = {
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+        "//hw/top_earlgrey:fpga_cw340_rom": None,
     },
     fpga = fpga_params(
         otp = ":otp_img_sigverify_spx_prod_enabled_true",

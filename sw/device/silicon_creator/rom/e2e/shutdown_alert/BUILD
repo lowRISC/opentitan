@@ -55,7 +55,7 @@ ALERT_LC_STATES = get_lc_items(
             lc_state_val,
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
         },
         fpga = fpga_params(
             otp = "//hw/top_earlgrey/data/otp:img_{}".format(lc_state),
@@ -174,7 +174,7 @@ otp_alert_digest(
             lc_state_val,
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
         },
         fpga = fpga_params(
             otp = ":otp_img_shutdown_alert_{}".format(lc_state),

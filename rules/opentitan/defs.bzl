@@ -114,10 +114,10 @@ opentitan_manual_test = _opentitan_manual_test
 # The default set of test environments for Earlgrey.
 EARLGREY_TEST_ENVS = {
     "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
-    "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+    "//hw/top_earlgrey:fpga_cw340_rom": None,
     "//hw/top_earlgrey:sim_dv": None,
     "//hw/top_earlgrey:sim_verilator": None,
-    "//hw/top_earlgrey:sim_qemu_rom_with_fake_keys": None,
+    "//hw/top_earlgrey:sim_qemu_rom": None,
 }
 
 # The default set of test environments for Earlgrey.
@@ -128,7 +128,7 @@ EARLGREY_SILICON_OWNER_ROM_EXT_ENVS = {
 # All CW340 test environments for Earlgrey.
 EARLGREY_CW340_TEST_ENVS = {
     "//hw/top_earlgrey:fpga_cw340_test_rom": None,
-    "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+    "//hw/top_earlgrey:fpga_cw340_rom": None,
     "//hw/top_earlgrey:fpga_cw340_sival": None,
     "//hw/top_earlgrey:fpga_cw340_sival_rom_ext": None,
     "//hw/top_earlgrey:fpga_cw340_rom_ext": None,

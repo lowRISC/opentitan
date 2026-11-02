@@ -27,7 +27,7 @@ to test the SIVAL FT provisioning flow, you would issue the following Bazel
 command:
 ```sh
 bazel test --test_output=streamed \
-  //sw/device/silicon_creator/manuf/base:ft_provision_sival_fpga_hyper310_rom_with_fake_keys \
+  //sw/device/silicon_creator/manuf/base:ft_provision_sival_fpga_hyper310_rom \
   --action_env=PKCS11_MODULE_PATH=/opt/nitrokey/lib/libsc-hsm-pkcs11.so \
   --action_env=PKCS11_TOKEN_PIN=123456
 ```

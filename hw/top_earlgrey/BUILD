@@ -78,11 +78,11 @@ sim_qemu(
 )
 
 sim_qemu(
-    name = "sim_qemu_rom_with_fake_keys",
+    name = "sim_qemu_rom",
     testonly = True,
     base = ":sim_qemu_base",
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "test_key_0"},
-    exec_env = "sim_qemu_rom_with_fake_keys",
+    exec_env = "sim_qemu_rom",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     rom = "//sw/device/silicon_creator/rom:mask_rom",
 )
@@ -170,12 +170,12 @@ fpga_cw340(
 )
 
 fpga_cw340(
-    name = "fpga_cw340_rom_with_fake_keys",
+    name = "fpga_cw340_rom",
     testonly = True,
     base = ":fpga_cw340",
     base_bitstream = "//hw/bitstream/cw340:bitstream",
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "test_key_0"},
-    exec_env = "fpga_cw340_rom_with_fake_keys",
+    exec_env = "fpga_cw340_rom",
     manifest = "//sw/device/silicon_creator/rom_ext:manifest",
     mmi = "//hw/bitstream/cw340:mmi",
     otp = "//hw/top_earlgrey/data/otp:img_rma",
@@ -189,7 +189,7 @@ fpga_cw340(
 fpga_cw340(
     name = "fpga_cw340_rom_ext",
     testonly = True,
-    base = ":fpga_cw340_rom_with_fake_keys",
+    base = ":fpga_cw340_rom",
     ecdsa_key = select({
         "//signing:test_keys": {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0"},
         # We choose key zero in the appkey's keyset, which should be app-key-prod-0.
@@ -221,7 +221,7 @@ fpga_cw340(
 fpga_cw340(
     name = "fpga_cw340_sival",
     testonly = True,
-    base = ":fpga_cw340_rom_with_fake_keys",
+    base = ":fpga_cw340_rom",
 
     # PROD keys are allowed to run across all life cycle stages. This prod key
     # is used to enable execution across life cycle stages with a single
@@ -398,7 +398,7 @@ sim_verilator(
 )
 
 sim_verilator(
-    name = "sim_verilator_rom_with_fake_keys",
+    name = "sim_verilator_rom",
     testonly = True,
     base = ":sim_verilator",
     ecdsa_key = {"//sw/device/silicon_creator/rom/keys/fake/ecdsa:ecdsa_keyset": "prod_key_0"},

@@ -68,7 +68,7 @@ manifest(
             lc_state_val,
         ),
         exec_env = {
-            "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": None,
+            "//hw/top_earlgrey:fpga_cw340_rom": None,
             "//hw/top_earlgrey:sim_dv": None,
         },
         fpga = fpga_params(
