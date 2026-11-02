@@ -15,6 +15,8 @@ filesets:
       - lowrisc:dv:tl_agent
       - lowrisc:dv:otbn_model_agent
       - lowrisc:dv:key_sideload_agent
+      - lowrisc:dv:kmac_app_agent
+      - lowrisc:ip:kmac_pkg
     files:
       - otbn_env_pkg.sv
       - otbn_loop_if.sv
