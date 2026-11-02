@@ -57,9 +57,19 @@ module prim_diff_decode #(
     // 2 sync regs, one reg for edge detection
     logic diff_pq, diff_nq, diff_pd, diff_nd;
 
-    // Counter for skew cycles tolerated before flagging an issue
-    // The width needs to accommodate SkewCycles + 1 to count up to SkewCycles.
-    logic [prim_util_pkg::vbits(SkewCycles + 1)-1:0] skew_cnt_d, skew_cnt_q;
+    // Counter for skew cycles tolerated before flagging an issue.
+    // Counts from 0 to SkewCycles - 1 in the IsSkewing state.
+    logic [prim_util_pkg::vbits(SkewCycles)-1:0] skew_cnt_d, skew_cnt_q;
+    // Whether the skew counter has not yet reached its maximum tolerated value.
+    // Gated via generate so that for SkewCycles == 1 this resolves to a constant
+    // zero, avoiding an always-false (and lint-unreachable) comparison against
+    // an unsigned counter compared to -1.
+    logic skew_incomplete;
+    if (SkewCycles > 1) begin : gen_skew_incomplete
+      assign skew_incomplete = (skew_cnt_q < SkewCycles - 1);
+    end else begin : gen_no_skew_incomplete
+      assign skew_incomplete = 1'b0;
+    end
 
     prim_flop_2sync #(
       .Width(1),
@@ -144,7 +154,6 @@ module prim_diff_decode #(
             end else begin
               // Mismatch with an edge: likely start of a tolerated skew
               state_d    = IsSkewing;
-              skew_cnt_d = 1;
             end
           end
         end
@@ -159,7 +168,7 @@ module prim_diff_decode #(
             if (level) rise_o = 1'b1;
             else       fall_o = 1'b1;
           end else begin
-            if (skew_cnt_q < SkewCycles) begin
+            if (skew_incomplete) begin
               // Still within tolerated skew cycles
               skew_cnt_d = skew_cnt_q + 1;
             end else begin
