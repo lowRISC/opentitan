@@ -241,6 +241,14 @@ In particular, the most significant byte B<sub>1</sub> of the string is read in 
   </tr>
 </table>
 
+## Aborting Generate Commands
+
+A Generate command in progress can be aborted via [`GEN_ABORT`](registers.md#gen_abort).
+A halted Generate command can also be aborted.
+The abort takes effect once the instance is resumed.
+To abort a Generate command of a hardware instance, halt the instance first via [`INT_STATE_HALT`](registers.md#int_state_halt) and check that a Generate command is in progress (bit 14 of the last internal state word).
+Otherwise, the command may complete before the abort, which then raises [`RECOV_ALERT_STS.GEN_ABORT_INVALID_ALERT`](registers.md#recov_alert_sts).
+
 ## Device Interface Functions (DIFs)
 
 - [Device Interface Functions](../../../../sw/device/lib/dif/dif_csrng.h)
