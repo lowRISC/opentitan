@@ -8,8 +8,10 @@ description: "Ascon unit"
 filesets:
   files_rtl:
     depend:
-       - lowrisc:prim:all
        - lowrisc:prim:sparse_fsm
+       - lowrisc:prim:assert
+       - lowrisc:prim:count
+       - lowrisc:prim:mubi_pkg
     files:
        - rtl/prim_ascon_round.sv
        - rtl/prim_ascon_sbox.sv

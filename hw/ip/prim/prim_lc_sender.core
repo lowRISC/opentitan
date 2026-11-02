@@ -8,7 +8,7 @@ description: "Sender primitive for life cycle control signals."
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:flop
+      - lowrisc:prim:sec_anchor
       - lowrisc:ip:lc_ctrl_pkg
     files:
       - rtl/prim_lc_sender.sv

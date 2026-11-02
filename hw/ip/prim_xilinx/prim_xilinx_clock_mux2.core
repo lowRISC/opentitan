@@ -10,6 +10,8 @@ virtual:
 
 filesets:
   files_rtl:
+    depend:
+      - lowrisc:prim:assert
     files:
       - rtl/prim_clock_mux2.sv
     file_type: systemVerilogSource

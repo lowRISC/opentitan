@@ -8,11 +8,23 @@ description: "Example module to verify constraints to keep redundant security fe
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:all
       - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:prim:clock_gating
       - lowrisc:prim:lc_sender
       - lowrisc:prim:lc_sync
+      - lowrisc:prim:and2
+      - lowrisc:prim:buf
+      - lowrisc:prim:clock_mux2
+      - lowrisc:prim:const
+      - lowrisc:prim:const_sec
+      - lowrisc:prim:flop
+      - lowrisc:prim:flop_en
+      - lowrisc:prim:flop_no_rst
+      - lowrisc:prim:inv
+      - lowrisc:prim:mubi
+      - lowrisc:prim:mubi_pkg
+      - lowrisc:prim:xnor2
+      - lowrisc:prim:xor2
     files:
       - rtl/prim_sdc_example.sv
     file_type: systemVerilogSource

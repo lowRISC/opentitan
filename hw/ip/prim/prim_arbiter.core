@@ -10,6 +10,7 @@ filesets:
     depend:
       - lowrisc:prim:util
       - lowrisc:prim:assert
+      - lowrisc:prim:buf
       - lowrisc:prim:leading_one_ppc
     files:
       - rtl/prim_arbiter_fixed.sv

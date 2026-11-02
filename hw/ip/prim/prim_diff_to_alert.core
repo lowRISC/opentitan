@@ -9,8 +9,8 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:flop_2sync
-      - lowrisc:prim:buf
       - lowrisc:prim:alert
+      - lowrisc:prim:sec_anchor
     files:
       - rtl/prim_diff_to_alert.sv
     file_type: systemVerilogSource

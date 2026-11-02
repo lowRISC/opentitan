@@ -15,6 +15,7 @@ filesets:
       - lowrisc:prim:flop
       - lowrisc:prim:clock_inv
       - lowrisc:prim:clock_buf
+      - lowrisc:prim:clock_mux2
     files:
       - rtl/prim_clock_div.sv
     file_type: systemVerilogSource

@@ -9,6 +9,8 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:flop_en
+      - lowrisc:prim:xor2
     files:
       - rtl/prim_dom_and_2share.sv
     file_type: systemVerilogSource

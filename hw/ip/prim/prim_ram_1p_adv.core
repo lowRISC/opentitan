@@ -9,8 +9,12 @@ filesets:
     depend:
       - lowrisc:prim:assert
       - lowrisc:prim:util
+      - lowrisc:prim:buf
+      - lowrisc:prim:flop
+      - lowrisc:prim:mubi_pkg
       - lowrisc:prim:secded
       - lowrisc:prim:ram_1p
+      - lowrisc:prim:ram_1p_pkg
     files:
       - rtl/prim_ram_1p_adv.sv
     file_type: systemVerilogSource

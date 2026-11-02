@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:assert
+      - lowrisc:prim:flop
     files:
       - rtl/prim_sparse_fsm_flop.sv
     file_type: systemVerilogSource

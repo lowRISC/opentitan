@@ -11,11 +11,15 @@ virtual:
 filesets:
   files_rtl:
     depend:
+      - lowrisc:prim:assert
+      - lowrisc:prim:fifo
       - lowrisc:tlul:headers
       - lowrisc:prim:ram_1p
       - lowrisc:systems:ast_pkg
       - lowrisc:virtual_ip:flash_ctrl_top_specific_pkg
       - lowrisc:virtual_ip:flash_ctrl_prim_reg_top
+      - lowrisc:prim:mubi_pkg
+      - lowrisc:prim:ram_1p_pkg
     files:
       - rtl/prim_generic_flash_bank.sv
       - rtl/prim_flash.sv
