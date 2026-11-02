@@ -158,7 +158,8 @@ otcrypto_status_t otcrypto_kmac(
       (required_output_len + sizeof(uint32_t) - 1) / sizeof(uint32_t);
 
   // Per NIST SP 800-185, KMAC tag length must be at least 32 bits (4 bytes).
-  if (tag->len != required_output_words || required_output_len < 4) {
+  if (tag->len != required_output_words || required_output_len < 4 ||
+      required_output_words > kOtcryptoWrappedKeyMaxWords) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -205,7 +206,7 @@ otcrypto_status_t otcrypto_kmac(
                          customization_string->len, tag->data,
                          required_output_len));
     // Second KMAC computation using the KMAC core.
-    uint32_t tag_redundant_data[required_output_words];
+    uint32_t tag_redundant_data[kOtcryptoWrappedKeyMaxWords];
     HARDENED_TRY(hardened_memshred(tag_redundant_data, required_output_words));
     kmac_blinded_key_t kmac_key_redundant;
     HARDENED_TRY(kmac_key_construct(key, &kmac_key_redundant));
