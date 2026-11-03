@@ -623,6 +623,7 @@ class IpBlock:
                                  alias_target, where, self.name))
 
         init_block = RegBlock(self.regwidth, self.params)
+        init_block.add_reinits(self.reinit_list)
 
         alias_reg_blocks = RegBlock.build_blocks(init_block, rd['registers'],
                                                  self.bus_interfaces,
