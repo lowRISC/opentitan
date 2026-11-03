@@ -117,10 +117,10 @@ It has been generated with ./util/topgen.py -t hw/top_earlgrey/data/top_earlgrey
 |         |                           |            |              |      64bit       |                             SRAM_DATA_KEY_SEED                              |     0x738      |     16     |
 |         |                           |            |              |      64bit       |                   [SECRET1_DIGEST](#Reg_secret1_digest_0)                   |     0x748      |     8      |
 |         |                           |            |              |      64bit       |                                 SECRET1_ZER                                 |     0x750      |     8      |
-|    9    |          SECRET2          |     96     |     yes      |      64bit       |                                  RMA_TOKEN                                  |     0x758      |     16     |
-|         |                           |            |              |      64bit       |                           CREATOR_ROOT_KEY_SHARE0                           |     0x768      |     32     |
-|         |                           |            |              |      64bit       |                           CREATOR_ROOT_KEY_SHARE1                           |     0x788      |     32     |
-|         |                           |            |              |      64bit       |                   [SECRET2_DIGEST](#Reg_secret2_digest_0)                   |     0x7A8      |     8      |
-|         |                           |            |              |      64bit       |                                 SECRET2_ZER                                 |     0x7B0      |     8      |
-|   10    |        LIFE_CYCLE         |     88     |      no      |      32bit       |                              LC_TRANSITION_CNT                              |     0x7B8      |     48     |
-|         |                           |            |              |      32bit       |                                  LC_STATE                                   |     0x7E8      |     40     |
+|    9    |          SECRET2          |    128     |     yes      |      64bit       |                                  RMA_TOKEN                                  |     0x758      |     16     |
+|         |                           |            |              |      64bit       |                           CREATOR_ROOT_KEY_SHARE0                           |     0x768      |     48     |
+|         |                           |            |              |      64bit       |                           CREATOR_ROOT_KEY_SHARE1                           |     0x798      |     48     |
+|         |                           |            |              |      64bit       |                   [SECRET2_DIGEST](#Reg_secret2_digest_0)                   |     0x7C8      |     8      |
+|         |                           |            |              |      64bit       |                                 SECRET2_ZER                                 |     0x7D0      |     8      |
+|   10    |        LIFE_CYCLE         |     88     |      no      |      32bit       |                              LC_TRANSITION_CNT                              |     0x7D8      |     48     |
+|         |                           |            |              |      32bit       |                                  LC_STATE                                   |     0x808      |     40     |

@@ -108,20 +108,26 @@ package otp_ctrl_pkg;
   localparam int SramNonceSel  = SramNonceWidth / ScrmblBlockWidth;
 
   typedef struct packed {
-    logic [keymgr_dpe_pkg::KeyWidth-1:0] creator_root_key_share0;
-    logic                                creator_root_key_share0_valid;
-    logic [keymgr_dpe_pkg::KeyWidth-1:0] creator_root_key_share1;
-    logic                                creator_root_key_share1_valid;
-    logic [keymgr_dpe_pkg::KeyWidth-1:0] creator_seed;
-    logic                                creator_seed_valid;
-    logic [keymgr_dpe_pkg::KeyWidth-1:0] owner_seed;
-    logic                                owner_seed_valid;
+    logic [keymgr_dpe_pkg::InternalKeyWidth-1:0] creator_root_key_share0;
+    logic                                        creator_root_key_share0_valid;
+    logic [keymgr_dpe_pkg::InternalKeyWidth-1:0] creator_root_key_share1;
+    logic                                        creator_root_key_share1_valid;
+    logic [keymgr_dpe_pkg::SeedWidth-1:0]        creator_seed;
+    logic                                        creator_seed_valid;
+    logic [keymgr_dpe_pkg::SeedWidth-1:0]        owner_seed;
+    logic                                        owner_seed_valid;
   } otp_keymgr_key_t;
 
   parameter otp_keymgr_key_t OTP_KEYMGR_KEY_DEFAULT = '{
-    creator_root_key_share0: 256'hefb7ea7ee90093cf4affd9aaa2d6c0ec446cfdf5f2d5a0bfd7e2d93edc63a102,
+    creator_root_key_share0: {
+      192'h63285532c486da16c9f1331285040771502fc6acf34bc6a1,
+      192'h7ab36a50bdb230e94c461620e8d4097ee7caeac893cabaed
+    },
     creator_root_key_share0_valid: 1'b1,
-    creator_root_key_share1: 256'h56d24a00181de99e0f690b447a8dde2a1ffb8bc306707107aa6e2410f15cfc37,
+    creator_root_key_share1: {
+      192'hf1cff3d4e029b6138242e1bae0b706e55bd6e5f1951fa6ce,
+      192'h0b925a8453a4e8685a5757fd9f7e6ee2195e629f3d349ce9
+    },
     creator_root_key_share1_valid: 1'b1,
     creator_seed: 256'hc7c50b38655cc87f821e5b07fed85d2c07e222a9e00bef308b3eccba0ba406fa,
     creator_seed_valid: 1'b1,

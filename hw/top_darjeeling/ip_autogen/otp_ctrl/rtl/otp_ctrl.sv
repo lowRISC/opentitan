@@ -1566,9 +1566,13 @@ end
   ////////////////
 
   `ASSERT_INIT(CreatorRootKeyShare0Size_A,
-               keymgr_dpe_pkg::KeyWidth == CreatorRootKeyShare0Size * 8)
+               keymgr_dpe_pkg::InternalKeyWidth == CreatorRootKeyShare0Size * 8)
   `ASSERT_INIT(CreatorRootKeyShare1Size_A,
-               keymgr_dpe_pkg::KeyWidth == CreatorRootKeyShare1Size * 8)
+               keymgr_dpe_pkg::InternalKeyWidth == CreatorRootKeyShare1Size * 8)
+  `ASSERT_INIT(CreatorSeedSize_A,
+               keymgr_dpe_pkg::SeedWidth == CreatorSeedSize * 8)
+  `ASSERT_INIT(OwnerSeedSize_A,
+               keymgr_dpe_pkg::SeedWidth == OwnerSeedSize * 8)
   `ASSERT_INIT(SramDataKeySeedSize_A,      SramKeySeedWidth == SramDataKeySeedSize * 8)
 
   `ASSERT_INIT(RmaTokenSize_A,        lc_ctrl_state_pkg::LcTokenWidth == RmaTokenSize * 8)

@@ -18,13 +18,13 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   input prim_mubi_pkg::mubi4_t otbn_as_kdf_engine_i,
   input data_en_i,
   input data_valid_i,
-  input hw_key_req_t key_i,
+  input internal_key_t key_i,
   input [Shares-1:0][kmac_pkg::AppDigestW-1:0] data_i,
   output logic prng_en_o,
-  output hw_key_req_t aes_key_o,
-  output hw_key_req_t kmac_key_o,
-  output wide_hw_key_req_t hmac_key_o,
-  output wide_hw_key_req_t otbn_key_o,
+  output hw_key_req_t        aes_key_o,
+  output hw_key_req_t        kmac_key_o,
+  output wide_hw_key_req_t   hmac_key_o,
+  output wide_hw_key_req_t   otbn_key_o,
   output logic sideload_sel_err_o,
   output logic fsm_err_o
 );
@@ -68,10 +68,10 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, keymgr_dpe_sideload_e, StSideloadReset)
 
   logic keys_en;
-  logic [Shares-1:0][KeyWidth-1:0] data_truncated;
+  logic [Shares-1:0][HwKeyWidth-1:0] data_truncated;
   logic [Shares-1:0][WideHwKeyWidth-1:0] data_truncated_wide;
   for(genvar i = 0; i < Shares; i++) begin : gen_truncate_data
-    assign data_truncated[i]      = data_i[i][KeyWidth-1:0];
+    assign data_truncated[i]      = data_i[i][HwKeyWidth-1:0];
     assign data_truncated_wide[i] = data_i[i][WideHwKeyWidth-1:0];
   end
 
@@ -153,7 +153,10 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   assign slot_sel[OtbnIdx] = (dest_sel_i == Otbn) & mubi4_test_true_strict(hw_key_sel[OtbnIdx]);
   assign slot_sel[HmacIdx] = (dest_sel_i == Hmac) & mubi4_test_true_strict(hw_key_sel[HmacIdx]);
 
-  keymgr_dpe_sideload_key u_aes_key (
+  hw_key_req_t aes_sideload_key;
+  keymgr_dpe_sideload_key #(
+    .Width(HwKeyWidth)
+  ) u_aes_key (
     .clk_i,
     .rst_ni,
     .en_i(keys_en),
@@ -162,8 +165,8 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
     .clr_i(slot_clr[AesIdx]),
     .entropy_i(entropy_i),
     .key_i(data_truncated),
-    .valid_o(aes_key_o.valid),
-    .key_o(aes_key_o.key)
+    .valid_o(aes_sideload_key.valid),
+    .key_o(aes_sideload_key.key)
   );
 
   wide_hw_key_req_t otbn_sideload_key;
@@ -182,6 +185,7 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
     .key_o(otbn_sideload_key.key)
   );
 
+  wide_hw_key_req_t hmac_sideload_key;
   keymgr_dpe_sideload_key #(
     .Width(WideHwKeyWidth)
   ) u_hmac_key (
@@ -193,12 +197,14 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
     .clr_i(slot_clr[HmacIdx]),
     .entropy_i(entropy_i),
     .key_i(data_truncated_wide),
-    .valid_o(hmac_key_o.valid),
-    .key_o(hmac_key_o.key)
+    .valid_o(hmac_sideload_key.valid),
+    .key_o(hmac_sideload_key.key)
   );
 
   hw_key_req_t kmac_sideload_key;
-  keymgr_dpe_sideload_key u_kmac_key (
+  keymgr_dpe_sideload_key #(
+    .Width(HwKeyWidth)
+  ) u_kmac_key (
     .clk_i,
     .rst_ni,
     .en_i(keys_en),
@@ -226,10 +232,10 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
 
   // SEC_CM: SIDE_LOAD_SEL.CTRL.CONSISTENCY
   logic [LastIdx-1:0] valids;
-  assign valids[AesIdx] = aes_key_o.valid;
+  assign valids[AesIdx]  = aes_sideload_key.valid;
   assign valids[KmacIdx] = kmac_sideload_key.valid;
   assign valids[OtbnIdx] = otbn_sideload_key.valid;
-  assign valids[HmacIdx] = hmac_key_o.valid;
+  assign valids[HmacIdx] = hmac_sideload_key.valid;
 
   // If valid tracking claims a valid should be 0 but 1 is observed, it is
   // an error.
@@ -238,24 +244,40 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   // 1 outside that window, then an error is triggered.
   assign sideload_sel_err_o = |(~valid_tracking_q & valids);
 
+  // when clearing, request prng
+  assign prng_en_o = clr;
+
+  ///////////////////
+  //  Output Stage
+  ///////////////////
+
   // Widen the internal key to the width of the OTBN sideload key.
   // OTBN expects a `WideHwKeyWidth` key in the sideload interface while the
-  // size of the internal key is only `KeyWidth`.
+  // size of the internal key is `InternalKeyWidth`.
   wide_hw_key_req_t padded_key_in;
   assign padded_key_in.valid = key_i.valid;
   for (genvar i = 0; i < Shares; i++) begin : gen_padded_input_key
     assign padded_key_in.key[i] = WideHwKeyWidth'(key_i.key[i]);
   end
 
+  // KMAC expects a `HwKeyWidth` key in the sideload interface while the size of the
+  // internal key is `InternalKeyWidth`. Truncate the internal key accordingly.
+  hw_key_req_t trunc_key_in;
+  assign trunc_key_in.valid = key_i.valid;
+  for (genvar i = 0; i < Shares; i++) begin : gen_trunc_input_key
+    assign trunc_key_in.key[i] = key_i.key[i][HwKeyWidth-1:0];
+  end
+
   // Forward the internal key to the kdf engine selected by `otbn_as_kdf_engine_i`.
   // Otherwise, the respective sideload key is output.
   assign kmac_key_o = key_i.valid & mubi4_test_false_strict(otbn_as_kdf_engine_i) ?
-                          key_i : kmac_sideload_key;
+                          trunc_key_in : kmac_sideload_key;
   assign otbn_key_o = key_i.valid & mubi4_test_true_strict(otbn_as_kdf_engine_i) ?
                           padded_key_in : otbn_sideload_key;
 
-  // when clearing, request prng
-  assign prng_en_o = clr;
+  // Directly assign the aes / hmac sideload key
+  assign aes_key_o = aes_sideload_key;
+  assign hmac_key_o = hmac_sideload_key;
 
 
   /////////////////////////////////////
@@ -268,6 +290,11 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
   // The sideload keys are truncated from the KMAC output. Hence the width of the KMAC
   // output needs to be at least size of the largest key.
   `ASSERT_INIT(WideHwKeyFitsInDigest_A, WideHwKeyWidth <= kmac_pkg::AppDigestW)
-  `ASSERT_INIT(KeyFitsInDigest_A, KeyWidth <= kmac_pkg::AppDigestW)
+  `ASSERT_INIT(InternalKeyFitsInDigest_A, InternalKeyWidth <= kmac_pkg::AppDigestW)
+  `ASSERT_INIT(KeyFitsInDigest_A, HwKeyWidth <= kmac_pkg::AppDigestW)
+
+  // Verify the following relationship: WideHwKeyWidth >= InternalKeyWidth >= HwKeyWidth
+  `ASSERT_INIT(WideHwKeyWidth_A, WideHwKeyWidth >= InternalKeyWidth)
+  `ASSERT_INIT(HwKeyWidth_A, InternalKeyWidth >= HwKeyWidth)
 
 endmodule // keymgr_dpe_sideload_key_ctrl
