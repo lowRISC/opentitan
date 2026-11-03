@@ -499,10 +499,10 @@ rom_error_t dice_attest_next_cdi_impl(
       &issuer_ecdsa_pubkey));
 
   // Save issuer attestation key for endorsing the next stage
-  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(
+  RETURN_IF_ERROR_OTBN_SAVE_KEY(
       params->issuer_params->ecc_cfg->keygen_seed_idx,
       params->issuer_params->ecc_cfg->type,
-      *params->issuer_params->ecc_cfg->keymgr_diversifier));
+      *params->issuer_params->ecc_cfg->keymgr_diversifier);
 
   keymgr_binding_value_t issuer_mldsa_seed;
   HARDENED_RETURN_IF_ERROR(dice_mldsa_derive_seed(

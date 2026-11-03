@@ -8,7 +8,6 @@
 
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
@@ -312,11 +311,6 @@ rom_error_t sc_keymgr_sideload_clear(sc_keymgr_dest_t destination) {
       destination) {
     return kErrorKeymgrInternal;
   }
-
-  // Spin for 100 microseconds.
-  // TODO(#20024): this value seems to work for tests, but it would be good to
-  // run a more principled analysis.
-  busy_spin_micros(100);
 
   // Stop continuous clearing.
   abs_mmio_write32(

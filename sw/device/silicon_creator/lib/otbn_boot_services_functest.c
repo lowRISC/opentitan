@@ -179,6 +179,12 @@ rom_error_t attestation_advance_and_endorse_test(void) {
   return kErrorOk;
 }
 
+static rom_error_t scoped_key_save_without_endorse_helper(void) {
+  RETURN_IF_ERROR_OTBN_SAVE_KEY(kFlashInfoFieldUdsKeySeedIdx,
+                                kScKeymgrKeyTypeAttestation, kDiversification);
+  return kErrorOk;
+}
+
 // N.B. This test will lock OTBN, so it needs to be the last test that runs.
 rom_error_t attestation_save_clear_key_test(void) {
   // We need the public key to pass to the endorse routine's self-test.
@@ -202,9 +208,12 @@ rom_error_t attestation_save_clear_key_test(void) {
   ecdsa_p256_signature_t sig;
   RETURN_IF_ERROR(otbn_boot_attestation_endorse(&digest, &sig, &pk));
 
-  // Previous otbn_boot_attestation_endorse clears the key. Check that endorsing
-  // now fails (it should even lock OTBN). We cannot recover from the fatal
-  // alert so must ignore it.
+  // Save a key using the scoped helper and return without endorsing; the key
+  // should be cleared automatically when leaving the helper's scope.
+  RETURN_IF_ERROR(scoped_key_save_without_endorse_helper());
+
+  // Check that endorsing now fails (it should even lock OTBN). We cannot
+  // recover from the fatal alert so must ignore it.
   CHECK_STATUS_OK(ottf_alerts_ignore_alert(kTopEarlgreyAlertIdOtbnFatal));
   hmac_sha256(kTestMessage, kTestMessageLen, &digest);
   CHECK(otbn_boot_attestation_endorse(&digest, &sig, &pk) ==

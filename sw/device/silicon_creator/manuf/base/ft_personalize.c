@@ -644,9 +644,6 @@ static status_t personalize_gen_dice_certificates(
   size_t curr_cert_size = kUdsMaxTbsSizeBytes;
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyUds, uds_pubkey_id,
                                      &pre_endorse_data->uds_pubkey));
-  TRY(otbn_boot_attestation_key_save(kDiceKeyUds.keygen_seed_idx,
-                                     kDiceKeyUds.type,
-                                     *kDiceKeyUds.keymgr_diversifier));
 
   const cert_key_id_pair_t uds_key_ids = {
       .endorsement = &uds_endorsement_key_id,
