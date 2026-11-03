@@ -1024,14 +1024,17 @@
                 }
                 {
                     name: "CREATOR_ROOT_KEY_SHARE0",
+                    // Key shares can be reduce to 256 bit if the top selectes
+                    // KdfEngineSel==`KdfEngineKmac` for the keymgr_dpe. In addition the
+                    // parameter `InternalKeyWidth` must be set to 256b.
                     inv_default: "<random>",
-                    size: "32",
+                    size: "48",
                     iskeymgr_creator: true
                 }
                 {
                     name: "CREATOR_ROOT_KEY_SHARE1",
                     inv_default: "<random>",
-                    size: "32"
+                    size: "48"
                     iskeymgr_creator: true
                 }
                 {

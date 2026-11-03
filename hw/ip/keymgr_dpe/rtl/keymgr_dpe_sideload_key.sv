@@ -7,7 +7,7 @@
 `include "prim_assert.sv"
 
 module keymgr_dpe_sideload_key import keymgr_dpe_pkg::*; #(
-  parameter int Width = KeyWidth
+  parameter int Width = HwKeyWidth
 ) (
   input clk_i,
   input rst_ni,

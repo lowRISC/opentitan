@@ -66,8 +66,8 @@ module keymgr_dpe_ctrl
   output logic init_o,
 
   // Data input
-  input hw_key_req_t root_key_i,
-  input hw_key_req_t secondary_root_key_i,
+  input internal_key_t root_key_i,
+  input internal_key_t secondary_root_key_i,
   // `hw_sel_o == 1` indicates whether the generated key output
   // goes to sideload port. The safe default here is software CSR key.
   output prim_mubi_pkg::mubi4_t hw_sel_o,
@@ -75,17 +75,19 @@ module keymgr_dpe_ctrl
   // KMAC ctrl interface
   output logic adv_en_o,
   output logic gen_en_o,
-  output hw_key_req_t key_o,
+  output internal_key_t key_o,
   output keymgr_dpe_slot_t active_key_slot_o,
-  output invalid_advance_o,
+  output logic invalid_advance_o,
 
-  input kmac_done_i,
-  input kmac_input_invalid_i, // asserted when selected data fails criteria check
-  input kmac_fsm_err_i, // asserted when kmac fsm reaches unexpected state
-  input kmac_op_err_i,  // asserted when kmac itself reports an error
-  input kmac_done_err_i,// asserted when kmac unexpectedly toggles done
-  input kmac_cmd_err_i, // asserted when more than one command given to kmac
-  input [Shares-1:0][KeyWidth-1:0] kmac_data_i,
+  input logic kmac_done_i,
+  input logic kmac_input_invalid_i, // asserted when selected data fails criteria check
+  input logic kmac_fsm_err_i,       // asserted when kmac fsm reaches unexpected state
+  input logic kmac_op_err_i,        // asserted when kmac itself reports an error
+  input logic kmac_done_err_i,      // asserted when kmac unexpectedly toggles done
+  input logic kmac_cmd_err_i,       // asserted when more than one command given to kmac
+
+  // Digest provided by the kmac
+  input logic [Shares-1:0][InternalKeyWidth-1:0] kmac_data_i,
 
   // prng control interface
   input [Shares-1:0][RandWidth-1:0] entropy_i,
@@ -101,7 +103,7 @@ module keymgr_dpe_ctrl
 );
 
   localparam int EntropyWidth = LfsrWidth / 2;
-  localparam int EntropyRounds = KeyWidth / EntropyWidth;
+  localparam int EntropyRounds = InternalKeyWidth / EntropyWidth;
   localparam int EntropyRndWidth = prim_util_pkg::vbits(EntropyRounds);
 
   keymgr_dpe_working_state_e state_q, state_d;
@@ -193,8 +195,8 @@ module keymgr_dpe_ctrl
   // check incoming kmac data validity
   // Only check during the periods when there is actual kmac output
   assign invalid_kmac_out = (op_update | op_ack) & kmac_done_i &
-                            (~valid_data_chk(kmac_data_i[0]) |
-                            ~valid_data_chk(kmac_data_i[1]));
+                            (~valid_key_chk(kmac_data_i[0]) |
+                            ~valid_key_chk(kmac_data_i[1]));
 
   // async errors have nothing to do with the operation and thus should not
   // impact operation results.
@@ -885,6 +887,12 @@ module keymgr_dpe_ctrl
 
   // The count value should always be 0 when a transaction start
   `ASSERT(CntZero_A, $rose(op_start_i) |-> cnt == '0)
+
+  // The internal key must be an integer multiple of the entropy width
+  `ASSERT_INIT(InternalKeyWidthMultipleOfEntropyWidth_A, InternalKeyWidth % EntropyWidth == 0)
+
+  // The counter indexes the key chunks and must never exceed the number of chunks.
+  `ASSERT(CntInRange_A, int'(cnt) < EntropyRounds)
 
   // Whenever a transaction completes, data_en must return to 0 on the next cycle
   `ASSERT(DataEnDis_A, op_start_i & op_done_o |=> ~data_hw_en_o && ~data_sw_en_o)
