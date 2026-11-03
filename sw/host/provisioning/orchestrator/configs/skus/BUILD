@@ -41,6 +41,23 @@ sku_cfg(
     token_encrypt_key = "//sw/device/silicon_creator/manuf/keys/sival:rma_unlock_enc_rsa3072.pub.der",
 )
 
+sku_cfg(
+    name = "sival_staging",
+    testonly = True,
+    dice_ca = ":emulation_dice_ca",
+    ext_ca = ":emulation_ext_ca",
+    otp = "sv00",
+    owner_fw_boot_str = "ownership: OWND",
+    package = "npcr10",
+    perso_bin_suffix = "ft_personalize_{sku}_{target}.signed.bin",
+    perso_bins = ["//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival"],
+    product = "earlgrey_a2",
+    si_creator = "nuvoton",
+    sku_name = "sival",
+    target_lc_state = "prod",
+    token_encrypt_key = "//sw/device/silicon_creator/manuf/keys/sival:rma_unlock_enc_rsa3072.pub.der",
+)
+
 sku_cert(
     name = "emulation_dice_ca",
     certificate = "//sw/device/silicon_creator/manuf/keys/fake:dice_ca.pem",

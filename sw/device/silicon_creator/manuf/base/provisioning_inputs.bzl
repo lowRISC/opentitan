@@ -99,6 +99,21 @@ EARLGREY_SKUS = {
         "orchestrator_cfg": "@lowrisc_opentitan//sw/host/provisioning/orchestrator/configs/skus:sival",
         "offline": True,
     },
+    "sival_staging": {
+        "otp": "sv00",
+        "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/fake:ca_data",
+        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice", "//sw/device/silicon_creator/lib/cert:dice_mldsa_empty"],
+        "host_ext_libs": ["@lowrisc_opentitan//sw/host/provisioning/ft_ext_lib:default_ft_ext_lib"],
+        "device_ext_libs": ["@lowrisc_opentitan//sw/device/silicon_creator/manuf/default:default_perso_fw_ext"],
+        "ownership_libs": ["//sw/device/silicon_creator/rom_ext/sival:sival_owner"],
+        "rom_ext": "//sw/device/silicon_creator/rom_ext/sival/binaries:rom_ext_dice_x509_prod",
+        "owner_fw": "//sw/device/silicon_owner/bare_metal:bare_metal_slot_b",
+        "ecdsa_key": {"//hw/ip/otp_ctrl/data/earlgrey_skus/sival/keys:keyset": "sv00-earlgrey-a1-root-ecdsa-prod-0"},
+        "spx_key": {},
+        "signature_prefix": None,
+        "perso_bin": "//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival",
+        "orchestrator_cfg": "@lowrisc_opentitan//sw/host/provisioning/orchestrator/configs/skus:sival_staging",
+    },
 } | EXT_EARLGREY_SKUS
 
 # TODO(lowRISC#27275): Refactor build/signing rules for perso binaries.
