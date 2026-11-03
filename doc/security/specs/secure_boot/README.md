@@ -168,6 +168,7 @@ On the next boot, `ROM_EXT` handles the request if:
 
 `ROM_EXT` writes its response to the same location in retention SRAM.
 Requests can also be sent to `ROM_EXT` through the [rescue protocol][rescue].
+The layout of retention SRAM and of the boot services messages is described in [Retention SRAM][retention-sram].
 
 ## Commands
 
@@ -212,6 +213,7 @@ However, these are the requirements that the manifest format is required to supp
 [keymgr_dpe]:  ../../../../hw/ip/keymgr_dpe/README.md
 [manifest-format]: ../../../../sw/device/silicon_creator/rom_ext/doc/manifest.md
 [rescue]: ../../../../sw/device/silicon_creator/rom_ext/doc/rescue.md
+[retention-sram]: ../../../../sw/device/silicon_creator/rom_ext/doc/retention_sram.md
 [rom-epmp]: ../../../../sw/device/silicon_creator/rom/doc/memory_protection.md
 [rom-ext-ownership]: ../../../../sw/device/silicon_creator/rom_ext/doc/ownership.md
 [otbn]: ../../../../hw/ip/otbn/README.md
