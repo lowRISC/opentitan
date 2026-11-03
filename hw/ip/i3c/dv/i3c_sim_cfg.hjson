@@ -43,42 +43,4 @@
   // Default UVM test and seq class name.
   uvm_test: i3c_base_test
   uvm_test_seq: i3c_base_vseq
-
-  // List of test specifications.
-  tests: [
-    // These tests write random values to PHY_CONFIG, which may disable the pull-ups and
-    // high-keepers of the DUT. Keep the bus at a defined level with the board-level pull-ups.
-    {
-      name: i3c_csr_hw_reset
-      run_opts: ["+en_board_pullup=1"]
-    }
-    {
-      name: i3c_csr_rw
-      run_opts: ["+en_board_pullup=1"]
-    }
-    {
-      name: i3c_csr_bit_bash
-      run_opts: ["+en_board_pullup=1"]
-    }
-    {
-      name: i3c_csr_aliasing
-      run_opts: ["+en_board_pullup=1"]
-    }
-    {
-      name: i3c_same_csr_outstanding
-      run_opts: ["+en_board_pullup=1"]
-    }
-    {
-      name: i3c_csr_mem_rw_with_rand_reset
-      run_opts: ["+en_board_pullup=1"]
-    }
-    {
-      name: i3c_tl_intg_err
-      run_opts: ["+en_board_pullup=1"]
-    }
-    {
-      name: i3c_sec_cm
-      run_opts: ["+en_board_pullup=1"]
-    }
-  ]
 }
