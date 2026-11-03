@@ -1,3 +1,6 @@
+# Registers
+
+<!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/rram_ctrl/data/rram_ctrl.hjson -->
 ## Summary
 
 | Name                                                                             | Offset   |   Length | Description                                                                                                                                                    |
@@ -1430,3 +1433,6 @@ The FIFO is 16 entries of 4B words.
 - Size (words): `1`
 - Access: `ro`
 - Byte writes are *not* supported.
+
+
+<!-- END CMDGEN -->
