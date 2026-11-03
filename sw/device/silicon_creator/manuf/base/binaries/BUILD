@@ -16,7 +16,6 @@ copy_files(
     ],
     filter = [
         "ft_personalize_sival",
-        "ft_flash_scramble_sival",
     ],
     relative_to = ":BUILD",
     tags = ["manual"],
@@ -34,22 +33,6 @@ exec_env_filegroup(
         "ft_personalize_sival_fpga_hyper310_rom_with_fake_keys.signed.bin": "cw310",
         "ft_personalize_sival_fpga_cw340_rom_with_fake_keys.signed.bin": "cw340",
         "ft_personalize_sival_silicon_creator.signed.bin": "silicon",
-    },
-    kind = "flash",
-)
-
-exec_env_filegroup(
-    name = "ft_flash_scramble_sival",
-    testonly = True,
-    exec_env = {
-        "//hw/top_earlgrey:fpga_hyper310_rom_with_fake_keys": "cw310",
-        "//hw/top_earlgrey:fpga_cw340_rom_with_fake_keys": "cw340",
-        "//hw/top_earlgrey:silicon_creator": "silicon",
-    },
-    files = {
-        "ft_flash_scramble_sival_fpga_hyper310_rom_with_fake_keys.signed.bin": "cw310",
-        "ft_flash_scramble_sival_fpga_cw340_rom_with_fake_keys.signed.bin": "cw340",
-        "ft_flash_scramble_sival_silicon_creator.signed.bin": "silicon",
     },
     kind = "flash",
 )

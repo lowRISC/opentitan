@@ -35,8 +35,6 @@ sku_cfg(
     perso_bin_suffix = "ft_personalize_{sku}_{target}.signed.bin",
     perso_bins = ["//sw/device/silicon_creator/manuf/base/binaries:ft_personalize_sival"],
     product = "earlgrey_a2",
-    scrambling_bin_suffix = "ft_flash_scramble_{sku}_{target}.signed.bin",
-    scrambling_bins = ["//sw/device/silicon_creator/manuf/base/binaries:ft_flash_scramble_sival"],
     si_creator = "nuvoton",
     sku_name = "sival",
     target_lc_state = "prod",
