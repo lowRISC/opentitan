@@ -44,18 +44,22 @@ rsa_key_from_cofactor:
   li       x20, 20
   li       x21, 21
 
-  /* Get a pointer to the middle of the cofactor.
-       x2 <= rsa_cofactor + n*32 */
-  slli     x2, x30, 5
-  la       x3, rsa_cofactor
-  add      x2, x2, x3
+  /* Combine the cofactor shares and clear the second share. */
+  la       x2, rsa_cofactor0
+  la       x3, rsa_cofactor1
+  li       x4, 31
+  loop     x30, 5
+    bn.lid   x20, 0(x2)
+    bn.lid   x21, 0(x3)
+    bn.xor   w20, w20, w21
+    bn.sid   x20, 0(x2++)
+    bn.sid   x4, 0(x3++)
 
-  # Set the second half of the cofactor buffer to zero, so the cofactor is the
-  #    same size as the modulus for division.
-  #     dmem[rsa_cofactor+n*32..rsa_cofactor+n*2*32] <= 0
-  li       x3, 31
+  /* Set the second half of the cofactor buffer to zero, so the cofactor is the
+     same size as the modulus for division.
+       dmem[rsa_cofactor+n*32..rsa_cofactor+n*2*32] <= 0 */
   loop     x30, 1
-    bn.sid   x3, 0(x2++)
+    bn.sid   x4, 0(x2++)
 
   /* Update the number of limbs for division.
        x30 <= n*2 */
@@ -125,6 +129,13 @@ derive_d:
   la       x10, rsa_p
   la       x11, rsa_q
 
+  /* Check that both p and q are odd (LSB of both must be 1). */
+  lw       x2, 0(x10)
+  lw       x3, 0(x11)
+  and      x2, x2, x3
+  andi     x2, x2, 1
+  beq      x2, x0, _derive_d_fail
+
   # Subtract 1 from p in-place (no carry from lowest limb since p is odd).
   #      dmem[rsa_p..rsa_p+(n*32)] <= p - 1
   bn.lid   x20, 0(x10)
@@ -150,10 +161,28 @@ derive_d:
      requires one working buffer, which we construct from `rsa_cofactor`.
        dmem[rsa_d..rsa_d+(n*2*32)] <= (65537^-1) mod dmem[x12..x12+(n*2*32)] */
   la x24, tmp_scratchpad
-  la x25, rsa_d0
+  la x25, rsa_d
   la x26, rsa_cofactor
   addi x27, x30, 0
   jal x1, modinv_f4
+
+  /* modinv_f4 stores (-LCM(p-1,q-1)^(e-2) mod e) at 0(x26).
+     If this is 0, e = 65537 divides LCM(p-1,q-1) and d has no inverse. */
+  lw       x2, 0(x26)
+  beq      x2, x0, _derive_d_fail_restore_x30
+
+  /* Boolean-mask d0 and d1 with fresh URND bits. */
+  li       x20, 20
+  li       x21, 21
+  la       x12, rsa_d0
+  la       x13, rsa_d1
+  loop     x30, 6
+    bn.lid   x20, 0(x12)
+    bn.wsrr  w21, URND
+    bn.xor   w20, w20, w21
+    bn.sid   x20, 0(x12++)
+    bn.xor   w31, w31, w31 /* dummy instruction */
+    bn.sid   x21, 0(x13++)
 
   # Reset the limb count.
   #      x30 <= (n*2) >> 1 = n
@@ -164,4 +193,10 @@ derive_d:
   addi     x3, x0, HARDENED_BOOL_TRUE
   sw       x3, 0(x2)
 
+  ret
+
+_derive_d_fail_restore_x30:
+  /* Restore limb count x30 <= n and abort with ok = FALSE. */
+  srli     x30, x30, 1
+_derive_d_fail:
   ret

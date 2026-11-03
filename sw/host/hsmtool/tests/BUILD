@@ -16,6 +16,69 @@ sh_library(
     srcs = ["test_lib.sh"],
 )
 
+[
+    sh_test(
+        name = "slh_dsa_generate_test_{}".format(parameter_set),
+        srcs = ["hsmtool_runner.sh"],
+        args = [
+            "--module=$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
+            "--token=fake_keys -u user -p 123456",
+            "slh-dsa",
+            "generate",
+            "--label fake",
+            "--parameter-set {}".format(parameter_set),
+        ],
+        data = [
+            "//signing/softhsm",
+            "//signing/softhsm:conf",
+            "@opentitan_signing_infra//hsmtool",
+            "@softhsm2//:gen_dir",
+        ],
+        env = {
+            "HSMTOOL": "$(rootpath @opentitan_signing_infra//hsmtool:hsmtool)",
+            "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
+        },
+        deps = [":test_lib"],
+    )
+    for parameter_set in [
+        "sha2-128s",
+        "shake-128s",
+        "sha2-128f",
+        "shake-128f",
+        "sha2-192s",
+        "shake-192s",
+        "sha2-192f",
+        "shake-192f",
+        "sha2-256s",
+        "shake-256s",
+        "sha2-256f",
+        "shake-256f",
+    ]
+]
+
+sh_test(
+    name = "slh_dsa_roundtrip_test",
+    srcs = ["hsmtool_roundtrip_runner.sh"],
+    args = [
+        "slh-dsa",
+        "fake_app_prod_slh_dsa",
+        "$(rootpath :tqbf.txt)",
+    ],
+    data = [
+        "tqbf.txt",
+        "//signing/softhsm",
+        "//signing/softhsm:conf",
+        "@opentitan_signing_infra//hsmtool",
+        "@softhsm2//:gen_dir",
+    ],
+    env = {
+        "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
+        "HSMTOOL": "$(rootpath @opentitan_signing_infra//hsmtool:hsmtool)",
+        "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
+    },
+    deps = [":test_lib"],
+)
+
 sh_test(
     name = "token_exists_test",
     srcs = ["hsmtool_runner.sh"],
@@ -35,6 +98,7 @@ sh_test(
         "HSMTOOL": "$(rootpath @opentitan_signing_infra//hsmtool:hsmtool)",
         "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
     },
+    deps = [":test_lib"],
 )
 
 genrule(

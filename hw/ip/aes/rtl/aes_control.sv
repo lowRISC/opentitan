@@ -214,6 +214,7 @@ module aes_control
   logic          [Sp2VWidth-1:0] mr_prng_update;
   logic          [Sp2VWidth-1:0] mr_prng_reseed_req;
   logic          [Sp2VWidth-1:0] mr_start_we;
+  logic          [Sp2VWidth-1:0] mr_key_iv_data_in_clear;
   logic          [Sp2VWidth-1:0] mr_key_iv_data_in_clear_we;
   logic          [Sp2VWidth-1:0] mr_data_out_clear_we;
   logic          [Sp2VWidth-1:0] mr_prng_reseed;
@@ -360,11 +361,12 @@ module aes_control
         .prng_reseed_req_o         ( mr_prng_reseed_req[i]         ), // OR-combine
         .prng_reseed_ack_i         ( prng_reseed_ack_i             ),
 
-        .start_we_o                ( mr_start_we[i]                ), // OR-combine
+        .start_we_o                ( mr_start_we[i]                ), // AND-combine
+        .key_iv_data_in_clear_o    ( mr_key_iv_data_in_clear[i]    ), // OR-combine
         .key_iv_data_in_clear_we_o ( mr_key_iv_data_in_clear_we[i] ), // AND-combine
         .data_out_clear_we_o       ( mr_data_out_clear_we[i]       ), // AND-combine
         .prng_reseed_o             ( mr_prng_reseed[i]             ), // OR-combine
-        .prng_reseed_we_o          ( mr_prng_reseed_we[i]          ), // OR-combine
+        .prng_reseed_we_o          ( mr_prng_reseed_we[i]          ), // AND-combine
 
         .idle_o                    ( mr_idle[i]                    ), // AND-combine
         .idle_we_o                 ( mr_idle_we[i]                 ), // AND-combine
@@ -465,11 +467,12 @@ module aes_control
         .prng_reseed_req_o         ( mr_prng_reseed_req[i]         ), // OR-combine
         .prng_reseed_ack_i         ( prng_reseed_ack_i             ),
 
-        .start_we_o                ( mr_start_we[i]                ), // OR-combine
+        .start_we_o                ( mr_start_we[i]                ), // AND-combine
+        .key_iv_data_in_clear_o    ( mr_key_iv_data_in_clear[i]    ), // OR-combine
         .key_iv_data_in_clear_we_o ( mr_key_iv_data_in_clear_we[i] ), // AND-combine
         .data_out_clear_we_o       ( mr_data_out_clear_we[i]       ), // AND-combine
         .prng_reseed_o             ( mr_prng_reseed[i]             ), // OR-combine
-        .prng_reseed_we_o          ( mr_prng_reseed_we[i]          ), // OR-combine
+        .prng_reseed_we_o          ( mr_prng_reseed_we[i]          ), // AND-combine
 
         .idle_o                    ( mr_idle[i]                    ), // AND-combine
         .idle_we_o                 ( mr_idle_we[i]                 ), // AND-combine
@@ -507,17 +510,18 @@ module aes_control
   assign cipher_data_out_clear_o   = |mr_cipher_data_out_clear;
   assign prng_update_o             = |mr_prng_update;
   assign prng_reseed_req_o         = |mr_prng_reseed_req;
-  assign start_we_o                = |mr_start_we;
+  assign key_iv_data_in_clear_o    = |mr_key_iv_data_in_clear;
   assign prng_reseed_o             = |mr_prng_reseed;
-  assign prng_reseed_we_o          = |mr_prng_reseed_we;
 
   // AND: Only if all bits are high, the corresponding action should be triggered.
   assign ctrl_we_o                 = &mr_ctrl_we;
   assign ctrl_gcm_we_o             = &mr_ctrl_gcm_we;
   assign gcm_init_done_o           = &mr_gcm_init_done;
   assign data_in_we_o              = &mr_data_in_we;
+  assign start_we_o                = &mr_start_we;
   assign key_iv_data_in_clear_we_o = &mr_key_iv_data_in_clear_we;
   assign data_out_clear_we_o       = &mr_data_out_clear_we;
+  assign prng_reseed_we_o          = &mr_prng_reseed_we;
   assign idle_o                    = &mr_idle;
   assign idle_we_o                 = &mr_idle_we;
   assign stall_o                   = &mr_stall;
@@ -643,7 +647,6 @@ module aes_control
   //////////////////////
   // Most triggers are only ever cleared by control.
   assign start_o                   = 1'b0;
-  assign key_iv_data_in_clear_o    = 1'b0;
   assign data_out_clear_o          = 1'b0;
 
 endmodule

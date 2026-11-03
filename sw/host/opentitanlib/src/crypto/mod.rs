@@ -6,6 +6,7 @@ use std::path::PathBuf;
 use thiserror::Error;
 
 pub mod ecdsa;
+pub mod mldsa;
 pub mod rsa;
 pub mod sha256;
 pub mod spx;

@@ -33,15 +33,23 @@ typedef struct ghash_block {
   uint32_t data[kGhashBlockNumWords];
 } ghash_block_t;
 
+/**
+ * GHASH context.
+ *
+ * All blocks in the context have the bits of each byte reversed relative to
+ * GCM, which is the bit order of the carry-less multiplication. The functions
+ * below take their inputs in the bit order of GCM, and `ghash_final` returns
+ * the result in that order.
+ */
 typedef struct ghash_context {
   /**
-   * Precomputed product table for the hash subkey share 0.
+   * Hash subkey share 0, as set by `ghash_init_subkey`.
    */
-  ghash_block_t tbl0[16];
+  ghash_block_t hash_subkey0;
   /**
-   * Precomputed product table for the hash subkey share 1.
+   * Hash subkey share 1, as set by `ghash_init_subkey`.
    */
-  ghash_block_t tbl1[16];
+  ghash_block_t hash_subkey1;
   /**
    * Cipher block representing the current GHASH state for share 0.
    */
@@ -105,27 +113,24 @@ hardened_bool_t ghash_context_integrity_checksum_check(
 /**
  * Precompute hash subkey information for GHASH.
  *
- * This routine will precompute a product table for the hash subkey for the
- * GHASH context. It will not set the state to 0; call `ghash_init` afterwards.
+ * This routine will convert the hash subkey to the bit order of the GHASH
+ * context. It will not set the state to 0, so call `ghash_init` afterwards.
  *
  * This operation should only be called once per key, and afterwards the
  * context object can be used for multiple separate GHASH operations with that
- * key. The reason for separating this and `ghash_init` into two functions is
- * that computing the product table is computationally expensive, and some GCM
- * computations need to compute more than one separate GHASH operation.
+ * key.
  *
  * @param hash_subkey Subkey for the GHASH operation (`kGhashBlockNumWords`
  * words).
- * @param[out] tbl The populated product table.
+ * @param[out] subkey The converted subkey.
  */
-status_t ghash_init_subkey(const uint32_t *hash_subkey, ghash_block_t *tbl);
+status_t ghash_init_subkey(const uint32_t *hash_subkey, ghash_block_t *subkey);
 
 /**
  * Start a GHASH operation.
  *
  * This routine will initialize the GHASH state within the context object to
- * zero. It will not precompute the key product table; call `ghash_init_subkey`
- * first.
+ * zero. It will not set the hash subkey, so call `ghash_init_subkey` first.
  *
  * @param[out] ctx Context object with GHASH state reset to zero.
  */

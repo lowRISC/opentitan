@@ -9,7 +9,7 @@ This critical design parameter specifies the frequency of the main clock into th
 The logic within the IP block uses this frequency to calculate default timing parameters (in terms of clock cycles) in order to comply with the strict timing requirements of the I3C Basic Specification without relying upon software to supply correct values.
 It is also important within the IP block for implementing appropriate time delays during I3C bus activity, and measuring intervals such as the 'Bus Idle' and 'Bus Available' conditions.
 
-The supported range of clock frequencies for maximum data rate ('SDR0' at 12.5MHz) is 50MHz-1.5GHz, both inclusive, but the timing parameters support operation down to 32MHz (exclusive) if a proportionate decrease in the maximum data rate is acceptable.
+The supported range of clock frequencies for maximum data rate ('SDR0' at 12.5 MHz) is 50 MHz-1.5 GHz, both inclusive, but the timing parameters support operation down to 32 MHz (exclusive) if a proportionate decrease in the maximum data rate is acceptable.
 
 ## I3C Role Configuration ('PrimaryCtrl', 'SecondaryCtrl' and 'Target')
 
@@ -18,12 +18,12 @@ Five role configurations are intended to be supported:
 | Required I3C role(s)                                                                          | PrimaryCtrl | SecondaryCtrl | Target | Available |
 |-----------------------------------------------------------------------------------------------|-------------|---------------|--------|-----------|
 | Primary and Secondary Controller functionality; implies Target functionality and a single bus |      1      |       1       |    1   |     -     |
-| Primary Controller and Target; these may be on a single bus or separated buses                |      1      |       0       |    1   |    Yes    |
+| Primary Controller or Target (software enables one of them at a time)                         |      1      |       0       |    1   |    Yes    |
 | Primary controller only                                                                       |      1      |       0       |    0   |    Yes    |
 | Secondary Controller; implies Target functionality and a single bus                           |      0      |       1       |    1   |     -     |
 | Target only, no Controller logic                                                              |      0      |       0       |    1   |    Yes    |
 
-It should be noted that in this first release, operation as a Secondary Controller is not supported, so not all of these configurations are yet available.
+This version of the IP block does not support the Secondary Controller role, so the configurations with `SecondaryCtrl` set are not available.
 Also, at the time of writing, the design has not been optimized to produce maximal area savings when Controller or Target functionality is excluded.
 
 ## Virtual Targets ('NumTargets' and 'MaxTargets')
@@ -74,7 +74,7 @@ In order to support a larger set of IP clock frequencies and/or lower clock freq
 
 This half-cycle extension is achieved by also using the negative edge of the IP clock in the generation of the SCL signal, which has the disadvantage of introducing combinational logic into the SCL output path.
 An important design decision within the IP is that I3C bus signals shall come directly from flip-flops wherever possible, to eliminate the possibility of glitches, and this is especially true of the SCL output.
-Whilst this combinational logic is kept to a minimum, if - for a given deployment of the IP block - it is certain that the combination of clock frequency and frequency accuracy is sufficient to meet the constraints imposed upon the SCL high period, as described in HCI Tables 48, 49 and 50, then the half-cycle extension should not be enabled.
+Whilst this combinational logic is kept to a minimum, if - for a given deployment of the IP block - it is certain that the combination of clock frequency and frequency accuracy is sufficient to meet the constraints imposed upon the SCL high period, as described in Tables 48, 49 and 50 of the I3C Basic Specification v1.2, then the half-cycle extension should not be enabled.
 
 There is further information on this point in the [integration notes](integration_notes.md).
 

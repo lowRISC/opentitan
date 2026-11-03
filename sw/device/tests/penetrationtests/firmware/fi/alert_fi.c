@@ -130,7 +130,7 @@ static status_t init_peripherals(void) {
   TRY(dif_flash_ctrl_init(base_addr, &flash_ctrl));
 #endif  // USE_FLASH
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR);
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR);
   TRY(dif_gpio_init(base_addr, &gpio));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);

@@ -115,7 +115,7 @@ tl_device_t xbar_devices[$] = '{
     '{"i2c0", '{
         '{32'h30080000, 32'h3008007f}
     }},
-    '{"gpio", '{
+    '{"gpio0", '{
         '{32'h30000000, 32'h300000ff}
     }},
     '{"spi_host0", '{
@@ -231,7 +231,7 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_main__ram",
         "uart0",
         "i2c0",
-        "gpio",
+        "gpio0",
         "spi_host0",
         "spi_device",
         "rv_timer",
@@ -286,7 +286,7 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_main__ram",
         "uart0",
         "i2c0",
-        "gpio",
+        "gpio0",
         "spi_host0",
         "spi_device",
         "rv_timer",
@@ -342,7 +342,7 @@ tl_host_t xbar_hosts[$] = '{
         "soc_proxy__ctn",
         "uart0",
         "i2c0",
-        "gpio",
+        "gpio0",
         "spi_host0",
         "spi_device",
         "rv_timer",

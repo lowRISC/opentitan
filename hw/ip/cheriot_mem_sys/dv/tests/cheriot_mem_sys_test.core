@@ -1,0 +1,19 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:cheriot_mem_sys_test:0.1"
+description: "CHERIOT_MEM_SYS DV UVM test"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:cheriot_mem_sys_env
+    files:
+      - cheriot_mem_sys_test_pkg.sv
+      - cheriot_mem_sys_base_test.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

@@ -342,8 +342,8 @@ static void init_peripheral_handles(void) {
       mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR), &entropy_src));
   CHECK_DIF_OK(
       dif_hmac_init(mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR), &hmac));
-  CHECK_DIF_OK(
-      dif_gpio_init(mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR), &gpio));
+  CHECK_DIF_OK(dif_gpio_init(
+      mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR), &gpio));
   CHECK_DIF_OK(
       dif_kmac_init(mmio_region_from_addr(TOP_EARLGREY_KMAC_BASE_ADDR), &kmac));
   CHECK_DIF_OK(dif_pinmux_init(
@@ -381,7 +381,7 @@ static void configure_pinmux(void) {
 
   // Configure GPIO max-power period indicator pin on IOB8.
   CHECK_DIF_OK(dif_pinmux_output_select(&pinmux, kTopEarlgreyPinmuxMioOutIob8,
-                                        kTopEarlgreyPinmuxOutselGpioGpio0));
+                                        kTopEarlgreyPinmuxOutselGpio0Gpio0));
 
   // UART1:
   //    RX on IOA4
@@ -738,6 +738,7 @@ static void configure_entropy_complex(void) {
           .rng_fips = true,
           .route_to_firmware = false,
           .bypass_conditioner = false,
+          .clear_esfinal_fifo_while_disabled = true,
           .single_bit_mode = kDifEntropySrcSingleBitModeDisabled,
           .health_test_threshold_scope = false,
           .health_test_window_size = kEntropySrcHealthTestWindowSize,

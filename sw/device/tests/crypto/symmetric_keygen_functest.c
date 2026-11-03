@@ -210,7 +210,7 @@ static status_t hw_backed_keygen_test(void) {
 
   otcrypto_blinded_key_t key = {
       .config = config,
-      .keyblob_length = 8 * sizeof(uint32_t),
+      .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
 
@@ -234,7 +234,8 @@ static status_t hw_backed_keygen_test(void) {
   TRY_CHECK(otcrypto_integrity_blinded_key_check(&key) == kHardenedBoolTrue);
 
   // We provide a test with CDI set to one, i.e., using the attestation key.
-  uint32_t attestation_keyblob[9];
+  uint32_t attestation_keyblob[16];
+  memset(attestation_keyblob, 0, sizeof(attestation_keyblob));
   otcrypto_blinded_key_t attestation_key = {
       .config = config,
       .keyblob_length = sizeof(attestation_keyblob),
@@ -255,9 +256,10 @@ static status_t hw_backed_keygen_test(void) {
   TRY(ot_crypto_hw_backed_keygen(kHardenedBoolTrue, &attestation_key));
 
   // Verify the key struct was morphed correctly.
-  TRY_CHECK(key.config.hw_backed == kHardenedBoolFalse);
-  TRY_CHECK(key.keyblob_length == 16 * sizeof(uint32_t));
-  TRY_CHECK(otcrypto_integrity_blinded_key_check(&key) == kHardenedBoolTrue);
+  TRY_CHECK(attestation_key.config.hw_backed == kHardenedBoolFalse);
+  TRY_CHECK(attestation_key.keyblob_length == 16 * sizeof(uint32_t));
+  TRY_CHECK(otcrypto_integrity_blinded_key_check(&attestation_key) ==
+            kHardenedBoolTrue);
 
   return OK_STATUS();
 }

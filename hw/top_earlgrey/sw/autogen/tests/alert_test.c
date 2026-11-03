@@ -14,7 +14,7 @@
 #include "sw/device/lib/dif/autogen/dif_aes_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_alert_handler_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_aon_timer_autogen.h"
-#include "sw/device/lib/dif/autogen/dif_cheriot_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_cheriot_mem_sys_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_clkmgr_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_csrng_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_edn_autogen.h"
@@ -22,6 +22,7 @@
 #include "sw/device/lib/dif/autogen/dif_gpio_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_hmac_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_i2c_autogen.h"
+#include "sw/device/lib/dif/autogen/dif_i3c_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_keymgr_dpe_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_kmac_autogen.h"
 #include "sw/device/lib/dif/autogen/dif_lc_ctrl_autogen.h"
@@ -56,17 +57,20 @@ static dif_alert_handler_t alert_handler;
 static dif_adc_ctrl_t adc_ctrl;
 static dif_aes_t aes;
 static dif_aon_timer_t aon_timer;
-static dif_cheriot_t cheriot;
+static dif_cheriot_mem_sys_t cheriot_mem_sys;
 static dif_clkmgr_t clkmgr;
 static dif_csrng_t csrng;
 static dif_edn_t edn0;
 static dif_edn_t edn1;
 static dif_entropy_src_t entropy_src;
-static dif_gpio_t gpio;
+static dif_gpio_t gpio0;
+static dif_gpio_t gpio1;
 static dif_hmac_t hmac;
 static dif_i2c_t i2c0;
 static dif_i2c_t i2c1;
 static dif_i2c_t i2c2;
+static dif_i3c_t i3c0;
+static dif_i3c_t i3c1;
 static dif_keymgr_dpe_t keymgr_dpe;
 static dif_kmac_t kmac;
 static dif_lc_ctrl_t lc_ctrl;
@@ -112,8 +116,8 @@ static void init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_AON_TIMER_BASE_ADDR);
   CHECK_DIF_OK(dif_aon_timer_init(base_addr, &aon_timer));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_CHERIOT_REGS_BASE_ADDR);
-  CHECK_DIF_OK(dif_cheriot_init(base_addr, &cheriot));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_CHERIOT_MEM_SYS_REGS_BASE_ADDR);
+  CHECK_DIF_OK(dif_cheriot_mem_sys_init(base_addr, &cheriot_mem_sys));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_BASE_ADDR);
   CHECK_DIF_OK(dif_clkmgr_init(base_addr, &clkmgr));
@@ -130,8 +134,11 @@ static void init_peripherals(void) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_ENTROPY_SRC_BASE_ADDR);
   CHECK_DIF_OK(dif_entropy_src_init(base_addr, &entropy_src));
 
-  base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO_BASE_ADDR);
-  CHECK_DIF_OK(dif_gpio_init(base_addr, &gpio));
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO0_BASE_ADDR);
+  CHECK_DIF_OK(dif_gpio_init(base_addr, &gpio0));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_GPIO1_BASE_ADDR);
+  CHECK_DIF_OK(dif_gpio_init(base_addr, &gpio1));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_HMAC_BASE_ADDR);
   CHECK_DIF_OK(dif_hmac_init(base_addr, &hmac));
@@ -144,6 +151,12 @@ static void init_peripherals(void) {
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_I2C2_BASE_ADDR);
   CHECK_DIF_OK(dif_i2c_init(base_addr, &i2c2));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_I3C0_BASE_ADDR);
+  CHECK_DIF_OK(dif_i3c_init(base_addr, &i3c0));
+
+  base_addr = mmio_region_from_addr(TOP_EARLGREY_I3C1_BASE_ADDR);
+  CHECK_DIF_OK(dif_i3c_init(base_addr, &i3c1));
 
   base_addr = mmio_region_from_addr(TOP_EARLGREY_KEYMGR_DPE_BASE_ADDR);
   CHECK_DIF_OK(dif_keymgr_dpe_init(base_addr, &keymgr_dpe));
@@ -329,12 +342,12 @@ static void trigger_alert_test(void) {
         &alert_handler, exp_alert));
   }
 
-  // Write cheriot's alert_test reg and check alert_cause.
-  for (dif_cheriot_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_cheriot_alert_force(&cheriot, kDifCheriotAlertFatalFault + i));
+  // Write cheriot_mem_sys's alert_test reg and check alert_cause.
+  for (dif_cheriot_mem_sys_alert_t i = 0; i < 1; ++i) {
+    CHECK_DIF_OK(dif_cheriot_mem_sys_alert_force(&cheriot_mem_sys, kDifCheriotMemSysAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdCheriotFatalFault + i;
+    exp_alert = (int)kTopEarlgreyAlertIdCheriotMemSysFatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -421,10 +434,25 @@ static void trigger_alert_test(void) {
 
   // Write gpio's alert_test reg and check alert_cause.
   for (dif_gpio_alert_t i = 0; i < 1; ++i) {
-    CHECK_DIF_OK(dif_gpio_alert_force(&gpio, kDifGpioAlertFatalFault + i));
+    CHECK_DIF_OK(dif_gpio_alert_force(&gpio0, kDifGpioAlertFatalFault + i));
 
     // Verify that alert handler received it.
-    exp_alert = (int)kTopEarlgreyAlertIdGpioFatalFault + i;
+    exp_alert = (int)kTopEarlgreyAlertIdGpio0FatalFault + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write gpio's alert_test reg and check alert_cause.
+  for (dif_gpio_alert_t i = 0; i < 1; ++i) {
+    CHECK_DIF_OK(dif_gpio_alert_force(&gpio1, kDifGpioAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = (int)kTopEarlgreyAlertIdGpio1FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);
@@ -485,6 +513,36 @@ static void trigger_alert_test(void) {
 
     // Verify that alert handler received it.
     exp_alert = (int)kTopEarlgreyAlertIdI2c2FatalFault + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write i3c's alert_test reg and check alert_cause.
+  for (dif_i3c_alert_t i = 0; i < 1; ++i) {
+    CHECK_DIF_OK(dif_i3c_alert_force(&i3c0, kDifI3cAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = (int)kTopEarlgreyAlertIdI3c0FatalFault + i;
+    CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
+        &alert_handler, exp_alert, &is_cause));
+    CHECK(is_cause, "Expect alert %d!", exp_alert);
+
+    // Clear alert cause register
+    CHECK_DIF_OK(dif_alert_handler_alert_acknowledge(
+        &alert_handler, exp_alert));
+  }
+
+  // Write i3c's alert_test reg and check alert_cause.
+  for (dif_i3c_alert_t i = 0; i < 1; ++i) {
+    CHECK_DIF_OK(dif_i3c_alert_force(&i3c1, kDifI3cAlertFatalFault + i));
+
+    // Verify that alert handler received it.
+    exp_alert = (int)kTopEarlgreyAlertIdI3c1FatalFault + i;
     CHECK_DIF_OK(dif_alert_handler_alert_is_cause(
         &alert_handler, exp_alert, &is_cause));
     CHECK(is_cause, "Expect alert %d!", exp_alert);

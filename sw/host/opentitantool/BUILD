@@ -4,11 +4,12 @@
 
 load("@rules_rust//rust:defs.bzl", "rust_binary", "rust_test")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_attributes", "pkg_filegroup", "pkg_files")
+load("//rules:host.bzl", "host_tool")
 
 package(default_visibility = ["//visibility:public"])
 
 rust_binary(
-    name = "opentitantool",
+    name = "opentitantool_bin",
     srcs = [
         "src/command/bfv.rs",
         "src/command/bootstrap.rs",
@@ -25,6 +26,7 @@ rust_binary(
         "src/command/image.rs",
         "src/command/lc.rs",
         "src/command/load_bitstream.rs",
+        "src/command/mldsa.rs",
         "src/command/mod.rs",
         "src/command/otp.rs",
         "src/command/ownership.rs",
@@ -67,6 +69,7 @@ rust_binary(
         "@crate_index//:hex",
         "@crate_index//:humantime",
         "@crate_index//:log",
+        "@crate_index//:ml-dsa",
         "@crate_index//:regex",
         "@crate_index//:serde",
         "@crate_index//:serde_bytes",
@@ -76,6 +79,11 @@ rust_binary(
         "@crate_index//:tokio",
         "@lowrisc_serde_annotate//serde_annotate",
     ],
+)
+
+host_tool(
+    name = "opentitantool",
+    target = ":opentitantool_bin",
 )
 
 pkg_files(
@@ -94,7 +102,7 @@ pkg_filegroup(
 
 rust_test(
     name = "opentitantool_test",
-    crate = ":opentitantool",
+    crate = ":opentitantool_bin",
     # stamping is necessary because opentitantool builds version.rs that needs it
     stamp = 1,
 )

@@ -120,6 +120,166 @@ status_t keygen_then_sign_test(void) {
   return OK_STATUS();
 }
 
+static status_t find_next_prime_2048(uint32_t candidate[kRsa2048NumWords / 2],
+                                     size_t *attempts) {
+  *attempts = 0;
+  for (size_t i = 0; i < 16; ++i) {
+    otcrypto_const_word32_buf_t cand_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_word32_buf_t, candidate, kRsa2048NumWords / 2);
+    hardened_bool_t prime_ok = kHardenedBoolFalse;
+    TRY(otcrypto_rsa_prime_check(kOtcryptoRsaSize2048, &cand_buf, &prime_ok));
+    *attempts += 1;
+    if (prime_ok == kHardenedBoolTrue) {
+      return OK_STATUS();
+    }
+    candidate[0] += 4;
+  }
+  return INTERNAL();
+}
+
+static status_t deterministic_keygen_test(void) {
+  LOG_INFO("Running deterministic RSA-2048 prime check and keygen test...");
+
+  // Starting candidate for p: candidate[0] = 0x7fa4d487 is composite, and
+  // candidate[0] + 4 = 0x7fa4d48b is prime with p = 3 (mod 8), verifying that
+  // otcrypto_rsa_prime_check tests 3 (mod 4) candidates as-is.
+  uint32_t prime_p[kRsa2048NumWords / 2] = {
+      0x7fa4d487u, 0xf1ff4004u, 0xa61a8263u, 0x1ce85b1du, 0x128d7b8eu,
+      0x3072cec3u, 0xaea6e426u, 0x0616596au, 0x3c11797au, 0x320dfccbu,
+      0xc97556ffu, 0xa68fb636u, 0xc5dd99b5u, 0x22a11a73u, 0xc16fcd1du,
+      0xd9994a6cu, 0x7429616du, 0xe31534feu, 0xb572776du, 0xe9ec0158u,
+      0x08e41f09u, 0x0ded3fa1u, 0xf654009bu, 0x3e1ae98eu, 0xdfc13527u,
+      0x865983b3u, 0x006512feu, 0xb5c07dabu, 0x3064ae89u, 0xf3ee2ba1u,
+      0x86f4e339u, 0xe14a1a00u,
+  };
+  // Starting candidate for q: candidate[0] = 0xaccd1283 is composite, and
+  // candidate[0] + 4 = 0xaccd1287 is prime with q = 7 (mod 8).
+  uint32_t prime_q[kRsa2048NumWords / 2] = {
+      0xaccd1283u, 0xb8f02c5fu, 0x5a092627u, 0x2f0f1a4bu, 0xfd17457au,
+      0x74848d63u, 0xf95018f6u, 0xa23de815u, 0xa002f551u, 0x3b1ccf90u,
+      0xdb83c679u, 0xe574c6f7u, 0x56df0ed7u, 0xa42f1606u, 0xb34820d1u,
+      0xce87067du, 0x7b878125u, 0xb504d87du, 0xe9a6954cu, 0xa9496837u,
+      0xa9867857u, 0x1acbb155u, 0x618a6cb5u, 0x036a9a17u, 0x5a4a96abu,
+      0x92802a56u, 0x1f30d599u, 0x0d47cd2bu, 0xcc060a39u, 0x6c30547bu,
+      0x6b358d9du, 0xff490afeu,
+  };
+
+  // Reject invalid candidate (not 3 mod 4).
+  uint32_t bad_cand[kRsa2048NumWords / 2];
+  memcpy(bad_cand, prime_p, sizeof(bad_cand));
+  bad_cand[0] &= ~2u;
+  otcrypto_const_word32_buf_t bad_cand_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, bad_cand, ARRAYSIZE(bad_cand));
+  hardened_bool_t prime_ok = kHardenedBoolFalse;
+  TRY_CHECK(
+      otcrypto_rsa_prime_check(kOtcryptoRsaSize2048, &bad_cand_buf, &prime_ok)
+          .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Step through candidates to find p and q (each takes 2 checks: 1 composite
+  // rejection followed by 1 prime acceptance).
+  size_t attempts_p = 0;
+  size_t attempts_q = 0;
+  TRY(find_next_prime_2048(prime_p, &attempts_p));
+  TRY_CHECK(attempts_p == 2);
+  TRY_CHECK((prime_p[0] & 7u) == 3u);
+
+  TRY(find_next_prime_2048(prime_q, &attempts_q));
+  TRY_CHECK(attempts_q == 2);
+
+  // Compute n = p * q using otcrypto_rsa_create_n_from_primes.
+  uint32_t n_data[kRsa2048NumWords] = {0};
+  otcrypto_const_word32_buf_t p_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, prime_p, ARRAYSIZE(prime_p));
+  otcrypto_const_word32_buf_t q_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, prime_q, ARRAYSIZE(prime_q));
+  otcrypto_word32_buf_t n_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, n_data, ARRAYSIZE(n_data));
+  otcrypto_const_word32_buf_t const_n_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, n_data, ARRAYSIZE(n_data));
+  TRY(otcrypto_rsa_create_n_from_primes(kOtcryptoRsaSize2048, &p_buf, &q_buf,
+                                        &n_buf));
+
+  uint32_t zero_share[kRsa2048NumWords / 2] = {0};
+  otcrypto_const_word32_buf_t p_share1_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, zero_share, ARRAYSIZE(zero_share));
+
+  uint32_t pub_data_1[kOtcryptoRsa2048PublicKeyBytes / sizeof(uint32_t)] = {0};
+  uint32_t pub_data_2[kOtcryptoRsa2048PublicKeyBytes / sizeof(uint32_t)] = {0};
+  otcrypto_unblinded_key_t pub_1 = {
+      .key_mode = kTestKeyMode,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = pub_data_1,
+  };
+  otcrypto_unblinded_key_t pub_2 = {
+      .key_mode = kTestKeyMode,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = pub_data_2,
+  };
+
+  size_t keyblob_words =
+      ceil_div(kOtcryptoRsa2048PrivateKeyblobBytes, sizeof(uint32_t));
+  uint32_t keyblob_1[keyblob_words];
+  uint32_t keyblob_2[keyblob_words];
+  otcrypto_key_config_t priv_cfg = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kTestKeyMode,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  otcrypto_blinded_key_t priv_1 = {
+      .config = priv_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = keyblob_1,
+  };
+  otcrypto_blinded_key_t priv_2 = {
+      .config = priv_cfg,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+      .keyblob = keyblob_2,
+  };
+
+  // Construct keypair twice from (n, p) and verify determinism of n and d.
+  TRY(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &const_n_buf,
+                                         &p_buf, &p_share1_buf, &pub_1,
+                                         &priv_1));
+  TRY(otcrypto_rsa_keypair_from_cofactor(kOtcryptoRsaSize2048, &const_n_buf,
+                                         &p_buf, &p_share1_buf, &pub_2,
+                                         &priv_2));
+  TRY_CHECK_ARRAYS_EQ(pub_data_1, n_data, ARRAYSIZE(n_data));
+  TRY_CHECK_ARRAYS_EQ(pub_data_1, pub_data_2, ARRAYSIZE(pub_data_1));
+
+  rsa_2048_private_key_t *sk_1 = (rsa_2048_private_key_t *)priv_1.keyblob;
+  rsa_2048_private_key_t *sk_2 = (rsa_2048_private_key_t *)priv_2.keyblob;
+  for (size_t i = 0; i < kRsa2048NumWords; i++) {
+    TRY_CHECK((sk_1->d0.data[i] ^ sk_1->d1.data[i]) ==
+              (sk_2->d0.data[i] ^ sk_2->d1.data[i]));
+  }
+
+  // Sign with priv_1 and verify with pub_2.
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, kTestMessage, kTestMessageLen);
+  uint32_t msg_digest_data[256 / 32];
+  otcrypto_hash_digest_t msg_digest = {
+      .data = msg_digest_data,
+      .len = ARRAYSIZE(msg_digest_data),
+  };
+  TRY(otcrypto_sha2_256(&msg_buf, &msg_digest));
+
+  uint32_t sig[kRsa2048NumWords];
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa2048NumWords);
+  otcrypto_const_word32_buf_t const_sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, kRsa2048NumWords);
+  TRY(otcrypto_rsa_sign(&priv_1, msg_digest, kOtcryptoRsaPaddingPkcs,
+                        &sig_buf));
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  TRY(otcrypto_rsa_verify(&pub_2, msg_digest, kOtcryptoRsaPaddingPkcs,
+                          &const_sig_buf, &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolTrue);
+
+  return OK_STATUS();
+}
+
 static status_t run_keygen_negative_tests(void) {
   LOG_INFO("Running RSA keygen negative tests");
 
@@ -270,6 +430,7 @@ bool test_main(void) {
 
   status_t test_result = OK_STATUS();
   EXECUTE_TEST(test_result, keygen_then_sign_test);
+  EXECUTE_TEST(test_result, deterministic_keygen_test);
   EXECUTE_TEST(test_result, run_async_wrong_finalize_tests);
   // This test leaves the OTBN running, best call it at the end.
   EXECUTE_TEST(test_result, run_keygen_negative_tests);

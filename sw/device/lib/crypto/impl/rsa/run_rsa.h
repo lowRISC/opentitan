@@ -87,6 +87,25 @@ status_t rsa_modexp_vartime_start(rsa_size_t size, const uint32_t *base,
 status_t rsa_modexp_finalize_size(rsa_size_t size, uint32_t *result);
 
 /**
+ * Finalizes a modular exponentiation given the expected word length.
+ *
+ * @param num_words Expected number of 32-bit words for the modexp result.
+ * @param[out] result Exponentiation result = (base ^ exp) mod modulus.
+ * @return Status of the operation (OK or error).
+ */
+status_t rsa_modexp_finalize(size_t num_words, uint32_t *result);
+
+/**
+ * Converts an internal `rsa_size_t` to the corresponding word length.
+ *
+ * @param size RSA size parameter.
+ * @param[out] num_words Number of 32-bit words in the modulus.
+ * @return Status of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_size_to_num_words(rsa_size_t size, size_t *num_words);
+
+/**
  * Starts an RSA key generation operation; returns immediately.
  *
  * The key exponent is always F4=65537; no other exponents are supported.
@@ -97,6 +116,32 @@ status_t rsa_modexp_finalize_size(rsa_size_t size, uint32_t *result);
  * @return Result of the operation (OK or error).
  */
 status_t rsa_keygen_start(rsa_size_t size);
+
+/**
+ * Checks whether a candidate prime is a probable RSA prime on OTBN.
+ *
+ * @param size RSA key size.
+ * @param prime_candidate Candidate prime buffer (half the modulus word length).
+ * @param[out] prime_ok Whether the candidate passed primality testing.
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_prime_check(rsa_size_t size, const uint32_t *prime_candidate,
+                         hardened_bool_t *prime_ok);
+
+/**
+ * Multiplies two prime factors p and q on OTBN to compute the modulus n = p *
+ * q.
+ *
+ * @param size RSA size parameter.
+ * @param prime_p First prime factor p.
+ * @param prime_q Second prime factor q.
+ * @param[out] modulus Output buffer for the modulus n = p * q.
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_create_n_from_primes(rsa_size_t size, const uint32_t *prime_p,
+                                  const uint32_t *prime_q, uint32_t *modulus);
 
 /**
  * Waits for an RSA key generation to complete.

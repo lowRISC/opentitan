@@ -88,10 +88,10 @@
       si_stage: SV3
       lc_states: ["PROD"]
       features: [
-        "CLKMGR.ENABLE.IO",
-        "CLKMGR.ENABLE.IO_DIV2",
+        "CLKMGR.ENABLE.IO_PERI",
         "CLKMGR.ENABLE.IO_DIV4",
         "CLKMGR.ENABLE.USB",
+        "CLKMGR.ENABLE.IO_SPI_HOST1",
       ]
       tests: ["chip_sw_clkmgr_off_peri"]
       bazel: ["//sw/device/tests:clkmgr_off_peri_test"]
@@ -112,7 +112,6 @@
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
         "CLKMGR.MEAS_CTRL.IO",
-        "CLKMGR.MEAS_CTRL.IO_DIV2",
         "CLKMGR.MEAS_CTRL.IO_DIV4",
         "CLKMGR.MEAS_CTRL.MAIN",
         "CLKMGR.MEAS_CTRL.USB",
@@ -235,7 +234,6 @@
         "CLKMGR.JITTER.ENABLE",
         "CLKMGR.MEAS_CTRL.REGWEN",
         "CLKMGR.MEAS_CTRL.IO",
-        "CLKMGR.MEAS_CTRL.IO_DIV2",
         "CLKMGR.MEAS_CTRL.IO_DIV4",
         "CLKMGR.MEAS_CTRL.MAIN",
         "CLKMGR.MEAS_CTRL.USB",
@@ -293,7 +291,6 @@
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
         "CLKMGR.MEAS_CTRL.IO",
-        "CLKMGR.MEAS_CTRL.IO_DIV2",
         "CLKMGR.MEAS_CTRL.IO_DIV4",
         "CLKMGR.MEAS_CTRL.MAIN",
         "CLKMGR.MEAS_CTRL.USB",
@@ -318,7 +315,6 @@
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
         "CLKMGR.MEAS_CTRL.IO",
-        "CLKMGR.MEAS_CTRL.IO_DIV2",
         "CLKMGR.MEAS_CTRL.IO_DIV4",
         "CLKMGR.MEAS_CTRL.MAIN",
         "CLKMGR.MEAS_CTRL.USB",
@@ -343,7 +339,6 @@
       features: [
         "CLKMGR.MEAS_CTRL.REGWEN",
         "CLKMGR.MEAS_CTRL.IO",
-        "CLKMGR.MEAS_CTRL.IO_DIV2",
         "CLKMGR.MEAS_CTRL.IO_DIV4",
         "CLKMGR.MEAS_CTRL.MAIN",
         "CLKMGR.MEAS_CTRL.USB",

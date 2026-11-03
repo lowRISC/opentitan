@@ -26,10 +26,6 @@ enum {
    */
   kDifClkmgrMeasureClockIo,
   /**
-   * The Io_div2 clock.
-   */
-  kDifClkmgrMeasureClockIoDiv2,
-  /**
    * The Io div4 clock.
    */
   kDifClkmgrMeasureClockIoDiv4,
@@ -474,7 +470,7 @@ TEST_F(MeasureCountTest, EnableBadArgs) {
   EXPECT_DIF_BADARG(
       dif_clkmgr_enable_measure_counts(&clkmgr_, kBadMeasClock, 2, 3));
   EXPECT_DIF_BADARG(dif_clkmgr_enable_measure_counts(
-      nullptr, kDifClkmgrMeasureClockIoDiv2, 2, 3));
+      nullptr, kDifClkmgrMeasureClockIoDiv4, 2, 3));
   // regwen on
   EXPECT_READ32(CLKMGR_MEASURE_CTRL_REGWEN_REG_OFFSET, 1);
   EXPECT_DIF_BADARG(
@@ -485,7 +481,7 @@ TEST_F(MeasureCountTest, EnableLocked) {
   // regwen off
   EXPECT_READ32(CLKMGR_MEASURE_CTRL_REGWEN_REG_OFFSET, 0);
   EXPECT_EQ(dif_clkmgr_enable_measure_counts(
-                &clkmgr_, kDifClkmgrMeasureClockIoDiv2, 2, 3),
+                &clkmgr_, kDifClkmgrMeasureClockIoDiv4, 2, 3),
             kDifLocked);
 }
 
@@ -509,8 +505,6 @@ TEST_F(MeasureCountTest, Enable) {
   break  // No semicolon to force semicolon below.
       case kDifClkmgrMeasureClockIo:
         PICK_COUNT_CTRL_FIELDS(IO);
-      case kDifClkmgrMeasureClockIoDiv2:
-        PICK_COUNT_CTRL_FIELDS(IO_DIV2);
       case kDifClkmgrMeasureClockIoDiv4:
         PICK_COUNT_CTRL_FIELDS(IO_DIV4);
       case kDifClkmgrMeasureClockMain:
@@ -544,11 +538,11 @@ TEST_F(MeasureCountTest, DisableBadArgs) {
   EXPECT_READ32(CLKMGR_MEASURE_CTRL_REGWEN_REG_OFFSET, 1);
   EXPECT_DIF_BADARG(dif_clkmgr_disable_measure_counts(&clkmgr_, kBadMeasClock));
   EXPECT_DIF_BADARG(
-      dif_clkmgr_disable_measure_counts(nullptr, kDifClkmgrMeasureClockIoDiv2));
+      dif_clkmgr_disable_measure_counts(nullptr, kDifClkmgrMeasureClockIoDiv4));
   // regwen off
   EXPECT_READ32(CLKMGR_MEASURE_CTRL_REGWEN_REG_OFFSET, 0);
   EXPECT_EQ(
-      dif_clkmgr_disable_measure_counts(&clkmgr_, kDifClkmgrMeasureClockIoDiv2),
+      dif_clkmgr_disable_measure_counts(&clkmgr_, kDifClkmgrMeasureClockIoDiv4),
       kDifLocked);
 }
 
@@ -556,7 +550,7 @@ TEST_F(MeasureCountTest, DisableLocked) {
   // regwen off
   EXPECT_READ32(CLKMGR_MEASURE_CTRL_REGWEN_REG_OFFSET, 0);
   EXPECT_EQ(
-      dif_clkmgr_disable_measure_counts(&clkmgr_, kDifClkmgrMeasureClockIoDiv2),
+      dif_clkmgr_disable_measure_counts(&clkmgr_, kDifClkmgrMeasureClockIoDiv4),
       kDifLocked);
 }
 
@@ -571,8 +565,6 @@ TEST_F(MeasureCountTest, Disable) {
   break  // No semicolon to force semicolon below.
       case kDifClkmgrMeasureClockIo:
         PICK_COUNT_CTRL_FIELDS(IO);
-      case kDifClkmgrMeasureClockIoDiv2:
-        PICK_COUNT_CTRL_FIELDS(IO_DIV2);
       case kDifClkmgrMeasureClockIoDiv4:
         PICK_COUNT_CTRL_FIELDS(IO_DIV4);
       case kDifClkmgrMeasureClockMain:
@@ -595,13 +587,13 @@ TEST_F(MeasureCountTest, GetEnableBadArgs) {
   EXPECT_DIF_BADARG(
       dif_clkmgr_measure_counts_get_enable(&clkmgr_, kBadMeasClock, nullptr));
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_enable(
-      nullptr, kDifClkmgrMeasureClockIoDiv2, nullptr));
+      nullptr, kDifClkmgrMeasureClockIoDiv4, nullptr));
   EXPECT_DIF_BADARG(
       dif_clkmgr_measure_counts_get_enable(nullptr, kBadMeasClock, &state));
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_enable(
-      &clkmgr_, kDifClkmgrMeasureClockIoDiv2, nullptr));
+      &clkmgr_, kDifClkmgrMeasureClockIoDiv4, nullptr));
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_enable(
-      nullptr, kDifClkmgrMeasureClockIoDiv2, &state));
+      nullptr, kDifClkmgrMeasureClockIoDiv4, &state));
   EXPECT_DIF_BADARG(
       dif_clkmgr_measure_counts_get_enable(&clkmgr_, kBadMeasClock, &state));
 }
@@ -617,8 +609,6 @@ TEST_F(MeasureCountTest, GetEnable) {
   break  // No semicolon to force semicolon below.
       case kDifClkmgrMeasureClockIo:
         PICK_COUNT_CTRL_FIELDS(IO);
-      case kDifClkmgrMeasureClockIoDiv2:
-        PICK_COUNT_CTRL_FIELDS(IO_DIV2);
       case kDifClkmgrMeasureClockIoDiv4:
         PICK_COUNT_CTRL_FIELDS(IO_DIV4);
       case kDifClkmgrMeasureClockMain:
@@ -643,33 +633,33 @@ TEST_F(MeasureCountTest, GetThresholdsBadArgs) {
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_thresholds(
       &clkmgr_, kBadMeasClock, nullptr, nullptr));
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_thresholds(
-      nullptr, kDifClkmgrMeasureClockIoDiv2, nullptr, nullptr));
+      nullptr, kDifClkmgrMeasureClockIoDiv4, nullptr, nullptr));
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_thresholds(
       nullptr, kBadMeasClock, &lo, nullptr));
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_thresholds(
       nullptr, kBadMeasClock, nullptr, &hi));
   // Two bar args.
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_thresholds(
-      nullptr, kDifClkmgrMeasureClockIoDiv2, &lo, nullptr));
+      nullptr, kDifClkmgrMeasureClockIoDiv4, &lo, nullptr));
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_thresholds(
-      nullptr, kDifClkmgrMeasureClockIoDiv2, nullptr, &hi));
+      nullptr, kDifClkmgrMeasureClockIoDiv4, nullptr, &hi));
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_thresholds(
       nullptr, kBadMeasClock, &lo, &hi));
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_thresholds(
-      &clkmgr_, kDifClkmgrMeasureClockIoDiv2, nullptr, nullptr));
+      &clkmgr_, kDifClkmgrMeasureClockIoDiv4, nullptr, nullptr));
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_thresholds(
       &clkmgr_, kBadMeasClock, nullptr, &hi));
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_thresholds(
       &clkmgr_, kBadMeasClock, &lo, nullptr));
   // One bad args.
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_thresholds(
-      &clkmgr_, kDifClkmgrMeasureClockIoDiv2, &lo, nullptr));
+      &clkmgr_, kDifClkmgrMeasureClockIoDiv4, &lo, nullptr));
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_thresholds(
-      &clkmgr_, kDifClkmgrMeasureClockIoDiv2, nullptr, &hi));
+      &clkmgr_, kDifClkmgrMeasureClockIoDiv4, nullptr, &hi));
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_thresholds(
       &clkmgr_, kBadMeasClock, &lo, &hi));
   EXPECT_DIF_BADARG(dif_clkmgr_measure_counts_get_thresholds(
-      nullptr, kDifClkmgrMeasureClockIoDiv2, &lo, &hi));
+      nullptr, kDifClkmgrMeasureClockIoDiv4, &lo, &hi));
 }
 
 TEST_F(MeasureCountTest, GetThresholds) {
@@ -687,8 +677,6 @@ TEST_F(MeasureCountTest, GetThresholds) {
   break  // No semicolon to force semicolon below.
       case kDifClkmgrMeasureClockIo:
         PICK_COUNT_CTRL_FIELDS(IO);
-      case kDifClkmgrMeasureClockIoDiv2:
-        PICK_COUNT_CTRL_FIELDS(IO_DIV2);
       case kDifClkmgrMeasureClockIoDiv4:
         PICK_COUNT_CTRL_FIELDS(IO_DIV4);
       case kDifClkmgrMeasureClockMain:

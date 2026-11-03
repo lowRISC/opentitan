@@ -30,9 +30,8 @@
       desc: '''
             Verify the countermeasure(s) CONFIG.REGWEN.
             Verify that:
-            1) ME_REGWEN and SW_REGUPD cannot be set back to 1 after being set to 0 once.
-            2) If ME_REGWEN is not set, MODULE_ENABLE cannot be modified.
-            3) Only if MODULE_ENABLE is MuBi4False and SW_REGUPD is 1, a) REGWEN reads as 1 and b) associated control and threshold registers can be modified.
+            1) SW_REGUPD cannot be set back to 1 after being set to 0 once.
+            2) Only if MODULE_ENABLE is MuBi4False and SW_REGUPD is 1, a) REGWEN reads as 1 and b) associated control and threshold registers can be modified.
             '''
       stage: V2S
       tests: ["entropy_src_rng", "entropy_src_cfg_regwen"]

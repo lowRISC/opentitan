@@ -40,6 +40,7 @@ COMMON_ENABLED_FEATURES = [
 ]
 
 COMMON_KNOWN_FEATURES = [
+    ":feat_cryptolib_warnings",
     "@rules_cc//cc/toolchains/args:experimental_replace_legacy_action_config_features",
     ":feat_warnings_as_errors",
     ":feat_guards",
@@ -433,7 +434,7 @@ cc_args(
         "@rules_cc//cc/toolchains/actions:compile_actions",
         "@rules_cc//cc/toolchains/actions:link_actions",
     ],
-    args = ["-march=rv32imc_zba_zbb_zbc_zbs"],
+    args = ["-march=rv32imc_zba_zbb_zbc_zbs_zcb_zcmp"],
     requires_any_of = [":constraint_bitmanip"],
 )
 
@@ -443,7 +444,7 @@ cc_args(
         "@rules_cc//cc/toolchains/actions:compile_actions",
         "@rules_cc//cc/toolchains/actions:link_actions",
     ],
-    args = ["-march=rv32imc"],
+    args = ["-march=rv32imc_zcb_zcmp"],
     requires_any_of = [":constraint_no_bitmanip"],
 )
 
@@ -460,8 +461,8 @@ cc_args(
     ],
 )
 
-# Mirrors `:arch_rv32imcb`; the only differences are the two the ISA requires,
-# `i` becoming `e` and `xcheriot` being added.
+# Mirrors `:arch_rv32imcb`, except that `i` becomes `e`, `xcheriot` is added
+# and Zcmp is dropped (not supported in CHERIoT mode).
 cc_args(
     name = "arch_cheriot",
     actions = [
@@ -470,7 +471,7 @@ cc_args(
     ],
     args = [
         "--target=riscv32-unknown-unknown",
-        "-march=rv32emc_zba_zbb_zbc_zbs_xcheriot",
+        "-march=rv32emc_zba_zbb_zbc_zbs_zcb_xcheriot",
     ],
     requires_any_of = [":constraint_bitmanip"],
 )
@@ -485,7 +486,7 @@ cc_args(
     ],
     args = [
         "--target=riscv32-unknown-unknown",
-        "-march=rv32emc_xcheriot",
+        "-march=rv32emc_zcb_xcheriot",
     ],
     requires_any_of = [":constraint_no_bitmanip"],
 )
@@ -700,4 +701,46 @@ cc_args(
     name = "no_jump_tables_args",
     actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
     args = ["-fno-jump-tables"],
+)
+
+cc_feature(
+    name = "feat_cryptolib_warnings",
+    args = [":cryptolib_warnings_args"],
+    feature_name = "cryptolib_warnings",
+)
+
+cc_args(
+    name = "cryptolib_warnings_args",
+    actions = ["@rules_cc//cc/toolchains/actions:compile_actions"],
+    args = [
+        "-Warray-bounds-pointer-arithmetic",
+        "-Wassign-enum",
+        "-Wbitwise-instead-of-logical",
+        "-Wcomma",
+        "-Wconditional-uninitialized",
+        "-Wflexible-array-extensions",
+        "-Wfor-loop-analysis",
+        "-Wformat-security",
+        "-Wgnu-null-pointer-arithmetic",
+        "-Wgnu-union-cast",
+        "-Wnested-anon-types",
+        "-Wnull-dereference",
+        "-Wpointer-arith",
+        "-Wshadow-all",
+        "-Wshift-sign-overflow",
+        "-Wshorten-64-to-32",
+        "-Wsign-compare",
+        "-Wsizeof-array-div",
+        "-Wsizeof-pointer-div",
+        "-Wstatic-in-inline",
+        "-Wstring-conversion",
+        "-Wtautological-constant-in-range-compare",
+        "-Wtype-limits",
+        "-Wundef",
+        "-Wuninitialized",
+        "-Wunreachable-code-aggressive",
+        "-Wno-unreachable-code-break",
+        "-Wwrite-strings",
+        "-Wzero-as-null-pointer-constant",
+    ],
 )

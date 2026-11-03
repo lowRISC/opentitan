@@ -140,9 +140,6 @@ module rv_core_ibex
   output otp_ctrl_pkg::sram_otp_key_req_t icache_otp_key_o,
   input  otp_ctrl_pkg::sram_otp_key_rsp_t icache_otp_key_i,
 
-  // fpga build info
-  input [31:0] fpga_info_i,
-
   // interrupts and alerts
   input  prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx_i,
   output prim_alert_pkg::alert_tx_t [NumAlerts-1:0] alert_tx_o
@@ -216,6 +213,10 @@ module rv_core_ibex
   tl_d2h_t tl_d_fifo2ibex;
   tl_h2d_t tl_revbm_ibex2fifo;
   tl_d2h_t tl_revbm_fifo2ibex;
+
+  // Pipeline interfaces for capability tags
+  logic main_core_data_tag_h2d;
+  logic main_core_data_tag_d2h;
 
   // TLUL LC Gate interfaces
   tl_h2d_t tl_d_fifo2gate;
@@ -562,10 +563,10 @@ module rv_core_ibex
     .data_addr_o        (main_core_data_addr),
     .data_wdata_o       (main_core_data_wdata),
     .data_wdata_intg_o  (main_core_data_wdata_intg),
-    .data_tag_o         (cored_tag_h2d_o),
+    .data_tag_o         (main_core_data_tag_h2d),
     .data_rdata_i       (main_core_data_rdata),
     .data_rdata_intg_i  (main_core_data_rdata_intg),
-    .data_tag_i         (cored_tag_d2h_i),
+    .data_tag_i         (main_core_data_tag_d2h),
     .data_err_i         (main_core_data_err),
 
     .trvk_revbm_req_o       (main_core_revbm_req),
@@ -843,10 +844,10 @@ module rv_core_ibex
     .tl_h_o      (tl_d_fifo2ibex),
     .tl_d_o      (tl_d_fifo2gate),
     .tl_d_i      (tl_d_gate2fifo),
-    .spare_req_i (1'b0),
-    .spare_req_o (),
-    .spare_rsp_i (1'b0),
-    .spare_rsp_o ());
+    .spare_req_i (main_core_data_tag_h2d),
+    .spare_req_o (cored_tag_h2d_o),
+    .spare_rsp_i (cored_tag_d2h_i),
+    .spare_rsp_o (main_core_data_tag_d2h));
 
   // SEC_CM: CORED_TLUL.BUS.LC_GATED
   // Gate any pending requests on escalation
@@ -1157,10 +1158,6 @@ module rv_core_ibex
 
   logic unused_reg2hw;
   assign unused_reg2hw = |reg2hw.rnd_data.q;
-
-
-  // fpga build info hook-up
-  assign hw2reg.fpga_info.d = fpga_info_i;
 
   // SEC_CM: TLUL_ADAPTER.LOGIC.SHADOW
   if (SecureIbex) begin : gen_tlul_lockstep

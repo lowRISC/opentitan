@@ -23,19 +23,22 @@ static const partition_data_t kPartitions[] = {
     {
         .partition = kDifOtpCtrlPartitionSecret0,
         .size =
-            (OTP_CTRL_PARAM_SECRET0_SIZE - OTP_CTRL_PARAM_SECRET0_DIGEST_SIZE) /
+            (OTP_CTRL_PARAM_SECRET0_SIZE - OTP_CTRL_PARAM_SECRET0_DIGEST_SIZE -
+             OTP_CTRL_PARAM_SECRET0_ZER_SIZE) /
             sizeof(uint64_t),
     },
     {
         .partition = kDifOtpCtrlPartitionSecret1,
         .size =
-            (OTP_CTRL_PARAM_SECRET1_SIZE - OTP_CTRL_PARAM_SECRET1_DIGEST_SIZE) /
+            (OTP_CTRL_PARAM_SECRET1_SIZE - OTP_CTRL_PARAM_SECRET1_DIGEST_SIZE -
+             OTP_CTRL_PARAM_SECRET1_ZER_SIZE) /
             sizeof(uint64_t),
     },
     {
         .partition = kDifOtpCtrlPartitionSecret2,
         .size =
-            (OTP_CTRL_PARAM_SECRET2_SIZE - OTP_CTRL_PARAM_SECRET2_DIGEST_SIZE) /
+            (OTP_CTRL_PARAM_SECRET2_SIZE - OTP_CTRL_PARAM_SECRET2_DIGEST_SIZE -
+             OTP_CTRL_PARAM_SECRET2_ZER_SIZE) /
             sizeof(uint64_t),
     },
 };

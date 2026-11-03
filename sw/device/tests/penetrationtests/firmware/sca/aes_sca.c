@@ -4,6 +4,7 @@
 
 #include "sw/device/tests/penetrationtests/firmware/sca/aes_sca.h"
 
+#include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/dif/dif_aes.h"
@@ -263,7 +264,9 @@ status_t handle_aes_sca_batch_daisy_chain(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_aes_sca_batch_fvsr_data(ujson_t *uj) {
+// Mark as `OT_NOINLINE` so that these buffers are not merged into the stack
+// frame of `handle_aes_sca()`, which would overflow the OTTF stack
+OT_NOINLINE status_t handle_aes_sca_batch_fvsr_data(ujson_t *uj) {
   aes_sca_key_t uj_key;
   aes_sca_text_t uj_text;
   penetrationtest_num_enc_t uj_data;
@@ -296,7 +299,7 @@ status_t handle_aes_sca_batch_fvsr_data(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_aes_sca_batch_fvsr_key(ujson_t *uj) {
+OT_NOINLINE status_t handle_aes_sca_batch_fvsr_key(ujson_t *uj) {
   aes_sca_key_t uj_key;
   penetrationtest_num_enc_t uj_data;
 
@@ -328,7 +331,7 @@ status_t handle_aes_sca_batch_fvsr_key(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_aes_sca_batch_random(ujson_t *uj) {
+OT_NOINLINE status_t handle_aes_sca_batch_random(ujson_t *uj) {
   aes_sca_key_t uj_key;
   penetrationtest_num_enc_t uj_data;
 
@@ -586,7 +589,7 @@ static status_t trigger_aes_gcm(dif_aes_key_share_t key, dif_aes_iv_t iv,
   return OK_STATUS();
 }
 
-status_t handle_aes_sca_gcm_fvsr_iv_key_batch(ujson_t *uj) {
+OT_NOINLINE status_t handle_aes_sca_gcm_fvsr_iv_key_batch(ujson_t *uj) {
   // Receive the AES-GCM input data over uJSON.
   aes_sca_num_ops_t uj_num_ops;
   aes_sca_gcm_triggers_t uj_triggers;
@@ -723,7 +726,7 @@ status_t handle_aes_sca_gcm_fvsr_iv_key_batch(ujson_t *uj) {
   return OK_STATUS();
 }
 
-status_t handle_aes_sca_gcm_fvsr_ptx_aad_batch(ujson_t *uj) {
+OT_NOINLINE status_t handle_aes_sca_gcm_fvsr_ptx_aad_batch(ujson_t *uj) {
   // Receive the AES-GCM input data over uJSON.
   aes_sca_num_ops_t uj_num_ops;
   aes_sca_gcm_triggers_t uj_triggers;

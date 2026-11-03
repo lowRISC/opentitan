@@ -14,6 +14,7 @@ typedef struct mldsa87_verify_testvector {
   size_t ctx_len;  // bytes
   const uint8_t *msg;
   size_t msg_len;  // bytes
+  const uint32_t *mu;
   otcrypto_mldsa_hash_mode_t hash_mode;
 } mldsa87_verify_testvector_t;
 
@@ -496,6 +497,12 @@ static const uint8_t kCtxNistAcvp63[181] = {
     0x5a, 0x8f, 0xb4, 0x53, 0x1d, 0xb1, 0x3d, 0x42, 0xdf, 0xbf, 0xd1, 0x19,
     0x6b, 0x08, 0xc3, 0x07, 0x08, 0x77, 0x46, 0x8b, 0xd8, 0x61, 0xf6, 0xf9,
     0x85,
+};
+
+static const uint32_t kMuNistAcvp63[kOtcryptoMldsa87MuWords] = {
+    0x9416fff8, 0x4c7cefa2, 0x21e19887, 0xd7f1b4a6, 0x199d64c9, 0x60a8cc88,
+    0xf1a7c9d9, 0xcbfc2606, 0x59aec80a, 0xc49d5997, 0x242e20a7, 0x8d561b85,
+    0x2c78bcf0, 0xbf861431, 0x805ee48d, 0x3a8119e4,
 };
 
 static const uint32_t kPkNistAcvp79[648] = {
@@ -1283,12 +1290,14 @@ static const uint8_t kCtxNistAcvp79[137] = {
 };
 
 // See
-// https://github.com/usnistgov/ACVP-Server/blob/master/gen-val/json-files/ML-DSA-sigVer-FIPS204/internalProjection.json
+// https://github.com/usnistgov/ACVP-Server/blob/v1.1.0.40/gen-val/json-files/ML-DSA-sigVer-FIPS204/internalProjection.json
 enum {
   // NIST ACVP vector 63 (valid signature in pure hash mode).
   kMldsa87VerifyNistAcvp63Pure,
   // NIST ACVP vector 79 (valid signature in pre-hash mode with SHA3_224).
   kMldsa87VerifyNistAcvp79PreHashSha3_224,
+  // NIST ACVP vector 63 with precomputed mu.
+  kMldsa87VerifyNistAcvp63ExternalMu,
 };
 
 static const mldsa87_verify_testvector_t mldsa87_verify_testvectors[] = {
@@ -1311,6 +1320,12 @@ static const mldsa87_verify_testvector_t mldsa87_verify_testvectors[] = {
             .msg = kMsgNistAcvp79,
             .msg_len = sizeof(kMsgNistAcvp79),
             .hash_mode = kOtcryptoMldsaHashModeSha3_224,
+        },
+    [kMldsa87VerifyNistAcvp63ExternalMu] =
+        {
+            .pk = kPkNistAcvp63,
+            .sig = kSigNistAcvp63,
+            .mu = kMuNistAcvp63,
         },
 };
 

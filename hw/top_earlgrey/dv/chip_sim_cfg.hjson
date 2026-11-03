@@ -572,7 +572,9 @@
       sw_images: ["//sw/device/tests/sim_dv:data_integrity_escalation_reset_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+bypass_alert_ready_to_end_check=1"]
-      reseed: 6
+      // Each seed picks one of three fault targets, so 12 seeds miss any given target with a
+      // probability of (2/3)^12 < 1%.
+      reseed: 12
     }
     {
       name: chip_sw_sleep_pin_mio_dio_val
@@ -806,9 +808,17 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
-      name: chip_sw_gpio
+      name: chip_sw_gpio0
       uvm_test_seq: chip_sw_gpio_vseq
       sw_images: ["//sw/device/tests/sim_dv:gpio_test:1:new_rules"]
+      run_opts: ["+gpio_idx=0"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+    }
+    {
+      name: chip_sw_gpio1
+      uvm_test_seq: chip_sw_gpio_vseq
+      sw_images: ["//sw/device/tests/sim_dv:gpio_test:1:new_rules"]
+      run_opts: ["+gpio_idx=1"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
@@ -1489,13 +1499,6 @@
       run_opts: ["+sw_test_timeout_ns=18_000_000"]
     }
     {
-      name: chip_sw_csrng_fuse_en_sw_app_read_test
-      uvm_test_seq: chip_sw_entropy_src_fuse_vseq
-      sw_images: ["//sw/device/tests/sim_dv:csrng_fuse_en_sw_app_read:1:new_rules"]
-      en_run_modes: ["sw_test_mode_test_rom"]
-      run_opts: ["+sw_test_timeout_ns=15_000_000"]
-    }
-    {
       name: chip_sw_entropy_src_ast_rng_req
       uvm_test_seq: chip_sw_base_vseq
       sw_images: ["//sw/device/tests:entropy_src_ast_rng_req_test:1:new_rules"]
@@ -1599,6 +1602,13 @@
       name: chip_sw_keymgr_dpe_sideload_otbn
       uvm_test_seq: chip_sw_keymgr_dpe_sideload_otbn_vseq
       sw_images: ["//sw/device/tests:keymgr_dpe_sideload_otbn_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: ["+sw_test_timeout_ns=50_000_000"]
+    }
+    {
+      name: chip_sw_keymgr_dpe_sideload_hmac
+      uvm_test_seq: chip_sw_keymgr_dpe_sideload_hmac_vseq
+      sw_images: ["//sw/device/tests:keymgr_dpe_sideload_hmac_test:1:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: ["+sw_test_timeout_ns=50_000_000"]
     }

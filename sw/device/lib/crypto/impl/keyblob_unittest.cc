@@ -191,6 +191,20 @@ TEST(Keyblob, FromToSharesNoop) {
   }
 }
 
+TEST(Keyblob, ToSharesFailsForHwBackedKey) {
+  uint32_t keyblob[8] = {0};
+  otcrypto_blinded_key_t key = {
+      .config = kConfigCtrSideloaded,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+      .checksum = 0,
+  };
+
+  uint32_t *share0;
+  uint32_t *share1;
+  EXPECT_NOT_OK(keyblob_to_shares(&key, &share0, &share1));
+}
+
 TEST(Keyblob, FromKeyMaskDoesNotChangeKey) {
   std::array<uint32_t, 4> test_key = {0x01234567, 0x89abcdef, 0x00010203,
                                       0x04050607};
@@ -502,6 +516,17 @@ TEST(Keyblob, KeyUnmaskNegative) {
 
   // Mismatched length
   EXPECT_NOT_OK(keyblob_key_unmask(&key, 99, unmasked_key));
+
+  // Huge key length (> kOtcryptoWrappedKeyMaxWords * sizeof(uint32_t))
+  otcrypto_blinded_key_t huge_key = {
+      .config = kConfigHuge,
+      .keyblob_length = sizeof(keyblob_buf),
+      .keyblob = keyblob_buf,
+      .checksum = 0,
+  };
+  uint32_t *share0;
+  uint32_t *share1;
+  EXPECT_NOT_OK(keyblob_to_shares(&huge_key, &share0, &share1));
 }
 
 }  // namespace

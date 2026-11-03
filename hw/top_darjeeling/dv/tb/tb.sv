@@ -527,14 +527,14 @@ module tb;
       // See chip_padctrl_attributes_vseq for more details.
       forever @dut.chip_if.chip_padctrl_attributes_test_sva_disable begin
         if (dut.chip_if.chip_padctrl_attributes_test_sva_disable) begin
-          $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_gpio);
+          $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_gpio0);
           $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_i2c0);
           $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_pinmux);
           $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_spi_device);
           $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_spi_host0);
           $assertoff(0, dut.top_darjeeling.darjeeling_pd_main.u_uart0);
         end else begin
-          $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_gpio);
+          $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_gpio0);
           $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_i2c0);
           $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_pinmux);
           $asserton(0, dut.top_darjeeling.darjeeling_pd_main.u_spi_device);

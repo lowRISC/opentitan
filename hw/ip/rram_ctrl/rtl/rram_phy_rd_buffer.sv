@@ -25,6 +25,7 @@ module rram_phy_rd_buffer import rram_ctrl_pkg::*; (
   input  logic                                       update_i,
   input  logic                                       invalidate_i,
   input  logic                                       verify_i,
+  input  logic                                       read_i,
   input  logic [AddrW-1:0]                           addr_i,
   input  rram_part_e                                 part_i,
   input  logic                                       descramble_en_i,
@@ -33,7 +34,8 @@ module rram_phy_rd_buffer import rram_ctrl_pkg::*; (
   input  logic [WidthMultiple-1:0][BusFullWidth-1:0] data_i,
   input  logic                                       err_i,
   output rd_buf_t                                    rd_buf_o,
-  output logic                                       intg_err_o
+  output logic                                       intg_err_o,
+  output logic                                       state_err_o
 );
 
   rd_buf_t rd_buf_d, rd_buf_q;
@@ -99,6 +101,16 @@ module rram_phy_rd_buffer import rram_ctrl_pkg::*; (
 
   assign intg_err_o = verify_i & ~buf_match;
   assign rd_buf_o   = rd_buf_q;
+
+  // SEC_CM: PHY_RD_BUF.CTRL.CONSISTENCY
+  // Update, verify and read operations are only legal in specific buffer states. A mismatch
+  // indicates a fault on the meta fifo control fields (buf_sel, update, verify) or on the state.
+  // - update: the buffer must be allocated
+  // - verify: the buffer must be valid
+  // - read (rd-buf hit): the buffer must be valid or verified
+  assign state_err_o = (update_i && (rd_buf_q.attr != Alloc)) ||
+                       (verify_i && (rd_buf_q.attr != Valid)) ||
+                       (read_i   && (rd_buf_q.attr != Valid) && (rd_buf_q.attr != Verified));
 
   // If a buffer receives an allocate command, it MUST be either invalid or verified
   `ASSERT(AllocCheck_A, alloc_i |-> (rd_buf_q.attr == Verified) || (rd_buf_q.attr == Invalid) )

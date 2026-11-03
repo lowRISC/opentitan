@@ -682,6 +682,7 @@ module ibex_core import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
 
     // from/to IF-ID pipeline register
     .instr_valid_i        (instr_valid_id),
+    .dummy_instr_id_i     (dummy_instr_id),
     .instr_rdata_i        (instr_rdata_id),
     .instr_rdata_alu_i    (instr_rdata_alu_id),
     .instr_rdata_c_i      (instr_rdata_c_id),
@@ -2431,6 +2432,36 @@ module ibex_core import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     end
   end
 
+  // A step debug entry must follow exactly one instruction that completed or trapped, as seen
+  // on RVFI (which has no dummies). A Zcmp sequence counts once, at its last uop or a trap. DRET is
+  // left out by using the debug mode recorded with its RVFI item. The count saturates, so no wrap.
+  logic [1:0] step_rvfi_cnt_q;
+  logic       step_arch_retire;
+
+  assign step_arch_retire = rvfi_valid && !rvfi_ext_debug_mode &&
+                            (rvfi_trap || !rvfi_ext_expanded_insn_valid ||
+                             rvfi_ext_expanded_insn_last);
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      step_rvfi_cnt_q <= '0;
+    end else if (debug_mode) begin
+      step_rvfi_cnt_q <= '0;
+    end else if (step_arch_retire && !(&step_rvfi_cnt_q)) begin
+      step_rvfi_cnt_q <= step_rvfi_cnt_q + 2'd1;
+    end
+  end
+
+  `COVER(StepCountedTrappedNonFinalUop,
+         rvfi_valid && rvfi_trap && rvfi_ext_expanded_insn_valid &&
+         !rvfi_ext_expanded_insn_last && debug_single_step)
+
+  // Checked when dcsr.cause is saved: the debug entry request comes before the stepped
+  // instruction's RVFI item.
+  `ASSERT(StepDebugEntryHasArchitecturalProgress,
+          debug_mode_entering && debug_csr_save && (debug_cause == DBG_CAUSE_STEP)
+          |=> (step_rvfi_cnt_q == 2'd1))
+
 `else
   logic unused_instr_new_id, unused_instr_id_done, unused_instr_done_wb,
         unused_instr_expanded_id, unused_instr_gets_expanded_id;
@@ -2448,6 +2479,14 @@ module ibex_core import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
 
   // If the ID stage signals its ready the mult/div FSMs must be idle in the following cycle
   // `ASSERT(MultDivFSMIdleOnIdReady, id_in_ready |=> ex_block_i.sva_multdiv_fsm_idle)
+
+  // A dummy instruction must neither arm nor complete a single step.
+  `ASSERT(SingleStepStableAcrossDummy,
+          instr_valid_id & dummy_instr_id |=> $stable(id_stage_i.controller_i.do_single_step_q))
+  `COVER(SingleStepDummyWhileDisarmed,
+         instr_valid_id & dummy_instr_id & ~id_stage_i.controller_i.do_single_step_q)
+  `COVER(SingleStepDummyWhileArmed,
+         instr_valid_id & dummy_instr_id & id_stage_i.controller_i.do_single_step_q)
 
   //////////
   // FCOV //

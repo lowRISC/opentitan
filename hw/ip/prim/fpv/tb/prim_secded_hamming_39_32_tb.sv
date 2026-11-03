@@ -10,7 +10,7 @@ module prim_secded_hamming_39_32_tb (
   input        [31:0] data_i,
   output logic [31:0] data_o,
   output logic [38:0] encoded_o,
-  output logic [6:0] syndrome_o,
+  output logic [6:0]  syndrome_o,
   output logic [1:0]  err_o,
   input        [38:0] error_inject_i
 );

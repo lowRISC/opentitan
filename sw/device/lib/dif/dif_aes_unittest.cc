@@ -39,6 +39,7 @@ class AesTest : public testing::Test, public mock_mmio::MmioTest {
     }
   }
   void ExpectKey(const dif_aes_key_share_t &key, uint32_t key_size) {
+    EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_IDLE_BIT, true}});
     ExpectWriteMultreg(AES_KEY_SHARE0_0_REG_OFFSET, key.share0, key_size);
     ExpectWriteMultreg(AES_KEY_SHARE1_0_REG_OFFSET, key.share1, key_size);
   }
@@ -570,6 +571,7 @@ TEST_F(SideloadedKeyTest, start) {
                 .key_sideloaded = true});
 
   ExpectAuxConfig({});
+  EXPECT_READ32(AES_STATUS_REG_OFFSET, {{AES_STATUS_IDLE_BIT, true}});
   EXPECT_DIF_OK(dif_aes_start(&aes_, &transaction_, nullptr, nullptr));
 }
 // Mask reseeding.

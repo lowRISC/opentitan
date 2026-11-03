@@ -27,7 +27,7 @@ package i3c_timing_pkg;
   // min and max values.
   // All time intervals are in nanoseconds.
   parameter int unsigned TCAS       = 39;    // 38.4ns (Table 49).
-  parameter int unsigned TCBP       = ceil_div(TCAS, 2);
+  parameter int unsigned TCBP       = prim_util_pkg::ceil_udiv(TCAS, 2);
   parameter int unsigned THIGH_INIT = 200;
   parameter int unsigned TDIGH      = 36;
   parameter int unsigned TLOW_OD    = 200;
@@ -45,26 +45,21 @@ package i3c_timing_pkg;
   parameter int unsigned TPERIOD_OD   = TDIGH + TLOW_OD;
   parameter int unsigned TPERIOD_OD1  = THIGH_INIT + TLOW_OD;
 
-  // Ceiling division: returns ceil(a / b) for unsigned a, b.
-  function automatic int unsigned ceil_div(int unsigned a, int unsigned b);
-    return (a + b - 1) / b;
-  endfunction
-
   // Determine the number of cycles of the IP clock required to achieve (at least) the given delay.
   // - in the case of the SCL high interval we may have the option of extending by half a cycle,
   //   so here we actually calculate the half-cycle too, i.e. 'n.1' fixed-point.
-  function automatic logic [TmCycW-1:-1] tm_cycles(int unsigned clk_freq, int unsigned tm_ns);
+  function automatic logic [TmCycW-1:-1] tm_cycles(logic [31:0] clk_freq, logic [31:0] tm_ns);
     // The longest interval we need to accommodate here is 2500ns (SCL period in I2C FM mode),
     // so 32-bit _unsigned_ calculation suffices.
     // Notes: we round up the clock frequency, _increasing_ the cycle count to cover the interval.
-    int unsigned unity = 2;  // ... because we're calculating as 'n.1' fixed-point.
-    int unsigned clk_khz = ceil_div(clk_freq, 1000);
-    return (TmCycW + 1)'(ceil_div(tm_ns * clk_khz, 500_000));
+    // We divide by 500_000 rather than 1_000_000, because we're calculating as 'n.1' fixed-point.
+    logic [31:0] clk_khz = prim_util_pkg::ceil_udiv(clk_freq, 1000);
+    return (TmCycW + 1)'(prim_util_pkg::ceil_udiv(tm_ns * clk_khz, 500_000));
   endfunction
 
   // Determine the initial value of the IP clock cycle counter required to achieve (at least) the
   // given delay. This is in '-1' form in preparation for counting down to zero.
-  function automatic logic [TmCycW-1:0] tm_cycles_init(int unsigned clk_freq, int unsigned tm_ns);
+  function automatic logic [TmCycW-1:0] tm_cycles_init(logic [31:0] clk_freq, logic [31:0] tm_ns);
     logic [TmCycW-1:-1] cnt;  // 'n.1' fixed-point.
     cnt = tm_cycles(clk_freq, tm_ns) - 'b1;  // Round up and then subtract 1.
     return cnt[TmCycW-1:0];
@@ -84,10 +79,10 @@ package i3c_timing_pkg;
   // zero) for the four phases of an SCL cycle as shown above. Additionally, `tchs` may be extended
   // by a half-cycle of the IP clock but this does not contribute to the SCL period and it simply
   // overlaps the `tclh` interval, to widen the SCL high pulse for specification compliance.
-  function automatic tm_params_t tm_params(int unsigned clk_freq,
-                                           int unsigned hi_ns,
-                                           int unsigned period_ns);
-    int unsigned lo_cyc, tchh, tchs, tclh, tcls;
+  function automatic tm_params_t tm_params(logic [31:0] clk_freq,
+                                           logic [31:0] hi_ns,
+                                           logic [31:0] period_ns);
+    logic [31:0] lo_cyc, tchh, tchs, tclh, tcls;
     logic [TmCycW-1:-1] per_cyc, hi_cyc;
     tm_params_t parm;
 
@@ -100,14 +95,14 @@ package i3c_timing_pkg;
     parm.hcext = hi_cyc[-1];
     // Set the SDA sampling after SCL posedge to the mid-point, favoring a slight delay.
     tchh = hi_cyc[TmCycW-1:1] + hi_cyc[0];
-    tchs = hi_cyc[TmCycW-1:0] - tchh;
+    tchs = 32'(hi_cyc[TmCycW-1:0]) - tchh;
 
     // Calculate the SCL low timing parameters.
     lo_cyc = per_cyc[TmCycW-1:0] + per_cyc[-1];  // Round-up to an integral number of cycles.
     lo_cyc = lo_cyc - tchh - tchs;
     // Set the SDA sampling after SCL negedge to the mid-point, favoring a slight delay to give
     // a little longer for the Target-supplied read data to arrive.
-    tclh = TmCycW'((lo_cyc + 'b1) >> 1);
+    tclh = (lo_cyc >> 1) + 32'(lo_cyc[0]);
     tcls = lo_cyc - tclh;
 
     // Timing parameters are used to count down from 'n-1' to 0.

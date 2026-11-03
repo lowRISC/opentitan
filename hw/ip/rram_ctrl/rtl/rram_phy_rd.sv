@@ -65,6 +65,7 @@ module rram_phy_rd
   // Error signals
   /////////////////////////////////
   logic valid_err, req_err, cmd_intg_err;
+  logic buf_state_err_any;
 
   /////////////////////////////////
   // Descrambling signals
@@ -129,6 +130,7 @@ module rram_phy_rd
   logic [NumRdBuf-1:0] buf_valid;
   logic [NumRdBuf-1:0] buf_verified;
   logic [NumRdBuf-1:0] buf_intg_err;
+  logic [NumRdBuf-1:0] buf_state_err;
   logic [NumRdBuf-1:0] buf_dependency;
   logic [NumRdBuf-1:0] buf_invalid_alloc;
   logic [NumRdBuf-1:0] buf_verified_alloc;
@@ -253,6 +255,7 @@ module rram_phy_rd
       .update_i       (update[i]),
       .invalidate_i   (buf_invalidate[i]),
       .verify_i       (verify[i]),
+      .read_i         (meta_q.buf_sel[i] & rd_buf_hit),
       .addr_i         (rram_word_addr),
       .part_i         (part_i),
       .descramble_en_i(descramble_en_i),
@@ -261,7 +264,8 @@ module rram_phy_rd
       .data_i         (rram_data_packed_intg),
       .err_i          (rd_fifo_q.err),
       .rd_buf_o       (rd_buf[i]),
-      .intg_err_o     (buf_intg_err[i])
+      .intg_err_o     (buf_intg_err[i]),
+      .state_err_o    (buf_state_err[i])
     );
   end
 
@@ -479,10 +483,12 @@ module rram_phy_rd
   assign meta_d.verify   = shadow_sel;
   assign meta_d.word_sel = shadow_sel ? '0 : addr_i[WordSelW-1:0];
 
-  // Command integrity of incoming requests (stored in meta fifo and checked with response)
+  // Command integrity of incoming requests (stored in meta fifo and checked with response).
+  // Also covers buf_sel, update and verify to detect faults on these meta fifo fields.
   logic [31:0] unused_cmd_data0;
   prim_secded_inv_39_32_enc u_cmd_intg_req_gen (
-    .data_i(32'({ecc_en_i, descramble_en_i, addr_xor_en_i, addr_i, part_i})),
+    .data_i(32'({meta_d.buf_sel, meta_d.update, meta_d.verify,
+                 ecc_en_i, descramble_en_i, addr_xor_en_i, addr_i, part_i})),
     .data_o({meta_d.cmd_intg, unused_cmd_data0})
   );
 
@@ -652,9 +658,11 @@ module rram_phy_rd
   // - a rd_buf hit
   // - a rd_buf_update as it is forwarded to the output
   assign data_valid_o = (rd_data_valid & rd_buf_update) | rd_buf_hit;
+  // Read buffer operation in an illegal buffer state
+  assign buf_state_err_any = |buf_state_err;
   // Select right bus word and return
   assign data_o     = (data_valid_o & ~data_err_o) ? muxed_data[meta_q.word_sel] : inv_data;
-  assign data_err_o = data_valid_o ? muxed_err | cmd_intg_err : 1'b0;
+  assign data_err_o = data_valid_o ? muxed_err | cmd_intg_err | buf_state_err_any : 1'b0;
 
   // The read module is idle when there are no outstanding transactions to process
   // (the meta fifo is empty) and no new requests enter the pipeline or no new shadow requests are
@@ -674,10 +682,6 @@ module rram_phy_rd
     .in_i (meta_q),
     .out_o(meta_q_buf)
   );
-  // some fields of meta_q_buf are not used for the check.
-  logic unused_meta_q_buf;
-  assign unused_meta_q_buf = (^meta_q_buf.update) ^ (^meta_q_buf.buf_sel);
-
   // valid cannot be one if:
   // - meta_fifo is empty
   // - the current operation is a verify operation
@@ -695,7 +699,8 @@ module rram_phy_rd
 
   // Command integrity of response
   prim_secded_inv_39_32_enc u_cmd_intg_rsp_gen (
-    .data_i(32'({rd_buf_ecc_en, rd_buf_descramble_en, rd_buf_addr_xor_en,
+    .data_i(32'({meta_q_buf.buf_sel, meta_q_buf.update, meta_q_buf.verify,
+                 rd_buf_ecc_en, rd_buf_descramble_en, rd_buf_addr_xor_en,
                  rd_buf_addr, meta_q_buf.word_sel, rd_buf_part})),
     .data_o({cmd_rsp_intg, unused_cmd_data1})
   );
@@ -704,7 +709,7 @@ module rram_phy_rd
 
   // SEC_CM: PHY_RD_RSP.CTRL.INTEGRITY
   // Control flow error if any of the above errors is set
-  assign ctrl_err_o = valid_err | req_err | cmd_intg_err;
+  assign ctrl_err_o = valid_err | req_err | cmd_intg_err | buf_state_err_any;
 
   // If any fifo shows an integrity error
   assign fifo_err_o = |{meta_fifo_err, rd_fifo_err, mask_fifo_err};
@@ -731,5 +736,10 @@ module rram_phy_rd
 
   // Abort when an integrity error is seen
   `ASSERT(IntgError, (buf_intg_err == '0))
+
+  // The command fields protected by the command integrity must fit into its 32 data bits.
+  `ASSERT_INIT(CmdIntgWidth_A,
+               $bits({meta_d.buf_sel, meta_d.update, meta_d.verify, ecc_en_i, descramble_en_i,
+                      addr_xor_en_i, addr_i, part_i}) <= 32)
 
 endmodule // rram_phy_rd

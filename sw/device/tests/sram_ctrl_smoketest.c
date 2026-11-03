@@ -72,8 +72,9 @@ static void write_read_check(void) {
   for (int i = 0; i < SRAM_CTRL_TEST_DATA_SIZE_WORDS; ++i) {
     for (dt_sram_ctrl_t sc = (dt_sram_ctrl_t)0; sc < kDtSramCtrlCount; ++sc) {
 #ifdef OPENTITAN_IS_EARLGREY
-      // The meta SRAM's RAM port is driven by the CHERIoT subsystem and is not
-      // on the main crossbar, so it can't be exercised as a generic SRAM here.
+      // The meta SRAM's RAM port is driven by the CHERIoT memory subsystem
+      // and is not on the main crossbar, so it can't be exercised as a
+      // generic SRAM here.
       if (sc == kDtSramCtrlMeta) {
         continue;
       }

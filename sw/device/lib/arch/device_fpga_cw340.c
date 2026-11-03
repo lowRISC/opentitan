@@ -6,8 +6,6 @@
 
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/silicon_creator/lib/drivers/ibex.h"
-#include "sw/device/silicon_creator/lib/drivers/uart.h"
 
 /**
  * @file
@@ -54,5 +52,3 @@ const uint32_t kAstCheckPollCpuCycles =
 uintptr_t device_test_status_address(void) { return 0; }
 
 uintptr_t device_log_bypass_uart_address(void) { return 0; }
-
-const bool kJitterEnabled = false;

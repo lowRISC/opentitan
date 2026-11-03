@@ -43,7 +43,6 @@ module tb;
   wire   intr_hw_inst_exc;
   wire   intr_cs_fatal_err;
   wire[NUM_MAX_INTERRUPTS-1:0]          interrupts;
-  wire[MuBi8Width - 1:0]                otp_en_cs_sw_app_read;
   wire[MuBi4Width - 1:0]                lc_hw_debug_en;
   csrng_pkg::csrng_req_t[NumHwApps-1:0] csrng_cmd_req;
   csrng_pkg::csrng_rsp_t[NumHwApps-1:0] csrng_cmd_rsp;
@@ -51,7 +50,6 @@ module tb;
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
   pins_if#(NUM_MAX_INTERRUPTS) intr_if(interrupts);
-  pins_if#(MuBi8Width) otp_en_cs_sw_app_read_if(otp_en_cs_sw_app_read);
   pins_if#(MuBi4Width) lc_hw_debug_en_if(lc_hw_debug_en);
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   csrng_if  csrng_if[NumHwApps](.clk(clk), .rst_n(edn_disable === 1'b1 ? 1'b0 : rst_n));
@@ -77,8 +75,6 @@ module tb;
 
     .tl_i                       (tl_if.h2d),
     .tl_o                       (tl_if.d2h),
-
-    .otp_en_csrng_sw_app_read_i (prim_mubi_pkg::mubi8_t'(otp_en_cs_sw_app_read)),
 
     .lc_hw_debug_en_i           (lc_ctrl_pkg::lc_tx_t'(lc_hw_debug_en)),
 
@@ -120,8 +116,6 @@ module tb;
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(virtual pins_if#(MuBi8Width))::set(null, "*.env", "otp_en_cs_sw_app_read_vif",
-        otp_en_cs_sw_app_read_if);
     uvm_config_db#(virtual pins_if#(MuBi4Width))::set(null, "*.env", "lc_hw_debug_en_vif",
         lc_hw_debug_en_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);

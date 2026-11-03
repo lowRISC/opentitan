@@ -2,7 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-package(default_visibility = ["//visibility:public"])
+package(
+    default_visibility = ["//visibility:public"],
+    features = ["cryptolib_warnings"],
+)
 
 cc_library(
     name = "aes_gcm",
@@ -13,9 +16,12 @@ cc_library(
         "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:random_order",
         "//sw/device/lib/crypto/drivers:aes",
+        "//sw/device/lib/crypto/drivers:keymgr_dpe",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -29,6 +35,7 @@ cc_library(
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:random_order",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/include:datatypes",

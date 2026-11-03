@@ -697,11 +697,6 @@ module chip_englishbreakfast_cw305 #(
     .rst_no(rst_n)
   );
 
-  logic [31:0] fpga_info;
-  usr_access_xil7series u_info (
-    .info_o(fpga_info)
-  );
-
   ast_pkg::clks_osc_byp_t clks_osc_byp;
   assign clks_osc_byp = '{
     usb: clk_usb_48mhz,
@@ -890,7 +885,6 @@ module chip_englishbreakfast_cw305 #(
     .UsbdevStub(1'b1),
     .RvCoreIbexSecureIbex(0),
     .RomCtrlBootRomInitFile(BootRomInitFile),
-    .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .SramCtrlMainInstrExec(1),
     .PinmuxTargetCfg(PinmuxTargetCfg)
   ) top_englishbreakfast (
@@ -942,7 +936,6 @@ module chip_englishbreakfast_cw305 #(
     .por_n_i                  (por_n             ),
     .rstmgr_resets_o          (rstmgr_resets     ),
     .rstmgr_rst_en_o          (                  ),
-    .fpga_info_i              (fpga_info         ),
     .usbdev_usb_rx_d_i        (1'b0              ),
     .usbdev_usb_tx_d_o        (                  ),
     .usbdev_usb_tx_se0_o      (                  ),
@@ -993,10 +986,10 @@ module chip_englishbreakfast_cw305 #(
   logic clk_io_div4_trigger_hw_oe, manual_in_io_clk_trigger_hw_oe;
   logic clk_io_div4_trigger_sw_en, manual_in_io_clk_trigger_sw_en;
   logic clk_io_div4_trigger_sw_oe, manual_in_io_clk_trigger_sw_oe;
-  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpioGpio9];
-  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpioGpio9];
-  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpioGpio8];
-  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpioGpio8];
+  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpio0Gpio9];
+  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpio0Gpio9];
+  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpio0Gpio8];
+  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpio0Gpio8];
 
   // Synchronize signals to manual_in_io_clk.
   prim_flop_2sync #(

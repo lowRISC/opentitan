@@ -20,7 +20,7 @@ typedef struct crypto_state {
   uint8_t self_check_state;
   uint8_t locked_state;
   uint8_t csrng_instantiated;
-  uint8_t csrng_is_default;
+  uint8_t csrng_is_manual;
   uint8_t cmvp_service_indicator;
   uint8_t cmvp_call_depth;
 } crypto_state_t;

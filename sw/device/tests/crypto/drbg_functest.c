@@ -146,7 +146,14 @@ static status_t run_negative_tests(void) {
 
   CHECK(otcrypto_drbg_reseed(&null_data_buf).value == OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_drbg_reseed(&too_long_buf).value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_drbg_reseed(&kEmptyBuffer).value == OTCRYPTO_RECOV_ERR.value);
+  CHECK(otcrypto_drbg_manual_reseed(&valid_entropy, &kEmptyBuffer).value ==
+        OTCRYPTO_RECOV_ERR.value);
 
+  CHECK(otcrypto_drbg_manual_instantiate(NULL, &kEmptyBuffer).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_drbg_manual_instantiate(&valid_entropy, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
   CHECK(
       otcrypto_drbg_manual_instantiate(&valid_entropy, &null_data_buf).value ==
       OTCRYPTO_BAD_ARGS.value);
@@ -174,6 +181,10 @@ static status_t run_negative_tests(void) {
         OTCRYPTO_OK.value);
 
   // Null outputs
+  CHECK(otcrypto_drbg_generate(&kEmptyBuffer, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_drbg_manual_generate(&kEmptyBuffer, NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_drbg_generate(&kEmptyBuffer, &null_out).value ==
         OTCRYPTO_BAD_ARGS.value);
   CHECK(otcrypto_drbg_manual_generate(&kEmptyBuffer, &null_out).value ==

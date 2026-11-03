@@ -135,6 +135,13 @@ typedef struct dif_entropy_src_config {
    */
   bool bypass_conditioner;
   /**
+   * If set, the esfinal FIFO holding previously produced entropy seeds is
+   * cleared upon disabling the module. Otherwise, previously produced entropy
+   * seeds get served to CSRNG upon request or can alternatively get read out
+   * via ENTROPY_DATA CSR even after disabling the module.
+   */
+  bool clear_esfinal_fifo_while_disabled;
+  /**
    * Specifies which single-bit-mode to use, if any at all. FIPS mode of
    * operation is disabled in single-bit-mode of operation is selected.
    */
@@ -404,6 +411,11 @@ typedef enum dif_entropy_src_alert_cause {
    * unsupported value.
    */
   kDifEntropySrcAlertThresholdScopeField = 1U << 3,
+  /**
+   * Triggered when the THRESHOLD_ONEWAY field in the CONF register is set to an
+   * unsupported value.
+   */
+  kDifEntropySrcAlertThresholdOnewayField = 1U << 4,
   /**
    * Triggered when the RNG_BIT_ENABLE field in the CONF register is set to an
    * unsupported value.

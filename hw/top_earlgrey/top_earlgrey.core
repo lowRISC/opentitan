@@ -17,10 +17,11 @@ filesets:
       - lowrisc:ip:rv_dm
       - lowrisc:ip:rv_timer
       - lowrisc:ip:tlul
-      - lowrisc:ip:cheriot
+      - lowrisc:ip:cheriot_mem_sys
       - lowrisc:ip:spi_device
       - lowrisc:ip:spi_host
       - lowrisc:ip:i2c
+      - lowrisc:ip:i3c
       - lowrisc:ip:aes
       - lowrisc:ip:entropy_src
       - lowrisc:ip:csrng
@@ -59,7 +60,7 @@ filesets:
       - lowrisc:prim:usb_diff_rx
       - lowrisc:prim:mubi
       - lowrisc:systems:top_earlgrey_pkg
-      - lowrisc:systems:ast_pkg
+      - lowrisc:virtual_systems:top_earlgrey_ast
     files:
       - rtl/autogen/top_earlgrey.sv
       - rtl/autogen/earlgrey_pd_main.sv

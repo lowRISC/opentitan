@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//rules:common_settings.bzl", "bool_flag")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 load("@rules_pkg//pkg:tar.bzl", "pkg_tar")
 load("//rules:const.bzl", "KEY_AUTHENTICITY")
@@ -25,6 +26,17 @@ _CW340_STUBROM_PATH = "{}/$(location {})".format(_PREFIX, _CW340_STUBROM)
 
 _FPGA_PATH_TMPL = "lowrisc_systems_{}_0.1/synth-vivado/{}"
 
+# Build the CW340 bitstream with Vivado's default flow instead of the build-time optimized one.
+bool_flag(
+    name = "fpga_cw340_debug",
+    build_setting_default = False,
+)
+
+config_setting(
+    name = "fpga_cw340_debug_enabled",
+    flag_values = {":fpga_cw340_debug": "True"},
+)
+
 # CW340 bitstream
 fusesoc_hash_and_build(
     name = "fpga_cw340",
@@ -35,6 +47,10 @@ fusesoc_hash_and_build(
     ],
     cores = ["//hw:cores"],
     data = ["//hw/ip/otbn:rtl_files"],
+    env = select({
+        ":fpga_cw340_debug_enabled": {"CW340_DEBUG": "1"},
+        "//conditions:default": {},
+    }),
     flags = [
         "--BootRomInitFile=" + _CW340_STUBROM_PATH,
     ],

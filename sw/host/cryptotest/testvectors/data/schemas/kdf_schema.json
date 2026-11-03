@@ -1,0 +1,73 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://raw.githubusercontent.com/lowRISC/opentitan/master/sw/host/cryptotest/testvectors/data/schemas/kdf_schema.json",
+  "title": "Cryptotest KDF Test Vector",
+  "description": "A list of testvectors for KDF testing",
+  "$defs": {
+    "byte_array": {
+      "type": "array",
+      "items": {
+        "type": "integer",
+        "minimum": 0,
+        "maximum": 255
+      }
+    }
+  },
+  "type": "array",
+  "minItems": 1,
+  "items": {
+    "type": "object",
+    "additionalProperties": false,
+    "required": [
+      "vendor",
+      "test_case_id",
+      "algorithm",
+      "mode",
+      "key",
+      "label",
+      "context",
+      "output",
+      "result"
+    ],
+    "properties": {
+      "vendor": {
+        "description": "test vector vendor name",
+        "type": "string"
+      },
+      "test_case_id": {
+        "description": "test_case_id",
+        "type": "integer"
+      },
+      "algorithm": {
+        "description": "KDF algorithm",
+        "type": "string",
+        "enum": ["hkdf", "kmac-kdf", "kdf-ctr"]
+      },
+      "mode": {
+        "description": "Underlying PRF mode",
+        "type": "string",
+        "enum": ["sha-256", "sha-384", "sha-512", "kmac-128", "kmac-256"]
+      },
+      "key": {
+        "description": "Input keying material (IKM) or key derivation key",
+        "$ref": "#/$defs/byte_array"
+      },
+      "label": {
+        "description": "Salt (for HKDF) or label (for KMAC-KDF / KDF-CTR)",
+        "$ref": "#/$defs/byte_array"
+      },
+      "context": {
+        "description": "Info (for HKDF) or context (for KMAC-KDF / KDF-CTR)",
+        "$ref": "#/$defs/byte_array"
+      },
+      "output": {
+        "description": "Expected derived key material",
+        "$ref": "#/$defs/byte_array"
+      },
+      "result": {
+        "description": "Whether the derived key material should match output",
+        "type": "boolean"
+      }
+    }
+  }
+}

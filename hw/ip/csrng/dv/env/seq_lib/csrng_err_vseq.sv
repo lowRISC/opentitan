@@ -81,10 +81,10 @@ class csrng_err_vseq extends csrng_base_vseq;
     cs_item.acmd  = csrng_pkg::GEN;
     cs_item.clen  = 'h0;
     cs_item.flags = MuBi4True;
-    cs_item.glen  = 'h1000;
+    cs_item.glen  = 'hfff;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
     // Not waiting for response so the error happens in the middle of the generate command.
-    send_cmd_req(cfg.which_app_err_alert, cs_item, .await_response(1'b0));
+    send_cmd_req(cfg.which_app_err_alert, cs_item, .await_response(1'b0), .await_genbits(1'b0));
 
     reg_name = "err_code";
     csr = ral.get_reg_by_name(reg_name);
@@ -177,18 +177,14 @@ class csrng_err_vseq extends csrng_base_vseq;
       ctr_err: begin
         logic [csrng_pkg::MainSmStateWidth-1:0] sm_state;
         string sm_state_path = cfg.csrng_path_vif.sm_err_path("main_sm", cfg.which_app_err_alert);
-        case(cfg.which_cnt) inside
-          cmd_gen_cnt_sel: begin
-            fld = csr.get_field_by_name(fld_name);
-            path = cfg.csrng_path_vif.cmd_gen_cnt_err_path(cfg.which_app_err_alert);
-            force_cnt_err(path, fld, 1'b1, csrng_pkg::GenBitsCtrWidth);
-          end
-          ctr_drbg_cnt_sel: begin
-            fld = csr.get_field_by_name(fld_name);
-            path = cfg.csrng_path_vif.ctr_drbg_ctr_err_path();
-            force_cnt_err(path, fld, 1'b1, csrng_pkg::CtrLen);
-          end
-        endcase
+        fld = csr.get_field_by_name(fld_name);
+        if (cfg.which_cnt == ctr_drbg_cnt) begin
+          path = cfg.csrng_path_vif.ctr_drbg_ctr_err_path();
+          force_cnt_err(path, fld, 1'b1, csrng_pkg::CtrLen);
+        end else begin
+          path = cfg.csrng_path_vif.state_db_reg_ptr_err_path();
+          force_cnt_err(path, fld, 1'b1, csrng_pkg::StateDbRegPtrWidth);
+        end
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
         // Check that the `csrng_main_sm` FSM, which observes the errors of the faulted counter, has

@@ -12,6 +12,7 @@ class entropy_src_intr_test extends entropy_src_base_test;
 
     cfg.en_scb                     = 1;
     cfg.dut_cfg.default_ht_thresholds_pct = 100;
+    cfg.dut_cfg.esfinal_clr_while_dsbld_pct = 100;
 
     `DV_CHECK_RANDOMIZE_FATAL(cfg)
 

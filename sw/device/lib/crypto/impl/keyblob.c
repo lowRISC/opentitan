@@ -85,6 +85,9 @@ static status_t check_keyblob_length(const otcrypto_blinded_key_t *key) {
 
 status_t keyblob_to_shares(const otcrypto_blinded_key_t *key, uint32_t **share0,
                            uint32_t **share1) {
+  if (key->config.hw_backed != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   // Double-check the length of the keyblob.
   HARDENED_TRY(check_keyblob_length(key));
 
@@ -148,7 +151,8 @@ status_t keyblob_to_keymgr_dpe_diversification(
   }
   HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
 
-  if (key->keyblob_length != kKeyblobHwBackedBytes) {
+  if (key->keyblob_length != kKeyblobHwBackedBytes &&
+      key->keyblob_length != kSwKeyblobHwBackedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -170,7 +174,8 @@ status_t keyblob_to_keymgr_dpe_attestation_diversification(
   }
   HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
 
-  if (key->keyblob_length != kCdiKeyblobHwBackedBytes) {
+  if (key->keyblob_length != kCdiKeyblobHwBackedBytes &&
+      key->keyblob_length != kSwKeyblobHwBackedBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -215,6 +220,10 @@ status_t keyblob_ensure_xor_masked(const otcrypto_key_config_t config) {
       key_type_used = launder32(key_type_used) | kOtcryptoKeyTypeAes;
       result ^= launder32(kOtcryptoKeyTypeAes);
       break;
+    case kOtcryptoKeyTypeTdes:
+      key_type_used = launder32(key_type_used) | kOtcryptoKeyTypeTdes;
+      result ^= launder32(kOtcryptoKeyTypeTdes);
+      break;
     case kOtcryptoKeyTypeHmac:
       key_type_used = launder32(key_type_used) | kOtcryptoKeyTypeHmac;
       result ^= launder32(kOtcryptoKeyTypeHmac);
@@ -257,6 +266,8 @@ status_t keyblob_from_key_and_mask(const uint32_t *key, const uint32_t *mask,
   // share0 = key ^ mask, share1 = mask
   size_t key_words = keyblob_share_num_words(config);
   if (key_words > kOtcryptoWrappedKeyMaxWords) {
+    // COVERAGE (FI CM) Redundant check; keyblob_ensure_xor_masked already
+    // bounds the key length.
     return OTCRYPTO_BAD_ARGS;
   }
   uint32_t share0[kOtcryptoWrappedKeyMaxWords];
@@ -276,6 +287,8 @@ status_t keyblob_remask(otcrypto_blinded_key_t *key) {
   // Generate a fresh mask the size of one share.
   size_t key_share_words = keyblob_share_num_words(key->config);
   if (key_share_words > kOtcryptoWrappedKeyMaxWords) {
+    // COVERAGE (FI CM) Redundant check; keyblob_ensure_xor_masked already
+    // bounds the key length.
     return OTCRYPTO_BAD_ARGS;
   }
   uint32_t mask[kOtcryptoWrappedKeyMaxWords];

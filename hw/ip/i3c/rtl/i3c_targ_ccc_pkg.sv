@@ -7,6 +7,7 @@
 package i3c_targ_ccc_pkg;
   import i3c_pkg::*;
   import i3c_consts_pkg::*;
+  import i3c_reg_pkg::*;
 
   // Width of the registers devoted to Target CCC handling.
   localparam int unsigned TargCRWidth = 'd8;
@@ -95,7 +96,7 @@ package i3c_targ_ccc_pkg;
     // CCC data for transmission by the Target transceiver logic.
     logic                       req_cvalid;
     logic                       req_clast;
-    logic [NumTargets-1:0][7:0] req_cdata;
+    logic [MaxTargets-1:0][7:0] req_cdata;
   } i3c_targ_ccc_rsp_t;
 
 endpackage

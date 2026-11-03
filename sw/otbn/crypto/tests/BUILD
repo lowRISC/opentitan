@@ -84,6 +84,24 @@ otbn_consttime_test(
     ],
 )
 
+otbn_consttime_test(
+    name = "ed25519_check_isoncurve_consttime",
+    subroutine = "ed25519_check_isoncurve",
+    deps = [
+        "//sw/otbn/crypto:run_curve25519",
+    ],
+)
+
+otbn_sim_test_suite(
+    name = "ed25519_check_isoncurve_test",
+    binary = "//sw/otbn/crypto:run_curve25519",
+    tests = [
+        "ed25519_check_isoncurve_not_on_curve.hjson",
+        "ed25519_check_isoncurve_valid.hjson",
+        "ed25519_check_isoncurve_y_too_large.hjson",
+    ],
+)
+
 otbn_sim_test(
     name = "ed25519_ext_is_on_curve_test",
     srcs = [
@@ -300,6 +318,14 @@ otbn_consttime_test(
 )
 
 otbn_consttime_test(
+    name = "p256_check_isoncurve_consttime",
+    subroutine = "p256_check_isoncurve",
+    deps = [
+        "//sw/otbn/crypto:run_p256",
+    ],
+)
+
+otbn_consttime_test(
     name = "p256_key_from_seed_consttime",
     subroutine = "p256_key_from_seed",
     deps = [
@@ -510,6 +536,7 @@ otbn_sim_test_suite(
     name = "p256_test",
     binary = "//sw/otbn/crypto:run_p256",
     tests = [
+        "p256_check_isoncurve_x_reduces_to_valid.hjson",
         "p256_check_public_key_not_on_curve.hjson",
         "p256_check_public_key_valid.hjson",
         "p256_check_public_key_x_too_large.hjson",
@@ -1147,6 +1174,8 @@ test_suite(
         ":ed25519_sc_reduce_test",
         ":ed25519_sign_test",
         ":ed25519_verify_test",
+        ":ed25519_check_isoncurve_consttime",
+        ":ed25519_check_isoncurve_test",
         ":ed25519_ext_is_on_curve_test",
 
         # X25519,
@@ -1156,6 +1185,7 @@ test_suite(
         # P256
         ":p256_base_mult_test",
         ":p256_base_mult_consttime",
+        ":p256_check_isoncurve_consttime",
         ":p256_isoncurve_consttime",
         ":p256_key_from_seed_consttime",
         ":p256_key_from_seed_test",

@@ -17,14 +17,6 @@ extern "C" {
 #endif
 
 /**
- * Get the FPGA version value from the USR_ACCESS register.
- *
- * @return FPGA version.
- */
-OT_WARN_UNUSED_RESULT
-uint32_t ibex_fpga_version(void);
-
-/**
  * Get the number of address remapper slots.
  *
  * @return Number of remapper slots.

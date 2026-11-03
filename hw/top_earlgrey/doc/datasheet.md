@@ -29,7 +29,7 @@ The OpenTitan Earl Grey 2 architecture supports the following key features:
     <td>
       <ul>
         <li><b>Ibex 32-bit RISC-V CPU core</b><br/>
-          (RV32{I,CHERIoT}MCB_Zicntr_Zicsr_Zifencei_<br/>Zihpm_Zcb_Zcmp_Zbc_Zbkb_Zbkx_<br/>Smepmp):
+          (RV32{I,CHERIoT}MCB_Zicntr_Zicsr_Zifencei_<br/>Zihpm_Zcb_Zcmp_Zbc_Zbkb_Zbkc_Zbkx_<br/>Smepmp):
           <ul>
             <li>3-stage pipeline: instruction fetch, decode and execute, writeback</li>
             <li>RV32I base ISA: version 2.1, active after reset</li>
@@ -41,7 +41,8 @@ The OpenTitan Earl Grey 2 architecture supports the following key features:
             <li>Bit manipulation extensions:
               <ul>
                 <li>version 1.0.0 of Zba_Zbb_Zbs (B)</li>
-                <li>version 1.0.0 of Zbc_Zbkb_Zbkc_Zbkx</li>
+                <li>version 1.0.0 of Zbc</li>
+                <li>version 1.0.1 of Zbkb_Zbkc_Zbkx</li>
               </ul>
             </li>
             <li>Smepmp: enhanced physical memory protection (ePMP) version 1.0, 16 entries, 4 byte minimum granularity</li>
@@ -214,7 +215,7 @@ The OpenTitan Earl Grey 2 architecture supports the following key features:
           <ul>
             <li>2x I3C Controller + Target (on muxed pins, restricted pin sets, tightly controlled timing)
               <ul>
-                <li>Signaling modes: HDR-DDR (24 Mbps), SDR (12 Mbps)</li>
+                <li>Signaling modes: HDR-DDR (24 Mbps signaling, 19.2 Mbps data), SDR (12 Mbps signaling, 10.6 Mbps data)</li>
                 <li>Programmed I/O (PIO) mode implementation of Host Controller Interface (HCI)</li>
                 <li>Transfer Command Response Interface (TCRI)</li>
                 <li>In-band interrupts (IBI)</li>
@@ -255,7 +256,7 @@ The OpenTitan Earl Grey 2 architecture supports the following key features:
             </li>
             <li>3x I2C (on muxed pins)</li>
             <li>4x UART (on muxed pins)</li>
-            <li>32x GPIO (on muxed pins)</li>
+            <li>2x GPIO with 32 pins each (on muxed pins)</li>
             <li>Pin Multiplexer</li>
             <li>ADC Controller</li>
             <li>System Reset Controller</li>

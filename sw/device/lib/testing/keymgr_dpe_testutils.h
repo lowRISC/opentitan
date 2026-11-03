@@ -143,7 +143,7 @@ static const dif_keymgr_dpe_advance_params_t kCreatorRootKeyParams = {
     .max_key_version = 0x11,
     .slot_src_sel = 1,
     .slot_dst_sel = 1,
-    .slot_policy = 1  // 0b001 Allow children without retaining the parent
+    .slot_policy = 9  // 0b1001 Allow keygen and children, erase the parent
 };
 
 /**
@@ -155,7 +155,7 @@ static const dif_keymgr_dpe_advance_params_t kOwnerIntKeyParams = {
     .max_key_version = 0xaa,
     .slot_src_sel = 1,
     .slot_dst_sel = 1,
-    .slot_policy = 1  // 0b001 Allow children without retaining the parent
+    .slot_policy = 9  // 0b1001 Allow keygen and children, erase the parent
 };
 
 /**
@@ -167,7 +167,7 @@ static const dif_keymgr_dpe_advance_params_t kOwnerKeyParams = {
     .max_key_version = 0xaa,
     .slot_src_sel = 1,
     .slot_dst_sel = 1,
-    .slot_policy = 5  // 0b101 Allow children with retaining the parent
+    .slot_policy = 13  // 0b1101 Allow keygen and children, retain the parent
 };
 
 /**
@@ -325,6 +325,26 @@ status_t keymgr_dpe_testutils_initial_load_uds(
 OT_WARN_UNUSED_RESULT
 status_t keymgr_dpe_testutils_check_state(
     const dif_keymgr_dpe_t *keymgr_dpe, const dif_keymgr_dpe_state_t exp_state);
+
+/**
+ * Checks that a keymgr dpe HW slot holds a valid DPE context with the expected
+ * maximum key version, boot stage and slot policy.
+ *
+ * @param keymgr_dpe A key manager dpe handle.
+ * @param slot The HW slot to check.
+ * @param exp_max_key_version The expected maximum key version for the DPE
+ * context in `slot`.
+ * @param exp_boot_stage The expected boot stage for the DPE context in
+ * `slot`.
+ * @param exp_policy The expected policy bits for the DPE context in `slot`,
+ * using the same bit layout as the `SLOT_POLICY` register.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keymgr_dpe_testutils_check_metadata(const dif_keymgr_dpe_t *keymgr_dpe,
+                                             uint32_t slot,
+                                             uint32_t exp_max_key_version,
+                                             uint32_t exp_boot_stage,
+                                             uint32_t exp_policy);
 
 /**
  * Issues a keymgr dpe HW/SW versioned key generation and wait for it

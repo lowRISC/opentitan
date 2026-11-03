@@ -323,7 +323,7 @@ genrule(
                 --exec="rescue no-op"
                 --exec="console --non-interactive --send='BAUD\r{rate}\r' --exit-success='unsupported baudrate' --exit-failure='BFV:.*\r\n'"
                 # Try the `REBO` mode and make sure we reboot without crash.
-                --exec="console --non-interactive --send='REBO\r' --exit-success='ROM:' --exit-failure='BFV:.*\r\n'"
+                --exec="console --non-interactive --send='REBO\r' --exit-success='ROM_EXT:' --exit-failure='BFV:.*\r\n'"
                 no-op
             """,
             testopt_bootstrap = "False",
@@ -426,7 +426,7 @@ opentitan_test(
             # Try the `RESQ` mode and make sure we get an error message.
             --exec="console --non-interactive --send='RESQ\r' --exit-success='{exit_success}' --exit-failure='{exit_failure}'"
             # Try the `REBO` mode and make sure we reboot without crash.
-            --exec="console --non-interactive --send='REBO\r' --exit-success='ROM:' --exit-failure='BFV:.*\r\n'"
+            --exec="console --non-interactive --send='REBO\r' --exit-success='ROM_EXT:' --exit-failure='BFV:.*\r\n'"
             no-op
         """,
     ),
@@ -620,7 +620,7 @@ opentitan_test(
             # Send Invalid rescue command.
             --exec="console --non-interactive --send='XYZ\r' --exit-success='error: unrecognized mode'"
             # Try the `REBO` mode and make sure we reboot without crash.
-            --exec="console --non-interactive --send='REBO\r' --exit-success='ROM:' --exit-failure='BFV:.*\r\n'"
+            --exec="console --non-interactive --send='REBO\r' --exit-success='ROM_EXT:' --exit-failure='BFV:.*\r\n'"
             no-op
         """,
         testopt_bootstrap = "False",

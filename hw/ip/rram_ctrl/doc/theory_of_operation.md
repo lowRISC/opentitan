@@ -501,6 +501,9 @@ Transmission integrity failures can manifest differently on each:
 
 2. **Host / Software Initiated Access to RRAM Macro**
 
+   A `host_tl` request with invalid command integrity is not forwarded to the RRAM and receives an error response.
+   It sets [`STD_FAULT_STATUS.reg_intg_err`](registers.md#std_fault_status), which asserts `fatal_std_err` and triggers local escalation, see [RRAM Escalation & Disable](#rram-escalation--disable).
+
    Reads go through two separate checks: data returned from the RRAM macro into the read buffer is verified by the shadow-read mechanism (see [RRAM Read Buffer](#rram-read-buffer)), and a mismatch raises `fatal_err`, regardless of whether the read was initiated via `core_tl` or `host_tl`.
    Data leaving the read buffer toward the requester already carries bus integrity bits, computed once when the data was written into the buffer.
 
@@ -552,6 +555,10 @@ RRAM access can be disabled through escalation (global or local) or directly by 
 Once any of these sources disables RRAM access, the only way to restore normal operation is a full system reset.
 
 When RRAM access is disabled by any of the above, the `rram_disable` bus is asserted: all host and controller requests are blocked, and the scrambling engine swaps its key to a random key.
+The OTP hardware plug (`rram_ctrl_otp`) can no longer reach the RRAM either.
+It moves to a terminal disabled state and, instead of waiting for the RRAM, answers the command that was in progress (if any) and every new command from `otp_ctrl` with `MacroError`.
+Its terminal error state, reached on a fault in `rram_ctrl_otp` itself, answers commands the same way and additionally reports the fault.
+`otp_ctrl` treats `MacroError` as a fatal macro error, so the disable is visible on the OTP side as an error rather than a command that never completes.
 
 RRAM controller registers remain accessible after disable to allow software to read status and error information.
 
@@ -625,6 +632,9 @@ Each entry contains the following fields (`rd_buf_t`):
 
 An entry progresses through states: `Invalid` -> `Alloc` (address reserved, data not yet arrived) -> `Valid` (data stored after first RRAM read) -> `Verified` (shadow read matched, entry is trusted for future hits).
 If the shadow read does not match the `Valid` entry, the entry is invalidated and `rd_intg_err` is raised.
+Each operation on an entry is only legal in specific states: an update requires `Alloc`, a verify requires `Valid`, and a read-buffer hit requires `Valid` or `Verified`.
+Any other combination indicates a fault on the read pipeline control (e.g. on the `buf_sel`, `update` or `verify` fields of the metadata FIFO) and raises `phy_rd_ctrl_err`, a fatal error.
+The affected response is returned with an error instead of data.
 The fields `addr`, `part`, `descramble_en`, `ecc_en`, and `addr_xor_en` are retained in the entry specifically to replay an identical request for the shadow read.
 The verify pass still switches which PRINCE cipher instance descrambles the data.
 See [RRAM Scrambling](#rram-scrambling) for details.

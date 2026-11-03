@@ -105,6 +105,12 @@
       default: "1"
     }
     {
+      name: "primary_clk"
+      desc: "Name of the source clock of clkmgr's primary clock clk_i"
+      type: "string"
+      default: "io_div4"
+    }
+    {
       name: "module_instance_name"
       desc: "instance name in case there are multiple clkmgr instances. Not yet implemented."
       type: "string"

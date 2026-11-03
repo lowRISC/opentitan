@@ -21,6 +21,7 @@ extern "C" {
     value(_, Hash) \
     value(_, Hkdf) \
     value(_, Hmac) \
+    value(_, Kdf) \
     value(_, Kmac) \
     value(_, Mldsa) \
     value(_, Mlkem) \

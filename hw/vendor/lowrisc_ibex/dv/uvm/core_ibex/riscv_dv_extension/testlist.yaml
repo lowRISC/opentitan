@@ -653,11 +653,11 @@
     +no_ebreak=0
     +no_ecall=0
     +no_branch_jump=0
-    +instr_cnt=10000
+    +instr_cnt=2000
     +no_csr_instr=0
     +randomize_csr=1
     +gen_all_csrs_by_default=1
-    +add_csr_write=MSTATUS,MEPC,MCAUSE,MTVAL,0x7c0,0x7c1
+    +add_csr_write=0x7c0,0x7c1
     +no_fence=0
     +no_wfi=0
     +num_of_sub_program=1
@@ -665,6 +665,45 @@
     +illegal_instr_ratio=5
     +hint_instr_ratio=1
   rtl_test: core_ibex_debug_single_step_test
+  sim_opts: >
+    +require_signature_addr=1
+    +max_interval=1500
+    +enable_debug_seq=1
+    +enable_bad_intg_on_uninit_access=0
+
+- test: riscv_debug_single_step_dummy_test
+  description: >
+    Single step through a random program whose cpuctrlsts stream enables dummy instructions at
+    the highest insertion rate. Random CSR accesses may trap. After boot setup only the stream
+    writes cpuctrlsts, though a random branch into it can write a stale value. Every debug entry
+    is a debug request or a completed step.
+  iterations: 20
+  gen_test: riscv_instr_base_test
+  gen_opts: >
+    +require_signature_addr=1
+    +gen_debug_section=1
+    +no_dret=1
+    +no_ebreak=1
+    +no_ecall=1
+    +no_branch_jump=0
+    +instr_cnt=2000
+    +no_csr_instr=0
+    +randomize_csr=1
+    +gen_all_csrs_by_default=1
+    +add_csr_write=0x7c1
+    +remove_csr_write=0x7c0
+    +no_fence=0
+    +no_wfi=1
+    +num_of_sub_program=0
+    +enable_debug_single_step=1
+    +illegal_instr_ratio=0
+    +hint_instr_ratio=1
+    +directed_instr_0=ibex_rand_cpuctrlsts_stream,8
+    +force_dummy_instr=1
+    +boot_mode=m
+  rtl_test: core_ibex_debug_single_step_test
+  rtl_params:
+    SecureIbex: 1
   sim_opts: >
     +require_signature_addr=1
     +max_interval=1500

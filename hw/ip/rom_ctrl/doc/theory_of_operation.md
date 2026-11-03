@@ -110,6 +110,16 @@ On future messages, it should raise an alert, defeating an attacker that tries t
 An attacker who modifies the ROM will perturb `CreatorRootKey` (to avoid doing so would require a preimage attack on the ROM checksum calculation or the `KM_DERIVE` function).
 The result is that, while the chip will function, it will have the "wrong" root key and the chain of trust used for attestation will be broken.
 
+## ROM check and FIPS 140-3 certification / CNSA2.0 compliance
+
+It is important that the underlying ROM is implemented as mask ROM, i.e., its contents need to be programmed by the IC manufacturer and cannot be modified or erased.
+In accordance with Section 5.A of [Implementation Guidance for FIPS 140-3 and the Cryptographic Module Validation Program](https://csrc.nist.gov/csrc/media/Projects/cryptographic-module-validation-program/documents/fips%20140-3/FIPS%20140-3%20IG.pdf), the ROM check is then *NOT* required for compliance with FIPS 140-3.
+As a result, no Known Answer Test (KAT) of the `cSHAKE256` algorithm executed by the KMAC block as part of the ROM check is required prior to the actual ROM check.
+It is sufficient to perform a `cSHAKE256` KAT at a later point but prior to the first other use or service of the ROM.
+Furthermore, since the ROM check is not required, the use of the `cSHAKE256` algorithm which is *NOT* in the list of approved hash functions of the [Commercial National Security Algorithm Suite 2.0](https://media.defense.gov/2025/May/30/2003728741/-1/-1/0/CSA_CNSA_2.0_ALGORITHMS.PDF) is permitted.
+
+Incorporating the `cSHAKE256` digest of the ROM check as configuration data at the start of the DICE chain, i.e., for the generation of the [`CreatorRootKey`](../../../../doc/security/specs/identities_and_root_keys/README.md#creator-root-key) in the key manager, is permitted since it is not the actual key derivation function.
+
 ## Fault-injection hardening
 
 The core integrity check, flowing from the ROM data to `CreatorRootKey`, should be infeasible to subvert.

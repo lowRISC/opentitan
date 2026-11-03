@@ -276,8 +276,6 @@
               environments. Advance to state in silicon.
             - Load test program into flash and start execution.
             - Check device lc_state. Return error to the host if device in invalid state.
-            - Configure the following OTP fuses to enable access to entropy:
-              - EN_CSRNG_SW_APP_READ
             - Configure remaining HW_CFG0 OTP fields:
               - DEVICE_ID
               - MANUF_STATE

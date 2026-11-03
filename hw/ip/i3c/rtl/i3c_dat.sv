@@ -67,6 +67,10 @@ module i3c_dat
   i3c_dat_mem_t sw_dat_wdata_packed;
   i3c_dat_entry_t sw_dat_wdata_full;
   assign sw_dat_wdata_full = i3c_dat_entry_t'({DATWidthWords{sw_dat_wdata_i}});
+  // Software writes to reserved fields have no effect.
+  logic unused_sw_dat_wdata;
+  assign unused_sw_dat_wdata = ^{sw_dat_wdata_full.reserved0, sw_dat_wdata_full.reserved1,
+                                 sw_dat_wdata_full.reserved2};
 
   always_comb begin
     // Write strobes for software access to the DAT
@@ -129,9 +133,10 @@ module i3c_dat
 
   // Extract the appropriate CPU word from the DCT entry to return it.
   logic sw_dat_rdata_sel;
-  assign sw_dat_rdata_o = sw_dat_rdata_sel ? sw_dat_rdata_full[63:32] : sw_dat_rdata_full[31:0];
+  logic [1:0][31:0] sw_dat_rdata_words;
+  assign sw_dat_rdata_words = sw_dat_rdata_full;
+  assign sw_dat_rdata_o = sw_dat_rdata_words[sw_dat_rdata_sel];
 
-  i3c_dat_mem_t dat_wdata_packed;
   logic [DATMemWidth-1:0] dat_rdata_raw;
   always_comb begin
     dat_rdata_o = i3c_dat_mem_t'(dat_rdata_raw);

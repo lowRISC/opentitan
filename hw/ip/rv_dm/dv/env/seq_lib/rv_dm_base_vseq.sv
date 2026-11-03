@@ -51,6 +51,9 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   // instead of the signals in jtag_if
   rand bit scanmode;
 
+  // This flag controls whether cheriot_ena_i selects the CHERIoT debug ROM and abstract commands.
+  rand bit cheriot_ena;
+
   rand logic [NUM_HARTS-1:0]  unavailable;
 
   rand int unsigned tck_period_ps;
@@ -70,6 +73,11 @@ class rv_dm_base_vseq extends cip_base_vseq #(
   // back on.
   constraint no_scanmode_c {
     scanmode == 1'b0;
+  }
+
+  // A constraint that keeps the debug module in RV32I mode. CHERIoT vseqs override it.
+  constraint no_cheriot_ena_c {
+    cheriot_ena == 1'b0;
   }
 
   // A constraint that ensures debug is enabled. We will have sequences that wish to disable debug,
@@ -149,6 +157,7 @@ class rv_dm_base_vseq extends cip_base_vseq #(
     mode_seq.m_has_pwrmgr_signals = 1'b1;
     mode_seq.m_has_otp_ctrl_signals = 1'b1;
     mode_seq.m_has_scanmode = 1'b1;
+    mode_seq.m_has_cheriot_ena = 1'b1;
 
     if (!mode_seq.randomize() with {
           // Signals from lc_ctrl //////////////////////////////////////////////////////////////////
@@ -193,6 +202,9 @@ class rv_dm_base_vseq extends cip_base_vseq #(
            // The sequence will choose MuBi4True for m_scanmode if the signal is true and an
            // arbitrary value other than MuBi4True otherwise.
            m_scanmode == local::scanmode;
+
+           // CHERIoT mode signal (same encoding as scanmode)
+           m_cheriot_ena == local::cheriot_ena;
          }) begin
       `uvm_fatal(get_name(), "Failed to randomize mode sequence.")
     end

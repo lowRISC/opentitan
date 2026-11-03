@@ -23,7 +23,7 @@ enum {
    * Number of pins.
    *
    * This constant is used to check that arguments of type `gpio_pin_t` are
-   * within bounds.
+   * within bounds. Each GPIO instance can have up to 32 pins.
    */
   kGpioNumPins = 32,
 };
@@ -40,35 +40,38 @@ typedef uint32_t gpio_pin_t;
  * setting and includes the effects of the input noise filter and the load on
  * the pin.
  *
+ * @param gpio A GPIO instance.
  * @param pin A GPIO pin.
  * @param[out] state Pin value.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t gpio_read(gpio_pin_t pin, bool *state);
+rom_error_t gpio_read(dt_gpio_t gpio, gpio_pin_t pin, bool *state);
 
 /**
  * Writes to a pin.
  *
  * The actual value on the pin depends on the output enable setting.
  *
+ * @param gpio A GPIO instance.
  * @param pin A GPIO pin.
  * @param state Value to write.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t gpio_write(gpio_pin_t pin, bool state);
+rom_error_t gpio_write(dt_gpio_t gpio, gpio_pin_t pin, bool state);
 
 /**
  * Sets output mode of a pin.
  *
+ * @param gpio A GPIO instance.
  * @param pin A GPIO pin.
  * @param output Output mode of the pin. The pin is set to an output pin if
  *        `output` is `true`.
  * @return The result of the operation.
  */
 OT_WARN_UNUSED_RESULT
-rom_error_t gpio_set_output_mode(gpio_pin_t pin, bool output);
+rom_error_t gpio_set_output_mode(dt_gpio_t gpio, gpio_pin_t pin, bool output);
 
 #ifdef __cplusplus
 }

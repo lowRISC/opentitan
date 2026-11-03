@@ -185,6 +185,7 @@ status_t aes_gcm_testutils_encrypt(const aes_gcm_test_t *test, bool streaming,
     TRY(otcrypto_aes_gcm_encrypt_final(&ctx, tag_len, &final_ciphertext,
                                        &ciphertext_bytes_written, &actual_tag));
     *cycles = profile_end(t_start);
+    TRY_CHECK(otcrypto_integrity_blinded_key_check(&key) == kHardenedBoolTrue);
   } else {
     // Call encrypt() with a cycle count timing profile.
     uint64_t t_start = profile_start();
@@ -277,6 +278,7 @@ status_t aes_gcm_testutils_decrypt(const aes_gcm_test_t *test,
                                        &final_plaintext_bytes_written,
                                        tag_valid));
     *cycles = profile_end(t_start);
+    TRY_CHECK(otcrypto_integrity_blinded_key_check(&key) == kHardenedBoolTrue);
   } else {
     // Call decrypt() with a cycle count timing profile.
     uint64_t t_start = profile_start();

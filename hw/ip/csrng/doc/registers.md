@@ -146,32 +146,13 @@ Control register
 {"reg": [{"name": "ENABLE", "bits": 4, "attr": ["rw"], "rotate": 0}, {"name": "SW_APP_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "READ_INT_STATE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"name": "FIPS_FORCE_ENABLE", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 190}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                          |
-|:------:|:------:|:-------:|:----------------------------------------------|
-| 31:16  |        |         | Reserved                                      |
-| 15:12  |   rw   |   0x9   | [FIPS_FORCE_ENABLE](#ctrl--fips_force_enable) |
-|  11:8  |   rw   |   0x9   | [READ_INT_STATE](#ctrl--read_int_state)       |
-|  7:4   |   rw   |   0x9   | [SW_APP_ENABLE](#ctrl--sw_app_enable)         |
-|  3:0   |   rw   |   0x9   | [ENABLE](#ctrl--enable)                       |
-
-### CTRL . FIPS_FORCE_ENABLE
-Setting this field to kMultiBitBool4True enables forcing the FIPS/CC compliance flag to true via the [`FIPS_FORCE`](#fips_force) register.
-
-### CTRL . READ_INT_STATE
-Setting this field to kMultiBitBool4True will enable reading from the [`INT_STATE_VAL`](#int_state_val) register.
-Reading the internal state of the enable instances will be enabled
-only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
-Also, the [`INT_STATE_READ_ENABLE`](#int_state_read_enable) bit of the selected instance needs to be set to true for this to work.
-
-### CTRL . SW_APP_ENABLE
-Setting this field to kMultiBitBool4True will enable reading from the [`GENBITS`](#genbits) register.
-This application interface for software (register based) will be enabled
-only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
-
-### CTRL . ENABLE
-Setting this field to kMultiBitBool4True will enable the CSRNG module. The modules
-of the entropy complex may only be enabled and disabled in a specific order, see
-Programmers Guide for details.
+|  Bits  |  Type  |  Reset  | Name              | Description                                                                                                                                                                                                                                          |
+|:------:|:------:|:-------:|:------------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:16  |        |         |                   | Reserved                                                                                                                                                                                                                                             |
+| 15:12  |   rw   |   0x9   | FIPS_FORCE_ENABLE | Setting this field to kMultiBitBool4True enables forcing the FIPS/CC compliance flag to true via the [`FIPS_FORCE`](#fips_force) register.                                                                                                           |
+|  11:8  |   rw   |   0x9   | READ_INT_STATE    | Setting this field to kMultiBitBool4True will enable reading from the [`INT_STATE_VAL`](#int_state_val) register. Also, the [`INT_STATE_READ_ENABLE`](#int_state_read_enable) bit of the selected instance needs to be set to true for this to work. |
+|  7:4   |   rw   |   0x9   | SW_APP_ENABLE     | Setting this field to kMultiBitBool4True will enable reading from the [`GENBITS`](#genbits) register.                                                                                                                                                |
+|  3:0   |   rw   |   0x9   | ENABLE            | Setting this field to kMultiBitBool4True will enable the CSRNG module. The modules of the entropy complex may only be enabled and disabled in a specific order, see Programmers Guide for details.                                                   |
 
 ## CMD_REQ
 Command request register
@@ -185,9 +166,15 @@ Command request register
 {"reg": [{"name": "CMD_REQ", "bits": 32, "attr": ["wo"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name    | Description                                                                                                                                                                         |
-|:------:|:------:|:-------:|:--------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|  31:0  |   wo   |   0x0   | CMD_REQ | Writing this request with defined CSRNG commands will initiate all possible CSRNG actions. The application interface must wait for the "ack" to return before issuing new commands. |
+|  Bits  |  Type  |  Reset  | Name                         |
+|:------:|:------:|:-------:|:-----------------------------|
+|  31:0  |   wo   |   0x0   | [CMD_REQ](#cmd_req--cmd_req) |
+
+### CMD_REQ . CMD_REQ
+Writing this request with defined CSRNG commands will initiate all
+possible CSRNG actions. The application interface must wait for the
+"ack" to return before issuing new commands.
+Before writing each word of a command, [`SW_CMD_STS.CMD_RDY`](#sw_cmd_sts) needs to be polled.
 
 ## RESEED_INTERVAL
 CSRNG maximum number of generate requests allowed between reseeds register
@@ -272,7 +259,7 @@ To check whether a command was successful, wait for [`INTR_STATE.CS_CMD_REQ_DONE
 |:--------|:--------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
 | 0x0     | SUCCESS             | Request completed successfully.                                                                                                                                                                                                                                                                               |
 | 0x1     | INVALID_ACMD        | Request completed with an invalid application command error. This error indicates that the issued application command doesn't represent a valid operation.                                                                                                                                                    |
-| 0x2     | INVALID_GEN_CMD     | Request completed with an invalid counter DRBG generation command error. This error indicates that CSRNG entropy was generated for a command that is not a Generate command. In this case the entropy should not be considered as valid.                                                                      |
+| 0x2     | INVALID_GEN_CMD     | Request completed with an invalid Generate command error. This error indicates that a Generate command was issued with a `glen` field of zero. The command is ignored and no entropy is generated.                                                                                                            |
 | 0x3     | INVALID_CMD_SEQ     | This error indicates that the last command was issued out of sequence. This happens when a command other than Instantiate was issued without sending an Instantiate command first. This can also happen when an Uninstantiate command is sent without instantiating first.                                    |
 | 0x4     | RESEED_CNT_EXCEEDED | This error indicates that the number of generate requests between reseeds exceeded the maximum number allowed (see [`RESEED_INTERVAL`](#reseed_interval)). This happens only for Generate commands.                                                                                                           |
 | 0x5     | GEN_ABORTED         | This bit indicates that a Generate command for this instance was aborted via [`GEN_ABORT`](#gen_abort) before returning all requested genbits. The instance has been uninstantiated as a result and must be instantiated again before further commands will succeed. This happens only for Generate commands. |
@@ -288,10 +275,11 @@ The field is set to high once a SW command request has been acknowledged by the 
 In case of a generate command the acknowledgement goes high after all of the requested entropy is consumed.
 
 ### SW_CMD_STS . CMD_RDY
-This bit indicates when the command interface is ready to accept commands.
-Before starting to write a new command to [`SW_CMD_REQ`](#sw_cmd_req), this field needs to be polled.
-0b0: CSRNG is not ready to accept commands or the last command hasn't been acked yet.
-0b1: CSRNG is ready to accept the next command.
+This bit indicates when the command interface is ready to accept the next command word.
+Before writing each word of a command to [`CMD_REQ`](#cmd_req), this field needs to be polled.
+Words written while this field is low are dropped.
+0b0: CSRNG is not ready to accept the next command word or the last command hasn't been acked yet.
+0b1: CSRNG is ready to accept the next command word.
 
 ## GENBITS_VLD
 Generate bits returned valid register
@@ -334,7 +322,6 @@ made. For example, an application command generate request with
 a `clen` value of 4 requires this register to be read 16 times to get all
 of the data out of the FIFO path.
 Note that for [`GENBITS`](#genbits) to be able to deliver random numbers, also [`CTRL.SW_APP_ENABLE`](#ctrl) needs to be set to `kMultiBitBool4True`.
-In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
 Otherwise, the register reads as 0.
 
 ## INT_STATE_READ_ENABLE_REGWEN
@@ -376,7 +363,6 @@ Internal state read enable register
 Per-instance internal state read enable.
 Defines whether the internal state of the corresponding instance is readable via [`INT_STATE_VAL.`](#int_state_val)
 Note that for [`INT_STATE_VAL`](#int_state_val) to provide read access to the internal state, also [`CTRL.READ_INT_STATE`](#ctrl) needs to be set to `kMultiBitBool4True`.
-In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
 
 ## INT_STATE_NUM
 Internal state number register
@@ -430,7 +416,6 @@ pointer (selects 32 bits of the 448 bit field) will reset to zero. The [`INT_STA
 can be re-written at this time (internal read pointer is also reset), and then
 another internal state field can be read.
 Note that for [`INT_STATE_VAL`](#int_state_val) to provide read access to the internal state, also [`CTRL.READ_INT_STATE`](#ctrl) needs to be set to `kMultiBitBool4True`.
-In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
 Also, the [`INT_STATE_READ_ENABLE`](#int_state_read_enable) bit of the selected instance needs to be set to true for this to work.
 Otherwise, the register reads as 0.
 
@@ -565,19 +550,20 @@ resets the status bits.
 Recoverable alert status register
 - Offset: `0x6c`
 - Reset default: `0x0`
-- Reset mask: `0xf07f`
+- Reset mask: `0x1f07f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FORCE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_INVALID_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 5}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_ACMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_CMD_SEQ_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_RESEED_CNT_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 16}], "config": {"lanes": 1, "fontsize": 10, "vspace": 330}}
+{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FORCE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_INVALID_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 5}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_ACMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_GEN_CMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_CMD_SEQ_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_RESEED_CNT_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 15}], "config": {"lanes": 1, "fontsize": 10, "vspace": 330}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                                 |
 |:------:|:------:|:-------:|:-------------------------------------------------------------------------------------|
-| 31:16  |        |         | Reserved                                                                             |
-|   15   |  rw0c  |   0x0   | [CMD_STAGE_RESEED_CNT_ALERT](#recov_alert_sts--cmd_stage_reseed_cnt_alert)           |
-|   14   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_CMD_SEQ_ALERT](#recov_alert_sts--cmd_stage_invalid_cmd_seq_alert) |
+| 31:17  |        |         | Reserved                                                                             |
+|   16   |  rw0c  |   0x0   | [CMD_STAGE_RESEED_CNT_ALERT](#recov_alert_sts--cmd_stage_reseed_cnt_alert)           |
+|   15   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_CMD_SEQ_ALERT](#recov_alert_sts--cmd_stage_invalid_cmd_seq_alert) |
+|   14   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_GEN_CMD_ALERT](#recov_alert_sts--cmd_stage_invalid_gen_cmd_alert) |
 |   13   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_ACMD_ALERT](#recov_alert_sts--cmd_stage_invalid_acmd_alert)       |
 |   12   |  rw0c  |   0x0   | [CS_BUS_CMP_ALERT](#recov_alert_sts--cs_bus_cmp_alert)                               |
 |  11:7  |        |         | Reserved                                                                             |
@@ -600,6 +586,11 @@ This bit is set when an out of order command is received by the main state machi
 This happens when an instantiate command is sent for a state that was already
 instantiated or when any command other than instantiate is sent for a state that
 wasn't instantiated yet.
+The invalid command is ignored and CSRNG continues to operate.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . CMD_STAGE_INVALID_GEN_CMD_ALERT
+This bit is set when a Generate command is received with a `glen` field of zero.
 The invalid command is ignored and CSRNG continues to operate.
 Writing a zero resets this status bit.
 

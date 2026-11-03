@@ -609,7 +609,7 @@ dif_result_t dif_rram_ctrl_set_data_region_properties(
     dif_rram_ctrl_state_t *handle, uint32_t region,
     dif_rram_ctrl_data_region_properties_t config) {
   const uint32_t page_limit = kNumUsableDataPages;
-  if (handle == NULL || region >= kNumRegions ||
+  if (handle == NULL || region >= kNumRegions || config.size == 0 ||
       config.base + config.size > page_limit) {
     return kDifBadArg;
   }
@@ -641,7 +641,7 @@ dif_result_t dif_rram_ctrl_set_data_region_properties(
   reg = bitfield_field32_write(0, RRAM_CTRL_MP_REGION_0_BASE_0_FIELD,
                                config.base);
   reg = bitfield_field32_write(reg, RRAM_CTRL_MP_REGION_0_SIZE_0_FIELD,
-                               config.size);
+                               config.size - 1);
   mmio_region_write32(handle->dev.base_addr, mp_reg_offset, reg);
   return kDifOk;
 }
@@ -668,7 +668,8 @@ dif_result_t dif_rram_ctrl_get_data_region_properties(
   mp_reg_offset = get_data_region_reg_offset(region);
   reg = mmio_region_read32(handle->dev.base_addr, mp_reg_offset);
   config.base = bitfield_field32_read(reg, RRAM_CTRL_MP_REGION_0_BASE_0_FIELD);
-  config.size = bitfield_field32_read(reg, RRAM_CTRL_MP_REGION_0_SIZE_0_FIELD);
+  config.size =
+      bitfield_field32_read(reg, RRAM_CTRL_MP_REGION_0_SIZE_0_FIELD) + 1;
   *config_out = config;
   return kDifOk;
 }

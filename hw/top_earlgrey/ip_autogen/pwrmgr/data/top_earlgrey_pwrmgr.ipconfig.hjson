@@ -5,9 +5,19 @@
   instance_name: top_earlgrey_pwrmgr
   param_values:
   {
-    NumWkups: 6
+    NumWkups: 8
     Wkups:
     [
+      {
+        name: rstdet_wkup_req
+        width: "1"
+        module: i3c0
+      }
+      {
+        name: rstdet_wkup_req
+        width: "1"
+        module: i3c1
+      }
       {
         name: wkup_req
         width: "1"

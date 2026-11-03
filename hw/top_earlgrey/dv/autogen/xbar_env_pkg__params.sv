@@ -25,6 +25,12 @@ tl_device_t xbar_devices[$] = '{
     '{"spi_host1", '{
         '{32'h40310000, 32'h4031003f}
     }},
+    '{"i3c0", '{
+        '{32'h40330000, 32'h40331fff}
+    }},
+    '{"i3c1", '{
+        '{32'h40340000, 32'h40341fff}
+    }},
     '{"usbdev", '{
         '{32'h40320000, 32'h40320fff}
     }},
@@ -85,10 +91,10 @@ tl_device_t xbar_devices[$] = '{
     '{"sram_ctrl_sec__ram", '{
         '{32'h10020000, 32'h1002ffff}
     }},
-    '{"cheriot__regs", '{
+    '{"cheriot_mem_sys__regs", '{
         '{32'h411b0000, 32'h411b003f}
     }},
-    '{"cheriot__revbm", '{
+    '{"cheriot_mem_sys__revbm", '{
         '{32'h11000000, 32'h11000bff}
     }},
     '{"uart0", '{
@@ -112,11 +118,14 @@ tl_device_t xbar_devices[$] = '{
     '{"i2c2", '{
         '{32'h400a0000, 32'h400a007f}
     }},
-    '{"gpio", '{
+    '{"gpio0", '{
         '{32'h40040000, 32'h400403ff}
     }},
+    '{"gpio1", '{
+        '{32'h40050000, 32'h400503ff}
+    }},
     '{"spi_device", '{
-        '{32'h40050000, 32'h40051fff}
+        '{32'h40060000, 32'h40061fff}
     }},
     '{"rv_timer", '{
         '{32'h40100000, 32'h401001ff}
@@ -149,7 +158,7 @@ tl_device_t xbar_devices[$] = '{
         '{32'h40500000, 32'h4050003f}
     }},
     '{"sram_ctrl_ret__ram", '{
-        '{32'h40600000, 32'h40600fff}
+        '{32'h40600000, 32'h40601fff}
     }},
     '{"aon_timer", '{
         '{32'h40470000, 32'h4047003f}
@@ -173,7 +182,7 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_sec__ram",
         "rram_ctrl__host"}}
     ,
-    '{"cheriot__cored", 1, '{
+    '{"cheriot_mem_sys__cored", 1, '{
         "rom_ctrl__rom",
         "rom_ctrl__regs",
         "rv_dm__mem",
@@ -187,7 +196,8 @@ tl_host_t xbar_hosts[$] = '{
         "i2c0",
         "i2c1",
         "i2c2",
-        "gpio",
+        "gpio0",
+        "gpio1",
         "spi_device",
         "rv_timer",
         "pwrmgr",
@@ -207,6 +217,8 @@ tl_host_t xbar_hosts[$] = '{
         "spi_host0",
         "spi_host1",
         "usbdev",
+        "i3c0",
+        "i3c1",
         "rram_ctrl__core",
         "rram_ctrl__host",
         "rram_macro__prim",
@@ -224,10 +236,10 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_sec__regs",
         "sram_ctrl_meta__regs",
         "rv_core_ibex__cfg",
-        "cheriot__regs",
-        "cheriot__revbm"}}
+        "cheriot_mem_sys__regs",
+        "cheriot_mem_sys__revbm"}}
     ,
-    '{"cheriot__tbre", 2, '{
+    '{"cheriot_mem_sys__tbre", 2, '{
         "sram_ctrl_main__ram",
         "sram_ctrl_sec__ram",
         "rram_ctrl__host"}}
@@ -246,7 +258,8 @@ tl_host_t xbar_hosts[$] = '{
         "i2c0",
         "i2c1",
         "i2c2",
-        "gpio",
+        "gpio0",
+        "gpio1",
         "spi_device",
         "rv_timer",
         "pwrmgr",
@@ -266,6 +279,8 @@ tl_host_t xbar_hosts[$] = '{
         "spi_host0",
         "spi_host1",
         "usbdev",
+        "i3c0",
+        "i3c1",
         "rram_ctrl__core",
         "rram_ctrl__host",
         "rram_macro__prim",
@@ -283,6 +298,6 @@ tl_host_t xbar_hosts[$] = '{
         "sram_ctrl_sec__regs",
         "sram_ctrl_meta__regs",
         "rv_core_ibex__cfg",
-        "cheriot__regs",
-        "cheriot__revbm"}}
+        "cheriot_mem_sys__regs",
+        "cheriot_mem_sys__revbm"}}
 };

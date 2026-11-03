@@ -4,6 +4,7 @@
 
 #include <string.h>
 
+#include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/crypto/impl/kats.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
@@ -17,15 +18,23 @@ status_t test_run_kats(void) {
 #ifdef FIPS_MODE
   LOG_INFO("Testing run_kats with kTestLastBit...");
 
-  // 1. Test out-of-bounds flag (>= 1UL << kTestLastBit)
+  // 1. Test zero and out-of-bounds flags (>= 1UL << kTestLastBit)
+  kat_id_t zero_id = {.flags = 0};
+  otcrypto_status_t status = run_kats(zero_id);
+  TRY_CHECK(status.value != kHardenedBoolTrue,
+            "Expected failure for zero test flags.");
+
   kat_id_t oob_id = {.flags = 1UL << kTestLastBit};
-  otcrypto_status_t status = run_kats(oob_id);
+  status = run_kats(oob_id);
   TRY_CHECK(status.value != kHardenedBoolTrue,
             "Expected failure for out of bounds test flags.");
 
-  // 2. Test running all KATs
+  // 2. Test running all KATs (except RNG, which already ran during
+  // otcrypto_init() and locked CSRNG internal state reading).
   LOG_INFO("Running all KATs...");
-  status = run_kats(OTCRYPTO_KAT_ALL_TESTS);
+  kat_id_t tests = OTCRYPTO_KAT_ALL_TESTS;
+  tests.flags &= ~OTCRYPTO_KAT_RNG;
+  status = run_kats(tests);
   TRY_CHECK(status.value == kHardenedBoolTrue,
             "Expected success for running all KATs.");
 
@@ -37,7 +46,7 @@ status_t test_run_kats(void) {
 
 bool test_main(void) {
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelHigh));
-
+  CSR_CLEAR_BITS(CSR_REG_CPUCTRL, 0x4);
   CHECK_STATUS_OK(test_run_kats());
 
   return true;

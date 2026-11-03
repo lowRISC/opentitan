@@ -49,7 +49,7 @@ class chip_sw_csrng_lc_hw_debug_en_vseq extends chip_sw_base_vseq;
       .device_id(DEVICE_ID), .manuf_state(MANUF_STATE));
     otp_write_hw_cfg1_partition(
       .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
-      .en_sram_ifetch(MUBI8FALSE), .en_csrng_sw_app_read(MUBI8TRUE),
+      .en_sram_ifetch(MUBI8FALSE),
       .dis_rv_dm_late_debug(MUBI8TRUE));
   endtask
 

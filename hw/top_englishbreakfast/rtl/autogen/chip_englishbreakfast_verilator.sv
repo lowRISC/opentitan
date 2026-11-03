@@ -589,7 +589,6 @@ module chip_englishbreakfast_verilator (
     .por_n_i                  (por_n              ),
     .rstmgr_resets_o          (rstmgr_resets      ),
     .rstmgr_rst_en_o          (                   ),
-    .fpga_info_i              ('0                 ),
     .usbdev_usb_rx_d_i        (usb_rx_d           ),
     .usbdev_usb_tx_d_o        (usb_tx_d           ),
     .usbdev_usb_tx_se0_o      (usb_tx_se0         ),

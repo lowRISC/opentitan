@@ -17,3 +17,15 @@ Ibex was originally developed by the PULP team at ETH Zurich and University of
 Bologna under the name zero-riscy. Ibex verification, performance enhancement
 and security hardening have been supported by the OpenTitan project
 (https://www.opentitan.org).
+
+-
+
+The RISC-V Debug Module
+Copyright 2018 ETH Zurich and University of Bologna.
+
+This product includes hardware and/or software developed as part of the PULP
+platform RISC-V debug module (https://github.com/pulp-platform/riscv-dbg),
+vendored in hw/vendor/pulp_riscv_dbg. Its CHERIoT support builds on the
+CHERIoT debug module by SCI Semiconductor
+(https://github.com/CHERIoT-Platform/cheriot-dbg-module). See the LICENSE*
+files in hw/vendor/pulp_riscv_dbg for the license terms.

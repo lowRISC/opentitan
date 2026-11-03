@@ -47,6 +47,12 @@ pub struct ChipWhisperer<B: Board> {
     inner: RefCell<Inner>,
 }
 
+impl<B: Board> std::fmt::Debug for ChipWhisperer<B> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::result::Result<(), std::fmt::Error> {
+        write!(f, "{} at {:?}", B::BOARD_NAME, self.device.borrow())
+    }
+}
+
 impl<B: Board> ChipWhisperer<B> {
     pub fn new(
         usb_vid: Option<u16>,
@@ -62,6 +68,10 @@ impl<B: Board> ChipWhisperer<B> {
             inner: RefCell::default(),
         };
         Ok(board)
+    }
+
+    pub fn backend(&self) -> Rc<RefCell<usb::Backend<B>>> {
+        self.device.clone()
     }
 
     fn open_uart(&self, instance: u32) -> Result<SoftwareFlowControl<SerialPortUart>> {

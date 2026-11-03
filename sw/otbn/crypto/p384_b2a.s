@@ -44,11 +44,11 @@
  * @param[out] [w21, w20]: result x0 (385 bits)
  * @param[out] [w11, w10]: result x1 (384 bits)
  *
- * clobbered registers: w1 to w4, w20 to w23
+ * clobbered registers: w1 to w4, w11, w20, w21, w28, w29
  * clobbered flag groups: FG0
  */
 p384_boolean_to_arithmetic:
-  /* Truncate inputs to 384 bits.
+  /* Mask out excess bits from seed shares.
        [w21, w20] <= s0 mod 2^384
        [w11, w10] <= s1 mod 2^384 = x1 */
   bn.rshi   w21, w21, w31 >> 128

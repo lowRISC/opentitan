@@ -12,6 +12,9 @@
   from topgen import lib
 
   lblock = block.name.lower()
+  # A split IP has its register block in its primary partition, so the reference to it below names
+  # that partition's module (<ip>_part_primary) rather than the IP's.
+  reg_module = lblock + '_part_primary' if block.is_split_ip else lblock
 
   # This template shouldn't be instantiated if the device interface
   # doesn't actually have any registers.
@@ -26,7 +29,7 @@
  // An upwards hierarchical reference that starts at the type of the IP block. This will correctly
  // find the block, as long as the assertion module is bound into the block (rather than sitting
  // outside of it) in the testbench.
-`define REGWEN_PATH ${lblock}.${reg_block_path}
+`define REGWEN_PATH ${reg_module}.${reg_block_path}
 
 // Block: ${lblock}
 module ${mod_base}_csr_assert_fpv import tlul_pkg::*;

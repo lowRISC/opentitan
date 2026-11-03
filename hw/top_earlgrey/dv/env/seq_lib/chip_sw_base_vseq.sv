@@ -146,7 +146,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
   task config_jitter();
     bit en_jitter;
     void'($value$plusargs("en_jitter=%0d", en_jitter));
-    // ROM blindly copies from OTP, backdoor load a true or false value.
+    // At boot, the ROM and the test ROM read this OTP word if AST init is
+    // enabled. They turn the jittery clock on unless it is MuBi4False.
     if (en_jitter) begin
       cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgJitterEnOffset,
                                        prim_mubi_pkg::MuBi4True);
@@ -862,14 +863,14 @@ class chip_sw_base_vseq extends chip_base_vseq;
         forever begin
           bit[1:0] tap_strap_value;
 `ifdef GATE_LEVEL
-          tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_main.u_pinmux.",
+          tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_aon.u_pinmux.",
                             "u_pinmux_strap_sampling.tap_strap_q_reg_1_.Q"};
           `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value[1]))
-          tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_main.u_pinmux.",
+          tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_aon.u_pinmux.",
                             "u_pinmux_strap_sampling.tap_strap_q_reg_0_.Q"};
           `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value[0]))
 `else
-          string tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_main.u_pinmux.",
+          string tap_strap_path = {"tb.dut.top_earlgrey.earlgrey_pd_aon.u_pinmux.",
                                    "u_pinmux_strap_sampling.tap_strap"};
           `DV_CHECK(uvm_hdl_read(tap_strap_path, tap_strap_value))
 `endif

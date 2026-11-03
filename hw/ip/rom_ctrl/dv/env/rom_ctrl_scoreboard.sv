@@ -482,17 +482,19 @@ function void rom_ctrl_scoreboard::check_phase(uvm_phase phase);
 endfunction
 
 function void rom_ctrl_scoreboard::phase_ready_to_end(uvm_phase phase);
-  if (phase.get_name() != "run") return;
+  // Only raise when there is something to wait for. Each drop restarts the run-phase drain, which
+  // calls this function again, so an objection raised and dropped at once repeats up to UVM's
+  // ready-to-end iteration limit and holds the run phase for that many drain times.
+  if (phase.get_name() != "run" || !cfg.en_scb || pwrmgr_complete) begin
+    return;
+  end
 
-    // Raising an objection and waiting for the pwrmgr_complete to set. This will add an extra
-    // delay after the test finishes and rom_ctrl_fsm would be in a done state which will set
-    // pwrmgr_data_o.done.
-    phase.raise_objection(this, {`gfn, " objection raised"});
-    fork
-      begin
-        if (cfg.en_scb)
-          wait (pwrmgr_complete);
-        phase.drop_objection(this, {`gfn, " objection dropped"});
-      end
-    join_none
+  // Hold the run phase until rom_ctrl_fsm reaches its done state and sets pwrmgr_data_o.done
+  phase.raise_objection(this, {`gfn, " objection raised"});
+  fork
+    begin
+      wait (pwrmgr_complete);
+      phase.drop_objection(this, {`gfn, " objection dropped"});
+    end
+  join_none
 endfunction

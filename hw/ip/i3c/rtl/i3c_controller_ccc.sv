@@ -8,9 +8,7 @@ module i3c_controller_ccc
   import i3c_ctrl_ccc_pkg::*;
   import i3c_pkg::*;
   import i3c_reg_pkg::*;
-#(
-  parameter int unsigned DataWidth = 32
-) (
+(
   // CCC logic is enabled and active.
   // - this may be used to suppress any internal activity and gate off any output control signals
   //   when not processing CCCs.
@@ -69,11 +67,11 @@ module i3c_controller_ccc
       ccc_rsp_o.inc_idx = 1'b1;
     end else begin
       // Following a repeated start (Sr)
-      case (r_i[CtrlCR_CCC])
+      unique case (r_i[CtrlCR_CCC])
         // Address Assignment command using ENTDAA.
         ENTDAA: begin  // 4.3.4.2
-          case (ccc_req_i.idx)
-            3'b010: begin
+          unique case (ccc_req_i.idx)
+            4'h2: begin
               // Sending the Dynamic Address must be done with Open-Drain signaling.
               ccc_rsp_o.req_dvalid = 1'b1;
               ccc_rsp_o.req_type   = CReqType_DynAddr;
@@ -84,7 +82,7 @@ module i3c_controller_ccc
                                       ccc_req_i.dat_entry.dynamic_address[23], 24'b0};
               ccc_rsp_o.inc_idx    = 1'b1;
             end
-            3'b011: begin
+            4'h3: begin
               // TODO(#31304): At this point we should be accepting/responding to ACK/NACK.
               // We must send Sr at this point, the command is continuing.
               ccc_rsp_o.done       = 1'b1;
@@ -104,8 +102,8 @@ module i3c_controller_ccc
 
         // Address Assignment command using SETDASA.
         SETDASA: begin  // 4.3.7.3.10
-          case (ccc_req_i.idx)
-            3'b001: begin
+          unique case (ccc_req_i.idx)
+            4'h1: begin
               // TODO(#31304): At this point we should be accepting/responding to ACK/NACK.
               // We must send Sr at this point, the command is continuing.
               // return.
@@ -132,9 +130,9 @@ module i3c_controller_ccc
           // Generic CCC handling
           // - Defining Byte, if supplied, has already been transmitted with the CCC.
           // - Here we are concerned with transmitting the data payload, if any.
-          case (ccc_req_i.idx)
+          unique case (ccc_req_i.idx)
             // Pass Tx buffer data to the transceiver logic.
-            3'b001:
+            4'h1:
               if (ccc_req_i.txd_valid) begin
                 ccc_rsp_o.req_dvalid = 1'b1;
                 ccc_rsp_o.req_type   = CReqType_SDRBytes;
@@ -163,5 +161,18 @@ module i3c_controller_ccc
       endcase
     end
   end
+
+  // Signals that the logic does not use (yet).
+  logic unused_ccc_inputs;
+  assign unused_ccc_inputs = ^{enable_i, r_i[CtrlCR_Status][7:2], r_i[CtrlCR_Scratch],
+                               cmd_state_i.available, cmd_state_i.dev_index, cmd_state_i.reps_left,
+                               cmd_state_i.retry_cnt, cmd_state_i.rst_csect, cmd_state_i.started,
+                               ccc_req_i.cmd_raw, ccc_req_i.dat_entry.autocmd_hdr_code,
+                               ccc_req_i.dat_entry.autocmd_mask, ccc_req_i.dat_entry.autocmd_mode,
+                               ccc_req_i.dat_entry.autocmd_value, ccc_req_i.dat_entry.crr_reject,
+                               ccc_req_i.dat_entry.dev_nack_retry_cnt, ccc_req_i.dat_entry.device,
+                               ccc_req_i.dat_entry.ibi_payload, ccc_req_i.dat_entry.ibi_reject,
+                               ccc_req_i.dat_entry.ring_id, ccc_req_i.dat_entry.ts,
+                               ccc_req_i.rdata, ccc_req_i.re, ccc_req_i.rlen, ccc};
 
 endmodule

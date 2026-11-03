@@ -18,6 +18,14 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
   // A bit map of command slots that will have passthrough filters enabled.
   rand bit [spi_device_pkg::NumTotalCmdInfo-1:0] passthrough_filters;
 
+  // This test will run with a random SCK period, selected from sck_periods_ps
+  rand time sck_period_ps;
+
+  // Constrain the selected SCK period to be one of the frequencies in sck_periods_ps
+  constraint valid_sck_period_c {
+    sck_period_ps inside {sck_periods_ps};
+  }
+
   // Generate a random permutation of the following opcodes, and place them in
   // the test_opcodes queue:
   //   - SpiFlashReadNormal
@@ -116,7 +124,6 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
   virtual task cpu_init();
     bit [7:0] sw_filter_config[4];
     super.cpu_init();
-    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(passthrough_filters);
     sw_filter_config = {<<byte{passthrough_filters}};
     sw_symbol_backdoor_overwrite("kFilteredCommands", sw_filter_config);
     cfg.mem_bkdr_util_h[SpiDeviceEgressMem].randomize_mem();
@@ -124,6 +131,14 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
   endtask
 
   virtual task body();
+    `uvm_info(get_full_name(),
+              $sformatf({"\nRunning SPI passthrough test with following config:\n",
+                         "    SCK period                  = %0d ps\n",
+                         "    Enabled passthrough filters = 0x%0h"},
+                        sck_period_ps,
+                        passthrough_filters),
+              UVM_LOW)
+
     // Turn off the FIFO data output assertion, as spi_device issues a read
     // before it knows whether it needs the data.
     $assertoff(0, "tb.dut.top_darjeeling.darjeeling_pd_main.u_spi_device.u_readcmd.u_readsram.u_sram_fifo.DataKnown_A");
@@ -151,11 +166,10 @@ class chip_sw_spi_passthrough_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Test setup complete.",
              "Timeout waiting for software to complete setup.")
 
-    foreach (sck_periods_ps[i]) begin
-      cfg.m_spi_host_agent_cfg.sck_period_ps = sck_periods_ps[i];
-      generate_spi_flash_sequence();
-      execute_spi_flash_sequence();
-    end
+    cfg.m_spi_host_agent_cfg.sck_period_ps = sck_period_ps;
+    generate_spi_flash_sequence();
+    execute_spi_flash_sequence();
+
     override_test_status_and_finish(1'b1);
   endtask
 

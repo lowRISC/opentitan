@@ -23,6 +23,10 @@ impl C2d2Flavor {
 }
 
 impl Flavor for C2d2Flavor {
+    type FlavorData = ();
+
+    fn get_default_flavor_data() -> Self::FlavorData {}
+
     fn gpio_pin(inner: &Rc<Inner>, pinname: &str) -> Result<Rc<dyn GpioPin>> {
         if pinname == "SPIVREF_RSVD_H1VREF_H1_RST_ODL" {
             return Ok(Rc::new(C2d2ResetPin::open(inner)?));

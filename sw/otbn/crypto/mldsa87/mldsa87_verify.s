@@ -1,0 +1,124 @@
+/* Copyright lowRISC contributors (OpenTitan project). */
+/* Licensed under the Apache License, Version 2.0, see LICENSE for details. */
+/* SPDX-License-Identifier: Apache-2.0 */
+
+.include "mldsa87.inc"
+
+/*
+ * ML-DSA-87 signature verification routine.
+ *
+ * Public entry point of the ML-DSA-87 library that can be called as a
+ * subroutine from any OTBN app that links the library (see `run_mldsa87.s` for
+ * the standalone app). The routine sets up the stack pointer x31, the all-zero
+ * WDR w31 and the MOD WSR itself and returns with `ret`. Inputs and outputs are
+ * exchanged through the DMEM buffers declared in `mldsa87_mem.s`.
+ */
+
+.globl mldsa87_verify
+
+.text
+
+/*
+ * Direct implementation of the `ML-DSA.Verify_internal` function (Algorithm 8)
+ * of FIPS-204.
+ */
+mldsa87_verify:
+  /* Initialize stack and all-zero WDR. */
+  la x31, mldsa87_stack
+  bn.xor w31, w31, w31
+
+  /* Load the ML-DSA parameters into the MOD register. */
+  la x2, mldsa87_const_params
+  bn.lid x0, 0(x2)
+  bn.wsrw MOD, w0
+
+  /* Copy rho. */
+  la x2, mldsa87_pk_rho
+  la x3, mldsa87_verify_var_rho
+  bn.lid x0, 0(x2)
+  bn.sid x0, 0(x3)
+
+  /* Decode the signature blob. */
+  la x2, mldsa87_sig_h
+  la x3, mldsa87_verify_var_h
+  la x4, mldsa87_sig_z
+  la x5, mldsa87_vector_slot0
+  jal_fi sig_decode, 14630
+
+  /* Check the infinity norm of Z. */
+  la x2, mldsa87_vector_slot0
+  la x3, mldsa87_const_gamma1_beta_bound
+  la x4, mldsa87_poly_slot0
+  jal_fi check_infinity_norm_z, 1306
+
+  bn.cmp w0, w31, FG0
+  csrrs x2, FG0, x0
+  andi x2, x2, 0x8
+  bne x2, x0, _mldsa87_verify_failure
+
+  /* Check the validity of the hint. */
+  la x2, mldsa87_verify_var_h
+  jal x1, check_hint
+
+  bn.cmp w0, w31, FG0
+  csrrs x2, FG0, x0
+  andi x2, x2, 0x8
+  bne x2, x0, _mldsa87_verify_failure
+
+  /* Sample the challenge polynomial C. */
+  la x2, mldsa87_verify_var_c
+  la x3, mldsa87_sig_c_tilde
+  jal x1, sample_in_ball
+
+  /* Check the Hamming weight of c (tau = 60). */
+  la x2, mldsa87_verify_var_c
+  jal x1, check_hw_c
+
+  bn.cmp w0, w31, FG0
+  csrrs x2, FG0, x0
+  andi x2, x2, 0x8
+  bne x2, x0, _mldsa87_verify_failure
+
+  /* Compute W_approx. */
+  la x2, mldsa87_verify_var_rho
+  la x3, mldsa87_vector_slot0
+  la x4, mldsa87_verify_var_c
+  la x5, mldsa87_pk_t1
+  la x6, mldsa87_vector_slot1
+  la x7, mldsa87_poly_slot0
+  jal x1, compute_w_approx
+
+  /* Apply the hint to W_approx. */
+  la x2, mldsa87_vector_slot1
+  la x3, mldsa87_verify_var_h
+  la x4, mldsa87_poly_slot0
+  la x5, mldsa87_poly_slot1
+  jal x1, use_hint
+
+  /* Recompute the challenge hash. */
+  la x2, mldsa87_mu
+  la x3, mldsa87_vector_slot1
+  la x4, mldsa87_verify_res_c_tilde_prime
+  jal x1, challenge_hash
+
+/*
+ * Hardened values to encode successful/unsuccessful run of the verification
+ * routine. A positive run means that no error condition lead to an early exit.
+ * The ultimate comparison of the provided and generated C_TILDE values is
+ * performed outside of the OTBN.
+ *
+ * Encoding generated with
+ *
+ *  ./util/design/sparse-fsm-encode.py -d 21 -m 2 -n 32 -s 3404539173 \
+ *    --language=c --avoid-zero
+ */
+_mldsa87_verify_success:
+  li x2, 0x7baf73d2
+  la x3, mldsa87_verify_res_ok
+  sw x2, 0(x3)
+  ret
+_mldsa87_verify_failure:
+  li x2, 0xadf1aebd
+  la x3, mldsa87_verify_res_ok
+  sw x2, 0(x3)
+  ret

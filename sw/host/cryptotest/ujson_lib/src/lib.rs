@@ -11,6 +11,7 @@ pub mod ed25519_commands;
 pub mod hash_commands;
 pub mod hkdf_commands;
 pub mod hmac_commands;
+pub mod kdf_commands;
 pub mod kmac_commands;
 pub mod mldsa_commands;
 pub mod mlkem_commands;

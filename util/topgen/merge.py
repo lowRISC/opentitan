@@ -2062,6 +2062,9 @@ def amend_pinmux_io(top: ConfigT,
                                  "{}.".format(sig_inst['width']))
             if idx == -1 and sig_inst['width'] != 1:
                 raise SystemExit(f"Bus signal {sig_name} requires an index.")
+            if idx >= 0 and sig_inst['width'] == 1:
+                raise SystemExit(f"Signal {mod_name}.{sig_name} is not a bus "
+                                 "and must not have an index.")
 
             # If we got this far we know that the signal is valid and exists.
             # Augment this signal instance with additional information.
@@ -2118,6 +2121,15 @@ def amend_pinmux_io(top: ConfigT,
     # we can go through once again and stack them into one unified
     # list, and calculate MIO/DIO global indices.
     pinmux['ios'] = (temp['inouts'] + temp['inputs'] + temp['outputs'])
+
+    # Each IO must be covered by exactly one pinmux signal entry.
+    known_ios = set()
+    for sig in pinmux['ios']:
+        key = (sig['name'], sig['idx'])
+        if key in known_ios:
+            name = sig['name'] if sig['idx'] < 0 else f"{sig['name']}[{sig['idx']}]"
+            raise SystemExit(f"Pinmux IO {name} is covered by multiple pinmux signal entries.")
+        known_ios.add(key)
 
     # Remember these counts to facilitate the RTL generation
     pinmux['io_counts'] = {

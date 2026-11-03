@@ -75,7 +75,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     const otcrypto_const_byte_buf_t *context,
     otcrypto_blinded_key_t *output_key_material) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_KDF_CTR_HMAC);
-  OTCRYPTO_LOCKED_STATE_CHECK();
+  OTCRYPTO_HEALTH_CHECK(kTestKdfCtrHmacBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check NULL pointers.
   if (output_key_material == NULL || output_key_material->keyblob == NULL ||
@@ -123,6 +123,8 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   if (output_key_material->config.hw_backed == kHardenedBoolTrue) {
     // The case where `output_key_material` is hw_backed is addressed by
     // `otcrypto_hw_backed_key` function in `key_transport.h`.
+    // COVERAGE (FI CM) Redundant check; keyblob_ensure_xor_masked already
+    // verifies hw_backed is false.
     return OTCRYPTO_BAD_ARGS;
   } else if (output_key_material->config.hw_backed == kHardenedBoolFalse) {
     if (output_key_material->keyblob_length !=
@@ -130,6 +132,8 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
       return OTCRYPTO_BAD_ARGS;
     }
   } else {
+    // COVERAGE (FI CM) Redundant check; keyblob_ensure_xor_masked already
+    // verifies hw_backed is false.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -138,19 +142,18 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   size_t required_byte_len = output_key_material->config.key_length;
   size_t required_word_len = ceil_div(required_byte_len, sizeof(uint32_t));
   size_t num_iterations = ceil_div(required_word_len, digest_word_len);
-  if (launder32(num_iterations) > UINT32_MAX ||
-      launder32(required_byte_len) > UINT32_MAX / 8) {
+  if (launder32(required_byte_len) > UINT32_MAX / 8) {
+    // COVERAGE (FI CM) Redundant check; keyblob_ensure_xor_masked already
+    // bounds key_length.
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_LE(num_iterations, UINT32_MAX);
   HARDENED_CHECK_LE(required_byte_len, UINT32_MAX / 8);
   uint32_t required_bit_len = __builtin_bswap32(required_byte_len * 8);
 
-  // Check if label or context contain 0x00 bytes
-  // Since 0x00 is used as the delimiter between label and context
-  // there shouldn't be multiple instances of them in input data
+  // Check if label contains 0x00 bytes.
+  // Since 0x00 is used as the delimiter between label and context,
+  // there shouldn't be multiple instances of it in the label data.
   HARDENED_TRY(check_zero_byte(label));
-  HARDENED_TRY(check_zero_byte(context));
 
   // Setup
   uint8_t zero = 0x00;

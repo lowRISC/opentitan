@@ -36,8 +36,17 @@ static status_t run_mldsa87_sign(const mldsa87_sign_testvector_t *vector) {
   uint32_t sig_data[kOtcryptoMldsa87SigWords];
   otcrypto_word32_buf_t sig = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_data,
                                                 kOtcryptoMldsa87SigWords);
-  CHECK_STATUS_OK(otcrypto_mldsa87_sign(&sk, &msg, &ctx, vector->hash_mode,
-                                        vector->sign_mode, &sig));
+  if (vector->mu != NULL) {
+    otcrypto_hash_digest_t mu = {
+        .data = (uint32_t *)vector->mu,
+        .len = kOtcryptoMldsa87MuWords,
+    };
+    CHECK_STATUS_OK(
+        otcrypto_mldsa87_sign_external_mu(&sk, &mu, vector->sign_mode, &sig));
+  } else {
+    CHECK_STATUS_OK(otcrypto_mldsa87_sign(&sk, &msg, &ctx, vector->hash_mode,
+                                          vector->sign_mode, &sig));
+  }
 
   CHECK_ARRAYS_EQ(vector->sig, sig_data, kOtcryptoMldsa87SigWords);
 
@@ -60,6 +69,14 @@ static status_t mldsa87_sign_pre_hash_test(void) {
       &mldsa87_sign_testvectors[kMldsa87SignNistAcvp76PreHashSha3_384]);
 }
 
+/**
+ * Precomputed message hash mu.
+ */
+static status_t mldsa87_sign_external_mu_test(void) {
+  return run_mldsa87_sign(
+      &mldsa87_sign_testvectors[kMldsa87SignNistAcvp61ExternalMu]);
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -71,6 +88,7 @@ bool test_main(void) {
   status_t result = OK_STATUS();
   EXECUTE_TEST(result, mldsa87_sign_pure_test);
   EXECUTE_TEST(result, mldsa87_sign_pre_hash_test);
+  EXECUTE_TEST(result, mldsa87_sign_external_mu_test);
 
   return status_ok(result);
 }

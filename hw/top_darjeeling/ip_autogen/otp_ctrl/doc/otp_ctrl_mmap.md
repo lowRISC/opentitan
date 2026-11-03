@@ -104,8 +104,7 @@ It has been generated with ./util/topgen.py -t hw/top_darjeeling/data/top_darjee
 |         |                       |            |              |      32bit       |                             MANUF_STATE                             |     0x3E70     |     32     |
 |         |                       |            |              |      64bit       |               [HW_CFG0_DIGEST](#Reg_hw_cfg0_digest_0)               |     0x3E90     |     8      |
 |   16    |        HW_CFG1        |     16     |      no      |      32bit       |                            SOC_DBG_STATE                            |     0x3E98     |     4      |
-|         |                       |            |              |      32bit       |                        EN_CSRNG_SW_APP_READ                         |     0x3E9C     |     1      |
-|         |                       |            |              |      32bit       |                           EN_SRAM_IFETCH                            |     0x3E9D     |     1      |
+|         |                       |            |              |      32bit       |                           EN_SRAM_IFETCH                            |     0x3E9C     |     1      |
 |         |                       |            |              |      64bit       |               [HW_CFG1_DIGEST](#Reg_hw_cfg1_digest_0)               |     0x3EA0     |     8      |
 |   17    |        SECRET0        |     48     |     yes      |      64bit       |                          TEST_UNLOCK_TOKEN                          |     0x3EA8     |     16     |
 |         |                       |            |              |      64bit       |                           TEST_EXIT_TOKEN                           |     0x3EB8     |     16     |

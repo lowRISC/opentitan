@@ -43,12 +43,13 @@ package keymgr_dpe_pkg;
 
   // Enumeration for operation
   typedef enum logic [2:0] {
-    OpDpeAdvance     = 0,
-    OpDpeErase       = 1,
-    OpDpeGenSwOut    = 2,
-    OpDpeGenHwOut    = 3,
-    OpDpeDisable     = 4,
-    OpDpeLoadRootKey = 5
+    OpDpeAdvance              = 0,
+    OpDpeErase                = 1,
+    OpDpeGenSwOut             = 2,
+    OpDpeGenHwOut             = 3,
+    OpDpeDisable              = 4,
+    OpDpeLoadRootKey          = 5,
+    OpDpeLoadSecondaryRootKey = 6
   } keymgr_dpe_ops_e;
 
   // Enumeration for operation status
@@ -59,18 +60,21 @@ package keymgr_dpe_pkg;
     OpDoneFail    = 3
   } keymgr_dpe_op_status_e;
 
-  // TODO(#354): Define further policy bits and extend this struct
   typedef struct packed {
+    logic allow_keygen;
     logic retain_parent;
     logic exportable;
     logic allow_child;
   } keymgr_dpe_policy_t;
 
   localparam keymgr_dpe_policy_t DEFAULT_UDS_POLICY = '{
+    allow_keygen  : 1'b0,
     retain_parent : 1'b0,
     exportable    : 1'b0,
     allow_child   : 1'b1
   };
+
+  localparam logic [KeyVersionWidth-1:0] DEFAULT_UDS_MAX_KEY_VERSION = '0;
 
 
   /////////////////////
@@ -204,6 +208,13 @@ package keymgr_dpe_pkg;
     share1_valid : 1'b1
   };
 
+  parameter keymgr_dpe_creator_root_key_t KEYMGR_DPE_SECONDARY_ROOT_KEY_DEFAULT = '{
+    share0       : 256'h77f2d6be9a72d1a59d5cecdb8642890fed982af1a627140616036d0f146e4d9d,
+    share0_valid : 1'b0,
+    share1       : 256'h258cb510c30b142de90df495810d0a62bd679b7961061a9b7273b5215c010058,
+    share1_valid : 1'b0
+  };
+
   parameter keymgr_dpe_creator_seed_t KEYMGR_DPE_CREATOR_SEED_DEFAULT = '{
     seed         : 256'hc7c50b38655cc87f821e5b07fed85d2c07e222a9e00bef308b3eccba0ba406fa,
     seed_valid   : 1'b1
@@ -277,6 +288,7 @@ package keymgr_dpe_pkg;
     SlotUpdateIdle,
     SlotDestRandomize,
     SlotLoadRoot,
+    SlotLoadSecondaryRoot,
     SlotLoadFromKmac,
     SlotErase,
     SlotWipeInternalOnly,

@@ -46,6 +46,16 @@
       spx_signature: {
         spx_signature: "test_signature.bin"
       }
+    },
+    {
+      mldsa87_key: {
+        mldsa87_key: "test_mldsa87.pem"
+      }
+    },
+    {
+      mldsa87_signature: {
+        mldsa87_signature: "test_mldsa87_signature.bin"
+      }
     }
   ],
 }

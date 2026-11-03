@@ -32,6 +32,11 @@ class clkmgr_env_cfg extends cip_base_env_cfg #(
 
   `uvm_object_new
 
+  // The primary clock `clk_i` runs at the frequency of its source clock, io_div4.
+  constraint clk_freq_mhz_c {
+    clk_freq_mhz == IoDiv4ClkHz / 1_000_000;
+  }
+
   virtual function void initialize(bit inherit_ral_models = 1'b0);
     list_of_alerts = clkmgr_env_pkg::LIST_OF_ALERTS;
     super.initialize(inherit_ral_models);

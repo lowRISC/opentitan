@@ -36,6 +36,10 @@ module i3c_hci_ibi
   // Interpret the DWORD as an IBI Status Descriptor; we are concerned only with the descriptors.
   i3c_ibi_status_t stat_desc;
   assign stat_desc = i3c_ibi_status_t'(rdata_i);
+  logic unused_stat_desc;
+  assign unused_stat_desc = ^{stat_desc.chunks, stat_desc.error, stat_desc.ibi_id,
+                              stat_desc.ibi_sts, stat_desc.last_status, stat_desc.reserved,
+                              stat_desc.status_type, stat_desc.ts};
 
   // Data lengths in words; payload lengths are described in bytes, so we must round up here.
   // - `ibi_controller_ibi` shall not emit more than 63 DWORDs (252 bytes) per segment so this

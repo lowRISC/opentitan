@@ -4,9 +4,9 @@
 
 #include "sw/device/tests/penetrationtests/firmware/sca/ibex_sca.h"
 
-#include "ecc256_keygen_sca.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_keymgr_dpe.h"
 #include "sw/device/lib/dif/dif_kmac.h"

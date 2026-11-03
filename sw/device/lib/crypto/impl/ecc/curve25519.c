@@ -55,6 +55,7 @@ OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519);
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_KEYGEN);
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_SIDELOAD);
 OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_X25519_KEYGEN_SIDELOAD);
+OTBN_DECLARE_SYMBOL_ADDR(run_curve25519, MODE_POINTONCRV_CHECK);
 
 enum {
 /*
@@ -72,7 +73,8 @@ enum {
   kModeX25519InsCnt = 366575,
   kModeX25519SideloadInsCnt = 362940,
   kModeKeygenInsCnt = 342100,
-  kModeEd25519VerifyInsCnt = 332987,
+  kModeEd25519VerifyInsCnt = 333861,
+  kModePointOnCurveCheckInsCnt = 6957,
 };
 
 /**
@@ -146,7 +148,12 @@ status_t curve25519_keygen_finalize(
     uint32_t public_key[kCurve25519PointWords]) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
-  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeKeygenInsCnt);
+  uint32_t ins_cnt = otbn_instruction_count_get();
+  if (launder32(ins_cnt) != kModeKeygenInsCnt) {
+    HARDENED_TRY(otbn_dmem_sec_wipe());
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(ins_cnt, kModeKeygenInsCnt);
 
   // Read the public key A from OTBN dmem.
   const otbn_addr_t kOtbnVarPubKey =
@@ -190,7 +197,11 @@ status_t curve25519_sign_stage1_finalize(
     curve25519_signature_t *sig, uint32_t public_key[kCurve25519PointWords]) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
-  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeSignStage1InsCnt);
+  uint32_t ins_cnt = otbn_instruction_count_get();
+  if (launder32(ins_cnt) != kModeSignStage1InsCnt) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(ins_cnt, kModeSignStage1InsCnt);
 
   // Read the signature commitment R from OTBN dmem.
   const otbn_addr_t kOtbnVarSigR =
@@ -246,7 +257,11 @@ status_t curve25519_sign_stage2_start(
 status_t curve25519_sign_stage2_finalize(curve25519_signature_t *sig) {
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
-  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeSignStage2InsCnt);
+  uint32_t ins_cnt = otbn_instruction_count_get();
+  if (launder32(ins_cnt) != kModeSignStage2InsCnt) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(ins_cnt, kModeSignStage2InsCnt);
 
   // Read the signature response S from OTBN dmem.
   const otbn_addr_t kOtbnVarSigS =
@@ -299,6 +314,8 @@ status_t curve25519_verify_start(
 }
 
 status_t curve25519_verify_finalize(hardened_bool_t *result) {
+  *result = kHardenedBoolFalse;
+
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
 
@@ -311,7 +328,12 @@ status_t curve25519_verify_finalize(hardened_bool_t *result) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
-  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeEd25519VerifyInsCnt);
+  uint32_t ins_cnt = otbn_instruction_count_get();
+  if (launder32(ins_cnt) != kModeEd25519VerifyInsCnt) {
+    HARDENED_TRY(otbn_dmem_sec_wipe());
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(ins_cnt, kModeEd25519VerifyInsCnt);
 
   // Read the computed LHS and RHS out of OTBN dmem.
   uint32_t lhs[kCurve25519PointWords];
@@ -331,12 +353,45 @@ status_t curve25519_verify_finalize(hardened_bool_t *result) {
   }
   HARDENED_CHECK_EQ(i, kCurve25519PointWords);
   if (launder32(rhs_bits_or) == 0) {
+    // COVERAGE (FI CM) An all-zero verification point only occurs on fault
+    // injection or degenerate input.
     HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_NE(rhs_bits_or, 0);
 
   *result = hardened_memeq(lhs, rhs, kCurve25519PointWords);
+
+  // Wipe DMEM.
+  return otbn_dmem_sec_wipe();
+}
+
+status_t curve25519_point_on_curve_check(
+    const uint32_t point[kCurve25519PointWords], hardened_bool_t *result) {
+  // Load the Curve25519 app. Fails if OTBN is non-idle.
+  const otbn_app_t kOtbnAppCurve25519 = OTBN_APP_T_INIT(run_curve25519);
+  HARDENED_TRY(otbn_load_app(kOtbnAppCurve25519));
+
+  // Set mode so start() will jump to the isoncurve check routine.
+  uint32_t mode = OTBN_ADDR_T_INIT(run_curve25519, MODE_POINTONCRV_CHECK);
+  const otbn_addr_t kOtbnVarMode = OTBN_ADDR_T_INIT(run_curve25519, mode);
+  HARDENED_TRY(otbn_dmem_write(kCurve25519ModeWords, &mode, kOtbnVarMode));
+
+  // Set the encoded point to be checked.
+  const otbn_addr_t kOtbnVarPubKey =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_public_key);
+  HARDENED_TRY(otbn_dmem_write(kCurve25519PointWords, point, kOtbnVarPubKey));
+
+  // Run the OTBN routine synchronously.
+  HARDENED_TRY_WIPE_DMEM(otbn_execute_sync());
+
+  // Check the instruction count.
+  HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModePointOnCurveCheckInsCnt);
+
+  // Read the result of the check (1 word).
+  const otbn_addr_t kOtbnVarVerifyRes =
+      OTBN_ADDR_T_INIT(run_curve25519, ed25519_verify_result);
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarVerifyRes, result));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
@@ -418,8 +473,11 @@ status_t curve25519_x25519_finalize(
   ins_cnt = otbn_instruction_count_get();
   if (launder32(ins_cnt) == kModeX25519InsCnt) {
     HARDENED_CHECK_EQ(ins_cnt, kModeX25519InsCnt);
-  } else {
+  } else if (launder32(ins_cnt) == kModeX25519SideloadInsCnt) {
     HARDENED_CHECK_EQ(ins_cnt, kModeX25519SideloadInsCnt);
+  } else {
+    HARDENED_TRY(otbn_dmem_sec_wipe());
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Check whether OTBN accepted the public key (rejects twist points).
@@ -479,8 +537,11 @@ status_t curve25519_x25519_keygen_finalize(
   ins_cnt = otbn_instruction_count_get();
   if (launder32(ins_cnt) == kModeX25519KeygenInsCnt) {
     HARDENED_CHECK_EQ(ins_cnt, kModeX25519KeygenInsCnt);
-  } else {
+  } else if (launder32(ins_cnt) == kModeX25519KeygenSideloadInsCnt) {
     HARDENED_CHECK_EQ(ins_cnt, kModeX25519KeygenSideloadInsCnt);
+  } else {
+    HARDENED_TRY(otbn_dmem_sec_wipe());
+    return OTCRYPTO_BAD_ARGS;
   }
 
   // Read the public key from OTBN dmem.

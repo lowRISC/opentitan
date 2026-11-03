@@ -36,7 +36,7 @@ interface ast_supply_if (
   localparam int MioInSysrstCtrlKey0In = 46;
 
   function static void force_vcaon_pok(bit value);
-    force u_ast.u_ast_part_secondary.u_rglts_pdm_3p3v.vcaon_pok_h_o = value;
+    force top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary.u_rglts_pdm_3p3v.vcaon_pok_h_o = value;
   endfunction
 
   // Create glitch in vcaon_pok_h_o some cycles after this is invoked. Hold vcaon_pok_h_o low for
@@ -66,14 +66,14 @@ interface ast_supply_if (
       `uvm_info("ast_supply_if", "disabling vcmain_supp_i related SVA", UVM_MEDIUM)
       $assertoff(1, top_earlgrey.earlgrey_pd_aon.u_pwrmgr.u_slow_fsm.IntRstReq_A);
     end
-    force u_ast.u_ast_part_secondary.ast_pwst.main_pok = value;
+    force top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary.ast_pwst.main_pok = value;
 `endif
   endtask
 
   task static release_vcmain_pok();
 `ifndef GATE_LEVEL
     `uvm_info("ast_supply_if", $sformatf("Releasing ast_pwst.main_pok"), UVM_MEDIUM)
-    release u_ast.u_ast_part_secondary.ast_pwst.main_pok;
+    release top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary.ast_pwst.main_pok;
 `endif
   endtask
 

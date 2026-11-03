@@ -362,7 +362,7 @@
           nodes:
           [
             uart0
-            gpio
+            gpio0
             spi_device
             i2c0
             rv_timer
@@ -517,7 +517,7 @@
       generate_dif: true
     }
     {
-      name: gpio
+      name: gpio0
       type: gpio
       template_type: gpio
       clock_srcs:
@@ -558,7 +558,7 @@
           default: "1"
           local: "false"
           expose: "true"
-          name_top: GpioGpioAsyncOn
+          name_top: Gpio0GpioAsyncOn
         }
         {
           name: GpioAsHwStrapsEn
@@ -567,7 +567,7 @@
           default: "1"
           local: "false"
           expose: "true"
-          name_top: GpioGpioAsHwStrapsEn
+          name_top: Gpio0GpioAsHwStrapsEn
         }
       ]
       inter_signal_list:
@@ -584,7 +584,7 @@
           act: rcv
           width: 1
           default: 1'b0
-          inst_name: gpio
+          inst_name: gpio0
           package: ""
           domain: Main
           top_signame: pwrmgr_strap
@@ -601,7 +601,7 @@
           act: req
           width: 1
           default: "'0"
-          inst_name: gpio
+          inst_name: gpio0
           index: -1
         }
         {
@@ -616,7 +616,7 @@
           type: uni
           act: rcv
           width: 1
-          inst_name: gpio
+          inst_name: gpio0
           index: -1
         }
         {
@@ -627,7 +627,7 @@
           type: uni
           act: req
           width: 1
-          inst_name: gpio
+          inst_name: gpio0
           index: -1
         }
         {
@@ -637,11 +637,11 @@
           type: req_rsp
           act: rsp
           width: 1
-          inst_name: gpio
+          inst_name: gpio0
           default: ""
           end_idx: -1
           top_type: one-to-one
-          top_signame: gpio_tl
+          top_signame: gpio0_tl
           index: -1
         }
       ]
@@ -1973,9 +1973,12 @@
           name: lc_hw_debug_clr
           desc:
             '''
-            Clear HW debug functionality.
-            This signal is On when `lc_hw_debug_en` turns Off outside a reset of `lc_ctrl`.
-            Flops storing the value of `lc_hw_debug_en` (see below) must be cleared when this signal is On.
+            Clear HW debug functionality; see `HW_DEBUG_CLR` in the Theory of Operation doc for details.
+
+            This signal is used to clear stored copies of `lc_hw_debug_en` when HW debug functionality gets disabled outside a reset of `lc_ctrl`.
+            This signal is On in the SCRAP, INVALID, POST_TRANSITION and ESCALATION states, in which `lc_hw_debug_en` is Off.
+            Once On, it remains On until lc_ctrl is reset.
+            Flops storing the value of `lc_hw_debug_en` (see below) must be cleared whenever this signal is not Off.
             '''
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -1997,7 +2000,7 @@
 
             This signal is Off while lc_ctrl is in reset.
             In order to prevent a JTAG disconnect during non-debug-module (NDM) reset, this signal should be flopped outside the NDM reset domain.
-            Such a flop must be cleared when `lc_hw_debug_clr` is On; see above.
+            Such a flop must be cleared whenever `lc_hw_debug_clr` is not Off; see above.
             '''
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -4448,6 +4451,15 @@
           name_top: RvDmUseDmiInterface
         }
         {
+          name: CheriotSupport
+          desc: When 1, cheriot_ena can select CHERIoT mode. When 0, the CHERIoT logic is removed.
+          type: bit
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: RvDmCheriotSupport
+        }
+        {
           name: SecVolatileRawUnlockEn
           desc:
             '''
@@ -4502,6 +4514,23 @@
           type: req_rsp
           act: rsp
           width: 1
+          inst_name: rv_dm
+          index: -1
+        }
+        {
+          name: cheriot_ena
+          desc:
+            '''
+            CHERIoT mode enable.
+            Selects which ROM and which abstract command encodings the debug module uses.
+            Ignored unless CheriotSupport is set.
+            '''
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi4False
           inst_name: rv_dm
           index: -1
         }
@@ -5936,6 +5965,17 @@
           index: -1
         }
         {
+          name: secondary_root_key
+          struct: keymgr_dpe_creator_root_key
+          package: keymgr_dpe_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: keymgr_dpe_pkg::KEYMGR_DPE_SECONDARY_ROOT_KEY_DEFAULT
+          inst_name: keymgr_dpe
+          index: -1
+        }
+        {
           name: creator_seed
           struct: keymgr_dpe_creator_seed
           package: keymgr_dpe_pkg
@@ -6123,18 +6163,6 @@
           end_idx: -1
           top_type: one-to-one
           top_signame: csrng_entropy_src_hw_if
-          index: -1
-        }
-        {
-          name: otp_en_csrng_sw_app_read
-          struct: mubi8
-          package: prim_mubi_pkg
-          type: uni
-          act: rcv
-          width: 1
-          default: prim_mubi_pkg::MuBi8True
-          inst_name: csrng
-          top_signame: csrng_otp_en_csrng_sw_app_read
           index: -1
         }
         {
@@ -11136,20 +11164,6 @@
           index: 3
         }
         {
-          name: fpga_info
-          struct: logic
-          type: uni
-          act: rcv
-          width: 32
-          inst_name: rv_core_ibex
-          default: ""
-          package: ""
-          external: true
-          conn_type: false
-          index: -1
-          top_signame: fpga_info
-        }
-        {
           name: corei_tl_h
           struct: tl
           package: tlul_pkg
@@ -11319,7 +11333,7 @@
       ]
       pwrmgr.strap:
       [
-        gpio.strap_en
+        gpio0.strap_en
         rv_dm.strap_en
       ]
       pwrmgr.low_power:
@@ -11797,9 +11811,9 @@
       [
         peri.tl_i2c0
       ]
-      gpio.tl:
+      gpio0.tl:
       [
-        peri.tl_gpio
+        peri.tl_gpio0
       ]
       spi_host0.tl:
       [
@@ -11960,7 +11974,6 @@
       rv_core_ibex.hart_id
       rv_core_ibex.boot_addr
       otp_ctrl.otp_broadcast
-      csrng.otp_en_csrng_sw_app_read
       soc_dbg_ctrl.soc_dbg_state
       lc_ctrl.otp_device_id
       lc_ctrl.otp_manuf_state
@@ -12048,7 +12061,6 @@
       rstmgr.por_n: por_n
       rstmgr.resets: ""
       rstmgr.rst_en: ""
-      rv_core_ibex.fpga_info: fpga_info
       soc_proxy.misc_tl_h2d: ctn_misc_tl_h2d
       soc_proxy.misc_tl_d2h: ctn_misc_tl_d2h
       soc_proxy.soc_wkup_async: soc_wkup_async
@@ -13880,7 +13892,7 @@
         [
           uart0
           i2c0
-          gpio
+          gpio0
           spi_host0
           spi_device
           rv_timer
@@ -13957,7 +13969,7 @@
           req_fifo_pass: true
         }
         {
-          name: gpio
+          name: gpio0
           type: device
           clock: clk_peri_i
           reset: rst_peri_ni
@@ -14362,7 +14374,7 @@
           index: -1
         }
         {
-          name: tl_gpio
+          name: tl_gpio0
           struct: tl
           package: tlul_pkg
           type: req_rsp
@@ -14371,7 +14383,7 @@
           width: 1
           default: ""
           domain: Main
-          top_signame: gpio_tl
+          top_signame: gpio0_tl
           index: -1
         }
         {
@@ -16254,7 +16266,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[0]
         connection: direct
         pad: GPIO0
@@ -16262,7 +16274,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[1]
         connection: direct
         pad: GPIO1
@@ -16270,7 +16282,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[2]
         connection: direct
         pad: GPIO2
@@ -16278,7 +16290,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[3]
         connection: direct
         pad: GPIO3
@@ -16286,7 +16298,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[4]
         connection: direct
         pad: GPIO4
@@ -16294,7 +16306,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[5]
         connection: direct
         pad: GPIO5
@@ -16302,7 +16314,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[6]
         connection: direct
         pad: GPIO6
@@ -16310,7 +16322,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[7]
         connection: direct
         pad: GPIO7
@@ -16318,7 +16330,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[8]
         connection: direct
         pad: GPIO8
@@ -16326,7 +16338,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[9]
         connection: direct
         pad: GPIO9
@@ -16334,7 +16346,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[10]
         connection: direct
         pad: GPIO10
@@ -16342,7 +16354,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[11]
         connection: direct
         pad: GPIO11
@@ -16350,7 +16362,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[12]
         connection: direct
         pad: GPIO12
@@ -16358,7 +16370,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[13]
         connection: direct
         pad: GPIO13
@@ -16366,7 +16378,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[14]
         connection: direct
         pad: GPIO14
@@ -16374,7 +16386,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[15]
         connection: direct
         pad: GPIO15
@@ -16382,7 +16394,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[16]
         connection: direct
         pad: GPIO16
@@ -16390,7 +16402,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[17]
         connection: direct
         pad: GPIO17
@@ -16398,7 +16410,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[18]
         connection: direct
         pad: GPIO18
@@ -16406,7 +16418,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[19]
         connection: direct
         pad: GPIO19
@@ -16414,7 +16426,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[20]
         connection: direct
         pad: GPIO20
@@ -16422,7 +16434,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[21]
         connection: direct
         pad: GPIO21
@@ -16430,7 +16442,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[22]
         connection: direct
         pad: GPIO22
@@ -16438,7 +16450,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[23]
         connection: direct
         pad: GPIO23
@@ -16446,7 +16458,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[24]
         connection: direct
         pad: GPIO24
@@ -16454,7 +16466,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[25]
         connection: direct
         pad: GPIO25
@@ -16462,7 +16474,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[26]
         connection: direct
         pad: GPIO26
@@ -16470,7 +16482,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[27]
         connection: direct
         pad: GPIO27
@@ -16478,7 +16490,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[28]
         connection: direct
         pad: GPIO28
@@ -16486,7 +16498,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[29]
         connection: direct
         pad: GPIO29
@@ -16494,7 +16506,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[30]
         connection: direct
         pad: GPIO30
@@ -16502,7 +16514,7 @@
         attr: BidirStd
       }
       {
-        instance: gpio
+        instance: gpio0
         port: gpio[31]
         connection: direct
         pad: GPIO31
@@ -16901,7 +16913,7 @@
         glob_idx: 9
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 0
@@ -16913,7 +16925,7 @@
         glob_idx: 10
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 1
@@ -16925,7 +16937,7 @@
         glob_idx: 11
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 2
@@ -16937,7 +16949,7 @@
         glob_idx: 12
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 3
@@ -16949,7 +16961,7 @@
         glob_idx: 13
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 4
@@ -16961,7 +16973,7 @@
         glob_idx: 14
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 5
@@ -16973,7 +16985,7 @@
         glob_idx: 15
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 6
@@ -16985,7 +16997,7 @@
         glob_idx: 16
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 7
@@ -16997,7 +17009,7 @@
         glob_idx: 17
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 8
@@ -17009,7 +17021,7 @@
         glob_idx: 18
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 9
@@ -17021,7 +17033,7 @@
         glob_idx: 19
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 10
@@ -17033,7 +17045,7 @@
         glob_idx: 20
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 11
@@ -17045,7 +17057,7 @@
         glob_idx: 21
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 12
@@ -17057,7 +17069,7 @@
         glob_idx: 22
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 13
@@ -17069,7 +17081,7 @@
         glob_idx: 23
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 14
@@ -17081,7 +17093,7 @@
         glob_idx: 24
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 15
@@ -17093,7 +17105,7 @@
         glob_idx: 25
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 16
@@ -17105,7 +17117,7 @@
         glob_idx: 26
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 17
@@ -17117,7 +17129,7 @@
         glob_idx: 27
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 18
@@ -17129,7 +17141,7 @@
         glob_idx: 28
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 19
@@ -17141,7 +17153,7 @@
         glob_idx: 29
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 20
@@ -17153,7 +17165,7 @@
         glob_idx: 30
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 21
@@ -17165,7 +17177,7 @@
         glob_idx: 31
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 22
@@ -17177,7 +17189,7 @@
         glob_idx: 32
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 23
@@ -17189,7 +17201,7 @@
         glob_idx: 33
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 24
@@ -17201,7 +17213,7 @@
         glob_idx: 34
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 25
@@ -17213,7 +17225,7 @@
         glob_idx: 35
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 26
@@ -17225,7 +17237,7 @@
         glob_idx: 36
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 27
@@ -17237,7 +17249,7 @@
         glob_idx: 37
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 28
@@ -17249,7 +17261,7 @@
         glob_idx: 38
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 29
@@ -17261,7 +17273,7 @@
         glob_idx: 39
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 30
@@ -17273,7 +17285,7 @@
         glob_idx: 40
       }
       {
-        name: gpio_gpio
+        name: gpio0_gpio
         width: 32
         type: inout
         idx: 31
@@ -17791,10 +17803,6 @@
       {
         port_overrides:
         {
-          rv_core_ibex.fpga_info:
-          {
-            unused: true
-          }
           rv_dm.next_dm_addr:
           {
             unused: true
@@ -18074,10 +18082,6 @@
       {
         port_overrides:
         {
-          rv_core_ibex.fpga_info:
-          {
-            unused: true
-          }
           rv_dm.next_dm_addr:
           {
             unused: true
@@ -18473,13 +18477,13 @@
       lpg_idx: 0
     }
     {
-      name: gpio_fatal_fault
+      name: gpio0_fatal_fault
       width: 1
       type: alert
       async: "1"
       handler: alert_handler
-      module_name: gpio
-      desc: gpio fatal_fault alert
+      module_name: gpio0
+      desc: gpio0 fatal_fault alert
       lpg_name: peri_lc_io_Main
       lpg_idx: 0
     }
@@ -19430,11 +19434,11 @@
       outgoing: false
     }
     {
-      name: gpio_gpio
+      name: gpio0_gpio
       width: 32
       type: interrupt
-      module_name: gpio
-      desc: gpio gpio interrupt
+      module_name: gpio0
+      desc: gpio0 gpio interrupt
       intr_type: IntrType.Event
       default_val: false
       incoming: false
@@ -21275,7 +21279,7 @@
   alert_module:
   [
     uart0
-    gpio
+    gpio0
     spi_device
     i2c0
     rv_timer
@@ -21332,7 +21336,7 @@
         alert_handler[0]: fatal_fault
       ]
     }
-    module_gpio:
+    module_gpio0:
     {
       tx_expr: alert_tx[1]
       rx_expr: alert_rx[1]
@@ -21864,7 +21868,7 @@
   interrupt_module:
   [
     uart0
-    gpio
+    gpio0
     spi_device
     i2c0
     rv_timer
@@ -22402,7 +22406,7 @@
         act: rcv
         width: 1
         default: 1'b0
-        inst_name: gpio
+        inst_name: gpio0
         package: ""
         domain: Main
         top_signame: pwrmgr_strap
@@ -22419,7 +22423,7 @@
         act: req
         width: 1
         default: "'0"
-        inst_name: gpio
+        inst_name: gpio0
         index: -1
       }
       {
@@ -22434,7 +22438,7 @@
         type: uni
         act: rcv
         width: 1
-        inst_name: gpio
+        inst_name: gpio0
         index: -1
       }
       {
@@ -22445,7 +22449,7 @@
         type: uni
         act: req
         width: 1
-        inst_name: gpio
+        inst_name: gpio0
         index: -1
       }
       {
@@ -22455,11 +22459,11 @@
         type: req_rsp
         act: rsp
         width: 1
-        inst_name: gpio
+        inst_name: gpio0
         default: ""
         end_idx: -1
         top_type: one-to-one
-        top_signame: gpio_tl
+        top_signame: gpio0_tl
         index: -1
       }
       {
@@ -23351,9 +23355,12 @@
         name: lc_hw_debug_clr
         desc:
           '''
-          Clear HW debug functionality.
-          This signal is On when `lc_hw_debug_en` turns Off outside a reset of `lc_ctrl`.
-          Flops storing the value of `lc_hw_debug_en` (see below) must be cleared when this signal is On.
+          Clear HW debug functionality; see `HW_DEBUG_CLR` in the Theory of Operation doc for details.
+
+          This signal is used to clear stored copies of `lc_hw_debug_en` when HW debug functionality gets disabled outside a reset of `lc_ctrl`.
+          This signal is On in the SCRAP, INVALID, POST_TRANSITION and ESCALATION states, in which `lc_hw_debug_en` is Off.
+          Once On, it remains On until lc_ctrl is reset.
+          Flops storing the value of `lc_hw_debug_en` (see below) must be cleared whenever this signal is not Off.
           '''
         struct: lc_tx
         package: lc_ctrl_pkg
@@ -23375,7 +23382,7 @@
 
           This signal is Off while lc_ctrl is in reset.
           In order to prevent a JTAG disconnect during non-debug-module (NDM) reset, this signal should be flopped outside the NDM reset domain.
-          Such a flop must be cleared when `lc_hw_debug_clr` is On; see above.
+          Such a flop must be cleared whenever `lc_hw_debug_clr` is not Off; see above.
           '''
         struct: lc_tx
         package: lc_ctrl_pkg
@@ -25037,6 +25044,23 @@
         index: -1
       }
       {
+        name: cheriot_ena
+        desc:
+          '''
+          CHERIoT mode enable.
+          Selects which ROM and which abstract command encodings the debug module uses.
+          Ignored unless CheriotSupport is set.
+          '''
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi4False
+        inst_name: rv_dm
+        index: -1
+      }
+      {
         name: lc_init_done
         desc: Lifecycle initialization done signal coming from life cycle controller.
         struct: lc_tx
@@ -25891,6 +25915,17 @@
         index: -1
       }
       {
+        name: secondary_root_key
+        struct: keymgr_dpe_creator_root_key
+        package: keymgr_dpe_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: keymgr_dpe_pkg::KEYMGR_DPE_SECONDARY_ROOT_KEY_DEFAULT
+        inst_name: keymgr_dpe
+        index: -1
+      }
+      {
         name: creator_seed
         struct: keymgr_dpe_creator_seed
         package: keymgr_dpe_pkg
@@ -26031,18 +26066,6 @@
         end_idx: -1
         top_type: one-to-one
         top_signame: csrng_entropy_src_hw_if
-        index: -1
-      }
-      {
-        name: otp_en_csrng_sw_app_read
-        struct: mubi8
-        package: prim_mubi_pkg
-        type: uni
-        act: rcv
-        width: 1
-        default: prim_mubi_pkg::MuBi8True
-        inst_name: csrng
-        top_signame: csrng_otp_en_csrng_sw_app_read
         index: -1
       }
       {
@@ -28899,20 +28922,6 @@
         index: 3
       }
       {
-        name: fpga_info
-        struct: logic
-        type: uni
-        act: rcv
-        width: 32
-        inst_name: rv_core_ibex
-        default: ""
-        package: ""
-        external: true
-        conn_type: false
-        index: -1
-        top_signame: fpga_info
-      }
-      {
         name: corei_tl_h
         struct: tl
         package: tlul_pkg
@@ -29648,7 +29657,7 @@
         index: -1
       }
       {
-        name: tl_gpio
+        name: tl_gpio0
         struct: tl
         package: tlul_pkg
         type: req_rsp
@@ -29657,7 +29666,7 @@
         width: 1
         default: ""
         domain: Main
-        top_signame: gpio_tl
+        top_signame: gpio0_tl
         index: -1
       }
       {
@@ -33860,25 +33869,6 @@
         netname: rstmgr_rst_en
       }
       {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: false
-        signame: fpga_info_i
-        signame_chip:
-        {
-          asic: "'0"
-          verilator: "'0"
-        }
-        width: 32
-        type: uni
-        default: ""
-        direction: in
-        conn_type: false
-        index: -1
-        netname: fpga_info
-      }
-      {
         package: tlul_pkg
         struct: tl_h2d
         domain: Aon
@@ -36339,7 +36329,7 @@
         package: tlul_pkg
         struct: tl_h2d
         domain: Main
-        signame: gpio_tl_req
+        signame: gpio0_tl_req
         width: 1
         type: req_rsp
         end_idx: -1
@@ -36351,7 +36341,7 @@
         package: tlul_pkg
         struct: tl_d2h
         domain: Main
-        signame: gpio_tl_rsp
+        signame: gpio0_tl_rsp
         width: 1
         type: req_rsp
         end_idx: -1
@@ -37048,16 +37038,6 @@
         type: uni
         end_idx: -1
         default: "'0"
-      }
-      {
-        package: prim_mubi_pkg
-        struct: mubi8
-        signame: csrng_otp_en_csrng_sw_app_read
-        domain: Main
-        width: 1
-        type: uni
-        end_idx: -1
-        default: prim_mubi_pkg::MuBi8True
       }
       {
         package: lc_ctrl_state_pkg

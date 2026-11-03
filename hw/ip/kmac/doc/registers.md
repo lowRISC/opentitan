@@ -370,7 +370,9 @@ Software can set this bit to 1 to manually clear [`ENTROPY_REFRESH_HASH_CNT.`](#
 Software can set this bit to 1 to manually trigger the reseeding of the internal PRNG when running in EDN mode.
 This will also clear [`ENTROPY_REFRESH_HASH_CNT.`](#entropy_refresh_hash_cnt)
 
-Note that the hardware may miss the trigger pulse if the module is not idle, or if the module is currently performing a reseed operation.
+After setting this bit, the [`STATUS.entropy_ready`](#status) bit should read as 0 and the [`STATUS.entropy_reseeding`](#status) bit as 1 indicating that a reseed operation is ongoing.
+
+If masking is disabled, this bit is ignored.
 
 ### CMD . cmd
 Issue a command to the KMAC/SHA3 IP. The command is sparse
@@ -393,19 +395,23 @@ Other values are reserved.
 KMAC/SHA3 Status register.
 - Offset: `0x1c`
 - Reset default: `0x4001`
-- Reset mask: `0x3df1f`
+- Reset mask: `0x3030df1f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "sha3_idle", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_absorb", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_squeeze", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_stopped", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "state_write", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 3}, {"name": "fifo_depth", "bits": 5, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "fifo_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_FATAL_FAULT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_RECOV_CTRL_UPDATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 14}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
+{"reg": [{"name": "sha3_idle", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_absorb", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_squeeze", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "sha3_stopped", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "state_write", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 3}, {"name": "fifo_depth", "bits": 5, "attr": ["ro"], "rotate": -90}, {"bits": 1}, {"name": "fifo_empty", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "fifo_full", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 4}, {"name": "entropy_ready", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "entropy_reseeding", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 6}, {"name": "ALERT_FATAL_FAULT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ALERT_RECOV_CTRL_UPDATE_ERR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 2}], "config": {"lanes": 1, "fontsize": 10, "vspace": 290}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                |
 |:------:|:------:|:-------:|:--------------------------------------------------------------------|
-| 31:18  |        |         | Reserved                                                            |
-|   17   |   ro   |   0x0   | [ALERT_RECOV_CTRL_UPDATE_ERR](#status--alert_recov_ctrl_update_err) |
-|   16   |   ro   |   0x0   | [ALERT_FATAL_FAULT](#status--alert_fatal_fault)                     |
+| 31:30  |        |         | Reserved                                                            |
+|   29   |   ro   |   0x0   | [ALERT_RECOV_CTRL_UPDATE_ERR](#status--alert_recov_ctrl_update_err) |
+|   28   |   ro   |   0x0   | [ALERT_FATAL_FAULT](#status--alert_fatal_fault)                     |
+| 27:22  |        |         | Reserved                                                            |
+|   21   |   ro   |   0x0   | [entropy_reseeding](#status--entropy_reseeding)                     |
+|   20   |   ro   |   0x0   | [entropy_ready](#status--entropy_ready)                             |
+| 19:16  |        |         | Reserved                                                            |
 |   15   |   ro   |    x    | [fifo_full](#status--fifo_full)                                     |
 |   14   |   ro   |   0x1   | [fifo_empty](#status--fifo_empty)                                   |
 |   13   |        |         | Reserved                                                            |
@@ -430,6 +436,17 @@ ii) storage errors in the shadow registers
 iii) errors in the message, round, or key counter
 iv) any internal FSM entering an invalid state
 v) an error in the redundant lfsr
+
+### STATUS . entropy_reseeding
+If 1, the internal PRNG is currently performing a reseed operation via EDN or waiting for software to provide a new seed.
+
+If masking is disabled, this bit always reads as 0.
+
+### STATUS . entropy_ready
+If 1, the internal PRNG is ready.
+If 0, the internal PRNG is either not configured in EDN mode or software mode, or currently performing a reseed operation via EDN or waiting for software to provide a new seed.
+
+If masking is disabled, this bit mirrors the [`CFG_SHADOWED.entropy_ready`](#cfg_shadowed) bit.
 
 ### STATUS . fifo_full
 Message FIFO Full indicator

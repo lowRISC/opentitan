@@ -6,6 +6,7 @@
 
 package i3c_target_pkg;
   import i3c_pkg::*;
+  import i3c_reg_pkg::*;
   import i3c_tti_pkg::*;
 
   // We need a small number of states here for tracking transfer framing, in particular CCCs
@@ -72,9 +73,9 @@ package i3c_target_pkg;
   // - data for all Targets is carried as a single unit.
   typedef struct packed {
     // Read data (from the perspective of the Controller).
-    logic [NumTargets-1:0][8:0] rdata_nq;  // Odd-indexed bits of HDR-DDR word, or SDR byte.
-    logic [NumTargets-1:0][8:0] rdata_pq;  // Even-indexed bits; unused for SDR reads.
-    logic [NumTargets-1:0][1:0] rlast;     // 'Last byte' indication for each of the two bytes.
+    logic [MaxTargets-1:0][8:0] rdata_nq;  // Odd-indexed bits of HDR-DDR word, or SDR byte.
+    logic [MaxTargets-1:0][8:0] rdata_pq;  // Even-indexed bits; unused for SDR reads.
+    logic [MaxTargets-1:0][1:0] rlast;     // 'Last byte' indication for each of the two bytes.
     // TODO: Proposal for consideration:
     // - Signaling method; we need to employ Open Drain and arbitration for the 48-bit dynamic
     //   address...this will be supplied a number of units at a time, and we must retain arb_lost
@@ -110,7 +111,7 @@ package i3c_target_pkg;
     // TODO: See note where `i3c_dtype_e` is defined; if split as suggested, can be include `sr`.
     i3c_dtype_e             dtype;
     logic     [TargIDW-1:0] targ_id;
-    logic  [NumTargets-1:0] targ_set;
+    logic  [MaxTargets-1:0] targ_set;
     logic             [6:0] addr;
     logic                   is_group;
     // Write data (from the perspective of the Controller).

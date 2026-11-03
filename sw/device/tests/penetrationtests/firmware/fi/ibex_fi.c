@@ -412,7 +412,7 @@ void increment_counter(void) __attribute__((optnone)) {
 }
 
 static status_t init_ref_otp_data(void) {
-  // Fetch faulty-free reference values from OTP paritions.
+  // Fetch faulty-free reference values from OTP partitions.
   if (!otp_ref_init) {
     // Read VENDOR_TEST partition.
     TRY(otp_ctrl_testutils_dai_read32_array(

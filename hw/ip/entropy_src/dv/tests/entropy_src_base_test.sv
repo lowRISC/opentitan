@@ -41,11 +41,11 @@ class entropy_src_base_test extends cip_base_test #(
 
     cfg.rng_ignores_backpressure       = 0;
     cfg.dut_cfg.en_intr_pct            = 75;
-    cfg.dut_cfg.me_regwen_pct          = 100;
     cfg.dut_cfg.sw_regupd_pct          = 100;
 
     cfg.dut_cfg.module_enable_pct      = 100;
     cfg.dut_cfg.type_bypass_pct        = 100;
+    cfg.dut_cfg.esfinal_clr_while_dsbld_pct = 50;
     cfg.dut_cfg.preconfig_disable_pct  = 100;
     cfg.dut_cfg.fips_flag_pct          = 75;
     cfg.dut_cfg.rng_fips_pct           = 75;

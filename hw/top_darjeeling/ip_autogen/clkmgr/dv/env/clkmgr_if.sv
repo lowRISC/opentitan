@@ -146,7 +146,9 @@ interface clkmgr_if (
       clk_enable_io_ffs <= {
         clk_enable_io_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_peri_en
       };
-      ip_clk_en_io_ffs <= {ip_clk_en_io_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en};
+      ip_clk_en_io_ffs <= {
+        ip_clk_en_io_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en
+      };
     end else begin
       clk_enable_io_ffs <= '0;
       ip_clk_en_io_ffs  <= '0;

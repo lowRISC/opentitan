@@ -22,11 +22,6 @@ static inline uint32_t rv_core_ibex_base(void) {
   return dt_rv_core_ibex_reg_block(kRvCoreIbexDt, kDtRvCoreIbexRegBlockCfg);
 }
 
-uint32_t ibex_fpga_version(void) {
-  const uint32_t kBase = rv_core_ibex_base();
-  return abs_mmio_read32(kBase + RV_CORE_IBEX_FPGA_INFO_REG_OFFSET);
-}
-
 size_t ibex_addr_remap_slots(void) { return RV_CORE_IBEX_PARAM_NUM_REGIONS; }
 
 void ibex_addr_remap_set(size_t slot, uint32_t matching_addr,

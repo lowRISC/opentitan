@@ -225,6 +225,10 @@ package csrng_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } cmd_stage_invalid_gen_cmd_alert;
+    struct packed {
+      logic        d;
+      logic        de;
     } cmd_stage_invalid_acmd_alert;
     struct packed {
       logic        d;
@@ -328,16 +332,16 @@ package csrng_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    csrng_hw2reg_intr_state_reg_t intr_state; // [264:257]
-    csrng_hw2reg_reseed_counter_mreg_t [2:0] reseed_counter; // [256:161]
-    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [160:153]
-    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [152:151]
-    csrng_hw2reg_genbits_reg_t genbits; // [150:119]
-    csrng_hw2reg_int_state_val_reg_t int_state_val; // [118:87]
-    csrng_hw2reg_gen_abort_mreg_t [2:0] gen_abort; // [86:72]
-    csrng_hw2reg_gen_abort_status_mreg_t [2:0] gen_abort_status; // [71:66]
-    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [65:49]
-    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [48:27]
+    csrng_hw2reg_intr_state_reg_t intr_state; // [266:259]
+    csrng_hw2reg_reseed_counter_mreg_t [2:0] reseed_counter; // [258:163]
+    csrng_hw2reg_sw_cmd_sts_reg_t sw_cmd_sts; // [162:155]
+    csrng_hw2reg_genbits_vld_reg_t genbits_vld; // [154:153]
+    csrng_hw2reg_genbits_reg_t genbits; // [152:121]
+    csrng_hw2reg_int_state_val_reg_t int_state_val; // [120:89]
+    csrng_hw2reg_gen_abort_mreg_t [2:0] gen_abort; // [88:74]
+    csrng_hw2reg_gen_abort_status_mreg_t [2:0] gen_abort_status; // [73:68]
+    csrng_hw2reg_hw_exc_sts_reg_t hw_exc_sts; // [67:51]
+    csrng_hw2reg_recov_alert_sts_reg_t recov_alert_sts; // [50:27]
     csrng_hw2reg_err_code_reg_t err_code; // [26:7]
     csrng_hw2reg_main_sm_state_reg_t main_sm_state; // [6:0]
   } csrng_hw2reg_t;
@@ -459,7 +463,7 @@ package csrng_reg_pkg;
     4'b 0001, // index[24] CSRNG_GEN_ABORT_STATUS_1
     4'b 0001, // index[25] CSRNG_GEN_ABORT_STATUS_2
     4'b 0011, // index[26] CSRNG_HW_EXC_STS
-    4'b 0011, // index[27] CSRNG_RECOV_ALERT_STS
+    4'b 0111, // index[27] CSRNG_RECOV_ALERT_STS
     4'b 1111, // index[28] CSRNG_ERR_CODE
     4'b 0001, // index[29] CSRNG_ERR_CODE_TEST
     4'b 0001  // index[30] CSRNG_MAIN_SM_STATE

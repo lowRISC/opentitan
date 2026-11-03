@@ -2,7 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-package(default_visibility = ["//visibility:public"])
+package(
+    default_visibility = ["//visibility:public"],
+    features = ["cryptolib_warnings"],
+)
 
 load("//rules:autogen.bzl", "autogen_cryptolib_build_info")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU")
@@ -145,6 +148,7 @@ cc_library(
         "//hw/top/dt:keymgr_dpe",
         "//sw/device/lib/base:abs_mmio",
         "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:hardened",
         "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/base:macros",
         "//sw/device/lib/crypto/impl:status",

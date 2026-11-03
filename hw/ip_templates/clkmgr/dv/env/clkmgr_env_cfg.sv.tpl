@@ -3,8 +3,16 @@
 // SPDX-License-Identifier: Apache-2.0
 
 <%
+from ipgen.clkmgr_gen import get_all_srcs
+from topgen.lib import Name
 all_src_names = sorted(s['name'] for s in src_clks.values())
 all_derived_names = sorted(s['name'] for s in derived_clks.values())
+all_srcs = get_all_srcs(src_clks, derived_clks)
+assert primary_clk in all_srcs, \
+    f"primary_clk {primary_clk!r} is not one of {sorted(all_srcs)}; set it in the ipconfig"
+primary_clk_freq = all_srcs[primary_clk]['freq']
+assert primary_clk_freq % 1_000_000 == 0, \
+    f"Primary clock frequency {primary_clk_freq} Hz is not a whole number of MHz"
 %>\
 class clkmgr_env_cfg extends cip_base_env_cfg #(
   .RAL_T(clkmgr_reg_block)
@@ -35,6 +43,11 @@ class clkmgr_env_cfg extends cip_base_env_cfg #(
   `uvm_object_utils_end
 
   `uvm_object_new
+
+  // The primary clock `clk_i` runs at the frequency of its source clock, ${primary_clk}.
+  constraint clk_freq_mhz_c {
+    clk_freq_mhz == ${Name.to_camel_case(primary_clk)}ClkHz / 1_000_000;
+  }
 
   virtual function void initialize(bit inherit_ral_models = 1'b0);
     list_of_alerts = clkmgr_env_pkg::LIST_OF_ALERTS;

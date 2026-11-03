@@ -710,8 +710,8 @@ module rram_ctrl
     .fatal_err_o     (otp_err),
     .intg_err_o      (otp_intg_err),
     .rram_init_done_i(phy_init_done),
-    .rram_wr_busy_i  (phy_wr_busy)
-
+    .rram_wr_busy_i  (phy_wr_busy),
+    .disable_i       (rram_disable[OtpDisableIdx])
   );
 
   ///////////////////////

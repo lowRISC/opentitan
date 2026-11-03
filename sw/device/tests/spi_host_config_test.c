@@ -65,7 +65,7 @@ bool test_main(void) {
 static status_t spi_config_test(dif_spi_host_t *spi) {
   dif_spi_host_config_t config = {
       .spi_clock = kSpiClock,
-      .peripheral_clock_freq_hz = (uint32_t)kClockFreqHiSpeedPeripheralHz / 2,
+      .peripheral_clock_freq_hz = (uint32_t)kClockFreqHiSpeedPeripheralHz,
   };
   backdoor_cpha = UINT8_MAX;
   backdoor_cpol = UINT8_MAX;

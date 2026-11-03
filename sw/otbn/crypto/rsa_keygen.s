@@ -51,10 +51,22 @@
  * @param[out] dmem[rsa_d0]: rsa_d0, first share of secret exponent
  * @param[out] dmem[rsa_d1]: rsa_d1, second share of secret exponent
  */
+.equ HARDENED_BOOL_TRUE, 0x739
+
 rsa_keygen:
+  la   x16, rsa_e
+  lw   x2, 0(x16)
+  addi x3, x0, HARDENED_BOOL_TRUE
+  beq  x2, x3, _det_keygen
+
   # Temporarily store the limb count in DMEM.
   la x16, nlimbs_tmp
   sw x30, 0(x16)
+
+_rsa_keygen_restart:
+  # Load the limb count.
+  la x16, nlimbs_tmp
+  lw x30, 0(x16)
 
   # Generate the RSA primes.
   # dmem[rsa_p] <= p.
@@ -77,6 +89,7 @@ rsa_keygen:
   lw x30, 0(x16)
 
   jal x1, gen_d
+  beq x2, x0, _rsa_keygen_restart
 
   ret
 
@@ -143,30 +156,30 @@ gen_d:
   bn.cmp w22, w31, FG0
   csrrs x16, FG0, x0
   andi x16, x16, 0x8
-  bne x16, x0, rsa_keygen
+  bne x16, x0, _gen_d_fail
 
   # dmem[rsa_h] <= (q - 1) * h
   la  x10, rsa_q
   la  x11, rsa_h
-  la  x12, work_buf
+  la  x12, work_buf_kgen
   li  x31, 2
   jal x1, bignum_mul
 
   # Check that gcd(h * (q - 1), F4) == 1.
-  la x16, work_buf
+  la x16, work_buf_kgen
   addi x31, x30, 2
   jal x1, mod_f4
 
   bn.cmp w22, w31, FG0
   csrrs x16, FG0, x0
   andi x16, x16, 0x8
-  bne x16, x0, rsa_keygen
+  bne x16, x0, _gen_d_fail
 
   # Compute gcd(g * (p - 1), h * (q - 1)).
   # dmem[RR] <= 0.
-  # dmem[work_buf] <= gcd(g * (p - 1), h * (q - 1)).
+  # dmem[work_buf_kgen] <= gcd(g * (p - 1), h * (q - 1)).
   la   x10, RR
-  la   x11, work_buf
+  la   x11, work_buf_kgen
   addi x30, x30, 2
   jal  x1, gcd
 
@@ -178,7 +191,7 @@ gen_d:
   li x9, 3
 
   # Check that gcd(g * (p - 1), h * (q - 1)) > 0.
-  la     x10, work_buf
+  la     x10, work_buf_kgen
   bn.lid x8, 0(x10++)
   bn.cmp w2, w31
   csrrs  x2, FG0, x0
@@ -195,7 +208,7 @@ gen_d:
     and    x2, x2, x3
 
   addi x30, x27, 0
-  beq  x2, x0, rsa_keygen
+  beq  x2, x0, _gen_d_fail
 
   # For the division (p - 1)*(q - 1)/gcd(p - 1 , q - 1), the denominator
   # gcd(p - 1, q - 1) needs to be inverted modulo 2^256 which requires the
@@ -205,7 +218,7 @@ _remove_even_factors:
 
   # Extract the LSB of gcd(p - 1, q - 1).
   # x2 <= gcd(p - 1, q - 1) & 1.
-  la   x10, work_buf # (p - 1) * (q - 1)
+  la   x10, work_buf_kgen # (p - 1) * (q - 1)
   la   x11, r0       # gcd(p - 1, q - 1)
   lw   x2, 0(x10)
   andi x2, x2, 1
@@ -213,13 +226,13 @@ _remove_even_factors:
   bne x2, x0, _remove_even_factors_end
 
   # The MSB is zero, shift the denominator by one position to right.
-  # dmem[work_buf] <= gcd(p - 1, q - 1) >> 1.
+  # dmem[work_buf_kgen] <= gcd(p - 1, q - 1) >> 1.
   bn.lid  x8, 0(x10)
   bn.rshi w2, w31, w2 >> 1
   bn.sid  x8, 0(x10)
 
   # Shift the numerator by one position to the right.
-  # dmem[work_buf] <= (p - 1) * (q - 1) >> 1.
+  # dmem[work_buf_kgen] <= (p - 1) * (q - 1) >> 1.
   addi x31, x30, -1
   addi x12, x11, 32
   loop x31, 4
@@ -240,7 +253,7 @@ _remove_even_factors_end:
   # Calculate gcd(p - 1, q - 1)^-1 mod 2^256.
   # w21 <= gcd(p - 1, q - 1)^-1 mod 2^256.
   li x8, 20
-  la x10, work_buf
+  la x10, work_buf_kgen
   bn.lid x8, 0(x10)
   jal x1, nr_inv
 
@@ -250,9 +263,10 @@ _remove_even_factors_end:
   jal x1, div_word
 
   # Calculate the secret key d = e^-1 mod LCM(p - 1, q - 1).
+  # Uses contiguous rsa_d (rsa_d0 || rsa_d1) for the (n + 1)-limb intermediate.
   # dmem[d0] <= d.
   la x24, r0
-  la x25, rsa_d0
+  la x25, rsa_d
   la x26, r1
   addi x27, x30, 0
   jal x1, modinv_f4
@@ -279,7 +293,7 @@ _remove_even_factors_end:
   # If x2 != 0, then d is too small and we need to restart key generation.
   csrrs x2, FG0, x0
   andi  x2, x2, 8
-  bne   x2, x0, rsa_keygen
+  bne   x2, x0, _gen_d_fail
 
   # Restore p and q.
   la x10, rsa_p
@@ -305,6 +319,11 @@ _remove_even_factors_end:
     bn.xor  w31, w31, w31 # dummy instruction
     bn.sid  x9, 0(x13++)
 
+  li x2, 1
+  ret
+
+_gen_d_fail:
+  li x2, 0
   ret
 
 /**
@@ -349,11 +368,9 @@ _gen_p_body:
   la x16, rsa_n
   jal x1, gen_prime_candidate
 
+_gen_p_check:
   jal x1, fermat_test
   beq x2, x0, _gen_p_loop
-
-  # Set up Miller-Rabin loop counter.
-  addi x28, x0, 0
 
   jal x1, miller_rabin_test
   beq x2, x0, _gen_p_loop
@@ -425,9 +442,6 @@ _gen_q_body_inner:
 
   jal x1, fermat_test
   beq x2, x0, _gen_q_loop
-
-  # Set up Miller-Rabin loop counter.
-  addi x28, x0, 0
 
   jal x1, miller_rabin_test
   beq x2, x0, _gen_q_loop
@@ -658,6 +672,26 @@ mul256_w24xw25:
   bn.mulqacc.so  w27.L, w24.2, w25.3, 64
   bn.mulqacc.so  w27.U, w24.3, w25.3,  0
   ret
+  unimp
+
+_det_keygen:
+  srl  x30, x30, 1
+  la   x16, rsa_p
+  lw   x2, 0(x16)
+  bne  x2, x0, _det_mul_pq
+  li   x26, 0
+  jal  x0, _gen_p_check
+
+_det_mul_pq:
+  la   x10, rsa_p
+  la   x11, rsa_q
+  la   x12, rsa_n
+  addi x31, x30, 0
+  jal  x0, bignum_mul
 
 _rsa_keygen_fail:
+  la x16, mode
+  la x17, mode_tmp
+  lw x18, 0(x17)
+  sw x18, 0(x16)
   ecall

@@ -293,18 +293,10 @@ status_t manuf_personalize_device_secret1(const dif_lc_ctrl_t *lc_ctrl,
     return INTERNAL();
   }
 
-  // Check that the CSRNG SW application interface is enabled in the HW_CFG1
-  // partition, as we cannot provision SECRET1 without access to the CSRNG.
   uint32_t otp_hw_cfg1_settings;
   TRY(otp_ctrl_testutils_dai_read32(otp_ctrl, kDifOtpCtrlPartitionHwCfg1,
                                     kHwCfgEnSramIfetchOffset,
                                     &otp_hw_cfg1_settings));
-  uint32_t csrng_sw_app_read =
-      bitfield_field32_read(otp_hw_cfg1_settings, kCsrngAppRead);
-  if (csrng_sw_app_read != kMultiBitBool8True) {
-    return INTERNAL();
-  }
-
   uint32_t dis_rv_dm_late_debug =
       bitfield_field32_read(otp_hw_cfg1_settings, kDisRvDmLateDebug);
   if (dis_rv_dm_late_debug != kMultiBitBool8True) {

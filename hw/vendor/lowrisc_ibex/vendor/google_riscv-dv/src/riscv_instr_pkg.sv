@@ -1381,7 +1381,16 @@ package riscv_instr_pkg;
                                                    riscv_reg_t tp,
                                                    ref string instr[$]);
     string store_instr = (XLEN == 32) ? "sw" : "sd";
-    if (scratch inside {implemented_csr}) begin
+    // On RV32 bare metal, reserve the whole frame with one addi before any store, so a debug
+    // entry in the middle of the push builds its frame below this one.
+    bit atomic_claim = (scratch inside {implemented_csr}) && (XLEN == 32) && (SATP_MODE == BARE);
+    if (atomic_claim) begin
+      instr.push_back($sformatf("addi x%0d, x%0d, -132", tp, tp));
+      // Push USP from gpr.SP onto the kernel stack (the top slot of the frame)
+      instr.push_back($sformatf("%0s  x%0d, 128(x%0d)", store_instr, sp, tp));
+      // Move KSP to gpr.SP
+      instr.push_back($sformatf("add x%0d, x%0d, zero", sp, tp));
+    end else if (scratch inside {implemented_csr}) begin
       // Push USP from gpr.SP onto the kernel stack
       instr.push_back($sformatf("addi x%0d, x%0d, -4", tp, tp));
       instr.push_back($sformatf("%0s  x%0d, (x%0d)", store_instr, sp, tp));
@@ -1409,7 +1418,9 @@ package riscv_instr_pkg;
     end
     // Push all GPRs (except for x0) to kernel stack
     // (gpr.SP currently holds the KSP)
-    instr.push_back($sformatf("addi x%0d, x%0d, -%0d", sp, sp, 32 * (XLEN/8)));
+    if (!atomic_claim) begin
+      instr.push_back($sformatf("addi x%0d, x%0d, -%0d", sp, sp, 32 * (XLEN/8)));
+    end
     for(int i = 1; i < 32; i++) begin
       instr.push_back($sformatf("%0s  x%0d, %0d(x%0d)", store_instr, i, i * (XLEN/8), sp));
     end
@@ -1426,11 +1437,19 @@ package riscv_instr_pkg;
                                                     riscv_reg_t tp,
                                                     ref string instr[$]);
     string load_instr = (XLEN == 32) ? "lw" : "ld";
+    // Same condition as in push_gpr_to_kernel_stack.
+    bit atomic_claim = (scratch inside {implemented_csr}) && (XLEN == 32) && (SATP_MODE == BARE);
     // Move KSP to gpr.SP
     instr.push_back($sformatf("add x%0d, x%0d, zero", sp, tp));
     // Pop GPRs from kernel stack
     for(int i = 1; i < 32; i++) begin
       instr.push_back($sformatf("%0s  x%0d, %0d(x%0d)", load_instr, i, i * (XLEN/8), sp));
+    end
+    if (atomic_claim) begin
+      // Restore USP, then release the whole frame with one addi.
+      instr.push_back($sformatf("%0s  x%0d, 128(x%0d)", load_instr, sp, tp));
+      instr.push_back($sformatf("addi x%0d, x%0d, 132", tp, tp));
+      return;
     end
     instr.push_back($sformatf("addi x%0d, x%0d, %0d", sp, sp, 32 * (XLEN/8)));
     if (scratch inside {implemented_csr}) begin

@@ -58,6 +58,11 @@ ujson_rust(
 )
 
 ujson_rust(
+    name = "kdf_commands_rust",
+    srcs = ["//sw/device/tests/crypto/cryptotest/json:kdf_commands"],
+)
+
+ujson_rust(
     name = "kmac_commands_rust",
     srcs = ["//sw/device/tests/crypto/cryptotest/json:kmac_commands"],
 )
@@ -105,6 +110,7 @@ rust_library(
         "src/hash_commands.rs",
         "src/hkdf_commands.rs",
         "src/hmac_commands.rs",
+        "src/kdf_commands.rs",
         "src/kmac_commands.rs",
         "src/lib.rs",
         "src/mldsa_commands.rs",
@@ -125,6 +131,7 @@ rust_library(
         ":hash_commands_rust",
         ":hkdf_commands_rust",
         ":hmac_commands_rust",
+        ":kdf_commands_rust",
         ":kmac_commands_rust",
         ":mldsa_commands_rust",
         ":mlkem_commands_rust",
@@ -144,6 +151,7 @@ rust_library(
         "hash_commands_loc": "$(execpath :hash_commands_rust)",
         "hkdf_commands_loc": "$(execpath :hkdf_commands_rust)",
         "hmac_commands_loc": "$(execpath :hmac_commands_rust)",
+        "kdf_commands_loc": "$(execpath :kdf_commands_rust)",
         "kmac_commands_loc": "$(execpath :kmac_commands_rust)",
         "mldsa_commands_loc": "$(execpath :mldsa_commands_rust)",
         "mlkem_commands_loc": "$(execpath :mlkem_commands_rust)",

@@ -70,7 +70,7 @@ parameters:
     description: Disconnect the TL data output of rv_core_ibex so that we can attach the simulation SRAM.
 
 targets:
-  default: &default_target
+  default:
     filesets:
       - files_sim_verilator
     toplevel: chip_sim_tb
@@ -128,12 +128,3 @@ targets:
           - '--no-timing'
           - '-Werror-STMTDLY'
           - '-Werror-ASSIGNDLY'
-
-  lint:
-    <<: *default_target
-    default_tool: verilator
-    tools:
-      verilator:
-        mode: lint-only
-        verilator_options:
-          - "-Wall"

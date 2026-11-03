@@ -53,24 +53,14 @@ status_t handle_x25519_key_exchange(ujson_t *uj) {
     return INVALID_ARGUMENT();
   }
 
-  // Generate a random ephemeral private key and apply blinding.
-  uint32_t raw_key[kX25519PrivateKeyWords] = {0};
-  HARDENED_TRY(hardened_memshred(raw_key, kX25519PrivateKeyWords));
-
+  // Generate a random ephemeral keypair.
   uint32_t keyblob[kX25519MaskedScalarTotalWords] = {0};
-  uint32_t *share0 = keyblob;
-  uint32_t *share1 = keyblob + kX25519MaskedScalarShareWords;
-  HARDENED_TRY(hardened_memshred(share1, kX25519PrivateKeyWords));
-  HARDENED_TRY(hardened_sub(raw_key, share1, kX25519PrivateKeyWords, share0));
-
   otcrypto_blinded_key_t private_key = {
       .config = kX25519PrivateKeyConfig,
       .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
-  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
 
-  // Derive the corresponding ephemeral public key.
   uint32_t gen_public_key_buf[kX25519PublicKeyWords] = {0};
   otcrypto_unblinded_key_t gen_public_key = {
       .key_mode = kOtcryptoKeyModeX25519,

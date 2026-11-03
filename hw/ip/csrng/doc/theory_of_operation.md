@@ -48,6 +48,7 @@ Because each request is pipelined, requests from other `cmd_stage` blocks can be
 This provides some interleaving of commands since a generate command can be programmed to take a very long time.
 
 When sending an unsupported or illegal command, `CMD_STAGE_INVALID_ACMD_ALERT` will be triggered.
+When sending a Generate command with a `glen` field of zero, `CMD_STAGE_INVALID_GEN_CMD_ALERT` will be triggered.
 Furthermore, CSRNG will respond with the appropriate error status response on the relevant interface.
 
 #### Working State Values
@@ -182,6 +183,7 @@ Below is a description of the fields of this header:
     <td> Generate Length: Only defined for the generate command, this field is the total number of cryptographic entropy blocks requested.
          Each unit represents 128 bits of entropy returned.
          This field allows values between 1 and 4095.
+         A value of 0 is rejected with an <tt>INVALID_GEN_CMD</tt> error status.
          A value of 1 returns 1 * 128 bits of entropy.
          A value of 4095 returns 4095 * 128 bits of entropy, which is less than the 2<sup>19</sup> bits allowed by NIST (referenced to as <tt>max_number_of_bits_per_request</tt>).
     </td>
@@ -246,6 +248,7 @@ The actions performed by each command, as well as which flags are supported, are
     <td> Starts a request to CSRNG to generate cryptographic entropy bits.
          The <tt>glen</tt> field defines how many 128-bit words are to be returned to the application interface.
          The <tt>glen</tt> field needs to be a minimum value of one.
+         A Generate command with a <tt>glen</tt> of zero is rejected with an <tt>INVALID_GEN_CMD</tt> error status.
          The NIST reference to the <tt>prediction_resistance_flag</tt> is not directly supported as a flag.
          It is the responsibility of the calling application to reseed as needed before the <tt>Generate</tt> command to properly support prediction resistance.
          Note that additional data is also supported when the <tt>clen</tt> field is set to non-zero.

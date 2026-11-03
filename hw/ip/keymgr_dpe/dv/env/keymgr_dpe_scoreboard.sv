@@ -361,6 +361,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
           key_policy.exportable;
         current_internal_key[current_key_slot.dst_slot].key_policy.retain_parent =
           key_policy.retain_parent;
+        current_internal_key[current_key_slot.dst_slot].key_policy.allow_keygen =
+          key_policy.allow_keygen;
         // max version should also be set from the max_version signal that was populated
         // from the last max_key_ver_shadowed csr write before the "start" operation was enabled
         current_internal_key[current_key_slot.dst_slot].max_key_version = max_key_version;
@@ -754,9 +756,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
         // Capture the latest key policy write
         // only valid when start is enabled
         if (addr_phase_write) begin
-          key_policy.allow_child   = item.a_data[0];
-          key_policy.exportable    = item.a_data[1];
-          key_policy.retain_parent = item.a_data[2];
+          key_policy.allow_child    = item.a_data[0];
+          key_policy.exportable     = item.a_data[1];
+          key_policy.retain_parent  = item.a_data[2];
+          key_policy.allow_keygen   = item.a_data[3];
           `uvm_info(`gfn,
             $sformatf("key_policy write with item.a_data 'h%h, key_policy = %p",
               item.a_data, key_policy), UVM_LOW)
@@ -882,7 +885,19 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                     void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
                     post_disable_compare_key_slots = 1;
                   end
-                  default: ;
+                  // TODO(#31746): Support `OpDpeLoadRootKey` in blocklevel dv
+                  default: begin
+                    // An unknown operation is rejected without touching the key slots
+                    current_op_status = keymgr_dpe_pkg::OpDoneFail;
+                    // No KDF issued, done interrupt/alert is triggered in next cycle
+                    void'(ral.intr_state.predict(.value(1 << int'(IntrOpDone))));
+                    if (cfg.keymgr_dpe_vif.get_keymgr_dpe_en()) fork
+                      begin
+                        cfg.clk_rst_vif.wait_clks(1);
+                        process_error_n_alert();
+                      end
+                    join_none
+                  end
                 endcase
               end
               keymgr_dpe_pkg::StWorkDpeDisabled, keymgr_dpe_pkg::StWorkDpeInvalid: begin
@@ -1069,7 +1084,8 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     end
     current_internal_key[current_key_slot.dst_slot].valid = 1;
     current_internal_key[current_key_slot.dst_slot].boot_stage = keymgr_dpe_pkg::BootStageCreator;
-    current_internal_key[current_key_slot.dst_slot].max_key_version = max_key_version;
+    current_internal_key[current_key_slot.dst_slot].max_key_version =
+        keymgr_dpe_pkg::DEFAULT_UDS_MAX_KEY_VERSION;
     // This call loads the "true" UDS without the randomness present in the
     // HW slot. The problem is that when this function is invoked (when writing into the start
     // register for the first time) the randomness in the HW slot is not yet generated.
@@ -1240,6 +1256,13 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
                 op.name, current_state.name), UVM_MEDIUM)
               return 1;
             end
+            if (!current_internal_key[current_key_slot.src_slot].key_policy.allow_keygen) begin
+              `uvm_info(`gfn,
+                        $sformatf("get_invalid_op: op %s current_state: %s allow_keygen == 0 err",
+                                  op.name, current_state.name),
+                        UVM_MEDIUM)
+              return 1;
+            end
             if (`gmv(ral.key_version[0]) >
                 current_internal_key[current_key_slot.src_slot].max_key_version) begin
               `uvm_info(`gfn, $sformatf("get_invalid_op: op %s current_state: %s key_version err",
@@ -1253,7 +1276,16 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
               return 1;
             return 0;
           end
+          keymgr_dpe_pkg::OpDpeDisable: begin
+            return 0;
+          end
+          keymgr_dpe_pkg::OpDpeLoadRootKey,
+          keymgr_dpe_pkg::OpDpeLoadSecondaryRootKey: begin
+            // TODO(#31746): Support `OpDpeLoad(Secondary)RootKey` in blocklevel dv
+            return 1;
+          end
           default: begin
+            return 1;
           end
         endcase
       end
@@ -1644,13 +1676,10 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     end
   endfunction
 
-  // if it's not defined operation, treat as OpDpeDisable
+  // Use a static cast so that unknown encodings are preserved, they are rejected by the DUT as
+  // invalid operations.
   virtual function keymgr_dpe_pkg::keymgr_dpe_ops_e get_operation();
-    keymgr_dpe_pkg::keymgr_dpe_ops_e op;
-    int op_int_val = `gmv(ral.control_shadowed.operation);
-
-    if (!$cast(op, op_int_val)) op = keymgr_dpe_pkg::OpDpeDisable;
-    return op;
+    return keymgr_dpe_pkg::keymgr_dpe_ops_e'(`gmv(ral.control_shadowed.operation));
   endfunction
 
   virtual function void get_key_slots();
@@ -1733,6 +1762,7 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
     is_kmac_invalid_data  = 0;
     is_sw_share_corrupted = 0;
     load_uds_with_randomness = 0;
+    key_policy = 0;
     foreach (current_internal_key[slot]) begin
       current_internal_key[slot].key = '0;
       current_internal_key[slot].key_policy = '0;

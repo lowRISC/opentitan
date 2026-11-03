@@ -34,12 +34,10 @@ interface chip_if;
   `define TOP_HIER          tb.dut.top_earlgrey
   `define PD_MAIN_HIER      tb.dut.top_earlgrey.earlgrey_pd_main
   `define PD_AON_HIER       tb.dut.top_earlgrey.earlgrey_pd_aon
-  `define AST_HIER          tb.dut.u_ast
 `else
   `define TOP_HIER          top_earlgrey
   `define PD_MAIN_HIER      top_earlgrey.earlgrey_pd_main
   `define PD_AON_HIER       top_earlgrey.earlgrey_pd_aon
-  `define AST_HIER          u_ast
 `endif
 `define ADC_CTRL_HIER       `PD_AON_HIER.u_adc_ctrl
 `define AES_HIER            `PD_MAIN_HIER.u_aes
@@ -55,7 +53,7 @@ interface chip_if;
 `define EDN_HIER(i)         `PD_MAIN_HIER.u_edn``i
 `define RRAM_CTRL_HIER      `PD_MAIN_HIER.u_rram_ctrl
 `define RRAM_MACRO_HIER     `PD_MAIN_HIER.u_rram_macro
-`define GPIO_HIER           `PD_MAIN_HIER.u_gpio
+`define GPIO_HIER(i)        `PD_MAIN_HIER.u_gpio``i
 `define HMAC_HIER           `PD_MAIN_HIER.u_hmac
 `define I2C_HIER(i)         `PD_MAIN_HIER.u_i2c``i
 `define IBEX_HIER           `CPU_CORE_HIER.u_ibex_core
@@ -65,7 +63,7 @@ interface chip_if;
 `define LC_CTRL_HIER        `PD_MAIN_HIER.u_lc_ctrl
 `define OTP_CTRL_HIER       `PD_MAIN_HIER.u_otp_ctrl
 `define OTBN_HIER           `PD_MAIN_HIER.u_otbn
-`define PINMUX_HIER         `PD_MAIN_HIER.u_pinmux
+`define PINMUX_HIER         `PD_AON_HIER.u_pinmux
 `define PWRMGR_HIER         `PD_AON_HIER.u_pwrmgr
 `define ROM_CTRL_HIER       `PD_MAIN_HIER.u_rom_ctrl
 `define RSTMGR_HIER         `PD_AON_HIER.u_rstmgr
@@ -622,16 +620,16 @@ interface chip_if;
   wire sram_ret_init_done = `SRAM_CTRL_RET_HIER.u_reg_regs.status_init_done_qs;
 
 `endif
-  wire adc_data_valid = `AST_HIER.u_ast_part_secondary.adc_o.data_valid;
+  wire adc_data_valid = `PD_AON_HIER.u_ast_part_secondary.adc_o.data_valid;
   wire rram_rd_buf_rdy = ~((|`RRAM_CTRL_HIER.u_rram_phy.u_rram_phy_rd.buf_valid) ||
                            (|`RRAM_CTRL_HIER.u_rram_phy.u_rram_phy_rd.buf_wip));
 
   task static force_adc_d_o(input bit [9:0] channel_val);
-    force `AST_HIER.u_ast_part_secondary.adc_o.data = channel_val;
+    force `PD_AON_HIER.u_ast_part_secondary.adc_o.data = channel_val;
   endtask
 
   task static release_adc_d_o();
-    release `AST_HIER.u_ast_part_secondary.adc_o.data;
+    release `PD_AON_HIER.u_ast_part_secondary.adc_o.data;
   endtask
 
   // This task triggers a wakeup by forcing an incoming alert from AST to sensor_ctrl.
@@ -1261,7 +1259,6 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_host1.u_sp
 `undef AES_CONTROL_HIER
 `undef ALERT_HANDLER_HIER
 `undef AON_TIMER_HIER
-`undef AST_HIER
 `undef CLKMGR_HIER
 `undef CPU_HIER
 `undef CPU_CORE_HIER

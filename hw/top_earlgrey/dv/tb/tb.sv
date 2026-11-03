@@ -84,7 +84,7 @@ module tb;
 
   // TODO: Absorb this functionality into chip_if.
   bind dut ast_supply_if ast_supply_if (
-    .clk(ast_base_clks.clk_aon),
+    .clk(top_earlgrey.earlgrey_pd_aon.ast_clk_src_aon),
 `ifdef GATE_LEVEL
     .core_sleeping_trigger(0),
     .low_power_trigger(0)
@@ -441,6 +441,13 @@ module tb;
     // Generic DPI interface.
     uvm_config_db#(virtual tb_dpi_if)::set(
         null, "*.env", "tb_dpi_vif", u_tb_dpi_if);
+
+    // Number of Virtual Targets that each I3C instance implements. The CSRs describe
+    // `i3c_reg_pkg::MaxTargets` of them, so the RAL has to know which ones the RTL ties off.
+    uvm_config_db#(int unsigned)::set(
+        null, "uvm_test_top", "i3c0_num_targets", dut.top_earlgrey.I3c0NumTargets);
+    uvm_config_db#(int unsigned)::set(
+        null, "uvm_test_top", "i3c1_num_targets", dut.top_earlgrey.I3c1NumTargets);
 
     // Format time in microseconds losing no precision. The added "." makes it easier to determine
     // the order of magnitude without counting digits, as is needed if it was formatted as ps or ns.
@@ -819,11 +826,12 @@ module tb;
       forever @dut.chip_if.chip_padctrl_attributes_test_sva_disable begin
         if (dut.chip_if.chip_padctrl_attributes_test_sva_disable) begin
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_rram_ctrl);
-          $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio);
+          $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio0);
+          $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio1);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c0);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c1);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c2);
-          $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_pinmux);
+          $assertoff(0, dut.top_earlgrey.earlgrey_pd_aon.u_pinmux);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_spi_device);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_spi_host0);
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_spi_host1);
@@ -835,11 +843,12 @@ module tb;
           $assertoff(0, dut.top_earlgrey.earlgrey_pd_main.u_usbdev);
         end else begin
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_rram_ctrl);
-          $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio);
+          $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio0);
+          $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_gpio1);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c0);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c1);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_i2c2);
-          $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_pinmux);
+          $asserton(0, dut.top_earlgrey.earlgrey_pd_aon.u_pinmux);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_spi_device);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_spi_host0);
           $asserton(0, dut.top_earlgrey.earlgrey_pd_main.u_spi_host1);

@@ -20,10 +20,10 @@ module i3c_timers #(
   parameter int unsigned NumTimers = 1,
   parameter int unsigned MaxDefaultW = 16,
   // Shift distances, in bits, for each software-programmed adjustment.
-  parameter bit [NumTimers-1:0][3:0] TimerShifts,
+  parameter bit [NumTimers-1:0][3:0] TimerShifts = '0,
   // For each timer, the default interval is specified in microseconds, allocating 16 bits to each
   // timer in turn.
-  parameter bit [NumTimers-1:0][MaxDefaultW-1:0] DefaultInts
+  parameter bit [NumTimers-1:0][MaxDefaultW-1:0] DefaultInts = {NumTimers{MaxDefaultW'(1)}}
 ) (
   input                       clk_i,
   input                       rst_ni,
@@ -61,9 +61,10 @@ module i3c_timers #(
     //   Bus Idle condition (200us by default).
     localparam int unsigned TimerW = $clog2(1 + TmInit + (8'h7f << Shift));
     logic signed [TimerW:0] tm_raw_val;
-    assign tm_raw_val = $signed({1'b0, TmInit}) + ($signed(tm_int_i[t]) << Shift);
+    assign tm_raw_val = $signed((TimerW + 1)'(TmInit)) +
+                        ((TimerW + 1)'($signed(tm_int_i[t])) << Shift);
     logic [TimerW-1:0] tm_init_val;
-    assign tm_init_val = (tm_raw_val < 0) ? TimerW'('b0) : tm_raw_val[TimerW-1:0];
+    assign tm_init_val = (tm_raw_val < 0) ? TimerW'('b0) : TimerW'($unsigned(tm_raw_val));
 
     logic [TimerW-1:0] tm_cnt;
     always_ff @(posedge clk_i or negedge rst_ni) begin

@@ -274,6 +274,7 @@ enum module_ {
   X(kErrorPwrmgrInvalidRequestType,   ERROR_(2, kModulePwrmgr, kInvalidArgument)), \
   \
   X(kErrorGpioInvalidPin,             ERROR_(0, kModuleGpio, kInvalidArgument)), \
+  X(kErrorGpioInvalidInstance,        ERROR_(1, kModuleGpio, kInvalidArgument)), \
   X(kErrorUsbBadSetup,                ERROR_(0, kModuleUsb, kInvalidArgument)), \
   X(kErrorUsbBadEndpointNumber,       ERROR_(1, kModuleUsb, kInvalidArgument)), \
   \

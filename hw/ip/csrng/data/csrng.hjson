@@ -96,13 +96,6 @@
       act:     "req"
       package: "entropy_src_pkg"
     }
-    { struct:  "mubi8"
-      type:    "uni"
-      name:    "otp_en_csrng_sw_app_read"
-      act:     "rcv"
-      package: "prim_mubi_pkg"
-      default: "prim_mubi_pkg::MuBi8True"
-    }
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_hw_debug_en"
@@ -117,7 +110,7 @@
       desc: '''
             CSRNG has an application interface for the software to interact with.
 
-            Note that for software to actually retrieve random numbers from this interface, the otp_en_csrng_sw_app_read input from OTP needs to be `kMultiBitBool8True` and !!CTRL.SW_APP_ENABLE needs to be set to `kMultiBitBool4True`.
+            Note that for software to actually retrieve random numbers from this interface, !!CTRL.SW_APP_ENABLE needs to be set to `kMultiBitBool4True`.
             Otherwise the !!GENBITS register always reads 0.
             '''
     }
@@ -142,8 +135,6 @@
       desc: '''
             CSRNG allows reading the internal state of the three CTR_DRBG instances corresponding to the three interfaces.
             This is useful for debugging and validation testing.
-
-            Note that for this to work the `otp_en_csrng_sw_app_read` input from OTP needs to be `kMultiBitBool8True`.
             '''
     }
     {
@@ -162,9 +153,6 @@
     { name: "CONFIG.MUBI"
       desc: "Registers have multi-bit encoded fields."
     }
-    { name: "INTERSIG.MUBI"
-      desc: "OTP signal used to enable software access to registers."
-    }
     { name: "CMD_STAGE.FSM.SPARSE"
       desc: "The CSRNG command stage state machines use a sparse state encoding."
     }
@@ -174,11 +162,11 @@
     { name: "CTR_DRBG.FSM.SPARSE"
       desc: "The CTR DRBG state machine uses a sparse state encoding."
     }
-    { name: "GEN_CMD.CTR.REDUN"
-      desc: "The generate command uses a counter that is protected by a second counter that counts in the opposite direction."
-    }
     { name: "CTR_DRBG.CTR.REDUN"
       desc: "The ctr_drbg algorithm uses a counter that is protected by a second counter that counts in the opposite direction."
+    }
+    { name: "STATE_DB.CTR.REDUN"
+      desc: "The !!INT_STATE_VAL word pointer uses a counter that is protected by a second counter that counts in the opposite direction."
     }
     { name: "CTRL.MUBI"
       desc: "Multi-bit field used for selection control."
@@ -274,8 +262,6 @@
             mubi: true
             desc: '''
                   Setting this field to kMultiBitBool4True will enable reading from the !!GENBITS register.
-                  This application interface for software (register based) will be enabled
-                  only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
                   '''
           resval: false
         },
@@ -285,8 +271,6 @@
             mubi: true
             desc: '''
                   Setting this field to kMultiBitBool4True will enable reading from the !!INT_STATE_VAL register.
-                  Reading the internal state of the enable instances will be enabled
-                  only if the otp_en_csrng_sw_app_read input vector is set to the enable encoding.
                   Also, the !!INT_STATE_READ_ENABLE bit of the selected instance needs to be set to true for this to work.
                   '''
           resval: false
@@ -314,6 +298,7 @@
                 Writing this request with defined CSRNG commands will initiate all
                 possible CSRNG actions. The application interface must wait for the
                 "ack" to return before issuing new commands.
+                Before writing each word of a command, !!SW_CMD_STS.CMD_RDY needs to be polled.
                 '''
         }
       ]
@@ -373,10 +358,11 @@
         { bits: "1",
           name: "CMD_RDY",
           desc: '''
-                This bit indicates when the command interface is ready to accept commands.
-                Before starting to write a new command to !!SW_CMD_REQ, this field needs to be polled.
-                0b0: CSRNG is not ready to accept commands or the last command hasn't been acked yet.
-                0b1: CSRNG is ready to accept the next command.
+                This bit indicates when the command interface is ready to accept the next command word.
+                Before writing each word of a command to !!CMD_REQ, this field needs to be polled.
+                Words written while this field is low are dropped.
+                0b0: CSRNG is not ready to accept the next command word or the last command hasn't been acked yet.
+                0b1: CSRNG is ready to accept the next command word.
                 '''
           resval: "0"
         }
@@ -419,9 +405,9 @@
             { value: "2",
               name: "INVALID_GEN_CMD",
               desc: '''
-                    Request completed with an invalid counter DRBG generation command error.
-                    This error indicates that CSRNG entropy was generated for a command that is not a Generate command.
-                    In this case the entropy should not be considered as valid.
+                    Request completed with an invalid Generate command error.
+                    This error indicates that a Generate command was issued with a `glen` field of zero.
+                    The command is ignored and no entropy is generated.
                     '''
             },
             { value: "3",
@@ -485,7 +471,6 @@
                 a `clen` value of 4 requires this register to be read 16 times to get all
                 of the data out of the FIFO path.
                 Note that for !!GENBITS to be able to deliver random numbers, also !!CTRL.SW_APP_ENABLE needs to be set to `kMultiBitBool4True`.
-                In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
                 Otherwise, the register reads as 0.
                 '''
         }
@@ -519,7 +504,6 @@
                 Per-instance internal state read enable.
                 Defines whether the internal state of the corresponding instance is readable via !!INT_STATE_VAL.
                 Note that for !!INT_STATE_VAL to provide read access to the internal state, also !!CTRL.READ_INT_STATE needs to be set to `kMultiBitBool4True`.
-                In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
                 '''
           resval: 0x7
         }
@@ -566,7 +550,6 @@
                 can be re-written at this time (internal read pointer is also reset), and then
                 another internal state field can be read.
                 Note that for !!INT_STATE_VAL to provide read access to the internal state, also !!CTRL.READ_INT_STATE needs to be set to `kMultiBitBool4True`.
-                In addition, the otp_en_csrng_sw_app_read input needs to be set to `kMultiBitBool8True`.
                 Also, the !!INT_STATE_READ_ENABLE bit of the selected instance needs to be set to true for this to work.
                 Otherwise, the register reads as 0.
                 '''
@@ -752,6 +735,14 @@
                 '''
         }
         { bits: "14",
+          name: "CMD_STAGE_INVALID_GEN_CMD_ALERT",
+          desc: '''
+                This bit is set when a Generate command is received with a `glen` field of zero.
+                The invalid command is ignored and CSRNG continues to operate.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "15",
           name: "CMD_STAGE_INVALID_CMD_SEQ_ALERT",
           desc: '''
                 This bit is set when an out of order command is received by the main state machine.
@@ -762,7 +753,7 @@
                 Writing a zero resets this status bit.
                 '''
         }
-        { bits: "15",
+        { bits: "16",
           name: "CMD_STAGE_RESEED_CNT_ALERT",
           desc: '''
                 This bit is set when the maximum number of generate requests between reseeds is

@@ -210,8 +210,8 @@
             Verify in PROD state, only the LC tap can be selected.
             Verify in DEV state, only the LC tap and RISC-V taps can be selected.
             Verify DFT test mode straps are sampled and output to AST via
-            top_earlgrey.dft_strap_test_o in TEST_UNLOCKED* and RMA states.
-            Verify top_earlgrey.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED*
+            pinmux.dft_strap_test_o in TEST_UNLOCKED* and RMA states.
+            Verify pinmux.dft_strap_test_o is always 0 in the states other than TEST_UNLOCKED*
             and RMA, regardless of the value on DFT SW straps.
             Verify loss of DFT functionality when DFT straps are deasserted on the next POR cycle.
 

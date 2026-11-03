@@ -219,23 +219,15 @@ class chip_sw_base_vseq extends chip_base_vseq;
     `uvm_info(`gfn, "cpu_init completed", UVM_MEDIUM)
   endtask
 
-  // The jitter enable mechanism is different from test_rom and rom right now.
-  // That's why below there is both a symbol overwrite and an otp backdoor load.
-  // Once test_rom and rom are consistent in this area, the symbol backdoor load
-  // can be removed.
   task config_jitter();
     bit en_jitter;
     void'($value$plusargs("en_jitter=%0d", en_jitter));
+    // At boot, the ROM and the test ROM read this OTP word if AST init is
+    // enabled. They turn the jittery clock on unless it is MuBi4False.
     if (en_jitter) begin
-      // enable for test_rom
-      bit [7:0] en_jitter_arr[] = {1};
-      sw_symbol_backdoor_overwrite("kJitterEnabled", en_jitter_arr, SwTypeRom);
-
-      // enable for rom
       cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgJitterEnOffset,
                                        prim_mubi_pkg::MuBi4True);
     end else begin
-      // rom blindly copies from otp, backdoor load a false value
       cfg.mem_bkdr_util_h[Otp].write32(otp_ctrl_reg_pkg::CreatorSwCfgJitterEnOffset,
                                        prim_mubi_pkg::MuBi4False);
     end
@@ -407,6 +399,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
   endfunction
 
   virtual task body();
+    // Disable assertions mentioned in plusargs.
+    assert_off();
     cfg.sw_test_status_vif.set_num_iterations(num_trans);
     // Initialize the CPU to kick off the sw test. TODO: Should be called in pre_start() instead.
     cpu_init();
@@ -1312,5 +1306,15 @@ class chip_sw_base_vseq extends chip_base_vseq;
     mypath = {path, ".end_page"};
     `DV_CHECK(uvm_hdl_release(mypath));
   endtask
+
+  function void assert_off();
+    uint disable_assertion = 0;
+    void'($value$plusargs("disable_assert_edn_output_diff_from_prev=%0d", disable_assertion));
+    if (disable_assertion) begin
+      $assertoff(0,
+        "tb.dut.top_darjeeling.darjeeling_pd_main.u_rv_core_ibex.u_edn_if.DataOutputDiffFromPrev_A"
+      );
+    end
+  endfunction
 
 endclass : chip_sw_base_vseq

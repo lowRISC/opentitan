@@ -174,6 +174,11 @@ RUN BAZELISK_PATH="/usr/local/bin/bazelisk"; \
     chmod +x ${BAZELISK_PATH} && \
     ln -s ${BAZELISK_PATH} /usr/local/bin/bazel
 
-RUN runuser dev -c "bazel > /dev/null"
+# We want to make sure that bazelisk can see the pinned .bazelversion, even
+# outside any workspace.
+COPY --chown=dev:dev .bazelversion /tmp/.bazelversion
+
+RUN runuser dev -c "USE_BAZEL_VERSION=$(cat /tmp/.bazelversion) bazel version > /dev/null" \
+    && rm -f /tmp/.bazelversion
 
 ENTRYPOINT [ "/start.sh" ]

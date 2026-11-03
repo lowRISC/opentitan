@@ -427,10 +427,12 @@ typedef struct partition_info {
    */
   uint32_t start_addr;
   /**
-   * The length of this partition, in bytes, including the digest.
+   * The length of this partition, in bytes, including the digest and the
+   * zeroization marker.
    *
    * If the partition has a digest, it is expected to be at address
-   * `start_addr + len - sizeof(uint64_t)`.
+   * `start_addr + len - sizeof(uint64_t)`, or at
+   * `start_addr + len - 2 * sizeof(uint64_t)` if the partition is zeroizable.
    */
   uint32_t len;
   /**
@@ -456,7 +458,22 @@ typedef struct partition_info {
    * Whether this partition is the lifecycle partition.
    */
   bool is_lifecycle;
+
+  /**
+   * Whether this partition is zeroizable.
+   */
+  bool is_zeroizable;
 } partition_info_t;
+
+/**
+ * Returns the effective size of a partition in bytes, i.e., the size of the
+ * fields that can be written directly via the DAI. This excludes the digest
+ * field and zeroization marker at the end of the partition.
+ */
+static uint32_t partition_effective_size(const partition_info_t *info) {
+  return info->len -
+         (info->has_digest + info->is_zeroizable) * (uint32_t)sizeof(uint64_t);
+}
 
 // This is generates too many lines with different formatting variants, so
 // We opt to just disable formatting.
@@ -468,21 +485,24 @@ static const partition_info_t kPartitions[] = {
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionCreatorSwCfg] = {
         .start_addr = OTP_CTRL_PARAM_CREATOR_SW_CFG_OFFSET,
         .len = OTP_CTRL_PARAM_CREATOR_SW_CFG_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionOwnerSwCfg] = {
         .start_addr = OTP_CTRL_PARAM_OWNER_SW_CFG_OFFSET,
         .len = OTP_CTRL_PARAM_OWNER_SW_CFG_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
 #if defined(OPENTITAN_IS_EARLGREY)
     [kDifOtpCtrlPartitionRotCreatorAuthCodesign] = {
         .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_CODESIGN_OFFSET,
@@ -490,14 +510,16 @@ static const partition_info_t kPartitions[] = {
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionRotCreatorAuthState] = {
         .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_OFFSET,
         .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_STATE_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
 #elif defined(OPENTITAN_IS_DARJEELING)
     [kDifOtpCtrlPartitionOwnershipSlotState] = {
         .start_addr = OTP_CTRL_PARAM_OWNERSHIP_SLOT_STATE_OFFSET,
@@ -505,84 +527,96 @@ static const partition_info_t kPartitions[] = {
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = false,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionRotCreatorAuth] = {
         .start_addr = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_OFFSET,
         .len = OTP_CTRL_PARAM_ROT_CREATOR_AUTH_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionRotOwnerAuthSlot0] = {
         .start_addr = OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_OFFSET,
         .len = OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT0_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionRotOwnerAuthSlot1] = {
         .start_addr = OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_OFFSET,
         .len = OTP_CTRL_PARAM_ROT_OWNER_AUTH_SLOT1_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionPlatIntegAuthSlot0] = {
         .start_addr = OTP_CTRL_PARAM_PLAT_INTEG_AUTH_SLOT0_OFFSET,
         .len = OTP_CTRL_PARAM_PLAT_INTEG_AUTH_SLOT0_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionPlatIntegAuthSlot1] = {
         .start_addr = OTP_CTRL_PARAM_PLAT_INTEG_AUTH_SLOT1_OFFSET,
         .len = OTP_CTRL_PARAM_PLAT_INTEG_AUTH_SLOT1_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionPlatOwnerAuthSlot0] = {
         .start_addr = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT0_OFFSET,
         .len = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT0_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionPlatOwnerAuthSlot1] = {
         .start_addr = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT1_OFFSET,
         .len = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT1_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionPlatOwnerAuthSlot2] = {
         .start_addr = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT2_OFFSET,
         .len = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT2_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionPlatOwnerAuthSlot3] = {
         .start_addr = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT3_OFFSET,
         .len = OTP_CTRL_PARAM_PLAT_OWNER_AUTH_SLOT3_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionExtNvm] = {
         .start_addr = OTP_CTRL_PARAM_EXT_NVM_OFFSET,
         .len = OTP_CTRL_PARAM_EXT_NVM_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = false,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionRomPatch] = {
         .start_addr = OTP_CTRL_PARAM_ROM_PATCH_OFFSET,
         .len = OTP_CTRL_PARAM_ROM_PATCH_SIZE,
         .align_mask = 0x3,
         .is_software = true,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
 #else
 #error "dif_otp_ctrl does not support this top"
 #endif
@@ -592,35 +626,40 @@ static const partition_info_t kPartitions[] = {
         .align_mask = 0x3,
         .is_software = false,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionHwCfg1] = {
         .start_addr = OTP_CTRL_PARAM_HW_CFG1_OFFSET,
         .len = OTP_CTRL_PARAM_HW_CFG1_SIZE,
         .align_mask = 0x3,
         .is_software = false,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = false},
     [kDifOtpCtrlPartitionSecret0] = {
         .start_addr = OTP_CTRL_PARAM_SECRET0_OFFSET,
         .len = OTP_CTRL_PARAM_SECRET0_SIZE,
         .align_mask = 0x7,
         .is_software = false,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = true},
     [kDifOtpCtrlPartitionSecret1] = {
         .start_addr = OTP_CTRL_PARAM_SECRET1_OFFSET,
         .len = OTP_CTRL_PARAM_SECRET1_SIZE,
         .align_mask = 0x7,
         .is_software = false,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = true},
     [kDifOtpCtrlPartitionSecret2] = {
         .start_addr = OTP_CTRL_PARAM_SECRET2_OFFSET,
         .len = OTP_CTRL_PARAM_SECRET2_SIZE,
         .align_mask = 0x7,
         .is_software = false,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = true},
 #if defined(OPENTITAN_IS_DARJEELING)
     [kDifOtpCtrlPartitionSecret3] = {
         .start_addr = OTP_CTRL_PARAM_SECRET3_OFFSET,
@@ -628,7 +667,8 @@ static const partition_info_t kPartitions[] = {
         .align_mask = 0x7,
         .is_software = false,
         .has_digest = true,
-        .is_lifecycle = false},
+        .is_lifecycle = false,
+        .is_zeroizable = true},
 #elif defined(OPENTITAN_IS_EARLGREY)
 // Earlgrey only has 3 secret partitions.
 #else
@@ -640,7 +680,8 @@ static const partition_info_t kPartitions[] = {
         .align_mask = 0x3,
         .is_software = false,
         .has_digest = false,
-        .is_lifecycle = true},
+        .is_lifecycle = true,
+        .is_zeroizable = false},
 };
 // clang-format on
 
@@ -744,10 +785,8 @@ dif_result_t dif_otp_ctrl_dai_program32(const dif_otp_ctrl_t *otp,
   }
 
   // NOTE: The bounds check is tightened here, since we disallow writing the
-  // digest directly. If the partition does not have a digest, no tightening is
-  // needed.
-  size_t digest_size = kPartitions[partition].has_digest * sizeof(uint64_t);
-  if (address >= kPartitions[partition].len - digest_size) {
+  // digest and zeroization fields directly.
+  if (address >= partition_effective_size(&kPartitions[partition])) {
     return kDifOutOfRange;
   }
 
@@ -784,9 +823,8 @@ dif_result_t dif_otp_ctrl_dai_program64(const dif_otp_ctrl_t *otp,
   }
 
   // NOTE: The bounds check is tightened here, since we disallow writing the
-  // digest directly.
-  size_t digest_size = sizeof(uint64_t);
-  if (address >= kPartitions[partition].len - digest_size) {
+  // digest and zeroization fields directly.
+  if (address >= partition_effective_size(&kPartitions[partition])) {
     return kDifOutOfRange;
   }
 
@@ -828,7 +866,8 @@ dif_result_t dif_otp_ctrl_dai_digest(const dif_otp_ctrl_t *otp,
 
   uint32_t address = kPartitions[partition].start_addr;
   if (is_sw) {
-    address += kPartitions[partition].len - sizeof(digest);
+    // The digest is located right after the writeable fields.
+    address += partition_effective_size(&kPartitions[partition]);
   }
   mmio_region_write32(otp->base_addr, OTP_CTRL_DIRECT_ACCESS_ADDRESS_REG_OFFSET,
                       address);

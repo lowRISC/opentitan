@@ -38,18 +38,20 @@ package i3c_pkg;
   //   entries; TODO(#31304): ratify and simplify, or modify as required.
   localparam int unsigned DATCacheSize = NumDATEntries;
 
-  // Number of Target(s) presented simultaneously on the I3C bus, including the Standby Controller.
-  localparam int unsigned NumTargets = 2;
-  localparam int unsigned Log2NT = $clog2(NumTargets);
+  // The number of Target(s) presented simultaneously on the I3C bus, including the Standby
+  // Controller, is a per-instance parameter (`NumTargets`) of the IP block top level.
+  // Every Target-indexed data type below is sized for `MaxTargets` so that none of
+  // them depends on that parameter. An instance configured with fewer Targets ties off the
+  // surplus slices, which synthesis then removes.
 
   // Maximum number of groups to which a Target may be added.
   localparam int unsigned NumGroups = 8;
 
   // The Target must also respond to the I3C Broadcast Address (7'h7e), and an additional encoding
   // is used within the Target transceiver logic to indicate the address did not match anything.
-  localparam int unsigned TargIDW = $clog2(NumTargets + 2);
-  localparam bit [TargIDW-1:0] TargIDNoMatch   = TargIDW'(NumTargets);
-  localparam bit [TargIDW-1:0] TargIDBroadcast = TargIDW'(NumTargets+1);
+  localparam int unsigned TargIDW = $clog2(MaxTargets + 2);
+  localparam bit [TargIDW-1:0] TargIDNoMatch   = TargIDW'(MaxTargets);
+  localparam bit [TargIDW-1:0] TargIDBroadcast = TargIDW'(MaxTargets+1);
 
   // Number of blocked addresses supported; this is a safeguard against I2C devices that may use
   // clock-stretching, but may also be of use diagnostically.
@@ -310,6 +312,10 @@ package i3c_pkg;
     logic     targ_rst_det;  // Whole Target Reset detected.
   } i3c_rstdet_rsp_t;
 
+  // Default connectivity, when there is no Target Reset detector.
+  parameter i3c_rstdet_req_t I3C_RSTDET_REQ_DEFAULT = '0;
+  parameter i3c_rstdet_rsp_t I3C_RSTDET_RSP_DEFAULT = '0;
+
   // --- TL-UL interface to FIFOs/buffers ---
 
   // TL-UL windows.
@@ -428,59 +434,50 @@ package i3c_pkg;
     logic            [6:0] addr;
     logic                  addr_valid;
     // Subset of Virtual Targets presently subscribed to this group address.
-    logic [NumTargets-1:0] targets;
+    logic [MaxTargets-1:0] targets;
   } i3c_grp_addr_t;
 
   // Set maximum read, write, IBI length.
   typedef struct packed {
     logic                  setmwl;   // As opposed to SETMRL.
     logic                  setibi;   // Optional, SETMRL only.
-    logic [NumTargets-1:0] targets;  // Set of affected Targets.
+    logic [MaxTargets-1:0] targets;  // Set of affected Targets.
     logic           [15:0] mwrl;     // Length for SETMW|RL.
     logic            [7:0] ibil;     // Optional max IBI payload length.
   } i3c_setml_t;
 
   // Enable/Disable Target-side IBI generation.
   typedef struct packed {
-    logic [NumTargets-1:0] enint;   // Regular In-Band Interrupts.
-    logic [NumTargets-1:0] disint;
-    logic [NumTargets-1:0] encr;    // Controller Role requests.
-    logic [NumTargets-1:0] discr;
-    logic [NumTargets-1:0] enhj;    // Hot-Join requests.
-    logic [NumTargets-1:0] dishj;
+    logic [MaxTargets-1:0] enint;   // Regular In-Band Interrupts.
+    logic [MaxTargets-1:0] disint;
+    logic [MaxTargets-1:0] encr;    // Controller Role requests.
+    logic [MaxTargets-1:0] discr;
+    logic [MaxTargets-1:0] enhj;    // Hot-Join requests.
+    logic [MaxTargets-1:0] dishj;
   } i3c_endis_event_t;
 
   // Indicates whether the given address is an 'Error Type TE0' address (4.3.8.1.1).
   // - these are single-bit deviations from the I3C Broadcast Address 7'h7e.
-  // TODO(#31035): Target-side logic checking using this function also needs to catch 7'h7e/R except
-  // when handling ENTDAA (HCI 4.3.8.1.1).
-  function automatic bit te0_invalid_addr(bit [6:0] addr);
+  function automatic logic te0_invalid_addr(logic [6:0] addr);
     return (addr inside {7'h7f, 7'h7c, 7'h7a, 7'h76, 7'h6e, 7'h5e, 7'h3e});
   endfunction
 
   // Check whether the given I3C address is invalid before attempting to drive it out into an
-  // arbitrable address header. This is primarily a safeguard against addressing any I2C device(s)
-  // on the bus that are known to employ clock-stretching.
-  //
-  // TODO(#31304): Update this according to usage, include masks and parameterize for NumBlocked.
-  function automatic bit invalid_addr(bit [6:0] addr,
-                                      bit [6:0] blocked_addr0,
-                                      bit [6:0] blocked_addr1,
-                                      bit       target);
-    case (addr)
-      7'h00:         return 1'b1;
-      7'h02:         return !target;  // Hot-Join requests permissible only from Targets.
-      blocked_addr0: return 1'b1;
-      blocked_addr1: return 1'b1;
-      default:       return te0_invalid_addr(addr);
+  // arbitrable address header.
+  // TODO(#31035): Target-side logic checking using this function also needs to catch 7'h7e/R except
+  // when handling ENTDAA (HCI 4.3.8.1.1).
+  function automatic logic invalid_addr(logic [6:0] addr, logic target);
+    unique case (addr)
+      7'h00:   return 1'b1;
+      7'h02:   return !target;  // Hot-Join requests permissible only from Targets.
+      default: return te0_invalid_addr(addr);
     endcase
-    return 1'b0;
   endfunction
 
   // The use of some CCCs is absolutely prohibited in Command Descriptors (TCRI 6.2) because the
   // Host Controller issues them internally. (Note that some others are conditionally-blocked.)
-  function automatic bit tcri_blocked_ccc(logic [7:0] ccc);
-    case (ccc)
+  function automatic logic tcri_blocked_ccc(logic [7:0] ccc);
+    unique case (ccc)
       ENTHDR0, ENTHDR1, ENTHDR2, ENTHDR3, ENTHDR4, ENTHDR5, ENTHDR6, ENTHDR7,
       GETACCCR: return 1'b1;
       default:  return 1'b0;
@@ -488,19 +485,19 @@ package i3c_pkg;
   endfunction
 
   // Broadcast CCCs need to be treated differently, especially on the Target side.
-  function automatic bit broadcast_ccc(logic [7:0] ccc);
+  function automatic logic broadcast_ccc(logic [7:0] ccc);
     return !ccc[7];
   endfunction
 
   // Direct Get, as opposed to Direct Set or Broadcast CCC?
-  function automatic bit direct_get(logic [7:0] ccc);
+  function automatic logic direct_get(logic [7:0] ccc);
     return ccc[7] & (ccc inside {GETMWL, GETMRL, GETPID, GETBCR, GETDCR, GETSTATUS,
                                  GETACCCR, GETMXDS, GETCAPS, GETXTIME});
   endfunction
 
   // A small number of the CCCs have a Defining Byte, which precedes the write data in the event
   // of a Broadcast CCC.
-  function automatic bit ccc_has_defb(logic [7:0] ccc);
+  function automatic logic ccc_has_defb(logic [7:0] ccc);
     // Note that we need only be concerned with those CCCs that are supported by the Target;
     // the Target transceiver logic is responsible for rejecting or ignoring CCCs/DEFBs that are not
     // supported.
@@ -510,7 +507,7 @@ package i3c_pkg;
   // Indicates whether the Target supports the given Direct Common Control Command.
   // - this is for use in deciding whether to ACK/NACK the Target/Group address, so it is not
   //   concerned with Broadcast CCCs.
-  function automatic bit supported_direct_ccc(logic [7:0] ccc);
+  function automatic logic supported_direct_ccc(logic [7:0] ccc);
     return ccc inside {ENEC, DISEC, SETDASA, SETNEWDA, SETMWL, SETMRL, GETMWL, GETMRL, GETPID,
                        GETBCR, GETDCR, GETSTATUS, GETACCCR, ENDXFER, GETMXDS, GETCAPS, RSTACT,
                        SETGRPA, RSTGRPA};

@@ -28,12 +28,14 @@ extern "C" {
  *
  * @param size RSA size parameter (e.g., 2048, 3072, 4096).
  * @param public_key_n Public key modulus (n).
- * @param cofactor One of the prime cofactors (p or q).
+ * @param cofactor_share0 First share of the prime cofactor (p or q).
+ * @param cofactor_share1 Second share of the prime cofactor (p or q).
  * @return Result of the operation (OK or error).
  */
 status_t rsa_keygen_from_cofactor_start(rsa_size_t size,
                                         const uint32_t *public_key_n,
-                                        const uint32_t *cofactor);
+                                        const uint32_t *cofactor_share0,
+                                        const uint32_t *cofactor_share1);
 
 /**
  * Waits for an RSA key-from-cofactor operation to complete.

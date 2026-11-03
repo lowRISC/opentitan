@@ -40,10 +40,10 @@ set_property -dict { PACKAGE_PIN AN9  IOSTANDARD LVCMOS18 } [get_ports { IOB5  }
 set_property -dict { PACKAGE_PIN AM10 IOSTANDARD LVCMOS18 } [get_ports { IOB6  }]; # EarlGrey:GPIO
 set_property -dict { PACKAGE_PIN AP10 IOSTANDARD LVCMOS18 } [get_ports { IOB7  }]; # EarlGrey:GPIO
 set_property -dict { PACKAGE_PIN AL9  IOSTANDARD LVCMOS18 } [get_ports { IOB8  }]; # EarlGrey:GPIO
-set_property -dict { PACKAGE_PIN AP11 IOSTANDARD LVCMOS18 } [get_ports { IOB9  }]; # EarlGrey:I2C_HOST_SDA
-set_property -dict { PACKAGE_PIN AM12 IOSTANDARD LVCMOS18 } [get_ports { IOB10 }]; # EarlGrey:I2C_HOST_SCL
-set_property -dict { PACKAGE_PIN AN11 IOSTANDARD LVCMOS18 } [get_ports { IOB11 }]; # EarlGrey:I2C_HOST_SCL
-set_property -dict { PACKAGE_PIN AN12 IOSTANDARD LVCMOS18 } [get_ports { IOB12 }]; # EarlGrey:I2C_HOST_SDA
+set_property -dict { PACKAGE_PIN AP11 IOSTANDARD LVCMOS18 } [get_ports { IOB9  }]; # EarlGrey:I2C_HOST_SDA,I3C0_SDA
+set_property -dict { PACKAGE_PIN AM12 IOSTANDARD LVCMOS18 } [get_ports { IOB10 }]; # EarlGrey:I2C_HOST_SCL,I3C0_SCL
+set_property -dict { PACKAGE_PIN AN11 IOSTANDARD LVCMOS18 } [get_ports { IOB11 }]; # EarlGrey:I2C_HOST_SCL,I3C1_SCL
+set_property -dict { PACKAGE_PIN AN12 IOSTANDARD LVCMOS18 } [get_ports { IOB12 }]; # EarlGrey:I2C_HOST_SDA,I3C1_SDA
 
 
 ## IOC bank

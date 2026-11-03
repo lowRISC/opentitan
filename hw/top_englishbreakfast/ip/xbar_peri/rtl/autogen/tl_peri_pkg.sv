@@ -8,7 +8,7 @@ package tl_peri_pkg;
 
   localparam logic [31:0] ADDR_SPACE_UART0      = 32'h 40000000;
   localparam logic [31:0] ADDR_SPACE_UART1      = 32'h 40010000;
-  localparam logic [31:0] ADDR_SPACE_GPIO       = 32'h 40040000;
+  localparam logic [31:0] ADDR_SPACE_GPIO0      = 32'h 40040000;
   localparam logic [31:0] ADDR_SPACE_SPI_DEVICE = 32'h 40050000;
   localparam logic [31:0] ADDR_SPACE_SPI_HOST0  = 32'h 40060000;
   localparam logic [31:0] ADDR_SPACE_RV_TIMER   = 32'h 40100000;
@@ -21,7 +21,7 @@ package tl_peri_pkg;
 
   localparam logic [31:0] ADDR_MASK_UART0      = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_UART1      = 32'h 0000003f;
-  localparam logic [31:0] ADDR_MASK_GPIO       = 32'h 0000007f;
+  localparam logic [31:0] ADDR_MASK_GPIO0      = 32'h 0000007f;
   localparam logic [31:0] ADDR_MASK_SPI_DEVICE = 32'h 00001fff;
   localparam logic [31:0] ADDR_MASK_SPI_HOST0  = 32'h 0000003f;
   localparam logic [31:0] ADDR_MASK_RV_TIMER   = 32'h 000001ff;
@@ -38,7 +38,7 @@ package tl_peri_pkg;
   typedef enum int {
     TlUart0 = 0,
     TlUart1 = 1,
-    TlGpio = 2,
+    TlGpio0 = 2,
     TlSpiDevice = 3,
     TlSpiHost0 = 4,
     TlRvTimer = 5,

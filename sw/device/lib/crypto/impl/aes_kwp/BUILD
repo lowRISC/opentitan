@@ -2,7 +2,10 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-package(default_visibility = ["//visibility:public"])
+package(
+    default_visibility = ["//visibility:public"],
+    features = ["cryptolib_warnings"],
+)
 
 cc_library(
     name = "aes_kwp",
@@ -15,5 +18,7 @@ cc_library(
         "//sw/device/lib/base:memory",
         "//sw/device/lib/crypto/drivers:aes",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/crypto/include:datatypes",
     ],
 )

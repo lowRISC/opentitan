@@ -17,7 +17,7 @@ status_t handle_hash(ujson_t *uj) {
   // Declare test arguments
   cryptotest_hash_algorithm_t uj_algorithm;
   cryptotest_hash_shake_digest_length_t uj_shake_digest_length;
-  cryptotest_hash_message_t uj_message;
+  static cryptotest_hash_message_t uj_message;
   // Deserialize test arguments from UART
   TRY(ujson_deserialize_cryptotest_hash_algorithm_t(uj, &uj_algorithm));
   TRY(ujson_deserialize_cryptotest_hash_shake_digest_length_t(
@@ -25,7 +25,7 @@ status_t handle_hash(ujson_t *uj) {
   TRY(ujson_deserialize_cryptotest_hash_message_t(uj, &uj_message));
 
   // Create input message
-  uint8_t msg_buf[uj_message.message_len];
+  static uint8_t msg_buf[HASH_CMD_MAX_MESSAGE_BYTES];
   memcpy(msg_buf, uj_message.message, uj_message.message_len);
   otcrypto_const_byte_buf_t input_message = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, msg_buf, uj_message.message_len);

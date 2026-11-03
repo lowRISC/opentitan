@@ -4,6 +4,7 @@
 .text
 .globl ed25519_gen_public_key
 .globl ed25519_verify_var
+.globl ed25519_check_isoncurve
 .globl ed25519_sign_stage1
 .globl ed25519_sign_stage2
 
@@ -252,11 +253,9 @@ ed25519_verify_var:
        w18 <= [w17:w16] mod L = k mod L */
   jal      x1, sc_reduce
 
-  /* Compute (8 * k) mod L.
-       w3 <= (2 * (2 * (2 * w18) mod L) mod L) mod L = (8 * k) mod L */
-  bn.addm  w3, w18, w18
-  bn.addm  w3, w3, w3
-  bn.addm  w3, w3, w3
+  /* Save k mod L for later.
+       w3 <= w18 = k mod L */
+  bn.mov   w3, w18
 
   /* Load the 512-bit signature (R_ || S).
        w11 <= R_
@@ -341,12 +340,20 @@ ed25519_verify_var:
   bn.mov   w7, w11
   jal      x1, affine_to_ext
 
-  /* w28 <= w3 = (8 * k) mod L */
+  /* w28 <= w3 = k mod L */
   bn.wsrr  w28, URND /* pre-randomize */
   bn.mov   w28, w3
 
-  /* [w13:w10] <= w28 * [w9:w6] = [8][k]A */
+  /* [w13:w10] <= w28 * [w9:w6] = [k]A */
   jal      x1, ext_scmul
+
+  /* Compute [8][k]A with three doublings. */
+  /* [w13:w10] <= [w13:w10] + [w13:w10] = [2][k]A */
+  jal      x1, ext_double
+  /* [w13:w10] <= [w13:w10] + [w13:w10] = [4][k]A */
+  jal      x1, ext_double
+  /* [w13:w10] <= [w13:w10] + [w13:w10] = [8][k]A */
+  jal      x1, ext_double
 
   /* Convert R to extended coordinates.
        [w9:w6] <= extended(R) = (R.X, R.Y, R.Z, R.T) */
@@ -468,6 +475,52 @@ ed25519_verify_var:
   li       x22, 0x1d4
   la       x4, ed25519_verify_result
   sw       x22, 0(x4)
+  ret
+
+/**
+ * Check if an encoded Ed25519 point is on the curve.
+ *
+ * Returns SUCCESS or FAILURE in dmem[ed25519_verify_result].
+ *
+ * This routine runs in constant time.
+ *
+ * Flags: Flags have no meaning beyond the scope of this subroutine.
+ *
+ * @param[in]  w31: all-zero
+ * @param[in]  dmem[ed25519_public_key]: encoded point A_, 256 bits
+ * @param[out] dmem[ed25519_verify_result]: SUCCESS or FAILURE
+ *
+ * clobbered registers: x2 to x11, x20, w10 to w12, w19 to w26, w29
+ * clobbered flag groups: FG0
+ */
+ed25519_check_isoncurve:
+  /* Set up for field arithmetic.
+       MOD <= p
+       w19 <= 19 */
+  jal      x1, fe_init
+
+  /* Initialize curve parameter d.
+       w29 <= dmem[ed25519_d] = (-121665/121666) mod p */
+  li       x2, 29
+  la       x3, ed25519_d
+  bn.lid   x2, 0(x3)
+
+  /* Load the encoded point A_.
+       w11 <= dmem[ed25519_public_key] = A_ */
+  li       x2, 11
+  la       x3, ed25519_public_key
+  bn.lid   x2, 0(x3)
+
+  /* Decode and validate the point.
+       x20 <= SUCCESS or FAILURE
+       [w11:w10] <= decode(w11) */
+  jal      x1, affine_decode_var
+
+  /* Write the result to DMEM.
+       dmem[ed25519_verify_result] <= x20 */
+  la       x4, ed25519_verify_result
+  sw       x20, 0(x4)
+
   ret
 
 /**

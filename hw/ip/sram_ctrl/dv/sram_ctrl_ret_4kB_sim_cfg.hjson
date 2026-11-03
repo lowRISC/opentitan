@@ -1,0 +1,17 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+// sim cfg file for the 4 KiB retention SRAM variant
+{
+  // Name of the sim cfg variant
+  variant: ret_4kB
+
+  // Import the base sram_ctrl sim_cfg file
+  import_cfgs: ["{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_base_sim_cfg.hjson"]
+
+  // These parameters are used for top_darjeeling retention sram
+  build_opts: ["+define+SRAM_SIZE_BYTES=2**12",
+               "+define+INSTR_EXEC=0",
+               "+define+NUM_PRINCE_ROUNDS_HALF=3"]
+}

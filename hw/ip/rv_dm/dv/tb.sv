@@ -57,6 +57,7 @@ module tb;
   // dut
   rv_dm #(
     .IdcodeValue (rv_dm_env_pkg::RV_DM_JTAG_IDCODE),
+    .CheriotSupport (1'b0),
 `ifdef USE_DMI_INTERFACE
     .UseDmiInterface(1'b1)
 `else
@@ -82,6 +83,7 @@ module tb;
     .strap_en_i                (mode_if.strap_en                ),
     .strap_en_override_i       (mode_if.strap_en_override       ),
     .otp_dis_rv_dm_late_debug_i(mode_if.otp_dis_rv_dm_late_debug),
+    .cheriot_ena_i             (mode_if.cheriot_ena             ),
     .scanmode_i                (mode_if.scanmode                ),
     .scan_rst_ni               (rv_dm_if.scan_rst_n    ),
     .ndmreset_req_o            (rv_dm_if.ndmreset_req  ),

@@ -75,6 +75,39 @@ enum {
   kMlkem1024StatusOk = 0x3a9e71b4,
 };
 
+/**
+ * Check that a caller-provided buffer has the length that is read or written.
+ *
+ * @param len Length given by the caller.
+ * @param expected_len Length that the operation reads or writes.
+ * @return OK if the lengths match, BAD_ARGS otherwise.
+ */
+static status_t check_length(size_t len, size_t expected_len) {
+  if (launder32(len) != expected_len) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(len, expected_len);
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Check that a shared secret keyblob can hold the shared secret.
+ *
+ * Only the first 32 bytes of the keyblob are written, so a larger keyblob is
+ * also accepted.
+ *
+ * @param shared_secret Shared secret key given by the caller.
+ * @return OK if the keyblob is large enough, BAD_ARGS otherwise.
+ */
+static status_t check_shared_secret_length(
+    const otcrypto_blinded_key_t *shared_secret) {
+  if (launder32(shared_secret->keyblob_length) < kMlkem1024SharedSecretBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_GE(shared_secret->keyblob_length, kMlkem1024SharedSecretBytes);
+  return OTCRYPTO_OK;
+}
+
 status_t mlkem1024_keygen_internal_start(void) {
   // Load the ML-KEM-1024 keygen app.
   const otbn_app_t kOtbnAppMlkem1024Keygen = OTBN_APP_T_INIT(mlkem1024_keygen);
@@ -133,6 +166,11 @@ status_t mlkem1024_keygen_internal_finalize(
     otcrypto_unblinded_key_t *public_key, otcrypto_blinded_key_t *secret_key) {
   // Stall until OTBN finishes.
   HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Check the outputs once OTBN is idle, so that DMEM can be wiped on error.
+  HARDENED_TRY(check_length(public_key->key_length, kMlkem1024PublicKeyBytes));
+  HARDENED_TRY(
+      check_length(secret_key->keyblob_length, kMlkem1024SecretKeyBytes));
 
   // Read public key components.
   const otbn_addr_t kOtbnPkT =
@@ -193,6 +231,9 @@ status_t mlkem1024_keygen_internal_finalize(
 
 status_t mlkem1024_encaps_start(const otcrypto_unblinded_key_t *public_key,
                                 const otcrypto_const_word32_buf_t *m) {
+  HARDENED_TRY(check_length(public_key->key_length, kMlkem1024PublicKeyBytes));
+  HARDENED_TRY(check_length(m->len, kMlkem1024SeedWords));
+
   // Load the ML-KEM-1024 encaps app.
   const otbn_app_t kOtbnAppMlkem1024Encaps = OTBN_APP_T_INIT(mlkem1024_encaps);
   HARDENED_TRY(otbn_load_app(kOtbnAppMlkem1024Encaps));
@@ -220,6 +261,10 @@ status_t mlkem1024_encaps_finalize(otcrypto_word32_buf_t *ciphertext,
                                    otcrypto_blinded_key_t *shared_secret) {
   // Stall until OTBN finishes.
   HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Check the outputs once OTBN is idle, so that DMEM can be wiped on error.
+  HARDENED_TRY(check_length(ciphertext->len, kMlkem1024CiphertextWords));
+  HARDENED_TRY(check_shared_secret_length(shared_secret));
 
   // Check encaps' status.
   uint32_t ok;
@@ -254,6 +299,10 @@ status_t mlkem1024_encaps_finalize(otcrypto_word32_buf_t *ciphertext,
 
 status_t mlkem1024_decaps_start(const otcrypto_blinded_key_t *secret_key,
                                 const otcrypto_const_word32_buf_t *ciphertext) {
+  HARDENED_TRY(
+      check_length(secret_key->keyblob_length, kMlkem1024SecretKeyBytes));
+  HARDENED_TRY(check_length(ciphertext->len, kMlkem1024CiphertextWords));
+
   // Load the ML-KEM-1024 decaps app.
   const otbn_app_t kOtbnAppMlkem1024Decaps = OTBN_APP_T_INIT(mlkem1024_decaps);
   HARDENED_TRY(otbn_load_app(kOtbnAppMlkem1024Decaps));
@@ -320,6 +369,9 @@ status_t mlkem1024_decaps_start(const otcrypto_blinded_key_t *secret_key,
 
 status_t mlkem1024_decaps_finalize(otcrypto_blinded_key_t *shared_secret) {
   HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // Check the outputs once OTBN is idle, so that DMEM can be wiped on error.
+  HARDENED_TRY(check_shared_secret_length(shared_secret));
 
   const otbn_addr_t kOtbnSs =
       OTBN_ADDR_T_INIT(mlkem1024_decaps, mlkem1024_decaps_ss);

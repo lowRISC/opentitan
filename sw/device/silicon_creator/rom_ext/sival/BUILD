@@ -142,7 +142,11 @@ offline_signature_attach(
     spx_signatures = [
         "//sw/device/silicon_creator/rom_ext/sival/signatures:spx_signatures",
     ],
-    tags = ["manual"],
+    tags = [
+        "manual",
+        # This requires some signatures to be manually provided, so it should not be built in CI.
+        "skip_build_in_ci",
+    ],
 )
 
 cc_library(

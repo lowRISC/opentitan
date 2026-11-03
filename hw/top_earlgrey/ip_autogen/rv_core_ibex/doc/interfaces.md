@@ -15,7 +15,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:--------------------|:---------------------------------|:--------|:------|:------------|:-----------------------------------------------------------------|
 | rst_cpu_n           | logic                            | uni     | req   | 1           |                                                                  |
 | cheriot_ena         | prim_mubi_pkg::mubi4             | uni     | req   | 1           | CHERIoT mode enable.                                             |
-| cored_tl_h          | tlul_pkg::tl                     | req_rsp | req   | 1           | Core data host port to the CHERIoT subsystem.                    |
+| cored_tl_h          | tlul_pkg::tl                     | req_rsp | req   | 1           | Core data host port to the CHERIoT memory subsystem.             |
 | cored_tag_h2d       | logic                            | uni     | req   | 1           | CHERIoT capability tag carried with the A-channel of cored_tl_h. |
 | cored_tag_d2h       | logic                            | uni     | rcv   | 1           | Capability tag returned on the D-channel of cored_tl_h.          |
 | corerevbm_tl        | tlul_pkg::tl                     | req_rsp | req   | 1           | Core revocation bitmap host port.                                |
@@ -36,7 +36,6 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | nmi_wdog            | logic                            | uni     | rcv   | 1           |                                                                  |
 | edn                 | edn_pkg::edn                     | req_rsp | req   | 1           |                                                                  |
 | icache_otp_key      | otp_ctrl_pkg::sram_otp_key       | req_rsp | req   | 1           |                                                                  |
-| fpga_info           | logic                            | uni     | rcv   | 32          |                                                                  |
 | corei_tl_h          | tlul_pkg::tl                     | req_rsp | req   | 1           |                                                                  |
 | cfg_tl_d            | tlul_pkg::tl                     | req_rsp | rsp   | 1           |                                                                  |
 
@@ -95,7 +94,6 @@ Signal                  | Direction | Type                                      
 `ram_cfg_icache_data_o` | `output`  | `prim_ram_1p_pkg::ram_1p_cfg_rsp_t [ICacheNWays-1:0]` | Outgoing icache data RAM configuration response.
 `hart_id_i`             | `input`   | `logic [31:0]`                                        | Static Hard ID input signal.
 `boot_addr_i`           | `input`   | `logic [31:0]`                                        | Static boot address input signal.
-`fpga_info_i`           | `input`   | `logic [31:0]`                                        | Fpga info input signal, coming from a Xilinx USR_ACCESSE2 primitive for example.
 `irq_software_i`        | `input`   | `logic`                                               | Software interrupt input.
 `irq_timer_i`           | `input`   | `logic`                                               | Timer interrupt input.
 `irq_external_i`        | `input`   | `logic`                                               | External interrupt input.

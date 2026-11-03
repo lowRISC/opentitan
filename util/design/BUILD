@@ -23,6 +23,13 @@ py_library(
     ],
 )
 
+py_test(
+    name = "secded_gen_test",
+    srcs = ["test_secded_gen.py"],
+    main = "test_secded_gen.py",
+    deps = [":secded_gen"],
+)
+
 py_binary(
     name = "gen-flash-img",
     srcs = ["gen-flash-img.py"],

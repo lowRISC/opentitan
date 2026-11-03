@@ -43,8 +43,8 @@ static const dt_pinmux_t kPinmuxDt = 0;
 static_assert(kDtPinmuxCount == 1, "this test expects exactly one pinmux");
 static const dt_aon_timer_t kAonTimerDt = 0;
 static_assert(kDtAonTimerCount == 1, "this test expects an aon_timer");
-static const dt_gpio_t kGpioDt = 0;
-static_assert(kDtGpioCount == 1, "this test expects a gpio");
+static const dt_gpio_t kGpioDt = kDtGpioFirst;
+static_assert(kDtGpioCount >= 1, "this test expects at least one gpio");
 static const dt_spi_device_t kSpiDeviceDt = 0;
 static_assert(kDtSpiDeviceCount >= 1,
               "this test expects at least one spi_device");
@@ -168,7 +168,7 @@ bool test_main(void) {
       kDifPinmuxSleepModeHigh));
   LOG_INFO("Use IOA7 to let host know when sleep is active.");
   CHECK_DIF_OK(dif_pinmux_input_select(&pinmux,
-                                       kTopEarlgreyPinmuxPeripheralInGpioGpio0,
+                                       kTopEarlgreyPinmuxPeripheralInGpio0Gpio0,
                                        kTopEarlgreyPinmuxInselIoa8));
   CHECK_DIF_OK(dif_pinmux_pad_sleep_enable(&pinmux, kTopEarlgreyMuxedPadsIoa7,
                                            kDifPinmuxPadKindMio,

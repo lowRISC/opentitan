@@ -236,15 +236,8 @@ bool rom_test_main(void) {
   *creator_last_word = TEST_ROM_IDENTIFIER;
 #endif
 
-  // Print the FPGA version-id.
-  // This is guaranteed to be zero on all non-FPGA implementations.
-  dif_rv_core_ibex_fpga_info_t fpga;
   static_assert(kDtRvCoreIbexCount == 1, "Expected one rv_core_ibex IP");
   CHECK_DIF_OK(dif_rv_core_ibex_init_from_dt(kDtRvCoreIbexFirst, &ibex));
-  CHECK_DIF_OK(dif_rv_core_ibex_read_fpga_info(&ibex, &fpga));
-  if (fpga != 0) {
-    LOG_INFO("TestROM:%08x", fpga);
-  }
 
   run_bootstrap();
 

@@ -100,6 +100,7 @@ class ibex_rand_cpuctrlsts_stream extends riscv_directed_instr_stream;
     riscv_instr instrs[4];
     bit toggle_dit;
     bit toggle_dummy_instr;
+    bit force_dummy_instr;
     bit toggle_icache;
     bit icache_en;
     bit dit_en;
@@ -122,6 +123,15 @@ class ibex_rand_cpuctrlsts_stream extends riscv_directed_instr_stream;
       toggle_dummy_instr = 1'b0;
     end
 
+    // +force_dummy_instr enables dummy instructions at the highest rate (mask 0) in every stream;
+    // +toggle_dummy_instr only allows them.
+    if (!$value$plusargs("force_dummy_instr=%d", force_dummy_instr)) begin
+      force_dummy_instr = 1'b0;
+    end
+    if (force_dummy_instr) begin
+      toggle_dummy_instr = 1'b1;
+    end
+
     if (!$value$plusargs("toggle_icache=%d", toggle_icache)) begin
       toggle_icache = 1'b0;
     end
@@ -129,9 +139,11 @@ class ibex_rand_cpuctrlsts_stream extends riscv_directed_instr_stream;
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(icache_en, if (!toggle_icache) icache_en == 0;);
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(dit_en, if (!toggle_dit) dit_en == 0;);
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(dummy_instr_en,
-      if (!toggle_dummy_instr) dummy_instr_en == 0;);
+      if (!toggle_dummy_instr) dummy_instr_en == 0;
+      if (force_dummy_instr) dummy_instr_en == 1;);
     `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(dummy_instr_mask,
-      if (!toggle_dummy_instr) dummy_instr_mask == 0;);
+      if (!toggle_dummy_instr) dummy_instr_mask == 0;
+      if (force_dummy_instr) dummy_instr_mask == 0;);
 
     cpuctrlsts_mask = {3'b111, {4{!dummy_instr_en}}, !dit_en, !icache_en};
     cpuctrlsts_val = {dummy_instr_mask, dummy_instr_en, dit_en, icache_en};

@@ -442,6 +442,25 @@ static status_t test_otcrypto_hkdf(void) {
   TRY_CHECK_ARRAYS_EQ((unsigned char *)unmasked_okm,
                       (unsigned char *)okm_exp_data, 42);
 
+  // Also exercise SHA-384 and SHA-512 modes in otcrypto_hkdf.
+  ikm_config.key_mode = kOtcryptoKeyModeHmacSha384;
+  otcrypto_blinded_key_t ikm384 = {
+      .config = ikm_config,
+      .keyblob = ikm_keyblob,
+      .keyblob_length = sizeof(ikm_keyblob),
+  };
+  ikm384.checksum = otcrypto_integrity_blinded_checksum(&ikm384);
+  CHECK_STATUS_OK(otcrypto_hkdf(&ikm384, &salt, &info, &okm));
+
+  ikm_config.key_mode = kOtcryptoKeyModeHmacSha512;
+  otcrypto_blinded_key_t ikm512 = {
+      .config = ikm_config,
+      .keyblob = ikm_keyblob,
+      .keyblob_length = sizeof(ikm_keyblob),
+  };
+  ikm512.checksum = otcrypto_integrity_blinded_checksum(&ikm512);
+  CHECK_STATUS_OK(otcrypto_hkdf(&ikm512, &salt, &info, &okm));
+
   return OTCRYPTO_OK;
 }
 
@@ -502,6 +521,10 @@ static status_t run_negative_tests(void) {
   otcrypto_const_byte_buf_t null_data_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 1);
 
+  // Top-level otcrypto_hkdf null IKM test
+  CHECK(otcrypto_hkdf(NULL, &valid_buf, &valid_buf, &valid_okm).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
   // HKDF extract null pointer tests
   CHECK(otcrypto_hkdf_extract(&valid_ikm, &valid_buf, NULL).value ==
         OTCRYPTO_BAD_ARGS.value);
@@ -536,6 +559,9 @@ static status_t run_negative_tests(void) {
   bad_ikm_mode.checksum = otcrypto_integrity_blinded_checksum(&bad_ikm_mode);
   CHECK(otcrypto_hkdf_extract(&bad_ikm_mode, &valid_buf, &valid_prk).value ==
         OTCRYPTO_BAD_ARGS.value);
+  CHECK(
+      otcrypto_hkdf(&bad_ikm_mode, &valid_buf, &valid_buf, &valid_okm).value ==
+      OTCRYPTO_BAD_ARGS.value);
 
   otcrypto_key_config_t bad_prk_mode_cfg = valid_prk_cfg;
   bad_prk_mode_cfg.key_mode = kOtcryptoKeyModeHmacSha384;
@@ -589,7 +615,8 @@ static status_t run_negative_tests(void) {
   // Exceed 255 iterations
   otcrypto_key_config_t huge_okm_cfg = valid_okm_cfg;
   huge_okm_cfg.key_length = 8161;
-  uint32_t huge_blob[keyblob_num_words(huge_okm_cfg)];
+  static uint32_t
+      huge_blob[2 * ((8161 + sizeof(uint32_t) - 1) / sizeof(uint32_t))];
   otcrypto_blinded_key_t huge_okm = {.config = huge_okm_cfg,
                                      .keyblob_length = sizeof(huge_blob),
                                      .keyblob = huge_blob};

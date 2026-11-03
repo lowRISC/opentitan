@@ -15,7 +15,7 @@
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 
-static const dt_gpio_t kGpioDt = kDtGpio;
+static const dt_gpio_t kGpioDt = kDtGpio0;
 static const dt_uart_t kUart0Dt = kDtUart0;
 
 #if defined(OPENTITAN_IS_EARLGREY) || defined(OPENTITAN_IS_ENGLISHBREAKFAST)
@@ -33,9 +33,9 @@ static const dt_pad_t kPadStrap2 = kDtPadIoc2;
 static const dt_pad_t kPadUart0Tx = kDtPadUart0Tx;
 static const dt_pad_t kPadUart0Rx = kDtPadUart0Rx;
 /* No UART1 */
-static const dt_pad_t kPadStrap0 = kDtPadGpioGpio22;
-static const dt_pad_t kPadStrap1 = kDtPadGpioGpio23;
-static const dt_pad_t kPadStrap2 = kDtPadGpioGpio24;
+static const dt_pad_t kPadStrap0 = kDtPadGpio0Gpio22;
+static const dt_pad_t kPadStrap1 = kDtPadGpio0Gpio23;
+static const dt_pad_t kPadStrap2 = kDtPadGpio0Gpio24;
 
 #else /* OPENTITAN_IS_* */
 #error Unsupported top
@@ -179,14 +179,14 @@ const dt_pad_t kPinmuxTestutilsGpioPads[kDifGpioNumPins] = {
     kDtPadIor12, kDtPadIor13};
 #elif defined(OPENTITAN_IS_DARJEELING)
 const dt_pad_t kPinmuxTestutilsGpioPads[kDifGpioNumPins] = {
-    kDtPadGpioGpio0,  kDtPadGpioGpio1,  kDtPadGpioGpio2,  kDtPadGpioGpio3,
-    kDtPadGpioGpio4,  kDtPadGpioGpio5,  kDtPadGpioGpio6,  kDtPadGpioGpio7,
-    kDtPadGpioGpio8,  kDtPadGpioGpio9,  kDtPadGpioGpio10, kDtPadGpioGpio11,
-    kDtPadGpioGpio12, kDtPadGpioGpio13, kDtPadGpioGpio14, kDtPadGpioGpio15,
-    kDtPadGpioGpio16, kDtPadGpioGpio17, kDtPadGpioGpio18, kDtPadGpioGpio19,
-    kDtPadGpioGpio20, kDtPadGpioGpio21, kDtPadGpioGpio22, kDtPadGpioGpio23,
-    kDtPadGpioGpio24, kDtPadGpioGpio25, kDtPadGpioGpio26, kDtPadGpioGpio27,
-    kDtPadGpioGpio28, kDtPadGpioGpio29, kDtPadGpioGpio30, kDtPadGpioGpio31,
+    kDtPadGpio0Gpio0,  kDtPadGpio0Gpio1,  kDtPadGpio0Gpio2,  kDtPadGpio0Gpio3,
+    kDtPadGpio0Gpio4,  kDtPadGpio0Gpio5,  kDtPadGpio0Gpio6,  kDtPadGpio0Gpio7,
+    kDtPadGpio0Gpio8,  kDtPadGpio0Gpio9,  kDtPadGpio0Gpio10, kDtPadGpio0Gpio11,
+    kDtPadGpio0Gpio12, kDtPadGpio0Gpio13, kDtPadGpio0Gpio14, kDtPadGpio0Gpio15,
+    kDtPadGpio0Gpio16, kDtPadGpio0Gpio17, kDtPadGpio0Gpio18, kDtPadGpio0Gpio19,
+    kDtPadGpio0Gpio20, kDtPadGpio0Gpio21, kDtPadGpio0Gpio22, kDtPadGpio0Gpio23,
+    kDtPadGpio0Gpio24, kDtPadGpio0Gpio25, kDtPadGpio0Gpio26, kDtPadGpio0Gpio27,
+    kDtPadGpio0Gpio28, kDtPadGpio0Gpio29, kDtPadGpio0Gpio30, kDtPadGpio0Gpio31,
 };
 #else /* OPENTITAN_IS_* */
 #error Unsupported top

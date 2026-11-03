@@ -334,8 +334,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       end
       "io_meas_ctrl_en": begin
       end
-      "io_div2_meas_ctrl_en": begin
-      end
       "io_div4_meas_ctrl_en": begin
       end
       "main_meas_ctrl_en": begin
@@ -343,8 +341,6 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
       "usb_meas_ctrl_en": begin
       end
       "io_meas_ctrl_shadowed": begin
-      end
-      "io_div2_meas_ctrl_shadowed": begin
       end
       "io_div4_meas_ctrl_shadowed": begin
       end

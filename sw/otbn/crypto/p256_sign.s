@@ -293,6 +293,10 @@ p256_sign:
   /* w24 = r <= w11  mod n */
   bn.addm   w24, w11, w31
 
+  /* Fail if r == 0. */
+  bn.cmp    w24, w31
+  jal       x1, trigger_fault_if_fg0_not_z
+
   /* Store r of signature in dmem.
        dmem[r] <= r = w24 */
   la        x19, r
@@ -328,6 +332,10 @@ p256_sign:
 
   /* w0 = (w0 + w19) mod n = (k^-1*r*d + k^-1*msg) mod n = s */
   bn.addm   w0, w0, w19
+
+  /* Fail if s == 0. */
+  bn.cmp    w0, w31
+  jal       x1, trigger_fault_if_fg0_not_z
 
   /* Store s of signature in dmem.
        dmem[s] <= s = w0 */

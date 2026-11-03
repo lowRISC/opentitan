@@ -77,8 +77,8 @@ class sram_ctrl_lc_escalation_vseq extends sram_ctrl_multiple_keys_vseq;
               1: req_scr_key(.wait_valid(0));
               1: req_mem_init(.wait_done(0));
             endcase
-            // a regular init for sram_ret (4kb) takes 1024 cycles
-            // add some big delay before checking status, so that we know the status
+            // A regular init takes SRAM_SIZE_WORDS cycles.
+            // Add some big delay before checking status, so that we know the status
             // always fails.
             cfg.clk_rst_vif.wait_clks($urandom_range(0, 2 * `SRAM_SIZE_WORDS));
           end

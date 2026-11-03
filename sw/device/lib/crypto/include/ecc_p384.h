@@ -100,6 +100,14 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign(
  * the curve, but in some cases it may be truncated. See FIPS 186-5 for
  * details.
  *
+ * The caller must ensure that `private_key` and `public_key` belong to the
+ * same P-384 keypair. A signature verification failure (including from a
+ * mismatched keypair) is treated as a fault or pairwise consistency failure,
+ * which locks the cryptolib state and returns `kOtcryptoStatusValueFatalError`
+ * (or traps the CPU if checked via `HARDENED_TRY`). To verify that the keys
+ * match beforehand, derive the public key with
+ * `otcrypto_ecc_p384_base_point_mult` and compare it against `public_key->key`.
+ *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
  * @param message_digest Message digest to be signed (pre-hashed).
@@ -153,6 +161,14 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify(
  * The hash function specified by `hash_mode` must produce a 384-bit digest
  * (e.g. `kOtcryptoHashModeSha384` or `kOtcryptoHashModeSha3_384`). Other hash
  * modes will return `OTCRYPTO_BAD_ARGS`.
+ *
+ * The caller must ensure that `private_key` and `public_key` belong to the
+ * same P-384 keypair. A signature verification failure (including from a
+ * mismatched keypair) is treated as a fault or pairwise consistency failure,
+ * which locks the cryptolib state and returns `kOtcryptoStatusValueFatalError`
+ * (or traps the CPU if checked via `HARDENED_TRY`). To verify that the keys
+ * match beforehand, derive the public key with
+ * `otcrypto_ecc_p384_base_point_mult` and compare it against `public_key->key`.
  *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
@@ -621,21 +637,29 @@ status_t otcrypto_ecc_p384_base_point_mult(
 /**
  * Arithmetically share a private key/seed provided as Boolean shares.
  *
- * Given a Boolean-shared 320-bit key d this function arithmetically shares the
- * key such that d = d0 + d1 mod n where n is the curve order.
+ * Given a Boolean-shared 384-bit key or seed d = share0 ^ share1, this function
+ * arithmetically shares the key such that d = (d0 + d1) mod n where n is the
+ * P-384 curve order.
  *
- * It is allowed to pass the key in plain with the second share being set to 0.
+ * Each input share buffer must be 14 words (448 bits) long. Only the lower 384
+ * bits (12 words) of each share are used; the upper 64 bits (2 words) are
+ * ignored. It is allowed to pass the key in plain with the second share set to
+ * 0.
  *
  * Note that no checks are performed to verify whether the input key d is in
- * the interval, this is the responsibility of the caller. I.e., this routine
- * does not (!) provide checks as per FIPS 186-5 for the case of generating a
- * key without extra random bits. The routine will though reduce modulo n
- * implicitly. The routine can be used to generate keys according to FIPS 186-5
- * with extra random bits. The modulo n reduction will not introduce bias due
- * to the extra bits. Note that the routine will not check for zero.
+ * the interval [1, n - 1]; this is the responsibility of the caller. In
+ * particular, this routine does not check for zero, and does not perform the
+ * range check required by FIPS 186-5 when importing an unreduced candidate
+ * without modular reduction. The routine reduces the 384-bit input modulo n
+ * implicitly, which is suitable for generating P-384 keys from a 384-bit seed
+ * according to FIPS 186-5 Section A.2.1 (no extra random bits are needed for
+ * P-384 because 2^384 - n < 2^192, making the modular reduction bias
+ * negligible).
  *
- * @param bool_private_key_share0 First Boolean share of the private key.
- * @param bool_private_key_share1 Second Boolean share of the private key.
+ * @param bool_private_key_share0 First Boolean share of the private key (14
+ *                                words; upper 2 words ignored).
+ * @param bool_private_key_share1 Second Boolean share of the private key (14
+ *                                words; upper 2 words ignored).
  * @param[out] arith_private_key The resulting arithmetically shared key.
  * @return Result of the sharing operation. Returns `kOtcryptoStatusValueOk` on
  * success, `kOtcryptoStatusValueBadArgs` if arguments, key configuration, or

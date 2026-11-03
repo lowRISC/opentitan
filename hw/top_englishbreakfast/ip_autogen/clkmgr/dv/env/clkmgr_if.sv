@@ -239,7 +239,9 @@ interface clkmgr_if (
       clk_enable_io_div4_ffs <= {
         clk_enable_io_div4_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_div4_peri_en
       };
-      ip_clk_en_io_div4_ffs <= {ip_clk_en_io_div4_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en};
+      ip_clk_en_io_div4_ffs <= {
+        ip_clk_en_io_div4_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en
+      };
     end else begin
       clk_enable_io_div4_ffs <= '0;
       ip_clk_en_io_div4_ffs  <= '0;
@@ -257,7 +259,9 @@ interface clkmgr_if (
       clk_enable_io_div2_ffs <= {
         clk_enable_io_div2_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_div2_peri_en
       };
-      ip_clk_en_io_div2_ffs <= {ip_clk_en_io_div2_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en};
+      ip_clk_en_io_div2_ffs <= {
+        ip_clk_en_io_div2_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en
+      };
     end else begin
       clk_enable_io_div2_ffs <= '0;
       ip_clk_en_io_div2_ffs  <= '0;
@@ -275,7 +279,9 @@ interface clkmgr_if (
       clk_enable_io_ffs <= {
         clk_enable_io_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.io_peri_en
       };
-      ip_clk_en_io_ffs <= {ip_clk_en_io_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en};
+      ip_clk_en_io_ffs <= {
+        ip_clk_en_io_ffs[PIPELINE_DEPTH-2:0], pwr_i.io_ip_clk_en
+      };
     end else begin
       clk_enable_io_ffs <= '0;
       ip_clk_en_io_ffs  <= '0;
@@ -293,7 +299,9 @@ interface clkmgr_if (
       clk_enable_usb_ffs <= {
         clk_enable_usb_ffs[PIPELINE_DEPTH-2:0], clk_enables_csr.usb_peri_en
       };
-      ip_clk_en_usb_ffs <= {ip_clk_en_usb_ffs[PIPELINE_DEPTH-2:0], pwr_i.usb_ip_clk_en};
+      ip_clk_en_usb_ffs <= {
+        ip_clk_en_usb_ffs[PIPELINE_DEPTH-2:0], pwr_i.usb_ip_clk_en
+      };
     end else begin
       clk_enable_usb_ffs <= '0;
       ip_clk_en_usb_ffs  <= '0;

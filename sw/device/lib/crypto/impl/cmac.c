@@ -66,15 +66,26 @@ enum {
 /**
  * AES cleanup guard.
  */
-static void aes_wipe_guard(uint32_t *dummy) { (void)aes_clear(); }
+OT_USED static void aes_wipe_guard(uint32_t *dummy) {
+  (void)dummy;
+  (void)aes_clear();
+}
 
 /**
  * Sideload cleanup guard.
  */
-static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
+OT_USED static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
   if (*is_sideloaded == kHardenedBoolTrue) {
+    // COVERAGE (MISSING) Sideloaded keys for CMAC are not covered.
     (void)keymgr_dpe_sideload_clear_aes();
   }
+}
+
+/**
+ * CMAC context cleanup guard.
+ */
+OT_USED static void cmac_ctx_shred(cmac_ctx_t *ctx) {
+  (void)hardened_memshred((uint32_t *)ctx, kOtcryptoCmacCtxStructWords);
 }
 
 /**
@@ -83,12 +94,18 @@ static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
 static status_t check_key(const otcrypto_blinded_key_t *key) {
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key == NULL || key->keyblob == NULL) {
+    // COVERAGE (MISSING) Null key pointers in CMAC are not covered.
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+  if (key->config.key_mode != kOtcryptoKeyModeAesCmac) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   // Check the integrity of the key.
   if (launder32(otcrypto_integrity_blinded_key_check(key)) !=
       kHardenedBoolTrue) {
+    // COVERAGE (MISSING) Corrupted key integrity in CMAC is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(otcrypto_integrity_blinded_key_check(key),
@@ -105,7 +122,14 @@ static status_t build_aes_key(const cmac_ctx_t *ctx, aes_key_t *aes_key) {
   aes_key->keymgr_dpe_slot_idx = ctx->keymgr_dpe_slot_idx;
   aes_key->key_len = ctx->key_len_words;
   if (launder32(ctx->sideload) == kHardenedBoolTrue) {
+    // COVERAGE (MISSING) Sideloaded keys for CMAC are not covered.
     HARDENED_CHECK_EQ(ctx->sideload, kHardenedBoolTrue);
+    keymgr_dpe_diversification_t diversification;
+    HARDENED_TRY(keyblob_buffer_to_keymgr_dpe_diversification(
+        ctx->key_share0, ctx->keymgr_dpe_slot_idx, kOtcryptoKeyModeAesCmac,
+        &diversification));
+    HARDENED_TRY(keymgr_dpe_sideload_clear_aes());
+    HARDENED_TRY(keymgr_dpe_generate_key_aes(diversification));
     aes_key->key_shares[0] = NULL;
     aes_key->key_shares[1] = NULL;
   } else if (launder32(ctx->sideload) == kHardenedBoolFalse) {
@@ -113,6 +137,8 @@ static status_t build_aes_key(const cmac_ctx_t *ctx, aes_key_t *aes_key) {
     aes_key->key_shares[0] = (uint32_t *)ctx->key_share0;
     aes_key->key_shares[1] = (uint32_t *)ctx->key_share1;
   } else {
+    // COVERAGE (FI CM) Unreachable unless ctx->sideload was corrupted after
+    // cmac_key_construct.
     return OTCRYPTO_BAD_ARGS;
   }
   aes_key->checksum = aes_key_integrity_checksum(aes_key);
@@ -127,11 +153,15 @@ static status_t cmac_key_construct(const otcrypto_blinded_key_t *key,
   ctx->sideload = key->config.hw_backed;
   ctx->key_len_words = keyblob_share_num_words(key->config);
   ctx->keymgr_dpe_slot_idx = key->config.keymgr_dpe_slot_idx;
+  if (ctx->key_len_words > ARRAYSIZE(ctx->key_share0)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   if (launder32(ctx->sideload) == kHardenedBoolTrue) {
+    // COVERAGE (MISSING) Sideloaded keys for CMAC are not covered.
     HARDENED_CHECK_EQ(ctx->sideload, kHardenedBoolTrue);
     HARDENED_TRY(
-        hardened_memshred(ctx->key_share0, ARRAYSIZE(ctx->key_share0)));
+        hardened_memcpy(ctx->key_share0, key->keyblob, kKeyblobHwBackedWords));
     HARDENED_TRY(
         hardened_memshred(ctx->key_share1, ARRAYSIZE(ctx->key_share1)));
   } else if (launder32(ctx->sideload) == kHardenedBoolFalse) {
@@ -142,6 +172,7 @@ static status_t cmac_key_construct(const otcrypto_blinded_key_t *key,
     HARDENED_TRY(hardened_memcpy(ctx->key_share0, share0, ctx->key_len_words));
     HARDENED_TRY(hardened_memcpy(ctx->key_share1, share1, ctx->key_len_words));
   } else {
+    // COVERAGE (MISSING) Invalid hw_backed value in CMAC key is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
   return OTCRYPTO_OK;
@@ -159,12 +190,12 @@ static status_t generate_subkey(const aes_block_t *in, aes_block_t *out) {
   uint8_t *in_bytes = (uint8_t *)in_buf;
   uint8_t *out_bytes = (uint8_t *)out_buf;
 
-  uint8_t msb = in_bytes[0] >> 7;
   size_t i;
   for (i = 0; launder32(i) < kAesBlockNumBytes - 1; ++i) {
     out_bytes[i] = (uint8_t)((in_bytes[i] << 1) | (in_bytes[i + 1] >> 7));
   }
   HARDENED_CHECK_EQ(i, kAesBlockNumBytes - 1);
+  uint8_t msb = in_bytes[0] >> 7;
 
   out_bytes[kAesBlockNumBytes - 1] =
       (uint8_t)(in_bytes[kAesBlockNumBytes - 1] << 1) ^
@@ -190,9 +221,9 @@ static status_t cmac_init_core(cmac_ctx_t *ctx) {
   HARDENED_TRY(aes_update(&L, NULL));
   HARDENED_TRY(aes_end(NULL));
 
-  HARDENED_TRY(generate_subkey(&L, &ctx->k1));
-  HARDENED_TRY(generate_subkey(&ctx->k1, &ctx->k2));
-
+  HARDENED_TRY(hardened_memshred(ctx->k1.data, kAesBlockNumWords));
+  HARDENED_TRY(
+      hardened_xor(L.data, ctx->k1.data, kAesBlockNumWords, ctx->k2.data));
   HARDENED_TRY(hardened_memshred(L.data, ARRAYSIZE(L.data)));
 
   size_t i;
@@ -211,6 +242,11 @@ static status_t cmac_init_core(cmac_ctx_t *ctx) {
  */
 static status_t cmac_update_core(
     cmac_ctx_t *ctx, const otcrypto_const_byte_buf_t *input_message) {
+  if (launder32(ctx->partial_block_len) > kAesBlockNumBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_LE(ctx->partial_block_len, kAesBlockNumBytes);
+
   if (input_message->len == 0) {
     return OTCRYPTO_OK;
   }
@@ -223,11 +259,11 @@ static status_t cmac_update_core(
   uint8_t *partial_bytes = (uint8_t *)ctx->partial_block;
 
   if (launder32(ctx->partial_block_len) > 0 &&
-      (launder32(ctx->partial_block_len + input_message->len) >
-       kAesBlockNumBytes)) {
+      (launder32(input_message->len) >
+       kAesBlockNumBytes - ctx->partial_block_len)) {
     HARDENED_CHECK_GT(ctx->partial_block_len, 0);
-    HARDENED_CHECK_GT(ctx->partial_block_len + input_message->len,
-                      kAesBlockNumBytes);
+    HARDENED_CHECK_GT(input_message->len,
+                      kAesBlockNumBytes - ctx->partial_block_len);
 
     size_t copy_len = kAesBlockNumBytes - ctx->partial_block_len;
     HARDENED_TRY(randomized_bytecopy(partial_bytes + ctx->partial_block_len,
@@ -246,6 +282,8 @@ static status_t cmac_update_core(
 
   // Ensure input_message->len is not smaller than offset to prevent underflow
   if (launder32(input_message->len) < launder32(offset)) {
+    // COVERAGE (FI CM) Unreachable unless fault injection corrupted offset or
+    // input_message->len.
     return OTCRYPTO_FATAL_ERR;
   }
   HARDENED_CHECK_GE(input_message->len, offset);
@@ -266,6 +304,7 @@ static status_t cmac_update_core(
   size_t remaining = input_message->len - offset;
   if (launder32(remaining) > 0) {
     HARDENED_CHECK_GT(remaining, 0);
+    HARDENED_CHECK_LE(remaining, kAesBlockNumBytes - ctx->partial_block_len);
     HARDENED_TRY(randomized_bytecopy(partial_bytes + ctx->partial_block_len,
                                      input_message->data + offset, remaining));
     ctx->partial_block_len += remaining;
@@ -279,6 +318,11 @@ static status_t cmac_update_core(
  * Core final operation.
  */
 static status_t cmac_final_core(cmac_ctx_t *ctx, otcrypto_word32_buf_t *tag) {
+  if (launder32(ctx->partial_block_len) > kAesBlockNumBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_LE(ctx->partial_block_len, kAesBlockNumBytes);
+
   aes_key_t aes_key;
   HARDENED_TRY(build_aes_key(ctx, &aes_key));
   HARDENED_TRY(aes_encrypt_begin(aes_key, &ctx->iv));
@@ -289,16 +333,15 @@ static status_t cmac_final_core(cmac_ctx_t *ctx, otcrypto_word32_buf_t *tag) {
   uint8_t *final_block = (uint8_t *)final_block_words;
   uint8_t *partial_bytes = (uint8_t *)ctx->partial_block;
 
+  aes_block_t subkey_share0;
+  aes_block_t subkey_share1;
+  HARDENED_TRY(generate_subkey(&ctx->k1, &subkey_share0));
+  HARDENED_TRY(generate_subkey(&ctx->k2, &subkey_share1));
+
   if (launder32(ctx->partial_block_len) == kAesBlockNumBytes) {
     HARDENED_CHECK_EQ(ctx->partial_block_len, kAesBlockNumBytes);
     HARDENED_TRY(hardened_memcpy(final_block_words, ctx->partial_block,
                                  kAesBlockNumWords));
-
-    size_t i;
-    for (i = 0; launder32(i) < kAesBlockNumBytes; i++) {
-      final_block[i] ^= ((uint8_t *)ctx->k1.data)[i];
-    }
-    HARDENED_CHECK_EQ(i, kAesBlockNumBytes);
   } else {
     HARDENED_CHECK_LT(ctx->partial_block_len, kAesBlockNumBytes);
     HARDENED_TRY(randomized_bytecopy(final_block, partial_bytes,
@@ -316,12 +359,14 @@ static status_t cmac_final_core(cmac_ctx_t *ctx, otcrypto_word32_buf_t *tag) {
       HARDENED_CHECK_EQ(i, padding_len);
     }
 
-    size_t i;
-    for (i = 0; launder32(i) < kAesBlockNumBytes; i++) {
-      final_block[i] ^= ((uint8_t *)ctx->k2.data)[i];
-    }
-    HARDENED_CHECK_EQ(i, kAesBlockNumBytes);
+    HARDENED_TRY(generate_subkey(&subkey_share0, &subkey_share0));
+    HARDENED_TRY(generate_subkey(&subkey_share1, &subkey_share1));
   }
+
+  HARDENED_TRY(hardened_xor_in_place(final_block_words, subkey_share0.data,
+                                     kAesBlockNumWords));
+  HARDENED_TRY(hardened_xor_in_place(final_block_words, subkey_share1.data,
+                                     kAesBlockNumWords));
 
   HARDENED_TRY(
       hardened_memcpy(block_in.data, final_block_words, kAesBlockNumWords));
@@ -331,6 +376,8 @@ static status_t cmac_final_core(cmac_ctx_t *ctx, otcrypto_word32_buf_t *tag) {
 
   size_t copy_words = tag->len;
   if (launder32(copy_words) > kAesBlockNumWords) {
+    // COVERAGE (FI CM) Redundant clamp; callers already check
+    // tag->len <= kAesBlockNumWords.
     copy_words = kAesBlockNumWords;
   }
   HARDENED_CHECK_LE(copy_words, kAesBlockNumWords);
@@ -350,11 +397,13 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (tag == NULL || tag->data == NULL || input_message == NULL ||
       (input_message->data == NULL && input_message->len != 0)) {
+    // COVERAGE (MISSING) Null input pointers in CMAC are not covered.
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
   // Tag length must be between 2 and 4 words (64 to 128 bits) per SP 800-38B.
   if (launder32(tag->len) < 2 || launder32(tag->len) > kAesBlockNumWords) {
+    // COVERAGE (MISSING) Invalid tag lengths in CMAC are not covered.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_GE(tag->len, 2);
@@ -370,14 +419,12 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
   HARDENED_TRY(check_key(key));
 
   if (launder32(key->config.hw_backed) == kHardenedBoolTrue) {
+    // COVERAGE (MISSING) Sideloaded keys for CMAC are not covered.
     HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
     is_sideloaded = kHardenedBoolTrue;
-    keymgr_dpe_diversification_t diversification;
-    HARDENED_TRY(keyblob_to_keymgr_dpe_diversification(key, &diversification));
-    HARDENED_TRY(keymgr_dpe_generate_key_aes(diversification));
   }
 
-  cmac_ctx_t primary_ctx;
+  cmac_ctx_t primary_ctx __attribute__((cleanup(cmac_ctx_shred)));
   HARDENED_TRY(cmac_key_construct(key, &primary_ctx));
 
   if (launder32(key->config.security_level) == kOtcryptoKeySecurityLevelLow) {
@@ -401,7 +448,7 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
     uint32_t tag_redundant_data[kAesBlockNumWords];
     otcrypto_word32_buf_t tag_redundant =
         OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_redundant_data, tag->len);
-    cmac_ctx_t redundant_ctx;
+    cmac_ctx_t redundant_ctx __attribute__((cleanup(cmac_ctx_shred)));
     HARDENED_TRY(cmac_key_construct(key, &redundant_ctx));
     HARDENED_TRY(cmac_init_core(&redundant_ctx));
     HARDENED_TRY(cmac_update_core(&redundant_ctx, input_message));
@@ -413,9 +460,6 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
     return otcrypto_eval_exit(OTCRYPTO_OK);
 
   } else {
-    HARDENED_CHECK_EQ(launder32(key->config.security_level),
-                      kOtcryptoKeySecurityLevelHigh);
-
     // First invocation
     HARDENED_TRY(cmac_init_core(&primary_ctx));
     HARDENED_TRY(cmac_update_core(&primary_ctx, input_message));
@@ -425,7 +469,7 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
     uint32_t tag_redundant_data[kAesBlockNumWords];
     otcrypto_word32_buf_t tag_redundant =
         OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_redundant_data, tag->len);
-    cmac_ctx_t redundant_ctx;
+    cmac_ctx_t redundant_ctx __attribute__((cleanup(cmac_ctx_shred)));
     HARDENED_TRY(cmac_key_construct(key, &redundant_ctx));
     HARDENED_TRY(cmac_init_core(&redundant_ctx));
     HARDENED_TRY(cmac_update_core(&redundant_ctx, input_message));
@@ -438,6 +482,7 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
   }
 
   HARDENED_TRAP();
+  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return otcrypto_eval_exit(OTCRYPTO_FATAL_ERR);
 }
 
@@ -449,24 +494,26 @@ otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
   OTCRYPTO_HEALTH_CHECK(kTestAesGcm256DecryptBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL) {
+    // COVERAGE (MISSING) Null context pointer in CMAC init is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
 
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
+  hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolFalse;
 
   HARDENED_TRY(check_key(key));
 
   if (launder32(key->config.hw_backed) == kHardenedBoolTrue) {
+    // COVERAGE (MISSING) Sideloaded keys for CMAC are not covered.
     HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
-    keymgr_dpe_diversification_t diversification;
-    HARDENED_TRY(keyblob_to_keymgr_dpe_diversification(key, &diversification));
-    HARDENED_TRY(keymgr_dpe_generate_key_aes(diversification));
+    is_sideloaded = kHardenedBoolTrue;
   }
 
-  cmac_ctx_t primary_ctx;
-  cmac_ctx_t redundant_ctx;
+  cmac_ctx_t primary_ctx __attribute__((cleanup(cmac_ctx_shred)));
+  cmac_ctx_t redundant_ctx __attribute__((cleanup(cmac_ctx_shred)));
 
   HARDENED_TRY(cmac_key_construct(key, &primary_ctx));
   HARDENED_TRY(cmac_init_core(&primary_ctx));
@@ -481,8 +528,6 @@ otcrypto_status_t otcrypto_cmac_init(otcrypto_cmac_context_t *ctx,
     HARDENED_TRY(cmac_key_construct(key, &redundant_ctx));
     HARDENED_TRY(cmac_init_core(&redundant_ctx));
   } else {
-    HARDENED_CHECK_EQ(launder32(key->config.security_level),
-                      kOtcryptoKeySecurityLevelHigh);
     HARDENED_TRY(cmac_key_construct(key, &redundant_ctx));
     HARDENED_TRY(cmac_init_core(&redundant_ctx));
   }
@@ -515,23 +560,32 @@ otcrypto_status_t otcrypto_cmac_update(
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || input_message == NULL) {
+    // COVERAGE (MISSING) Null pointers in CMAC update are not covered.
     return OTCRYPTO_BAD_ARGS;
   }
   if (input_message->data == NULL && input_message->len != 0) {
+    // COVERAGE (MISSING) Null input_message data with non-zero length is not
+    // covered.
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
 
   uint32_t hw_cleanup_guard __attribute__((cleanup(aes_wipe_guard))) = 1;
   barrier32(hw_cleanup_guard);
+  hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolFalse;
 
   otcrypto_key_security_level_t security_level =
       (otcrypto_key_security_level_t)ctx->data[kCtxSecurityLevelOffset];
 
-  cmac_ctx_t primary_ctx;
+  cmac_ctx_t primary_ctx __attribute__((cleanup(cmac_ctx_shred)));
   HARDENED_TRY(hardened_memcpy((uint32_t *)&primary_ctx,
                                (const uint32_t *)&ctx->data[kCtxPrimaryOffset],
                                kOtcryptoCmacCtxStructWords));
+
+  if (launder32(primary_ctx.sideload) == kHardenedBoolTrue) {
+    is_sideloaded = kHardenedBoolTrue;
+  }
 
   HARDENED_TRY(cmac_update_core(&primary_ctx, input_message));
 
@@ -544,13 +598,17 @@ otcrypto_status_t otcrypto_cmac_update(
       kHardenedBoolTrue);
 
   if (launder32(security_level) != kOtcryptoKeySecurityLevelLow) {
-    cmac_ctx_t redundant_ctx;
+    cmac_ctx_t redundant_ctx __attribute__((cleanup(cmac_ctx_shred)));
     HARDENED_TRY(
         hardened_memcpy((uint32_t *)&redundant_ctx,
                         (const uint32_t *)&ctx->data[kCtxRedundantOffset],
                         kOtcryptoCmacCtxStructWords));
 
     HARDENED_TRY(cmac_update_core(&redundant_ctx, input_message));
+
+    HARDENED_CHECK_EQ(hardened_memeq(primary_ctx.iv.data, redundant_ctx.iv.data,
+                                     kAesBlockNumWords),
+                      kHardenedBoolTrue);
 
     HARDENED_TRY(randomized_bytecopy((uint8_t *)&ctx->data[kCtxRedundantOffset],
                                      (uint8_t *)&redundant_ctx,
@@ -570,11 +628,13 @@ otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (ctx == NULL || tag == NULL || tag->data == NULL) {
+    // COVERAGE (MISSING) Null pointers in CMAC final are not covered.
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
   // Tag length must be between 2 and 4 words (64 to 128 bits) per SP 800-38B.
   if (launder32(tag->len) < 2 || launder32(tag->len) > kAesBlockNumWords) {
+    // COVERAGE (MISSING) Invalid tag lengths in CMAC final are not covered.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_GE(tag->len, 2);
@@ -588,23 +648,26 @@ otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
   otcrypto_key_security_level_t security_level =
       (otcrypto_key_security_level_t)ctx->data[kCtxSecurityLevelOffset];
 
-  cmac_ctx_t primary_ctx;
+  cmac_ctx_t primary_ctx __attribute__((cleanup(cmac_ctx_shred)));
   HARDENED_TRY(hardened_memcpy((uint32_t *)&primary_ctx,
                                (const uint32_t *)&ctx->data[kCtxPrimaryOffset],
                                kOtcryptoCmacCtxStructWords));
 
   if (launder32(primary_ctx.sideload) == kHardenedBoolTrue) {
+    // COVERAGE (MISSING) Sideloaded keys for CMAC are not covered.
     is_sideloaded = kHardenedBoolTrue;
   }
 
   if (launder32(security_level) == kOtcryptoKeySecurityLevelLow) {
     HARDENED_CHECK_EQ(launder32(security_level), kOtcryptoKeySecurityLevelLow);
-    return otcrypto_eval_exit(cmac_final_core(&primary_ctx, tag));
+    HARDENED_TRY(cmac_final_core(&primary_ctx, tag));
+    HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
+    return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
   HARDENED_TRY(cmac_final_core(&primary_ctx, tag));
 
-  cmac_ctx_t redundant_ctx;
+  cmac_ctx_t redundant_ctx __attribute__((cleanup(cmac_ctx_shred)));
   HARDENED_TRY(
       hardened_memcpy((uint32_t *)&redundant_ctx,
                       (const uint32_t *)&ctx->data[kCtxRedundantOffset],
@@ -619,11 +682,11 @@ otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
                       kOtcryptoKeySecurityLevelMedium);
     HARDENED_TRY(cmac_final_core(&redundant_ctx, &tag_redundant));
   } else {
-    HARDENED_CHECK_EQ(launder32(security_level), kOtcryptoKeySecurityLevelHigh);
     HARDENED_TRY(cmac_final_core(&redundant_ctx, &tag_redundant));
   }
 
   HARDENED_CHECK_EQ(hardened_memeq(tag->data, tag_redundant.data, tag->len),
                     kHardenedBoolTrue);
+  HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }

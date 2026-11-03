@@ -35,7 +35,6 @@ filesets:
       - lowrisc:ibex:ibex_pkg
     files:
       - rtl/ast_reg_pkg.sv
-      - rtl/ast_pkg.sv
       - rtl/ast_bhv_pkg.sv
       - rtl/ast_intraip_pkg.sv
       - rtl/ast.sv

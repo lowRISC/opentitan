@@ -121,6 +121,7 @@ static const sc_keymgr_dpe_policies_t kKeymgrDPEDefaultPolicy = {
     .child = kScKeymgrDPESlotPolAllowChild,
     .expo = kScKeymgrDPESlotPolNoExport,
     .parent = kScKeymgrDPESlotPolEraseParent,
+    .keygen = kScKeymgrDPESlotPolAllowKeygen,
 };
 
 // Get the size of the remaining tail space that is not processed yet.

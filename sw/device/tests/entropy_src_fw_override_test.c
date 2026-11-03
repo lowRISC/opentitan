@@ -294,6 +294,7 @@ static status_t entropy_config(
           .rng_fips = true,
           .route_to_firmware = false,
           .bypass_conditioner = bypass_conditioner,
+          .clear_esfinal_fifo_while_disabled = true,
           .single_bit_mode = single_bit_mode,
           .health_test_threshold_scope = false,
           .health_test_window_size = kEntropySrcHealthTestWindowSize,

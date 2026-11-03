@@ -56,5 +56,9 @@ offline_signature_attach(
     ecdsa_signatures = [
         "//signing/examples/signatures:ecdsa_signatures",
     ],
-    tags = ["manual"],
+    tags = [
+        "manual",
+        # This requires some signatures to be manually provided, so it should not be built in CI.
+        "skip_build_in_ci",
+    ],
 )

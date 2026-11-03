@@ -106,6 +106,11 @@ static status_t run_bad_args_test(void) {
   CHECK(otcrypto_aes_gcm_encrypt(NULL, &pt, &iv, &aad, kOtcryptoAesGcmTagLen128,
                                  &ct, &tag)
             .value == OTCRYPTO_BAD_ARGS.value);
+  otcrypto_blinded_key_t null_keyblob_key = key;
+  null_keyblob_key.keyblob = NULL;
+  CHECK(otcrypto_aes_gcm_encrypt(&null_keyblob_key, &pt, &iv, &aad,
+                                 kOtcryptoAesGcmTagLen128, &ct, &tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
   otcrypto_word32_buf_t null_tag =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, NULL, 4);
   CHECK(otcrypto_aes_gcm_encrypt(&key, &pt, &iv, &aad, kOtcryptoAesGcmTagLen128,
@@ -239,8 +244,11 @@ static status_t run_bad_args_test(void) {
   CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &pt, &short_ct, &written)
             .value == OTCRYPTO_BAD_ARGS.value);
 
-  // Update the key checksum because we remasked before
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
+  // Empty {NULL, 0} buffers are valid in streaming update functions
+  otcrypto_byte_buf_t empty_ct =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, NULL, 0);
+  TRY(otcrypto_aes_gcm_update_aad(&ctx, &aad));
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &aad, &empty_ct, &written));
 
   // Test operation ordering
   otcrypto_aes_gcm_context_t ctx_aad_after_data;
@@ -249,6 +257,8 @@ static status_t run_bad_args_test(void) {
                                              &written));
   // Adding AAD after data has already been accumulated must return BAD_ARGS
   CHECK(otcrypto_aes_gcm_update_aad(&ctx_aad_after_data, &valid_aad).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_update_aad(&ctx_aad_after_data, &aad).value ==
         OTCRYPTO_BAD_ARGS.value);
 
   // Encrypt final checks
@@ -290,9 +300,6 @@ static status_t run_bad_args_test(void) {
             &ctx, &tag_const, kOtcryptoAesGcmTagLen128, &ct, &written, NULL)
             .value == OTCRYPTO_BAD_ARGS.value);
 
-  // Update the key checksum because we remasked before
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
-
   // Re-init context for decrypt to reset input_len for the partial block test
   TRY(otcrypto_aes_gcm_decrypt_init(&key, &iv, &ctx));
   TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &partial_pt, &ct,
@@ -302,10 +309,19 @@ static status_t run_bad_args_test(void) {
                                        &too_short_ct_final, &written, &success)
             .value == OTCRYPTO_BAD_ARGS.value);
 
+  // Encrypt/decrypt direction mismatch checks in final
+  TRY(otcrypto_aes_gcm_decrypt_init(&key, &iv, &ctx));
+  CHECK(otcrypto_aes_gcm_encrypt_final(&ctx, kOtcryptoAesGcmTagLen128, &ct,
+                                       &written, &tag)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
+  CHECK(otcrypto_aes_gcm_decrypt_final(
+            &ctx, &tag_const, kOtcryptoAesGcmTagLen128, &ct, &written, &success)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
   // Edge Case & Fault Injection Coverage
 
   // Failed Decryption Tag Check
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
   TRY(otcrypto_aes_gcm_encrypt(&key, &pt, &iv, &aad, kOtcryptoAesGcmTagLen128,
                                &ct, &tag));
   ct.data[0] ^= 0x01;  // Corrupt ciphertext bit
@@ -331,9 +347,15 @@ static status_t run_bad_args_test(void) {
                                  kOtcryptoAesGcmTagLen128, &tag_const, &ct,
                                  &success)
             .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_aes_gcm_decrypt(&null_keyblob_key, &pt, &iv, &aad,
+                                 kOtcryptoAesGcmTagLen128, &tag_const, &ct,
+                                 &success)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_aes_gcm_decrypt(&key, &pt, &iv, &aad, kOtcryptoAesGcmTagLen128,
+                                 &tag_const, &ct, NULL)
+            .value == OTCRYPTO_BAD_ARGS.value);
 
   // Inner Driver Bounds & Overflows
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
   TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
 
   otcrypto_const_byte_buf_t buf_16 =
@@ -360,13 +382,11 @@ static status_t run_bad_args_test(void) {
             .value != OTCRYPTO_OK.value);
 
   // Final API NULL Checks
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
   TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
   CHECK(otcrypto_aes_gcm_encrypt_final(&ctx, kOtcryptoAesGcmTagLen128,
                                        &null_out_16, &written, &tag)
             .value != OTCRYPTO_OK.value);
 
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
   TRY(otcrypto_aes_gcm_decrypt_init(&key, &iv, &ctx));
   CHECK(otcrypto_aes_gcm_decrypt_final(&ctx, &tag_const,
                                        kOtcryptoAesGcmTagLen128, &null_out_16,
@@ -374,15 +394,8 @@ static status_t run_bad_args_test(void) {
             .value != OTCRYPTO_OK.value);
 
   // Fault Injection
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
   TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
   ctx.data[0] = 0xBADBAD;  // Corrupt is_encrypt boolean
-  CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &buf_16, &out_16, &written)
-            .value != OTCRYPTO_OK.value);
-
-  key.checksum = otcrypto_integrity_blinded_checksum(&key);
-  TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
-  ctx.data[1] = 0xBADBAD;  // Corrupt aes_key.mode enum
   CHECK(otcrypto_aes_gcm_update_encrypted_data(&ctx, &buf_16, &out_16, &written)
             .value != OTCRYPTO_OK.value);
 
@@ -462,6 +475,136 @@ static status_t run_sideload_test(void) {
   return OTCRYPTO_OK;
 }
 
+/**
+ * Test in-place encryption and decryption (both one-shot and streaming).
+ */
+static status_t run_in_place_test(void) {
+  LOG_INFO("Running AES-GCM in-place test.");
+
+  uint32_t keyMask[8] = {
+      0x01234567, 0x89abcdef, 0x00010203, 0x04050607,
+      0x08090a0b, 0x0c0d0e0f, 0x10111213, 0x14151617,
+  };
+  otcrypto_key_config_t config = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeAesGcm,
+      .key_length = sizeof(kKey256),
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t keyblob[16];
+  TRY(keyblob_from_key_and_mask(kKey256, keyMask, config, keyblob));
+  otcrypto_blinded_key_t key = {
+      .config = config,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
+
+  uint8_t iv_bytes[16] = {0xc5, 0x8a, 0xde, 0xd2, 0xe1, 0xbb, 0xec, 0xba,
+                          0x8b, 0x16, 0xa5, 0x75, 0x7e, 0x54, 0x75, 0xbd};
+  uint32_t iv_data[4];
+  memcpy(iv_data, iv_bytes, sizeof(iv_bytes));
+  otcrypto_const_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, iv_data, 4);
+
+  otcrypto_const_byte_buf_t aad =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kAad, sizeof(kAad));
+
+  uint8_t expected_tag[16] = {0x32, 0x48, 0x95, 0xb3, 0xd2, 0xf6, 0x56, 0xe4,
+                              0xfa, 0x2f, 0x8c, 0xe0, 0x56, 0x13, 0x70, 0x61};
+
+  // 1. One-shot in-place encrypt and decrypt on full blocks (32 bytes).
+  uint8_t buf[sizeof(kPlaintext)];
+  memcpy(buf, kPlaintext, sizeof(kPlaintext));
+  otcrypto_const_byte_buf_t in_place_const =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, buf, sizeof(buf));
+  otcrypto_byte_buf_t in_place_mut =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, buf, sizeof(buf));
+
+  uint32_t tag_data[4] = {0};
+  otcrypto_word32_buf_t tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_data, 4);
+  otcrypto_const_word32_buf_t tag_const =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, tag_data, 4);
+
+  TRY(otcrypto_aes_gcm_encrypt(&key, &in_place_const, &iv, &aad,
+                               kOtcryptoAesGcmTagLen128, &in_place_mut, &tag));
+  TRY_CHECK_ARRAYS_EQ(buf, kCiphertext256, sizeof(kCiphertext256));
+  TRY_CHECK_ARRAYS_EQ((unsigned char *)tag_data, expected_tag,
+                      sizeof(expected_tag));
+
+  hardened_bool_t success = kHardenedBoolFalse;
+  TRY(otcrypto_aes_gcm_decrypt(&key, &in_place_const, &iv, &aad,
+                               kOtcryptoAesGcmTagLen128, &tag_const,
+                               &in_place_mut, &success));
+  TRY_CHECK(success == kHardenedBoolTrue);
+  TRY_CHECK_ARRAYS_EQ(buf, kPlaintext, sizeof(kPlaintext));
+
+  // 2. Streaming in-place encrypt and decrypt across two unaligned chunks
+  // (10 bytes + 15 bytes = 25 bytes = 1 full block + 9-byte partial block).
+  enum {
+    kChunk1Len = 10,
+    kChunk2Len = 15,
+    kPartialTestLen = kChunk1Len + kChunk2Len,
+  };
+  otcrypto_const_byte_buf_t chunk1_in =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, buf, kChunk1Len);
+  otcrypto_byte_buf_t chunk1_out =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, buf, kChunk1Len);
+  otcrypto_const_byte_buf_t chunk2_in =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, buf, kChunk2Len);
+  otcrypto_byte_buf_t chunk2_out =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, buf, kPartialTestLen);
+
+  otcrypto_aes_gcm_context_t ctx;
+  size_t bytes_written = 0;
+  size_t final_written = 0;
+  TRY(otcrypto_aes_gcm_encrypt_init(&key, &iv, &ctx));
+  TRY(otcrypto_aes_gcm_update_aad(&ctx, &aad));
+
+  memcpy(buf, kPlaintext, kChunk1Len);
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &chunk1_in, &chunk1_out,
+                                             &bytes_written));
+  TRY_CHECK(bytes_written == 0);
+
+  memcpy(buf, kPlaintext + kChunk1Len, kChunk2Len);
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &chunk2_in, &chunk2_out,
+                                             &bytes_written));
+  TRY_CHECK(bytes_written == kAesBlockNumBytes);
+
+  otcrypto_byte_buf_t stream_out_final =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, buf + bytes_written,
+                        kPartialTestLen - bytes_written);
+  TRY(otcrypto_aes_gcm_encrypt_final(&ctx, kOtcryptoAesGcmTagLen128,
+                                     &stream_out_final, &final_written, &tag));
+  TRY_CHECK(bytes_written + final_written == kPartialTestLen);
+  TRY_CHECK_ARRAYS_EQ(buf, kCiphertext256, kPartialTestLen);
+
+  success = kHardenedBoolFalse;
+  TRY(otcrypto_aes_gcm_decrypt_init(&key, &iv, &ctx));
+  TRY(otcrypto_aes_gcm_update_aad(&ctx, &aad));
+
+  memcpy(buf, kCiphertext256, kChunk1Len);
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &chunk1_in, &chunk1_out,
+                                             &bytes_written));
+  TRY_CHECK(bytes_written == 0);
+
+  memcpy(buf, kCiphertext256 + kChunk1Len, kChunk2Len);
+  TRY(otcrypto_aes_gcm_update_encrypted_data(&ctx, &chunk2_in, &chunk2_out,
+                                             &bytes_written));
+  TRY_CHECK(bytes_written == kAesBlockNumBytes);
+
+  TRY(otcrypto_aes_gcm_decrypt_final(&ctx, &tag_const, kOtcryptoAesGcmTagLen128,
+                                     &stream_out_final, &final_written,
+                                     &success));
+  TRY_CHECK(success == kHardenedBoolTrue);
+  TRY_CHECK(bytes_written + final_written == kPartialTestLen);
+  TRY_CHECK_ARRAYS_EQ(buf, kPlaintext, kPartialTestLen);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -500,6 +643,7 @@ bool test_main(void) {
 
   EXECUTE_TEST(result, run_sideload_test);
   EXECUTE_TEST(result, run_bad_args_test);
+  EXECUTE_TEST(result, run_in_place_test);
 
   return status_ok(result);
 }

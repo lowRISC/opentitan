@@ -500,11 +500,27 @@ module ibex_if_stage import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     .illegal_instr_o  (illegal_c_insn)
   );
 
+  // Debug entry must not split a Zcmp sequence, nor an interrupt its committing micro-ops: the
+  // handler returns to the start of the instruction.
+  `ASSERT(NoDebugEntryInZcmpSequence,
+          pc_set_i && (pc_mux_i == PC_EXC) && (exc_pc_mux_i == EXC_PC_DBD)
+          |-> compressed_decoder_i.cm_state_q == compressed_decoder_i.CmIdle)
+  `ASSERT(NoIrqInZcmpCommit,
+          pc_set_i && (pc_mux_i == PC_EXC) && (exc_pc_mux_i == EXC_PC_IRQ)
+          |-> !(compressed_decoder_i.cm_state_q inside {compressed_decoder_i.CmPopZeroA0,
+                                                        compressed_decoder_i.CmPopRetRa,
+                                                        compressed_decoder_i.CmMvSecondReg}))
+
   // Dummy instruction insertion
   if (DummyInstructions) begin : gen_dummy_instr
     // SEC_CM: CTRL_FLOW.UNPREDICTABLE
     logic        insert_dummy_instr;
+    logic        dummy_instr_hold;
     logic [31:0] dummy_instr_data;
+
+    // Hold dummies back while the next instruction is a Zcmp micro-op. The controller sees a dummy
+    // as a separate instruction, so one inside a sequence would let debug entry or an interrupt in.
+    assign dummy_instr_hold = instr_gets_expanded != INSTR_NOT_EXPANDED;
 
     ibex_dummy_instr #(
       .RndCnstLfsrSeed (RndCnstLfsrSeed),
@@ -518,6 +534,7 @@ module ibex_if_stage import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .dummy_instr_seed_i   (dummy_instr_seed_i),
       .fetch_valid_i        (fetch_valid),
       .id_in_ready_i        (id_in_ready_i),
+      .insert_hold_i        (dummy_instr_hold),
       .insert_dummy_instr_o (insert_dummy_instr),
       .dummy_instr_data_o   (dummy_instr_data)
     );
@@ -533,6 +550,28 @@ module ibex_if_stage import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     // is currently in the ID stage and whatever is valid from the prefetch buffer this cycle. The
     // PC of the dummy instruction will match whatever is next from the prefetch buffer.
     assign stall_dummy_instr = insert_dummy_instr;
+
+    `ASSERT(NoDummyInZcmpSequence,
+            insert_dummy_instr |-> (instr_gets_expanded == INSTR_NOT_EXPANDED) &&
+                                   (compressed_decoder_i.cm_state_q == compressed_decoder_i.CmIdle))
+
+`ifdef INC_ASSERT
+    // A dummy was due, and held back, before each kind of Zcmp micro-op.
+    logic       dummy_held;
+    logic [2:0] cm_state;
+    assign dummy_held = dummy_instr_hold & dummy_instr_en_i &
+                        (dummy_instr_i.dummy_cnt_q == dummy_instr_i.dummy_cnt_threshold);
+    assign cm_state   = compressed_decoder_i.cm_state_q;
+
+    `COVER(DummyHeldCmIdle_C,         dummy_held && cm_state == compressed_decoder_i.CmIdle)
+    `COVER(DummyHeldCmPushStoreReg_C, dummy_held && cm_state == compressed_decoder_i.CmPushStoreReg)
+    `COVER(DummyHeldCmPushDecrSp_C,   dummy_held && cm_state == compressed_decoder_i.CmPushDecrSp)
+    `COVER(DummyHeldCmPopLoadReg_C,   dummy_held && cm_state == compressed_decoder_i.CmPopLoadReg)
+    `COVER(DummyHeldCmPopIncrSp_C,    dummy_held && cm_state == compressed_decoder_i.CmPopIncrSp)
+    `COVER(DummyHeldCmPopZeroA0_C,    dummy_held && cm_state == compressed_decoder_i.CmPopZeroA0)
+    `COVER(DummyHeldCmPopRetRa_C,     dummy_held && cm_state == compressed_decoder_i.CmPopRetRa)
+    `COVER(DummyHeldCmMvSecondReg_C,  dummy_held && cm_state == compressed_decoder_i.CmMvSecondReg)
+`endif
 
     // Register the dummy instruction indication into the ID stage
     always_ff @(posedge clk_i or negedge rst_ni) begin

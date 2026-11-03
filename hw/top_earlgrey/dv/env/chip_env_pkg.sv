@@ -62,6 +62,11 @@ package chip_env_pkg;
   localparam uint TokenWidthBit  = kmac_pkg::MsgWidth * 2;
   localparam uint TokenWidthByte = TokenWidthBit / 8;
 
+  // I3C Virtual Targets.
+  // The CSRs describe `I3cMaxTargets` Virtual Targets. How many of them an instance implements is
+  // its `NumTargets` parameter, which may differ between instances.
+  localparam uint I3cMaxTargets = i3c_reg_pkg::MaxTargets;
+
   // ROM digest parameters
   localparam uint RomDigestDw = 256;
   localparam uint RomMaxCheckAddr = top_earlgrey_pkg::TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES -

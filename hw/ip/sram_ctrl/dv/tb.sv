@@ -59,9 +59,11 @@ module tb;
 
   // DUT
 
-  // The exact SRAM size in bytes.
-  // Will be set to 4 KiB for retention SRAM and 128 KiB for main SRAM.
-  // Can be a non-power-of-2 size.
+  // The SRAM_SIZE_BYTES define gives the size of the memory in bytes. This might have been supplied
+  // on the command line (controlled by the sim_cfg and gives sizes for specific chips). The size
+  // can be a non-power-of-2 value.
+  //
+  // If it has not been set explicitly, default to 128 KiB: the size of the main SRAM.
 `ifndef SRAM_SIZE_BYTES
   `define SRAM_SIZE_BYTES 2**17
 `endif

@@ -12,17 +12,17 @@ module xbar_main_bind;
     .h2d    (tl_rv_core_ibex__corei_i),
     .d2h    (tl_rv_core_ibex__corei_o)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_cheriot__cored (
+  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_cheriot_mem_sys__cored (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_cheriot__cored_i),
-    .d2h    (tl_cheriot__cored_o)
+    .h2d    (tl_cheriot_mem_sys__cored_i),
+    .d2h    (tl_cheriot_mem_sys__cored_o)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_cheriot__tbre (
+  bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_cheriot_mem_sys__tbre (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_cheriot__tbre_i),
-    .d2h    (tl_cheriot__tbre_o)
+    .h2d    (tl_cheriot_mem_sys__tbre_i),
+    .d2h    (tl_cheriot_mem_sys__tbre_o)
   );
   bind xbar_main tlul_assert #(.EndpointType("Device")) tlul_assert_host_rv_dm__sba (
     .clk_i  (clk_main_i),
@@ -63,16 +63,28 @@ module xbar_main_bind;
     .d2h    (tl_peri_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_spi_host0 (
-    .clk_i  (clk_spi_host0_i),
-    .rst_ni (rst_spi_host0_ni),
+    .clk_i  (clk_io_i),
+    .rst_ni (rst_io_ni),
     .h2d    (tl_spi_host0_o),
     .d2h    (tl_spi_host0_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_spi_host1 (
-    .clk_i  (clk_spi_host1_i),
-    .rst_ni (rst_spi_host1_ni),
+    .clk_i  (clk_io_i),
+    .rst_ni (rst_io_ni),
     .h2d    (tl_spi_host1_o),
     .d2h    (tl_spi_host1_i)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_i3c0 (
+    .clk_i  (clk_io_i),
+    .rst_ni (rst_io_ni),
+    .h2d    (tl_i3c0_o),
+    .d2h    (tl_i3c0_i)
+  );
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_i3c1 (
+    .clk_i  (clk_io_i),
+    .rst_ni (rst_io_ni),
+    .h2d    (tl_i3c1_o),
+    .d2h    (tl_i3c1_i)
   );
   bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_usbdev (
     .clk_i  (clk_usb_i),
@@ -194,17 +206,17 @@ module xbar_main_bind;
     .h2d    (tl_sram_ctrl_sec__ram_o),
     .d2h    (tl_sram_ctrl_sec__ram_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_cheriot__regs (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_cheriot_mem_sys__regs (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_cheriot__regs_o),
-    .d2h    (tl_cheriot__regs_i)
+    .h2d    (tl_cheriot_mem_sys__regs_o),
+    .d2h    (tl_cheriot_mem_sys__regs_i)
   );
-  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_cheriot__revbm (
+  bind xbar_main tlul_assert #(.EndpointType("Host")) tlul_assert_device_cheriot_mem_sys__revbm (
     .clk_i  (clk_main_i),
     .rst_ni (rst_main_ni),
-    .h2d    (tl_cheriot__revbm_o),
-    .d2h    (tl_cheriot__revbm_i)
+    .h2d    (tl_cheriot_mem_sys__revbm_o),
+    .d2h    (tl_cheriot_mem_sys__revbm_i)
   );
 `endif
 endmodule

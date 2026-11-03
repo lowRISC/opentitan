@@ -6,6 +6,10 @@ Except for the first advance call that initializes keymgr_dpe, this means keymgr
 Similarly, at the end of the operation (when `OP_STATUS` is not `WIP` anymore), it is recommended to check that the operation was successful by reading `ERR_CODE`.
 SW can also read the reported FSM state through `WORKING_STATE` to confirm that keymgr_dpe reaches the expected state.
 
+`CONTROL_SHADOWED.SLOT_SRC_SEL` and `CONTROL_SHADOWED.SLOT_DST_SEL` must select an instantiated slot, i.e. a value below `NumInstHwSlot`.
+Both fields are sized for `NumMaxHwSlot` slots, so they accept larger values.
+An operation that uses a slot selection at or above `NumInstHwSlot` is rejected with `ERR_CODE.INVALID_OP`, and no slot is modified.
+
 ## Initialize (first advance call)
 
 From a SW perspective, there is not an explicit initialize command.
@@ -18,6 +22,9 @@ Keymgr_DPE is initialized by configuring the following CSR:
 *  Set `START` to initiate the operation.
 
 At the end of the successful first advance call, the UDS is latched into the specified destination slot.
+If `SLOT_DST_SEL` is at or above `NumInstHwSlot`, the call is rejected with `ERR_CODE.INVALID_OP` and keymgr_dpe remains in `Reset` state.
+SW can then correct `SLOT_DST_SEL` and retry.
+Like for the [load root key operations](#load-root-key--load-secondary-root-key), the slot receives the default UDS policy (`allow_child = 1`, `retain_parent = 0`, `allow_keygen = 0`, `exportable = 0`) and the default max key version (`0`), ignoring `SLOT_POLICY` and `MAX_KEY_VER_SHADOWED`.
 
 ## Advance
 
@@ -66,6 +73,8 @@ SW needs to configure the following registers:
 *  Set `CONTROL_SHADOWED.DST_SEL` for either of the use cases {`AES`, `KMAC`, `OTBN`, `HMAC`}.
 *  Set `CONTROL_SHADOWED.OPERATION` to either of {Generate SW Operation, Generate HW Operation}.
 *  Set `CONTROL_SHADOWED.SLOT_SRC_SEL` to select the source slot whose secret will be used to generate the key.
+   The `allow_keygen` policy of this slot must be set, otherwise the operation fails with `ERR_CODE.INVALID_OP`.
+   In particular, keys can never be generated from the slot holding the UDS.
 *  Set `SALT` and `KEY_VERSION` registers.
 *  Trigger the operation by setting `START`.
 
@@ -85,6 +94,25 @@ SW needs to configure the following registers to erase a slot:
 
 At the end of a successful erase operation, the secret of the destination slot is removed and the slot is marked as invalid.
 
+## Load Root Key / Load Secondary Root Key
+
+Both operations are configured identically and only differ in the root secret that is loaded.
+The destination slot must be empty, so erase it first if it currently holds a DPE context.
+Invoking the load operation on a valid slot fails with `ERR_CODE.INVALID_OP`.
+
+SW needs to configure the following registers to load a root key:
+*  Set `CONTROL_SHADOWED.OPERATION` to `Load root key` or `Load secondary root key`.
+*  Set `CONTROL_SHADOWED.SLOT_DST_SEL` to the empty slot that should store the root key.
+*  Neither `MAX_KEY_VER_SHADOWED` nor `SLOT_POLICY` needs to be configured, as both are ignored by these operations.
+*  Set `START` to initiate the operation.
+
+At the end of a successful load operation, the destination slot holds the root key with `boot_stage = 0`, the default UDS policy and the default max key version.
+As `allow_keygen = 0`, no key can be generated from this slot, hence its `max_key_version` is irrelevant.
+As `retain_parent = 0`, the first advance from this slot must be an in-place update (`SLOT_SRC_SEL = SLOT_DST_SEL`).
+
+Once a root key is no longer needed in the current boot, SW should write 1 to `LOAD_ROOT_KEY_LOCK` or `LOAD_SECONDARY_ROOT_KEY_LOCK` respectively.
+Any further load request of that root key is then rejected until the next reset.
+
 ## Read Slot Metadata
 
 Software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` fields at any time by reading the `METADATA_LOW` and `METADATA_HIGH` registers at the corresponding slot index:
@@ -94,6 +122,7 @@ Software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `ke
 *  `METADATA_HIGH[i].ALLOW_CHILD_POLICY` reports the `allow_child` policy applied to slot `i`.
 *  `METADATA_HIGH[i].EXPORTABLE_POLICY` reports the `exportable` policy applied to slot `i`.
 *  `METADATA_HIGH[i].RETAIN_PARENT_POLICY` reports the `retain_parent` policy applied to slot `i`.
+*  `METADATA_HIGH[i].ALLOW_KEYGEN_POLICY` reports the `allow_keygen` policy applied to slot `i`.
 
 The secret key itself is never exposed through these registers.
 Both registers are replicated `NumMaxHwSlot` times but only indices below `NumInstHwSlot` correspond to an actual hardware slot, the remaining slots are bound to `0`.

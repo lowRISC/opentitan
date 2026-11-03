@@ -392,10 +392,6 @@ status_t keymgr_dpe_testutils_startup(dif_keymgr_dpe_t *keymgr_dpe,
  * policy register) then these locks are not removed after the initial advance
  * call completes.
  */
-// TODO(#30665): Verify if the max key version needs to be written here too!
-// When loading the UDS the RTL fetches the max key version from the SW
-// register. Verify that the lock is released when the version register is
-// locked.
 status_t keymgr_dpe_testutils_initial_load_uds(
     const dif_keymgr_dpe_t *keymgr_dpe,
     const dif_keymgr_dpe_advance_params_t *params) {
@@ -418,6 +414,28 @@ status_t keymgr_dpe_testutils_check_state(
   TRY_CHECK(act_state == exp_state,
             "Keymgr DPE in unexpected state: %x, expected to be %x", act_state,
             exp_state);
+  return OK_STATUS();
+}
+
+status_t keymgr_dpe_testutils_check_metadata(const dif_keymgr_dpe_t *keymgr_dpe,
+                                             uint32_t slot,
+                                             uint32_t exp_max_key_version,
+                                             uint32_t exp_boot_stage,
+                                             uint32_t exp_policy) {
+  dif_keymgr_dpe_metadata_t metadata;
+  TRY(dif_keymgr_dpe_get_metadata(keymgr_dpe, slot, &metadata));
+  TRY_CHECK(metadata.valid, "Keymgr DPE slot %d is not valid", slot);
+  TRY_CHECK(metadata.max_key_version == exp_max_key_version,
+            "Keymgr DPE slot %d has unexpected max key version: %x, expected "
+            "to be %x",
+            slot, metadata.max_key_version, exp_max_key_version);
+  TRY_CHECK(
+      metadata.boot_stage == exp_boot_stage,
+      "Keymgr DPE slot %d in unexpected boot stage: %x, expected to be %x",
+      slot, metadata.boot_stage, exp_boot_stage);
+  TRY_CHECK(metadata.slot_policy == exp_policy,
+            "Keymgr DPE slot %d has unexpected policy: %x, expected to be %x",
+            slot, metadata.slot_policy, exp_policy);
   return OK_STATUS();
 }
 

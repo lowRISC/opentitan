@@ -2,17 +2,19 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-use anyhow::Result;
+use anyhow::{Result, ensure};
 use serde::{self, Deserialize, Serialize};
 use std::path::{Path, PathBuf};
 use thiserror::Error;
 use zerocopy::IntoBytes;
 
 use crate::chip::boolean::HardenedBool;
+use crate::crypto::mldsa::load_mldsa_key;
 use crate::image::manifest::*;
 use crate::image::manifest_def::le_bytes_to_word_arr;
 use crate::util::num_de::HexEncoded;
 use crate::with_unknown;
+use ml_dsa::{MlDsa87, VerifyingKey};
 use sphincsplus::{DecodeKey, SpxPublicKey};
 
 #[derive(Debug, Error)]
@@ -31,6 +33,8 @@ with_unknown! {
         secver_write = MANIFEST_EXT_ID_SECVER_WRITE,
         isfb = MANIFEST_EXT_ID_ISFB,
         isfb_erase = MANIFEST_EXT_ID_ISFB_ERASE,
+        mldsa87_key = MANIFEST_EXT_ID_MLDSA87_KEY,
+        mldsa87_signature = MANIFEST_EXT_ID_MLDSA87_SIGNATURE,
     }
 }
 
@@ -62,6 +66,16 @@ pub enum ManifestExtEntrySpec {
     SpxSignature {
         /// The path to the SPHINCS+ signature.
         spx_signature: PathBuf,
+    },
+    #[serde(alias = "mldsa87_key")]
+    Mldsa87Key {
+        /// The path to the ML-DSA-87 public or private key.
+        mldsa87_key: PathBuf,
+    },
+    #[serde(alias = "mldsa87_signature")]
+    Mldsa87Signature {
+        /// The path to the ML-DSA-87 signature.
+        mldsa87_signature: PathBuf,
     },
 
     #[serde(alias = "image_type")]
@@ -95,6 +109,8 @@ pub enum ManifestExtEntrySpec {
 pub enum ManifestExtEntry {
     SpxKey(ManifestExtSpxKey),
     SpxSignature(Box<ManifestExtSpxSignature>),
+    Mldsa87Key(Box<ManifestExtMldsa87Key>),
+    Mldsa87Signature(Box<ManifestExtMldsa87Signature>),
     ImageType(ManifestExtImageType),
     SecVerWrite(ManifestExtSecVerWrite),
     Isfb(ManifestExtIsfb),
@@ -129,6 +145,8 @@ impl ManifestExtEntrySpec {
             ManifestExtEntrySpec::SpxSignature { spx_signature: _ } => {
                 MANIFEST_EXT_ID_SPX_SIGNATURE
             }
+            ManifestExtEntrySpec::Mldsa87Key { .. } => MANIFEST_EXT_ID_MLDSA87_KEY,
+            ManifestExtEntrySpec::Mldsa87Signature { .. } => MANIFEST_EXT_ID_MLDSA87_SIGNATURE,
             ManifestExtEntrySpec::SecVerWrite { .. } => MANIFEST_EXT_ID_SECVER_WRITE,
             ManifestExtEntrySpec::Isfb { .. } => MANIFEST_EXT_ID_ISFB,
             ManifestExtEntrySpec::IsfbErasePolicy { .. } => MANIFEST_EXT_ID_ISFB_ERASE,
@@ -140,11 +158,13 @@ impl ManifestExtEntrySpec {
     pub fn is_signed(&self) -> bool {
         match self {
             ManifestExtEntrySpec::SpxKey { .. }
+            | ManifestExtEntrySpec::Mldsa87Key { .. }
             | ManifestExtEntrySpec::SecVerWrite { .. }
             | ManifestExtEntrySpec::Isfb { .. }
             | ManifestExtEntrySpec::IsfbErasePolicy { .. }
             | ManifestExtEntrySpec::ImageType { .. } => true,
-            ManifestExtEntrySpec::SpxSignature { .. } => false,
+            ManifestExtEntrySpec::SpxSignature { .. }
+            | ManifestExtEntrySpec::Mldsa87Signature { .. } => false,
             ManifestExtEntrySpec::Raw { signed, .. } => *signed,
         }
     }
@@ -173,6 +193,41 @@ impl ManifestExtEntry {
                     name: MANIFEST_EXT_NAME_SPX_SIGNATURE,
                 },
                 signature: SigverifySpxSignature {
+                    data: le_bytes_to_word_arr(signature)?,
+                },
+            },
+        )))
+    }
+
+    /// Creates a new manifest extension from a given ML-DSA-87 `key`.
+    pub fn new_mldsa87_key_entry(key: &VerifyingKey<MlDsa87>) -> Result<Self> {
+        Ok(ManifestExtEntry::Mldsa87Key(Box::new(
+            ManifestExtMldsa87Key {
+                header: ManifestExtHeader {
+                    identifier: MANIFEST_EXT_ID_MLDSA87_KEY,
+                    name: MANIFEST_EXT_NAME_MLDSA87_KEY,
+                },
+                key: SigverifyMldsa87Key {
+                    data: le_bytes_to_word_arr(&key.encode())?,
+                },
+            },
+        )))
+    }
+
+    /// Creates a new manifest extension from a given ML-DSA-87 `signature`.
+    pub fn new_mldsa87_signature_entry(signature: &[u8]) -> Result<Self> {
+        ensure!(
+            signature.len() == MLDSA87_SIGNATURE_BYTES,
+            "Unexpected ML-DSA-87 signature length {}",
+            signature.len()
+        );
+        Ok(ManifestExtEntry::Mldsa87Signature(Box::new(
+            ManifestExtMldsa87Signature {
+                header: ManifestExtHeader {
+                    identifier: MANIFEST_EXT_ID_MLDSA87_SIGNATURE,
+                    name: MANIFEST_EXT_NAME_MLDSA87_SIGNATURE,
+                },
+                signature: SigverifyMldsa87Signature {
                     data: le_bytes_to_word_arr(signature)?,
                 },
             },
@@ -240,6 +295,12 @@ impl ManifestExtEntry {
             ManifestExtEntrySpec::SpxSignature { spx_signature } => {
                 ManifestExtEntry::new_spx_signature_entry(&std::fs::read(spx_signature)?)?
             }
+            ManifestExtEntrySpec::Mldsa87Key { mldsa87_key } => {
+                ManifestExtEntry::new_mldsa87_key_entry(&load_mldsa_key::<MlDsa87>(mldsa87_key)?.0)?
+            }
+            ManifestExtEntrySpec::Mldsa87Signature { mldsa87_signature } => {
+                ManifestExtEntry::new_mldsa87_signature_entry(&std::fs::read(mldsa87_signature)?)?
+            }
             ManifestExtEntrySpec::ImageType { image_type } => {
                 ManifestExtEntry::new_image_type_entry(*image_type)?
             }
@@ -287,6 +348,8 @@ impl ManifestExtEntry {
         match self {
             ManifestExtEntry::SpxKey(key) => &key.header,
             ManifestExtEntry::SpxSignature(sig) => &sig.header,
+            ManifestExtEntry::Mldsa87Key(key) => &key.header,
+            ManifestExtEntry::Mldsa87Signature(sig) => &sig.header,
             ManifestExtEntry::ImageType(image_type) => &image_type.header,
             ManifestExtEntry::SecVerWrite(sv) => &sv.header,
             ManifestExtEntry::Isfb(isfb) => &isfb.header,
@@ -300,6 +363,8 @@ impl ManifestExtEntry {
         match self {
             ManifestExtEntry::SpxKey(key) => key.as_bytes().to_vec(),
             ManifestExtEntry::SpxSignature(sig) => sig.as_bytes().to_vec(),
+            ManifestExtEntry::Mldsa87Key(key) => key.as_bytes().to_vec(),
+            ManifestExtEntry::Mldsa87Signature(sig) => sig.as_bytes().to_vec(),
             ManifestExtEntry::ImageType(image_type) => image_type.as_bytes().to_vec(),
             ManifestExtEntry::SecVerWrite(sv) => sv.as_bytes().to_vec(),
             ManifestExtEntry::Isfb(isfb) => isfb.to_vec().unwrap(),
@@ -322,7 +387,7 @@ mod tests {
     fn test_manifest_ext_from_hjson() {
         let spec = ManifestExtSpec::read_from_file(&testdata("image/manifest_ext.hjson")).unwrap();
         assert_eq!(spec.source_path(), Some(testdata("image").as_path()));
-        assert_eq!(spec.extension_params.len(), 6);
+        assert_eq!(spec.extension_params.len(), 8);
         assert_eq!(
             spec.extension_params[0],
             ManifestExtEntrySpec::SpxKey {
@@ -376,6 +441,20 @@ mod tests {
             }
         );
         assert!(!spec.extension_params[5].is_signed());
+        assert_eq!(
+            spec.extension_params[6],
+            ManifestExtEntrySpec::Mldsa87Key {
+                mldsa87_key: "test_mldsa87.pem".into()
+            }
+        );
+        assert!(spec.extension_params[6].is_signed());
+        assert_eq!(
+            spec.extension_params[7],
+            ManifestExtEntrySpec::Mldsa87Signature {
+                mldsa87_signature: "test_mldsa87_signature.bin".into()
+            }
+        );
+        assert!(!spec.extension_params[7].is_signed());
     }
 
     const MAN_EXT_ISFB_CONF: &str = "\

@@ -48,7 +48,7 @@
              "{proj_root}/hw/ip/spi_host/dv/spi_host_sim_cfg.hjson",
              "{proj_root}/hw/ip/spi_device/dv/spi_device_1r1w_sim_cfg.hjson",
              "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_main_sim_cfg.hjson",
-             "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_ret_sim_cfg.hjson",
+             "{proj_root}/hw/ip/sram_ctrl/dv/sram_ctrl_ret_4kB_sim_cfg.hjson",
              "{proj_root}/hw/ip/uart/dv/uart_sim_cfg.hjson",
              // Top level IPs.
              "{proj_root}/hw/top_darjeeling/ip_autogen/ac_range_check/dv/ac_range_check_sim_cfg.hjson",

@@ -87,7 +87,7 @@ enum {
  * A type that holds a masked value from the P-384 scalar field.
  *
  * This struct is used to represent secret keys, which are integers modulo n.
- * The key d is represented in two 320-bit shares, d0 and d1, such that d = (d0
+ * The key d is represented in two 448-bit shares, d0 and d1, such that d = (d0
  * + d1) mod n. Mathematically, d0 and d1 could also be reduced modulo n, but
  * the extra bits provide side-channel protection.
  */
@@ -419,10 +419,11 @@ status_t p384_base_point_mult(p384_masked_scalar_t *private_key,
  *
  * The input can either be an unshared raw key (two 448-bit shares d0, d1 with
  * the upper 64 bits of d0 being 0 and d1 being 0) or a Boolean-shared key (two
- * 384-bit shares in a 448-bit buffer).
+ * 384-bit shares in 448-bit buffers, where the upper 64 bits of each buffer
+ * are ignored).
  *
  * @param boolean_private_key The key that is being arithmetically shared.
- * @param arithmetic_private_key The resulting arithmetically shared key.
+ * @param arith_private_key The resulting arithmetically shared key.
  * @return Result of the operation (OK or error).
  */
 status_t p384_arith_share_private_key(p384_masked_scalar_t *boolean_private_key,

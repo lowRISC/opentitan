@@ -104,6 +104,7 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
 
   local function bit blocked_by_regwen(string ral_name);
     bit blocked = 0;
+    int idx;
 
     if (ral_name == "alert_info_ctrl")
       blocked = `gmv(ral.alert_regwen) == 0;
@@ -112,18 +113,9 @@ class rstmgr_scoreboard extends cip_base_scoreboard #(
     // And only the various "sw_rst_ctrl_n may be blocked, so ignore all others.
     if (uvm_re_match({sw_rst_ctrl_n_preffix, "*"}, ral_name))
       return 0;
-    case (ral_name[sw_rst_ctrl_n_preffix.len()])
-      "0": blocked = `gmv(ral.sw_rst_regwen[0]) == 0;
-      "1": blocked = `gmv(ral.sw_rst_regwen[1]) == 0;
-      "2": blocked = `gmv(ral.sw_rst_regwen[2]) == 0;
-      "3": blocked = `gmv(ral.sw_rst_regwen[3]) == 0;
-      "4": blocked = `gmv(ral.sw_rst_regwen[4]) == 0;
-      "5": blocked = `gmv(ral.sw_rst_regwen[5]) == 0;
-      "6": blocked = `gmv(ral.sw_rst_regwen[6]) == 0;
-      "7": blocked = `gmv(ral.sw_rst_regwen[7]) == 0;
-      default:
-        `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", ral_name))
-    endcase
+    idx = ral_name.substr(sw_rst_ctrl_n_preffix.len(), ral_name.len() - 1).atoi();
+    if (idx >= NumSwResets) `uvm_fatal(`gfn, $sformatf("invalid csr: %0s", ral_name))
+    blocked = `gmv(ral.sw_rst_regwen[idx]) == 0;
     `uvm_info(`gfn, $sformatf(
               "blocked_by_regwen: csr = %0s is %0sblocked", ral_name, blocked ? "" : "not "),
               UVM_MEDIUM)

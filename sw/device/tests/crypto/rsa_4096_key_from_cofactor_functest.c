@@ -145,6 +145,9 @@ static status_t run_key_from_cofactor_4096(const uint32_t *cofactor) {
 
   TRY_CHECK(private_key.keyblob_length == sizeof(rsa_4096_private_key_t));
   rsa_4096_private_key_t *sk = (rsa_4096_private_key_t *)private_key.keyblob;
+  for (size_t i = 0; i < ARRAYSIZE(kTestPrivateExponent4096); i++) {
+    sk->d0.data[i] ^= sk->d1.data[i];
+  }
   TRY_CHECK_ARRAYS_EQ(sk->d0.data, kTestPrivateExponent4096,
                       ARRAYSIZE(kTestPrivateExponent4096));
 

@@ -66,22 +66,22 @@ extern "C" {
 #define TOP_ENGLISHBREAKFAST_UART1_SIZE_BYTES 0x40u
 
 /**
- * Peripheral base address for gpio in top englishbreakfast.
+ * Peripheral base address for gpio0 in top englishbreakfast.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_ENGLISHBREAKFAST_GPIO_BASE_ADDR 0x40040000u
+#define TOP_ENGLISHBREAKFAST_GPIO0_BASE_ADDR 0x40040000u
 
 /**
- * Peripheral size for gpio in top englishbreakfast.
+ * Peripheral size for gpio0 in top englishbreakfast.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_ENGLISHBREAKFAST_GPIO_BASE_ADDR and
- * `TOP_ENGLISHBREAKFAST_GPIO_BASE_ADDR + TOP_ENGLISHBREAKFAST_GPIO_SIZE_BYTES`.
+ * address between #TOP_ENGLISHBREAKFAST_GPIO0_BASE_ADDR and
+ * `TOP_ENGLISHBREAKFAST_GPIO0_BASE_ADDR + TOP_ENGLISHBREAKFAST_GPIO0_SIZE_BYTES`.
  */
-#define TOP_ENGLISHBREAKFAST_GPIO_SIZE_BYTES 0x80u
+#define TOP_ENGLISHBREAKFAST_GPIO0_SIZE_BYTES 0x80u
 
 /**
  * Peripheral base address for spi_device in top englishbreakfast.
@@ -431,7 +431,7 @@ typedef enum top_englishbreakfast_plic_peripheral {
   kTopEnglishbreakfastPlicPeripheralUnknown = 0, /**< Unknown Peripheral */
   kTopEnglishbreakfastPlicPeripheralUart0 = 1, /**< uart0 */
   kTopEnglishbreakfastPlicPeripheralUart1 = 2, /**< uart1 */
-  kTopEnglishbreakfastPlicPeripheralGpio = 3, /**< gpio */
+  kTopEnglishbreakfastPlicPeripheralGpio0 = 3, /**< gpio0 */
   kTopEnglishbreakfastPlicPeripheralSpiDevice = 4, /**< spi_device */
   kTopEnglishbreakfastPlicPeripheralSpiHost0 = 5, /**< spi_host0 */
   kTopEnglishbreakfastPlicPeripheralUsbdev = 6, /**< usbdev */
@@ -467,38 +467,38 @@ typedef enum top_englishbreakfast_plic_irq_id {
   kTopEnglishbreakfastPlicIrqIdUart1RxTimeout = 16, /**< uart1_rx_timeout */
   kTopEnglishbreakfastPlicIrqIdUart1RxParityErr = 17, /**< uart1_rx_parity_err */
   kTopEnglishbreakfastPlicIrqIdUart1TxEmpty = 18, /**< uart1_tx_empty */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio0 = 19, /**< gpio_gpio 0 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio1 = 20, /**< gpio_gpio 1 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio2 = 21, /**< gpio_gpio 2 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio3 = 22, /**< gpio_gpio 3 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio4 = 23, /**< gpio_gpio 4 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio5 = 24, /**< gpio_gpio 5 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio6 = 25, /**< gpio_gpio 6 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio7 = 26, /**< gpio_gpio 7 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio8 = 27, /**< gpio_gpio 8 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio9 = 28, /**< gpio_gpio 9 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio10 = 29, /**< gpio_gpio 10 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio11 = 30, /**< gpio_gpio 11 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio12 = 31, /**< gpio_gpio 12 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio13 = 32, /**< gpio_gpio 13 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio14 = 33, /**< gpio_gpio 14 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio15 = 34, /**< gpio_gpio 15 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio16 = 35, /**< gpio_gpio 16 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio17 = 36, /**< gpio_gpio 17 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio18 = 37, /**< gpio_gpio 18 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio19 = 38, /**< gpio_gpio 19 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio20 = 39, /**< gpio_gpio 20 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio21 = 40, /**< gpio_gpio 21 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio22 = 41, /**< gpio_gpio 22 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio23 = 42, /**< gpio_gpio 23 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio24 = 43, /**< gpio_gpio 24 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio25 = 44, /**< gpio_gpio 25 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio26 = 45, /**< gpio_gpio 26 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio27 = 46, /**< gpio_gpio 27 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio28 = 47, /**< gpio_gpio 28 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio29 = 48, /**< gpio_gpio 29 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio30 = 49, /**< gpio_gpio 30 */
-  kTopEnglishbreakfastPlicIrqIdGpioGpio31 = 50, /**< gpio_gpio 31 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio0 = 19, /**< gpio0_gpio 0 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio1 = 20, /**< gpio0_gpio 1 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio2 = 21, /**< gpio0_gpio 2 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio3 = 22, /**< gpio0_gpio 3 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio4 = 23, /**< gpio0_gpio 4 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio5 = 24, /**< gpio0_gpio 5 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio6 = 25, /**< gpio0_gpio 6 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio7 = 26, /**< gpio0_gpio 7 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio8 = 27, /**< gpio0_gpio 8 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio9 = 28, /**< gpio0_gpio 9 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio10 = 29, /**< gpio0_gpio 10 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio11 = 30, /**< gpio0_gpio 11 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio12 = 31, /**< gpio0_gpio 12 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio13 = 32, /**< gpio0_gpio 13 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio14 = 33, /**< gpio0_gpio 14 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio15 = 34, /**< gpio0_gpio 15 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio16 = 35, /**< gpio0_gpio 16 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio17 = 36, /**< gpio0_gpio 17 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio18 = 37, /**< gpio0_gpio 18 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio19 = 38, /**< gpio0_gpio 19 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio20 = 39, /**< gpio0_gpio 20 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio21 = 40, /**< gpio0_gpio 21 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio22 = 41, /**< gpio0_gpio 22 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio23 = 42, /**< gpio0_gpio 23 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio24 = 43, /**< gpio0_gpio 24 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio25 = 44, /**< gpio0_gpio 25 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio26 = 45, /**< gpio0_gpio 26 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio27 = 46, /**< gpio0_gpio 27 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio28 = 47, /**< gpio0_gpio 28 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio29 = 48, /**< gpio0_gpio 29 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio30 = 49, /**< gpio0_gpio 30 */
+  kTopEnglishbreakfastPlicIrqIdGpio0Gpio31 = 50, /**< gpio0_gpio 31 */
   kTopEnglishbreakfastPlicIrqIdSpiDeviceUploadCmdfifoNotEmpty = 51, /**< spi_device_upload_cmdfifo_not_empty */
   kTopEnglishbreakfastPlicIrqIdSpiDeviceUploadPayloadNotEmpty = 52, /**< spi_device_upload_payload_not_empty */
   kTopEnglishbreakfastPlicIrqIdSpiDeviceUploadPayloadOverflow = 53, /**< spi_device_upload_payload_overflow */
@@ -573,38 +573,38 @@ typedef enum top_englishbreakfast_plic_target {
  * Pinmux Peripheral Input.
  */
 typedef enum top_englishbreakfast_pinmux_peripheral_in {
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio0 = 0, /**< Peripheral Input 0 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio1 = 1, /**< Peripheral Input 1 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio2 = 2, /**< Peripheral Input 2 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio3 = 3, /**< Peripheral Input 3 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio4 = 4, /**< Peripheral Input 4 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio5 = 5, /**< Peripheral Input 5 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio6 = 6, /**< Peripheral Input 6 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio7 = 7, /**< Peripheral Input 7 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio8 = 8, /**< Peripheral Input 8 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio9 = 9, /**< Peripheral Input 9 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio10 = 10, /**< Peripheral Input 10 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio11 = 11, /**< Peripheral Input 11 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio12 = 12, /**< Peripheral Input 12 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio13 = 13, /**< Peripheral Input 13 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio14 = 14, /**< Peripheral Input 14 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio15 = 15, /**< Peripheral Input 15 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio16 = 16, /**< Peripheral Input 16 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio17 = 17, /**< Peripheral Input 17 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio18 = 18, /**< Peripheral Input 18 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio19 = 19, /**< Peripheral Input 19 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio20 = 20, /**< Peripheral Input 20 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio21 = 21, /**< Peripheral Input 21 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio22 = 22, /**< Peripheral Input 22 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio23 = 23, /**< Peripheral Input 23 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio24 = 24, /**< Peripheral Input 24 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio25 = 25, /**< Peripheral Input 25 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio26 = 26, /**< Peripheral Input 26 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio27 = 27, /**< Peripheral Input 27 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio28 = 28, /**< Peripheral Input 28 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio29 = 29, /**< Peripheral Input 29 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio30 = 30, /**< Peripheral Input 30 */
-  kTopEnglishbreakfastPinmuxPeripheralInGpioGpio31 = 31, /**< Peripheral Input 31 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio0 = 0, /**< Peripheral Input 0 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio1 = 1, /**< Peripheral Input 1 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio2 = 2, /**< Peripheral Input 2 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio3 = 3, /**< Peripheral Input 3 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio4 = 4, /**< Peripheral Input 4 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio5 = 5, /**< Peripheral Input 5 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio6 = 6, /**< Peripheral Input 6 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio7 = 7, /**< Peripheral Input 7 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio8 = 8, /**< Peripheral Input 8 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio9 = 9, /**< Peripheral Input 9 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio10 = 10, /**< Peripheral Input 10 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio11 = 11, /**< Peripheral Input 11 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio12 = 12, /**< Peripheral Input 12 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio13 = 13, /**< Peripheral Input 13 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio14 = 14, /**< Peripheral Input 14 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio15 = 15, /**< Peripheral Input 15 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio16 = 16, /**< Peripheral Input 16 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio17 = 17, /**< Peripheral Input 17 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio18 = 18, /**< Peripheral Input 18 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio19 = 19, /**< Peripheral Input 19 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio20 = 20, /**< Peripheral Input 20 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio21 = 21, /**< Peripheral Input 21 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio22 = 22, /**< Peripheral Input 22 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio23 = 23, /**< Peripheral Input 23 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio24 = 24, /**< Peripheral Input 24 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio25 = 25, /**< Peripheral Input 25 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio26 = 26, /**< Peripheral Input 26 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio27 = 27, /**< Peripheral Input 27 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio28 = 28, /**< Peripheral Input 28 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio29 = 29, /**< Peripheral Input 29 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio30 = 30, /**< Peripheral Input 30 */
+  kTopEnglishbreakfastPinmuxPeripheralInGpio0Gpio31 = 31, /**< Peripheral Input 31 */
   kTopEnglishbreakfastPinmuxPeripheralInUart0Rx = 32, /**< Peripheral Input 32 */
   kTopEnglishbreakfastPinmuxPeripheralInUart1Rx = 33, /**< Peripheral Input 33 */
   kTopEnglishbreakfastPinmuxPeripheralInFlashCtrlTck = 34, /**< Peripheral Input 34 */
@@ -731,38 +731,38 @@ typedef enum top_englishbreakfast_pinmux_outsel {
   kTopEnglishbreakfastPinmuxOutselConstantZero = 0, /**< Tie constantly to zero */
   kTopEnglishbreakfastPinmuxOutselConstantOne = 1, /**< Tie constantly to one */
   kTopEnglishbreakfastPinmuxOutselConstantHighZ = 2, /**< Tie constantly to high-Z */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio0 = 3, /**< Peripheral Output 0 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio1 = 4, /**< Peripheral Output 1 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio2 = 5, /**< Peripheral Output 2 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio3 = 6, /**< Peripheral Output 3 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio4 = 7, /**< Peripheral Output 4 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio5 = 8, /**< Peripheral Output 5 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio6 = 9, /**< Peripheral Output 6 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio7 = 10, /**< Peripheral Output 7 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio8 = 11, /**< Peripheral Output 8 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio9 = 12, /**< Peripheral Output 9 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio10 = 13, /**< Peripheral Output 10 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio11 = 14, /**< Peripheral Output 11 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio12 = 15, /**< Peripheral Output 12 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio13 = 16, /**< Peripheral Output 13 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio14 = 17, /**< Peripheral Output 14 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio15 = 18, /**< Peripheral Output 15 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio16 = 19, /**< Peripheral Output 16 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio17 = 20, /**< Peripheral Output 17 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio18 = 21, /**< Peripheral Output 18 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio19 = 22, /**< Peripheral Output 19 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio20 = 23, /**< Peripheral Output 20 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio21 = 24, /**< Peripheral Output 21 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio22 = 25, /**< Peripheral Output 22 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio23 = 26, /**< Peripheral Output 23 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio24 = 27, /**< Peripheral Output 24 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio25 = 28, /**< Peripheral Output 25 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio26 = 29, /**< Peripheral Output 26 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio27 = 30, /**< Peripheral Output 27 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio28 = 31, /**< Peripheral Output 28 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio29 = 32, /**< Peripheral Output 29 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio30 = 33, /**< Peripheral Output 30 */
-  kTopEnglishbreakfastPinmuxOutselGpioGpio31 = 34, /**< Peripheral Output 31 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio0 = 3, /**< Peripheral Output 0 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio1 = 4, /**< Peripheral Output 1 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio2 = 5, /**< Peripheral Output 2 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio3 = 6, /**< Peripheral Output 3 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio4 = 7, /**< Peripheral Output 4 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio5 = 8, /**< Peripheral Output 5 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio6 = 9, /**< Peripheral Output 6 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio7 = 10, /**< Peripheral Output 7 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio8 = 11, /**< Peripheral Output 8 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio9 = 12, /**< Peripheral Output 9 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio10 = 13, /**< Peripheral Output 10 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio11 = 14, /**< Peripheral Output 11 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio12 = 15, /**< Peripheral Output 12 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio13 = 16, /**< Peripheral Output 13 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio14 = 17, /**< Peripheral Output 14 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio15 = 18, /**< Peripheral Output 15 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio16 = 19, /**< Peripheral Output 16 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio17 = 20, /**< Peripheral Output 17 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio18 = 21, /**< Peripheral Output 18 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio19 = 22, /**< Peripheral Output 19 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio20 = 23, /**< Peripheral Output 20 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio21 = 24, /**< Peripheral Output 21 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio22 = 25, /**< Peripheral Output 22 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio23 = 26, /**< Peripheral Output 23 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio24 = 27, /**< Peripheral Output 24 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio25 = 28, /**< Peripheral Output 25 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio26 = 29, /**< Peripheral Output 26 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio27 = 30, /**< Peripheral Output 27 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio28 = 31, /**< Peripheral Output 28 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio29 = 32, /**< Peripheral Output 29 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio30 = 33, /**< Peripheral Output 30 */
+  kTopEnglishbreakfastPinmuxOutselGpio0Gpio31 = 34, /**< Peripheral Output 31 */
   kTopEnglishbreakfastPinmuxOutselUart0Tx = 35, /**< Peripheral Output 32 */
   kTopEnglishbreakfastPinmuxOutselUart1Tx = 36, /**< Peripheral Output 33 */
   kTopEnglishbreakfastPinmuxOutselFlashCtrlTdo = 37, /**< Peripheral Output 34 */

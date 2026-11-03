@@ -162,6 +162,12 @@
       tests: []
     }
     {
+      name: sec_cm_phy_rd_buf_ctrl_consistency
+      desc: "Verify the countermeasure(s) PHY_RD_BUF.CTRL.CONSISTENCY."
+      stage: V2S
+      tests: []
+    }
+    {
       name: sec_cm_fifo_ctr_redun
       desc: "Verify the countermeasure(s) FIFO.CTR.REDUN."
       stage: V2S

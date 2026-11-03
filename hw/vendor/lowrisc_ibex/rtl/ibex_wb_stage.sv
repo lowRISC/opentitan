@@ -203,9 +203,11 @@ module ibex_wb_stage import ibex_cheriot_pkg::*; #(
     // Speculative versions of the signals do not factor in exceptions and whether the instruction
     // is done yet. These are used to get correct values for instructions reading the relevant
     // performance counters in the ID stage.
-    assign perf_instr_ret_wb_spec_o            = wb_count_q & wb_valid_q;
+    // Dummy instructions do not count as retired; mask them with the marker for the WB instruction.
+    assign perf_instr_ret_wb_spec_o            = wb_count_q & wb_valid_q & ~dummy_instr_wb_o;
     assign perf_instr_ret_compressed_wb_spec_o = perf_instr_ret_wb_spec_o & wb_compressed_q;
     assign perf_instr_ret_wb_o                 = instr_done_wb_o & wb_count_q &
+                                                 ~dummy_instr_wb_o &
                                                  ~(lsu_resp_valid_i & lsu_resp_err_i);
     assign perf_instr_ret_compressed_wb_o      = perf_instr_ret_wb_o & wb_compressed_q;
 
@@ -261,7 +263,9 @@ module ibex_wb_stage import ibex_cheriot_pkg::*; #(
     // values will be correct.
     assign perf_instr_ret_wb_spec_o            = 1'b0;
     assign perf_instr_ret_compressed_wb_spec_o = 1'b0;
+    // Dummy instructions do not count as retired.
     assign perf_instr_ret_wb_o                 = instr_perf_count_id_i & en_wb_i &
+                                                 ~dummy_instr_wb_o &
                                                  ~(lsu_resp_valid_i & lsu_resp_err_i);
     assign perf_instr_ret_compressed_wb_o      = perf_instr_ret_wb_o & instr_is_compressed_id_i;
 
@@ -308,4 +312,15 @@ module ibex_wb_stage import ibex_cheriot_pkg::*; #(
   `DV_FCOV_SIGNAL_GEN_IF(logic, wb_valid, g_writeback_stage.wb_valid_q, WritebackStage)
 
   `ASSERT(RFWriteFromOneSourceOnly, $onehot0(rf_wdata_wb_mux_we))
+
+  // A dummy instruction must not advance minstret, through either retire indication.
+  `ASSERT(NoMinstretForDummyInstr, dummy_instr_wb_o |-> ~perf_instr_ret_wb_o)
+  `ASSERT(NoSpecMinstretForDummyInstr, dummy_instr_wb_o |-> ~perf_instr_ret_wb_spec_o)
+
+  // A dummy actually in WB (the marker can outlive the entry).
+  if (WritebackStage) begin : g_dummy_cover_wb
+    `COVER(DummyInstrLiveInWb, dummy_instr_wb_o & g_writeback_stage.wb_valid_q)
+  end else begin : g_dummy_cover_bypass
+    `COVER(DummyInstrLiveInWb, dummy_instr_wb_o & en_wb_i)
+  end
 endmodule

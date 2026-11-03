@@ -34,6 +34,9 @@ jobs:
           fetch-depth: 0 # Required by bitstream cache script
           ref: ${{ inputs.ref }}
 
+      - name: Prepare Nix
+        uses: ./.github/actions/prepare-nix
+
       - name: Prepare environment
         uses: ./.github/actions/prepare-env
         with:
@@ -59,7 +62,7 @@ jobs:
       - name: Build
         run: |
           module load xilinx/vivado
-          ./bazelisk.sh build '${{ inputs.target }}'
+          nix run --quiet --no-warn-dirty .#eda -- ./bazelisk.sh build '${{ inputs.target }}'
 
       - name: Create release
         env:

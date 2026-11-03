@@ -104,22 +104,22 @@
  */
 #define TOP_UART0_SIZE_BYTES 0x40
 /**
- * Peripheral base address for gpio in top darjeeling.
+ * Peripheral base address for gpio0 in top darjeeling.
  *
  * This should be used with #mmio_region_from_addr to access the memory-mapped
  * registers associated with the peripheral (usually via a DIF).
  */
-#define TOP_GPIO_BASE_ADDR 0x30000000
+#define TOP_GPIO0_BASE_ADDR 0x30000000
 
 /**
- * Peripheral size for gpio in top darjeeling.
+ * Peripheral size for gpio0 in top darjeeling.
  *
  * This is the size (in bytes) of the peripheral's reserved memory area. All
  * memory-mapped registers associated with this peripheral should have an
- * address between #TOP_GPIO_BASE_ADDR and
- * `TOP_GPIO_BASE_ADDR + TOP_GPIO_SIZE_BYTES`.
+ * address between #TOP_GPIO0_BASE_ADDR and
+ * `TOP_GPIO0_BASE_ADDR + TOP_GPIO0_SIZE_BYTES`.
  */
-#define TOP_GPIO_SIZE_BYTES 0x100
+#define TOP_GPIO0_SIZE_BYTES 0x100
 /**
  * Peripheral base address for spi_device in top darjeeling.
  *

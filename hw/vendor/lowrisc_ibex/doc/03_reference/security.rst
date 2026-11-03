@@ -47,6 +47,11 @@ When enabled (via the **dummy_instr_en** control bit in the **cpuctrl** register
 The dummy instructions have no functional impact on processor state, but add some difficult-to-predict timing and power disruption to executed code.
 This disruption makes it more difficult for an attacker to infer what is being executed, and also makes it more difficult to execute precisely timed fault injection attacks.
 
+Dummy instructions do not count as a single step and do not increment ``minstret`` or ``mhpmcounter10`` (compressed instructions retired).
+They do take cycles, so they can show in ``mcycle`` and, where implemented and enabled, in the multiply and divide wait counters ``mhpmcounter11`` and ``mhpmcounter12``.
+No dummy instruction is inserted directly before a Zcmp instruction or between its micro-ops.
+Zcmp instructions do not count towards the intervals below, so a run of them lengthens the gap between dummy instructions.
+
 The frequency of injected instructions can be tuned via the **dummy_instr_mask** bits in the **cpuctrl** register.
 
 +----------------------+----------------------------------------------------------+

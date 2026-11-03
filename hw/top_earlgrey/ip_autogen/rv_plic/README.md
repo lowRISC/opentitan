@@ -1,5 +1,7 @@
 # Interrupt Controller Technical Specification
 
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/top_earlgrey/ip_autogen/rv_plic/index.html).
+
 # Overview
 
 This document specifies the Interrupt Controller (RV_PLIC) functionality. This

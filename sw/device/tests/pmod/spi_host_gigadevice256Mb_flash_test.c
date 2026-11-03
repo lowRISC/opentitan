@@ -54,15 +54,17 @@ static void init_test(dif_spi_host_t *spi_host, dt_pad_t csb_pad) {
   base_addr = mmio_region_from_addr(TOP_EARLGREY_SPI_HOST1_BASE_ADDR);
   CHECK_DIF_OK(dif_spi_host_init(base_addr, spi_host));
 
-  CHECK(kClockFreqUsbHz <= UINT32_MAX, "kClockFreqUsbHz must fit in uint32_t");
+  CHECK(kClockFreqHiSpeedPeripheralHz <= UINT32_MAX,
+        "kClockFreqHiSpeedPeripheralHz must fit in uint32_t");
 
-  CHECK_DIF_OK(dif_spi_host_configure(
-                   spi_host,
-                   (dif_spi_host_config_t){
-                       .spi_clock = 1000000,
-                       .peripheral_clock_freq_hz = (uint32_t)kClockFreqUsbHz,
-                   }),
-               "SPI_HOST config failed!");
+  CHECK_DIF_OK(
+      dif_spi_host_configure(spi_host,
+                             (dif_spi_host_config_t){
+                                 .spi_clock = 1000000,
+                                 .peripheral_clock_freq_hz =
+                                     (uint32_t)kClockFreqHiSpeedPeripheralHz,
+                             }),
+      "SPI_HOST config failed!");
 
   CHECK_DIF_OK(dif_spi_host_output_set_enabled(spi_host, true));
 }

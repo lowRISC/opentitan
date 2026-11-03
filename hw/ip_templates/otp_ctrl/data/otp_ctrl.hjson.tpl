@@ -618,9 +618,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
     }
     {
       name: "OTP_CTRL.ENTROPY_READ"
-      desc: '''Firmware can read entropy from ENTROPY_SRC block by configuring following field of HW_CFG* partition.
-        - EN_CSRNG_SW_APP_READ
-      '''
+      desc: "Firmware can read entropy from ENTROPY_SRC block."
     }
     {
       name: "OTP_CTRL.KEY_DERIVATION"

@@ -149,7 +149,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
 
         # Taken from the regular test
         cfg = 0
-        trigger = 0
+        trigger = 1
 
         # Directory for the trace log files
         pc_trace_file = os.path.join(log_dir, "p384_sign_pc_trace.log")
@@ -725,6 +725,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        ecdh_output = [None, None]
                         # Search for collisions in outputs between the ecdh instances
                         for i in range(2):
                             print("-" * 80)
@@ -1166,6 +1167,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        ecdh_output = [None, None]
                         # Search for collisions in outputs between the ecdh instances
                         for i in range(2):
                             print("-" * 80)
@@ -1776,12 +1778,11 @@ class AsymCryptolibFiSim(unittest.TestCase):
         n_len = 256
         d = [x for x in (key.d).to_bytes(256, "little")]
 
-        # Create a second set of inputs with a single bit flipped to check for collisions
-        data1 = [i for i in range(16)]
-        data2 = data1.copy()
-        data2[0] ^= 1
+        # We prepare two data inputs and check for collisions between them
+        data_len = 16
+        data1 = [i for i in range(data_len)]
+        data2 = [data_len - i for i in range(data_len)]
         data_inputs = [data1, data2]
-        data_len = len(data1)
 
         cfg = 0
         trigger = 0x4
@@ -1921,6 +1922,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        sign_output = [None, None]
                         # Search for collisions in outputs between the sign instances
                         for i in range(2):
                             print("-" * 80)
@@ -2168,6 +2170,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        ecdh_output = [None, None]
                         # Search for collisions in outputs between the ecdh instances
                         for i in range(2):
                             print("-" * 80)
@@ -2345,38 +2348,38 @@ class AsymCryptolibFiSim(unittest.TestCase):
             0,
         ]
         r = [
-            179,
-            233,
-            109,
-            11,
-            158,
-            166,
-            221,
-            245,
-            31,
-            170,
-            150,
-            231,
-            193,
-            167,
-            36,
-            93,
-            15,
-            224,
-            39,
-            117,
-            62,
-            182,
-            19,
-            173,
-            252,
-            159,
-            107,
-            165,
-            211,
-            94,
-            217,
             145,
+            217,
+            94,
+            211,
+            165,
+            107,
+            159,
+            252,
+            173,
+            19,
+            182,
+            62,
+            117,
+            39,
+            224,
+            15,
+            93,
+            36,
+            167,
+            193,
+            231,
+            150,
+            170,
+            31,
+            245,
+            221,
+            166,
+            158,
+            11,
+            109,
+            233,
+            179,
             0,
             0,
             0,

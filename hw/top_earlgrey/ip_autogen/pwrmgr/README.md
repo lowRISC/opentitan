@@ -4,6 +4,8 @@
 |-|-|-|-|
  [`pwrmgr`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 1.1.0 | D3, V2S | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/pwrmgr/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/pwrmgr/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/pwrmgr/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/pwrmgr/code.svg) |
 
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/top_earlgrey/ip_autogen/pwrmgr/index.html).
+
 <!-- END CMDGEN -->
 
 # Overview

@@ -42,6 +42,11 @@ class rv_dm_mode_seq_item extends uvm_sequence_item;
   bit             m_has_scanmode;
   rand bit [3:0]  m_scanmode;
 
+  // Note: The 4-bit value represents a value of type mubi4_t, but we use the raw bit vector to
+  //       allow invalid encodings.
+  bit             m_has_cheriot_ena;
+  rand bit [3:0]  m_cheriot_ena;
+
   extern function new (string name="");
   extern virtual function void do_print(uvm_printer printer);
 
@@ -114,6 +119,12 @@ function void rv_dm_mode_seq_item::do_print(uvm_printer printer);
   end else begin
     printer.print_field_int("m_has_scanmode", m_has_scanmode, 1, UVM_BIN);
   end
+
+  if (m_has_cheriot_ena) begin
+    print_mubi4_t_field(printer, "m_cheriot_ena", m_cheriot_ena);
+  end else begin
+    printer.print_field_int("m_has_cheriot_ena", m_has_cheriot_ena, 1, UVM_BIN);
+  end
 endfunction
 
 function void rv_dm_mode_seq_item::print_lc_tx_t_field(uvm_printer printer,
@@ -164,4 +175,5 @@ constraint rv_dm_mode_seq_item::zero_when_not_provided_c {
   !m_has_pwrmgr_signals -> ~|m_strap_en;
   !m_has_otp_ctrl_signals -> ~|m_otp_dis_rv_dm_late_debug;
   !m_has_scanmode -> ~|m_scanmode;
+  !m_has_cheriot_ena -> ~|m_cheriot_ena;
 }

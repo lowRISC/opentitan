@@ -127,6 +127,9 @@ static status_t run_key_from_cofactor_3072(const uint32_t *cofactor) {
 
   TRY_CHECK(private_key.keyblob_length == sizeof(rsa_3072_private_key_t));
   rsa_3072_private_key_t *sk = (rsa_3072_private_key_t *)private_key.keyblob;
+  for (size_t i = 0; i < ARRAYSIZE(kTestPrivateExponent3072); i++) {
+    sk->d0.data[i] ^= sk->d1.data[i];
+  }
   TRY_CHECK_ARRAYS_EQ(sk->d0.data, kTestPrivateExponent3072,
                       ARRAYSIZE(kTestPrivateExponent3072));
 

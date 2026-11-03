@@ -29,7 +29,8 @@ class chip_sw_otp_ctrl_escalation_vseq extends chip_sw_base_vseq;
     `DV_WAIT(cfg.sw_logger_vif.printed_log == "Ready for fault injection",
              "Timeout waiting for fault injection request.")
 
-    // inject_errors() may flip any bit of the row, so save the whole row.
+    // inject_errors() flips bits in the 64-bit chunk that holds hw_cfg_addr or in its integrity
+    // byte. Restoring the saved row undoes both, as write() also recomputes the integrity byte.
     val = cfg.mem_bkdr_util_h[Otp].read(hw_cfg_addr);
 
     // Inject 2 bits error in this hw_cfg_addr to trigger a ECC non-correctable error.

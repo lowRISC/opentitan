@@ -3,3 +3,149 @@
 # SPDX-License-Identifier: Apache-2.0
 #
 # waiver file for I3C Controller/Target
+
+## Clocks derived from the I3C bus
+waive -rules {CLOCK_MUX} -location {i3c_core.sv} \
+      -regexp {Clock 'targ_(scl_buf|scl_buf_n|sda0_clk|sda0_clk_n)' is driven by a multiplexer here} \
+      -comment "The Target-side input buffers gate SCL and SDA when disabled and select the scan clock in scan mode."
+waive -rules {CLOCK_MUX} -location {i3c_core.sv} \
+      -regexp {Clock 'targ_bus_obs_i\.sda\[0\]' reaches a multiplexer here} \
+      -comment "The Target-side input buffers gate SCL and SDA when disabled and select the scan clock in scan mode."
+waive -rules {CLOCK_USE} -location {i3c_core.sv} \
+      -regexp {'targ_bus_obs_i\.(scl|sda\[0\])' is connected to 'prim_flop_2sync' port 'd_i\[[01]\]', and used as a clock} \
+      -comment "The bus levels are also synchronized into clk_i to report them to software and to time bus inactivity."
+waive -rules {CLOCK_USE INV_CLOCK} -location {i3c_patt_detector.sv} \
+      -regexp {'scl_buf_i' is (used for some other purpose, and|inverted, used) as clock} \
+      -comment "SCL high resets the HDR Exit and Restart Pattern Detector, as in the example design of the I3C Basic specification (section 6.1.2.1)."
+waive -rules {CLOCK_USE INV_CLOCK} -location {i3c_target_trx.sv} \
+      -regexp {'scl_i' is (used for some other purpose, and|inverted, used) as clock} \
+      -comment "SDA edges sample SCL to detect START, Repeated START and STOP conditions."
+
+## Target Reset Detector, which has no free-running clock
+waive -rules {CLOCK_MUX} -location {i3c_reset_detector.sv} \
+      -regexp {Clock '(scl_buf|sda_clk|sda_clk_n)' is driven by a multiplexer here|Clock '(scl_i|scan_clk_i)' reaches a multiplexer here} \
+      -comment "The Target Reset Detector input buffers gate SCL and SDA when disabled and select the scan clock in scan mode."
+waive -rules {CLOCK_USE INV_CLOCK} -location {i3c_reset_detector.sv} \
+      -regexp {'scl_buf' is (used for some other purpose, and|inverted, used) as clock} \
+      -comment "The SCL level qualifies the SDA-clocked pattern detection, and SCL high clears the SDA transition count (I3C Basic 4.3.9.3)."
+waive -rules {CLOCK_USE} -location {i3c_reset_detector.sv} \
+      -regexp {'sda_clk' is used for some other purpose, and as clock} \
+      -comment "The rising edge of SCL samples the SDA level to detect the Repeated START of the Target Reset Pattern."
+waive -rules {RESET_DRIVER} -location {i3c_reset_detector.sv} \
+      -regexp {'(reset_ni|reset_cnt_n|reset_srp_ni)' is driven here, and used as an asynchronous reset} \
+      -comment "The detector has no free-running clock, so firmware clears it, and SCL high and a detected pattern restart it, through asynchronous resets."
+waive -rules {CLOCK_USE} -location {i3c_part_primary.sv} \
+      -regexp {'cio_ctrl_bus_obs\.(scl|sda\[0\])' is connected to 'i3c_core' port 'ctrl_bus_obs_i\.(scl|sda\[0\])', and used as a clock} \
+      -comment "Controller and Target observe the same SCL and SDA lines. The Target transceiver has no free-running clock and is clocked by the Controller-supplied SCL, and by SDA to detect (Repeated) START and STOP conditions."
+
+## Clock edges
+waive -rules {CLOCK_EDGE DUAL_EDGE_CLOCK} -location {i3c_controller_trx.sv} \
+      -regexp {(Falling edge of clock 'clk_i' used here|Clock 'clk_i' uses falling edge here and rising edge at)} \
+      -comment "The half-cycle SCL extension (HalfCycleScl) places an SCL transition on the falling edge of clk_i, which a Mixed Fast Bus needs at a 96MHz IP clock (see #31679)."
+
+## Asynchronous resets
+waive -rules {RESET_DRIVER} -location {i3c_core.sv} \
+      -regexp {'targ_trx_rst_n' is driven by instance 'u_targ_rst_src' of module 'prim_flop'} \
+      -comment "A flop in the clk_i domain drives the reset of the Target transceiver, so that the reset is free of glitches. The transceiver is clocked by SCL and SDA and has no free-running clock."
+waive -rules {RESET_USE} -location {i3c_core.sv} \
+      -regexp {'targ_trx_rst_n' is used for some other purpose, and as asynchronous reset} \
+      -comment "The Target transceiver reset is also reported to software and restarts the Bus Available timer."
+waive -rules {RESET_DRIVER} -location {i3c_patt_detector.sv} \
+      -regexp {'(scl_rst_n|restart_rst_n)' is driven here, and used as an asynchronous reset} \
+      -comment "The HDR Exit and Restart Pattern Detector has asynchronous resets derived from SCL and the enables, as in the example design of the I3C Basic specification (section 6.1.2.1)."
+waive -rules {RESET_USE} -location {i3c_core.sv} \
+      -regexp {'rst_ni' is connected to 'i3c_patt_detector' port 'rst_ni', and used as an asynchronous reset} \
+      -comment "The HDR Exit and Restart Pattern Detector combines rst_ni into its asynchronous resets."
+waive -rules {RESET_USE} -location {i3c_dxt.sv} \
+      -regexp {'rst_ni' is connected to 'prim_ram_1p' port 'rst_ni', and used as an asynchronous reset or set} \
+      -comment "rst_ni is the asynchronous reset of prim_ram_1p. It is unused in the generic implementation, but other implementations may use it."
+
+## Parameters
+waive -rules {PARAM_NOT_USED} -location {i3c_controller.sv i3c_controller_trx.sv} \
+      -regexp {Parameter '(PrimaryCtrl|SecondaryCtrl)' not used} \
+      -comment "The Controller logic does not yet distinguish between the Primary and the Secondary Controller role (see #31308)."
+
+## Coding style
+waive -rules {ONE_BIT_MEM_WIDTH} -location {i3c_part_primary.sv i3c_core.sv i3c_target.sv} \
+      -regexp {Memory '(bufq_(req|gnt|we|rvalid)|(hci|tti)_(wvalid|rready)|fifo_rst|targ_trx_(dvalid|dready)|targ_tx_desc_(rready|rvalid)|targ_buf_(rready|rvalid|rempty)|targ_grp_(addr|targ)_de|txd_toggle_(in|out))' has word width which is single bit wide} \
+      -comment "These unpacked arrays hold one valid, ready or enable signal per queue, FIFO, group or Virtual Target, in line with the arrays of the corresponding data."
+waive -rules {CALC_NEXT_STATE} -location {i3c_controller_trx.sv} \
+      -regexp {Next state register 'state_d' is assigned a non-constant expression 'state_next_req'} \
+      -comment "state_next_req is the state that serves the next transceiver request, which a separate block decodes."
+waive -rules {ENUM_RANGE} -location {i3c_controller_trx.sv} \
+      -regexp {Base of index expression 'state_q\[(ST_SCL|ST_SCL_PP_EN)\]' is of enumerated type 'state_e'} \
+      -comment "The state encoding drives SCL and its push-pull enable directly from state flops, to avoid glitches."
+waive -rules {INTEGER} -location {i3c_target_fsm.sv i3c_target_trx.sv} \
+      -regexp {'(t|grp)' of type int used as a non-constant value} \
+      -comment "The loop variable is converted to the index of the selected Target or group."
+waive -rules {LOOP_VAR_OP} -location {i3c_controller_fsm.sv} \
+      -regexp {Loop variable 'ib' is in arithmetic expression 'ib \+ 8 < bits_left'} \
+      -comment "The loop variable selects which bytes are padded with zero."
+waive -rules {INVALID_COMPARE} -location {i3c_controller_fsm.sv} \
+      -regexp {Comparison '\(dct_idx_next >= NumDCTEntries\)' with 'NumDCTEntries'=32 can never be true} \
+      -comment "The comparison wraps the DCT index for table sizes that are not a power of two."
+waive -rules {INVALID_COMPARE} -location {i3c_queues.sv} \
+      -regexp {Comparison 'addr_i < NumQueues' with 'NumQueues'=4 can never be false} \
+      -comment "The comparison guards against out-of-range addresses for queue counts that are not a power of two."
+waive -rules {NEG_RANGE} -location {i3c_timing_pkg.sv} \
+      -regexp {Declaration range index '-1' of '(cnt|per_cyc)' is negative} \
+      -comment "Bit -1 holds the half cycle of the 'n.1' fixed-point cycle counts."
+waive -rules {CASE_SEL_EXPR} -location {i3c_controller_trx.sv} \
+      -regexp {Expression '\{tx_load,trx_dreq_i\.req == CReqType_ArbAddr\}' as case selector encountered} \
+      -comment "The concatenation selects how the transmit buffer is loaded."
+waive -rules {VAR_INDEX_RANGE} -location {i3c_target_trx.sv i3c_target_ccc.sv} \
+      -regexp {'(sel_targ_id|targ_id|ccc_req_i\.targ_id)' of length [0-9]+ is larger than the [0-9]+ bits required} \
+      -comment "Target IDs also encode the Broadcast Address and the absence of a match, so they are wider than the index of the Virtual Targets. The logic checks them against NumTargets before indexing."
+waive -rules {VAR_INDEX_RANGE} -location {i3c_target_fsm.sv} \
+      -regexp {'tx_targ_id' of length [0-9]+ is larger than the [0-9]+ bits required to address 'tx_desc_rdata_i'} \
+      -comment "Virtual Target indices are reported to software in terms of MaxTargets, whereas a transmit descriptor queue exists only for each of the NumTargets implemented Virtual Targets."
+waive -rules {VAR_INDEX_RANGE} -location {i3c_controller_fsm.sv} \
+      -regexp {'ccc_rsp\.reg_widx' of length 3 is larger than the 2 bits required} \
+      -comment "The register index enum includes the CtrlCR_Count member, which is never used as an index."
+
+## Constant flops
+waive -rules {CONST_FF} -location {i3c_controller_fsm.sv i3c_target_fsm.sv} \
+      -regexp {Flip-flop '(rsp|rx_desc_q)\.reserved' is driven by constant zeros?} \
+      -comment "Reserved fields of descriptors are always zero."
+waive -rules {CONST_FF} -location {i3c_target_fsm.sv} \
+      -regexp {Flip-flop 'rx_desc_q\.targets\[3:2\]' is driven by constant zeros} \
+      -comment "The descriptor has a bit for each of the maximum number of Virtual Targets; bits above NumTargets are zero."
+waive -rules {CONST_FF} -location {i3c_controller_fsm.sv i3c_target_trx.sv} \
+      -regexp {Flip-flop '(state_q\[5\]|trx_rxd_o\.dtype\[4\])' is driven by constant zero} \
+      -comment "None of the enum values that the logic assigns to this flop sets this bit."
+waive -rules {CONST_FF} -location {i3c_target_trx.sv} \
+      -regexp {Flip-flop 'trx_rxd_o\.status\[2\]' is driven by constant zero} \
+      -comment "Only TTIRxStatus_BusAborted sets this bit, and the Target does not report aborted transfers yet (see #31337)."
+waive -rules {CONST_FF} -location {i3c_patt_detector.sv} \
+      -regexp {Flip-flop 'exit_det\[0\]' is driven by constant one} \
+      -comment "The first stage of the HDR Exit Pattern Detector shift chain captures a constant one on each SDA edge, as in the I3C Basic specification."
+waive -rules {CONST_FF} -location {i3c_stby_cr_regs.sv} \
+      -regexp {Flip-flop 'stby_cr_control_o\.(handoff_delay_nack|pending_rx_nack)\.d' is driven by constant zero} \
+      -comment "Software can clear these W1C fields, but hardware does not set them yet (see #31308)."
+waive -rules {CONST_FF} -location {i3c_targ_async_events.sv} \
+      -regexp {Flip-flop 'ccc_address' is driven by constant zeros} \
+      -comment "The reporting of CCC activity is not specified completely yet (see #31337)."
+waive -rules {CONST_FF} -location {i3c_targ_async_events.sv} \
+      -regexp {Flip-flop 'ccc_targets\[[0-9]+:[0-9]+\]' is driven by constant zeros} \
+      -comment "The recorded set has a bit for each of the maximum number of Virtual Targets; bits above NumTargets are trimmed off by TargPresent."
+
+## Unused signals
+waive -rules {INPUT_NOT_READ HIER_BRANCH_NOT_READ} \
+      -location {i3c_core.sv i3c_controller.sv i3c_controller_ccc.sv i3c_controller_fsm.sv i3c_controller_state.sv i3c_ctrl_req_gen.sv i3c_stby_cr_regs.sv i3c_target.sv i3c_target_ccc.sv i3c_target_fsm.sv i3c_targ_async_events.sv} \
+      -regexp {(Input port|Net|Connected net) 'reg2hw_i[.']} \
+      -comment "These modules receive the complete register interface and read only the fields they need. Fields that no module reads are sunk explicitly in i3c_core."
+waive -rules {INPUT_NOT_READ} -location {i3c_sync_data.sv} \
+      -regexp {Input port '(clk_src_i|rst_src_ni)' is not read from} \
+      -comment "The source clock and reset are used only when EnSrcToggleOut is set."
+waive -rules {INPUT_NOT_READ} -location {i3c_fifo_pkg.sv} \
+      -regexp {Input port 'cfg\.size' is not read from} \
+      -comment "fifo_size derives the size from the address bounds of the configuration."
+waive -rules {INPUT_NOT_READ} -location {i3c_pkg.sv} \
+      -regexp {Input port 'ccc\[6:0\]' is not read from} \
+      -comment "broadcast_ccc needs only the MSB of the CCC."
+waive -rules {INPUT_NOT_READ} -location {i3c_target_trx.sv} \
+      -regexp {Input port 'data_pq\[(3:0|8)\]' is not read from} \
+      -comment "extract_data_nq needs only some of the positive-edge data bits."
+waive -rules {NOT_READ} -location {i3c_timing_pkg.sv} \
+      -regexp {Signal 'cnt\[-1\]' is not read from} \
+      -comment "tm_cycles_init drops the half cycle of the 'n.1' fixed-point cycle count."

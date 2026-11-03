@@ -7,6 +7,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/entropy_kat.h"
+#include "sw/device/lib/crypto/impl/hash.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -17,10 +18,11 @@
 #include "sw/device/lib/crypto/include/ecc_curve25519.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
-#include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/hmac.h"
 #include "sw/device/lib/crypto/include/integrity.h"
+#include "sw/device/lib/crypto/include/kdf_ctr.h"
 #include "sw/device/lib/crypto/include/kmac.h"
+#include "sw/device/lib/crypto/include/kmac_kdf.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/crypto/include/sha3.h"
@@ -83,14 +85,29 @@ static const uint8_t sha512_ans[64] = {
     0x77, 0xc8, 0xab, 0x5d, 0xc9, 0x02, 0x09, 0x4c, 0x52, 0xde, 0x32,
     0x78, 0xf3, 0x5a, 0x75, 0xeb, 0xc2, 0x5f, 0x09, 0x3a};
 
-// P256,SHA-256 CAVP vector
-// Msg = 44acf6b7e36c1342c2c5897204fe09504e1e2efb1a900377dbc4e7a6a133ec56
+// P-256,SHA-256 CAVP vector (186-4ecdsatestvectors/SigGen.txt)
+// Msg =
+// 5905238877c77421f73e43ee3da6f2d9e2ccad5fc942dcec0cbd25482935faaf416983fe165b1a045ee2bcd2e6dca3bdf46c4310a7461f9a37960ca672d3feb5473e253605fb1ddfd28065b53cb5858a8ad28175bf9bd386a5e471ea7a65c17cc934a9d791e91491eb3754d03799790fe2d308d16146d5c9b0d0debd97d79ce8
+// Digest = 44acf6b7e36c1342c2c5897204fe09504e1e2efb1a900377dbc4e7a6a133ec56
 // d = 519b423d715f8b581f4fa8ee59f4771a5b44c8130b4e3eacca54a56dda72b464
 // Qx = 1ccbe91c075fc7f4f033bfa248db8fccd3565de94bbfb12f3c59ff46c271bf83
 // Qy = ce4014c68811f9a21a1fdb2c0e6113e06db7ca93b7404e78dc7ccd5ca89a4ca9
 // k = 94a1bbb14b906a61a280f245f9e93c7f3b4a6247824f5d33b9670787642a68de
 // R = f3ac8061b514795b8843e3d6629527ed2afd6b1f6a555a7acabb5e6f79c8c2ac
 // S = 8bf77819ca05a6b2786c76262bf7371cef97b218e96f175a3ccdda2acc058903
+
+static const uint8_t p256_msg[128] = {
+    0x59, 0x05, 0x23, 0x88, 0x77, 0xc7, 0x74, 0x21, 0xf7, 0x3e, 0x43, 0xee,
+    0x3d, 0xa6, 0xf2, 0xd9, 0xe2, 0xcc, 0xad, 0x5f, 0xc9, 0x42, 0xdc, 0xec,
+    0x0c, 0xbd, 0x25, 0x48, 0x29, 0x35, 0xfa, 0xaf, 0x41, 0x69, 0x83, 0xfe,
+    0x16, 0x5b, 0x1a, 0x04, 0x5e, 0xe2, 0xbc, 0xd2, 0xe6, 0xdc, 0xa3, 0xbd,
+    0xf4, 0x6c, 0x43, 0x10, 0xa7, 0x46, 0x1f, 0x9a, 0x37, 0x96, 0x0c, 0xa6,
+    0x72, 0xd3, 0xfe, 0xb5, 0x47, 0x3e, 0x25, 0x36, 0x05, 0xfb, 0x1d, 0xdf,
+    0xd2, 0x80, 0x65, 0xb5, 0x3c, 0xb5, 0x85, 0x8a, 0x8a, 0xd2, 0x81, 0x75,
+    0xbf, 0x9b, 0xd3, 0x86, 0xa5, 0xe4, 0x71, 0xea, 0x7a, 0x65, 0xc1, 0x7c,
+    0xc9, 0x34, 0xa9, 0xd7, 0x91, 0xe9, 0x14, 0x91, 0xeb, 0x37, 0x54, 0xd0,
+    0x37, 0x99, 0x79, 0x0f, 0xe2, 0xd3, 0x08, 0xd1, 0x61, 0x46, 0xd5, 0xc9,
+    0xb0, 0xd0, 0xde, 0xbd, 0x97, 0xd7, 0x9c, 0xe8};
 
 static const uint8_t p256_d[32] = {
     0x64, 0xb4, 0x72, 0xda, 0x6d, 0xa5, 0x54, 0xca, 0xac, 0x3e, 0x4e,
@@ -112,11 +129,6 @@ static const uint8_t p256_Q[64] = {
     0x93, 0xca, 0xb7, 0x6d, 0xe0, 0x13, 0x61, 0x0e, 0x2c, 0xdb, 0x1f, 0x1a,
     0xa2, 0xf9, 0x11, 0x88, 0xc6, 0x14, 0x40, 0xce};
 
-static const uint8_t p256_msg_digest[32] = {
-    0x44, 0xac, 0xf6, 0xb7, 0xe3, 0x6c, 0x13, 0x42, 0xc2, 0xc5, 0x89,
-    0x72, 0x04, 0xfe, 0x09, 0x50, 0x4e, 0x1e, 0x2e, 0xfb, 0x1a, 0x90,
-    0x03, 0x77, 0xdb, 0xc4, 0xe7, 0xa6, 0xa1, 0x33, 0xec, 0x56};
-
 static const uint8_t p256_sig[64] = {
     // R (Reversed)
     0xac, 0xc2, 0xc8, 0x79, 0x6f, 0x5e, 0xbb, 0xca, 0x7a, 0x5a, 0x55, 0x6a,
@@ -127,62 +139,72 @@ static const uint8_t p256_sig[64] = {
     0x18, 0xb2, 0x97, 0xef, 0x1c, 0x37, 0xf7, 0x2b, 0x26, 0x76, 0x6c, 0x78,
     0xb2, 0xa6, 0x05, 0xca, 0x19, 0x78, 0xf7, 0x8b};
 
-// P-384,SHA-256 CAVP vector
-// Msg = bbbd0a5f645d3fda10e288d172b299455f9dff00e0fbc2833e18cd017d7f3ed1
+// P-384,SHA-384 CAVP vector (186-4ecdsatestvectors/SigGen.txt)
+// Msg =
+// 6b45d88037392e1371d9fd1cd174e9c1838d11c3d6133dc17e65fa0c485dcca9f52d41b60161246039e42ec784d49400bffdb51459f5de654091301a09378f93464d52118b48d44b30d781eb1dbed09da11fb4c818dbd442d161aba4b9edc79f05e4b7e401651395b53bd8b5bd3f2aaa6a00877fa9b45cadb8e648550b4c6cbe
+// Digest =
+// 31a452d6164d904bb5724c878280231eae705c29ce9d4bc7d58e020e1085f17eebcc1a38f0ed0bf2b344d81fbd896825
 // d =
-// c602bc74a34592c311a6569661e0832c84f7207274676cc42a89f058162630184b52f0d99b855a7783c987476d7f9e6b
+// 201b432d8df14324182d6261db3e4b3f46a8284482d52e370da41e6cbdf45ec2952f5db7ccbce3bc29449f4fb080ac97
 // Qx =
-// 0400193b21f07cd059826e9453d3e96dd145041c97d49ff6b7047f86bb0b0439e909274cb9c282bfab88674c0765bc75
+// c2b47944fb5de342d03285880177ca5f7d0f2fcad7678cce4229d6e1932fcac11bfc3c3e97d942a3c56bf34123013dbf
 // Qy =
-// f70d89c52acbc70468d2c5ae75c76d7f69b76af62dcf95e99eba5dd11adf8f42ec9a425b0c5ec98e2f234a926b82a147
+// 37257906a8223866eda0743c519616a76a758ae58aee81c5fd35fbf3a855b7754a36d4a0672df95d6c44a81cf7620c2d
 // k =
-// c10b5c25c4683d0b7827d0d88697cdc0932496b5299b798c0dd1e7af6cc757ccb30fcd3d36ead4a804877e24f3a32443
+// dcedabf85978e090f733c6e16646fa34df9ded6e5ce28c6676a00f58a25283db8885e16ce5bf97f917c81e1f25c9c771
 // R =
-// b11db00cdaf53286d4483f38cd02785948477ed7ebc2ad609054551da0ab0359978c61851788aa2ec3267946d440e878
+// 50835a9251bad008106177ef004b091a1e4235cd0da84fff54542b0ed755c1d6f251609d14ecf18f9e1ddfe69b946e32
 // S =
-// 16007873c5b0604ce68112a8fee973e8e2b6e3319c683a762ff5065a076512d7c98b27e74b7887671048ac027df8cbf2
+// 0475f3d30c6463b646e8d3bf2455830314611cbde404be518b14464fdb195fdcc92eb222e61f426a4a592c00a6a89721
+
+static const uint8_t p384_msg[128] = {
+    0x6b, 0x45, 0xd8, 0x80, 0x37, 0x39, 0x2e, 0x13, 0x71, 0xd9, 0xfd, 0x1c,
+    0xd1, 0x74, 0xe9, 0xc1, 0x83, 0x8d, 0x11, 0xc3, 0xd6, 0x13, 0x3d, 0xc1,
+    0x7e, 0x65, 0xfa, 0x0c, 0x48, 0x5d, 0xcc, 0xa9, 0xf5, 0x2d, 0x41, 0xb6,
+    0x01, 0x61, 0x24, 0x60, 0x39, 0xe4, 0x2e, 0xc7, 0x84, 0xd4, 0x94, 0x00,
+    0xbf, 0xfd, 0xb5, 0x14, 0x59, 0xf5, 0xde, 0x65, 0x40, 0x91, 0x30, 0x1a,
+    0x09, 0x37, 0x8f, 0x93, 0x46, 0x4d, 0x52, 0x11, 0x8b, 0x48, 0xd4, 0x4b,
+    0x30, 0xd7, 0x81, 0xeb, 0x1d, 0xbe, 0xd0, 0x9d, 0xa1, 0x1f, 0xb4, 0xc8,
+    0x18, 0xdb, 0xd4, 0x42, 0xd1, 0x61, 0xab, 0xa4, 0xb9, 0xed, 0xc7, 0x9f,
+    0x05, 0xe4, 0xb7, 0xe4, 0x01, 0x65, 0x13, 0x95, 0xb5, 0x3b, 0xd8, 0xb5,
+    0xbd, 0x3f, 0x2a, 0xaa, 0x6a, 0x00, 0x87, 0x7f, 0xa9, 0xb4, 0x5c, 0xad,
+    0xb8, 0xe6, 0x48, 0x55, 0x0b, 0x4c, 0x6c, 0xbe};
 
 static const uint8_t p384_d[48] = {
-    0x6b, 0x9e, 0x7f, 0x6d, 0x47, 0x87, 0xc9, 0x83, 0x77, 0x5a, 0x85, 0x9b,
-    0xd9, 0xf0, 0x52, 0x4b, 0x18, 0x30, 0x26, 0x16, 0x58, 0xf0, 0x89, 0x2a,
-    0xc4, 0x6c, 0x67, 0x74, 0x72, 0x20, 0xf7, 0x84, 0x2c, 0x83, 0xe0, 0x61,
-    0x96, 0x56, 0xa6, 0x11, 0xc3, 0x92, 0x45, 0xa3, 0x74, 0xbc, 0x02, 0xc6};
+    0x97, 0xac, 0x80, 0xb0, 0x4f, 0x9f, 0x44, 0x29, 0xbc, 0xe3, 0xbc, 0xcc,
+    0xb7, 0x5d, 0x2f, 0x95, 0xc2, 0x5e, 0xf4, 0xbd, 0x6c, 0x1e, 0xa4, 0x0d,
+    0x37, 0x2e, 0xd5, 0x82, 0x44, 0x28, 0xa8, 0x46, 0x3f, 0x4b, 0x3e, 0xdb,
+    0x61, 0x62, 0x2d, 0x18, 0x24, 0x43, 0xf1, 0x8d, 0x2d, 0x43, 0x1b, 0x20};
 
 static const uint8_t p384_k[48] = {
-    0x43, 0x24, 0xa3, 0xf3, 0x24, 0x7e, 0x87, 0x04, 0xa8, 0xd4, 0xea, 0x36,
-    0x3d, 0xcd, 0x0f, 0xb3, 0xcc, 0x57, 0xc7, 0x6c, 0xaf, 0xe7, 0xd1, 0x0d,
-    0x8c, 0x79, 0x9b, 0x29, 0xb5, 0x96, 0x24, 0x93, 0xc0, 0xcd, 0x97, 0x86,
-    0xd8, 0xd0, 0x27, 0x78, 0x0b, 0x3d, 0x68, 0xc4, 0x25, 0x5c, 0x0b, 0xc1};
+    0x71, 0xc7, 0xc9, 0x25, 0x1f, 0x1e, 0xc8, 0x17, 0xf9, 0x97, 0xbf, 0xe5,
+    0x6c, 0xe1, 0x85, 0x88, 0xdb, 0x83, 0x52, 0xa2, 0x58, 0x0f, 0xa0, 0x76,
+    0x66, 0x8c, 0xe2, 0x5c, 0x6e, 0xed, 0x9d, 0xdf, 0x34, 0xfa, 0x46, 0x66,
+    0xe1, 0xc6, 0x33, 0xf7, 0x90, 0xe0, 0x78, 0x59, 0xf8, 0xab, 0xed, 0xdc};
 
 static const uint8_t p384_Q[96] = {
     // Qx (Reversed)
-    0x75, 0xbc, 0x65, 0x07, 0x4c, 0x67, 0x88, 0xab, 0xbf, 0x82, 0xc2, 0xb9,
-    0x4c, 0x27, 0x09, 0xe9, 0x39, 0x04, 0x0b, 0xbb, 0x86, 0x7f, 0x04, 0xb7,
-    0xf6, 0x9f, 0xd4, 0x97, 0x1c, 0x04, 0x45, 0xd1, 0x6d, 0xe9, 0xd3, 0x53,
-    0x94, 0x6e, 0x82, 0x59, 0xd0, 0x7c, 0xf0, 0x21, 0x3b, 0x19, 0x00, 0x04,
+    0xbf, 0x3d, 0x01, 0x23, 0x41, 0xf3, 0x6b, 0xc5, 0xa3, 0x42, 0xd9, 0x97,
+    0x3e, 0x3c, 0xfc, 0x1b, 0xc1, 0xca, 0x2f, 0x93, 0xe1, 0xd6, 0x29, 0x42,
+    0xce, 0x8c, 0x67, 0xd7, 0xca, 0x2f, 0x0f, 0x7d, 0x5f, 0xca, 0x77, 0x01,
+    0x88, 0x85, 0x32, 0xd0, 0x42, 0xe3, 0x5d, 0xfb, 0x44, 0x79, 0xb4, 0xc2,
     // Qy (Reversed)
-    0x47, 0xa1, 0x82, 0x6b, 0x92, 0x4a, 0x23, 0x2f, 0x8e, 0xc9, 0x5e, 0x0c,
-    0x5b, 0x42, 0x9a, 0xec, 0x42, 0x8f, 0xdf, 0x1a, 0xd1, 0x5d, 0xba, 0x9e,
-    0xe9, 0x95, 0xcf, 0x2d, 0xf6, 0x6a, 0xb7, 0x69, 0x7f, 0x6d, 0xc7, 0x75,
-    0xae, 0xc5, 0xd2, 0x68, 0x04, 0xc7, 0xcb, 0x2a, 0xc5, 0x89, 0x0d, 0xf7};
-
-static const uint8_t p384_msg_digest[48] = {
-    0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
-    0x00, 0x00, 0x00, 0x00, 0xbb, 0xbd, 0x0a, 0x5f, 0x64, 0x5d, 0x3f, 0xda,
-    0x10, 0xe2, 0x88, 0xd1, 0x72, 0xb2, 0x99, 0x45, 0x5f, 0x9d, 0xff, 0x00,
-    0xe0, 0xfb, 0xc2, 0x83, 0x3e, 0x18, 0xcd, 0x01, 0x7d, 0x7f, 0x3e, 0xd1};
+    0x2d, 0x0c, 0x62, 0xf7, 0x1c, 0xa8, 0x44, 0x6c, 0x5d, 0xf9, 0x2d, 0x67,
+    0xa0, 0xd4, 0x36, 0x4a, 0x75, 0xb7, 0x55, 0xa8, 0xf3, 0xfb, 0x35, 0xfd,
+    0xc5, 0x81, 0xee, 0x8a, 0xe5, 0x8a, 0x75, 0x6a, 0xa7, 0x16, 0x96, 0x51,
+    0x3c, 0x74, 0xa0, 0xed, 0x66, 0x38, 0x22, 0xa8, 0x06, 0x79, 0x25, 0x37};
 
 static const uint8_t p384_sig[96] = {
     // R (Reversed)
-    0x78, 0xe8, 0x40, 0xd4, 0x46, 0x79, 0x26, 0xc3, 0x2e, 0xaa, 0x88, 0x17,
-    0x85, 0x61, 0x8c, 0x97, 0x59, 0x03, 0xab, 0xa0, 0x1d, 0x55, 0x54, 0x90,
-    0x60, 0xad, 0xc2, 0xeb, 0xd7, 0x7e, 0x47, 0x48, 0x59, 0x78, 0x02, 0xcd,
-    0x38, 0x3f, 0x48, 0xd4, 0x86, 0x32, 0xf5, 0xda, 0x0c, 0xb0, 0x1d, 0xb1,
+    0x32, 0x6e, 0x94, 0x9b, 0xe6, 0xdf, 0x1d, 0x9e, 0x8f, 0xf1, 0xec, 0x14,
+    0x9d, 0x60, 0x51, 0xf2, 0xd6, 0xc1, 0x55, 0xd7, 0x0e, 0x2b, 0x54, 0x54,
+    0xff, 0x4f, 0xa8, 0x0d, 0xcd, 0x35, 0x42, 0x1e, 0x1a, 0x09, 0x4b, 0x00,
+    0xef, 0x77, 0x61, 0x10, 0x08, 0xd0, 0xba, 0x51, 0x92, 0x5a, 0x83, 0x50,
     // S (Reversed)
-    0xf2, 0xcb, 0xf8, 0x7d, 0x02, 0xac, 0x48, 0x10, 0x67, 0x87, 0x78, 0x4b,
-    0xe7, 0x27, 0x8b, 0xc9, 0xd7, 0x12, 0x65, 0x07, 0x5a, 0x06, 0xf5, 0x2f,
-    0x76, 0x3a, 0x68, 0x9c, 0x31, 0xe3, 0xb6, 0xe2, 0xe8, 0x73, 0xe9, 0xfe,
-    0xa8, 0x12, 0x81, 0xe6, 0x4c, 0x60, 0xb0, 0xc5, 0x73, 0x78, 0x00, 0x16};
+    0x21, 0x97, 0xa8, 0xa6, 0x00, 0x2c, 0x59, 0x4a, 0x6a, 0x42, 0x1f, 0xe6,
+    0x22, 0xb2, 0x2e, 0xc9, 0xdc, 0x5f, 0x19, 0xdb, 0x4f, 0x46, 0x14, 0x8b,
+    0x51, 0xbe, 0x04, 0xe4, 0xbd, 0x1c, 0x61, 0x14, 0x03, 0x83, 0x55, 0x24,
+    0xbf, 0xd3, 0xe8, 0x46, 0xb6, 0x63, 0x64, 0x0c, 0xd3, 0xf3, 0x75, 0x04};
 
 // Test vector comes from the rsa_2048_signature_functest
 static const uint32_t rsa2048_mod[64] = {
@@ -213,10 +235,9 @@ static const uint32_t rsa2048_sig[64] = {
     0x50692a42, 0x41e94a74, 0x0a6f79eb, 0x1c405c66,
 };
 
-static const uint32_t rsa2048_digest[8] = {
-    0x7a99dab2, 0x7ce06e96, 0x83f0e143, 0x88e57c80,
-    0xcaa4c04b, 0xca023bd1, 0x18a172dc, 0x1709b520,
-};
+// Message = "Test message."
+static const uint8_t rsa_msg[13] = {0x54, 0x65, 0x73, 0x74, 0x20, 0x6d, 0x65,
+                                    0x73, 0x73, 0x61, 0x67, 0x65, 0x2e};
 
 // Test vector comes from the rsa_4096_signature_functest
 static const uint32_t rsa4096_mod[128] = {
@@ -292,12 +313,6 @@ static const uint32_t rsa4096_sig[128] = {
     0xbae35f12, 0xd2cf54e8, 0xe0b58909, 0xa2ae9943, 0x1eb03456, 0x5dcac40b,
     0x05bf5fa0, 0xc745d2c2, 0x624004fb, 0x445c1918, 0x3853399d, 0x738f2ae2,
     0xd31ca0a5, 0x2daf5e53,
-};
-
-static const uint32_t rsa4096_digest[16] = {
-    0xb893ca9d, 0xf40ba12b, 0x09e4aa43, 0x8c33b554, 0xeec01007, 0x64192c43,
-    0xf0513d70, 0x7bc41f0e, 0x46196723, 0x94549bc2, 0xc35e1539, 0x371599ad,
-    0x5203c922, 0x43577df0, 0xbd4c7513, 0x43267c48,
 };
 
 // NIST CAVP vector
@@ -401,16 +416,6 @@ static inline otcrypto_unblinded_key_t make_unblinded_key(
   return k;
 }
 
-// Helper function to make the data be loaded dynamically making the code PIC
-static inline otcrypto_hash_digest_t make_hash_digest(
-    const uint32_t *data, size_t len, otcrypto_hash_mode_t mode) {
-  otcrypto_hash_digest_t d;
-  d.data = (uint32_t *)data;
-  d.len = len;
-  d.mode = mode;
-  return d;
-}
-
 // The functions to run the kats
 static status_t kat_sha256_hash(void) {
   otcrypto_const_byte_buf_t msg_buf =
@@ -424,7 +429,9 @@ static status_t kat_sha256_hash(void) {
   HARDENED_TRY(otcrypto_sha2_256(&msg_buf, &digest_buf));
 
   if (memcmp(act_digest, sha256_ans, 256 / 8)) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -446,7 +453,9 @@ static status_t kat_sha512_hash(void) {
   HARDENED_TRY(otcrypto_sha2_512(&msg_buf, &digest_buf));
 
   if (memcmp(act_digest, sha512_ans, 512 / 8)) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -494,7 +503,9 @@ static status_t kat_sha256_hmac(void) {
   HARDENED_TRY(otcrypto_hmac(&blinded_key, &msg_buf, &tag_buf));
 
   if (memcmp(act_tag, hmac_sha256_ans, 32)) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -541,17 +552,17 @@ static status_t kat_sha512_hmac(void) {
   HARDENED_TRY(otcrypto_hmac(&blinded_key, &msg_buf, &tag_buf));
 
   if (memcmp(act_tag, hmac_sha512_ans, 64)) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
 }
 
 static status_t kat_rng(void) {
-  HARDENED_TRY(entropy_src_sha3_conditioning_kat());
   HARDENED_TRY(entropy_csrng_kat());
-  HARDENED_TRY(otcrypto_entropy_init());
-  return OTCRYPTO_OK;
+  return entropy_csrng_uninstantiate();
 }
 
 static status_t kat_p256_sign(void) {
@@ -583,8 +594,13 @@ static status_t kat_p256_sign(void) {
   memcpy(keyblob_scalar, p256_k, 32);
   secret_scalar.checksum = otcrypto_integrity_blinded_checksum(&secret_scalar);
 
-  otcrypto_hash_digest_t digest = make_hash_digest(
-      (const uint32_t *)p256_msg_digest, 8, kOtcryptoHashModeSha256);
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(p256_msg, sizeof(p256_msg));
+  uint32_t digest_data[8] = {0};
+  otcrypto_hash_digest_t digest;
+  HARDENED_TRY(
+      hash_message(kOtcryptoHashModeSha256, &msg_buf, digest_data, &digest));
+
   uint32_t sig[16];
   otcrypto_word32_buf_t sig_buf = otcrypto_make_word32_buf(sig, 16);
 
@@ -592,7 +608,9 @@ static status_t kat_p256_sign(void) {
                                                  digest, &sig_buf));
 
   if (memcmp(sig, p256_sig, 64)) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -624,7 +642,9 @@ static status_t kat_p256_base_point_mul(void) {
   HARDENED_TRY(otcrypto_ecc_p256_base_point_mult(&private_key, &public_key));
 
   if (memcmp(pk_act, p256_Q, 64)) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -637,22 +657,30 @@ static status_t kat_p256_verify(void) {
       kOtcryptoKeyModeEcdsaP256, sizeof(p256_Q), (const uint32_t *)p256_Q);
   public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
 
-  otcrypto_hash_digest_t digest = make_hash_digest(
-      (const uint32_t *)p256_msg_digest, 8, kOtcryptoHashModeSha256);
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(p256_msg, sizeof(p256_msg));
 
   uint32_t sig_data[16] = {0};
   otcrypto_const_word32_buf_t sig_buf =
       otcrypto_make_const_word32_buf(sig_data, 16);
   memcpy(sig_data, p256_sig, 64);
 
-  HARDENED_TRY(
-      otcrypto_ecdsa_p256_verify(&public_key, digest, &sig_buf, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  HARDENED_TRY(otcrypto_ecdsa_p256_hash_verify(
+      &public_key, kOtcryptoHashModeSha256, &msg_buf, &sig_buf, &result));
+  if (result != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   sig_data[15] ^= 0x1;
-  HARDENED_TRY(
-      otcrypto_ecdsa_p256_verify(&public_key, digest, &sig_buf, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolFalse);
+  HARDENED_TRY(otcrypto_ecdsa_p256_hash_verify(
+      &public_key, kOtcryptoHashModeSha256, &msg_buf, &sig_buf, &result));
+  if (result != kHardenedBoolFalse) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   return OTCRYPTO_OK;
 }
@@ -665,7 +693,11 @@ static status_t kat_p256_point_on_curve(void) {
   point.checksum = otcrypto_integrity_unblinded_checksum(&point);
 
   HARDENED_TRY(otcrypto_ecc_p256_point_on_curve(&point, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  if (result != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   uint32_t bad_point_data[16] = {0};
   memcpy(bad_point_data, p256_Q, 32);
@@ -677,7 +709,11 @@ static status_t kat_p256_point_on_curve(void) {
   bad_point.checksum = otcrypto_integrity_unblinded_checksum(&bad_point);
 
   HARDENED_TRY(otcrypto_ecc_p256_point_on_curve(&bad_point, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolFalse);
+  if (result != kHardenedBoolFalse) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   return OTCRYPTO_OK;
 }
@@ -712,8 +748,13 @@ static status_t kat_p384_sign(void) {
   memcpy(keyblob_scalar, p384_k, 48);
   secret_scalar.checksum = otcrypto_integrity_blinded_checksum(&secret_scalar);
 
-  otcrypto_hash_digest_t digest = make_hash_digest(
-      (const uint32_t *)p384_msg_digest, 12, kOtcryptoHashModeSha384);
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(p384_msg, sizeof(p384_msg));
+  uint32_t digest_data[12] = {0};
+  otcrypto_hash_digest_t digest;
+  HARDENED_TRY(
+      hash_message(kOtcryptoHashModeSha384, &msg_buf, digest_data, &digest));
+
   uint32_t sig[24];
   otcrypto_word32_buf_t sig_buf = otcrypto_make_word32_buf(sig, 24);
 
@@ -721,7 +762,9 @@ static status_t kat_p384_sign(void) {
                                                  digest, &sig_buf));
 
   if (memcmp(sig, p384_sig, 96)) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -756,7 +799,9 @@ static status_t kat_p384_base_point_mul(void) {
   HARDENED_TRY(otcrypto_ecc_p384_base_point_mult(&private_key, &public_key));
 
   if (memcmp(pk_act, p384_Q, 96)) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -769,22 +814,30 @@ static status_t kat_p384_verify(void) {
       kOtcryptoKeyModeEcdsaP384, sizeof(p384_Q), (const uint32_t *)p384_Q);
   public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
 
-  otcrypto_hash_digest_t digest = make_hash_digest(
-      (const uint32_t *)p384_msg_digest, 12, kOtcryptoHashModeSha384);
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(p384_msg, sizeof(p384_msg));
 
   uint32_t sig_data[24] = {0};
   otcrypto_const_word32_buf_t sig_buf =
       otcrypto_make_const_word32_buf(sig_data, 24);
   memcpy(sig_data, p384_sig, 96);
 
-  HARDENED_TRY(
-      otcrypto_ecdsa_p384_verify(&public_key, digest, &sig_buf, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  HARDENED_TRY(otcrypto_ecdsa_p384_hash_verify(
+      &public_key, kOtcryptoHashModeSha384, &msg_buf, &sig_buf, &result));
+  if (result != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   sig_data[23] ^= 0x1;
-  HARDENED_TRY(
-      otcrypto_ecdsa_p384_verify(&public_key, digest, &sig_buf, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolFalse);
+  HARDENED_TRY(otcrypto_ecdsa_p384_hash_verify(
+      &public_key, kOtcryptoHashModeSha384, &msg_buf, &sig_buf, &result));
+  if (result != kHardenedBoolFalse) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   return OTCRYPTO_OK;
 }
@@ -797,7 +850,11 @@ static status_t kat_p384_point_on_curve(void) {
   point.checksum = otcrypto_integrity_unblinded_checksum(&point);
 
   HARDENED_TRY(otcrypto_ecc_p384_point_on_curve(&point, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  if (result != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   uint32_t bad_point_data[24] = {0};
   memcpy(bad_point_data, p384_Q, 48);
@@ -809,7 +866,11 @@ static status_t kat_p384_point_on_curve(void) {
   bad_point.checksum = otcrypto_integrity_unblinded_checksum(&bad_point);
 
   HARDENED_TRY(otcrypto_ecc_p384_point_on_curve(&bad_point, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolFalse);
+  if (result != kHardenedBoolFalse) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   return OTCRYPTO_OK;
 }
@@ -828,16 +889,21 @@ static status_t kat_rsa2048_verify(void) {
   HARDENED_TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048,
                                                  &modulus_buf, &public_key));
 
-  otcrypto_hash_digest_t digest =
-      make_hash_digest(rsa2048_digest, 8, kOtcryptoHashModeSha256);
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(rsa_msg, sizeof(rsa_msg));
   otcrypto_const_word32_buf_t sig_buf =
       otcrypto_make_const_word32_buf(rsa2048_sig, 64);
 
   hardened_bool_t result = kHardenedBoolFalse;
-  HARDENED_TRY(otcrypto_rsa_verify(&public_key, digest, kOtcryptoRsaPaddingPkcs,
-                                   &sig_buf, &result));
+  HARDENED_TRY(otcrypto_rsa_hash_verify(&public_key, kOtcryptoHashModeSha256,
+                                        &msg_buf, kOtcryptoRsaPaddingPkcs,
+                                        &sig_buf, &result));
 
-  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  if (result != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   return OTCRYPTO_OK;
 }
@@ -870,16 +936,28 @@ static status_t kat_rsa4096_sign(void) {
   HARDENED_TRY(otcrypto_rsa_private_key_from_exponents(
       kOtcryptoRsaSize4096, &modulus, &d_share0, &d_share1, &private_key));
 
-  otcrypto_hash_digest_t digest_struct =
-      make_hash_digest(rsa4096_digest, 16, kOtcryptoHashModeSha512);
+  uint32_t public_key_data[kOtcryptoRsa4096PublicKeyBytes / 4];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa4096PublicKeyBytes,
+      .key = public_key_data,
+  };
+  HARDENED_TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize4096, &modulus,
+                                                 &public_key));
+
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(rsa_msg, sizeof(rsa_msg));
   uint32_t act_sig[128];
   otcrypto_word32_buf_t sig_buf = otcrypto_make_word32_buf(act_sig, 128);
 
-  HARDENED_TRY(otcrypto_rsa_sign(&private_key, digest_struct,
-                                 kOtcryptoRsaPaddingPkcs, &sig_buf));
+  HARDENED_TRY(otcrypto_rsa_hash_sign_verify(
+      &private_key, &public_key, kOtcryptoHashModeSha512, &msg_buf,
+      kOtcryptoRsaPaddingPkcs, &sig_buf));
 
   if (memcmp(act_sig, rsa4096_sig, 512)) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -897,15 +975,20 @@ static status_t kat_rsa4096_verify(void) {
   HARDENED_TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize4096,
                                                  &modulus_buf, &public_key));
 
-  otcrypto_hash_digest_t digest =
-      make_hash_digest(rsa4096_digest, 16, kOtcryptoHashModeSha512);
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(rsa_msg, sizeof(rsa_msg));
   otcrypto_const_word32_buf_t sig_buf =
       otcrypto_make_const_word32_buf(rsa4096_sig, 128);
 
-  hardened_bool_t result;
-  HARDENED_TRY(otcrypto_rsa_verify(&public_key, digest, kOtcryptoRsaPaddingPkcs,
-                                   &sig_buf, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  hardened_bool_t result = kHardenedBoolFalse;
+  HARDENED_TRY(otcrypto_rsa_hash_verify(&public_key, kOtcryptoHashModeSha512,
+                                        &msg_buf, kOtcryptoRsaPaddingPkcs,
+                                        &sig_buf, &result));
+  if (result != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   return OTCRYPTO_OK;
 }
@@ -948,10 +1031,14 @@ static status_t kat_aes_gcm_256_encrypt(void) {
                                         &tag_buf));
 
   if (memcmp(ct_act, aes_gcm_256_ct, sizeof(aes_gcm_256_ct))) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
   if (memcmp(tag_act, aes_gcm_256_tag, sizeof(aes_gcm_256_tag))) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -993,10 +1080,16 @@ static status_t kat_aes_gcm_256_decrypt(void) {
   HARDENED_TRY(otcrypto_aes_gcm_decrypt(&key, &ct_buf, &iv_buf, &aad_buf,
                                         kOtcryptoAesGcmTagLen128, &tag_buf,
                                         &pt_buf, &success));
-  HARDENED_CHECK_EQ(success, kHardenedBoolTrue);
+  if (success != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   if (memcmp(pt_act, aes_gcm_256_pt, sizeof(aes_gcm_256_pt))) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -1036,7 +1129,9 @@ static status_t kat_aes_ecb_256_decrypt(void) {
                             kOtcryptoAesPaddingNull, &pt_buf));
 
   if (memcmp(pt_act, aes_256_pt, 16)) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -1054,7 +1149,9 @@ static status_t kat_shake_256(void) {
   HARDENED_TRY(otcrypto_shake256(&msg_buf, &digest_buf));
 
   if (memcmp(act_digest, shake256_ans, 256 / 8)) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -1102,7 +1199,9 @@ static status_t kat_kmac_256(void) {
       otcrypto_kmac(&blinded_key, &msg_buf, &custom_buf, 64, &tag_buf));
 
   if (memcmp(act_tag, kmac_256_ans, 64)) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -1121,14 +1220,14 @@ static const uint32_t ed25519_pk[] = {
 
 static const uint32_t ed25519_sig[] = {
     // R
-    0xebdb69da,
-    0xb3762223,
-    0x16503f8f,
-    0xa2b27b54,
-    0x5f642540,
-    0x720e820b,
-    0xf0d4cab8,
-    0x92a009a9,
+    0xa909a092,
+    0xb8cad4f0,
+    0x0b820e72,
+    0x4025645f,
+    0x547bb2a2,
+    0x8f3f5016,
+    0x232276b3,
+    0xda69dbeb,
     // S
     0xe4c15a08,
     0x6e99153e,
@@ -1177,7 +1276,9 @@ static status_t kat_ed25519_sign(void) {
                                      kOtcryptoEddsaSignModeEddsa, &sig_buf));
 
   if (memcmp(sig_act, ed25519_sig, sizeof(ed25519_sig))) {
-    return OTCRYPTO_BAD_ARGS;
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
   }
 
   return OTCRYPTO_OK;
@@ -1206,14 +1307,199 @@ static status_t kat_ed25519_verify(void) {
 
   HARDENED_TRY(otcrypto_ed25519_verify(
       &public_key, &msg, kOtcryptoEddsaSignModeEddsa, &sig_buf, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolTrue);
+  if (result != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   // Negative test: Modify a word in the signature array to ensure verification
   // fails
   sig_data[15] ^= 0x1;
   HARDENED_TRY(otcrypto_ed25519_verify(
       &public_key, &msg, kOtcryptoEddsaSignModeEddsa, &sig_buf, &result));
-  HARDENED_CHECK_EQ(result, kHardenedBoolFalse);
+  if (result != kHardenedBoolFalse) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
+
+  return OTCRYPTO_OK;
+}
+
+// NIST SP 800-108r1 KDF-CTR with HMAC-SHA256 (ACVP vsId = 4098935, tcId = 1)
+// KDK = 8991314c829a0499d743545e6faf970f5f993feff51ab170c9ae974e59ef30ac
+// Label = 4b44464c6162656c ("KDFLabel", no 0x00 bytes)
+// Context = 0102030405060708090a0b0c (12 bytes)
+// L = 384 bits (48 bytes)
+// fixedData = 4b44464c6162656c000102030405060708090a0b0c00000180
+static const uint8_t kdf_ctr_hmac_kdk[32] = {
+    0x89, 0x91, 0x31, 0x4c, 0x82, 0x9a, 0x04, 0x99, 0xd7, 0x43, 0x54,
+    0x5e, 0x6f, 0xaf, 0x97, 0x0f, 0x5f, 0x99, 0x3f, 0xef, 0xf5, 0x1a,
+    0xb1, 0x70, 0xc9, 0xae, 0x97, 0x4e, 0x59, 0xef, 0x30, 0xac};
+
+static const uint8_t kdf_ctr_hmac_label[8] = {0x4b, 0x44, 0x46, 0x4c,
+                                              0x61, 0x62, 0x65, 0x6c};
+
+static const uint8_t kdf_ctr_hmac_context[12] = {
+    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c};
+
+static const uint8_t kdf_ctr_hmac_ans[48] = {
+    0x38, 0x8b, 0x24, 0xc8, 0x38, 0x34, 0x33, 0x2d, 0x21, 0xa0, 0x3f, 0xb6,
+    0x01, 0x72, 0xb2, 0x71, 0xfd, 0x5e, 0x66, 0x89, 0xec, 0x71, 0x2e, 0xc1,
+    0xc0, 0xdc, 0x53, 0xb1, 0x40, 0x48, 0x0b, 0x13, 0x6a, 0x54, 0x29, 0xfd,
+    0x6f, 0x45, 0x5c, 0xde, 0xb4, 0x7b, 0xc4, 0x8c, 0xc5, 0xa8, 0xad, 0x6e};
+
+// NIST SP 800-108r1 KMAC-KDF with KMAC256 (ACVP vsId = 4098936, tcId = 1)
+// KDK = f5fe0847085742c8ebb438b12faccea9e9750084d4ef8f7d242f5d34eff009bc
+// Label = 75dd2606f127045583c529361f44fc50 (16 bytes)
+// Context = acfdabb618f6edb590c2a74f55941d9b (16 bytes)
+// L = 384 bits (48 bytes)
+static const uint8_t kmac_kdf_kdk[32] = {
+    0xf5, 0xfe, 0x08, 0x47, 0x08, 0x57, 0x42, 0xc8, 0xeb, 0xb4, 0x38,
+    0xb1, 0x2f, 0xac, 0xce, 0xa9, 0xe9, 0x75, 0x00, 0x84, 0xd4, 0xef,
+    0x8f, 0x7d, 0x24, 0x2f, 0x5d, 0x34, 0xef, 0xf0, 0x09, 0xbc};
+
+static const uint8_t kmac_kdf_label[16] = {0x75, 0xdd, 0x26, 0x06, 0xf1, 0x27,
+                                           0x04, 0x55, 0x83, 0xc5, 0x29, 0x36,
+                                           0x1f, 0x44, 0xfc, 0x50};
+
+static const uint8_t kmac_kdf_context[16] = {0xac, 0xfd, 0xab, 0xb6, 0x18, 0xf6,
+                                             0xed, 0xb5, 0x90, 0xc2, 0xa7, 0x4f,
+                                             0x55, 0x94, 0x1d, 0x9b};
+
+static const uint8_t kmac_kdf_ans[48] = {
+    0xbf, 0x8a, 0x4a, 0x29, 0x50, 0x20, 0x30, 0xde, 0x8b, 0xa9, 0xbd, 0xe2,
+    0x3d, 0x27, 0x67, 0xbc, 0x73, 0x2a, 0x2c, 0x8d, 0xa4, 0x79, 0xc2, 0xae,
+    0x17, 0xf5, 0xfa, 0x42, 0xf0, 0xb3, 0xa9, 0xf2, 0x05, 0x52, 0x64, 0xdc,
+    0x16, 0xa3, 0x07, 0x8d, 0x62, 0xd0, 0xb8, 0xb9, 0x23, 0xf6, 0xf7, 0xad};
+
+static status_t kat_kdf_ctr_hmac(void) {
+  const otcrypto_key_config_t kKdkConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeHmacSha256,
+      .key_length = sizeof(kdf_ctr_hmac_kdk),
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t kdk_words[8];
+  memcpy(kdk_words, kdf_ctr_hmac_kdk, sizeof(kdk_words));
+
+  uint32_t kdk_keyblob[keyblob_num_words(kKdkConfig)];
+  HARDENED_TRY(
+      keyblob_from_key_and_mask(kdk_words, kTestMask, kKdkConfig, kdk_keyblob));
+
+  otcrypto_blinded_key_t kdk = {
+      .config = kKdkConfig,
+      .keyblob = kdk_keyblob,
+      .keyblob_length = sizeof(kdk_keyblob),
+      .checksum = 0,
+  };
+  kdk.checksum = otcrypto_integrity_blinded_checksum(&kdk);
+
+  const otcrypto_key_config_t kOkmConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeHmacSha384,
+      .key_length = sizeof(kdf_ctr_hmac_ans),
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t okm_keyblob[keyblob_num_words(kOkmConfig)];
+  memset(okm_keyblob, 0, sizeof(okm_keyblob));
+  otcrypto_blinded_key_t okm = {
+      .config = kOkmConfig,
+      .keyblob = okm_keyblob,
+      .keyblob_length = sizeof(okm_keyblob),
+      .checksum = 0,
+  };
+
+  otcrypto_const_byte_buf_t label_buf = otcrypto_make_const_byte_buf(
+      kdf_ctr_hmac_label, sizeof(kdf_ctr_hmac_label));
+  otcrypto_const_byte_buf_t context_buf = otcrypto_make_const_byte_buf(
+      kdf_ctr_hmac_context, sizeof(kdf_ctr_hmac_context));
+
+  HARDENED_TRY(otcrypto_kdf_ctr_hmac(&kdk, &label_buf, &context_buf, &okm));
+  if (otcrypto_integrity_blinded_key_check(&okm) != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
+
+  uint32_t act_okm[12] = {0};
+  HARDENED_TRY(keyblob_key_unmask(&okm, ARRAYSIZE(act_okm), act_okm));
+
+  if (memcmp(act_okm, kdf_ctr_hmac_ans, sizeof(kdf_ctr_hmac_ans))) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
+
+  return OTCRYPTO_OK;
+}
+
+static status_t kat_kmac_kdf(void) {
+  const otcrypto_key_config_t kKdkConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeKdfKmac256,
+      .key_length = sizeof(kmac_kdf_kdk),
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t kdk_words[8];
+  memcpy(kdk_words, kmac_kdf_kdk, sizeof(kdk_words));
+
+  uint32_t kdk_keyblob[keyblob_num_words(kKdkConfig)];
+  HARDENED_TRY(
+      keyblob_from_key_and_mask(kdk_words, kTestMask, kKdkConfig, kdk_keyblob));
+
+  otcrypto_blinded_key_t kdk = {
+      .config = kKdkConfig,
+      .keyblob = kdk_keyblob,
+      .keyblob_length = sizeof(kdk_keyblob),
+      .checksum = 0,
+  };
+  kdk.checksum = otcrypto_integrity_blinded_checksum(&kdk);
+
+  const otcrypto_key_config_t kOkmConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeKdfKmac256,
+      .key_length = sizeof(kmac_kdf_ans),
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t okm_keyblob[keyblob_num_words(kOkmConfig)];
+  memset(okm_keyblob, 0, sizeof(okm_keyblob));
+  otcrypto_blinded_key_t okm = {
+      .config = kOkmConfig,
+      .keyblob = okm_keyblob,
+      .keyblob_length = sizeof(okm_keyblob),
+      .checksum = 0,
+  };
+
+  otcrypto_const_byte_buf_t label_buf =
+      otcrypto_make_const_byte_buf(kmac_kdf_label, sizeof(kmac_kdf_label));
+  otcrypto_const_byte_buf_t context_buf =
+      otcrypto_make_const_byte_buf(kmac_kdf_context, sizeof(kmac_kdf_context));
+
+  HARDENED_TRY(otcrypto_kmac_kdf(&kdk, &label_buf, &context_buf, &okm));
+  if (otcrypto_integrity_blinded_key_check(&okm) != kHardenedBoolTrue) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
+
+  uint32_t act_okm[12] = {0};
+  HARDENED_TRY(keyblob_key_unmask(&okm, ARRAYSIZE(act_okm), act_okm));
+
+  if (memcmp(act_okm, kmac_kdf_ans, sizeof(kmac_kdf_ans))) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
 
   return OTCRYPTO_OK;
 }
@@ -1296,6 +1582,12 @@ otcrypto_status_t run_kats(kat_id_t tests) {
   }
   if ((tests.flags & OTCRYPTO_KAT_ED25519_VERIFY) != 0) {
     HARDENED_TRY(kat_ed25519_verify());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_KDF_CTR_HMAC) != 0) {
+    HARDENED_TRY(kat_kdf_ctr_hmac());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_KMAC_KDF) != 0) {
+    HARDENED_TRY(kat_kmac_kdf());
   }
 
   return OTCRYPTO_OK;

@@ -12,11 +12,14 @@ volatile otcrypto_interface_t otcrypto = {
     .restore_icache = &otcrypto_restore_icache,
     .init = &otcrypto_init,
     .eval_exit = &otcrypto_eval_exit,
+    .show_status = &otcrypto_show_status,
 
     // Build info.
+    .module_name = &otcrypto_module_name,
     .build_info = &otcrypto_build_info,
     .lib_version = &otcrypto_lib_version,
     .version_decode = &otcrypto_version_decode,
+    .rom_version = &otcrypto_rom_version,
 
     // CMVP service indicator.
     .cmvp_service_indicator = &otcrypto_cmvp_service_indicator,
@@ -62,6 +65,11 @@ volatile otcrypto_interface_t otcrypto = {
     .aes = &otcrypto_aes,
     .aes_padded_plaintext_length = &otcrypto_aes_padded_plaintext_length,
 
+    // TDES
+    .tdes = &otcrypto_tdes,
+    .tdes_padded_plaintext_length = &otcrypto_tdes_padded_plaintext_length,
+    .tdes_padding_strip = &otcrypto_tdes_padding_strip,
+
     // AES-GCM (one-shot).
     .aes_gcm_encrypt = &otcrypto_aes_gcm_encrypt,
     .aes_gcm_decrypt = &otcrypto_aes_gcm_decrypt,
@@ -81,6 +89,9 @@ volatile otcrypto_interface_t otcrypto = {
     .cmac_init = &otcrypto_cmac_init,
     .cmac_update = &otcrypto_cmac_update,
     .cmac_final = &otcrypto_cmac_final,
+
+    // CMAC-KDF
+    .cmac_kdf = &otcrypto_cmac_kdf,
 
     // DRBG
     .drbg_instantiate = &otcrypto_drbg_instantiate,
@@ -107,6 +118,12 @@ volatile otcrypto_interface_t otcrypto = {
     .hmac_update = &otcrypto_hmac_update,
     .hmac_final = &otcrypto_hmac_final,
 
+    // HMAC-SHA-1 (one-shot and streaming).
+    .hmac_sha1 = &otcrypto_hmac_sha1,
+    .hmac_sha1_init = &otcrypto_hmac_sha1_init,
+    .hmac_sha1_update = &otcrypto_hmac_sha1_update,
+    .hmac_sha1_final = &otcrypto_hmac_sha1_final,
+
     // KDF-CTR with HMAC
     .kdf_ctr_hmac = &otcrypto_kdf_ctr_hmac,
 
@@ -115,6 +132,12 @@ volatile otcrypto_interface_t otcrypto = {
 
     // KMAC-KDF
     .kmac_kdf = &otcrypto_kmac_kdf,
+
+    // SHA-1 (one-shot and streaming).
+    .sha1 = &otcrypto_sha1,
+    .sha1_init = &otcrypto_sha1_init,
+    .sha1_update = &otcrypto_sha1_update,
+    .sha1_final = &otcrypto_sha1_final,
 
     // SHA-2 (one-shot).
     .sha2_256 = &otcrypto_sha2_256,
@@ -139,13 +162,17 @@ volatile otcrypto_interface_t otcrypto = {
     .cshake256 = &otcrypto_cshake256,
 
     // Ed25519 (blocking).
+    .ed25519_keygen = &otcrypto_ed25519_keygen,
     .ed25519_public_key_from_private =
         &otcrypto_ed25519_public_key_from_private,
     .ed25519_sign = &otcrypto_ed25519_sign,
     .ed25519_sign_verify = &otcrypto_ed25519_sign_verify,
     .ed25519_verify = &otcrypto_ed25519_verify,
+    .ed25519_point_on_curve = &otcrypto_ed25519_point_on_curve,
 
     // Ed25519 (async).
+    .ed25519_keygen_async_start = &otcrypto_ed25519_keygen_async_start,
+    .ed25519_keygen_async_finalize = &otcrypto_ed25519_keygen_async_finalize,
     .ed25519_public_key_from_private_async_start =
         &otcrypto_ed25519_public_key_from_private_async_start,
     .ed25519_public_key_from_private_async_finalize =
@@ -158,11 +185,16 @@ volatile otcrypto_interface_t otcrypto = {
 
     // X25519 (blocking).
     .x25519_keygen = &otcrypto_x25519_keygen,
+    .x25519_public_key_from_private = &otcrypto_x25519_public_key_from_private,
     .x25519 = &otcrypto_x25519,
 
     // X25519 (async).
     .x25519_keygen_async_start = &otcrypto_x25519_keygen_async_start,
     .x25519_keygen_async_finalize = &otcrypto_x25519_keygen_async_finalize,
+    .x25519_public_key_from_private_async_start =
+        &otcrypto_x25519_public_key_from_private_async_start,
+    .x25519_public_key_from_private_async_finalize =
+        &otcrypto_x25519_public_key_from_private_async_finalize,
     .x25519_async_start = &otcrypto_x25519_async_start,
     .x25519_async_finalize = &otcrypto_x25519_async_finalize,
 
@@ -172,6 +204,8 @@ volatile otcrypto_interface_t otcrypto = {
 
     // RSA key generation (blocking).
     .rsa_keygen = &otcrypto_rsa_keygen,
+    .rsa_prime_check = &otcrypto_rsa_prime_check,
+    .rsa_create_n_from_primes = &otcrypto_rsa_create_n_from_primes,
     .rsa_keypair_from_cofactor = &otcrypto_rsa_keypair_from_cofactor,
 
     // RSA key generation (async).

@@ -5,7 +5,7 @@
 import argparse
 import hjson
 from pathlib import Path
-from typing import Tuple
+from typing import Optional, Tuple
 
 # This scripts generates a markdown table with regression links and badges for an IP README file,
 # based on the IP's data hjson file.
@@ -28,6 +28,7 @@ EG100_TAPED_OUT_IPS = [
     "otbn",
     "otp_ctrl",
     "pattgen",
+    "pinmux",
     "pwm",
     "rom_ctrl",
     "rv_core_ibex",
@@ -39,6 +40,24 @@ EG100_TAPED_OUT_IPS = [
     "sysrst_ctrl",
     "uart",
     "usbdev",
+]
+
+# IPs which were generated per top (ipgen) and taped out as part of Earl Grey 1.0.0.
+# Extracted from branch earlgrey_1.0.0 (hw/top_earlgrey/ip_autogen)
+EG100_TAPED_OUT_IPGEN_IPS = [
+    "alert_handler",
+    "clkmgr",
+    "flash_ctrl",
+    "pwrmgr",
+    "rstmgr",
+    "rv_plic",
+]
+
+# Top-specific IPs which were taped out as part of Earl Grey 1.0.0.
+# Extracted from branch earlgrey_1.0.0 (hw/top_earlgrey/ip)
+# The AST in hw/top_earlgrey/ip/ast is an open-source model; the taped-out AST is closed source.
+EG100_TAPED_OUT_TOP_SPECIFIC_IPS = [
+    "sensor_ctrl",
 ]
 
 # For some IPs the regression results are hosted outside the standard opentitan dashboard.
@@ -111,6 +130,19 @@ def generate_links_for_regs_and_badges(ipname: str, topname: str) -> Tuple[list[
     return regression_links, badge_links
 
 
+def eg100_doc_url(ipname: str) -> Optional[str]:
+    """Return the URL of the Earl Grey 1.0.0 documentation of an IP, if it was taped out."""
+    if ipname in EG100_TAPED_OUT_IPS:
+        ip_dir = "hw/ip"
+    elif ipname in EG100_TAPED_OUT_IPGEN_IPS:
+        ip_dir = "hw/top_earlgrey/ip_autogen"
+    elif ipname in EG100_TAPED_OUT_TOP_SPECIFIC_IPS:
+        ip_dir = "hw/top_earlgrey/ip"
+    else:
+        return None
+    return f"https://opentitan.org/earlgrey_1.0.0/book/{ip_dir}/{ipname}/index.html"
+
+
 def generate_regression_table(ip_hjson_path: str, topname: str) -> str:
     ipname, version, design_stage, verification_stage = parse_data_file(ip_hjson_path)
 
@@ -132,8 +164,8 @@ def generate_regression_table(ip_hjson_path: str, topname: str) -> str:
             f"![]({badge_link}/functional.svg) ![]({badge_link}/code.svg) |",
         ]
 
-    if ipname in EG100_TAPED_OUT_IPS and topname == "earlgrey":
-        egv100_doc_url = f"https://opentitan.org/earlgrey_1.0.0/book/hw/ip/{ipname}/index.html"
+    egv100_doc_url = eg100_doc_url(ipname)
+    if egv100_doc_url is not None and topname == "earlgrey":
         block_lines += [
             "",
             "This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and "

@@ -95,6 +95,8 @@ static status_t rsa_check_otbn_status(void) {
 
   // Check if it matches the expected magic value
   if (launder32(ok) != kHardenedBoolTrue) {
+    // COVERAGE (FI CM) This check only fails if OTBN execution was faulted or
+    // given invalid inputs.
     HARDENED_TRY(otbn_dmem_sec_wipe());
     return OTCRYPTO_RECOV_ERR;
   }
@@ -150,15 +152,21 @@ status_t rsa_modexp_wait(size_t *num_words) {
     *num_words = kRsa3072NumWords;
     exp_insn_cnt = (mode == kMode3072Modexp)     ? kModeRsa3072ModexpInsCnt
                    : (mode == kMode3072ModexpF4) ? kModeRsa3072ModexpF4InsCnt
-                   : (mode == kMode3072ModexpDE) ? kModeRsa3072ModexpDEInsCnt
-                                                 : kModeRsa3072ModexpEInsCnt;
+                   : (mode == kMode3072ModexpDE)
+                       ? kModeRsa3072ModexpDEInsCnt
+                       // COVERAGE (MISSING) We do not cover custom public
+                       // exponents for RSA-3072.
+                       : kModeRsa3072ModexpEInsCnt;
   } else if (mode == kMode4096Modexp || mode == kMode4096ModexpF4 ||
              mode == kMode4096ModexpDE || mode == kMode4096ModexpE) {
     *num_words = kRsa4096NumWords;
     exp_insn_cnt = (mode == kMode4096Modexp)     ? kModeRsa4096ModexpInsCnt
                    : (mode == kMode4096ModexpF4) ? kModeRsa4096ModexpF4InsCnt
-                   : (mode == kMode4096ModexpDE) ? kModeRsa4096ModexpDEInsCnt
-                                                 : kModeRsa4096ModexpEInsCnt;
+                   : (mode == kMode4096ModexpDE)
+                       ? kModeRsa4096ModexpDEInsCnt
+                       // COVERAGE (MISSING) We do not cover custom public
+                       // exponents for RSA-4096.
+                       : kModeRsa4096ModexpEInsCnt;
   } else {
     // Unrecognized mode.
     return OTCRYPTO_FATAL_ERR;
@@ -178,7 +186,7 @@ status_t rsa_modexp_wait(size_t *num_words) {
  * @param[out] result Result of the modexp operation.
  * @return Status of the operation (OK or error).
  */
-static status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
+status_t rsa_modexp_finalize(const size_t num_words, uint32_t *result) {
   // Wait for OTBN to complete and get the result size.
   size_t num_words_inferred;
   HARDENED_TRY(rsa_modexp_wait(&num_words_inferred));
@@ -300,10 +308,14 @@ static status_t keygen_finalize(uint32_t exp_mode, size_t num_words,
 
   // Optionally read out the primes p and q.
   if (p != NULL) {
+    // COVERAGE (SW ERR) Testing-only prime readout is not used by standard
+    // keygen callers.
     const otbn_addr_t kOtbnVarRsaP = OTBN_ADDR_T_INIT(run_rsa, rsa_p);
     HARDENED_TRY(otbn_dmem_read(num_words >> 1, kOtbnVarRsaP, p));
   }
   if (q != NULL) {
+    // COVERAGE (SW ERR) Testing-only prime readout is not used by standard
+    // keygen callers.
     const otbn_addr_t kOtbnVarRsaQ = OTBN_ADDR_T_INIT(run_rsa, rsa_q);
     HARDENED_TRY(otbn_dmem_read(num_words >> 1, kOtbnVarRsaQ, q));
   }
@@ -358,6 +370,9 @@ status_t rsa_modexp_consttime_start(rsa_size_t size, const uint32_t *base,
 
   // Verify the checksum over share 0 (exp0).
   if (checksum != launder32(crc32(exp0, num_words * sizeof(uint32_t)))) {
+    // COVERAGE (FI CM) The outer blinded key checksum is already verified, so
+    // the inner share checksum only fails under fault injection or memory
+    // corruption.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(checksum, crc32(exp0, num_words * sizeof(uint32_t)));
@@ -444,87 +459,135 @@ status_t rsa_modexp_vartime_start(rsa_size_t size, const uint32_t *base,
   return otbn_execute();
 }
 
-status_t rsa_modexp_finalize_size(rsa_size_t size, uint32_t *result) {
-  size_t expected_words = 0;
+static status_t keygen_size_to_params(rsa_size_t size, uint32_t *mode,
+                                      size_t *num_words) {
+  *mode = 0;
+  *num_words = 0;
   switch (launder32(size)) {
     case kRsaSize2048:
       HARDENED_CHECK_EQ(size, kRsaSize2048);
-      expected_words = kRsa2048NumWords;
-      break;
+      *mode = OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_KEYGEN);
+      *num_words = kRsa2048NumWords;
+      return OTCRYPTO_OK;
     case kRsaSize3072:
       HARDENED_CHECK_EQ(size, kRsaSize3072);
-      expected_words = kRsa3072NumWords;
-      break;
+      *mode = OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_KEYGEN);
+      *num_words = kRsa3072NumWords;
+      return OTCRYPTO_OK;
     case kRsaSize4096:
       HARDENED_CHECK_EQ(size, kRsaSize4096);
-      expected_words = kRsa4096NumWords;
-      break;
+      *mode = OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_KEYGEN);
+      *num_words = kRsa4096NumWords;
+      return OTCRYPTO_OK;
     default:
       HARDENED_TRAP();
       return OTCRYPTO_FATAL_ERR;
   }
+
+  // Should be unreachable.
+  HARDENED_TRAP();
+  // COVERAGE (FI CM) Unreachable code, checked against fault injections.
+  return OTCRYPTO_FATAL_ERR;
+}
+
+status_t rsa_size_to_num_words(rsa_size_t size, size_t *num_words) {
+  uint32_t unused_mode = 0;
+  return keygen_size_to_params(size, &unused_mode, num_words);
+}
+
+status_t rsa_modexp_finalize_size(rsa_size_t size, uint32_t *result) {
+  size_t expected_words = 0;
+  HARDENED_TRY(rsa_size_to_num_words(size, &expected_words));
   return rsa_modexp_finalize(expected_words, result);
 }
 
 status_t rsa_keygen_start(rsa_size_t size) {
   uint32_t mode = 0;
-  switch (launder32(size)) {
-    case kRsaSize2048:
-      HARDENED_CHECK_EQ(size, kRsaSize2048);
-      const uint32_t kMode2048Keygen =
-          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_KEYGEN);
-      mode = kMode2048Keygen;
-      break;
-    case kRsaSize3072:
-      HARDENED_CHECK_EQ(size, kRsaSize3072);
-      const uint32_t kMode3072Keygen =
-          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_KEYGEN);
-      mode = kMode3072Keygen;
-      break;
-    case kRsaSize4096:
-      HARDENED_CHECK_EQ(size, kRsaSize4096);
-      const uint32_t kMode4096Keygen =
-          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_KEYGEN);
-      mode = kMode4096Keygen;
-      break;
-    default:
-      HARDENED_TRAP();
-      return OTCRYPTO_FATAL_ERR;
-  }
+  size_t unused_words = 0;
+  HARDENED_TRY(keygen_size_to_params(size, &mode, &unused_words));
   return keygen_start(mode);
+}
+
+status_t rsa_prime_check(rsa_size_t size, const uint32_t *prime_candidate,
+                         hardened_bool_t *prime_ok) {
+  *prime_ok = kHardenedBoolFalse;
+  uint32_t mode = 0;
+  size_t num_words = 0;
+  HARDENED_TRY(keygen_size_to_params(size, &mode, &num_words));
+  size_t prime_words = num_words / 2;
+
+  uint32_t det = kHardenedBoolTrue;
+  HARDENED_TRY(otbn_load_app(OTBN_APP_T_INIT(run_rsa)));
+  HARDENED_TRY(otbn_dmem_write(1, &mode, OTBN_ADDR_T_INIT(run_rsa, mode)));
+  HARDENED_TRY(otbn_dmem_write(1, &det, OTBN_ADDR_T_INIT(run_rsa, rsa_e)));
+  HARDENED_TRY(otbn_dmem_set(1, 0, OTBN_ADDR_T_INIT(run_rsa, rsa_p)));
+  HARDENED_TRY(otbn_dmem_write(prime_words, prime_candidate,
+                               OTBN_ADDR_T_INIT(run_rsa, rsa_n)));
+  HARDENED_TRY(otbn_execute_sync());
+
+  uint32_t act_mode = 0;
+  HARDENED_TRY(otbn_dmem_read(1, OTBN_ADDR_T_INIT(run_rsa, mode), &act_mode));
+  if (launder32(act_mode) != mode) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+  HARDENED_CHECK_EQ(act_mode, mode);
+
+  uint32_t ok = 0;
+  HARDENED_TRY(otbn_dmem_read(1, OTBN_ADDR_T_INIT(run_rsa, ok), &ok));
+  uint32_t mr_iters = 0;
+  HARDENED_TRY(
+      otbn_dmem_read(1, OTBN_ADDR_T_INIT(run_rsa, mr_iter_p), &mr_iters));
+  HARDENED_TRY(otbn_dmem_sec_wipe());
+
+  if (launder32(ok) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
+    if (launder32(mr_iters) != kMrIters) {
+      return OTCRYPTO_FATAL_ERR;
+    }
+    HARDENED_CHECK_EQ(mr_iters, kMrIters);
+    *prime_ok = kHardenedBoolTrue;
+  } else {
+    HARDENED_CHECK_NE(ok, kHardenedBoolTrue);
+    *prime_ok = kHardenedBoolFalse;
+  }
+  return OTCRYPTO_OK;
+}
+
+status_t rsa_create_n_from_primes(rsa_size_t size, const uint32_t *prime_p,
+                                  const uint32_t *prime_q, uint32_t *modulus) {
+  uint32_t mode = 0;
+  size_t num_words = 0;
+  HARDENED_TRY(keygen_size_to_params(size, &mode, &num_words));
+  size_t prime_words = num_words / 2;
+
+  uint32_t det = kHardenedBoolTrue;
+  HARDENED_TRY(otbn_load_app(OTBN_APP_T_INIT(run_rsa)));
+  HARDENED_TRY(otbn_dmem_write(1, &mode, OTBN_ADDR_T_INIT(run_rsa, mode)));
+  HARDENED_TRY(otbn_dmem_write(1, &det, OTBN_ADDR_T_INIT(run_rsa, rsa_e)));
+  HARDENED_TRY(
+      otbn_dmem_write(prime_words, prime_p, OTBN_ADDR_T_INIT(run_rsa, rsa_p)));
+  HARDENED_TRY(
+      otbn_dmem_write(prime_words, prime_q, OTBN_ADDR_T_INIT(run_rsa, rsa_q)));
+  HARDENED_TRY(otbn_execute_sync());
+
+  HARDENED_TRY(rsa_check_otbn_status());
+
+  uint32_t act_mode = 0;
+  HARDENED_TRY(otbn_dmem_read(1, OTBN_ADDR_T_INIT(run_rsa, mode), &act_mode));
+  if (launder32(act_mode) != mode) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+  HARDENED_CHECK_EQ(act_mode, mode);
+
+  HARDENED_TRY(
+      otbn_dmem_read(num_words, OTBN_ADDR_T_INIT(run_rsa, rsa_n), modulus));
+  return otbn_dmem_sec_wipe();
 }
 
 status_t rsa_keygen_finalize_size(rsa_size_t size, uint32_t *n, uint32_t *d0,
                                   uint32_t *d1, uint32_t *p, uint32_t *q) {
   uint32_t mode = 0;
   size_t expected_words = 0;
-
-  switch (launder32(size)) {
-    case kRsaSize2048:
-      HARDENED_CHECK_EQ(size, kRsaSize2048);
-      const uint32_t kMode2048Keygen =
-          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_KEYGEN);
-      mode = kMode2048Keygen;
-      expected_words = kRsa2048NumWords;
-      break;
-    case kRsaSize3072:
-      HARDENED_CHECK_EQ(size, kRsaSize3072);
-      const uint32_t kMode3072Keygen =
-          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_KEYGEN);
-      mode = kMode3072Keygen;
-      expected_words = kRsa3072NumWords;
-      break;
-    case kRsaSize4096:
-      HARDENED_CHECK_EQ(size, kRsaSize4096);
-      const uint32_t kMode4096Keygen =
-          OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_KEYGEN);
-      mode = kMode4096Keygen;
-      expected_words = kRsa4096NumWords;
-      break;
-    default:
-      HARDENED_TRAP();
-      return OTCRYPTO_FATAL_ERR;
-  }
-
+  HARDENED_TRY(keygen_size_to_params(size, &mode, &expected_words));
   return keygen_finalize(mode, expected_words, n, d0, d1, p, q);
 }

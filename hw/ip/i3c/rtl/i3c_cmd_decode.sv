@@ -13,11 +13,8 @@ module i3c_cmd_decode
   import i3c_controller_pkg::*;
   import i3c_pkg::*;
 #(
-  // Number of entries in the Device Address Table.
-  parameter int unsigned NumDATEntries = i3c_pkg::NumDATEntries,
-
-  // Derived parameters.
-  localparam int unsigned DATAddrW = $clog2(NumDATEntries)
+  // Number of blocked address settings supported.
+  parameter int unsigned NumBlocked = i3c_pkg::NumBlocked
 ) (
   // No requirement for clock or reset.
 
@@ -29,7 +26,12 @@ module i3c_cmd_decode
   input  i3c_dat_mem_t              dat_entry_i,
 
   // Command Descriptor from the Command Queue.
-  input  logic               [63:0] cmd_queue_i,  // 2 DWORDs.
+  input                      [63:0] cmd_queue_i,  // 2 DWORDs.
+
+  // Configuration.
+  input                             use_bcst_addr_i,
+  input                       [6:0] addr_blocked_i[NumBlocked],
+  input                       [6:0] mask_blocked_i[NumBlocked],
 
   // Interpretations of the Command Descriptor.
   output i3c_xfer_cmd_intern_ctrl_t cmd_intn_o,   // Internal Control commands.
@@ -46,7 +48,10 @@ module i3c_cmd_decode
 
   // Indicates that the Command Descriptor is invalid for one or more reasons;
   // - the TCRI permits only 'NotSupported' in response to an invalid command.
-  output logic                      err_o
+  output logic                      err_o,
+
+  // Indicates that the Command Phase shall not proceed because the addressed Target is blocked.
+  output logic                      blocked_o
 
   // Additional information presented in the Controller-side registers may be of diagnostic use.
   // TODO(#31307): Supply additional information?
@@ -82,7 +87,7 @@ module i3c_cmd_decode
   // otherwise deadlock the Controller and Driver.
   always_comb begin
     // Is this a Common Command Code transfer?
-    case (cmd_reg_o.cmd_attr)
+    unique case (cmd_reg_o.cmd_attr)
       CmdAttr_ImmTransfer,
       CmdAttr_RegTransfer: begin
         // HCI version 1.2 supports CCC Framing in SDR only (not HDR modes), but the CMD field may
@@ -99,7 +104,7 @@ module i3c_cmd_decode
     init_ok_o = !(cmd_attrs_o.is_ccc & tcri_blocked_ccc(cmd_reg_o.cmd));
 
     // Initial dispatch checks based on the type of Command Descriptor.
-    case (cmd_reg_o.cmd_attr)
+    unique case (cmd_reg_o.cmd_attr)
       CmdAttr_ImmTransfer:    init_ok_o = init_ok_o & !cmd_imm_o.rnw;  // Write Transfers only.
       // Any CCC command having just a Defining Byte and no data payload shall be sent as an
       // Immediate Data Transfer Command.
@@ -108,7 +113,7 @@ module i3c_cmd_decode
       // Address Assignment Commands support SETDASA and ENTDAA, but not SETAASA (HCI 8.4.1).
       CmdAttr_AddrAssignment: init_ok_o = init_ok_o & (cmd_daa_o.cmd inside {ENTDAA, SETDASA});
       CmdAttr_InternalCtrl:
-        case (cmd_intn_o.mipi_cmd)
+        unique case (cmd_intn_o.mipi_cmd)
           MIPICmd_NoOp,
           MIPICmd_BroadAddrEnable: init_ok_o = 1'b1;
           MIPICmd_TargRstPattern:
@@ -150,7 +155,7 @@ module i3c_cmd_decode
     cmd_attrs_o.ddr  = hdr_ddr;
 
     // Determine maximum number of retries; this depends upon the device properties as well.
-    case (cmd_reg_o.cmd_attr)
+    unique case (cmd_reg_o.cmd_attr)
       CmdAttr_ImmTransfer,
       CmdAttr_RegTransfer,
       CmdAttr_ComboTransfer: begin
@@ -180,19 +185,16 @@ module i3c_cmd_decode
     // Default to acceptance, unless it's a CCC that's prohibited in Command Descriptors (TCRI 6.2).
     err_o = cmd_attrs_o.is_ccc & tcri_blocked_ccc(cmd_imm_o.cmd);
 
-    // TODO(#31305): Check the validity of the address being used, remembering that it may be the
-    // static address rather than the dynamic address.
-
     // The most significant field is the command type (`cmd_attr`).
     // - the validity of fields is type-specific.
-    case (cmd_reg_o.cmd_attr)
+    unique case (cmd_reg_o.cmd_attr)
       CmdAttr_ImmTransfer: begin
         cmd_attrs_o.has_defb = (cmd_imm_o.dtt > 'h4);
         cmd_attrs_o.defb     =  cmd_imm_o.data_byte_1;
-        case (cmd_imm_o.dtt)
+        unique case (cmd_imm_o.dtt)
           // Data length does _not_ include the Defining Byte.
-          3'h5, 3'h6, 3'h7: cmd_attrs_o.data_len = cmd_imm_o.dtt - 3'h5;
-          default:          cmd_attrs_o.data_len = cmd_imm_o.dtt;
+          3'h5, 3'h6, 3'h7: cmd_attrs_o.data_len = 16'(cmd_imm_o.dtt - 3'h5);
+          default:          cmd_attrs_o.data_len = 16'(cmd_imm_o.dtt);
         endcase
         if (cmd_imm_o.rnw) err_o = 1'b1;  // Immediate transfers are Write only.
         // Not all Transfer mode values are valid/supported.
@@ -213,7 +215,7 @@ module i3c_cmd_decode
         // TODO(#31304). Combo Transfer Commands are declared as unsupported, and not implemented.
         cmd_attrs_o.data_len  = cmd_combo_o.data_length;
         // There are two phases to a Combo Transfer command.
-        cmd_attrs_o.reps_left = !cmd_state_i.rep_start;
+        cmd_attrs_o.reps_left = CmdRepW'(!cmd_state_i.rep_start);
         // Not all Transfer mode values are valid/supported, and zero-length transfers are invalid.
         if (!mode_supported(cmd_attrs_o.mode, cmd_attrs_o.i2c) || ~|cmd_combo_o.data_length ||
             &cmd_combo_o.dlp) begin
@@ -223,9 +225,9 @@ module i3c_cmd_decode
         if (cmd_attrs_o.is_ccc & tcri_blocked_ccc(cmd_combo_o.cmd)) err_o = 1'b1;
       end
       CmdAttr_AddrAssignment: begin
-        cmd_attrs_o.mode    = XferMode_SDR0;
-        cmd_attrs_o.i2c     = 1'b0;
-        cmd_attrs_o.toc     = 1'b0;
+        cmd_attrs_o.mode = XferMode_SDR0;
+        cmd_attrs_o.i2c  = 1'b0;
+        cmd_attrs_o.toc  = 1'b0;
         // TODO(#31304): Dynamic address during the write phase, but this is possibly not required.
         cmd_attrs_o.data_len  = 'h1;
         // The first segment is a write operation, sending the CCC.
@@ -241,7 +243,7 @@ module i3c_cmd_decode
                                                       : cmd_daa_o.dev_count;
       end
       CmdAttr_InternalCtrl:
-        case (cmd_intn_o.mipi_cmd)
+        unique case (cmd_intn_o.mipi_cmd)
           MIPICmd_NoOp,
           MIPICmd_BroadAddrEnable: err_o = 1'b0;
           MIPICmd_TargRstPattern:
@@ -262,7 +264,66 @@ module i3c_cmd_decode
     endcase
 
     // Derived properties.
-    cmd_attrs_o.brd_ccc = cmd_attrs_o.is_ccc & !cmd_attrs_o.ccc[7];
+    cmd_attrs_o.brd_ccc = cmd_attrs_o.is_ccc & broadcast_ccc(cmd_attrs_o.ccc);
   end
+
+  // Determine the address to be used for this command phase and whether communication with that
+  // address has been blocked.
+  always_comb begin : gen_addr
+    logic [NumBlocked:0] addr_blocked;  // One extra for the invalid I3C addresses.
+    logic [6:0] addr_cand;
+
+    // Using I3C Broadcast Address to commence a transfer?
+    // - do NOT use the I3C Broadcast Address after a Repeated Start (Sr); for either CCC or Private
+    //   transfers. TODO(#31304): ENTDAA is an exception here.
+    cmd_attrs_o.addr_bcst = |{cmd_attrs_o.is_ccc, cmd_attrs_o.ddr, use_bcst_addr_i} &
+                             ~cmd_state_i.rep_start;
+
+    // Candidate Target/Group/I3C Broadcast Address.
+    /// - I3C Broadcast address is used for SDR Private Transfers iff explicitly requested.
+    addr_cand = dat_entry_i.dynamic_address[22:16];
+    if (cmd_attrs_o.addr_bcst) begin
+      addr_cand = Addr_Broadcast;
+    end else begin
+      // SETDASA is always sent to the programmed static address, and I2C devices have only static
+      // addresses.
+      if (cmd_attrs_o.ccc == SETDASA || cmd_attrs_o.i2c) begin  // HCI 6.3.1
+        addr_cand = dat_entry_i.static_address;
+      end
+    end
+
+    // Test whether this is _always_ an invalid address for the Controller to access, prohibited
+    // by the I3C spec
+    addr_blocked[NumBlocked] = invalid_addr(addr_cand, 1'b0);
+
+    // Address blocking prevents addressing of software-blacklisted addresses, e.g., I2C Targets
+    // that may try to employ clock stretching.
+    for (int unsigned b = 0; b < NumBlocked; b++) begin
+      addr_blocked[b] = ((addr_cand & mask_blocked_i[b]) == addr_blocked_i[b]);
+    end
+
+    // Indicate to the core FSM logic that the transfer shall not proceed.
+    // TODO(#31304): A later revision separates the address used in the header from the checked
+    // address:
+    // - there is scant reason to check the I3C Broadcast Address, but we _do_ want to check the
+    //   ensuing Target/Group address, and the DA being assigned in Addr Assignment commands.
+    // - address blocking is not appropriate for MIPI Internal Control Commands.
+    blocked_o = |addr_blocked;
+    // Address to be used, as required by CmdArb/CmdAddr, _iff not blocked_.
+    // - always W for I3C Broadcast Address) TODO(#31304): ENTDAA is an exception here.
+    cmd_attrs_o.addr_rnw = {addr_cand, cmd_attrs_o.rnw & ~cmd_attrs_o.addr_bcst};
+  end
+
+  // Signals that the logic does not use (yet).
+  // - fields of the shared command state and DAT entry structs that the decoder does not need.
+  logic unused_decode_inputs;
+  assign unused_decode_inputs = ^{cmd_state_i.available, cmd_state_i.retry_cnt,
+                                  cmd_state_i.rst_csect, cmd_state_i.started,
+                                  dat_entry_i.autocmd_hdr_code, dat_entry_i.autocmd_mask,
+                                  dat_entry_i.autocmd_mode, dat_entry_i.autocmd_value,
+                                  dat_entry_i.crr_reject, dat_entry_i.dynamic_address,
+                                  dat_entry_i.ibi_payload, dat_entry_i.ibi_reject,
+                                  dat_entry_i.ring_id, dat_entry_i.static_address,
+                                  dat_entry_i.ts};
 
 endmodule

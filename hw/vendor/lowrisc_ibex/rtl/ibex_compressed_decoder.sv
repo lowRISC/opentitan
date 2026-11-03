@@ -633,8 +633,9 @@ module ibex_compressed_decoder import ibex_pkg::*; #(
                       // the list. Then work our way down by decrementing `rlist` each cycle.
                       instr_o = cm_push_store_reg(.rlist(cm_rlist_d), .sp_offset(5'd1));
                       if (cm_rlist_d <= 5'd3) begin
-                        // Reserved --> illegal instruction.
+                        // Reserved --> illegal instruction, not expanded.
                         illegal_instr_o = 1'b1;
+                        gets_expanded   = INSTR_NOT_EXPANDED;
                       end else if (cm_rlist_d == 5'd4) begin
                         // Only `ra` has to be stored, which is done in this cycle.  Proceed by
                         // decrementing SP.
@@ -701,8 +702,9 @@ module ibex_compressed_decoder import ibex_pkg::*; #(
                       // the list. Then work our way down by decrementing `rlist` each cycle.
                       instr_o = cm_pop_load_reg(.rlist(cm_rlist_d), .sp_offset(cm_sp_offset_d));
                       if (cm_rlist_d <= 5'd3) begin
-                        // Reserved --> illegal instruction.
+                        // Reserved --> illegal instruction, not expanded.
                         illegal_instr_o = 1'b1;
+                        gets_expanded   = INSTR_NOT_EXPANDED;
                       end else if (cm_rlist_d == 5'd4) begin
                         // Only `ra` has to be loaded, which is done in this cycle.  Proceed by
                         // incrementing SP.
@@ -786,10 +788,16 @@ module ibex_compressed_decoder import ibex_pkg::*; #(
                           // No cm.mvsa01 instruction is active yet; start a new one.
                           // Move a0 to register indicated by r1s'.
                           instr_o = cm_mvsa01(.a01(1'b0), .rs(instr_i[9:7]));
-                          // Ensure the second move happens atomically with this one.
-                          gets_expanded = INSTR_EXPANDED_COMMIT;
-                          if (valid_i && id_in_ready_i) begin
-                            cm_state_d = CmMvSecondReg;
+                          if (instr_i[9:7] == instr_i[4:2]) begin
+                            // r1s' == r2s' is reserved --> illegal instruction, not expanded.
+                            illegal_instr_o = 1'b1;
+                            gets_expanded   = INSTR_NOT_EXPANDED;
+                          end else begin
+                            // Ensure the second move happens atomically with this one.
+                            gets_expanded = INSTR_EXPANDED_COMMIT;
+                            if (valid_i && id_in_ready_i) begin
+                              cm_state_d = CmMvSecondReg;
+                            end
                           end
                         end
                         CmMvSecondReg: begin
@@ -935,5 +943,8 @@ module ibex_compressed_decoder import ibex_pkg::*; #(
   `ASSERT(IbexC2Known1, (valid_i && (instr_i[1:0] == 2'b10)) |->
       !$isunknown(instr_i[15:13]))
   `ASSERT(IbexPushPopFSMStable, !valid_i |-> cm_state_d == cm_state_q)
+  // An illegal instruction is never expanded.
+  `ASSERT(IbexIllegalInstrNotExpanded, (valid_i && illegal_instr_o) |->
+      (gets_expanded == INSTR_NOT_EXPANDED))
 
 endmodule

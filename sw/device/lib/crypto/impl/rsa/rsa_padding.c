@@ -154,6 +154,11 @@ static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
                                    size_t *num_words) {
   hash_info_t info;
   HARDENED_TRY(hash_info_get(hash_mode, &info));
+  if (info.der_oid == NULL) {
+    // Unsupported or unrecognized hash function.
+    // COVERAGE (MISSING) We do not cover bad padding modes.
+    return OTCRYPTO_BAD_ARGS;
+  }
   *num_words = info.digest_wordlen;
   HARDENED_CHECK_GT(*num_words, 0);
   return OTCRYPTO_OK;
@@ -428,6 +433,8 @@ status_t rsa_padding_pss_verify(const otcrypto_hash_digest_t message_digest,
   size_t salt_bytelen = digest_bytelen;
   size_t encoded_message_bytelen = encoded_message_len * sizeof(uint32_t);
   if (encoded_message_bytelen < salt_bytelen + digest_bytelen + 2) {
+    // COVERAGE (SW ERR) This is an internal function which is called with
+    // correct inputs that do not trigger this return.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -609,11 +616,11 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
       consttime_memeq_byte(seed, encoded_message_bytes + 1, sizeof(seed)),
       kHardenedBoolTrue);
   HARDENED_TRY(randomized_bytecopy(encoded_message_bytes + 1 + sizeof(seed), db,
-                                   sizeof(db)));
+                                   db_bytelen));
   // Check whether a FI tampered copying the bytes.
   HARDENED_CHECK_EQ(
       consttime_memeq_byte(db, encoded_message_bytes + 1 + sizeof(seed),
-                           sizeof(db)),
+                           db_bytelen),
       kHardenedBoolTrue);
 
   // Reverse the byte-order.

@@ -3,201 +3,201 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/i3c/data/i3c.hjson -->
 ## Summary
 
-| Name                                                                        | Offset   |   Length | Description                                                                        |
-|:----------------------------------------------------------------------------|:---------|---------:|:-----------------------------------------------------------------------------------|
-| i3c.[`INTR_STATE`](#intr_state)                                             | 0x0      |        4 | Interrupt State Register                                                           |
-| i3c.[`INTR_ENABLE`](#intr_enable)                                           | 0x4      |        4 | Interrupt Enable Register                                                          |
-| i3c.[`INTR_TEST`](#intr_test)                                               | 0x8      |        4 | Interrupt Test Register                                                            |
-| i3c.[`ALERT_TEST`](#alert_test)                                             | 0xc      |        4 | Alert Test Register                                                                |
-| i3c.[`INFO`](#info)                                                         | 0x10     |        4 | IP block information, allowing software to adapt dynamically.                      |
-| i3c.[`CTRL_STATUS`](#ctrl_status)                                           | 0x14     |        4 | Controller-side Status register.                                                   |
-| i3c.[`CTRL_ERROR`](#ctrl_error)                                             | 0x18     |        4 | Controller Error counts.                                                           |
-| i3c.[`TARG_CONTROL`](#targ_control)                                         | 0x1c     |        4 | Target Control register.                                                           |
-| i3c.[`TARG_STATUS`](#targ_status)                                           | 0x20     |        4 | Target-side Status register                                                        |
-| i3c.[`TARG_SINK_CONTROL`](#targ_sink_control)                               | 0x24     |        4 | Target data sink control.                                                          |
-| i3c.[`TARG_SINK_STATUS`](#targ_sink_status)                                 | 0x28     |        4 | Target data sink status.                                                           |
-| i3c.[`RESET_DET_CTRL`](#reset_det_ctrl)                                     | 0x2c     |        4 | Reset detector control.                                                            |
-| i3c.[`RESET_DET_STATUS`](#reset_det_status)                                 | 0x30     |        4 | Reset detector status.                                                             |
-| i3c.[`CTRL_TIME_SP`](#ctrl_time_sp)                                         | 0x34     |        4 | Controller Timing Parameters for Start and stoP.                                   |
-| i3c.[`CTRL_TIME_OD`](#ctrl_time_od)                                         | 0x38     |        4 | Controller Timing Parameters for Open Drain signaling.                             |
-| i3c.[`CTRL_TIME_PP`](#ctrl_time_pp)                                         | 0x3c     |        4 | Controller Timing Parameters for SDR/HDR-DDR Push-Pull SCL High signaling.         |
-| i3c.[`CTRL_TIME_SDR0`](#ctrl_time_sdr0)                                     | 0x40     |        4 | Controller Timing Parameters for SDR0/HDR-DDR Push-Pull SCL Low signaling.         |
-| i3c.[`CTRL_TIME_SDR1`](#ctrl_time_sdr1)                                     | 0x44     |        4 | Controller Timing Parameters for SDR1 Push-Pull SCL Low signaling.                 |
-| i3c.[`CTRL_TIME_SDR2`](#ctrl_time_sdr2)                                     | 0x48     |        4 | Controller Timing Parameters for SDR2 Push-Pull SCL Low signaling.                 |
-| i3c.[`CTRL_TIME_SDR3`](#ctrl_time_sdr3)                                     | 0x4c     |        4 | Controller Timing Parameters for SDR3 Push-Pull SCL Low signaling.                 |
-| i3c.[`CTRL_TIME_SDR4`](#ctrl_time_sdr4)                                     | 0x50     |        4 | Controller Timing Parameters for SDR4 Push-Pull SCL Low signaling.                 |
-| i3c.[`CTRL_TIME_FMP`](#ctrl_time_fmp)                                       | 0x54     |        4 | Controller Timing Parameters for I2C Fast Mode Plus signaling.                     |
-| i3c.[`CTRL_TIME_FM`](#ctrl_time_fm)                                         | 0x58     |        4 | Controller Timing Parameters for I2C Fast Mode signaling.                          |
-| i3c.[`INTERVAL_TIME0`](#interval_time0)                                     | 0x5c     |        4 | Interval Timers 0 register.                                                        |
-| i3c.[`INTERVAL_TIME1`](#interval_time1)                                     | 0x60     |        4 | Interval Timers 1 register.                                                        |
-| i3c.[`PHY_CONFIG`](#phy_config)                                             | 0x64     |        4 | PHY configuration                                                                  |
-| i3c.[`BLOCKED_ADDR`](#blocked_addr)                                         | 0x68     |        4 | Blocked target addresses.                                                          |
-| i3c.[`BUFFER_CTRL`](#buffer_ctrl)                                           | 0x6c     |        4 | Buffer control                                                                     |
-| i3c.[`BUFFER_STATUS`](#buffer_status)                                       | 0x70     |        4 | Buffer status                                                                      |
-| i3c.[`CTRL_TXBUF_CONFIG`](#ctrl_txbuf_config)                               | 0x74     |        4 | Controller TX Buffer Configuration                                                 |
-| i3c.[`CTRL_TXBUF_STATE`](#ctrl_txbuf_state)                                 | 0x78     |        4 | Controller TX Buffer State.                                                        |
-| i3c.[`CTRL_RXBUF_CONFIG`](#ctrl_rxbuf_config)                               | 0x7c     |        4 | Controller RX Buffer Configuration                                                 |
-| i3c.[`CTRL_RXBUF_STATE`](#ctrl_rxbuf_state)                                 | 0x80     |        4 | Controller RX Buffer State.                                                        |
-| i3c.[`COMMAND_QUEUE_CONFIG`](#command_queue_config)                         | 0x84     |        4 | Command Queue Configuration.                                                       |
-| i3c.[`COMMAND_QUEUE_STATE`](#command_queue_state)                           | 0x88     |        4 | Command Queue State.                                                               |
-| i3c.[`RESPONSE_QUEUE_CONFIG`](#response_queue_config)                       | 0x8c     |        4 | Response Queue Configuration.                                                      |
-| i3c.[`RESPONSE_QUEUE_STATE`](#response_queue_state)                         | 0x90     |        4 | Response Queue State.                                                              |
-| i3c.[`IBI_CONFIG`](#ibi_config)                                             | 0x94     |        4 | In-Band Interrupt Queue Configuration.                                             |
-| i3c.[`IBI_STATE`](#ibi_state)                                               | 0x98     |        4 | In-Band Interrupt Queue State.                                                     |
-| i3c.[`IBI_STAT_CONFIG`](#ibi_stat_config)                                   | 0x9c     |        4 | In-Band Status Descriptor FIFO Configuration.                                      |
-| i3c.[`IBI_STAT_STATE`](#ibi_stat_state)                                     | 0xa0     |        4 | In-Band Status Descriptor FIFO State.                                              |
-| i3c.[`TARG_TXBUF_CONFIG_0`](#targ_txbuf_config)                             | 0xa4     |        4 | Target TX Buffer Configuration.                                                    |
-| i3c.[`TARG_TXBUF_CONFIG_1`](#targ_txbuf_config)                             | 0xa8     |        4 | Target TX Buffer Configuration.                                                    |
-| i3c.[`TARG_TXBUF_CONFIG_2`](#targ_txbuf_config)                             | 0xac     |        4 | Target TX Buffer Configuration.                                                    |
-| i3c.[`TARG_TXBUF_CONFIG_3`](#targ_txbuf_config)                             | 0xb0     |        4 | Target TX Buffer Configuration.                                                    |
-| i3c.[`TARG_TXBUF_STATE_0`](#targ_txbuf_state)                               | 0xb4     |        4 | Target 0 TX Buffer State.                                                          |
-| i3c.[`TARG_TXBUF_STATE_1`](#targ_txbuf_state)                               | 0xb8     |        4 | Target 0 TX Buffer State.                                                          |
-| i3c.[`TARG_TXBUF_STATE_2`](#targ_txbuf_state)                               | 0xbc     |        4 | Target 0 TX Buffer State.                                                          |
-| i3c.[`TARG_TXBUF_STATE_3`](#targ_txbuf_state)                               | 0xc0     |        4 | Target 0 TX Buffer State.                                                          |
-| i3c.[`TARG_RXBUF_CONFIG`](#targ_rxbuf_config)                               | 0xc4     |        4 | Target RX Buffer Configuration                                                     |
-| i3c.[`TARG_RXBUF_STATE`](#targ_rxbuf_state)                                 | 0xc8     |        4 | Target RX Buffer State.                                                            |
-| i3c.[`TARG_IBI_CONFIG`](#targ_ibi_config)                                   | 0xcc     |        4 | Target In-Band Interrupt Payload Queue Configuration                               |
-| i3c.[`TARG_IBI_STATE`](#targ_ibi_state)                                     | 0xd0     |        4 | Target In-Band Interrupt Payload Queue State.                                      |
-| i3c.[`TARG_TXDESC_CONFIG_0`](#targ_txdesc_config)                           | 0xd4     |        4 | Target Transmission Descriptor Queue Configuration.                                |
-| i3c.[`TARG_TXDESC_CONFIG_1`](#targ_txdesc_config)                           | 0xd8     |        4 | Target Transmission Descriptor Queue Configuration.                                |
-| i3c.[`TARG_TXDESC_CONFIG_2`](#targ_txdesc_config)                           | 0xdc     |        4 | Target Transmission Descriptor Queue Configuration.                                |
-| i3c.[`TARG_TXDESC_CONFIG_3`](#targ_txdesc_config)                           | 0xe0     |        4 | Target Transmission Descriptor Queue Configuration.                                |
-| i3c.[`TARG_TXDESC_STATE_0`](#targ_txdesc_state)                             | 0xe4     |        4 | Target Transmission Descriptor Queue State.                                        |
-| i3c.[`TARG_TXDESC_STATE_1`](#targ_txdesc_state)                             | 0xe8     |        4 | Target Transmission Descriptor Queue State.                                        |
-| i3c.[`TARG_TXDESC_STATE_2`](#targ_txdesc_state)                             | 0xec     |        4 | Target Transmission Descriptor Queue State.                                        |
-| i3c.[`TARG_TXDESC_STATE_3`](#targ_txdesc_state)                             | 0xf0     |        4 | Target Transmission Descriptor Queue State.                                        |
-| i3c.[`TARG_RXDESC_CONFIG`](#targ_rxdesc_config)                             | 0xf4     |        4 | Target Reception Descriptor Queue Configuration.                                   |
-| i3c.[`TARG_RXDESC_STATE`](#targ_rxdesc_state)                               | 0xf8     |        4 | Target Reception Descriptor Queue State.                                           |
-| i3c.[`TARG_IBIDESC_CONFIG`](#targ_ibidesc_config)                           | 0xfc     |        4 | Target In-Band Interrupt Descriptor Queue Configuration.                           |
-| i3c.[`TARG_IBIDESC_STATE`](#targ_ibidesc_state)                             | 0x100    |        4 | Target In-Band Interrupt Descriptor Queue State.                                   |
-| i3c.[`TARG_ASYNC_CONFIG`](#targ_async_config)                               | 0x104    |        4 | Target Asynchronous Event Queue Configuration.                                     |
-| i3c.[`TARG_ASYNC_STATE`](#targ_async_state)                                 | 0x108    |        4 | Target Asynchronous Event Queue State.                                             |
-| i3c.[`HCI_VERSION`](#hci_version)                                           | 0x180    |        4 | HCI Version.                                                                       |
-| i3c.[`HC_CONTROL`](#hc_control)                                             | 0x184    |        4 | Host Controller Control.                                                           |
-| i3c.[`CONTROLLER_DEVICE_ADDR`](#controller_device_addr)                     | 0x188    |        4 | Controller Device Address.                                                         |
-| i3c.[`HC_CAPABILITIES`](#hc_capabilities)                                   | 0x18c    |        4 | Host Controller Capabilities.                                                      |
-| i3c.[`RESET_CONTROL`](#reset_control)                                       | 0x190    |        4 | Reset Control.                                                                     |
-| i3c.[`PRESENT_STATE`](#present_state)                                       | 0x194    |        4 | Present State.                                                                     |
-| i3c.[`INTR_STATUS`](#intr_status)                                           | 0x1a0    |        4 | Interrupt Status.                                                                  |
-| i3c.[`INTR_STATUS_ENABLE`](#intr_status_enable)                             | 0x1a4    |        4 | Interrupt Status Enable.                                                           |
-| i3c.[`INTR_SIGNAL_ENABLE`](#intr_signal_enable)                             | 0x1a8    |        4 | Interrupt Signal Enable.                                                           |
-| i3c.[`INTR_FORCE`](#intr_force)                                             | 0x1ac    |        4 | Interrupt Force.                                                                   |
-| i3c.[`DAT_SECTION_OFFSET`](#dat_section_offset)                             | 0x1b0    |        4 | Device Address Table Section Offset.                                               |
-| i3c.[`DCT_SECTION_OFFSET`](#dct_section_offset)                             | 0x1b4    |        4 | Device Characteristics Table Section Offset.                                       |
-| i3c.[`RING_HEADERS_SECTION_OFFSET`](#ring_headers_section_offset)           | 0x1b8    |        4 | Ring Headers Section Offset.                                                       |
-| i3c.[`PIO_SECTION_OFFSET`](#pio_section_offset)                             | 0x1bc    |        4 | PIO Section Offset.                                                                |
-| i3c.[`EXT_CAPS_SECTION_OFFSET`](#ext_caps_section_offset)                   | 0x1c0    |        4 | Extended Capabilities Section Offset.                                              |
-| i3c.[`INT_CTRL_CMDS_EN`](#int_ctrl_cmds_en)                                 | 0x1cc    |        4 | Internal Control Command Subtype Support.                                          |
-| i3c.[`IBI_NOTIFY_CTRL`](#ibi_notify_ctrl)                                   | 0x1d8    |        4 | IBI Notify Control.                                                                |
-| i3c.[`IBI_DATA_ABORT_CTRL`](#ibi_data_abort_ctrl)                           | 0x1dc    |        4 | IBI Data Abort Control.                                                            |
-| i3c.[`DEV_CTX_BASE_LO`](#dev_ctx_base_lo)                                   | 0x1e0    |        4 | Device Context Base Address Low.                                                   |
-| i3c.[`DEV_CTX_BASE_HI`](#dev_ctx_base_hi)                                   | 0x1e4    |        4 | Device Context Base Address High.                                                  |
-| i3c.[`DEV_CTX_SG`](#dev_ctx_sg)                                             | 0x1e8    |        4 | Device Context Scatter-Gather Support.                                             |
-| i3c.[`HCI_PORTS`](#hci_ports)                                               | 0x200    |       16 | HCI ports, occupying successive word addresses:                                    |
-| i3c.[`QUEUE_THLD_CTRL`](#queue_thld_ctrl)                                   | 0x210    |        4 | Queue Threshold Control.                                                           |
-| i3c.[`DATA_BUFFER_THLD_CTRL`](#data_buffer_thld_ctrl)                       | 0x214    |        4 | Transfer Data Buffer Threshold Control.                                            |
-| i3c.[`QUEUE_SIZE`](#queue_size)                                             | 0x218    |        4 | Queue Size.                                                                        |
-| i3c.[`ALT_QUEUE_SIZE`](#alt_queue_size)                                     | 0x21c    |        4 | Alternate Queue Size.                                                              |
-| i3c.[`PIO_INTR_STATUS`](#pio_intr_status)                                   | 0x220    |        4 | PIO Interrupt Status.                                                              |
-| i3c.[`PIO_INTR_STATUS_ENABLE`](#pio_intr_status_enable)                     | 0x224    |        4 | PIO Interrupt Status Enable.                                                       |
-| i3c.[`PIO_INTR_SIGNAL_ENABLE`](#pio_intr_signal_enable)                     | 0x228    |        4 | PIO Interrupt Signal Enable.                                                       |
-| i3c.[`PIO_INTR_FORCE`](#pio_intr_force)                                     | 0x22c    |        4 | PIO Interrupt Force.                                                               |
-| i3c.[`PIO_CONTROL`](#pio_control)                                           | 0x230    |        4 | PIO Control.                                                                       |
-| i3c.[`ID_EXTCAP_HEADER`](#id_extcap_header)                                 | 0x2a0    |        4 | Hardware Identification Extended Capability Header                                 |
-| i3c.[`COMP_MANUFACTURER`](#comp_manufacturer)                               | 0x2a4    |        4 | Component Manufacturer.                                                            |
-| i3c.[`COMP_VERSION`](#comp_version)                                         | 0x2a8    |        4 | Component Version.                                                                 |
-| i3c.[`COMP_TYPE`](#comp_type)                                               | 0x2ac    |        4 | Component Type.                                                                    |
-| i3c.[`CTRL_CFG_EXTCAP_HEADER`](#ctrl_cfg_extcap_header)                     | 0x2b0    |        4 | Controller Config Extended Capability Header                                       |
-| i3c.[`CONTROLLER_CONFIG`](#controller_config)                               | 0x2b4    |        4 | Controller Config.                                                                 |
-| i3c.[`DBR_EXTCAP_HEADER`](#dbr_extcap_header)                               | 0x2b8    |        4 | Dead Bus Recovery Extended Capability Header                                       |
-| i3c.[`DBR_ENGAGE`](#dbr_engage)                                             | 0x2bc    |        4 | Dead Bus Recovery Engage.                                                          |
-| i3c.[`DEBUG_EXTCAP_HEADER`](#debug_extcap_header)                           | 0x2c0    |        4 | Debug Specific Extended Capability Header                                          |
-| i3c.[`QUEUE_STATUS_LEVEL`](#queue_status_level)                             | 0x2c4    |        4 | Queue Status Level                                                                 |
-| i3c.[`DATA_BUFFER_STATUS_LEVEL`](#data_buffer_status_level)                 | 0x2c8    |        4 | Data Buffer Status Level                                                           |
-| i3c.[`PRESENT_STATE_DEBUG`](#present_state_debug)                           | 0x2cc    |        4 | Present State Debug                                                                |
-| i3c.[`MX_ERROR_COUNTERS`](#mx_error_counters)                               | 0x2d0    |        4 | Controller Error Counters.                                                         |
-| i3c.[`SCHED_CMDS_DEBUG`](#sched_cmds_debug)                                 | 0x2d4    |        4 | Scheduled Commands Debug                                                           |
-| i3c.[`STBY_CR_EXTCAP_HEADER`](#stby_cr_extcap_header)                       | 0x2d8    |        4 | Standby Controller Extended Capability Header                                      |
-| i3c.[`STBY_CR_CONTROL`](#stby_cr_control)                                   | 0x2dc    |        4 | Standby Controller Control                                                         |
-| i3c.[`STBY_CR_DEVICE_ADDR`](#stby_cr_device_addr)                           | 0x2e0    |        4 | Standby Controller Device Address                                                  |
-| i3c.[`STBY_CR_CAPABILITIES`](#stby_cr_capabilities)                         | 0x2e4    |        4 | Standby Controller Capabilities                                                    |
-| i3c.[`STBY_CR_STATUS`](#stby_cr_status)                                     | 0x2ec    |        4 | Standby Controller Status                                                          |
-| i3c.[`STBY_CR_DEVICE_CHAR`](#stby_cr_device_char)                           | 0x2f0    |        4 | Standby Controller Device Characteristics                                          |
-| i3c.[`STBY_CR_DEVICE_PID_LO`](#stby_cr_device_pid_lo)                       | 0x2f4    |        4 | Standby Controller PID Low                                                         |
-| i3c.[`STBY_CR_INTR_STATUS`](#stby_cr_intr_status)                           | 0x2f8    |        4 | Standby Controller Interrupt Status                                                |
-| i3c.[`STBY_CR_INTR_SIGNAL_ENABLE`](#stby_cr_intr_signal_enable)             | 0x300    |        4 | Standby Controller Interrupt Signal Enable                                         |
-| i3c.[`STBY_CR_INTR_FORCE`](#stby_cr_intr_force)                             | 0x304    |        4 | Standby Controller Interrupt Force                                                 |
-| i3c.[`STBY_CR_CCC_CONFIG_GETCAPS`](#stby_cr_ccc_config_getcaps)             | 0x308    |        4 | Standby Controller CCC Auto-Response Config Get Capabilities                       |
-| i3c.[`STBY_CR_CCC_CONFIG_RSTACT_PARAMS`](#stby_cr_ccc_config_rstact_params) | 0x30c    |        4 | Standby Controller CCC Auto-Response Config Target Reset Action                    |
-| i3c.[`TTI_EXTCAP_HEADER`](#tti_extcap_header)                               | 0x310    |        4 | Target Transaction Interface Extended Capability Header                            |
-| i3c.[`TARG_INTR_STATUS`](#targ_intr_status)                                 | 0x314    |        4 | Target Interrupt Status.                                                           |
-| i3c.[`TARG_INTR_STATUS_ENABLE`](#targ_intr_status_enable)                   | 0x318    |        4 | Target Interrupt Status Enable.                                                    |
-| i3c.[`TARG_INTR_SIGNAL_ENABLE`](#targ_intr_signal_enable)                   | 0x31c    |        4 | Target Interrupt Signal Enable.                                                    |
-| i3c.[`TARG_INTR_FORCE`](#targ_intr_force)                                   | 0x320    |        4 | Target Interrupt Force.                                                            |
-| i3c.[`TARG_PIO_CONTROL`](#targ_pio_control)                                 | 0x324    |        4 | Target PIO mode Control register.                                                  |
-| i3c.[`TARG_ASYNC_EVT_CONTROL`](#targ_async_evt_control)                     | 0x328    |        4 | Target Asynchronous Event Queue Control.                                           |
-| i3c.[`TARG_ERROR`](#targ_error)                                             | 0x32c    |        4 | Target Error counts.                                                               |
-| i3c.[`TARG_QUEUE_THLD_CTRL`](#targ_queue_thld_ctrl)                         | 0x330    |        4 | Target-side control register for setting queue interrupt thresholds.               |
-| i3c.[`TARG_QUEUE_STATUS_LEVEL`](#targ_queue_status_level)                   | 0x334    |        4 | Target-side queue levels.                                                          |
-| i3c.[`TARG_BUF_THLD_CTRL`](#targ_buf_thld_ctrl)                             | 0x338    |        4 | Target-side control register for setting buffer interrupt thresholds.              |
-| i3c.[`TARG_BUF_STATUS_LEVEL`](#targ_buf_status_level)                       | 0x33c    |        4 | Target-side data buffer levels.                                                    |
-| i3c.[`TARG_RW_LEN_0`](#targ_rw_len)                                         | 0x340    |        4 | Target Read/Write Length.                                                          |
-| i3c.[`TARG_RW_LEN_1`](#targ_rw_len)                                         | 0x344    |        4 | Target Read/Write Length.                                                          |
-| i3c.[`TARG_RW_LEN_2`](#targ_rw_len)                                         | 0x348    |        4 | Target Read/Write Length.                                                          |
-| i3c.[`TARG_RW_LEN_3`](#targ_rw_len)                                         | 0x34c    |        4 | Target Read/Write Length.                                                          |
-| i3c.[`TARG_IBI_LEN`](#targ_ibi_len)                                         | 0x350    |        4 | Target IBI payload Length.                                                         |
-| i3c.[`TARG_EVENT_ENABLE_0`](#targ_event_enable)                             | 0x354    |        4 | Target Event enables.                                                              |
-| i3c.[`TARG_EVENT_ENABLE_1`](#targ_event_enable)                             | 0x358    |        4 | Target Event enables.                                                              |
-| i3c.[`TARG_EVENT_ENABLE_2`](#targ_event_enable)                             | 0x35c    |        4 | Target Event enables.                                                              |
-| i3c.[`TARG_EVENT_ENABLE_3`](#targ_event_enable)                             | 0x360    |        4 | Target Event enables.                                                              |
-| i3c.[`TARG_STATE_DEBUG`](#targ_state_debug)                                 | 0x364    |        4 | Target State Debug                                                                 |
-| i3c.[`TARG_ENABLE`](#targ_enable)                                           | 0x368    |        4 | Enable signals for individual virtual targets.                                     |
-| i3c.[`TARG_GROUP_0`](#targ_group)                                           | 0x36c    |        4 | Group addressing configuration.                                                    |
-| i3c.[`TARG_GROUP_1`](#targ_group)                                           | 0x370    |        4 | Group addressing configuration.                                                    |
-| i3c.[`TARG_GROUP_2`](#targ_group)                                           | 0x374    |        4 | Group addressing configuration.                                                    |
-| i3c.[`TARG_GROUP_3`](#targ_group)                                           | 0x378    |        4 | Group addressing configuration.                                                    |
-| i3c.[`TARG_GROUP_4`](#targ_group)                                           | 0x37c    |        4 | Group addressing configuration.                                                    |
-| i3c.[`TARG_GROUP_5`](#targ_group)                                           | 0x380    |        4 | Group addressing configuration.                                                    |
-| i3c.[`TARG_GROUP_6`](#targ_group)                                           | 0x384    |        4 | Group addressing configuration.                                                    |
-| i3c.[`TARG_GROUP_7`](#targ_group)                                           | 0x388    |        4 | Group addressing configuration.                                                    |
-| i3c.[`TARG_TX_THLD_CTRL_0`](#targ_tx_thld_ctrl)                             | 0x38c    |        4 | Target control register for setting Tx thresholds.                                 |
-| i3c.[`TARG_TX_THLD_CTRL_1`](#targ_tx_thld_ctrl)                             | 0x390    |        4 | Target control register for setting Tx thresholds.                                 |
-| i3c.[`TARG_TX_THLD_CTRL_2`](#targ_tx_thld_ctrl)                             | 0x394    |        4 | Target control register for setting Tx thresholds.                                 |
-| i3c.[`TARG_TX_THLD_CTRL_3`](#targ_tx_thld_ctrl)                             | 0x398    |        4 | Target control register for setting Tx thresholds.                                 |
-| i3c.[`TARG_TX_QUEUE_STATUS_LEVEL_0`](#targ_tx_queue_status_level)           | 0x39c    |        4 | Target status register reporting transmit queue levels.                            |
-| i3c.[`TARG_TX_QUEUE_STATUS_LEVEL_1`](#targ_tx_queue_status_level)           | 0x3a0    |        4 | Target status register reporting transmit queue levels.                            |
-| i3c.[`TARG_TX_QUEUE_STATUS_LEVEL_2`](#targ_tx_queue_status_level)           | 0x3a4    |        4 | Target status register reporting transmit queue levels.                            |
-| i3c.[`TARG_TX_QUEUE_STATUS_LEVEL_3`](#targ_tx_queue_status_level)           | 0x3a8    |        4 | Target status register reporting transmit queue levels.                            |
-| i3c.[`TARG_ADDR_0`](#targ_addr)                                             | 0x3ac    |        4 | Target address on the I3C bus.                                                     |
-| i3c.[`TARG_ADDR_1`](#targ_addr)                                             | 0x3b0    |        4 | Target address on the I3C bus.                                                     |
-| i3c.[`TARG_ADDR_2`](#targ_addr)                                             | 0x3b4    |        4 | Target address on the I3C bus.                                                     |
-| i3c.[`TARG_ADDR_3`](#targ_addr)                                             | 0x3b8    |        4 | Target address on the I3C bus.                                                     |
-| i3c.[`TARG_CHAR_0`](#targ_char)                                             | 0x3bc    |        4 | Target Characteristics.                                                            |
-| i3c.[`TARG_CHAR_1`](#targ_char)                                             | 0x3c0    |        4 | Target Characteristics.                                                            |
-| i3c.[`TARG_CHAR_2`](#targ_char)                                             | 0x3c4    |        4 | Target Characteristics.                                                            |
-| i3c.[`TARG_CHAR_3`](#targ_char)                                             | 0x3c8    |        4 | Target Characteristics.                                                            |
-| i3c.[`TARG_PID_LO_0`](#targ_pid_lo)                                         | 0x3cc    |        4 | Low part of Target Provisioned ID.                                                 |
-| i3c.[`TARG_PID_LO_1`](#targ_pid_lo)                                         | 0x3d0    |        4 | Low part of Target Provisioned ID.                                                 |
-| i3c.[`TARG_PID_LO_2`](#targ_pid_lo)                                         | 0x3d4    |        4 | Low part of Target Provisioned ID.                                                 |
-| i3c.[`TARG_PID_LO_3`](#targ_pid_lo)                                         | 0x3d8    |        4 | Low part of Target Provisioned ID.                                                 |
-| i3c.[`TARG_CAPS_0`](#targ_caps)                                             | 0x3dc    |        4 | Target Capabilities.                                                               |
-| i3c.[`TARG_CAPS_1`](#targ_caps)                                             | 0x3e0    |        4 | Target Capabilities.                                                               |
-| i3c.[`TARG_CAPS_2`](#targ_caps)                                             | 0x3e4    |        4 | Target Capabilities.                                                               |
-| i3c.[`TARG_CAPS_3`](#targ_caps)                                             | 0x3e8    |        4 | Target Capabilities.                                                               |
-| i3c.[`TARG_INFO_0`](#targ_info)                                             | 0x3ec    |        4 | Target information.                                                                |
-| i3c.[`TARG_INFO_1`](#targ_info)                                             | 0x3f0    |        4 | Target information.                                                                |
-| i3c.[`TARG_INFO_2`](#targ_info)                                             | 0x3f4    |        4 | Target information.                                                                |
-| i3c.[`TARG_INFO_3`](#targ_info)                                             | 0x3f8    |        4 | Target information.                                                                |
-| i3c.[`TARG_MAX_RDWR_0`](#targ_max_rdwr)                                     | 0x3fc    |        4 | Target Maximum Read/Write Rate and Turnaround.                                     |
-| i3c.[`TARG_MAX_RDWR_1`](#targ_max_rdwr)                                     | 0x400    |        4 | Target Maximum Read/Write Rate and Turnaround.                                     |
-| i3c.[`TARG_MAX_RDWR_2`](#targ_max_rdwr)                                     | 0x404    |        4 | Target Maximum Read/Write Rate and Turnaround.                                     |
-| i3c.[`TARG_MAX_RDWR_3`](#targ_max_rdwr)                                     | 0x408    |        4 | Target Maximum Read/Write Rate and Turnaround.                                     |
-| i3c.[`TTI_PORTS`](#tti_ports)                                               | 0x440    |       52 | TTI ports, occupying successive word addresses:                                    |
-| i3c.[`TARGEXT_EXTCAP_HEADER`](#targext_extcap_header)                       | 0x474    |        4 | Target Extension Extended Capability Header                                        |
-| i3c.[`TERM_EXTCAP_HEADER`](#term_extcap_header)                             | 0x478    |        4 | Terminating Extended Capability Header                                             |
-| i3c.[`DAT`](#dat)                                                           | 0xa00    |      256 | Device Address Table.                                                              |
-| i3c.[`DCT`](#dct)                                                           | 0xc00    |      512 | Device Characteristics Table.                                                      |
-| i3c.[`BUFFER`](#buffer)                                                     | 0x1000   |     4096 | Software-managed 4KiB message buffer used for transmitting and receiving messages. |
+| Name                                                                        | Offset   |   Length | Description                                                                         |
+|:----------------------------------------------------------------------------|:---------|---------:|:------------------------------------------------------------------------------------|
+| i3c.[`INTR_STATE`](#intr_state)                                             | 0x0      |        4 | Interrupt State Register                                                            |
+| i3c.[`INTR_ENABLE`](#intr_enable)                                           | 0x4      |        4 | Interrupt Enable Register                                                           |
+| i3c.[`INTR_TEST`](#intr_test)                                               | 0x8      |        4 | Interrupt Test Register                                                             |
+| i3c.[`ALERT_TEST`](#alert_test)                                             | 0xc      |        4 | Alert Test Register                                                                 |
+| i3c.[`INFO`](#info)                                                         | 0x10     |        4 | IP block information, allowing software to adapt dynamically.                       |
+| i3c.[`CTRL_STATUS`](#ctrl_status)                                           | 0x14     |        4 | Controller-side Status register.                                                    |
+| i3c.[`CTRL_ERROR`](#ctrl_error)                                             | 0x18     |        4 | Controller Error counts.                                                            |
+| i3c.[`TARG_CONTROL`](#targ_control)                                         | 0x1c     |        4 | Target Control register.                                                            |
+| i3c.[`TARG_STATUS`](#targ_status)                                           | 0x20     |        4 | Target-side Status register                                                         |
+| i3c.[`TARG_SINK_CONTROL`](#targ_sink_control)                               | 0x24     |        4 | Target data sink control.                                                           |
+| i3c.[`TARG_SINK_STATUS`](#targ_sink_status)                                 | 0x28     |        4 | Target data sink status.                                                            |
+| i3c.[`RESET_DET_CTRL`](#reset_det_ctrl)                                     | 0x2c     |        4 | Reset detector control.                                                             |
+| i3c.[`RESET_DET_STATUS`](#reset_det_status)                                 | 0x30     |        4 | Reset detector status.                                                              |
+| i3c.[`CTRL_TIME_SP`](#ctrl_time_sp)                                         | 0x34     |        4 | Controller Timing Parameters for Start and stoP.                                    |
+| i3c.[`CTRL_TIME_OD`](#ctrl_time_od)                                         | 0x38     |        4 | Controller Timing Parameters for Open Drain signaling.                              |
+| i3c.[`CTRL_TIME_PP`](#ctrl_time_pp)                                         | 0x3c     |        4 | Controller Timing Parameters for SDR/HDR-DDR Push-Pull SCL High signaling.          |
+| i3c.[`CTRL_TIME_SDR0`](#ctrl_time_sdr0)                                     | 0x40     |        4 | Controller Timing Parameters for SDR0/HDR-DDR Push-Pull SCL Low signaling.          |
+| i3c.[`CTRL_TIME_SDR1`](#ctrl_time_sdr1)                                     | 0x44     |        4 | Controller Timing Parameters for SDR1 Push-Pull SCL Low signaling.                  |
+| i3c.[`CTRL_TIME_SDR2`](#ctrl_time_sdr2)                                     | 0x48     |        4 | Controller Timing Parameters for SDR2 Push-Pull SCL Low signaling.                  |
+| i3c.[`CTRL_TIME_SDR3`](#ctrl_time_sdr3)                                     | 0x4c     |        4 | Controller Timing Parameters for SDR3 Push-Pull SCL Low signaling.                  |
+| i3c.[`CTRL_TIME_SDR4`](#ctrl_time_sdr4)                                     | 0x50     |        4 | Controller Timing Parameters for SDR4 Push-Pull SCL Low signaling.                  |
+| i3c.[`CTRL_TIME_FMP`](#ctrl_time_fmp)                                       | 0x54     |        4 | Controller Timing Parameters for I2C Fast Mode Plus signaling.                      |
+| i3c.[`CTRL_TIME_FM`](#ctrl_time_fm)                                         | 0x58     |        4 | Controller Timing Parameters for I2C Fast Mode signaling.                           |
+| i3c.[`INTERVAL_TIME0`](#interval_time0)                                     | 0x5c     |        4 | Interval Timers 0 register.                                                         |
+| i3c.[`INTERVAL_TIME1`](#interval_time1)                                     | 0x60     |        4 | Interval Timers 1 register.                                                         |
+| i3c.[`PHY_CONFIG`](#phy_config)                                             | 0x64     |        4 | PHY configuration                                                                   |
+| i3c.[`BLOCKED_ADDR`](#blocked_addr)                                         | 0x68     |        4 | Blocked target addresses.                                                           |
+| i3c.[`BUFFER_CTRL`](#buffer_ctrl)                                           | 0x6c     |        4 | Buffer control                                                                      |
+| i3c.[`BUFFER_STATUS`](#buffer_status)                                       | 0x70     |        4 | Buffer status                                                                       |
+| i3c.[`CTRL_TXBUF_CONFIG`](#ctrl_txbuf_config)                               | 0x74     |        4 | Controller TX Buffer Configuration                                                  |
+| i3c.[`CTRL_TXBUF_STATE`](#ctrl_txbuf_state)                                 | 0x78     |        4 | Controller TX Buffer State.                                                         |
+| i3c.[`CTRL_RXBUF_CONFIG`](#ctrl_rxbuf_config)                               | 0x7c     |        4 | Controller RX Buffer Configuration                                                  |
+| i3c.[`CTRL_RXBUF_STATE`](#ctrl_rxbuf_state)                                 | 0x80     |        4 | Controller RX Buffer State.                                                         |
+| i3c.[`COMMAND_QUEUE_CONFIG`](#command_queue_config)                         | 0x84     |        4 | Command Queue Configuration.                                                        |
+| i3c.[`COMMAND_QUEUE_STATE`](#command_queue_state)                           | 0x88     |        4 | Command Queue State.                                                                |
+| i3c.[`RESPONSE_QUEUE_CONFIG`](#response_queue_config)                       | 0x8c     |        4 | Response Queue Configuration.                                                       |
+| i3c.[`RESPONSE_QUEUE_STATE`](#response_queue_state)                         | 0x90     |        4 | Response Queue State.                                                               |
+| i3c.[`IBI_CONFIG`](#ibi_config)                                             | 0x94     |        4 | In-Band Interrupt Queue Configuration.                                              |
+| i3c.[`IBI_STATE`](#ibi_state)                                               | 0x98     |        4 | In-Band Interrupt Queue State.                                                      |
+| i3c.[`IBI_STAT_CONFIG`](#ibi_stat_config)                                   | 0x9c     |        4 | In-Band Status Descriptor FIFO Configuration.                                       |
+| i3c.[`IBI_STAT_STATE`](#ibi_stat_state)                                     | 0xa0     |        4 | In-Band Status Descriptor FIFO State.                                               |
+| i3c.[`TARG_TXBUF_CONFIG_0`](#targ_txbuf_config)                             | 0xa4     |        4 | Target TX Buffer Configuration.                                                     |
+| i3c.[`TARG_TXBUF_CONFIG_1`](#targ_txbuf_config)                             | 0xa8     |        4 | Target TX Buffer Configuration.                                                     |
+| i3c.[`TARG_TXBUF_CONFIG_2`](#targ_txbuf_config)                             | 0xac     |        4 | Target TX Buffer Configuration.                                                     |
+| i3c.[`TARG_TXBUF_CONFIG_3`](#targ_txbuf_config)                             | 0xb0     |        4 | Target TX Buffer Configuration.                                                     |
+| i3c.[`TARG_TXBUF_STATE_0`](#targ_txbuf_state)                               | 0xb4     |        4 | Target 0 TX Buffer State.                                                           |
+| i3c.[`TARG_TXBUF_STATE_1`](#targ_txbuf_state)                               | 0xb8     |        4 | Target 0 TX Buffer State.                                                           |
+| i3c.[`TARG_TXBUF_STATE_2`](#targ_txbuf_state)                               | 0xbc     |        4 | Target 0 TX Buffer State.                                                           |
+| i3c.[`TARG_TXBUF_STATE_3`](#targ_txbuf_state)                               | 0xc0     |        4 | Target 0 TX Buffer State.                                                           |
+| i3c.[`TARG_RXBUF_CONFIG`](#targ_rxbuf_config)                               | 0xc4     |        4 | Target RX Buffer Configuration                                                      |
+| i3c.[`TARG_RXBUF_STATE`](#targ_rxbuf_state)                                 | 0xc8     |        4 | Target RX Buffer State.                                                             |
+| i3c.[`TARG_IBI_CONFIG`](#targ_ibi_config)                                   | 0xcc     |        4 | Target In-Band Interrupt Payload Queue Configuration                                |
+| i3c.[`TARG_IBI_STATE`](#targ_ibi_state)                                     | 0xd0     |        4 | Target In-Band Interrupt Payload Queue State.                                       |
+| i3c.[`TARG_TXDESC_CONFIG_0`](#targ_txdesc_config)                           | 0xd4     |        4 | Target Transmission Descriptor Queue Configuration.                                 |
+| i3c.[`TARG_TXDESC_CONFIG_1`](#targ_txdesc_config)                           | 0xd8     |        4 | Target Transmission Descriptor Queue Configuration.                                 |
+| i3c.[`TARG_TXDESC_CONFIG_2`](#targ_txdesc_config)                           | 0xdc     |        4 | Target Transmission Descriptor Queue Configuration.                                 |
+| i3c.[`TARG_TXDESC_CONFIG_3`](#targ_txdesc_config)                           | 0xe0     |        4 | Target Transmission Descriptor Queue Configuration.                                 |
+| i3c.[`TARG_TXDESC_STATE_0`](#targ_txdesc_state)                             | 0xe4     |        4 | Target Transmission Descriptor Queue State.                                         |
+| i3c.[`TARG_TXDESC_STATE_1`](#targ_txdesc_state)                             | 0xe8     |        4 | Target Transmission Descriptor Queue State.                                         |
+| i3c.[`TARG_TXDESC_STATE_2`](#targ_txdesc_state)                             | 0xec     |        4 | Target Transmission Descriptor Queue State.                                         |
+| i3c.[`TARG_TXDESC_STATE_3`](#targ_txdesc_state)                             | 0xf0     |        4 | Target Transmission Descriptor Queue State.                                         |
+| i3c.[`TARG_RXDESC_CONFIG`](#targ_rxdesc_config)                             | 0xf4     |        4 | Target Reception Descriptor Queue Configuration.                                    |
+| i3c.[`TARG_RXDESC_STATE`](#targ_rxdesc_state)                               | 0xf8     |        4 | Target Reception Descriptor Queue State.                                            |
+| i3c.[`TARG_IBIDESC_CONFIG`](#targ_ibidesc_config)                           | 0xfc     |        4 | Target In-Band Interrupt Descriptor Queue Configuration.                            |
+| i3c.[`TARG_IBIDESC_STATE`](#targ_ibidesc_state)                             | 0x100    |        4 | Target In-Band Interrupt Descriptor Queue State.                                    |
+| i3c.[`TARG_ASYNC_CONFIG`](#targ_async_config)                               | 0x104    |        4 | Target Asynchronous Event Queue Configuration.                                      |
+| i3c.[`TARG_ASYNC_STATE`](#targ_async_state)                                 | 0x108    |        4 | Target Asynchronous Event Queue State.                                              |
+| i3c.[`HCI_VERSION`](#hci_version)                                           | 0x180    |        4 | HCI Version.                                                                        |
+| i3c.[`HC_CONTROL`](#hc_control)                                             | 0x184    |        4 | Host Controller Control.                                                            |
+| i3c.[`CONTROLLER_DEVICE_ADDR`](#controller_device_addr)                     | 0x188    |        4 | Controller Device Address.                                                          |
+| i3c.[`HC_CAPABILITIES`](#hc_capabilities)                                   | 0x18c    |        4 | Host Controller Capabilities.                                                       |
+| i3c.[`RESET_CONTROL`](#reset_control)                                       | 0x190    |        4 | Reset Control.                                                                      |
+| i3c.[`PRESENT_STATE`](#present_state)                                       | 0x194    |        4 | Present State.                                                                      |
+| i3c.[`INTR_STATUS`](#intr_status)                                           | 0x1a0    |        4 | Interrupt Status.                                                                   |
+| i3c.[`INTR_STATUS_ENABLE`](#intr_status_enable)                             | 0x1a4    |        4 | Interrupt Status Enable.                                                            |
+| i3c.[`INTR_SIGNAL_ENABLE`](#intr_signal_enable)                             | 0x1a8    |        4 | Interrupt Signal Enable.                                                            |
+| i3c.[`INTR_FORCE`](#intr_force)                                             | 0x1ac    |        4 | Interrupt Force.                                                                    |
+| i3c.[`DAT_SECTION_OFFSET`](#dat_section_offset)                             | 0x1b0    |        4 | Device Address Table Section Offset.                                                |
+| i3c.[`DCT_SECTION_OFFSET`](#dct_section_offset)                             | 0x1b4    |        4 | Device Characteristics Table Section Offset.                                        |
+| i3c.[`RING_HEADERS_SECTION_OFFSET`](#ring_headers_section_offset)           | 0x1b8    |        4 | Ring Headers Section Offset.                                                        |
+| i3c.[`PIO_SECTION_OFFSET`](#pio_section_offset)                             | 0x1bc    |        4 | PIO Section Offset.                                                                 |
+| i3c.[`EXT_CAPS_SECTION_OFFSET`](#ext_caps_section_offset)                   | 0x1c0    |        4 | Extended Capabilities Section Offset.                                               |
+| i3c.[`INT_CTRL_CMDS_EN`](#int_ctrl_cmds_en)                                 | 0x1cc    |        4 | Internal Control Command Subtype Support.                                           |
+| i3c.[`IBI_NOTIFY_CTRL`](#ibi_notify_ctrl)                                   | 0x1d8    |        4 | IBI Notify Control.                                                                 |
+| i3c.[`IBI_DATA_ABORT_CTRL`](#ibi_data_abort_ctrl)                           | 0x1dc    |        4 | IBI Data Abort Control.                                                             |
+| i3c.[`DEV_CTX_BASE_LO`](#dev_ctx_base_lo)                                   | 0x1e0    |        4 | Device Context Base Address Low.                                                    |
+| i3c.[`DEV_CTX_BASE_HI`](#dev_ctx_base_hi)                                   | 0x1e4    |        4 | Device Context Base Address High.                                                   |
+| i3c.[`DEV_CTX_SG`](#dev_ctx_sg)                                             | 0x1e8    |        4 | Device Context Scatter-Gather Support.                                              |
+| i3c.[`HCI_PORTS`](#hci_ports)                                               | 0x200    |       16 | HCI ports, occupying successive word addresses:                                     |
+| i3c.[`QUEUE_THLD_CTRL`](#queue_thld_ctrl)                                   | 0x210    |        4 | Queue Threshold Control.                                                            |
+| i3c.[`DATA_BUFFER_THLD_CTRL`](#data_buffer_thld_ctrl)                       | 0x214    |        4 | Transfer Data Buffer Threshold Control.                                             |
+| i3c.[`QUEUE_SIZE`](#queue_size)                                             | 0x218    |        4 | Queue Size.                                                                         |
+| i3c.[`ALT_QUEUE_SIZE`](#alt_queue_size)                                     | 0x21c    |        4 | Alternate Queue Size.                                                               |
+| i3c.[`PIO_INTR_STATUS`](#pio_intr_status)                                   | 0x220    |        4 | PIO Interrupt Status.                                                               |
+| i3c.[`PIO_INTR_STATUS_ENABLE`](#pio_intr_status_enable)                     | 0x224    |        4 | PIO Interrupt Status Enable.                                                        |
+| i3c.[`PIO_INTR_SIGNAL_ENABLE`](#pio_intr_signal_enable)                     | 0x228    |        4 | PIO Interrupt Signal Enable.                                                        |
+| i3c.[`PIO_INTR_FORCE`](#pio_intr_force)                                     | 0x22c    |        4 | PIO Interrupt Force.                                                                |
+| i3c.[`PIO_CONTROL`](#pio_control)                                           | 0x230    |        4 | PIO Control.                                                                        |
+| i3c.[`ID_EXTCAP_HEADER`](#id_extcap_header)                                 | 0x2a0    |        4 | Hardware Identification Extended Capability Header                                  |
+| i3c.[`COMP_MANUFACTURER`](#comp_manufacturer)                               | 0x2a4    |        4 | Component Manufacturer.                                                             |
+| i3c.[`COMP_VERSION`](#comp_version)                                         | 0x2a8    |        4 | Component Version.                                                                  |
+| i3c.[`COMP_TYPE`](#comp_type)                                               | 0x2ac    |        4 | Component Type.                                                                     |
+| i3c.[`CTRL_CFG_EXTCAP_HEADER`](#ctrl_cfg_extcap_header)                     | 0x2b0    |        4 | Controller Config Extended Capability Header                                        |
+| i3c.[`CONTROLLER_CONFIG`](#controller_config)                               | 0x2b4    |        4 | Controller Config.                                                                  |
+| i3c.[`DBR_EXTCAP_HEADER`](#dbr_extcap_header)                               | 0x2b8    |        4 | Dead Bus Recovery Extended Capability Header                                        |
+| i3c.[`DBR_ENGAGE`](#dbr_engage)                                             | 0x2bc    |        4 | Dead Bus Recovery Engage.                                                           |
+| i3c.[`DEBUG_EXTCAP_HEADER`](#debug_extcap_header)                           | 0x2c0    |        4 | Debug Specific Extended Capability Header                                           |
+| i3c.[`QUEUE_STATUS_LEVEL`](#queue_status_level)                             | 0x2c4    |        4 | Queue Status Level                                                                  |
+| i3c.[`DATA_BUFFER_STATUS_LEVEL`](#data_buffer_status_level)                 | 0x2c8    |        4 | Data Buffer Status Level                                                            |
+| i3c.[`PRESENT_STATE_DEBUG`](#present_state_debug)                           | 0x2cc    |        4 | Present State Debug                                                                 |
+| i3c.[`MX_ERROR_COUNTERS`](#mx_error_counters)                               | 0x2d0    |        4 | Controller Error Counters.                                                          |
+| i3c.[`SCHED_CMDS_DEBUG`](#sched_cmds_debug)                                 | 0x2d4    |        4 | Scheduled Commands Debug                                                            |
+| i3c.[`STBY_CR_EXTCAP_HEADER`](#stby_cr_extcap_header)                       | 0x2d8    |        4 | Standby Controller Extended Capability Header                                       |
+| i3c.[`STBY_CR_CONTROL`](#stby_cr_control)                                   | 0x2dc    |        4 | Standby Controller Control                                                          |
+| i3c.[`STBY_CR_DEVICE_ADDR`](#stby_cr_device_addr)                           | 0x2e0    |        4 | Standby Controller Device Address                                                   |
+| i3c.[`STBY_CR_CAPABILITIES`](#stby_cr_capabilities)                         | 0x2e4    |        4 | Standby Controller Capabilities                                                     |
+| i3c.[`STBY_CR_STATUS`](#stby_cr_status)                                     | 0x2ec    |        4 | Standby Controller Status                                                           |
+| i3c.[`STBY_CR_DEVICE_CHAR`](#stby_cr_device_char)                           | 0x2f0    |        4 | Standby Controller Device Characteristics                                           |
+| i3c.[`STBY_CR_DEVICE_PID_LO`](#stby_cr_device_pid_lo)                       | 0x2f4    |        4 | Standby Controller PID Low                                                          |
+| i3c.[`STBY_CR_INTR_STATUS`](#stby_cr_intr_status)                           | 0x2f8    |        4 | Standby Controller Interrupt Status                                                 |
+| i3c.[`STBY_CR_INTR_SIGNAL_ENABLE`](#stby_cr_intr_signal_enable)             | 0x300    |        4 | Standby Controller Interrupt Signal Enable                                          |
+| i3c.[`STBY_CR_INTR_FORCE`](#stby_cr_intr_force)                             | 0x304    |        4 | Standby Controller Interrupt Force                                                  |
+| i3c.[`STBY_CR_CCC_CONFIG_GETCAPS`](#stby_cr_ccc_config_getcaps)             | 0x308    |        4 | Standby Controller CCC Auto-Response Config Get Capabilities                        |
+| i3c.[`STBY_CR_CCC_CONFIG_RSTACT_PARAMS`](#stby_cr_ccc_config_rstact_params) | 0x30c    |        4 | Standby Controller CCC Auto-Response Config Target Reset Action                     |
+| i3c.[`TTI_EXTCAP_HEADER`](#tti_extcap_header)                               | 0x310    |        4 | Target Transaction Interface Extended Capability Header                             |
+| i3c.[`TARG_INTR_STATUS`](#targ_intr_status)                                 | 0x314    |        4 | Target Interrupt Status.                                                            |
+| i3c.[`TARG_INTR_STATUS_ENABLE`](#targ_intr_status_enable)                   | 0x318    |        4 | Target Interrupt Status Enable.                                                     |
+| i3c.[`TARG_INTR_SIGNAL_ENABLE`](#targ_intr_signal_enable)                   | 0x31c    |        4 | Target Interrupt Signal Enable.                                                     |
+| i3c.[`TARG_INTR_FORCE`](#targ_intr_force)                                   | 0x320    |        4 | Target Interrupt Force.                                                             |
+| i3c.[`TARG_PIO_CONTROL`](#targ_pio_control)                                 | 0x324    |        4 | Target PIO mode Control register.                                                   |
+| i3c.[`TARG_ASYNC_EVT_CONTROL`](#targ_async_evt_control)                     | 0x328    |        4 | Target Asynchronous Event Queue Control.                                            |
+| i3c.[`TARG_ERROR`](#targ_error)                                             | 0x32c    |        4 | Target Error counts.                                                                |
+| i3c.[`TARG_QUEUE_THLD_CTRL`](#targ_queue_thld_ctrl)                         | 0x330    |        4 | Target-side control register for setting queue interrupt thresholds.                |
+| i3c.[`TARG_QUEUE_STATUS_LEVEL`](#targ_queue_status_level)                   | 0x334    |        4 | Target-side queue levels.                                                           |
+| i3c.[`TARG_BUF_THLD_CTRL`](#targ_buf_thld_ctrl)                             | 0x338    |        4 | Target-side control register for setting buffer interrupt thresholds.               |
+| i3c.[`TARG_BUF_STATUS_LEVEL`](#targ_buf_status_level)                       | 0x33c    |        4 | Target-side data buffer levels.                                                     |
+| i3c.[`TARG_RW_LEN_0`](#targ_rw_len)                                         | 0x340    |        4 | Target Read/Write Length.                                                           |
+| i3c.[`TARG_RW_LEN_1`](#targ_rw_len)                                         | 0x344    |        4 | Target Read/Write Length.                                                           |
+| i3c.[`TARG_RW_LEN_2`](#targ_rw_len)                                         | 0x348    |        4 | Target Read/Write Length.                                                           |
+| i3c.[`TARG_RW_LEN_3`](#targ_rw_len)                                         | 0x34c    |        4 | Target Read/Write Length.                                                           |
+| i3c.[`TARG_IBI_LEN`](#targ_ibi_len)                                         | 0x350    |        4 | Target IBI payload Length.                                                          |
+| i3c.[`TARG_EVENT_ENABLE_0`](#targ_event_enable)                             | 0x354    |        4 | Target Event enables.                                                               |
+| i3c.[`TARG_EVENT_ENABLE_1`](#targ_event_enable)                             | 0x358    |        4 | Target Event enables.                                                               |
+| i3c.[`TARG_EVENT_ENABLE_2`](#targ_event_enable)                             | 0x35c    |        4 | Target Event enables.                                                               |
+| i3c.[`TARG_EVENT_ENABLE_3`](#targ_event_enable)                             | 0x360    |        4 | Target Event enables.                                                               |
+| i3c.[`TARG_STATE_DEBUG`](#targ_state_debug)                                 | 0x364    |        4 | Target State Debug                                                                  |
+| i3c.[`TARG_ENABLE`](#targ_enable)                                           | 0x368    |        4 | Enable signals for individual virtual targets.                                      |
+| i3c.[`TARG_GROUP_0`](#targ_group)                                           | 0x36c    |        4 | Group addressing configuration.                                                     |
+| i3c.[`TARG_GROUP_1`](#targ_group)                                           | 0x370    |        4 | Group addressing configuration.                                                     |
+| i3c.[`TARG_GROUP_2`](#targ_group)                                           | 0x374    |        4 | Group addressing configuration.                                                     |
+| i3c.[`TARG_GROUP_3`](#targ_group)                                           | 0x378    |        4 | Group addressing configuration.                                                     |
+| i3c.[`TARG_GROUP_4`](#targ_group)                                           | 0x37c    |        4 | Group addressing configuration.                                                     |
+| i3c.[`TARG_GROUP_5`](#targ_group)                                           | 0x380    |        4 | Group addressing configuration.                                                     |
+| i3c.[`TARG_GROUP_6`](#targ_group)                                           | 0x384    |        4 | Group addressing configuration.                                                     |
+| i3c.[`TARG_GROUP_7`](#targ_group)                                           | 0x388    |        4 | Group addressing configuration.                                                     |
+| i3c.[`TARG_TX_THLD_CTRL_0`](#targ_tx_thld_ctrl)                             | 0x38c    |        4 | Target control register for setting Tx thresholds.                                  |
+| i3c.[`TARG_TX_THLD_CTRL_1`](#targ_tx_thld_ctrl)                             | 0x390    |        4 | Target control register for setting Tx thresholds.                                  |
+| i3c.[`TARG_TX_THLD_CTRL_2`](#targ_tx_thld_ctrl)                             | 0x394    |        4 | Target control register for setting Tx thresholds.                                  |
+| i3c.[`TARG_TX_THLD_CTRL_3`](#targ_tx_thld_ctrl)                             | 0x398    |        4 | Target control register for setting Tx thresholds.                                  |
+| i3c.[`TARG_TX_QUEUE_STATUS_LEVEL_0`](#targ_tx_queue_status_level)           | 0x39c    |        4 | Target status register reporting transmit queue levels.                             |
+| i3c.[`TARG_TX_QUEUE_STATUS_LEVEL_1`](#targ_tx_queue_status_level)           | 0x3a0    |        4 | Target status register reporting transmit queue levels.                             |
+| i3c.[`TARG_TX_QUEUE_STATUS_LEVEL_2`](#targ_tx_queue_status_level)           | 0x3a4    |        4 | Target status register reporting transmit queue levels.                             |
+| i3c.[`TARG_TX_QUEUE_STATUS_LEVEL_3`](#targ_tx_queue_status_level)           | 0x3a8    |        4 | Target status register reporting transmit queue levels.                             |
+| i3c.[`TARG_ADDR_0`](#targ_addr)                                             | 0x3ac    |        4 | Target address on the I3C bus.                                                      |
+| i3c.[`TARG_ADDR_1`](#targ_addr)                                             | 0x3b0    |        4 | Target address on the I3C bus.                                                      |
+| i3c.[`TARG_ADDR_2`](#targ_addr)                                             | 0x3b4    |        4 | Target address on the I3C bus.                                                      |
+| i3c.[`TARG_ADDR_3`](#targ_addr)                                             | 0x3b8    |        4 | Target address on the I3C bus.                                                      |
+| i3c.[`TARG_CHAR_0`](#targ_char)                                             | 0x3bc    |        4 | Target Characteristics.                                                             |
+| i3c.[`TARG_CHAR_1`](#targ_char)                                             | 0x3c0    |        4 | Target Characteristics.                                                             |
+| i3c.[`TARG_CHAR_2`](#targ_char)                                             | 0x3c4    |        4 | Target Characteristics.                                                             |
+| i3c.[`TARG_CHAR_3`](#targ_char)                                             | 0x3c8    |        4 | Target Characteristics.                                                             |
+| i3c.[`TARG_PID_LO_0`](#targ_pid_lo)                                         | 0x3cc    |        4 | Low part of Target Provisioned ID.                                                  |
+| i3c.[`TARG_PID_LO_1`](#targ_pid_lo)                                         | 0x3d0    |        4 | Low part of Target Provisioned ID.                                                  |
+| i3c.[`TARG_PID_LO_2`](#targ_pid_lo)                                         | 0x3d4    |        4 | Low part of Target Provisioned ID.                                                  |
+| i3c.[`TARG_PID_LO_3`](#targ_pid_lo)                                         | 0x3d8    |        4 | Low part of Target Provisioned ID.                                                  |
+| i3c.[`TARG_CAPS_0`](#targ_caps)                                             | 0x3dc    |        4 | Target Capabilities.                                                                |
+| i3c.[`TARG_CAPS_1`](#targ_caps)                                             | 0x3e0    |        4 | Target Capabilities.                                                                |
+| i3c.[`TARG_CAPS_2`](#targ_caps)                                             | 0x3e4    |        4 | Target Capabilities.                                                                |
+| i3c.[`TARG_CAPS_3`](#targ_caps)                                             | 0x3e8    |        4 | Target Capabilities.                                                                |
+| i3c.[`TARG_INFO_0`](#targ_info)                                             | 0x3ec    |        4 | Target information.                                                                 |
+| i3c.[`TARG_INFO_1`](#targ_info)                                             | 0x3f0    |        4 | Target information.                                                                 |
+| i3c.[`TARG_INFO_2`](#targ_info)                                             | 0x3f4    |        4 | Target information.                                                                 |
+| i3c.[`TARG_INFO_3`](#targ_info)                                             | 0x3f8    |        4 | Target information.                                                                 |
+| i3c.[`TARG_MAX_RDWR_0`](#targ_max_rdwr)                                     | 0x3fc    |        4 | Target Maximum Read/Write Rate and Turnaround.                                      |
+| i3c.[`TARG_MAX_RDWR_1`](#targ_max_rdwr)                                     | 0x400    |        4 | Target Maximum Read/Write Rate and Turnaround.                                      |
+| i3c.[`TARG_MAX_RDWR_2`](#targ_max_rdwr)                                     | 0x404    |        4 | Target Maximum Read/Write Rate and Turnaround.                                      |
+| i3c.[`TARG_MAX_RDWR_3`](#targ_max_rdwr)                                     | 0x408    |        4 | Target Maximum Read/Write Rate and Turnaround.                                      |
+| i3c.[`TTI_PORTS`](#tti_ports)                                               | 0x440    |       52 | TTI ports, occupying successive word addresses:                                     |
+| i3c.[`TARGEXT_EXTCAP_HEADER`](#targext_extcap_header)                       | 0x474    |        4 | Target Extension Extended Capability Header                                         |
+| i3c.[`TERM_EXTCAP_HEADER`](#term_extcap_header)                             | 0x478    |        4 | Terminating Extended Capability Header                                              |
+| i3c.[`DAT`](#dat)                                                           | 0xa00    |      256 | Device Address Table.                                                               |
+| i3c.[`DCT`](#dct)                                                           | 0xc00    |      512 | Device Characteristics Table.                                                       |
+| i3c.[`BUFFER`](#buffer)                                                     | 0x1000   |     4096 | Software-managed 4 KiB message buffer used for transmitting and receiving messages. |
 
 ## INTR_STATE
 Interrupt State Register
@@ -332,26 +332,28 @@ Controller Error counts.
 ## TARG_CONTROL
 Target Control register.
 - Offset: `0x1c`
-- Reset default: `0x2`
-- Reset mask: `0xc000001f`
+- Reset default: `0x102`
+- Reset mask: `0xc000011f`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "STBY_CR_SUPPORT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CRHDLY1_AS", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "CRHDLY1_SET_AS", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 25}, {"name": "HJ_REQUEST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "RESET", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "STBY_CR_SUPPORT", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "CRHDLY1_AS", "bits": 2, "attr": ["rw"], "rotate": -90}, {"name": "CRHDLY1_SET_AS", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 3}, {"name": "EN_HDR_DDR", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 21}, {"name": "HJ_REQUEST", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "SW_RESET", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                              |
 |:------:|:------:|:-------:|:--------------------------------------------------|
-|   31   |   wo   |   0x0   | [RESET](#targ_control--reset)                     |
+|   31   |   wo   |   0x0   | [SW_RESET](#targ_control--sw_reset)               |
 |   30   |   rw   |   0x0   | [HJ_REQUEST](#targ_control--hj_request)           |
-|  29:5  |        |         | Reserved                                          |
+|  29:9  |        |         | Reserved                                          |
+|   8    |   rw   |   0x1   | [EN_HDR_DDR](#targ_control--en_hdr_ddr)           |
+|  7:5   |        |         | Reserved                                          |
 |   4    |   rw   |   0x0   | [CRHDLY1_SET_AS](#targ_control--crhdly1_set_as)   |
 |  3:2   |   rw   |   0x0   | [CRHDLY1_AS](#targ_control--crhdly1_as)           |
 |   1    |   rw   |   0x1   | [STBY_CR_SUPPORT](#targ_control--stby_cr_support) |
 |   0    |   rw   |   0x0   | [EN](#targ_control--en)                           |
 
-### TARG_CONTROL . RESET
+### TARG_CONTROL . SW_RESET
 Software reset of Target logic.
 
 Writing '1' to this field will reset all of the Target-side logic and registers.
@@ -363,6 +365,13 @@ Issue Hot-Join request.
 
 This applies to all Virtual Targets since they share a single physical Target.
 Software shall set this to '1' to issue the request, and the hardware will clear it when the request has been sent and acknowledged.
+
+### TARG_CONTROL . EN_HDR_DDR
+Declare support for HDR-DDR mode in the GETCAPS response of the Target.
+
+HDR-DDR mode should normally be enabled, and the ability for software to deactivate HDR-DDR mode is included only as a contingency.
+This configuration bit shall be modified only before the Target is enabled.
+For the Controller, the issuing of HDR-DDR communications may be avoided in software by the construction of appropriate Command Descriptors.
 
 ### TARG_CONTROL . CRHDLY1_SET_AS
 Set Bus Activity State.
@@ -378,6 +387,7 @@ Standby Controller role supported.
 When set the Controller shall have the option of performing Controller Role Handoff and switching into Standby Controller mode.
 If this field is clear the Controller will refuse to hand off the bus when requested and will instead remain the Active Controller,
 thus freeing up the first Virtual Target to operate independently as a dedicated Target device.
+This version of the IP block does not support Controller Role Handoff.
 
 ### TARG_CONTROL . EN
 Target enable.
@@ -388,27 +398,26 @@ In this configuration the Controller-side logic must remain the Active Controlle
 ## TARG_STATUS
 Target-side Status register
 - Offset: `0x20`
-- Reset default: `0x80000000`
-- Reset mask: `0xe7ffffff`
+- Reset default: `0x82000000`
+- Reset mask: `0xffffffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "EXT_INFO", "bits": 15, "attr": ["rw"], "rotate": 0}, {"name": "EXT_PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RSTACT", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "RSTACT_VIRT_TARG_DET", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "VTM", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PROTOCOL_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 2}, {"name": "CONNECTED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+{"reg": [{"name": "EXT_INFO", "bits": 15, "attr": ["rw"], "rotate": 0}, {"name": "EXT_PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RSTACT", "bits": 8, "attr": ["ro"], "rotate": 0}, {"name": "NUM_TARGETS", "bits": 3, "attr": ["ro"], "rotate": -90}, {"name": "VTM", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PROTOCOL_ERROR", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "CONNECTED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "PRESENT", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                                                                                                                                               |
-|:------:|:------:|:-------:|:---------------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-|   31   |   ro   |   0x1   | PRESENT              | Indicates the presence of Target functionality.                                                                                                                                                                                                           |
-|   30   |   ro   |   0x0   | ACTIVE               | Indicates whether the Target logic is presently active, as opposed to under reset.                                                                                                                                                                        |
-|   29   |   ro   |   0x0   | CONNECTED            | Indicates whether the Target logic is connected to the bus and monitoring traffic.                                                                                                                                                                        |
-| 28:27  |        |         |                      | Reserved                                                                                                                                                                                                                                                  |
-|   26   |   ro   |   0x0   | PROTOCOL_ERROR       | Protocol error detected since the last GETSTATUS CCC to read this indicator.                                                                                                                                                                              |
-|   25   |   ro   |   0x0   | VTM                  | Vendor Test Mode active, in response to ENTTM.                                                                                                                                                                                                            |
-|   24   |   ro   |   0x0   | RSTACT_VIRT_TARG_DET | RSTACT Virtual Target Detect.                                                                                                                                                                                                                             |
-| 23:16  |   ro   |   0x0   | RSTACT               | Configured Target Reset action.                                                                                                                                                                                                                           |
-|   15   |   ro   |   0x0   | EXT_PRESENT          | Indicates whether one or more additional protocols is implemented in the Target hardware. Some protocols require a sufficiently fast response that software involvement is not possible. These may be implemented as an extension within the Target core. |
-|  14:0  |   rw   |   0x0   | EXT_INFO             | Extension-specific information.                                                                                                                                                                                                                           |
+|  Bits  |  Type  |  Reset  | Name           | Description                                                                                                                                                                                                                                               |
+|:------:|:------:|:-------:|:---------------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|   31   |   ro   |   0x1   | PRESENT        | Indicates the presence of Target functionality.                                                                                                                                                                                                           |
+|   30   |   ro   |   0x0   | ACTIVE         | Indicates whether the Target logic is presently active, as opposed to under reset.                                                                                                                                                                        |
+|   29   |   ro   |   0x0   | CONNECTED      | Indicates whether the Target logic is connected to the bus and monitoring traffic.                                                                                                                                                                        |
+|   28   |   ro   |   0x0   | PROTOCOL_ERROR | Protocol error detected since the last GETSTATUS CCC to read this indicator.                                                                                                                                                                              |
+|   27   |   ro   |   0x0   | VTM            | Vendor Test Mode active, in response to ENTTM.                                                                                                                                                                                                            |
+| 26:24  |   ro   |   0x2   | NUM_TARGETS    | The number of Targets in this implementation.                                                                                                                                                                                                             |
+| 23:16  |   ro   |   0x0   | RSTACT         | Configured Target Reset action.                                                                                                                                                                                                                           |
+|   15   |   ro   |   0x0   | EXT_PRESENT    | Indicates whether one or more additional protocols is implemented in the Target hardware. Some protocols require a sufficiently fast response that software involvement is not possible. These may be implemented as an extension within the Target core. |
+|  14:0  |   rw   |   0x0   | EXT_INFO       | Extension-specific information.                                                                                                                                                                                                                           |
 
 ## TARG_SINK_CONTROL
 Target data sink control.
@@ -523,8 +532,8 @@ Reset detector status.
 |  Bits  |  Type  |  Reset  | Name       | Description                                               |
 |:------:|:------:|:-------:|:-----------|:----------------------------------------------------------|
 |  31:4  |        |         |            | Reserved                                                  |
-|   3    |   ro   |   0x0   | RST_TARGET | Indicates that a Whole Target reset requst was received.  |
-|   2    |   ro   |   0x0   | RST_PERIPH | Indicates that a Peripheral request request was received. |
+|   3    |   ro   |   0x0   | RST_TARGET | Indicates that a Whole Target reset request was received. |
+|   2    |   ro   |   0x0   | RST_PERIPH | Indicates that a Peripheral reset request was received.   |
 |   1    |   ro   |   0x0   | WAKE_UP    | Indicates that a Wake Up request was received.            |
 |   0    |   ro   |   0x0   | ACTIVE     | Indicates whether the reset detector is active.           |
 
@@ -601,7 +610,7 @@ If this field has all bits set then the hardware will calculate a suitable value
 Enable half-cycle SCL extension.
 If the field `TCHS` has been set to something other than 0x3ff, this bit controls whether the half-cycle SCL extension is enabled.
 If `TCHS` has all bits set then the hardware will determine this setting automatically.
-Extending SCL high by half a cycle of the IP clock enables support for other clock frequencies such as 96MHz.
+Extending SCL high by half a cycle of the IP clock enables support for other clock frequencies such as 96 MHz.
 
 ### CTRL_TIME_PP . TCHH
 Duration of hold phase after rising SCL during Push-Pull signaling, minus 1.
@@ -761,16 +770,16 @@ Time intervals are specified as two's complement 8-bit signed offsets added to t
 
  - interval_clks = (hw_default_us * clks_per_us) + (signed_adj << shift)
 
-The granularity of the adjustment is timer-dependent because the intervals span a large range, from 1us to 50ms.
-It is also scaled according to the clock frequency of the IP block, because the supported frequency range is 50MHz to 1.5GHz:
+The granularity of the adjustment is timer-dependent because the intervals span a large range, from 1 us to 50 ms.
+It is also scaled according to the clock frequency of the IP block, because the supported frequency range is 50 MHz to 1.5 GHz:
 
 Clock frequencies:
- - 50MHz to 64MHz, both inclusive: base weighting applies.
- - From 64MHz (exclusive) to 128MHz (inclusive): adjustments have twice the base weighting.
- - From 128MHz (excl.) to 256MHz (incl.): adjustments have 4 times the base weighting.
- - From 256MHz (excl.) to 512MHz (incl.): adjustments have 8 times the base weighting.
- - From 512MHz (excl.) to 1024MHz (incl.): adjustments have 16 times the base weighting.
- - From 1024MHz (excl.) to 1500MHz (incl.): adjustments have 32 times the base weighting.
+ - 50 MHz to 64 MHz, both inclusive: base weighting applies.
+ - From 64 MHz (exclusive) to 128 MHz (inclusive): adjustments have twice the base weighting.
+ - From 128 MHz (excl.) to 256 MHz (incl.): adjustments have 4 times the base weighting.
+ - From 256 MHz (excl.) to 512 MHz (incl.): adjustments have 8 times the base weighting.
+ - From 512 MHz (excl.) to 1024 MHz (incl.): adjustments have 16 times the base weighting.
+ - From 1024 MHz (excl.) to 1500 MHz (incl.): adjustments have 32 times the base weighting.
 
 This allows the default intervals (in microseconds) to be adjusted in terms of IP clock cycles to an accuracy of +/- 0.8% typically.
 - Offset: `0x5c`
@@ -795,7 +804,7 @@ Interval Timers 1 register.
 Time intervals are specified as two's complement 8-bit signed adjustments to the default values calculated by the hardware.
 
 The granularity of the adjustment is timer-dependent and clock frequency-dependent.
-The weightings given here apply to the base case of an IP clock frequency up to 64MHz, inclusive.
+The weightings given here apply to the base case of an IP clock frequency up to 64 MHz, inclusive.
 See `INTERVAL_TIME0` for details.
 - Offset: `0x60`
 - Reset default: `0x0`
@@ -847,7 +856,7 @@ Blocked target addresses.
 The controller will raise an error if any attempt is made to access a blocked target address.
 This feature is intended to safeguard against inadvertent accesses to any I2C device that may try to employ clock-stretching, but it may also be of use diagnostically.
 - Offset: `0x68`
-- Reset default: `0x0`
+- Reset default: `0x7f007f`
 - Reset mask: `0x7f7f7f7f`
 
 ### Fields
@@ -861,31 +870,37 @@ This feature is intended to safeguard against inadvertent accesses to any I2C de
 |   31   |        |         | Reserved                      |
 | 30:24  |   rw   |   0x0   | [MASK1](#blocked_addr--mask1) |
 |   23   |        |         | Reserved                      |
-| 22:16  |   rw   |   0x0   | [ADDR1](#blocked_addr--addr1) |
+| 22:16  |   rw   |  0x7f   | [ADDR1](#blocked_addr--addr1) |
 |   15   |        |         | Reserved                      |
 |  14:8  |   rw   |   0x0   | [MASK0](#blocked_addr--mask0) |
 |   7    |        |         | Reserved                      |
-|  6:0   |   rw   |   0x0   | [ADDR0](#blocked_addr--addr0) |
+|  6:0   |   rw   |  0x7f   | [ADDR0](#blocked_addr--addr0) |
 
 ### BLOCKED_ADDR . MASK1
 Address mask for the second set of blocked addresses.
 
 This mask determines which bits of the device address will be tested and matched against the address in 'ADDR1'.
-I2C devices are commonly configured with one of a small set of static addresses, differing in only one two address bits.
-If this field is zero then 'ADDR1' is implicitly not used.
+I2C devices are commonly configured with one of a small set of static addresses, differing in only one or two address bits.
 
 ### BLOCKED_ADDR . ADDR1
 Second blocked address.
+
+Accesses to the target address (`TARG_ADDR`) will be blocked if the following expression matches:
+  `(TARG_ADDR & MASK1) == ADDR1`
+The reset values of `MASK1` and `ADDR1` cannot yield a match, deactivating this check.
 
 ### BLOCKED_ADDR . MASK0
 Address mask for the first set of blocked addresses.
 
 This mask determines which bits of the device address will be tested and matched against the address in 'ADDR0'.
-I2C devices are commonly configured with one of a small set of static addresses, differing in only one two address bits.
-If this field is zero then 'ADDR0' is implicitly not used.
+I2C devices are commonly configured with one of a small set of static addresses, differing in only one or two address bits.
 
 ### BLOCKED_ADDR . ADDR0
 First blocked address.
+
+Accesses to the target address (`TARG_ADDR`) will be blocked if the following expression matches:
+  `(TARG_ADDR & MASK0) == ADDR0`
+The reset values of `MASK0` and `ADDR0` cannot yield a match, deactivating this check.
 
 ## BUFFER_CTRL
 Buffer control
@@ -915,7 +930,7 @@ This shall only be used when both the Controller- and the Target-side functional
 Supplies the high address bits when software performs direct accesses to the internal message buffer.
 The IP may be configured to map part of its internal message buffer into the upper half of the IP address space.
 This provides more RAM to a memory-limited system when the I3C is not being used, and may be diagnostically useful when it is used.
-Since half of the IP address space is typically 2KiB but the message buffer is larger, this field allows software-controlled paging.
+Since half of the IP address space is typically 2 KiB but the message buffer is larger, this field allows software-controlled paging.
 
 ## BUFFER_STATUS
 Buffer status
@@ -1565,7 +1580,7 @@ Controller Device Address.
 ## HC_CAPABILITIES
 Host Controller Capabilities.
 - Offset: `0x18c`
-- Reset default: `0x440`
+- Reset default: `0x448`
 - Reset mask: `0x70303cec`
 
 ### Fields
@@ -1592,7 +1607,7 @@ Host Controller Capabilities.
 |   6    |   ro   |   0x1   | HDR_DDR_EN            | Defines whether the Host Controller supports HDR-DDR transfers.                                        |
 |   5    |   ro   |   0x0   | STANDBY_CR_CAP        | Defines whether the Host Controller supports handoff of the Active Controller role.                    |
 |   4    |        |         |                       | Reserved                                                                                               |
-|   3    |   ro   |   0x0   | AUTO_COMMAND          | Defines whether the Host Controller supports Auto-Command functionality.                               |
+|   3    |   ro   |   0x1   | AUTO_COMMAND          | Defines whether the Host Controller supports Auto-Command functionality.                               |
 |   2    |   ro   |   0x0   | COMBO_COMMAND         | Defines whether the Host Controller supports Combo Transfer Command transfers.                         |
 |  1:0   |        |         |                       | Reserved                                                                                               |
 
@@ -1817,7 +1832,7 @@ Extended Capabilities Section Offset.
 ## INT_CTRL_CMDS_EN
 Internal Control Command Subtype Support.
 - Offset: `0x1cc`
-- Reset default: `0x61`
+- Reset default: `0x20f5`
 - Reset mask: `0xffff`
 
 ### Fields
@@ -1829,7 +1844,7 @@ Internal Control Command Subtype Support.
 |  Bits  |  Type  |  Reset  | Name                | Description                          |
 |:------:|:------:|:-------:|:--------------------|:-------------------------------------|
 | 31:16  |        |         |                     | Reserved                             |
-|  15:1  |   ro   |  0x30   | MIPI_CMDS_SUPPORTED | MIPI Alliance Commands Supported.    |
+|  15:1  |   ro   | 0x107a  | MIPI_CMDS_SUPPORTED | MIPI Alliance Commands Supported.    |
 |   0    |   ro   |   0x1   | ICC_SUPPORT         | Internal Control Commands Supported. |
 
 ## IBI_NOTIFY_CTRL
@@ -1981,7 +1996,7 @@ Transfer Data Buffer Threshold Control.
 ## QUEUE_SIZE
 Queue Size.
 - Offset: `0x218`
-- Reset default: `0x6061408`
+- Reset default: `0x6061410`
 - Reset mask: `0xffffffff`
 
 ### Fields
@@ -1995,7 +2010,7 @@ Queue Size.
 | 31:24  |   ro   |   0x6   | TX_DATA_BUFFER_SIZE | Transmit Data Buffer Size.   |
 | 23:16  |   ro   |   0x6   | RX_DATA_BUFFER_SIZE | Receive Data Buffer Size.    |
 |  15:8  |   ro   |  0x14   | IBI_STATUS_SIZE     | IBI Queue Size.              |
-|  7:0   |   ro   |   0x8   | CR_QUEUE_SIZE       | Command/Response Queue Size. |
+|  7:0   |   ro   |  0x10   | CR_QUEUE_SIZE       | Command/Response Queue Size. |
 
 ## ALT_QUEUE_SIZE
 Alternate Queue Size.
@@ -2922,12 +2937,12 @@ Target Asynchronous Event Queue Control.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "BCST_CCC", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "DIR_SET_CCC", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "DIR_GET_CCC", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX_NOTIFY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_NOTIFY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX_SUSPEND", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_SUSPEND", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "BUS_EVENTS", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 23}, {"name": "RESET", "bits": 1, "attr": ["rw1c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"name": "BCST_CCC", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "DIR_SET_CCC", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "DIR_GET_CCC", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX_NOTIFY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_NOTIFY", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "TX_SUSPEND", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "IBI_SUSPEND", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "BUS_EVENTS", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 23}, {"name": "QUEUE_RESET", "bits": 1, "attr": ["rw1c"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name        | Description                                          |
 |:------:|:------:|:-------:|:------------|:-----------------------------------------------------|
-|   31   |  rw1c  |   0x0   | RESET       | Write 1 to reset the Asynchronous Event Queue.       |
+|   31   |  rw1c  |   0x0   | QUEUE_RESET | Write 1 to reset the Asynchronous Event Queue.       |
 |  30:8  |        |         |             | Reserved                                             |
 |   7    |   rw   |   0x0   | BUS_EVENTS  | Report I3C Bus Events.                               |
 |   6    |   rw   |   0x0   | IBI_SUSPEND | Report Suspension of In-Band Interrupt transmission. |
@@ -3021,7 +3036,7 @@ Target-side control register for setting buffer interrupt thresholds.
 ## TARG_BUF_STATUS_LEVEL
 Target-side data buffer levels.
 - Offset: `0x33c`
-- Reset default: `0x0`
+- Reset default: `0x400000`
 - Reset mask: `0xfff0fff`
 
 ### Fields
@@ -3033,7 +3048,7 @@ Target-side data buffer levels.
 |  Bits  |  Type  |  Reset  | Name         | Description                                              |
 |:------:|:------:|:-------:|:-------------|:---------------------------------------------------------|
 | 31:28  |        |         |              | Reserved                                                 |
-| 27:16  |   ro   |    x    | IBI_FREE_LVL | The available space (in DWORDs) in the Target IBI queue. |
+| 27:16  |   ro   |  0x40   | IBI_FREE_LVL | The available space (in DWORDs) in the Target IBI queue. |
 | 15:12  |        |         |              | Reserved                                                 |
 |  11:0  |   ro   |    x    | RX_BUF_LVL   | The number of DWORDs of data present in the Rx Buffer.   |
 
@@ -3176,15 +3191,15 @@ Group addressing configuration.
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "GROUP_ADDR", "bits": 7, "attr": ["ro"], "rotate": 0}, {"bits": 1}, {"name": "TARGETS", "bits": 4, "attr": ["ro"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
+{"reg": [{"name": "GROUP_ADDR", "bits": 7, "attr": ["rw"], "rotate": 0}, {"bits": 1}, {"name": "TARGETS", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 20}], "config": {"lanes": 1, "fontsize": 10, "vspace": 90}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                         |
-|:------:|:------:|:-------:|:-----------|:----------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:12  |        |         |            | Reserved                                                                                                                                            |
-|  11:8  |   ro   |   0x0   | TARGETS    | The set of virtual targets subscribed to this group address. If zero, this entry in the list of group addresses is unused.                          |
-|   7    |        |         |            | Reserved                                                                                                                                            |
-|  6:0   |   ro   |   0x0   | GROUP_ADDR | Group address, iff the entry is used. If zero, and TARGETS is non-zero, all I3C traffic will be captured as if addressed to the selected Target(s). |
+|  Bits  |  Type  |  Reset  | Name       | Description                                                                                                                                                                      |
+|:------:|:------:|:-------:|:-----------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:12  |        |         |            | Reserved                                                                                                                                                                         |
+|  11:8  |   rw   |   0x0   | TARGETS    | The set of virtual targets subscribed to this group address. If zero, this entry in the list of group addresses is unused.                                                       |
+|   7    |        |         |            | Reserved                                                                                                                                                                         |
+|  6:0   |   rw   |   0x0   | GROUP_ADDR | Group address, iff the entry is used. If software sets this address to zero and TARGETS to non-zero, all I3C traffic will be captured as if addressed to the selected Target(s). |
 
 ## TARG_TX_THLD_CTRL
 Target control register for setting Tx thresholds.
@@ -3217,7 +3232,7 @@ Target control register for setting Tx thresholds.
 
 ## TARG_TX_QUEUE_STATUS_LEVEL
 Target status register reporting transmit queue levels.
-- Reset default: `0x0`
+- Reset default: `0x80040`
 - Reset mask: `0xff0fff`
 
 ### Instances
@@ -3239,9 +3254,9 @@ Target status register reporting transmit queue levels.
 |  Bits  |  Type  |  Reset  | Name             | Description                                     |
 |:------:|:------:|:-------:|:-----------------|:------------------------------------------------|
 | 31:24  |        |         |                  | Reserved                                        |
-| 23:16  |   ro   |   0x0   | TX_DESC_FREE_LVL | The number of free Tx Descriptor Queue entries. |
+| 23:16  |   ro   |   0x8   | TX_DESC_FREE_LVL | The number of free Tx Descriptor Queue entries. |
 | 15:12  |        |         |                  | Reserved                                        |
-|  11:0  |   ro   |   0x0   | TX_BUF_FREE_LVL  | The number of free DWORDs in the Tx Buffer.     |
+|  11:0  |   ro   |  0x40   | TX_BUF_FREE_LVL  | The number of free DWORDs in the Tx Buffer.     |
 
 ## TARG_ADDR
 Target address on the I3C bus.
@@ -3269,7 +3284,7 @@ Target address on the I3C bus.
 |   31   |   rw   |   0x0   | DYNAMIC_ADDR_VALID | Dynamic Address is Valid. |
 | 30:23  |        |         |                    | Reserved                  |
 | 22:16  |   rw   |   0x0   | DYNAMIC_ADDR       | Device Dynamic Address.   |
-|   15   |   rw   |   0x0   | STATIC_ADDR_VALID  | Static Addres is Valid.   |
+|   15   |   rw   |   0x0   | STATIC_ADDR_VALID  | Static Address is Valid.  |
 |  14:7  |        |         |                    | Reserved                  |
 |  6:0   |   rw   |   0x0   | STATIC_ADDR        | Device Static Address.    |
 
@@ -3490,7 +3505,7 @@ Device Characteristics Table.
 - Byte writes are *not* supported.
 
 ## BUFFER
-Software-managed 4KiB message buffer used for transmitting and receiving messages.
+Software-managed 4 KiB message buffer used for transmitting and receiving messages.
 
 This may be used diagnostically when the I3C Controller and/or Target(s) are enabled.
 It may be employed as additional system RAM when the I3C block is completely disabled.

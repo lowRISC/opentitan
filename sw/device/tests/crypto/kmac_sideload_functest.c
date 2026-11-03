@@ -120,7 +120,7 @@ static kmac_test_vector_t kKmacTestVectors[] = {
                         .hw_backed = kHardenedBoolTrue,
                         .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
                         .exportable = kHardenedBoolFalse,
-                        .security_level = kOtcryptoKeySecurityLevelLow,
+                        .security_level = kOtcryptoKeySecurityLevelMedium,
                     },
                 .keyblob_length = 32,
                 .keyblob =
@@ -200,7 +200,7 @@ static kmac_test_vector_t kKmacTestVectors[] = {
                         .hw_backed = kHardenedBoolTrue,
                         .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
                         .exportable = kHardenedBoolFalse,
-                        .security_level = kOtcryptoKeySecurityLevelLow,
+                        .security_level = kOtcryptoKeySecurityLevelHigh,
                     },
                 .keyblob_length = 32,
                 .keyblob =

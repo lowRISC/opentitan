@@ -105,7 +105,7 @@
       name:    "cored_tl_h",
       act:     "req",
       package: "tlul_pkg",
-      desc:    "Core data host port to the CHERIoT subsystem."
+      desc:    "Core data host port to the CHERIoT memory subsystem."
     },
 
     { struct:  "logic",
@@ -259,14 +259,6 @@
       name:    "icache_otp_key",
       act:     "req",
       package: "otp_ctrl_pkg",
-    },
-
-    { struct:  "logic",
-      type:    "uni",
-      name:    "fpga_info",
-      act:     "rcv",
-      width:   "32",
-      package: "",
     },
   % if racl_support:
     { struct:  "racl_policy_vec",
@@ -1247,25 +1239,6 @@
         "excl:CsrAllTests:CsrExclAll"],
       },
 % endif
-
-      { name: "FPGA_INFO",
-        desc: '''
-          FPGA build timestamp info.
-          This register only contains valid data for fpga, for all other variants it is simply 0.
-        ''',
-        swaccess: "ro",
-        hwaccess: "hwo",
-        hwext: "true"
-        fields: [
-          { bits: "31:0",
-            name: "VAL",
-            resval: "0x0"
-            desc: '''
-              FPGA build timestamp information.
-            '''
-          },
-        ]
-      },
 
       { name: "MCOUNTEREN_WRITABLE_REGWEN",
         desc: "Register write-enable for !!MCOUNTEREN_WRITABLE.",

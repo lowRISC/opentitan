@@ -179,8 +179,8 @@ def filter_tests_by_config(cfg: ibex_config.Config,
                         f"rtl_params of {p_val}, which doesn't contain the "
                         f"expected '{config_val}'.")
                     break
-
-                # The test is accepted if we got this far
+            else:
+                # The test is accepted if every parameter matched
                 filtered_test_list.append(test)
 
     return filtered_test_list

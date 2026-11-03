@@ -206,9 +206,9 @@ cc_library(
     srcs = ["ibex_sca.c"],
     hdrs = ["ibex_sca.h"],
     deps = [
-        ":ecc256_keygen_sca",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:keymgr_dpe",
         "//sw/device/lib/dif:kmac",
@@ -221,6 +221,7 @@ cc_library(
         "//sw/device/sca/lib:prng",
         "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
         "//sw/device/tests/penetrationtests/json:ibex_sca_commands",
+        "//sw/otbn/crypto:p256_ecdsa_sca",
     ],
 )
 
@@ -243,14 +244,62 @@ cc_library(
 )
 
 cc_library(
+    name = "hkdf_otbn_sca",
+    srcs = ["hkdf_otbn_sca.c"],
+    hdrs = ["hkdf_otbn_sca.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:prng",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+        "//sw/device/tests/penetrationtests/json:otbn_sca_commands",
+        "//sw/otbn/crypto/sha2:run_hkdf_sha256",
+        "//sw/otbn/crypto/sha2:run_hkdf_sha384",
+        "//sw/otbn/crypto/sha2:run_hkdf_sha512",
+    ],
+)
+
+cc_library(
+    name = "sha2_otbn_sca",
+    srcs = ["sha2_otbn_sca.c"],
+    hdrs = ["sha2_otbn_sca.h"],
+    target_compatible_with = opentitan_require_top("earlgrey"),
+    deps = [
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ujson_ottf",
+        "//sw/device/lib/ujson",
+        "//sw/device/sca/lib:prng",
+        "//sw/device/tests/penetrationtests/firmware/lib:pentest_lib",
+        "//sw/device/tests/penetrationtests/json:otbn_sca_commands",
+        "//sw/otbn/crypto/sha2:run_sha256",
+        "//sw/otbn/crypto/sha2:run_sha384",
+        "//sw/otbn/crypto/sha2:run_sha512",
+    ],
+)
+
+cc_library(
     name = "otbn_sca",
     srcs = ["otbn_sca.c"],
     hdrs = ["otbn_sca.h"],
     deps = [
         ":ecc256_keygen_sca",
+        ":hkdf_otbn_sca",
+        ":sha2_otbn_sca",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
         "//sw/device/lib/crypto/drivers:keymgr_dpe",
+        "//sw/device/lib/crypto/drivers:otbn",
+        "//sw/device/lib/crypto/drivers:rv_core_ibex",
         "//sw/device/lib/crypto/impl:keyblob",
         "//sw/device/lib/crypto/impl:status",
         "//sw/device/lib/dif:otbn",
@@ -263,6 +312,7 @@ cc_library(
         "//sw/device/tests/penetrationtests/firmware/sca/otbn:otbn_insn_carry_flag",
         "//sw/device/tests/penetrationtests/firmware/sca/otbn:otbn_insn_combi_ops",
         "//sw/device/tests/penetrationtests/firmware/sca/otbn:otbn_key_sideload_sca",
+        "//sw/device/tests/penetrationtests/firmware/sca/otbn:otbn_mai_sca",
         "//sw/device/tests/penetrationtests/json:otbn_sca_commands",
         "//sw/otbn/crypto:p256_ecdsa_sca",
         "//sw/otbn/crypto:run_rsa",

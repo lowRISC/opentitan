@@ -17,7 +17,6 @@
 #include "sw/device/tests/penetrationtests/json/hmac_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/ibex_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/kmac_sca_commands.h"
-#include "sw/device/tests/penetrationtests/json/otbn_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/pentest_lib_commands.h"
 #include "sw/device/tests/penetrationtests/json/prng_sca_commands.h"
 #include "sw/device/tests/penetrationtests/json/sha3_sca_commands.h"
@@ -31,7 +30,6 @@
 #include "sw/device/tests/penetrationtests/firmware/sca/hmac_sca.h"
 #include "sw/device/tests/penetrationtests/firmware/sca/ibex_sca.h"
 #include "sw/device/tests/penetrationtests/firmware/sca/kmac_sca.h"
-#include "sw/device/tests/penetrationtests/firmware/sca/otbn_sca.h"
 #include "sw/device/tests/penetrationtests/firmware/sca/rng_sca.h"
 #include "sw/device/tests/penetrationtests/firmware/sca/sha3_sca.h"
 #include "sw/device/tests/penetrationtests/firmware/sca/trigger_sca.h"
@@ -63,9 +61,6 @@ status_t process_cmd(ujson_t *uj) {
         break;
       case kPenetrationtestCommandKmacSca:
         RESP_ERR(uj, handle_kmac_sca(uj));
-        break;
-      case kPenetrationtestCommandOtbnSca:
-        RESP_ERR(uj, handle_otbn_sca(uj));
         break;
       case kPenetrationtestCommandPrngSca:
         RESP_ERR(uj, handle_prng_sca(uj));

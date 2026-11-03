@@ -4,6 +4,8 @@
 |-|-|-|-|
  [`clkmgr`](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/dashboard.html) | 2.0.0 | D1, V1 | ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/clkmgr/test.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/clkmgr/passing.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/clkmgr/functional.svg) ![](https://dashboard.reports.lowrisc.org/opentitan/earlgrey/badge/clkmgr/code.svg) |
 
+This IP has been taped out in Earl Grey 1.0.0. The corresponding documentation and regression results can be found [here](https://opentitan.org/earlgrey_1.0.0/book/hw/top_earlgrey/ip_autogen/clkmgr/index.html).
+
 <!-- END CMDGEN -->
 
 **NOTE**: This document describes the planned split of the clock manager into an always-on (AON) part and a power-gated (Main) part, including the software re-initialisation requirement.

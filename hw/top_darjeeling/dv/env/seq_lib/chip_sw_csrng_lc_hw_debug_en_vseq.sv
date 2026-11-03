@@ -53,7 +53,6 @@ class chip_sw_csrng_lc_hw_debug_en_vseq extends chip_sw_base_vseq;
       .mem_bkdr_util_h(cfg.mem_bkdr_util_h[Otp]),
       // This means SOC_DEBUG won't block debug access.
       .soc_dbg_state(SOC_DBG_RAW),
-      .en_csrng_sw_app_read(MUBI8TRUE),
       .en_sram_ifetch(MUBI8FALSE));
   endtask
 

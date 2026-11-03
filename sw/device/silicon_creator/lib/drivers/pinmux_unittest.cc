@@ -95,11 +95,11 @@ TEST_F(InitTest, WithBootstrap) {
   for (size_t i = 0; i < 6; ++i) {
     EXPECT_CSR_READ(CSR_REG_MCYCLE, i * 100);
   }
-  EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio22),
+  EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpio0Gpio22),
                      kTopEarlgreyPinmuxInselIoc0)
-  EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio23),
+  EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpio0Gpio23),
                      kTopEarlgreyPinmuxInselIoc1)
-  EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpioGpio24),
+  EXPECT_ABS_WRITE32(RegInSel(kTopEarlgreyPinmuxPeripheralInGpio0Gpio24),
                      kTopEarlgreyPinmuxInselIoc2)
 
   // UART configuration: RX line pulled up, RX is IOC3, TX is IOC4.

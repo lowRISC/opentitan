@@ -105,6 +105,36 @@ otcrypto_status_t otcrypto_rsa_keygen(otcrypto_rsa_size_t size,
                                       otcrypto_blinded_key_t *private_key);
 
 /**
+ * Checks whether a candidate prime is a probable RSA prime.
+ *
+ * Tests `prime_candidate` as-is on OTBN using the Fermat and Miller-Rabin
+ * primality tests (4 iterations). The candidate must have its lowest two bits
+ * set (`p = 3 mod 4`) and its most significant bit set.
+ *
+ * @param size RSA size parameter.
+ * @param prime_candidate Candidate prime buffer (half the modulus size).
+ * @param[out] prime_ok Whether the candidate passed the primality checks.
+ * @return Result of the prime check operation.
+ */
+otcrypto_status_t otcrypto_rsa_prime_check(
+    otcrypto_rsa_size_t size,
+    const otcrypto_const_word32_buf_t *prime_candidate,
+    hardened_bool_t *prime_ok);
+
+/**
+ * Computes the RSA public modulus `n = p * q` from two primes `p` and `q`.
+ *
+ * @param size RSA size parameter.
+ * @param prime_p First prime factor `p` (half the modulus size).
+ * @param prime_q Second prime factor `q` (half the modulus size).
+ * @param[out] modulus Output buffer for `n = p * q` (full modulus size).
+ * @return Result of the modulus computation.
+ */
+otcrypto_status_t otcrypto_rsa_create_n_from_primes(
+    otcrypto_rsa_size_t size, const otcrypto_const_word32_buf_t *prime_p,
+    const otcrypto_const_word32_buf_t *prime_q, otcrypto_word32_buf_t *modulus);
+
+/**
  * Constructs an RSA public key from the modulus and public exponent.
  *
  * The caller should allocate space for the public key and set the `key` and
@@ -223,6 +253,15 @@ otcrypto_status_t otcrypto_rsa_verify(
 /**
  * Computes and verifies the digital signature on the input message data by
  * hashing first.
+ *
+ * The caller must ensure that `private_key` and `public_key` belong to the
+ * same RSA keypair. A signature verification failure (including from a
+ * mismatched keypair) is treated as a fault or pairwise consistency failure,
+ * which locks the cryptolib state and returns `kOtcryptoStatusValueFatalError`
+ * (or traps the CPU if checked via `HARDENED_TRY`). To verify that the keys
+ * share the same modulus `n` beforehand, compare the `num_words`
+ * (`public_key->key_length / sizeof(uint32_t)`) words at `public_key->key`
+ * against `&private_key->keyblob[2 * num_words]`.
  *
  * @param private_key Pointer to blinded private key struct.
  * @param public_key Pointer to public key struct.

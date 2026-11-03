@@ -2,56 +2,84 @@
 
 This directory contains the FIPS-204-compliant and hardened OpenTitan OTBN implementation of the ML-DSA-87 (Dilithium-5) post-quantum cryptography signature algorithm.
 
-The implementation is split into three separate OTBN applications (keygen, sign, verify) that are structured hierarchically where the bottom layer consists of routines that operate on polynomials in `Z_q[X] / (X^256 + 1)` composed of 256 24-bit coefficients in the ring Z_q each occupying one 32-bit memory word such that one complete polynomial takes up 1024 bytes.
+The keygen, sign and verify operations are implemented as one OTBN library (`:mldsa87`) and one standalone OTBN app (`:run_mldsa87`).
+The implementation is structured hierarchically where the bottom layer consists of routines that operate on polynomials in `Z_q[X] / (X^256 + 1)` composed of 256 24-bit coefficients in the ring Z_q each occupying one 32-bit memory word such that one complete polynomial takes up 1024 bytes.
 
 The polynomial operations form the base for the vector operations through which the lattice is realized.
 These vector operations follow the schematics of the three high-level algorithms detailed in FIPS-204.
 The general organisation of the ML-DSA OTBN implementation is sketched below.
 
 ```
-  ML-DSA-87 Keygen                              ML-DSA-87 Sign                               ML-DSA-87 Verify
- +---------------------------------------+    +---------------------------------------+    +---------------------------------------+
- |               Entrypoint              |    |               Entrypoint              |    |               Entrypoint              |
- |          +------------------+         |    |          +----------------+           |    |          +------------------+         |
- |          | mldsa87_keygen.s |         |    |          | mldsa87_sign.s |           |    |          | mldsa87_verify.s |         |
- |          +--------+---------+         |    |          +--------+-------+           |    |          +--------+---------+         |
- |                   |                   |    |                   |                   |    |                   |                   |
- |          Vector   |                   |    |          Vector   |                   |    |          Vector   |                   |
- |        +----------+-----------+       |    |        +----------+---------+         |    |        +----------+-----------+       |
- |        | mldsa87_keygen_ops.s |       |    |        | mldsa87_sign_ops.s |         |    |        | mldsa87_verify_ops.s |       |
- |        +----------+-----------+       |    |        +----------+---------+         |    |        +----------+-----------+       |
- |                   |                   |    |                   |                   |    |                   |                   |
- |    Poly           |                   |    |    Poly           |                   |    |    Poly           |                   |
- |  +----------------+----------------+  |    |  +----------------+----------------+  |    |  +----------------+----------------+  |
- |  |  +---------------------------+  |  |    |  |  +-------------------------+    |  |    |  |  +---------------------------+  |  |
- |  |  | mldsa87_keygen_encoding.s |  |  |    |  |  | mldsa87_sign_encoding.s |    |  |    |  |  | mldsa87_verify_encoding.s |  |  |
- |  |  +---------------------------+  |  |    |  |  +-------------------------+    |  |    |  |  +---------------------------+  |  |
- |  |  +-------------------------+    |  |    |  |  +-----------------------+      |  |    |  |  +-----------------------+      |  |
- |  |  | mldsa87_keygen_expand.s |    |  |    |  |  | mldsa87_sign_expand.s |      |  |    |  |  | mldsa87_verify_norm.s |      |  |
- |  |  +-------------------------+    |  |    |  |  +-----------------------+      |  |    |  |  +-----------------------+      |  |
- |  |  +---------------------------+  |  |    |  |  +-------------------------+    |  |    |  |  +---------------------------+  |  |
- |  |  | mldsa87_keygen_rounding.s |  |  |    |  |  | mldsa87_sign_sample.s   |    |  |    |  |  | mldsa87_verify_rounding.s |  |  |
- |  |  +---------------------------+  |  |    |  |  +-------------------------+    |  |    |  |  +---------------------------+  |  |
- |  |  +-------------------------+    |  |    |  +---------------------------------+  |    |  +---------------------------------+  |
- |  |  | mldsa87_keygen_sample.s |    |  |    |                                       |    |                                       |
- |  |  +-------------------------+    |  |    |                                       |    |                                       |
- |  +---------------------------------+  |    |                                       |    |                                       |
- +--------------------+------------------+    +--------------------+------------------+    +--------------------+------------------+
-                      |                                            |                                            |
-                Poly  |                                            |                                            |
-               +------+--------------------------------------------+--------------------------------------------+-----+
-               |        +-----------------+ +--------------------+ +------------------+ +-------------------+         |
-               |        | mldsa87_arith.s | | mldsa87_encoding.s | | mldsa87_expand.s | | mldsa87_gadgets.s |         |
-               |        +-----------------+ +--------------------+ +------------------+ +-------------------+         |
-               |        +---------------+ +------------------+ +---------------+ +-----------------+                  |
-               |        | mldsa87_ntt.s | | mldsa87_sample.s | | mldsa87_xof.s | | mldsa87_utils.s |                  |
-               |        +---------------+ +------------------+ +---------------+ +-----------------+                  |
-               +------------------------------------------------------------------------------------------------------+
+┌─ App/Library ────────────────────────────────────────────────────────────────┐
+│                        ╔═════════════════════════════╗                       │
+│                        ║        run_mldsa87.s        ║                       │
+│                        ║          :mldsa87           ║                       │
+│                        ╚══════════════╤══════════════╝                       │
+│                                       │                                      │
+└───────────────────────────────────────┼──────────────────────────────────────┘
+                                        │
+┌─ Operations ──────────────────────────┼──────────────────────────────────────┐
+│              ┌────────────────────────┼────────────────────────┐             │
+│              ▼                        ▼                        ▼             │
+│   ╭────────────────────╮   ╭────────────────────╮   ╭────────────────────╮   │
+│   │  mldsa87_keygen.s  │   │   mldsa87_sign.s   │   │  mldsa87_verify.s  │   │
+│   ╰──────────┬─────────╯   ╰──────────┬─────────╯   ╰──────────┬─────────╯   │
+│              │                        │                        │             │
+│              └────────────────────────┼────────────────────────┘             │
+└───────────────────────────────────────┼──────────────────────────────────────┘
+                                        │
+┌─ Vector ──────────────────────────────┼──────────────────────────────────────┐
+│                                       ▼                                      │
+│   ┌──────────────────────────────────────────────────────────────────────┐   │
+│   │                            mldsa87_ops.s                             │   │
+│   └───────────────────────────────────┬──────────────────────────────────┘   │
+│                                       │                                      │
+└───────────────────────────────────────┼──────────────────────────────────────┘
+                                        │
+┌─ Polynomial ──────────────────────────┼──────────────────────────────────────┐
+│                                       ▼                                      │
+│   ╭────────────────────╮   ╭────────────────────╮   ╭────────────────────╮   │
+│   │  mldsa87_arith.s   │   │ mldsa87_encoding.s │   │   mldsa87_ntt.s    │   │
+│   ╰────────────────────╯   ╰────────────────────╯   ╰────────────────────╯   │
+│   ╭────────────────────╮   ╭────────────────────╮   ╭────────────────────╮   │
+│   │  mldsa87_expand.s  │   │  mldsa87_sample.s  │   │ mldsa87_rounding.s │   │
+│   ╰────────────────────╯   ╰────────────────────╯   ╰────────────────────╯   │
+│               ╭────────────────────╮    ╭────────────────────╮               │
+│               │ mldsa87_gadgets.s  │    │  mldsa87_utils.s   │               │
+│               ╰────────────────────╯    ╰────────────────────╯               │
+│                                                                              │
+│               ┄┄┄┄┄┄┄┄┄ imported from sw/otbn/crypto ┄┄┄┄┄┄┄┄┄               │
+│               ╭────────────────────╮    ╭────────────────────╮               │
+│               │  ../mai_gadgets.s  │    │      ../xof.s      │               │
+│               ╰────────────────────╯    ╰────────────────────╯               │
+└──────────────────────────────────────────────────────────────────────────────┘
+
+┌─ Memory/Constants ───────────────────────────────────────────────────────────┐
+│               ┌────────────────────┐    ┌────────────────────┐               │
+│               │   mldsa87_mem.s    │    │    mldsa87.inc     │               │
+│               └────────────────────┘    └────────────────────┘               │
+└──────────────────────────────────────────────────────────────────────────────┘
 ```
+
+## Usage
+
+The standalone app `run_mldsa87` reads the operation from the `mldsa87_mode` DMEM word (see the `MLDSA87_MODE_*` constants in `mldsa87.inc`) and calls the corresponding routine.
+The keygen and sign routines additionally use the mode to choose between the random and the deterministic (and for sign, the abridged) variants.
+
+Other OTBN apps can depend on the `//sw/otbn/crypto/mldsa87:mldsa87` library and call `mldsa87_keygen`, `mldsa87_sign` and `mldsa87_verify` as subroutines.
+Each routine initializes the stack pointer `x31`, the all-zero WDR `w31` and the `MOD` WSR and returns with `ret`.
+The caller must not rely on these after the call.
+Inputs and outputs are passed through the DMEM buffers declared in `mldsa87_mem.s`.
+
+## Memory Layout
+
+All DMEM buffers are declared at fixed offsets in `mldsa87_mem.s`.
+The secret key, public key and signature buffers are shared between the operations, i.e., the output of keygen (`mldsa87_sk_*`, `mldsa87_pk_*`) and sign (`mldsa87_sig_*`) can be consumed by sign and verify without copying.
+Dedicated operation buffers (`mldsa87_{keygen,sign,verify}_*`) overlay regions that are not used by the respective operation.
+Keygen clobbers the signature, sign clobbers the public key and verify clobbers the secret key.
 
 ## Calling Convention
 
-Each of the three ML-DSA apps can be compiled holistically as a single binary with a corresponding memory file (not depicted in the diagram).
 The memory layout governs the implementation choices (e.g., which vectors need to be stored encoded and then decoded on-the-fly when needed) by statically assigning memory regions to intermediate variables as well as input and output data.
 This static part of the memory is extended with a dynamic stack onto which a routine can push registers before it starts executing and restore them before returning to the caller routine.
 The following rules/conventions are followed in this implementation:

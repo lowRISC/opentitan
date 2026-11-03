@@ -50,12 +50,16 @@ module i3c_dct
   i3c_dct_mem_t sw_dct_wdata_packed;
   i3c_dct_entry_t sw_dct_wdata_full;
   assign sw_dct_wdata_full = i3c_dct_entry_t'({DCTWidthWords{sw_dct_wdata_i}});
+  // Software writes to reserved fields have no effect.
+  logic unused_sw_dct_wdata;
+  assign unused_sw_dct_wdata = ^{sw_dct_wdata_full.reserved0, sw_dct_wdata_full.reserved1,
+                                 sw_dct_wdata_full.reserved2};
 
   always_comb begin
     sw_dct_wmask = '0;
     // The DCT entry is mapped into a number of CPU memory locations, but with
     // holes (HCI Table 131).
-    case (sw_dct_addr_i[1:0])
+    unique case (sw_dct_addr_i[1:0])
       2'b00: sw_dct_wmask[3:0] = 4'hF;
       2'b01: sw_dct_wmask[5:4] = 2'b11;
       2'b10: sw_dct_wmask[7:6] = 2'b11;

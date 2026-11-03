@@ -798,11 +798,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .rst_no(${clkgen_rst_o})
   );
 
-  logic [31:0] fpga_info;
-  usr_access_xil7series u_info (
-    .info_o(fpga_info)
-  );
-
   ast_pkg::clks_osc_byp_t clks_osc_byp;
   assign clks_osc_byp = '{
     usb: clk_usb_48mhz,
@@ -1125,6 +1120,12 @@ module chip_${top["name"]}_${target["name"]} #(
     bkdr_loader_pkg::bkdr_req_t [bkdr_loader_reg_pkg::NumBkdrTgts-1:0] bkdr_req;
     bkdr_loader_pkg::bkdr_rsp_t [bkdr_loader_reg_pkg::NumBkdrTgts-1:0] bkdr_rsp;
 
+    // Bitstream USR_ACCESS value
+    logic [31:0] fpga_info;
+    usr_access_xil7series u_info (
+      .info_o(fpga_info)
+    );
+
     bkdr_loader i_bkdr_loader (
       .clk_i      (clk_main),
       .rst_ni     (bkdr_rst_n),
@@ -1281,8 +1282,9 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecAesAllowForcingMasks(1'b1),
     .SramCtrlMainInstrExec(1),
 % else:
+    ## Ibex keeps the default RegFileFF: RegFileFPGA is not reset, which breaks the
+    ## SecureIbex shadow ECC. Do not switch back before lowRISC/ibex#2539 is fixed.
     .RomCtrlBootRomInitFile(BootRomInitFile),
-    .RvCoreIbexRegFile(ibex_pkg::RegFileFPGA),
     .SramCtrlMainInstrExec(1),
 % endif
     .PinmuxTargetCfg(PinmuxTargetCfg)
@@ -1334,7 +1336,7 @@ module chip_${top["name"]}_${target["name"]} #(
   % else:
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
-    unique case ({mio_out[MioOutGpioGpio11], mio_out[MioOutGpioGpio10]})
+    unique case ({mio_out[MioOutGpio0Gpio11], mio_out[MioOutGpio0Gpio10]})
       2'b00:   trigger_sel = clkmgr_pkg::HintMainAes;
       2'b01:   trigger_sel = clkmgr_pkg::HintMainHmac;
       2'b10:   trigger_sel = clkmgr_pkg::HintMainKmac;
@@ -1349,10 +1351,10 @@ module chip_${top["name"]}_${target["name"]} #(
   logic clk_io_div4_trigger_hw_oe, manual_in_io_clk_trigger_hw_oe;
   logic clk_io_div4_trigger_sw_en, manual_in_io_clk_trigger_sw_en;
   logic clk_io_div4_trigger_sw_oe, manual_in_io_clk_trigger_sw_oe;
-  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpioGpio9];
-  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpioGpio9];
-  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpioGpio8];
-  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpioGpio8];
+  assign clk_io_div4_trigger_hw_en = mio_out[MioOutGpio0Gpio9];
+  assign clk_io_div4_trigger_hw_oe = mio_oe[MioOutGpio0Gpio9];
+  assign clk_io_div4_trigger_sw_en = mio_out[MioOutGpio0Gpio8];
+  assign clk_io_div4_trigger_sw_oe = mio_oe[MioOutGpio0Gpio8];
 
   // Synchronize signals to manual_in_io_clk.
   prim_flop_2sync #(

@@ -12,27 +12,27 @@ It should, however, be noted that this configuration is conservative and anticip
 
 The default buffer allocation, with the queues and FIFOs arranged in ascending order of buffer offset (in DWORDs) is shown below:
 
-| Description | Register | Min offset (incl). | Max offset (incl). |
-|--------------------|-----------------------|---------|---------|
-| Controller Tx Data | CTRL_TXBUF_CONFIG     | 0x00    | 0x7f    |
-| Controller Rx Data | CTRL_RXBUF_CONFIG     | 0x80    | 0xff    |
-| Command Queue      | COMMAND_QUEUE_CONFIG  | 0x100   | 0x11f   |
-| Response Queue     | RESPONSE_QUEUE_CONFIG | 0x120   | 0x12f   |
-| IBI Data Queue     | IBI_CONFIG            | 0x130   | 0x1af   |
-| IBI Status Descs   | IBI_STAT_CONFIG       | 0x1b0   | 0x1cf   |
-| Target 0 Tx Data   | TARG_TXBUF_CONFIG_0   | 0x1d0   | 0x20f   |
-| Target 1 Tx Data   | TARG_TXBUF_CONFIG_1   | 0x210   | 0x24f   |
-| Target 2 Tx Data   | TARG_TXBUF_CONFIG_2   | 0x250   | 0x28f   |
-| Target 3 Tx Data   | TARG_TXBUF_CONFIG_3   | 0x290   | 0x2cf   |
-| Target Rx Data     | TARG_RXBUF_CONFIG     | 0x2d0   | 0x36f   |
-| Target IBI Data    | TARG_IBI_CONFIG       | 0x370   | 0x3af   |
-| Target 0 Tx Descs  | TARG_TXDESC_CONFIG_0  | 0x3b0   | 0x3b7   |
-| Target 1 Tx Descs  | TARG_TXDESC_CONFIG_1  | 0x3b8   | 0x3bf   |
-| Target 2 Tx Descs  | TARG_TXDESC_CONFIG_2  | 0x3c0   | 0x3c7   |
-| Target 3 Tx Descs  | TARG_TXDESC_CONFIG_3  | 0x3c8   | 0x3cf   |
-| Target Rx Descs    | TARG_RXDESC_CONFIG    | 0x3d0   | 0x3df   |
-| Target IBI StatD   | TARG_IBIDESC_CONFIG   | 0x3e0   | 0x3ef   |
-| Target ASync Event | TARG_ASYNC_CONFIG     | 0x3f0   | 0x3ff   |
+| Description        | Register              | Min offset (incl). | Max offset (incl). |
+|--------------------|-----------------------|--------------------|--------------------|
+| Controller Tx Data | CTRL_TXBUF_CONFIG     | 0x00               | 0x7f               |
+| Controller Rx Data | CTRL_RXBUF_CONFIG     | 0x80               | 0xff               |
+| Command Queue      | COMMAND_QUEUE_CONFIG  | 0x100              | 0x11f              |
+| Response Queue     | RESPONSE_QUEUE_CONFIG | 0x120              | 0x12f              |
+| IBI Data Queue     | IBI_CONFIG            | 0x130              | 0x1af              |
+| IBI Status Descs   | IBI_STAT_CONFIG       | 0x1b0              | 0x1cf              |
+| Target 0 Tx Data   | TARG_TXBUF_CONFIG_0   | 0x1d0              | 0x20f              |
+| Target 1 Tx Data   | TARG_TXBUF_CONFIG_1   | 0x210              | 0x24f              |
+| Target 2 Tx Data   | TARG_TXBUF_CONFIG_2   | 0x250              | 0x28f              |
+| Target 3 Tx Data   | TARG_TXBUF_CONFIG_3   | 0x290              | 0x2cf              |
+| Target Rx Data     | TARG_RXBUF_CONFIG     | 0x2d0              | 0x36f              |
+| Target IBI Data    | TARG_IBI_CONFIG       | 0x370              | 0x3af              |
+| Target 0 Tx Descs  | TARG_TXDESC_CONFIG_0  | 0x3b0              | 0x3b7              |
+| Target 1 Tx Descs  | TARG_TXDESC_CONFIG_1  | 0x3b8              | 0x3bf              |
+| Target 2 Tx Descs  | TARG_TXDESC_CONFIG_2  | 0x3c0              | 0x3c7              |
+| Target 3 Tx Descs  | TARG_TXDESC_CONFIG_3  | 0x3c8              | 0x3cf              |
+| Target Rx Descs    | TARG_RXDESC_CONFIG    | 0x3d0              | 0x3df              |
+| Target IBI StatD   | TARG_IBIDESC_CONFIG   | 0x3e0              | 0x3ef              |
+| Target ASync Event | TARG_ASYNC_CONFIG     | 0x3f0              | 0x3ff              |
 
 Each of the queues/FIFOs has a configuration register that specifies the minimum and maximum offsets, in DWORDs, within the message buffer.
 Both offsets are inclusive and it is the responsibility of the software to ensure overlaps do not occur because otherwise undefined behavior will result.
@@ -40,35 +40,35 @@ Both offsets are inclusive and it is the responsibility of the software to ensur
 ## Timer Intervals
 
 The IP block contains a number of timers for measuring the duration of I3C bus states, such as the 'Bus Available' and 'Bus Idle' conditions.
-The longest of these time intervals is the 50ms 'Dead Bus Recovery' interval, whilst the shortest interval is the 'Bus Available' condition at just 1 microsecond.
+The longest of these time intervals is the 50 ms 'Dead Bus Recovery' interval, whilst the shortest interval is the 'Bus Available' condition at just 1 microsecond.
 
 In order to support this wide variation in time intervals across the large range of supported IP clock frequencies, the timer granularity (in IP clock cycles) varies on a per-timer basis as illustrated by the following tables, at the extremes of the supported clock frequency range.
 
-Minimum supported clock frequency, 50MHz:
+Minimum supported clock frequency, 50 MHz:
 
-| Timer | Default Interval  | Width (bits) | Shift amount | Unit at 50MHz | Max interval |
-|------------------|----------|--------|--------|---------|----------|
-| Command Retrying |   800us  |   s.7  |    8   |  5.1us  |   1.5ms  |
-| Targ Bus Idle    |   200us  |   s.7  |    6   |  1.3us  |   360us  |
-| TE0 Recovery     |    60us  |   s.7  |    4   |  320ns  |   100us  |
-| Targ Reset       |     5us  |   s.7  |    0   |   20ns  |   7.5us  |
-| Targ Bus Avail   |     1us  |   s.7  |    0   |   20ns  |   3.5us  |
-| Read stalled     |   150us  |   s.7  |    6   |  1.3us  |   310us  |
-| Ctrl Bus Avail   |     1us  |   s.7  |    0   |   20ns  |   3.5us  |
-| Dead Bus Recov   |    50ms  |   s.7  |   14   |  330us  |    92ms  |
+| Timer            | Default Interval | Width (bits) | Shift amount | Unit at 50 MHz | Max interval |
+|------------------|-----------------:|-------------:|-------------:|---------------:|-------------:|
+| Command Retrying |           800 us |          s.7 |            8 |         5.1 us |       1.5 ms |
+| Targ Bus Idle    |           200 us |          s.7 |            6 |         1.3 us |       360 us |
+| TE0 Recovery     |            60 us |          s.7 |            4 |         320 ns |       100 us |
+| Targ Reset       |             5 us |          s.7 |            0 |          20 ns |       7.5 us |
+| Targ Bus Avail   |             1 us |          s.7 |            0 |          20 ns |       3.5 us |
+| Read stalled     |           150 us |          s.7 |            6 |         1.3 us |       310 us |
+| Ctrl Bus Avail   |             1 us |          s.7 |            0 |          20 ns |       3.5 us |
+| Dead Bus Recov   |            50 ms |          s.7 |           14 |         330 us |        92 ms |
 
-Maximum supported clock frequency, 1.5GHz
+Maximum supported clock frequency, 1.5 GHz
 
-| Timer | Default Interval  | Width (bits) | Shift amount | Unit at 1.5GHz | Max interval |
-|------------------|----------|--------|--------|---------|----------|
-| Command Retrying |   800us  |   s.7  |   13   |  5.5us  |   1.7ms  |
-| Targ Bus Idle    |   200us  |   s.7  |   11   |  1.4us  |   370us  |
-| TE0 Recovery     |    60us  |   s.7  |    9   |  340ns  |   100us  |
-| Targ Reset       |     5us  |   s.7  |    5   |   21ns  |   7.7us  |
-| Targ Bus Avail   |     1us  |   s.7  |    5   |   21ns  |   3.7us  |
-| Read stalled     |   150us  |   s.7  |   11   |  1.4us  |   320us  |
-| Ctrl Bus Avail   |     1us  |   s.7  |    5   |   21ns  |   3.7us  |
-| Dead Bus Recov   |    50ms  |   s.7  |   19   |  350us  |    94ms  |
+| Timer            | Default Interval | Width (bits) | Shift amount | Unit at 1.5 GHz | Max interval |
+|------------------|-----------------:|-------------:|-------------:|----------------:|-------------:|
+| Command Retrying |           800 us |          s.7 |           13 |          5.5 us |       1.7 ms |
+| Targ Bus Idle    |           200 us |          s.7 |           11 |          1.4 us |       370 us |
+| TE0 Recovery     |            60 us |          s.7 |            9 |          340 ns |       100 us |
+| Targ Reset       |             5 us |          s.7 |            5 |           21 ns |       7.7 us |
+| Targ Bus Avail   |             1 us |          s.7 |            5 |           21 ns |       3.7 us |
+| Read stalled     |           150 us |          s.7 |           11 |          1.4 us |       320 us |
+| Ctrl Bus Avail   |             1 us |          s.7 |            5 |           21 ns |       3.7 us |
+| Dead Bus Recov   |            50 ms |          s.7 |           19 |          350 us |        94 ms |
 
 All times are quoted to two significant figures.
 It may be seen from the above tables how the shift amount achieves almost exactly the same granularity of timer adjustment despite the large disparity in IP clock frequency.
@@ -86,12 +86,17 @@ The shift values, as illustrated in the tables above, are adjusted according to 
 
 Clock frequencies:
 
- - 50MHz to 64MHz, both inclusive: base weighting applies and the shift value are as shown in the 50MHz table above.
- - From 64MHz (exclusive) to 128MHz (inclusive): adjustments have twice the base weighting; shifts are increased by 1.
- - From 128MHz (excl.) to 256MHz (incl.): adjustments have 4 times the base weighting; shifts are increased by 2...
- - From 256MHz (excl.) to 512MHz (incl.): adjustments have 8 times the base weighting.
- - From 512MHz (excl.) to 1024MHz (incl.): adjustments have 16 times the base weighting.
- - From 1024MHz (excl.) to 1500MHz (incl.): adjustments have 32 times the base weighting; shifts are increased by 5.
+ - 50 MHz to 64 MHz, both inclusive: base weighting applies and the shift value are as shown in the 50 MHz table above.
+ - From 64 MHz (exclusive) to 128 MHz (inclusive): adjustments have twice the base weighting; shifts are increased by 1.
+ - From 128 MHz (excl.) to 256 MHz (incl.): adjustments have 4 times the base weighting; shifts are increased by 2...
+ - From 256 MHz (excl.) to 512 MHz (incl.): adjustments have 8 times the base weighting.
+ - From 512 MHz (excl.) to 1024 MHz (incl.): adjustments have 16 times the base weighting.
+ - From 1024 MHz (excl.) to 1500 MHz (incl.): adjustments have 32 times the base weighting; shifts are increased by 5.
+
+## Target Reset Detector pads
+
+The Target Reset Detector observes SCL and SDA through its own inputs, `rstdet_scl` and `rstdet_sda` (see the [Integration Notes](integration_notes.md#target-reset-detector)).
+Where these inputs are connected through a pin multiplexer, software must route them to the same pads as `scl` and `sda` before the detector is activated.
 
 # IBI Payload Fetching
 

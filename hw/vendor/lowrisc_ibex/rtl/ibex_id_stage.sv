@@ -38,6 +38,7 @@ module ibex_id_stage import ibex_cheriot_pkg::*; #(
 
   // Interface to IF stage
   input  logic                      instr_valid_i,
+  input  logic                      dummy_instr_id_i,      // instr in ID is a dummy
   input  logic [31:0]               instr_rdata_i,         // from IF-ID pipeline registers
   input  logic [31:0]               instr_rdata_alu_i,     // from IF-ID pipeline registers
   input  logic [15:0]               instr_rdata_c_i,       // from IF-ID pipeline registers
@@ -631,6 +632,7 @@ module ibex_id_stage import ibex_cheriot_pkg::*; #(
 
     // from IF-ID pipeline
     .instr_valid_i                  (instr_valid_i),
+    .dummy_instr_id_i               (dummy_instr_id_i),
     .instr_i                        (instr_rdata_i),
     .instr_compressed_i             (instr_rdata_c_i),
     .instr_is_compressed_i          (instr_is_compressed_i),

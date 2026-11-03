@@ -13,7 +13,7 @@ tl_device_t xbar_devices[$] = '{
     '{"uart1", '{
         '{32'h40010000, 32'h4001003f}
     }},
-    '{"gpio", '{
+    '{"gpio0", '{
         '{32'h40040000, 32'h4004007f}
     }},
     '{"spi_device", '{
@@ -49,7 +49,7 @@ tl_host_t xbar_hosts[$] = '{
     '{"main", 0, '{
         "uart0",
         "uart1",
-        "gpio",
+        "gpio0",
         "spi_device",
         "spi_host0",
         "rv_timer",

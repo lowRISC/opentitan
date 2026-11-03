@@ -17,6 +17,9 @@
 #include "sw/device/lib/testing/pwrmgr_testutils.h"
 #include "sw/device/lib/testing/rv_plic_testutils.h"
 
+#ifdef HAS_I3C
+#include "hw/top/dt/i3c.h"
+#endif
 #ifdef HAS_ADC_CTRL
 #include "hw/top/dt/adc_ctrl.h"
 #include "sw/device/lib/dif/dif_adc_ctrl.h"
@@ -324,7 +327,26 @@ static void sensor_ctrl_wakeup_clear(dt_pwrmgr_wakeup_src_t src) {
 }
 #endif /* HAS_SENSOR_CTRL */
 
+#ifdef HAS_I3C
+/**
+ * The I3C Target Reset Detector wakes the chip on a Target Reset Pattern from
+ * an external I3C Controller, which the test environments cannot send yet.
+ */
+static bool i3c_rstdet_skip(dt_pwrmgr_wakeup_src_t src) { return true; }
+#endif /* HAS_I3C */
+
 const test_wakeup_sources_t kTestWakeupSources[] = {
+#ifdef HAS_I3C
+    {
+        .name = "I3C_RSTDET",
+        .dev_type = kDtDeviceTypeI3c,
+        .wakeup = kDtI3cWakeupRstdetWkupReq,
+        .skip = i3c_rstdet_skip,
+        .config = NULL,
+        .check = NULL,
+        .clear = NULL,
+    },
+#endif /* HAS_I3C */
 #ifdef HAS_SYSRST_CTRL
     {
         .name = "SYSRST_CTRL",

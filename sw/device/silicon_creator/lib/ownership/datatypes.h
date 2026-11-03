@@ -61,6 +61,12 @@ typedef enum ownership_state {
   kOwnershipStateRecovery = 0,
 } ownership_state_t;
 
+enum {
+  /* Common pattern shared between unlocked states */
+  kOwnershipStateUnlockedGroupMask = 0x000000ff,
+  kOwnershipStateUnlockedGroup = 0x00000055,
+};
+
 typedef enum ownership_key_alg {
   /** Key algorithm ECDSA P-256: `P256` */
   kOwnershipKeyAlgEcdsaP256 = 0x36353250,
@@ -110,6 +116,12 @@ typedef enum ownership_update_mode {
    * self-same owner if the config_version is newer)
    */
   kOwnershipUpdateModeSelfVersion = 0x564c4553,
+  /**
+   * Update mode AnyVersion: `ANYV`
+   * (accept new owner configs as long as the config_version is newer,
+   * or any config_version if it is a new owner (transfer))
+   */
+  kOwnershipUpdateModeAnyVersion = 0x56594e41,
 } ownership_update_mode_t;
 
 typedef enum lock_constraint {

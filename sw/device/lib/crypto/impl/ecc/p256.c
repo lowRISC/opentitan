@@ -77,12 +77,12 @@ enum {
    */
   kModeKeygenInsCnt = 573922,
   kModeKeygenSideloadInsCnt = 573814,
-  kModeEcdhInsCnt = 588956,
-  kModeEcdhSideloadInsCnt = 589021,
-  kModeEcdsaSignConfigKInsCnt = 607096,
-  kModeEcdsaSignInsCnt = 606946,
-  kModeEcdsaSignSideloadInsCnt = 607161,
-  kModePointOnCurveCheckInsCnt = 224,
+  kModeEcdhInsCnt = 588964,
+  kModeEcdhSideloadInsCnt = 589029,
+  kModeEcdsaSignConfigKInsCnt = 606962,
+  kModeEcdsaSignInsCnt = 607112,
+  kModeEcdsaSignSideloadInsCnt = 607177,
+  kModePointOnCurveCheckInsCnt = 245,
   kModeBasePointMultInsCnt = 573756,
   kModeArithShareSecretKeyInsCnt = 147,
 };
@@ -206,7 +206,7 @@ uint32_t p256_masked_scalar_checksum(const p256_masked_scalar_t *scalar) {
   // (a) manipulating the second share with FI has only limited use to an
   // adversary and (b) when manipulating the entire pointer to the key structure
   // the checksum check fails.
-  crc32_add(&ctx, (unsigned char *)scalar->share0, kP256CoordBytes);
+  crc32_add(&ctx, (unsigned char *)scalar->share0, kP256MaskedScalarShareBytes);
   return crc32_finish(&ctx);
 }
 
@@ -422,6 +422,8 @@ status_t p256_ecdsa_verify_start(const p256_ecdsa_signature_t *signature,
 
 status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
                                     hardened_bool_t *result) {
+  *result = kHardenedBoolFalse;
+
   // Spin here waiting for OTBN to complete.
   HARDENED_TRY(otbn_busy_wait_for_done());
 
@@ -506,11 +508,8 @@ status_t p256_point_on_curve_check(const p256_point_t *point,
   HARDENED_TRY(p256_init_otbn(mode));
   HARDENED_TRY(p256_write_point(point));
 
-  // Start the OTBN routine.
-  HARDENED_TRY(otbn_execute());
-
-  // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  // Run the OTBN routine synchronously.
+  HARDENED_TRY(otbn_execute_sync());
 
   // Check if we executed the expected number of OTBN instructions.
   HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModePointOnCurveCheckInsCnt);
@@ -533,11 +532,8 @@ status_t p256_base_point_mult(p256_masked_scalar_t *private_key,
   const otbn_addr_t kOtbnVarD1 = OTBN_ADDR_T_INIT(run_p256, d1_io);
   HARDENED_TRY(p256_masked_scalar_write(private_key, kOtbnVarD0, kOtbnVarD1));
 
-  // Start the OTBN routine.
-  HARDENED_TRY(otbn_execute());
-
-  // Spin here waiting for OTBN to complete.
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  // Run the OTBN routine synchronously.
+  HARDENED_TRY(otbn_execute_sync());
 
   // Check if we executed the expected number of OTBN instructions.
   HARDENED_CHECK_EQ(otbn_instruction_count_get(), kModeBasePointMultInsCnt);
@@ -560,11 +556,8 @@ status_t p256_arith_share_private_key(p256_masked_scalar_t *boolean_private_key,
   HARDENED_TRY(
       p256_masked_scalar_write(boolean_private_key, kOtbnVarD0, kOtbnVarD1));
 
-  /* // Start the OTBN routine. */
-  HARDENED_TRY(otbn_execute());
-
-  /* // Spin here waiting for OTBN to complete. */
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  // Run the OTBN routine synchronously.
+  HARDENED_TRY(otbn_execute_sync());
 
   // Check if we executed the expected number of OTBN instructions.
   HARDENED_CHECK_EQ(otbn_instruction_count_get(),

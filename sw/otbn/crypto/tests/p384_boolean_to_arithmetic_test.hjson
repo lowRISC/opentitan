@@ -7,12 +7,12 @@
     "regs": {
       # w31 is zero
       "w31": "0x0000000000000000000000000000000000000000000000000000000000000000",
-      # First boolean share of x.
+      # First boolean share of x (upper 128 bits >= bit 384 should be ignored).
       "w10": "0xc716757891a0810d6e87d0d0d907e0ae0793c405b1fd0f6e220f3f707754f46d",
-      "w11": "0x000000000000000000000000000000002da7faca17fb5b95d4471b5381d97b3a",
-      # Second boolean share of x.
+      "w11": "0xdeadbeefcafebabe0123456789abcdef2da7faca17fb5b95d4471b5381d97b3a",
+      # Second boolean share of x (upper 128 bits >= bit 384 should be ignored).
       "w20": "0xb13a287e66b01c59e4ae0cc6fbf9e2d532ad0c114ec31594a23ef1c85de388cd",
-      "w21": "0x00000000000000000000000000000000b2d3f7278a67cdd11c1c632d2ad60da2"
+      "w21": "0xfedcba9876543210deadbeefcafebabeb2d3f7278a67cdd11c1c632d2ad60da2"
     }
   }
   "output": {

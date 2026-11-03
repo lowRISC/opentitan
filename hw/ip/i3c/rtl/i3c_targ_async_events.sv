@@ -9,6 +9,8 @@
 // - suspended transmission
 // - bus events
 
+`include "prim_assert.sv"
+
 module i3c_targ_async_events
   import i3c_async_event_pkg::*;
   import i3c_consts_pkg::*;
@@ -21,7 +23,8 @@ module i3c_targ_async_events
   parameter int unsigned DataWidth  = 32,
 
   // Derived parameters.
-  localparam int unsigned Log2NT = $clog2(NumTargets)
+  // Mask of the Virtual Targets implemented by this instance.
+  localparam logic [MaxTargets-1:0] TargPresent = MaxTargets'({NumTargets{1'b1}})
 ) (
   input                       clk_i,
   input                       rst_ni,
@@ -36,7 +39,7 @@ module i3c_targ_async_events
   // Transmission outcomes.
   input                       txd_result_i,
   input  i3c_err_status_e     txd_status_i,
-  input          [Log2NT-1:0] txd_targ_id_i,
+  input          [Log2MT-1:0] txd_targ_id_i,
   input                 [3:0] txd_tid_i,
   input                [15:0] txd_data_left_i,
 
@@ -47,7 +50,7 @@ module i3c_targ_async_events
   input                [15:0] ibi_data_left_i,
 
   // Suspending transmission.
-  input      [NumTargets-1:0] suspend_tx_i,
+  input      [MaxTargets-1:0] suspend_tx_i,
   input                       ibi_suspend_tx_i,
 
   // CCC request and current state of CCC handling.
@@ -114,14 +117,15 @@ module i3c_targ_async_events
   //
   // - the aim is to report CCC activity to one or more targets, so that software is notified of any
   //   resultant configuration change.
-  logic [NumTargets-1:0] ccc_targets;
+  logic [MaxTargets-1:0] ccc_targets;
   logic [6:0] ccc_address;
 
-  struct packed {
+  typedef struct packed {
     logic [7:0] ccc;
     logic [7:0] defb;
     logic       has_defb;
-  } ccc_info;
+  } ccc_info_t;
+  ccc_info_t ccc_info;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
@@ -132,7 +136,8 @@ module i3c_targ_async_events
     else begin
       // Latch ccc_targets and ccc_info together, once per qualifying CCC.
       if (capture[AsyncEv_CCC] & (!(|ccc_targets) | evt_captured[AsyncEv_CCC])) begin
-        ccc_targets <= NumTargets'(r_i[TargCR_Targets]);
+        // Virtual Targets that are not present are trimmed off the recorded set.
+        ccc_targets <= r_i[TargCR_Targets][MaxTargets-1:0] & TargPresent;
         ccc_address <= '0; // TODO(#31337) Reporting of CCC activity incompletely specified.
         ccc_info    <= '{
           ccc:      ccc,
@@ -149,7 +154,7 @@ module i3c_targ_async_events
   // - only a single outcome is retained because they are temporally well-separated.
   logic               txd_result_q;
   i3c_err_status_e    txd_status_q;
-  logic  [Log2NT-1:0] txd_targ_id_q;
+  logic  [Log2MT-1:0] txd_targ_id_q;
   logic         [3:0] txd_tid_q;
   logic        [15:0] txd_data_left_q;
 
@@ -210,7 +215,7 @@ module i3c_targ_async_events
 
   // Capture transmission suspensions.
   // - these may be captured incrementally until arbitration is won.
-  logic [NumTargets-1:0] suspend_tx_q;
+  logic [MaxTargets-1:0] suspend_tx_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) suspend_tx_q <= '0;
     else if (sw_reset_i) suspend_tx_q <= '0;
@@ -274,7 +279,7 @@ module i3c_targ_async_events
 
     async_evt[AsyncEv_NotifyTx].txdr.code       = AsyncEv_NotifyTx;
     async_evt[AsyncEv_NotifyTx].txdr.err_status = txd_status_q;
-    async_evt[AsyncEv_NotifyTx].txdr.targ_id    = Log2MT'(txd_targ_id_q);
+    async_evt[AsyncEv_NotifyTx].txdr.targ_id    = txd_targ_id_q;
     async_evt[AsyncEv_NotifyTx].txdr.tid        = txd_tid_q;
     async_evt[AsyncEv_NotifyTx].txdr.data_left  = txd_data_left_q;
 
@@ -285,12 +290,12 @@ module i3c_targ_async_events
     async_evt[AsyncEv_NotifyIBI].ibir.data_left  = ibi_data_left_q;
 
     async_evt[AsyncEv_TxSuspend].txds.code    = AsyncEv_TxSuspend;
-    async_evt[AsyncEv_TxSuspend].txds.targets = MaxTargets'(suspend_tx_q);
+    async_evt[AsyncEv_TxSuspend].txds.targets = suspend_tx_q;
 
     async_evt[AsyncEv_IBISuspend].ibis.code = AsyncEv_IBISuspend;
 
     async_evt[AsyncEv_BusEvents].bus.code = AsyncEv_BusEvents;
-    async_evt[AsyncEv_BusEvents].bus.evt  = bus_events_q;
+    async_evt[AsyncEv_BusEvents].bus.evt  = TTIBusEvMax'(bus_events_q);
   end
 
   // Report any failure to write into the Asynchronous Event Queue in a timely fashion.
@@ -317,7 +322,7 @@ module i3c_targ_async_events
 
   // Arbitrate amongst the Asynchronous Event types.
   prim_arbiter_fixed #(
-    .N         (AsyncEv_Count),
+    .N         (int'(AsyncEv_Count)),
     .DW        ($bits(i3c_tti_async_event_t)),
     .EnDataPort(1)
   ) u_arb (
@@ -336,6 +341,15 @@ module i3c_targ_async_events
   );
 
   // TTI Async Event union size check.
-  if ($bits(i3c_tti_async_event_t) != DataWidth) $fatal(2, "i3c_tti_async_event_t has incorrect size");
+  `ASSERT_INIT(TtiAsyncEvtWidthIsDataWidth_A, $bits(i3c_tti_async_event_t) == DataWidth)
+  `ASSERT_INIT(TtiAsyncEvtBusEvtCntFits_A, int'(TTIBusEv_Count) <= TTIBusEvMax)
+
+  // Signals that the logic does not use (yet).
+  // - TODO(#31337): reporting of CCC activity is not specified completely yet.
+  logic unused_async_inputs;
+  assign unused_async_inputs = ^{enable_i, ccc_req_i.is_group, ccc_req_i.re, ccc_req_i.rnw,
+                                 ccc_req_i.targ_id, r_i[TargCR_Status][7:1],
+                                 r_i[TargCR_Targets][7:2], r_i[TargCR_WData0],
+                                 r_i[TargCR_WData1], r_i[TargCR_WData2], ccc_address};
 
 endmodule

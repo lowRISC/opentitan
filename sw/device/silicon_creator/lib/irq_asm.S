@@ -33,9 +33,13 @@ _asm_exception_handler:
   // Disable access to RRAM.
   //
   // This is done after requesting a reset so that this function will
-  // work even if it is executing from RRAM.
+  // work even if it is executing from RRAM. DIS is rw1s with MuBi4 fields, so
+  // write MuBi4True to SW_DIS and MuBi4False to LOCAL_ESC_RELBL_ERR to leave
+  // the latter unchanged.
   li t0, TOP_RRAM_CTRL_CORE_BASE_ADDR
-  sw zero, RRAM_CTRL_DIS_REG_OFFSET(t0)
+  li t1, (MULTIBIT_ASM_BOOL4_TRUE << RRAM_CTRL_DIS_SW_DIS_OFFSET) | \
+         (MULTIBIT_ASM_BOOL4_FALSE << RRAM_CTRL_DIS_LOCAL_ESC_RELBL_ERR_OFFSET)
+  sw t1, RRAM_CTRL_DIS_REG_OFFSET(t0)
 
   wfi
   j   .L_exception_loop

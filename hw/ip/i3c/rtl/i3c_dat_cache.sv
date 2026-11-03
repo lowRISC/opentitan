@@ -10,9 +10,9 @@ module i3c_dat_cache
   import i3c_pkg::*;
 #(
   // Number of entries in the DAT.
-  parameter int unsigned NumDATEntries,
+  parameter int unsigned NumDATEntries = i3c_pkg::NumDATEntries,
   // Maximum number of entries in the DAT cache.
-  parameter int unsigned CacheSize,
+  parameter int unsigned CacheSize = i3c_pkg::NumDATEntries,
 
   // Derived parameters.
   localparam int unsigned DATAddrW = $clog2(NumDATEntries)
@@ -153,7 +153,9 @@ module i3c_dat_cache
   // Read requests to the Device Address Table; not required with this simple implementation.
   assign dat_re_o   = 1'b0;
   assign dat_idx_o  = DATAddrW'('b0);
-  wire unnused_rdata = ^dat_rdata_i;
+  wire unused_rdata = ^dat_rdata_i;
+  // `enable_i` and `sw_reset_i` do not affect the cache; see the note on cache updates above.
+  wire unused_ctrl = ^{enable_i, sw_reset_i};
 
   // This simple implementation requires that the cache has the same number of entries as the
   // Device Address Table (DAT) itself.

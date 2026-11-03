@@ -126,6 +126,7 @@ static const sc_keymgr_dpe_policies_t kKeymgrDPEDefaultPolicy = {
     .child = kScKeymgrDPESlotPolAllowChild,
     .expo = kScKeymgrDPESlotPolNoExport,
     .parent = kScKeymgrDPESlotPolEraseParent,
+    .keygen = kScKeymgrDPESlotPolAllowKeygen,
 };
 
 static inline bool rom_console_enabled(void) {
@@ -288,8 +289,6 @@ static rom_error_t rom_init(void) {
   if (waking_from_low_power != kHardenedBoolTrue) {
     rom_banner();
   }
-  // This function is a NOP unless ROM is built for an fpga.
-  device_fpga_version_print();
 
   // Double check the reset reason value against the OTP-defined value.
   reset_reason_check = launder32(reset_reason_check) ^ rstmgr_reason_get();
@@ -673,7 +672,8 @@ static rom_error_t rom_boot(const manifest_t *manifest,
     }
   } else {
     HARDENED_CHECK_EQ(keymgr_dpe_enabled, kHardenedBoolFalse);
-    // TODO(#30666): Verify this issue doesn't lock the keymgr_dpe!
+    // TODO(#30811): Verify all REGWEN register remain locked until the first
+    // derivation in the Available state.
     // Bypass the CREATOR_ROOT_KEY generation in ROM according to issue #564
     // Store the SW binding value for the attestation key
     sc_keymgr_dpe_sw_binding_set(&attestation_measurement);

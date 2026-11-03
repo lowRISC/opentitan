@@ -199,7 +199,7 @@ The framework determines for each signal if it goes directly to a dedicated chip
 Designation of available IO is given with the configuration file entries of `available_input_list`, `available_output_list`, and `available_inout_list`.
 These can be skipped, or contain an empty list `[]`, or a comma-separated list of signal names.
 Items on the input list of the form `name` incur a module input of the form `cio_name_i`.
-Items on the output list of the form `name` incur a module output of the form `cio_name_o` as well as an output enable `cio_name_en_o`, unless the output is itself an enable signal ending in `_en`.
+Items on the output list of the form `name` incur a module output of the form `cio_name_o` as well as an output enable `cio_name_en_o`.
 Items on the inout list of the form `name` incur all three.
 
 #### Multiplexing Feature and Pad Control

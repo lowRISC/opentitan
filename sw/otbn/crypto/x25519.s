@@ -307,7 +307,7 @@ ladderstep:
   bn.mov   w22, w24
   jal      x1, fe_mul
   /* w22 <= w3 + w22 = AA + (a24 * E) */
-  bn.add   w22, w3, w22
+  bn.addm  w22, w3, w22
   /* z_2 = w12 <= w22 * w23 = (AA + a24 * E) * E */
   jal      x1, fe_mul
   bn.mov   w12, w22

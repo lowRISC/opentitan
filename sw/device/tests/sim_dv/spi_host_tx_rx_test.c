@@ -213,7 +213,7 @@ bool test_main(void) {
     }
     case 1: {
       base_addr = TOP_EARLGREY_SPI_HOST1_BASE_ADDR;
-      clkHz = kClockFreqPeripheralHz;
+      clkHz = kClockFreqHiSpeedPeripheralHz;
       break;
     }
     default:

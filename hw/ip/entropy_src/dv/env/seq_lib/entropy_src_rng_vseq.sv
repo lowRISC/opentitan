@@ -241,7 +241,7 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
     wait_no_outstanding_access();
     if (!do_background_procs) return;
 
-    if (!`gmv(ral.me_regwen.me_regwen) || !`gmv(ral.sw_regupd.sw_regupd)) begin
+    if (!`gmv(ral.sw_regupd.sw_regupd)) begin
       `uvm_info(`gfn, "DUT is permanently locked, reset required", UVM_MEDIUM);
       do_background_procs = 0;
       return;
@@ -827,6 +827,12 @@ class entropy_src_rng_vseq extends entropy_src_base_vseq;
       // the configuration explicitly says to disable before reconfiguring
       if(!altcfg.preconfig_disable) begin
         enable_dut();
+      end
+
+      // The threshold_oneway CSR is RW1S. Don't set invalid MuBi values to this CSR as they would
+      // be sticky.
+      if (altcfg.which_invalid_mubi == invalid_threshold_oneway) begin
+        altcfg.ht_threshold_oneway = MuBi4False;
       end
 
       entropy_src_init(.newcfg(altcfg),

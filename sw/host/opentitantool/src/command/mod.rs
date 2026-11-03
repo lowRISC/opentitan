@@ -17,6 +17,7 @@ pub mod i2c;
 pub mod image;
 pub mod lc;
 pub mod load_bitstream;
+pub mod mldsa;
 pub mod otp;
 pub mod ownership;
 pub mod rescue;

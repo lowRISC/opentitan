@@ -94,13 +94,17 @@ p384_sign:
   jal       x1, scalar_mult_int_p384
   jal       x1, proj_to_affine_p384
 
+  /* store the affine coordinates into dmem for is on curve check */
+  li        x2, 25
+  la        x20, x
+  bn.sid    x2++, 0(x20)
+  bn.sid    x2++, 32(x20)
+  la        x21, y
+  bn.sid    x2++, 0(x21)
+  bn.sid    x2++, 32(x21)
+
   /* call curve point test routine in P-384 lib */
   jal       x1, p384_isoncurve_check
-
-  /* store r of signature in dmem: dmem[dptr_r] <= r = R_x = [w26,w25] */
-  li        x2, 25
-  bn.sid    x2++, 0(x14)
-  bn.sid    x2++, 32(x14)
 
   /* load domain parameter n (order of base point)
      [w13, w12] <= n = dmem[p384_n] */
@@ -108,6 +112,17 @@ p384_sign:
   la        x3, p384_n
   bn.lid    x2++, 0(x3)
   bn.lid    x2++, 32(x3)
+
+  /* reduce r: [w28, w27] <= r = R_x mod n = [w26, w25] mod [w13, w12] */
+  bn.sub    w10, w25, w12
+  bn.subb   w11, w26, w13
+  bn.sel    w27, w25, w10, C
+  bn.sel    w28, w26, w11, C
+
+  /* store r of signature in dmem: dmem[dptr_r] <= r = [w28, w27] */
+  li        x2, 27
+  bn.sid    x2++, 0(x14)
+  bn.sid    x2++, 32(x14)
 
   /* Compute Solinas constant k for modulus n (we know it is only 191 bits, so
      no need to compute the high part):
@@ -310,6 +325,10 @@ p384_sign:
   bn.mov    w4, w16
   bn.mov    w5, w17
 
+  /* Fail if r == 0, k == 0 mod n, or d == 0 mod n. */
+  bn.or     w10, w4, w5
+  jal       x1, trigger_fault_if_fg0_not_z
+
   /* [w17, w16] <= k^(-1) * msg =
                    = (k*alpha)^(-1) * msg*alpha =
                    = [w3, w2]*[w1, w0] mod n */
@@ -334,6 +353,10 @@ p384_sign:
   bn.sel    w27, w25, w10, C
   bn.sel    w28, w26, w11, C
   bn.sub    w31, w31, w31  /* dummy instruction to clear flags */
+
+  /* Fail if s == 0. */
+  bn.or     w10, w27, w28
+  jal       x1, trigger_fault_if_fg0_not_z
 
   /* store s of signature in dmem: dmem[dptr_s] <= s = [w28, w27] */
   li        x2, 27

@@ -33,7 +33,7 @@
     [
       uart0
       i2c0
-      gpio
+      gpio0
       spi_host0
       spi_device
       rv_timer
@@ -110,7 +110,7 @@
       req_fifo_pass: true
     }
     {
-      name: gpio
+      name: gpio0
       type: device
       clock: clk_peri_i
       reset: rst_peri_ni
@@ -515,7 +515,7 @@
       index: -1
     }
     {
-      name: tl_gpio
+      name: tl_gpio0
       struct: tl
       package: tlul_pkg
       type: req_rsp
@@ -524,7 +524,7 @@
       width: 1
       default: ""
       domain: Main
-      top_signame: gpio_tl
+      top_signame: gpio0_tl
       index: -1
     }
     {

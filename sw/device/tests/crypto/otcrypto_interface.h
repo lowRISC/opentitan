@@ -22,11 +22,14 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*restore_icache)(hardened_bool_t);
   otcrypto_status_t (*init)(otcrypto_key_security_level_t);
   otcrypto_status_t (*eval_exit)(otcrypto_status_t);
+  uint8_t (*show_status)(void);
 
   // Build info
+  otcrypto_status_t (*module_name)(otcrypto_byte_buf_t *);
   otcrypto_status_t (*build_info)(uint32_t *, bool *, uint32_t *, uint32_t *);
   otcrypto_lib_version_t (*lib_version)(void);
   void (*version_decode)(uint32_t, uint32_t *, uint32_t *, uint32_t *);
+  otcrypto_status_t (*rom_version)(uint32_t *);
 
   // CMVP service indicator
   otcrypto_status_t (*cmvp_service_indicator)(
@@ -89,6 +92,17 @@ typedef struct otcrypto_interface_t {
                                                    otcrypto_aes_padding_t,
                                                    size_t *);
 
+  // TDES
+  otcrypto_status_t (*tdes)(otcrypto_blinded_key_t *, otcrypto_word32_buf_t *,
+                            otcrypto_tdes_mode_t, otcrypto_tdes_operation_t,
+                            const otcrypto_const_byte_buf_t *,
+                            otcrypto_tdes_padding_t, otcrypto_byte_buf_t *);
+  otcrypto_status_t (*tdes_padded_plaintext_length)(size_t,
+                                                    otcrypto_tdes_padding_t,
+                                                    size_t *);
+  otcrypto_status_t (*tdes_padding_strip)(otcrypto_byte_buf_t *,
+                                          otcrypto_tdes_padding_t, size_t *);
+
   // AES-GCM
   otcrypto_status_t (*aes_gcm_encrypt)(otcrypto_blinded_key_t *,
                                        const otcrypto_const_byte_buf_t *,
@@ -133,6 +147,12 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*cmac_final)(otcrypto_cmac_context_t *const,
                                   otcrypto_word32_buf_t *);
 
+  // CMAC-KDF
+  otcrypto_status_t (*cmac_kdf)(const otcrypto_blinded_key_t *,
+                                const otcrypto_const_byte_buf_t *,
+                                const otcrypto_const_byte_buf_t *,
+                                otcrypto_blinded_key_t *);
+
   // DRBG
   otcrypto_status_t (*drbg_instantiate)(const otcrypto_const_byte_buf_t *);
   otcrypto_status_t (*drbg_reseed)(const otcrypto_const_byte_buf_t *);
@@ -169,6 +189,17 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*hmac_final)(otcrypto_hmac_context_t *const,
                                   otcrypto_word32_buf_t *);
 
+  // HMAC-SHA-1
+  otcrypto_status_t (*hmac_sha1)(const otcrypto_blinded_key_t *,
+                                 const otcrypto_const_byte_buf_t *,
+                                 otcrypto_word32_buf_t *);
+  otcrypto_status_t (*hmac_sha1_init)(otcrypto_hmac_sha1_context_t *,
+                                      const otcrypto_blinded_key_t *);
+  otcrypto_status_t (*hmac_sha1_update)(otcrypto_hmac_sha1_context_t *,
+                                        const otcrypto_const_byte_buf_t *);
+  otcrypto_status_t (*hmac_sha1_final)(otcrypto_hmac_sha1_context_t *,
+                                       otcrypto_word32_buf_t *);
+
   // KDF-CTR
   otcrypto_status_t (*kdf_ctr_hmac)(const otcrypto_blinded_key_t *,
                                     const otcrypto_const_byte_buf_t *,
@@ -186,6 +217,15 @@ typedef struct otcrypto_interface_t {
                                 const otcrypto_const_byte_buf_t *,
                                 const otcrypto_const_byte_buf_t *,
                                 otcrypto_blinded_key_t *);
+
+  // SHA-1
+  otcrypto_status_t (*sha1)(const otcrypto_const_byte_buf_t *,
+                            otcrypto_hash_digest_t *);
+  otcrypto_status_t (*sha1_init)(otcrypto_sha1_context_t *);
+  otcrypto_status_t (*sha1_update)(otcrypto_sha1_context_t *,
+                                   const otcrypto_const_byte_buf_t *);
+  otcrypto_status_t (*sha1_final)(otcrypto_sha1_context_t *,
+                                  otcrypto_hash_digest_t *);
 
   // SHA-2
   otcrypto_status_t (*sha2_256)(const otcrypto_const_byte_buf_t *,
@@ -224,6 +264,8 @@ typedef struct otcrypto_interface_t {
                                  otcrypto_hash_digest_t *);
 
   // ED25519
+  otcrypto_status_t (*ed25519_keygen)(otcrypto_blinded_key_t *,
+                                      otcrypto_unblinded_key_t *);
   otcrypto_status_t (*ed25519_public_key_from_private)(
       const otcrypto_blinded_key_t *, otcrypto_unblinded_key_t *);
   otcrypto_status_t (*ed25519_sign)(const otcrypto_blinded_key_t *,
@@ -240,6 +282,11 @@ typedef struct otcrypto_interface_t {
                                       otcrypto_eddsa_sign_mode_t,
                                       const otcrypto_const_word32_buf_t *,
                                       hardened_bool_t *);
+  otcrypto_status_t (*ed25519_point_on_curve)(const otcrypto_unblinded_key_t *,
+                                              hardened_bool_t *);
+  otcrypto_status_t (*ed25519_keygen_async_start)(otcrypto_blinded_key_t *);
+  otcrypto_status_t (*ed25519_keygen_async_finalize)(
+      otcrypto_blinded_key_t *, otcrypto_unblinded_key_t *);
   otcrypto_status_t (*ed25519_public_key_from_private_async_start)(
       const otcrypto_blinded_key_t *);
   otcrypto_status_t (*ed25519_public_key_from_private_async_finalize)(
@@ -266,13 +313,18 @@ typedef struct otcrypto_interface_t {
   // X25519
   otcrypto_status_t (*x25519_keygen)(otcrypto_blinded_key_t *,
                                      otcrypto_unblinded_key_t *);
+  otcrypto_status_t (*x25519_public_key_from_private)(
+      const otcrypto_blinded_key_t *, otcrypto_unblinded_key_t *);
   otcrypto_status_t (*x25519)(const otcrypto_blinded_key_t *,
                               const otcrypto_unblinded_key_t *,
                               otcrypto_blinded_key_t *);
-  otcrypto_status_t (*x25519_keygen_async_start)(
-      const otcrypto_blinded_key_t *);
+  otcrypto_status_t (*x25519_keygen_async_start)(otcrypto_blinded_key_t *);
   otcrypto_status_t (*x25519_keygen_async_finalize)(otcrypto_blinded_key_t *,
                                                     otcrypto_unblinded_key_t *);
+  otcrypto_status_t (*x25519_public_key_from_private_async_start)(
+      const otcrypto_blinded_key_t *);
+  otcrypto_status_t (*x25519_public_key_from_private_async_finalize)(
+      otcrypto_unblinded_key_t *);
   otcrypto_status_t (*x25519_async_start)(const otcrypto_blinded_key_t *,
                                           const otcrypto_unblinded_key_t *);
   otcrypto_status_t (*x25519_async_finalize)(otcrypto_blinded_key_t *);
@@ -281,6 +333,12 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*rsa_keygen)(otcrypto_rsa_size_t,
                                   otcrypto_unblinded_key_t *,
                                   otcrypto_blinded_key_t *);
+  otcrypto_status_t (*rsa_prime_check)(otcrypto_rsa_size_t,
+                                       const otcrypto_const_word32_buf_t *,
+                                       hardened_bool_t *);
+  otcrypto_status_t (*rsa_create_n_from_primes)(
+      otcrypto_rsa_size_t, const otcrypto_const_word32_buf_t *,
+      const otcrypto_const_word32_buf_t *, otcrypto_word32_buf_t *);
   otcrypto_status_t (*rsa_public_key_construct)(
       otcrypto_rsa_size_t, const otcrypto_const_word32_buf_t *,
       otcrypto_unblinded_key_t *);

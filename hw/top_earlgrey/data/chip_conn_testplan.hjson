@@ -255,10 +255,10 @@
       tags: ["conn"]
     }
     {
-      name: cg_en_io_div2_peri
-      desc: '''Verify clkmgr's cg_en_o.io_div2_peri is connected to alert_handler's lpg_cg_en[8].'''
+      name: cg_en_io_spi_host1
+      desc: '''Verify clkmgr's cg_en_o.io_spi_host1 is connected to alert_handler's lpg_cg_en[8].'''
       stage: V2
-      tests: ["clkmgr_io_div2_peri_alert_8_cg_en"]
+      tests: ["clkmgr_io_spi_host1_alert_8_cg_en"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -434,22 +434,11 @@
     }
     {
       name: clkmgr_clk_io_infra
-      desc: '''Verify clkmgr's `clk_io_infra` is connected to the following block's clock input:
-             - xbar_main's clk_spi_host0_i
+      desc: '''Verify clkmgr's `clk_io_infra` is connected to the following blocks' clock inputs:
+             - xbar_main's clk_io_i, shared by its spi_host0, spi_host1, i3c0 and i3c1 nodes
             '''
       stage: V2
-      tests: ["clkmgr_infra_clk_xbar_main_spi_host0_clk"]
-      si_stage: NA
-      tags: ["conn"]
-    }
-    {
-      name: clkmgr_clk_io_div2_infra
-      desc: '''Verify clkmgr's `clk_io_div2_infra` is connected to the following block's clock
-            input:
-            - xbar_main clk_spi_host1_i
-            '''
-      stage: V2
-      tests: ["clkmgr_infra_clk_xbar_main_spi_host1_clk"]
+      tests: ["clkmgr_infra_clk_xbar_main_io_clk"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -462,7 +451,8 @@
       desc: '''Verify clkmgr's `clk_io_div4_peri` is connected to the following blocks' clock
             input:
             - adc_ctrl clk_i
-            - gpio clk_i
+            - gpio0 clk_i
+            - gpio1 clk_i
             - spi_device clk_i
             - i2c0 clk_i
             - i2c1 clk_i
@@ -474,7 +464,8 @@
             '''
       stage: V2
       tests: ["clkmgr_peri_clk_adc_ctrl_clk",
-              "clkmgr_peri_clk_gpio_clk",
+              "clkmgr_peri_clk_gpio0_clk",
+              "clkmgr_peri_clk_gpio1_clk",
               "clkmgr_peri_clk_spi_device_clk",
               "clkmgr_peri_clk_i2c0_clk",
               "clkmgr_peri_clk_i2c1_clk",
@@ -491,21 +482,37 @@
       desc: '''Verify clkmgr's `clk_io_div2_peri` is connected to the following blocks' clock
             input:
             - spi_device's scan_clk_i
-            - spi_host1 clk_i
+            - i3c0's scan_clk_i
+            - i3c1's scan_clk_i
             '''
       stage: V2
       tests: ["clkmgr_peri_clk_spi_device_scan_clk",
-              "clkmgr_peri_clk_spi_host1_clk"]
+              "clkmgr_peri_clk_i3c0_scan_clk",
+              "clkmgr_peri_clk_i3c1_scan_clk"]
       si_stage: NA
       tags: ["conn"]
     }
     {
       name: clkmgr_clk_io_peri
-      desc: '''Verify clkmgr's `clk_io_peri` is connected to the following block's clock input:
+      desc: '''Verify clkmgr's `clk_io_peri` is connected to the following blocks' clock input:
             - spi_host0's clk_i
+            - i3c0's clk_i
+            - i3c1's clk_i
             '''
       stage: V2
-      tests: ["clkmgr_peri_clk_spi_host0_clk"]
+      tests: ["clkmgr_peri_clk_spi_host0_clk",
+              "clkmgr_peri_clk_i3c0_clk",
+              "clkmgr_peri_clk_i3c1_clk"]
+      si_stage: NA
+      tags: ["conn"]
+    }
+    {
+      name: clkmgr_clk_io_spi_host1
+      desc: '''Verify clkmgr's `clk_io_spi_host1` is connected to the following block's clock input:
+            - spi_host1's clk_i
+            '''
+      stage: V2
+      tests: ["clkmgr_peri_clk_spi_host1_clk"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -523,9 +530,13 @@
       name: clkmgr_clk_aon_peri
       desc: '''Verify clkmgr's `clk_aon_peri` is connected to the following blocks' clock input:
             - usbdev clk_aon_i
+            - i3c0 clk_aon_i
+            - i3c1 clk_aon_i
             '''
       stage: V2
-      tests: ["clkmgr_peri_clk_usbdev_aon_clk"]
+      tests: ["clkmgr_peri_clk_usbdev_aon_clk",
+              "clkmgr_peri_clk_i3c0_aon_clk",
+              "clkmgr_peri_clk_i3c1_aon_clk"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -930,6 +941,34 @@
       tags: ["conn"]
     }
     {
+      name: rst_i3c0_n_d0
+      desc: '''Verify rstmgr's rst_i3c0_n[1] is connected to i3c0's rst_ni.'''
+      stage: V2
+      tests: ["rstmgr_i3c0_d0_i3c0_rst_ni"]
+      si_stage: NA
+      tags: ["conn"]
+    }
+    {
+      name: rst_i3c1_n_d0
+      desc: '''Verify rstmgr's rst_i3c1_n[1] is connected to i3c1's rst_ni.'''
+      stage: V2
+      tests: ["rstmgr_i3c1_d0_i3c1_rst_ni"]
+      si_stage: NA
+      tags: ["conn"]
+    }
+    {
+      name: rst_lc_aon_d0
+      desc: '''Verify rstmgr's rst_lc_aon_n[1] is connected to:
+            - i3c0's rst_aon_ni
+            - i3c1's rst_aon_ni
+            '''
+      stage: V2
+      tests: ["rstmgr_lc_aon_d0_i3c0_rst_aon_ni",
+              "rstmgr_lc_aon_d0_i3c1_rst_aon_ni"]
+      si_stage: NA
+      tags: ["conn"]
+    }
+    {
       name: rst_lc_aon_aon
       desc: '''Verify rstmgr's rst_lc_aon_n[0] is connected to the following:
             - aon_timer's rst_aon_ni
@@ -1139,18 +1178,12 @@
       tags: ["conn"]
     }
     {
-      name: rst_sys_io_d0
-      desc: '''Verify rstmgr's rst_sys_io_n[1] is connected to xbar_main's rst_spi_host0_ni.'''
+      name: rst_lc_io_d0
+      desc: '''Verify rstmgr's rst_lc_io_n[1] is connected to:
+            - xbar_main's rst_io_ni, shared by its spi_host0, spi_host1, i3c0 and i3c1 nodes
+            '''
       stage: V2
-      tests: ["rstmgr_sys_io_d0_xbar_main_rst_spi_host0_ni"]
-      si_stage: NA
-      tags: ["conn"]
-    }
-    {
-      name: rst_sys_io_div2_d0
-      desc: '''Verify rstmgr's rst_sys_io_div2_n[1] is connected to xbar_main's rst_spi_host1_ni.'''
-      stage: V2
-      tests: ["rstmgr_sys_io_div2_d0_xbar_main_rst_spi_host1_ni"]
+      tests: ["rstmgr_lc_io_d0_xbar_main_rst_io_ni"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -1173,7 +1206,8 @@
     {
       name: rst_sys_io_div4_d0
       desc: '''Verify rstmgr's rst_sys_io_div4_n[1] is connected to the following:
-            - gpio's rst_ni
+            - gpio0's rst_ni
+            - gpio1's rst_ni
             - rv_timer's rst_ni
             - uart0's rst_ni
             - uart1's rst_ni
@@ -1183,7 +1217,8 @@
             - xbar_peri's rst_peri_ni
             '''
       stage: V2
-      tests: ["rstmgr_sys_io_div4_d0_gpio_rst_ni",
+      tests: ["rstmgr_sys_io_div4_d0_gpio0_rst_ni",
+              "rstmgr_sys_io_div4_d0_gpio1_rst_ni",
               "rstmgr_sys_io_div4_d0_rv_timer_rst_ni",
               "rstmgr_sys_io_div4_d0_uart0_rst_ni",
               "rstmgr_sys_io_div4_d0_uart1_rst_ni",

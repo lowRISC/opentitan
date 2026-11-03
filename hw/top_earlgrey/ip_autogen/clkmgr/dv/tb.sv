@@ -95,12 +95,10 @@ module tb;
         u_reg.u_recov_err_code_usb_timeout_err.qs,
         u_reg.u_recov_err_code_main_timeout_err.qs,
         u_reg.u_recov_err_code_io_div4_timeout_err.qs,
-        u_reg.u_recov_err_code_io_div2_timeout_err.qs,
         u_reg.u_recov_err_code_io_timeout_err.qs,
         u_reg.u_recov_err_code_usb_measure_err.qs,
         u_reg.u_recov_err_code_main_measure_err.qs,
         u_reg.u_recov_err_code_io_div4_measure_err.qs,
-        u_reg.u_recov_err_code_io_div2_measure_err.qs,
         u_reg.u_recov_err_code_io_measure_err.qs,
         u_reg.u_recov_err_code_shadow_update_err.qs
     }),
@@ -110,6 +108,7 @@ module tb;
         u_reg.u_fatal_err_code_reg_intg.qs
      }),
     .clk_enables({
+        reg2hw.clk_enables.clk_io_spi_host1_en.q,
         reg2hw.clk_enables.clk_usb_peri_en.q,
         reg2hw.clk_enables.clk_io_peri_en.q,
         reg2hw.clk_enables.clk_io_div2_peri_en.q,

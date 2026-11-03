@@ -234,8 +234,6 @@
     .rst_shadowed_ni,
     .clk_io_i(clk_io),
     .rst_io_ni,
-    .clk_io_div2_i(clk_io_div2),
-    .rst_io_div2_ni,
     .clk_io_div4_i(clk_io_div4),
     .rst_io_div4_ni,
     .clk_main_i(clk_main),
@@ -268,8 +266,6 @@
   assign recov_alert =
     hw2reg.recov_err_code.io_measure_err.de |
     hw2reg.recov_err_code.io_timeout_err.de |
-    hw2reg.recov_err_code.io_div2_measure_err.de |
-    hw2reg.recov_err_code.io_div2_timeout_err.de |
     hw2reg.recov_err_code.io_div4_measure_err.de |
     hw2reg.recov_err_code.io_div4_timeout_err.de |
     hw2reg.recov_err_code.main_measure_err.de |
@@ -531,7 +527,6 @@
   typedef enum logic [2:0] {
     BaseIdx,
     ClkIoIdx,
-    ClkIoDiv2Idx,
     ClkIoDiv4Idx,
     ClkMainIdx,
     ClkUsbIdx,
@@ -586,33 +581,6 @@
 
   assign hw2reg.recov_err_code.io_measure_err.d = 1'b1;
   assign hw2reg.recov_err_code.io_timeout_err.d = 1'b1;
-
-
-  clkmgr_meas_chk #(
-    .Cnt(512),
-    .RefCnt(1)
-  ) u_io_div2_meas (
-    .clk_i,
-    .rst_ni,
-    .clk_src_i(clk_io_div2),
-    .rst_src_ni(rst_io_div2_ni),
-    .clk_ref_i(clk_aon),
-    .rst_ref_ni(rst_aon_ni),
-    // signals on source domain
-    .src_en_i(clk_io_div2_en & mubi4_test_true_loose(mubi4_t'(reg2hw.io_div2_meas_ctrl_en))),
-    .src_max_cnt_i(reg2hw.io_div2_meas_ctrl_shadowed.hi.q),
-    .src_min_cnt_i(reg2hw.io_div2_meas_ctrl_shadowed.lo.q),
-    .src_cfg_meas_en_i(mubi4_t'(reg2hw.io_div2_meas_ctrl_en.q)),
-    .src_cfg_meas_en_valid_o(hw2reg.io_div2_meas_ctrl_en.de),
-    .src_cfg_meas_en_o(hw2reg.io_div2_meas_ctrl_en.d),
-    // signals on local clock domain
-    .calib_rdy_i(calib_rdy[ClkIoDiv2Idx]),
-    .meas_err_o(hw2reg.recov_err_code.io_div2_measure_err.de),
-    .timeout_err_o(hw2reg.recov_err_code.io_div2_timeout_err.de)
-  );
-
-  assign hw2reg.recov_err_code.io_div2_measure_err.d = 1'b1;
-  assign hw2reg.recov_err_code.io_div2_timeout_err.d = 1'b1;
 
 
   clkmgr_meas_chk #(
@@ -743,17 +711,6 @@
     .mubi_i(((clk_io_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.io_infra)
   );
-  assign clocks_o.clk_io_div2_infra = clk_io_div2_root;
-
-  // clock gated indication for alert handler
-  prim_mubi4_sender #(
-    .ResetValue(MuBi4True)
-  ) u_prim_mubi4_sender_clk_io_div2_infra (
-    .clk_i(clk_io_div2),
-    .rst_ni(rst_io_div2_ni),
-    .mubi_i(((clk_io_div2_en) ? MuBi4False : MuBi4True)),
-    .mubi_o(cg_en_o.io_div2_infra)
-  );
   assign clocks_o.clk_io_div4_secure = clk_io_div4_root;
 
   // clock gated indication for alert handler
@@ -796,6 +753,7 @@
   logic clk_io_div2_peri_sw_en;
   logic clk_io_peri_sw_en;
   logic clk_usb_peri_sw_en;
+  logic clk_io_spi_host1_sw_en;
 
   prim_flop_2sync #(
     .Width(1)
@@ -963,6 +921,48 @@
     .rst_ni(rst_usb_ni),
     .mubi_i(((clk_usb_peri_combined_en) ? MuBi4False : MuBi4True)),
     .mubi_o(cg_en_o.usb_peri)
+  );
+
+  prim_flop_2sync #(
+    .Width(1)
+  ) u_clk_io_spi_host1_sw_en_sync (
+    .clk_i(clk_io),
+    .rst_ni(rst_io_ni),
+    .d_i(reg2hw.clk_enables.clk_io_spi_host1_en.q),
+    .q_o(clk_io_spi_host1_sw_en)
+  );
+
+  // Declared as size 1 packed array to avoid FPV warning.
+  prim_mubi_pkg::mubi4_t [0:0] clk_io_spi_host1_scanmode;
+  prim_mubi4_sync #(
+    .NumCopies(1),
+    .AsyncOn(0)
+  ) u_clk_io_spi_host1_scanmode_sync  (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(scanmode_i),
+    .mubi_o(clk_io_spi_host1_scanmode)
+  );
+
+  logic clk_io_spi_host1_combined_en;
+  assign clk_io_spi_host1_combined_en = clk_io_spi_host1_sw_en & clk_io_en;
+  prim_clock_gating #(
+    .FpgaBufGlobal(1'b1) // This clock spans across multiple clock regions.
+  ) u_clk_io_spi_host1_cg (
+    .clk_i(clk_io),
+    .en_i(clk_io_spi_host1_combined_en),
+    .test_en_i(mubi4_test_true_strict(clk_io_spi_host1_scanmode[0])),
+    .clk_o(clocks_o.clk_io_spi_host1)
+  );
+
+  // clock gated indication for alert handler
+  prim_mubi4_sender #(
+    .ResetValue(MuBi4True)
+  ) u_prim_mubi4_sender_clk_io_spi_host1 (
+    .clk_i(clk_io),
+    .rst_ni(rst_io_ni),
+    .mubi_i(((clk_io_spi_host1_combined_en) ? MuBi4False : MuBi4True)),
+    .mubi_o(cg_en_o.io_spi_host1)
   );
 
 

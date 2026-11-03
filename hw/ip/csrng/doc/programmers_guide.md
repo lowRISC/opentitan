@@ -65,18 +65,22 @@ Providing this sequence as additional data to CSRNG requires software to write t
   </tr>
 </table>
 
-When reading the internal state from [`INT_STATE_VAL`](registers.md#int_state_val), CSRNG returns the bytes of V and Key in the following order:
+When reading the internal state of an instance from [`INT_STATE_VAL`](registers.md#int_state_val) (see [Internal-State Save and Restore](#internal-state-save-and-restore) below), CSRNG returns 26 words: the reseed counter, the bytes of V and Key, the additional data of a Generate command paused mid-sequence, and finally the status and Generate command state, in the following order:
 <table>
 <caption>Byte order when reading from [`INT_STATE_VAL`](data/csrng.hjson#int_state_val)</caption>
 <thead>
   <tr>
     <th>Word Index</th>
-    <th>Byte Indices of V and Key</th>
+    <th>Contents</th>
   </tr>
 </thead>
 <tbody>
   <tr>
     <td>1</td>
+    <td>Reseed counter</td>
+  </tr>
+  <tr>
+    <td>2</td>
     <td>0xV<sub>13</sub>V<sub>14</sub>V<sub>15</sub>V<sub>16</sub></td>
   </tr>
   <tr>
@@ -84,11 +88,11 @@ When reading the internal state from [`INT_STATE_VAL`](registers.md#int_state_va
     <td>...</td>
   </tr>
   <tr>
-    <td>4</td>
+    <td>5</td>
     <td>0xV<sub>01</sub>V<sub>02</sub>V<sub>03</sub>V<sub>04</sub></td>
   </tr>
   <tr>
-    <td>5</td>
+    <td>6</td>
     <td>0xKey<sub>29</sub>Key<sub>30</sub>Key<sub>31</sub>Key<sub>32</sub></td>
   </tr>
   <tr>
@@ -96,14 +100,75 @@ When reading the internal state from [`INT_STATE_VAL`](registers.md#int_state_va
     <td>...</td>
   </tr>
   <tr>
-    <td>11</td>
+    <td>12</td>
     <td>0xKey<sub>05</sub>Key<sub>06</sub>Key<sub>07</sub>Key<sub>08</sub></td>
   </tr>
   <tr>
-    <td>12</td>
+    <td>13</td>
     <td>0xKey<sub>01</sub>Key<sub>02</sub>Key<sub>03</sub>Key<sub>04</sub></td>
   </tr>
+  <tr>
+    <td>14</td>
+    <td>Generate additional data, least significant word</td>
+  </tr>
+  <tr>
+    <td>...</td>
+    <td>...</td>
+  </tr>
+  <tr>
+    <td>25</td>
+    <td>Generate additional data, most significant word</td>
+  </tr>
+  <tr>
+    <td>26</td>
+    <td>Bit 0: instantiated, bit 1: FIPS, bits 2-13: remaining Generate blocks, bit 14: Generate command in progress, bit 15: Generate additional data valid, bits 16-31: reserved (read as 0)</td>
+  </tr>
 </table>
+
+### Internal-State Save and Restore
+
+CSRNG supports pausing a single instance via [`INT_STATE_HALT`](registers.md#int_state_halt), reading out (or overwriting) its full internal DRBG state via [`INT_STATE_VAL`](registers.md#int_state_val), and resuming it:
+
+1. Select the target instance by writing its index to [`INT_STATE_NUM`](registers.md#int_state_num).
+1. Set [`INT_STATE_HALT`](registers.md#int_state_halt) to `kMultiBitBool4True`.
+   The halt applies to the instance selected by [`INT_STATE_NUM`](registers.md#int_state_num), so only one instance can be halted at a time.
+1. Wait for the instance to quiesce, either by polling [`INT_STATE_STS`](registers.md#int_state_sts) or by waiting for the `cs_cmd_req_done` interrupt.
+1. Read all 26 words of the internal state through [`INT_STATE_VAL`](registers.md#int_state_val) to save it, or write all 26 words to restore it.
+   Reserved bits are ignored on writes and read as 0.
+   The internal state includes the state of a Generate command paused mid-sequence, which continues once the instance is resumed.
+   Every read and every write advances the word pointer.
+   Switching from reads to writes, or from writes to reads, restarts the sequence at the first word.
+   Writing [`INT_STATE_NUM`](registers.md#int_state_num) also resets the word pointer to the first word.
+1. Set [`INT_STATE_HALT`](registers.md#int_state_halt) to `kMultiBitBool4False` to let the instance continue processing commands.
+
+[`INT_STATE_VAL`](registers.md#int_state_val) can be read independent of whether or not the instance is halted.
+Restoring a state by writing [`INT_STATE_VAL`](registers.md#int_state_val) is only allowed while the instance is halted, i.e., while [`INT_STATE_STS.HALTED`](registers.md#int_state_sts) is set.
+If CSRNG internally updates the state of the selected instance while a read sequence is in progress, i.e., while the word pointer is advanced, the saved state may be inconsistent and [`RECOV_ALERT_STS.INT_STATE_OVERWRITE_ALERT`](registers.md#recov_alert_sts) is raised.
+Halting the instance first prevents this.
+
+Reading requires [`CTRL.READ_INT_STATE`](registers.md#ctrl) to be set to `kMultiBitBool4True` and the selected instance's bit in [`INT_STATE_READ_ENABLE`](registers.md#int_state_read_enable) to be set.
+Writing requires [`CTRL.WRITE_INT_STATE`](registers.md#ctrl) to be set to `kMultiBitBool4True` and the selected instance's bit in [`INT_STATE_WRITE_ENABLE`](registers.md#int_state_write_enable) to be set.
+Otherwise, [`INT_STATE_VAL`](registers.md#int_state_val) reads as 0, writes are dropped, and the word pointer does not advance.
+Disabling read access while reading, or write access while writing, resets the word pointer to the first word.
+Halting requires the selected instance's bit in [`INT_STATE_HALT_ENABLE`](registers.md#int_state_halt_enable) to be set.
+Otherwise, setting [`INT_STATE_HALT`](registers.md#int_state_halt) has no effect on the instance and [`INT_STATE_STS.HALTED`](registers.md#int_state_sts) remains 0.
+After reset, reading, writing and halting are enabled for all instances.
+Each of these settings can be locked via [`INT_STATE_READ_ENABLE_REGWEN`](registers.md#int_state_read_enable_regwen), [`INT_STATE_WRITE_ENABLE_REGWEN`](registers.md#int_state_write_enable_regwen) and [`INT_STATE_HALT_ENABLE_REGWEN`](registers.md#int_state_halt_enable_regwen), respectively.
+
+If [`INT_STATE_HALT`](registers.md#int_state_halt) is set while the instance is processing a Generate command, the instance halts as soon as the block currently being generated is complete, provided that further blocks of the command remain to be generated.
+The application does not need to read out the generated block first.
+The remaining blocks are generated after the instance is resumed.
+If the generation of the final block of the command has already started, the instance only halts after the application has read out the final block and the command has been acknowledged.
+Any other command in progress completes before the instance halts.
+Commands that have been received for the instance but not yet started are also processed before it halts.
+
+While halted, the instance accepts no new commands: requests from an EDN are back-pressured until the instance is resumed, and [`SW_CMD_STS.CMD_RDY`](registers.md#sw_cmd_sts) stays low for the software instance.
+Hence, no command is pending while the instance is halted, and any command issued afterwards is processed against the restored state once the instance is resumed.
+
+Halting does not stop an EDN in auto mode: it continues its Generate/Reseed sequence as soon as the instance is resumed.
+When restoring the state of an instance serving an EDN, software must ensure that the EDN can continue without errors.
+The EDN might expect the instance to be instantiated, and the restored reseed counter needs to leave enough headroom for the Generate commands the EDN may issue before its next Reseed, as the EDN tracks [`MAX_NUM_REQS_BETWEEN_RESEEDS`](../../edn/doc/registers.md#max_num_reqs_between_reseeds) independently of CSRNG.
+Otherwise, CSRNG rejects one of the EDN's subsequent commands and the EDN stops serving entropy until software disables and re-enables it.
 
 Finally, when reading a byte string of say 64 bytes (16 words) B<sub>1</sub>, B<sub>2</sub>, ..., B<sub>64</sub> from [`GENBITS`](registers.md#genbits) as defined in Appendix A of [NIST's SP 800-90A](https://nvlpubs.nist.gov/nistpubs/SpecialPublications/NIST.SP.800-90Ar1.pdf), the bytes are returned in the following order.
 Note that always 4 words return 1 128-bit GENBITS block.

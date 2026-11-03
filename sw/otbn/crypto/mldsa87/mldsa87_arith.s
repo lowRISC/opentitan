@@ -39,10 +39,7 @@
  */
 poly_mul:
   /* Push clobbered general-purpose registers onto the stack. */
-  .irp reg, x2, x3, x4, x5
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3, x4, x5
 
   /* WDR pointer for the coefficients of b(X). */
   addi x5, x0, 1
@@ -62,10 +59,7 @@ poly_mul:
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x5, x4, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x5, x4, x3, x2
 
   ret
 
@@ -86,10 +80,7 @@ poly_mul:
  */
 poly_add:
   /* Push clobbered general-purpose registers onto the stack. */
-  .irp reg, x2, x3, x4, x5
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3, x4, x5
 
   /* WDR pointer for the coefficients of b(X). */
   addi x5, x0, 1
@@ -108,10 +99,7 @@ poly_add:
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x5, x4, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x5, x4, x3, x2
 
   ret
 
@@ -133,10 +121,7 @@ poly_add:
  */
 poly_sub:
   /* Push clobbered general-purpose registers onto the stack. */
-  .irp reg, x2, x3, x4, x5
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3, x4, x5
 
   /* WDR pointer for the coefficients of b(X). */
   addi x5, x0, 1
@@ -155,10 +140,7 @@ poly_sub:
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x5, x4, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x5, x4, x3, x2
 
   ret
 
@@ -190,10 +172,7 @@ poly_sub:
  */
 poly_mul_add:
   /* Push clobbered general-purpose registers onto the stack. */
-  .irp reg, x2, x3, x4, x5, x6, x7
-    sw \reg, 0(x31)
-    addi x31, x31, 4
-  .endr
+  push x2, x3, x4, x5, x6, x7
 
   /* WDR pointers for the coefficients of b(X) and c(X). */
   addi x6, x0, 1
@@ -218,9 +197,6 @@ poly_mul_add:
     /* End of loop */
 
   /* Restore clobbered general-purpose registers. */
-  .irp reg, x7, x6, x5, x4, x3, x2
-    addi x31, x31, -4
-    lw \reg, 0(x31)
-  .endr
+  pop x7, x6, x5, x4, x3, x2
 
   ret

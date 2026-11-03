@@ -11,8 +11,6 @@ class csrng_intr_test extends csrng_base_test;
     super.configure_env();
 
     cfg.en_scb                          = 0;
-    cfg.otp_en_cs_sw_app_read_pct       = 100;
-    cfg.otp_en_cs_sw_app_read_inval_pct = 0;
     cfg.sw_app_enable_pct               = 100;
     cfg.use_invalid_mubi                = 0;
   endfunction

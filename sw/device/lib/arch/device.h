@@ -209,13 +209,6 @@ uintptr_t device_log_bypass_uart_address(void);
 OT_WARN_UNUSED_RESULT
 uint64_t to_cpu_cycles(uint64_t usec);
 
-/**
- * Prints the FPGA version.
- *
- * This function is a NOP unless we are building for an FPGA.
- */
-void device_fpga_version_print(void);
-
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

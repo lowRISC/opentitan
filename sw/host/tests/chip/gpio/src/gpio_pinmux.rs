@@ -14,7 +14,9 @@ use opentitanlib::app::TransportWrapper;
 use opentitanlib::execute_test;
 use opentitanlib::io::gpio::{PinMode, PullMode};
 use opentitanlib::io::uart::Uart;
-use opentitanlib::test_utils::gpio::{GpioGet, GpioSet};
+use opentitanlib::test_utils::gpio::{
+    GPIO_INSTANCES, GPIO_PINS, GpioGet, GpioSet, input_pin, output_pin, outsel, peripheral_in,
+};
 use opentitanlib::test_utils::init::InitializeTest;
 use opentitanlib::test_utils::pinmux_config::PinmuxConfig;
 use opentitanlib::uart::console::UartConsole;
@@ -32,44 +34,10 @@ struct Opts {
 }
 
 struct Config {
+    instance: u8,
     input: HashMap<PinmuxPeripheralIn, PinmuxInsel>,
     output: HashMap<PinmuxMioOut, PinmuxOutsel>,
 }
-
-static GPIOS: [(PinmuxPeripheralIn, PinmuxOutsel); 32] = [
-    (PinmuxPeripheralIn::GpioGpio0, PinmuxOutsel::GpioGpio0),
-    (PinmuxPeripheralIn::GpioGpio1, PinmuxOutsel::GpioGpio1),
-    (PinmuxPeripheralIn::GpioGpio2, PinmuxOutsel::GpioGpio2),
-    (PinmuxPeripheralIn::GpioGpio3, PinmuxOutsel::GpioGpio3),
-    (PinmuxPeripheralIn::GpioGpio4, PinmuxOutsel::GpioGpio4),
-    (PinmuxPeripheralIn::GpioGpio5, PinmuxOutsel::GpioGpio5),
-    (PinmuxPeripheralIn::GpioGpio6, PinmuxOutsel::GpioGpio6),
-    (PinmuxPeripheralIn::GpioGpio7, PinmuxOutsel::GpioGpio7),
-    (PinmuxPeripheralIn::GpioGpio8, PinmuxOutsel::GpioGpio8),
-    (PinmuxPeripheralIn::GpioGpio9, PinmuxOutsel::GpioGpio9),
-    (PinmuxPeripheralIn::GpioGpio10, PinmuxOutsel::GpioGpio10),
-    (PinmuxPeripheralIn::GpioGpio11, PinmuxOutsel::GpioGpio11),
-    (PinmuxPeripheralIn::GpioGpio12, PinmuxOutsel::GpioGpio12),
-    (PinmuxPeripheralIn::GpioGpio13, PinmuxOutsel::GpioGpio13),
-    (PinmuxPeripheralIn::GpioGpio14, PinmuxOutsel::GpioGpio14),
-    (PinmuxPeripheralIn::GpioGpio15, PinmuxOutsel::GpioGpio15),
-    (PinmuxPeripheralIn::GpioGpio16, PinmuxOutsel::GpioGpio16),
-    (PinmuxPeripheralIn::GpioGpio17, PinmuxOutsel::GpioGpio17),
-    (PinmuxPeripheralIn::GpioGpio18, PinmuxOutsel::GpioGpio18),
-    (PinmuxPeripheralIn::GpioGpio19, PinmuxOutsel::GpioGpio19),
-    (PinmuxPeripheralIn::GpioGpio20, PinmuxOutsel::GpioGpio20),
-    (PinmuxPeripheralIn::GpioGpio21, PinmuxOutsel::GpioGpio21),
-    (PinmuxPeripheralIn::GpioGpio22, PinmuxOutsel::GpioGpio22),
-    (PinmuxPeripheralIn::GpioGpio23, PinmuxOutsel::GpioGpio23),
-    (PinmuxPeripheralIn::GpioGpio24, PinmuxOutsel::GpioGpio24),
-    (PinmuxPeripheralIn::GpioGpio25, PinmuxOutsel::GpioGpio25),
-    (PinmuxPeripheralIn::GpioGpio26, PinmuxOutsel::GpioGpio26),
-    (PinmuxPeripheralIn::GpioGpio27, PinmuxOutsel::GpioGpio27),
-    (PinmuxPeripheralIn::GpioGpio28, PinmuxOutsel::GpioGpio28),
-    (PinmuxPeripheralIn::GpioGpio29, PinmuxOutsel::GpioGpio29),
-    (PinmuxPeripheralIn::GpioGpio30, PinmuxOutsel::GpioGpio30),
-    (PinmuxPeripheralIn::GpioGpio31, PinmuxOutsel::GpioGpio31),
-];
 
 static SUPPORTS_OD: [PinmuxMioOut; 14] = [
     PinmuxMioOut::Ioa6,
@@ -127,12 +95,13 @@ static SUPPORTS_VIRT_OD: [PinmuxMioOut; 33] = [
 fn write_all_verify(
     transport: &TransportWrapper,
     uart: &dyn Uart,
+    instance: u8,
     write: u32,
     read: u32,
     config: &HashMap<PinmuxMioOut, PinmuxOutsel>,
 ) -> Result<()> {
     let mask = config.values().fold(0, |acc, v| {
-        let i = u32::from(*v) - u32::from(PinmuxOutsel::GpioGpio0);
+        let i = output_pin(*v);
         acc | 1u32 << i
     });
 
@@ -149,12 +118,12 @@ fn write_all_verify(
         return Ok(());
     }
 
-    GpioSet::write_all(uart, masked_write)?;
+    GpioSet::write_all(uart, instance, masked_write)?;
 
     let mut result = 0u32;
     for (k, v) in config.iter() {
         let n = u32::from(transport.gpio_pin(&k.to_string())?.read()?);
-        let i = u32::from(*v) - u32::from(PinmuxOutsel::GpioGpio0);
+        let i = output_pin(*v);
         result |= n << i;
     }
 
@@ -167,12 +136,13 @@ fn write_all_verify(
 fn read_all_verify(
     transport: &TransportWrapper,
     uart: &dyn Uart,
+    instance: u8,
     write: u32,
     read: u32,
     config: &HashMap<PinmuxPeripheralIn, PinmuxInsel>,
 ) -> Result<()> {
     let mask = config.keys().fold(0, |acc, k| {
-        let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::GpioGpio0);
+        let i = input_pin(*k);
         acc | 1u32 << i
     });
 
@@ -190,20 +160,20 @@ fn read_all_verify(
     }
 
     for (k, v) in config.iter() {
-        let i = u32::from(*k) - u32::from(PinmuxPeripheralIn::GpioGpio0);
+        let i = input_pin(*k);
         transport
             .gpio_pin(&v.to_string())?
             .write((masked_write >> i) & 1 != 0)?;
     }
 
-    let result = GpioGet::read_all(uart)? & mask;
+    let result = GpioGet::read_all(uart, instance)? & mask;
     log::info!("result = {result:08x}");
     assert_eq!(masked_read, result);
 
     Ok(())
 }
 
-fn get_config(transport: &TransportWrapper) -> Config {
+fn get_config(transport: &TransportWrapper, instance: u8) -> Config {
     let gpio_pins = transport.gpios();
     let pinmux_insels = gpio_pins
         .iter()
@@ -211,13 +181,17 @@ fn get_config(transport: &TransportWrapper) -> Config {
     let pinmux_mio_outs = gpio_pins
         .iter()
         .map(|pin| PinmuxMioOut::from_str(pin).unwrap());
-    let gpio_inputs = GPIOS.iter().map(|(input, _)| *input);
-    let gpio_outputs = GPIOS.iter().map(|(_, output)| *output);
+    let gpio_inputs = (0..GPIO_PINS).map(|i| peripheral_in(instance, i));
+    let gpio_outputs = (0..GPIO_PINS).map(|i| outsel(instance, i));
 
     let input: HashMap<_, _> = iter::zip(gpio_inputs, pinmux_insels).collect();
     let output: HashMap<_, _> = iter::zip(pinmux_mio_outs, gpio_outputs).collect();
 
-    Config { input, output }
+    Config {
+        instance,
+        input,
+        output,
+    }
 }
 
 fn test_gpio_outputs(transport: &TransportWrapper, config: &Config) -> Result<()> {
@@ -233,12 +207,33 @@ fn test_gpio_outputs(transport: &TransportWrapper, config: &Config) -> Result<()
     }
 
     log::info!("Enabling outputs on the DUT");
-    GpioSet::set_enabled_all(&*uart, 0xFFFFFFFF)?;
-    write_all_verify(transport, &*uart, 0x5555_5555, 0x5555_5555, &config.output)?;
-    write_all_verify(transport, &*uart, 0xAAAA_AAAA, 0xAAAA_AAAA, &config.output)?;
+    GpioSet::set_enabled_all(&*uart, config.instance, 0xFFFFFFFF)?;
+    write_all_verify(
+        transport,
+        &*uart,
+        config.instance,
+        0x5555_5555,
+        0x5555_5555,
+        &config.output,
+    )?;
+    write_all_verify(
+        transport,
+        &*uart,
+        config.instance,
+        0xAAAA_AAAA,
+        0xAAAA_AAAA,
+        &config.output,
+    )?;
 
     for i in 0..32 {
-        write_all_verify(transport, &*uart, 1 << i, 1 << i, &config.output)?;
+        write_all_verify(
+            transport,
+            &*uart,
+            config.instance,
+            1 << i,
+            1 << i,
+            &config.output,
+        )?;
     }
 
     Ok(())
@@ -258,13 +253,34 @@ fn test_gpio_inputs(transport: &TransportWrapper, config: &Config) -> Result<()>
     }
 
     log::info!("Disabling outputs on the DUT");
-    GpioSet::set_enabled_all(&*uart, 0x0)?;
+    GpioSet::set_enabled_all(&*uart, config.instance, 0x0)?;
 
-    read_all_verify(transport, &*uart, 0x5555_5555, 0x5555_5555, &config.input)?;
-    read_all_verify(transport, &*uart, 0xAAAA_AAAA, 0xAAAA_AAAA, &config.input)?;
+    read_all_verify(
+        transport,
+        &*uart,
+        config.instance,
+        0x5555_5555,
+        0x5555_5555,
+        &config.input,
+    )?;
+    read_all_verify(
+        transport,
+        &*uart,
+        config.instance,
+        0xAAAA_AAAA,
+        0xAAAA_AAAA,
+        &config.input,
+    )?;
 
     for i in 0..32 {
-        read_all_verify(transport, &*uart, 1 << i, 1 << i, &config.input)?;
+        read_all_verify(
+            transport,
+            &*uart,
+            config.instance,
+            1 << i,
+            1 << i,
+            &config.input,
+        )?;
     }
     Ok(())
 }
@@ -290,14 +306,35 @@ fn test_pad_inversion(transport: &TransportWrapper, config: &Config) -> Result<(
     }
 
     log::info!("Disabling outputs on the DUT");
-    GpioSet::set_enabled_all(&*uart, 0x0)?;
+    GpioSet::set_enabled_all(&*uart, config.instance, 0x0)?;
 
     log::info!("Testing inverted device inputs");
-    read_all_verify(transport, &*uart, 0x5555_5555, !0x5555_5555, &config.input)?;
-    read_all_verify(transport, &*uart, 0xAAAA_AAAA, !0xAAAA_AAAA, &config.input)?;
+    read_all_verify(
+        transport,
+        &*uart,
+        config.instance,
+        0x5555_5555,
+        !0x5555_5555,
+        &config.input,
+    )?;
+    read_all_verify(
+        transport,
+        &*uart,
+        config.instance,
+        0xAAAA_AAAA,
+        !0xAAAA_AAAA,
+        &config.input,
+    )?;
 
     for i in 0..32 {
-        read_all_verify(transport, &*uart, 1 << i, !(1 << i), &config.input)?;
+        read_all_verify(
+            transport,
+            &*uart,
+            config.instance,
+            1 << i,
+            !(1 << i),
+            &config.input,
+        )?;
     }
 
     log::info!("Configuring pads as inverted outputs");
@@ -312,14 +349,35 @@ fn test_pad_inversion(transport: &TransportWrapper, config: &Config) -> Result<(
     }
 
     log::info!("Enabling outputs on the DUT");
-    GpioSet::set_enabled_all(&*uart, 0xFFFFFFFF)?;
+    GpioSet::set_enabled_all(&*uart, config.instance, 0xFFFFFFFF)?;
 
     log::info!("Testing inverted device outputs");
-    write_all_verify(transport, &*uart, 0x5555_5555, !0x5555_5555, &config.output)?;
-    write_all_verify(transport, &*uart, 0xAAAA_AAAA, !0xAAAA_AAAA, &config.output)?;
+    write_all_verify(
+        transport,
+        &*uart,
+        config.instance,
+        0x5555_5555,
+        !0x5555_5555,
+        &config.output,
+    )?;
+    write_all_verify(
+        transport,
+        &*uart,
+        config.instance,
+        0xAAAA_AAAA,
+        !0xAAAA_AAAA,
+        &config.output,
+    )?;
 
     for i in 0..32 {
-        write_all_verify(transport, &*uart, 1 << i, !(1 << i), &config.output)?;
+        write_all_verify(
+            transport,
+            &*uart,
+            config.instance,
+            1 << i,
+            !(1 << i),
+            &config.output,
+        )?;
     }
 
     Ok(())
@@ -366,14 +424,28 @@ fn test_opendrain(
     )?;
 
     log::info!("Enabling outputs on the DUT");
-    GpioSet::set_enabled_all(&*uart, 0xFFFFFFFF)?;
+    GpioSet::set_enabled_all(&*uart, config.instance, 0xFFFFFFFF)?;
 
     log::info!("Testing opendrain device outputs");
     for pattern in [0x5555_5555, 0xAAAA_AAAA] {
-        write_all_verify(transport, &*uart, pattern, pattern, &opendrain_outputs)?;
+        write_all_verify(
+            transport,
+            &*uart,
+            config.instance,
+            pattern,
+            pattern,
+            &opendrain_outputs,
+        )?;
     }
     for i in 0..32 {
-        write_all_verify(transport, &*uart, 1 << i, 1 << i, &opendrain_outputs)?;
+        write_all_verify(
+            transport,
+            &*uart,
+            config.instance,
+            1 << i,
+            1 << i,
+            &opendrain_outputs,
+        )?;
     }
 
     Ok(())
@@ -384,32 +456,43 @@ fn main() -> Result<()> {
     opts.init.init_logging();
     let transport = opts.init.init_target()?;
 
-    let config = get_config(&transport);
-
     let uart = transport.uart("console")?;
     uart.set_flow_control(true)?;
     let _ = UartConsole::wait_for(&*uart, r"Running ", opts.timeout)?;
 
-    execute_test!(test_gpio_outputs, &transport, &config);
-    execute_test!(test_gpio_inputs, &transport, &config);
-    execute_test!(test_pad_inversion, &transport, &config);
-    // Only silicon supports OpenDrain, FPGA does not.
-    if opts.init.backend_opts.interface == "teacup" {
+    for instance in 0..GPIO_INSTANCES.len() as u8 {
+        log::info!("Testing GPIO instance {instance}");
+        let config = get_config(&transport, instance);
+
+        // Clear pad attributes left over from testing the previous instance.
+        let clear_attrs: HashMap<_, _> = config
+            .output
+            .keys()
+            .map(|&mio| (mio, PinmuxPadAttr::empty()))
+            .collect();
+        PinmuxConfig::configure(&*uart, None, None, Some(&clear_attrs))?;
+
+        execute_test!(test_gpio_outputs, &transport, &config);
+        execute_test!(test_gpio_inputs, &transport, &config);
+        execute_test!(test_pad_inversion, &transport, &config);
+        // Only silicon supports OpenDrain, FPGA does not.
+        if opts.init.backend_opts.interface == "teacup" {
+            execute_test!(
+                test_opendrain,
+                &transport,
+                &config,
+                &SUPPORTS_OD,
+                PinmuxPadAttr::OD_EN,
+            );
+        }
         execute_test!(
             test_opendrain,
             &transport,
             &config,
-            &SUPPORTS_OD,
-            PinmuxPadAttr::OD_EN,
+            &SUPPORTS_VIRT_OD,
+            PinmuxPadAttr::VIRTUAL_OD_EN
         );
     }
-    execute_test!(
-        test_opendrain,
-        &transport,
-        &config,
-        &SUPPORTS_VIRT_OD,
-        PinmuxPadAttr::VIRTUAL_OD_EN
-    );
 
     Ok(())
 }

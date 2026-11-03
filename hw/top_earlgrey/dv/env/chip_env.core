@@ -16,6 +16,7 @@ filesets:
       - lowrisc:ip:aes
       - lowrisc:dv:cip_lib
       - lowrisc:dv:digestpp_dpi
+      - lowrisc:dv:cryptoc_dpi
       - lowrisc:dv:aes_model_dpi
       - lowrisc:ip:jtag_pkg
       - lowrisc:dv:jtag_riscv_agent
@@ -30,6 +31,7 @@ filesets:
       - lowrisc:dv:sw_logger_if
       - lowrisc:dv:uart_agent
       - lowrisc:dv:i2c_agent
+      - lowrisc:ip:i3c_pkg
       - lowrisc:ip:otp_ctrl_pkg
       - lowrisc:earlgrey_ip:pwrmgr_pkg
       - lowrisc:dv:lc_ctrl_dv_utils
@@ -107,6 +109,7 @@ filesets:
       - seq_lib/chip_sw_keymgr_dpe_sideload_kmac_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_keymgr_dpe_sideload_aes_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_keymgr_dpe_sideload_otbn_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_sw_keymgr_dpe_sideload_hmac_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_ast_clk_outputs_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_sensor_ctrl_status_intr_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_rv_dm_access_after_wakeup_vseq.sv: {is_include_file: true}
@@ -119,7 +122,6 @@ filesets:
       - seq_lib/chip_sw_rv_dm_access_after_escalation_reset_vseq.sv: {is_include_file: true}
       - seq_lib/chip_rv_dm_lc_disabled_vseq.sv: {is_include_file: true}
       - seq_lib/chip_callback_vseq.sv: {is_include_file: true}
-      - seq_lib/chip_sw_entropy_src_fuse_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_csrng_lc_hw_debug_en_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_usb_ast_clk_calib_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_usbdev_dpi_vseq.sv: {is_include_file: true}

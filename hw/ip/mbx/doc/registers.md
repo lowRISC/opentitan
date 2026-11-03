@@ -421,7 +421,8 @@ This bit is also set by the DOE instance when processing an abort command and re
 ## WDATA
 DOE mailbox write data register.
 The DOE instance receives data objects via writes to this register.
-A successful write adds one DWORD to the data object being assembled in the DOE instance.
+A successful full-word write adds one DWORD to the data object being assembled in the DOE instance.
+A narrower write returns an error and has no effect.
 A write of 1 to the DOE Go bit in the DOE Control Register marks the completion of the data transfer, i.e, final DWORD for the object has been written.
 
 - Word Aligned Offset Range: `0x10`to`0x10`
@@ -432,7 +433,8 @@ A write of 1 to the DOE Go bit in the DOE Control Register marks the completion 
 ## RDATA
 DOE mailbox read data register
 If the Data Object Ready bit is Set, a read of this register returns the current DWORD of the data object.
-A write of any value to this register indicates a successful read of the current DWORD.
+A full-word write of any value to this register indicates a successful read of the current DWORD.
+A narrower write returns an error and has no effect.
 The next read to this register shall return the next DWORD from the data object being read.
 If Data Object Ready bit is clear, writes of any value to this register must have no effect and reads from this register return zero.
 

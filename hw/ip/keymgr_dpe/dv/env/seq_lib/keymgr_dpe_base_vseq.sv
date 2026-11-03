@@ -29,6 +29,8 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
 
   rand bit do_rand_otp_key;
   rand bit do_invalid_otp_key;
+  rand bit do_rand_secondary_root_key;
+  rand bit do_invalid_secondary_root_key;
   rand keymgr_dpe_pkg::keymgr_dpe_policy_t policy;
   rand keymgr_dpe_env_pkg::dv_keymgr_dpe_slot_idx_e src_slot;
   rand keymgr_dpe_env_pkg::dv_keymgr_dpe_slot_idx_e dst_slot;
@@ -40,6 +42,10 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
 
   rand bit is_key_version_err;
 
+  // Hold the decoy data at all zeros or all ones during a single-cycle operation.
+  rand bit const_decoy;
+  rand bit const_decoy_ones;
+
   constraint is_key_version_err_c {
     is_key_version_err == 0;
   }
@@ -47,6 +53,8 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
   constraint otp_key_c {
     do_rand_otp_key == 0;
     do_invalid_otp_key == 0;
+    do_rand_secondary_root_key == 0;
+    do_invalid_secondary_root_key == 0;
   }
 
   constraint gen_operation_c {
@@ -70,7 +78,8 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     cfg.keymgr_dpe_vif.update_edn_tolerance_upd(cfg.edn_clk_freq_mhz, cfg.clk_freq_mhz);
     op_before_enable_keymgr();
 
-    cfg.keymgr_dpe_vif.init(do_rand_otp_key, do_invalid_otp_key);
+    cfg.keymgr_dpe_vif.init(do_rand_otp_key, do_invalid_otp_key, do_rand_secondary_root_key,
+                            do_invalid_secondary_root_key);
     delay_after_reset_before_access_csr();
 
     if (do_keymgr_dpe_init) keymgr_dpe_init();
@@ -118,6 +127,18 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     csr_update(.csr(ral.reseed_interval_shadowed));
   endtask : keymgr_dpe_init
 
+  // Sometimes run the next single-cycle operation (erase or disable) with constant decoy data.
+  // These operations produce no KMAC output, so the DUT must not report the decoy as invalid.
+  virtual task maybe_force_const_decoy();
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(const_decoy)
+    `DV_CHECK_MEMBER_RANDOMIZE_FATAL(const_decoy_ones)
+    if (const_decoy) cfg.keymgr_dpe_vif.force_const_decoy(const_decoy_ones);
+  endtask
+
+  virtual task release_const_decoy();
+    if (const_decoy) cfg.keymgr_dpe_vif.release_const_decoy();
+  endtask
+
   virtual task keymgr_dpe_erase(
       int num_gen_op = $urandom_range(1, 4),
       int num_adv_op = $urandom_range(1, 4),
@@ -130,10 +151,13 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     ral.control_shadowed.slot_src_sel.set(src_slot);
     ral.control_shadowed.slot_dst_sel.set(dst_slot);
     csr_update(.csr(ral.control_shadowed));
+    if (wait_done) maybe_force_const_decoy();
     csr_wr(.ptr(ral.start), .value(1), .blocking(0));
 
-    if (wait_done)
+    if (wait_done) begin
       wait_op_done();
+      release_const_decoy();
+    end
 
     if (num_adv_op) begin
       src_slot = dst_slot;
@@ -169,10 +193,13 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     ral.control_shadowed.slot_src_sel.set(src_slot);
     ral.control_shadowed.slot_dst_sel.set(dst_slot);
     csr_update(.csr(ral.control_shadowed));
+    if (wait_done) maybe_force_const_decoy();
     csr_wr(.ptr(ral.start), .value(1));
 
-    if (wait_done)
+    if (wait_done) begin
       wait_op_done();
+      release_const_decoy();
+    end
 
     // Fix to make the smoketest pass again. The problem is that if
     // the advance operation is invoked in the reset state, it is impossible
@@ -285,14 +312,15 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
       keymgr_dpe_pkg::OpDpeGenHwOut: begin
         // generating versioned key's is only valid
         // during available state and it's a good op if
-        // max_key_ver <= max_key_version
+        // max_key_ver <= max_key_version and the slot policy "allow_keygen" is set
         is_good_op &= (!(current_state inside {
           keymgr_dpe_pkg::StWorkDpeInvalid,
           keymgr_dpe_pkg::StWorkDpeDisabled,
           keymgr_dpe_pkg::StWorkDpeReset
         })) ? key_version <=
         cfg.keymgr_dpe_vif.internal_key_slots[src_slot].max_key_version : 0;
-        is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[src_slot].valid == 1;
+        is_good_op &= cfg.keymgr_dpe_vif.internal_key_slots[src_slot].valid &
+                      cfg.keymgr_dpe_vif.internal_key_slots[src_slot].key_policy.allow_keygen;
       end
       keymgr_dpe_pkg::OpDpeErase: begin
         is_good_op &= !(current_state inside {
@@ -309,7 +337,13 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
           keymgr_dpe_pkg::StWorkDpeReset
         });
       end
+      keymgr_dpe_pkg::OpDpeLoadRootKey,
+      keymgr_dpe_pkg::OpDpeLoadSecondaryRootKey: begin
+        // TODO(#31746): Support `OpDpeLoadRootKey` in blocklevel dv
+        is_good_op = 0;
+      end
       default: begin
+        is_good_op = 0;
       end
     endcase
 
@@ -383,11 +417,12 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
       current_state, keymgr_dpe_pkg::OpDpeAdvance);
     sema_update_control_csr.get();
     `uvm_info(`gfn,
-              $sformatf({"Derive DPE context from %0d to %0d in state %s",
-                         " - pol. parent: %b pol. child: %b, pol. export: %b"},
+              $sformatf({"Derive DPE context from slot %0d to slot %0d in state %s\n",
+                         "policy.allow_keygen: %b\n", "policy.retain_parent: %b\n",
+                         "policy.exportable: %b\n", "policy.allow_child: %b"},
                          src_slot, dst_slot, current_state.name,
-                         policy.retain_parent, policy.allow_child,
-                         policy.exportable),
+                         policy.allow_keygen, policy.retain_parent,
+                         policy.exportable, policy.allow_child),
               UVM_MEDIUM)
 
     ral.control_shadowed.operation.set(keymgr_dpe_pkg::OpDpeAdvance);
@@ -398,6 +433,7 @@ class keymgr_dpe_base_vseq extends cip_base_vseq #(
     ral.slot_policy.exportable.set(policy.exportable);
     ral.slot_policy.allow_child.set(policy.allow_child);
     ral.slot_policy.retain_parent.set(policy.retain_parent);
+    ral.slot_policy.allow_keygen.set(policy.allow_keygen);
     csr_update(.csr(ral.slot_policy));
     csr_update(.csr(ral.control_shadowed));
     csr_wr(.ptr(ral.start), .value(1));

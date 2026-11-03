@@ -23,7 +23,7 @@
 /**
  * KMAC FIFO flush cleanup guard.
  */
-static void kmac_fifo_flush_guard(uint32_t *dummy) {
+OT_USED static void kmac_fifo_flush_guard(uint32_t *dummy) {
   (void)dummy;
   (void)kmac_fifo_flush();
 }
@@ -31,7 +31,7 @@ static void kmac_fifo_flush_guard(uint32_t *dummy) {
 /**
  * Sideload cleanup guard.
  */
-static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
+OT_USED static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
   if (*is_sideloaded == kHardenedBoolTrue) {
     (void)keymgr_dpe_sideload_clear_kmac();
   }
@@ -43,7 +43,7 @@ otcrypto_status_t otcrypto_kmac_kdf(
     const otcrypto_const_byte_buf_t *context,
     otcrypto_blinded_key_t *output_key_material) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_KMAC_KDF);
-  OTCRYPTO_HEALTH_CHECK(kTestKmac256Bit);
+  OTCRYPTO_HEALTH_CHECK(kTestKmacKdfBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check NULL pointers.
   if (key_derivation_key == NULL || key_derivation_key->keyblob == NULL ||
@@ -70,6 +70,7 @@ otcrypto_status_t otcrypto_kmac_kdf(
   // Because of KMAC HWIPs prefix limitation, `label` should not exceed
   // `kKmacCustStrMaxSize` bytes.
   if (label->len > kKmacCustStrMaxSize) {
+    // COVERAGE (MISSING) Oversized label in KMAC KDF is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -92,6 +93,29 @@ otcrypto_status_t otcrypto_kmac_kdf(
   // The set of supported key sizes is {128, 192, 256, 384, 512}.
   HARDENED_TRY(kmac_key_length_check(key_derivation_key->config.key_length));
 
+  // Check non-zero length for output_key_material.
+  if (output_key_material->config.key_length == 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Ensure that the derived key is a symmetric key masked with XOR and is not
+  // supposed to be hardware-backed.
+  HARDENED_TRY(keyblob_ensure_xor_masked(output_key_material->config));
+
+  // Output key cannot be hardware-backed.
+  if (output_key_material->config.hw_backed != kHardenedBoolFalse) {
+    // COVERAGE (MISSING) Hardware-backed output key in KMAC KDF is not covered.
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(output_key_material->config.hw_backed, kHardenedBoolFalse);
+
+  // Check the keyblob length.
+  if (output_key_material->keyblob_length !=
+      keyblob_num_words(output_key_material->config) * sizeof(uint32_t)) {
+    // COVERAGE (MISSING) Bad output keyblob length in KMAC KDF is not covered.
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   kmac_blinded_key_t kmac_key = {
       .share0 = NULL,
       .share1 = NULL,
@@ -103,9 +127,9 @@ otcrypto_status_t otcrypto_kmac_kdf(
   if (key_derivation_key->config.hw_backed == kHardenedBoolTrue) {
     // Check that 1) key size matches sideload port size, 2) keyblob length
     // matches diversification length.
-    if (keyblob_share_num_words(key_derivation_key->config) *
-            sizeof(uint32_t) !=
-        kKmacSideloadKeyLength / 8) {
+    if (key_derivation_key->config.key_length != kKmacSideloadKeyLength / 8) {
+      // COVERAGE (MISSING) Invalid sideloaded key length in KMAC KDF is not
+      // covered.
       return OTCRYPTO_BAD_ARGS;
     }
 
@@ -120,30 +144,21 @@ otcrypto_status_t otcrypto_kmac_kdf(
                                                        &diversification));
     HARDENED_TRY(keymgr_dpe_generate_key_kmac(diversification));
   } else if (key_derivation_key->config.hw_backed == kHardenedBoolFalse) {
-    // Remask the key.
-    HARDENED_TRY(keyblob_remask(key_derivation_key));
-
     if (key_derivation_key->keyblob_length !=
         keyblob_num_words(key_derivation_key->config) * sizeof(uint32_t)) {
+      // COVERAGE (FI CM) Redundant check; keyblob_remask already validates
+      // keyblob_length.
       return OTCRYPTO_BAD_ARGS;
     }
+
+    // Remask the key.
+    HARDENED_TRY(keyblob_remask(key_derivation_key));
     HARDENED_TRY(keyblob_to_shares(key_derivation_key, &kmac_key.share0,
                                    &kmac_key.share1));
     // Set the checksum of the key.
     kmac_key.checksum = kmac_key_integrity_checksum(&kmac_key);
   } else {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Output key cannot be hardware-backed.
-  if (output_key_material->config.hw_backed != kHardenedBoolFalse) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(output_key_material->config.hw_backed, kHardenedBoolFalse);
-
-  // Check the keyblob length.
-  if (output_key_material->keyblob_length !=
-      keyblob_num_words(output_key_material->config) * sizeof(uint32_t)) {
+    // COVERAGE (MISSING) Invalid hw_backed value in KMAC KDF is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -169,6 +184,8 @@ otcrypto_status_t otcrypto_kmac_kdf(
       // Check that key size matches the security strength. It should be at
       // least 256-bit.
       if (key_derivation_key->config.key_length < 256 / 8) {
+        // COVERAGE (MISSING) Short key (< 256-bit) for KMAC-256 KDF is not
+        // covered.
         return OTCRYPTO_BAD_ARGS;
       }
       HARDENED_TRY(kmac_kmac_256(&kmac_key, /*masked_digest=*/kHardenedBoolTrue,

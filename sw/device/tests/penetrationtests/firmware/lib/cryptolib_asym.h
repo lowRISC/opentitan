@@ -117,8 +117,8 @@ enum {
    */
   kPentestMlkem1024PkBytes = 1568,
   kPentestMlkem1024PkWords = 1568 / sizeof(uint32_t),
-  kPentestMlkem1024SkBytes = 3168,
-  kPentestMlkem1024SkWords = 2 * (3168 / sizeof(uint32_t)),
+  kPentestMlkem1024SkBytes = 4736,
+  kPentestMlkem1024SkWords = 4736 / sizeof(uint32_t),
   kPentestMlkem1024CtBytes = 1568,
   kPentestMlkem1024CtWords = 1568 / sizeof(uint32_t),
   kPentestMlkem1024SharedSecretBytes = 32,

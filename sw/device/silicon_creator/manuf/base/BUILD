@@ -34,11 +34,12 @@ package(default_visibility = ["//visibility:public"])
 
 device_id_header(
     name = "cp_device_id",
+    testonly = True,
     headers = ["cp_device_id.h"],
     mode = "cp",
     # All SKUs have the same CP device ID for a given product version so we just
     # use the emulation SKU configuration here.
-    sku_config = "@//sw/host/provisioning/orchestrator/configs/skus:emulation.hjson",
+    sku_config = "@//sw/host/provisioning/orchestrator/configs/skus:emulation",
     template = ":cp_device_id.c.tpl",
 )
 
@@ -133,10 +134,7 @@ opentitan_test(
         },
         needs_jtag = True,
         otp = "//hw/top_earlgrey/data/otp:img_raw",
-        tags = [
-            "manuf",
-            "skip_in_ci",
-        ],
+        tags = ["manuf"],
         test_cmd = """
             --provisioning-sram-elf={sram_cp_provision}
             --test-sram-elf={sram_cp_provision_functest}
@@ -148,6 +146,7 @@ opentitan_test(
 [
     device_id_header(
         name = "ft_device_id_{}".format(sku),
+        testonly = True,
         headers = ["ft_device_id.h"],
         mode = "ft",
         sku_config = config["orchestrator_cfg"],
@@ -450,5 +449,9 @@ offline_signature_attach(
         for sku, data in EARLGREY_SKUS.items()
         if data["signature_prefix"] and not disqualified_for_signing(sku, data)
     ]).to_list(),
-    tags = ["manual"],
+    tags = [
+        "manual",
+        # This requires some signatures to be manually provided, so it should not be built in CI.
+        "skip_build_in_ci",
+    ],
 )

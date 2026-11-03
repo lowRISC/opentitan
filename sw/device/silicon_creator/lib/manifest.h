@@ -15,6 +15,7 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/keymgr_dpe_binding_value.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
+#include "sw/device/silicon_creator/lib/sigverify/mldsa87_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/rsa_key.h"
 #include "sw/device/silicon_creator/lib/sigverify/spx_key.h"
 
@@ -162,7 +163,7 @@ typedef struct manifest_version {
    *
    * This field can be used to maintain or break forward compatibility in ROM
    * while preserving backward compatibility in ROM_EXT. ROM requires the major
-   * version to be `kManifestFormatVersionMajor1`.
+   * version to be `kManifestFormatVersionMajor2`.
    */
   uint16_t major;
 } manifest_version_t;
@@ -195,12 +196,7 @@ enum {
  */
 typedef struct manifest {
   /**
-   * The manifest only supports one of the following signatures:
-   *
-   * - For `kManifestVersionMajor1`: `rsa_signature`.
-   * - For `kManifestVersionMajor2`: `ecdsa_signature`.
-   *
-   * Both signatures use SHA-256 as the hash function.
+   * The kManifestVersionMajor2 manifest only ecdsa-p256-sha256 signature.
    *
    * On-target verification should also integrate usage constraints comparison
    * to signature verification to harden it against potential attacks. During
@@ -214,46 +210,43 @@ typedef struct manifest {
    * usage constraints read from the hardware can be obtained using
    * `manifest_digest_region_get()`.
    */
-  union {
-    /**
-     * RSA signature of the image.
-     *
-     * RSASSA-PKCS1-v1_5 signature of the image generated using a 3072-bit RSA
-     * private key and the SHA-256 hash function. The signed region of an image
-     * starts immediately after this field and ends at the end of the image.
-     */
-    sigverify_rsa_buffer_t rsa_signature;
-
-    /**
-     * ECDSA P256 signature of the image.
-     *
-     * ECDSA P256 signature of the image generated using a NIST P256 ECC key
-     * and the SHA-256 hash function. The signed region of an image starts
-     * immediately after the end of the union encapsulating this field and ends
-     * at the end of the image.
-     */
-    ecdsa_p256_signature_t ecdsa_signature;
-  };
+  /**
+   * ECDSA P256 signature of the image.
+   *
+   * ECDSA P256 signature of the image generated using a NIST P256 ECC key
+   * and the SHA-256 hash function.
+   */
+  ecdsa_p256_signature_t ecdsa_signature;
+  /**
+   * Reserved bytes for signature.
+   */
+  uint32_t reserved_signature[40];
+  /**
+   * Reserved bytes. These bytes are not signed by the signature above.
+   *
+   * The signed region of an image starts immediately after this field and ends
+   * at the end of the image.
+   */
+  uint32_t reserved_unsigned[40];
   /**
    * Usage constraints.
    */
   manifest_usage_constraints_t usage_constraints;
   /**
-   * The manifest only supports one of the following public key types:
-   *
-   * - For `kManifestVersionMajor1`: `rsa_modulus`.
-   * - For `kManifestVersionMajor2`: `ecdsa_public_key`.
+   * Signer's ECDSA NIST P256 ECC public key.
    */
-  union {
-    /**
-     * Modulus of the signer's 3072-bit RSA public key.
-     */
-    sigverify_rsa_buffer_t rsa_modulus;
-    /**
-     * Signer's ECDSA NIST P256 ECC public key.
-     */
-    ecdsa_p256_public_key_t ecdsa_public_key;
-  };
+  ecdsa_p256_public_key_t ecdsa_public_key;
+  /**
+   * Reserved bytes for public key.
+   */
+  uint32_t reserved_public_key[40];
+  /**
+   * Reserved bytes.
+   *
+   * When allocating reserved bytes, please allocate from the end of this field
+   * to allow for the potential size expansion of the public key field above.
+   */
+  uint32_t reserved[40];
   /**
    * Address translation (hardened boolean).
    */
@@ -334,11 +327,13 @@ typedef struct manifest {
   manifest_ext_table_t extensions;
 } manifest_t;
 
-OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_signature, 0);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, ecdsa_signature, 0);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved_signature, 64);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved_unsigned, 224);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, usage_constraints, 384);
-OT_ASSERT_MEMBER_OFFSET(manifest_t, rsa_modulus, 432);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, ecdsa_public_key, 432);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved_public_key, 496);
+OT_ASSERT_MEMBER_OFFSET(manifest_t, reserved, 656);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, address_translation, 816);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, identifier, 820);
 OT_ASSERT_MEMBER_OFFSET(manifest_t, manifest_version, 824);
@@ -401,6 +396,8 @@ enum {
   kManifestExtIdSpxKey = 0x94ac01ec,
   kManifestExtIdSpxSignature = 0xad77f84a,
   kManifestExtIdSecVerWrite = 0x3f086a41,
+  kManifestExtIdMldsa87Key = 0xa3e247b8,
+  kManifestExtIdMldsa87Signature = 0x4714ac7d,
 
   /**
    * ASCII "ISFB".
@@ -415,13 +412,21 @@ enum {
    */
   kManifestExtIdIsfbErase = 0x45465349,
   /**
-   * ASCII "EXT0.
+   * ASCII "EXT0".
    */
   kManifestExtNameSpxKey = 0x30545845,
   /**
-   * ASCII "EXT1.
+   * ASCII "EXT1".
    */
   kManifestExtNameSpxSignature = 0x31545845,
+  /**
+   * ASCII "ML8K".
+   */
+  kManifestExtNameMldsa87Key = 0x4b384c4d,
+  /**
+   * ASCII "ML8S".
+   */
+  kManifestExtNameMldsa87Signature = 0x53384c4d,
 };
 
 /**
@@ -451,6 +456,36 @@ typedef struct manifest_ext_spx_signature {
    */
   sigverify_spx_signature_t signature;
 } manifest_ext_spx_signature_t;
+
+/**
+ * Manifest extension: ML-DSA-87 public key.
+ */
+typedef struct manifest_ext_mldsa87_key {
+  /**
+   * Required manifest header.
+   */
+  manifest_ext_header_t header;
+  /**
+   * ML-DSA-87 public key used to sign the image.
+   */
+  sigverify_mldsa87_key_t key;
+} manifest_ext_mldsa87_key_t;
+OT_ASSERT_SIZE(manifest_ext_mldsa87_key_t, 2600);
+
+/**
+ * Manifest extension: ML-DSA-87 signature.
+ */
+typedef struct manifest_ext_mldsa87_signature {
+  /**
+   * Required manifest header.
+   */
+  manifest_ext_header_t header;
+  /**
+   * ML-DSA-87 signature of the image.
+   */
+  sigverify_mldsa87_signature_t signature;
+} manifest_ext_mldsa87_signature_t;
+OT_ASSERT_SIZE(manifest_ext_mldsa87_signature_t, 4636);
 
 /**
  * Manifest extension: Write the securty version.
@@ -553,14 +588,19 @@ typedef struct manifest_ext_isfb_erase {
  * Table of manifest extensions.
  *
  * Columns: Table index, type name, extenstion name, identifier, signed or not.
+ *
+ * Indices 0 to 5 are fixed by Earl Grey 1.0.0 and must not be reused. Index 5
+ * is the `owner_transfer_blob` extension on the `earlgrey_1.0.0` branch.
  */
 // clang-format off
 #define MANIFEST_EXTENSIONS(X) \
-  X(0, manifest_ext_spx_key_t,       spx_key,       kManifestExtIdSpxKey,       true ) \
-  X(1, manifest_ext_spx_signature_t, spx_signature, kManifestExtIdSpxSignature, false) \
-  X(2, manifest_ext_secver_write_t,  secver_write,  kManifestExtIdSecVerWrite,  true)  \
-  X(3, manifest_ext_isfb_t,          isfb,          kManifestExtIdIsfb,         true)  \
-  X(4, manifest_ext_isfb_erase_t,    isfb_erase,    kManifestExtIdIsfbErase,    true)
+  X(0, manifest_ext_spx_key_t,           spx_key,           kManifestExtIdSpxKey,           true ) \
+  X(1, manifest_ext_spx_signature_t,     spx_signature,     kManifestExtIdSpxSignature,     false) \
+  X(2, manifest_ext_secver_write_t,      secver_write,      kManifestExtIdSecVerWrite,      true)  \
+  X(3, manifest_ext_isfb_t,              isfb,              kManifestExtIdIsfb,             true)  \
+  X(4, manifest_ext_isfb_erase_t,        isfb_erase,        kManifestExtIdIsfbErase,        true)  \
+  X(6, manifest_ext_mldsa87_key_t,       mldsa87_key,       kManifestExtIdMldsa87Key,       true ) \
+  X(7, manifest_ext_mldsa87_signature_t, mldsa87_signature, kManifestExtIdMldsa87Signature, false)
 // clang-format on
 
 #if defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
@@ -730,6 +770,11 @@ rom_error_t manifest_ext_get_isfb(const manifest_t *manifest,
                                   const manifest_ext_isfb_t **isfb);
 rom_error_t manifest_ext_get_isfb_erase(
     const manifest_t *manifest, const manifest_ext_isfb_erase_t **isfb_erase);
+rom_error_t manifest_ext_get_mldsa87_key(
+    const manifest_t *manifest, const manifest_ext_mldsa87_key_t **mldsa87_key);
+rom_error_t manifest_ext_get_mldsa87_signature(
+    const manifest_t *manifest,
+    const manifest_ext_mldsa87_signature_t **mldsa87_signature);
 
 #endif  // defined(OT_PLATFORM_RV32) || defined(MANIFEST_UNIT_TEST_)
 

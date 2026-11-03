@@ -5,6 +5,7 @@
 #include "sw/device/lib/crypto/include/ecc_curve25519.h"
 
 #include "sw/device/lib/base/hardened_memory.h"
+#include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/ecc/curve25519.h"
@@ -18,6 +19,15 @@
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('e', '2', '5')
+
+/**
+ * Sideload cleanup guard.
+ */
+OT_USED static void sideload_wipe_guard(hardened_bool_t *should_wipe) {
+  if (*should_wipe == kHardenedBoolTrue) {
+    (void)keymgr_dpe_sideload_clear_otbn();
+  }
+}
 
 // RFC 8032 dom2(1, "") prefix for Ed25519ph (HashEdDSA)
 static const uint8_t kDom2Prefix[34] = {
@@ -76,14 +86,6 @@ static status_t curve25519_private_key_length_check(
   }
 #endif
 
-  if (private_key->config.hw_backed == kHardenedBoolTrue) {
-    // Skip the length check in this case; if the salt is the wrong length, the
-    // keyblob library will catch it before we sideload the key.
-    return OTCRYPTO_OK;
-  }
-  HARDENED_CHECK_NE(launder32(private_key->config.hw_backed),
-                    kHardenedBoolTrue);
-
   // Check the unmasked length.
   if (launder32(private_key->config.key_length) != kCurve25519KeyBytes) {
     return OTCRYPTO_BAD_ARGS;
@@ -104,6 +106,20 @@ static status_t curve25519_private_key_length_check(
       launder32(otcrypto_integrity_blinded_key_check(private_key)),
       kHardenedBoolTrue);
 
+  if (private_key->config.hw_backed == kHardenedBoolTrue) {
+    // Skip the length check in this case; if the salt is the wrong length, the
+    // keyblob library will catch it before we sideload the key.
+    return OTCRYPTO_OK;
+  }
+  HARDENED_CHECK_NE(launder32(private_key->config.hw_backed),
+                    kHardenedBoolTrue);
+
+  // Check the keyblob length.
+  if (private_key->keyblob_length !=
+      keyblob_num_words(private_key->config) * sizeof(uint32_t)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   return OTCRYPTO_OK;
 }
 
@@ -123,18 +139,21 @@ static status_t curve25519_public_key_length_check(
     const otcrypto_unblinded_key_t *key, otcrypto_key_mode_t expected_mode) {
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key == NULL || key->key == NULL) {
+    // COVERAGE (MISSING) Null public key pointer is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
   // Check the key struct and key length.
   if (key->key_length != kCurve25519KeyBytes ||
       launder32(key->key_mode) != expected_mode) {
+    // COVERAGE (MISSING) Invalid public key length or mode is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(key->key_mode, expected_mode);
 
   // Check the integrity of the key.
   if (otcrypto_integrity_unblinded_key_check(key) != kHardenedBoolTrue) {
+    // COVERAGE (MISSING) Corrupted public key checksum is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(launder32(otcrypto_integrity_unblinded_key_check(key)),
@@ -174,22 +193,6 @@ static status_t ed25519_signature_check(otcrypto_word32_buf_t *signature) {
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
 
   return OTCRYPTO_OK;
-}
-
-/**
- * Copy a byte array from src to dst in reverse order.
- *
- * @param dst Destination address.
- * @param src Source address.
- * @param len Array length.
- * @return OK.
- */
-static status_t reverse_bytecpy(uint8_t *dst, const uint8_t *src, size_t len) {
-  for (size_t i = 0; i < len; i++) {
-    dst[i] = src[len - 1 - i];
-  }
-
-  return LAUNDERED_OTCRYPTO_OK;
 }
 
 /**
@@ -317,6 +320,7 @@ static status_t ed25519_mask_scalar(uint32_t *scalar, size_t scalar_len,
 
   // Compute share0 = share + share1.
   HARDENED_TRY(hardened_add(buf, share1, share_len, share0));
+  HARDENED_TRY(hardened_memshred(buf, share_len));
 
   return OTCRYPTO_OK;
 }
@@ -368,7 +372,70 @@ static otcrypto_status_t ed25519_compute_scalar_and_prefix(
   HARDENED_TRY(ed25519_mask_scalar(key_digest->data, kCurve25519ScalarWords,
                                    masked_s->share0, masked_s->share1,
                                    kCurve25519MaskedScalarSWords));
+  HARDENED_TRY(hardened_memshred(key_digest->data, kCurve25519ScalarWords));
 
+  return OTCRYPTO_OK;
+}
+
+/**
+ * Generate a fresh Curve25519 private key in two shares from CSRNG.
+ *
+ * Validates the private key configuration and keyblob length, zeros the
+ * keyblob (so the extra 64 redundant bits per share remain zero), and
+ * populates the two 256-bit shares from CSRNG.
+ *
+ * @param[out] private_key Blinded private key struct to populate.
+ * @param expected_mode Expected Curve25519 key mode.
+ * @return OK on success, or BAD_ARGS / hardware error otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+static status_t curve25519_csrng_keyblob_generate(
+    otcrypto_blinded_key_t *private_key, otcrypto_key_mode_t expected_mode) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (private_key == NULL || private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  if (launder32(private_key->config.hw_backed) != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
+
+  if (launder32(private_key->config.key_length) != kCurve25519KeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.key_length, kCurve25519KeyBytes);
+
+  if (launder32(private_key->config.key_mode) != expected_mode) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.key_mode, expected_mode);
+
+  uint32_t *share0;
+  uint32_t *share1;
+  HARDENED_TRY(keyblob_to_shares(private_key, &share0, &share1));
+
+  // Zero out the entire keyblob so the 2 extra padding words per share are 0.
+  memset(private_key->keyblob, 0, private_key->keyblob_length);
+
+  // Randomize the 256-bit share buffers before writing CSRNG output.
+  HARDENED_TRY(hardened_memshred(share0, kCurve25519MaskedScalarShareWords));
+  HARDENED_TRY(hardened_memshred(share1, kCurve25519MaskedScalarShareWords));
+
+  // Ensure SW CSRNG is instantiated with TRNG entropy and pull both shares.
+  HARDENED_TRY(entropy_csrng_instantiate(
+      /*disable_trng_input=*/kHardenedBoolFalse, /*seed_material=*/NULL));
+  HARDENED_TRY(entropy_csrng_generate(
+      /*seed_material=*/NULL, share0, kCurve25519MaskedScalarShareWords,
+      /*fips_check=*/kHardenedBoolTrue));
+  HARDENED_TRY(entropy_csrng_generate(
+      /*seed_material=*/NULL, share1, kCurve25519MaskedScalarShareWords,
+      /*fips_check=*/kHardenedBoolTrue));
+
+  // Populate the checksum.
+  private_key->checksum = otcrypto_integrity_blinded_checksum(private_key);
   return OTCRYPTO_OK;
 }
 
@@ -405,6 +472,8 @@ static status_t ed25519_pct_verify(const otcrypto_blinded_key_t *private_key,
                                        &result));
 
   if (result != kHardenedBoolTrue) {
+    // COVERAGE (FI CM) Pairwise consistency check only fails under fault
+    // injection.
     crypto_state_t state;
     if (status_ok(read_state(&state))) {
       state.locked_state = kHardenedByteBoolTrue;
@@ -418,6 +487,12 @@ static status_t ed25519_pct_verify(const otcrypto_blinded_key_t *private_key,
 }
 #endif
 
+otcrypto_status_t otcrypto_ed25519_keygen(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+  HARDENED_TRY(otcrypto_ed25519_keygen_async_start(private_key));
+  return otcrypto_ed25519_keygen_async_finalize(private_key, public_key);
+}
+
 otcrypto_status_t otcrypto_ed25519_public_key_from_private(
     const otcrypto_blinded_key_t *private_key,
     otcrypto_unblinded_key_t *public_key) {
@@ -426,9 +501,14 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private(
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (public_key == NULL || public_key->key == NULL) {
+    // COVERAGE (MISSING) Null public key pointer is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+  if (launder32(public_key->key_mode) != kOtcryptoKeyModeEd25519 ||
+      public_key->key_length != kCurve25519KeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   // Start the execution of the key generation.
   HARDENED_TRY(
       otcrypto_ed25519_public_key_from_private_async_start(private_key));
@@ -499,9 +579,11 @@ otcrypto_status_t otcrypto_ed25519_verify(
   OTCRYPTO_HEALTH_CHECK(kTestEd25519VerifyBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (verification_result == NULL) {
+    // COVERAGE (MISSING) Null verification_result pointer is not covered.
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+  *verification_result = kHardenedBoolFalse;
 
   uint32_t prehash_buffer[kCurve25519HashWords];
   otcrypto_byte_buf_t message_ph;
@@ -516,6 +598,25 @@ otcrypto_status_t otcrypto_ed25519_verify(
       public_key, &input_message_ph, sign_mode, signature));
   // Finish the verification operation and get the result.
   return otcrypto_ed25519_verify_async_finalize(verification_result);
+}
+
+otcrypto_status_t otcrypto_ed25519_point_on_curve(
+    const otcrypto_unblinded_key_t *point, hardened_bool_t *check_result) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_POINT_ON_CURVE);
+  OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (point == NULL || point->key == NULL || check_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  if (launder32(point->key_length) != kCurve25519PointBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(point->key_length, kCurve25519PointBytes);
+
+  HARDENED_TRY(curve25519_point_on_curve_check(point->key, check_result));
+
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ed25519_sign_verify(
@@ -537,6 +638,45 @@ otcrypto_status_t otcrypto_ed25519_sign_verify(
   // Trap if signature verification failed.
   HARDENED_CHECK_EQ(verification_result, kHardenedBoolTrue);
   return OTCRYPTO_OK;
+}
+
+otcrypto_status_t otcrypto_ed25519_keygen_async_start(
+    otcrypto_blinded_key_t *private_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_KEYGEN_ASYNC_START);
+  HARDENED_TRY(
+      curve25519_csrng_keyblob_generate(private_key, kOtcryptoKeyModeEd25519));
+  HARDENED_TRY(
+      otcrypto_ed25519_public_key_from_private_async_start(private_key));
+  return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
+otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_KEYGEN_ASYNC_FINALIZE);
+  OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (private_key == NULL || private_key->keyblob == NULL ||
+      public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  if (launder32(public_key->key_mode) != kOtcryptoKeyModeEd25519 ||
+      public_key->key_length != kCurve25519KeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeEd25519);
+
+  HARDENED_TRY(curve25519_private_key_length_check(private_key,
+                                                   kOtcryptoKeyModeEd25519));
+  HARDENED_TRY(
+      otcrypto_ed25519_public_key_from_private_async_finalize(public_key));
+
+#ifdef FIPS_MODE
+  // Perform FIPS Pairwise Consistency Test (PCT).
+  HARDENED_TRY(ed25519_pct_verify(private_key, public_key));
+#endif
+
+  return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
 otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_start(
@@ -671,8 +811,8 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
   uint32_t public_key_buf[kCurve25519PointWords];
   HARDENED_TRY_WIPE_DMEM(
       curve25519_sign_stage1_finalize(&sig_curve25519, public_key_buf));
-  reverse_bytecpy((uint8_t *)signature->data, (uint8_t *)sig_curve25519.r,
-                  kCurve25519PointBytes);
+  HARDENED_TRY(hardened_memcpy(signature->data, sig_curve25519.r,
+                               kCurve25519PointWords));
 
   // Compute SHA512(R || A || PH(M))
   otcrypto_sha2_context_t ctx;
@@ -751,14 +891,16 @@ otcrypto_status_t otcrypto_ed25519_verify_async_start(
   HARDENED_TRY(ed25519_signature_check((otcrypto_word32_buf_t *)signature));
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (signature->data == NULL) {
+    // COVERAGE (FI CM) Redundant check; ed25519_signature_check already
+    // verifies signature->data != NULL.
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
 
   // Compute SHA512(R || A || PH(M)).
   curve25519_signature_t sig_curve25519;
-  reverse_bytecpy((uint8_t *)sig_curve25519.r, (uint8_t *)signature->data,
-                  kCurve25519PointBytes);
+  HARDENED_TRY(hardened_memcpy(sig_curve25519.r, signature->data,
+                               kCurve25519PointWords));
   memcpy(sig_curve25519.s, &signature->data[kCurve25519PointWords],
          kCurve25519ScalarBytes);
 
@@ -801,6 +943,12 @@ otcrypto_status_t otcrypto_ed25519_verify_async_finalize(
     hardened_bool_t *verification_result) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_VERIFY_ASYNC_FINALIZE);
   OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (verification_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  *verification_result = kHardenedBoolFalse;
   // Finalize the verify operation and retrieve the verification result.
   HARDENED_TRY_WIPE_DMEM(curve25519_verify_finalize(verification_result));
   return otcrypto_eval_exit(OTCRYPTO_OK);
@@ -812,6 +960,14 @@ otcrypto_status_t otcrypto_x25519_keygen(otcrypto_blinded_key_t *private_key,
   return otcrypto_x25519_keygen_async_finalize(private_key, public_key);
 }
 
+otcrypto_status_t otcrypto_x25519_public_key_from_private(
+    const otcrypto_blinded_key_t *private_key,
+    otcrypto_unblinded_key_t *public_key) {
+  HARDENED_TRY(
+      otcrypto_x25519_public_key_from_private_async_start(private_key));
+  return otcrypto_x25519_public_key_from_private_async_finalize(public_key);
+}
+
 otcrypto_status_t otcrypto_x25519(const otcrypto_blinded_key_t *private_key,
                                   const otcrypto_unblinded_key_t *public_key,
                                   otcrypto_blinded_key_t *shared_secret) {
@@ -820,8 +976,54 @@ otcrypto_status_t otcrypto_x25519(const otcrypto_blinded_key_t *private_key,
 }
 
 otcrypto_status_t otcrypto_x25519_keygen_async_start(
-    const otcrypto_blinded_key_t *private_key) {
+    otcrypto_blinded_key_t *private_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_X25519_KEYGEN_ASYNC_START);
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (private_key == NULL || private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  if (launder32(private_key->config.key_mode) != kOtcryptoKeyModeX25519) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeX25519);
+
+  if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
+    HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
+    HARDENED_TRY(
+        curve25519_csrng_keyblob_generate(private_key, kOtcryptoKeyModeX25519));
+  } else if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
+    HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
+  } else {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY(
+      otcrypto_x25519_public_key_from_private_async_start(private_key));
+  return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
+otcrypto_status_t otcrypto_x25519_keygen_async_finalize(
+    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_X25519_KEYGEN_ASYNC_FINALIZE);
+  OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (private_key == NULL || private_key->keyblob == NULL ||
+      public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  HARDENED_TRY(
+      curve25519_private_key_length_check(private_key, kOtcryptoKeyModeX25519));
+  HARDENED_TRY(
+      otcrypto_x25519_public_key_from_private_async_finalize(public_key));
+  return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
+otcrypto_status_t otcrypto_x25519_public_key_from_private_async_start(
+    const otcrypto_blinded_key_t *private_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_X25519_PUBLIC_KEY_FROM_PRIVATE_ASYNC_START);
   OTCRYPTO_LOCKED_STATE_CHECK();
   // Check the private key.
   HARDENED_TRY(
@@ -829,10 +1031,13 @@ otcrypto_status_t otcrypto_x25519_keygen_async_start(
 
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
+    hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+        kHardenedBoolTrue;
 
     HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
-
-    return otcrypto_eval_exit(curve25519_x25519_keygen_sideload_start());
+    HARDENED_TRY(curve25519_x25519_keygen_sideload_start());
+    should_wipe = kHardenedBoolFalse;
+    return otcrypto_eval_exit(OTCRYPTO_OK);
   } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
     curve25519_masked_scalar_t private_scalar;
     HARDENED_TRY(load_private_scalar(private_key, &private_scalar));
@@ -845,16 +1050,31 @@ otcrypto_status_t otcrypto_x25519_keygen_async_start(
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
+  // COVERAGE (MISSING) Invalid hw_backed boolean value is not covered.
   return OTCRYPTO_BAD_ARGS;
 }
 
-otcrypto_status_t otcrypto_x25519_keygen_async_finalize(
-    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
-  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_X25519_KEYGEN_ASYNC_FINALIZE);
+otcrypto_status_t otcrypto_x25519_public_key_from_private_async_finalize(
+    otcrypto_unblinded_key_t *public_key) {
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_X25519_PUBLIC_KEY_FROM_PRIVATE_ASYNC_FINALIZE);
   OTCRYPTO_LOCKED_STATE_CHECK();
-  (void)private_key;
+  hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolTrue;
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  if (launder32(public_key->key_mode) != kOtcryptoKeyModeX25519 ||
+      public_key->key_length != kCurve25519KeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeX25519);
+
   HARDENED_TRY_WIPE_DMEM(curve25519_x25519_keygen_finalize(public_key->key));
   public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
+  should_wipe = kHardenedBoolFalse;
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
   return otcrypto_eval_exit(keymgr_dpe_sideload_clear_otbn());
 }
@@ -873,12 +1093,13 @@ otcrypto_status_t otcrypto_x25519_async_start(
 
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
+    hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+        kHardenedBoolTrue;
 
     HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
-
-    return otcrypto_eval_exit(
-        curve25519_x25519_sideload_start(public_key->key));
-
+    HARDENED_TRY(curve25519_x25519_sideload_start(public_key->key));
+    should_wipe = kHardenedBoolFalse;
+    return otcrypto_eval_exit(OTCRYPTO_OK);
   } else if (private_key->config.hw_backed == kHardenedBoolFalse) {
     curve25519_masked_scalar_t private_scalar;
     HARDENED_TRY(load_private_scalar(private_key, &private_scalar));
@@ -891,6 +1112,7 @@ otcrypto_status_t otcrypto_x25519_async_start(
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
+  // COVERAGE (MISSING) Invalid hw_backed boolean value is not covered.
   return OTCRYPTO_BAD_ARGS;
 }
 
@@ -898,8 +1120,42 @@ otcrypto_status_t otcrypto_x25519_async_finalize(
     otcrypto_blinded_key_t *shared_secret) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_X25519_ASYNC_FINALIZE);
   OTCRYPTO_LOCKED_STATE_CHECK();
-  HARDENED_TRY_WIPE_DMEM(curve25519_x25519_finalize(shared_secret->keyblob));
+  hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolTrue;
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (shared_secret == NULL || shared_secret->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  if (shared_secret->config.hw_backed != kHardenedBoolFalse ||
+      shared_secret->config.key_length != kCurve25519KeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  uint32_t *share0;
+  uint32_t *share1;
+  HARDENED_TRY(keyblob_to_shares(shared_secret, &share0, &share1));
+
+  // Randomize the output before computing it.
+  HARDENED_TRY(hardened_memshred(shared_secret->keyblob,
+                                 keyblob_num_words(shared_secret->config)));
+
+  uint32_t shares[kCurve25519MaskedPointWords];
+  HARDENED_TRY(hardened_memshred(shares, kCurve25519MaskedPointWords));
+  HARDENED_TRY_WIPE_DMEM(curve25519_x25519_finalize(shares));
+
+  HARDENED_TRY(hardened_memcpy(share0, shares, kCurve25519PointWords));
+  HARDENED_TRY(hardened_memcpy(share1, &shares[kCurve25519PointWords],
+                               kCurve25519PointWords));
+  HARDENED_CHECK_EQ(hardened_memeq(shares, share0, kCurve25519PointWords),
+                    kHardenedBoolTrue);
+
   shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
+
+  HARDENED_TRY(hardened_memshred(shares, kCurve25519MaskedPointWords));
+  should_wipe = kHardenedBoolFalse;
+
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
   return otcrypto_eval_exit(keymgr_dpe_sideload_clear_otbn());
 }

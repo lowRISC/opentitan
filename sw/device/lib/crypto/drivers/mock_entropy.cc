@@ -21,6 +21,8 @@ const entropy_seed_material_t kEntropyEmptySeed = {
 
 status_t entropy_complex_init(hardened_bool_t fips) { return OTCRYPTO_OK; }
 
+void entropy_complex_stop_all(void) {}
+
 status_t entropy_complex_check(hardened_bool_t fips) { return OTCRYPTO_OK; }
 
 status_t entropy_complex_health_test_config_check(hardened_bool_t fips) {

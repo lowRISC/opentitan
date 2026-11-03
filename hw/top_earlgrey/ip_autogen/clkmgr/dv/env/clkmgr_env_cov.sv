@@ -108,7 +108,7 @@ class clkmgr_env_cov extends cip_base_env_cov #(
   clkmgr_trans_cg_wrap trans_cg_wrap[NUM_TRANS];
 
   // These covergroups collect outcomes of clock frequency measurements.
-  freq_measure_cg_wrap freq_measure_cg_wrap[5];
+  freq_measure_cg_wrap freq_measure_cg_wrap[4];
 
   // This embeded covergroup collects coverage for the external clock functionality.
   covergroup extclk_cg with function sample (
@@ -128,23 +128,19 @@ class clkmgr_env_cov extends cip_base_env_cov #(
       bit usb_timeout,
       bit main_timeout,
       bit io_div4_timeout,
-      bit io_div2_timeout,
       bit io_timeout,
       bit usb_measure,
       bit main_measure,
       bit io_div4_measure,
-      bit io_div2_measure,
       bit io_measure,
       bit shadow_update
   );
     shadow_update_cp: coverpoint shadow_update;
     io_measure_cp: coverpoint io_measure;
-    io_div2_measure_cp: coverpoint io_div2_measure;
     io_div4_measure_cp: coverpoint io_div4_measure;
     main_measure_cp: coverpoint main_measure;
     usb_measure_cp: coverpoint usb_measure;
     io_timeout_cp: coverpoint io_timeout;
-    io_div2_timeout_cp: coverpoint io_div2_timeout;
     io_div4_timeout_cp: coverpoint io_div4_timeout;
     main_timeout_cp: coverpoint main_timeout;
     usb_timeout_cp: coverpoint usb_timeout;

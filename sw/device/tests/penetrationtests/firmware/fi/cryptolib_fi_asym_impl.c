@@ -254,26 +254,38 @@ status_t cryptolib_fi_rsa_enc_impl(cryptolib_fi_asym_rsa_enc_in_t uj_input,
 status_t cryptolib_fi_rsa_sign_impl(
     cryptolib_fi_asym_rsa_sign_in_t uj_input,
     cryptolib_fi_asym_rsa_sign_out_t *uj_output) {
+  uint32_t sig[kPentestRsaMaxMsgWords] = {0};
+  otcrypto_word32_buf_t sig_buf;
+  memset(&sig_buf, 0, sizeof(sig_buf));
+  uj_output->cfg = 0;
+  memset(uj_output->sig, 0, RSA_CMD_MAX_SIGNATURE_BYTES);
+  memset(uj_output->n, 0, RSA_CMD_MAX_N_BYTES);
+  memset(uj_output->d, 0, RSA_CMD_MAX_N_BYTES);
+
   size_t private_key_bytes;
   size_t private_key_blob_bytes;
+  size_t public_key_bytes;
   size_t num_words;
   otcrypto_rsa_size_t rsa_size;
   switch (uj_input.n_len) {
     case kPentestRsa2048NumBytes:
       private_key_bytes = kOtcryptoRsa2048PrivateKeyBytes;
       private_key_blob_bytes = kOtcryptoRsa2048PrivateKeyblobBytes;
+      public_key_bytes = kOtcryptoRsa2048PublicKeyBytes;
       num_words = kPentestRsa2048NumWords;
       rsa_size = kOtcryptoRsaSize2048;
       break;
     case kPentestRsa3072NumBytes:
       private_key_bytes = kOtcryptoRsa3072PrivateKeyBytes;
       private_key_blob_bytes = kOtcryptoRsa3072PrivateKeyblobBytes;
+      public_key_bytes = kOtcryptoRsa3072PublicKeyBytes;
       num_words = kPentestRsa3072NumWords;
       rsa_size = kOtcryptoRsaSize3072;
       break;
     case kPentestRsa4096NumBytes:
       private_key_bytes = kOtcryptoRsa4096PrivateKeyBytes;
       private_key_blob_bytes = kOtcryptoRsa4096PrivateKeyblobBytes;
+      public_key_bytes = kOtcryptoRsa4096PublicKeyBytes;
       num_words = kPentestRsa4096NumWords;
       rsa_size = kOtcryptoRsaSize4096;
       break;
@@ -299,19 +311,15 @@ status_t cryptolib_fi_rsa_sign_impl(
   };
 
   otcrypto_hash_mode_t hash_mode;
-  size_t hash_digest_words;
   switch (uj_input.hashing) {
     case kPentestRsaHashmodeSha256:
       hash_mode = kOtcryptoHashModeSha256;
-      hash_digest_words = kPentestSha256DigestWords;
       break;
     case kPentestRsaHashmodeSha384:
       hash_mode = kOtcryptoHashModeSha384;
-      hash_digest_words = kPentestSha384DigestWords;
       break;
     case kPentestRsaHashmodeSha512:
       hash_mode = kOtcryptoHashModeSha512;
-      hash_digest_words = kPentestSha512DigestWords;
       break;
     default:
       LOG_ERROR("Unsupported RSA hash mode: %d", uj_input.hashing);
@@ -354,12 +362,22 @@ status_t cryptolib_fi_rsa_sign_impl(
   otcrypto_const_word32_buf_t modulus =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, n_buf, num_words);
 
+  // Create the public key.
+  uint32_t public_key_data[ceil_div(public_key_bytes, sizeof(uint32_t))];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = key_mode,
+      .key_length = public_key_bytes,
+      .key = public_key_data,
+  };
+
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_high();
   }
   HARDENED_TRY(otcrypto_rsa_private_key_from_exponents(
       rsa_size, &modulus, &d_share0, &d_share1, &private_key));
+  HARDENED_TRY(
+      otcrypto_rsa_public_key_construct(rsa_size, &modulus, &public_key));
   if (uj_input.trigger & kPentestTrigger1) {
     pentest_set_trigger_low();
   }
@@ -370,40 +388,15 @@ status_t cryptolib_fi_rsa_sign_impl(
   otcrypto_const_byte_buf_t msg_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, uj_input.data_len);
 
-  // Buffer to store the digest.
-  uint32_t msg_digest_data[hash_digest_words];
-  otcrypto_hash_digest_t msg_digest = {
-      .data = msg_digest_data,
-      .len = ARRAYSIZE(msg_digest_data),
-      .mode = hash_mode,
-  };
-  // Trigger window.
-  if (uj_input.trigger & kPentestTrigger2) {
-    pentest_set_trigger_high();
-  }
-  // Hash the message.
-  if (hash_mode == kOtcryptoHashModeSha256) {
-    HARDENED_TRY(otcrypto_sha2_256(&msg_buf, &msg_digest));
-  } else if (hash_mode == kOtcryptoHashModeSha384) {
-    HARDENED_TRY(otcrypto_sha2_384(&msg_buf, &msg_digest));
-  } else {
-    HARDENED_TRY(otcrypto_sha2_512(&msg_buf, &msg_digest));
-  }
-  if (uj_input.trigger & kPentestTrigger2) {
-    pentest_set_trigger_low();
-  }
-
-  uint32_t sig[kPentestRsaMaxMsgWords];
-  otcrypto_word32_buf_t sig_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, num_words);
+  sig_buf = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, num_words);
 
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger3) {
     PENTEST_MARKER_LABEL(PENTEST_MARKER_RSA_SIGN_START);
     pentest_set_trigger_high();
   }
-  HARDENED_TRY(
-      otcrypto_rsa_sign(&private_key, msg_digest, padding_mode, &sig_buf));
+  HARDENED_TRY(otcrypto_rsa_hash_sign_verify(
+      &private_key, &public_key, hash_mode, &msg_buf, padding_mode, &sig_buf));
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
@@ -413,15 +406,11 @@ status_t cryptolib_fi_rsa_sign_impl(
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&sig_buf));
 
   // Return data back to host.
-  uj_output->sig_len = uj_input.n_len;
-  uj_output->cfg = 0;
-  memset(uj_output->sig, 0, RSA_CMD_MAX_SIGNATURE_BYTES);
-  memcpy(uj_output->sig, sig, uj_output->sig_len);
+  uj_output->sig_len = sig_buf.len * sizeof(uint32_t);
+  memcpy(uj_output->sig, sig_buf.data, uj_output->sig_len);
   // Return received n and d back to host.
   uj_output->n_len = uj_input.n_len;
-  memset(uj_output->n, 0, RSA_CMD_MAX_N_BYTES);
   memcpy(uj_output->n, uj_input.n, uj_input.n_len);
-  memset(uj_output->d, 0, RSA_CMD_MAX_N_BYTES);
   memcpy(uj_output->d, uj_input.d, uj_input.n_len);
   uj_output->magic = kOutputComplete;
 
@@ -608,6 +597,11 @@ status_t cryptolib_fi_p256_ecdh_impl(
   uint32_t share0[kPentestP256MaskedPrivateKeyWords];
   uint32_t share1[kPentestP256MaskedPrivateKeyWords];
 
+  otcrypto_word32_buf_t ss_share0_buf;
+  otcrypto_word32_buf_t ss_share1_buf;
+  memset(&ss_share0_buf, 0, sizeof(ss_share0_buf));
+  memset(&ss_share1_buf, 0, sizeof(ss_share1_buf));
+
   memset(unmasked_val, 0, kPentestP256MaskedPrivateKeyBytes);
   memcpy(unmasked_val, uj_input.private_key, P256_CMD_BYTES);
 
@@ -673,13 +667,15 @@ status_t cryptolib_fi_p256_ecdh_impl(
 
   uint32_t ss_share0[kPentestP256SharedSecretWords];
   uint32_t ss_share1[kPentestP256SharedSecretWords];
-  otcrypto_word32_buf_t ss_share0_buf =
+  ss_share0_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, ARRAYSIZE(ss_share0));
-  otcrypto_word32_buf_t ss_share1_buf =
+  ss_share1_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, ARRAYSIZE(ss_share1));
   uint32_t ss[kPentestP256SharedSecretWords];
   HARDENED_TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
                                            &ss_share1_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share0_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share1_buf));
   for (size_t i = 0; i < kPentestP256SharedSecretWords; i++) {
     ss[i] = ss_share0[i] ^ ss_share1[i];
   }
@@ -1010,6 +1006,11 @@ status_t cryptolib_fi_p384_ecdh_impl(
   uint32_t share0[kPentestP384MaskedPrivateKeyWords];
   uint32_t share1[kPentestP384MaskedPrivateKeyWords];
 
+  otcrypto_word32_buf_t ss_share0_buf;
+  otcrypto_word32_buf_t ss_share1_buf;
+  memset(&ss_share0_buf, 0, sizeof(ss_share0_buf));
+  memset(&ss_share1_buf, 0, sizeof(ss_share1_buf));
+
   memset(unmasked_val, 0, kPentestP384MaskedPrivateKeyBytes);
   memcpy(unmasked_val, uj_input.private_key, P384_CMD_BYTES);
 
@@ -1075,13 +1076,15 @@ status_t cryptolib_fi_p384_ecdh_impl(
 
   uint32_t ss_share0[kPentestP384SharedSecretWords];
   uint32_t ss_share1[kPentestP384SharedSecretWords];
-  otcrypto_word32_buf_t ss_share0_buf =
+  ss_share0_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, ARRAYSIZE(ss_share0));
-  otcrypto_word32_buf_t ss_share1_buf =
+  ss_share1_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, ARRAYSIZE(ss_share1));
   uint32_t ss[kPentestP384SharedSecretWords];
   HARDENED_TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
                                            &ss_share1_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share0_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share1_buf));
   for (size_t i = 0; i < kPentestP384SharedSecretWords; i++) {
     ss[i] = ss_share0[i] ^ ss_share1[i];
   }
@@ -1124,6 +1127,10 @@ status_t cryptolib_fi_p384_sign_impl(
   uint32_t share1_rand[kPentestP384MaskedPrivateKeyWords];
   uint32_t share0[kPentestP384MaskedPrivateKeyWords];
   uint32_t share1[kPentestP384MaskedPrivateKeyWords];
+
+  uint32_t sig[kPentestP384Words * 2] = {0};
+  otcrypto_word32_buf_t signature_mut;
+  memset(&signature_mut, 0, sizeof(signature_mut));
 
   memset(unmasked_val, 0, kPentestP384MaskedPrivateKeyBytes);
   memcpy(unmasked_val, uj_input.scalar, P384_CMD_BYTES);
@@ -1191,9 +1198,7 @@ status_t cryptolib_fi_p384_sign_impl(
   };
 
   // Set up the signature buffer.
-  uint32_t sig[kPentestP384Words * 2] = {0};
-  otcrypto_word32_buf_t signature_mut =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
+  signature_mut = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
 
   // Trigger window 1.
   if (uj_input.trigger == 1) {
@@ -1228,6 +1233,9 @@ status_t cryptolib_fi_p384_sign_impl(
 
   HARDENED_TRY(
       otcrypto_ecc_p384_public_key_export(&public_key, &out_x_buf, &out_y_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&signature_mut));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&out_x_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&out_y_buf));
 
   memcpy(uj_output->pubx, out_pub_x, P384_CMD_BYTES);
   memcpy(uj_output->puby, out_pub_y, P384_CMD_BYTES);
@@ -1570,7 +1578,8 @@ status_t cryptolib_fi_x25519_base_mul_impl(
   if (uj_input.trigger) {
     pentest_set_trigger_high();
   }
-  HARDENED_TRY(otcrypto_x25519_keygen(&private_key, &public_key));
+  HARDENED_TRY(
+      otcrypto_x25519_public_key_from_private(&private_key, &public_key));
   if (uj_input.trigger) {
     pentest_set_trigger_low();
   }
@@ -1587,6 +1596,11 @@ status_t cryptolib_fi_x25519_base_mul_impl(
 status_t cryptolib_fi_x25519_ecdh_impl(
     cryptolib_fi_asym_x25519_ecdh_in_t uj_input,
     cryptolib_fi_asym_x25519_ecdh_out_t *uj_output) {
+  otcrypto_word32_buf_t ss_share0_buf;
+  otcrypto_word32_buf_t ss_share1_buf;
+  memset(&ss_share0_buf, 0, sizeof(ss_share0_buf));
+  memset(&ss_share1_buf, 0, sizeof(ss_share1_buf));
+
   // Use the Ed25519 masked size since both use the exact same 256-bit curve
   uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
   memset(private_keyblob, 0, sizeof(private_keyblob));
@@ -1654,13 +1668,13 @@ status_t cryptolib_fi_x25519_ecdh_impl(
 
   uint32_t ss_share0[8];
   uint32_t ss_share1[8];
-  otcrypto_word32_buf_t ss_share0_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, 8);
-  otcrypto_word32_buf_t ss_share1_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, 8);
+  ss_share0_buf = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, 8);
+  ss_share1_buf = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, 8);
 
   HARDENED_TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
                                            &ss_share1_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share0_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share1_buf));
 
   uint32_t ss_unmasked[8];
   HARDENED_TRY(hardened_xor(ss_share0, ss_share1, 8, ss_unmasked));
@@ -1676,6 +1690,11 @@ status_t cryptolib_fi_x25519_ecdh_impl(
 status_t cryptolib_fi_x25519_point_mul_impl(
     cryptolib_fi_asym_x25519_point_mul_in_t uj_input,
     cryptolib_fi_asym_x25519_point_mul_out_t *uj_output) {
+  otcrypto_word32_buf_t ss_share0_buf;
+  otcrypto_word32_buf_t ss_share1_buf;
+  memset(&ss_share0_buf, 0, sizeof(ss_share0_buf));
+  memset(&ss_share1_buf, 0, sizeof(ss_share1_buf));
+
   // Use the Ed25519 masked size since both use the exact same 256-bit curve
   uint32_t private_keyblob[kPentestEd25519MaskedPrivateKeyWords * 2];
   memset(private_keyblob, 0, sizeof(private_keyblob));
@@ -1743,13 +1762,13 @@ status_t cryptolib_fi_x25519_point_mul_impl(
 
   uint32_t ss_share0[8];
   uint32_t ss_share1[8];
-  otcrypto_word32_buf_t ss_share0_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, 8);
-  otcrypto_word32_buf_t ss_share1_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, 8);
+  ss_share0_buf = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share0, 8);
+  ss_share1_buf = OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ss_share1, 8);
 
   HARDENED_TRY(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
                                            &ss_share1_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share0_buf));
+  HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&ss_share1_buf));
 
   uint32_t ss_unmasked[8];
   HARDENED_TRY(hardened_xor(ss_share0, ss_share1, 8, ss_unmasked));

@@ -24,7 +24,8 @@ INCLUDE OPENTITAN_TOP_MEMORY_LD
 _rom_boot_address = ORIGIN(rom);
 
 /**
- * Symbols to be used in the setup of the address translation for ROM_EXT.
+ * Symbols to be used in the setup of the address translation for ROM_EXT and
+ * for checking virtual flash address ranges in `flash_exc_handler.S`.
  */
 _rom_ext_virtual_start_address = ORIGIN(rom_ext_virtual);
 _rom_ext_virtual_size = LENGTH(rom_ext_virtual);
@@ -37,6 +38,10 @@ _rom_ext_virtual_size = LENGTH(rom_ext_virtual);
  */
 ASSERT((_rom_ext_virtual_size <= (LENGTH(nvm) / 2)),
   "Error: rom ext NVM is bigger than slot.");
+_owner_virtual_start_address = ORIGIN(owner_virtual);
+_owner_virtual_size = LENGTH(owner_virtual);
+ASSERT((_owner_virtual_size <= (LENGTH(nvm) / 2)),
+  "Error: owner NVM is bigger than slot.");
 
 /* DV Log offset (has to be different to other boot stages). */
 _dv_log_offset = 0x0;

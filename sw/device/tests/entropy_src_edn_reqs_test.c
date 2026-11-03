@@ -14,6 +14,7 @@
 #include "hw/top/dt/pwrmgr.h"
 #include "hw/top/dt/rv_core_ibex.h"
 #include "sw/device/lib/arch/boot_stage.h"
+#include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/memory.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/dif/dif_aes.h"
@@ -53,7 +54,6 @@ static dif_otp_ctrl_t otp;
 static dif_pwrmgr_t pwrmgr;
 static dif_rv_core_ibex_t ibex;
 static dif_alert_handler_t alert_handler;
-static dif_rv_core_ibex_fpga_info_t fpga_info;
 
 enum {
   kFpgaLoop = 5,
@@ -265,8 +265,7 @@ void test_initialize(void) {
 }
 
 status_t execute_test(void) {
-  CHECK_DIF_OK(dif_rv_core_ibex_read_fpga_info(&ibex, &fpga_info));
-  uint32_t loop = (fpga_info != 0) ? kFpgaLoop : 1;
+  uint32_t loop = (kDeviceType == kDeviceFpgaCw340) ? kFpgaLoop : 1;
 
   for (size_t i = 0; i < loop; ++i) {
     LOG_INFO("Entropy src test %d/%d", i, loop);

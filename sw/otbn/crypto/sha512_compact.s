@@ -103,7 +103,7 @@ sha512_compact:
   la x16, K
 
   /* one iteration per chunk */
-  loop x20, 105
+  loop x20, 103
 
     /* load state variables from dmem */
     addi     x2, x0, 0
@@ -127,9 +127,6 @@ sha512_compact:
     /* reset pointer to beginning of dmem section containing round constants */
     addi x15, x16, 0
 
-    /* read pointer to message buffer from dmem */
-    la x14, dptr_msg
-    lw x14, 0(x14)
     /* The message schedule's 16 lower words (W_0 to W_15) are set equal to the
        16 words of the message chunk (M_0 to M_15). */
     addi    x2, x0, 24
@@ -137,6 +134,7 @@ sha512_compact:
     bn.lid  x2++, 32(x14)
     bn.lid  x2++, 64(x14)
     bn.lid  x2++, 96(x14)
+    addi    x14, x14, 128
 
    /* Main loop for SHA-512 compression function (80 rounds),
       split into an inner and outer loop here (80=20*4 cycles), since

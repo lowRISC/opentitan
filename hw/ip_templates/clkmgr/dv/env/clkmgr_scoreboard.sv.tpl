@@ -2,10 +2,10 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 <%
-from itertools import chain
-from ipgen.clkmgr_gen import get_rg_srcs
+from ipgen.clkmgr_gen import get_rg_srcs, get_sw_clk_keys
 from topgen.lib import Name
 rg_srcs = get_rg_srcs(typed_clocks)
+sw_clk_keys = get_sw_clk_keys(typed_clocks)
 %>\
 
 // The scoreboard checks the jitter_an_o output, and processes CSR checks.
@@ -128,13 +128,14 @@ class clkmgr_scoreboard extends cip_base_scoreboard #(
 
   task sample_peri_covs();
     fork
-% for clk in typed_clocks['sw_clks'].values():
+% for sw_clk, clk in typed_clocks['sw_clks'].items():
 <%
-  clk_name = clk['src_name']
-  if clk_name in derived_clks:
-    root_name = derived_clks[clk_name]['src']['name']
+  clk_name = sw_clk_keys[sw_clk]
+  src_name = clk['src_name']
+  if src_name in derived_clks:
+    root_name = derived_clks[src_name]['src']['name']
   else:
-    root_name = clk_name
+    root_name = src_name
 %>\
       forever
         @cfg.clkmgr_vif.peri_${clk_name}_cb begin
@@ -313,11 +314,11 @@ ${spc}cfg.clkmgr_vif.scanmode_i == MuBi4True);
       "measure_ctrl_regwen": begin
         if (addr_phase_write) measure_ctrl_regwen = item.a_data;
       end
-% for clk in sorted(chain(*[c for c in parent_child_clks.values()])):
+% for clk in sorted(rg_srcs):
       "${clk}_meas_ctrl_en": begin
       end
 % endfor
-% for clk in sorted(chain(*[c for c in parent_child_clks.values()])):
+% for clk in sorted(rg_srcs):
       "${clk}_meas_ctrl_shadowed": begin
       end
 % endfor

@@ -18,6 +18,7 @@ cc_library(
         ":hash_commands",
         ":hkdf_commands",
         ":hmac_commands",
+        ":kdf_commands",
         ":kmac_commands",
         ":mldsa_commands",
         ":mlkem_commands",
@@ -138,6 +139,14 @@ cc_library(
     name = "x25519_commands",
     srcs = ["x25519_commands.c"],
     hdrs = ["x25519_commands.h"],
+    features = ["-coverage"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "kdf_commands",
+    srcs = ["kdf_commands.c"],
+    hdrs = ["kdf_commands.h"],
     features = ["-coverage"],
     deps = ["//sw/device/lib/ujson"],
 )

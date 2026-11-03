@@ -369,7 +369,12 @@ void rram_ctrl_init(void) {
 }
 
 void rram_ctrl_disable(void) {
-  abs_mmio_write32(rram_ctrl_core_base() + RRAM_CTRL_DIS_REG_OFFSET, 0);
+  // DIS is rw1s with MuBi4 fields, so a write is merged into the current value.
+  // Writing MuBi4True to SW_DIS disables the RRAM, while writing MuBi4False to
+  // LOCAL_ESC_RELBL_ERR leaves that field unchanged.
+  uint32_t reg = bitfield_field32_write(
+      RRAM_CTRL_DIS_REG_RESVAL, RRAM_CTRL_DIS_SW_DIS_FIELD, kMultiBitBool4True);
+  abs_mmio_write32(rram_ctrl_core_base() + RRAM_CTRL_DIS_REG_OFFSET, reg);
 }
 
 void rram_ctrl_status_get(rram_ctrl_status_t *status) {

@@ -89,6 +89,13 @@
       act:     "rcv",
       package: "keymgr_dpe_pkg",
     },
+    { struct:  "keymgr_dpe_creator_root_key",
+      type:    "uni",
+      name:    "secondary_root_key",
+      act:     "rcv",
+      package: "keymgr_dpe_pkg",
+      default: "keymgr_dpe_pkg::KEYMGR_DPE_SECONDARY_ROOT_KEY_DEFAULT",
+    },
     { struct:  "keymgr_dpe_creator_seed",
       type:    "uni",
       name:    "creator_seed",
@@ -525,7 +532,12 @@
       fields: [
         { bits: "6:4",
           name: "OPERATION",
-          desc: "Key manager DPE operation selection",
+          desc: '''
+            Key manager DPE operation selection.
+
+            The remaining value (7) is invalid. Starting an operation with it
+            makes it fail with `invalid_op` in every working state.
+          ''',
           resval: "1",
           enum: [
             { value: "0",
@@ -562,9 +574,17 @@
               value: "5",
               name: "Load root key",
               desc: '''
-                Loads the root key into the key manager.
+                Loads the root key into the key manager. Can be disabled by !!LOAD_ROOT_KEY_LOCK if needed.
                 '''
-            }
+            },
+            {
+              value: "6",
+              name: "Load secondary root key",
+              desc: '''
+                Loads the secondary root key into the key manager.
+                Can be disabled by !!LOAD_SECONDARY_ROOT_KEY_LOCK if needed.
+                '''
+            },
           ],
         },
 
@@ -619,7 +639,11 @@
           name: "SLOT_SRC_SEL",
           resval: "0x0"
           desc: '''
-            The source key slot to be used for the invoked operation.
+            The source key slot to be used for the advance and generate operations.
+
+            Only slots below `NumInstHwSlot` are instantiated.
+            If this field selects a slot at or above `NumInstHwSlot`, an advance or generate operation
+            is rejected with !!ERR_CODE.INVALID_OP and no slot is modified.
           '''
         },
 
@@ -627,7 +651,12 @@
           name: "SLOT_DST_SEL",
           resval: "0x0"
           desc: '''
-            The destination key slot to be used for the advance and erase operations.
+            The destination key slot to be used for the advance, erase, load root key and load secondary root key operations.
+
+            Only slots below `NumInstHwSlot` are instantiated.
+            If this field selects a slot at or above `NumInstHwSlot`, an advance, erase,
+            load root key or load secondary root key operation is rejected with !!ERR_CODE.INVALID_OP
+            and no slot is modified.
           '''
         },
         {
@@ -641,9 +670,6 @@
           '''
         }
       ],
-      // TODO(#30682): Remove this label as soon as the RTL raises an
-      // error instead of a assertion.
-      tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 
     { name: "SIDELOAD_CLEAR",
@@ -782,6 +808,14 @@
           resval: "0"
           desc: '''
             Set whether further advance operations force erasure of the slot.
+          '''
+        },
+        { bits: "3",
+          name: "ALLOW_KEYGEN",
+          resval: "0"
+          desc: '''
+            Set whether this context can be used to generate keys.
+            This applies to both software and sideload key generation.
           '''
         },
       ]
@@ -1159,6 +1193,13 @@
                 Read the `retain_parent` policy applied to the DPE context in this slot.
               '''
             },
+            { bits: "6",
+              name: "ALLOW_KEYGEN_POLICY",
+              resval: "0"
+              desc: '''
+                Read the `allow_keygen` policy applied to the DPE context in this slot.
+              '''
+            },
         ],
       },
     },
@@ -1325,18 +1366,23 @@
         { bits: "7",
           name: "INVALID_ROOT_KEY",
           resval: "0x0"
-          desc: "OTP root key was invalid during the first advance",
+          desc: "OTP root key was invalid during the first advance or during a `load root key` operation",
         },
         { bits: "8",
           name: "INACTIVE_LC_EN",
           resval: "0x0"
           desc: "Enable signal from LC ctrl is deactivated",
         },
+        { bits: "9",
+          name: "INVALID_SECONDARY_ROOT_KEY",
+          resval: "0x0"
+          desc: "Secondary root key was invalid during a `load secondary root key` operation",
+        },
       ]
     },
 
-    { name: "LOAD_KEY_LOCK",
-      desc: "Register write lock for the LOAD_KEY command",
+    { name: "LOAD_ROOT_KEY_LOCK",
+      desc: "Register lock for the `load root key` operation, see !!CONTROL_SHADOWED.OPERATION.",
       swaccess: "rw1s",
       hwaccess: "hro",
       fields: [
@@ -1344,10 +1390,25 @@
           name: "LOCK",
           resval: "0"
           desc: '''
-            Load key register write lock.
+            Write 1 to disable the `load root key` operation until the next reset.
+          '''
+        },
+      ]
+      // Don't let automated CSR tests write random values to this register, as it could lock
+      // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    },
 
-            Load key lock to 0, and its value cannot be altered by software until the next reset or locked.
-            Once locked, the LOAD_KEY command is disabled.
+    { name: "LOAD_SECONDARY_ROOT_KEY_LOCK",
+      desc: "Register lock for the `load secondary root key` operation, see !!CONTROL_SHADOWED.OPERATION.",
+      swaccess: "rw1s",
+      hwaccess: "hro",
+      fields: [
+        { bits: "0",
+          name: "LOCK",
+          resval: "0"
+          desc: '''
+            Write 1 to disable the `load secondary root key` operation until the next reset.
           '''
         },
       ]

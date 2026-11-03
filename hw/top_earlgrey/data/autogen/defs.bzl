@@ -12,7 +12,7 @@ load("//hw/ip/aes:defs.bzl", "AES")
 load("//hw/top_earlgrey/ip_autogen/alert_handler:defs.bzl", "ALERT_HANDLER")
 load("//hw/ip/aon_timer:defs.bzl", "AON_TIMER")
 load("//hw/top_earlgrey/ip/ast:defs.bzl", "AST")
-load("//hw/ip/cheriot:defs.bzl", "CHERIOT")
+load("//hw/ip/cheriot_mem_sys:defs.bzl", "CHERIOT_MEM_SYS")
 load("//hw/top_earlgrey/ip_autogen/clkmgr:defs.bzl", "CLKMGR")
 load("//hw/ip/csrng:defs.bzl", "CSRNG")
 load("//hw/ip/edn:defs.bzl", "EDN")
@@ -20,6 +20,7 @@ load("//hw/ip/entropy_src:defs.bzl", "ENTROPY_SRC")
 load("//hw/top_earlgrey/ip_autogen/gpio:defs.bzl", "GPIO")
 load("//hw/ip/hmac:defs.bzl", "HMAC")
 load("//hw/ip/i2c:defs.bzl", "I2C")
+load("//hw/ip/i3c:defs.bzl", "I3C")
 load("//hw/ip/keymgr_dpe:defs.bzl", "KEYMGR_DPE")
 load("//hw/ip/kmac:defs.bzl", "KMAC")
 load("//hw/ip/lc_ctrl:defs.bzl", "LC_CTRL")
@@ -49,7 +50,7 @@ EARLGREY_IPS = [
     ALERT_HANDLER,
     AON_TIMER,
     AST,
-    CHERIOT,
+    CHERIOT_MEM_SYS,
     CLKMGR,
     CSRNG,
     EDN,
@@ -57,6 +58,7 @@ EARLGREY_IPS = [
     GPIO,
     HMAC,
     I2C,
+    I3C,
     KEYMGR_DPE,
     KMAC,
     LC_CTRL,
@@ -86,11 +88,14 @@ EARLGREY_ALERTS = [
     "uart1_fatal_fault",
     "uart2_fatal_fault",
     "uart3_fatal_fault",
-    "gpio_fatal_fault",
+    "gpio0_fatal_fault",
+    "gpio1_fatal_fault",
     "spi_device_fatal_fault",
     "i2c0_fatal_fault",
     "i2c1_fatal_fault",
     "i2c2_fatal_fault",
+    "i3c0_fatal_fault",
+    "i3c1_fatal_fault",
     "rv_timer_fatal_fault",
     "otp_ctrl_fatal_macro_error",
     "otp_ctrl_fatal_check_error",
@@ -146,6 +151,6 @@ EARLGREY_ALERTS = [
     "rv_core_ibex_recov_sw_err",
     "rv_core_ibex_fatal_hw_err",
     "rv_core_ibex_recov_hw_err",
-    "cheriot_fatal_fault",
+    "cheriot_mem_sys_fatal_fault",
     "sram_ctrl_meta_fatal_error",
 ]

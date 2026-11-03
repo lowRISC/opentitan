@@ -56,9 +56,9 @@ module keymgr_dpe_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [70:0] reg_we_check;
+  logic [71:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(71)
+    .OneHotWidth(72)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -188,6 +188,8 @@ module keymgr_dpe_reg_top (
   logic slot_policy_exportable_wd;
   logic slot_policy_retain_parent_qs;
   logic slot_policy_retain_parent_wd;
+  logic slot_policy_allow_keygen_qs;
+  logic slot_policy_allow_keygen_wd;
   logic sw_binding_regwen_re;
   logic sw_binding_regwen_we;
   logic sw_binding_regwen_qs;
@@ -327,48 +329,56 @@ module keymgr_dpe_reg_top (
   logic metadata_high_0_allow_child_policy_0_qs;
   logic metadata_high_0_exportable_policy_0_qs;
   logic metadata_high_0_retain_parent_policy_0_qs;
+  logic metadata_high_0_allow_keygen_policy_0_qs;
   logic metadata_high_1_re;
   logic metadata_high_1_valid_1_qs;
   logic [1:0] metadata_high_1_boot_stage_1_qs;
   logic metadata_high_1_allow_child_policy_1_qs;
   logic metadata_high_1_exportable_policy_1_qs;
   logic metadata_high_1_retain_parent_policy_1_qs;
+  logic metadata_high_1_allow_keygen_policy_1_qs;
   logic metadata_high_2_re;
   logic metadata_high_2_valid_2_qs;
   logic [1:0] metadata_high_2_boot_stage_2_qs;
   logic metadata_high_2_allow_child_policy_2_qs;
   logic metadata_high_2_exportable_policy_2_qs;
   logic metadata_high_2_retain_parent_policy_2_qs;
+  logic metadata_high_2_allow_keygen_policy_2_qs;
   logic metadata_high_3_re;
   logic metadata_high_3_valid_3_qs;
   logic [1:0] metadata_high_3_boot_stage_3_qs;
   logic metadata_high_3_allow_child_policy_3_qs;
   logic metadata_high_3_exportable_policy_3_qs;
   logic metadata_high_3_retain_parent_policy_3_qs;
+  logic metadata_high_3_allow_keygen_policy_3_qs;
   logic metadata_high_4_re;
   logic metadata_high_4_valid_4_qs;
   logic [1:0] metadata_high_4_boot_stage_4_qs;
   logic metadata_high_4_allow_child_policy_4_qs;
   logic metadata_high_4_exportable_policy_4_qs;
   logic metadata_high_4_retain_parent_policy_4_qs;
+  logic metadata_high_4_allow_keygen_policy_4_qs;
   logic metadata_high_5_re;
   logic metadata_high_5_valid_5_qs;
   logic [1:0] metadata_high_5_boot_stage_5_qs;
   logic metadata_high_5_allow_child_policy_5_qs;
   logic metadata_high_5_exportable_policy_5_qs;
   logic metadata_high_5_retain_parent_policy_5_qs;
+  logic metadata_high_5_allow_keygen_policy_5_qs;
   logic metadata_high_6_re;
   logic metadata_high_6_valid_6_qs;
   logic [1:0] metadata_high_6_boot_stage_6_qs;
   logic metadata_high_6_allow_child_policy_6_qs;
   logic metadata_high_6_exportable_policy_6_qs;
   logic metadata_high_6_retain_parent_policy_6_qs;
+  logic metadata_high_6_allow_keygen_policy_6_qs;
   logic metadata_high_7_re;
   logic metadata_high_7_valid_7_qs;
   logic [1:0] metadata_high_7_boot_stage_7_qs;
   logic metadata_high_7_allow_child_policy_7_qs;
   logic metadata_high_7_exportable_policy_7_qs;
   logic metadata_high_7_retain_parent_policy_7_qs;
+  logic metadata_high_7_allow_keygen_policy_7_qs;
   logic err_code_we;
   logic err_code_invalid_op_qs;
   logic err_code_invalid_op_wd;
@@ -409,9 +419,14 @@ module keymgr_dpe_reg_top (
   logic debug_invalid_root_key_wd;
   logic debug_inactive_lc_en_qs;
   logic debug_inactive_lc_en_wd;
-  logic load_key_lock_we;
-  logic load_key_lock_qs;
-  logic load_key_lock_wd;
+  logic debug_invalid_secondary_root_key_qs;
+  logic debug_invalid_secondary_root_key_wd;
+  logic load_root_key_lock_we;
+  logic load_root_key_lock_qs;
+  logic load_root_key_lock_wd;
+  logic load_secondary_root_key_lock_we;
+  logic load_secondary_root_key_lock_qs;
+  logic load_secondary_root_key_lock_wd;
   logic enforce_sw_binding_we;
   logic [3:0] enforce_sw_binding_qs;
   logic [3:0] enforce_sw_binding_wd;
@@ -1004,6 +1019,34 @@ module keymgr_dpe_reg_top (
 
     // to register interface (read)
     .qs     (slot_policy_retain_parent_qs)
+  );
+
+  //   F[allow_keygen]: 3:3
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_slot_policy_allow_keygen (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (slot_policy_gated_we),
+    .wd     (slot_policy_allow_keygen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.slot_policy.allow_keygen.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (slot_policy_allow_keygen_qs)
   );
 
 
@@ -2399,6 +2442,21 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_0_retain_parent_policy_0_qs)
   );
 
+  //   F[allow_keygen_policy_0]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_metadata_high_0_allow_keygen_policy_0 (
+    .re     (metadata_high_0_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.metadata_high[0].allow_keygen_policy.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (metadata_high_0_allow_keygen_policy_0_qs)
+  );
+
 
   // Subregister 1 of Multireg metadata_high
   // R[metadata_high_1]: V(True)
@@ -2475,6 +2533,21 @@ module keymgr_dpe_reg_top (
     .q      (),
     .ds     (),
     .qs     (metadata_high_1_retain_parent_policy_1_qs)
+  );
+
+  //   F[allow_keygen_policy_1]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_metadata_high_1_allow_keygen_policy_1 (
+    .re     (metadata_high_1_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.metadata_high[1].allow_keygen_policy.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (metadata_high_1_allow_keygen_policy_1_qs)
   );
 
 
@@ -2555,6 +2628,21 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_2_retain_parent_policy_2_qs)
   );
 
+  //   F[allow_keygen_policy_2]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_metadata_high_2_allow_keygen_policy_2 (
+    .re     (metadata_high_2_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.metadata_high[2].allow_keygen_policy.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (metadata_high_2_allow_keygen_policy_2_qs)
+  );
+
 
   // Subregister 3 of Multireg metadata_high
   // R[metadata_high_3]: V(True)
@@ -2631,6 +2719,21 @@ module keymgr_dpe_reg_top (
     .q      (),
     .ds     (),
     .qs     (metadata_high_3_retain_parent_policy_3_qs)
+  );
+
+  //   F[allow_keygen_policy_3]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_metadata_high_3_allow_keygen_policy_3 (
+    .re     (metadata_high_3_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.metadata_high[3].allow_keygen_policy.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (metadata_high_3_allow_keygen_policy_3_qs)
   );
 
 
@@ -2711,6 +2814,21 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_4_retain_parent_policy_4_qs)
   );
 
+  //   F[allow_keygen_policy_4]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_metadata_high_4_allow_keygen_policy_4 (
+    .re     (metadata_high_4_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.metadata_high[4].allow_keygen_policy.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (metadata_high_4_allow_keygen_policy_4_qs)
+  );
+
 
   // Subregister 5 of Multireg metadata_high
   // R[metadata_high_5]: V(True)
@@ -2787,6 +2905,21 @@ module keymgr_dpe_reg_top (
     .q      (),
     .ds     (),
     .qs     (metadata_high_5_retain_parent_policy_5_qs)
+  );
+
+  //   F[allow_keygen_policy_5]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_metadata_high_5_allow_keygen_policy_5 (
+    .re     (metadata_high_5_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.metadata_high[5].allow_keygen_policy.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (metadata_high_5_allow_keygen_policy_5_qs)
   );
 
 
@@ -2867,6 +3000,21 @@ module keymgr_dpe_reg_top (
     .qs     (metadata_high_6_retain_parent_policy_6_qs)
   );
 
+  //   F[allow_keygen_policy_6]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_metadata_high_6_allow_keygen_policy_6 (
+    .re     (metadata_high_6_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.metadata_high[6].allow_keygen_policy.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (metadata_high_6_allow_keygen_policy_6_qs)
+  );
+
 
   // Subregister 7 of Multireg metadata_high
   // R[metadata_high_7]: V(True)
@@ -2943,6 +3091,21 @@ module keymgr_dpe_reg_top (
     .q      (),
     .ds     (),
     .qs     (metadata_high_7_retain_parent_policy_7_qs)
+  );
+
+  //   F[allow_keygen_policy_7]: 6:6
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_metadata_high_7_allow_keygen_policy_7 (
+    .re     (metadata_high_7_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.metadata_high[7].allow_keygen_policy.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (metadata_high_7_allow_keygen_policy_7_qs)
   );
 
 
@@ -3679,21 +3842,49 @@ module keymgr_dpe_reg_top (
     .qs     (debug_inactive_lc_en_qs)
   );
 
-
-  // R[load_key_lock]: V(False)
+  //   F[invalid_secondary_root_key]: 9:9
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_load_key_lock (
+  ) u_debug_invalid_secondary_root_key (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
     .reinit_i(1'b0),
 
     // from register interface
-    .we     (load_key_lock_we),
-    .wd     (load_key_lock_wd),
+    .we     (debug_we),
+    .wd     (debug_invalid_secondary_root_key_wd),
+
+    // from internal hardware
+    .de     (hw2reg.debug.invalid_secondary_root_key.de),
+    .d      (hw2reg.debug.invalid_secondary_root_key.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (debug_invalid_secondary_root_key_qs)
+  );
+
+
+  // R[load_root_key_lock]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_load_root_key_lock (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (load_root_key_lock_we),
+    .wd     (load_root_key_lock_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -3701,11 +3892,40 @@ module keymgr_dpe_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.load_key_lock.q),
+    .q      (reg2hw.load_root_key_lock.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (load_key_lock_qs)
+    .qs     (load_root_key_lock_qs)
+  );
+
+
+  // R[load_secondary_root_key_lock]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_load_secondary_root_key_lock (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (load_secondary_root_key_lock_we),
+    .wd     (load_secondary_root_key_lock_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.load_secondary_root_key_lock.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (load_secondary_root_key_lock_qs)
   );
 
 
@@ -3739,7 +3959,7 @@ module keymgr_dpe_reg_top (
 
 
 
-  logic [70:0] addr_hit;
+  logic [71:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == KEYMGR_DPE_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == KEYMGR_DPE_INTR_ENABLE_OFFSET);
@@ -3810,8 +4030,9 @@ module keymgr_dpe_reg_top (
     addr_hit[66] = (reg_addr == KEYMGR_DPE_ERR_CODE_OFFSET);
     addr_hit[67] = (reg_addr == KEYMGR_DPE_FAULT_STATUS_OFFSET);
     addr_hit[68] = (reg_addr == KEYMGR_DPE_DEBUG_OFFSET);
-    addr_hit[69] = (reg_addr == KEYMGR_DPE_LOAD_KEY_LOCK_OFFSET);
-    addr_hit[70] = (reg_addr == KEYMGR_DPE_ENFORCE_SW_BINDING_OFFSET);
+    addr_hit[69] = (reg_addr == KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_OFFSET);
+    addr_hit[70] = (reg_addr == KEYMGR_DPE_LOAD_SECONDARY_ROOT_KEY_LOCK_OFFSET);
+    addr_hit[71] = (reg_addr == KEYMGR_DPE_ENFORCE_SW_BINDING_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -3889,7 +4110,8 @@ module keymgr_dpe_reg_top (
                (addr_hit[67] & (|(KEYMGR_DPE_PERMIT[67] & ~reg_be))) |
                (addr_hit[68] & (|(KEYMGR_DPE_PERMIT[68] & ~reg_be))) |
                (addr_hit[69] & (|(KEYMGR_DPE_PERMIT[69] & ~reg_be))) |
-               (addr_hit[70] & (|(KEYMGR_DPE_PERMIT[70] & ~reg_be)))));
+               (addr_hit[70] & (|(KEYMGR_DPE_PERMIT[70] & ~reg_be))) |
+               (addr_hit[71] & (|(KEYMGR_DPE_PERMIT[71] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -3946,6 +4168,8 @@ module keymgr_dpe_reg_top (
   assign slot_policy_exportable_wd = reg_wdata[1];
 
   assign slot_policy_retain_parent_wd = reg_wdata[2];
+
+  assign slot_policy_allow_keygen_wd = reg_wdata[3];
   assign sw_binding_regwen_re = addr_hit[12] & reg_re & !reg_error;
   assign sw_binding_regwen_we = addr_hit[12] & reg_we & !reg_error;
 
@@ -4102,10 +4326,15 @@ module keymgr_dpe_reg_top (
   assign debug_invalid_root_key_wd = reg_wdata[7];
 
   assign debug_inactive_lc_en_wd = reg_wdata[8];
-  assign load_key_lock_we = addr_hit[69] & reg_we & !reg_error;
 
-  assign load_key_lock_wd = reg_wdata[0];
-  assign enforce_sw_binding_we = addr_hit[70] & reg_we & !reg_error;
+  assign debug_invalid_secondary_root_key_wd = reg_wdata[9];
+  assign load_root_key_lock_we = addr_hit[69] & reg_we & !reg_error;
+
+  assign load_root_key_lock_wd = reg_wdata[0];
+  assign load_secondary_root_key_lock_we = addr_hit[70] & reg_we & !reg_error;
+
+  assign load_secondary_root_key_lock_wd = reg_wdata[0];
+  assign enforce_sw_binding_we = addr_hit[71] & reg_we & !reg_error;
 
   assign enforce_sw_binding_wd = reg_wdata[3:0];
 
@@ -4180,8 +4409,9 @@ module keymgr_dpe_reg_top (
     reg_we_check[66] = err_code_we;
     reg_we_check[67] = 1'b0;
     reg_we_check[68] = debug_we;
-    reg_we_check[69] = load_key_lock_we;
-    reg_we_check[70] = enforce_sw_binding_we;
+    reg_we_check[69] = load_root_key_lock_we;
+    reg_we_check[70] = load_secondary_root_key_lock_we;
+    reg_we_check[71] = enforce_sw_binding_we;
   end
 
   // Read data return
@@ -4242,6 +4472,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[0] = slot_policy_allow_child_qs;
         reg_rdata_next[1] = slot_policy_exportable_qs;
         reg_rdata_next[2] = slot_policy_retain_parent_qs;
+        reg_rdata_next[3] = slot_policy_allow_keygen_qs;
       end
 
       addr_hit[12]: begin
@@ -4434,6 +4665,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[3] = metadata_high_0_allow_child_policy_0_qs;
         reg_rdata_next[4] = metadata_high_0_exportable_policy_0_qs;
         reg_rdata_next[5] = metadata_high_0_retain_parent_policy_0_qs;
+        reg_rdata_next[6] = metadata_high_0_allow_keygen_policy_0_qs;
       end
 
       addr_hit[59]: begin
@@ -4442,6 +4674,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[3] = metadata_high_1_allow_child_policy_1_qs;
         reg_rdata_next[4] = metadata_high_1_exportable_policy_1_qs;
         reg_rdata_next[5] = metadata_high_1_retain_parent_policy_1_qs;
+        reg_rdata_next[6] = metadata_high_1_allow_keygen_policy_1_qs;
       end
 
       addr_hit[60]: begin
@@ -4450,6 +4683,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[3] = metadata_high_2_allow_child_policy_2_qs;
         reg_rdata_next[4] = metadata_high_2_exportable_policy_2_qs;
         reg_rdata_next[5] = metadata_high_2_retain_parent_policy_2_qs;
+        reg_rdata_next[6] = metadata_high_2_allow_keygen_policy_2_qs;
       end
 
       addr_hit[61]: begin
@@ -4458,6 +4692,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[3] = metadata_high_3_allow_child_policy_3_qs;
         reg_rdata_next[4] = metadata_high_3_exportable_policy_3_qs;
         reg_rdata_next[5] = metadata_high_3_retain_parent_policy_3_qs;
+        reg_rdata_next[6] = metadata_high_3_allow_keygen_policy_3_qs;
       end
 
       addr_hit[62]: begin
@@ -4466,6 +4701,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[3] = metadata_high_4_allow_child_policy_4_qs;
         reg_rdata_next[4] = metadata_high_4_exportable_policy_4_qs;
         reg_rdata_next[5] = metadata_high_4_retain_parent_policy_4_qs;
+        reg_rdata_next[6] = metadata_high_4_allow_keygen_policy_4_qs;
       end
 
       addr_hit[63]: begin
@@ -4474,6 +4710,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[3] = metadata_high_5_allow_child_policy_5_qs;
         reg_rdata_next[4] = metadata_high_5_exportable_policy_5_qs;
         reg_rdata_next[5] = metadata_high_5_retain_parent_policy_5_qs;
+        reg_rdata_next[6] = metadata_high_5_allow_keygen_policy_5_qs;
       end
 
       addr_hit[64]: begin
@@ -4482,6 +4719,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[3] = metadata_high_6_allow_child_policy_6_qs;
         reg_rdata_next[4] = metadata_high_6_exportable_policy_6_qs;
         reg_rdata_next[5] = metadata_high_6_retain_parent_policy_6_qs;
+        reg_rdata_next[6] = metadata_high_6_allow_keygen_policy_6_qs;
       end
 
       addr_hit[65]: begin
@@ -4490,6 +4728,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[3] = metadata_high_7_allow_child_policy_7_qs;
         reg_rdata_next[4] = metadata_high_7_exportable_policy_7_qs;
         reg_rdata_next[5] = metadata_high_7_retain_parent_policy_7_qs;
+        reg_rdata_next[6] = metadata_high_7_allow_keygen_policy_7_qs;
       end
 
       addr_hit[66]: begin
@@ -4525,13 +4764,18 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[6] = debug_invalid_digest_qs;
         reg_rdata_next[7] = debug_invalid_root_key_qs;
         reg_rdata_next[8] = debug_inactive_lc_en_qs;
+        reg_rdata_next[9] = debug_invalid_secondary_root_key_qs;
       end
 
       addr_hit[69]: begin
-        reg_rdata_next[0] = load_key_lock_qs;
+        reg_rdata_next[0] = load_root_key_lock_qs;
       end
 
       addr_hit[70]: begin
+        reg_rdata_next[0] = load_secondary_root_key_lock_qs;
+      end
+
+      addr_hit[71]: begin
         reg_rdata_next[3:0] = enforce_sw_binding_qs;
       end
 

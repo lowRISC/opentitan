@@ -124,6 +124,10 @@ set_rule_status -rule E_RST_METASTABILITY -status Waived \
     (MetaStableFlop=~"*.u_clk_io_peri_cg.*")}
 set_rule_status -rule E_RST_METASTABILITY -status Waived \
   -expression {(SourceReset=="POR_N") && \
+    (ResetFlop=~"*.u_clkmgr_aon.*io_spi_host1_sw_en_sync*") && \
+    (MetaStableFlop=~"*.u_clk_io_spi_host1_cg.*")}
+set_rule_status -rule E_RST_METASTABILITY -status Waived \
+  -expression {(SourceReset=="POR_N") && \
     (ResetFlop=~"*.u_clkmgr_aon.*io_div4_peri_sw_en_sync*") && \
     (MetaStableFlop=~"*.u_clk_io_div4_peri_cg.*")}
 set_rule_status -rule E_RST_METASTABILITY -status Waived \

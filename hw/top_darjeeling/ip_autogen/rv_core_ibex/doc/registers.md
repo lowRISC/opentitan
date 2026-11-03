@@ -271,9 +271,8 @@ A number of memory-mapped registers are available to control Ibex-related functi
 | rv_core_ibex.[`ERR_STATUS`](#err_status)                                 | 0x414    |        4 | error status                                                                  |
 | rv_core_ibex.[`RND_DATA`](#rnd_data)                                     | 0x418    |        4 | Random data from EDN                                                          |
 | rv_core_ibex.[`RND_STATUS`](#rnd_status)                                 | 0x41c    |        4 | Status of random data in [`RND_DATA`](#rnd_data)                              |
-| rv_core_ibex.[`FPGA_INFO`](#fpga_info)                                   | 0x420    |        4 | FPGA build timestamp info.                                                    |
-| rv_core_ibex.[`MCOUNTEREN_WRITABLE_REGWEN`](#mcounteren_writable_regwen) | 0x424    |        4 | Register write-enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable)      |
-| rv_core_ibex.[`MCOUNTEREN_WRITABLE`](#mcounteren_writable)               | 0x428    |        4 | Controls whether Ibex mcounteren CSR is writable by software.                 |
+| rv_core_ibex.[`MCOUNTEREN_WRITABLE_REGWEN`](#mcounteren_writable_regwen) | 0x420    |        4 | Register write-enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable)      |
+| rv_core_ibex.[`MCOUNTEREN_WRITABLE`](#mcounteren_writable)               | 0x424    |        4 | Controls whether Ibex mcounteren CSR is writable by software.                 |
 | rv_core_ibex.[`DV_SIM_WINDOW`](#dv_sim_window)                           | 0x440    |       32 | Exposed tlul window for DV only purposes.                                     |
 
 ## ALERT_TEST
@@ -902,26 +901,9 @@ Status of random data in [`RND_DATA`](#rnd_data)
 |   1    |   ro   |   0x0   | RND_DATA_FIPS  | When [`RND_STATUS.RND_DATA_VALID`](#rnd_status) is 1, this bit indicates whether [`RND_DATA`](#rnd_data) is fips quality. When [`RND_STATUS.RND_DATA_VALID`](#rnd_status) is 0, this bit has no meaning. |
 |   0    |   ro   |   0x0   | RND_DATA_VALID | When set, the data in [`RND_DATA`](#rnd_data) is valid. When clear an EDN request for new data for [`RND_DATA`](#rnd_data) is pending.                                                                   |
 
-## FPGA_INFO
-FPGA build timestamp info.
-This register only contains valid data for fpga, for all other variants it is simply 0.
-- Offset: `0x420`
-- Reset default: `0x0`
-- Reset mask: `0xffffffff`
-
-### Fields
-
-```wavejson
-{"reg": [{"name": "VAL", "bits": 32, "attr": ["ro"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
-```
-
-|  Bits  |  Type  |  Reset  | Name   | Description                       |
-|:------:|:------:|:-------:|:-------|:----------------------------------|
-|  31:0  |   ro   |   0x0   | VAL    | FPGA build timestamp information. |
-
 ## MCOUNTEREN_WRITABLE_REGWEN
 Register write-enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable)
-- Offset: `0x424`
+- Offset: `0x420`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -947,7 +929,7 @@ Write enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable) Once set to 0, i
 
 ## MCOUNTEREN_WRITABLE
 Controls whether Ibex mcounteren CSR is writable by software.
-- Offset: `0x428`
+- Offset: `0x424`
 - Reset default: `0x6`
 - Reset mask: `0xf`
 - Register enable: [`MCOUNTEREN_WRITABLE_REGWEN`](#mcounteren_writable_regwen)

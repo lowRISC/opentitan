@@ -40,7 +40,7 @@ class chip_sw_data_integrity_vseq extends chip_sw_base_vseq;
                           error_ram_size/2 +
                           (($urandom_range(0, 20) - 10) << $clog2(bus_params_pkg::BUS_DBW));
     end else if (fault_target == FaultTargetRetSramData) begin
-      // Choose a random address in the last 1KB so we don't clobber counters.
+      // Choose a random address in the last quarter so we don't clobber counters.
       // The exact range of memory that can be corrupted with no trouble can be
       // deduced from sw/device/lib/testing/ret_sram_testutils.c, near line 36.
       `uvm_info(`gfn, "Injecting data error in retention SRAM.", UVM_MEDIUM)

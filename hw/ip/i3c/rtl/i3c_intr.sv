@@ -6,10 +6,10 @@
 
 module i3c_intr #(
   // Number of interrupts implemented by this module instance.
-  parameter int unsigned      Width    = 1,
+  parameter int unsigned      Width     = 1,
   // Whether each interrupt is an `Event` type (pulse), rather than always reflecting the current
   // `Status`.
-  parameter logic [Width-1:0] Event = 0
+  parameter logic [Width-1:0] EventType = 0
 ) (
   // Interrupt event from internal logic.
   input   [Width-1:0] event_i,
@@ -67,7 +67,7 @@ module i3c_intr #(
 
   // Interrupt clearing is performed only for level-sensitive interrupts.
   logic [Width-1:0] clr_status;
-  assign clr_status = (status_i & ~event_i) & ~Event;
+  assign clr_status = (status_i & ~event_i) & ~EventType;
 
   // Drive out OpenTitan-style 'data enable' and 'data' values.
   // Note: `set_status` overrides `clear_status`; this is essential for forcing to work on

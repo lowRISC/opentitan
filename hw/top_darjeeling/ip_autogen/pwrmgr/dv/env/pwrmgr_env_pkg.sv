@@ -42,12 +42,9 @@ package pwrmgr_env_pkg;
 
   // types
   typedef enum int {
-    WakeupSysrst,
-    WakeupDbgCable,
-    WakeupPin,
-    WakeupUsb,
-    WakeupAonTimer,
-    WakeupSensorCtrl
+    WakeupPinmuxPinWkupReq,
+    WakeupAonTimerWkupReq,
+    WakeupSocProxyWkupExternalReq
   } wakeup_e;
 
   typedef enum int {

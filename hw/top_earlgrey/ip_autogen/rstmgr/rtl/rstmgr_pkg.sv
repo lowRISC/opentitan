@@ -22,6 +22,8 @@ package rstmgr_pkg;
   parameter int I2C0 = 5;
   parameter int I2C1 = 6;
   parameter int I2C2 = 7;
+  parameter int I3C0 = 8;
+  parameter int I3C1 = 9;
 
   // resets generated and broadcast
   // SEC_CM: LEAF.RST.SHADOW
@@ -50,6 +52,8 @@ package rstmgr_pkg;
     logic [PowerDomains-1:0] rst_i2c0_n;
     logic [PowerDomains-1:0] rst_i2c1_n;
     logic [PowerDomains-1:0] rst_i2c2_n;
+    logic [PowerDomains-1:0] rst_i3c0_n;
+    logic [PowerDomains-1:0] rst_i3c1_n;
   } rstmgr_out_t;
 
   // reset indication for alert handler
@@ -78,9 +82,11 @@ package rstmgr_pkg;
     prim_mubi_pkg::mubi4_t [PowerDomains-1:0] i2c0;
     prim_mubi_pkg::mubi4_t [PowerDomains-1:0] i2c1;
     prim_mubi_pkg::mubi4_t [PowerDomains-1:0] i2c2;
+    prim_mubi_pkg::mubi4_t [PowerDomains-1:0] i3c0;
+    prim_mubi_pkg::mubi4_t [PowerDomains-1:0] i3c1;
   } rstmgr_rst_en_t;
 
-  parameter int NumOutputRst = 24 * PowerDomains;
+  parameter int NumOutputRst = 26 * PowerDomains;
 
   // cpu reset requests and status
   typedef struct packed {

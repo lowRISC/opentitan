@@ -7,8 +7,6 @@
 #include "hw/top/dt/rv_core_ibex.h"  // Generated
 #include "sw/device/lib/arch/device.h"
 #include "sw/device/lib/base/macros.h"
-#include "sw/device/silicon_creator/lib/drivers/ibex.h"
-#include "sw/device/silicon_creator/lib/drivers/uart.h"
 
 #include "hw/top/rv_core_ibex_regs.h"  // Generated
 

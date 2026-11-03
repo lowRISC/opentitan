@@ -46,12 +46,16 @@ pub const MANIFEST_EXT_ID_IMAGE_TYPE: u32 = 0x494d4754;
 pub const MANIFEST_EXT_ID_SECVER_WRITE: u32 = 0x3f086a41;
 pub const MANIFEST_EXT_ID_ISFB: u32 = 0x42465349;
 pub const MANIFEST_EXT_ID_ISFB_ERASE: u32 = 0x45465349;
+pub const MANIFEST_EXT_ID_MLDSA87_KEY: u32 = 0xa3e247b8;
+pub const MANIFEST_EXT_ID_MLDSA87_SIGNATURE: u32 = 0x4714ac7d;
 pub const MANIFEST_EXT_NAME_SPX_KEY: u32 = 0x30545845;
 pub const MANIFEST_EXT_NAME_SPX_SIGNATURE: u32 = 0x31545845;
 pub const MANIFEST_EXT_NAME_IMAGE_TYPE: u32 = 0x494d4754;
 pub const MANIFEST_EXT_NAME_SECVER_WRITE: u32 = 0x56434553;
 pub const MANIFEST_EXT_NAME_ISFB: u32 = 0x42465349;
 pub const MANIFEST_EXT_NAME_ISFB_ERASE: u32 = 0x45465349;
+pub const MANIFEST_EXT_NAME_MLDSA87_KEY: u32 = 0x4b384c4d;
+pub const MANIFEST_EXT_NAME_MLDSA87_SIGNATURE: u32 = 0x53384c4d;
 pub const CHIP_ROM_EXT_IDENTIFIER: u32 = 0x4552544f;
 pub const CHIP_BL0_IDENTIFIER: u32 = 0x3042544f;
 pub const CHIP_ROM_EXT_SIZE_MIN: u32 = 8788;
@@ -66,13 +70,35 @@ with_unknown! {
     }
 }
 
+/// Buffer of reserved bytes.
+///
+/// This struct is used to hold reserved bytes in the manifest to pad fields
+/// with 0xa5 to match layout specifications.
+#[repr(C)]
+#[derive(KnownLayout, Immutable, IntoBytes, FromBytes, Debug, Clone, Copy)]
+pub struct ReservedBuffer<const COUNT: usize> {
+    a: [u8; COUNT],
+}
+
+impl<const COUNT: usize> Default for ReservedBuffer<COUNT> {
+    fn default() -> Self {
+        Self {
+            a: std::array::from_fn(|_| 0xa5),
+        }
+    }
+}
+
 /// Manifest for boot stage images stored in flash.
 #[repr(C)]
 #[derive(KnownLayout, Immutable, IntoBytes, FromBytes, Debug, Default)]
 pub struct Manifest {
     pub signature: SigverifyBuffer,
+    pub reserved_signature: ReservedBuffer<160>,
+    pub reserved_unsigned: ReservedBuffer<160>,
     pub usage_constraints: ManifestUsageConstraints,
     pub pub_key: SigverifyBuffer,
+    pub reserved_public_key: ReservedBuffer<160>,
+    pub reserved: ReservedBuffer<160>,
     pub address_translation: u32,
     pub identifier: u32,
     pub manifest_version: ManifestVersion,
@@ -151,17 +177,65 @@ pub struct ManifestExtSpxKey {
     pub key: SigverifySpxKey,
 }
 
-/// A type that holds 96 32-bit words for RSA-3072.
+/// Size of an ML-DSA-87 public key in bytes (FIPS-204).
+pub const MLDSA87_PUBLIC_KEY_BYTES: usize = 2592;
+/// Size of an ML-DSA-87 signature in bytes (FIPS-204).
+pub const MLDSA87_SIGNATURE_BYTES: usize = 4627;
+/// Context string of the ML-DSA-87 image signature (FIPS-204). Must match
+/// `kSigverifyMldsa87ImageContext` in `sw/device/silicon_creator/lib/sigverify/mldsa87_key.c`.
+pub const MLDSA87_IMAGE_CONTEXT: &[u8] = b"OT-MLDSA-IMAGE";
+
+/// A type that holds an ML-DSA-87 signature, zero-padded to a whole number of 32-bit words.
 #[repr(C)]
-#[derive(Immutable, IntoBytes, FromBytes, Debug)]
-pub struct SigverifyBuffer {
-    pub data: [u32; 96usize],
+#[derive(Immutable, IntoBytes, FromBytes, Debug, Copy, Clone)]
+pub struct SigverifyMldsa87Signature {
+    pub data: [u32; MLDSA87_SIGNATURE_BYTES.div_ceil(size_of::<u32>())],
 }
 
-impl Default for SigverifyBuffer {
+impl Default for SigverifyMldsa87Signature {
     fn default() -> Self {
-        Self { data: [0; 96usize] }
+        Self {
+            data: [0; MLDSA87_SIGNATURE_BYTES.div_ceil(size_of::<u32>())],
+        }
     }
+}
+
+/// ML-DSA-87 signature manifest extension.
+#[repr(C)]
+#[derive(Immutable, IntoBytes, FromBytes, Debug, Default)]
+pub struct ManifestExtMldsa87Signature {
+    pub header: ManifestExtHeader,
+    pub signature: SigverifyMldsa87Signature,
+}
+
+/// A type that holds an ML-DSA-87 public key as 32-bit words.
+#[repr(C)]
+#[derive(Immutable, IntoBytes, FromBytes, Debug, Copy, Clone)]
+pub struct SigverifyMldsa87Key {
+    pub data: [u32; MLDSA87_PUBLIC_KEY_BYTES / size_of::<u32>()],
+}
+
+impl Default for SigverifyMldsa87Key {
+    fn default() -> Self {
+        Self {
+            data: [0; MLDSA87_PUBLIC_KEY_BYTES / size_of::<u32>()],
+        }
+    }
+}
+
+/// ML-DSA-87 public key manifest extension.
+#[repr(C)]
+#[derive(Immutable, IntoBytes, FromBytes, Debug, Default)]
+pub struct ManifestExtMldsa87Key {
+    pub header: ManifestExtHeader,
+    pub key: SigverifyMldsa87Key,
+}
+
+/// A type that holds 16 32-bit words for ECDSA-P256.
+#[repr(C)]
+#[derive(Immutable, IntoBytes, FromBytes, Debug, Clone, Copy, Default)]
+pub struct SigverifyBuffer {
+    pub data: [u32; 16usize],
 }
 
 #[repr(C)]
@@ -292,8 +366,12 @@ mod tests {
     #[test]
     pub fn test_manifest_layout() {
         assert_eq!(offset_of!(Manifest, signature), 0);
+        assert_eq!(offset_of!(Manifest, reserved_signature), 64);
+        assert_eq!(offset_of!(Manifest, reserved_unsigned), 224);
         assert_eq!(offset_of!(Manifest, usage_constraints), 384);
         assert_eq!(offset_of!(Manifest, pub_key), 432);
+        assert_eq!(offset_of!(Manifest, reserved_public_key), 496);
+        assert_eq!(offset_of!(Manifest, reserved), 656);
         assert_eq!(offset_of!(Manifest, address_translation), 816);
         assert_eq!(offset_of!(Manifest, identifier), 820);
         assert_eq!(offset_of!(Manifest, manifest_version), 824);

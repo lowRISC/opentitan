@@ -77,11 +77,10 @@ module i3c_reset_detector
   i3c_rstdet_rsp_t rsp_sync;
   assign rsp_o = rsp_sync;
 
-  // SCL and SDA inputs, and their negations, are all required within this detector.
+  // SCL and SDA inputs, and the negation of SDA, are required within this detector.
   // Additionally the 'enable_i' signal can be used to protect the logic from disconnected SCL/SDA
   // inputs or other activity when the Target logic is not ready to process traffic.
   logic scl_buf;
-  logic scl_buf_n;
   logic sda_clk;
   logic sda_clk_n;
 
@@ -94,7 +93,7 @@ module i3c_reset_detector
 
     // Clock signals.
     .scl_buf_o  (scl_buf),
-    .scl_buf_no (scl_buf_n),
+    .scl_buf_no (),  // Not used.
     .sda0_clk_o (sda_clk),
     .sda0_clk_no(sda_clk_n),
     .sda_buf_o  (),  // Not used.

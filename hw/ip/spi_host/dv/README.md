@@ -24,7 +24,7 @@ SPI_HOST testbench has been constructed based on the
 ![Block diagram](./doc/tb.svg)
 
 ### Top level testbench
-Top level testbench is located at `hw/ip/spi_host/dv/tb/tb.sv`. It instantiates the SPI_HOST DUT module `hw/ip/spi_host/rtl/spi_host.sv`.
+Top level testbench is located at `hw/ip/spi_host/dv/tb.sv`. It instantiates the SPI_HOST DUT module `hw/ip/spi_host/rtl/spi_host.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
 * [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md)
@@ -197,6 +197,9 @@ and the incoming device transactions where it will capture the response items an
 The SPI_HOST RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
 It can be created manually by invoking [`regtool`](../../../../util/reggen/doc/setup_and_use.md):
+```console
+$ util/regtool.py -s -t <output-dir> hw/ip/spi_host/data/spi_host.hjson
+```
 
 ### Stimulus strategy
 #### Test sequences
@@ -255,7 +258,7 @@ This way both outgoing and incoming transactions are validated independently of 
 
 
 #### Assertions
-* TLUL assertions: The `tb/spi_host_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
+* TLUL assertions: The `dv/sva/spi_host_bind.sv` binds the `tlul_assert` [assertions](../../tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.
 * Unknown checks on DUT outputs: The RTL has assertions to ensure all outputs are initialized to known values after coming out of reset.
 
 

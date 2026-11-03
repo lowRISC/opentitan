@@ -17,7 +17,8 @@
  * f = lcm(p - 1, q- 1) is always an even integer.
  *
  * @param[in] x24: f, DMEM pointer to the first limb of f.
- * @param[in] x25: e^-1, DMEM pointer to the first limb of the result.
+ * @param[in] x25: e^-1, DMEM pointer to the first limb of the result buffer
+ *                 (must have space for n + 1 limbs, i.e., up to 544 bytes).
  * @param[in] x26: DMEM pointer to a temporary slot (>= 32 bytes).
  * @param[in] x27: n, number of limbs of f.
  * @param[in] w31: all-zero.
