@@ -70,7 +70,8 @@ Instead, both are fixed by HW to their defaults: `key_policy` is set to `DEFAULT
 Since `allow_keygen = 0`, no key can be generated directly from such a slot, and SW must advance it at least once before it can generate keys.
 Hence, the value of `max_key_version` is irrelevant for these slots.
 
-With the exception of the secret key itself, software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` subfields at any time through the `METADATA_LOW` and `METADATA_HIGH` registers.
+With the exception of the secret key itself, software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` subfields through the `METADATA_LOW` and `METADATA_HIGH` registers until `METADATA_READ_LOCK` is set.
+Once `METADATA_READ_LOCK` is set, both registers read as zero for all slots until the next reset.
 Both registers are replicated `NumMaxHwSlot` times but only indices below `NumInstHwSlot` correspond to an actual hardware slot, the remaining slots are bound to `0`.
 `METADATA_LOW.MAX_KEY_VERSION` reports `max_key_version`, while `METADATA_HIGH` reports `valid`, `boot_stage` and `key_policy` subfields respectively.
 
