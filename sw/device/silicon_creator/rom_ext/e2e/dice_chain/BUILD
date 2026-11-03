@@ -388,24 +388,24 @@ opentitan_test(
 )
 
 otp_json(
-    name = "otp_json_watchdog_250ms",
+    name = "otp_json_watchdog_350ms",
     partitions = [
         otp_partition(
             name = "OWNER_SW_CFG",
             items = {
-                # 0.25s * 200000Hz = 50000
-                "OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES": otp_hex(50000),
+                # 0.35s * 200000Hz = 70000
+                "OWNER_SW_CFG_ROM_WATCHDOG_BITE_THRESHOLD_CYCLES": otp_hex(70000),
             },
         ),
     ],
 )
 
 otp_image(
-    name = "otp_img_secret2_locked_watchdog_250ms_prod",
+    name = "otp_img_secret2_locked_watchdog_350ms_prod",
     src = "//hw/ip/otp_ctrl/data:otp_json_prod",
     overlays = STD_OTP_OVERLAYS + [
         "//sw/device/silicon_creator/rom_ext/e2e:otp_json_secret2_locked",
-        ":otp_json_watchdog_250ms",
+        ":otp_json_watchdog_350ms",
     ],
 )
 
@@ -418,13 +418,13 @@ opentitan_test(
         "//hw/top_earlgrey:sim_qemu_rom_ext": None,
     },
     fpga = fpga_params(
-        otp = ":otp_img_secret2_locked_watchdog_250ms_prod",
+        otp = ":otp_img_secret2_locked_watchdog_350ms_prod",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a",
         testopt_clear_after_test = "True",
         testopt_clear_before_test = "True",
     ),
     qemu = qemu_params(
-        otp = ":otp_img_secret2_locked_watchdog_250ms_prod",
+        otp = ":otp_img_secret2_locked_watchdog_350ms_prod",
         rom_ext = "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_a",
     ),
     slot_spec = ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
