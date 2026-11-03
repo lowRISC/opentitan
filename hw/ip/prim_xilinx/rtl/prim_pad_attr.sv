@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-`include "prim_assert.sv"
-
 module prim_pad_attr
   import prim_pad_wrapper_pkg::*;
 #(

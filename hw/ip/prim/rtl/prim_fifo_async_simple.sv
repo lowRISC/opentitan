@@ -3,8 +3,6 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 
-`include "prim_assert.sv"
-
 module prim_fifo_async_simple #(
   parameter int unsigned Width  = 16,
   parameter bit          EnRstChks = 1'b0, // Enable reset-related assertion checks, disabled by
