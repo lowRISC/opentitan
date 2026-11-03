@@ -272,6 +272,7 @@ static status_t aes_kwp_key_construct(const otcrypto_blinded_key_t *key_kek,
   aes_key->key_len = keyblob_share_num_words(key_kek->config);
 
   if (key_kek->config.hw_backed == kHardenedBoolTrue) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     // Call keymgr to sideload the key into AES.
     keymgr_diversification_t diversification;
     HARDENED_TRY(keyblob_to_keymgr_diversification(key_kek, &diversification));

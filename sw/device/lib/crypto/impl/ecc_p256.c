@@ -155,6 +155,7 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t internal_p256_keygen_finalize(
 
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     HARDENED_TRY(p256_sideload_keygen_finalize(pk));
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
@@ -222,6 +223,7 @@ static status_t internal_p256_keygen_start(
     const otcrypto_blinded_key_t *private_key) {
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
         kHardenedBoolTrue;
     HARDENED_TRY(keyblob_sideload_key_otbn(private_key));
@@ -689,6 +691,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_async_start(
   } else if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     // Load the key and start in sideloaded-key mode.
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
         kHardenedBoolTrue;
     HARDENED_TRY_WIPE_DMEM(keyblob_sideload_key_otbn(private_key));
@@ -996,6 +999,7 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
 
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
         kHardenedBoolTrue;
     HARDENED_TRY_WIPE_DMEM(keyblob_sideload_key_otbn(private_key));

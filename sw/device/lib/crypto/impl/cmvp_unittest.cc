@@ -566,8 +566,18 @@ TEST_F(CmvpTest, SpecificationKeyRequirements) {
   EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_KDF_CTR_HMAC]);
   EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_KMAC_KDF]);
 
-  // Hardware-backed keygen is not approved
+  // Hardware-backed keygen and DICE keygen/sign are not approved
   EXPECT_FALSE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_HW_BACKED_KEYGEN]);
+  EXPECT_FALSE(
+      kCryptoFunctionApproved[OTCRYPTO_FUNCTION_ECDSA_P256_DICE_KEYGEN]);
+  EXPECT_FALSE(kCryptoFunctionApproved
+                   [OTCRYPTO_FUNCTION_ECDSA_P256_DICE_KEYGEN_ASYNC_START]);
+  EXPECT_FALSE(kCryptoFunctionApproved
+                   [OTCRYPTO_FUNCTION_ECDSA_P256_DICE_KEYGEN_ASYNC_FINALIZE]);
+  EXPECT_FALSE(kCryptoFunctionApproved
+                   [OTCRYPTO_FUNCTION_ECDSA_P256_DICE_SIGN_ASYNC_START]);
+  EXPECT_FALSE(kCryptoFunctionApproved
+                   [OTCRYPTO_FUNCTION_ECDSA_P256_DICE_SIGN_ASYNC_FINALIZE]);
   // RSA hash_sign_verify and hash_verify are approved, cofactor keygen is not
   EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_RSA_HASH_SIGN_VERIFY]);
   EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_RSA_HASH_VERIFY]);

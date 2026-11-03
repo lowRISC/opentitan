@@ -160,6 +160,7 @@ static status_t aes_gcm_key_construct(otcrypto_blinded_key_t *blinded_key,
   aes_key->key_len = keyblob_share_num_words(blinded_key->config);
 
   if (launder32(blinded_key->config.hw_backed) == kHardenedBoolTrue) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     // In this case, we use an implementation-specific representation; the
     // first "share" is the keyblob and the second share is ignored.
     if (launder32(blinded_key->keyblob_length) != kKeyblobHwBackedBytes) {
@@ -475,13 +476,14 @@ otcrypto_status_t otcrypto_aes_gcm_update_aad(
   if (internal_ctx.input_len > 0) {
     return OTCRYPTO_BAD_ARGS;
   }
+  if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+    is_sideloaded = kHardenedBoolTrue;
+  }
   if (aad->len == 0) {
     // Nothing to do.
     // COVERAGE (MISSING) We do not cover the length 0 aad on update.
     return otcrypto_eval_exit(OTCRYPTO_OK);
-  }
-  if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
-    is_sideloaded = kHardenedBoolTrue;
   }
 
   // Call the internal update operation.
@@ -519,13 +521,14 @@ otcrypto_status_t otcrypto_aes_gcm_update_encrypted_data(
   aes_gcm_context_t internal_ctx
       __attribute__((cleanup(aes_gcm_context_shred)));
   HARDENED_TRY(gcm_context_restore(ctx, &internal_ctx));
+  if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+    is_sideloaded = kHardenedBoolTrue;
+  }
   if (input->len == 0) {
     // Nothing to do.
     // COVERAGE (MISSING) We do not cover the length 0 input on update.
     return otcrypto_eval_exit(OTCRYPTO_OK);
-  }
-  if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
-    is_sideloaded = kHardenedBoolTrue;
   }
   // Remask the key if it is not sideloaded.
   HARDENED_TRY(gcm_remask_key(&internal_ctx));
@@ -591,6 +594,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
     return OTCRYPTO_BAD_ARGS;
   }
   if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     is_sideloaded = kHardenedBoolTrue;
   }
   // Remask the key if it is not sideloaded.
@@ -650,6 +654,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
   if (launder32(internal_ctx.sideload) == kHardenedBoolTrue) {
     // COVERAGE (MISSING) Sideloaded keys with streaming decrypt_final are not
     // covered.
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     is_sideloaded = kHardenedBoolTrue;
   }
   // Remask the key if it is not sideloaded.
