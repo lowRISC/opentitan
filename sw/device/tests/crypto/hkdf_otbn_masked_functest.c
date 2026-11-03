@@ -82,7 +82,7 @@ static status_t run_test(hkdf_test_vector_t *test) {
 
   otcrypto_key_config_t okm_config = {
       .version = otcrypto_lib_version(),
-      .key_mode = kOtcryptoKeyModeAesCtr,
+      .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = test->okm_bytelen,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
@@ -272,7 +272,7 @@ static status_t run_negative_tests(void) {
   };
   otcrypto_key_config_t valid_okm_cfg = {
       .version = otcrypto_lib_version(),
-      .key_mode = kOtcryptoKeyModeAesCtr,
+      .key_mode = kOtcryptoKeyModeHmacSha256,
       .key_length = 42,
       .hw_backed = kHardenedBoolFalse,
       .exportable = kHardenedBoolFalse,
