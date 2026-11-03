@@ -89,38 +89,47 @@ enum {
 
 rom_error_t otbn_boot_app_load(void) { return sc_otbn_load_app(kOtbnAppBoot); }
 
+/**
+ * Helper to sideload a keymgr key, write the additional flash seed, execute an
+ * OTBN attestation mode (`keygen` or `key_save`), and immediately clear the
+ * sideload slot and DMEM seed buffer.
+ */
+static rom_error_t otbn_boot_keygen_or_save(
+    uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
+    sc_keymgr_diversification_t diversification, uint32_t mode) {
+  HARDENED_RETURN_IF_ERROR(
+      sc_otbn_dmem_write(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
+
+  // Load the additional seed from flash info and pad the remaining wide-word
+  // DMEM field with zeros to prevent a DMEM integrity error.
+  uint32_t seed[kOtbnAttestationSeedBufferWords] = {0};
+  HARDENED_RETURN_IF_ERROR(
+      load_attestation_keygen_seed(additional_seed_idx, seed));
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
+      ARRAYSIZE(seed), seed, kOtbnVarBootAttestationAdditionalSeed));
+  memset(seed, 0, sizeof(seed));
+
+  // Trigger key manager to sideload the attestation key into OTBN and run the
+  // OTBN program (blocks until OTBN is done).
+  HARDENED_RETURN_IF_ERROR(
+      sc_keymgr_generate_key_otbn(key_type, diversification));
+  rom_error_t err = sc_otbn_execute();
+  SEC_MMIO_WRITE_INCREMENT(kScOtbnSecMmioExecute);
+
+  // Immediately clear the sideload slot and DMEM seed buffer.
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_sideload_clear_otbn());
+  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
+      ARRAYSIZE(seed), seed, kOtbnVarBootAttestationAdditionalSeed));
+  return err;
+}
+
 rom_error_t otbn_boot_attestation_keygen(
     uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
     sc_keymgr_diversification_t diversification,
     ecdsa_p256_public_key_t *public_key) {
-  // Trigger key manager to sideload the attestation key into OTBN.
   HARDENED_RETURN_IF_ERROR(
-      sc_keymgr_generate_key_otbn(key_type, diversification));
-
-  // Write the mode.
-  uint32_t mode = kOtbnBootModeAttestationKeygen;
-  HARDENED_RETURN_IF_ERROR(
-      sc_otbn_dmem_write(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
-
-  // Load the additional seed from flash info.
-  uint32_t seed[kAttestationSeedWords];
-  HARDENED_RETURN_IF_ERROR(
-      load_attestation_keygen_seed(additional_seed_idx, seed));
-
-  // Write the additional seed to OTBN DMEM.
-  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
-      kAttestationSeedWords, seed, kOtbnVarBootAttestationAdditionalSeed));
-  // Pad remaining DMEM field with zeros to prevent a DMEM integrity error
-  // (since data is aligned to 256-bit words).
-  uint32_t zero_buf[kOtbnAttestationSeedBufferWords - kAttestationSeedWords] = {
-      0};
-  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
-      ARRAYSIZE(zero_buf), zero_buf,
-      kOtbnVarBootAttestationAdditionalSeed + kAttestationSeedBytes));
-
-  // Run the OTBN program (blocks until OTBN is done).
-  HARDENED_RETURN_IF_ERROR(sc_otbn_execute());
-  SEC_MMIO_WRITE_INCREMENT(kScOtbnSecMmioExecute);
+      otbn_boot_keygen_or_save(additional_seed_idx, key_type, diversification,
+                               kOtbnBootModeAttestationKeygen));
 
   // Verify the OTBN instruction count to mitigate FI.
   uint32_t insn_cnt = sc_otbn_instruction_count_get();
@@ -176,34 +185,9 @@ rom_error_t otbn_boot_cert_ecc_p256_keygen(sc_keymgr_ecc_key_t key,
 rom_error_t otbn_boot_attestation_key_save(
     uint32_t additional_seed_idx, sc_keymgr_key_type_t key_type,
     sc_keymgr_diversification_t diversification) {
-  // Trigger key manager to sideload the attestation key into OTBN.
   HARDENED_RETURN_IF_ERROR(
-      sc_keymgr_generate_key_otbn(key_type, diversification));
-
-  // Write the mode.
-  uint32_t mode = kOtbnBootModeAttestationKeySave;
-  HARDENED_RETURN_IF_ERROR(
-      sc_otbn_dmem_write(kOtbnBootModeWords, &mode, kOtbnVarBootMode));
-
-  // Load the additional seed from flash info.
-  uint32_t seed[kAttestationSeedWords];
-  HARDENED_RETURN_IF_ERROR(
-      load_attestation_keygen_seed(additional_seed_idx, seed));
-  // Pad remaining DMEM field with zeros to prevent a DMEM integrity error
-  // (since data is aligned to 256-bit words).
-  uint32_t zero_buf[kOtbnAttestationSeedBufferWords - kAttestationSeedWords] = {
-      0};
-  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
-      ARRAYSIZE(zero_buf), zero_buf,
-      kOtbnVarBootAttestationAdditionalSeed + kAttestationSeedBytes));
-
-  // Write the additional seed to OTBN DMEM.
-  HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
-      kAttestationSeedWords, seed, kOtbnVarBootAttestationAdditionalSeed));
-
-  // Run the OTBN program (blocks until OTBN is done).
-  HARDENED_RETURN_IF_ERROR(sc_otbn_execute());
-  SEC_MMIO_WRITE_INCREMENT(kScOtbnSecMmioExecute);
+      otbn_boot_keygen_or_save(additional_seed_idx, key_type, diversification,
+                               kOtbnBootModeAttestationKeySave));
 
   // Verify the OTBN instruction count to mitigate FI.
   uint32_t insn_cnt = sc_otbn_instruction_count_get();
@@ -217,6 +201,8 @@ rom_error_t otbn_boot_attestation_key_save(
 }
 
 rom_error_t otbn_boot_attestation_key_clear(void) {
+  HARDENED_RETURN_IF_ERROR(sc_keymgr_sideload_clear_otbn());
+
   const size_t data_num_words =
       (size_t)(kOtbnAppBoot.dmem_data_end - kOtbnAppBoot.dmem_data_start);
   if (data_num_words != kOtbnBootDmemDataWords) {
@@ -239,6 +225,11 @@ rom_error_t otbn_boot_attestation_key_clear(void) {
   HARDENED_RETURN_IF_ERROR(sc_otbn_dmem_write(
       kOtbnBootDmemDataWords, dmem_backup, kOtbnAppBoot.dmem_data_start_addr));
   return kErrorOk;
+}
+
+void otbn_boot_attestation_key_scope_clear(uint32_t *unused) {
+  (void)unused;
+  HARDENED_CHECK_EQ(otbn_boot_attestation_key_clear(), kErrorOk);
 }
 
 rom_error_t otbn_boot_attestation_endorse(const hmac_digest_t *digest,

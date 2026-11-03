@@ -148,6 +148,31 @@ OT_WARN_UNUSED_RESULT
 rom_error_t otbn_boot_attestation_key_clear(void);
 
 /**
+ * Scope cleanup callback for `RETURN_IF_ERROR_OTBN_SAVE_KEY`.
+ *
+ * Clears the saved attestation key from OTBN when leaving the scope.
+ *
+ * @param unused Unused scope guard variable pointer.
+ */
+void otbn_boot_attestation_key_scope_clear(uint32_t *unused);
+
+/**
+ * Saves an attestation private key to OTBN's scratchpad and automatically
+ * clears it on scope exit.
+ *
+ * @param additional_seed The attestation key generation seed to load.
+ * @param key_type OTBN attestation key type to generate.
+ * @param diversification Salt and version information for key manager.
+ */
+#define RETURN_IF_ERROR_OTBN_SAVE_KEY(additional_seed, key_type,           \
+                                      diversification)                     \
+  uint32_t otbn_boot_key_scope_                                            \
+      __attribute__((cleanup(otbn_boot_attestation_key_scope_clear))) = 0; \
+  (void)otbn_boot_key_scope_;                                              \
+  HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_save(                 \
+      (additional_seed), (key_type), (diversification)))
+
+/**
  * Signs the message with the saved attestation key, clears the key, and
  * verifies the signature.
  *

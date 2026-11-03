@@ -67,9 +67,8 @@ rom_error_t dice_chain_attestation_creator(
     keymgr_binding_value_t *rom_ext_measurement,
     const manifest_t *rom_ext_manifest) {
   // Save UDS key for signing next stage cert.
-  RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kDiceKeyUds.keygen_seed_idx, kDiceKeyUds.type,
-      *kDiceKeyUds.keymgr_diversifier));
+  RETURN_IF_ERROR_OTBN_SAVE_KEY(kDiceKeyUds.keygen_seed_idx, kDiceKeyUds.type,
+                                *kDiceKeyUds.keymgr_diversifier);
 
   // Generate CDI_0 attestation keys and (potentially) update certificate.
   keymgr_binding_value_t seal_binding_value = {
@@ -135,9 +134,8 @@ rom_error_t dice_chain_attestation_owner(
     hmac_digest_t *owner_measurement, hmac_digest_t *owner_history_hash,
     keymgr_binding_value_t *sealing_binding, owner_app_domain_t key_domain) {
   // Save CDI_0 key for signing next stage cert.
-  RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kDiceKeyCdi0.keygen_seed_idx, kDiceKeyCdi0.type,
-      *kDiceKeyCdi0.keymgr_diversifier));
+  RETURN_IF_ERROR_OTBN_SAVE_KEY(kDiceKeyCdi0.keygen_seed_idx, kDiceKeyCdi0.type,
+                                *kDiceKeyCdi0.keymgr_diversifier);
 
   // Local variables for CDI_1 key generation and cert building
   hmac_digest_t subject_pubkey_id;
@@ -219,13 +217,6 @@ rom_error_t dice_chain_attestation_owner(
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_clear());
 
   sc_keymgr_sw_binding_unlock_wait();
-
-  // Save CDI_1 key for endorsing next stage cert.
-  // TODO: Remove this save once all ownersw are migrated to derive the key
-  // on their own. This save is added only for compatibility.
-  RETURN_IF_ERROR(otbn_boot_attestation_key_save(
-      kDiceKeyCdi1.keygen_seed_idx, kDiceKeyCdi1.type,
-      *kDiceKeyCdi1.keymgr_diversifier));
   return kErrorOk;
 }
 
