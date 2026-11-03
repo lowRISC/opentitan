@@ -72,14 +72,8 @@
       tests: []
     }
     {
-      name: sec_cm_enforce_sw_binding_ctrl_consistency
-      desc: "Verify the countermeasure(s) ENFORCE_SW_BINDING.CTRL.CONSISTENCY."
-      stage: V2S
-      tests: []
-    }
-    {
-      name: sec_cm_enforce_sw_binding_ctrl_mubi
-      desc: "Verify the countermeasure(s) ENFORCE_SW_BINDING.CTRL.MUBI."
+      name: sec_cm_enforce_sw_binding_ctrl_lock_mubi
+      desc: "Verify the countermeasure(s) ENFORCE_SW_BINDING.CTRL.LOCK_MUBI."
       stage: V2S
       tests: []
     }
