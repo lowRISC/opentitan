@@ -9,9 +9,12 @@ It shows the four-stage configuration (`NumBootStages = 4`); see [Advance](#adva
 Blue rounded rectangles represent empty key slots and green color is used to denote when they become active. Each slot stores a secret key as well as context data for its key.
 Purple rectangles denote key derivation function (KDF) calls that are used to compute slot keys.
 
-In OpenTitan, the KDF is instantiated as [KMAC](../../kmac/README.md).
-Each valid operation involves a KMAC invocation, which uses the internal key from the selected source slot for its key input, and other HW / SW supplied inputs as its message.
-The concatenated components of the message is dependent on the context of the source slot as well as further inputs provided from HW / SW.
+Each valid operation involves a KDF invocation, which uses the internal key from the selected source slot for its key input, and other HW / SW supplied inputs as its message.
+The concatenated components of the message are dependent on the context of the source slot as well as further inputs provided from HW / SW.
+
+In OpenTitan, the KDF is instantiated either as [KMAC](../../kmac/README.md) or as an HKDF implemented in software running on [OTBN](../../otbn/README.md).
+At elaboration time, one can decide if one or both derivation functions are available, see [KDF Engine Selection](#kdf-engine-selection).
+Unless stated otherwise, the descriptions in this document assumes KMAC as the KDF engine.
 
 In theory, KMAC can generate outputs of arbitrary length, however this design uses a specific variant with 256-bit security strength, 512-bit digest size, and 256-bit key input.
 
@@ -196,6 +199,7 @@ When there is no fault and the enable signal is active by life cycle controller,
   * If `retain_parent = true`, then the destination slot is not valid (i.e. `valid = 0`).
   * If `retain_parent = false`, then the source and the destination slots are the same.
   * If `ENFORCE_SW_BINDING.ENFORCE` is set and the source slot has `boot_stage <= 3`, then `CONTROL_SHADOWED.SW_BINDING_ONLY` must also be set.
+  * `KDF_ENGINE_SHADOWED.SEL` holds a valid multibit encoding (`kMultiBitBool4True` or `kMultiBitBool4False`), see [KDF Engine Selection](#kdf-engine-selection).
 
 
 ### Versioned Key Generation
@@ -213,7 +217,7 @@ In the case of SW key, the generated key is loaded into a CSR (see `SW_SHARE0_OU
 The key is generated with a KDF call, where the secret key is read from source slot.
 Then, `generated_key = KDF(parent_key, KEY_VERSION || SALT || dest_seed || output_key)` where `dest_seed` and `output_key` are domain separators (i.e. diversification values from netlist) to distinguish SW/HW outputs as well as the target HWIP peripheral {`AES`, `KMAC`, `OTBN`, `HMAC`}.
 
-KDF used for key generation calls is the same KMAC instance used in advance calls.
+KDF used for key generation calls is the same KDF engine used in advance calls.
 The only difference is that the input messages are 0-padded to another length parameter, `GenDataWidth`.
 
 Key generation request is valid if all of the following conditions are satisfied (AND clause):
@@ -223,6 +227,7 @@ Key generation request is valid if all of the following conditions are satisfied
 * `allow_keygen = true` for the source slot.
 * `KEY_VERSION` is less than or equal to `max_key_version` of the source slot.
 * `DEST_SEL` contains one of the five valid sideload destinations (None, AES, KMAC, OTBN, HMAC).
+* `KDF_ENGINE_SHADOWED.SEL` holds a valid multibit encoding, see [KDF Engine Selection](#kdf-engine-selection).
 
 ### Erase slot
 
@@ -289,9 +294,56 @@ keymgr_dpe receives two 256-bit root secrets, each provided in two shares with a
 
 The valid bits of both root keys are synchronized into the keymgr_dpe clock domain before use.
 
+### KDF Engine Selection
+
+keymgr_dpe supports two KDF engines:
+* [KMAC](../../kmac/README.md), which computes the KDF in hardware.
+* [OTBN](../../otbn/README.md), which computes an HKDF in software running on OTBN.
+
+Which engines are present is selected at design time with the `KdfEngineSel` parameter (type `keymgr_dpe_pkg::kdf_engine_sel_e`):
+
+| `KdfEngineSel`  | Behavior                                                                                                    |
+|:----------------|:------------------------------------------------------------------------------------------------------------|
+| `KdfEngineKmac` | KMAC is the only KDF engine. This is the default, existing integrations are unaffected.                     |
+| `KdfEngineOtbn` | OTBN is the only KDF engine.                                                                                |
+| `KdfEngineBoth` | Software selects the engine at run time with [`KDF_ENGINE_SHADOWED`](registers.md#kdf_engine_shadowed).     |
+
+With `KdfEngineBoth`, `KDF_ENGINE_SHADOWED.SEL` selects the engine: `kMultiBitBool4False` (reset value) selects KMAC and `kMultiBitBool4True` selects OTBN.
+With `KdfEngineKmac` or `KdfEngineOtbn` the engine is hard-wired and the register value is ignored, although values other than `kMultiBitBool4False` or `kMultiBitBool4True` will raise `ERR_CODE.INVALID_OP`.
+Writes to `KDF_ENGINE_SHADOWED` can be locked until the next reset by clearing `KDF_ENGINE_REGWEN.EN`.
+
+The selection that is in use is latched internally and only follows `KDF_ENGINE_SHADOWED` while no operation is ongoing.
+A write that happens during an operation therefore only takes effect once the operation has finished, and the engine can never change in the middle of an operation.
+
+#### Application interfaces
+
+keymgr_dpe has one application interface per engine: `kmac_app` towards KMAC and `otbn_app` towards OTBN.
+Both use the static variant of the [KMAC application interface](../../kmac/doc/theory_of_operation.md#application-interfaces) protocol (`kmac_pkg::app_req_t` / `kmac_pkg::app_rsp_t`).
+Internally, keymgr_dpe's KDF controller has a single application interface that is multiplexed between the two engines according to the latched selection.
+
+#### Internal key routing
+
+The key of the KDF is the internal key of the source slot.
+It is forwarded to the selected engine only:
+* If KMAC is selected, the internal key drives `kmac_key_o` while it is valid.
+* If OTBN is selected, the internal key drives `otbn_key_o` while it is valid.
+  OTBN expects a 512-bit key on its sideload interface while the internal key is 256 bits wide, so the key is zero-extended to the OTBN key width.
+While the internal key is valid (meaning either a derivation or generation is ongoing), it takes precedence over the applied sideload key, i.e. a previously generated sideload key is not visible during the operation.
+
+#### Sensitive key indicator
+
+When OTBN is the KDF engine the internal key, which must never be visible to software, is handed to OTBN.
+To protect it, keymgr_dpe asserts `sensitive_key_o` (`mubi4`, `kMultiBitBool4True`) while both of the following hold:
+* OTBN is the selected KDF engine.
+* The internal key is valid, i.e. it is being forwarded to the KDF engine.
+
+OTBN receives this signal as `keymgr_sensitive_key` and is required to ensure this key is never exposed to the host SW.
+If KMAC is the only engine (`KdfEngineKmac`), `sensitive_key_o` is constantly `kMultiBitBool4False`.
+
 ### KDF Details
 
-KDF used for advance calls is the KMAC instance with (keylen=256, digest_len=512, sec_lvl = 256) parameters. The input messages to KDF are always 0-padded to the fixed length specified below.
+The KDF used for advance calls is, depending on the [KDF engine selection](#kdf-engine-selection), either the KMAC instance with (keylen=256, digest_len=512, sec_lvl = 256) parameters or an HKDF running on OTBN.
+The input messages to KDF are always 0-padded to the fixed length specified below.
 
 During advance operations, KDF inputs are 0 padded to `AdvDataWidth` bits. Depending on the boot stage, KDF message input also receives the following inputs:
 * `hw_revision_seed` is a 256-bit netlist constant.
