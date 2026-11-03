@@ -9,11 +9,16 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/base/multibits.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/error.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+#define FLASH_CTRL_CSR0_REGWEN_REG_OFFSET 0x0
 
 /**
  * A flash partition.
@@ -179,6 +184,7 @@ enum {
   kFlashCtrlSecMmioInit = 3,
   kFlashCtrlSecMmioDataRegionProtect = 1,
   kFlashCtrlSecMmioDataRegionProtectLock = 1,
+  kFlashCtrlSecMmioPrimLockdown = 1,
 };
 
 /**
@@ -689,6 +695,19 @@ void flash_ctrl_cert_info_page_owner_restrict(
  */
 rom_error_t flash_ctrl_info_type0_params_build(
     uint8_t bank, uint8_t page, flash_ctrl_info_page_t *info_page);
+
+/**
+ * Locks down FLASH controller prim interface.
+ *
+ * The caller is responsible for calling
+ * `SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioPrimLockdown)`
+ * when sec_mmio is being used to check expectations.
+ */
+static inline void flash_ctrl_prim_lockdown(void) {
+  sec_mmio_write32(TOP_EARLGREY_FLASH_CTRL_PRIM_BASE_ADDR +
+                       FLASH_CTRL_CSR0_REGWEN_REG_OFFSET,
+                   0);
+}
 
 #ifdef __cplusplus
 }

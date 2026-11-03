@@ -200,6 +200,8 @@ static void rom_ext_flash_lockdown(uint32_t rom_ext_slot) {
       inactive_pages, write, cfg, kHardenedBoolTrue);
 }
 
+static void rom_ext_regwen_lockdown(void) { flash_ctrl_prim_lockdown(); }
+
 OT_WARN_UNUSED_RESULT
 static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   sec_mmio_next_stage_init();
@@ -212,6 +214,9 @@ static rom_error_t rom_ext_init(boot_data_t *boot_data) {
   // Defensive clear to be sure no key material is left after the immutable
   // ROM_EXT section.
   HARDENED_RETURN_IF_ERROR(otbn_boot_attestation_key_clear());
+
+  rom_ext_regwen_lockdown();
+  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioPrimLockdown);
 
   flash_ecc_exc_handler_en = otp_read32(
       OTP_CTRL_PARAM_OWNER_SW_CFG_ROM_FLASH_ECC_EXC_HANDLER_EN_OFFSET);
