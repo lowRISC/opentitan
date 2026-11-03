@@ -156,6 +156,7 @@ static status_t cmac_key_construct(const otcrypto_blinded_key_t *key,
   if (launder32(ctx->sideload) == kHardenedBoolTrue) {
     // COVERAGE (MISSING) Sideloaded keys for CMAC are not covered.
     HARDENED_CHECK_EQ(ctx->sideload, kHardenedBoolTrue);
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     HARDENED_TRY(
         hardened_memcpy(ctx->key_share0, key->keyblob, kKeyblobHwBackedWords));
     HARDENED_TRY(
@@ -581,6 +582,7 @@ otcrypto_status_t otcrypto_cmac_update(
                                kOtcryptoCmacCtxStructWords));
 
   if (launder32(primary_ctx.sideload) == kHardenedBoolTrue) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     is_sideloaded = kHardenedBoolTrue;
   }
 
@@ -653,6 +655,7 @@ otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
 
   if (launder32(primary_ctx.sideload) == kHardenedBoolTrue) {
     // COVERAGE (MISSING) Sideloaded keys for CMAC are not covered.
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     is_sideloaded = kHardenedBoolTrue;
   }
 
