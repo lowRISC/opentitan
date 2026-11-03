@@ -43,6 +43,11 @@ enum {
   kEntropyPollCmdDoneTimeout = 1000000,
   // Timeout for waiting for GenBits to become valid
   kEntropyPollGenBitsTimeout = 131071,
+
+  /**
+   * Sparse FSM encoding for MainSmIdle in csrng_pkg.sv.
+   */
+  kCsrngMainSmStateIdle = 0x4e,
 };
 
 /**
@@ -748,8 +753,8 @@ static void entropy_src_stop(void) {
   abs_mmio_write32(kBaseEntropySrc + ENTROPY_SRC_MODULE_ENABLE_REG_OFFSET,
                    ENTROPY_SRC_MODULE_ENABLE_REG_RESVAL);
 
-  // Wait for the entropy_src state machine to become idle before writing
-  // REGWEN-protected configuration registers.
+  // Wait for the entropy_src state machine to become idle and verify that
+  // REGWEN is asserted before writing REGWEN-protected configuration registers.
   uint32_t timeout = kEntropyPollReadyTimeout;
   while (
       !bitfield_bit32_read(abs_mmio_read32(kBaseEntropySrc +
@@ -757,6 +762,8 @@ static void entropy_src_stop(void) {
                            ENTROPY_SRC_DEBUG_STATUS_MAIN_SM_IDLE_BIT) &&
       --timeout > 0) {
   }
+  HARDENED_CHECK_EQ(
+      abs_mmio_read32(kBaseEntropySrc + ENTROPY_SRC_REGWEN_REG_OFFSET), 1);
 
   // Set default values for other critical registers to avoid synchronization
   // issues.
@@ -796,7 +803,9 @@ void entropy_complex_stop_all(void) {
   abs_mmio_write32(kBaseCsrng + CSRNG_CTRL_REG_OFFSET, CSRNG_CTRL_REG_RESVAL);
   // Read back CSRNG state to synchronize the disable write on the bus and
   // ensure any in-flight block encryption drains while CSRNG is disabled.
-  OT_DISCARD(abs_mmio_read32(kBaseCsrng + CSRNG_MAIN_SM_STATE_REG_OFFSET));
+  HARDENED_CHECK_EQ(
+      abs_mmio_read32(kBaseCsrng + CSRNG_MAIN_SM_STATE_REG_OFFSET),
+      kCsrngMainSmStateIdle);
   entropy_src_stop();
 
   if (status_ok(res) && state != NULL) {
