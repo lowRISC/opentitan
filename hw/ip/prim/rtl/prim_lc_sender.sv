@@ -8,8 +8,6 @@
 // for each bit in the life cycle control signal such that tools do not
 // optimize the multibit encoding.
 
-`include "prim_assert.sv"
-
 module prim_lc_sender #(
   // This flops the output if set to 1.
   // In special cases where the sender is in the same clock domain as the receiver,

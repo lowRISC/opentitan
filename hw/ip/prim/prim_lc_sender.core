@@ -8,7 +8,6 @@ description: "Sender primitive for life cycle control signals."
 filesets:
   files_rtl:
     depend:
-      - lowrisc:prim:assert
       - lowrisc:prim:flop
       - lowrisc:ip:lc_ctrl_pkg
     files:

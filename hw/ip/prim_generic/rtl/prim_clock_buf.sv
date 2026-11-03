@@ -2,8 +2,6 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-`include "prim_assert.sv"
-
 module prim_clock_buf #(
   // Turning off these verilator lints because keeping these parameters makes it consistent with
   // the IP in hw/ip/prim_xilinx/rtl/ .

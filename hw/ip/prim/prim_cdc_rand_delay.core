@@ -7,8 +7,6 @@ description: "CDC random delay module for DV"
 
 filesets:
   files_rtl:
-    depend:
-      - lowrisc:prim:assert
     files:
       - rtl/prim_cdc_rand_delay.sv
     file_type: systemVerilogSource

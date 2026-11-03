@@ -10,8 +10,6 @@
 // signal. This allows replacing the prim_flop_en with a regular prim_flop without multiplexer cell
 // on the input, which helps the reducing area for the later register stages by roughly 20%.
 
-`include "prim_assert.sv"
-
 module prim_flop_x #(
   parameter int               Width      = 1,
   parameter logic [Width-1:0] ResetValue = '0,

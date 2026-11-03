@@ -5,8 +5,6 @@
 // Generic differential receiver for USB. Note that this is meant for emulation purposes only, and
 // the pull-up, calibration and pok signals are not connected in this module.
 
-`include "prim_assert.sv"
-
 module prim_usb_diff_rx #(
   parameter int CalibW = 32
 ) (
