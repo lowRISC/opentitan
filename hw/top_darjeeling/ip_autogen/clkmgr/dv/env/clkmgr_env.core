@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:dv:ralgen
       - lowrisc:dv:cip_lib
+      - lowrisc:ip:lc_ctrl_pkg
       - lowrisc:darjeeling_ip:pwrmgr_pkg
       - lowrisc:darjeeling_ip:clkmgr_pkg
       - lowrisc:darjeeling_constants:top_pkg

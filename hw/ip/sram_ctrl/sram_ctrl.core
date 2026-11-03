@@ -11,6 +11,8 @@ filesets:
       - lowrisc:prim:all
       - lowrisc:prim:util
       - lowrisc:prim:lc_sync
+      - lowrisc:prim:lfsr
+      - lowrisc:prim:mubi
       - lowrisc:prim:count
       - lowrisc:prim:ram_1p_scr
       - lowrisc:prim:racl_error_arb
