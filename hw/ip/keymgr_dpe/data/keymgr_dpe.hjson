@@ -391,18 +391,13 @@
         Slot policy is software lockable.
       '''
     }
-    { name: "ENFORCE_SW_BINDING.CTRL.CONSISTENCY",
+    { name: "ENFORCE_SW_BINDING.CTRL.LOCK_MUBI",
       desc: '''
-        Once ENFORCE_SW_BINDING is set, hardware checks that
-        CONTROL_SHADOWED.SW_BINDING_ONLY is consistently set on every subsequent advance
-        operation from a parent whose boot stage consumes HW binding values. In case the
-        SW_BINDING_ONLY is not set, an `invalid_op` error is raised and the operation is
-        rejected. The destination slot is not updated.
-      '''
-    }
-    { name: "ENFORCE_SW_BINDING.CTRL.MUBI",
-      desc: '''
-        Enforce sw binding register is multibit encoded.
+        Once !!ENFORCE_SW_BINDING is set, hardware requires CONTROL_SHADOWED.SW_BINDING_ONLY
+        to be set on every subsequent advance operation from a parent whose boot stage
+        consumes HW binding values. Otherwise an `invalid_op` error is raised, the operation
+        is rejected, and the destination slot is not updated.
+        !!ENFORCE_SW_BINDING is multibit encoded.
       '''
     }
     { name: "KDF_ENGINE.CTRL.MUBI",
