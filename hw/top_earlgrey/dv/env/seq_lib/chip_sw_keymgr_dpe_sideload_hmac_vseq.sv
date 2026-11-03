@@ -16,7 +16,7 @@ class chip_sw_keymgr_dpe_sideload_hmac_vseq extends chip_sw_keymgr_dpe_key_deriv
   localparam int KeyWords = keymgr_dpe_pkg::WideHwKeyWidth / 32;
 
   virtual task run_test_sequence(key_shares_t creator_key);
-    wide_key_t       sideload_hmac_key;
+    wide_hw_key_t    sideload_hmac_key;
     bit [31:0]       key_words[KeyWords];
     string           msg;
     bit [7:0]        msg_arr[];

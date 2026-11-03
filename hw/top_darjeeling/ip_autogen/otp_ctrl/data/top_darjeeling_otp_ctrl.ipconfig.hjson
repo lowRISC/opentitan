@@ -1688,7 +1688,7 @@
             {
               name: ROM_PATCH_DIGEST
               size: 8
-              offset: 15944
+              offset: 15912
               ismubi: false
               isdigest: true
               iszer: false
@@ -1701,7 +1701,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           ignore_read_lock_in_rma: false
-          size: 9856
+          size: 9824
           offset: 6096
         }
         {
@@ -1728,7 +1728,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 15952
+              offset: 15920
             }
             {
               name: MANUF_STATE
@@ -1739,12 +1739,12 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 15984
+              offset: 15952
             }
             {
               name: HW_CFG0_DIGEST
               size: 8
-              offset: 16016
+              offset: 15984
               ismubi: false
               isdigest: true
               iszer: false
@@ -1765,7 +1765,7 @@
           iskeymgr_owner: false
           ignore_read_lock_in_rma: false
           size: 72
-          offset: 15952
+          offset: 15920
         }
         {
           name: HW_CFG1
@@ -1803,7 +1803,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 16024
+              offset: 15992
             }
             {
               name: EN_SRAM_IFETCH
@@ -1814,12 +1814,12 @@
               iszer: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 16028
+              offset: 15996
             }
             {
               name: HW_CFG1_DIGEST
               size: 8
-              offset: 16032
+              offset: 16000
               ismubi: false
               isdigest: true
               iszer: false
@@ -1850,7 +1850,7 @@
           iskeymgr_owner: false
           ignore_read_lock_in_rma: false
           size: 16
-          offset: 16024
+          offset: 15992
         }
         {
           name: SECRET0
@@ -1877,7 +1877,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 16040
+              offset: 16008
             }
             {
               name: TEST_EXIT_TOKEN
@@ -1888,12 +1888,12 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 16056
+              offset: 16024
             }
             {
               name: SECRET0_DIGEST
               size: 8
-              offset: 16072
+              offset: 16040
               ismubi: false
               isdigest: true
               iszer: false
@@ -1904,7 +1904,7 @@
             {
               name: SECRET0_ZER
               size: 8
-              offset: 16080
+              offset: 16048
               ismubi: false
               isdigest: false
               iszer: true
@@ -1922,7 +1922,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 48
-          offset: 16040
+          offset: 16008
         }
         {
           name: SECRET1
@@ -1949,12 +1949,12 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 16088
+              offset: 16056
             }
             {
               name: SECRET1_DIGEST
               size: 8
-              offset: 16104
+              offset: 16072
               ismubi: false
               isdigest: true
               iszer: false
@@ -1965,7 +1965,7 @@
             {
               name: SECRET1_ZER
               size: 8
-              offset: 16112
+              offset: 16080
               ismubi: false
               isdigest: false
               iszer: true
@@ -1983,7 +1983,7 @@
           iskeymgr_creator: false
           iskeymgr_owner: false
           size: 32
-          offset: 16088
+          offset: 16056
         }
         {
           name: SECRET2
@@ -2010,29 +2010,29 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 16120
+              offset: 16088
             }
             {
               name: CREATOR_ROOT_KEY_SHARE0
               inv_default: <random>
-              size: 32
+              size: 48
               iskeymgr_creator: true
               isdigest: false
               iszer: false
               ismubi: false
               iskeymgr_owner: false
-              offset: 16136
+              offset: 16104
             }
             {
               name: CREATOR_ROOT_KEY_SHARE1
               inv_default: <random>
-              size: 32
+              size: 48
               iskeymgr_creator: true
               isdigest: false
               iszer: false
               ismubi: false
               iskeymgr_owner: false
-              offset: 16168
+              offset: 16152
             }
             {
               name: CREATOR_SEED
@@ -2076,8 +2076,8 @@
           absorb: false
           iskeymgr_creator: true
           iskeymgr_owner: false
-          size: 128
-          offset: 16120
+          size: 160
+          offset: 16088
         }
         {
           name: SECRET3
