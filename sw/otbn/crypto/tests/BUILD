@@ -880,6 +880,7 @@ otbn_sim_test(
     ],
     testcase = "rsa_miller_rabin_test.hjson",
     deps = [
+        "//sw/otbn/crypto:gcd",
         "//sw/otbn/crypto:modexp",
         "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:rsa_primality",
@@ -895,6 +896,39 @@ otbn_sim_test(
     ],
     testcase = "rsa_miller_rabin_negative_test.hjson",
     deps = [
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:rsa_primality",
+        "//sw/otbn/crypto:run_rsa_mem",
+    ],
+)
+
+otbn_sim_test(
+    name = "rsa_2048_check_modulus_test",
+    timeout = "long",  # runs a full 2048-bit exponentiation
+    srcs = [
+        "rsa_2048_check_modulus_test.s",
+    ],
+    testcase = "rsa_2048_check_modulus_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:gcd",
+        "//sw/otbn/crypto:modexp",
+        "//sw/otbn/crypto:montmul",
+        "//sw/otbn/crypto:rsa_primality",
+        "//sw/otbn/crypto:run_rsa_mem",
+    ],
+)
+
+otbn_sim_test(
+    name = "rsa_2048_check_modulus_negative_test",
+    timeout = "long",  # runs a full 2048-bit exponentiation
+    srcs = [
+        "rsa_2048_check_modulus_test.s",
+    ],
+    testcase = "rsa_2048_check_modulus_negative_test.hjson",
+    deps = [
+        "//sw/otbn/crypto:gcd",
         "//sw/otbn/crypto:modexp",
         "//sw/otbn/crypto:montmul",
         "//sw/otbn/crypto:rsa_primality",
@@ -1233,6 +1267,8 @@ test_suite(
         # RSA
         ":rsa_miller_rabin_test",
         ":rsa_miller_rabin_negative_test",
+        ":rsa_2048_check_modulus_test",
+        ":rsa_2048_check_modulus_negative_test",
         ":rsa_primality_test",
         ":rsa_primality_negative_test",
         ":rsa_distance_negative_test",

@@ -48,6 +48,9 @@ OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_4096_MODEXP);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_4096_MODEXP_F4);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_4096_MODEXP_DE);
 OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_4096_MODEXP_E);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_2048_CHECK_N);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_3072_CHECK_N);
+OTBN_DECLARE_SYMBOL_ADDR(run_rsa, MODE_RSA_4096_CHECK_N);
 
 enum {
   /**
@@ -604,4 +607,73 @@ status_t rsa_keygen_finalize_size(rsa_size_t size, uint32_t *n, uint32_t *d0,
   size_t expected_words = 0;
   HARDENED_TRY(keygen_size_to_params(size, &mode, &expected_words));
   return keygen_finalize(mode, expected_words, n, d0, d1, p, q);
+}
+
+status_t rsa_modulus_composite_check(rsa_size_t size, const uint32_t *modulus,
+                                     hardened_bool_t *result) {
+  *result = kHardenedBoolFalse;
+
+  size_t num_words = 0;
+  uint32_t mode = 0;
+  switch (launder32(size)) {
+    case kRsaSize2048:
+      HARDENED_CHECK_EQ(size, kRsaSize2048);
+      num_words = kRsa2048NumWords;
+      mode = OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_2048_CHECK_N);
+      break;
+    case kRsaSize3072:
+      HARDENED_CHECK_EQ(size, kRsaSize3072);
+      num_words = kRsa3072NumWords;
+      mode = OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_3072_CHECK_N);
+      break;
+    case kRsaSize4096:
+      HARDENED_CHECK_EQ(size, kRsaSize4096);
+      num_words = kRsa4096NumWords;
+      mode = OTBN_ADDR_T_INIT(run_rsa, MODE_RSA_4096_CHECK_N);
+      break;
+    default:
+      HARDENED_TRAP();
+      // COVERAGE (FI CM) Unreachable code, checked against fault injections.
+      return OTCRYPTO_FATAL_ERR;
+  }
+
+  // Load the OTBN app. Fails if OTBN is not idle.
+  HARDENED_TRY(otbn_load_app(OTBN_APP_T_INIT(run_rsa)));
+
+  // Set the mode and the modulus, then run the check to completion.
+  const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);
+  HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnVarRsaMode));
+  const otbn_addr_t kOtbnVarRsaN = OTBN_ADDR_T_INIT(run_rsa, rsa_n);
+  HARDENED_TRY(otbn_dmem_write(num_words, modulus, kOtbnVarRsaN));
+  HARDENED_TRY(otbn_execute());
+  HARDENED_TRY(otbn_busy_wait_for_done());
+
+  // The test is variable time, so there is no instruction count check. Check
+  // that the expected mode ran instead.
+  uint32_t act_mode = 0;
+  HARDENED_TRY(otbn_dmem_read(1, kOtbnVarRsaMode, &act_mode));
+  if (launder32(act_mode) != mode) {
+    // COVERAGE (FI CM) The mode only changes under fault injection.
+    HARDENED_TRY(otbn_dmem_sec_wipe());
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(act_mode, mode);
+
+  // `ok` holds a hardened boolean with the result of the check.
+  uint32_t ok = 0;
+  HARDENED_TRY(otbn_dmem_read(1, OTBN_ADDR_T_INIT(run_rsa, ok), &ok));
+  HARDENED_TRY(otbn_dmem_sec_wipe());
+  switch (launder32(ok)) {
+    case kHardenedBoolTrue:
+      HARDENED_CHECK_EQ(ok, kHardenedBoolTrue);
+      *result = kHardenedBoolTrue;
+      return OTCRYPTO_OK;
+    case kHardenedBoolFalse:
+      HARDENED_CHECK_EQ(ok, kHardenedBoolFalse);
+      *result = kHardenedBoolFalse;
+      return OTCRYPTO_OK;
+    default:
+      // COVERAGE (FI CM) Any other value indicates a fault.
+      return OTCRYPTO_FATAL_ERR;
+  }
 }

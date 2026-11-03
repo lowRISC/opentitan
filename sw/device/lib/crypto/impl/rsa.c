@@ -439,11 +439,34 @@ static status_t rsa_modulus_check(const uint32_t *n, size_t num_words) {
 }
 
 /**
+ * Check that an RSA modulus is composite and not a power of a prime.
+ *
+ * Runs the enhanced Miller-Rabin test on OTBN (NIST SP 800-89, Section 5.3.3).
+ * Must only be called after `rsa_modulus_check`, which ensures the modulus is
+ * odd and has its most significant bit set.
+ *
+ * @param size RSA size.
+ * @param n RSA modulus.
+ * @return OK if the modulus passes the check, OTCRYPTO_BAD_ARGS otherwise.
+ */
+static status_t rsa_modulus_composite_validate(rsa_size_t size,
+                                               const uint32_t *n) {
+  hardened_bool_t composite = kHardenedBoolFalse;
+  HARDENED_TRY(rsa_modulus_composite_check(size, n, &composite));
+  if (launder32(composite) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(composite, kHardenedBoolTrue);
+  return OTCRYPTO_OK;
+}
+
+/**
  * Validate an RSA public key according to NIST SP 800-89, Section 5.3.3.
  *
- * Checks the key structure and integrity, then checks the modulus with
- * `rsa_modulus_check`. The public exponent is always F4 for the approved
- * verification API, so it is not checked here.
+ * Checks the key structure and integrity, runs the RSA verification
+ * self-test, then checks the modulus with `rsa_modulus_check` and
+ * `rsa_modulus_composite_validate`. The public exponent is always F4 for the
+ * approved verification API, so it is not checked here.
  *
  * @param public_key Public key to validate.
  * @return OK if the key is valid, OTCRYPTO_BAD_ARGS otherwise.
@@ -459,21 +482,29 @@ static status_t rsa_public_key_validate(
 
   otcrypto_rsa_size_t size;
   HARDENED_TRY(rsa_size_from_public_key(public_key, &size));
+
+  // Run the RSA self-test before the modulus checks, which use the RSA
+  // exponentiation on OTBN.
+  OTCRYPTO_HEALTH_CHECK(size == kOtcryptoRsaSize2048 ? kTestRsa2048VerifyBit
+                                                     : kTestRsa4096VerifyBit);
   switch (launder32(size)) {
     case kOtcryptoRsaSize2048: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize2048);
       rsa_2048_public_key_t *pk = (rsa_2048_public_key_t *)public_key->key;
-      return rsa_modulus_check(pk->n.data, kRsa2048NumWords);
+      HARDENED_TRY(rsa_modulus_check(pk->n.data, kRsa2048NumWords));
+      return rsa_modulus_composite_validate(kRsaSize2048, pk->n.data);
     }
     case kOtcryptoRsaSize3072: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize3072);
       rsa_3072_public_key_t *pk = (rsa_3072_public_key_t *)public_key->key;
-      return rsa_modulus_check(pk->n.data, kRsa3072NumWords);
+      HARDENED_TRY(rsa_modulus_check(pk->n.data, kRsa3072NumWords));
+      return rsa_modulus_composite_validate(kRsaSize3072, pk->n.data);
     }
     case kOtcryptoRsaSize4096: {
       HARDENED_CHECK_EQ(size, kOtcryptoRsaSize4096);
       rsa_4096_public_key_t *pk = (rsa_4096_public_key_t *)public_key->key;
-      return rsa_modulus_check(pk->n.data, kRsa4096NumWords);
+      HARDENED_TRY(rsa_modulus_check(pk->n.data, kRsa4096NumWords));
+      return rsa_modulus_composite_validate(kRsaSize4096, pk->n.data);
     }
     default:
       return OTCRYPTO_BAD_ARGS;
