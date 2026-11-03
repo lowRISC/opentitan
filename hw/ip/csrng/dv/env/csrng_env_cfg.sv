@@ -77,6 +77,7 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
   rand invalid_mubi_e   which_invalid_mubi;
   rand which_aes_cm_e   which_aes_cm;
   rand which_cnt_e      which_cnt;
+  rand bit              drop_sw_cmd_word;
 
   bit                                    compliance[MaxNumApps], status[MaxNumApps];
   bit [csrng_env_pkg::KEY_LEN-1:0]       key[MaxNumApps];
@@ -164,7 +165,8 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
       [fifo_write_error : fifo_state_error]    := 1
   };}
   constraint which_err_code_c { which_err_code dist {
-      [sfifo_cmd_err : sfifo_genbits_err]    := 3, // 3 error types per sfifo
+      sfifo_cmd_err                          := 4, // 3 error types plus a dropped SW cmd word
+      sfifo_genbits_err                      := 3, // 3 error types
       [cmd_stage_sm_err : ctr_drbg_sm_err]   := 1, // 1 error type per FSM
       aes_cipher_sm_err                      := num_bins_aes_cipher_sm_err,
       ctr_err                                := 2, // 2 counters feed into this bit

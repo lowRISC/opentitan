@@ -31,6 +31,7 @@ class csrng_err_vseq extends csrng_base_vseq;
     uvm_reg       csr;
     uvm_reg_field fld;
     bit [31:0]    backdoor_err_code_val;
+    bit [31:0]    dropped_word;
 
     super.body();
 
@@ -108,8 +109,19 @@ class csrng_err_vseq extends csrng_base_vseq;
         `uvm_info(`gfn, $sformatf("Forcing this FIFO error type %s", cfg.which_fifo_err.name()),
                   UVM_MEDIUM)
 
-        force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts, fld, 1'b1,
-                            cfg.which_fifo_err);
+        if (cfg.which_err_code == sfifo_cmd_err && cfg.which_fifo_err == fifo_write &&
+            cfg.which_app_err_alert == cfg.m_sw_app_idx && cfg.drop_sw_cmd_word) begin
+          // The generate command is stalled, so a word written to CMD_REQ now is dropped.
+          csr_rd_check(.ptr(ral.sw_cmd_sts.cmd_rdy), .compare_value(1'b0));
+          `DV_CHECK_STD_RANDOMIZE_FATAL(dropped_word)
+          csr_wr(.ptr(ral.cmd_req), .value(dropped_word));
+          csr_spinwait(.ptr(fld), .exp_data(1'b1));
+          csr_rd_check(.ptr(ral.err_code.fifo_write_err), .compare_value(1'b1));
+        end else begin
+          force_all_fifo_errs(fifo_forced_paths, fifo_forced_values, path_exts, fld, 1'b1,
+                              cfg.which_fifo_err);
+        end
+
         csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
         cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
       end
