@@ -1,0 +1,33 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:otp_key_agent"
+description: "Agent that responds as otp_ctrl to its key interface"
+
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:dv:dv_lib
+      - lowrisc:dv:dv_base_agent
+      - lowrisc:dv:dv_utils
+      - lowrisc:ip:otp_ctrl_pkg
+      - lowrisc:virtual_ip:otp_ctrl_macro_pkg
+    files:
+      - otp_key_if.sv
+      - otp_key_agent_pkg.sv
+      - otp_key_agent_cfg.svh: {is_include_file: true}
+      - otp_key_driver.svh: {is_include_file: true}
+      - otp_key_monitor.svh: {is_include_file: true}
+      - otp_key_agent.svh: {is_include_file: true}
+      - otp_key_req_seq_item.svh: {is_include_file: true}
+      - otp_key_rsp_seq_item.svh: {is_include_file: true}
+      - otp_key_sequencer.svh: {is_include_file: true}
+      - seq/otp_key_seq.svh: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv
