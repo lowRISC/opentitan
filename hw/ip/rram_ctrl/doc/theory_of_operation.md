@@ -385,7 +385,7 @@ See [Emulated Info Pages](programmers_guide.md#emulated-info-pages) in the progr
 
 Software can define up to two windows on the data partition (see [`EMUL_INFO_REGION`](registers.md#emul_info_region)), each independently enabled via its mubi `EN` field and locked via [`EMUL_INFO_REGWEN`](registers.md#emul_info_regwen).
 A window carries no access permissions of its own and only reserves a window within the data partition.
-Host access to that window is always blocked in hardware, regardless of the subregion configuration.
+If the `EN` field is true then host access to that window is always blocked in hardware, regardless of the subregion configuration.
 
 Each window can be split into up to 12 subregions.
 Subregions use TOR (top-of-range) addressing relative to the window's base: each subregion's [`EMUL_INFO_SUBREGION`](registers.md#emul_info_subregion) register stores only the offset (`TOP`) of its own last page, relative to the window's base.
