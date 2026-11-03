@@ -180,14 +180,14 @@ static rom_error_t expected_state_check(uint32_t expected_state) {
   uint32_t got_state = abs_mmio_read32(sc_keymgr_dpe_base() +
                                        KEYMGR_DPE_WORKING_STATE_REG_OFFSET);
 
-  if (launder32(op_status_field) == KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE &&
-      launder32(error_code) == 0u && launder32(got_state) == expected_state) {
-    HARDENED_CHECK_EQ(op_status_field, KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE);
-    HARDENED_CHECK_EQ(error_code, 0u);
-    HARDENED_CHECK_EQ(got_state, expected_state);
-    return kErrorOk;
+  if (launder32(op_status_field) != KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE ||
+      launder32(error_code) != 0u || launder32(got_state) != expected_state) {
+    return kErrorKeymgrInternal;
   }
-  return kErrorKeymgrInternal;
+  HARDENED_CHECK_EQ(op_status_field, KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE);
+  HARDENED_CHECK_EQ(error_code, 0u);
+  HARDENED_CHECK_EQ(got_state, expected_state);
+  return kErrorOk;
 }
 
 /**
@@ -201,11 +201,11 @@ static rom_error_t keymgr_dpe_is_idle(void) {
       abs_mmio_read32(sc_keymgr_dpe_base() + KEYMGR_DPE_OP_STATUS_REG_OFFSET);
   uint32_t status =
       bitfield_field32_read(reg, KEYMGR_DPE_OP_STATUS_STATUS_FIELD);
-  if (launder32(status) == KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE) {
-    HARDENED_CHECK_EQ(status, KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE);
-    return kErrorOk;
+  if (launder32(status) != KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE) {
+    return kErrorKeymgrInternal;
   }
-  return kErrorKeymgrInternal;
+  HARDENED_CHECK_EQ(status, KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE);
+  return kErrorOk;
 }
 
 /**
@@ -717,23 +717,23 @@ rom_error_t sc_keymgr_dpe_check_metadata(
     const sc_keymgr_dpe_policies_t *expected_policy) {
   sc_keymgr_dpe_metadata_t metadata;
   HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_get_metadata(slot, &metadata));
-  if (launder32(metadata.valid) == kHardenedBoolTrue &&
-      launder32(metadata.max_key_version) == expected_max_key_version &&
-      launder32(metadata.boot_stage) == expected_boot_stage &&
-      launder32(metadata.slot_policy.child) == expected_policy->child &&
-      launder32(metadata.slot_policy.expo) == expected_policy->expo &&
-      launder32(metadata.slot_policy.parent) == expected_policy->parent &&
-      launder32(metadata.slot_policy.keygen) == expected_policy->keygen) {
-    HARDENED_CHECK_EQ(metadata.valid, kHardenedBoolTrue);
-    HARDENED_CHECK_EQ(metadata.max_key_version, expected_max_key_version);
-    HARDENED_CHECK_EQ(metadata.boot_stage, expected_boot_stage);
-    HARDENED_CHECK_EQ(metadata.slot_policy.child, expected_policy->child);
-    HARDENED_CHECK_EQ(metadata.slot_policy.expo, expected_policy->expo);
-    HARDENED_CHECK_EQ(metadata.slot_policy.parent, expected_policy->parent);
-    HARDENED_CHECK_EQ(metadata.slot_policy.keygen, expected_policy->keygen);
-    return kErrorOk;
+  if (launder32(metadata.valid) != kHardenedBoolTrue ||
+      launder32(metadata.max_key_version) != expected_max_key_version ||
+      launder32(metadata.boot_stage) != expected_boot_stage ||
+      launder32(metadata.slot_policy.child) != expected_policy->child ||
+      launder32(metadata.slot_policy.expo) != expected_policy->expo ||
+      launder32(metadata.slot_policy.parent) != expected_policy->parent ||
+      launder32(metadata.slot_policy.keygen) != expected_policy->keygen) {
+    return kErrorKeymgrInternal;
   }
-  return kErrorKeymgrInternal;
+  HARDENED_CHECK_EQ(metadata.valid, kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(metadata.max_key_version, expected_max_key_version);
+  HARDENED_CHECK_EQ(metadata.boot_stage, expected_boot_stage);
+  HARDENED_CHECK_EQ(metadata.slot_policy.child, expected_policy->child);
+  HARDENED_CHECK_EQ(metadata.slot_policy.expo, expected_policy->expo);
+  HARDENED_CHECK_EQ(metadata.slot_policy.parent, expected_policy->parent);
+  HARDENED_CHECK_EQ(metadata.slot_policy.keygen, expected_policy->keygen);
+  return kErrorOk;
 }
 
 /**
