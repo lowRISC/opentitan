@@ -199,6 +199,46 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
                                  size_t encoded_message_len, uint8_t *message,
                                  size_t *message_bytelen);
 
+/**
+ * Encode the message with PKCS#1 v1.5 encryption padding (EME-PKCS1-v1_5,
+ * RFC 8017, section 7.2.1, step 2).
+ *
+ * We encode the message in reversed byte-order from the RFC because OTBN
+ * interprets the message as a fully little-endian integer.
+ *
+ * @param message Message to encode.
+ * @param message_bytelen Message length in bytes.
+ * @param encoded_message_len Intended encoded message length in 32-bit words.
+ * @param[out] encoded_message Encoded message.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_padding_pkcs1v15_encrypt_encode(const uint8_t *message,
+                                             size_t message_bytelen,
+                                             size_t encoded_message_len,
+                                             uint32_t *encoded_message);
+
+/**
+ * Decode the PKCS#1 v1.5 encrypted message (EME-PKCS1-v1_5, RFC 8017,
+ * section 7.2.2, step 3).
+ *
+ * Expects the encoded message in reversed byte-order from the RFC because OTBN
+ * interprets the message as a fully little-endian integer. The caller must
+ * ensure that at least `encoded_message_len * sizeof(uint32_t) - 11` bytes are
+ * allocated at `message`.
+ *
+ * @param encoded_message Encoded message (modified in-place and shredded).
+ * @param encoded_message_len Encoded message length in 32-bit words.
+ * @param[out] message Decoded message.
+ * @param[out] message_bytelen Length of the decoded message in bytes.
+ * @return Result of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_padding_pkcs1v15_decrypt_decode(uint32_t *encoded_message,
+                                             size_t encoded_message_len,
+                                             uint8_t *message,
+                                             size_t *message_bytelen);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

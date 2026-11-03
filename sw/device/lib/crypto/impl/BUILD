@@ -579,6 +579,7 @@ cc_library(
     hdrs = ["hash.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":sha1",
         ":sha2",
         ":sha3",
         ":status",
