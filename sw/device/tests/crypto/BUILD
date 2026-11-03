@@ -1487,6 +1487,7 @@ opentitan_test(
         "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl:sha1",
         "//sw/device/lib/crypto/impl:sha2",
         "//sw/device/lib/crypto/impl:sha3",
         "//sw/device/lib/runtime:log",

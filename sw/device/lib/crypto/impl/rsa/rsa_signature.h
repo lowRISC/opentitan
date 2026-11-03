@@ -38,6 +38,8 @@ typedef enum rsa_signature_padding {
   kRsaSignaturePaddingPkcs1v15 = 0x94e,
   // EMCS-PSS padding (RFC 8017, section 9.1).
   kRsaSignaturePaddingPss = 0x6b1,
+  // Unpadded (raw) RSA modular exponentiation.
+  kRsaSignaturePaddingNull = 0x137,
 } rsa_signature_padding_t;
 
 /**

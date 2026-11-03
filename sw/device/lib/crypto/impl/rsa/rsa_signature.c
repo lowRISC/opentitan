@@ -8,6 +8,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
+#include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/hash.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_padding.h"
 #include "sw/device/lib/crypto/impl/rsa/run_rsa.h"
@@ -26,10 +27,30 @@
  * @return Result of the operation (OK or BAD_ARGS).
  */
 OT_WARN_UNUSED_RESULT
-static status_t digest_check(const otcrypto_hash_digest_t digest) {
+static status_t digest_check(const otcrypto_hash_digest_t digest,
+                             const rsa_signature_padding_t padding_mode,
+                             size_t encoded_message_len) {
+  if (launder32(padding_mode) == kRsaSignaturePaddingNull) {
+    HARDENED_CHECK_EQ(padding_mode, kRsaSignaturePaddingNull);
+    if (launder32(digest.mode) != kOtcryptoHashModeNull ||
+        launder32(digest.len) != encoded_message_len) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    HARDENED_CHECK_EQ(digest.mode, kOtcryptoHashModeNull);
+    HARDENED_CHECK_EQ(digest.len, encoded_message_len);
+    return OTCRYPTO_OK;
+  }
   hash_info_t info;
   HARDENED_TRY(hash_info_get(digest.mode, &info));
-  if (info.der_oid == NULL || launder32(digest.len) != info.digest_wordlen) {
+  if (info.der_oid == NULL || digest.len == 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  if (info.digest_wordlen == 0) {
+    return (launder32(padding_mode) == kRsaSignaturePaddingPkcs1v15)
+               ? OTCRYPTO_OK
+               : OTCRYPTO_BAD_ARGS;
+  }
+  if (launder32(digest.len) != info.digest_wordlen) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(digest.len, info.digest_wordlen);
@@ -98,7 +119,7 @@ static status_t message_encode(const otcrypto_hash_digest_t message_digest,
                                size_t encoded_message_len,
                                uint32_t *encoded_message) {
   // Check that the digest length is OK.
-  HARDENED_TRY(digest_check(message_digest));
+  HARDENED_TRY(digest_check(message_digest, padding_mode, encoded_message_len));
 #ifdef FIPS_MODE
   HARDENED_TRY(
       rsa_digest_check_fips(message_digest, padding_mode, encoded_message_len));
@@ -121,6 +142,10 @@ static status_t message_encode(const otcrypto_hash_digest_t message_digest,
       return rsa_padding_pss_encode(message_digest, salt, ARRAYSIZE(salt),
                                     encoded_message_len, encoded_message);
     }
+    case kRsaSignaturePaddingNull:
+      HARDENED_CHECK_EQ(padding_mode, kRsaSignaturePaddingNull);
+      return hardened_memcpy(encoded_message, message_digest.data,
+                             encoded_message_len);
     default:
       // Unrecognized padding mode.
       return OTCRYPTO_BAD_ARGS;
@@ -153,7 +178,7 @@ static status_t encoded_message_verify(
     const rsa_signature_padding_t padding_mode, uint32_t *encoded_message,
     const size_t encoded_message_len, hardened_bool_t *result) {
   // Check that the digest length is OK.
-  HARDENED_TRY(digest_check(message_digest));
+  HARDENED_TRY(digest_check(message_digest, padding_mode, encoded_message_len));
 #ifdef FIPS_MODE
   HARDENED_TRY(
       rsa_digest_check_fips(message_digest, padding_mode, encoded_message_len));
@@ -168,6 +193,12 @@ static status_t encoded_message_verify(
       HARDENED_CHECK_EQ(padding_mode, kRsaSignaturePaddingPss);
       return rsa_padding_pss_verify(message_digest, encoded_message,
                                     encoded_message_len, result);
+    case kRsaSignaturePaddingNull:
+      HARDENED_CHECK_EQ(padding_mode, kRsaSignaturePaddingNull);
+      *result = hardened_memeq(message_digest.data, encoded_message,
+                               encoded_message_len);
+      ibex_clear_rf();
+      return OTCRYPTO_OK;
     default:
       // Unrecognized padding mode.
       return OTCRYPTO_BAD_ARGS;

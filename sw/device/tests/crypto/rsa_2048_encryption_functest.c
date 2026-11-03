@@ -798,6 +798,153 @@ status_t oaep_encrypt_decrypt_custom_exp_test(void) {
   return OK_STATUS();
 }
 
+status_t pkcs1v15_and_raw_encrypt_decrypt_test(void) {
+  otcrypto_const_word32_buf_t modulus = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, kTestModulus, ARRAYSIZE(kTestModulus));
+  otcrypto_const_word32_buf_t d_share0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kTestPrivateExponent,
+                        ARRAYSIZE(kTestPrivateExponent));
+  uint32_t share1[ARRAYSIZE(kTestPrivateExponent)] = {0};
+  otcrypto_const_word32_buf_t d_share1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, share1, ARRAYSIZE(share1));
+
+  uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes,
+                                    sizeof(uint32_t))];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeRsaEncryptPkcs,
+      .key_length = kOtcryptoRsa2048PublicKeyBytes,
+      .key = public_key_data,
+  };
+  TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, &modulus,
+                                        &public_key));
+
+  otcrypto_key_config_t private_key_config = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeRsaEncryptPkcs,
+      .key_length = kOtcryptoRsa2048PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t
+      keyblob[ceil_div(kOtcryptoRsa2048PrivateKeyblobBytes, sizeof(uint32_t))];
+  otcrypto_blinded_key_t private_key = {
+      .config = private_key_config,
+      .keyblob = keyblob,
+      .keyblob_length = kOtcryptoRsa2048PrivateKeyblobBytes,
+  };
+  TRY(otcrypto_rsa_private_key_from_exponents(
+      kOtcryptoRsaSize2048, &modulus, &d_share0, &d_share1, &private_key));
+
+  otcrypto_const_byte_buf_t empty_label =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
+  uint32_t ciphertext[kRsa2048NumWords];
+  otcrypto_word32_buf_t ciphertext_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ciphertext, kRsa2048NumWords);
+  otcrypto_const_word32_buf_t const_ct_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, ciphertext, kRsa2048NumWords);
+
+  enum { kMaxPkcs1v15PlaintextBytes = kRsa2048NumBytes - 11 };
+  uint8_t actual_msg[kRsa2048NumBytes];
+  size_t actual_msg_len = 0;
+  otcrypto_byte_buf_t pkcs_pt_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_byte_buf_t, actual_msg, kMaxPkcs1v15PlaintextBytes);
+
+  // 1a. PKCS#1 v1.5 encrypt & decrypt normal message.
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, kTestMessage, kTestMessageLen);
+  TRY(otcrypto_rsa_encrypt(&public_key, kOtcryptoHashModeNull, &msg_buf,
+                           &empty_label, &ciphertext_buf));
+  TRY(otcrypto_rsa_decrypt(&private_key, kOtcryptoHashModeNull, &const_ct_buf,
+                           &empty_label, &pkcs_pt_buf, &actual_msg_len));
+  TRY_CHECK(actual_msg_len == kTestMessageLen);
+  TRY_CHECK_ARRAYS_EQ(actual_msg, kTestMessage, actual_msg_len);
+
+  // 1b. PKCS#1 v1.5 encrypt & decrypt maximum-length message (k - 11 = 245B).
+  uint8_t max_msg[kMaxPkcs1v15PlaintextBytes];
+  for (size_t i = 0; i < sizeof(max_msg); i++) {
+    max_msg[i] = (uint8_t)(i ^ 0x5a);
+  }
+  otcrypto_const_byte_buf_t max_msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, max_msg, sizeof(max_msg));
+  TRY(otcrypto_rsa_encrypt(&public_key, kOtcryptoHashModeNull, &max_msg_buf,
+                           &empty_label, &ciphertext_buf));
+  actual_msg_len = 0;
+  TRY(otcrypto_rsa_decrypt(&private_key, kOtcryptoHashModeNull, &const_ct_buf,
+                           &empty_label, &pkcs_pt_buf, &actual_msg_len));
+  TRY_CHECK(actual_msg_len == sizeof(max_msg));
+  TRY_CHECK_ARRAYS_EQ(actual_msg, max_msg, actual_msg_len);
+
+  // 1c. PKCS#1 v1.5 negative checks: message too long (246B), non-empty label,
+  // or non-Null hash mode must fail with OTCRYPTO_BAD_ARGS.
+  uint8_t too_long_msg[kMaxPkcs1v15PlaintextBytes + 1] = {0};
+  otcrypto_const_byte_buf_t too_long_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, too_long_msg, sizeof(too_long_msg));
+  CHECK(otcrypto_rsa_encrypt(&public_key, kOtcryptoHashModeNull, &too_long_buf,
+                             &empty_label, &ciphertext_buf)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  otcrypto_const_byte_buf_t non_empty_label =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kTestLabel, kTestLabelLen);
+  CHECK(otcrypto_rsa_encrypt(&public_key, kOtcryptoHashModeNull, &msg_buf,
+                             &non_empty_label, &ciphertext_buf)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_rsa_encrypt(&public_key, kOtcryptoHashModeSha256, &msg_buf,
+                             &empty_label, &ciphertext_buf)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // 2. Raw RSA encrypt & decrypt (kOtcryptoKeyModeRsaRaw).
+  public_key.key_mode = kOtcryptoKeyModeRsaRaw;
+  TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, &modulus,
+                                        &public_key));
+  private_key.config.key_mode = kOtcryptoKeyModeRsaRaw;
+  TRY(otcrypto_rsa_private_key_from_exponents(
+      kOtcryptoRsaSize2048, &modulus, &d_share0, &d_share1, &private_key));
+
+  uint8_t raw_pt[kRsa2048NumBytes];
+  for (size_t i = 0; i < sizeof(raw_pt); i++) {
+    raw_pt[i] = (uint8_t)(i + 1);
+  }
+  // Ensure little-endian 2048-bit integer is < kTestModulus.
+  raw_pt[kRsa2048NumBytes - 1] = 0x10;
+  otcrypto_const_byte_buf_t raw_pt_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, raw_pt, sizeof(raw_pt));
+  otcrypto_byte_buf_t raw_out_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, actual_msg, sizeof(actual_msg));
+
+  TRY(otcrypto_rsa_encrypt(&public_key, kOtcryptoHashModeNull, &raw_pt_buf,
+                           &empty_label, &ciphertext_buf));
+  actual_msg_len = 0;
+  TRY(otcrypto_rsa_decrypt(&private_key, kOtcryptoHashModeNull, &const_ct_buf,
+                           &empty_label, &raw_out_buf, &actual_msg_len));
+  TRY_CHECK(actual_msg_len == kRsa2048NumBytes);
+  TRY_CHECK_ARRAYS_EQ(actual_msg, raw_pt, kRsa2048NumBytes);
+
+  // Raw RSA negative check: input >= modulus must fail with OTCRYPTO_BAD_ARGS.
+  uint8_t large_raw[kRsa2048NumBytes];
+  memset(large_raw, 0xff, sizeof(large_raw));
+  otcrypto_const_byte_buf_t large_raw_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, large_raw, sizeof(large_raw));
+  CHECK(otcrypto_rsa_encrypt(&public_key, kOtcryptoHashModeNull, &large_raw_buf,
+                             &empty_label, &ciphertext_buf)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // 3. OAEP with SHA-1 (kOtcryptoHashModeSha1).
+  public_key.key_mode = kOtcryptoKeyModeRsaEncryptOaep;
+  TRY(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize2048, &modulus,
+                                        &public_key));
+  private_key.config.key_mode = kOtcryptoKeyModeRsaEncryptOaep;
+  TRY(otcrypto_rsa_private_key_from_exponents(
+      kOtcryptoRsaSize2048, &modulus, &d_share0, &d_share1, &private_key));
+  TRY(otcrypto_rsa_encrypt(&public_key, kOtcryptoHashModeSha1, &msg_buf,
+                           &non_empty_label, &ciphertext_buf));
+  actual_msg_len = 0;
+  TRY(otcrypto_rsa_decrypt(&private_key, kOtcryptoHashModeSha1, &const_ct_buf,
+                           &non_empty_label, &raw_out_buf, &actual_msg_len));
+  TRY_CHECK(actual_msg_len == kTestMessageLen);
+  TRY_CHECK_ARRAYS_EQ(actual_msg, kTestMessage, actual_msg_len);
+
+  return OK_STATUS();
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -805,6 +952,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
   EXECUTE_TEST(test_result, oaep_decrypt_valid_test);
   EXECUTE_TEST(test_result, oaep_encrypt_decrypt_test);
+  EXECUTE_TEST(test_result, pkcs1v15_and_raw_encrypt_decrypt_test);
   EXECUTE_TEST(test_result, run_encrypt_negative_tests);
   EXECUTE_TEST(test_result, run_public_key_construct_negative_tests);
   EXECUTE_TEST(test_result, run_private_key_from_exponents_negative_tests);

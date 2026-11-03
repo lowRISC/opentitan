@@ -26,8 +26,11 @@ typedef enum otcrypto_rsa_padding {
   kOtcryptoRsaPaddingPkcs = 0x94e,
   // Pads input data according to the PKCS#1-PSS scheme. The mask generation
   // function is MGF1 with the same hash function as the input message
-  // (supported SHA2 or SHA3 hash functions only).
+  // (supported SHA1, SHA2, or SHA3 hash functions).
   kOtcryptoRsaPaddingPss = 0x6b1,
+  // No padding (raw modular exponentiation; requires `kOtcryptoKeyModeRsaRaw`
+  // and `kOtcryptoHashModeNull`).
+  kOtcryptoRsaPaddingNull = 0x137,
 } otcrypto_rsa_padding_t;
 
 /**
