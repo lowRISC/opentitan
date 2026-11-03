@@ -3,6 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 load(
     "//rules/opentitan:defs.bzl",
+    "EARLGREY_SILICON_OWNER_ROM_EXT_ENVS",
     "cw310_params",
     "fpga_params",
     "opentitan_test",
@@ -110,5 +111,22 @@ opentitan_test(
         "//sw/device/lib/testing/test_framework:ottf_main",
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
         "//sw/device/silicon_creator/lib/drivers:rstmgr",
+    ],
+)
+
+opentitan_test(
+    name = "regwen_lockdown",
+    srcs = ["regwen_lockdown.c"],
+    exec_env = EARLGREY_SILICON_OWNER_ROM_EXT_ENVS | {
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:sim_qemu_rom_ext": None,
+    },
+    deps = [
+        "//hw/top_earlgrey/sw/autogen:top_earlgrey",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
     ],
 )
