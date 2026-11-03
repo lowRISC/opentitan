@@ -705,7 +705,7 @@ module keymgr_dpe
   // | 7 | Invalid        | True             | Invalid (= enforce value)  | 1                     |
   // | 8 | Invalid        | False            | False                      | 0                     |
 
-  // SEC_CM: ENFORCE_SW_BINDING.CTRL.CONSISTENCY, ENFORCE_SW_BINDING.CTRL.MUBI
+  // SEC_CM: ENFORCE_SW_BINDING.CTRL.LOCK_MUBI
   assign enforce_sw_binding_err = mubi4_and_hi(
       mubi4_t'(reg2hw.enforce_sw_binding.q), adv_consumes_hw_binding);
 
