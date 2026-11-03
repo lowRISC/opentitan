@@ -6,6 +6,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/sha1.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/crypto/include/sha3.h"
 
@@ -17,6 +18,10 @@
  *
  * See Note 1 in RFC 8017.
  */
+static const uint8_t kSha1DigestIdentifier[] = {
+    0x14, 0x04, 0x00, 0x05, 0x1a, 0x02, 0x03, 0x0e,
+    0x2b, 0x05, 0x06, 0x09, 0x30, 0x21, 0x30,
+};
 static const uint8_t kSha256DigestIdentifier[] = {
     0x20, 0x04, 0x00, 0x05, 0x01, 0x02, 0x04, 0x03, 0x65, 0x01,
     0x48, 0x86, 0x60, 0x09, 0x06, 0x0d, 0x30, 0x31, 0x30,
@@ -53,6 +58,24 @@ static const uint8_t kSha3_512DigestIdentifier[] = {
 
 status_t hash_info_get(otcrypto_hash_mode_t hash_mode, hash_info_t *info) {
   switch (launder32(hash_mode)) {
+    case kOtcryptoHashModeNull:
+      *info = (hash_info_t){
+          .mode = kOtcryptoHashModeNull,
+          .digest_wordlen = 0,
+          .der_oid = kSha1DigestIdentifier,
+          .der_oid_len = 0,
+          .compute = NULL,
+      };
+      return OTCRYPTO_OK;
+    case kOtcryptoHashModeSha1:
+      *info = (hash_info_t){
+          .mode = kOtcryptoHashModeSha1,
+          .digest_wordlen = 160 / 32,
+          .der_oid = kSha1DigestIdentifier,
+          .der_oid_len = sizeof(kSha1DigestIdentifier),
+          .compute = otcrypto_sha1,
+      };
+      return OTCRYPTO_OK;
     case kOtcryptoHashModeSha256:
       *info = (hash_info_t){
           .mode = kOtcryptoHashModeSha256,
@@ -152,6 +175,9 @@ status_t hash_message(otcrypto_hash_mode_t hash_mode,
                       uint32_t *digest_data, otcrypto_hash_digest_t *digest) {
   hash_info_t info;
   HARDENED_TRY(hash_info_get(hash_mode, &info));
+  if (info.compute == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
   digest->mode = hash_mode;
   digest->len = info.digest_wordlen;
   digest->data = digest_data;
