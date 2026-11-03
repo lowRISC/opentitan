@@ -1285,6 +1285,27 @@
       tests: ["chip_sw_alert_handler_ping_timeout"]
     }
     {
+      name: chip_sw_alert_handler_ping_ok
+      desc: '''Verify alert ping mechanism doesn't trigger spurious alerts.
+
+            Check that the alert handler ping mechanism doesn't trigger any unexpected NMI
+            interrupts once enabled.
+
+            **Procedure**
+
+            - On POR reset:
+              - Enable an alert and assign it to to ClassA.
+              - Set escalation configuration to trigger before test wake up time.
+              - Set ping timeout to 0x100
+              - Lock alert configuration and enable ping mechanism.
+              - Wait for polling counters to cycle through by busy polling on Ibex for
+                120000 alert_handler clock cycles.
+              - Check there are no alert_handler NMI interrupts triggered.
+            '''
+      stage: V2
+      tests: ["chip_sw_alert_handler_ping_ok"]
+    }
+    {
       name: chip_sw_alert_handler_lpg_sleep_mode_alerts
       desc: '''Verify alert_handler can preserve alerts during low_power mode.
 
