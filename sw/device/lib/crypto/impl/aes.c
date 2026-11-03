@@ -53,6 +53,7 @@ static status_t aes_key_construct(otcrypto_blinded_key_t *blinded_key,
   }
 
   if (blinded_key->config.hw_backed == kHardenedBoolTrue) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     // Call keymgr dpe to sideload the key into AES.
     keymgr_dpe_diversification_t diversification;
     HARDENED_TRY(
