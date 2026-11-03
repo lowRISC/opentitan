@@ -72,6 +72,18 @@
       tests: []
     }
     {
+      name: sec_cm_load_root_key_lock_ctrl_lock_mubi
+      desc: "Verify the countermeasure(s) LOAD_ROOT_KEY_LOCK.CTRL.LOCK_MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_load_secondary_root_key_lock_ctrl_lock_mubi
+      desc: "Verify the countermeasure(s) LOAD_SECONDARY_ROOT_KEY_LOCK.CTRL.LOCK_MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
       name: sec_cm_enforce_sw_binding_ctrl_lock_mubi
       desc: "Verify the countermeasure(s) ENFORCE_SW_BINDING.CTRL.LOCK_MUBI."
       stage: V2S

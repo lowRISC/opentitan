@@ -9,6 +9,7 @@
 
 #include "gtest/gtest.h"
 #include "sw/device/lib/base/mock_abs_mmio.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/silicon_creator/lib/base/mock_sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr_dpe.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -516,9 +517,7 @@ TEST_F(KeymgrDpeTest, AdvanceDpeContext) {
 
 TEST_F(KeymgrDpeTest, LockUds) {
   EXPECT_ABS_WRITE32(base_ + KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_REG_OFFSET,
-                     {
-                         {KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_LOCK_BIT, true},
-                     });
+                     kMultiBitBool4True);
   sc_keymgr_dpe_lock_uds();
 }
 

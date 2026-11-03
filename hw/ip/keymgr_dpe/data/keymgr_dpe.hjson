@@ -379,6 +379,20 @@
         Slot policy is software lockable.
       '''
     }
+    { name: "LOAD_ROOT_KEY_LOCK.CTRL.LOCK_MUBI",
+      desc: '''
+        The !!LOAD_ROOT_KEY_LOCK register is multibit encoded. If this register is set
+        then the `load root key` operation is disabled until the next reset. The operation
+        is rejected with !!ERR_CODE.INVALID_OP when invoked.
+      '''
+    }
+    { name: "LOAD_SECONDARY_ROOT_KEY_LOCK.CTRL.LOCK_MUBI",
+      desc: '''
+        The !!LOAD_SECONDARY_ROOT_KEY_LOCK register is multibit encoded. If this register is
+        set then the `load secondary root key` operation is disabled until the next reset. The
+        operation is rejected with !!ERR_CODE.INVALID_OP when invoked.
+      '''
+    }
     { name: "ENFORCE_SW_BINDING.CTRL.LOCK_MUBI",
       desc: '''
         Once !!ENFORCE_SW_BINDING is set, hardware requires CONTROL_SHADOWED.SW_BINDING_ONLY
@@ -1480,11 +1494,13 @@
       swaccess: "rw1s",
       hwaccess: "hro",
       fields: [
-        { bits: "0",
+        { bits: "3:0",
           name: "LOCK",
-          resval: "0"
+          mubi: true,
+          resval: false
           desc: '''
-            Write 1 to disable the `load root key` operation until the next reset.
+            Write `kMultiBitBool4True` to disable the `load root key` operation until the next reset.
+            However, all encodings except `kMultiBitBool4False` will be treated as locked.
           '''
         },
       ]
@@ -1498,11 +1514,13 @@
       swaccess: "rw1s",
       hwaccess: "hro",
       fields: [
-        { bits: "0",
+        { bits: "3:0",
           name: "LOCK",
-          resval: "0"
+          mubi: true,
+          resval: false
           desc: '''
-            Write 1 to disable the `load secondary root key` operation until the next reset.
+            Write `kMultiBitBool4True` to disable the `load secondary root key` operation until the next reset.
+            However, all encodings except `kMultiBitBool4False` will be treated as locked.
           '''
         },
       ]

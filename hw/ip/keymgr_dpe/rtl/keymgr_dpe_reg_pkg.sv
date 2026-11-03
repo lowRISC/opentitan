@@ -180,11 +180,11 @@ package keymgr_dpe_reg_pkg;
   } keymgr_dpe_reg2hw_fault_status_reg_t;
 
   typedef struct packed {
-    logic        q;
+    logic [3:0]  q;
   } keymgr_dpe_reg2hw_load_root_key_lock_reg_t;
 
   typedef struct packed {
-    logic        q;
+    logic [3:0]  q;
   } keymgr_dpe_reg2hw_load_secondary_root_key_lock_reg_t;
 
   typedef struct packed {
@@ -385,26 +385,26 @@ package keymgr_dpe_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    keymgr_dpe_reg2hw_intr_state_reg_t intr_state; // [650:650]
-    keymgr_dpe_reg2hw_intr_enable_reg_t intr_enable; // [649:649]
-    keymgr_dpe_reg2hw_intr_test_reg_t intr_test; // [648:647]
-    keymgr_dpe_reg2hw_alert_test_reg_t alert_test; // [646:643]
-    keymgr_dpe_reg2hw_start_reg_t start; // [642:642]
-    keymgr_dpe_reg2hw_control_shadowed_reg_t control_shadowed; // [641:629]
-    keymgr_dpe_reg2hw_sideload_clear_reg_t sideload_clear; // [628:626]
-    keymgr_dpe_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [625:610]
-    keymgr_dpe_reg2hw_kdf_engine_shadowed_reg_t kdf_engine_shadowed; // [609:606]
-    keymgr_dpe_reg2hw_slot_policy_regwen_reg_t slot_policy_regwen; // [605:604]
-    keymgr_dpe_reg2hw_slot_policy_reg_t slot_policy; // [603:600]
-    keymgr_dpe_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [599:598]
-    keymgr_dpe_reg2hw_sw_binding_mreg_t [7:0] sw_binding; // [597:342]
-    keymgr_dpe_reg2hw_salt_mreg_t [7:0] salt; // [341:86]
-    keymgr_dpe_reg2hw_key_version_mreg_t [0:0] key_version; // [85:54]
-    keymgr_dpe_reg2hw_max_key_ver_regwen_reg_t max_key_ver_regwen; // [53:52]
-    keymgr_dpe_reg2hw_max_key_ver_shadowed_reg_t max_key_ver_shadowed; // [51:20]
-    keymgr_dpe_reg2hw_fault_status_reg_t fault_status; // [19:6]
-    keymgr_dpe_reg2hw_load_root_key_lock_reg_t load_root_key_lock; // [5:5]
-    keymgr_dpe_reg2hw_load_secondary_root_key_lock_reg_t load_secondary_root_key_lock; // [4:4]
+    keymgr_dpe_reg2hw_intr_state_reg_t intr_state; // [656:656]
+    keymgr_dpe_reg2hw_intr_enable_reg_t intr_enable; // [655:655]
+    keymgr_dpe_reg2hw_intr_test_reg_t intr_test; // [654:653]
+    keymgr_dpe_reg2hw_alert_test_reg_t alert_test; // [652:649]
+    keymgr_dpe_reg2hw_start_reg_t start; // [648:648]
+    keymgr_dpe_reg2hw_control_shadowed_reg_t control_shadowed; // [647:635]
+    keymgr_dpe_reg2hw_sideload_clear_reg_t sideload_clear; // [634:632]
+    keymgr_dpe_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [631:616]
+    keymgr_dpe_reg2hw_kdf_engine_shadowed_reg_t kdf_engine_shadowed; // [615:612]
+    keymgr_dpe_reg2hw_slot_policy_regwen_reg_t slot_policy_regwen; // [611:610]
+    keymgr_dpe_reg2hw_slot_policy_reg_t slot_policy; // [609:606]
+    keymgr_dpe_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [605:604]
+    keymgr_dpe_reg2hw_sw_binding_mreg_t [7:0] sw_binding; // [603:348]
+    keymgr_dpe_reg2hw_salt_mreg_t [7:0] salt; // [347:92]
+    keymgr_dpe_reg2hw_key_version_mreg_t [0:0] key_version; // [91:60]
+    keymgr_dpe_reg2hw_max_key_ver_regwen_reg_t max_key_ver_regwen; // [59:58]
+    keymgr_dpe_reg2hw_max_key_ver_shadowed_reg_t max_key_ver_shadowed; // [57:26]
+    keymgr_dpe_reg2hw_fault_status_reg_t fault_status; // [25:12]
+    keymgr_dpe_reg2hw_load_root_key_lock_reg_t load_root_key_lock; // [11:8]
+    keymgr_dpe_reg2hw_load_secondary_root_key_lock_reg_t load_secondary_root_key_lock; // [7:4]
     keymgr_dpe_reg2hw_enforce_sw_binding_reg_t enforce_sw_binding; // [3:0]
   } keymgr_dpe_reg2hw_t;
 

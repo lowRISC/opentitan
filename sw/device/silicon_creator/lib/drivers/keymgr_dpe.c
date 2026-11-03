@@ -10,6 +10,7 @@
 #include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/base/multibits.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 
@@ -478,7 +479,7 @@ rom_error_t sc_keymgr_dpe_advance_dpe_context(
 void sc_keymgr_dpe_lock_uds(void) {
   abs_mmio_write32(
       sc_keymgr_dpe_base() + KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_REG_OFFSET,
-      1 << KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_LOCK_BIT);
+      kMultiBitBool4True);
 }
 
 /**

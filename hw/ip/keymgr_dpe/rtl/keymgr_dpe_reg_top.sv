@@ -433,11 +433,11 @@ module keymgr_dpe_reg_top (
   logic debug_invalid_field_entropy_qs;
   logic debug_invalid_field_entropy_wd;
   logic load_root_key_lock_we;
-  logic load_root_key_lock_qs;
-  logic load_root_key_lock_wd;
+  logic [3:0] load_root_key_lock_qs;
+  logic [3:0] load_root_key_lock_wd;
   logic load_secondary_root_key_lock_we;
-  logic load_secondary_root_key_lock_qs;
-  logic load_secondary_root_key_lock_wd;
+  logic [3:0] load_secondary_root_key_lock_qs;
+  logic [3:0] load_secondary_root_key_lock_wd;
   logic enforce_sw_binding_we;
   logic [3:0] enforce_sw_binding_qs;
   logic [3:0] enforce_sw_binding_wd;
@@ -3981,10 +3981,10 @@ module keymgr_dpe_reg_top (
 
   // R[load_root_key_lock]: V(False)
   prim_subreg #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessW1S),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
   ) u_load_root_key_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4010,10 +4010,10 @@ module keymgr_dpe_reg_top (
 
   // R[load_secondary_root_key_lock]: V(False)
   prim_subreg #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessW1S),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
   ) u_load_secondary_root_key_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4451,10 +4451,10 @@ module keymgr_dpe_reg_top (
   assign debug_invalid_field_entropy_wd = reg_wdata[10];
   assign load_root_key_lock_we = addr_hit[71] & reg_we & !reg_error;
 
-  assign load_root_key_lock_wd = reg_wdata[0];
+  assign load_root_key_lock_wd = reg_wdata[3:0];
   assign load_secondary_root_key_lock_we = addr_hit[72] & reg_we & !reg_error;
 
-  assign load_secondary_root_key_lock_wd = reg_wdata[0];
+  assign load_secondary_root_key_lock_wd = reg_wdata[3:0];
   assign enforce_sw_binding_we = addr_hit[73] & reg_we & !reg_error;
 
   assign enforce_sw_binding_wd = reg_wdata[3:0];
@@ -4900,11 +4900,11 @@ module keymgr_dpe_reg_top (
       end
 
       addr_hit[71]: begin
-        reg_rdata_next[0] = load_root_key_lock_qs;
+        reg_rdata_next[3:0] = load_root_key_lock_qs;
       end
 
       addr_hit[72]: begin
-        reg_rdata_next[0] = load_secondary_root_key_lock_qs;
+        reg_rdata_next[3:0] = load_secondary_root_key_lock_qs;
       end
 
       addr_hit[73]: begin
