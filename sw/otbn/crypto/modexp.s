@@ -5,6 +5,7 @@
 .text
 .globl modexp_65537
 .globl modexp
+.globl montmul_mul1
 
 /**
  * Constant-time exponentiation of the random blinding factor by e-1 = F4-1 =
