@@ -25,8 +25,7 @@ See the [I3C HWIP technical specification](../README.md).
   * SCL and SDA are driven by the DUT outputs and resolved by strength.
   * The pull-ups (`ctrl_scl_pu_en_o`, `cio_ctrl_sda_pu_en_o`) and high-keepers (`scl_hk_en_o`, `sda_hk_en_o`) of the DUT act on the bus, and a [pins interface](../../../dv/sv/common_ifs/README.md) observes their enables.
   * Board-level pull-ups, a weak [pins interface](../../../dv/sv/common_ifs/README.md), keep the bus at a defined level when the DUT disables all of its pull-ups and high-keepers.
-    They are disabled by default; tests that are not about I/O correctness enable them with `+en_board_pullup=1`.
-    The common CSR tests do so, because they write random values to `PHY_CONFIG`.
+    They are enabled by default, because the common CSR tests write random values to `PHY_CONFIG`; a test about I/O correctness disables them with `+en_board_pullup=0`.
 
 The other inputs are tied off as in Earl Grey: there is no Target Reset detector, RACL is disabled, and the RAM configuration and DFT inputs take their default values.
 
