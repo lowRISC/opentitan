@@ -479,7 +479,7 @@ rom_error_t sc_keymgr_dpe_advance_dpe_context(
 void sc_keymgr_dpe_lock_uds(void) {
   abs_mmio_write32(
       sc_keymgr_dpe_base() + KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_REG_OFFSET,
-      1 << KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_LOCK_BIT);
+      kMultiBitBool4True);
 }
 
 /**

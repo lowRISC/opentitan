@@ -879,36 +879,36 @@ misbehaves.
 ## LOAD_ROOT_KEY_LOCK
 Register lock for the `load root key` operation, see [`CONTROL_SHADOWED.OPERATION.`](#control_shadowed)
 - Offset: `0x11c`
-- Reset default: `0x0`
-- Reset mask: `0x1`
+- Reset default: `0x9`
+- Reset mask: `0xf`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "LOCK", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "LOCK", "bits": 4, "attr": ["rw1s"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                            |
-|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                               |
-|   0    |  rw1s  |   0x0   | LOCK   | Write 1 to disable the `load root key` operation until the next reset. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                              |
+|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |        | Reserved                                                                                                                                                                 |
+|  3:0   |  rw1s  |   0x9   | LOCK   | Write `kMultiBitBool4True` to disable the `load root key` operation until the next reset. However, all encodings except `kMultiBitBool4False` will be treated as locked. |
 
 ## LOAD_SECONDARY_ROOT_KEY_LOCK
 Register lock for the `load secondary root key` operation, see [`CONTROL_SHADOWED.OPERATION.`](#control_shadowed)
 - Offset: `0x120`
-- Reset default: `0x0`
-- Reset mask: `0x1`
+- Reset default: `0x9`
+- Reset mask: `0xf`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "LOCK", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "LOCK", "bits": 4, "attr": ["rw1s"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                      |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                                         |
-|   0    |  rw1s  |   0x0   | LOCK   | Write 1 to disable the `load secondary root key` operation until the next reset. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                        |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |        | Reserved                                                                                                                                                                           |
+|  3:0   |  rw1s  |   0x9   | LOCK   | Write `kMultiBitBool4True` to disable the `load secondary root key` operation until the next reset. However, all encodings except `kMultiBitBool4False` will be treated as locked. |
 
 ## ENFORCE_SW_BINDING
 Enforce the software binding value as the only advance input message until the next reset

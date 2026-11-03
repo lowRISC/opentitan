@@ -517,9 +517,7 @@ TEST_F(KeymgrDpeTest, AdvanceDpeContext) {
 
 TEST_F(KeymgrDpeTest, LockUds) {
   EXPECT_ABS_WRITE32(base_ + KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_REG_OFFSET,
-                     {
-                         {KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_LOCK_BIT, true},
-                     });
+                     kMultiBitBool4True);
   sc_keymgr_dpe_lock_uds();
 }
 

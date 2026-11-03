@@ -133,7 +133,8 @@ At the end of a successful load operation, the destination slot holds the root k
 As `allow_keygen = 0`, no key can be generated from this slot, hence its `max_key_version` is irrelevant.
 As `retain_parent = 0`, the first advance from this slot must be an in-place update (`SLOT_SRC_SEL = SLOT_DST_SEL`).
 
-Once a root key is no longer needed in the current boot, SW should write 1 to `LOAD_ROOT_KEY_LOCK` or `LOAD_SECONDARY_ROOT_KEY_LOCK` respectively.
+Once a root key is no longer needed in the current boot and to prevent further usage, SW can write `kMultiBitBool4True` to `LOAD_ROOT_KEY_LOCK.LOCK` or `LOAD_SECONDARY_ROOT_KEY_LOCK.LOCK` respectively.
+Although all values other `kMultiBitBool4False` will be treated as locked.
 Any further load request of that root key is then rejected until the next reset.
 
 ## Read Slot Metadata
