@@ -27,16 +27,16 @@
  * @param OTCRYPTO_BAD_ARGS if the hash function is not valid, otherwise OK.
  */
 OT_WARN_UNUSED_RESULT
-static status_t digest_info_length_get(const otcrypto_hash_mode_t hash_mode,
-                                       size_t *len) {
+static status_t digest_info_length_get(
+    const otcrypto_hash_digest_t message_digest, size_t *len) {
   *len = 0;
   hash_info_t info;
-  HARDENED_TRY(hash_info_get(hash_mode, &info));
-  if (info.der_oid == NULL) {
+  HARDENED_TRY(hash_info_get(message_digest.mode, &info));
+  if (info.der_oid == NULL || message_digest.len == 0) {
     // Unsupported or unrecognized hash function.
     return OTCRYPTO_BAD_ARGS;
   }
-  *len = info.der_oid_len + info.digest_wordlen * sizeof(uint32_t);
+  *len = info.der_oid_len + message_digest.len * sizeof(uint32_t);
 
   // Check if the length was set in the switch case statements.
   HARDENED_CHECK_NE(*len, 0);
@@ -69,12 +69,14 @@ static status_t digest_info_write(const otcrypto_hash_digest_t message_digest,
     // Unsupported or unrecognized hash function.
     return OTCRYPTO_BAD_ARGS;
   }
-  if (launder32(message_digest.len) != info.digest_wordlen) {
-    return OTCRYPTO_BAD_ARGS;
+  if (info.digest_wordlen != 0) {
+    if (launder32(message_digest.len) != info.digest_wordlen) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    HARDENED_CHECK_EQ(message_digest.len, info.digest_wordlen);
   }
-  HARDENED_CHECK_EQ(message_digest.len, info.digest_wordlen);
 
-  memcpy(encoding + info.digest_wordlen, info.der_oid, info.der_oid_len);
+  memcpy(encoding + message_digest.len, info.der_oid, info.der_oid_len);
 
   // Copy the digest into the encoding, reversing the order of bytes.
   size_t i;
@@ -105,7 +107,7 @@ status_t rsa_padding_pkcs1v15_encode(
 
   // Get the length of the digest info (called T in the RFC).
   size_t tlen;
-  HARDENED_TRY(digest_info_length_get(message_digest.mode, &tlen));
+  HARDENED_TRY(digest_info_length_get(message_digest, &tlen));
 
   if (tlen + 3 + 8 >= encoded_message_bytelen) {
     // Invalid encoded message length/hash function combination; the RFC
@@ -154,7 +156,7 @@ static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
                                    size_t *num_words) {
   hash_info_t info;
   HARDENED_TRY(hash_info_get(hash_mode, &info));
-  if (info.der_oid == NULL) {
+  if (info.der_oid == NULL || info.digest_wordlen == 0) {
     // Unsupported or unrecognized hash function.
     // COVERAGE (MISSING) We do not cover bad padding modes.
     return OTCRYPTO_BAD_ARGS;
@@ -733,4 +735,103 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
   // Shred the stale memory after copying out the plaintext.
   HARDENED_TRY(hardened_memshred(db, db_wordlen));
   return OTCRYPTO_OK;
+}
+
+status_t rsa_padding_pkcs1v15_encrypt_encode(const uint8_t *message,
+                                             size_t message_bytelen,
+                                             size_t encoded_message_len,
+                                             uint32_t *encoded_message) {
+  size_t encoded_message_bytelen = encoded_message_len * sizeof(uint32_t);
+  if (encoded_message_bytelen < 11 ||
+      message_bytelen > encoded_message_bytelen - 11) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Fill the buffer with random bytes, then construct
+  // EM = 0x00 || 0x02 || PS || 0x00 || M (RFC 8017, section 7.2.1).
+  HARDENED_TRY(entropy_csrng_instantiate(
+      /*disable_trng_input=*/kHardenedBoolFalse, /*seed_material=*/NULL));
+  HARDENED_TRY(entropy_csrng_generate(/*seed_material=*/NULL, encoded_message,
+                                      encoded_message_len,
+                                      /*fips_check=*/kHardenedBoolTrue));
+
+  unsigned char *buf = (unsigned char *)encoded_message;
+  buf[0] = 0x00;
+  buf[1] = 0x02;
+  size_t ps_end = encoded_message_bytelen - message_bytelen - 1;
+  for (size_t i = 2; i < ps_end; ++i) {
+    while (buf[i] == 0) {
+      uint32_t rnd;
+      HARDENED_TRY(entropy_csrng_generate(
+          /*seed_material=*/NULL, &rnd, 1, /*fips_check=*/kHardenedBoolTrue));
+      buf[i] = (unsigned char)rnd;
+    }
+    HARDENED_CHECK_NE(buf[i], 0);
+  }
+  buf[ps_end] = 0x00;
+
+  HARDENED_TRY(randomized_bytecopy(buf + ps_end + 1, message, message_bytelen));
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(message, buf + ps_end + 1, message_bytelen),
+      kHardenedBoolTrue);
+
+  return reverse_bytes(encoded_message_len, encoded_message);
+}
+
+OT_WARN_UNUSED_RESULT
+static status_t pkcs1v15_check_padding_and_find_message_start(
+    const unsigned char *encoded_message_bytes, size_t encoded_message_bytelen,
+    volatile uint32_t *message_start_idx) {
+  *message_start_idx = 0;
+  for (size_t i = 2; i < encoded_message_bytelen; i++) {
+    ct_bool32_t is_zero = ct_seqz32(encoded_message_bytes[i]);
+    ct_bool32_t is_before_message = ct_seqz32(*message_start_idx);
+    *message_start_idx =
+        ct_cmov32(is_zero & is_before_message, i + 1, *message_start_idx);
+  }
+  HARDENED_CHECK_LE(*message_start_idx, encoded_message_bytelen);
+
+  // Check that EM starts with 0x00 || 0x02 and that the 0x00 separator was
+  // found after at least 8 nonzero PS bytes (*message_start_idx >= 11).
+  ct_bool32_t decode_failure = ~ct_seqz32(encoded_message_bytes[0]) |
+                               ~ct_seq32(encoded_message_bytes[1], 0x02) |
+                               ct_sltu32(*message_start_idx, 11);
+  if (launder32(decode_failure) != 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(decode_failure, 0);
+  HARDENED_CHECK_GE(*message_start_idx, 11);
+  return OTCRYPTO_OK;
+}
+
+status_t rsa_padding_pkcs1v15_decrypt_decode(uint32_t *encoded_message,
+                                             size_t encoded_message_len,
+                                             uint8_t *message,
+                                             size_t *message_bytelen) {
+  HARDENED_TRY(reverse_bytes(encoded_message_len, encoded_message));
+  *message_bytelen = 0;
+
+  size_t encoded_message_bytelen = encoded_message_len * sizeof(uint32_t);
+  unsigned char *encoded_message_bytes = (unsigned char *)encoded_message;
+
+  volatile uint32_t message_start_idx0 = 0;
+  volatile uint32_t message_start_idx1 = 0;
+  if (!status_ok(pkcs1v15_check_padding_and_find_message_start(
+          encoded_message_bytes, encoded_message_bytelen,
+          &message_start_idx0)) ||
+      !status_ok(pkcs1v15_check_padding_and_find_message_start(
+          encoded_message_bytes, encoded_message_bytelen,
+          &message_start_idx1))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(message_start_idx0, message_start_idx1);
+
+  *message_bytelen = encoded_message_bytelen - message_start_idx0;
+  HARDENED_TRY(randomized_bytecopy(
+      message, encoded_message_bytes + message_start_idx0, *message_bytelen));
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(encoded_message_bytes + message_start_idx0, message,
+                           *message_bytelen),
+      kHardenedBoolTrue);
+  return hardened_memshred(encoded_message, encoded_message_len);
 }

@@ -304,6 +304,10 @@ typedef enum otcrypto_rsa_key_mode {
   kOtcryptoRsaKeyModeSignPss = 0x761,
   /// Mode RSA Encrypt, RSAES-OAEP.
   kOtcryptoRsaKeyModeEncryptOaep = 0x585,
+  /// Mode RSA Encrypt, RSAES-PKCS1-v1_5.
+  kOtcryptoRsaKeyModeEncryptPkcs = 0x13a,
+  /// Mode RSA Raw (unpadded modular exponentiation).
+  kOtcryptoRsaKeyModeRaw = 0x20f,
 } otcrypto_rsa_key_mode_t;
 
 /**
@@ -427,6 +431,11 @@ typedef enum otcrypto_key_mode {
   /// Key is intended for RSA encryption RSAES-OAEP mode.
   kOtcryptoKeyModeRsaEncryptOaep =
       kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeEncryptOaep,
+  /// Key is intended for RSA encryption RSAES-PKCS1-v1_5 mode.
+  kOtcryptoKeyModeRsaEncryptPkcs =
+      kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeEncryptPkcs,
+  /// Key is intended for unpadded (raw) RSA operations.
+  kOtcryptoKeyModeRsaRaw = kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeRaw,
   /// Key is intended for ECDSA with P-256.
   kOtcryptoKeyModeEcdsaP256 =
       kOtcryptoKeyTypeEcc << 16 | kOtcryptoEccKeyModeEcdsaP256,
@@ -585,6 +594,8 @@ typedef struct otcrypto_blinded_key {
  * Values are hardened.
  */
 typedef enum otcrypto_hash_mode {
+  /// Null (unhashed / raw digest) mode for RSA PKCS#1 v1.5 and raw operations.
+  kOtcryptoHashModeNull = 0x10f,
   /// SHA-1 mode (plain software; not FI/SCA protected).
   kOtcryptoHashModeSha1 = 0x3ef,
   /// SHA2-256 mode.

@@ -15,6 +15,7 @@
 #define MODULE_ID MAKE_MODULE_ID('r', 'e', 'n')
 
 status_t rsa_encrypt_start(rsa_size_t size, uint32_t e, const uint32_t *n,
+                           otcrypto_key_mode_t key_mode,
                            const otcrypto_hash_mode_t hash_mode,
                            const uint8_t *message, size_t message_bytelen,
                            const uint8_t *label, size_t label_bytelen) {
@@ -22,15 +23,46 @@ status_t rsa_encrypt_start(rsa_size_t size, uint32_t e, const uint32_t *n,
   HARDENED_TRY(rsa_size_to_num_words(size, &num_words));
   HARDENED_CHECK_NE(num_words, 0);
 
+  if (launder32(key_mode) != kOtcryptoKeyModeRsaEncryptOaep) {
+    if (launder32(hash_mode) != kOtcryptoHashModeNull || label_bytelen != 0) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeNull);
+  }
+
   // Allocate maximum possible size to avoid VLAs. We allocate enough for
   // 4096, but will only utilize `num_words`.
   uint32_t encoded_message[kRsa4096NumWords];
 
   // Encode the message.
   HARDENED_TRY(hardened_memshred(encoded_message, ARRAYSIZE(encoded_message)));
-  HARDENED_TRY(rsa_padding_oaep_encode(hash_mode, message, message_bytelen,
-                                       label, label_bytelen, num_words,
-                                       encoded_message));
+  switch (launder32(key_mode)) {
+    case kOtcryptoKeyModeRsaEncryptOaep:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaep);
+      HARDENED_TRY(rsa_padding_oaep_encode(hash_mode, message, message_bytelen,
+                                           label, label_bytelen, num_words,
+                                           encoded_message));
+      break;
+    case kOtcryptoKeyModeRsaEncryptPkcs:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptPkcs);
+      HARDENED_TRY(rsa_padding_pkcs1v15_encrypt_encode(
+          message, message_bytelen, num_words, encoded_message));
+      break;
+    case kOtcryptoKeyModeRsaRaw:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaRaw);
+      if (launder32(message_bytelen) != num_words * sizeof(uint32_t)) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      HARDENED_CHECK_EQ(message_bytelen, num_words * sizeof(uint32_t));
+      HARDENED_TRY(
+          randomized_bytecopy(encoded_message, message, message_bytelen));
+      HARDENED_CHECK_EQ(
+          consttime_memeq_byte(message, encoded_message, message_bytelen),
+          kHardenedBoolTrue);
+      break;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
 
   // Start computing (encoded_message ^ e) mod n with a variable-time
   // exponentiation.
@@ -48,7 +80,8 @@ status_t rsa_decrypt_start(rsa_size_t size, const uint32_t *d0,
   return rsa_modexp_consttime_start(size, ciphertext, d0, d1, e, n, checksum);
 }
 
-status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
+status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
+                              const otcrypto_hash_mode_t hash_mode,
                               const uint8_t *label, size_t label_bytelen,
                               size_t plaintext_max_bytelen, uint8_t *plaintext,
                               size_t *plaintext_len) {
@@ -56,14 +89,12 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
   size_t num_words;
   HARDENED_TRY(rsa_modexp_wait(&num_words));
 
-  // Check that enough space has been allocated for the plaintext.
-  size_t max_plaintext_bytelen = 0;
-  HARDENED_TRY(rsa_padding_oaep_max_message_bytelen(hash_mode, num_words,
-                                                    &max_plaintext_bytelen));
-  if (plaintext_max_bytelen < max_plaintext_bytelen) {
-    return OTCRYPTO_BAD_ARGS;
+  if (launder32(key_mode) != kOtcryptoKeyModeRsaEncryptOaep) {
+    if (launder32(hash_mode) != kOtcryptoHashModeNull || label_bytelen != 0) {
+      return OTCRYPTO_BAD_ARGS;
+    }
+    HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeNull);
   }
-  HARDENED_CHECK_GE(plaintext_max_bytelen, max_plaintext_bytelen);
 
   // Randomize the plaintext destination buffer as best we can, considering its
   // alignment.
@@ -71,8 +102,6 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
   size_t aligned_offset =
       (sizeof(uint32_t) - (size_t)misalignment) % sizeof(uint32_t);
   if (plaintext_max_bytelen < aligned_offset) {
-    // COVERAGE (SW ERR) plaintext_max_bytelen is already checked against
-    // max_plaintext_bytelen (>= 62), so it is always >= aligned_offset (< 4).
     return OTCRYPTO_BAD_ARGS;
   }
   size_t num_aligned_full_words =
@@ -85,7 +114,39 @@ status_t rsa_decrypt_finalize(const otcrypto_hash_mode_t hash_mode,
   HARDENED_CHECK_LE(num_words, kRsa4096NumWords);
   uint32_t recovered_message[kRsa4096NumWords];
   HARDENED_TRY(rsa_modexp_finalize(num_words, recovered_message));
-  return rsa_padding_oaep_decode(hash_mode, label, label_bytelen,
-                                 recovered_message, num_words, plaintext,
-                                 plaintext_len);
+
+  size_t max_plaintext_bytelen = num_words * sizeof(uint32_t);
+  switch (launder32(key_mode)) {
+    case kOtcryptoKeyModeRsaEncryptOaep:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaep);
+      HARDENED_TRY(rsa_padding_oaep_max_message_bytelen(
+          hash_mode, num_words, &max_plaintext_bytelen));
+      if (plaintext_max_bytelen < max_plaintext_bytelen) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      return rsa_padding_oaep_decode(hash_mode, label, label_bytelen,
+                                     recovered_message, num_words, plaintext,
+                                     plaintext_len);
+    case kOtcryptoKeyModeRsaEncryptPkcs:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptPkcs);
+      if (plaintext_max_bytelen < max_plaintext_bytelen - 11) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      return rsa_padding_pkcs1v15_decrypt_decode(recovered_message, num_words,
+                                                 plaintext, plaintext_len);
+    case kOtcryptoKeyModeRsaRaw:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaRaw);
+      if (plaintext_max_bytelen < max_plaintext_bytelen) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      *plaintext_len = max_plaintext_bytelen;
+      HARDENED_TRY(
+          randomized_bytecopy(plaintext, recovered_message, *plaintext_len));
+      HARDENED_CHECK_EQ(
+          consttime_memeq_byte(recovered_message, plaintext, *plaintext_len),
+          kHardenedBoolTrue);
+      return hardened_memshred(recovered_message, num_words);
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
 }
