@@ -7295,10 +7295,13 @@ test_suite(
 opentitan_test(
     name = "rv_core_ibex_mcounteren_writable_test",
     srcs = ["rv_core_ibex_mcounteren_writable_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        DARJEELING_TEST_ENVS,
+    ),
     deps = [
         "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top:top_lib",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/testing/test_framework:check",
