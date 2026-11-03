@@ -116,7 +116,7 @@ Any further load request of that root key is then rejected until the next reset.
 
 ## Read Slot Metadata
 
-Software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` fields at any time by reading the `METADATA_LOW` and `METADATA_HIGH` registers at the corresponding slot index:
+Until `METADATA_READ_LOCK` is set, software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` fields by reading the `METADATA_LOW` and `METADATA_HIGH` registers at the corresponding slot index:
 *  `METADATA_LOW[i].MAX_KEY_VERSION` reports `max_key_version` of slot `i`.
 *  `METADATA_HIGH[i].VALID` reports whether slot `i` currently holds a valid DPE context.
 *  `METADATA_HIGH[i].BOOT_STAGE` reports the `boot_stage` of slot `i`.
@@ -127,6 +127,8 @@ Software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `ke
 
 The secret key itself is never exposed through these registers.
 Both registers are replicated `NumMaxHwSlot` times but only indices below `NumInstHwSlot` correspond to an actual hardware slot, the remaining slots are bound to `0`.
+
+SW can hide the slot metadata until the next reset by writing `kMultiBitBool4True` to `METADATA_READ_LOCK.LOCK`.
 
 # Disable
 

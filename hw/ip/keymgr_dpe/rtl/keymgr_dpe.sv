@@ -327,15 +327,21 @@ module keymgr_dpe
   logic slot_dst_sel_oob;
 
   keymgr_dpe_metadata_slot_t [NumInstHwSlot-1:0] metadata;
+
+  // SEC_CM: METADATA.CONFIG.REGREN
   for (genvar i = 0; i < NumMaxHwSlot; i++) begin : gen_metadata_read_data
     if (i < NumInstHwSlot) begin : gen_inst_slot
-      assign hw2reg.metadata_high[i].valid.d                = metadata[i].valid;
-      assign hw2reg.metadata_high[i].exportable_policy.d    = metadata[i].key_policy.exportable;
-      assign hw2reg.metadata_high[i].retain_parent_policy.d = metadata[i].key_policy.retain_parent;
-      assign hw2reg.metadata_high[i].allow_child_policy.d   = metadata[i].key_policy.allow_child;
-      assign hw2reg.metadata_high[i].allow_keygen_policy.d  = metadata[i].key_policy.allow_keygen;
-      assign hw2reg.metadata_high[i].boot_stage.d           = metadata[i].boot_stage;
-      assign hw2reg.metadata_low[i].d                       = metadata[i].max_key_version;
+      keymgr_dpe_metadata_slot_t metadata_rd;
+      assign metadata_rd =
+          mubi4_test_false_strict(mubi4_t'(reg2hw.metadata_read_lock.q)) ? metadata[i] : '0;
+
+      assign hw2reg.metadata_high[i].valid.d                = metadata_rd.valid;
+      assign hw2reg.metadata_high[i].exportable_policy.d    = metadata_rd.key_policy.exportable;
+      assign hw2reg.metadata_high[i].retain_parent_policy.d = metadata_rd.key_policy.retain_parent;
+      assign hw2reg.metadata_high[i].allow_child_policy.d   = metadata_rd.key_policy.allow_child;
+      assign hw2reg.metadata_high[i].allow_keygen_policy.d  = metadata_rd.key_policy.allow_keygen;
+      assign hw2reg.metadata_high[i].boot_stage.d           = metadata_rd.boot_stage;
+      assign hw2reg.metadata_low[i].d                       = metadata_rd.max_key_version;
     end else begin : gen_tieoff_slot
       assign hw2reg.metadata_high[i].valid.d                = '0;
       assign hw2reg.metadata_high[i].exportable_policy.d    = '0;

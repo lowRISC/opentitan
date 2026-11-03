@@ -79,6 +79,7 @@
 | keymgr_dpe.[`LOAD_ROOT_KEY_LOCK`](#load_root_key_lock)                     | 0x11c    |        4 | Register lock for the `load root key` operation, see [`CONTROL_SHADOWED.OPERATION.`](#control_shadowed)           |
 | keymgr_dpe.[`LOAD_SECONDARY_ROOT_KEY_LOCK`](#load_secondary_root_key_lock) | 0x120    |        4 | Register lock for the `load secondary root key` operation, see [`CONTROL_SHADOWED.OPERATION.`](#control_shadowed) |
 | keymgr_dpe.[`ENFORCE_SW_BINDING`](#enforce_sw_binding)                     | 0x124    |        4 | Enforce the software binding value as the only advance input message until the next reset                         |
+| keymgr_dpe.[`METADATA_READ_LOCK`](#metadata_read_lock)                     | 0x128    |        4 | Disable software read access to the slot metadata until the next reset                                            |
 
 ## INTR_STATE
 Interrupt State Register
@@ -686,6 +687,7 @@ Read metadata (low word) for each HW slot.
 
 Only the first `NumInstHwSlot` slots are instantiated.
 Entries at index `NumInstHwSlot` and above always read as 0.
+All entries read as 0 once [`METADATA_READ_LOCK`](#metadata_read_lock) is set.
 Together with [`METADATA_HIGH`](#metadata_high), this register lets software inspect the non-secret
 metadata of the DPE context.
 - Reset default: `0x0`
@@ -720,6 +722,7 @@ Read metadata (high word) for each HW slot.
 
 Only the first `NumInstHwSlot` slots are instantiated.
 Entries at index `NumInstHwSlot` and above always read as 0.
+All entries read as 0 once [`METADATA_READ_LOCK`](#metadata_read_lock) is set.
 Together with [`METADATA_LOW`](#metadata_low), this register lets software inspect the non-secret
 metadata of the DPE context.
 - Reset default: `0x0`
@@ -938,6 +941,23 @@ updating the destination slot.
 Advance operations from later boot stages are not affected.
 
 Every encoding except `kMultiBitBool4False` will be treated as locked.
+
+## METADATA_READ_LOCK
+Disable software read access to the slot metadata until the next reset
+- Offset: `0x128`
+- Reset default: `0x9`
+- Reset mask: `0xf`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "LOCK", "bits": 4, "attr": ["rw1s"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                                                |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |        | Reserved                                                                                                                                                                                                                                                   |
+|  3:0   |  rw1s  |   0x9   | LOCK   | Write `kMultiBitBool4True` to disable reading [`METADATA_LOW`](#metadata_low) and [`METADATA_HIGH`](#metadata_high) until the next reset. Once locked, both registers read as zero. Every encoding except `kMultiBitBool4False` will be treated as locked. |
 
 
 <!-- END CMDGEN -->
