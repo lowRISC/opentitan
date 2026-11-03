@@ -9,6 +9,15 @@
 .globl gen_prime_candidate
 .globl fermat_test
 .globl miller_rabin_test
+.globl rsa_check_modulus
+
+/**
+ * Hardened boolean values.
+ *
+ * Should match the values in `hardened_asm.h`.
+ */
+.equ HARDENED_BOOL_TRUE, 0x739
+.equ HARDENED_BOOL_FALSE, 0x1d4
 
 /**
  * Perform the Fermat primality test.
@@ -471,4 +480,328 @@ is_pminus1:
   andi  x2, x2, 8
   srli  x2, x2, 3
 
+  ret
+
+/**
+ * Check that an RSA modulus is composite and not a power of a prime.
+ *
+ * Implements the enhanced Miller-Rabin test of FIPS 186-5, Appendix B.3.2, as
+ * required for RSA public-key validation by NIST SP 800-89, Section 5.3.3. The
+ * modulus is accepted only if the test returns PROVABLY COMPOSITE AND NOT A
+ * POWER OF A PRIME. Both PROBABLY PRIME and PROVABLY COMPOSITE WITH FACTOR are
+ * rejected; for a valid modulus n = p*q the latter only happens if a random
+ * witness shares a factor with n, which has negligible probability.
+ *
+ *   a = largest integer such that 2^a divides n-1
+ *   m = (n-1) / 2^a
+ *   for i in 1..4 do
+ *     Choose a random witness b, 1 < b < n-1
+ *     if gcd(b, n) != 1 then
+ *       return REJECT
+ *     z = b^m mod n
+ *     if z = 1 or z = n-1 then
+ *       continue
+ *     for j in 1..a do
+ *       x = z
+ *       z = x^2 mod n
+ *       if z = 1 then
+ *         goto final
+ *       if j < a and z = n-1 then
+ *         continue with the next witness
+ *     endfor
+ *     x = z
+ *   final:
+ *     if gcd(x-1, n) != 1 then
+ *       return REJECT
+ *     return ACCEPT
+ *   endfor
+ *   return REJECT
+ *
+ * For a valid RSA modulus the first witness almost always yields ACCEPT, so the
+ * cost is dominated by a single full-length exponentiation. Rejected inputs
+ * (e.g. a prime n) run all rounds.
+ *
+ * The modulus is public, so this routine is not constant time. The
+ * exponentiation uses `modexp` with message blinding disabled and the
+ * exponent m in rsa_d0 (rsa_d1 = 0).
+ *
+ * The modulus must have its most significant bit set (n > 2^(256*N-1)), so
+ * that the redundant Montgomery representation used by `montmul` stays below
+ * 2^(256*N). Callers must check this beforehand.
+ *
+ * DMEM usage: reads rsa_n; overwrites rsa_d0, rsa_d1, r0, r1, r2, RR and
+ * work_buf. Since r1 aliases `mode` and `ok`, the caller must rewrite these
+ * afterwards.
+ *
+ * @param[in]  dmem[rsa_n]: n, odd RSA modulus with N limbs
+ * @param[in]  x30: N, number of limbs (N >= 2)
+ * @param[in]  w31: all-zero
+ * @param[out] x2: HARDENED_BOOL_TRUE if n is composite and not a prime power,
+ *                 HARDENED_BOOL_FALSE otherwise
+ *
+ * Clobbered registers: x2 to x29, x31, w0 to w30
+ * Clobbered flag groups: FG0, FG1
+ */
+rsa_check_modulus:
+  # Compute the Montgomery constants for n.
+  # w1        <= m0'
+  # dmem[RR]  <= R^2 mod n
+  # x31       <= N - 1
+  la  x16, rsa_n
+  la  x17, RR
+  jal x1, modload
+
+  # Copy n to rsa_d0 and clear rsa_d1.
+  # dmem[rsa_d0] <= n
+  # dmem[rsa_d1] <= 0
+  li   x8, 2
+  li   x9, 31
+  la   x12, rsa_n
+  la   x13, rsa_d0
+  la   x14, rsa_d1
+  loop x30, 3
+    bn.lid  x8, 0(x12++)
+    bn.sid  x8, 0(x13++)
+    bn.sid  x9, 0(x14++)
+
+  # n is odd, so n-1 only clears the lowest bit.
+  # dmem[rsa_d0] <= n-1
+  la      x13, rsa_d0
+  bn.lid  x8, 0(x13)
+  bn.subi w2, w2, 1
+  bn.sid  x8, 0(x13)
+
+  # Shift rsa_d0 right until it is odd. Since n-1 > 0 this terminates.
+  # x24          <= a
+  # dmem[rsa_d0] <= m = (n-1) >> a
+  li x24, 0
+  li x9, 3
+_rsa_check_modulus_shift:
+  la   x13, rsa_d0
+  lw   x2, 0(x13)
+  andi x2, x2, 1
+  bne  x2, x0, _rsa_check_modulus_shift_done
+  loop x31, 4
+    bn.lid  x8, 0(x13)
+    bn.lid  x9, 32(x13)
+    bn.rshi w2, w3, w2 >> 1
+    bn.sid  x8, 0(x13++)
+  bn.lid  x8, 0(x13)
+  bn.rshi w2, w31, w2 >> 1
+  bn.sid  x8, 0(x13)
+  addi    x24, x24, 1
+  jal     x0, _rsa_check_modulus_shift
+_rsa_check_modulus_shift_done:
+
+  # `gcd` and `modexp` clobber most GPRs, so keep the loop state in DMEM. The
+  # whole 256-bit word is initialized first since it is moved with bn.lid/sid.
+  # dmem[work_buf]   <= number of remaining rounds
+  # dmem[work_buf+4] <= a
+  la     x2, work_buf
+  li     x3, 31
+  bn.sid x3, 0(x2)
+  li     x3, 4
+  sw     x3, 0(x2)
+  sw     x24, 4(x2)
+
+_rsa_check_modulus_round:
+  # If all rounds are exhausted without a verdict, n is probably prime.
+  la   x2, work_buf
+  lw   x3, 0(x2)
+  beq  x3, x0, _rsa_check_modulus_reject
+  addi x3, x3, -1
+  sw   x3, 0(x2)
+
+  # Generate a random witness.
+  # dmem[r0] <= b, 1 < b < n-1
+  la  x16, r0
+  la  x17, rsa_n
+  jal x1, gen_witness
+
+  # dmem[r1] <= b
+  # dmem[r2] <= n
+  la  x12, r0
+  la  x13, r1
+  jal x1, rsa_check_modulus_copy
+  la  x12, rsa_n
+  la  x13, r2
+  jal x1, rsa_check_modulus_copy
+
+  # Reject if b shares a factor with n.
+  # dmem[r2] <= gcd(b, n)
+  la  x10, r1
+  la  x11, r2
+  jal x1, gcd
+  la  x16, r2
+  jal x1, is_1
+  beq x2, x0, _rsa_check_modulus_reject
+
+  # Compute z = b^m mod n with message blinding disabled. `modexp` overwrites
+  # work_buf but leaves w20 intact, so park the loop state in w20.
+  # dmem[r0] <= z
+  li     x14, 20
+  la     x2, work_buf
+  bn.lid x14, 0(x2)
+  li     x29, 0
+  jal    x1, modexp
+  li     x14, 20
+  la     x2, work_buf
+  bn.sid x14, 0(x2)
+
+  # Continue with the next witness if z = 1 or z = n-1.
+  la  x16, r0
+  jal x1, is_1
+  bne x2, x0, _rsa_check_modulus_round
+  la  x16, r0
+  la  x17, rsa_n
+  jal x1, is_pminus1
+  bne x2, x0, _rsa_check_modulus_round
+
+  # Convert z to the Montgomery domain.
+  # dmem[r1] <= montmul(z, RR) = z*R mod n
+  addi x31, x30, -1
+  la   x19, r0
+  la   x20, RR
+  jal  x1, rsa_check_modulus_montmul
+  la   x3, r1
+  jal  x1, rsa_check_modulus_store
+
+  # x25 <= a, number of remaining squarings
+  la x2, work_buf
+  lw x25, 4(x2)
+
+_rsa_check_modulus_square:
+  # x31 <= N-1, as required by `montmul` and `montmul_mul1`.
+  addi x31, x30, -1
+
+  # dmem[r2] <= x = z
+  la  x12, r0
+  la  x13, r2
+  jal x1, rsa_check_modulus_copy
+
+  # dmem[r1] <= montmul(z*R, z*R) = z^2*R mod n
+  la  x19, r1
+  la  x20, r1
+  jal x1, rsa_check_modulus_montmul
+  la  x3, r1
+  jal x1, rsa_check_modulus_store
+
+  # Convert back to the normal domain (fully reduced).
+  # dmem[r0] <= z = montmul(z^2*R, 1) = x^2 mod n
+  li  x8, 4
+  li  x9, 3
+  li  x10, 4
+  li  x11, 2
+  la  x16, rsa_n
+  la  x19, r1
+  la  x21, r0
+  jal x1, montmul_mul1
+
+  # If z = 1, then x is a square root of 1 with x != 1.
+  la  x16, r0
+  jal x1, is_1
+  bne x2, x0, _rsa_check_modulus_final
+
+  # After a squarings z = b^(n-1) mod n != 1; use x = z.
+  addi x25, x25, -1
+  beq  x25, x0, _rsa_check_modulus_last
+
+  # If z = n-1 (and j < a), continue with the next witness.
+  la  x16, r0
+  la  x17, rsa_n
+  jal x1, is_pminus1
+  bne x2, x0, _rsa_check_modulus_round
+  jal x0, _rsa_check_modulus_square
+
+_rsa_check_modulus_last:
+  # dmem[r2] <= x = z
+  la  x12, r0
+  la  x13, r2
+  jal x1, rsa_check_modulus_copy
+
+_rsa_check_modulus_final:
+  # Compute x-1. Here x is neither 0 nor 1, so this does not underflow.
+  # dmem[r2] <= x-1
+  li      x14, 2
+  bn.addi w3, w31, 1
+  bn.add  w31, w31, w31
+  la      x12, r2
+  loop    x30, 4
+    bn.lid  x14, 0(x12)
+    bn.subb w2, w2, w3
+    bn.sid  x14, 0(x12++)
+    bn.mov  w3, w31
+
+  # dmem[r0] <= n
+  la  x12, rsa_n
+  la  x13, r0
+  jal x1, rsa_check_modulus_copy
+
+  # n is not a prime power iff gcd(x-1, n) = 1.
+  # dmem[r0] <= gcd(x-1, n)
+  la  x10, r2
+  la  x11, r0
+  jal x1, gcd
+  la  x16, r0
+  jal x1, is_1
+  beq x2, x0, _rsa_check_modulus_reject
+
+  # n is provably composite and not a power of a prime.
+  addi x2, x0, HARDENED_BOOL_TRUE
+  ret
+
+_rsa_check_modulus_reject:
+  addi x2, x0, HARDENED_BOOL_FALSE
+  ret
+
+/**
+ * Copy an N-limb bignum within DMEM.
+ *
+ * @param[in] x12: dptr_src, source buffer
+ * @param[in] x13: dptr_dst, destination buffer
+ * @param[in] x30: N, number of limbs
+ *
+ * Clobbered registers: x12, x13, x14, w2
+ */
+rsa_check_modulus_copy:
+  li   x14, 2
+  loop x30, 2
+    bn.lid x14, 0(x12++)
+    bn.sid x14, 0(x13++)
+  ret
+
+/**
+ * Montgomery multiplication modulo rsa_n with the pointer setup of `modexp`.
+ *
+ * @param[in]  x19: dptr_a, first operand
+ * @param[in]  x20: dptr_b, second operand
+ * @param[in]  x30: N, number of limbs
+ * @param[in]  x31: N-1
+ * @param[in]   w1: m0', Montgomery constant
+ * @param[out] [w[4+N-1]:w4]: montmul(a, b)
+ *
+ * Clobbered registers: see `montmul`
+ */
+rsa_check_modulus_montmul:
+  li  x8, 4
+  li  x9, 3
+  li  x10, 4
+  li  x11, 2
+  la  x16, rsa_n
+  jal x1, montmul
+  ret
+
+/**
+ * Store the `montmul` result [w[4+N-1]:w4] to DMEM.
+ *
+ * @param[in] x3: dptr_dst, destination buffer
+ * @param[in] x30: N, number of limbs
+ *
+ * Clobbered registers: x2, x3
+ */
+rsa_check_modulus_store:
+  li   x2, 4
+  loop x30, 2
+    bn.sid x2, 0(x3++)
+    addi   x2, x2, 1
   ret

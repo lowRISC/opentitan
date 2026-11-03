@@ -821,6 +821,36 @@ static const uint32_t kTestModulusFactor757[kRsa2048NumWords] = {
     0x79532938, 0x718a44e7, 0xffc72b42, 0xcb605263,
 };
 
+// 2048-bit prime with no factors below 752: must fail the compositeness check.
+static const uint32_t kTestModulusPrime[kRsa2048NumWords] = {
+    0x50d32bab, 0x61c92bf3, 0x39f268c6, 0x4539c0b0, 0xeb85911e, 0x5df94fe3,
+    0xec2ba344, 0x2ab744f2, 0x7a182028, 0x93fbda09, 0xded7c71a, 0xb7300eee,
+    0xe20626f9, 0x71553f6a, 0x26a52d5a, 0xb4e82227, 0x4564d4ce, 0xd4743611,
+    0x242eec91, 0x2deed304, 0x37a41831, 0xa4f3a96a, 0x3a44354d, 0x7305adfe,
+    0x24e4be8e, 0x362978fc, 0x6cb849df, 0xd6a1cb65, 0x6d91a881, 0xf2b1b1ba,
+    0x64e94ab8, 0xf2cc7de2, 0x648c00fc, 0x3cf8c6d4, 0xb90fc191, 0x9d1395e1,
+    0xdce8ea7b, 0x57b1a862, 0x58c2ab66, 0x15ec073b, 0xdc35844d, 0x730b74b0,
+    0x636dd285, 0xed726b30, 0xb4db9372, 0x10c2b900, 0x71deb755, 0xe9ffd275,
+    0x98942a6c, 0xbc9af0a8, 0xfdb459b7, 0xdc129b87, 0x41f2eec5, 0xfe3656c4,
+    0xf5a38739, 0xcc89198f, 0xbc7253d9, 0xb4c78caa, 0xa6b9e8a5, 0x321ab9ba,
+    0x91fbdc17, 0xd8c63b0e, 0xf9a2413a, 0xeca3e138,
+};
+
+// 2048-bit modulus n = q^2 (q a 1024-bit prime): composite, but a prime power.
+static const uint32_t kTestModulusPrimeSquare[kRsa2048NumWords] = {
+    0xf412d069, 0xc7aeb59d, 0x4704860b, 0xfd2eddc4, 0x4e8f69c0, 0x5b67e45b,
+    0x98393c59, 0x4a7818cc, 0x6e67e014, 0xc659ba2a, 0x9fb9af14, 0xe7214023,
+    0x816dc734, 0xb33f5c7b, 0x7ccbe951, 0xc865a154, 0xb66b334e, 0xf86668f4,
+    0x1a87ddce, 0xea33a6ce, 0x9793d52f, 0x33aad6d3, 0xd7cb88f8, 0x0f762ff3,
+    0xd067e203, 0xc8e0085b, 0x143ed746, 0x53bf43e8, 0x72c2eea8, 0x491d4e9f,
+    0xdf152aef, 0x376e6504, 0x9ad84090, 0x24e47826, 0x547c68bb, 0x2df4b486,
+    0xb8e2cccc, 0xac3b684c, 0x5ebcb6c1, 0xfab2b0ea, 0x858b3f50, 0xa7202af9,
+    0xda4ea3e8, 0xf8e6f16e, 0x922231ec, 0xab9adecd, 0x57c7a97a, 0xe82e742b,
+    0x6871472c, 0xf3df06f7, 0x75c08a68, 0x1a3e468d, 0xecd34cb1, 0x9b384861,
+    0x3696cb39, 0x45f757ce, 0x8ef4a6ae, 0x935478ab, 0x4ef32a2f, 0x8f6d615d,
+    0xf3b84bd4, 0x0b53d5c7, 0xdf2d7f99, 0x9881aeea,
+};
+
 /**
  * Run `otcrypto_rsa_hash_verify` on a hand-built public key.
  *
@@ -876,11 +906,23 @@ status_t hash_verify_modulus_check_test(void) {
       hash_verify_with_modulus(kTestModulusFactor751, &verification_result)
           .value == OTCRYPTO_BAD_ARGS.value);
 
-  // Modulus whose smallest prime factor is above the bound: the key is
-  // accepted, but the signature is not valid for it.
-  verification_result = kHardenedBoolTrue;
-  TRY(hash_verify_with_modulus(kTestModulusFactor757, &verification_result));
-  TRY_CHECK(verification_result == kHardenedBoolFalse);
+  // Modulus whose smallest prime factor (757) is above the small-factor bound.
+  // It passes the small-factor check but is rejected by the compositeness
+  // check: 756 divides n-1, so b^(n-1) = 1 mod 757 for every witness b and the
+  // enhanced Miller-Rabin test returns PROVABLY COMPOSITE WITH FACTOR.
+  TRY_CHECK(
+      hash_verify_with_modulus(kTestModulusFactor757, &verification_result)
+          .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Prime modulus (passes the small-factor check, but is not composite).
+  TRY_CHECK(
+      hash_verify_with_modulus(kTestModulusPrime, &verification_result).value ==
+      OTCRYPTO_BAD_ARGS.value);
+
+  // Prime power modulus q^2 (composite, but a power of a prime).
+  TRY_CHECK(
+      hash_verify_with_modulus(kTestModulusPrimeSquare, &verification_result)
+          .value == OTCRYPTO_BAD_ARGS.value);
 
   // The non-approved verify API does not apply the modulus checks.
   uint32_t public_key_data[ceil_div(kOtcryptoRsa2048PublicKeyBytes,
