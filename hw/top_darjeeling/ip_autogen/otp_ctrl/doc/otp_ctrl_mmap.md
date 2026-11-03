@@ -98,24 +98,24 @@ It has been generated with ./util/topgen.py -t hw/top_darjeeling/data/top_darjee
 |         |                       |            |              |      32bit       |                PLAT_OWNER_AUTH_SLOT3_UNLOCK4XFER_KEY                |     0x1328     |    160     |
 |         |                       |            |              |      64bit       | [PLAT_OWNER_AUTH_SLOT3_DIGEST](#Reg_plat_owner_auth_slot3_digest_0) |     0x13C8     |     8      |
 |   13    |        EXT_NVM        |    1024    |      no      |      32bit       |                  EXT_NVM_ANTIREPLAY_FRESHNESS_CNT                   |     0x13D0     |    1024    |
-|   14    |       ROM_PATCH       |    9856    |      no      |      32bit       |                           ROM_PATCH_DATA                            |     0x17D0     |    9192    |
-|         |                       |            |              |      64bit       |             [ROM_PATCH_DIGEST](#Reg_rom_patch_digest_0)             |     0x3E48     |     8      |
-|   15    |        HW_CFG0        |     72     |      no      |      32bit       |                              DEVICE_ID                              |     0x3E50     |     32     |
-|         |                       |            |              |      32bit       |                             MANUF_STATE                             |     0x3E70     |     32     |
-|         |                       |            |              |      64bit       |               [HW_CFG0_DIGEST](#Reg_hw_cfg0_digest_0)               |     0x3E90     |     8      |
-|   16    |        HW_CFG1        |     16     |      no      |      32bit       |                            SOC_DBG_STATE                            |     0x3E98     |     4      |
-|         |                       |            |              |      32bit       |                           EN_SRAM_IFETCH                            |     0x3E9C     |     1      |
-|         |                       |            |              |      64bit       |               [HW_CFG1_DIGEST](#Reg_hw_cfg1_digest_0)               |     0x3EA0     |     8      |
-|   17    |        SECRET0        |     48     |     yes      |      64bit       |                          TEST_UNLOCK_TOKEN                          |     0x3EA8     |     16     |
-|         |                       |            |              |      64bit       |                           TEST_EXIT_TOKEN                           |     0x3EB8     |     16     |
-|         |                       |            |              |      64bit       |               [SECRET0_DIGEST](#Reg_secret0_digest_0)               |     0x3EC8     |     8      |
-|         |                       |            |              |      64bit       |                             SECRET0_ZER                             |     0x3ED0     |     8      |
-|   18    |        SECRET1        |     32     |     yes      |      64bit       |                         SRAM_DATA_KEY_SEED                          |     0x3ED8     |     16     |
-|         |                       |            |              |      64bit       |               [SECRET1_DIGEST](#Reg_secret1_digest_0)               |     0x3EE8     |     8      |
-|         |                       |            |              |      64bit       |                             SECRET1_ZER                             |     0x3EF0     |     8      |
-|   19    |        SECRET2        |    128     |     yes      |      64bit       |                              RMA_TOKEN                              |     0x3EF8     |     16     |
-|         |                       |            |              |      64bit       |                       CREATOR_ROOT_KEY_SHARE0                       |     0x3F08     |     32     |
-|         |                       |            |              |      64bit       |                       CREATOR_ROOT_KEY_SHARE1                       |     0x3F28     |     32     |
+|   14    |       ROM_PATCH       |    9824    |      no      |      32bit       |                           ROM_PATCH_DATA                            |     0x17D0     |    9192    |
+|         |                       |            |              |      64bit       |             [ROM_PATCH_DIGEST](#Reg_rom_patch_digest_0)             |     0x3E28     |     8      |
+|   15    |        HW_CFG0        |     72     |      no      |      32bit       |                              DEVICE_ID                              |     0x3E30     |     32     |
+|         |                       |            |              |      32bit       |                             MANUF_STATE                             |     0x3E50     |     32     |
+|         |                       |            |              |      64bit       |               [HW_CFG0_DIGEST](#Reg_hw_cfg0_digest_0)               |     0x3E70     |     8      |
+|   16    |        HW_CFG1        |     16     |      no      |      32bit       |                            SOC_DBG_STATE                            |     0x3E78     |     4      |
+|         |                       |            |              |      32bit       |                           EN_SRAM_IFETCH                            |     0x3E7C     |     1      |
+|         |                       |            |              |      64bit       |               [HW_CFG1_DIGEST](#Reg_hw_cfg1_digest_0)               |     0x3E80     |     8      |
+|   17    |        SECRET0        |     48     |     yes      |      64bit       |                          TEST_UNLOCK_TOKEN                          |     0x3E88     |     16     |
+|         |                       |            |              |      64bit       |                           TEST_EXIT_TOKEN                           |     0x3E98     |     16     |
+|         |                       |            |              |      64bit       |               [SECRET0_DIGEST](#Reg_secret0_digest_0)               |     0x3EA8     |     8      |
+|         |                       |            |              |      64bit       |                             SECRET0_ZER                             |     0x3EB0     |     8      |
+|   18    |        SECRET1        |     32     |     yes      |      64bit       |                         SRAM_DATA_KEY_SEED                          |     0x3EB8     |     16     |
+|         |                       |            |              |      64bit       |               [SECRET1_DIGEST](#Reg_secret1_digest_0)               |     0x3EC8     |     8      |
+|         |                       |            |              |      64bit       |                             SECRET1_ZER                             |     0x3ED0     |     8      |
+|   19    |        SECRET2        |    160     |     yes      |      64bit       |                              RMA_TOKEN                              |     0x3ED8     |     16     |
+|         |                       |            |              |      64bit       |                       CREATOR_ROOT_KEY_SHARE0                       |     0x3EE8     |     48     |
+|         |                       |            |              |      64bit       |                       CREATOR_ROOT_KEY_SHARE1                       |     0x3F18     |     48     |
 |         |                       |            |              |      64bit       |                            CREATOR_SEED                             |     0x3F48     |     32     |
 |         |                       |            |              |      64bit       |               [SECRET2_DIGEST](#Reg_secret2_digest_0)               |     0x3F68     |     8      |
 |         |                       |            |              |      64bit       |                             SECRET2_ZER                             |     0x3F70     |     8      |

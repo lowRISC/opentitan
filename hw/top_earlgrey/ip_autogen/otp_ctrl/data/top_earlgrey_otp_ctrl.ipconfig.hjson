@@ -11,8 +11,8 @@
       otp:
       {
         width: 2
-        depth: 1032
-        size: 2064
+        depth: 1048
+        size: 2096
         addr_width: 11
         byte_addr_width: 12
       }
@@ -2106,7 +2106,7 @@
             {
               name: CREATOR_ROOT_KEY_SHARE0
               inv_default: <random>
-              size: 32
+              size: 48
               iskeymgr_creator: true
               isdigest: false
               iszer: false
@@ -2117,18 +2117,18 @@
             {
               name: CREATOR_ROOT_KEY_SHARE1
               inv_default: <random>
-              size: 32
+              size: 48
               iskeymgr_creator: true
               isdigest: false
               iszer: false
               ismubi: false
               iskeymgr_owner: false
-              offset: 1928
+              offset: 1944
             }
             {
               name: SECRET2_DIGEST
               size: 8
-              offset: 1960
+              offset: 1992
               ismubi: false
               isdigest: true
               iszer: false
@@ -2139,7 +2139,7 @@
             {
               name: SECRET2_ZER
               size: 8
-              offset: 1968
+              offset: 2000
               ismubi: false
               isdigest: false
               iszer: true
@@ -2156,7 +2156,7 @@
           absorb: false
           iskeymgr_creator: true
           iskeymgr_owner: false
-          size: 96
+          size: 128
           offset: 1880
         }
         {
@@ -2183,7 +2183,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1976
+              offset: 2008
             }
             {
               name: LC_STATE
@@ -2194,7 +2194,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 2024
+              offset: 2056
             }
           ]
           desc:
@@ -2214,7 +2214,7 @@
           iskeymgr_owner: false
           ignore_read_lock_in_rma: false
           size: 88
-          offset: 1976
+          offset: 2008
         }
       ]
     }

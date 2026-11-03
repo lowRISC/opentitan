@@ -187,8 +187,8 @@
 
     { name:      "RndCnstPartInvDefault",
       desc:      "OTP invalid partition default for buffered partitions",
-      type:      "logic [16511:0]"
-      randcount: "16512",
+      type:      "logic [16767:0]"
+      randcount: "16768",
       randtype:  "extdata",
     }
     // Normal parameters
@@ -202,7 +202,7 @@
     {
       name: "OtpDepth",
       desc: "Number of native words.",
-      default: "1032",
+      default: "1048",
       local: "true"
     },
     {
@@ -1728,7 +1728,7 @@
     { name: "Secret2Size",
       desc: "Size of the SECRET2 partition",
       type: "int",
-      default: "96",
+      default: "128",
       local: "true"
     },
     { name: "RmaTokenOffset",
@@ -1752,25 +1752,25 @@
     { name: "CreatorRootKeyShare0Size",
       desc: "Size of CREATOR_ROOT_KEY_SHARE0",
       type: "int",
-      default: "32",
+      default: "48",
       local: "true"
     },
     { name: "CreatorRootKeyShare1Offset",
       desc: "Offset of CREATOR_ROOT_KEY_SHARE1",
       type: "int",
-      default: "1928",
+      default: "1944",
       local: "true"
     },
     { name: "CreatorRootKeyShare1Size",
       desc: "Size of CREATOR_ROOT_KEY_SHARE1",
       type: "int",
-      default: "32",
+      default: "48",
       local: "true"
     },
     { name: "Secret2DigestOffset",
       desc: "Offset of SECRET2_DIGEST",
       type: "int",
-      default: "1960",
+      default: "1992",
       local: "true"
     },
     { name: "Secret2DigestSize",
@@ -1782,7 +1782,7 @@
     { name: "Secret2ZerOffset",
       desc: "Offset of SECRET2_ZER",
       type: "int",
-      default: "1968",
+      default: "2000",
       local: "true"
     },
     { name: "Secret2ZerSize",
@@ -1794,7 +1794,7 @@
     { name: "LifeCycleOffset",
       desc: "Offset of the LIFE_CYCLE partition",
       type: "int",
-      default: "1976",
+      default: "2008",
       local: "true"
     },
     { name: "LifeCycleSize",
@@ -1806,7 +1806,7 @@
     { name: "LcTransitionCntOffset",
       desc: "Offset of LC_TRANSITION_CNT",
       type: "int",
-      default: "1976",
+      default: "2008",
       local: "true"
     },
     { name: "LcTransitionCntSize",
@@ -1818,7 +1818,7 @@
     { name: "LcStateOffset",
       desc: "Offset of LC_STATE",
       type: "int",
-      default: "2024",
+      default: "2056",
       local: "true"
     },
     { name: "LcStateSize",

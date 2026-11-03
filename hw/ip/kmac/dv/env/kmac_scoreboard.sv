@@ -275,13 +275,13 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
 
             // Once valid sideload keys have been seen, update scoreboard state.
             //
-            // Note: max size of sideloaded key is keymgr_dpe_pkg::KeyWidth
+            // Note: max size of sideloaded key is keymgr_dpe_pkg::HwKeyWidth
 
             sideload_key = cfg.keymgr_sideload_agent_cfg.vif.sideload_key;
 
             `uvm_info(`gfn, $sformatf("detected valid sideload_key: %0p", sideload_key), UVM_HIGH)
 
-            for (int i = 0; i < keymgr_dpe_pkg::KeyWidth / 32; i++) begin
+            for (int i = 0; i < keymgr_dpe_pkg::HwKeyWidth / 32; i++) begin
               keymgr_keys[0][i] = sideload_key.key[0][i*32 +: 32];
               keymgr_keys[1][i] = sideload_key.key[1][i*32 +: 32];
             end
@@ -304,7 +304,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
     if (cfg.keymgr_sideload_agent_cfg.vif.sideload_key.valid) begin
       sideload_key = cfg.keymgr_sideload_agent_cfg.vif.sideload_key;
       `uvm_info(`gfn, $sformatf("get valid sideload_key: %0p", sideload_key), UVM_HIGH)
-      for (int i = 0; i < keymgr_dpe_pkg::KeyWidth / 32; i++) begin
+      for (int i = 0; i < keymgr_dpe_pkg::HwKeyWidth / 32; i++) begin
         keymgr_keys[0][i] = sideload_key.key[0][i*32 +: 32];
         keymgr_keys[1][i] = sideload_key.key[1][i*32 +: 32];
       end
