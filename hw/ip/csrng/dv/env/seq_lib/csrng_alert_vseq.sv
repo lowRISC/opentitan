@@ -401,6 +401,47 @@ class csrng_alert_vseq extends csrng_base_vseq;
 
   endtask
 
+  // Here we write a reserved instance index to INT_STATE_NUM to check that the write is ignored
+  // and INT_STATE_NUM_INVALID_ALERT is triggered. We also check that INT_STATE_NUM is locked while
+  // INT_STATE_HALT is set.
+  virtual task test_int_state_num_alert();
+
+    bit [3:0] int_state_num;
+    bit [3:0] wr_num;
+
+    `uvm_info(`gfn, $sformatf("Testing INT_STATE_NUM_INVALID_ALERT"), UVM_MEDIUM)
+
+    csr_rd(.ptr(ral.int_state_num), .value(int_state_num));
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wr_num, wr_num >= cfg.m_num_apps;)
+    csr_wr(.ptr(ral.int_state_num), .value(wr_num));
+
+    `uvm_info(`gfn, $sformatf("Waiting for alert ack to complete"), UVM_MEDIUM)
+    cfg.m_alert_agent_cfgs["recov_alert"].vif.wait_ack_complete();
+
+    `uvm_info(`gfn, $sformatf("Checking RECOV_ALERT_STS register"), UVM_MEDIUM)
+    exp_recov_alert_sts = 32'b0;
+    exp_recov_alert_sts[ral.recov_alert_sts.int_state_num_invalid_alert.get_lsb_pos()] = 1;
+    csr_spinwait(.ptr(ral.recov_alert_sts), .exp_data(exp_recov_alert_sts));
+    // Since we already did a backdoor check, sampling with this value is sufficient.
+    cov_vif.cg_recov_alert_sample(.recov_alert(exp_recov_alert_sts));
+    csr_rd_check(.ptr(ral.int_state_num), .compare_value(int_state_num));
+
+    `uvm_info(`gfn, $sformatf("Testing INT_STATE_NUM_REGWEN"), UVM_MEDIUM)
+    csr_wr(.ptr(ral.int_state_halt), .value(MuBi4True));
+    csr_rd_check(.ptr(ral.int_state_num_regwen), .compare_value(1'b0));
+    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(wr_num,
+                                       wr_num < cfg.m_num_apps; wr_num != int_state_num;)
+    csr_wr(.ptr(ral.int_state_num), .value(wr_num));
+    csr_rd_check(.ptr(ral.int_state_num), .compare_value(int_state_num));
+    csr_wr(.ptr(ral.int_state_halt), .value(MuBi4False));
+    csr_rd_check(.ptr(ral.int_state_num_regwen), .compare_value(1'b1));
+    // Clear the interrupt raised by halting the instance.
+    csr_wr(.ptr(ral.intr_state), .value('1));
+
+    reset_csrng_alert();
+
+  endtask
+
   task body();
 
     // Values for the CMD_STAGE_INVALID_ACMD_ALERT test.
@@ -426,6 +467,7 @@ class csrng_alert_vseq extends csrng_base_vseq;
     test_invalid_gen_cmd_alert();
     test_invalid_cmd_seq_alert();
     test_reseed_cnt_alert_alert();
+    test_int_state_num_alert();
 
     // Turn assertions back on.
     cfg.csrng_assert_vif.assert_on_alert();
