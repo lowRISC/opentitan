@@ -675,6 +675,13 @@ mul256_w24xw25:
   unimp
 
 _det_keygen:
+  # Zero intermediate variables used by keygen.
+  la   x16, mr_iter_p
+  sw   x0, 0(x16)
+  la   x16, mr_iter_p_tmp
+  sw   x0, 0(x16)
+  la   x16, mr_iter_q_tmp
+  sw   x0, 0(x16)
   srl  x30, x30, 1
   la   x16, rsa_p
   lw   x2, 0(x16)

@@ -234,6 +234,10 @@ static status_t keygen_start(uint32_t mode) {
   const otbn_app_t kOtbnAppRsa = OTBN_APP_T_INIT(run_rsa);
   HARDENED_TRY(otbn_load_app(kOtbnAppRsa));
 
+  // Ensure deterministic keygen mode is disabled.
+  uint32_t det = kHardenedBoolFalse;
+  HARDENED_TRY(otbn_dmem_write(1, &det, OTBN_ADDR_T_INIT(run_rsa, rsa_e)));
+
   // Set mode and start OTBN.
   const otbn_addr_t kOtbnVarRsaMode = OTBN_ADDR_T_INIT(run_rsa, mode);
   HARDENED_TRY(otbn_dmem_write_public(1, &mode, kOtbnVarRsaMode));
