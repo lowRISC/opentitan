@@ -1171,7 +1171,7 @@ This is an integrity error on the generated integrity during a life cycle manage
 
 ### STD_FAULT_STATUS . lcmgr_err
 The life cycle management interface has encountered a fatal error.
-The error is either an FSM sparse encoding error or a count error.
+The error is either an FSM sparse encoding error, a count error or an integrity error of the stored scrambling keys.
 
 ### STD_FAULT_STATUS . reg_intg_err
 The RRAM controller encountered a register integrity error.

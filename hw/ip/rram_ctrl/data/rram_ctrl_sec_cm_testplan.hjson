@@ -54,6 +54,12 @@
       tests: []
     }
     {
+      name: sec_cm_scramble_key_integrity
+      desc: "Verify the countermeasure(s) SCRAMBLE.KEY.INTEGRITY."
+      stage: V2S
+      tests: []
+    }
+    {
       name: sec_cm_lc_ctrl_intersig_mubi
       desc: "Verify the countermeasure(s) LC_CTRL.INTERSIG.MUBI."
       stage: V2S

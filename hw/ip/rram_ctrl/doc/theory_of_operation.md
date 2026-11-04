@@ -699,5 +699,10 @@ On reset, before initialization completes, these registers hold fixed netlist-co
 Once `keys_valid` is asserted, the real sideloaded keys are latched in.
 If RRAM access is later disabled (`keys_disable` is any value other than `MuBi4False`), the scrambler switches to a separate pair of random keys (`rand_addr_key`, `rand_data_key`), also supplied by `otp_ctrl` as part of the scrambling-key response, preventing the real sideloaded keys from being used or observed after disable.
 
+The life cycle management interface captures `addr_key` and `data_key` once from `otp_ctrl` and keeps them until reset, while the scrambler reloads its copy from them in every cycle.
+A fault on these stored keys would therefore silently corrupt all subsequent scrambling and descrambling operations, which the shadow-read verify pass cannot detect as both reads use the same key.
+Hence, each key is stored together with SECDED check bits (`prim_secded_inv_137_128`), which are computed when the key is captured and continuously checked.
+An integrity error raises [`STD_FAULT_STATUS.LCMGR_ERR`](registers.md#std_fault_status), a fatal error.
+
 Scrambling is per-page configurable via the `scramble_en` attribute in each protection region or info-page configuration.
 Pages with `scramble_en = MuBi4False` are stored unscrambled.

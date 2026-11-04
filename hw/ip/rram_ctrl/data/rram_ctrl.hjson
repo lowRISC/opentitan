@@ -213,6 +213,12 @@
     { name: "SCRAMBLE.KEY.SIDELOAD",
       desc: "The scrambling key is sideloaded from OTP and thus unreadable by SW."
     }
+    { name: "SCRAMBLE.KEY.INTEGRITY",
+      desc: '''
+            The scrambling keys are stored together with SECDED check bits, which are continuously checked.
+            An integrity error is reported in !!STD_FAULT_STATUS.LCMGR_ERR and is a fatal error.
+            '''
+    }
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: '''
             Life cycle control signals are used to control information partition access
@@ -1424,7 +1430,7 @@
             name: "lcmgr_err",
             desc: '''
                   The life cycle management interface has encountered a fatal error.
-                  The error is either an FSM sparse encoding error or a count error.
+                  The error is either an FSM sparse encoding error, a count error or an integrity error of the stored scrambling keys.
                   '''
           },
           { bits: "2",
