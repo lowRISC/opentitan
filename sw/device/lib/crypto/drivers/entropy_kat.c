@@ -19,6 +19,20 @@
 
 #define MODULE_ID MAKE_MODULE_ID('e', 'n', 'k')
 
+enum {
+  /**
+   * Number of INT_STATE_VAL words making up the internal state of an instance.
+   */
+  kEntropyKatIntStateNumWords = 26,
+  /**
+   * Word indexes of the internal state fields within INT_STATE_VAL.
+   */
+  kEntropyKatIntStateReseedCounterIdx = 0,
+  kEntropyKatIntStateVIdx = 1,
+  kEntropyKatIntStateKeyIdx = 5,
+  kEntropyKatIntStateFlagsIdx = 25,
+};
+
 static const dt_csrng_t kCsrngDt = kDtCsrng;
 static const dt_entropy_src_t kEntropySrcDt = kDtEntropySrc;
 
@@ -92,25 +106,28 @@ static void entropy_csrng_internal_state_get(
     entropy_csrng_internal_state_id_t instance_id,
     entropy_csrng_internal_state_t *state) {
   const uint32_t kBase = csrng_base();
-  // Select the instance id to read the internal state from, request a state
-  // machine halt, and wait for the internal registers to be ready to be read.
+  // Select the instance id to read the internal state from.
   uint32_t reg = bitfield_field32_write(
       0, CSRNG_INT_STATE_NUM_INT_STATE_NUM_FIELD, instance_id);
   abs_mmio_write32(kBase + CSRNG_INT_STATE_NUM_REG_OFFSET, reg);
 
-  // Read the internal state.
-  state->reseed_counter =
-      abs_mmio_read32(kBase + CSRNG_INT_STATE_VAL_REG_OFFSET);
+  // Read the complete internal state, such that the word pointer wraps around.
+  uint32_t words[kEntropyKatIntStateNumWords];
+  for (size_t i = 0; i < ARRAYSIZE(words); ++i) {
+    words[i] = abs_mmio_read32(kBase + CSRNG_INT_STATE_VAL_REG_OFFSET);
+  }
+
+  state->reseed_counter = words[kEntropyKatIntStateReseedCounterIdx];
 
   for (size_t i = 0; i < ARRAYSIZE(state->v); ++i) {
-    state->v[i] = abs_mmio_read32(kBase + CSRNG_INT_STATE_VAL_REG_OFFSET);
+    state->v[i] = words[kEntropyKatIntStateVIdx + i];
   }
 
   for (size_t i = 0; i < ARRAYSIZE(state->key); ++i) {
-    state->key[i] = abs_mmio_read32(kBase + CSRNG_INT_STATE_VAL_REG_OFFSET);
+    state->key[i] = words[kEntropyKatIntStateKeyIdx + i];
   }
 
-  uint32_t flags = abs_mmio_read32(kBase + CSRNG_INT_STATE_VAL_REG_OFFSET);
+  uint32_t flags = words[kEntropyKatIntStateFlagsIdx];
 
   // The following bit indexes are defined in
   // https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#working-state-values
