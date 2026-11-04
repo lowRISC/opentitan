@@ -121,6 +121,7 @@ package csrng_env_pkg;
     GEN_ABORT_FIELD_ALERT           = 7,
     INT_STATE_HALT_FIELD_ALERT      = 8,
     INT_STATE_OVERWRITE_ALERT       = 9,
+    INT_STATE_NUM_INVALID_ALERT     = 10,
     CS_BUS_CMP_ALERT                = 12,
     CMD_STAGE_INVALID_ACMD_ALERT    = 13,
     CMD_STAGE_INVALID_GEN_CMD_ALERT = 14,

@@ -333,6 +333,10 @@ class csrng_env_cfg extends cip_base_env_cfg #(.RAL_T(csrng_reg_block));
       csr_rd(.ptr(ral.int_state_val), .value(rdata));
       hw_key = (rdata<<TL_DW*i) + hw_key;
     end
+    // Skip the additional data of a Generate command halted mid-sequence.
+    repeat (csrng_pkg::SeedLen/TL_DW) begin
+      csr_rd(.ptr(ral.int_state_val), .value(rdata));
+    end
     csr_rd(.ptr(ral.int_state_val), .value(rdata));
     hw_compliance = rdata[1];
     hw_status     = rdata[0];
