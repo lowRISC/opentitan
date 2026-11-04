@@ -307,6 +307,7 @@ static void cancel_if_pending(uint8_t ep) {
     abs_mmio_write32(
         kBase + USBDEV_CONFIGIN_0_REG_OFFSET + ep * sizeof(uint32_t),
         1 << USBDEV_CONFIGIN_0_PEND_0_BIT);
+    in_endpoints[ep].transfer = (usb_transfer_t){0};
   }
 }
 
@@ -392,8 +393,10 @@ static void handle_out(void) {
       continue;
     }
     if (setup) {
+      // Reclaim any cancelled IN buffer and reset transfer state if a previous
+      // control transfer was aborted by this SETUP transaction.
+      cancel_if_pending(ep);
       // Send SETUP_DATA directly to the endpoint handler.
-      // TODO: Do we need to call cancel_if_pending here?
       copy_from_buffer(buffer, (char *)&setup_data, sizeof(setup_data));
       buffer_pool_put(buffer);
       endpoint->handler(endpoint->user_ctx, ep, kUsbTransferFlagsSetupData,
