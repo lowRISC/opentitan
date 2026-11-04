@@ -60,15 +60,17 @@ static void copy_to_buffer(uint8_t id, const char *src, size_t len) {
     src += sizeof(uint32_t);
     len -= sizeof(uint32_t);
   }
-  uint32_t last = 0;
-  uint32_t shift = 0;
-  while (len > 0) {
-    last |= (uint32_t)*src << shift;
-    shift += 8;
-    src += 1;
-    len -= 1;
+  if (len > 0) {
+    uint32_t last = 0;
+    uint32_t shift = 0;
+    while (len > 0) {
+      last |= (uint32_t)(uint8_t)*src << shift;
+      shift += 8;
+      src += 1;
+      len -= 1;
+    }
+    *dst = last;
   }
-  *dst = last;
 }
 
 // Copy from an USB buffer to memory.
