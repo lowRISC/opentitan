@@ -15,12 +15,13 @@ module csrng_cmd_stage import csrng_pkg::*; (
   input logic [InstIdWidth-1:0]      cmd_stage_shid_i,
   input logic [CmdBusWidth-1:0]      cmd_stage_bus_i,
   output logic                       cmd_stage_rdy_o,
-  // Command checking interface.
+  // Command checking and state db interface.
   input logic                        reseed_cnt_reached_i,
   input logic                        instantiated_i,
   input logic [GenBitsCtrWidth-1:0]  cmd_gen_cnt_i,
   input logic                        cmd_gen_flag_i,
   output logic                       cmd_gen_flag_o,
+  input logic                        restore_i,
   output logic                       reseed_cnt_alert_o,
   output logic                       invalid_cmd_seq_alert_o,
   output logic                       invalid_acmd_alert_o,
@@ -123,7 +124,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
     end
   end
 
-  // The GEN flag is stored in the state db.
+  // The GEN flag is stored in the state db such that it can be saved and restored.
   assign gen_ongoing_q = cmd_gen_flag_i;
   assign cmd_gen_flag_o = gen_ongoing_d;
 
@@ -235,7 +236,7 @@ module csrng_cmd_stage import csrng_pkg::*; (
   // Latch an accepted GEN abort request until it is dispatched.
   // To avoid race conditions we latch the abort request until it is safe to send an UNI command.
   assign gen_abort_pending_d =
-         (!cs_enable_i) ? 1'b0 :
+         (!cs_enable_i || restore_i) ? 1'b0 :
          cmd_gen_abort_req ? 1'b0 :
          (gen_abort_req_i && gen_ongoing_d) ? 1'b1 :
          gen_abort_pending_q;
@@ -508,8 +509,8 @@ module csrng_cmd_stage import csrng_pkg::*; (
     .err_o   ()
   );
 
-  // Clear u_prim_fifo_genbits when CSRNG is disabled or on a GEN abort.
-  assign sfifo_genbits_clr = !cs_enable_i || cmd_gen_abort_ack;
+  // Clear u_prim_fifo_genbits when CSRNG is disabled, on a GEN abort or on a restore.
+  assign sfifo_genbits_clr = !cs_enable_i || cmd_gen_abort_ack || restore_i;
 
   assign sfifo_genbits_wdata = {genbits_fips_i,genbits_bus_i};
 
