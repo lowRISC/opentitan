@@ -128,8 +128,9 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   // interface that is passed by default by the testbench (retrieved by dv_base_env class). It was
   // meant for a CIP-compliant testbench to drive the clock and reset to the DUT. The chip level
   // testbench reuses the CIP framework, but is not exactly CIP-compliant. It uses chip_vif.por_n_if
-  // to drive the reset and chip_vif.ext_clk_if to drive the external clock, only if external clock
-  // source is required for the test. The clk_rst_vif is a passive interface which monitors them.
+  // and chip_vif.pora_n_if to drive the reset and chip_vif.ext_clk_if to drive the external clock,
+  // only if external clock source is required for the test. The clk_rst_vif is a passive interface
+  // which monitors them.
   constraint clk_freq_mhz_c {
     clk_freq_mhz inside {ChipClockSourceExternal48Mhz, ChipClockSourceExternal96Mhz};
     foreach (clk_freqs_mhz[i]) clk_freqs_mhz[i] == clk_freq_mhz;

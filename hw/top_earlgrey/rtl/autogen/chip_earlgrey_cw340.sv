@@ -336,7 +336,7 @@ module chip_earlgrey_cw340 #(
   /////////////////////////
 
   // Only signals going to non-custom pads need to be tied off.
-  logic [66:0] unused_sig;
+  logic [67:0] unused_sig;
   //////////////////////
   // Padring Instance //
   //////////////////////
@@ -731,7 +731,7 @@ module chip_earlgrey_cw340 #(
     .AddClkBuf(0)
   ) clkgen (
     .clk_i(manual_in_io_clk),
-    .rst_ni(manual_in_por_n),
+    .rst_ni(manual_in_por_n), // FPGA reset is solely based on POR_N
     .clk_main_o(clk_main),
     .clk_io_o(clk_io),
     .clk_48MHz_o(clk_usb_48mhz),
@@ -931,6 +931,7 @@ module chip_earlgrey_cw340 #(
 
     // Regular ports (auto-generated)
     .manual_in_por_n_i            (rst_n           ),
+    .manual_in_pora_n_i           (rst_n           ),
     .scanmode_o                   (scanmode        ),
     .scan_en_o                    (                ),
     .scan_rst_n_o                 (                ),
@@ -1017,7 +1018,7 @@ module chip_earlgrey_cw340 #(
     .Width ($bits(clk_trans_idle) + 4)
   ) u_sync_trigger (
     .clk_i (manual_in_io_clk),
-    .rst_ni(manual_in_por_n),
+    .rst_ni(manual_in_por_n), // FPGA reset is solely based on POR_N
     .d_i   ({clk_trans_idle,
              clk_io_div4_trigger_hw_en,
              clk_io_div4_trigger_hw_oe,

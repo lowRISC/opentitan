@@ -665,7 +665,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .AddClkBuf(0)
   ) clkgen (
     .clk_i(manual_in_io_clk),
-    .rst_ni(manual_in_por_n),
+    .rst_ni(manual_in_por_n), // FPGA reset is solely based on POR_N
 % if has_srst:
     .srst_ni(manual_in_por_button_n),
 % endif
@@ -747,6 +747,8 @@ module chip_${top["name"]}_${target["name"]} #(
 
   assign manual_out_por_n = 1'b0;
   assign manual_oe_por_n = 1'b0;
+  assign manual_out_pora_n = 1'b0;
+  assign manual_oe_pora_n = 1'b0;
 
   assign manual_out_cc1 = 1'b0;
   assign manual_oe_cc1 = 1'b0;
@@ -756,8 +758,9 @@ module chip_${top["name"]}_${target["name"]} #(
   assign manual_out_rram_analog = 1'b0;
   assign manual_oe_rram_analog = 1'b0;
 
-  // Enable schmitt trigger on POR for better signal integrity.
-  assign manual_attr_por_n = '{schmitt_en: 1'b1, pull_en: 1'b1, pull_select: 1'b1, default: '0};
+  // Enable schmitt trigger on the POR pads for better signal integrity.
+  assign manual_attr_por_n  = '{schmitt_en: 1'b1, pull_en: 1'b1, pull_select: 1'b1, default: '0};
+  assign manual_attr_pora_n = '{schmitt_en: 1'b1, pull_en: 1'b1, pull_select: 1'b1, default: '0};
 
   // These pad attributes are controlled through sensor_ctrl.  Update the description of
   // `MANUAL_PAD_ATTR` in `sensor_ctrl.hjson` when you change or extend the mapping below.
@@ -1102,7 +1105,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .Width ($bits(clk_trans_idle) + 4)
   ) u_sync_trigger (
     .clk_i (manual_in_io_clk),
-    .rst_ni(manual_in_por_n),
+    .rst_ni(manual_in_por_n), // FPGA reset is solely based on POR_N
     .d_i   ({clk_trans_idle,
              clk_io_div4_trigger_hw_en,
              clk_io_div4_trigger_hw_oe,

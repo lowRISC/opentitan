@@ -62,8 +62,14 @@ class chip_env_cov extends cip_base_env_cov #(.CFG_T(chip_env_cfg));
   chip_alert_cg_wrap alert_cg_wrap[NUM_ALERTS];
   chip_spi_device_cg_wrap spi_device_cg_wrap;
 
+  // Power on reset pins pulled low to reset the chip.
+  covergroup por_pin_cg with function sample(por_pin_e por_pin);
+    por_pin_cp: coverpoint por_pin;
+  endgroup
+
   function new(string name, uvm_component parent);
     super.new(name, parent);
+    por_pin_cg = new();
 
     // instantiate all covergroups here
     `uvm_info(`gfn, $sformatf("Instantiating %0d alert_cg wrappers", NUM_ALERTS), UVM_MEDIUM)
