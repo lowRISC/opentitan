@@ -35,6 +35,30 @@ static void spin_until_ready(const dif_csrng_t *csrng) {
   } while (!status.valid_data);
 }
 
+enum {
+  /**
+   * Number of INT_STATE_VAL words making up the internal state of an instance.
+   */
+  kCsrngIntStateNumWords = 26,
+  /**
+   * Word indexes of the internal state fields within INT_STATE_VAL.
+   */
+  kCsrngIntStateReseedCounterIdx = 0,
+  kCsrngIntStateVIdx = 1,
+  kCsrngIntStateKeyIdx = 5,
+  kCsrngIntStateFlagsIdx = 25,
+};
+
+/**
+ * Returns an INT_STATE_HALT register value that halts (`halt` is true) or
+ * resumes the instance selected by INT_STATE_NUM.
+ */
+static uint32_t int_state_halt_reg(bool halt) {
+  return bitfield_field32_write(
+      0, CSRNG_INT_STATE_HALT_INT_STATE_HALT_FIELD,
+      halt ? kMultiBitBool4True : kMultiBitBool4False);
+}
+
 static dif_result_t check_locked(const dif_csrng_t *csrng) {
   if (mmio_region_read32(csrng->base_addr, CSRNG_REGWEN_REG_OFFSET) == 0) {
     return kDifLocked;
@@ -284,8 +308,7 @@ dif_result_t dif_csrng_get_internal_state(
     return kDifBadArg;
   }
 
-  // Select the instance id to read the internal state from, request a state
-  // machine halt, and wait for the internal registers to be ready to be read.
+  // Select the instance id to read the internal state from.
   uint32_t reg = bitfield_field32_write(
       0, CSRNG_INT_STATE_NUM_INT_STATE_NUM_FIELD, instance_id);
   mmio_region_write32(csrng->base_addr, CSRNG_INT_STATE_NUM_REG_OFFSET, reg);
@@ -295,27 +318,55 @@ dif_result_t dif_csrng_get_internal_state(
     return kDifError;
   }
 
-  // Read the internal state.
-  state->reseed_counter =
-      mmio_region_read32(csrng->base_addr, CSRNG_INT_STATE_VAL_REG_OFFSET);
+  // Confirm that saving the internal state of the instance is enabled.
+  if (!mmio_region_get_bit32(csrng->base_addr,
+                             CSRNG_INT_STATE_READ_ENABLE_REG_OFFSET,
+                             (uint32_t)instance_id)) {
+    return kDifLocked;
+  }
+
+  // Confirm that halting the instance is enabled.
+  if (!mmio_region_get_bit32(csrng->base_addr,
+                             CSRNG_INT_STATE_HALT_ENABLE_REG_OFFSET,
+                             (uint32_t)instance_id)) {
+    return kDifLocked;
+  }
+
+  // Request that the instance halts, and wait for it to do so.
+  mmio_region_write32(csrng->base_addr, CSRNG_INT_STATE_HALT_REG_OFFSET,
+                      int_state_halt_reg(/*halt=*/true));
+  while (!mmio_region_get_bit32(csrng->base_addr,
+                                CSRNG_INT_STATE_STS_REG_OFFSET,
+                                CSRNG_INT_STATE_STS_HALTED_BIT)) {
+  }
+
+  // Read the complete internal state, such that the word pointer wraps around.
+  uint32_t words[kCsrngIntStateNumWords];
+  for (size_t i = 0; i < ARRAYSIZE(words); ++i) {
+    words[i] =
+        mmio_region_read32(csrng->base_addr, CSRNG_INT_STATE_VAL_REG_OFFSET);
+  }
+
+  state->reseed_counter = words[kCsrngIntStateReseedCounterIdx];
 
   for (size_t i = 0; i < ARRAYSIZE(state->v); ++i) {
-    state->v[i] =
-        mmio_region_read32(csrng->base_addr, CSRNG_INT_STATE_VAL_REG_OFFSET);
+    state->v[i] = words[kCsrngIntStateVIdx + i];
   }
 
   for (size_t i = 0; i < ARRAYSIZE(state->key); ++i) {
-    state->key[i] =
-        mmio_region_read32(csrng->base_addr, CSRNG_INT_STATE_VAL_REG_OFFSET);
+    state->key[i] = words[kCsrngIntStateKeyIdx + i];
   }
 
-  uint32_t flags =
-      mmio_region_read32(csrng->base_addr, CSRNG_INT_STATE_VAL_REG_OFFSET);
+  uint32_t flags = words[kCsrngIntStateFlagsIdx];
 
   // The following bit indexes are defined in
   // https://opentitan.org/book/hw/ip/csrng/doc/theory_of_operation.html#working-state-values
   state->instantiated = bitfield_bit32_read(flags, /*bit_index=*/0u);
   state->fips_compliance = bitfield_bit32_read(flags, /*bit_index=*/1u);
+
+  // Resume normal command processing for this instance.
+  mmio_region_write32(csrng->base_addr, CSRNG_INT_STATE_HALT_REG_OFFSET,
+                      int_state_halt_reg(/*halt=*/false));
 
   return kDifOk;
 }
