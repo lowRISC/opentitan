@@ -25,14 +25,6 @@ package csrng_pkg;
   // Width of the counter in the command stages to count the amount of generated random bits
   parameter int unsigned GenBitsCtrWidth = 12;
 
-  // Width of the state fields readable via the register interface (up to and including fips)
-  parameter int unsigned StateDbRegStateWidth = RsCtrWidth + BlkLen + KeyLen + 2;
-  // Number of registers per state with synthesis-friendly $ceil(StateDbRegStateWidth / TL_DW)
-  parameter int unsigned StateDbNumRegState =
-      (StateDbRegStateWidth + top_pkg::TL_DW - 1) / top_pkg::TL_DW;
-  // Width of the word pointer used to read out a state via the register interface
-  parameter int unsigned StateDbRegPtrWidth = $clog2(StateDbNumRegState);
-
   // Commonly used internal signal widths
   parameter int unsigned CmdWidth = 3;
   parameter int unsigned InstIdWidth = 4;
@@ -137,16 +129,21 @@ package csrng_pkg;
     // GENerate command.
     // TODO(#28153) Find a smaller solution (giving each app interface an unpacker does not help)
     logic                       gen_adata_vld;
-    logic         [SeedLen-1:0] gen_adata;
     logic                       gen_flag;
     logic [GenBitsCtrWidth-1:0] gen_ctr;
     logic                       fips;
     logic                       inst_state;
+    logic         [SeedLen-1:0] gen_adata;
     csrng_key_v_t               key_v;
     logic      [RsCtrWidth-1:0] rs_ctr;
   } csrng_state_t;
 
   parameter int unsigned StateWidth    = $bits(csrng_state_t);
+
+  // Number of registers per state with synthesis-friendly $ceil(StateWidth / TL_DW)
+  parameter int unsigned StateDbNumRegState = (StateWidth + top_pkg::TL_DW - 1) / top_pkg::TL_DW;
+  // Width of the word pointer used to access a state via the register interface
+  parameter int unsigned StateDbRegPtrWidth = $clog2(StateDbNumRegState);
 
   parameter int unsigned MainSmStateWidth = 6;
 

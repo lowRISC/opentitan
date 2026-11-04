@@ -52,9 +52,9 @@ module csrng_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [36:0] reg_we_check;
+  logic [37:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(37)
+    .OneHotWidth(38)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -188,6 +188,9 @@ module csrng_reg_top (
   logic int_state_read_enable_we;
   logic [2:0] int_state_read_enable_qs;
   logic [2:0] int_state_read_enable_wd;
+  logic int_state_num_regwen_re;
+  logic int_state_num_regwen_qs;
+  logic int_state_num_re;
   logic int_state_num_we;
   logic [3:0] int_state_num_qs;
   logic [3:0] int_state_num_wd;
@@ -243,6 +246,8 @@ module csrng_reg_top (
   logic recov_alert_sts_int_state_halt_field_alert_wd;
   logic recov_alert_sts_int_state_overwrite_alert_qs;
   logic recov_alert_sts_int_state_overwrite_alert_wd;
+  logic recov_alert_sts_int_state_num_invalid_alert_qs;
+  logic recov_alert_sts_int_state_num_invalid_alert_wd;
   logic recov_alert_sts_cs_bus_cmp_alert_qs;
   logic recov_alert_sts_cs_bus_cmp_alert_wd;
   logic recov_alert_sts_cmd_stage_invalid_acmd_alert_qs;
@@ -1153,42 +1158,40 @@ module csrng_reg_top (
   );
 
 
-  // R[int_state_num]: V(False)
+  // R[int_state_num_regwen]: V(True)
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_int_state_num_regwen (
+    .re     (int_state_num_regwen_re),
+    .we     (1'b0),
+    .wd     ('0),
+    .d      (hw2reg.int_state_num_regwen.d),
+    .qre    (),
+    .qe     (),
+    .q      (),
+    .ds     (),
+    .qs     (int_state_num_regwen_qs)
+  );
+
+
+  // R[int_state_num]: V(True)
   logic int_state_num_qe;
   logic [0:0] int_state_num_flds_we;
-  prim_flop #(
-    .Width(1),
-    .ResetValue(0)
-  ) u_int_state_num0_qe (
-    .clk_i(clk_i),
-    .rst_ni(rst_ni),
-    .d_i(&int_state_num_flds_we),
-    .q_o(int_state_num_qe)
-  );
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h0),
-    .Mubi    (1'b0)
+  assign int_state_num_qe = &int_state_num_flds_we;
+  // Create REGWEN-gated WE signal
+  logic int_state_num_gated_we;
+  assign int_state_num_gated_we = int_state_num_we & int_state_num_regwen_qs;
+  prim_subreg_ext #(
+    .DW    (4)
   ) u_int_state_num (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
-    .we     (int_state_num_we),
+    .re     (int_state_num_re),
+    .we     (int_state_num_gated_we),
     .wd     (int_state_num_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
+    .d      (hw2reg.int_state_num.d),
+    .qre    (),
     .qe     (int_state_num_flds_we[0]),
     .q      (reg2hw.int_state_num.q),
     .ds     (),
-
-    // to register interface (read)
     .qs     (int_state_num_qs)
   );
   assign reg2hw.int_state_num.qe = int_state_num_qe;
@@ -1772,6 +1775,34 @@ module csrng_reg_top (
 
     // to register interface (read)
     .qs     (recov_alert_sts_int_state_overwrite_alert_qs)
+  );
+
+  //   F[int_state_num_invalid_alert]: 10:10
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_recov_alert_sts_int_state_num_invalid_alert (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (recov_alert_sts_we),
+    .wd     (recov_alert_sts_int_state_num_invalid_alert_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_alert_sts.int_state_num_invalid_alert.de),
+    .d      (hw2reg.recov_alert_sts.int_state_num_invalid_alert.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (recov_alert_sts_int_state_num_invalid_alert_qs)
   );
 
   //   F[cs_bus_cmp_alert]: 12:12
@@ -2453,7 +2484,7 @@ module csrng_reg_top (
 
 
 
-  logic [36:0] addr_hit;
+  logic [37:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == CSRNG_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == CSRNG_INTR_ENABLE_OFFSET);
@@ -2471,27 +2502,28 @@ module csrng_reg_top (
     addr_hit[13] = (reg_addr == CSRNG_GENBITS_OFFSET);
     addr_hit[14] = (reg_addr == CSRNG_INT_STATE_READ_ENABLE_REGWEN_OFFSET);
     addr_hit[15] = (reg_addr == CSRNG_INT_STATE_READ_ENABLE_OFFSET);
-    addr_hit[16] = (reg_addr == CSRNG_INT_STATE_NUM_OFFSET);
-    addr_hit[17] = (reg_addr == CSRNG_INT_STATE_VAL_OFFSET);
-    addr_hit[18] = (reg_addr == CSRNG_FIPS_FORCE_OFFSET);
-    addr_hit[19] = (reg_addr == CSRNG_GEN_ABORT_REGWEN_OFFSET);
-    addr_hit[20] = (reg_addr == CSRNG_GEN_ABORT_0_OFFSET);
-    addr_hit[21] = (reg_addr == CSRNG_GEN_ABORT_1_OFFSET);
-    addr_hit[22] = (reg_addr == CSRNG_GEN_ABORT_2_OFFSET);
-    addr_hit[23] = (reg_addr == CSRNG_GEN_ABORT_STATUS_0_OFFSET);
-    addr_hit[24] = (reg_addr == CSRNG_GEN_ABORT_STATUS_1_OFFSET);
-    addr_hit[25] = (reg_addr == CSRNG_GEN_ABORT_STATUS_2_OFFSET);
-    addr_hit[26] = (reg_addr == CSRNG_HW_EXC_STS_OFFSET);
-    addr_hit[27] = (reg_addr == CSRNG_RECOV_ALERT_STS_OFFSET);
-    addr_hit[28] = (reg_addr == CSRNG_ERR_CODE_OFFSET);
-    addr_hit[29] = (reg_addr == CSRNG_ERR_CODE_TEST_OFFSET);
-    addr_hit[30] = (reg_addr == CSRNG_MAIN_SM_STATE_OFFSET);
-    addr_hit[31] = (reg_addr == CSRNG_INT_STATE_WRITE_ENABLE_REGWEN_OFFSET);
-    addr_hit[32] = (reg_addr == CSRNG_INT_STATE_WRITE_ENABLE_OFFSET);
-    addr_hit[33] = (reg_addr == CSRNG_INT_STATE_HALT_ENABLE_REGWEN_OFFSET);
-    addr_hit[34] = (reg_addr == CSRNG_INT_STATE_HALT_ENABLE_OFFSET);
-    addr_hit[35] = (reg_addr == CSRNG_INT_STATE_HALT_OFFSET);
-    addr_hit[36] = (reg_addr == CSRNG_INT_STATE_STS_OFFSET);
+    addr_hit[16] = (reg_addr == CSRNG_INT_STATE_NUM_REGWEN_OFFSET);
+    addr_hit[17] = (reg_addr == CSRNG_INT_STATE_NUM_OFFSET);
+    addr_hit[18] = (reg_addr == CSRNG_INT_STATE_VAL_OFFSET);
+    addr_hit[19] = (reg_addr == CSRNG_FIPS_FORCE_OFFSET);
+    addr_hit[20] = (reg_addr == CSRNG_GEN_ABORT_REGWEN_OFFSET);
+    addr_hit[21] = (reg_addr == CSRNG_GEN_ABORT_0_OFFSET);
+    addr_hit[22] = (reg_addr == CSRNG_GEN_ABORT_1_OFFSET);
+    addr_hit[23] = (reg_addr == CSRNG_GEN_ABORT_2_OFFSET);
+    addr_hit[24] = (reg_addr == CSRNG_GEN_ABORT_STATUS_0_OFFSET);
+    addr_hit[25] = (reg_addr == CSRNG_GEN_ABORT_STATUS_1_OFFSET);
+    addr_hit[26] = (reg_addr == CSRNG_GEN_ABORT_STATUS_2_OFFSET);
+    addr_hit[27] = (reg_addr == CSRNG_HW_EXC_STS_OFFSET);
+    addr_hit[28] = (reg_addr == CSRNG_RECOV_ALERT_STS_OFFSET);
+    addr_hit[29] = (reg_addr == CSRNG_ERR_CODE_OFFSET);
+    addr_hit[30] = (reg_addr == CSRNG_ERR_CODE_TEST_OFFSET);
+    addr_hit[31] = (reg_addr == CSRNG_MAIN_SM_STATE_OFFSET);
+    addr_hit[32] = (reg_addr == CSRNG_INT_STATE_WRITE_ENABLE_REGWEN_OFFSET);
+    addr_hit[33] = (reg_addr == CSRNG_INT_STATE_WRITE_ENABLE_OFFSET);
+    addr_hit[34] = (reg_addr == CSRNG_INT_STATE_HALT_ENABLE_REGWEN_OFFSET);
+    addr_hit[35] = (reg_addr == CSRNG_INT_STATE_HALT_ENABLE_OFFSET);
+    addr_hit[36] = (reg_addr == CSRNG_INT_STATE_HALT_OFFSET);
+    addr_hit[37] = (reg_addr == CSRNG_INT_STATE_STS_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -2535,7 +2567,8 @@ module csrng_reg_top (
                (addr_hit[33] & (|(CSRNG_PERMIT[33] & ~reg_be))) |
                (addr_hit[34] & (|(CSRNG_PERMIT[34] & ~reg_be))) |
                (addr_hit[35] & (|(CSRNG_PERMIT[35] & ~reg_be))) |
-               (addr_hit[36] & (|(CSRNG_PERMIT[36] & ~reg_be)))));
+               (addr_hit[36] & (|(CSRNG_PERMIT[36] & ~reg_be))) |
+               (addr_hit[37] & (|(CSRNG_PERMIT[37] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -2604,41 +2637,43 @@ module csrng_reg_top (
   assign int_state_read_enable_we = addr_hit[15] & reg_we & !reg_error;
 
   assign int_state_read_enable_wd = reg_wdata[2:0];
-  assign int_state_num_we = addr_hit[16] & reg_we & !reg_error;
+  assign int_state_num_regwen_re = addr_hit[16] & reg_re & !reg_error;
+  assign int_state_num_re = addr_hit[17] & reg_re & !reg_error;
+  assign int_state_num_we = addr_hit[17] & reg_we & !reg_error;
 
   assign int_state_num_wd = reg_wdata[3:0];
-  assign int_state_val_re = addr_hit[17] & reg_re & !reg_error;
-  assign int_state_val_we = addr_hit[17] & reg_we & !reg_error;
+  assign int_state_val_re = addr_hit[18] & reg_re & !reg_error;
+  assign int_state_val_we = addr_hit[18] & reg_we & !reg_error;
 
   assign int_state_val_wd = reg_wdata[31:0];
-  assign fips_force_we = addr_hit[18] & reg_we & !reg_error;
+  assign fips_force_we = addr_hit[19] & reg_we & !reg_error;
 
   assign fips_force_wd = reg_wdata[2:0];
-  assign gen_abort_regwen_we = addr_hit[19] & reg_we & !reg_error;
+  assign gen_abort_regwen_we = addr_hit[20] & reg_we & !reg_error;
 
   assign gen_abort_regwen_wd = reg_wdata[0];
-  assign gen_abort_0_we = addr_hit[20] & reg_we & !reg_error;
+  assign gen_abort_0_we = addr_hit[21] & reg_we & !reg_error;
 
   assign gen_abort_0_wd = reg_wdata[3:0];
-  assign gen_abort_1_we = addr_hit[21] & reg_we & !reg_error;
+  assign gen_abort_1_we = addr_hit[22] & reg_we & !reg_error;
 
   assign gen_abort_1_wd = reg_wdata[3:0];
-  assign gen_abort_2_we = addr_hit[22] & reg_we & !reg_error;
+  assign gen_abort_2_we = addr_hit[23] & reg_we & !reg_error;
 
   assign gen_abort_2_wd = reg_wdata[3:0];
-  assign gen_abort_status_0_we = addr_hit[23] & reg_we & !reg_error;
+  assign gen_abort_status_0_we = addr_hit[24] & reg_we & !reg_error;
 
   assign gen_abort_status_0_wd = reg_wdata[0];
-  assign gen_abort_status_1_we = addr_hit[24] & reg_we & !reg_error;
+  assign gen_abort_status_1_we = addr_hit[25] & reg_we & !reg_error;
 
   assign gen_abort_status_1_wd = reg_wdata[0];
-  assign gen_abort_status_2_we = addr_hit[25] & reg_we & !reg_error;
+  assign gen_abort_status_2_we = addr_hit[26] & reg_we & !reg_error;
 
   assign gen_abort_status_2_wd = reg_wdata[0];
-  assign hw_exc_sts_we = addr_hit[26] & reg_we & !reg_error;
+  assign hw_exc_sts_we = addr_hit[27] & reg_we & !reg_error;
 
   assign hw_exc_sts_wd = reg_wdata[15:0];
-  assign recov_alert_sts_we = addr_hit[27] & reg_we & !reg_error;
+  assign recov_alert_sts_we = addr_hit[28] & reg_we & !reg_error;
 
   assign recov_alert_sts_enable_field_alert_wd = reg_wdata[0];
 
@@ -2660,6 +2695,8 @@ module csrng_reg_top (
 
   assign recov_alert_sts_int_state_overwrite_alert_wd = reg_wdata[9];
 
+  assign recov_alert_sts_int_state_num_invalid_alert_wd = reg_wdata[10];
+
   assign recov_alert_sts_cs_bus_cmp_alert_wd = reg_wdata[12];
 
   assign recov_alert_sts_cmd_stage_invalid_acmd_alert_wd = reg_wdata[13];
@@ -2669,22 +2706,22 @@ module csrng_reg_top (
   assign recov_alert_sts_cmd_stage_invalid_cmd_seq_alert_wd = reg_wdata[15];
 
   assign recov_alert_sts_cmd_stage_reseed_cnt_alert_wd = reg_wdata[16];
-  assign err_code_test_we = addr_hit[29] & reg_we & !reg_error;
+  assign err_code_test_we = addr_hit[30] & reg_we & !reg_error;
 
   assign err_code_test_wd = reg_wdata[4:0];
-  assign int_state_write_enable_regwen_we = addr_hit[31] & reg_we & !reg_error;
+  assign int_state_write_enable_regwen_we = addr_hit[32] & reg_we & !reg_error;
 
   assign int_state_write_enable_regwen_wd = reg_wdata[0];
-  assign int_state_write_enable_we = addr_hit[32] & reg_we & !reg_error;
+  assign int_state_write_enable_we = addr_hit[33] & reg_we & !reg_error;
 
   assign int_state_write_enable_wd = reg_wdata[2:0];
-  assign int_state_halt_enable_regwen_we = addr_hit[33] & reg_we & !reg_error;
+  assign int_state_halt_enable_regwen_we = addr_hit[34] & reg_we & !reg_error;
 
   assign int_state_halt_enable_regwen_wd = reg_wdata[0];
-  assign int_state_halt_enable_we = addr_hit[34] & reg_we & !reg_error;
+  assign int_state_halt_enable_we = addr_hit[35] & reg_we & !reg_error;
 
   assign int_state_halt_enable_wd = reg_wdata[2:0];
-  assign int_state_halt_we = addr_hit[35] & reg_we & !reg_error;
+  assign int_state_halt_we = addr_hit[36] & reg_we & !reg_error;
 
   assign int_state_halt_wd = reg_wdata[3:0];
 
@@ -2706,27 +2743,28 @@ module csrng_reg_top (
     reg_we_check[13] = 1'b0;
     reg_we_check[14] = int_state_read_enable_regwen_we;
     reg_we_check[15] = int_state_read_enable_gated_we;
-    reg_we_check[16] = int_state_num_we;
-    reg_we_check[17] = int_state_val_we;
-    reg_we_check[18] = fips_force_gated_we;
-    reg_we_check[19] = gen_abort_regwen_we;
-    reg_we_check[20] = gen_abort_0_gated_we;
-    reg_we_check[21] = gen_abort_1_gated_we;
-    reg_we_check[22] = gen_abort_2_gated_we;
-    reg_we_check[23] = gen_abort_status_0_we;
-    reg_we_check[24] = gen_abort_status_1_we;
-    reg_we_check[25] = gen_abort_status_2_we;
-    reg_we_check[26] = hw_exc_sts_we;
-    reg_we_check[27] = recov_alert_sts_we;
-    reg_we_check[28] = 1'b0;
-    reg_we_check[29] = err_code_test_gated_we;
-    reg_we_check[30] = 1'b0;
-    reg_we_check[31] = int_state_write_enable_regwen_we;
-    reg_we_check[32] = int_state_write_enable_gated_we;
-    reg_we_check[33] = int_state_halt_enable_regwen_we;
-    reg_we_check[34] = int_state_halt_enable_gated_we;
-    reg_we_check[35] = int_state_halt_we;
-    reg_we_check[36] = 1'b0;
+    reg_we_check[16] = 1'b0;
+    reg_we_check[17] = int_state_num_gated_we;
+    reg_we_check[18] = int_state_val_we;
+    reg_we_check[19] = fips_force_gated_we;
+    reg_we_check[20] = gen_abort_regwen_we;
+    reg_we_check[21] = gen_abort_0_gated_we;
+    reg_we_check[22] = gen_abort_1_gated_we;
+    reg_we_check[23] = gen_abort_2_gated_we;
+    reg_we_check[24] = gen_abort_status_0_we;
+    reg_we_check[25] = gen_abort_status_1_we;
+    reg_we_check[26] = gen_abort_status_2_we;
+    reg_we_check[27] = hw_exc_sts_we;
+    reg_we_check[28] = recov_alert_sts_we;
+    reg_we_check[29] = 1'b0;
+    reg_we_check[30] = err_code_test_gated_we;
+    reg_we_check[31] = 1'b0;
+    reg_we_check[32] = int_state_write_enable_regwen_we;
+    reg_we_check[33] = int_state_write_enable_gated_we;
+    reg_we_check[34] = int_state_halt_enable_regwen_we;
+    reg_we_check[35] = int_state_halt_enable_gated_we;
+    reg_we_check[36] = int_state_halt_we;
+    reg_we_check[37] = 1'b0;
   end
 
   // Read data return
@@ -2816,50 +2854,54 @@ module csrng_reg_top (
       end
 
       addr_hit[16]: begin
-        reg_rdata_next[3:0] = int_state_num_qs;
+        reg_rdata_next[0] = int_state_num_regwen_qs;
       end
 
       addr_hit[17]: begin
-        reg_rdata_next[31:0] = int_state_val_qs;
+        reg_rdata_next[3:0] = int_state_num_qs;
       end
 
       addr_hit[18]: begin
-        reg_rdata_next[2:0] = fips_force_qs;
+        reg_rdata_next[31:0] = int_state_val_qs;
       end
 
       addr_hit[19]: begin
-        reg_rdata_next[0] = gen_abort_regwen_qs;
+        reg_rdata_next[2:0] = fips_force_qs;
       end
 
       addr_hit[20]: begin
-        reg_rdata_next[3:0] = gen_abort_0_qs;
+        reg_rdata_next[0] = gen_abort_regwen_qs;
       end
 
       addr_hit[21]: begin
-        reg_rdata_next[3:0] = gen_abort_1_qs;
+        reg_rdata_next[3:0] = gen_abort_0_qs;
       end
 
       addr_hit[22]: begin
-        reg_rdata_next[3:0] = gen_abort_2_qs;
+        reg_rdata_next[3:0] = gen_abort_1_qs;
       end
 
       addr_hit[23]: begin
-        reg_rdata_next[0] = gen_abort_status_0_qs;
+        reg_rdata_next[3:0] = gen_abort_2_qs;
       end
 
       addr_hit[24]: begin
-        reg_rdata_next[0] = gen_abort_status_1_qs;
+        reg_rdata_next[0] = gen_abort_status_0_qs;
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[0] = gen_abort_status_2_qs;
+        reg_rdata_next[0] = gen_abort_status_1_qs;
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[15:0] = hw_exc_sts_qs;
+        reg_rdata_next[0] = gen_abort_status_2_qs;
       end
 
       addr_hit[27]: begin
+        reg_rdata_next[15:0] = hw_exc_sts_qs;
+      end
+
+      addr_hit[28]: begin
         reg_rdata_next[0] = recov_alert_sts_enable_field_alert_qs;
         reg_rdata_next[1] = recov_alert_sts_sw_app_enable_field_alert_qs;
         reg_rdata_next[2] = recov_alert_sts_read_int_state_field_alert_qs;
@@ -2870,6 +2912,7 @@ module csrng_reg_top (
         reg_rdata_next[7] = recov_alert_sts_gen_abort_field_alert_qs;
         reg_rdata_next[8] = recov_alert_sts_int_state_halt_field_alert_qs;
         reg_rdata_next[9] = recov_alert_sts_int_state_overwrite_alert_qs;
+        reg_rdata_next[10] = recov_alert_sts_int_state_num_invalid_alert_qs;
         reg_rdata_next[12] = recov_alert_sts_cs_bus_cmp_alert_qs;
         reg_rdata_next[13] = recov_alert_sts_cmd_stage_invalid_acmd_alert_qs;
         reg_rdata_next[14] = recov_alert_sts_cmd_stage_invalid_gen_cmd_alert_qs;
@@ -2877,7 +2920,7 @@ module csrng_reg_top (
         reg_rdata_next[16] = recov_alert_sts_cmd_stage_reseed_cnt_alert_qs;
       end
 
-      addr_hit[28]: begin
+      addr_hit[29]: begin
         reg_rdata_next[0] = err_code_sfifo_cmd_err_qs;
         reg_rdata_next[1] = err_code_sfifo_genbits_err_qs;
         reg_rdata_next[20] = err_code_cmd_stage_sm_err_qs;
@@ -2890,35 +2933,35 @@ module csrng_reg_top (
         reg_rdata_next[30] = err_code_fifo_state_err_qs;
       end
 
-      addr_hit[29]: begin
+      addr_hit[30]: begin
         reg_rdata_next[4:0] = err_code_test_qs;
       end
 
-      addr_hit[30]: begin
+      addr_hit[31]: begin
         reg_rdata_next[5:0] = main_sm_state_qs;
       end
 
-      addr_hit[31]: begin
+      addr_hit[32]: begin
         reg_rdata_next[0] = int_state_write_enable_regwen_qs;
       end
 
-      addr_hit[32]: begin
+      addr_hit[33]: begin
         reg_rdata_next[2:0] = int_state_write_enable_qs;
       end
 
-      addr_hit[33]: begin
+      addr_hit[34]: begin
         reg_rdata_next[0] = int_state_halt_enable_regwen_qs;
       end
 
-      addr_hit[34]: begin
+      addr_hit[35]: begin
         reg_rdata_next[2:0] = int_state_halt_enable_qs;
       end
 
-      addr_hit[35]: begin
+      addr_hit[36]: begin
         reg_rdata_next[3:0] = int_state_halt_qs;
       end
 
-      addr_hit[36]: begin
+      addr_hit[37]: begin
         reg_rdata_next[0] = int_state_sts_qs;
       end
 

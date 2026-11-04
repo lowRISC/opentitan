@@ -179,7 +179,8 @@ module csrng_core import csrng_pkg::*; #(
 
   logic [NumHwApps-1:0]        hw_exception_sts;
   logic [LcHwDebugCopies-1:0]  lc_hw_debug_on_fo;
-  logic                        state_db_reg_read_en;
+  logic                        int_state_rd_allowed;
+  logic                        int_state_wr_allowed;
 
   logic [30:0]                 err_code_test_bit;
 
@@ -194,7 +195,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [NumApps-1:0]          gen_abort_field_alert;
   logic                        sw_gen_abort_ack;
 
-  logic [NumApps-1:0][31:0]                reseed_counter;
+  logic [NumApps-1:0][31:0]                state_db_reseed_counter;
   logic [NumApps-1:0]                      state_db_inst_state;
   logic [NumApps-1:0][GenBitsCtrWidth-1:0] state_db_gen_cnt;
   logic [NumApps-1:0]                      state_db_gen_flag;
@@ -203,12 +204,17 @@ module csrng_core import csrng_pkg::*; #(
   prim_mubi_pkg::mubi4_t [CsEnableCopies-1:0] mubi_cs_enable_fanout;
   prim_mubi_pkg::mubi4_t    [Flag0Copies-1:0] mubi_flag0_fanout;
 
-  // Internal-state halt signals
-  logic [NumAppsLg-1:0] int_state_num_idx;
-  logic                 int_state_num_vld;
-  logic [NumApps-1:0]   int_state_halted_pulse;
-  logic [NumApps-1:0]   cmd_stage_halt;
-  logic [NumApps-1:0]   cmd_stage_halted;
+  // Internal-state halt and save/restore signals
+  logic                              int_state_overwrite_alert;
+  logic                              int_state_num_invalid_alert;
+  logic                              int_state_num_wr;
+  logic [NumApps-1:0]                int_state_halted_pulse;
+  logic [NumApps-1:0]                cmd_stage_halt;
+  logic [NumApps-1:0]                cmd_stage_halted;
+  logic [NumApps-1:0]                cmd_stage_restore;
+  logic [CmdBusWidth-1:0]            int_state_val_rd_data;
+  logic                              int_state_val_rd_en;
+  logic                              int_state_val_wr_en;
 
   // flops
   acmd_e                      acmd_q, acmd_d;
@@ -226,6 +232,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                       cs_rdata_capt_vld_q, cs_rdata_capt_vld_d;
   logic                       sw_rdy_sts_q, sw_rdy_sts_d;
   logic                       sw_sts_ack_q, sw_sts_ack_d;
+  logic [NumAppsLg-1:0]       int_state_num_q, int_state_num_d;
   logic [NumApps-1:0]         reseed_cnt_reached;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
@@ -245,6 +252,7 @@ module csrng_core import csrng_pkg::*; #(
       cs_rdata_capt_vld_q     <= '0;
       sw_rdy_sts_q            <= '0;
       sw_sts_ack_q            <= '0;
+      int_state_num_q         <= '0;
     end else begin
       acmd_q                  <= acmd_d;
       inst_id_q               <= inst_id_d;
@@ -261,6 +269,7 @@ module csrng_core import csrng_pkg::*; #(
       cs_rdata_capt_vld_q     <= cs_rdata_capt_vld_d;
       sw_rdy_sts_q            <= sw_rdy_sts_d;
       sw_sts_ack_q            <= sw_sts_ack_d;
+      int_state_num_q         <= int_state_num_d;
     end
   end
 
@@ -434,6 +443,8 @@ module csrng_core import csrng_pkg::*; #(
          |invalid_gen_cmd_alert ||
          |gen_abort_invalid_alert ||
          |gen_abort_field_alert ||
+         int_state_overwrite_alert ||
+         int_state_num_invalid_alert ||
          int_state_halt_pfa ||
          cs_bus_cmp_alert;
 
@@ -578,24 +589,41 @@ module csrng_core import csrng_pkg::*; #(
   assign int_state_halt = int_state_halt_pfe;
 
   //------------------------------------------
-  // Internal-state halt control
+  // Internal-state save/restore control
   //------------------------------------------
-  // This section of the RTL halts the instance selected via INT_STATE_NUM.
+  // This section of the RTL halts the selected instance and gates access to its internal state.
 
-  assign int_state_num_idx = reg2hw.int_state_num.q[NumAppsLg-1:0];
-  assign int_state_num_vld = reg2hw.int_state_num.q < NumApps;
+  // Only writes selecting a valid instance are accepted, others are ignored and raise an alert.
+  // The selected instance cannot be changed while INT_STATE_HALT is set.
+  assign int_state_num_wr = reg2hw.int_state_num.qe && (reg2hw.int_state_num.q < NumApps);
+  assign int_state_num_invalid_alert = (reg2hw.int_state_num.qe && !int_state_num_wr) ||
+                                       (int_state_num_q >= NumApps);
+  assign int_state_num_d = int_state_num_wr ? reg2hw.int_state_num.q[NumAppsLg-1:0] :
+                                              int_state_num_q;
+  assign hw2reg.int_state_num.d = 4'(int_state_num_q);
+  assign hw2reg.int_state_num_regwen.d = !int_state_halt;
+
+  // Permission gates for reading and writing the internal state of the selected instance.
+  // Writing is only allowed while the selected instance is halted.
+  assign int_state_rd_allowed = cs_enable_fo[46] && read_int_state &&
+                                (int_state_num_q < NumApps) &&
+                                reg2hw.int_state_read_enable.q[int_state_num_q];
+  assign int_state_wr_allowed = cs_enable_fo[47] && write_int_state &&
+                                (int_state_num_q < NumApps) &&
+                                reg2hw.int_state_write_enable.q[int_state_num_q] &&
+                                cmd_stage_halted[int_state_num_q];
 
   // The selected instance is halted for as long as INT_STATE_HALT is set, provided that halting is
   // enabled for it.
   for (genvar ai = 0; ai < NumApps; ai = ai+1) begin : gen_cmd_stage_halt
     assign cmd_stage_halt[ai] = cs_enable_fo[5] && int_state_halt &&
-                                (reg2hw.int_state_num.q == ai) &&
+                                (int_state_num_q == ai) &&
                                 reg2hw.int_state_halt_enable.q[ai];
   end : gen_cmd_stage_halt
 
   // Report the halted status of the selected instance.
   assign hw2reg.int_state_sts.de = 1'b1;
-  assign hw2reg.int_state_sts.d  = int_state_num_vld && cmd_stage_halted[int_state_num_idx];
+  assign hw2reg.int_state_sts.d  = cmd_stage_halted[int_state_num_q];
 
   //------------------------------------------
   // application interface
@@ -644,6 +672,7 @@ module csrng_core import csrng_pkg::*; #(
       .cmd_gen_cnt_i                (state_db_gen_cnt[ai]),
       .cmd_gen_flag_i               (state_db_gen_flag[ai]),
       .cmd_gen_flag_o               (cmd_stage_gen_flag[ai]),
+      .restore_i                    (cmd_stage_restore[ai]),
       .reseed_cnt_alert_o           (reseed_cnt_alert[ai]),
       .invalid_cmd_seq_alert_o      (invalid_cmd_seq_alert[ai]),
       .invalid_acmd_alert_o         (invalid_acmd_alert[ai]),
@@ -676,7 +705,7 @@ module csrng_core import csrng_pkg::*; #(
 
     // Set reseed_cnt_reached to true if the max number of generate requests between reseeds
     // has been reached for the respective counter.
-    assign reseed_cnt_reached[ai] = (reseed_counter[ai] >= reg2hw.reseed_interval.q);
+    assign reseed_cnt_reached[ai] = (state_db_reseed_counter[ai] >= reg2hw.reseed_interval.q);
 
     // GEN_ABORT status polling interface.
     assign hw2reg.gen_abort_status[ai].de = cmd_stage_ack[ai] &&
@@ -731,7 +760,7 @@ module csrng_core import csrng_pkg::*; #(
   ) u_prim_packer_fifo_sw_genbits (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
-    .clr_i   (!cs_enable_fo[29] || sw_gen_abort_ack),
+    .clr_i   (!cs_enable_fo[29] || sw_gen_abort_ack || cmd_stage_restore[NumApps-1]),
     .wvalid_i(genbits_stage_vld[NumApps-1]),
     .wdata_i (genbits_stage_bus[NumApps-1]),
     .wready_o(genbits_stage_rdy[NumApps-1]),
@@ -790,6 +819,13 @@ module csrng_core import csrng_pkg::*; #(
 
   assign hw2reg.recov_alert_sts.gen_abort_field_alert.de = |gen_abort_field_alert;
   assign hw2reg.recov_alert_sts.gen_abort_field_alert.d  = |gen_abort_field_alert;
+
+  assign hw2reg.recov_alert_sts.int_state_overwrite_alert.de = int_state_overwrite_alert;
+  assign hw2reg.recov_alert_sts.int_state_overwrite_alert.d  = int_state_overwrite_alert;
+
+  assign hw2reg.recov_alert_sts.int_state_num_invalid_alert.de = int_state_num_invalid_alert;
+  assign hw2reg.recov_alert_sts.int_state_num_invalid_alert.d  = int_state_num_invalid_alert;
+
 
   // HW interface connections (up to 16, numbered 0-14)
   for (genvar hai = 0; hai < (NumApps-1); hai = hai+1) begin : gen_app_if
@@ -976,7 +1012,8 @@ module csrng_core import csrng_pkg::*; #(
   //-------------------------------------
   // Holds the internal state of each csrng instance. Gets updated after every command.
 
-  assign state_db_reg_read_en = cs_enable_fo[40] && read_int_state;
+  assign int_state_val_rd_en = int_state_rd_allowed && reg2hw.int_state_val.re;
+  assign int_state_val_wr_en = int_state_wr_allowed && reg2hw.int_state_val.qe;
 
   csrng_state_db u_csrng_state_db (
     .clk_i   (clk_i),
@@ -989,15 +1026,16 @@ module csrng_core import csrng_pkg::*; #(
     .wr_vld_i   (state_db_wr_vld),
     .wr_data_i  (ctr_drbg_rsp_data),
 
-    .reg_rd_en_i        (state_db_reg_read_en),
-    .reg_rd_regfile_en_i(reg2hw.int_state_read_enable.q),
+    .reg_inst_id_i        (int_state_num_q),
+    .reg_ptr_clr_i        (int_state_num_wr),
+    .reg_rd_en_i          (int_state_val_rd_en),
+    .reg_rd_data_o        (int_state_val_rd_data),
+    .reg_wr_en_i          (int_state_val_wr_en),
+    .reg_wr_data_i        (reg2hw.int_state_val.q),
+    .reg_overwrite_alert_o(int_state_overwrite_alert),
+    .reg_restored_o       (cmd_stage_restore),
 
-    .reg_rd_id_vld_i(reg2hw.int_state_num.qe),
-    .reg_rd_id_i    (reg2hw.int_state_num.q),
-    .reg_rd_strb_i  (reg2hw.int_state_val.re),
-    .reg_rd_val_o   (hw2reg.int_state_val.d),
-
-    .reseed_counter_o(reseed_counter),
+    .reseed_counter_o(state_db_reseed_counter),
     .inst_state_o    (state_db_inst_state),
     .gen_cnt_o       (state_db_gen_cnt),
     .gen_flag_i      (cmd_stage_gen_flag),
@@ -1006,10 +1044,13 @@ module csrng_core import csrng_pkg::*; #(
     .reg_ptr_err_o(state_db_reg_ptr_err)
   );
 
+  // Internal state reads return zero unless reading is enabled for the selected instance.
+  assign hw2reg.int_state_val.d = int_state_rd_allowed ? int_state_val_rd_data : '0;
+
   // Forward the reseed counter values to the register interface.
   always_comb begin : reseed_counter_assign
     for (int i = 0; i < NumApps; i++) begin
-      hw2reg.reseed_counter[i].d = reseed_counter[i];
+      hw2reg.reseed_counter[i].d = state_db_reseed_counter[i];
     end
   end
 
@@ -1153,20 +1194,10 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.hw_exc_sts.de = cs_enable_fo[50];
   assign hw2reg.hw_exc_sts.d  = MaxNumInstances'(hw_exception_sts);
 
-  //------------------------------------------
-  // Internal-state save/restore: registers
-  //------------------------------------------
-  // TODO: Wire up the registers to context save/restore control logic.
-
-  assign hw2reg.recov_alert_sts.int_state_overwrite_alert.de = 1'b0;
-  assign hw2reg.recov_alert_sts.int_state_overwrite_alert.d  = 1'b0;
-
   // unused signals
   logic               unused_err_code_test_bit;
   logic               unused_enable_fo;
   logic               unused_reg2hw_genbits;
-  logic               unused_int_state_val;
-  logic               unused_int_state_write;
   logic               unused_reseed_interval;
   logic [SeedLen-1:0] unused_gen_rsp_pdata;
   logic               unused_state_db_inst_state;
@@ -1175,10 +1206,8 @@ module csrng_core import csrng_pkg::*; #(
   assign unused_err_code_test_bit = err_code_test_bit[27] || (|err_code_test_bit[24:23]) ||
                                     (|err_code_test_bit[19:2]);
   assign unused_enable_fo = |cs_enable_fo[18:6] || (|cs_enable_fo[35:33]) ||
-                            (|cs_enable_fo[47:46]);
+                            cs_enable_fo[40];
   assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
-  assign unused_int_state_val = (|reg2hw.int_state_val.q) | reg2hw.int_state_val.qe;
-  assign unused_int_state_write = write_int_state | (|reg2hw.int_state_write_enable.q);
   assign unused_reseed_interval = reg2hw.reseed_interval.qe;
   assign unused_gen_rsp_pdata = ctr_drbg_rsp_data.pdata;
   assign unused_state_db_inst_state = state_db_rd_data.inst_state;
