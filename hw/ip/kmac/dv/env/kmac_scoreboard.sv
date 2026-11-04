@@ -193,7 +193,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
 
   function void build_phase(uvm_phase phase);
     super.build_phase(phase);
-    skip_state_mem_model = $test$plusargs("run_mem_partial_access") || $test$plusargs("run_csr_mem_rw_with_rand_reset");
     for (int i = 0; i < NUM_APP_INTF; i++) begin
       kmac_app_fifo[i] = new($sformatf("kmac_app_fifo[%0d]", i), this);
       m_app_req_fifos[i] = new($sformatf("m_app_req_fifos[%0d]", i), this);
