@@ -227,6 +227,7 @@ module top_earlgrey #(
 
   // Inter-module Signal External type
   input  logic       manual_in_por_n_i,
+  input  logic       manual_in_pora_n_i,
   output prim_mubi_pkg::mubi4_t       scanmode_o,
   output logic       scan_en_o,
   output logic       scan_rst_n_o,
@@ -992,6 +993,7 @@ module top_earlgrey #(
 
     // Regular ports (auto-generated)
     .manual_in_por_n_i,
+    .manual_in_pora_n_i,
     .scanmode_o,
     .scan_en_o,
     .scan_rst_n_o,

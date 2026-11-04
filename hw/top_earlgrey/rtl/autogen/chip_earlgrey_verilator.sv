@@ -377,6 +377,7 @@ module chip_earlgrey_verilator (
 
     // Regular ports (auto-generated)
     .manual_in_por_n_i            (rst_n           ),
+    .manual_in_pora_n_i           (rst_n           ),
     .scanmode_o                   (scanmode        ),
     .scan_en_o                    (                ),
     .scan_rst_n_o                 (                ),

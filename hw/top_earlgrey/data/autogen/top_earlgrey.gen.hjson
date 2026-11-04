@@ -6751,7 +6751,7 @@
         }
         {
           name: por_n
-          desc: External power ON reset
+          desc: External power ON reset based on VCC
           struct: logic
           type: uni
           act: rcv
@@ -6764,6 +6764,22 @@
           conn_type: false
           index: -1
           top_signame: manual_in_por_n
+        }
+        {
+          name: pora_n
+          desc: External power ON reset based on VIOA
+          struct: logic
+          type: uni
+          act: rcv
+          width: 1
+          partition: secondary
+          inst_name: ast
+          default: ""
+          package: ""
+          external: true
+          conn_type: false
+          index: -1
+          top_signame: manual_in_pora_n
         }
         {
           name: sns_clks
@@ -13517,6 +13533,7 @@
     external:
     {
       ast.por_n: manual_in_por_n
+      ast.pora_n: manual_in_pora_n
       ast.dft_scan_md: scanmode
       ast.scan_shift_en: scan_en
       ast.scan_reset_n: scan_rst_n
@@ -15862,8 +15879,17 @@
         type: InputStd
         bank: VCC
         connection: manual
-        desc: System reset
+        desc: System reset based on VCC
         idx: 0
+        port_type: inout
+      }
+      {
+        name: PORA_N
+        type: InputStd
+        bank: VIOA
+        connection: manual
+        desc: System reset based on VIOA
+        idx: 1
         port_type: inout
       }
       {
@@ -15872,7 +15898,7 @@
         bank: VCC
         connection: manual
         desc: USB P signal
-        idx: 1
+        idx: 2
         port_type: inout
       }
       {
@@ -15881,7 +15907,7 @@
         bank: VCC
         connection: manual
         desc: USB N signal
-        idx: 2
+        idx: 3
         port_type: inout
       }
       {
@@ -15891,7 +15917,7 @@
         connection: manual
         desc: ADC input 1
         port_type: `INOUT_AI
-        idx: 3
+        idx: 4
       }
       {
         name: CC2
@@ -15900,7 +15926,7 @@
         connection: manual
         desc: ADC input 2
         port_type: `INOUT_AI
-        idx: 4
+        idx: 5
       }
       {
         name: RRAM_ANALOG
@@ -15908,7 +15934,7 @@
         bank: VCC
         connection: manual
         desc: RRAM analog test signal
-        idx: 5
+        idx: 6
         port_type: inout
       }
       {
@@ -15917,7 +15943,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
-        idx: 6
+        idx: 7
         port_type: inout
       }
       {
@@ -15926,7 +15952,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
-        idx: 7
+        idx: 8
         port_type: inout
       }
       {
@@ -15935,7 +15961,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
-        idx: 8
+        idx: 9
         port_type: inout
       }
       {
@@ -15944,7 +15970,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host data
-        idx: 9
+        idx: 10
         port_type: inout
       }
       {
@@ -15953,7 +15979,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host clock
-        idx: 10
+        idx: 11
         port_type: inout
       }
       {
@@ -15962,7 +15988,7 @@
         bank: VIOA
         connection: direct
         desc: SPI host chip select
-        idx: 11
+        idx: 12
         port_type: inout
       }
       {
@@ -15971,7 +15997,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 12
+        idx: 13
         port_type: inout
       }
       {
@@ -15980,7 +16006,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 13
+        idx: 14
         port_type: inout
       }
       {
@@ -15989,7 +16015,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 14
+        idx: 15
         port_type: inout
       }
       {
@@ -15998,7 +16024,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device data
-        idx: 15
+        idx: 16
         port_type: inout
       }
       {
@@ -16007,7 +16033,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device clock
-        idx: 16
+        idx: 17
         port_type: inout
       }
       {
@@ -16016,7 +16042,7 @@
         bank: VIOA
         connection: direct
         desc: SPI device chip select
-        idx: 17
+        idx: 18
         port_type: inout
       }
       {
@@ -16412,7 +16438,7 @@
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (ec_rst_l)
-        idx: 18
+        idx: 19
         port_type: inout
       }
       {
@@ -16421,7 +16447,7 @@
         bank: VCC
         connection: direct
         desc: Dedicated sysrst_ctrl output (flash_wp_l))
-        idx: 19
+        idx: 20
         port_type: inout
       }
       {
@@ -18481,7 +18507,7 @@
         inouts: 12
         inputs: 2
         outputs: 2
-        pads: 20
+        pads: 21
       }
       muxed:
       {
@@ -18664,6 +18690,10 @@
           {
             signal: rst_n
           }
+          ast.pora_n:
+          {
+            signal: rst_n
+          }
           ast.mux_iob_sel:
           {
             unused: true
@@ -18799,6 +18829,10 @@
           {
             signal: rst_n
           }
+          ast.pora_n:
+          {
+            signal: rst_n
+          }
           ast.scan_shift_en:
           {
             unused: true
@@ -18818,6 +18852,7 @@
         remove_ports: []
         remove_pads:
         [
+          PORA_N
           CC1
           CC2
           RRAM_ANALOG
@@ -29322,7 +29357,7 @@
       }
       {
         name: por_n
-        desc: External power ON reset
+        desc: External power ON reset based on VCC
         struct: logic
         type: uni
         act: rcv
@@ -29335,6 +29370,22 @@
         conn_type: false
         index: -1
         top_signame: manual_in_por_n
+      }
+      {
+        name: pora_n
+        desc: External power ON reset based on VIOA
+        struct: logic
+        type: uni
+        act: rcv
+        width: 1
+        partition: secondary
+        inst_name: ast
+        default: ""
+        package: ""
+        external: true
+        conn_type: false
+        index: -1
+        top_signame: manual_in_pora_n
       }
       {
         name: sns_clks
@@ -36608,6 +36659,26 @@
         conn_type: false
         index: -1
         netname: manual_in_por_n
+      }
+      {
+        package: ""
+        struct: logic
+        domain: Aon
+        inter_pd: false
+        signame: manual_in_pora_n_i
+        signame_chip:
+        {
+          asic: manual_in_pora_n
+          verilator: rst_n
+          cw340: rst_n
+        }
+        width: 1
+        type: uni
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: manual_in_pora_n
       }
       {
         package: prim_mubi_pkg
