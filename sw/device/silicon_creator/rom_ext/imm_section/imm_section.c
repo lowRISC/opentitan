@@ -55,6 +55,8 @@ static rom_error_t imm_section_start(void) {
   // Make mutable part executable.
   HARDENED_RETURN_IF_ERROR(imm_section_epmp_mutable_rx(rom_ext));
 
+  sec_mmio_check_values(rnd_uint32());
+
   return kErrorOk;
 }
 
