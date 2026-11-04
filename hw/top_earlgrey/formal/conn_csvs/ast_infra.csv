@@ -109,7 +109,8 @@ CONDITION, top_earlgrey.earlgrey_pd_aon.u_pinmux, rst_ni, 1'b1, 1'b0
 #################################
 # Other resets
 #################################
-CONNECTION, AST_RST_POR_IN, , POR_N, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, por_n_i
+CONNECTION, AST_RST_POR_IN,  , POR_N,  top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, por_n_i
+CONNECTION, AST_RST_PORA_IN, , PORA_N, top_earlgrey.earlgrey_pd_aon.u_ast_part_secondary, pora_n_i
 
 #################################
 # Other power related signals

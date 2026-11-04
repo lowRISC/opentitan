@@ -16,7 +16,7 @@ class chip_jtag_mem_vseq extends chip_common_vseq;
     select_jtag = JtagTapRvDm;
     cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
     void'($value$plusargs("skip_por_n_during_first_pwrup=%0b", skip_por_n_during_first_pwrup));
-    // If we want to skip POR_N,
+    // If we want to skip POR_N and PORA_N,
     // make sure jtag agent under reset until jtag target selection is
     // confirmed by the pinmux
     if (skip_por_n_during_first_pwrup && is_first_pwrup) begin

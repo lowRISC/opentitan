@@ -32,7 +32,8 @@ module ast (
   input clk_ast_usb_i,                        // Buffered AST USB Clock
   input rst_ast_usb_ni,                       // Buffered AST USB Reset
   input clk_ast_ext_i,                        // Buffered AST External Clock
-  input por_ni,                               // Power ON Reset
+  input por_ni,                               // Power ON Reset based on VCC
+  input pora_ni,                              // Power ON Reset based on VIOA
 
   // sensed clocks / resets
   input clkmgr_pkg::clkmgr_out_t sns_clks_i,  // Sensed Clocks
@@ -285,6 +286,7 @@ ast_part_secondary #(
   .rst_ast_alert_ni        ( rst_ast_alert_ni ),
   .clk_ast_ext_i           ( clk_ast_ext_i ),
   .por_n_i                 ( por_ni ),
+  .pora_n_i                ( pora_ni ),
   .sns_clks_i              ( sns_clks_i ),
   .sns_rsts_i              ( sns_rsts_i ),
   .vx_supp_i               ( vx_supp ),

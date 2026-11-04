@@ -57,7 +57,7 @@ module tb;
     .rst_n(passive_rst_n)
   );
   // Reset driver for pad tests.
-  assign passive_rst_n = dut.chip_if.dios[top_earlgrey_pkg::DioPadPorN];
+  assign passive_rst_n = dut.chip_if.chip_por_n;
 
   // The interface only drives the clock.
   initial passive_clk_rst_if.set_active(.drive_clk_val(1), .drive_rst_n_val(0));
@@ -119,6 +119,7 @@ module tb;
 `endif
     // Dedicated Pads
     .POR_N(dut.chip_if.dios[top_earlgrey_pkg::DioPadPorN]),
+    .PORA_N(dut.chip_if.dios[top_earlgrey_pkg::DioPadPoraN]),
     .USB_P(dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbP]),
     .USB_N(dut.chip_if.dios[top_earlgrey_pkg::DioPadUsbN]),
 `ifdef ANALOGSIM
