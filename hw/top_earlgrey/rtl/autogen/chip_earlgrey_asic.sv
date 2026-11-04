@@ -848,15 +848,6 @@ module chip_earlgrey_asic #(
     usb_obs: usb_diff_rx_obs
   };
 
-  // Feed the same bypass struct to both PDs. This is a limitation as topgen cannot distribute the
-  // same external signal to multiple IP ports from the top. The 'top' signals are local to their
-  // power domain. Note these are only relevant for FPGA and verilator. But we always connect them
-  // as topgen does not support conditional port generation.
-  ast_pkg::clks_osc_byp_t clk_osc_byp_pd_main;
-  ast_pkg::clks_osc_byp_t clk_osc_byp_pd_aon;
-  assign clk_osc_byp_pd_main = clks_osc_byp;
-  assign clk_osc_byp_pd_aon  = clks_osc_byp;
-
   // Unused AST power states
   logic unused_ast_pwst_h;
   assign unused_ast_pwst_h = ^{ast_pwst_h.vcc_pok,
@@ -983,32 +974,31 @@ module chip_earlgrey_asic #(
     .dio_attr_o(dio_attr),
 
     // Regular ports (auto-generated)
-    .manual_in_por_n_i            (manual_in_por_n    ),
-    .scanmode_o                   (scanmode           ),
-    .scan_en_o                    (                   ),
-    .scan_rst_n_o                 (                   ),
-    .usb_io_pu_cal_o              (usb_io_pu_cal      ),
-    .padmux2ast_i                 (padmux2ast         ),
-    .mux_iob_sel_o                (mux_iob_sel        ),
-    .ast_vx_supp_i                (ast_vx_supp        ),
-    .ast_obs_i                    (ast_obs            ),
-    .ast_adc_a0_a_i               (ast_adc_a0_a       ),
-    .ast_adc_a1_a_i               (ast_adc_a1_a       ),
-    .ast2pad_t0_a_o               (ast2pad_t0_a       ),
-    .ast2pad_t1_a_o               (ast2pad_t1_a       ),
-    .clk_osc_byp_pd_main_i        (clk_osc_byp_pd_main),
-    .clk_osc_byp_pd_aon_i         (clk_osc_byp_pd_aon ),
-    .ast_pwst_h_o                 (ast_pwst_h         ),
-    .dft_hold_tap_sel_i           ('0                 ),
-    .usb_dp_pullup_en_o           (usb_dp_pullup_en   ),
-    .usb_dn_pullup_en_o           (usb_dn_pullup_en   ),
-    .rram_test_analog_io          (RRAM_ANALOG        ),
+    .manual_in_por_n_i            (manual_in_por_n ),
+    .scanmode_o                   (scanmode        ),
+    .scan_en_o                    (                ),
+    .scan_rst_n_o                 (                ),
+    .usb_io_pu_cal_o              (usb_io_pu_cal   ),
+    .padmux2ast_i                 (padmux2ast      ),
+    .mux_iob_sel_o                (mux_iob_sel     ),
+    .ast_vx_supp_i                (ast_vx_supp     ),
+    .ast_obs_i                    (ast_obs         ),
+    .ast_adc_a0_a_i               (ast_adc_a0_a    ),
+    .ast_adc_a1_a_i               (ast_adc_a1_a    ),
+    .ast2pad_t0_a_o               (ast2pad_t0_a    ),
+    .ast2pad_t1_a_o               (ast2pad_t1_a    ),
+    .clks_osc_byp_i               (clks_osc_byp    ),
+    .ast_pwst_h_o                 (ast_pwst_h      ),
+    .dft_hold_tap_sel_i           ('0              ),
+    .usb_dp_pullup_en_o           (usb_dp_pullup_en),
+    .usb_dn_pullup_en_o           (usb_dn_pullup_en),
+    .rram_test_analog_io          (RRAM_ANALOG     ),
     .sensor_ctrl_manual_pad_attr_o(sensor_ctrl_manual_pad_attr),
-    .usbdev_usb_rx_d_i            (usb_rx_d           ),
-    .usbdev_usb_tx_d_o            (                   ),
-    .usbdev_usb_tx_se0_o          (                   ),
-    .usbdev_usb_tx_use_d_se0_o    (                   ),
-    .usbdev_usb_rx_enable_o       (usb_rx_enable      )
+    .usbdev_usb_rx_d_i            (usb_rx_d        ),
+    .usbdev_usb_tx_d_o            (                ),
+    .usbdev_usb_tx_se0_o          (                ),
+    .usbdev_usb_tx_use_d_se0_o    (                ),
+    .usbdev_usb_rx_enable_o       (usb_rx_enable   )
   );
 
 endmodule

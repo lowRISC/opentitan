@@ -51,21 +51,21 @@ const otcrypto_key_config_t kConfigEcdsaP256 = {
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
-// Key configuration for testing (31-byte key; not valid but helps test for
-// issues with keys that don't have an even word size).
+// Key configuration for testing (31-byte HMAC key; tests keys that don't have
+// an even word size).
 const otcrypto_key_config_t kConfigOddBytes = {
     .version = otcrypto_lib_version(),
-    .key_mode = kOtcryptoKeyModeAesCtr,
+    .key_mode = kOtcryptoKeyModeHmacSha256,
     .key_length = 31,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
 };
 
-// Key configuration for testing (key with a huge number of bytes; not valid
-// but helps test for overflow).
+// Key configuration for testing (HMAC key with a huge number of bytes; not
+// valid but helps test for overflow).
 const otcrypto_key_config_t kConfigHuge = {
     .version = otcrypto_lib_version(),
-    .key_mode = kOtcryptoKeyModeAesCtr,
+    .key_mode = kOtcryptoKeyModeHmacSha256,
     .key_length = UINT32_MAX,
     .hw_backed = kHardenedBoolFalse,
     .security_level = kOtcryptoKeySecurityLevelLow,
@@ -75,7 +75,7 @@ const otcrypto_key_config_t kConfigHuge = {
 const otcrypto_key_config_t kConfigCtrSideloaded = {
     .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeAesCtr,
-    .key_length = 16,
+    .key_length = 32,
     .hw_backed = kHardenedBoolTrue,
     .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
     .security_level = kOtcryptoKeySecurityLevelLow,
@@ -85,7 +85,7 @@ const otcrypto_key_config_t kConfigCtrSideloaded = {
 const otcrypto_key_config_t kConfigOfbSideloaded = {
     .version = otcrypto_lib_version(),
     .key_mode = kOtcryptoKeyModeAesOfb,
-    .key_length = 16,
+    .key_length = 32,
     .hw_backed = kHardenedBoolTrue,
     .keymgr_dpe_slot_idx = kKeymgrDpeSrcSlot,
     .security_level = kOtcryptoKeySecurityLevelLow,
@@ -101,6 +101,17 @@ TEST(Keyblob, ShareNumWordsOdd) {
   size_t share_words = keyblob_share_num_words(kConfigOddBytes);
   EXPECT_GE(share_words * sizeof(uint32_t), kConfigOddBytes.key_length);
   EXPECT_LT((share_words - 1) * sizeof(uint32_t), kConfigOddBytes.key_length);
+}
+
+TEST(Keyblob, ShareNumWordsOddNonHmacRejected) {
+  otcrypto_key_config_t odd_aes = kConfigCtr128;
+  odd_aes.key_length = 31;
+  EXPECT_EQ(keyblob_share_num_words(odd_aes), 0);
+
+  // Sideloaded symmetric keys not equal to 256 bits (32 bytes) must return 0.
+  otcrypto_key_config_t bad_sideload = kConfigCtrSideloaded;
+  bad_sideload.key_length = 16;
+  EXPECT_EQ(keyblob_share_num_words(bad_sideload), 0);
 }
 
 TEST(Keyblob, ShareNumWordsHuge) {

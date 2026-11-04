@@ -127,7 +127,10 @@ module tb;
     .otbn_otp_key_o(otp_key_req),
     .otbn_otp_key_i(otp_key_rsp),
 
-    .keymgr_key_i(sideload_key)
+    .keymgr_key_i(sideload_key),
+    .keymgr_app_i(kmac_pkg::APP_REQ_DEFAULT),
+    .keymgr_app_o(),
+    .keymgr_sensitive_key_i(prim_mubi_pkg::MuBi4False)
   );
 
   bind dut.u_otbn_core otbn_trace_if #(

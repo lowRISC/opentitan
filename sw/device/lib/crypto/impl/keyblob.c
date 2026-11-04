@@ -25,12 +25,19 @@
  * @return Number of bytes in one share of the blinded key.
  */
 static size_t keyblob_share_num_bytes(const otcrypto_key_config_t config) {
+  if (launder32(config.key_length) == 0) {
+    return 0;
+  }
+
   // Get the key type from the top 16 bits of the full mode.
   otcrypto_key_type_t key_type = (otcrypto_key_type_t)(config.key_mode >> 16);
   switch (launder32(key_type)) {
     case kOtcryptoKeyTypeEcc:
       // ECC keys have 64 extra redundant bits per share.
       HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeEcc);
+      if (launder32(config.key_length) > UINT32_MAX - (64 / 8)) {
+        return 0;
+      }
       return config.key_length + (64 / 8);
     case kOtcryptoKeyTypeRsa:
       // RSA key shares are the same size as the unmasked key.
@@ -47,7 +54,21 @@ static size_t keyblob_share_num_bytes(const otcrypto_key_config_t config) {
 
 size_t keyblob_share_num_words(const otcrypto_key_config_t config) {
   size_t len_bytes = keyblob_share_num_bytes(config);
-  return ceil_div(len_bytes, sizeof(uint32_t));
+  otcrypto_key_type_t key_type = (otcrypto_key_type_t)(config.key_mode >> 16);
+  if (launder32(config.hw_backed) == kHardenedBoolTrue &&
+      launder32(key_type) != kOtcryptoKeyTypeEcc &&
+      launder32(len_bytes) !=
+          kKeymgrDPEOutputShareNumWords * sizeof(uint32_t)) {
+    return 0;
+  }
+  if (launder32(key_type) == kOtcryptoKeyTypeHmac ||
+      launder32(key_type) == kOtcryptoKeyTypeTdes) {
+    return ceil_div(len_bytes, sizeof(uint32_t));
+  }
+  if (launder32(len_bytes % sizeof(uint32_t)) != 0) {
+    return 0;
+  }
+  return len_bytes / sizeof(uint32_t);
 }
 
 size_t keyblob_num_words(const otcrypto_key_config_t config) {
@@ -70,7 +91,8 @@ size_t keyblob_num_words(const otcrypto_key_config_t config) {
  */
 static status_t check_keyblob_length(const otcrypto_blinded_key_t *key) {
   if (launder32(key->config.key_length) >
-      kOtcryptoWrappedKeyMaxWords * sizeof(uint32_t)) {
+          kOtcryptoWrappedKeyMaxWords * sizeof(uint32_t) ||
+      launder32(keyblob_share_num_words(key->config)) == 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -151,8 +173,9 @@ status_t keyblob_to_keymgr_dpe_diversification(
   }
   HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
 
-  if (key->keyblob_length != kKeyblobHwBackedBytes &&
-      key->keyblob_length != kSwKeyblobHwBackedBytes) {
+  if (launder32(keyblob_share_num_words(key->config)) == 0 ||
+      (key->keyblob_length != kKeyblobHwBackedBytes &&
+       key->keyblob_length != kSwKeyblobHwBackedBytes)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -174,8 +197,9 @@ status_t keyblob_to_keymgr_dpe_attestation_diversification(
   }
   HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
 
-  if (key->keyblob_length != kCdiKeyblobHwBackedBytes &&
-      key->keyblob_length != kSwKeyblobHwBackedBytes) {
+  if (launder32(keyblob_share_num_words(key->config)) == 0 ||
+      (key->keyblob_length != kCdiKeyblobHwBackedBytes &&
+       key->keyblob_length != kSwKeyblobHwBackedBytes)) {
     return OTCRYPTO_BAD_ARGS;
   }
 
@@ -199,7 +223,8 @@ status_t keyblob_to_keymgr_dpe_attestation_diversification(
 
 status_t keyblob_ensure_xor_masked(const otcrypto_key_config_t config) {
   if (launder32(config.key_length) >
-      kOtcryptoWrappedKeyMaxWords * sizeof(uint32_t)) {
+          kOtcryptoWrappedKeyMaxWords * sizeof(uint32_t) ||
+      launder32(keyblob_share_num_words(config)) == 0) {
     return OTCRYPTO_BAD_ARGS;
   }
 

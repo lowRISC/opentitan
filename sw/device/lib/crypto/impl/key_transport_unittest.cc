@@ -89,9 +89,11 @@ TEST(KeyTransport, HwBackedKeyToDiversificationData) {
                                        0x10111213};
 
   // Create a key handle from the test data.
+  otcrypto_key_config_t hw_cfg = kConfigHwBackedAesCtr128;
+  hw_cfg.key_length = 256 / 8;
   uint32_t keyblob[32] = {0};
   otcrypto_blinded_key_t key = {
-      .config = kConfigHwBackedAesCtr128,
+      .config = hw_cfg,
       .keyblob_length = 32,
       .keyblob = keyblob,
   };
@@ -535,6 +537,20 @@ TEST(KeyTransport, HwBackedKeygenNegative) {
   EXPECT_OK(
       otcrypto_hw_backed_key(test_version, test_salt.data(), &wrong_key_len));
   EXPECT_NOT_OK(ot_crypto_hw_backed_keygen(kHardenedBoolFalse, &wrong_key_len));
+
+  // A 31-byte key config rounds up to 8 words in keyblob_share_num_words, but
+  // is not 32 bytes and must be rejected.
+  otcrypto_key_config_t non_aligned_cfg = kConfigHwBackedAesCtr256;
+  non_aligned_cfg.key_length = 31;
+  otcrypto_blinded_key_t non_aligned_key = {
+      .config = non_aligned_cfg,
+      .keyblob_length = sizeof(keyblob_64b),
+      .keyblob = keyblob_64b,
+  };
+  EXPECT_OK(
+      otcrypto_hw_backed_key(test_version, test_salt.data(), &non_aligned_key));
+  EXPECT_NOT_OK(
+      ot_crypto_hw_backed_keygen(kHardenedBoolFalse, &non_aligned_key));
 
   // Corrupted checksum should be rejected before keygen.
   otcrypto_blinded_key_t bad_checksum_key = {
