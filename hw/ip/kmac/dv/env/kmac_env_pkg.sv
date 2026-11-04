@@ -129,7 +129,8 @@ package kmac_env_pkg;
     KmacStatusFifoDepthLSB = 8,
     KmacStatusFifoDepthMSB = 12,
     KmacStatusFifoEmpty = 14,
-    KmacStatusFifoFull = 15
+    KmacStatusFifoFull = 15,
+    KmacStatusEntropyReady = 20
   } kmac_status_e;
 
   typedef enum int {

@@ -175,6 +175,10 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
   // The actually FIFO depth is covered in direct sequence.
   bit [TL_DW-1:0] status_mask = (1'b1 << KmacStatusFifoFull) |
                                 (1'b1 << KmacStatusFifoEmpty) |
+                                // TODO: Add dedicated checks for entropy_ready/reseeding status
+                                // transitions. In masked configurations, entropy_ready reports the
+                                // PRNG state and is not modeled cycle-accurately by this SCB.
+                                (1'b1 << KmacStatusEntropyReady) |
                                 (1'b1 << KmacStatusSha3Stopped) |
                                 (1'b1 << KmacStatusStateWrite) |
                                 ({KMAC_FIFO_DEPTH{1'b1}} << KmacStatusFifoDepthLSB);

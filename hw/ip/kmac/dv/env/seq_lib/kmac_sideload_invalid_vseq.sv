@@ -249,7 +249,11 @@ class kmac_sideload_invalid_vseq extends kmac_long_msg_and_output_vseq;
       end
 
       csr_spinwait(.ptr(ral.status.sha3_idle), .exp_data(1'b1), .backdoor(1));
-      csr_rd_check(.ptr(ral.status), .compare_value(ral.status.get_reset()));
+        // TODO: Add dedicated checks for entropy_ready/reseeding status transitions. In masked
+        // configurations, entropy_ready reports the PRNG state and can remain high after hashing,
+        // so it is not expected to return to its reset value here.
+        csr_rd_check(.ptr(ral.status), .compare_value(ral.status.get_reset()),
+               .compare_mask(~(32'h1 << KmacStatusEntropyReady)));
 
       // Disable the sideload key.
       cfg.clk_rst_vif.wait_clks($urandom_range(5, 10));
