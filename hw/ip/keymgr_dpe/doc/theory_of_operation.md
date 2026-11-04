@@ -5,6 +5,7 @@ The following diagram gives an example on how keymgr DPE handles multiple DICE c
 ![Key Manager Functional Model](../doc/keymgr_dpe_diagram.svg)
 
 This example diagram describes a sequence of advance operations on multiple keymgr slots, assuming that keymgr_dpe is instantiated with 4 key slots.
+It shows the four-stage configuration (`NumBootStages = 4`); see [Advance](#advance) for how the two-stage configuration differs.
 Blue rounded rectangles represent empty key slots and green color is used to denote when they become active. Each slot stores a secret key as well as context data for its key.
 Purple rectangles denote key derivation function (KDF) calls that are used to compute slot keys.
 
