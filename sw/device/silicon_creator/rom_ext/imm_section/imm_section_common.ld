@@ -128,7 +128,6 @@ SECTIONS {
     . = ALIGN(4);
     _data_end = .;
     _data_init_end = LOADADDR(.data) + SIZEOF(.data);
-    _rom_ext_immutable_end = LOADADDR(.data) + SIZEOF(.data);
 
     /* This puts it in ram_main at runtime (for the VMA), but puts the section
      * into flash for load time (for the LMA). This is why `_data_init_*` uses
@@ -174,4 +173,5 @@ SECTIONS {
       SIZEOF(.imm_section_version) == 32,
       "Error: immutable section version string should be exactly 32 bytes");
   } > rom_ext_flash
+  _rom_ext_immutable_end = LOADADDR(.imm_section_version) + SIZEOF(.imm_section_version);
 }
