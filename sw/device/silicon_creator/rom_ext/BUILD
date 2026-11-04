@@ -269,6 +269,7 @@ asm_library_with_coverage(
             "//hw/ip/sram_ctrl/data:sram_ctrl_c_regs",
             "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
             "//sw/device/lib/arch:device",
+            "//sw/device/lib/base:abs_mmio",
             "//sw/device/lib/base:csr",
             "//sw/device/lib/base:macros",
             "//sw/device/lib/base:memory",

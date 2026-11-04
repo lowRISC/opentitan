@@ -5,6 +5,7 @@
 #include "sw/device/silicon_creator/rom_ext/rom_ext.h"
 
 #include "sw/device/lib/arch/device.h"
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/csr.h"
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
@@ -407,9 +408,23 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
   dbg_printf("entry: 0x%x\r\n", (unsigned int)entry_point);
   coverage_report();
   coverage_invalidate();
+
+  // Request a new scrambling key and initialize Main SRAM with pseudo-random
+  // data before jumping to owner code.
+  uint32_t ctrl = 0;
+  ctrl = bitfield_bit32_write(ctrl, SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT, true);
+  ctrl = bitfield_bit32_write(ctrl, SRAM_CTRL_CTRL_INIT_BIT, true);
+  abs_mmio_write32(
+      TOP_EARLGREY_SRAM_CTRL_MAIN_REGS_BASE_ADDR + SRAM_CTRL_CTRL_REG_OFFSET,
+      ctrl);
+  sec_mmio_init();
+
   ((owner_stage_entry_point *)entry_point)();
   coverage_init();  // re-init after invalidate.
 
+  // Because Main SRAM (including the C call stack) was wiped above, we must
+  // shut down directly rather than returning if the owner entry point returns.
+  shutdown_finalize(kErrorRomExtBootFailed);
   return kErrorRomExtBootFailed;
 }
 
