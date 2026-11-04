@@ -5,3 +5,4 @@
 #include "third_party/embedpqc/ports/mldsa_caller_common.h"
 
 MLDSA_CALLER_WITH_STACK(dice_attest_next_cdi_impl, a5)
+MLDSA_CALLER_WITH_STACK(dice_mldsa_uds_pubkey_populate_impl, a1)
