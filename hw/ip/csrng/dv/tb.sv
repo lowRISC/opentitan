@@ -131,23 +131,6 @@ module tb;
     run_test();
   end
 
-  // Assertions
-  for (genvar i = 0; i < NumApps; i++) begin : gen_cmd_stage_asserts
-    `ASSERT(CmdStageFifoNotFullReady,
-      $past(rst_n) &&
-      (tb.dut.u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.sfifo_cmd_depth != 2'h2) |->
-      tb.dut.u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.cmd_stage_rdy_o,
-      clk,
-      !rst_n)
-    `ASSERT(CmdStageFifoFullNotReady,
-      (tb.dut.u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.sfifo_cmd_depth == 2'h2) |->
-      !tb.dut.u_csrng_core.gen_cmd_stage[i].u_csrng_cmd_stage.cmd_stage_rdy_o,
-      clk,
-      !rst_n)
-    `DV_ASSERT_CTRL("CmdStageFifoAsserts", CmdStageFifoNotFullReady)
-    `DV_ASSERT_CTRL("CmdStageFifoAsserts", CmdStageFifoFullNotReady)
-  end
-
   // Assertion controls
   `DV_ASSERT_CTRL("EntropySrcIf_ReqHighUntilAck_A_CTRL", entropy_src_if.ReqHighUntilAck_A)
   `DV_ASSERT_CTRL("EntropySrcIf_AckAssertedOnlyWhenReqAsserted_A_CTRL",

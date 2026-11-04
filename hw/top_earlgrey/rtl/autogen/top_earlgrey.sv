@@ -239,8 +239,7 @@ module top_earlgrey #(
   input  ast_pkg::awire_t       ast_adc_a1_a_i,
   output ast_pkg::awire_t       ast2pad_t0_a_o,
   output ast_pkg::awire_t       ast2pad_t1_a_o,
-  input  ast_pkg::clks_osc_byp_t       clk_osc_byp_pd_main_i,
-  input  ast_pkg::clks_osc_byp_t       clk_osc_byp_pd_aon_i,
+  input  ast_pkg::clks_osc_byp_t       clks_osc_byp_i,
   output ast_pkg::ast_pwst_t       ast_pwst_h_o,
   input  logic       dft_hold_tap_sel_i,
   output logic       usb_dp_pullup_en_o,
@@ -265,9 +264,6 @@ module top_earlgrey #(
   ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl;
   prim_mubi_pkg::mubi4_t       ast_clk_src_sys_jen;
   prim_mubi_pkg::mubi4_t       ast_init_done;
-  logic       spi_device_sck_monitor;
-  logic       usbdev_usb_ref_pulse;
-  logic       usbdev_usb_ref_val;
   prim_mubi_pkg::mubi4_t       clkmgr_all_clk_byp_req;
   prim_mubi_pkg::mubi4_t       clkmgr_all_clk_byp_ack;
   prim_mubi_pkg::mubi4_t       clkmgr_io_clk_byp_req;
@@ -609,9 +605,6 @@ module top_earlgrey #(
     .ast_obs_ctrl_i                    (ast_obs_ctrl             ),
     .ast_clk_src_sys_jen_i             (ast_clk_src_sys_jen      ),
     .ast_init_done_o                   (ast_init_done            ),
-    .spi_device_sck_monitor_o          (spi_device_sck_monitor   ),
-    .usbdev_usb_ref_pulse_o            (usbdev_usb_ref_pulse     ),
-    .usbdev_usb_ref_val_o              (usbdev_usb_ref_val       ),
     .clkmgr_all_clk_byp_req_i          (clkmgr_all_clk_byp_req   ),
     .clkmgr_all_clk_byp_ack_o          (clkmgr_all_clk_byp_ack   ),
     .clkmgr_io_clk_byp_req_i           (clkmgr_io_clk_byp_req    ),
@@ -773,7 +766,7 @@ module top_earlgrey #(
     .ast_clk_src_usb_o                 (ast_clk_src_usb          ),
 
     // Regular ports (auto-generated)
-    .clk_osc_byp_pd_main_i,
+    .clks_osc_byp_i,
     .rram_test_analog_io,
     .usbdev_usb_rx_d_i,
     .usbdev_usb_tx_d_o,
@@ -837,9 +830,6 @@ module top_earlgrey #(
     .ast_obs_ctrl_o                    (ast_obs_ctrl             ),
     .ast_clk_src_sys_jen_o             (ast_clk_src_sys_jen      ),
     .ast_init_done_i                   (ast_init_done            ),
-    .spi_device_sck_monitor_i          (spi_device_sck_monitor   ),
-    .usbdev_usb_ref_pulse_i            (usbdev_usb_ref_pulse     ),
-    .usbdev_usb_ref_val_i              (usbdev_usb_ref_val       ),
     .clkmgr_all_clk_byp_req_o          (clkmgr_all_clk_byp_req   ),
     .clkmgr_all_clk_byp_ack_i          (clkmgr_all_clk_byp_ack   ),
     .clkmgr_io_clk_byp_req_o           (clkmgr_io_clk_byp_req    ),
@@ -1014,7 +1004,6 @@ module top_earlgrey #(
     .ast_adc_a1_a_i,
     .ast2pad_t0_a_o,
     .ast2pad_t1_a_o,
-    .clk_osc_byp_pd_aon_i,
     .ast_pwst_h_o,
     .dft_hold_tap_sel_i,
     .usb_dp_pullup_en_o,

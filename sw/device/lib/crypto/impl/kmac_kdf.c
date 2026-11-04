@@ -125,6 +125,7 @@ otcrypto_status_t otcrypto_kmac_kdf(
 
   // Validate key length of `key_derivation_key`.
   if (key_derivation_key->config.hw_backed == kHardenedBoolTrue) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     // Check that 1) key size matches sideload port size, 2) keyblob length
     // matches diversification length.
     if (key_derivation_key->config.key_length != kKmacSideloadKeyLength / 8) {

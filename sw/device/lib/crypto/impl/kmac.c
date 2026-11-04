@@ -85,6 +85,7 @@ static status_t kmac_key_construct(otcrypto_blinded_key_t *key,
   kmac_key->len = key_len;
 
   if (key->config.hw_backed == kHardenedBoolTrue) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     if (key_len != kKmacSideloadKeyLength / 8) {
       return OTCRYPTO_BAD_ARGS;
     }

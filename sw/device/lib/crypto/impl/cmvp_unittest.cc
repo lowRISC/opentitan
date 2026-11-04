@@ -110,6 +110,8 @@ const bool kCryptoFunctionApproved[OTCRYPTO_FUNCTION_MAX] = {
         (OTCRYPTO_IS_APPROVED_OTCRYPTO_FUNCTION_DRBG_RESEED != 0),
     [OTCRYPTO_FUNCTION_DRBG_GENERATE] =
         (OTCRYPTO_IS_APPROVED_OTCRYPTO_FUNCTION_DRBG_GENERATE != 0),
+    [OTCRYPTO_FUNCTION_DRBG_UNINSTANTIATE] =
+        (OTCRYPTO_IS_APPROVED_OTCRYPTO_FUNCTION_DRBG_UNINSTANTIATE != 0),
     [OTCRYPTO_FUNCTION_DRBG_MANUAL_INSTANTIATE] =
         (OTCRYPTO_IS_APPROVED_OTCRYPTO_FUNCTION_DRBG_MANUAL_INSTANTIATE != 0),
     [OTCRYPTO_FUNCTION_DRBG_MANUAL_RESEED] =
@@ -134,6 +136,11 @@ const bool kCryptoFunctionApproved[OTCRYPTO_FUNCTION_MAX] = {
         (OTCRYPTO_IS_APPROVED_OTCRYPTO_FUNCTION_KEY_WRAP != 0),
     [OTCRYPTO_FUNCTION_KEY_UNWRAP] =
         (OTCRYPTO_IS_APPROVED_OTCRYPTO_FUNCTION_KEY_UNWRAP != 0),
+    [OTCRYPTO_FUNCTION_RSA_PUBLIC_KEY_CONSTRUCT] =
+        (OTCRYPTO_IS_APPROVED_OTCRYPTO_FUNCTION_RSA_PUBLIC_KEY_CONSTRUCT != 0),
+    [OTCRYPTO_FUNCTION_RSA_PRIVATE_KEY_FROM_EXPONENTS] =
+        (OTCRYPTO_IS_APPROVED_OTCRYPTO_FUNCTION_RSA_PRIVATE_KEY_FROM_EXPONENTS !=
+         0),
     [OTCRYPTO_FUNCTION_RSA_KEYGEN] =
         (OTCRYPTO_IS_APPROVED_OTCRYPTO_FUNCTION_RSA_KEYGEN != 0),
     [OTCRYPTO_FUNCTION_RSA_PRIME_CHECK] =
@@ -550,10 +557,12 @@ TEST_F(CmvpTest, SpecificationKeyRequirements) {
   EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_AES_GCM_DECRYPT]);
   EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_AES_GCM_DECRYPT_INIT]);
 
-  // DRBG: generate, instantiate, reseed are approved, manual is not
+  // DRBG: generate, instantiate, reseed, uninstantiate are approved, manual is
+  // not
   EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_DRBG_GENERATE]);
   EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_DRBG_INSTANTIATE]);
   EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_DRBG_RESEED]);
+  EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_DRBG_UNINSTANTIATE]);
   EXPECT_FALSE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_DRBG_MANUAL_GENERATE]);
 
   // CMAC-KDF and HKDF are not approved
@@ -566,11 +575,26 @@ TEST_F(CmvpTest, SpecificationKeyRequirements) {
   EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_KDF_CTR_HMAC]);
   EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_KMAC_KDF]);
 
-  // Hardware-backed keygen is not approved
+  // Hardware-backed keygen and DICE keygen/sign are not approved
   EXPECT_FALSE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_HW_BACKED_KEYGEN]);
-  // RSA hash_sign_verify and hash_verify are approved, cofactor keygen is not
+  EXPECT_FALSE(
+      kCryptoFunctionApproved[OTCRYPTO_FUNCTION_ECDSA_P256_DICE_KEYGEN]);
+  EXPECT_FALSE(kCryptoFunctionApproved
+                   [OTCRYPTO_FUNCTION_ECDSA_P256_DICE_KEYGEN_ASYNC_START]);
+  EXPECT_FALSE(kCryptoFunctionApproved
+                   [OTCRYPTO_FUNCTION_ECDSA_P256_DICE_KEYGEN_ASYNC_FINALIZE]);
+  EXPECT_FALSE(kCryptoFunctionApproved
+                   [OTCRYPTO_FUNCTION_ECDSA_P256_DICE_SIGN_ASYNC_START]);
+  EXPECT_FALSE(kCryptoFunctionApproved
+                   [OTCRYPTO_FUNCTION_ECDSA_P256_DICE_SIGN_ASYNC_FINALIZE]);
+  // RSA hash_sign_verify and hash_verify are approved, key construction from
+  // caller components and cofactor keygen are not
   EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_RSA_HASH_SIGN_VERIFY]);
   EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_RSA_HASH_VERIFY]);
+  EXPECT_FALSE(
+      kCryptoFunctionApproved[OTCRYPTO_FUNCTION_RSA_PUBLIC_KEY_CONSTRUCT]);
+  EXPECT_FALSE(kCryptoFunctionApproved
+                   [OTCRYPTO_FUNCTION_RSA_PRIVATE_KEY_FROM_EXPONENTS]);
   EXPECT_FALSE(
       kCryptoFunctionApproved[OTCRYPTO_FUNCTION_RSA_KEYPAIR_FROM_COFACTOR]);
   EXPECT_FALSE(kCryptoFunctionApproved

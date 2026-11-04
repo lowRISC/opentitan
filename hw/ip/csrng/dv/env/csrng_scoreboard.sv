@@ -370,6 +370,15 @@ class csrng_scoreboard extends cip_base_scoreboard #(
       end
       "gen_abort_status_0", "gen_abort_status_1", "gen_abort_status_2": begin
       end
+      "int_state_halt_enable_regwen": begin
+      end
+      "int_state_halt_enable": begin
+      end
+      "int_state_halt": begin
+      end
+      "int_state_sts": begin
+        do_read_check = 1'b0;
+      end
       "hw_exc_sts": begin
       end
       "recov_alert_sts": begin

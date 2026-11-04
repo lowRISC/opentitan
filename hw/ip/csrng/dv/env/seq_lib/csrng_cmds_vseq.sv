@@ -202,6 +202,7 @@ class csrng_cmds_vseq extends csrng_base_vseq;
     // Check internal state, then uninstantiate if not already
     if (cfg.check_int_state) begin
       for (int i = 0; i < cfg.m_num_apps; i++) begin
+        if (cfg.under_reset) break;
         cfg.check_internal_state(.app(i), .compare(1));
         if (!uninstantiate[i]) begin
           cs_item = new();
