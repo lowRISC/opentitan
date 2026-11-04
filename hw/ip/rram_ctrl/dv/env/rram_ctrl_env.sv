@@ -10,9 +10,9 @@ class rram_ctrl_env extends cip_base_env #(
   );
   `uvm_component_utils(rram_ctrl_env)
 
-  // Answer the DUT's OTP scrambling-key requests. See rram_ctrl_otp_key_driver.sv.
-  rram_ctrl_otp_key_driver m_otp_addr_key_driver;
-  rram_ctrl_otp_key_driver m_otp_data_key_driver;
+  // Plays otp_ctrl on the scrambling-key interface: answers the DUT's address and data key
+  // requests and reports each handshake to the scoreboard.
+  nvm_otp_key_agent m_otp_key_agent;
 
   // Standard SV/UVM methods
   extern function new(string name="", uvm_component parent=null);
@@ -42,11 +42,10 @@ function void rram_ctrl_env::build_phase(uvm_phase phase);
     `uvm_fatal(`gfn, "Failed to get RdFifoDepth from uvm_config_db")
   end
 
-  m_otp_addr_key_driver = rram_ctrl_otp_key_driver::type_id::create("m_otp_addr_key_driver", this);
-  m_otp_addr_key_driver.phase_kind = RramCtrlOtpKeyAddr;
-
-  m_otp_data_key_driver = rram_ctrl_otp_key_driver::type_id::create("m_otp_data_key_driver", this);
-  m_otp_data_key_driver.phase_kind = RramCtrlOtpKeyData;
+  m_otp_key_agent = nvm_otp_key_agent::type_id::create("m_otp_key_agent", this);
+  cfg.m_otp_key_agent_cfg.en_cov = cfg.en_cov;
+  uvm_config_db#(nvm_otp_key_agent_cfg)::set(this, "m_otp_key_agent", "cfg",
+                                             cfg.m_otp_key_agent_cfg);
 endfunction : build_phase
 
 function void rram_ctrl_env::connect_phase(uvm_phase phase);
@@ -56,5 +55,6 @@ function void rram_ctrl_env::connect_phase(uvm_phase phase);
   if (cfg.en_scb) begin
     m_tl_agents[cfg.ral.get_name()].monitor.d_chan_port.connect(
         scoreboard.m_tl_core_reg_predictor_filter.analysis_export);
+    m_otp_key_agent.monitor.analysis_port.connect(scoreboard.m_otp_key_fifo.analysis_export);
   end
 endfunction : connect_phase
