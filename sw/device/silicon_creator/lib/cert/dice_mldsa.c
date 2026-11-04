@@ -561,6 +561,7 @@ rom_error_t dice_attest_next_cdi_impl(
 
   mldsa_parameter_set_t mldsa_param_set =
       dice_mldsa_param_set_get(rom_ext_manifest());
+  HARDENED_RETURN_IF_ERROR(kmac_keymgr_configure());
 
   // Derive Issuer Keys & IDs (Before Keymgr Advance)
   ecdsa_p256_public_key_t issuer_ecdsa_pubkey;
@@ -685,6 +686,7 @@ rom_error_t dice_attest_next_cdi_impl(
       return kErrorCertInvalidSize;
     }
     *params->mldsa_cert_size_out = (uint32_t)generated_mldsa_size;
+    HARDENED_RETURN_IF_ERROR(kmac_keymgr_configure());
   }
 
   sc_keymgr_sw_binding_unlock_wait();
@@ -1088,6 +1090,7 @@ rom_error_t dice_uds_mldsa_tbs_cert_generate_and_build(
           sizeof(dice_mldsa_perso_scratch_stack) / sizeof(uint32_t))
           .value,
       kHardenedBoolTrue);
+  HARDENED_RETURN_IF_ERROR(kmac_keymgr_configure());
 
   // Build UDS MLDSA certificate for signing
   return dice_uds_mldsa_tbs_cert_build(
