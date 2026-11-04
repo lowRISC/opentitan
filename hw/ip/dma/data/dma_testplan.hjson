@@ -290,7 +290,8 @@
               - Check if DMA generates an alert
               '''
         stage: V2S
-        tests: ["dma_generic_stress", "dma_handshake_stress", "dma_mem_enabled"]
+        tests: ["dma_generic_stress", "dma_handshake_stress", "dma_mem_enabled",
+                "dma_mem_range_limit"]
       }
       {
         name: dma_config_lock

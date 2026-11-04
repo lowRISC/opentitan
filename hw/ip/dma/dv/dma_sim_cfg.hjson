@@ -89,6 +89,11 @@
       reseed: 5
     }
     {
+      name: dma_mem_range_limit
+      uvm_test_seq: dma_mem_range_limit_vseq
+      reseed: 3
+    }
+    {
       name: dma_config_lock
       uvm_test_seq: dma_config_lock_vseq
       reseed: 15
