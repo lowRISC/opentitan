@@ -115,6 +115,7 @@ package csrng_env_pkg;
     SW_APP_ENABLE_FIELD_ALERT       = 1,
     READ_INT_STATE_FIELD_ALERT      = 2,
     ACMD_FLAG0_FIELD_ALERT          = 3,
+    INT_STATE_NUM_INVALID_ALERT     = 10,
     CS_BUS_CMP_ALERT                = 12,
     CMD_STAGE_INVALID_ACMD_ALERT    = 13,
     CMD_STAGE_INVALID_GEN_CMD_ALERT = 14,
