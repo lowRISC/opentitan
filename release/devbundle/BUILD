@@ -71,9 +71,13 @@ pkg_files(
 pkg_files(
     name = "cryptolib_archive_pkg",
     srcs = [
+        "//sw/device/lib/crypto:otcrypto_fips",
         "//sw/device/lib/crypto:package",
     ],
     prefix = "lib",
+    renames = {
+        "//sw/device/lib/crypto:otcrypto_fips": "libotcrypto_fips.a",
+    },
 )
 
 pkg_filegroup(

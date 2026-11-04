@@ -1,0 +1,60 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: Release Cryptolib
+
+on:
+  push:
+    branches-ignore:
+      - "backport-*"
+    paths:
+      - "sw/device/lib/crypto/**"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  release:
+    name: Build and Release Cryptolib
+    runs-on: ubuntu-22.04
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0 # Required by --stamp (util/get_workspace_status.sh)
+
+      - name: Prepare environment
+        uses: ./.github/actions/prepare-env
+        with:
+          service_account_json: '${{ secrets.BAZEL_CACHE_CREDS }}'
+
+      - name: Build Cryptolib packages
+        run: |
+          ./bazelisk.sh build --stamp \
+            //sw/device/lib/crypto:cryptolib \
+            //sw/device/lib/crypto:cryptolib_fips
+
+      - name: Publish GitHub Release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          short_sha="${GITHUB_SHA::8}"
+          date_str="$(date -u +%Y-%m-%d)"
+          release_tag="cryptolib-${date_str}-${short_sha}"
+
+          gh release create "${release_tag}" \
+            --prerelease \
+            --target "${GITHUB_SHA}" \
+            --title "${release_tag}" \
+            --notes "Automated cryptolib release for commit ${GITHUB_SHA}." \
+          || echo "Release ${release_tag} already exists"
+
+          gh release upload "${release_tag}" \
+            --clobber \
+            bazel-bin/sw/device/lib/crypto/cryptolib.tar.xz \
+            bazel-bin/sw/device/lib/crypto/cryptolib_fips.tar.xz
