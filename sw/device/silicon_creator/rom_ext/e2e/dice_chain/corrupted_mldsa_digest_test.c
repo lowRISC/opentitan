@@ -26,6 +26,8 @@ OTTF_DEFINE_TEST_CONFIG();
 typedef struct test_scratchpad {
   uint64_t saved_cdi0_id;
   uint64_t saved_cdi1_id;
+  uint32_t saved_cdi0_cert_len;
+  uint32_t saved_cdi1_cert_len;
 } test_scratchpad_t;
 
 static status_t test_corrupted_mldsa_digest(void) {
@@ -45,6 +47,8 @@ static status_t test_corrupted_mldsa_digest(void) {
 
     scratch->saved_cdi0_id = read_64(res->mldsa_cdi0_id);
     scratch->saved_cdi1_id = read_64(res->mldsa_cdi1_id);
+    scratch->saved_cdi0_cert_len = res->mldsa_cdi0_cert_len;
+    scratch->saved_cdi1_cert_len = res->mldsa_cdi1_cert_len;
 
     // Corrupt the CDI_1 data flash slot.
     uint32_t flash_offset = dice_storage_slot_v1_offset(&cdi1_slot);
@@ -86,6 +90,12 @@ static status_t test_corrupted_mldsa_digest(void) {
         (uint32_t)(cdi1_id >> 32), (uint32_t)cdi1_id,
         (uint32_t)(scratch->saved_cdi1_id >> 32),
         (uint32_t)scratch->saved_cdi1_id);
+  CHECK(res->mldsa_cdi0_cert_len == scratch->saved_cdi0_cert_len,
+        "CDI_0 cert len mismatch: %u != %u", res->mldsa_cdi0_cert_len,
+        scratch->saved_cdi0_cert_len);
+  CHECK(res->mldsa_cdi1_cert_len == scratch->saved_cdi1_cert_len,
+        "CDI_1 cert len mismatch: %u != %u", res->mldsa_cdi1_cert_len,
+        scratch->saved_cdi1_cert_len);
 
   // Verify that the CDI_1 data flash slot was rewritten with a valid TLV cert.
   perso_tlv_cert_obj_view_t cdi1_obj = {0};

@@ -631,14 +631,13 @@ rom_error_t dice_attest_next_cdi_impl(
 
   cdi_hybrid_tbs_values_t tbs_values;
   memset(&tbs_values, 0, sizeof(tbs_values));
+  if (exts_size > kCdiHybridMaxRawPrivateExtensionsSizeBytes) {
+    return kErrorCertInvalidSize;
+  }
+  tbs_values.raw_private_extensions = (uint8_t *)exts;
+  tbs_values.raw_private_extensions_size = exts_size;
 
   if (ecdsa_regenerate) {
-    if (exts_size > kCdiHybridMaxRawPrivateExtensionsSizeBytes) {
-      return kErrorCertInvalidSize;
-    }
-    tbs_values.raw_private_extensions = (uint8_t *)exts;
-    tbs_values.raw_private_extensions_size = exts_size;
-
     // Build ECDSA Cert
     tbs_values.key_alg = kCdiHybridKeyAlgEcdsa;
     TEMPLATE_SET(tbs_values, CdiHybrid, PubKeyEcX, subject_ecdsa_pubkey.x);
