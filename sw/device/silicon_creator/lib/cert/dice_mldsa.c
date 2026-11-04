@@ -727,7 +727,18 @@ rom_error_t dice_attest_next_cdi(const attest_params_t *params,
   return err;
 }
 /**
+ * Switches the stack to `stack_top` and calls
+ * `dice_mldsa_uds_pubkey_populate_impl`.
+ */
+rom_error_t dice_mldsa_uds_pubkey_populate_impl_with_stack(
+    mldsa_parameter_set_t mldsa_param_set, void *stack_top);
+
+/**
  * Populates the UDS ML-DSA public key to static_dice_mldsa_cdi.
+ *
+ * Switches to `dice_mldsa_rom_ext_scratch_stack` as the stack before calling
+ * `dice_mldsa_uds_pubkey_populate_impl`, and shreds the stack buffer before
+ * returning.
  */
 static rom_error_t dice_mldsa_uds_pubkey_populate(
     mldsa_parameter_set_t mldsa_param_set) {
@@ -736,26 +747,40 @@ static rom_error_t dice_mldsa_uds_pubkey_populate(
     return kErrorOk;
   }
 
+  void *stack_top = (void *)(dice_mldsa_rom_ext_scratch_stack +
+                             sizeof(dice_mldsa_rom_ext_scratch_stack));
+  rom_error_t err = dice_mldsa_uds_pubkey_populate_impl_with_stack(
+      mldsa_param_set, stack_top);
+  HARDENED_CHECK_EQ(
+      hardened_memshred(
+          (uint32_t *)dice_mldsa_rom_ext_scratch_stack,
+          sizeof(dice_mldsa_rom_ext_scratch_stack) / sizeof(uint32_t))
+          .value,
+      kHardenedBoolTrue);
+  return err;
+}
+
+/**
+ * Populates the UDS ML-DSA public key to static_dice_mldsa_cdi (internal
+ * implementation).
+ *
+ * Runs on the scratch stack.
+ */
+rom_error_t dice_mldsa_uds_pubkey_populate_impl(
+    mldsa_parameter_set_t mldsa_param_set) {
   keymgr_binding_value_t uds_mldsa_seed;
   HARDENED_RETURN_IF_ERROR(dice_mldsa_derive_seed(
       &kUdsKeygenParams, mldsa_param_set, &uds_mldsa_seed));
-  uint32_t *stack_top = (uint32_t *)(dice_mldsa_rom_ext_scratch_stack +
-                                     sizeof(dice_mldsa_rom_ext_scratch_stack));
   if (mldsa_param_set == kMldsaParameterSet87) {
-    mldsa87_tiny_pub_from_seed_with_stack(static_dice_mldsa_cdi.uds_pub,
-                                          (const uint8_t *)uds_mldsa_seed.data,
-                                          stack_top);
+    mldsa87_tiny_pub_from_seed(static_dice_mldsa_cdi.uds_pub,
+                               (const uint8_t *)uds_mldsa_seed.data);
     static_dice_mldsa_cdi.uds_pub_size = MLDSA87_PUBLIC_KEY_BYTES;
   } else {
-    mldsa44_tiny_pub_from_seed_with_stack(static_dice_mldsa_cdi.uds_pub,
-                                          (const uint8_t *)uds_mldsa_seed.data,
-                                          stack_top);
+    mldsa44_tiny_pub_from_seed(static_dice_mldsa_cdi.uds_pub,
+                               (const uint8_t *)uds_mldsa_seed.data);
     static_dice_mldsa_cdi.uds_pub_size = MLDSA44_PUBLIC_KEY_BYTES;
   }
-  HARDENED_CHECK_EQ(hardened_memshred((uint32_t *)&uds_mldsa_seed,
-                                      sizeof(uds_mldsa_seed) / sizeof(uint32_t))
-                        .value,
-                    kHardenedBoolTrue);
+  HARDENED_RETURN_IF_ERROR(kmac_keymgr_configure());
   return kErrorOk;
 }
 
