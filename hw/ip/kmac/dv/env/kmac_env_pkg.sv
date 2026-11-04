@@ -123,12 +123,13 @@ package kmac_env_pkg;
     KmacStatusSha3Idle = 0,
     KmacStatusSha3Absorb = 1,
     KmacStatusSha3Squeeze = 2,
+    // STATE-window ownership/readability bits used by the claim-aware software state model.
+    KmacStatusSha3Stopped = 3,
+    KmacStatusStateWrite = 4,
     KmacStatusFifoDepthLSB = 8,
     KmacStatusFifoDepthMSB = 12,
     KmacStatusFifoEmpty = 14,
-    KmacStatusFifoFull = 15,
-    KmacStatusEntropyReady = 20,
-    KmacStatusEntropyReseeding = 21
+    KmacStatusFifoFull = 15
   } kmac_status_e;
 
   typedef enum int {
@@ -141,7 +142,9 @@ package kmac_env_pkg;
   typedef enum int {
     KmacCmdIdx = 5,
     KmacEntropyReqIdx = 8,
-    KmacHashCntClrIdx = 9
+    KmacHashCntClrIdx = 9,
+    // CMD.err_processed is bit 10 in CMD (distinct from CFG.ENTROPY_READY / CFG fields).
+    KmacCmdErrProcessedIdx = 10
   } kmac_cmd_idx_e;
 
   typedef enum int {
@@ -151,7 +154,9 @@ package kmac_env_pkg;
     AppOtbn
   } kmac_app_e;
 
-  // state values of the App FSM
+  // Scoreboard's abstract app-FSM states. Values are local model encodings (not RTL sparse-FSM
+  // encodings); the added StError* entries model the static service-rejected path and key-invalid
+  // recovery path through request/response handshakes, SW acknowledgement, and idle.
   typedef enum bit [9:0] {
     StIdle                  = 10'b1011011010,
     StAppCfg                = 10'b0001010000,
@@ -161,6 +166,14 @@ package kmac_env_pkg;
     StAppWait               = 10'b0010010110,
     StAppPushDigest         = 10'b0000000001,
     StAppFinish             = 10'b0000000010,
+    // Error handling for static apps:
+    // - rejected configuration: accept the final request, handshake its error, return to idle;
+    // - invalid key: accept the request, handshake its error, wait for SW and SHA3 recovery.
+    StErrorAwaitMsg         = 10'b0000000011,
+    StErrorNotify           = 10'b0000000100,
+    StErrorFinish           = 10'b0000000101,
+    StErrorAwaitSw          = 10'b0000000110,
+    StErrorAwaitAbsorbed    = 10'b0000000111,
     StSw                    = 10'b0111111111,
     StErrorKeyNotValid      = 10'b1001110100,
     StError                 = 10'b1101011101
