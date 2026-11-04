@@ -426,6 +426,11 @@ Each region or page carries the following access attributes:
 Any access that does not satisfy `rd_en` or `wr_en` for the requested operation is blocked.
 `ctrl_mp_err` is asserted and the transaction is rejected.
 
+All software-configurable attributes are multibit encoded and are only considered set if they equal `MuBi4True`.
+A fault that turns an attribute into an invalid encoding would therefore silently clear it, or, for `en`, make accesses fall back to a lower-priority region.
+Hence, an invalid encoding in any multibit field of [`MP_REGION_CFG`](registers.md#mp_region_cfg), [`DEFAULT_REGION`](registers.md#default_region), [`INFO_PAGE_CFG`](registers.md#info_page_cfg), [`EMUL_INFO_REGION`](registers.md#emul_info_region) or [`EMUL_INFO_SUBREGION_CFG`](registers.md#emul_info_subregion_cfg) raises [`STD_FAULT_STATUS.MP_CFG_ERR`](registers.md#std_fault_status), a fatal error.
+Software must therefore only write `MuBi4True` or `MuBi4False` to these fields.
+
 Each region/page config also carries an `addr_xor_en` field, but unlike the attributes above it is not software-configurable.
 It is hardwired to `MuBi4True` for software-configurable data regions and info pages, and to a fixed value per hardware-access table otherwise (e.g. `MuBi4False` for the OTP region, see [Memory Protection for OTP Hardware Plug](#memory-protection-for-otp-hardware-plug)).
 

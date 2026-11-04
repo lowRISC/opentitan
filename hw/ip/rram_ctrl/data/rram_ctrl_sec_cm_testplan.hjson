@@ -78,6 +78,18 @@
       tests: []
     }
     {
+      name: sec_cm_data_regions_config_mubi
+      desc: "Verify the countermeasure(s) DATA_REGIONS.CONFIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_info_page_config_mubi
+      desc: "Verify the countermeasure(s) INFO_PAGE.CONFIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
       name: sec_cm_mem_ctrl_global_esc
       desc: "Verify the countermeasure(s) MEM.CTRL.GLOBAL_ESC."
       stage: V2S

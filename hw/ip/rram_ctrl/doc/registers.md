@@ -1102,30 +1102,79 @@ These represent errors that occur in the standard structures of the design.
 For example fsm integrity, counter integrity and tlul integrity.
 - Offset: `0x284`
 - Reset default: `0x0`
-- Reset mask: `0x1fff`
+- Reset mask: `0x3fff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "reg_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "lcmgr_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "lcmgr_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "otp_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "otp_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_wr_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_fifo_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_fsm_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_cnt_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_arb_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ctrl_fsm_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ctrl_cnt_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ctrl_fifo_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 19}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
+{"reg": [{"name": "reg_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "lcmgr_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "lcmgr_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "otp_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "otp_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_wr_intg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_fifo_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_fsm_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_cnt_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "phy_arb_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ctrl_fsm_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ctrl_cnt_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "ctrl_fifo_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "mp_cfg_err", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 18}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name            | Description                                                                                                                                                                              |
-|:------:|:------:|:-------:|:----------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:13  |        |         |                 | Reserved                                                                                                                                                                                 |
-|   12   |   ro   |   0x0   | ctrl_fifo_err   | RRAM controller write fifo has encountered an error.                                                                                                                                     |
-|   11   |   ro   |   0x0   | ctrl_cnt_err    | RRAM controller read/write has encountered a count error.                                                                                                                                |
-|   10   |   ro   |   0x0   | ctrl_fsm_err    | Any of the arbiter or rd/wr control FSMs have encountered a sparse encoding error.                                                                                                       |
-|   9    |   ro   |   0x0   | phy_arb_err     | A RRAM phy arbiter has encountered an error.                                                                                                                                             |
-|   8    |   ro   |   0x0   | phy_cnt_err     | A RRAM phy wr/read has encountered a count error.                                                                                                                                        |
-|   7    |   ro   |   0x0   | phy_fsm_err     | A RRAM phy fsm has encountered a sparse encoding error.                                                                                                                                  |
-|   6    |   ro   |   0x0   | phy_fifo_err    | A RRAM phy fifo has encountered a count error.                                                                                                                                           |
-|   5    |   ro   |   0x0   | phy_wr_intg_err | The RRAM phy encountered a write data transmission integrity error.                                                                                                                      |
-|   4    |   ro   |   0x0   | otp_intg_err    | The otp interface has encountered a transmission integrity error. This is an integrity error on the generated integrity during an OTP read.                                              |
-|   3    |   ro   |   0x0   | otp_err         | The otp interface has encountered a fatal error. The error is either an FSM sparse encoding error or a count error.                                                                      |
-|   2    |   ro   |   0x0   | lcmgr_intg_err  | The life cycle management interface has encountered a transmission integrity error. This is an integrity error on the generated integrity during a life cycle management interface read. |
-|   1    |   ro   |   0x0   | lcmgr_err       | The life cycle management interface has encountered a fatal error. The error is either an FSM sparse encoding error or a count error.                                                    |
-|   0    |   ro   |   0x0   | reg_intg_err    | The RRAM controller encountered a register integrity error.                                                                                                                              |
+|  Bits  |  Type  |  Reset  | Name                                                  |
+|:------:|:------:|:-------:|:------------------------------------------------------|
+| 31:14  |        |         | Reserved                                              |
+|   13   |   ro   |   0x0   | [mp_cfg_err](#std_fault_status--mp_cfg_err)           |
+|   12   |   ro   |   0x0   | [ctrl_fifo_err](#std_fault_status--ctrl_fifo_err)     |
+|   11   |   ro   |   0x0   | [ctrl_cnt_err](#std_fault_status--ctrl_cnt_err)       |
+|   10   |   ro   |   0x0   | [ctrl_fsm_err](#std_fault_status--ctrl_fsm_err)       |
+|   9    |   ro   |   0x0   | [phy_arb_err](#std_fault_status--phy_arb_err)         |
+|   8    |   ro   |   0x0   | [phy_cnt_err](#std_fault_status--phy_cnt_err)         |
+|   7    |   ro   |   0x0   | [phy_fsm_err](#std_fault_status--phy_fsm_err)         |
+|   6    |   ro   |   0x0   | [phy_fifo_err](#std_fault_status--phy_fifo_err)       |
+|   5    |   ro   |   0x0   | [phy_wr_intg_err](#std_fault_status--phy_wr_intg_err) |
+|   4    |   ro   |   0x0   | [otp_intg_err](#std_fault_status--otp_intg_err)       |
+|   3    |   ro   |   0x0   | [otp_err](#std_fault_status--otp_err)                 |
+|   2    |   ro   |   0x0   | [lcmgr_intg_err](#std_fault_status--lcmgr_intg_err)   |
+|   1    |   ro   |   0x0   | [lcmgr_err](#std_fault_status--lcmgr_err)             |
+|   0    |   ro   |   0x0   | [reg_intg_err](#std_fault_status--reg_intg_err)       |
+
+### STD_FAULT_STATUS . mp_cfg_err
+A memory protection configuration register holds an invalid multibit encoding.
+This applies to all multibit fields of [`MP_REGION_CFG`](#mp_region_cfg), [`DEFAULT_REGION`](#default_region), [`INFO_PAGE_CFG`](#info_page_cfg), [`EMUL_INFO_REGION`](#emul_info_region) and [`EMUL_INFO_SUBREGION_CFG.`](#emul_info_subregion_cfg)
+Software must only write the multibit encodings of true or false to these fields.
+
+### STD_FAULT_STATUS . ctrl_fifo_err
+RRAM controller write fifo has encountered an error.
+
+### STD_FAULT_STATUS . ctrl_cnt_err
+RRAM controller read/write has encountered a count error.
+
+### STD_FAULT_STATUS . ctrl_fsm_err
+Any of the arbiter or rd/wr control FSMs have encountered a sparse encoding error.
+
+### STD_FAULT_STATUS . phy_arb_err
+A RRAM phy arbiter has encountered an error.
+
+### STD_FAULT_STATUS . phy_cnt_err
+A RRAM phy wr/read has encountered a count error.
+
+### STD_FAULT_STATUS . phy_fsm_err
+A RRAM phy fsm has encountered a sparse encoding error.
+
+### STD_FAULT_STATUS . phy_fifo_err
+A RRAM phy fifo has encountered a count error.
+
+### STD_FAULT_STATUS . phy_wr_intg_err
+The RRAM phy encountered a write data transmission integrity error.
+
+### STD_FAULT_STATUS . otp_intg_err
+The otp interface has encountered a transmission integrity error.
+This is an integrity error on the generated integrity during an OTP read.
+
+### STD_FAULT_STATUS . otp_err
+The otp interface has encountered a fatal error.
+The error is either an FSM sparse encoding error or a count error.
+
+### STD_FAULT_STATUS . lcmgr_intg_err
+The life cycle management interface has encountered a transmission integrity error.
+This is an integrity error on the generated integrity during a life cycle management interface read.
+
+### STD_FAULT_STATUS . lcmgr_err
+The life cycle management interface has encountered a fatal error.
+The error is either an FSM sparse encoding error or a count error.
+
+### STD_FAULT_STATUS . reg_intg_err
+The RRAM controller encountered a register integrity error.
 
 ## FAULT_STATUS
 This register tabulates customized fault status of the RRAM.

@@ -224,6 +224,7 @@ module rram_ctrl
   mp_region_cfg_t region_cfgs[TotalMpRegions];
   mp_region_cfg_t host_region_cfgs[HostMpRegions];
   mp_info_cfg_t   info_page_cfgs[TotalInfoPages];
+  logic           mp_cfg_err;
 
   // lcmgr signals
   logic lcmgr_keys_valid;
@@ -409,6 +410,8 @@ module rram_ctrl
   assign hw2reg.std_fault_status.ctrl_cnt_err.de    = rd_cnt_err | wr_cnt_err;
   assign hw2reg.std_fault_status.ctrl_fifo_err.d    = 1'b1;
   assign hw2reg.std_fault_status.ctrl_fifo_err.de   = wr_fifo_err;
+  assign hw2reg.std_fault_status.mp_cfg_err.d       = 1'b1;
+  assign hw2reg.std_fault_status.mp_cfg_err.de      = mp_cfg_err;
 
   // Location of the last correctable error, tracked separately for single- and double-bit errors
   // SEC_CM: MEM.INTEGRITY
@@ -969,7 +972,8 @@ module rram_ctrl
     .emul_info_subregion_cfg_i    (reg2hw.emul_info_subregion_cfg),
     .region_cfgs_o                (region_cfgs),
     .host_region_cfgs_o           (host_region_cfgs),
-    .info_page_cfgs_o             (info_page_cfgs)
+    .info_page_cfgs_o             (info_page_cfgs),
+    .cfg_err_o                    (mp_cfg_err)
   );
 
   rram_ctrl_mp u_rram_ctrl_mp (
