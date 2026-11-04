@@ -46,6 +46,7 @@ static rom_error_t imm_section_start(void) {
   flash_ctrl_cert_info_page_owner_restrict(
       &kFlashCtrlInfoPageAttestationKeySeeds);
   flash_ctrl_info_cfg_lock(&kFlashCtrlInfoPageAttestationKeySeeds);
+  flash_ctrl_prim_lockdown();
 
   // Establish our identity.
   const manifest_t *rom_ext = rom_ext_manifest();
