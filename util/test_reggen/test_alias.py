@@ -72,7 +72,6 @@ class TestAliasReinit(unittest.TestCase):
         # reinit and regwen are exclusive per register, so adding a regwen
         # means dropping reinit, which the cross-check rejects.
         del alias['registers']['a'][0]['reinit']
-        alias['registers']['a'][0]['regwen'] = 'LOCK_REGWEN'
         alias['registers']['a'].append(copy.deepcopy(IP['registers']['a'][1]))
         alias['registers']['a'][1]['alias_target'] = 'LOCK_REGWEN'
         alias['registers']['a'][1]['name'] = 'LOCK_ALIAS_REGWEN'
