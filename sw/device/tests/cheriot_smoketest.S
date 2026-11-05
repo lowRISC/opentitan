@@ -130,7 +130,7 @@ _trap_handler_cheriot:
   sw        a0, RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET(t2)
   lui       t2, %hi(TOP_UART0_BASE_ADDR)
   csetaddr  t1, t1, t2
-  csetboundsimm t1, t1, 0x40
+  csetboundsimm t1, t1, TOP_UART0_SIZE_BYTES
   addi      t2, x0, 'C'
 
 .L_trap_mark:
@@ -301,10 +301,10 @@ _ottf_start:
   cspecialr ct1, mtdc
   li        t2, TOP_UART0_BASE_ADDR
   csetaddr  cs0, ct1, t2
-  csetboundsimm cs0, cs0, 0x40
+  csetboundsimm cs0, cs0, TOP_UART0_SIZE_BYTES
   li        t2, TOP_RV_CORE_IBEX_CFG_BASE_ADDR
   csetaddr  cs1, ct1, t2
-  csetboundsimm cs1, cs1, 0xa0
+  csetboundsimm cs1, cs1, TOP_RV_CORE_IBEX_CFG_SIZE_BYTES
 
   // Only report now: the failure reporter needs the capabilities in s0 and s1.
   bnez a4, _fail_reg_tag
