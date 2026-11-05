@@ -47,8 +47,12 @@ static status_t keymgr_dpe_is_idle(void) {
       abs_mmio_read32(keymgr_dpe_base() + KEYMGR_DPE_OP_STATUS_REG_OFFSET);
   uint32_t status =
       bitfield_field32_read(reg, KEYMGR_DPE_OP_STATUS_STATUS_FIELD);
-  if (launder32(status) == KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE) {
+  uint32_t err_code =
+      abs_mmio_read32(keymgr_dpe_base() + KEYMGR_DPE_ERR_CODE_REG_OFFSET);
+  if (launder32(status) == KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE &&
+      launder32(err_code) == 0) {
     HARDENED_CHECK_EQ(status, KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE);
+    HARDENED_CHECK_EQ(err_code, 0);
     return OTCRYPTO_OK;
   }
   return OTCRYPTO_RECOV_ERR;
@@ -115,7 +119,7 @@ static status_t keymgr_dpe_wait_until_done(void) {
     case KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS:
       HARDENED_CHECK_EQ(launder32(status),
                         KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
-      return OTCRYPTO_OK;
+      return keymgr_dpe_is_idle();
     case KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_ERROR: {
       // Clear the ERR_CODE register before returning.
       uint32_t err_code =

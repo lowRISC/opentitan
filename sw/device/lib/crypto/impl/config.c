@@ -10,6 +10,7 @@
 #include "sw/device/lib/crypto/drivers/alert.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/keymgr_dpe.h"
+#include "sw/device/lib/crypto/drivers/kmac.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/cmvp.h"
@@ -98,6 +99,7 @@ otcrypto_status_t otcrypto_init(otcrypto_key_security_level_t security_level) {
 
   // Instantiate the entropy source in FIPS mode.
   HARDENED_TRY(otcrypto_entropy_init());
+  HARDENED_TRY(kmac_hwip_default_configure());
 
 #ifdef FIPS_MODE
   OTCRYPTO_HEALTH_CHECK(kTestRngBit);

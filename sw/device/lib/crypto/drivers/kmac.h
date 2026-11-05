@@ -89,11 +89,9 @@ status_t kmac_key_length_check(size_t key_len);
 /**
  * Set the "global" config of HWIP
  *
- * For the moment, we have a number of configuation options needs to be
- * configured at session level. This functions serves as a temporary
- * solution by setting default values to this configuration.
- * TODO: Define config struct and pass it as argument.
- * TODO: see #14832
+ * For the moment, we have a number of configuration options that need to be
+ * configured at session level. This function sets default values for this
+ * configuration.
  *
  * Warning: This function sets `entropy_ready`, which triggers kmac_entropy's
  * FSM to jump to next step. Therefore, the caller of this function should make
