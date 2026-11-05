@@ -402,9 +402,9 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
       UpdateSwOut: begin
         if (!get_fault_err && !get_invalid_op()) begin
           bit [keymgr_dpe_pkg::Shares-1:0][SW_OUTPUT_WORD_NUM-1:0][TL_DW-1:0] sw_share_output;
-          // digest is 512 bits wide while SW output is only 256, need to truncate it
-          sw_share_output = {txn.m_rsp.m_digest_s1[HwKeyWidth-1:0],
-                             txn.m_rsp.m_digest_s0[HwKeyWidth-1:0]};
+          // digest is 512 bits wide while SW output is only 384, need to truncate it
+          sw_share_output = {txn.m_rsp.m_digest_s1[SW_OUTPUT_WIDTH-1:0],
+                             txn.m_rsp.m_digest_s0[SW_OUTPUT_WIDTH-1:0]};
           foreach (sw_share_output[i, j]) begin
             string csr_name = $sformatf("sw_share%0d_output_%0d", i, j);
             uvm_reg csr = ral.get_reg_by_name(csr_name);

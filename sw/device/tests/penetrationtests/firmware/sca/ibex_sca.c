@@ -486,7 +486,7 @@ status_t handle_ibex_sca_key_sideloading(ujson_t *uj) {
 
   // Acknowledge test.
   ibex_sca_key_t uj_key;
-  for (int i = 0; i < 8; i++) {
+  for (int i = 0; i < 12; i++) {
     uj_key.share0[i] = key.value[0][i];
     uj_key.share1[i] = key.value[1][i];
   }

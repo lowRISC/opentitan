@@ -600,7 +600,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
   endtask
 
   bit trigger_force_hw_key_sel;
-  for (genvar i = 0; i < 8; i++) begin : gen_force_hw_key_sel
+  for (genvar i = 0; i < SW_OUTPUT_WORD_NUM; i++) begin : gen_force_hw_key_sel
     always @(trigger_force_hw_key_sel) begin
       if (trigger_force_hw_key_sel) begin
         // force to false, in order to try to move HW key to SW output

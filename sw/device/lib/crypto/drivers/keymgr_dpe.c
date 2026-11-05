@@ -23,12 +23,14 @@ static inline uint32_t keymgr_dpe_base(void) {
 
 static_assert(kKeymgrDPESaltNumWords == KEYMGR_DPE_SALT_MULTIREG_COUNT,
               "Number of salt registers does not match.");
-static_assert(kKeymgrDPEOutputShareNumWords ==
+// The cryptolib only reads the first `kKeymgrDPEOutputShareNumWords` words of
+// the (potentially wider) software output.
+static_assert(kKeymgrDPEOutputShareNumWords <=
                   KEYMGR_DPE_SW_SHARE0_OUTPUT_MULTIREG_COUNT,
-              "Number of output share 0 registers does not match.");
-static_assert(kKeymgrDPEOutputShareNumWords ==
+              "Not enough output share 0 registers.");
+static_assert(kKeymgrDPEOutputShareNumWords <=
                   KEYMGR_DPE_SW_SHARE1_OUTPUT_MULTIREG_COUNT,
-              "Number of output share 1 registers does not match.");
+              "Not enough output share 1 registers.");
 static_assert(KEYMGR_DPE_METADATA_LOW_MULTIREG_COUNT ==
                   KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT,
               "Number of metadata low registers does not match.");
