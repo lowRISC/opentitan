@@ -23,6 +23,9 @@ enum {
   kKeymgrDPESaltNumWords = 8,
   /**
    * Number of 32-bit words for each output key share.
+   *
+   * The key manager provides a wider (384-bit) software output; the cryptolib
+   * only uses the first 256 bits of it.
    */
   kKeymgrDPEOutputShareNumWords = 8,
 };
