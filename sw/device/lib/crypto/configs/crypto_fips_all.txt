@@ -50,6 +50,11 @@ otcrypto_drbg_uninstantiate
 otcrypto_drbg_manual_instantiate
 otcrypto_drbg_manual_reseed
 otcrypto_drbg_manual_generate
+otcrypto_hmac_drbg_init
+otcrypto_hmac_drbg_deinit
+otcrypto_hmac_drbg_reseed
+otcrypto_hmac_drbg_set_auto_reseed
+otcrypto_hmac_drbg_generate
 otcrypto_hkdf
 otcrypto_hkdf_extract
 otcrypto_hkdf_expand

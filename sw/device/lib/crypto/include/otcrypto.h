@@ -20,6 +20,7 @@
 #include "entropy_src.h"
 #include "hkdf.h"
 #include "hmac.h"
+#include "hmac_drbg.h"
 #include "integrity.h"
 #include "kdf_ctr.h"
 #include "key_transport.h"

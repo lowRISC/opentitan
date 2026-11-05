@@ -1746,6 +1746,26 @@ opentitan_test(
 )
 
 opentitan_test(
+    name = "hmac_drbg_functest",
+    srcs = ["hmac_drbg_functest.c"],
+    exec_env = CRYPTOTEST_EXEC_ENVS,
+    verilator = verilator_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//sw/device/lib/base:macros",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:hmac_drbg",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:status",
+        "//sw/device/lib/crypto/include:datatypes",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+    ],
+)
+
+opentitan_test(
     name = "hmac_sha1_functest",
     srcs = ["hmac_sha1_functest.c"],
     exec_env = CRYPTOTEST_EXEC_ENVS,
@@ -2004,6 +2024,7 @@ test_suite(
         ":ed25519_functest",
         ":entropy_src_functest",
         ":hkdf_functest",
+        ":hmac_drbg_functest",
         ":hmac_functest",
         ":hmac_multistream_functest",
         ":hmac_sha1_functest",
