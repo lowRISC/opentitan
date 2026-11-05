@@ -221,6 +221,16 @@ _ottf_start:
   andi t1, t0, (1 << SRAM_CTRL_STATUS_INIT_DONE_BIT)
   beqz t1, .L_meta_init_wait
 
+  // Lock re-keying of the meta SRAM and the tagged SRAMs. In CHERIoT mode it
+  // would leave stale tags on the new contents. This is not required: if
+  // re-keying must stay possible, e.g. to wipe the SRAMs on shutdown, only hand
+  // capabilities to these registers to trusted code instead.
+  sw   x0, SRAM_CTRL_CTRL_REGWEN_REG_OFFSET(a0)
+  li   t0, TOP_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+  sw   x0, SRAM_CTRL_CTRL_REGWEN_REG_OFFSET(t0)
+  li   t0, TOP_SRAM_CTRL_SEC_REGS_BASE_ADDR
+  sw   x0, SRAM_CTRL_CTRL_REGWEN_REG_OFFSET(t0)
+
   // x16-x31 hold the capability metadata of x0-x15 in CHERIoT mode, so zero
   // them, and keep dummy instructions off until the core is in CHERIoT mode.
   csrr  a1, CSR_REG_CPUCTRL
@@ -325,6 +335,18 @@ _ottf_start:
   clc      ca3, 0(ca2)
   csetequalexact t2, ca3, ca2
   beqz     t2, _fail_tag_store
+
+  // A main SRAM re-key would stall the reload below until done and change what
+  // it reads.
+  li       t2, TOP_SRAM_CTRL_MAIN_REGS_BASE_ADDR
+  csetaddr ca4, ct1, t2
+  csetboundsimm ca4, ca4, TOP_SRAM_CTRL_MAIN_REGS_SIZE_BYTES
+  li       t0, (1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT) | \
+               (1 << SRAM_CTRL_CTRL_INIT_BIT)
+  csw      t0, SRAM_CTRL_CTRL_REG_OFFSET(ca4)
+  clc      ca4, 0(ca2)
+  csetequalexact t2, ca4, ca2
+  beqz     t2, _fail_sram_ctrl_lock
 #endif
 
   // Confirm the core really is in the mode that was asked for.
@@ -409,6 +431,7 @@ _ottf_start:
  *   G    a register held a tagged capability right after the switch
  *   T    the tag memory was not clear after its initialization
  *   C    a stored capability did not load back unchanged
+ *   K    a main SRAM key renewal changed a stored capability after the lock
  *
  * `s0` holds an integer address before the switch and a capability after it,
  * and the stores here encode identically either way, so one reporter serves
@@ -441,6 +464,9 @@ _fail_tag:
   j    _fail
 _fail_tag_store:
   addi a0, x0, 'C'
+  j    _fail
+_fail_sram_ctrl_lock:
+  addi a0, x0, 'K'
   j    _fail
 
   .type _fail, @function
