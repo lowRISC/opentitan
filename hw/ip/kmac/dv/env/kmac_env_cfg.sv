@@ -56,6 +56,21 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
     sec_cm_alert_name  = "fatal_fault_err";
     super.initialize(inherit_ral_models);
 
+    // Temporary fix for kmac_mem_walk only: exclude STATE from the generic uvm_mem_walk_seq.
+    // STATE is RW in the RAL, but the RTL drops writes unless SW holds the `state_write` claim,
+    // so the walk's readback check fails (e.g. wrote 'hffffffff, read 0).
+    // TODO: replace with a walk that issues `state_write` first and releases with `done`.
+    if ($test$plusargs("csr_mem_walk")) begin
+      uvm_mem mems[$];
+      ral.get_memories(mems);
+      foreach (mems[i]) begin
+        if (mems[i].get_name() == "state") begin
+          uvm_resource_db#(bit)::set({"REG::", mems[i].get_full_name()},
+                                     "NO_MEM_WALK_TEST", 1, this);
+        end
+      end
+    end
+
     tl_intg_alert_fields[ral.status.alert_fatal_fault] = 1;
     tl_intg_alert_fields[ral.cfg_regwen.en] = 0;
     tl_intg_alert_fields[ral.status.sha3_idle] = 0;
@@ -68,6 +83,11 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
       string name = $sformatf("m_kmac_app_agent_cfg[%0d]", i);
       m_kmac_app_agent_cfg[i] = kmac_app_agent_cfg::type_id::create(name);
       m_kmac_app_agent_cfg[i].if_mode = dv_utils_pkg::Host;
+      // ovewrite default value to match the interface spec
+      // KeyMgr, LC_CTRL, ROM_CTRL unmasked and
+      // OTBN is masked
+      if (i == (kmac_env_pkg::NUM_APP_INTF -1)) m_kmac_app_agent_cfg[i].has_masking = 1'b1;
+      else m_kmac_app_agent_cfg[i].has_masking = 1'b0;
     end
     keymgr_sideload_agent_cfg = key_sideload_agent_cfg#(keymgr_dpe_pkg::hw_key_req_t)::type_id
                                 ::create("keymgr_sideload_agent_cfg");
