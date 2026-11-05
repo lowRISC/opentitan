@@ -105,6 +105,13 @@ volatile otcrypto_interface_t otcrypto = {
     .drbg_manual_reseed = &otcrypto_drbg_manual_reseed,
     .drbg_manual_generate = &otcrypto_drbg_manual_generate,
 
+    // HMAC-DRBG
+    .hmac_drbg_init = &otcrypto_hmac_drbg_init,
+    .hmac_drbg_deinit = &otcrypto_hmac_drbg_deinit,
+    .hmac_drbg_reseed = &otcrypto_hmac_drbg_reseed,
+    .hmac_drbg_set_auto_reseed = &otcrypto_hmac_drbg_set_auto_reseed,
+    .hmac_drbg_generate = &otcrypto_hmac_drbg_generate,
+
     // HKDF
     .hkdf = &otcrypto_hkdf,
     .hkdf_extract = &otcrypto_hkdf_extract,

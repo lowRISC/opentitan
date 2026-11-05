@@ -38,7 +38,7 @@ For more details, see later sections (links in the "category" column).
 | [**RSA**](#rsa) | RSA-{2048,3072,4096} |
 | [**Elliptic curve cryptography**](#elliptic-curve-cryptography) | ECDSA-{P256,P384}<br>ECDH-{P256,P384}<br>Ed25519<br>X25519 |
 | [**ML-KEM**](#ml-kem) | ML-KEM-1024 |
-| [**Deterministic random bit generation**](#deterministic-random-bit-generation) | AES-CTR-DRBG |
+| [**Deterministic random bit generation**](#deterministic-random-bit-generation) | AES-CTR-DRBG<br>HMAC-DRBG *(not FI/SCA protected)* |
 | [**Key derivation**](#key-derivation) | HKDF-SHA{256,384,512}<br>HMAC-KDF-CTR<br>KMAC-KDF-CTR<br>AES-CMAC-KDF-CTR |
 
 ## Cryptolib Initialization
@@ -351,6 +351,7 @@ However, they are essentially scratchpad space for the underlying implementation
 {{#header-snippet sw/device/lib/crypto/include/hmac.h otcrypto_hmac_context }}
 {{#header-snippet sw/device/lib/crypto/include/sha1.h otcrypto_hmac_sha1_context }}
 {{#header-snippet sw/device/lib/crypto/include/cmac.h otcrypto_cmac_context }}
+{{#header-snippet sw/device/lib/crypto/include/hmac_drbg.h otcrypto_hmac_drbg_context }}
 
 ## AES
 
@@ -988,6 +989,18 @@ To learn more about DRBG details such as entropy requirements, seed construction
 {{#header-snippet sw/device/lib/crypto/include/drbg.h otcrypto_drbg_manual_reseed }}
 {{#header-snippet sw/device/lib/crypto/include/drbg.h otcrypto_drbg_manual_generate }}
 
+### HMAC-DRBG
+
+In addition to the hardware-backed AES-CTR-DRBG, the cryptolib provides a stateful **HMAC-DRBG** implementation as specified in [NIST SP800-90A][nist-drbg-spec] Section 10.1.2 over SHA2-256, SHA2-384, and SHA2-512 (which can also be used for deterministic ECDSA nonce generation per RFC 6979).
+
+> **Security warning:** The HMAC-DRBG implementation is **not** protected against fault injection (FI) or side-channel analysis (SCA) attacks, and is not a FIPS-approved service (`kOtcryptoCmvpNotApprovedService`).
+
+{{#header-snippet sw/device/lib/crypto/include/hmac_drbg.h otcrypto_hmac_drbg_init }}
+{{#header-snippet sw/device/lib/crypto/include/hmac_drbg.h otcrypto_hmac_drbg_deinit }}
+{{#header-snippet sw/device/lib/crypto/include/hmac_drbg.h otcrypto_hmac_drbg_reseed }}
+{{#header-snippet sw/device/lib/crypto/include/hmac_drbg.h otcrypto_hmac_drbg_set_auto_reseed }}
+{{#header-snippet sw/device/lib/crypto/include/hmac_drbg.h otcrypto_hmac_drbg_generate }}
+
 ## Key derivation
 
 Key derivation functions (KDFs) generate a new key from an existing key.
@@ -1102,7 +1115,7 @@ Consequently:
 
 ### Context and State Zeroization and Randomization
 
-- **DRBG Uninstantiation:** To destroy and zeroize the internal state of the Deterministic Random Bit Generator, callers can invoke `otcrypto_drbg_uninstantiate()`, which clears the internal DRBG context.
+- **DRBG Uninstantiation:** To destroy and zeroize the internal state of the Deterministic Random Bit Generator, callers can invoke `otcrypto_drbg_uninstantiate()`, which clears the internal DRBG context. For software HMAC-DRBG contexts (`otcrypto_hmac_drbg_context_t`), callers can invoke `otcrypto_hmac_drbg_deinit()` to shred the context.
 - **Streaming Contexts:** Intermediate states and keys held in streaming operation contexts (such as `otcrypto_hmac_context_t`, `otcrypto_cmac_context_t`, and `otcrypto_aes_gcm_context_t`) are randomized automatically when finalization routines (`*_final`) finish.
 
 ## Asynchronous operations
@@ -1241,6 +1254,7 @@ The table below summarizes the security strength for the supported [cryptographi
 | ECC            | X25519/Ed25519 | 128                              |                                                       |
 | KEM            | ML-KEM-1024    | 256                              | NIST Security Category 5 (FIPS 203); not hardened against SCA/FI |
 | DRBG           | CTR_DRBG       | 256                              | Based on AES-CTR-256                                  |
+| DRBG           | HMAC_DRBG      | 256                              | Based on HMAC-SHA2 (not FI/SCA protected)             |
 | KDF            | KDF_CTR        | 128                              | With HMAC, KMAC, or AES-CMAC as PRF                   |
 
 Over time the cryptographic algorithms may become more vulnerable to successful attacks, requiring a transition to stronger algorithms or longer key lengths over time.
