@@ -11,3 +11,7 @@ The choice of memory, or lack thereof at location 0x0 confers two exclusive bene
 - If SRAM is placed at 0, accesses to data located within 2KB of 0x0 can be accomplished with a single instruction and thus reduce code size.
 
 For the purpose of `top_englishbreakfast`, the first option has been chosen to benefit software development and testing.
+
+## Interrupts
+
+The source behind each Ibex vector table slot and the PLIC interrupt IDs are listed in this [table](./doc/interrupts.md).
