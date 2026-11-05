@@ -534,6 +534,7 @@ cc_library(
         "//sw/device/lib/crypto/drivers:alert",
         "//sw/device/lib/crypto/drivers:entropy",
         "//sw/device/lib/crypto/drivers:keymgr_dpe",
+        "//sw/device/lib/crypto/drivers:kmac",
         "//sw/device/lib/crypto/drivers:otbn",
         "//sw/device/lib/crypto/drivers:rv_core_ibex",
     ],

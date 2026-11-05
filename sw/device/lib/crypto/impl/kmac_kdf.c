@@ -143,6 +143,7 @@ otcrypto_status_t otcrypto_kmac_kdf(
     // `key_derivation_key->keyblob_length` is 8 words long.
     HARDENED_TRY(keyblob_to_keymgr_dpe_diversification(key_derivation_key,
                                                        &diversification));
+    HARDENED_TRY(keymgr_dpe_sideload_clear_kmac());
     HARDENED_TRY(keymgr_dpe_generate_key_kmac(diversification));
   } else if (key_derivation_key->config.hw_backed == kHardenedBoolFalse) {
     if (key_derivation_key->keyblob_length !=
@@ -202,6 +203,10 @@ otcrypto_status_t otcrypto_kmac_kdf(
   // avoid that multiple cases were executed.
   HARDENED_CHECK_EQ(launder32(key_mode_used),
                     key_derivation_key->config.key_mode);
+
+  if (is_sideloaded == kHardenedBoolTrue) {
+    HARDENED_TRY(keymgr_dpe_sideload_clear_kmac());
+  }
 
   output_key_material->checksum =
       otcrypto_integrity_blinded_checksum(output_key_material);
