@@ -47,6 +47,45 @@ genrule(
     ]
 ]
 
+# Strip the inner layer of the DRBG repository, which is a zip of zips
+genrule(
+    name = "nist_cavp_hmac_drbg_sp_800_90a_reseed",
+    srcs = ["@nist_cavp_drbg_sp_800_90a_root//:drbgvectors_pr_false.zip"],
+    outs = [":HMAC_DRBG_RESEED.rsp"],
+    cmd = "unzip -p $(location @nist_cavp_drbg_sp_800_90a_root//:drbgvectors_pr_false.zip) HMAC_DRBG.rsp > $(location :HMAC_DRBG_RESEED.rsp)",
+)
+
+genrule(
+    name = "nist_cavp_hmac_drbg_sp_800_90a_no_reseed",
+    srcs = ["@nist_cavp_drbg_sp_800_90a_root//:drbgvectors_no_reseed.zip"],
+    outs = [":HMAC_DRBG_NO_RESEED.rsp"],
+    cmd = "unzip -p $(location @nist_cavp_drbg_sp_800_90a_root//:drbgvectors_no_reseed.zip) HMAC_DRBG.rsp > $(location :HMAC_DRBG_NO_RESEED.rsp)",
+)
+
+[
+    run_binary(
+        name = "nist_cavp_hmac_drbg_sp_800_90a_{}_json".format(mode),
+        srcs = [
+            ":HMAC_DRBG_{}.rsp".format(mode.upper()),
+            "//sw/host/cryptotest/testvectors/data/schemas:hmac_drbg_schema.json",
+        ],
+        outs = [":nist_cavp_hmac_drbg_sp_800_90a_{}.json".format(mode)],
+        args = [
+            "--src",
+            "$(location :HMAC_DRBG_{}.rsp)".format(mode.upper()),
+            "--dst",
+            "$(location :nist_cavp_hmac_drbg_sp_800_90a_{}.json)".format(mode),
+            "--schema",
+            "$(location //sw/host/cryptotest/testvectors/data/schemas:hmac_drbg_schema.json)",
+        ] + (["--reseed"] if reseed else []),
+        tool = "//sw/host/cryptotest/testvectors/parsers:nist_cavp_hmac_drbg_parser",
+    )
+    for mode, reseed in [
+        ("reseed", True),
+        ("no_reseed", False),
+    ]
+]
+
 run_binary(
     name = "nist_cavp_ecdsa_fips_186_4_sig_ver_json",
     srcs = [

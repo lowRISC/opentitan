@@ -18,6 +18,7 @@ cc_library(
         ":hash_commands",
         ":hkdf_commands",
         ":hmac_commands",
+        ":hmac_drbg_commands",
         ":kdf_commands",
         ":kmac_commands",
         ":mldsa_commands",
@@ -75,6 +76,13 @@ cc_library(
     name = "hmac_commands",
     srcs = ["hmac_commands.c"],
     hdrs = ["hmac_commands.h"],
+    deps = ["//sw/device/lib/ujson"],
+)
+
+cc_library(
+    name = "hmac_drbg_commands",
+    srcs = ["hmac_drbg_commands.c"],
+    hdrs = ["hmac_drbg_commands.h"],
     deps = ["//sw/device/lib/ujson"],
 )
 
