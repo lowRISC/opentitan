@@ -86,6 +86,17 @@ class chip_stub_cpu_base_vseq extends chip_base_vseq;
     wait_rom_check_done();
   endtask
 
+  // Wait for the pwrmgr to have sampled the TAP straps. The RV_DM TAP is only muxed in after that,
+  // and wait_rom_check_done() can return before it, so call this before the first RV_DM access.
+  // The pinmux enables the selected TAP two io_div4 cycles after the strap pulse, so wait one more
+  // cycle than that before the first TCK edge.
+  virtual task wait_pwrmgr_strap_sampled();
+    `DV_SPINWAIT(wait(cfg.chip_vif.pwrmgr_strap_sampled);,
+                 "timeout waiting for the pwrmgr to sample the straps before RV_DM TAP access",
+                 5_000_000)
+    repeat (3) @(posedge cfg.chip_vif.io_div4_clk);
+  endtask
+
   virtual task dut_init(string reset_kind = "HARD");
     super.dut_init(reset_kind);
     // Program the AST with the configuration data loaded in OTP creator SW config region.
