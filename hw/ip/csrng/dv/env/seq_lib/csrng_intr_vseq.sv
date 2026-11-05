@@ -104,9 +104,9 @@ class csrng_intr_vseq extends csrng_base_vseq;
       // Expect/Clear interrupt bit
       check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));
       cfg.clk_rst_vif.wait_clks(100);
-      // Make sure the interrupt bit is cleared
-      csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
     end
+    // Make sure the interrupt bit is cleared (or never raised for the SW instance)
+    csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
 
     csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
     cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
@@ -131,9 +131,9 @@ class csrng_intr_vseq extends csrng_base_vseq;
       // Expect/Clear interrupt bit
       check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));
       cfg.clk_rst_vif.wait_clks(100);
-      // Make sure the interrupt bit is cleared
-      csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
     end
+    // Make sure the interrupt bit is cleared (or never raised for the SW instance)
+    csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
 
     csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
     cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
@@ -168,9 +168,9 @@ class csrng_intr_vseq extends csrng_base_vseq;
       // Expect/Clear interrupt bit
       check_interrupts(.interrupts((1 << HwInstExc)), .check_set(1'b1));
       cfg.clk_rst_vif.wait_clks(100);
-      // Make sure the interrupt bit is cleared
-      csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
     end
+    // Make sure the interrupt bit is cleared (or never raised for the SW instance)
+    csr_rd_check(.ptr(ral.intr_state.cs_hw_inst_exc), .compare_value(1'b0));
 
     csr_rd(.ptr(ral.err_code), .value(backdoor_err_code_val));
     cov_vif.cg_err_code_sample(.err_code(backdoor_err_code_val));
