@@ -485,6 +485,10 @@ void sc_keymgr_dpe_lock_uds(void) {
  * Load the UDS into the provided destination slot.
  */
 rom_error_t sc_keymgr_dpe_load_uds(uint32_t sel_dst_slot) {
+  // Wait until any previous operation has finished, because CFG_REGWEN drops
+  // the writes below while an operation is running.
+  HARDENED_RETURN_IF_ERROR(expected_state_check(kScKeymgrDPEStateAvailable));
+
   // Verify the destination slot is empty.
   sc_keymgr_dpe_metadata_t metadata;
   HARDENED_RETURN_IF_ERROR(sc_keymgr_dpe_get_metadata(sel_dst_slot, &metadata));
@@ -684,6 +688,10 @@ rom_error_t sc_keymgr_dpe_advance_owner(
  * Erase the DPE context of any slot.
  */
 rom_error_t sc_keymgr_dpe_erase_slot(uint32_t sel_dst_slot) {
+  // Wait until any previous operation has finished, because CFG_REGWEN drops
+  // the writes below while an operation is running.
+  HARDENED_RETURN_IF_ERROR(expected_state_check(kScKeymgrDPEStateAvailable));
+
   // Set the control register entries
   sc_keymgr_dpe_control_reg_set(
       kScKeymgrDPEUseAdditionalHwBinding,

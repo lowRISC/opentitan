@@ -151,6 +151,9 @@ class KeymgrDpeTest : public rom_test::RomTest {
    * start of the operation.
    */
   void ExpectLoadUdsStart(uint32_t dst_slot) {
+    ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                      KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                      /*err_code=*/0u);
     // The destination slot has to be empty.
     ExpectGetMetadata(dst_slot, /*max_key_version=*/0, /*valid=*/false,
                       kScKeymgrDPEBootStageCreator, policy_empty_);
@@ -527,6 +530,22 @@ TEST_F(KeymgrDpeTest, LoadUds) {
   EXPECT_EQ(sc_keymgr_dpe_load_uds(/*sel_dst_slot=*/1), kErrorOk);
 }
 
+TEST_F(KeymgrDpeTest, LoadUdsWaitsForOngoingOperation) {
+  // The load must not start while a previous operation is still running,
+  // because the CONTROL and START writes would be dropped.
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_WIP);
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+  ExpectLoadUds(/*dst_slot=*/1);
+  EXPECT_EQ(sc_keymgr_dpe_load_uds(/*sel_dst_slot=*/1), kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, LoadUdsBadState) {
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_DISABLED,
+                    /*err_code=*/0u);
+  EXPECT_EQ(sc_keymgr_dpe_load_uds(/*sel_dst_slot=*/1), kErrorKeymgrInternal);
+}
+
 TEST_F(KeymgrDpeTest, LoadUdsError) {
   ExpectLoadUdsStart(/*dst_slot=*/1);
   // Loading the UDS while locked reports an error.
@@ -537,6 +556,9 @@ TEST_F(KeymgrDpeTest, LoadUdsError) {
 }
 
 TEST_F(KeymgrDpeTest, LoadUdsSlotNotEmpty) {
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    /*err_code=*/0u);
   // The destination slot already holds a DPE context: nothing is written.
   ExpectGetMetadata(/*slot=*/1, max_key_version_uds_, /*valid=*/true,
                     kScKeymgrDPEBootStageCreator, policy_uds_);
@@ -544,6 +566,9 @@ TEST_F(KeymgrDpeTest, LoadUdsSlotNotEmpty) {
 }
 
 TEST_F(KeymgrDpeTest, LoadUdsBadSlot) {
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    /*err_code=*/0u);
   EXPECT_EQ(sc_keymgr_dpe_load_uds(KEYMGR_DPE_PARAM_NUM_MAX_HW_SLOT),
             kErrorKeymgrInternal);
 }
@@ -935,6 +960,9 @@ TEST_F(KeymgrDpeTest, AdvanceOwnerBadSlots) {
 }
 
 TEST_F(KeymgrDpeTest, EraseSlot) {
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    /*err_code=*/0u);
   ExpectControlRegSet(/*sw_binding_only=*/false,
                       KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_ERASE_SLOT,
                       KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
@@ -949,7 +977,31 @@ TEST_F(KeymgrDpeTest, EraseSlot) {
   EXPECT_EQ(sc_keymgr_dpe_erase_slot(/*sel_dst_slot=*/2), kErrorOk);
 }
 
+TEST_F(KeymgrDpeTest, EraseSlotWaitsForOngoingOperation) {
+  // The erase must not start while a previous operation is still running,
+  // because the CONTROL and START writes would be dropped.
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_WIP);
+  ExpectOpStatusReadClear(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    /*err_code=*/0u);
+  ExpectControlRegSet(/*sw_binding_only=*/false,
+                      KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_ERASE_SLOT,
+                      KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
+                      /*src_slot=*/0, /*dst_slot=*/2);
+  ExpectStartOperation();
+  ExpectWaitUntilDone(/*busy_cycles=*/1,
+                      KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_SUCCESS);
+  ExpectGetMetadata(/*slot=*/2, /*max_key_version=*/0, /*valid=*/false,
+                    kScKeymgrDPEBootStageCreator, policy_empty_);
+
+  EXPECT_EQ(sc_keymgr_dpe_erase_slot(/*sel_dst_slot=*/2), kErrorOk);
+}
+
 TEST_F(KeymgrDpeTest, EraseSlotStillValid) {
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_IDLE,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    /*err_code=*/0u);
   ExpectControlRegSet(/*sw_binding_only=*/false,
                       KEYMGR_DPE_CONTROL_SHADOWED_OPERATION_VALUE_ERASE_SLOT,
                       KEYMGR_DPE_CONTROL_SHADOWED_DEST_SEL_VALUE_NONE,
@@ -961,6 +1013,14 @@ TEST_F(KeymgrDpeTest, EraseSlotStillValid) {
   ExpectGetMetadata(/*slot=*/2, /*max_key_version=*/0xA5A5A5A5, /*valid=*/true,
                     kScKeymgrDPEBootStageOwner, policy_erase_parent_);
 
+  EXPECT_EQ(sc_keymgr_dpe_erase_slot(/*sel_dst_slot=*/2), kErrorKeymgrInternal);
+}
+
+TEST_F(KeymgrDpeTest, EraseSlotBadState) {
+  // A failed previous operation is reported instead of starting the erase.
+  ExpectStatusCheck(KEYMGR_DPE_OP_STATUS_STATUS_VALUE_DONE_ERROR,
+                    KEYMGR_DPE_WORKING_STATE_STATE_VALUE_AVAILABLE,
+                    1 << KEYMGR_DPE_ERR_CODE_INVALID_OP_BIT);
   EXPECT_EQ(sc_keymgr_dpe_erase_slot(/*sel_dst_slot=*/2), kErrorKeymgrInternal);
 }
 
