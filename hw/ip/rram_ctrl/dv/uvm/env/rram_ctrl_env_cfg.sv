@@ -9,6 +9,9 @@ class rram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rram_ctrl_core_reg_blo
   // rst_otp_ni ports.
   virtual clk_rst_if otp_clk_rst_vif;
 
+  // Config for an agent that acts as otp_ctrl and responds to key requests from rram_ctrl
+  rand otp_key_agent_cfg m_key_agent_cfg;
+
   // Name of the RAL model tied to the host interface (tl_host), which accesses the
   // RRAM data array.
   string host_ral_name = "rram_ctrl_host_reg_block";
@@ -24,6 +27,11 @@ class rram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rram_ctrl_core_reg_blo
   // Standard SV/UVM methods
   extern function new(string name="");
 
+  // Configure whether the env_cfg is active (configuring the agents too)
+  //
+  // This extends the definition in dv_base_env_cfg.
+  extern function void set_is_active(bit active);
+
   // Class specific methods
   extern function void initialize(bit inherit_ral_models = 1'b0);
 
@@ -32,7 +40,14 @@ endclass : rram_ctrl_env_cfg
 
 function rram_ctrl_env_cfg::new(string name="");
   super.new(name);
+
+  m_key_agent_cfg = otp_key_agent_cfg::type_id::create("m_key_agent_cfg");
 endfunction : new
+
+function void rram_ctrl_env_cfg::set_is_active(bit active);
+  super.set_is_active(active);
+  m_key_agent_cfg.is_active = active;
+endfunction
 
 function void rram_ctrl_env_cfg::initialize(bit inherit_ral_models = 1'b0);
   list_of_alerts = rram_ctrl_env_pkg::LIST_OF_ALERTS;

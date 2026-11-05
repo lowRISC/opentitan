@@ -10,9 +10,8 @@ class rram_ctrl_env extends cip_base_env #(
   );
   `uvm_component_utils(rram_ctrl_env)
 
-  // Answer the DUT's OTP scrambling-key requests. See rram_ctrl_otp_key_driver.sv.
-  rram_ctrl_otp_key_driver m_otp_addr_key_driver;
-  rram_ctrl_otp_key_driver m_otp_data_key_driver;
+  // An agent that acts as otp_ctrl and responds to key requests from rram_ctrl
+  otp_key_agent m_key_agent;
 
   // Standard SV/UVM methods
   extern function new(string name="", uvm_component parent=null);
@@ -28,10 +27,14 @@ endfunction : new
 function void rram_ctrl_env::build_phase(uvm_phase phase);
   super.build_phase(phase);
 
-  // Retrieve the otp_clk_rst_if virtual interface
+  // Retrieve virtual interfaces
   if (!uvm_config_db#(virtual clk_rst_if)::get(this, "", "otp_clk_rst_vif",
       cfg.otp_clk_rst_vif)) begin
-    `uvm_fatal(`gfn, "failed to get otp_clk_rst_vif from uvm_config_db")
+    `uvm_fatal("no_vif", "Failed to get otp_clk_rst_vif from uvm_config_db")
+  end
+  if (!uvm_config_db#(virtual otp_key_if)::get(this, "", "otp_key_vif",
+                                               cfg.m_key_agent_cfg.m_vif)) begin
+    `uvm_fatal("no_vif", "Failed to get otp_key_vif from uvm_config_db.")
   end
 
   // Retrieve the DUT's configured FIFO depths
@@ -42,11 +45,8 @@ function void rram_ctrl_env::build_phase(uvm_phase phase);
     `uvm_fatal(`gfn, "Failed to get RdFifoDepth from uvm_config_db")
   end
 
-  m_otp_addr_key_driver = rram_ctrl_otp_key_driver::type_id::create("m_otp_addr_key_driver", this);
-  m_otp_addr_key_driver.phase_kind = RramCtrlOtpKeyAddr;
-
-  m_otp_data_key_driver = rram_ctrl_otp_key_driver::type_id::create("m_otp_data_key_driver", this);
-  m_otp_data_key_driver.phase_kind = RramCtrlOtpKeyData;
+  m_key_agent = otp_key_agent::type_id::create("m_key_agent", this);
+  uvm_config_db#(otp_key_agent_cfg)::set(this, "m_key_agent", "cfg", cfg.m_key_agent_cfg);
 endfunction : build_phase
 
 function void rram_ctrl_env::connect_phase(uvm_phase phase);
@@ -57,4 +57,6 @@ function void rram_ctrl_env::connect_phase(uvm_phase phase);
     m_tl_agents[cfg.ral.get_name()].monitor.d_chan_port.connect(
         scoreboard.m_tl_core_reg_predictor_filter.analysis_export);
   end
+
+  m_key_agent.monitor.analysis_port.connect(scoreboard.m_otp_key_txn_imp);
 endfunction : connect_phase

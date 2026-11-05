@@ -26,7 +26,7 @@ module tb;
   tl_if                         tl_core_if    (.clk(clk),     .rst_n(rst_n));
   tl_if                         tl_host_if    (.clk(clk),     .rst_n(rst_n));
   tl_if                         tl_prim_if    (.clk(clk),     .rst_n(rst_n));
-  rram_ctrl_otp_key_if          otp_key_if    (.clk(clk_otp), .rst_n(rst_otp_n));
+  otp_key_if                    otp_key_if    (.clk_i(clk_otp), .rst_ni(rst_otp_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if       (interrupts);
 
   rram_ctrl_pkg::rram_macro_req_t rram_req;
@@ -66,8 +66,8 @@ module tb;
     // otp interface
     .otp_macro_i(otp_macro_req),
     .otp_macro_o(otp_macro_rsp),
-    .otp_key_i  (otp_key_if.otp_key_rsp),
-    .otp_key_o  (otp_key_if.otp_key_req),
+    .otp_key_i  (otp_key_if.rsp),
+    .otp_key_o  (otp_key_if.req),
 
     // various life cycle decode signals - fixed, not exercised by any test yet
     .lc_creator_seed_sw_rw_en_i(lc_ctrl_pkg::On),
@@ -148,8 +148,8 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_core*", "vif", tl_core_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_host*", "vif", tl_host_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_prim*", "vif", tl_prim_if);
-    uvm_config_db#(otp_key_vif_t)::set(null, "*.env.m_otp_*_key_driver", "otp_key_vif",
-                                        otp_key_if);
+    uvm_config_db#(virtual otp_key_if)::set(null, "*.env", "otp_key_vif", otp_key_if);
+
     uvm_config_db#(int unsigned)::set(null, "*.env", "WrFifoDepth", WrFifoDepth);
     uvm_config_db#(int unsigned)::set(null, "*.env", "RdFifoDepth", RdFifoDepth);
     $timeformat(-12, 0, " ps", 12);

@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`uvm_analysis_imp_decl(_key_txn)
+
 class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   .CFG_T(rram_ctrl_env_cfg),
   .RAL_T(rram_ctrl_core_reg_block),
@@ -17,6 +19,9 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   uvm_reg_predictor#(tl_seq_item) m_tl_core_reg_predictor;
   tl_reg_adapter#(tl_seq_item)    m_tl_core_reg_adapter;
   rram_ctrl_reg_predictor_filter  m_tl_core_reg_predictor_filter;
+
+  // An implementation port that tracks keys sent from otp_ctrl
+  uvm_analysis_imp_key_txn #(otp_key_rsp_seq_item, rram_ctrl_scoreboard) m_otp_key_txn_imp;
 
   // Standard SV/UVM methods
   extern function new(string name = "", uvm_component parent = null);
@@ -34,6 +39,10 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
                                      tl_phase_e tl_phase);
   extern function void configure_csr_check_exclusions();
   extern function void reset(string kind = "HARD");
+
+  // The write function for m_otp_key_txn_imp. This is called every time the monitor sees a complete
+  // key transaction passing a key back from otp_ctrl.
+  extern function void write_key_txn(otp_key_rsp_seq_item item);
 endclass : rram_ctrl_scoreboard
 
 
@@ -52,6 +61,8 @@ function void rram_ctrl_scoreboard::build_phase(uvm_phase phase);
   m_tl_core_reg_adapter.cfg = cfg.m_tl_agent_cfgs[ral.get_name()];
   m_tl_core_reg_predictor_filter = rram_ctrl_reg_predictor_filter::type_id::create(
       "m_tl_core_reg_predictor_filter", this);
+
+  m_otp_key_txn_imp = new("m_otp_key_txn_imp", this);
 endfunction : build_phase
 
 function void rram_ctrl_scoreboard::connect_phase(uvm_phase phase);
@@ -159,3 +170,7 @@ function void rram_ctrl_scoreboard::check_phase(uvm_phase phase);
   super.check_phase(phase);
   // Post test checks: ensure that all local fifos and queues are empty
 endfunction : check_phase
+
+function void rram_ctrl_scoreboard::write_key_txn(otp_key_rsp_seq_item item);
+  `uvm_info("key_txn", "Saw key transaction", UVM_LOW)
+endfunction
