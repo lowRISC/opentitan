@@ -9,19 +9,17 @@ class rram_ctrl_base_test extends cip_base_test #(
 
   `uvm_component_utils(rram_ctrl_base_test)
 
-  // The base class dv_base_test creates the following instances:
-  //   - rram_ctrl_env_cfg: cfg
-  //   - rram_ctrl_env:     env
-
-  // The base class also looks up UVM_TEST_SEQ plusarg to create and run that seq in the run_phase.
-  // As such, nothing more needs to be done
-
-  // Standard SV/UVM methods
   extern function new(string name="", uvm_component parent=null);
-
+  extern task run_phase(uvm_phase phase);
 endclass : rram_ctrl_base_test
-
 
 function rram_ctrl_base_test::new(string name="", uvm_component parent=null);
   super.new(name, parent);
 endfunction : new
+
+task rram_ctrl_base_test::run_phase(uvm_phase phase);
+  fork
+    super.run_phase(phase);
+    env.m_key_agent.run_device_seq();
+  join
+endtask
