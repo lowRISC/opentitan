@@ -14,6 +14,10 @@ class rram_ctrl_env extends cip_base_env #(
   rram_ctrl_otp_key_driver m_otp_addr_key_driver;
   rram_ctrl_otp_key_driver m_otp_data_key_driver;
 
+  // Plays otp_ctrl on the OTP macro interface: sends Init, read and write requests to the DUT and
+  // reports each completed transaction to the scoreboard.
+  otp_macro_agent m_otp_macro_agent;
+
   // Standard SV/UVM methods
   extern function new(string name="", uvm_component parent=null);
   extern function void build_phase(uvm_phase phase);
@@ -47,14 +51,27 @@ function void rram_ctrl_env::build_phase(uvm_phase phase);
 
   m_otp_data_key_driver = rram_ctrl_otp_key_driver::type_id::create("m_otp_data_key_driver", this);
   m_otp_data_key_driver.phase_kind = RramCtrlOtpKeyData;
+
+  if (!uvm_config_db#(rram_ctrl_bkdr_util_pkg::rram_ctrl_otp_bkdr_util)::get(
+          this, "", "otp_bkdr", cfg.m_otp_bkdr)) begin
+    `uvm_fatal(`gfn, "Failed to get otp_bkdr from uvm_config_db")
+  end
+
+  m_otp_macro_agent = otp_macro_agent::type_id::create("m_otp_macro_agent", this);
+  cfg.m_otp_macro_agent_cfg.en_cov = cfg.en_cov;
+  uvm_config_db#(otp_macro_agent_cfg)::set(this, "m_otp_macro_agent", "cfg",
+                                           cfg.m_otp_macro_agent_cfg);
 endfunction : build_phase
 
 function void rram_ctrl_env::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
+  virtual_sequencer.otp_macro_sequencer_h = m_otp_macro_agent.sequencer;
   // See rram_ctrl_scoreboard.sv: the predictor itself lives there, since only the scoreboard has
   // direct cfg/ral access, but only the env has access to the TL agents to connect it up.
   if (cfg.en_scb) begin
     m_tl_agents[cfg.ral.get_name()].monitor.d_chan_port.connect(
         scoreboard.m_tl_core_reg_predictor_filter.analysis_export);
+    m_otp_macro_agent.monitor.analysis_port.connect(
+        scoreboard.m_otp_macro_fifo.analysis_export);
   end
 endfunction : connect_phase

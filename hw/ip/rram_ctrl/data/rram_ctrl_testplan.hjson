@@ -39,8 +39,14 @@
             **Checks**:
             - The scoreboard keeps a model of the RRAM array and predicts the read data of every
               software, host and OTP read.
+            - The scoreboard predicts the response error code of every OTP command: `Init` once
+              per reset and before any other command, `MacroWriteBlankError` for a write that
+              tries to clear a set bit, and `MacroEccUncorrError` for a `Read` whose stored
+              integrity does not match its data. Response words beyond the requested size are
+              zero.
             - After each write the RRAM contents are checked through the backdoor, including
               scrambling with the sideloaded keys, address-XOR and the OTP integrity page.
+            - No OTP transaction is left unchecked at the end of the test.
             - Blocked accesses set `ERR_CODE.mp_err` and `ERR_ADDR`, return error on host
               reads, and do not change the RRAM contents.
             - `STATUS` and `OP_STATUS` match the predicted values.

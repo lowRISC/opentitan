@@ -1,0 +1,29 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: "lowrisc:dv:otp_macro_agent:0.1"
+description: "UVM agent playing otp_ctrl on the OTP macro interface"
+filesets:
+  files_dv:
+    depend:
+      - lowrisc:dv:dv_utils
+      - lowrisc:dv:dv_lib
+      - lowrisc:virtual_ip:otp_ctrl_macro_pkg
+    files:
+      - otp_macro_if.sv
+      - otp_macro_agent_pkg.sv
+      - otp_macro_item.sv: {is_include_file: true}
+      - otp_macro_agent_cfg.sv: {is_include_file: true}
+      - otp_macro_monitor.sv: {is_include_file: true}
+      - otp_macro_sequencer.sv: {is_include_file: true}
+      - otp_macro_host_driver.sv: {is_include_file: true}
+      - seq_lib/otp_macro_seq_list.sv: {is_include_file: true}
+      - seq_lib/otp_macro_base_seq.sv: {is_include_file: true}
+      - otp_macro_agent.sv: {is_include_file: true}
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_dv

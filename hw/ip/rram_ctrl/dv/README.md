@@ -31,6 +31,10 @@ In addition, the testbench instantiates the following interfaces, connects them 
 * [TileLink host interface for the prim registers](../../../dv/sv/tl_agent/README.md) (the RRAM macro's `tl_prim` interface)
 * Alerts ([`alert_esc_if`](../../../dv/sv/alert_agent/README.md))
 * `rram_ctrl_otp_key_if`: the `otp_ctrl` scrambling-key request/response handshake, driven by `rram_ctrl_otp_key_driver` (see [OTP key driver](#otp-key-driver) below)
+* [`otp_macro_if`](../../../dv/sv/otp_macro_agent/README.md): the OTP macro interface, on which the environment plays `otp_ctrl` (see [OTP macro agent](#otp-macro-agent) below)
+
+`tb.sv` also clears the OTP region of the RRAM array at time zero, through `rram_ctrl_otp_bkdr_util`, since a fresh OTP is blank and the RRAM model starts out as X.
+The same object is passed to the environment for backdoor access to the OTP contents.
 
 The DUT's other input-only signals (life cycle qualifiers, the RMA handshake) are not yet exercised by any test and are tied to fixed values directly in `tb.sv`.
 
@@ -101,6 +105,11 @@ The DUT's `u_addr_sync_reqack`/`u_data_sync_reqack` (`prim_sync_reqack`) assert 
 `run_phase` races handling one request (`main_thread`) against `@(negedge vif.rst_n)` (`reset_kill`) via `fork`/`join_any`/`disable fork`.
 On reset, this kills any in-flight request handling, redrives all outputs to idle, and restarts.
 
+### OTP macro agent
+`rram_ctrl_env` instantiates an [`otp_macro_agent`](../../../dv/sv/otp_macro_agent/README.md) (`m_otp_macro_agent`, configured by `cfg.m_otp_macro_agent_cfg`) to play `otp_ctrl` on the OTP macro interface.
+Virtual sequences send commands on its sequencer, through `p_sequencer.otp_macro_sequencer_h`.
+Its monitor sends each completed transaction to the scoreboard.
+
 ### UVM RAL Model
 The `rram_ctrl` RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
@@ -142,11 +151,14 @@ Some of the most commonly used tasks / functions are as follows, from `hw/ip/rra
 * `dut_init()`: resets the DUT and calls `rram_ctrl_init()`
 * `rram_ctrl_init()`: brings the controller out of reset, polls the phy's own init, then triggers and polls the controller's INIT sequence (lc key derivation etc), without which the arbiter never grants software/host access
 * `apply_reset()` / `apply_resets_concurrently()`: reset both the core and OTP clock domains together, since each clock generator blocks on its own domain's reset
+* `otp_macro_req()`: sends one OTP macro command, as `otp_ctrl` would, and returns the completed transaction
+* `otp_macro_init()`: sends the OTP `Init` command, which `rram_ctrl` needs before any other OTP command
+* `otp_macro_rand_rw()`: raw-reads, writes and reads back random OTP locations, sometimes also trying to clear set bits
 
 #### Functional coverage
 To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
-No covergroups have been developed yet.
-`rram_ctrl_env_cov` is currently an empty stub extending `cip_base_env_cov`.
+`rram_ctrl_env_cov` currently holds one covergroup, `otp_cmd_cg`, sampled by the scoreboard for every OTP macro command except `Init`.
+It crosses the command with its size and with its response error code, leaving out the combinations `rram_ctrl` cannot produce.
 
 ### Self-checking strategy
 #### Scoreboard
@@ -169,6 +181,12 @@ This has to happen upstream of the predictor: `uvm_reg_predictor::write()` calls
 Without the filter, error-injection traffic (e.g. from `run_tl_errors_vseq`) mispredicts rejected writes as successful, and an errored read (`d_data` is undefined per TileLink on `d_error=1`) can corrupt even read-only fields via `UVM_PREDICT_READ`, which overwrites the mirror unconditionally regardless of access policy.
 `on_mem_access()` covers the core regfile's `wr_fifo`/`rd_fifo` windows and is currently an empty stub (real FIFO-occupancy tracking is future work).
 An unmapped address should be unreachable: `cip_base_scoreboard`'s own `predict_tl_err()` already predicts and checks `d_error` for unmapped addresses generically, before `process_tl_access()` is even called, so `process_tl_core_access()` just flags it with a `uvm_error` inline rather than dispatching to a dedicated handler.
+
+`m_otp_macro_fifo` receives each completed OTP macro transaction from the OTP macro agent's monitor.
+`check_otp_macro_item()` checks it against a model of the OTP contents and of the integrity page (one integrity byte per 64 bits of data).
+The model is loaded from the RRAM through the backdoor when `rram_ctrl` answers `Init`, then updated by every command: writes set bits, `Write` and `Zeroize` recompute the integrity byte, and `WriteRaw` leaves it alone.
+From the model the scoreboard predicts the read data and the error code of every response, and after every write it checks the data and integrity byte stored in the RRAM.
+In `check_phase` it checks that no OTP transaction was left unchecked.
 
 #### Assertions
 * TLUL assertions: The `hw/ip/rram_ctrl/dv/sva/rram_ctrl_bind.sv` binds the `tlul_assert` [assertions](../../../ip/tlul/doc/TlulProtocolChecker.md) to the IP to ensure TileLink interface protocol compliance.

@@ -124,6 +124,17 @@ class rram_ctrl_otp_bkdr_util extends mem_bkdr_util;
     return OtpIntgByteOffset + addr / (rram_ctrl_pkg::OtpIntgDataWidth / 8);
   endfunction
 
+  // Returns the stored integrity byte of the 64b chunk that holds OTP byte address `addr`.
+  function bit [7:0] read_intg(bit [bus_params_pkg::BUS_AW-1:0] addr);
+    int unsigned intg_byte_addr = get_intg_byte_addr(addr);
+    int unsigned intg_row_addr  = (intg_byte_addr / this.bytes_per_word) * this.bytes_per_word;
+    int unsigned byte_idx       = intg_byte_addr - intg_row_addr;
+    string       row_path       = $sformatf("%0s[%0d]", get_full_path(0),
+                                            intg_row_addr >> this.addr_lsb);
+    bit [EmulDataWidth-1:0] row = rram_row_read(row_path);
+    return row[byte_idx * 8 +: 8];
+  endfunction
+
   // Updates the integrity byte(s) for the row `write()` just touched: one 8-bit Hamming(72,64)
   // syndrome per 64b chunk, stored in a separate integrity page.
   //
