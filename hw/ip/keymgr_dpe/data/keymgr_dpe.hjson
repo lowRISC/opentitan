@@ -265,7 +265,7 @@
     { name: "NumOutReg",
       desc: "Number of Registers for SW outputs",
       type: "int",
-      default: "8",
+      default: "12",
       local: "true"
     },
     { name: "NumKeyVersion",

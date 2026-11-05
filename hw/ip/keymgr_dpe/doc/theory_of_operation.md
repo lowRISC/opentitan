@@ -225,6 +225,7 @@ A versioned key generation operation uses the following registers:
 During the generate operation, a versioned key is generated from the secret of the source slot selected by `SLOT_SRC_SEL`.
 After a successful key generation operation, if the generated key is requested for HW use, then the generated key is loaded into the sideload slot that drives the specified target peripheral port (`DST_SEL` being either one of {`AES`, `KMAC`, `OTBN`, `HMAC`}).
 In the case of SW key, the generated key is loaded into a CSR (see `SW_SHARE0_OUTPUT` and `SW_SHARE1_OUTPUT` registers).
+The SW output is the lower 384 bits (`NumOutReg` 32-bit registers per share) of the 512-bit KDF output, whereas the HW keys use the lower 256 bits (`AES`, `KMAC`) or the full 512 bits (`OTBN`, `HMAC`).
 
 The key is generated with a KDF call, where the secret key is read from source slot.
 Then, `generated_key = KDF(parent_key, KEY_VERSION || SALT || dest_seed || output_key)` where `dest_seed` and `output_key` are domain separators (i.e. diversification values from netlist) to distinguish SW/HW outputs as well as the target HWIP peripheral {`AES`, `KMAC`, `OTBN`, `HMAC`}.

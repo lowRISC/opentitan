@@ -934,7 +934,7 @@ module keymgr_dpe
     .fsm_err_o(sideload_fsm_err)
   );
 
-  for (genvar i = 0; i < 8; i++) begin : gen_sw_assigns
+  for (genvar i = 0; i < NumOutReg; i++) begin : gen_sw_assigns
 
     mubi4_t [1:0] hw_key_sel_buf;
     prim_mubi4_sync #(
@@ -949,16 +949,18 @@ module keymgr_dpe
 
     // SEC_CM: OUTPUT_KEYS.CTRL.REDUN
     prim_sec_anchor_buf #(
-     .Width(32)
+     .Width(top_pkg::TL_DW)
     ) u_prim_buf_share0_d (
-      .in_i(~data_sw_en | wipe_key ? data_rand[0] : kmac_data[0][i*32 +: 32]),
+      .in_i(~data_sw_en | wipe_key ? data_rand[0] :
+                                     kmac_data[0][i*top_pkg::TL_DW +: top_pkg::TL_DW]),
       .out_o(hw2reg.sw_share0_output[i].d)
     );
 
     prim_sec_anchor_buf #(
-     .Width(32)
+     .Width(top_pkg::TL_DW)
     ) u_prim_buf_share1_d (
-      .in_i(~data_sw_en | wipe_key ? data_rand[1] : kmac_data[1][i*32 +: 32]),
+      .in_i(~data_sw_en | wipe_key ? data_rand[1] :
+                                     kmac_data[1][i*top_pkg::TL_DW +: top_pkg::TL_DW]),
       .out_o(hw2reg.sw_share1_output[i].d)
     );
 
@@ -1130,6 +1132,9 @@ module keymgr_dpe
 
   // Verify the metadata do not exceed the width of the sw registers
   `ASSERT_INIT(MetadataExceedSwReg_A, $bits(keymgr_dpe_metadata_slot_t) <= 2*top_pkg::TL_DW)
+
+  // Verify the SW output registers do not exceed the width of the KDF digest
+  `ASSERT_INIT(SwOutFitsInDigest_A, NumOutReg * top_pkg::TL_DW <= kmac_pkg::AppDigestW)
 
   // Verify the number of instanciated HW slots
   `ASSERT_INIT(InvalidNumHwSlot_A, NumInstHwSlot <= NumMaxHwSlot)

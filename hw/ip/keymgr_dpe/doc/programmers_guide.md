@@ -103,6 +103,7 @@ SW needs to configure the following registers:
 *  Trigger the operation by setting `START`.
 
 If SW key is requested, then it becomes available at `SW_SHARE0_OUTPUT`, `SW_SHARE1_OUTPUT` registers in two shares.
+Each share is 384 bits wide (`NumOutReg` 32-bit registers).
 If HW key is requested then it becomes available in the configured sideload port.
 The key on the slot remains valid unless:
 *  It is explicitly cleared by SW.
