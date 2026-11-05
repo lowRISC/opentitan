@@ -166,6 +166,22 @@ typedef struct otcrypto_interface_t {
                                             otcrypto_word32_buf_t *);
   otcrypto_status_t (*drbg_uninstantiate)(void);
 
+  // HMAC-DRBG
+  otcrypto_status_t (*hmac_drbg_init)(otcrypto_hmac_drbg_context_t *,
+                                      const otcrypto_const_byte_buf_t *,
+                                      const otcrypto_const_byte_buf_t *,
+                                      const otcrypto_const_byte_buf_t *,
+                                      uint32_t, otcrypto_hash_mode_t);
+  otcrypto_status_t (*hmac_drbg_deinit)(otcrypto_hmac_drbg_context_t *);
+  otcrypto_status_t (*hmac_drbg_reseed)(otcrypto_hmac_drbg_context_t *,
+                                        const otcrypto_const_byte_buf_t *,
+                                        const otcrypto_const_byte_buf_t *);
+  otcrypto_status_t (*hmac_drbg_set_auto_reseed)(otcrypto_hmac_drbg_context_t *,
+                                                 hardened_bool_t);
+  otcrypto_status_t (*hmac_drbg_generate)(otcrypto_hmac_drbg_context_t *,
+                                          const otcrypto_const_byte_buf_t *,
+                                          otcrypto_byte_buf_t *);
+
   // HKDF
   otcrypto_status_t (*hkdf)(const otcrypto_blinded_key_t *,
                             const otcrypto_const_byte_buf_t *,

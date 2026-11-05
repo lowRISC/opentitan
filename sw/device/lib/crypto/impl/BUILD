@@ -259,6 +259,28 @@ cc_library(
 )
 
 cc_library(
+    name = "hmac_drbg",
+    srcs = ["hmac_drbg.c"],
+    hdrs = ["//sw/device/lib/crypto/include:hmac_drbg.h"],
+    deps = [
+        ":cmvp",
+        ":config",
+        ":cryptolib_build_info",
+        ":drbg",
+        ":hmac",
+        ":integrity",
+        ":keyblob",
+        ":state",
+        ":status",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/base:math",
+        "//sw/device/lib/base:memory",
+        "//sw/device/lib/crypto/drivers:hmac",
+        "//sw/device/lib/crypto/include:datatypes",
+    ],
+)
+
+cc_library(
     name = "integrity",
     srcs = ["integrity.c"],
     hdrs = ["//sw/device/lib/crypto/include:integrity.h"],
