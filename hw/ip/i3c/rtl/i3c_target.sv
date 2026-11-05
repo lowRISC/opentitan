@@ -678,7 +678,7 @@ module i3c_target
   assign hdr_exit_det_en_o = 1'b1;
 
   // Clear Hot-Join request once it has been acknowledged by the Active Controller.
-  // TODO: We cannot yet issue a Hot-Join request.
+  // TODO: We do not yet receive any form of acknowledgement?
   assign hj_request_clear_o = 1'b0;
 
   // Assertions.
