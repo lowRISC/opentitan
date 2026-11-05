@@ -717,10 +717,35 @@ opentitan_binary(
     ],
 )
 
+_FLASH_PERMISSION_88K_TEST_CMD = """
+    --unlock-mode=Any
+    --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+    --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
+    --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
+    --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
+    --next-application-key=sw/device/silicon_creator/lib/ownership/keys/dummy/app_prod_ecdsa_p256.pub.der
+    --config-kind=with-flash-locked
+    --rescue-after-activate={flash_regions}
+    --rescue-slot={owner_slot}
+    --expected-rom-ext-slot={rom_ext_slot}
+    --rom-ext-pages=44
+"""
+
 [
     ownership_transfer_test(
         name = "flash_permission_88k_test_slot_{}".format(name),
         srcs = ["flash_regions.c"],
+        # Until the first owner firmware boot writes the DICE cert cache, every
+        # boot of the dice_mldsa ROM_EXT regenerates its certificates, which
+        # takes a variable amount of time (up to ~2.5s per boot observed on the
+        # CW310 and ~3.7s on the CW340). Entering rescue via `EntryMode::Reboot`
+        # after the unlock request spans two such boots and can exceed the
+        # default 5s rescue entry timeout. QEMU already gets
+        # `--rescue-enter-delay=20s` from `ownership_transfer_test` and the
+        # option cannot be given twice, so only override the FPGA test command.
+        fpga = {
+            "test_cmd": "--rescue-enter-delay=15s" + _FLASH_PERMISSION_88K_TEST_CMD,
+        },
         linker_script = "//sw/device/lib/testing/test_framework:ottf_ld_silicon_owner_slot_virtual",
         qemu = {
             "timeout": "moderate",
@@ -734,19 +759,7 @@ opentitan_binary(
             "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_dice_mldsa_slot_virtual",
             "rom_ext_offset": param["rom_ext_offset"],
             "rom_ext_slot": param["rom_ext_slot"],
-            "test_cmd": """
-                --unlock-mode=Any
-                --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
-                --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:owner_key)
-                --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:unlock_key)
-                --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/dummy:activate_key)
-                --next-application-key=sw/device/silicon_creator/lib/ownership/keys/dummy/app_prod_ecdsa_p256.pub.der
-                --config-kind=with-flash-locked
-                --rescue-after-activate={flash_regions}
-                --rescue-slot={owner_slot}
-                --expected-rom-ext-slot={rom_ext_slot}
-                --rom-ext-pages=44
-            """,
+            "test_cmd": _FLASH_PERMISSION_88K_TEST_CMD,
             "test_harness": "//sw/host/tests/ownership:flash_permission_test",
         },
         slot_spec = ROM_EXT_VARIATIONS["dice_mldsa"].slot_spec,
