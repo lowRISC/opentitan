@@ -36,6 +36,7 @@ package csrng_pkg;
   // Commonly used internal signal widths
   parameter int unsigned CmdWidth = 3;
   parameter int unsigned InstIdWidth = 4;
+  parameter int unsigned MaxNumInstances = 2**InstIdWidth;
 
   // Width of the application command bus (matches the 32b TLUL bus width)
   parameter int unsigned CmdBusWidth = 32;

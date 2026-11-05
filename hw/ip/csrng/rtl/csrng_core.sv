@@ -173,7 +173,7 @@ module csrng_core import csrng_pkg::*; #(
   logic                        genbits_stage_bus_rd_sw;
   logic [31:0]                 genbits_stage_bus_sw;
 
-  logic [15:0]                 hw_exception_sts;
+  logic [NumHwApps-1:0]        hw_exception_sts;
   logic [LcHwDebugCopies-1:0]  lc_hw_debug_on_fo;
   logic                        state_db_reg_read_en;
 
@@ -776,16 +776,10 @@ module csrng_core import csrng_pkg::*; #(
     assign csrng_cmd_o[hai].genbits_fips  = genbits_stage_fips[hai];
     assign csrng_cmd_o[hai].genbits_bus   = genbits_stage_bus[hai];
     assign genbits_stage_rdy[hai] = csrng_cmd_i[hai].genbits_ready;
+    // exception status
+    assign hw_exception_sts[hai] = cmd_stage_ack[hai] &&
+                                   (cmd_stage_ack_sts[hai] != CMD_STS_SUCCESS);
   end : gen_app_if
-
-  // Assign ack statuss
-  for (genvar i = 0; i < 16; i = i+1) begin : gen_app_if_sts
-    if (i < NumApps) begin : gen_assign
-      assign hw_exception_sts[i] = cmd_stage_ack[i] && (cmd_stage_ack_sts[i] != CMD_STS_SUCCESS);
-    end else begin : gen_dummy_assign
-      assign hw_exception_sts[i] = 1'b0;
-    end
-  end : gen_app_if_sts
 
   // set fifo err status bits
   for (genvar i = 0; i < NumApps; i = i+1) begin : gen_fifo_sts
@@ -1124,7 +1118,7 @@ module csrng_core import csrng_pkg::*; #(
   // Misc status
 
   assign hw2reg.hw_exc_sts.de = cs_enable_fo[50];
-  assign hw2reg.hw_exc_sts.d  = hw_exception_sts;
+  assign hw2reg.hw_exc_sts.d  = MaxNumInstances'(hw_exception_sts);
 
   // unused signals
   logic               unused_err_code_test_bit;
