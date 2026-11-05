@@ -10,12 +10,17 @@
  * cannot be revoked, so between them they cover both locked states of the
  * switch FSM.
  *
+ * The switch to CHERIoT follows the runtime switch sequence in the rv_core_ibex
+ * documentation.
+ *
  * Emits a marker straight to UART0 and parks the core. Whatever booted it has
  * already configured UART0 for its own logging, so no driver setup is needed.
  */
 
+#include "sw/device/lib/base/csr_registers.h"
 #include "sw/device/lib/base/multibits_asm.h"
 #include "hw/top/rv_core_ibex_regs.h"  // Generated.
+#include "hw/top/sram_ctrl_regs.h"  // Generated.
 #include "hw/top/top_memory.h" // Generated.
 #include "hw/top/uart_regs.h"  // Generated.
 
@@ -37,6 +42,19 @@
 #define MISA_I (1 << 8)
 #define MISA_MODE (MISA_E | MISA_I)
 
+#define MSTATUS_MIE (1 << 3)
+#define CPUCTRL_DUMMY_INSTR_EN (1 << 2)
+
+// Bounds the wait for CHERIoT mode, far above the switch latency.
+#define SWITCH_POLL_LIMIT 0x1000
+
+#define SRAM_CTRL_STATUS_ERRORS                                            \
+  ((1 << SRAM_CTRL_STATUS_BUS_INTEG_ERROR_BIT) |                           \
+   (1 << SRAM_CTRL_STATUS_INIT_ERROR_BIT) |                                \
+   (1 << SRAM_CTRL_STATUS_ESCALATED_BIT) |                                 \
+   (1 << SRAM_CTRL_STATUS_READBACK_ERROR_BIT) |                            \
+   (1 << SRAM_CTRL_STATUS_SRAM_ALERT_BIT))
+
 #if CHERIOT_MODE
 #define ENA_SELECTED MULTIBIT_ASM_BOOL4_TRUE
 #define ENA_REJECTED MULTIBIT_ASM_BOOL4_FALSE
@@ -52,9 +70,8 @@
 // -----------------------------------------------------------------------------
 
 /**
- * Trap handler, for diagnostics only.
- *
- * Without this a failure is just silence on the console. This emits one of
+ * Trap handler. Every trap is fatal: it raises the fatal software alert, then
+ * emits one of
  *
  *   RTRAP <mcause>    entered in RV32 mode - the mode switch did not take
  *   CTRAP <mcause>    entered in CHERIoT mode - the switch worked, something
@@ -62,11 +79,14 @@
  *
  * telling the two apart by MISA.E.
  *
- * `mtvec` is installed in direct mode before the mode switch, while a plain
- * `csrw` to it is still legal, so no vector table is needed. It stays valid
- * afterwards: an RV32-mode write only updates the address half, leaving
- * `mtvec_cap` at the executable root, so in CHERIoT mode `mtcc` still points
- * here with a PCC that covers it.
+ * `mtvec` is set before the switch, while a plain `csrw` to it is still legal.
+ * RV32 mode vectors (exceptions at the base, NMIs at base + 0x7C). Until `mtcc`
+ * is set up after the switch, CHERIoT mode enters every trap at the `mtvec`
+ * base, so the body checks the mode. `mtcc` then points at the CHERIoT part.
+ *
+ * NMIs cannot be masked, so the mode can also change while the RV32 path runs.
+ * Its stores then fault before any bus access and the trap re-enters in
+ * CHERIoT mode. Raising the alert twice is harmless.
  *
  * Only the base register setup differs between the two paths; the shared body
  * must stick to instructions that encode identically in both modes, which
@@ -77,25 +97,37 @@
   .option norvc
   .option norelax
 
-  // mtvec direct mode requires the address to be 4-byte aligned; the 256-byte
-  // alignment is the Ibex convention for this section.
+  // The RV32 vector table base must be 256-byte aligned.
   .balign 256
   .globl _trap_handler
   .type _trap_handler, @function
 _trap_handler:
+  .rept 32
+  j    .L_trap_body
+  .endr
+
+.L_trap_body:
   csrr t0, misa
   andi t0, t0, MISA_E
-  bnez t0, .L_trap_cheriot
+  bnez t0, _trap_handler_cheriot
 
-  // RV32: an integer base is all the store needs.
+  // RV32: an integer base is all the stores need.
+  lui  t1, %hi(TOP_RV_CORE_IBEX_CFG_BASE_ADDR)
+  li   t2, MULTIBIT_ASM_BOOL4_TRUE
+  sw   t2, RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET(t1)
   lui  t1, %hi(TOP_UART0_BASE_ADDR)
   addi t2, x0, 'R'
   j    .L_trap_mark
 
-.L_trap_cheriot:
-  // CHERIoT: the store needs a capability. `mtdc` is still the memory root, so
-  // narrow a copy of it onto the UART register window.
+  .balign 4
+_trap_handler_cheriot:
+  // CHERIoT: the stores need capabilities. `mtdc` is still the memory root, so
+  // derive them from it.
   cspecialr t1, mtdc
+  lui       t2, %hi(TOP_RV_CORE_IBEX_CFG_BASE_ADDR)
+  csetaddr  t2, t1, t2
+  li        a0, MULTIBIT_ASM_BOOL4_TRUE
+  sw        a0, RV_CORE_IBEX_SW_FATAL_ERR_REG_OFFSET(t2)
   lui       t2, %hi(TOP_UART0_BASE_ADDR)
   csetaddr  t1, t1, t2
   csetboundsimm t1, t1, 0x40
@@ -165,11 +197,41 @@ _ottf_start:
   li s0, TOP_UART0_BASE_ADDR
   li s1, TOP_RV_CORE_IBEX_CFG_BASE_ADDR
 
-  // Install the diagnostic trap handler first, in direct mode, so that it is
-  // already armed if the switch itself faults.
+  // Install the diagnostic trap handler first, so that it is already armed if
+  // the switch itself faults.
   lui  t0, %hi(_trap_handler)
   addi t0, t0, %lo(_trap_handler)
   csrw mtvec, t0
+
+  // No interrupts until the end. The handler above takes NMIs in either mode.
+  csrci mstatus, MSTATUS_MIE
+  csrw  mie, x0
+
+#if CHERIOT_MODE
+  // Zero the capability tags and the revocation bitmap. Nothing before this
+  // stage initializes the meta SRAM.
+  li   a0, TOP_SRAM_CTRL_META_REGS_BASE_ADDR
+  li   t0, (1 << SRAM_CTRL_CTRL_RENEW_SCR_KEY_BIT) | \
+           (1 << SRAM_CTRL_CTRL_INIT_BIT)
+  sw   t0, SRAM_CTRL_CTRL_REG_OFFSET(a0)
+.L_meta_init_wait:
+  lw   t0, SRAM_CTRL_STATUS_REG_OFFSET(a0)
+  andi t1, t0, SRAM_CTRL_STATUS_ERRORS
+  bnez t1, _fail_meta_init
+  andi t1, t0, (1 << SRAM_CTRL_STATUS_INIT_DONE_BIT)
+  beqz t1, .L_meta_init_wait
+
+  // x16-x31 hold the capability metadata of x0-x15 in CHERIoT mode, so zero
+  // them, and keep dummy instructions off until the core is in CHERIoT mode.
+  csrr  a1, CSR_REG_CPUCTRL
+  csrci CSR_REG_CPUCTRL, CPUCTRL_DUMMY_INSTR_EN
+  .option push
+  .option arch, rv32i_zicsr
+  .irp reg, x16, x17, x18, x19, x20, x21, x22, x23, x24, x25, x26, x27, x28, x29, x30, x31
+  li   \reg, 0
+  .endr
+  .option pop
+#endif
 
   // Select the mode. The switch FSM accepts only the strict MuBi4 encodings of
   // `CHERIOT_ENA`; on anything else the `CHERIOT_LOCK` write parks it in a
@@ -181,13 +243,49 @@ _ottf_start:
   lw   t1, RV_CORE_IBEX_CHERIOT_ENA_REG_OFFSET(s1)
   bne  t0, t1, _fail_ena
 
+#if CHERIOT_MODE
+  li   a3, SWITCH_POLL_LIMIT
+#endif
+
   // Commit. `CHERIOT_ENA` is only sampled here, and this write is once-only.
   addi t0, x0, MULTIBIT_ASM_BOOL4_TRUE
   sw   t0, RV_CORE_IBEX_CHERIOT_LOCK_REG_OFFSET(s1)
   fence.i
-  .option pop
 
 #if CHERIOT_MODE
+  // The mode changes some cycles after the write. Until it does, only use
+  // instructions that behave the same in both modes. `misa.E` marks CHERIoT
+  // mode only because ePMP mode runs RV32I on Earl Grey.
+.L_switch_wait:
+  csrr t2, misa
+  andi t2, t2, MISA_E
+  bnez t2, .L_switched
+  addi a3, a3, -1
+  bnez a3, .L_switch_wait
+  beq  x0, x0, _fail_switch
+.L_switched:
+  csrw CSR_REG_CPUCTRL, a1
+
+  // Set up `mtcc` before anything that can trap.
+  cllc      ct0, _trap_handler_cheriot
+  cspecialw mtcc, ct0
+#endif
+  .option pop
+
+  // This concludes the switch. The rest of the test checks that it worked.
+
+#if CHERIOT_MODE
+  // No register may hold a tagged capability, except t0, which now holds the
+  // `mtcc` capability. Reading them also checks their metadata ECC, as an error
+  // halts the core.
+  cgettag a4, a4
+  cgettag t2, t2
+  or      a4, a4, t2
+  .irp reg, ra, sp, gp, tp, t1, s0, s1, a0, a1, a2, a3, a5
+  cgettag t2, \reg
+  or      a4, a4, t2
+  .endr
+
   // MMIO now needs capabilities. `mtdc` still holds the memory root: nothing
   // in the RV32 boot stages writes it.
   cspecialr ct1, mtdc
@@ -197,6 +295,36 @@ _ottf_start:
   li        t2, TOP_RV_CORE_IBEX_CFG_BASE_ADDR
   csetaddr  cs1, ct1, t2
   csetboundsimm cs1, cs1, 0xa0
+
+  // Only report now: the failure reporter needs the capabilities in s0 and s1.
+  bnez a4, _fail_reg_tag
+
+  // The tag memory is clear, at both ends of main SRAM and in the NVM.
+  li       t2, TOP_SRAM_CTRL_MAIN_RAM_BASE_ADDR
+  csetaddr ca2, ct1, t2
+  csetboundsimm ca2, ca2, 8
+  clc      ca3, 0(ca2)
+  cgettag  t2, ca3
+  bnez     t2, _fail_tag
+  li       t2, (TOP_SRAM_CTRL_MAIN_RAM_BASE_ADDR + \
+                TOP_SRAM_CTRL_MAIN_RAM_SIZE_BYTES - 8)
+  csetaddr ca3, ct1, t2
+  clc      ca3, 0(ca3)
+  cgettag  t2, ca3
+  bnez     t2, _fail_tag
+  cllc     ca3, kPassMsg
+  cgetaddr t2, ca3
+  andi     t2, t2, -8
+  csetaddr ca3, ct1, t2
+  clc      ca3, 0(ca3)
+  cgettag  t2, ca3
+  bnez     t2, _fail_tag
+
+  // And a stored capability loads back unchanged, tag included.
+  csc      ca2, 0(ca2)
+  clc      ca3, 0(ca2)
+  csetequalexact t2, ca3, ca2
+  beqz     t2, _fail_tag_store
 #endif
 
   // Confirm the core really is in the mode that was asked for.
@@ -276,6 +404,11 @@ _ottf_start:
  *   S    `CHERIOT_ENA` did not read back as written, after locking, so the
  *        revocation attempt below it would not have proved anything
  *   L    the mode followed a post-lock `CHERIOT_ENA` change
+ *   I    the meta SRAM initialization reported an error
+ *   W    the core did not reach CHERIoT mode after the `CHERIOT_LOCK` write
+ *   G    a register held a tagged capability right after the switch
+ *   T    the tag memory was not clear after its initialization
+ *   C    a stored capability did not load back unchanged
  *
  * `s0` holds an integer address before the switch and a capability after it,
  * and the stores here encode identically either way, so one reporter serves
@@ -293,6 +426,21 @@ _fail_ena_stuck:
   j    _fail
 _fail_lock:
   addi a0, x0, 'L'
+  j    _fail
+_fail_meta_init:
+  addi a0, x0, 'I'
+  j    _fail
+_fail_switch:
+  addi a0, x0, 'W'
+  j    _fail
+_fail_reg_tag:
+  addi a0, x0, 'G'
+  j    _fail
+_fail_tag:
+  addi a0, x0, 'T'
+  j    _fail
+_fail_tag_store:
+  addi a0, x0, 'C'
   j    _fail
 
   .type _fail, @function
