@@ -15,7 +15,6 @@ filesets:
       - lowrisc:dv:rram_ctrl_test
       - lowrisc:dv:rram_ctrl_sva
     files:
-      - env/rram_ctrl_otp_key_if.sv
       - tb.sv
     file_type: systemVerilogSource
 
