@@ -125,6 +125,30 @@ Both values are decoded strictly: [`CHERIOT_ENA`](registers.md#cheriot_ena) must
 From then on the mode is fixed until `rv_core_ibex` is reset.
 Further writes to either register have no effect.
 
+### Switching to CHERIoT Mode at Runtime
+
+Switching from RV32I to CHERIoT mode at runtime needs the software sequence described in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/cheriot.html).
+On Earl Grey, it consists of the following steps, which `sw/device/tests/cheriot_smoketest.S` implements:
+
+1. Disable interrupts until `mtcc` is set up in CHERIoT mode.
+   NMIs cannot be disabled, so until then the `mtvec` handler must work in both modes, including a mode change while it runs.
+   As an NMI is fatal, the handler can raise a fatal alert and stop.
+2. Zero-initialize the meta SRAM, which holds the capability tags and the revocation bitmap.
+3. Save `cpuctrlsts`, clear `cpuctrlsts.dummy_instr_en` and write zero to `x16`-`x31`.
+4. Write `MuBi4True` to [`CHERIOT_ENA`](registers.md#cheriot_ena).
+5. Write `MuBi4True` to [`CHERIOT_LOCK`](registers.md#cheriot_lock) and poll `misa` until `misa.E` is set.
+   This only marks CHERIoT mode because ePMP mode runs RV32I on Earl Grey.
+   For this, only use 32-bit instructions that behave the same in both modes.
+6. Restore `cpuctrlsts`, and set up `mtcc` before any instruction that can trap.
+
+Debug is not supported during the switch.
+
+In CHERIoT mode, a key renewal or initialization of `sram_ctrl_meta`, `sram_ctrl_main` or `sram_ctrl_sec` replaces the data under existing tags, which then loads as valid capabilities.
+Only trusted code should therefore have access to their `CTRL` registers, or their `CTRL_REGWEN` can be cleared before the switch.
+
+CHERIoT mode turns off the ePMP protection, including locked entries.
+The boot stage that configures the ePMP should therefore make the mode decision, or lock ePMP mode, before it hands over to less trusted code.
+
 ### Error State
 
 The switch has a terminal error state.
