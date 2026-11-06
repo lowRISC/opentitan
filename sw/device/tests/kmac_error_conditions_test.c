@@ -168,137 +168,6 @@ status_t check_and_clear_error(const dif_kmac_t *kmac, dif_kmac_error_t exp_err,
 }
 
 /**
- * ErrWaitTimerExpired.
- *
- * This test checks whether the ErrWaitTimerExpired error code is
- * returned by the hardware when KMAC timed out while waiting for EDN entropy.
- * By configuring a small wait timer (=1), the timeout immediately will be
- * triggered and we should see the expected error code.
- *
- * @return OK or error.
- */
-status_t test_err_wait_timer_expired(void) {
-  LOG_INFO("Testing ErrWaitTimerExpired error.");
-
-  // Init the KMAC block.
-  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
-
-  const dif_kmac_config_t config = (dif_kmac_config_t){
-      .entropy_mode = kDifKmacEntropyModeEdn,
-      .entropy_wait_timer = 0x001,  // Small wait time out to trigger the error.
-      .entropy_prescaler = 0x000,
-      .entropy_fast_process = kDifToggleDisabled,
-      .entropy_seed = {0xaa25b4bf, 0x48ce8fff, 0x5a78282a, 0x48465647,
-                       0x70410fef},
-      .message_big_endian = kDifToggleDisabled,
-      .output_big_endian = kDifToggleDisabled,
-      .sideload = kDifToggleDisabled,
-      .msg_mask = kDifToggleEnabled,
-  };
-
-  TRY(dif_kmac_configure(&kmac, config));
-
-  dif_kmac_operation_state_t kmac_operation_state;
-  TRY(dif_kmac_mode_kmac_start(&kmac, &kmac_operation_state,
-                               kKmacTestVector.mode, 0, &kKmacTestVector.key,
-                               NULL));
-
-  TRY(dif_kmac_absorb(&kmac, &kmac_operation_state, kKmacTestVector.message,
-                      kKmacTestVector.message_len, NULL));
-
-  // This is where timeout might happen, so we handle dif return manually.
-  uint32_t digest[kKmacTestVector.digest_len];
-  dif_result_t res = dif_kmac_squeeze(&kmac, &kmac_operation_state, digest,
-                                      kKmacTestVector.digest_len,
-                                      /*processed=*/NULL, /*capacity=*/NULL);
-
-  // It is OK to get kDifError at this point because of possible timeout.
-  TRY_CHECK(res == kDifOk || res == kDifError);
-
-  // Check if there is a new error.
-  bool irq_err_pending;
-  TRY(dif_kmac_irq_is_pending(&kmac, kDifKmacIrqKmacErr, &irq_err_pending));
-  if (irq_err_pending) {
-    dif_kmac_error_t err_status;
-    uint32_t err_info;
-    TRY(dif_kmac_get_error(&kmac, &err_status, &err_info));
-    TRY_CHECK(err_status == kDifErrorEntropyWaitTimerExpired,
-              "Error other than EDN timeout occurred.");
-    LOG_INFO("EDN timed out.");
-  } else {
-    LOG_INFO("EDN seed received before timeout.");
-  }
-
-  // At this point, irq_err_pending says if timeout is observed
-  TRY_CHECK(irq_err_pending == true,
-            "EDN timeout expectation doesn't match observation.");
-
-  // Flush out the result and check correctness
-  TRY(dif_kmac_end(&kmac, &kmac_operation_state));
-
-  // If err interrupt is generated, we need clean-up
-  if (irq_err_pending) {
-    // Clean INTR_STATE
-    TRY(dif_kmac_irq_acknowledge_all(&kmac));
-
-    // Reset FSM by setting `err_processed` bit
-    TRY(dif_kmac_reset(&kmac, &kmac_operation_state));
-
-    // At this point, we expect that there are no remaining interrupts.
-    dif_kmac_irq_state_snapshot_t intr_snapshot;
-    TRY(dif_kmac_irq_get_state(&kmac, &intr_snapshot));
-    TRY_CHECK(intr_snapshot == 0,
-              "INTR_STATE is non-zero after timeout clean-up.");
-
-    bool is_kmac_locked;
-    TRY(dif_kmac_config_is_locked(&kmac, &is_kmac_locked));
-    TRY_CHECK(!is_kmac_locked, "KMAC still locked after timeout clean-up.");
-  }
-
-  return OK_STATUS();
-}
-
-/**
- * ErrIncorrectEntropyMode.
- *
- * This test checks whether the ErrIncorrectEntropyMode error code is
- * returned by the hardware when using a wrong entropy mode configuration.
- *
- * @return OK or error.
- */
-status_t test_err_incorrect_entropy_mode(void) {
-  LOG_INFO("Testing ErrIncorrectEntropyMode error.");
-
-  // Re-init KMAC for the test.
-  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
-
-  // Write configuration register.
-  uint32_t cfg_reg = 0;
-  // Provide invalid entropy mode (other than kDifKmacEntropyModeSoftware or
-  // kDifKmacEntropyModeEdn)
-  cfg_reg = bitfield_field32_write(cfg_reg,
-                                   KMAC_CFG_SHADOWED_ENTROPY_MODE_FIELD, 0xf);
-  // Set remaining config to a valid one.
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_ENDIANNESS_BIT,
-                                 kDifToggleDisabled);
-  cfg_reg = bitfield_bit32_write(
-      cfg_reg, KMAC_CFG_SHADOWED_STATE_ENDIANNESS_BIT, kDifToggleDisabled);
-  cfg_reg = bitfield_bit32_write(
-      cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, kDifToggleDisabled);
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT,
-                                 kDifToggleDisabled);
-  cfg_reg =
-      bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_READY_BIT, true);
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT,
-                                 kDifToggleEnabled);
-  mmio_region_write32_shadowed(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET,
-                               cfg_reg);
-
-  // Check whether we got the expected error.
-  return check_and_clear_error(&kmac, kDifErrorEntropyModeIncorrect, false);
-}
-
-/**
  * ErrSwHashingWithoutEntropyReady.
  *
  * This test checks whether the ErrSwHashingWithoutEntropyReady error code is
@@ -704,9 +573,8 @@ status_t test_err_sw_pushed_msg_fifo(void) {
 
 bool test_main(void) {
   // The first three tests don't run on CW310 (see lowRISC/opentitan#15530).
+  // TODO: this should now work as well.
   if (kDeviceType != kDeviceFpgaCw310) {
-    CHECK_STATUS_OK(test_err_wait_timer_expired());
-    CHECK_STATUS_OK(test_err_incorrect_entropy_mode());
     CHECK_STATUS_OK(test_err_sw_hashing_without_entropy_ready());
   }
 

@@ -311,8 +311,6 @@ module kmac
   logic      cmd_update;
 
   // Entropy configurations
-  logic [9:0]  wait_timer_prescaler;
-  logic [15:0] wait_timer_limit;
   logic        entropy_refresh_req;
   logic        entropy_seed_update;
   logic [31:0] entropy_seed_data;
@@ -321,15 +319,13 @@ module kmac
   logic [HashCntW-1:0] entropy_hash_cnt;
   logic                entropy_hash_clr;
 
-  logic entropy_ready;
+  logic entropy_boot_mode;
   entropy_mode_e entropy_mode;
   logic reg_entropy_fast_process;
   logic entropy_fast_process;
 
-  prim_mubi_pkg::mubi4_t entropy_configured;
-
-  logic status_entropy_ready;
-  logic status_entropy_reseeding;
+  logic entropy_ready;
+  logic entropy_reseeding;
 
   // Message Masking
   logic msg_mask_en, cfg_msg_mask;
@@ -340,9 +336,6 @@ module kmac
 
   // KeyMgr Error response
   kmac_pkg::err_t app_err;
-
-  // Entropy Generator Error
-  kmac_pkg::err_t entropy_err;
 
   // Error checker
   kmac_pkg::err_t errchecker_err;
@@ -503,8 +496,8 @@ module kmac
   assign hw2reg.status.sha3_stopped.d  = sha3_fsm == sha3_pkg::StStop;
   assign hw2reg.status.state_write.d   = state_write_en;
 
-  assign hw2reg.status.entropy_ready.d     = status_entropy_ready;
-  assign hw2reg.status.entropy_reseeding.d = status_entropy_reseeding;
+  assign hw2reg.status.entropy_ready.d     = entropy_ready;
+  assign hw2reg.status.entropy_reseeding.d = entropy_reseeding;
 
   // FIFO related status
   assign hw2reg.status.fifo_depth.d[MsgFifoDepthW-1:0] = msgfifo_depth;
@@ -586,33 +579,29 @@ module kmac
   // Entropy configurations
   assign hw2reg.entropy_refresh_hash_cnt.de = 1'b 1;
   if (EnFullKmac) begin : gen_entropy_mask
-    assign wait_timer_prescaler = reg2hw.entropy_period.prescaler.q;
-    assign wait_timer_limit     = reg2hw.entropy_period.wait_timer.q;
     assign entropy_refresh_req = reg2hw.cmd.entropy_req.q
-                              && reg2hw.cmd.entropy_req.qe;
+                              && reg2hw.cmd.entropy_req.qe
+                              && !reg2hw.entropy_cfg_shadowed.ignore_cmd_entropy_req.q;
     assign entropy_seed_update = reg2hw.entropy_seed.qe;
     assign entropy_seed_data = reg2hw.entropy_seed.q;
 
-    assign entropy_hash_threshold = reg2hw.entropy_refresh_threshold_shadowed.q;
     assign hw2reg.entropy_refresh_hash_cnt.d  = entropy_hash_cnt;
 
     assign entropy_hash_clr = reg2hw.cmd.hash_cnt_clr.qe
                            && reg2hw.cmd.hash_cnt_clr.q;
 
     // Entropy config
-    assign entropy_ready = reg2hw.cfg_shadowed.entropy_ready.q
-                         & reg2hw.cfg_shadowed.entropy_ready.qe;
-    assign entropy_mode  = entropy_mode_e'(reg2hw.cfg_shadowed.entropy_mode.q);
+    assign entropy_boot_mode = reg2hw.entropy_cfg_shadowed.entropy_boot_mode.q;
+    assign entropy_mode = entropy_mode_e'(reg2hw.entropy_cfg_shadowed.entropy_mode.q);
+    assign entropy_hash_threshold = reg2hw.entropy_cfg_shadowed.edn_mode_refresh_threshold.q;
+
     assign reg_entropy_fast_process = reg2hw.cfg_shadowed.entropy_fast_process.q;
 
     // msg_mask_en turns on the message LFSR when KMAC is enabled.
     assign cfg_msg_mask = reg2hw.cfg_shadowed.msg_mask.q;
     assign msg_mask_en = cfg_msg_mask & msg_valid & msg_ready;
 
-    `ASSERT(EntropyReadyLatched_A, $rose(entropy_ready) |=> !entropy_ready)
   end else begin : gen_no_entropy_mask
-    assign wait_timer_prescaler = '0;
-    assign wait_timer_limit     = '0;
     assign entropy_refresh_req  = 1'b0;
     assign entropy_seed_update  = 1'b0;
     assign entropy_seed_data    = '0;
@@ -622,8 +611,9 @@ module kmac
 
     assign entropy_hash_clr = 1'b0;
 
-    assign entropy_ready            = 1'b0;
-    assign entropy_mode             = EntropyModeNone;
+    assign entropy_boot_mode = 1'b1;
+    assign entropy_mode      = EntropyModeEdn;
+
     assign reg_entropy_fast_process = 1'b0;
 
     assign cfg_msg_mask = 1'b0;
@@ -631,18 +621,27 @@ module kmac
 
     logic unused_entropy_regs;
     assign unused_entropy_regs = ^{
-      reg2hw.entropy_period,
       reg2hw.cmd.entropy_req,
       reg2hw.cmd.hash_cnt_clr,
       reg2hw.entropy_seed,
-      reg2hw.entropy_refresh_threshold_shadowed.q,
-      reg2hw.cfg_shadowed.entropy_ready,
-      reg2hw.cfg_shadowed.entropy_mode.q,
+      reg2hw.entropy_cfg_shadowed.edn_mode_refresh_threshold.q,
+      reg2hw.entropy_cfg_shadowed.ignore_cmd_entropy_req.q,
+      reg2hw.entropy_cfg_shadowed.entropy_mode.q,
+      reg2hw.entropy_cfg_shadowed.entropy_boot_mode.q,
       reg2hw.cfg_shadowed.entropy_fast_process.q,
       reg2hw.cfg_shadowed.msg_mask.q,
       entropy_hash_cnt
       };
   end
+
+  assign hw2reg.entropy_cfg_regwen.de = 1'b1;
+  assign hw2reg.entropy_cfg_regwen.d =
+      // The ENTROPY_CFG_LOCK register permanently locks updates to the ENTROPY_CFG_SHADOWED
+      // register.
+      reg2hw.entropy_cfg_lock.q ? 1'b0 :
+      // Otherwise, we only allow updates to the entropy configuration while the Keccak core is
+      // idle and if we're not yet busy doing a reseed operation.
+      entropy_reseeding || sha3_fsm != sha3_pkg::StIdle ? 1'b0 : 1'b1;
 
   // Idle control (registered output)
   // The logic checks idle of SHA3 engine, MSG_FIFO, KMAC_CORE, KEYMGR interface
@@ -780,9 +779,7 @@ module kmac
   // Error
 
   logic event_error;
-  assign event_error = sha3_err.valid    | app_err.valid
-                     | entropy_err.valid | errchecker_err.valid
-                     ;
+  assign event_error = sha3_err.valid | app_err.valid | errchecker_err.valid;
 
   // Assing error code to the register
   assign hw2reg.err_code.de = event_error;
@@ -804,10 +801,6 @@ module kmac
 
       sha3_err.valid: begin
         hw2reg.err_code.d = {sha3_err.code , sha3_err.info};
-      end
-
-      entropy_err.valid: begin
-        hw2reg.err_code.d = {entropy_err.code, entropy_err.info};
       end
 
       msgfifo_err.valid: begin
@@ -1304,7 +1297,7 @@ module kmac
     .cmd_o    (kmac_cmd),
 
     // Status
-    .entropy_ready_i (entropy_configured),
+    .entropy_ready_i(entropy_ready),
 
     // LC escalation
     .lc_escalate_en_i (lc_escalate_en[3]),
@@ -1393,7 +1386,7 @@ module kmac
 
     .cfg_en_unsupported_modestrength_i (cfg_en_unsupported_modestrength),
 
-    .entropy_ready_pulse_i (entropy_ready),
+    .entropy_ready_i(entropy_ready),
 
     // SW commands
     .sw_cmd_i(sw_cmd),
@@ -1473,13 +1466,10 @@ module kmac
       .in_keyblock_i (entropy_in_keyblock),
 
       // Configuration
-      .mode_i          (entropy_mode),
-      .entropy_ready_i (entropy_ready),
-      .fast_process_i  (entropy_fast_process),
+      .entropy_boot_mode_i(entropy_boot_mode),
+      .entropy_mode_i     (entropy_mode),
 
-      //// Entropy refresh period in clk cycles
-      .wait_timer_prescaler_i (wait_timer_prescaler),
-      .wait_timer_limit_i     (wait_timer_limit),
+      .fast_process_i  (entropy_fast_process),
 
       //// Message Masking
       .msg_mask_en_i (msg_mask_en),
@@ -1495,26 +1485,25 @@ module kmac
       .hash_cnt_clr_i   (entropy_hash_clr),
       .hash_threshold_i (entropy_hash_threshold),
 
-      .entropy_configured_o (entropy_configured),
-      .entropy_ready_o      (status_entropy_ready),
-      .entropy_reseeding_o  (status_entropy_reseeding),
+      .entropy_ready_o    (entropy_ready),
+      .entropy_reseeding_o(entropy_reseeding),
 
       // LC escalation
       .lc_escalate_en_i (lc_escalate_en[5]),
 
-      // Error
-      .err_o              (entropy_err),
-      .sparse_fsm_error_o (kmac_entropy_state_error),
-      .count_error_o      (kmac_entropy_hash_counter_error),
-      .err_processed_i    (err_processed)
+      // Errors
+      .sparse_fsm_error_o(kmac_entropy_state_error),
+      .count_error_o     (kmac_entropy_hash_counter_error)
     );
   end else begin : gen_empty_entropy
     // If Masking is not used, no need of entropy. Ignore inputs and config; tie output to 0.
     edn_pkg::edn_rsp_t unused_entropy_input;
+    logic              unused_entropy_boot_mode;
     entropy_mode_e     unused_entropy_mode;
     logic              unused_entropy_fast_process;
 
     assign unused_entropy_input        = entropy_i;
+    assign unused_entropy_boot_mode    = entropy_boot_mode;
     assign unused_entropy_mode         = entropy_mode;
     assign unused_entropy_fast_process = entropy_fast_process;
 
@@ -1531,18 +1520,14 @@ module kmac
 
     logic unused_seed_update;
     logic unused_seed_data;
-    logic unused_refresh_period;
     logic unused_entropy_refresh_req;
     assign unused_seed_data = ^entropy_seed_data;
     assign unused_seed_update = entropy_seed_update;
-    assign unused_refresh_period = ^{wait_timer_limit, wait_timer_prescaler};
     assign unused_entropy_refresh_req = entropy_refresh_req;
 
     logic unused_entropy_hash;
     assign unused_entropy_hash = ^{entropy_hash_clr, entropy_hash_threshold};
     assign entropy_hash_cnt = '0;
-
-    assign entropy_err = '{valid: 1'b 0, code: ErrNone, info: '0};
 
     assign kmac_entropy_state_error = 1'b 0;
     assign kmac_entropy_hash_counter_error  = 1'b 0;
@@ -1550,14 +1535,12 @@ module kmac
     logic unused_entropy_status;
     assign unused_entropy_status = entropy_in_keyblock;
 
-    // If Masking is off, always entropy configured
-    assign entropy_configured = prim_mubi_pkg::MuBi4True;
-
-    // Mirror the entropy_ready bit written by software to simplify DV and software.
-    assign status_entropy_ready = reg2hw.cfg_shadowed.entropy_ready.q;
+    // Construct the entropy_ready bit based on the entropy boot mode setting to simplify DV and
+    // software.
+    assign entropy_ready = !reg2hw.entropy_cfg_shadowed.entropy_boot_mode.q;
 
     // No reseed operation is ever happening.
-    assign status_entropy_reseeding = 1'b 0;
+    assign entropy_reseeding = 1'b 0;
 
     logic unused_edn_clk_rst;
     assign unused_edn_clk_rst = ^{clk_edn_i, rst_edn_ni};
@@ -1609,7 +1592,6 @@ module kmac
     reg2hw.cfg_shadowed.msg_endianness.qe              ,
     reg2hw.cfg_shadowed.state_endianness.qe            ,
     reg2hw.cfg_shadowed.sideload.qe                    ,
-    reg2hw.cfg_shadowed.entropy_mode.qe                ,
     reg2hw.cfg_shadowed.entropy_fast_process.qe        ,
     reg2hw.cfg_shadowed.msg_mask.qe                    ,
     reg2hw.cfg_shadowed.en_unsupported_modestrength.qe

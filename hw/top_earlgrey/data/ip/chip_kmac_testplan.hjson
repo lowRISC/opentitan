@@ -310,8 +310,6 @@
             - ErrSwPushedMsgFifo: covers that SW writes the msgfifo while App interface is active
             - ErrSwIssuedCmdInAppActive: covers that SW writes all possible commands to the KMAC
                                          while App interface is active
-            - ErrWaitTimerExpired: covers that the KMAC timed out while waiting for EDN entropy
-            - ErrIncorrectEntropyMode: covers that incorrect entropy modes are detected by the KMAC
             - ErrUnexpectedModeStrength: covers that 128-bit strength is seen for SHA3, and all but
                                          128/256 bit strengths are seen for XOF functions
             - ErrIncorrectFunctionName: covers that the function name is configured incorrectly
