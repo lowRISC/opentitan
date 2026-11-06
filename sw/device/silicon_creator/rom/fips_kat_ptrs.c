@@ -502,6 +502,113 @@ typedef struct fips_kat_aes_kwp256 {
 } fips_kat_aes_kwp256_t;
 
 /**
+ * Algorithm 12: KDF-HMAC-SHA2-256 (Alg ID 37)
+ *
+ * Source Standard: NIST SP 800-108r1 (Recommendation for Key Derivation Using
+ * Pseudorandom Functions) Section 4.1 (Counter Mode) / CAVP / ACVP.
+ *
+ * Test Vector Parameters:
+ * - Key (KDK): 32 bytes (256-bit key: 0x0b repeated 32 times).
+ * - Label: 6 bytes (0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5).
+ * - Separator: 1 byte (0x00).
+ * - Context: 6 bytes (0x60, 0x61, 0x62, 0x63, 0x64, 0x65).
+ * - Counter `[i]_2`: 4 bytes (0x00, 0x00, 0x00, 0x01).
+ * - Length `[L]_2`: 4 bytes (0x00, 0x00, 0x01, 0x00 = 256 bits).
+ * - Formatted Message: 21 bytes:
+ *   [i]_2 || Label || 0x00 || Context || [L]_2
+ *   = 00000001 b0b1b2b3b4b5 00 606162636465 00000100
+ * - Expected Derived Keying Material (32 bytes = 256 bits):
+ *   12b44b700276c03074cd99f98763574b7bf71c30340223790bf0b8f53fcf3c86
+ *
+ * How inputs/outputs were transformed:
+ * - Header Fields:
+ *     key_len    = 32 (32-byte KDK)
+ *     msg_len    = 21 (21-byte formatted counter-mode message)
+ *     digest_len = 32 (32-byte derived keying material output)
+ * - Contiguous Payload:
+ *     data[0..31]  = 32-byte KDK
+ *     data[32..52] = 21-byte formatted input message
+ *     data[53..55] = 3 bytes 0x00 padding for 4-byte Ibex word alignment
+ *     data[56..87] = 32-byte expected derived keying material
+ * - Ibex Alignment: 12 bytes (header: 3 x uint32_t) + 88 bytes (payload)
+ *   = 100 bytes total (`100 % 4 == 0`). Naturally 4-byte aligned.
+ *
+ * How test runners (BL0 / Cryptolib) use this vector:
+ * 1. Read entry offset from `fips_kat_descriptor_table_t` for
+ * `kFipsKatAlgKdfHmacSha2_256`.
+ * 2. Dereference as `const hmac_kat_data_t *kat = get_fips_data(table, entry)`.
+ * 3. Verify parameters: `kat->key_len == 32`, `kat->msg_len == 21`,
+ * `kat->digest_len == 32`.
+ * 4. Extract pointers:
+ *      `const uint8_t *kdk = kat->data;`
+ *      `const uint8_t *msg = kat->data + kat->key_len;`
+ *      `const uint8_t *expected_km = kat->data + kat->key_len + ((kat->msg_len
+ * + 3) & ~3u);`
+ * 5. Compute HMAC-SHA2-256 on `msg` using key `kdk` via hardware HMAC
+ * accelerator.
+ * 6. Compare computed output against `expected_km`.
+ */
+typedef struct fips_kat_kdf_hmac_sha256 {
+  uint32_t key_len;
+  uint32_t msg_len;
+  uint32_t digest_len;
+  uint8_t data[88];
+} fips_kat_kdf_hmac_sha256_t;
+
+/**
+ * Algorithm 13: KDF-KMAC-256 (Alg ID 38)
+ *
+ * Source Standard: NIST SP 800-108r1 / NIST SP 800-185 (Section 8.4.2 Sample
+ * #1) / CAVP Vector.
+ *
+ * Test Vector Parameters:
+ * - Key (KDK): 32 bytes (256-bit:
+ * 404142434445464748494a4b4c4d4e4f505152535455565758595a5b5c5d5e5f).
+ * - Context (Message): 4 bytes (00010203).
+ * - Label (Customization String S): "My Tagged Application" (21 bytes).
+ * - Output Length: 64 bytes (512 bits).
+ * - Expected Keying Material (64 bytes):
+ *   20c570c31346f703c9ac36c61c03cb64c3970d0cfc787e9b79599d273a68d2f7
+ *   f69d4cc3de9d104a351689f27cf6f5951f0103f33f4f24871024d9c27773a8dd
+ *
+ * How inputs/outputs were transformed:
+ * - Header Fields:
+ *     key_len    = 32 (32-byte KDK)
+ *     msg_len    = 4  (4-byte context/message)
+ *     digest_len = 64 (64-byte derived keying material output)
+ * - Contiguous Payload:
+ *     data[0..31]  = 32-byte KDK
+ *     data[32..35] = 4-byte context/message (0x00, 0x01, 0x02, 0x03)
+ *     data[36..99] = 64-byte expected output
+ * - Ibex Alignment: 12 bytes (header: 3 x uint32_t) + 100 bytes (payload)
+ *   = 112 bytes total (`112 % 4 == 0`). Naturally 4-byte aligned.
+ *
+ * How test runners (BL0 / Cryptolib) use this vector:
+ * 1. Read entry offset from `fips_kat_descriptor_table_t` for
+ * `kFipsKatAlgKdfKmac256`.
+ * 2. Dereference as `const hmac_kat_data_t *kat = get_fips_data(table, entry)`.
+ * 3. Verify parameters: `kat->key_len == 32`, `kat->msg_len == 4`,
+ * `kat->digest_len == 64`.
+ * 4. Extract pointers:
+ *      `const uint8_t *kdk = kat->data;`
+ *      `const uint8_t *context = kat->data + kat->key_len;`
+ *      `const uint8_t *expected_km = kat->data + kat->key_len + kat->msg_len;`
+ * 5. Configure KMAC IP in KMAC-256 mode via `kmac_kmac256_sw_configure()`.
+ * 6. Load software key via `kmac_kmac256_sw_key((const uint32_t *)kdk, 8)`.
+ * 7. Set customization prefix (label): `kmac_kmac256_set_prefix("My Tagged
+ * Application", 21)`.
+ * 8. Absorb context via `kmac_kmac256_absorb(context, 4)`.
+ * 9. Squeeze 16 words (64 bytes) via `kmac_kmac256_final(digest_words, 16)`.
+ * 10. Compare computed output against `expected_km`.
+ */
+typedef struct fips_kat_kdf_kmac256 {
+  uint32_t key_len;
+  uint32_t msg_len;
+  uint32_t digest_len;
+  uint8_t data[100];
+} fips_kat_kdf_kmac256_t;
+
+/**
  * Container holding all embedded FIPS KAT vector payloads in `.fips_kat.data`.
  */
 typedef struct fips_kat_data_store {
@@ -514,6 +621,8 @@ typedef struct fips_kat_data_store {
   fips_kat_aes_ecb256_t aes_ecb256;
   fips_kat_aes_cbc256_t aes_cbc256;
   fips_kat_aes_kwp256_t aes_kwp256;
+  fips_kat_kdf_hmac_sha256_t kdf_hmac_sha256;
+  fips_kat_kdf_kmac256_t kdf_kmac256;
 } fips_kat_data_store_t;
 
 /**
@@ -721,6 +830,56 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
         },
     }
 ,
+    .kdf_hmac_sha256 = {
+        .key_len = 32,
+        .msg_len = 21,
+        .digest_len = 32,
+        .data = {
+            // KDK (32 bytes of 0x0b)
+            0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
+            0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
+            0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
+            0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
+            // Formatted Message (21 bytes: [i]_2 || Label || 0x00 || Context || [L]_2)
+            0x00, 0x00, 0x00, 0x01,
+            0xb0, 0xb1, 0xb2, 0xb3, 0xb4, 0xb5,
+            0x00,
+            0x60, 0x61, 0x62, 0x63, 0x64, 0x65,
+            0x00, 0x00, 0x01, 0x00,
+            // 3 bytes 0x00 padding for 4B Ibex alignment
+            0x00, 0x00, 0x00,
+            // Expected Derived Keying Material (32 bytes)
+            0x12, 0xb4, 0x4b, 0x70, 0x02, 0x76, 0xc0, 0x30,
+            0x74, 0xcd, 0x99, 0xf9, 0x87, 0x63, 0x57, 0x4b,
+            0x7b, 0xf7, 0x1c, 0x30, 0x34, 0x02, 0x23, 0x79,
+            0x0b, 0xf0, 0xb8, 0xf5, 0x3f, 0xcf, 0x3c, 0x86,
+        },
+    }
+,
+    .kdf_kmac256 = {
+        .key_len = 32,
+        .msg_len = 4,
+        .digest_len = 64,
+        .data = {
+            // KDK (32 bytes: 0x40..0x5f)
+            0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
+            0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
+            0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+            0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f,
+            // Context / Message (4 bytes: 0x00, 0x01, 0x02, 0x03)
+            0x00, 0x01, 0x02, 0x03,
+            // Expected Output (64 bytes = 512 bits)
+            0x20, 0xc5, 0x70, 0xc3, 0x13, 0x46, 0xf7, 0x03,
+            0xc9, 0xac, 0x36, 0xc6, 0x1c, 0x03, 0xcb, 0x64,
+            0xc3, 0x97, 0x0d, 0x0c, 0xfc, 0x78, 0x7e, 0x9b,
+            0x79, 0x59, 0x9d, 0x27, 0x3a, 0x68, 0xd2, 0xf7,
+            0xf6, 0x9d, 0x4c, 0xc3, 0xde, 0x9d, 0x10, 0x4a,
+            0x35, 0x16, 0x89, 0xf2, 0x7c, 0xf6, 0xf5, 0x95,
+            0x1f, 0x01, 0x03, 0xf3, 0x3f, 0x4f, 0x24, 0x87,
+            0x10, 0x24, 0xd9, 0xc2, 0x77, 0x73, 0xa8, 0xdd,
+        },
+    }
+,
 };
 
 /**
@@ -731,12 +890,12 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
   (sizeof(fips_kat_rom_table_t) + offsetof(fips_kat_data_store_t, field))
 
 /**
- * Concrete descriptor table in ROM holding 9 entries.
+ * Concrete descriptor table in ROM holding 11 entries.
  */
-#define FIPS_KAT_NUM_ENTRIES 9
+#define FIPS_KAT_NUM_ENTRIES 11
 
 /**
- * Concrete descriptor table in ROM holding 9 entries.
+ * Concrete descriptor table in ROM holding 11 entries.
  */
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -799,6 +958,16 @@ alignas(uint32_t) static const fips_kat_rom_table_t kFipsKatDescriptorTable = {
                 .algorithm_id = (uint32_t)kFipsKatAlgAesKwp256Wrap,
                 .offset = FIPS_KAT_OFFSET(aes_kwp256),
                 .size = sizeof(fips_kat_aes_kwp256_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgKdfHmacSha2_256,
+                .offset = FIPS_KAT_OFFSET(kdf_hmac_sha256),
+                .size = sizeof(fips_kat_kdf_hmac_sha256_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgKdfKmac256,
+                .offset = FIPS_KAT_OFFSET(kdf_kmac256),
+                .size = sizeof(fips_kat_kdf_kmac256_t),
             },
         },
 };

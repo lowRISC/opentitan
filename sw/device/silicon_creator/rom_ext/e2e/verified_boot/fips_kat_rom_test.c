@@ -858,6 +858,119 @@ static status_t test_aes_kwp256_kat(const fips_kat_descriptor_table_t *table) {
   return OK_STATUS();
 }
 
+static status_t test_kdf_hmac_sha256_kat(
+    const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for KDF-HMAC-SHA2-256 KAT entry (alg_id = %u)...",
+           kFipsKatAlgKdfHmacSha2_256);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgKdfHmacSha2_256);
+  CHECK(entry != NULL, "KDF-HMAC-SHA2-256 KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving KDF-HMAC-SHA2-256 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const hmac_kat_data_t *kat_data = (const hmac_kat_data_t *)data;
+  CHECK(kat_data->key_len == 32, "Expected key_len=32, got %u",
+        kat_data->key_len);
+  CHECK(kat_data->msg_len == 21, "Expected msg_len=21, got %u",
+        kat_data->msg_len);
+  CHECK(kat_data->digest_len == 32, "Expected digest_len=32, got %u",
+        kat_data->digest_len);
+
+  const uint8_t *kdk = kat_data->data;
+  const uint8_t *msg = kat_data->data + kat_data->key_len;
+  const uint8_t *expected_km =
+      kat_data->data + kat_data->key_len + ((kat_data->msg_len + 3) & ~3u);
+
+  CHECK_ARRAYS_EQ(kdk, kExpectedKdfHmacSha256Kdk, 32);
+  CHECK_ARRAYS_EQ(msg, kExpectedKdfHmacSha256Msg, 21);
+  CHECK_ARRAYS_EQ(expected_km, kExpectedKdfHmacSha256Km, 32);
+  LOG_INFO("KDF-HMAC-SHA2-256 vector payload verified against golden values.");
+
+  LOG_INFO("Executing KDF-HMAC-SHA2-256 using HMAC hardware accelerator...");
+  hmac_key_t hkey;
+  for (size_t i = 0; i < 8; ++i) {
+    hkey.key[i] = (uint32_t)kdk[4 * i] | ((uint32_t)kdk[4 * i + 1] << 8) |
+                  ((uint32_t)kdk[4 * i + 2] << 16) |
+                  ((uint32_t)kdk[4 * i + 3] << 24);
+  }
+  hmac_digest_t digest;
+  sc_hmac_hmac_sha256(msg, kat_data->msg_len, hkey,
+                      /*big_endian_digest=*/false, &digest);
+
+  uint8_t computed_km[32];
+  for (size_t i = 0; i < 8; ++i) {
+    uint32_t word = digest.digest[7 - i];
+    computed_km[4 * i] = (uint8_t)(word >> 24);
+    computed_km[4 * i + 1] = (uint8_t)(word >> 16);
+    computed_km[4 * i + 2] = (uint8_t)(word >> 8);
+    computed_km[4 * i + 3] = (uint8_t)(word);
+  }
+
+  CHECK_ARRAYS_EQ(computed_km, expected_km, 32);
+  LOG_INFO("KDF-HMAC-SHA2-256 Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
+static status_t test_kdf_kmac256_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for KDF-KMAC-256 KAT entry (alg_id = %u)...",
+           kFipsKatAlgKdfKmac256);
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgKdfKmac256);
+  CHECK(entry != NULL, "KDF-KMAC-256 KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving KDF-KMAC-256 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const hmac_kat_data_t *kat_data = (const hmac_kat_data_t *)data;
+  CHECK(kat_data->key_len == 32, "Expected key_len=32, got %u",
+        kat_data->key_len);
+  CHECK(kat_data->msg_len == 4, "Expected msg_len=4, got %u",
+        kat_data->msg_len);
+  CHECK(kat_data->digest_len == 64, "Expected digest_len=64, got %u",
+        kat_data->digest_len);
+
+  const uint8_t *kdk = kat_data->data;
+  const uint8_t *context = kat_data->data + kat_data->key_len;
+  const uint8_t *expected_km =
+      kat_data->data + kat_data->key_len + kat_data->msg_len;
+
+  CHECK_ARRAYS_EQ(kdk, kExpectedKmac256Key, 32);
+  CHECK_ARRAYS_EQ(context, kExpectedKmac256Msg, 4);
+  CHECK_ARRAYS_EQ(expected_km, kExpectedKmac256Digest, 64);
+  LOG_INFO("KDF-KMAC-256 vector payload verified against golden values.");
+
+  LOG_INFO("Executing KDF-KMAC-256 using KMAC hardware accelerator...");
+  CHECK(kmac_kmac256_sw_configure() == kErrorOk,
+        "Failed to configure KMAC for KDF-KMAC-256!");
+
+  uint32_t key_words[8];
+  memcpy(key_words, kdk, sizeof(key_words));
+  CHECK(kmac_kmac256_sw_key(key_words, 8) == kErrorOk,
+        "Failed to load software key into KMAC!");
+
+  const char prefix[] = "My Tagged Application";
+  kmac_kmac256_set_prefix(prefix, sizeof(prefix) - 1);
+
+  CHECK(kmac_kmac256_start() == kErrorOk, "Failed to start KMAC-256!");
+  kmac_kmac256_absorb(context, kat_data->msg_len);
+
+  uint32_t act_digest_words[16];
+  CHECK(kmac_kmac256_final(act_digest_words, 16) == kErrorOk,
+        "Failed to finalize KMAC-256!");
+
+  CHECK_ARRAYS_EQ((const uint8_t *)act_digest_words, expected_km, 64);
+  LOG_INFO("KDF-KMAC-256 Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
 static status_t test_fips_kat_rom(void) {
   // Stop the watchdog timer to prevent timeout during long RSA-4096 OTBN
   // computations.
@@ -872,7 +985,7 @@ static status_t test_fips_kat_rom(void) {
         table->magic);
   CHECK(table->version == kFipsKatDescriptorVersion1,
         "Invalid table version: %u", table->version);
-  CHECK(table->entry_count >= 9, "Expected at least 9 entries, got %u",
+  CHECK(table->entry_count >= 11, "Expected at least 11 entries, got %u",
         table->entry_count);
   LOG_INFO(
       "FIPS KAT table found at %p (magic=0x%08x, version=%u, entries=%u, "
@@ -889,6 +1002,8 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_aes_ecb256_kat(table));
   TRY(test_aes_cbc256_kat(table));
   TRY(test_aes_kwp256_kat(table));
+  TRY(test_kdf_hmac_sha256_kat(table));
+  TRY(test_kdf_kmac256_kat(table));
 
   return OK_STATUS();
 }

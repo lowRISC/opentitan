@@ -49,6 +49,10 @@ typedef enum fips_kat_alg_id {
   kFipsKatAlgAesEcb256Decrypt = 7,
   kFipsKatAlgAesCbc256Decrypt = 8,
   kFipsKatAlgAesKwp256Wrap = 9,
+
+  // Key Derivation (KDF)
+  kFipsKatAlgKdfHmacSha2_256 = 10,
+  kFipsKatAlgKdfKmac256 = 11,
 } fips_kat_alg_id_t;
 
 /**
