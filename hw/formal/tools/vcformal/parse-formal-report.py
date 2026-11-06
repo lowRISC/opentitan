@@ -6,11 +6,34 @@
 import argparse
 import logging as log
 import re
-from pathlib import Path
-from collections import OrderedDict
 import sys
+from collections import OrderedDict
+from pathlib import Path
 
 import hjson
+
+# The parser's directory names its engine in common_formal_cfg.hjson.
+TOOL = Path(__file__).resolve().parent.name
+
+# Reject sections that name no supported engine.
+KNOWN_TOOLS = frozenset(
+    entry.name for entry in Path(__file__).resolve().parent.parent.iterdir()
+    if (entry / Path(__file__).name).is_file())
+
+# common_formal_cfg.hjson treats ERROR-level diagnostics as build failures.
+
+SUMMARY_PATTERNS = [("errors", r"^Error.*"), ("errors", r"^\[Error.*"),
+                    ("warnings", r"^Warning.*"), ("warnings", r"^\[Warning.*"),
+                    ("proven", r"^\d+,assert,proven,.*"),
+                    ("cex", r"^\d+,assert,falsified,.*"),
+                    ("cex", r"^\d+,assert,vacuous,.*"),
+                    ("undetermined", r"^\d+,assert,inconclusive,.*"),
+                    ("covered", r"^\d+,cover,covered,.*"),
+                    ("unreachable", r"^\d+,cover,uncoverable,.*"),
+                    ("undetermined", r"^\d+,cover,inconclusive,.*")]
+
+# Accept only categories counted in the summary.
+WAIVER_CATEGORIES = frozenset(key for key, _ in SUMMARY_PATTERNS)
 
 
 def extract_messages(str_buffer, patterns):
@@ -27,19 +50,131 @@ def extract_messages(str_buffer, patterns):
     return results
 
 
-def extract_messages_count(str_buffer, patterns):
-    '''Extract messages matching patterns from full_file as a dictionary.
+def drop_expected_messages(key, matched, exp_unproven_properties):
+    '''Drop uniquely matched properties and report stale or ambiguous waivers.
 
-    The patterns argument is a list of pairs, (key, pattern). Each pattern is a regex
-    and the total count of all matches in str_buffer are stored in a dictionary under
-    the paired key.
+    Keep stale-entry placeholders separate so later waivers cannot match them.
     '''
-    results = OrderedDict()
+    remaining = list(matched)
+    unmatched = []
+    for unproven_property in exp_unproven_properties:
+        found = [item for item in remaining if unproven_property in item]
+        if not found:
+            log.error(
+                "Expected %s property '%s' is not in the report, so it is counted as a failure. "
+                "The expected-failure file is stale or the name is wrong.",
+                key, unproven_property)
+            unmatched.append("Fail to find this property: " +
+                             unproven_property)
+        elif len(found) > 1:
+            log.error(
+                "Expected %s property '%s' matches %d messages, so it is ambiguous and waives "
+                "none of them. Give the property name in full.", key,
+                unproven_property, len(found))
+        else:
+            remaining.remove(found[0])
+
+    return remaining + unmatched
+
+
+def extract_messages_count(str_buffer, patterns, exp_unproven_properties):
+    '''Count matches by category, then apply each waiver once.'''
+    # Combine patterns first: some statuses share a category.
+    matched = OrderedDict()
     for key, pattern in patterns:
-        results.setdefault(key, 0)
-        results[key] += len(re.findall(pattern, str_buffer, flags=re.MULTILINE))
+        matched.setdefault(key, [])
+        matched[key] += re.findall(pattern, str_buffer, flags=re.MULTILINE)
+
+    results = OrderedDict()
+    for key, messages in matched.items():
+        if exp_unproven_properties and key in exp_unproven_properties:
+            messages = drop_expected_messages(key, messages,
+                                              exp_unproven_properties[key])
+        results[key] = len(messages)
 
     return results
+
+
+def check_waiver_categories(waivers, exp_failure_path):
+    '''Validate category names and property-name lists.'''
+    for category, properties in waivers.items():
+        if category not in WAIVER_CATEGORIES:
+            log.error(
+                "%s names category '%s', which is not one this parser counts. Expected one of "
+                "%s. No property is waived.", exp_failure_path, category,
+                ", ".join(sorted(WAIVER_CATEGORIES)))
+            return {}
+
+        if not isinstance(properties, list) or not all(
+                isinstance(p, str) and p.strip() for p in properties):
+            log.error(
+                "%s category '%s' must hold a list of nonempty property names. "
+                "No property is waived.", exp_failure_path, category)
+            return {}
+
+    return waivers
+
+
+def select_tool_waivers(exp_failures, tool, exp_failure_path):
+    '''Read legacy flat waivers or the section for the selected engine.'''
+    if not isinstance(exp_failures, dict):
+        log.error(
+            "%s must contain a mapping of categories or engine sections. "
+            "No property is waived.", exp_failure_path)
+        return {}
+
+    if not exp_failures:
+        return {}
+
+    values = list(exp_failures.values())
+    if all(isinstance(value, list) for value in values):
+        return check_waiver_categories(exp_failures, exp_failure_path)
+
+    if all(isinstance(value, dict) for value in values):
+        unknown = sorted(set(exp_failures) - KNOWN_TOOLS)
+        if unknown:
+            log.error(
+                "%s has section(s) %s, which name no engine with a parser. Expected one of %s. "
+                "No property is waived.", exp_failure_path, ", ".join(unknown),
+                ", ".join(sorted(KNOWN_TOOLS)))
+            return {}
+
+        waivers = exp_failures.get(tool)
+        if waivers is None:
+            log.info(
+                "%s has no %s section, so no property is waived for this engine.",
+                exp_failure_path, tool)
+            return {}
+        return check_waiver_categories(waivers, exp_failure_path)
+
+    log.error(
+        "%s mixes per-tool sections with bare categories, so it cannot be read. "
+        "No property is waived.", exp_failure_path)
+    return {}
+
+
+def get_expected_failures(exp_failure_path, tool):
+    '''Read expected failures, reporting invalid files without waiving anything.'''
+    if not exp_failure_path:
+        return {}
+
+    try:
+        with Path(exp_failure_path).open() as f:
+            exp_failures = hjson.load(f,
+                                      use_decimal=True,
+                                      object_pairs_hook=OrderedDict)
+    except OSError as err:
+        log.error(
+            "Cannot read the expected-failure file %s: %s. No property is waived.",
+            exp_failure_path, err)
+        return {}
+    except ValueError as err:
+        log.error(
+            "Cannot parse the expected-failure file %s: %s. No property is waived.",
+            exp_failure_path, err)
+        return {}
+
+    return select_tool_waivers(exp_failures, tool, exp_failure_path)
 
 
 def format_percentage(good, bad):
@@ -64,20 +199,10 @@ def parse_message(str_buffer):
     return extract_messages(str_buffer, err_warn_patterns)
 
 
-def get_summary(str_buffer):
+def get_summary(str_buffer, exp_failures):
     '''Count errors, warnings, and property status from the log file'''
-    message_patterns = [("errors", r"^Error.*"),
-                        ("errors", r"^\[Error.*"),
-                        ("warnings", r"^Warning.*"),
-                        ("warnings", r"^\[Warning.*"),
-                        ("proven", r"^\d+,assert,proven,.*"),
-                        ("cex", r"^\d+,assert,falsified,.*"),
-                        ("cex", r"^\d+,assert,vacuous,.*"),
-                        ("undetermined", r"^\d+,assert,inconclusive,.*"),
-                        ("covered", r"^\d+,cover,covered,.*"),
-                        ("unreachable", r"^\d+,cover,uncoverable,.*"),
-                        ("undetermined", r"^\d+,cover,inconclusive,.*")]
-    summary = extract_messages_count(str_buffer, message_patterns)
+    summary = extract_messages_count(str_buffer, SUMMARY_PATTERNS,
+                                     exp_failures)
 
     summary["pass_rate"] = format_percentage(summary["proven"],
                                              summary["cex"] + summary["undetermined"])
@@ -87,14 +212,16 @@ def get_summary(str_buffer):
     return summary
 
 
-def get_results(logpath):
+def get_results(logpath, exp_failure_path):
     '''Parse log file and extract info to a dictionary'''
     try:
         with Path(logpath).open() as f:
             results = OrderedDict()
             full_file = f.read()
             results["messages"] = parse_message(full_file)
-            summary = get_summary(full_file)
+            results["exp_failures"] = get_expected_failures(
+                exp_failure_path, TOOL)
+            summary = get_summary(full_file, results["exp_failures"])
             if summary:
                 results["summary"] = summary
             return results
@@ -190,9 +317,18 @@ def main():
                         default=None,
                         help=('Tesbench name. '
                               'By default is empty, used for coverage parsing.'))
+    parser.add_argument(
+        '--exp-fail-path',
+        type=str,
+        default=None,
+        help=(
+            'Path to an expected-failure Hjson file. Categories can be at the '
+            'top level (all engines) or under engine-name sections. '
+            'An empty path applies no waivers.'))
+
     args = parser.parse_args()
 
-    results = get_results(args.logpath)
+    results = get_results(args.logpath, args.exp_fail_path)
 
     if args.cov:
         results["coverage"] = get_cov_results(args.logpath, args.dut)
