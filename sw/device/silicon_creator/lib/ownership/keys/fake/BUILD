@@ -7,6 +7,14 @@ load("@rules_pkg//pkg:mappings.bzl", "pkg_filegroup", "pkg_files")
 
 package(default_visibility = ["//visibility:public"])
 
+filegroup(
+    name = "all_keys",
+    srcs = glob([
+        "*.der",
+        "*.pem",
+    ]),
+)
+
 cc_library(
     name = "includes",
     testonly = True,
