@@ -20,7 +20,7 @@ The ENTROPY_SRC block will then start to collect entropy bits indefinitely until
 
 After a reset, the ENTROPY_SRC block will start up in boot-time / bypass mode by default.
 This feature is designed to provide an initial seed's worth of entropy with lower latency than the normal FIPS/CC compliant health check process.
-Health testing will still be performed on boot-time mode entropy, but the window of checking is, by default, 384 bits instead of 2048 bits.
+Health testing will still be performed on boot-time mode entropy, but the window of checking is, by default, 384 bits instead of 512 symbols (2048 bits for a symbol size of 4 bits).
 
 ### FIPS/CC Compliant Mode
 
