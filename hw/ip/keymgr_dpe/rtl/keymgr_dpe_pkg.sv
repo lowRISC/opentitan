@@ -35,6 +35,12 @@ package keymgr_dpe_pkg;
   // The max width here is chosen arbitrarily to ensure we do not get out of hand.
   // Since KMAC is a MAC operation, the data can be as long as we need.
   parameter int KDFMaxWidth           = 1984;
+  // KDF engine selection
+  typedef enum logic [1:0] {
+    KdfEngineKmac = 0,
+    KdfEngineOtbn = 1,
+    KdfEngineBoth = 2
+  } kdf_engine_sel_e;
 
 
   /////////////////////////////////////
