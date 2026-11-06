@@ -18,4 +18,7 @@ ENGLISHBREAKFAST = opentitan_top(
     secret_cfgs = {
         "testing": "//hw/top_englishbreakfast/data/autogen:top_englishbreakfast.secrets.testing.gen.hjson",
     },
+    platforms = {
+        "default": "//hw/top_englishbreakfast:platform",
+    },
 )
