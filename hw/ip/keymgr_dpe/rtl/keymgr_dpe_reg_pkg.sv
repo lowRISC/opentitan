@@ -9,7 +9,7 @@ package keymgr_dpe_reg_pkg;
   // Param list
   parameter int NumSaltReg = 8;
   parameter int NumSwBindingReg = 8;
-  parameter int NumOutReg = 8;
+  parameter int NumOutReg = 12;
   parameter int NumKeyVersion = 1;
   parameter int NumMaxHwSlot = 8;
   parameter int NumAlerts = 2;
@@ -18,7 +18,7 @@ package keymgr_dpe_reg_pkg;
   parameter int BlockAw = 9;
 
   // Number of registers for every interface
-  parameter int NumRegs = 74;
+  parameter int NumRegs = 82;
 
   // Alert indices
   typedef enum int {
@@ -410,14 +410,14 @@ package keymgr_dpe_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    keymgr_dpe_hw2reg_intr_state_reg_t intr_state; // [917:916]
-    keymgr_dpe_hw2reg_cfg_regwen_reg_t cfg_regwen; // [915:915]
-    keymgr_dpe_hw2reg_start_reg_t start; // [914:913]
-    keymgr_dpe_hw2reg_slot_policy_regwen_reg_t slot_policy_regwen; // [912:912]
-    keymgr_dpe_hw2reg_sw_binding_regwen_reg_t sw_binding_regwen; // [911:911]
-    keymgr_dpe_hw2reg_max_key_ver_regwen_reg_t max_key_ver_regwen; // [910:910]
-    keymgr_dpe_hw2reg_sw_share0_output_mreg_t [7:0] sw_share0_output; // [909:646]
-    keymgr_dpe_hw2reg_sw_share1_output_mreg_t [7:0] sw_share1_output; // [645:382]
+    keymgr_dpe_hw2reg_intr_state_reg_t intr_state; // [1181:1180]
+    keymgr_dpe_hw2reg_cfg_regwen_reg_t cfg_regwen; // [1179:1179]
+    keymgr_dpe_hw2reg_start_reg_t start; // [1178:1177]
+    keymgr_dpe_hw2reg_slot_policy_regwen_reg_t slot_policy_regwen; // [1176:1176]
+    keymgr_dpe_hw2reg_sw_binding_regwen_reg_t sw_binding_regwen; // [1175:1175]
+    keymgr_dpe_hw2reg_max_key_ver_regwen_reg_t max_key_ver_regwen; // [1174:1174]
+    keymgr_dpe_hw2reg_sw_share0_output_mreg_t [11:0] sw_share0_output; // [1173:778]
+    keymgr_dpe_hw2reg_sw_share1_output_mreg_t [11:0] sw_share1_output; // [777:382]
     keymgr_dpe_hw2reg_working_state_reg_t working_state; // [381:379]
     keymgr_dpe_hw2reg_op_status_reg_t op_status; // [378:376]
     keymgr_dpe_hw2reg_metadata_low_mreg_t [7:0] metadata_low; // [375:120]
@@ -470,38 +470,46 @@ package keymgr_dpe_reg_pkg;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE0_OUTPUT_5_OFFSET = 9'h 9c;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE0_OUTPUT_6_OFFSET = 9'h a0;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE0_OUTPUT_7_OFFSET = 9'h a4;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_0_OFFSET = 9'h a8;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_1_OFFSET = 9'h ac;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_2_OFFSET = 9'h b0;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_3_OFFSET = 9'h b4;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_4_OFFSET = 9'h b8;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_5_OFFSET = 9'h bc;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_6_OFFSET = 9'h c0;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_7_OFFSET = 9'h c4;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_WORKING_STATE_OFFSET = 9'h c8;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_OP_STATUS_OFFSET = 9'h cc;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_0_OFFSET = 9'h d0;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_1_OFFSET = 9'h d4;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_2_OFFSET = 9'h d8;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_3_OFFSET = 9'h dc;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_4_OFFSET = 9'h e0;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_5_OFFSET = 9'h e4;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_6_OFFSET = 9'h e8;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_7_OFFSET = 9'h ec;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_0_OFFSET = 9'h f0;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_1_OFFSET = 9'h f4;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_2_OFFSET = 9'h f8;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_3_OFFSET = 9'h fc;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_4_OFFSET = 9'h 100;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_5_OFFSET = 9'h 104;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_6_OFFSET = 9'h 108;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_7_OFFSET = 9'h 10c;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_ERR_CODE_OFFSET = 9'h 110;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_FAULT_STATUS_OFFSET = 9'h 114;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_DEBUG_OFFSET = 9'h 118;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_OFFSET = 9'h 11c;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_LOAD_SECONDARY_ROOT_KEY_LOCK_OFFSET = 9'h 120;
-  parameter logic [BlockAw-1:0] KEYMGR_DPE_ENFORCE_SW_BINDING_OFFSET = 9'h 124;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE0_OUTPUT_8_OFFSET = 9'h a8;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE0_OUTPUT_9_OFFSET = 9'h ac;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE0_OUTPUT_10_OFFSET = 9'h b0;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE0_OUTPUT_11_OFFSET = 9'h b4;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_0_OFFSET = 9'h b8;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_1_OFFSET = 9'h bc;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_2_OFFSET = 9'h c0;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_3_OFFSET = 9'h c4;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_4_OFFSET = 9'h c8;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_5_OFFSET = 9'h cc;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_6_OFFSET = 9'h d0;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_7_OFFSET = 9'h d4;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_8_OFFSET = 9'h d8;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_9_OFFSET = 9'h dc;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_10_OFFSET = 9'h e0;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_SW_SHARE1_OUTPUT_11_OFFSET = 9'h e4;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_WORKING_STATE_OFFSET = 9'h e8;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_OP_STATUS_OFFSET = 9'h ec;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_0_OFFSET = 9'h f0;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_1_OFFSET = 9'h f4;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_2_OFFSET = 9'h f8;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_3_OFFSET = 9'h fc;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_4_OFFSET = 9'h 100;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_5_OFFSET = 9'h 104;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_6_OFFSET = 9'h 108;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_LOW_7_OFFSET = 9'h 10c;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_0_OFFSET = 9'h 110;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_1_OFFSET = 9'h 114;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_2_OFFSET = 9'h 118;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_3_OFFSET = 9'h 11c;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_4_OFFSET = 9'h 120;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_5_OFFSET = 9'h 124;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_6_OFFSET = 9'h 128;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_HIGH_7_OFFSET = 9'h 12c;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_ERR_CODE_OFFSET = 9'h 130;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_FAULT_STATUS_OFFSET = 9'h 134;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_DEBUG_OFFSET = 9'h 138;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_OFFSET = 9'h 13c;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_LOAD_SECONDARY_ROOT_KEY_LOCK_OFFSET = 9'h 140;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_ENFORCE_SW_BINDING_OFFSET = 9'h 144;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] KEYMGR_DPE_INTR_TEST_RESVAL = 1'h 0;
@@ -635,6 +643,10 @@ package keymgr_dpe_reg_pkg;
     KEYMGR_DPE_SW_SHARE0_OUTPUT_5,
     KEYMGR_DPE_SW_SHARE0_OUTPUT_6,
     KEYMGR_DPE_SW_SHARE0_OUTPUT_7,
+    KEYMGR_DPE_SW_SHARE0_OUTPUT_8,
+    KEYMGR_DPE_SW_SHARE0_OUTPUT_9,
+    KEYMGR_DPE_SW_SHARE0_OUTPUT_10,
+    KEYMGR_DPE_SW_SHARE0_OUTPUT_11,
     KEYMGR_DPE_SW_SHARE1_OUTPUT_0,
     KEYMGR_DPE_SW_SHARE1_OUTPUT_1,
     KEYMGR_DPE_SW_SHARE1_OUTPUT_2,
@@ -643,6 +655,10 @@ package keymgr_dpe_reg_pkg;
     KEYMGR_DPE_SW_SHARE1_OUTPUT_5,
     KEYMGR_DPE_SW_SHARE1_OUTPUT_6,
     KEYMGR_DPE_SW_SHARE1_OUTPUT_7,
+    KEYMGR_DPE_SW_SHARE1_OUTPUT_8,
+    KEYMGR_DPE_SW_SHARE1_OUTPUT_9,
+    KEYMGR_DPE_SW_SHARE1_OUTPUT_10,
+    KEYMGR_DPE_SW_SHARE1_OUTPUT_11,
     KEYMGR_DPE_WORKING_STATE,
     KEYMGR_DPE_OP_STATUS,
     KEYMGR_DPE_METADATA_LOW_0,
@@ -670,7 +686,7 @@ package keymgr_dpe_reg_pkg;
   } keymgr_dpe_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] KEYMGR_DPE_PERMIT [74] = '{
+  parameter logic [3:0] KEYMGR_DPE_PERMIT [82] = '{
     4'b 0001, // index[ 0] KEYMGR_DPE_INTR_STATE
     4'b 0001, // index[ 1] KEYMGR_DPE_INTR_ENABLE
     4'b 0001, // index[ 2] KEYMGR_DPE_INTR_TEST
@@ -713,38 +729,46 @@ package keymgr_dpe_reg_pkg;
     4'b 1111, // index[39] KEYMGR_DPE_SW_SHARE0_OUTPUT_5
     4'b 1111, // index[40] KEYMGR_DPE_SW_SHARE0_OUTPUT_6
     4'b 1111, // index[41] KEYMGR_DPE_SW_SHARE0_OUTPUT_7
-    4'b 1111, // index[42] KEYMGR_DPE_SW_SHARE1_OUTPUT_0
-    4'b 1111, // index[43] KEYMGR_DPE_SW_SHARE1_OUTPUT_1
-    4'b 1111, // index[44] KEYMGR_DPE_SW_SHARE1_OUTPUT_2
-    4'b 1111, // index[45] KEYMGR_DPE_SW_SHARE1_OUTPUT_3
-    4'b 1111, // index[46] KEYMGR_DPE_SW_SHARE1_OUTPUT_4
-    4'b 1111, // index[47] KEYMGR_DPE_SW_SHARE1_OUTPUT_5
-    4'b 1111, // index[48] KEYMGR_DPE_SW_SHARE1_OUTPUT_6
-    4'b 1111, // index[49] KEYMGR_DPE_SW_SHARE1_OUTPUT_7
-    4'b 0001, // index[50] KEYMGR_DPE_WORKING_STATE
-    4'b 0001, // index[51] KEYMGR_DPE_OP_STATUS
-    4'b 1111, // index[52] KEYMGR_DPE_METADATA_LOW_0
-    4'b 1111, // index[53] KEYMGR_DPE_METADATA_LOW_1
-    4'b 1111, // index[54] KEYMGR_DPE_METADATA_LOW_2
-    4'b 1111, // index[55] KEYMGR_DPE_METADATA_LOW_3
-    4'b 1111, // index[56] KEYMGR_DPE_METADATA_LOW_4
-    4'b 1111, // index[57] KEYMGR_DPE_METADATA_LOW_5
-    4'b 1111, // index[58] KEYMGR_DPE_METADATA_LOW_6
-    4'b 1111, // index[59] KEYMGR_DPE_METADATA_LOW_7
-    4'b 0001, // index[60] KEYMGR_DPE_METADATA_HIGH_0
-    4'b 0001, // index[61] KEYMGR_DPE_METADATA_HIGH_1
-    4'b 0001, // index[62] KEYMGR_DPE_METADATA_HIGH_2
-    4'b 0001, // index[63] KEYMGR_DPE_METADATA_HIGH_3
-    4'b 0001, // index[64] KEYMGR_DPE_METADATA_HIGH_4
-    4'b 0001, // index[65] KEYMGR_DPE_METADATA_HIGH_5
-    4'b 0001, // index[66] KEYMGR_DPE_METADATA_HIGH_6
-    4'b 0001, // index[67] KEYMGR_DPE_METADATA_HIGH_7
-    4'b 0001, // index[68] KEYMGR_DPE_ERR_CODE
-    4'b 0011, // index[69] KEYMGR_DPE_FAULT_STATUS
-    4'b 0011, // index[70] KEYMGR_DPE_DEBUG
-    4'b 0001, // index[71] KEYMGR_DPE_LOAD_ROOT_KEY_LOCK
-    4'b 0001, // index[72] KEYMGR_DPE_LOAD_SECONDARY_ROOT_KEY_LOCK
-    4'b 0001  // index[73] KEYMGR_DPE_ENFORCE_SW_BINDING
+    4'b 1111, // index[42] KEYMGR_DPE_SW_SHARE0_OUTPUT_8
+    4'b 1111, // index[43] KEYMGR_DPE_SW_SHARE0_OUTPUT_9
+    4'b 1111, // index[44] KEYMGR_DPE_SW_SHARE0_OUTPUT_10
+    4'b 1111, // index[45] KEYMGR_DPE_SW_SHARE0_OUTPUT_11
+    4'b 1111, // index[46] KEYMGR_DPE_SW_SHARE1_OUTPUT_0
+    4'b 1111, // index[47] KEYMGR_DPE_SW_SHARE1_OUTPUT_1
+    4'b 1111, // index[48] KEYMGR_DPE_SW_SHARE1_OUTPUT_2
+    4'b 1111, // index[49] KEYMGR_DPE_SW_SHARE1_OUTPUT_3
+    4'b 1111, // index[50] KEYMGR_DPE_SW_SHARE1_OUTPUT_4
+    4'b 1111, // index[51] KEYMGR_DPE_SW_SHARE1_OUTPUT_5
+    4'b 1111, // index[52] KEYMGR_DPE_SW_SHARE1_OUTPUT_6
+    4'b 1111, // index[53] KEYMGR_DPE_SW_SHARE1_OUTPUT_7
+    4'b 1111, // index[54] KEYMGR_DPE_SW_SHARE1_OUTPUT_8
+    4'b 1111, // index[55] KEYMGR_DPE_SW_SHARE1_OUTPUT_9
+    4'b 1111, // index[56] KEYMGR_DPE_SW_SHARE1_OUTPUT_10
+    4'b 1111, // index[57] KEYMGR_DPE_SW_SHARE1_OUTPUT_11
+    4'b 0001, // index[58] KEYMGR_DPE_WORKING_STATE
+    4'b 0001, // index[59] KEYMGR_DPE_OP_STATUS
+    4'b 1111, // index[60] KEYMGR_DPE_METADATA_LOW_0
+    4'b 1111, // index[61] KEYMGR_DPE_METADATA_LOW_1
+    4'b 1111, // index[62] KEYMGR_DPE_METADATA_LOW_2
+    4'b 1111, // index[63] KEYMGR_DPE_METADATA_LOW_3
+    4'b 1111, // index[64] KEYMGR_DPE_METADATA_LOW_4
+    4'b 1111, // index[65] KEYMGR_DPE_METADATA_LOW_5
+    4'b 1111, // index[66] KEYMGR_DPE_METADATA_LOW_6
+    4'b 1111, // index[67] KEYMGR_DPE_METADATA_LOW_7
+    4'b 0001, // index[68] KEYMGR_DPE_METADATA_HIGH_0
+    4'b 0001, // index[69] KEYMGR_DPE_METADATA_HIGH_1
+    4'b 0001, // index[70] KEYMGR_DPE_METADATA_HIGH_2
+    4'b 0001, // index[71] KEYMGR_DPE_METADATA_HIGH_3
+    4'b 0001, // index[72] KEYMGR_DPE_METADATA_HIGH_4
+    4'b 0001, // index[73] KEYMGR_DPE_METADATA_HIGH_5
+    4'b 0001, // index[74] KEYMGR_DPE_METADATA_HIGH_6
+    4'b 0001, // index[75] KEYMGR_DPE_METADATA_HIGH_7
+    4'b 0001, // index[76] KEYMGR_DPE_ERR_CODE
+    4'b 0011, // index[77] KEYMGR_DPE_FAULT_STATUS
+    4'b 0011, // index[78] KEYMGR_DPE_DEBUG
+    4'b 0001, // index[79] KEYMGR_DPE_LOAD_ROOT_KEY_LOCK
+    4'b 0001, // index[80] KEYMGR_DPE_LOAD_SECONDARY_ROOT_KEY_LOCK
+    4'b 0001  // index[81] KEYMGR_DPE_ENFORCE_SW_BINDING
   };
 
 endpackage

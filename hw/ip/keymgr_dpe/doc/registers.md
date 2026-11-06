@@ -47,38 +47,46 @@
 | keymgr_dpe.[`SW_SHARE0_OUTPUT_5`](#sw_share0_output)                       | 0x9c     |        4 | Key manager software output.                                                                                      |
 | keymgr_dpe.[`SW_SHARE0_OUTPUT_6`](#sw_share0_output)                       | 0xa0     |        4 | Key manager software output.                                                                                      |
 | keymgr_dpe.[`SW_SHARE0_OUTPUT_7`](#sw_share0_output)                       | 0xa4     |        4 | Key manager software output.                                                                                      |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_0`](#sw_share1_output)                       | 0xa8     |        4 | Key manager software output.                                                                                      |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_1`](#sw_share1_output)                       | 0xac     |        4 | Key manager software output.                                                                                      |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_2`](#sw_share1_output)                       | 0xb0     |        4 | Key manager software output.                                                                                      |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_3`](#sw_share1_output)                       | 0xb4     |        4 | Key manager software output.                                                                                      |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_4`](#sw_share1_output)                       | 0xb8     |        4 | Key manager software output.                                                                                      |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_5`](#sw_share1_output)                       | 0xbc     |        4 | Key manager software output.                                                                                      |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_6`](#sw_share1_output)                       | 0xc0     |        4 | Key manager software output.                                                                                      |
-| keymgr_dpe.[`SW_SHARE1_OUTPUT_7`](#sw_share1_output)                       | 0xc4     |        4 | Key manager software output.                                                                                      |
-| keymgr_dpe.[`WORKING_STATE`](#working_state)                               | 0xc8     |        4 | Key manager working state.                                                                                        |
-| keymgr_dpe.[`OP_STATUS`](#op_status)                                       | 0xcc     |        4 | Key manager status.                                                                                               |
-| keymgr_dpe.[`METADATA_LOW_0`](#metadata_low)                               | 0xd0     |        4 | Read metadata (low word) for each HW slot.                                                                        |
-| keymgr_dpe.[`METADATA_LOW_1`](#metadata_low)                               | 0xd4     |        4 | Read metadata (low word) for each HW slot.                                                                        |
-| keymgr_dpe.[`METADATA_LOW_2`](#metadata_low)                               | 0xd8     |        4 | Read metadata (low word) for each HW slot.                                                                        |
-| keymgr_dpe.[`METADATA_LOW_3`](#metadata_low)                               | 0xdc     |        4 | Read metadata (low word) for each HW slot.                                                                        |
-| keymgr_dpe.[`METADATA_LOW_4`](#metadata_low)                               | 0xe0     |        4 | Read metadata (low word) for each HW slot.                                                                        |
-| keymgr_dpe.[`METADATA_LOW_5`](#metadata_low)                               | 0xe4     |        4 | Read metadata (low word) for each HW slot.                                                                        |
-| keymgr_dpe.[`METADATA_LOW_6`](#metadata_low)                               | 0xe8     |        4 | Read metadata (low word) for each HW slot.                                                                        |
-| keymgr_dpe.[`METADATA_LOW_7`](#metadata_low)                               | 0xec     |        4 | Read metadata (low word) for each HW slot.                                                                        |
-| keymgr_dpe.[`METADATA_HIGH_0`](#metadata_high)                             | 0xf0     |        4 | Read metadata (high word) for each HW slot.                                                                       |
-| keymgr_dpe.[`METADATA_HIGH_1`](#metadata_high)                             | 0xf4     |        4 | Read metadata (high word) for each HW slot.                                                                       |
-| keymgr_dpe.[`METADATA_HIGH_2`](#metadata_high)                             | 0xf8     |        4 | Read metadata (high word) for each HW slot.                                                                       |
-| keymgr_dpe.[`METADATA_HIGH_3`](#metadata_high)                             | 0xfc     |        4 | Read metadata (high word) for each HW slot.                                                                       |
-| keymgr_dpe.[`METADATA_HIGH_4`](#metadata_high)                             | 0x100    |        4 | Read metadata (high word) for each HW slot.                                                                       |
-| keymgr_dpe.[`METADATA_HIGH_5`](#metadata_high)                             | 0x104    |        4 | Read metadata (high word) for each HW slot.                                                                       |
-| keymgr_dpe.[`METADATA_HIGH_6`](#metadata_high)                             | 0x108    |        4 | Read metadata (high word) for each HW slot.                                                                       |
-| keymgr_dpe.[`METADATA_HIGH_7`](#metadata_high)                             | 0x10c    |        4 | Read metadata (high word) for each HW slot.                                                                       |
-| keymgr_dpe.[`ERR_CODE`](#err_code)                                         | 0x110    |        4 | Key manager error code.                                                                                           |
-| keymgr_dpe.[`FAULT_STATUS`](#fault_status)                                 | 0x114    |        4 | This register represents both synchronous and asynchronous fatal faults.                                          |
-| keymgr_dpe.[`DEBUG`](#debug)                                               | 0x118    |        4 | The register holds some debug information that may be convenient if keymgr                                        |
-| keymgr_dpe.[`LOAD_ROOT_KEY_LOCK`](#load_root_key_lock)                     | 0x11c    |        4 | Register lock for the `load root key` operation, see [`CONTROL_SHADOWED.OPERATION.`](#control_shadowed)           |
-| keymgr_dpe.[`LOAD_SECONDARY_ROOT_KEY_LOCK`](#load_secondary_root_key_lock) | 0x120    |        4 | Register lock for the `load secondary root key` operation, see [`CONTROL_SHADOWED.OPERATION.`](#control_shadowed) |
-| keymgr_dpe.[`ENFORCE_SW_BINDING`](#enforce_sw_binding)                     | 0x124    |        4 | Enforce the software binding value as the only advance input message until the next reset                         |
+| keymgr_dpe.[`SW_SHARE0_OUTPUT_8`](#sw_share0_output)                       | 0xa8     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`SW_SHARE0_OUTPUT_9`](#sw_share0_output)                       | 0xac     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`SW_SHARE0_OUTPUT_10`](#sw_share0_output)                      | 0xb0     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`SW_SHARE0_OUTPUT_11`](#sw_share0_output)                      | 0xb4     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_0`](#sw_share1_output)                       | 0xb8     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_1`](#sw_share1_output)                       | 0xbc     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_2`](#sw_share1_output)                       | 0xc0     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_3`](#sw_share1_output)                       | 0xc4     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_4`](#sw_share1_output)                       | 0xc8     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_5`](#sw_share1_output)                       | 0xcc     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_6`](#sw_share1_output)                       | 0xd0     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_7`](#sw_share1_output)                       | 0xd4     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_8`](#sw_share1_output)                       | 0xd8     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_9`](#sw_share1_output)                       | 0xdc     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_10`](#sw_share1_output)                      | 0xe0     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`SW_SHARE1_OUTPUT_11`](#sw_share1_output)                      | 0xe4     |        4 | Key manager software output.                                                                                      |
+| keymgr_dpe.[`WORKING_STATE`](#working_state)                               | 0xe8     |        4 | Key manager working state.                                                                                        |
+| keymgr_dpe.[`OP_STATUS`](#op_status)                                       | 0xec     |        4 | Key manager status.                                                                                               |
+| keymgr_dpe.[`METADATA_LOW_0`](#metadata_low)                               | 0xf0     |        4 | Read metadata (low word) for each HW slot.                                                                        |
+| keymgr_dpe.[`METADATA_LOW_1`](#metadata_low)                               | 0xf4     |        4 | Read metadata (low word) for each HW slot.                                                                        |
+| keymgr_dpe.[`METADATA_LOW_2`](#metadata_low)                               | 0xf8     |        4 | Read metadata (low word) for each HW slot.                                                                        |
+| keymgr_dpe.[`METADATA_LOW_3`](#metadata_low)                               | 0xfc     |        4 | Read metadata (low word) for each HW slot.                                                                        |
+| keymgr_dpe.[`METADATA_LOW_4`](#metadata_low)                               | 0x100    |        4 | Read metadata (low word) for each HW slot.                                                                        |
+| keymgr_dpe.[`METADATA_LOW_5`](#metadata_low)                               | 0x104    |        4 | Read metadata (low word) for each HW slot.                                                                        |
+| keymgr_dpe.[`METADATA_LOW_6`](#metadata_low)                               | 0x108    |        4 | Read metadata (low word) for each HW slot.                                                                        |
+| keymgr_dpe.[`METADATA_LOW_7`](#metadata_low)                               | 0x10c    |        4 | Read metadata (low word) for each HW slot.                                                                        |
+| keymgr_dpe.[`METADATA_HIGH_0`](#metadata_high)                             | 0x110    |        4 | Read metadata (high word) for each HW slot.                                                                       |
+| keymgr_dpe.[`METADATA_HIGH_1`](#metadata_high)                             | 0x114    |        4 | Read metadata (high word) for each HW slot.                                                                       |
+| keymgr_dpe.[`METADATA_HIGH_2`](#metadata_high)                             | 0x118    |        4 | Read metadata (high word) for each HW slot.                                                                       |
+| keymgr_dpe.[`METADATA_HIGH_3`](#metadata_high)                             | 0x11c    |        4 | Read metadata (high word) for each HW slot.                                                                       |
+| keymgr_dpe.[`METADATA_HIGH_4`](#metadata_high)                             | 0x120    |        4 | Read metadata (high word) for each HW slot.                                                                       |
+| keymgr_dpe.[`METADATA_HIGH_5`](#metadata_high)                             | 0x124    |        4 | Read metadata (high word) for each HW slot.                                                                       |
+| keymgr_dpe.[`METADATA_HIGH_6`](#metadata_high)                             | 0x128    |        4 | Read metadata (high word) for each HW slot.                                                                       |
+| keymgr_dpe.[`METADATA_HIGH_7`](#metadata_high)                             | 0x12c    |        4 | Read metadata (high word) for each HW slot.                                                                       |
+| keymgr_dpe.[`ERR_CODE`](#err_code)                                         | 0x130    |        4 | Key manager error code.                                                                                           |
+| keymgr_dpe.[`FAULT_STATUS`](#fault_status)                                 | 0x134    |        4 | This register represents both synchronous and asynchronous fatal faults.                                          |
+| keymgr_dpe.[`DEBUG`](#debug)                                               | 0x138    |        4 | The register holds some debug information that may be convenient if keymgr                                        |
+| keymgr_dpe.[`LOAD_ROOT_KEY_LOCK`](#load_root_key_lock)                     | 0x13c    |        4 | Register lock for the `load root key` operation, see [`CONTROL_SHADOWED.OPERATION.`](#control_shadowed)           |
+| keymgr_dpe.[`LOAD_SECONDARY_ROOT_KEY_LOCK`](#load_secondary_root_key_lock) | 0x140    |        4 | Register lock for the `load secondary root key` operation, see [`CONTROL_SHADOWED.OPERATION.`](#control_shadowed) |
+| keymgr_dpe.[`ENFORCE_SW_BINDING`](#enforce_sw_binding)                     | 0x144    |        4 | Enforce the software binding value as the only advance input message until the next reset                         |
 
 ## INTR_STATE
 Interrupt State Register
@@ -565,16 +573,20 @@ here.
 
 ### Instances
 
-| Name               | Offset   |
-|:-------------------|:---------|
-| SW_SHARE0_OUTPUT_0 | 0x88     |
-| SW_SHARE0_OUTPUT_1 | 0x8c     |
-| SW_SHARE0_OUTPUT_2 | 0x90     |
-| SW_SHARE0_OUTPUT_3 | 0x94     |
-| SW_SHARE0_OUTPUT_4 | 0x98     |
-| SW_SHARE0_OUTPUT_5 | 0x9c     |
-| SW_SHARE0_OUTPUT_6 | 0xa0     |
-| SW_SHARE0_OUTPUT_7 | 0xa4     |
+| Name                | Offset   |
+|:--------------------|:---------|
+| SW_SHARE0_OUTPUT_0  | 0x88     |
+| SW_SHARE0_OUTPUT_1  | 0x8c     |
+| SW_SHARE0_OUTPUT_2  | 0x90     |
+| SW_SHARE0_OUTPUT_3  | 0x94     |
+| SW_SHARE0_OUTPUT_4  | 0x98     |
+| SW_SHARE0_OUTPUT_5  | 0x9c     |
+| SW_SHARE0_OUTPUT_6  | 0xa0     |
+| SW_SHARE0_OUTPUT_7  | 0xa4     |
+| SW_SHARE0_OUTPUT_8  | 0xa8     |
+| SW_SHARE0_OUTPUT_9  | 0xac     |
+| SW_SHARE0_OUTPUT_10 | 0xb0     |
+| SW_SHARE0_OUTPUT_11 | 0xb4     |
 
 
 ### Fields
@@ -597,16 +609,20 @@ here.
 
 ### Instances
 
-| Name               | Offset   |
-|:-------------------|:---------|
-| SW_SHARE1_OUTPUT_0 | 0xa8     |
-| SW_SHARE1_OUTPUT_1 | 0xac     |
-| SW_SHARE1_OUTPUT_2 | 0xb0     |
-| SW_SHARE1_OUTPUT_3 | 0xb4     |
-| SW_SHARE1_OUTPUT_4 | 0xb8     |
-| SW_SHARE1_OUTPUT_5 | 0xbc     |
-| SW_SHARE1_OUTPUT_6 | 0xc0     |
-| SW_SHARE1_OUTPUT_7 | 0xc4     |
+| Name                | Offset   |
+|:--------------------|:---------|
+| SW_SHARE1_OUTPUT_0  | 0xb8     |
+| SW_SHARE1_OUTPUT_1  | 0xbc     |
+| SW_SHARE1_OUTPUT_2  | 0xc0     |
+| SW_SHARE1_OUTPUT_3  | 0xc4     |
+| SW_SHARE1_OUTPUT_4  | 0xc8     |
+| SW_SHARE1_OUTPUT_5  | 0xcc     |
+| SW_SHARE1_OUTPUT_6  | 0xd0     |
+| SW_SHARE1_OUTPUT_7  | 0xd4     |
+| SW_SHARE1_OUTPUT_8  | 0xd8     |
+| SW_SHARE1_OUTPUT_9  | 0xdc     |
+| SW_SHARE1_OUTPUT_10 | 0xe0     |
+| SW_SHARE1_OUTPUT_11 | 0xe4     |
 
 
 ### Fields
@@ -623,7 +639,7 @@ here.
 Key manager working state.
 
 This is a readout of the current key manager working state
-- Offset: `0xc8`
+- Offset: `0xe8`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -655,7 +671,7 @@ Key manager status.
 Hardware sets the status based on software initiated operations.
 This register must be explicitly cleared by software.
 Software clears by writing back whatever it reads.
-- Offset: `0xcc`
+- Offset: `0xec`
 - Reset default: `0x0`
 - Reset mask: `0x3`
 
@@ -695,14 +711,14 @@ metadata of the DPE context.
 
 | Name           | Offset   |
 |:---------------|:---------|
-| METADATA_LOW_0 | 0xd0     |
-| METADATA_LOW_1 | 0xd4     |
-| METADATA_LOW_2 | 0xd8     |
-| METADATA_LOW_3 | 0xdc     |
-| METADATA_LOW_4 | 0xe0     |
-| METADATA_LOW_5 | 0xe4     |
-| METADATA_LOW_6 | 0xe8     |
-| METADATA_LOW_7 | 0xec     |
+| METADATA_LOW_0 | 0xf0     |
+| METADATA_LOW_1 | 0xf4     |
+| METADATA_LOW_2 | 0xf8     |
+| METADATA_LOW_3 | 0xfc     |
+| METADATA_LOW_4 | 0x100    |
+| METADATA_LOW_5 | 0x104    |
+| METADATA_LOW_6 | 0x108    |
+| METADATA_LOW_7 | 0x10c    |
 
 
 ### Fields
@@ -729,14 +745,14 @@ metadata of the DPE context.
 
 | Name            | Offset   |
 |:----------------|:---------|
-| METADATA_HIGH_0 | 0xf0     |
-| METADATA_HIGH_1 | 0xf4     |
-| METADATA_HIGH_2 | 0xf8     |
-| METADATA_HIGH_3 | 0xfc     |
-| METADATA_HIGH_4 | 0x100    |
-| METADATA_HIGH_5 | 0x104    |
-| METADATA_HIGH_6 | 0x108    |
-| METADATA_HIGH_7 | 0x10c    |
+| METADATA_HIGH_0 | 0x110    |
+| METADATA_HIGH_1 | 0x114    |
+| METADATA_HIGH_2 | 0x118    |
+| METADATA_HIGH_3 | 0x11c    |
+| METADATA_HIGH_4 | 0x120    |
+| METADATA_HIGH_5 | 0x124    |
+| METADATA_HIGH_6 | 0x128    |
+| METADATA_HIGH_7 | 0x12c    |
 
 
 ### Fields
@@ -797,7 +813,7 @@ errors.
 
 Synchronous errors refer to those that only happen when a keymgr operation is
 invoked, while asynchronous refers to errors that can happen at any time.
-- Offset: `0x110`
+- Offset: `0x130`
 - Reset default: `0x0`
 - Reset mask: `0x7`
 
@@ -820,7 +836,7 @@ This register represents both synchronous and asynchronous fatal faults.
 Synchronous faults refer to those that only happen when a keymgr operation is
 invoked, while asynchronous refers to faults that can happen at any time.
 
-- Offset: `0x114`
+- Offset: `0x134`
 - Reset default: `0x0`
 - Reset mask: `0x3fff`
 
@@ -851,7 +867,7 @@ invoked, while asynchronous refers to faults that can happen at any time.
 ## DEBUG
 The register holds some debug information that may be convenient if keymgr
 misbehaves.
-- Offset: `0x118`
+- Offset: `0x138`
 - Reset default: `0x0`
 - Reset mask: `0x7ff`
 
@@ -878,7 +894,7 @@ misbehaves.
 
 ## LOAD_ROOT_KEY_LOCK
 Register lock for the `load root key` operation, see [`CONTROL_SHADOWED.OPERATION.`](#control_shadowed)
-- Offset: `0x11c`
+- Offset: `0x13c`
 - Reset default: `0x0`
 - Reset mask: `0x1`
 
@@ -895,7 +911,7 @@ Register lock for the `load root key` operation, see [`CONTROL_SHADOWED.OPERATIO
 
 ## LOAD_SECONDARY_ROOT_KEY_LOCK
 Register lock for the `load secondary root key` operation, see [`CONTROL_SHADOWED.OPERATION.`](#control_shadowed)
-- Offset: `0x120`
+- Offset: `0x140`
 - Reset default: `0x0`
 - Reset mask: `0x1`
 
@@ -912,7 +928,7 @@ Register lock for the `load secondary root key` operation, see [`CONTROL_SHADOWE
 
 ## ENFORCE_SW_BINDING
 Enforce the software binding value as the only advance input message until the next reset
-- Offset: `0x124`
+- Offset: `0x144`
 - Reset default: `0x9`
 - Reset mask: `0xf`
 
