@@ -34,6 +34,12 @@ enum {
  */
 typedef enum fips_kat_alg_id {
   kFipsKatAlgNone = 0,
+
+  // SHA-2 & HMAC (256 & 512)
+  kFipsKatAlgSha2_256 = 1,
+  kFipsKatAlgSha2_512 = 2,
+  kFipsKatAlgHmacSha2_256 = 3,
+  kFipsKatAlgHmacSha2_512 = 4,
 } fips_kat_alg_id_t;
 
 /**
@@ -55,6 +61,18 @@ typedef struct fips_kat_descriptor_table {
   uint32_t total_size;   // Total size of .fips_kat section in bytes
   fips_kat_entry_t entries[];
 } fips_kat_descriptor_table_t;
+
+/**
+ * Vector payload structures conforming to natural 4-byte alignment.
+ */
+
+// Hash / MAC / Digest
+typedef struct hmac_kat_data {
+  uint32_t key_len;
+  uint32_t msg_len;
+  uint32_t digest_len;
+  uint8_t data[];  // key || msg || expected_digest
+} hmac_kat_data_t;
 
 /**
  * Fixed address slot storing the pointer to the FIPS KAT descriptor table.
