@@ -10,6 +10,27 @@ SW can also read the reported FSM state through `WORKING_STATE` to confirm that 
 Both fields are sized for `NumMaxHwSlot` slots, so they accept larger values.
 An operation that uses a slot selection at or above `NumInstHwSlot` is rejected with `ERR_CODE.INVALID_OP`, and no slot is modified.
 
+## Select the KDF engine
+
+This step is only relevant if keymgr_dpe is instantiated with `KdfEngineSel = KdfEngineBoth`.
+With `KdfEngineKmac` or `KdfEngineOtbn` the engine is fixed and `KDF_ENGINE_SHADOWED` is ignored.
+Values other than `kMultiBitBool4False` or `kMultiBitBool4True` will raise `ERR_CODE.INVALID_OP`.
+See [KDF Engine Selection](theory_of_operation.md#kdf-engine-selection) for the background.
+
+SW selects the engine used by all following advance and versioned key generation operations by configuring the following CSRs:
+*  Make sure `OP_STATUS` is not `WIP` and `CFG_REGWEN` is set. The selection is only taken over while no operation is ongoing, so a write during an operation is delayed until the operation is done.
+*  Set `KDF_ENGINE_SHADOWED.SEL` to `kMultiBitBool4False` to use KMAC (default) or to `kMultiBitBool4True` to use HKDF on OTBN.
+   As the register is shadowed, the value must be written twice.
+*  Set `KDF_ENGINE_REGWEN.EN` to zero to lock the kfd engine selection.
+
+Any value other than `kMultiBitBool4True` or `kMultiBitBool4False` makes subsequent advance and generate operations fail with `ERR_CODE.INVALID_OP`.
+SW can recover by writing a valid value, unless `KDF_ENGINE_REGWEN.EN` has been cleared.
+Operations that do not involve a KDF engine (the first advance call, erase, load and disable) are not affected.
+
+When OTBN is selected, the KDF requests are issued on the `otbn_app` interface (OTBN's `keymgr_app`) instead of towards KMAC.
+The internal key is handed to OTBN through its sideload key interface and `sensitive_key_o` (OTBN's `keymgr_sensitive_key`) is asserted while it is in use.
+OTBN is required to wipe its data memory before the host regains control in this case.
+
 ## Initialize (first advance call)
 
 From a SW perspective, there is not an explicit initialize command.
