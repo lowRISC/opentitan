@@ -206,6 +206,13 @@
         epoch, odd while a sweep runs, that counts the sweeps that ended without an error.
       '''
     },
+    { name: "CHERIOT_MEM_SYS.FATAL_ALERT",
+      desc: '''
+        The subsystem raises the fatal_fault alert on an integrity fault, a meta SRAM device error,
+        a fault the revocation engine reports, a partial capability store to the NVM, or a request
+        that breaks the core's capability store sequence.
+      '''
+    },
   ],
 
   /////////////////////////////
