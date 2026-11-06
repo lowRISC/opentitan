@@ -74,6 +74,9 @@ typedef enum fips_kat_alg_id {
 
   // Post Quantum Cryptography (ML-DSA)
   kFipsKatAlgMldsa87 = 24,
+
+  // Authenticated Encryption (AES-GCM)
+  kFipsKatAlgAesGcm256Encrypt = 28,
 } fips_kat_alg_id_t;
 
 /**

@@ -502,6 +502,70 @@ typedef struct fips_kat_aes_kwp256 {
 } fips_kat_aes_kwp256_t;
 
 /**
+ * Algorithm 10: AES-256-GCM (Alg ID 28)
+ *
+ * Source Standard: NIST SP 800-38D (Recommendation for Block Cipher Modes of
+ * Operation: Galois/Counter Mode (GCM) and GMAC) / CAVP / ACVP.
+ *
+ * Test Vector Parameters:
+ * - Key: 32 bytes (0xaa repeated).
+ * - IV: 12 bytes (96 bits: 0xbb repeated).
+ * - Plaintext: 16 bytes (128 bits: 0xcc repeated).
+ * - AAD: 0 bytes.
+ * - Expected Ciphertext: 16 bytes:
+ *   06 dd 87 6a ba d1 96 14 fc 58 61 51 21 a9 16 d6
+ * - Expected Tag: 16 bytes (128 bits):
+ *   8e e2 59 8e e0 cb 02 99 ec e2 92 88 42 7c 1b 22
+ *
+ * How inputs/outputs were transformed:
+ * - Header Fields:
+ *     key_len = 32 (32-byte key)
+ *     iv_len  = 12 (12-byte standard 96-bit IV)
+ *     aad_len = 0  (empty AAD)
+ *     pt_len  = 16 (16-byte plaintext)
+ *     ct_len  = 16 (16-byte ciphertext)
+ *     tag_len = 16 (16-byte authentication tag)
+ * - Data array:
+ *     Key (32B) || IV (12B) || PT (16B) || CT (16B) || Tag (16B)
+ *     = 92 bytes.
+ * - Memory Alignment:
+ *     sizeof(fips_kat_aes_gcm256_t) = 6 * 4 (header) + 92 (data)
+ *     = 116 bytes total (`116 % 4 == 0`). Naturally 4-byte aligned, 0 padding
+ * bytes.
+ *
+ * How test runners (BL0 / Cryptolib) use this vector:
+ * 1. Read entry offset from `fips_kat_descriptor_table_t` for
+ * `kFipsKatAlgAesGcm256Encrypt`.
+ * 2. Dereference as `const aes_kat_data_t *kat = get_fips_data(table, entry)`.
+ * 3. Verify parameters: `kat->key_len == 32`, `kat->iv_len == 12`,
+ * `kat->aad_len == 0`, `kat->pt_len == 16`, `kat->ct_len == 16`, `kat->tag_len
+ * == 16`.
+ * 4. Extract pointers:
+ *      `const uint8_t *key = kat->data;`
+ *      `const uint8_t *iv = kat->data + kat->key_len;`
+ *      `const uint8_t *pt = kat->data + kat->key_len + kat->iv_len;`
+ *      `const uint8_t *expected_ct = kat->data + kat->key_len + kat->iv_len +
+ * kat->pt_len;` `const uint8_t *expected_tag = kat->data + kat->key_len +
+ * kat->iv_len + kat->pt_len + kat->ct_len;`
+ * 5. Construct blinded key with mode `kOtcryptoKeyModeAesGcm`.
+ * 6. Call `otcrypto_aes_gcm_encrypt(&blinded_key, &pt, &iv, &aad,
+ * kOtcryptoAesGcmTagLen128, &ct, &tag)` and compare ciphertext with
+ * `expected_ct` and tag with `expected_tag`.
+ * 7. Call `otcrypto_aes_gcm_decrypt(&blinded_key, &expected_ct, &iv, &aad,
+ * kOtcryptoAesGcmTagLen128, &expected_tag, &recovered_pt, &success)` and verify
+ * that `success == kHardenedBoolTrue` and recovered plaintext matches `pt`.
+ */
+typedef struct fips_kat_aes_gcm256 {
+  uint32_t key_len;
+  uint32_t iv_len;
+  uint32_t aad_len;
+  uint32_t pt_len;
+  uint32_t ct_len;
+  uint32_t tag_len;
+  uint8_t data[92];
+} fips_kat_aes_gcm256_t;
+
+/**
  * Algorithm 12: KDF-HMAC-SHA2-256 (Alg ID 37)
  *
  * Source Standard: NIST SP 800-108r1 (Recommendation for Key Derivation Using
@@ -1258,6 +1322,7 @@ typedef struct fips_kat_data_store {
   fips_kat_aes_ecb256_t aes_ecb256;
   fips_kat_aes_cbc256_t aes_cbc256;
   fips_kat_aes_kwp256_t aes_kwp256;
+  fips_kat_aes_gcm256_t aes_gcm256;
   fips_kat_kdf_hmac_sha256_t kdf_hmac_sha256;
   fips_kat_kdf_kmac256_t kdf_kmac256;
   fips_kat_rsa_4096_sign_t rsa_4096_sign;
@@ -1476,6 +1541,34 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
             0xcc, 0x06, 0xca, 0x9e, 0xd0, 0x8d, 0xb0, 0x32,
             0x13, 0x48, 0x1e, 0x0b, 0x44, 0x0d, 0x7f, 0xab,
             0xf8, 0x85, 0x0c, 0xcc, 0xad, 0x63, 0x00, 0x53,
+        },
+    }
+,
+    .aes_gcm256 = {
+        .key_len = 32,
+        .iv_len = 12,
+        .aad_len = 0,
+        .pt_len = 16,
+        .ct_len = 16,
+        .tag_len = 16,
+        .data = {
+            // Key (32 bytes: 0xaa repeated)
+            0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+            0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+            0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+            0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+            // IV (12 bytes: 0xbb repeated)
+            0xbb, 0xbb, 0xbb, 0xbb, 0xbb, 0xbb, 0xbb, 0xbb,
+            0xbb, 0xbb, 0xbb, 0xbb,
+            // Plaintext (16 bytes: 0xcc repeated)
+            0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc,
+            0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc,
+            // Expected Ciphertext (16 bytes)
+            0x06, 0xdd, 0x87, 0x6a, 0xba, 0xd1, 0x96, 0x14,
+            0xfc, 0x58, 0x61, 0x51, 0x21, 0xa9, 0x16, 0xd6,
+            // Expected Tag (16 bytes)
+            0x8e, 0xe2, 0x59, 0x8e, 0xe0, 0xcb, 0x02, 0x99,
+            0xec, 0xe2, 0x92, 0x88, 0x42, 0x7c, 0x1b, 0x22,
         },
     }
 ,
@@ -2312,12 +2405,12 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
   (sizeof(fips_kat_rom_table_t) + offsetof(fips_kat_data_store_t, field))
 
 /**
- * Concrete descriptor table in ROM holding 23 entries.
+ * Concrete descriptor table in ROM holding 24 entries.
  */
-#define FIPS_KAT_NUM_ENTRIES 23
+#define FIPS_KAT_NUM_ENTRIES 24
 
 /**
- * Concrete descriptor table in ROM holding 23 entries.
+ * Concrete descriptor table in ROM holding 24 entries.
  */
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -2450,6 +2543,11 @@ alignas(uint32_t) static const fips_kat_rom_table_t kFipsKatDescriptorTable = {
                 .algorithm_id = (uint32_t)kFipsKatAlgMldsa87,
                 .offset = FIPS_KAT_OFFSET(mldsa87),
                 .size = sizeof(fips_kat_mldsa87_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgAesGcm256Encrypt,
+                .offset = FIPS_KAT_OFFSET(aes_gcm256),
+                .size = sizeof(fips_kat_aes_gcm256_t),
             },
         },
 };

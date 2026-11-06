@@ -14,7 +14,9 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/mldsa/mldsa.h"
+#include "sw/device/lib/crypto/include/aes_gcm.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/ecc_curve25519.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
@@ -101,6 +103,31 @@ static const uint8_t __attribute__((unused)) kExpectedAes256CbcPt[16] = {
 static const uint8_t __attribute__((unused)) kExpectedAes256CbcCt[16] = {
     0xf5, 0x8c, 0x4c, 0x04, 0xd6, 0xe5, 0xf1, 0xba,
     0x77, 0x9e, 0xab, 0xfb, 0x5f, 0x7b, 0xfb, 0xd6,
+};
+
+static const uint8_t __attribute__((unused)) kExpectedAesGcm256Key[32] = {
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+    0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+};
+
+static const uint8_t __attribute__((unused)) kExpectedAesGcm256Iv[12] = {
+    0xbb, 0xbb, 0xbb, 0xbb, 0xbb, 0xbb, 0xbb, 0xbb, 0xbb, 0xbb, 0xbb, 0xbb,
+};
+
+static const uint8_t __attribute__((unused)) kExpectedAesGcm256Pt[16] = {
+    0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc,
+    0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc, 0xcc,
+};
+
+static const uint8_t __attribute__((unused)) kExpectedAesGcm256Ct[16] = {
+    0x06, 0xdd, 0x87, 0x6a, 0xba, 0xd1, 0x96, 0x14,
+    0xfc, 0x58, 0x61, 0x51, 0x21, 0xa9, 0x16, 0xd6,
+};
+
+static const uint8_t __attribute__((unused)) kExpectedAesGcm256Tag[16] = {
+    0x8e, 0xe2, 0x59, 0x8e, 0xe0, 0xcb, 0x02, 0x99,
+    0xec, 0xe2, 0x92, 0x88, 0x42, 0x7c, 0x1b, 0x22,
 };
 
 static const uint8_t __attribute__((unused)) kExpectedKdfHmacSha256Kdk[32] = {
@@ -858,6 +885,114 @@ static status_t test_aes_kwp256_kat(const fips_kat_descriptor_table_t *table) {
 
   CHECK_ARRAYS_EQ(computed_ct, expected_ct, 24);
   LOG_INFO("AES-KWP-256 Wrap Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
+static status_t test_aes_gcm256_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for AES-256-GCM Encrypt KAT entry (alg_id = %u)...",
+           kFipsKatAlgAesGcm256Encrypt);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgAesGcm256Encrypt);
+  CHECK(entry != NULL, "AES-256-GCM Encrypt KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving AES-256-GCM KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const aes_kat_data_t *kat_data = (const aes_kat_data_t *)data;
+  CHECK(kat_data->key_len == 32, "Expected key_len=32, got %u",
+        kat_data->key_len);
+  CHECK(kat_data->iv_len == 12, "Expected iv_len=12, got %u", kat_data->iv_len);
+  CHECK(kat_data->aad_len == 0, "Expected aad_len=0, got %u",
+        kat_data->aad_len);
+  CHECK(kat_data->pt_len == 16, "Expected pt_len=16, got %u", kat_data->pt_len);
+  CHECK(kat_data->ct_len == 16, "Expected ct_len=16, got %u", kat_data->ct_len);
+  CHECK(kat_data->tag_len == 16, "Expected tag_len=16, got %u",
+        kat_data->tag_len);
+
+  const uint8_t *key = kat_data->data;
+  const uint8_t *iv = kat_data->data + kat_data->key_len;
+  const uint8_t *pt = kat_data->data + kat_data->key_len + kat_data->iv_len;
+  const uint8_t *expected_ct =
+      kat_data->data + kat_data->key_len + kat_data->iv_len + kat_data->pt_len;
+  const uint8_t *expected_tag = kat_data->data + kat_data->key_len +
+                                kat_data->iv_len + kat_data->pt_len +
+                                kat_data->ct_len;
+
+  CHECK_ARRAYS_EQ(key, kExpectedAesGcm256Key, 32);
+  CHECK_ARRAYS_EQ(iv, kExpectedAesGcm256Iv, 12);
+  CHECK_ARRAYS_EQ(pt, kExpectedAesGcm256Pt, 16);
+  CHECK_ARRAYS_EQ(expected_ct, kExpectedAesGcm256Ct, 16);
+  CHECK_ARRAYS_EQ(expected_tag, kExpectedAesGcm256Tag, 16);
+  LOG_INFO("AES-256-GCM vector payload verified against golden values.");
+
+  LOG_INFO(
+      "Executing AES-256-GCM encryption using cryptolib (HW AES + SW "
+      "GHASH)...");
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+  const otcrypto_key_config_t kAesGcm256Config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeAesGcm,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t keyblob[keyblob_num_words(kAesGcm256Config)];
+  static const uint32_t kTestMask[8] = {0};
+  CHECK_STATUS_OK(keyblob_from_key_and_mask((const uint32_t *)key, kTestMask,
+                                            kAesGcm256Config, keyblob));
+  otcrypto_blinded_key_t blinded_key = {
+      .config = kAesGcm256Config,
+      .keyblob = keyblob,
+      .keyblob_length = sizeof(keyblob),
+      .checksum = 0,
+  };
+  blinded_key.checksum = otcrypto_integrity_blinded_checksum(&blinded_key);
+
+  otcrypto_const_byte_buf_t pt_buf = otcrypto_make_const_byte_buf(pt, 16);
+  otcrypto_const_byte_buf_t aad_buf = otcrypto_make_const_byte_buf(NULL, 0);
+  uint32_t iv_words[3];
+  memcpy(iv_words, iv, sizeof(iv_words));
+  otcrypto_const_word32_buf_t iv_buf =
+      otcrypto_make_const_word32_buf(iv_words, 3);
+
+  uint8_t actual_ct[16];
+  otcrypto_byte_buf_t ct_buf =
+      otcrypto_make_byte_buf(actual_ct, sizeof(actual_ct));
+
+  uint32_t actual_tag[4];
+  otcrypto_word32_buf_t tag_buf = otcrypto_make_word32_buf(actual_tag, 4);
+
+  CHECK_STATUS_OK(otcrypto_aes_gcm_encrypt(&blinded_key, &pt_buf, &iv_buf,
+                                           &aad_buf, kOtcryptoAesGcmTagLen128,
+                                           &ct_buf, &tag_buf));
+
+  CHECK_ARRAYS_EQ(actual_ct, expected_ct, 16);
+  CHECK_ARRAYS_EQ((const uint8_t *)actual_tag, expected_tag, 16);
+  LOG_INFO("AES-256-GCM Encrypt Known Answer Test check ok.");
+
+  LOG_INFO(
+      "Executing AES-256-GCM decryption using cryptolib (HW AES + SW "
+      "GHASH)...");
+  uint8_t actual_pt[16];
+  otcrypto_byte_buf_t actual_pt_buf =
+      otcrypto_make_byte_buf(actual_pt, sizeof(actual_pt));
+  otcrypto_const_byte_buf_t const_ct_buf =
+      otcrypto_make_const_byte_buf(expected_ct, 16);
+  otcrypto_const_word32_buf_t const_tag_buf =
+      otcrypto_make_const_word32_buf((const uint32_t *)expected_tag, 4);
+  hardened_bool_t success = kHardenedBoolFalse;
+
+  CHECK_STATUS_OK(otcrypto_aes_gcm_decrypt(
+      &blinded_key, &const_ct_buf, &iv_buf, &aad_buf, kOtcryptoAesGcmTagLen128,
+      &const_tag_buf, &actual_pt_buf, &success));
+  CHECK(success == kHardenedBoolTrue,
+        "AES-256-GCM decryption tag check failed!");
+  CHECK_ARRAYS_EQ(actual_pt, pt, 16);
+  LOG_INFO("AES-256-GCM Decrypt Known Answer Test check ok.");
 
   return OK_STATUS();
 }
@@ -2014,7 +2149,7 @@ static status_t test_fips_kat_rom(void) {
         table->magic);
   CHECK(table->version == kFipsKatDescriptorVersion1,
         "Invalid table version: %u", table->version);
-  CHECK(table->entry_count >= 23, "Expected at least 23 entries, got %u",
+  CHECK(table->entry_count >= 24, "Expected at least 24 entries, got %u",
         table->entry_count);
   LOG_INFO(
       "FIPS KAT table found at %p (magic=0x%08x, version=%u, entries=%u, "
@@ -2031,6 +2166,7 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_aes_ecb256_kat(table));
   TRY(test_aes_cbc256_kat(table));
   TRY(test_aes_kwp256_kat(table));
+  TRY(test_aes_gcm256_kat(table));
   TRY(test_kdf_hmac_sha256_kat(table));
   TRY(test_kdf_kmac256_kat(table));
   TRY(test_rsa4096_sign_kat(table));

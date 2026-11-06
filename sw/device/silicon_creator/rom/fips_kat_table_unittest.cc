@@ -423,6 +423,67 @@ TEST(FipsKatTableDataTest, GetDataMldsa87) {
   EXPECT_EQ(mldsa_data->cases[0].expected_sig_hash[0], 0x50);
 }
 
+TEST(FipsKatTableDataTest, GetDataAesGcm256) {
+  struct Layout {
+    struct {
+      uint32_t magic;
+      uint32_t version;
+      uint32_t entry_count;
+      uint32_t total_size;
+      fips_kat_entry_t entries[1];
+    } table;
+    struct {
+      uint32_t key_len;
+      uint32_t iv_len;
+      uint32_t aad_len;
+      uint32_t pt_len;
+      uint32_t ct_len;
+      uint32_t tag_len;
+      uint8_t data[92];
+    } gcm;
+  } layout{};
+
+  layout.table.magic = kFipsKatDescriptorMagic;
+  layout.table.version = kFipsKatDescriptorVersion1;
+  layout.table.entry_count = 1;
+  layout.table.total_size = sizeof(layout);
+
+  layout.table.entries[0].algorithm_id = kFipsKatAlgAesGcm256Encrypt;
+  layout.table.entries[0].offset = offsetof(Layout, gcm);
+  layout.table.entries[0].size = sizeof(layout.gcm);
+
+  layout.gcm.key_len = 32;
+  layout.gcm.iv_len = 12;
+  layout.gcm.aad_len = 0;
+  layout.gcm.pt_len = 16;
+  layout.gcm.ct_len = 16;
+  layout.gcm.tag_len = 16;
+  layout.gcm.data[0] = 0xAA;
+  layout.gcm.data[32] = 0xBB;
+  layout.gcm.data[44] = 0xCC;
+
+  const auto *table =
+      reinterpret_cast<const fips_kat_descriptor_table_t *>(&layout.table);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgAesGcm256Encrypt);
+  ASSERT_NE(entry, nullptr);
+
+  const void *data = get_fips_data(table, entry);
+  ASSERT_NE(data, nullptr);
+  EXPECT_EQ(data, reinterpret_cast<const void *>(&layout.gcm));
+
+  const auto *gcm_data = static_cast<const aes_kat_data_t *>(data);
+  EXPECT_EQ(gcm_data->key_len, 32);
+  EXPECT_EQ(gcm_data->iv_len, 12);
+  EXPECT_EQ(gcm_data->aad_len, 0);
+  EXPECT_EQ(gcm_data->pt_len, 16);
+  EXPECT_EQ(gcm_data->ct_len, 16);
+  EXPECT_EQ(gcm_data->tag_len, 16);
+  EXPECT_EQ(gcm_data->data[0], 0xAA);
+  EXPECT_EQ(gcm_data->data[32], 0xBB);
+  EXPECT_EQ(gcm_data->data[44], 0xCC);
+}
+
 TEST(FipsKatTableBoundsCheckTest, RejectOutOfBounds) {
   TestTableLayout layout{};
   layout.table.magic = kFipsKatDescriptorMagic;
