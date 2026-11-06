@@ -19,6 +19,9 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
     for (int ram_idx = 0; ram_idx < cfg.num_ram_main_tiles; ram_idx++) begin
       cfg.mem_bkdr_util_h[chip_mem_e'(RamMain0 + ram_idx)].randomize_mem();
     end
+    for (int ram_idx = 0; ram_idx < cfg.num_ram_mbox_tiles; ram_idx++) begin
+      cfg.mem_bkdr_util_h[chip_mem_e'(RamMbox0 + ram_idx)].randomize_mem();
+    end
     for (int ram_idx = 0; ram_idx < cfg.num_ram_ctn_tiles; ram_idx++) begin
       cfg.mem_bkdr_util_h[chip_mem_e'(RamCtn0 + ram_idx)].randomize_mem();
     end
@@ -26,7 +29,7 @@ class chip_common_vseq extends chip_stub_cpu_base_vseq;
 
   virtual task body();
     string csr_test_type;
-    void'($value$plusargs("+csr_%0s", csr_test_type));
+    void'($value$plusargs("csr_%0s", csr_test_type));
     // sio are driven X when csb is inactive, but these pins can be configured as wakeup cause,
     // assign a known value to avoid X propagation in case that `PINMUX.WKUP_CAUSE` is programmed.
     cfg.chip_vif.spi_host_if.sio_out = $urandom;

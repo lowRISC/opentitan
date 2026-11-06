@@ -157,7 +157,10 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     // Set the a_source width limitation for the TL agent hooked up to the CPU cored port.
     // TODO: use a parameter (or some better way)?
-    m_tl_agent_cfg.valid_a_source_width = 6;
+    // Each M:1 socket on the way takes source bits for its host ID. The longest chain is to the
+    // CTN RAM: xbar_main (4 hosts), soc_proxy (3 hosts) and the chip-level CTN socket (2 hosts)
+    // take 5 of the 8 bits, which leaves 3.
+    m_tl_agent_cfg.valid_a_source_width = 3;
 
     // create uart agent config obj
     foreach (m_uart_agent_cfgs[i]) begin
