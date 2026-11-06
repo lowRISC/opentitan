@@ -991,6 +991,7 @@ test_suite(
         ":kdf_random_kat",
         ":kmac_kat",
         ":rsa_kat",
+        ":rsa_keygen_kat",
         ":rsa_random_kat",
         ":sha256_kat",
         ":sha384_kat",
