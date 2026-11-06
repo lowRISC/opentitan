@@ -68,11 +68,8 @@ static status_t run_negative_test(void) {
 
   // Send an invalid command to the CMD register to trigger the error interrupt
   uint32_t cmd_addr = kmac_base() + KMAC_CMD_REG_OFFSET;
-  abs_mmio_write32(cmd_addr, 0xFFFFFFFF);
+  abs_mmio_write32(cmd_addr, KMAC_CMD_CMD_VALUE_PROCESS << KMAC_CMD_CMD_OFFSET);
   CHECK(kmac_hwip_default_configure().value == OTCRYPTO_RECOV_ERR.value);
-  abs_mmio_write32(kmac_base() + KMAC_INTR_STATE_REG_OFFSET,
-                   1 << KMAC_INTR_STATE_KMAC_ERR_BIT);
-  abs_mmio_write32(kmac_base() + KMAC_ERR_CODE_REG_OFFSET, 0xFFFFFFFF);
 
   // Test shadow reg update mismatch
   CHECK_STATUS_OK(
@@ -108,6 +105,7 @@ bool test_main(void) {
 
   EXECUTE_TEST(result, run_kmac_test);
   EXECUTE_TEST(result, run_negative_test);
+  EXECUTE_TEST(result, run_kmac_test);
 
   return status_ok(result);
 }
