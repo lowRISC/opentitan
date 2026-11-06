@@ -18,6 +18,7 @@
 #include "sw/device/lib/crypto/impl/mldsa/mldsa.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
 #include "sw/device/lib/crypto/include/config.h"
+#include "sw/device/lib/crypto/include/drbg.h"
 #include "sw/device/lib/crypto/include/ecc_curve25519.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
@@ -128,6 +129,22 @@ static const uint8_t __attribute__((unused)) kExpectedAesGcm256Ct[16] = {
 static const uint8_t __attribute__((unused)) kExpectedAesGcm256Tag[16] = {
     0x8e, 0xe2, 0x59, 0x8e, 0xe0, 0xcb, 0x02, 0x99,
     0xec, 0xe2, 0x92, 0x88, 0x42, 0x7c, 0x1b, 0x22,
+};
+
+static const uint8_t __attribute__((unused)) kExpectedDrbgEntropyInput[48] = {
+    0x10, 0xc0, 0xbe, 0x73, 0x4c, 0x47, 0x62, 0x92, 0x76, 0x0f, 0xa3, 0x16,
+    0xde, 0x51, 0x1b, 0x53, 0xe5, 0x94, 0xe4, 0x2e, 0xb3, 0x9d, 0xec, 0xdf,
+    0x9d, 0x87, 0x7a, 0xcb, 0x9c, 0x41, 0x00, 0x56, 0xb0, 0xb0, 0x79, 0xca,
+    0x5c, 0x3b, 0xa3, 0xdd, 0x9e, 0x64, 0x68, 0xa4, 0xfa, 0x73, 0x5d, 0xdf,
+};
+
+static const uint8_t __attribute__((unused)) kExpectedDrbgOutput[64] = {
+    0xd9, 0x7c, 0xc0, 0xd1, 0xf1, 0xa7, 0xf8, 0x5a, 0x4c, 0xc8, 0x12,
+    0x10, 0xcb, 0xb8, 0x8b, 0xe4, 0x99, 0x9e, 0x18, 0x87, 0xb1, 0xcc,
+    0x0f, 0xd4, 0x9b, 0x61, 0x1c, 0x77, 0x22, 0xab, 0x82, 0xdf, 0x2f,
+    0xdc, 0xb1, 0x80, 0x91, 0xf3, 0x81, 0x25, 0x0c, 0xac, 0xf7, 0x64,
+    0xb3, 0x94, 0x04, 0x51, 0xb7, 0x41, 0x3c, 0xa4, 0x4c, 0x51, 0x17,
+    0xdb, 0xae, 0x07, 0xb1, 0x87, 0xc5, 0x01, 0x3e, 0x79,
 };
 
 static const uint8_t __attribute__((unused)) kExpectedKdfHmacSha256Kdk[32] = {
@@ -993,6 +1010,63 @@ static status_t test_aes_gcm256_kat(const fips_kat_descriptor_table_t *table) {
         "AES-256-GCM decryption tag check failed!");
   CHECK_ARRAYS_EQ(actual_pt, pt, 16);
   LOG_INFO("AES-256-GCM Decrypt Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
+static status_t test_drbg_aes256_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for CTR_DRBG AES-256 KAT entry (alg_id = %u)...",
+           kFipsKatAlgDrbgAes256);
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgDrbgAes256);
+  CHECK(entry != NULL, "CTR_DRBG AES-256 KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving CTR_DRBG AES-256 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const drbg_kat_data_t *kat_data = (const drbg_kat_data_t *)data;
+  CHECK(kat_data->entropy_input_len == 48,
+        "Expected entropy_input_len=48, got %u", kat_data->entropy_input_len);
+  CHECK(kat_data->expected_output_len == 64,
+        "Expected expected_output_len=64, got %u",
+        kat_data->expected_output_len);
+
+  const uint8_t *entropy_input = kat_data->data;
+  const uint8_t *expected_output = kat_data->data + kat_data->entropy_input_len;
+
+  CHECK_ARRAYS_EQ(entropy_input, kExpectedDrbgEntropyInput, 48);
+  CHECK_ARRAYS_EQ(expected_output, kExpectedDrbgOutput, 64);
+  LOG_INFO("CTR_DRBG AES-256 vector payload verified against golden values.");
+
+  LOG_INFO("Executing CTR_DRBG AES-256 test using cryptolib DRBG driver...");
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  otcrypto_const_byte_buf_t kEmptyBuffer =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
+  otcrypto_const_byte_buf_t entropy = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, entropy_input, kat_data->entropy_input_len);
+
+  // 1. Manual instantiate with 48 bytes of seed (32B entropy + 16B nonce).
+  CHECK_STATUS_OK(otcrypto_drbg_manual_instantiate(&entropy, &kEmptyBuffer));
+
+  // 2. Generate output twice as required by NIST SP 800-90A.
+  uint32_t actual_output_words[16];
+  otcrypto_word32_buf_t actual_output =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, actual_output_words,
+                        ARRAYSIZE(actual_output_words));
+
+  CHECK_STATUS_OK(otcrypto_drbg_manual_generate(&kEmptyBuffer, &actual_output));
+  CHECK_STATUS_OK(otcrypto_drbg_manual_generate(&kEmptyBuffer, &actual_output));
+
+  // 3. Compare second generate output against expected golden output.
+  CHECK_ARRAYS_EQ((const uint8_t *)actual_output_words, expected_output, 64);
+  LOG_INFO("CTR_DRBG AES-256 output matches expected golden vector.");
+
+  // 4. Clean up and uninstantiate.
+  CHECK_STATUS_OK(otcrypto_drbg_uninstantiate());
+  LOG_INFO("CTR_DRBG AES-256 Known Answer Test check ok.");
 
   return OK_STATUS();
 }
@@ -2149,7 +2223,7 @@ static status_t test_fips_kat_rom(void) {
         table->magic);
   CHECK(table->version == kFipsKatDescriptorVersion1,
         "Invalid table version: %u", table->version);
-  CHECK(table->entry_count >= 24, "Expected at least 24 entries, got %u",
+  CHECK(table->entry_count >= 25, "Expected at least 25 entries, got %u",
         table->entry_count);
   LOG_INFO(
       "FIPS KAT table found at %p (magic=0x%08x, version=%u, entries=%u, "
@@ -2167,6 +2241,7 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_aes_cbc256_kat(table));
   TRY(test_aes_kwp256_kat(table));
   TRY(test_aes_gcm256_kat(table));
+  TRY(test_drbg_aes256_kat(table));
   TRY(test_kdf_hmac_sha256_kat(table));
   TRY(test_kdf_kmac256_kat(table));
   TRY(test_rsa4096_sign_kat(table));

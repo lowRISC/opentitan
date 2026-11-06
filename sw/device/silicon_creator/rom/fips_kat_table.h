@@ -77,6 +77,9 @@ typedef enum fips_kat_alg_id {
 
   // Authenticated Encryption (AES-GCM)
   kFipsKatAlgAesGcm256Encrypt = 28,
+
+  // DRBG & Entropy (Future)
+  kFipsKatAlgDrbgAes256 = 26,
 } fips_kat_alg_id_t;
 
 /**
@@ -163,6 +166,13 @@ typedef struct mldsa_kat_data {
   uint32_t num_cases; /**< Number of test cases (5) */
   fips_kat_mldsa87_case_t cases[5];
 } mldsa_kat_data_t;
+
+// 5. DRBG / Entropy
+typedef struct drbg_kat_data {
+  uint32_t entropy_input_len;
+  uint32_t expected_output_len;
+  uint8_t data[];  // entropy_input || expected_output
+} drbg_kat_data_t;
 
 /**
  * Fixed address slot storing the pointer to the FIPS KAT descriptor table.

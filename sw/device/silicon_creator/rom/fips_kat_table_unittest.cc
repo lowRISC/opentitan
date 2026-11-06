@@ -484,6 +484,52 @@ TEST(FipsKatTableDataTest, GetDataAesGcm256) {
   EXPECT_EQ(gcm_data->data[44], 0xCC);
 }
 
+TEST(FipsKatTableDataTest, GetDataDrbgAes256) {
+  struct Layout {
+    struct {
+      uint32_t magic;
+      uint32_t version;
+      uint32_t entry_count;
+      uint32_t total_size;
+      fips_kat_entry_t entries[1];
+    } table;
+    struct {
+      uint32_t entropy_input_len;
+      uint32_t expected_output_len;
+      uint8_t data[112];
+    } drbg;
+  } layout{};
+
+  layout.table.magic = kFipsKatDescriptorMagic;
+  layout.table.version = kFipsKatDescriptorVersion1;
+  layout.table.entry_count = 1;
+  layout.table.total_size = sizeof(layout);
+
+  layout.table.entries[0].algorithm_id = kFipsKatAlgDrbgAes256;
+  layout.table.entries[0].offset = offsetof(Layout, drbg);
+  layout.table.entries[0].size = sizeof(layout.drbg);
+
+  layout.drbg.entropy_input_len = 48;
+  layout.drbg.expected_output_len = 64;
+  layout.drbg.data[0] = 0x10;
+  layout.drbg.data[48] = 0xD9;
+
+  const auto *table =
+      reinterpret_cast<const fips_kat_descriptor_table_t *>(&layout.table);
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgDrbgAes256);
+  ASSERT_NE(entry, nullptr);
+
+  const void *data = get_fips_data(table, entry);
+  ASSERT_NE(data, nullptr);
+  EXPECT_EQ(data, reinterpret_cast<const void *>(&layout.drbg));
+
+  const auto *drbg_data = static_cast<const drbg_kat_data_t *>(data);
+  EXPECT_EQ(drbg_data->entropy_input_len, 48);
+  EXPECT_EQ(drbg_data->expected_output_len, 64);
+  EXPECT_EQ(drbg_data->data[0], 0x10);
+  EXPECT_EQ(drbg_data->data[48], 0xD9);
+}
+
 TEST(FipsKatTableBoundsCheckTest, RejectOutOfBounds) {
   TestTableLayout layout{};
   layout.table.magic = kFipsKatDescriptorMagic;
