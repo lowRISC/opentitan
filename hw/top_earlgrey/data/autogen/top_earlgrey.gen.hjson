@@ -12315,7 +12315,7 @@
         }
         {
           name: cored_tag_h2d
-          desc: CHERIoT capability tag carried with the A-channel of cored_tl_h.
+          desc: CHERIoT capability tag carried with the A-channel of cored_tl_d.
           struct: logic
           type: uni
           act: rcv
@@ -12329,7 +12329,7 @@
         }
         {
           name: cored_tag_d2h
-          desc: Capability tag returned on the D-channel of cored_tl_h.
+          desc: Capability tag returned on the D-channel of cored_tl_d.
           struct: logic
           type: uni
           act: req
@@ -32692,7 +32692,7 @@
       }
       {
         name: cored_tag_h2d
-        desc: CHERIoT capability tag carried with the A-channel of cored_tl_h.
+        desc: CHERIoT capability tag carried with the A-channel of cored_tl_d.
         struct: logic
         type: uni
         act: rcv
@@ -32706,7 +32706,7 @@
       }
       {
         name: cored_tag_d2h
-        desc: Capability tag returned on the D-channel of cored_tl_h.
+        desc: Capability tag returned on the D-channel of cored_tl_d.
         struct: logic
         type: uni
         act: req
