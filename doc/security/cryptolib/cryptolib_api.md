@@ -86,6 +86,7 @@ Building with `--stamp` also automatically marks the build as a release build (s
 | `crypto_status_debug` | `OTCRYPTO_STATUS_DEBUG` | Embeds the module ID and line number directly into `otcrypto_status_t` error codes. This significantly aids debugging but increases the footprint and alters standard error structures. |
 | `disable_null_checks` | `OTCRYPTO_DISABLE_NULL_CHECKS` | Removes `NULL` pointer checks on API inputs throughout the library (e.g., AES-GCM operations). This saves code size, but strictly requires the caller to guarantee no `NULL` pointers are passed. |
 | `disable_buf_integrity_checks` | `OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS` | Disables runtime integrity verification for data buffers. This bypasses `verify_buf_integrity`, removing the check that compares `ptr_checksum` against the data's calculated checksum. |
+| `disable_hardening` | `OT_DISABLE_HARDENING` | Replaces the fault-hardened double-branch assembly sequences in `HARDENED_TRY` and `HARDENED_CHECK_*` with a single non-redundant check in the cryptolib to reduce code size. When enabled, `otcrypto_security_config_check` only permits `kOtcryptoKeySecurityLevelLow`. |
 
 ## Build Information and Versioning
 
