@@ -27,6 +27,14 @@ package i3c_controller_pkg;
     GState_Suspended   // Entered in response to an indication from the Controller FSM.
   } i3c_ctrl_gstate_e;
 
+  // The source of the current Command Descriptor.
+  typedef enum logic [1:0] {
+    CmdSrc_HCI,     // From the HCI, which implies the Command Queue presently (no DMA support).
+    CmdSrc_Poll,    // Polling, to support Passive Hot-Join Targets.
+    CmdSrc_DISEC,   // Disable IBI, CRR, HJ in response to a NACKed request.
+    CmdSrc_AutoCmd  // Auto-Command (Private Read after a Pending Read Notification).
+  } i3c_ctrl_cmd_src_e;
+
   // The type of transfer being performed by the Controller.
   typedef enum logic [1:0] {
     TransType_None,
@@ -67,6 +75,7 @@ package i3c_controller_pkg;
     // --- Controller Role and Hot-Join Requests ---
     CRR,        // TODO(#31308): CRR is not yet supported.
     HotJoin,    // Record Hot-Join request as an IBI Status Descriptor.
+
 
     // --- In-Band Interrupts ---
     IBICheck,   // Initial check of whether to accept or reject and IBI.
@@ -240,12 +249,22 @@ package i3c_controller_pkg;
     // Command Descriptor available; command ready to be actioned.
     // Note: This does not imply that the Command Descriptor has been accepted as valid.
     logic                 available;
+
+    // Command Descriptors performing a series of RSTACT CCCs are to be followed by the Target Reset
+    // Pattern if it is not interrupted by failure or timeout.
+    logic                 rst_csect;  // HCI 6.15.1
+  } i3c_ctrl_cmd_hci_t;
+
+  // Stored properties of the current Command Descriptor, no matter the command source.
+  typedef struct packed {
     // Indication that the command has been accepted as valid and that we have started at least
     // one attempt at executing the command, so the remainder of this state may be trusted.
     logic                 started;
 
     // ----- The remaining fields are only valid if `started` is true. -----
     //
+    // Current DAT index; this advances whilst executing Address Assignment commands.
+    logic  [DATAddrW-1:0] dev_index;
     // Was the most recent command/segment terminated with Sr rather than P?
     logic                 rep_start;
     // Number of retries required for this command when NACK(s) are received.
@@ -253,11 +272,6 @@ package i3c_controller_pkg;
     // Number of repetitions remaining.
     // - each repetition is a phase within e.g. a Combo Transfer or Address Assignment command.
     logic   [CmdRepW-1:0] reps_left;
-    // Current DAT index; this advances whilst executing Address Assignment commands.
-    logic  [DATAddrW-1:0] dev_index;
-    // Command Descriptors performing a series of RSTACT CCCs are to be followed by the Target Reset
-    // Pattern if it is not interrupted by failure or timeout.
-    logic                 rst_csect;  // HCI 6.15.1
   } i3c_ctrl_cmd_state_t;
 
   // The standard Command Descriptors specify a transfer more and an I2C/I3C indication, which

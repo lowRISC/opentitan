@@ -318,8 +318,7 @@ module i3c_cmd_decode
   // Signals that the logic does not use (yet).
   // - fields of the shared command state and DAT entry structs that the decoder does not need.
   logic unused_decode_inputs;
-  assign unused_decode_inputs = ^{cmd_state_i.available, cmd_state_i.retry_cnt,
-                                  cmd_state_i.rst_csect, cmd_state_i.started,
+  assign unused_decode_inputs = ^{cmd_state_i.started, cmd_state_i.retry_cnt,
                                   dat_entry_i.autocmd_hdr_code, dat_entry_i.autocmd_mask,
                                   dat_entry_i.autocmd_mode, dat_entry_i.autocmd_value,
                                   dat_entry_i.crr_reject, dat_entry_i.dynamic_address,

@@ -172,7 +172,11 @@ module i3c_controller_fsm
   logic [$bits(i3c_xfer_cmd_imm_t)-1:0] cmd_raw;      // 2 DWORDs.
   assign cmd_raw = {cmd_desc_rdata_i, cmdq_lo_data};  // Current and previous DWORDs.
 
-  // Current Command State.
+  // Current HCI Command State; the Command Descriptor must be from the HCI Command Queue, since
+  // there is no support for DMA currently.
+  i3c_ctrl_cmd_hci_t   cmd_hci;
+
+  // Current Command State, no matter the source of the Command Descriptor.
   i3c_ctrl_cmd_state_t cmd_state;
   logic cmd_complete;
 
@@ -390,7 +394,7 @@ module i3c_controller_fsm
   // - helps reduce the latency in responding to Target requests such as IBIs.
   wire cmd_dispatch = &{cmd_avail, cmd_start, !(cmd_attrs.wroc & rsp_desc_wfull_i),
                         // Retrying occurs only after the programmed delay has elapsed.
-                        !cmd_state.available | cmd_retry_i,
+                        !cmd_hci.available | cmd_retry_i,
                         // We must also be permitted to proceed with Command processing.
                         gstate_i == GState_Running};
   // Some command descriptors must be rejected immediately.
@@ -652,7 +656,7 @@ module i3c_controller_fsm
 
   // Response to Abort request; this status indication is consulted only in `GState_Aborting`
   // so it needs no further qualification here.
-  assign aborted_o = (state_q == Idle && !cmd_state.available);  // This is just temporary.
+  assign aborted_o = (state_q == Idle && !cmd_hci.available);  // This is just temporary.
   // TODO(#31304): We do, however, need to respond more promptly to `Aborting` in a few states such
   // as part-way through handling an Address Assignment command. HCI 6.5.6 seems to indicate that
   //` transfer_aborted_o` shall be asserted only when actually reporting `HC_ABORTED` in one or
@@ -681,6 +685,7 @@ module i3c_controller_fsm
       state_q           <= Inactive;
       i3c_first         <= 1'b1;
       trans_type        <= TransType_None;
+      cmd_hci           <= 'b0;
       cmd_state         <= 'b0;
       datf_re_q         <= 1'b0;
       dat_entry         <= 'b0;
@@ -699,10 +704,10 @@ module i3c_controller_fsm
       bus_state.i2c       <= 1'b0;
       cmdq_lo_valid       <= 1'b0;
       cmdq_lo_data        <= 'b0;  // Not logically required, just for the HCI `SOFT_RST` action.
-      cmd_state.available <= 1'b0;
+      cmd_hci.available   <= 1'b0;
+      cmd_hci.rst_csect   <= 1'b0;
       cmd_state.started   <= 1'b0;
       pio_bcst_addr_en    <= 1'b0;
-      cmd_state.rst_csect <= 1'b0;
     end else if (enable_i) begin
       if (proceed) begin  // The progress of the state machine is conditional.
         unique case (state_q)
@@ -710,8 +715,8 @@ module i3c_controller_fsm
           // processed, even if we are merely rejecting it with an error.
           Idle: begin
             // Did we initiate this transfer?
-            cmd_state.available <= cmd_dispatch;
-            trans_type          <= cmd_dispatch ? TransType_Cmd : TransType_Intr;
+            cmd_hci.available <= cmd_dispatch;
+            trans_type        <= cmd_dispatch ? TransType_Cmd : TransType_Intr;
           end
           // DAT entry must be captured immediately (see `datf_re_q` below).
           // - note that we also wait here until the result from the previous command has been
@@ -735,8 +740,8 @@ module i3c_controller_fsm
                 MIPICmd_BroadAddrEnable: pio_bcst_addr_en <= cmd_intn.mipi_reserved[12];
                 MIPICmd_TargRstPattern:
                   unique case (i3c_reset_op_type_e '(cmd_intn.mipi_reserved[13:12]))
-                    RstOpType_RSTACT: cmd_state.rst_csect <= 1'b1;
-                    default:          cmd_state.rst_csect <= 1'b0;
+                    RstOpType_RSTACT: cmd_hci.rst_csect <= 1'b1;
+                    default:          cmd_hci.rst_csect <= 1'b0;
                   endcase
                 default: begin end
               endcase
@@ -750,7 +755,7 @@ module i3c_controller_fsm
             // We need to reset `available` in order to retry it as soon as possible, but we do not
             // modify `started` or `retry_count` because that would erase the past history of this
             // command.
-            cmd_state.available <= 1'b0;
+            cmd_hci.available <= 1'b0;
             // Set the data length to the maximum value so that we keep issuing SDR read requests
             // and we do not artificially limit the maximum length of the IBI payload.
             data_len <= 16'hffff;
@@ -814,9 +819,9 @@ module i3c_controller_fsm
         // When completing and dropping a command we must invalidate `cmd_state` to ensure there is
         // no persistent state from this command.
         if (cmd_complete) begin
-          cmd_state.available <= 1'b0;
-          cmd_state.started   <= 1'b0;
-          trans_type          <= TransType_None;
+          cmd_hci.available <= 1'b0;
+          cmd_state.started <= 1'b0;
+          trans_type        <= TransType_None;
         end
       end
 
@@ -1086,7 +1091,7 @@ module i3c_controller_fsm
         rx_data_len <= '0;
       end else begin
         // TODO(#31304): Consider more carefully the use of `cmd_state` here.
-        unique case ({cmd_state.available, cmd_attrs.attr})
+        unique case ({cmd_hci.available, cmd_attrs.attr})
           {1'b1, CmdAttr_AddrAssignment}: begin
             // The `data_length` field of the posted response indicates only whether there _may_ be
             // other devices in need of a dynamic address. Zero indicates that the command did not
@@ -1572,6 +1577,9 @@ module i3c_controller_fsm
                              cmd_reg.toc, cmd_reg.wroc, cmd_imm.cmd, cmd_imm.cmd_attr, cmd_imm.cp,
                              cmd_imm.dev_index, cmd_imm.mode, cmd_imm.reserved, cmd_imm.rnw,
                              cmd_imm.tid, cmd_imm.toc, cmd_imm.wroc};
+  // - fields of the HCI Command State that are not yet used.
+  logic unused_cmd_hci;
+  assign unused_cmd_hci = ^{cmd_hci.rst_csect};
   // - Controller Role Requests, Auto-Commands and DAT cache hits are not handled yet.
   logic unused_ibi_handling;
   assign unused_ibi_handling = ^{crr_reject, autocmd_fetch, autocmd_code, datc_hit};
