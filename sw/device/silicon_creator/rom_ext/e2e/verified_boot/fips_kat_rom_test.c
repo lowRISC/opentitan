@@ -491,6 +491,108 @@ static status_t test_hmac_sha512_kat(const fips_kat_descriptor_table_t *table) {
   return OK_STATUS();
 }
 
+static status_t test_shake256_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for SHAKE-256 KAT entry (alg_id = %u)...",
+           kFipsKatAlgShake256);
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgShake256);
+  CHECK(entry != NULL, "SHAKE-256 KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving SHAKE-256 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const hmac_kat_data_t *kat_data = (const hmac_kat_data_t *)data;
+  CHECK(kat_data->key_len == 0, "Expected key_len=0, got %u",
+        kat_data->key_len);
+  CHECK(kat_data->msg_len == 1, "Expected msg_len=1, got %u",
+        kat_data->msg_len);
+  CHECK(kat_data->digest_len == 32, "Expected digest_len=32, got %u",
+        kat_data->digest_len);
+
+  const uint8_t *msg = kat_data->data + kat_data->key_len;
+  const uint8_t *expected_digest =
+      kat_data->data + kat_data->key_len + ((kat_data->msg_len + 3) & ~3u);
+
+  CHECK(msg[0] == kExpectedShake256Msg[0], "SHAKE-256 message mismatch!");
+  CHECK_ARRAYS_EQ(expected_digest, kExpectedShake256Digest, 32);
+  LOG_INFO("SHAKE-256 vector payload verified against golden values.");
+
+  LOG_INFO("Executing SHAKE-256 using KMAC hardware accelerator...");
+  CHECK(kmac_shake256_configure() == kErrorOk,
+        "Failed to configure KMAC for SHAKE-256!");
+  CHECK(kmac_shake256_start() == kErrorOk, "Failed to start SHAKE-256!");
+
+  kmac_shake256_absorb(msg, kat_data->msg_len);
+  kmac_shake256_squeeze_start();
+
+  uint32_t act_digest_words[8];
+  CHECK(kmac_shake256_squeeze_end(act_digest_words, 8) == kErrorOk,
+        "Failed to squeeze SHAKE-256 digest!");
+
+  CHECK_ARRAYS_EQ((const uint8_t *)act_digest_words, expected_digest, 32);
+  LOG_INFO("SHAKE-256 Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
+static status_t test_kmac256_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for KMAC-256 KAT entry (alg_id = %u)...",
+           kFipsKatAlgKmac256);
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgKmac256);
+  CHECK(entry != NULL, "KMAC-256 KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving KMAC-256 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const hmac_kat_data_t *kat_data = (const hmac_kat_data_t *)data;
+  CHECK(kat_data->key_len == 32, "Expected key_len=32, got %u",
+        kat_data->key_len);
+  CHECK(kat_data->msg_len == 4, "Expected msg_len=4, got %u",
+        kat_data->msg_len);
+  CHECK(kat_data->digest_len == 64, "Expected digest_len=64, got %u",
+        kat_data->digest_len);
+
+  const uint8_t *key = kat_data->data;
+  const uint8_t *msg = kat_data->data + kat_data->key_len;
+  const uint8_t *expected_digest =
+      kat_data->data + kat_data->key_len + kat_data->msg_len;
+
+  CHECK_ARRAYS_EQ(key, kExpectedKmac256Key, 32);
+  CHECK_ARRAYS_EQ(msg, kExpectedKmac256Msg, 4);
+  CHECK_ARRAYS_EQ(expected_digest, kExpectedKmac256Digest, 64);
+  LOG_INFO("KMAC-256 vector payload verified against golden values.");
+
+  LOG_INFO("Executing KMAC-256 using KMAC hardware accelerator...");
+  CHECK(kmac_kmac256_sw_configure() == kErrorOk,
+        "Failed to configure KMAC for KMAC-256!");
+
+  // Key array in words (32 bytes = 8 words)
+  uint32_t key_words[8];
+  memcpy(key_words, key, sizeof(key_words));
+  CHECK(kmac_kmac256_sw_key(key_words, 8) == kErrorOk,
+        "Failed to load software key into KMAC!");
+
+  const char prefix[] = "My Tagged Application";
+  kmac_kmac256_set_prefix(prefix, sizeof(prefix) - 1);
+
+  CHECK(kmac_kmac256_start() == kErrorOk, "Failed to start KMAC-256!");
+  kmac_kmac256_absorb(msg, kat_data->msg_len);
+
+  uint32_t act_digest_words[16];
+  CHECK(kmac_kmac256_final(act_digest_words, 16) == kErrorOk,
+        "Failed to finalize KMAC-256!");
+
+  CHECK_ARRAYS_EQ((const uint8_t *)act_digest_words, expected_digest, 64);
+  LOG_INFO("KMAC-256 Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
 static status_t test_fips_kat_rom(void) {
   // Stop the watchdog timer to prevent timeout during long RSA-4096 OTBN
   // computations.
@@ -505,7 +607,7 @@ static status_t test_fips_kat_rom(void) {
         table->magic);
   CHECK(table->version == kFipsKatDescriptorVersion1,
         "Invalid table version: %u", table->version);
-  CHECK(table->entry_count >= 4, "Expected at least 4 entries, got %u",
+  CHECK(table->entry_count >= 6, "Expected at least 6 entries, got %u",
         table->entry_count);
   LOG_INFO(
       "FIPS KAT table found at %p (magic=0x%08x, version=%u, entries=%u, "
@@ -517,6 +619,8 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_hmac_sha256_kat(table));
   TRY(test_sha512_kat(table));
   TRY(test_hmac_sha512_kat(table));
+  TRY(test_shake256_kat(table));
+  TRY(test_kmac256_kat(table));
 
   return OK_STATUS();
 }

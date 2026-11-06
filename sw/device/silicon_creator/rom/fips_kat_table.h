@@ -40,6 +40,10 @@ typedef enum fips_kat_alg_id {
   kFipsKatAlgSha2_512 = 2,
   kFipsKatAlgHmacSha2_256 = 3,
   kFipsKatAlgHmacSha2_512 = 4,
+
+  // SHA-3 / Keccak
+  kFipsKatAlgShake256 = 5,
+  kFipsKatAlgKmac256 = 6,
 } fips_kat_alg_id_t;
 
 /**
