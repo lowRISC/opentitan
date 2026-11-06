@@ -86,6 +86,9 @@ typedef enum fips_kat_alg_id {
 
   // Post Quantum Key Encapsulation (ML-KEM)
   kFipsKatAlgMlkem1024 = 25,
+
+  // Entropy Source Conditioning
+  kFipsKatAlgEntropySrcSha3Conditioning = 27,
 } fips_kat_alg_id_t;
 
 /**

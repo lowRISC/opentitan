@@ -32,10 +32,13 @@
 #include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
+#include "sw/device/lib/dif/dif_entropy_src.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/runtime/hart.h"
 #include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/entropy_src_testutils.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
@@ -2451,6 +2454,125 @@ static status_t test_mlkem1024_kat(const fips_kat_descriptor_table_t *table) {
   return OK_STATUS();
 }
 
+static void stop_sha3_conditioner(dif_entropy_src_t *entropy_src) {
+  uint32_t fail_count = 0;
+  dif_result_t op_result;
+  do {
+    op_result = dif_entropy_src_conditioner_stop(entropy_src);
+    if (op_result == kDifIpFifoFull) {
+      fail_count++;
+      CHECK(fail_count < 256);
+    } else {
+      CHECK_DIF_OK(op_result);
+    }
+  } while (op_result == kDifIpFifoFull);
+}
+
+static void flush_sha3_conditioner(dif_entropy_src_t *entropy_src) {
+  CHECK_DIF_OK(dif_entropy_src_conditioner_start(entropy_src));
+  stop_sha3_conditioner(entropy_src);
+
+  int fail_count = 0;
+  uint32_t got[12];
+  size_t total = 0;
+  do {
+    dif_result_t op_result =
+        dif_entropy_src_non_blocking_read(entropy_src, &got[total]);
+    if (op_result == kDifUnavailable) {
+      fail_count++;
+      CHECK(fail_count < 256);
+    } else {
+      CHECK_DIF_OK(op_result);
+      total++;
+    }
+  } while (total < ARRAYSIZE(got));
+}
+
+static status_t test_entropy_src_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO(
+      "Searching for Entropy Source SHA3 Conditioning KAT entry (alg_id = "
+      "%u)...",
+      kFipsKatAlgEntropySrcSha3Conditioning);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgEntropySrcSha3Conditioning);
+  CHECK(entry != NULL, "Entropy Source KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving Entropy Source KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const hmac_kat_data_t *kat = (const hmac_kat_data_t *)data;
+  CHECK(kat->key_len == 0, "Expected key_len=0, got %u", kat->key_len);
+  CHECK(kat->msg_len == 48, "Expected msg_len=48, got %u", kat->msg_len);
+  CHECK(kat->digest_len == 48, "Expected digest_len=48, got %u",
+        kat->digest_len);
+
+  const uint32_t *input_msg = (const uint32_t *)kat->data;
+  const uint32_t *expected_digest =
+      (const uint32_t *)(kat->data + kat->msg_len);
+
+  LOG_INFO("Executing Entropy Source SHA3 Conditioning KAT on hardware...");
+  uint64_t t_start = ibex_mcycle_read();
+
+  dif_entropy_src_t entropy_src;
+  CHECK_DIF_OK(dif_entropy_src_init_from_dt(kDtEntropySrc, &entropy_src));
+
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
+  CHECK_STATUS_OK(entropy_src_testutils_fw_override_enable(
+      &entropy_src, /*buffer_threshold=*/12,
+      /*route_to_firmware=*/true,
+      /*bypass_conditioner=*/false));
+
+  flush_sha3_conditioner(&entropy_src);
+
+  CHECK_DIF_OK(dif_entropy_src_conditioner_start(&entropy_src));
+
+  dif_result_t op_result;
+  uint32_t fail_count = 0;
+  uint32_t count;
+  uint32_t total = 0;
+
+  do {
+    op_result = dif_entropy_src_fw_ov_data_write(
+        &entropy_src, input_msg + total, 12 - total, &count);
+    if (op_result == kDifIpFifoFull) {
+      fail_count++;
+      CHECK(fail_count < 256);
+    } else {
+      fail_count = 0;
+      CHECK_DIF_OK(op_result);
+      total += count;
+    }
+  } while (total < 12);
+
+  stop_sha3_conditioner(&entropy_src);
+
+  fail_count = 0;
+  uint32_t got[12];
+  total = 0;
+  do {
+    op_result = dif_entropy_src_non_blocking_read(&entropy_src, &got[total]);
+    if (op_result == kDifUnavailable) {
+      fail_count++;
+      CHECK(fail_count < 256);
+    } else {
+      CHECK_DIF_OK(op_result);
+      total++;
+    }
+  } while (total < ARRAYSIZE(got));
+
+  CHECK_ARRAYS_EQ(got, expected_digest, 12);
+
+  uint32_t total_cycles = (uint32_t)(ibex_mcycle_read() - t_start);
+  LOG_INFO(
+      "Entropy Source SHA3 Conditioning KAT passed: Total=%u cycles (%u us)",
+      total_cycles, total_cycles / 24);
+
+  return OK_STATUS();
+}
+
 static status_t test_fips_kat_rom(void) {
   // Stop the watchdog timer to prevent timeout during long RSA-4096 OTBN
   // computations.
@@ -2465,7 +2587,7 @@ static status_t test_fips_kat_rom(void) {
         table->magic);
   CHECK(table->version == kFipsKatDescriptorVersion1,
         "Invalid table version: %u", table->version);
-  CHECK(table->entry_count >= 27, "Expected at least 27 entries, got %u",
+  CHECK(table->entry_count >= 28, "Expected at least 28 entries, got %u",
         table->entry_count);
   LOG_INFO(
       "FIPS KAT table found at %p (magic=0x%08x, version=%u, entries=%u, "
@@ -2500,6 +2622,7 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_x25519_kat(table));
   TRY(test_mldsa87_kat(table));
   TRY(test_mlkem1024_kat(table));
+  TRY(test_entropy_src_kat(table));
 
   return OK_STATUS();
 }

@@ -1441,6 +1441,25 @@ typedef struct fips_kat_mlkem1024 {
   uint8_t data[160];
 } fips_kat_mlkem1024_t;
 
+/**
+ * Concrete test vector structure for Entropy Source SHA3 Conditioning
+ * (Algorithm ID 27).
+ *
+ * Schema: `hmac_kat_data_t` equivalent.
+ * Optimization: Single Vector Parameterization (SVP), NIST SP 800-90B.
+ *
+ * Test Vector Parameters:
+ * - Key: 0 bytes (no key).
+ * - Input Message: 48 bytes (12 x 32-bit words).
+ * - Expected Digest: 48 bytes (12 x 32-bit words / 384-bit conditioned digest).
+ */
+typedef struct fips_kat_entropy_src_sha3_conditioning {
+  uint32_t key_len;
+  uint32_t msg_len;
+  uint32_t digest_len;
+  uint8_t data[96];
+} fips_kat_entropy_src_sha3_conditioning_t;
+
 typedef struct fips_kat_data_store {
   fips_kat_sha256_pilot_t sha256_pilot;
   fips_kat_hmac_sha256_t hmac_sha256;
@@ -1469,6 +1488,7 @@ typedef struct fips_kat_data_store {
   fips_kat_drbg_aes256_t drbg_aes256;
   fips_kat_sphincsplus_sha2_128s_verify_t sphincsplus_sha2_128s;
   fips_kat_mlkem1024_t mlkem1024;
+  fips_kat_entropy_src_sha3_conditioning_t entropy_src;
 } fips_kat_data_store_t;
 
 /**
@@ -3588,6 +3608,27 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
             0xd7, 0xd8, 0x55, 0x2d, 0x88, 0xa9, 0x9f, 0xf0,
         },
     },
+    .entropy_src = {
+        .key_len = 0,
+        .msg_len = 48,
+        .digest_len = 48,
+        .data = {
+            // input_msg (48 bytes)
+            0xa9, 0x0d, 0x2a, 0xa5, 0xb2, 0x41, 0xe1, 0xca,
+            0x9d, 0xab, 0x5b, 0x6d, 0xc0, 0x5c, 0x3e, 0x2c,
+            0x93, 0xfc, 0x5a, 0x22, 0x10, 0xa6, 0x31, 0x5d,
+            0x60, 0xf9, 0xb7, 0x91, 0xb3, 0x6b, 0x56, 0x0d,
+            0x70, 0xe1, 0x35, 0xef, 0x8e, 0x7d, 0xba, 0x94,
+            0x41, 0xb7, 0x4e, 0x53, 0xda, 0xb0, 0x60, 0x6b,
+            // expected_digest (48 bytes)
+            0x4a, 0x16, 0x88, 0x1c, 0xe1, 0x56, 0xf4, 0x5f,
+            0xdf, 0xdb, 0x45, 0x08, 0x8e, 0x3f, 0x23, 0xbe,
+            0x1b, 0x4c, 0x5a, 0x7a, 0x6a, 0x35, 0x31, 0x5d,
+            0x36, 0xc5, 0x1c, 0x75, 0xf2, 0x75, 0x73, 0x33,
+            0x19, 0xac, 0xa1, 0x85, 0xd4, 0xab, 0x33, 0x13,
+            0x0f, 0xfe, 0x45, 0xf7, 0x51, 0xf1, 0xbb, 0xc5,
+        },
+    },
 };
 
 /**
@@ -3598,12 +3639,12 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
   (sizeof(fips_kat_rom_table_t) + offsetof(fips_kat_data_store_t, field))
 
 /**
- * Concrete descriptor table in ROM holding 27 entries.
+ * Concrete descriptor table in ROM holding 28 entries.
  */
-#define FIPS_KAT_NUM_ENTRIES 27
+#define FIPS_KAT_NUM_ENTRIES 28
 
 /**
- * Concrete descriptor table in ROM holding 27 entries.
+ * Concrete descriptor table in ROM holding 28 entries.
  */
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -3756,6 +3797,11 @@ alignas(uint32_t) static const fips_kat_rom_table_t kFipsKatDescriptorTable = {
                 .algorithm_id = (uint32_t)kFipsKatAlgMlkem1024,
                 .offset = FIPS_KAT_OFFSET(mlkem1024),
                 .size = sizeof(fips_kat_mlkem1024_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgEntropySrcSha3Conditioning,
+                .offset = FIPS_KAT_OFFSET(entropy_src),
+                .size = sizeof(fips_kat_entropy_src_sha3_conditioning_t),
             },
         },
 };
