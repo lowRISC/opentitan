@@ -530,6 +530,66 @@ TEST(FipsKatTableDataTest, GetDataDrbgAes256) {
   EXPECT_EQ(drbg_data->data[48], 0xD9);
 }
 
+TEST(FipsKatTableDataTest, GetDataSphincsPlusSha2_128sVerify) {
+  struct Layout {
+    struct {
+      uint32_t magic;
+      uint32_t version;
+      uint32_t entry_count;
+      uint32_t total_size;
+      fips_kat_entry_t entries[1];
+    } table;
+
+    struct {
+      uint32_t pub_key_len1;
+      uint32_t pub_key_len2;
+      uint32_t msg_len;
+      uint32_t sig_len1;
+      uint32_t sig_len2;
+      uint8_t data[7924];
+    } spx;
+  } layout{};
+
+  layout.table.magic = kFipsKatDescriptorMagic;
+  layout.table.version = kFipsKatDescriptorVersion1;
+  layout.table.entry_count = 1;
+  layout.table.total_size = sizeof(layout);
+
+  layout.table.entries[0].algorithm_id = kFipsKatAlgSphincsPlusSha2_128sVerify;
+  layout.table.entries[0].offset = offsetof(Layout, spx);
+  layout.table.entries[0].size = sizeof(layout.spx);
+
+  layout.spx.pub_key_len1 = 32;
+  layout.spx.pub_key_len2 = 0;
+  layout.spx.msg_len = 33;
+  layout.spx.sig_len1 = 7856;
+  layout.spx.sig_len2 = 0;
+  layout.spx.data[0] = 0xB5;   // first byte of PK
+  layout.spx.data[32] = 0xD8;  // first byte of msg
+  layout.spx.data[68] = 0xB7;  // first byte of signature
+
+  const auto *table =
+      reinterpret_cast<const fips_kat_descriptor_table_t *>(&layout.table);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgSphincsPlusSha2_128sVerify);
+  ASSERT_NE(entry, nullptr);
+
+  const void *data = get_fips_data(table, entry);
+  ASSERT_NE(data, nullptr);
+  EXPECT_EQ(data, reinterpret_cast<const void *>(&layout.spx));
+
+  const auto *spx_data =
+      static_cast<const asymmetric_verify_kat_data_t *>(data);
+  EXPECT_EQ(spx_data->pub_key_len1, 32);
+  EXPECT_EQ(spx_data->pub_key_len2, 0);
+  EXPECT_EQ(spx_data->msg_len, 33);
+  EXPECT_EQ(spx_data->sig_len1, 7856);
+  EXPECT_EQ(spx_data->sig_len2, 0);
+  EXPECT_EQ(spx_data->data[0], 0xB5);
+  EXPECT_EQ(spx_data->data[32], 0xD8);
+  EXPECT_EQ(spx_data->data[68], 0xB7);
+}
+
 TEST(FipsKatTableBoundsCheckTest, RejectOutOfBounds) {
   TestTableLayout layout{};
   layout.table.magic = kFipsKatDescriptorMagic;

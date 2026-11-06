@@ -38,6 +38,7 @@
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/kmac.h"
+#include "sw/device/silicon_creator/lib/sigverify/sphincsplus/verify.h"
 #include "sw/device/silicon_creator/rom/fips_kat_table.h"
 
 #include "hw/top/aes_regs.h"
@@ -145,6 +146,18 @@ static const uint8_t __attribute__((unused)) kExpectedDrbgOutput[64] = {
     0xdc, 0xb1, 0x80, 0x91, 0xf3, 0x81, 0x25, 0x0c, 0xac, 0xf7, 0x64,
     0xb3, 0x94, 0x04, 0x51, 0xb7, 0x41, 0x3c, 0xa4, 0x4c, 0x51, 0x17,
     0xdb, 0xae, 0x07, 0xb1, 0x87, 0xc5, 0x01, 0x3e, 0x79,
+};
+
+static const uint8_t __attribute__((unused)) kExpectedSphincsPlusPk[32] = {
+    0xb5, 0x05, 0xd7, 0xcf, 0xad, 0x1b, 0x49, 0x74, 0x99, 0x32, 0x3c,
+    0x86, 0x86, 0x32, 0x5e, 0x47, 0x6d, 0x2e, 0x59, 0x93, 0xd9, 0x19,
+    0xb7, 0xf2, 0x88, 0xcc, 0x82, 0x31, 0x33, 0x04, 0x6c, 0xf9,
+};
+
+static const uint8_t __attribute__((unused)) kExpectedSphincsPlusMsg[33] = {
+    0xd8, 0x1c, 0x4d, 0x8d, 0x73, 0x4f, 0xcb, 0xfb, 0xea, 0xde, 0x3d,
+    0x3f, 0x8a, 0x03, 0x9f, 0xaa, 0x2a, 0x2c, 0x99, 0x57, 0xe8, 0x35,
+    0xad, 0x55, 0xb2, 0x2e, 0x75, 0xbf, 0x57, 0xbb, 0x55, 0x6a, 0xc8,
 };
 
 static const uint8_t __attribute__((unused)) kExpectedKdfHmacSha256Kdk[32] = {
@@ -1774,6 +1787,62 @@ static status_t test_ed25519_verify_kat(
   return OK_STATUS();
 }
 
+static status_t test_sphincsplus_sha2_128s_verify_kat(
+    const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for SPHINCS+-SHA2-128s Verify KAT entry (alg_id = %u)...",
+           kFipsKatAlgSphincsPlusSha2_128sVerify);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgSphincsPlusSha2_128sVerify);
+  CHECK(entry != NULL,
+        "SPHINCS+-SHA2-128s Verify KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving SPHINCS+-SHA2-128s Verify KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const asymmetric_verify_kat_data_t *kat_data =
+      (const asymmetric_verify_kat_data_t *)data;
+  CHECK(kat_data->pub_key_len1 == 32, "Expected pub_key_len1=32, got %u",
+        kat_data->pub_key_len1);
+  CHECK(kat_data->pub_key_len2 == 0, "Expected pub_key_len2=0, got %u",
+        kat_data->pub_key_len2);
+  CHECK(kat_data->msg_len == 33, "Expected msg_len=33, got %u",
+        kat_data->msg_len);
+  CHECK(kat_data->sig_len1 == 7856, "Expected sig_len1=7856, got %u",
+        kat_data->sig_len1);
+  CHECK(kat_data->sig_len2 == 0, "Expected sig_len2=0, got %u",
+        kat_data->sig_len2);
+
+  const uint8_t *pk_bytes = kat_data->data;
+  const uint8_t *msg_bytes = kat_data->data + kat_data->pub_key_len1;
+  const uint8_t *sig_bytes =
+      kat_data->data + kat_data->pub_key_len1 + ((kat_data->msg_len + 3) & ~3u);
+
+  CHECK_ARRAYS_EQ(pk_bytes, kExpectedSphincsPlusPk, 32);
+  CHECK_ARRAYS_EQ(msg_bytes, kExpectedSphincsPlusMsg, 33);
+  LOG_INFO("SPHINCS+-SHA2-128s vector payload verified against golden values.");
+
+  LOG_INFO(
+      "Executing SPHINCS+-SHA2-128s verification using sigverify/sphincsplus "
+      "driver...");
+  uint32_t exp_root[kSpxVerifyRootNumWords];
+  spx_public_key_root((const uint32_t *)pk_bytes, exp_root);
+
+  uint32_t act_root[kSpxVerifyRootNumWords];
+  rom_error_t err = spx_verify((const uint32_t *)sig_bytes, NULL, 0, NULL, 0,
+                               NULL, 0, msg_bytes, kat_data->msg_len,
+                               (const uint32_t *)pk_bytes, act_root);
+  CHECK(err == kErrorOk, "spx_verify failed with rom_error 0x%08x", err);
+
+  CHECK_ARRAYS_EQ(act_root, exp_root, kSpxVerifyRootNumWords);
+  LOG_INFO("SPHINCS+-SHA2-128s root matches public key root.");
+  LOG_INFO("SPHINCS+-SHA2-128s Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
 static status_t test_ecdh_p256_kat(const fips_kat_descriptor_table_t *table) {
   LOG_INFO("Searching for ECDH-P256 KAT entry (alg_id = %u)...",
            kFipsKatAlgEcdhP256);
@@ -2223,7 +2292,7 @@ static status_t test_fips_kat_rom(void) {
         table->magic);
   CHECK(table->version == kFipsKatDescriptorVersion1,
         "Invalid table version: %u", table->version);
-  CHECK(table->entry_count >= 25, "Expected at least 25 entries, got %u",
+  CHECK(table->entry_count >= 26, "Expected at least 26 entries, got %u",
         table->entry_count);
   LOG_INFO(
       "FIPS KAT table found at %p (magic=0x%08x, version=%u, entries=%u, "
@@ -2252,6 +2321,7 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_ecdsa_p384_verify_kat(table));
   TRY(test_ed25519_sign_kat(table));
   TRY(test_ed25519_verify_kat(table));
+  TRY(test_sphincsplus_sha2_128s_verify_kat(table));
   TRY(test_ecdh_p256_kat(table));
   TRY(test_ecdh_p384_kat(table));
   TRY(test_x25519_kat(table));
