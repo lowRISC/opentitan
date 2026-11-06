@@ -1,0 +1,203 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+//
+// Testpoints whose description starts with "Placeholder" describe system-level
+// behavior whose scope has not been decided yet.
+{
+  name: i3c
+  testpoints: [
+    // I3C (pre-verified IP) integration tests:
+    {
+      name: chip_sw_i3c_ctrl_tx_rx
+      desc: '''Verify private transfers with the chip's I3C peripheral as Active Controller.
+
+            - Route SCL, SDA and `ctrl_sda_pu` of the I3C peripheral to MIOs through the
+              pinmux, with the open drain attributes of the pads disabled.
+            - Configure the I3C peripheral as Controller and assign a dynamic address to the
+              I3C Target in the testbench with ENTDAA.
+            - The SW test writes a known payload to the Target, and reads it back.
+            - Repeat with transfers longer than the data queues, which SW refills and
+              drains on threshold interrupts.
+            - SW services the command and response queues on interrupt.
+            - SW checks that the read data matches the written data, and the response status.
+
+            Verify all instances of I3C in the chip.
+
+            Notes for silicon targets:
+            - The testbench in this case is a board with an I3C Target device and a bus
+              capture of SCL and SDA. The capture must agree with the payload and status
+              reported by SW.
+            '''
+      stage: V2
+      si_stage: SV2
+      lc_states: ["PROD"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_i3c_tgt_tx_rx
+      desc: '''Verify private transfers with the chip's I3C peripheral as Target.
+
+            - Route SCL and SDA of the I3C peripheral to MIOs through the pinmux.
+            - Configure the I3C peripheral as Target.
+            - The I3C Controller in the testbench assigns a dynamic address to the chip,
+              writes a known payload and reads data that SW has provided through the TTI.
+            - Repeat with transfers longer than the TTI buffers.
+            - SW services the TTI queues on interrupt and checks the received payload.
+            - The testbench checks the data it reads.
+
+            Verify all instances of I3C in the chip.
+
+            Notes for silicon targets:
+            - The testbench in this case is a board with an I3C Controller device.
+            '''
+      stage: V2
+      si_stage: SV2
+      lc_states: ["PROD"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_i3c_ibi
+      desc: '''Verify In-Band Interrupts in both roles.
+
+            - With the chip as Controller, the I3C Target in the testbench raises IBIs with
+              payloads. SW services the IBI queue on interrupt and checks the source address
+              and payload.
+            - With the chip as Target, SW raises IBIs with an MDB and payload through the TTI.
+              The I3C Controller in the testbench accepts them and checks the MDB and payload.
+
+            Verify all instances of I3C in the chip.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_i3c_ctrl_to_tgt
+      desc: '''Verify transfers between two I3C peripherals of the chip.
+
+            - Route `i3c0` and `i3c1` to MIOs that the testbench connects to one bus.
+            - Configure one peripheral as Controller and the other as Target.
+            - The Controller assigns a dynamic address to the Target, and transfers data in
+              both directions.
+            - The Target raises an IBI, which the Controller accepts and services.
+            - Reset each peripheral in turn through the reset manager, then repeat the
+              address assignment and transfers.
+            - Repeat with the roles swapped.
+
+            The testbench decodes the bus independently and checks the payloads.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_i3c_bus_speed
+      desc: '''Verify I3C transfers at the supported bus speeds.
+
+            - Select rates from the Controller, Target and board timing limits, including the
+              maximum rate, the minimum supported rate and the divider boundaries.
+            - At each rate, run private transfers and IBIs under load.
+            - Measure the SCL and data timing, and check the payloads and status.
+
+            Notes for silicon targets:
+            - Bus loading, capacitance and signal integrity need lab evidence.
+            '''
+      stage: V3
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_i3c_sleep_wake
+      desc: '''Verify that the Target Reset Detector of `i3c0` wakes the chip from deep sleep.
+
+            - Configure `i3c0` as Target and select the same pads for its Target Reset
+              Detector as for its SCL and SDA inputs.
+            - Enable the detector and the corresponding wake-up in the power manager, and
+              enter deep sleep.
+            - The testbench drives valid and near-miss Target Reset Patterns.
+            - After wake-up, SW checks the wake-up reason, restores the I3C configuration and
+              runs a transfer with the testbench.
+
+            Checking:
+            - Valid patterns wake the chip; near-miss patterns do not.
+
+            Also check that the detector of `i3c1` raises its wake-up request in normal
+            sleep.
+            '''
+      stage: V2
+      si_stage: SV3
+      lc_states: ["PROD"]
+      tests: []
+      bazel: []
+    }
+
+    // Placeholders for undecided system-level scope:
+    {
+      name: chip_sw_i3c_caliptra_recovery
+      desc: '''Placeholder: OCP Recovery of a Caliptra Target by the chip as Controller.
+
+            Select the Caliptra revision, the OCP Recovery register contract and the split
+            between hardware and Recovery Agent software. Then verify, with the chip as
+            Controller and Recovery Agent:
+            - Discovery of the recovery Target after ENTDAA: DCR 0xBD, and GETMRL and GETMWL
+              of at least 67 and 68 bytes, which the Controller then respects.
+            - The response to a recovery command after address assignment, and to a second
+              command without another address assignment.
+            - Separate recovery and MCTP endpoint addresses, with delivery only to the
+              addressed endpoint.
+            - PEC checking of writes, and discard of a state-changing write with a bad PEC
+              followed by a valid write.
+            - The Protocol Error status 0x04 after a bad PEC, cleared to 0x00 by the next
+              read of DEVICE_STATUS.
+            - Capability and status discovery, writable and read-only registers, and
+              transfer size boundaries.
+            - Image transfer, activation and result status, errors, timeouts and restart,
+              with resets and service delays.
+            - IBIs that the Target raises, accepted by the chip and followed by a private
+              read.
+            '''
+      stage: V3
+      si_stage: NA
+      lc_states: ["PROD"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_i3c_caliptra_interop
+      desc: '''Placeholder: interoperability of the chip as Controller with a Caliptra Target.
+
+            Select the Caliptra revision. Then verify address assignment and configuration,
+            private reads and writes, and IBIs that Caliptra raises and the chip services.
+            An independent bus monitor and payload model check the results.
+            '''
+      stage: V3
+      si_stage: NA
+      lc_states: ["PROD"]
+      tests: []
+      bazel: []
+    }
+    {
+      name: chip_sw_i3c_ext_peer_interop
+      desc: '''Placeholder: interoperability with external I3C and I2C devices.
+
+            Select the devices, their part and board revisions, and their supported roles and
+            bus limits. Then configure each device, transfer known data and exercise its
+            supported events, in each role that the device supports.
+            '''
+      stage: V3
+      si_stage: NA
+      lc_states: ["PROD"]
+      tests: []
+      bazel: []
+    }
+  ]
+}
