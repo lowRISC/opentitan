@@ -22,6 +22,9 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_reactive_mo
   jtag_dmi_reg_block jtag_dmi_ral;
   uvm_reg_addr_t sba_addrs[$];
 
+  // A callback object that's used to augment field predictions
+  direct_predict_cb m_predict_cb;
+
   // Enables the monitor.
   bit enable;
 
@@ -40,6 +43,8 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_reactive_mo
     super.build_phase(phase);
     jtag_dmi_fifo = new("jtag_dmi_fifo", this);
     non_sba_jtag_dmi_analysis_port = new("non_sba_jtag_dmi_analysis_port", this);
+    m_predict_cb = new("m_predict_cb");
+
     sba_addrs.push_back(jtag_dmi_ral.sbcs.get_address());
     sba_addrs.push_back(jtag_dmi_ral.sbaddress0.get_address());
     if (jtag_dmi_ral.sbcs.sbasize.get_reset() > 32) begin
@@ -60,6 +65,26 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_reactive_mo
       sba_addrs.push_back(jtag_dmi_ral.sbdata3.get_address());
     end
     `uvm_info(`gfn, $sformatf("sba_addrs: %0p", sba_addrs), UVM_LOW)
+  endfunction
+
+  function void connect_phase(uvm_phase phase);
+    // Attach m_predict_cb to every field in the three SBA registers (sbcs, sbaddress0-3, sbdata0-3)
+    // in jtag_dmi_ral
+    uvm_reg sb_regs[$] = '{jtag_dmi_ral.sbcs,
+                           jtag_dmi_ral.sbaddress0, jtag_dmi_ral.sbaddress1,
+                           jtag_dmi_ral.sbaddress2, jtag_dmi_ral.sbaddress3,
+                           jtag_dmi_ral.sbdata0, jtag_dmi_ral.sbdata1,
+                           jtag_dmi_ral.sbdata2, jtag_dmi_ral.sbdata3};
+
+    super.connect_phase(phase);
+
+    foreach (sb_regs[i]) begin
+      uvm_reg_field fields[$];
+      sb_regs[i].get_fields(fields);
+      foreach (fields[j]) begin
+        uvm_reg_field_cb::add(fields[j], m_predict_cb);
+      end
+    end
   endfunction
 
   task run_phase(uvm_phase phase);
@@ -100,11 +125,17 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_reactive_mo
 
       if (dmi_item.req_op == DmiOpRead) begin
         if (process_sba_csr_read(csr, dmi_item)) begin
-          void'(csr.predict(.value(dmi_item.rdata), .kind(UVM_PREDICT_READ)));
+          if (!csr.predict(.value(dmi_item.rdata), .kind(UVM_PREDICT_READ))) begin
+            `uvm_fatal(get_full_name(),
+                       $sformatf("Failed to predict after read from %0s", csr.get_name()))
+          end
         end
       end
       else if (dmi_item.req_op == DmiOpWrite) begin
-        void'(csr.predict(.value(dmi_item.wdata), .kind(UVM_PREDICT_WRITE)));
+        if (!csr.predict(.value(dmi_item.wdata), .kind(UVM_PREDICT_WRITE))) begin
+            `uvm_fatal(get_full_name(),
+                       $sformatf("Failed to predict after write to %0s", csr.get_name()))
+        end
         process_sba_csr_write(csr);
       end
     end
@@ -117,11 +148,11 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_reactive_mo
   //
   // Returns a bit to the caller indicating whether to predict the CSR read or not.
   virtual protected function bit process_sba_csr_read(uvm_reg csr, jtag_dmi_item dmi_item);
-    uvm_reg_data_t readondata  = `gmv(jtag_dmi_ral.sbcs.sbreadondata);
-    uvm_reg_data_t readonaddr  = `gmv(jtag_dmi_ral.sbcs.sbreadonaddr);
-    uvm_reg_data_t sbbusy      = `gmv(jtag_dmi_ral.sbcs.sbbusy);
-    uvm_reg_data_t sbbusyerror = `gmv(jtag_dmi_ral.sbcs.sbbusyerror);
-    uvm_reg_data_t sberror     = `gmv(jtag_dmi_ral.sbcs.sberror);
+    uvm_reg_data_t readondata  = m_predict_cb.get_prediction(jtag_dmi_ral.sbcs.sbreadondata);
+    uvm_reg_data_t readonaddr  = m_predict_cb.get_prediction(jtag_dmi_ral.sbcs.sbreadonaddr);
+    uvm_reg_data_t sbbusy      = m_predict_cb.get_prediction(jtag_dmi_ral.sbcs.sbbusy);
+    uvm_reg_data_t sbbusyerror = m_predict_cb.get_prediction(jtag_dmi_ral.sbcs.sbbusyerror);
+    uvm_reg_data_t sberror     = m_predict_cb.get_prediction(jtag_dmi_ral.sbcs.sberror);
     bit do_predict = 1;
 
     case (csr.get_name())
@@ -153,10 +184,11 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_reactive_mo
         end
       end
       "sbaddress0": begin
-        uvm_reg_data_t exp_addr = `gmv(jtag_dmi_ral.sbaddress0);
-        uvm_reg_data_t autoincrement = `gmv(jtag_dmi_ral.sbcs.sbautoincrement);
-        if (autoincrement) begin
-          sba_access_size_e size = sba_access_size_e'(`gmv(jtag_dmi_ral.sbcs.sbaccess));
+        uvm_reg_data_t exp_addr = m_predict_cb.get_prediction(jtag_dmi_ral.sbaddress0.address);
+        uvm_reg_data_t autoinc = m_predict_cb.get_prediction(jtag_dmi_ral.sbcs.sbautoincrement);
+        if (autoinc) begin
+          uvm_reg_data_t raw_size = m_predict_cb.get_prediction(jtag_dmi_ral.sbcs.sbaccess);
+          sba_access_size_e size = sba_access_size_e'(raw_size);
           // Depending on when the sbaddress0 is read, the predicted sbaddress0 value could be off
           // (less than) the observed by at most 1 increment value.
           `DV_CHECK(dmi_item.rdata inside {exp_addr, exp_addr + (1 << size)})
@@ -238,7 +270,10 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_reactive_mo
 
   virtual protected task monitor_reset();
     forever @cfg.in_reset begin
-      if (cfg.in_reset) sba_req_q.delete();
+      if (cfg.in_reset) begin
+        sba_req_q.delete();
+        m_predict_cb.on_reset();
+      end
     end
   endtask
 
@@ -252,31 +287,31 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_reactive_mo
   // item: The returned expected request predicted to be sent.
   // returns 1 if a new SBA request is expected to be sent, else 0.
   virtual protected function bit predict_sba_req(input bus_op_e bus_op);
-    uvm_reg_addr_t addr = `gmv(jtag_dmi_ral.sbaddress0);
-    uvm_reg_data_t data = `gmv(jtag_dmi_ral.sbdata0);
+    uvm_reg_addr_t addr = m_predict_cb.get_prediction(jtag_dmi_ral.sbaddress0.address);
+    uvm_reg_data_t data = m_predict_cb.get_prediction(jtag_dmi_ral.sbdata0.data);
 
-    sba_access_size_e size  = sba_access_size_e'(`gmv(jtag_dmi_ral.sbcs.sbaccess));
+    uvm_reg_data_t raw_size = m_predict_cb.get_prediction(jtag_dmi_ral.sbcs.sbaccess);
+    sba_access_size_e size  = sba_access_size_e'(raw_size);
     int unsigned size_bytes = 1 << int'(size);
 
     sba_access_item item;
 
     // Is the address aligned?
     if (addr << ($bits(addr) - size)) begin
-      void'(jtag_dmi_ral.sbcs.sberror.predict(.value(SbaErrBadAlignment),
-                                              .kind(UVM_PREDICT_DIRECT)));
+      m_predict_cb.make_direct_prediction(jtag_dmi_ral.sbcs.sberror, SbaErrBadAlignment);
       return 0;
     end
 
     // This transfer size is only supported if it will fit on the bus. If not, the agent should drop
     // the request and report the bad size through its register interface.
     if (size_bytes > bus_params_pkg::BUS_DBW) begin
-      void'(jtag_dmi_ral.sbcs.sberror.predict(.value(SbaErrBadSize), .kind(UVM_PREDICT_DIRECT)));
+      m_predict_cb.make_direct_prediction(jtag_dmi_ral.sbcs.sberror, SbaErrBadSize);
       return 0;
     end
 
     // Is there already a pending transaction?
-    if (`gmv(jtag_dmi_ral.sbcs.sbbusy)) begin
-      void'(jtag_dmi_ral.sbcs.sbbusyerror.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
+    if (m_predict_cb.get_prediction(jtag_dmi_ral.sbcs.sbbusy)) begin
+      m_predict_cb.make_direct_prediction(jtag_dmi_ral.sbcs.sbbusyerror, 1);
       return 0;
     end
 
@@ -295,20 +330,23 @@ class sba_access_monitor #(type ITEM_T = sba_access_item) extends dv_reactive_mo
                            sba_req_q[$].sprint(uvm_default_line_printer)))
     sba_req_q.push_back(item);
     req_analysis_port.write(item);
-    void'(jtag_dmi_ral.sbcs.sbbusy.predict(.value(1), .kind(UVM_PREDICT_DIRECT)));
+    m_predict_cb.make_direct_prediction(jtag_dmi_ral.sbcs.sbbusy, 1);
     return 1;
   endfunction
 
   // If autoincr is set then predict the new address. Invoked after the successful completion of
   // previous transfer.
   virtual function void predict_autoincr_sba_addr();
-    if (`gmv(jtag_dmi_ral.sbcs.sbautoincrement)) begin
-      sba_access_size_e size = sba_access_size_e'(`gmv(jtag_dmi_ral.sbcs.sbaccess));
-      uvm_reg_data_t addr = `gmv(jtag_dmi_ral.sbaddress0);
-      void'(jtag_dmi_ral.sbaddress0.predict(.value(addr + (1 << size)),
-                                            .kind(UVM_PREDICT_DIRECT)));
-      `uvm_info(`gfn, $sformatf("Predicted sbaddr after autoincr: 0x%0h -> 0x%0h",
-                                addr, `gmv(jtag_dmi_ral.sbaddress0)), UVM_HIGH)
+    if (m_predict_cb.get_prediction(jtag_dmi_ral.sbcs.sbautoincrement)) begin
+      uvm_reg_data_t raw_size = m_predict_cb.get_prediction(jtag_dmi_ral.sbcs.sbaccess);
+      sba_access_size_e size = sba_access_size_e'(raw_size);
+      uvm_reg_data_t addr = m_predict_cb.get_prediction(jtag_dmi_ral.sbaddress0.address);
+
+      m_predict_cb.make_direct_prediction(jtag_dmi_ral.sbaddress0.address, addr + (1 << size));
+      `uvm_info(`gfn,
+                $sformatf("Predicted sbaddr after autoincr: 0x%0h -> 0x%0h",
+                          addr, m_predict_cb.get_prediction(jtag_dmi_ral.sbaddress0.address)),
+                UVM_HIGH)
     end
   endfunction
 
