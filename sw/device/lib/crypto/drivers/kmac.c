@@ -152,6 +152,62 @@ OT_ASSERT_ENUM_VALUE(ARRAYSIZE(prefix_offsets), KMAC_PREFIX_MULTIREG_COUNT);
 OT_ASSERT_ENUM_VALUE(32, KMAC_PREFIX_PREFIX_FIELD_WIDTH);
 
 /**
+ * Issue a command to `KMAC_CMD.CMD`.
+ */
+static void kmac_cmd_write(uint32_t cmd_value) {
+  uint32_t cmd_reg = bitfield_field32_write(KMAC_CMD_REG_RESVAL,
+                                            KMAC_CMD_CMD_FIELD, cmd_value);
+  abs_mmio_write32(kmac_base() + KMAC_CMD_REG_OFFSET, cmd_reg);
+}
+
+static void kmac_hwip_release(void) {
+  const uint32_t kBase = kmac_base();
+  uint32_t status_reg = abs_mmio_read32(kBase + KMAC_STATUS_REG_OFFSET);
+  if (bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_ABSORB_BIT)) {
+    kmac_cmd_write(KMAC_CMD_CMD_VALUE_PROCESS);
+    while (
+        !bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_SQUEEZE_BIT) &&
+        !bitfield_bit32_read(status_reg, KMAC_STATUS_ALERT_FATAL_FAULT_BIT)) {
+      status_reg = abs_mmio_read32(kBase + KMAC_STATUS_REG_OFFSET);
+    }
+  }
+  if (bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_SQUEEZE_BIT)) {
+    kmac_cmd_write(KMAC_CMD_CMD_VALUE_DONE);
+  }
+}
+
+/**
+ * Hardware wipe guard.
+ *
+ * Streaming operations disable the guard by setting it to `kHardenedBoolFalse`
+ * when there is no error because the hardware must remain claimed between
+ * calls.
+ */
+void kmac_wipe_guard(uint32_t *guard) {
+  if (launder32(*guard) == kHardenedBoolFalse) {
+    return;
+  }
+  kmac_hwip_release();
+}
+
+/**
+ * Clear recoverable error state in the KMAC hardware block.
+ */
+static void kmac_err_clear(void) {
+  const uint32_t kBase = kmac_base();
+  uint32_t cmd_reg =
+      bitfield_bit32_write(KMAC_CMD_REG_RESVAL, KMAC_CMD_ERR_PROCESSED_BIT, 1);
+  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
+  kmac_hwip_release();
+  abs_mmio_write32(kBase + KMAC_INTR_STATE_REG_OFFSET, UINT32_MAX);
+
+  // Read the shadowed registers to clear their write phase trackers.
+  (void)abs_mmio_read32(kBase +
+                        KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_OFFSET);
+  (void)abs_mmio_read32(kBase + KMAC_CFG_SHADOWED_REG_OFFSET);
+}
+
+/**
  * Return the rate (in bytes) for given security strength.
  *
  * The caller must ensure that `keccak_rate` is not a NULL pointer. This is not
@@ -257,10 +313,12 @@ status_t kmac_hwip_default_configure(void) {
   }
   if (bitfield_bit32_read(status_reg,
                           KMAC_STATUS_ALERT_RECOV_CTRL_UPDATE_ERR_BIT)) {
+    kmac_err_clear();
     return OTCRYPTO_RECOV_ERR;
   }
   // Check that core is not busy
   if (!bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_IDLE_BIT)) {
+    kmac_err_clear();
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -268,6 +326,7 @@ status_t kmac_hwip_default_configure(void) {
   uint32_t intr_state =
       abs_mmio_read32(kmac_base() + KMAC_INTR_STATE_REG_OFFSET);
   if (bitfield_bit32_read(intr_state, KMAC_INTR_STATE_KMAC_ERR_BIT)) {
+    kmac_err_clear();
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -335,6 +394,8 @@ status_t kmac_hwip_default_configure(void) {
 
   abs_mmio_write32_shadowed(kmac_base() + KMAC_CFG_SHADOWED_REG_OFFSET,
                             cfg_reg);
+  HARDENED_CHECK_EQ(abs_mmio_read32(kmac_base() + KMAC_CFG_SHADOWED_REG_OFFSET),
+                    launder32(cfg_reg));
 
   return OTCRYPTO_OK;
 }
@@ -360,60 +421,21 @@ static status_t wait_status_bit(uint32_t bit_position, bool bit_value) {
       return OTCRYPTO_FATAL_ERR;
     }
     if (bitfield_bit32_read(reg, KMAC_STATUS_ALERT_RECOV_CTRL_UPDATE_ERR_BIT)) {
+      // COVERAGE (HW ERR) This is only reached if KMAC raises an alert.
+      kmac_err_clear();
       return OTCRYPTO_RECOV_ERR;
     }
     uint32_t intr_state =
         abs_mmio_read32(kmac_base() + KMAC_INTR_STATE_REG_OFFSET);
     if (bitfield_bit32_read(intr_state, KMAC_INTR_STATE_KMAC_ERR_BIT)) {
       // COVERAGE (HW ERR) This is only reached if KMAC reports an error.
+      kmac_err_clear();
       return OTCRYPTO_RECOV_ERR;
     }
     if (bitfield_bit32_read(reg, bit_position) == bit_value) {
       return OTCRYPTO_OK;
     }
   }
-}
-
-static void kmac_hwip_release(void) {
-  // Do nothing when the block is already in `IDLE` mode.
-  const uint32_t kBase = kmac_base();
-  uint32_t status_reg = abs_mmio_read32(kBase + KMAC_STATUS_REG_OFFSET);
-  if (bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_IDLE_BIT)) {
-    return;
-  }
-
-  // If the hardware is still absorbing, terminate the absorption phase.
-  if (bitfield_bit32_read(status_reg, KMAC_STATUS_SHA3_ABSORB_BIT)) {
-    uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
-    cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
-                                     KMAC_CMD_CMD_VALUE_PROCESS);
-    abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
-  }
-
-  // Wait until the squeeze state is reached.
-  if (!status_ok(wait_status_bit(KMAC_STATUS_SHA3_SQUEEZE_BIT, 1))) {
-    return;
-  }
-
-  // Issue `CMD.DONE` to wipe the internal state and release the hardware.
-  uint32_t cmd_reg = KMAC_CMD_REG_RESVAL;
-  cmd_reg = bitfield_field32_write(cmd_reg, KMAC_CMD_CMD_FIELD,
-                                   KMAC_CMD_CMD_VALUE_DONE);
-  abs_mmio_write32(kBase + KMAC_CMD_REG_OFFSET, cmd_reg);
-}
-
-/**
- * Hardware wipe guard.
- *
- * Streaming operations disable the guard by setting it to `kHardenedBoolFalse`
- * when there is no error because the hardware must remain claimed between
- * calls.
- */
-void kmac_wipe_guard(uint32_t *guard) {
-  if (launder32(*guard) == kHardenedBoolFalse) {
-    return;
-  }
-  kmac_hwip_release();
 }
 
 /**
@@ -831,6 +853,12 @@ static status_t kmac_squeeze(kmac_operation_t operation, uint32_t *digest,
 
   // Poll the status register until in the 'squeeze' state.
   HARDENED_TRY(wait_status_bit(KMAC_STATUS_SHA3_SQUEEZE_BIT, 1));
+  HARDENED_CHECK_EQ(abs_mmio_read32(kBase + KMAC_CFG_SHADOWED_REG_OFFSET),
+                    launder32(cfg_reg));
+  HARDENED_CHECK_EQ(
+      bitfield_bit32_read(abs_mmio_read32(kBase + KMAC_INTR_STATE_REG_OFFSET),
+                          KMAC_INTR_STATE_KMAC_ERR_BIT),
+      false);
 
   // Zero out the trailing bytes in the final word.
   size_t remainder_bytes = digest_len_bytes % sizeof(uint32_t);
