@@ -761,8 +761,10 @@ opentitan_test(
 
 CHERIOT_SMOKETEST_DEPS = [
     "//hw/top:rv_core_ibex_c_regs",
+    "//hw/top:sram_ctrl_c_regs",
     "//hw/top:top_lib",
     "//hw/top:uart_c_regs",
+    "//sw/device/lib/base:csr",
     "//sw/device/lib/base:multibits",
     "//sw/device/silicon_creator/lib:manifest_def",
 ]
