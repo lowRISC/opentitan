@@ -944,6 +944,116 @@ typedef struct fips_kat_ecdsa_p384_verify {
 } fips_kat_ecdsa_p384_verify_t;
 
 /**
+ * Algorithm 23: Ed25519 PureEdDSA Signature Generation (Alg ID 23)
+ *
+ * Source Standard: RFC 8032 Section 7.1 (Test 2) / FIPS 186-5 Section 7 / NIST
+ * CAVP.
+ *
+ * Test Vector Parameters:
+ * - Private Key Seed (sk): 32 bytes (256-bit:
+ * 9b08cd4cda96ff2846c3b69d0f4e11ec9f318a5b24a6ab35edf68cdafba6b84f).
+ * - Ephemeral Secret Scalar: None (0 bytes, Ed25519 generates ephemeral k
+ * deterministically via SHA-512).
+ * - Message: 1 byte (0x72).
+ * - Expected Signature: R (32 bytes), S (32 bytes).
+ *
+ * How inputs/outputs were transformed:
+ * - Header Fields:
+ *     priv_key_len  = 32 (32-byte private key seed)
+ *     ephemeral_len = 0  (Ed25519 deterministic nonce derivation)
+ *     msg_len       = 1  (1-byte input message)
+ *     sig_len1      = 32 (32-byte signature component R)
+ *     sig_len2      = 32 (32-byte signature component S)
+ * - Contiguous Payload:
+ *     data[0..31]   = 32-byte private key seed
+ *     data[32]      = 1-byte message (0x72)
+ *     data[33..35]  = 3 bytes 0x00 padding for 4-byte Ibex natural alignment
+ *     data[36..67]  = 32-byte signature component R
+ *     data[68..99]  = 32-byte signature component S
+ * - Ibex Alignment: 20 bytes (header: 5 x uint32_t) + 100 bytes (payload)
+ *   = 120 bytes total (`120 % 4 == 0`). Naturally 4-byte aligned.
+ *
+ * How test runners (BL0 / Cryptolib) use this vector:
+ * 1. Read entry offset from `fips_kat_descriptor_table_t` for
+ * `kFipsKatAlgEd25519Sign`.
+ * 2. Dereference as `const asymmetric_sign_kat_data_t *kat =
+ * get_fips_data(table, entry)`.
+ * 3. Verify parameters: `kat->priv_key_len == 32`, `kat->ephemeral_len == 0`,
+ * `kat->msg_len == 1`, `kat->sig_len1 == 32`, `kat->sig_len2 == 32`.
+ * 4. Extract pointers:
+ *      `const uint8_t *sk = kat->data;`
+ *      `const uint8_t *msg = kat->data + kat->priv_key_len;`
+ *      `const uint8_t *expected_sig = kat->data + kat->priv_key_len +
+ * ((kat->msg_len + 3) & ~3u);`
+ * 5. Construct blinded private key with `kEd25519Config`.
+ * 6. Execute Ed25519 PureEdDSA signing using OTBN coprocessor via
+ * `otcrypto_ed25519_sign()`.
+ * 7. Assert generated signature (R || S) equals `expected_sig`.
+ */
+typedef struct fips_kat_ed25519_sign {
+  uint32_t priv_key_len;
+  uint32_t ephemeral_len;
+  uint32_t msg_len;
+  uint32_t sig_len1;
+  uint32_t sig_len2;
+  uint8_t data[100];
+} fips_kat_ed25519_sign_t;
+
+/**
+ * Algorithm 24: Ed25519 PureEdDSA Signature Verification (Alg ID 24)
+ *
+ * Source Standard: RFC 8032 Section 7.1 (Test 2) / FIPS 186-5 Section 7 / NIST
+ * CAVP.
+ *
+ * Test Vector Parameters:
+ * - Public Key (pk): 32 bytes (256-bit compressed Edwards point).
+ * - Message: 1 byte (0x72).
+ * - Signature: R (32 bytes), S (32 bytes).
+ *
+ * How inputs/outputs were transformed:
+ * - Header Fields:
+ *     pub_key_len1 = 32 (32-byte public key)
+ *     pub_key_len2 = 0  (Ed25519 uses 32-byte compressed public key)
+ *     msg_len      = 1  (1-byte input message)
+ *     sig_len1     = 32 (32-byte signature component R)
+ *     sig_len2     = 32 (32-byte signature component S)
+ * - Contiguous Payload:
+ *     data[0..31]  = 32-byte public key (little-endian serialized)
+ *     data[32]     = 1-byte message (0x72)
+ *     data[33..35] = 3 bytes 0x00 padding for 4-byte Ibex natural alignment
+ *     data[36..67] = 32-byte signature component R (little-endian serialized)
+ *     data[68..99] = 32-byte signature component S (little-endian serialized)
+ * - Ibex Alignment: 20 bytes (header: 5 x uint32_t) + 100 bytes (payload)
+ *   = 120 bytes total (`120 % 4 == 0`). Naturally 4-byte aligned.
+ *
+ * How test runners (BL0 / Cryptolib) use this vector:
+ * 1. Read entry offset from `fips_kat_descriptor_table_t` for
+ * `kFipsKatAlgEd25519Verify`.
+ * 2. Dereference as `const asymmetric_verify_kat_data_t *kat =
+ * get_fips_data(table, entry)`.
+ * 3. Verify parameters: `kat->pub_key_len1 == 32`, `kat->pub_key_len2 == 0`,
+ * `kat->msg_len == 1`, `kat->sig_len1 == 32`, `kat->sig_len2 == 32`.
+ * 4. Extract pointers:
+ *      `const uint8_t *pk = kat->data;`
+ *      `const uint8_t *msg = kat->data + kat->pub_key_len1;`
+ *      `const uint8_t *sig_raw = kat->data + kat->pub_key_len1 + ((kat->msg_len
+ * + 3) & ~3u);`
+ * 5. Construct unblinded public key `otcrypto_unblinded_key_t` (key_mode =
+ * kOtcryptoKeyModeEd25519, key_length = 32).
+ * 6. Execute Ed25519 verification using OTBN coprocessor via
+ * `otcrypto_ed25519_verify()`.
+ * 7. Assert verification result is `kHardenedBoolTrue`.
+ */
+typedef struct fips_kat_ed25519_verify {
+  uint32_t pub_key_len1;
+  uint32_t pub_key_len2;
+  uint32_t msg_len;
+  uint32_t sig_len1;
+  uint32_t sig_len2;
+  uint8_t data[100];
+} fips_kat_ed25519_verify_t;
+
+/**
  * Container holding all embedded FIPS KAT vector payloads in `.fips_kat.data`.
  */
 typedef struct fips_kat_data_store {
@@ -964,6 +1074,8 @@ typedef struct fips_kat_data_store {
   fips_kat_ecdsa_p256_verify_t ecdsa_p256_verify;
   fips_kat_ecdsa_p384_sign_t ecdsa_p384_sign;
   fips_kat_ecdsa_p384_verify_t ecdsa_p384_verify;
+  fips_kat_ed25519_sign_t ed25519_sign;
+  fips_kat_ed25519_verify_t ed25519_verify;
 } fips_kat_data_store_t;
 
 /**
@@ -1735,6 +1847,66 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
         },
     }
 ,
+    .ed25519_sign = {
+        .priv_key_len = 32,
+        .ephemeral_len = 0,
+        .msg_len = 1,
+        .sig_len1 = 32,
+        .sig_len2 = 32,
+        .data = {
+            // Private Key Seed (32 bytes)
+            0x4c, 0xcd, 0x08, 0x9b, 0x28, 0xff, 0x96, 0xda,
+            0x9d, 0xb6, 0xc3, 0x46, 0xec, 0x11, 0x4e, 0x0f,
+            0x5b, 0x8a, 0x31, 0x9f, 0x35, 0xab, 0xa6, 0x24,
+            0xda, 0x8c, 0xf6, 0xed, 0x4f, 0xb8, 0xa6, 0xfb,
+            // Message (1 byte: 0x72)
+            0x72,
+            // Padding (3 bytes 0x00 for 4-byte Ibex alignment)
+            0x00, 0x00, 0x00,
+            // Expected Signature R || S (64 bytes)
+            // R (32 bytes)
+            0xda, 0x69, 0xdb, 0xeb, 0x23, 0x22, 0x76, 0xb3,
+            0x8f, 0x3f, 0x50, 0x16, 0x54, 0x7b, 0xb2, 0xa2,
+            0x40, 0x25, 0x64, 0x5f, 0x0b, 0x82, 0x0e, 0x72,
+            0xb8, 0xca, 0xd4, 0xf0, 0xa9, 0x09, 0xa0, 0x92,
+            // S (32 bytes)
+            0x08, 0x5a, 0xc1, 0xe4, 0x3e, 0x15, 0x99, 0x6e,
+            0x45, 0x8f, 0x36, 0x13, 0xd0, 0xf1, 0x1d, 0x8c,
+            0x38, 0x7b, 0x2e, 0xae, 0xb4, 0x30, 0x2a, 0xee,
+            0xb0, 0x0d, 0x29, 0x16, 0x12, 0xbb, 0x0c, 0x00,
+        },
+    }
+,
+    .ed25519_verify = {
+        .pub_key_len1 = 32,
+        .pub_key_len2 = 0,
+        .msg_len = 1,
+        .sig_len1 = 32,
+        .sig_len2 = 32,
+        .data = {
+            // Public Key (32 bytes)
+            0x3d, 0x40, 0x17, 0xc3, 0xe8, 0x43, 0x89, 0x5a,
+            0x92, 0xb7, 0x0a, 0xa7, 0x4d, 0x1b, 0x7e, 0xbc,
+            0x9c, 0x98, 0x2c, 0xcf, 0x2e, 0xc4, 0x96, 0x8c,
+            0xc0, 0xcd, 0x55, 0xf1, 0x2a, 0xf4, 0x66, 0x0c,
+            // Message (1 byte: 0x72)
+            0x72,
+            // Padding (3 bytes 0x00 for 4-byte Ibex alignment)
+            0x00, 0x00, 0x00,
+            // Signature R || S (64 bytes)
+            // R (32 bytes)
+            0xda, 0x69, 0xdb, 0xeb, 0x23, 0x22, 0x76, 0xb3,
+            0x8f, 0x3f, 0x50, 0x16, 0x54, 0x7b, 0xb2, 0xa2,
+            0x40, 0x25, 0x64, 0x5f, 0x0b, 0x82, 0x0e, 0x72,
+            0xb8, 0xca, 0xd4, 0xf0, 0xa9, 0x09, 0xa0, 0x92,
+            // S (32 bytes)
+            0x08, 0x5a, 0xc1, 0xe4, 0x3e, 0x15, 0x99, 0x6e,
+            0x45, 0x8f, 0x36, 0x13, 0xd0, 0xf1, 0x1d, 0x8c,
+            0x38, 0x7b, 0x2e, 0xae, 0xb4, 0x30, 0x2a, 0xee,
+            0xb0, 0x0d, 0x29, 0x16, 0x12, 0xbb, 0x0c, 0x00,
+        },
+    }
+,
 };
 
 /**
@@ -1745,12 +1917,12 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
   (sizeof(fips_kat_rom_table_t) + offsetof(fips_kat_data_store_t, field))
 
 /**
- * Concrete descriptor table in ROM holding 17 entries.
+ * Concrete descriptor table in ROM holding 19 entries.
  */
-#define FIPS_KAT_NUM_ENTRIES 17
+#define FIPS_KAT_NUM_ENTRIES 19
 
 /**
- * Concrete descriptor table in ROM holding 17 entries.
+ * Concrete descriptor table in ROM holding 19 entries.
  */
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -1853,6 +2025,16 @@ alignas(uint32_t) static const fips_kat_rom_table_t kFipsKatDescriptorTable = {
                 .algorithm_id = (uint32_t)kFipsKatAlgEcdsaP384Verify,
                 .offset = FIPS_KAT_OFFSET(ecdsa_p384_verify),
                 .size = sizeof(fips_kat_ecdsa_p384_verify_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgEd25519Sign,
+                .offset = FIPS_KAT_OFFSET(ed25519_sign),
+                .size = sizeof(fips_kat_ed25519_sign_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgEd25519Verify,
+                .offset = FIPS_KAT_OFFSET(ed25519_verify),
+                .size = sizeof(fips_kat_ed25519_verify_t),
             },
         },
 };

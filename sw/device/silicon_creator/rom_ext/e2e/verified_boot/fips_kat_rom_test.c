@@ -1428,6 +1428,139 @@ static status_t test_ecdsa_p384_verify_kat(
   return OK_STATUS();
 }
 
+static status_t test_ed25519_sign_kat(
+    const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for Ed25519 Sign KAT entry (alg_id = %u)...",
+           kFipsKatAlgEd25519Sign);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgEd25519Sign);
+  CHECK(entry != NULL, "Ed25519 Sign KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving Ed25519 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const asymmetric_sign_kat_data_t *kat_data =
+      (const asymmetric_sign_kat_data_t *)data;
+  CHECK(kat_data->priv_key_len == 32, "Expected priv_key_len=32, got %u",
+        kat_data->priv_key_len);
+  CHECK(kat_data->ephemeral_len == 0, "Expected ephemeral_len=0, got %u",
+        kat_data->ephemeral_len);
+  CHECK(kat_data->msg_len == 1, "Expected msg_len=1, got %u",
+        kat_data->msg_len);
+  CHECK(kat_data->sig_len1 == 32, "Expected sig_len1=32, got %u",
+        kat_data->sig_len1);
+  CHECK(kat_data->sig_len2 == 32, "Expected sig_len2=32, got %u",
+        kat_data->sig_len2);
+
+  const uint8_t *sk = kat_data->data;
+  const uint8_t *msg = kat_data->data + kat_data->priv_key_len;
+  const uint8_t *expected_sig =
+      kat_data->data + kat_data->priv_key_len + ((kat_data->msg_len + 3) & ~3u);
+
+  LOG_INFO("Executing Ed25519 signing using OTBN coprocessor...");
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  const otcrypto_key_config_t kEd25519Config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeEd25519,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  uint32_t keyblob[20] = {0};
+  otcrypto_blinded_key_t private_key = {
+      .config = kEd25519Config,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+      .checksum = 0,
+  };
+  memcpy(keyblob, sk, 32);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(msg, kat_data->msg_len);
+
+  uint32_t sig[16] = {0};
+  otcrypto_word32_buf_t sig_buf = otcrypto_make_word32_buf(sig, 16);
+
+  CHECK_STATUS_OK(otcrypto_ed25519_sign(&private_key, &msg_buf,
+                                        kOtcryptoEddsaSignModeEddsa, &sig_buf));
+
+  CHECK_ARRAYS_EQ((const uint8_t *)sig, expected_sig, 64);
+  LOG_INFO("Ed25519 Signing Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
+static status_t test_ed25519_verify_kat(
+    const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for Ed25519 Verify KAT entry (alg_id = %u)...",
+           kFipsKatAlgEd25519Verify);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgEd25519Verify);
+  CHECK(entry != NULL, "Ed25519 Verify KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving Ed25519 Verify KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const asymmetric_verify_kat_data_t *kat_data =
+      (const asymmetric_verify_kat_data_t *)data;
+  CHECK(kat_data->pub_key_len1 == 32, "Expected pub_key_len1=32, got %u",
+        kat_data->pub_key_len1);
+  CHECK(kat_data->pub_key_len2 == 0, "Expected pub_key_len2=0, got %u",
+        kat_data->pub_key_len2);
+  CHECK(kat_data->msg_len == 1, "Expected msg_len=1, got %u",
+        kat_data->msg_len);
+  CHECK(kat_data->sig_len1 == 32, "Expected sig_len1=32, got %u",
+        kat_data->sig_len1);
+  CHECK(kat_data->sig_len2 == 32, "Expected sig_len2=32, got %u",
+        kat_data->sig_len2);
+
+  const uint8_t *pk = kat_data->data;
+  const uint8_t *msg = kat_data->data + kat_data->pub_key_len1;
+  const uint8_t *sig_raw =
+      kat_data->data + kat_data->pub_key_len1 + ((kat_data->msg_len + 3) & ~3u);
+
+  LOG_INFO("Executing Ed25519 verification using OTBN coprocessor...");
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  uint32_t pk_data[8];
+  memcpy(pk_data, pk, 32);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEd25519,
+      .key_length = 32,
+      .key = pk_data,
+      .checksum = 0,
+  };
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(msg, kat_data->msg_len);
+
+  uint32_t sig_data[16];
+  memcpy(sig_data, sig_raw, 64);
+  otcrypto_const_word32_buf_t sig_buf =
+      otcrypto_make_const_word32_buf(sig_data, 16);
+
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  CHECK_STATUS_OK(otcrypto_ed25519_verify(&public_key, &msg_buf,
+                                          kOtcryptoEddsaSignModeEddsa, &sig_buf,
+                                          &verification_result));
+
+  CHECK(verification_result == kHardenedBoolTrue,
+        "Ed25519 signature verification failed!");
+  LOG_INFO("Ed25519 Verification Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
 static status_t test_fips_kat_rom(void) {
   // Stop the watchdog timer to prevent timeout during long RSA-4096 OTBN
   // computations.
@@ -1442,7 +1575,7 @@ static status_t test_fips_kat_rom(void) {
         table->magic);
   CHECK(table->version == kFipsKatDescriptorVersion1,
         "Invalid table version: %u", table->version);
-  CHECK(table->entry_count >= 17, "Expected at least 17 entries, got %u",
+  CHECK(table->entry_count >= 19, "Expected at least 19 entries, got %u",
         table->entry_count);
   LOG_INFO(
       "FIPS KAT table found at %p (magic=0x%08x, version=%u, entries=%u, "
@@ -1467,6 +1600,8 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_ecdsa_p256_verify_kat(table));
   TRY(test_ecdsa_p384_sign_kat(table));
   TRY(test_ecdsa_p384_verify_kat(table));
+  TRY(test_ed25519_sign_kat(table));
+  TRY(test_ed25519_verify_kat(table));
 
   return OK_STATUS();
 }

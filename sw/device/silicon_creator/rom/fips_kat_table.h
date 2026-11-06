@@ -64,6 +64,8 @@ typedef enum fips_kat_alg_id {
   kFipsKatAlgEcdsaP256Verify = 16,
   kFipsKatAlgEcdsaP384Sign = 17,
   kFipsKatAlgEcdsaP384Verify = 18,
+  kFipsKatAlgEd25519Sign = 19,
+  kFipsKatAlgEd25519Verify = 20,
 } fips_kat_alg_id_t;
 
 /**
