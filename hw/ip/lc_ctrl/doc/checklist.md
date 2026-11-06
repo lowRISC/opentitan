@@ -148,7 +148,7 @@ Code Quality  | [TB_LINT_SETUP][]                     | Done        |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V1][]       | N/A         | Exception for IP modules
 Review        | [DESIGN_SPEC_REVIEWED][]              | Done        |
 Review        | [TESTPLAN_REVIEWED][]                 | Done        |
-Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        | Exception (Security, Power)
+Review        | [STD_TEST_CATEGORIES_PLANNED][]       | Done        | Exception (Power, Performance)
 Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
 [DV_DOC_DRAFT_COMPLETED]:             ../../../../doc/project_governance/checklist/README.md#dv_doc_draft_completed
@@ -178,26 +178,26 @@ Review        | [V2_CHECKLIST_SCOPED][]               | Done        |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Done        |
-Documentation | [DV_DOC_COMPLETED][]                    | Done        |
-Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Done        |
-Testbench     | [ALL_INTERFACES_EXERCISED][]            | Done        |
-Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Done        |
-Testbench     | [SIM_TB_ENV_COMPLETED][]                | Done        |
-Tests         | [SIM_ALL_TESTS_PASSING][]               | Done        |
+Documentation | [DESIGN_DELTAS_CAPTURED_V2][]           | Not Started |
+Documentation | [DV_DOC_COMPLETED][]                    | Not Started |
+Testbench     | [FUNCTIONAL_COVERAGE_IMPLEMENTED][]     | Not Started |
+Testbench     | [ALL_INTERFACES_EXERCISED][]            | Not Started |
+Testbench     | [ALL_ASSERTION_CHECKS_ADDED][]          | Not Started |
+Testbench     | [SIM_TB_ENV_COMPLETED][]                | Not Started |
+Tests         | [SIM_ALL_TESTS_PASSING][]               | Not Started |
 Tests         | [FPV_ALL_ASSERTIONS_WRITTEN][]          | N/A         |
 Tests         | [FPV_ALL_ASSUMPTIONS_REVIEWED][]        | N/A         |
 Tests         | [SIM_FW_SIMULATED][]                    | N/A         |
-Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Done        |
-Coverage      | [SIM_CODE_COVERAGE_V2][]                | Done        | RV_TAP excluded except port toggle, condition coverage waived until V2S
-Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Done        |
+Regression    | [SIM_NIGHTLY_REGRESSION_V2][]           | Not Started |
+Coverage      | [SIM_CODE_COVERAGE_V2][]                | Not Started |
+Coverage      | [SIM_FUNCTIONAL_COVERAGE_V2][]          | Not Started |
 Coverage      | [FPV_CODE_COVERAGE_V2][]                | N/A         |
 Coverage      | [FPV_COI_COVERAGE_V2][]                 | N/A         |
 Integration   | [PRE_VERIFIED_SUB_MODULES_V2][]         | N/A         | Exception for IP modules
-Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Done        |
-Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Done        |
-Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Done        |
-Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
+Issues        | [NO_HIGH_PRIORITY_ISSUES_PENDING][]     | Not Started |
+Issues        | [ALL_LOW_PRIORITY_ISSUES_ROOT_CAUSED][] | Not Started |
+Review        | [DV_DOC_TESTPLAN_REVIEWED][]            | Not Started |
+Review        | [V3_CHECKLIST_SCOPED][]                 | Not Started |
 
 [DESIGN_DELTAS_CAPTURED_V2]:          ../../../../doc/project_governance/checklist/README.md#design_deltas_captured_v2
 [DV_DOC_COMPLETED]:                   ../../../../doc/project_governance/checklist/README.md#dv_doc_completed
@@ -224,11 +224,11 @@ Review        | [V3_CHECKLIST_SCOPED][]                 | Done        |
 
  Type         | Item                                    | Resolution  | Note/Collaterals
 --------------|-----------------------------------------|-------------|------------------
-Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Done        |
-Tests         | [FPV_SEC_CM_VERIFIED][]                 | Done        | Waive tool issue #13693
-Tests         | [SIM_SEC_CM_VERIFIED][]                 | Done        |
-Coverage      | [SIM_COVERAGE_REVIEWED][]               | Done        | Waive reg_en coverage that will implement in common test and FSM coverage covered in FPV test
-Review        | [SEC_CM_DV_REVIEWED][]                  | Done        |
+Documentation | [SEC_CM_TESTPLAN_COMPLETED][]           | Not Started |
+Tests         | [FPV_SEC_CM_VERIFIED][]                 | Not Started |
+Tests         | [SIM_SEC_CM_VERIFIED][]                 | Not Started |
+Coverage      | [SIM_COVERAGE_REVIEWED][]               | Not Started |
+Review        | [SEC_CM_DV_REVIEWED][]                  | Not Started |
 
 [SEC_CM_TESTPLAN_COMPLETED]:          ../../../../doc/project_governance/checklist/README.md#sec_cm_testplan_completed
 [FPV_SEC_CM_VERIFIED]:                ../../../../doc/project_governance/checklist/README.md#fpv_sec_cm_verified
