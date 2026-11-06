@@ -92,6 +92,9 @@ typedef enum fips_kat_alg_id {
 
   // Key Derivation (HKDF - RFC 5869 / SP 800-56Cr2)
   kFipsKatAlgHkdfSha2_384 = 30,
+
+  // SHA-2 (384-bit for CNSA 2.0)
+  kFipsKatAlgSha2_384 = 31,
 } fips_kat_alg_id_t;
 
 /**

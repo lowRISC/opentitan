@@ -759,6 +759,56 @@ TEST(FipsKatTableDataTest, GetDataHkdfSha384) {
   EXPECT_EQ(hkdf_data->data[45], 0x9B);
 }
 
+TEST(FipsKatTableDataTest, GetDataSha384) {
+  struct Layout {
+    struct {
+      uint32_t magic;
+      uint32_t version;
+      uint32_t entry_count;
+      uint32_t total_size;
+      fips_kat_entry_t entries[1];
+    } table;
+    struct {
+      uint32_t key_len;
+      uint32_t msg_len;
+      uint32_t digest_len;
+      uint8_t data[51];
+      uint8_t padding[1];
+    } sha384;
+  } layout{};
+
+  layout.table.magic = kFipsKatDescriptorMagic;
+  layout.table.version = kFipsKatDescriptorVersion1;
+  layout.table.entry_count = 1;
+  layout.table.total_size = sizeof(layout);
+
+  layout.table.entries[0].algorithm_id = kFipsKatAlgSha2_384;
+  layout.table.entries[0].offset = offsetof(Layout, sha384);
+  layout.table.entries[0].size = sizeof(layout.sha384);
+
+  layout.sha384.key_len = 0;
+  layout.sha384.msg_len = 3;
+  layout.sha384.digest_len = 48;
+  layout.sha384.data[0] = 'a';
+  layout.sha384.data[3] = 0xCB;
+
+  const auto *table =
+      reinterpret_cast<const fips_kat_descriptor_table_t *>(&layout.table);
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgSha2_384);
+  ASSERT_NE(entry, nullptr);
+
+  const void *data = get_fips_data(table, entry);
+  ASSERT_NE(data, nullptr);
+  EXPECT_EQ(data, reinterpret_cast<const void *>(&layout.sha384));
+
+  const auto *sha384_data = static_cast<const hmac_kat_data_t *>(data);
+  EXPECT_EQ(sha384_data->key_len, 0);
+  EXPECT_EQ(sha384_data->msg_len, 3);
+  EXPECT_EQ(sha384_data->digest_len, 48);
+  EXPECT_EQ(sha384_data->data[0], 'a');
+  EXPECT_EQ(sha384_data->data[3], 0xCB);
+}
+
 TEST(FipsKatTableBoundsCheckTest, RejectOutOfBounds) {
   TestTableLayout layout{};
   layout.table.magic = kFipsKatDescriptorMagic;

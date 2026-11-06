@@ -73,6 +73,13 @@ static const uint8_t __attribute__((unused)) kExpectedSha512Digest[64] = {
     0x0e, 0x2a, 0x9a, 0xc9, 0x4f, 0xa5, 0x4c, 0xa4, 0x9f,
 };
 
+static const uint8_t __attribute__((unused)) kExpectedSha384Digest[48] = {
+    0xcb, 0x00, 0x75, 0x3f, 0x45, 0xa3, 0x5e, 0x8b, 0xb5, 0xa0, 0x3d, 0x69,
+    0x9a, 0xc6, 0x50, 0x07, 0x27, 0x2c, 0x32, 0xab, 0x0e, 0xde, 0xd1, 0x63,
+    0x1a, 0x8b, 0x60, 0x5a, 0x43, 0xff, 0x5b, 0xed, 0x80, 0x86, 0x07, 0x2b,
+    0xa1, 0xe7, 0xcc, 0x23, 0x58, 0xba, 0xec, 0xa1, 0x34, 0xc8, 0x25, 0xa7,
+};
+
 static const uint8_t __attribute__((unused)) kExpectedHmacSha512Digest[64] = {
     0xfa, 0x73, 0xb0, 0x08, 0x9d, 0x56, 0xa2, 0x84, 0xef, 0xb0, 0xf0,
     0x75, 0x6c, 0x89, 0x0b, 0xe9, 0xb1, 0xb5, 0xdb, 0xdd, 0x8e, 0xe8,
@@ -425,6 +432,88 @@ static status_t test_sha512_kat(const fips_kat_descriptor_table_t *table) {
 
   CHECK_ARRAYS_EQ((const uint8_t *)computed_digest, expected_digest, 64);
   LOG_INFO("SHA2-512 Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
+static status_t test_sha384_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for SHA2-384 KAT entry (alg_id = %u)...",
+           kFipsKatAlgSha2_384);
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgSha2_384);
+  CHECK(entry != NULL, "SHA2-384 KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving SHA2-384 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const hmac_kat_data_t *kat_data = (const hmac_kat_data_t *)data;
+  CHECK(kat_data->key_len == 0, "Expected key_len=0, got %u",
+        kat_data->key_len);
+  CHECK(kat_data->msg_len == 3, "Expected msg_len=3, got %u",
+        kat_data->msg_len);
+  CHECK(kat_data->digest_len == 48, "Expected digest_len=48, got %u",
+        kat_data->digest_len);
+
+  const uint8_t *msg = kat_data->data + kat_data->key_len;
+  const uint8_t *expected_digest =
+      kat_data->data + kat_data->key_len + kat_data->msg_len;
+
+  CHECK(msg[0] == 'a' && msg[1] == 'b' && msg[2] == 'c',
+        "Test vector message mismatch!");
+  CHECK_ARRAYS_EQ(expected_digest, kExpectedSha384Digest, 48);
+  LOG_INFO("SHA2-384 vector payload verified against golden values.");
+
+  LOG_INFO("Executing SHA2-384 hash using HMAC hardware accelerator...");
+  const uint32_t hmac_base_addr = dt_hmac_primary_reg_block(kDtHmac);
+
+  // Clear config and disable interrupts
+  abs_mmio_write32(hmac_base_addr + HMAC_CFG_REG_OFFSET, 0u);
+  abs_mmio_write32(hmac_base_addr + HMAC_INTR_ENABLE_REG_OFFSET, 0u);
+  abs_mmio_write32(hmac_base_addr + HMAC_INTR_STATE_REG_OFFSET, UINT32_MAX);
+
+  // Configure HMAC IP for SHA2-384 with digest_swap = true
+  uint32_t cfg = 0;
+  cfg = bitfield_bit32_write(cfg, HMAC_CFG_DIGEST_SWAP_BIT, true);
+  cfg = bitfield_bit32_write(cfg, HMAC_CFG_ENDIAN_SWAP_BIT, false);
+  cfg = bitfield_bit32_write(cfg, HMAC_CFG_SHA_EN_BIT, true);
+  cfg = bitfield_bit32_write(cfg, HMAC_CFG_HMAC_EN_BIT, false);
+  cfg = bitfield_field32_write(cfg, HMAC_CFG_DIGEST_SIZE_FIELD,
+                               HMAC_CFG_DIGEST_SIZE_VALUE_SHA2_384);
+  cfg = bitfield_field32_write(cfg, HMAC_CFG_KEY_LENGTH_FIELD,
+                               HMAC_CFG_KEY_LENGTH_VALUE_KEY_NONE);
+  abs_mmio_write32(hmac_base_addr + HMAC_CFG_REG_OFFSET, cfg);
+
+  // Start hash
+  abs_mmio_write32(hmac_base_addr + HMAC_CMD_REG_OFFSET,
+                   bitfield_bit32_write(0, HMAC_CMD_HASH_START_BIT, true));
+
+  // Write message bytes into FIFO
+  for (size_t i = 0; i < kat_data->msg_len; ++i) {
+    abs_mmio_write8(hmac_base_addr + HMAC_MSG_FIFO_REG_OFFSET, msg[i]);
+  }
+
+  // Trigger process
+  abs_mmio_write32(hmac_base_addr + HMAC_CMD_REG_OFFSET,
+                   bitfield_bit32_write(0, HMAC_CMD_HASH_PROCESS_BIT, true));
+
+  // Wait until hmac_done interrupt flag is asserted
+  uint32_t intr_state = 0;
+  do {
+    intr_state = abs_mmio_read32(hmac_base_addr + HMAC_INTR_STATE_REG_OFFSET);
+  } while (!bitfield_bit32_read(intr_state, HMAC_INTR_STATE_HMAC_DONE_BIT));
+  abs_mmio_write32(hmac_base_addr + HMAC_INTR_STATE_REG_OFFSET, intr_state);
+
+  // Read 12 digest registers (48 bytes)
+  uint32_t computed_digest[12];
+  for (size_t i = 0; i < 12; ++i) {
+    computed_digest[i] = abs_mmio_read32(
+        hmac_base_addr + HMAC_DIGEST_0_REG_OFFSET + i * sizeof(uint32_t));
+  }
+
+  CHECK_ARRAYS_EQ((const uint8_t *)computed_digest, expected_digest, 48);
+  LOG_INFO("SHA2-384 Known Answer Test check ok.");
 
   return OK_STATUS();
 }
@@ -2707,7 +2796,7 @@ static status_t test_fips_kat_rom(void) {
         table->magic);
   CHECK(table->version == kFipsKatDescriptorVersion1,
         "Invalid table version: %u", table->version);
-  CHECK(table->entry_count >= 29, "Expected at least 29 entries, got %u",
+  CHECK(table->entry_count >= 30, "Expected at least 30 entries, got %u",
         table->entry_count);
   LOG_INFO(
       "FIPS KAT table found at %p (magic=0x%08x, version=%u, entries=%u, "
@@ -2718,6 +2807,7 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_sha256_kat(table));
   TRY(test_hmac_sha256_kat(table));
   TRY(test_sha512_kat(table));
+  TRY(test_sha384_kat(table));
   TRY(test_hmac_sha512_kat(table));
   TRY(test_shake256_kat(table));
   TRY(test_kmac256_kat(table));
