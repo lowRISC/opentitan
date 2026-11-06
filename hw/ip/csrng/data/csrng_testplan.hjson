@@ -43,6 +43,8 @@
             - When an initiate or reseed command is sent where flag0 is not a valid kMultiBitBool value.
             - The genbits bus value is equal to the prior valid value.
             - When an illegal command is used (0x0,0x6-0xf).
+            - When INT_STATE_NUM is written with a reserved instance number, which must be ignored.
+            Verify that INT_STATE_NUM cannot be written while INT_STATE_HALT is set.
             Verify that writing zeros to the recoverable alert status register resets all the status bits.
             Verify fatal_alert asserts when:
             - An illegal state is reached.

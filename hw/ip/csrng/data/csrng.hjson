@@ -131,10 +131,11 @@
       desc: "CSRNG can be set up to generate non-deterministic random values by using a random seed from the entropy source."
     }
     {
-      name: "CSRNG.READ_INT_STATE",
+      name: "CSRNG.SAVE_AND_RESTORE",
       desc: '''
-            CSRNG allows reading the internal state of the three CTR_DRBG instances corresponding to the three interfaces.
-            This is useful for debugging and validation testing.
+            CSRNG allows a selected instance to be halted, have its state read out or overwritten, and resumed,
+            via !!INT_STATE_HALT and !!INT_STATE_VAL.
+            This is useful for debugging and validation testing, as well as context save/restore.
             '''
     }
     {
@@ -270,12 +271,22 @@
             name: "READ_INT_STATE",
             mubi: true
             desc: '''
-                  Setting this field to kMultiBitBool4True will enable reading from the !!INT_STATE_VAL register.
+                  Setting this field to kMultiBitBool4True will enable reading the internal state via !!INT_STATE_VAL.
                   Also, the !!INT_STATE_READ_ENABLE bit of the selected instance needs to be set to true for this to work.
                   '''
           resval: false
         },
-        { bits: "15:12",
+        {
+            bits: "15:12",
+            name: "WRITE_INT_STATE",
+            mubi: true
+            desc: '''
+                  Setting this field to kMultiBitBool4True will enable writing the internal state via !!INT_STATE_VAL.
+                  Also, the !!INT_STATE_WRITE_ENABLE bit of the selected instance needs to be set to true for this to work.
+                  '''
+          resval: false
+        },
+        { bits: "19:16",
           name: "FIPS_FORCE_ENABLE",
           mubi: true
           desc: '''
@@ -502,58 +513,89 @@
           name: "INT_STATE_READ_ENABLE",
           desc: '''
                 Per-instance internal state read enable.
-                Defines whether the internal state of the corresponding instance is readable via !!INT_STATE_VAL.
-                Note that for !!INT_STATE_VAL to provide read access to the internal state, also !!CTRL.READ_INT_STATE needs to be set to `kMultiBitBool4True`.
+                Defines whether the internal state of the corresponding instance can be read via !!INT_STATE_VAL.
+                Reads for an instance whose bit is cleared return 0.
                 '''
           resval: 0x7
+        }
+      ]
+    },
+    { name: "INT_STATE_NUM_REGWEN",
+      desc: "Internal state number REGWEN register",
+      swaccess: "ro",
+      hwaccess: "hwo",
+      hwext: "true",
+      tags: [// This regwen is completely under HW management and thus cannot be manipulated
+             // by software.
+             "excl:CsrNonInitTests:CsrExclCheck"]
+      fields: [
+        { bits: "0",
+          desc: '''
+                INT_STATE_NUM register configuration enable bit.
+                This bit is cleared while !!INT_STATE_HALT is set to kMultiBitBool4True, so the selected instance cannot be changed while it is halted.
+                '''
+          resval: 1,
         }
       ]
     },
     { name: "INT_STATE_NUM",
       desc: "Internal state number register",
       swaccess: "rw",
-      hwaccess: "hro",
+      hwaccess: "hrw",
+      hwext: "true",
       hwqe: "true",
+      regwen: "INT_STATE_NUM_REGWEN",
+      tags: [// Writes of reserved instance numbers are ignored and affect RECOV_ALERT_STS.
+             "excl:CsrAllTests:CsrExclWrite"]
       fields: [
         {
             bits: "3:0",
             name: "INT_STATE_NUM",
             desc: '''
-                  Setting this field will set the number for which internal state can be
-                  selected for a read access. Up to 16 internal state values can be chosen
-                  from this register. The actual number of valid internal state fields
-                  is set by parameter NumHwApps plus 1 software app. For those selections that point
-                  to reserved locations (greater than NumHwApps plus 1), the returned value
-                  will be zero. Writing this register will also reset the internal read
-                  pointer for the !!INT_STATE_VAL register.
-                  Note: This register should be read back after being written to ensure
-                  that the !!INT_STATE_VAL read back is accurate.
-                  This field also selects the instance targeted by !!INT_STATE_HALT and !!INT_STATE_STS.
+                  Setting this field will set the number for which instance is targeted by !!INT_STATE_HALT, !!INT_STATE_STS and !!INT_STATE_VAL.
+                  The number of valid instances is set by parameter NumHwApps plus 1 software app.
+                  Writes of a number pointing to a reserved instance (NumHwApps plus 1 or greater) are ignored and set !!RECOV_ALERT_STS.INT_STATE_NUM_INVALID_ALERT.
+                  This register cannot be written while !!INT_STATE_NUM_REGWEN is cleared.
+                  Writing this register will also reset the internal read/write pointer for the !!INT_STATE_VAL register.
+                  Note: This register should be read back after being written to ensure that the !!INT_STATE_VAL read back is accurate.
                   '''
         },
       ]
     },
     {
       name: "INT_STATE_VAL",
-      desc: "Internal state read access register",
-      swaccess: "ro",
+      desc: "Internal state read/write access register",
+      swaccess: "rw",
       hwaccess: "hrw",
       hwext: "true",
       hwre: "true",
+      hwqe: "true",
+      tags: [// Reads return the internal state and advance the word pointer, so they are not
+             // predictable by the CSR tests.
+             "excl:CsrNonInitTests:CsrExclCheck"]
       fields: [
         { bits: "31:0",
           name: "INT_STATE_VAL",
           desc: '''
-                Reading this register will dump out the contents of the selected internal state field.
-                Since the internal state field is 448 bits wide, it will require 14 reads from this
-                register to gather the entire field. Once 14 reads have been done, the internal read
-                pointer (selects 32 bits of the 448 bit field) will reset to zero. The !!INT_STATE_NUM
-                can be re-written at this time (internal read pointer is also reset), and then
-                another internal state field can be read.
+                Reading this register will dump out the contents of the selected instance's internal state.
+                Writing this register overwrites the state word by word as the writes arrive.
+                Stopping before all 26 words have been written leaves the instance with a mix of restored and previous state words.
+                The internal state comprises the CTR_DRBG state (key/V/reseed counter/fips/instantiated) as well as the state of a Generate command paused mid-sequence (remaining block count, Generate flag and additional data).
+                Since this field is 816 bits wide, it will require 26 reads or writes of this register to access the entire field.
+                Every read and every write advances the internal read/write pointer (selects 32 bits of the 816 bit field), which wraps around to zero after 26 accesses.
+                Reads and writes share this pointer.
+                Writing !!INT_STATE_NUM resets the pointer to zero, so every read or write sequence should be started by writing !!INT_STATE_NUM.
+
+                Reserved bits are ignored on writes and read as 0.
+
+                Reads are accepted regardless of whether the instance is halted.
                 To get a consistent snapshot, halt the instance via !!INT_STATE_HALT first.
-                Note that for !!INT_STATE_VAL to provide read access to the internal state, also !!CTRL.READ_INT_STATE needs to be set to `kMultiBitBool4True`.
-                Also, the !!INT_STATE_READ_ENABLE bit of the selected instance needs to be set to true for this to work.
-                Otherwise, the register reads as 0.
+                Restoring the state is only possible while the instance is halted.
+                If the state is internally updated while an access sequence is in progress, !!RECOV_ALERT_STS.INT_STATE_OVERWRITE_ALERT is raised.
+
+                Note that for !!INT_STATE_VAL to provide read access to the internal state, !!CTRL.READ_INT_STATE needs to be set to `kMultiBitBool4True` and the !!INT_STATE_READ_ENABLE bit of the selected instance needs to be set.
+                For write access, !!CTRL.WRITE_INT_STATE needs to be set to `kMultiBitBool4True`, the !!INT_STATE_WRITE_ENABLE bit of the selected instance needs to be set and !!INT_STATE_STS.HALTED needs to be set.
+                Otherwise, the register reads as 0, writes are dropped and the pointer does not advance.
                 '''
         }
       ]
@@ -615,6 +657,7 @@
 
                 This request is only accepted while a Generate command is actually in progress for this instance.
                 If no Generate command is in progress, the write is ignored and !!RECOV_ALERT_STS.GEN_ABORT_INVALID_ALERT is set instead.
+                If the instance is halted via !!INT_STATE_HALT, the abort only takes effect once the instance is resumed.
                 '''
         }
       ]
@@ -690,13 +733,21 @@
                 '''
         }
         { bits: "3",
+          name: "WRITE_INT_STATE_FIELD_ALERT",
+          desc: '''
+                This bit is set when the WRITE_INT_STATE field in the !!CTRL register is set to
+                a value other than kMultiBitBool4True or kMultiBitBool4False.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "4",
           name: "FIPS_FORCE_ENABLE_FIELD_ALERT",
           desc: '''
                 This bit is set when the FIPS_FORCE_ENABLE field in the !!CTRL register is set to a value other than kMultiBitBool4True or kMultiBitBool4False.
                 Writing a zero resets this status bit.
                 '''
         }
-        { bits: "4",
+        { bits: "5",
           name: "ACMD_FLAG0_FIELD_ALERT",
           desc: '''
                 This bit is set when the FLAG0 field in the Application Command is set to
@@ -704,7 +755,7 @@
                 Writing a zero resets this status bit.
                 '''
         }
-        { bits: "5",
+        { bits: "6",
           name: "GEN_ABORT_INVALID_ALERT",
           desc: '''
                 This bit is set when a field of the !!GEN_ABORT register is set to kMultiBitBool4True for an instance that does not currently have a Generate command in progress.
@@ -712,18 +763,37 @@
                 Writing a zero resets this status bit.
                 '''
         }
-        { bits: "6",
+        { bits: "7",
           name: "GEN_ABORT_FIELD_ALERT",
           desc: '''
                 This bit is set when a field of the !!GEN_ABORT register is set to a value other than kMultiBitBool4True or kMultiBitBool4False.
                 Writing a zero resets this status bit.
                 '''
         }
-        { bits: "7",
+        { bits: "8",
           name: "INT_STATE_HALT_FIELD_ALERT",
           desc: '''
                 This bit is set when the !!INT_STATE_HALT register is set to a value other than
                 kMultiBitBool4True or kMultiBitBool4False.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "9",
+          name: "INT_STATE_OVERWRITE_ALERT",
+          desc: '''
+                This bit is set when CSRNG internally updates the state of the instance selected by !!INT_STATE_NUM while an access sequence via !!INT_STATE_VAL is in progress.
+                This happens when the word pointer is advanced or when !!INT_STATE_VAL is accessed in the same cycle.
+                The words read or written in that sequence may therefore be inconsistent.
+                Halt the instance via !!INT_STATE_HALT to prevent this.
+                Writing a zero resets this status bit.
+                '''
+        }
+        { bits: "10",
+          name: "INT_STATE_NUM_INVALID_ALERT",
+          desc: '''
+                This bit is set when !!INT_STATE_NUM is written with a number pointing to a reserved instance.
+                The write is ignored and CSRNG continues to operate.
+                This bit is also set if the selected instance is invalid, which can only be caused by a fault.
                 Writing a zero resets this status bit.
                 '''
         }
@@ -911,6 +981,39 @@
       ]
     },
     {
+      name: "INT_STATE_WRITE_ENABLE_REGWEN",
+      desc: "Internal state write enable REGWEN register",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          desc: '''
+                INT_STATE_WRITE_ENABLE register configuration enable bit.
+                If this is cleared to 0, the INT_STATE_WRITE_ENABLE register cannot be written anymore.
+                '''
+          resval: 1,
+        }
+      ]
+    },
+    {
+      name: "INT_STATE_WRITE_ENABLE",
+      desc: "Internal state write enable register",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "INT_STATE_WRITE_ENABLE_REGWEN",
+      fields: [
+        { bits: "2:0",
+          name: "INT_STATE_WRITE_ENABLE",
+          desc: '''
+                Per-instance internal state write enable.
+                Defines whether the internal state of the corresponding instance can be written via !!INT_STATE_VAL.
+                Writes for an instance whose bit is cleared are dropped.
+                '''
+          resval: 0x7
+        }
+      ]
+    },
+    {
       name: "INT_STATE_HALT_ENABLE_REGWEN",
       desc: "Internal state halt enable REGWEN register",
       swaccess: "rw0c",
@@ -956,7 +1059,7 @@
           mubi: true,
           resval: false,
           desc: '''
-                While this field is set to kMultiBitBool4True, the instance selected by !!INT_STATE_NUM halts.
+                While this field is set to kMultiBitBool4True, the instance selected by !!INT_STATE_NUM halts and !!INT_STATE_NUM cannot be written.
                 The instance first completes the command in progress and any commands already queued for it.
                 A Generate command is instead halted as soon as the block currently being generated is complete.
                 If this is the final block, the command is acknowledged after resuming, once the block has been read out.
@@ -978,8 +1081,7 @@
         { bits: "0",
           name: "HALTED",
           desc: '''
-                Reflects whether the instance selected by !!INT_STATE_NUM has quiesced following !!INT_STATE_HALT, such that its internal state stays constant while it is read via !!INT_STATE_VAL.
-                Reads as 0 if !!INT_STATE_NUM selects a reserved instance.
+                Reflects whether the instance selected by !!INT_STATE_NUM has quiesced following !!INT_STATE_HALT, such that its internal state stays constant while it is read/written via !!INT_STATE_VAL.
                 Also see !!INTR_STATE.CS_CMD_REQ_DONE, which fires when an instance has halted.
                 '''
           resval: 0

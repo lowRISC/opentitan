@@ -32,7 +32,8 @@ TEST_F(ConfigTest, NullArgs) {
 
 TEST_F(ConfigTest, ConfigOk) {
   constexpr uint32_t exp = kMultiBitBool4True | kMultiBitBool4True << 4 |
-                           kMultiBitBool4True << 8 | kMultiBitBool4False << 12;
+                           kMultiBitBool4True << 8 | kMultiBitBool4False << 12 |
+                           kMultiBitBool4False << 16;
   EXPECT_READ32(CSRNG_REGWEN_REG_OFFSET, 1);
   EXPECT_WRITE32(CSRNG_CTRL_REG_OFFSET, exp);
   EXPECT_DIF_OK(dif_csrng_configure(&csrng_));
@@ -372,6 +373,18 @@ TEST_F(GetInternalStateTest, GetInternalStateOk) {
                     {CSRNG_INT_STATE_NUM_INT_STATE_NUM_OFFSET,
                      static_cast<uint32_t>(instance_id)},
                 });
+  EXPECT_READ32(CSRNG_INT_STATE_READ_ENABLE_REG_OFFSET,
+                {{static_cast<uint32_t>(instance_id), true}});
+  EXPECT_READ32(CSRNG_INT_STATE_HALT_ENABLE_REG_OFFSET,
+                {{static_cast<uint32_t>(instance_id), true}});
+  EXPECT_WRITE32(
+      CSRNG_INT_STATE_HALT_REG_OFFSET,
+      {
+          {CSRNG_INT_STATE_HALT_INT_STATE_HALT_OFFSET, kMultiBitBool4True},
+      });
+  EXPECT_READ32(CSRNG_INT_STATE_STS_REG_OFFSET, 0);
+  EXPECT_READ32(CSRNG_INT_STATE_STS_REG_OFFSET,
+                {{CSRNG_INT_STATE_STS_HALTED_BIT, true}});
 
   dif_csrng_internal_state_t expected = {
       .reseed_counter = 0,
@@ -387,7 +400,16 @@ TEST_F(GetInternalStateTest, GetInternalStateOk) {
   for (size_t i = 0; i < 8; ++i) {
     EXPECT_READ32(CSRNG_INT_STATE_VAL_REG_OFFSET, expected.key[i]);
   }
+  // The Generate additional data is ignored.
+  for (size_t i = 0; i < 12; ++i) {
+    EXPECT_READ32(CSRNG_INT_STATE_VAL_REG_OFFSET, 0xdeadbeef);
+  }
   EXPECT_READ32(CSRNG_INT_STATE_VAL_REG_OFFSET, 3);
+  EXPECT_WRITE32(
+      CSRNG_INT_STATE_HALT_REG_OFFSET,
+      {
+          {CSRNG_INT_STATE_HALT_INT_STATE_HALT_OFFSET, kMultiBitBool4False},
+      });
 
   dif_csrng_internal_state_t got;
   EXPECT_DIF_OK(dif_csrng_get_internal_state(&csrng_, instance_id, &got));
@@ -414,6 +436,48 @@ TEST_F(GetInternalStateTest, BadIntStateNumWrite) {
   EXPECT_EQ(
       dif_csrng_get_internal_state(&csrng_, kCsrngInternalStateIdSw, &got),
       kDifError);
+}
+
+TEST_F(GetInternalStateTest, IntStateReadDisabled) {
+  EXPECT_WRITE32(CSRNG_INT_STATE_NUM_REG_OFFSET,
+                 {
+                     {CSRNG_INT_STATE_NUM_INT_STATE_NUM_OFFSET,
+                      static_cast<uint32_t>(kCsrngInternalStateIdSw)},
+                 });
+  EXPECT_READ32(CSRNG_INT_STATE_NUM_REG_OFFSET,
+                {
+                    {CSRNG_INT_STATE_NUM_INT_STATE_NUM_OFFSET,
+                     static_cast<uint32_t>(kCsrngInternalStateIdSw)},
+                });
+  EXPECT_READ32(CSRNG_INT_STATE_READ_ENABLE_REG_OFFSET,
+                {{static_cast<uint32_t>(kCsrngInternalStateIdSw), false}});
+
+  dif_csrng_internal_state_t got;
+  EXPECT_EQ(
+      dif_csrng_get_internal_state(&csrng_, kCsrngInternalStateIdSw, &got),
+      kDifLocked);
+}
+
+TEST_F(GetInternalStateTest, IntStateHaltDisabled) {
+  EXPECT_WRITE32(CSRNG_INT_STATE_NUM_REG_OFFSET,
+                 {
+                     {CSRNG_INT_STATE_NUM_INT_STATE_NUM_OFFSET,
+                      static_cast<uint32_t>(kCsrngInternalStateIdSw)},
+                 });
+  EXPECT_READ32(CSRNG_INT_STATE_NUM_REG_OFFSET,
+                {
+                    {CSRNG_INT_STATE_NUM_INT_STATE_NUM_OFFSET,
+                     static_cast<uint32_t>(kCsrngInternalStateIdSw)},
+                });
+  EXPECT_READ32(CSRNG_INT_STATE_READ_ENABLE_REG_OFFSET,
+                {{static_cast<uint32_t>(kCsrngInternalStateIdSw), true}});
+  EXPECT_READ32(CSRNG_INT_STATE_HALT_ENABLE_REG_OFFSET,
+                {{static_cast<uint32_t>(kCsrngInternalStateIdSw), false}});
+
+  dif_csrng_internal_state_t got;
+  EXPECT_EQ(
+      dif_csrng_get_internal_state(&csrng_, kCsrngInternalStateIdSw, &got),
+      kDifLocked);
 }
 
 TEST_F(GetInternalStateTest, GetInternalStateBadArgs) {
