@@ -701,6 +701,64 @@ TEST(FipsKatTableDataTest, GetDataEntropySrcSha3Conditioning) {
   EXPECT_EQ(hmac_data->data[48], 0x4A);
 }
 
+TEST(FipsKatTableDataTest, GetDataHkdfSha384) {
+  struct Layout {
+    struct {
+      uint32_t magic;
+      uint32_t version;
+      uint32_t entry_count;
+      uint32_t total_size;
+      fips_kat_entry_t entries[1];
+    } table;
+    struct {
+      uint32_t ikm_len;
+      uint32_t salt_len;
+      uint32_t info_len;
+      uint32_t okm_len;
+      uint8_t data[87];
+      uint8_t padding[1];
+    } hkdf;
+  } layout{};
+
+  layout.table.magic = kFipsKatDescriptorMagic;
+  layout.table.version = kFipsKatDescriptorVersion1;
+  layout.table.entry_count = 1;
+  layout.table.total_size = sizeof(layout);
+
+  layout.table.entries[0].algorithm_id = kFipsKatAlgHkdfSha2_384;
+  layout.table.entries[0].offset = offsetof(Layout, hkdf);
+  layout.table.entries[0].size = sizeof(layout.hkdf);
+
+  layout.hkdf.ikm_len = 22;
+  layout.hkdf.salt_len = 13;
+  layout.hkdf.info_len = 10;
+  layout.hkdf.okm_len = 42;
+  layout.hkdf.data[0] = 0x0B;
+  layout.hkdf.data[22] = 0x00;
+  layout.hkdf.data[35] = 0xF0;
+  layout.hkdf.data[45] = 0x9B;
+
+  const auto *table =
+      reinterpret_cast<const fips_kat_descriptor_table_t *>(&layout.table);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgHkdfSha2_384);
+  ASSERT_NE(entry, nullptr);
+
+  const void *data = get_fips_data(table, entry);
+  ASSERT_NE(data, nullptr);
+  EXPECT_EQ(data, reinterpret_cast<const void *>(&layout.hkdf));
+
+  const auto *hkdf_data = static_cast<const hkdf_kat_data_t *>(data);
+  EXPECT_EQ(hkdf_data->ikm_len, 22);
+  EXPECT_EQ(hkdf_data->salt_len, 13);
+  EXPECT_EQ(hkdf_data->info_len, 10);
+  EXPECT_EQ(hkdf_data->okm_len, 42);
+  EXPECT_EQ(hkdf_data->data[0], 0x0B);
+  EXPECT_EQ(hkdf_data->data[22], 0x00);
+  EXPECT_EQ(hkdf_data->data[35], 0xF0);
+  EXPECT_EQ(hkdf_data->data[45], 0x9B);
+}
+
 TEST(FipsKatTableBoundsCheckTest, RejectOutOfBounds) {
   TestTableLayout layout{};
   layout.table.magic = kFipsKatDescriptorMagic;

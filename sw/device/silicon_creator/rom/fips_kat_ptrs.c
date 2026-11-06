@@ -1460,6 +1460,32 @@ typedef struct fips_kat_entropy_src_sha3_conditioning {
   uint8_t data[96];
 } fips_kat_entropy_src_sha3_conditioning_t;
 
+/**
+ * Concrete test vector structure for HKDF-SHA2-384 (Algorithm ID 30).
+ *
+ * Schema: `hkdf_kat_data_t` equivalent.
+ * Source Standard: IETF RFC 5869 (Test Case 1 inputs adapted to SHA-384) /
+ *                  NIST SP 800-56Cr2.
+ *
+ * Test Vector Parameters:
+ * - IKM: 22 bytes (0x0b repeated 22 times).
+ * - Salt: 13 bytes (0x00, 0x01, ..., 0x0c).
+ * - Info: 10 bytes (0xf0, 0xf1, ..., 0xf9).
+ * - Expected OKM: 42 bytes:
+ *   9b5097a86038b805309076a44b3a9f38063e25b516dcbf369f394cfab43685f7
+ *   48b6457763e4f0204fc5
+ * - Ibex Alignment: 16 bytes (header: 4 x uint32_t) + 87 bytes (payload) +
+ *   1 byte padding = 104 bytes total (`104 % 4 == 0`).
+ */
+typedef struct fips_kat_hkdf_sha384 {
+  uint32_t ikm_len;
+  uint32_t salt_len;
+  uint32_t info_len;
+  uint32_t okm_len;
+  uint8_t data[87];
+  uint8_t padding[1];
+} fips_kat_hkdf_sha384_t;
+
 typedef struct fips_kat_data_store {
   fips_kat_sha256_pilot_t sha256_pilot;
   fips_kat_hmac_sha256_t hmac_sha256;
@@ -1489,6 +1515,7 @@ typedef struct fips_kat_data_store {
   fips_kat_sphincsplus_sha2_128s_verify_t sphincsplus_sha2_128s;
   fips_kat_mlkem1024_t mlkem1024;
   fips_kat_entropy_src_sha3_conditioning_t entropy_src;
+  fips_kat_hkdf_sha384_t hkdf_sha384;
 } fips_kat_data_store_t;
 
 /**
@@ -3629,6 +3656,32 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
             0x0f, 0xfe, 0x45, 0xf7, 0x51, 0xf1, 0xbb, 0xc5,
         },
     },
+    .hkdf_sha384 = {
+        .ikm_len = 22,
+        .salt_len = 13,
+        .info_len = 10,
+        .okm_len = 42,
+        .data = {
+            // IKM (22 bytes of 0x0b)
+            0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
+            0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
+            0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
+            // Salt (13 bytes: 0x00..0x0c)
+            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+            0x08, 0x09, 0x0a, 0x0b, 0x0c,
+            // Info (10 bytes: 0xf0..0xf9)
+            0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7,
+            0xf8, 0xf9,
+            // Expected OKM (42 bytes)
+            0x9b, 0x50, 0x97, 0xa8, 0x60, 0x38, 0xb8, 0x05,
+            0x30, 0x90, 0x76, 0xa4, 0x4b, 0x3a, 0x9f, 0x38,
+            0x06, 0x3e, 0x25, 0xb5, 0x16, 0xdc, 0xbf, 0x36,
+            0x9f, 0x39, 0x4c, 0xfa, 0xb4, 0x36, 0x85, 0xf7,
+            0x48, 0xb6, 0x45, 0x77, 0x63, 0xe4, 0xf0, 0x20,
+            0x4f, 0xc5,
+        },
+        .padding = {0},
+    },
 };
 
 /**
@@ -3639,12 +3692,12 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
   (sizeof(fips_kat_rom_table_t) + offsetof(fips_kat_data_store_t, field))
 
 /**
- * Concrete descriptor table in ROM holding 28 entries.
+ * Concrete descriptor table in ROM holding 29 entries.
  */
-#define FIPS_KAT_NUM_ENTRIES 28
+#define FIPS_KAT_NUM_ENTRIES 29
 
 /**
- * Concrete descriptor table in ROM holding 28 entries.
+ * Concrete descriptor table in ROM holding 29 entries.
  */
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -3802,6 +3855,11 @@ alignas(uint32_t) static const fips_kat_rom_table_t kFipsKatDescriptorTable = {
                 .algorithm_id = (uint32_t)kFipsKatAlgEntropySrcSha3Conditioning,
                 .offset = FIPS_KAT_OFFSET(entropy_src),
                 .size = sizeof(fips_kat_entropy_src_sha3_conditioning_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgHkdfSha2_384,
+                .offset = FIPS_KAT_OFFSET(hkdf_sha384),
+                .size = sizeof(fips_kat_hkdf_sha384_t),
             },
         },
 };

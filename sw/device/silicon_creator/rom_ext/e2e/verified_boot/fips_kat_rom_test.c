@@ -23,6 +23,7 @@
 #include "sw/device/lib/crypto/include/ecc_curve25519.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
+#include "sw/device/lib/crypto/include/hkdf.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/mldsa.h"
@@ -180,6 +181,27 @@ static const uint8_t __attribute__((unused)) kExpectedKdfHmacSha256Km[32] = {
     0x12, 0xb4, 0x4b, 0x70, 0x02, 0x76, 0xc0, 0x30, 0x74, 0xcd, 0x99,
     0xf9, 0x87, 0x63, 0x57, 0x4b, 0x7b, 0xf7, 0x1c, 0x30, 0x34, 0x02,
     0x23, 0x79, 0x0b, 0xf0, 0xb8, 0xf5, 0x3f, 0xcf, 0x3c, 0x86,
+};
+
+static const uint8_t __attribute__((unused)) kExpectedHkdfSha384Ikm[22] = {
+    0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
+    0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b, 0x0b,
+};
+
+static const uint8_t __attribute__((unused)) kExpectedHkdfSha384Salt[13] = {
+    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06,
+    0x07, 0x08, 0x09, 0x0a, 0x0b, 0x0c,
+};
+
+static const uint8_t __attribute__((unused)) kExpectedHkdfSha384Info[10] = {
+    0xf0, 0xf1, 0xf2, 0xf3, 0xf4, 0xf5, 0xf6, 0xf7, 0xf8, 0xf9,
+};
+
+static const uint8_t __attribute__((unused)) kExpectedHkdfSha384Okm[42] = {
+    0x9b, 0x50, 0x97, 0xa8, 0x60, 0x38, 0xb8, 0x05, 0x30, 0x90, 0x76,
+    0xa4, 0x4b, 0x3a, 0x9f, 0x38, 0x06, 0x3e, 0x25, 0xb5, 0x16, 0xdc,
+    0xbf, 0x36, 0x9f, 0x39, 0x4c, 0xfa, 0xb4, 0x36, 0x85, 0xf7, 0x48,
+    0xb6, 0x45, 0x77, 0x63, 0xe4, 0xf0, 0x20, 0x4f, 0xc5,
 };
 
 static const uint8_t __attribute__((unused)) kExpectedShake256Msg[1] = {0x0f};
@@ -1198,6 +1220,104 @@ static status_t test_kdf_kmac256_kat(const fips_kat_descriptor_table_t *table) {
 
   CHECK_ARRAYS_EQ((const uint8_t *)act_digest_words, expected_km, 64);
   LOG_INFO("KDF-KMAC-256 Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
+static status_t test_hkdf_sha384_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for HKDF-SHA2-384 KAT entry (alg_id = %u)...",
+           kFipsKatAlgHkdfSha2_384);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgHkdfSha2_384);
+  CHECK(entry != NULL, "HKDF-SHA2-384 KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving HKDF-SHA2-384 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const hkdf_kat_data_t *kat_data = (const hkdf_kat_data_t *)data;
+  CHECK(kat_data->ikm_len == 22, "Expected ikm_len=22, got %u",
+        kat_data->ikm_len);
+  CHECK(kat_data->salt_len == 13, "Expected salt_len=13, got %u",
+        kat_data->salt_len);
+  CHECK(kat_data->info_len == 10, "Expected info_len=10, got %u",
+        kat_data->info_len);
+  CHECK(kat_data->okm_len == 42, "Expected okm_len=42, got %u",
+        kat_data->okm_len);
+
+  const uint8_t *ikm = kat_data->data;
+  const uint8_t *salt = kat_data->data + kat_data->ikm_len;
+  const uint8_t *info = kat_data->data + kat_data->ikm_len + kat_data->salt_len;
+  const uint8_t *expected_okm = kat_data->data + kat_data->ikm_len +
+                                kat_data->salt_len + kat_data->info_len;
+
+  CHECK_ARRAYS_EQ(ikm, kExpectedHkdfSha384Ikm, 22);
+  CHECK_ARRAYS_EQ(salt, kExpectedHkdfSha384Salt, 13);
+  CHECK_ARRAYS_EQ(info, kExpectedHkdfSha384Info, 10);
+  CHECK_ARRAYS_EQ(expected_okm, kExpectedHkdfSha384Okm, 42);
+  LOG_INFO("HKDF-SHA2-384 vector payload verified against golden values.");
+
+  LOG_INFO("Executing HKDF-SHA2-384 using cryptolib (OTBN SHA2)...");
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  const otcrypto_key_config_t kIkmConfig = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeHmacSha384,
+      .key_length = kat_data->ikm_len,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t ikm_words[6] = {0};
+  memcpy(ikm_words, ikm, kat_data->ikm_len);
+  uint32_t ikm_keyblob[12] = {0};
+  static const uint32_t kTestMask[6] = {0};
+  CHECK_STATUS_OK(
+      keyblob_from_key_and_mask(ikm_words, kTestMask, kIkmConfig, ikm_keyblob));
+  otcrypto_blinded_key_t ikm_key = {
+      .config = kIkmConfig,
+      .keyblob = ikm_keyblob,
+      .keyblob_length = sizeof(ikm_keyblob),
+      .checksum = 0,
+  };
+  ikm_key.checksum = otcrypto_integrity_blinded_checksum(&ikm_key);
+
+  const otcrypto_key_config_t kOkmConfig = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeAesCtr,
+      .key_length = kat_data->okm_len,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t okm_keyblob[22] = {0};
+  otcrypto_blinded_key_t okm_key = {
+      .config = kOkmConfig,
+      .keyblob = okm_keyblob,
+      .keyblob_length = sizeof(okm_keyblob),
+      .checksum = 0,
+  };
+
+  otcrypto_const_byte_buf_t salt_buf =
+      otcrypto_make_const_byte_buf(salt, kat_data->salt_len);
+  otcrypto_const_byte_buf_t info_buf =
+      otcrypto_make_const_byte_buf(info, kat_data->info_len);
+
+  uint64_t t_start = ibex_mcycle_read();
+  CHECK_STATUS_OK(otcrypto_hkdf(&ikm_key, &salt_buf, &info_buf, &okm_key));
+  uint32_t total_cycles = (uint32_t)(ibex_mcycle_read() - t_start);
+
+  uint32_t *okm_share0;
+  uint32_t *okm_share1;
+  CHECK_STATUS_OK(keyblob_to_shares(&okm_key, &okm_share0, &okm_share1));
+  uint32_t actual_okm_words[11];
+  for (size_t i = 0; i < ARRAYSIZE(actual_okm_words); ++i) {
+    actual_okm_words[i] = okm_share0[i] ^ okm_share1[i];
+  }
+
+  CHECK_ARRAYS_EQ((const uint8_t *)actual_okm_words, expected_okm, 42);
+  LOG_INFO("HKDF-SHA2-384 Known Answer Test check ok: Total=%u cycles (%u us)",
+           total_cycles, total_cycles / 24);
 
   return OK_STATUS();
 }
@@ -2587,7 +2707,7 @@ static status_t test_fips_kat_rom(void) {
         table->magic);
   CHECK(table->version == kFipsKatDescriptorVersion1,
         "Invalid table version: %u", table->version);
-  CHECK(table->entry_count >= 28, "Expected at least 28 entries, got %u",
+  CHECK(table->entry_count >= 29, "Expected at least 29 entries, got %u",
         table->entry_count);
   LOG_INFO(
       "FIPS KAT table found at %p (magic=0x%08x, version=%u, entries=%u, "
@@ -2608,6 +2728,7 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_drbg_aes256_kat(table));
   TRY(test_kdf_hmac_sha256_kat(table));
   TRY(test_kdf_kmac256_kat(table));
+  TRY(test_hkdf_sha384_kat(table));
   TRY(test_rsa4096_sign_kat(table));
   TRY(test_rsa4096_verify_kat(table));
   TRY(test_ecdsa_p256_sign_kat(table));

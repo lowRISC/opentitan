@@ -89,6 +89,9 @@ typedef enum fips_kat_alg_id {
 
   // Entropy Source Conditioning
   kFipsKatAlgEntropySrcSha3Conditioning = 27,
+
+  // Key Derivation (HKDF - RFC 5869 / SP 800-56Cr2)
+  kFipsKatAlgHkdfSha2_384 = 30,
 } fips_kat_alg_id_t;
 
 /**
@@ -193,6 +196,15 @@ typedef struct kem_kat_data {
   uint8_t
       data[];  // seed_d || seed_z || seed_m || expected_ct_hash || expected_ss
 } kem_kat_data_t;
+
+// 9. Key Derivation (HKDF - RFC 5869)
+typedef struct hkdf_kat_data {
+  uint32_t ikm_len;
+  uint32_t salt_len;
+  uint32_t info_len;
+  uint32_t okm_len;
+  uint8_t data[];  // ikm || salt || info || expected_okm
+} hkdf_kat_data_t;
 
 /**
  * Fixed address slot storing the pointer to the FIPS KAT descriptor table.
