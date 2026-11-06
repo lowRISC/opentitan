@@ -402,10 +402,21 @@ module rv_dm
                         !lc_rst_asserted &&
                         reset_req_en;
 
-  // Apply the latched LC value only while an NDM reset is pending.
+  // Apply the latched LC value only while an NDM reset is pending. The OR is hardened so that two
+  // values that are not strictly On cannot combine into On.
   for (genvar k = 0; k < int'(LcEnLastPos); k++) begin : gen_ndm_gated
+    lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_gated_or_latched;
+    prim_lc_or_hardened #(
+      .ActVal(lc_ctrl_pkg::On)
+    ) u_prim_lc_or_hardened (
+      .clk_i,
+      .rst_ni,
+      .lc_en_a_i(lc_hw_debug_en_gated[k]),
+      .lc_en_b_i(lc_hw_debug_en_latched_q),
+      .lc_en_o  (lc_hw_debug_en_gated_or_latched)
+    );
     assign lc_hw_debug_en_gated_ndm[k] = (ndmreset_pending_q) ?
-        lc_ctrl_pkg::lc_tx_or_hi(lc_hw_debug_en_gated[k], lc_hw_debug_en_latched_q) :
+        lc_hw_debug_en_gated_or_latched :
         lc_hw_debug_en_gated[k];
   end
 
