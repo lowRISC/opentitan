@@ -143,6 +143,7 @@ scramble_flash_vmem = rv_rule(
 
 def _scramble_rram_vmem_impl(ctx):
     outputs = [scramble_rram(ctx, suffix = "scr.vmem", name = ctx.attr.out or None)]
+
     return [
         DefaultInfo(
             files = depset(outputs),
@@ -156,10 +157,9 @@ scramble_rram_vmem = rv_rule(
         "src": attr.label(allow_single_file = True),
         "otp": attr.label(allow_single_file = True),
         "slot": attr.string(
-            doc = "Which firmware slot `src` was linked for. `src` is a slot-relative " +
-                  "(0-based) image, but address-infection and scrambling need the word's " +
-                  "true absolute address in the RRAM data partition - see gen-rram-img.py's " +
-                  "--slot.",
+            doc = "Which physical slot the output should be loaded into. " +
+                  "This is needed so address-infection and scrambling are calculated " +
+                  "properly. See `gen-rram-img.py`.",
             default = "a",
             values = ["a", "b"],
         ),

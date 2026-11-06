@@ -261,12 +261,14 @@ def _test_dispatch(ctx, exec_env, firmware):
         assemble = param.get("assemble")
         assemble = recursive_format(assemble, action_param)
         assemble = ctx.expand_location(assemble, data_labels)
+        nvm_size = exec_env.slot_spec.get("nvm_size")
         image = assemble_for_test(
             ctx,
             name = ctx.attr.name,
             spec = assemble.strip().split(" "),
             data_files = data_files,
             opentitantool = exec_env._opentitantool,
+            size = nvm_size,
         )
         param["firmware"] = image.short_path
         action_param["firmware"] = image.path

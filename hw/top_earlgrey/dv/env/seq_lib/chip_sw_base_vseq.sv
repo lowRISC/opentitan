@@ -125,15 +125,16 @@ class chip_sw_base_vseq extends chip_base_vseq;
       // TODO: support bootstrapping entire flash address space, not just slot A.
 
     end else begin
-      // Slot A and slot B images are each pre-scrambled (see gen-rram-img.py's --slot) for their
-      // true absolute address in the RRAM data partition, so their vmem files' own addresses
-      // don't overlap and can be loaded directly.
+      // RRAM images are pre-scrambled for both slots since scrambling depends on the absolute
+      // address in the unified RRAM partition. We load the variants matching the slot that
+      // the image is loaded into. The addresses are absolute and don't overlap, so both
+      // images can just be loaded directly.
       if (cfg.sw_images.exists(SwTypeTestSlotA)) begin
-        string image_path = {cfg.sw_images[SwTypeTestSlotA], ".128.scr.vmem"};
+        string image_path = {cfg.sw_images[SwTypeTestSlotA], ".slot_a.128.scr.vmem"};
         cfg.mem_bkdr_util_h[RramData].load_mem_from_file(image_path);
       end
       if (cfg.sw_images.exists(SwTypeTestSlotB)) begin
-        string image_path = {cfg.sw_images[SwTypeTestSlotB], ".128.scr.vmem"};
+        string image_path = {cfg.sw_images[SwTypeTestSlotB], ".slot_b.128.scr.vmem"};
         cfg.mem_bkdr_util_h[RramData].load_mem_from_file(image_path);
       end
     end
