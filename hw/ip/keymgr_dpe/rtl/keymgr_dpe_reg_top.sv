@@ -56,9 +56,9 @@ module keymgr_dpe_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [73:0] reg_we_check;
+  logic [74:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(74)
+    .OneHotWidth(75)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -433,14 +433,17 @@ module keymgr_dpe_reg_top (
   logic debug_invalid_field_entropy_qs;
   logic debug_invalid_field_entropy_wd;
   logic load_root_key_lock_we;
-  logic load_root_key_lock_qs;
-  logic load_root_key_lock_wd;
+  logic [3:0] load_root_key_lock_qs;
+  logic [3:0] load_root_key_lock_wd;
   logic load_secondary_root_key_lock_we;
-  logic load_secondary_root_key_lock_qs;
-  logic load_secondary_root_key_lock_wd;
+  logic [3:0] load_secondary_root_key_lock_qs;
+  logic [3:0] load_secondary_root_key_lock_wd;
   logic enforce_sw_binding_we;
   logic [3:0] enforce_sw_binding_qs;
   logic [3:0] enforce_sw_binding_wd;
+  logic metadata_read_lock_we;
+  logic [3:0] metadata_read_lock_qs;
+  logic [3:0] metadata_read_lock_wd;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -3981,10 +3984,10 @@ module keymgr_dpe_reg_top (
 
   // R[load_root_key_lock]: V(False)
   prim_subreg #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessW1S),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
   ) u_load_root_key_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4010,10 +4013,10 @@ module keymgr_dpe_reg_top (
 
   // R[load_secondary_root_key_lock]: V(False)
   prim_subreg #(
-    .DW      (1),
+    .DW      (4),
     .SwAccess(prim_subreg_pkg::SwAccessW1S),
-    .RESVAL  (1'h0),
-    .Mubi    (1'b0)
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
   ) u_load_secondary_root_key_lock (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
@@ -4066,8 +4069,37 @@ module keymgr_dpe_reg_top (
   );
 
 
+  // R[metadata_read_lock]: V(False)
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_metadata_read_lock (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
-  logic [73:0] addr_hit;
+    // from register interface
+    .we     (metadata_read_lock_we),
+    .wd     (metadata_read_lock_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.metadata_read_lock.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (metadata_read_lock_qs)
+  );
+
+
+
+  logic [74:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == KEYMGR_DPE_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == KEYMGR_DPE_INTR_ENABLE_OFFSET);
@@ -4143,6 +4175,7 @@ module keymgr_dpe_reg_top (
     addr_hit[71] = (reg_addr == KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_OFFSET);
     addr_hit[72] = (reg_addr == KEYMGR_DPE_LOAD_SECONDARY_ROOT_KEY_LOCK_OFFSET);
     addr_hit[73] = (reg_addr == KEYMGR_DPE_ENFORCE_SW_BINDING_OFFSET);
+    addr_hit[74] = (reg_addr == KEYMGR_DPE_METADATA_READ_LOCK_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -4223,7 +4256,8 @@ module keymgr_dpe_reg_top (
                (addr_hit[70] & (|(KEYMGR_DPE_PERMIT[70] & ~reg_be))) |
                (addr_hit[71] & (|(KEYMGR_DPE_PERMIT[71] & ~reg_be))) |
                (addr_hit[72] & (|(KEYMGR_DPE_PERMIT[72] & ~reg_be))) |
-               (addr_hit[73] & (|(KEYMGR_DPE_PERMIT[73] & ~reg_be)))));
+               (addr_hit[73] & (|(KEYMGR_DPE_PERMIT[73] & ~reg_be))) |
+               (addr_hit[74] & (|(KEYMGR_DPE_PERMIT[74] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -4451,13 +4485,16 @@ module keymgr_dpe_reg_top (
   assign debug_invalid_field_entropy_wd = reg_wdata[10];
   assign load_root_key_lock_we = addr_hit[71] & reg_we & !reg_error;
 
-  assign load_root_key_lock_wd = reg_wdata[0];
+  assign load_root_key_lock_wd = reg_wdata[3:0];
   assign load_secondary_root_key_lock_we = addr_hit[72] & reg_we & !reg_error;
 
-  assign load_secondary_root_key_lock_wd = reg_wdata[0];
+  assign load_secondary_root_key_lock_wd = reg_wdata[3:0];
   assign enforce_sw_binding_we = addr_hit[73] & reg_we & !reg_error;
 
   assign enforce_sw_binding_wd = reg_wdata[3:0];
+  assign metadata_read_lock_we = addr_hit[74] & reg_we & !reg_error;
+
+  assign metadata_read_lock_wd = reg_wdata[3:0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -4535,6 +4572,7 @@ module keymgr_dpe_reg_top (
     reg_we_check[71] = load_root_key_lock_we;
     reg_we_check[72] = load_secondary_root_key_lock_we;
     reg_we_check[73] = enforce_sw_binding_we;
+    reg_we_check[74] = metadata_read_lock_we;
   end
 
   // Read data return
@@ -4900,15 +4938,19 @@ module keymgr_dpe_reg_top (
       end
 
       addr_hit[71]: begin
-        reg_rdata_next[0] = load_root_key_lock_qs;
+        reg_rdata_next[3:0] = load_root_key_lock_qs;
       end
 
       addr_hit[72]: begin
-        reg_rdata_next[0] = load_secondary_root_key_lock_qs;
+        reg_rdata_next[3:0] = load_secondary_root_key_lock_qs;
       end
 
       addr_hit[73]: begin
         reg_rdata_next[3:0] = enforce_sw_binding_qs;
+      end
+
+      addr_hit[74]: begin
+        reg_rdata_next[3:0] = metadata_read_lock_qs;
       end
 
       default: begin

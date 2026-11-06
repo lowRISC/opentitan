@@ -111,12 +111,12 @@ At the end of a successful load operation, the destination slot holds the root k
 As `allow_keygen = 0`, no key can be generated from this slot, hence its `max_key_version` is irrelevant.
 As `retain_parent = 0`, the first advance from this slot must be an in-place update (`SLOT_SRC_SEL = SLOT_DST_SEL`).
 
-Once a root key is no longer needed in the current boot, SW should write 1 to `LOAD_ROOT_KEY_LOCK` or `LOAD_SECONDARY_ROOT_KEY_LOCK` respectively.
+Once a root key is no longer needed in the current boot, SW should write `kMultiBitBool4True` to `LOAD_ROOT_KEY_LOCK.LOCK` or `LOAD_SECONDARY_ROOT_KEY_LOCK.LOCK` respectively.
 Any further load request of that root key is then rejected until the next reset.
 
 ## Read Slot Metadata
 
-Software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` fields at any time by reading the `METADATA_LOW` and `METADATA_HIGH` registers at the corresponding slot index:
+Until `METADATA_READ_LOCK` is set, software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `key_policy` fields by reading the `METADATA_LOW` and `METADATA_HIGH` registers at the corresponding slot index:
 *  `METADATA_LOW[i].MAX_KEY_VERSION` reports `max_key_version` of slot `i`.
 *  `METADATA_HIGH[i].VALID` reports whether slot `i` currently holds a valid DPE context.
 *  `METADATA_HIGH[i].BOOT_STAGE` reports the `boot_stage` of slot `i`.
@@ -127,6 +127,8 @@ Software can read back a slot's `valid`, `boot_stage`, `max_key_version` and `ke
 
 The secret key itself is never exposed through these registers.
 Both registers are replicated `NumMaxHwSlot` times but only indices below `NumInstHwSlot` correspond to an actual hardware slot, the remaining slots are bound to `0`.
+
+SW can hide the slot metadata until the next reset by writing `kMultiBitBool4True` to `METADATA_READ_LOCK.LOCK`.
 
 # Disable
 
