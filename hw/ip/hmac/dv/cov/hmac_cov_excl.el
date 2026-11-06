@@ -196,11 +196,11 @@ Branch 8 "3400827115" "st_q" (17) "st_q StLenHi ,-,-,-,-,-,-,-,-,-,-,0,-"
 ANNOTATION: "shaf_rready_i == 1'b0 cannot occur in the StLenHi and StLenLo states thus the missing else is unavoidable."
 Branch 8 "3400827115" "st_q" (19) "st_q StLenLo ,-,-,-,-,-,-,-,-,-,-,-,0"
 CHECKSUM: "1785966602"
-INSTANCE: tb.dut.u_tlul_adapter.u_rspfifo
+INSTANCE: tb.dut.u_tlul_adapter.gen_no_sec_u_rspfifo.u_rspfifo
 ANNOTATION: "[INVALID] Disable this assertion as the FIFO is WO"
 Assert DataKnown_A "assertion"
 CHECKSUM: "1785966602"
-INSTANCE: tb.dut.u_tlul_adapter.u_sramreqfifo
+INSTANCE: tb.dut.u_tlul_adapter.gen_no_sec_u_sramreqfifo.u_sramreqfifo
 ANNOTATION: "[INVALID] Disable this assertion as the FIFO is WO"
 Assert DataKnown_A "assertion"
 CHECKSUM: "3919502532"
