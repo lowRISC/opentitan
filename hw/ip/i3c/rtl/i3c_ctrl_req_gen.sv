@@ -442,9 +442,9 @@ module i3c_ctrl_req_gen
   // - fields of the shared command state, attribute, DAT entry and CCC response structs that the
   //   request generation does not need.
   logic unused_req_inputs;
-  assign unused_req_inputs = ^{cmd_state_i.available, cmd_state_i.dev_index,
+  assign unused_req_inputs = ^{cmd_state_i.dev_index,
                                cmd_state_i.reps_left, cmd_state_i.retry_cnt, cmd_state_i.rep_start,
-                               cmd_state_i.rst_csect, cmd_state_i.started, cmd_attrs_i.attr,
+                               cmd_state_i.started, cmd_attrs_i.attr,
                                cmd_attrs_i.brd_ccc, cmd_attrs_i.data_len, cmd_attrs_i.defb,
                                cmd_attrs_i.dev_index, cmd_attrs_i.has_defb, cmd_attrs_i.reps_left,
                                cmd_attrs_i.retry_cnt, cmd_attrs_i.tid, cmd_attrs_i.toc,

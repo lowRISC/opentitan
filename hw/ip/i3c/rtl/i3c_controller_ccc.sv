@@ -165,8 +165,8 @@ module i3c_controller_ccc
   // Signals that the logic does not use (yet).
   logic unused_ccc_inputs;
   assign unused_ccc_inputs = ^{enable_i, r_i[CtrlCR_Status][7:2], r_i[CtrlCR_Scratch],
-                               cmd_state_i.available, cmd_state_i.dev_index, cmd_state_i.reps_left,
-                               cmd_state_i.retry_cnt, cmd_state_i.rst_csect, cmd_state_i.started,
+                               cmd_state_i.dev_index, cmd_state_i.reps_left,
+                               cmd_state_i.retry_cnt, cmd_state_i.started,
                                ccc_req_i.cmd_raw, ccc_req_i.dat_entry.autocmd_hdr_code,
                                ccc_req_i.dat_entry.autocmd_mask, ccc_req_i.dat_entry.autocmd_mode,
                                ccc_req_i.dat_entry.autocmd_value, ccc_req_i.dat_entry.crr_reject,
