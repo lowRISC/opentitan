@@ -76,6 +76,17 @@ static status_t run_negative_test(void) {
   abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_INTR_STATE_REG_OFFSET,
                    intr_state);
 
+  // Trigger a recoverable HMAC error (`SwHashStartWhenShaDisabled`), verify
+  // that `hmac_hash_sha256` reports `OTCRYPTO_RECOV_ERR` and clears
+  // `HMAC_INTR_STATE.hmac_err`, and verify that subsequent HMAC operations
+  // succeed even though `HMAC_ERR_CODE` remains latched non-zero.
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CFG_REG_OFFSET, 0);
+  cmd = bitfield_bit32_write(0, HMAC_CMD_HASH_START_BIT, 1);
+  abs_mmio_write32(TOP_EARLGREY_HMAC_BASE_ADDR + HMAC_CMD_REG_OFFSET, cmd);
+  CHECK(hmac_hash_sha256(&null_buf, dummy_digest).value ==
+        OTCRYPTO_RECOV_ERR.value);
+  TRY(run_hmac_test());
+
   // Negative test hmac_idle_wait
   hmac_ctx_t ctx;
   hmac_hash_sha256_init(&ctx);

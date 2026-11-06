@@ -181,6 +181,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(entropy_complex_init(kHardenedBoolFalse));
   CHECK_STATUS_OK(run_aes_test());
   CHECK_STATUS_OK(run_negative_test());
+  CHECK_STATUS_OK(run_aes_test());
 
   return true;
 }
