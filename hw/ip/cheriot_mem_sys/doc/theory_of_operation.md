@@ -48,6 +48,7 @@ window is the software-visible view of the first region, the RAM interface is on
 In the `revbm` window, bit `b` of word `w` covers the eight heap bytes starting at
 `MainSramBaseAddr + (w * 32 + b) * 8`, setting it marks that granule as revoked. Accesses must be
 full 32-bit words, and the window returns a TL-UL error while the system is in ePMP mode.
+Byte and half-word loads of the core still work, because the core reads full words from the bus, but its byte and half-word stores receive an error and raise a store access fault.
 
 
 ## Datapath
