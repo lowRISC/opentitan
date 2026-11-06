@@ -501,6 +501,7 @@ It must be instantiated again before further Reseed, Update, or Generate command
 
 This request is only accepted while a Generate command is actually in progress for this instance.
 If no Generate command is in progress, the write is ignored and [`RECOV_ALERT_STS.GEN_ABORT_INVALID_ALERT`](#recov_alert_sts) is set instead.
+If the instance is halted via [`INT_STATE_HALT`](#int_state_halt), the abort only takes effect once the instance is resumed.
 
 ## GEN_ABORT_STATUS
 Generate command abort completion status register
