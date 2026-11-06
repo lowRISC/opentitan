@@ -66,6 +66,11 @@ typedef enum fips_kat_alg_id {
   kFipsKatAlgEcdsaP384Verify = 18,
   kFipsKatAlgEd25519Sign = 19,
   kFipsKatAlgEd25519Verify = 20,
+
+  // Key Agreement / ECDH (P-256, P-384, X25519)
+  kFipsKatAlgEcdhP256 = 21,
+  kFipsKatAlgEcdhP384 = 22,
+  kFipsKatAlgX25519 = 23,
 } fips_kat_alg_id_t;
 
 /**
@@ -131,6 +136,15 @@ typedef struct asymmetric_sign_kat_data {
   uint8_t
       data[];  // priv_key || ephemeral || msg || expected_sig1 || expected_sig2
 } asymmetric_sign_kat_data_t;
+
+// 7. Key Agreement (ECDH / X25519)
+typedef struct ecdh_kat_data {
+  uint32_t priv_key_len;
+  uint32_t pub_key_len1;
+  uint32_t pub_key_len2;
+  uint32_t shared_secret_len;
+  uint8_t data[];  // priv_key || pub_key1 || pub_key2 || expected_shared_secret
+} ecdh_kat_data_t;
 
 /**
  * Fixed address slot storing the pointer to the FIPS KAT descriptor table.

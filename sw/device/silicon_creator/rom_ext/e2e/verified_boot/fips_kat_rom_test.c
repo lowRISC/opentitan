@@ -1561,6 +1561,291 @@ static status_t test_ed25519_verify_kat(
   return OK_STATUS();
 }
 
+static status_t test_ecdh_p256_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for ECDH-P256 KAT entry (alg_id = %u)...",
+           kFipsKatAlgEcdhP256);
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgEcdhP256);
+  CHECK(entry != NULL, "ECDH-P256 KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving ECDH-P256 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const ecdh_kat_data_t *kat_data = (const ecdh_kat_data_t *)data;
+  CHECK(kat_data->priv_key_len == 32, "Expected priv_key_len=32, got %u",
+        kat_data->priv_key_len);
+  CHECK(kat_data->pub_key_len1 == 32, "Expected pub_key_len1=32, got %u",
+        kat_data->pub_key_len1);
+  CHECK(kat_data->pub_key_len2 == 32, "Expected pub_key_len2=32, got %u",
+        kat_data->pub_key_len2);
+  CHECK(kat_data->shared_secret_len == 32,
+        "Expected shared_secret_len=32, got %u", kat_data->shared_secret_len);
+
+  const uint8_t *d = kat_data->data;
+  const uint8_t *qx = kat_data->data + kat_data->priv_key_len;
+  const uint8_t *qy =
+      kat_data->data + kat_data->priv_key_len + kat_data->pub_key_len1;
+  const uint8_t *expected_ss = kat_data->data + kat_data->priv_key_len +
+                               kat_data->pub_key_len1 + kat_data->pub_key_len2;
+
+  LOG_INFO(
+      "Executing ECDH-P256 shared secret computation using OTBN "
+      "coprocessor...");
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  const otcrypto_key_config_t kP256Config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeEcdhP256,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  uint32_t keyblob_sk[20] = {0};
+  otcrypto_blinded_key_t private_key = {
+      .config = kP256Config,
+      .keyblob_length = sizeof(keyblob_sk),
+      .keyblob = keyblob_sk,
+      .checksum = 0,
+  };
+  memcpy(keyblob_sk, d, 32);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  uint32_t pk_data[16];
+  memcpy(pk_data, qx, 32);
+  memcpy(pk_data + 8, qy, 32);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdhP256,
+      .key_length = sizeof(pk_data),
+      .key = pk_data,
+      .checksum = 0,
+  };
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+
+  uint32_t shared_secretblob[32];
+  memset(shared_secretblob, 0, sizeof(shared_secretblob));
+  otcrypto_blinded_key_t shared_secret = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeAesCtr,
+              .key_length = 64,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = sizeof(shared_secretblob),
+      .keyblob = shared_secretblob,
+      .checksum = 0,
+  };
+
+  CHECK_STATUS_OK(
+      otcrypto_ecdh_p256(&private_key, &public_key, &shared_secret));
+
+  uint32_t ss_share0[16];
+  uint32_t ss_share1[16];
+  otcrypto_word32_buf_t ss_share0_buf = otcrypto_make_word32_buf(ss_share0, 16);
+  otcrypto_word32_buf_t ss_share1_buf = otcrypto_make_word32_buf(ss_share1, 16);
+  CHECK_STATUS_OK(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
+                                              &ss_share1_buf));
+
+  uint32_t ss[16];
+  for (size_t i = 0; i < 16; ++i) {
+    ss[i] = ss_share0[i] ^ ss_share1[i];
+  }
+
+  CHECK_ARRAYS_EQ((const uint8_t *)ss, expected_ss, 32);
+  LOG_INFO("ECDH-P256 Shared Secret Computation Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
+static status_t test_ecdh_p384_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for ECDH-P384 KAT entry (alg_id = %u)...",
+           kFipsKatAlgEcdhP384);
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgEcdhP384);
+  CHECK(entry != NULL, "ECDH-P384 KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving ECDH-P384 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const ecdh_kat_data_t *kat_data = (const ecdh_kat_data_t *)data;
+  CHECK(kat_data->priv_key_len == 48, "Expected priv_key_len=48, got %u",
+        kat_data->priv_key_len);
+  CHECK(kat_data->pub_key_len1 == 48, "Expected pub_key_len1=48, got %u",
+        kat_data->pub_key_len1);
+  CHECK(kat_data->pub_key_len2 == 48, "Expected pub_key_len2=48, got %u",
+        kat_data->pub_key_len2);
+  CHECK(kat_data->shared_secret_len == 48,
+        "Expected shared_secret_len=48, got %u", kat_data->shared_secret_len);
+
+  const uint8_t *d = kat_data->data;
+  const uint8_t *qx = kat_data->data + kat_data->priv_key_len;
+  const uint8_t *qy =
+      kat_data->data + kat_data->priv_key_len + kat_data->pub_key_len1;
+  const uint8_t *expected_ss = kat_data->data + kat_data->priv_key_len +
+                               kat_data->pub_key_len1 + kat_data->pub_key_len2;
+
+  LOG_INFO(
+      "Executing ECDH-P384 shared secret computation using OTBN "
+      "coprocessor...");
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  const otcrypto_key_config_t kP384Config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeEcdhP384,
+      .key_length = 48,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  uint32_t keyblob_sk[28] = {0};
+  otcrypto_blinded_key_t private_key = {
+      .config = kP384Config,
+      .keyblob_length = sizeof(keyblob_sk),
+      .keyblob = keyblob_sk,
+      .checksum = 0,
+  };
+  memcpy(keyblob_sk, d, 48);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  uint32_t pk_data[24];
+  memcpy(pk_data, qx, 48);
+  memcpy(pk_data + 12, qy, 48);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdhP384,
+      .key_length = sizeof(pk_data),
+      .key = pk_data,
+      .checksum = 0,
+  };
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+
+  uint32_t shared_secretblob[48];
+  memset(shared_secretblob, 0, sizeof(shared_secretblob));
+  otcrypto_blinded_key_t shared_secret = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModeAesCtr,
+              .key_length = 96,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolTrue,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = sizeof(shared_secretblob),
+      .keyblob = shared_secretblob,
+      .checksum = 0,
+  };
+
+  CHECK_STATUS_OK(
+      otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret));
+
+  uint32_t ss_share0[24];
+  uint32_t ss_share1[24];
+  otcrypto_word32_buf_t ss_share0_buf = otcrypto_make_word32_buf(ss_share0, 24);
+  otcrypto_word32_buf_t ss_share1_buf = otcrypto_make_word32_buf(ss_share1, 24);
+  CHECK_STATUS_OK(otcrypto_export_blinded_key(&shared_secret, &ss_share0_buf,
+                                              &ss_share1_buf));
+
+  uint32_t ss[24];
+  for (size_t i = 0; i < 24; ++i) {
+    ss[i] = ss_share0[i] ^ ss_share1[i];
+  }
+
+  CHECK_ARRAYS_EQ((const uint8_t *)ss, expected_ss, 48);
+  LOG_INFO("ECDH-P384 Shared Secret Computation Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
+static status_t test_x25519_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for X25519 KAT entry (alg_id = %u)...",
+           kFipsKatAlgX25519);
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgX25519);
+  CHECK(entry != NULL, "X25519 KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving X25519 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const ecdh_kat_data_t *kat_data = (const ecdh_kat_data_t *)data;
+  CHECK(kat_data->priv_key_len == 32, "Expected priv_key_len=32, got %u",
+        kat_data->priv_key_len);
+  CHECK(kat_data->pub_key_len1 == 32, "Expected pub_key_len1=32, got %u",
+        kat_data->pub_key_len1);
+  CHECK(kat_data->pub_key_len2 == 0, "Expected pub_key_len2=0, got %u",
+        kat_data->pub_key_len2);
+  CHECK(kat_data->shared_secret_len == 32,
+        "Expected shared_secret_len=32, got %u", kat_data->shared_secret_len);
+
+  const uint8_t *sk = kat_data->data;
+  const uint8_t *pk = kat_data->data + kat_data->priv_key_len;
+  const uint8_t *expected_ss =
+      kat_data->data + kat_data->priv_key_len + kat_data->pub_key_len1;
+
+  LOG_INFO("Executing X25519 key agreement using OTBN coprocessor...");
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  const otcrypto_key_config_t kX25519Config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeX25519,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  uint32_t keyblob_sk[keyblob_num_words(kX25519Config)];
+  memset(keyblob_sk, 0, sizeof(keyblob_sk));
+  otcrypto_blinded_key_t private_key = {
+      .config = kX25519Config,
+      .keyblob_length = sizeof(keyblob_sk),
+      .keyblob = keyblob_sk,
+      .checksum = 0,
+  };
+  memcpy(keyblob_sk, sk, 32);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  uint32_t pk_data[8];
+  memcpy(pk_data, pk, 32);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeX25519,
+      .key_length = sizeof(pk_data),
+      .key = pk_data,
+      .checksum = 0,
+  };
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+
+  uint32_t shared_secretblob[keyblob_num_words(kX25519Config)];
+  memset(shared_secretblob, 0, sizeof(shared_secretblob));
+  otcrypto_blinded_key_t shared_secret = {
+      .config = kX25519Config,
+      .keyblob_length = sizeof(shared_secretblob),
+      .keyblob = shared_secretblob,
+      .checksum = 0,
+  };
+
+  CHECK_STATUS_OK(otcrypto_x25519(&private_key, &public_key, &shared_secret));
+
+  uint32_t ss[8];
+  uint32_t *ss_share0 = shared_secretblob;
+  uint32_t *ss_share1 = shared_secretblob + 8;
+  for (size_t i = 0; i < 8; ++i) {
+    ss[i] = ss_share0[i] ^ ss_share1[i];
+  }
+
+  CHECK_ARRAYS_EQ((const uint8_t *)ss, expected_ss, 32);
+  LOG_INFO("X25519 Key Agreement Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
 static status_t test_fips_kat_rom(void) {
   // Stop the watchdog timer to prevent timeout during long RSA-4096 OTBN
   // computations.
@@ -1575,7 +1860,7 @@ static status_t test_fips_kat_rom(void) {
         table->magic);
   CHECK(table->version == kFipsKatDescriptorVersion1,
         "Invalid table version: %u", table->version);
-  CHECK(table->entry_count >= 19, "Expected at least 19 entries, got %u",
+  CHECK(table->entry_count >= 22, "Expected at least 22 entries, got %u",
         table->entry_count);
   LOG_INFO(
       "FIPS KAT table found at %p (magic=0x%08x, version=%u, entries=%u, "
@@ -1602,6 +1887,9 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_ecdsa_p384_verify_kat(table));
   TRY(test_ed25519_sign_kat(table));
   TRY(test_ed25519_verify_kat(table));
+  TRY(test_ecdh_p256_kat(table));
+  TRY(test_ecdh_p384_kat(table));
+  TRY(test_x25519_kat(table));
 
   return OK_STATUS();
 }

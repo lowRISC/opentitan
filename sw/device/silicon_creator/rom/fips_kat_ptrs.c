@@ -1054,6 +1054,157 @@ typedef struct fips_kat_ed25519_verify {
 } fips_kat_ed25519_verify_t;
 
 /**
+ * Algorithm 25: ECDH-P256 Shared Secret Computation (Alg ID 25)
+ *
+ * Source Standard: NIST SP 800-56A Rev. 3 / FIPS 186-5 / CAVP Vector.
+ *
+ * Test Vector Parameters:
+ * - Private Key scalar (d): 32 bytes (256-bit scalar).
+ * - Peer Public Key X (Qx): 32 bytes (256-bit coordinate).
+ * - Peer Public Key Y (Qy): 32 bytes (256-bit coordinate).
+ * - Expected Shared Secret (Z): 32 bytes (256-bit X-coordinate of d * Q).
+ *
+ * How inputs/outputs were transformed:
+ * - Header Fields:
+ *     priv_key_len      = 32 (32-byte private key scalar d)
+ *     pub_key_len1      = 32 (32-byte peer public key X coordinate)
+ *     pub_key_len2      = 32 (32-byte peer public key Y coordinate)
+ *     shared_secret_len = 32 (32-byte expected shared secret Z)
+ * - Contiguous Payload:
+ *     data[0..31]   = 32-byte private key scalar d
+ *     data[32..63]  = 32-byte peer public key X
+ *     data[64..95]  = 32-byte peer public key Y
+ *     data[96..127] = 32-byte expected shared secret Z
+ * - Ibex Alignment: 16 bytes (header: 4 x uint32_t) + 128 bytes (payload)
+ *   = 144 bytes total (`144 % 4 == 0`). Naturally 4-byte aligned.
+ *
+ * How test runners (BL0 / Cryptolib) use this vector:
+ * 1. Read entry offset from `fips_kat_descriptor_table_t` for
+ * `kFipsKatAlgEcdhP256`.
+ * 2. Dereference as `const ecdh_kat_data_t *kat = get_fips_data(table, entry)`.
+ * 3. Verify parameters: `kat->priv_key_len == 32`, `kat->pub_key_len1 == 32`,
+ * `kat->pub_key_len2 == 32`, `kat->shared_secret_len == 32`.
+ * 4. Extract pointers:
+ *      `const uint8_t *d = kat->data;`
+ *      `const uint8_t *qx = kat->data + kat->priv_key_len;`
+ *      `const uint8_t *qy = kat->data + kat->priv_key_len + kat->pub_key_len1;`
+ *      `const uint8_t *expected_ss = kat->data + kat->priv_key_len +
+ * kat->pub_key_len1 + kat->pub_key_len2;`
+ * 5. Construct blinded private key and unblinded public key for
+ * `kOtcryptoKeyModeEcdhP256`.
+ * 6. Compute shared secret via `otcrypto_ecdh_p256(&private_key, &public_key,
+ * &shared_secret)`.
+ * 7. Export and unmask shared secret, then compare against `expected_ss`.
+ */
+typedef struct fips_kat_ecdh_p256 {
+  uint32_t priv_key_len;
+  uint32_t pub_key_len1;
+  uint32_t pub_key_len2;
+  uint32_t shared_secret_len;
+  uint8_t data[128];
+} fips_kat_ecdh_p256_t;
+
+/**
+ * Algorithm 26: ECDH-P384 Shared Secret Computation (Alg ID 26)
+ *
+ * Source Standard: NIST SP 800-56A Rev. 3 / FIPS 186-5 / CAVP Vector.
+ *
+ * Test Vector Parameters:
+ * - Private Key scalar (d): 48 bytes (384-bit scalar).
+ * - Peer Public Key X (Qx): 48 bytes (384-bit coordinate).
+ * - Peer Public Key Y (Qy): 48 bytes (384-bit coordinate).
+ * - Expected Shared Secret (Z): 48 bytes (384-bit X-coordinate of d * Q).
+ *
+ * How inputs/outputs were transformed:
+ * - Header Fields:
+ *     priv_key_len      = 48 (48-byte private key scalar d)
+ *     pub_key_len1      = 48 (48-byte peer public key X coordinate)
+ *     pub_key_len2      = 48 (48-byte peer public key Y coordinate)
+ *     shared_secret_len = 48 (48-byte expected shared secret Z)
+ * - Contiguous Payload:
+ *     data[0..47]    = 48-byte private key scalar d
+ *     data[48..95]   = 48-byte peer public key X
+ *     data[96..143]  = 48-byte peer public key Y
+ *     data[144..191] = 48-byte expected shared secret Z
+ * - Ibex Alignment: 16 bytes (header: 4 x uint32_t) + 192 bytes (payload)
+ *   = 208 bytes total (`208 % 4 == 0`). Naturally 4-byte aligned.
+ *
+ * How test runners (BL0 / Cryptolib) use this vector:
+ * 1. Read entry offset from `fips_kat_descriptor_table_t` for
+ * `kFipsKatAlgEcdhP384`.
+ * 2. Dereference as `const ecdh_kat_data_t *kat = get_fips_data(table, entry)`.
+ * 3. Verify parameters: `kat->priv_key_len == 48`, `kat->pub_key_len1 == 48`,
+ * `kat->pub_key_len2 == 48`, `kat->shared_secret_len == 48`.
+ * 4. Extract pointers:
+ *      `const uint8_t *d = kat->data;`
+ *      `const uint8_t *qx = kat->data + kat->priv_key_len;`
+ *      `const uint8_t *qy = kat->data + kat->priv_key_len + kat->pub_key_len1;`
+ *      `const uint8_t *expected_ss = kat->data + kat->priv_key_len +
+ * kat->pub_key_len1 + kat->pub_key_len2;`
+ * 5. Construct blinded private key and unblinded public key for
+ * `kOtcryptoKeyModeEcdhP384`.
+ * 6. Compute shared secret via `otcrypto_ecdh_p384(&private_key, &public_key,
+ * &shared_secret)`.
+ * 7. Export and unmask shared secret, then compare against `expected_ss`.
+ */
+typedef struct fips_kat_ecdh_p384 {
+  uint32_t priv_key_len;
+  uint32_t pub_key_len1;
+  uint32_t pub_key_len2;
+  uint32_t shared_secret_len;
+  uint8_t data[192];
+} fips_kat_ecdh_p384_t;
+
+/**
+ * Algorithm 27: X25519 Key Agreement (Alg ID 27)
+ *
+ * Source Standard: RFC 7748 / NIST SP 800-186 / CAVP Vector.
+ * Section 6.1: Curve25519 Diffie-Hellman Test Vector.
+ *
+ * Test Vector Parameters:
+ * - Private Key scalar (Alice): 32 bytes.
+ * - Peer Public Key u-coordinate (Bob): 32 bytes.
+ * - Expected Shared Secret (K): 32 bytes.
+ *
+ * How inputs/outputs were transformed:
+ * - Header Fields:
+ *     priv_key_len      = 32 (32-byte private key scalar)
+ *     pub_key_len1      = 32 (32-byte peer public key u-coordinate)
+ *     pub_key_len2      = 0  (X25519 uses single coordinate)
+ *     shared_secret_len = 32 (32-byte expected shared secret)
+ * - Contiguous Payload:
+ *     data[0..31]  = 32-byte private scalar (Alice)
+ *     data[32..63] = 32-byte peer public key u-coordinate (Bob)
+ *     data[64..95] = 32-byte expected shared secret
+ * - Ibex Alignment: 16 bytes (header: 4 x uint32_t) + 96 bytes (payload)
+ *   = 112 bytes total (`112 % 4 == 0`). Naturally 4-byte aligned.
+ *
+ * How test runners (BL0 / Cryptolib) use this vector:
+ * 1. Read entry offset from `fips_kat_descriptor_table_t` for
+ * `kFipsKatAlgX25519`.
+ * 2. Dereference as `const ecdh_kat_data_t *kat = get_fips_data(table, entry)`.
+ * 3. Verify parameters: `kat->priv_key_len == 32`, `kat->pub_key_len1 == 32`,
+ * `kat->pub_key_len2 == 0`, `kat->shared_secret_len == 32`.
+ * 4. Extract pointers:
+ *      `const uint8_t *sk = kat->data;`
+ *      `const uint8_t *pk = kat->data + kat->priv_key_len;`
+ *      `const uint8_t *expected_ss = kat->data + kat->priv_key_len +
+ * kat->pub_key_len1;`
+ * 5. Construct blinded private key and unblinded public key for
+ * `kOtcryptoKeyModeX25519`.
+ * 6. Compute shared secret via `otcrypto_x25519(&private_key, &public_key,
+ * &shared_secret)`.
+ * 7. Unmask shared secret and compare against `expected_ss`.
+ */
+typedef struct fips_kat_x25519 {
+  uint32_t priv_key_len;
+  uint32_t pub_key_len1;
+  uint32_t pub_key_len2;
+  uint32_t shared_secret_len;
+  uint8_t data[96];
+} fips_kat_x25519_t;
+
+/**
  * Container holding all embedded FIPS KAT vector payloads in `.fips_kat.data`.
  */
 typedef struct fips_kat_data_store {
@@ -1076,6 +1227,9 @@ typedef struct fips_kat_data_store {
   fips_kat_ecdsa_p384_verify_t ecdsa_p384_verify;
   fips_kat_ed25519_sign_t ed25519_sign;
   fips_kat_ed25519_verify_t ed25519_verify;
+  fips_kat_ecdh_p256_t ecdh_p256;
+  fips_kat_ecdh_p384_t ecdh_p384;
+  fips_kat_x25519_t x25519;
 } fips_kat_data_store_t;
 
 /**
@@ -1907,6 +2061,96 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
         },
     }
 ,
+    .ecdh_p256 = {
+        .priv_key_len = 32,
+        .pub_key_len1 = 32,
+        .pub_key_len2 = 32,
+        .shared_secret_len = 32,
+        .data = {
+            // Private Key scalar d (32 bytes)
+            0x71, 0x10, 0x6d, 0xfe, 0x16, 0xa0, 0xd0, 0x21,
+            0x81, 0xc7, 0xb2, 0xb0, 0x5d, 0xef, 0x90, 0x95,
+            0x79, 0xa3, 0xdf, 0x3f, 0xe8, 0xeb, 0x76, 0x1b,
+            0x63, 0x02, 0x21, 0x74, 0x41, 0xfc, 0x20, 0x14,
+            // Peer Public Key Qx (32 bytes)
+            0x34, 0xc3, 0xa8, 0xbf, 0xb3, 0xb7, 0x73, 0x97,
+            0x89, 0x06, 0x6b, 0xf3, 0xb2, 0xc0, 0xc0, 0x6e,
+            0xf3, 0x8b, 0x6c, 0xdb, 0x58, 0xce, 0x28, 0x16,
+            0x46, 0xc5, 0xcd, 0xfa, 0x6a, 0x1a, 0x51, 0xb5,
+            // Peer Public Key Qy (32 bytes)
+            0x2e, 0x8c, 0x00, 0x9e, 0x58, 0x70, 0x70, 0xa8,
+            0x24, 0x69, 0x9c, 0xab, 0xd0, 0x11, 0x7a, 0x7f,
+            0xfa, 0x17, 0x3a, 0xb5, 0xea, 0x09, 0xdd, 0x43,
+            0x43, 0xc1, 0x31, 0x1f, 0x97, 0xc6, 0xa1, 0x42,
+            // Expected Shared Secret Z (32 bytes)
+            0x82, 0xeb, 0xc9, 0x18, 0x1d, 0x27, 0x42, 0x57,
+            0xe8, 0xb2, 0x75, 0xe6, 0x3d, 0x9f, 0x86, 0x72,
+            0x03, 0xc1, 0x15, 0xec, 0x90, 0x94, 0x9a, 0x73,
+            0x0a, 0x64, 0x26, 0xa3, 0x46, 0xd7, 0x33, 0x5f,
+        },
+    }
+,
+    .ecdh_p384 = {
+        .priv_key_len = 48,
+        .pub_key_len1 = 48,
+        .pub_key_len2 = 48,
+        .shared_secret_len = 48,
+        .data = {
+            // Private Key scalar d (48 bytes)
+            0x09, 0x9b, 0xe2, 0xc3, 0xeb, 0xbb, 0x38, 0x54,
+            0x29, 0x64, 0x0a, 0xa4, 0x78, 0xb6, 0x16, 0x5f,
+            0xd4, 0xd5, 0x00, 0xb1, 0x20, 0x4b, 0x16, 0x8f,
+            0xd7, 0xee, 0xcf, 0xe4, 0x86, 0xc0, 0xf4, 0x90,
+            0x9c, 0xe0, 0x03, 0x08, 0xc0, 0xd1, 0x0a, 0x35,
+            0x38, 0x2c, 0x2d, 0x25, 0x36, 0xee, 0x0f, 0xb8,
+            // Peer Public Key Qx (48 bytes)
+            0x4a, 0x0b, 0xe7, 0x71, 0x23, 0x56, 0xbe, 0xb8,
+            0xc6, 0xa9, 0xc8, 0x56, 0xab, 0xea, 0xd2, 0x04,
+            0x38, 0x1e, 0x9d, 0xfb, 0x9f, 0x45, 0xfb, 0xe6,
+            0x18, 0xe6, 0x47, 0x08, 0x00, 0x5f, 0x40, 0xc0,
+            0xae, 0x61, 0xa8, 0xd8, 0xe9, 0x24, 0xd3, 0x0c,
+            0xb0, 0x7e, 0x07, 0x9e, 0x9c, 0x5a, 0x72, 0x46,
+            // Peer Public Key Qy (48 bytes)
+            0x42, 0xaf, 0x00, 0x1f, 0x11, 0x13, 0x9e, 0x4d,
+            0x28, 0x5d, 0x7c, 0x53, 0x0f, 0x21, 0x7b, 0xed,
+            0x40, 0x48, 0xef, 0x22, 0x50, 0x8d, 0x52, 0xe7,
+            0xa9, 0x1b, 0xa6, 0x81, 0xd6, 0x8e, 0x77, 0x45,
+            0x3e, 0x35, 0x8b, 0x6a, 0xf5, 0x0d, 0xa3, 0xbd,
+            0x93, 0x89, 0xdc, 0x42, 0xea, 0x12, 0x63, 0xe5,
+            // Expected Shared Secret Z (48 bytes)
+            0x29, 0x15, 0x86, 0x72, 0x24, 0xc6, 0x24, 0x59,
+            0x08, 0x2c, 0x5d, 0x3c, 0xfd, 0xfc, 0xf3, 0x5a,
+            0x38, 0x84, 0x9b, 0x26, 0xd9, 0x75, 0x1d, 0xde,
+            0x74, 0x9e, 0xc9, 0x82, 0x54, 0x52, 0x33, 0x6a,
+            0xa3, 0x0a, 0x00, 0x60, 0x9a, 0x57, 0x9d, 0x79,
+            0x71, 0x40, 0xd7, 0x0c, 0x68, 0x6c, 0xf6, 0xa5,
+        },
+    }
+,
+    .x25519 = {
+        .priv_key_len = 32,
+        .pub_key_len1 = 32,
+        .pub_key_len2 = 0,
+        .shared_secret_len = 32,
+        .data = {
+            // Alice Private Key scalar (32 bytes)
+            0x77, 0x07, 0x6d, 0x0a, 0x73, 0x18, 0xa5, 0x7d,
+            0x3c, 0x16, 0xc1, 0x72, 0x51, 0xb2, 0x66, 0x45,
+            0xdf, 0x4c, 0x2f, 0x87, 0xeb, 0xc0, 0x99, 0x2a,
+            0xb1, 0x77, 0xfb, 0xa5, 0x1d, 0xb9, 0x2c, 0x2a,
+            // Bob Peer Public Key (32 bytes)
+            0xde, 0x9e, 0xdb, 0x7d, 0x7b, 0x7d, 0xc1, 0xb4,
+            0xd3, 0x5b, 0x61, 0xc2, 0xec, 0xe4, 0x35, 0x37,
+            0x3f, 0x83, 0x43, 0xc8, 0x5b, 0x78, 0x67, 0x4d,
+            0xad, 0xfc, 0x7e, 0x14, 0x6f, 0x88, 0x2b, 0x4f,
+            // Expected Shared Secret (32 bytes)
+            0x4a, 0x5d, 0x9d, 0x5b, 0xa4, 0xce, 0x2d, 0xe1,
+            0x72, 0x8e, 0x3b, 0xf4, 0x80, 0x35, 0x0f, 0x25,
+            0xe0, 0x7e, 0x21, 0xc9, 0x47, 0xd1, 0x9e, 0x33,
+            0x76, 0xf0, 0x9b, 0x3c, 0x1e, 0x16, 0x17, 0x42,
+        },
+    }
+,
 };
 
 /**
@@ -1917,12 +2161,12 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
   (sizeof(fips_kat_rom_table_t) + offsetof(fips_kat_data_store_t, field))
 
 /**
- * Concrete descriptor table in ROM holding 19 entries.
+ * Concrete descriptor table in ROM holding 22 entries.
  */
-#define FIPS_KAT_NUM_ENTRIES 19
+#define FIPS_KAT_NUM_ENTRIES 22
 
 /**
- * Concrete descriptor table in ROM holding 19 entries.
+ * Concrete descriptor table in ROM holding 22 entries.
  */
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -2035,6 +2279,21 @@ alignas(uint32_t) static const fips_kat_rom_table_t kFipsKatDescriptorTable = {
                 .algorithm_id = (uint32_t)kFipsKatAlgEd25519Verify,
                 .offset = FIPS_KAT_OFFSET(ed25519_verify),
                 .size = sizeof(fips_kat_ed25519_verify_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgEcdhP256,
+                .offset = FIPS_KAT_OFFSET(ecdh_p256),
+                .size = sizeof(fips_kat_ecdh_p256_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgEcdhP384,
+                .offset = FIPS_KAT_OFFSET(ecdh_p384),
+                .size = sizeof(fips_kat_ecdh_p384_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgX25519,
+                .offset = FIPS_KAT_OFFSET(x25519),
+                .size = sizeof(fips_kat_x25519_t),
             },
         },
 };
