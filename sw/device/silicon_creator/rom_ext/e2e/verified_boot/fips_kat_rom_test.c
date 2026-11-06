@@ -84,21 +84,6 @@ static const uint8_t __attribute__((unused)) kExpectedAes256EcbCt[16] = {
     0x06, 0x4b, 0x5a, 0x7e, 0x3d, 0xb1, 0x81, 0xf8,
 };
 
-static const uint8_t __attribute__((unused)) kExpectedAes128Key[16] = {
-    0x2b, 0x7e, 0x15, 0x16, 0x28, 0xae, 0xd2, 0xa6,
-    0xab, 0xf7, 0x15, 0x88, 0x09, 0xcf, 0x4f, 0x3c,
-};
-
-static const uint8_t __attribute__((unused)) kExpectedAes128EcbPt[16] = {
-    0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
-    0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a,
-};
-
-static const uint8_t __attribute__((unused)) kExpectedAes128EcbCt[16] = {
-    0x3a, 0xd7, 0x7b, 0xb4, 0x0d, 0x7a, 0x36, 0x60,
-    0xa8, 0x9e, 0xca, 0xf3, 0x24, 0x66, 0xef, 0x97,
-};
-
 static const uint8_t __attribute__((unused)) kExpectedAes256CbcIv[16] = {
     0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
     0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
@@ -112,21 +97,6 @@ static const uint8_t __attribute__((unused)) kExpectedAes256CbcPt[16] = {
 static const uint8_t __attribute__((unused)) kExpectedAes256CbcCt[16] = {
     0xf5, 0x8c, 0x4c, 0x04, 0xd6, 0xe5, 0xf1, 0xba,
     0x77, 0x9e, 0xab, 0xfb, 0x5f, 0x7b, 0xfb, 0xd6,
-};
-
-static const uint8_t __attribute__((unused)) kExpectedAes128CbcIv[16] = {
-    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
-    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
-};
-
-static const uint8_t __attribute__((unused)) kExpectedAes128CbcPt[16] = {
-    0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
-    0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a,
-};
-
-static const uint8_t __attribute__((unused)) kExpectedAes128CbcCt[16] = {
-    0x76, 0x49, 0xab, 0xac, 0x81, 0x19, 0xb2, 0x46,
-    0xce, 0xe9, 0x8e, 0x9b, 0x12, 0xe9, 0x19, 0x7d,
 };
 
 static const uint8_t __attribute__((unused)) kExpectedKdfHmacSha256Kdk[32] = {
@@ -172,29 +142,9 @@ static const uint8_t __attribute__((unused)) kExpectedKmac256Digest[64] = {
     0x87, 0x10, 0x24, 0xd9, 0xc2, 0x77, 0x73, 0xa8, 0xdd,
 };
 
-static const uint8_t __attribute__((unused)) kExpectedKmac128Key[32] = {
-    0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47, 0x48, 0x49, 0x4a,
-    0x4b, 0x4c, 0x4d, 0x4e, 0x4f, 0x50, 0x51, 0x52, 0x53, 0x54, 0x55,
-    0x56, 0x57, 0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f,
-};
-
-static const uint8_t
-    __attribute__((unused)) kExpectedKmac128Msg[4] = {0x00, 0x01, 0x02, 0x03};
-
-static const uint8_t __attribute__((unused)) kExpectedKmac128Digest[32] = {
-    0xe5, 0x78, 0x0b, 0x0d, 0x3e, 0xa6, 0xf7, 0xd3, 0xa4, 0x29, 0xc5,
-    0x70, 0x6a, 0xa4, 0x3a, 0x00, 0xfa, 0xdb, 0xd7, 0xd4, 0x96, 0x28,
-    0x83, 0x9e, 0x31, 0x87, 0x24, 0x3f, 0x45, 0x6e, 0xe1, 0x4e,
-};
-
 static const uint8_t __attribute__((unused)) kExpectedAesKwp256Ct[24] = {
     0xcc, 0x06, 0xca, 0x9e, 0xd0, 0x8d, 0xb0, 0x32, 0x13, 0x48, 0x1e, 0x0b,
     0x44, 0x0d, 0x7f, 0xab, 0xf8, 0x85, 0x0c, 0xcc, 0xad, 0x63, 0x00, 0x53,
-};
-
-static const uint8_t __attribute__((unused)) kExpectedAesKwp128Ct[24] = {
-    0xe1, 0x7d, 0xaa, 0x13, 0x0c, 0xf8, 0xbc, 0xa1, 0x64, 0x39, 0x01, 0xa5,
-    0x8d, 0x28, 0xe7, 0x99, 0x43, 0x2d, 0x78, 0x48, 0xde, 0x59, 0xb3, 0x4d,
 };
 
 static status_t test_sha256_kat(const fips_kat_descriptor_table_t *table) {
@@ -593,6 +543,321 @@ static status_t test_kmac256_kat(const fips_kat_descriptor_table_t *table) {
   return OK_STATUS();
 }
 
+static status_t test_aes_ecb256_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for AES-256-ECB Decrypt KAT entry (alg_id = %u)...",
+           kFipsKatAlgAesEcb256Decrypt);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgAesEcb256Decrypt);
+  CHECK(entry != NULL, "AES-256-ECB Decrypt KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving AES-256-ECB KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const aes_kat_data_t *kat_data = (const aes_kat_data_t *)data;
+  CHECK(kat_data->key_len == 32, "Expected key_len=32, got %u",
+        kat_data->key_len);
+  CHECK(kat_data->iv_len == 0, "Expected iv_len=0, got %u", kat_data->iv_len);
+  CHECK(kat_data->aad_len == 0, "Expected aad_len=0, got %u",
+        kat_data->aad_len);
+  CHECK(kat_data->pt_len == 16, "Expected pt_len=16, got %u", kat_data->pt_len);
+  CHECK(kat_data->ct_len == 16, "Expected ct_len=16, got %u", kat_data->ct_len);
+  CHECK(kat_data->tag_len == 0, "Expected tag_len=0, got %u",
+        kat_data->tag_len);
+
+  const uint8_t *key = kat_data->data;
+  const uint8_t *expected_pt = kat_data->data + kat_data->key_len;
+  const uint8_t *ct = kat_data->data + kat_data->key_len + kat_data->pt_len;
+
+  CHECK_ARRAYS_EQ(key, kExpectedAes256Key, 32);
+  CHECK_ARRAYS_EQ(expected_pt, kExpectedAes256EcbPt, 16);
+  CHECK_ARRAYS_EQ(ct, kExpectedAes256EcbCt, 16);
+  LOG_INFO("AES-256-ECB vector payload verified against golden values.");
+
+  LOG_INFO(
+      "Executing AES-256-ECB decryption using AES hardware accelerator...");
+  dif_aes_t aes;
+  CHECK_DIF_OK(dif_aes_init_from_dt(kDtAes, &aes));
+  CHECK_DIF_OK(dif_aes_reset(&aes));
+
+  dif_aes_transaction_t transaction = {
+      .operation = kDifAesOperationDecrypt,
+      .mode = kDifAesModeEcb,
+      .key_len = kDifAesKey256,
+      .key_provider = kDifAesKeySoftwareProvided,
+      .mask_reseeding = kDifAesReseedPer8kBlock,
+      .manual_operation = kDifAesManualOperationAuto,
+      .reseed_on_key_change = false,
+      .ctrl_aux_lock = false,
+  };
+
+  dif_aes_key_share_t key_shares;
+  memcpy(key_shares.share0, key, 32);
+  memset(key_shares.share1, 0, sizeof(key_shares.share1));
+
+  CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key_shares, /*iv=*/NULL));
+
+  dif_aes_data_t in_data;
+  memcpy(in_data.data, ct, 16);
+
+  bool input_ready = false;
+  for (size_t i = 0; i < 1000000; ++i) {
+    CHECK_DIF_OK(
+        dif_aes_get_status(&aes, kDifAesStatusInputReady, &input_ready));
+    if (input_ready) {
+      break;
+    }
+  }
+  CHECK(input_ready, "Timed out waiting for AES input ready!");
+
+  CHECK_DIF_OK(dif_aes_load_data(&aes, in_data));
+
+  bool output_valid = false;
+  for (size_t i = 0; i < 1000000; ++i) {
+    CHECK_DIF_OK(
+        dif_aes_get_status(&aes, kDifAesStatusOutputValid, &output_valid));
+    if (output_valid) {
+      break;
+    }
+  }
+  CHECK(output_valid, "Timed out waiting for AES output valid!");
+
+  dif_aes_data_t out_data;
+  CHECK_DIF_OK(dif_aes_read_output(&aes, &out_data));
+  CHECK_DIF_OK(dif_aes_end(&aes));
+
+  CHECK_ARRAYS_EQ((const uint8_t *)out_data.data, expected_pt, 16);
+  LOG_INFO("AES-256-ECB Decrypt Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
+static status_t test_aes_cbc256_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for AES-256-CBC Decrypt KAT entry (alg_id = %u)...",
+           kFipsKatAlgAesCbc256Decrypt);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgAesCbc256Decrypt);
+  CHECK(entry != NULL, "AES-256-CBC Decrypt KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving AES-256-CBC KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const aes_kat_data_t *kat_data = (const aes_kat_data_t *)data;
+  CHECK(kat_data->key_len == 32, "Expected key_len=32, got %u",
+        kat_data->key_len);
+  CHECK(kat_data->iv_len == 16, "Expected iv_len=16, got %u", kat_data->iv_len);
+  CHECK(kat_data->aad_len == 0, "Expected aad_len=0, got %u",
+        kat_data->aad_len);
+  CHECK(kat_data->pt_len == 16, "Expected pt_len=16, got %u", kat_data->pt_len);
+  CHECK(kat_data->ct_len == 16, "Expected ct_len=16, got %u", kat_data->ct_len);
+  CHECK(kat_data->tag_len == 0, "Expected tag_len=0, got %u",
+        kat_data->tag_len);
+
+  const uint8_t *key = kat_data->data;
+  const uint8_t *iv = kat_data->data + kat_data->key_len;
+  const uint8_t *expected_pt =
+      kat_data->data + kat_data->key_len + kat_data->iv_len;
+  const uint8_t *ct =
+      kat_data->data + kat_data->key_len + kat_data->iv_len + kat_data->pt_len;
+
+  CHECK_ARRAYS_EQ(key, kExpectedAes256Key, 32);
+  CHECK_ARRAYS_EQ(iv, kExpectedAes256CbcIv, 16);
+  CHECK_ARRAYS_EQ(expected_pt, kExpectedAes256CbcPt, 16);
+  CHECK_ARRAYS_EQ(ct, kExpectedAes256CbcCt, 16);
+  LOG_INFO("AES-256-CBC vector payload verified against golden values.");
+
+  LOG_INFO(
+      "Executing AES-256-CBC decryption using AES hardware accelerator...");
+  dif_aes_t aes;
+  CHECK_DIF_OK(dif_aes_init_from_dt(kDtAes, &aes));
+  CHECK_DIF_OK(dif_aes_reset(&aes));
+
+  dif_aes_transaction_t transaction = {
+      .operation = kDifAesOperationDecrypt,
+      .mode = kDifAesModeCbc,
+      .key_len = kDifAesKey256,
+      .key_provider = kDifAesKeySoftwareProvided,
+      .mask_reseeding = kDifAesReseedPer8kBlock,
+      .manual_operation = kDifAesManualOperationAuto,
+      .reseed_on_key_change = false,
+      .ctrl_aux_lock = false,
+  };
+
+  dif_aes_key_share_t key_shares;
+  memcpy(key_shares.share0, key, 32);
+  memset(key_shares.share1, 0, sizeof(key_shares.share1));
+
+  dif_aes_iv_t aes_iv;
+  memcpy(aes_iv.iv, iv, 16);
+
+  CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key_shares, &aes_iv));
+
+  dif_aes_data_t in_data;
+  memcpy(in_data.data, ct, 16);
+
+  bool input_ready = false;
+  for (size_t i = 0; i < 1000000; ++i) {
+    CHECK_DIF_OK(
+        dif_aes_get_status(&aes, kDifAesStatusInputReady, &input_ready));
+    if (input_ready) {
+      break;
+    }
+  }
+  CHECK(input_ready, "Timed out waiting for AES input ready!");
+
+  CHECK_DIF_OK(dif_aes_load_data(&aes, in_data));
+
+  bool output_valid = false;
+  for (size_t i = 0; i < 1000000; ++i) {
+    CHECK_DIF_OK(
+        dif_aes_get_status(&aes, kDifAesStatusOutputValid, &output_valid));
+    if (output_valid) {
+      break;
+    }
+  }
+  CHECK(output_valid, "Timed out waiting for AES output valid!");
+
+  dif_aes_data_t out_data;
+  CHECK_DIF_OK(dif_aes_read_output(&aes, &out_data));
+  CHECK_DIF_OK(dif_aes_end(&aes));
+
+  CHECK_ARRAYS_EQ((const uint8_t *)out_data.data, expected_pt, 16);
+  LOG_INFO("AES-256-CBC Decrypt Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
+static status_t test_aes_kwp256_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for AES-KWP-256 Wrap KAT entry (alg_id = %u)...",
+           kFipsKatAlgAesKwp256Wrap);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgAesKwp256Wrap);
+  CHECK(entry != NULL, "AES-KWP-256 Wrap KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving AES-KWP-256 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const aes_kat_data_t *kat_data = (const aes_kat_data_t *)data;
+  CHECK(kat_data->key_len == 32, "Expected key_len=32, got %u",
+        kat_data->key_len);
+  CHECK(kat_data->iv_len == 0, "Expected iv_len=0, got %u", kat_data->iv_len);
+  CHECK(kat_data->aad_len == 0, "Expected aad_len=0, got %u",
+        kat_data->aad_len);
+  CHECK(kat_data->pt_len == 16, "Expected pt_len=16, got %u", kat_data->pt_len);
+  CHECK(kat_data->ct_len == 24, "Expected ct_len=24, got %u", kat_data->ct_len);
+  CHECK(kat_data->tag_len == 0, "Expected tag_len=0, got %u",
+        kat_data->tag_len);
+
+  const uint8_t *key = kat_data->data;
+  const uint8_t *pt = kat_data->data + kat_data->key_len;
+  const uint8_t *expected_ct =
+      kat_data->data + kat_data->key_len + kat_data->pt_len;
+
+  CHECK_ARRAYS_EQ(key, kExpectedAes256Key, 32);
+  CHECK_ARRAYS_EQ(pt, kExpectedAes256EcbPt, 16);
+  CHECK_ARRAYS_EQ(expected_ct, kExpectedAesKwp256Ct, 24);
+  LOG_INFO("AES-KWP-256 vector payload verified against golden values.");
+
+  LOG_INFO("Executing AES-KWP-256 wrapping using AES hardware accelerator...");
+  dif_aes_t aes;
+  CHECK_DIF_OK(dif_aes_init_from_dt(kDtAes, &aes));
+  CHECK_DIF_OK(dif_aes_reset(&aes));
+
+  dif_aes_transaction_t transaction = {
+      .operation = kDifAesOperationEncrypt,
+      .mode = kDifAesModeEcb,
+      .key_len = kDifAesKey256,
+      .key_provider = kDifAesKeySoftwareProvided,
+      .mask_reseeding = kDifAesReseedPer8kBlock,
+      .manual_operation = kDifAesManualOperationAuto,
+      .reseed_on_key_change = false,
+      .ctrl_aux_lock = false,
+  };
+
+  dif_aes_key_share_t key_shares;
+  memcpy(key_shares.share0, key, 32);
+  memset(key_shares.share1, 0, sizeof(key_shares.share1));
+
+  CHECK_DIF_OK(dif_aes_start(&aes, &transaction, &key_shares, /*iv=*/NULL));
+
+  // Initialize semiblocks A, R[0], R[1]
+  // A = 0xA65959A6 || 32-bit big-endian length (16 = 0x00000010)
+  uint8_t a[8] = {0xa6, 0x59, 0x59, 0xa6, 0x00, 0x00, 0x00, 0x10};
+  uint8_t r[2][8];
+  memcpy(r[0], pt, 8);
+  memcpy(r[1], pt + 8, 8);
+
+  uint64_t t = 1;
+  for (size_t j = 0; j < 6; ++j) {
+    for (size_t i = 0; i < 2; ++i) {
+      dif_aes_data_t in_block;
+      memcpy(&in_block.data[0], a, 8);
+      memcpy(&in_block.data[2], r[i], 8);
+
+      bool input_ready = false;
+      for (size_t k = 0; k < 1000000; ++k) {
+        CHECK_DIF_OK(
+            dif_aes_get_status(&aes, kDifAesStatusInputReady, &input_ready));
+        if (input_ready)
+          break;
+      }
+      CHECK(input_ready, "Timed out waiting for AES input ready!");
+
+      CHECK_DIF_OK(dif_aes_load_data(&aes, in_block));
+
+      bool output_valid = false;
+      for (size_t k = 0; k < 1000000; ++k) {
+        CHECK_DIF_OK(
+            dif_aes_get_status(&aes, kDifAesStatusOutputValid, &output_valid));
+        if (output_valid)
+          break;
+      }
+      CHECK(output_valid, "Timed out waiting for AES output valid!");
+
+      dif_aes_data_t out_block;
+      CHECK_DIF_OK(dif_aes_read_output(&aes, &out_block));
+
+      memcpy(a, &out_block.data[0], 8);
+      uint64_t a_val = ((uint64_t)a[0] << 56) | ((uint64_t)a[1] << 48) |
+                       ((uint64_t)a[2] << 40) | ((uint64_t)a[3] << 32) |
+                       ((uint64_t)a[4] << 24) | ((uint64_t)a[5] << 16) |
+                       ((uint64_t)a[6] << 8) | ((uint64_t)a[7]);
+      a_val ^= t;
+      a[0] = (uint8_t)(a_val >> 56);
+      a[1] = (uint8_t)(a_val >> 48);
+      a[2] = (uint8_t)(a_val >> 40);
+      a[3] = (uint8_t)(a_val >> 32);
+      a[4] = (uint8_t)(a_val >> 24);
+      a[5] = (uint8_t)(a_val >> 16);
+      a[6] = (uint8_t)(a_val >> 8);
+      a[7] = (uint8_t)(a_val);
+
+      memcpy(r[i], &out_block.data[2], 8);
+      t++;
+    }
+  }
+
+  CHECK_DIF_OK(dif_aes_end(&aes));
+
+  uint8_t computed_ct[24];
+  memcpy(computed_ct, a, 8);
+  memcpy(computed_ct + 8, r[0], 8);
+  memcpy(computed_ct + 16, r[1], 8);
+
+  CHECK_ARRAYS_EQ(computed_ct, expected_ct, 24);
+  LOG_INFO("AES-KWP-256 Wrap Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
 static status_t test_fips_kat_rom(void) {
   // Stop the watchdog timer to prevent timeout during long RSA-4096 OTBN
   // computations.
@@ -607,7 +872,7 @@ static status_t test_fips_kat_rom(void) {
         table->magic);
   CHECK(table->version == kFipsKatDescriptorVersion1,
         "Invalid table version: %u", table->version);
-  CHECK(table->entry_count >= 6, "Expected at least 6 entries, got %u",
+  CHECK(table->entry_count >= 9, "Expected at least 9 entries, got %u",
         table->entry_count);
   LOG_INFO(
       "FIPS KAT table found at %p (magic=0x%08x, version=%u, entries=%u, "
@@ -621,6 +886,9 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_hmac_sha512_kat(table));
   TRY(test_shake256_kat(table));
   TRY(test_kmac256_kat(table));
+  TRY(test_aes_ecb256_kat(table));
+  TRY(test_aes_cbc256_kat(table));
+  TRY(test_aes_kwp256_kat(table));
 
   return OK_STATUS();
 }

@@ -44,6 +44,11 @@ typedef enum fips_kat_alg_id {
   // SHA-3 / Keccak
   kFipsKatAlgShake256 = 5,
   kFipsKatAlgKmac256 = 6,
+
+  // AES Block Cipher & Key Wrap (256-bit)
+  kFipsKatAlgAesEcb256Decrypt = 7,
+  kFipsKatAlgAesCbc256Decrypt = 8,
+  kFipsKatAlgAesKwp256Wrap = 9,
 } fips_kat_alg_id_t;
 
 /**
@@ -77,6 +82,17 @@ typedef struct hmac_kat_data {
   uint32_t digest_len;
   uint8_t data[];  // key || msg || expected_digest
 } hmac_kat_data_t;
+
+// 2. Symmetric Block Cipher (AES)
+typedef struct aes_kat_data {
+  uint32_t key_len;
+  uint32_t iv_len;
+  uint32_t aad_len;
+  uint32_t pt_len;
+  uint32_t ct_len;
+  uint32_t tag_len;
+  uint8_t data[];  // key || iv || aad || pt || ct || tag
+} aes_kat_data_t;
 
 /**
  * Fixed address slot storing the pointer to the FIPS KAT descriptor table.

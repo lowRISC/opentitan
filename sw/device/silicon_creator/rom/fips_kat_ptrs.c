@@ -331,6 +331,177 @@ typedef struct fips_kat_kmac256 {
 } fips_kat_kmac256_t;
 
 /**
+ * Concrete test vector structure for AES-256-ECB Decrypt (Algorithm ID 2).
+ *
+ * Schema: `aes_kat_data_t` equivalent.
+ * Optimization: Single-Vector Parameterization (SVP), Single-Block Reuse.
+ *
+ * How this vector was obtained:
+ * - Authoritative Reference: NIST SP 800-38A Section F.1.5 (ECB-AES256) /
+ *   NIST CAVP / ACVP Vector Set 3483386 Test Case 21.
+ * - Key: 32 bytes (256-bit key:
+ *   603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4).
+ * - Plaintext: 16 bytes (128-bit block 1:
+ *   6bc1bee22e409f96e93d7e117393172a).
+ * - Ciphertext: 16 bytes (128-bit block 1:
+ *   f3eed1bdb5d2a03c064b5a7e3db181f8).
+ *
+ * How inputs/outputs were transformed:
+ * - Header Fields:
+ *     key_len = 32
+ *     iv_len  = 0  (ECB mode does not utilize an initialization vector)
+ *     aad_len = 0  (ECB mode does not utilize additional authenticated data)
+ *     pt_len  = 16 (16-byte decrypted plaintext)
+ *     ct_len  = 16 (16-byte encrypted ciphertext input)
+ *     tag_len = 0  (ECB mode has no authentication tag)
+ * - Contiguous Payload: Key (32 bytes) + Plaintext (16 bytes) +
+ *   Ciphertext (16 bytes) = 64 bytes.
+ * - Ibex Alignment: 24 bytes (header: 6 x uint32_t) + 64 bytes (payload)
+ *   = 88 bytes total (`88 % 4 == 0`). Naturally 4-byte aligned, 0 padding
+ * bytes.
+ *
+ * How test runners (BL0 / Cryptolib) use this vector:
+ * 1. Read entry offset from `fips_kat_descriptor_table_t` for
+ * `kFipsKatAlgAesEcb256Decrypt`.
+ * 2. Dereference as `const aes_kat_data_t *kat = get_fips_data(table, entry)`.
+ * 3. Verify parameters: `kat->key_len == 32`, `kat->iv_len == 0`, `kat->aad_len
+ * == 0`, `kat->pt_len == 16`, `kat->ct_len == 16`, `kat->tag_len == 0`.
+ * 4. Extract pointers:
+ *      `const uint8_t *key = kat->data;`
+ *      `const uint8_t *expected_pt = kat->data + kat->key_len;`
+ *      `const uint8_t *ct = kat->data + kat->key_len + kat->pt_len;`
+ * 5. Configure hardware AES IP in automatic decrypt mode:
+ *      operation = `kDifAesOperationDecrypt`,
+ *      mode = `kDifAesModeEcb`,
+ *      key_len = `kDifAesKey256`.
+ * 6. Split/mask 32-byte key into two 256-bit key shares (`share0 = key`,
+ * `share1 = 0`), start transaction, load 16-byte ciphertext block into AES IP.
+ * 7. Read 16-byte decrypted output block and compare against `expected_pt`.
+ */
+typedef struct fips_kat_aes_ecb256 {
+  uint32_t key_len;
+  uint32_t iv_len;
+  uint32_t aad_len;
+  uint32_t pt_len;
+  uint32_t ct_len;
+  uint32_t tag_len;
+  uint8_t data[64];
+} fips_kat_aes_ecb256_t;
+
+/**
+ * Algorithm 10: AES-256-CBC Decrypt (Alg ID 4)
+ *
+ * Source Standard: NIST SP 800-38A (Recommendation for Block Cipher Modes of
+ * Operation: Methods and Techniques) Section F.2.5 (CBC-AES256) / CAVP / ACVP.
+ *
+ * Test Vector Parameters:
+ * - Key: 32 bytes (256-bit key:
+ * 603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4).
+ * - IV: 16 bytes (128-bit IV: 000102030405060708090a0b0c0d0e0f).
+ * - Plaintext: 16 bytes (128-bit block 1: 6bc1bee22e409f96e93d7e117393172a).
+ * - Ciphertext: 16 bytes (128-bit block 1: f58c4c04d6e5f1ba779eabfb5f7bfbd6).
+ *
+ * How inputs/outputs were transformed:
+ * - Header Fields:
+ *     key_len = 32 (32-byte 256-bit key)
+ *     iv_len  = 16 (16-byte initialization vector)
+ *     aad_len = 0  (CBC mode does not utilize additional authenticated data)
+ *     pt_len  = 16 (16-byte decrypted plaintext output)
+ *     ct_len  = 16 (16-byte encrypted ciphertext input)
+ *     tag_len = 0  (CBC mode has no authentication tag)
+ * - Contiguous Payload: Key (32 bytes) + IV (16 bytes) + Plaintext (16 bytes) +
+ *   Ciphertext (16 bytes) = 80 bytes.
+ * - Ibex Alignment: 24 bytes (header: 6 x uint32_t) + 80 bytes (payload)
+ *   = 104 bytes total (`104 % 4 == 0`). Naturally 4-byte aligned, 0 padding
+ * bytes.
+ *
+ * How test runners (BL0 / Cryptolib) use this vector:
+ * 1. Read entry offset from `fips_kat_descriptor_table_t` for
+ * `kFipsKatAlgAesCbc256Decrypt`.
+ * 2. Dereference as `const aes_kat_data_t *kat = get_fips_data(table, entry)`.
+ * 3. Verify parameters: `kat->key_len == 32`, `kat->iv_len == 16`,
+ * `kat->aad_len == 0`, `kat->pt_len == 16`, `kat->ct_len == 16`, `kat->tag_len
+ * == 0`.
+ * 4. Extract pointers:
+ *      `const uint8_t *key = kat->data;`
+ *      `const uint8_t *iv = kat->data + kat->key_len;`
+ *      `const uint8_t *expected_pt = kat->data + kat->key_len + kat->iv_len;`
+ *      `const uint8_t *ct = kat->data + kat->key_len + kat->iv_len +
+ * kat->pt_len;`
+ * 5. Configure hardware AES IP in automatic decrypt mode:
+ *      operation = `kDifAesOperationDecrypt`,
+ *      mode = `kDifAesModeCbc`,
+ *      key_len = `kDifAesKey256`.
+ * 6. Split/mask 32-byte key into two 256-bit key shares (`share0 = key`,
+ * `share1 = 0`), load IV, start transaction, load 16-byte ciphertext block into
+ * AES IP.
+ * 7. Read 16-byte decrypted output block and compare against `expected_pt`.
+ */
+typedef struct fips_kat_aes_cbc256 {
+  uint32_t key_len;
+  uint32_t iv_len;
+  uint32_t aad_len;
+  uint32_t pt_len;
+  uint32_t ct_len;
+  uint32_t tag_len;
+  uint8_t data[80];
+} fips_kat_aes_cbc256_t;
+
+/**
+ * Algorithm 14: AES-KWP-256 Wrap / Key Wrap with Padding (Alg ID 8)
+ *
+ * Source Standard: NIST SP 800-38F (Section 6.3, Algorithm 5 / 6) & RFC 5649 /
+ * CAVP.
+ *
+ * Test Vector Parameters:
+ * - Key (KEK): 32 bytes (256-bit:
+ * 603deb1015ca71be2b73aef0857d77811f352c073b6108d72d9810a30914dff4).
+ * - Plaintext: 16 bytes (128-bit: 6bc1bee22e409f96e93d7e117393172a).
+ * - Ciphertext (Wrapped Output): 24 bytes (192-bit:
+ * cc06ca9ed08db03213481e0b440d7fabf8850cccad630053).
+ *
+ * How inputs/outputs were transformed:
+ * - Header Fields:
+ *     key_len = 32 (256-bit KEK)
+ *     iv_len  = 0
+ *     aad_len = 0
+ *     pt_len  = 16 (16-byte key material to wrap)
+ *     ct_len  = 24 (24-byte wrapped ciphertext with 64-bit ICV)
+ *     tag_len = 0
+ * - Contiguous Payload:
+ *     data[0..31]  = 32-byte KEK
+ *     data[32..47] = 16-byte plaintext key material
+ *     data[48..71] = 24-byte expected wrapped ciphertext
+ * - Ibex Alignment: 24 bytes (header: 6 x uint32_t) + 72 bytes (payload)
+ *   = 96 bytes total (`96 % 4 == 0`). Naturally 4-byte aligned.
+ *
+ * How test runners (BL0 / Cryptolib) use this vector:
+ * 1. Read entry offset from `fips_kat_descriptor_table_t` for
+ * `kFipsKatAlgAesKwp256Wrap`.
+ * 2. Dereference as `const aes_kat_data_t *kat = get_fips_data(table, entry)`.
+ * 3. Verify parameters: `kat->key_len == 32`, `kat->pt_len == 16`, `kat->ct_len
+ * == 24`.
+ * 4. Extract pointers:
+ *      `const uint8_t *kek = kat->data;`
+ *      `const uint8_t *pt = kat->data + kat->key_len;`
+ *      `const uint8_t *expected_ct = kat->data + kat->key_len + kat->pt_len;`
+ * 5. Execute AES-KWP wrapping via hardware AES accelerator in ECB mode (NIST SP
+ * 800-38F Alg 5).
+ * 6. Compare computed ciphertext against `expected_ct`.
+ * 7. Optionally execute AES-KWP unwrapping (Alg 6) and verify recovered
+ * plaintext equals `pt`.
+ */
+typedef struct fips_kat_aes_kwp256 {
+  uint32_t key_len;
+  uint32_t iv_len;
+  uint32_t aad_len;
+  uint32_t pt_len;
+  uint32_t ct_len;
+  uint32_t tag_len;
+  uint8_t data[72];
+} fips_kat_aes_kwp256_t;
+
+/**
  * Container holding all embedded FIPS KAT vector payloads in `.fips_kat.data`.
  */
 typedef struct fips_kat_data_store {
@@ -340,6 +511,9 @@ typedef struct fips_kat_data_store {
   fips_kat_hmac_sha512_t hmac_sha512;
   fips_kat_shake256_t shake256;
   fips_kat_kmac256_t kmac256;
+  fips_kat_aes_ecb256_t aes_ecb256;
+  fips_kat_aes_cbc256_t aes_cbc256;
+  fips_kat_aes_kwp256_t aes_kwp256;
 } fips_kat_data_store_t;
 
 /**
@@ -348,532 +522,205 @@ typedef struct fips_kat_data_store {
 OT_SECTION(".fips_kat.data")
 OT_USED
 alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
-    .sha256_pilot =
-        {
-            .key_len = 0,
-            .msg_len = 3,
-            .digest_len = 32,
-            .data =
-                {
-                    'a',  'b',  'c',  0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01,
-                    0xcf, 0xea, 0x41, 0x41, 0x40, 0xde, 0x5d, 0xae, 0x22,
-                    0x23, 0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
-                    0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad,
-                },
-            .padding = {0},
+    .sha256_pilot = {
+        .key_len = 0,
+        .msg_len = 3,
+        .digest_len = 32,
+        .data = {
+            'a', 'b', 'c',
+            0xba, 0x78, 0x16, 0xbf, 0x8f, 0x01, 0xcf, 0xea,
+            0x41, 0x41, 0x40, 0xde, 0x5d, 0xae, 0x22, 0x23,
+            0xb0, 0x03, 0x61, 0xa3, 0x96, 0x17, 0x7a, 0x9c,
+            0xb4, 0x10, 0xff, 0x61, 0xf2, 0x00, 0x15, 0xad,
         },
-    .hmac_sha256 =
-        {
-            .key_len = 32,
-            .msg_len = 50,
-            .digest_len = 32,
-            .data =
-                {
-                    // Key (32 bytes of 0xaa)
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    // Message (50 bytes of 0xdd)
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    // Expected Digest (32 bytes)
-                    0xcd,
-                    0xcb,
-                    0x12,
-                    0x20,
-                    0xd1,
-                    0xec,
-                    0xcc,
-                    0xea,
-                    0x91,
-                    0xe5,
-                    0x3a,
-                    0xba,
-                    0x30,
-                    0x92,
-                    0xf9,
-                    0x62,
-                    0xe5,
-                    0x49,
-                    0xfe,
-                    0x6c,
-                    0xe9,
-                    0xed,
-                    0x7f,
-                    0xdc,
-                    0x43,
-                    0x19,
-                    0x1f,
-                    0xbd,
-                    0xe4,
-                    0x5c,
-                    0x30,
-                    0xb0,
-                },
-            .padding = {0, 0},
+        .padding = {0},
+    }
+,
+    .hmac_sha256 = {
+        .key_len = 32,
+        .msg_len = 50,
+        .digest_len = 32,
+        .data = {
+            // Key (32 bytes of 0xaa)
+            0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+            0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+            0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+            0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+            // Message (50 bytes of 0xdd)
+            0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+            0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+            0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+            0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+            0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+            0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+            0xdd, 0xdd,
+            // Expected Digest (32 bytes)
+            0xcd, 0xcb, 0x12, 0x20, 0xd1, 0xec, 0xcc, 0xea,
+            0x91, 0xe5, 0x3a, 0xba, 0x30, 0x92, 0xf9, 0x62,
+            0xe5, 0x49, 0xfe, 0x6c, 0xe9, 0xed, 0x7f, 0xdc,
+            0x43, 0x19, 0x1f, 0xbd, 0xe4, 0x5c, 0x30, 0xb0,
         },
-    .sha512 =
-        {
-            .key_len = 0,
-            .msg_len = 3,
-            .digest_len = 64,
-            .data =
-                {
-                    'a',
-                    'b',
-                    'c',
-                    // Expected Digest (64 bytes)
-                    0xdd,
-                    0xaf,
-                    0x35,
-                    0xa1,
-                    0x93,
-                    0x61,
-                    0x7a,
-                    0xba,
-                    0xcc,
-                    0x41,
-                    0x73,
-                    0x49,
-                    0xae,
-                    0x20,
-                    0x41,
-                    0x31,
-                    0x12,
-                    0xe6,
-                    0xfa,
-                    0x4e,
-                    0x89,
-                    0xa9,
-                    0x7e,
-                    0xa2,
-                    0x0a,
-                    0x9e,
-                    0xee,
-                    0xe6,
-                    0x4b,
-                    0x55,
-                    0xd3,
-                    0x9a,
-                    0x21,
-                    0x92,
-                    0x99,
-                    0x2a,
-                    0x27,
-                    0x4f,
-                    0xc1,
-                    0xa8,
-                    0x36,
-                    0xba,
-                    0x3c,
-                    0x23,
-                    0xa3,
-                    0xfe,
-                    0xeb,
-                    0xbd,
-                    0x45,
-                    0x4d,
-                    0x44,
-                    0x23,
-                    0x64,
-                    0x3c,
-                    0xe8,
-                    0x0e,
-                    0x2a,
-                    0x9a,
-                    0xc9,
-                    0x4f,
-                    0xa5,
-                    0x4c,
-                    0xa4,
-                    0x9f,
-                },
-            .padding = {0},
+        .padding = {0, 0},
+    }
+,
+    .sha512 = {
+        .key_len = 0,
+        .msg_len = 3,
+        .digest_len = 64,
+        .data = {
+            'a', 'b', 'c',
+            // Expected Digest (64 bytes)
+            0xdd, 0xaf, 0x35, 0xa1, 0x93, 0x61, 0x7a, 0xba,
+            0xcc, 0x41, 0x73, 0x49, 0xae, 0x20, 0x41, 0x31,
+            0x12, 0xe6, 0xfa, 0x4e, 0x89, 0xa9, 0x7e, 0xa2,
+            0x0a, 0x9e, 0xee, 0xe6, 0x4b, 0x55, 0xd3, 0x9a,
+            0x21, 0x92, 0x99, 0x2a, 0x27, 0x4f, 0xc1, 0xa8,
+            0x36, 0xba, 0x3c, 0x23, 0xa3, 0xfe, 0xeb, 0xbd,
+            0x45, 0x4d, 0x44, 0x23, 0x64, 0x3c, 0xe8, 0x0e,
+            0x2a, 0x9a, 0xc9, 0x4f, 0xa5, 0x4c, 0xa4, 0x9f,
         },
-    .hmac_sha512 =
-        {
-            .key_len = 20,
-            .msg_len = 50,
-            .digest_len = 64,
-            .data =
-                {
-                    // Key (20 bytes of 0xaa)
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    0xaa,
-                    // Message (50 bytes of 0xdd)
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    0xdd,
-                    // Expected Digest (64 bytes)
-                    0xfa,
-                    0x73,
-                    0xb0,
-                    0x08,
-                    0x9d,
-                    0x56,
-                    0xa2,
-                    0x84,
-                    0xef,
-                    0xb0,
-                    0xf0,
-                    0x75,
-                    0x6c,
-                    0x89,
-                    0x0b,
-                    0xe9,
-                    0xb1,
-                    0xb5,
-                    0xdb,
-                    0xdd,
-                    0x8e,
-                    0xe8,
-                    0x1a,
-                    0x36,
-                    0x55,
-                    0xf8,
-                    0x3e,
-                    0x33,
-                    0xb2,
-                    0x27,
-                    0x9d,
-                    0x39,
-                    0xbf,
-                    0x3e,
-                    0x84,
-                    0x82,
-                    0x79,
-                    0xa7,
-                    0x22,
-                    0xc8,
-                    0x06,
-                    0xb4,
-                    0x85,
-                    0xa4,
-                    0x7e,
-                    0x67,
-                    0xc8,
-                    0x07,
-                    0xb9,
-                    0x46,
-                    0xa3,
-                    0x37,
-                    0xbe,
-                    0xe8,
-                    0x94,
-                    0x26,
-                    0x74,
-                    0x27,
-                    0x88,
-                    0x59,
-                    0xe1,
-                    0x32,
-                    0x92,
-                    0xfb,
-                },
-            .padding = {0, 0},
+        .padding = {0},
+    }
+,
+    .hmac_sha512 = {
+        .key_len = 20,
+        .msg_len = 50,
+        .digest_len = 64,
+        .data = {
+            // Key (20 bytes of 0xaa)
+            0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+            0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa, 0xaa,
+            0xaa, 0xaa, 0xaa, 0xaa,
+            // Message (50 bytes of 0xdd)
+            0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+            0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+            0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+            0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+            0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+            0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd, 0xdd,
+            0xdd, 0xdd,
+            // Expected Digest (64 bytes)
+            0xfa, 0x73, 0xb0, 0x08, 0x9d, 0x56, 0xa2, 0x84,
+            0xef, 0xb0, 0xf0, 0x75, 0x6c, 0x89, 0x0b, 0xe9,
+            0xb1, 0xb5, 0xdb, 0xdd, 0x8e, 0xe8, 0x1a, 0x36,
+            0x55, 0xf8, 0x3e, 0x33, 0xb2, 0x27, 0x9d, 0x39,
+            0xbf, 0x3e, 0x84, 0x82, 0x79, 0xa7, 0x22, 0xc8,
+            0x06, 0xb4, 0x85, 0xa4, 0x7e, 0x67, 0xc8, 0x07,
+            0xb9, 0x46, 0xa3, 0x37, 0xbe, 0xe8, 0x94, 0x26,
+            0x74, 0x27, 0x88, 0x59, 0xe1, 0x32, 0x92, 0xfb,
         },
-    .shake256 =
-        {
-            .key_len = 0,
-            .msg_len = 1,
-            .digest_len = 32,
-            .data =
-                {
-                    // Message (1 byte): 0x0f, followed by 3 bytes 0x00 padding
-                    // for 4B word alignment
-                    0x0f,
-                    0x00,
-                    0x00,
-                    0x00,
-                    // Expected Squeezed Output (32 bytes = 256 bits)
-                    0xaa,
-                    0xbb,
-                    0x07,
-                    0x48,
-                    0x8f,
-                    0xf9,
-                    0xed,
-                    0xd0,
-                    0x5d,
-                    0x6a,
-                    0x60,
-                    0x3b,
-                    0x77,
-                    0x91,
-                    0xb6,
-                    0x0a,
-                    0x16,
-                    0xd4,
-                    0x50,
-                    0x93,
-                    0x60,
-                    0x8f,
-                    0x1b,
-                    0xad,
-                    0xc0,
-                    0xc9,
-                    0xcc,
-                    0x9a,
-                    0x91,
-                    0x54,
-                    0xf2,
-                    0x15,
-                },
+        .padding = {0, 0},
+    }
+,
+    .shake256 = {
+        .key_len = 0,
+        .msg_len = 1,
+        .digest_len = 32,
+        .data = {
+            // Message (1 byte): 0x0f, followed by 3 bytes 0x00 padding for 4B word alignment
+            0x0f, 0x00, 0x00, 0x00,
+            // Expected Squeezed Output (32 bytes = 256 bits)
+            0xaa, 0xbb, 0x07, 0x48, 0x8f, 0xf9, 0xed, 0xd0,
+            0x5d, 0x6a, 0x60, 0x3b, 0x77, 0x91, 0xb6, 0x0a,
+            0x16, 0xd4, 0x50, 0x93, 0x60, 0x8f, 0x1b, 0xad,
+            0xc0, 0xc9, 0xcc, 0x9a, 0x91, 0x54, 0xf2, 0x15,
         },
-    .kmac256 =
-        {
-            .key_len = 32,
-            .msg_len = 4,
-            .digest_len = 64,
-            .data =
-                {
-                    // Key (32 bytes: 0x40..0x5f)
-                    0x40,
-                    0x41,
-                    0x42,
-                    0x43,
-                    0x44,
-                    0x45,
-                    0x46,
-                    0x47,
-                    0x48,
-                    0x49,
-                    0x4a,
-                    0x4b,
-                    0x4c,
-                    0x4d,
-                    0x4e,
-                    0x4f,
-                    0x50,
-                    0x51,
-                    0x52,
-                    0x53,
-                    0x54,
-                    0x55,
-                    0x56,
-                    0x57,
-                    0x58,
-                    0x59,
-                    0x5a,
-                    0x5b,
-                    0x5c,
-                    0x5d,
-                    0x5e,
-                    0x5f,
-                    // Message (4 bytes: 0x00, 0x01, 0x02, 0x03)
-                    0x00,
-                    0x01,
-                    0x02,
-                    0x03,
-                    // Expected Output (64 bytes = 512 bits)
-                    0x20,
-                    0xc5,
-                    0x70,
-                    0xc3,
-                    0x13,
-                    0x46,
-                    0xf7,
-                    0x03,
-                    0xc9,
-                    0xac,
-                    0x36,
-                    0xc6,
-                    0x1c,
-                    0x03,
-                    0xcb,
-                    0x64,
-                    0xc3,
-                    0x97,
-                    0x0d,
-                    0x0c,
-                    0xfc,
-                    0x78,
-                    0x7e,
-                    0x9b,
-                    0x79,
-                    0x59,
-                    0x9d,
-                    0x27,
-                    0x3a,
-                    0x68,
-                    0xd2,
-                    0xf7,
-                    0xf6,
-                    0x9d,
-                    0x4c,
-                    0xc3,
-                    0xde,
-                    0x9d,
-                    0x10,
-                    0x4a,
-                    0x35,
-                    0x16,
-                    0x89,
-                    0xf2,
-                    0x7c,
-                    0xf6,
-                    0xf5,
-                    0x95,
-                    0x1f,
-                    0x01,
-                    0x03,
-                    0xf3,
-                    0x3f,
-                    0x4f,
-                    0x24,
-                    0x87,
-                    0x10,
-                    0x24,
-                    0xd9,
-                    0xc2,
-                    0x77,
-                    0x73,
-                    0xa8,
-                    0xdd,
-                },
+    }
+,
+    .kmac256 = {
+        .key_len = 32,
+        .msg_len = 4,
+        .digest_len = 64,
+        .data = {
+            // Key (32 bytes: 0x40..0x5f)
+            0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
+            0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
+            0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+            0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f,
+            // Message (4 bytes: 0x00, 0x01, 0x02, 0x03)
+            0x00, 0x01, 0x02, 0x03,
+            // Expected Output (64 bytes = 512 bits)
+            0x20, 0xc5, 0x70, 0xc3, 0x13, 0x46, 0xf7, 0x03,
+            0xc9, 0xac, 0x36, 0xc6, 0x1c, 0x03, 0xcb, 0x64,
+            0xc3, 0x97, 0x0d, 0x0c, 0xfc, 0x78, 0x7e, 0x9b,
+            0x79, 0x59, 0x9d, 0x27, 0x3a, 0x68, 0xd2, 0xf7,
+            0xf6, 0x9d, 0x4c, 0xc3, 0xde, 0x9d, 0x10, 0x4a,
+            0x35, 0x16, 0x89, 0xf2, 0x7c, 0xf6, 0xf5, 0x95,
+            0x1f, 0x01, 0x03, 0xf3, 0x3f, 0x4f, 0x24, 0x87,
+            0x10, 0x24, 0xd9, 0xc2, 0x77, 0x73, 0xa8, 0xdd,
         },
+    }
+,
+    .aes_ecb256 = {
+        .key_len = 32,
+        .iv_len = 0,
+        .aad_len = 0,
+        .pt_len = 16,
+        .ct_len = 16,
+        .tag_len = 0,
+        .data = {
+            // Key (32 bytes): NIST SP 800-38A Section F.1.5
+            0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe,
+            0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
+            0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7,
+            0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4,
+            // Plaintext (16 bytes)
+            0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
+            0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a,
+            // Ciphertext (16 bytes)
+            0xf3, 0xee, 0xd1, 0xbd, 0xb5, 0xd2, 0xa0, 0x3c,
+            0x06, 0x4b, 0x5a, 0x7e, 0x3d, 0xb1, 0x81, 0xf8,
+        },
+    }
+,
+    .aes_cbc256 = {
+        .key_len = 32,
+        .iv_len = 16,
+        .aad_len = 0,
+        .pt_len = 16,
+        .ct_len = 16,
+        .tag_len = 0,
+        .data = {
+            // Key (32 bytes): NIST SP 800-38A Section F.2.5
+            0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe,
+            0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
+            0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7,
+            0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4,
+            // IV (16 bytes)
+            0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+            0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+            // Plaintext (16 bytes)
+            0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
+            0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a,
+            // Ciphertext (16 bytes)
+            0xf5, 0x8c, 0x4c, 0x04, 0xd6, 0xe5, 0xf1, 0xba,
+            0x77, 0x9e, 0xab, 0xfb, 0x5f, 0x7b, 0xfb, 0xd6,
+        },
+    }
+,
+    .aes_kwp256 = {
+        .key_len = 32,
+        .iv_len = 0,
+        .aad_len = 0,
+        .pt_len = 16,
+        .ct_len = 24,
+        .tag_len = 0,
+        .data = {
+            // Key (32 bytes)
+            0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe,
+            0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
+            0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7,
+            0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4,
+            // Plaintext (16 bytes)
+            0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
+            0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a,
+            // Expected Wrapped Ciphertext (24 bytes)
+            0xcc, 0x06, 0xca, 0x9e, 0xd0, 0x8d, 0xb0, 0x32,
+            0x13, 0x48, 0x1e, 0x0b, 0x44, 0x0d, 0x7f, 0xab,
+            0xf8, 0x85, 0x0c, 0xcc, 0xad, 0x63, 0x00, 0x53,
+        },
+    }
+,
 };
 
 /**
@@ -884,12 +731,12 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
   (sizeof(fips_kat_rom_table_t) + offsetof(fips_kat_data_store_t, field))
 
 /**
- * Concrete descriptor table in ROM holding 6 entries.
+ * Concrete descriptor table in ROM holding 9 entries.
  */
-#define FIPS_KAT_NUM_ENTRIES 6
+#define FIPS_KAT_NUM_ENTRIES 9
 
 /**
- * Concrete descriptor table in ROM holding 6 entries.
+ * Concrete descriptor table in ROM holding 9 entries.
  */
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -937,6 +784,21 @@ alignas(uint32_t) static const fips_kat_rom_table_t kFipsKatDescriptorTable = {
                 .algorithm_id = (uint32_t)kFipsKatAlgKmac256,
                 .offset = FIPS_KAT_OFFSET(kmac256),
                 .size = sizeof(fips_kat_kmac256_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgAesEcb256Decrypt,
+                .offset = FIPS_KAT_OFFSET(aes_ecb256),
+                .size = sizeof(fips_kat_aes_ecb256_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgAesCbc256Decrypt,
+                .offset = FIPS_KAT_OFFSET(aes_cbc256),
+                .size = sizeof(fips_kat_aes_cbc256_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgAesKwp256Wrap,
+                .offset = FIPS_KAT_OFFSET(aes_kwp256),
+                .size = sizeof(fips_kat_aes_kwp256_t),
             },
         },
 };
