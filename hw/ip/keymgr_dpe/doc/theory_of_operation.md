@@ -83,7 +83,7 @@ Invalid states such as {`Reset`, `Invalid`}, on the other hand, are used to deno
 ### Reset
 The advancement from `Reset` to `Available` internally goes through few FSM states, but from the SW point of view, this only requires a single advance call.
 During these FSM transitions, the OTP creator root key is latched into a destination slot specified by SW.
-The latching of the root key can only happen once until the keymgr_DPE is reset.
+This latching happens once per reset; afterwards, the root key can be loaded again with the [_Load Root Key_](#load-root-key-and-load-secondary-root-key) operation unless locked with the `LOAD_ROOT_KEY_LOCK` register.
 Until the initial advance is invoked and keymgr_DPE reaches to `Available` state, the key manager rejects key generation requests.
 
 ### Available
