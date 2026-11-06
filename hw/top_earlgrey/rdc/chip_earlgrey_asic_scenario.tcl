@@ -40,7 +40,6 @@ set_reset_scenario { \
   { top_earlgrey.clkmgr_aon_clocks.clk_main_powerup    { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_powerup      { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_usb_powerup     { constraint { @t0 0 } } } \
-  { top_earlgrey.clkmgr_aon_clocks.clk_io_div2_powerup { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_main_aes        { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_main_hmac       { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_main_kmac       { constraint { @t0 0 } } } \
@@ -53,7 +52,6 @@ set_reset_scenario { \
   { top_earlgrey.clkmgr_aon_clocks.clk_main_secure     { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_timers  { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_peri    { constraint { @t0 0 } } } \
-  { top_earlgrey.clkmgr_aon_clocks.clk_io_div2_peri    { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_peri         { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_usb_peri        { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_spi_host1    { constraint { @t0 0 } } } \
@@ -74,7 +72,6 @@ set_reset_scenario { \
   { top_earlgrey.clkmgr_aon_clocks.clk_main_powerup    { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_powerup      { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_usb_powerup     { constraint { @t0 0 } } } \
-  { top_earlgrey.clkmgr_aon_clocks.clk_io_div2_powerup { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_main_aes        { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_main_hmac       { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_main_kmac       { constraint { @t0 0 } } } \
@@ -87,7 +84,6 @@ set_reset_scenario { \
   { top_earlgrey.clkmgr_aon_clocks.clk_main_secure     { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_timers  { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_div4_peri    { constraint { @t0 0 } } } \
-  { top_earlgrey.clkmgr_aon_clocks.clk_io_div2_peri    { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_peri         { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_usb_peri        { constraint { @t0 0 } } } \
   { top_earlgrey.clkmgr_aon_clocks.clk_io_spi_host1    { constraint { @t0 0 } } } \

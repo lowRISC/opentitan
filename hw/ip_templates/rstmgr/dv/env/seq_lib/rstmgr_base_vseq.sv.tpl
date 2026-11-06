@@ -332,7 +332,7 @@ class rstmgr_base_vseq extends cip_base_vseq #(
     csr_wr(.ptr(ral.sw_rst_ctrl_n[entry]), .value(sw_rst_ctrl_n[entry]));
     // And check that the reset outputs match the actual ctrl_n settings.
     // Allow for domain crossing delay.
-    cfg.${preferred_clk("io_div2")}_clk_rst_vif.wait_clks(3);
+    cfg.${preferred_clk("io_div4")}_clk_rst_vif.wait_clks(3);
     exp_ctrl_n = ~sw_rst_regwen | sw_rst_ctrl_n;
     `uvm_info(`gfn, $sformatf(
               "regwen=%b, ctrl_n=%b, expected=%b", sw_rst_regwen, sw_rst_ctrl_n, exp_ctrl_n),

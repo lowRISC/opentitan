@@ -879,10 +879,9 @@ typedef enum top_englishbreakfast_power_manager_reset_requests {
  */
 typedef enum top_englishbreakfast_gateable_clocks {
   kTopEnglishbreakfastGateableClocksIoDiv4Peri = 0, /**< Clock clk_io_div4_peri in group peri */
-  kTopEnglishbreakfastGateableClocksIoDiv2Peri = 1, /**< Clock clk_io_div2_peri in group peri */
-  kTopEnglishbreakfastGateableClocksIoPeri = 2, /**< Clock clk_io_peri in group peri */
-  kTopEnglishbreakfastGateableClocksUsbPeri = 3, /**< Clock clk_usb_peri in group peri */
-  kTopEnglishbreakfastGateableClocksLast = 3, /**< \internal Last Valid Gateable Clock */
+  kTopEnglishbreakfastGateableClocksIoPeri = 1, /**< Clock clk_io_peri in group peri */
+  kTopEnglishbreakfastGateableClocksUsbPeri = 2, /**< Clock clk_usb_peri in group peri */
+  kTopEnglishbreakfastGateableClocksLast = 2, /**< \internal Last Valid Gateable Clock */
 } top_englishbreakfast_gateable_clocks_t;
 
 /**
