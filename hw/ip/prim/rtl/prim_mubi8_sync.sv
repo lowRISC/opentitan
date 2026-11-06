@@ -37,6 +37,9 @@ module prim_mubi8_sync
   input  mubi8_t                 mubi_i,
   output mubi8_t [NumCopies-1:0] mubi_o
 );
+`ifdef INC_ASSERT
+  localparam int MubiSyncMinDelayCycles = prim_pkg::get_cdc_min_delay_cycles();
+`endif
 
   `ASSERT_INIT(NumCopiesMustBeGreaterZero_A, NumCopies > 0)
 
@@ -117,8 +120,12 @@ module prim_mubi8_sync
         mubi_in_sva_q <= mubi_i;
       end
       `ASSERT(OutputIfUnstable_A, sig_unstable |-> mubi_o == {NumCopies{reset_value}})
+      // This assertion has a 3-stage data path: 2-stage sync + 1-stage stability flop.
+      // Delay = MubiSyncMinDelayCycles + 1. It may take an extra cycle to stabilize.
       `ASSERT(OutputDelay_A,
-              rst_ni |-> ##[3:4] sig_unstable || mubi_o == {NumCopies{$past(mubi_in_sva_q, 2)}})
+              rst_ni |-> ##[MubiSyncMinDelayCycles+1 : MubiSyncMinDelayCycles+2]
+                             sig_unstable ||
+                             mubi_o == {NumCopies{$past(mubi_in_sva_q, MubiSyncMinDelayCycles)}})
 `endif
     end else begin : gen_no_stable_chks
       assign mubi = mubi_sync;
@@ -127,9 +134,22 @@ module prim_mubi8_sync
       always_ff @(posedge clk_i) begin
         mubi_in_sva_q <= mubi_i;
       end
-      `ASSERT(OutputDelay_A,
-              rst_ni |-> ##3 (mubi_o == {NumCopies{$past(mubi_in_sva_q, 2)}} ||
-                              $past(mubi_in_sva_q, 2) != $past(mubi_in_sva_q, 1)))
+      // This assertion has a 2-stage data path: 2-stage sync.
+      // Delay = MubiSyncMinDelayCycles. SVA checks 1 cycle later.
+      if (MubiSyncMinDelayCycles == 1) begin : gen_sva_delay_1
+        // Special case for N=1 to avoid illegal $past(..., 0)
+        `ASSERT(OutputDelay_A,
+          rst_ni |-> ##(MubiSyncMinDelayCycles + 1)
+                          (mubi_o == {NumCopies{$past(mubi_in_sva_q, MubiSyncMinDelayCycles)}} ||
+                          // $past(..., N-1) becomes the current value 'mubi_in_sva_q'
+                          $past(mubi_in_sva_q, MubiSyncMinDelayCycles) != mubi_in_sva_q))
+      end else begin : gen_sva_delay_gt_1
+        `ASSERT(OutputDelay_A,
+          rst_ni |-> ##(MubiSyncMinDelayCycles + 1)
+                          (mubi_o == {NumCopies{$past(mubi_in_sva_q, MubiSyncMinDelayCycles)}} ||
+                          $past(mubi_in_sva_q, MubiSyncMinDelayCycles) !=
+                          $past(mubi_in_sva_q, MubiSyncMinDelayCycles - 1)))
+      end
 `endif
     end
   end else begin : gen_no_flops
