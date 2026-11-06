@@ -14,6 +14,9 @@
 | `regs_tl_d`    | device | `xbar_main`      | CSR interface. |
 | `meta_sram_tl` | host   | `sram_ctrl_meta` | The single port into the unified meta SRAM. |
 
+A host (in Earl Grey, Ibex) must hold a request on `cored_tl_d` stable until `a_ready` accepts it.
+OpenTitan does not require this of TL-UL hosts in general, but the [revocation engine](#revocation-engine) watches a core write on this port from the moment it is presented.
+
 `cheriot_ena_i` selects the execution mode. It is a `mubi4_t` driven by the write-once mode switch in
 `rv_core_ibex`.
 
