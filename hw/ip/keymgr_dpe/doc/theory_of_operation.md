@@ -95,6 +95,7 @@ Until the initial advance is invoked and keymgr_DPE reaches to `Available` state
 During `Available`, keymgr_DPE accepts further advance and key generation requests.
 When transitioning from `Reset` to `Available`, as a SCA counter-measure, random values obtained from the entropy source are used to populate the key slot first in a manner that both shares have the same random mask.
 Then the root key is XORed on top of this randomness, in order to have fresh randomness for UDS at every power cycle.
+In the same cycle in which the root key is latched, all sideload key slots (AES, KMAC, OTBN and HMAC) are cleared: they are invalidated and their contents are overwritten with entropy.
 During these transitions, keymgr_DPE's working state will be reported as `Reset`, until the latching is done and keymgr_DPE is ready to accept further commands.
 
 ### Disabled
