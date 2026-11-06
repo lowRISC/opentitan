@@ -361,3 +361,40 @@ opentitan_test(
         "//sw/device/silicon_creator/lib/drivers:retention_sram",
     ],
 )
+
+opentitan_test(
+    name = "fips_kat_rom_test",
+    srcs = ["fips_kat_rom_test.c"],
+    exec_env = {
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = fpga_params(
+        timeout = "long",
+    ),
+    deps = [
+        "//hw/top:aes_c_regs",
+        "//hw/top:hmac_c_regs",
+        "//hw/top/dt",
+        "//sw/device/lib/base:abs_mmio",
+        "//sw/device/lib/base:bitfield",
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/crypto/impl:config",
+        "//sw/device/lib/crypto/impl:ecc_curve25519",
+        "//sw/device/lib/crypto/impl:ecc_p256",
+        "//sw/device/lib/crypto/impl:ecc_p384",
+        "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:key_transport",
+        "//sw/device/lib/crypto/impl:rsa",
+        "//sw/device/lib/crypto/impl:sha2",
+        "//sw/device/lib/dif:aes",
+        "//sw/device/lib/dif:aon_timer",
+        "//sw/device/lib/dif:kmac",
+        "//sw/device/lib/runtime:hart",
+        "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing/test_framework:check",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:kmac",
+        "//sw/device/silicon_creator/rom:fips_kat_table",
+    ],
+)
