@@ -14,6 +14,8 @@ Parameter          | Default        | Top Earlgrey   | Description
 `NvmTopAddr`       | `0x3020_0000`  | `0x3020_0000`  | Top address of the NVM region, exclusive.
 `MetaSramBaseAddr` | `0x1100_0000`  | `0x1100_0000`  | Base address of the unified meta SRAM.
 `MemSizeRevbm`     | `3072`         | `3072`         | Size of the `revbm` window in bytes, set by topgen. Must equal the size of the main SRAM revocation bitmap.
+`AlertAsyncOn`     | `1'b1`         | `1'b1`         | Adds synchronizers to the alert sender for an alert handler on another clock, set by topgen.
+`AlertSkewCycles`  | `1`            | `1`            | Cycles of skew tolerated on the differential alert signals, set by topgen.
 
 ## Signals
 
