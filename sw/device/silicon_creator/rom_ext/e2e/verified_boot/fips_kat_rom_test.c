@@ -1136,6 +1136,298 @@ static status_t test_rsa4096_verify_kat(
   return OK_STATUS();
 }
 
+static status_t test_ecdsa_p256_sign_kat(
+    const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for ECDSA-P256 Sign KAT entry (alg_id = %u)...",
+           kFipsKatAlgEcdsaP256Sign);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgEcdsaP256Sign);
+  CHECK(entry != NULL, "ECDSA-P256 Sign KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving ECDSA-P256 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const asymmetric_sign_kat_data_t *kat_data =
+      (const asymmetric_sign_kat_data_t *)data;
+  CHECK(kat_data->priv_key_len == 32, "Expected priv_key_len=32, got %u",
+        kat_data->priv_key_len);
+  CHECK(kat_data->ephemeral_len == 32, "Expected ephemeral_len=32, got %u",
+        kat_data->ephemeral_len);
+  CHECK(kat_data->msg_len == 32, "Expected msg_len=32, got %u",
+        kat_data->msg_len);
+  CHECK(kat_data->sig_len1 == 32, "Expected sig_len1=32, got %u",
+        kat_data->sig_len1);
+  CHECK(kat_data->sig_len2 == 32, "Expected sig_len2=32, got %u",
+        kat_data->sig_len2);
+
+  const uint8_t *d = kat_data->data;
+  const uint8_t *k = kat_data->data + kat_data->priv_key_len;
+  const uint8_t *msg_digest =
+      kat_data->data + kat_data->priv_key_len + kat_data->ephemeral_len;
+  const uint8_t *expected_sig = kat_data->data + kat_data->priv_key_len +
+                                kat_data->ephemeral_len + kat_data->msg_len;
+
+  LOG_INFO("Executing ECDSA-P256 signing using OTBN coprocessor...");
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  const otcrypto_key_config_t kP256Config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  uint32_t keyblob_sk[20] = {0};
+  otcrypto_blinded_key_t private_key = {
+      .config = kP256Config,
+      .keyblob_length = sizeof(keyblob_sk),
+      .keyblob = keyblob_sk,
+      .checksum = 0,
+  };
+  memcpy(keyblob_sk, d, 32);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  uint32_t keyblob_scalar[20] = {0};
+  otcrypto_blinded_key_t secret_scalar = {
+      .config = kP256Config,
+      .keyblob_length = sizeof(keyblob_scalar),
+      .keyblob = keyblob_scalar,
+      .checksum = 0,
+  };
+  memcpy(keyblob_scalar, k, 32);
+  secret_scalar.checksum = otcrypto_integrity_blinded_checksum(&secret_scalar);
+
+  otcrypto_hash_digest_t digest = {
+      .mode = kOtcryptoHashModeSha256,
+      .len = 8,
+      .data = (uint32_t *)msg_digest,
+  };
+
+  uint32_t sig[16];
+  otcrypto_word32_buf_t sig_buf = otcrypto_make_word32_buf(sig, 16);
+
+  CHECK_STATUS_OK(otcrypto_ecdsa_p256_sign_config_k(
+      &private_key, &secret_scalar, digest, &sig_buf));
+
+  CHECK_ARRAYS_EQ((const uint8_t *)sig, expected_sig, 64);
+  LOG_INFO("ECDSA-P256 Signing Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
+static status_t test_ecdsa_p256_verify_kat(
+    const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for ECDSA-P256 Verify KAT entry (alg_id = %u)...",
+           kFipsKatAlgEcdsaP256Verify);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgEcdsaP256Verify);
+  CHECK(entry != NULL, "ECDSA-P256 Verify KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving ECDSA-P256 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const asymmetric_verify_kat_data_t *kat_data =
+      (const asymmetric_verify_kat_data_t *)data;
+  CHECK(kat_data->pub_key_len1 == 32, "Expected pub_key_len1=32, got %u",
+        kat_data->pub_key_len1);
+  CHECK(kat_data->pub_key_len2 == 32, "Expected pub_key_len2=32, got %u",
+        kat_data->pub_key_len2);
+  CHECK(kat_data->msg_len == 32, "Expected msg_len=32, got %u",
+        kat_data->msg_len);
+  CHECK(kat_data->sig_len1 == 32, "Expected sig_len1=32, got %u",
+        kat_data->sig_len1);
+  CHECK(kat_data->sig_len2 == 32, "Expected sig_len2=32, got %u",
+        kat_data->sig_len2);
+
+  const uint8_t *public_key_raw = kat_data->data;
+  const uint8_t *msg_digest =
+      kat_data->data + kat_data->pub_key_len1 + kat_data->pub_key_len2;
+  const uint8_t *sig_raw = kat_data->data + kat_data->pub_key_len1 +
+                           kat_data->pub_key_len2 + kat_data->msg_len;
+
+  LOG_INFO("Executing ECDSA-P256 verification using OTBN coprocessor...");
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = 64,
+      .key = (uint32_t *)public_key_raw,
+  };
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+
+  otcrypto_hash_digest_t digest = {
+      .mode = kOtcryptoHashModeSha256,
+      .len = 8,
+      .data = (uint32_t *)msg_digest,
+  };
+
+  otcrypto_const_word32_buf_t sig_buf =
+      otcrypto_make_const_word32_buf((const uint32_t *)sig_raw, 16);
+
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  CHECK_STATUS_OK(otcrypto_ecdsa_p256_verify(&public_key, digest, &sig_buf,
+                                             &verification_result));
+
+  CHECK(verification_result == kHardenedBoolTrue,
+        "ECDSA-P256 signature verification failed!");
+  LOG_INFO("ECDSA-P256 Verification Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
+static status_t test_ecdsa_p384_sign_kat(
+    const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for ECDSA-P384 Sign KAT entry (alg_id = %u)...",
+           kFipsKatAlgEcdsaP384Sign);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgEcdsaP384Sign);
+  CHECK(entry != NULL, "ECDSA-P384 Sign KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving ECDSA-P384 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const asymmetric_sign_kat_data_t *kat_data =
+      (const asymmetric_sign_kat_data_t *)data;
+  CHECK(kat_data->priv_key_len == 48, "Expected priv_key_len=48, got %u",
+        kat_data->priv_key_len);
+  CHECK(kat_data->ephemeral_len == 48, "Expected ephemeral_len=48, got %u",
+        kat_data->ephemeral_len);
+  CHECK(kat_data->msg_len == 48, "Expected msg_len=48, got %u",
+        kat_data->msg_len);
+  CHECK(kat_data->sig_len1 == 48, "Expected sig_len1=48, got %u",
+        kat_data->sig_len1);
+  CHECK(kat_data->sig_len2 == 48, "Expected sig_len2=48, got %u",
+        kat_data->sig_len2);
+
+  const uint8_t *d = kat_data->data;
+  const uint8_t *k = kat_data->data + kat_data->priv_key_len;
+  const uint8_t *msg_digest =
+      kat_data->data + kat_data->priv_key_len + kat_data->ephemeral_len;
+  const uint8_t *expected_sig = kat_data->data + kat_data->priv_key_len +
+                                kat_data->ephemeral_len + kat_data->msg_len;
+
+  LOG_INFO("Executing ECDSA-P384 signing using OTBN coprocessor...");
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  const otcrypto_key_config_t kP384Config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = 48,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+
+  uint32_t keyblob_sk[28] = {0};
+  otcrypto_blinded_key_t private_key = {
+      .config = kP384Config,
+      .keyblob_length = sizeof(keyblob_sk),
+      .keyblob = keyblob_sk,
+      .checksum = 0,
+  };
+  memcpy(keyblob_sk, d, 48);
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  uint32_t keyblob_scalar[28] = {0};
+  otcrypto_blinded_key_t secret_scalar = {
+      .config = kP384Config,
+      .keyblob_length = sizeof(keyblob_scalar),
+      .keyblob = keyblob_scalar,
+      .checksum = 0,
+  };
+  memcpy(keyblob_scalar, k, 48);
+  secret_scalar.checksum = otcrypto_integrity_blinded_checksum(&secret_scalar);
+
+  otcrypto_hash_digest_t digest = {
+      .mode = kOtcryptoHashModeSha384,
+      .len = 12,
+      .data = (uint32_t *)msg_digest,
+  };
+
+  uint32_t sig[24];
+  otcrypto_word32_buf_t sig_buf = otcrypto_make_word32_buf(sig, 24);
+
+  CHECK_STATUS_OK(otcrypto_ecdsa_p384_sign_config_k(
+      &private_key, &secret_scalar, digest, &sig_buf));
+
+  CHECK_ARRAYS_EQ((const uint8_t *)sig, expected_sig, 96);
+  LOG_INFO("ECDSA-P384 Signing Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
+static status_t test_ecdsa_p384_verify_kat(
+    const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for ECDSA-P384 Verify KAT entry (alg_id = %u)...",
+           kFipsKatAlgEcdsaP384Verify);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgEcdsaP384Verify);
+  CHECK(entry != NULL, "ECDSA-P384 Verify KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving ECDSA-P384 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const asymmetric_verify_kat_data_t *kat_data =
+      (const asymmetric_verify_kat_data_t *)data;
+  CHECK(kat_data->pub_key_len1 == 48, "Expected pub_key_len1=48, got %u",
+        kat_data->pub_key_len1);
+  CHECK(kat_data->pub_key_len2 == 48, "Expected pub_key_len2=48, got %u",
+        kat_data->pub_key_len2);
+  CHECK(kat_data->msg_len == 48, "Expected msg_len=48, got %u",
+        kat_data->msg_len);
+  CHECK(kat_data->sig_len1 == 48, "Expected sig_len1=48, got %u",
+        kat_data->sig_len1);
+  CHECK(kat_data->sig_len2 == 48, "Expected sig_len2=48, got %u",
+        kat_data->sig_len2);
+
+  const uint8_t *public_key_raw = kat_data->data;
+  const uint8_t *msg_digest =
+      kat_data->data + kat_data->pub_key_len1 + kat_data->pub_key_len2;
+  const uint8_t *sig_raw = kat_data->data + kat_data->pub_key_len1 +
+                           kat_data->pub_key_len2 + kat_data->msg_len;
+
+  LOG_INFO("Executing ECDSA-P384 verification using OTBN coprocessor...");
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = 96,
+      .key = (uint32_t *)public_key_raw,
+  };
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+
+  otcrypto_hash_digest_t digest = {
+      .mode = kOtcryptoHashModeSha384,
+      .len = 12,
+      .data = (uint32_t *)msg_digest,
+  };
+
+  otcrypto_const_word32_buf_t sig_buf =
+      otcrypto_make_const_word32_buf((const uint32_t *)sig_raw, 24);
+
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  CHECK_STATUS_OK(otcrypto_ecdsa_p384_verify(&public_key, digest, &sig_buf,
+                                             &verification_result));
+
+  CHECK(verification_result == kHardenedBoolTrue,
+        "ECDSA-P384 signature verification failed!");
+  LOG_INFO("ECDSA-P384 Verification Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
 static status_t test_fips_kat_rom(void) {
   // Stop the watchdog timer to prevent timeout during long RSA-4096 OTBN
   // computations.
@@ -1150,7 +1442,7 @@ static status_t test_fips_kat_rom(void) {
         table->magic);
   CHECK(table->version == kFipsKatDescriptorVersion1,
         "Invalid table version: %u", table->version);
-  CHECK(table->entry_count >= 13, "Expected at least 13 entries, got %u",
+  CHECK(table->entry_count >= 17, "Expected at least 17 entries, got %u",
         table->entry_count);
   LOG_INFO(
       "FIPS KAT table found at %p (magic=0x%08x, version=%u, entries=%u, "
@@ -1171,6 +1463,10 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_kdf_kmac256_kat(table));
   TRY(test_rsa4096_sign_kat(table));
   TRY(test_rsa4096_verify_kat(table));
+  TRY(test_ecdsa_p256_sign_kat(table));
+  TRY(test_ecdsa_p256_verify_kat(table));
+  TRY(test_ecdsa_p384_sign_kat(table));
+  TRY(test_ecdsa_p384_verify_kat(table));
 
   return OK_STATUS();
 }

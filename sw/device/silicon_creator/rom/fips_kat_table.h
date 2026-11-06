@@ -58,6 +58,12 @@ typedef enum fips_kat_alg_id {
   kFipsKatAlgRsa2048Verify = 12,
   kFipsKatAlgRsa4096Sign = 13,
   kFipsKatAlgRsa4096Verify = 14,
+
+  // Elliptic Curve Signatures (ECDSA & Ed25519)
+  kFipsKatAlgEcdsaP256Sign = 15,
+  kFipsKatAlgEcdsaP256Verify = 16,
+  kFipsKatAlgEcdsaP384Sign = 17,
+  kFipsKatAlgEcdsaP384Verify = 18,
 } fips_kat_alg_id_t;
 
 /**

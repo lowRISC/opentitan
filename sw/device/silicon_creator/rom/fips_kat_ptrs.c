@@ -724,6 +724,226 @@ typedef struct fips_kat_rsa_4096_verify {
 } fips_kat_rsa_4096_verify_t;
 
 /**
+ * Algorithm 19: ECDSA-P256 Signature Generation (Alg ID 19)
+ *
+ * Source Standard: FIPS 186-4 (Section 6) / NIST CAVP ECDSA Vector (P-256,
+ * SHA-256).
+ *
+ * Test Vector Parameters:
+ * - Private Key Scalar d: 32 bytes (256-bit).
+ * - Ephemeral Secret Scalar k: 32 bytes (256-bit).
+ * - Message Digest: 32 bytes (SHA2-256 pre-hashed).
+ * - Expected Signature: r (32 bytes), s (32 bytes).
+ *
+ * How inputs/outputs were transformed:
+ * - Header Fields:
+ *     priv_key_len  = 32 (32-byte private key scalar d)
+ *     ephemeral_len = 32 (32-byte secret scalar k)
+ *     msg_len       = 32 (32-byte pre-hashed message digest)
+ *     sig_len1      = 32 (32-byte signature component r)
+ *     sig_len2      = 32 (32-byte signature component s)
+ * - Contiguous Payload:
+ *     data[0..31]    = 32-byte private key scalar d (little-endian serialized)
+ *     data[32..63]   = 32-byte ephemeral secret scalar k (little-endian
+ * serialized) data[64..95]   = 32-byte message digest data[96..127]  = 32-byte
+ * expected signature component r (little-endian serialized) data[128..159] =
+ * 32-byte expected signature component s (little-endian serialized)
+ * - Ibex Alignment: 20 bytes (header: 5 x uint32_t) + 160 bytes (payload)
+ *   = 180 bytes total (`180 % 4 == 0`). Naturally 4-byte aligned.
+ *
+ * How test runners (BL0 / Cryptolib) use this vector:
+ * 1. Read entry offset from `fips_kat_descriptor_table_t` for
+ * `kFipsKatAlgEcdsaP256Sign`.
+ * 2. Dereference as `const asymmetric_sign_kat_data_t *kat =
+ * get_fips_data(table, entry)`.
+ * 3. Verify parameters: `kat->priv_key_len == 32`, `kat->ephemeral_len == 32`,
+ * `kat->msg_len == 32`, `kat->sig_len1 == 32`, `kat->sig_len2 == 32`.
+ * 4. Extract pointers:
+ *      `const uint8_t *d = kat->data;`
+ *      `const uint8_t *k = kat->data + kat->priv_key_len;`
+ *      `const uint8_t *msg_digest = kat->data + kat->priv_key_len +
+ * kat->ephemeral_len;` `const uint8_t *expected_sig = kat->data +
+ * kat->priv_key_len + kat->ephemeral_len + kat->msg_len;`
+ * 5. Construct blinded private key and secret scalar using `kP256Config`.
+ * 6. Execute deterministic ECDSA-P256 signing with secret scalar k using OTBN
+ * coprocessor via `otcrypto_ecdsa_p256_sign_config_k()`.
+ * 7. Assert generated signature (r || s) equals `expected_sig`.
+ */
+typedef struct fips_kat_ecdsa_p256_sign {
+  uint32_t priv_key_len;
+  uint32_t ephemeral_len;
+  uint32_t msg_len;
+  uint32_t sig_len1;
+  uint32_t sig_len2;
+  uint8_t data[160];
+} fips_kat_ecdsa_p256_sign_t;
+
+/**
+ * Algorithm 20: ECDSA-P256 Signature Verification (Alg ID 20)
+ *
+ * Source Standard: FIPS 186-4 (Section 6) / NIST CAVP ECDSA Vector (P-256,
+ * SHA-256).
+ *
+ * Test Vector Parameters:
+ * - Public Key Coordinate Qx: 32 bytes (256-bit).
+ * - Public Key Coordinate Qy: 32 bytes (256-bit).
+ * - Message Digest: 32 bytes (SHA2-256 pre-hashed).
+ * - Signature: r (32 bytes), s (32 bytes).
+ *
+ * How inputs/outputs were transformed:
+ * - Header Fields:
+ *     pub_key_len1 = 32 (32-byte public key coordinate Qx)
+ *     pub_key_len2 = 32 (32-byte public key coordinate Qy)
+ *     msg_len      = 32 (32-byte pre-hashed message digest)
+ *     sig_len1     = 32 (32-byte signature component r)
+ *     sig_len2     = 32 (32-byte signature component s)
+ * - Contiguous Payload:
+ *     data[0..31]    = 32-byte public key coordinate Qx (little-endian
+ * serialized) data[32..63]   = 32-byte public key coordinate Qy (little-endian
+ * serialized) data[64..95]   = 32-byte message digest data[96..127]  = 32-byte
+ * signature component r (little-endian serialized) data[128..159] = 32-byte
+ * signature component s (little-endian serialized)
+ * - Ibex Alignment: 20 bytes (header: 5 x uint32_t) + 160 bytes (payload)
+ *   = 180 bytes total (`180 % 4 == 0`). Naturally 4-byte aligned.
+ *
+ * How test runners (BL0 / Cryptolib) use this vector:
+ * 1. Read entry offset from `fips_kat_descriptor_table_t` for
+ * `kFipsKatAlgEcdsaP256Verify`.
+ * 2. Dereference as `const asymmetric_verify_kat_data_t *kat =
+ * get_fips_data(table, entry)`.
+ * 3. Verify parameters: `kat->pub_key_len1 == 32`, `kat->pub_key_len2 == 32`,
+ * `kat->msg_len == 32`, `kat->sig_len1 == 32`, `kat->sig_len2 == 32`.
+ * 4. Extract pointers:
+ *      `const uint8_t *public_key_raw = kat->data;`
+ *      `const uint8_t *msg_digest = kat->data + kat->pub_key_len1 +
+ * kat->pub_key_len2;` `const uint8_t *sig_raw = kat->data + kat->pub_key_len1 +
+ * kat->pub_key_len2 + kat->msg_len;`
+ * 5. Construct unblinded public key `otcrypto_unblinded_key_t` (key_length =
+ * 64).
+ * 6. Execute ECDSA-P256 verification using OTBN coprocessor via
+ * `otcrypto_ecdsa_p256_verify()`.
+ * 7. Assert verification result is `kHardenedBoolTrue`.
+ */
+typedef struct fips_kat_ecdsa_p256_verify {
+  uint32_t pub_key_len1;
+  uint32_t pub_key_len2;
+  uint32_t msg_len;
+  uint32_t sig_len1;
+  uint32_t sig_len2;
+  uint8_t data[160];
+} fips_kat_ecdsa_p256_verify_t;
+
+/**
+ * Algorithm 21: ECDSA-P384 Signature Generation (Alg ID 21)
+ *
+ * Source Standard: FIPS 186-4 (Section 6) / NIST CAVP ECDSA Vector (P-384,
+ * SHA-384).
+ *
+ * Test Vector Parameters:
+ * - Private Key Scalar d: 48 bytes (384-bit).
+ * - Ephemeral Secret Scalar k: 48 bytes (384-bit).
+ * - Message Digest: 48 bytes (SHA2-384 pre-hashed).
+ * - Expected Signature: r (48 bytes), s (48 bytes).
+ *
+ * How inputs/outputs were transformed:
+ * - Header Fields:
+ *     priv_key_len  = 48 (48-byte private key scalar d)
+ *     ephemeral_len = 48 (48-byte secret scalar k)
+ *     msg_len       = 48 (48-byte pre-hashed message digest)
+ *     sig_len1      = 48 (48-byte signature component r)
+ *     sig_len2      = 48 (48-byte signature component s)
+ * - Contiguous Payload:
+ *     data[0..47]    = 48-byte private key scalar d (little-endian serialized)
+ *     data[48..95]   = 48-byte ephemeral secret scalar k (little-endian
+ * serialized) data[96..143]  = 48-byte message digest data[144..191] = 48-byte
+ * expected signature component r (little-endian serialized) data[192..239] =
+ * 48-byte expected signature component s (little-endian serialized)
+ * - Ibex Alignment: 20 bytes (header: 5 x uint32_t) + 240 bytes (payload)
+ *   = 260 bytes total (`260 % 4 == 0`). Naturally 4-byte aligned.
+ *
+ * How test runners (BL0 / Cryptolib) use this vector:
+ * 1. Read entry offset from `fips_kat_descriptor_table_t` for
+ * `kFipsKatAlgEcdsaP384Sign`.
+ * 2. Dereference as `const asymmetric_sign_kat_data_t *kat =
+ * get_fips_data(table, entry)`.
+ * 3. Verify parameters: `kat->priv_key_len == 48`, `kat->ephemeral_len == 48`,
+ * `kat->msg_len == 48`, `kat->sig_len1 == 48`, `kat->sig_len2 == 48`.
+ * 4. Extract pointers:
+ *      `const uint8_t *d = kat->data;`
+ *      `const uint8_t *k = kat->data + kat->priv_key_len;`
+ *      `const uint8_t *msg_digest = kat->data + kat->priv_key_len +
+ * kat->ephemeral_len;` `const uint8_t *expected_sig = kat->data +
+ * kat->priv_key_len + kat->ephemeral_len + kat->msg_len;`
+ * 5. Construct blinded private key and secret scalar using `kP384Config`.
+ * 6. Execute deterministic ECDSA-P384 signing with secret scalar k using OTBN
+ * coprocessor via `otcrypto_ecdsa_p384_sign_config_k()`.
+ * 7. Assert generated signature (r || s) equals `expected_sig`.
+ */
+typedef struct fips_kat_ecdsa_p384_sign {
+  uint32_t priv_key_len;
+  uint32_t ephemeral_len;
+  uint32_t msg_len;
+  uint32_t sig_len1;
+  uint32_t sig_len2;
+  uint8_t data[240];
+} fips_kat_ecdsa_p384_sign_t;
+
+/**
+ * Algorithm 22: ECDSA-P384 Signature Verification (Alg ID 22)
+ *
+ * Source Standard: FIPS 186-4 (Section 6) / NIST CAVP ECDSA Vector (P-384,
+ * SHA-384).
+ *
+ * Test Vector Parameters:
+ * - Public Key Coordinate Qx: 48 bytes (384-bit).
+ * - Public Key Coordinate Qy: 48 bytes (384-bit).
+ * - Message Digest: 48 bytes (SHA2-384 pre-hashed).
+ * - Signature: r (48 bytes), s (48 bytes).
+ *
+ * How inputs/outputs were transformed:
+ * - Header Fields:
+ *     pub_key_len1 = 48 (48-byte public key coordinate Qx)
+ *     pub_key_len2 = 48 (48-byte public key coordinate Qy)
+ *     msg_len      = 48 (48-byte pre-hashed message digest)
+ *     sig_len1     = 48 (48-byte signature component r)
+ *     sig_len2     = 48 (48-byte signature component s)
+ * - Contiguous Payload:
+ *     data[0..47]    = 48-byte public key coordinate Qx (little-endian
+ * serialized) data[48..95]   = 48-byte public key coordinate Qy (little-endian
+ * serialized) data[96..143]  = 48-byte message digest data[144..191] = 48-byte
+ * signature component r (little-endian serialized) data[192..239] = 48-byte
+ * signature component s (little-endian serialized)
+ * - Ibex Alignment: 20 bytes (header: 5 x uint32_t) + 240 bytes (payload)
+ *   = 260 bytes total (`260 % 4 == 0`). Naturally 4-byte aligned.
+ *
+ * How test runners (BL0 / Cryptolib) use this vector:
+ * 1. Read entry offset from `fips_kat_descriptor_table_t` for
+ * `kFipsKatAlgEcdsaP384Verify`.
+ * 2. Dereference as `const asymmetric_verify_kat_data_t *kat =
+ * get_fips_data(table, entry)`.
+ * 3. Verify parameters: `kat->pub_key_len1 == 48`, `kat->pub_key_len2 == 48`,
+ * `kat->msg_len == 48`, `kat->sig_len1 == 48`, `kat->sig_len2 == 48`.
+ * 4. Extract pointers:
+ *      `const uint8_t *public_key_raw = kat->data;`
+ *      `const uint8_t *msg_digest = kat->data + kat->pub_key_len1 +
+ * kat->pub_key_len2;` `const uint8_t *sig_raw = kat->data + kat->pub_key_len1 +
+ * kat->pub_key_len2 + kat->msg_len;`
+ * 5. Construct unblinded public key `otcrypto_unblinded_key_t` (key_length =
+ * 96).
+ * 6. Execute ECDSA-P384 verification using OTBN coprocessor via
+ * `otcrypto_ecdsa_p384_verify()`.
+ * 7. Assert verification result is `kHardenedBoolTrue`.
+ */
+typedef struct fips_kat_ecdsa_p384_verify {
+  uint32_t pub_key_len1;
+  uint32_t pub_key_len2;
+  uint32_t msg_len;
+  uint32_t sig_len1;
+  uint32_t sig_len2;
+  uint8_t data[240];
+} fips_kat_ecdsa_p384_verify_t;
+
+/**
  * Container holding all embedded FIPS KAT vector payloads in `.fips_kat.data`.
  */
 typedef struct fips_kat_data_store {
@@ -740,6 +960,10 @@ typedef struct fips_kat_data_store {
   fips_kat_kdf_kmac256_t kdf_kmac256;
   fips_kat_rsa_4096_sign_t rsa_4096_sign;
   fips_kat_rsa_4096_verify_t rsa_4096_verify;
+  fips_kat_ecdsa_p256_sign_t ecdsa_p256_sign;
+  fips_kat_ecdsa_p256_verify_t ecdsa_p256_verify;
+  fips_kat_ecdsa_p384_sign_t ecdsa_p384_sign;
+  fips_kat_ecdsa_p384_verify_t ecdsa_p384_verify;
 } fips_kat_data_store_t;
 
 /**
@@ -1351,6 +1575,166 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
         },
     }
 ,
+    .ecdsa_p256_sign = {
+        .priv_key_len = 32,
+        .ephemeral_len = 32,
+        .msg_len = 32,
+        .sig_len1 = 32,
+        .sig_len2 = 32,
+        .data = {
+            // Private Key Scalar d (32 bytes)
+            0x64, 0xb4, 0x72, 0xda, 0x6d, 0xa5, 0x54, 0xca,
+            0xac, 0x3e, 0x4e, 0x0b, 0x13, 0xc8, 0x44, 0x5b,
+            0x1a, 0x77, 0xf4, 0x59, 0xee, 0xa8, 0x4f, 0x1f,
+            0x58, 0x8b, 0x5f, 0x71, 0x3d, 0x42, 0x9b, 0x51,
+            // Ephemeral Secret Scalar k (32 bytes)
+            0xde, 0x68, 0x2a, 0x64, 0x87, 0x07, 0x67, 0xb9,
+            0x33, 0x5d, 0x4f, 0x82, 0x47, 0x62, 0x4a, 0x3b,
+            0x7f, 0x3c, 0xe9, 0xf9, 0x45, 0xf2, 0x80, 0xa2,
+            0x61, 0x6a, 0x90, 0x4b, 0xb1, 0xbb, 0xa1, 0x94,
+            // Message Digest (32 bytes)
+            0x44, 0xac, 0xf6, 0xb7, 0xe3, 0x6c, 0x13, 0x42,
+            0xc2, 0xc5, 0x89, 0x72, 0x04, 0xfe, 0x09, 0x50,
+            0x4e, 0x1e, 0x2e, 0xfb, 0x1a, 0x90, 0x03, 0x77,
+            0xdb, 0xc4, 0xe7, 0xa6, 0xa1, 0x33, 0xec, 0x56,
+            // Expected Signature (r || s, 64 bytes)
+            0xac, 0xc2, 0xc8, 0x79, 0x6f, 0x5e, 0xbb, 0xca,
+            0x7a, 0x5a, 0x55, 0x6a, 0x1f, 0x6b, 0xfd, 0x2a,
+            0xed, 0x27, 0x95, 0x62, 0xd6, 0xe3, 0x43, 0x88,
+            0x5b, 0x79, 0x14, 0xb5, 0x61, 0x80, 0xac, 0xf3,
+            0x03, 0x89, 0x05, 0xcc, 0x2a, 0xda, 0xcd, 0x3c,
+            0x5a, 0x17, 0x6f, 0xe9, 0x18, 0xb2, 0x97, 0xef,
+            0x1c, 0x37, 0xf7, 0x2b, 0x26, 0x76, 0x6c, 0x78,
+            0xb2, 0xa6, 0x05, 0xca, 0x19, 0x78, 0xf7, 0x8b,
+        },
+    }
+,
+    .ecdsa_p256_verify = {
+        .pub_key_len1 = 32,
+        .pub_key_len2 = 32,
+        .msg_len = 32,
+        .sig_len1 = 32,
+        .sig_len2 = 32,
+        .data = {
+            // Public Key Coordinate Qx (32 bytes)
+            0x83, 0xbf, 0x71, 0xc2, 0x46, 0xff, 0x59, 0x3c,
+            0x2f, 0xb1, 0xbf, 0x4b, 0xe9, 0x5d, 0x56, 0xd3,
+            0xcc, 0x8f, 0xdb, 0x48, 0xa2, 0xbf, 0x33, 0xf0,
+            0xf4, 0xc7, 0x5f, 0x07, 0x1c, 0xe9, 0xcb, 0x1c,
+            // Public Key Coordinate Qy (32 bytes)
+            0xa9, 0x4c, 0x9a, 0xa8, 0x5c, 0xcd, 0x7c, 0xdc,
+            0x78, 0x4e, 0x40, 0xb7, 0x93, 0xca, 0xb7, 0x6d,
+            0xe0, 0x13, 0x61, 0x0e, 0x2c, 0xdb, 0x1f, 0x1a,
+            0xa2, 0xf9, 0x11, 0x88, 0xc6, 0x14, 0x40, 0xce,
+            // Message Digest (32 bytes)
+            0x44, 0xac, 0xf6, 0xb7, 0xe3, 0x6c, 0x13, 0x42,
+            0xc2, 0xc5, 0x89, 0x72, 0x04, 0xfe, 0x09, 0x50,
+            0x4e, 0x1e, 0x2e, 0xfb, 0x1a, 0x90, 0x03, 0x77,
+            0xdb, 0xc4, 0xe7, 0xa6, 0xa1, 0x33, 0xec, 0x56,
+            // Signature (r || s, 64 bytes)
+            0xac, 0xc2, 0xc8, 0x79, 0x6f, 0x5e, 0xbb, 0xca,
+            0x7a, 0x5a, 0x55, 0x6a, 0x1f, 0x6b, 0xfd, 0x2a,
+            0xed, 0x27, 0x95, 0x62, 0xd6, 0xe3, 0x43, 0x88,
+            0x5b, 0x79, 0x14, 0xb5, 0x61, 0x80, 0xac, 0xf3,
+            0x03, 0x89, 0x05, 0xcc, 0x2a, 0xda, 0xcd, 0x3c,
+            0x5a, 0x17, 0x6f, 0xe9, 0x18, 0xb2, 0x97, 0xef,
+            0x1c, 0x37, 0xf7, 0x2b, 0x26, 0x76, 0x6c, 0x78,
+            0xb2, 0xa6, 0x05, 0xca, 0x19, 0x78, 0xf7, 0x8b,
+        },
+    }
+,
+    .ecdsa_p384_sign = {
+        .priv_key_len = 48,
+        .ephemeral_len = 48,
+        .msg_len = 48,
+        .sig_len1 = 48,
+        .sig_len2 = 48,
+        .data = {
+            // Private Key Scalar d (48 bytes)
+            0x6b, 0x9e, 0x7f, 0x6d, 0x47, 0x87, 0xc9, 0x83,
+            0x77, 0x5a, 0x85, 0x9b, 0xd9, 0xf0, 0x52, 0x4b,
+            0x18, 0x30, 0x26, 0x16, 0x58, 0xf0, 0x89, 0x2a,
+            0xc4, 0x6c, 0x67, 0x74, 0x72, 0x20, 0xf7, 0x84,
+            0x2c, 0x83, 0xe0, 0x61, 0x96, 0x56, 0xa6, 0x11,
+            0xc3, 0x92, 0x45, 0xa3, 0x74, 0xbc, 0x02, 0xc6,
+            // Ephemeral Secret Scalar k (48 bytes)
+            0x43, 0x24, 0xa3, 0xf3, 0x24, 0x7e, 0x87, 0x04,
+            0xa8, 0xd4, 0xea, 0x36, 0x3d, 0xcd, 0x0f, 0xb3,
+            0xcc, 0x57, 0xc7, 0x6c, 0xaf, 0xe7, 0xd1, 0x0d,
+            0x8c, 0x79, 0x9b, 0x29, 0xb5, 0x96, 0x24, 0x93,
+            0xc0, 0xcd, 0x97, 0x86, 0xd8, 0xd0, 0x27, 0x78,
+            0x0b, 0x3d, 0x68, 0xc4, 0x25, 0x5c, 0x0b, 0xc1,
+            // Message Digest (48 bytes)
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0xbb, 0xbd, 0x0a, 0x5f, 0x64, 0x5d, 0x3f, 0xda,
+            0x10, 0xe2, 0x88, 0xd1, 0x72, 0xb2, 0x99, 0x45,
+            0x5f, 0x9d, 0xff, 0x00, 0xe0, 0xfb, 0xc2, 0x83,
+            0x3e, 0x18, 0xcd, 0x01, 0x7d, 0x7f, 0x3e, 0xd1,
+            // Expected Signature: R || S (96 bytes)
+            // R (48 bytes)
+            0x78, 0xe8, 0x40, 0xd4, 0x46, 0x79, 0x26, 0xc3,
+            0x2e, 0xaa, 0x88, 0x17, 0x85, 0x61, 0x8c, 0x97,
+            0x59, 0x03, 0xab, 0xa0, 0x1d, 0x55, 0x54, 0x90,
+            0x60, 0xad, 0xc2, 0xeb, 0xd7, 0x7e, 0x47, 0x48,
+            0x59, 0x78, 0x02, 0xcd, 0x38, 0x3f, 0x48, 0xd4,
+            0x86, 0x32, 0xf5, 0xda, 0x0c, 0xb0, 0x1d, 0xb1,
+            // S (48 bytes)
+            0xf2, 0xcb, 0xf8, 0x7d, 0x02, 0xac, 0x48, 0x10,
+            0x67, 0x87, 0x78, 0x4b, 0xe7, 0x27, 0x8b, 0xc9,
+            0xd7, 0x12, 0x65, 0x07, 0x5a, 0x06, 0xf5, 0x2f,
+            0x76, 0x3a, 0x68, 0x9c, 0x31, 0xe3, 0xb6, 0xe2,
+            0xe8, 0x73, 0xe9, 0xfe, 0xa8, 0x12, 0x81, 0xe6,
+            0x4c, 0x60, 0xb0, 0xc5, 0x73, 0x78, 0x00, 0x16,
+        },
+    }
+,
+    .ecdsa_p384_verify = {
+        .pub_key_len1 = 48,
+        .pub_key_len2 = 48,
+        .msg_len = 48,
+        .sig_len1 = 48,
+        .sig_len2 = 48,
+        .data = {
+            // Public Key Coordinate Qx (48 bytes)
+            0x75, 0xbc, 0x65, 0x07, 0x4c, 0x67, 0x88, 0xab,
+            0xbf, 0x82, 0xc2, 0xb9, 0x4c, 0x27, 0x09, 0xe9,
+            0x39, 0x04, 0x0b, 0xbb, 0x86, 0x7f, 0x04, 0xb7,
+            0xf6, 0x9f, 0xd4, 0x97, 0x1c, 0x04, 0x45, 0xd1,
+            0x6d, 0xe9, 0xd3, 0x53, 0x94, 0x6e, 0x82, 0x59,
+            0xd0, 0x7c, 0xf0, 0x21, 0x3b, 0x19, 0x00, 0x04,
+            // Public Key Coordinate Qy (48 bytes)
+            0x47, 0xa1, 0x82, 0x6b, 0x92, 0x4a, 0x23, 0x2f,
+            0x8e, 0xc9, 0x5e, 0x0c, 0x5b, 0x42, 0x9a, 0xec,
+            0x42, 0x8f, 0xdf, 0x1a, 0xd1, 0x5d, 0xba, 0x9e,
+            0xe9, 0x95, 0xcf, 0x2d, 0xf6, 0x6a, 0xb7, 0x69,
+            0x7f, 0x6d, 0xc7, 0x75, 0xae, 0xc5, 0xd2, 0x68,
+            0x04, 0xc7, 0xcb, 0x2a, 0xc5, 0x89, 0x0d, 0xf7,
+            // Message Digest (48 bytes)
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
+            0xbb, 0xbd, 0x0a, 0x5f, 0x64, 0x5d, 0x3f, 0xda,
+            0x10, 0xe2, 0x88, 0xd1, 0x72, 0xb2, 0x99, 0x45,
+            0x5f, 0x9d, 0xff, 0x00, 0xe0, 0xfb, 0xc2, 0x83,
+            0x3e, 0x18, 0xcd, 0x01, 0x7d, 0x7f, 0x3e, 0xd1,
+            // Signature: R || S (96 bytes)
+            // R (48 bytes)
+            0x78, 0xe8, 0x40, 0xd4, 0x46, 0x79, 0x26, 0xc3,
+            0x2e, 0xaa, 0x88, 0x17, 0x85, 0x61, 0x8c, 0x97,
+            0x59, 0x03, 0xab, 0xa0, 0x1d, 0x55, 0x54, 0x90,
+            0x60, 0xad, 0xc2, 0xeb, 0xd7, 0x7e, 0x47, 0x48,
+            0x59, 0x78, 0x02, 0xcd, 0x38, 0x3f, 0x48, 0xd4,
+            0x86, 0x32, 0xf5, 0xda, 0x0c, 0xb0, 0x1d, 0xb1,
+            // S (48 bytes)
+            0xf2, 0xcb, 0xf8, 0x7d, 0x02, 0xac, 0x48, 0x10,
+            0x67, 0x87, 0x78, 0x4b, 0xe7, 0x27, 0x8b, 0xc9,
+            0xd7, 0x12, 0x65, 0x07, 0x5a, 0x06, 0xf5, 0x2f,
+            0x76, 0x3a, 0x68, 0x9c, 0x31, 0xe3, 0xb6, 0xe2,
+            0xe8, 0x73, 0xe9, 0xfe, 0xa8, 0x12, 0x81, 0xe6,
+            0x4c, 0x60, 0xb0, 0xc5, 0x73, 0x78, 0x00, 0x16,
+        },
+    }
+,
 };
 
 /**
@@ -1361,12 +1745,12 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
   (sizeof(fips_kat_rom_table_t) + offsetof(fips_kat_data_store_t, field))
 
 /**
- * Concrete descriptor table in ROM holding 13 entries.
+ * Concrete descriptor table in ROM holding 17 entries.
  */
-#define FIPS_KAT_NUM_ENTRIES 13
+#define FIPS_KAT_NUM_ENTRIES 17
 
 /**
- * Concrete descriptor table in ROM holding 13 entries.
+ * Concrete descriptor table in ROM holding 17 entries.
  */
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -1449,6 +1833,26 @@ alignas(uint32_t) static const fips_kat_rom_table_t kFipsKatDescriptorTable = {
                 .algorithm_id = (uint32_t)kFipsKatAlgRsa4096Verify,
                 .offset = FIPS_KAT_OFFSET(rsa_4096_verify),
                 .size = sizeof(fips_kat_rsa_4096_verify_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgEcdsaP256Sign,
+                .offset = FIPS_KAT_OFFSET(ecdsa_p256_sign),
+                .size = sizeof(fips_kat_ecdsa_p256_sign_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgEcdsaP256Verify,
+                .offset = FIPS_KAT_OFFSET(ecdsa_p256_verify),
+                .size = sizeof(fips_kat_ecdsa_p256_verify_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgEcdsaP384Sign,
+                .offset = FIPS_KAT_OFFSET(ecdsa_p384_sign),
+                .size = sizeof(fips_kat_ecdsa_p384_sign_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgEcdsaP384Verify,
+                .offset = FIPS_KAT_OFFSET(ecdsa_p384_verify),
+                .size = sizeof(fips_kat_ecdsa_p384_verify_t),
             },
         },
 };
