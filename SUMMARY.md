@@ -701,6 +701,7 @@
       - [ROM\_EXT for Silicon Validation](./sw/device/silicon_creator/rom_ext/doc/si_val.md)
       - [ROM\_EXT Ownership Transfer](./sw/device/silicon_creator/rom_ext/doc/ownership.md)
       - [ROM\_EXT Rescue Protocol](./sw/device/silicon_creator/rom_ext/doc/rescue.md)
+      - [Retention SRAM](./sw/device/silicon_creator/rom_ext/doc/retention_sram.md)
       - [Manifest Format](./sw/device/silicon_creator/rom_ext/doc/manifest.md)
     - [Boot Log](./sw/device/silicon_creator/doc/boot_log.md)
   - [Top-Level Tests](./sw/device/tests/README.md)
