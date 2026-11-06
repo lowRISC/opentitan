@@ -24,6 +24,9 @@
 otcrypto_status_t otcrypto_security_config_check(
     otcrypto_key_security_level_t security_level) {
   if (launder32(security_level) != kOtcryptoKeySecurityLevelLow) {
+#if defined(OT_DISABLE_HARDENING)
+    return OTCRYPTO_FATAL_ERR;
+#else
     // Check if the jittery clock is enabled.
     mmio_region_t clkmgr = mmio_region_from_addr(TOP_EARLGREY_CLKMGR_BASE_ADDR);
     uint32_t jittery_clk_en =
@@ -42,6 +45,7 @@ otcrypto_status_t otcrypto_security_config_check(
       return OTCRYPTO_FATAL_ERR;
     }
     HARDENED_CHECK_EQ(ibex_secure_config, kHardenedBoolTrue);
+#endif
   } else {
     // Do not check the device config when security level is low.
     HARDENED_CHECK_EQ(security_level, kOtcryptoKeySecurityLevelLow);
