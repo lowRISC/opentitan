@@ -971,6 +971,171 @@ static status_t test_kdf_kmac256_kat(const fips_kat_descriptor_table_t *table) {
   return OK_STATUS();
 }
 
+static status_t test_rsa4096_sign_kat(
+    const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for RSA-4096 Sign KAT entry (alg_id = %u)...",
+           kFipsKatAlgRsa4096Sign);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgRsa4096Sign);
+  CHECK(entry != NULL, "RSA-4096 Sign KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving RSA-4096 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const asymmetric_sign_kat_data_t *kat_data =
+      (const asymmetric_sign_kat_data_t *)data;
+  CHECK(kat_data->priv_key_len == 1024, "Expected priv_key_len=1024, got %u",
+        kat_data->priv_key_len);
+  CHECK(kat_data->ephemeral_len == 0, "Expected ephemeral_len=0, got %u",
+        kat_data->ephemeral_len);
+  CHECK(kat_data->msg_len == 13, "Expected msg_len=13, got %u",
+        kat_data->msg_len);
+  CHECK(kat_data->sig_len1 == 512, "Expected sig_len1=512, got %u",
+        kat_data->sig_len1);
+  CHECK(kat_data->sig_len2 == 0, "Expected sig_len2=0, got %u",
+        kat_data->sig_len2);
+
+  const uint32_t *modulus = (const uint32_t *)kat_data->data;
+  const uint32_t *d_share0 = (const uint32_t *)(kat_data->data + 512);
+  const uint8_t *msg = kat_data->data + kat_data->priv_key_len;
+  const uint8_t *expected_sig =
+      kat_data->data + kat_data->priv_key_len + ((kat_data->msg_len + 3) & ~3u);
+
+  LOG_INFO("Executing RSA-4096 PKCS#1 v1.5 signing using OTBN coprocessor...");
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  otcrypto_const_word32_buf_t mod_buf =
+      otcrypto_make_const_word32_buf(modulus, 512 / sizeof(uint32_t));
+  otcrypto_const_word32_buf_t d0_buf =
+      otcrypto_make_const_word32_buf(d_share0, 512 / sizeof(uint32_t));
+  static uint32_t zero_share_4096[512 / sizeof(uint32_t)];
+  memset(zero_share_4096, 0, sizeof(zero_share_4096));
+  otcrypto_const_word32_buf_t d1_buf =
+      otcrypto_make_const_word32_buf(zero_share_4096, 512 / sizeof(uint32_t));
+
+  otcrypto_key_config_t private_key_config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa4096PrivateKeyBytes,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  static uint32_t
+      keyblob_4096[kOtcryptoRsa4096PrivateKeyblobBytes / sizeof(uint32_t)];
+  otcrypto_blinded_key_t private_key = {
+      .config = private_key_config,
+      .keyblob = keyblob_4096,
+      .keyblob_length = kOtcryptoRsa4096PrivateKeyblobBytes,
+  };
+  CHECK_STATUS_OK(otcrypto_rsa_private_key_from_exponents(
+      kOtcryptoRsaSize4096, &mod_buf, &d0_buf, &d1_buf, &private_key));
+
+  // Compute SHA2-512 digest of msg
+  static uint32_t digest_words_4096_sign[512 / 32];
+  otcrypto_hash_digest_t msg_digest = {
+      .mode = kOtcryptoHashModeSha512,
+      .len = 512 / 32,
+      .data = digest_words_4096_sign,
+  };
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(msg, kat_data->msg_len);
+  CHECK_STATUS_OK(otcrypto_sha2_512(&msg_buf, &msg_digest));
+
+  static uint32_t act_sig_4096[512 / sizeof(uint32_t)];
+  otcrypto_word32_buf_t sig_buf =
+      otcrypto_make_word32_buf(act_sig_4096, 512 / sizeof(uint32_t));
+
+  LOG_INFO("Calling otcrypto_rsa_sign...");
+  CHECK_STATUS_OK(otcrypto_rsa_sign(&private_key, msg_digest,
+                                    kOtcryptoRsaPaddingPkcs, &sig_buf));
+
+  CHECK_ARRAYS_EQ((const uint8_t *)act_sig_4096, expected_sig, 512);
+  LOG_INFO("RSA-4096 PKCS#1 v1.5 Signing Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
+static status_t test_rsa4096_verify_kat(
+    const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for RSA-4096 Verify KAT entry (alg_id = %u)...",
+           kFipsKatAlgRsa4096Verify);
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatAlgRsa4096Verify);
+  CHECK(entry != NULL, "RSA-4096 Verify KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving RSA-4096 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const asymmetric_verify_kat_data_t *kat_data =
+      (const asymmetric_verify_kat_data_t *)data;
+  CHECK(kat_data->pub_key_len1 == 512, "Expected pub_key_len1=512, got %u",
+        kat_data->pub_key_len1);
+  CHECK(kat_data->pub_key_len2 == 4, "Expected pub_key_len2=4, got %u",
+        kat_data->pub_key_len2);
+  CHECK(kat_data->msg_len == 13, "Expected msg_len=13, got %u",
+        kat_data->msg_len);
+  CHECK(kat_data->sig_len1 == 512, "Expected sig_len1=512, got %u",
+        kat_data->sig_len1);
+  CHECK(kat_data->sig_len2 == 0, "Expected sig_len2=0, got %u",
+        kat_data->sig_len2);
+
+  const uint32_t *modulus = (const uint32_t *)kat_data->data;
+  const uint8_t *msg =
+      kat_data->data + kat_data->pub_key_len1 + kat_data->pub_key_len2;
+  const uint32_t *sig =
+      (const uint32_t *)(kat_data->data + kat_data->pub_key_len1 +
+                         kat_data->pub_key_len2 +
+                         ((kat_data->msg_len + 3) & ~3u));
+
+  LOG_INFO(
+      "Executing RSA-4096 PKCS#1 v1.5 verification using OTBN coprocessor...");
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  otcrypto_const_word32_buf_t mod_buf =
+      otcrypto_make_const_word32_buf(modulus, 512 / sizeof(uint32_t));
+  static uint32_t
+      public_key_data_4096[kOtcryptoRsa4096PublicKeyBytes / sizeof(uint32_t)];
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeRsaSignPkcs,
+      .key_length = kOtcryptoRsa4096PublicKeyBytes,
+      .key = public_key_data_4096,
+  };
+  CHECK_STATUS_OK(otcrypto_rsa_public_key_construct(kOtcryptoRsaSize4096,
+                                                    &mod_buf, &public_key));
+
+  // Compute SHA2-512 digest of msg using cryptolib sha2
+  static uint32_t digest_words_4096_verify[512 / 32];
+  otcrypto_hash_digest_t msg_digest = {
+      .mode = kOtcryptoHashModeSha512,
+      .len = 512 / 32,
+      .data = digest_words_4096_verify,
+  };
+  otcrypto_const_byte_buf_t msg_buf =
+      otcrypto_make_const_byte_buf(msg, kat_data->msg_len);
+  CHECK_STATUS_OK(otcrypto_sha2_512(&msg_buf, &msg_digest));
+
+  otcrypto_const_word32_buf_t sig_buf =
+      otcrypto_make_const_word32_buf(sig, 512 / sizeof(uint32_t));
+
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  LOG_INFO("Calling otcrypto_rsa_verify...");
+  CHECK_STATUS_OK(otcrypto_rsa_verify(&public_key, msg_digest,
+                                      kOtcryptoRsaPaddingPkcs, &sig_buf,
+                                      &verification_result));
+
+  CHECK(verification_result == kHardenedBoolTrue,
+        "RSA-4096 signature verification failed!");
+  LOG_INFO("RSA-4096 PKCS#1 v1.5 Verification Known Answer Test check ok.");
+
+  return OK_STATUS();
+}
+
 static status_t test_fips_kat_rom(void) {
   // Stop the watchdog timer to prevent timeout during long RSA-4096 OTBN
   // computations.
@@ -985,7 +1150,7 @@ static status_t test_fips_kat_rom(void) {
         table->magic);
   CHECK(table->version == kFipsKatDescriptorVersion1,
         "Invalid table version: %u", table->version);
-  CHECK(table->entry_count >= 11, "Expected at least 11 entries, got %u",
+  CHECK(table->entry_count >= 13, "Expected at least 13 entries, got %u",
         table->entry_count);
   LOG_INFO(
       "FIPS KAT table found at %p (magic=0x%08x, version=%u, entries=%u, "
@@ -1004,6 +1169,8 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_aes_kwp256_kat(table));
   TRY(test_kdf_hmac_sha256_kat(table));
   TRY(test_kdf_kmac256_kat(table));
+  TRY(test_rsa4096_sign_kat(table));
+  TRY(test_rsa4096_verify_kat(table));
 
   return OK_STATUS();
 }

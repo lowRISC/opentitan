@@ -53,6 +53,11 @@ typedef enum fips_kat_alg_id {
   // Key Derivation (KDF)
   kFipsKatAlgKdfHmacSha2_256 = 10,
   kFipsKatAlgKdfKmac256 = 11,
+
+  // RSA Asymmetric (2048 & 4096)
+  kFipsKatAlgRsa2048Verify = 12,
+  kFipsKatAlgRsa4096Sign = 13,
+  kFipsKatAlgRsa4096Verify = 14,
 } fips_kat_alg_id_t;
 
 /**
@@ -97,6 +102,27 @@ typedef struct aes_kat_data {
   uint32_t tag_len;
   uint8_t data[];  // key || iv || aad || pt || ct || tag
 } aes_kat_data_t;
+
+// 3. Asymmetric Verification (RSA / ECDSA / Ed25519 / SPHINCS+)
+typedef struct asymmetric_verify_kat_data {
+  uint32_t pub_key_len1;
+  uint32_t pub_key_len2;
+  uint32_t msg_len;
+  uint32_t sig_len1;
+  uint32_t sig_len2;
+  uint8_t data[];  // pub_key1 || pub_key2 || msg || sig1 || sig2
+} asymmetric_verify_kat_data_t;
+
+// 4. Asymmetric Signing
+typedef struct asymmetric_sign_kat_data {
+  uint32_t priv_key_len;
+  uint32_t ephemeral_len;
+  uint32_t msg_len;
+  uint32_t sig_len1;
+  uint32_t sig_len2;
+  uint8_t
+      data[];  // priv_key || ephemeral || msg || expected_sig1 || expected_sig2
+} asymmetric_sign_kat_data_t;
 
 /**
  * Fixed address slot storing the pointer to the FIPS KAT descriptor table.
