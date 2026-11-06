@@ -83,6 +83,9 @@ typedef enum fips_kat_alg_id {
 
   // SPHINCS+ / SLH-DSA Post-Quantum Signatures
   kFipsKatAlgSphincsPlusSha2_128sVerify = 29,
+
+  // Post Quantum Key Encapsulation (ML-KEM)
+  kFipsKatAlgMlkem1024 = 25,
 } fips_kat_alg_id_t;
 
 /**
@@ -176,6 +179,17 @@ typedef struct drbg_kat_data {
   uint32_t expected_output_len;
   uint8_t data[];  // entropy_input || expected_output
 } drbg_kat_data_t;
+
+// 6. Key Encapsulation (ML-KEM)
+typedef struct kem_kat_data {
+  uint32_t seed_d_len;
+  uint32_t seed_z_len;
+  uint32_t seed_m_len;
+  uint32_t exp_ct_hash_len;
+  uint32_t exp_ss_len;
+  uint8_t
+      data[];  // seed_d || seed_z || seed_m || expected_ct_hash || expected_ss
+} kem_kat_data_t;
 
 /**
  * Fixed address slot storing the pointer to the FIPS KAT descriptor table.

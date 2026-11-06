@@ -1410,6 +1410,37 @@ typedef struct fips_kat_sphincsplus_sha2_128s_verify {
   uint8_t data[7924];
 } fips_kat_sphincsplus_sha2_128s_verify_t;
 
+/**
+ * Concrete test vector structure for ML-KEM-1024 (Algorithm ID 25).
+ *
+ * Schema: `kem_kat_data_t` equivalent.
+ * Optimization: Dynamic Encap-then-Decap (DED), Deterministic Key Generation
+ *               (DKG), and Output Hashing (OH).
+ *
+ * Footprint Reduction:
+ * - Raw ACVP representation: Public key (1,568 B) + Secret key (3,168 B) +
+ *   Ciphertext (1,568 B) + Shared secret (32 B) = 6,336 bytes.
+ * - Optimized stored representation:
+ *     seed_d (32 B) + seed_z (32 B) + seed_m (32 B) +
+ *     SHA2-256(ciphertext) (32 B) + shared_secret (32 B) = 160 bytes.
+ * - Space saved: 97.5% reduction.
+ *
+ * How this vector is executed:
+ * 1. Derives (PK, SK) from seeds d and z on OTBN.
+ * 2. Computes encapsulation of seed m with PK -> derives (CT, SS_encap).
+ * 3. Verifies SHA2-256(CT) matches `exp_ct_hash`.
+ * 4. Decapsulates CT with SK on OTBN -> derives SS_decap.
+ * 5. Verifies SS_decap matches SS_encap and stored `exp_ss`.
+ */
+typedef struct fips_kat_mlkem1024 {
+  uint32_t seed_d_len;
+  uint32_t seed_z_len;
+  uint32_t seed_m_len;
+  uint32_t exp_ct_hash_len;
+  uint32_t exp_ss_len;
+  uint8_t data[160];
+} fips_kat_mlkem1024_t;
+
 typedef struct fips_kat_data_store {
   fips_kat_sha256_pilot_t sha256_pilot;
   fips_kat_hmac_sha256_t hmac_sha256;
@@ -1437,6 +1468,7 @@ typedef struct fips_kat_data_store {
   fips_kat_mldsa87_t mldsa87;
   fips_kat_drbg_aes256_t drbg_aes256;
   fips_kat_sphincsplus_sha2_128s_verify_t sphincsplus_sha2_128s;
+  fips_kat_mlkem1024_t mlkem1024;
 } fips_kat_data_store_t;
 
 /**
@@ -3522,6 +3554,40 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
             0x16, 0x23, 0xb2, 0xfe, 0xe0, 0xeb, 0xd3, 0x7a,
         },
     },
+    .mlkem1024 = {
+        .seed_d_len = 32,
+        .seed_z_len = 32,
+        .seed_m_len = 32,
+        .exp_ct_hash_len = 32,
+        .exp_ss_len = 32,
+        .data = {
+            // seed_d (32 bytes)
+            0x7e, 0xb8, 0x75, 0xe8, 0xe7, 0x26, 0x60, 0x09,
+            0xa1, 0x62, 0x79, 0x56, 0x31, 0x8e, 0x88, 0xc6,
+            0xb5, 0x06, 0x86, 0x3a, 0xb0, 0xb2, 0x0b, 0xd8,
+            0xf3, 0xa7, 0x06, 0xfa, 0xf0, 0x90, 0xc0, 0x3d,
+            // seed_z (32 bytes)
+            0xea, 0xe4, 0x17, 0xb9, 0x0a, 0xb7, 0xa2, 0x75,
+            0x89, 0xdd, 0xe9, 0x10, 0xe5, 0x7e, 0x2b, 0xb0,
+            0xf7, 0x65, 0xbf, 0x2a, 0x0c, 0x5e, 0x29, 0x78,
+            0x35, 0xd2, 0xbc, 0x43, 0xdd, 0x1c, 0xc8, 0x79,
+            // seed_m (32 bytes)
+            0x67, 0x45, 0x23, 0x01, 0xef, 0xcd, 0xab, 0x89,
+            0x44, 0x33, 0x22, 0x11, 0x88, 0x77, 0x66, 0x55,
+            0xcc, 0xbb, 0xaa, 0x99, 0x00, 0xff, 0xee, 0xdd,
+            0x40, 0x30, 0x20, 0x10, 0x80, 0x70, 0x60, 0x50,
+            // exp_ct_hash (32 bytes)
+            0xb2, 0x8d, 0xd3, 0x2b, 0x7e, 0x7d, 0x9f, 0x0e,
+            0x15, 0x86, 0x45, 0x7c, 0x7d, 0x7c, 0x03, 0xea,
+            0xcc, 0x03, 0x10, 0xad, 0x19, 0x6a, 0x0f, 0xc5,
+            0x37, 0x3a, 0xd3, 0x72, 0x6a, 0xba, 0xa5, 0x91,
+            // exp_ss (32 bytes)
+            0x44, 0x4c, 0xaf, 0x49, 0x41, 0x56, 0xc2, 0x81,
+            0x94, 0x23, 0xf1, 0x43, 0x13, 0x82, 0x6c, 0xee,
+            0x84, 0x79, 0xd6, 0x5e, 0x46, 0xd2, 0xf6, 0x77,
+            0xd7, 0xd8, 0x55, 0x2d, 0x88, 0xa9, 0x9f, 0xf0,
+        },
+    },
 };
 
 /**
@@ -3532,12 +3598,12 @@ alignas(uint32_t) static const fips_kat_data_store_t kFipsKatDataStore = {
   (sizeof(fips_kat_rom_table_t) + offsetof(fips_kat_data_store_t, field))
 
 /**
- * Concrete descriptor table in ROM holding 25 entries.
+ * Concrete descriptor table in ROM holding 27 entries.
  */
-#define FIPS_KAT_NUM_ENTRIES 26
+#define FIPS_KAT_NUM_ENTRIES 27
 
 /**
- * Concrete descriptor table in ROM holding 26 entries.
+ * Concrete descriptor table in ROM holding 27 entries.
  */
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -3685,6 +3751,11 @@ alignas(uint32_t) static const fips_kat_rom_table_t kFipsKatDescriptorTable = {
                 .algorithm_id = (uint32_t)kFipsKatAlgSphincsPlusSha2_128sVerify,
                 .offset = FIPS_KAT_OFFSET(sphincsplus_sha2_128s),
                 .size = sizeof(fips_kat_sphincsplus_sha2_128s_verify_t),
+            },
+            {
+                .algorithm_id = (uint32_t)kFipsKatAlgMlkem1024,
+                .offset = FIPS_KAT_OFFSET(mlkem1024),
+                .size = sizeof(fips_kat_mlkem1024_t),
             },
         },
 };

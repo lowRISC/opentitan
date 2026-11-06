@@ -590,6 +590,67 @@ TEST(FipsKatTableDataTest, GetDataSphincsPlusSha2_128sVerify) {
   EXPECT_EQ(spx_data->data[68], 0xB7);
 }
 
+TEST(FipsKatTableDataTest, GetDataMlkem1024) {
+  struct Layout {
+    struct {
+      uint32_t magic;
+      uint32_t version;
+      uint32_t entry_count;
+      uint32_t total_size;
+      fips_kat_entry_t entries[1];
+    } table;
+    struct {
+      uint32_t seed_d_len;
+      uint32_t seed_z_len;
+      uint32_t seed_m_len;
+      uint32_t exp_ct_hash_len;
+      uint32_t exp_ss_len;
+      uint8_t data[160];
+    } mlkem;
+  } layout{};
+
+  layout.table.magic = kFipsKatDescriptorMagic;
+  layout.table.version = kFipsKatDescriptorVersion1;
+  layout.table.entry_count = 1;
+  layout.table.total_size = sizeof(layout);
+
+  layout.table.entries[0].algorithm_id = kFipsKatAlgMlkem1024;
+  layout.table.entries[0].offset = offsetof(Layout, mlkem);
+  layout.table.entries[0].size = sizeof(layout.mlkem);
+
+  layout.mlkem.seed_d_len = 32;
+  layout.mlkem.seed_z_len = 32;
+  layout.mlkem.seed_m_len = 32;
+  layout.mlkem.exp_ct_hash_len = 32;
+  layout.mlkem.exp_ss_len = 32;
+  layout.mlkem.data[0] = 0x7E;
+  layout.mlkem.data[32] = 0xEA;
+  layout.mlkem.data[64] = 0x67;
+  layout.mlkem.data[96] = 0xFE;
+  layout.mlkem.data[128] = 0x07;
+
+  const auto *table =
+      reinterpret_cast<const fips_kat_descriptor_table_t *>(&layout.table);
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgMlkem1024);
+  ASSERT_NE(entry, nullptr);
+
+  const void *data = get_fips_data(table, entry);
+  ASSERT_NE(data, nullptr);
+  EXPECT_EQ(data, reinterpret_cast<const void *>(&layout.mlkem));
+
+  const auto *mlkem_data = static_cast<const kem_kat_data_t *>(data);
+  EXPECT_EQ(mlkem_data->seed_d_len, 32);
+  EXPECT_EQ(mlkem_data->seed_z_len, 32);
+  EXPECT_EQ(mlkem_data->seed_m_len, 32);
+  EXPECT_EQ(mlkem_data->exp_ct_hash_len, 32);
+  EXPECT_EQ(mlkem_data->exp_ss_len, 32);
+  EXPECT_EQ(mlkem_data->data[0], 0x7E);
+  EXPECT_EQ(mlkem_data->data[32], 0xEA);
+  EXPECT_EQ(mlkem_data->data[64], 0x67);
+  EXPECT_EQ(mlkem_data->data[96], 0xFE);
+  EXPECT_EQ(mlkem_data->data[128], 0x07);
+}
+
 TEST(FipsKatTableBoundsCheckTest, RejectOutOfBounds) {
   TestTableLayout layout{};
   layout.table.magic = kFipsKatDescriptorMagic;

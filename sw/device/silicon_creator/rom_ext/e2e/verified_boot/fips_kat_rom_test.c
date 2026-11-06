@@ -16,6 +16,7 @@
 #include "sw/device/lib/base/status.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/mldsa/mldsa.h"
+#include "sw/device/lib/crypto/impl/mlkem/mlkem.h"
 #include "sw/device/lib/crypto/include/aes_gcm.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/drbg.h"
@@ -25,6 +26,7 @@
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/mldsa.h"
+#include "sw/device/lib/crypto/include/mlkem.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/crypto/include/sha3.h"
@@ -2278,6 +2280,177 @@ static status_t test_mldsa87_kat(const fips_kat_descriptor_table_t *table) {
   return OK_STATUS();
 }
 
+static status_t test_mlkem1024_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for ML-KEM-1024 KAT entry (alg_id = %u)...",
+           kFipsKatAlgMlkem1024);
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgMlkem1024);
+  CHECK(entry != NULL, "ML-KEM-1024 KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving ML-KEM-1024 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const kem_kat_data_t *kat = (const kem_kat_data_t *)data;
+  CHECK(kat->seed_d_len == 32, "Invalid seed_d_len: %u", kat->seed_d_len);
+  CHECK(kat->seed_z_len == 32, "Invalid seed_z_len: %u", kat->seed_z_len);
+  CHECK(kat->seed_m_len == 32, "Invalid seed_m_len: %u", kat->seed_m_len);
+  CHECK(kat->exp_ct_hash_len == 32, "Invalid exp_ct_hash_len: %u",
+        kat->exp_ct_hash_len);
+  CHECK(kat->exp_ss_len == 32, "Invalid exp_ss_len: %u", kat->exp_ss_len);
+
+  const uint8_t *seed_d = kat->data;
+  const uint8_t *seed_z = seed_d + kat->seed_d_len;
+  const uint8_t *seed_m = seed_z + kat->seed_z_len;
+  const uint8_t *exp_ct_hash = seed_m + kat->seed_m_len;
+  const uint8_t *exp_ss = exp_ct_hash + kat->exp_ct_hash_len;
+
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  uint64_t t_start = ibex_mcycle_read();
+
+  // 1. Prepare deterministic key generation inputs.
+  uint32_t d_blob[64 / sizeof(uint32_t)] = {0};
+  memcpy(d_blob, seed_d, kat->seed_d_len);
+
+  otcrypto_blinded_key_t d = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModePqcMlkem1024,
+              .key_length = 64,
+              .hw_backed = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = 64,
+      .keyblob = d_blob,
+  };
+  d.checksum = otcrypto_integrity_blinded_checksum(&d);
+
+  uint32_t z_data[kMlkem1024SharedSecretWords];
+  memcpy(z_data, seed_z, kat->seed_z_len);
+  otcrypto_const_word32_buf_t z = {
+      .data = z_data,
+      .len = kMlkem1024SharedSecretWords,
+  };
+
+  static uint32_t pk_data[kMlkem1024PublicKeyWords];
+  otcrypto_unblinded_key_t pk = {
+      .key_mode = kOtcryptoKeyModePqcMlkem1024,
+      .key_length = kMlkem1024PublicKeyBytes,
+      .key = pk_data,
+  };
+
+  static uint32_t sk_data[kMlkem1024SecretKeyWords];
+  otcrypto_blinded_key_t sk = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModePqcMlkem1024,
+              .key_length = kMlkem1024SecretKeyBytes / 2,
+              .hw_backed = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = kMlkem1024SecretKeyBytes,
+      .keyblob = sk_data,
+  };
+  sk.checksum = otcrypto_integrity_blinded_checksum(&sk);
+
+  // 2. Deterministic KeyGen on OTBN
+  LOG_INFO("Executing ML-KEM-1024 deterministic keygen on OTBN...");
+  uint64_t t_keygen_start = ibex_mcycle_read();
+  CHECK_STATUS_OK(mlkem1024_det_keygen_internal_start(&d, &z));
+  CHECK_STATUS_OK(mlkem1024_keygen_internal_finalize(&pk, &sk));
+  uint64_t keygen_cycles = ibex_mcycle_read() - t_keygen_start;
+
+  // 3. Encapsulation
+  LOG_INFO("Executing ML-KEM-1024 encapsulation on OTBN...");
+  uint32_t m_data[kMlkem1024SharedSecretWords];
+  memcpy(m_data, seed_m, kat->seed_m_len);
+  otcrypto_const_word32_buf_t m = {
+      .data = m_data,
+      .len = kMlkem1024SharedSecretWords,
+  };
+
+  static uint32_t ct_data[kMlkem1024CiphertextWords];
+  otcrypto_word32_buf_t ct = {
+      .data = ct_data,
+      .len = kMlkem1024CiphertextWords,
+  };
+
+  uint32_t ss1_data[kMlkem1024SharedSecretWords];
+  otcrypto_blinded_key_t ss1 = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModePqcMlkem1024,
+              .key_length = kMlkem1024SharedSecretBytes / 2,
+              .hw_backed = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = kMlkem1024SharedSecretBytes,
+      .keyblob = ss1_data,
+  };
+  ss1.checksum = otcrypto_integrity_blinded_checksum(&ss1);
+
+  uint64_t t_encaps_start = ibex_mcycle_read();
+  CHECK_STATUS_OK(otcrypto_mlkem1024_encaps(&pk, &m, &ct, &ss1));
+  uint64_t encaps_cycles = ibex_mcycle_read() - t_encaps_start;
+
+  // 4. Validate Ciphertext Output Hash (SHA2-256 over 1568 bytes)
+  uint32_t actual_ct_hash[8] = {0};
+  otcrypto_hash_digest_t ct_hash_digest = {
+      .mode = kOtcryptoHashModeSha256,
+      .len = 8,
+      .data = actual_ct_hash,
+  };
+  otcrypto_const_byte_buf_t ct_bytes_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const unsigned char *)ct_data,
+      kMlkem1024CiphertextBytes);
+  CHECK_STATUS_OK(otcrypto_sha2_256(&ct_bytes_buf, &ct_hash_digest));
+
+  // 5. Decapsulation
+  LOG_INFO("Executing ML-KEM-1024 decapsulation on OTBN...");
+  uint32_t ss2_data[kMlkem1024SharedSecretWords];
+  otcrypto_blinded_key_t ss2 = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModePqcMlkem1024,
+              .key_length = kMlkem1024SharedSecretBytes / 2,
+              .hw_backed = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = kMlkem1024SharedSecretBytes,
+      .keyblob = ss2_data,
+  };
+  ss2.checksum = otcrypto_integrity_blinded_checksum(&ss2);
+
+  otcrypto_const_word32_buf_t ct_const = {
+      .data = ct_data,
+      .len = kMlkem1024CiphertextWords,
+  };
+
+  uint64_t t_decaps_start = ibex_mcycle_read();
+  CHECK_STATUS_OK(otcrypto_mlkem1024_decaps(&sk, &ct_const, &ss2));
+  uint64_t decaps_cycles = ibex_mcycle_read() - t_decaps_start;
+
+  // 6. Validate
+  CHECK_ARRAYS_EQ((const uint8_t *)actual_ct_hash, exp_ct_hash, 32);
+  CHECK_ARRAYS_EQ(ss1_data, ss2_data, kMlkem1024SharedSecretWords);
+  CHECK_ARRAYS_EQ((const uint8_t *)ss1_data, exp_ss, 32);
+
+  uint32_t total_cycles = (uint32_t)(ibex_mcycle_read() - t_start);
+  LOG_INFO(
+      "ML-KEM-1024 KAT passed: Total=%u cycles (%u us), KeyGen=%u, "
+      "Encaps=%u, Decaps=%u",
+      total_cycles, total_cycles / 24, (uint32_t)keygen_cycles,
+      (uint32_t)encaps_cycles, (uint32_t)decaps_cycles);
+
+  return OK_STATUS();
+}
+
 static status_t test_fips_kat_rom(void) {
   // Stop the watchdog timer to prevent timeout during long RSA-4096 OTBN
   // computations.
@@ -2292,7 +2465,7 @@ static status_t test_fips_kat_rom(void) {
         table->magic);
   CHECK(table->version == kFipsKatDescriptorVersion1,
         "Invalid table version: %u", table->version);
-  CHECK(table->entry_count >= 26, "Expected at least 26 entries, got %u",
+  CHECK(table->entry_count >= 27, "Expected at least 27 entries, got %u",
         table->entry_count);
   LOG_INFO(
       "FIPS KAT table found at %p (magic=0x%08x, version=%u, entries=%u, "
@@ -2326,6 +2499,7 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_ecdh_p384_kat(table));
   TRY(test_x25519_kat(table));
   TRY(test_mldsa87_kat(table));
+  TRY(test_mlkem1024_kat(table));
 
   return OK_STATUS();
 }
