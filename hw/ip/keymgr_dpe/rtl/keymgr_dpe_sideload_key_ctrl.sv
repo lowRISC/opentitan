@@ -74,11 +74,13 @@ module keymgr_dpe_sideload_key_ctrl import keymgr_dpe_pkg::*;(
     assign data_truncated_wide[i] = data_i[i][WideHwKeyWidth-1:0];
   end
 
-  // clear all keys when selected by software, or when
-  // wipe command is received
+  // clear all keys when:
+  // - selected by software
+  // - wipe command is received
+  // - in the init sequence of the keymgr_dpe
   logic clr_all_keys;
   logic [LastIdx-1:0] slot_clr;
-  assign clr_all_keys = wipe_key_i |
+  assign clr_all_keys = wipe_key_i | init_i |
                         !(clr_key_i inside {SideLoadClrIdle,
                                             SideLoadClrAes,
                                             SideLoadClrKmac,
