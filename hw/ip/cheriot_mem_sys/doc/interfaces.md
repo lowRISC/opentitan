@@ -3,7 +3,7 @@
 ## Parameters
 
 The following table lists the instantiation parameters of the CHERIoT memory subsystem.
-[Theory of Operation](theory_of_operation.md#meta-sram-address-map).
+The layout of the meta SRAM is derived from the address-map parameters, see [Meta SRAM Address Map](theory_of_operation.md#meta-sram-address-map).
 
 Parameter          | Default        | Top Earlgrey   | Description
 -------------------|----------------|----------------|---------------
