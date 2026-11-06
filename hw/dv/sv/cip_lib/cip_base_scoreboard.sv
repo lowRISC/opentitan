@@ -315,10 +315,12 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
           bit seen_reset;
 
           // When expected_alert[alert_name] becomes high, we want to wait for an alert to come out.
-          // This only makes sense when the block is not under reset (!cfg.under_reset) and the
-          // alert interface itself is not under reset (agent_cfg.vif.rst_n != 0).
+          // This only makes sense when neither the block nor the alert interface is in reset.
+          // Check the reset pins as well as cfg.under_reset, which only follows them later:
+          // check_alert_triggered returns at once while either pin is low.
           wait(expected_alert[alert_name].expected == 1 &&
                !cfg.under_reset &&
+               cfg.clk_rst_vif.rst_n &&
                agent_cfg.vif.rst_n);
 
           if (expected_alert[alert_name].is_fatal) begin
@@ -340,12 +342,12 @@ class cip_base_scoreboard #(type RAL_T = dv_base_reg_block,
               //
               // Drop out early if the block or interface goes into reset.
               wait(under_alert_handshake[alert_name] == 0 ||
-                   cfg.under_reset || !agent_cfg.vif.rst_n);
+                   cfg.under_reset || !cfg.clk_rst_vif.rst_n || !agent_cfg.vif.rst_n);
 
               // If the block or interface has gone into reset, break from the forever loop. As with
               // the break statement above, this will go to the next iteration of the outer loop,
               // which will start by waiting for the end of both resets.
-              if (cfg.under_reset || !agent_cfg.vif.rst_n) break;
+              if (cfg.under_reset || !cfg.clk_rst_vif.rst_n || !agent_cfg.vif.rst_n) break;
             end
           end else begin
             // Wait for an alert to be reported or a reset to be seen.
