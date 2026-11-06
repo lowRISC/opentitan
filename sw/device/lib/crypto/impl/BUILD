@@ -32,6 +32,13 @@ config_setting(
     },
 )
 
+config_setting(
+    name = "disable_hardening",
+    define_values = {
+        "disable_hardening": "true",
+    },
+)
+
 cc_library(
     name = "tdes",
     srcs = ["tdes.c"],
@@ -664,6 +671,12 @@ cc_library(
         # Activate it by building the library with `--define=disable_null_checks=true`
         # The status header is used in all API functions to pass a bad status hence it propagates to where the flag is needed
         ":disable_null_checks": ["OTCRYPTO_DISABLE_NULL_CHECKS"],
+        "//conditions:default": [],
+    }) + select({
+        # This replaces the redundant branch sequences in HARDENED_TRY and
+        # HARDENED_CHECK_* with a single check to save code size.
+        # Activate it by building the library with `--define=disable_hardening=true`
+        ":disable_hardening": ["OT_DISABLE_HARDENING"],
         "//conditions:default": [],
     }),
     deps = [
