@@ -8,6 +8,7 @@ package rram_ctrl_env_pkg;
   import top_pkg::*;
   import dv_utils_pkg::*;
   import tl_agent_pkg::*;
+  import otp_macro_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
   import dv_base_reg_pkg::*;

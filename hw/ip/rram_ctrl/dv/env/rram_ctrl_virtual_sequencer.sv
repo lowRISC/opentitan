@@ -8,6 +8,9 @@ class rram_ctrl_virtual_sequencer extends cip_base_virtual_sequencer #(
   );
   `uvm_component_utils(rram_ctrl_virtual_sequencer)
 
+  // The OTP macro agent's sequencer, so vseqs can send requests as otp_ctrl.
+  otp_macro_sequencer otp_macro_sequencer_h;
+
   // Standard SV/UVM methods
   extern function new(string name="", uvm_component parent=null);
 endclass : rram_ctrl_virtual_sequencer

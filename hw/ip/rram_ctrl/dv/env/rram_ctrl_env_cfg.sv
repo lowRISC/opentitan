@@ -21,6 +21,13 @@ class rram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rram_ctrl_core_reg_blo
   int unsigned m_wr_fifo_depth;
   int unsigned m_rd_fifo_depth;
 
+  // Configuration of the agent that plays otp_ctrl on the OTP macro interface.
+  otp_macro_agent_cfg m_otp_macro_agent_cfg;
+
+  // Backdoor access to the OTP region of the RRAM array, created in tb.sv. The scoreboard uses it
+  // to load its OTP model after Init and to check the stored data and integrity after each write.
+  rram_ctrl_bkdr_util_pkg::rram_ctrl_otp_bkdr_util m_otp_bkdr;
+
   // Standard SV/UVM methods
   extern function new(string name="");
 
@@ -43,6 +50,8 @@ function void rram_ctrl_env_cfg::initialize(bit inherit_ral_models = 1'b0);
   clk_freqs_mhz[prim_ral_name] = clk_freq_mhz;
 
   super.initialize(inherit_ral_models);
+
+  m_otp_macro_agent_cfg = otp_macro_agent_cfg::type_id::create("m_otp_macro_agent_cfg");
 
   // Configure tl agents. Everything defaults to 1 outstanding request, except the
   // host interface (tl_host), which can tolerate up to 2 outstanding read requests.
