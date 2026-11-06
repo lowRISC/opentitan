@@ -161,6 +161,13 @@
         cannot modify a valid capability.
       '''
     },
+    { name: "CHERIOT_MEM_SYS.NVM_CAP_STORE",
+      desc: '''
+        A store of a tagged capability to the read-only NVM does not write data. It sets the tag of
+        the capability only if the NVM already holds the stored capability. Any other store of a
+        tagged capability to the NVM is answered with an error and leaves the tag unchanged.
+      '''
+    },
     { name: "CHERIOT_MEM_SYS.REVOCATION_BITMAP",
       desc: '''
         The revocation bitmap is exposed as a memory window on the `revbm` device interface and is
