@@ -11,21 +11,33 @@
 
 namespace {
 
-// Helper struct for a table with 1 entry and dummy payload data.
+// Helper struct for a table with 2 entries and attached payload data.
 struct TestTableLayout {
   struct {
     uint32_t magic;
     uint32_t version;
     uint32_t entry_count;
     uint32_t total_size;
-    fips_kat_entry_t entries[1];
+    fips_kat_entry_t entries[2];
   } table;
 
   struct {
-    uint32_t field1;
-    uint32_t field2;
-    uint8_t data[8];
-  } payload;
+    uint32_t key_len;
+    uint32_t msg_len;
+    uint32_t digest_len;
+    uint8_t data[35];
+    uint8_t padding[1];
+  } sha256;
+
+  struct {
+    uint32_t key_len;
+    uint32_t iv_len;
+    uint32_t aad_len;
+    uint32_t pt_len;
+    uint32_t ct_len;
+    uint32_t tag_len;
+    uint8_t data[80];
+  } aes;
 };
 
 class FipsKatTableTest : public ::testing::Test {
@@ -59,7 +71,7 @@ TEST_F(FipsKatTableTest, ValidateTableSuccess) {
   TestTableLayout layout{};
   layout.table.magic = kFipsKatDescriptorMagic;
   layout.table.version = kFipsKatDescriptorVersion1;
-  layout.table.entry_count = 1;
+  layout.table.entry_count = 2;
   layout.table.total_size = sizeof(layout);
 
   const auto *table =
@@ -91,6 +103,11 @@ TEST_F(FipsKatTableTest, ValidateTableInvalidMagic) {
   EXPECT_EQ(
       get_fips_descriptor_table_from_address(reinterpret_cast<uintptr_t>(&ptr)),
       nullptr);
+
+  if (mmap_base_ != MAP_FAILED) {
+    SetDescriptorPointer(table);
+    EXPECT_EQ(get_fips_descriptor_table(), nullptr);
+  }
 }
 
 TEST_F(FipsKatTableTest, ValidateTableInvalidVersion) {
@@ -106,14 +123,19 @@ TEST_F(FipsKatTableTest, ValidateTableInvalidVersion) {
   EXPECT_EQ(
       get_fips_descriptor_table_from_address(reinterpret_cast<uintptr_t>(&ptr)),
       nullptr);
+
+  if (mmap_base_ != MAP_FAILED) {
+    SetDescriptorPointer(table);
+    EXPECT_EQ(get_fips_descriptor_table(), nullptr);
+  }
 }
 
 TEST_F(FipsKatTableTest, ValidateTableZeroTotalSize) {
   TestTableLayout layout{};
   layout.table.magic = kFipsKatDescriptorMagic;
   layout.table.version = kFipsKatDescriptorVersion1;
-  layout.table.entry_count = 0;
-  layout.table.total_size = 0;
+  layout.table.entry_count = 1;
+  layout.table.total_size = 0;  // Invalid size
 
   const auto *table =
       reinterpret_cast<const fips_kat_descriptor_table_t *>(&layout.table);
@@ -121,6 +143,11 @@ TEST_F(FipsKatTableTest, ValidateTableZeroTotalSize) {
   EXPECT_EQ(
       get_fips_descriptor_table_from_address(reinterpret_cast<uintptr_t>(&ptr)),
       nullptr);
+
+  if (mmap_base_ != MAP_FAILED) {
+    SetDescriptorPointer(table);
+    EXPECT_EQ(get_fips_descriptor_table(), nullptr);
+  }
 }
 
 TEST_F(FipsKatTableTest, ValidateTableTotalSizeTooSmall) {
@@ -203,56 +230,69 @@ TEST(FipsKatTableSearchTest, FindEntry) {
   TestTableLayout layout{};
   layout.table.magic = kFipsKatDescriptorMagic;
   layout.table.version = kFipsKatDescriptorVersion1;
-  layout.table.entry_count = 1;
+  layout.table.entry_count = 2;
   layout.table.total_size = sizeof(layout);
 
-  layout.table.entries[0].algorithm_id = 1;
-  layout.table.entries[0].offset = offsetof(TestTableLayout, payload);
-  layout.table.entries[0].size = sizeof(layout.payload);
+  layout.table.entries[0].algorithm_id = kFipsKatAlgSha2_256;
+  layout.table.entries[0].offset = offsetof(TestTableLayout, sha256);
+  layout.table.entries[0].size = sizeof(layout.sha256);
+
+  layout.table.entries[1].algorithm_id = kFipsKatAlgAesEcb256Decrypt;
+  layout.table.entries[1].offset = offsetof(TestTableLayout, aes);
+  layout.table.entries[1].size = sizeof(layout.aes);
 
   const auto *table =
       reinterpret_cast<const fips_kat_descriptor_table_t *>(&layout.table);
 
   // Find existing entries
-  const fips_kat_entry_t *entry =
-      find_fips_entry(table, static_cast<fips_kat_alg_id_t>(1));
-  ASSERT_NE(entry, nullptr);
-  EXPECT_EQ(entry->algorithm_id, 1);
-  EXPECT_EQ(entry->offset, offsetof(TestTableLayout, payload));
-  EXPECT_EQ(entry->size, sizeof(layout.payload));
+  const fips_kat_entry_t *entry_sha =
+      find_fips_entry(table, kFipsKatAlgSha2_256);
+  ASSERT_NE(entry_sha, nullptr);
+  EXPECT_EQ(entry_sha->algorithm_id, kFipsKatAlgSha2_256);
+  EXPECT_EQ(entry_sha->offset, offsetof(TestTableLayout, sha256));
 
-  // Non-existent algorithms
-  EXPECT_EQ(find_fips_entry(table, static_cast<fips_kat_alg_id_t>(99)),
-            nullptr);
+  const fips_kat_entry_t *entry_aes =
+      find_fips_entry(table, kFipsKatAlgAesEcb256Decrypt);
+  ASSERT_NE(entry_aes, nullptr);
+  EXPECT_EQ(entry_aes->algorithm_id, kFipsKatAlgAesEcb256Decrypt);
+  EXPECT_EQ(entry_aes->offset, offsetof(TestTableLayout, aes));
+
+  // Non-existent algorithm
+  EXPECT_EQ(find_fips_entry(table, kFipsKatAlgSha2_512), nullptr);
   EXPECT_EQ(find_fips_entry(table, kFipsKatAlgNone), nullptr);
-  EXPECT_EQ(find_fips_entry(nullptr, static_cast<fips_kat_alg_id_t>(1)),
-            nullptr);
+
+  // Null table
+  EXPECT_EQ(find_fips_entry(nullptr, kFipsKatAlgSha2_256), nullptr);
 }
 
 TEST(FipsKatTableSearchTest, DefensiveChecks) {
   TestTableLayout layout{};
   layout.table.magic = kFipsKatDescriptorMagic;
   layout.table.version = kFipsKatDescriptorVersion1;
-  layout.table.entry_count = 1;
+  layout.table.entry_count = 2;
   layout.table.total_size = sizeof(layout);
-  layout.table.entries[0].algorithm_id = 1;
+  layout.table.entries[0].algorithm_id = kFipsKatAlgSha2_256;
 
-  // Unaligned table pointer
-  uintptr_t unaligned_addr =
-      reinterpret_cast<uintptr_t>(&layout.table) + 1;
-  const auto *unaligned_table =
-      reinterpret_cast<const fips_kat_descriptor_table_t *>(
-          unaligned_addr);
-  EXPECT_EQ(
-      find_fips_entry(unaligned_table, static_cast<fips_kat_alg_id_t>(1)),
-      nullptr);
-
-  // Invalid total size
-  layout.table.total_size = sizeof(fips_kat_descriptor_table_t) - 1;
   const auto *table =
       reinterpret_cast<const fips_kat_descriptor_table_t *>(&layout.table);
-  EXPECT_EQ(find_fips_entry(table, static_cast<fips_kat_alg_id_t>(1)),
-            nullptr);
+
+  // Unaligned table pointer
+  const auto *unaligned_table =
+      reinterpret_cast<const fips_kat_descriptor_table_t *>(
+          reinterpret_cast<uintptr_t>(table) + 1);
+  EXPECT_EQ(find_fips_entry(unaligned_table, kFipsKatAlgSha2_256), nullptr);
+
+  // total_size too small
+  layout.table.total_size = sizeof(fips_kat_descriptor_table_t) - 1;
+  EXPECT_EQ(find_fips_entry(table, kFipsKatAlgSha2_256), nullptr);
+
+  // entry_count exceeds capacity of total_size
+  layout.table.total_size = sizeof(layout);
+  uint32_t max_entries =
+      (layout.table.total_size - sizeof(fips_kat_descriptor_table_t)) /
+      sizeof(fips_kat_entry_t);
+  layout.table.entry_count = max_entries + 1;
+  EXPECT_EQ(find_fips_entry(table, kFipsKatAlgSha2_256), nullptr);
 }
 
 TEST(FipsKatTableDataTest, GetDataSuccess) {
@@ -262,25 +302,125 @@ TEST(FipsKatTableDataTest, GetDataSuccess) {
   layout.table.entry_count = 1;
   layout.table.total_size = sizeof(layout);
 
-  layout.table.entries[0].algorithm_id = 1;
-  layout.table.entries[0].offset = offsetof(TestTableLayout, payload);
-  layout.table.entries[0].size = sizeof(layout.payload);
+  layout.table.entries[0].algorithm_id = kFipsKatAlgSha2_256;
+  layout.table.entries[0].offset = offsetof(TestTableLayout, sha256);
+  layout.table.entries[0].size = sizeof(layout.sha256);
 
-  layout.payload.field1 = 0x12345678;
-  layout.payload.field2 = 0x9abcdef0;
+  layout.sha256.key_len = 0;
+  layout.sha256.msg_len = 3;
+  layout.sha256.digest_len = 32;
+  layout.sha256.data[0] = 'a';
+  layout.sha256.data[1] = 'b';
+  layout.sha256.data[2] = 'c';
 
   const auto *table =
       reinterpret_cast<const fips_kat_descriptor_table_t *>(&layout.table);
-  const fips_kat_entry_t *entry =
-      find_fips_entry(table, static_cast<fips_kat_alg_id_t>(1));
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgSha2_256);
   ASSERT_NE(entry, nullptr);
 
   const void *data = get_fips_data(table, entry);
   ASSERT_NE(data, nullptr);
-  const auto *payload =
-      reinterpret_cast<const decltype(layout.payload) *>(data);
-  EXPECT_EQ(payload->field1, 0x12345678);
-  EXPECT_EQ(payload->field2, 0x9abcdef0);
+  EXPECT_EQ(data, reinterpret_cast<const void *>(&layout.sha256));
+
+  const auto *hmac_data = static_cast<const hmac_kat_data_t *>(data);
+  EXPECT_EQ(hmac_data->key_len, 0);
+  EXPECT_EQ(hmac_data->msg_len, 3);
+  EXPECT_EQ(hmac_data->digest_len, 32);
+  EXPECT_EQ(hmac_data->data[0], 'a');
+  EXPECT_EQ(hmac_data->data[1], 'b');
+  EXPECT_EQ(hmac_data->data[2], 'c');
+}
+
+TEST(FipsKatTableDataTest, GetEcdhDataSuccess) {
+  struct Layout {
+    struct {
+      uint32_t magic;
+      uint32_t version;
+      uint32_t entry_count;
+      uint32_t total_size;
+      fips_kat_entry_t entries[1];
+    } table;
+    struct {
+      uint32_t priv_key_len;
+      uint32_t pub_key_len1;
+      uint32_t pub_key_len2;
+      uint32_t shared_secret_len;
+      uint8_t data[128];
+    } ecdh;
+  } layout{};
+
+  layout.table.magic = kFipsKatDescriptorMagic;
+  layout.table.version = kFipsKatDescriptorVersion1;
+  layout.table.entry_count = 1;
+  layout.table.total_size = sizeof(layout);
+
+  layout.table.entries[0].algorithm_id = kFipsKatAlgEcdhP256;
+  layout.table.entries[0].offset = offsetof(Layout, ecdh);
+  layout.table.entries[0].size = sizeof(layout.ecdh);
+
+  layout.ecdh.priv_key_len = 32;
+  layout.ecdh.pub_key_len1 = 32;
+  layout.ecdh.pub_key_len2 = 32;
+  layout.ecdh.shared_secret_len = 32;
+  layout.ecdh.data[0] = 0x71;
+
+  const auto *table =
+      reinterpret_cast<const fips_kat_descriptor_table_t *>(&layout.table);
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgEcdhP256);
+  ASSERT_NE(entry, nullptr);
+
+  const void *data = get_fips_data(table, entry);
+  ASSERT_NE(data, nullptr);
+  EXPECT_EQ(data, reinterpret_cast<const void *>(&layout.ecdh));
+
+  const auto *ecdh_data = static_cast<const ecdh_kat_data_t *>(data);
+  EXPECT_EQ(ecdh_data->priv_key_len, 32);
+  EXPECT_EQ(ecdh_data->pub_key_len1, 32);
+  EXPECT_EQ(ecdh_data->pub_key_len2, 32);
+  EXPECT_EQ(ecdh_data->shared_secret_len, 32);
+  EXPECT_EQ(ecdh_data->data[0], 0x71);
+}
+
+TEST(FipsKatTableDataTest, GetDataMldsa87) {
+  struct Layout {
+    struct {
+      uint32_t magic;
+      uint32_t version;
+      uint32_t entry_count;
+      uint32_t total_size;
+      fips_kat_entry_t entries[1];
+    } table;
+    mldsa_kat_data_t mldsa;
+  } layout{};
+
+  layout.table.magic = kFipsKatDescriptorMagic;
+  layout.table.version = kFipsKatDescriptorVersion1;
+  layout.table.entry_count = 1;
+  layout.table.total_size = sizeof(layout);
+
+  layout.table.entries[0].algorithm_id = kFipsKatAlgMldsa87;
+  layout.table.entries[0].offset = offsetof(Layout, mldsa);
+  layout.table.entries[0].size = sizeof(layout.mldsa);
+
+  layout.mldsa.num_cases = 5;
+  layout.mldsa.cases[0].seed[0] = 0x0D;
+  layout.mldsa.cases[0].mprime[0] = 0x3A;
+  layout.mldsa.cases[0].expected_sig_hash[0] = 0x50;
+
+  const auto *table =
+      reinterpret_cast<const fips_kat_descriptor_table_t *>(&layout.table);
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgMldsa87);
+  ASSERT_NE(entry, nullptr);
+
+  const void *data = get_fips_data(table, entry);
+  ASSERT_NE(data, nullptr);
+  EXPECT_EQ(data, reinterpret_cast<const void *>(&layout.mldsa));
+
+  const auto *mldsa_data = static_cast<const mldsa_kat_data_t *>(data);
+  EXPECT_EQ(mldsa_data->num_cases, 5);
+  EXPECT_EQ(mldsa_data->cases[0].seed[0], 0x0D);
+  EXPECT_EQ(mldsa_data->cases[0].mprime[0], 0x3A);
+  EXPECT_EQ(mldsa_data->cases[0].expected_sig_hash[0], 0x50);
 }
 
 TEST(FipsKatTableBoundsCheckTest, RejectOutOfBounds) {
@@ -290,22 +430,36 @@ TEST(FipsKatTableBoundsCheckTest, RejectOutOfBounds) {
   layout.table.entry_count = 1;
   layout.table.total_size = sizeof(layout);
 
-  // Offset past total_size
-  layout.table.entries[0].offset = sizeof(layout) + 4;
-  layout.table.entries[0].size = 4;
   const auto *table =
       reinterpret_cast<const fips_kat_descriptor_table_t *>(&layout.table);
-  EXPECT_EQ(get_fips_data(table, &layout.table.entries[0]), nullptr);
 
-  // Offset + size overflows total_size
-  layout.table.entries[0].offset = sizeof(layout) - 4;
-  layout.table.entries[0].size = 8;
-  EXPECT_EQ(get_fips_data(table, &layout.table.entries[0]), nullptr);
+  // Offset + size exceeds total_size (word-aligned offset)
+  fips_kat_entry_t oob_entry{
+      .algorithm_id = kFipsKatAlgSha2_256,
+      .offset = static_cast<uint32_t>(sizeof(layout) - 8),
+      .size = 12,  // exceeds by 4 bytes
+  };
+  EXPECT_EQ(get_fips_data(table, &oob_entry), nullptr);
 
-  // Arithmetic overflow (offset + size wraps uint32_t)
-  layout.table.entries[0].offset = 0xFFFFFFF0;
-  layout.table.entries[0].size = 0x20;
-  EXPECT_EQ(get_fips_data(table, &layout.table.entries[0]), nullptr);
+  // Offset itself exceeds total_size
+  fips_kat_entry_t oob_offset_entry{
+      .algorithm_id = kFipsKatAlgSha2_256,
+      .offset = static_cast<uint32_t>(sizeof(layout) + 4),
+      .size = 10,
+  };
+  EXPECT_EQ(get_fips_data(table, &oob_offset_entry), nullptr);
+
+  // Integer overflow in offset + size
+  fips_kat_entry_t overflow_entry{
+      .algorithm_id = kFipsKatAlgSha2_256,
+      .offset = 0xFFFFFFF0u,
+      .size = 0x20u,
+  };
+  EXPECT_EQ(get_fips_data(table, &overflow_entry), nullptr);
+
+  // Null pointers
+  EXPECT_EQ(get_fips_data(nullptr, &oob_entry), nullptr);
+  EXPECT_EQ(get_fips_data(table, nullptr), nullptr);
 }
 
 TEST(FipsKatTableAlignmentTest, RejectUnalignedPointersAndOffsets) {
@@ -314,26 +468,36 @@ TEST(FipsKatTableAlignmentTest, RejectUnalignedPointersAndOffsets) {
   layout.table.version = kFipsKatDescriptorVersion1;
   layout.table.entry_count = 1;
   layout.table.total_size = sizeof(layout);
-  layout.table.entries[0].offset = offsetof(TestTableLayout, payload);
-  layout.table.entries[0].size = sizeof(layout.payload);
+  layout.table.entries[0].algorithm_id = kFipsKatAlgSha2_256;
+  layout.table.entries[0].offset = offsetof(TestTableLayout, sha256);
+  layout.table.entries[0].size = sizeof(layout.sha256);
 
   const auto *table =
       reinterpret_cast<const fips_kat_descriptor_table_t *>(&layout.table);
+  const fips_kat_entry_t *entry = &layout.table.entries[0];
+
+  // Valid baseline
+  EXPECT_NE(get_fips_data(table, entry), nullptr);
 
   // Unaligned table pointer
   const auto *unaligned_table =
       reinterpret_cast<const fips_kat_descriptor_table_t *>(
           reinterpret_cast<uintptr_t>(table) + 1);
-  EXPECT_EQ(get_fips_data(unaligned_table, &layout.table.entries[0]), nullptr);
+  EXPECT_EQ(get_fips_data(unaligned_table, entry), nullptr);
 
   // Unaligned entry pointer
   const auto *unaligned_entry = reinterpret_cast<const fips_kat_entry_t *>(
-      reinterpret_cast<uintptr_t>(&layout.table.entries[0]) + 1);
+      reinterpret_cast<uintptr_t>(entry) + 1);
   EXPECT_EQ(get_fips_data(table, unaligned_entry), nullptr);
 
-  // Unaligned offset
-  layout.table.entries[0].offset = offsetof(TestTableLayout, payload) + 1;
-  EXPECT_EQ(get_fips_data(table, &layout.table.entries[0]), nullptr);
+  // Unaligned offset in entry
+  fips_kat_entry_t unaligned_offset_entry = *entry;
+  unaligned_offset_entry.offset += 1;
+  EXPECT_EQ(get_fips_data(table, &unaligned_offset_entry), nullptr);
+  unaligned_offset_entry.offset = entry->offset + 2;
+  EXPECT_EQ(get_fips_data(table, &unaligned_offset_entry), nullptr);
+  unaligned_offset_entry.offset = entry->offset + 3;
+  EXPECT_EQ(get_fips_data(table, &unaligned_offset_entry), nullptr);
 }
 
 }  // namespace

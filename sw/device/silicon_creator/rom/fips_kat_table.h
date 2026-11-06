@@ -71,6 +71,9 @@ typedef enum fips_kat_alg_id {
   kFipsKatAlgEcdhP256 = 21,
   kFipsKatAlgEcdhP384 = 22,
   kFipsKatAlgX25519 = 23,
+
+  // Post Quantum Cryptography (ML-DSA)
+  kFipsKatAlgMldsa87 = 24,
 } fips_kat_alg_id_t;
 
 /**
@@ -145,6 +148,18 @@ typedef struct ecdh_kat_data {
   uint32_t shared_secret_len;
   uint8_t data[];  // priv_key || pub_key1 || pub_key2 || expected_shared_secret
 } ecdh_kat_data_t;
+
+// 8. Post-Quantum Signatures (ML-DSA-87 Rejection Cases)
+typedef struct fips_kat_mldsa87_case {
+  uint8_t seed[32];   /**< 32-byte seed xi for deterministic keygen */
+  uint8_t mprime[32]; /**< 32-byte M' message */
+  uint8_t expected_sig_hash[32]; /**< SHA2-256(sig[0..4627]) */
+} fips_kat_mldsa87_case_t;
+
+typedef struct mldsa_kat_data {
+  uint32_t num_cases; /**< Number of test cases (5) */
+  fips_kat_mldsa87_case_t cases[5];
+} mldsa_kat_data_t;
 
 /**
  * Fixed address slot storing the pointer to the FIPS KAT descriptor table.

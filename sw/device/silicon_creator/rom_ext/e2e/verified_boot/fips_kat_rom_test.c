@@ -14,18 +14,22 @@
 #include "sw/device/lib/base/bitfield.h"
 #include "sw/device/lib/base/mmio.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/crypto/impl/mldsa/mldsa.h"
 #include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/ecc_curve25519.h"
 #include "sw/device/lib/crypto/include/ecc_p256.h"
 #include "sw/device/lib/crypto/include/ecc_p384.h"
 #include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/key_transport.h"
+#include "sw/device/lib/crypto/include/mldsa.h"
 #include "sw/device/lib/crypto/include/rsa.h"
 #include "sw/device/lib/crypto/include/sha2.h"
+#include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/dif/dif_aes.h"
 #include "sw/device/lib/dif/dif_aon_timer.h"
 #include "sw/device/lib/dif/dif_kmac.h"
 #include "sw/device/lib/runtime/hart.h"
+#include "sw/device/lib/runtime/ibex.h"
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
@@ -1846,6 +1850,156 @@ static status_t test_x25519_kat(const fips_kat_descriptor_table_t *table) {
   return OK_STATUS();
 }
 
+static status_t test_mldsa87_kat(const fips_kat_descriptor_table_t *table) {
+  LOG_INFO("Searching for ML-DSA-87 KAT entry (alg_id = %u)...",
+           kFipsKatAlgMldsa87);
+  const fips_kat_entry_t *entry = find_fips_entry(table, kFipsKatAlgMldsa87);
+  CHECK(entry != NULL, "ML-DSA-87 KAT entry not found in table!");
+  LOG_INFO("Entry found: algorithm_id=%u, offset=%u, size=%u",
+           entry->algorithm_id, entry->offset, entry->size);
+
+  LOG_INFO("Resolving ML-DSA-87 KAT data payload...");
+  const void *data = get_fips_data(table, entry);
+  CHECK(data != NULL, "Failed to resolve KAT data payload (out of bounds)!");
+
+  const mldsa_kat_data_t *kat_data = (const mldsa_kat_data_t *)data;
+  CHECK(kat_data->num_cases == 5, "Expected num_cases=5, got %u",
+        kat_data->num_cases);
+
+  CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow));
+
+  static uint32_t pk_data[kOtcryptoMldsa87PkWords];
+  static uint32_t sk_data[kOtcryptoMldsa87SkWords];
+  static uint32_t sig_data[kOtcryptoMldsa87SigWords];
+
+  uint64_t total_suite_start = ibex_mcycle_read();
+
+  for (size_t i = 0; i < kat_data->num_cases; ++i) {
+    uint64_t case_start = ibex_mcycle_read();
+    const fips_kat_mldsa87_case_t *c = &kat_data->cases[i];
+
+    // 1. Prepare 64-byte blinded seed xi (share0 = seed, share1 = 0)
+    uint32_t xi_data[16] = {0};
+    memcpy(xi_data, c->seed, 32);
+
+    otcrypto_blinded_key_t xi = {
+        .config =
+            {
+                .version = kOtcryptoLibVersion1,
+                .key_mode = kOtcryptoKeyModePqcMldsa87,
+                .key_length = 64,
+                .hw_backed = kHardenedBoolFalse,
+                .security_level = kOtcryptoKeySecurityLevelLow,
+            },
+        .keyblob_length = 64,
+        .keyblob = xi_data,
+    };
+    xi.checksum = otcrypto_integrity_blinded_checksum(&xi);
+
+    otcrypto_unblinded_key_t pk = {
+        .key_mode = kOtcryptoKeyModePqcMldsa87,
+        .key_length = kOtcryptoMldsa87PkBytes,
+        .key = pk_data,
+    };
+
+    otcrypto_blinded_key_t sk = {
+        .config =
+            {
+                .version = kOtcryptoLibVersion1,
+                .key_mode = kOtcryptoKeyModePqcMldsa87,
+                .key_length = kOtcryptoMldsa87SkBytes,
+                .hw_backed = kHardenedBoolFalse,
+                .security_level = kOtcryptoKeySecurityLevelLow,
+            },
+        .keyblob_length = kOtcryptoMldsa87SkBytes,
+        .keyblob = sk_data,
+    };
+
+    // 2. Deterministic KeyGen on OTBN
+    uint64_t t_keygen_start = ibex_mcycle_read();
+    CHECK_STATUS_OK(mldsa87_det_keygen_internal_start(&xi));
+    CHECK_STATUS_OK(mldsa87_keygen_internal_finalize(&pk, &sk));
+    uint64_t keygen_cycles = ibex_mcycle_read() - t_keygen_start;
+    pk.checksum = otcrypto_integrity_unblinded_checksum(&pk);
+    sk.checksum = otcrypto_integrity_blinded_checksum(&sk);
+
+    // 3. Compute mu = SHAKE256(tr || M', 64)
+    // tr (64 bytes) is located at sk.keyblob + 24
+    uint64_t t_mu_start = ibex_mcycle_read();
+    otcrypto_sha3_context_t sha3_ctx;
+    CHECK_STATUS_OK(otcrypto_shake256_init(&sha3_ctx));
+    otcrypto_const_byte_buf_t tr_buf =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                          (const unsigned char *)(sk.keyblob + 24), 64);
+    CHECK_STATUS_OK(otcrypto_sha3_update(&sha3_ctx, &tr_buf));
+    otcrypto_const_byte_buf_t mprime_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, c->mprime, sizeof(c->mprime));
+    CHECK_STATUS_OK(otcrypto_sha3_update(&sha3_ctx, &mprime_buf));
+
+    uint32_t mu_data[16] = {0};
+    otcrypto_hash_digest_t mu = {
+        .data = mu_data,
+        .len = 16,
+    };
+    CHECK_STATUS_OK(otcrypto_shake256_final(&sha3_ctx, &mu));
+    uint64_t mu_cycles = ibex_mcycle_read() - t_mu_start;
+
+    // 4. Deterministic Signing on OTBN
+    uint64_t t_sign_start = ibex_mcycle_read();
+    CHECK_STATUS_OK(
+        mldsa87_sign_internal_start(&sk, &mu, kOtcryptoMldsaSignModeDet));
+    otcrypto_word32_buf_t sig_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, sig_data, kOtcryptoMldsa87SigWords);
+    CHECK_STATUS_OK(
+        mldsa87_sign_internal_finalize(&sig_buf, kMldsa87SingleSign));
+    uint64_t sign_cycles = ibex_mcycle_read() - t_sign_start;
+
+    // 5. Signature Output Hash Validation (SHA2-256 over exact 4627 bytes)
+    uint64_t t_hash_start = ibex_mcycle_read();
+    uint32_t actual_sig_hash[8] = {0};
+    otcrypto_hash_digest_t sig_hash_digest = {
+        .mode = kOtcryptoHashModeSha256,
+        .len = 8,
+        .data = actual_sig_hash,
+    };
+    otcrypto_const_byte_buf_t sig_bytes_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, (const unsigned char *)sig_data, 4627);
+    CHECK_STATUS_OK(otcrypto_sha2_256(&sig_bytes_buf, &sig_hash_digest));
+    CHECK_ARRAYS_EQ((const uint8_t *)actual_sig_hash, c->expected_sig_hash, 32);
+    uint64_t hash_cycles = ibex_mcycle_read() - t_hash_start;
+
+    // 6. Signature Verification on OTBN
+    uint64_t t_verify_start = ibex_mcycle_read();
+    otcrypto_const_word32_buf_t const_sig_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_word32_buf_t, sig_data, kOtcryptoMldsa87SigWords);
+    CHECK_STATUS_OK(mldsa87_verify_internal_start(&pk, &const_sig_buf, &mu));
+    hardened_bool_t verification_result = kHardenedBoolFalse;
+    CHECK_STATUS_OK(
+        mldsa87_verify_internal_finalize(&const_sig_buf, &verification_result));
+    CHECK(verification_result == kHardenedBoolTrue,
+          "ML-DSA-87 signature verification failed!");
+    uint64_t verify_cycles = ibex_mcycle_read() - t_verify_start;
+
+    uint32_t case_total_cycles = (uint32_t)(ibex_mcycle_read() - case_start);
+    uint32_t case_total_us = case_total_cycles / 24;  // 24 MHz clock
+    LOG_INFO(
+        "ML-DSA-87 Case %u/5 timing: Total=%u cycles (%u us), KeyGen=%u, "
+        "Mu=%u, Sign=%u, Hash=%u, Verify=%u",
+        (uint32_t)(i + 1), case_total_cycles, case_total_us,
+        (uint32_t)keygen_cycles, (uint32_t)mu_cycles, (uint32_t)sign_cycles,
+        (uint32_t)hash_cycles, (uint32_t)verify_cycles);
+  }
+
+  uint32_t total_suite_cycles =
+      (uint32_t)(ibex_mcycle_read() - total_suite_start);
+  uint32_t total_suite_us = total_suite_cycles / 24;
+  LOG_INFO(
+      "ML-DSA-87 All 5 Cases Total Suite Timing: %u cycles (%u us / %u ms)",
+      total_suite_cycles, total_suite_us, total_suite_us / 1000);
+  busy_spin_micros(100000);
+  return OK_STATUS();
+}
+
 static status_t test_fips_kat_rom(void) {
   // Stop the watchdog timer to prevent timeout during long RSA-4096 OTBN
   // computations.
@@ -1860,7 +2014,7 @@ static status_t test_fips_kat_rom(void) {
         table->magic);
   CHECK(table->version == kFipsKatDescriptorVersion1,
         "Invalid table version: %u", table->version);
-  CHECK(table->entry_count >= 22, "Expected at least 22 entries, got %u",
+  CHECK(table->entry_count >= 23, "Expected at least 23 entries, got %u",
         table->entry_count);
   LOG_INFO(
       "FIPS KAT table found at %p (magic=0x%08x, version=%u, entries=%u, "
@@ -1890,6 +2044,7 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_ecdh_p256_kat(table));
   TRY(test_ecdh_p384_kat(table));
   TRY(test_x25519_kat(table));
+  TRY(test_mldsa87_kat(table));
 
   return OK_STATUS();
 }
