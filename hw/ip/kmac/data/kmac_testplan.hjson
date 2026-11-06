@@ -123,6 +123,760 @@
       stage: V2
       tests: ["{name}_app_with_partial_data"]
    }
+    {
+      name: dynamic_app_sha3_smoke
+      desc: '''
+        Stimulus:
+        Send SHA3-256 config and a short final message via the KMAC IP UVM app agent; program
+        prerequisite CSRs through TL and send a separate zero-strobe termination.
+
+        Checks:
+            Count requests only at req_valid&&req_ready and responses only at rsp_valid&&rsp_ready.
+            Check config-before-message, one message end, stable request fields while stalled, four
+            ordered 64-bit digest beats against the message reference, error=0, then drain before
+            accepting exactly one successful finish and no later digest/finish.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_sha3_strengths
+      desc: '''
+        Stimulus:
+        Run independent dynamic SHA3-224/256/384/512 sessions with final message and separate
+        zero-strobe termination.
+
+        Checks:
+        Check 4/4/6/8 accepted 64-bit digest beats in
+            reference order, compare defined bits, require unused SHA3-224 transport bytes zero,
+            and reject extra/duplicate beats. Drain digest before termination; require exactly one
+            error-free finish and no post-finish response.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_fixed_output_xof
+      desc: '''
+        Stimulus:
+        Run SHAKE and cSHAKE at L128/L256 with en_xof=0 and partial/full output up to the first
+        rate.
+
+        Checks:
+        Check config/message handshake order, stable stalled requests, ordered
+            reference output, and a maximum complete rate of 21/17 64-bit beats respectively, with
+            no second squeeze. Drain output before separate termination and one successful finish;
+            vary legal inter-request gaps.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_cshake_prefix
+      desc: '''
+        Stimulus:
+        Program non-empty cSHAKE N/S via TL PREFIX writes before app config/message at L128/L256.
+
+        Checks:
+        Check each PREFIX write completes first, then config and one final-message
+            handshake with stable stalled payload. Compare ordered accepted response beats to the
+            reference using programmed N/S; drain before separate termination and one successful
+            finish, with no trailing response.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_kmac
+      desc: '''
+        Stimulus:
+        Run full dynamic KMAC with valid KeyMgr sideload key, legal strength, en_xof=0, and a
+        known message. Before config establish full-KMAC build, entropy_ready, and key validity.
+
+        Checks:
+        Check ordered config/message/last handshakes and stall stability;
+            compare eight 64-bit digest beats to the KMAC reference, error=0, and no duplicated
+            key/prefix payload. Drain before separate zero-strobe termination and one successful
+            finish; reject extra beats.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_rate_boundaries
+      desc: '''
+        Stimulus:
+        Test supported modes/strengths below, at, and above the Keccak rate with full and partial
+        final beats, empty final messages, and separate post-digest zero-strobe termination.
+
+        Checks:
+        Count accepted handshakes; check byte order, LSB-contiguous final strobes,
+            req_last only on message end, full non-final strobes on masked OTBN, empty req_last with
+            strb=0, no second end marker, and reference digest/padding/output framing.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_empty_message
+      desc: '''
+        Stimulus:
+        Send empty SHA3-256 (strb=0,last=1), accept its digest, then send a separate zero-strobe
+        termination.
+
+        Checks:
+        Check config and exactly one empty-message request, distinct
+            from termination; compare four accepted digest beats to the empty-string reference with
+            error=0. Terminate only after digest drain and require one finish and no extra response.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_multibeat_message
+      desc: '''
+        Stimulus:
+        Send a known 17-byte SHA3-256 message as two full beats and one 1-byte final beat, then
+        terminate separately.
+
+        Checks:
+        Check config first; count only accepted transfers;
+            verify full non-final strobes/last=0, final strb=0x01/last=1, stable stalled payload,
+            order, and exactly 17 valid absorbed bytes. Compare four digest beats to reference and
+            require one error-free finish after drain, with no duplicate response.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_partial_message
+      desc: '''
+        Stimulus:
+        Send known 11-byte SHA3-256 input as one full beat and one 3-byte final beat.
+
+        Checks:
+        Check exactly two ordered message handshakes, final strb=0x07/last=1, stable payload
+            under stalls, and only 11 valid bytes in the reference. Compare four digest beats and
+            error=0; after digest drain handshake separate zero-strobe termination.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_cshake_prefix_programming
+      desc: '''
+        Stimulus:
+        Program encoded cSHAKE N/S through TL PREFIX writes before dynamic app config/message.
+
+        Checks:
+        Check every TL write completes before config; dynamic config carries
+            mode/strength but not N/S. Verify ordered stable config/message/final-message
+            handshakes, reference output/count using exactly the programmed prefix, drain, separate
+            termination, one successful finish, and no extra beats.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_response_backpressure
+      desc: '''
+        Stimulus:
+        Stall first/last digest, error, and finish responses using deterministic and randomized
+        ready policies, including configured max_rsp_ready_delay.
+
+        Checks:
+        For every response
+            class hold payload (both digest shares, error, finish) stable from valid assertion until
+            handshake; count handshakes only and detect loss, duplication, or ordering errors. Treat
+            ready-delay as a testbench policy bound, not an IP latency guarantee; drain before finish.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_pipelined_termination
+      desc: '''
+        Stimulus:
+        Terminate once with no response stalled and once with a valid digest stalled.
+
+        Checks:
+        Count request/response handshakes independently. In the stalled case allow at most one
+            pending beat, stable until accepted exactly once and with no replacement. Drain pending
+            data before exactly one finish; require no later response and do not assume immediate
+            RTL response.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_xof_stream
+      desc: '''
+        Stimulus:
+        Run SHAKE128 en_xof=1 through the first 21-beat rate and into the next squeeze.
+
+        Checks:
+        Compare the first 21 accepted beats in order to reference and ensure the next squeeze
+            does not start before they handshake. Accept at least one correct next-rate beat; then
+            terminate separately, drain, and require one error-free finish with no later output.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_xof_backpressure
+      desc: '''
+        Stimulus:
+        Run SHAKE128 en_xof=1 with early and near-rate-boundary response stalls.
+
+        Checks:
+        Require valid and digest shares/error/finish flags stable until ready, count each beat
+            once in reference order, and verify 21 first-rate beats before next squeeze. Resume
+            within configured ready policy, prevent premature finish/extra beats, then terminate
+            after next-rate data and drain to one finish.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_xof_pipelined_termination
+      desc: '''
+        Stimulus:
+        Assert separate zero-strobe termination while a digest response is valid but stalled.
+
+        Checks:
+        Handshake termination once, hold pending response payload/flags stable until
+            accepted exactly once, and prohibit replacement or duplicate beats. Drain offered data
+            before one finish and check no post-finish response; apply the configured ready policy.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_sideloaded_kmac_output
+      desc: '''
+        Stimulus:
+        Run dynamic KMAC with valid KeyMgr key, legal strength, en_xof=0. Optionally include the
+        invalid en_xof=1 subcase.
+
+        Checks:
+        Check entropy_ready/key validity before config, unique ordered config/message/termination,
+            eight ordered 64-bit digest beats against KMAC reference, no duplicated key/prefix in
+            payload, error=0, and one finish after digest drain. For the invalid en_xof=1 subcase,
+            expect error response, termination, successful finish, and no hash output or CSR error.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_entropy_prerequisite
+      desc: '''
+        Stimulus:
+        Through TL clear entropy_ready before each dynamic KMAC; include non-KMAC controls and
+        supported masking/build variants.
+
+        Checks:
+        For KMAC verify config/message/error/termination/finish order,
+            accepted-but-discarded message, error=1, no digest or CSR error/ack, then one
+            error-free finish. Confirm non-KMAC control returns its reference digest. Bound progress
+            by watchdog, not fixed response latency.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_service_rejection
+      desc: '''
+        Stimulus:
+        Send invalid mode-strength or illegal en_xof, complete required message phase, and
+        terminate separately, isolated from key/fault errors.
+
+        Checks:
+        Check rejected message is not
+            forwarded to hash engine; error follows accepted final-message request; then require
+            one finish with error=0, no valid digest or new CSR error/IRQ/ack. Check stable stalled
+            request fields and count only valid&&ready transfers.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_sideload_key_invalidation
+      desc: '''
+        Stimulus:
+        In separate dynamic OTBN KMAC runs invalidate key-valid before and after PROCESS.
+
+        Checks:
+        Check ordered config/message/final handshakes, ErrKeyNotValid/kmac_err,
+            documented error response and error-marked finish; discard invalid digest and do not
+            duplicate PROCESS. TL-write 1 to clear kmac_err, issue CMD.err_processed as required,
+            wait for recovery/ownership release, and verify a valid reference-checked follow-up;
+            vary acknowledgement delay.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_recoverability
+      desc: '''
+        Stimulus:
+        Exercise pure service rejection and invalid-key errors separately; vary key error phase
+        and TL acknowledgement delay, then run a valid session.
+
+        Checks:
+        Check accepted
+            handshake order. Service rejection requires error response, termination, successful
+            finish, and no CSR ack. Key error requires ERR_CODE/kmac_err, phase-correct response and
+            finish, TL clear then err_processed, observed recovery-busy then idle/owner release, and
+            a reference-checked follow-up with no stale state or response.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_invalid_configuration
+      desc: '''
+        Stimulus:
+        With legal CSR/key prerequisites, send illegal dynamic mode/strength or en_xof, complete
+        required message phase, and terminate separately.
+
+        Checks:
+        Check one invalid
+            config acceptance, no hash-engine forwarding, error response after final request,
+            exactly one finish with error=0, no digest/extra response/CSR error/IRQ/ack, stable
+            stalled requests, and watchdog-bounded progress rather than fixed latency.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_entropy_not_ready_error
+      desc: '''
+        Stimulus:
+        Clear entropy_ready through TL, then request otherwise-valid dynamic KMAC with valid
+        sideload key; also run a non-KMAC control.
+
+        Checks:
+        Verify CSR write precedes config. KMAC
+            rejection follows accepted message with error=1, separate termination, one finish
+            error=0, no digest/ERR_CODE/kmac_err/SW acknowledgement; non-KMAC returns normal
+            digest/finish. Use bounded progress checks, not exact response timing.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_invalid_key_error
+      desc: '''
+        Stimulus:
+        In separate pre- and post-PROCESS dynamic OTBN KMAC runs, invalidate the key.
+
+        Checks:
+        Count valid&&ready transfers and verify ErrKeyNotValid/kmac_err and required error
+        response/finish flags;
+            do not compare digest or duplicate PROCESS. TL clear kmac_err then CMD.err_processed
+            in order, wait for recovery-busy to idle/owner release, then verify valid follow-up
+            digest/finish against reference.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_mixed_mode_stress
+      desc: '''
+        Stimulus:
+        Run back-to-back SHA3/SHAKE/cSHAKE/KMAC sessions varying strengths, framing, request
+        gaps, response stalls, and recoverable errors.
+
+        Checks:
+        Per session score accepted
+            handshakes in order; check config-before-message, one message end, mode-specific digest
+            beat count/content, error/finish semantics, and absence of lost/duplicate/stale traffic.
+            Cover selected mode/strength/framing/error and owner release. Distinguish sequential
+            stress from simultaneous arbitration; use configured agent bounds, not latency promises.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_multi_rate_xof
+      desc: '''
+        Stimulus:
+        Run SHAKE/cSHAKE en_xof=1 through complete rates and at least one next-squeeze beat.
+
+        Checks:
+        For L128/L256 check each complete rate has 21/17 accepted beats in reference
+            order and next squeeze starts only after the previous rate handshakes. Accept at least
+            one next-rate beat, terminate once, drain, and require one error-free finish with no
+            later output; use watchdog, not fixed permutation delay.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_concurrent_requesters
+      desc: '''
+        Stimulus:
+        Drive OTBN dynamic/static app agents with TL SW START requests at directed same-cycle
+        arbitration and command-collision offsets.
+
+        Checks:
+        Count accepted grants; verify
+            documented priority, losing-request stall/stability, owner-only responses, and per-
+            session digest/finish. Rejected SW commands report ErrSwIssuedCmdInAppActive and command
+            info without ownership theft/state writes; clear error as needed and verify retry after
+            release. Use watchdogs, not undocumented arbitration latency.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_reset_cancellation
+      desc: '''
+        Stimulus:
+        Reset during config, message, processing, response stall, and finish in isolated runs.
+
+        Checks:
+        Record last accepted handshake; verify reset clears request/response
+            valids and discards pending beats. Canceled sessions need no finish and must not emit
+            stale responses. After reset run a fresh session and compare exact accepted-beat order/
+            count and digest to reference; use reset synchronization and a testbench timeout.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_reset_during_response
+      desc: '''
+        Stimulus:
+        Stall a digest/finish response (valid&&!ready), record payload/flags, then reset.
+
+        Checks:
+        Require stability only until reset and clearing after reset; no pre-reset beat
+            may be accepted or replayed. Run fresh SHA3-256 and check config/message, four ordered
+            digest beats, separate termination, exactly one successful finish, and bounded post-
+            reset progress.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_fatal_escalation
+      desc: '''
+        Stimulus:
+        Inject KMAC LC escalation independently during OTBN app config, message, processing,
+        and response.
+
+        Checks:
+        Record accepted handshakes; require fatal alert/terminal
+            lockout, no normal digest/finish or new app traffic after lockout, and specified fault
+            behavior for pending outputs (not assumed graceful drain). CSR acknowledgement cannot
+            recover; only IP reset permits a fresh session.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: dynamic_app_fault_protection
+      desc: '''
+        Stimulus:
+        Use scoped UVM fault injection on countermeasure targets and LC input during app
+        config/message/process/response phases.
+
+        Checks:
+        For each fault/phase check specified
+            assertion/alert, status/lockout, and response behavior; count only actual handshakes.
+            Do not require defined digest, normal finish, or graceful response for terminal faults.
+            Check no unintended post-fault traffic and reset recovery only where specified; keep
+            fatal cases separate from recoverable service/key errors and avoid unsupported latency
+            assumptions.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: context_restore_non_idle
+      desc: '''
+        Stimulus:
+        With sideload disabled, attempt STATE_WRITE during SW absorb/squeeze and then write
+        STATE.
+
+        Checks:
+        Confirm STATUS phase before command, each TL response, ErrSwCmdSequence/
+            kmac_err, state_write=0, and no effective state writes. Finish and reference-check the
+            original hash; clear kmac_err, issue legal DONE, and run a fresh hash.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: context_stop_after_squeeze
+      desc: '''
+        Stimulus:
+        With sideload disabled, poll STATUS.sha3_squeeze through completed TL reads, then issue
+        CMD.STOP.
+
+        Checks:
+        Verify TL completion, ErrSwCmdSequence/kmac_err, sha3_stopped=0,
+            and preserved digest. Clear kmac_err and issue DONE in legal order; verify a fresh hash
+            completes. Do not expect CMD.err_processed.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: context_restore_cfg
+      desc: '''
+        Stimulus:
+        Save a SW context through STOP/STOPPED/STATE reads/DONE, run another config, then
+        restore original CFG, claim STATE_WRITE, load shares, and CONTINUE.
+
+        Checks:
+        STOP only
+            after rate-aligned absorption; poll STOPPED before reading shares and complete reads
+            before DONE. Restore CFG before claim, wait state_write before share writes, load all
+            shares before CONTINUE, and compare resumed digest to reference.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: context_repeated_checkpoints
+      desc: '''
+            Stimulus:
+            Repeatedly absorb full user-message rate blocks, STOP, wait STOPPED, save both shares in
+            TB buffers, and DONE. At checkpoints choose no intervening operation, a full independent
+            SW hash, or a full app session; restore CFG, claim STATE_WRITE, reload the latest
+            checkpoint, and CONTINUE before final PROCESS.
+
+            Checks:
+            Enforce exact order and 50 words per share, no missing/duplicate TL traffic, correct
+            ownership/status, and reference-matching final digest. Cover each switch choice and
+            multiple checkpoints.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: context_entropy_prerequisite
+      desc: '''
+            Stimulus:
+            In masked full-KMAC RTL with sideload=0, save an aligned checkpoint, reset, restore CFG
+            with entropy_ready=0, claim STATE_WRITE, load shares, and issue CONTINUE.
+
+            Checks:
+            Verify TL order, ErrSwHashingWithoutEntropyReady, kmac_err/IRQ, CONTINUE blocked, no
+            absorb, and claim held. Clear kmac_err then DONE to release; configure valid entropy,
+            repeat restore/CONTINUE, finalize, and compare whole-message digest. No err_processed.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: context_sideload_restriction
+      desc: '''
+            Stimulus:
+            With sideload=1, isolate STOP during SW absorption, STATE_WRITE while idle, and CONTINUE.
+
+            Checks:
+            Check TL completion, ErrSwSaveRestoreSideload (including rejected command), kmac_err/IRQ
+            if enabled, and no valid checkpoint/claim/resume/state write. Clear kmac_err before legal
+            cleanup/follow-up and check original hash/status as appropriate.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: context_kmac_key_prefix_continuity
+      desc: '''
+            Stimulus:
+            With sideload disabled, program key/prefix through TL, absorb a full user-message rate
+            block, STOP/save/DONE, then claim/load/CONTINUE without replaying key/prefix.
+
+            Checks:
+            Complete key/prefix writes before START; count only user bytes for alignment; wait
+            STOPPED before reads and state_write before reload. Append output-length encoding once
+            before PROCESS and compare to one-pass KMAC reference; require no duplicate commands/
+            writes or errors.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: context_reset_interruption
+      desc: '''
+            Stimulus:
+            Reset during STOP/STOPPED, STATE reads, DONE, claim, partial state loading within/
+            between shares, and before/after CONTINUE.
+
+            Checks:
+            Track completed TL and command handshakes; verify reset defaults, claim/write-enable
+            cleared, pending work canceled, and no spontaneous continuation or stale response. TB
+            save buffers persist. After reset run fresh START/message/PROCESS/read/DONE and compare
+            digest to reference.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: context_save_alignment
+      desc: '''
+            Stimulus:
+            Track SW user-message bytes since START/CONTINUE; issue TL STOP at aligned and
+            misaligned lengths with varied FIFO/absorption timing.
+
+            Checks:
+            Count only user-message bytes accepted/absorbed; exclude key/prefix and distinguish TL
+            FIFO acceptance from SHA3 absorption. For aligned input wait for a complete rate block,
+            STOP, poll STOPPED, read shares, and verify resume. For misaligned input check TL
+            response, ErrSwStopNotBlockAligned/kmac_err, invalid-save behavior, then clear and DONE
+            before follow-up.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: state_app_ownership_reads
+      desc: '''
+            Stimulus:
+            Read both STATE apertures through TL while each app owns KMAC during message,
+            processing, and response phases.
+
+            Checks:
+            Count each TL request/response; verify app-owned read data matches specified zero
+            behavior with no state leak. Ensure reads do not stall/corrupt app protocol; preserve
+            response order/count and reference-matching digest.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: state_share0_address_range
+      desc: '''
+            Stimulus:
+            In masked mode claim STATE_WRITE and write aligned share0 first/last words; test both
+            state-endianness settings and distinct first/middle/last patterns. Optionally sweep all
+            valid words.
+
+            Checks:
+            Confirm claim before writes and each TL completion; internal write index/share0 enable/
+            endian conversion must be correct with no neighbor changes, and share1 must remain
+            unchanged. A full sweep covers all 50 words in 0x400..0x4C4. Do not read back while
+            claimed; release with DONE.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: state_share1_address_range
+      desc: '''
+            Stimulus:
+            In a masked build claim STATE_WRITE and write distinct aligned share1 first, middle,
+            and last words; optionally sweep all valid words.
+
+            Checks:
+            Confirm STATUS.state_write before writes, TL completion, and internal accepted addresses/
+            share select in 0x500..0x5C4. Share0 remains unchanged; check no alias. A full sweep
+            covers 50 words. Avoid claim-time readback; optionally CONTINUE/finalize valid state and
+            compare reference.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: state_valid_invalid_boundaries
+      desc: '''
+            Stimulus:
+            Read/write aligned valid and invalid selectors in both STATE apertures, including the
+            inter-share gap 0x4C8..0x4FC and share1 tail 0x5C8..0x5FC. Exercise reads when visible
+            and writes with/without claim.
+
+            Checks:
+            Count one TL request/response per address; cover 50 valid words per 64-slot aperture.
+            Invalid selectors read zero and writes must not write, alias, or wrap. Compare internal
+            accepted writes with intended valid writes; avoid claim-time readback and misaligned
+            0x4C7.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: state_app_ownership_arbitration
+      desc: '''
+            Stimulus:
+            Drive app requests against TL STATE_WRITE and CMD.STOP during app ownership and at the
+            same-cycle app-grant boundary; retry STATE_WRITE after app completion.
+
+            Checks:
+            Count TL responses and app grants. Rejected SW commands report
+            ErrSwIssuedCmdInAppActive/command info, keep state_write low, cause no effective STATE
+            writes, and preserve app response routing/digest. Clear kmac_err as required, wait for
+            owner release, then verify STATE_WRITE retry succeeds.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: state_partial_write_with_claim
+      desc: '''
+            Stimulus:
+            In a masked build claim STATE_WRITE and issue legal TL partial-mask writes to valid
+            STATE words.
+
+            Checks:
+            After confirmed claim, require one ordered TL D-channel error per request and zero
+            accepted/effective internal writes or state mutation. Distinguish TL adapter rejection
+            from KMAC ERR_CODE/kmac_err/IRQ; do not expect a KMAC error.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: state_partial_write_without_claim
+      desc: '''
+            Stimulus:
+            Without STATE_WRITE claim, issue legal partial-mask writes to valid STATE words under
+            varied ownership.
+
+            Checks:
+            Keep STATUS.state_write=0; require one adapter D-channel error per completed TL write
+            and zero internal state writes. Do not infer KMAC ERR_CODE/kmac_err/IRQ from TL adapter
+            errors.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: state_write_without_claim
+      desc: '''
+            Stimulus:
+            Without STATE_WRITE ownership, issue full-word writes to both valid shares during idle
+            and active operations.
+
+            Checks:
+            Verify state_write=0 before each transaction and distinguish TL response from internal
+            write-enable. Require no internal write or write-induced state/digest while idle; allow
+            only legitimate engine evolution while hashing. Check both shares and follow-up digest
+            against reference.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
+    {
+      name: state_claim_while_sha3_busy
+      desc: '''
+            Stimulus:
+            During TL-driven SW absorption with sideload disabled, issue STATE_WRITE and subsequent
+            full-word STATE writes.
+
+            Checks:
+            Confirm STATUS.sha3_absorb before STATE_WRITE; check TL completion, ErrSwCmdSequence/
+            kmac_err, state_write=0, and no accepted internal writes. Preserve original reference
+            digest; clear kmac_err, PROCESS/read digest/DONE in legal order, and run a clean follow-
+            up hash.
+            '''
+      stage: V2
+      tests: ["N/A"]
+    }
    {
       name: entropy_refresh
       desc: ''' Test entropy interface for KMAC.
@@ -413,6 +1167,505 @@
             - ErrIncorrectFunctionName: covers that the function name is configured incorrectly
                                         when KMAC mode is enabled
             - ErrSwCmdSequence: covers that SW issues commands to the KMAC out of order
+            '''
+    }
+    {
+      name: dynamic_app_config_cg
+      desc: '''
+            Dynamic-app configuration and mode coverage. Keep mode/strength/en_xof bins and
+        configuration acceptance together with their configuration crosses. Each listed point
+        name is a stable identifier used by the groups crosses; the following values specify
+        its required bins.
+
+        Coverage requirements:
+            - dynamic_app_id: OTBN dynamic interface; static app IDs as controls where useful.
+            - dynamic_mode: SHA3; SHAKE; cSHAKE; KMAC.
+            - dynamic_strength: L128; L224; L256; L384; L512 as legal for the selected mode.
+            - en_xof: 0; 1.
+            - config_request_seen: config accepted; config rejected.
+            - config_error: no config error; expected config error; unexpected/missing config error.
+            - finish: successful finish observed; finish absent due to cancellation/fault.
+            - previous_mode: mode used by prior session.
+            - current_mode: mode used by current session.
+
+            Crosses:
+            - dynamic_app_id_x_mode; mode_x_strength; mode_x_strength_x_en_xof;
+              mode_x_en_xof_x_finish; mode_x_strength_x_en_xof_x_config_error;
+              previous_mode_x_current_mode.
+            '''
+    }
+    {
+      name: dynamic_app_message_framing_cg
+      desc: '''
+            Dynamic-app message framing coverage. Sample message length/framing and final-beat
+            strobes together, including the empty-message case.
+
+            Coverage requirements:
+            - dynamic_mode: SHA3; SHAKE; cSHAKE; KMAC.
+            - beat_count: 1; 2; 3+ beats.
+            - message_beat_count: 1; 2; 3+ beats.
+            - final_beat_strobe_bytes: 0; 1-7 partial bytes; full beat.
+            - empty_message: empty final message; non-empty message.
+
+            Crosses:
+            - beat_count_x_final_strobe; empty_message_x_mode_x_finish.
+            '''
+    }
+    {
+      name: dynamic_app_prefix_cg
+      desc: '''
+            Dynamic-app prefix coverage. Sample function-name and customization-string lengths
+            for empty, non-empty, boundary, and maximum cases.
+
+            Coverage requirements:
+            - dynamic_mode: SHA3; SHAKE; cSHAKE; KMAC.
+            - function_name_length: empty; non-empty; boundary/max.
+            - customization_length: empty; non-empty; boundary/max.
+
+            Cross:
+            - mode_x_function_name_length_x_customization_length.
+            '''
+    }
+    {
+      name: dynamic_app_key_entropy_cg
+      desc: '''
+            Dynamic-app key and entropy prerequisite coverage, separate from ordinary configuration
+            and response flow.
+
+            Coverage requirements:
+            - dynamic_mode: SHA3; SHAKE; cSHAKE; KMAC.
+            - key_source: software key; sideload key.
+            - key_source_and_validity: software key; sideload valid; sideload invalidated.
+            - key_validity: valid; invalidated; not applicable.
+            - entropy_ready: 0; 1.
+            - entropy_mode: software; EDN; idle/invalid where applicable.
+            - masking_mode: masking enabled; masking disabled.
+            - app_error: no app error; expected app error; unexpected/missing app error.
+
+            Crosses:
+            - mode_x_key_source_x_key_validity_x_app_error;
+              masking_x_entropy_mode_x_entropy_ready_x_app_error.
+            '''
+    }
+    {
+      name: dynamic_app_response_stream_cg
+      desc: '''
+            Dynamic-app response streaming and backpressure coverage. Track accepted output chunks,
+            termination with pending responses, finish behavior, and configured ready policy.
+
+            Coverage requirements:
+            - dynamic_mode: SHA3; SHAKE; cSHAKE; KMAC.
+            - dynamic_strength: L128; L224; L256; L384; L512 as legal for selected mode.
+            - response_chunk_count: single chunk; multiple chunks; full rate; additional squeeze.
+            - pending_response_count: 0 pending; 1 pending; 2+ pending.
+            - response_finish_observed: finish observed; finish absent due to reset/fatal event.
+            - finish_error: finish error=0; finish error=1.
+            - policy: deterministic; randomized; configured maximum delay.
+            - response_stall_length: 0; 1; 2-to-bound; at maximum configured bound.
+            - configured_stall_bound: configured max_rsp_ready_delay value.
+            - observed_stall: no stall; below bound; at bound; exceeds bound.
+            - acceptance_point: response accepted within configured policy; acceptance delayed.
+            - chunk_ordinal: first; middle; last; next-rate chunk.
+
+            Crosses:
+            - mode_x_strength_x_chunk_count; pending_response_count_x_finish_error;
+              policy_x_stall_length_x_chunk_ordinal;
+              configured_bound_x_observed_stall_x_acceptance_point.
+            '''
+    }
+    {
+      name: dynamic_app_concurrent_arbitration_cg
+      desc: '''
+            Dynamic app concurrent-arbitration coverage, separate from protocol and data-path bins.
+            Cover concurrent requester combinations, documented arbitration outcomes, collision
+            timing, and response routing.
+
+            Coverage requirements:
+            - concurrent_request_set: dynamic OTBN only; static app only; SW only; dynamic OTBN+
+              static app; dynamic OTBN+SW; static app+SW; all three concurrent.
+            - request_set: same requester-set bins used by the arbitration cross.
+            - arbitration_result: each documented priority winner; lower-priority request rejected
+              or deferred; no eligible winner.
+            - collision_timing: same-cycle; adjacent-cycle; non-overlapping.
+            - response_route: dynamic OTBN interface; static app interface; SW interface; no
+              response expected.
+
+            Cross:
+            - request_set_x_collision_timing_x_arbitration_result.
+            '''
+    }
+    {
+      name: dynamic_app_sustained_stress_cg
+      desc: '''
+            Dynamic app sustained-stress coverage, separate from per-session protocol bins. Track run
+            length, gaps, overall transaction outcome, and mode transitions across sessions.
+
+            Coverage requirements:
+            - test_session_run_length: 1 session; 2-10 sessions; 11-100 sessions; more than 100.
+            - run_length: 1; 2-10; 11-100; more than 100 sessions.
+            - inter_session_gap: back-to-back; 1 cycle; 2 or more cycles.
+            - mode_transition: same mode; mode changed; transition to/from KMAC.
+            - stress_run_result: all requests completed; lost transaction; duplicate transaction;
+              digest mismatch; timeout/deadlock; residual state detected.
+
+            Cross:
+            - run_length_x_mode_transition_x_inter_session_gap.
+            '''
+    }
+    {
+      name: dynamic_app_response_boundaries_cg
+      desc: '''
+            Dynamic app response-boundary coverage, separate from stream-level output accounting. Sample
+            first/middle/last digest beats, error and finish responses against stall and boundary
+            events.
+
+            Coverage requirements:
+            - boundary_response_kind: first digest beat; middle digest beat; last digest beat; error
+              response; finish response.
+            - boundary_stall_event: no stall; termination during stall; key invalidation during
+              stall; reset during stall.
+            - response_stall_length: 0; 1; 2-to-bound; at maximum configured bound.
+            - response_kind: first/middle/last digest; error; finish.
+            - stall_event: no stall; termination; key invalidation; reset during stall.
+            - stall_length: 0; 1; 2-to-bound; at maximum configured bound.
+
+            Cross:
+            - response_kind_x_stall_length_x_stall_event.
+            '''
+    }
+    {
+      name: dynamic_app_recovery_cg
+      desc: '''
+            Dynamic app recovery coverage, separate from mode, framing, and response-stream bins. Cover recoverable
+            error classes and follow-up outcomes, repeated failures, software acknowledgement
+            delay, and fatal lockout/recovery.
+
+            Coverage requirements:
+            - recoverable_error_class: configuration error; invalid key; entropy not ready;
+              application error; recoverable bus/protocol error.
+            - post_error_operation_result: valid follow-up accepted; follow-up digest matches
+              reference; follow-up rejected; digest mismatch; timeout.
+            - consecutive_failure_count: 1 failure; 2 consecutive failures; 3 or more consecutive.
+            - software_ack_delay: no delay; short delay; maximum supported delay; acknowledgement
+              timeout.
+            - fatal_lockout_state: not escalated; escalated and blocked until reset; reset clears
+              lockout; operation succeeds after reset.
+            - fatal_escalation: absent; asserted; remains locked out until reset.
+            - dynamic_app_id: OTBN dynamic interface; static app IDs as controls where useful.
+            - key_source_and_validity: software key; sideload valid; sideload invalidated.
+            - key_validity: valid; invalidated; not applicable.
+            - error_response: no error response; expected error response; missing/unexpected error.
+            - injection_state: no injection; injection during active session.
+            - dynamic_session: no session; config; message; processing; response.
+            - fault_or_escalation_session_state: no session; config; message; processing; response.
+            - terminal_outcome: recoverable completion; fatal lockout; reset recovery.
+            - recovery_result: recovered; recovery failed; timed out.
+            - request_before_reset: accepted; blocked during fatal lockout.
+            - request_after_reset: accepted after reset; still blocked after reset.
+
+            Crosses:
+            - error_class_x_failure_count_x_followup_result;
+              fatal_escalation_x_request_before_reset_x_request_after_reset;
+              app_id_x_key_validity_x_error_response_x_recovery;
+              injection_state_x_dynamic_session_x_terminal_outcome.
+            - Do not exclude bins from error_class_x_failure_count_x_followup_result.
+            - Do not exclude bins from fatal_escalation_x_request_before_reset_x_request_after_reset;
+              keep requests observed during fatal lockout and blocked requests after completed reset
+              visible so the lockout/recovery checker can fail them.
+            '''
+    }
+    {
+      name: dynamic_app_reset_coverage_cg
+      desc: '''
+            Dynamic app reset coverage, separate from regular session and response-stream bins. Track the response
+            state when reset occurs, reset phase, pending response kind, stale-response behavior,
+            and the result of the next session.
+
+            Coverage requirements:
+            - reset_response_phase: no response pending; valid stalled; pending response; after
+              accepted response.
+            - pending_response_kind: none; digest; error; finish; phase-inconsistent response.
+            - dynamic_reset_phase: configuration; absorption; processing; squeezing; termination;
+              error recovery.
+            - reset_recovery_result: no stale response; stale response observed; next valid session
+              passes; next valid session fails.
+
+            Cross:
+            - reset_phase_x_pending_response_kind_x_recovery_result.
+            - Do not exclude bins from reset_phase_x_pending_response_kind_x_recovery_result; keep
+              stale or phase-inconsistent pending responses visible to the reset checker.
+            '''
+    }
+    {
+      name: state_write_ownership_cg
+      desc: '''
+            STATE_WRITE ownership and claim-lifecycle coverage. Keep claim state, engine phase,
+            block ownership, commands, and app-collision outcomes together.
+
+            Coverage requirements:
+            - state_write_claim: unclaimed; claimed; claim denied.
+            - engine_idle: idle; absorb; squeeze/processing.
+            - claim_lifecycle_event: claim accepted; CONTINUE release; DONE release; reset release.
+            - claim_phase: claim inactive; claimed; released.
+            - block_owner: software; application interface; no active owner.
+            - command_outcome: STATE_WRITE accepted; rejected while busy; rejected by sideload
+              restriction; CONTINUE; DONE.
+            - state_model_phase: claim inactive; claim active and idle; resumed absorb; done/cleared;
+              reset.
+            - claim_attempt: STATE_WRITE request under each owner/engine phase.
+            - claim_result: accepted; denied while busy; denied during app ownership.
+            - app_id: dynamic OTBN; each static application interface.
+            - collision_timing: same-cycle; adjacent-cycle; non-overlapping.
+            - state_share: share0; share1.
+
+            Crosses:
+            - claim_x_engine_idle_x_share; claim_phase_x_command;
+              block_owner_x_claim_attempt_x_outcome;
+              app_id_x_collision_timing_x_claim_result.
+            '''
+    }
+    {
+      name: state_address_decode_cg
+      desc: '''
+            STATE aperture address-decode and share-selection coverage. Separate valid word,
+            boundary, and invalid-selector behavior from ownership and data-pattern coverage.
+
+            Coverage requirements:
+            - state_share: share0; share1.
+            - claim_phase: claim inactive; claimed; released.
+            - address_boundary: first/last valid selector; gap boundary; aperture end.
+            - valid_word_index_class: first word; middle word; last valid word; other valid word.
+            - word_index: first; middle; last valid; other valid word.
+            - invalid_address_class: share0/share1 gap; share1 tail; boundary-adjacent invalid.
+            - address_validity: valid; invalid gap; invalid tail; adjacent boundary.
+            - mask_class: full word; single-byte partial; multi-byte partial; zero mask if legal.
+            - access_type: read; full-word write; partial-mask write.
+            - address_result: valid selector accepted; invalid selector returns zero; invalid write
+              dropped; alias/wrap detected.
+            - state_write_claim: unclaimed; claimed; claim denied.
+            - masking_mode: masking enabled; masking disabled.
+            - byte_mask_class: full word; single-byte partial; multi-byte partial; zero mask if
+              legal.
+
+            Crosses:
+            - share_x_address_boundary;
+              address_class_x_access_type_x_result;
+              masking_x_claim_x_share_x_address_validity_x_mask_class.
+            '''
+    }
+    {
+      name: state_write_data_bus_cg
+      desc: '''
+            STATE write-data, bus-attribute, endianness, and sequence coverage. Keep write patterns
+            and write acceptance outcomes with their byte-mask and share crosses.
+
+            Coverage requirements:
+            - write_data_pattern: all zero; all one; alternating; walking one; walking zero;
+              address-derived; distinct-share pattern.
+            - byte_mask_class: full word; single-byte partial; multi-byte partial; zero mask if
+              legal.
+            - write_acceptance_outcome: accepted; acknowledged-but-dropped; TL attribute error;
+              invalid address.
+            - tl_error: no TL error; adapter partial-write error.
+            - state_endianness: little-endian; byte-swapped/big-endian.
+            - masking_mode: masking enabled; masking disabled.
+            - valid_word_index_class: first word; middle word; last valid word; other valid word.
+            - write_sequence_kind: single write; repeated overwrite; full state sweep.
+            - state_share: share0; share1.
+            - state_write_claim: unclaimed; claimed; claim denied.
+            - claim_phase: claim inactive; claim active; released.
+            - configuration_class: legal supported configuration; unsupported/invalid configuration.
+            - required_feature_bins: each build configuration and required feature bin.
+
+            Crosses:
+            - share_x_word_index_x_data_pattern; claim_x_byte_mask_x_tl_error;
+              byte_mask_x_write_outcome; endianness_x_share_x_pattern;
+              write_sequence_x_claim_phase_x_share; masking_x_endianness_x_share;
+              configuration_x_required_feature_bins.
+            '''
+    }
+    {
+      name: state_read_semantics_cg
+      desc: '''
+            STATE read-data and masking-semantics coverage, isolated from STATE write behavior.
+
+            Coverage requirements:
+            - read_share_result: share0 data; share1 data; share1 forced zero when unmasked;
+              invalid/gap behavior.
+            - state_share: share0; share1.
+            - masking_mode: masking enabled; masking disabled.
+
+            Cross:
+            - masking_x_share_x_read_result.
+            '''
+    }
+    {
+      name: state_write_error_recovery_cg
+      desc: '''
+            STATE_WRITE error-handling and recovery coverage, separated from ownership, address,
+            and data-path coverage. Cover expected KMAC command/security errors and TL adapter
+            partial-write errors distinctly.
+
+            Coverage requirements:
+            - configuration_class: legal configuration; unsupported/invalid configuration.
+            - command_outcome: STATE_WRITE accepted; rejected while busy; rejected by sideload
+              restriction; CONTINUE; DONE.
+            - error_outcome: none; expected command error; TL partial-write error; sideload
+              restriction; entropy-not-ready; app collision; fatal escalation.
+            - state_write_claim: unclaimed; claimed; claim denied.
+            - state_share: share0; share1.
+            - lc_escalation_phase: before claim; during claimed write; coincident with write; after
+              release.
+            - lc_escalation_alert: no alert; expected alert; missing/unexpected alert.
+
+            Crosses:
+            - command_x_configuration_x_error_outcome;
+              lc_escalation_phase_x_claim_x_share_x_alert.
+            '''
+    }
+    {
+      name: state_write_reset_recovery_cg
+      desc: '''
+            STATE_WRITE reset-recovery coverage, separated from ownership and write-data coverage.
+            Sample resets before/during/after claimed share writes and check recovery of the
+            share-write state.
+
+            Coverage requirements:
+            - reset_phase: before claim; after claim; between share writes; after final write; after
+              release.
+            - share_write_phase: no share written; share0 partially/fully written; share1
+              partially/fully written; all intended shares written.
+            - recovery_result: claim/write-enable cleared; stale claim/write-enable remains.
+
+            Cross:
+            - reset_phase_x_share_write_phase_x_recovery.
+            '''
+    }
+    {
+      name: save_restore_mode_alignment_cg
+      desc: '''
+            Save/restore operation mode, rate, checkpoint position, and STOP-alignment coverage.
+            Error/recovery and reset/recovery coverage remain in their dedicated groups.
+
+            Coverage requirements:
+            - hash_mode: SHA3; SHAKE; cSHAKE; KMAC.
+            - keccak_strength: L128; L224; L256; L384; L512 as supported by mode.
+            - keccak_rate_bytes: 72; 104; 136; 144; 168.
+            - save_position_blocks: after 1 full block; after 2 blocks; repeated save after later
+              blocks.
+            - stop_alignment: aligned; non-aligned.
+            - post_restore_tail_length: 0; 1; rate-1; representative partial tail.
+
+            Crosses:
+            - hash_mode_x_strength_x_rate; hash_mode_x_strength_x_save_position;
+              mode_x_rate_x_alignment; mode_x_tail_length; save_alignment_x_tail_length.
+            '''
+    }
+    {
+      name: save_restore_context_switch_cg
+      desc: '''
+            Save/restore command sequencing, ownership switching, and repeated/interleaved
+            checkpoint coverage.
+
+            Coverage requirements:
+            - context_switch_command: STOP; STATE_WRITE; CONTINUE; DONE.
+            - context_phase: absorbing; stopped; state-write claimed; continued; done/released.
+            - interleaved_context_count: 1 context; 2 contexts.
+            - save_restore_iteration_count: single save; repeated saves (2+).
+            - state_write_claim_result: claim accepted; rejected while busy; rejected during app
+              ownership.
+            - application_activity: no app active; app active; same-cycle app/STATE_WRITE collision.
+            - stream_id: first or second interleaved message stream.
+            - save_order: first or later checkpoint saved.
+            - restore_order: matching checkpoint restored; out-of-order restore.
+            - checkpoint_age: newest; older retained checkpoint.
+
+            Crosses:
+            - command_transition_sequence;
+              save_order_x_restore_order_x_stream_id;
+              save_count_x_checkpoint_age;
+              app_activity_x_state_write_claim_result.
+            '''
+    }
+    {
+      name: save_restore_state_integrity_cg
+      desc: '''
+            Save/restore share data, readback, metadata, and digest-integrity coverage. Preserve
+            diagnostic mismatches and sample required feature bins in each build configuration.
+
+            Coverage requirements:
+            - state_share: share0; share1.
+            - state_word_boundary: first; middle; last valid word.
+            - state_share_readback: share0 preserved; share1 preserved; share1 zero when unmasked.
+            - masking_mode: enabled; disabled.
+            - context_data_pattern: distinct share patterns; all-zero/all-one; asymmetric/walking
+              patterns.
+            - digest_compare_result: match uninterrupted reference; mismatch diagnostic.
+            - access_type: claimed-state read; save read; restore write.
+            - metadata_field: saved/restored metadata field.
+            - metadata_roundtrip_result: preserved; mismatch.
+            - modified_share_region: first; middle; last word region.
+            - modified_share_digest_effect: expected diagnostic mismatch; no effect detected.
+            - build_config: each supported masked/unmasked build.
+            - required_bins: each required feature bin for the build.
+
+            Crosses:
+            - masking_x_share_x_access; share_x_word_boundary_x_pattern;
+              metadata_field_x_roundtrip_result;
+              modified_share_x_word_region_x_digest_effect;
+              build_config_x_required_bins. Do not exclude bins; sample every build configuration
+              and required feature bin.
+            '''
+    }
+    {
+      name: save_restore_error_recovery_cg
+      desc: '''
+            Save/restore error-handling and recovery coverage, separated from normal configuration,
+            alignment, and context-switch coverage. Cover app-collision, entropy-readiness,
+            sideload, and configuration-restore errors together with their recovery outcomes.
+
+            Coverage requirements:
+            - save_restore_error: none; ErrSwStopNotBlockAligned; ErrSwIssuedCmdInAppActive;
+              ErrSwHashingWithoutEntropyReady; sideload restriction error.
+            - entropy_ready_at_continue: ready; not ready.
+            - key_source: software key; sideload key.
+            - sideload_context_switch_attempt: sideload disabled; sideload enabled with command
+              rejected.
+            - configuration_restored: original mode/strength/endianness restored; mismatch/negative
+              test.
+            - masking_mode: enabled; disabled.
+            - continue_outcome: CONTINUE accepted; blocked by entropy-not-ready; blocked by other
+              error.
+            - context_switch_command: STOP; STATE_WRITE; CONTINUE; DONE.
+            - context_command_outcome: accepted; rejected by sideload restriction; rejected by
+              another save/restore error.
+            - config_changed: configuration changed after save; original configuration restored;
+              restore mismatch.
+            - sideload: disabled; enabled.
+
+            Crosses:
+            - masking_x_entropy_ready_x_continue_outcome;
+              sideload_x_context_command_x_outcome;
+              config_changed_x_config_restored_x_digest_result.
+            '''
+    }
+    {
+      name: save_restore_reset_recovery_cg
+      desc: '''
+            Save/restore reset-recovery coverage, separated from normal configuration and
+            context-switch coverage. Cover reset points in the claim/share-loading/CONTINUE
+            lifecycle and whether a fresh operation succeeds after reset.
+
+            Coverage requirements:
+            - reset_phase: before claim; after claim; between share writes; after state load; before
+              CONTINUE.
+            - share_write_phase: no share written; share0 partially/fully written; share1
+              partially/fully written; all intended shares loaded.
+            - fresh_operation_result: no stale response; fresh operation passes; fresh operation
+              fails.
+
+            Cross:
+            - reset_phase_x_share_write_phase_x_fresh_operation_result.
             '''
     }
   ]
