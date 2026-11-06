@@ -17,6 +17,11 @@ Parameter          | Default        | Top Earlgrey   | Description
 `AlertAsyncOn`     | `1'b1`         | `1'b1`         | Adds synchronizers to the alert sender for an alert handler on another clock, set by topgen.
 `AlertSkewCycles`  | `1`            | `1`            | Cycles of skew tolerated on the differential alert signals, set by topgen.
 
+## Supported Parameter Sets
+
+The design is signed off with the parameters Earl Grey instantiates, listed in the Top Earlgrey column above.
+The address parameters follow the Earl Grey memory map and can change with it.
+
 ## Signals
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/ip/cheriot_mem_sys/data/cheriot_mem_sys.hjson -->
