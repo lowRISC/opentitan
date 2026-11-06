@@ -463,19 +463,30 @@ fn test_rsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
     }
 
     if opts.run_keygen {
-        for &(security_level, padding, hash_alg) in KEYGEN_CASES {
+        // Ensure that at least one keygen test is run
+        let stride = min(skip_stride, KEYGEN_CASES.len());
+        let offset = start_offset % stride;
+        log::info!("Tests options: skip_stride: {}, offset: {}", stride, offset);
+
+        for (i, &(security_level, padding, hash_alg)) in KEYGEN_CASES.iter().enumerate() {
+            if (i % stride) != offset {
+                // Skip test
+                continue;
+            }
+
             log::info!(
                 "RSA keygen: {}-bit {} {}",
                 security_level,
                 padding,
                 hash_alg
             );
+            // RSA key generation is slow on-device, so scale the receive timeout.
             run_rsa_keygen_testcase(
                 security_level,
                 padding,
                 hash_alg,
                 &spi_console_device,
-                opts.timeout,
+                opts.timeout * 25,
             )?;
         }
     }

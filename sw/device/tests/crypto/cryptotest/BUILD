@@ -1134,6 +1134,7 @@ test_suite(
         ":mldsa_kat",
         ":mlkem_kat",
         ":rsa_kat",
+        ":rsa_keygen_kat",
         ":rsa_random_kat",
         ":sha256_kat",
         ":sha384_kat",
