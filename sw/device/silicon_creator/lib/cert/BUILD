@@ -203,8 +203,27 @@ cc_library(
 )
 
 cc_library(
-    name = "dice_cert_build",
-    srcs = ["dice_cert_build.c"],
+    name = "dice_uds_cert_build",
+    srcs = ["dice_uds_cert_build.c"],
+    deps = [
+        ":cert",
+        ":dice_api",
+        ":template",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib/cert:uds_template_library",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/lib/drivers:lifecycle",
+        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
+    ],
+    # We don't want a SKU to silently end up with e.g. `dice_cert_build` and its
+    # own link builder, so always link to ensure a link error in this case.
+    alwayslink = True,
+)
+
+cc_library(
+    name = "dice_cdi_cert_build",
+    srcs = ["dice_cdi_cert_build.c"],
     deps = [
         ":cert",
         ":dice_api",
@@ -215,11 +234,21 @@ cc_library(
         "//sw/device/silicon_creator/lib/base:util",
         "//sw/device/silicon_creator/lib/cert:cdi_0_template_library",
         "//sw/device/silicon_creator/lib/cert:cdi_1_template_library",
-        "//sw/device/silicon_creator/lib/cert:uds_template_library",
         "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
         "//sw/device/silicon_creator/lib/ownership:datatypes",
         "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
+    ],
+)
+
+# Deprecated library since downstream SKUs may refer to this target.
+# Flag that these should switch to using the individual cert libraries if they
+# just want to retain the default.
+cc_library(
+    name = "dice_cert_build",
+    deprecation = "Use :dice_cdi_cert_build and :dice_uds_cert_build instead.",
+    deps = [
+        ":dice_cdi_cert_build",
+        ":dice_uds_cert_build",
     ],
 )
 
