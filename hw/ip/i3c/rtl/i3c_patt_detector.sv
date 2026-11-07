@@ -28,11 +28,11 @@ module i3c_patt_detector (
   // The HDR Exit pattern marks the departure from HDR mode and a return to SDR operation.
   // It consists of four falling edges on SDA whilst SCL is held low throughout, followed by
   // a rising edge on SCL. HDR Exit is followed by the standard SDR STOP signaling.
-  //     _____   _   _   _   _      __
-  // SDA      \_/ \_/ \_/ \_/ \____/
-  //     __                       ____   HDR Exit signaling, followed by SDR STOP.
-  // SCL   \_____________________/
-  //              1   2   3   4    P
+  //     ______    __    __    __       ___
+  // SDA ___/  \__/  \__/  \__/  \_____/
+  //     _                           ______  HDR Exit signaling, followed by SDR STOP.
+  // SCL  \_________________________/
+  //           1     2     3     4     P
   //
   // The HDR Exit pattern must be detected by all I3C devices at all times whilst the Target is
   // enabled, whether or not the HDR mode is supported, because it is used to recover from errors.
@@ -44,12 +44,12 @@ module i3c_patt_detector (
   // HDR modes also employ HDR Restart signaling, which is a subset of the HDR Exit pattern,
   // consisting of two SDA falling edges with SCL held low throughout, validated by the rising
   // edge on SCL.
-  //                     Possible Restart.
-  //     _____   _   _   |______
-  // SDA      \_/ \_/ \__/
-  //     __                 ____  HDR Restart signaling.
-  // SCL   \_______________/
-  //              1   2   SCL confirms
+  //                  Possible Restart.
+  //     ______    __   |_______
+  // SDA ___/  \__/  \__/
+  //     _                 _____  HDR Restart signaling.
+  // SCL  \_______________/
+  //           1     2    SCL confirms
   //
   // The HDR Restart pattern serves essentially the same purpose as the Sr (Repeated Start) in
   // SDR mode; it indicates that the Controller is continuing a command and that the bus is not
