@@ -8,7 +8,12 @@ load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
 def _certificate_codegen_impl(ctx):
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
 
-    basename = paths.replace_extension(ctx.file.template.basename, "")
+    # Base name defaults to the template base name unless overridden.
+    if ctx.attr.out_basename:
+        # To avoid conflicts in generated targets when renaming, use a subdir.
+        basename = paths.join(ctx.label.name, ctx.attr.out_basename)
+    else:
+        basename = paths.replace_extension(ctx.file.template.basename, "")
 
     # Output files before formatting.
     pre_c = ctx.actions.declare_file("{}.pre.c".format(basename))
@@ -85,6 +90,14 @@ certificate_codegen = rule(
             values = ["cwt", "x509"],
             doc = "certificate format of the template",
         ),
+        "out_basename": attr.string(
+            doc = """
+                The base name to use for all generated files, which must match the certificate's
+                "name" field inside the template. If a name is not provided, this defaults to
+                the given `template`'s base name. If it is, generated files are placed in a
+                subdir with the target's name to avoid conflicts.
+            """,
+        ),
     },
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
@@ -97,11 +110,12 @@ certificate_codegen = rule(
 # - <name>_hdrs: filegroup corresponding to the `headers` output group of <name>
 # - <name>_library: cc_library that compiles the sources, exports the headers and links to the asn1
 #   library.
-def certificate_template(name, template, cert_format = "x509"):
+def certificate_template(name, template, cert_format = "x509", out_basename = None):
     certificate_codegen(
         name = name,
         template = template,
         cert_format = cert_format,
+        out_basename = out_basename,
     )
 
     native.filegroup(
@@ -131,6 +145,13 @@ def certificate_template(name, template, cert_format = "x509"):
             "@lowrisc_opentitan//sw/device/silicon_creator/lib/cert:cbor",
         ]
 
+    strip_include_prefix = None
+    include_prefix = None
+    if out_basename:
+        # `certificate_codegen` puts generated files in a "name" subdir.
+        strip_include_prefix = "/{}/{}".format(native.package_name(), name)
+        include_prefix = native.package_name()
+
     native.cc_library(
         name = "{}_library".format(name),
         srcs = [":{}_srcs".format(name)],
@@ -138,6 +159,8 @@ def certificate_template(name, template, cert_format = "x509"):
         # Include the codegen rule in data to propagate the instrumented files.
         data = [":{}".format(name)],
         deps = runtime_deps,
+        strip_include_prefix = strip_include_prefix,
+        include_prefix = include_prefix,
     )
 
     native.cc_test(
