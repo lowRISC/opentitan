@@ -15,12 +15,18 @@
  * - A parameter `MemInitFile` with a file path of a VMEM file to be loaded into
  *   the memory if not empty.
  *
- * Note this works with memories up to a maximum width of 312 bits. Should this maximum width be
+ * Note this works with memories up to a maximum width of 312 bits (wider memories compile, but
+ * `simutil_set_mem` and `simutil_get_mem` return 0 for them). Should this maximum width be
  * increased all of the `simutil_set_mem` and `simutil_get_mem` call sites must be found (e.g. using
  * git grep) and adjusted appropriately.
  */
 
 `ifndef SYNTHESIS
+  // Must match SV_MEM_WIDTH_BITS in hw/dv/verilator/cpp/mem_area.h.
+  localparam int SimutilMaxWidth = 312;
+  // Capped so the part-selects below stay in range for wider memories.
+  localparam int SimutilCopyWidth = Width > SimutilMaxWidth ? SimutilMaxWidth : Width;
+
   // Task for loading 'mem' with SystemVerilog system task $readmemh()
   export "DPI-C" task simutil_memload;
 
@@ -33,22 +39,22 @@
   // Returns 1 (true) for success, 0 (false) for errors.
   export "DPI-C" function simutil_set_mem;
 
-  function int simutil_set_mem(input int index, input bit [311:0] val);
+  function int simutil_set_mem(input int index, input bit [SimutilMaxWidth-1:0] val);
     int valid;
-    valid = Width > 312 || index >= Depth ? 0 : 1;
-    if (valid == 1) mem[index] = val[Width-1:0];
+    valid = Width > SimutilMaxWidth || index >= Depth ? 0 : 1;
+    if (valid == 1) mem[index] = Width'(val[SimutilCopyWidth-1:0]);
     return valid;
   endfunction
 
   // Function for getting a specific element in |mem|
   export "DPI-C" function simutil_get_mem;
 
-  function int simutil_get_mem(input int index, output bit [311:0] val);
+  function int simutil_get_mem(input int index, output bit [SimutilMaxWidth-1:0] val);
     int valid;
-    valid = Width > 312 || index >= Depth ? 0 : 1;
+    valid = Width > SimutilMaxWidth || index >= Depth ? 0 : 1;
     if (valid == 1) begin
       val = 0;
-      val[Width-1:0] = mem[index];
+      val[SimutilCopyWidth-1:0] = mem[index][SimutilCopyWidth-1:0];
     end
     return valid;
   endfunction
