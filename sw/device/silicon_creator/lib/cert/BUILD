@@ -182,12 +182,12 @@ cc_library(
 )
 
 cc_library(
-    name = "dice",
+    name = "dice_cdi",
     srcs = ["dice.c"],
     deps = [
         ":cert",
         ":dice_api",
-        ":dice_cert_build",
+        ":dice_cdi_cert_build",
         ":dice_storage",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:status",
@@ -199,6 +199,18 @@ cc_library(
         "//sw/device/silicon_creator/lib/ownership:ownership_key",
         "//sw/device/silicon_creator/manuf/base:perso_tlv_data",
         "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
+    ],
+)
+
+# Deprecated library since downstream SKUs may refer to this target.
+# This was just providing CDIx attestation functions, but targets
+# may have been using it to pull in UDS certificate builds as well.
+cc_library(
+    name = "dice",
+    deprecation = "Use :dice_cdi (and :dice_uds_cert_build if you need it) instead.",
+    deps = [
+        ":dice_cdi",
+        ":dice_uds_cert_build",
     ],
 )
 
