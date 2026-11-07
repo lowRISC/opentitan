@@ -10,9 +10,6 @@ class dv_base_agent_cfg extends uvm_object;
   // agent and only uses a monitor.
   bit is_active = 1'b1;
 
-  // True if the agent should enable a monitor (perhaps for a scoreboard)
-  bit en_monitor = 1'b1;
-
   // True if the agent should collect functional coverage
   bit en_cov = 1'b1;
 
@@ -37,7 +34,6 @@ class dv_base_agent_cfg extends uvm_object;
 
   `uvm_object_utils_begin(dv_base_agent_cfg)
     `uvm_field_int (is_active,            UVM_DEFAULT)
-    `uvm_field_int (en_monitor,           UVM_DEFAULT)
     `uvm_field_int (en_cov,               UVM_DEFAULT)
     `uvm_field_enum(if_mode_e, if_mode,   UVM_DEFAULT)
     `uvm_field_int (has_driver,           UVM_DEFAULT)
