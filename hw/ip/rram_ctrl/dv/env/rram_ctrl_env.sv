@@ -42,6 +42,29 @@ function void rram_ctrl_env::build_phase(uvm_phase phase);
     `uvm_fatal(`gfn, "Failed to get RdFifoDepth from uvm_config_db")
   end
 
+  if (!uvm_config_db#(misc_vif_t)::get(this, "", "misc_vif", cfg.misc_vif)) begin
+    `uvm_fatal(`gfn, "failed to get misc_vif from uvm_config_db")
+  end
+  cfg.mp_model.misc_vif = cfg.misc_vif;
+
+  if (!uvm_config_db#(otp_macro_vif_t)::get(this, "", "otp_macro_vif", cfg.otp_macro_vif)) begin
+    `uvm_fatal(`gfn, "failed to get otp_macro_vif from uvm_config_db")
+  end
+
+  // Retrieve the backdoor utilities of the RRAM arrays
+  if (!uvm_config_db#(rram_ctrl_bkdr_util)::get(this, "", "data_bkdr_util",
+                                                cfg.mem_bkdr_util_h[RramPartData])) begin
+    `uvm_fatal(`gfn, "failed to get data_bkdr_util from uvm_config_db")
+  end
+  if (!uvm_config_db#(rram_ctrl_bkdr_util)::get(this, "", "info_bkdr_util",
+                                                cfg.mem_bkdr_util_h[RramPartInfo])) begin
+    `uvm_fatal(`gfn, "failed to get info_bkdr_util from uvm_config_db")
+  end
+  if (!uvm_config_db#(rram_ctrl_otp_bkdr_util)::get(this, "", "otp_bkdr_util",
+                                                    cfg.otp_bkdr_util_h)) begin
+    `uvm_fatal(`gfn, "failed to get otp_bkdr_util from uvm_config_db")
+  end
+
   m_otp_addr_key_driver = rram_ctrl_otp_key_driver::type_id::create("m_otp_addr_key_driver", this);
   m_otp_addr_key_driver.phase_kind = RramCtrlOtpKeyAddr;
 
@@ -51,6 +74,10 @@ endfunction : build_phase
 
 function void rram_ctrl_env::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
+  // The keys are randomized in the key drivers' build_phase. Backdoor scrambling needs them too.
+  cfg.otp_addr_key = m_otp_addr_key_driver.key;
+  cfg.otp_data_key = m_otp_data_key_driver.key;
+
   // See rram_ctrl_scoreboard.sv: the predictor itself lives there, since only the scoreboard has
   // direct cfg/ral access, but only the env has access to the TL agents to connect it up.
   if (cfg.en_scb) begin

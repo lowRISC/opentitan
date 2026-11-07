@@ -16,7 +16,7 @@ typedef enum bit {
 //
 // Randomizes a single key/rand_key pair once and answers every request with it for the life of
 // the test, matching real key-derivation semantics (the key doesn't change without
-// re-provisioning).
+// re-provisioning). rram_ctrl_env copies the key into the env cfg for backdoor scrambling.
 class rram_ctrl_otp_key_driver extends uvm_component;
   `uvm_component_utils(rram_ctrl_otp_key_driver)
 
@@ -58,11 +58,13 @@ function void rram_ctrl_otp_key_driver::build_phase(uvm_phase phase);
   // instead of silently truncating/zero-extending.
   `DV_CHECK_EQ_FATAL(KeyWidth, otp_ctrl_pkg::NvmKeyWidth,
                      "rram_ctrl_pkg::KeyWidth doesn't match otp_ctrl_pkg::NvmKeyWidth")
+
+  // Randomized here rather than in the run phase, so that the environment can share the keys
+  // with the backdoor scrambling functions before any sequence starts.
+  `DV_CHECK_RANDOMIZE_FATAL(this)
 endfunction : build_phase
 
 task rram_ctrl_otp_key_driver::run_phase(uvm_phase phase);
-  `DV_CHECK_RANDOMIZE_FATAL(this)
-
   forever begin
     // Idle output state, driven both at startup and on every reset.
     vif.host_cb.rsp.addr_ack   <= 1'b0;
@@ -73,9 +75,11 @@ task rram_ctrl_otp_key_driver::run_phase(uvm_phase phase);
 
     wait (vif.rst_n);
 
-    // Race handling one request against reset so it restarts instead of driving stale state.
+    // Race handling requests against reset so it restarts instead of driving stale state.
+    // The key must stay in place after the ack, since the DUT only samples it once the ack has
+    // crossed into its own clock domain. So only return to the idle state on reset.
     fork
-      provide_scrambling_keys();
+      forever provide_scrambling_keys();
       begin : reset_kill
         wait (!vif.rst_n);
       end

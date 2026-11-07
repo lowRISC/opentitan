@@ -16,6 +16,13 @@ package rram_ctrl_env_pkg;
   import rram_ctrl_core_ral_pkg::*;
   import rram_ctrl_host_ral_pkg::*;
   import rram_macro_prim_ral_pkg::*;
+  import rram_ctrl_bkdr_util_pkg::*;
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::MuBi4True;
+  import prim_mubi_pkg::MuBi4False;
+  import lc_ctrl_pkg::lc_tx_t;
+  import lc_ctrl_pkg::On;
+  import lc_ctrl_pkg::Off;
 
   // Macro includes
   `include "uvm_macros.svh"
@@ -36,7 +43,26 @@ package rram_ctrl_env_pkg;
   parameter uint OTP_CLK_FREQ_MHZ = 24;
 
   // Types
-  typedef virtual rram_ctrl_otp_key_if otp_key_vif_t;
+  typedef virtual rram_ctrl_otp_key_if   otp_key_vif_t;
+  typedef virtual rram_ctrl_misc_io_if   misc_vif_t;
+  typedef virtual rram_ctrl_otp_macro_if otp_macro_vif_t;
+
+  // A full RRAM word.
+  typedef bit [rram_ctrl_pkg::DataWidth-1:0] rram_word_t;
+  // Byte address on the host and controller interfaces.
+  typedef bit [BusAddrByteW-1:0] addr_t;
+  // A bus data word.
+  typedef logic [TL_DW-1:0] data_t;
+  // Queue of bus data words.
+  typedef data_t data_q_t[$];
+
+  // A controller interface operation.
+  typedef struct packed {
+    rram_part_e                 partition; // data or info partition
+    rram_op_e                   op;        // read, write or rewrite
+    logic [CtrlMaxWordsW-1:0]   num_words; // number of bus words to access, minus one
+    addr_t                      addr;      // byte address of the first word
+  } rram_ctrl_op_t;
 
   typedef enum bit [1:0] {
     AddrRead  = 0,
@@ -61,6 +87,7 @@ package rram_ctrl_env_pkg;
   // Functions
 
   // Package sources
+  `include "rram_ctrl_mp_model.sv"
   `include "rram_ctrl_env_cfg.sv"
   `include "rram_ctrl_env_cov.sv"
   `include "rram_ctrl_virtual_sequencer.sv"
