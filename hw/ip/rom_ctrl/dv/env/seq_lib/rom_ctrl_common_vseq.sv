@@ -83,9 +83,9 @@ endfunction
 // request fifo.
 function bit rom_ctrl_common_vseq::is_ptr_in_adapters_fifo(string path, output bit in_req_fifo);
   string adapter_path = {"tb.dut.u_tl_adapter_rom"};
-  string fifo_paths[] = '{{adapter_path, ".u_reqfifo"},
-                          {adapter_path, ".u_sramreqfifo"},
-                          {adapter_path, ".u_rspfifo"}};
+  string fifo_paths[] = '{{adapter_path, ".gen_no_sec_u_reqfifo.u_reqfifo"},
+                          {adapter_path, ".gen_no_sec_u_sramreqfifo.u_sramreqfifo"},
+                          {adapter_path, ".gen_no_sec_u_rspfifo.u_rspfifo"}};
 
   foreach (fifo_paths[i]) begin
     if (is_ptr_in_prim_counts_fifo(path, fifo_paths[i])) begin
@@ -110,13 +110,13 @@ function void rom_ctrl_common_vseq::sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_
     if (is_ptr_in_adapters_fifo(if_proxy.path, touching_req_fifo)) begin
       if (!enable) begin
         `uvm_info(`gfn, "Doing FI on a prim_fifo_sync. Disabling related assertions", UVM_HIGH)
-        $assertoff(0, "tb.dut.u_tl_adapter_rom.u_reqfifo");
-        $assertoff(0, "tb.dut.u_tl_adapter_rom.u_sramreqfifo");
-        $assertoff(0, "tb.dut.u_tl_adapter_rom.u_rspfifo");
+        $assertoff(0, "tb.dut.u_tl_adapter_rom.gen_no_sec_u_reqfifo.u_reqfifo");
+        $assertoff(0, "tb.dut.u_tl_adapter_rom.gen_no_sec_u_sramreqfifo.u_sramreqfifo");
+        $assertoff(0, "tb.dut.u_tl_adapter_rom.gen_no_sec_u_rspfifo.u_rspfifo");
       end else begin
-        $asserton(0, "tb.dut.u_tl_adapter_rom.u_reqfifo");
-        $asserton(0, "tb.dut.u_tl_adapter_rom.u_sramreqfifo");
-        $asserton(0, "tb.dut.u_tl_adapter_rom.u_rspfifo");
+        $asserton(0, "tb.dut.u_tl_adapter_rom.gen_no_sec_u_reqfifo.u_reqfifo");
+        $asserton(0, "tb.dut.u_tl_adapter_rom.gen_no_sec_u_sramreqfifo.u_sramreqfifo");
+        $asserton(0, "tb.dut.u_tl_adapter_rom.gen_no_sec_u_rspfifo.u_rspfifo");
       end
 
       // Disable assertions that we expect to fail if we corrupt a request FIFO. This causes us to
@@ -168,8 +168,8 @@ task rom_ctrl_common_vseq::dut_init(string reset_kind = "HARD");
   // will cause the fifos' error signals to get stuck at X). Write some arbitrary rubbish to the
   // contents.
   if (do_apply_reset) begin
-    splat_fifo_storage("tb.dut.u_tl_adapter_rom.u_reqfifo", 2);
-    splat_fifo_storage("tb.dut.u_tl_adapter_rom.u_sramreqfifo", 2);
+    splat_fifo_storage("tb.dut.u_tl_adapter_rom.gen_no_sec_u_reqfifo.u_reqfifo", 2);
+    splat_fifo_storage("tb.dut.u_tl_adapter_rom.gen_no_sec_u_sramreqfifo.u_sramreqfifo", 2);
   end
 endtask
 
