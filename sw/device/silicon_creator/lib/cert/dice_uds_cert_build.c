@@ -12,6 +12,12 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/sigverify/ecdsa_p256_key.h"
 
+// Check that the UDS template fits within our perso blob
+static_assert(kUdsMaxTbsSizeBytes <= kDiceUdsMaxTbsSizeBytes,
+              "UDS TBS template too large for personalization");
+static_assert(kUdsMaxCertSizeBytes <= kDiceUdsMaxCertSizeBytes,
+              "UDS cert template too large for personalization");
+
 // The `dice_*_cert_build` libraries are only used for x509 certificates
 // (both ECDSA and ML-DSA). CWT is handled separately in `dice_cwt.c`
 const dice_cert_format_t kDiceCertFormat = kDiceCertFormatX509TcbInfo;
