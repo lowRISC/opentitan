@@ -96,7 +96,36 @@ jobs:
           repository: ${{ inputs.repository }}
           ref: ${{ inputs.merge_sha }}
           path: ot-sku
+      - name: Build binary signature tests
+        id: build-signature-tests
+        continue-on-error: ${{ inputs.continue-on-error }}
+        run: |
+          cd opentitan
+          ./bazelisk.sh build \
+            --override_module=ot_provisioning_exts=${{ github.workspace }}/ot-sku \
+            @provisioning_exts//open/binaries/perso:signature_test \
+            @provisioning_exts//open/binaries/rom_ext:signature_test
+      - name: Check release binaries verify with current keys
+        id: signature-tests
+        if: steps.build-signature-tests.outcome == 'success'
+        # If the test failed, then `ot-sku` needs a new release (this is not a typical CI failure).
+        # Checking this first avoids trying to run more expensive FPGA tests, and makes it clearer
+        # why FPGA tests were skipped on `ot-sku` while waiting for a release.
+        continue-on-error: true
+        run: |
+          cd opentitan
+          ./bazelisk.sh test \
+            --override_module=ot_provisioning_exts=${{ github.workspace }}/ot-sku \
+            @provisioning_exts//open/binaries/perso:signature_test \
+            @provisioning_exts//open/binaries/rom_ext:signature_test
+      # CI will still show passes even if the releases are outdated, so loudly warn about this.
+      - name: Warn about out-of-date release binaries
+        if: steps.signature-tests.outcome == 'failure'
+        run: |
+          echo "::warning::The pinned release binaries do not verify with the current keys, meaning a new release is needed. Skipping FPGA tests."
+          echo "### Pinned binaries out of date, skipped FPGA tests" >> "$GITHUB_STEP_SUMMARY"
       - name: Execute tests
+        if: steps.signature-tests.outcome == 'success'
         continue-on-error: ${{ inputs.continue-on-error }}
         run: |
           cd opentitan
