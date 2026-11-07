@@ -975,8 +975,7 @@ module kmac_app
 
   // Check that dynamic app only states are never entered for a static app.
   `ASSERT(InvalidStateForStaticApp_A,
-          st inside {StErrorAwaitTermination} |-> (app_cfg.if_type == AppDynamic),
-          clk_i, rst_ni)
+          st inside {StErrorAwaitTermination} |-> (app_cfg.if_type == AppDynamic))
 
   //////////////
   // Datapath //

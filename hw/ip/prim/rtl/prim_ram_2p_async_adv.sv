@@ -173,10 +173,12 @@ module prim_ram_2p_async_adv import prim_ram_2p_pkg::*; #(
     `ASSERT_INIT(SecDecWidth_A, Width inside {32})
 
     // the wmask is constantly set to 1 in this case
-    `ASSERT(OnlyWordWritePossibleWithEccPortA_A, a_req_i |->
-        a_wmask_i == {Width{1'b1}}, clk_a_i, rst_a_ni)
-    `ASSERT(OnlyWordWritePossibleWithEccPortB_A, b_req_i |->
-        b_wmask_i == {Width{1'b1}}, clk_b_i, rst_b_ni)
+    `ASSERT(OnlyWordWritePossibleWithEccPortA_A,
+            a_req_i |-> a_wmask_i == {Width{1'b1}},
+            clk_a_i, !rst_a_ni)
+    `ASSERT(OnlyWordWritePossibleWithEccPortB_A,
+            b_req_i |-> b_wmask_i == {Width{1'b1}},
+            clk_b_i, !rst_b_ni)
 
     assign a_wmask_d = {TotalWidth{1'b1}};
     assign b_wmask_d = {TotalWidth{1'b1}};
