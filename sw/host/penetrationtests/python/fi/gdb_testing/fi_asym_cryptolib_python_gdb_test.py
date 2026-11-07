@@ -266,6 +266,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                     pc_count_dict, MAX_SKIPS_PER_LOOP, args.num_skips
                 ).items():
                     for i_count in occ_list:
+                        sign_output = [None, None]
                         # Search for collisions in outputs between the sign instances
                         for i in range(2):
                             print("-" * 80)
