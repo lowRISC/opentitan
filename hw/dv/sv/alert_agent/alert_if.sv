@@ -22,7 +22,7 @@ interface alert_if(input clk, input rst_n);
   prim_alert_pkg::alert_rx_t alert_rx_int; // internal alert_rx
 
   wire                    async_clk;
-  bit                     is_async, is_active;
+  bit                     is_async;
   dv_utils_pkg::if_mode_e if_mode;
   clk_rst_if              clk_rst_async_if(.clk(async_clk), .rst_n(rst_n));
 
@@ -111,8 +111,8 @@ interface alert_if(input clk, input rst_n);
     input alert_rx_final;
   endclocking
 
-  assign alert_tx = (if_mode == dv_utils_pkg::Host && is_active)   ? alert_tx_int : 'z;
-  assign alert_rx = (if_mode == dv_utils_pkg::Device && is_active) ? alert_rx_int : 'z;
+  assign alert_tx = (if_mode == dv_utils_pkg::Host)   ? alert_tx_int : 'z;
+  assign alert_rx = (if_mode == dv_utils_pkg::Device) ? alert_rx_int : 'z;
 
   task automatic wait_ack_complete();
     while (alert_tx_final.alert_p === 1'b1) @(monitor_cb);

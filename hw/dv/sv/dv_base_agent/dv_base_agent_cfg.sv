@@ -6,10 +6,6 @@
 
 class dv_base_agent_cfg extends uvm_object;
 
-  // True if this is an active agent, so has a driver and sequencer. If false, this is a passive
-  // agent and only uses a monitor.
-  bit is_active = 1'b1;
-
   // True if the agent should collect functional coverage
   bit en_cov = 1'b1;
 
@@ -33,7 +29,6 @@ class dv_base_agent_cfg extends uvm_object;
   bit in_reset;
 
   `uvm_object_utils_begin(dv_base_agent_cfg)
-    `uvm_field_int (is_active,            UVM_DEFAULT)
     `uvm_field_int (en_cov,               UVM_DEFAULT)
     `uvm_field_enum(if_mode_e, if_mode,   UVM_DEFAULT)
     `uvm_field_int (has_driver,           UVM_DEFAULT)
@@ -42,8 +37,16 @@ class dv_base_agent_cfg extends uvm_object;
   `uvm_object_utils_end
 
   extern function new (string name="");
+
+  // Return whether this agent is active (with a driver and sequencer). This is computed from
+  // if_mode and is UVM_ACTIVE iff it is Host or Device.
+  extern function uvm_active_passive_enum get_is_active();
 endclass
 
 function dv_base_agent_cfg::new (string name="");
   super.new(name);
+endfunction
+
+function uvm_active_passive_enum dv_base_agent_cfg::get_is_active();
+  return (if_mode inside {Host, Device}) ? UVM_ACTIVE : UVM_PASSIVE;
 endfunction

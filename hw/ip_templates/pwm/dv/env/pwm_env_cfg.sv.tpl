@@ -35,8 +35,7 @@ function void ${module_instance_name}_env_cfg::initialize(bit inherit_ral_models
   // Set up the configuration for each of the monitors.
   foreach (m_pwm_monitor_cfg[i]) begin
     m_pwm_monitor_cfg[i] = pwm_monitor_cfg::type_id::create($sformatf("m_pwm_monitor%0d_cfg", i));
-    m_pwm_monitor_cfg[i].if_mode = Device;
-    m_pwm_monitor_cfg[i].is_active = 0;
+    m_pwm_monitor_cfg[i].if_mode = Monitor;
     // Monitors identify themselves and their sequence items, for diagnostic/debugging purposes.
     m_pwm_monitor_cfg[i].monitor_id = i;
   end

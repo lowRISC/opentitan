@@ -83,10 +83,10 @@ class rv_dm_env extends cip_base_env #(
     end
 
     if (cfg.is_active) begin
-      if (cfg.m_jtag_agent_cfg.is_active) begin
+      if (m_jtag_agent.get_is_active() == UVM_ACTIVE) begin
         virtual_sequencer.jtag_sequencer_h = m_jtag_agent.sequencer;
       end
-      if (cfg.m_tl_sba_agent_cfg.is_active) begin
+      if (m_tl_sba_agent.get_is_active() == UVM_ACTIVE) begin
         virtual_sequencer.tl_sba_sequencer_h = m_tl_sba_agent.sequencer;
       end
     end

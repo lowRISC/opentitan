@@ -72,7 +72,6 @@ class entropy_src_env extends cip_base_env #(
     cfg.m_xht_agent_cfg.start_default_seq = 1'b0;
     cfg.m_xht_agent_cfg.if_mode           = dv_utils_pkg::Device;
     cfg.m_xht_agent_cfg.en_cov            = cfg.en_cov;
-    cfg.m_xht_agent_cfg.is_active         = 1'b1;
 
     // When running ast/rng at the maximum rate (this is an unrealistic scenario primarily used for
     // reaching coverage metrics) we reduce the maximum d_ready delay of the TL-UL host to speed up

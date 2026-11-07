@@ -13,7 +13,7 @@ class otbn_model_agent_cfg extends dv_base_agent_cfg;
   function new (string name="");
     super.new(name);
     // This agent is always passive.
-    this.is_active = 1'b0;
+    this.if_mode = Monitor;
   endfunction : new
 
 endclass
