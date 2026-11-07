@@ -147,7 +147,6 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
     // Create downstream agent cfg objects.
     foreach (ral_model_names[ral_name]) begin
       m_tl_agent_cfgs[ral_name] = tl_agent_cfg::type_id::create({"m_tl_agent_cfg_", ral_name});
-      m_tl_agent_cfgs[ral_name].is_active = is_active;
       m_tl_agent_cfgs[ral_name].if_mode = (is_active ? dv_utils_pkg::Host : dv_utils_pkg::Monitor);
       // TL host cannot support device same cycle response. Host may drive d_ready=0 when a_valid=1.
       m_tl_agent_cfgs[ral_name].host_can_stall_rsp_when_a_valid_high = $urandom_range(0, 1);
@@ -172,7 +171,6 @@ class cip_base_env_cfg #(type RAL_T = dv_base_reg_block) extends dv_base_env_cfg
         string alert_name = list_of_alerts[i];
         m_alert_agent_cfgs[alert_name] = alert_agent_cfg::type_id::create(
             $sformatf("m_alert_agent_cfgs[%s]", alert_name));
-        m_alert_agent_cfgs[alert_name].is_active = is_active;
         m_alert_agent_cfgs[alert_name].if_mode = (is_active ?
                                                   dv_utils_pkg::Device : dv_utils_pkg::Monitor);
         m_alert_agent_cfgs[alert_name].is_async = 1; // default async_on, can override this

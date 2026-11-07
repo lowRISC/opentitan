@@ -44,7 +44,7 @@ function void esc_agent::build_phase(uvm_phase phase);
   end
 
   // get esc_en signal for esc_monitor
-  if (cfg.is_active && cfg.if_mode == Device) begin
+  if (cfg.if_mode == Device) begin
     if (!uvm_config_db#(virtual esc_probe_if)::get(this, "", "probe_vif", cfg.probe_vif)) begin
         `uvm_fatal(`gfn, "failed to get probe_vif handle from uvm_config_db")
     end
@@ -52,7 +52,6 @@ function void esc_agent::build_phase(uvm_phase phase);
 
   // Set variables that configure the escalation interface
   cfg.vif.is_async  = cfg.is_async;
-  cfg.vif.is_active = cfg.is_active;
   cfg.vif.if_mode   = cfg.if_mode;
 endfunction : build_phase
 

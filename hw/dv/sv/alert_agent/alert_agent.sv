@@ -38,7 +38,7 @@ function void alert_agent::build_phase(uvm_phase phase);
   end
 
   // The reactive agent upon which we build will have a request fifo iff the agent is active.
-  cfg.has_req_fifo = cfg.is_active;
+  cfg.has_req_fifo = cfg.get_is_active();
 
   super.build_phase(phase);
 
@@ -53,9 +53,8 @@ function void alert_agent::build_phase(uvm_phase phase);
   end
 
   // set variables to alert interface
-  cfg.vif.is_async  = cfg.is_async;
-  cfg.vif.is_active = cfg.is_active;
-  cfg.vif.if_mode   = cfg.if_mode;
+  cfg.vif.is_async = cfg.is_async;
+  cfg.vif.if_mode  = cfg.if_mode;
 
   // set async alert clock frequency
   if (cfg.is_async) begin
@@ -84,7 +83,7 @@ endfunction : connect_phase
 
 task alert_agent::run_phase(uvm_phase phase);
   super.run_phase(phase);
-  if (cfg.is_active && cfg.start_default_rsp_seq) begin
+  if (cfg.get_is_active() && cfg.start_default_rsp_seq) begin
     // For host mode, run alert ping auto-response sequence.
     if (cfg.if_mode == dv_utils_pkg::Host) begin
       alert_sender_ping_rsp_seq m_seq =

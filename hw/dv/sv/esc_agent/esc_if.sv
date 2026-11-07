@@ -12,7 +12,7 @@ interface esc_if(input clk, input rst_n);
   prim_esc_pkg::esc_rx_t     esc_rx_int;   // internal esc_rx
 
   wire                    async_clk;
-  bit                     is_async, is_active;
+  bit                     is_async;
   dv_utils_pkg::if_mode_e if_mode;
   clk_rst_if              clk_rst_async_if(.clk(async_clk), .rst_n(rst_n));
 
@@ -34,8 +34,8 @@ interface esc_if(input clk, input rst_n);
     input esc_rx;
   endclocking
 
-  assign esc_tx = (if_mode == dv_utils_pkg::Host && is_active)   ? esc_tx_int   : 'z;
-  assign esc_rx = (if_mode == dv_utils_pkg::Device && is_active) ? esc_rx_int   : 'z;
+  assign esc_tx = (if_mode == dv_utils_pkg::Host)   ? esc_tx_int : 'z;
+  assign esc_rx = (if_mode == dv_utils_pkg::Device) ? esc_rx_int : 'z;
 
   task automatic wait_esc_complete();
     while (esc_tx.esc_p === 1'b1 && esc_tx.esc_n === 1'b0) @(monitor_cb);

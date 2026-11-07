@@ -200,8 +200,7 @@ class chip_sw_power_virus_vseq extends chip_sw_base_vseq;
     cfg.m_spi_device_agent_cfgs[1].csid = '0;
     cfg.m_spi_device_agent_cfgs[1].num_bytes_per_trans_in_mon = 4;
     cfg.m_spi_device_agent_cfgs[1].spi_mode = Quad;
-    cfg.m_spi_device_agent_cfgs[1].if_mode = dv_utils_pkg::Device;
-    cfg.m_spi_device_agent_cfgs[1].is_active = 0;
+    cfg.m_spi_device_agent_cfgs[1].if_mode = dv_utils_pkg::Monitor;
 
     // Configs for SPI passthrough part of the test
     cfg.m_spi_device_agent_cfgs[0].byte_order = '0;

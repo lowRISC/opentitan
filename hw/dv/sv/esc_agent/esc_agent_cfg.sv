@@ -59,7 +59,7 @@ function esc_agent_cfg::new (string name="");
 endfunction : new
 
 function bit esc_agent_cfg::get_esc_en();
-  if (if_mode == Device && is_active) begin
+  if (if_mode == Device) begin
     return probe_vif.get_esc_en();
   end
   // Only support escalation ping request interrupted by real escalation request in device mode.

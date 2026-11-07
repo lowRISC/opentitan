@@ -33,7 +33,7 @@ class chip_env extends cip_base_env #(
     end
 
     // Set tl_agent's is_active bit based on the stub_cpu value.
-    cfg.m_tl_agent_cfg.is_active = cfg.chip_vif.stub_cpu;
+    cfg.m_tl_agent_cfg.if_mode = cfg.chip_vif.stub_cpu ? Host : Monitor;
 
     for (chip_mem_e mem = mem.first(), int i = 0; i < mem.num(); mem = mem.next(), i++) begin
       string inst = $sformatf("mem_bkdr_util[%0s]", mem.name());
@@ -126,7 +126,7 @@ class chip_env extends cip_base_env #(
 
     // disable alert_agent's driver and only use its monitor
     foreach (LIST_OF_ALERTS[i]) begin
-      cfg.m_alert_agent_cfgs[LIST_OF_ALERTS[i]].is_active = 0;
+      cfg.m_alert_agent_cfgs[LIST_OF_ALERTS[i]].if_mode = Monitor;
     end
   endfunction
 
@@ -140,13 +140,13 @@ class chip_env extends cip_base_env #(
       m_jtag_riscv_agent.monitor.analysis_port.connect(scoreboard.jtag_fifo.analysis_export);
     end
     foreach (m_uart_agents[i]) begin
-      if (cfg.is_active && cfg.m_uart_agent_cfgs[i].is_active) begin
+      if (cfg.is_active && cfg.m_uart_agent_cfgs[i].get_is_active()) begin
         virtual_sequencer.uart_sequencer_hs[i] = m_uart_agents[i].sequencer;
       end
     end
 
     foreach (m_spi_device_agents[i]) begin
-      if (cfg.is_active && cfg.m_spi_device_agent_cfgs[i].is_active) begin
+      if (cfg.is_active && cfg.m_spi_device_agent_cfgs[i].get_is_active()) begin
         virtual_sequencer.spi_device_sequencer_hs[i] = m_spi_device_agents[i].sequencer;
       end
     end
@@ -160,7 +160,7 @@ class chip_env extends cip_base_env #(
         virtual_sequencer.i2c_rd_fifos[i].analysis_export);
     end
 
-    if (cfg.is_active && cfg.m_jtag_riscv_agent_cfg.is_active) begin
+    if (cfg.is_active && cfg.m_jtag_riscv_agent_cfg.get_is_active()) begin
       virtual_sequencer.jtag_sequencer_h = m_jtag_riscv_agent.sequencer;
     end
 
@@ -170,7 +170,7 @@ class chip_env extends cip_base_env #(
       m_jtag_riscv_agent.set_dtm_reg_map(cfg.m_jtag_dtm_ral.get_default_map());
     end
 
-    if (cfg.is_active && cfg.m_spi_host_agent_cfg.is_active) begin
+    if (cfg.is_active && cfg.m_spi_host_agent_cfg.get_is_active()) begin
       virtual_sequencer.spi_host_sequencer_h = m_spi_host_agent.sequencer;
     end
 

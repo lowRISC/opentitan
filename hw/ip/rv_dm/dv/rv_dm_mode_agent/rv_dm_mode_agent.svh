@@ -27,7 +27,7 @@ function void rv_dm_mode_agent::build_phase(uvm_phase phase);
 
   // If the agent is configured to be active, make sure that the is_active flag in the interface is
   // also set: if it isn't our updates to the *_internal signals will have no effect.
-  if (cfg.is_active && !cfg.vif.is_active) begin
+  if (cfg.get_is_active() && !cfg.vif.is_active) begin
     `uvm_error(get_full_name(), "Agent is active but the interface's is_active signal is false.")
   end
 endfunction

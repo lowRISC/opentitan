@@ -29,7 +29,7 @@ class jtag_agent extends dv_base_agent #(
       void'(uvm_config_db#(virtual jtag_mon_if)::get(this, "", "mon_vif", cfg.mon_vif));
     end
 
-    if (cfg.is_active) begin
+    if (cfg.get_is_active()) begin
       m_jtag_dtm_reg_adapter = jtag_dtm_reg_adapter::type_id::create("m_jtag_dtm_reg_adapter");
       m_jtag_dtm_reg_adapter.set_ir_len(cfg.ir_len);
     end

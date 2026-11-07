@@ -30,7 +30,6 @@ class csrng_agent extends dv_reactive_agent #(
                        create("m_cmd_push_agent", this);
     cfg.m_cmd_push_agent_cfg = push_pull_agent_cfg#(csrng_pkg::CmdBusWidth)::type_id::
                                create("m_cmd_push_agent.cfg");
-    cfg.m_cmd_push_agent_cfg.is_active   = cfg.is_active;
     cfg.m_cmd_push_agent_cfg.agent_type  = PushAgent;
     cfg.m_cmd_push_agent_cfg.if_mode     = cfg.if_mode;
     cfg.m_cmd_push_agent_cfg.zero_delays = cfg.cmd_zero_delays;
@@ -39,17 +38,18 @@ class csrng_agent extends dv_reactive_agent #(
                            create("m_genbits_push_agent", this);
     cfg.m_genbits_push_agent_cfg = push_pull_agent_cfg#(csrng_pkg::FIPS_GENBITS_BUS_WIDTH)::type_id::
                                    create("m_genbits_push_agent_cfg");
-    cfg.m_genbits_push_agent_cfg.is_active  = cfg.is_active;
     cfg.m_genbits_push_agent_cfg.agent_type = PushAgent;
     if (cfg.if_mode == dv_utils_pkg::Host) begin
-      cfg.m_genbits_push_agent_cfg.if_mode = dv_utils_pkg::Device;
+      cfg.m_genbits_push_agent_cfg.if_mode = cfg.get_is_active() ?
+                                             dv_utils_pkg::Device : dv_utils_pkg::Monitor;
       cfg.m_genbits_push_agent_cfg.device_delay_min = cfg.min_genbits_rdy_dly;
       cfg.m_genbits_push_agent_cfg.device_delay_max = cfg.max_genbits_rdy_dly;
     end else begin
       cfg.m_cmd_push_agent_cfg.device_delay_min = cfg.min_cmd_rdy_dly;
       cfg.m_cmd_push_agent_cfg.device_delay_max = cfg.max_cmd_rdy_dly;
       cfg.has_req_fifo = 1;
-      cfg.m_genbits_push_agent_cfg.if_mode = dv_utils_pkg::Host;
+      cfg.m_genbits_push_agent_cfg.if_mode = cfg.get_is_active() ?
+                                             dv_utils_pkg::Host : dv_utils_pkg::Monitor;
     end
 
     cfg.vif.if_mode = cfg.if_mode;
@@ -71,14 +71,11 @@ class csrng_agent extends dv_reactive_agent #(
 
     m_cmd_push_agent.monitor.analysis_port.connect(monitor.csrng_cmd_fifo.analysis_export);
 
-    if (cfg.is_active) begin
-      if (cfg.if_mode == dv_utils_pkg::Device) begin
-        monitor.req_analysis_port.connect(sequencer.req_analysis_fifo.analysis_export);
-        sequencer.m_genbits_push_sequencer = m_genbits_push_agent.sequencer;
-      end
-      else begin
-        sequencer.m_cmd_push_sequencer = m_cmd_push_agent.sequencer;
-      end
+    if (cfg.if_mode == dv_utils_pkg::Device) begin
+      monitor.req_analysis_port.connect(sequencer.req_analysis_fifo.analysis_export);
+      sequencer.m_genbits_push_sequencer = m_genbits_push_agent.sequencer;
+    end else if (cfg.if_mode == dv_utils_pkg::Host) begin
+      sequencer.m_cmd_push_sequencer = m_cmd_push_agent.sequencer;
     end
   endfunction
 

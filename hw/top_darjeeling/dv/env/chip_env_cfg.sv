@@ -238,7 +238,6 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
 
     m_jtag_agent_cfg = jtag_agent_cfg::type_id::create("m_jtag_agent_cfg");
     m_jtag_agent_cfg.if_mode = dv_utils_pkg::Host;
-    m_jtag_agent_cfg.is_active = 1'b1;
     m_jtag_agent_cfg.ir_len = JTAG_IR_LEN;
 
     // Create a JTAG DTM RAL and give it the right IDCODE register value.

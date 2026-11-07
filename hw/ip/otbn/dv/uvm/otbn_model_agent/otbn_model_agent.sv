@@ -16,7 +16,7 @@ class otbn_model_agent extends dv_base_agent #(
     super.build_phase(phase);
 
     // This agent doesn't support active use (it's just for monitoring the model interface).
-    `DV_CHECK_FATAL(!cfg.is_active)
+    `DV_CHECK_FATAL(!cfg.get_is_active())
 
     // get otbn_model_if handle
     if (!uvm_config_db#(

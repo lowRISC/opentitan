@@ -44,7 +44,7 @@ class ${name}_env extends dv_base_env #(
     end
 % endif
 % for agent in env_agents:
-    if (cfg.is_active && cfg.m_${agent}_agent_cfg.is_active) begin
+    if (cfg.is_active && cfg.m_${agent}_agent_cfg.get_is_active()) begin
       virtual_sequencer.${agent}_sequencer_h = m_${agent}_agent.sequencer;
     end
 % endfor

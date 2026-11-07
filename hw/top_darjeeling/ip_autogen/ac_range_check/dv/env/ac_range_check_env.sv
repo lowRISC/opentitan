@@ -55,10 +55,10 @@ function void ac_range_check_env::connect_phase(uvm_phase phase);
     tl_filt_agt.monitor.d_chan_port.connect(
       scoreboard.predict.tl_filt_d_chan_fifo.analysis_export);
   end
-  if (cfg.is_active && cfg.tl_unfilt_agt_cfg.is_active) begin
+  if (cfg.is_active && cfg.tl_unfilt_agt_cfg.get_is_active()) begin
     virtual_sequencer.tl_unfilt_sqr = tl_unfilt_agt.sequencer;
   end
-  if (cfg.is_active && cfg.tl_filt_agt_cfg.is_active) begin
+  if (cfg.is_active && cfg.tl_filt_agt_cfg.get_is_active()) begin
     virtual_sequencer.tl_filt_sqr = tl_filt_agt.sequencer;
   end
 endfunction : connect_phase
