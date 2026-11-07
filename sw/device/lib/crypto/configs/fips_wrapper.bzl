@@ -22,6 +22,20 @@ fips_transition = transition(
     ],
 )
 
+def _fips_target_wrapper_impl(ctx):
+    return [ctx.attr.target[0][DefaultInfo]]
+
+# Create a wrapper for a build target to build with the --config=crypto_fips_all flag
+fips_transition_target = rule(
+    implementation = _fips_target_wrapper_impl,
+    attrs = {
+        "target": attr.label(mandatory = True, cfg = fips_transition),
+        "_allowlist_function_transition": attr.label(
+            default = "@bazel_tools//tools/allowlists/function_transition_allowlist",
+        ),
+    },
+)
+
 def _fips_test_wrapper_impl(ctx):
     actual_test = ctx.executable.actual_test
 

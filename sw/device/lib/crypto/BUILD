@@ -4,6 +4,7 @@
 
 package(default_visibility = ["//visibility:public"])
 
+load("//sw/device/lib/crypto/configs:fips_wrapper.bzl", "fips_transition_target")
 load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "opentitan_binary_blob")
 load("//rules/opentitan:static_library.bzl", "ot_static_library")
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
@@ -132,6 +133,29 @@ pkg_tar(
     name = "cryptolib",
     srcs = [
         ":package",
+        "//sw/device/lib/crypto/include:package",
+        "//sw/device/lib/crypto/include/freestanding:package",
+    ],
+    extension = "tar.xz",
+)
+
+fips_transition_target(
+    name = "otcrypto_fips",
+    target = ":otcrypto",
+)
+
+pkg_files(
+    name = "package_fips",
+    srcs = [
+        ":otcrypto_fips",
+    ],
+    prefix = "crypto",
+)
+
+pkg_tar(
+    name = "cryptolib_fips",
+    srcs = [
+        ":package_fips",
         "//sw/device/lib/crypto/include:package",
         "//sw/device/lib/crypto/include/freestanding:package",
     ],
