@@ -38,7 +38,6 @@
 #include "sw/device/silicon_creator/lib/cert/dice.h"
 #include "sw/device/silicon_creator/lib/cert/dice_mldsa.h"
 #include "sw/device/silicon_creator/lib/cert/dice_storage.h"
-#include "sw/device/silicon_creator/lib/cert/uds.h"  // Generated.
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/drivers/keymgr.h"
@@ -121,7 +120,10 @@ enum {
   kMaxEndorsedCertBufferSize = 1024,
   // 1K should be enough for the largest TBS certificate perso LTV object
   // (excluding SKU extension certificates)
-  kMaxTbsBufferSize = MAX_NODEF(1024, kUdsMaxTbsSizeBytes),
+  kMaxTbsBufferSize = MAX_NODEF(1024, kDiceUdsMaxTbsSizeBytes),
+  // The "budget" that we want to reserve in our perso blob to guranatee we
+  // have space for non-PQ personalization data.
+  kPersoNonPqBudgetSize = 5 * 1024,
 };
 typedef struct cert_scratch_buffer {
   uint8_t buffer[kMaxEndorsedCertBufferSize];
@@ -215,12 +217,12 @@ typedef struct otp_measurements {
 } otp_measurements_t;
 
 static_assert(sizeof(((perso_blob_t *)NULL)->body) >=
-                  (5 * 1024 + 2 * kUdsMaxTbsSizeBytes),
+                  (kPersoNonPqBudgetSize + 2 * kDiceUdsMaxTbsSizeBytes),
               "Perso blob data must be able to hold 5KiB of data to host, and "
               "two PQ UDS TBS certificates");
 
 static_assert(sizeof(((perso_blob_t *)NULL)->body) >=
-                  (5 * 1024 + kUdsMaxCertSizeBytes),
+                  (kPersoNonPqBudgetSize + kDiceUdsMaxCertSizeBytes),
               "Perso blob data must be able to hold 5KiB of endorsed "
               "certificates, and one endorsed PQ UDS certificate");
 
@@ -641,7 +643,7 @@ static status_t personalize_gen_dice_certificates(
    ****************************************************************************/
 
   // Generate UDS keys and (TBS) cert.
-  size_t curr_cert_size = kUdsMaxTbsSizeBytes;
+  size_t curr_cert_size = sizeof(pre_endorse_data->cert_buffer);
   TRY(otbn_boot_cert_ecc_p256_keygen(kDiceKeyUds, uds_pubkey_id,
                                      &pre_endorse_data->uds_pubkey));
 
@@ -668,7 +670,7 @@ static status_t personalize_gen_dice_certificates(
 
   // Build MLDSA certificate in temp buffer if requested
   if (pre_endorse_data->certgen_inputs.has_dice_mldsa_auth_key_key_id != 0) {
-    curr_cert_size = kUdsMaxTbsSizeBytes;  // From template code
+    curr_cert_size = sizeof(pre_endorse_data->cert_buffer);
 
     // Copy Key ID to endorse UDS MLDSA certificate sent by ATE. This must be
     // populated by the ATE tool when `has_dice_mldsa_auth_key_key_id` is
@@ -706,7 +708,7 @@ static status_t personalize_gen_dice_certificates(
         kDiceCertFormat, pre_endorse_data->cert_buffer, curr_cert_size,
         kPersoBlobVersionV1, &pre_endorse_data->blob_to_host));
 
-    curr_cert_size = kUdsMaxTbsSizeBytes;  // From template code
+    curr_cert_size = sizeof(pre_endorse_data->cert_buffer);
     // Pubkey ID will be populated again by
     // `dice_uds_mldsa_tbs_cert_generate_and_build` using `uds_mldsa_key_ids`
     TRY(dice_uds_mldsa_tbs_cert_generate_and_build(

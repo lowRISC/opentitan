@@ -29,6 +29,10 @@
 
 #include "otp_ctrl_regs.h"  // Generated.
 
+// Check that the UDS COSE_Key fits within our perso blob
+static_assert(kCwtCoseKeyMaxVariableSizeBytes <= kDiceUdsMaxTbsSizeBytes,
+              "CWT UDS COSE_Key too large for perso");
+
 enum {
   kDiceSlotSize = 936,
 };

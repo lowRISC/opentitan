@@ -383,7 +383,6 @@ manifest(d = {
             "//sw/device/silicon_creator/lib/cert",
             "//sw/device/silicon_creator/lib/cert:dice_mldsa_api",
             "//sw/device/silicon_creator/lib/cert:dice_storage",
-            "//sw/device/silicon_creator/lib/cert:uds_template_library",
             "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
             "//sw/device/silicon_creator/lib/drivers:hmac",
             "//sw/device/silicon_creator/lib/drivers:keymgr",
