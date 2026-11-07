@@ -32,7 +32,7 @@ ROM_EXT_VERSION = struct(
 ROM_EXT_VARIATIONS = {
     "dice_x509": struct(
         deps = [
-            "//sw/device/silicon_creator/lib/cert:dice",
+            "//sw/device/silicon_creator/lib/cert:dice_cdi",
         ],
         slot_spec = {},
         imm_exports = [],
