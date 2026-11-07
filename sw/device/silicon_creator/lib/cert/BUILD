@@ -2,17 +2,18 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(
-    "//rules:certificates.bzl",
-    "certificate_template",
-)
-load(
-    "//rules/opentitan:defs.bzl",
-    "fpga_params",
-    "opentitan_test",
-)
+load("//rules:certificates.bzl", "certificate_template")
+load("//rules/opentitan:defs.bzl", "fpga_params", "opentitan_test")
+load("//sw/device/silicon_creator/lib/cert:uds.bzl", "uds_cert_libs")
 
 package(default_visibility = ["//visibility:public"])
+
+# External SKUs which define their own UDS cert template need these files to
+# be able to compile their own UDS cert builder libraries.
+exports_files([
+    "dice_uds_cert_build.c",
+    "dice_mldsa_uds_cert_build.c",
+])
 
 certificate_template(
     name = "generic_template",
@@ -27,11 +28,6 @@ certificate_template(
 filegroup(
     name = "uds_template_file",
     srcs = ["uds.hjson"],
-)
-
-certificate_template(
-    name = "uds_template",
-    template = "uds.hjson",
 )
 
 certificate_template(
@@ -214,23 +210,19 @@ cc_library(
     ],
 )
 
-cc_library(
-    name = "dice_uds_cert_build",
-    srcs = ["dice_uds_cert_build.c"],
-    deps = [
-        ":cert",
-        ":dice_api",
-        ":template",
-        "//sw/device/lib/base:hardened",
-        "//sw/device/silicon_creator/lib:error",
-        "//sw/device/silicon_creator/lib/cert:uds_template_library",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/sigverify:ecdsa_p256_key",
-    ],
-    # We don't want a SKU to silently end up with e.g. `dice_cert_build` and its
-    # own link builder, so always link to ensure a link error in this case.
-    alwayslink = True,
+# Defines the ":dice_uds_cert_build" and ":dice_mldsa_uds_cert_build" x509 ECDSA
+# and ML-DSA UDS cert builder libraries.
+uds_cert_libs(
+    name = "dice",
+    template = "uds.hjson",
+)
+
+# To avoid breaking downstream flows that use this library, add a temporary alias
+# with an appropriate deprecation warning.
+alias(
+    name = "uds_template_library",
+    actual = ":dice_uds_template_library",
+    deprecation = "Use :dice_uds_template_library instead.",
 )
 
 cc_library(
@@ -293,32 +285,6 @@ cc_library(
         "//sw/device/silicon_creator/lib/drivers:keymgr",
         "//sw/device/silicon_creator/lib/sigverify:mldsa_key",
     ],
-)
-
-cc_library(
-    name = "dice_mldsa_uds_cert_build",
-    srcs = ["dice_mldsa_uds_cert_build.c"],
-    deps = [
-        ":cert",
-        ":dice_api",
-        ":dice_mldsa_api",
-        ":dice_mldsa_keys",
-        ":template",
-        "//sw/device/lib/base:hardened_memory",
-        "//sw/device/lib/base:memory",
-        "//sw/device/silicon_creator/lib/cert:uds_template_library",
-        "//sw/device/silicon_creator/lib/drivers:hmac",
-        "//sw/device/silicon_creator/lib/drivers:kmac",
-        "//sw/device/silicon_creator/lib/drivers:lifecycle",
-        "//sw/device/silicon_creator/lib/sigverify:mldsa_key",
-        "//third_party/embedpqc:mldsa44_tiny",
-        "//third_party/embedpqc:mldsa87_tiny",
-        "//third_party/embedpqc/ports:mldsa44_tiny_caller",
-        "//third_party/embedpqc/ports:mldsa87_tiny_caller",
-    ],
-    # We don't want a SKU to silently end up with e.g. `dice_cert_build` and its
-    # own link builder, so always link to ensure a link error in this case.
-    alwayslink = True,
 )
 
 cc_library(
