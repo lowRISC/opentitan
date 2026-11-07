@@ -145,8 +145,9 @@ module prim_ram_1r1w_async_adv import prim_ram_1r1w_pkg::*; #(
     `ASSERT_INIT(SecDecWidth_A, Width inside {32})
 
     // the wmask is constantly set to 1 in this case
-    `ASSERT(OnlyWordWritePossibleWithEccPortA_A, a_req_i |->
-        a_wmask_i == {Width{1'b1}}, clk_a_i, rst_a_ni)
+    `ASSERT(OnlyWordWritePossibleWithEccPortA_A,
+            a_req_i |-> a_wmask_i == {Width{1'b1}},
+            clk_a_i, !rst_a_ni)
 
     assign a_wmask_d = {TotalWidth{1'b1}};
 
