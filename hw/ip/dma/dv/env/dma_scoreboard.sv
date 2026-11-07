@@ -40,6 +40,19 @@ class dma_scoreboard extends cip_base_scoreboard #(
   bit dst_tl_error_detected;
   // Bit to indicate if DMA operation is explicitly aborted with register write
   bit abort_via_reg_write;
+  // Per interface, whether a request has been seen and still awaits its response
+  bit req_awaiting_rsp[string];
+  // Per interface, whether the request awaiting its response was issued by an aborted transfer
+  bit aborted_req[string];
+  // Whether an Abort has been requested since the start of the current transfer
+  bit abort_since_start;
+  // Number of responses to requests of aborted transfers that have been dropped
+  uint num_aborted_rsps_dropped;
+  // Per interface, the address of the request awaiting its response, the address expected for it
+  // when it was issued, and whether it is a 'Clear Interrupt' write
+  bit [63:0] req_addr[string];
+  bit [63:0] req_exp_addr[string];
+  bit req_is_intr_clear[string];
 
   // Interrupt enable state
   bit [NUM_MAX_INTERRUPTS-1:0] intr_enable;
@@ -556,6 +569,27 @@ class dma_scoreboard extends cip_base_scoreboard #(
           // Collect A and D channel notifications in either order (the DUT supports combinational
           // responses) and pair them before proceeding to the original code below.
           if (got_addr && got_data) begin
+            req_awaiting_rsp[if_name] = 1'b0;
+            // A response to a request of an aborted transfer that arrives after the next transfer
+            // has started belongs to neither transfer. Check only its address, then drop the pair.
+            if (aborted_req.exists(if_name) && aborted_req[if_name]) begin
+              `uvm_info(`gfn, $sformatf("Dropping %s response to a request of an aborted transfer",
+                                        if_name), UVM_MEDIUM)
+              num_aborted_rsps_dropped++;
+              `DV_CHECK_FATAL(a_chan_fifo.try_get(item))
+              `DV_CHECK_FATAL(d_chan_fifo.try_get(item))
+              // The request must have been the access that the aborted transfer expected next,
+              // unless it was one of its 'Clear Interrupt' writes.
+              if (!req_is_intr_clear[if_name]) begin
+                `DV_CHECK_EQ(req_addr[if_name][63:2], req_exp_addr[if_name][63:2],
+                             $sformatf("%s request of the aborted transfer to 0x%0x",
+                                       if_name, req_addr[if_name]))
+              end
+              aborted_req[if_name] = 1'b0;
+              got_addr = 0;
+              got_data = 0;
+              continue;
+            end
             if (data_phase) begin
               dir = DataChannel;
               got_addr = 0;
@@ -573,6 +607,21 @@ class dma_scoreboard extends cip_base_scoreboard #(
             end else begin
               `DV_CHECK_FATAL(dir == AddrChannel);
               got_addr = 1;
+              req_awaiting_rsp[if_name] = !got_data;
+              // Record the request in case its transfer is aborted and restarted before the
+              // response arrives. Expectations only advance when a request completes, so they
+              // still describe this request.
+              if (!got_data) begin
+                `DV_CHECK_FATAL(a_chan_fifo.try_peek(item))
+                a_addr = item.a_addr;
+                if (if_name == "sys") begin
+                  a_addr += (item.a_opcode == Get) ? cfg.soc_system_src_base_addr
+                                                   : cfg.soc_system_dst_base_addr;
+                end
+                req_addr[if_name] = a_addr;
+                req_exp_addr[if_name] = item.is_write() ? exp_dst_addr : exp_src_addr;
+                req_is_intr_clear[if_name] = item.is_write() && (intr_addr_lookup(a_addr) >= 0);
+              end
               continue;
             end
           end
@@ -584,9 +633,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
           `DV_CHECK_FATAL(dma_config.is_valid_config || exp_intr_clearing,
                              $sformatf("transaction observed on %s for invalid configuration",
                                        if_name))
-          // Check if there is any active operation, but be aware that the Abort functionality
-          // intentionally does not wait for a bus response (this is safe because the design never
-          // blocks/stalls the TL-UL response).
+          // Check if there is any active operation, but be aware that an Abort does not wait for a
+          // pending bus response, so the response may arrive after it. If the next transfer has
+          // started by then, the response was dropped above.
           `DV_CHECK_FATAL(operation_in_progress || abort_via_reg_write,
                           "Transaction detected with no active operation")
           case (dir)
@@ -648,6 +697,9 @@ class dma_scoreboard extends cip_base_scoreboard #(
     src_tl_error_detected = 0;
     dst_tl_error_detected = 0;
     abort_via_reg_write = 0;
+    req_awaiting_rsp.delete();
+    aborted_req.delete();
+    abort_since_start = 0;
     fifo_intr_cleared = 0;
     intr_enable = 0;
     intr_test = 0;
@@ -1100,6 +1152,7 @@ class dma_scoreboard extends cip_base_scoreboard #(
         // Update the 'Aborted' prediction in response to setting the CONTROL.abort bit
         // Note: this is a Write Only field so we cannot use the mirrored value
         abort_via_reg_write = get_field_val(ral.control.abort, item.a_data);
+        abort_since_start |= abort_via_reg_write;
         // Abort overrides Go.
         go = get_field_val(ral.control.go, item.a_data) & ~abort_via_reg_write;
         initial_transfer = get_field_val(ral.control.initial_transfer, item.a_data);
@@ -1118,6 +1171,15 @@ class dma_scoreboard extends cip_base_scoreboard #(
           // that no more transactions occur after an error, _for that transfer_.
           dst_tl_error_detected = 1'b0;
           src_tl_error_detected = 1'b0;
+          // A request may still await its response only if the previous transfer was aborted.
+          foreach (req_awaiting_rsp[i]) begin
+            if (req_awaiting_rsp[i]) begin
+              `DV_CHECK(abort_since_start,
+                        $sformatf("%s request awaiting its response at the start of a transfer", i))
+              aborted_req[i] = 1'b1;
+            end
+          end
+          abort_since_start = 1'b0;
           // Get mirrored field value and cast to associated enum in dma_config
           dma_config.opcode = opcode_e'(`gmv(ral.control.opcode));
           `uvm_info(`gfn, $sformatf("Got opcode = %s", dma_config.opcode.name()), UVM_HIGH)
