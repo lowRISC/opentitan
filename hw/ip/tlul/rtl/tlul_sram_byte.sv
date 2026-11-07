@@ -239,7 +239,7 @@ module tlul_sram_byte import tlul_pkg::*; #(
       assign rdback_chk_ok          = 1'b0;
       assign rdback_check_q         = MuBi4False;
       assign rdback_en_q            = MuBi4False;
-      assign rdback_data_exp_q      = 1'b0;
+      assign rdback_data_exp_q      = '0;
 
       logic unused_rdback;
 
