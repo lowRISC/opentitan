@@ -33,6 +33,7 @@ cc_library(
         "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:hkdf",
         "//sw/device/lib/crypto/impl:hmac",
+        "//sw/device/lib/crypto/impl:hmac_drbg",
         "//sw/device/lib/crypto/impl:integrity",
         "//sw/device/lib/crypto/impl:kats",
         "//sw/device/lib/crypto/impl:kdf_ctr",
