@@ -46,7 +46,7 @@ ROM_EXT_VARIATIONS = {
     ),
     "dice_mldsa": struct(
         deps = [
-            "//sw/device/silicon_creator/lib/cert:dice_mldsa",
+            "//sw/device/silicon_creator/lib/cert:dice_mldsa_cdi",
         ],
         slot_spec = EARLGREY_MLDSA_SLOTS,
         imm_exports = [
