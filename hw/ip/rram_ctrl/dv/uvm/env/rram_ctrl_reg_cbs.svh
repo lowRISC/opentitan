@@ -2,10 +2,15 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
-// A callback attached to some registers in the rram_ctrl environment.
+// A callback attached to some registers in the rram_ctrl environment. This should be given a handle
+// to the scoreboard, which it uses to inform the scoreboard about some register events.
 
 class rram_ctrl_reg_cbs extends uvm_reg_cbs;
   `uvm_object_utils(rram_ctrl_reg_cbs)
+
+  // A handle to the scoreboard. This must be set before the start of the simulation (because some
+  // of the hooks need to pass information to the scoreboard).
+  local rram_ctrl_scoreboard m_scb;
 
   // A layer of "direct predictions". These are used for fields in registers that can be updated by
   // hardware, meaning that we might need to update our estimate of the field's value when there is
@@ -35,6 +40,10 @@ class rram_ctrl_reg_cbs extends uvm_reg_cbs;
   local bit m_fields_to_check[uvm_reg_field];
 
   extern function new (string name="");
+
+  // Pass a handle to the scoreboard. This must be called before the start of the simulation
+  // (because some of the hooks need to pass information to the scoreboard).
+  extern function void set_scb(rram_ctrl_scoreboard scb);
 
   // Set that the given field should have its rdata checked in post_predict for reads
   extern function void enable_field_rdata_check(uvm_reg_field fld);
@@ -70,6 +79,10 @@ endclass
 
 function rram_ctrl_reg_cbs::new(string name="");
   super.new(name);
+endfunction
+
+function void rram_ctrl_reg_cbs::set_scb(rram_ctrl_scoreboard scb);
+  m_scb = scb;
 endfunction
 
 function void rram_ctrl_reg_cbs::enable_field_rdata_check(uvm_reg_field fld);
@@ -128,12 +141,18 @@ function void rram_ctrl_reg_cbs::post_predict(input uvm_reg_field  fld,
                                               input uvm_predict_e  kind,
                                               input uvm_path_e     path,
                                               input uvm_reg_map    map);
+  import prim_mubi_pkg::MuBi4False;
+
   bit            has_pending_wdata;
   uvm_reg_data_t wdata;
 
   bit            has_direct_pred;
   uvm_reg_data_t direct_pred;
   uvm_reg_data_t best_old_pred;
+
+  if (m_scb == null) begin
+    `uvm_fatal("no_scb", "No handle to a scoreboard.")
+  end
 
   // If this is a write access that came from some_reg.write(), there should be a corresponding
   // value in m_pending_wdata. Pop that value into a wdata variable and set has_pending_wdata.
@@ -157,6 +176,18 @@ function void rram_ctrl_reg_cbs::post_predict(input uvm_reg_field  fld,
     best_old_pred = direct_pred;
   end else begin
     best_old_pred = fld.get_mirrored_value();
+  end
+
+  // Track writes to DIS.SW_DIS.
+  //
+  // If a write causes RRAM to be disabled (because the previous version of the field was MuBi4False
+  // and the new value is not) then tell the scoreboard about it. This allows the scoreboard to
+  // start a short window where the disable status of RRAM isn't known.
+  if (kind == UVM_PREDICT_WRITE && fld.get_full_name() == "dis.sw_dis") begin
+    // This is a write to DIS.SW_DIS. Is it disabling RRAM? If so, tell the scoreboard about it.
+    if (previous == MuBi4False && value != MuBi4False) begin
+      m_scb.on_dis_sw_write_true();
+    end
   end
 
   case (kind)
