@@ -23,6 +23,10 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   // An implementation port that tracks keys sent from otp_ctrl
   uvm_analysis_imp_key_txn #(nvm_otp_key_rsp_seq_item, rram_ctrl_scoreboard) m_otp_key_txn_imp;
 
+  // A reg callbacks object that we register with particular register model fields, causing the
+  // scoreboard to know about reads/writes/predictions
+  rram_ctrl_reg_cbs m_cbs;
+
   // Standard SV/UVM methods
   extern function new(string name = "", uvm_component parent = null);
   extern function void build_phase(uvm_phase phase);
@@ -43,6 +47,13 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   // The write function for m_otp_key_txn_imp. This is called every time the monitor sees a complete
   // key transaction passing a key back from otp_ctrl.
   extern function void write_key_txn(nvm_otp_key_rsp_seq_item item);
+
+  // Register each field of the given register with m_cbs
+  //
+  // One side effect is that m_cbs will implement the "read data check" that uvm_reg_predictor
+  // normally does. This means that it can use m_cbs's more up-to-date prediction of the field
+  // value. As such, we also disable the check in uvm_reg_predictor that we have superseded.
+  extern local function void add_cbs_for_reg(uvm_reg register);
 endclass : rram_ctrl_scoreboard
 
 
@@ -63,6 +74,8 @@ function void rram_ctrl_scoreboard::build_phase(uvm_phase phase);
       "m_tl_core_reg_predictor_filter", this);
 
   m_otp_key_txn_imp = new("m_otp_key_txn_imp", this);
+
+  m_cbs = rram_ctrl_reg_cbs::type_id::create("m_cbs");
 endfunction : build_phase
 
 function void rram_ctrl_scoreboard::connect_phase(uvm_phase phase);
@@ -71,6 +84,29 @@ function void rram_ctrl_scoreboard::connect_phase(uvm_phase phase);
   m_tl_core_reg_predictor.adapter = m_tl_core_reg_adapter;
   m_tl_core_reg_predictor_filter.ap.connect(m_tl_core_reg_predictor.bus_in);
   configure_csr_check_exclusions();
+
+  // Connect m_cbs to all the register fields it's tracking. These are:
+  //
+  //  - Fields that might be written by the hardware, where we might want to update a prediction at
+  //    a time when the field's register is busy.
+  //
+  //  - Fields that have an effect that needs tracking in the scoreboard when they change (so the
+  //    callback needs to call a callback function inside the scoreboard).
+  add_cbs_for_reg(ral.dis);
+  add_cbs_for_reg(ral.ctrl_regwen);
+  add_cbs_for_reg(ral.control);
+  add_cbs_for_reg(ral.op_status);
+  add_cbs_for_reg(ral.status);
+  add_cbs_for_reg(ral.err_code);
+  add_cbs_for_reg(ral.std_fault_status);
+  add_cbs_for_reg(ral.fault_status);
+  add_cbs_for_reg(ral.err_addr);
+  add_cbs_for_reg(ral.corr1_err_cnt);
+  add_cbs_for_reg(ral.corr2_err_cnt);
+  add_cbs_for_reg(ral.corr1_err_loc);
+  add_cbs_for_reg(ral.corr2_err_loc);
+  add_cbs_for_reg(ral.phy_status);
+  add_cbs_for_reg(ral.curr_fifo_lvl);
 endfunction : connect_phase
 
 function void rram_ctrl_scoreboard::configure_csr_check_exclusions();
@@ -163,7 +199,8 @@ endtask : process_tl_prim_access
 
 function void rram_ctrl_scoreboard::reset(string kind = "HARD");
   super.reset(kind);
-  // Reset local fifos queues and variables
+
+  m_cbs.on_reset();
 endfunction : reset
 
 function void rram_ctrl_scoreboard::check_phase(uvm_phase phase);
@@ -173,4 +210,19 @@ endfunction : check_phase
 
 function void rram_ctrl_scoreboard::write_key_txn(nvm_otp_key_rsp_seq_item item);
   `uvm_info("key_txn", "Saw key transaction", UVM_LOW)
+endfunction
+
+function void rram_ctrl_scoreboard::add_cbs_for_reg(uvm_reg register);
+  uvm_reg_field fields[$];
+  register.get_fields(fields);
+  foreach (fields[i]) begin
+    uvm_reg_field_cb::add(fields[i], m_cbs);
+
+    // Tell uvm_reg_predictor not to check the value of the field on reads. m_cbs will do the
+    // check instead.
+    if (fields[i].get_compare() == UVM_CHECK) begin
+      m_cbs.enable_field_rdata_check(fields[i]);
+      fields[i].set_compare(UVM_NO_CHECK);
+    end
+  end
 endfunction

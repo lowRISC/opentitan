@@ -21,6 +21,7 @@ filesets:
       - rram_ctrl_env_cov.sv: {is_include_file: true}
       - rram_ctrl_virtual_sequencer.sv: {is_include_file: true}
       - rram_ctrl_scoreboard.sv: {is_include_file: true}
+      - rram_ctrl_reg_cbs.svh: {is_include_file: true}
       - rram_ctrl_reg_predictor_filter.sv: {is_include_file: true}
       - rram_ctrl_env.sv: {is_include_file: true}
       - seq_lib/region_cfg_setting_base.svh: {is_include_file: true}
