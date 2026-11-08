@@ -259,6 +259,7 @@ function void rram_ctrl_reg_cbs::post_predict(input uvm_reg_field  fld,
                                               input uvm_reg_map    map);
   bit            has_pending_write;
   uvm_reg_data_t reg_wdata, fld_wdata;
+  string         reg_fld_name = $sformatf("%0s.%0s", fld.get_parent().get_name(), fld.get_name());
 
   bit            has_direct_pred;
   uvm_reg_data_t direct_pred;
