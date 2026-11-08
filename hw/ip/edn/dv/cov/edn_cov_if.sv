@@ -3,11 +3,24 @@
 // SPDX-License-Identifier: Apache-2.0
 //
 // Implements functional coverage for edn.
-interface edn_cov_if (
-  input logic                         clk_i,
-  input logic [`NUM_END_POINTS - 1:0] ep_req
-);
+//
+// Note that this is a "max footprint" interface, which can accept up to MaxEndPoints endpoints. The
+// actual number of endpoints is supplied in a num_endpoints_i port, which is driven by a parameter
+// at the bind site.
 
+interface edn_cov_if
+  import edn_pkg::edn_req_t;
+#(
+  localparam int unsigned MaxEndPoints = 16
+) (
+  input logic                        clk_i,
+  input edn_req_t [MaxEndPoints-1:0] edn_i,
+
+  // The number of endpoints. This will be supplied by the bind site. It's a constant, but is passed
+  // as a port instead of a parameter in order to avoid the interface being parameterised (which
+  // would make passing it through uvm_config_db difficult).
+  input int unsigned                 num_endpoints_i
+);
   import uvm_pkg::*;
   import dv_utils_pkg::*;
   import edn_pkg::*;
@@ -18,24 +31,28 @@ interface edn_cov_if (
 
   bit en_full_cov = 1'b1;
   bit en_intg_cov = 1'b1;
-  bit [`NUM_END_POINTS - 1:0] ep_requests;
+  bit [MaxEndPoints - 1:0] ep_requests;
 
   // If en_full_cov is set, then en_intg_cov must also be set since it is a subset.
   bit en_intg_cov_loc;
   assign en_intg_cov_loc = en_full_cov | en_intg_cov;
 
-  assign ep_requests = ep_req;
+  for (genvar i = 0; i < MaxEndPoints; i++) begin : gen_assign_req
+    assign ep_requests[i] = (i < num_endpoints_i) ? edn_i[i].edn_req : 0;
+  end
 
-  covergroup edn_cfg_cg with function sample(uint    num_endpoints,
-                                             uint    num_boot_reqs,
-                                             mubi4_t boot_req_mode,
-                                             mubi4_t auto_req_mode);
+  covergroup edn_cfg_cg (int unsigned num_endpoints_in_hw)
+    with function sample(uint    num_endpoints,
+                         uint    num_boot_reqs,
+                         mubi4_t boot_req_mode,
+                         mubi4_t auto_req_mode);
+
     option.name         = "edn_cfg_cg";
     option.per_instance = 1;
 
     cp_num_endpoints: coverpoint num_endpoints {
       ignore_bins below_min = { [0:MIN_NUM_ENDPOINTS-1] };
-      ignore_bins above_max = { [`NUM_END_POINTS+1:$] };
+      ignore_bins above_max = { [num_endpoints_in_hw+1:$] };
     }
     cp_num_boot_reqs: coverpoint num_boot_reqs {
       bins         single   = { 1 };
@@ -52,14 +69,14 @@ interface edn_cov_if (
     cr_num_endpoints_mode: cross cp_num_endpoints, cp_mode;
   endgroup : edn_cfg_cg
 
-  covergroup edn_endpoints_cg @(ep_requests);
+  covergroup edn_endpoints_cg (int unsigned num_endpoints_in_hw) @(ep_requests);
     option.name         = "edn_endpoints_cg";
     option.per_instance = 1;
 
-    cp_ep_requests: coverpoint ep_requests {
-      bins none = { $countones(ep_requests) == 0 };
-      bins some = { $countones(ep_requests) inside { [1:`NUM_END_POINTS - 1] } };
-      bins all  = { $countones(ep_requests) == `NUM_END_POINTS };
+    cp_ep_requests: coverpoint $countones(ep_requests) {
+      bins none = { 0 };
+      bins some = { [1:num_endpoints_in_hw-1] };
+      bins all  = { num_endpoints_in_hw };
     }
   endgroup : edn_endpoints_cg
 
@@ -304,25 +321,27 @@ interface edn_cov_if (
     }
   endgroup : edn_hw_cmd_sts_cg
 
-  covergroup edn_endpoint_err_req_cg with function sample(uint endpoint);
+  covergroup edn_endpoint_err_req_cg (int unsigned num_endpoints_in_hw)
+    with function sample(uint endpoint);
+
     option.name         = "edn_endpoint_err_req_cg";
     option.per_instance = 1;
 
     // Create one bin per endpoint of EDN.
     endpoint_cg: coverpoint endpoint {
-      bins range[`NUM_END_POINTS] = {[0:`NUM_END_POINTS-1]};
+      bins range[num_endpoints_in_hw] = {[0:num_endpoints_in_hw-1]};
     }
   endgroup : edn_endpoint_err_req_cg
 
-  `DV_FCOV_INSTANTIATE_CG(edn_cfg_cg, en_full_cov)
-  `DV_FCOV_INSTANTIATE_CG(edn_endpoints_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(edn_cfg_cg, en_full_cov, (num_endpoints_i))
+  `DV_FCOV_INSTANTIATE_CG(edn_endpoints_cg, en_full_cov, (num_endpoints_i))
   `DV_FCOV_INSTANTIATE_CG(edn_cs_cmds_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_error_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_alert_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_cs_cmd_response_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_sw_cmd_sts_cg, en_full_cov)
   `DV_FCOV_INSTANTIATE_CG(edn_hw_cmd_sts_cg, en_full_cov)
-  `DV_FCOV_INSTANTIATE_CG(edn_endpoint_err_req_cg, en_full_cov)
+  `DV_FCOV_INSTANTIATE_CG(edn_endpoint_err_req_cg, en_full_cov, (num_endpoints_i))
 
   // Sample functions needed for xcelium
   function automatic void cg_cfg_sample(edn_env_cfg cfg);
