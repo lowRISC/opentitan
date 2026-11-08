@@ -6,7 +6,7 @@
 //
 // To use it:
 //
-//   - In the scoreboard's run_phase, start the clean_write_queue() task
+//   - In the scoreboard's run_phase, start the clean_write_queue() task.
 //   - Call uvm_reg_field_cb::add() to connect each monitored field to this cbs class.
 //   - To have an rdata check for a field, call enable_field_rdata_check() with it.
 //   - Call on_reset() from the scoreboard on resets.
@@ -120,7 +120,7 @@ class rram_ctrl_reg_cbs extends uvm_reg_cbs;
   extern function uvm_reg_data_t get_fld_prediction(uvm_reg_field fld);
 
   // Get the testbench's best possible prediction of the register's current value. This is built
-  // from calls to get_fld_prediction for the fields in the register.
+  // from calls to get_fld_prediction() for the fields in the register.
   extern function uvm_reg_data_t get_reg_prediction(uvm_reg register);
 
   // Standard function from uvm_reg_cbs that is called as part of do_predict.
@@ -213,7 +213,8 @@ function void rram_ctrl_reg_cbs::make_direct_prediction(uvm_reg_field fld, uvm_r
 
   if (!fld.get_parent().is_busy()) begin
     // If the field's parent register isn't busy, we can make a direct prediction of the field's
-    // value.
+    // value. This shouldn't fail (the only reason it can fail is if the register is busy), so we
+    // generate a fatal error if it does.
     if (!fld.predict(value)) begin
       `uvm_fatal("failed_predict",
                  $sformatf("Failed to predict value of %0s.", fld.get_full_name()))
@@ -238,8 +239,8 @@ function uvm_reg_data_t rram_ctrl_reg_cbs::get_fld_prediction(uvm_reg_field fld)
 endfunction
 
 function uvm_reg_data_t rram_ctrl_reg_cbs::get_reg_prediction(uvm_reg register);
-  // This is basically a clone of uvm_reg::get_mirrored_value, but using get_fld_prediction instead
-  // of getting the fields' mirrored values.
+  // This is basically a clone of uvm_reg::get_mirrored_value, but using get_fld_prediction()
+  // instead of getting the fields' mirrored values.
   uvm_reg_field  fields[$];
   uvm_reg_data_t prediction = 0;
 
@@ -259,6 +260,7 @@ function void rram_ctrl_reg_cbs::post_predict(input uvm_reg_field  fld,
                                               input uvm_reg_map    map);
   bit            has_pending_write;
   uvm_reg_data_t reg_wdata, fld_wdata;
+  string         reg_fld_name = $sformatf("%0s.%0s", fld.get_parent().get_name(), fld.get_name());
 
   bit            has_direct_pred;
   uvm_reg_data_t direct_pred;
