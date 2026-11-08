@@ -59,13 +59,11 @@ package rram_ctrl_env_pkg;
     NumRramCtrlIntr = 7
   } rram_ctrl_intr_e;
 
-  // Functions
-
-  // Package sources
   `include "rram_ctrl_env_cfg.sv"
   `include "rram_ctrl_env_cov.sv"
   `include "rram_ctrl_virtual_sequencer.sv"
   `include "rram_ctrl_reg_predictor_filter.sv"
+  `include "rram_ctrl_reg_cbs.svh"
   `include "rram_ctrl_scoreboard.sv"
   `include "rram_ctrl_env.sv"
   `include "rram_ctrl_vseq_list.sv"
