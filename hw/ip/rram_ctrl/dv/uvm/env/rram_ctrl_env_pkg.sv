@@ -21,6 +21,8 @@ package rram_ctrl_env_pkg;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
 
+  import otp_ctrl_pkg::NvmKeyWidth;
+
   import nvm_otp_key_agent_pkg::nvm_otp_key_agent_cfg;
   import nvm_otp_key_agent_pkg::nvm_otp_key_rsp_seq_item;
   import nvm_otp_key_agent_pkg::nvm_otp_key_agent;
@@ -68,6 +70,10 @@ package rram_ctrl_env_pkg;
     Corr2Err        = 6,
     NumRramCtrlIntr = 7
   } rram_ctrl_intr_e;
+
+
+  // Forward-declare rram_ctrl_reg_cbs (in order that it and the scoreboard can refer to each other)
+  typedef class rram_ctrl_reg_cbs;
 
   `include "rram_ctrl_env_cfg.sv"
   `include "rram_ctrl_env_cov.sv"
