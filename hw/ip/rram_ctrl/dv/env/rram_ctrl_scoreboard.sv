@@ -2,6 +2,8 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+`uvm_analysis_imp_decl(_otp_macro)
+
 class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   .CFG_T(rram_ctrl_env_cfg),
   .RAL_T(rram_ctrl_core_reg_block),
@@ -18,6 +20,24 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   tl_reg_adapter#(tl_seq_item)    m_tl_core_reg_adapter;
   rram_ctrl_reg_predictor_filter  m_tl_core_reg_predictor_filter;
 
+  uvm_analysis_imp_otp_macro #(otp_macro_rsp_seq_item, rram_ctrl_scoreboard) m_otp_macro_imp;
+
+  // Model of the OTP contents: every OTP word, keyed by OTP word address. It is loaded from the
+  // RRAM through the backdoor at the end of the first reset, then updated by every write and
+  // Zeroize.
+  local bit [OtpWidth-1:0] m_otp_mem[int unsigned];
+
+  // Model of the integrity page: the integrity byte stored for each 64-bit block of OTP data
+  // (OtpWordsPerIntgBlock words), keyed by block index. Write and Zeroize recompute it from the
+  // data. WriteRaw leaves it alone, so a Read after a WriteRaw can see a mismatch.
+  local bit [7:0] m_otp_intg[int unsigned];
+
+  // Set once the DUT has answered Init since the last reset.
+  local bit m_otp_init_done;
+
+  // Set once m_otp_mem and m_otp_intg have been loaded from the RRAM.
+  local bit m_otp_model_loaded;
+
   // Standard SV/UVM methods
   extern function new(string name = "", uvm_component parent = null);
   extern function void build_phase(uvm_phase phase);
@@ -33,6 +53,26 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   extern task process_tl_prim_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
                                      tl_phase_e tl_phase);
   extern function void configure_csr_check_exclusions();
+
+  // Checks a completed OTP macro transaction against the OTP model and keeps the model up to date.
+  // Called through m_otp_macro_imp.
+  extern function void write_otp_macro(otp_macro_rsp_seq_item item);
+
+  // Loads m_otp_mem and m_otp_intg from the RRAM through the backdoor.
+  extern local function void load_otp_model();
+
+  // Returns the 64 bits of OTP data in integrity block `intg_idx` from m_otp_mem.
+  extern local function otp_intg_block_t get_otp_intg_block(int unsigned intg_idx);
+
+  // Returns the Hamming(72,64) integrity byte for the data in integrity block `intg_idx`.
+  extern local function bit [7:0] calc_otp_intg(int unsigned intg_idx);
+
+  // Classifies a write by what it does to the words it targets.
+  extern local function otp_write_kind_e get_otp_write_kind(otp_macro_req_seq_item req);
+
+  // Checks that the RRAM holds what the OTP model says for the words that `req` touched, and
+  // the integrity byte of their block.
+  extern local function void check_otp_bkdr(otp_macro_req_seq_item req);
   extern function void reset(string kind = "HARD");
 endclass : rram_ctrl_scoreboard
 
@@ -52,6 +92,7 @@ function void rram_ctrl_scoreboard::build_phase(uvm_phase phase);
   m_tl_core_reg_adapter.cfg = cfg.m_tl_agent_cfgs[ral.get_name()];
   m_tl_core_reg_predictor_filter = rram_ctrl_reg_predictor_filter::type_id::create(
       "m_tl_core_reg_predictor_filter", this);
+  m_otp_macro_imp = new("m_otp_macro_imp", this);
 endfunction : build_phase
 
 function void rram_ctrl_scoreboard::connect_phase(uvm_phase phase);
@@ -61,6 +102,168 @@ function void rram_ctrl_scoreboard::connect_phase(uvm_phase phase);
   m_tl_core_reg_predictor_filter.ap.connect(m_tl_core_reg_predictor.bus_in);
   configure_csr_check_exclusions();
 endfunction : connect_phase
+
+function void rram_ctrl_scoreboard::write_otp_macro(otp_macro_rsp_seq_item item);
+  otp_macro_req_seq_item    req      = item.m_req;
+  string                    cmd_name = (req.m_cmd.name() == "") ? "??" : req.m_cmd.name();
+  string                    err_name = (item.m_err.name() == "") ? "??" : item.m_err.name();
+  int unsigned              intg_idx = req.m_addr / OtpWordsPerIntgBlock;
+  otp_write_kind_e          write_kind;
+  otp_ctrl_macro_pkg::err_e exp_err;
+
+  `uvm_info(`gfn, $sformatf("OTP macro transaction:\n%0s", item.sprint()), UVM_HIGH)
+
+  if (req.m_cmd == otp_ctrl_macro_pkg::Init) begin
+    if (item.m_err != otp_ctrl_macro_pkg::NoError) begin
+      `uvm_error("otp_init_err", $sformatf("OTP Init returned m_err = %0s (%0d).",
+                                           err_name, item.m_err))
+    end
+    m_otp_init_done = 1'b1;
+    return;
+  end
+
+  // The scoreboard can't predict the response to a command before Init.
+  if (!m_otp_init_done) begin
+    `uvm_error("otp_cmd_before_init",
+               $sformatf("Unspecified use of the OTP macro interface: %0s before Init.", cmd_name))
+    return;
+  end
+
+  // The scoreboard can't model a transfer that crosses an integrity block.
+  if ((req.m_addr + req.m_size) / OtpWordsPerIntgBlock != intg_idx) begin
+    `uvm_error("otp_block_crossed",
+               $sformatf({"Unspecified use of the OTP macro interface: %0s of %0d words at ",
+                          "address 0x%0h crosses an integrity block."},
+                         cmd_name, req.m_size + 1, req.m_addr))
+    return;
+  end
+
+  // The write kind is only meaningful for writes, and is only covered for them.
+  write_kind = get_otp_write_kind(req);
+  if (cfg.en_cov) cov.otp_cmd_cg.sample(item, write_kind);
+
+  case (req.m_cmd)
+    otp_ctrl_macro_pkg::Read, otp_ctrl_macro_pkg::ReadRaw: begin
+      // Read checks the stored integrity byte against the data, ReadRaw does not.
+      exp_err = ((req.m_cmd == otp_ctrl_macro_pkg::Read) &&
+                 (calc_otp_intg(intg_idx) != m_otp_intg[intg_idx])) ?
+                otp_ctrl_macro_pkg::MacroEccUncorrError :
+                otp_ctrl_macro_pkg::NoError;
+      if (item.m_err != exp_err) begin
+        `uvm_error("otp_read_err",
+                   $sformatf("%0s of address 0x%0h returned m_err = %0s (%0d), expected %0s.",
+                             cmd_name, req.m_addr, err_name, item.m_err, exp_err.name()))
+      end
+      if (item.m_err == otp_ctrl_macro_pkg::NoError) begin
+        for (int unsigned k = 0; k <= req.m_size; k++) begin
+          if (item.get_rdata_word(k) != m_otp_mem[req.m_addr + k]) begin
+            `uvm_error("otp_rdata_mismatch",
+                       $sformatf("%0s of address 0x%0h returned 0x%0h when we expected 0x%0h.",
+                                 cmd_name, req.m_addr + k, item.get_rdata_word(k),
+                                 m_otp_mem[req.m_addr + k]))
+          end
+        end
+      end
+    end
+    otp_ctrl_macro_pkg::Write, otp_ctrl_macro_pkg::WriteRaw: begin
+      // The 1 bits in wdata are written even if the write fails with MacroWriteBlankError.
+      exp_err = (write_kind == OtpWriteClearsBits) ? otp_ctrl_macro_pkg::MacroWriteBlankError :
+                                                     otp_ctrl_macro_pkg::NoError;
+      if (item.m_err != exp_err) begin
+        `uvm_error("otp_write_err",
+                   $sformatf("%0s of address 0x%0h returned m_err = %0s (%0d), expected %0s.",
+                             cmd_name, req.m_addr, err_name, item.m_err, exp_err.name()))
+      end
+      for (int unsigned k = 0; k <= req.m_size; k++) begin
+        m_otp_mem[req.m_addr + k] |= req.get_wdata_word(k);
+      end
+      if (req.m_cmd == otp_ctrl_macro_pkg::Write) m_otp_intg[intg_idx] = calc_otp_intg(intg_idx);
+      check_otp_bkdr(req);
+    end
+    otp_ctrl_macro_pkg::Zeroize: begin
+      if (item.m_err != otp_ctrl_macro_pkg::NoError) begin
+        `uvm_error("otp_zeroize_err",
+                   $sformatf("Zeroize of address 0x%0h returned m_err = %0s (%0d).",
+                             req.m_addr, err_name, item.m_err))
+      end
+      for (int unsigned k = 0; k <= req.m_size; k++) begin
+        m_otp_mem[req.m_addr + k] = '1;
+        // Zeroize returns the zeroized words.
+        if (item.get_rdata_word(k) != '1) begin
+          `uvm_error("otp_zeroize_rdata",
+                     $sformatf("Zeroize of address 0x%0h returned 0x%0h.",
+                               req.m_addr + k, item.get_rdata_word(k)))
+        end
+      end
+      m_otp_intg[intg_idx] = calc_otp_intg(intg_idx);
+      check_otp_bkdr(req);
+    end
+    default: begin
+      `uvm_error("otp_bad_cmd", $sformatf("Unexpected OTP command %0s (0x%0h).",
+                                          cmd_name, req.m_cmd))
+    end
+  endcase
+endfunction : write_otp_macro
+
+function otp_write_kind_e rram_ctrl_scoreboard::get_otp_write_kind(otp_macro_req_seq_item req);
+  bit target_blank = 1'b1;
+  bit sets_new_bit = 1'b0;
+
+  for (int unsigned k = 0; k <= req.m_size; k++) begin
+    bit [OtpWidth-1:0] old_word = m_otp_mem[req.m_addr + k];
+    bit [OtpWidth-1:0] new_word = req.get_wdata_word(k);
+
+    if ((old_word & ~new_word) != '0) return OtpWriteClearsBits;
+    if (old_word != '0) target_blank = 1'b0;
+    if ((new_word & ~old_word) != '0) sets_new_bit = 1'b1;
+  end
+
+  if (target_blank) return OtpWriteToBlank;
+  else if (sets_new_bit) return OtpWriteAddsBits;
+  else return OtpWriteNoNewBits;
+endfunction : get_otp_write_kind
+
+function void rram_ctrl_scoreboard::load_otp_model();
+  for (int unsigned addr = 0; addr < OtpDepth; addr++) begin
+    m_otp_mem[addr] = cfg.m_otp_bkdr_util.read16(addr * 2);
+  end
+  for (int unsigned intg_idx = 0; intg_idx < OtpDepth / OtpWordsPerIntgBlock; intg_idx++) begin
+    m_otp_intg[intg_idx] = cfg.m_otp_bkdr_util.read_intg(intg_idx * OtpWordsPerIntgBlock * 2);
+  end
+endfunction : load_otp_model
+
+function otp_intg_block_t rram_ctrl_scoreboard::get_otp_intg_block(int unsigned intg_idx);
+  otp_intg_block_t data;
+  for (int unsigned k = 0; k < OtpWordsPerIntgBlock; k++) begin
+    data[k * OtpWidth +: OtpWidth] = m_otp_mem[intg_idx * OtpWordsPerIntgBlock + k];
+  end
+  return data;
+endfunction : get_otp_intg_block
+
+function bit [7:0] rram_ctrl_scoreboard::calc_otp_intg(int unsigned intg_idx);
+  bit [71:0] enc = prim_secded_pkg::prim_secded_hamming_72_64_enc(get_otp_intg_block(intg_idx));
+  return enc[71:64];
+endfunction : calc_otp_intg
+
+function void rram_ctrl_scoreboard::check_otp_bkdr(otp_macro_req_seq_item req);
+  int unsigned intg_idx = req.m_addr / OtpWordsPerIntgBlock;
+  bit [7:0]    intg     = cfg.m_otp_bkdr_util.read_intg(req.m_addr * 2);
+
+  for (int unsigned k = 0; k <= req.m_size; k++) begin
+    int unsigned       addr = req.m_addr + k;
+    bit [OtpWidth-1:0] data = cfg.m_otp_bkdr_util.read16(addr * 2);
+    if (data != m_otp_mem[addr]) begin
+      `uvm_error("otp_bkdr_data",
+                 $sformatf("After %0s, the RRAM holds 0x%0h at OTP address 0x%0h, not 0x%0h.",
+                           req.m_cmd.name(), data, addr, m_otp_mem[addr]))
+    end
+  end
+  if (intg != m_otp_intg[intg_idx]) begin
+    `uvm_error("otp_bkdr_intg",
+               $sformatf("After %0s, the RRAM holds integrity 0x%0h for block %0d, not 0x%0h.",
+                         req.m_cmd.name(), intg, intg_idx, m_otp_intg[intg_idx]))
+  end
+endfunction : check_otp_bkdr
 
 function void rram_ctrl_scoreboard::configure_csr_check_exclusions();
   uvm_reg regs[$];
@@ -153,6 +356,14 @@ endtask : process_tl_prim_access
 function void rram_ctrl_scoreboard::reset(string kind = "HARD");
   super.reset(kind);
   // Reset local fifos queues and variables
+  m_otp_init_done = 1'b0;
+
+  // This is called at the end of each reset. The RRAM keeps its contents across a reset, so only
+  // load the OTP model the first time.
+  if (!m_otp_model_loaded) begin
+    load_otp_model();
+    m_otp_model_loaded = 1'b1;
+  end
 endfunction : reset
 
 function void rram_ctrl_scoreboard::check_phase(uvm_phase phase);
