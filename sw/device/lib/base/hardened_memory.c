@@ -151,9 +151,11 @@ hardened_bool_t hardened_memeq_masked_rhs(const uint32_t *lhs,
   HARDENED_CHECK_EQ(count, word_len);
   HARDENED_CHECK_NE(lhs_addr, rhs0_addr);
   HARDENED_CHECK_NE(rhs0_addr, rhs1_addr);
-  if (launder32(zeros) == launder32(~ones)) {
+  HARDENED_CHECK_NE(word_len, 0);
+  uint32_t diff = launder32(zeros) ^ launder32(~ones);
+  if (launder32(diff) == 0) {
     HARDENED_CHECK_EQ(launder32(zeros), ~launder32(ones));
-    return kHardenedBoolTrue;
+    return launderw(kHardenedBoolTrue ^ diff);
   }
 
   HARDENED_CHECK_NE(launder32(zeros), ~launder32(ones));
@@ -168,8 +170,8 @@ hardened_bool_t hardened_memeq(const uint32_t *lhs, const uint32_t *rhs,
 
 hardened_bool_t consttime_memeq_byte(const void *lhs, const void *rhs,
                                      size_t len) {
-  uint32_t zeros = 0;
-  uint32_t ones = UINT32_MAX;
+  uint32_t zeros = launder32(0);
+  uint32_t ones = launder32(UINT32_MAX);
 
   random_order_t order;
   random_order_init(&order, len);
@@ -198,11 +200,13 @@ hardened_bool_t consttime_memeq_byte(const void *lhs, const void *rhs,
     ones = launder32(ones) & (launder32((uint32_t)*a) ^ ~*b);
   }
 
+  RANDOM_ORDER_HARDENED_CHECK_DONE(order);
   HARDENED_CHECK_EQ(count, len);
 
-  if (launder32(zeros) == 0) {
+  uint32_t diff = launder32(zeros) | launder32(~ones);
+  if (launder32(diff) == 0) {
     HARDENED_CHECK_EQ(ones, UINT32_MAX);
-    return kHardenedBoolTrue;
+    return launderw(kHardenedBoolTrue ^ diff);
   }
 
   HARDENED_CHECK_NE(ones, UINT32_MAX);
