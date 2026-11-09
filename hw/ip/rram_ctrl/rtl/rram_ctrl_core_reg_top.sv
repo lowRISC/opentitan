@@ -220,6 +220,12 @@ module rram_ctrl_core_reg_top (
   logic [3:0] dis_sw_dis_wd;
   logic [3:0] dis_local_esc_relbl_err_qs;
   logic [3:0] dis_local_esc_relbl_err_wd;
+  logic [3:0] dis_dis_all_rewrite_qs;
+  logic [3:0] dis_dis_all_rewrite_wd;
+  logic [3:0] dis_dis_otp_rewrite_qs;
+  logic [3:0] dis_dis_otp_rewrite_wd;
+  logic [3:0] dis_dis_info_rewrite_qs;
+  logic [3:0] dis_dis_info_rewrite_wd;
   logic exec_we;
   logic [31:0] exec_qs;
   logic [31:0] exec_wd;
@@ -1770,6 +1776,90 @@ module rram_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (dis_local_esc_relbl_err_qs)
+  );
+
+  //   F[dis_all_rewrite]: 11:8
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_dis_dis_all_rewrite (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (dis_we),
+    .wd     (dis_dis_all_rewrite_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dis.dis_all_rewrite.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dis_dis_all_rewrite_qs)
+  );
+
+  //   F[dis_otp_rewrite]: 15:12
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_dis_dis_otp_rewrite (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (dis_we),
+    .wd     (dis_dis_otp_rewrite_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dis.dis_otp_rewrite.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dis_dis_otp_rewrite_qs)
+  );
+
+  //   F[dis_info_rewrite]: 19:16
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_dis_dis_info_rewrite (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (dis_we),
+    .wd     (dis_dis_info_rewrite_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.dis.dis_info_rewrite.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (dis_dis_info_rewrite_qs)
   );
 
 
@@ -13241,6 +13331,12 @@ module rram_ctrl_core_reg_top (
   assign dis_sw_dis_wd = reg_wdata[3:0];
 
   assign dis_local_esc_relbl_err_wd = reg_wdata[7:4];
+
+  assign dis_dis_all_rewrite_wd = reg_wdata[11:8];
+
+  assign dis_dis_otp_rewrite_wd = reg_wdata[15:12];
+
+  assign dis_dis_info_rewrite_wd = reg_wdata[19:16];
   assign exec_we = addr_hit[5] & reg_we & !reg_error;
 
   assign exec_wd = reg_wdata[31:0];
@@ -14289,6 +14385,9 @@ module rram_ctrl_core_reg_top (
       addr_hit[4]: begin
         reg_rdata_next[3:0] = dis_sw_dis_qs;
         reg_rdata_next[7:4] = dis_local_esc_relbl_err_qs;
+        reg_rdata_next[11:8] = dis_dis_all_rewrite_qs;
+        reg_rdata_next[15:12] = dis_dis_otp_rewrite_qs;
+        reg_rdata_next[19:16] = dis_dis_info_rewrite_qs;
       end
 
       addr_hit[5]: begin

@@ -143,6 +143,15 @@ package rram_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [3:0]  q;
+    } dis_info_rewrite;
+    struct packed {
+      logic [3:0]  q;
+    } dis_otp_rewrite;
+    struct packed {
+      logic [3:0]  q;
+    } dis_all_rewrite;
+    struct packed {
+      logic [3:0]  q;
     } local_esc_relbl_err;
     struct packed {
       logic [3:0]  q;
@@ -675,11 +684,11 @@ package rram_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    rram_ctrl_reg2hw_intr_state_reg_t intr_state; // [1484:1478]
-    rram_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [1477:1471]
-    rram_ctrl_reg2hw_intr_test_reg_t intr_test; // [1470:1457]
-    rram_ctrl_reg2hw_alert_test_reg_t alert_test; // [1456:1447]
-    rram_ctrl_reg2hw_dis_reg_t dis; // [1446:1439]
+    rram_ctrl_reg2hw_intr_state_reg_t intr_state; // [1496:1490]
+    rram_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [1489:1483]
+    rram_ctrl_reg2hw_intr_test_reg_t intr_test; // [1482:1469]
+    rram_ctrl_reg2hw_alert_test_reg_t alert_test; // [1468:1459]
+    rram_ctrl_reg2hw_dis_reg_t dis; // [1458:1439]
     rram_ctrl_reg2hw_exec_reg_t exec; // [1438:1407]
     rram_ctrl_reg2hw_init_reg_t init; // [1406:1406]
     rram_ctrl_reg2hw_control_reg_t control; // [1405:1392]
@@ -1114,7 +1123,7 @@ package rram_ctrl_reg_pkg;
     4'b 0001, // index[  1] RRAM_CTRL_INTR_ENABLE
     4'b 0001, // index[  2] RRAM_CTRL_INTR_TEST
     4'b 1111, // index[  3] RRAM_CTRL_ALERT_TEST
-    4'b 0001, // index[  4] RRAM_CTRL_DIS
+    4'b 0111, // index[  4] RRAM_CTRL_DIS
     4'b 1111, // index[  5] RRAM_CTRL_EXEC
     4'b 0001, // index[  6] RRAM_CTRL_INIT
     4'b 0001, // index[  7] RRAM_CTRL_CTRL_REGWEN
