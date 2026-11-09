@@ -268,7 +268,10 @@ class GDBController:
         except Exception as e:
             print(f"Error reading GDB output: {e}")
 
-        if "instruction skip applied" in output:
+        if (
+            "instruction skip applied" in output and
+            'printf "instruction skip applied' not in output
+        ):
             self._skip_hit_this_arm = True
             try:
                 from sw.host.penetrationtests.python.util import utils
