@@ -29,9 +29,9 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Interrupts
 
-| Interrupt Name   | Type   | Description                                                                           |
-|:-----------------|:-------|:--------------------------------------------------------------------------------------|
-| done             | Event  | OTBN has completed the operation, encountered a WFI instruction or has locked itself. |
+| Interrupt Name   | Type   | Description                                                                                          |
+|:-----------------|:-------|:-----------------------------------------------------------------------------------------------------|
+| done             | Event  | OTBN has completed an operation, encountered a WFI instruction or locked itself during an operation. |
 
 ## Security Alerts
 

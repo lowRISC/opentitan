@@ -336,7 +336,7 @@ The following actions are taken when OTBN detects a fatal error:
    - No more instructions are fetched or executed.
    - A [secure wipe of internal state](#internal-state-secure-wipe) is performed.
    - The [`ERR_BITS`](registers.md#err_bits) register is set to a non-zero value that describes the error.
-   - The current operation is marked as complete by setting [`INTR_STATE.done`](registers.md#intr_state).
+   - The current operation is marked as complete by setting [`INTR_STATE.done`](registers.md#intr_state), except during the initial secure wipe after reset.
 3. The [`STATUS`](registers.md#status) register is set to `LOCKED`.
 4. A [fatal alert](#alerts) is raised.
 
