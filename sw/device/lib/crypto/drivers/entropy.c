@@ -300,7 +300,7 @@ static const entropy_complex_config_t
                 .edn1 =
                     {
                         .base_address = kBaseEdn1,
-                        .reseed_interval = 4,
+                        .reseed_interval = 1,
                         .instantiate =
                             {
                                 .id = kEntropyDrbgOpInstantiate,
@@ -312,7 +312,7 @@ static const entropy_complex_config_t
                             {
                                 .id = kEntropyDrbgOpGenerate,
                                 .seed_material = NULL,
-                                .generate_len = 4,
+                                .generate_len = 16,
                             },
                         .reseed =
                             {
@@ -381,7 +381,7 @@ static const entropy_complex_config_t
             .edn1 =
                 {
                     .base_address = kBaseEdn1,
-                    .reseed_interval = 4,
+                    .reseed_interval = 1,
                     .instantiate =
                         {
                             .id = kEntropyDrbgOpInstantiate,
@@ -393,7 +393,7 @@ static const entropy_complex_config_t
                         {
                             .id = kEntropyDrbgOpGenerate,
                             .seed_material = NULL,
-                            .generate_len = 4,
+                            .generate_len = 16,
                         },
                     .reseed =
                         {
@@ -468,6 +468,38 @@ OT_USED static status_t csrng_send_app_cmd(
   // Check if we landed in the correct case statement. Use ORs for this to
   // avoid that multiple cases were executed.
   HARDENED_CHECK_EQ(launder32(cmd_type_used), cmd_type);
+
+  if (cmd_type == kEntropyCsrngSendAppCmdTypeCsrng) {
+    crypto_state_t *state = NULL;
+    if (status_ok(read_state_pointer(&state)) && state != NULL &&
+        launder32(state->csrng_instantiated) == kHardenedByteBoolTrue) {
+      HARDENED_CHECK_EQ(state->csrng_instantiated, kHardenedByteBoolTrue);
+      // Wait for any previous command (such as an asynchronous Reseed) to
+      // finish executing before issuing the next command.
+      uint32_t timeout = kEntropyPollCmdDoneTimeout;
+      do {
+        reg = abs_mmio_read32(sts_reg_addr);
+      } while (!bitfield_bit32_read(reg, CSRNG_SW_CMD_STS_CMD_ACK_BIT) &&
+               --timeout);
+
+      if (timeout == 0) {
+        // COVERAGE (HW ERR) The timeout should only happen with a HW error.
+        return OTCRYPTO_RECOV_ERR;
+      }
+      HARDENED_CHECK_EQ(
+          bitfield_bit32_read(launder32(reg), CSRNG_SW_CMD_STS_CMD_ACK_BIT),
+          true);
+
+      if (bitfield_field32_read(reg, CSRNG_SW_CMD_STS_CMD_STS_FIELD)) {
+        // COVERAGE (HW ERR) The status bit will be 0 unless there was a HW
+        // error.
+        return OTCRYPTO_RECOV_ERR;
+      }
+      HARDENED_CHECK_EQ(
+          bitfield_field32_read(launder32(reg), CSRNG_SW_CMD_STS_CMD_STS_FIELD),
+          CSRNG_SW_CMD_STS_CMD_STS_VALUE_SUCCESS);
+    }
+  }
 
   if ((cmd_type == kEntropyCsrngSendAppCmdTypeCsrng) ||
       (cmd_type == kEntropyCsrngSendAppCmdTypeEdnSw)) {
@@ -722,6 +754,10 @@ OT_USED static status_t edn_configure(const edn_config_t *config) {
                                   kEntropyCsrngSendAppCmdTypeEdnGen, false));
   abs_mmio_write32(
       config->base_address + EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_REG_OFFSET,
+      config->reseed_interval);
+  HARDENED_CHECK_EQ(
+      abs_mmio_read32(config->base_address +
+                      EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_REG_OFFSET),
       config->reseed_interval);
 
   // Clear the EDN recoverable alert status register.
@@ -1084,7 +1120,10 @@ OT_USED static status_t edn_check(const edn_config_t *config) {
   uint32_t edn_enable = bitfield_field32_read(reg, EDN_CTRL_EDN_ENABLE_FIELD);
   uint32_t auto_req_mode =
       bitfield_field32_read(reg, EDN_CTRL_AUTO_REQ_MODE_FIELD);
-  if (edn_enable == kMultiBitBool4True && auto_req_mode == kMultiBitBool4True) {
+  uint32_t reseed_interval = abs_mmio_read32(
+      config->base_address + EDN_MAX_NUM_REQS_BETWEEN_RESEEDS_REG_OFFSET);
+  if (edn_enable == kMultiBitBool4True && auto_req_mode == kMultiBitBool4True &&
+      reseed_interval == config->reseed_interval) {
     return OTCRYPTO_OK;
   }
   return OTCRYPTO_RECOV_ERR;
@@ -1391,7 +1430,26 @@ status_t entropy_csrng_generate(const entropy_seed_material_t *seed_material,
                                 uint32_t *buf, size_t len,
                                 hardened_bool_t fips_check) {
   HARDENED_TRY(entropy_csrng_generate_start(seed_material, len));
-  return entropy_csrng_generate_data_get(buf, len, fips_check);
+  HARDENED_TRY(entropy_csrng_generate_data_get(buf, len, fips_check));
+
+  crypto_state_t *state = NULL;
+  if (status_ok(read_state_pointer(&state)) && state != NULL) {
+    if (launder32(fips_check) == kHardenedBoolTrue) {
+      HARDENED_TRY(csrng_send_app_cmd(
+          kBaseCsrng,
+          (entropy_csrng_cmd_t){
+              .id = kEntropyDrbgOpReseed,
+              .disable_trng_input = kHardenedBoolFalse,
+              .seed_material = NULL,
+              .generate_len = 0,
+          },
+          kEntropyCsrngSendAppCmdTypeCsrng, /*check_completion=*/false));
+    } else {
+      HARDENED_CHECK_EQ(fips_check, kHardenedBoolFalse);
+    }
+  }
+
+  return OTCRYPTO_OK;
 }
 
 status_t entropy_csrng_uninstantiate(void) {
