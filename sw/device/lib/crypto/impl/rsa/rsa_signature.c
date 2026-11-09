@@ -42,7 +42,7 @@ static status_t digest_check(const otcrypto_hash_digest_t digest,
   }
   hash_info_t info;
   HARDENED_TRY(hash_info_get(digest.mode, &info));
-  if (info.der_oid == NULL || digest.len == 0) {
+  if (info.der_oid == NULL || (info.digest_wordlen != 0 && digest.len == 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
   if (info.digest_wordlen == 0) {
