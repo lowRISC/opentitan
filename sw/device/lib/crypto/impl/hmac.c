@@ -280,13 +280,18 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
   }
   HARDENED_CHECK_EQ(launder32(key_mode_used), key->config.key_mode);
 
-  // Check the digest length.
-  if (tag->len != digest_words) {
+  // Check the digest length (allow truncated tags >= 64 bits / 2 words up to
+  // the full digest length).
+  if (tag->len < 2 || tag->len > digest_words) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Preload the tag with randomness.
   HARDENED_TRY(hardened_memshred(tag->data, tag->len));
+
+  uint32_t full_tag_data[kHmacMaxDigestWords];
+  otcrypto_word32_buf_t full_tag =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, full_tag_data, digest_words);
 
   hmac_key_t hmac_key;
   HARDENED_TRY(hmac_key_construct(key, block_words, &hmac_key));
@@ -294,7 +299,8 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
   if (launder32(key->config.security_level) == kOtcryptoKeySecurityLevelLow) {
     // No protection against FI.
     HARDENED_CHECK_EQ(key->config.security_level, kOtcryptoKeySecurityLevelLow);
-    HARDENED_TRY(cl_fn(&hmac_key, input_message, tag));
+    HARDENED_TRY(cl_fn(&hmac_key, input_message, &full_tag));
+    HARDENED_TRY(hardened_memcpy(tag->data, full_tag_data, tag->len));
     HARDENED_TRY(hardened_memshred((uint32_t *)&hmac_key,
                                    sizeof(hmac_key) / sizeof(uint32_t)));
     return otcrypto_eval_exit(OTCRYPTO_OK);
@@ -305,18 +311,19 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
     // First HMAC computation using the HMAC core.
     HARDENED_CHECK_EQ(key->config.security_level,
                       kOtcryptoKeySecurityLevelMedium);
-    HARDENED_TRY(cl_fn(&hmac_key, input_message, tag));
+    HARDENED_TRY(cl_fn(&hmac_key, input_message, &full_tag));
     // Second HMAC computation using the HMAC core.
     uint32_t tag_redundant_data[kHmacMaxDigestWords];
-    otcrypto_word32_buf_t tag_redundant =
-        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_redundant_data, tag->len);
+    otcrypto_word32_buf_t tag_redundant = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, tag_redundant_data, digest_words);
     hmac_key_t hmac_key_redundant;
     HARDENED_TRY(hmac_key_construct(key, block_words, &hmac_key_redundant));
     HARDENED_TRY(cl_fn(&hmac_key_redundant, input_message, &tag_redundant));
     // Comparison of both tags.
     HARDENED_CHECK_EQ(
-        hardened_memeq(&tag->data[0], &tag_redundant.data[0], tag->len),
+        hardened_memeq(full_tag_data, tag_redundant_data, digest_words),
         kHardenedBoolTrue);
+    HARDENED_TRY(hardened_memcpy(tag->data, full_tag_data, tag->len));
     HARDENED_TRY(hardened_memshred((uint32_t *)&hmac_key,
                                    sizeof(hmac_key) / sizeof(uint32_t)));
     HARDENED_TRY(
@@ -330,19 +337,20 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
     HARDENED_CHECK_EQ(launder32(key->config.security_level),
                       kOtcryptoKeySecurityLevelHigh);
     // First HMAC computation using the HMAC core.
-    HARDENED_TRY(cl_fn(&hmac_key, input_message, tag));
+    HARDENED_TRY(cl_fn(&hmac_key, input_message, &full_tag));
     // Second HMAC computation without using the HMAC core.
     uint32_t tag_redundant_data[kHmacMaxDigestWords];
-    otcrypto_word32_buf_t tag_redundant =
-        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_redundant_data, tag->len);
+    otcrypto_word32_buf_t tag_redundant = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, tag_redundant_data, digest_words);
     hmac_key_t hmac_key_redundant;
     HARDENED_TRY(hmac_key_construct(key, block_words, &hmac_key_redundant));
     HARDENED_TRY(
         redundant_fn(&hmac_key_redundant, input_message, &tag_redundant));
     // Comparison of both tags.
     HARDENED_CHECK_EQ(
-        hardened_memeq(&tag->data[0], &tag_redundant.data[0], tag->len),
+        hardened_memeq(full_tag_data, tag_redundant_data, digest_words),
         kHardenedBoolTrue);
+    HARDENED_TRY(hardened_memcpy(tag->data, full_tag_data, tag->len));
     HARDENED_TRY(hardened_memshred((uint32_t *)&hmac_key,
                                    sizeof(hmac_key) / sizeof(uint32_t)));
     HARDENED_TRY(
