@@ -165,10 +165,8 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
                                      num_words, plaintext, plaintext_len);
     case kOtcryptoKeyModeRsaEncryptPkcs:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptPkcs);
-      if (plaintext_max_bytelen < max_plaintext_bytelen - 11) {
-        return OTCRYPTO_BAD_ARGS;
-      }
       return rsa_padding_pkcs1v15_decrypt_decode(recovered_message, num_words,
+                                                 plaintext_max_bytelen,
                                                  plaintext, plaintext_len);
     case kOtcryptoKeyModeRsaRaw:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaRaw);

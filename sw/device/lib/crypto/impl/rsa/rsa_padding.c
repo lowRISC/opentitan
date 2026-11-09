@@ -821,6 +821,7 @@ static status_t pkcs1v15_check_padding_and_find_message_start(
 
 status_t rsa_padding_pkcs1v15_decrypt_decode(uint32_t *encoded_message,
                                              size_t encoded_message_len,
+                                             size_t max_message_bytelen,
                                              uint8_t *message,
                                              size_t *message_bytelen) {
   HARDENED_TRY(reverse_bytes(encoded_message_len, encoded_message));
@@ -842,6 +843,10 @@ status_t rsa_padding_pkcs1v15_decrypt_decode(uint32_t *encoded_message,
   HARDENED_CHECK_EQ(message_start_idx0, message_start_idx1);
 
   *message_bytelen = encoded_message_bytelen - message_start_idx0;
+  if (*message_bytelen > max_message_bytelen) {
+    HARDENED_TRY(hardened_memshred(encoded_message, encoded_message_len));
+    return OTCRYPTO_BAD_ARGS;
+  }
   HARDENED_TRY(randomized_bytecopy(
       message, encoded_message_bytes + message_start_idx0, *message_bytelen));
   HARDENED_CHECK_EQ(

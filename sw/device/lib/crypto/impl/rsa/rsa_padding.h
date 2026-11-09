@@ -238,6 +238,7 @@ status_t rsa_padding_pkcs1v15_encrypt_encode(const uint8_t *message,
 OT_WARN_UNUSED_RESULT
 status_t rsa_padding_pkcs1v15_decrypt_decode(uint32_t *encoded_message,
                                              size_t encoded_message_len,
+                                             size_t max_message_bytelen,
                                              uint8_t *message,
                                              size_t *message_bytelen);
 
