@@ -1051,11 +1051,12 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   HARDENED_CHECK_EQ(launder32(shared_secret->config.hw_backed),
                     kHardenedBoolFalse);
 
-  // Check shared secret length (affine point x-coordinate || y-coordinate).
-  if (launder32(shared_secret->config.key_length) != kP256SharedSecretBytes) {
+  // Check shared secret length (either 64-byte full affine point x || y or
+  // 32-byte x-coordinate only).
+  if (launder32(shared_secret->config.key_length) != kP256SharedSecretBytes &&
+      launder32(shared_secret->config.key_length) != kP256CoordBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(shared_secret->config.key_length, kP256SharedSecretBytes);
   if (launder32(shared_secret->keyblob_length) !=
       keyblob_num_words(shared_secret->config) * sizeof(uint32_t)) {
     return OTCRYPTO_BAD_ARGS;
