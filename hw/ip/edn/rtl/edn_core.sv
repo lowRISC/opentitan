@@ -234,6 +234,7 @@ module edn_core import edn_pkg::*;
       cmd_rdy_q   <= '0;
       csrng_cmd_sts_q   <= csrng_pkg::CMD_STS_SUCCESS;
       csrng_sw_cmd_ack_q   <= '0;
+      csrng_hw_cmd_ack_q   <= '0;
       csrng_hw_cmd_sts_q   <= csrng_pkg::CMD_STS_SUCCESS;
       boot_mode_q   <= '0;
       auto_mode_q   <= '0;
