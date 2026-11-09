@@ -130,16 +130,20 @@ package i3c_pkg;
 
   typedef struct packed {
     logic     activate;    // Request to activate/deactivate the detector.
-    logic     deep_sleep;  // Entering 'Deepest Sleep.' Issue Wake Up signaling on Target Reset.
+    logic     wake_up;     // Entering 'Deepest Sleep.' Issue Wake Up signaling on Target Reset.
     logic     rst_periph;  // Reset Peripheral if Target Reset signaling detected.
     logic     rst_target;  // Reset Whole Target if Target Reset signaling detected.
   } i3c_rstdet_req_t;
 
   typedef struct packed {
-    logic     active;        // Detector is active.
-    logic     wake_up_det;   // Wake from Deep Sleep detected.
-    logic     peri_rst_det;  // Peripheral Reset detected.
-    logic     targ_rst_det;  // Whole Target Reset detected.
+    logic     active;         // Detector is active.
+    logic     wake_up_en;     // Wake from Deep Sleep enabled.
+    logic     rst_periph_en;  // Peripheral Reset enabled.
+    logic     rst_target_en;  // Whole Target Reset enabled.
+    logic     pattern_det;    // Target Reset Pattern detected.
+    logic     wake_up_det;    // Wake from Deep Sleep detected.
+    logic     peri_rst_det;   // Peripheral Reset detected.
+    logic     targ_rst_det;   // Whole Target Reset detected.
   } i3c_rstdet_rsp_t;
 
   // Default connectivity, when there is no Target Reset detector.
