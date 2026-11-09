@@ -162,6 +162,12 @@ static status_t rsa_mode_check(const otcrypto_key_mode_t mode) {
     case kOtcryptoKeyModeRsaEncryptOaep:
       HARDENED_CHECK_EQ(mode, kOtcryptoKeyModeRsaEncryptOaep);
       return OTCRYPTO_OK;
+    case kOtcryptoKeyModeRsaEncryptOaepMgfSha1:
+      HARDENED_CHECK_EQ(mode, kOtcryptoKeyModeRsaEncryptOaepMgfSha1);
+      return OTCRYPTO_OK;
+    case kOtcryptoKeyModeRsaEncryptOaepMgfSha256:
+      HARDENED_CHECK_EQ(mode, kOtcryptoKeyModeRsaEncryptOaepMgfSha256);
+      return OTCRYPTO_OK;
     case kOtcryptoKeyModeRsaEncryptPkcs:
       HARDENED_CHECK_EQ(mode, kOtcryptoKeyModeRsaEncryptPkcs);
       return OTCRYPTO_OK;
@@ -1158,6 +1164,10 @@ static otcrypto_status_t rsa_verify_exp_async_start(
   // Check the caller-provided public key buffer.
   HARDENED_TRY(public_key_structural_check(public_key));
   if (launder32(public_key->key_mode) == kOtcryptoKeyModeRsaEncryptOaep ||
+      launder32(public_key->key_mode) ==
+          kOtcryptoKeyModeRsaEncryptOaepMgfSha1 ||
+      launder32(public_key->key_mode) ==
+          kOtcryptoKeyModeRsaEncryptOaepMgfSha256 ||
       launder32(public_key->key_mode) == kOtcryptoKeyModeRsaEncryptPkcs) {
     return OTCRYPTO_BAD_ARGS;
   }
