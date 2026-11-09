@@ -1,0 +1,584 @@
+/*
+ * Copyright lowRISC contributors (OpenTitan project).
+ * Licensed under the Apache License, Version 2.0, see LICENSE for details.
+ * SPDX-License-Identifier: Apache-2.0
+ *
+ * This file was derived by lowRISC contributors (OpenTitan project) from the
+ * IHP Open PDK SRAM timing model RM_IHPSG13_1P_8192x32_c4_typ_1p20V_25C.lib
+ * (https://github.com/IHP-GmbH/IHP-Open-PDK, ihp-sg13g2/libs.ref/sg13g2_sram/lib).
+ * It is a synthetic model, not an IHP release; the lowRISC modifications are
+ * listed under SYNTHETIC MACRO below. IHP's original notice follows:
+ *
+ *   Copyright 2023 IHP PDK Authors
+ *
+ *   Licensed under the Apache License, Version 2.0 (the "License");
+ *   you may not use this file except in compliance with the License.
+ *   You may obtain a copy of the License at
+ *
+ *      https://www.apache.org/licenses/LICENSE-2.0
+ *
+ *   Unless required by applicable law or agreed to in writing, software
+ *   distributed under the License is distributed on an "AS IS" BASIS,
+ *   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *   See the License for the specific language governing permissions and
+ *   limitations under the License.
+ *
+ *   Generated on Mon Apr  7 14:15:44 2025
+ *
+ * SYNTHETIC MACRO - FOR SYNTHESIS TRIALS ONLY.
+ * Derived from RM_IHPSG13_1P_8192x32_c4_typ_1p20V_25C.lib
+ * 49152 words x 39 bits, 16 address bits, type rom.
+ * Timing and power are copied unchanged from the template.
+ * Area = 3.58549 um2/bit (template, 0.4940 GE/bit)
+ *        x 0.40 x 1916928 bits
+ */
+library(IHPSG13_SYNTHETIC_ROM_1P_49152x39_typ_1p20V_25C) {
+	technology (cmos) ;
+	delay_model : table_lookup ;
+	define ("add_pg_pin_to_lib",  "library",  "boolean");
+	add_pg_pin_to_lib : true;
+	voltage_map ( VDD, 1.20);
+	voltage_map ( VDDARRAY, 1.20);
+	voltage_map ( VSS, 0.000000 );
+
+	date            : "Mon Apr  7 14:15:42 2025" ;
+	comment         : "IHP Microelectronics GmbH, 2023" ;
+	revision        : 1.0.0 ;
+	simulation      : true ;
+	nom_process     : 1 ;
+	nom_temperature : 25 ;
+	nom_voltage     : 1.20 ;
+
+	operating_conditions("typ_1p20V_25C"){
+	    process     : 1 ;
+	    temperature : 25 ;
+	    voltage     : 1.20 ;
+	    tree_type   : "balanced_tree" ;
+	}
+
+	default_operating_conditions  : typ_1p20V_25C ;
+	default_max_transition        : 1.0 ;
+	default_fanout_load           : 1.0 ;
+	default_inout_pin_cap         : 0.0 ;
+	default_input_pin_cap         : 0.0 ;
+	default_output_pin_cap        : 0.0 ;
+	default_cell_leakage_power    : 0.0 ;
+	default_leakage_power_density : 0.0 ;
+
+	slew_lower_threshold_pct_rise : 30 ;
+	slew_upper_threshold_pct_rise : 70 ;
+	input_threshold_pct_fall      : 50 ;
+	output_threshold_pct_fall     : 50 ;
+	input_threshold_pct_rise      : 50 ;
+	output_threshold_pct_rise     : 50 ;
+	slew_lower_threshold_pct_fall : 30 ;
+	slew_upper_threshold_pct_fall : 70 ;
+	slew_derate_from_library      : 0.5;
+	k_volt_cell_leakage_power     : 0.0 ;
+	k_temp_cell_leakage_power     : 0.0 ;
+	k_process_cell_leakage_power  : 0.0 ;
+	k_volt_internal_power         : 0.0 ;
+	k_temp_internal_power         : 0.0 ;
+	k_process_internal_power      : 0.0 ;
+
+	capacitive_load_unit            (1,pf) ;
+	voltage_unit                  : "1V" ;
+	current_unit                  : "1uA" ;
+	time_unit                     : "1ns" ;
+	leakage_power_unit            : "1nW" ;
+	pulling_resistance_unit       : "1kohm";
+	/*
+	  ------------------------------------------------------------------------------------------
+	  implicit units overview:
+	    cell_area       unit      : "um"
+	    internal_power  unit      : "1e-12 * J/toggle = 1 * uW/MHz"
+	                                (capacitive_load_unit * voltage_unit^2) per toggle event
+	  ------------------------------------------------------------------------------------------
+	*/
+	library_features(report_delay_calculation);
+	define_cell_area (pad_drivers,pad_driver_sites) ;
+
+	lu_table_template(CLKTRAN_constraint_template) {
+	     variable_1 : constrained_pin_transition;
+	     index_1 ( "0.010, 0.050, 0.200, 0.400, 1.000" );
+	}
+	lu_table_template(SRAM_load_template) {
+	     variable_1 : total_output_net_capacitance;
+	     index_1 ( "0.0008,0.0014,0.0051,0.0100,0.0339,0.0640" );
+	}
+	lu_table_template(SIG2SRAM_constraint_template) {
+	     variable_1 : related_pin_transition;
+	     variable_2 : constrained_pin_transition;
+	     index_1 ( "0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760" );
+	     index_2 ( "0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760" );
+	}
+
+	lu_table_template(SIG2SRAM_delay_template) {
+	     variable_1 : input_net_transition;
+	     variable_2 : total_output_net_capacitance;
+	     index_1 ( "0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760" );
+	     index_2 ( "0.0008,0.0014,0.0051,0.0100,0.0339,0.0640" );
+	}
+
+	type (D_38_0) {
+		base_type : array;
+		data_type : bit;
+		bit_width : 39;
+		bit_from  : 38;
+		bit_to    : 0;
+		downto    : true;
+	 }
+
+	type (A_15_0) {
+		base_type : array;
+		data_type : bit;
+		bit_width : 16;
+		bit_from  : 15;
+		bit_to    : 0;
+		downto    : true;
+	 }
+
+cell(IHPSG13_SYNTHETIC_ROM_1P_49152x39) {
+pg_pin (VDD) {
+  pg_type : primary_power;
+  voltage_name : VDD;
+}
+pg_pin (VDDARRAY) {
+  pg_type : primary_power;
+  voltage_name : VDDARRAY;
+}
+pg_pin (VSS) {
+  pg_type : primary_ground;
+  voltage_name : VSS;
+}
+
+memory() {
+ type : rom;
+ address_width : 16;
+ word_width : 39;
+}
+
+interface_timing : false;
+bus_naming_style    :   "%s[%d]" ;
+area        : 2749251.164 ;
+
+   pin(A_DLY) {
+	   direction       : input ;
+	   capacitance     : 0.00401111 ;
+	   max_transition  : "1" ;
+		 related_power_pin : VDD;
+		 related_ground_pin : VSS;
+		internal_power() {
+		  rise_power("scalar") {
+			 values (0);
+		  }
+		  fall_power("scalar") {
+			 values (0);
+		  }
+	   }
+   }
+
+bus(A_ADDR) {
+   bus_type : A_15_0;
+   direction          : input ;
+   capacitance        : 0.00721489 ;
+    pin(A_ADDR[0]) {
+       capacitance : 0.00593979 ;
+    }
+    pin(A_ADDR[1]) {
+       capacitance : 0.00483009 ;
+    }
+    pin(A_ADDR[2]) {
+       capacitance : 0.006215 ;
+    }
+    pin(A_ADDR[3]) {
+       capacitance : 0.00766726 ;
+    }
+    pin(A_ADDR[4]) {
+       capacitance : 0.00488951 ;
+    }
+    pin(A_ADDR[5]) {
+       capacitance : 0.0091523 ;
+    }
+    pin(A_ADDR[6]) {
+       capacitance : 0.0109212 ;
+    }
+    pin(A_ADDR[7]) {
+       capacitance : 0.00774122 ;
+    }
+    pin(A_ADDR[8]) {
+       capacitance : 0.0101403 ;
+    }
+    pin(A_ADDR[9]) {
+       capacitance : 0.00771605 ;
+    }
+    pin(A_ADDR[10]) {
+       capacitance : 0.00860549 ;
+    }
+    pin(A_ADDR[11]) {
+       capacitance : 0.00948967 ;
+    }
+   max_transition     : "0.476" ;
+   pin(A_ADDR[15:0]) {
+   related_power_pin  : VDD;
+   related_ground_pin : VSS;
+	internal_power() {
+		when : "A_MEN";
+		        rise_power("scalar"){
+		 values (0.0075);
+		}
+		        fall_power("scalar"){
+		 values (0.0016);
+		}
+	}
+	internal_power() {
+		when : "!A_MEN";
+		        rise_power("scalar"){
+		 values (0.0157);
+		}
+		        fall_power("scalar"){
+		 values (0.0046);
+		}
+	}
+	}
+	timing() {
+		timing_type     : setup_rising;
+		related_pin     : "A_CLK";
+		when            : "(A_REN & A_MEN)"
+		sdf_cond        : "A_R_ACCESS"
+
+		rise_constraint("SIG2SRAM_constraint_template") {
+		index_1("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		index_2("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		values ("-0.4168,-0.3973,-0.3855,-0.3543,-0.3074,-0.2020,-0.0027",\
+"-0.4324,-0.4129,-0.4012,-0.3699,-0.3191,-0.2176,-0.0184",\
+"-0.4441,-0.4285,-0.4129,-0.3816,-0.3309,-0.2293,-0.0301",\
+"-0.4793,-0.4598,-0.4441,-0.4129,-0.3660,-0.2645,-0.0652",\
+"-0.5223,-0.5066,-0.4910,-0.4598,-0.4129,-0.3074,-0.1121",\
+"-0.6199,-0.6082,-0.5926,-0.5613,-0.5145,-0.4129,-0.2137",\
+"-0.8191,-0.8074,-0.7840,-0.7566,-0.7098,-0.6082,-0.4051");
+		}
+
+		fall_constraint("SIG2SRAM_constraint_template") {
+		index_1("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		index_2("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		values ("-0.3309,-0.3113,-0.2996,-0.2684,-0.2176,-0.1238,0.0637",\
+"-0.3465,-0.3309,-0.3152,-0.2840,-0.2332,-0.1395,0.0480",\
+"-0.3582,-0.3426,-0.3270,-0.2996,-0.2488,-0.1512,0.0324",\
+"-0.3895,-0.3738,-0.3582,-0.3309,-0.2801,-0.1863,0.0051",\
+"-0.4363,-0.4207,-0.4051,-0.3777,-0.3230,-0.2293,-0.0379",\
+"-0.5379,-0.5223,-0.5066,-0.4793,-0.4285,-0.3309,-0.1434",\
+"-0.7332,-0.7176,-0.7020,-0.6746,-0.6238,-0.5262,-0.3387");
+		}
+	}
+
+
+	timing() {
+		timing_type     : hold_rising;
+		related_pin     : "A_CLK";
+		when            : "(A_REN & A_MEN)"
+		sdf_cond        : "A_R_ACCESS"
+
+		rise_constraint("SIG2SRAM_constraint_template") {
+		index_1("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		index_2("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		values ("0.5246,0.5051,0.4895,0.4582,0.4113,0.3059,0.1066",\
+"0.5402,0.5207,0.5051,0.4777,0.4270,0.3215,0.1223",\
+"0.5520,0.5324,0.5168,0.4895,0.4387,0.3371,0.1340",\
+"0.5832,0.5676,0.5520,0.5207,0.4738,0.3684,0.1691",\
+"0.6301,0.6105,0.5949,0.5676,0.5168,0.4113,0.2160",\
+"0.7316,0.7121,0.7004,0.6691,0.6223,0.5168,0.3176",\
+"0.9270,0.9230,0.8957,0.8645,0.8137,0.7121,0.5168");
+		}
+
+		fall_constraint("SIG2SRAM_constraint_template") {
+		index_1("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		index_2("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		values ("0.4309,0.4152,0.4035,0.3684,0.3215,0.2277,0.0363",\
+"0.4465,0.4309,0.4152,0.3879,0.3371,0.2395,0.0559",\
+"0.4582,0.4426,0.4309,0.3996,0.3488,0.2551,0.0715",\
+"0.4934,0.4777,0.4621,0.4348,0.3840,0.2863,0.0988",\
+"0.5363,0.5207,0.5051,0.4777,0.4270,0.3332,0.1418",\
+"0.6379,0.6262,0.6105,0.5793,0.5324,0.4348,0.2434",\
+"0.8332,0.8215,0.8059,0.7707,0.7238,0.6301,0.4387");
+		}
+	}
+}
+pin(A_REN) {
+   direction          : input ;
+   capacitance        : 0.00381634 ;
+   max_transition     : "0.476" ;
+   related_power_pin  : VDD;
+   related_ground_pin : VSS;
+	internal_power() {
+		when : "A_MEN";
+		        rise_power("scalar"){
+		 values (0.0053);
+		}
+		        fall_power("scalar"){
+		 values (0.0045);
+		}
+	}
+	internal_power() {
+		when : "!A_MEN";
+		        rise_power("scalar"){
+		 values (0.0057);
+		}
+		        fall_power("scalar"){
+		 values (0.0040);
+		}
+	}
+	timing() {
+		timing_type     : setup_rising;
+		related_pin     : "A_CLK";
+		when            : "A_MEN"
+		sdf_cond        : "A_MEN"
+
+		rise_constraint("SIG2SRAM_constraint_template") {
+		index_1("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		index_2("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		values ("-0.0301,-0.0145,0.0012,0.0324,0.0793,0.1809,0.3762",\
+"-0.0457,-0.0301,-0.0145,0.0168,0.0637,0.1613,0.3605",\
+"-0.0574,-0.0418,-0.0262,0.0051,0.0520,0.1496,0.3449",\
+"-0.0926,-0.0730,-0.0574,-0.0262,0.0207,0.1184,0.3137",\
+"-0.1395,-0.1238,-0.1082,-0.0770,-0.0301,0.0715,0.2707",\
+"-0.2410,-0.2254,-0.2098,-0.1746,-0.1355,-0.0340,0.1652",\
+"-0.4402,-0.4207,-0.4051,-0.3738,-0.3270,-0.2293,-0.0340");
+		}
+
+		fall_constraint("SIG2SRAM_constraint_template") {
+		index_1("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		index_2("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		values ("0.0988,0.1145,0.1262,0.1535,0.2043,0.3020,0.4855",\
+"0.0832,0.0988,0.1105,0.1418,0.1848,0.2824,0.4738",\
+"0.0676,0.0832,0.0949,0.1262,0.1730,0.2668,0.4621",\
+"0.0402,0.0559,0.0676,0.0988,0.1457,0.2434,0.4191",\
+"-0.0105,0.0012,0.0168,0.0480,0.0988,0.1965,0.3840",\
+"-0.1160,-0.0965,-0.0848,-0.0535,-0.0066,0.0988,0.2824",\
+"-0.3113,-0.2957,-0.2801,-0.2527,-0.2059,-0.1043,0.0832");
+		}
+	}
+
+
+	timing() {
+		timing_type     : hold_rising;
+		related_pin     : "A_CLK";
+		when            : "A_MEN"
+		sdf_cond        : "A_MEN"
+
+		rise_constraint("SIG2SRAM_constraint_template") {
+		index_1("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		index_2("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		values ("0.2707,0.2551,0.2395,0.2121,0.1613,0.0598,-0.1395",\
+"0.2863,0.2707,0.2551,0.2238,0.1730,0.0715,-0.1238",\
+"0.2980,0.2824,0.2668,0.2395,0.1887,0.0871,-0.1121",\
+"0.3332,0.3176,0.3020,0.2707,0.2199,0.1184,-0.0809",\
+"0.3762,0.3605,0.3449,0.3176,0.2668,0.1613,-0.0340",\
+"0.4816,0.4621,0.4504,0.4191,0.3723,0.2629,0.0715",\
+"0.6770,0.6613,0.6418,0.6184,0.5637,0.4699,0.2629");
+		}
+
+		fall_constraint("SIG2SRAM_constraint_template") {
+		index_1("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		index_2("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		values ("0.2590,0.2434,0.2316,0.2004,0.1457,0.0520,-0.1355",\
+"0.2746,0.2590,0.2434,0.2160,0.1613,0.0676,-0.1199",\
+"0.2863,0.2707,0.2590,0.2277,0.1730,0.0832,-0.1082",\
+"0.3215,0.3059,0.2902,0.2590,0.2082,0.1105,-0.0770",\
+"0.3645,0.3488,0.3332,0.3059,0.2551,0.1535,-0.0340",\
+"0.4699,0.4543,0.4387,0.4074,0.3605,0.2551,0.0715",\
+"0.6652,0.6496,0.6340,0.6027,0.5520,0.4621,0.2707");
+		}
+	}
+	}
+pin(A_MEN) {
+   direction          : input ;
+   capacitance        : 0.00309605 ;
+   max_transition     : "0.476" ;
+   related_power_pin  : VDD;
+   related_ground_pin : VSS;
+	internal_power() {
+		        rise_power("scalar"){
+		 values (0.0874);
+		}
+		        fall_power("scalar"){
+		 values (0.0062);
+		}
+	}
+	timing() {
+		timing_type     : setup_rising;
+		related_pin     : "A_CLK";
+
+		rise_constraint("SIG2SRAM_constraint_template") {
+		index_1("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		index_2("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		values ("0.2043,0.2199,0.2316,0.2668,0.3098,0.4152,0.6066",\
+"0.1887,0.2043,0.2199,0.2512,0.2941,0.3996,0.5949",\
+"0.1730,0.1887,0.2043,0.2355,0.2824,0.3840,0.5793",\
+"0.1418,0.1574,0.1730,0.2043,0.2512,0.3566,0.5480",\
+"0.0949,0.1105,0.1262,0.1574,0.2043,0.3020,0.5051",\
+"-0.0066,0.0090,0.0246,0.0520,0.0988,0.2043,0.3996",\
+"-0.2020,-0.1863,-0.1746,-0.1434,-0.0965,0.0090,0.2082");
+		}
+
+		fall_constraint("SIG2SRAM_constraint_template") {
+		index_1("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		index_2("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		values ("0.2980,0.3137,0.3254,0.3527,0.4035,0.5012,0.6887",\
+"0.2824,0.2980,0.3098,0.3371,0.3879,0.4855,0.6730",\
+"0.2668,0.2824,0.2941,0.3215,0.3723,0.4699,0.6574",\
+"0.2355,0.2473,0.2629,0.2902,0.3410,0.4387,0.6262",\
+"0.1887,0.2004,0.2160,0.2395,0.2941,0.3918,0.5793",\
+"0.0871,0.1027,0.1145,0.1418,0.1848,0.2746,0.4816",\
+"-0.1082,-0.0965,-0.0809,-0.0496,-0.0027,0.0949,0.2863");
+		}
+	}
+
+
+	timing() {
+		timing_type     : hold_rising;
+		related_pin     : "A_CLK";
+
+		rise_constraint("SIG2SRAM_constraint_template") {
+		index_1("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		index_2("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		values ("0.2512,0.2355,0.2199,0.1926,0.1418,0.0402,-0.1590",\
+"0.2668,0.2512,0.2355,0.2082,0.1574,0.0559,-0.1434",\
+"0.2824,0.2629,0.2512,0.2199,0.1691,0.0715,-0.1316",\
+"0.3137,0.2980,0.2824,0.2512,0.2004,0.0988,-0.0965",\
+"0.3566,0.3410,0.3254,0.2980,0.2473,0.1418,-0.0535",\
+"0.4621,0.4426,0.4309,0.3996,0.3527,0.2473,0.0520",\
+"0.6574,0.6418,0.6262,0.5949,0.5441,0.4465,0.2473");
+		}
+
+		fall_constraint("SIG2SRAM_constraint_template") {
+		index_1("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		index_2("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		values ("0.2395,0.2238,0.2121,0.1809,0.1301,0.0324,-0.1551",\
+"0.2551,0.2434,0.2277,0.1965,0.1457,0.0480,-0.1395",\
+"0.2707,0.2551,0.2395,0.2082,0.1574,0.0637,-0.1277",\
+"0.3020,0.2863,0.2707,0.2434,0.1926,0.0910,-0.0965",\
+"0.3449,0.3332,0.3176,0.2863,0.2355,0.1379,-0.0496",\
+"0.4504,0.4348,0.4230,0.3918,0.3410,0.2434,0.0559",\
+"0.6457,0.6301,0.6145,0.5910,0.5324,0.4387,0.2512");
+		}
+	}
+	}
+   pin(A_CLK)  {
+	   direction       : input;
+	   capacitance     : 0.00380014;
+	   max_transition  : "0.476";
+	   clock           : "true" ;
+	   pin_func_type   : active_rising ;
+
+	   timing () {
+		 timing_type : "min_pulse_width";
+		 related_pin : "A_CLK";
+		 rise_constraint("CLKTRAN_constraint_template") {
+		 index_1("0.0056,0.476");
+		 values("0.21,0.21");
+		 }
+	   }
+
+	   related_power_pin : VDD;
+	   related_ground_pin : VSS;
+
+	internal_power() {
+		when : "!A_MEN & !A_REN";
+		        rise_power("scalar"){
+		 values (0);
+		}
+		        fall_power("scalar"){
+		 values (0);
+		}
+	}
+	internal_power() {
+		when : "A_MEN & A_REN";
+		        rise_power("scalar"){
+		 values (230.3533);
+		}
+		        fall_power("scalar"){
+		 values (0);
+		}
+	}
+	internal_power() {
+		when : "!A_MEN & A_REN";
+		        rise_power("scalar"){
+		 values (0.4883);
+		}
+		        fall_power("scalar"){
+		 values (0);
+		}
+	}
+	internal_power() {
+		when : "A_MEN & !A_REN";
+		        rise_power("scalar"){
+		 values (0);
+		}
+		        fall_power("scalar"){
+		 values (0);
+		}
+	}
+	}
+bus(A_DOUT) {
+
+	   bus_type : D_38_0;
+	   direction       : output ;
+	   capacitance     : 0 ;
+	   max_capacitance  : 0.064 ;
+	   memory_read() {
+		  address : A_ADDR ;
+	   }
+	   pin(A_DOUT[38:0]) {
+		 related_power_pin : VDD;
+		 related_ground_pin : VSS;
+	   internal_power() {
+		  rise_power("scalar") {
+			 values (0);
+		  }
+		  fall_power("scalar") {
+			 values (0);
+		  }
+	   }
+	   }
+	   timing() {
+		 related_pin   : "A_CLK";
+		 timing_type   : rising_edge ;
+		 timing_sense  : non_unate ;
+
+	   cell_rise(SIG2SRAM_delay_template) {
+		 index_1("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		 index_2("0.0008,0.0014,0.0051,0.0100,0.0339,0.0640");
+		 values ("5.5956,5.5972,5.6048,5.6135,5.6460,5.6818",\
+"5.6061,5.6077,5.6154,5.6241,5.6565,5.6924",\
+"5.6142,5.6158,5.6234,5.6321,5.6646,5.7004",\
+"5.6202,5.6218,5.6295,5.6382,5.6706,5.7065",\
+"5.6260,5.6276,5.6353,5.6440,5.6764,5.7123",\
+"5.6619,5.6635,5.6712,5.6799,5.7123,5.7482",\
+"5.7185,5.7201,5.7278,5.7365,5.7689,5.8048");
+	   }
+	   cell_fall(SIG2SRAM_delay_template) {
+		 index_1("0.0056,0.0232,0.0400,0.0728,0.1280,0.2440,0.4760");
+		 index_2("0.0008,0.0014,0.0051,0.0100,0.0339,0.0640");
+		 values ("5.5345,5.5358,5.5418,5.5490,5.5755,5.6021",\
+"5.5450,5.5464,5.5524,5.5595,5.5860,5.6126",\
+"5.5531,5.5544,5.5604,5.5676,5.5941,5.6207",\
+"5.5592,5.5605,5.5665,5.5736,5.6001,5.6268",\
+"5.5650,5.5663,5.5723,5.5794,5.6059,5.6326",\
+"5.6009,5.6022,5.6082,5.6153,5.6418,5.6685",\
+"5.6574,5.6588,5.6648,5.6719,5.6984,5.7250");
+	   }
+
+	   rise_transition(SRAM_load_template) {
+		 index_1("0.0008,0.0014,0.0051,0.0100,0.0339,0.0640");
+		 values ("0.0326,0.0341,0.0428,0.0518,0.0923,0.1492");
+	   }
+	   fall_transition(SRAM_load_template) {
+		 index_1("0.0008,0.0014,0.0051,0.0100,0.0339,0.0640");
+		 values ("0.0254,0.0265,0.0335,0.0402,0.0707,0.1039");
+	   }
+	}
+}
+cell_leakage_power : 3168.2478;
+}
+}
