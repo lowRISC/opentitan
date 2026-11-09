@@ -21,6 +21,12 @@ class rram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rram_ctrl_core_reg_blo
   int unsigned m_wr_fifo_depth;
   int unsigned m_rd_fifo_depth;
 
+  // Configuration of the agent that acts as otp_ctrl on the OTP macro interface.
+  otp_macro_agent_cfg m_otp_macro_agent_cfg;
+
+  // Backdoor access to the OTP region of the RRAM array, created in tb.sv.
+  rram_ctrl_otp_bkdr_util m_otp_bkdr;
+
   // Standard SV/UVM methods
   extern function new(string name="");
 
@@ -32,6 +38,7 @@ endclass : rram_ctrl_env_cfg
 
 function rram_ctrl_env_cfg::new(string name="");
   super.new(name);
+  m_otp_macro_agent_cfg = otp_macro_agent_cfg::type_id::create("m_otp_macro_agent_cfg");
 endfunction : new
 
 function void rram_ctrl_env_cfg::initialize(bit inherit_ral_models = 1'b0);

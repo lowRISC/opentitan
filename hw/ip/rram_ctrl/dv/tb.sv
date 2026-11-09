@@ -12,6 +12,7 @@ module tb;
   // Macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
+  `include "rram_ctrl_bkdr_util_hier.svh"
 
   wire                          clk;
   wire                          rst_n;
@@ -27,16 +28,11 @@ module tb;
   tl_if                         tl_host_if    (.clk(clk),     .rst_n(rst_n));
   tl_if                         tl_prim_if    (.clk(clk),     .rst_n(rst_n));
   rram_ctrl_otp_key_if          otp_key_if    (.clk(clk_otp), .rst_n(rst_otp_n));
+  otp_macro_if                  otp_macro_if  (.clk_i(clk_otp), .rst_ni(rst_otp_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if       (interrupts);
 
   rram_ctrl_pkg::rram_macro_req_t rram_req;
   rram_ctrl_pkg::rram_macro_rsp_t rram_rsp;
-
-  otp_ctrl_macro_pkg::otp_ctrl_macro_req_t otp_macro_req;
-  otp_ctrl_macro_pkg::otp_ctrl_macro_rsp_t otp_macro_rsp;
-
-  // Not driven by anything real yet - the DUT never sees a macro response.
-  assign otp_macro_req = '{valid: 1'b0, cmd: otp_ctrl_macro_pkg::Init, default: '0};
 
   `DV_ALERT_IF_CONNECT()
 
@@ -64,8 +60,8 @@ module tb;
     .host_tl_o(tl_host_if.d2h),
 
     // otp interface
-    .otp_macro_i(otp_macro_req),
-    .otp_macro_o(otp_macro_rsp),
+    .otp_macro_i(otp_macro_if.req),
+    .otp_macro_o(otp_macro_if.rsp),
     .otp_key_i  (otp_key_if.otp_key_rsp),
     .otp_key_o  (otp_key_if.otp_key_req),
 
@@ -135,6 +131,24 @@ module tb;
   assign (pull1, pull0) rram_test_analog = 1'b0;
 
   initial begin
+    localparam int unsigned OtpBits  = otp_ctrl_macro_pkg::OtpDepth * otp_ctrl_macro_pkg::OtpWidth;
+    localparam int unsigned RowBits  = rram_ctrl_pkg::DataWidth;
+    localparam int unsigned OtpRows  = (OtpBits + RowBits - 1) / RowBits;
+    rram_ctrl_bkdr_util_pkg::rram_ctrl_otp_bkdr_util otp_bkdr;
+
+    // As an initial setup, start with a blank (all zero) OTP.
+    otp_bkdr = new(
+        .name  ("otp_bkdr"),
+        .path  (`DV_STRINGIFY(tb.u_rram_macro.`RRAM_DATA_MEM_PATH)),
+        .depth ($size(u_rram_macro.`RRAM_DATA_MEM_PATH)),
+        .n_bits($bits(u_rram_macro.`RRAM_DATA_MEM_PATH)),
+        .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone));
+    for (int unsigned i = 0; i < OtpRows; i++) begin
+      otp_bkdr.write(i * otp_bkdr.get_bytes_per_word(), '0);
+    end
+    uvm_config_db#(rram_ctrl_bkdr_util_pkg::rram_ctrl_otp_bkdr_util)::set(
+      null, "*.env", "otp_bkdr", otp_bkdr);
+
     otp_clk_rst_if.set_freq_mhz(OTP_CLK_FREQ_MHZ);
     clk_rst_if.set_active();
     otp_clk_rst_if.set_active();
@@ -150,6 +164,7 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_prim*", "vif", tl_prim_if);
     uvm_config_db#(otp_key_vif_t)::set(null, "*.env.m_otp_*_key_driver", "otp_key_vif",
                                         otp_key_if);
+    uvm_config_db#(virtual otp_macro_if)::set(null, "*.env", "otp_macro_vif", otp_macro_if);
     uvm_config_db#(int unsigned)::set(null, "*.env", "WrFifoDepth", WrFifoDepth);
     uvm_config_db#(int unsigned)::set(null, "*.env", "RdFifoDepth", RdFifoDepth);
     $timeformat(-12, 0, " ps", 12);
