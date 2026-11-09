@@ -594,6 +594,7 @@
   - [Memory Backdoor Scoreboard](./hw/dv/sv/mem_bkdr_scb/README.md)
   - [Memory Backdoor Utility](./hw/dv/sv/mem_bkdr_util/README.md)
   - [Memory Model](./hw/dv/sv/mem_model/README.md)
+  - [OTP_MACRO Agent](./hw/dv/sv/otp_macro_agent/README.md)
   - [PATTGEN Agent](./hw/dv/sv/pattgen_agent/README.md)
   - [PUSH_PULL Agent](./hw/dv/sv/push_pull_agent/README.md)
   - [PWM Monitor](./hw/dv/sv/pwm_monitor/README.md)
