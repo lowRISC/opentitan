@@ -939,18 +939,24 @@ Setting this field to kMultiBitBool4False resumes the command processing of the 
 Internal state halt status register
 - Offset: `0x94`
 - Reset default: `0x0`
-- Reset mask: `0x1`
+- Reset mask: `0x3`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "HALTED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "HALTED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "GENBITS_VLD", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                             |
-|:------:|:------:|:-------:|:---------------------------------|
-|  31:1  |        |         | Reserved                         |
-|   0    |   ro   |   0x0   | [HALTED](#int_state_sts--halted) |
+|  Bits  |  Type  |  Reset  | Name                                       |
+|:------:|:------:|:-------:|:-------------------------------------------|
+|  31:2  |        |         | Reserved                                   |
+|   1    |   ro   |   0x0   | [GENBITS_VLD](#int_state_sts--genbits_vld) |
+|   0    |   ro   |   0x0   | [HALTED](#int_state_sts--halted)           |
+
+### INT_STATE_STS . GENBITS_VLD
+Reflects whether generated bits of the instance selected by [`INT_STATE_NUM`](#int_state_num) are waiting to be read by the consumer.
+The consumer can still read these bits while the instance is halted.
+Restoring the internal state via [`INT_STATE_VAL`](#int_state_val) discards any generated bits that have not been read yet.
 
 ### INT_STATE_STS . HALTED
 Reflects whether the instance selected by [`INT_STATE_NUM`](#int_state_num) has quiesced following [`INT_STATE_HALT`](#int_state_halt), such that its internal state stays constant while it is read/written via [`INT_STATE_VAL.`](#int_state_val)
