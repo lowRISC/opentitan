@@ -274,23 +274,48 @@ Alert Test Register
 
 ## DIS
 Disable RRAM functionality.
-Each write is merged into both fields.
+Note: Each write access to this register affects all fields.
 To leave a field unchanged, write MuBi4False to it.
+Writing any other value to a field that is still MuBi4False sets it, e.g. writing 0 results in an invalid mubi value, which is treated as set.
 - Offset: `0x10`
-- Reset default: `0x99`
-- Reset mask: `0xff`
+- Reset default: `0x99999`
+- Reset mask: `0xfffff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "SW_DIS", "bits": 4, "attr": ["rw1s"], "rotate": 0}, {"name": "LOCAL_ESC_RELBL_ERR", "bits": 4, "attr": ["rw1s"], "rotate": -90}, {"bits": 24}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
+{"reg": [{"name": "SW_DIS", "bits": 4, "attr": ["rw1s"], "rotate": 0}, {"name": "LOCAL_ESC_RELBL_ERR", "bits": 4, "attr": ["rw1s"], "rotate": -90}, {"name": "DIS_ALL_REWRITE", "bits": 4, "attr": ["rw1s"], "rotate": -90}, {"name": "DIS_OTP_REWRITE", "bits": 4, "attr": ["rw1s"], "rotate": -90}, {"name": "DIS_INFO_REWRITE", "bits": 4, "attr": ["rw1s"], "rotate": -90}, {"bits": 12}], "config": {"lanes": 1, "fontsize": 10, "vspace": 210}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                             |
 |:------:|:------:|:-------:|:-------------------------------------------------|
-|  31:8  |        |         | Reserved                                         |
+| 31:20  |        |         | Reserved                                         |
+| 19:16  |  rw1s  |   0x9   | [DIS_INFO_REWRITE](#dis--dis_info_rewrite)       |
+| 15:12  |  rw1s  |   0x9   | [DIS_OTP_REWRITE](#dis--dis_otp_rewrite)         |
+|  11:8  |  rw1s  |   0x9   | [DIS_ALL_REWRITE](#dis--dis_all_rewrite)         |
 |  7:4   |  rw1s  |   0x9   | [LOCAL_ESC_RELBL_ERR](#dis--local_esc_relbl_err) |
 |  3:0   |  rw1s  |   0x9   | [SW_DIS](#dis--sw_dis)                           |
+
+### DIS . DIS_INFO_REWRITE
+Disables Rewrite operations ([`CONTROL.OP`](#control) = Rewrite) to the info partition.
+Once this field is set to any value other than MuBi4False, every Rewrite operation targeting the info partition is rejected by the memory protection.
+Emulated info pages reside in the data partition and are therefore not covered by this field.
+Only [`DIS.DIS_ALL_REWRITE`](#dis) rejects Rewrites to them.
+A rejected Rewrite does not modify the RRAM and completes with [`ERR_CODE.MP_ERR`](#err_code) set.
+Since this register is rw1s instead of rw, this configuration cannot be reverted once set.
+
+### DIS . DIS_OTP_REWRITE
+Disables Rewrite operations ([`CONTROL.OP`](#control) = Rewrite) to the OTP region of the data partition, i.e. the last NumOtpPages pages including the OTP integrity page.
+Once this field is set to any value other than MuBi4False, every Rewrite operation targeting the OTP region is rejected by the memory protection.
+A rejected Rewrite does not modify the RRAM and completes with [`ERR_CODE.MP_ERR`](#err_code) set.
+Since this register is rw1s instead of rw, this configuration cannot be reverted once set.
+
+### DIS . DIS_ALL_REWRITE
+Disables all Rewrite operations ([`CONTROL.OP`](#control) = Rewrite).
+Once this field is set to any value other than MuBi4False, every Rewrite operation is rejected by the memory protection, regardless of the target partition and address.
+A rejected Rewrite does not modify the RRAM and completes with [`ERR_CODE.MP_ERR`](#err_code) set.
+Rewrite bypasses the configurable memory protection regions, so trusted firmware should set this field before handing over control to less trusted firmware.
+Since this register is rw1s instead of rw, this configuration cannot be reverted once set.
 
 ### DIS . LOCAL_ESC_RELBL_ERR
 Enables local escalation for reliability errors.
