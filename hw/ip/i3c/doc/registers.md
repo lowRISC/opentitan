@@ -570,23 +570,55 @@ Reset detector control.
 Reset detector status.
 - Offset: `0x30`
 - Reset default: `0x0`
-- Reset mask: `0x310001`
+- Reset mask: `0x31310001`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 15}, {"name": "WAKE_UP", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 3}, {"name": "RST_PERIPH", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RST_TARGET", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 10}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
+{"reg": [{"name": "ACTIVE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 15}, {"name": "SLEEP_REQ_EN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 3}, {"name": "RST_PERIPH_EN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RST_TARGET_EN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 2}, {"name": "WAKE_UP", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 3}, {"name": "RST_PERIPH", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "RST_TARGET", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 2}], "config": {"lanes": 1, "fontsize": 10, "vspace": 150}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name       | Description                                               |
-|:------:|:------:|:-------:|:-----------|:----------------------------------------------------------|
-| 31:22  |        |         |            | Reserved                                                  |
-|   21   |   ro   |   0x0   | RST_TARGET | Indicates that a Whole Target reset request was received. |
-|   20   |   ro   |   0x0   | RST_PERIPH | Indicates that a Peripheral reset request was received.   |
-| 19:17  |        |         |            | Reserved                                                  |
-|   16   |   ro   |   0x0   | WAKE_UP    | Indicates that a Wake Up request was received.            |
-|  15:1  |        |         |            | Reserved                                                  |
-|   0    |   ro   |   0x0   | ACTIVE     | Indicates whether the reset detector is active.           |
+|  Bits  |  Type  |  Reset  | Name                                              |
+|:------:|:------:|:-------:|:--------------------------------------------------|
+| 31:30  |        |         | Reserved                                          |
+|   29   |   ro   |   0x0   | [RST_TARGET](#reset_det_status--rst_target)       |
+|   28   |   ro   |   0x0   | [RST_PERIPH](#reset_det_status--rst_periph)       |
+| 27:25  |        |         | Reserved                                          |
+|   24   |   ro   |   0x0   | [WAKE_UP](#reset_det_status--wake_up)             |
+| 23:22  |        |         | Reserved                                          |
+|   21   |   ro   |   0x0   | [RST_TARGET_EN](#reset_det_status--rst_target_en) |
+|   20   |   ro   |   0x0   | [RST_PERIPH_EN](#reset_det_status--rst_periph_en) |
+| 19:17  |        |         | Reserved                                          |
+|   16   |   ro   |   0x0   | [SLEEP_REQ_EN](#reset_det_status--sleep_req_en)   |
+|  15:1  |        |         | Reserved                                          |
+|   0    |   ro   |   0x0   | [ACTIVE](#reset_det_status--active)               |
+
+### RESET_DET_STATUS . RST_TARGET
+Indicates that a Whole Target reset request was received.
+
+### RESET_DET_STATUS . RST_PERIPH
+Indicates that a Peripheral reset request was received.
+
+### RESET_DET_STATUS . WAKE_UP
+Indicates that a Wake Up request was received.
+
+### RESET_DET_STATUS . RST_TARGET_EN
+Response to a Whole Target reset request enabled, when RSTACT has been set accordingly.
+This field echoes the field `RESET_DET_CTRL.RST_TARGET_EN`, indicating that the requested configuration has been set.
+Since the Reset Detector resides within a low power domain on a slow clock, this update can take up to 15 us.
+
+### RESET_DET_STATUS . RST_PERIPH_EN
+Response to a Peripheral reset request enabled, when RSTACT has been set accordingly.
+This field echoes the field `RESET_DET_CTRL.RST_PERIPH_EN`, indicating that the requested configuration has been set.
+Since the Reset Detector resides within a low power domain on a slow clock, this update can take up to 15 us.
+
+### RESET_DET_STATUS . SLEEP_REQ_EN
+Wake up signaling enabled.
+This field echoes the field `RESET_DET_CTRL.SLEEP_REQ_EN`, indicating that the requested configuration has been set.
+Since the Reset Detector resides within a low power domain on a slow clock, this update can take up to 15 us.
+
+### RESET_DET_STATUS . ACTIVE
+Indicates whether the reset detector is active.
 
 ## CTRL_TIME_SP
 Controller Timing Parameters for Start and stoP.

@@ -2285,8 +2285,17 @@ module i3c_core
     assign hw2reg_o.targ_group[grp].targets.d     = targ_grp_targ_d[grp];
   end
 
+  // Current activation state (delayed echo of requested activation).
   assign hw2reg_o.reset_det_status.active.de     = 1'b1;
   assign hw2reg_o.reset_det_status.active.d      = rstdet_i.active;
+  // Current configuration (delayed echo of requested configuration).
+  assign hw2reg_o.reset_det_status.sleep_req_en.de  = 1'b1;
+  assign hw2reg_o.reset_det_status.sleep_req_en.d   = rstdet_i.deep_sleep_en;
+  assign hw2reg_o.reset_det_status.rst_periph_en.de = 1'b1;
+  assign hw2reg_o.reset_det_status.rst_periph_en.d  = rstdet_i.rst_periph_en;
+  assign hw2reg_o.reset_det_status.rst_target_en.de = 1'b1;
+  assign hw2reg_o.reset_det_status.rst_target_en.d  = rstdet_i.rst_target_en;
+  // Detection status.
   assign hw2reg_o.reset_det_status.wake_up.de    = 1'b1;
   assign hw2reg_o.reset_det_status.wake_up.d     = rstdet_i.wake_up_det;
   assign hw2reg_o.reset_det_status.rst_periph.de = 1'b1;

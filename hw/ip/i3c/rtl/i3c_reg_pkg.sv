@@ -1699,6 +1699,18 @@ package i3c_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } rst_target_en;
+    struct packed {
+      logic        d;
+      logic        de;
+    } rst_periph_en;
+    struct packed {
+      logic        d;
+      logic        de;
+    } sleep_req_en;
+    struct packed {
+      logic        d;
+      logic        de;
     } active;
   } i3c_hw2reg_reset_det_status_reg_t;
 
@@ -2845,14 +2857,14 @@ package i3c_reg_pkg;
 
   // HW -> register type
   typedef struct packed {
-    i3c_hw2reg_intr_state_reg_t intr_state; // [2041:2038]
-    i3c_hw2reg_info_reg_t info; // [2037:2009]
-    i3c_hw2reg_ctrl_status_reg_t ctrl_status; // [2008:2008]
-    i3c_hw2reg_ctrl_error_reg_t ctrl_error; // [2007:1988]
-    i3c_hw2reg_targ_control_reg_t targ_control; // [1987:1986]
-    i3c_hw2reg_targ_status_reg_t targ_status; // [1985:1954]
-    i3c_hw2reg_targ_sink_status_reg_t targ_sink_status; // [1953:1941]
-    i3c_hw2reg_reset_det_status_reg_t reset_det_status; // [1940:1933]
+    i3c_hw2reg_intr_state_reg_t intr_state; // [2047:2044]
+    i3c_hw2reg_info_reg_t info; // [2043:2015]
+    i3c_hw2reg_ctrl_status_reg_t ctrl_status; // [2014:2014]
+    i3c_hw2reg_ctrl_error_reg_t ctrl_error; // [2013:1994]
+    i3c_hw2reg_targ_control_reg_t targ_control; // [1993:1992]
+    i3c_hw2reg_targ_status_reg_t targ_status; // [1991:1960]
+    i3c_hw2reg_targ_sink_status_reg_t targ_sink_status; // [1959:1947]
+    i3c_hw2reg_reset_det_status_reg_t reset_det_status; // [1946:1933]
     i3c_hw2reg_buffer_ctrl_reg_t buffer_ctrl; // [1932:1931]
     i3c_hw2reg_buffer_status_reg_t buffer_status; // [1930:1927]
     i3c_hw2reg_ctrl_txbuf_state_reg_t ctrl_txbuf_state; // [1926:1905]
@@ -3687,7 +3699,7 @@ package i3c_reg_pkg;
     4'b 1111, // index[  9] I3C_TARG_SINK_CONTROL
     4'b 1111, // index[ 10] I3C_TARG_SINK_STATUS
     4'b 0111, // index[ 11] I3C_RESET_DET_CTRL
-    4'b 0111, // index[ 12] I3C_RESET_DET_STATUS
+    4'b 1111, // index[ 12] I3C_RESET_DET_STATUS
     4'b 1111, // index[ 13] I3C_CTRL_TIME_SP
     4'b 1111, // index[ 14] I3C_CTRL_TIME_OD
     4'b 1111, // index[ 15] I3C_CTRL_TIME_PP

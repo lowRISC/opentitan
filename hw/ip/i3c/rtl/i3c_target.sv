@@ -289,7 +289,6 @@ module i3c_target
 
   // Some independent level-sensitive signals may be synchronized in the conventional fashion.
   // - response from the Target Reset Detector; multiple, but independent bits.
-  // TODO: `rstdet_rsp_sync` is currently unused (unread)
   i3c_rstdet_rsp_t rstdet_rsp_sync;
   // - HDR-DDR mode indication, on/off.
   logic ddr_mode_sync;
@@ -387,6 +386,7 @@ module i3c_target
     .enable_i             (enable_i),
     .sw_reset_i           (sw_reset_i),
     .async_evt_rst_i      (async_evt_rst_i),
+    .target_rst_det_i     (rstdet_rsp_sync.pattern_det),
 
     // Configuration.
     .reg2hw_i             (reg2hw_i),
@@ -691,8 +691,12 @@ module i3c_target
 
   // Signals that the logic does not use (yet).
   // - TODO(#31035): HDR Exit and HDR Restart are not handled yet.
-  // - TODO: `rstdet_rsp_sync` and `buf_wused_i` are not used yet (see above).
+  // - TODO: Most of `rstdet_rsp_sync`, and `buf_wused_i`, are not used yet (see above).
   logic unused_targ_inputs;
-  assign unused_targ_inputs = ^{hdr_exit_det_i, hdr_restart_det_i, buf_wused_i, rstdet_rsp_sync};
+  assign unused_targ_inputs = ^{hdr_exit_det_i, hdr_restart_det_i, buf_wused_i,
+                                rstdet_rsp_sync.active, rstdet_rsp_sync.deep_sleep_en,
+                                rstdet_rsp_sync.rst_periph_en, rstdet_rsp_sync.rst_target_en,
+                                rstdet_rsp_sync.wake_up_det, rstdet_rsp_sync.peri_rst_det,
+                                rstdet_rsp_sync.targ_rst_det};
 
 endmodule
