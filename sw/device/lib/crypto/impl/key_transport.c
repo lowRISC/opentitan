@@ -46,25 +46,21 @@ otcrypto_status_t otcrypto_symmetric_keygen(
   uint32_t *share1;
   HARDENED_TRY(keyblob_to_shares(key, &share0, &share1));
 
-  // Construct buffers to direct the DRBG output into the keyblob.
-  otcrypto_word32_buf_t share0_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_word32_buf_t, share0, keyblob_share_num_words(key->config));
-  otcrypto_word32_buf_t share1_buf = OTCRYPTO_MAKE_BUF(
-      otcrypto_word32_buf_t, share1, keyblob_share_num_words(key->config));
+  // Construct a buffer to direct the DRBG output into the keyblob.
+  otcrypto_word32_buf_t keyblob_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, key->keyblob, keyblob_num_words(key->config));
 
   // Randomize the memory before writing the shares.
-  HARDENED_TRY(hardened_memshred(share0_buf.data, share0_buf.len));
-  HARDENED_TRY(hardened_memshred(share1_buf.data, share1_buf.len));
+  HARDENED_TRY(hardened_memshred(keyblob_buf.data, keyblob_buf.len));
 
   // Construct an empty buffer for the "additional input" to the DRBG generate
   // function.
   otcrypto_const_byte_buf_t empty =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
 
-  // Generate each share of the key independently.
+  // Generate both shares of the key in a single contiguous DRBG generate call.
   HARDENED_TRY(otcrypto_drbg_instantiate(perso_string));
-  HARDENED_TRY(otcrypto_drbg_generate(&empty, &share0_buf));
-  HARDENED_TRY(otcrypto_drbg_generate(&empty, &share1_buf));
+  HARDENED_TRY(otcrypto_drbg_generate(&empty, &keyblob_buf));
 
   // Populate the checksum and return.
   key->checksum = otcrypto_integrity_blinded_checksum(key);

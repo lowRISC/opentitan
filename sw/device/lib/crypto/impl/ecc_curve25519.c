@@ -417,22 +417,25 @@ static status_t curve25519_csrng_keyblob_generate(
   uint32_t *share1;
   HARDENED_TRY(keyblob_to_shares(private_key, &share0, &share1));
 
-  // Zero out the entire keyblob so the 2 extra padding words per share are 0.
-  memset(private_key->keyblob, 0, private_key->keyblob_length);
+  // Randomize the keyblob before writing CSRNG output.
+  size_t keyblob_words = keyblob_num_words(private_key->config);
+  HARDENED_TRY(hardened_memshred(private_key->keyblob, keyblob_words));
 
-  // Randomize the 256-bit share buffers before writing CSRNG output.
-  HARDENED_TRY(hardened_memshred(share0, kCurve25519MaskedScalarShareWords));
-  HARDENED_TRY(hardened_memshred(share1, kCurve25519MaskedScalarShareWords));
-
-  // Ensure SW CSRNG is instantiated with TRNG entropy and pull both shares.
+  // Ensure SW CSRNG is instantiated with TRNG entropy and pull both shares
+  // in a single contiguous generate call.
   HARDENED_TRY(entropy_csrng_instantiate(
       /*disable_trng_input=*/kHardenedBoolFalse, /*seed_material=*/NULL));
-  HARDENED_TRY(entropy_csrng_generate(
-      /*seed_material=*/NULL, share0, kCurve25519MaskedScalarShareWords,
-      /*fips_check=*/kHardenedBoolTrue));
-  HARDENED_TRY(entropy_csrng_generate(
-      /*seed_material=*/NULL, share1, kCurve25519MaskedScalarShareWords,
-      /*fips_check=*/kHardenedBoolTrue));
+  HARDENED_TRY(entropy_csrng_generate(/*seed_material=*/NULL,
+                                      private_key->keyblob, keyblob_words,
+                                      /*fips_check=*/kHardenedBoolTrue));
+
+  // Zero out the 2 extra padding words per share.
+  size_t share_words = keyblob_share_num_words(private_key->config);
+  size_t pad_words = share_words - kCurve25519MaskedScalarShareWords;
+  memset(&share0[kCurve25519MaskedScalarShareWords], 0,
+         pad_words * sizeof(uint32_t));
+  memset(&share1[kCurve25519MaskedScalarShareWords], 0,
+         pad_words * sizeof(uint32_t));
 
   // Populate the checksum.
   private_key->checksum = otcrypto_integrity_blinded_checksum(private_key);
