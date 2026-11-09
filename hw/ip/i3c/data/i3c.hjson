@@ -710,7 +710,7 @@
           resval: "0"
         }
         { bits:   "16",
-          name:   "SLEEP_REQ",
+          name:   "WAKE_UP_EN",
           desc:   "Enable wake up signaling, prior to entering 'Deepest Sleep' state.",
           resval: "0",
         }
@@ -729,21 +729,45 @@
       hwaccess: "hwo",
       async:    "clk_aon_i",
       fields: [
-        { bits:   "21",
+        { bits:   "29",
           name:   "RST_TARGET",
           desc:   "Indicates that a Whole Target reset request was received.",
           resval: "0"
         }
-        { bits:   "20",
+        { bits:   "28",
           name:   "RST_PERIPH",
           desc:   "Indicates that a Peripheral reset request was received.",
           resval: "0"
         }
-        { bits:   "16",
+        { bits:   "24",
           name:   "WAKE_UP",
           desc:   "Indicates that a Wake Up request was received.",
           resval: "0"
         },
+        { bits:   "21",
+          name:   "RST_TARGET_EN",
+          desc:   '''Response to a Whole Target reset request enabled, when RSTACT has been set accordingly.
+                  This field echoes the field `RESET_DET_CTRL.RST_TARGET_EN`, indicating that the requested configuration has been set.
+                  Since the Reset Detector resides within a low power domain on a slow clock, this update can take up to 15 us.
+                  ''',
+          resval: "0"
+        }
+        { bits:   "20",
+          name:   "RST_PERIPH_EN",
+          desc:   '''Response to a Peripheral reset request enabled, when RSTACT has been set accordingly.
+                  This field echoes the field `RESET_DET_CTRL.RST_PERIPH_EN`, indicating that the requested configuration has been set.
+                  Since the Reset Detector resides within a low power domain on a slow clock, this update can take up to 15 us.
+                  ''',
+          resval: "0"
+        }
+        { bits:   "16",
+          name:   "WAKE_UP_EN",
+          desc:   '''Wake up signaling enabled.
+                  This field echoes the field `RESET_DET_CTRL.WAKE_UP_EN`, indicating that the requested configuration has been set.
+                  Since the Reset Detector resides within a low power domain on a slow clock, this update can take up to 15 us.
+                  ''',
+          resval: "0",
+        }
         { bits:   "0",
           name:   "ACTIVE",
           desc:   "Indicates whether the reset detector is active.",

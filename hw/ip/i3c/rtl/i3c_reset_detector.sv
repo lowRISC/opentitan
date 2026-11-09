@@ -10,6 +10,10 @@
 // is powered down or unclocked, in order to respond to wake up signaling.
 //
 // The AON clock is required for the CDC to the IP register interface and the power manager.
+//
+// TODO(#31337): The signaling to/from the IP register interface, and particularly the signal
+// `rsp_o.pattern_det`, should probably not involve the AON clock because this may miss an event,
+// as well as adding significant latency to correct operation.
 
 module i3c_reset_detector
   import i3c_pkg::*;
@@ -66,6 +70,8 @@ module i3c_reset_detector
   logic scanmode;
   assign scanmode = mubi4_test_true_strict(scanmode_i);
 
+  // Notification that the Target Reset Pattern has been detected.
+  logic pattern_det_q;
   // Responses to detection of the Target Reset Pattern.
   logic wake_up_q;
   logic target_reset_q;
@@ -184,21 +190,25 @@ module i3c_reset_detector
       wake_up_q       <= 1'b0;
       target_reset_q  <= 1'b0;
       chip_reset_q    <= 1'b0;
+      pattern_det_q   <= 1'b0;
     end else if (active) begin
       // stoP signaling confirms detection.
       if (scl_buf & poss_reset_start) begin
-        wake_up_q       <= req_sync.deep_sleep;
+        wake_up_q       <= req_sync.wake_up;
         target_reset_q  <= req_sync.rst_periph;
         // Reset escalation; upon receipt of a second Target Reset signal without a
         // 'Peripheral Reset' being acknowledged, we are recommended to issue a reset of the
         // 'Whole Target' (I3C Basic 4.3.9.4).
         chip_reset_q    <= req_sync.rst_target | target_reset_q;
       end
+      // Notification, for software awareness even when not configured to respond.
+      pattern_det_q     <= scl_buf & poss_reset_start;
     end else begin
       // Deassert all outputs when the detector is inactive.
       wake_up_q       <= 1'b0;
       target_reset_q  <= 1'b0;
       chip_reset_q    <= 1'b0;
+      pattern_det_q   <= 1'b0;
     end
   end
 
@@ -206,11 +216,19 @@ module i3c_reset_detector
   // Active/inactive indication to the software to confirm that the configuration change has been
   // actioned; because of the low frequency of the AON clock it can be up to 10us before the change
   // takes effect (200kHz -> 5us period).
-  assign rsp_int.active       = req_i.activate;
+  assign rsp_int.active        = req_i.activate;
+  // Report the active configuration to the IP block, since it takes quite some time for it to
+  // be accepted; this is not strictly what the block is using _right now_, but what it will pick
+  // up after two SDA rising edges, but a valid Target Reset Pattern guarantees that.
+  assign rsp_int.wake_up_en    = req_i.wake_up_en;
+  assign rsp_int.rst_periph_en = req_i.rst_periph;
+  assign rsp_int.rst_target_en = req_i.rst_target;
+  // Notification that a Target Reset pattern has been detected.
+  assign rsp_int.pattern_det   = pattern_det_q;
   // Events triggered by reception of the Target Reset signaling.
-  assign rsp_int.wake_up_det  = wake_up_q;
-  assign rsp_int.peri_rst_det = target_reset_q;
-  assign rsp_int.targ_rst_det = chip_reset_q;
+  assign rsp_int.wake_up_det   = wake_up_q;
+  assign rsp_int.peri_rst_det  = target_reset_q;
+  assign rsp_int.targ_rst_det  = chip_reset_q;
 
   // The activation signals are captured onto the AON clock domain, to resolve CDC issues with
   // both the register interface of the IP block and the recipient of the notification signals
