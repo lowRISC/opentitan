@@ -173,9 +173,11 @@ static status_t aes_padding_apply(otcrypto_aes_padding_t padding_mode,
           launder32(padding_written) | kOtcryptoAesPaddingIso9797M2;
       break;
     case kOtcryptoAesPaddingNull:
-      // This routine should not be called if padding is not needed.
-      // COVERAGE (SW ERR) The internal routine is not called with PaddingNull
-      return OTCRYPTO_RECOV_ERR;
+      // Zero-pad the remaining bytes (used for partial final blocks in CTR
+      // mode).
+      memset(padding, 0x0, padding_len);
+      padding_written = launder32(padding_written) | kOtcryptoAesPaddingNull;
+      break;
     default:
       // Unrecognized padding mode.
       // COVERAGE (SW ERR) This is an internal routine which is given correct
@@ -374,11 +376,20 @@ static otcrypto_status_t otcrypto_aes_impl(
 
   // Calculate the number of blocks for the input, including the padding for
   // encryption.
+  bool ctr_stream = (launder32(aes_mode) == kOtcryptoAesModeCtr &&
+                     launder32(aes_padding) == kOtcryptoAesPaddingNull);
   size_t input_nblocks = 0;
-  if (aes_operation == kOtcryptoAesOperationEncrypt) {
+  if (ctr_stream) {
+    input_nblocks = ceil_div(cipher_input->len, kAesBlockNumBytes);
+  } else if (aes_operation == kOtcryptoAesOperationEncrypt) {
     HARDENED_TRY(
         num_padded_blocks_get(cipher_input->len, aes_padding, &input_nblocks));
   } else if (aes_operation == kOtcryptoAesOperationDecrypt) {
+    if (launder32(aes_padding) != kOtcryptoAesPaddingPkcs7 &&
+        launder32(aes_padding) != kOtcryptoAesPaddingIso9797M2 &&
+        launder32(aes_padding) != kOtcryptoAesPaddingNull) {
+      return OTCRYPTO_BAD_ARGS;
+    }
     // If the operation is decryption, the input length must be divisible by
     // the block size.
     if (launder32(cipher_input->len) % kAesBlockNumBytes != 0) {
@@ -389,19 +400,13 @@ static otcrypto_status_t otcrypto_aes_impl(
   }
 
   // Check input/output lengths.
+  size_t exp_output_len =
+      ctr_stream ? cipher_input->len : input_nblocks * kAesBlockNumBytes;
   if (cipher_output != NULL) {
-    if (input_nblocks == 0 ||
-        launder32(cipher_output->len) != input_nblocks * kAesBlockNumBytes) {
+    if (launder32(cipher_output->len) != exp_output_len) {
       return OTCRYPTO_BAD_ARGS;
     }
-    HARDENED_CHECK_EQ(cipher_output->len, input_nblocks * kAesBlockNumBytes);
-  } else {
-    if (input_nblocks == 0) {
-      // COVERAGE (FI CM) Redundant check when cipher_output is NULL during
-      // redundant execution; input_nblocks was already checked in the
-      // primary execution.
-      return OTCRYPTO_BAD_ARGS;
-    }
+    HARDENED_CHECK_EQ(cipher_output->len, exp_output_len);
   }
 
   // Construct the IV and check its length. ECB mode will ignore the IV, so in
@@ -423,6 +428,11 @@ static otcrypto_status_t otcrypto_aes_impl(
   // Parse the AES key.
   aes_key_t aes_key;
   HARDENED_TRY(aes_key_construct(key, aes_mode, &aes_key));
+
+  if (launder32(input_nblocks) == 0) {
+    HARDENED_CHECK_EQ(input_nblocks, 0);
+    return OTCRYPTO_OK;
+  }
 
   // Start the operation (encryption or decryption).
   otcrypto_aes_operation_t aes_operation_started = launder32(0);
@@ -515,14 +525,22 @@ static otcrypto_status_t otcrypto_aes_impl(
   // input).
   for (i = block_offset; i > 0; --i) {
     HARDENED_TRY(aes_update(&block_out, /*src=*/NULL));
+    size_t out_blk_idx = input_nblocks - i;
+    size_t out_blk_bytelen = kAesBlockNumBytes;
+    if (ctr_stream &&
+        (out_blk_idx + 1) * kAesBlockNumBytes > cipher_input->len) {
+      out_blk_bytelen = cipher_input->len - out_blk_idx * kAesBlockNumBytes;
+      memset(((uint8_t *)block_out.data) + out_blk_bytelen, 0,
+             kAesBlockNumBytes - out_blk_bytelen);
+    }
     block_words_add(&local_checksum, &block_out);
     if (cipher_output != NULL) {
       // Byte buffers passed as input may not be word-aligned, so we cannot
       // use `hardened_memcpy`.
       // Hence, use `randomized_bytecopy` instead.
       HARDENED_TRY(randomized_bytecopy(
-          &cipher_output->data[(input_nblocks - i) * kAesBlockNumBytes],
-          block_out.data, kAesBlockNumBytes));
+          &cipher_output->data[out_blk_idx * kAesBlockNumBytes], block_out.data,
+          out_blk_bytelen));
     } else {
       HARDENED_CHECK_EQ(cipher_output, NULL);
     }
