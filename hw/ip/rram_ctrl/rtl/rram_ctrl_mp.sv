@@ -22,6 +22,10 @@ module rram_ctrl_mp
   input mubi4_t                   rram_disable_i,
   // Disables host reads only. Software controller operations are disabled in rram_ctrl_arb.
   input mubi4_t                   sw_disable_i,
+  // Rewrite (HwLoopBack) disables for all, OTP region and info partition accesses.
+  input mubi4_t                   dis_all_rewrite_i,
+  input mubi4_t                   dis_otp_rewrite_i,
+  input mubi4_t                   dis_info_rewrite_i,
   // Interface selection
   input rram_sel_e                if_sel_i,
   // Configuration from sw
@@ -156,13 +160,33 @@ module rram_ctrl_mp
     .page_cfg_o  (hw_lcmgr_sel_cfg)
   );
 
+  //////////////////////////////////
+  // Rewrite (HwLoopBack) disable //
+  //////////////////////////////////
+  // A Rewrite bypasses the MP regions. DIS.DIS_*_REWRITE restrict it on every read and write,
+  // so a fault on the Rewrite address after acceptance cannot reach a disabled region.
+  // Any value other than MuBi4False disables Rewrite access to the respective region.
+  logic rewrite_dis_all, rewrite_dis_otp, rewrite_dis_info;
+  logic otp_page_sel;
+  logic data_rewrite_dis, info_rewrite_dis;
+
+  assign rewrite_dis_all  = mubi4_test_true_loose(dis_all_rewrite_i);
+  assign rewrite_dis_otp  = mubi4_test_true_loose(dis_otp_rewrite_i);
+  assign rewrite_dis_info = mubi4_test_true_loose(dis_info_rewrite_i);
+
+  // The OTP region covers the last OtpPages pages of the data partition (integrity page and data).
+  assign otp_page_sel     = data_part_sel & (page_addr >= PageW'(OtpStartPage));
+
+  assign data_rewrite_dis = rewrite_dis_all | (rewrite_dis_otp & otp_page_sel);
+  assign info_rewrite_dis = rewrite_dis_all | rewrite_dis_info;
+
   // Select between hardware and software interfaces
   page_cfg_t data_region_cfg;
   always_comb begin
     data_region_cfg = CfgDisable;
 
     unique case (if_sel_i)
-      HwLoopBack: data_region_cfg = CfgRw;
+      HwLoopBack: data_region_cfg = data_rewrite_dis ? CfgDisable : CfgRw;
       SwSel:      data_region_cfg = sw_sel_cfg;
       HwOtpSel:   data_region_cfg = hw_otp_sel_cfg;
       HwLcMgrSel: data_region_cfg = hw_lcmgr_sel_cfg;
@@ -227,7 +251,7 @@ module rram_ctrl_mp
     info_page_cfg = CfgDisable;
 
     unique case (if_sel_i)
-      HwLoopBack: info_page_cfg = CfgRw;
+      HwLoopBack: info_page_cfg = info_rewrite_dis ? CfgDisable : CfgRw;
       SwSel:      info_page_cfg = info_page_cfgs_i[info_page_addr].cfg;
       HwLcMgrSel: info_page_cfg = hw_lcmgr_info_page_cfg;
       default: ;
@@ -399,5 +423,16 @@ module rram_ctrl_mp
   // If software access is disabled, host reads are not forwarded to the phy, but answered with an
   // error.
   `ASSERT(SwDisHostBlocked_A, sw_dis && host_req_i |-> !host_req_o && invalid_host_txn)
+
+  // A disabled Rewrite never reaches the phy and is answered with an MP error.
+  `ASSERT(RewriteDisAllBlocked_A,
+          ctrl_req && if_sel_i == HwLoopBack && rewrite_dis_all
+          |-> !ctrl_req_o ##1 ctrl_mp_err_o)
+  `ASSERT(RewriteDisOtpBlocked_A,
+          ctrl_req && if_sel_i == HwLoopBack && rewrite_dis_otp && otp_page_sel
+          |-> !ctrl_req_o ##1 ctrl_mp_err_o)
+  `ASSERT(RewriteDisInfoBlocked_A,
+          ctrl_req && if_sel_i == HwLoopBack && rewrite_dis_info && info_part_sel
+          |-> !ctrl_req_o ##1 ctrl_mp_err_o)
 
   endmodule
