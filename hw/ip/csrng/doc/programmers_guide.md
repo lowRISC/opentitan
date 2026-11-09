@@ -139,6 +139,7 @@ CSRNG supports pausing a single instance via [`INT_STATE_HALT`](registers.md#int
    Reserved bits are ignored on writes and read as 0.
    The internal state includes the state of a Generate command halted mid-sequence, which continues once the instance is resumed.
    Writing the last word of [`INT_STATE_VAL`](registers.md#int_state_val) discards any generated blocks that have not been consumed yet and clears a pending abort requested via [`GEN_ABORT`](registers.md#gen_abort).
+   The consumer can still read generated blocks while the instance is halted, so to avoid discarding them, wait for [`INT_STATE_STS.GENBITS_VLD`](registers.md#int_state_sts) to clear before restoring.
    Each written word takes effect immediately, so stopping before all 26 words have been written leaves the instance with a mix of restored and previous state words.
    Whether the instance continues a Generate command once resumed is determined by the Generate flag of the restored state.
    If the Generate flag is set but the remaining Generate block count is 0, the instance acknowledges the Generate command upon resuming without producing further blocks.

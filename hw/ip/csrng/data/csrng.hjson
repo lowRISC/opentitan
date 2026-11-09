@@ -1086,6 +1086,15 @@
                 '''
           resval: 0
         }
+        { bits: "1",
+          name: "GENBITS_VLD",
+          desc: '''
+                Reflects whether generated bits of the instance selected by !!INT_STATE_NUM are waiting to be read by the consumer.
+                The consumer can still read these bits while the instance is halted.
+                Restoring the internal state via !!INT_STATE_VAL discards any generated bits that have not been read yet.
+                '''
+          resval: 0
+        }
       ]
     },
   ]

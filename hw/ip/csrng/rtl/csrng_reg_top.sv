@@ -287,7 +287,8 @@ module csrng_reg_top (
   logic int_state_halt_we;
   logic [3:0] int_state_halt_qs;
   logic [3:0] int_state_halt_wd;
-  logic int_state_sts_qs;
+  logic int_state_sts_halted_qs;
+  logic int_state_sts_genbits_vld_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -2455,12 +2456,13 @@ module csrng_reg_top (
 
 
   // R[int_state_sts]: V(False)
+  //   F[halted]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_int_state_sts (
+  ) u_int_state_sts_halted (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
     .reinit_i(1'b0),
@@ -2470,8 +2472,8 @@ module csrng_reg_top (
     .wd     ('0),
 
     // from internal hardware
-    .de     (hw2reg.int_state_sts.de),
-    .d      (hw2reg.int_state_sts.d),
+    .de     (hw2reg.int_state_sts.halted.de),
+    .d      (hw2reg.int_state_sts.halted.d),
 
     // to internal hardware
     .qe     (),
@@ -2479,7 +2481,35 @@ module csrng_reg_top (
     .ds     (),
 
     // to register interface (read)
-    .qs     (int_state_sts_qs)
+    .qs     (int_state_sts_halted_qs)
+  );
+
+  //   F[genbits_vld]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_int_state_sts_genbits_vld (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.int_state_sts.genbits_vld.de),
+    .d      (hw2reg.int_state_sts.genbits_vld.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_state_sts_genbits_vld_qs)
   );
 
 
@@ -2962,7 +2992,8 @@ module csrng_reg_top (
       end
 
       addr_hit[37]: begin
-        reg_rdata_next[0] = int_state_sts_qs;
+        reg_rdata_next[0] = int_state_sts_halted_qs;
+        reg_rdata_next[1] = int_state_sts_genbits_vld_qs;
       end
 
       default: begin
