@@ -101,6 +101,8 @@ The RRAM controller sits between the software interface, other hardware IPs, and
   - Software can issue a `Rewrite` operation (`CONTROL.OP = Rewrite`) at any time.
   - The controller reads one RRAM word and writes the corrected data back to restore full ECC headroom before further bit flips make the word uncorrectable.
   - Software typically issues it after `corr1_err` or `corr2_err` fires, at the address captured in `CORR1_ERR_LOC` or `CORR2_ERR_LOC`.
+  - A Rewrite bypasses the configurable memory protection regions.
+    Trusted firmware can restrict it with the `rw1s` mubi fields `DIS.DIS_ALL_REWRITE`, `DIS.DIS_OTP_REWRITE` and `DIS.DIS_INFO_REWRITE`, which reject all Rewrites, Rewrites to the OTP region of the data partition, and Rewrites to the info partition respectively.
 - Secure wipe upon RMA request from the life cycle controller.
   - The `rram_ctrl_lcmgr` FSM overwrites three info pages and all data partition pages except the OTP region with pseudo-random data from a 64-bit LFSR.
     The three info pages are the creator seed page, the owner seed page and the isolated page.

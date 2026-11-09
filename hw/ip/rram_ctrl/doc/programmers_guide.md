@@ -140,6 +140,28 @@ Internally, the controller reads the addressed RRAM word and immediately writes 
 When complete, the controller sets [`OP_STATUS.done`](registers.md#op_status) and asserts the `op_done` interrupt, the same as for a Read or Write operation.
 If the internal read or write fails, [`OP_STATUS.err`](registers.md#op_status) is set and the failure is reported through [`ERR_CODE`](registers.md#err_code)/[`ERR_ADDR`](registers.md#err_addr), exactly as for a normal read or write error.
 
+### Disabling Rewrite Operations
+
+A rewrite bypasses the configurable memory protection regions: it can target any page of the data and info partitions, including the OTP region.
+Trusted firmware should therefore restrict rewrites before handing over control to less trusted firmware, using the following `rw1s` mubi fields of [`DIS`](registers.md#dis):
+
+| Field | Rewrites rejected |
+|---|---|
+| [`DIS.DIS_ALL_REWRITE`](registers.md#dis) | All rewrites |
+| [`DIS.DIS_OTP_REWRITE`](registers.md#dis) | Rewrites to the OTP region of the data partition (see [Accessing the OTP Region](#accessing-the-otp-region)) |
+| [`DIS.DIS_INFO_REWRITE`](registers.md#dis) | Rewrites to the info partition |
+
+The OTP region is part of the data partition, so a rewrite to it is only rejected by `DIS_ALL_REWRITE` or `DIS_OTP_REWRITE`.
+The [emulated info pages](#emulated-info-pages) also reside in the data partition, so `DIS_INFO_REWRITE` does not cover them.
+Only `DIS_ALL_REWRITE` rejects rewrites to emulated info pages.
+
+Write `MuBi4True` to set a field.
+Any value other than `MuBi4False` disables, and a set field cannot be cleared until the next reset.
+To leave the other fields of [`DIS`](registers.md#dis) unchanged, write `MuBi4False` to them, not 0.
+
+A rejected rewrite does not modify the RRAM.
+It completes with [`OP_STATUS.err`](registers.md#op_status), [`ERR_CODE.mp_err`](registers.md#err_code) and [`ERR_ADDR`](registers.md#err_addr) set.
+
 ## Accessing the OTP Region
 
 The OTP region is not directly programmable through `rram_ctrl`'s `CONTROL`/`ADDR` registers or FIFOs.
@@ -230,7 +252,7 @@ When a controller operation completes with [`OP_STATUS.err`](registers.md#op_sta
 | Field | Meaning |
 |---|---|
 | `op_err` | Operation rejected without accessing the RRAM: undefined `CONTROL.OP`, operation started before initialization completed or while software access is disabled for RMA entry, or a write or Rewrite that does not cover whole RRAM words (see [`ERR_CODE.op_err`](registers.md#err_code)) |
-| `mp_err` | Memory protection violation |
+| `mp_err` | Memory protection violation, including a Rewrite rejected by [`DIS.DIS_*_REWRITE`](#disabling-rewrite-operations) |
 | `rd_err` | RRAM read error (ECC or integrity failure) |
 | `wr_err` | RRAM write error |
 
