@@ -559,6 +559,7 @@ status_t rsa_padding_oaep_max_message_bytelen(
 }
 
 status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
+                                 const otcrypto_hash_mode_t mgf_hash_mode,
                                  const uint8_t *message, size_t message_bytelen,
                                  const uint8_t *label, size_t label_bytelen,
                                  size_t encoded_message_len,
@@ -597,7 +598,7 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
   size_t db_wordlen = ceil_div(db_bytelen, sizeof(uint32_t));
   uint32_t db[db_wordlen];
   HARDENED_TRY(
-      mgf1(hash_mode, (unsigned char *)seed, sizeof(seed), db_bytelen, db));
+      mgf1(mgf_hash_mode, (unsigned char *)seed, sizeof(seed), db_bytelen, db));
 
   // Construct maskedDB = dbMask XOR (lhash || PS || 0x01 || M), where PS is
   // all-zero (step 2f). By computing the mask first, we can simply XOR with
@@ -613,8 +614,8 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
 
   // Compute seedMask = MGF(maskedDB, hLen) (step 2g).
   uint32_t seed_mask[digest_wordlen];
-  HARDENED_TRY(mgf1(hash_mode, (unsigned char *)db, db_bytelen, digest_bytelen,
-                    seed_mask));
+  HARDENED_TRY(mgf1(mgf_hash_mode, (unsigned char *)db, db_bytelen,
+                    digest_bytelen, seed_mask));
 
   // Construct maskedSeed = seed XOR seedMask (step 2h).
   HARDENED_TRY(hardened_xor_in_place(seed, seed_mask, ARRAYSIZE(seed)));
@@ -642,6 +643,7 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
 }
 
 status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
+                                 const otcrypto_hash_mode_t mgf_hash_mode,
                                  const uint8_t *label, size_t label_bytelen,
                                  uint32_t *encoded_message,
                                  size_t encoded_message_len, uint8_t *message,
@@ -683,16 +685,16 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
 
   // Compute seedMask = MGF(maskedDB, hLen) (step 3c).
   uint32_t seed_mask[digest_wordlen];
-  HARDENED_TRY(mgf1(hash_mode, (unsigned char *)db, db_bytelen, digest_bytelen,
-                    seed_mask));
+  HARDENED_TRY(mgf1(mgf_hash_mode, (unsigned char *)db, db_bytelen,
+                    digest_bytelen, seed_mask));
 
   // Construct seed = maskedSeed XOR seedMask (step 3d).
   HARDENED_TRY(hardened_xor_in_place(seed, seed_mask, ARRAYSIZE(seed)));
 
   // Generate dbMask = MGF(seed, k - hLen - 1) (step 3e).
   uint32_t db_mask[db_wordlen];
-  HARDENED_TRY(mgf1(hash_mode, (unsigned char *)seed, sizeof(seed), db_bytelen,
-                    db_mask));
+  HARDENED_TRY(mgf1(mgf_hash_mode, (unsigned char *)seed, sizeof(seed),
+                    db_bytelen, db_mask));
 
   // Zero trailing bytes of DB and dbMask if needed.
   size_t num_trailing_bytes = sizeof(db) - db_bytelen;
