@@ -31,6 +31,7 @@ In addition, the testbench instantiates the following interfaces, connects them 
 * [TileLink host interface for the prim registers](../../../dv/sv/tl_agent/README.md) (the RRAM macro's `tl_prim` interface)
 * Alerts ([`alert_esc_if`](../../../dv/sv/alert_agent/README.md))
 * `rram_ctrl_otp_key_if`: the `otp_ctrl` scrambling-key request/response handshake, driven by `rram_ctrl_otp_key_driver` (see [OTP key driver](#otp-key-driver) below)
+* [`otp_macro_if`](../../../dv/sv/otp_macro_agent/README.md): the OTP macro interface, on which the environment acts as `otp_ctrl` (see [OTP macro agent](#otp-macro-agent) below)
 
 The DUT's other input-only signals (life cycle qualifiers, the RMA handshake) are not yet exercised by any test and are tied to fixed values directly in `tb.sv`.
 
@@ -101,6 +102,10 @@ The DUT's `u_addr_sync_reqack`/`u_data_sync_reqack` (`prim_sync_reqack`) assert 
 `run_phase` races handling one request (`main_thread`) against `@(negedge vif.rst_n)` (`reset_kill`) via `fork`/`join_any`/`disable fork`.
 On reset, this kills any in-flight request handling, redrives all outputs to idle, and restarts.
 
+### OTP macro agent
+`rram_ctrl_env` instantiates an [`otp_macro_agent`](../../../dv/sv/otp_macro_agent/README.md) that acts as `otp_ctrl` on the OTP macro interface.
+The test gives its sequencer to the virtual sequence (`m_otp_macro_sequencer`).
+
 ### UVM RAL Model
 The `rram_ctrl` RAL model is created with the [`ralgen`](../../../dv/tools/ralgen/README.md) FuseSoC generator script automatically when the simulation is at the build stage.
 
@@ -142,11 +147,6 @@ Some of the most commonly used tasks / functions are as follows, from `hw/ip/rra
 * `dut_init()`: resets the DUT and calls `rram_ctrl_init()`
 * `rram_ctrl_init()`: brings the controller out of reset, polls the phy's own init, then triggers and polls the controller's INIT sequence (lc key derivation etc), without which the arbiter never grants software/host access
 * `apply_reset()` / `apply_resets_concurrently()`: reset both the core and OTP clock domains together, since each clock generator blocks on its own domain's reset
-
-#### Functional coverage
-To ensure high quality constrained random stimulus, it is necessary to develop a functional coverage model.
-No covergroups have been developed yet.
-`rram_ctrl_env_cov` is currently an empty stub extending `cip_base_env_cov`.
 
 ### Self-checking strategy
 #### Scoreboard
