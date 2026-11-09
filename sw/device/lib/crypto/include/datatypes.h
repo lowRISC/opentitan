@@ -299,6 +299,10 @@ typedef enum otcrypto_rsa_key_mode {
   kOtcryptoRsaKeyModeSignPss = 0x761,
   /// Mode RSA Encrypt, RSAES-OAEP.
   kOtcryptoRsaKeyModeEncryptOaep = 0x585,
+  /// Mode RSA Encrypt, RSAES-OAEP with MGF1-SHA1.
+  kOtcryptoRsaKeyModeEncryptOaepMgfSha1 = 0x62c,
+  /// Mode RSA Encrypt, RSAES-OAEP with MGF1-SHA256.
+  kOtcryptoRsaKeyModeEncryptOaepMgfSha256 = 0x9b3,
   /// Mode RSA Encrypt, RSAES-PKCS1-v1_5.
   kOtcryptoRsaKeyModeEncryptPkcs = 0x13a,
   /// Mode RSA Raw (unpadded modular exponentiation).
@@ -411,6 +415,12 @@ typedef enum otcrypto_key_mode {
   /// Key is intended for RSA encryption RSAES-OAEP mode.
   kOtcryptoKeyModeRsaEncryptOaep =
       kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeEncryptOaep,
+  /// Key is intended for RSA encryption RSAES-OAEP mode with MGF1-SHA1.
+  kOtcryptoKeyModeRsaEncryptOaepMgfSha1 =
+      kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeEncryptOaepMgfSha1,
+  /// Key is intended for RSA encryption RSAES-OAEP mode with MGF1-SHA256.
+  kOtcryptoKeyModeRsaEncryptOaepMgfSha256 =
+      kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeEncryptOaepMgfSha256,
   /// Key is intended for RSA encryption RSAES-PKCS1-v1_5 mode.
   kOtcryptoKeyModeRsaEncryptPkcs =
       kOtcryptoKeyTypeRsa << 16 | kOtcryptoRsaKeyModeEncryptPkcs,

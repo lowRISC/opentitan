@@ -23,7 +23,9 @@ status_t rsa_encrypt_start(rsa_size_t size, uint32_t e, const uint32_t *n,
   HARDENED_TRY(rsa_size_to_num_words(size, &num_words));
   HARDENED_CHECK_NE(num_words, 0);
 
-  if (launder32(key_mode) != kOtcryptoKeyModeRsaEncryptOaep) {
+  if (launder32(key_mode) != kOtcryptoKeyModeRsaEncryptOaep &&
+      launder32(key_mode) != kOtcryptoKeyModeRsaEncryptOaepMgfSha1 &&
+      launder32(key_mode) != kOtcryptoKeyModeRsaEncryptOaepMgfSha256) {
     if (launder32(hash_mode) != kOtcryptoHashModeNull || label_bytelen != 0) {
       return OTCRYPTO_BAD_ARGS;
     }
@@ -39,9 +41,21 @@ status_t rsa_encrypt_start(rsa_size_t size, uint32_t e, const uint32_t *n,
   switch (launder32(key_mode)) {
     case kOtcryptoKeyModeRsaEncryptOaep:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaep);
-      HARDENED_TRY(rsa_padding_oaep_encode(hash_mode, message, message_bytelen,
-                                           label, label_bytelen, num_words,
-                                           encoded_message));
+      HARDENED_TRY(rsa_padding_oaep_encode(
+          hash_mode, hash_mode, message, message_bytelen, label, label_bytelen,
+          num_words, encoded_message));
+      break;
+    case kOtcryptoKeyModeRsaEncryptOaepMgfSha1:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaepMgfSha1);
+      HARDENED_TRY(rsa_padding_oaep_encode(
+          hash_mode, kOtcryptoHashModeSha1, message, message_bytelen, label,
+          label_bytelen, num_words, encoded_message));
+      break;
+    case kOtcryptoKeyModeRsaEncryptOaepMgfSha256:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaepMgfSha256);
+      HARDENED_TRY(rsa_padding_oaep_encode(
+          hash_mode, kOtcryptoHashModeSha256, message, message_bytelen, label,
+          label_bytelen, num_words, encoded_message));
       break;
     case kOtcryptoKeyModeRsaEncryptPkcs:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptPkcs);
@@ -89,7 +103,9 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
   size_t num_words;
   HARDENED_TRY(rsa_modexp_wait(&num_words));
 
-  if (launder32(key_mode) != kOtcryptoKeyModeRsaEncryptOaep) {
+  if (launder32(key_mode) != kOtcryptoKeyModeRsaEncryptOaep &&
+      launder32(key_mode) != kOtcryptoKeyModeRsaEncryptOaepMgfSha1 &&
+      launder32(key_mode) != kOtcryptoKeyModeRsaEncryptOaepMgfSha256) {
     if (launder32(hash_mode) != kOtcryptoHashModeNull || label_bytelen != 0) {
       return OTCRYPTO_BAD_ARGS;
     }
@@ -124,9 +140,29 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
       if (plaintext_max_bytelen < max_plaintext_bytelen) {
         return OTCRYPTO_BAD_ARGS;
       }
-      return rsa_padding_oaep_decode(hash_mode, label, label_bytelen,
+      return rsa_padding_oaep_decode(hash_mode, hash_mode, label, label_bytelen,
                                      recovered_message, num_words, plaintext,
                                      plaintext_len);
+    case kOtcryptoKeyModeRsaEncryptOaepMgfSha1:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaepMgfSha1);
+      HARDENED_TRY(rsa_padding_oaep_max_message_bytelen(
+          hash_mode, num_words, &max_plaintext_bytelen));
+      if (plaintext_max_bytelen < max_plaintext_bytelen) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      return rsa_padding_oaep_decode(hash_mode, kOtcryptoHashModeSha1, label,
+                                     label_bytelen, recovered_message,
+                                     num_words, plaintext, plaintext_len);
+    case kOtcryptoKeyModeRsaEncryptOaepMgfSha256:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaepMgfSha256);
+      HARDENED_TRY(rsa_padding_oaep_max_message_bytelen(
+          hash_mode, num_words, &max_plaintext_bytelen));
+      if (plaintext_max_bytelen < max_plaintext_bytelen) {
+        return OTCRYPTO_BAD_ARGS;
+      }
+      return rsa_padding_oaep_decode(hash_mode, kOtcryptoHashModeSha256, label,
+                                     label_bytelen, recovered_message,
+                                     num_words, plaintext, plaintext_len);
     case kOtcryptoKeyModeRsaEncryptPkcs:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptPkcs);
       if (plaintext_max_bytelen < max_plaintext_bytelen - 11) {
