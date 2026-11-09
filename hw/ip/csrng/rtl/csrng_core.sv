@@ -211,6 +211,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [NumApps-1:0]                int_state_halted_pulse;
   logic [NumApps-1:0]                cmd_stage_halt;
   logic [NumApps-1:0]                cmd_stage_halted;
+  logic [NumApps-1:0]                genbits_pending;
   logic [NumApps-1:0]                cmd_stage_restore;
   logic [CmdBusWidth-1:0]            int_state_val_rd_data;
   logic                              int_state_val_rd_en;
@@ -621,9 +622,20 @@ module csrng_core import csrng_pkg::*; #(
                                 reg2hw.int_state_halt_enable.q[ai];
   end : gen_cmd_stage_halt
 
+  // Generated bits of the SW instance may also wait in the SW genbits FIFO.
+  for (genvar ai = 0; ai < NumApps; ai = ai+1) begin : gen_genbits_pending
+    if (ai == NumApps-1) begin : gen_sw
+      assign genbits_pending[ai] = genbits_stage_vld[ai] || genbits_stage_vld_sw;
+    end else begin : gen_hw
+      assign genbits_pending[ai] = genbits_stage_vld[ai];
+    end
+  end : gen_genbits_pending
+
   // Report the halted status of the selected instance.
-  assign hw2reg.int_state_sts.de = 1'b1;
-  assign hw2reg.int_state_sts.d  = cmd_stage_halted[int_state_num_q];
+  assign hw2reg.int_state_sts.halted.de = 1'b1;
+  assign hw2reg.int_state_sts.halted.d  = cmd_stage_halted[int_state_num_q];
+  assign hw2reg.int_state_sts.genbits_vld.de = 1'b1;
+  assign hw2reg.int_state_sts.genbits_vld.d  = genbits_pending[int_state_num_q];
 
   //------------------------------------------
   // application interface
