@@ -92,13 +92,38 @@
             - After the rewrite the backdoor contents match the original stored word, with the
               error corrected.
             - The read FIFO is not filled by the rewrite.
-            - Rewrites are not subject to memory protection: they complete without
-              `ERR_CODE.mp_err` on any page, whatever its region or page configuration, and leave
-              the stored data unchanged.
+            - While all `DIS.DIS_*_REWRITE` fields are `MuBi4False`, rewrites are not subject to
+              memory protection: they complete without `ERR_CODE.mp_err` on any page, whatever
+              its region or page configuration, and leave the stored data unchanged.
 
             Note: with the open-source macro, a double bit error must be injected by flipping
             one bit in each 64-bit half. This is because the macro protects each half with its
             own Hamming(72,64) code and two bits in the same half are uncorrectable.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: rewrite_disable
+      desc: '''
+            Verify that `DIS.DIS_ALL_REWRITE`, `DIS.DIS_OTP_REWRITE` and `DIS.DIS_INFO_REWRITE`
+            restrict the `Rewrite` operation.
+
+            **Stimulus**:
+            - Preload RRAM words through the backdoor, some of them with a correctable error.
+            - Set a random subset of the three fields, writing `MuBi4True` or a random non-
+              `MuBi4False` value, and keep the other fields unchanged.
+            - Issue rewrites to random pages of the data partition outside the OTP region, to the
+              OTP region (data and integrity page), and to the info partition.
+            - Write `MuBi4False` or 0 to a set field, then repeat the rewrites.
+
+            **Checks**:
+            - A rewrite is rejected if `DIS_ALL_REWRITE` is set, if `DIS_OTP_REWRITE` is set and it
+              targets the OTP region, or if `DIS_INFO_REWRITE` is set and it targets the info
+              partition. Otherwise it behaves as in `rewrite_op`.
+            - A rejected rewrite completes with `OP_STATUS.err`, `ERR_CODE.mp_err` and `ERR_ADDR`
+              set, and the backdoor contents of the targeted word are unchanged, i.e. a
+              correctable error injected into it is still present.
             '''
       stage: V2
       tests: []
