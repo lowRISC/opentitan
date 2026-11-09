@@ -32,17 +32,18 @@ static status_t digest_info_length_get(
   *len = 0;
   hash_info_t info;
   HARDENED_TRY(hash_info_get(message_digest.mode, &info));
-  if (info.der_oid == NULL || message_digest.len == 0) {
+  if (info.der_oid == NULL ||
+      (info.digest_wordlen != 0 && message_digest.len == 0)) {
     // Unsupported or unrecognized hash function.
     // COVERAGE (MISSING) We do not cover bad padding modes.
     return OTCRYPTO_BAD_ARGS;
   }
   *len = info.der_oid_len + message_digest.len * sizeof(uint32_t);
 
-  // Check if the length was set in the switch case statements.
-  HARDENED_CHECK_NE(*len, 0);
+  if (info.digest_wordlen != 0) {
+    HARDENED_CHECK_NE(*len, 0);
+  }
 
-  // Unreachable.
   return OTCRYPTO_OK;
 }
 
