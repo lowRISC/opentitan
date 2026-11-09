@@ -35,10 +35,10 @@ Interrupt State Register
 {"reg": [{"name": "done", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                           |
-|:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                                              |
-|   0    |  rw1c  |   0x0   | done   | OTBN has completed the operation, encountered a WFI instruction or has locked itself. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                          |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                             |
+|   0    |  rw1c  |   0x0   | done   | OTBN has completed an operation, encountered a WFI instruction or locked itself during an operation. |
 
 ## INTR_ENABLE
 Interrupt Enable Register

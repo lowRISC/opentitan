@@ -168,7 +168,7 @@
   ]
   interrupt_list: [
     { name: "done"
-      desc: "OTBN has completed the operation, encountered a WFI instruction or has locked itself."
+      desc: "OTBN has completed an operation, encountered a WFI instruction or locked itself during an operation."
     }
   ]
   alert_list: [
