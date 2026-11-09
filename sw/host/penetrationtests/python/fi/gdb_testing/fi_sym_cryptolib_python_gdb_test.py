@@ -253,6 +253,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        data_out = [None, None]
                         # Search for collisions in outputs between the hmac instances
                         for i in range(2):
                             print("-" * 80)
@@ -272,7 +273,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                 gdb.add_observation(observations)
 
                                 gdb.apply_instruction_skip(
-                                    pc, parser.parse_next_instruction(pc), i_count
+                                    pc, parser.parse_next_instruction(pc), i_count + 1
                                 )
                                 gdb.send_command("c", check_response=False)
 
@@ -285,7 +286,6 @@ class SymCryptolibFiSim(unittest.TestCase):
                                 gdb_response = gdb.read_output()
                                 data_out[i] = None
                                 if "instruction skip applied" in gdb_response:
-                                    i_count += 1
                                     total_attacks += 1
 
                                     if crash_observation in gdb_response:
@@ -310,7 +310,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                                 successful_faults += 1
                                                 print("-" * 80)
                                                 print("Successful FI attack!")
-                                                print("Location:", pc, "iteration", i_count - 1)
+                                                print("Location:", pc, "iteration", i_count)
                                                 print(gdb_response)
                                                 print("Response:", testos_response_json)
                                                 print("-" * 80)
@@ -489,6 +489,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        data_out = [None, None]
                         # Search for collisions in outputs between the hmac instances
                         for i in range(2):
                             print("-" * 80)
@@ -508,7 +509,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                 gdb.add_observation(observations)
 
                                 gdb.apply_instruction_skip(
-                                    pc, parser.parse_next_instruction(pc), i_count
+                                    pc, parser.parse_next_instruction(pc), i_count + 1
                                 )
                                 gdb.send_command("c", check_response=False)
 
@@ -530,7 +531,6 @@ class SymCryptolibFiSim(unittest.TestCase):
                                 gdb_response = gdb.read_output()
                                 data_out[i] = None
                                 if "instruction skip applied" in gdb_response:
-                                    i_count += 1
                                     total_attacks += 1
 
                                     if crash_observation in gdb_response:
@@ -555,7 +555,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                                 successful_faults += 1
                                                 print("-" * 80)
                                                 print("Successful FI attack!")
-                                                print("Location:", pc, "iteration", i_count - 1)
+                                                print("Location:", pc, "iteration", i_count)
                                                 print(gdb_response)
                                                 print("Response:", testos_response_json)
                                                 print("-" * 80)
@@ -664,7 +664,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                 symfi.handle_drbg_reseed(
                     entropy[0], entropy_len, nonce, nonce_len, reseed_interval, mode, 0, 0
                 )
-                target.read_response()
+                read_testos_output()
                 symfi.handle_drbg_generate([0], 0, data_len, mode, cfg, trigger)
 
                 start_time = time.time()
@@ -692,7 +692,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                     symfi.handle_drbg_reseed(
                         entropy[0], entropy_len, nonce, nonce_len, reseed_interval, mode, 0, 0
                     )
-                    target.read_response()
+                    read_testos_output()
                     symfi.handle_drbg_generate([0], 0, data_len, mode, cfg, trigger)
                     start_time = time.time()
                     while time.time() - start_time < initial_timeout:
@@ -734,6 +734,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        drbg_out = [None, None]
                         # Search for collisions in outputs between the drbg instances
                         for i in range(2):
                             print("-" * 80)
@@ -753,7 +754,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                 gdb.add_observation(observations)
 
                                 gdb.apply_instruction_skip(
-                                    pc, parser.parse_next_instruction(pc), i_count
+                                    pc, parser.parse_next_instruction(pc), i_count + 1
                                 )
                                 gdb.send_command("c", check_response=False)
 
@@ -768,14 +769,13 @@ class SymCryptolibFiSim(unittest.TestCase):
                                     0,
                                     0,
                                 )
-                                target.read_response()
+                                read_testos_output()
                                 symfi.handle_drbg_generate([0], 0, data_len, mode, cfg, trigger)
                                 testos_response = read_testos_output()
 
                                 gdb_response = gdb.read_output()
                                 drbg_out[i] = None
                                 if "instruction skip applied" in gdb_response:
-                                    i_count += 1
                                     total_attacks += 1
 
                                     if crash_observation in gdb_response:
@@ -800,7 +800,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                                 successful_faults += 1
                                                 print("-" * 80)
                                                 print("Successful FI attack!")
-                                                print("Location:", pc, "iteration", i_count - 1)
+                                                print("Location:", pc, "iteration", i_count)
                                                 print(gdb_response)
                                                 print("Response:", testos_response_json)
                                                 print("-" * 80)
@@ -909,7 +909,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                 symfi.handle_drbg_reseed(
                     entropy[0], entropy_len, nonce, nonce_len, reseed_interval, mode, cfg, trigger
                 )
-                target.read_response()
+                read_testos_output()
                 symfi.handle_drbg_generate([0], 0, data_len, mode, cfg, trigger)
 
                 start_time = time.time()
@@ -944,7 +944,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                         cfg,
                         trigger,
                     )
-                    target.read_response()
+                    read_testos_output()
                     symfi.handle_drbg_generate([0], 0, data_len, mode, cfg, trigger)
                     start_time = time.time()
                     while time.time() - start_time < initial_timeout:
@@ -986,6 +986,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        drbg_out = [None, None]
                         # Search for collisions in outputs between the drbg instances
                         for i in range(2):
                             print("-" * 80)
@@ -1005,7 +1006,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                 gdb.add_observation(observations)
 
                                 gdb.apply_instruction_skip(
-                                    pc, parser.parse_next_instruction(pc), i_count
+                                    pc, parser.parse_next_instruction(pc), i_count + 1
                                 )
                                 gdb.send_command("c", check_response=False)
 
@@ -1288,6 +1289,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP_GCM, count)):
+                        gcm_out = [None, None]
                         # Search for collisions in outputs between the gcm instances
                         for i in range(2):
                             print("-" * 80)
@@ -1307,7 +1309,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                 gdb.add_observation(observations)
 
                                 gdb.apply_instruction_skip(
-                                    pc, parser.parse_next_instruction(pc), i_count
+                                    pc, parser.parse_next_instruction(pc), i_count + 1
                                 )
                                 gdb.send_command("c", check_response=False)
 
@@ -1529,6 +1531,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                 started = True
                 for pc, count in pc_count_dict.items():
                     for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                        data_out = [None, None]
                         # Search for collisions in outputs between the cmac instances
                         for i in range(2):
                             print("-" * 80)
@@ -1553,7 +1556,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                 gdb.add_observation(observations)
 
                                 gdb.apply_instruction_skip(
-                                    pc, parser.parse_next_instruction(pc), i_count
+                                    pc, parser.parse_next_instruction(pc), i_count + 1
                                 )
                                 gdb.send_command("c", check_response=False)
 
@@ -1830,6 +1833,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                     pc_count_dict, MAX_SKIPS_PER_LOOP, args.num_skips
                 ).items():
                     for i_count in occ_list:
+                        data_out = [None, None]
                         # Search for collisions in outputs between the cmac_kdf instances
                         for i in range(2):
                             print("-" * 80)
@@ -1854,7 +1858,7 @@ class SymCryptolibFiSim(unittest.TestCase):
                                 gdb.add_observation(observations)
 
                                 gdb.apply_instruction_skip(
-                                    pc, parser.parse_next_instruction(pc), i_count
+                                    pc, parser.parse_next_instruction(pc), i_count + 1
                                 )
                                 gdb.send_command("c", check_response=False)
 

@@ -193,7 +193,7 @@ status_t cryptolib_fi_drbg_generate_impl(
   // Return data back to host.
   uj_output->cfg = 0;
   memset(uj_output->data, 0, DRBG_CMD_MAX_OUTPUT_BYTES);
-  memcpy(uj_output->data, output_data, uj_input.data_len);
+  memcpy(uj_output->data, output.data, output.len);
   uj_output->magic = kOutputComplete;
 
   return OK_STATUS();
@@ -340,11 +340,11 @@ status_t cryptolib_fi_gcm_impl(cryptolib_fi_sym_gcm_in_t uj_input,
   // Return data back to host.
   uj_output->cfg = 0;
   // Ciphertext.
-  uj_output->data_len = uj_input.data_len;
+  uj_output->data_len = actual_ciphertext.len;
   memset(uj_output->data, 0, AES_CMD_MAX_MSG_BYTES);
   memcpy(uj_output->data, actual_ciphertext.data, uj_output->data_len);
   // Tag.
-  uj_output->tag_len = uj_input.tag_len;
+  uj_output->tag_len = actual_tag.len * sizeof(uint32_t);
   memset(uj_output->tag, 0, AES_CMD_MAX_MSG_BYTES);
   memcpy(uj_output->tag, actual_tag.data, uj_output->tag_len);
   uj_output->magic = kOutputComplete;
