@@ -977,6 +977,10 @@ module rram_ctrl
     .rst_ni,
     .rram_disable_i     (rram_disable[MpDisableIdx]),
     .sw_disable_i       (rram_sw_disable[SwDisMpIdx]),
+    // Rewrite disables
+    .dis_all_rewrite_i  (mubi4_t'(reg2hw.dis.dis_all_rewrite.q)),
+    .dis_otp_rewrite_i  (mubi4_t'(reg2hw.dis.dis_otp_rewrite.q)),
+    .dis_info_rewrite_i (mubi4_t'(reg2hw.dis.dis_info_rewrite.q)),
     // Interface selection
     .if_sel_i           (if_sel),
     // Memory protection configuration
