@@ -672,6 +672,11 @@ otcrypto_status_t otcrypto_tdes(otcrypto_blinded_key_t *key,
     HARDENED_TRY(
         num_padded_blocks_get(cipher_input->len, tdes_padding, &input_nblocks));
   } else if (tdes_operation == kOtcryptoTdesOperationDecrypt) {
+    if (tdes_padding != kOtcryptoTdesPaddingPkcs7 &&
+        tdes_padding != kOtcryptoTdesPaddingIso9797M2 &&
+        tdes_padding != kOtcryptoTdesPaddingNull) {
+      return OTCRYPTO_BAD_ARGS;
+    }
     if (cipher_input->len % kTdesBlockNumBytes != 0) {
       return OTCRYPTO_BAD_ARGS;
     }
@@ -681,8 +686,7 @@ otcrypto_status_t otcrypto_tdes(otcrypto_blinded_key_t *key,
   }
 
   // Check input/output lengths.
-  if (input_nblocks == 0 ||
-      cipher_output->len != input_nblocks * kTdesBlockNumBytes) {
+  if (cipher_output->len != input_nblocks * kTdesBlockNumBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
 
