@@ -76,7 +76,7 @@ option of provisioning additional secrets after taking ownership of the device.
 [firmware_update]: ./firmware_update/README.md
 [identities_and_root_keys]: ./identities_and_root_keys/README.md
 [ownership_transfer]: ./ownership_transfer/README.md
-[pmp]: https://ibex-core.readthedocs.io/en/latest/03_reference/pmp.html
+[pmp]: https://ibex-core.readthedocs.io/en/earlgrey_1.0.0/03_reference/pmp.html
 [provisioning]: ./device_provisioning/README.md
 [secure_boot]: ./secure_boot/README.md
 [silicon_creator]: ../logical_security_model/README.md#silicon-creator
