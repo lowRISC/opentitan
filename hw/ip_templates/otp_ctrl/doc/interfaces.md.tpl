@@ -1,3 +1,8 @@
+<%
+  # Name of the partition holding FIELD_ENTROPY, if the memory map contains that item.
+  field_entropy_part = next((part["name"] for part in otp_mmap["partitions"]
+                             for item in part["items"] if item["name"] == "FIELD_ENTROPY"), None)
+%>\
 # Hardware Interfaces
 
 ${"##"} Parameters
@@ -117,8 +122,16 @@ ${"###"} Interface to Key Manager
 
 Each individual secret key material (CREATOR_ROOT_KEY, OWNER_SEED, CREATOR_SEED) gets its own connection to the keymgr.
 These secrets are provided to the keymgr if they have been provisioned and locked (via CREATOR_KEY_LOCK), otherwise these signals are tied to random netlist constants.
+% if field_entropy_part:
 
-Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the `keymgr_creator_root_key_o`, `keymgr_creator_seed_o`, `keymgr_owner_seed_o` signals.
+The FIELD_ENTROPY in the `${field_entropy_part}` partition is provided to the key manager via the `keymgr_field_entropy_o` signal.
+`keymgr_field_entropy_o.secret_valid` is set once the `${field_entropy_part}` partition has been locked with a digest, has been successfully initialized, and the FIELD_ENTROPY is not all-zero.
+If the FIELD_ENTROPY is not valid, the key manager uses its own netlist constant instead.
+Like for the CREATOR_ROOT_KEY, the FIELD_ENTROPY value is only output if `lc_seed_hw_rd_en_i` is asserted, otherwise `keymgr_field_entropy_o.secret` is tied to a random netlist constant.
+Like for the `SECRET1` partition, SW access via the DAI is only restricted by the partition's own digest lock, and read access is re-enabled in RMA.
+% endif
+
+Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the `keymgr_creator_root_key_o`, `keymgr_creator_seed_o`, `keymgr_owner_seed_o`${", `keymgr_field_entropy_o`" if field_entropy_part else ""} signals.
 
 ${"###"} Interfaces to SRAM and OTBN Scramblers
 
