@@ -356,9 +356,9 @@ class _FICampaign:
             self.results.setdefault(pc_int, {})[occ] = True
             self.outcomes[(pc_int, occ)] = "Successful corruption (FI attack)"
         elif self.outcomes.get((pc_int, occ)) != "Successful corruption (FI attack)":
-            if "Crash detected" in line:
+            if "Crash detected" in line or "Error: JSON decoding failed" in line:
                 self.outcomes[(pc_int, occ)] = "Caught (crash)"
-            elif "Target did not respond" in line:
+            elif "Target did not respond" in line or "Timeout error" in line:
                 self.outcomes[(pc_int, occ)] = "Caught (timeout)"
 
 

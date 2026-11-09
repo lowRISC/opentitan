@@ -266,6 +266,7 @@ class AsymCryptolibFiSim(unittest.TestCase):
                     pc_count_dict, MAX_SKIPS_PER_LOOP, args.num_skips
                 ).items():
                     for i_count in occ_list:
+                        sign_output = [None, None]
                         # Search for collisions in outputs between the sign instances
                         for i in range(2):
                             print("-" * 80)
@@ -2074,10 +2075,8 @@ class AsymCryptolibFiSim(unittest.TestCase):
         )
         private_key_array1 = list(private_key_bytes1)
 
-        # Create a second set of inputs with a single bit flipped to check for collisions
-        private_key_array2 = private_key_array1.copy()
-        # Flipping a more significant bit to not flip a clamped bit
-        private_key_array2[2] ^= 1
+        # Create a second set of inputs with bits flipped to check for collisions
+        private_key_array2 = [x ^ 0xFF for x in private_key_array1]
         private_key_array = [private_key_array1, private_key_array2]
 
         # Bob's Public Key
