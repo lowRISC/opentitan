@@ -350,6 +350,47 @@ module rram_macro #(
   assign allow_vol_unlock_o = allow_vol_unlock_q;
   assign cp_done_o          = cp_done_q;
 
+  ///////////////
+  // Zero view //
+  ///////////////
+
+  // While DIS_VOL_RAW_UNLOCK is not set, rram_ctrl must not see the content of the array.
+  // So reads return 0 with clean ECC without accessing the array, and writes fail.
+  // The marker page is exempt, so the CP flow can write DIS_VOL_RAW_UNLOCK and read it back.
+  // The zero view is only off while allow_vol_unlock_q is strictly False.
+  // So it also stays on for an invalid value, for example before the markers are latched.
+  logic zero_view;
+  logic rd_marker_page, wr_marker_page;
+  logic zero_rd_d, zero_rd_q;
+  assign zero_view      = !prim_mubi_pkg::mubi8_test_false_strict(allow_vol_unlock_q);
+  assign rd_marker_page = rram_macro_i.part == RramPartInfo &&
+                          rram_macro_i.addr[InfoAddrW-1:WordW] == MarkerInfoPage;
+  assign wr_marker_page = current_part_q == RramPartInfo &&
+                          waddr_q[InfoAddrW-1:WordW] == MarkerInfoPage;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      zero_rd_q <= 1'b0;
+    end else begin
+      zero_rd_q <= zero_rd_d;
+    end
+  end
+
+  // While the zero view is on, the words of a write outside of the marker page are dropped, and
+  // the write operation completes with err.
+  logic zero_view_wr_drop;
+  assign zero_view_wr_drop = zero_view && !wr_marker_page;
+
+  // Records a dropped word until the write operation completes with an error.
+  logic wr_blocked_d, wr_blocked_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      wr_blocked_q <= 1'b0;
+    end else begin
+      wr_blocked_q <= wr_blocked_d;
+    end
+  end
+
   logic [11:0] rand_val;
   logic [1:0]  rand_val_read;
   logic [1:0]  rand_val_store;
@@ -454,9 +495,11 @@ module rram_macro #(
     cnt_clr = 1'b0;
     cnt_inc = 1'b0;
 
-    marker_cp_d        = marker_cp_q;
-    allow_vol_unlock_d = allow_vol_unlock_q;
-    cp_done_d          = cp_done_q;
+    marker_cp_d           = marker_cp_q;
+    allow_vol_unlock_d    = allow_vol_unlock_q;
+    cp_done_d             = cp_done_q;
+    wr_blocked_d          = wr_blocked_q;
+    zero_rd_d             = zero_rd_q;
 
     lfsr_en_d = 1'b0;
     init_done = 1'b1;
@@ -512,11 +555,13 @@ module rram_macro #(
           ack            = 1'b1;
           current_part_d = rram_macro_i.part;
           ecc_en_d       = rram_macro_i.ecc_en;
-          mem_req        = 1'b1;
-          mem_addr       = rram_macro_i.addr;
           cnt_inc        = 1'b1;
           state_d        = StRead;
-          mem_rvalid_d   = 1'b1;
+          // The zero view does not access the array.
+          zero_rd_d      = zero_view && !rd_marker_page;
+          mem_req        = !zero_rd_d;
+          mem_addr       = rram_macro_i.addr;
+          mem_rvalid_d   = !zero_rd_d;
         // write request to RRAM (wr_last)
         end else if (rram_macro_i.wr_req & rram_macro_i.wr_last & rand_ack) begin
           ack = 1'b1;
@@ -555,10 +600,14 @@ module rram_macro #(
         // mem_rvalid_q is only true on the cycle mem_rdata is guaranteed valid (see above).
         // Use the registered copy on any other cycle.
         if (cnt_q >= (ReadLatency + rand_val_read)) begin
-          done    = 1'b1;
-          state_d = StIdle;
-          cnt_clr = 1'b1;
-          if (ecc_en_q) begin
+          done      = 1'b1;
+          state_d   = StIdle;
+          cnt_clr   = 1'b1;
+          zero_rd_d = 1'b0;
+          if (zero_rd_q) begin
+            // Zero view: 0 with clean ECC.
+            rdata = '0;
+          end else if (ecc_en_q) begin
             rdata   = rd_data_dec;
             ecc_err = {rd_data_fatal_err, rd_data_corr2_err, rd_data_corr1_err};
           end else begin
@@ -583,16 +632,23 @@ module rram_macro #(
         cnt_inc = 1'b1;
         if (store_buf_fifo_rvalid) begin
           store_buf_fifo_rready = 1'b1;
-          mem_req   = 1'b1;
-          mem_wr    = 1'b1;
-          mem_addr  = {waddr_q[DataAddrW-1:WordW], store_buf_fifo_offset};
-          mem_wdata = store_buf_fifo_data;
+          if (zero_view_wr_drop) begin
+            // Drop the word and report an error at the end of the write operation.
+            wr_blocked_d = 1'b1;
+          end else begin
+            mem_req   = 1'b1;
+            mem_wr    = 1'b1;
+            mem_addr  = {waddr_q[DataAddrW-1:WordW], store_buf_fifo_offset};
+            mem_wdata = store_buf_fifo_data;
+          end
         end else begin
           // return to idle if counter >= WriteLatency + random_delay
           if (cnt_q >= (WriteLatency + rand_val_write)) begin
-            done    = 1'b1;
-            cnt_clr = 1'b1;
-            state_d = StIdle;
+            done         = 1'b1;
+            err          = wr_blocked_q;
+            wr_blocked_d = 1'b0;
+            cnt_clr      = 1'b1;
+            state_d      = StIdle;
           end
         end
       end
@@ -680,10 +736,33 @@ module rram_macro #(
 `ifndef SYNTHESIS
   // The emulated info array starts out uninitialized in simulation, unlike a formed RRAM array.
   // Clear the marker page, so that the marker read at init returns defined values.
+  // DIS_VOL_RAW_UNLOCK is written as well, so that the zero view is off and the testbench sees
+  // the real array.
+  // Tests of the forming flow and the volatile RAW unlock skip it with
+  // +rram_dis_vol_raw_unlock=0.
+  // The chip testbench uses the same plusarg for its backdoor preload, which also covers a vendor
+  // rram_macro.
   // A testbench can still load other marker values through the backdoor before the read.
+  function automatic logic [FullDataWidth-1:0] sim_encode_word(logic [DataWidth-1:0] data);
+    logic [EccCodeWidth-1:0] lo, hi;
+    lo = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[EccWordWidth-1:0]);
+    hi = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[DataWidth-1:EccWordWidth]);
+    return {hi[EccCodeWidth-1:EccWordWidth], lo[EccCodeWidth-1:EccWordWidth],
+            hi[EccWordWidth-1:0], lo[EccWordWidth-1:0]};
+  endfunction
+
   initial begin
+    bit dis_vol_raw_unlock;
+    dis_vol_raw_unlock = 1'b1;
+    void'($value$plusargs("rram_dis_vol_raw_unlock=%0d", dis_vol_raw_unlock));
     for (int unsigned k = 0; k < WordsPerPage; k++) begin
       u_info_array.mem[MarkerInfoPage * WordsPerPage + k] = '0;
+    end
+    if (dis_vol_raw_unlock) begin
+      for (int unsigned k = 0; k < NumMarkerCopies; k++) begin
+        u_info_array.mem[MarkerInfoPage * WordsPerPage + DisVolRawUnlockWords[k]] =
+            sim_encode_word(marker_word_value(MarkerMagic, DisVolRawUnlockWords[k]));
+      end
     end
   end
 `endif
@@ -696,8 +775,6 @@ module rram_macro #(
   `ASSERT_KNOWN_IF(CpDoneKnown_A, cp_done_o, init_done)
   // The markers are latched once and never change afterwards.
   `ASSERT(MarkersStable_A, init_done |=> $stable(allow_vol_unlock_o) && $stable(cp_done_o))
-  `ASSERT(AllowVolUnlockValid_A,
-      init_done |-> !prim_mubi_pkg::mubi8_test_invalid(allow_vol_unlock_o))
 
   // Alert assertions for reg_we onehot check
   `ASSERT_ERROR_TRIGGER_ERR(MacroFsmCheck_A, u_state_regs, rram_macro_o.fatal_err, 0,

@@ -32,9 +32,6 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
     bit [TokenWidthBit-1:0] otp_exit_token_bits, otp_unlock_token_bits, otp_rma_token_bits;
     bit [7:0] selected_dest_state[];
 
-    jtag_riscv_dm_activation_seq jtag_dm_activation_seq =
-        jtag_riscv_dm_activation_seq::type_id::create("jtag_dm_activation_seq");
-
     super.body();
 
     // Since super.body only does backdoor operation,
@@ -44,48 +41,27 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
     wait_lc_ready(1);
     `uvm_info(`gfn, "Done.", UVM_LOW)
 
-    // If we're expecting the feature to be enabled, the device should boot.
     if (exp_volatile_raw_unlock_en) begin
+      bit [TL_DW-1:0] lc_state, device_id;
       `uvm_info(`gfn, "Expecting volatile raw unlock enabled.", UVM_LOW)
-      `uvm_info(`gfn, "Waiting for device to boot..", UVM_LOW)
-      // VOLATILE_RAW_UNLOCK does not require a reset after completion.
-      // Applying a reset will move the device back to RAW state in this case.
-      jtag_lc_state_volatile_raw_unlock(.target_strap(JtagTapRvDm), .expect_success(1));
-      reset_jtag_tap();
+      // The test runs without the DIS_VOL_RAW_UNLOCK marker (+rram_dis_vol_raw_unlock=0), like a
+      // part before forming.
+      // rram_macro's zero view then hides the RRAM, so OTP reads as all zero and cannot be
+      // programmed.
+      // So the ROM never executes software, because RomExecEn reads as zero.
+      // The test therefore only checks the volatile unlock and the zero view through the LC TAP.
+      jtag_lc_state_volatile_raw_unlock(.target_strap(JtagTapLc), .expect_success(1));
 
-      if (rom_prod_mode) begin
-        // The production ROM is not instrumented to report `sw_test_status`, so
-        // we wait for the PC to advance before continuing with the test. The
-        // PC was taken from the ROM disassembly.
-        `DV_WAIT(cfg.chip_vif.probed_cpu_pc.pc_wb >= 8194)
-      end else begin
-        // In RAW state the ROM should halt as RomExecEn is not set yet.
-        `DV_WAIT(cfg.sw_test_status_vif.sw_test_status == SwTestStatusInBootRomHalt)
+      jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl_regs.lc_state.get_offset(),
+                                          p_sequencer.jtag_sequencer_h, lc_state);
+      `DV_CHECK_EQ(lc_state, {DecLcStateNumRep{DecLcStTestUnlocked0}})
+
+      // The zero view makes the whole OTP read as zero, including the device ID.
+      foreach (ral.lc_ctrl_regs.device_id[i]) begin
+        jtag_riscv_agent_pkg::jtag_read_csr(ral.lc_ctrl_regs.device_id[i].get_offset(),
+                                            p_sequencer.jtag_sequencer_h, device_id);
+        `DV_CHECK_EQ(device_id, 0)
       end
-
-      // Use the frontend interface to configure the RomExecEn OTP value. A
-      // reset is required to have otp_ctrl sample the new OTP value.
-      `uvm_info(`gfn, "Configuring RomExecEng", UVM_LOW)
-      jtag_dm_activation_seq.start(p_sequencer.jtag_sequencer_h);
-      `uvm_info(`gfn, $sformatf("rv_dm_activated: %0d", cfg.m_jtag_riscv_agent_cfg.rv_dm_activated),
-              UVM_LOW)
-      cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 1;
-      jtag_otp_program32(otp_ctrl_reg_pkg::CreatorSwCfgRomExecEnOffset, 1);
-
-      cfg.chip_vif.tap_straps_if.drive(JtagTapLc);
-      cfg.m_jtag_riscv_agent_cfg.is_rv_dm = 0;
-      apply_reset();
-      reset_jtag_tap();
-
-      // Wait for `rom_ctrl` to complete the ROM check. This will give the dut
-      // enough time to configure the TAP interface before any JTAG agents send
-      // any commands.
-      wait_rom_check_done();
-
-      // Second VOLATILE_RAW_UNLOCK does not change the TAP interface to rv_dm
-      // so that we can check the completion status through that interface.
-      // After this, the rest of the test should proceed.
-      jtag_lc_state_volatile_raw_unlock(JtagTapLc);
       `uvm_info(`gfn, "Done.", UVM_LOW)
     end else begin
       `uvm_info(`gfn, "Expecting volatile raw unlock disabled.", UVM_LOW)
@@ -96,11 +72,10 @@ class chip_sw_lc_volatile_raw_unlock_vseq extends chip_sw_base_vseq;
   endtask
 
   task post_start();
-    // In case the volatile RAW unlock feature is not supported by HW, the transition is not going
-    // to succeed and SW will never be able to run.
-    if (!exp_volatile_raw_unlock_en) begin
-      override_test_status_and_finish(.passed(1));
-    end
+    // SW never runs in this test.
+    // Without the volatile RAW unlock feature, the transition does not succeed.
+    // With it, the zero view keeps RomExecEn at zero (see body).
+    override_test_status_and_finish(.passed(1));
     super.post_start();
   endtask : post_start
 endclass

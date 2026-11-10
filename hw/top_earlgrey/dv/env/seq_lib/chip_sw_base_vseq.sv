@@ -93,6 +93,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // Initialize the info and data partition of the RRAM to all 0s.
     cfg.mem_bkdr_util_h[RramInfo].clear_mem();
+    preload_rram_markers();
     cfg.mem_bkdr_util_h[RramData].clear_mem();
 
     // Randomize retention memory.  This is done intentionally with wrong integrity

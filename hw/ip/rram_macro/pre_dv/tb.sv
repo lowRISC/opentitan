@@ -79,13 +79,15 @@ module tb;
     end
   endtask
 
+  // Like rram_ctrl, every load request carries the partition of the write operation.
   task automatic rram_store_buf(input logic [AddrW-1:0] addr, input logic [DataWidth-1:0] data,
-                                input logic ecc_en = 1'b0);
+                                input logic ecc_en = 1'b0, input logic info = 1'b0);
     @(posedge clk);
     #1ns;
     rram_macro_req.wr_req = 1'b1;
     rram_macro_req.wr_last = 1'b0;
     rram_macro_req.addr = addr;
+    rram_macro_req.part = info ? RramPartInfo : RramPartData;
     rram_macro_req.ecc_en = ecc_en;
     rram_macro_req.wr_data = data;
     #1ns;
@@ -138,7 +140,7 @@ module tb;
   task automatic rram_access_test(input logic [AddrW-1:0] addr, input logic info,
                                   input integer num_words, input logic ecc_en);
     for (int unsigned k = 0; k < num_words; k++) begin
-      rram_store_buf(addr + k, addr + k, ecc_en);
+      rram_store_buf(addr + k, addr + k, ecc_en, info);
     end
     rram_write(addr, info, ecc_en);
     for (int unsigned k = 0; k < num_words; k++) begin
@@ -166,6 +168,14 @@ module tb;
       ecc_en = $urandom();
       addr = $urandom();
       addr[4:0] = '0;
+      // Info accesses stay within the info array, and skip the marker page, so that random data
+      // does not change the markers.
+      if (info) begin
+        addr = addr % (TotalInfoPages * WordsPerPage);
+        if (addr[WordW +: InfoPageW] == MarkerInfoPage) begin
+          addr[WordW +: InfoPageW] = MarkerInfoPage + 1'b1;
+        end
+      end
       num_words = $urandom_range(1, MaxWrWords);
       rram_access_test(addr, info, num_words, ecc_en);
     end
@@ -185,7 +195,7 @@ module tb;
   // Writes a single word of the marker page and returns the error flag of the write.
   task automatic write_marker_word(input logic [WordW-1:0] word, input logic [DataWidth-1:0] val,
                                    output logic err, input logic ecc_en = 1'b1);
-    rram_store_buf(marker_addr(word), val, ecc_en);
+    rram_store_buf(marker_addr(word), val, ecc_en, 1'b1);
     rram_write(marker_addr(word), 1'b1, ecc_en);
     err = rram_macro_rsp.err;
   endtask
@@ -236,6 +246,28 @@ module tb;
     end
   endtask
 
+  // Checks whether the zero view is on with a write and read of a data word outside of the marker
+  // page.
+  // With the zero view, the write fails and the read returns 0 with clean ECC.
+  // Without it, the write succeeds and the word reads back.
+  task automatic check_zero_view(input logic exp_on);
+    localparam logic [AddrW-1:0] Addr = AddrW'(100 * WordsPerPage);
+    localparam logic [DataWidth-1:0] Val = {DataWidth/16{16'hA55A}};
+    logic err;
+    rram_store_buf(Addr, Val, 1'b1);
+    rram_write(Addr, 1'b0, 1'b1);
+    err = rram_macro_rsp.err;
+    if (err !== exp_on) begin
+      $error("RRAM-ERROR: zero view %0d: data write err=%b, exp=%b", exp_on, err, exp_on);
+      errors++;
+    end
+    rram_read(Addr, 1'b0, rdata, ecc_err, 1'b1);
+    if (rdata !== (exp_on ? '0 : Val) || ecc_err !== 3'b000) begin
+      $error("RRAM-ERROR: zero view %0d: data read %x ecc_err=%b", exp_on, rdata, ecc_err);
+      errors++;
+    end
+  endtask
+
   // Writes the markers through the data path, and checks the latched values after each reset.
   task automatic test_markers();
     // The marker words as rram_ctrl writes them: the magic value XORed with the bus word addresses.
@@ -256,6 +288,8 @@ module tb;
     end
     reset_dut();
     expect_markers(prim_mubi_pkg::MuBi8True, prim_mubi_pkg::MuBi8False);
+    // DIS_VOL_RAW_UNLOCK is not set, so the zero view is on.
+    check_zero_view(1'b1);
 
     // The magic value without the address infection does not count.
     expect_marker_write(DisVolRawUnlockWords[0], DataWidth'(MarkerMagic),
@@ -275,6 +309,8 @@ module tb;
     expect_marker_write(DisVolRawUnlockWords[0], DisVal, 1'b0);
     reset_dut();
     expect_markers(prim_mubi_pkg::MuBi8False, prim_mubi_pkg::MuBi8False);
+    // DIS_VOL_RAW_UNLOCK is set, so the zero view is off.
+    check_zero_view(1'b0);
 
     // The magic value sets CP_DONE.
     expect_marker_write(CpDoneWords[0], CpDoneVal, 1'b0);
@@ -331,14 +367,16 @@ module tb;
     @(init_done == 1'b1);
     #10ns;
 
+    // Run the marker test first.
+    // It starts without any marker, under the zero view, and leaves both markers set.
+    // So the other tests run without the zero view.
+    test_markers();
+
     // run functional tests
     test_func(100);
 
     // run vendor specific tests
     run_vendor_tests();
-
-    // run the marker test last, since it resets the macro
-    test_markers();
 
     #10us;
 

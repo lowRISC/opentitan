@@ -41,13 +41,34 @@ The decoded markers drive two MuBi8 outputs:
 - Both outputs are an invalid MuBi8 value until the markers are latched.
 
 Each marker has one copy for now, and it is read once.
-The parameters (`NumMarkerCopies` and the word lists in `rram_ctrl_pkg`) allow more copies later.
+The parameters (`NumMarkerCopies` and the word lists in `rram_ctrl_pkg`) allow more copies later, and a later version could confirm the result in a second read before the markers are latched.
 
 The macro does not protect the marker page itself.
 `rram_ctrl` only allows writes to it while `lc_nvm_debug_en` is On.
 Newly written markers only take effect after the next reset.
 
+## Zero View
+
+While `DIS_VOL_RAW_UNLOCK` is not set, `rram_ctrl` must not see the content of the array.
+This is the case during the forming flow, where the part is only volatilely unlocked.
+The zero view is off only while `allow_vol_unlock_o` is strictly `MuBi8False`, so it also stays on for an invalid value.
+
+| Request from `rram_ctrl` | Zero view on | Zero view off |
+| --- | --- | --- |
+| Read outside of the marker page | returns 0 with clean ECC, without accessing the array | normal |
+| Write outside of the marker page | dropped, completes with `err` | normal |
+| Read or write of the marker page | normal | normal |
+
+So `otp_ctrl` sees an all-zero OTP image, the life cycle partition decodes as `RAW` with counter 0, and any OTP write fails.
+The marker page is exempt, so the CP flow can write `DIS_VOL_RAW_UNLOCK` and read it back.
+The marker read during init, the vendor-specific JTAG/BIST access and the TRC's own reads are not affected.
+
+## Simulation Notes
+
 In simulation, the open-source model starts with an all-zero marker page, like a formed array.
+It then writes `DIS_VOL_RAW_UNLOCK`, so that the zero view is off and a testbench sees the real array.
+Tests of the forming flow and the volatile RAW unlock pass `+rram_dis_vol_raw_unlock=0` to skip it, which turns the zero view on.
+The chip-level DV uses the same plusarg for its backdoor preload, which also covers a vendor `rram_macro`.
 
 ## Replacing the macro
 

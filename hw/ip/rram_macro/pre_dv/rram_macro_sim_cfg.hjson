@@ -31,6 +31,10 @@
   // Add additional tops for simulation.
   sim_tops: [""]
 
+  // The tests start from an all-zero marker page, so the open-source rram_macro must not write
+  // DIS_VOL_RAW_UNLOCK at init.
+  run_opts: ["+rram_dis_vol_raw_unlock=0"]
+
   // Default iterations for all tests - each test entry can override this.
   reseed: 10
 
