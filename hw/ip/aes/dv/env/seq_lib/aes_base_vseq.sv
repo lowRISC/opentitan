@@ -129,10 +129,13 @@ class aes_base_vseq extends cip_base_vseq #(
     txt = {txt, $sformatf("\n vector: \t %0b", clr_vector)};
     `uvm_info(`gfn, $sformatf("%s",txt), UVM_MEDIUM)
 
-    ral.trigger.set(0);
-    ral.trigger.key_iv_data_in_clear.set(clr_vector.key_iv_data_in);
-    ral.trigger.data_out_clear.set(clr_vector.dataout);
-    csr_update(ral.trigger);
+    // TRIGGER is rw1s, so set(0) keeps every bit already set in the desired value, such as the
+    // reset values and the START bit of an earlier trigger(). Write the requested bits only.
+    reg_val = get_csr_val_with_updated_field(ral.trigger.key_iv_data_in_clear, reg_val,
+                                             clr_vector.key_iv_data_in);
+    reg_val = get_csr_val_with_updated_field(ral.trigger.data_out_clear, reg_val,
+                                             clr_vector.dataout);
+    csr_wr(.ptr(ral.trigger), .value(reg_val));
   endtask // clear_registers
 
 
