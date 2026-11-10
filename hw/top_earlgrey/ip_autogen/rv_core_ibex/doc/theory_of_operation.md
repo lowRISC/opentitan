@@ -98,11 +98,12 @@ When Ibex fetch is disabled it will cease to execute, but will complete instruct
 Ibex fetch is enabled when all of the following conditions are met:
   - The lifecycle controller has enabled it
   - The power manager has enabled it
-  - A ``fatal_hw_err`` alert hasn't been raised
+  - No fatal internal error has been seen ([`FATAL_CORE_ERR`](registers.md#err_status))
 
 ### Local Escalation Path
 
-When the ``fatal_hw_err`` alert is raised Ibex fetch is disabled and will remain disabled until ``rv_core_ibex`` is reset.
+When a fatal internal error sets [`FATAL_CORE_ERR`](registers.md#err_status), which also raises the ``fatal_hw_err`` alert, Ibex fetch is disabled and will remain disabled until ``rv_core_ibex`` is reset.
+The other causes of the ``fatal_hw_err`` alert, such as integrity errors, do not disable fetch locally; their escalation is left to the alert handler.
 
 ## Execution Mode Switch
 
