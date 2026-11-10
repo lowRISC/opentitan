@@ -17,9 +17,17 @@ package rram_ctrl_env_pkg;
   import rram_ctrl_host_ral_pkg::*;
   import rram_macro_prim_ral_pkg::*;
 
+  import prim_mubi_pkg::mubi4_t;
+  import prim_mubi_pkg::MuBi4False;
+  import prim_mubi_pkg::MuBi4True;
+
   import nvm_otp_key_agent_pkg::nvm_otp_key_agent_cfg;
   import nvm_otp_key_agent_pkg::nvm_otp_key_rsp_seq_item;
   import nvm_otp_key_agent_pkg::nvm_otp_key_agent;
+
+  import rram_ctrl_reg_pkg::NumRegions;
+  import rram_ctrl_reg_pkg::NumDataPages;
+  import rram_ctrl_reg_pkg::NumInfoPages;
 
   // Macro includes
   `include "uvm_macros.svh"
