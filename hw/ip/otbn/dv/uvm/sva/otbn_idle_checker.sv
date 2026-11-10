@@ -21,6 +21,7 @@ module otbn_idle_checker
   input logic otbn_imem_scramble_key_req_busy_i,
 
   input logic [7:0] status_q_i,
+  input logic locking_i,
   input logic busy_secure_wipe,
   input logic [38:0] imem_rdata_bus,
   input logic [ExtWLEN-1:0] dmem_rdata_bus
@@ -40,7 +41,7 @@ module otbn_idle_checker
     end
   end
 
-  // Detect writes to CMD. They only take effect if we are in state IDLE
+  // Detect writes to CMD. They only take effect if we are in state IDLE and not locking
   logic cmd_operation, start_req, do_start;
 
   assign cmd_operation = reg2hw.cmd.q inside {otbn_pkg::CmdSecWipeImem,
@@ -49,7 +50,7 @@ module otbn_idle_checker
 
   assign start_req = reg2hw.cmd.qe && cmd_operation;
 
-  assign do_start = start_req && (hw2reg.status.d == otbn_pkg::StatusIdle);
+  assign do_start = start_req && (hw2reg.status.d == otbn_pkg::StatusIdle) && !locking_i;
 
   // Detect a RESUME command. It only takes effect if we are currently paused on a WFI instruction.
   logic resume_req, do_resume;
