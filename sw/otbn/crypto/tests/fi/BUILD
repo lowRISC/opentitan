@@ -15,6 +15,7 @@ otbn_fi_sim_test(
     collision_size = 32,
     collision_symbol = "r",
     fixed_instruction_count = True,
+    ignore_outputs = ["0x0"],
     ok_size = 4,
     ok_symbol = "ok",
     ok_value = "0x739",
@@ -30,7 +31,7 @@ otbn_fi_sim_test(
         "mode": "unmasked:4:0x563",
         "msg": "unmasked:32:0x06d712076ce90fefb028ad8a90d4d90b17d015f1b54d7452400bdd7d4456fd21",
         "d0_io,d1_io": "additive:64:0x112233445566778899aabbccddeeff00112233445566778899aabbccddeeff00:0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",
-        "k0_io,k1_io": "scalar_blind:64:0x9999999999999999999999999999999999999999999999999999999999999999:0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",
+        "k0_io,k1_io": "scalar_blind:64:0x2222222222222222222222222222222222222222222222222222222222222222:0xffffffff00000000ffffffffffffffffbce6faada7179e84f3b9cac2fc632551",
     },
 )
 
@@ -43,6 +44,7 @@ otbn_fi_sim_test(
     collision_size = 32,  # x_r is a 256-bit word
     collision_symbol = "x_r",
     fixed_instruction_count = False,  # Verify is a variable time algorithm
+    ignore_outputs = ["0x0"],
     ok_size = 4,  # ok is a 32-bit word
     ok_symbol = "ok",
     ok_value = "0x739",
@@ -59,7 +61,7 @@ otbn_fi_sim_test(
     },
     target_b_secrets = {
         "mode": "unmasked:4:0x5D8",
-        "msg": "unmasked:32:0x16d712076ce90fefb028ad8a90d4d90b17d015f1b54d7452400bdd7d4456fd21",  # Changed byte
+        "msg": "unmasked:32:0x5382475239bc5abae57df8dfdb818c5e428540a4e018210715ee88281103a874",
         "r": "unmasked:32:0x815215ad7dd27f336b35843cbe064de299504edd0c7d87dd1147ea5680a9674a",
         "s": "unmasked:32:0xa3991e01c444042086e30cd999e589ad4dad9404e90a6d17d0b1051ec93fd605",
         "x": "unmasked:32:0xb5511a6afacdc5461628ce58db6c8bf36ec0c0b2f36b06899773b7b3bfa8c334",
@@ -76,6 +78,7 @@ otbn_fi_sim_test(
     collision_size = 32,
     collision_symbol = "x_r",
     fixed_instruction_count = False,
+    ignore_outputs = ["0x0"],
     ok_size = 4,
     ok_symbol = "ok",
     ok_value = "0x739",
@@ -111,6 +114,7 @@ otbn_fi_sim_test(
     collision_size = 32,
     collision_symbol = "ecdh_x0,ecdh_x1",
     fixed_instruction_count = True,
+    ignore_outputs = ["0x0"],
     ok_size = 4,
     ok_symbol = "ok",
     ok_value = "0x739",
@@ -141,6 +145,7 @@ otbn_fi_sim_test(
     collision_size = 48,  # P384 r is 48 bytes
     collision_symbol = "r",
     fixed_instruction_count = True,
+    ignore_outputs = ["0x0"],
     ok_size = 4,
     ok_symbol = "ok",
     ok_value = "0x0",
@@ -156,7 +161,7 @@ otbn_fi_sim_test(
         "mode": "unmasked:4:0x655",
         "msg": "unmasked:64:0x00000000000000000000000000000000555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555555",
         "d0_io,d1_io": "additive:64:0x32f9e2b08677a5f2adb9ce1be14cd8df800a4c9416f5c1ee1e9d19e796d2f9e05b7d3b0f4de8344e6e0012819a0c1b763eb17c275c832a51:0xffffffffffffffffffffffffffffffffffffffffffffffffc7634d81f4372ddf581a0db248b0a77aecec196accc52973",
-        "k0_io,k1_io": "scalar_blind:64:0x999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999:0xffffffffffffffffffffffffffffffffffffffffffffffffc7634d81f4372ddf581a0db248b0a77aecec196accc52973",
+        "k0_io,k1_io": "scalar_blind:64:0x222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222222:0xffffffffffffffffffffffffffffffffffffffffffffffffc7634d81f4372ddf581a0db248b0a77aecec196accc52973",
     },
 )
 
@@ -169,6 +174,7 @@ otbn_fi_sim_test(
     collision_size = 48,
     collision_symbol = "x_r",
     fixed_instruction_count = False,
+    ignore_outputs = ["0x0"],
     ok_size = 4,
     ok_symbol = "ok",
     ok_value = "0x739",
@@ -204,6 +210,7 @@ otbn_fi_sim_test(
     collision_size = 64,
     collision_symbol = "x25519_shared_key",
     fixed_instruction_count = True,
+    ignore_outputs = ["0x0"],
     ok_size = 4,
     ok_symbol = "x25519_ok",
     ok_value = "0x739",
@@ -218,7 +225,7 @@ otbn_fi_sim_test(
     # Secret B (different private key, same public key)
     target_b_secrets = {
         "mode": "unmasked:4:0x695",
-        "ed25519_s0,ed25519_s1": "additive:32:0x012233445566778899aabbccddeeff00112233445566778899aabbccdd1eff00:0x10000000000000000000000000000000000000000000000000000000000000000",
+        "ed25519_s0,ed25519_s1": "additive:32:0x44776611003322ddccffeedd88bbaa5544776611003322ddccffeedd88bbaa55:0x10000000000000000000000000000000000000000000000000000000000000000",
         "x25519_public_key": "unmasked:32:0x4c1cabd0a603a9103b35b326ec2466727c5fb124a4c19435db3030586768dbe6",
     },
 )
@@ -232,6 +239,7 @@ otbn_fi_sim_test(
     collision_size = 64,
     collision_symbol = "inout",
     fixed_instruction_count = True,
+    ignore_outputs = ["0x0"],
     ok_size = 4,
     ok_symbol = "ok",
     ok_value = "0x739",
@@ -250,7 +258,7 @@ otbn_fi_sim_test(
         "rsa_n": "unmasked:64:0x906ce5d361397c1ce1f5b75760a23b20786e52ca82f66ec7216e982b5945a19afe4aba4e1c59d1aa020b035ef4c08da0658e9702c9bb46392d3b81ce594dec21",
         "rsa_d0": "unmasked:64:0x354d9c10865d447ebaac7fe326a9d65724726953c74d2e9098051a5b9148bcfed742487a13f0350dbb897a967fb872e83acd05430c8ba533fe8b2e91e902ef79",
         "rsa_d1": "unmasked:64:0x07618e6fa119246ed63e813a12581081b1adacc6e532f9369fc5289555113fcbca4943b2e02fc6bb722402a4a2a0a685b86b12799e910ab9242e9d8e49d29004",
-        "inout": "unmasked:64:0xd487ce1eaf19922ad9b8a714e61a441c12e0c8b2bad640fb19488dec4f65d4d9259f4329e6f4590b9a164106cf6a659eb4862b21fb97d43588561712e8e5216b",
+        "inout": "unmasked:64:0x81d29b4bfa4cc77f8cedf241b34f114947b59de7ef8315ae4c1dd8b91a30818c70ca167cb3a10c5ec44314539a3f30cbe1d37e74aec28160dd034247bdbe743f",
     },
 )
 
@@ -263,6 +271,7 @@ otbn_fi_sim_test(
     collision_size = 64,
     collision_symbol = "inout",
     fixed_instruction_count = True,
+    ignore_outputs = ["0x0"],
     ok_size = 4,
     ok_symbol = "ok",
     ok_value = "0x739",
@@ -279,7 +288,7 @@ otbn_fi_sim_test(
     target_b_secrets = {
         "mode": "unmasked:4:0x3ad",
         "rsa_n": "unmasked:64:0x906ce5d361397c1ce1f5b75760a23b20786e52ca82f66ec7216e982b5945a19afe4aba4e1c59d1aa020b035ef4c08da0658e9702c9bb46392d3b81ce594dec21",
-        "rsa_d0": "unmasked:64:0x354d9c10865d447ebaac7fe326a9d65724726953c74d2e9098051a5b9148bcfed742487a13f0350dbb897a967fb872e83acd05430c8ba533fe8b2e91e902ef78",
+        "rsa_d0": "unmasked:64:0x6018c945d308112bef592ab673fc830271273cc092187bc5cd504ff0ec41deaa82171d2f46a56058ee7cc2fc2aee27bdeffd501659deff06aa3efbc4bc57ba29",
         "rsa_d1": "unmasked:64:0x07618e6fa119246ed63e813a12581081b1adacc6e532f9369fc5289555113fcbca4943b2e02fc6bb722402a4a2a0a685b86b12799e910ab9242e9d8e49d29004",
         "inout": "unmasked:64:0xd487ce1eaf19922ad9b8a714e61a441c12e0c8b2bad640fb19488dec4f65d4d9259f4329e6f4590b9a164106cf6a659eb4862b21fb97d43588561712e8e5216a",
     },
@@ -294,6 +303,7 @@ otbn_fi_sim_test(
     collision_size = 64,
     collision_symbol = "inout",
     fixed_instruction_count = True,
+    ignore_outputs = ["0x0"],
     ok_size = 4,
     ok_symbol = "ok",
     ok_value = "0x739",
@@ -308,7 +318,7 @@ otbn_fi_sim_test(
     target_b_secrets = {
         "mode": "unmasked:4:0x37f",
         "rsa_n": "unmasked:64:0x906ce5d361397c1ce1f5b75760a23b20786e52ca82f66ec7216e982b5945a19afe4aba4e1c59d1aa020b035ef4c08da0658e9702c9bb46392d3b81ce594dec21",
-        "inout": "unmasked:64:0xd487ce1eaf19922ad9b8a714e61a441c12e0c8b2bad640fb19488dec4f65d4d9259f4329e6f4590b9a164106cf6a659eb4862b21fb97d43588561712e8e5216b",
+        "inout": "unmasked:64:0x81d29b4bfa4cc77f8cedf241b34f114947b59de7ef8315ae4c1dd8b91a30818c70ca167cb3a10c5ec44314539a3f30cbe1d37e74aec28160dd034247bdbe743f",
     },
 )
 
@@ -321,6 +331,7 @@ otbn_fi_sim_test(
     collision_size = 64,
     collision_symbol = "inout",
     fixed_instruction_count = True,
+    ignore_outputs = ["0x0"],
     ok_size = 4,
     ok_symbol = "ok",
     ok_value = "0x739",
@@ -334,7 +345,7 @@ otbn_fi_sim_test(
     # Same signature, different public modulus (rsa_n modified)
     target_b_secrets = {
         "mode": "unmasked:4:0x37f",
-        "rsa_n": "unmasked:64:0x906ce5d361397c1ce1f5b75760a23b20786e52ca82f66ec7216e982b5945a19afe4aba4e1c59d1aa020b035ef4c08da0658e9702c9bb46392d3b81ce594dec22",
+        "rsa_n": "unmasked:64:0xc539b086346c2949b4a0e20235f76e752d3b079fd7a33b92743bcd7e0c10f4cfab1feffbc90c84ff5755560ba1955df530dbcd259cee136c778ed49b0c18b971",
         "inout": "unmasked:64:0xd487ce1eaf19922ad9b8a714e61a441c12e0c8b2bad640fb19488dec4f65d4d9259f4329e6f4590b9a164106cf6a659eb4862b21fb97d43588561712e8e5216a",
     },
 )
@@ -348,6 +359,7 @@ otbn_fi_sim_test(
     collision_size = 32,
     collision_symbol = "ed25519_sig_R",
     fixed_instruction_count = True,
+    ignore_outputs = ["0x0"],
     ok_size = 4,
     ok_symbol = "x25519_ok",
     ok_value = "0x0",
@@ -372,7 +384,8 @@ otbn_fi_sim_test(
     attack_mode = "collision",
     collision_size = 32,
     collision_symbol = "ed25519_verify_rhs",
-    fixed_instruction_count = False,
+    fixed_instruction_count = True,
+    ignore_outputs = ["0x0"],
     ok_size = 4,
     ok_symbol = "ed25519_verify_result",
     ok_value = "0x739",
@@ -387,7 +400,7 @@ otbn_fi_sim_test(
     },
     target_b_secrets = {
         "mode": "unmasked:4:0x54E",
-        "ed25519_hash_k": "unmasked:64:0x9f0e3ca07bee6837283462046ae8b109acf2337c37117420c7228a98dc5bf10ec2a4a7bc4df02282f0f34d280df15d037b82c32003dabdffe76f536b2b067128",
+        "ed25519_hash_k": "unmasked:64:0xca5b69f52ebb3d627d6137513fbde45cf9a76629964421759277dfcd890ea45b97ff2df918a577d7a5a6187d58a408562ed79675568fe8aa22b2063e7e532472",
         "ed25519_sig_R": "unmasked:32:0x5501492265e073d874d9e5b81e7f87848a826e80cce2869072ac60c3004356e5",
         "ed25519_sig_S": "unmasked:32:0x0b107a8e4341516524be5b59f0f55bd26bb4f91c70391ec6ac3ba3901582b85f",
         "ed25519_public_key": "unmasked:32:0x1a5107f7681a02af2523a6daf372e10e3a0764c9d3fe4bd5b70ab18201985ad7",
@@ -401,7 +414,8 @@ otbn_fi_sim_test(
     attack_mode = "collision",
     collision_size = 32,
     collision_symbol = "ed25519_verify_rhs",
-    fixed_instruction_count = False,
+    fixed_instruction_count = True,
+    ignore_outputs = ["0x0"],
     ok_size = 4,
     ok_symbol = "ed25519_verify_result",
     ok_value = "0x739",
@@ -416,7 +430,7 @@ otbn_fi_sim_test(
     },
     target_b_secrets = {
         "mode": "unmasked:4:0x54E",
-        "ed25519_hash_k": "unmasked:64:0x9f0e3ca07bee6837283462046ae8b109acf2337c37117420c7228a98dc5bf10ec2a4a7bc4df02282f0f34d280df15d037b82c32003dabdffe76f536b2b067128",
+        "ed25519_hash_k": "unmasked:64:0x9f0e3ca07bee6837283462046ae8b109acf2337c37117420c7228a98dc5bf10ec2a4a7bc4df02282f0f34d280df15d037b82c32003dabdffe76f536b2b067127",
         "ed25519_sig_R": "unmasked:32:0x5501492265e073d874d9e5b81e7f87848a826e80cce2869072ac60c3004356e5",
         "ed25519_sig_S": "unmasked:32:0x0b107a8e4341516524be5b59f0f55bd26bb4f91c70391ec6ac3ba3901582b85f",
         "ed25519_public_key": "unmasked:32:0x5501492265e073d874d9e5b81e7f87848a826e80cce2869072ac60c3004356e5",

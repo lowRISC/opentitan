@@ -499,6 +499,12 @@ def main() -> int:
         help="Enforce strict cycle/instruction counting",
     )
     parser.add_argument(
+        "--ignore-output",
+        action="append",
+        default=[],
+        help="Hex output values to ignore (e.g. 0x0)",
+    )
+    parser.add_argument(
         "--target-a-secret",
         action="append",
         default=[],
@@ -532,6 +538,7 @@ def main() -> int:
     target_b_secrets = parse_secret_args(args.target_b_secret)
 
     ok_val_int = int(args.ok_val, 16)
+    ignored_outputs = {int(val, 16) for val in args.ignore_output}
     sizes = {args.ok_sym: args.ok_size}
     col_syms = args.col_sym.split(",")
     for sym in col_syms:
@@ -729,6 +736,14 @@ def main() -> int:
                             args.col_modulus,
                         )
 
+                        if val_a in ignored_outputs or val_b in ignored_outputs:
+                            print(
+                                f"{progress} Ignored output "
+                                f"(val_a: {hex(val_a)}, val_b: {hex(val_b)})",
+                                flush=True,
+                            )
+                            continue
+
                         total_bits = unmasked_size * 8
                         xor_val = val_a ^ val_b
                         mismatched_bits = bin(xor_val).count("1")
@@ -778,6 +793,12 @@ def main() -> int:
                             args.col_size,
                             args.col_modulus,
                         )
+                        if val_a in ignored_outputs:
+                            print(
+                                f"{progress} Ignored output (faulted: {hex(val_a)})",
+                                flush=True,
+                            )
+                            continue
                         total_bits = unmasked_size * 8
                         xor_val = val_a ^ baseline_collision_val
                         match_ratio = (
