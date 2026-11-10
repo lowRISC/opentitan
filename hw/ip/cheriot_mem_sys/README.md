@@ -13,11 +13,9 @@ The subsystem sits between the CHERIoT-capable Ibex core and the main crossbar a
 [Comportability Specification](../../../doc/contributing/hw/comportability/README.md).
 
 A CHERIoT capability is 65 bits in size: 32 bits pointer, 32 bits of metadata for the pointer, and a single validity tag bit.
-OpenTitan keeps a 32-bit interconnect, so capabilities are transferred in two consecutive
-32-bit accesses, and the tag is carried on a sideband signal, which shares the handshakes,
-next to the TL-UL structs.
-The subsystem is responsible for handling and storing the validity tag bit. It splits a data access
-of Ibex into the data access towards the interconnect and a tag access towards a dedicated and guarded meta SRAM.
+OpenTitan keeps a 32-bit interconnect, so capabilities are transferred in two consecutive 32-bit accesses, and the tag is carried next to the TL-UL structs on a multi-bit encoded sideband signal that shares their handshakes.
+The subsystem is responsible for handling and storing the validity tag bit.
+It splits a data access of Ibex into the data access towards the interconnect and a tag access towards a dedicated and guarded meta SRAM.
 
 The capability validity tags for main SRAM and NVM, and the revocation bitmap for the heap stored in the main
 SRAM are stored using a `sram_ctrl`.
@@ -38,9 +36,10 @@ SRAM are stored using a `sram_ctrl`.
   without an error in an epoch register of the form the CHERIoT RTOS revoker uses.
 - Per-port access checking: each of the four requesters may only reach the meta SRAM region it owns,
   with word-granular accesses only.
-- Fatal alert on a CSR bus integrity fault, a meta SRAM response integrity fault, a meta SRAM
-  device error, a fault the revocation engine reports, or what the core cannot produce around a
-  capability store to the NVM (an integrity fault, a partial store, or a request out of sequence).
+- Fatal alert on a CSR bus integrity fault, an invalid encoding of the capability tag of a core
+  request, a meta SRAM response integrity fault, a meta SRAM device error, a fault the revocation
+  engine reports, or what the core cannot produce around a capability store to the NVM (an
+  integrity fault, a partial store, or a request out of sequence).
 
 ## Description
 
