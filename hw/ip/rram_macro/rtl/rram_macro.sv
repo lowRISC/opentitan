@@ -15,12 +15,7 @@ module rram_macro #(
   parameter int unsigned DataWidth      = 128,  // RRAM word data width
   parameter int unsigned WordsPerPage   = 32,   // Number of words per page
   parameter int unsigned TotalInfoPages = 8,    // Total number of info pages
-  parameter int unsigned MaxWrWords     = 32,   // Maximum number of words per write
-  // Marker magic values (netlist constants)
-  parameter rram_ctrl_pkg::marker_magic_t RndCnstDisVolRawUnlockMagic =
-      rram_ctrl_pkg::RndCnstDisVolRawUnlockMagicDefault,
-  parameter rram_ctrl_pkg::marker_magic_t RndCnstCpDoneMagic =
-      rram_ctrl_pkg::RndCnstCpDoneMagicDefault
+  parameter int unsigned MaxWrWords     = 32    // Maximum number of words per write
 ) (
   input logic                            clk_i,
   input logic                            rst_ni,
@@ -322,10 +317,7 @@ module rram_macro #(
   // Each output keeps its invalid reset value until its word was read.
   // A later version could confirm the result in a second state before StIdle.
   // The open-source model always responds, so it needs no read timeout.
-  `ASSERT_INIT(DisVolRawUnlockMagicWeight_A,
-      $countones(RndCnstDisVolRawUnlockMagic) >= MarkerMagicMinWeight)
-  `ASSERT_INIT(CpDoneMagicWeight_A, $countones(RndCnstCpDoneMagic) >= MarkerMagicMinWeight)
-  `ASSERT_INIT(MarkerMagicsDiffer_A, RndCnstDisVolRawUnlockMagic != RndCnstCpDoneMagic)
+  `ASSERT_INIT(MarkerMagicWeight_A, $countones(MarkerMagic) >= MarkerMagicMinWeight)
   `ASSERT_INIT(OneMarkerCopy_A, NumMarkerCopies == 1)
 
   // Selects the marker word that is read next: 0 for DIS_VOL_RAW_UNLOCK, 1 for CP_DONE.
@@ -340,9 +332,7 @@ module rram_macro #(
   // The markers are always read with ECC.
   logic marker_match;
   assign marker_match = ~|{rd_err_lo, rd_err_hi} &&
-                        rd_data_dec == marker_word_value(marker_cp_q ? RndCnstCpDoneMagic :
-                                                                       RndCnstDisVolRawUnlockMagic,
-                                                         marker_word);
+                        rd_data_dec == marker_word_value(MarkerMagic, marker_word);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin

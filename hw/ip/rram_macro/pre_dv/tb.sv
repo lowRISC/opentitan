@@ -240,9 +240,10 @@ module tb;
   task automatic test_markers();
     // The marker words as rram_ctrl writes them: the magic value XORed with the bus word addresses.
     localparam logic [DataWidth-1:0] DisVal =
-        marker_word_value(RndCnstDisVolRawUnlockMagicDefault, DisVolRawUnlockWords[0]);
-    localparam logic [DataWidth-1:0] CpDoneVal =
-        marker_word_value(RndCnstCpDoneMagicDefault, CpDoneWords[0]);
+        marker_word_value(MarkerMagic, DisVolRawUnlockWords[0]);
+    localparam logic [DataWidth-1:0] CpDoneVal = marker_word_value(MarkerMagic, CpDoneWords[0]);
+    // The magic value with an extra bit set outside of the 16 magic bits.
+    localparam logic [DataWidth-1:0] DisValExtraBit = DisVal | (DataWidth'(1) << (DataWidth - 1));
     logic err;
     int errors_before;
     $display("Starting test test_markers");
@@ -257,14 +258,14 @@ module tb;
     expect_markers(prim_mubi_pkg::MuBi8True, prim_mubi_pkg::MuBi8False);
 
     // The magic value without the address infection does not count.
-    expect_marker_write(DisVolRawUnlockWords[0], DataWidth'(RndCnstDisVolRawUnlockMagicDefault),
+    expect_marker_write(DisVolRawUnlockWords[0], DataWidth'(MarkerMagic),
                         1'b0);
     reset_dut();
     expect_markers(prim_mubi_pkg::MuBi8True, prim_mubi_pkg::MuBi8False);
 
-    // A marker with the right value but without valid ECC does not count.
+    // A marker only counts if the whole word holds exactly the magic value.
     // The CP_DONE word is not the magic value, so CP_DONE is not set either.
-    expect_marker_write(DisVolRawUnlockWords[0], DisVal, 1'b0, 1'b0);
+    expect_marker_write(DisVolRawUnlockWords[0], DisValExtraBit, 1'b0);
     expect_marker_write(CpDoneWords[0], 'h1, 1'b0);
     reset_dut();
     expect_markers(prim_mubi_pkg::MuBi8True, prim_mubi_pkg::MuBi8False);

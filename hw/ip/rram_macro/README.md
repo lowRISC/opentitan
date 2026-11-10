@@ -25,12 +25,14 @@ They are read in every life cycle state, independent of the memory protection in
 
 | Marker | Word offset | Set if |
 | --- | --- | --- |
-| `DIS_VOL_RAW_UNLOCK` | `DisVolRawUnlockWords` (0) | the word holds exactly `RndCnstDisVolRawUnlockMagic`, zero-extended to 128 bits and XORed with the bus word addresses like `rram_ctrl` writes it, with clean ECC |
-| `CP_DONE` | `CpDoneWords` (1) | the word holds exactly `RndCnstCpDoneMagic`, zero-extended to 128 bits and XORed with the bus word addresses like `rram_ctrl` writes it, with clean ECC |
+| `DIS_VOL_RAW_UNLOCK` | `DisVolRawUnlockWords` (0) | the word holds exactly `MarkerMagic`, zero-extended to 128 bits and XORed with the bus word addresses like `rram_ctrl` writes it, with clean ECC |
+| `CP_DONE` | `CpDoneWords` (1) | the word holds exactly `MarkerMagic`, zero-extended to 128 bits and XORed with the bus word addresses like `rram_ctrl` writes it, with clean ECC |
 
 The markers are always read with ECC, and they are not scrambled.
 A read with an ECC error or any other value means "not set", so a blank or unformed array reads as "not set".
-Both magic values are 16-bit netlist constants with at least `MarkerMagicMinWeight` (8) 1-bits, and they must differ.
+`MarkerMagic` is the public 16-bit constant `MuBi16True` (`16'h9696`), since the CP flow has to write it.
+It has 8 1-bits (`MarkerMagicMinWeight`), so a marker only falls back to "not set" if all of them decay to zero.
+Both markers use the same value, since each marker has its own words.
 
 The decoded markers drive two MuBi8 outputs:
 

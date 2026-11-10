@@ -510,9 +510,8 @@
         regs: {hart: "0x40140000"},
       },
       param_decl: {
-        // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-        // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED FOR
-        // PRODUCTION DEVICES.
+        // The volatile RAW unlock is needed to reach the RRAM forming flow on a part without a
+        // persistent life cycle state. It is gated by rram_macro's allow_vol_unlock, see top_pkg.
         SecVolatileRawUnlockEn: "top_pkg::SecVolatileRawUnlockEn",
         // The following three values get exposed in the life cycle CSRs
         // that are also readable via the TAP.
@@ -734,9 +733,8 @@
       },
       attr: "ipgen",
       param_decl: {
-        // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-        // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED FOR
-        // PRODUCTION DEVICES.
+        // The volatile RAW unlock is needed to reach the RRAM forming flow on a part without a
+        // persistent life cycle state. It is gated by rram_macro's allow_vol_unlock, see top_pkg.
         SecVolatileRawUnlockEn: "top_pkg::SecVolatileRawUnlockEn",
       }
     },
@@ -1406,7 +1404,8 @@
                                       'rv_dm.lc_dft_en'
                                      ],
       'lc_ctrl.lc_nvm_debug_en'    : ['rram_macro.lc_nvm_debug_en',
-                                      'pinmux.lc_nvm_debug_en'],
+                                      'pinmux.lc_nvm_debug_en',
+                                      'rram_ctrl.lc_nvm_debug_en'],
       'lc_ctrl.lc_hw_debug_clr'    : ['pinmux.lc_hw_debug_clr',
                                       'rv_dm.lc_hw_debug_clr'],
       'lc_ctrl.lc_init_done'       : ['rv_dm.lc_init_done'],
@@ -1480,6 +1479,9 @@
 
       // connection between rram_macro and rram_ctrl
       'rram_ctrl.rram_macro' : ['rram_macro.rram_macro'],
+      // Markers read by rram_macro during its init, for the RRAM forming and CP flow.
+      'rram_macro.allow_vol_unlock' : ['lc_ctrl.allow_vol_unlock'],
+      'rram_macro.cp_done'          : ['rram_ctrl.cp_done'],
 
       // CHERIoT connections
       'cheriot_mem_sys.meta_sram_tl'  : ['sram_ctrl_meta.ram_tl'],

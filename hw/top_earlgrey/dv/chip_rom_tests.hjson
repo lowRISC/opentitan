@@ -761,6 +761,8 @@
         "+use_otp_image=OtpTypeLcStRaw",
         "+chip_clock_source=ChipClockSourceExternal48Mhz",
         "+rom_prod_mode=1",
+        // Earl Grey enables the volatile RAW unlock for the RRAM forming flow.
+        "+exp_volatile_raw_unlock_en=1",
       ]
       run_timeout_mins: 480
     }

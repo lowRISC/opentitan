@@ -43,9 +43,12 @@ module pinmux
 % if enable_strap_sampling:
   input                            strap_en_i,
   // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
-  // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-  // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
-  // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+  // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+  // COMPILETIME.
+  // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+  // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+  // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+  // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
   // ---------------------------------------------------------------
   // Strap sampling override that is only used when SecVolatileRawUnlockEn = 1, Otherwise this input
   // is unused. This needs to be synchronized since it is coming from a different clock domain.

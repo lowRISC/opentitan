@@ -290,12 +290,12 @@ package rram_ctrl_pkg;
   // Word offsets of the DIS_VOL_RAW_UNLOCK and CP_DONE copies within the marker page.
   parameter bit [WordW-1:0] DisVolRawUnlockWords [NumMarkerCopies] = '{0};
   parameter bit [WordW-1:0] CpDoneWords [NumMarkerCopies] = '{1};
-  // A marker is set if a copy holds exactly its 16-bit magic value, zero-extended to the word.
-  // The magic values are netlist constants of rram_macro.
+  // A marker is set if a copy holds exactly the 16-bit magic value, zero-extended to the word.
+  // The magic value is a public constant, since the CP flow has to write it.
+  // Both markers use the same value, since each marker has its own words.
   parameter int unsigned MarkerMagicW = 16;
   typedef logic [MarkerMagicW-1:0] marker_magic_t;
-  parameter marker_magic_t RndCnstDisVolRawUnlockMagicDefault = 16'h3A6D;
-  parameter marker_magic_t RndCnstCpDoneMagicDefault          = 16'hC5A7;
+  parameter marker_magic_t MarkerMagic = prim_mubi_pkg::MuBi16True;
   // Minimum number of 1-bits in each magic value.
   // A marker only falls back to "not written" if all its 1-bits decay to exactly zero.
   parameter int unsigned MarkerMagicMinWeight = 8;

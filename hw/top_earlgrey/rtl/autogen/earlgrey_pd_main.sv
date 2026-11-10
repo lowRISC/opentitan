@@ -686,6 +686,8 @@ module earlgrey_pd_main #(
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   rram_ctrl_pkg::rram_macro_req_t       rram_ctrl_rram_macro_req;
   rram_ctrl_pkg::rram_macro_rsp_t       rram_ctrl_rram_macro_rsp;
+  prim_mubi_pkg::mubi8_t       rram_macro_allow_vol_unlock;
+  prim_mubi_pkg::mubi8_t       rram_macro_cp_done;
   tlul_pkg::tl_h2d_t       cheriot_mem_sys_meta_sram_tl_req;
   tlul_pkg::tl_d2h_t       cheriot_mem_sys_meta_sram_tl_rsp;
   logic       cheriot_mem_sys_cored_tag_d2h;
@@ -1823,7 +1825,7 @@ module earlgrey_pd_main #(
     .otp_manuf_state_i(lc_ctrl_otp_manuf_state),
     .hw_rev_o(),
     .strap_en_override_o(lc_ctrl_strap_en_override_o),
-    .allow_vol_unlock_i(prim_mubi_pkg::MuBi8True),
+    .allow_vol_unlock_i(rram_macro_allow_vol_unlock),
     .regs_tl_i(lc_ctrl_regs_tl_req),
     .regs_tl_o(lc_ctrl_regs_tl_rsp),
     .dmi_tl_i(tlul_pkg::TL_H2D_DEFAULT),
@@ -2110,8 +2112,8 @@ module earlgrey_pd_main #(
     .lc_iso_part_sw_wr_en_i(lc_ctrl_lc_iso_part_sw_wr_en),
     .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
     .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
-    .lc_nvm_debug_en_i(lc_ctrl_pkg::Off),
-    .cp_done_i(prim_mubi_pkg::MuBi8False),
+    .lc_nvm_debug_en_i(lc_ctrl_lc_nvm_debug_en),
+    .cp_done_i(rram_macro_cp_done),
     .rma_req_i(lc_ctrl_lc_nvm_rma_req),
     .rma_ack_o(lc_ctrl_lc_nvm_rma_ack[0]),
     .rma_seed_i(lc_ctrl_lc_nvm_rma_seed),
@@ -2144,8 +2146,8 @@ module earlgrey_pd_main #(
     // Inter-module signals
     .rram_macro_i(rram_ctrl_rram_macro_req),
     .rram_macro_o(rram_ctrl_rram_macro_rsp),
-    .allow_vol_unlock_o(),
-    .cp_done_o(),
+    .allow_vol_unlock_o(rram_macro_allow_vol_unlock),
+    .cp_done_o(rram_macro_cp_done),
     .lc_nvm_debug_en_i(lc_ctrl_lc_nvm_debug_en),
     .jtag_i(pinmux_rram_jtag_req_i),
     .jtag_o(pinmux_rram_jtag_rsp_o),

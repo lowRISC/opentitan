@@ -3673,6 +3673,8 @@
           width: 1
           default: prim_mubi_pkg::MuBi8True
           inst_name: lc_ctrl
+          domain: Main
+          top_signame: rram_macro_allow_vol_unlock
           index: -1
         }
         {
@@ -8019,6 +8021,8 @@
           width: 1
           default: lc_ctrl_pkg::Off
           inst_name: rram_ctrl
+          domain: Main
+          top_signame: lc_ctrl_lc_nvm_debug_en
           index: -1
         }
         {
@@ -8035,6 +8039,8 @@
           width: 1
           default: prim_mubi_pkg::MuBi8False
           inst_name: rram_ctrl
+          domain: Main
+          top_signame: rram_macro_cp_done
           index: -1
         }
         {
@@ -8265,6 +8271,10 @@
           act: req
           width: 1
           inst_name: rram_macro
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rram_macro_allow_vol_unlock
           index: -1
         }
         {
@@ -8281,6 +8291,10 @@
           act: req
           width: 1
           inst_name: rram_macro
+          default: ""
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rram_macro_cp_done
           index: -1
         }
         {
@@ -13197,6 +13211,7 @@
       [
         rram_macro.lc_nvm_debug_en
         pinmux.lc_nvm_debug_en
+        rram_ctrl.lc_nvm_debug_en
       ]
       lc_ctrl.lc_hw_debug_clr:
       [
@@ -13334,6 +13349,14 @@
       rram_ctrl.rram_macro:
       [
         rram_macro.rram_macro
+      ]
+      rram_macro.allow_vol_unlock:
+      [
+        lc_ctrl.allow_vol_unlock
+      ]
+      rram_macro.cp_done:
+      [
+        rram_ctrl.cp_done
       ]
       cheriot_mem_sys.meta_sram_tl:
       [
@@ -27314,6 +27337,8 @@
         width: 1
         default: prim_mubi_pkg::MuBi8True
         inst_name: lc_ctrl
+        domain: Main
+        top_signame: rram_macro_allow_vol_unlock
         index: -1
       }
       {
@@ -30452,6 +30477,8 @@
         width: 1
         default: lc_ctrl_pkg::Off
         inst_name: rram_ctrl
+        domain: Main
+        top_signame: lc_ctrl_lc_nvm_debug_en
         index: -1
       }
       {
@@ -30468,6 +30495,8 @@
         width: 1
         default: prim_mubi_pkg::MuBi8False
         inst_name: rram_ctrl
+        domain: Main
+        top_signame: rram_macro_cp_done
         index: -1
       }
       {
@@ -30608,6 +30637,10 @@
         act: req
         width: 1
         inst_name: rram_macro
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rram_macro_allow_vol_unlock
         index: -1
       }
       {
@@ -30624,6 +30657,10 @@
         act: req
         width: 1
         inst_name: rram_macro
+        default: ""
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rram_macro_cp_done
         index: -1
       }
       {
@@ -42091,6 +42128,30 @@
         act: req
         suffix: rsp
         default: rram_ctrl_pkg::RRAM_MACRO_RSP_DEFAULT
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi8
+        domain: Main
+        signame: rram_macro_allow_vol_unlock
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: prim_mubi_pkg::MUBI8_DEFAULT
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi8
+        domain: Main
+        signame: rram_macro_cp_done
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: prim_mubi_pkg::MUBI8_DEFAULT
       }
       {
         package: tlul_pkg
