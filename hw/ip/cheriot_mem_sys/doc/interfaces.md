@@ -30,8 +30,8 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:--------------|:---------------------|:--------|:------|--------:|:----------------------------------------------------------------------|
 | cheriot_ena   | prim_mubi_pkg::mubi4 | uni     | rcv   |       1 | CHERIoT mode enable.                                                  |
 | cored_tl_d    | tlul_pkg::tl         | req_rsp | rsp   |       1 | Data port from the core.                                              |
-| cored_tag_h2d | logic                | uni     | rcv   |       1 | CHERIoT capability tag carried with the A-channel of cored_tl_h.      |
-| cored_tag_d2h | logic                | uni     | req   |       1 | Capability tag returned on the D-channel of cored_tl_h.               |
+| cored_tag_h2d | prim_mubi_pkg::mubi4 | uni     | rcv   |       1 | CHERIoT capability tag carried with the A-channel of cored_tl_d.      |
+| cored_tag_d2h | prim_mubi_pkg::mubi4 | uni     | req   |       1 | Capability tag returned on the D-channel of cored_tl_d.               |
 | corerevbm_tl  | tlul_pkg::tl         | req_rsp | rsp   |       1 | TRVK (tag revocation) revocation bitmap port from the core.           |
 | meta_sram_tl  | tlul_pkg::tl         | req_rsp | req   |       1 | Host TL-UL port to the external meta SRAM controller's RAM interface. |
 | cored_tl_h    | tlul_pkg::tl         | req_rsp | req   |       1 |                                                                       |
@@ -47,9 +47,9 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Security Alerts
 
-| Alert Name   | Description                                                                                                                                                                                                                                                                  |
-|:-------------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| fatal_fault  | This fatal alert is triggered when an integrity fault is detected, when the meta SRAM path returns a device error, when the revocation engine reports a fault, when a capability store to the NVM is partial, or when a request breaks the core's capability store sequence. |
+| Alert Name   | Description                                                                                                                                                                                                                                                                                                                                              |
+|:-------------|:---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| fatal_fault  | This fatal alert is triggered when an integrity fault is detected, when a core data request carries an invalid encoding of the capability tag, when the meta SRAM path returns a device error, when the revocation engine reports a fault, when a capability store to the NVM is partial, or when a request breaks the core's capability store sequence. |
 
 ## Security Countermeasures
 
@@ -59,7 +59,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | CHERIOT_MEM_SYS.LOGIC.SHADOW            | The CHERIoT memory subsystem, including the background revocation engine, is instantiated in lockstep. Not implemented yet. This also covers the pointers of the subsystem's FIFOs, which therefore are not redundantly encoded (CTR.REDUN). |
 | CHERIOT_MEM_SYS.MEM.SW_NOACCESS         | The capability tag store is not memory mapped.                                                                                                                                                                                               |
 | CHERIOT_MEM_SYS.INTERSIG.MUBI           | The CHERIoT mode enable is multi-bit encoded.                                                                                                                                                                                                |
-| CHERIOT_MEM_SYS.CORED_TAG.INTERSIG.MUBI | The capability tag is multi-bit encoded between the Ibex lockstep domain and the lockstep domain of the CHERIoT memory subsystem. Not implemented yet.                                                                                       |
+| CHERIOT_MEM_SYS.CORED_TAG.INTERSIG.MUBI | The capability tags of the core data port are multi-bit encoded between Ibex and the CHERIoT memory subsystem. Only MuBi4True reads as tagged, and a core data request with an invalid encoding raises the fatal_fault alert.                |
 
 
 <!-- END CMDGEN -->

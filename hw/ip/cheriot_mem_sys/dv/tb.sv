@@ -44,7 +44,7 @@ module tb;
 
     // Core data port with its capability tag sideband
     .cored_tl_d_i         (tlul_pkg::TL_H2D_DEFAULT),
-    .cored_tag_h2d_i      (1'b0),
+    .cored_tag_h2d_i      (prim_mubi_pkg::MuBi4False),
     .cored_tl_d_o         (),
     .cored_tag_d2h_o      (),
 

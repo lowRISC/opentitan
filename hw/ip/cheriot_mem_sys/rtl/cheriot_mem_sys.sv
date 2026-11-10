@@ -6,8 +6,6 @@
 
 // SEC_CM: LOGIC.SHADOW
 // TODO(#30572): Implement lockstep operation for this module
-// SEC_CM: CORED_TAG.INTERSIG.MUBI
-// TODO(#31066): Multi-bit encode the capability tag sidebands of the core data port
 
 module cheriot_mem_sys
   import cheriot_mem_sys_reg_pkg::*;
@@ -43,10 +41,10 @@ module cheriot_mem_sys
   output tlul_pkg::tl_d2h_t regs_tl_d_o,
 
   // Core data input port
-  input  tlul_pkg::tl_h2d_t cored_tl_d_i,
-  input  logic              cored_tag_h2d_i,
-  output tlul_pkg::tl_d2h_t cored_tl_d_o,
-  output logic              cored_tag_d2h_o,
+  input  tlul_pkg::tl_h2d_t     cored_tl_d_i,
+  input  prim_mubi_pkg::mubi4_t cored_tag_h2d_i,
+  output tlul_pkg::tl_d2h_t     cored_tl_d_o,
+  output prim_mubi_pkg::mubi4_t cored_tag_d2h_o,
 
   // TRVK revocation bitmap input port
   input  tlul_pkg::tl_h2d_t corerevbm_tl_i,
@@ -113,6 +111,7 @@ module cheriot_mem_sys
 
   typedef struct packed {
     logic csr_intg;
+    logic cored_tag_intg;
     logic meta_sram_intg;
     logic meta_sram_data_intg;
     logic rmw_error;
@@ -126,6 +125,10 @@ module cheriot_mem_sys
   /////////////
   // Signals //
   /////////////
+
+  // Decoded capability tags of the core data port
+  logic              cored_tag_h2d;
+  logic              cored_tag_d2h;
 
   tlul_pkg::tl_h2d_t tag_mux_in_tl_h2d[32'd2];
   logic              tag_mux_in_tag_h2d[32'd2];
@@ -245,6 +248,29 @@ module cheriot_mem_sys
     .tl_d_i(meta_mux_in_tl_d2h[32'd0])
   );
 
+  // SEC_CM: CORED_TAG.INTERSIG.MUBI
+  // The capability tags of the core data port are multi-bit encoded between Ibex and this
+  // subsystem. Only MuBi4True reads as tagged, and an invalid tag on a request raises the fatal
+  // alert.
+  prim_mubi4_dec u_prim_mubi4_dec_cored_tag (
+    .mubi_i    (cored_tag_h2d_i),
+    .mubi_dec_o(cored_tag_h2d)
+  );
+
+  // The tag only carries a value with a request, so only then is an invalid encoding a fault.
+  assign cheriot_fatal_error.cored_tag_intg = cored_tl_d_i.a_valid &&
+                                              prim_mubi_pkg::mubi4_test_invalid(cored_tag_h2d_i);
+
+  prim_mubi4_sender #(
+    .AsyncOn (1'b0),
+    .EnSecBuf(1'b1)
+  ) u_prim_mubi4_sender_cored_tag (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(prim_mubi_pkg::mubi4_bool_to_mubi(cored_tag_d2h)),
+    .mubi_o(cored_tag_d2h_o)
+  );
+
   cheriot_tag_filter #(
     .NumOutstanding(CoreOutstanding),
     .addr_t(addr_t),
@@ -260,9 +286,9 @@ module cheriot_mem_sys
     .rst_ni,
     .cheriot_ena_i,
     .tl_d_i     (cored_tl_d_i),
-    .tag_d_i    (cored_tag_h2d_i),
+    .tag_d_i    (cored_tag_h2d),
     .tl_d_o     (cored_tl_d_o),
-    .tag_d_o    (cored_tag_d2h_o),
+    .tag_d_o    (cored_tag_d2h),
     .tl_m_o     (tag_mux_in_tl_h2d[32'd0]),
     .tag_m_o    (tag_mux_in_tag_h2d[32'd0]),
     .bit_sel_m_o(tag_mux_in_bit_sel[32'd0]),
