@@ -679,14 +679,14 @@ module earlgrey_pd_main #(
   tlul_pkg::tl_d2h_t       rv_core_ibex_cored_tl_h_rsp;
   tlul_pkg::tl_h2d_t       rv_core_ibex_corerevbm_tl_req;
   tlul_pkg::tl_d2h_t       rv_core_ibex_corerevbm_tl_rsp;
-  logic       rv_core_ibex_cored_tag_h2d;
+  prim_mubi_pkg::mubi4_t       rv_core_ibex_cored_tag_h2d;
   spi_device_pkg::passthrough_req_t       spi_device_passthrough_req;
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   rram_ctrl_pkg::rram_macro_req_t       rram_ctrl_rram_macro_req;
   rram_ctrl_pkg::rram_macro_rsp_t       rram_ctrl_rram_macro_rsp;
   tlul_pkg::tl_h2d_t       cheriot_mem_sys_meta_sram_tl_req;
   tlul_pkg::tl_d2h_t       cheriot_mem_sys_meta_sram_tl_rsp;
-  logic       cheriot_mem_sys_cored_tag_d2h;
+  prim_mubi_pkg::mubi4_t       cheriot_mem_sys_cored_tag_d2h;
   prim_mubi_pkg::mubi4_t       rv_core_ibex_cheriot_ena;
   logic       i3c1_rstdet_enable;
   i3c_pkg::i3c_rstdet_req_t       i3c1_rstdet_req;
