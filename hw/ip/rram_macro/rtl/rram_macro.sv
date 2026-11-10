@@ -7,19 +7,33 @@
 // This module emulates the real RRAM macro with a simple FSM and two prim_ram_1p for data and info
 // arrays.
 // Operations have random execution time which is achieved with a LFSR and a cycle counter.
+// After the init delay, the macro reads the marker copies from the marker info page and latches
+// the decoded DIS_VOL_RAW_UNLOCK and CP_DONE markers until the next reset.
 
 module rram_macro #(
   parameter int unsigned TotalDataPages = 4096, // Total number of data pages
   parameter int unsigned DataWidth      = 128,  // RRAM word data width
   parameter int unsigned WordsPerPage   = 32,   // Number of words per page
   parameter int unsigned TotalInfoPages = 8,    // Total number of info pages
-  parameter int unsigned MaxWrWords     = 32    // Maximum number of words per write
+  parameter int unsigned MaxWrWords     = 32,   // Maximum number of words per write
+  // Marker magic values (netlist constants)
+  parameter rram_ctrl_pkg::marker_magic_t RndCnstDisVolRawUnlockMagic =
+      rram_ctrl_pkg::RndCnstDisVolRawUnlockMagicDefault,
+  parameter rram_ctrl_pkg::marker_magic_t RndCnstCpDoneMagic =
+      rram_ctrl_pkg::RndCnstCpDoneMagicDefault
 ) (
   input logic                            clk_i,
   input logic                            rst_ni,
   // Functional connections
   input rram_ctrl_pkg::rram_macro_req_t  rram_macro_i,
   output rram_ctrl_pkg::rram_macro_rsp_t rram_macro_o,
+  // Decoded markers, latched during init.
+  // Both are an invalid MuBi8 value until the marker read has finished.
+  // allow_vol_unlock_o is True unless DIS_VOL_RAW_UNLOCK is set.
+  output prim_mubi_pkg::mubi8_t          allow_vol_unlock_o,
+  // cp_done_o is True if CP_DONE holds the magic value, False if it is all zero or if
+  // DIS_VOL_RAW_UNLOCK is not set, and an invalid MuBi8 value otherwise.
+  output prim_mubi_pkg::mubi8_t          cp_done_o,
   input tlul_pkg::tl_h2d_t               prim_tl_i,
   output tlul_pkg::tl_d2h_t              prim_tl_o,
   // Test connections
@@ -147,9 +161,9 @@ module rram_macro #(
   localparam int WriteLatency    = 1000;
   localparam int StoreBufLatency = 2;
 
-  // Encoding generated at commit 0eeae81c80 using Python 3.12.13 with:
+  // Encoding generated at commit 4fbd2f8b6a using Python 3.12.13 with:
   // $ ./util/design/sparse-fsm-encode.py --language=sv \
-  //     --seed 450951119 --distance 5 --states 8 --bits 10
+  //     --seed 450951119 --distance 5 --states 9 --bits 10
   //
   // Hamming distance histogram:
   //
@@ -158,28 +172,29 @@ module rram_macro #(
   //  2: --
   //  3: --
   //  4: --
-  //  5: |||||||||||||||||||| (42.86%)
-  //  6: |||||||||||||||||||| (42.86%)
-  //  7: |||||| (14.29%)
-  //  8: --
+  //  5: |||||||||||||||||||| (52.78%)
+  //  6: ||||||||||||||| (41.67%)
+  //  7: | (2.78%)
+  //  8: | (2.78%)
   //  9: --
   // 10: --
   //
   // Minimum Hamming distance: 5
-  // Maximum Hamming distance: 7
-  // Minimum Hamming weight: 2
+  // Maximum Hamming distance: 8
+  // Minimum Hamming weight: 1
   // Maximum Hamming weight: 7
   //
   localparam int StateWidth = 10;
   typedef enum logic [StateWidth-1:0] {
-    StReset    = 10'b1001111000,
-    StInit     = 10'b0000111111,
-    StIdle     = 10'b0010001010,
-    StRead     = 10'b0100010000,
-    StStoreBuf = 10'b1110001101,
-    StWrite    = 10'b1101100011,
-    StRetErr   = 10'b1011010111,
-    StErr      = 10'b0111100100
+    StReset    = 10'b0000001000,
+    StInit     = 10'b0101101101,
+    StMarker   = 10'b0001010111,
+    StIdle     = 10'b0111011010,
+    StRead     = 10'b1010001111,
+    StStoreBuf = 10'b1110111001,
+    StWrite    = 10'b1001100010,
+    StRetErr   = 10'b0010110100,
+    StErr      = 10'b1111000100
   } state_e;
 
   state_e state_d, state_q;
@@ -295,6 +310,56 @@ module rram_macro #(
   assign rd_data_corr2_err = rd_err_lo[0] & rd_err_hi[0];
   assign rd_data_corr1_err = (rd_err_lo[0] ^ rd_err_hi[0]) & ~rd_data_fatal_err;
 
+  ////////////////////////////
+  // Marker read during init //
+  ////////////////////////////
+
+  // StMarker reads the DIS_VOL_RAW_UNLOCK word and then the CP_DONE word, once each.
+  // A marker is set if its word has clean ECC and holds exactly its magic value, XORed with the
+  // bus word addresses like rram_ctrl writes it (rram_ctrl_pkg::marker_word_value()).
+  // Anything else means "not set", including read errors and ECC errors, so a blank or garbage
+  // array reads as "not set".
+  // Each output keeps its invalid reset value until its word was read.
+  // A later version could confirm the result in a second state before StIdle.
+  // The open-source model always responds, so it needs no read timeout.
+  `ASSERT_INIT(DisVolRawUnlockMagicWeight_A,
+      $countones(RndCnstDisVolRawUnlockMagic) >= MarkerMagicMinWeight)
+  `ASSERT_INIT(CpDoneMagicWeight_A, $countones(RndCnstCpDoneMagic) >= MarkerMagicMinWeight)
+  `ASSERT_INIT(MarkerMagicsDiffer_A, RndCnstDisVolRawUnlockMagic != RndCnstCpDoneMagic)
+  `ASSERT_INIT(OneMarkerCopy_A, NumMarkerCopies == 1)
+
+  // Selects the marker word that is read next: 0 for DIS_VOL_RAW_UNLOCK, 1 for CP_DONE.
+  logic                  marker_cp_d, marker_cp_q;
+  logic [WordW-1:0]      marker_word;
+  prim_mubi_pkg::mubi8_t allow_vol_unlock_d, allow_vol_unlock_q;
+  prim_mubi_pkg::mubi8_t cp_done_d, cp_done_q;
+
+  assign marker_word = marker_cp_q ? CpDoneWords[0] : DisVolRawUnlockWords[0];
+
+  // The word that was just read holds exactly its stored magic value, with clean ECC.
+  // The markers are always read with ECC.
+  logic marker_match;
+  assign marker_match = ~|{rd_err_lo, rd_err_hi} &&
+                        rd_data_dec == marker_word_value(marker_cp_q ? RndCnstCpDoneMagic :
+                                                                       RndCnstDisVolRawUnlockMagic,
+                                                         marker_word);
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      marker_cp_q        <= 1'b0;
+      // Invalid MuBi8 values until the markers are read.
+      allow_vol_unlock_q <= prim_mubi_pkg::mubi8_t'('0);
+      cp_done_q          <= prim_mubi_pkg::mubi8_t'('0);
+    end else begin
+      marker_cp_q        <= marker_cp_d;
+      allow_vol_unlock_q <= allow_vol_unlock_d;
+      cp_done_q          <= cp_done_d;
+    end
+  end
+
+  assign allow_vol_unlock_o = allow_vol_unlock_q;
+  assign cp_done_o          = cp_done_q;
+
   logic [11:0] rand_val;
   logic [1:0]  rand_val_read;
   logic [1:0]  rand_val_store;
@@ -399,6 +464,10 @@ module rram_macro #(
     cnt_clr = 1'b0;
     cnt_inc = 1'b0;
 
+    marker_cp_d        = marker_cp_q;
+    allow_vol_unlock_d = allow_vol_unlock_q;
+    cp_done_d          = cp_done_q;
+
     lfsr_en_d = 1'b0;
     init_done = 1'b1;
     done      = 1'b0;
@@ -415,10 +484,28 @@ module rram_macro #(
       StInit: begin
         init_done = 1'b0;
         cnt_inc   = 1'b1;
-        // Go to idle state if counter >= InitLatency + random_delay
+        // Read the markers once counter >= InitLatency + random_delay
         if (cnt_q >= (InitLatency + rand_val)) begin
-          state_d = StIdle;
+          state_d = StMarker;
           cnt_clr = 1'b1;
+        end
+      end
+
+      // Read the DIS_VOL_RAW_UNLOCK word and then the CP_DONE word, and decode each one directly.
+      // A read is issued in one cycle, and its data is valid in the next one (mem_rvalid_q).
+      StMarker: begin
+        init_done = 1'b0;
+        if (!mem_rvalid_q) begin
+          current_part_d = RramPartInfo;
+          mem_req        = 1'b1;
+          mem_addr       = DataAddrW'({MarkerInfoPage, marker_word});
+          mem_rvalid_d   = 1'b1;
+        end else if (!marker_cp_q) begin
+          allow_vol_unlock_d = marker_match ? prim_mubi_pkg::MuBi8False : prim_mubi_pkg::MuBi8True;
+          marker_cp_d        = 1'b1;
+        end else begin
+          cp_done_d = marker_match ? prim_mubi_pkg::MuBi8True : prim_mubi_pkg::MuBi8False;
+          state_d   = StIdle;
         end
       end
 
@@ -600,10 +687,27 @@ module rram_macro #(
     .cfg_o    ()
   );
 
+`ifndef SYNTHESIS
+  // The emulated info array starts out uninitialized in simulation, unlike a formed RRAM array.
+  // Clear the marker page, so that the marker read at init returns defined values.
+  // A testbench can still load other marker values through the backdoor before the read.
+  initial begin
+    for (int unsigned k = 0; k < WordsPerPage; k++) begin
+      u_info_array.mem[MarkerInfoPage * WordsPerPage + k] = '0;
+    end
+  end
+`endif
+
   // output multiplexer
   assign mem_rdata = (current_part_q == RramPartData) ? data_mem_rdata : info_mem_rdata;
 
   `ASSERT(EccErrOnehot0_A, $onehot0(rram_macro_o.ecc_err))
+  `ASSERT_KNOWN_IF(AllowVolUnlockKnown_A, allow_vol_unlock_o, init_done)
+  `ASSERT_KNOWN_IF(CpDoneKnown_A, cp_done_o, init_done)
+  // The markers are latched once and never change afterwards.
+  `ASSERT(MarkersStable_A, init_done |=> $stable(allow_vol_unlock_o) && $stable(cp_done_o))
+  `ASSERT(AllowVolUnlockValid_A,
+      init_done |-> !prim_mubi_pkg::mubi8_test_invalid(allow_vol_unlock_o))
 
   // Alert assertions for reg_we onehot check
   `ASSERT_ERROR_TRIGGER_ERR(MacroFsmCheck_A, u_state_regs, rram_macro_o.fatal_err, 0,

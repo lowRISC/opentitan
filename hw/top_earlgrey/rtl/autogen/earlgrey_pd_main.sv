@@ -2133,6 +2133,8 @@ module earlgrey_pd_main #(
     // Inter-module signals
     .rram_macro_i(rram_ctrl_rram_macro_req),
     .rram_macro_o(rram_ctrl_rram_macro_rsp),
+    .allow_vol_unlock_o(),
+    .cp_done_o(),
     .lc_nvm_debug_en_i(lc_ctrl_lc_nvm_debug_en),
     .jtag_i(pinmux_rram_jtag_req_i),
     .jtag_o(pinmux_rram_jtag_rsp_o),

@@ -115,6 +115,8 @@ module tb;
     .rst_ni             (rst_n),
     .rram_macro_i       (rram_req),
     .rram_macro_o       (rram_rsp),
+    .allow_vol_unlock_o (),
+    .cp_done_o          (),
     .jtag_i             (jtag_pkg::JTAG_REQ_DEFAULT),
     .jtag_o             (),
     .lc_nvm_debug_en_i  (lc_ctrl_pkg::Off),
