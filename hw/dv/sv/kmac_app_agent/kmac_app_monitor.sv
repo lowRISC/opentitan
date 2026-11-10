@@ -142,7 +142,12 @@ task kmac_app_monitor::populate_request_packet(kmac_app_req_packet_item packet);
 endtask
 
 task kmac_app_monitor::populate_response(kmac_app_rsp_item rsp);
-  while (cfg.vif.mon_cb.rsp_valid !== 1'b1) @(cfg.vif.mon_cb);
+  // A response is transferred only when both rsp_valid and rsp_ready are asserted.
+  while (!(cfg.vif.mon_cb.rsp_valid === 1'b1 && cfg.vif.mon_cb.rsp_ready === 1'b1)) begin
+    @(cfg.vif.mon_cb);
+  end
+
+  // Capture the response on the accepted handshake, not merely when it is presented.
   rsp.m_digest_s0 = cfg.vif.mon_cb.rsp_digest_s0;
   rsp.m_digest_s1 = cfg.vif.mon_cb.rsp_digest_s1;
   rsp.m_error = cfg.vif.mon_cb.rsp_error;
