@@ -443,6 +443,9 @@ module otbn_start_stop_control
   assign done_o = ((state_q == OtbnStartStopSecureWipeComplete && init_sec_wipe_done_q) ||
                    (stop && (state_q == OtbnStartStopStateUrndRefresh) &&
                     mubi4_test_false_strict(wipe_after_urnd_refresh_q)) ||
+                   // A start that arrives in Halt as the FSM locks is dropped, so end it here.
+                   (start_i && (state_q == OtbnStartStopStateHalt) &&
+                    (state_d == OtbnStartStopStateLocked)) ||
                    (spurious_urnd_ack_error && !(state_q inside {OtbnStartStopStateHalt,
                                                                  OtbnStartStopStateLocked}) &&
                     init_sec_wipe_done_q) || (mubi_err_d && !mubi_err_q));

@@ -888,9 +888,10 @@ module otbn
     dmem_sec_wipe = 1'b0;
     imem_sec_wipe = 1'b0;
 
-    // Can only start a new command when idle.
+    // Can only start a new command when idle. A command in the cycle that OTBN starts locking is
+    // ignored, as status_q only becomes StatusLocked a cycle later.
     if (status_q == StatusIdle) begin
-      if (reg2hw.cmd.qe) begin
+      if (reg2hw.cmd.qe && !locking) begin
         unique case (reg2hw.cmd.q)
           CmdExecute:     start_d       = 1'b1;
           CmdSecWipeDmem: dmem_sec_wipe = 1'b1;
@@ -968,12 +969,13 @@ module otbn
   // otbn_dmem_scramble_key_req_busy, otbn_imem_scramble_key_req_busy} are possible.
   //
   // - Once locking is high, we guarantee never to see a new execution or the start of a key
-  //   rotation. (Assertion: NoStartWhenLocked_A)
+  //   rotation. (Assertions: NoStartWhenLocked_A, NoCmdStartWhenLocking_A)
 
   `ASSERT(NoStartWhenLocked_A,
           locking |=> !($rose(busy_execute_d) ||
                         $rose(otbn_dmem_scramble_key_req_busy) ||
                         $rose(otbn_imem_scramble_key_req_busy)))
+  `ASSERT(NoCmdStartWhenLocking_A, locking |-> !start_d)
 
   // CTRL register
   assign software_errs_fatal_d =
