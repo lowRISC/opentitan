@@ -122,13 +122,11 @@ def main(args_in):
     parser.add_argument(
         "--log-ujson-payloads",
         action="store_true",
-        default=False,
         help="Log UJSON host-->device payloads to console for ATE development.",
     )
     parser.add_argument(
         "--non-interactive",
         action="store_true",
-        default=False,
         help="Skip all non-required user confirmations.",
     )
     parser.add_argument(
