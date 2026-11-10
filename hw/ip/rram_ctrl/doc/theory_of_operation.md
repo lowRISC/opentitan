@@ -475,6 +475,32 @@ When `RemapSize` is nonzero, `rram_ctrl_otp` also relocates one OTP partition on
 Its accesses to this page still use the `HwOtpSel` requester identity, but are matched against the fixed table `HwOtpInfoPageCfg`, the info-partition counterpart of `HwOtpDataCfg`, which grants `rd_en`/`wr_en` for `OtpRemapInfoPage` only, with `scramble_en` disabled for the same reason as the data-partition OTP region.
 Unlike the creator, owner, and isolated info pages, software's `rd_en`/`wr_en` for `OtpRemapInfoPage` are unconditionally forced to `MuBi4False`.
 
+### Life Cycle Partition Copy
+
+When `LcSize` is nonzero, `rram_ctrl_otp` keeps a second copy of the OTP LIFE_CYCLE partition, and selects the copy with the `cp_done_i` input.
+`rram_macro` drives `cp_done_i` from the `CP_DONE` marker, which it reads once during its init.
+Copy 0 is the normal LIFE_CYCLE partition at `LcStart`.
+Copy 1 directly follows it, in the unused tail of the OTP data region, and has its own integrity bytes.
+
+| `cp_done_i` | Reads of LIFE_CYCLE | Writes to LIFE_CYCLE |
+|---|---|---|
+| `MuBi8False` | copy 0 | copy 0 |
+| `MuBi8True` | copy 1, with `LcStTestLocked6` and `LcCnt16` ORed in | copy 1 |
+| any other value | the constants `LcStScrap` and `LcCnt24` | rejected with `MacroError` |
+
+The minimum works because every life cycle state and count encoding only sets bits on its way up.
+So while copy 1 is still all zero, it reads as `TEST_LOCKED6` with count 16, and once it holds a later state, the OR has no effect.
+The minimum and the constants are only applied to the read response.
+The read-set-write path uses the raw RRAM content, so the RRAM only ever holds what `otp_ctrl` wrote.
+
+### Marker Page
+
+`MarkerInfoPage` holds the `DIS_VOL_RAW_UNLOCK` and `CP_DONE` markers, which `rram_macro` reads during its init.
+Software can only write this page while `lc_nvm_debug_en_i` is On (TEST_UNLOCKED0-6, RMA).
+Reads follow the page's `INFO_PAGE_CFG` register.
+The page is never scrambled and always uses ECC, independent of `INFO_PAGE_CFG`, since `rram_macro` reads the markers with exactly this encoding.
+It uses the address infection like every other page, and `rram_macro` compares against `marker_word_value()` in `rram_ctrl_pkg`.
+
 ## RRAM Errors and Faults
 
 The RRAM controller maintains three categories of observed errors and faults.

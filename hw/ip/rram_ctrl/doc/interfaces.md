@@ -10,25 +10,27 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name                | Package::Struct                         | Type    | Act   |   Width | Description                            |
-|:-------------------------|:----------------------------------------|:--------|:------|--------:|:---------------------------------------|
-| rram_macro               | rram_ctrl_pkg::rram_macro               | req_rsp | req   |       1 |                                        |
-| otp_key                  | otp_ctrl_pkg::nvm_otp_key               | req_rsp | req   |       1 |                                        |
-| otp_macro                | otp_ctrl_macro_pkg::otp_ctrl_macro      | req_rsp | rsp   |       1 | Data interface for the OTP macro.      |
-| lc_creator_seed_sw_rw_en | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                        |
-| lc_owner_seed_sw_rw_en   | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                        |
-| lc_iso_part_sw_rd_en     | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                        |
-| lc_iso_part_sw_wr_en     | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                        |
-| lc_seed_hw_rd_en         | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                        |
-| lc_escalate_en           | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                        |
-| rma_req                  | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                        |
-| rma_ack                  | lc_ctrl_pkg::lc_tx                      | uni     | req   |       1 |                                        |
-| rma_seed                 | lc_ctrl_pkg::lc_nvm_rma_seed            | uni     | rcv   |       1 |                                        |
-| pwrmgr                   | pwrmgr_pkg::pwr_nvm                     | uni     | req   |       1 |                                        |
-| keymgr_creator_seed      | keymgr_dpe_pkg::keymgr_dpe_creator_seed | uni     | req   |       1 | Creator seed output to the key manager |
-| keymgr_owner_seed        | keymgr_dpe_pkg::keymgr_dpe_owner_seed   | uni     | req   |       1 | Owner seed output to the key manager   |
-| core_tl                  | tlul_pkg::tl                            | req_rsp | rsp   |       1 |                                        |
-| host_tl                  | tlul_pkg::tl                            | req_rsp | rsp   |       1 |                                        |
+| Port Name                | Package::Struct                         | Type    | Act   |   Width | Description                                                                                                   |
+|:-------------------------|:----------------------------------------|:--------|:------|--------:|:--------------------------------------------------------------------------------------------------------------|
+| rram_macro               | rram_ctrl_pkg::rram_macro               | req_rsp | req   |       1 |                                                                                                               |
+| otp_key                  | otp_ctrl_pkg::nvm_otp_key               | req_rsp | req   |       1 |                                                                                                               |
+| otp_macro                | otp_ctrl_macro_pkg::otp_ctrl_macro      | req_rsp | rsp   |       1 | Data interface for the OTP macro.                                                                             |
+| lc_creator_seed_sw_rw_en | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                                                                                               |
+| lc_owner_seed_sw_rw_en   | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                                                                                               |
+| lc_iso_part_sw_rd_en     | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                                                                                               |
+| lc_iso_part_sw_wr_en     | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                                                                                               |
+| lc_seed_hw_rd_en         | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                                                                                               |
+| lc_escalate_en           | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                                                                                               |
+| lc_nvm_debug_en          | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 | Write enable of the marker page.                                                                              |
+| cp_done                  | prim_mubi_pkg::mubi8                    | uni     | rcv   |       1 | CP_DONE marker from the NVM macro. Selects the life cycle partition copy, and locks the marker page once set. |
+| rma_req                  | lc_ctrl_pkg::lc_tx                      | uni     | rcv   |       1 |                                                                                                               |
+| rma_ack                  | lc_ctrl_pkg::lc_tx                      | uni     | req   |       1 |                                                                                                               |
+| rma_seed                 | lc_ctrl_pkg::lc_nvm_rma_seed            | uni     | rcv   |       1 |                                                                                                               |
+| pwrmgr                   | pwrmgr_pkg::pwr_nvm                     | uni     | req   |       1 |                                                                                                               |
+| keymgr_creator_seed      | keymgr_dpe_pkg::keymgr_dpe_creator_seed | uni     | req   |       1 | Creator seed output to the key manager                                                                        |
+| keymgr_owner_seed        | keymgr_dpe_pkg::keymgr_dpe_owner_seed   | uni     | req   |       1 | Owner seed output to the key manager                                                                          |
+| core_tl                  | tlul_pkg::tl                            | req_rsp | rsp   |       1 |                                                                                                               |
+| host_tl                  | tlul_pkg::tl                            | req_rsp | rsp   |       1 |                                                                                                               |
 
 ## Interrupts
 

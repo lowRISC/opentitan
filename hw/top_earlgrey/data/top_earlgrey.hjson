@@ -878,6 +878,8 @@
         RdFifoDepth: "16",
         RemapStart: "otp_ctrl_reg_pkg::Secret0Offset",
         RemapSize: "otp_ctrl_reg_pkg::Secret0Size",
+        LcStart: "otp_ctrl_reg_pkg::LifeCycleOffset",
+        LcSize: "otp_ctrl_reg_pkg::LifeCycleSize",
       },
       memory: {
         host: {

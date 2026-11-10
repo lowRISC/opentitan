@@ -7783,6 +7783,8 @@
         RdFifoDepth: "16"
         RemapStart: otp_ctrl_reg_pkg::Secret0Offset
         RemapSize: otp_ctrl_reg_pkg::Secret0Size
+        LcStart: otp_ctrl_reg_pkg::LifeCycleOffset
+        LcSize: otp_ctrl_reg_pkg::LifeCycleSize
       }
       memory:
       {
@@ -7848,6 +7850,24 @@
           local: "false"
           expose: "true"
           name_top: RramCtrlRemapSize
+        }
+        {
+          name: LcStart
+          desc: Byte offset of the OTP LIFE_CYCLE partition. Only used together with LcSize.
+          type: int
+          default: otp_ctrl_reg_pkg::LifeCycleOffset
+          local: "false"
+          expose: "true"
+          name_top: RramCtrlLcStart
+        }
+        {
+          name: LcSize
+          desc: Byte size of the OTP LIFE_CYCLE partition. 0 disables the life cycle copy selection.
+          type: int
+          default: otp_ctrl_reg_pkg::LifeCycleSize
+          local: "false"
+          expose: "true"
+          name_top: RramCtrlLcSize
         }
       ]
       inter_signal_list:
@@ -7970,6 +7990,34 @@
           default: ""
           domain: Main
           top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
+          name: lc_nvm_debug_en
+          desc: Write enable of the marker page.
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: rram_ctrl
+          index: -1
+        }
+        {
+          name: cp_done
+          desc:
+            '''
+            CP_DONE marker from the NVM macro.
+            Selects the life cycle partition copy, and locks the marker page once set.
+            '''
+          struct: mubi8
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi8False
+          inst_name: rram_ctrl
           index: -1
         }
         {
@@ -30358,6 +30406,34 @@
         default: ""
         domain: Main
         top_signame: lc_ctrl_lc_escalate_en
+        index: -1
+      }
+      {
+        name: lc_nvm_debug_en
+        desc: Write enable of the marker page.
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: rram_ctrl
+        index: -1
+      }
+      {
+        name: cp_done
+        desc:
+          '''
+          CP_DONE marker from the NVM macro.
+          Selects the life cycle partition copy, and locks the marker page once set.
+          '''
+        struct: mubi8
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi8False
+        inst_name: rram_ctrl
         index: -1
       }
       {

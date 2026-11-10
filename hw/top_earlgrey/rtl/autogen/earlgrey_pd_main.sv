@@ -71,6 +71,8 @@ module earlgrey_pd_main #(
   parameter int RramCtrlRdFifoDepth = 16,
   parameter int RramCtrlRemapStart = otp_ctrl_reg_pkg::Secret0Offset,
   parameter int RramCtrlRemapSize = otp_ctrl_reg_pkg::Secret0Size,
+  parameter int RramCtrlLcStart = otp_ctrl_reg_pkg::LifeCycleOffset,
+  parameter int RramCtrlLcSize = otp_ctrl_reg_pkg::LifeCycleSize,
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::RV_DM_JTAG_IDCODE,
   parameter bit RvDmUseDmiInterface = 0,
@@ -2067,7 +2069,9 @@ module earlgrey_pd_main #(
     .WrFifoDepth(RramCtrlWrFifoDepth),
     .RdFifoDepth(RramCtrlRdFifoDepth),
     .RemapStart(RramCtrlRemapStart),
-    .RemapSize(RramCtrlRemapSize)
+    .RemapSize(RramCtrlRemapSize),
+    .LcStart(RramCtrlLcStart),
+    .LcSize(RramCtrlLcSize)
   ) u_rram_ctrl (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_infra),
@@ -2105,6 +2109,8 @@ module earlgrey_pd_main #(
     .lc_iso_part_sw_wr_en_i(lc_ctrl_lc_iso_part_sw_wr_en),
     .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
     .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+    .lc_nvm_debug_en_i(lc_ctrl_pkg::Off),
+    .cp_done_i(prim_mubi_pkg::MuBi8False),
     .rma_req_i(lc_ctrl_lc_nvm_rma_req),
     .rma_ack_o(lc_ctrl_lc_nvm_rma_ack[0]),
     .rma_seed_i(lc_ctrl_lc_nvm_rma_seed),

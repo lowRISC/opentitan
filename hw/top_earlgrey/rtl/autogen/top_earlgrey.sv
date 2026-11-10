@@ -88,6 +88,8 @@ module top_earlgrey #(
   parameter int RramCtrlRdFifoDepth = 16,
   parameter int RramCtrlRemapStart = otp_ctrl_reg_pkg::Secret0Offset,
   parameter int RramCtrlRemapSize = otp_ctrl_reg_pkg::Secret0Size,
+  parameter int RramCtrlLcStart = otp_ctrl_reg_pkg::LifeCycleOffset,
+  parameter int RramCtrlLcSize = otp_ctrl_reg_pkg::LifeCycleSize,
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::RV_DM_JTAG_IDCODE,
   parameter bit RvDmUseDmiInterface = 0,
@@ -488,6 +490,8 @@ module top_earlgrey #(
   .RramCtrlRdFifoDepth(RramCtrlRdFifoDepth),
   .RramCtrlRemapStart(RramCtrlRemapStart),
   .RramCtrlRemapSize(RramCtrlRemapSize),
+  .RramCtrlLcStart(RramCtrlLcStart),
+  .RramCtrlLcSize(RramCtrlLcSize),
   .RvDmIdcodeValue(RvDmIdcodeValue),
   .RvDmUseDmiInterface(RvDmUseDmiInterface),
   .RvDmCheriotSupport(RvDmCheriotSupport),

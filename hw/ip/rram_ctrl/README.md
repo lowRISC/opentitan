@@ -295,7 +295,7 @@ Its top 6 pages (3 KiB) form the OTP region, which acts as NVM backing storage f
 The OTP region is inaccessible to software.
 Software-initiated controller operations to it fail with a memory protection error, host reads to it return a TL-UL error, and the RMA wipe does not touch it.
 See [Memory Protection for OTP Hardware Plug](doc/theory_of_operation.md#memory-protection-for-otp-hardware-plug).
-The info partition holds design-specific data, including the two secret seed pages (creator/owner), an isolated page for manufacturing authentication, and a page relocating the OTP SECRET0 partition.
+The info partition holds design-specific data, including the two secret seed pages (creator/owner), an isolated page for manufacturing authentication, a marker page for the RRAM forming and CP flow, and a page relocating the OTP SECRET0 partition.
 
 #### Address Map
 
@@ -325,6 +325,7 @@ Software selects between them via `CONTROL.PARTITION`, and each address range be
 | Info | 0 | 0 | `0x000000` | SW, lcmgr-hw-if |
 | Info | 1 (`CreatorInfoPage`) | 0 | `0x000200` | SW, lcmgr-hw-if |
 | Info | 2 (`OwnerInfoPage`) | 0 | `0x000400` | SW, lcmgr-hw-if |
+| Info | 4 (`MarkerInfoPage`) | 0 | `0x000800` | SW (written only during CP), rram_macro init |
 | Info | ... | ... | ... | ... |
 | Info | 6 (`IsolatedInfoPage`) | 0 | `0x000C00` | SW, lcmgr-hw-if |
 | Info (OTP remap) | 7 (`OtpRemapInfoPage`) | 0 | `0x000E00`<br>(`RemapInfoStartAddr`) | otp-hw-if |

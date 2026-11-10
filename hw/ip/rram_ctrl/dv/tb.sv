@@ -76,6 +76,8 @@ module tb;
     .lc_iso_part_sw_wr_en_i    (lc_ctrl_pkg::On),
     .lc_seed_hw_rd_en_i        (lc_ctrl_pkg::Off),
     .lc_escalate_en_i          (lc_ctrl_pkg::Off),
+    .lc_nvm_debug_en_i         (lc_ctrl_pkg::Off),
+    .cp_done_i                 (prim_mubi_pkg::MuBi8False),
 
     // life cycle rma handling - fixed, not exercised by any test yet
     .rma_req_i (lc_ctrl_pkg::Off),

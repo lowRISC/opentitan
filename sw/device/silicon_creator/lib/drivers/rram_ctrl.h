@@ -105,6 +105,7 @@ enum {
   X(kRramCtrlInfoPageAttestationKeySeeds, 0, false, 1) \
   X(kRramCtrlInfoPageCreatorSecret,       1, false, 1) \
   X(kRramCtrlInfoPageOwnerSecret,         2, false, 1) \
+  X(kRramCtrlInfoPageMarkers,             4, false, 1) \
   X(kRramCtrlInfoPageFactoryId,           5, false, 1) \
   X(kRramCtrlInfoPageWaferAuthSecret,     6, false, 1) \
   X(kRramCtrlInfoPageOtpRemap,            7, false, 1) \
