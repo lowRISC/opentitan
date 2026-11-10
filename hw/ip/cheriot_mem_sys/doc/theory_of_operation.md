@@ -48,6 +48,7 @@ window is the software-visible view of the first region, the RAM interface is on
 In the `revbm` window, bit `b` of word `w` covers the eight heap bytes starting at
 `MainSramBaseAddr + (w * 32 + b) * 8`, setting it marks that granule as revoked. Accesses must be
 full 32-bit words, and the window returns a TL-UL error while the system is in ePMP mode.
+Byte and half-word loads of the core still work, because the core reads full words from the bus, but its byte and half-word stores receive an error and raise a store access fault.
 
 
 ## Datapath
@@ -102,8 +103,8 @@ exception: its tag is only written once the store is verified.
 
 The NVM cannot be written through the interconnect, but a capability held in the NVM must be able to
 carry a valid tag. The core's tag filter is therefore built with `NvmCapStores`, which places
-`cheriot_wtrc` on its host port. A capability store to the NVM - a write in strict CHERIoT mode to
-the NVM with the tag sideband set, is not written: it is turned into a `Get` of the word it targets,
+`cheriot_wtrc` on its host port. A capability store to the NVM (a write in strict CHERIoT mode to
+the NVM with the tag sideband set) is not written: it is turned into a `Get` of the word it targets,
 with recomputed command integrity, and succeeds only if the NVM already holds its data and data
 integrity. It does no lookup. Every other access passes through the WTRC unchanged and with
 unchanged timing; the revocation engine's tag filter has no WTRC.
