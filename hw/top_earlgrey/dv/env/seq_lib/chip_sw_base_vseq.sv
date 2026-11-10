@@ -1013,7 +1013,16 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end
 
     begin
-      bit [TL_DW-1:0] token_csr_vals[4] = {<< 32 {{>> 8 {RndCnstRawUnlockTokenHashed}}}};
+      // The volatile RAW unlock hashes the token in KMAC, so it needs the unhashed RAW unlock token.
+      // If the mechanism is absent, this is a persistent RAW unlock.
+      // Then the hashed token is provided on purpose, so that the transition fails with a token
+      // error instead of programming OTP.
+      bit [TL_DW-1:0] token_csr_vals[4];
+      if (expect_success) begin
+        token_csr_vals = {<< 32 {{>> 8 {RndCnstRawUnlockToken}}}};
+      end else begin
+        token_csr_vals = {<< 32 {{>> 8 {RndCnstRawUnlockTokenHashed}}}};
+      end
       foreach (token_csr_vals[index]) begin
         jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl_regs.transition_token[index].get_offset(),
                                              p_sequencer.jtag_sequencer_h,
@@ -1040,8 +1049,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                              p_sequencer.jtag_sequencer_h,
                                              prim_mubi_pkg::MuBi8False);
       end else begin
-        // The hashed token should be invalid if volatile unlock is not supported, since the
-        // regular transition expects that the unhashed token is provided.
+        // The hashed token is invalid for the persistent RAW unlock.
         wait_lc_token_error(.max_attempt(max_attempt));
       end
     end else begin

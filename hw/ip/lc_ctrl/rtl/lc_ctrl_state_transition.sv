@@ -26,6 +26,8 @@ module lc_ctrl_state_transition
   // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
   // ---------------------------------------------------------------
   input  logic              volatile_raw_unlock_i,
+  // The ongoing transition is a volatile RAW unlock.
+  input  prim_mubi_pkg::mubi8_t vol_unlock_req_i,
   input  logic              trans_cmd_i,
   // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
   // Updated state vector.
@@ -42,7 +44,8 @@ module lc_ctrl_state_transition
 
   if (!SecVolatileRawUnlockEn) begin : gen_no_volatile_unlock
     logic unused_trans_cmd;
-    assign unused_trans_cmd = trans_cmd_i;
+    assign unused_trans_cmd = ^{trans_cmd_i,
+                                vol_unlock_req_i};
   end
 
   // The decoder logic below checks whether a given transition edge
@@ -78,7 +81,17 @@ module lc_ctrl_state_transition
                             TransCheckSt,
                             TokenCheck0St,
                             TokenCheck1St,
-                            TransProgSt}) begin
+                            TransProgSt} &&
+        // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
+        // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
+        // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
+        // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+        // ---------------------------------------------------------------
+        // A volatile RAW unlock does not program the counter.
+        // So it must not raise an overflow error.
+        !(SecVolatileRawUnlockEn &&
+          prim_mubi_pkg::mubi8_test_true_strict(vol_unlock_req_i))) begin
+        // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
       // In this state, the life cycle counter is incremented.
       // Throw an error if the counter is already maxed out.
       unique case (lc_cnt_i)
