@@ -74,36 +74,6 @@ status_t rsa_signature_generate_start(
     const rsa_signature_padding_t padding_mode);
 
 /**
- * Waits for an RSA signature generation to complete.
- *
- * Should be invoked only after `rsa_signature_generate_start`. Blocks until
- * OTBN is done processing.
- *
- * @param size RSA size parameter (e.g. 2048, 3072, 4096).
- * @param[out] signature Generated signature.
- * @return Result of the operation (OK or error).
- */
-OT_WARN_UNUSED_RESULT
-status_t rsa_signature_generate_finalize(rsa_size_t size, uint32_t *signature);
-
-/**
- * Starts verifying an RSA signature; returns immediately.
- *
- * Returns an `OTCRYPTO_ASYNC_INCOMPLETE` error if OTBN is busy.
- *
- * @param size RSA size parameter (e.g. 2048, 3072, 4096).
- * @param e RSA public exponent (0 for default F4=65537, or odd >= 3; note that
- *          FIPS 186-5 requires e > 2^16).
- * @param n RSA public modulus.
- * @param signature Signature to verify.
- * @return Result of the operation (OK or error).
- */
-OT_WARN_UNUSED_RESULT
-status_t rsa_signature_verify_start(rsa_size_t size, uint32_t e,
-                                    const uint32_t *n,
-                                    const uint32_t *signature);
-
-/**
  * Waits for any RSA signature verification to complete.
  *
  * Should be invoked only after a `rsa_signature_verify_start` call, but

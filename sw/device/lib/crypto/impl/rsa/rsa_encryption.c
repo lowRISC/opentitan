@@ -14,6 +14,29 @@
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('r', 'e', 'n')
 
+OT_NOINLINE
+OT_WARN_UNUSED_RESULT
+static status_t rsa_get_oaep_mgf_mode(otcrypto_key_mode_t key_mode,
+                                      otcrypto_hash_mode_t hash_mode,
+                                      otcrypto_hash_mode_t *mgf_mode) {
+  switch (launder32(key_mode)) {
+    case kOtcryptoKeyModeRsaEncryptOaep:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaep);
+      *mgf_mode = hash_mode;
+      return OTCRYPTO_OK;
+    case kOtcryptoKeyModeRsaEncryptOaepMgfSha1:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaepMgfSha1);
+      *mgf_mode = kOtcryptoHashModeSha1;
+      return OTCRYPTO_OK;
+    case kOtcryptoKeyModeRsaEncryptOaepMgfSha256:
+      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaepMgfSha256);
+      *mgf_mode = kOtcryptoHashModeSha256;
+      return OTCRYPTO_OK;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+}
+
 status_t rsa_encrypt_start(rsa_size_t size, uint32_t e, const uint32_t *n,
                            otcrypto_key_mode_t key_mode,
                            const otcrypto_hash_mode_t hash_mode,
@@ -40,23 +63,15 @@ status_t rsa_encrypt_start(rsa_size_t size, uint32_t e, const uint32_t *n,
   HARDENED_TRY(hardened_memshred(encoded_message, ARRAYSIZE(encoded_message)));
   switch (launder32(key_mode)) {
     case kOtcryptoKeyModeRsaEncryptOaep:
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaep);
+    case kOtcryptoKeyModeRsaEncryptOaepMgfSha1:
+    case kOtcryptoKeyModeRsaEncryptOaepMgfSha256: {
+      otcrypto_hash_mode_t mgf_mode;
+      HARDENED_TRY(rsa_get_oaep_mgf_mode(key_mode, hash_mode, &mgf_mode));
       HARDENED_TRY(rsa_padding_oaep_encode(
-          hash_mode, hash_mode, message, message_bytelen, label, label_bytelen,
+          hash_mode, mgf_mode, message, message_bytelen, label, label_bytelen,
           num_words, encoded_message));
       break;
-    case kOtcryptoKeyModeRsaEncryptOaepMgfSha1:
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaepMgfSha1);
-      HARDENED_TRY(rsa_padding_oaep_encode(
-          hash_mode, kOtcryptoHashModeSha1, message, message_bytelen, label,
-          label_bytelen, num_words, encoded_message));
-      break;
-    case kOtcryptoKeyModeRsaEncryptOaepMgfSha256:
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaepMgfSha256);
-      HARDENED_TRY(rsa_padding_oaep_encode(
-          hash_mode, kOtcryptoHashModeSha256, message, message_bytelen, label,
-          label_bytelen, num_words, encoded_message));
-      break;
+    }
     case kOtcryptoKeyModeRsaEncryptPkcs:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptPkcs);
       HARDENED_TRY(rsa_padding_pkcs1v15_encrypt_encode(
@@ -81,17 +96,6 @@ status_t rsa_encrypt_start(rsa_size_t size, uint32_t e, const uint32_t *n,
   // Start computing (encoded_message ^ e) mod n with a variable-time
   // exponentiation.
   return rsa_modexp_vartime_start(size, encoded_message, e, n);
-}
-
-status_t rsa_encrypt_finalize(rsa_size_t size, uint32_t *ciphertext) {
-  return rsa_modexp_finalize_size(size, ciphertext);
-}
-
-status_t rsa_decrypt_start(rsa_size_t size, const uint32_t *d0,
-                           const uint32_t *d1, uint32_t e, const uint32_t *n,
-                           const uint32_t *ciphertext, uint32_t checksum) {
-  // Start computing (ciphertext ^ d) mod n.
-  return rsa_modexp_consttime_start(size, ciphertext, d0, d1, e, n, checksum);
 }
 
 status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
@@ -134,35 +138,19 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
   size_t max_plaintext_bytelen = num_words * sizeof(uint32_t);
   switch (launder32(key_mode)) {
     case kOtcryptoKeyModeRsaEncryptOaep:
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaep);
+    case kOtcryptoKeyModeRsaEncryptOaepMgfSha1:
+    case kOtcryptoKeyModeRsaEncryptOaepMgfSha256: {
+      otcrypto_hash_mode_t mgf_mode;
+      HARDENED_TRY(rsa_get_oaep_mgf_mode(key_mode, hash_mode, &mgf_mode));
       HARDENED_TRY(rsa_padding_oaep_max_message_bytelen(
           hash_mode, num_words, &max_plaintext_bytelen));
       if (plaintext_max_bytelen < max_plaintext_bytelen) {
         return OTCRYPTO_BAD_ARGS;
       }
-      return rsa_padding_oaep_decode(hash_mode, hash_mode, label, label_bytelen,
+      return rsa_padding_oaep_decode(hash_mode, mgf_mode, label, label_bytelen,
                                      recovered_message, num_words, plaintext,
                                      plaintext_len);
-    case kOtcryptoKeyModeRsaEncryptOaepMgfSha1:
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaepMgfSha1);
-      HARDENED_TRY(rsa_padding_oaep_max_message_bytelen(
-          hash_mode, num_words, &max_plaintext_bytelen));
-      if (plaintext_max_bytelen < max_plaintext_bytelen) {
-        return OTCRYPTO_BAD_ARGS;
-      }
-      return rsa_padding_oaep_decode(hash_mode, kOtcryptoHashModeSha1, label,
-                                     label_bytelen, recovered_message,
-                                     num_words, plaintext, plaintext_len);
-    case kOtcryptoKeyModeRsaEncryptOaepMgfSha256:
-      HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaepMgfSha256);
-      HARDENED_TRY(rsa_padding_oaep_max_message_bytelen(
-          hash_mode, num_words, &max_plaintext_bytelen));
-      if (plaintext_max_bytelen < max_plaintext_bytelen) {
-        return OTCRYPTO_BAD_ARGS;
-      }
-      return rsa_padding_oaep_decode(hash_mode, kOtcryptoHashModeSha256, label,
-                                     label_bytelen, recovered_message,
-                                     num_words, plaintext, plaintext_len);
+    }
     case kOtcryptoKeyModeRsaEncryptPkcs:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptPkcs);
       return rsa_padding_pkcs1v15_decrypt_decode(recovered_message, num_words,
