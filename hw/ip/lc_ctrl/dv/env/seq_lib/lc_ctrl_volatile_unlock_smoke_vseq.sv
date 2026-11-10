@@ -7,6 +7,9 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
 
   rand dec_lc_state_e next_state;
   rand bit next_state_is_testunlock0;
+  // Gate for the volatile RAW unlock: True, False or an invalid MuBi8 value.
+  // A plain 8-bit value, since a randomized enum would only take the named values.
+  rand bit [7:0] allow_vol_unlock;
 
   `uvm_object_utils(lc_ctrl_volatile_unlock_smoke_vseq)
   `uvm_object_new
@@ -16,6 +19,14 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
       else next_state inside {LcValidTargetState};
       solve next_state_is_testunlock0 before next_state;
    }
+
+  constraint allow_vol_unlock_c {
+    allow_vol_unlock dist {
+      prim_mubi_pkg::MuBi8True  :/ 6,
+      prim_mubi_pkg::MuBi8False :/ 2,
+      [0:255]                   :/ 2
+    };
+  }
 
   // Drive OTP input `lc_state` and `lc_cnt`.
   virtual task drive_otp_i(bit rand_otp_i = 1);
@@ -28,12 +39,17 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
 
   task body();
     int lc_cnt_int;
+    bit vol_unlock_allowed;
     fork
       run_clk_byp_rsp(1'b0);
       run_nvm_rma_rsp(1'b0);
     join_none
 
     `DV_CHECK_RANDOMIZE_FATAL(this)
+    // The gate is static in the design, so drive it before the transition is requested.
+    cfg.lc_ctrl_vif.allow_vol_unlock_i = prim_mubi_pkg::mubi8_t'(allow_vol_unlock);
+    vol_unlock_allowed =
+        prim_mubi_pkg::mubi8_test_true_strict(prim_mubi_pkg::mubi8_t'(allow_vol_unlock));
     lc_cnt_int = dec_lc_cnt(lc_cnt);
     if (lc_cnt != LcCnt24) begin
       int exp_lc_cnt = lc_cnt_int == 0 ? 1 : lc_cnt_int;
@@ -47,7 +63,8 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
       end
       // The volatile RAW unlock hashes the token in KMAC, like a persistent transition.
       // Let the KMAC agent return the hashed RAW unlock token.
-      if (`SEC_VOLATILE_RAW_UNLOCK_EN && next_state == DecLcStTestUnlocked0) begin
+      if (`SEC_VOLATILE_RAW_UNLOCK_EN && next_state == DecLcStTestUnlocked0 &&
+          vol_unlock_allowed) begin
         next_lc_state = next_state;
         set_hashed_token();
       end
@@ -65,7 +82,7 @@ class lc_ctrl_volatile_unlock_smoke_vseq extends lc_ctrl_smoke_vseq;
         // The strap sampling override signal should be zero.
         `DV_CHECK_EQ(cfg.lc_ctrl_vif.strap_en_override_o, 0);
         if (cfg.en_cov) cov.volatile_raw_unlock_cg.sample(0);
-      end else if (next_state == DecLcStTestUnlocked0) begin
+      end else if (next_state == DecLcStTestUnlocked0 && vol_unlock_allowed) begin
         // We expect the VOLATILE_RAW_UNLOCK bit to go to one in this case.
         cfg.clk_rst_vif.wait_clks(2);
         csr_rd_check(.ptr(ral.transition_ctrl.volatile_raw_unlock), .compare_value(1));

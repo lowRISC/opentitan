@@ -69,6 +69,9 @@ module lc_ctrl
   // Strap sampling override that is only used when SecVolatileRawUnlockEn = 1,
   // Otherwise this output is tied off to 0.
   output logic                                       strap_en_override_o,
+  // Gate for the volatile RAW unlock, derived from the DIS_VOL_RAW_UNLOCK marker in rram_macro.
+  // Only used when SecVolatileRawUnlockEn = 1.
+  input  prim_mubi_pkg::mubi8_t                      allow_vol_unlock_i,
   // Strap override - this is only used when
   // Macro-specific test registers going to lifecycle TAP/DMI
   output otp_macro_pkg::otp_test_req_t               lc_otp_vendor_test_o,
@@ -456,9 +459,12 @@ module lc_ctrl
         end
 
         // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
-        // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-        // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
-        // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+        // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+        // COMPILETIME.
+        // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+        // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+        // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+        // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
         // ---------------------------------------------------------------
         if (tap_dmi_reg2hw.transition_ctrl.volatile_raw_unlock.qe) begin
           volatile_raw_unlock_d = tap_dmi_reg2hw.transition_ctrl.volatile_raw_unlock.q;
@@ -490,9 +496,12 @@ module lc_ctrl
         end
 
         // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
-        // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-        // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
-        // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+        // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+        // COMPILETIME.
+        // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+        // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+        // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+        // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
         // ---------------------------------------------------------------
         if (reg2hw.transition_ctrl.volatile_raw_unlock.qe) begin
           volatile_raw_unlock_d = reg2hw.transition_ctrl.volatile_raw_unlock.q;
@@ -538,9 +547,12 @@ module lc_ctrl
       use_ext_clock_q               <= 1'b0;
     end else begin
       // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
-      // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-      // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
-      // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+      // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+      // COMPILETIME.
+      // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+      // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+      // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+      // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
       // ---------------------------------------------------------------
       // In case of a volatile RAW unlock, this bit has to be cleared when the volatile
       // unlock is followed by a real transition.
@@ -572,9 +584,12 @@ module lc_ctrl
   end
 
   // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
-  // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-  // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
-  // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+  // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+  // COMPILETIME.
+  // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+  // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+  // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+  // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
   // ---------------------------------------------------------------
   // If not enabled, this register will become a constant.
   if (SecVolatileRawUnlockEn) begin : gen_volatile_raw_unlock_reg
@@ -763,6 +778,30 @@ module lc_ctrl
     .hashed_token_o       ( hashed_token       )
   );
 
+  // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
+  // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+  // COMPILETIME.
+  // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+  // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+  // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+  // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
+  // ---------------------------------------------------------------
+  // The gate comes from the rram_macro clock domain.
+  // It is latched once during the RRAM init and stays stable afterwards.
+  // SEC_CM: INTERSIG.MUBI
+  prim_mubi_pkg::mubi8_t [1:0] allow_vol_unlock;
+  prim_mubi8_sync #(
+    .NumCopies(2),
+    .AsyncOn(1),
+    .StabilityCheck(1)
+  ) u_prim_mubi8_sync_allow_vol_unlock (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(allow_vol_unlock_i),
+    .mubi_o(allow_vol_unlock)
+  );
+  // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
+
   ////////////
   // LC FSM //
   ////////////
@@ -793,6 +832,7 @@ module lc_ctrl
     .use_ext_clock_i        ( use_ext_clock_q                  ),
     .ext_clock_switched_o   ( ext_clock_switched               ),
     .volatile_raw_unlock_i  ( volatile_raw_unlock_q            ),
+    .allow_vol_unlock_i     ( allow_vol_unlock                 ),
     .strap_en_override_o,
     .test_unlock_token_i    ( otp_lc_data_i.test_unlock_token  ),
     .test_exit_token_i      ( otp_lc_data_i.test_exit_token    ),

@@ -68,6 +68,8 @@ On production silicon this option will be disabled.
 Note that if a volatile `RAW` unlock operation has been performed, it is not necessary to reset the chip and the life cycle controller accepts further transition commands.
 The `LC_TRANSITION_CNT` will not be incremented and the life cycle state will not be moved to the temporary POST_TRANSITION state.
 A failed volatile `RAW` unlock ends in the POST_TRANSITION state, like a failed persistent transition.
+The volatile `RAW` unlock is only accepted while the `allow_vol_unlock` input is `MuBi8True`.
+The NVM macro drives this input from the `DIS_VOL_RAW_UNLOCK` marker, so a part with the marker set rejects the volatile unlock with [`STATUS.TRANSITION_ERROR`](registers.md#status).
 
 ## Device Interface Functions (DIFs)
 

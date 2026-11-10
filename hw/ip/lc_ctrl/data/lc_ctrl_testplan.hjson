@@ -188,12 +188,14 @@
             **Stimulus**:
             - Claim the mutex.
             - Set volatile_raw_unlock to 1.
+            - Drive the allow_vol_unlock input to True, False or an invalid MuBi8 value.
             - Trigger a lc_transition.
             - Trigger a second lc_transition without reset.
 
             **Checks if the feature is enabled in HW**:
             - If the current state is RawState, and transition state is TestUnlocked0, and if the
               hashed input token is correct, expect the transition to be successful.
+              Only while allow_vol_unlock is True, otherwise expect a transition error.
             - Check status and volatile_raw_unlock output.
             - If the raw unlock transition is successful, check the second lc_transition can be
               performed without any error.

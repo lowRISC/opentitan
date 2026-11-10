@@ -12,9 +12,12 @@ module lc_ctrl_kmac_if
   import lc_ctrl_state_pkg::*;
 #(
   // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
-  // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-  // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
-  // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+  // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+  // COMPILETIME.
+  // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+  // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+  // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+  // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
   // ---------------------------------------------------------------
   // If enabled, a second token can be hashed after a successful volatile RAW unlock.
   parameter bit SecVolatileRawUnlockEn = 0
@@ -166,9 +169,12 @@ module lc_ctrl_kmac_if
   state_e state_d, state_q;
 
   // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
-  // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-  // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
-  // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+  // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+  // COMPILETIME.
+  // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+  // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+  // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+  // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
   // ---------------------------------------------------------------
   // Registers whether the second token hashing operation has been started.
   // A volatile RAW unlock hashes the token without ending the transition, so a successful
@@ -218,9 +224,12 @@ module lc_ctrl_kmac_if
           kmac_ack = 1'b1;
           state_d = DoneSt;
           // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
-          // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-          // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
-          // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+          // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+          // COMPILETIME.
+          // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+          // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+          // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+          // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
           // ---------------------------------------------------------------
           // Accept a second token hashing operation.
           if (SecVolatileRawUnlockEn &&
@@ -256,9 +265,12 @@ module lc_ctrl_kmac_if
   end
 
   // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
-  // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-  // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
-  // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+  // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+  // COMPILETIME.
+  // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+  // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+  // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+  // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
   // ---------------------------------------------------------------
   if (SecVolatileRawUnlockEn) begin : gen_second_hash_reg
     always_ff @(posedge clk_kmac_i or negedge rst_kmac_ni) begin : p_second_hash
