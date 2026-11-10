@@ -201,15 +201,12 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t set_message_digest(
 }
 
 uint32_t p256_masked_scalar_checksum(const p256_masked_scalar_t *scalar) {
-  uint32_t ctx;
-  crc32_init(&ctx);
   // Compute the checksum only over a single share to avoid side-channel
   // leakage. From a FI perspective only covering one key share is fine as
   // (a) manipulating the second share with FI has only limited use to an
   // adversary and (b) when manipulating the entire pointer to the key structure
   // the checksum check fails.
-  crc32_add(&ctx, (unsigned char *)scalar->share0, kP256MaskedScalarShareBytes);
-  return crc32_finish(&ctx);
+  return crc32(scalar->share0, kP256MaskedScalarShareBytes);
 }
 
 hardened_bool_t p256_masked_scalar_checksum_check(
@@ -223,16 +220,12 @@ hardened_bool_t p256_masked_scalar_checksum_check(
 }
 
 uint32_t p256_ecdh_shared_key_checksum(const p256_ecdh_shared_key_t *key) {
-  uint32_t ctx;
-  crc32_init(&ctx);
   // Compute the checksum only over a single share to avoid side-channel
   // leakage. From a FI perspective only covering one key share is fine as
   // (a) manipulating the second share with FI has only limited use to an
   // adversary and (b) when manipulating the entire pointer to the key structure
   // the checksum check fails.
-  crc32_add(&ctx, (unsigned char *)key->x_share0, kP256CoordBytes);
-  crc32_add(&ctx, (unsigned char *)key->y_share0, kP256CoordBytes);
-  return crc32_finish(&ctx);
+  return crc32(key->x_share0, 2 * kP256CoordBytes);
 }
 
 hardened_bool_t p256_ecdh_shared_key_checksum_check(
@@ -254,12 +247,7 @@ status_t p256_keygen_start(void) {
 }
 
 status_t p256_sideload_keygen_start(void) {
-  uint32_t mode = OTBN_ADDR_T_INIT(run_p256, MODE_SIDELOAD_KEYGEN);
-  HARDENED_TRY(p256_init_otbn(mode));
-  HARDENED_TRY(p256_write_attestation_seed(NULL));
-
-  // Start the OTBN routine.
-  return otbn_execute();
+  return p256_sideload_attestation_keygen_start(NULL);
 }
 
 status_t p256_sideload_attestation_keygen_start(
@@ -349,15 +337,7 @@ status_t p256_ecdsa_sign_config_k_start(const uint32_t digest[kP256ScalarWords],
 
 status_t p256_ecdsa_sideload_sign_start(
     const uint32_t digest[kP256ScalarWords]) {
-  uint32_t mode = OTBN_ADDR_T_INIT(run_p256, MODE_SIDELOAD_SIGN);
-  HARDENED_TRY(p256_init_otbn(mode));
-  HARDENED_TRY(p256_write_attestation_seed(NULL));
-
-  // Set the message digest.
-  HARDENED_TRY(set_message_digest(digest));
-
-  // Start the OTBN routine.
-  return otbn_execute();
+  return p256_sideload_attestation_sign_start(digest, NULL);
 }
 
 status_t p256_sideload_attestation_sign_start(
