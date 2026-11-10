@@ -46,6 +46,8 @@ module lc_ctrl_fsm
   // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
   // ---------------------------------------------------------------
   input  logic                  volatile_raw_unlock_i,
+  // Gate for the volatile RAW unlock (two synchronized copies).
+  input  prim_mubi_pkg::mubi8_t [1:0] allow_vol_unlock_i,
   output logic                  strap_en_override_o,
   // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
   // Token input from OTP (these are all hash post-images).
@@ -497,6 +499,7 @@ module lc_ctrl_fsm
                 if (prim_mubi_pkg::mubi8_test_true_strict(volatile_raw_unlock_req_q)) begin
                   // Check the volatile RAW unlock conditions again.
                   if (SecVolatileRawUnlockEn && volatile_raw_unlock_i &&
+                      prim_mubi_pkg::mubi8_test_true_strict(allow_vol_unlock_i[1]) &&
                       lc_state_q == LcStRaw &&
                       trans_target_i == {DecLcStateNumRep{DecLcStTestUnlocked0}}) begin
                     // Go back to Idle and update the life cycle state register (volatile).
@@ -815,6 +818,7 @@ module lc_ctrl_fsm
     .fsm_state_i               ( fsm_state_q               ),
     .trans_target_i,
     .volatile_raw_unlock_i,
+    .allow_vol_unlock_i        ( allow_vol_unlock_i[0]     ),
     .volatile_raw_unlock_req_i ( volatile_raw_unlock_req_q ),
     .trans_cmd_i,
     .next_lc_state_o           ( next_lc_state             ),

@@ -26,6 +26,8 @@ module lc_ctrl_state_transition
   // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
   // ---------------------------------------------------------------
   input  logic              volatile_raw_unlock_i,
+  // Gate for the volatile RAW unlock.
+  input  prim_mubi_pkg::mubi8_t allow_vol_unlock_i,
   // The ongoing transition is a volatile RAW unlock.
   input  prim_mubi_pkg::mubi8_t volatile_raw_unlock_req_i,
   input  logic              trans_cmd_i,
@@ -45,6 +47,7 @@ module lc_ctrl_state_transition
   if (!SecVolatileRawUnlockEn) begin : gen_no_volatile_unlock
     logic unused_trans_cmd;
     assign unused_trans_cmd = ^{trans_cmd_i,
+                                allow_vol_unlock_i,
                                 volatile_raw_unlock_req_i};
   end
 
@@ -65,9 +68,10 @@ module lc_ctrl_state_transition
     // Only enter here if volatile RAW unlock is available and enabled.
     if (SecVolatileRawUnlockEn && volatile_raw_unlock_i && trans_cmd_i && fsm_state_i == IdleSt)
     begin
-      // We only allow transitions from RAW -> TEST_UNLOCKED0
+      // We only allow transitions from RAW -> TEST_UNLOCKED0, and only while the gate is open.
       if (dec_lc_state_i != {DecLcStateNumRep{DecLcStRaw}} ||
-          trans_target_i != {DecLcStateNumRep{DecLcStTestUnlocked0}}) begin
+          trans_target_i != {DecLcStateNumRep{DecLcStTestUnlocked0}} ||
+          !prim_mubi_pkg::mubi8_test_true_strict(allow_vol_unlock_i)) begin
         trans_invalid_error_o = 1'b1;
       end
     end

@@ -1820,6 +1820,7 @@ module earlgrey_pd_main #(
     .otp_manuf_state_i(lc_ctrl_otp_manuf_state),
     .hw_rev_o(),
     .strap_en_override_o(lc_ctrl_strap_en_override_o),
+    .allow_vol_unlock_i(prim_mubi_pkg::MuBi8True),
     .regs_tl_i(lc_ctrl_regs_tl_req),
     .regs_tl_o(lc_ctrl_regs_tl_rsp),
     .dmi_tl_i(tlul_pkg::TL_H2D_DEFAULT),
