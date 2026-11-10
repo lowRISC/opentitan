@@ -77,26 +77,32 @@ extern "C" {
  * @param expr_ An expression that evaluates to a `status_t`.
  * @return The enclosed OK value.
  */
-#define HARDENED_TRY(expr_)                                            \
-  do {                                                                 \
-    uint32_t status_ = OT_UNSIGNED(expr_.value);                       \
-    asm volatile("addi %[status_], %[status_], -%[kHardenedBoolTrue]"  \
-                 : [status_] "+r"(status_)                             \
-                 : [kHardenedBoolTrue] "i"(kHardenedBoolTrue)          \
-                 :);                                                   \
-    if (status_) {                                                     \
-      asm volatile("addi %[status_], %[status_], %[kHardenedBoolTrue]" \
-                   : [status_] "+r"(status_)                           \
-                   : [kHardenedBoolTrue] "i"(kHardenedBoolTrue)        \
-                   :);                                                 \
-      if ((int32_t)(status_) < 0) {                                    \
-        return (status_t){.value = (int32_t)(status_ | 0x80000000)};   \
-      }                                                                \
-      asm volatile("unimp");                                           \
-    }                                                                  \
-    if (launder32(status_)) {                                          \
-      asm volatile("unimp");                                           \
-    }                                                                  \
+#define HARDENED_TRY(expr_)                                              \
+  do {                                                                   \
+    uint32_t status_ = OT_UNSIGNED(expr_.value);                         \
+    asm volatile(                                                        \
+        "xori %[status_], %[status_], (%[kHardenedBoolTrue] - 1); "      \
+        "addi %[status_], %[status_], -1;"                               \
+        : [status_] "+r"(status_)                                        \
+        : [kHardenedBoolTrue] "i"(kHardenedBoolTrue)                     \
+        :);                                                              \
+    if (status_) {                                                       \
+      int32_t orig_ =                                                    \
+          (int32_t)((status_ + 1) ^ OT_UNSIGNED(kHardenedBoolTrue - 1)); \
+      if (orig_ < 0) {                                                   \
+        return (status_t){.value = orig_};                               \
+      }                                                                  \
+      __builtin_trap();                                                  \
+    }                                                                    \
+    status_ = launder32(status_);                                        \
+    if (status_) {                                                       \
+      int32_t orig_ =                                                    \
+          (int32_t)((status_ + 1) ^ OT_UNSIGNED(kHardenedBoolTrue - 1)); \
+      if (orig_ < 0) {                                                   \
+        return (status_t){.value = orig_};                               \
+      }                                                                  \
+      __builtin_trap();                                                  \
+    }                                                                    \
   } while (false)
 // COVERAGE (FI CM) We do not cover the redundant checks of the HARDENED_TRY as
 // they serve as redundant encoding against fault attacks.
