@@ -352,6 +352,14 @@ module rram_ctrl_otp
                      (otp_byte_addr < RemapStart + RemapSize);
   assign remap_rel_byte_addr = otp_byte_addr - BusAddrByteW'(RemapStart);
 
+  // RRAM byte address of the request, in the relocated info page or in the OTP data region.
+  // The OTP word offset within the RRAM word must come from this address, not from the OTP
+  // address.
+  // The relocated partition does not need to start at the same offset within a RRAM word.
+  logic [BusAddrByteW-1:0] req_byte_addr;
+  assign req_byte_addr = is_remap ? RemapInfoStartAddr + remap_rel_byte_addr :
+                                    OtpStartAddr + otp_byte_addr;
+
   // OTP-FSM
   always_comb begin : p_fsm
     state_d       = state_q;
@@ -407,12 +415,12 @@ module rram_ctrl_otp
           req_o        = 1'b1;
           is_remap_d   = is_remap;
           if (is_remap) begin
-            addr_d      = RemapInfoStartAddr + remap_rel_byte_addr;
+            addr_d      = req_byte_addr;
             intg_addr_d = RemapIntgInfoStartAddr +
                           (remap_rel_byte_addr >> vbits(OtpIntgDataWidth/8));
             intg_ind_d  = remap_rel_byte_addr[vbits(OtpIntgDataWidth/8) +: OtpIntgIndWidth];
           end else begin
-            addr_d      = OtpStartAddr + otp_byte_addr;
+            addr_d      = req_byte_addr;
             intg_addr_d = OtpIntgStartAddr + (otp_byte_addr >> vbits(OtpIntgDataWidth/8));
             intg_ind_d  = otp_byte_addr[vbits(OtpIntgDataWidth/8) +: OtpIntgIndWidth];
           end
@@ -782,7 +790,7 @@ module rram_ctrl_otp
       valid_q        <= valid_d;
       rsp_pending_q  <= rsp_pending_d;
       if (otp_req_ready && otp_req_valid) begin
-        otp_off_q   <= otp_req_addr[RramOtpSizeWidth-1:0];
+        otp_off_q   <= req_byte_addr[OtpAddrShift +: RramOtpSizeWidth];
         otp_size_q  <= otp_req_size;
         otp_wdata_q <= otp_req_wdata;
       end
