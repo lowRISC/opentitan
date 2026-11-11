@@ -31,8 +31,17 @@
     }
     {
       name: sec_cm_logic_shadow
-      desc: "Verify the countermeasure(s) LOGIC.SHADOW."
+      desc: '''
+            Verify the countermeasure(s) LOGIC.SHADOW.
+
+            Corrupt an output of the main copy, or an input of the second copy while it is in use,
+            for one cycle, and check that the lockstep comparison raises the `fatal_fault` alert.
+            Assertions inside the second copy are disabled while it is corrupted. Without a
+            corruption, including the cycles after reset, the alert must not fire.
+            '''
       stage: V2S
+      // The chip-level testpoint chip_sw_cheriot_mem_sys_lockstep_glitch is to cover this with
+      // traffic on every port.
       tests: []
     }
     {
