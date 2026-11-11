@@ -205,14 +205,14 @@ status_t aes_kwp_unwrap(const aes_key_t kek, const uint32_t *ciphertext,
   if (launderw(is_bad) != 0) {
     *success = kHardenedBoolFalse;
     *plaintext_len = 0;
-    HARDENED_TRY(hardened_memshred(r, ARRAYSIZE(r)));
+    hardened_memshred(r, ARRAYSIZE(r));
     return aes_end(NULL);
   }
 
   // Copy the plaintext into the destination buffer.
   size_t plaintext_words = ceil_div(ptext_len, sizeof(uint32_t));
   HARDENED_TRY(hardened_memcpy(plaintext, r, plaintext_words));
-  HARDENED_TRY(hardened_memshred(r, ARRAYSIZE(r)));
+  hardened_memshred(r, ARRAYSIZE(r));
 
   // Return success.
   *success = kHardenedBoolTrue;

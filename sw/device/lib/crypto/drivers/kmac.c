@@ -642,10 +642,10 @@ static status_t kmac_write_key_block(kmac_blinded_key_t *key) {
   uintptr_t share0_addr = kKmacBaseAddr + KMAC_KEY_SHARE0_0_REG_OFFSET;
   uintptr_t share1_addr = kKmacBaseAddr + KMAC_KEY_SHARE1_0_REG_OFFSET;
   size_t key_len_words = key->len / sizeof(uint32_t);
-  HARDENED_TRY(hardened_memshred((uint32_t *)share0_addr, key_len_words));
+  hardened_memshred((uint32_t *)share0_addr, key_len_words);
   HARDENED_TRY(
       hardened_memcpy((uint32_t *)share0_addr, key->share0, key_len_words));
-  HARDENED_TRY(hardened_memshred((uint32_t *)share1_addr, key_len_words));
+  hardened_memshred((uint32_t *)share1_addr, key_len_words);
   HARDENED_TRY(
       hardened_memcpy((uint32_t *)share1_addr, key->share1, key_len_words));
 

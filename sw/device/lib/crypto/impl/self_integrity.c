@@ -70,7 +70,7 @@ otcrypto_status_t otcrypto_integrity_check(void) {
     diff |= ((uint8_t *)digest.data)[i] ^ hash_ptr[i];
   }
 
-  HARDENED_TRY(hardened_memshred(digest.data, digest.len));
+  hardened_memshred(digest.data, digest.len);
 
   if (diff != 0) {
     // Lock the cryptolib if the self-integrity check failed

@@ -247,14 +247,14 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
 
   // Mask the PRK
   uint32_t prk_mask[kHmacMaxDigestWords];
-  HARDENED_TRY(hardened_memshred(prk_mask, digest_words));
+  hardened_memshred(prk_mask, digest_words);
 
   HARDENED_TRY(
       keyblob_from_key_and_mask(tag_data, prk_mask, prk->config, prk->keyblob));
 
   // Wipe the sensitive buffers
-  HARDENED_TRY(hardened_memshred(unmasked_ikm_data, unmasked_ikm_wordlen));
-  HARDENED_TRY(hardened_memshred(tag_data, digest_words));
+  hardened_memshred(unmasked_ikm_data, unmasked_ikm_wordlen);
+  hardened_memshred(tag_data, digest_words);
 
   prk->checksum = otcrypto_integrity_blinded_checksum(prk);
   return otcrypto_eval_exit(OTCRYPTO_OK);
@@ -354,7 +354,7 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
     }
 
     uint32_t mask_data[kHmacMaxDigestWords];
-    HARDENED_TRY(hardened_memshred(mask_data, words_to_copy));
+    hardened_memshred(mask_data, words_to_copy);
 
     uint32_t share0_data[kHmacMaxDigestWords];
     HARDENED_TRY(hardened_xor(tag_data, mask_data, words_to_copy, share0_data));

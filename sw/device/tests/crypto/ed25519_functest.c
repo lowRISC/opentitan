@@ -115,7 +115,7 @@ static status_t create_blinded_kat_keyblob(uint32_t *keyblob) {
   uint32_t *share1 = keyblob + keyblob_share_num_words(kPrivateKeyConfig);
 
   // Generate a random mask for share1 (only need 8 words for the seed)
-  HARDENED_TRY(hardened_memshred(share1, kEd25519PrivateKeyWords));
+  hardened_memshred(share1, kEd25519PrivateKeyWords);
 
   // Calculate share0 = kSecretKey - share1 (implicitly modulo 2^256)
   HARDENED_TRY(

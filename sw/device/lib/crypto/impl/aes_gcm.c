@@ -107,7 +107,7 @@ status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
 
     // Generate a fresh mask the size of one share.
     uint32_t mask[ARRAYSIZE(internal_ctx->key_shares[0])];
-    HARDENED_TRY(hardened_memshred(mask, internal_ctx->key_len));
+    hardened_memshred(mask, internal_ctx->key_len);
 
     // XOR each share with the mask.
     hardened_xor_in_place(internal_ctx->key_shares[0], mask,
@@ -301,7 +301,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt(
   HARDENED_TRY(aes_gcm_check_tag_length(auth_tag->len, tag_len));
 
   // Randomize the tag before the operation.
-  HARDENED_TRY(hardened_memshred(auth_tag->data, auth_tag->len));
+  hardened_memshred(auth_tag->data, auth_tag->len);
 
   // Construct the AES key.
   aes_key_t aes_key;
@@ -579,7 +579,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
   HARDENED_TRY(aes_gcm_check_tag_length(auth_tag->len, tag_len));
 
   // Randomize the tag before the operation.
-  HARDENED_TRY(hardened_memshred(auth_tag->data, auth_tag->len));
+  hardened_memshred(auth_tag->data, auth_tag->len);
 
   hardened_bool_t is_sideloaded __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolFalse;
@@ -612,7 +612,7 @@ otcrypto_status_t otcrypto_aes_gcm_encrypt_final(
                                      ciphertext_bytes_written));
 
   // Clear the context.
-  HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
+  hardened_memshred(ctx->data, ARRAYSIZE(ctx->data));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -672,7 +672,7 @@ otcrypto_status_t otcrypto_aes_gcm_decrypt_final(
                                      plaintext_bytes_written, success));
 
   // Clear the context.
-  HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
+  hardened_memshred(ctx->data, ARRAYSIZE(ctx->data));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }

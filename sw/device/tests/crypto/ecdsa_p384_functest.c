@@ -164,7 +164,7 @@ static status_t sign_kat(void) {
   memcpy(unmasked_val, kKATSecretScalar, kP384TestVectorScalarInpBytes);
 
   // Generate a random value and reduce it modulo n to get a valid share1
-  TRY(hardened_memshred(share1_rand, kP384SecretScalarWords));
+  hardened_memshred(share1_rand, kP384SecretScalarWords);
   TRY(hardened_mod_reduce(share1_rand, kP384Order, kP384SecretScalarWords,
                           share1));
 
@@ -189,7 +189,7 @@ static status_t sign_kat(void) {
   memcpy(unmasked_val, kKATKey, kP384TestVectorScalarInpBytes);
 
   // Generate new random noise and reduce it modulo n
-  TRY(hardened_memshred(share1_rand, kP384SecretScalarWords));
+  hardened_memshred(share1_rand, kP384SecretScalarWords);
   TRY(hardened_mod_reduce(share1_rand, kP384Order, kP384SecretScalarWords,
                           share1));
 

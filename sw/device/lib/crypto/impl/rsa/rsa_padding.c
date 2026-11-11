@@ -750,7 +750,7 @@ status_t rsa_padding_oaep_decode(const otcrypto_hash_mode_t hash_mode,
                       kHardenedBoolTrue);
   }
   // Shred the stale memory after copying out the plaintext.
-  HARDENED_TRY(hardened_memshred(db, db_wordlen));
+  hardened_memshred(db, db_wordlen);
   return OTCRYPTO_OK;
 }
 
@@ -846,7 +846,7 @@ status_t rsa_padding_pkcs1v15_decrypt_decode(uint32_t *encoded_message,
 
   *message_bytelen = encoded_message_bytelen - message_start_idx0;
   if (*message_bytelen > max_message_bytelen) {
-    HARDENED_TRY(hardened_memshred(encoded_message, encoded_message_len));
+    hardened_memshred(encoded_message, encoded_message_len);
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_TRY(randomized_bytecopy(
@@ -855,5 +855,6 @@ status_t rsa_padding_pkcs1v15_decrypt_decode(uint32_t *encoded_message,
       consttime_memeq_byte(encoded_message_bytes + message_start_idx0, message,
                            *message_bytelen),
       kHardenedBoolTrue);
-  return hardened_memshred(encoded_message, encoded_message_len);
+  hardened_memshred(encoded_message, encoded_message_len);
+  return OTCRYPTO_OK;
 }

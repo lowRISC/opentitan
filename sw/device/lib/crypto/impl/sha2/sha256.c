@@ -275,9 +275,8 @@ status_t sha256_update(sha256_state_t *state, const uint8_t *msg,
  * @return OK or error.
  */
 static status_t state_shred(sha256_state_t *state) {
-  HARDENED_TRY(hardened_memshred(state->H, kSha256StateWords));
-  HARDENED_TRY(
-      hardened_memshred(state->partial_block, kSha256MessageBlockWords));
+  hardened_memshred(state->H, kSha256StateWords);
+  hardened_memshred(state->partial_block, kSha256MessageBlockWords);
   state->total_len = 0;
 
   return OTCRYPTO_OK;

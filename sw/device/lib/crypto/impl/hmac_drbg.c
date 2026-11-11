@@ -189,7 +189,7 @@ static status_t hmac_drbg_set_k(const uint32_t *unmasked_k,
   otcrypto_blinded_key_t k_key =
       hmac_drbg_context_key(ctx, key_mode, digest_words);
   uint32_t k_mask[kHmacMaxDigestWords];
-  HARDENED_TRY(hardened_memshred(k_mask, digest_words));
+  hardened_memshred(k_mask, digest_words);
   HARDENED_TRY(keyblob_from_key_and_mask(unmasked_k, k_mask, k_key.config,
                                          ctx->k_keyblob));
   ctx->k_checksum = otcrypto_integrity_blinded_checksum(&k_key);
@@ -222,7 +222,7 @@ static status_t update_v(hmac_drbg_ctx_t *ctx) {
   HARDENED_TRY(hardened_memcpy(ctx->v, new_v, digest_words));
   HARDENED_CHECK_EQ(hardened_memeq(ctx->v, new_v, digest_words),
                     kHardenedBoolTrue);
-  HARDENED_TRY(hardened_memshred(new_v, digest_words));
+  hardened_memshred(new_v, digest_words);
 
   // Fault countermeasure: ensure the updated V is not all zero.
   HARDENED_CHECK_EQ(hardened_memeq(ctx->v, kZeroDigest, digest_words),
@@ -292,7 +292,7 @@ static status_t update_kv(hmac_drbg_ctx_t *ctx, uint8_t tag,
                     kHardenedBoolFalse);
 
   HARDENED_TRY(hmac_drbg_set_k(new_k, key_mode, digest_words, ctx));
-  HARDENED_TRY(hardened_memshred(new_k, digest_words));
+  hardened_memshred(new_k, digest_words);
 
   return update_v(ctx);
 }
@@ -350,11 +350,10 @@ otcrypto_status_t otcrypto_hmac_drbg_init(
   size_t digest_words = 0;
   HARDENED_TRY(hmac_mode_and_digest_words(hash_mode, &key_mode, &digest_words));
 
-  HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
+  hardened_memshred(ctx->data, ARRAYSIZE(ctx->data));
 
   hmac_drbg_ctx_t internal_ctx;
-  HARDENED_TRY(
-      hardened_memshred((uint32_t *)&internal_ctx, kHmacDrbgCtxNumWords));
+  hardened_memshred((uint32_t *)&internal_ctx, kHmacDrbgCtxNumWords);
 
   internal_ctx.reseed_counter = 1;
   internal_ctx.hash_mode = hash_mode;
@@ -371,8 +370,7 @@ otcrypto_status_t otcrypto_hmac_drbg_init(
   internal_ctx.reseed_interval = reseed_interval;
 
   HARDENED_TRY(hmac_drbg_context_save(&internal_ctx, ctx));
-  HARDENED_TRY(
-      hardened_memshred((uint32_t *)&internal_ctx, kHmacDrbgCtxNumWords));
+  hardened_memshred((uint32_t *)&internal_ctx, kHmacDrbgCtxNumWords);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -385,7 +383,7 @@ otcrypto_status_t otcrypto_hmac_drbg_deinit(otcrypto_hmac_drbg_context_t *ctx) {
   }
 #endif
 
-  HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
+  hardened_memshred(ctx->data, ARRAYSIZE(ctx->data));
   hmac_drbg_ctx_t *internal_ctx = (hmac_drbg_ctx_t *)ctx->data;
   internal_ctx->initialized = kHardenedBoolFalse;
 
@@ -425,8 +423,7 @@ otcrypto_status_t otcrypto_hmac_drbg_reseed(
   internal_ctx.reseed_counter = 1;
 
   HARDENED_TRY(hmac_drbg_context_save(&internal_ctx, ctx));
-  HARDENED_TRY(
-      hardened_memshred((uint32_t *)&internal_ctx, kHmacDrbgCtxNumWords));
+  hardened_memshred((uint32_t *)&internal_ctx, kHmacDrbgCtxNumWords);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -494,13 +491,12 @@ otcrypto_status_t otcrypto_hmac_drbg_generate(
   if (launder32(internal_ctx.reseed_counter) >
       launder32(internal_ctx.reseed_interval)) {
     if (launder32(internal_ctx.auto_reseed) == kHardenedBoolFalse) {
-      HARDENED_TRY(
-          hardened_memshred((uint32_t *)&internal_ctx, kHmacDrbgCtxNumWords));
+      hardened_memshred((uint32_t *)&internal_ctx, kHmacDrbgCtxNumWords);
       return otcrypto_eval_exit(OTCRYPTO_RECOV_ERR);
     }
     HARDENED_CHECK_EQ(internal_ctx.auto_reseed, kHardenedBoolTrue);
     uint32_t seed[kHmacMaxDigestWords];
-    HARDENED_TRY(hardened_memshred(seed, ARRAYSIZE(seed)));
+    hardened_memshred(seed, ARRAYSIZE(seed));
     otcrypto_word32_buf_t seed_words =
         OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, seed, ARRAYSIZE(seed));
     HARDENED_TRY(otcrypto_drbg_instantiate(&empty));
@@ -514,7 +510,7 @@ otcrypto_status_t otcrypto_hmac_drbg_generate(
         hmac_drbg_update(&internal_ctx, &seed_bytes, &empty, additional_input));
     internal_ctx.reseed_counter = 1;
     additional_input = &empty;
-    HARDENED_TRY(hardened_memshred(seed, ARRAYSIZE(seed)));
+    hardened_memshred(seed, ARRAYSIZE(seed));
   } else {
     HARDENED_CHECK_LE(internal_ctx.reseed_counter,
                       internal_ctx.reseed_interval);
@@ -552,7 +548,6 @@ otcrypto_status_t otcrypto_hmac_drbg_generate(
   internal_ctx.reseed_counter++;
 
   HARDENED_TRY(hmac_drbg_context_save(&internal_ctx, ctx));
-  HARDENED_TRY(
-      hardened_memshred((uint32_t *)&internal_ctx, kHmacDrbgCtxNumWords));
+  hardened_memshred((uint32_t *)&internal_ctx, kHmacDrbgCtxNumWords);
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }

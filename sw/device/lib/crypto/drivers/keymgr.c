@@ -206,10 +206,10 @@ status_t keymgr_generate_key_sw(keymgr_diversification_t diversification,
   // memcpy.
   uintptr_t share0 = kBaseAddr + KEYMGR_SW_SHARE0_OUTPUT_0_REG_OFFSET;
   uintptr_t share1 = kBaseAddr + KEYMGR_SW_SHARE1_OUTPUT_0_REG_OFFSET;
-  HARDENED_TRY(hardened_memshred(key->share0, kKeymgrOutputShareNumWords));
+  hardened_memshred(key->share0, kKeymgrOutputShareNumWords);
   HARDENED_TRY(hardened_memcpy(key->share0, (uint32_t *)share0,
                                kKeymgrOutputShareNumWords));
-  HARDENED_TRY(hardened_memshred(key->share1, kKeymgrOutputShareNumWords));
+  hardened_memshred(key->share1, kKeymgrOutputShareNumWords);
   HARDENED_TRY(hardened_memcpy(key->share1, (uint32_t *)share1,
                                kKeymgrOutputShareNumWords));
 
