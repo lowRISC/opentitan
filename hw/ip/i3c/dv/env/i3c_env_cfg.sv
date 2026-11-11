@@ -101,9 +101,9 @@ class i3c_env_cfg extends cip_base_env_cfg #(.RAL_T(i3c_reg_block));
     csr_excl_item     csr_excl = i3c_ral.get_excl_item();
     dv_base_reg_field flds[$] = '{i3c_ral.buffer_status.hciq_err,
                                   i3c_ral.buffer_status.ttiq_err,
-                                  i3c_ral.targ_pio_control.suspended,
+                                  i3c_ral.targ_pio_control.tx_suspended,
                                   i3c_ral.targ_pio_control.ibi_suspended,
-                                  i3c_ral.targ_pio_control.abort,
+                                  i3c_ral.targ_pio_control.tx_abort,
                                   i3c_ral.targ_pio_control.ibi_abort};
     if (!$test$plusargs("run_csr_mem_rw_with_rand_reset")) return;
     foreach (flds[i]) csr_excl.add_excl(flds[i].get_full_name(), CsrExclCheck, CsrRwTest);

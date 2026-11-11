@@ -20,8 +20,8 @@ module i3c_target_ext
   output                    ext_present_o,
   // Extension info.
   input                     ext_info_qe_i,
-  input              [14:0] ext_info_q_i,
-  output             [14:0] ext_info_o,
+  input              [15:0] ext_info_q_i,
+  output             [15:0] ext_info_o,
 
   // Register interface.
   input  i3c_reg2targ_ext_t ext_reg2hw_i,
@@ -32,7 +32,7 @@ module i3c_target_ext
   //
   // Note: this simple register is exercised via a test script and should probably be replaced with
   // some information identifying the Target Extension that is present.
-  logic [14:0] ext_info;
+  logic [15:0] ext_info;
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
       ext_info  <= 'b0;

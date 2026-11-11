@@ -103,6 +103,7 @@ package i3c_pkg;
   typedef struct packed {
     // The order of these fields is important in connecting to the `i3c_intr` instance.
     logic te;
+    logic internal_err;
     logic [MaxTargets-1:0] tx_desc_ready;
     logic [MaxTargets-1:0] tx_thld;
     logic async_evt_ovf;

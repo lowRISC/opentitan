@@ -213,7 +213,7 @@ module i3c_target
 
   // Extension hardware.
   output                    ext_present_o,
-  output             [14:0] ext_info_o,
+  output             [15:0] ext_info_o,
   input  i3c_reg2targ_ext_t ext_reg2hw_i,
   output i3c_targ_ext2reg_t ext_hw2reg_o,
 

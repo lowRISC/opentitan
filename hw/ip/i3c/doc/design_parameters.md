@@ -84,5 +84,5 @@ In order to support protocols that are layered atop the basic I3C protocol and d
 
 This interface allows a deployment of the I3C IP block to add additional logic into the design via a simplified interface at the data byte/word level, and to operate on the IP clock rather than the SCL/SDA signals of the I3C bus itself.
 
-Any specific implementation of the 'Target Extension' interface shall declare itself via the fields `EXT_PRESENT` and `EXT_INFO` fields of the [`TARG_STATUS` register](registers.md#targ_status) and as an Extended Capability within the register address space of the IP block.
+Any specific implementation of the 'Target Extension' interface shall declare itself via the fields `PRESENT` and `INFO` fields of the [`TARG_EXT_STATUS` register](registers.md#targ_ext_status) and as an Extended Capability within the register address space of the IP block.
 This allows the software driver to detect and adapt to the presence or absence of a specific Target Extension.
