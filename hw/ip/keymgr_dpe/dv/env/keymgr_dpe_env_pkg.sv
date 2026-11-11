@@ -15,6 +15,9 @@ package keymgr_dpe_env_pkg;
   import keymgr_dpe_ral_pkg::*;
   import kmac_app_agent_pkg::*;
   import sec_cm_pkg::*;
+  import keymgr_dpe_reg_pkg::NumSwBindingReg;
+  import keymgr_dpe_pkg::KeyWidth;
+  import keymgr_dpe_pkg::SwBindingWidth;
 
   // macro includes
   `include "uvm_macros.svh"
