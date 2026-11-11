@@ -58,6 +58,8 @@ module pinmux
   input  lc_ctrl_pkg::lc_tx_t      lc_check_byp_en_i,
   // SEC_CM: LC_ESCALATE_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t      lc_escalate_en_i,
+  // SEC_CM: LC_NVM_DEBUG_EN.INTERSIG.MUBI
+  input  lc_ctrl_pkg::lc_tx_t      lc_nvm_debug_en_i,
   // SEC_CM: PINMUX_HW_DEBUG_EN.INTERSIG.MUBI
   output lc_ctrl_pkg::lc_tx_t      pinmux_hw_debug_en_o,
   // Sampled values for DFT straps
@@ -71,6 +73,8 @@ module pinmux
   input  jtag_pkg::jtag_rsp_t      rv_jtag_i,
   output jtag_pkg::jtag_req_t      dft_jtag_o,
   input  jtag_pkg::jtag_rsp_t      dft_jtag_i,
+  output jtag_pkg::jtag_req_t      rram_jtag_o,
+  input  jtag_pkg::jtag_rsp_t      rram_jtag_i,
   // Direct USB connection
   input                            usbdev_dppullup_en_i,
   input                            usbdev_dnpullup_en_i,
@@ -373,6 +377,8 @@ module pinmux
     .lc_hw_debug_en_i,
     .lc_escalate_en_i,
     .lc_check_byp_en_i,
+    .lc_nvm_debug_en_i,
+    .rram_jtag_sel_i ( prim_mubi_pkg::mubi4_t'(reg2hw.rram_jtag_sel.q) ),
     // This is the latched version of lc_hw_debug_en_i. We use it exclusively to gate the JTAG
     // signals and TAP side of the RV_DM so that RV_DM can remain live during an NDM reset cycle.
     .pinmux_hw_debug_en_o,
@@ -383,7 +389,9 @@ module pinmux
     .rv_jtag_o,
     .rv_jtag_i,
     .dft_jtag_o,
-    .dft_jtag_i
+    .dft_jtag_i,
+    .rram_jtag_o,
+    .rram_jtag_i
   );
 
   ///////////////////////////////////////
@@ -655,6 +663,10 @@ module pinmux
   `ASSERT_KNOWN(DftJtagTckKnown_A, dft_jtag_o.tck)
   `ASSERT_KNOWN(DftJtagTrstKnown_A, dft_jtag_o.trst_n)
   `ASSERT_KNOWN(DftJtagTmsKnown_A, dft_jtag_o.tms)
+
+  `ASSERT_KNOWN(RramJtagTckKnown_A, rram_jtag_o.tck)
+  `ASSERT_KNOWN(RramJtagTrstKnown_A, rram_jtag_o.trst_n)
+  `ASSERT_KNOWN(RramJtagTmsKnown_A, rram_jtag_o.tms)
 
   `ASSERT_KNOWN(DftStrapsKnown_A, dft_strap_test_o)
 
