@@ -528,8 +528,10 @@
     {
       name: "RV_CORE_IBEX.CPU.ISA",
       desc: '''
-        Implements a RISC-V core capable of executing RV32ICMB instructions (a subset of bitmanip is
-        implemented, see the Ibex core documentation for details).
+        Implements a RISC-V core capable of executing RV32IMC instructions, including the Zca, Zcb
+        and Zcmp compressed extensions. With `RV32B` set to `RV32BFull`, the core also implements
+        the ratified bitmanip extensions Zba, Zbb, Zbc and Zbs, plus Zbkb and Zbkx. The core
+        supports machine and user mode.
       '''
     },
     {
@@ -564,6 +566,16 @@
       '''
     }
     {
+      name: "RV_CORE_IBEX.CPU.PERF_COUNTERS"
+      desc: '''
+        The RISC-V core implements the `mcycle` and `minstret` counters and `MHPMCounterNum`
+        hardware performance counters with hardwired events. User mode can read them through the
+        Zicntr and Zihpm aliases if `mcounteren` allows it. The core wrapper controls through
+        `MCOUNTEREN_WRITABLE` whether software can change `mcounteren`, and this setting can be
+        locked until reset.
+      '''
+    }
+    {
       name: "RV_CORE_IBEX.RND"
       desc: '''
         The core wrapper has a connection to the EDN that provides 32-bit random numbers via a
@@ -584,6 +596,15 @@
         executed and most recent exception taken on a reset event. Where the RISC-V core has
         detected a double fault a crash dump will be stored for when the double fault was detect as
         well as the crash dump at reset.
+      '''
+    }
+    {
+      name: "RV_CORE_IBEX.ALERTS"
+      desc: '''
+        The core wrapper raises fatal and recoverable alerts for errors of the RISC-V core, bus
+        integrity errors and configuration register errors, and records them in `ERR_STATUS`.
+        Software can trigger a fatal or a recoverable alert through `SW_FATAL_ERR` and
+        `SW_RECOV_ERR`.
       '''
     }
   ],

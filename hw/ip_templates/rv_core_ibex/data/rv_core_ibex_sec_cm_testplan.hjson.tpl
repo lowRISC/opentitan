@@ -23,14 +23,6 @@
 // .../${module_instance_name}/data/${module_instance_name}_testplan.hjson
 {
   testpoints: [
-% if cheriot_available:
-    {
-      name: sec_cm_cheriot_switch_fsm_sparse
-      desc: "Verify the countermeasure(s) CHERIOT_SWITCH.FSM.SPARSE."
-      stage: V2S
-      tests: []
-    }
-% endif
     {
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
@@ -109,5 +101,43 @@
       stage: V2S
       tests: []
     }
+    {
+      name: sec_cm_icache_mem_addr_infection
+      desc: "Verify the countermeasure(s) ICACHE.MEM.ADDR_INFECTION."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_cored_tlul_bus_lc_gated
+      desc: "Verify the countermeasure(s) CORED_TLUL.BUS.LC_GATED."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_tlul_adapter_logic_shadow
+      desc: "Verify the countermeasure(s) TLUL_ADAPTER.LOGIC.SHADOW."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_mcounteren_writable_ctrl_mubi
+      desc: "Verify the countermeasure(s) MCOUNTEREN_WRITABLE.CTRL.MUBI."
+      stage: V2S
+      tests: []
+    }
+% if cheriot_available:
+    {
+      name: sec_cm_cheriot_switch_fsm_sparse
+      desc: "Verify the countermeasure(s) CHERIOT_SWITCH.FSM.SPARSE."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_cheriot_enable_ctrl_mubi
+      desc: "Verify the countermeasure(s) CHERIOT_ENABLE.CTRL.MUBI."
+      stage: V2S
+      tests: []
+    }
+% endif
   ]
 }
