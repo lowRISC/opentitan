@@ -9,8 +9,9 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   protected process handle_alerts_process;
   // Error injection control
   rand lc_ctrl_err_inj_t err_inj;
-  // Invalid lc_state lc_count as a binary representation
-  rand lc_state_bin_t invalid_lc_state_bin;
+  // Invalid lc_state as a level representation and lc_count as a binary
+  // representation
+  rand lc_state_lvl_t invalid_lc_state_lvl;
   rand lc_count_bin_t invalid_lc_count_bin;
   rand bit [DecLcStateWidth-1:0] invalid_next_state;
   rand bit [FsmStateWidth-1:0] lc_fsm_state_invert_bits;
@@ -43,7 +44,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   `uvm_object_utils_begin(lc_ctrl_errors_vseq)
     `uvm_field_int(num_trans, UVM_DEFAULT)
     `uvm_field_int(err_inj, UVM_DEFAULT)
-    `uvm_field_int(invalid_lc_state_bin, UVM_DEFAULT)
+    `uvm_field_int(invalid_lc_state_lvl, UVM_DEFAULT)
     `uvm_field_int(invalid_lc_count_bin, UVM_DEFAULT)
     `uvm_field_int(invalid_next_state, UVM_DEFAULT)
     `uvm_field_int(lc_fsm_state_invert_bits, UVM_DEFAULT)
@@ -87,7 +88,10 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
   }
 
   constraint invalid_states_bin_c {
-    !(invalid_lc_state_bin inside {ValidLcStatesBin});
+    foreach (invalid_lc_state_lvl[i]) {
+      invalid_lc_state_lvl[i] <= LcLvlOne;
+    }
+    !(invalid_lc_state_lvl inside {ValidLcStatesLvl});
     !(invalid_lc_count_bin inside {ValidLcCountsBin});
     !(invalid_next_state inside {ValidDecodedStates});
   }
@@ -599,7 +603,7 @@ class lc_ctrl_errors_vseq extends lc_ctrl_smoke_vseq;
         `uvm_info(`gfn, $sformatf("drive_otp_i: driving lc_state=%s", lc_state.name), UVM_MEDIUM)
       end else begin
         // Force invalid state on input optionally with illegal coding
-        lc_state = lc_state_e'(bin_to_lc_state(invalid_lc_state_bin, err_inj.state_illegal_err));
+        lc_state = lc_state_e'(lvl_to_lc_state(invalid_lc_state_lvl, err_inj.state_illegal_err));
         `uvm_info(`gfn, $sformatf("drive_otp_i: driving invalid state lc_state=%s", lc_state.name),
                   UVM_MEDIUM)
       end
