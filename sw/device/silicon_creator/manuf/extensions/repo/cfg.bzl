@@ -18,10 +18,26 @@ EXT_EARLGREY_OTP_CFGS = {
 # details.
 EXT_EARLGREY_SKUS = {
     # <SKU name>: {
-    #    "otp": <OTP image name above in EXT_EARLGREY_OTP_CFGS>,
-    #    "dice_libs": [<which DICE certgen libs to use: X.509 or CWT>]
-    #    "host_ext_libs": [<which host hooks extension libraries to use>]
-    #    "device_ext_libs": [<which device hooks extension libraries to use>]
+    #    # --- Required attributes ---
+    #    "otp": <OTP image name in EARLGREY_OTP_CFGS>,
+    #    "ca_data": <label of SKU's CA data (certs and keys)>
+    #    "dice_libs": [<DICE certgen libs for perso firmware>]
+    #    "host_ext_libs": [<host (FT) hook extension libraries to use>]
+    #    "device_ext_libs": [<device (perso) hook extension libraries to use>]
+    #    "rom_ext": <label of ROM_EXT to provision>
+    #    "owner_fw": <label of owner firmware to provision>
+    #    "ecdsa_key": {<keyset label>: <key name>} describing the ECDSA key for
+    #                 signing, or `{}` for no key.
+    #    "spx_key": {<keyset label>: <key name>} describing the SPX key for
+    #               signing, or `{}` for no key.
+    #    "signature_prefix": <package containing `_signatures` targets, or None>
+    #    "orchestrator_cfg": <label of the `sku_cfg` to configure the orchestrator.>
+    #
+    #    # --- Optional attributes ---
+    #    "ownership_libs": [<ownership libraries used by perso firmware>]
+    #    "perso_bin": <override label of a prebuilt signed perso binary to use.>
+    #    "scrambling_bin": <override label of a prebuild scrambling binary to use.>
+    #    "offline": <True if provisioning tests need offline signed binaries>
     # }
 }
 
