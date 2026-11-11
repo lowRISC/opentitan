@@ -12,6 +12,11 @@ class jtag_riscv_agent_cfg extends dv_base_agent_cfg;
   // Allows JTAG to return error status.
   bit allow_errors = 0;
 
+  // Waits after each DMI write until the DMI accepts the next request.
+  // Without it, the DMI can ignore the request after a write, see
+  // jtag_riscv_driver::wait_dmi_write_done().
+  bit wait_for_dmi_write = 0;
+
   // RV_DM jtag connects to DM CSRs.
   // Because LC jtag will normalize the input address for the last two bits,
   // while RV_DM jtag uses the original DM CSR addresses without the normalization.

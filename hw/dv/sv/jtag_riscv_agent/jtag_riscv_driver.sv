@@ -134,9 +134,21 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
     m_dr_seq.start(cfg.jtag_sequencer_h);
   endtask
 
+  // Shifts zero through DTMCS, which has no effect on the DMI, and returns its dmistat field.
+  protected virtual task read_dtmcs_dmistat(output bit [DMI_OPW-1:0] dmistat);
+    jtag_dr_seq m_dr_seq;
+    `uvm_create_obj(jtag_dr_seq, m_dr_seq);
+    `DV_CHECK_RANDOMIZE_WITH_FATAL(m_dr_seq,
+        dr_len == DTMCS_DRW;
+        dr     == 0;)
+    m_dr_seq.start(cfg.jtag_sequencer_h);
+    dmistat = (m_dr_seq.rsp != null) ? m_dr_seq.rsp.dout[11:10] : DmiNoErr;
+  endtask
+
   // This task finishes a csr read/write transaction:
   // 1. Driving JTAG's DR register to start the transaction.
   // 2. Check status until the transaction is done.
+  // 3. With cfg.wait_for_dmi_write, wait after a write until the DMI accepts the next request.
   protected virtual task send_csr_req(input bit [DMI_OPW-1:0] op,
                                       input bit [DMI_DATAW-1:0] data,
                                       input bit [DMI_ADDRW-1:0] addr,
@@ -147,6 +159,34 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
 
     // Get status of previous transfer
     check_csr_req_status(.status(status), .rdata(dout));
+
+    if (op == DmiWrite && cfg.wait_for_dmi_write) wait_dmi_write_done();
+  endtask
+
+  // The DMI reports a read that is still in progress as busy, but not a write.
+  // So the status poll after a write can return DmiNoErr while the write is still running.
+  // The update of that poll then sets the sticky busy error, and the DMI ignores the next request.
+  // This task checks dmistat through DTMCS, which has no effect on the DMI.
+  // While dmistat is not clear, it clears it with dmireset and checks again after a DMI nop scan.
+  // The nop scan sets the busy error again as long as the write is still running.
+  // Once dmistat stays clear after a nop scan, the write is done and the next request is safe.
+  protected virtual task wait_dmi_write_done();
+    bit [DMI_OPW-1:0] dmistat;
+    bit [DMI_DRW-1:0] dout;
+    while (!cfg.in_reset) begin
+      send_riscv_ir_req(JtagDtmCsr);
+      read_dtmcs_dmistat(dmistat);
+      if (dmistat == DmiNoErr || cfg.in_reset) begin
+        break;
+      end
+      if (dmistat == DmiFail && !cfg.allow_errors) begin
+        `uvm_error(`gfn, "DMI write failed after its status poll")
+      end
+      send_dtmcs_dr_req(DmiReset);
+      send_riscv_ir_req(JtagDmiAccess);
+      send_csr_dr_req(.op(DmiStatus), .addr(0), .data(0), .dout(dout));
+    end
+    if (!cfg.in_reset) send_riscv_ir_req(JtagDmiAccess);
   endtask
 
   // This task sends a CSR register read/write request via JTAG data register.
