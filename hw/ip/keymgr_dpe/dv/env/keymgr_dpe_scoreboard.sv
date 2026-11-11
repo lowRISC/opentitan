@@ -14,11 +14,6 @@ class keymgr_dpe_scoreboard extends cip_base_scoreboard #(
   `define CREATE_CMP_STR(VAR) \
     str = $sformatf("%0s\n %0s act: 0x%0h, exp: 0x%0h", str, `"VAR`", act.``VAR, exp.``VAR);
 
-  // Import parameter to avoid code cluttering
-  import keymgr_dpe_reg_pkg::NumSwBindingReg;
-  import keymgr_dpe_env_pkg::DvNumRomDigestInputs, keymgr_dpe_env_pkg::DvDpeAdvDataWidth;
-  import keymgr_dpe_pkg::SwBindingWidth, keymgr_dpe_pkg::KeyWidth;
-
   // if boot_stage == 0 with creator seed
   typedef struct packed {
     // SW_CDI_INPUT
