@@ -8,14 +8,14 @@
     n_wkup_detect: 8
     wkup_cnt_width: 8
     n_mio_pads: 47
-    n_mio_periph_in: 97
-    n_mio_periph_out: 106
+    n_mio_periph_in: 94
+    n_mio_periph_out: 105
     n_dio_pads: 16
     n_dio_periph_in: 14
     n_dio_periph_out: 14
     enable_usb_wakeup: true
     enable_strap_sampling: true
-    enable_rram_tap: false
+    enable_rram_tap: true
     topname: earlgrey
     uniquified_modules: {}
     module_instance_name: pinmux
