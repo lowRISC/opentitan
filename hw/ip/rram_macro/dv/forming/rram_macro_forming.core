@@ -1,0 +1,22 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+name: lowrisc:dv:rram_macro_forming:0.1
+description: "RRAM TAP steps of the chip-level CP flow for the open-source rram_macro"
+virtual:
+  - lowrisc:virtual_dv:rram_macro_forming
+
+filesets:
+  files_dv:
+    files:
+      - rram_macro_forming.svh: {is_include_file: true}
+    file_type: systemVerilogSource
+
+mapping:
+  "lowrisc:virtual_dv:rram_macro_forming": "lowrisc:dv:rram_macro_forming"
+
+targets:
+  default:
+    filesets:
+      - files_dv

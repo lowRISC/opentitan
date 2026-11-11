@@ -1064,6 +1064,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
   //     This transition will use default raw unlock token.
   // 2). Test lock state N -> test unlock state N+1
   //     This transition requires user to input the correct test unlock token.
+  // 3). Test unlock state N -> DEV, PROD or PROD_END
+  //     This transition requires user to input the correct test exit token.
   virtual task jtag_lc_state_transition(dec_lc_state_e src_state,
                                         dec_lc_state_e dest_state,
                                         bit [TokenWidthBit-1:0] test_unlock_token = 0);
@@ -1140,7 +1142,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
       DecLcStTestUnlocked5,
       DecLcStTestUnlocked6,
       DecLcStTestUnlocked7: begin
-        if (dest_state inside {DecLcStProd, DecLcStScrap}) valid_transition = 1;
+        if (dest_state inside {DecLcStDev, DecLcStProd, DecLcStProdEnd, DecLcStScrap}) begin
+          valid_transition = 1;
+        end
       end
       DecLcStDev,
       DecLcStProd: begin

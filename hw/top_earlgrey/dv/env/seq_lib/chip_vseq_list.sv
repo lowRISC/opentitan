@@ -39,6 +39,7 @@
 `include "chip_sw_lc_ctrl_scrap_vseq.sv"
 `include "chip_sw_lc_raw_unlock_vseq.sv"
 `include "chip_sw_lc_volatile_raw_unlock_vseq.sv"
+`include "chip_rram_cp_flow_vseq.sv"
 `include "chip_sw_lc_walkthrough_vseq.sv"
 `include "chip_sw_lc_walkthrough_testunlocks_vseq.sv"
 `include "chip_sw_rram_ctrl_lc_rw_en_vseq.sv"

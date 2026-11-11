@@ -1028,6 +1028,19 @@
       run_timeout_mins: 120
     }
     {
+      // RRAM CP flow over JTAG, see chip_rram_cp_flow_vseq.
+      // No SW runs, the image only satisfies the test ROM.
+      name: chip_rram_cp_flow
+      uvm_test_seq: chip_rram_cp_flow_vseq
+      sw_images: ["//sw/device/tests/sim_dv:lc_ctrl_volatile_raw_unlock_test:1:new_rules"]
+      en_run_modes: ["sw_test_mode_test_rom"]
+      run_opts: [
+        "+use_otp_image=OtpTypeLcStRaw",
+        // A formed part before CP, without any marker.
+        "+rram_dis_vol_raw_unlock=0"]
+      run_timeout_mins: 180
+    }
+    {
       name: chip_sw_lc_walkthrough_rma
       uvm_test_seq: chip_sw_lc_walkthrough_vseq
       sw_images: ["//sw/device/tests/sim_dv:lc_walkthrough_test:1:new_rules"]
