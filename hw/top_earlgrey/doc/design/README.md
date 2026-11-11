@@ -223,7 +223,7 @@ See those specifications for more details.
 #### OTP
 
 Earl Grey has no OTP macro.
-Instead, the [OTP controller](../../ip_autogen/otp_ctrl/README.md) stores its 2144 bytes of one-time programmable memory (1072 words of 16 bit) in the OTP region of the RRAM.
+Instead, the [OTP controller](../../ip_autogen/otp_ctrl/README.md) stores its 2240 bytes of one-time programmable memory (1120 words of 16 bit) in the OTP region of the RRAM.
 The RRAM controller implements OTP semantics on that region: bits can only be set, never cleared.
 
 #### SRAMs
@@ -490,6 +490,7 @@ The key manager DPE uses KMAC as its key derivation function.
 Its inputs include the creator root key from the OTP controller, the creator and owner seeds from the RRAM controller, the ROM digest from the ROM controller, and a diversification value from the life cycle controller.
 It optionally also consumes the field entropy from the `SECRET3` OTP partition.
 If the field entropy has not been provisioned, the key manager DPE uses a netlist constant instead.
+Software can additionally load the secondary root key from the `SECRET3` OTP partition into a key slot.
 It can generate keys for software or sideload them into AES, HMAC, KMAC and OTBN.
 
 See the [key manager DPE specification](../../../ip/keymgr_dpe/README.md) for more details.
@@ -511,7 +512,23 @@ See the [life cycle controller specification](../../../ip/lc_ctrl/README.md) for
 The OTP controller provides one-time programmable storage that is logically divided into partitions.
 Partitions can be locked, integrity checked with digests, and scrambled.
 The OTP controller checks the partitions periodically in the background.
-It provides keys and seeds to other blocks over dedicated hardware interfaces, including the scrambling keys of the SRAMs, the instruction cache, OTBN and the RRAM, the creator root key and the optional field entropy of the key manager DPE, and the life cycle state.
+It provides keys and seeds to other blocks over dedicated hardware interfaces, including the scrambling keys of the SRAMs, the instruction cache, OTBN and the RRAM, the creator root key, the secondary root key and the optional field entropy of the key manager DPE, and the life cycle state.
+
+The field entropy and the secondary root key are stored in the optional `SECRET3` OTP partition.
+This partition should not be provisioned (digest locked) if neither value is used.
+If only one of the two fields is provisioned, the other field must be written with all zeros.
+An all-zero value tells the OTP controller that the field is not used.
+If the other field is left unwritten instead, the OTP controller treats it as a valid secret with a known value.
+
+This follows from how the valid for each field inside the OTP controller is derived:
+
+    valid = digest_locked && hw read enable && (descrambled(field) != 0)
+
+Zeros written through the DAI are scrambled before they are stored.
+They then descramble back to zero, so the field is marked invalid.
+An unwritten field holds raw zeros.
+Raw zeros never descramble to zero, so the field is marked valid with a constant.
+Once the partition digest is locked, the missing field can no longer be written.
 
 Earl Grey has no OTP macro.
 The OTP controller stores its data in the OTP region of the RRAM through the RRAM controller (see [OTP](#otp)).
