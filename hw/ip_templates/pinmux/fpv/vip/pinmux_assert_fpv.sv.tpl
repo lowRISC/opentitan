@@ -34,6 +34,9 @@ module pinmux_assert_fpv
   input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_check_byp_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+% if enable_rram_tap:
+  input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
+% endif
   input lc_ctrl_pkg::lc_tx_t pinmux_hw_debug_en_o,
   input dft_strap_test_req_t dft_strap_test_o,
   input  dft_hold_tap_sel_i,
@@ -43,6 +46,10 @@ module pinmux_assert_fpv
   input jtag_pkg::jtag_rsp_t rv_jtag_i,
   input jtag_pkg::jtag_req_t dft_jtag_o,
   input jtag_pkg::jtag_rsp_t dft_jtag_i,
+% if enable_rram_tap:
+  input jtag_pkg::jtag_req_t rram_jtag_o,
+  input jtag_pkg::jtag_rsp_t rram_jtag_i,
+% endif
 % endif
 % if enable_usb_wakeup:
   input usbdev_dppullup_en_i,
@@ -632,6 +639,33 @@ module pinmux_assert_fpv
           u_pinmux_strap_sampling.pinmux_hw_debug_en_q == lc_ctrl_pkg::On)
   `ASSERT(RvJtagClkRstBackward_A, rv_jtag_o.tck || rv_jtag_o.trst_n |->
           u_pinmux_strap_sampling.rv_tap_en_q)
+% if enable_rram_tap:
+
+  // -- RRAM TAP -- (Uses the FuncSel strap value while rram_tap_sel is set.
+  // rram_tap_sel combines RRAM_JTAG_SEL and the synchronized lc_nvm_debug_en_i.)
+  `ASSERT(RramJtagDataO_A, u_pinmux_strap_sampling.tap_strap == pinmux_pkg::FuncSel &&
+          u_pinmux_strap_sampling.rram_tap_sel |->
+          rram_jtag_o.tms == mio_in_i[TargetCfg.tms_idx] &&
+          rram_jtag_o.tdi == mio_in_i[TargetCfg.tdi_idx])
+  `ASSERT(RramJtagDataODefault_A, u_pinmux_strap_sampling.tap_strap != pinmux_pkg::FuncSel ||
+          !u_pinmux_strap_sampling.rram_tap_sel |->
+          rram_jtag_o.tms == 1'b0 && rram_jtag_o.tdi == 1'b0)
+  `ASSERT(RramJtagClkRstOWoScanmode_A, u_pinmux_strap_sampling.rram_tap_en_q &&
+          !prim_mubi_pkg::mubi4_test_true_strict(scanmode_i) |->
+          rram_jtag_o.tck == mio_in_i[TargetCfg.tck_idx] &&
+          rram_jtag_o.trst_n == mio_in_i[TargetCfg.trst_idx])
+  `ASSERT(RramJtagClkRstOWScanmode_A, u_pinmux_strap_sampling.rram_tap_en_q &&
+          prim_mubi_pkg::mubi4_test_true_strict(scanmode_i) |->
+          rram_jtag_o.tck == mio_in_i[TargetCfg.tck_idx] &&
+          rram_jtag_o.trst_n == rst_ni)
+  `ASSERT(RramJtagClkRstODefault_A, !u_pinmux_strap_sampling.rram_tap_en_q |->
+          rram_jtag_o.tck == 1'b0 && rram_jtag_o.trst_n == 1'b0)
+  `ASSERT(RramJtagDataBackward_A, rram_jtag_o.tms || rram_jtag_o.tdi |->
+          u_pinmux_strap_sampling.tap_strap == pinmux_pkg::FuncSel &&
+          u_pinmux_strap_sampling.rram_tap_sel)
+  `ASSERT(RramJtagClkRstBackward_A, rram_jtag_o.tck || rram_jtag_o.trst_n |->
+          u_pinmux_strap_sampling.rram_tap_en_q)
+% endif
 
   // -- DFT TAP -- (Lc_dft_en_i signal goes through a two clock cycle synchronizer.)
   `ASSERT(DftJtagDataO_A, u_pinmux_strap_sampling.tap_strap == pinmux_pkg::DftTapSel &&
@@ -669,6 +703,11 @@ module pinmux_assert_fpv
   `ASSERT(RvTapEnCorrect_A, u_pinmux_strap_sampling.rv_tap_en_q ==
           $past((u_pinmux_strap_sampling.tap_strap == pinmux_pkg::RvTapSel) &&
                 (u_pinmux_strap_sampling.pinmux_hw_debug_en_q == lc_ctrl_pkg::On)))
+% if enable_rram_tap:
+  `ASSERT(RramTapEnCorrect_A, u_pinmux_strap_sampling.rram_tap_en_q ==
+          $past((u_pinmux_strap_sampling.tap_strap == pinmux_pkg::FuncSel) &&
+                u_pinmux_strap_sampling.rram_tap_sel))
+% endif
   `ASSERT(DftTapEnCorrect_A, u_pinmux_strap_sampling.dft_tap_en_q ==
           ($past(u_pinmux_strap_sampling.tap_strap == pinmux_pkg::DftTapSel) &&
            ($past(lc_dft_en_i, 3) == lc_ctrl_pkg::On)))

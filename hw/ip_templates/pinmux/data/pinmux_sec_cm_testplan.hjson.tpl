@@ -54,6 +54,14 @@
       stage: V2S
       tests: []
     }
+  % if enable_rram_tap:
+    {
+      name: sec_cm_lc_nvm_debug_en_intersig_mubi
+      desc: "Verify the countermeasure(s) LC_NVM_DEBUG_EN.INTERSIG.MUBI."
+      stage: V2S
+      tests: []
+    }
+  % endif
     {
       name: sec_cm_pinmux_hw_debug_en_intersig_mubi
       desc: "Verify the countermeasure(s) PINMUX_HW_DEBUG_EN.INTERSIG.MUBI."

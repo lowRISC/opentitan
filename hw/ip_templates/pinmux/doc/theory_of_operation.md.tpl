@@ -140,6 +140,15 @@ TAP strap 1 | TAP strap 0  | Life Cycle State         | Selected TAP
 1           | 0            | TEST_UNLOCKED*, RMA, DEV | RISC-V
 1           | 1            | TEST_UNLOCKED*, RMA      | DFT
 
+% if enable_rram_tap:
+This top also has an RRAM TAP.
+It uses the TAP strap value 0, which selects no TAP otherwise.
+While the [`RRAM_JTAG_SEL`](registers.md#rram_jtag_sel) register is set to `kMultiBitBool4True` and the life cycle signal `lc_nvm_debug_en` is On (TEST_UNLOCKED0-6, RMA), the TAP strap value 0 selects the RRAM TAP.
+The other TAPs are not affected, so a test can write the register through RV_DM and then switch between the TAPs with the straps alone.
+The TAP straps are sampled continuously in these life cycle states.
+A reset clears the register, and software can clear it as well.
+
+% endif
 Note that the tool-inserted DFT controller may assert the `dft_hold_tap_sel_i` during a test (e.g. boundary scan) in which case the `pinmux` will temporarily pause sampling of the TAP selection straps.
 
 It should be noted that the TAP straps are muxed with MIOs and that the pad attributes will take effect even in life cycles states that
