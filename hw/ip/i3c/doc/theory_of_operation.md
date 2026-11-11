@@ -178,7 +178,7 @@ The IP block supports the following ones:
 | Address Assignment Command (ENTDAA, SETDASA)                                                       | HCI 8.4.1                        |                                                                      |
 | Internal Control Commands, including Broadcast Address Enable and Target Reset Pattern with RSTACT | HCI 8.4.2                        |                                                                      |
 | In-Band Interrupts, including IBI payloads and Hot-Join control                                    | HCI 6.9.1, 8.6                   |                                                                      |
-| Periodic bus traffic for passive Hot-Join and IBI Targets                                          | -                                |                                                                      |
+| Periodic bus traffic for passive Hot-Join and IBI Targets                                          | I3C Basic 4.3.5                  |                                                                      |
 | Auto-Command, for fetching Private Read data automatically after an In-Band Interrupt request      | HCI 6.11                         |                                                                      |
 | Abort, suspend and resume of command processing; halt on error                                     | HCI 6.5.6, 6.8.4                 |                                                                      |
 | Error detection and reporting                                                                      | HCI 6.13                         | See [Error detection and reporting](#error-detection-and-reporting). |
@@ -310,6 +310,18 @@ This feature may also be of use diagnostically, by catching and reporting traffi
 To block multiple addresses using a single entry, set the address [mask](registers.md#blocked_addr--mask0) to a value other than 0x7f, i.e. by leaving one or more bits clear.
 This is useful because I<sup>2</sup>C devices are commonly configured with one of a small set of static addresses that differ from each other by only one or two address bits.
 All instances of a given I<sup>2</sup>C device may therefore be blocked using a single mask/address pair.
+
+## Detection of Passive Hot-Join Targets and unexpected disconnections
+
+The Controller may be configured to issue `GETSTATUS` CCCs periodically to Target address 0x77 during periods of bus inactivity.
+This affords Passive Hot-Join Targets an opportunity to arbitrate for the bus and notify the Controller of their presence.
+
+Although a `GETSTATUS` CCC should not change the state of any addressed Target, address 0x77 has been chosen as the highest unconditionally available I3C address and it is unlikely to be used.
+The driver software may also avoid allocating this as a dynamic address to any Target, to limit the impact on bus utilization.
+This functionality is enabled by setting the field [`BUS_CONTROL.PASSIVE_POLL_EN`](registers.md#bus_control--passive_poll_en), but the driver software is always at liberty to fall back to issuing `GETSTATUS` CCCs directly, both to support Passive Hot-Join Targets and to test for unexpected Target disconnections (4.3.5).
+
+The `GETSTATUS` CCC will be emitted with 'I2C FM' timing when the [`BUS_CONTROL.POLL_FM_TIMING`](registers.md#bus_control--poll_fm_timing) bit is set, to ensure that Passive Hot-Join Targets with their spike filters still enabled will also see the traffic.
+This bit may be cleared if it is known that all Passive Hot-Join Targets will not have enabled spike filters, reducing the bus utilization impact of polling.
 
 ## Memory mapping of the message buffer
 

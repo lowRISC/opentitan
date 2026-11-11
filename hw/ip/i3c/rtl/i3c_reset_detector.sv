@@ -220,7 +220,7 @@ module i3c_reset_detector
   // Report the active configuration to the IP block, since it takes quite some time for it to
   // be accepted; this is not strictly what the block is using _right now_, but what it will pick
   // up after two SDA rising edges, but a valid Target Reset Pattern guarantees that.
-  assign rsp_int.wake_up_en    = req_i.wake_up_en;
+  assign rsp_int.wake_up_en    = req_i.wake_up;
   assign rsp_int.rst_periph_en = req_i.rst_periph;
   assign rsp_int.rst_target_en = req_i.rst_target;
   // Notification that a Target Reset pattern has been detected.
