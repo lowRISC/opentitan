@@ -4,14 +4,11 @@
 
 `include "prim_assert.sv"
 
-// SEC_CM: LOGIC.SHADOW
-// TODO(#30572): Implement lockstep operation for this module
-
 module cheriot_mem_sys
   import cheriot_mem_sys_reg_pkg::*;
 #(
   // TL-UL address type
-  parameter type   addr_t           = logic [top_pkg::TL_AW-1:0],
+  parameter type                  addr_t           = logic [top_pkg::TL_AW-1:0],
   // Top-level address map parameters
   parameter addr_t                MainSramBaseAddr = 'h1000_0000,
   parameter addr_t                MainSramTopAddr  = 'h1003_0000,
@@ -19,12 +16,20 @@ module cheriot_mem_sys
   parameter addr_t                NvmTopAddr       = 'h3020_0000,
   parameter addr_t                MetaSramBaseAddr = 'h1100_0000,
   parameter int unsigned          MemSizeRevbm     = 3072,
+  // Run a second copy of the logic in lockstep with the main copy
+  parameter bit                   SecLockstep      = 1'b1,
+  // Cycles the second copy of the logic runs behind the main copy
+  parameter int unsigned          LockstepOffset   = 1,
   parameter logic [NumAlerts-1:0] AlertAsyncOn     = {NumAlerts{1'b1}},
   parameter int unsigned          AlertSkewCycles  = 1
 ) (
 
   input  logic clk_i,
   input  logic rst_ni,
+
+  // Scan mode, bypasses the reset of the second copy of the logic
+  input  prim_mubi_pkg::mubi4_t scanmode_i,
+  input  logic                  scan_rst_ni,
 
   // CHERIoT mode enabled
   input  prim_mubi_pkg::mubi4_t cheriot_ena_i,
@@ -77,6 +82,7 @@ module cheriot_mem_sys
   logic reg_intg_err;
   logic tbre_done;
   logic core_alert_fatal_fault;
+  logic lockstep_alert_fatal_fault;
   logic alert_test;
 
 
@@ -137,6 +143,59 @@ module cheriot_mem_sys
   );
 
 
+  //////////////
+  // Lockstep //
+  //////////////
+
+  // SEC_CM: LOGIC.SHADOW
+  if (SecLockstep) begin : gen_lockstep
+    cheriot_mem_sys_lockstep #(
+      .LockstepOffset  (LockstepOffset),
+      .addr_t          (addr_t),
+      .MainSramBaseAddr(MainSramBaseAddr),
+      .MainSramTopAddr (MainSramTopAddr),
+      .NvmBaseAddr     (NvmBaseAddr),
+      .NvmTopAddr      (NvmTopAddr),
+      .MetaSramBaseAddr(MetaSramBaseAddr),
+      .MemSizeRevbm    (MemSizeRevbm)
+    ) u_cheriot_mem_sys_lockstep (
+      .clk_i,
+      .rst_ni,
+      .scanmode_i,
+      .scan_rst_ni,
+      .cheriot_ena_i,
+      .tbre_base_addr_i   (reg2hw.tbre_base_addr),
+      .tbre_num_caps_i    (reg2hw.tbre_num_caps),
+      .tbre_start_i       (reg2hw.tbre_start),
+      .tbre_regwen_i      (hw2reg.tbre_regwen),
+      .tbre_status_i      (hw2reg.tbre_status),
+      .tbre_epoch_i       (hw2reg.tbre_epoch),
+      .tbre_done_i        (tbre_done),
+      .alert_fatal_fault_o(lockstep_alert_fatal_fault),
+      .cored_tl_d_h2d_i   (cored_tl_d_i),
+      .cored_tag_h2d_i,
+      .cored_tl_d_d2h_i   (cored_tl_d_o),
+      .cored_tag_d2h_i    (cored_tag_d2h_o),
+      .corerevbm_tl_h2d_i (corerevbm_tl_i),
+      .corerevbm_tl_d2h_i (corerevbm_tl_o),
+      .revbm_tl_d_h2d_i   (revbm_tl_d_i),
+      .revbm_tl_d_d2h_i   (revbm_tl_d_o),
+      .cored_tl_h_h2d_i   (cored_tl_h_o),
+      .cored_tl_h_d2h_i   (cored_tl_h_i),
+      .tbre_tl_h_h2d_i    (tbre_tl_h_o),
+      .tbre_tl_h_d2h_i    (tbre_tl_h_i),
+      .meta_sram_tl_h2d_i (meta_sram_tl_o),
+      .meta_sram_tl_d2h_i (meta_sram_tl_i)
+    );
+  end else begin : gen_no_lockstep
+    assign lockstep_alert_fatal_fault = 1'b0;
+
+    // The scan inputs only bypass the reset of the second copy.
+    logic unused_scan;
+    assign unused_scan = ^{scanmode_i, scan_rst_ni};
+  end
+
+
   ///////////////
   // Interrupt //
   ///////////////
@@ -171,7 +230,7 @@ module cheriot_mem_sys
     .clk_i,
     .rst_ni,
     .alert_test_i (alert_test),
-    .alert_req_i  (reg_intg_err | core_alert_fatal_fault),
+    .alert_req_i  (reg_intg_err | core_alert_fatal_fault | lockstep_alert_fatal_fault),
     .alert_ack_o  (),
     .alert_state_o(),
     .alert_rx_i   (alert_rx_i[0]),
@@ -215,9 +274,15 @@ module cheriot_mem_sys
   `ASSERT_KNOWN_IF(RegsTlDPayloadKnown_A, regs_tl_d_o, regs_tl_d_o.d_valid)
 
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
+  `ASSERT_KNOWN(LockstepAlertKnown_A, lockstep_alert_fatal_fault)
   `ASSERT_KNOWN(IntrTbreDoneKnown_A, intr_tbre_done_o)
 
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A,
       u_reg_regs, alert_tx_o[0])
+
+  if (SecLockstep && LockstepOffset > 1) begin : gen_lockstep_rst_cnt_assert
+    `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(LockstepResetCountAlertCheck_A,
+        gen_lockstep.u_cheriot_mem_sys_lockstep.gen_reset_counter.u_rst_shadow_cnt, alert_tx_o[0])
+  end
 
 endmodule

@@ -44,6 +44,7 @@ interface chip_if;
 `define AES_CONTROL_HIER    `AES_HIER.u_aes_core.u_aes_control
 `define ALERT_HANDLER_HIER  `PD_MAIN_HIER.u_alert_handler
 `define AON_TIMER_HIER      `PD_AON_HIER.u_aon_timer
+`define CHERIOT_MEM_SYS_HIER `PD_MAIN_HIER.u_cheriot_mem_sys
 `define CLKMGR_HIER         `PD_AON_HIER.u_clkmgr
 `define CPU_HIER            `PD_MAIN_HIER.u_rv_core_ibex
 `define CPU_CORE_HIER       `CPU_HIER.u_core
@@ -915,6 +916,10 @@ interface chip_if;
         force `CPU_HIER.main_core_data_tag_h2d = 1'b0;
         force `CPU_HIER.main_core_revbm_req = 1'b0;
         force `CPU_HIER.main_core_revbm_addr = '0;
+        // The CHERIoT memory subsystem passes the stubbed data port's TL-UL payload through, X
+        // while it is not valid, so its lockstep comparison would be X. This also masks the fatal
+        // errors of its second copy. The Ibex lockstep stays off as its clock is silenced.
+        force `CHERIOT_MEM_SYS_HIER.lockstep_alert_fatal_fault = 1'b0;
         force `CPU_TL_ADAPT_D_HIER.tl_out = cpu_d_tl_if.h2d;
         force cpu_d_tl_if.d2h = `CPU_TL_ADAPT_D_HIER.tl_i;
 
@@ -1281,6 +1286,7 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_host1.u_sp
 `undef AES_CONTROL_HIER
 `undef ALERT_HANDLER_HIER
 `undef AON_TIMER_HIER
+`undef CHERIOT_MEM_SYS_HIER
 `undef CLKMGR_HIER
 `undef CPU_HIER
 `undef CPU_CORE_HIER

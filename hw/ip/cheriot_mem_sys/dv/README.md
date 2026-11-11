@@ -19,6 +19,8 @@ See the [CHERIoT Memory Subsystem HWIP technical specification](../README.md).
 * [Alert interface](../../../dv/sv/alert_agent/README.md) for `fatal_fault`
 * [Interrupt pins interface](../../../dv/sv/common_ifs/README.md) for `intr_tbre_done_o`
 
+The other ports are tied off, with scan mode off, so the lockstep sees no traffic at block level.
+
 ## Building and running tests
 The [dvsim](https://github.com/lowRISC/dvsim) tool is used for building and running our tests and regressions.
 
