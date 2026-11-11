@@ -2028,7 +2028,8 @@
       package: "lc_ctrl_pkg"
       desc:    '''
                Seed read enable coming from life cycle controller.
-               This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+               This signal enables HW read access to the:
+               - CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1
                '''
     }
     { struct:  "lc_tx"
