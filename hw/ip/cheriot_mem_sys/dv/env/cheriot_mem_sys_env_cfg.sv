@@ -15,6 +15,13 @@ class cheriot_mem_sys_env_cfg extends cip_base_env_cfg #(.RAL_T(cheriot_mem_sys_
     list_of_alerts = cheriot_mem_sys_env_pkg::LIST_OF_ALERTS;
     super.initialize(inherit_ral_models);
     num_interrupts = ral.intr_state.get_n_used_bits();
+
+    // Status field the TL-UL integrity error test checks.
+    tl_intg_alert_fields[ral.fatal_err_code.reg_intg] = 1;
+
+    // Status fields the shadow register error tests check.
+    shadow_update_err_status_fields[ral.recov_err_code.shadow_update_err] = 1;
+    shadow_storage_err_status_fields[ral.fatal_err_code.shadow_storage_err] = 1;
   endfunction
 
 endclass
