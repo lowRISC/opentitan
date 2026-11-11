@@ -128,10 +128,13 @@ package lc_ctrl_state_pkg;
   // Note that the ECC bits are not defined in this package as they will be calculated by
   // the OTP ECC logic at runtime.
 
-  // The A/B values are used for the encoded LC state.
+  // The A/B/K/L values are used for the encoded LC state. In each word, the
+  // values 0 -> A -> B -> K -> L -> ONE only ever set bits (data and ECC).
 % for word in lc_st_enc.config['genwords']['lc_state']:
   parameter logic [${data_width-1}:0] A${loop.index} = ${data_width}'b${word[0][ecc_width:]}; // ECC: ${ecc_width}'b${word[0][0:ecc_width]}
   parameter logic [${data_width-1}:0] B${loop.index} = ${data_width}'b${word[1][ecc_width:]}; // ECC: ${ecc_width}'b${word[1][0:ecc_width]}
+  parameter logic [${data_width-1}:0] K${loop.index} = ${data_width}'b${word[2][ecc_width:]}; // ECC: ${ecc_width}'b${word[2][0:ecc_width]}
+  parameter logic [${data_width-1}:0] L${loop.index} = ${data_width}'b${word[3][ecc_width:]}; // ECC: ${ecc_width}'b${word[3][0:ecc_width]}
 
 % endfor
 
@@ -164,6 +167,7 @@ package lc_ctrl_state_pkg;
 % endfor
 
   parameter logic [${data_width-1}:0] ZRO = ${data_width}'h0;
+  parameter logic [${data_width-1}:0] ONE = ${data_width}'h${'f' * (data_width // 4)};
 
   ////////////////////////
   // Derived enum types //
