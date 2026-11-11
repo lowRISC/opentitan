@@ -12248,6 +12248,24 @@
           name_top: MemSizeCheriotMemSysRevbm
           default: 3072
         }
+        {
+          name: SecLockstep
+          desc: Run a second copy of the logic in lockstep with the main copy (LOGIC.SHADOW).
+          type: bit
+          default: 1'b1
+          local: "false"
+          expose: "true"
+          name_top: SecCheriotMemSysLockstep
+        }
+        {
+          name: LockstepOffset
+          desc: Cycles the second copy of the logic runs behind the main copy, at least 1.
+          type: int unsigned
+          default: "1"
+          local: "false"
+          expose: "true"
+          name_top: CheriotMemSysLockstepOffset
+        }
       ]
       inter_signal_list:
       [

@@ -36,10 +36,13 @@ SRAM are stored using a `sram_ctrl`.
   without an error in an epoch register of the form the CHERIoT RTOS revoker uses.
 - Per-port access checking: each of the four requesters may only reach the meta SRAM region it owns,
   with word-granular accesses only.
-- Fatal alert on a CSR bus integrity fault, an invalid encoding of the capability tag of a core
-  request, a meta SRAM response integrity fault, a meta SRAM device error, a fault the revocation
-  engine reports, or what the core cannot produce around a capability store to the NVM (an
-  integrity fault, a partial store, or a request out of sequence).
+- Lockstep (parameter `SecLockstep`, on by default): a second copy of the subsystem's logic,
+  without the CSRs, the interrupt and the alert sender, runs `LockstepOffset` cycles (one by
+  default) behind the main copy on the same inputs, and their outputs are compared.
+- Fatal alert on a lockstep mismatch, a CSR bus integrity fault, an invalid encoding of the
+  capability tag of a core request, a meta SRAM response integrity fault, a meta SRAM device error,
+  a fault the revocation engine reports, or what the core cannot produce around a capability store
+  to the NVM (an integrity fault, a partial store, or a request out of sequence).
 
 ## Description
 
@@ -60,8 +63,7 @@ read nor write capability tags.
 
 Requests that the subsystem generates or rewrites get command and data integrity, so end-to-end bus
 integrity is intended to hold from the Ibex lockstep through the CHERIoT HWIP domain to the
-storage cells; this relies on lockstep operation of the CHERIoT memory subsystem, which is not
-implemented yet.
+storage cells; this relies on the lockstep operation of the CHERIoT memory subsystem.
 An integrity fault raises the `fatal_fault` alert.
 
 

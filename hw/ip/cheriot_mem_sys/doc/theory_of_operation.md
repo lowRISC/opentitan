@@ -17,6 +17,9 @@
 `cheriot_ena_i` selects the execution mode. It is a `mubi4_t` driven by the write-once mode switch in
 `rv_core_ibex`.
 
+`scanmode_i` and `scan_rst_ni` only bypass the reset of the second copy of the
+[lockstep](#lockstep).
+
 `cored_tag_h2d_i` and `cored_tag_d2h_o` carry the capability validity tag next to `cored_tl_d`: the
 request tag is the tag of a store, or on a load the hint that it loads a capability, and the
 response tag is the tag of the loaded capability. Both are `mubi4_t`, encoded and decoded in
@@ -24,8 +27,8 @@ response tag is the tag of the loaded capability. Both are `mubi4_t`, encoded an
 port and encodes the response tag there, without a flop, so the tag stays in the cycle of its TL-UL
 beat. Decoding is strict: only `MuBi4True` reads as tagged, so an invalid encoding reads as
 untagged. A request with an invalid encoding also raises the `fatal_fault` alert. Inside the
-subsystem the tag is a single bit, whose protection relies on the lockstep operation of the subsystem,
-which is not implemented yet.
+subsystem the tag is a single bit, whose protection relies on the [lockstep](#lockstep) operation of
+the subsystem.
 
 ## Metadata Encoding
 
@@ -260,6 +263,39 @@ SBA remains available in CHERIoT mode if the life cycle state allows debug, but:
 
 Debug accesses in CHERIoT-mode ***MUST*** therefore be performed through Ibex and not through SBA.
 
+## Lockstep
+
+`cheriot_mem_sys` keeps the CSRs, the interrupt and the alert sender; all other logic is in
+`cheriot_mem_sys_core`. With the `SecLockstep` parameter set (the default),
+`cheriot_mem_sys_lockstep` runs a second copy of `cheriot_mem_sys_core` `LockstepOffset` cycles (one
+by default) behind the main copy, the same scheme as the Ibex lockstep:
+
+- The inputs of the main copy, including the register fields, reach the second copy through
+  `LockstepOffset` flops.
+- The outputs of the main copy other than its alert are delayed by `LockstepOffset + 1` cycles and
+  compared with the registered outputs of the second copy. All bits of these outputs are compared,
+  including the payload of TL-UL channels that are not valid.
+- After reset, the second copy leaves reset `LockstepOffset` cycles after the main copy, and the
+  comparison starts one cycle later. In scan mode, `scan_rst_ni` resets the second copy.
+- An output mismatch, a fatal error of the second copy, or a fault of the reset counter (for
+  `LockstepOffset > 1`) raises `fatal_fault`.
+
+Only the main copy drives the ports, so the lockstep adds no latency.
+
+The lockstep detects faults; it does not correct them:
+
+- A fault is flagged `LockstepOffset + 1` cycles after the main copy produced the wrong output,
+  which has left the subsystem by then.
+- What both copies share is not covered: the CSRs (a fault in `TBRE_BASE_ADDR` or `TBRE_NUM_CAPS`
+  makes both copies sweep the same wrong range), `cheriot_ena_i`, the clock, the reset, the
+  comparator, the interrupt and the alert sender.
+- A fault that changes no output raises no alert, and no output is compared before the comparison
+  starts after reset.
+
+Setting `SecLockstep` to 0 removes the second copy, and with it `LOGIC.SHADOW` and the protection
+that `BUS.INTEGRITY` and the unencoded FIFO pointers rely on. `SecLockstep` and `LockstepOffset` are
+top-level parameters.
+
 ## Error Handling
 
 The subsystem distinguishes a denied access from a fault:
@@ -280,6 +316,7 @@ The subsystem distinguishes a denied access from a fault:
 | Any other error, or an integrity fault, on a response to the revocation engine | `TBRE_STATUS.sweep_err` and `fatal_fault` alert |
 | Error, integrity fault or malformed response on a revocation engine bitmap lookup | Capability counted as revoked, `TBRE_STATUS.sweep_err` and `fatal_fault` alert |
 | RMW filter fault while the revocation engine is active | `TBRE_STATUS.sweep_err` and `fatal_fault` alert |
+| Lockstep mismatch, a fatal error of the second copy, or a fault of its reset counter | `fatal_fault` alert |
 
 The first three, and a capability store to the NVM that does not match or whose NVM read fails,
 are reachable by software and surface as a bus fault in the core, and an error response to a read

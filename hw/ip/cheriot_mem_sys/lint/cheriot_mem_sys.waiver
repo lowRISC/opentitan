@@ -8,3 +8,12 @@ waive -rules {ONE_BIT_MEM_WIDTH} -location {cheriot_mem_sys_core.sv} -regexp {Me
       -comment "Connects to the unpacked one-bit tag sideband ports of cheriot_socket_m1."
 waive -rules {ONE_BIT_MEM_WIDTH} -location {cheriot_tbre.sv} -regexp {Memory 'sock_tag_(h2d|d2h)' has word width which is single bit wide} \
       -comment "Connects to the unpacked one-bit tag sideband ports of cheriot_socket_m1."
+
+# Lockstep: the same reset scheme as ibex_lockstep, see
+# hw/ip_templates/rv_core_ibex/lint/rv_core_ibex.waiver.tpl.
+waive -rules RESET_DRIVER -location {cheriot_mem_sys_lockstep.sv} -regexp {'rst_shadow_set_q\[1\]' is driven by instance 'u_prim_rst_shadow_set_flop' of module 'prim_flop', and used as an asynchronous reset 'rst_ni' at} \
+      -comment "A synchronous counter is needed to release the reset of the second copy with a delay of LockstepOffset clock cycles"
+waive -rules RESET_MUX -location {cheriot_mem_sys_lockstep.sv} -regexp {Asynchronous reset 'rst_shadow_n' is driven by a multiplexer here} \
+      -comment "The scan mode input used to control the bypass can be considered static"
+waive -rules CONST_FF -location {cheriot_mem_sys_lockstep.sv} -regexp {Flip-flop 'enable_cmp_d' is driven by constant} \
+      -comment "The only purpose of the flop is to enable the lockstep comparison after reset"
