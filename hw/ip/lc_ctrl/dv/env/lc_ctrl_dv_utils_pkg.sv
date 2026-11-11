@@ -269,6 +269,52 @@ package lc_ctrl_dv_utils_pkg;
       lc_ctrl_state_pkg::B19
   };
 
+  parameter bit [15:0] K_VALUES[20] = '{
+      lc_ctrl_state_pkg::K0,
+      lc_ctrl_state_pkg::K1,
+      lc_ctrl_state_pkg::K2,
+      lc_ctrl_state_pkg::K3,
+      lc_ctrl_state_pkg::K4,
+      lc_ctrl_state_pkg::K5,
+      lc_ctrl_state_pkg::K6,
+      lc_ctrl_state_pkg::K7,
+      lc_ctrl_state_pkg::K8,
+      lc_ctrl_state_pkg::K9,
+      lc_ctrl_state_pkg::K10,
+      lc_ctrl_state_pkg::K11,
+      lc_ctrl_state_pkg::K12,
+      lc_ctrl_state_pkg::K13,
+      lc_ctrl_state_pkg::K14,
+      lc_ctrl_state_pkg::K15,
+      lc_ctrl_state_pkg::K16,
+      lc_ctrl_state_pkg::K17,
+      lc_ctrl_state_pkg::K18,
+      lc_ctrl_state_pkg::K19
+  };
+
+  parameter bit [15:0] L_VALUES[20] = '{
+      lc_ctrl_state_pkg::L0,
+      lc_ctrl_state_pkg::L1,
+      lc_ctrl_state_pkg::L2,
+      lc_ctrl_state_pkg::L3,
+      lc_ctrl_state_pkg::L4,
+      lc_ctrl_state_pkg::L5,
+      lc_ctrl_state_pkg::L6,
+      lc_ctrl_state_pkg::L7,
+      lc_ctrl_state_pkg::L8,
+      lc_ctrl_state_pkg::L9,
+      lc_ctrl_state_pkg::L10,
+      lc_ctrl_state_pkg::L11,
+      lc_ctrl_state_pkg::L12,
+      lc_ctrl_state_pkg::L13,
+      lc_ctrl_state_pkg::L14,
+      lc_ctrl_state_pkg::L15,
+      lc_ctrl_state_pkg::L16,
+      lc_ctrl_state_pkg::L17,
+      lc_ctrl_state_pkg::L18,
+      lc_ctrl_state_pkg::L19
+  };
+
   parameter bit [15:0] C_VALUES[24] = '{
       lc_ctrl_state_pkg::C0,
       lc_ctrl_state_pkg::C1,
@@ -323,42 +369,73 @@ package lc_ctrl_dv_utils_pkg;
       lc_ctrl_state_pkg::D23
   };
 
-  // Binary representation of state and count types
-  typedef bit [NumLcStateValues - 1 : 0] lc_state_bin_t;
+  // Level of a single LC state word: 0 -> A -> B -> K -> L -> ONE.
+  typedef enum bit [2:0] {
+    LcLvlZro = 3'd0,
+    LcLvlA   = 3'd1,
+    LcLvlB   = 3'd2,
+    LcLvlK   = 3'd3,
+    LcLvlL   = 3'd4,
+    LcLvlOne = 3'd5
+  } lc_state_lvl_e;
+
+  // Level representation of an LC state (one level per word) and binary
+  // representation of the count type.
+  typedef bit [NumLcStateValues-1:0][2:0] lc_state_lvl_t;
   typedef bit [NumLcCountValues - 1 : 0] lc_count_bin_t;
 
+  // Return the value of LC state word idx at the given level.
+  function automatic bit [15:0] lc_state_word(int idx, bit [2:0] lvl);
+    case (lvl)
+      LcLvlZro: return ZRO;
+      LcLvlA:   return A_VALUES[idx];
+      LcLvlB:   return B_VALUES[idx];
+      LcLvlK:   return K_VALUES[idx];
+      LcLvlL:   return L_VALUES[idx];
+      LcLvlOne: return ONE;
+      default:  return ~A_VALUES[idx];  // not a legal level
+    endcase
+  endfunction
 
-
-  //Convert an lc_state to a binary representation 0=Axx 1=Bxx
-  function static lc_state_bin_t lc_state_to_bin(bit [LcStateWidth-1:0] val);
-    lc_state_to_bin = 0;
-    for (int i = 0; i < $size(A_VALUES); i++) begin
-      if (val[i*16+:16] == A_VALUES[i]) begin
-        lc_state_to_bin[i] = 0;
+  // Convert an lc_state to its level representation.
+  function static lc_state_lvl_t lc_state_to_lvl(bit [LcStateWidth-1:0] val);
+    lc_state_to_lvl = '0;
+    for (int i = 0; i < NumLcStateValues; i++) begin
+      if (val[i*16+:16] == ZRO) begin
+        lc_state_to_lvl[i] = LcLvlZro;
+      end else if (val[i*16+:16] == A_VALUES[i]) begin
+        lc_state_to_lvl[i] = LcLvlA;
       end else if (val[i*16+:16] == B_VALUES[i]) begin
-        lc_state_to_bin[i] = 1;
+        lc_state_to_lvl[i] = LcLvlB;
+      end else if (val[i*16+:16] == K_VALUES[i]) begin
+        lc_state_to_lvl[i] = LcLvlK;
+      end else if (val[i*16+:16] == L_VALUES[i]) begin
+        lc_state_to_lvl[i] = LcLvlL;
+      end else if (val[i*16+:16] == ONE) begin
+        lc_state_to_lvl[i] = LcLvlOne;
       end else begin
-        $fatal(0, "lc_ctrl_dv_utils_pkg lc_state_to_bin: state %x not valid", val);
+        $fatal(0, "lc_ctrl_dv_utils_pkg lc_state_to_lvl: state %x not valid", val);
       end
     end
   endfunction
 
-  //Convert a binary representation to a lc_state representation 0=Axx 1=Bxx
-  function automatic bit [LcStateWidth-1:0] bin_to_lc_state(lc_state_bin_t val, bit err_inj = 0);
+  // Convert a level representation to an lc_state. With err_inj, one word is
+  // replaced by an illegal symbol: the inverted value of that word, or the
+  // inverted A value for ZRO/ONE words (since ~ZRO = ONE is a legal symbol).
+  function automatic bit [LcStateWidth-1:0] lvl_to_lc_state(lc_state_lvl_t val,
+                                                            bit err_inj = 0);
     int err_inj_idx = -1;
-    bin_to_lc_state = 0;
+    lvl_to_lc_state = 0;
     if (err_inj) begin
-      // Select a symbol to invert
-      err_inj_idx = $urandom_range(0, $size(A_VALUES) - 1);
+      // Select a symbol to corrupt
+      err_inj_idx = $urandom_range(0, NumLcStateValues - 1);
     end
-    for (int i = 0; i < $size(A_VALUES); i++) begin
-      if (i != err_inj_idx) begin
-        // No error
-        bin_to_lc_state[i*16+:16] = val[i] ? B_VALUES[i] : A_VALUES[i];
-      end else begin
-        // Error inject - invert symbol
-        bin_to_lc_state[i*16+:16] = val[i] ? ~B_VALUES[i] : ~A_VALUES[i];
+    for (int i = 0; i < NumLcStateValues; i++) begin
+      bit [15:0] word = lc_state_word(i, val[i]);
+      if (i == err_inj_idx) begin
+        word = (val[i] inside {LcLvlZro, LcLvlOne}) ? ~A_VALUES[i] : ~word;
       end
+      lvl_to_lc_state[i*16+:16] = word;
     end
   endfunction
 
@@ -395,29 +472,29 @@ package lc_ctrl_dv_utils_pkg;
     end
   endfunction
 
-  // Array of valid LC states in binary representation
-  parameter lc_state_bin_t ValidLcStatesBin[NumLcStates] = '{
-      lc_state_to_bin(LcStRaw),
-      lc_state_to_bin(LcStTestUnlocked0),
-      lc_state_to_bin(LcStTestLocked0),
-      lc_state_to_bin(LcStTestUnlocked1),
-      lc_state_to_bin(LcStTestLocked1),
-      lc_state_to_bin(LcStTestUnlocked2),
-      lc_state_to_bin(LcStTestLocked2),
-      lc_state_to_bin(LcStTestUnlocked3),
-      lc_state_to_bin(LcStTestLocked3),
-      lc_state_to_bin(LcStTestUnlocked4),
-      lc_state_to_bin(LcStTestLocked4),
-      lc_state_to_bin(LcStTestUnlocked5),
-      lc_state_to_bin(LcStTestLocked5),
-      lc_state_to_bin(LcStTestUnlocked6),
-      lc_state_to_bin(LcStTestLocked6),
-      lc_state_to_bin(LcStTestUnlocked7),
-      lc_state_to_bin(LcStDev),
-      lc_state_to_bin(LcStProd),
-      lc_state_to_bin(LcStProdEnd),
-      lc_state_to_bin(LcStRma),
-      lc_state_to_bin(LcStScrap)
+  // Array of valid LC states in level representation
+  parameter lc_state_lvl_t ValidLcStatesLvl[NumLcStates] = '{
+      lc_state_to_lvl(LcStRaw),
+      lc_state_to_lvl(LcStTestUnlocked0),
+      lc_state_to_lvl(LcStTestLocked0),
+      lc_state_to_lvl(LcStTestUnlocked1),
+      lc_state_to_lvl(LcStTestLocked1),
+      lc_state_to_lvl(LcStTestUnlocked2),
+      lc_state_to_lvl(LcStTestLocked2),
+      lc_state_to_lvl(LcStTestUnlocked3),
+      lc_state_to_lvl(LcStTestLocked3),
+      lc_state_to_lvl(LcStTestUnlocked4),
+      lc_state_to_lvl(LcStTestLocked4),
+      lc_state_to_lvl(LcStTestUnlocked5),
+      lc_state_to_lvl(LcStTestLocked5),
+      lc_state_to_lvl(LcStTestUnlocked6),
+      lc_state_to_lvl(LcStTestLocked6),
+      lc_state_to_lvl(LcStTestUnlocked7),
+      lc_state_to_lvl(LcStDev),
+      lc_state_to_lvl(LcStProd),
+      lc_state_to_lvl(LcStProdEnd),
+      lc_state_to_lvl(LcStRma),
+      lc_state_to_lvl(LcStScrap)
   };
 
   // Array of valid LC states in binary representation
