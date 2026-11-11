@@ -37,12 +37,15 @@ SRAM are stored using a `sram_ctrl`.
 - Per-port access checking: each of the four requesters may only reach the meta SRAM region it owns,
   with word-granular accesses only.
 - Lockstep (parameter `SecLockstep`, on by default): a second copy of the subsystem's logic,
-  without the CSRs, the interrupt and the alert sender, runs `LockstepOffset` cycles (one by
+  without the CSRs, the interrupt and the alert senders, runs `LockstepOffset` cycles (one by
   default) behind the main copy on the same inputs, and their outputs are compared.
-- Fatal alert on a lockstep mismatch, a CSR bus integrity fault, an invalid encoding of the
-  capability tag of a core request, a meta SRAM response integrity fault, a meta SRAM device error,
-  a fault the revocation engine reports, or what the core cannot produce around a capability store
-  to the NVM (an integrity fault, a partial store, or a request out of sequence).
+- Shadow registers for the sweep configuration of the revocation engine, with a recoverable alert
+  on a mismatching update.
+- Fatal alert on a lockstep mismatch, a CSR bus integrity fault, a shadow register storage error,
+  an invalid encoding of the capability tag of a core request, a meta SRAM response integrity fault,
+  a meta SRAM device error, a fault the revocation engine reports, or what the core cannot produce
+  around a capability store to the NVM (an integrity fault, a partial store, or a request out of
+  sequence).
 
 ## Description
 

@@ -14,9 +14,9 @@ See the [CHERIoT Memory Subsystem HWIP technical specification](../README.md).
 
 ## Testbench
 `hw/ip/cheriot_mem_sys/dv/tb.sv` instantiates `hw/ip/cheriot_mem_sys/rtl/cheriot_mem_sys.sv` with:
-* [Clock and reset interface](../../../dv/sv/common_ifs/README.md)
+* [Clock and reset interface](../../../dv/sv/common_ifs/README.md), with the shadowed reset
 * [TileLink host interface](../../../dv/sv/tl_agent/README.md) on the `regs` CSR port
-* [Alert interface](../../../dv/sv/alert_agent/README.md) for `fatal_fault`
+* [Alert interface](../../../dv/sv/alert_agent/README.md) for `fatal_fault` and `recov_ctrl_update_err`
 * [Interrupt pins interface](../../../dv/sv/common_ifs/README.md) for `intr_tbre_done_o`
 
 The other ports are tied off, with scan mode off, so the lockstep sees no traffic at block level.
