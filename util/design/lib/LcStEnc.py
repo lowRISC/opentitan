@@ -4,6 +4,7 @@
 r"""Contains life cycle state encoding class which is
 used to generate new life cycle encodings.
 """
+import itertools
 import logging as log
 from collections import OrderedDict
 
@@ -17,15 +18,28 @@ from topgen.secure_prng import SecurePrngFactory
 lc_ctrl_non_secure_seed = 0x517ecf3166f4323433e4ad760d6f8e2fdf45244002ce54be8ca3cb7747c21bb
 
 
+# Top level of a multi-level state word: all data bits set.
+ONE = 'ONE'
+
 # State types and permissible format for entries
 # The format is index dependent, e.g. ['0', 'A1', 'B1'] for index 1
 LC_STATE_TYPES = {
-    'lc_state': ['0', 'A{}', 'B{}'],
+    # 0 -> A -> B -> K -> L -> ONE. Every step only sets bits (data and ECC),
+    # see _get_new_state_word_chain().
+    'lc_state': ['0', 'A{}', 'B{}', 'K{}', 'L{}', ONE],
     'lc_cnt': ['0', 'C{}', 'D{}'],
     'soc_dbg_state': ['0', 'E{}', 'F{}'],
     'ownership_state': ['0', 'G{}', 'H{}'],
     'auth_state': ['0', 'I{}', 'J{}']
 }
+
+# Types whose state table is checked by _check_state_order().
+ORDER_CHECKED_TYPES = ['lc_state']
+
+
+def _is_chain_type(typ):
+    '''Multi-level types use nested codeword chains below the all-ones word.'''
+    return LC_STATE_TYPES[typ][-1] == ONE
 
 
 def _is_incremental_codeword(word1, word2):
@@ -112,6 +126,145 @@ def _get_new_state_word_pair(config, existing_words):
                     return (base_cand_ecc, incr_cand_ecc)
 
 
+def _get_new_state_word_chain(config, existing_words, num_levels):
+    '''Randomly generate codewords following those rules:
+    - 1) Each value is a valid ECC codeword
+    - 2) Each value contains all bits of the previous one (A in B in K in L).
+    - 3) Each step (0->A, A->B, B->K, K->L, L->ONE) adds exactly 4 bits (for
+         22-bit ECC codewords).
+    - 4) Every value fits inside ONE.
+    - 5) All values are different.
+    - 6) Each step (including L->ONE) sets at least min_level_data_hd data
+         bits, so any two levels differ in at least that many data bits.
+    '''
+    # Generate the ONES values for SCRAP. For the 6-bit ECC + 16-data bit
+    # config this gives us 011110 1111111111111111.
+    prng = SecurePrngFactory.get("lc_non_secure")
+    ones = ecc_encode(config, '1' * config['secded']['data_width'])
+    width = len(ones)
+    set_pos = [i for i, b in enumerate(ones) if b == '1']
+    if len(set_pos) % (num_levels + 1):
+        raise RuntimeError(
+            'Cannot split the all-ones codeword ({} set bits) into {} equal '
+            'steps'.format(len(set_pos), num_levels + 1))
+    step_hw = len(set_pos) // (num_levels + 1)
+
+    # We need num_levels=4 values (A, B, K, L). In the 6-bit ECC + 16-data bit
+    # config we can choose 20 out of the 22 bits (the two 0 bits in the ECC
+    # need to stay). We need 5 4-bit pieces that form valid ECC codewords.
+    # Compute them here.
+    # The data bits are the lower data_width bits of each codeword.
+    data_mask = (1 << config['secded']['data_width']) - 1
+    min_data = config['min_level_data_hd']
+    pieces = []
+    for pos in itertools.combinations(set_pos, step_hw):
+        cand = ''.join('1' if i in pos else '0' for i in range(width))
+        if (is_valid_codeword(config, cand) and
+                bin(int(cand, 2) & data_mask).count('1') >= min_data):
+            pieces.append(int(cand, 2))
+    if not pieces:
+        raise RuntimeError('No codewords of weight {} below the all-ones '
+                           'codeword'.format(step_hw))
+
+    # Select num_levels pieces that then will be the values for (A, B, K, L).
+    # The first one can be selected randomly. For the other ones we need to
+    # make sure that only bits are set that haven't been set before.
+    # Retry on a dead end or if a resulting value already exists.
+    while True:
+        acc, chain = 0, []
+        for _ in range(num_levels):
+            cands = [a for a in pieces if not (a & acc)]
+            if not cands:
+                break
+            acc |= prng.choice(cands)
+            chain.append(format(acc, '0{}b'.format(width)))
+        rest_data = (int(ones, 2) ^ acc) & data_mask
+        if (len(chain) == num_levels and
+                not any(w in existing_words for w in chain) and
+                bin(rest_data).count('1') >= min_data):
+            break
+
+    # The last piece (L -> ONE) consists of the leftover bits.
+    rest = format(int(ones, 2) ^ acc, '0{}b'.format(width))
+    if not is_valid_codeword(config, rest):
+        raise RuntimeError('Remainder step {} is not a codeword'.format(rest))
+
+    log.info('word {}: {}'.format(len(existing_words),
+                                  ' -> '.join(chain)))
+    existing_words.extend(chain)
+
+    return tuple(chain)
+
+
+def _validate_chain_words(config, chains, all_words):
+    '''Validate generated codeword chains.
+    - Each value is a valid ECC codeword.
+    - Each step only adds bits, never removes any of them.
+    - Each value is unique accross all generated words.
+    - Each step sets at least min_level_data_hd data bits.
+    '''
+    ones = ecc_encode(config, '1' * config['secded']['data_width'])
+    data_mask = (1 << config['secded']['data_width']) - 1
+    for k, chain in enumerate(chains):
+        prev = '0' * len(ones)
+        for w in list(chain) + [ones]:
+            if not is_valid_codeword(config, w):
+                raise RuntimeError('Codeword {} in chain {} is not valid'.format(
+                    w, k))
+            if not _is_incremental_codeword(prev, w):
+                raise RuntimeError(
+                    'Codeword {} in chain {} is not incremental wrt {}'.format(
+                        w, k, prev))
+            step_data = (int(w, 2) ^ int(prev, 2)) & data_mask
+            if bin(step_data).count('1') < config['min_level_data_hd']:
+                raise RuntimeError(
+                    'Codeword {} in chain {} sets less than {} data bits '
+                    'wrt {}'.format(w, k, config['min_level_data_hd'], prev))
+            prev = w
+        for w in chain:
+            if all_words.count(w) != 1:
+                raise RuntimeError('Codeword {} in chain {} is not unique'.format(
+                    w, k))
+
+
+def _check_state_order(config, typ):
+    '''Check the ordering rules of the state table (see lc_ctrl_state.hjson).
+
+    Words are grouped into blocks of num_words_per_block consecutive words.
+    '''
+    num_words = config['num_' + typ + '_words']
+    config.setdefault('num_words_per_block', 1)
+    bw = check_int(config['num_words_per_block'])
+    if bw < 1 or num_words % bw:
+        raise RuntimeError(
+            'num_words_per_block {} does not divide the {} words of {}'.format(
+                bw, num_words, typ))
+    config['num_words_per_block'] = bw
+
+    fmts = LC_STATE_TYPES[typ]
+    states = {
+        name: [[f.format(j) for f in fmts].index(e) for j, e in enumerate(words)]
+        for name, words in config[typ].items()
+    }
+    for u, U in states.items():
+        for v, V in states.items():
+            if u == v or any(a > b for a, b in zip(U, V)):
+                continue
+            for w, W in states.items():
+                if w in (u, v):
+                    continue
+                if all(W[i] in (U[i], V[i]) for i in range(len(W))):
+                    raise RuntimeError(
+                        '{}: state {} violates the ordering rules wrt {} '
+                        'and {}'.format(typ, w, u, v))
+                for f in range(0, num_words, bw):
+                    if (W[:f] == V[:f] and W[f + bw:] == U[f + bw:] and
+                            all(U[i] <= W[i] <= V[i] for i in range(f, f + bw))):
+                        raise RuntimeError(
+                            '{}: state {} violates the ordering rules wrt {} '
+                            'and {}'.format(typ, w, u, v))
+
+
 def _validate_words(config, words):
     '''Validate generated words (base and incremental).'''
     for k, w in enumerate(words):
@@ -167,9 +320,13 @@ def _validate_constraints(config):
     config.setdefault('min_hw', 0)
     config.setdefault('max_hw', 0)
     config.setdefault('min_hd', 0)
+    # Minimum number of data bits (without ECC bits) by which two levels of
+    # the same multi-level word differ.
+    config.setdefault('min_level_data_hd', 2)
     config['min_hw'] = check_int(config['min_hw'])
     config['max_hw'] = check_int(config['max_hw'])
     config['min_hd'] = check_int(config['min_hd'])
+    config['min_level_data_hd'] = check_int(config['min_level_data_hd'])
 
     total_width = config['secded']['data_width'] + config['secded']['ecc_width']
 
@@ -235,14 +392,27 @@ def _generate_words(config):
     '''Generate encoding words'''
     config['genwords'] = {}  # dict holding the word pairs for each state type
     existing_words = []  # temporary list of all words for uniqueness tests
+    pair_words = []  # words subject to the min/max HW and min HD constraints
+    chains = []  # multi-level chains, constrained by construction instead
     for typ in LC_STATE_TYPES.keys():
         config['genwords'][typ] = []
         for k in range(config['num_' + typ + '_words']):
-            new_word = _get_new_state_word_pair(config, existing_words)
+            if _is_chain_type(typ):
+                # Levels without '0' and ONE.
+                num_levels = len(LC_STATE_TYPES[typ]) - 2
+                new_word = _get_new_state_word_chain(config, existing_words,
+                                                     num_levels)
+                chains.append(new_word)
+            else:
+                new_word = _get_new_state_word_pair(config, existing_words)
+                pair_words += list(new_word)
             config['genwords'][typ].append(new_word)
 
     # Validate words (this must not fail at this point).
-    _validate_words(config, existing_words)
+    _validate_words(config, pair_words)
+    _validate_chain_words(config, chains, existing_words)
+    for typ in ORDER_CHECKED_TYPES:
+        _check_state_order(config, typ)
 
     # Calculate and store statistics
     config['stats'] = hd_histogram(existing_words)
@@ -336,6 +506,8 @@ class LcStEnc():
             idx = val_idx[entry]
             if idx == 0:
                 words.append(0)
+            elif entry == ONE:
+                words.append((1 << data_width) - 1)
             else:
                 # Only extract data portion, discard ECC portion
                 word = self.config['genwords'][name][j][idx - 1][ecc_width:]
