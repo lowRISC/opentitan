@@ -90,8 +90,9 @@
             This test checks lc_state failure by:
             - Driving invalid data to lc_ctrl input `otp_lc_data_i` fields `lc_state` and `lc_cnt`.
             - Backdoor changing lc_ctrl FSM's to invalid value.
-            For invalid value, the testbench will test using random value and valid `A/B/C/D`
-            values with different orders.
+            For invalid value, the testbench will test using random value and valid per-word
+            values in combinations that are not a valid state (`0/A/B/K/L/ONE` for `lc_state`,
+            `0/C/D` for `lc_cnt`).
 
             **Checks**:
             - Check if status register reflects the correct error bit.
