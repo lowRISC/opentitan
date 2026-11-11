@@ -354,9 +354,10 @@ class OTBNState:
 
         self.ext_regs.commit()
 
-        # A busy MAI forces the URND PRNG to advance even if software stopped it. Must come before
-        # the pulled out URND commit below that it is considered in the update.
-        if self.mai.is_busy():
+        # A busy MAI forces the URND PRNG to advance even if software stopped it. Like the RTL, this
+        # includes the cycle of the START write. Must come before the pulled out URND commit below
+        # that it is considered in the update.
+        if self.mai.is_busy() or self.csrs.MAI_CTRL.is_start_pending():
             self.wsrs.URND.mark_consumed()
 
         # Pull URND out separately because we also want to commit this in some
