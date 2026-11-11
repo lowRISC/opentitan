@@ -23,11 +23,9 @@ module rram_macro #(
   input tlul_pkg::tl_h2d_t               prim_tl_i,
   output tlul_pkg::tl_d2h_t              prim_tl_o,
   // Test connections
-  input logic                  cio_tck_i,
-  input logic                  cio_tdi_i,
-  input logic                  cio_tms_i,
-  output logic                 cio_tdo_o,
-  output logic                 cio_tdo_en_o,
+  // JTAG signals for the RRAM TAP, from the pinmux TAP selection
+  input jtag_pkg::jtag_req_t   jtag_i,
+  output jtag_pkg::jtag_rsp_t  jtag_o,
   input lc_ctrl_pkg::lc_tx_t   lc_nvm_debug_en_i,
   input prim_mubi_pkg::mubi4_t scanmode_i,
   input logic                  scan_en_i,
@@ -48,11 +46,6 @@ module rram_macro #(
   logic unused_scan_en;
   logic unused_scan_rst_n;
   logic unused_rram_test_analog;
-  logic unused_tck;
-  logic unused_tdi;
-  logic unused_tms;
-
-  lc_ctrl_pkg::lc_tx_t unused_lc_nvm_debug_en;
 
   assign unused_scanmode   = ^scanmode_i;
   assign unused_scan_en    = scan_en_i;
@@ -60,13 +53,13 @@ module rram_macro #(
 
   assign unused_rram_test_analog = rram_test_analog_io;
 
-  assign unused_lc_nvm_debug_en = lc_nvm_debug_en_i;
+  // The open-source model has no RRAM TAP yet.
+  jtag_pkg::jtag_req_t unused_jtag;
+  lc_ctrl_pkg::lc_tx_t unused_lc_nvm_debug_en;
 
-  assign unused_tck   = cio_tck_i;
-  assign unused_tdi   = cio_tdi_i;
-  assign unused_tms   = cio_tms_i;
-  assign cio_tdo_o    = '0;
-  assign cio_tdo_en_o = '0;
+  assign unused_jtag            = jtag_i;
+  assign unused_lc_nvm_debug_en = lc_nvm_debug_en_i;
+  assign jtag_o                 = '{default: '0};
 
   ////////////////////////////////////
   // TL-UL Test Interface Emulation //

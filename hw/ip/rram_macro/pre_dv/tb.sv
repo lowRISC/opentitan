@@ -28,7 +28,13 @@ module tb;
   // Test/observability ports not exercised by the shared data-path tests below: JTAG, scan, BIST
   // lifecycle gating, and AST observability.
   // The JTAG inputs (cio_tck/tdi/tms) are driven by the vendor tests include.
+  // They are packed into the dut's jtag struct below, with trst_n held inactive.
   logic cio_tck, cio_tdi, cio_tms, cio_tdo, cio_tdo_en;
+  jtag_pkg::jtag_req_t jtag_req;
+  jtag_pkg::jtag_rsp_t jtag_rsp;
+  assign jtag_req   = '{tck: cio_tck, tms: cio_tms, trst_n: 1'b1, tdi: cio_tdi};
+  assign cio_tdo    = jtag_rsp.tdo;
+  assign cio_tdo_en = jtag_rsp.tdo_oe;
   lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en;
   prim_mubi_pkg::mubi4_t scanmode;
   logic scan_en, scan_rst_n;
@@ -230,11 +236,8 @@ module tb;
     .rst_ni             (rst_n),
     .rram_macro_i       (rram_macro_req),
     .rram_macro_o       (rram_macro_rsp),
-    .cio_tck_i          (cio_tck),
-    .cio_tdi_i          (cio_tdi),
-    .cio_tms_i          (cio_tms),
-    .cio_tdo_o          (cio_tdo),
-    .cio_tdo_en_o       (cio_tdo_en),
+    .jtag_i             (jtag_req),
+    .jtag_o             (jtag_rsp),
     .lc_nvm_debug_en_i  (lc_nvm_debug_en),
     .scanmode_i         (scanmode),
     .scan_en_i          (scan_en),

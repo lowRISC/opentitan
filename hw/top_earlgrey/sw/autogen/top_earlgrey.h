@@ -1525,17 +1525,14 @@ typedef enum top_earlgrey_pinmux_peripheral_in {
   kTopEarlgreyPinmuxPeripheralInI3c1RstdetScl = 84, /**< Peripheral Input 84 */
   kTopEarlgreyPinmuxPeripheralInI3c1RstdetSda = 85, /**< Peripheral Input 85 */
   kTopEarlgreyPinmuxPeripheralInSpiDeviceTpmCsb = 86, /**< Peripheral Input 86 */
-  kTopEarlgreyPinmuxPeripheralInRramMacroTck = 87, /**< Peripheral Input 87 */
-  kTopEarlgreyPinmuxPeripheralInRramMacroTms = 88, /**< Peripheral Input 88 */
-  kTopEarlgreyPinmuxPeripheralInRramMacroTdi = 89, /**< Peripheral Input 89 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAcPresent = 90, /**< Peripheral Input 90 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey0In = 91, /**< Peripheral Input 91 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey1In = 92, /**< Peripheral Input 92 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey2In = 93, /**< Peripheral Input 93 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlPwrbIn = 94, /**< Peripheral Input 94 */
-  kTopEarlgreyPinmuxPeripheralInSysrstCtrlLidOpen = 95, /**< Peripheral Input 95 */
-  kTopEarlgreyPinmuxPeripheralInUsbdevSense = 96, /**< Peripheral Input 96 */
-  kTopEarlgreyPinmuxPeripheralInLast = 96, /**< \internal Last valid peripheral input */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlAcPresent = 87, /**< Peripheral Input 87 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey0In = 88, /**< Peripheral Input 88 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey1In = 89, /**< Peripheral Input 89 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey2In = 90, /**< Peripheral Input 90 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlPwrbIn = 91, /**< Peripheral Input 91 */
+  kTopEarlgreyPinmuxPeripheralInSysrstCtrlLidOpen = 92, /**< Peripheral Input 92 */
+  kTopEarlgreyPinmuxPeripheralInUsbdevSense = 93, /**< Peripheral Input 93 */
+  kTopEarlgreyPinmuxPeripheralInLast = 93, /**< \internal Last valid peripheral input */
 } top_earlgrey_pinmux_peripheral_in_t;
 
 /**
@@ -1745,23 +1742,22 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselSpiHost1Csb0 = 90, /**< Peripheral Output 87 */
   kTopEarlgreyPinmuxOutselSpiHost1Csb1 = 91, /**< Peripheral Output 88 */
   kTopEarlgreyPinmuxOutselSpiHost1Csb2 = 92, /**< Peripheral Output 89 */
-  kTopEarlgreyPinmuxOutselRramMacroTdo = 93, /**< Peripheral Output 90 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut0 = 94, /**< Peripheral Output 91 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut1 = 95, /**< Peripheral Output 92 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut2 = 96, /**< Peripheral Output 93 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut3 = 97, /**< Peripheral Output 94 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut4 = 98, /**< Peripheral Output 95 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut5 = 99, /**< Peripheral Output 96 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut6 = 100, /**< Peripheral Output 97 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut7 = 101, /**< Peripheral Output 98 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut8 = 102, /**< Peripheral Output 99 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlBatDisable = 103, /**< Peripheral Output 100 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlKey0Out = 104, /**< Peripheral Output 101 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlKey1Out = 105, /**< Peripheral Output 102 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlKey2Out = 106, /**< Peripheral Output 103 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlPwrbOut = 107, /**< Peripheral Output 104 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlZ3Wakeup = 108, /**< Peripheral Output 105 */
-  kTopEarlgreyPinmuxOutselLast = 108, /**< \internal Last valid outsel value */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut0 = 93, /**< Peripheral Output 90 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut1 = 94, /**< Peripheral Output 91 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut2 = 95, /**< Peripheral Output 92 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut3 = 96, /**< Peripheral Output 93 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut4 = 97, /**< Peripheral Output 94 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut5 = 98, /**< Peripheral Output 95 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut6 = 99, /**< Peripheral Output 96 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut7 = 100, /**< Peripheral Output 97 */
+  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut8 = 101, /**< Peripheral Output 98 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlBatDisable = 102, /**< Peripheral Output 99 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlKey0Out = 103, /**< Peripheral Output 100 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlKey1Out = 104, /**< Peripheral Output 101 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlKey2Out = 105, /**< Peripheral Output 102 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlPwrbOut = 106, /**< Peripheral Output 103 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlZ3Wakeup = 107, /**< Peripheral Output 104 */
+  kTopEarlgreyPinmuxOutselLast = 107, /**< \internal Last valid outsel value */
 } top_earlgrey_pinmux_outsel_t;
 
 /**

@@ -35,14 +35,6 @@
   bus_interfaces: [
     { protocol: "tlul", direction: "device", name: "prim"}
   ],
-  available_input_list: [
-    { name: "tck", desc: "jtag clock" },
-    { name: "tms", desc: "jtag tms" },
-    { name: "tdi", desc: "jtag input" },
-  ],
-  available_output_list: [
-    { name: "tdo", desc: "jtag output" },
-  ],
 
   scan: "true",       // Enable `scanmode_i` port
   scan_en: "true",    // Enable `scan_en_i` port
@@ -94,6 +86,13 @@
       type:    "uni"
       act:     "rcv"
       name:    "lc_nvm_debug_en"
+    },
+    { struct:  "jtag",
+      type:    "req_rsp",
+      name:    "jtag",
+      act:     "rsp",
+      package: "jtag_pkg",
+      desc:    "JTAG signals for the RRAM TAP, from the pinmux TAP selection."
     },
     // AST observability control
     { struct:  "ast_obs_ctrl",
