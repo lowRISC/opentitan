@@ -156,6 +156,9 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
           keymgr_dpe_pkg::keymgr_dpe_creator_seed_t     exp_creator_seed;
           keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       exp_owner_seed;
           keymgr_dpe_pkg::keymgr_dpe_field_entropy_t    exp_field_entropy;
+          keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t exp_secondary_root_key;
+          bit                                           secondary_root_key_locked;
+          bit                                           secondary_root_key_rd_en;
 
           if (PartInfo[dai_digest_ip].sw_digest || PartInfo[dai_digest_ip].hw_digest) begin
             bit [TL_DW-1:0] otp_addr = PART_OTP_DIGEST_ADDRS[dai_digest_ip];
@@ -276,12 +279,41 @@ class otp_ctrl_scoreboard #(type CFG_T = otp_ctrl_env_cfg)
             end
             `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_field_entropy_o, exp_field_entropy)
 
+            // Fetch and verify the SECONDARY_ROOT_KEY_SHARE0/1 secrets. A share is valid once the
+            // partition has a digest, the share is not all-zero and lc_seed_hw_rd_en_i is On. The
+            // key material is replaced by a constant unless lc_seed_hw_rd_en_i is On.
+            exp_secondary_root_key = '0;
+            secondary_root_key_locked =
+                get_otp_digest_val(Secret3Idx) != 0;
+            secondary_root_key_rd_en = cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On;
+            exp_secondary_root_key.share0 =
+                {<<32 {otp_a[SecondaryRootKeyShare0Offset/4 +: SecondaryRootKeyShare0Size/4]}};
+            exp_secondary_root_key.share0_valid = secondary_root_key_locked &&
+                                                    secondary_root_key_rd_en &&
+                                                    exp_secondary_root_key.share0 != '0;
+            if (!secondary_root_key_rd_en) begin
+              exp_secondary_root_key.share0 =
+                  top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault[SecondaryRootKeyShare0Offset*8 +: SecondaryRootKeyShare0Size*8];
+            end
+            exp_secondary_root_key.share1 =
+                {<<32 {otp_a[SecondaryRootKeyShare1Offset/4 +: SecondaryRootKeyShare1Size/4]}};
+            exp_secondary_root_key.share1_valid = secondary_root_key_locked &&
+                                                    secondary_root_key_rd_en &&
+                                                    exp_secondary_root_key.share1 != '0;
+            if (!secondary_root_key_rd_en) begin
+              exp_secondary_root_key.share1 =
+                  top_earlgrey_rnd_cnst_pkg::RndCnstOtpCtrlPartInvDefault[SecondaryRootKeyShare1Offset*8 +: SecondaryRootKeyShare1Size*8];
+            end
+            `DV_CHECK_EQ(cfg.otp_ctrl_vif.keymgr_secondary_root_key_o, exp_secondary_root_key)
+
             if (cfg.en_cov) begin
               cov.keymgr_o_cg.sample(cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On,
                                      exp_creator_root_key.share0_valid);
               cov.keymgr_field_entropy_o_cg.sample(
                   cfg.otp_ctrl_vif.lc_seed_hw_rd_en_i == lc_ctrl_pkg::On,
                   get_otp_digest_val(Secret3Idx) != 0);
+              cov.keymgr_secondary_root_key_o_cg.sample(secondary_root_key_rd_en,
+                                                        secondary_root_key_locked);
             end
           end
         end else if (cfg.otp_ctrl_vif.alert_reqs) begin

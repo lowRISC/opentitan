@@ -193,8 +193,8 @@
 
     { name:      "RndCnstPartInvDefault",
       desc:      "OTP invalid partition default for buffered partitions",
-      type:      "logic [16895:0]"
-      randcount: "16896",
+      type:      "logic [17407:0]"
+      randcount: "17408",
       randtype:  "extdata",
     }
     // Normal parameters
@@ -208,7 +208,7 @@
     {
       name: "OtpDepth",
       desc: "Number of native words.",
-      default: "1056",
+      default: "1088",
       local: "true"
     },
     {
@@ -1806,7 +1806,7 @@
     { name: "Secret3Size",
       desc: "Size of the SECRET3 partition",
       type: "int",
-      default: "48",
+      default: "112",
       local: "true"
     },
     { name: "FieldEntropyOffset",
@@ -1821,10 +1821,34 @@
       default: "32",
       local: "true"
     },
+    { name: "SecondaryRootKeyShare0Offset",
+      desc: "Offset of SECONDARY_ROOT_KEY_SHARE0",
+      type: "int",
+      default: "2008",
+      local: "true"
+    },
+    { name: "SecondaryRootKeyShare0Size",
+      desc: "Size of SECONDARY_ROOT_KEY_SHARE0",
+      type: "int",
+      default: "32",
+      local: "true"
+    },
+    { name: "SecondaryRootKeyShare1Offset",
+      desc: "Offset of SECONDARY_ROOT_KEY_SHARE1",
+      type: "int",
+      default: "2040",
+      local: "true"
+    },
+    { name: "SecondaryRootKeyShare1Size",
+      desc: "Size of SECONDARY_ROOT_KEY_SHARE1",
+      type: "int",
+      default: "32",
+      local: "true"
+    },
     { name: "Secret3DigestOffset",
       desc: "Offset of SECRET3_DIGEST",
       type: "int",
-      default: "2008",
+      default: "2072",
       local: "true"
     },
     { name: "Secret3DigestSize",
@@ -1836,7 +1860,7 @@
     { name: "Secret3ZerOffset",
       desc: "Offset of SECRET3_ZER",
       type: "int",
-      default: "2016",
+      default: "2080",
       local: "true"
     },
     { name: "Secret3ZerSize",
@@ -1848,7 +1872,7 @@
     { name: "LifeCycleOffset",
       desc: "Offset of the LIFE_CYCLE partition",
       type: "int",
-      default: "2024",
+      default: "2088",
       local: "true"
     },
     { name: "LifeCycleSize",
@@ -1860,7 +1884,7 @@
     { name: "LcTransitionCntOffset",
       desc: "Offset of LC_TRANSITION_CNT",
       type: "int",
-      default: "2024",
+      default: "2088",
       local: "true"
     },
     { name: "LcTransitionCntSize",
@@ -1872,7 +1896,7 @@
     { name: "LcStateOffset",
       desc: "Offset of LC_STATE",
       type: "int",
-      default: "2072",
+      default: "2136",
       local: "true"
     },
     { name: "LcStateSize",
@@ -1968,7 +1992,7 @@
       package: "lc_ctrl_pkg"
       desc:    '''
                Seed read enable coming from life cycle controller.
-               This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+               This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1, FIELD_ENTROPY, SECONDARY_ROOT_KEY_SHARE0 and SECONDARY_ROOT_KEY_SHARE1.
                '''
     }
     { struct:  "lc_tx"
@@ -2025,6 +2049,14 @@
       default: "'0"
       package: "keymgr_dpe_pkg"
       desc:    "Field entropy output to the key manager holding FIELD_ENTROPY."
+    }
+    { struct:  "keymgr_dpe_creator_root_key"
+      type:    "uni"
+      name:    "keymgr_secondary_root_key"
+      act:     "req"
+      default: "'0"
+      package: "keymgr_dpe_pkg"
+      desc:    "Key output to the key manager holding SECONDARY_ROOT_KEY_SHARE0 and SECONDARY_ROOT_KEY_SHARE1."
     }
     // Broadcast to Nvm Controller
     { struct:  "nvm_otp_key"

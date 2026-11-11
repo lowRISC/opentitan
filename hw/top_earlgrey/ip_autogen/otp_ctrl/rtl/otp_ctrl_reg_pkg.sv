@@ -8,7 +8,7 @@ package otp_ctrl_reg_pkg;
 
   // Param list
   parameter int NumSramKeyReqSlots = 5;
-  parameter int OtpDepth = 1056;
+  parameter int OtpDepth = 1088;
   parameter int OtpWidth = 2;
   parameter int OtpSizeWidth = 2;
   parameter int OtpByteAddrWidth = 12;
@@ -274,18 +274,22 @@ package otp_ctrl_reg_pkg;
   parameter int Secret2ZerOffset = 1968;
   parameter int Secret2ZerSize = 8;
   parameter int Secret3Offset = 1976;
-  parameter int Secret3Size = 48;
+  parameter int Secret3Size = 112;
   parameter int FieldEntropyOffset = 1976;
   parameter int FieldEntropySize = 32;
-  parameter int Secret3DigestOffset = 2008;
+  parameter int SecondaryRootKeyShare0Offset = 2008;
+  parameter int SecondaryRootKeyShare0Size = 32;
+  parameter int SecondaryRootKeyShare1Offset = 2040;
+  parameter int SecondaryRootKeyShare1Size = 32;
+  parameter int Secret3DigestOffset = 2072;
   parameter int Secret3DigestSize = 8;
-  parameter int Secret3ZerOffset = 2016;
+  parameter int Secret3ZerOffset = 2080;
   parameter int Secret3ZerSize = 8;
-  parameter int LifeCycleOffset = 2024;
+  parameter int LifeCycleOffset = 2088;
   parameter int LifeCycleSize = 88;
-  parameter int LcTransitionCntOffset = 2024;
+  parameter int LcTransitionCntOffset = 2088;
   parameter int LcTransitionCntSize = 48;
-  parameter int LcStateOffset = 2072;
+  parameter int LcStateOffset = 2136;
   parameter int LcStateSize = 40;
   parameter int NumAlerts = 5;
 

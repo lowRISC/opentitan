@@ -122,8 +122,10 @@ It has been generated with ./util/topgen.py -t hw/top_earlgrey/data/top_earlgrey
 |         |                           |            |              |      64bit       |                           CREATOR_ROOT_KEY_SHARE1                           |     0x788      |     32     |
 |         |                           |            |              |      64bit       |                   [SECRET2_DIGEST](#Reg_secret2_digest_0)                   |     0x7A8      |     8      |
 |         |                           |            |              |      64bit       |                                 SECRET2_ZER                                 |     0x7B0      |     8      |
-|   10    |          SECRET3          |     48     |     yes      |      64bit       |                                FIELD_ENTROPY                                |     0x7B8      |     32     |
-|         |                           |            |              |      64bit       |                   [SECRET3_DIGEST](#Reg_secret3_digest_0)                   |     0x7D8      |     8      |
-|         |                           |            |              |      64bit       |                                 SECRET3_ZER                                 |     0x7E0      |     8      |
-|   11    |        LIFE_CYCLE         |     88     |      no      |      32bit       |                              LC_TRANSITION_CNT                              |     0x7E8      |     48     |
-|         |                           |            |              |      32bit       |                                  LC_STATE                                   |     0x818      |     40     |
+|   10    |          SECRET3          |    112     |     yes      |      64bit       |                                FIELD_ENTROPY                                |     0x7B8      |     32     |
+|         |                           |            |              |      64bit       |                          SECONDARY_ROOT_KEY_SHARE0                          |     0x7D8      |     32     |
+|         |                           |            |              |      64bit       |                          SECONDARY_ROOT_KEY_SHARE1                          |     0x7F8      |     32     |
+|         |                           |            |              |      64bit       |                   [SECRET3_DIGEST](#Reg_secret3_digest_0)                   |     0x818      |     8      |
+|         |                           |            |              |      64bit       |                                 SECRET3_ZER                                 |     0x820      |     8      |
+|   11    |        LIFE_CYCLE         |     88     |      no      |      32bit       |                              LC_TRANSITION_CNT                              |     0x828      |     48     |
+|         |                           |            |              |      32bit       |                                  LC_STATE                                   |     0x858      |     40     |

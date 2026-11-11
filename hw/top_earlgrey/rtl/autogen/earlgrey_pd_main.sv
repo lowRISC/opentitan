@@ -642,6 +642,7 @@ module earlgrey_pd_main #(
   otp_ctrl_pkg::otbn_otp_key_rsp_t       otp_ctrl_otbn_otp_key_rsp;
   keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t       otp_ctrl_keymgr_creator_root_key;
   keymgr_dpe_pkg::keymgr_dpe_field_entropy_t       otp_ctrl_keymgr_field_entropy;
+  keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t       otp_ctrl_keymgr_secondary_root_key;
   keymgr_dpe_pkg::keymgr_dpe_creator_seed_t       rram_ctrl_keymgr_creator_seed;
   keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       rram_ctrl_keymgr_owner_seed;
   keymgr_dpe_pkg::hw_key_req_t       keymgr_dpe_aes_key;
@@ -1735,6 +1736,7 @@ module earlgrey_pd_main #(
     .keymgr_creator_seed_o(),
     .keymgr_owner_seed_o(),
     .keymgr_field_entropy_o(otp_ctrl_keymgr_field_entropy),
+    .keymgr_secondary_root_key_o(otp_ctrl_keymgr_secondary_root_key),
     .nvm_otp_key_i(rram_ctrl_otp_key_req),
     .nvm_otp_key_o(rram_ctrl_otp_key_rsp),
     .sram_otp_key_i(otp_ctrl_sram_otp_key_req),
@@ -2449,7 +2451,7 @@ module earlgrey_pd_main #(
     .otbn_app_i(otbn_keymgr_app_rsp),
     .sensitive_key_o(otbn_keymgr_sensitive_key),
     .creator_root_key_i(otp_ctrl_keymgr_creator_root_key),
-    .secondary_root_key_i(keymgr_dpe_pkg::KEYMGR_DPE_SECONDARY_ROOT_KEY_DEFAULT),
+    .secondary_root_key_i(otp_ctrl_keymgr_secondary_root_key),
     .creator_seed_i(rram_ctrl_keymgr_creator_seed),
     .owner_seed_i(rram_ctrl_keymgr_owner_seed),
     .device_id_i(keymgr_dpe_device_id),

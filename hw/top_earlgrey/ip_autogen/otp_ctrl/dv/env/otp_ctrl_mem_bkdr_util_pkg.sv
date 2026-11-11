@@ -229,11 +229,15 @@ package otp_ctrl_mem_bkdr_util_pkg;
 
   function automatic void otp_write_secret3_partition(
       mem_bkdr_util_pkg::mem_bkdr_util mem_bkdr_util_h,
-      bit [FieldEntropySize*8-1:0] field_entropy
+      bit [FieldEntropySize*8-1:0] field_entropy,
+      bit [SecondaryRootKeyShare0Size*8-1:0] secondary_root_key_share0,
+      bit [SecondaryRootKeyShare1Size*8-1:0] secondary_root_key_share1
   );
     bit [Secret3DigestSize*8-1:0] digest;
     bit [bus_params_pkg::BUS_DW-1:0] partition_data[$];
     bit [FieldEntropySize*8-1:0] scrambled_field_entropy;
+    bit [SecondaryRootKeyShare0Size*8-1:0] scrambled_secondary_root_key_share0;
+    bit [SecondaryRootKeyShare1Size*8-1:0] scrambled_secondary_root_key_share1;
 
     for (int i = 0; i < FieldEntropySize; i += 8) begin
       scrambled_field_entropy[i*8+:64] = scramble_data(
@@ -241,8 +245,22 @@ package otp_ctrl_mem_bkdr_util_pkg;
       mem_bkdr_util_h.write64(i + FieldEntropyOffset,
                               scrambled_field_entropy[i*8+:64]);
     end
+    for (int i = 0; i < SecondaryRootKeyShare0Size; i += 8) begin
+      scrambled_secondary_root_key_share0[i*8+:64] = scramble_data(
+          secondary_root_key_share0[i*8+:64], Secret3Idx);
+      mem_bkdr_util_h.write64(i + SecondaryRootKeyShare0Offset,
+                              scrambled_secondary_root_key_share0[i*8+:64]);
+    end
+    for (int i = 0; i < SecondaryRootKeyShare1Size; i += 8) begin
+      scrambled_secondary_root_key_share1[i*8+:64] = scramble_data(
+          secondary_root_key_share1[i*8+:64], Secret3Idx);
+      mem_bkdr_util_h.write64(i + SecondaryRootKeyShare1Offset,
+                              scrambled_secondary_root_key_share1[i*8+:64]);
+    end
 
     partition_data = {<<32{
+      scrambled_secondary_root_key_share1,
+      scrambled_secondary_root_key_share0,
       scrambled_field_entropy
     }};
     digest = cal_digest(Secret3Idx, partition_data);

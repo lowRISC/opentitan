@@ -213,6 +213,14 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     field_entropy_output_conditions: cross keymgr_rd_en, field_entropy_lock;
   endgroup
 
+  // This covergroup is sampled only if the keymgr secondary root key output passed scb check.
+  covergroup keymgr_secondary_root_key_o_cg with function sample (bit lc_seed_hw_rd_en,
+                                                                  bit locked);
+    keymgr_rd_en: coverpoint lc_seed_hw_rd_en;
+    secondary_root_key_lock: coverpoint locked;
+    keymgr_output_conditions: cross keymgr_rd_en, secondary_root_key_lock;
+  endgroup
+
   // This covergroup samples dai request being issued after fatal alert is issued.
   covergroup req_dai_access_after_alert_cg with function sample(bit [TL_DW-1:0] val);
     req_dai_access_after_alert_issued: coverpoint val {
@@ -299,6 +307,7 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     sram_req_cg                   = new();
     keymgr_o_cg                   = new();
     keymgr_field_entropy_o_cg     = new();
+    keymgr_secondary_root_key_o_cg = new();
     req_dai_access_after_alert_cg = new();
     issue_checks_after_alert_cg   = new();
     dai_err_code_cg               = new();
