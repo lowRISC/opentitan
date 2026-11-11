@@ -227,26 +227,31 @@ def _gen_rram_otp_vmem(ctx, otp_output):
     """Reformats an otp_image()'s native-format output into the RRAM-native layout, via
     gen-rram-img.py.
 
+    The same invocation also writes the RRAM INFO array image with the relocated SECRET0
+    partition.
+
     Args:
       ctx: The rule context.
       otp_output: The otp_image()'s own native-format output file.
     Returns:
-      File: the reformatted output.
+      (File, File): the reformatted OTP output and the INFO array output.
     """
     rram_output = ctx.actions.declare_file(ctx.attr.name + ".128.vmem")
+    info_output = ctx.actions.declare_file(ctx.attr.name + ".info.vmem")
     rram_args = ctx.actions.args()
     rram_args.add("--in-otp-vmem", otp_output)
     rram_args.add("--out-otp-vmem", rram_output)
+    rram_args.add("--out-info-vmem", info_output)
     rram_args.add("--top-secret-cfg", ctx.file.top_secret_cfg)
     if ctx.attr.data_perm:
         rram_args.add("--otp-data-perm", ctx.attr.data_perm[BuildSettingInfo].value)
     ctx.actions.run(
-        outputs = [rram_output],
+        outputs = [rram_output, info_output],
         inputs = [otp_output, ctx.file.top_secret_cfg],
         arguments = [rram_args],
         executable = ctx.executable._rram_tool,
     )
-    return rram_output
+    return rram_output, info_output
 
 def _otp_image(ctx):
     output = ctx.actions.declare_file(ctx.attr.name + ".24.vmem")
@@ -288,11 +293,15 @@ def _otp_image(ctx):
     # the specific images something actually requests it for (e.g. via rram_otp_image() in
     # transform.bzl).
     # Tops that don't use RRAM for OTP (e.g. darjeeling) never trigger it.
-    rram_output = _gen_rram_otp_vmem(ctx, output)
+    # The INFO array image goes into its own output group, for the same consumers.
+    rram_output, info_output = _gen_rram_otp_vmem(ctx, output)
 
     return [
         DefaultInfo(files = depset([output]), runfiles = ctx.runfiles(files = [output])),
-        OutputGroupInfo(rram_otp = depset([rram_output])),
+        OutputGroupInfo(
+            rram_otp = depset([rram_output]),
+            rram_info = depset([info_output]),
+        ),
     ]
 
 otp_image = rule(

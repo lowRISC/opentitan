@@ -33,6 +33,8 @@ pub struct VerilatorOpts {
     verilator_ctn_ram: String,
     #[arg(long, default_value_t)]
     verilator_otp: String,
+    #[arg(long, default_value_t)]
+    verilator_rram_info: String,
 
     #[arg(long, required = false)]
     verilator_args: Vec<String>,
@@ -55,6 +57,7 @@ impl Backend for VerilatorBackend {
             rram_image: args.verilator_rram.clone(),
             ctn_ram_image: args.verilator_ctn_ram.clone(),
             otp_image: args.verilator_otp.clone(),
+            rram_info_image: args.verilator_rram_info.clone(),
             extra_args: args.verilator_args.clone(),
             timeout: args.verilator_timeout,
         };
