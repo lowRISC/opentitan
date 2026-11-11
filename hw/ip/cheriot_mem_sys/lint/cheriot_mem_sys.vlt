@@ -9,7 +9,7 @@
 // The subsystem chains zero-depth (pass-through) TL-UL sockets, so the request and response
 // channels of a single link are combinationally coupled. Verilator reports this as circular logic
 // even though there is no combinational loop through a single signal.
-lint_off -rule UNOPTFLAT -file "*/rtl/cheriot_mem_sys.sv" -match "*rmw_tl_d2h*"
+lint_off -rule UNOPTFLAT -file "*/rtl/cheriot_mem_sys_core.sv" -match "*rmw_tl_d2h*"
 lint_off -rule UNOPTFLAT -file "*/rtl/tlul_socket_1n.sv" -match "*u_cheriot_access_check_tags*"
 lint_off -rule UNOPTFLAT -file "*/rtl/prim_arbiter_ppc.sv" -match "*u_tlul_socket_m1*"
 // The revocation engine's TRVK filter passes whole TL-UL structs between its ports and derives its
