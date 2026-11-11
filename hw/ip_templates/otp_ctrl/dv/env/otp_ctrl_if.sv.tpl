@@ -12,6 +12,7 @@ buf_parts_without_lc = [part for part in otp_mmap["partitions"] if
                         part["variant"] == "Buffered"]
 item_names = [item["name"] for part in otp_mmap["partitions"] for item in part["items"]]
 has_field_entropy = "FIELD_ENTROPY" in item_names
+has_secondary_root_key = "SECONDARY_ROOT_KEY_SHARE0" in item_names
 %>\
 // This interface collect the broadcast output data from OTP,
 // and drive input requests coming into OTP.
@@ -61,6 +62,9 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       keymgr_owner_seed_o;
 % if has_field_entropy:
   keymgr_dpe_pkg::keymgr_dpe_field_entropy_t    keymgr_field_entropy_o;
+% endif
+% if has_secondary_root_key:
+  keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t keymgr_secondary_root_key_o;
 % endif
   otp_lc_data_t      lc_data_o;
   logic              pwr_otp_done_o, pwr_otp_idle_o;
@@ -314,6 +318,12 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   `OTP_ASSERT_WO_LC_ESC(OtpKeymgrValidStable4_A, pwr_otp_done_o |->
                         $stable(keymgr_field_entropy_o.secret_valid))
 % endif
+% if has_secondary_root_key:
+  `OTP_ASSERT_WO_LC_ESC(OtpKeymgrValidStable5_A, pwr_otp_done_o |->
+                        $stable(keymgr_secondary_root_key_o.share0_valid))
+  `OTP_ASSERT_WO_LC_ESC(OtpKeymgrValidStable6_A, pwr_otp_done_o |->
+                        $stable(keymgr_secondary_root_key_o.share1_valid))
+% endif
 
   // During lc_prog_req, either otp_idle will be reset or lc_error is set
   `OTP_ASSERT_WO_LC_ESC(LcProgReq_A, $rose(lc_prog_req) |=>
@@ -343,6 +353,12 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
 % if has_field_entropy:
   `OTP_FATAL_ERR_ASSERT(KeymgrFieldEntropyData_A, keymgr_field_entropy_o.secret ==
     RndCnstOtpCtrlPartInvDefault[FieldEntropyOffset*8+:FieldEntropySize*8])
+% endif
+% if has_secondary_root_key:
+  `OTP_FATAL_ERR_ASSERT(KeymgrSecondaryRootKeyData_A, keymgr_secondary_root_key_o.share0 ==
+    RndCnstOtpCtrlPartInvDefault[SecondaryRootKeyShare0Offset*8+:SecondaryRootKeyShare0Size*8] &&
+    keymgr_secondary_root_key_o.share1 ==
+    RndCnstOtpCtrlPartInvDefault[SecondaryRootKeyShare1Offset*8+:SecondaryRootKeyShare1Size*8])
 % endif
 
   `OTP_FATAL_ERR_ASSERT(HwCfgOValid_A, otp_broadcast_o.valid == lc_ctrl_pkg::Off)

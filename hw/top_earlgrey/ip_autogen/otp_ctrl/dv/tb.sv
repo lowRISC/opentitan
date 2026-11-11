@@ -142,6 +142,7 @@ module tb;
     .keymgr_creator_seed_o      (otp_ctrl_if.keymgr_creator_seed_o),
     .keymgr_owner_seed_o        (otp_ctrl_if.keymgr_owner_seed_o),
     .keymgr_field_entropy_o     (otp_ctrl_if.keymgr_field_entropy_o),
+    .keymgr_secondary_root_key_o(otp_ctrl_if.keymgr_secondary_root_key_o),
     // nvm
     .nvm_otp_key_i              (nvm_req),
     .nvm_otp_key_o              (nvm_rsp),
