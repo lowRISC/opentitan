@@ -180,8 +180,6 @@ Error                        | Value | Description
 `SwHashStartWhenShaDisabled` | `0x2` | When HMAC detects the CMD.start while SHA is disabled, it reports this error code.
 `SwUpdateSecretKeyInProcess` | `0x3` | Secret Key CSRs should not be modified during the hashing. This error is reported when those CSRs are revised during hashing.
 `SwHashStartWhenActive`      | `0x4` | The error is reported when CMD.start is received while HMAC is running.
-`SwPushMsgWhenDisallowed`    | `0x5` | After CMD.process is received, the MSG_FIFO should not by updated by SW. This error is reported in that case.
-`SwInvalidConfig`            | `0x6` | SW has configured HMAC incorrectly.
 `SwPushMsgWhenDisallowed`    | `0x5` | The error is reported when MSG_FIFO is being updated by SW with more message words when it is disallowed: either when the SHA-2 engine is disabled or the engine has not been triggered to start yet or it has been already triggered to finalize computation.
 `SwInvalidConfig`            | `0x6` | The error is reported when HMAC has been configured incorrectly by SW, i.e. invalid digest size for SHA-2/HMAC modes or invalid key length for HMAC mode. It is also reported for the sideloaded key: when an operation is started while the key manager does not provide a valid key, when the key becomes invalid while an operation is in progress, and when a context switch is attempted with a sideloaded key.
 
