@@ -156,7 +156,7 @@ otcrypto_status_t otcrypto_cmac_kdf(
     }
 
     uint32_t mask_data[kAesBlockNumWords];
-    HARDENED_TRY(hardened_memshred(mask_data, words_to_copy));
+    hardened_memshred(mask_data, words_to_copy);
 
     uint32_t share0_data[kAesBlockNumWords];
     HARDENED_TRY(hardened_xor(tag_data, mask_data, words_to_copy, share0_data));
@@ -171,7 +171,7 @@ otcrypto_status_t otcrypto_cmac_kdf(
   HARDENED_CHECK_EQ(words_written, required_word_len);
   HARDENED_CHECK_GT(words_written, 0);
 
-  HARDENED_TRY(hardened_memshred(tag_data, kAesBlockNumWords));
+  hardened_memshred(tag_data, kAesBlockNumWords);
 
   output_key_material->checksum =
       otcrypto_integrity_blinded_checksum(output_key_material);

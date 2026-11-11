@@ -131,7 +131,7 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
                              const otcrypto_key_config_t config,
                              uint32_t *keyblob) {
   // Randomize the keyblob contents before writing shares.
-  HARDENED_TRY(hardened_memshred(keyblob, keyblob_num_words(config)));
+  hardened_memshred(keyblob, keyblob_num_words(config));
 
   size_t share_words = keyblob_share_num_words(config);
   HARDENED_TRY(hardened_memcpy(keyblob, share0, share_words));
@@ -315,7 +315,7 @@ status_t keyblob_remask(otcrypto_blinded_key_t *key) {
     return OTCRYPTO_BAD_ARGS;
   }
   uint32_t mask[kOtcryptoWrappedKeyMaxWords];
-  HARDENED_TRY(hardened_memshred(mask, key_share_words));
+  hardened_memshred(mask, key_share_words);
 
   // XOR each share with the mask.
   HARDENED_TRY(hardened_xor_in_place(share0, mask, key_share_words));

@@ -664,9 +664,8 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
   }
 
   // Randomize the keyblob.
-  HARDENED_TRY(hardened_memshred(
-      private_key->keyblob,
-      ceil_div(private_key->keyblob_length, sizeof(uint32_t))));
+  hardened_memshred(private_key->keyblob,
+                    ceil_div(private_key->keyblob_length, sizeof(uint32_t)));
 
   size_t num_words = 0;
   HARDENED_TRY(rsa_size_to_params(size, NULL, &num_words));
@@ -815,7 +814,7 @@ otcrypto_status_t otcrypto_rsa_hash_sign_verify(
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   }
   uint32_t digest_data[16];
-  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  hardened_memshred(digest_data, ARRAYSIZE(digest_data));
   otcrypto_hash_digest_t digest;
   HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
   HARDENED_TRY(otcrypto_rsa_sign(private_key, digest, padding_mode, signature));
@@ -824,7 +823,7 @@ otcrypto_status_t otcrypto_rsa_hash_sign_verify(
   hardened_bool_t verification_result = kHardenedBoolFalse;
   HARDENED_TRY(otcrypto_rsa_verify(public_key, digest, padding_mode,
                                    &signature_check, &verification_result));
-  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  hardened_memshred(digest_data, ARRAYSIZE(digest_data));
   if (verification_result != kHardenedBoolTrue) {
     // COVERAGE (FI CM) This check only fails if the signature generation was
     // faulted.
@@ -859,7 +858,7 @@ otcrypto_status_t otcrypto_rsa_hash_verify(
   HARDENED_TRY(rsa_public_key_validate(public_key));
 
   uint32_t digest_data[16];
-  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  hardened_memshred(digest_data, ARRAYSIZE(digest_data));
   otcrypto_hash_digest_t digest;
   HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
   return otcrypto_eval_exit(otcrypto_rsa_verify(
@@ -948,9 +947,8 @@ otcrypto_status_t otcrypto_rsa_keygen_async_finalize(
   HARDENED_TRY(private_key_structural_check(size, private_key));
 
   // Randomize the keyblob memory.
-  HARDENED_TRY(hardened_memshred(
-      private_key->keyblob,
-      ceil_div(private_key->keyblob_length, sizeof(uint32_t))));
+  hardened_memshred(private_key->keyblob,
+                    ceil_div(private_key->keyblob_length, sizeof(uint32_t)));
 
   // Call the required finalize() operation.
   rsa_size_t rsa_size = (rsa_size_t)0;
@@ -1048,9 +1046,8 @@ otcrypto_status_t otcrypto_rsa_keypair_from_cofactor_async_finalize(
   HARDENED_TRY(private_key_structural_check(size, private_key));
 
   // Randomize the keyblob memory.
-  HARDENED_TRY(hardened_memshred(
-      private_key->keyblob,
-      ceil_div(private_key->keyblob_length, sizeof(uint32_t))));
+  hardened_memshred(private_key->keyblob,
+                    ceil_div(private_key->keyblob_length, sizeof(uint32_t)));
 
   // Call the required finalize() operation.
   rsa_size_t rsa_size = (rsa_size_t)0;

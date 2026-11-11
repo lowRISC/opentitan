@@ -338,9 +338,7 @@ static rom_error_t dice_cdi_hybrid_cert_build(
   memset(&sig_params, 0, sizeof(sig_params));
   if (tbs_values->key_alg == kCdiHybridKeyAlgMldsa44) {
     uint32_t randomizer[MLDSA44_RANDOMIZER_BYTES / sizeof(uint32_t)];
-    HARDENED_CHECK_EQ(
-        hardened_memshred(randomizer, ARRAYSIZE(randomizer)).value,
-        kHardenedBoolTrue);
+    hardened_memshred(randomizer, ARRAYSIZE(randomizer));
     watchdog_pet();
     mldsa44_tiny_sign(curr_mldsa_sig, signer_mldsa_seed,
                       (const uint8_t *)randomizer, tbs_buffer, tbs_size);
@@ -350,9 +348,7 @@ static rom_error_t dice_cdi_hybrid_cert_build(
                            kCdiHybridExactCertSignatureMldsaSizeBytes);
   } else if (tbs_values->key_alg == kCdiHybridKeyAlgMldsa87) {
     uint32_t randomizer[MLDSA87_RANDOMIZER_BYTES / sizeof(uint32_t)];
-    HARDENED_CHECK_EQ(
-        hardened_memshred(randomizer, ARRAYSIZE(randomizer)).value,
-        kHardenedBoolTrue);
+    hardened_memshred(randomizer, ARRAYSIZE(randomizer));
     watchdog_pet();
     mldsa87_tiny_sign(curr_mldsa_sig, signer_mldsa_seed,
                       (const uint8_t *)randomizer, tbs_buffer, tbs_size);
@@ -719,11 +715,8 @@ rom_error_t dice_attest_next_cdi(const attest_params_t *params,
   rom_error_t err = dice_attest_next_cdi_impl_with_stack(
       params, sealing_binding, max_key_version, exts, exts_size, stack_top);
   rom_error_t err2 = otbn_boot_attestation_key_clear();
-  HARDENED_CHECK_EQ(
-      hardened_memshred((uint32_t *)params->scratch_buf,
-                        params->scratch_buf_size / sizeof(uint32_t))
-          .value,
-      kHardenedBoolTrue);
+  hardened_memshred((uint32_t *)params->scratch_buf,
+                    params->scratch_buf_size / sizeof(uint32_t));
   HARDENED_RETURN_IF_ERROR(err2);
   return err;
 }
@@ -752,12 +745,9 @@ static rom_error_t dice_mldsa_uds_pubkey_populate(
                              sizeof(dice_mldsa_rom_ext_scratch_stack));
   rom_error_t err = dice_mldsa_uds_pubkey_populate_impl_with_stack(
       mldsa_param_set, stack_top);
-  HARDENED_CHECK_EQ(
-      hardened_memshred(
-          (uint32_t *)dice_mldsa_rom_ext_scratch_stack,
-          sizeof(dice_mldsa_rom_ext_scratch_stack) / sizeof(uint32_t))
-          .value,
-      kHardenedBoolTrue);
+  hardened_memshred(
+      (uint32_t *)dice_mldsa_rom_ext_scratch_stack,
+      sizeof(dice_mldsa_rom_ext_scratch_stack) / sizeof(uint32_t));
   return err;
 }
 
@@ -1062,11 +1052,8 @@ rom_error_t dice_uds_mldsa_tbs_cert_generate_and_build(
                                           (const uint8_t *)uds_mldsa_seed.data,
                                           stack_top);
   } else {
-    HARDENED_CHECK_EQ(
-        hardened_memshred(uds_mldsa_seed.data,
-                          sizeof(uds_mldsa_seed.data) / sizeof(uint32_t))
-            .value,
-        kHardenedBoolTrue);
+    hardened_memshred(uds_mldsa_seed.data,
+                      sizeof(uds_mldsa_seed.data) / sizeof(uint32_t));
     return kErrorCertInvalidArgument;
   }
 
@@ -1074,22 +1061,15 @@ rom_error_t dice_uds_mldsa_tbs_cert_generate_and_build(
   get_mldsa_id((const hmac_key_t *)uds_mldsa_seed.data, key_ids->cert);
 
   // Delete the seed since it is no longer needed
-  HARDENED_CHECK_EQ(
-      hardened_memshred(uds_mldsa_seed.data,
-                        sizeof(uds_mldsa_seed.data) / sizeof(uint32_t))
-          .value,
-      kHardenedBoolTrue);
+  hardened_memshred(uds_mldsa_seed.data,
+                    sizeof(uds_mldsa_seed.data) / sizeof(uint32_t));
 
   static_assert(
       (sizeof(dice_mldsa_perso_scratch_stack) % sizeof(uint32_t)) == 0,
       "Scratch stack size must be multiple of 4 for hardened_memshred");
   // Clear any secret data on the stack
-  HARDENED_CHECK_EQ(
-      hardened_memshred(
-          (uint32_t *)dice_mldsa_perso_scratch_stack,
-          sizeof(dice_mldsa_perso_scratch_stack) / sizeof(uint32_t))
-          .value,
-      kHardenedBoolTrue);
+  hardened_memshred((uint32_t *)dice_mldsa_perso_scratch_stack,
+                    sizeof(dice_mldsa_perso_scratch_stack) / sizeof(uint32_t));
   HARDENED_RETURN_IF_ERROR(kmac_keymgr_configure());
 
   // Build UDS MLDSA certificate for signing

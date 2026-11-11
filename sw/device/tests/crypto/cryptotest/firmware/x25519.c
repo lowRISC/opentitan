@@ -153,7 +153,7 @@ status_t handle_x25519_shared_secret_generation(ujson_t *uj) {
   uint32_t keyblob[kX25519MaskedScalarTotalWords] = {0};
   uint32_t *share0 = keyblob;
   uint32_t *share1 = keyblob + kX25519MaskedScalarShareWords;
-  HARDENED_TRY(hardened_memshred(share1, kX25519PrivateKeyWords));
+  hardened_memshred(share1, kX25519PrivateKeyWords);
   HARDENED_TRY(hardened_sub(raw_key, share1, kX25519PrivateKeyWords, share0));
 
   otcrypto_blinded_key_t private_key = {

@@ -84,7 +84,7 @@ OT_USED static void sideload_wipe_guard(hardened_bool_t *is_sideloaded) {
  * CMAC context cleanup guard.
  */
 OT_USED static void cmac_ctx_shred(cmac_ctx_t *ctx) {
-  (void)hardened_memshred((uint32_t *)ctx, kOtcryptoCmacCtxStructWords);
+  hardened_memshred((uint32_t *)ctx, kOtcryptoCmacCtxStructWords);
 }
 
 /**
@@ -153,14 +153,15 @@ static status_t cmac_key_construct(const otcrypto_blinded_key_t *key,
     return OTCRYPTO_BAD_ARGS;
   }
 
+  hardened_memshred(ctx->key_share0, ARRAYSIZE(ctx->key_share0));
+  hardened_memshred(ctx->key_share1, ARRAYSIZE(ctx->key_share1));
+
   if (launder32(ctx->sideload) == kHardenedBoolTrue) {
     // COVERAGE (MISSING) Sideloaded keys for CMAC are not covered.
     HARDENED_CHECK_EQ(ctx->sideload, kHardenedBoolTrue);
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
     HARDENED_TRY(
         hardened_memcpy(ctx->key_share0, key->keyblob, kKeyblobHwBackedWords));
-    HARDENED_TRY(
-        hardened_memshred(ctx->key_share1, ARRAYSIZE(ctx->key_share1)));
   } else if (launder32(ctx->sideload) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(ctx->sideload, kHardenedBoolFalse);
     uint32_t *share0;
@@ -218,10 +219,10 @@ static status_t cmac_init_core(cmac_ctx_t *ctx) {
   HARDENED_TRY(aes_update(&L, NULL));
   HARDENED_TRY(aes_end(NULL));
 
-  HARDENED_TRY(hardened_memshred(ctx->k1.data, kAesBlockNumWords));
+  hardened_memshred(ctx->k1.data, kAesBlockNumWords);
   HARDENED_TRY(
       hardened_xor(L.data, ctx->k1.data, kAesBlockNumWords, ctx->k2.data));
-  HARDENED_TRY(hardened_memshred(L.data, ARRAYSIZE(L.data)));
+  hardened_memshred(L.data, ARRAYSIZE(L.data));
 
   size_t i;
   uint32_t *iv_words = ctx->iv.data;
@@ -413,7 +414,7 @@ otcrypto_status_t otcrypto_cmac(const otcrypto_blinded_key_t *key,
       kHardenedBoolFalse;
   (void)is_sideloaded;
 
-  HARDENED_TRY(hardened_memshred(tag->data, tag->len));
+  hardened_memshred(tag->data, tag->len);
   HARDENED_TRY(check_key(key));
 
   if (launder32(key->config.hw_backed) == kHardenedBoolTrue) {
@@ -662,7 +663,7 @@ otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
   if (launder32(security_level) == kOtcryptoKeySecurityLevelLow) {
     HARDENED_CHECK_EQ(launder32(security_level), kOtcryptoKeySecurityLevelLow);
     HARDENED_TRY(cmac_final_core(&primary_ctx, tag));
-    HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
+    hardened_memshred(ctx->data, ARRAYSIZE(ctx->data));
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
 
@@ -688,6 +689,6 @@ otcrypto_status_t otcrypto_cmac_final(otcrypto_cmac_context_t *const ctx,
 
   HARDENED_CHECK_EQ(hardened_memeq(tag->data, tag_redundant.data, tag->len),
                     kHardenedBoolTrue);
-  HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
+  hardened_memshred(ctx->data, ARRAYSIZE(ctx->data));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
