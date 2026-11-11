@@ -1098,20 +1098,29 @@ task cip_base_vseq::wait_alert_trigger(string alert_name,
 
       // The timer thread (wait for max_wait_cycle cycles, then generate an error). To avoid a race
       // if the alert is asserted on the positive edge of the clock after exactly that number of
-      // cycles, the timer waits for the following negative edge.
+      // cycles, report on the next negative edge. Restart the count while a ping is in progress
+      // because a colliding alert is delayed until the ping handshake completes.
       begin
-        repeat (max_wait_cycle) @(posedge alert_vif.clk);
+        int unsigned cycles = 0;
+        while (cycles < max_wait_cycle) begin
+          @(posedge alert_vif.clk);
+          if (alert_vif.in_ping_st() || agent_cfg.active_ping) begin
+            cycles = 0;
+          end else begin
+            cycles++;
+          end
+        end
         @(negedge alert_vif.clk);
         `uvm_error(get_name(),
                    $sformatf("Expected alert (%0s) did not fire in %0d cycles.",
                              alert_name, max_wait_cycle))
       end
 
-      // Wait to see an alert come out. This happens if is_alert_handshaking becomes true
-      // when there is no active_ping.
+      // Check active_ping too: a ping response reaches alert_tx_final after in_ping_st() drops and
+      // must not count as a native alert
       forever begin
         wait(alert_vif.is_alert_handshaking);
-        if (!alert_vif.in_ping_st()) break;
+        if (!alert_vif.in_ping_st() && !agent_cfg.active_ping) break;
         // If we get here, we were in the middle of a ping. Wait for it to complete and then wait
         // for another handshake.
         wait_until_ping_is_finished(agent_cfg);
