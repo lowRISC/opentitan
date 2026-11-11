@@ -222,7 +222,12 @@ If the FIELD_ENTROPY is not valid, the key manager uses its own netlist constant
 Like for the CREATOR_ROOT_KEY, the FIELD_ENTROPY value is only output if `lc_seed_hw_rd_en_i` is asserted, otherwise `keymgr_field_entropy_o.secret` is tied to a random netlist constant.
 Like for the `SECRET1` partition, SW access via the DAI is only restricted by the partition's own digest lock, and read access is re-enabled in RMA.
 
-Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the `keymgr_creator_root_key_o`, `keymgr_creator_seed_o`, `keymgr_owner_seed_o`, `keymgr_field_entropy_o` signals.
+The SECONDARY_ROOT_KEY (SECONDARY_ROOT_KEY_SHARE0, SECONDARY_ROOT_KEY_SHARE1) in the `SECRET3` partition is provided to the key manager via the `keymgr_secondary_root_key_o` signal.
+`keymgr_secondary_root_key_o.share0/1_valid` are each set once the `SECRET3` partition has been locked with a digest, has been successfully initialized, the respective share is not all-zero, and `lc_seed_hw_rd_en_i` is asserted.
+The key manager only accepts the secondary root key if both shares are valid.
+Like for the CREATOR_ROOT_KEY, the key shares are only provided if `lc_seed_hw_rd_en_i` is asserted, otherwise they are tied to random netlist constants.
+
+Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the `keymgr_creator_root_key_o`, `keymgr_creator_seed_o`, `keymgr_owner_seed_o`, `keymgr_field_entropy_o`, `keymgr_secondary_root_key_o` signals.
 
 ### Interfaces to SRAM and OTBN Scramblers
 

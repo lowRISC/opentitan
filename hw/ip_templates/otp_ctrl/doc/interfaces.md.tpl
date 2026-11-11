@@ -2,6 +2,15 @@
   # Name of the partition holding FIELD_ENTROPY, if the memory map contains that item.
   field_entropy_part = next((part["name"] for part in otp_mmap["partitions"]
                              for item in part["items"] if item["name"] == "FIELD_ENTROPY"), None)
+  # Name of the partition holding SECONDARY_ROOT_KEY_SHARE0/1, if the memory map contains them.
+  secondary_root_key_part = next((part["name"] for part in otp_mmap["partitions"]
+                                  for item in part["items"]
+                                  if item["name"] == "SECONDARY_ROOT_KEY_SHARE0"), None)
+  keymgr_sigs = ["keymgr_creator_root_key_o", "keymgr_creator_seed_o", "keymgr_owner_seed_o"]
+  if field_entropy_part:
+    keymgr_sigs.append("keymgr_field_entropy_o")
+  if secondary_root_key_part:
+    keymgr_sigs.append("keymgr_secondary_root_key_o")
 %>\
 # Hardware Interfaces
 
@@ -130,8 +139,15 @@ If the FIELD_ENTROPY is not valid, the key manager uses its own netlist constant
 Like for the CREATOR_ROOT_KEY, the FIELD_ENTROPY value is only output if `lc_seed_hw_rd_en_i` is asserted, otherwise `keymgr_field_entropy_o.secret` is tied to a random netlist constant.
 Like for the `SECRET1` partition, SW access via the DAI is only restricted by the partition's own digest lock, and read access is re-enabled in RMA.
 % endif
+% if secondary_root_key_part:
 
-Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the `keymgr_creator_root_key_o`, `keymgr_creator_seed_o`, `keymgr_owner_seed_o`${", `keymgr_field_entropy_o`" if field_entropy_part else ""} signals.
+The SECONDARY_ROOT_KEY (SECONDARY_ROOT_KEY_SHARE0, SECONDARY_ROOT_KEY_SHARE1) in the `${secondary_root_key_part}` partition is provided to the key manager via the `keymgr_secondary_root_key_o` signal.
+`keymgr_secondary_root_key_o.share0/1_valid` are each set once the `${secondary_root_key_part}` partition has been locked with a digest, has been successfully initialized, the respective share is not all-zero, and `lc_seed_hw_rd_en_i` is asserted.
+The key manager only accepts the secondary root key if both shares are valid.
+Like for the CREATOR_ROOT_KEY, the key shares are only provided if `lc_seed_hw_rd_en_i` is asserted, otherwise they are tied to random netlist constants.
+% endif
+
+Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the ${", ".join(f"`{s}`" for s in keymgr_sigs)} signals.
 
 ${"###"} Interfaces to SRAM and OTBN Scramblers
 
