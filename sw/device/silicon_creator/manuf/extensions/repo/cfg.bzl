@@ -21,7 +21,7 @@ EXT_EARLGREY_SKUS = {
     #    # --- Required attributes ---
     #    "otp": <OTP image name in EARLGREY_OTP_CFGS>,
     #    "ca_data": <label of SKU's CA data (certs and keys)>
-    #    "dice_libs": [<DICE certgen libs for perso firmware>]
+    #    "dice_format": <DICE certificate format: 'x509', 'cwt' or 'mldsa'>
     #    "host_ext_libs": [<host (FT) hook extension libraries to use>]
     #    "device_ext_libs": [<device (perso) hook extension libraries to use>]
     #    "rom_ext": <label of ROM_EXT to provision>
@@ -34,6 +34,8 @@ EXT_EARLGREY_SKUS = {
     #    "orchestrator_cfg": <label of the `sku_cfg` to configure the orchestrator.>
     #
     #    # --- Optional attributes ---
+    #    "dice_libs": [<Deprecated. Now an override for the DICE certgen libs
+    #                  (for perso firmware) instead of `dice_format`'s defaults.>]
     #    "ownership_libs": [<ownership libraries used by perso firmware>]
     #    "perso_bin": <override label of a prebuilt signed perso binary to use.>
     #    "scrambling_bin": <override label of a prebuild scrambling binary to use.>
