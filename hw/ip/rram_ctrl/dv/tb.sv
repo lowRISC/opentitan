@@ -135,6 +135,37 @@ module tb;
   // TODO(#31287): connect to something meaningful
   assign (pull1, pull0) rram_test_analog = 1'b0;
 
+  // The emulated info array starts out uninitialized, unlike a formed RRAM array.
+  // Clear the marker page, so that the marker read at init returns defined values.
+  // DIS_VOL_RAW_UNLOCK is written as well, so that the zero view is off.
+  // A test can skip them with +rram_dis_vol_raw_unlock=0, like the chip-level tests.
+  // The physical row of the open-source rram_macro: two Hamming(72,64) codewords, 144 bits.
+  function automatic logic [143:0] encode_rram_word(logic [rram_ctrl_pkg::DataWidth-1:0] data);
+    logic [71:0] lo, hi;
+    lo = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[63:0]);
+    hi = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[127:64]);
+    return {hi[71:64], lo[71:64], hi[63:0], lo[63:0]};
+  endfunction
+
+  initial begin
+    bit dis_vol_raw_unlock;
+    dis_vol_raw_unlock = 1'b1;
+    void'($value$plusargs("rram_dis_vol_raw_unlock=%0d", dis_vol_raw_unlock));
+    for (int unsigned k = 0; k < rram_ctrl_pkg::WordsPerPage; k++) begin
+      u_rram_macro.u_info_array.mem[rram_ctrl_pkg::MarkerInfoPage * rram_ctrl_pkg::WordsPerPage +
+                                    k] = '0;
+    end
+    if (dis_vol_raw_unlock) begin
+      for (int unsigned k = 0; k < rram_ctrl_pkg::NumMarkerCopies; k++) begin
+        u_rram_macro.u_info_array.mem[rram_ctrl_pkg::MarkerInfoPage *
+                                      rram_ctrl_pkg::WordsPerPage +
+                                      rram_ctrl_pkg::DisVolRawUnlockWords[k]] =
+            encode_rram_word(rram_ctrl_pkg::marker_word_value(rram_ctrl_pkg::MarkerMagic,
+                rram_ctrl_pkg::DisVolRawUnlockWords[k]));
+      end
+    end
+  end
+
   initial begin
     otp_clk_rst_if.set_freq_mhz(OTP_CLK_FREQ_MHZ);
     clk_rst_if.set_active();

@@ -227,8 +227,10 @@ def _gen_rram_otp_vmem(ctx, otp_output):
     """Reformats an otp_image()'s native-format output into the RRAM-native layout, via
     gen-rram-img.py.
 
-    The same invocation also writes the RRAM INFO array image with the relocated SECRET0
-    partition.
+    The same invocation also writes the RRAM INFO array image of a formed part: the
+    DIS_VOL_RAW_UNLOCK marker (except in RAW), the relocated SECRET0 partition, and CP_DONE for
+    images in TEST_LOCKED6 or later. Those images also get the second copy of the life cycle
+    partition in the OTP output, since otp_ctrl reads that copy once CP_DONE is set.
 
     Args:
       ctx: The rule context.
@@ -242,12 +244,13 @@ def _gen_rram_otp_vmem(ctx, otp_output):
     rram_args.add("--in-otp-vmem", otp_output)
     rram_args.add("--out-otp-vmem", rram_output)
     rram_args.add("--out-info-vmem", info_output)
+    rram_args.add("--lc-state-def", ctx.file.lc_state_def)
     rram_args.add("--top-secret-cfg", ctx.file.top_secret_cfg)
     if ctx.attr.data_perm:
         rram_args.add("--otp-data-perm", ctx.attr.data_perm[BuildSettingInfo].value)
     ctx.actions.run(
         outputs = [rram_output, info_output],
-        inputs = [otp_output, ctx.file.top_secret_cfg],
+        inputs = [otp_output, ctx.file.top_secret_cfg, ctx.file.lc_state_def],
         arguments = [rram_args],
         executable = ctx.executable._rram_tool,
     )

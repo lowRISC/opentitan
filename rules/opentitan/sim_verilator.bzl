@@ -154,7 +154,7 @@ def _test_dispatch(ctx, exec_env, firmware):
             data_files.append(rram_otp)
             param["otp"] = rram_otp.short_path
             action_param["otp"] = rram_otp.path
-        # --verilator-rram-info={rram_info} loads the INFO array image into
+        # --verilator-rram-info={rram_info} loads the INFO array of a formed part into
         # chip_sim_tb.cc's `rram_info` MemArea.
         rram_info = rram_info_image(ctx, exec_env, otp_attr)
         if rram_info:

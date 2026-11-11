@@ -65,10 +65,15 @@ The marker read during init, the vendor-specific JTAG/BIST access and the TRC's 
 
 ## Simulation Notes
 
-In simulation, the open-source model starts with an all-zero marker page, like a formed array.
-It then writes `DIS_VOL_RAW_UNLOCK`, so that the zero view is off and a testbench sees the real array.
-Tests of the forming flow and the volatile RAW unlock pass `+rram_dis_vol_raw_unlock=0` to skip it, which turns the zero view on.
-The chip-level DV uses the same plusarg for its backdoor preload, which also covers a vendor `rram_macro`.
+The model does not initialize its arrays itself.
+Without the `DIS_VOL_RAW_UNLOCK` marker, the zero view is on and all OTP content reads as zero.
+So each environment loads the INFO array of a formed part:
+
+- The chip-level DV clears the INFO array and writes the marker through the backdoor (`preload_rram_markers()`).
+- The `rram_ctrl` block DV writes the marker in its testbench.
+- Verilator and FPGA load the INFO image from `gen-rram-img.py --out-info-vmem`, which sets the marker for every life cycle state except `RAW`.
+
+In DV, tests of the forming flow and the volatile RAW unlock pass `+rram_dis_vol_raw_unlock=0` to skip the marker, which turns the zero view on.
 
 ## Replacing the macro
 

@@ -26,6 +26,7 @@ from typing import List
 
 import hjson
 from pyfinite import ffield
+from lib.LcStEnc import LcStEnc
 from lib.common import (inverse_permute_bits, validate_data_perm_option,
                         vmem_permutation_string)
 from lib.otp_scrambling_keys import (OTP_WORD_SIZE, OTP_WORD_SIZE_WECC,
@@ -79,6 +80,20 @@ INTG_BYTES_PER_RRAM_WORD = RRAM_WORD_SIZE // 8  # 16
 
 # RRAM INFO array content for --out-info-vmem, see rram_ctrl_pkg.sv.
 RRAM_WORD_BYTES = RRAM_WORD_SIZE // 8
+# rram_ctrl_pkg::MarkerInfoPage, DisVolRawUnlockWords, CpDoneWords and MarkerMagic
+# (prim_mubi_pkg::MuBi16True).
+RRAM_MARKER_INFO_PAGE = 4
+RRAM_DIS_VOL_RAW_UNLOCK_WORDS = (0,)
+RRAM_CP_DONE_WORDS = (1,)
+RRAM_MARKER_MAGIC = 0x9696
+# The field label of the life cycle state in gen-otp-img.py's native image.
+RRAM_LC_STATE_LABEL = "LIFE_CYCLE: LC_STATE"
+# The life cycle partition, and the states that are after CP.
+# With CP_DONE set, otp_ctrl sees a second copy of the life cycle partition right behind the first
+# one (see rram_ctrl_otp.sv), as LC_STATE1 | TEST_LOCKED6 and LC_TRANSITION_CNT1 | count 16.
+RRAM_LC_PARTITION = "LIFE_CYCLE"
+RRAM_POST_CP_LC_STATES = ("TEST_LOCKED6", "TEST_UNLOCKED7", "DEV", "PROD", "PROD_END", "RMA",
+                          "SCRAP")
 # rram_ctrl_pkg::OtpRemapInfoPage holds the relocated OTP partition (rram_ctrl RemapStart and
 # RemapSize, which top_earlgrey sets to SECRET0).
 RRAM_OTP_REMAP_INFO_PAGE = 7
@@ -237,19 +252,76 @@ def _read_otp_native_words(otp_vmem_file: str, otp_data_perm: list):
     return data_words, data_word_labels
 
 
-def _gen_info_rram_vmem_lines(data_words: dict, data_word_labels: dict) -> List[str]:
+def _decode_lc_state(data_words: dict, data_word_labels: dict, lc_state_def: Path,
+                     top_secret_cfg: dict) -> str:
+    """Returns the name of the life cycle state of a native OTP image."""
+    with open(lc_state_def, "r") as infile:
+        lc_state_cfg = hjson.load(infile)
+    lc_ctrl_seed = int(str(top_secret_cfg["seed"]["lc_ctrl_seed"]["value"]), 0)
+    lc_st_enc = LcStEnc(lc_state_cfg, lc_ctrl_seed)
+    addrs = sorted(addr for addr, label in data_word_labels.items()
+                   if label == RRAM_LC_STATE_LABEL)
+    value = sum(data_words[addr] << (OTP_WORD_SIZE * k) for k, addr in enumerate(addrs))
+    for state in lc_st_enc.config["lc_state"]:
+        if lc_st_enc.encode("lc_state", state) == value:
+            return state
+    raise ValueError("The life cycle state of the OTP image is not a valid encoding.")
+
+
+def _add_lc_copy1(data_words: dict, data_word_labels: dict):
+    """Adds the second copy of the life cycle partition right behind the first one."""
+    lc_addrs = sorted(addr for addr, label in data_word_labels.items()
+                      if label.startswith(RRAM_LC_PARTITION + ":"))
+    for addr in lc_addrs:
+        copy_addr = addr + len(lc_addrs)
+        data_words[copy_addr] = data_words[addr]
+        data_word_labels[copy_addr] = data_word_labels[addr] + " (copy 1)"
+
+
+def _gen_info_rram_vmem_lines(data_words: dict, data_word_labels: dict,
+                              cp_done: bool) -> List[str]:
     """Returns VMEM lines for the RRAM INFO array, addressed by INFO word address
     (page * RRAM_WORDS_PER_PAGE + word).
 
-    The image is sparse and only holds the OTP relocation page: the SECRET0 partition of the OTP
-    image.
-    Its data fills the page from the start, and the Hamming(72,64) integrity byte of each 64b
-    chunk follows at the integrity offset, like rram_ctrl_otp.sv and rram_ctrl_otp_bkdr_util.sv.
+    The image is sparse and only holds the rows that a formed part needs:
+    - The marker page: DIS_VOL_RAW_UNLOCK is set for every life cycle state except RAW.
+      A RAW image stands for a part before CP, which still has the zero view and allows the
+      volatile RAW unlock.
+      CP_DONE is only set with cp_done, for images that are after CP (TEST_LOCKED6 and later).
+    - The OTP relocation page: the SECRET0 partition of the OTP image.
+      Its data fills the page from the start, and the Hamming(72,64) integrity byte of each 64b
+      chunk follows at the integrity offset, like rram_ctrl_otp.sv and
+      rram_ctrl_otp_bkdr_util.sv.
 
     Every row carries rram_macro.sv's own physical ECC (see _rram_ecc()).
     """
     rows = {}
     comments = {}
+
+    # Marker page.
+    # The RAW encoding of the life cycle state is all zero.
+    lc_state_addrs = [addr for addr, label in data_word_labels.items()
+                      if label == RRAM_LC_STATE_LABEL]
+    if not lc_state_addrs:
+        raise ValueError(f"The OTP image has no {RRAM_LC_STATE_LABEL} label.")
+    is_raw = all(data_words[addr] == 0 for addr in lc_state_addrs)
+    marker_base = RRAM_MARKER_INFO_PAGE * RRAM_WORDS_PER_PAGE
+
+    # rram_ctrl writes the markers with the address infection, see marker_word_value() in
+    # rram_ctrl_pkg.sv: each 32-bit bus word is XORed with its bus word address.
+    def marker_word(word: int) -> int:
+        val = RRAM_MARKER_MAGIC
+        for i in range(RRAM_WORD_SIZE // 32):
+            val ^= ((marker_base + word) * (RRAM_WORD_SIZE // 32) + i) << (32 * i)
+        return val
+
+    for word in RRAM_DIS_VOL_RAW_UNLOCK_WORDS:
+        rows[marker_base + word] = 0 if is_raw else marker_word(word)
+        comments[marker_base + word] = ("DIS_VOL_RAW_UNLOCK (not set, RAW)" if is_raw else
+                                        "DIS_VOL_RAW_UNLOCK")
+    for word in RRAM_CP_DONE_WORDS:
+        rows[marker_base + word] = marker_word(word) if cp_done else 0
+        comments[marker_base + word] = "CP_DONE" if cp_done else "CP_DONE (not set)"
 
     # SECRET0, found through the field labels of the native OTP image.
     secret0_addrs = sorted(addr for addr, label in data_word_labels.items()
@@ -493,9 +565,20 @@ def main(argv: List[str]):
     parser.add_argument("--out-info-vmem",
                         type=str,
                         help="""
-                        Optional output VMEM file for the RRAM INFO array, addressed by INFO word
-                        address. Requires --in-otp-vmem. It places the relocated SECRET0 partition
-                        of the OTP image in its INFO page, where rram_ctrl_otp.sv reads it.
+                        Optional output VMEM file for the RRAM INFO array of a formed part,
+                        addressed by INFO word address. Requires --in-otp-vmem. It places the
+                        relocated SECRET0 partition of the OTP image in its INFO page, where
+                        rram_ctrl_otp.sv reads it. It also sets DIS_VOL_RAW_UNLOCK in the marker
+                        page, unless the image is in RAW.
+                        """)
+    parser.add_argument("--lc-state-def",
+                        type=Path,
+                        help="""
+                        Life cycle state definition (lc_ctrl_state.hjson). With it, an image in
+                        TEST_LOCKED6 or a later state is treated as after CP: --out-info-vmem sets
+                        CP_DONE, and --out-otp-vmem adds the second copy of the life cycle
+                        partition, which otp_ctrl sees once CP_DONE is set. Its count reads as at
+                        least 16 then. Without it, CP_DONE is never set.
                         """)
     parser.add_argument("--slot",
                         type=str,
@@ -566,9 +649,17 @@ def main(argv: List[str]):
             of.write(("\n".join(reformatted_vmem_lines) + "\n").encode('utf-8'))
 
     # Parse the native OTP image once, for --out-otp-vmem and --out-info-vmem.
+    # An image after CP gets CP_DONE and the second copy of the life cycle partition.
+    cp_done = False
     if args.in_otp_vmem and (args.out_otp_vmem or args.out_info_vmem):
         data_words, data_word_labels = _read_otp_native_words(args.in_otp_vmem,
                                                               args.otp_data_perm)
+        if args.lc_state_def:
+            lc_state = _decode_lc_state(data_words, data_word_labels, args.lc_state_def,
+                                        top_secret_cfg)
+            cp_done = lc_state in RRAM_POST_CP_LC_STATES
+        if cp_done:
+            _add_lc_copy1(data_words, data_word_labels)
 
     # Separately, generate OTP's own image (data + integrity page) if requested.
     if args.out_otp_vmem:
@@ -578,11 +669,11 @@ def main(argv: List[str]):
         with open(args.out_otp_vmem, "wb", buffering=2097152) as of:
             of.write(("\n".join(otp_vmem_lines) + "\n").encode('utf-8'))
 
-    # Separately, generate the INFO array image (relocated SECRET0) if requested.
+    # Separately, generate the INFO array image (markers and relocated SECRET0) if requested.
     if args.out_info_vmem:
         if not args.in_otp_vmem:
             raise ValueError("--out-info-vmem requires --in-otp-vmem.")
-        info_vmem_lines = _gen_info_rram_vmem_lines(data_words, data_word_labels)
+        info_vmem_lines = _gen_info_rram_vmem_lines(data_words, data_word_labels, cp_done)
         with open(args.out_info_vmem, "w") as of:
             of.write("\n".join(info_vmem_lines) + "\n")
 

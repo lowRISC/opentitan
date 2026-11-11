@@ -44,7 +44,9 @@ int main(int argc, char **argv) {
 
   // The RRAM INFO array: 8 pages of 32 words.
   // It starts all zero like a formed array, and --meminit=rram_info loads the
-  // relocated SECRET0 partition (see gen-rram-img.py --out-info-vmem).
+  // markers and the relocated SECRET0 partition (see gen-rram-img.py
+  // --out-info-vmem). Without the DIS_VOL_RAW_UNLOCK marker, the zero view of
+  // rram_macro would hide the OTP content.
   MemArea rram_info(top_scope + ".u_rram_macro.u_info_array", 8 * 32, 16);
   std::vector<uint8_t> info_zeros(rram_info.GetSizeBytes());
   std::fill(info_zeros.begin(), info_zeros.end(), 0x00u);

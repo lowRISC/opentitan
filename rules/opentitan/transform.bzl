@@ -437,8 +437,10 @@ def rram_otp_image(ctx, exec_env, otp_attr):
     return output
 
 def rram_info_image(ctx, exec_env, otp_attr):
-    """Returns the RRAM INFO array image that belongs to an exec_env's `otp` attribute.
-    It holds the SECRET0 partition of the OTP image in the INFO page rram_ctrl_otp reads it from.
+    """Returns the RRAM INFO array image of a formed part that belongs to an exec_env's `otp`
+    attribute.
+    It sets the DIS_VOL_RAW_UNLOCK marker, so that rram_macro turns off its zero view, and
+    holds the SECRET0 partition of the OTP image in the INFO page rram_ctrl_otp reads it from.
 
     Like rram_otp_image(), this reuses the `rram_info` output group of an otp_image() target
     (see rules/otp.bzl), and only falls back to running gen-rram-img.py itself otherwise.
@@ -473,7 +475,11 @@ def rram_info_image(ctx, exec_env, otp_attr):
     args.add("--in-otp-vmem", otp_file)
     args.add("--out-info-vmem", output)
     args.add("--top-secret-cfg", exec_env.top_secret_cfg)
+    # Images in TEST_LOCKED6 or later get CP_DONE, see gen-rram-img.py --lc-state-def.
     inputs = [otp_file, exec_env.top_secret_cfg]
+    if exec_env.lc_state_def:
+        args.add("--lc-state-def", exec_env.lc_state_def)
+        inputs.append(exec_env.lc_state_def)
     if exec_env.otp_data_perm:
         args.add("--otp-data-perm", str(exec_env.otp_data_perm[BuildSettingInfo].value))
     ctx.actions.run(

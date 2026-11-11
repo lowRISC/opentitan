@@ -733,40 +733,6 @@ module rram_macro #(
     .cfg_o    ()
   );
 
-`ifndef SYNTHESIS
-  // The emulated info array starts out uninitialized in simulation, unlike a formed RRAM array.
-  // Clear the marker page, so that the marker read at init returns defined values.
-  // DIS_VOL_RAW_UNLOCK is written as well, so that the zero view is off and the testbench sees
-  // the real array.
-  // Tests of the forming flow and the volatile RAW unlock skip it with
-  // +rram_dis_vol_raw_unlock=0.
-  // The chip testbench uses the same plusarg for its backdoor preload, which also covers a vendor
-  // rram_macro.
-  // A testbench can still load other marker values through the backdoor before the read.
-  function automatic logic [FullDataWidth-1:0] sim_encode_word(logic [DataWidth-1:0] data);
-    logic [EccCodeWidth-1:0] lo, hi;
-    lo = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[EccWordWidth-1:0]);
-    hi = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[DataWidth-1:EccWordWidth]);
-    return {hi[EccCodeWidth-1:EccWordWidth], lo[EccCodeWidth-1:EccWordWidth],
-            hi[EccWordWidth-1:0], lo[EccWordWidth-1:0]};
-  endfunction
-
-  initial begin
-    bit dis_vol_raw_unlock;
-    dis_vol_raw_unlock = 1'b1;
-    void'($value$plusargs("rram_dis_vol_raw_unlock=%0d", dis_vol_raw_unlock));
-    for (int unsigned k = 0; k < WordsPerPage; k++) begin
-      u_info_array.mem[MarkerInfoPage * WordsPerPage + k] = '0;
-    end
-    if (dis_vol_raw_unlock) begin
-      for (int unsigned k = 0; k < NumMarkerCopies; k++) begin
-        u_info_array.mem[MarkerInfoPage * WordsPerPage + DisVolRawUnlockWords[k]] =
-            sim_encode_word(marker_word_value(MarkerMagic, DisVolRawUnlockWords[k]));
-      end
-    end
-  end
-`endif
-
   // output multiplexer
   assign mem_rdata = (current_part_q == RramPartData) ? data_mem_rdata : info_mem_rdata;
 

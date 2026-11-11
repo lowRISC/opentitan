@@ -213,8 +213,8 @@ def _get_test_commands(ctx, param, exec_env):
         # OTP lives inside RRAM, so it's written into "RRDA".
         backdoor_writes += " --write RRDA={otp}"
     if "rram_info" in param:
-        # The INFO array image holds the SECRET0 partition, which rram_ctrl_otp reads from an
-        # INFO page.
+        # The INFO array of a formed part: DIS_VOL_RAW_UNLOCK, so that the zero view is off, and
+        # the SECRET0 partition, which rram_ctrl_otp reads from an INFO page.
         backdoor_writes += " --write RRIN={rram_info}"
     test_setup_cmd.append('--exec="fpga backdoor {{jtag_test_cmd}} batch {backdoor_writes} --start"'.format(backdoor_writes = backdoor_writes))
 

@@ -31,6 +31,7 @@ _FIELDS = {
     "otp_mmap": ("file.otp_mmap", False),
     "top_gen_hjson": ("file.top_gen_hjson", False),
     "top_secret_cfg": ("file.top_secret_cfg", False),
+    "lc_state_def": ("file.lc_state_def", False),
     "otp_data_perm": ("attr.otp_data_perm", False),
     "flash_scramble_tool": ("attr.flash_scramble_tool", False),
     "rram_scramble_tool": ("attr.rram_scramble_tool", False),
@@ -219,6 +220,11 @@ def exec_env_common_attrs(**kwargs):
             allow_single_file = True,
             default = "//hw/top:secrets",
             doc = "Generated top configuration file including secrets.",
+        ),
+        "lc_state_def": attr.label(
+            allow_single_file = True,
+            default = "//hw/ip/lc_ctrl/data:lc_ctrl_state.hjson",
+            doc = "Life cycle state definition file, used to tell whether an OTP image is after CP.",
         ),
         "otp_data_perm": attr.label(
             default = kwargs.get("otp_data_perm"),
