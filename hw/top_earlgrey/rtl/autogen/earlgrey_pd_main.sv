@@ -2814,7 +2814,7 @@ module earlgrey_pd_main #(
   );
 
   cheriot_mem_sys #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[67]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[68:67]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .MainSramBaseAddr(CheriotMemSysMainSramBaseAddr),
     .MainSramTopAddr(CheriotMemSysMainSramTopAddr),
@@ -2827,6 +2827,7 @@ module earlgrey_pd_main #(
   ) u_cheriot_mem_sys (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_infra),
+    .rst_shadowed_ni(rstmgr_resets_i.rst_lc_shadowed_n[rstmgr_pkg::DomainMainSel]),
     .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
 
     // DFT/scan connections
@@ -2837,8 +2838,9 @@ module earlgrey_pd_main #(
     .intr_tbre_done_o(intr_cheriot_mem_sys_tbre_done),
 
     // alert_handler[67]: fatal_fault
-    .alert_tx_o(alert_tx[67]),
-    .alert_rx_i(alert_rx[67]),
+    // alert_handler[68]: recov_ctrl_update_err
+    .alert_tx_o(alert_tx[68:67]),
+    .alert_rx_i(alert_rx[68:67]),
 
     // Inter-module signals
     .cheriot_ena_i(rv_core_ibex_cheriot_ena),
@@ -2861,7 +2863,7 @@ module earlgrey_pd_main #(
   );
 
   sram_ctrl #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[68]),
+    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[69]),
     .AlertSkewCycles(top_pkg::AlertSkewCycles),
     .RndCnstSramKey(RndCnstSramCtrlMetaSramKey),
     .RndCnstSramNonce(RndCnstSramCtrlMetaSramNonce),
@@ -2883,9 +2885,9 @@ module earlgrey_pd_main #(
     .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
     .rst_otp_ni(rstmgr_resets_i.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
 
-    // alert_handler[68]: fatal_error
-    .alert_tx_o(alert_tx[68]),
-    .alert_rx_i(alert_rx[68]),
+    // alert_handler[69]: fatal_error
+    .alert_tx_o(alert_tx[69]),
+    .alert_rx_i(alert_rx[69]),
 
     // RACL policies
     .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),

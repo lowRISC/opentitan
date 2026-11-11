@@ -185,10 +185,10 @@ so every tag update of the subsystem goes through one read-modify-write.
 
 ### Revocation Engine
 
-A write of 1 to `TBRE_START` starts a sweep over `TBRE_NUM_CAPS` capabilities from
-`TBRE_BASE_ADDR`, if `TBRE_NUM_CAPS` is not zero, `TBRE_BASE_ADDR` lies in a tagged region
-(`MainSramBaseAddr` up to `MainSramTopAddr`, or `NvmBaseAddr` up to `NvmTopAddr`), and the subsystem
-is in CHERIoT mode (a strict
+A write of 1 to `TBRE_START` starts a sweep over `TBRE_NUM_CAPS_SHADOWED` capabilities from
+`TBRE_BASE_ADDR_SHADOWED`, if `TBRE_NUM_CAPS_SHADOWED` is not zero, `TBRE_BASE_ADDR_SHADOWED` lies
+in a tagged region (`MainSramBaseAddr` up to `MainSramTopAddr`, or `NvmBaseAddr` up to
+`NvmTopAddr`), and the subsystem is in CHERIoT mode (a strict
 `MuBi4True` on `cheriot_ena_i`). Any other start is ignored and leaves `TBRE_STATUS.busy` and
 `TBRE_REGWEN` unchanged and sets `TBRE_STATUS.start_err`, which stays set until software writes 1 to
 it.
@@ -197,6 +197,14 @@ is resolved, `TBRE_REGWEN` is low and locks the three registers; `TBRE_STATUS.bu
 cycle later. The register interface takes a request at most every other cycle, so a read issued
 right after a start already sees the sweep in both. When the engine stops being active, the
 `tbre_done` interrupt is raised.
+
+`TBRE_BASE_ADDR_SHADOWED` and `TBRE_NUM_CAPS_SHADOWED` are
+[shadow registers](../../../../util/reggen/README.md#shadow-registers) (`TBRE.CONFIG.SHADOW`):
+software writes each value twice, and only a second write that matches the first updates the
+register. A mismatching second write leaves the register unchanged, sets
+`RECOV_ERR_CODE.shadow_update_err` and raises `recov_ctrl_update_err`; a difference between the two
+stored copies of a register sets `FATAL_ERR_CODE.shadow_storage_err` and raises `fatal_fault`. The
+shadow copies of the two registers are reset by `rst_shadowed_ni`, separately from `rst_ni`.
 
 `TBRE_EPOCH`: bit 0 is set while the engine is active, in the same cycle as `TBRE_REGWEN` is low,
 and bits 31:1 count the sweeps that ended without an error, incremented in the cycle bit 0 clears,
@@ -229,9 +237,11 @@ it there, so no core write reaches the RMW filter before it. Writes of other cro
 the debug module's system bus access, are not watched.
 
 A sweep that would reach past the top of its region ends there: the engine sweeps
-`min(TBRE_NUM_CAPS, (top - TBRE_BASE_ADDR) / 8)` capabilities, with `top` the `MainSramTopAddr` or
-`NvmTopAddr` of the region `TBRE_BASE_ADDR` lies in, and `TBRE_NUM_CAPS` keeps the value software
-wrote. A sweep therefore never leaves the tagged region it starts in.
+`min(TBRE_NUM_CAPS_SHADOWED, (top - TBRE_BASE_ADDR_SHADOWED) / 8)` capabilities, with `top` the
+`MainSramTopAddr` or `NvmTopAddr` of the region `TBRE_BASE_ADDR_SHADOWED` lies in, and
+`TBRE_NUM_CAPS_SHADOWED` keeps the value software wrote. A sweep therefore never leaves the tagged
+region it starts in. The engine works from a copy of the start address and of this capability count
+made when the start is taken, not from the registers.
 
 
 ### Access Checkers
@@ -265,7 +275,7 @@ Debug accesses in CHERIoT-mode ***MUST*** therefore be performed through Ibex an
 
 ## Lockstep
 
-`cheriot_mem_sys` keeps the CSRs, the interrupt and the alert sender; all other logic is in
+`cheriot_mem_sys` keeps the CSRs, the interrupt and the alert senders; all other logic is in
 `cheriot_mem_sys_core`. With the `SecLockstep` parameter set (the default),
 `cheriot_mem_sys_lockstep` runs a second copy of `cheriot_mem_sys_core` `LockstepOffset` cycles (one
 by default) behind the main copy, the same scheme as the Ibex lockstep:
@@ -286,9 +296,10 @@ The lockstep detects faults; it does not correct them:
 
 - A fault is flagged `LockstepOffset + 1` cycles after the main copy produced the wrong output,
   which has left the subsystem by then.
-- What both copies share is not covered: the CSRs (a fault in `TBRE_BASE_ADDR` or `TBRE_NUM_CAPS`
-  makes both copies sweep the same wrong range), `cheriot_ena_i`, the clock, the reset, the
-  comparator, the interrupt and the alert sender.
+- What both copies share is not covered: the CSRs, `cheriot_ena_i`, the clock, the reset, the
+  comparator, the interrupt and the alert senders. For the sweep configuration, `TBRE.CONFIG.SHADOW`
+  protects the stored registers, and each copy reads them only in the cycle a start is taken, into
+  its own copy for the sweep; the read-out in that cycle and `TBRE_START` remain shared.
 - A fault that changes no output raises no alert, and no output is compared before the comparison
   starts after reset.
 
@@ -307,7 +318,9 @@ The subsystem distinguishes a denied access from a fault:
 | `PutPartialData` to the meta SRAM | TL-UL error response |
 | Device error on the tag path | Read-modify-write aborted, `d_error` towards the core, and `fatal_fault` alert |
 | Integrity fault on a meta SRAM response (`rsp_intg` or `data_intg`) | `fatal_fault` alert |
-| Integrity fault on the CSR interface | `fatal_fault` alert |
+| Integrity fault on the CSR interface | `FATAL_ERR_CODE.reg_intg` and `fatal_fault` alert |
+| Second write of a shadow register update that does not match the first | Register unchanged, `RECOV_ERR_CODE.shadow_update_err`, and `recov_ctrl_update_err` alert |
+| Storage error of a shadow register (its two copies differ) | `FATAL_ERR_CODE.shadow_storage_err` and `fatal_fault` alert |
 | Core data request with an invalid encoding of the capability tag (`cored_tag_h2d_i`) | Tag read as clear (a store clears the tag, a load returns untagged), and `fatal_fault` alert |
 | Capability store to the NVM that does not match the NVM contents, or whose NVM read fails | `d_error` towards the core, tag unchanged |
 | Capability store to the NVM with a bad command or data integrity, a bad NVM response integrity, not a full-word `PutFullData`, or out of the W0-W1 sequence | `d_error` towards the core, tag unchanged, and `fatal_fault` alert |
@@ -321,8 +334,11 @@ The subsystem distinguishes a denied access from a fault:
 The first three, and a capability store to the NVM that does not match or whose NVM read fails,
 are reachable by software and surface as a bus fault in the core, and an error response to a read
 of the revocation engine, e.g. of a read-protected NVM page, only fails the sweep; none of them
-raises an alert. The others latch the fatal alert until reset; a sweep that could not be completed
-correctly must not look successful.
+raises an alert. A mismatching shadow register update is reachable by software too and raises only
+the recoverable alert. The others latch the fatal alert until reset; a sweep that could not be
+completed correctly must not look successful. A shadow register storage error does not stop the
+revocation engine: a sweep started after it runs on the committed value, which may be the corrupted
+one, and the subsystem relies on the escalation of `fatal_fault`, as for a lockstep mismatch.
 
 
 ## Timing

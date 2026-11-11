@@ -78,10 +78,10 @@ Security      | [SEC_CM_DOCUMENTED][]     | Not Started |
  Type         | Item                         | Resolution  | Note/Collaterals
 --------------|------------------------------|-------------|------------------
 Security      | [SEC_CM_ASSETS_LISTED][]     | Done        | [cheriot_mem_sys.hjson](../data/cheriot_mem_sys.hjson)
-Security      | [SEC_CM_IMPLEMENTED][]       | Done        | `LOGIC.SHADOW` (lockstep, #30572), `BUS.INTEGRITY`, `MEM.SW_NOACCESS`, `INTERSIG.MUBI` and `CORED_TAG.INTERSIG.MUBI` are implemented. The CSRs are common to both lockstep copies, see SEC_CM_SHADOW_REGS.
+Security      | [SEC_CM_IMPLEMENTED][]       | Done        | `LOGIC.SHADOW`, `BUS.INTEGRITY`, `TBRE.CONFIG.SHADOW`, `MEM.SW_NOACCESS`, `INTERSIG.MUBI` and `CORED_TAG.INTERSIG.MUBI` are implemented. The CSRs are common to both lockstep copies, see SEC_CM_SHADOW_REGS.
 Security      | [SEC_CM_RND_CNST][]          | N/A         |
 Security      | [SEC_CM_NON_RESET_FLOPS][]   | Not Started |
-Security      | [SEC_CM_SHADOW_REGS][]       | Not Started | `TBRE_BASE_ADDR` and `TBRE_NUM_CAPS` reach both lockstep copies from one CSR block and are to be shadowed (#31066).
+Security      | [SEC_CM_SHADOW_REGS][]       | Done        | `TBRE_BASE_ADDR_SHADOWED` and `TBRE_NUM_CAPS_SHADOWED`, which reach both lockstep copies from one CSR block, are shadowed (`TBRE.CONFIG.SHADOW`).
 Security      | [SEC_CM_RTL_REVIEWED][]      | Not Started |
 Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
 

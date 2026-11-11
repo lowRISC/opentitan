@@ -51,8 +51,15 @@
             This fatal alert is triggered when the two copies of the lockstep disagree, when an
             integrity fault is detected, when a core data request carries an invalid encoding of
             the capability tag, when the meta SRAM path returns a device error, when the revocation
-            engine reports a fault, when a capability store to the NVM is partial, or when a request
-            breaks the core's capability store sequence.
+            engine reports a fault, when a capability store to the NVM is partial, when a request
+            breaks the core's capability store sequence, or when a shadow register has a storage
+            error.
+            '''
+    }
+    { name: "recov_ctrl_update_err",
+      desc: '''
+            This recoverable alert is triggered when the two writes of an update to a shadow
+            register disagree. The register keeps its previous value.
             '''
     }
   ],
@@ -142,8 +149,8 @@
 
     { name:    "TbreNumCapsW",
       desc:    '''
-               Width of TBRE_NUM_CAPS. A sweep reads two words per capability, and that word count
-               fits the TL-UL address width.
+               Width of TBRE_NUM_CAPS_SHADOWED. A sweep reads two words per capability, and that
+               word count fits the TL-UL address width.
                ''',
       type:    "int unsigned",
       default: "31",
@@ -302,10 +309,17 @@
         instantiated in lockstep: with the SecLockstep parameter set (the default), a second copy
         of its logic runs LockstepOffset cycles behind the main copy, and a difference in their
         outputs other than the alert, or a fatal error of the second copy, raises the fatal_fault
-        alert. The registers, the interrupt and the alert sender are not duplicated, so the
-        register values are common to both copies.
-        This also covers the pointers of the subsystem's FIFOs, which therefore are not
-        redundantly encoded (CTR.REDUN). With SecLockstep set to 0, neither holds.
+        alert. This also covers the pointers of the subsystem's FIFOs, which therefore are not
+        redundantly encoded (CTR.REDUN). The registers, the interrupt and the alert senders are
+        not duplicated, so the register values are common to both lockstep copies:
+        TBRE.CONFIG.SHADOW protects the stored sweep configuration, and each lockstep copy
+        captures it when a sweep starts. With SecLockstep set to 0, neither the lockstep nor its
+        coverage of the FIFO pointers holds.
+      '''
+    },
+    { name: "TBRE.CONFIG.SHADOW",
+      desc: '''
+        The sweep configuration registers of the revocation engine are shadowed.
       '''
     },
     { name: "MEM.SW_NOACCESS",
@@ -342,6 +356,42 @@
   regwidth: "32",
   registers: {
     regs: [
+      { name: "RECOV_ERR_CODE",
+        desc: "Recoverable error code.",
+        swaccess: "rw1c",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "0",
+            name: "shadow_update_err",
+            desc: '''
+              The second write of a shadow register update did not match the first. Stays set until
+              software writes 1 to it.
+            ''',
+            resval: "0"
+          }
+        ]
+      },
+      { name: "FATAL_ERR_CODE",
+        desc: "Fatal error code.",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "0",
+            name: "reg_intg",
+            desc: '''
+              A request to the register interface failed its integrity check. Stays set until reset.
+            ''',
+            resval: "0"
+          },
+          { bits: "1",
+            name: "shadow_storage_err",
+            desc: '''
+              The two stored copies of a shadow register differed. Stays set until reset.
+            ''',
+            resval: "0"
+          }
+        ]
+      },
       { name: "TBRE_REGWEN",
         desc: "Write enable for the revocation engine registers.",
         swaccess: "ro",
@@ -351,18 +401,22 @@
           { bits: "0",
             name: "en",
             desc: '''
-              Low while the revocation engine is active, locking !!TBRE_BASE_ADDR, !!TBRE_NUM_CAPS
-              and !!TBRE_START. !!TBRE_STATUS.busy follows the same state one cycle later.
+              Low while the revocation engine is active, locking !!TBRE_BASE_ADDR_SHADOWED,
+              !!TBRE_NUM_CAPS_SHADOWED and !!TBRE_START. !!TBRE_STATUS.busy follows the same state
+              one cycle later.
             ''',
             resval: "1"
           }
         ]
       },
-      { name: "TBRE_BASE_ADDR",
+      { name: "TBRE_BASE_ADDR_SHADOWED",
         desc: "Address of the first capability the revocation engine sweeps.",
         regwen: "TBRE_REGWEN",
         swaccess: "rw",
         hwaccess: "hro",
+        shadowed: "true",
+        update_err_alert: "recov_ctrl_update_err",
+        storage_err_alert: "fatal_fault",
         fields: [
           { bits: "31:3",
             name: "addr",
@@ -375,11 +429,14 @@
           }
         ]
       },
-      { name: "TBRE_NUM_CAPS",
+      { name: "TBRE_NUM_CAPS_SHADOWED",
         desc: "Number of capabilities the revocation engine sweeps, each of them two 32-bit words.",
         regwen: "TBRE_REGWEN",
         swaccess: "rw",
         hwaccess: "hro",
+        shadowed: "true",
+        update_err_alert: "recov_ctrl_update_err",
+        storage_err_alert: "fatal_fault",
         fields: [
           { bits: "TbreNumCapsW-1:0",
             name: "num",
@@ -393,10 +450,11 @@
       },
       { name: "TBRE_START",
         desc: '''
-          Starts a sweep over the capabilities !!TBRE_BASE_ADDR and !!TBRE_NUM_CAPS describe.
-          !!TBRE_STATUS.busy reflects the sweep in progress. A start outside CHERIoT mode, with
-          !!TBRE_NUM_CAPS zero, or with !!TBRE_BASE_ADDR outside the tagged regions, is ignored and
-          sets !!TBRE_STATUS.start_err.
+          Starts a sweep over the capabilities !!TBRE_BASE_ADDR_SHADOWED and
+          !!TBRE_NUM_CAPS_SHADOWED describe. !!TBRE_STATUS.busy reflects the sweep in progress. A
+          start outside CHERIoT mode, with !!TBRE_NUM_CAPS_SHADOWED zero, or with
+          !!TBRE_BASE_ADDR_SHADOWED outside the tagged regions, is ignored and sets
+          !!TBRE_STATUS.start_err.
         ''',
         regwen: "TBRE_REGWEN",
         swaccess: "wo",
@@ -430,9 +488,9 @@
             name: "start_err",
             swaccess: "rw1c",
             desc: '''
-              A start was ignored because the subsystem was not in CHERIoT mode, !!TBRE_NUM_CAPS was
-              zero or !!TBRE_BASE_ADDR was outside the tagged regions. Stays set until software
-              writes 1 to it.
+              A start was ignored because the subsystem was not in CHERIoT mode,
+              !!TBRE_NUM_CAPS_SHADOWED was zero or !!TBRE_BASE_ADDR_SHADOWED was outside the tagged
+              regions. Stays set until software writes 1 to it.
             ''',
             resval: "0"
           },

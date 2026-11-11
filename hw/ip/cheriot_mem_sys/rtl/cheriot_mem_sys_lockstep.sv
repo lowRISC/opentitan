@@ -37,12 +37,12 @@ module cheriot_mem_sys_lockstep
   input  prim_mubi_pkg::mubi4_t cheriot_ena_i,
 
   // Revocation engine registers
-  input  cheriot_mem_sys_reg2hw_tbre_base_addr_reg_t tbre_base_addr_i,
-  input  cheriot_mem_sys_reg2hw_tbre_num_caps_reg_t  tbre_num_caps_i,
-  input  cheriot_mem_sys_reg2hw_tbre_start_reg_t     tbre_start_i,
-  input  cheriot_mem_sys_hw2reg_tbre_regwen_reg_t    tbre_regwen_i,
-  input  cheriot_mem_sys_hw2reg_tbre_status_reg_t    tbre_status_i,
-  input  cheriot_mem_sys_hw2reg_tbre_epoch_reg_t     tbre_epoch_i,
+  input  cheriot_mem_sys_reg2hw_tbre_base_addr_shadowed_reg_t tbre_base_addr_i,
+  input  cheriot_mem_sys_reg2hw_tbre_num_caps_shadowed_reg_t  tbre_num_caps_i,
+  input  cheriot_mem_sys_reg2hw_tbre_start_reg_t              tbre_start_i,
+  input  cheriot_mem_sys_hw2reg_tbre_regwen_reg_t             tbre_regwen_i,
+  input  cheriot_mem_sys_hw2reg_tbre_status_reg_t             tbre_status_i,
+  input  cheriot_mem_sys_hw2reg_tbre_epoch_reg_t              tbre_epoch_i,
 
   // Revocation engine done event
   input  logic tbre_done_i,
@@ -186,17 +186,17 @@ module cheriot_mem_sys_lockstep
   //////////////////
 
   typedef struct packed {
-    prim_mubi_pkg::mubi4_t                      cheriot_ena;
-    cheriot_mem_sys_reg2hw_tbre_base_addr_reg_t tbre_base_addr;
-    cheriot_mem_sys_reg2hw_tbre_num_caps_reg_t  tbre_num_caps;
-    cheriot_mem_sys_reg2hw_tbre_start_reg_t     tbre_start;
-    tlul_pkg::tl_h2d_t                          cored_tl_d;
-    prim_mubi_pkg::mubi4_t                      cored_tag_h2d;
-    tlul_pkg::tl_h2d_t                          corerevbm_tl;
-    tlul_pkg::tl_h2d_t                          revbm_tl_d;
-    tlul_pkg::tl_d2h_t                          cored_tl_h;
-    tlul_pkg::tl_d2h_t                          tbre_tl_h;
-    tlul_pkg::tl_d2h_t                          meta_sram_tl;
+    prim_mubi_pkg::mubi4_t                               cheriot_ena;
+    cheriot_mem_sys_reg2hw_tbre_base_addr_shadowed_reg_t tbre_base_addr;
+    cheriot_mem_sys_reg2hw_tbre_num_caps_shadowed_reg_t  tbre_num_caps;
+    cheriot_mem_sys_reg2hw_tbre_start_reg_t              tbre_start;
+    tlul_pkg::tl_h2d_t                                   cored_tl_d;
+    prim_mubi_pkg::mubi4_t                               cored_tag_h2d;
+    tlul_pkg::tl_h2d_t                                   corerevbm_tl;
+    tlul_pkg::tl_h2d_t                                   revbm_tl_d;
+    tlul_pkg::tl_d2h_t                                   cored_tl_h;
+    tlul_pkg::tl_d2h_t                                   tbre_tl_h;
+    tlul_pkg::tl_d2h_t                                   meta_sram_tl;
   } delayed_inputs_t;
 
   // Stage LockstepOffset-1 takes the inputs of the main copy, stage 0 feeds the second copy.

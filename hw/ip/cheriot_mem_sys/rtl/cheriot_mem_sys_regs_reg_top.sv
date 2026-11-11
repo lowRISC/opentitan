@@ -9,11 +9,15 @@
 module cheriot_mem_sys_regs_reg_top (
   input clk_i,
   input rst_ni,
+  input rst_shadowed_ni,
   input  tlul_pkg::tl_h2d_t tl_i,
   output tlul_pkg::tl_d2h_t tl_o,
   // To HW
   output cheriot_mem_sys_reg_pkg::cheriot_mem_sys_regs_reg2hw_t reg2hw, // Write
   input  cheriot_mem_sys_reg_pkg::cheriot_mem_sys_regs_hw2reg_t hw2reg, // Read
+
+  output logic shadowed_storage_err_o,
+  output logic shadowed_update_err_o,
 
   // Integrity check errors
   output logic intg_err_o
@@ -52,9 +56,9 @@ module cheriot_mem_sys_regs_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [9:0] reg_we_check;
+  logic [11:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(10)
+    .OneHotWidth(12)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -131,16 +135,28 @@ module cheriot_mem_sys_regs_reg_top (
   logic intr_test_wd;
   logic alert_test_we;
   logic alert_test_fatal_fault_wd;
+  logic alert_test_recov_ctrl_update_err_wd;
   logic alert_test_regwen_qs;
   logic alert_test_regwen_wd;
+  logic recov_err_code_we;
+  logic recov_err_code_qs;
+  logic recov_err_code_wd;
+  logic fatal_err_code_reg_intg_qs;
+  logic fatal_err_code_shadow_storage_err_qs;
   logic tbre_regwen_re;
   logic tbre_regwen_qs;
-  logic tbre_base_addr_we;
-  logic [28:0] tbre_base_addr_qs;
-  logic [28:0] tbre_base_addr_wd;
-  logic tbre_num_caps_we;
-  logic [30:0] tbre_num_caps_qs;
-  logic [30:0] tbre_num_caps_wd;
+  logic tbre_base_addr_shadowed_re;
+  logic tbre_base_addr_shadowed_we;
+  logic [28:0] tbre_base_addr_shadowed_qs;
+  logic [28:0] tbre_base_addr_shadowed_wd;
+  logic tbre_base_addr_shadowed_storage_err;
+  logic tbre_base_addr_shadowed_update_err;
+  logic tbre_num_caps_shadowed_re;
+  logic tbre_num_caps_shadowed_we;
+  logic [30:0] tbre_num_caps_shadowed_qs;
+  logic [30:0] tbre_num_caps_shadowed_wd;
+  logic tbre_num_caps_shadowed_storage_err;
+  logic tbre_num_caps_shadowed_update_err;
   logic tbre_start_we;
   logic tbre_start_wd;
   logic tbre_status_we;
@@ -234,7 +250,7 @@ module cheriot_mem_sys_regs_reg_top (
 
   // R[alert_test]: V(True)
   logic alert_test_qe;
-  logic [1:0] alert_test_flds_we;
+  logic [2:0] alert_test_flds_we;
   assign alert_test_qe = &alert_test_flds_we;
   // Create REGWEN-gated WE signal
   logic alert_test_gated_we;
@@ -249,11 +265,27 @@ module cheriot_mem_sys_regs_reg_top (
     .d      ('0),
     .qre    (),
     .qe     (alert_test_flds_we[0]),
-    .q      (reg2hw.alert_test.q),
+    .q      (reg2hw.alert_test.fatal_fault.q),
     .ds     (),
     .qs     ()
   );
-  assign reg2hw.alert_test.qe = alert_test_qe;
+  assign reg2hw.alert_test.fatal_fault.qe = alert_test_qe;
+
+  //   F[recov_ctrl_update_err]: 1:1
+  prim_subreg_ext #(
+    .DW    (1)
+  ) u_alert_test_recov_ctrl_update_err (
+    .re     (1'b0),
+    .we     (alert_test_gated_we),
+    .wd     (alert_test_recov_ctrl_update_err_wd),
+    .d      ('0),
+    .qre    (),
+    .qe     (alert_test_flds_we[1]),
+    .q      (reg2hw.alert_test.recov_ctrl_update_err.q),
+    .ds     (),
+    .qs     ()
+  );
+  assign reg2hw.alert_test.recov_ctrl_update_err.qe = alert_test_qe;
 
   //   F[regwen]: 31:31
   prim_subreg #(
@@ -275,12 +307,99 @@ module cheriot_mem_sys_regs_reg_top (
     .d      ('0),
 
     // to internal hardware
-    .qe     (alert_test_flds_we[1]),
+    .qe     (alert_test_flds_we[2]),
     .q      (),
     .ds     (),
 
     // to register interface (read)
     .qs     (alert_test_regwen_qs)
+  );
+
+
+  // R[recov_err_code]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW1C),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_recov_err_code (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (recov_err_code_we),
+    .wd     (recov_err_code_wd),
+
+    // from internal hardware
+    .de     (hw2reg.recov_err_code.de),
+    .d      (hw2reg.recov_err_code.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (recov_err_code_qs)
+  );
+
+
+  // R[fatal_err_code]: V(False)
+  //   F[reg_intg]: 0:0
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_fatal_err_code_reg_intg (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fatal_err_code.reg_intg.de),
+    .d      (hw2reg.fatal_err_code.reg_intg.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (fatal_err_code_reg_intg_qs)
+  );
+
+  //   F[shadow_storage_err]: 1:1
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_fatal_err_code_shadow_storage_err (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.fatal_err_code.shadow_storage_err.de),
+    .d      (hw2reg.fatal_err_code.shadow_storage_err.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (fatal_err_code_shadow_storage_err_qs)
   );
 
 
@@ -300,23 +419,24 @@ module cheriot_mem_sys_regs_reg_top (
   );
 
 
-  // R[tbre_base_addr]: V(False)
+  // R[tbre_base_addr_shadowed]: V(False)
   // Create REGWEN-gated WE signal
-  logic tbre_base_addr_gated_we;
-  assign tbre_base_addr_gated_we = tbre_base_addr_we & tbre_regwen_qs;
-  prim_subreg #(
+  logic tbre_base_addr_shadowed_gated_we;
+  assign tbre_base_addr_shadowed_gated_we = tbre_base_addr_shadowed_we & tbre_regwen_qs;
+  prim_subreg_shadow #(
     .DW      (29),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (29'h0),
     .Mubi    (1'b0)
-  ) u_tbre_base_addr (
+  ) u_tbre_base_addr_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (tbre_base_addr_gated_we),
-    .wd     (tbre_base_addr_wd),
+    .re     (tbre_base_addr_shadowed_re),
+    .we     (tbre_base_addr_shadowed_gated_we),
+    .wd     (tbre_base_addr_shadowed_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -324,31 +444,39 @@ module cheriot_mem_sys_regs_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.tbre_base_addr.q),
+    .q      (reg2hw.tbre_base_addr_shadowed.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (tbre_base_addr_qs)
+    .qs     (tbre_base_addr_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (tbre_base_addr_shadowed_update_err),
+    .err_storage (tbre_base_addr_shadowed_storage_err)
   );
 
 
-  // R[tbre_num_caps]: V(False)
+  // R[tbre_num_caps_shadowed]: V(False)
   // Create REGWEN-gated WE signal
-  logic tbre_num_caps_gated_we;
-  assign tbre_num_caps_gated_we = tbre_num_caps_we & tbre_regwen_qs;
-  prim_subreg #(
+  logic tbre_num_caps_shadowed_gated_we;
+  assign tbre_num_caps_shadowed_gated_we = tbre_num_caps_shadowed_we & tbre_regwen_qs;
+  prim_subreg_shadow #(
     .DW      (31),
     .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (31'h0),
     .Mubi    (1'b0)
-  ) u_tbre_num_caps (
+  ) u_tbre_num_caps_shadowed (
     .clk_i   (clk_i),
     .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
+    .rst_shadowed_ni (rst_shadowed_ni),
 
     // from register interface
-    .we     (tbre_num_caps_gated_we),
-    .wd     (tbre_num_caps_wd),
+    .re     (tbre_num_caps_shadowed_re),
+    .we     (tbre_num_caps_shadowed_gated_we),
+    .wd     (tbre_num_caps_shadowed_wd),
 
     // from internal hardware
     .de     (1'b0),
@@ -356,11 +484,18 @@ module cheriot_mem_sys_regs_reg_top (
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.tbre_num_caps.q),
+    .q      (reg2hw.tbre_num_caps_shadowed.q),
     .ds     (),
 
     // to register interface (read)
-    .qs     (tbre_num_caps_qs)
+    .qs     (tbre_num_caps_shadowed_qs),
+
+    // Shadow register phase. Relevant for hwext only.
+    .phase  (),
+
+    // Shadow register error conditions
+    .err_update  (tbre_num_caps_shadowed_update_err),
+    .err_storage (tbre_num_caps_shadowed_storage_err)
   );
 
 
@@ -506,18 +641,20 @@ module cheriot_mem_sys_regs_reg_top (
 
 
 
-  logic [9:0] addr_hit;
+  logic [11:0] addr_hit;
   always_comb begin
-    addr_hit[0] = (reg_addr == CHERIOT_MEM_SYS_INTR_STATE_OFFSET);
-    addr_hit[1] = (reg_addr == CHERIOT_MEM_SYS_INTR_ENABLE_OFFSET);
-    addr_hit[2] = (reg_addr == CHERIOT_MEM_SYS_INTR_TEST_OFFSET);
-    addr_hit[3] = (reg_addr == CHERIOT_MEM_SYS_ALERT_TEST_OFFSET);
-    addr_hit[4] = (reg_addr == CHERIOT_MEM_SYS_TBRE_REGWEN_OFFSET);
-    addr_hit[5] = (reg_addr == CHERIOT_MEM_SYS_TBRE_BASE_ADDR_OFFSET);
-    addr_hit[6] = (reg_addr == CHERIOT_MEM_SYS_TBRE_NUM_CAPS_OFFSET);
-    addr_hit[7] = (reg_addr == CHERIOT_MEM_SYS_TBRE_START_OFFSET);
-    addr_hit[8] = (reg_addr == CHERIOT_MEM_SYS_TBRE_STATUS_OFFSET);
-    addr_hit[9] = (reg_addr == CHERIOT_MEM_SYS_TBRE_EPOCH_OFFSET);
+    addr_hit[ 0] = (reg_addr == CHERIOT_MEM_SYS_INTR_STATE_OFFSET);
+    addr_hit[ 1] = (reg_addr == CHERIOT_MEM_SYS_INTR_ENABLE_OFFSET);
+    addr_hit[ 2] = (reg_addr == CHERIOT_MEM_SYS_INTR_TEST_OFFSET);
+    addr_hit[ 3] = (reg_addr == CHERIOT_MEM_SYS_ALERT_TEST_OFFSET);
+    addr_hit[ 4] = (reg_addr == CHERIOT_MEM_SYS_RECOV_ERR_CODE_OFFSET);
+    addr_hit[ 5] = (reg_addr == CHERIOT_MEM_SYS_FATAL_ERR_CODE_OFFSET);
+    addr_hit[ 6] = (reg_addr == CHERIOT_MEM_SYS_TBRE_REGWEN_OFFSET);
+    addr_hit[ 7] = (reg_addr == CHERIOT_MEM_SYS_TBRE_BASE_ADDR_SHADOWED_OFFSET);
+    addr_hit[ 8] = (reg_addr == CHERIOT_MEM_SYS_TBRE_NUM_CAPS_SHADOWED_OFFSET);
+    addr_hit[ 9] = (reg_addr == CHERIOT_MEM_SYS_TBRE_START_OFFSET);
+    addr_hit[10] = (reg_addr == CHERIOT_MEM_SYS_TBRE_STATUS_OFFSET);
+    addr_hit[11] = (reg_addr == CHERIOT_MEM_SYS_TBRE_EPOCH_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -525,16 +662,18 @@ module cheriot_mem_sys_regs_reg_top (
   // Check sub-word write is permitted
   always_comb begin
     wr_err = (reg_we &
-              ((addr_hit[0] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[0] & ~reg_be))) |
-               (addr_hit[1] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[1] & ~reg_be))) |
-               (addr_hit[2] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[2] & ~reg_be))) |
-               (addr_hit[3] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[3] & ~reg_be))) |
-               (addr_hit[4] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[4] & ~reg_be))) |
-               (addr_hit[5] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[5] & ~reg_be))) |
-               (addr_hit[6] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[6] & ~reg_be))) |
-               (addr_hit[7] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[7] & ~reg_be))) |
-               (addr_hit[8] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[8] & ~reg_be))) |
-               (addr_hit[9] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[9] & ~reg_be)))));
+              ((addr_hit[ 0] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[ 0] & ~reg_be))) |
+               (addr_hit[ 1] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[ 1] & ~reg_be))) |
+               (addr_hit[ 2] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[ 2] & ~reg_be))) |
+               (addr_hit[ 3] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[ 3] & ~reg_be))) |
+               (addr_hit[ 4] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[ 4] & ~reg_be))) |
+               (addr_hit[ 5] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[ 5] & ~reg_be))) |
+               (addr_hit[ 6] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[ 6] & ~reg_be))) |
+               (addr_hit[ 7] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[ 7] & ~reg_be))) |
+               (addr_hit[ 8] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[ 8] & ~reg_be))) |
+               (addr_hit[ 9] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[ 9] & ~reg_be))) |
+               (addr_hit[10] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[10] & ~reg_be))) |
+               (addr_hit[11] & (|(CHERIOT_MEM_SYS_REGS_PERMIT[11] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -551,23 +690,30 @@ module cheriot_mem_sys_regs_reg_top (
 
   assign alert_test_fatal_fault_wd = reg_wdata[0];
 
+  assign alert_test_recov_ctrl_update_err_wd = reg_wdata[1];
+
   assign alert_test_regwen_wd = reg_wdata[31];
-  assign tbre_regwen_re = addr_hit[4] & reg_re & !reg_error;
-  assign tbre_base_addr_we = addr_hit[5] & reg_we & !reg_error;
+  assign recov_err_code_we = addr_hit[4] & reg_we & !reg_error;
 
-  assign tbre_base_addr_wd = reg_wdata[31:3];
-  assign tbre_num_caps_we = addr_hit[6] & reg_we & !reg_error;
+  assign recov_err_code_wd = reg_wdata[0];
+  assign tbre_regwen_re = addr_hit[6] & reg_re & !reg_error;
+  assign tbre_base_addr_shadowed_re = addr_hit[7] & reg_re & !reg_error;
+  assign tbre_base_addr_shadowed_we = addr_hit[7] & reg_we & !reg_error;
 
-  assign tbre_num_caps_wd = reg_wdata[30:0];
-  assign tbre_start_we = addr_hit[7] & reg_we & !reg_error;
+  assign tbre_base_addr_shadowed_wd = reg_wdata[31:3];
+  assign tbre_num_caps_shadowed_re = addr_hit[8] & reg_re & !reg_error;
+  assign tbre_num_caps_shadowed_we = addr_hit[8] & reg_we & !reg_error;
+
+  assign tbre_num_caps_shadowed_wd = reg_wdata[30:0];
+  assign tbre_start_we = addr_hit[9] & reg_we & !reg_error;
 
   assign tbre_start_wd = reg_wdata[0];
-  assign tbre_status_we = addr_hit[8] & reg_we & !reg_error;
+  assign tbre_status_we = addr_hit[10] & reg_we & !reg_error;
 
   assign tbre_status_start_err_wd = reg_wdata[8];
 
   assign tbre_status_sweep_err_wd = reg_wdata[9];
-  assign tbre_epoch_re = addr_hit[9] & reg_re & !reg_error;
+  assign tbre_epoch_re = addr_hit[11] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -575,12 +721,14 @@ module cheriot_mem_sys_regs_reg_top (
     reg_we_check[1] = intr_enable_we;
     reg_we_check[2] = intr_test_we;
     reg_we_check[3] = alert_test_we;
-    reg_we_check[4] = 1'b0;
-    reg_we_check[5] = tbre_base_addr_gated_we;
-    reg_we_check[6] = tbre_num_caps_gated_we;
-    reg_we_check[7] = tbre_start_gated_we;
-    reg_we_check[8] = tbre_status_we;
-    reg_we_check[9] = 1'b0;
+    reg_we_check[4] = recov_err_code_we;
+    reg_we_check[5] = 1'b0;
+    reg_we_check[6] = 1'b0;
+    reg_we_check[7] = tbre_base_addr_shadowed_gated_we;
+    reg_we_check[8] = tbre_num_caps_shadowed_gated_we;
+    reg_we_check[9] = tbre_start_gated_we;
+    reg_we_check[10] = tbre_status_we;
+    reg_we_check[11] = 1'b0;
   end
 
   // Read data return
@@ -601,32 +749,42 @@ module cheriot_mem_sys_regs_reg_top (
 
       addr_hit[3]: begin
         reg_rdata_next[0] = '0;
+        reg_rdata_next[1] = '0;
         reg_rdata_next[31] = alert_test_regwen_qs;
       end
 
       addr_hit[4]: begin
-        reg_rdata_next[0] = tbre_regwen_qs;
+        reg_rdata_next[0] = recov_err_code_qs;
       end
 
       addr_hit[5]: begin
-        reg_rdata_next[31:3] = tbre_base_addr_qs;
+        reg_rdata_next[0] = fatal_err_code_reg_intg_qs;
+        reg_rdata_next[1] = fatal_err_code_shadow_storage_err_qs;
       end
 
       addr_hit[6]: begin
-        reg_rdata_next[30:0] = tbre_num_caps_qs;
+        reg_rdata_next[0] = tbre_regwen_qs;
       end
 
       addr_hit[7]: begin
-        reg_rdata_next[0] = '0;
+        reg_rdata_next[31:3] = tbre_base_addr_shadowed_qs;
       end
 
       addr_hit[8]: begin
+        reg_rdata_next[30:0] = tbre_num_caps_shadowed_qs;
+      end
+
+      addr_hit[9]: begin
+        reg_rdata_next[0] = '0;
+      end
+
+      addr_hit[10]: begin
         reg_rdata_next[0] = tbre_status_busy_qs;
         reg_rdata_next[8] = tbre_status_start_err_qs;
         reg_rdata_next[9] = tbre_status_sweep_err_qs;
       end
 
-      addr_hit[9]: begin
+      addr_hit[11]: begin
         reg_rdata_next[0] = tbre_epoch_active_qs;
         reg_rdata_next[31:1] = tbre_epoch_count_qs;
       end
@@ -639,7 +797,36 @@ module cheriot_mem_sys_regs_reg_top (
 
   // shadow busy
   logic shadow_busy;
-  assign shadow_busy = 1'b0;
+  logic rst_done;
+  logic shadow_rst_done;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      rst_done <= '0;
+    end else begin
+      rst_done <= 1'b1;
+    end
+  end
+
+  always_ff @(posedge clk_i or negedge rst_shadowed_ni) begin
+    if (!rst_shadowed_ni) begin
+      shadow_rst_done <= '0;
+    end else begin
+      shadow_rst_done <= 1'b1;
+    end
+  end
+
+  // both shadow and normal resets have been released
+  assign shadow_busy = ~(rst_done & shadow_rst_done);
+
+  // Collect up storage and update errors
+  assign shadowed_storage_err_o = |{
+    tbre_base_addr_shadowed_storage_err,
+    tbre_num_caps_shadowed_storage_err
+  };
+  assign shadowed_update_err_o = |{
+    tbre_base_addr_shadowed_update_err,
+    tbre_num_caps_shadowed_update_err
+  };
 
   // register busy
   assign reg_busy = shadow_busy;

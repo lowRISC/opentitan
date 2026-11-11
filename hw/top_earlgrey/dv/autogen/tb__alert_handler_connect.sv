@@ -72,4 +72,5 @@ assign alert_if[64].alert_tx = `PD_MAIN_HIER.u_rv_core_ibex.alert_tx_o[1];
 assign alert_if[65].alert_tx = `PD_MAIN_HIER.u_rv_core_ibex.alert_tx_o[2];
 assign alert_if[66].alert_tx = `PD_MAIN_HIER.u_rv_core_ibex.alert_tx_o[3];
 assign alert_if[67].alert_tx = `PD_MAIN_HIER.u_cheriot_mem_sys.alert_tx_o[0];
-assign alert_if[68].alert_tx = `PD_MAIN_HIER.u_sram_ctrl_meta.alert_tx_o[0];
+assign alert_if[68].alert_tx = `PD_MAIN_HIER.u_cheriot_mem_sys.alert_tx_o[1];
+assign alert_if[69].alert_tx = `PD_MAIN_HIER.u_sram_ctrl_meta.alert_tx_o[0];

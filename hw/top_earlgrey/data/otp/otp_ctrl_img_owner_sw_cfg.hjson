@@ -118,6 +118,7 @@
                         "0x94949494",
                         "0x94949494",
                         "0x94949494",
+                        "0x94949494",
                     ],
                 },
                 {
@@ -168,19 +169,19 @@
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_DEV",
-                    value: "0x363b8f75",
+                    value: "0xed05c026",
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD",
-                    value: "0x5893a89a",
+                    value: "0x83ade7c9",
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_PROD_END",
-                    value: "0xacd84c1f",
+                    value: "0x77e6034c",
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_ALERT_DIGEST_RMA",
-                    value: "0xf2ed003e",
+                    value: "0x29d34f6d",
                 },
                 {
                     name: "OWNER_SW_CFG_ROM_SENSOR_CTRL_ALERT_CFG",
