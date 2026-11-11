@@ -5,6 +5,7 @@
 <%
 item_names = [item["name"] for part in otp_mmap["partitions"] for item in part["items"]]
 has_field_entropy = "FIELD_ENTROPY" in item_names
+has_secondary_root_key = "SECONDARY_ROOT_KEY_SHARE0" in item_names
 %>\
 module tb;
   // dep packages
@@ -150,6 +151,9 @@ module tb;
     .keymgr_owner_seed_o        (otp_ctrl_if.keymgr_owner_seed_o),
   % if has_field_entropy:
     .keymgr_field_entropy_o     (otp_ctrl_if.keymgr_field_entropy_o),
+  % endif
+  % if has_secondary_root_key:
+    .keymgr_secondary_root_key_o(otp_ctrl_if.keymgr_secondary_root_key_o),
   % endif
   % if enable_nvm_key:
     // nvm
