@@ -216,10 +216,10 @@ status_t keymgr_dpe_generate_key_sw(
       keymgr_dpe_base() + KEYMGR_DPE_SW_SHARE0_OUTPUT_0_REG_OFFSET;
   uintptr_t share1 =
       keymgr_dpe_base() + KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET;
-  HARDENED_TRY(hardened_memshred(key->share0, kKeymgrDPEOutputShareNumWords));
+  hardened_memshred(key->share0, kKeymgrDPEOutputShareNumWords);
   HARDENED_TRY(hardened_memcpy(key->share0, (uint32_t *)share0,
                                kKeymgrDPEOutputShareNumWords));
-  HARDENED_TRY(hardened_memshred(key->share1, kKeymgrDPEOutputShareNumWords));
+  hardened_memshred(key->share1, kKeymgrDPEOutputShareNumWords);
   HARDENED_TRY(hardened_memcpy(key->share1, (uint32_t *)share1,
                                kKeymgrDPEOutputShareNumWords));
 

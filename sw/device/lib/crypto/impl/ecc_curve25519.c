@@ -311,16 +311,16 @@ static status_t ed25519_mask_scalar(uint32_t *scalar, size_t scalar_len,
   // can be of different sizes, we resort here to a VLA.
   uint32_t buf[share_len];
   memset(buf, 0, share_len << 2);
-  HARDENED_TRY(hardened_memshred(buf, scalar_len));
+  hardened_memshred(buf, scalar_len);
   HARDENED_TRY(hardened_memcpy(buf, scalar, scalar_len));
 
   // Set share1 to a random value and unset its MSB.
-  HARDENED_TRY(hardened_memshred(share1, share_len));
+  hardened_memshred(share1, share_len);
   share1[share_len - 1] &= 0x7fffffff;
 
   // Compute share0 = share + share1.
   HARDENED_TRY(hardened_add(buf, share1, share_len, share0));
-  HARDENED_TRY(hardened_memshred(buf, share_len));
+  hardened_memshred(buf, share_len);
 
   return OTCRYPTO_OK;
 }
@@ -358,7 +358,7 @@ static otcrypto_status_t ed25519_compute_scalar_and_prefix(
     HARDENED_TRY(otcrypto_sha2_512(&key_buf, key_digest));
 
     // Memshred the unmasked seed.
-    HARDENED_TRY(hardened_memshred(seed_data, ARRAYSIZE(seed_data)));
+    hardened_memshred(seed_data, ARRAYSIZE(seed_data));
   } else {
     // Hardware backed keys are not possible due to the keys being SHA2 seeds
     // which does not allow sideloading.
@@ -372,7 +372,7 @@ static otcrypto_status_t ed25519_compute_scalar_and_prefix(
   HARDENED_TRY(ed25519_mask_scalar(key_digest->data, kCurve25519ScalarWords,
                                    masked_s->share0, masked_s->share1,
                                    kCurve25519MaskedScalarSWords));
-  HARDENED_TRY(hardened_memshred(key_digest->data, kCurve25519ScalarWords));
+  hardened_memshred(key_digest->data, kCurve25519ScalarWords);
 
   return OTCRYPTO_OK;
 }
@@ -421,8 +421,8 @@ static status_t curve25519_csrng_keyblob_generate(
   memset(private_key->keyblob, 0, private_key->keyblob_length);
 
   // Randomize the 256-bit share buffers before writing CSRNG output.
-  HARDENED_TRY(hardened_memshred(share0, kCurve25519MaskedScalarShareWords));
-  HARDENED_TRY(hardened_memshred(share1, kCurve25519MaskedScalarShareWords));
+  hardened_memshred(share0, kCurve25519MaskedScalarShareWords);
+  hardened_memshred(share1, kCurve25519MaskedScalarShareWords);
 
   // Ensure SW CSRNG is instantiated with TRNG entropy and pull both shares.
   HARDENED_TRY(entropy_csrng_instantiate(
@@ -1052,8 +1052,8 @@ otcrypto_status_t otcrypto_x25519_public_key_from_private_async_start(
 
     HARDENED_TRY(curve25519_x25519_keygen_start(&private_scalar));
 
-    HARDENED_TRY(hardened_memshred((uint32_t *)&private_scalar,
-                                   kCurve25519MaskedScalarTotalShareWords));
+    hardened_memshred((uint32_t *)&private_scalar,
+                      kCurve25519MaskedScalarTotalShareWords);
 
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
@@ -1114,8 +1114,8 @@ otcrypto_status_t otcrypto_x25519_async_start(
 
     HARDENED_TRY(curve25519_x25519_start(&private_scalar, public_key->key));
 
-    HARDENED_TRY(hardened_memshred((uint32_t *)&private_scalar,
-                                   kCurve25519MaskedScalarTotalShareWords));
+    hardened_memshred((uint32_t *)&private_scalar,
+                      kCurve25519MaskedScalarTotalShareWords);
 
     return otcrypto_eval_exit(OTCRYPTO_OK);
   }
@@ -1146,11 +1146,11 @@ otcrypto_status_t otcrypto_x25519_async_finalize(
   HARDENED_TRY(keyblob_to_shares(shared_secret, &share0, &share1));
 
   // Randomize the output before computing it.
-  HARDENED_TRY(hardened_memshred(shared_secret->keyblob,
-                                 keyblob_num_words(shared_secret->config)));
+  hardened_memshred(shared_secret->keyblob,
+                    keyblob_num_words(shared_secret->config));
 
   uint32_t shares[kCurve25519MaskedPointWords];
-  HARDENED_TRY(hardened_memshred(shares, kCurve25519MaskedPointWords));
+  hardened_memshred(shares, kCurve25519MaskedPointWords);
   HARDENED_TRY_WIPE_DMEM(curve25519_x25519_finalize(shares));
 
   HARDENED_TRY(hardened_memcpy(share0, shares, kCurve25519PointWords));
@@ -1161,7 +1161,7 @@ otcrypto_status_t otcrypto_x25519_async_finalize(
 
   shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
 
-  HARDENED_TRY(hardened_memshred(shares, kCurve25519MaskedPointWords));
+  hardened_memshred(shares, kCurve25519MaskedPointWords);
   should_wipe = kHardenedBoolFalse;
 
   // Clear the OTBN sideload slot (in case the seed was sideloaded).

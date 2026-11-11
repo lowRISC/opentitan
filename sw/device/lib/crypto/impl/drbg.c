@@ -130,8 +130,7 @@ otcrypto_status_t otcrypto_drbg_instantiate(
 #endif
 
   entropy_seed_material_t seed_material;
-  HARDENED_TRY(
-      hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data)));
+  hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data));
   HARDENED_TRY(seed_material_construct(perso_string, &seed_material));
 
   return otcrypto_eval_exit(entropy_csrng_instantiate(
@@ -151,8 +150,7 @@ otcrypto_status_t otcrypto_drbg_reseed(
 #endif
 
   entropy_seed_material_t seed_material;
-  HARDENED_TRY(
-      hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data)));
+  hardened_memshred(seed_material.data, ARRAYSIZE(seed_material.data));
   HARDENED_TRY(seed_material_construct(additional_input, &seed_material));
 
   return otcrypto_eval_exit(entropy_csrng_reseed(
@@ -260,7 +258,7 @@ otcrypto_status_t otcrypto_drbg_generate(
 #endif
 
   // Randomize destination buffer.
-  HARDENED_TRY(hardened_memshred(drbg_output->data, drbg_output->len));
+  hardened_memshred(drbg_output->data, drbg_output->len);
 
   return otcrypto_eval_exit(generate(/*fips_check=*/kHardenedBoolTrue,
                                      additional_input, drbg_output));
