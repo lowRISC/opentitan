@@ -1188,6 +1188,7 @@
             - aes's rst_edn_ni
             - aes's rst_ni
             - alert_handler's rst_edn_ni
+            - cheriot_mem_sys's rst_ni
             - csrng's rst_ni
             - edn0's rst_ni
             - edn1's rst_ni
@@ -1211,6 +1212,7 @@
       tests: ["rstmgr_sys_d0_aes_rst_edn_ni",
               "rstmgr_sys_d0_aes_rst_ni",
               "rstmgr_sys_d0_alert_handler_rst_edn_ni",
+              "rstmgr_sys_d0_cheriot_mem_sys_rst_ni",
               "rstmgr_sys_d0_csrng_rst_ni",
               "rstmgr_sys_d0_edn0_rst_ni",
               "rstmgr_sys_d0_edn1_rst_ni",
@@ -1236,11 +1238,13 @@
       name: rst_sys_shadowed_d0
       desc: '''Verify rstmgr's rst_sys_shadowed_n[1] is connected to the following:
             - aes's rst_shadowed_ni
+            - cheriot_mem_sys's rst_shadowed_ni
             - keymgr's rst_shadowed_ni
             - kmac's rst_shadowed_ni
             '''
       stage: V2
       tests: ["rstmgr_sys_shadowed_d0_aes_rst_shadowed_ni",
+              "rstmgr_sys_shadowed_d0_cheriot_mem_sys_rst_shadowed_ni",
               "rstmgr_sys_shadowed_d0_keymgr_rst_shadowed_ni",
               "rstmgr_sys_shadowed_d0_kmac_rst_shadowed_ni"]
       si_stage: NA
