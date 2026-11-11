@@ -26,6 +26,7 @@ module cheriot_mem_sys
 
   input  logic clk_i,
   input  logic rst_ni,
+  input  logic rst_shadowed_ni,
 
   // Scan mode, bypasses the reset of the second copy of the logic
   input  prim_mubi_pkg::mubi4_t scanmode_i,
@@ -80,26 +81,41 @@ module cheriot_mem_sys
   cheriot_mem_sys_regs_hw2reg_t hw2reg;
 
   logic reg_intg_err;
+  logic shadowed_storage_err;
+  logic shadowed_update_err;
   logic tbre_done;
   logic core_alert_fatal_fault;
   logic lockstep_alert_fatal_fault;
-  logic alert_test;
+
+  logic [NumAlerts-1:0] alert;
+  logic [NumAlerts-1:0] alert_test;
 
 
   //////////////
   // CSR Node //
   //////////////
 
+  // SEC_CM: TBRE.CONFIG.SHADOW
   cheriot_mem_sys_regs_reg_top u_reg_regs (
     .clk_i,
     .rst_ni,
-    .tl_i      (regs_tl_d_i),
-    .tl_o      (regs_tl_d_o),
+    .rst_shadowed_ni,
+    .tl_i                  (regs_tl_d_i),
+    .tl_o                  (regs_tl_d_o),
     .reg2hw,
     .hw2reg,
+    .shadowed_storage_err_o(shadowed_storage_err),
+    .shadowed_update_err_o (shadowed_update_err),
     // SEC_CM: BUS.INTEGRITY
-    .intg_err_o(reg_intg_err)
+    .intg_err_o            (reg_intg_err)
   );
+
+  assign hw2reg.recov_err_code.d                     = 1'b1;
+  assign hw2reg.recov_err_code.de                    = shadowed_update_err;
+  assign hw2reg.fatal_err_code.reg_intg.d            = 1'b1;
+  assign hw2reg.fatal_err_code.reg_intg.de           = reg_intg_err;
+  assign hw2reg.fatal_err_code.shadow_storage_err.d  = 1'b1;
+  assign hw2reg.fatal_err_code.shadow_storage_err.de = shadowed_storage_err;
 
 
   //////////
@@ -118,8 +134,8 @@ module cheriot_mem_sys
     .clk_i,
     .rst_ni,
     .cheriot_ena_i,
-    .tbre_base_addr_i   (reg2hw.tbre_base_addr),
-    .tbre_num_caps_i    (reg2hw.tbre_num_caps),
+    .tbre_base_addr_i   (reg2hw.tbre_base_addr_shadowed),
+    .tbre_num_caps_i    (reg2hw.tbre_num_caps_shadowed),
     .tbre_start_i       (reg2hw.tbre_start),
     .tbre_regwen_o      (hw2reg.tbre_regwen),
     .tbre_status_o      (hw2reg.tbre_status),
@@ -164,8 +180,8 @@ module cheriot_mem_sys
       .scanmode_i,
       .scan_rst_ni,
       .cheriot_ena_i,
-      .tbre_base_addr_i   (reg2hw.tbre_base_addr),
-      .tbre_num_caps_i    (reg2hw.tbre_num_caps),
+      .tbre_base_addr_i   (reg2hw.tbre_base_addr_shadowed),
+      .tbre_num_caps_i    (reg2hw.tbre_num_caps_shadowed),
       .tbre_start_i       (reg2hw.tbre_start),
       .tbre_regwen_i      (hw2reg.tbre_regwen),
       .tbre_status_i      (hw2reg.tbre_status),
@@ -216,26 +232,35 @@ module cheriot_mem_sys
   );
 
 
-  //////////////////
-  // Alert Sender //
-  //////////////////
+  ///////////////////
+  // Alert Senders //
+  ///////////////////
 
-  assign alert_test = reg2hw.alert_test.q & reg2hw.alert_test.qe;
+  assign alert[AlertFatalFaultIdx]         = reg_intg_err | shadowed_storage_err |
+                                             core_alert_fatal_fault | lockstep_alert_fatal_fault;
+  assign alert[AlertRecovCtrlUpdateErrIdx] = shadowed_update_err;
 
-  prim_alert_sender #(
-    .AsyncOn(AlertAsyncOn[0]),
-    .SkewCycles(AlertSkewCycles),
-    .IsFatal(1'b1)
-  ) u_prim_alert_sender_fatal_fault (
-    .clk_i,
-    .rst_ni,
-    .alert_test_i (alert_test),
-    .alert_req_i  (reg_intg_err | core_alert_fatal_fault | lockstep_alert_fatal_fault),
-    .alert_ack_o  (),
-    .alert_state_o(),
-    .alert_rx_i   (alert_rx_i[0]),
-    .alert_tx_o   (alert_tx_o[0])
-  );
+  assign alert_test[AlertFatalFaultIdx]         = reg2hw.alert_test.fatal_fault.q &
+                                                  reg2hw.alert_test.fatal_fault.qe;
+  assign alert_test[AlertRecovCtrlUpdateErrIdx] = reg2hw.alert_test.recov_ctrl_update_err.q &
+                                                  reg2hw.alert_test.recov_ctrl_update_err.qe;
+
+  for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx
+    prim_alert_sender #(
+      .AsyncOn(AlertAsyncOn[i]),
+      .SkewCycles(AlertSkewCycles),
+      .IsFatal(i == AlertFatalFaultIdx)
+    ) u_prim_alert_sender (
+      .clk_i,
+      .rst_ni,
+      .alert_test_i (alert_test[i]),
+      .alert_req_i  (alert[i]),
+      .alert_ack_o  (),
+      .alert_state_o(),
+      .alert_rx_i   (alert_rx_i[i]),
+      .alert_tx_o   (alert_tx_o[i])
+    );
+  end
 
 
   ////////////////
@@ -278,11 +303,12 @@ module cheriot_mem_sys
   `ASSERT_KNOWN(IntrTbreDoneKnown_A, intr_tbre_done_o)
 
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A,
-      u_reg_regs, alert_tx_o[0])
+      u_reg_regs, alert_tx_o[AlertFatalFaultIdx])
 
   if (SecLockstep && LockstepOffset > 1) begin : gen_lockstep_rst_cnt_assert
     `ASSERT_PRIM_COUNT_ERROR_TRIGGER_ALERT(LockstepResetCountAlertCheck_A,
-        gen_lockstep.u_cheriot_mem_sys_lockstep.gen_reset_counter.u_rst_shadow_cnt, alert_tx_o[0])
+        gen_lockstep.u_cheriot_mem_sys_lockstep.gen_reset_counter.u_rst_shadow_cnt,
+        alert_tx_o[AlertFatalFaultIdx])
   end
 
 endmodule

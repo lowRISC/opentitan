@@ -5,7 +5,7 @@
 `include "prim_assert.sv"
 
 // The logic of the CHERIoT memory subsystem: everything except the registers, the interrupt and the
-// alert sender, which cheriot_mem_sys keeps around it.
+// alert senders, which cheriot_mem_sys keeps around it.
 
 module cheriot_mem_sys_core
   import cheriot_mem_sys_reg_pkg::*;
@@ -27,12 +27,12 @@ module cheriot_mem_sys_core
   input  prim_mubi_pkg::mubi4_t cheriot_ena_i,
 
   // Revocation engine registers
-  input  cheriot_mem_sys_reg2hw_tbre_base_addr_reg_t tbre_base_addr_i,
-  input  cheriot_mem_sys_reg2hw_tbre_num_caps_reg_t  tbre_num_caps_i,
-  input  cheriot_mem_sys_reg2hw_tbre_start_reg_t     tbre_start_i,
-  output cheriot_mem_sys_hw2reg_tbre_regwen_reg_t    tbre_regwen_o,
-  output cheriot_mem_sys_hw2reg_tbre_status_reg_t    tbre_status_o,
-  output cheriot_mem_sys_hw2reg_tbre_epoch_reg_t     tbre_epoch_o,
+  input  cheriot_mem_sys_reg2hw_tbre_base_addr_shadowed_reg_t tbre_base_addr_i,
+  input  cheriot_mem_sys_reg2hw_tbre_num_caps_shadowed_reg_t  tbre_num_caps_i,
+  input  cheriot_mem_sys_reg2hw_tbre_start_reg_t              tbre_start_i,
+  output cheriot_mem_sys_hw2reg_tbre_regwen_reg_t             tbre_regwen_o,
+  output cheriot_mem_sys_hw2reg_tbre_status_reg_t             tbre_status_o,
+  output cheriot_mem_sys_hw2reg_tbre_epoch_reg_t              tbre_epoch_o,
 
   // Revocation engine done event
   output logic tbre_done_o,
@@ -80,6 +80,8 @@ module cheriot_mem_sys_core
   localparam int unsigned CapabilitySizeByte    = 32'd8;
   // Byte offset bits of a capability
   localparam int unsigned CapOffsetW            = $clog2(CapabilitySizeByte);
+  // Capability address bits, as in TBRE_BASE_ADDR_SHADOWED
+  localparam int unsigned CapAddrW              = $bits(addr_t) - CapOffsetW;
   // Number of capability bytes a single TL word in the meta store can track
   localparam int unsigned CapabilityBytePerWord = top_pkg::TL_DW * CapabilitySizeByte;
 
@@ -194,6 +196,10 @@ module cheriot_mem_sys_core
   logic                    tbre_revbm_intg_err;
   logic                    tbre_revbm_data_intg_err;
   logic                    tbre_revbm_dev_err;
+  logic                    tbre_start_taken;
+  logic [CapAddrW-1:0]     tbre_start_cap_q;
+  logic [TbreNumCapsW-1:0] tbre_sweep_caps_q;
+  addr_t                   tbre_cfg_start_addr;
   addr_t                   tbre_start_addr;
   addr_t                   tbre_num_words;
   logic                    tbre_in_sram;
@@ -532,21 +538,21 @@ module cheriot_mem_sys_core
   // Revocation Engine //
   ///////////////////////
 
-  assign tbre_start_addr = {tbre_base_addr_i.q, {CapOffsetW{1'b0}}};
+  assign tbre_cfg_start_addr = {tbre_base_addr_i.q, {CapOffsetW{1'b0}}};
 
   // A sweep starts in one of the tagged regions, the main SRAM or the NVM, and stops at its top.
   // The bounds are constants, so the regions cost comparators against constants and share one
   // subtractor.
-  assign tbre_in_sram      = (tbre_start_addr >= MainSramBaseAddr) &&
-                             (tbre_start_addr <  MainSramTopAddr);
-  assign tbre_in_nvm       = (tbre_start_addr >= NvmBaseAddr) && (tbre_start_addr < NvmTopAddr);
+  assign tbre_in_sram      = (tbre_cfg_start_addr >= MainSramBaseAddr) &&
+                             (tbre_cfg_start_addr <  MainSramTopAddr);
+  assign tbre_in_nvm       = (tbre_cfg_start_addr >= NvmBaseAddr) &&
+                             (tbre_cfg_start_addr <  NvmTopAddr);
   assign tbre_in_range     = tbre_in_sram || tbre_in_nvm;
   assign tbre_region_top   = tbre_in_nvm ? NvmTopAddr : MainSramTopAddr;
-  assign tbre_bytes_to_top = tbre_region_top - tbre_start_addr;
+  assign tbre_bytes_to_top = tbre_region_top - tbre_cfg_start_addr;
   assign tbre_caps_to_top  = tbre_bytes_to_top >> CapOffsetW;
   assign tbre_sweep_caps   = (addr_t'(tbre_num_caps_i.q) > tbre_caps_to_top) ?
                              tbre_caps_to_top[TbreNumCapsW-1:0] : tbre_num_caps_i.q;
-  assign tbre_num_words    = {tbre_sweep_caps, 1'b0};
 
   // Held until the engine accepts the sweep; a start without capabilities, outside the tagged
   // regions or outside CHERIoT mode is dropped.
@@ -562,6 +568,25 @@ module cheriot_mem_sys_core
       tbre_valid_q <= tbre_valid_d;
     end
   end
+
+  // The engine works from a copy of the sweep made when a start is taken, so that each lockstep
+  // copy holds its own instead of reading the shared registers during the sweep.
+  assign tbre_start_taken = !tbre_valid_q && tbre_valid_d;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin : proc_tbre_sweep_store
+    if (!rst_ni) begin
+      tbre_start_cap_q  <= '0;
+      tbre_sweep_caps_q <= '0;
+    end else begin
+      if (tbre_start_taken) begin
+        tbre_start_cap_q  <= tbre_base_addr_i.q;
+        tbre_sweep_caps_q <= tbre_sweep_caps;
+      end
+    end
+  end
+
+  assign tbre_start_addr = {tbre_start_cap_q, {CapOffsetW{1'b0}}};
+  assign tbre_num_words  = {tbre_sweep_caps_q, 1'b0};
 
   // A start that is ignored is flagged until software clears the flag.
   assign tbre_start_err = tbre_start_i.qe && tbre_start_i.q &&
@@ -691,7 +716,10 @@ module cheriot_mem_sys_core
   // Assertions //
   ////////////////
 
-  // The engine reads the sweep from the registers until it accepts it.
+  // The engine's copy of the sweep is only taken while it is inactive, so during a sweep it equals
+  // the registers TBRE_REGWEN locks.
+  `ASSERT(TbreSweepCopyHeld_A, tbre_active |-> !tbre_start_taken)
+  // The sweep offered to the engine does not change until the engine accepts it.
   `ASSERT(TbreReqStable_A, tbre_valid_q && !tbre_ready |=>
                            tbre_valid_q && $stable(tbre_start_addr) && $stable(tbre_num_words))
   `ASSERT(TbreReqNonZero_A, tbre_valid_q |-> tbre_num_words != '0)
@@ -700,9 +728,9 @@ module cheriot_mem_sys_core
           $rose(tbre_valid_q) |-> $past(prim_mubi_pkg::mubi4_test_true_strict(cheriot_ena_i)))
   // A sweep stays inside the tagged region it starts in.
   `ASSERT(TbreReqInRange_A, tbre_valid_q |->
-          (tbre_in_sram &&
+          (tbre_start_addr >= MainSramBaseAddr &&
            35'(tbre_start_addr) + (35'(tbre_num_words) << 2) <= 35'(MainSramTopAddr)) ||
-          (tbre_in_nvm &&
+          (tbre_start_addr >= NvmBaseAddr &&
            35'(tbre_start_addr) + (35'(tbre_num_words) << 2) <= 35'(NvmTopAddr)))
 
   // A stale tag clear only reaches the RMW filter as a read of the tag word.
@@ -790,7 +818,7 @@ module cheriot_mem_sys_core
   `ASSERT_INIT(TaggedRegionsDoNotOverlap_A,
       MainSramTopAddr <= NvmBaseAddr || NvmTopAddr <= MainSramBaseAddr)
   `ASSERT_INIT(MetaSramBaseAddrWordAligned_A, MetaSramBaseAddr[1:0] == 2'b00)
-  // A sweep's word count, twice TBRE_NUM_CAPS, fits an address.
+  // A sweep's word count, twice TBRE_NUM_CAPS_SHADOWED, fits an address.
   `ASSERT_INIT(TbreNumWordsFitAddr_A, TbreNumCapsW + 32'd1 <= $bits(addr_t))
   // The revocation bitmap window declared at the top level must match the size derived from
   // the main SRAM region.

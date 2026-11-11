@@ -45,6 +45,12 @@
       tests: []
     }
     {
+      name: sec_cm_tbre_config_shadow
+      desc: "Verify the countermeasure(s) TBRE.CONFIG.SHADOW."
+      stage: V2S
+      tests: []
+    }
+    {
       name: sec_cm_mem_sw_noaccess
       desc: "Verify the countermeasure(s) MEM.SW_NOACCESS."
       stage: V2S

@@ -9,17 +9,18 @@ package cheriot_mem_sys_reg_pkg;
   // Param list
   parameter int unsigned TbreNumCapsW = 31;
   parameter int unsigned TbreEpochW = 31;
-  parameter int NumAlerts = 1;
+  parameter int NumAlerts = 2;
 
   // Address widths within the block
   parameter int RegsAw = 6;
 
   // Number of registers for every interface
-  parameter int NumRegsRegs = 10;
+  parameter int NumRegsRegs = 12;
 
   // Alert indices
   typedef enum int {
-    AlertFatalFaultIdx = 0
+    AlertFatalFaultIdx = 0,
+    AlertRecovCtrlUpdateErrIdx = 1
   } cheriot_mem_sys_alert_idx_t;
 
   ///////////////////////////////////////////////
@@ -40,17 +41,23 @@ package cheriot_mem_sys_reg_pkg;
   } cheriot_mem_sys_reg2hw_intr_test_reg_t;
 
   typedef struct packed {
-    logic        q;
-    logic        qe;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } recov_ctrl_update_err;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } fatal_fault;
   } cheriot_mem_sys_reg2hw_alert_test_reg_t;
 
   typedef struct packed {
     logic [28:0] q;
-  } cheriot_mem_sys_reg2hw_tbre_base_addr_reg_t;
+  } cheriot_mem_sys_reg2hw_tbre_base_addr_shadowed_reg_t;
 
   typedef struct packed {
     logic [30:0] q;
-  } cheriot_mem_sys_reg2hw_tbre_num_caps_reg_t;
+  } cheriot_mem_sys_reg2hw_tbre_num_caps_shadowed_reg_t;
 
   typedef struct packed {
     logic        q;
@@ -61,6 +68,22 @@ package cheriot_mem_sys_reg_pkg;
     logic        d;
     logic        de;
   } cheriot_mem_sys_hw2reg_intr_state_reg_t;
+
+  typedef struct packed {
+    logic        d;
+    logic        de;
+  } cheriot_mem_sys_hw2reg_recov_err_code_reg_t;
+
+  typedef struct packed {
+    struct packed {
+      logic        d;
+      logic        de;
+    } shadow_storage_err;
+    struct packed {
+      logic        d;
+      logic        de;
+    } reg_intg;
+  } cheriot_mem_sys_hw2reg_fatal_err_code_reg_t;
 
   typedef struct packed {
     logic        d;
@@ -92,18 +115,20 @@ package cheriot_mem_sys_reg_pkg;
 
   // Register -> HW type for regs interface
   typedef struct packed {
-    cheriot_mem_sys_reg2hw_intr_state_reg_t intr_state; // [67:67]
-    cheriot_mem_sys_reg2hw_intr_enable_reg_t intr_enable; // [66:66]
-    cheriot_mem_sys_reg2hw_intr_test_reg_t intr_test; // [65:64]
-    cheriot_mem_sys_reg2hw_alert_test_reg_t alert_test; // [63:62]
-    cheriot_mem_sys_reg2hw_tbre_base_addr_reg_t tbre_base_addr; // [61:33]
-    cheriot_mem_sys_reg2hw_tbre_num_caps_reg_t tbre_num_caps; // [32:2]
+    cheriot_mem_sys_reg2hw_intr_state_reg_t intr_state; // [69:69]
+    cheriot_mem_sys_reg2hw_intr_enable_reg_t intr_enable; // [68:68]
+    cheriot_mem_sys_reg2hw_intr_test_reg_t intr_test; // [67:66]
+    cheriot_mem_sys_reg2hw_alert_test_reg_t alert_test; // [65:62]
+    cheriot_mem_sys_reg2hw_tbre_base_addr_shadowed_reg_t tbre_base_addr_shadowed; // [61:33]
+    cheriot_mem_sys_reg2hw_tbre_num_caps_shadowed_reg_t tbre_num_caps_shadowed; // [32:2]
     cheriot_mem_sys_reg2hw_tbre_start_reg_t tbre_start; // [1:0]
   } cheriot_mem_sys_regs_reg2hw_t;
 
   // HW -> register type for regs interface
   typedef struct packed {
-    cheriot_mem_sys_hw2reg_intr_state_reg_t intr_state; // [40:39]
+    cheriot_mem_sys_hw2reg_intr_state_reg_t intr_state; // [46:45]
+    cheriot_mem_sys_hw2reg_recov_err_code_reg_t recov_err_code; // [44:43]
+    cheriot_mem_sys_hw2reg_fatal_err_code_reg_t fatal_err_code; // [42:39]
     cheriot_mem_sys_hw2reg_tbre_regwen_reg_t tbre_regwen; // [38:38]
     cheriot_mem_sys_hw2reg_tbre_status_reg_t tbre_status; // [37:32]
     cheriot_mem_sys_hw2reg_tbre_epoch_reg_t tbre_epoch; // [31:0]
@@ -114,18 +139,21 @@ package cheriot_mem_sys_reg_pkg;
   parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_INTR_ENABLE_OFFSET = 6'h 4;
   parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_INTR_TEST_OFFSET = 6'h 8;
   parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_ALERT_TEST_OFFSET = 6'h c;
-  parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_TBRE_REGWEN_OFFSET = 6'h 10;
-  parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_TBRE_BASE_ADDR_OFFSET = 6'h 14;
-  parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_TBRE_NUM_CAPS_OFFSET = 6'h 18;
-  parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_TBRE_START_OFFSET = 6'h 1c;
-  parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_TBRE_STATUS_OFFSET = 6'h 20;
-  parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_TBRE_EPOCH_OFFSET = 6'h 24;
+  parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_RECOV_ERR_CODE_OFFSET = 6'h 10;
+  parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_FATAL_ERR_CODE_OFFSET = 6'h 14;
+  parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_TBRE_REGWEN_OFFSET = 6'h 18;
+  parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_TBRE_BASE_ADDR_SHADOWED_OFFSET = 6'h 1c;
+  parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_TBRE_NUM_CAPS_SHADOWED_OFFSET = 6'h 20;
+  parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_TBRE_START_OFFSET = 6'h 24;
+  parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_TBRE_STATUS_OFFSET = 6'h 28;
+  parameter logic [RegsAw-1:0] CHERIOT_MEM_SYS_TBRE_EPOCH_OFFSET = 6'h 2c;
 
   // Reset values for hwext registers and their fields for regs interface
   parameter logic [0:0] CHERIOT_MEM_SYS_INTR_TEST_RESVAL = 1'h 0;
   parameter logic [0:0] CHERIOT_MEM_SYS_INTR_TEST_TBRE_DONE_RESVAL = 1'h 0;
   parameter logic [31:0] CHERIOT_MEM_SYS_ALERT_TEST_RESVAL = 32'h 80000000;
   parameter logic [0:0] CHERIOT_MEM_SYS_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
+  parameter logic [0:0] CHERIOT_MEM_SYS_ALERT_TEST_RECOV_CTRL_UPDATE_ERR_RESVAL = 1'h 0;
   parameter logic [0:0] CHERIOT_MEM_SYS_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] CHERIOT_MEM_SYS_TBRE_REGWEN_RESVAL = 1'h 1;
   parameter logic [0:0] CHERIOT_MEM_SYS_TBRE_REGWEN_EN_RESVAL = 1'h 1;
@@ -141,26 +169,30 @@ package cheriot_mem_sys_reg_pkg;
     CHERIOT_MEM_SYS_INTR_ENABLE,
     CHERIOT_MEM_SYS_INTR_TEST,
     CHERIOT_MEM_SYS_ALERT_TEST,
+    CHERIOT_MEM_SYS_RECOV_ERR_CODE,
+    CHERIOT_MEM_SYS_FATAL_ERR_CODE,
     CHERIOT_MEM_SYS_TBRE_REGWEN,
-    CHERIOT_MEM_SYS_TBRE_BASE_ADDR,
-    CHERIOT_MEM_SYS_TBRE_NUM_CAPS,
+    CHERIOT_MEM_SYS_TBRE_BASE_ADDR_SHADOWED,
+    CHERIOT_MEM_SYS_TBRE_NUM_CAPS_SHADOWED,
     CHERIOT_MEM_SYS_TBRE_START,
     CHERIOT_MEM_SYS_TBRE_STATUS,
     CHERIOT_MEM_SYS_TBRE_EPOCH
   } cheriot_mem_sys_regs_id_e;
 
   // Register width information to check illegal writes for regs interface
-  parameter logic [3:0] CHERIOT_MEM_SYS_REGS_PERMIT [10] = '{
-    4'b 0001, // index[0] CHERIOT_MEM_SYS_INTR_STATE
-    4'b 0001, // index[1] CHERIOT_MEM_SYS_INTR_ENABLE
-    4'b 0001, // index[2] CHERIOT_MEM_SYS_INTR_TEST
-    4'b 1111, // index[3] CHERIOT_MEM_SYS_ALERT_TEST
-    4'b 0001, // index[4] CHERIOT_MEM_SYS_TBRE_REGWEN
-    4'b 1111, // index[5] CHERIOT_MEM_SYS_TBRE_BASE_ADDR
-    4'b 1111, // index[6] CHERIOT_MEM_SYS_TBRE_NUM_CAPS
-    4'b 0001, // index[7] CHERIOT_MEM_SYS_TBRE_START
-    4'b 0011, // index[8] CHERIOT_MEM_SYS_TBRE_STATUS
-    4'b 1111  // index[9] CHERIOT_MEM_SYS_TBRE_EPOCH
+  parameter logic [3:0] CHERIOT_MEM_SYS_REGS_PERMIT [12] = '{
+    4'b 0001, // index[ 0] CHERIOT_MEM_SYS_INTR_STATE
+    4'b 0001, // index[ 1] CHERIOT_MEM_SYS_INTR_ENABLE
+    4'b 0001, // index[ 2] CHERIOT_MEM_SYS_INTR_TEST
+    4'b 1111, // index[ 3] CHERIOT_MEM_SYS_ALERT_TEST
+    4'b 0001, // index[ 4] CHERIOT_MEM_SYS_RECOV_ERR_CODE
+    4'b 0001, // index[ 5] CHERIOT_MEM_SYS_FATAL_ERR_CODE
+    4'b 0001, // index[ 6] CHERIOT_MEM_SYS_TBRE_REGWEN
+    4'b 1111, // index[ 7] CHERIOT_MEM_SYS_TBRE_BASE_ADDR_SHADOWED
+    4'b 1111, // index[ 8] CHERIOT_MEM_SYS_TBRE_NUM_CAPS_SHADOWED
+    4'b 0001, // index[ 9] CHERIOT_MEM_SYS_TBRE_START
+    4'b 0011, // index[10] CHERIOT_MEM_SYS_TBRE_STATUS
+    4'b 1111  // index[11] CHERIOT_MEM_SYS_TBRE_EPOCH
   };
 
 endpackage
