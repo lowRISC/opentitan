@@ -1434,8 +1434,13 @@ task cip_base_vseq::check_fatal_alert_nonblocking(string alert_name);
           // 1 extra cycle to make sure no race condition
           // Plus 2 extra cycles due to alert sampling delay of 2 cycles at the VIF
           for (int i = 0; i <  (alert_agent_pkg::ALERT_B2B_DELAY + 1 + 2); i++) begin
-            if (cfg.m_alert_agent_cfgs[alert_name].active_ping) begin
-              wait (cfg.m_alert_agent_cfgs[alert_name].active_ping==0);
+            // A ping response delays the alert and does not count as one. The monitor sets
+            // active_ping 2 cycles after the ping starts, so check the interface's ping state too.
+            if (cfg.m_alert_agent_cfgs[alert_name].active_ping ||
+                cfg.m_alert_agent_cfgs[alert_name].vif.in_ping_st() ||
+                cfg.m_alert_agent_cfgs[alert_name].vif.ping_pending) begin
+              wait_until_ping_is_finished(cfg.m_alert_agent_cfgs[alert_name]);
+              wait (!cfg.m_alert_agent_cfgs[alert_name].vif.ping_pending);
               i = 0; // restart the delay, since alert may take longer now ping is happening
             end
             cfg.clk_rst_vif.wait_n_clks(1);

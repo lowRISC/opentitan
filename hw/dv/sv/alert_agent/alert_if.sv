@@ -41,7 +41,18 @@ interface alert_if(input clk, input rst_n);
   logic alert_inactive;
   always_comb alert_inactive = (alert_tx.alert_p ^ alert_tx.alert_n) === 1'b1 && alert_tx.alert_n;
 
-  typedef enum logic [1:0] { IdleSt, PingSt, AlertSt } state_e;
+  logic alert_active_q;
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      alert_active_q <= 1'b0;
+    end else begin
+      alert_active_q <= alert_active;
+    end
+  end
+
+  // PingWaitSt: a ping arrived while an alert that started earlier was still active. That alert is
+  // a genuine alert, and the receiver takes the next alert as the ping response.
+  typedef enum logic [1:0] { IdleSt, PingSt, AlertSt, PingWaitSt } state_e;
   state_e state_d, state_q;
   // Delaying the state in the same way as the alert_tx/rx signals
   state_e state_q_dly1, state_q_final;
@@ -60,7 +71,8 @@ interface alert_if(input clk, input rst_n);
   always_comb begin
     state_d = state_q;
     unique case (state_q)
-      IdleSt: if (ping_request) state_d = PingSt;
+      IdleSt: if (ping_request) state_d = alert_active_q ? PingWaitSt : PingSt;
+      PingWaitSt: if (alert_inactive) state_d = PingSt;
       PingSt: if (alert_active) state_d = AlertSt;
       AlertSt: if (alert_inactive) state_d = IdleSt;
       default: state_d = IdleSt;
@@ -68,7 +80,7 @@ interface alert_if(input clk, input rst_n);
   end
 
   logic ping_pending;
-  always_comb ping_pending = state_q_final != IdleSt;
+  always_comb ping_pending = state_q_final inside {PingSt, AlertSt};
 
   // if alert sender is async mode, the clock will be driven in alert_agent,
   // if it is sync mode, will assign to dut clk here
