@@ -765,6 +765,7 @@ CHERIOT_SMOKETEST_DEPS = [
     "//hw/top:sram_ctrl_c_regs",
     "//hw/top:top_lib",
     "//hw/top:uart_c_regs",
+    "//sw/device/lib/base:csr",
     "//sw/device/lib/base:multibits",
     "//sw/device/silicon_creator/lib:manifest_def",
 ]
