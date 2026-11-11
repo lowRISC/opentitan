@@ -36,6 +36,8 @@ EXT_EARLGREY_SKUS = {
     #    # --- Optional attributes ---
     #    "dice_libs": [<Deprecated. Now an override for the DICE certgen libs
     #                  (for perso firmware) instead of `dice_format`'s defaults.>]
+    #    "uds_template": <label of a custom HJSON UDS certificate template for
+    #                    the 'x509' and 'mldsa' DICE formats.>
     #    "ownership_libs": [<ownership libraries used by perso firmware>]
     #    "perso_bin": <override label of a prebuilt signed perso binary to use.>
     #    "scrambling_bin": <override label of a prebuild scrambling binary to use.>
