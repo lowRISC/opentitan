@@ -28,7 +28,7 @@ To run a smoke test, use:
 ```console
 $ dvsim hw/ip/cheriot_mem_sys/dv/cheriot_mem_sys_sim_cfg.hjson -i cheriot_mem_sys_smoke
 ```
-To run the CSR, alert, interrupt and TL-UL suites, use:
+To run the CSR, alert, interrupt, shadow register and TL-UL suites, use:
 ```console
 $ dvsim hw/ip/cheriot_mem_sys/dv/cheriot_mem_sys_sim_cfg.hjson
 ```

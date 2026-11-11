@@ -48,7 +48,7 @@
       name: sec_cm_tbre_config_shadow
       desc: "Verify the countermeasure(s) TBRE.CONFIG.SHADOW."
       stage: V2S
-      tests: []
+      tests: ["cheriot_mem_sys_shadow_reg_errors"]
     }
     {
       name: sec_cm_mem_sw_noaccess
