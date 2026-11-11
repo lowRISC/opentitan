@@ -3,7 +3,7 @@
 ## Parameters
 
 The following table lists the instantiation parameters of the CHERIoT memory subsystem.
-[Theory of Operation](theory_of_operation.md#meta-sram-address-map).
+The [meta SRAM address map](theory_of_operation.md#meta-sram-address-map) follows from the address parameters.
 
 Parameter          | Default        | Top Earlgrey   | Description
 -------------------|----------------|----------------|---------------
@@ -13,6 +13,14 @@ Parameter          | Default        | Top Earlgrey   | Description
 `NvmBaseAddr`      | `0x3000_0000`  | `0x3000_0000`  | Base address of the NVM region, inclusive.
 `NvmTopAddr`       | `0x3020_0000`  | `0x3020_0000`  | Top address of the NVM region, exclusive.
 `MetaSramBaseAddr` | `0x1100_0000`  | `0x1100_0000`  | Base address of the unified meta SRAM.
+`MemSizeRevbm`     | `3072`         | `3072`         | Size of the `revbm` window in bytes, set by topgen. Must equal the size of the main SRAM revocation bitmap.
+`AlertAsyncOn`     | `1'b1`         | `1'b1`         | Adds synchronizers to the alert sender for an alert handler on another clock, set by topgen.
+`AlertSkewCycles`  | `1`            | `1`            | Cycles of skew tolerated on the differential alert signals, set by topgen.
+
+## Supported Parameter Sets
+
+The design is signed off with the parameters Earl Grey instantiates, listed in the Top Earlgrey column above.
+The address parameters follow the Earl Grey memory map and can change with it.
 
 ## Signals
 
