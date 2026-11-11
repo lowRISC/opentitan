@@ -18,6 +18,8 @@
       "result": "0x004b0797007325a8003f3539006704890028b454007b496800165e680003a981",
       # The per-element sums produced by secAdd (mod 2^32).
       "result_secadd": "0x0000bcde00040f11000203040041000000340000002800000020000000000003",
+      # The B2A zero-mask test reports each deviation as a set bit.
+      "result_zero_mask": "0x0000000000000000000000000000000000000000000000000000000000000000",
     }
   }
 }
