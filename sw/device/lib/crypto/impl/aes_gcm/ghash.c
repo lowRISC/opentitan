@@ -301,7 +301,7 @@ static status_t ghash_refresh_subkey_mask(ghash_context_t *ctx) {
                     kHardenedBoolTrue);
 
   ghash_block_t delta_h __attribute__((cleanup(ghash_block_shred)));
-  HARDENED_TRY(hardened_memshred(delta_h.data, kGhashBlockNumWords));
+  hardened_memshred(delta_h.data, kGhashBlockNumWords);
 
   ghash_block_t subkey_delta __attribute__((cleanup(ghash_block_shred)));
   HARDENED_TRY(ghash_init_subkey(delta_h.data, &subkey_delta));

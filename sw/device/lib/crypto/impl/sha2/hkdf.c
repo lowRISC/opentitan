@@ -198,7 +198,7 @@ static status_t otbn_hmac_sha2(otcrypto_key_mode_t key_mode, const uint8_t *key,
           return OTCRYPTO_BAD_ARGS;
       }
       memcpy(k_pad, hashed_key, digest_bytes);
-      HARDENED_TRY(hardened_memshred(hashed_key, kHkdfMaxDigestWords));
+      hardened_memshred(hashed_key, kHkdfMaxDigestWords);
     }
   }
 
@@ -281,7 +281,7 @@ static status_t otbn_hmac_sha2(otcrypto_key_mode_t key_mode, const uint8_t *key,
       return OTCRYPTO_BAD_ARGS;
   }
 
-  HARDENED_TRY(hardened_memshred(inner_digest, kHkdfMaxDigestWords));
+  hardened_memshred(inner_digest, kHkdfMaxDigestWords);
   return OTCRYPTO_OK;
 }
 
@@ -475,12 +475,12 @@ otcrypto_status_t otbn_hkdf_extract(const otcrypto_blinded_key_t *ikm,
                               tag_data));
 
   uint32_t prk_mask[kHkdfMaxDigestWords];
-  HARDENED_TRY(hardened_memshred(prk_mask, cfg.digest_words));
+  hardened_memshred(prk_mask, cfg.digest_words);
   HARDENED_TRY(
       keyblob_from_key_and_mask(tag_data, prk_mask, prk->config, prk->keyblob));
 
-  HARDENED_TRY(hardened_memshred(unmasked_ikm, unmasked_ikm_wordlen));
-  HARDENED_TRY(hardened_memshred(tag_data, cfg.digest_words));
+  hardened_memshred(unmasked_ikm, unmasked_ikm_wordlen);
+  hardened_memshred(tag_data, cfg.digest_words);
 
   prk->checksum = otcrypto_integrity_blinded_checksum(prk);
   return otcrypto_eval_exit(OTCRYPTO_OK);
@@ -548,7 +548,7 @@ otcrypto_status_t otbn_hkdf_expand(const otcrypto_blinded_key_t *prk,
     }
 
     uint32_t mask_data[kHkdfMaxDigestWords];
-    HARDENED_TRY(hardened_memshred(mask_data, words_to_copy));
+    hardened_memshred(mask_data, words_to_copy);
 
     uint32_t share0_data[kHkdfMaxDigestWords];
     HARDENED_TRY(hardened_xor(tag_data, mask_data, words_to_copy, share0_data));
@@ -561,8 +561,8 @@ otcrypto_status_t otbn_hkdf_expand(const otcrypto_blinded_key_t *prk,
     words_written += words_to_copy;
   }
 
-  HARDENED_TRY(hardened_memshred(unmasked_prk, cfg.digest_words));
-  HARDENED_TRY(hardened_memshred(prev_t, cfg.digest_words));
+  hardened_memshred(unmasked_prk, cfg.digest_words);
+  hardened_memshred(prev_t, cfg.digest_words);
 
   okm->checksum = otcrypto_integrity_blinded_checksum(okm);
   return otcrypto_eval_exit(OTCRYPTO_OK);

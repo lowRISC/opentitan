@@ -106,7 +106,7 @@ status_t arith_share_private_key_test(bool seed) {
   } else {
     TRY(generate_random_key(key_share0));
     // Share the key across all 448 bits of the share buffers.
-    TRY(hardened_memshred(key_share1, kP384MaskedScalarShareWords));
+    hardened_memshred(key_share1, kP384MaskedScalarShareWords);
     TRY(hardened_xor_in_place(key_share0, key_share1,
                               kP384MaskedScalarShareWords));
   }

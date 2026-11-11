@@ -188,7 +188,7 @@ otcrypto_status_t otcrypto_kmac(
   HARDENED_TRY(kmac_key_construct(key, &kmac_key));
 
   // Preload the tag with randomness.
-  HARDENED_TRY(hardened_memshred(tag->data, tag->len));
+  hardened_memshred(tag->data, tag->len);
 
   if (launder32(key->config.security_level) == kOtcryptoKeySecurityLevelLow) {
     // No protection against FI.
@@ -208,7 +208,7 @@ otcrypto_status_t otcrypto_kmac(
                          required_output_len));
     // Second KMAC computation using the KMAC core.
     uint32_t tag_redundant_data[kOtcryptoWrappedKeyMaxWords];
-    HARDENED_TRY(hardened_memshred(tag_redundant_data, required_output_words));
+    hardened_memshred(tag_redundant_data, required_output_words);
     kmac_blinded_key_t kmac_key_redundant;
     HARDENED_TRY(kmac_key_construct(key, &kmac_key_redundant));
     HARDENED_TRY(kmac_fn(&kmac_key_redundant,
