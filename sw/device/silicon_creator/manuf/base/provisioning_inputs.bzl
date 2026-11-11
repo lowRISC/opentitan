@@ -2,6 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
+load("@bazel_skylib//lib:paths.bzl", "paths")
 load("@provisioning_exts//:cfg.bzl", "EXT_EARLGREY_OTP_CFGS", "EXT_EARLGREY_SKUS")
 load("//sw/device/silicon_creator/lib/cert:dice.bzl", "DICE_FORMATS")
 
@@ -113,10 +114,16 @@ EARLGREY_SKUS = {
     },
 } | EXT_EARLGREY_SKUS
 
+def uds_cert_libs_name(template):
+    """Get the name of the `uds_cert_libs` instance for this template."""
+    label = Label(template)
+    return paths.join(label.package, paths.replace_extension(label.name, ""))
+
 def sku_dice_libs(sku, config):
     """Get the DICE libraries for a SKU's perso firmware. These are selected by the `dice_format`,
     but can be overriden using `dice_libs`."""
     dice_format = config.get("dice_format")
+    uds_template = config.get("uds_template")
     if dice_format and dice_format not in DICE_FORMATS:
         fail("SKU {} has dice_format: \"{}\" but it must be one of {}".format(sku, dice_format, DICE_FORMATS))
 
@@ -126,25 +133,33 @@ def sku_dice_libs(sku, config):
     if "dice_libs" in config:
         if dice_format == None:
             print("WARNING: SKU {} uses deprecated `dice_libs` without `dice_format`. Set `dice_format` instead.".format(sku))
+        if uds_template:
+            fail("SKU {} sets both `dice_libs` and `uds_template`. Only one should be used.".format(sku))
         return config["dice_libs"]
 
     if not dice_format:
         fail("SKU {} has no defined `dice_format`.".format(sku))
 
-    if dice_format == "x509":
-        return [
-            "//sw/device/silicon_creator/lib/cert:dice_uds_cert_build",
-            "//sw/device/silicon_creator/lib/cert:dice_mldsa_empty",
-        ]
     if dice_format == "cwt":
+        if uds_template:
+            fail("SKU {} sets a `uds_template`, which is not used by the \"cwt\" DICE format.".format(sku))
         return [
             "//sw/device/silicon_creator/lib/cert:dice_cwt",
             "//sw/device/silicon_creator/lib/cert:dice_mldsa_empty",
         ]
-    return [
-        "//sw/device/silicon_creator/lib/cert:dice_uds_cert_build",
-        "//sw/device/silicon_creator/lib/cert:dice_mldsa_uds_cert_build",
-    ]
+
+    # For x509 and ML-DSA, SKUs may override the UDS template
+    if uds_template:
+        name = uds_cert_libs_name(uds_template)
+        uds_x509 = Label(":{}_uds_cert_build".format(name))
+        uds_mldsa = Label(":{}_mldsa_uds_cert_build".format(name))
+    else:
+        uds_x509 = "//sw/device/silicon_creator/lib/cert:dice_uds_cert_build"
+        uds_mldsa = "//sw/device/silicon_creator/lib/cert:dice_mldsa_uds_cert_build"
+
+    if dice_format == "x509":
+        return [uds_x509, "//sw/device/silicon_creator/lib/cert:dice_mldsa_empty"]
+    return [uds_x509, uds_mldsa]
 
 # TODO(lowRISC#27275): Refactor build/signing rules for perso binaries.
 def disqualified_for_signing(name, data):
