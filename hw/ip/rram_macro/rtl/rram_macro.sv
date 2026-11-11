@@ -53,13 +53,76 @@ module rram_macro #(
 
   assign unused_rram_test_analog = rram_test_analog_io;
 
-  // The open-source model has no RRAM TAP yet.
-  jtag_pkg::jtag_req_t unused_jtag;
-  lc_ctrl_pkg::lc_tx_t unused_lc_nvm_debug_en;
+  //////////////
+  // RRAM TAP //
+  //////////////
 
-  assign unused_jtag            = jtag_i;
-  assign unused_lc_nvm_debug_en = lc_nvm_debug_en_i;
-  assign jtag_o                 = '{default: '0};
+  // The open-source model has no BIST.
+  // A plain TAP lets DV shift through the RRAM TAP chain.
+  // It implements IDCODE and BYPASS.
+  // The DTMCSR and DMIACCESS instructions of dmi_jtag_tap shift a constant 0 here.
+  // The IDCODE must match the open-source chip DV check (rram_macro_forming.svh).
+  localparam logic [31:0] JtagIdcodeValue = 32'h5252_414D;
+
+  logic tap_tck, tap_tms, tap_tdi, tap_tdo, tap_tdo_oe;
+  logic unused_tap_tck, unused_tap_dmi_clear, unused_tap_update, unused_tap_capture;
+  logic unused_tap_shift, unused_tap_tdi, unused_tap_dtmcs_select, unused_tap_dmi_select;
+
+  // Like the closed-source macro, the TAP is gated with the synchronized lc_nvm_debug_en.
+  lc_ctrl_pkg::lc_tx_t [3:0] lc_nvm_debug_en;
+  prim_lc_sync #(
+    .NumCopies(4)
+  ) u_lc_nvm_debug_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_nvm_debug_en_i),
+    .lc_en_o(lc_nvm_debug_en)
+  );
+
+  prim_and2 u_tck_and (
+    .in0_i(lc_ctrl_pkg::lc_tx_test_true_strict(lc_nvm_debug_en[0])),
+    .in1_i(jtag_i.tck),
+    .out_o(tap_tck)
+  );
+
+  prim_and2 u_tms_and (
+    .in0_i(lc_ctrl_pkg::lc_tx_test_true_strict(lc_nvm_debug_en[1])),
+    .in1_i(jtag_i.tms),
+    .out_o(tap_tms)
+  );
+
+  prim_and2 u_tdi_and (
+    .in0_i(lc_ctrl_pkg::lc_tx_test_true_strict(lc_nvm_debug_en[2])),
+    .in1_i(jtag_i.tdi),
+    .out_o(tap_tdi)
+  );
+
+  dmi_jtag_tap #(
+    .IrLength   (5),
+    .IdcodeValue(JtagIdcodeValue)
+  ) u_tap (
+    .tck_i         (tap_tck),
+    .tms_i         (tap_tms),
+    .trst_ni       (jtag_i.trst_n),
+    .td_i          (tap_tdi),
+    .td_o          (tap_tdo),
+    .tdo_oe_o      (tap_tdo_oe),
+    .testmode_i    (1'b0),
+    .tck_o         (unused_tap_tck),
+    .dmi_clear_o   (unused_tap_dmi_clear),
+    .update_o      (unused_tap_update),
+    .capture_o     (unused_tap_capture),
+    .shift_o       (unused_tap_shift),
+    .tdi_o         (unused_tap_tdi),
+    .dtmcs_select_o(unused_tap_dtmcs_select),
+    .dtmcs_tdo_i   (1'b0),
+    .dmi_select_o  (unused_tap_dmi_select),
+    .dmi_tdo_i     (1'b0)
+  );
+
+  // The TAP only drives TDO while lc_nvm_debug_en is On.
+  assign jtag_o.tdo    = tap_tdo;
+  assign jtag_o.tdo_oe = tap_tdo_oe & lc_ctrl_pkg::lc_tx_test_true_strict(lc_nvm_debug_en[3]);
 
   ////////////////////////////////////
   // TL-UL Test Interface Emulation //
@@ -569,6 +632,16 @@ module rram_macro #(
   assign mem_rdata = (current_part_q == RramPartData) ? data_mem_rdata : info_mem_rdata;
 
   `ASSERT(EccErrOnehot0_A, $onehot0(rram_macro_o.ecc_err))
+
+  // TCK and TRST_N must always be known.
+  `ASSERT_KNOWN(JtagTckKnown_A, jtag_i.tck)
+  `ASSERT_KNOWN(JtagTrstKnown_A, jtag_i.trst_n)
+  // The TAP samples TMS and TDI on the rising edge of TCK.
+  `ASSERT_KNOWN(JtagTmsKnown_A, jtag_i.tms, tap_tck, !jtag_i.trst_n)
+  `ASSERT_KNOWN(JtagTdiKnown_A, jtag_i.tdi, tap_tck, !jtag_i.trst_n)
+  // The TAP output is sampled on the falling edge of TCK, like in rv_dm.
+  `ASSERT_KNOWN(JtagTdoKnown_A, jtag_o.tdo, !tap_tck, !jtag_i.trst_n)
+  `ASSERT_KNOWN(JtagTdoOeKnown_A, jtag_o.tdo_oe, !tap_tck, !jtag_i.trst_n)
 
   // Alert assertions for reg_we onehot check
   `ASSERT_ERROR_TRIGGER_ERR(MacroFsmCheck_A, u_state_regs, rram_macro_o.fatal_err, 0,
