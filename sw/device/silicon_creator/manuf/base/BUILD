@@ -23,6 +23,7 @@ load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
     "EARLGREY_SKUS",
     "disqualified_for_signing",
+    "sku_dice_libs",
 )
 load(
     "//sw/device/silicon_creator/rom/e2e:defs.bzl",
@@ -395,7 +396,7 @@ manifest(d = {
             "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
             "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_{}".format(config["otp"]),
             "//sw/device/silicon_creator/manuf/lib:personalize",
-        ] + config["dice_libs"] + config["device_ext_libs"] + config.get("ownership_libs", []),
+        ] + sku_dice_libs(sku, config) + config["device_ext_libs"] + config.get("ownership_libs", []),
     )
     for sku, config in EARLGREY_SKUS.items()
 ]
