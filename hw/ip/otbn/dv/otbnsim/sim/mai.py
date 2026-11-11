@@ -661,6 +661,8 @@ class MaskingAcceleratorInterface:
         # The dispatch logic is responsible for pushing inputs into the accelerator.
         self._dispatch_idx = 0
         self.is_dispatching = False
+        # Set in the cycle of the last dispatch. INPUT_READY rises in the next cycle.
+        self._input_ready_pending = False
 
         # Writeback related variables
         # The writeback logic is responsible for receiving results from the accelerator into the
@@ -688,6 +690,12 @@ class MaskingAcceleratorInterface:
         # is different compared to how CRSs are updated when an instruction writes to them.
         # Setting values "immediately" simplifies the status flag handling because the abort case
         # must not be considered.
+
+        # The RTL sets INPUT_READY on the clock edge after the last dispatch, so the first
+        # instruction that sees it runs in the cycle after that dispatch.
+        if self._input_ready_pending:
+            self._input_ready_pending = False
+            self.csrs.MAI_STATUS.update_input_ready_bit(True)
 
         # Idle fast-path: if nothing is active and no new start is pending,
         # skip all pipeline/writeback work.
@@ -765,9 +773,8 @@ class MaskingAcceleratorInterface:
             self.is_dispatching = False
             # Latch the random dispatch index for the next execution.
             self._cnt = cnt
-            # Immediately set the input-ready bit as the input WSRs can be overwritten in
-            # this cycle.
-            self.csrs.MAI_STATUS.update_input_ready_bit(True)
+            # The input WSRs may be overwritten from the next cycle on.
+            self._input_ready_pending = True
 
     def is_busy(self) -> bool:
         '''Returns whether the MAI is currently busy processing an operation.'''
