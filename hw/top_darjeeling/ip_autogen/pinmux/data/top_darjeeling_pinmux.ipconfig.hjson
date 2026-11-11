@@ -15,6 +15,7 @@
     n_dio_periph_out: 57
     enable_usb_wakeup: false
     enable_strap_sampling: false
+    enable_rram_tap: false
     topname: darjeeling
     uniquified_modules: {}
     module_instance_name: pinmux

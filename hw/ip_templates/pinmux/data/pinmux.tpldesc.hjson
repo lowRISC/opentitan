@@ -76,6 +76,16 @@
       default: "1"
     }
     {
+      name: "enable_rram_tap"
+      desc: '''
+            Set to true to add an RRAM TAP to the TAP selection.
+            The RRAM_JTAG_SEL register enables it on the TAP strap value 0, while lc_nvm_debug_en is On.
+            Requires enable_strap_sampling.
+            '''
+      type: "bool"
+      default: "0"
+    }
+    {
       name: "module_instance_name"
       desc: "instance name in case there are multiple pinmux instances. Not yet implemented."
       type: "string"
