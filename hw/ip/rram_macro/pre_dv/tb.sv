@@ -28,11 +28,11 @@ module tb;
   // Test/observability ports not exercised by the shared data-path tests below: JTAG, scan, BIST
   // lifecycle gating, and AST observability.
   // The JTAG inputs (cio_tck/tdi/tms) are driven by the vendor tests include.
-  // They are packed into the dut's jtag struct below, with trst_n held inactive.
+  // They are packed into the dut's jtag struct below, with trst_n tied to the tb reset.
   logic cio_tck, cio_tdi, cio_tms, cio_tdo, cio_tdo_en;
   jtag_pkg::jtag_req_t jtag_req;
   jtag_pkg::jtag_rsp_t jtag_rsp;
-  assign jtag_req   = '{tck: cio_tck, tms: cio_tms, trst_n: 1'b1, tdi: cio_tdi};
+  assign jtag_req   = '{tck: cio_tck, tms: cio_tms, trst_n: rst_n, tdi: cio_tdi};
   assign cio_tdo    = jtag_rsp.tdo;
   assign cio_tdo_en = jtag_rsp.tdo_oe;
   lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en;

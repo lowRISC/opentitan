@@ -94,3 +94,7 @@ waive -rules {LINE_LENGTH} -location {top_earlgrey.sv earlgrey_pd_main.sv earlgr
 
 waive -rules LINE_LENGTH -location {top_earlgrey_rnd_cnst_pkg.sv} -regexp {Line length of [0-9]+ exceeds 100 character limit} \
       -comment "top_earlgrey_rnd_cnst_pkg is auto-generated and adhering to the line length limit is not always feasible for auto-generated code"
+
+# RRAM TAP reset
+waive -rules {RESET_DRIVER} -location {top_earlgrey.sv} -regexp {'pinmux_rram_jtag_req.trst_n' is driven by instance 'earlgrey_pd_aon' of module 'earlgrey_pd_aon', and used as an asynchronous reset 'trst_ni' at dmi_jtag_tap.sv} \
+      -comment "TRSTn of the RRAM TAP in rram_macro. Pinmux holds it asserted while the RRAM TAP is not selected."
