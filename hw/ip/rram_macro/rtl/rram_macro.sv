@@ -53,13 +53,48 @@ module rram_macro #(
 
   assign unused_rram_test_analog = rram_test_analog_io;
 
-  // The open-source model has no RRAM TAP yet.
-  jtag_pkg::jtag_req_t unused_jtag;
-  lc_ctrl_pkg::lc_tx_t unused_lc_nvm_debug_en;
+  //////////////
+  // RRAM TAP //
+  //////////////
 
-  assign unused_jtag            = jtag_i;
-  assign unused_lc_nvm_debug_en = lc_nvm_debug_en_i;
-  assign jtag_o                 = '{default: '0};
+  // The open-source model has no BIST.
+  // A plain TAP with IDCODE and BYPASS lets DV shift through the RRAM TAP chain.
+  // The value must match the open-source chip DV check (rram_macro_forming.svh).
+  localparam logic [31:0] JtagIdcodeValue = 32'h5252_414D;
+
+  logic tap_trst_n, tap_tdo, tap_tdo_oe;
+  logic unused_tap_tck, unused_tap_dmi_clear, unused_tap_update, unused_tap_capture;
+  logic unused_tap_shift, unused_tap_tdi, unused_tap_dtmcs_select, unused_tap_dmi_select;
+
+  // The TAP is also held in reset with the macro, so that it starts from a known state.
+  assign tap_trst_n = jtag_i.trst_n & rst_ni;
+
+  dmi_jtag_tap #(
+    .IrLength   (5),
+    .IdcodeValue(JtagIdcodeValue)
+  ) u_tap (
+    .tck_i         (jtag_i.tck),
+    .tms_i         (jtag_i.tms),
+    .trst_ni       (tap_trst_n),
+    .td_i          (jtag_i.tdi),
+    .td_o          (tap_tdo),
+    .tdo_oe_o      (tap_tdo_oe),
+    .testmode_i    (1'b0),
+    .tck_o         (unused_tap_tck),
+    .dmi_clear_o   (unused_tap_dmi_clear),
+    .update_o      (unused_tap_update),
+    .capture_o     (unused_tap_capture),
+    .shift_o       (unused_tap_shift),
+    .tdi_o         (unused_tap_tdi),
+    .dtmcs_select_o(unused_tap_dtmcs_select),
+    .dtmcs_tdo_i   (1'b0),
+    .dmi_select_o  (unused_tap_dmi_select),
+    .dmi_tdo_i     (1'b0)
+  );
+
+  // Like the closed-source macro, the TAP only drives TDO while lc_nvm_debug_en is On.
+  assign jtag_o.tdo    = tap_tdo;
+  assign jtag_o.tdo_oe = tap_tdo_oe & lc_ctrl_pkg::lc_tx_test_true_strict(lc_nvm_debug_en_i);
 
   ////////////////////////////////////
   // TL-UL Test Interface Emulation //
