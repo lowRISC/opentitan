@@ -76,10 +76,22 @@ def _ot_static_library_impl(ctx):
         OutputGroupInfo(library = depset([output_lib]), linker_flags = depset([output_flags])),
     ]
 
+def _transitive_feature_transition_impl(settings, attr):
+    return {
+        "//command_line_option:features": settings["//command_line_option:features"] + attr.transitive_features,
+    }
+
+_transitive_feature_transition = transition(
+    implementation = _transitive_feature_transition_impl,
+    inputs = ["//command_line_option:features"],
+    outputs = ["//command_line_option:features"],
+)
+
 ot_static_library = rv_rule(
     implementation = _ot_static_library_impl,
     attrs = {
-        "deps": attr.label_list(),
+        "deps": attr.label_list(cfg = _transitive_feature_transition),
+        "transitive_features": attr.string_list(),
         "_cc_toolchain": attr.label(default = Label("@bazel_tools//tools/cpp:current_cc_toolchain")),
     },
     #incompatible_use_toolchain_transition = True,
