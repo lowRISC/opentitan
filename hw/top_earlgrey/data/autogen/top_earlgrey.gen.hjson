@@ -16753,7 +16753,255 @@
       }
       {
         instance: gpio0
-        port: ""
+        port: gpio[0]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[1]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[2]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[3]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[4]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[5]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[6]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[7]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[8]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[9]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[10]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[11]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[12]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[13]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[14]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[15]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[16]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[17]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[18]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[19]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[20]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[21]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[22]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[23]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[24]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[25]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[26]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[27]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[28]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[29]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[30]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio0
+        port: gpio[31]
         connection: muxed
         pads: []
         desc: ""
@@ -16761,7 +17009,255 @@
       }
       {
         instance: gpio1
-        port: ""
+        port: gpio[0]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[1]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[2]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[3]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[4]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[5]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[6]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[7]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[8]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[9]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[10]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[11]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[12]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[13]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[14]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[15]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[16]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[17]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[18]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[19]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[20]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[21]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[22]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[23]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[24]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[25]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[26]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[27]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[28]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[29]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[30]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: gpio1
+        port: gpio[31]
         connection: muxed
         pads: []
         desc: ""
@@ -16769,7 +17265,15 @@
       }
       {
         instance: uart0
-        port: ""
+        port: rx
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: uart0
+        port: tx
         connection: muxed
         pads: []
         desc: ""
@@ -16777,7 +17281,15 @@
       }
       {
         instance: uart1
-        port: ""
+        port: rx
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: uart1
+        port: tx
         connection: muxed
         pads: []
         desc: ""
@@ -16785,7 +17297,15 @@
       }
       {
         instance: uart2
-        port: ""
+        port: rx
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: uart2
+        port: tx
         connection: muxed
         pads: []
         desc: ""
@@ -16793,7 +17313,15 @@
       }
       {
         instance: uart3
-        port: ""
+        port: rx
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: uart3
+        port: tx
         connection: muxed
         pads: []
         desc: ""
@@ -16801,7 +17329,15 @@
       }
       {
         instance: i2c0
-        port: ""
+        port: sda
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i2c0
+        port: scl
         connection: muxed
         pads: []
         desc: ""
@@ -16809,7 +17345,15 @@
       }
       {
         instance: i2c1
-        port: ""
+        port: sda
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i2c1
+        port: scl
         connection: muxed
         pads: []
         desc: ""
@@ -16817,7 +17361,15 @@
       }
       {
         instance: i2c2
-        port: ""
+        port: sda
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i2c2
+        port: scl
         connection: muxed
         pads: []
         desc: ""
@@ -16825,7 +17377,39 @@
       }
       {
         instance: i3c0
-        port: ""
+        port: scl
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c0
+        port: sda
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c0
+        port: ctrl_sda_pu
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c0
+        port: rstdet_scl
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c0
+        port: rstdet_sda
         connection: muxed
         pads: []
         desc: ""
@@ -16833,7 +17417,39 @@
       }
       {
         instance: i3c1
-        port: ""
+        port: scl
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c1
+        port: sda
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c1
+        port: ctrl_sda_pu
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c1
+        port: rstdet_scl
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: i3c1
+        port: rstdet_sda
         connection: muxed
         pads: []
         desc: ""
@@ -16865,7 +17481,63 @@
       }
       {
         instance: spi_host1
-        port: ""
+        port: sck
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: csb[0]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: csb[1]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: csb[2]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: sd[0]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: sd[1]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: sd[2]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: spi_host1
+        port: sd[3]
         connection: muxed
         pads: []
         desc: ""
@@ -16873,7 +17545,63 @@
       }
       {
         instance: sensor_ctrl
-        port: ""
+        port: ast_debug_out[0]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: sensor_ctrl
+        port: ast_debug_out[1]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: sensor_ctrl
+        port: ast_debug_out[2]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: sensor_ctrl
+        port: ast_debug_out[3]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: sensor_ctrl
+        port: ast_debug_out[4]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: sensor_ctrl
+        port: ast_debug_out[5]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: sensor_ctrl
+        port: ast_debug_out[6]
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
+        instance: sensor_ctrl
+        port: ast_debug_out[7]
         connection: muxed
         pads: []
         desc: ""
