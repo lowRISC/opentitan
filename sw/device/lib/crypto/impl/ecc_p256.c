@@ -967,7 +967,7 @@ otcrypto_status_t otcrypto_ecdh_p256_async_start(
     const otcrypto_unblinded_key_t *public_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDH_P256_ASYNC_START);
   OTCRYPTO_HEALTH_CHECK(kTestP256PointOnCurveBit);
-  OTCRYPTO_HEALTH_CHECK(kTestP256BasePointMulBit);
+  OTCRYPTO_HEALTH_CHECK(kTestP256EcdhBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (private_key == NULL || public_key == NULL || public_key->key == NULL ||
       private_key->keyblob == NULL) {

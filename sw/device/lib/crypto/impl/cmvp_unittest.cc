@@ -636,11 +636,11 @@ TEST_F(CmvpTest, SpecificationKeyRequirements) {
   EXPECT_FALSE(
       kCryptoFunctionApproved[OTCRYPTO_FUNCTION_ECDSA_P384_VERIFY_ASYNC_START]);
 
-  // ECDH is not approved
-  EXPECT_FALSE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_ECDH_P256]);
-  EXPECT_FALSE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_ECDH_P384]);
-  EXPECT_FALSE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_ECDH_P256_KEYGEN]);
-  EXPECT_FALSE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_ECDH_P384_KEYGEN]);
+  // ECDH P-256 and P-384 are approved
+  EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_ECDH_P256]);
+  EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_ECDH_P384]);
+  EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_ECDH_P256_KEYGEN]);
+  EXPECT_TRUE(kCryptoFunctionApproved[OTCRYPTO_FUNCTION_ECDH_P384_KEYGEN]);
 
   // Ed25519 is approved when private key comes from CSRNG (keygen), but not
   // when derived from a caller-provided private key (public_key_from_private).
