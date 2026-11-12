@@ -12,17 +12,32 @@ class rram_ctrl_env_cfg extends cip_base_env_cfg #(.RAL_T(rram_ctrl_core_reg_blo
   // Config for an agent that acts as otp_ctrl and responds to key requests from rram_ctrl
   rand nvm_otp_key_agent_cfg m_key_agent_cfg;
 
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // Configuration / helpers from the tb
+  //
+  // These values are set or constructed in the tb and passed to the environment through
+  // uvm_config_db, retrieved in the environment's build_phase.
+
+  // The number of words that can be held at once in wr_fifo
+  int unsigned m_wr_fifo_depth;
+
+  // The number of words that can be held at once in rd_fifo
+  int unsigned m_rd_fifo_depth;
+
+  // A backdoor utility for the data partition
+  rram_ctrl_bkdr_util m_data_bkdr_util;
+
+  // A backdoor utility for the info partition
+  rram_ctrl_bkdr_util m_info_bkdr_util;
+
+  //////////////////////////////////////////////////////////////////////////////////////////////////
+  // Static values used by the environment
+
   // Name of the RAL model tied to the host interface (tl_host), which accesses the
   // RRAM data array.
-  string host_ral_name = "rram_ctrl_host_reg_block";
+  const string host_ral_name = "rram_ctrl_host_reg_block";
   // Name of the RAL model tied to the RRAM macro's primitive interface (tl_prim).
-  string prim_ral_name = "rram_macro_prim_reg_block";
-
-  // The configured depth of the DUT's write/read FIFOs (WrFifoDepth/RdFifoDepth). Retrieved
-  // from uvm_config_db in the environment's build_phase - tb.sv is the source of truth, since
-  // it elaborates the DUT with these values directly.
-  int unsigned m_wr_fifo_depth;
-  int unsigned m_rd_fifo_depth;
+  const string prim_ral_name = "rram_macro_prim_reg_block";
 
   // Standard SV/UVM methods
   extern function new(string name="");
