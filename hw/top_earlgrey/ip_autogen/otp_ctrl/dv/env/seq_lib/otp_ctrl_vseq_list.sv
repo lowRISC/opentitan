@@ -5,6 +5,7 @@
 `include "otp_ctrl_callback_vseq.sv"
 `include "otp_ctrl_base_vseq.sv"
 `include "otp_ctrl_wake_up_vseq.sv"
+`include "otp_ctrl_bkdr_write_partitions_vseq.sv"
 `include "otp_ctrl_smoke_vseq.sv"
 `include "otp_ctrl_common_vseq.sv"
 `include "otp_ctrl_partition_walk_vseq.sv"
