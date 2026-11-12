@@ -57,11 +57,11 @@ class kmac_env_cfg extends cip_base_env_cfg #(.RAL_T(kmac_reg_block));
     super.initialize(inherit_ral_models);
 
     tl_intg_alert_fields[ral.status.alert_fatal_fault] = 1;
-    tl_intg_alert_fields[ral.cfg_regwen.en] = 0;
+    tl_intg_alert_fields[ral.cfg_regwen.cfg_regwen] = 0;
     tl_intg_alert_fields[ral.status.sha3_idle] = 0;
     shadow_update_err_status_fields[ral.status.alert_recov_ctrl_update_err] = 1;
     shadow_storage_err_status_fields[ral.status.alert_fatal_fault] = 1;
-    shadow_storage_err_status_fields[ral.cfg_regwen.en] = 0;
+    shadow_storage_err_status_fields[ral.cfg_regwen.cfg_regwen] = 0;
     shadow_storage_err_status_fields[ral.status.sha3_idle] = 0;
 
     for (int i = 0; i < kmac_env_pkg::NUM_APP_INTF; i++) begin

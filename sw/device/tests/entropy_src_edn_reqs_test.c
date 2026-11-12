@@ -85,16 +85,21 @@ static void aes_test(const dif_aes_t *aes) {
 }
 
 /**
- * Configure the kmac to use entropy from edn to request entropy.
+ * Configure the kmac to use entropy from edn.
  */
 static void kmac_test(dif_kmac_t *kmac) {
   LOG_INFO("%s", __func__);
 
   dif_kmac_config_t config = (dif_kmac_config_t){
-      .entropy_mode = kDifKmacEntropyModeEdn,
       .entropy_fast_process = kDifToggleDisabled,
   };
   CHECK_DIF_OK(dif_kmac_configure(kmac, config));
+  dif_kmac_entropy_config_t entropy_config = (dif_kmac_entropy_config_t){
+      .entropy_mode = kDifKmacEntropyModeEdn,
+      .ignore_cmd_entropy_req = false,
+      .edn_mode_refresh_threshold = 1,
+  };
+  CHECK_DIF_OK(dif_kmac_configure_entropy(kmac, entropy_config));
 }
 
 /**

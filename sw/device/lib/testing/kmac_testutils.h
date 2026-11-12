@@ -14,7 +14,7 @@
  * This is a thin wrapper around `dif_kmac_configure`. It sets up a testing
  * configuration that prioritizes speed over security, since we don't care
  * about protecting test keys. For instance, it sets the entropy source to
- * software so KMAC doesn't wait for fresh entropy, and minimizes masking.
+ * software so KMAC doesn't wait for fresh entropy.
  *
  * @param kmac KMAC context.
  * @param sideload Whether to configure KMAC to read a sideloaded key.

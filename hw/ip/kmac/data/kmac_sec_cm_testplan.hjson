@@ -78,6 +78,12 @@
       tests: ["{name}_smoke"]
     }
     {
+      name: sec_cm_entropy_cfg_shadowed_config_regwen
+      desc: "Verify the countermeasure(s) ENTROPY_CFG_SHADOWED.CONFIG.REGWEN."
+      stage: V2S
+      tests: ["N/A"]
+    }
+    {
       name: sec_cm_fsm_global_esc
       desc: "Verify the countermeasure(s) FSM.GLOBAL_ESC."
       stage: V2S

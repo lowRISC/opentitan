@@ -119,7 +119,7 @@ module kmac_app
   output logic entropy_fast_process_o,
 
   // Entropy must be ready before a KMAC operation can be performed.
-  input prim_mubi_pkg::mubi4_t entropy_ready_i,
+  input entropy_ready_i,
 
   // Error input
   // This error comes from KMAC/SHA3 engine and is pulsed if a wrong command sequence is detected
@@ -416,8 +416,7 @@ module kmac_app
   assign valid_app_mode_strength = valid_app_mode_strength_raw || app_cfg.en_unsup_comb;
 
   assign valid_app_kmac_cfg =
-      app_cfg.session_cfg.mode == AppKMAC ?
-      EnFullKmac && prim_mubi_pkg::mubi4_test_true_strict(entropy_ready_i) : 1'b1;
+      app_cfg.session_cfg.mode == AppKMAC ? EnFullKmac && entropy_ready_i : 1'b1;
 
   // XOF operation is not supported for SHA3 or KMAC.
   assign valid_en_xof_cfg = app_cfg.session_cfg.mode inside {AppSHA3, AppKMAC} ?

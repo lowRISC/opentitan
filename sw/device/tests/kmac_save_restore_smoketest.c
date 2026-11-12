@@ -246,12 +246,17 @@ bool test_main(void) {
   // chosen and is generated using
   // ./util/design/gen-lfsr-seed.py --width 192 --seed 2034386436 --prefix ""
   dif_kmac_config_t config = (dif_kmac_config_t){
-      .entropy_mode = kDifKmacEntropyModeSoftware,
-      .entropy_seed = {0xb153e3fe, 0x09596819, 0x3e85a6e8, 0xb6dcdaba,
-                       0x50dc409c, 0x11e1ebd1},
       .entropy_fast_process = kDifToggleEnabled,
   };
   CHECK_DIF_OK(dif_kmac_configure(&kmac, config));
+  dif_kmac_entropy_config_t entropy_config = (dif_kmac_entropy_config_t){
+      .entropy_mode = kDifKmacEntropyModeSoftware,
+      .ignore_cmd_entropy_req = false,
+      .edn_mode_refresh_threshold = 0,
+      .sw_mode_entropy_seed = {0xb153e3fe, 0x09596819, 0x3e85a6e8, 0xb6dcdaba,
+                               0x50dc409c, 0x11e1ebd1},
+  };
+  CHECK_DIF_OK(dif_kmac_configure_entropy(&kmac, entropy_config));
 
   for (size_t i = 0; i < ARRAYSIZE(kSrTests); ++i) {
     const sr_test_t *test = &kSrTests[i];

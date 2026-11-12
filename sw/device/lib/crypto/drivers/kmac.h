@@ -93,16 +93,17 @@ status_t kmac_key_length_check(size_t key_len);
  * configured at session level. This function sets default values for this
  * configuration.
  *
- * Warning: This function sets `entropy_ready`, which triggers kmac_entropy's
- * FSM to jump to next step. Therefore, the caller of this function should make
- * sure that entropy is configured properly beforehand.
+ * Warning: This function sets disables Entropy Boot Mode and configures EDN
+ * Mode, this can trigger an EDN reseed operation. Therefore, the caller of this
+ * function should make sure that entropy complex is configured properly
+ * beforehand.
  *
  * It enforces the following as the default configuration:
  * It touches the following fields of CSRs:
- *   CFG register:
- *     endianness, entropy_mode, fast_process, msg_mask, ent_ready,
- * en_unsup_mode EDN refresh settings: hash threshold refresh
- * counter entropy seed -> ignore? INTR_ENABLE: all disabled
+ *   ENTROPY_CFG register:
+ *     entropy_boot_mode, entropy_mode, ignore_cmd_entropy_req,
+ * edn_mode_refresh_threshold CFG register: endianness, fast_process, msg_mask,
+ * en_unsup_mode INTR_ENABLE: all disabled
  *
  * @return Error code.
  */

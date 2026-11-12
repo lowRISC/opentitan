@@ -107,15 +107,10 @@ package kmac_pkg;
     CmdStateWrite = 6'b011011  // dec 27
   } kmac_cmd_e;
 
-  // Timer
-  parameter int unsigned TimerPrescalerW = 10;
-  parameter int unsigned EdnWaitTimerW   = 16;
-
   // Entropy Mode Selection : Should be matched to register package Enum value
-  typedef enum logic [1:0] {
-    EntropyModeNone = 2'h 0,
-    EntropyModeEdn  = 2'h 1,
-    EntropyModeSw   = 2'h 2
+  typedef enum logic {
+    EntropyModeEdn  = 1'h 0,
+    EntropyModeSw   = 1'h 1
   } entropy_mode_e;
 
   // PRNG (kmac_entropy)
@@ -509,14 +504,6 @@ package kmac_pkg;
     // ErrSwIssuedCmdInAppActive
     //  - Sw writes any command while AppIntf is in active.
     ErrSwIssuedCmdInAppActive = 8'h 03,
-
-    // ErrWaitTimerExpired
-    // Entropy Wait timer expired. Something wrong on EDN i/f
-    ErrWaitTimerExpired = 8'h 04,
-
-    // ErrIncorrectEntropyMode
-    // Incorrect Entropy mode when entropy is ready
-    ErrIncorrectEntropyMode = 8'h 05,
 
     // ErrUnexpectedModeStrength
     ErrUnexpectedModeStrength = 8'h 06,

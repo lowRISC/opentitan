@@ -39,17 +39,17 @@ module kmac_reduced_tb #(
   logic sha3_start, sha3_process;
   prim_mubi_pkg::mubi4_t done, absorbed;
   sha3_st_e sha3_fsm;
-  logic entropy_ready;
-  logic entropy_refresh_req;
+  logic entropy_boot_mode;
   logic [EntropyWidth-1:0] entropy;
   logic entropy_req;
+  logic entropy_ready;
   logic error;
 
   // Instantiate DUT
   kmac_reduced #(
     .EnMasking(EnMasking),
     .MsgLen(MsgLen),
-    .EntropyWidth(EntropyWidth),
+    .EntropyWidth(EntropyWidth)
   ) u_kmac_reduced (
     .clk_i,
     .rst_ni,
@@ -77,8 +77,7 @@ module kmac_reduced_tb #(
     .sha3_fsm_o(sha3_fsm),
 
     // Entropy interface
-    .entropy_ready_i(entropy_ready),
-    .entropy_refresh_req_i(entropy_refresh_req),
+    .entropy_refresh_req_i(1'b0),
     .entropy_i(entropy),
     .entropy_req_o(entropy_req),
     .entropy_ack_i(1'b1),
@@ -99,16 +98,15 @@ module kmac_reduced_tb #(
     .state_clear_i(prim_mubi_pkg::MuBi4False), // drive to MuBi4False
 
     // Entropy configuration
-    .msg_mask_en_i(1'b1),            // drive to 1
-    .entropy_mode_i(EntropyModeEdn), // drive to kmac_pkg::EntropyModeEdn
-    .entropy_fast_process_i(1'b0),   // drive to 0
-    .entropy_in_keyblock_i(1'b1),    // drive to 1
+    .msg_mask_en_i(1'b1),                    // drive to 1
+    .entropy_boot_mode_i(entropy_boot_mode), // drop to 0 to trigger PRNG reseed operation
+    .entropy_mode_i(EntropyModeEdn),         // drive to kmac_pkg::EntropyModeEdn
+    .entropy_fast_process_i(1'b0),           // drive to 0
+    .entropy_in_keyblock_i(1'b1),            // drive to 1
 
     // Entropy reseed control
     .entropy_seed_update_i('0),                 // drive to 0
     .entropy_seed_data_i('0),                   // drive to 0
-    .wait_timer_prescaler_i('0),                // drive to 0
-    .wait_timer_limit_i({EdnWaitTimerW{1'b1}}), // drive to EdnWaitTimerW'1
 
     // Signals primarily kept to prevent them from being optimized away during synthesis.
     // State output
@@ -116,7 +114,8 @@ module kmac_reduced_tb #(
     .state_valid_o(state_valid),
 
     // Entropy status signals
-    .entropy_configured_o(),
+    .entropy_ready_o(entropy_ready),
+    .entropy_reseeding_o(),
     .entropy_hash_threshold_i({HashCntW{1'b1}}), // drive to max
     .entropy_hash_clr_i(1'b0),                   // drive to 0
     .entropy_hash_cnt_o(),
@@ -125,8 +124,7 @@ module kmac_reduced_tb #(
     .lc_escalate_en_i(lc_ctrl_pkg::Off),
 
     // Error signaling
-    .err_o(error),
-    .err_processed_i(1'b0)  // drive 0
+    .err_o(error)
   );
 
   // TB signals.
@@ -142,9 +140,6 @@ module kmac_reduced_tb #(
     FINISH
   } kmac_reduced_tb_e;
   kmac_reduced_tb_e kmac_reduced_tb_state_d, kmac_reduced_tb_state_q;
-  logic             entropy_req_d, entropy_req_q, entropy_req_fell;
-  logic       [7:0] reseed_count_d, reseed_count_q;
-  logic             reseed_count_increment;
   logic             msg_handshake, test_done;
 
   // Counter to control the simulation.
@@ -159,32 +154,9 @@ module kmac_reduced_tb #(
     end
   end
 
-  // Count the number of encrypted/decrypted blocks. We're doing 8 blocks with each
-  // key length.
-  assign reseed_count_d = reseed_count_increment ? reseed_count_q + 8'h1 : reseed_count_q;
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_reseed_count
-    if (!rst_ni) begin
-      reseed_count_q <= '0;
-    end else begin
-      reseed_count_q <= reseed_count_d;
-    end
-  end
-
   assign msg_handshake = msg_valid & msg_ready;
 
   // Randomness generation.
-  // Track falling edges of entropy_req. The end of the reseed operation is signaled with
-  // entropy_req going low.
-  assign entropy_req_d = entropy_req;
-  always_ff @(posedge clk_i or negedge rst_ni) begin : reg_entropy_req
-    if (!rst_ni) begin
-      entropy_req_q <= '0;
-    end else begin
-      entropy_req_q <= entropy_req_d;
-    end
-  end
-  assign entropy_req_fell = entropy_req_q & ~entropy_req;
-
   // Update whenever requested.
   always_ff @(posedge clk_i or negedge rst_ni) begin : reg_entropy
     if (!rst_ni) begin
@@ -216,20 +188,18 @@ module kmac_reduced_tb #(
     sha3_start = 1'b0;
     sha3_process = 1'b0;
     done = prim_mubi_pkg::MuBi4False;
-    entropy_ready = 1'b0;
-    entropy_refresh_req = 1'b0;
+    entropy_boot_mode = 1'b0;
 
     // TB
     kmac_reduced_tb_state_d = kmac_reduced_tb_state_q;
-    reseed_count_increment = 1'b0;
     test_done = 1'b0;
 
     unique case (kmac_reduced_tb_state_q)
 
       IDLE: begin
         // Just move to INIT_RESEED
+        entropy_boot_mode = 1'b1;
         if (count_q > 10'd2) begin
-          entropy_ready = 1'b1;
           kmac_reduced_tb_state_d = INIT_RESEED;
         end
       end
@@ -237,10 +207,7 @@ module kmac_reduced_tb #(
       INIT_RESEED: begin
         // Perform an initial reseed of the PRNG to put it into a random state.
         // We do one reseed operation to reseed the single Bivium primitive.
-        entropy_refresh_req = 1'b1;
-        reseed_count_increment = entropy_req_fell;
-        if (reseed_count_q == 8'd1) begin
-          entropy_refresh_req = 1'b0;
+        if (entropy_ready == 1'b1) begin
           kmac_reduced_tb_state_d = START_TRIGGER;
         end
       end
@@ -284,7 +251,7 @@ module kmac_reduced_tb #(
       FINISH: begin
         // Wait for the SHA3 FSM to enter the idle state again after wiping before signaling the
         // end of the simulation.
-        if (sha3_fsm == StIdle) begin
+        if (sha3_fsm == sha3_pkg::StIdle) begin
           test_done = 1'b1;
         end
       end

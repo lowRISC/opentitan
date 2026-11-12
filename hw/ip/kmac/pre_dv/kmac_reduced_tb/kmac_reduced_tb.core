@@ -9,6 +9,7 @@ filesets:
     depend:
       - lowrisc:ip:kmac_reduced
       - lowrisc:dv:digestpp_dpi:0.1
+      - lowrisc:prim_generic:all
     files:
       - rtl/kmac_reduced_tb.sv
     file_type: systemVerilogSource

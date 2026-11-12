@@ -13,58 +13,41 @@
 
 OTTF_DEFINE_TEST_CONFIG();
 
-dif_kmac_config_t kKmacTestCases[] = {
+dif_kmac_entropy_config_t kKmacTestCases[] = {
 
     //////////////////////////////////////////////////////////////////////////////
     // EDN Mode
     //////////////////////////////////////////////////////////////////////////////
 
-    // Entropy wait timer is zero
+    // edn_mode_refresh_threshold is 0 -- expect no hash counter reset
     {
         .entropy_mode = kDifKmacEntropyModeEdn,
-        .entropy_fast_process = false,
-        .entropy_hash_threshold = 8,
-        .entropy_wait_timer = 0,
-        .entropy_prescaler = 0,
+        .edn_mode_refresh_threshold = 0,
     },
 
-    // Entropy wait timer is nonzero
+    // edn_mode_refresh_threshold is nonzero
     {
         .entropy_mode = kDifKmacEntropyModeEdn,
-        .entropy_fast_process = false,
-        .entropy_hash_threshold = 8,
-        .entropy_wait_timer = 0xffff,
-        .entropy_prescaler = 0x3ff,
+        .edn_mode_refresh_threshold = 8,
     },
 
-    // Entropy refresh hash count is 0 -- expect no hash counter reset
+    // edn_mode_refresh_threshold is 1023, the maximum
     {
         .entropy_mode = kDifKmacEntropyModeEdn,
-        .entropy_fast_process = false,
-        .entropy_hash_threshold = 0,
-        .entropy_wait_timer = 0,
-        .entropy_prescaler = 1,
-    },
-
-    // Entropy refresh hash count is 1023, the maximum
-    {
-        .entropy_mode = kDifKmacEntropyModeEdn,
-        .entropy_fast_process = false,
-        .entropy_hash_threshold = 1023,
-        .entropy_wait_timer = 0,
-        .entropy_prescaler = 1,
+        .edn_mode_refresh_threshold = 1023,
     },
 
     //////////////////////////////////////////////////////////////////////////////
     // SW Mode
     //////////////////////////////////////////////////////////////////////////////
 
-    // entropy_hash_threshold = 8; in SW mode, the hash counter will still be
-    // reset but entropy will not be refreshed
+    // In SW mode, the hash counter will saturate and entropy will not be
+    // refreshed automatically.
+    // edn_mode_refresh_threshold = 0
     {
         .entropy_mode = kDifKmacEntropyModeSoftware,
-        .entropy_fast_process = false,
-        .entropy_seed =
+        .edn_mode_refresh_threshold = 0,
+        .sw_mode_entropy_seed =
             {
                 0x1234567,
                 0x1234567,
@@ -72,16 +55,13 @@ dif_kmac_config_t kKmacTestCases[] = {
                 0x1234567,
                 0x1234567,
             },
-        .entropy_hash_threshold = 8,
-        .entropy_wait_timer = 0xffff,
-        .entropy_prescaler = 0x3ff,
     },
 
-    // entropy_hash_threshold = 0
+    // edn_mode_refresh_threshold = 8
     {
         .entropy_mode = kDifKmacEntropyModeSoftware,
-        .entropy_fast_process = false,
-        .entropy_seed =
+        .edn_mode_refresh_threshold = 8,
+        .sw_mode_entropy_seed =
             {
                 0x1234567,
                 0x1234567,
@@ -89,20 +69,18 @@ dif_kmac_config_t kKmacTestCases[] = {
                 0x1234567,
                 0x1234567,
             },
-        .entropy_hash_threshold = 0,
-        .entropy_wait_timer = 0xffff,
-        .entropy_prescaler = 0x3ff,
     },
 };
 
 enum {
   kKmacDigestLenMax = 100,
   kTestConfigCount = ARRAYSIZE(kKmacTestCases),
-  kKmacIterations = 1000,
+  kKmacIterations = 1030,
 
-  // ENTROPY_REFRESH_THRESHOLD_SHADOWED and ENTROPY_REFRESH_HASH_CNT registers
-  // are 10 bits wide, so the refresh threshold cannot be set higher and the
-  // hash counter cannot count higher than this value
+  // The ENTROPY_CFG_SHADOWED.EDN_MODE_REFRESH_THRESHOLD register field and the
+  // ENTROPY_REFRESH_HASH_CNT register are 10 bits wide, so the refresh
+  // threshold cannot be set higher and the hash counter cannot count higher
+  // than this value
   kHashCntMax = 0x3ff,
 };
 
@@ -163,12 +141,12 @@ const kmac_test_vector_t kKmacTestVector = {
  * This test checks that the KMAC block does not produce any errors and that
  * the hash counter behaves as expected.
  */
-status_t test_kmac_config(dif_kmac_config_t *test_case) {
-  // The ENTROPY_REFRESH_THRESHOLD_SHADOWED register is 10 bits wide and cannot
-  // be set to a value higher than kHashCntMax.
+status_t test_kmac_config(dif_kmac_entropy_config_t *test_case) {
+  // The ENTROPY_CFG_SHADOWED.EDN_MODE_REFRESH_THRESHOLD register field is 10
+  // bits wide and cannot be set to a value higher than kHashCntMax.
   TRY_CHECK(
-      test_case->entropy_hash_threshold <= kHashCntMax,
-      "Invalid test case: entropy_hash_threshold too high; greater than %d",
+      test_case->edn_mode_refresh_threshold <= kHashCntMax,
+      "Invalid test case: edn_mode_refresh_threshold too high; greater than %d",
       kHashCntMax);
 
   dif_kmac_t kmac;
@@ -180,12 +158,23 @@ status_t test_kmac_config(dif_kmac_config_t *test_case) {
       kKmacTestVector.customization_string,
       kKmacTestVector.customization_string_len, &cust_str));
 
-  // Configure the KMAC block with the config from the test case
-  test_case->message_big_endian = false;
-  test_case->output_big_endian = false;
-  test_case->sideload = false;
-  test_case->msg_mask = true;
-  TRY(dif_kmac_configure(&kmac, *test_case));
+  // Configure the main config register.
+  dif_kmac_config_t config = {
+      // Always mask Keccak operations, even if not processing a secret key.
+      .entropy_fast_process = false,
+      // Leave message as the little-endian default.
+      .message_big_endian = false,
+      // Leave output as the little-endian default.
+      .output_big_endian = false,
+      // Use the key provided via software interface.
+      .sideload = false,
+      // Mask the message upon loading.
+      .msg_mask = true,
+  };
+  TRY(dif_kmac_configure(&kmac, config));
+
+  // Configure the KMAC block with the entropy config from the test case.
+  TRY(dif_kmac_configure_entropy(&kmac, *test_case));
 
   // Manually clear the hash counter
   uint32_t hash_count, expected_hash_count = 0;
@@ -227,12 +216,14 @@ status_t test_kmac_config(dif_kmac_config_t *test_case) {
 
     // Check the hash counter value
     TRY(dif_kmac_get_hash_counter(&kmac, &hash_count));
-    if (test_case->entropy_hash_threshold != 0) {
+    if ((test_case->edn_mode_refresh_threshold != 0) &&
+        (test_case->entropy_mode == kDifKmacEntropyModeEdn)) {
       expected_hash_count =
-          (expected_hash_count + 1) % test_case->entropy_hash_threshold;
+          (expected_hash_count + 1) % test_case->edn_mode_refresh_threshold;
     } else {
-      // If the hash counter threshold is not enabled (i.e. set to 0), the hash
-      // counter maxes out at kHashCntMax and should not overflow
+      // If the hash counter threshold is not enabled (i.e. set to 0 or when
+      // running in EDN Mode), the hash counter maxes out at kHashCntMax and
+      // should not overflow
       expected_hash_count = MIN(expected_hash_count + 1, (uint32_t)kHashCntMax);
     }
     TRY_CHECK(expected_hash_count == hash_count,

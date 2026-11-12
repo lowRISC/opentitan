@@ -646,9 +646,9 @@
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
-      name: chip_sw_kmac_entropy
+      name: chip_sw_kmac_entropy_error_conditions_test
       uvm_test_seq: chip_sw_base_vseq
-      sw_images: ["//sw/device/tests:kmac_entropy_test:6:new_rules"]
+      sw_images: ["//sw/device/tests:kmac_entropy_error_conditions_test:6:new_rules"]
       en_run_modes: ["sw_test_mode_test_rom"]
     }
     {
