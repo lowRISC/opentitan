@@ -71,6 +71,20 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
   uint num_ram_ctn_tiles;
   uint num_otbn_dmem_tiles;
 
+  // Number of a_source bits that the TL agent on the CPU cored port may use.
+  //
+  // a_source has top_pkg::TL_AIW (8) bits, but each M:1 socket on the way to a device uses some of
+  // them. A socket with M hosts shifts the source left by $clog2(M) bits, puts the host index in
+  // the freed low bits and asserts that the bits shifted out were zero. The path that uses the most
+  // bits is the one to the CTN RAM:
+  //
+  //   - xbar_main socket in front of soc_proxy.ctn, 4 hosts: 2 bits
+  //   - soc_proxy egress socket (u_ctn_egress_mux), 3 hosts: 2 bits
+  //   - chip-level CTN socket (u_ctn_sm1), 2 hosts: 1 bit
+  //
+  // These take 5 bits, which leaves 3 for the agent. No other path uses more than 4 bits.
+  uint cpu_tl_a_source_width = 3;
+
   // ext component cfgs
   rand uart_agent_cfg       m_uart_agent_cfgs[NUM_UARTS];
   rand spi_agent_cfg        m_spi_device_agent_cfgs[NUM_SPI_HOSTS];
@@ -156,8 +170,7 @@ class chip_env_cfg #(type RAL_T = chip_ral_pkg::chip_reg_block) extends cip_base
     `downcast(chip_soc_mbx_ral, soc_mbx_base_reg_block);
 
     // Set the a_source width limitation for the TL agent hooked up to the CPU cored port.
-    // TODO: use a parameter (or some better way)?
-    m_tl_agent_cfg.valid_a_source_width = 6;
+    m_tl_agent_cfg.valid_a_source_width = cpu_tl_a_source_width;
 
     // create uart agent config obj
     foreach (m_uart_agent_cfgs[i]) begin
