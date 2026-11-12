@@ -1269,30 +1269,30 @@ Register write enable for DIO PAD attributes.
 Dedicated pad attributes.
 This register has WARL behavior since not each pad type may support
 all attributes.
-- Reset default: `0x0`
+- Reset default: see Instances
 - Reset mask: `0xf300ff`
 - Register enable: [`DIO_PAD_ATTR_REGWEN`](#dio_pad_attr_regwen)
 
 ### Instances
 
-| Name            | Offset   |
-|:----------------|:---------|
-| DIO_PAD_ATTR_0  | 0x624    |
-| DIO_PAD_ATTR_1  | 0x628    |
-| DIO_PAD_ATTR_2  | 0x62c    |
-| DIO_PAD_ATTR_3  | 0x630    |
-| DIO_PAD_ATTR_4  | 0x634    |
-| DIO_PAD_ATTR_5  | 0x638    |
-| DIO_PAD_ATTR_6  | 0x63c    |
-| DIO_PAD_ATTR_7  | 0x640    |
-| DIO_PAD_ATTR_8  | 0x644    |
-| DIO_PAD_ATTR_9  | 0x648    |
-| DIO_PAD_ATTR_10 | 0x64c    |
-| DIO_PAD_ATTR_11 | 0x650    |
-| DIO_PAD_ATTR_12 | 0x654    |
-| DIO_PAD_ATTR_13 | 0x658    |
-| DIO_PAD_ATTR_14 | 0x65c    |
-| DIO_PAD_ATTR_15 | 0x660    |
+| Name            | Offset   | Reset   | virtual_od_en reset   |
+|:----------------|:---------|:--------|:----------------------|
+| DIO_PAD_ATTR_0  | 0x624    | 0x0     | 0x0                   |
+| DIO_PAD_ATTR_1  | 0x628    | 0x0     | 0x0                   |
+| DIO_PAD_ATTR_2  | 0x62c    | 0x0     | 0x0                   |
+| DIO_PAD_ATTR_3  | 0x630    | 0x0     | 0x0                   |
+| DIO_PAD_ATTR_4  | 0x634    | 0x0     | 0x0                   |
+| DIO_PAD_ATTR_5  | 0x638    | 0x0     | 0x0                   |
+| DIO_PAD_ATTR_6  | 0x63c    | 0x0     | 0x0                   |
+| DIO_PAD_ATTR_7  | 0x640    | 0x0     | 0x0                   |
+| DIO_PAD_ATTR_8  | 0x644    | 0x0     | 0x0                   |
+| DIO_PAD_ATTR_9  | 0x648    | 0x0     | 0x0                   |
+| DIO_PAD_ATTR_10 | 0x64c    | 0x2     | 0x1                   |
+| DIO_PAD_ATTR_11 | 0x650    | 0x2     | 0x1                   |
+| DIO_PAD_ATTR_12 | 0x654    | 0x0     | 0x0                   |
+| DIO_PAD_ATTR_13 | 0x658    | 0x0     | 0x0                   |
+| DIO_PAD_ATTR_14 | 0x65c    | 0x0     | 0x0                   |
+| DIO_PAD_ATTR_15 | 0x660    | 0x0     | 0x0                   |
 
 
 ### Fields
@@ -1301,21 +1301,21 @@ all attributes.
 {"reg": [{"name": "invert", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "virtual_od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_select", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "keeper_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "schmitt_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "input_disable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 8}, {"name": "slew_rate", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "drive_strength", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                            |
-|:------:|:------:|:-------:|:------------------------------------------------|
-| 31:24  |        |         | Reserved                                        |
-| 23:20  |   rw   |   0x0   | [drive_strength](#dio_pad_attr--drive_strength) |
-| 19:18  |        |         | Reserved                                        |
-| 17:16  |   rw   |   0x0   | [slew_rate](#dio_pad_attr--slew_rate)           |
-|  15:8  |        |         | Reserved                                        |
-|   7    |   rw   |   0x0   | [input_disable](#dio_pad_attr--input_disable)   |
-|   6    |   rw   |   0x0   | [od_en](#dio_pad_attr--od_en)                   |
-|   5    |   rw   |   0x0   | [schmitt_en](#dio_pad_attr--schmitt_en)         |
-|   4    |   rw   |   0x0   | [keeper_en](#dio_pad_attr--keeper_en)           |
-|   3    |   rw   |   0x0   | [pull_select](#dio_pad_attr--pull_select)       |
-|   2    |   rw   |   0x0   | [pull_en](#dio_pad_attr--pull_en)               |
-|   1    |   rw   |   0x0   | [virtual_od_en](#dio_pad_attr--virtual_od_en)   |
-|   0    |   rw   |   0x0   | [invert](#dio_pad_attr--invert)                 |
+|  Bits  |  Type  |     Reset     | Name                                            |
+|:------:|:------:|:-------------:|:------------------------------------------------|
+| 31:24  |        |               | Reserved                                        |
+| 23:20  |   rw   |      0x0      | [drive_strength](#dio_pad_attr--drive_strength) |
+| 19:18  |        |               | Reserved                                        |
+| 17:16  |   rw   |      0x0      | [slew_rate](#dio_pad_attr--slew_rate)           |
+|  15:8  |        |               | Reserved                                        |
+|   7    |   rw   |      0x0      | [input_disable](#dio_pad_attr--input_disable)   |
+|   6    |   rw   |      0x0      | [od_en](#dio_pad_attr--od_en)                   |
+|   5    |   rw   |      0x0      | [schmitt_en](#dio_pad_attr--schmitt_en)         |
+|   4    |   rw   |      0x0      | [keeper_en](#dio_pad_attr--keeper_en)           |
+|   3    |   rw   |      0x0      | [pull_select](#dio_pad_attr--pull_select)       |
+|   2    |   rw   |      0x0      | [pull_en](#dio_pad_attr--pull_en)               |
+|   1    |   rw   | see Instances | [virtual_od_en](#dio_pad_attr--virtual_od_en)   |
+|   0    |   rw   |      0x0      | [invert](#dio_pad_attr--invert)                 |
 
 ### DIO_PAD_ATTR . drive_strength
 Drive strength (0x0: weakest, 0xf: strongest)

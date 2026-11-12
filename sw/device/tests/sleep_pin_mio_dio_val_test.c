@@ -38,6 +38,9 @@ OTTF_DEFINE_TEST_CONFIG();
 static const dt_pad_t kOptOut[] = {
     kDtPadSpiDeviceSck,
     kDtPadSpiDeviceCsb,
+    // Virtual open drain by default
+    kDtPadSysrstCtrlEcRstL,
+    kDtPadSysrstCtrlFlashWpL,
 };
 #elif defined(OPENTITAN_IS_DARJEELING)
 static const dt_pad_t kOptOut[] = {};
