@@ -86,6 +86,8 @@ create_generated_clock -name lc_jtag_tck -source [get_ports IOR3] -divide_by 1 \
     [get_pins ${u_pinmux}/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/gen_fpga_buf.bufg_i/O]
 create_generated_clock -name rv_jtag_tck -source [get_ports IOR3] -divide_by 1 \
     [get_pins ${u_pinmux}/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/gen_fpga_buf.bufg_i/O]
+create_generated_clock -name rram_jtag_tck -source [get_ports IOR3] -divide_by 1 \
+    [get_pins ${u_pinmux}/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rram/prim_clock_buf_tck/gen_fpga_buf.bufg_i/O]
 
 # Assign input and output delays.
 set_output_delay -add_delay -clock jtag_tck -max 10.0 [get_ports IOR1]
