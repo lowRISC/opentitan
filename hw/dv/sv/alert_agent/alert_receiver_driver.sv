@@ -438,12 +438,12 @@ task alert_receiver_driver::do_alert_rx_init();
       wait(cfg.in_reset);
       begin
         repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
-        cfg.vif.alert_rx_int.ack_p <= 1'b0;
-        cfg.vif.alert_rx_int.ack_n <= 1'b0;
+        cfg.vif.receiver_cb.alert_rx_int.ack_p <= 1'b0;
+        cfg.vif.receiver_cb.alert_rx_int.ack_n <= 1'b0;
 
         wait (cfg.vif.receiver_cb.alert_tx.alert_p == cfg.vif.receiver_cb.alert_tx.alert_n);
         repeat ($urandom_range(1, 10)) @(cfg.vif.receiver_cb);
-        cfg.vif.alert_rx_int.ack_n <= 1'b1;
+        cfg.vif.receiver_cb.alert_rx_int.ack_n <= 1'b1;
 
         wait (cfg.vif.receiver_cb.alert_tx.alert_p != cfg.vif.receiver_cb.alert_tx.alert_n);
       end
