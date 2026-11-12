@@ -562,7 +562,6 @@
                   desc:     '''
                             Muxed pad attributes.
                             This register has WARL behavior since not each pad type may support all attributes.
-                            If strap sampling is enabled, the muxed pad that is used for TAP strap 0 has a fixed reset value, with `pull_en` set to 1.
                             ''',
                   count:        "NMioPads",
                   compact:      "false",
@@ -586,7 +585,7 @@
                     },
                     { bits: "2",
                       name: "pull_en",
-                      resval: 0
+                      resval: "[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0][multireg_idx]"
                       desc: "Enable pull-up or pull-down resistor."
                     },
                     { bits: "3",
