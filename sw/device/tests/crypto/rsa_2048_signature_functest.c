@@ -102,9 +102,10 @@ static status_t compute_digest(const otcrypto_const_byte_buf_t *msg,
   digest->mode = hash_mode;
   switch (hash_mode) {
     case kOtcryptoHashModeNull:
-      digest->len = ceil_div(msg->len, sizeof(uint32_t));
-      memset(digest->data, 0, digest->len * sizeof(uint32_t));
+      memset(digest->data, 0,
+             ceil_div(msg->len, sizeof(uint32_t)) * sizeof(uint32_t));
       memcpy(digest->data, msg->data, msg->len);
+      digest->len = msg->len;
       return OK_STATUS();
     case kOtcryptoHashModeSha1:
       digest->len = 160 / 32;
@@ -955,7 +956,7 @@ status_t pkcs1v15_null_hash_and_raw_sign_verify_test(void) {
   // (DigestType::NULL: omits the ASN.1 DER DigestInfo prefix).
   uint32_t sig[kRsa2048NumWords];
   hardened_bool_t verification_result = kHardenedBoolFalse;
-  uint8_t custom_digest[36];
+  uint8_t custom_digest[23];
   for (size_t i = 0; i < sizeof(custom_digest); i++) {
     custom_digest[i] = (uint8_t)(0xa0 + i);
   }
