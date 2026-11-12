@@ -22,7 +22,7 @@
           inst_regs[inst_name] = reg
       else:
         for r0 in r.cregs:
-          inst_regs[r0.name] = r0
+          inst_regs[r0.name.lower()] = r0
     else:
       inst_regs[r.name.lower()] = r
     return inst_regs
