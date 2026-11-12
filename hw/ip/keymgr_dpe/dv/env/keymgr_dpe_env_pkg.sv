@@ -64,6 +64,7 @@ package keymgr_dpe_env_pkg;
   parameter string LIST_OF_ALERTS[NUM_ALERTS] = {"recov_operation_err", "fatal_fault_err"};
   parameter uint NUM_EDN = 1;
   parameter uint SW_OUTPUT_WORD_NUM = keymgr_dpe_reg_pkg::NumOutReg;
+  parameter uint SW_OUTPUT_WIDTH = SW_OUTPUT_WORD_NUM * TL_DW;
 
   typedef virtual keymgr_dpe_if keymgr_dpe_vif;
   typedef bit [keymgr_dpe_pkg::Shares-1:0][keymgr_dpe_pkg::HwKeyWidth-1:0] hw_key_shares_t;
