@@ -83,6 +83,7 @@ opentitan_binary_blob(
 # Top-level cryptolib target.
 ot_static_library(
     name = "otcrypto",
+    extra_bazel_features = ["minsize"],
     deps = select({
         "//sw/device/lib/crypto/configs:type_static": [":otcrypto_api"],
         "//sw/device/lib/crypto/configs:type_binary_blob": [":otcrypto_binary_blob_api"],
