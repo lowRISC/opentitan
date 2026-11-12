@@ -383,7 +383,6 @@ module chip_earlgrey_verilator (
     .scan_rst_n_o                 (                ),
     .usb_io_pu_cal_o              (                ),
     .padmux2ast_i                 (padmux2ast      ),
-    .mux_iob_sel_o                (                ),
     .ast_vx_supp_i                (ast_vx_supp     ),
     .ast_obs_i                    (ast_obs         ),
     .ast_adc_a0_a_i               (ast_adc_a0_a    ),

@@ -281,7 +281,6 @@ module chip_earlgrey_cw340 #(
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_oe;
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
 
-  logic                          [3:0] mux_iob_sel;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
   logic                         [26:0] dio_in_raw;
 
@@ -433,7 +432,6 @@ module chip_earlgrey_cw340 #(
     .clk_scan_i(padring_scan_clk),
     .scanmode_i(scanmode),
 
-    .mux_iob_sel_i(mux_iob_sel),
     .dio_in_raw_o (dio_in_raw ),
 
     // Chip IOs
@@ -937,7 +935,6 @@ module chip_earlgrey_cw340 #(
     .scan_rst_n_o                 (                ),
     .usb_io_pu_cal_o              (                ),
     .padmux2ast_i                 (padmux2ast      ),
-    .mux_iob_sel_o                (mux_iob_sel     ),
     .ast_vx_supp_i                (ast_vx_supp     ),
     .ast_obs_i                    (ast_obs         ),
     .ast_adc_a0_a_i               (ast_adc_a0_a    ),
