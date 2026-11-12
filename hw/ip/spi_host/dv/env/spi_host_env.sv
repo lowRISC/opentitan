@@ -39,7 +39,7 @@ class spi_host_env extends cip_base_env #(
       m_spi_agent.monitor.plain_sampling_analysis_port.connect(
                                                       scoreboard.plain_data_fifo.analysis_export);
     end
-    if (cfg.is_active && cfg.m_spi_agent_cfg.is_active) begin
+    if (cfg.is_active && cfg.m_spi_agent_cfg.get_is_active()) begin
       virtual_sequencer.spi_sequencer_h = m_spi_agent.sequencer;
     end
   endfunction : connect_phase

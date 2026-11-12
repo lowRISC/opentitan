@@ -170,7 +170,7 @@ function void cip_base_env::connect_phase(uvm_phase phase);
   end
 
   foreach (cfg.m_tl_agent_cfgs[i]) begin
-    if (cfg.m_tl_agent_cfgs[i].is_active) begin
+    if (cfg.m_tl_agent_cfgs[i].get_is_active()) begin
       virtual_sequencer.tl_sequencer_hs[i] = m_tl_agents[i].sequencer;
       if (i == cfg.ral.get_type_name()) begin
         virtual_sequencer.tl_sequencer_h = m_tl_agents[i].sequencer;
@@ -178,7 +178,7 @@ function void cip_base_env::connect_phase(uvm_phase phase);
     end
   end
   foreach(cfg.list_of_alerts[i]) begin
-    if (cfg.m_alert_agent_cfgs[cfg.list_of_alerts[i]].is_active) begin
+    if (cfg.m_alert_agent_cfgs[cfg.list_of_alerts[i]].get_is_active()) begin
       virtual_sequencer.m_alert_sequencers[cfg.list_of_alerts[i]] =
           m_alert_agent[cfg.list_of_alerts[i]].sequencer;
     end
@@ -193,7 +193,7 @@ function void cip_base_env::end_of_elaboration_phase(uvm_phase phase);
   super.end_of_elaboration_phase(phase);
   // Set the TL adapter / sequencer to the default_map.
   foreach (cfg.m_tl_agent_cfgs[i]) begin
-    if (cfg.m_tl_agent_cfgs[i].is_active) begin
+    if (cfg.m_tl_agent_cfgs[i].get_is_active()) begin
       cfg.ral_models[i].default_map.set_sequencer(m_tl_agents[i].sequencer, m_tl_reg_adapters[i]);
     end
   end

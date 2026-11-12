@@ -32,13 +32,13 @@ function void kmac_app_device_agent::build_phase(uvm_phase phase);
   end
 
   // Configure the interface to match the agent.
-  cfg.vif.if_mode = cfg.is_active ? Device : Monitor;
+  cfg.vif.if_mode = cfg.if_mode;
 endfunction
 
 function void kmac_app_device_agent::connect_phase(uvm_phase phase);
   super.connect_phase(phase);
 
-  if (cfg.is_active) begin
+  if (cfg.get_is_active()) begin
     // Connect requests from the driver to the sequencer
     driver.m_req_port.connect(sequencer.m_req_fifo.analysis_export);
   end

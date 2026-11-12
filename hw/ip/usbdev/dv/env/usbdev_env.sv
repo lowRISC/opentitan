@@ -49,7 +49,7 @@ class usbdev_env extends cip_base_env #(
       m_usb20_agent.monitor.req_analysis_port.connect(scoreboard.req_usb20_fifo.analysis_export);
       m_usb20_agent.monitor.rsp_analysis_port.connect(scoreboard.rsp_usb20_fifo.analysis_export);
     end
-    if (cfg.is_active && cfg.m_usb20_agent_cfg.is_active) begin
+    if (cfg.is_active && cfg.m_usb20_agent_cfg.get_is_active()) begin
       virtual_sequencer.usb20_sequencer_h = m_usb20_agent.sequencer;
     end
   endfunction

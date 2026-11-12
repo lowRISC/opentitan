@@ -31,8 +31,8 @@ class chip_env extends cip_base_env #(
       `uvm_fatal(`gfn, "failed to get chip_vif from uvm_config_db")
     end
 
-    // Set tl_agent's is_active bit based on the stub_cpu value.
-    cfg.m_tl_agent_cfg.is_active = cfg.chip_vif.stub_cpu;
+    // Set tl_agent's if_mode based on the stub_cpu value.
+    cfg.m_tl_agent_cfg.if_mode = cfg.chip_vif.stub_cpu ? Host : Monitor;
 
     // Set DMI tl_agent's is_active bit only when in stub_cpu mode *and* neither the JTAG DMI
     // agent nor the JTAG RISC-V agent (jtag_riscv_map) is in use: both drive the chip through the
@@ -41,7 +41,7 @@ class chip_env extends cip_base_env #(
                        !cfg.m_jtag_riscv_agent_cfg.use_jtag_dmi &&
                        cfg.jtag_riscv_map == null;
 
-    cfg.m_tl_agent_cfgs["chip_soc_dbg_reg_block"].is_active = use_tl_agent_dmi;
+    cfg.m_tl_agent_cfgs["chip_soc_dbg_reg_block"].if_mode = use_tl_agent_dmi ? Host : Monitor;
     cfg.chip_vif.configure_jtag_dmi(!use_tl_agent_dmi);
 
     if (cfg.use_mbx_if || !cfg.chip_vif.stub_cpu) cfg.chip_vif.connect_mbx_if();
@@ -127,7 +127,7 @@ class chip_env extends cip_base_env #(
 
     // disable alert_agent's driver and only use its monitor
     foreach (LIST_OF_ALERTS[i]) begin
-      cfg.m_alert_agent_cfgs[LIST_OF_ALERTS[i]].is_active = 0;
+      cfg.m_alert_agent_cfgs[LIST_OF_ALERTS[i]].if_mode = Monitor;
     end
   endfunction
 
@@ -137,13 +137,13 @@ class chip_env extends cip_base_env #(
       m_jtag_riscv_agent.monitor.analysis_port.connect(scoreboard.jtag_fifo.analysis_export);
     end
     foreach (m_uart_agents[i]) begin
-      if (cfg.is_active && cfg.m_uart_agent_cfgs[i].is_active) begin
+      if (cfg.is_active && cfg.m_uart_agent_cfgs[i].get_is_active()) begin
         virtual_sequencer.uart_sequencer_hs[i] = m_uart_agents[i].sequencer;
       end
     end
 
     foreach (m_spi_device_agents[i]) begin
-      if (cfg.is_active && cfg.m_spi_device_agent_cfgs[i].is_active) begin
+      if (cfg.is_active && cfg.m_spi_device_agent_cfgs[i].get_is_active()) begin
         virtual_sequencer.spi_device_sequencer_hs[i] = m_spi_device_agents[i].sequencer;
       end
     end
@@ -157,7 +157,7 @@ class chip_env extends cip_base_env #(
           virtual_sequencer.i2c_rd_fifos[i].analysis_export);
     end
 
-    if (cfg.is_active && cfg.m_jtag_riscv_agent_cfg.is_active) begin
+    if (cfg.is_active && cfg.m_jtag_riscv_agent_cfg.get_is_active()) begin
       virtual_sequencer.jtag_sequencer_h = m_jtag_riscv_agent.sequencer;
     end
 
@@ -167,7 +167,7 @@ class chip_env extends cip_base_env #(
       m_jtag_riscv_agent.set_dtm_reg_map(cfg.m_jtag_dtm_ral.get_default_map());
     end
 
-    if (cfg.is_active && cfg.m_spi_host_agent_cfg.is_active) begin
+    if (cfg.is_active && cfg.m_spi_host_agent_cfg.get_is_active()) begin
       virtual_sequencer.spi_host_sequencer_h = m_spi_host_agent.sequencer;
     end
 

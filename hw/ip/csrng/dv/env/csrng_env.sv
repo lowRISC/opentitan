@@ -75,10 +75,10 @@ class csrng_env extends cip_base_env #(
       end
     end
     if (cfg.is_active) begin
-      if (cfg.m_entropy_src_agent_cfg.is_active)
+      if (cfg.m_entropy_src_agent_cfg.get_is_active())
         virtual_sequencer.entropy_src_sequencer_h = m_entropy_src_agent.sequencer;
       for (int i = 0; i < cfg.m_num_hw_apps; i++) begin
-        virtual_sequencer.edn_sequencer_h[i] = cfg.m_edn_agent_cfg[i].is_active ?
+        virtual_sequencer.edn_sequencer_h[i] = cfg.m_edn_agent_cfg[i].get_is_active() ?
                                                m_edn_agent[i].sequencer :
                                                null;
       end

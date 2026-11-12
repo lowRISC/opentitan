@@ -90,9 +90,11 @@ class lc_ctrl_env_cfg extends cip_base_env_cfg #(
 
 
     m_esc_scrap_state1_agent_cfg = esc_agent_cfg::type_id::create("m_esc_scrap_state1_agent_cfg");
+    m_esc_scrap_state1_agent_cfg.if_mode = Host;
     `DV_CHECK_RANDOMIZE_FATAL(m_esc_scrap_state1_agent_cfg)
 
     m_esc_scrap_state0_agent_cfg = esc_agent_cfg::type_id::create("m_esc_scrap_state0_agent_cfg");
+    m_esc_scrap_state0_agent_cfg.if_mode = Host;
     `DV_CHECK_RANDOMIZE_FATAL(m_esc_scrap_state0_agent_cfg)
 
     m_jtag_dtm_ral = create_jtag_dtm_reg_block("m_jtag_dtm_ral");

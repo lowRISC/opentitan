@@ -65,7 +65,7 @@ class edn_env extends cip_base_env #(
     end
 
     for (int i = 0; i < `NUM_END_POINTS; i++) begin
-      if (cfg.m_endpoint_agent_cfg[i].is_active) begin
+      if (cfg.m_endpoint_agent_cfg[i].get_is_active()) begin
         virtual_sequencer.endpoint_sequencer_h[i] = m_endpoint_agent[i].sequencer;
       end
     end

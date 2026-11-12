@@ -41,7 +41,7 @@ class spi_device_env extends cip_base_env #(
       spi_device_agent.monitor.host_analysis_port.connect(
           scoreboard.downstream_spi_host_fifo.analysis_export);
     end
-    if (cfg.spi_host_agent_cfg.is_active) begin
+    if (cfg.spi_host_agent_cfg.get_is_active()) begin
       virtual_sequencer.spi_sequencer_h = spi_host_agent.sequencer;
     end
     virtual_sequencer.spi_sequencer_d = spi_device_agent.sequencer;

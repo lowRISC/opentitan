@@ -12,6 +12,11 @@ class i2c_agent_cfg extends dv_base_agent_cfg;
   timing_cfg_t    timing_cfg;
   bit host_stretch_test_mode = 0;
 
+  // Enable the monitor of this agent.
+  //
+  // This flag is turned off when the agent is used in some chip-level tests
+  bit en_monitor = 1'b1;
+
   uvm_event got_nack;
 
   virtual i2c_if  vif;
