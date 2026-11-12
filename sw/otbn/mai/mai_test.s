@@ -8,6 +8,7 @@
  * Each operation is tested separately in its own subroutine:
  *   - B2A followed by A2B, which must return the secret unchanged.
  *   - secAdd, a Boolean-masked addition of two operands.
+ *   - B2A with a small modulus, so that some of its random masks are zero.
  */
 .global main
 
@@ -24,6 +25,7 @@ main:
 
   jal x1, _test_b2a_a2b
   jal x1, _test_secadd
+  jal x1, _test_b2a_zero_mask
 
   /* TODO: add secAddMod test */
 
@@ -130,6 +132,74 @@ _test_secadd:
   ret
 
 /**
+ * Tests the B2A conversion with a zero mask.
+ *
+ * B2A draws a random mask below the modulus for each element. With the
+ * modulus 3 one mask in three is zero. The test converts 128 elements, so
+ * the probability that none of the masks is zero is (2/3)^128.
+ *
+ * Each round converts the secrets to arithmetic shares and back. Both
+ * arithmetic shares must be below the modulus and the round trip must return
+ * the secrets. Every deviation sets bits in `result_zero_mask`, which is zero
+ * on success.
+ */
+_test_b2a_zero_mask:
+  /* Load the modulus 3. */
+  li x2, 30
+  la x3, mod3
+  bn.lid x2, 0(x3)
+  bn.wsrw MOD, w30
+
+  /* Load the secrets into w0 and clear the deviations in w25. */
+  li x2, 0
+  la x3, secret_mod3
+  bn.lid x2, 0(x3)
+  bn.xor w25, w25, w25
+
+  li x10, 0x21               /* CTRL: B2A + start */
+  li x11, 0x17               /* CTRL: A2B + start */
+
+  loopi 16, 27
+    /* Add a Boolean mask to the secrets and convert them with B2A. */
+    bn.wsrr w2, URND
+    bn.xor w1, w0, w2
+    jal x1, _poll_ready_for_inputs
+    bn.wsrw MAI_IN0_S0, w1
+    bn.wsrw MAI_IN0_S1, w2
+    jal x1, _poll_busy
+    csrrw x0, MAI_CTRL, x10
+    jal x1, _poll_busy
+    bn.wsrr w20, MAI_RES_S0
+    bn.wsrr w21, MAI_RES_S1
+
+    /* A share below the modulus is not changed by a modular reduction. */
+    bn.addvm.8S w22, w20, w31
+    bn.xor w22, w22, w20
+    bn.or w25, w25, w22
+    bn.addvm.8S w22, w21, w31
+    bn.xor w22, w22, w21
+    bn.or w25, w25, w22
+
+    /* Convert back with A2B and compare with the secrets. */
+    jal x1, _poll_ready_for_inputs
+    bn.wsrw MAI_IN0_S0, w20
+    bn.wsrw MAI_IN0_S1, w21
+    jal x1, _poll_busy
+    csrrw x0, MAI_CTRL, x11
+    jal x1, _poll_busy
+    bn.wsrr w22, MAI_RES_S0
+    bn.wsrr w23, MAI_RES_S1
+    bn.xor w22, w22, w23
+    bn.xor w22, w22, w0
+    bn.or w25, w25, w22
+
+  /* Store the deviations. */
+  li x2, 25
+  la x3, result_zero_mask
+  bn.sid x2, 0(x3)
+  ret
+
+/**
  * Polls the MAI_STATUS BUSY bit until the MAI is no longer busy.
  * Clobbers: x2
  */
@@ -179,6 +249,45 @@ result:
 .globl result_secadd
 result_secadd:
   .zero 32
+
+/*
+ * The deviations found by the B2A zero-mask test. All ones until the test has
+ * stored its result.
+ */
+.balign 32
+.globl result_zero_mask
+result_zero_mask:
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+  .word 0xffffffff
+
+/* The secrets of the B2A zero-mask test, each below the modulus 3. */
+.balign 32
+secret_mod3:
+  .word 0x00000000
+  .word 0x00000001
+  .word 0x00000002
+  .word 0x00000001
+  .word 0x00000002
+  .word 0x00000000
+  .word 0x00000002
+  .word 0x00000001
+
+.balign 32
+mod3:
+  .word 0x00000003
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
+  .word 0x00000000
 
 /*
   mod32 = 8380417

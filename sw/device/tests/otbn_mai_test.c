@@ -3,10 +3,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
 // This test runs an OTBN program that exercises the OTBN Masked Arithmetic
-// Interface (MAI). It tests two operations:
+// Interface (MAI). It runs three tests:
 //   - A B2A conversion followed by an A2B conversion, which must return the
 //     secret unchanged.
 //   - secAdd, a Boolean-masked arithmetic addition of two operands.
+//   - B2A conversions with a small modulus, so that some of the random masks
+//     are zero.
 // Ibex loads the inputs into OTBN's data memory, runs the program, and checks
 // the results.
 
@@ -23,6 +25,7 @@ OTBN_DECLARE_SYMBOL_ADDR(mai_tlt_test, operand_a);
 OTBN_DECLARE_SYMBOL_ADDR(mai_tlt_test, operand_b);
 OTBN_DECLARE_SYMBOL_ADDR(mai_tlt_test, result);
 OTBN_DECLARE_SYMBOL_ADDR(mai_tlt_test, result_secadd);
+OTBN_DECLARE_SYMBOL_ADDR(mai_tlt_test, result_zero_mask);
 
 static const otbn_app_t kAppMaiTest = OTBN_APP_T_INIT(mai_tlt_test);
 static const otbn_addr_t kSecret = OTBN_ADDR_T_INIT(mai_tlt_test, secret);
@@ -31,6 +34,8 @@ static const otbn_addr_t kOperandB = OTBN_ADDR_T_INIT(mai_tlt_test, operand_b);
 static const otbn_addr_t kResult = OTBN_ADDR_T_INIT(mai_tlt_test, result);
 static const otbn_addr_t kResultSecAdd =
     OTBN_ADDR_T_INIT(mai_tlt_test, result_secadd);
+static const otbn_addr_t kResultZeroMask =
+    OTBN_ADDR_T_INIT(mai_tlt_test, result_zero_mask);
 
 static_assert(kDtOtbnCount >= 1,
               "This test requires at least one OTBN instance");
@@ -68,6 +73,9 @@ static const uint32_t kExpectedSecAdd[8] = {
     0x00410000, 0x00020304, 0x00040f11, 0x0000bcde,
 };
 
+// The B2A zero-mask test reports each deviation as a set bit.
+static const uint32_t kExpectedZeroMask[8] = {0};
+
 bool test_main(void) {
   // OTBN needs entropy for the URND WSR that is used to mask the inputs.
   CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
@@ -100,6 +108,12 @@ bool test_main(void) {
   CHECK_STATUS_OK(otbn_testutils_read_data(&otbn, sizeof(result_secadd),
                                            kResultSecAdd, result_secadd));
   CHECK_ARRAYS_EQ(result_secadd, kExpectedSecAdd, ARRAYSIZE(result_secadd));
+
+  uint32_t result_zero_mask[8];
+  CHECK_STATUS_OK(otbn_testutils_read_data(&otbn, sizeof(result_zero_mask),
+                                           kResultZeroMask, result_zero_mask));
+  CHECK_ARRAYS_EQ(result_zero_mask, kExpectedZeroMask,
+                  ARRAYSIZE(result_zero_mask));
 
   return true;
 }

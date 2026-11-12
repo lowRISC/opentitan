@@ -540,10 +540,14 @@ class _MaskingAccelerator:
             inp2 = (((in0_s1 + mod_neg) & _MASK32) ^ mask_1, mask_1)
         elif self._mode == MaiOperation.B2A:
             # inp1 = in0_i (Boolean sharing of a)
-            # inp2 = ((-mask_mod) ^ r1, r1)
+            # inp2 = ((-mask_adder) ^ r1, r1)
+            # A zero mask is negated as -mod, like in the RTL: with -0 the sum
+            # has no carry and the adder would add the modulus to a value that
+            # needs no correction.
             mask_mod = mask_0 & _mod_smear(mod)
+            mask_adder = mod if mask_mod == 0 else mask_mod
             inp1 = (in0_s0, in0_s1)
-            inp2 = (((-mask_mod) & _MASK32) ^ mask_1, mask_1)
+            inp2 = (((-mask_adder) & _MASK32) ^ mask_1, mask_1)
         else:
             # SecAdd / SecAddMod: pass through directly.
             inp1 = (in0_s0, in0_s1)
