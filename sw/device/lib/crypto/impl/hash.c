@@ -183,3 +183,21 @@ status_t hash_message(otcrypto_hash_mode_t hash_mode,
   digest->data = digest_data;
   return info.compute(message, digest);
 }
+
+status_t hash_context_final(otcrypto_hash_context_t *ctx, uint32_t *digest_data,
+                            otcrypto_hash_digest_t *digest) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (ctx == NULL || digest_data == NULL || digest == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  otcrypto_hash_mode_t hash_mode = (otcrypto_hash_mode_t)ctx->data[0];
+  hash_info_t info;
+  HARDENED_TRY(hash_info_get(hash_mode, &info));
+  digest->mode = hash_mode;
+  digest->len = info.digest_wordlen;
+  digest->data = digest_data;
+
+  return otcrypto_hash_final(ctx, digest);
+}

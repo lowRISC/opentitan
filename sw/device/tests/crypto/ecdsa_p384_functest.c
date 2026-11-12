@@ -126,13 +126,17 @@ static status_t sign_then_verify_test(void) {
       &public_key, msg_digest, &const_sig_buf, &verificationResult));
   TRY_CHECK(verificationResult == kHardenedBoolTrue);
 
-  // Test hash_sign_verify and hash_verify.
-  CHECK_STATUS_OK(otcrypto_ecdsa_p384_hash_sign_verify(
-      &private_key, &public_key, kOtcryptoHashModeSha384, &msg, &sig_buf));
+  // Test streaming hash_sign_verify_final and hash_verify_final.
+  otcrypto_hash_context_t hash_ctx;
+  CHECK_STATUS_OK(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha384));
+  CHECK_STATUS_OK(otcrypto_hash_update(&hash_ctx, &msg));
+  CHECK_STATUS_OK(otcrypto_ecdsa_p384_hash_sign_verify_final(
+      &private_key, &public_key, &hash_ctx, &sig_buf));
   verificationResult = kHardenedBoolFalse;
-  CHECK_STATUS_OK(otcrypto_ecdsa_p384_hash_verify(
-      &public_key, kOtcryptoHashModeSha384, &msg, &const_sig_buf,
-      &verificationResult));
+  CHECK_STATUS_OK(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha384));
+  CHECK_STATUS_OK(otcrypto_hash_update(&hash_ctx, &msg));
+  CHECK_STATUS_OK(otcrypto_ecdsa_p384_hash_verify_final(
+      &public_key, &hash_ctx, &const_sig_buf, &verificationResult));
   TRY_CHECK(verificationResult == kHardenedBoolTrue);
 
   return OK_STATUS();
