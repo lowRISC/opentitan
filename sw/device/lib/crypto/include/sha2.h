@@ -137,6 +137,58 @@ OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_sha2_final(otcrypto_sha2_context_t *ctx,
                                       otcrypto_hash_digest_t *digest);
 
+/**
+ * Initialize a mode-tagged streaming hash operation for signature generation
+ * or verification.
+ *
+ * Supports `kOtcryptoHashModeSha256`, `kOtcryptoHashModeSha384`,
+ * `kOtcryptoHashModeSha512`, and `kOtcryptoHashModeSha1`.
+ *
+ * @param[out] ctx Populated hash context object.
+ * @param hash_mode Hash mode to initialize.
+ * @return Result of the hash init operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments or hash mode are
+ * invalid, or `kOtcryptoStatusValueFatalError` if an internal hardware check
+ * fails.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_hash_init(otcrypto_hash_context_t *ctx,
+                                     otcrypto_hash_mode_t hash_mode);
+
+/**
+ * Add more data to a streaming hash operation and update the context.
+ *
+ * @param ctx Initialized hash context object (updated in place).
+ * @param input_message Input message chunk to be processed.
+ * @return Result of the hash update operation. Returns `kOtcryptoStatusValueOk`
+ * on success, `kOtcryptoStatusValueBadArgs` if arguments are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_hash_update(
+    otcrypto_hash_context_t *ctx,
+    const otcrypto_const_byte_buf_t *input_message);
+
+/**
+ * Finish a mode-tagged streaming hash operation, write the digest, and shred
+ * the hash context.
+ *
+ * The caller must allocate space for the `digest` buffer and set the `len`
+ * field to the expected digest length in 32-bit words (`256 / 32` for SHA-256,
+ * `384 / 32` for SHA-384, `512 / 32` for SHA-512, or `160 / 32` for SHA-1).
+ * The hash mode will be populated by this function into `digest->mode`.
+ *
+ * @param ctx Initialized hash context object (shredded on exit).
+ * @param[out] digest Output digest buffer.
+ * @return Result of the hash finalization operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments or digest length are invalid, or `kOtcryptoStatusValueFatalError`
+ * if an internal hardware check fails.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_hash_final(otcrypto_hash_context_t *ctx,
+                                      otcrypto_hash_digest_t *digest);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

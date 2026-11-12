@@ -618,6 +618,26 @@ typedef struct otcrypto_hash_digest {
   size_t len;
 } otcrypto_hash_digest_t;
 
+enum {
+  /**
+   * Size of an opaque streaming hash context in 32-bit words.
+   * Holds a hash mode word plus the largest underlying streaming hash context
+   * (`kOtcryptoSha2CtxStructWords` = 88 words).
+   */
+  kOtcryptoHashCtxStructWords = 89,
+};
+
+/**
+ * Opaque streaming hash context for signature generation and verification.
+ *
+ * Representation is internal to the hash implementation; initialize with
+ * #otcrypto_hash_init and update with #otcrypto_hash_update before passing to
+ * a `*_hash_sign_verify_final` or `*_hash_verify_final` function.
+ */
+typedef struct otcrypto_hash_context {
+  uint32_t data[kOtcryptoHashCtxStructWords];
+} otcrypto_hash_context_t;
+
 /**
  * State structure for the crypto library.
  */
