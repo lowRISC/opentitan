@@ -7,6 +7,9 @@
 class rram_ctrl_smoke_vseq extends rram_ctrl_base_vseq;
   `uvm_object_utils(rram_ctrl_smoke_vseq)
 
+  // The number of bus words to read/write/rewrite in SW operations
+  int unsigned m_num_sw_words = 100;
+
   extern function new(string name="");
   extern task body();
 
@@ -21,6 +24,24 @@ function rram_ctrl_smoke_vseq::new(string name="");
 endfunction : new
 
 task rram_ctrl_smoke_vseq::body();
+  rram_ctrl_sw_burst_vseq burst_vseq = rram_ctrl_sw_burst_vseq::type_id::create("burst_vseq");
+  burst_vseq.set_ral(cfg.ral);
+  burst_vseq.m_num_words = m_num_sw_words;
+
+  if (!burst_vseq.randomize()) `uvm_fatal("failed_rand", "Failed to randomize burst_vseq.")
+
+  fork : isolation_fork begin
+    fork
+      burst_vseq.start(null);
+      begin
+        wait(cfg.under_reset);
+        burst_vseq.abort();
+        wait(0);
+      end
+    join_any
+    disable fork;
+  end join
+
   // TODO(#31293): add real tests.
 endtask
 
