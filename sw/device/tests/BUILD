@@ -588,6 +588,7 @@ opentitan_test(
     exec_env = dicts.add(
         EARLGREY_TEST_ENVS,
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
+        DARJEELING_TEST_ENVS,
         {
             "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:silicon_creator": None,
@@ -595,6 +596,7 @@ opentitan_test(
     ),
     deps = [
         "//sw/device/lib/arch:device",
+        "//sw/device/lib/base:math",
         "//sw/device/lib/dif:aes",
         "//sw/device/lib/dif:alert_handler",
         "//sw/device/lib/dif:aon_timer",
@@ -7308,10 +7310,13 @@ test_suite(
 opentitan_test(
     name = "rv_core_ibex_mcounteren_writable_test",
     srcs = ["rv_core_ibex_mcounteren_writable_test.c"],
-    exec_env = EARLGREY_TEST_ENVS,
+    exec_env = dicts.add(
+        EARLGREY_TEST_ENVS,
+        DARJEELING_TEST_ENVS,
+    ),
     deps = [
         "//hw/top:rv_core_ibex_c_regs",
-        "//hw/top:top_lib",
+        "//hw/top/dt",
         "//sw/device/lib/base:mmio",
         "//sw/device/lib/base:multibits",
         "//sw/device/lib/testing/test_framework:check",
