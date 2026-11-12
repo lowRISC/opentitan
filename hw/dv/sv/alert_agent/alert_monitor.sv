@@ -390,7 +390,9 @@ task alert_monitor::monitor_ping_handshake();
         req.m_ping_timeout = 1'b1;
       end
       begin : wait_ping_handshake
-        wait(cfg.vif.monitor_cb.alert_tx_final.alert_p);
+        // A signal integrity error (alert_p == alert_n) is not a ping response.
+        wait(cfg.vif.monitor_cb.alert_tx_final.alert_p &&
+             !cfg.vif.monitor_cb.alert_tx_final.alert_n);
         req.m_alert_handshake_sta = AlertReceived;
         wait_ack();
         req.m_alert_handshake_sta = AlertAckReceived;
