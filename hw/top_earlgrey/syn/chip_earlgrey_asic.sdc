@@ -206,6 +206,8 @@ create_generated_clock -name LC_JTAG_TCK -source [get_ports IOR3] -divide_by 1 \
     [get_pins top_earlgrey/earlgrey_pd_aon/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/clk_o] -master_clock JTAG_TCK -add
 create_generated_clock -name RV_JTAG_TCK -source [get_ports IOR3] -divide_by 1 \
     [get_pins top_earlgrey/earlgrey_pd_aon/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/clk_o] -master_clock JTAG_TCK -add
+create_generated_clock -name RRAM_JTAG_TCK -source [get_ports IOR3] -divide_by 1 \
+    [get_pins top_earlgrey/earlgrey_pd_aon/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rram/prim_clock_buf_tck/clk_o] -master_clock JTAG_TCK -add
 
 set LC_JTAG_TCK_INV_PIN \
   [get_pins -leaf -filter {@pin_direction == out} -of_objects \
@@ -1665,7 +1667,7 @@ set_clock_groups -name group1 -async                                  \
     -group [get_clocks "${SPI_DEV_CLKS} ${SPI_DEV_HC_CLKS} ${SPI_DEV_SLOW_PASS_CLKS} ${SPI_DEV_FAST_PASS_CLKS} ${SPI_TPM_CLKS}"] \
     -group [get_clocks {IO_CLK SPI_HOST_CLK SPI_HOST1_CLK SPI_HOST1_INTERNAL_CLK}] \
     -group [get_clocks IO_DIV4_CLK                                  ] \
-    -group [get_clocks "JTAG_TCK RV_JTAG_TCK LC_JTAG_TCK"           ] \
+    -group [get_clocks "JTAG_TCK RV_JTAG_TCK LC_JTAG_TCK RRAM_JTAG_TCK"] \
     -group [get_clocks AON_CLK                                      ]
 
 # UART loopback path can be considered to be a false path
