@@ -29,7 +29,9 @@ typedef enum otcrypto_rsa_padding {
   // (supported SHA1, SHA2, or SHA3 hash functions).
   kOtcryptoRsaPaddingPss = 0x6b1,
   // No padding (raw modular exponentiation; requires `kOtcryptoKeyModeRsaRaw`
-  // and `kOtcryptoHashModeNull`).
+  // and `kOtcryptoHashModeNull`). When `kOtcryptoHashModeNull` is used with
+  // RSA (`kOtcryptoRsaPaddingPkcs` or `kOtcryptoRsaPaddingNull`),
+  // `message_digest.len` is in bytes.
   kOtcryptoRsaPaddingNull = 0x137,
 } otcrypto_rsa_padding_t;
 

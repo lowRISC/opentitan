@@ -37,9 +37,10 @@ static status_t digest_info_length_get(
     // Unsupported or unrecognized hash function.
     return OTCRYPTO_BAD_ARGS;
   }
-  *len = info.der_oid_len + message_digest.len * sizeof(uint32_t);
-
-  if (info.digest_wordlen != 0) {
+  if (info.digest_wordlen == 0) {
+    *len = message_digest.len;
+  } else {
+    *len = info.der_oid_len + message_digest.len * sizeof(uint32_t);
     HARDENED_CHECK_NE(*len, 0);
   }
 
@@ -70,24 +71,25 @@ static status_t digest_info_write(const otcrypto_hash_digest_t message_digest,
     // Unsupported or unrecognized hash function.
     return OTCRYPTO_BAD_ARGS;
   }
+  size_t digest_bytelen = message_digest.len;
   if (info.digest_wordlen != 0) {
     if (launder32(message_digest.len) != info.digest_wordlen) {
       return OTCRYPTO_BAD_ARGS;
     }
     HARDENED_CHECK_EQ(message_digest.len, info.digest_wordlen);
+    digest_bytelen = message_digest.len * sizeof(uint32_t);
   }
 
-  memcpy(encoding + message_digest.len, info.der_oid, info.der_oid_len);
+  uint8_t *encoding_bytes = (uint8_t *)encoding;
+  memcpy(encoding_bytes + digest_bytelen, info.der_oid, info.der_oid_len);
 
   // Copy the digest into the encoding, reversing the order of bytes.
+  const uint8_t *digest_bytes = (const uint8_t *)message_digest.data;
   size_t i;
-  for (i = 0; launder32(i) < ceil_div(message_digest.len, 2); i++) {
-    encoding[i] =
-        __builtin_bswap32(message_digest.data[message_digest.len - 1 - i]);
-    encoding[message_digest.len - 1 - i] =
-        __builtin_bswap32(message_digest.data[i]);
+  for (i = 0; launder32(i) < digest_bytelen; i++) {
+    encoding_bytes[i] = digest_bytes[digest_bytelen - 1 - i];
   }
-  HARDENED_CHECK_EQ(i, ceil_div(message_digest.len, 2));
+  HARDENED_CHECK_EQ(i, digest_bytelen);
 
   return OTCRYPTO_OK;
 }
@@ -110,7 +112,7 @@ status_t rsa_padding_pkcs1v15_encode(
   size_t tlen;
   HARDENED_TRY(digest_info_length_get(message_digest, &tlen));
 
-  if (tlen + 3 + 8 >= encoded_message_bytelen) {
+  if (encoded_message_bytelen < 11 || tlen > encoded_message_bytelen - 11) {
     // Invalid encoded message length/hash function combination; the RFC
     // specifies that the 0xff padding must be at least 8 octets.
     return OTCRYPTO_BAD_ARGS;
