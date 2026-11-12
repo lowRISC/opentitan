@@ -1504,6 +1504,126 @@ static status_t kat_kmac_kdf(void) {
   return OTCRYPTO_OK;
 }
 
+// ECDH P-256 shared secret Z = ([p256_d] * p256_Q).x
+// Z = a8bd0a009a1175331d5b81aca8e76e82a123b836bc9aeab834984bcd3f44fc92
+static const uint8_t ecdh_p256_z[32] = {
+    0x92, 0xfc, 0x44, 0x3f, 0xcd, 0x4b, 0x98, 0x34, 0xb8, 0xea, 0x9a,
+    0xbc, 0x36, 0xb8, 0x23, 0xa1, 0x82, 0x6e, 0xe7, 0xa8, 0xac, 0x81,
+    0x5b, 0x1d, 0x33, 0x75, 0x11, 0x9a, 0x00, 0x0a, 0xbd, 0xa8};
+
+// ECDH P-384 shared secret Z = ([p384_d] * p384_Q).x
+// Z =
+// 7265e7dd2b9a2cb304efd2b16aceeab559402d234dc41452bf28e60c698aedffb14326b6d1142b5ce11f3471b29a7070
+static const uint8_t ecdh_p384_z[48] = {
+    0x70, 0x70, 0x9a, 0xb2, 0x71, 0x34, 0x1f, 0xe1, 0x5c, 0x2b, 0x14, 0xd1,
+    0xb6, 0x26, 0x43, 0xb1, 0xff, 0xed, 0x8a, 0x69, 0x0c, 0xe6, 0x28, 0xbf,
+    0x52, 0x14, 0xc4, 0x4d, 0x23, 0x2d, 0x40, 0x59, 0xb5, 0xea, 0xce, 0x6a,
+    0xb1, 0xd2, 0xef, 0x04, 0xb3, 0x2c, 0x9a, 0x2b, 0xdd, 0xe7, 0x65, 0x72};
+
+static status_t kat_p256_ecdh(void) {
+  const otcrypto_key_config_t kP256EcdhPrivateKeyConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeEcdhP256,
+      .key_length = sizeof(p256_d),
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t keyblob_sk[20] = {0};
+  otcrypto_blinded_key_t private_key = {
+      .config = kP256EcdhPrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob_sk),
+      .keyblob = keyblob_sk,
+      .checksum = 0,
+  };
+  memcpy(keyblob_sk, p256_d, sizeof(p256_d));
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  otcrypto_unblinded_key_t public_key = make_unblinded_key(
+      kOtcryptoKeyModeEcdhP256, sizeof(p256_Q), (const uint32_t *)p256_Q);
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+
+  const otcrypto_key_config_t kP256EcdhSharedKeyConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeAesCtr,
+      .key_length = sizeof(p256_Q),
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t shared_keyblob[2 * sizeof(p256_Q) / sizeof(uint32_t)];
+  otcrypto_blinded_key_t shared_secret = {
+      .config = kP256EcdhSharedKeyConfig,
+      .keyblob_length = sizeof(shared_keyblob),
+      .keyblob = shared_keyblob,
+      .checksum = 0,
+  };
+
+  HARDENED_TRY(otcrypto_ecdh_p256(&private_key, &public_key, &shared_secret));
+
+  uint32_t act_ss[16] = {0};
+  HARDENED_TRY(keyblob_key_unmask(&shared_secret, ARRAYSIZE(act_ss), act_ss));
+
+  if (memcmp(act_ss, ecdh_p256_z, sizeof(ecdh_p256_z))) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
+
+  return OTCRYPTO_OK;
+}
+
+static status_t kat_p384_ecdh(void) {
+  const otcrypto_key_config_t kP384EcdhPrivateKeyConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeEcdhP384,
+      .key_length = sizeof(p384_d),
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t keyblob_sk[28] = {0};
+  otcrypto_blinded_key_t private_key = {
+      .config = kP384EcdhPrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob_sk),
+      .keyblob = keyblob_sk,
+      .checksum = 0,
+  };
+  memcpy(keyblob_sk, p384_d, sizeof(p384_d));
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  otcrypto_unblinded_key_t public_key = make_unblinded_key(
+      kOtcryptoKeyModeEcdhP384, sizeof(p384_Q), (const uint32_t *)p384_Q);
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+
+  const otcrypto_key_config_t kP384EcdhSharedKeyConfig = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeAesCtr,
+      .key_length = sizeof(p384_Q),
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t shared_keyblob[2 * sizeof(p384_Q) / sizeof(uint32_t)];
+  otcrypto_blinded_key_t shared_secret = {
+      .config = kP384EcdhSharedKeyConfig,
+      .keyblob_length = sizeof(shared_keyblob),
+      .keyblob = shared_keyblob,
+      .checksum = 0,
+  };
+
+  HARDENED_TRY(otcrypto_ecdh_p384(&private_key, &public_key, &shared_secret));
+
+  uint32_t act_ss[24] = {0};
+  HARDENED_TRY(keyblob_key_unmask(&shared_secret, ARRAYSIZE(act_ss), act_ss));
+
+  if (memcmp(act_ss, ecdh_p384_z, sizeof(ecdh_p384_z))) {
+    // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
+    // FI.
+    return OTCRYPTO_FATAL_ERR;
+  }
+
+  return OTCRYPTO_OK;
+}
+
 otcrypto_status_t run_kats(kat_id_t tests) {
   if (tests.flags == 0 || tests.flags >= (1UL << kTestLastBit)) {
     return OTCRYPTO_BAD_ARGS;
@@ -1587,6 +1707,12 @@ otcrypto_status_t run_kats(kat_id_t tests) {
   }
   if ((tests.flags & OTCRYPTO_KAT_KMAC_KDF) != 0) {
     HARDENED_TRY(kat_kmac_kdf());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_P256_ECDH) != 0) {
+    HARDENED_TRY(kat_p256_ecdh());
+  }
+  if ((tests.flags & OTCRYPTO_KAT_P384_ECDH) != 0) {
+    HARDENED_TRY(kat_p384_ecdh());
   }
 
   return OTCRYPTO_OK;
