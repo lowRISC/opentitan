@@ -6,6 +6,7 @@ from typing import List, Optional, Tuple
 from .constants import URND_PERMUTATION, WsrAddrs
 from .ext_regs import OTBNExtRegs
 from .ispr import ISPR, DumbISPR, ISPRChange
+from .keymgr_ispr import KeymgrMsgRcvWsr
 from .kmac_ispr import KmacDataWSR
 from .mai_ispr import MaiInputWSR, MaiOutputWSR
 from .trace import Trace
@@ -477,6 +478,11 @@ class WSRFile:
         self.MAI_IN1_S0 = MaiInputWSR('MAI_IN1_S0')
         self.MAI_IN1_S1 = MaiInputWSR('MAI_IN1_S1')
         self.URND_STATE = UrndStateWSR('URND_STATE', self.URND)
+        # TODO: implement these WSRs
+        self.KEYMGR_MSG_S0_L = KeymgrMsgRcvWsr('KEYMGR_MSG_S0_L', 256)
+        self.KEYMGR_MSG_S0_H = DumbISPR('KEYMGR_MSG_S0_H', 256)
+        self.KEYMGR_MSG_S1_L = DumbISPR('KEYMGR_MSG_S1_L', 256)
+        self.KEYMGR_MSG_S1_H = DumbISPR('KEYMGR_MSG_S1_H', 256)
 
         self._by_addr = {
             WsrAddrs.MOD: self.MOD,
@@ -496,6 +502,10 @@ class WSRFile:
             WsrAddrs.MAI_IN1_S0: self.MAI_IN1_S0,
             WsrAddrs.MAI_IN1_S1: self.MAI_IN1_S1,
             WsrAddrs.URND_STATE: self.URND_STATE,
+            WsrAddrs.KEYMGR_MSG_S0_L: self.KEYMGR_MSG_S0_L,
+            WsrAddrs.KEYMGR_MSG_S0_H: self.KEYMGR_MSG_S0_H,
+            WsrAddrs.KEYMGR_MSG_S1_L: self.KEYMGR_MSG_S1_L,
+            WsrAddrs.KEYMGR_MSG_S1_H: self.KEYMGR_MSG_S1_H,
         }
 
     def on_start(self) -> None:
@@ -556,6 +566,10 @@ class WSRFile:
         self.MAI_IN1_S0.commit()
         self.MAI_IN1_S1.commit()
         self.URND_STATE.commit()
+        self.KEYMGR_MSG_S0_L.commit()
+        self.KEYMGR_MSG_S0_H.commit()
+        self.KEYMGR_MSG_S1_L.commit()
+        self.KEYMGR_MSG_S1_H.commit()
 
     def abort(self) -> None:
         self.MOD.abort()
@@ -578,6 +592,10 @@ class WSRFile:
         self.MAI_IN1_S0.abort()
         self.MAI_IN1_S1.abort()
         self.URND_STATE.abort()
+        self.KEYMGR_MSG_S0_L.abort()
+        self.KEYMGR_MSG_S0_H.abort()
+        self.KEYMGR_MSG_S1_L.abort()
+        self.KEYMGR_MSG_S1_H.abort()
 
     def changes(self) -> List[Trace]:
         ret: List[Trace] = []
@@ -595,6 +613,10 @@ class WSRFile:
         ret += self.MAI_IN1_S0.changes()
         ret += self.MAI_IN1_S1.changes()
         ret += self.URND_STATE.changes()
+        ret += self.KEYMGR_MSG_S0_L.changes()
+        ret += self.KEYMGR_MSG_S0_H.changes()
+        ret += self.KEYMGR_MSG_S1_L.changes()
+        ret += self.KEYMGR_MSG_S1_H.changes()
         return ret
 
     def set_sideload_keys(self,
