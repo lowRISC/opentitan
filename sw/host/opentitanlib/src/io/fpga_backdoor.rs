@@ -9,6 +9,7 @@ use std::time::{Duration, Instant};
 
 use crate::app::TransportWrapper;
 use crate::debug::dmi::{Dmi, OpenOcdDmi};
+use crate::debug::openocd::OpenOcdJtagChain;
 use crate::io::jtag::{JtagChain, JtagParams, JtagTap};
 use crate::transport::Capability;
 use crate::util::vmem::Word;
@@ -67,9 +68,29 @@ pub mod consts {
 
     // Parameters - see hw/ip/bkdr_loader/doc/interfaces.md
     pub const DATA_REGS_PER_WORD: usize = 8; // MaxWordWidthDiv32
+
+    // The maximum main clock frequency, used *only* for recovery flows.
+    pub const MAX_MAIN_CLOCK_FREQ_HZ: u64 = 50_000_000;
 }
 
 use consts::*;
+
+/// Can be used to help recover a backdoor loader that is stuck in its preload state.
+/// TODO: ideally this is temporary, only used to work around a suspected hardware issue
+/// on reset.
+pub fn release_stuck_backdoor(adapter_command: &str, opts: &JtagParams) -> Result<()> {
+    let openocd = Box::new(OpenOcdJtagChain::new(adapter_command, opts)?)
+        .connect(JtagTap::BackdoorTap)?
+        .into_raw()?;
+    Backdoor::new(
+        OpenOcdDmi::new(openocd, "fpga_backdoor.tap")?,
+        opts.adapter_speed_khz,
+        MAX_MAIN_CLOCK_FREQ_HZ,
+        /*enumerate=*/ false,
+    )?
+    .set_done()
+    .context("failed to release the FPGA backdoor loader")
+}
 
 /// Apply the bkdr_loader TAP strapping and reset to enter the backdoor loader.
 pub fn enter_backdoor_loader(transport: &TransportWrapper) -> Result<()> {
