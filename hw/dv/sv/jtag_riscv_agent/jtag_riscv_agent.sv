@@ -30,6 +30,13 @@ class jtag_riscv_agent extends dv_base_agent #(
     end
     m_jtag_agent = jtag_agent::type_id::create("m_jtag_agent", this);
 
+    // The driver waits dmi_idle_cycles TCK cycles in Run-Test/Idle after each DMI request.
+    // TCK must keep running for that, so extend the run to clear length of the JTAG agent.
+    // The margin keeps TCK running until the next scan starts.
+    if (cfg.dmi_idle_cycles > 0 && cfg.m_jtag_agent_cfg.rtc_length < cfg.dmi_idle_cycles + 2) begin
+      cfg.m_jtag_agent_cfg.rtc_length = cfg.dmi_idle_cycles + 2;
+    end
+
     uvm_config_db#(jtag_agent_cfg)::set(this, "m_jtag_agent", "cfg", cfg.m_jtag_agent_cfg);
     cfg.m_jtag_agent_cfg.en_cov = cfg.en_cov;
   endfunction

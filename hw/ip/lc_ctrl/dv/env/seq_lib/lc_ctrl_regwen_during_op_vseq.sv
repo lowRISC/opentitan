@@ -25,11 +25,6 @@ class lc_ctrl_regwen_during_op_vseq extends lc_ctrl_smoke_vseq;
   endtask
 
   virtual task sw_transition_req(bit [TL_DW-1:0] next_lc_state, bit [TL_DW*4-1:0] token_val);
-    uint max_wait = !cfg.jtag_csr ? 500 : 3000;
-    string wait_msg = $sformatf(
-        "No OTP program request received - delayed %0d clock cycles instead", max_wait
-    );
-
     `uvm_info(`gfn, "sw_transition_req: started", UVM_MEDIUM)
     fork
       // Run base sw_transition_req
@@ -40,11 +35,11 @@ class lc_ctrl_regwen_during_op_vseq extends lc_ctrl_smoke_vseq;
         uvm_reg_data_t write_val = 0;
         bit old_en_scb_ral_update_write = cfg.en_scb_ral_update_write;
 
-        // Wait until we are sure the transition has started
-        // indicated be an OTP program request or a number of clock cycles
-        `DV_SPINWAIT_EXIT(
-            while(cfg.m_otp_prog_pull_agent_cfg.vif.req != 1) cfg.clk_rst_vif.wait_clks(1);,
-            cfg.clk_rst_vif.wait_clks(max_wait);, wait_msg)
+        // Wait until the transition has started, indicated by the FSM leaving IdleSt.
+        // A fixed delay is not sufficient, because the CSR writes before the transition command
+        // take much longer through JTAG than through TL-UL.
+        `DV_WAIT(cfg.lc_ctrl_vif.lc_ctrl_fsm_state != IdleSt,
+                 "The FSM did not leave IdleSt after the transition command")
 
         cfg.clk_rst_vif.wait_clks(100);
         // Read TRANSITION_REGWEN register - should be 0 by now

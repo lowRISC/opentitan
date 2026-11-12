@@ -12,6 +12,10 @@ class jtag_riscv_agent_cfg extends dv_base_agent_cfg;
   // Allows JTAG to return error status.
   bit allow_errors = 0;
 
+  // Number of TCK cycles spent in Run-Test/Idle after each DMI request, before its status check.
+  // This gives the DMI time to complete the request, as the dtmcs.idle hint describes.
+  int unsigned dmi_idle_cycles = 0;
+
   // RV_DM jtag connects to DM CSRs.
   // Because LC jtag will normalize the input address for the last two bits,
   // while RV_DM jtag uses the original DM CSR addresses without the normalization.
