@@ -317,8 +317,7 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
 
   // Repeatedly call HMAC to generate the derived key (see RFC 5869,
   // section 2.3).
-  uint32_t *share0_ptr = okm->keyblob;
-  uint32_t *share1_ptr = okm->keyblob + keyblob_share_num_words(okm->config);
+  memset(okm->keyblob, 0, okm->keyblob_length);
   size_t words_written = 0;
 
   // Array to hold T(i) from the previous loop iteration.
@@ -353,21 +352,12 @@ otcrypto_status_t otcrypto_hkdf_expand(const otcrypto_blinded_key_t *prk,
       words_to_copy = okm_wordlen - words_written;
     }
 
-    uint32_t mask_data[kHmacMaxDigestWords];
-    HARDENED_TRY(hardened_memshred(mask_data, words_to_copy));
-
-    uint32_t share0_data[kHmacMaxDigestWords];
-    HARDENED_TRY(hardened_xor(tag_data, mask_data, words_to_copy, share0_data));
-
-    HARDENED_TRY(hardened_memcpy(share0_ptr + words_written, share0_data,
-                                 words_to_copy));
     HARDENED_TRY(
-        hardened_memcpy(share1_ptr + words_written, mask_data, words_to_copy));
+        hardened_memcpy(okm->keyblob + words_written, tag_data, words_to_copy));
 
     words_written += words_to_copy;
   }
 
-  // Manually compute and assign the checksum
-  okm->checksum = otcrypto_integrity_blinded_checksum(okm);
+  HARDENED_TRY(keyblob_remask(okm));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }

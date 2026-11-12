@@ -178,18 +178,9 @@ otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
 
   // Morph the key into a software-backed key.
   key->config.hw_backed = kHardenedBoolFalse;
-
-  // Extract pointers to the shares.
-  uint32_t *share0;
-  uint32_t *share1;
-  HARDENED_TRY(keyblob_to_shares(key, &share0, &share1));
-
-  // Preload the target key shares with randomness.
-  HARDENED_TRY(hardened_memshred(share0, share_words));
-  HARDENED_TRY(hardened_memshred(share1, share_words));
-
-  HARDENED_TRY(hardened_memcpy(share0, output.share0, share_words));
-  HARDENED_TRY(hardened_memcpy(share1, output.share1, share_words));
+  key->keyblob_length = keyblob_num_words(key->config) * sizeof(uint32_t);
+  HARDENED_TRY(keyblob_from_shares(output.share0, output.share1, key->config,
+                                   key->keyblob));
 
   // Wipe the sensitive key material.
   HARDENED_TRY(hardened_memshred(output.share0, share_words));
