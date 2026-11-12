@@ -516,6 +516,7 @@ inter_sig_added = {}
 class PadType(Enum):
     INPUT_STD = 'InputStd'
     BIDIR_STD = 'BidirStd'
+    BIDIR_STR = 'BidirStr'
     BIDIR_TOL = 'BidirTol'
     BIDIR_OD = 'BidirOd'
     ANALOG_IN0 = 'AnalogIn0'
