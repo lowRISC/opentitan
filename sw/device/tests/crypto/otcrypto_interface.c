@@ -155,6 +155,9 @@ volatile otcrypto_interface_t otcrypto = {
     .sha2_init = &otcrypto_sha2_init,
     .sha2_update = &otcrypto_sha2_update,
     .sha2_final = &otcrypto_sha2_final,
+    .hash_init = &otcrypto_hash_init,
+    .hash_update = &otcrypto_hash_update,
+    .hash_final = &otcrypto_hash_final,
 
     // SHA-3
     .sha3_224 = &otcrypto_sha3_224,
@@ -217,9 +220,9 @@ volatile otcrypto_interface_t otcrypto = {
 
     // RSA signatures (blocking).
     .rsa_sign = &otcrypto_rsa_sign,
-    .rsa_hash_sign_verify = &otcrypto_rsa_hash_sign_verify,
+    .rsa_hash_sign_verify_final = &otcrypto_rsa_hash_sign_verify_final,
     .rsa_verify = &otcrypto_rsa_verify,
-    .rsa_hash_verify = &otcrypto_rsa_hash_verify,
+    .rsa_hash_verify_final = &otcrypto_rsa_hash_verify_final,
 
     // RSA encryption (blocking).
     .rsa_encrypt = &otcrypto_rsa_encrypt,
@@ -256,10 +259,11 @@ volatile otcrypto_interface_t otcrypto = {
     .ecdsa_p256_dice_keygen = &otcrypto_ecdsa_p256_dice_keygen,
     .ecdsa_p256_sign_config_k = &otcrypto_ecdsa_p256_sign_config_k,
     .ecdsa_p256_sign = &otcrypto_ecdsa_p256_sign,
-    .ecdsa_p256_hash_sign_verify = &otcrypto_ecdsa_p256_hash_sign_verify,
+    .ecdsa_p256_hash_sign_verify_final =
+        &otcrypto_ecdsa_p256_hash_sign_verify_final,
     .ecdsa_p256_sign_verify = &otcrypto_ecdsa_p256_sign_verify,
     .ecdsa_p256_verify = &otcrypto_ecdsa_p256_verify,
-    .ecdsa_p256_hash_verify = &otcrypto_ecdsa_p256_hash_verify,
+    .ecdsa_p256_hash_verify_final = &otcrypto_ecdsa_p256_hash_verify_final,
 
     // ECDH P-256 (blocking).
     .ecdh_p256_keygen = &otcrypto_ecdh_p256_keygen,
@@ -305,11 +309,12 @@ volatile otcrypto_interface_t otcrypto = {
     // ECDSA P-384 (blocking).
     .ecdsa_p384_keygen = &otcrypto_ecdsa_p384_keygen,
     .ecdsa_p384_sign = &otcrypto_ecdsa_p384_sign,
-    .ecdsa_p384_hash_sign_verify = &otcrypto_ecdsa_p384_hash_sign_verify,
+    .ecdsa_p384_hash_sign_verify_final =
+        &otcrypto_ecdsa_p384_hash_sign_verify_final,
     .ecdsa_p384_sign_config_k = &otcrypto_ecdsa_p384_sign_config_k,
     .ecdsa_p384_sign_verify = &otcrypto_ecdsa_p384_sign_verify,
     .ecdsa_p384_verify = &otcrypto_ecdsa_p384_verify,
-    .ecdsa_p384_hash_verify = &otcrypto_ecdsa_p384_hash_verify,
+    .ecdsa_p384_hash_verify_final = &otcrypto_ecdsa_p384_hash_verify_final,
 
     // ECDH P-384 (blocking).
     .ecdh_p384_keygen = &otcrypto_ecdh_p384_keygen,
