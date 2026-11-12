@@ -1,0 +1,994 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   width="855.10559"
+   height="655.80933"
+   fill="none"
+   stroke-linecap="square"
+   stroke-miterlimit="10"
+   version="1.1"
+   viewBox="0 0 855.10558 655.80933"
+   id="svg1209"
+   sodipodi:docname="uvm-tb.svg"
+   inkscape:version="1.4.4 (dcaf3e7d9e, 2026-05-05)"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <sodipodi:namedview
+     id="namedview16"
+     pagecolor="#ffffff"
+     bordercolor="#000000"
+     borderopacity="0.25"
+     inkscape:showpageshadow="2"
+     inkscape:pageopacity="0.0"
+     inkscape:pagecheckerboard="0"
+     inkscape:deskcolor="#d1d1d1"
+     inkscape:zoom="1.9002699"
+     inkscape:cx="320.74392"
+     inkscape:cy="305.74605"
+     inkscape:window-width="1868"
+     inkscape:window-height="1041"
+     inkscape:window-x="26"
+     inkscape:window-y="23"
+     inkscape:window-maximized="0"
+     inkscape:current-layer="svg1209"
+     inkscape:export-bgcolor="#ffffffff" />
+  <metadata
+     id="metadata1056">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <defs
+     id="defs835">
+    <rect
+       x="-297.9502"
+       y="658.20032"
+       width="290.82916"
+       height="55.29501"
+       id="rect1331" />
+    <rect
+       x="-230.9109"
+       y="542.1825"
+       width="519.57452"
+       height="330.1489"
+       id="rect1240" />
+    <marker
+       id="marker1910"
+       overflow="visible"
+       orient="auto"
+       refX="0"
+       refY="0"
+       viewBox="0 0 17.773854 10.156488"
+       markerWidth="9.9995003"
+       markerHeight="5.7140002"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path823" />
+    </marker>
+    <marker
+       id="marker1078"
+       overflow="visible"
+       orient="auto"
+       refX="0"
+       refY="0"
+       viewBox="0 0 17.773854 10.156488"
+       markerWidth="17.773853"
+       markerHeight="10.156488"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path826" />
+    </marker>
+    <marker
+       id="marker1029"
+       overflow="visible"
+       orient="auto"
+       refX="0"
+       refY="0"
+       viewBox="0 0 17.773854 10.156488"
+       markerWidth="17.773853"
+       markerHeight="10.156488"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path829" />
+    </marker>
+    <marker
+       id="Arrow1Lend"
+       overflow="visible"
+       orient="auto">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path832" />
+    </marker>
+    <marker
+       id="marker1029-5"
+       overflow="visible"
+       orient="auto">
+      <path
+         transform="matrix(-0.8,0,0,-0.8,-10,0)"
+         d="M 0,0 5,-5 -12.5,0 5,5 Z"
+         fill="#000000"
+         fill-rule="evenodd"
+         stroke="#000000"
+         stroke-width="1pt"
+         id="path829-6" />
+    </marker>
+  </defs>
+  <clipPath
+     id="clipPath839">
+    <path
+       d="M 0,0 H 1086 V 817 H 0 Z"
+       id="path837" />
+  </clipPath>
+  <text
+     x="-50.142395"
+     y="-134"
+     fill="#000000"
+     font-family="'Liberation Sans'"
+     font-size="17.333px"
+     letter-spacing="0px"
+     stroke-linecap="butt"
+     stroke-width="1px"
+     text-align="center"
+     text-anchor="middle"
+     word-spacing="0px"
+     style="line-height:20px"
+     xml:space="preserve"
+     id="text907"><tspan
+       x="-50.142395"
+       y="-134"
+       id="tspan905" /></text>
+  <flowRoot
+     transform="translate(-130.14279,-680.99997)"
+     fill="#000000"
+     font-family="'Liberation Sans'"
+     font-size="14.667px"
+     letter-spacing="0px"
+     stroke-linecap="butt"
+     stroke-width="1px"
+     word-spacing="0px"
+     style="line-height:20px"
+     xml:space="preserve"
+     id="flowRoot915"><flowRegion
+       id="flowRegion911"><rect
+         x="80"
+         y="537"
+         width="440"
+         height="120"
+         id="rect909" /></flowRegion><flowPara
+       id="flowPara913" /></flowRoot>
+  <text
+     xml:space="preserve"
+     id="text1329"
+     style="font-size:26.6667px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'Liberation Sans';text-align:center;letter-spacing:0px;word-spacing:0px;white-space:pre;shape-inside:url(#rect1331);display:inline;fill:none;stroke:#000000;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     transform="translate(-93.658792,-634.49997)" />
+  <g
+     id="g37"
+     transform="translate(-283.26197,-850.75369)" />
+  <rect
+     x="0.65359497"
+     y="0.65359497"
+     width="853.7984"
+     height="586.29828"
+     rx="0"
+     ry="0"
+     color="#000000"
+     color-rendering="auto"
+     fill="#dad2ea"
+     fill-rule="evenodd"
+     image-rendering="auto"
+     shape-rendering="auto"
+     solid-color="#000000"
+     stroke="#000000"
+     stroke-linecap="butt"
+     stroke-miterlimit="10"
+     style="isolation:auto;mix-blend-mode:normal;stroke-width:1.30719"
+     id="rect58" />
+  <g
+     id="g51"
+     transform="translate(-101.19998,-163.42319)">
+    <rect
+       style="fill:#ffffff;stroke:#000000;stroke-width:0.778039;stroke-miterlimit:10"
+       id="rect16"
+       width="275.43558"
+       height="530.20105"
+       x="445.25705"
+       y="210.41562" />
+    <text
+       xml:space="preserve"
+       style="font-size:17.333px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke:none;stroke-width:1px;stroke-miterlimit:10"
+       x="548.79547"
+       y="480.07367"
+       id="text17"><tspan
+         sodipodi:role="line"
+         x="548.79547"
+         y="480.07367"
+         id="tspan18">rram_ctrl</tspan></text>
+  </g>
+  <path
+     d="m 625.87172,91.580091 10,-15 v 10 h 24.605 v -10 l 10,15 -10,14.999999 v -9.999999 h -24.605 v 9.999999 z"
+     fill="#ffffff"
+     id="path42-8"
+     style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+  <g
+     id="g44"
+     transform="translate(113.90215,-317.23078)">
+    <rect
+       style="fill:#ffffff;stroke:#000000;stroke-width:0.58684;stroke-miterlimit:10"
+       id="rect43"
+       width="165.26146"
+       height="89.366508"
+       x="562.85803"
+       y="364.12762" />
+    <text
+       xml:space="preserve"
+       style="font-size:17.333px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;fill:#000000;stroke:none;stroke-width:1px;stroke-miterlimit:10"
+       x="598.56781"
+       y="411.75189"
+       id="text43"><tspan
+         sodipodi:role="line"
+         x="598.56781"
+         y="411.75189"
+         id="tspan43">rram_macro</tspan></text>
+  </g>
+  <g
+     id="g23">
+    <g
+       id="g57"
+       transform="translate(-101.19998,-163.42319)">
+      <g
+         id="g1129-9"
+         transform="translate(-328.60767,-38.882228)">
+        <g
+           transform="translate(-10,188.90884)"
+           stroke-linecap="butt"
+           id="g977-1">
+          <rect
+             x="590.5"
+             y="60.5"
+             width="136.17"
+             height="35"
+             color="#000000"
+             color-rendering="auto"
+             fill="#fce6ce"
+             fill-rule="evenodd"
+             image-rendering="auto"
+             shape-rendering="auto"
+             solid-color="#000000"
+             stroke="#000000"
+             stroke-miterlimit="10"
+             style="isolation:auto;mix-blend-mode:normal"
+             id="rect971-2" />
+          <text
+             x="658.20618"
+             y="82.557625"
+             fill="#000000"
+             font-family="'Liberation Sans'"
+             font-size="17.333px"
+             letter-spacing="0px"
+             stroke-width="1px"
+             text-align="center"
+             text-anchor="middle"
+             word-spacing="0px"
+             style="line-height:20px"
+             xml:space="preserve"
+             id="text975-7"><tspan
+               x="658.20618"
+               y="82.557625"
+               id="tspan973-0">clk_rst_if</tspan></text>
+        </g>
+        <path
+           d="m 723.16,266.90884 h 42.738"
+           fill="#000000"
+           marker-end="url(#marker1029-5)"
+           id="path1083-9"
+           style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;marker-end:url(#marker1029-5)" />
+      </g>
+      <g
+         id="g21"
+         transform="translate(-328.60767,8.7472085)">
+        <g
+           transform="translate(-10,188.90884)"
+           stroke-linecap="butt"
+           id="g20">
+          <rect
+             x="590.5"
+             y="60.5"
+             width="136.17"
+             height="35"
+             color="#000000"
+             color-rendering="auto"
+             fill="#fce6ce"
+             fill-rule="evenodd"
+             image-rendering="auto"
+             shape-rendering="auto"
+             solid-color="#000000"
+             stroke="#000000"
+             stroke-miterlimit="10"
+             style="isolation:auto;mix-blend-mode:normal"
+             id="rect19" />
+          <text
+             x="658.20618"
+             y="82.557625"
+             fill="#000000"
+             font-family="'Liberation Sans'"
+             font-size="17.333px"
+             letter-spacing="0px"
+             stroke-width="1px"
+             text-align="center"
+             text-anchor="middle"
+             word-spacing="0px"
+             style="line-height:20px"
+             xml:space="preserve"
+             id="text19"><tspan
+               x="658.20618"
+               y="82.557625"
+               id="tspan19">otp_clk_rst_if</tspan></text>
+        </g>
+        <path
+           d="m 723.16,266.90884 h 42.738"
+           fill="#000000"
+           marker-end="url(#marker1029-5)"
+           id="path20"
+           style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;marker-end:url(#marker1029-5)" />
+      </g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:17.333px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.758;stroke-miterlimit:10;stroke-dasharray:none"
+       x="69.603455"
+       y="92.899506"
+       id="text47"><tspan
+         sodipodi:role="line"
+         id="tspan47"
+         x="69.603455"
+         y="92.899506"
+         style="font-style:italic">clkmgr</tspan></text>
+  </g>
+  <g
+     id="g22"
+     transform="translate(0,-0.23277508)">
+    <g
+       id="g58"
+       transform="translate(-101.19998,-163.42319)">
+      <g
+         id="g41"
+         transform="translate(-327.6867,56.716081)">
+        <g
+           transform="translate(-10,188.90884)"
+           stroke-linecap="butt"
+           id="g40">
+          <rect
+             x="590.5"
+             y="107.79"
+             width="136.17"
+             height="35"
+             color="#000000"
+             color-rendering="auto"
+             fill="#fce6ce"
+             fill-rule="evenodd"
+             image-rendering="auto"
+             shape-rendering="auto"
+             solid-color="#000000"
+             stroke="#000000"
+             stroke-miterlimit="10"
+             style="isolation:auto;mix-blend-mode:normal"
+             id="rect40" />
+          <text
+             x="658.44318"
+             y="129.84575"
+             fill="#000000"
+             font-family="'Liberation Sans'"
+             font-size="17.333px"
+             letter-spacing="0px"
+             stroke-width="1px"
+             text-align="center"
+             text-anchor="middle"
+             word-spacing="0px"
+             style="line-height:20px"
+             xml:space="preserve"
+             id="text40"><tspan
+               x="658.44318"
+               y="129.84575"
+               id="tspan40">host_tl_if</tspan></text>
+        </g>
+        <path
+           d="m 723.16,314.19684 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 H 733.16 v 10 z"
+           fill="#ffffff"
+           id="path40"
+           style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+      </g>
+      <g
+         id="g47"
+         transform="translate(192.3133,-55.916076)">
+        <g
+           transform="translate(-530,253.91156)"
+           stroke-linecap="butt"
+           id="g42">
+          <rect
+             x="590.5"
+             y="107.79"
+             width="136.17"
+             height="35"
+             color="#000000"
+             color-rendering="auto"
+             fill="#fce6ce"
+             fill-rule="evenodd"
+             image-rendering="auto"
+             shape-rendering="auto"
+             solid-color="#000000"
+             stroke="#000000"
+             stroke-miterlimit="10"
+             style="isolation:auto;mix-blend-mode:normal"
+             id="rect41" />
+          <text
+             x="658.44318"
+             y="129.84575"
+             fill="#000000"
+             font-family="'Liberation Sans'"
+             font-size="17.333px"
+             letter-spacing="0px"
+             stroke-width="1px"
+             text-align="center"
+             text-anchor="middle"
+             word-spacing="0px"
+             style="line-height:20px"
+             xml:space="preserve"
+             id="text41"><tspan
+               x="658.44318"
+               y="129.84575"
+               id="tspan41">core_tl_if</tspan></text>
+        </g>
+        <path
+           d="m 203.16,379.19956 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 H 213.16 v 10 z"
+           fill="#ffffff"
+           id="path42"
+           style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+      </g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:17.333px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.758;stroke-miterlimit:10;stroke-dasharray:none"
+       x="86.919525"
+       y="189.87222"
+       id="text48"><tspan
+         sodipodi:role="line"
+         id="tspan48"
+         x="86.919525"
+         y="189.87222"
+         style="font-style:italic">xbar</tspan></text>
+  </g>
+  <path
+     d="m 294.27332,263.12117 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 h -24.605 v 10 z"
+     fill="#ffffff"
+     id="path34"
+     style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+  <g
+     id="g19"
+     transform="translate(0,-0.46555274)">
+    <g
+       id="g7"
+       transform="translate(0,-238.14718)">
+      <rect
+         x="135.61333"
+         y="491.76834"
+         width="136.17"
+         height="35"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fce6ce"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="isolation:auto;mix-blend-mode:normal;stroke-linecap:butt"
+         id="rect3" />
+      <rect
+         x="139.61333"
+         y="487.76834"
+         width="136.17"
+         height="35"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fce6ce"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="isolation:auto;mix-blend-mode:normal;stroke-linecap:butt"
+         id="rect4" />
+      <rect
+         x="143.61333"
+         y="483.76834"
+         width="136.17"
+         height="35"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fce6ce"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="isolation:auto;mix-blend-mode:normal;stroke-linecap:butt"
+         id="rect2" />
+      <rect
+         x="147.61333"
+         y="479.76834"
+         width="136.17"
+         height="35"
+         color="#000000"
+         color-rendering="auto"
+         fill="#fce6ce"
+         fill-rule="evenodd"
+         image-rendering="auto"
+         shape-rendering="auto"
+         solid-color="#000000"
+         stroke="#000000"
+         stroke-miterlimit="10"
+         style="isolation:auto;mix-blend-mode:normal;stroke-linecap:butt"
+         id="rect1" />
+      <g
+         transform="translate(-438.88668,367.97835)"
+         stroke-linecap="butt"
+         id="g34">
+        <rect
+           x="590.5"
+           y="107.79"
+           width="136.17"
+           height="35"
+           color="#000000"
+           color-rendering="auto"
+           fill="#fce6ce"
+           fill-rule="evenodd"
+           image-rendering="auto"
+           shape-rendering="auto"
+           solid-color="#000000"
+           stroke="#000000"
+           stroke-miterlimit="10"
+           style="isolation:auto;mix-blend-mode:normal"
+           id="rect33" />
+        <text
+           x="658.44318"
+           y="129.84575"
+           fill="#000000"
+           font-family="'Liberation Sans'"
+           font-size="17.333px"
+           letter-spacing="0px"
+           stroke-width="1px"
+           text-align="center"
+           text-anchor="middle"
+           word-spacing="0px"
+           style="line-height:20px"
+           xml:space="preserve"
+           id="text33"><tspan
+             x="658.44318"
+             y="129.84575"
+             id="tspan33">alert_if</tspan></text>
+      </g>
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:17.333px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.758;stroke-miterlimit:10;stroke-dasharray:none"
+       x="19.96059"
+       y="268.34308"
+       id="text55"><tspan
+         sodipodi:role="line"
+         x="19.96059"
+         y="268.34308"
+         id="tspan56"
+         style="font-style:italic">alert_handler</tspan></text>
+  </g>
+  <g
+     id="g12"
+     transform="translate(26,72)">
+    <text
+       xml:space="preserve"
+       style="font-size:17.333px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.758;stroke-miterlimit:10;stroke-dasharray:none"
+       x="62.020664"
+       y="580.2124"
+       id="text58"><tspan
+         sodipodi:role="line"
+         id="tspan58"
+         x="62.020664"
+         y="580.2124">The block connecting to this interface in a chip</tspan></text>
+    <path
+       style="fill:#000000;fill-opacity:1;stroke:#000000;stroke-width:2;stroke-miterlimit:10;stroke-dasharray:none;stroke-opacity:1;marker-end:url(#marker1910)"
+       d="m 97.936747,560.15683 -17.83662,-42.1731"
+       id="path58" />
+  </g>
+  <g
+     id="g17"
+     transform="translate(0,0.69832508)">
+    <g
+       id="g25"
+       transform="translate(-428.88668,98.1812)">
+      <g
+         transform="translate(-10,188.90884)"
+         stroke-linecap="butt"
+         id="g24">
+        <rect
+           x="590.5"
+           y="107.79"
+           width="136.17"
+           height="35"
+           color="#000000"
+           color-rendering="auto"
+           fill="#fce6ce"
+           fill-rule="evenodd"
+           image-rendering="auto"
+           shape-rendering="auto"
+           solid-color="#000000"
+           stroke="#000000"
+           stroke-miterlimit="10"
+           style="isolation:auto;mix-blend-mode:normal"
+           id="rect23" />
+        <text
+           x="658.44318"
+           y="129.84575"
+           fill="#000000"
+           font-family="'Liberation Sans'"
+           font-size="17.333px"
+           letter-spacing="0px"
+           stroke-width="1px"
+           text-align="center"
+           text-anchor="middle"
+           word-spacing="0px"
+           style="line-height:20px"
+           xml:space="preserve"
+           id="text23"><tspan
+             x="658.44318"
+             y="129.84575"
+             id="tspan23">lc_if</tspan></text>
+      </g>
+      <path
+         d="m 723.16,314.19684 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 H 733.16 v 10 z"
+         fill="#ffffff"
+         id="path24"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:17.333px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.758;stroke-miterlimit:10;stroke-dasharray:none"
+       x="76.247208"
+       y="416.93756"
+       id="text51"><tspan
+         sodipodi:role="line"
+         x="76.247208"
+         y="416.93756"
+         id="tspan51"
+         style="font-style:italic">lc_ctrl</tspan></text>
+  </g>
+  <g
+     id="g16"
+     transform="translate(0,0.46554641)">
+    <g
+       id="g29"
+       transform="translate(-428.88668,145.81064)">
+      <g
+         transform="translate(-10,188.90884)"
+         stroke-linecap="butt"
+         id="g28">
+        <rect
+           x="590.5"
+           y="107.79"
+           width="136.17"
+           height="35"
+           color="#000000"
+           color-rendering="auto"
+           fill="#fce6ce"
+           fill-rule="evenodd"
+           image-rendering="auto"
+           shape-rendering="auto"
+           solid-color="#000000"
+           stroke="#000000"
+           stroke-miterlimit="10"
+           style="isolation:auto;mix-blend-mode:normal"
+           id="rect27" />
+        <text
+           x="658.44318"
+           y="129.84575"
+           fill="#000000"
+           font-family="'Liberation Sans'"
+           font-size="17.333px"
+           letter-spacing="0px"
+           stroke-width="1px"
+           text-align="center"
+           text-anchor="middle"
+           word-spacing="0px"
+           style="line-height:20px"
+           xml:space="preserve"
+           id="text27"><tspan
+             x="658.44318"
+             y="129.84575"
+             id="tspan27">keymgr_if</tspan></text>
+      </g>
+      <path
+         d="m 723.16,314.19684 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 H 733.16 v 10 z"
+         fill="#ffffff"
+         id="path28"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:17.333px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.758;stroke-miterlimit:10;stroke-dasharray:none"
+       x="63.814495"
+       y="464.49084"
+       id="text52"><tspan
+         sodipodi:role="line"
+         x="63.814495"
+         y="464.49084"
+         id="tspan52"
+         style="font-style:italic">keymgr</tspan></text>
+  </g>
+  <g
+     id="g15"
+     transform="translate(0,0.23276866)">
+    <g
+       id="g31"
+       transform="translate(-429.80765,240.73008)">
+      <g
+         transform="translate(-10,188.90884)"
+         stroke-linecap="butt"
+         id="g30">
+        <rect
+           x="590.5"
+           y="60.5"
+           width="136.17"
+           height="35"
+           color="#000000"
+           color-rendering="auto"
+           fill="#fce6ce"
+           fill-rule="evenodd"
+           image-rendering="auto"
+           shape-rendering="auto"
+           solid-color="#000000"
+           stroke="#000000"
+           stroke-miterlimit="10"
+           style="isolation:auto;mix-blend-mode:normal"
+           id="rect29" />
+        <text
+           x="658.20618"
+           y="82.557625"
+           fill="#000000"
+           font-family="'Liberation Sans'"
+           font-size="17.333px"
+           letter-spacing="0px"
+           stroke-width="1px"
+           text-align="center"
+           text-anchor="middle"
+           word-spacing="0px"
+           style="line-height:20px"
+           xml:space="preserve"
+           id="text29"><tspan
+             x="658.20618"
+             y="82.557625"
+             id="tspan29">pwrmgr_if</tspan></text>
+      </g>
+      <path
+         d="m 767.83936,266.90884 h -42.738"
+         fill="#000000"
+         marker-end="url(#marker1029-5)"
+         id="path30"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;marker-end:url(#marker1029-5)" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:17.333px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.758;stroke-miterlimit:10;stroke-dasharray:none"
+       x="62.858135"
+       y="510.50372"
+       id="text53"><tspan
+         sodipodi:role="line"
+         x="62.858135"
+         y="510.50372"
+         id="tspan53"
+         style="font-style:italic">pwrmgr</tspan></text>
+  </g>
+  <g
+     id="g14">
+    <g
+       id="g33"
+       transform="translate(-429.80765,288.35951)">
+      <g
+         transform="translate(-10,188.90884)"
+         stroke-linecap="butt"
+         id="g32">
+        <rect
+           x="590.5"
+           y="60.5"
+           width="136.17"
+           height="35"
+           color="#000000"
+           color-rendering="auto"
+           fill="#fce6ce"
+           fill-rule="evenodd"
+           image-rendering="auto"
+           shape-rendering="auto"
+           solid-color="#000000"
+           stroke="#000000"
+           stroke-miterlimit="10"
+           style="isolation:auto;mix-blend-mode:normal"
+           id="rect31" />
+        <text
+           x="658.20618"
+           y="82.557625"
+           fill="#000000"
+           font-family="'Liberation Sans'"
+           font-size="17.333px"
+           letter-spacing="0px"
+           stroke-width="1px"
+           text-align="center"
+           text-anchor="middle"
+           word-spacing="0px"
+           style="line-height:20px"
+           xml:space="preserve"
+           id="text31"><tspan
+             x="658.20618"
+             y="82.557625"
+             id="tspan31">intr_if</tspan></text>
+      </g>
+      <path
+         d="m 767.83936,266.90884 h -42.738"
+         fill="#000000"
+         marker-end="url(#marker1029-5)"
+         id="path32"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt;marker-end:url(#marker1029-5)" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:17.333px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.758;stroke-miterlimit:10;stroke-dasharray:none"
+       x="88.739151"
+       y="561.46344"
+       id="text54"><tspan
+         sodipodi:role="line"
+         x="88.739151"
+         y="561.46344"
+         id="tspan54"
+         style="font-style:italic">ibex</tspan></text>
+  </g>
+  <g
+     id="g18"
+     transform="translate(0,-1.0689023)">
+    <g
+       id="g1136-6-7"
+       transform="translate(-428.88668,4.922331)">
+      <g
+         transform="translate(-10,188.90884)"
+         stroke-linecap="butt"
+         id="g969-0-9">
+        <rect
+           x="590.5"
+           y="107.79"
+           width="136.17"
+           height="35"
+           color="#000000"
+           color-rendering="auto"
+           fill="#fce6ce"
+           fill-rule="evenodd"
+           image-rendering="auto"
+           shape-rendering="auto"
+           solid-color="#000000"
+           stroke="#000000"
+           stroke-miterlimit="10"
+           style="isolation:auto;mix-blend-mode:normal"
+           id="rect963-6-2" />
+        <text
+           x="658.44318"
+           y="129.84575"
+           fill="#000000"
+           font-family="'Liberation Sans'"
+           font-size="17.333px"
+           letter-spacing="0px"
+           stroke-width="1px"
+           text-align="center"
+           text-anchor="middle"
+           word-spacing="0px"
+           style="line-height:20px"
+           xml:space="preserve"
+           id="text967-2-0"><tspan
+             x="658.44318"
+             y="129.84575"
+             id="tspan965-6-2">otp_macro_if</tspan></text>
+      </g>
+      <path
+         d="m 723.16,314.19684 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 H 733.16 v 10 z"
+         fill="#ffffff"
+         id="path1081-1-3"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+    </g>
+    <text
+       xml:space="preserve"
+       style="font-size:17.333px;line-height:20px;font-family:'Liberation Sans';-inkscape-font-specification:'DejaVu Sans';text-align:center;letter-spacing:0px;word-spacing:0px;writing-mode:lr-tb;direction:ltr;fill:#000000;fill-opacity:1;stroke:none;stroke-width:0.758;stroke-miterlimit:10;stroke-dasharray:none"
+       x="64.669312"
+       y="347.41724"
+       id="text49"><tspan
+         sodipodi:role="line"
+         x="64.669312"
+         y="347.41724"
+         id="tspan50"
+         style="font-style:italic">otp_ctrl</tspan></text>
+    <g
+       id="g11"
+       transform="translate(-428.88668,52.551766)">
+      <g
+         transform="translate(-10,188.90884)"
+         stroke-linecap="butt"
+         id="g10">
+        <rect
+           x="590.5"
+           y="107.79"
+           width="136.17"
+           height="35"
+           color="#000000"
+           color-rendering="auto"
+           fill="#fce6ce"
+           fill-rule="evenodd"
+           image-rendering="auto"
+           shape-rendering="auto"
+           solid-color="#000000"
+           stroke="#000000"
+           stroke-miterlimit="10"
+           style="isolation:auto;mix-blend-mode:normal"
+           id="rect9" />
+        <text
+           x="658.44318"
+           y="129.84575"
+           fill="#000000"
+           font-family="'Liberation Sans'"
+           font-size="17.333px"
+           letter-spacing="0px"
+           stroke-width="1px"
+           text-align="center"
+           text-anchor="middle"
+           word-spacing="0px"
+           style="line-height:20px"
+           xml:space="preserve"
+           id="text9"><tspan
+             x="658.44318"
+             y="129.84575"
+             id="tspan9">otp_key_if</tspan></text>
+      </g>
+      <path
+         d="m 723.16,314.19684 10,-15 v 10 h 24.605 v -10 l 10,15 -10,15 v -10 H 733.16 v 10 z"
+         fill="#ffffff"
+         id="path10"
+         style="fill-rule:evenodd;stroke:#000000;stroke-width:1px;stroke-linecap:butt" />
+    </g>
+  </g>
+</svg>

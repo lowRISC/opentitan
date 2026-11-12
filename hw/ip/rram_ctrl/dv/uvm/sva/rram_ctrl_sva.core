@@ -21,7 +21,7 @@ generate:
   csr_assert_gen:
     generator: csr_assert_gen
     parameters:
-      spec: ../../data/rram_ctrl.hjson
+      spec: ../../../data/rram_ctrl.hjson
 
 targets:
   default: &default_target
