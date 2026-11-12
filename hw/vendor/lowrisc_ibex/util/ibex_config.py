@@ -34,6 +34,7 @@ class Config:
         ('ICacheScramble', bool),
         ('BranchPredictor', bool),
         ('DbgTriggerEn', bool),
+        ('DbgHwBreakNum', int),
         ('SecureIbex', bool),
         ('PMPEnable', bool),
         ('PMPGranularity', int),
@@ -74,6 +75,7 @@ class Config:
         self.icache_scramble = Config.read_bool('ICacheScramble', yml)
         self.branch_predictor = Config.read_bool('BranchPredictor', yml)
         self.dbg_trigger_en = Config.read_bool('DbgTriggerEn', yml)
+        self.dbg_hw_break_num = Config.read_int('DbgHwBreakNum', yml)
         self.secure_ibex = Config.read_bool('SecureIbex', yml)
         self.pmp_enable = Config.read_bool('PMPEnable', yml)
         self.pmp_granularity = Config.read_int('PMPGranularity', yml)

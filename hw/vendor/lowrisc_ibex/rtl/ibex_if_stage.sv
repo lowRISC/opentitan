@@ -32,7 +32,8 @@ module ibex_if_stage import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   parameter lfsr_perm_t  RndCnstLfsrPerm      = RndCnstLfsrPermDefault,
   parameter bit          BranchPredictor      = 1'b0,
   parameter bit          MemECC               = 1'b0,
-  parameter int unsigned MemDataWidth         = MemECC ? 32 + 7 : 32
+  parameter int unsigned MemDataWidth         = MemECC ? 32 + 7 : 32,
+  parameter bit          RV32E                = 1'b0
 ) (
   input  logic                         clk_i,
   input  logic                         rst_ni,
@@ -532,6 +533,8 @@ module ibex_if_stage import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .dummy_instr_mask_i   (dummy_instr_mask_i),
       .dummy_instr_seed_en_i(dummy_instr_seed_en_i),
       .dummy_instr_seed_i   (dummy_instr_seed_i),
+      .dummy_instr_16regs_i (RV32E || ((BaseIsa == BaseIsaRV32IorCHERIoT) &&
+                                       (cheriot_enable_i == IbexMuBiOn))),
       .fetch_valid_i        (fetch_valid),
       .id_in_ready_i        (id_in_ready_i),
       .insert_hold_i        (dummy_instr_hold),
@@ -634,7 +637,6 @@ module ibex_if_stage import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
         instr_fetch_err_plus2_o         <= '0;
         instr_rdata_c_id_o              <= '0;
         instr_is_compressed_id_o        <= '0;
-        instr_gets_expanded_id_o        <= INSTR_NOT_EXPANDED;
         instr_expanded_id_o             <= '0;
         illegal_c_insn_id_o             <= '0;
         pc_id_o                         <= '0;
@@ -646,7 +648,6 @@ module ibex_if_stage import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
         instr_fetch_err_plus2_o         <= if_instr_err_plus2;
         instr_rdata_c_id_o              <= if_instr_rdata[15:0];
         instr_is_compressed_id_o        <= instr_is_compressed_out;
-        instr_gets_expanded_id_o        <= instr_gets_expanded_out;
         instr_expanded_id_o             <= if_instr_rdata[15:0];
         illegal_c_insn_id_o             <= illegal_c_instr_out;
         pc_id_o                         <= pc_if_o;
@@ -662,13 +663,27 @@ module ibex_if_stage import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
         instr_fetch_err_plus2_o         <= if_instr_err_plus2;
         instr_rdata_c_id_o              <= if_instr_rdata[15:0];
         instr_is_compressed_id_o        <= instr_is_compressed_out;
-        instr_gets_expanded_id_o        <= instr_gets_expanded_out;
         instr_expanded_id_o             <= if_instr_rdata[15:0];
         illegal_c_insn_id_o             <= illegal_c_instr_out;
         pc_id_o                         <= pc_if_o;
       end
     end
   end
+
+  // Reset this tag because the controller reads it while ID is empty. Clear it whenever the
+  // expander is flushed.
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      instr_gets_expanded_id_o <= INSTR_NOT_EXPANDED;
+    end else if (flush_expanded) begin
+      instr_gets_expanded_id_o <= INSTR_NOT_EXPANDED;
+    end else if (if_id_pipe_reg_we) begin
+      instr_gets_expanded_id_o <= instr_gets_expanded_out;
+    end
+  end
+
+  `ASSERT(ExpandedTagClearedOnFlush,
+          flush_expanded |=> instr_gets_expanded_id_o == INSTR_NOT_EXPANDED)
 
   if (BaseIsa == BaseIsaRV32IorCHERIoT) begin : gen_cheriot_vio_regs
     if (ResetAll) begin : g_cheriot_vio_ra

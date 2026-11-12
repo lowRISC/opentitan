@@ -724,10 +724,15 @@ module ${module_instance_name}
     .data_addr_shadow_o       (shadow_core_data_addr),
     .data_wdata_shadow_o      (shadow_core_data_wdata),
     .data_wdata_intg_shadow_o (shadow_core_data_wdata_intg),
+    .data_tag_shadow_o        (),
 
     // Shadow core instruction interface outputs.
     .instr_req_shadow_o       (shadow_core_instr_req),
-    .instr_addr_shadow_o      (shadow_core_instr_addr)
+    .instr_addr_shadow_o      (shadow_core_instr_addr),
+
+    // Shadow core TRVK revocation bitmap interface outputs.
+    .trvk_revbm_req_shadow_o  (),
+    .trvk_revbm_addr_shadow_o ()
   );
 
   logic core_sleep_q;

@@ -5,7 +5,8 @@
 // Ibex lockstep module
 // This module instantiates a second copy of the core logic, and compares it's outputs against
 // those from the main core. The second core runs synchronously with the main core, delayed by
-// LockstepOffset cycles.
+// LockstepOffset cycles. With BaseIsa == BaseIsaRV32IorCHERIoT, the core and its TRVK filter are
+// replicated as one unit.
 
 // SEC_CM: LOGIC.SHADOW
 module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
@@ -17,6 +18,9 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   parameter ibex_pkg::pmp_cfg_t     PMPRstCfg[PMP_MAX_REGIONS]  = ibex_pkg::PmpCfgRst,
   parameter logic [PMP_ADDR_MSB:0]  PMPRstAddr[PMP_MAX_REGIONS] = ibex_pkg::PmpAddrRst,
   parameter ibex_pkg::pmp_mseccfg_t PMPRstMsecCfg               = ibex_pkg::PmpMseccfgRst,
+  parameter int unsigned            CheriotRevBitmapAddrWidth   = 32'd11,
+  parameter int unsigned            CheriotRevBitmapBaseAddr    = 32'h0,
+  parameter int unsigned            TrvkNumOutstanding          = 2,
   parameter int unsigned            MHPMCounterNum              = 0,
   parameter int unsigned            MHPMCounterWidth            = 40,
   parameter bit                     RV32E                       = 1'b0,
@@ -61,6 +65,7 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   input  logic [31:0]                  hart_id_i,
   input  logic [31:0]                  boot_addr_i,
   input  ibex_mubi_t                   cheriot_enable_i,
+  input  logic [31:0]                  trvk_heap_base_addr_i,
 
   input  logic                         instr_req_i,
   input  logic                         instr_gnt_i,
@@ -69,6 +74,7 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   input  logic [MemDataWidth-1:0]      instr_rdata_i,
   input  logic                         instr_err_i,
 
+  // Data interface of ibex_top, i.e. behind the TRVK filter
   input  logic                         data_req_i,
   input  logic                         data_gnt_i,
   input  logic                         data_rvalid_i,
@@ -81,6 +87,19 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   input  logic                         data_rdata_tag_i,
   input  logic                         data_err_i,
 
+  input  logic                         trvk_revbm_req_i,
+  input  logic                         trvk_revbm_gnt_i,
+  input  logic                         trvk_revbm_rvalid_i,
+  input  logic [31:0]                  trvk_revbm_addr_i,
+  input  logic [31:0]                  trvk_revbm_rdata_i,
+  input  logic [6:0]                   trvk_revbm_rdata_intg_i,
+  input  logic                         trvk_revbm_err_i,
+
+  input  logic [4:0]                   rf_raddr_a_i,
+  input  logic [4:0]                   rf_raddr_b_i,
+  input  logic [4:0]                   rf_waddr_wb_i,
+  input  logic                         rf_we_wb_i,
+  input  logic [RegFileDataWidth-1:0]  rf_wdata_wb_i,
   input  logic [RegFileDataWidth-1:0]  rf_rdata_a_i,
   input  logic [RegFileDataWidth-1:0]  rf_rdata_b_i,
 
@@ -128,8 +147,11 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   output logic [31:0]                  data_addr_shadow_o,
   output logic [31:0]                  data_wdata_shadow_o,
   output logic [6:0]                   data_wdata_intg_shadow_o,
+  output logic                         data_tag_shadow_o,
   output logic                         instr_req_shadow_o,
-  output logic [31:0]                  instr_addr_shadow_o
+  output logic [31:0]                  instr_addr_shadow_o,
+  output logic                         trvk_revbm_req_shadow_o,
+  output logic [31:0]                  trvk_revbm_addr_shadow_o
 );
 
   import prim_secded_pkg::SecdedInv3932ZeroWord;
@@ -250,6 +272,12 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     logic [MemDataWidth-1:0]     data_rdata;
     logic                        data_rdata_tag;
     logic                        data_err;
+    logic                        trvk_revbm_gnt;
+    logic                        trvk_revbm_rvalid;
+    logic [31:0]                 trvk_revbm_rdata;
+    logic [6:0]                  trvk_revbm_rdata_intg;
+    logic                        trvk_revbm_err;
+    logic [31:0]                 trvk_heap_base_addr;
     logic [RegFileDataWidth-1:0] rf_rdata_a;
     logic [RegFileDataWidth-1:0] rf_rdata_b;
     logic                        irq_software;
@@ -326,57 +354,70 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   end
 
   // Assign the inputs to the delay structure
-  assign shadow_inputs_in.instr_gnt           = instr_gnt_i;
-  assign shadow_inputs_in.instr_rvalid        = instr_rvalid_i;
-  assign shadow_inputs_in.instr_rdata         = instr_rdata_i;
-  assign shadow_inputs_in.instr_err           = instr_err_i;
-  assign shadow_inputs_in.data_gnt            = data_gnt_i;
-  assign shadow_inputs_in.data_rvalid         = data_rvalid_i;
-  assign shadow_inputs_in.data_rdata          = data_rdata_i;
-  assign shadow_inputs_in.data_rdata_tag      = data_rdata_tag_i;
-  assign shadow_inputs_in.data_err            = data_err_i;
-  assign shadow_inputs_in.rf_rdata_a          = rf_rdata_a_i;
-  assign shadow_inputs_in.rf_rdata_b          = rf_rdata_b_i;
-  assign shadow_inputs_in.irq_software        = irq_software_i;
-  assign shadow_inputs_in.irq_timer           = irq_timer_i;
-  assign shadow_inputs_in.irq_external        = irq_external_i;
-  assign shadow_inputs_in.irq_fast            = irq_fast_i;
-  assign shadow_inputs_in.irq_nm              = irq_nm_i;
-  assign shadow_inputs_in.debug_req           = debug_req_i;
-  assign shadow_inputs_in.fetch_enable        = fetch_enable_i;
-  assign shadow_inputs_in.mcounteren_writable = mcounteren_writable_i;
-  assign shadow_inputs_in.ic_scr_key_valid    = ic_scr_key_valid_i;
-  assign shadow_inputs_in.cheriot_enable      = cheriot_enable_i;
-  assign shadow_inputs_in.rf_rcap_a           = rf_rcap_a_i;
-  assign shadow_inputs_in.rf_rcap_b           = rf_rcap_b_i;
+  assign shadow_inputs_in.instr_gnt             = instr_gnt_i;
+  assign shadow_inputs_in.instr_rvalid          = instr_rvalid_i;
+  assign shadow_inputs_in.instr_rdata           = instr_rdata_i;
+  assign shadow_inputs_in.instr_err             = instr_err_i;
+  assign shadow_inputs_in.data_gnt              = data_gnt_i;
+  assign shadow_inputs_in.data_rvalid           = data_rvalid_i;
+  assign shadow_inputs_in.data_rdata            = data_rdata_i;
+  assign shadow_inputs_in.data_rdata_tag        = data_rdata_tag_i;
+  assign shadow_inputs_in.data_err              = data_err_i;
+  assign shadow_inputs_in.trvk_revbm_gnt        = trvk_revbm_gnt_i;
+  assign shadow_inputs_in.trvk_revbm_rvalid     = trvk_revbm_rvalid_i;
+  assign shadow_inputs_in.trvk_revbm_rdata      = trvk_revbm_rdata_i;
+  assign shadow_inputs_in.trvk_revbm_rdata_intg = trvk_revbm_rdata_intg_i;
+  assign shadow_inputs_in.trvk_revbm_err        = trvk_revbm_err_i;
+  assign shadow_inputs_in.trvk_heap_base_addr   = trvk_heap_base_addr_i;
+  assign shadow_inputs_in.rf_rdata_a            = rf_rdata_a_i;
+  assign shadow_inputs_in.rf_rdata_b            = rf_rdata_b_i;
+  assign shadow_inputs_in.irq_software          = irq_software_i;
+  assign shadow_inputs_in.irq_timer             = irq_timer_i;
+  assign shadow_inputs_in.irq_external          = irq_external_i;
+  assign shadow_inputs_in.irq_fast              = irq_fast_i;
+  assign shadow_inputs_in.irq_nm                = irq_nm_i;
+  assign shadow_inputs_in.debug_req             = debug_req_i;
+  assign shadow_inputs_in.fetch_enable          = fetch_enable_i;
+  assign shadow_inputs_in.mcounteren_writable   = mcounteren_writable_i;
+  assign shadow_inputs_in.ic_scr_key_valid      = ic_scr_key_valid_i;
+  assign shadow_inputs_in.cheriot_enable        = cheriot_enable_i;
+  assign shadow_inputs_in.rf_rcap_a             = rf_rcap_a_i;
+  assign shadow_inputs_in.rf_rcap_b             = rf_rcap_b_i;
 
   ///////////////////
   // Output delays //
   ///////////////////
 
   typedef struct packed {
-    logic                    instr_req;
-    logic [31:0]             instr_addr;
-    logic                    data_req;
-    logic                    data_we;
-    logic [3:0]              data_be;
-    logic [31:0]             data_addr;
-    logic [31:0]             data_wdata;
-    logic                    data_tag;
-    logic [IC_NUM_WAYS-1:0]  ic_tag_req;
-    logic                    ic_tag_write;
-    logic [IC_INDEX_W-1:0]   ic_tag_addr;
-    logic [TagSizeECC-1:0]   ic_tag_wdata;
-    logic [IC_NUM_WAYS-1:0]  ic_data_req;
-    logic                    ic_data_write;
-    logic [IC_INDEX_W-1:0]   ic_data_addr;
-    logic [LineSizeECC-1:0]  ic_data_wdata;
-    logic                    ic_scr_key_req;
-    logic                    irq_pending;
-    crash_dump_t             crash_dump;
-    logic                    double_fault_seen;
-    ibex_mubi_t              core_busy;
-    cap_t                    rf_wcap_wb;
+    logic                        instr_req;
+    logic [31:0]                 instr_addr;
+    logic                        data_req;
+    logic                        data_we;
+    logic [3:0]                  data_be;
+    logic [31:0]                 data_addr;
+    logic [31:0]                 data_wdata;
+    logic                        data_tag;
+    logic                        trvk_revbm_req;
+    logic [31:0]                 trvk_revbm_addr;
+    logic [4:0]                  rf_raddr_a;
+    logic [4:0]                  rf_raddr_b;
+    logic [4:0]                  rf_waddr_wb;
+    logic                        rf_we_wb;
+    logic [RegFileDataWidth-1:0] rf_wdata_wb;
+    logic [IC_NUM_WAYS-1:0]      ic_tag_req;
+    logic                        ic_tag_write;
+    logic [IC_INDEX_W-1:0]       ic_tag_addr;
+    logic [TagSizeECC-1:0]       ic_tag_wdata;
+    logic [IC_NUM_WAYS-1:0]      ic_data_req;
+    logic                        ic_data_write;
+    logic [IC_INDEX_W-1:0]       ic_data_addr;
+    logic [LineSizeECC-1:0]      ic_data_wdata;
+    logic                        ic_scr_key_req;
+    logic                        irq_pending;
+    crash_dump_t                 crash_dump;
+    logic                        double_fault_seen;
+    ibex_mubi_t                  core_busy;
+    cap_t                        rf_wcap_wb;
   } delayed_outputs_t;
 
   delayed_outputs_t [OutputsOffset-1:0]  core_outputs_q;
@@ -392,6 +433,13 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   assign core_outputs_in.data_addr           = data_addr_i;
   assign core_outputs_in.data_wdata          = data_wdata_i;
   assign core_outputs_in.data_tag            = data_tag_i;
+  assign core_outputs_in.trvk_revbm_req      = trvk_revbm_req_i;
+  assign core_outputs_in.trvk_revbm_addr     = trvk_revbm_addr_i;
+  assign core_outputs_in.rf_raddr_a          = rf_raddr_a_i;
+  assign core_outputs_in.rf_raddr_b          = rf_raddr_b_i;
+  assign core_outputs_in.rf_waddr_wb         = rf_waddr_wb_i;
+  assign core_outputs_in.rf_we_wb            = rf_we_wb_i;
+  assign core_outputs_in.rf_wdata_wb         = rf_wdata_wb_i;
   assign core_outputs_in.ic_tag_req          = ic_tag_req_i;
   assign core_outputs_in.ic_tag_write        = ic_tag_write_i;
   assign core_outputs_in.ic_tag_addr         = ic_tag_addr_i;
@@ -416,10 +464,11 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   end
 
   // The following outputs are generated by the shadow core and directly fed into the shadow core
-  // register file. There is no need to compare those signals against the signals generated by the
-  // main core in the lockstep comparison. A fault into one of those signals will cause a mismatch
-  // in the main core and shadow core register file instances. As the outputs of both register
-  // files are combined, the ECC checker inside the shadow core will detect the fault.
+  // register file. The read addresses and the write port signals are additionally compared against
+  // the main core in the lockstep comparison. Relying only on the ECC check when the register is
+  // read is not sufficient: a faulty value is not detected if it happens to have the same ECC check
+  // bits as the correct value. This is always the case for a bitwise inverted value, e.g., when XOR
+  // is executed as XNOR or when a faulty read address selects a register holding the inverse.
   logic [RegFileDataEccWidth-1:0] shadow_rf_wdata_wb_ecc;
   logic [4:0]                     shadow_rf_raddr_a;
   logic [4:0]                     shadow_rf_raddr_b;
@@ -431,7 +480,31 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   // The following output does not need to be checked in the lockstep comparison as we anyways
   // check the data_wdata itself.
   logic [6:0]                     shadow_data_wdata_intg;
+
+  // Shadow core <-> shadow TRVK connection
+  logic                           shadow_trvk_req;
+  logic                           shadow_trvk_gnt;
+  logic                           shadow_trvk_rvalid;
+  logic                           shadow_trvk_we;
+  logic [3:0]                     shadow_trvk_be;
+  logic [31:0]                    shadow_trvk_addr;
+  logic [31:0]                    shadow_trvk_wdata;
+  logic [6:0]                     shadow_trvk_wdata_intg;
+  logic                           shadow_trvk_wtag;
+  logic [31:0]                    shadow_trvk_rdata;
+  logic [6:0]                     shadow_trvk_rdata_intg;
+  logic                           shadow_trvk_rtag;
+  logic                           shadow_trvk_err;
   logic [MemDataWidth-1:0]        shadow_data_wdata_full;
+  logic [MemDataWidth-1:0]        shadow_data_rdata_full;
+
+  // Revocation bitmap errors of the shadow TRVK
+  logic                           shadow_trvk_revbm_data_intg_error;
+  logic                           shadow_trvk_revbm_device_error;
+
+  // Data and integrity bits of the delayed ibex_top data interface response
+  logic [31:0]                    shadow_data_rdata;
+  logic [6:0]                     shadow_data_rdata_intg;
 
   ///////////////////////////////
   // Shadow core instantiation //
@@ -501,17 +574,17 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     .instr_rdata_i       (shadow_inputs_q[0].instr_rdata),
     .instr_err_i         (shadow_inputs_q[0].instr_err),
 
-    .data_req_o          (shadow_outputs_d.data_req),
-    .data_gnt_i          (shadow_inputs_q[0].data_gnt),
-    .data_rvalid_i       (shadow_inputs_q[0].data_rvalid),
-    .data_we_o           (shadow_outputs_d.data_we),
-    .data_be_o           (shadow_outputs_d.data_be),
-    .data_addr_o         (shadow_outputs_d.data_addr),
+    .data_req_o          (shadow_trvk_req),
+    .data_gnt_i          (shadow_trvk_gnt),
+    .data_rvalid_i       (shadow_trvk_rvalid),
+    .data_we_o           (shadow_trvk_we),
+    .data_be_o           (shadow_trvk_be),
+    .data_addr_o         (shadow_trvk_addr),
     .data_wdata_o        (shadow_data_wdata_full),
-    .data_tag_o          (shadow_outputs_d.data_tag),
-    .data_rdata_i        (shadow_inputs_q[0].data_rdata),
-    .data_tag_i          (shadow_inputs_q[0].data_rdata_tag),
-    .data_err_i          (shadow_inputs_q[0].data_err),
+    .data_tag_o          (shadow_trvk_wtag),
+    .data_rdata_i        (shadow_data_rdata_full),
+    .data_tag_i          (shadow_trvk_rtag),
+    .data_err_i          (shadow_trvk_err),
 
     .dummy_instr_id_o    (shadow_dummy_instr_id),
     .dummy_instr_wb_o    (shadow_dummy_instr_wb),
@@ -608,26 +681,126 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     .core_busy_o            (shadow_outputs_d.core_busy)
   );
 
+  // Compare the register file read addresses and write port of the shadow core against the ones of
+  // the main core. Only the data bits are compared, the ECC bits are written into the shadow
+  // register file.
+  assign shadow_outputs_d.rf_raddr_a  = shadow_rf_raddr_a;
+  assign shadow_outputs_d.rf_raddr_b  = shadow_rf_raddr_b;
+  assign shadow_outputs_d.rf_waddr_wb = shadow_rf_waddr_wb;
+  assign shadow_outputs_d.rf_we_wb    = shadow_rf_we_wb;
+  assign shadow_outputs_d.rf_wdata_wb = shadow_rf_wdata_wb_ecc[RegFileDataWidth-1:0];
+
   // Extract cap data from shadow core's unified cap ECC output (cap in lower REGCAP_W bits)
   assign shadow_outputs_d.rf_wcap_wb = cheriot_vec_to_regcap(shadow_rf_wcap_ecc_wb[REGCAP_W-1:0]);
 
-  // Extract data_wdata and ECC bits from shadow core's combined output
-  assign shadow_outputs_d.data_wdata = shadow_data_wdata_full[31:0];
-  if (MemECC) begin : gen_shadow_wdata_ecc
-    assign shadow_data_wdata_intg = shadow_data_wdata_full[MemDataWidth-1:32];
-  end else begin : gen_shadow_wdata_no_ecc
-    assign shadow_data_wdata_intg = '0;
+  // The shadow core and the delayed ibex_top data interface response carry data and ECC bits
+  // combined; the TRVK takes them split.
+  assign shadow_trvk_wdata = shadow_data_wdata_full[31:0];
+  assign shadow_data_rdata = shadow_inputs_q[0].data_rdata[31:0];
+  assign shadow_data_rdata_full[31:0] = shadow_trvk_rdata;
+  if (MemECC) begin : gen_shadow_mem_ecc
+    assign shadow_trvk_wdata_intg = shadow_data_wdata_full[MemDataWidth-1:32];
+    assign shadow_data_rdata_intg = shadow_inputs_q[0].data_rdata[MemDataWidth-1:32];
+    assign shadow_data_rdata_full[MemDataWidth-1:32] = shadow_trvk_rdata_intg;
+  end else begin : gen_shadow_no_mem_ecc
+    logic unused_shadow_trvk_rdata_intg;
+
+    assign shadow_trvk_wdata_intg = '0;
+    assign shadow_data_rdata_intg = '0;
+    assign unused_shadow_trvk_rdata_intg = ^shadow_trvk_rdata_intg;
+  end
+
+  ///////////////////////////////
+  // Shadow TRVK instantiation //
+  ///////////////////////////////
+
+  // The shadow TRVK sits between the shadow core and the delayed responses of the ibex_top data and
+  // revocation bitmap interfaces, mirroring the main TRVK. Its downstream and revocation bitmap
+  // requests are compared against the ones of the main TRVK.
+  if (BaseIsa == BaseIsaRV32IorCHERIoT) begin : gen_shadow_trvk
+    ibex_trvk #(
+      .NumOutstanding    (TrvkNumOutstanding),
+      .MemECC            (MemECC),
+      .RevBitmapAddrWidth(CheriotRevBitmapAddrWidth),
+      .RevBitmapBaseAddr (CheriotRevBitmapBaseAddr)
+    ) u_shadow_trvk (
+      .clk_i                  (clk_i),
+      .rst_ni                 (rst_shadow_n),
+      .heap_base_addr_i       (shadow_inputs_q[0].trvk_heap_base_addr),
+      .upstream_req_i         (shadow_trvk_req),
+      .upstream_gnt_o         (shadow_trvk_gnt),
+      .upstream_rvalid_o      (shadow_trvk_rvalid),
+      .upstream_we_i          (shadow_trvk_we),
+      .upstream_be_i          (shadow_trvk_be),
+      .upstream_addr_i        (shadow_trvk_addr),
+      .upstream_wdata_i       (shadow_trvk_wdata),
+      .upstream_wdata_intg_i  (shadow_trvk_wdata_intg),
+      .upstream_rdata_o       (shadow_trvk_rdata),
+      .upstream_rdata_intg_o  (shadow_trvk_rdata_intg),
+      .upstream_err_o         (shadow_trvk_err),
+      .upstream_tag_i         (shadow_trvk_wtag),
+      .upstream_tag_o         (shadow_trvk_rtag),
+      .downstream_req_o       (shadow_outputs_d.data_req),
+      .downstream_gnt_i       (shadow_inputs_q[0].data_gnt),
+      .downstream_rvalid_i    (shadow_inputs_q[0].data_rvalid),
+      .downstream_we_o        (shadow_outputs_d.data_we),
+      .downstream_be_o        (shadow_outputs_d.data_be),
+      .downstream_addr_o      (shadow_outputs_d.data_addr),
+      .downstream_wdata_o     (shadow_outputs_d.data_wdata),
+      .downstream_wdata_intg_o(shadow_data_wdata_intg),
+      .downstream_rdata_i     (shadow_data_rdata),
+      .downstream_rdata_intg_i(shadow_data_rdata_intg),
+      .downstream_err_i       (shadow_inputs_q[0].data_err),
+      .downstream_tag_o       (shadow_outputs_d.data_tag),
+      .downstream_tag_i       (shadow_inputs_q[0].data_rdata_tag),
+      .revbm_req_o            (shadow_outputs_d.trvk_revbm_req),
+      .revbm_gnt_i            (shadow_inputs_q[0].trvk_revbm_gnt),
+      .revbm_rvalid_i         (shadow_inputs_q[0].trvk_revbm_rvalid),
+      .revbm_addr_o           (shadow_outputs_d.trvk_revbm_addr),
+      .revbm_rdata_i          (shadow_inputs_q[0].trvk_revbm_rdata),
+      .revbm_rdata_intg_i     (shadow_inputs_q[0].trvk_revbm_rdata_intg),
+      .revbm_err_i            (shadow_inputs_q[0].trvk_revbm_err),
+      .revbm_data_intg_error_o(shadow_trvk_revbm_data_intg_error),
+      .revbm_device_error_o   (shadow_trvk_revbm_device_error)
+    );
+  end else begin : gen_no_shadow_trvk
+    logic unused_shadow_trvk;
+
+    // Through-connect the shadow TRVK, as done for the main TRVK in ibex_top.
+    assign shadow_outputs_d.data_req         = shadow_trvk_req;
+    assign shadow_trvk_gnt                   = shadow_inputs_q[0].data_gnt;
+    assign shadow_trvk_rvalid                = shadow_inputs_q[0].data_rvalid;
+    assign shadow_outputs_d.data_we          = shadow_trvk_we;
+    assign shadow_outputs_d.data_be          = shadow_trvk_be;
+    assign shadow_outputs_d.data_addr        = shadow_trvk_addr;
+    assign shadow_outputs_d.data_wdata       = shadow_trvk_wdata;
+    assign shadow_data_wdata_intg            = shadow_trvk_wdata_intg;
+    assign shadow_trvk_rdata                 = shadow_data_rdata;
+    assign shadow_trvk_rdata_intg            = shadow_data_rdata_intg;
+    assign shadow_trvk_err                   = shadow_inputs_q[0].data_err;
+    assign shadow_trvk_rtag                  = 1'b0;
+    assign shadow_outputs_d.data_tag         = 1'b0;
+    assign shadow_outputs_d.trvk_revbm_req   = 1'b0;
+    assign shadow_outputs_d.trvk_revbm_addr  = '0;
+    assign shadow_trvk_revbm_data_intg_error = 1'b0;
+    assign shadow_trvk_revbm_device_error    = 1'b0;
+
+    assign unused_shadow_trvk = ^{
+      shadow_inputs_q[0].trvk_heap_base_addr,
+      shadow_trvk_wtag,
+      shadow_inputs_q[0].data_rdata_tag,
+      shadow_inputs_q[0].trvk_revbm_gnt,
+      shadow_inputs_q[0].trvk_revbm_rvalid,
+      shadow_inputs_q[0].trvk_revbm_rdata,
+      shadow_inputs_q[0].trvk_revbm_rdata_intg,
+      shadow_inputs_q[0].trvk_revbm_err
+    };
   end
 
   // Register the shadow core outputs
   always_ff @(posedge clk_i) begin
     shadow_outputs_q <= shadow_outputs_d;
   end
-
-  // The lower RegFileDataWidth bits (which are the data bits) are not fed into the shadow
-  // register file as they are handled by the main register file.
-  logic [RegFileDataWidth-1:0] unused_shadow_rf_wdata_wb_ecc;
-  assign unused_shadow_rf_wdata_wb_ecc = shadow_rf_wdata_wb_ecc[RegFileDataWidth-1:0];
 
   //////////////////////////
   // Shadow register file //
@@ -734,17 +907,26 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
 
   assign alert_major_internal_o
     = outputs_mismatch | shadow_alert_major_internal | rst_shadow_cnt_err;
-  assign alert_major_bus_o      = shadow_alert_major_bus;
+  // Like the alerts of the shadow core, the bitmap errors of the shadow TRVK are ORed into the
+  // alerts rather than compared: an error that a fault suppresses in the main TRVK is still
+  // signalled as a bus alert.
+  assign alert_major_bus_o      = shadow_alert_major_bus            |
+                                  shadow_trvk_revbm_data_intg_error |
+                                  shadow_trvk_revbm_device_error;
   assign alert_minor_o          = shadow_alert_minor;
 
   assign lockstep_cmp_en_o = enable_cmp_q;
 
+  // The shadow data interface outputs are taken behind the shadow TRVK, like the ones of ibex_top.
   assign data_req_shadow_o = shadow_outputs_d.data_req;
   assign data_we_shadow_o = shadow_outputs_d.data_we;
   assign data_be_shadow_o = shadow_outputs_d.data_be;
   assign data_addr_shadow_o = shadow_outputs_d.data_addr;
   assign data_wdata_shadow_o = shadow_outputs_d.data_wdata;
   assign data_wdata_intg_shadow_o = shadow_data_wdata_intg;
+  assign data_tag_shadow_o = shadow_outputs_d.data_tag;
   assign instr_req_shadow_o = shadow_outputs_d.instr_req;
   assign instr_addr_shadow_o = shadow_outputs_d.instr_addr;
+  assign trvk_revbm_req_shadow_o = shadow_outputs_d.trvk_revbm_req;
+  assign trvk_revbm_addr_shadow_o = shadow_outputs_d.trvk_revbm_addr;
 endmodule

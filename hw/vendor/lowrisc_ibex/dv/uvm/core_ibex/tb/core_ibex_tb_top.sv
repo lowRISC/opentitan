@@ -77,6 +77,7 @@ module core_ibex_tb_top;
   parameter int unsigned LockstepOffset   = 1;
   parameter bit ICacheScramble            = 1'b0;
   parameter bit DbgTriggerEn              = 1'b0;
+  parameter int unsigned DbgHwBreakNum    = 1;
   parameter int unsigned DmBaseAddr       = 32'h`DM_ADDR;
   parameter int unsigned DmAddrMask       = 32'h`DM_ADDR_MASK;
   parameter int unsigned DmHaltAddr       = 32'h`DEBUG_MODE_HALT_ADDR;
@@ -120,6 +121,7 @@ module core_ibex_tb_top;
     .ICacheScramble       (ICacheScramble      ),
     .BranchPredictor      (BranchPredictor     ),
     .DbgTriggerEn         (DbgTriggerEn        ),
+    .DbgHwBreakNum        (DbgHwBreakNum       ),
     .DmBaseAddr           (DmBaseAddr          ),
     .DmAddrMask           (DmAddrMask          ),
     .DmHaltAddr           (DmHaltAddr          ),
@@ -201,9 +203,13 @@ module core_ibex_tb_top;
     .data_addr_shadow_o        (                           ),
     .data_wdata_shadow_o       (                           ),
     .data_wdata_intg_shadow_o  (                           ),
+    .data_tag_shadow_o         (                           ),
 
     .instr_req_shadow_o        (                           ),
-    .instr_addr_shadow_o       (                           )
+    .instr_addr_shadow_o       (                           ),
+
+    .trvk_revbm_req_shadow_o   (                           ),
+    .trvk_revbm_addr_shadow_o  (                           )
   );
 
   `define IBEX_RF_PATH core_ibex_tb_top.dut.u_ibex_top.gen_regfile_ff.register_file_i
@@ -227,9 +233,18 @@ module core_ibex_tb_top;
   end
 
   if (BaseIsa == ibex_pkg::BaseIsaRV32IorCHERIoT) begin : g_trvk_assert_ctrl
-    // Disable TRVK's alignment FIFO assertion alongside the other spurious response checks.
+    // Disable TRVK's FIFO assertions alongside the other spurious response checks.
     `DV_ASSERT_CTRL("tb_no_spurious_response",
       core_ibex_tb_top.dut.u_ibex_top.gen_cheriot_trvk.i_ibex_trvk.AlignValidOnRsp_A)
+    `DV_ASSERT_CTRL("tb_no_spurious_response",
+      core_ibex_tb_top.dut.u_ibex_top.gen_cheriot_trvk.i_ibex_trvk.DsRspFifoNoOverflow_A)
+    // The shadow TRVK of the lockstep receives the same, delayed responses.
+    if (SecureIbex) begin : g_shadow_trvk_assert_ctrl
+      `DV_ASSERT_CTRL("tb_no_spurious_response",
+        `IBEX_LOCKSTEP_PATH.gen_shadow_trvk.u_shadow_trvk.AlignValidOnRsp_A)
+      `DV_ASSERT_CTRL("tb_no_spurious_response",
+        `IBEX_LOCKSTEP_PATH.gen_shadow_trvk.u_shadow_trvk.DsRspFifoNoOverflow_A)
+    end
   end
 
 `ifndef DV_FCOV_DISABLE

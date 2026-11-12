@@ -453,9 +453,7 @@ module ibex_core import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   logic [11:0]            cheriot_ex_err_info;
   logic                   cheriot_wb_err;
   logic [15:0]            cheriot_wb_err_info;
-  // verilator lint_off UNOPTFLAT
   cheriot_op_t            cheriot_operator;
-  // verilator lint_on UNOPTFLAT
 
   logic          rv32_lsu_req;
   logic          rv32_lsu_we;
@@ -466,10 +464,8 @@ module ibex_core import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   logic [31:0]   rv32_lsu_addr_last;
 
   logic          cheriot_csr_access;
-  // verilator lint_off UNOPTFLAT
   logic [4:0]    cheriot_csr_addr;
   logic [31:0]   cheriot_csr_wdata;
-  // verilator lint_on UNOPTFLAT
   cap_t          cheriot_csr_wcap;
   cheriot_csr_op_e cheriot_csr_op;
   logic          cheriot_csr_op_en;
@@ -543,7 +539,8 @@ module ibex_core import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     .BranchPredictor      (BranchPredictor),
     .MemECC               (MemECC),
     .MemDataWidth         (MemDataWidth),
-    .BaseIsa              (BaseIsa)
+    .BaseIsa              (BaseIsa),
+    .RV32E                (RV32E)
   ) if_stage_i (
     .clk_i (clk_i),
     .rst_ni(rst_ni),
@@ -1172,6 +1169,7 @@ module ibex_core import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
 
     .lsu_resp_valid_i(lsu_resp_valid),
     .lsu_resp_err_i  (lsu_resp_err),
+    .cheriot_wb_err_i(cheriot_wb_err),
 
     .instr_done_wb_o(instr_done_wb)
   );
@@ -2487,6 +2485,16 @@ module ibex_core import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
          instr_valid_id & dummy_instr_id & ~id_stage_i.controller_i.do_single_step_q)
   `COVER(SingleStepDummyWhileArmed,
          instr_valid_id & dummy_instr_id & id_stage_i.controller_i.do_single_step_q)
+
+  // An instruction that takes an exception in WB does not retire.
+  `ASSERT_KNOWN(IbexWbExceptionKnown, id_stage_i.controller_i.wb_exception_o)
+  `ASSERT_KNOWN(IbexInstrRetWbKnown, perf_instr_ret_wb)
+  `ASSERT(NoInstrRetOnWbException,
+          id_stage_i.controller_i.wb_exception_o |-> ~perf_instr_ret_wb)
+  `COVER(WbExceptionOnCountedInstr,
+         id_stage_i.controller_i.wb_exception_o & perf_instr_ret_wb_spec)
+  `COVER(WbExceptionOnCountedCompressedInstr,
+         id_stage_i.controller_i.wb_exception_o & perf_instr_ret_compressed_wb_spec)
 
   //////////
   // FCOV //

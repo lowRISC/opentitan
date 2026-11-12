@@ -5,7 +5,7 @@ Ibex Configurations
 
 The ``ibex_top`` module has a large number of top-level parameters which configure the core (see :ref:`core-integration`).
 This gives rise to a huge number of possible Ibex core configurations.
-To manage this complexity a number of named configurations is provided in the :file:`ibex_configs.yml` file.
+To manage this complexity a number of named configurations is provided in the :file:`ibex_configs.yaml` file.
 A subset of these are 'supported configurations' which are the focus of verification and development activities.
 
 Configuration Tool
@@ -23,7 +23,7 @@ Here is an example of using the configuration tool to get the FuseSoC options re
   ./util/ibex_config.py opentitan fusesoc_opts
 
   # The output of the tool
-  --RV32E=0 --RV32M=ibex_pkg::RV32MSingleCycle --RV32B=ibex_pkg::RV32BFull --RegFile=ibex_pkg::RegFileFF --BranchTargetALU=1 --WritebackStage=1 --ICache=1 --ICacheECC=1 --ICacheScramble=1 --BranchPredictor=0 --DbgTriggerEn=1 --SecureIbex=1 --PMPEnable=1 --PMPGranularity=0 --PMPNumRegions=16 --MHPMCounterNum=10 --MHPMCounterWidth=32
+  --BaseIsa=ibex_pkg::BaseIsaRV32IorCHERIoT --RV32E=0 --RV32M=ibex_pkg::RV32MSingleCycle --RV32B=ibex_pkg::RV32BFull --RV32ZC=ibex_pkg::RV32ZcaZcbZcmp --RegFile=ibex_pkg::RegFileFF --BranchTargetALU=1 --WritebackStage=1 --ICache=1 --ICacheECC=1 --ICacheScramble=1 --BranchPredictor=0 --DbgTriggerEn=1 --DbgHwBreakNum=4 --SecureIbex=1 --PMPEnable=1 --PMPGranularity=0 --PMPNumRegions=16 --MHPMCounterNum=2 --MHPMCounterWidth=32
 
 For further information about using the tool check the help provided on the command line.
 
@@ -41,3 +41,10 @@ The current set of supported configurations are:
  * ``opentitan`` - The configuration used by the `OpenTitan <www.opentitan.org>`_ project
  * ``maxperf`` - RV32IMC with three stage pipeline and single cycle multiplier, maximum performance (using stable features) configuration.
  * ``maxperf-pmp-bmbalanced`` - ``maxperf`` configuration with PMP and the 'balanced' bit-manipulation configuration (:ref:`core-integration` for details).
+
+.. _supported-parameter-sets:
+
+Supported Parameter Sets
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+The ``opentitan`` configuration is the parameter set used and signed off in the Earl Grey top of `OpenTitan <https://opentitan.org>`__ (``rv_core_ibex``).
