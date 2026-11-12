@@ -28,11 +28,23 @@
   dv_doc:             "../doc/dv",
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_pinmux",
-  version:            "1.1.1",
-  life_stage:         "L1",
-  design_stage:       "D3",
-  verification_stage: "V2S",
-  dif_stage:          "S2",
+  revisions: [
+      {
+          version:            "1.1.0",
+          life_stage:         "L1",
+          design_stage:       "D3",
+          verification_stage: "V2S",
+          dif_stage:          "S2",
+          commit_id:          "78ad89d1aa5f81cca93a0a5c103eec42e37e4759",
+      },
+      {
+          version:            "2.0.0",
+          life_stage:         "L1",
+          design_stage:       "D1",
+          verification_stage: "V1",
+          dif_stage:          "S1",
+      },
+  ]
   notes:              "Use FPV to perform block level verification.",
   clocking: [
     {clock: "clk_i", reset: "rst_ni", primary: true},
