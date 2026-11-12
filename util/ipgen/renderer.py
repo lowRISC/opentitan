@@ -113,7 +113,7 @@ class IpTemplateRendererBase:
             if core_name == uniq_name or core_name.startswith(f'{uniq_name}_'):
                 return core_name
             if core_name.startswith(f'{name}_'):
-                return f'{uniq_name}_{core_name[len(name)+1:]}'
+                return f'{uniq_name}_{core_name[len(name) + 1:]}'
             elif core_name == name:
                 return uniq_name
         else:
@@ -179,7 +179,13 @@ class IpTemplateRendererBase:
         }
         try:
             return template.render(**tpl_args)
-        except Exception:
+        except Exception as e:
+            # Templates check their parameter values with assertions. Only report the message
+            # instead of the full traceback and template variables. An assertion without a
+            # message gets the full report.
+            if isinstance(e, AssertionError) and str(e):
+                raise TemplateRenderError("\n".join(f"{self.ip_template.name}: {line}"
+                                                    for line in str(e).splitlines())) from None
             raise TemplateRenderError(
                 "Unable to render template: " +
                 mako_exceptions.text_error_template().render(),
