@@ -126,8 +126,8 @@ TEST_F(PinmuxTest, PadAttributes) {
                                        &attrs_check),
             kDifLocked);
 
-  EXPECT_READ32(PINMUX_DIO_PAD_ATTR_REGWEN_2_REG_OFFSET, 0);
-  EXPECT_EQ(dif_pinmux_pad_write_attrs(&dif_pinmux_, /*pad=*/2,
+  EXPECT_READ32(PINMUX_DIO_PAD_ATTR_REGWEN_0_REG_OFFSET, 0);
+  EXPECT_EQ(dif_pinmux_pad_write_attrs(&dif_pinmux_, /*pad=*/0,
                                        /*type=*/kDifPinmuxPadKindDio, attrs,
                                        &attrs_check),
             kDifLocked);
@@ -159,27 +159,27 @@ TEST_F(PinmuxTest, PadAttributes) {
   EXPECT_EQ(attrs_check.drive_strength, attrs.drive_strength);
   EXPECT_EQ(attrs_check.flags, attrs.flags);
 
-  EXPECT_READ32(PINMUX_DIO_PAD_ATTR_REGWEN_3_REG_OFFSET, 1);
-  EXPECT_READ32(PINMUX_DIO_PAD_ATTR_3_REG_OFFSET, 0);
-  EXPECT_WRITE32(PINMUX_DIO_PAD_ATTR_3_REG_OFFSET,
+  EXPECT_READ32(PINMUX_DIO_PAD_ATTR_REGWEN_1_REG_OFFSET, 1);
+  EXPECT_READ32(PINMUX_DIO_PAD_ATTR_1_REG_OFFSET, 0);
+  EXPECT_WRITE32(PINMUX_DIO_PAD_ATTR_1_REG_OFFSET,
                  {
-                     {PINMUX_DIO_PAD_ATTR_3_INVERT_3_BIT, 1},
-                     {PINMUX_DIO_PAD_ATTR_3_PULL_EN_3_BIT, 1},
-                     {PINMUX_DIO_PAD_ATTR_3_PULL_SELECT_3_BIT, 1},
-                     {PINMUX_DIO_PAD_ATTR_3_INPUT_DISABLE_3_BIT, 1},
-                     {PINMUX_DIO_PAD_ATTR_3_SLEW_RATE_3_OFFSET, 2},
-                     {PINMUX_DIO_PAD_ATTR_3_DRIVE_STRENGTH_3_OFFSET, 5},
+                     {PINMUX_DIO_PAD_ATTR_1_INVERT_1_BIT, 1},
+                     {PINMUX_DIO_PAD_ATTR_1_PULL_EN_1_BIT, 1},
+                     {PINMUX_DIO_PAD_ATTR_1_PULL_SELECT_1_BIT, 1},
+                     {PINMUX_DIO_PAD_ATTR_1_INPUT_DISABLE_1_BIT, 1},
+                     {PINMUX_DIO_PAD_ATTR_1_SLEW_RATE_1_OFFSET, 2},
+                     {PINMUX_DIO_PAD_ATTR_1_DRIVE_STRENGTH_1_OFFSET, 5},
                  });
-  EXPECT_READ32(PINMUX_DIO_PAD_ATTR_3_REG_OFFSET,
+  EXPECT_READ32(PINMUX_DIO_PAD_ATTR_1_REG_OFFSET,
                 {
-                    {PINMUX_DIO_PAD_ATTR_3_INVERT_3_BIT, 0},
-                    {PINMUX_DIO_PAD_ATTR_3_PULL_EN_3_BIT, 1},
-                    {PINMUX_DIO_PAD_ATTR_3_PULL_SELECT_3_BIT, 1},
-                    {PINMUX_DIO_PAD_ATTR_3_INPUT_DISABLE_3_BIT, 1},
-                    {PINMUX_DIO_PAD_ATTR_3_SLEW_RATE_3_OFFSET, 2},
-                    {PINMUX_DIO_PAD_ATTR_3_DRIVE_STRENGTH_3_OFFSET, 5},
+                    {PINMUX_DIO_PAD_ATTR_1_INVERT_1_BIT, 0},
+                    {PINMUX_DIO_PAD_ATTR_1_PULL_EN_1_BIT, 1},
+                    {PINMUX_DIO_PAD_ATTR_1_PULL_SELECT_1_BIT, 1},
+                    {PINMUX_DIO_PAD_ATTR_1_INPUT_DISABLE_1_BIT, 1},
+                    {PINMUX_DIO_PAD_ATTR_1_SLEW_RATE_1_OFFSET, 2},
+                    {PINMUX_DIO_PAD_ATTR_1_DRIVE_STRENGTH_1_OFFSET, 5},
                 });
-  EXPECT_EQ(dif_pinmux_pad_write_attrs(&dif_pinmux_, /*pad=*/3,
+  EXPECT_EQ(dif_pinmux_pad_write_attrs(&dif_pinmux_, /*pad=*/1,
                                        /*type=*/kDifPinmuxPadKindDio, attrs,
                                        &attrs_check),
             kDifError);
@@ -226,10 +226,10 @@ TEST_F(PinmuxTest, SleepModeConfig) {
   EXPECT_DIF_OK(dif_pinmux_pad_sleep_enable(
       &dif_pinmux_, /*pad=*/1, kDifPinmuxPadKindMio, kDifPinmuxSleepModeHighZ));
 
-  EXPECT_READ32(PINMUX_DIO_PAD_SLEEP_REGWEN_2_REG_OFFSET, 1);
-  EXPECT_WRITE32(PINMUX_DIO_PAD_SLEEP_EN_2_REG_OFFSET,
-                 {{PINMUX_DIO_PAD_SLEEP_EN_2_EN_2_BIT, 0}});
-  EXPECT_DIF_OK(dif_pinmux_pad_sleep_disable(&dif_pinmux_, /*pad=*/2,
+  EXPECT_READ32(PINMUX_DIO_PAD_SLEEP_REGWEN_0_REG_OFFSET, 1);
+  EXPECT_WRITE32(PINMUX_DIO_PAD_SLEEP_EN_0_REG_OFFSET,
+                 {{PINMUX_DIO_PAD_SLEEP_EN_0_EN_0_BIT, 0}});
+  EXPECT_DIF_OK(dif_pinmux_pad_sleep_disable(&dif_pinmux_, /*pad=*/0,
                                              kDifPinmuxPadKindDio));
 }
 
@@ -240,9 +240,9 @@ TEST_F(PinmuxTest, SleepStatus) {
       &dif_pinmux_, /*pad=*/3, kDifPinmuxPadKindMio, &in_sleep_mode));
   EXPECT_FALSE(in_sleep_mode);
 
-  EXPECT_READ32(PINMUX_DIO_PAD_SLEEP_STATUS_REG_OFFSET, 0x00000004u);
+  EXPECT_READ32(PINMUX_DIO_PAD_SLEEP_STATUS_REG_OFFSET, 0x00000002u);
   EXPECT_DIF_OK(dif_pinmux_pad_sleep_get_state(
-      &dif_pinmux_, /*pad=*/2, kDifPinmuxPadKindDio, &in_sleep_mode));
+      &dif_pinmux_, /*pad=*/1, kDifPinmuxPadKindDio, &in_sleep_mode));
   EXPECT_TRUE(in_sleep_mode);
 
   EXPECT_READ32(PINMUX_MIO_PAD_SLEEP_STATUS_0_REG_OFFSET, 0xffff7777u);
@@ -289,7 +289,7 @@ TEST_F(PinmuxTest, WakeupConfig) {
       dif_pinmux_wakeup_detector_enable(&dif_pinmux_, /*detector=*/3, config));
 
   config.signal_filter = kDifToggleEnabled;
-  config.pad_select = 3;
+  config.pad_select = 1;
   config.pad_type = kDifPinmuxPadKindDio;
   config.mode = kDifPinmuxWakeupModeAnyEdge;
   EXPECT_READ32(PINMUX_WKUP_DETECTOR_REGWEN_3_REG_OFFSET, 1);
@@ -301,7 +301,7 @@ TEST_F(PinmuxTest, WakeupConfig) {
                      {PINMUX_WKUP_DETECTOR_3_FILTER_3_BIT, 1},
                      {PINMUX_WKUP_DETECTOR_3_MIODIO_3_BIT, 1},
                  });
-  EXPECT_WRITE32(PINMUX_WKUP_DETECTOR_PADSEL_3_REG_OFFSET, 3);
+  EXPECT_WRITE32(PINMUX_WKUP_DETECTOR_PADSEL_3_REG_OFFSET, 1);
   EXPECT_WRITE32(PINMUX_WKUP_DETECTOR_EN_3_REG_OFFSET, 1);
   EXPECT_DIF_OK(
       dif_pinmux_wakeup_detector_enable(&dif_pinmux_, /*detector=*/3, config));
