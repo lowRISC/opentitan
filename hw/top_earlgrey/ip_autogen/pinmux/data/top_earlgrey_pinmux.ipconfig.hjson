@@ -325,6 +325,10 @@
         pads: []
       }
       {
+        name: usbdev_sense
+        pads: []
+      }
+      {
         name: uart0_rx
         pads: []
       }
@@ -382,10 +386,6 @@
       }
       {
         name: sysrst_ctrl_lid_open
-        pads: []
-      }
-      {
-        name: usbdev_sense
         pads: []
       }
     ]

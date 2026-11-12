@@ -1808,6 +1808,7 @@
       // USB
       { instance: 'usbdev',      port: 'usb_dp',           connection: 'manual', pads: [],                desc: ''},
       { instance: 'usbdev',      port: 'usb_dn',           connection: 'manual', pads: [],                desc: ''},
+      { instance: 'usbdev',      port: 'sense',            connection: 'muxed',  pads: [],                desc: ''},
       // SPI Host0
       { instance: 'spi_host0',   port: 'sck',            connection: 'direct', pads: ['SPI_HOST_CLK'],  desc: ''},
       { instance: 'spi_host0',   port: 'csb[0]',         connection: 'direct', pads: ['SPI_HOST_CS_L'], desc: ''},
@@ -1945,7 +1946,6 @@
       { instance: "sysrst_ctrl", port: 'pwrb_out',         connection: 'muxed',  pads: [],                desc: ''},
       { instance: "sysrst_ctrl", port: 'lid_open',         connection: 'muxed',  pads: [],                desc: ''},
       { instance: "sysrst_ctrl", port: 'z3_wakeup',        connection: 'muxed',  pads: [],                desc: ''},
-      { instance: 'usbdev',      port: 'sense',            connection: 'muxed',  pads: [],                desc: ''},
     ],
 
     num_wkup_detect: 8,

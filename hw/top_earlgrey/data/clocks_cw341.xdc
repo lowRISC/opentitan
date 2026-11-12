@@ -360,10 +360,10 @@ set_case_analysis 0 [get_pins [list ${i3c1_sda_insel}\[3\]/Q ${i3c1_sda_insel}\[
 
 # The Target Reset Detectors are clocked by SCL and SDA too, through their own
 # pinmux inputs. Pin these to the same pads as the inputs of their I3C instance.
-set i3c0_rstdet_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_82/q_reg
-set i3c0_rstdet_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_83/q_reg
-set i3c1_rstdet_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_84/q_reg
-set i3c1_rstdet_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_85/q_reg
+set i3c0_rstdet_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_83/q_reg
+set i3c0_rstdet_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_84/q_reg
+set i3c1_rstdet_scl_insel ${u_pinmux}/u_reg/u_mio_periph_insel_85/q_reg
+set i3c1_rstdet_sda_insel ${u_pinmux}/u_reg/u_mio_periph_insel_86/q_reg
 
 # insel 21 = 6'b010101
 set_case_analysis 1 [get_pins [list ${i3c0_rstdet_scl_insel}\[0\]/Q \
