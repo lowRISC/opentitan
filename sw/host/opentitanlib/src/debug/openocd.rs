@@ -22,6 +22,7 @@ use thiserror::Error;
 use ot_hal::dif::lc_ctrl::LcCtrlReg;
 
 use crate::impl_serializable_error;
+use crate::io::fpga_backdoor::consts::BACKDOOR_JTAG_IDCODE;
 use crate::io::jtag::{Jtag, JtagChain, JtagError, JtagParams, JtagTap, RiscvReg};
 use crate::regex;
 use crate::util::parse_int::ParseInt;
@@ -325,6 +326,11 @@ pub struct OpenOcdJtagChain {
 pub enum OpenOcdError {
     #[error("OpenOCD initialization failed: {0}")]
     InitializeFailure(String),
+    #[error(
+        "expected the {0:?} TAP but found the FPGA bkdr_loader. It may not have \
+         been released after the last reset: {1}"
+    )]
+    BackdoorTapFound(JtagTap, String),
     #[error("OpenOCD server exited prematurely: {0}")]
     PrematureExit(String),
     #[error("Generic error {0}")]
@@ -360,6 +366,11 @@ impl JtagChain for OpenOcdJtagChain {
         let resp = self.openocd.execute("capture init")?;
         if resp.contains("JTAG scan chain interrogation failed") {
             bail!(OpenOcdError::InitializeFailure(resp));
+        }
+        // Check that we are not unintentionally stuck trying to talk to the Backdoor Loader tap
+        let backdoor_tap_found = format!("tap/device found: {BACKDOOR_JTAG_IDCODE:#010x}");
+        if tap != JtagTap::BackdoorTap && resp.contains(&backdoor_tap_found) {
+            bail!(OpenOcdError::BackdoorTapFound(tap, resp));
         }
         // OpenOCD carries on with a target it could not examine (e.g. "Hart 0 failed
         // to halt during examine()"), and later commands then fail in confusing ways.

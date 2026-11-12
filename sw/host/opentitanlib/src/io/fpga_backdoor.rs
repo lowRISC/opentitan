@@ -49,6 +49,9 @@ pub mod regs {
 }
 
 pub mod consts {
+    // Defined in `hw/ip/bkdr_loader/rtl/bkdr_loader_pkg.sv`.
+    pub const BACKDOOR_JTAG_IDCODE: u32 = 0x0300_0cdf;
+
     // How long the reset strapping is applied for when entering the backdoor loader.
     pub const RESET_PULSE_MS: u64 = 50;
 
