@@ -1071,8 +1071,8 @@ static otcrypto_status_t rsa_sign_exp_async_start(
   OTCRYPTO_HEALTH_CHECK(kTestRsa4096SignBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
-  if (message_digest.data == NULL || private_key == NULL ||
-      private_key->keyblob == NULL) {
+  if ((message_digest.data == NULL && message_digest.len != 0) ||
+      private_key == NULL || private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
@@ -1103,11 +1103,11 @@ static otcrypto_status_t rsa_sign_exp_async_start(
   uint32_t checksum = private_key->keyblob[3 * num_words];
   if (launder32(padding_mode) == kOtcryptoRsaPaddingNull) {
     HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingNull);
-    if (message_digest.len != num_words ||
+    if (message_digest.len != num_words * sizeof(uint32_t) ||
         bignum_lt(message_digest.data, n, num_words) == kHardenedBoolFalse) {
       return OTCRYPTO_BAD_ARGS;
     }
-    HARDENED_CHECK_EQ(message_digest.len, num_words);
+    HARDENED_CHECK_EQ(message_digest.len, num_words * sizeof(uint32_t));
   }
   HARDENED_TRY_WIPE_DMEM(rsa_signature_generate_start(
       rsa_size, d0, d1, exponent, n, checksum, message_digest,
@@ -1213,7 +1213,8 @@ otcrypto_status_t otcrypto_rsa_verify_async_finalize(
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Check for NULL pointers.
-  if (message_digest.data == NULL || verification_result == NULL) {
+  if ((message_digest.data == NULL && message_digest.len != 0) ||
+      verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif

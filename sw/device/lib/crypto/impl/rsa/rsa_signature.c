@@ -32,12 +32,13 @@ static status_t digest_check(const otcrypto_hash_digest_t digest,
                              size_t encoded_message_len) {
   if (launder32(padding_mode) == kRsaSignaturePaddingNull) {
     HARDENED_CHECK_EQ(padding_mode, kRsaSignaturePaddingNull);
+    size_t encoded_message_bytelen = encoded_message_len * sizeof(uint32_t);
     if (launder32(digest.mode) != kOtcryptoHashModeNull ||
-        launder32(digest.len) != encoded_message_len) {
+        launder32(digest.len) != encoded_message_bytelen) {
       return OTCRYPTO_BAD_ARGS;
     }
     HARDENED_CHECK_EQ(digest.mode, kOtcryptoHashModeNull);
-    HARDENED_CHECK_EQ(digest.len, encoded_message_len);
+    HARDENED_CHECK_EQ(digest.len, encoded_message_bytelen);
     return OTCRYPTO_OK;
   }
   hash_info_t info;
