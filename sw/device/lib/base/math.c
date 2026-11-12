@@ -25,7 +25,8 @@ uint64_t udiv64_slow(uint64_t a, uint64_t b, uint64_t *rem_out) {
   for (size_t i = 0; i < bits; ++i) {
     rem <<= 1;
     quot <<= 1;
-    rem |= (a >> (bits - i - 1)) & 1;
+    rem |= (a >> (bits - 1)) & 1;
+    a <<= 1;
 
     // We need to keep bringing down zeros until `rem`, the running total, is
     // large enough that we can subtract off `b`; this tells us the value we
