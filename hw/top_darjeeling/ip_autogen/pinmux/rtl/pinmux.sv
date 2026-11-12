@@ -114,8 +114,8 @@ module pinmux
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      dio_pad_attr_q <= '0;
-      mio_pad_attr_q <= '0;
+      dio_pad_attr_q <= DioPadAttrResval;
+      mio_pad_attr_q <= MioPadAttrResval;
     end else begin
       // dedicated pads
       for (int kk = 0; kk < NDioPads; kk++) begin
