@@ -71,7 +71,7 @@ package pinmux_pkg;
     pad_attr_t'{default: '0}, // 33: IOC11
     pad_attr_t'{default: '0}, // 32: IOC10
     pad_attr_t'{default: '0}, // 31: IOC9
-    pad_attr_t'{default: '0}, // 30: IOC8
+    pad_attr_t'{pull_en: 1'h1, default: '0}, // 30: IOC8
     pad_attr_t'{default: '0}, // 29: IOC7
     pad_attr_t'{default: '0}, // 28: IOC6
     pad_attr_t'{default: '0}, // 27: IOC5

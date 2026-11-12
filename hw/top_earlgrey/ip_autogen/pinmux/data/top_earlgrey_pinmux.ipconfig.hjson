@@ -134,7 +134,10 @@
       ]
       [
         IOC8
-        {}
+        {
+          pull_en: 1
+          pull_select: 0
+        }
       ]
       [
         IOC9
