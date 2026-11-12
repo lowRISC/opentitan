@@ -64,7 +64,8 @@ module lc_ctrl_signal_decode
 
   always_comb begin : p_lc_signal_decode
     // Life cycle control signal defaults
-    lc_init_done             = Off;
+    // This ensures that once lc_init_done has been set, it cannot go back to Off.
+    lc_init_done             = lc_tx_or_hi(Off, lc_init_done_o);
     lc_raw_test_rma          = Off;
     lc_dft_en                = Off;
     lc_nvm_debug_en          = Off;
