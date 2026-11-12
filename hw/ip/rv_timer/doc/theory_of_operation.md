@@ -45,16 +45,16 @@ registers per Hart.
   // ...
   interrupt_list: [
     { name: "timer_expired_hart0_timer0",
-      desc: "raised if hart0's timer0 expired (mtimecmp >= mtime)"
+      desc: "raised if hart0's timer0 expired (mtime >= mtimecmp)"
     },
     { name: "timer_expired_hart0_timer1",
-      desc: "raised if hart0's timer1 expired (mtimecmp >= mtime)"
+      desc: "raised if hart0's timer1 expired (mtime >= mtimecmp)"
     },
     { name: "timer_expired_hart1_timer0",
-      desc: "raised if hart1's timer0 expired (mtimecmp >= mtime)"
+      desc: "raised if hart1's timer0 expired (mtime >= mtimecmp)"
     },
     { name: "timer_expired_hart1_timer1",
-      desc: "raised if hart1's timer1 expired (mtimecmp >= mtime)"
+      desc: "raised if hart1's timer1 expired (mtime >= mtimecmp)"
     },
   ],
   //...

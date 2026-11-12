@@ -20,7 +20,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 | Interrupt Name             | Type   | Description                                          |
 |:---------------------------|:-------|:-----------------------------------------------------|
-| timer_expired_hart0_timer0 | Event  | raised if hart0's timer0 expired (mtimecmp >= mtime) |
+| timer_expired_hart0_timer0 | Event  | raised if hart0's timer0 expired (mtime >= mtimecmp) |
 
 ## Security Alerts
 
