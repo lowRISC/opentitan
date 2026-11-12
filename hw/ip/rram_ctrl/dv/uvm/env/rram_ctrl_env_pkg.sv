@@ -23,6 +23,7 @@ package rram_ctrl_env_pkg;
   import rram_ctrl_pkg::DataWidth;
   import rram_ctrl_pkg::WordsPerPage;
   import rram_ctrl_pkg::OtpStartPage;
+  import rram_ctrl_pkg::NumOutstandingRdReq;
 
   import nvm_otp_key_agent_pkg::nvm_otp_key_agent_cfg;
   import nvm_otp_key_agent_pkg::nvm_otp_key_rsp_seq_item;
