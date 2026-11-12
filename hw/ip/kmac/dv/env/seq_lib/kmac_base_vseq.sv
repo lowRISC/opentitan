@@ -60,25 +60,21 @@ class kmac_base_vseq extends cip_base_vseq #(
   // Controls whether to actually enable sideloading functionality via cfg_shadowed register.
   rand bit reg_en_sideload;
 
-  // entropy mode
-  rand kmac_pkg::entropy_mode_e entropy_mode = EntropyModeSw;
-  // We do not want to change the value of `entropy_mode` in between hashing iterations.
-  //
-  // So we use a static entropy mode value to hold the same mode through the whole test,
-  // and constrain `entropy_mode` accordingly.
-  kmac_pkg::entropy_mode_e static_entropy_mode = EntropyModeSw;
-
   // entropy fast process mode
   rand bit entropy_fast_process;
-
-  // entropy ready
-  rand bit entropy_ready;
 
   // process the digest when mode strength does not match
   rand bit en_unsupported_modestrength;
 
   // Message masking
   rand bit msg_mask;
+
+  // Entropy configuration
+  rand bit lock_entropy_cfg;
+  rand bit entropy_boot_mode;
+  rand kmac_pkg::entropy_mode_e entropy_mode;
+  rand bit ignore_cmd_entropy_req;
+  rand bit [9:0] hash_threshold;
 
   // output length in bytes.
   rand int unsigned output_len;
@@ -120,12 +116,8 @@ class kmac_base_vseq extends cip_base_vseq #(
   rand kmac_pkg::kmac_cmd_e err_sw_cmd_seq_cmd;
 
   // Entropy related variables
-  rand bit [9:0] hash_threshold;
   rand bit hash_cnt_clr;
   rand bit entropy_req;
-  rand bit entropy_timer_en;
-  rand bit [EntropyPeriodReserved-1:0] prescaler_val;
-  rand bit [TL_DW-KmacWaitTimer-1:0] entropy_wait_timer;
 
   // array to store `right_encode(output_len)`
   bit [7:0] output_len_enc[];
@@ -151,6 +143,22 @@ class kmac_base_vseq extends cip_base_vseq #(
       } else {
         hash_mode != sha3_pkg::CShake;
       }
+    }
+  }
+
+  // KMAC mode requires either the EDN or Software Mode.
+  constraint entropy_boot_mode_c {
+    (kmac_en) -> entropy_boot_mode == 1'b0;
+  }
+
+  // Never lock the boot mode configuration. It's purpose is just to enable the initial ROM_CTRL
+  // verification at system boot, and KMAC mode is meant to not even start in Entropy Boot Mode.
+  constraint lock_entropy_cfg_c {
+    if (entropy_boot_mode) {
+      lock_entropy_cfg == 1'b0;
+    } else {
+      lock_entropy_cfg dist { 1'b1 :/ 10,
+                              1'b0 :/ 90};
     }
   }
 
@@ -186,14 +194,6 @@ class kmac_base_vseq extends cip_base_vseq #(
 
   constraint key_len_c {
     (reg_en_sideload) -> key_len == Key256;
-  }
-
-  constraint entropy_mode_c {
-    if (kmac_err_type == kmac_pkg::ErrIncorrectEntropyMode) {
-      !(entropy_mode inside {EntropyModeSw, EntropyModeEdn});
-    } else {
-      entropy_mode == static_entropy_mode;
-    }
   }
 
   // Set the block size based on the random security strength.
@@ -268,21 +268,6 @@ class kmac_base_vseq extends cip_base_vseq #(
     }
   }
 
-  constraint entropy_period_c {
-    if (entropy_mode == EntropyModeEdn && cfg.enable_masking) {
-      if (entropy_timer_en) {
-        (prescaler_val + 1) * entropy_wait_timer >
-          // If zero delay case, the max delay is 0.
-          // Kmac requests 4 EDN entropies, and add 10 cycles as extra buffer for domain crossing.
-          (cfg.m_edn_pull_agent_cfgs[0].device_delay_max * 4 + 10) *
-          (cfg.edn_clk_freq_mhz / cfg.clk_freq_mhz + 1);
-      } else {
-        entropy_wait_timer == 0;
-      }
-    }
-    solve entropy_mode before prescaler_val, entropy_wait_timer;
-  }
-
   virtual task dut_init(string reset_kind = "HARD");
     // KMAC has dut and edn reset. If assign kmac_vif_init() values after `super.dut_init()`,
     // and if dut reset deasserts earlier than edn reset, some KMAC outputs might remain X or Z
@@ -292,12 +277,6 @@ class kmac_base_vseq extends cip_base_vseq #(
     if (do_kmac_init) kmac_init();
   endtask
 
-  virtual task pre_start();
-    super.pre_start();
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(static_entropy_mode,
-        static_entropy_mode inside {EntropyModeSw, EntropyModeEdn};)
-  endtask
-
   virtual task kmac_vif_init();
     // Any value that is not `lc_ctrl_pkg::On` is considered `lc_ctrl_pkg::Off`.
     cfg.kmac_vif.drive_lc_escalate(lc_ctrl_pkg::Off);
@@ -305,6 +284,9 @@ class kmac_base_vseq extends cip_base_vseq #(
 
   // setup basic kmac features
   virtual task kmac_init(bit wait_init = 1, bit keymgr_app_intf = 0);
+    bit lock_pre, lock_post;
+    bit [TL_DW-1:0] entropy_cfg = 0;
+
     // Wait for KMAC to reach idle state
     if (wait_init) begin
       wait (cfg.kmac_vif.idle_o == prim_mubi_pkg::MuBi4True);
@@ -320,17 +302,7 @@ class kmac_base_vseq extends cip_base_vseq #(
     `uvm_info(`gfn, $sformatf("intr[KmacFifoEmpty] = %0b", enable_intr[KmacFifoEmpty]), UVM_HIGH)
     `uvm_info(`gfn, $sformatf("intr[KmacErr] = %0b", enable_intr[KmacErr]), UVM_HIGH)
 
-    if (kmac_err_type == ErrWaitTimerExpired && entropy_mode == EntropyModeEdn &&
-        cfg.enable_masking) begin
-      csr_wr(.ptr(ral.entropy_period), .value(1'b1 << KmacWaitTimer));
-    end else begin
-      csr_wr(.ptr(ral.entropy_period.wait_timer), .value(entropy_wait_timer));
-      csr_wr(.ptr(ral.entropy_period.prescaler), .value(prescaler_val));
-    end
-
-    csr_wr(.ptr(ral.entropy_refresh_threshold_shadowed), .value(hash_threshold));
     wr_hash_cnt_clear_cmd();
-    wr_entropy_req_cmd();
 
     // setup CFG csr with default random values
     ral.cfg_shadowed.kmac_en.set(kmac_en);
@@ -338,14 +310,35 @@ class kmac_base_vseq extends cip_base_vseq #(
     ral.cfg_shadowed.mode.set(hash_mode);
     ral.cfg_shadowed.msg_endianness.set(msg_endian);
     ral.cfg_shadowed.state_endianness.set(state_endian);
-    ral.cfg_shadowed.entropy_mode.set(entropy_mode);
     ral.cfg_shadowed.entropy_fast_process.set(entropy_fast_process);
-    ral.cfg_shadowed.entropy_ready.set(entropy_ready);
     ral.cfg_shadowed.msg_mask.set(msg_mask);
     ral.cfg_shadowed.en_unsupported_modestrength.set(en_unsupported_modestrength);
     ral.cfg_shadowed.sideload.set(reg_en_sideload);
-
     csr_update(.csr(ral.cfg_shadowed));
+
+    // Entropy configuration
+    csr_rd(.ptr(ral.entropy_cfg_lock), .value(lock_pre));
+    if (!lock_pre) begin
+      entropy_cfg[KmacEntropyBootMode] = entropy_boot_mode;
+      entropy_cfg[KmacEntropyMode] = entropy_mode;
+      entropy_cfg[KmacEntropyIgnoreCmdEntropyReq] = ignore_cmd_entropy_req;
+      entropy_cfg[KmacEntropyEdnModeRefreshThresholdMSB:KmacEntropyEdnModeRefreshThresholdLSB] = hash_threshold;
+      csr_wr(.ptr(ral.entropy_cfg_shadowed), .value(entropy_cfg), .en_shadow_wr(1'b1), .blocking(1));
+
+      // Provide a seed value if the software mode is enabled.
+      if (!entropy_boot_mode && (entropy_mode == EntropyModeSw)) begin
+        for (int i = 0; i < kmac_reg_pkg::NumSeedsEntropy; i++) begin
+          csr_wr(.ptr(ral.entropy_seed), .value($urandom()));
+        end
+      end
+    end
+
+    // Write the entropy configuration lock.
+    csr_wr(.ptr(ral.entropy_cfg_lock), .value(lock_entropy_cfg), .blocking(1));
+    csr_rd(.ptr(ral.entropy_cfg_lock), .value(lock_post));
+    if (lock_pre) begin
+      `DV_CHECK(lock_pre == lock_post, "Was able to unlock the entropy configuration lock")
+    end
 
     // setup KEY_LEN csr
     // The key length will be override to 256 bits if design uses keymgr app interface or the
@@ -360,9 +353,6 @@ class kmac_base_vseq extends cip_base_vseq #(
     bit [TL_DW-1:0] data;
     csr_rd(.ptr(ral.cfg_regwen), .value(data));
     // Randomly write locked registers only if the cfg_regwen is locked.
-    if (data == 0) begin
-      csr_wr(.ptr(ral.entropy_period), .value($urandom_range(0, 32'hFFFF_FFFF)));
-    end
   endtask
 
   // This task reads out the STATUS and INTR_STATE csrs so scb can check the status
@@ -397,14 +387,7 @@ class kmac_base_vseq extends cip_base_vseq #(
 
     // only clear the error if error is actually set,
     // otherwise we effectively reset the design
-    if (cfg.enable_masking && clear_err &&
-        kmac_err_type inside {kmac_pkg::ErrIncorrectEntropyMode,
-                              kmac_pkg::ErrWaitTimerExpired}) begin
-      cfg.clk_rst_vif.wait_clks($urandom_range(10, 50));
-      // After entropy related errors, cannot set `err_processed` and `entropy_ready` together.
-      // Otherwise design will ignore the `entropy_ready` field.
-      csr_wr(.ptr(ral.cmd.err_processed), .value(1));
-    end else if (kmac_err_type == kmac_pkg::ErrKeyNotValid) begin
+    if (kmac_err_type == kmac_pkg::ErrKeyNotValid) begin
       csr_wr(.ptr(ral.cmd.err_processed), .value(1));
     end
     `uvm_info(`gfn, "Finished checking error", UVM_HIGH)
@@ -430,10 +413,12 @@ class kmac_base_vseq extends cip_base_vseq #(
             $sformatf("fname: %0s\n", str_utils_pkg::bytes_to_str(fname_arr)),
             $sformatf("custom_str_arr: %0p\n", custom_str_arr),
             $sformatf("custom_str: %0s\n", str_utils_pkg::bytes_to_str(custom_str_arr)),
-            $sformatf("entropy_mode: %0s\n", entropy_mode.name()),
             $sformatf("entropy_fast_process: %0b\n", entropy_fast_process),
-            $sformatf("entropy_ready: %0b\n", entropy_ready),
-            $sformatf("en_unsupported_modestrength %0b\n", en_unsupported_modestrength)};
+            $sformatf("en_unsupported_modestrength %0b\n", en_unsupported_modestrength),
+            $sformatf("entropy_boot_mode: %0b\n", entropy_boot_mode),
+            $sformatf("entropy_mode: %0s\n", entropy_mode.name()),
+            $sformatf("ignore_cmd_entropy_req: %0b\n", ignore_cmd_entropy_req),
+            $sformatf("hash_threshold: %0d\n", hash_threshold)};
   endfunction
 
   // This function implements the bulk of integer encoding specified by NIST.SP.800-185
@@ -875,8 +860,8 @@ class kmac_base_vseq extends cip_base_vseq #(
                                   ref bit [7:0] share0[], ref bit [7:0] share1[]);
 
     int unsigned remaining_output_len = full_output_len;
-
     int unsigned cur_chunk_size = 0;
+    bit [TL_DW-1:0] status;
 
     while (remaining_output_len > 0) begin
       cur_chunk_size = (remaining_output_len <= keccak_block_size) ? remaining_output_len : keccak_block_size;
@@ -900,6 +885,15 @@ class kmac_base_vseq extends cip_base_vseq #(
         squeeze_digest();
         wr_hash_cnt_clear_cmd();
         wr_entropy_req_cmd();
+        if (entropy_req && !ignore_cmd_entropy_req && !entropy_boot_mode) begin
+          csr_rd(.ptr(ral.status), .value(status));
+          `DV_CHECK(status[KmacStatusEntropyReseeding] == 1'b1, "DUT not waiting for a new PRNG seed")
+          if (entropy_mode == EntropyModeSw) begin
+            for (int i = 0; i < kmac_reg_pkg::NumSeedsEntropy; i++) begin
+              csr_wr(.ptr(ral.entropy_seed), .value($urandom()));
+            end
+          end
+        end
       end
 
       `uvm_info(`gfn, $sformatf("remaining_output_len: %0d", remaining_output_len), UVM_HIGH)

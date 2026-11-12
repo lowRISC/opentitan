@@ -17,9 +17,8 @@ class kmac_error_vseq extends kmac_app_vseq;
   constraint disable_err_c {
     (kmac_err_type inside
         {// Below error cases are verified in separate testbench.
-         kmac_pkg::ErrKeyNotValid,
-         kmac_pkg::ErrWaitTimerExpired,
-         kmac_pkg::ErrIncorrectEntropyMode}) == 0;
+         kmac_pkg::ErrKeyNotValid
+        }) == 0;
 
     (kmac_err_type == kmac_pkg::ErrSwPushedMsgFifo) -> (en_app == 1);
 

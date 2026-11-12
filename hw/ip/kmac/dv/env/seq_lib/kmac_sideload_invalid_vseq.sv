@@ -39,10 +39,6 @@ class kmac_sideload_invalid_vseq extends kmac_long_msg_and_output_vseq;
     app_mode == AppKeymgr;
   }
 
-  constraint entropy_ready_c {
-    entropy_ready == 1;
-  }
-
   constraint disable_err_c {
     kmac_err_type == kmac_pkg::ErrKeyNotValid;
   }

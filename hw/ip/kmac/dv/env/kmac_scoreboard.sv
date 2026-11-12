@@ -41,31 +41,35 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
   // this bit goes high for a cycle when a manual squeezing is requested
   bit req_manual_squeeze = 0;
 
-  // The CFG.entropy_ready field is only used to transition the entropy FSM into fetching entropy
-  // from the reset state, so we can only rely on writes to CFG.entropy_ready to update internal
-  // scoreboard state after a reset is seen.
-  //
-  // To that effect, we set this bit to 1 any time the scoreboard is reset, and will unset it
-  // the first time that CFG.entropy_ready is updated.
-  bit first_op_after_rst = 0;
+  // Lowering the ENTROPY_CFG_SHADOWED.entropy_boot_mode field causes the entropy FSM to start
+  // fetching entropy. This field is RW0C, so we must only detect the first time this is written
+  // after a reset.
+  bit first_entropy_cfg_write_after_rst = 0;
+
+  // When these bits are 1, the DUT is configured in the corresponding mode and we are waiting on
+  // entropy.
+  bit in_edn_fetch = 0;
+  bit in_sw_fetch = 0;
+
+  // The number of seed words received from software when running in Software Mode.
+  int num_sw_seed_words = 0;
 
   // CFG fields
   bit kmac_en;
   bit sideload_en;
   sha3_pkg::sha3_mode_e hash_mode;
   sha3_pkg::keccak_strength_e strength;
-  entropy_mode_e entropy_mode = EntropyModeNone;
   bit entropy_fast_process;
-  bit entropy_ready;
+
+  // ENTROPY_CFG fields
+  bit entropy_boot_mode = 1'b1;
+  entropy_mode_e entropy_mode = EntropyModeEdn;
+  bit ignore_cmd_entropy_req;
 
   // The scoreboard overwrites the value configured by software with the value of the application
   // interface. Keep a separate copy of the CSR value to restore it after application interface
   // transactions finish.
   sha3_pkg::keccak_strength_e strength_csr;
-
-  // Set this bit when entropy_ready is 1 and entropy_mode is EntropyModeEdn,
-  // to indicate that we are now waiting on the EDN to return valid entropy
-  bit in_edn_fetch = 0;
 
   // CMD fields
   bit [KmacCmdIdx:0] kmac_cmd;
@@ -252,7 +256,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
           repeat (kmac_reg_pkg::NumSeedsEntropy) begin
             edn_fifos[0].get(edn_item);
           end
-          `uvm_info(`gfn, "got all edn transactions", UVM_HIGH)
+          `uvm_info(`gfn, "Got all EDN transactions", UVM_HIGH)
           set_entropy_fetch(0);
         end
         ,
@@ -345,7 +349,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
             if (`KMAC_APP_VALID_TRANS(AppKeymgr)) begin
               app_mode = AppKeymgr;
               strength = APP_CFG[app_mode].session_cfg.kstrength;
-              if (entropy_ready) incr_and_predict_hash_cnt();
+              if (status_entropy_ready) incr_and_predict_hash_cnt();
             end else if (`KMAC_APP_VALID_TRANS(AppLc)) begin
               app_mode = AppLc;
               strength = APP_CFG[app_mode].session_cfg.kstrength;
@@ -604,7 +608,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
             // the masking that is enabled or the key has been invalidated.
             if (item.m_rsp.m_error !=
                 (app_mode == AppKeymgr &&
-                 ((cfg.enable_masking && !entropy_ready) || cfg.key_invalidated))) begin
+                 ((cfg.enable_masking && !status_entropy_ready) || cfg.key_invalidated))) begin
               `uvm_error(get_full_name(),
                          $sformatf("Unexpected m_error value in the app response (%0d)",
                                    item.m_rsp.m_error))
@@ -673,8 +677,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
 
         // following csrs are locked by CFG_REGWEN:
         // - cfg
-        // - entropy_period
-        // - entropy_seed
         // - key_len
         // if writes to these csrs are seen, must check that they are not locked first.
         if (ral.cfg_regwen.locks_reg_or_fld(dv_base_csr) &&
@@ -771,7 +773,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
 
           kmac_en              = item.a_data[KmacEn];
           entropy_fast_process = item.a_data[KmacFastEntropy];
-          entropy_ready        = item.a_data[KmacEntropyReady];
           sideload_en          = item.a_data[KmacSideload];
 
           hash_mode = sha3_pkg::sha3_mode_e'(item.a_data[KmacModeMSB:KmacModeLSB]);
@@ -779,24 +780,9 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
           strength = sha3_pkg::keccak_strength_e'(item.a_data[KmacStrengthMSB:KmacStrengthLSB]);
           strength_csr = strength;
 
-          entropy_mode = entropy_mode_e'(item.a_data[KmacEntropyModeMSB:KmacEntropyModeLSB]);
-
           // sample sideload-related coverage
           if (cfg.en_cov) begin
             cov.sideload_cg.sample(sideload_en, kmac_en, 0);
-          end
-
-          // Entropy mode configuration error
-          if (cfg.enable_masking && !(entropy_mode inside {EntropyModeSw, EntropyModeEdn})) begin
-            kmac_err.valid = 1;
-            kmac_err.code  = kmac_pkg::ErrIncorrectEntropyMode;
-            kmac_err.info  = 24'(entropy_mode);
-
-            predict_err(.is_kmac_err(1));
-          end
-
-          if (item.a_data[KmacEntropyReady] && first_op_after_rst) begin
-            set_entropy_fetch(1);
           end
         end
       end
@@ -811,7 +797,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
           // KMAC. Otherwise the design ties these CMD fields off, so there is nothing to predict.
           if (cfg.enable_full_kmac) begin
             if (item.a_data[KmacHashCntClrIdx]) `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(0));
-            if (item.a_data[KmacEntropyReqIdx]) begin
+            if (item.a_data[KmacEntropyReqIdx] && !entropy_boot_mode && !ignore_cmd_entropy_req) begin
               `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(0));
               set_entropy_fetch(1);
             end
@@ -1054,20 +1040,34 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
           end
         end
       end
-      "entropy_refresh_threshold_shadowed": begin
-        if (addr_phase_write && cfg.enable_full_kmac &&
+      "entropy_cfg_shadowed": begin
+        if (addr_phase_write &&
             (dv_base_csr.is_staged() || dv_base_csr.get_shadow_update_err())) begin
-          bit [HASH_CNT_WIDTH-1:0] threshold = item.a_data;
+
+          bit [HASH_CNT_WIDTH-1:0] threshold;
+          entropy_boot_mode = item.a_data[KmacEntropyBootMode];
+          entropy_mode = entropy_mode_e'(item.a_data[KmacEntropyMode]);
+          if (!entropy_boot_mode && first_entropy_cfg_write_after_rst) begin
+            set_entropy_fetch(1);
+            first_entropy_cfg_write_after_rst = 0;
+          end
+          ignore_cmd_entropy_req = item.a_data[KmacEntropyIgnoreCmdEntropyReq];
+          threshold = item.a_data[KmacEntropyEdnModeRefreshThresholdMSB:
+                                  KmacEntropyEdnModeRefreshThresholdLSB];
           if (threshold > 0 && threshold <= `gmv(ral.entropy_refresh_hash_cnt)) begin
             `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(0));
             set_entropy_fetch(1);
           end
         end
       end
-      "entropy_period": begin
-        if (cfg.en_cov && addr_phase_write) begin
-          cov.entropy_timer_cg.sample(item.a_data[9:0], item.a_data[31:16],
-                                      entropy_mode == EntropyModeEdn);
+      "entropy_seed": begin
+        if (addr_phase_write) begin
+          if (!entropy_boot_mode && entropy_mode == EntropyModeSw) begin
+            num_sw_seed_words++;
+            if (num_sw_seed_words >= kmac_reg_pkg::NumSeedsEntropy) begin
+              set_entropy_fetch(0);
+            end
+          end
         end
       end
       default: begin
@@ -1379,7 +1379,7 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
     checked_kmac_cmd   = CmdNone;
     unchecked_kmac_cmd = CmdNone;
 
-    first_op_after_rst = 1;
+    first_entropy_cfg_write_after_rst = 1;
     m_part_way_through_req = 0;
 
     // status tracking bits
@@ -1395,8 +1395,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
   virtual function void clear_state();
     `uvm_info(`gfn, "clearing scoreboard state", UVM_HIGH)
 
-    if (first_op_after_rst) first_op_after_rst = 0;
-
     do_check_digest = 1;
 
     msg.delete();
@@ -1406,8 +1404,6 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
 
     req_manual_squeeze      = 0;
     msg_digest_done         = 0;
-
-    set_entropy_fetch(0);
 
     kmac_err = '{valid: 1'b0,
                  code: kmac_pkg::ErrNone,
@@ -1842,8 +1838,8 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
       bit [HASH_CNT_WIDTH-1:0] new_hash_cnt_val = curr_hash_cnt_val + 1;
 
       // Check threshold
-      if (new_hash_cnt_val >= `gmv(ral.entropy_refresh_threshold_shadowed) &&
-          `gmv(ral.entropy_refresh_threshold_shadowed) > 0) begin
+      if (new_hash_cnt_val >= `gmv(ral.entropy_cfg_shadowed.edn_mode_refresh_threshold) &&
+          `gmv(ral.entropy_cfg_shadowed.edn_mode_refresh_threshold) > 0) begin
         `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(0));
       end else begin
         `DV_CHECK(ral.entropy_refresh_hash_cnt.predict(new_hash_cnt_val));
@@ -1855,14 +1851,22 @@ class kmac_scoreboard extends cip_base_scoreboard #(.CFG_T(kmac_env_cfg),
     if (val) begin
       if (entropy_mode == EntropyModeEdn) begin
         in_edn_fetch = cfg.enable_masking;
-        status_entropy_reseeding = cfg.enable_masking;
-        status_entropy_ready = cfg.enable_masking ? 0 : entropy_ready;
+      end else begin
+        in_sw_fetch = cfg.enable_masking;
       end
+      status_entropy_reseeding = cfg.enable_masking;
+      status_entropy_ready = cfg.enable_masking ? 0 : 1;
     end else begin
-      in_edn_fetch = 0;
+      if (in_edn_fetch) begin
+        in_edn_fetch = 0;
+        `uvm_info(`gfn, "dropped in_edn_fetch", UVM_HIGH)
+      end else if (in_sw_fetch) begin
+        in_sw_fetch = 0;
+        `uvm_info(`gfn, "dropped in_sw_fetch", UVM_HIGH)
+        num_sw_seed_words = 0;
+      end
       status_entropy_reseeding = 0;
       status_entropy_ready = 1;
-      `uvm_info(`gfn, "dropped in_edn_fetch", UVM_HIGH)
     end
   endfunction
 

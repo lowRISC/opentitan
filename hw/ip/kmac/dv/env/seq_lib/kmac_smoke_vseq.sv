@@ -70,10 +70,6 @@ class kmac_smoke_vseq extends kmac_base_vseq;
     reg_en_sideload == 0;
   }
 
-  constraint entropy_ready_c {
-    entropy_ready == 1;
-  }
-
   constraint entropy_refresh_c {
     hash_threshold == 0;
     hash_cnt_clr   == 0;
@@ -129,24 +125,11 @@ class kmac_smoke_vseq extends kmac_base_vseq;
 
       read_regwen_and_rand_write_locked_regs();
 
-      if (cfg.enable_masking && kmac_err_type == kmac_pkg::ErrWaitTimerExpired &&
-          entropy_mode == EntropyModeEdn) begin
-        if (entropy_fetched == 0) begin
-          check_err();
-          // Edn wait timer expired will lock entropy FSM, so the other operations cannot proceed
-          // unless the entropy is provided.
-          continue;
-        end
-      end else if (cfg.enable_masking && entropy_mode == EntropyModeEdn) begin
+      if (cfg.enable_masking && entropy_mode == EntropyModeEdn) begin
         entropy_fetched = 1;
       end
 
-      if (cfg.enable_masking && kmac_err_type == kmac_pkg::ErrIncorrectEntropyMode) begin
-        if (!entropy_fetched) begin
-          check_err();
-          continue;
-        end
-      end else if (cfg.enable_masking) begin
+      if (cfg.enable_masking) begin
         entropy_fetched = 1;
       end
 

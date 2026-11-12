@@ -9,27 +9,32 @@
 
 status_t kmac_testutils_config(dif_kmac_t *kmac, bool sideload) {
   dif_kmac_config_t config = {
-      // Use software-provided "entropy" to avoid waiting for EDN.
-      .entropy_mode = kDifKmacEntropyModeSoftware,
-      // This option minimizes masking to improve speed.
-      .entropy_fast_process = true,
-      // No need to have real entropy for tests.
-      .entropy_seed = {0},
-      .entropy_hash_threshold = 0,
-      // Ignored because the entropy source is software.
-      .entropy_wait_timer = 0,
+      // Always mask Keccak operations, even if not processing a secret key.
+      .entropy_fast_process = false,
       // Leave message as the little-endian default.
-      .entropy_prescaler = 0,
       .message_big_endian = false,
       // Leave output as the little-endian default.
       .output_big_endian = false,
       // Use a sideloaded key if the caller requested to.
       .sideload = sideload,
-      // Avoid masking the message to improve speed.
-      .msg_mask = false,
+      // Mask the message upon loading.
+      .msg_mask = true,
+  };
+
+  dif_kmac_entropy_config_t entropy_config = {
+      // Use software-provided "entropy" to avoid waiting for EDN.
+      .entropy_mode = kDifKmacEntropyModeSoftware,
+      // Don't ignore reseed requests from software.
+      .ignore_cmd_entropy_req = false,
+      // This can be ignored as we use the Software Mode.
+      .edn_mode_refresh_threshold = 0,
+      // Any seed is suitable for testing.
+      .sw_mode_entropy_seed = {0xb153e3fe, 0x09596819, 0x3e85a6e8, 0xb6dcdaba,
+                               0x50dc409c, 0x11e1ebd1},
   };
 
   TRY(dif_kmac_configure(kmac, config));
+  TRY(dif_kmac_configure_entropy(kmac, entropy_config));
   return OK_STATUS();
 }
 

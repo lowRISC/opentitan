@@ -131,14 +131,22 @@
             App interface.
             All configuration fields are left as is, but now we will request EDN entropy by setting
             the following registers with random value:
-            - "cmd.entropy_req": Request an EDN entropy
+            - "entropy_cfg_shadowed.entropy_boot_mode": Enable or Disable Entropy Boot Mode
+            - "entropy_cfg_shadowed.entropy_mode": Configure either EDN Mode or Software Mode
+            - "entropy_cfg_shadowed.ignore_cmd_entropy_req": Honor or ignore manual reseeding
+                                                             requests
+            - "entropy_cfg_shadowed.edn_mode_refresh_threshold": Automatically trigger reseed
+                                                                 operations in EDN Mode only and
+                                                                 only if > 0
+            - "cmd.entropy_req": Manually trigger a reseed request in EDN Mode or Software Mode and
+                                 only if ignore_cmd_entropy_req is 0.
             - "cmd.hash_cnt_clear": Clear the entropy_refresh_hash_cnt
-            - "entropy_refresh_threshold_shadowed": The threshold when KMAC should request an EDN
-              entropy
 
             In masked mode, scoreboard will check:
             - Register `entropy_refresh_hash_cnt` value
             - KMAC requests EDN at the correct time
+            - Writes to the `entropy_seed` register have an effect only if a reseed operation is
+              ongoing and if Software Mode is configured.
 
             In unmasked mode, scoreboard will check:
             - Register `entropy_refresh_hash_cnt` always returns 0
@@ -203,47 +211,19 @@
       tests: ["{name}_sideload_invalid"]
     }
     {
-      name: edn_timeout_error
-      desc: ''' Test kmac responses correctly when EDN response timeout.
-            Based on kmac app sequence, this sequence configures kmac to ensure an EDN timeout
-            error by writing `entropy_period.wait_timer` and `entropy_period.prescaler` registers.
-            **Check**:
-            - Check error related registers including `err_code`, `status`, and `interrupt`.
-            - Check keymgr interface responses with error bit sets to 1.
-            - Check kmac can resume normal functionalities after processing this error case.
-            - Check timeout error will not trigger if the `entropy_mode` is set to SW, or masking
-              is disabled.
-            '''
-      stage: V2
-      tests: ["{name}_edn_timeout_error"]
-    }
-    {
-      name: entropy_mode_error
-      desc: ''' Test kmac responses correctly when entropy mode is configured incorrectly.
-            Based on kmac edn_timeout sequence, this sequence write incorrect
-            `ral.cfg_shadowed.entropy_mode` before entropy is fetched.
-            **Check**:
-            - Check error related registers including `err_code`, `status`, and `interrupt`.
-            - Check keymgr interface responses with error bit sets to 1.
-            - Check kmac can resume normal functionalities after processing this error case.
-            - Check timeout error will not trigger if masking is disabled.
-            '''
-      stage: V2
-      tests: ["{name}_entropy_mode_error"]
-   }
-    {
       name: entropy_ready_error
-      desc: ''' Test kmac responses correctly when entropy_ready field is not set.
-            Based on kmac app sequence, this sequence does not write `1` to
-            `ral.cfg_shadowed.entropy_ready` field before a kmac operation.
+      desc: ''' Test kmac responds correctly depending on the STATUS.entropy_ready bit field.
+
             **Check**:
-            - If masking is enabled and the kmac operation is EDN mode:
-              - If it is a SW operation, check error related registers including `err_code`,
-                `status`, and `interrupt`.
-              - If it is an APP operation, check keymgr interface responses with error bit sets to
-                `1`.
-            - If masking is not enabled or the operation does not require entropy:
-              - Check no error triggered.
+            - Independent of the `EnMasking` parameter and the configured Entropy Mode (EDN Mode
+              or Software Mode) and independent of the Entropy Boot Mode:
+              - Non-KMAC operations must be processed without stalling and without signaling
+                errors.
+              - SW-initiated KMAC operations must trigger a ErrSwHashingWithoutEntropyReady error
+                and an interrupt.
+              - APP-initiated KMAC operations must trigger a Service Rejected Error.
+            - If a manual or automated reseed operation is triggered after having started
+              processing the secret key, the processing does not stall and no errors are signaled.
             '''
       stage: V2
       tests: ["{name}_entropy_ready_error"]
@@ -392,13 +372,6 @@
             '''
    }
    {
-      name: entropy_timer_cg
-      desc: '''
-            Cover the values for the entropy_period register's `prescaler` and `wait_timer` fields.
-            Cross these field ranges with whether the entropy EDN mode is on or off.
-            '''
-   }
-   {
       name: error_cg
       desc: '''
             Covers all error scenarios:
@@ -406,13 +379,20 @@
             - ErrSwPushedMsgFifo: covers that SW writes the msgfifo while App interface is active
             - ErrSwIssuedCmdInAppActive: covers that SW writes all possible commands to the KMAC
                                          while App interface is active
-            - ErrWaitTimerExpired: covers that the KMAC timed out while waiting for EDN entropy
-            - ErrIncorrectEntropyMode: covers that incorrect entropy modes are detected by the KMAC
             - ErrUnexpectedModeStrength: covers that 128-bit strength is seen for SHA3, and all but
                                          128/256 bit strengths are seen for XOF functions
             - ErrIncorrectFunctionName: covers that the function name is configured incorrectly
                                         when KMAC mode is enabled
             - ErrSwCmdSequence: covers that SW issues commands to the KMAC out of order
+            - ErrSwHashingWithoutEntropyReady: covers that SW issues a KMAC op without the PRNG
+                                               being ready
+            - ErrSwStopNotBlockAligned: covers that SW tries to save a context after an incomplete
+                                        block
+            - ErrSwSaveRestoreSideload: covers that SW tries to save a context while a sideload key
+                                        is used
+            - ErrFatalError: covers that the DUT sees a fatal fault or LC escalation
+            - ErrPackerIntegrity: covers that the DUT sees an integrity failure inside MsgFifo.Packer
+            - ErrMsgFifoIntegrity: covers that the DUT sees and integrity failure inside MsgFifo.Fifo
             '''
     }
   ]
