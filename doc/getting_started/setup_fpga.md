@@ -266,7 +266,7 @@ On your HyperDebug board:
 On your CW340 base board (the red board):
 1. Move the following single pin-to-pin jumpers in the bottom right corner of the board to `HD` (for "HyperDebug").
     1. UART0 RX/TX (OpenTitan pins IOC3/4): JP1 & JP2
-    2. UART1 RX/TX (OpenTitan pins IOA0/1): JP3 & JP4
+    2. UART1 RX/TX (OpenTitan pins IOR5/6 on the OT_IOA0/1 nets): JP3 & JP4
     3. JTAG TAP select straps (OpenTitan pins IOC5/8): JP11 & JP12
 2. Connect the following blue socket-to-socket jumpers in the middle of the board to `HD` (for "HyperDebug").
     1. SPI Device: connect J23 to J25
