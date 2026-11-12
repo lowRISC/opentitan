@@ -1704,7 +1704,9 @@
       { name: 'IOC5'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOC6'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOC7'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOC8'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      // Enable pull-down to ensure TAP strap 0 gets sampled as 0 unless driven to 1 from an external source
+      // (and specifically that it gets sampled as 0 when left floating / not connected).
+      { name: 'IOC8'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad', attrs: {pull_en: 1}},
       { name: 'IOC9'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOC10'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOC11'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
@@ -1904,6 +1906,7 @@
         // Each entry may have an optional 'desc' key for further description.
         special_signals: [
           // Straps
+          // Check pad attributes if strap pins change.
           { name: 'tap0',   pad: 'IOC8', desc: 'TAP strap signal.'   },
           { name: 'tap1',   pad: 'IOC5', desc: 'TAP strap signal.'   },
           { name: 'dft0',   pad: 'IOR5', desc: 'DFT strap signal.'   },
@@ -1962,6 +1965,7 @@
         // keep PinmuxTargetCfg in chiplevel identical; not actually relevant.
         special_signals: [
           // Straps
+          // Check pad attributes if strap pins change.
           { name: 'tap0',   pad: 'IOC8', desc: 'TAP strap signal.'   },
           { name: 'tap1',   pad: 'IOC5', desc: 'TAP strap signal.'   },
           { name: 'dft0',   pad: 'IOR5', desc: 'DFT strap signal.'   },
@@ -2030,6 +2034,7 @@
       pinmux: {
         special_signals: [
           // Straps
+          // Check pad attributes if strap pins change.
           { name: 'tap0',   pad: 'IOC8', desc: 'TAP strap signal.'   },
           { name: 'tap1',   pad: 'IOC5', desc: 'TAP strap signal.'   },
           { name: 'dft0',   pad: 'IOR5', desc: 'DFT strap signal.'   },

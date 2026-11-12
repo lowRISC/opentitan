@@ -259,7 +259,6 @@
                   desc:     '''
                             Muxed pad attributes.
                             This register has WARL behavior since not each pad type may support all attributes.
-                            If strap sampling is enabled, the muxed pad that is used for TAP strap 0 has a fixed reset value, with `pull_en` set to 1.
                             ''',
                   count:        "NMioPads",
                   compact:      "false",
