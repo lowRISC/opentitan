@@ -12,6 +12,12 @@ class lc_ctrl_common_vseq extends lc_ctrl_base_vseq;
     run_common_vseq_wrapper(num_trans);
   endtask : body
 
+  // A CSR access through JTAG takes much longer than through TL-UL.
+  // Back-to-back JTAG accesses may not leave a quiet period within the default 10_000 cycles.
+  virtual function int wait_cycles_with_no_outstanding_accesses();
+    return cfg.jtag_csr ? 50_000 : super.wait_cycles_with_no_outstanding_accesses();
+  endfunction
+
   virtual function void sec_cm_fi_ctrl_svas(sec_cm_base_if_proxy if_proxy, bit enable);
     case (if_proxy.sec_cm_type)
       SecCmPrimSparseFsmFlop: begin

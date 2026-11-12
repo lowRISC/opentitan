@@ -136,7 +136,8 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
 
   // This task finishes a csr read/write transaction:
   // 1. Driving JTAG's DR register to start the transaction.
-  // 2. Check status until the transaction is done.
+  // 2. With cfg.dmi_idle_cycles, spend that many TCK cycles in Run-Test/Idle.
+  // 3. Check status until the transaction is done.
   protected virtual task send_csr_req(input bit [DMI_OPW-1:0] op,
                                       input bit [DMI_DATAW-1:0] data,
                                       input bit [DMI_ADDRW-1:0] addr,
@@ -144,6 +145,9 @@ class jtag_riscv_driver extends dv_base_driver #(jtag_riscv_item, jtag_riscv_age
                                       output bit [DMI_OPW-1:0] status);
     // Drive DR with operation type, address, and data.
     send_csr_dr_req(.op(op), .data(data), .addr(addr), .dout(dout));
+
+    // Give the DMI time to finish the request before the status check.
+    cfg.m_jtag_agent_cfg.vif.wait_tck(cfg.dmi_idle_cycles);
 
     // Get status of previous transfer
     check_csr_req_status(.status(status), .rdata(dout));
