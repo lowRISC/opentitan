@@ -212,7 +212,7 @@ typedef struct dif_keymgr_dpe_erase_params {
  * Useed to represent the output of SW generated key.
  */
 typedef struct dif_keymgr_dpe_output {
-  uint32_t value[2][8];
+  uint32_t value[2][12];
 } dif_keymgr_dpe_output_t;
 
 /**

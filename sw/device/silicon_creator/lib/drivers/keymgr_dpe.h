@@ -105,9 +105,9 @@ enum {
    */
   kScKeymgrDPESaltNumWords = 8,
   /**
-   * Number of 32-bit words for the key.
+   * Number of 32-bit words for each share of the SW output key.
    */
-  kScKeymgrDPEKeyNumWords = 8,
+  kScKeymgrDPEKeyNumWords = 12,
 };
 
 /**

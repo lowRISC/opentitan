@@ -44,8 +44,8 @@ UJSON_SERDE_STRUCT(IbexScaTestData, ibex_sca_test_data_t, IBEXSCA_TEST_DATA);
 UJSON_SERDE_STRUCT(IbexScaSalt, ibex_sca_salt_t, IBEXSCA_SALT);
 
 #define IBEXSCA_KEY(field, string) \
-    field(share0, uint32_t, 8) \
-    field(share1, uint32_t, 8)
+    field(share0, uint32_t, 12) \
+    field(share1, uint32_t, 12)
 UJSON_SERDE_STRUCT(IbexScaKey, ibex_sca_key_t, IBEXSCA_KEY);
 
 #define IBEXSCA_TEST_FVSR(field, string) \
