@@ -25,20 +25,20 @@ class chip_padctrl_attributes_vseq extends chip_stub_cpu_base_vseq;
   localparam prim_pad_wrapper_pkg::pad_type_e DioPadType[DioCount] = '{
     prim_pad_wrapper_pkg::BidirStd, // DIO usbdev_usb_dp
     prim_pad_wrapper_pkg::BidirStd, // DIO usbdev_usb_dn
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_host0_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sd
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_device_sd
+    prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sd
+    prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sd
+    prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sd
+    prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sd
+    prim_pad_wrapper_pkg::BidirStr, // DIO spi_device_sd
+    prim_pad_wrapper_pkg::BidirStr, // DIO spi_device_sd
+    prim_pad_wrapper_pkg::BidirStr, // DIO spi_device_sd
+    prim_pad_wrapper_pkg::BidirStr, // DIO spi_device_sd
     prim_pad_wrapper_pkg::BidirStd, // DIO sysrst_ctrl_ec_rst_l
     prim_pad_wrapper_pkg::BidirStd, // DIO sysrst_ctrl_flash_wp_l
     prim_pad_wrapper_pkg::InputStd, // DIO spi_device_sck
     prim_pad_wrapper_pkg::InputStd, // DIO spi_device_csb
-    prim_pad_wrapper_pkg::BidirStd, // DIO spi_host0_sck
-    prim_pad_wrapper_pkg::BidirStd  // DIO spi_host0_csb0
+    prim_pad_wrapper_pkg::BidirStr, // DIO spi_host0_sck
+    prim_pad_wrapper_pkg::BidirStr  // DIO spi_host0_csb0
   };
 
   int dio_input_pads[$];

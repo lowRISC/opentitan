@@ -50,20 +50,20 @@ module chip_earlgrey_verilator (
     usb_sense_idx:     MioInUsbdevSense,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
-      BidirStd, // DIO spi_host0_csb
-      BidirStd, // DIO spi_host0_sck
+      BidirStr, // DIO spi_host0_csb
+      BidirStr, // DIO spi_host0_sck
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
       BidirStd, // DIO sysrst_ctrl_flash_wp_l
       BidirStd, // DIO sysrst_ctrl_ec_rst_l
-      BidirStd, // DIO spi_device_sd
-      BidirStd, // DIO spi_device_sd
-      BidirStd, // DIO spi_device_sd
-      BidirStd, // DIO spi_device_sd
-      BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO spi_host0_sd
-      BidirStd, // DIO spi_host0_sd
+      BidirStr, // DIO spi_device_sd
+      BidirStr, // DIO spi_device_sd
+      BidirStr, // DIO spi_device_sd
+      BidirStr, // DIO spi_device_sd
+      BidirStr, // DIO spi_host0_sd
+      BidirStr, // DIO spi_host0_sd
+      BidirStr, // DIO spi_host0_sd
+      BidirStr, // DIO spi_host0_sd
       BidirStd, // DIO usbdev_usb_dn
       BidirStd  // DIO usbdev_usb_dp
     },
@@ -93,21 +93,21 @@ module chip_earlgrey_verilator (
       BidirStd, // MIO Pad 24
       BidirStd, // MIO Pad 23
       BidirStd, // MIO Pad 22
-      BidirStd, // MIO Pad 21
-      BidirStd, // MIO Pad 20
-      BidirStd, // MIO Pad 19
-      BidirStd, // MIO Pad 18
+      BidirStr, // MIO Pad 21
+      BidirStr, // MIO Pad 20
+      BidirStr, // MIO Pad 19
+      BidirStr, // MIO Pad 18
       BidirStd, // MIO Pad 17
       BidirStd, // MIO Pad 16
-      BidirStd, // MIO Pad 15
-      BidirStd, // MIO Pad 14
-      BidirStd, // MIO Pad 13
-      BidirStd, // MIO Pad 12
-      BidirStd, // MIO Pad 11
-      BidirStd, // MIO Pad 10
-      BidirStd, // MIO Pad 9
-      BidirStd, // MIO Pad 8
-      BidirStd, // MIO Pad 7
+      BidirStr, // MIO Pad 15
+      BidirStr, // MIO Pad 14
+      BidirStr, // MIO Pad 13
+      BidirStr, // MIO Pad 12
+      BidirStr, // MIO Pad 11
+      BidirStr, // MIO Pad 10
+      BidirStr, // MIO Pad 9
+      BidirStr, // MIO Pad 8
+      BidirStr, // MIO Pad 7
       BidirStd, // MIO Pad 6
       BidirStd, // MIO Pad 5
       BidirStd, // MIO Pad 4
