@@ -53,6 +53,75 @@ package pinmux_pkg;
     mio_scan_role:     {NMioPads{NoScan}}
   };
 
+  // Reset values of the MIO_PAD_ATTR CSRs defined by the top. LSB corresponds to lowest index.
+  parameter pad_attr_t [NMioPads-1:0] MioPadAttrResval = {
+    pad_attr_t'{default: '0}, // IOR13
+    pad_attr_t'{default: '0}, // IOR12
+    pad_attr_t'{default: '0}, // IOR11
+    pad_attr_t'{default: '0}, // IOR10
+    pad_attr_t'{default: '0}, // IOR7
+    pad_attr_t'{default: '0}, // IOR6
+    pad_attr_t'{default: '0}, // IOR5
+    pad_attr_t'{default: '0}, // IOR4
+    pad_attr_t'{default: '0}, // IOR3
+    pad_attr_t'{default: '0}, // IOR2
+    pad_attr_t'{default: '0}, // IOR1
+    pad_attr_t'{default: '0}, // IOR0
+    pad_attr_t'{default: '0}, // IOC12
+    pad_attr_t'{default: '0}, // IOC11
+    pad_attr_t'{default: '0}, // IOC10
+    pad_attr_t'{default: '0}, // IOC9
+    pad_attr_t'{default: '0}, // IOC8
+    pad_attr_t'{default: '0}, // IOC7
+    pad_attr_t'{default: '0}, // IOC6
+    pad_attr_t'{default: '0}, // IOC5
+    pad_attr_t'{default: '0}, // IOC4
+    pad_attr_t'{default: '0}, // IOC3
+    pad_attr_t'{default: '0}, // IOC2
+    pad_attr_t'{default: '0}, // IOC1
+    pad_attr_t'{default: '0}, // IOC0
+    pad_attr_t'{default: '0}, // IOB12
+    pad_attr_t'{default: '0}, // IOB11
+    pad_attr_t'{default: '0}, // IOB10
+    pad_attr_t'{default: '0}, // IOB9
+    pad_attr_t'{default: '0}, // IOB8
+    pad_attr_t'{default: '0}, // IOB7
+    pad_attr_t'{default: '0}, // IOB6
+    pad_attr_t'{default: '0}, // IOB5
+    pad_attr_t'{default: '0}, // IOB4
+    pad_attr_t'{default: '0}, // IOB3
+    pad_attr_t'{default: '0}, // IOB2
+    pad_attr_t'{default: '0}, // IOB1
+    pad_attr_t'{default: '0}, // IOB0
+    pad_attr_t'{default: '0}, // IOA8
+    pad_attr_t'{default: '0}, // IOA7
+    pad_attr_t'{default: '0}, // IOA6
+    pad_attr_t'{default: '0}, // IOA5
+    pad_attr_t'{default: '0}, // IOA4
+    pad_attr_t'{default: '0}, // IOA3
+    pad_attr_t'{default: '0}, // IOA2
+    pad_attr_t'{default: '0}, // IOA1
+    pad_attr_t'{default: '0}  // IOA0
+  };
+
+  // Reset values of the DIO_PAD_ATTR CSRs defined by the top. LSB corresponds to lowest index.
+  parameter pad_attr_t [NDioPads-1:0] DioPadAttrResval = {
+    pad_attr_t'{default: '0}, // SPI_HOST_CS_L
+    pad_attr_t'{default: '0}, // SPI_HOST_CLK
+    pad_attr_t'{default: '0}, // SPI_DEV_CS_L
+    pad_attr_t'{default: '0}, // SPI_DEV_CLK
+    pad_attr_t'{default: '0}, // usbdev_usb_dn
+    pad_attr_t'{default: '0}, // usbdev_usb_dp
+    pad_attr_t'{default: '0}, // SPI_DEV_D3
+    pad_attr_t'{default: '0}, // SPI_DEV_D2
+    pad_attr_t'{default: '0}, // SPI_DEV_D1
+    pad_attr_t'{default: '0}, // SPI_DEV_D0
+    pad_attr_t'{default: '0}, // SPI_HOST_D3
+    pad_attr_t'{default: '0}, // SPI_HOST_D2
+    pad_attr_t'{default: '0}, // SPI_HOST_D1
+    pad_attr_t'{default: '0}  // SPI_HOST_D0
+  };
+
   // Wakeup Detector Modes
   typedef enum logic [2:0] {
     Posedge   = 3'b000,

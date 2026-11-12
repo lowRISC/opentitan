@@ -183,7 +183,7 @@ module pinmux
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_regs
     if (!rst_ni) begin
-      dio_pad_attr_q <= '0;
+      dio_pad_attr_q <= DioPadAttrResval;
     % if enable_strap_sampling:
       for (int kk = 0; kk < NMioPads; kk++) begin
         if (kk == TargetCfg.tap_strap0_idx) begin
@@ -193,11 +193,11 @@ module pinmux
           // connected), this enables the pull-down of the pad at reset.
           mio_pad_attr_q[kk] <= '{pull_en: 1'b1, default: '0};
         end else begin
-          mio_pad_attr_q[kk] <= '0;
+          mio_pad_attr_q[kk] <= MioPadAttrResval[kk];
         end
       end
     % else:
-      mio_pad_attr_q <= '0;
+      mio_pad_attr_q <= MioPadAttrResval;
     % endif
     end else begin
       // dedicated pads

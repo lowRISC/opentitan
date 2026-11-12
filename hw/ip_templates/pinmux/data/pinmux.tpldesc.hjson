@@ -46,6 +46,19 @@
       default: "8"
     }
     {
+      name: "mio_pad_attr_resvals"
+      desc: '''
+            List of (name, attrs) tuples for each MIO pad, ordered ascending by the MIO pad index.
+            attrs is a dict mapping given MIO_PAD_ATTR fields to non-default reset values. Fields
+            not specified get the default reset value.
+            '''
+      type: "object"
+      default: [
+        ["mio_pad_0", {}], ["mio_pad_1", {}], ["mio_pad_2", {}], ["mio_pad_3", {}],
+        ["mio_pad_4", {}], ["mio_pad_5", {}], ["mio_pad_6", {}], ["mio_pad_7", {}]
+      ]
+    }
+    {
       name: "n_dio_pads"
       desc: "Number of DIO pads"
       type: "int"
@@ -62,6 +75,20 @@
       desc: "Number of DIO periperal outs"
       type: "int"
       default: "8"
+    }
+    {
+      name: "dio_pad_attr_resvals"
+      desc: '''
+            List of (name, attrs) tuples for each DIO, ordered ascending by the DIO index, which
+            is the DIO_PAD_ATTR CSR index. name is the pad name, or the IO name for manual DIOs.
+            attrs is a dict mapping given DIO_PAD_ATTR fields to non-default reset values. Fields
+            not specified get the default reset value.
+            '''
+      type: "object"
+      default: [
+        ["dio_pad_0", {}], ["dio_pad_1", {}], ["dio_pad_2", {}], ["dio_pad_3", {}],
+        ["dio_pad_4", {}], ["dio_pad_5", {}], ["dio_pad_6", {}], ["dio_pad_7", {}]
+      ]
     }
     {
       name: "enable_usb_wakeup"

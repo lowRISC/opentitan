@@ -1633,9 +1633,22 @@
     //
     //               3) 'muxed': This is a muxed IO pad that will be connected to the pinmux.
     //
-    // Optionally, each pad can also have a 'desc' field for further description, and a 'port_type' field
-    // to override the default 'inout wire' type (this is currently only used for simulating ADC connections
-    // where the ports have to be switched to a real type when the ANALOGSIM macro is defined).
+    // Optionally, each pad can also have the following keys:
+    //
+    // - desc: A field for further description.
+    //
+    // - port_type: A field to override the default 'inout wire' type (this is currently only used
+    //              for simulating ADC connections where the ports have to be switched to a real
+    //              type when the ANALOGSIM macro is defined).
+    //
+    // Muxed and direct pads may also have:
+    //
+    // - attrs: This field allows to define the reset values of the MIO/DIO_PAD_ATTR CSR of direct
+    //          or muxed pads. It is a dict mapping CSR field names to integer reset values. An
+    //          example is: `attrs: {virtual_od_en: 1, drive_strength: 3}`
+    //
+    //          Fields not specified keep the default reset value of the pinmux. Whether a pad
+    //          supports an attribute depends on its type and technology (WARL).
     pads: [
       // Special manually connected pads
       { name: 'POR_N'           , type: 'InputStd',     bank: 'VCC' , connection: 'manual', desc: 'System reset based on VCC'},
@@ -1750,6 +1763,7 @@
     // - attr: Manual direct IOs may specify an additional pad attr field.
     //         This is used to create the correct pad attribute CSR for that DIO channel (since the
     //         DIO is manual, there is no way to automatically infer the corresponding pad type).
+    //         Not to be confused with the 'attrs' key of a pad.
     //
     signals: [
       // USB
