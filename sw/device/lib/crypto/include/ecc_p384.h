@@ -172,8 +172,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify(
  *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
- * @param hash_mode Hash algorithm to use for message hashing (must be 384-bit).
- * @param message Message data to be hashed and signed.
+ * @param ctx Streaming hash context (finalized and shredded by this function).
  * @param[out] signature Pointer to the signature struct with (r,s) values.
  * @return Result of the ECDSA signature generation. Returns
  * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
@@ -182,21 +181,19 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify(
  * verification check fails.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ecdsa_p384_hash_sign_verify(
+otcrypto_status_t otcrypto_ecdsa_p384_hash_sign_verify_final(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
-    const otcrypto_const_byte_buf_t *message, otcrypto_word32_buf_t *signature);
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_context_t *ctx,
+    otcrypto_word32_buf_t *signature);
 
 /**
- * Verifies an ECDSA/P-384 signature by hashing the message first.
+ * Finalizes a streaming hash context and verifies an ECDSA/P-384 signature.
  *
- * The hash function specified by `hash_mode` must produce a 384-bit digest
- * (e.g. `kOtcryptoHashModeSha384` or `kOtcryptoHashModeSha3_384`). Other hash
- * modes will return `OTCRYPTO_BAD_ARGS`.
+ * The hash function in `ctx` must produce a 384-bit digest (e.g.
+ * `kOtcryptoHashModeSha384`). Other hash modes will return `OTCRYPTO_BAD_ARGS`.
  *
  * @param public_key Pointer to the unblinded public key (Q) struct.
- * @param hash_mode Hash algorithm to use for message hashing (must be 384-bit).
- * @param message Message data to be hashed and verified.
+ * @param ctx Streaming hash context (finalized and shredded by this function).
  * @param signature Pointer to the signature to be verified.
  * @param[out] verification_result Whether the signature passed verification.
  * @return Result of the ECDSA verification operation. Returns
@@ -206,9 +203,8 @@ otcrypto_status_t otcrypto_ecdsa_p384_hash_sign_verify(
  * fails.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_ecdsa_p384_hash_verify(
-    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
-    const otcrypto_const_byte_buf_t *message,
+otcrypto_status_t otcrypto_ecdsa_p384_hash_verify_final(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_context_t *ctx,
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);
 
