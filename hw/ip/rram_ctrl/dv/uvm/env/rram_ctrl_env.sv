@@ -39,10 +39,18 @@ function void rram_ctrl_env::build_phase(uvm_phase phase);
 
   // Retrieve the DUT's configured FIFO depths
   if (!uvm_config_db#(int unsigned)::get(this, "", "WrFifoDepth", cfg.m_wr_fifo_depth)) begin
-    `uvm_fatal(`gfn, "Failed to get WrFifoDepth from uvm_config_db")
+    `uvm_fatal("cfg_db", "Failed to get WrFifoDepth from uvm_config_db")
   end
   if (!uvm_config_db#(int unsigned)::get(this, "", "RdFifoDepth", cfg.m_rd_fifo_depth)) begin
-    `uvm_fatal(`gfn, "Failed to get RdFifoDepth from uvm_config_db")
+    `uvm_fatal("cfg_db", "Failed to get RdFifoDepth from uvm_config_db")
+  end
+  if (!uvm_config_db#(rram_ctrl_bkdr_util)::get(this, "", "data_bkdr_util",
+                                                cfg.m_data_bkdr_util)) begin
+    `uvm_fatal("cfg_db", "Failed to get data_bkdr_util from uvm_config_db.")
+  end
+  if (!uvm_config_db#(rram_ctrl_bkdr_util)::get(this, "", "info_bkdr_util",
+                                                cfg.m_info_bkdr_util)) begin
+    `uvm_fatal("cfg_db", "Failed to get info_bkdr_util from uvm_config_db.")
   end
 
   m_key_agent = nvm_otp_key_agent::type_id::create("m_key_agent", this);

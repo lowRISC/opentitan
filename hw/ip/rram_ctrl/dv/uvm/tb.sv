@@ -132,6 +132,23 @@ module tb;
   assign (pull1, pull0) rram_test_analog = 1'b0;
 
   initial begin
+    import rram_ctrl_bkdr_util_pkg::rram_ctrl_bkdr_util;
+
+    static rram_ctrl_bkdr_util data_bkdr_util;
+    static string data_bkdr_path = "tb.u_rram_macro.u_data_array.mem";
+    static int unsigned data_nwords = u_rram_macro.TotalDataPages * u_rram_macro.WordsPerPage;
+    static int unsigned data_nbits = data_nwords * u_rram_macro.DataWidth;
+
+    static rram_ctrl_bkdr_util info_bkdr_util;
+    static string info_bkdr_path = "tb.u_rram_macro.u_info_array.mem";
+    static int unsigned info_nwords = u_rram_macro.TotalInfoPages * u_rram_macro.WordsPerPage;
+    static int unsigned info_nbits = info_nwords * u_rram_macro.DataWidth;
+
+    data_bkdr_util = new("data_bkdr_util", data_bkdr_path, data_nwords, data_nbits,
+                         mem_bkdr_util_pkg::ErrDetectionNone);
+    info_bkdr_util = new("info_bkdr_util", info_bkdr_path, info_nwords, info_nbits,
+                         mem_bkdr_util_pkg::ErrDetectionNone);
+
     otp_clk_rst_if.set_freq_mhz(OTP_CLK_FREQ_MHZ);
     clk_rst_if.set_active();
     otp_clk_rst_if.set_active();
@@ -146,6 +163,9 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_host*", "vif", tl_host_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_prim*", "vif", tl_prim_if);
     uvm_config_db#(virtual nvm_otp_key_if)::set(null, "*.env", "otp_key_vif", otp_key_if);
+
+    uvm_config_db#(rram_ctrl_bkdr_util)::set(null, "*.env", "data_bkdr_util", data_bkdr_util);
+    uvm_config_db#(rram_ctrl_bkdr_util)::set(null, "*.env", "info_bkdr_util", info_bkdr_util);
 
     uvm_config_db#(int unsigned)::set(null, "*.env", "WrFifoDepth", WrFifoDepth);
     uvm_config_db#(int unsigned)::set(null, "*.env", "RdFifoDepth", RdFifoDepth);
