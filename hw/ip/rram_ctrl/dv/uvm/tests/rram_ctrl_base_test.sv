@@ -18,6 +18,10 @@ function rram_ctrl_base_test::new(string name="", uvm_component parent=null);
 endfunction : new
 
 task rram_ctrl_base_test::run_phase(uvm_phase phase);
+  // Randomise the contents of the RRAM memory through the backdoor
+  env.m_data_bkdr_util.randomize_mem();
+  env.m_info_bkdr_util.randomize_mem();
+
   fork
     super.run_phase(phase);
     env.m_key_agent.run_device_seq();

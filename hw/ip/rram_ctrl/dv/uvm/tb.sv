@@ -135,6 +135,11 @@ module tb;
   assign (pull1, pull0) rram_test_analog = 1'b0;
 
   initial begin
+    static int unsigned data_nwords = u_rram_macro.TotalDataPages * u_rram_macro.WordsPerPage;
+    static int unsigned data_nbits = data_nwords * u_rram_macro.DataWidth;
+    static int unsigned info_nwords = u_rram_macro.TotalInfoPages * u_rram_macro.WordsPerPage;
+    static int unsigned info_nbits = info_nwords * u_rram_macro.DataWidth;
+
     otp_clk_rst_if.set_freq_mhz(OTP_CLK_FREQ_MHZ);
     clk_rst_if.set_active();
     otp_clk_rst_if.set_active();
@@ -149,6 +154,15 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_host*", "vif", tl_host_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_prim*", "vif", tl_prim_if);
     uvm_config_db#(virtual nvm_otp_key_if)::set(null, "*.env", "otp_key_vif", otp_key_if);
+
+    uvm_config_db#(string)::set(null, "*.env", "data_bkdr_path",
+                                "tb.u_rram_macro.u_data_array.mem");
+    uvm_config_db#(int unsigned)::set(null, "*.env", "data_bkdr_depth", data_nwords);
+    uvm_config_db#(int unsigned)::set(null, "*.env", "data_bkdr_nbits", data_nbits);
+    uvm_config_db#(string)::set(null, "*.env", "info_bkdr_path",
+                                "tb.u_rram_macro.u_info_array.mem");
+    uvm_config_db#(int unsigned)::set(null, "*.env", "info_bkdr_depth", info_nwords);
+    uvm_config_db#(int unsigned)::set(null, "*.env", "info_bkdr_nbits", info_nbits);
 
     uvm_config_db#(int unsigned)::set(null, "*.env", "WrFifoDepth", WrFifoDepth);
     uvm_config_db#(int unsigned)::set(null, "*.env", "RdFifoDepth", RdFifoDepth);
