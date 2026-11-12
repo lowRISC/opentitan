@@ -54,8 +54,8 @@ module pinmux_chip_tb
       BidirStd, // DIO spi_host0_sck
       InputStd, // DIO spi_device_csb
       InputStd, // DIO spi_device_sck
-      BidirOd, // DIO sysrst_ctrl_flash_wp_l
-      BidirOd, // DIO sysrst_ctrl_ec_rst_l
+      BidirStd, // DIO sysrst_ctrl_flash_wp_l
+      BidirStd, // DIO sysrst_ctrl_ec_rst_l
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
       BidirStd, // DIO spi_device_sd
@@ -68,10 +68,10 @@ module pinmux_chip_tb
       BidirStd  // DIO usbdev_usb_dp
     },
     mio_pad_type: {
-      BidirOd, // MIO Pad 46
-      BidirOd, // MIO Pad 45
-      BidirOd, // MIO Pad 44
-      BidirOd, // MIO Pad 43
+      BidirStd, // MIO Pad 46
+      BidirStd, // MIO Pad 45
+      BidirStd, // MIO Pad 44
+      BidirStd, // MIO Pad 43
       BidirStd, // MIO Pad 42
       BidirStd, // MIO Pad 41
       BidirStd, // MIO Pad 40
@@ -80,9 +80,9 @@ module pinmux_chip_tb
       BidirStd, // MIO Pad 37
       BidirStd, // MIO Pad 36
       BidirStd, // MIO Pad 35
-      BidirOd, // MIO Pad 34
-      BidirOd, // MIO Pad 33
-      BidirOd, // MIO Pad 32
+      BidirStd, // MIO Pad 34
+      BidirStd, // MIO Pad 33
+      BidirStd, // MIO Pad 32
       BidirStd, // MIO Pad 31
       BidirStd, // MIO Pad 30
       BidirStd, // MIO Pad 29
@@ -93,10 +93,10 @@ module pinmux_chip_tb
       BidirStd, // MIO Pad 24
       BidirStd, // MIO Pad 23
       BidirStd, // MIO Pad 22
-      BidirOd, // MIO Pad 21
-      BidirOd, // MIO Pad 20
-      BidirOd, // MIO Pad 19
-      BidirOd, // MIO Pad 18
+      BidirStd, // MIO Pad 21
+      BidirStd, // MIO Pad 20
+      BidirStd, // MIO Pad 19
+      BidirStd, // MIO Pad 18
       BidirStd, // MIO Pad 17
       BidirStd, // MIO Pad 16
       BidirStd, // MIO Pad 15
@@ -106,9 +106,9 @@ module pinmux_chip_tb
       BidirStd, // MIO Pad 11
       BidirStd, // MIO Pad 10
       BidirStd, // MIO Pad 9
-      BidirOd, // MIO Pad 8
-      BidirOd, // MIO Pad 7
-      BidirOd, // MIO Pad 6
+      BidirStd, // MIO Pad 8
+      BidirStd, // MIO Pad 7
+      BidirStd, // MIO Pad 6
       BidirStd, // MIO Pad 5
       BidirStd, // MIO Pad 4
       BidirStd, // MIO Pad 3

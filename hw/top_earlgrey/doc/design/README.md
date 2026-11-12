@@ -348,7 +348,7 @@ In target mode, they stretch the clock automatically and support programmable au
 
 The SCL and SDA signals of each I2C peripheral can be connected to any of the multiplexable IO (MIO) of the chip via the [pinmux](../../ip_autogen/pinmux/README.md).
 The I2C peripherals drive SCL and SDA as a virtual open drain: they only pull the lines low and otherwise release them.
-A bus pulled up above the pad supply voltage needs a **BidirOd** pad with open drain enabled (see [Open drain / virtual open drain](#open-drain--virtual-open-drain)).
+The bus must not be pulled up above the supply voltage of the pad bank (see [Virtual open drain](#virtual-open-drain)).
 Each I2C peripheral has its own reset, which software can assert through the [reset manager](../../ip_autogen/rstmgr/README.md).
 
 See the [I2C specification](../../../ip/i2c/README.md) for more details.
@@ -677,9 +677,9 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | 3    | IOA3          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
 | 4    | IOA4          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
 | 5    | IOA5          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
-| 6    | IOA6          | VIOA   | BidirOd      | muxed             | Muxed IO pad                               |
-| 7    | IOA7          | VIOA   | BidirOd      | muxed             | Muxed IO pad                               |
-| 8    | IOA8          | VIOA   | BidirOd      | muxed             | Muxed IO pad                               |
+| 6    | IOA6          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
+| 7    | IOA7          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
+| 8    | IOA8          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
 | 9    | IOB0          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
 | 10   | IOB1          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
 | 11   | IOB2          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
@@ -689,10 +689,10 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | 15   | IOB6          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
 | 16   | IOB7          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
 | 17   | IOB8          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 18   | IOB9          | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
-| 19   | IOB10         | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
-| 20   | IOB11         | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
-| 21   | IOB12         | VIOB   | BidirOd      | muxed             | Muxed IO pad                               |
+| 18   | IOB9          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 19   | IOB10         | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 20   | IOB11         | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
+| 21   | IOB12         | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
 | 22   | IOC0          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 23   | IOC1          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 24   | IOC2          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
@@ -703,9 +703,9 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | 29   | IOC7          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 30   | IOC8          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 31   | IOC9          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 32   | IOC10         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 33   | IOC11         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 34   | IOC12         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 32   | IOC10         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 33   | IOC11         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 34   | IOC12         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 35   | IOR0          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 36   | IOR1          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 37   | IOR2          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
@@ -714,28 +714,26 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 | 40   | IOR5          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 41   | IOR6          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 | 42   | IOR7          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 19   | IOR8          | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (ec_rst_l)    |
-| 20   | IOR9          | VCC    | BidirOd      | direct            | Dedicated sysrst_ctrl output (flash_wp_l)) |
-| 43   | IOR10         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 44   | IOR11         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 45   | IOR12         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
-| 46   | IOR13         | VCC    | BidirOd      | muxed             | Muxed IO pad                               |
+| 19   | IOR8          | VCC    | BidirStd     | direct            | Dedicated sysrst_ctrl output (ec_rst_l)    |
+| 20   | IOR9          | VCC    | BidirStd     | direct            | Dedicated sysrst_ctrl output (flash_wp_l)) |
+| 43   | IOR10         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 44   | IOR11         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 45   | IOR12         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| 46   | IOR13         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
 
 <!-- END CMDGEN -->
 
-#### Open drain / virtual open drain
+#### Virtual open drain
 
-Pads of type **BidirOd** and **BidirStd** support **open drain** and **virtual open drain**, respectively.
-When open drain or virtual open drain is enabled in pinmux's attributes for such a pad, the PMOS transistor that would otherwise drive the output high for a logic 1 is disabled.
+Pads of type **BidirStd** support **virtual open drain**.
+When virtual open drain is enabled in pinmux's attributes for such a pad, the PMOS transistor that would otherwise drive the output high for a logic 1 is disabled.
 Thus for a logic 1, the impedance of the pad is essentially the output impedance of the CMOS transistor pair (which is specified in the data sheet of the chip).
 
 However, there still exists a parallel connection to the supply rail through a protection circuit.
-Therefore:
-- For **BidirOd** pads in open drain mode, the output protection circuit allows voltages that exceed the supply voltage.
-  The maximum voltage that may be applied in this case is derived from the maximum voltage of the specific pad type (which is specified in the data sheet of the chip).
-- For **BidirStd** pads, the maximum voltage that may be applied is the supply voltage (within tolerance, as specified in the data sheet of the chip).
+Therefore, the maximum voltage that may be applied is the supply voltage of the pad bank (within tolerance, as specified in the data sheet of the chip).
 
-All other pad types support neither open drain nor virtual open drain.
+No pad of the chip supports true open drain.
+All other pad types do not support virtual open drain.
 
 
 # RTL Implementation Notes

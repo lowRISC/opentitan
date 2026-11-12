@@ -1047,11 +1047,15 @@
       ]
       [
         IOR8
-        {}
+        {
+          virtual_od_en: 1
+        }
       ]
       [
         IOR9
-        {}
+        {
+          virtual_od_en: 1
+        }
       ]
       [
         SPI_DEV_CLK

@@ -1558,8 +1558,6 @@ set_false_path  -from SPI_HOST1_INTERNAL_CLK -to   IOR1
 }
 ## end: SPI Host 1 constraints for PrimeTime
 
-set_false_path  -through   [get_pins -hierarchical -filter "full_name =~ *PI2C_33_50_T_DR/IE"] -through [get_pins -hierarchical -filter "full_name =~ *PI2C_33_50_T_DR/Y"]
-
 #leonids 06Jul False path that prevent SPI report
 set_false_path -from [get_clocks SPI*] -through [get_cells -hierarchical -filter "full_name =~ *u_ast_dft*"]
 
@@ -1651,13 +1649,16 @@ set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_tech
 set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
 set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_techlib/gen_input_only_u_pad_macro_PBIDIR_33_33_FS_DR/IS
 #IOA7
-# Open drain pads have just one drive strength bit.
-set_case_analysis 1 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_od_compat_u_pad_macro_PI2C_33_50_T_DR/DS
-set_case_analysis 1 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_od_compat_u_pad_macro_PI2C_33_50_T_DR/IS
-#IOB9, IOB10, IOB11, IOB12 - the I3C pads, also open drain.
+set_case_analysis 0 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
+set_case_analysis 1 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
+set_case_analysis 1 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS1
+set_case_analysis 1 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/IS
+#IOB9, IOB10, IOB11, IOB12 - the I3C pads.
 foreach I3C_PAD {18 19 20 21} {
-  set I3C_PAD_MACRO u_padring/gen_mio_pads_${I3C_PAD}__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_od_compat_u_pad_macro_PI2C_33_50_T_DR
-  set_case_analysis 1 ${I3C_PAD_MACRO}/DS
+  set I3C_PAD_MACRO u_padring/gen_mio_pads_${I3C_PAD}__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR
+  set_case_analysis 0 ${I3C_PAD_MACRO}/SR
+  set_case_analysis 1 ${I3C_PAD_MACRO}/DS0
+  set_case_analysis 1 ${I3C_PAD_MACRO}/DS1
   set_case_analysis 1 ${I3C_PAD_MACRO}/IS
 }
 #IOB0

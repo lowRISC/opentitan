@@ -18,6 +18,9 @@ class chip_sw_usbdev_dpi_vseq extends chip_sw_base_vseq;
     // We need to release the tb weak pull up on DP, otherwise usbdev appears
     // to be connected much too soon
     cfg.chip_vif.cfg_default_weak_pulls_on_dios(0);
+    // The open drain sysrst_ctrl pads need the board pull-ups.
+    cfg.chip_vif.ec_rst_l_if.set_pullup_en(1);
+    cfg.chip_vif.flash_wp_l_if.set_pullup_en(1);
 
     // Connect the drivers of the DPI model
     cfg.usb20_vif.enable_driver(1);

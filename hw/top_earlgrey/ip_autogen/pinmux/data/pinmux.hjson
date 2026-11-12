@@ -721,7 +721,7 @@
                     },
                     { bits: "1",
                       name: "virtual_od_en",
-                      resval: 0
+                      resval: "[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0][multireg_idx]"
                       desc: "Enable virtual open drain."
                     },
                     { bits: "2",
