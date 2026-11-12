@@ -17,6 +17,10 @@ package rram_ctrl_env_pkg;
   import rram_ctrl_host_ral_pkg::*;
   import rram_macro_prim_ral_pkg::*;
 
+  import otp_key_agent_pkg::otp_key_agent_cfg;
+  import otp_key_agent_pkg::otp_key_rsp_seq_item;
+  import otp_key_agent_pkg::otp_key_agent;
+
   // Macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
@@ -34,9 +38,6 @@ package rram_ctrl_env_pkg;
   // Frequency of the OTP interface clock (clk_otp_i). The testbench uses this to configure
   // otp_clk_rst_if directly.
   parameter uint OTP_CLK_FREQ_MHZ = 24;
-
-  // Types
-  typedef virtual rram_ctrl_otp_key_if otp_key_vif_t;
 
   typedef enum bit [1:0] {
     AddrRead  = 0,
@@ -58,15 +59,16 @@ package rram_ctrl_env_pkg;
     NumRramCtrlIntr = 7
   } rram_ctrl_intr_e;
 
-  // Functions
 
-  // Package sources
+  // Forward-declare rram_ctrl_reg_cbs (in order that it and the scoreboard can refer to each other)
+  typedef class rram_ctrl_reg_cbs;
+
   `include "rram_ctrl_env_cfg.sv"
   `include "rram_ctrl_env_cov.sv"
   `include "rram_ctrl_virtual_sequencer.sv"
   `include "rram_ctrl_reg_predictor_filter.sv"
   `include "rram_ctrl_scoreboard.sv"
-  `include "rram_ctrl_otp_key_driver.sv"
+  `include "rram_ctrl_reg_cbs.svh"
   `include "rram_ctrl_env.sv"
   `include "rram_ctrl_vseq_list.sv"
 endpackage : rram_ctrl_env_pkg
