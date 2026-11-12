@@ -64,7 +64,8 @@ module lc_ctrl_signal_decode
 
   always_comb begin : p_lc_signal_decode
     // Life cycle control signal defaults
-    lc_init_done             = Off;
+    // This ensures that once a valid LC state has been seen, lc_init_done cannot go back to Off.
+    lc_init_done             = lc_tx_or_hi(Off, lc_init_done_o);
     lc_raw_test_rma          = Off;
     lc_dft_en                = Off;
     lc_nvm_debug_en          = Off;
@@ -218,9 +219,6 @@ module lc_ctrl_signal_decode
       // states below, with the exception that escalate_en is NOT asserted,
       // since that could trigger unwanted alerts / escalations and system resets.
       PostTransSt: begin
-        // At this point, all life cycle controller broadcast signals are valid and based on the
-        // OTP LC state
-        lc_init_done = On;
         // Explicitly clear any flops holding the lc_hw_debug_en signal. Those flops would retain
         // their state if just the lc_hw_debug_en signal is switched off, in order to let debug
         // connections survive a reset of lc_ctrl.
@@ -232,9 +230,6 @@ module lc_ctrl_signal_decode
       ScrapSt,
       EscalateSt,
       InvalidSt: begin
-        // At this point, all life cycle controller broadcast signals are valid and based on the
-        // OTP LC state.
-        lc_init_done    = On;
         lc_escalate_en  = On;
         lc_hw_debug_clr = On;
       end
