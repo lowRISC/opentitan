@@ -206,6 +206,22 @@ SECTIONS {
   } > ram_main
 
   /**
+   * Dedicated section grouping the descriptor table and all contiguous test vectors.
+   */
+  .fips_kat : ALIGN(4) {
+    _fips_kat_start = .;
+    KEEP(*(.fips_kat.table))
+    KEEP(*(.fips_kat.data*))
+    _fips_kat_end = .;
+    ASSERT(_fips_kat_start >= ORIGIN(rom) && _fips_kat_end <= (ORIGIN(rom) + LENGTH(rom)),
+      "Error: .fips_kat section placed outside ROM boundaries!");
+  } > rom
+
+  .fips_kat_descriptor_ptr (_rom_chip_info_start - 4) : {
+    KEEP(*(.fips_kat_descriptor_ptr))
+  } > rom
+
+  /**
    * Immutable chip_info data, containing build-time-recorded information.
    *
    * This is the last thing in rom.

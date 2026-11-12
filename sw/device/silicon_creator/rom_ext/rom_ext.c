@@ -339,6 +339,16 @@ static rom_error_t rom_ext_boot(boot_data_t *boot_data, boot_log_t *boot_log,
       HARDENED_TRAP();
   }
 
+  // Grant BL0 read-only access to ROM for FIPS Known Answer Tests.
+  // Entry 0 and entry 1 form the TOR window for ROM address space.
+  const epmp_region_t rom_region = {
+      .start = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR,
+      .end = TOP_EARLGREY_ROM_CTRL_ROM_BASE_ADDR +
+             TOP_EARLGREY_ROM_CTRL_ROM_SIZE_BYTES,
+  };
+  epmp_set_tor(0, rom_region, kEpmpPermReadOnly);
+  HARDENED_RETURN_IF_ERROR(epmp_state_check());
+
   // Allow execution of owner stage executable code (text) sections.
   epmp_set_tor(2, text_region, kEpmpPermReadExecute);
   HARDENED_RETURN_IF_ERROR(epmp_state_check());
