@@ -76,7 +76,6 @@ module ast_part_secondary #(
   // pad mux/pad related
   input [Pad2AstInWidth-1:0] padmux2ast_i,    // IO_2_DFT Input Signals
   output logic [Ast2PadOutWidth-1:0] ast2padmux_o,  // DFT_2_IO Output Signals
-  output logic [4-1:0] mux_iob_sel_o, // iob or spi selector
 
   output ast_pkg::awire_t ast2pad_t0_a_o,     // AST_2_PAD Analog T0 Output Signal
   output ast_pkg::awire_t ast2pad_t1_a_o,     // AST_2_PAD Analog T1 Output Signal
@@ -268,7 +267,6 @@ vio_pgd u_viob_pok (
 
 assign viob_pok = viob_pok_int && vx_supp_i.viob;
 assign ast_pwst.io_pok[1] = vcaon_pok && viob_pok;
-assign mux_iob_sel_o = 4'h0;
 
 ///////////////////////////////////////
 // Regulators & PDM Logic (VCC)

@@ -7015,22 +7015,6 @@
           conn_type: false
         }
         {
-          name: mux_iob_sel
-          desc: IOB or SPI selector
-          struct: logic
-          type: uni
-          act: req
-          width: 4
-          partition: secondary
-          inst_name: ast
-          default: ""
-          package: ""
-          external: true
-          conn_type: false
-          index: -1
-          top_signame: mux_iob_sel
-        }
-        {
           name: flash_bist_en
           desc: Flash BIST (TAP) enable
           struct: mubi4
@@ -13522,7 +13506,6 @@
       ast.scan_reset_n: scan_rst_n
       ast.usb_io_pu_cal: usb_io_pu_cal
       ast.padmux2ast: padmux2ast
-      ast.mux_iob_sel: mux_iob_sel
       ast.vx_supp: ""
       ast.obs: ""
       ast.adc_a0_a: ""
@@ -18740,10 +18723,6 @@
           ast.pora_n:
           {
             signal: rst_n
-          }
-          ast.mux_iob_sel:
-          {
-            unused: true
           }
           ast.scan_shift_en:
           {
@@ -29698,22 +29677,6 @@
         conn_type: false
       }
       {
-        name: mux_iob_sel
-        desc: IOB or SPI selector
-        struct: logic
-        type: uni
-        act: req
-        width: 4
-        partition: secondary
-        inst_name: ast
-        default: ""
-        package: ""
-        external: true
-        conn_type: false
-        index: -1
-        top_signame: mux_iob_sel
-      }
-      {
         name: flash_bist_en
         desc: Flash BIST (TAP) enable
         struct: mubi4
@@ -36844,26 +36807,6 @@
         conn_type: false
         index: -1
         netname: padmux2ast
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: false
-        signame: mux_iob_sel_o
-        signame_chip:
-        {
-          asic: mux_iob_sel
-          verilator: ""
-          cw340: mux_iob_sel
-        }
-        width: 4
-        type: uni
-        default: ""
-        direction: out
-        conn_type: false
-        index: -1
-        netname: mux_iob_sel
       }
       {
         package: ast_pkg

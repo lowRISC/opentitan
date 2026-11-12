@@ -229,7 +229,6 @@ module chip_${top["name"]}_${target["name"]} #(
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
 
 % if target["name"] != "verilator":
-  logic                          [3:0] mux_iob_sel;
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
   logic                         [${len(dedicated_pads)-1}:0] dio_in_raw;
 
@@ -407,7 +406,6 @@ module chip_${top["name"]}_${target["name"]} #(
     .clk_scan_i(padring_scan_clk),
     .scanmode_i(scanmode),
 
-    .mux_iob_sel_i(mux_iob_sel),
     .dio_in_raw_o (dio_in_raw ),
 
     // Chip IOs

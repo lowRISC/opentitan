@@ -95,7 +95,6 @@ module ast_aon (
   // pad mux/pad related
   input [ast_pkg::Pad2AstInWidth-1:0] padmux2ast_i,    // IO_2_DFT Input Signals
   output logic [ast_pkg::Ast2PadOutWidth-1:0] ast2padmux_o,  // DFT_2_IO Output Signals
-  output logic [4-1:0] mux_iob_sel_o, // iob or spi selector
 
 `ifdef ANALOGSIM
   output real ast2pad_t0_ao,                  // AST_2_PAD Analog T0 Output Signal
@@ -254,7 +253,6 @@ vio_pgd u_viob_pok (
 
 assign viob_pok = viob_pok_int && viob_supp_i;
 assign ast_pwst_o.io_pok[1] = vcaon_pok && viob_pok;
-assign mux_iob_sel_o = 4'h0;
 
 ///////////////////////////////////////
 // Regulators & PDM Logic (VCC)
