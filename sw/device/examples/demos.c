@@ -42,7 +42,7 @@ uint32_t demo_gpio_to_log_echo(dif_gpio_t *gpio, uint32_t prev_gpio_state) {
   gpio_state &= kGpioMask;
 
   uint32_t state_delta = prev_gpio_state ^ gpio_state;
-  for (int bit_idx = 0; bit_idx < 8; ++bit_idx) {
+  for (int bit_idx = 8; bit_idx < 12; ++bit_idx) {
     bool changed = ((state_delta >> bit_idx) & 0x1) != 0;
     bool is_currently_set = ((gpio_state >> bit_idx) & 0x1) != 0;
     if (changed) {
