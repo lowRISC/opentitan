@@ -33,6 +33,8 @@ filesets:
       - seq_lib/rram_ctrl_fifo_write_vseq.svh: {is_include_file: true}
       - seq_lib/rram_ctrl_sw_vseq.svh: {is_include_file: true}
       - seq_lib/rram_ctrl_sw_burst_vseq.svh: {is_include_file: true}
+      - seq_lib/rram_ctrl_host_vseq.svh: {is_include_file: true}
+      - seq_lib/rram_ctrl_host_burst_vseq.svh: {is_include_file: true}
       - seq_lib/rram_ctrl_base_vseq.sv: {is_include_file: true}
       - seq_lib/rram_ctrl_common_vseq.sv: {is_include_file: true}
       - seq_lib/rram_ctrl_smoke_vseq.sv: {is_include_file: true}

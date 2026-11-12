@@ -9,8 +9,12 @@
 `include "rram_ctrl_randomize_vseq.svh"
 `include "rram_ctrl_fifo_read_vseq.svh"
 `include "rram_ctrl_fifo_write_vseq.svh"
+
 `include "rram_ctrl_sw_vseq.svh"
 `include "rram_ctrl_sw_burst_vseq.svh"
+
+`include "rram_ctrl_host_vseq.svh"
+`include "rram_ctrl_host_burst_vseq.svh"
 
 `include "rram_ctrl_base_vseq.sv"
 `include "rram_ctrl_common_vseq.sv"
