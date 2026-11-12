@@ -16620,6 +16620,14 @@
         attr: BidirStd
       }
       {
+        instance: usbdev
+        port: sense
+        connection: muxed
+        pads: []
+        desc: ""
+        attr: ""
+      }
+      {
         instance: spi_host0
         port: sck
         connection: direct
@@ -17720,14 +17728,6 @@
       {
         instance: sysrst_ctrl
         port: z3_wakeup
-        connection: muxed
-        pads: []
-        desc: ""
-        attr: ""
-      }
-      {
-        instance: usbdev
-        port: sense
         connection: muxed
         pads: []
         desc: ""
@@ -18852,6 +18852,18 @@
         glob_idx: 11
       }
       {
+        name: usbdev_sense
+        width: 1
+        type: input
+        idx: -1
+        pads: []
+        attr: ""
+        connection: muxed
+        desc: ""
+        domain: Main
+        glob_idx: 78
+      }
+      {
         name: spi_device_sck
         width: 1
         type: input
@@ -18891,7 +18903,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 78
+        glob_idx: 79
       }
       {
         name: uart1_rx
@@ -18903,7 +18915,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 79
+        glob_idx: 80
       }
       {
         name: uart2_rx
@@ -18915,7 +18927,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 80
+        glob_idx: 81
       }
       {
         name: uart3_rx
@@ -18927,7 +18939,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 81
+        glob_idx: 82
       }
       {
         name: i3c0_rstdet_scl
@@ -18940,7 +18952,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 82
+        glob_idx: 83
       }
       {
         name: i3c0_rstdet_sda
@@ -18953,7 +18965,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 83
+        glob_idx: 84
       }
       {
         name: i3c1_rstdet_scl
@@ -18966,7 +18978,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 84
+        glob_idx: 85
       }
       {
         name: i3c1_rstdet_sda
@@ -18979,7 +18991,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 85
+        glob_idx: 86
       }
       {
         name: spi_device_tpm_csb
@@ -18991,7 +19003,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 86
+        glob_idx: 87
       }
       {
         name: sysrst_ctrl_ac_present
@@ -19003,7 +19015,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 87
+        glob_idx: 88
       }
       {
         name: sysrst_ctrl_key0_in
@@ -19015,7 +19027,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 88
+        glob_idx: 89
       }
       {
         name: sysrst_ctrl_key1_in
@@ -19027,7 +19039,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 89
+        glob_idx: 90
       }
       {
         name: sysrst_ctrl_key2_in
@@ -19039,7 +19051,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 90
+        glob_idx: 91
       }
       {
         name: sysrst_ctrl_pwrb_in
@@ -19051,7 +19063,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 91
+        glob_idx: 92
       }
       {
         name: sysrst_ctrl_lid_open
@@ -19063,18 +19075,6 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 92
-      }
-      {
-        name: usbdev_sense
-        width: 1
-        type: input
-        idx: -1
-        pads: []
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
         glob_idx: 93
       }
       {

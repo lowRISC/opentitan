@@ -1742,10 +1742,10 @@ set I3C_PINMUX {
     {71 71 18}
     {72 72 20}
     {73 73 21}
-    {82  - 19}
-    {83  - 18}
-    {84  - 20}
-    {85  - 21}
+    {83  - 19}
+    {84  - 18}
+    {85  - 20}
+    {86  - 21}
 }
 sdc_pinmux_case_analysis top_earlgrey/earlgrey_pd_aon/u_pinmux ${I3C_PINMUX}
 

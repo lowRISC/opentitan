@@ -2655,37 +2655,37 @@ pub enum PinmuxPeripheralIn {
     /// Peripheral Input 77
     SpiHost1Sd3 = 77,
     /// Peripheral Input 78
-    Uart0Rx = 78,
+    UsbdevSense = 78,
     /// Peripheral Input 79
-    Uart1Rx = 79,
+    Uart0Rx = 79,
     /// Peripheral Input 80
-    Uart2Rx = 80,
+    Uart1Rx = 80,
     /// Peripheral Input 81
-    Uart3Rx = 81,
+    Uart2Rx = 81,
     /// Peripheral Input 82
-    I3c0RstdetScl = 82,
+    Uart3Rx = 82,
     /// Peripheral Input 83
-    I3c0RstdetSda = 83,
+    I3c0RstdetScl = 83,
     /// Peripheral Input 84
-    I3c1RstdetScl = 84,
+    I3c0RstdetSda = 84,
     /// Peripheral Input 85
-    I3c1RstdetSda = 85,
+    I3c1RstdetScl = 85,
     /// Peripheral Input 86
-    SpiDeviceTpmCsb = 86,
+    I3c1RstdetSda = 86,
     /// Peripheral Input 87
-    SysrstCtrlAcPresent = 87,
+    SpiDeviceTpmCsb = 87,
     /// Peripheral Input 88
-    SysrstCtrlKey0In = 88,
+    SysrstCtrlAcPresent = 88,
     /// Peripheral Input 89
-    SysrstCtrlKey1In = 89,
+    SysrstCtrlKey0In = 89,
     /// Peripheral Input 90
-    SysrstCtrlKey2In = 90,
+    SysrstCtrlKey1In = 90,
     /// Peripheral Input 91
-    SysrstCtrlPwrbIn = 91,
+    SysrstCtrlKey2In = 91,
     /// Peripheral Input 92
-    SysrstCtrlLidOpen = 92,
+    SysrstCtrlPwrbIn = 92,
     /// Peripheral Input 93
-    UsbdevSense = 93,
+    SysrstCtrlLidOpen = 93,
 }
 
 impl TryFrom<u32> for PinmuxPeripheralIn {
@@ -2770,22 +2770,22 @@ impl TryFrom<u32> for PinmuxPeripheralIn {
             75 => Ok(Self::SpiHost1Sd1),
             76 => Ok(Self::SpiHost1Sd2),
             77 => Ok(Self::SpiHost1Sd3),
-            78 => Ok(Self::Uart0Rx),
-            79 => Ok(Self::Uart1Rx),
-            80 => Ok(Self::Uart2Rx),
-            81 => Ok(Self::Uart3Rx),
-            82 => Ok(Self::I3c0RstdetScl),
-            83 => Ok(Self::I3c0RstdetSda),
-            84 => Ok(Self::I3c1RstdetScl),
-            85 => Ok(Self::I3c1RstdetSda),
-            86 => Ok(Self::SpiDeviceTpmCsb),
-            87 => Ok(Self::SysrstCtrlAcPresent),
-            88 => Ok(Self::SysrstCtrlKey0In),
-            89 => Ok(Self::SysrstCtrlKey1In),
-            90 => Ok(Self::SysrstCtrlKey2In),
-            91 => Ok(Self::SysrstCtrlPwrbIn),
-            92 => Ok(Self::SysrstCtrlLidOpen),
-            93 => Ok(Self::UsbdevSense),
+            78 => Ok(Self::UsbdevSense),
+            79 => Ok(Self::Uart0Rx),
+            80 => Ok(Self::Uart1Rx),
+            81 => Ok(Self::Uart2Rx),
+            82 => Ok(Self::Uart3Rx),
+            83 => Ok(Self::I3c0RstdetScl),
+            84 => Ok(Self::I3c0RstdetSda),
+            85 => Ok(Self::I3c1RstdetScl),
+            86 => Ok(Self::I3c1RstdetSda),
+            87 => Ok(Self::SpiDeviceTpmCsb),
+            88 => Ok(Self::SysrstCtrlAcPresent),
+            89 => Ok(Self::SysrstCtrlKey0In),
+            90 => Ok(Self::SysrstCtrlKey1In),
+            91 => Ok(Self::SysrstCtrlKey2In),
+            92 => Ok(Self::SysrstCtrlPwrbIn),
+            93 => Ok(Self::SysrstCtrlLidOpen),
             _ => Err(val),
         }
     }

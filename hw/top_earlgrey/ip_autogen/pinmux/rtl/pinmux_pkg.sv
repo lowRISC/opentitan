@@ -56,22 +56,22 @@ package pinmux_pkg;
   // Legal MIO_PERIPH_INSEL values for each MIO peripheral input. LSB corresponds to lowest index.
   // Includes static options.
   parameter logic [NMioPeriphIn-1:0][NMioPads+1:0] MioPeriphInselLegal = {
-    49'h1ffffffffffff, // 93: usbdev_sense
-    49'h1ffffffffffff, // 92: sysrst_ctrl_lid_open
-    49'h1ffffffffffff, // 91: sysrst_ctrl_pwrb_in
-    49'h1ffffffffffff, // 90: sysrst_ctrl_key2_in
-    49'h1ffffffffffff, // 89: sysrst_ctrl_key1_in
-    49'h1ffffffffffff, // 88: sysrst_ctrl_key0_in
-    49'h1ffffffffffff, // 87: sysrst_ctrl_ac_present
-    49'h1ffffffffffff, // 86: spi_device_tpm_csb
-    49'h1ffffffffffff, // 85: i3c1_rstdet_sda
-    49'h1ffffffffffff, // 84: i3c1_rstdet_scl
-    49'h1ffffffffffff, // 83: i3c0_rstdet_sda
-    49'h1ffffffffffff, // 82: i3c0_rstdet_scl
-    49'h1ffffffffffff, // 81: uart3_rx
-    49'h1ffffffffffff, // 80: uart2_rx
-    49'h1ffffffffffff, // 79: uart1_rx
-    49'h1ffffffffffff, // 78: uart0_rx
+    49'h1ffffffffffff, // 93: sysrst_ctrl_lid_open
+    49'h1ffffffffffff, // 92: sysrst_ctrl_pwrb_in
+    49'h1ffffffffffff, // 91: sysrst_ctrl_key2_in
+    49'h1ffffffffffff, // 90: sysrst_ctrl_key1_in
+    49'h1ffffffffffff, // 89: sysrst_ctrl_key0_in
+    49'h1ffffffffffff, // 88: sysrst_ctrl_ac_present
+    49'h1ffffffffffff, // 87: spi_device_tpm_csb
+    49'h1ffffffffffff, // 86: i3c1_rstdet_sda
+    49'h1ffffffffffff, // 85: i3c1_rstdet_scl
+    49'h1ffffffffffff, // 84: i3c0_rstdet_sda
+    49'h1ffffffffffff, // 83: i3c0_rstdet_scl
+    49'h1ffffffffffff, // 82: uart3_rx
+    49'h1ffffffffffff, // 81: uart2_rx
+    49'h1ffffffffffff, // 80: uart1_rx
+    49'h1ffffffffffff, // 79: uart0_rx
+    49'h1ffffffffffff, // 78: usbdev_sense
     49'h1ffffffffffff, // 77: spi_host1_sd[3]
     49'h1ffffffffffff, // 76: spi_host1_sd[2]
     49'h1ffffffffffff, // 75: spi_host1_sd[1]
