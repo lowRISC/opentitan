@@ -29,6 +29,8 @@ package rram_ctrl_env_pkg;
   import rram_ctrl_reg_pkg::NumDataPages;
   import rram_ctrl_reg_pkg::NumInfoPages;
 
+  import rram_ctrl_bkdr_util_pkg::rram_ctrl_bkdr_util;
+
   // Macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
