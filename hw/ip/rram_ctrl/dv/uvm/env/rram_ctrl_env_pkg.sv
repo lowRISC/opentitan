@@ -21,6 +21,8 @@ package rram_ctrl_env_pkg;
   import nvm_otp_key_agent_pkg::nvm_otp_key_rsp_seq_item;
   import nvm_otp_key_agent_pkg::nvm_otp_key_agent;
 
+  import rram_ctrl_bkdr_util_pkg::rram_ctrl_bkdr_util;
+
   // Macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"

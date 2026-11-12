@@ -13,6 +13,7 @@ filesets:
       - lowrisc:dv:dv_base_reg
       - lowrisc:dv:rram_macro_env
       - lowrisc:dv:nvm_otp_key_agent
+      - lowrisc:dv:rram_ctrl_bkdr_util
     files:
       - rram_ctrl_host_ral_pkg.sv
       - rram_ctrl_env_pkg.sv
