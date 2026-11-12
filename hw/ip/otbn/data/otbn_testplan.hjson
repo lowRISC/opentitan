@@ -133,29 +133,67 @@
       tests: ["otbn_stress_all"]
     }
     {
-      name: mai
+      name: mai_random_ops
       desc: '''
-            Exercise the masking accelerator interface (MAI)
+            Random programs using the MAI through its ISPRs (MAI_CTRL, MAI_STATUS,
+            MAI_IN0/IN1 shares, MAI_RES shares). Compare results and ISPR contents with the
+            model across all operation types (secAdd, secAddMod, A2B, B2A), with back-to-back
+            operations and varied delays between dispatch and readback.
 
-            Drive and read the `MAI_CTRL`/`MAI_STATUS` CSRs and the `MAI_IN0`/`MAI_IN1`/`MAI_RES`
-            WSRs to run secAdd, secAddMod, A2B, and B2A operations through the masking
-            accelerator, comparing results against the reference model across a range of operand
-            values, including edge cases such as zero, all-ones, and operands that exercise the
-            secAddMod modulus reduction.
+            Cover a range of operand values, including edge cases such as zero, all-ones, and
+            operands that exercise the secAddMod modulus reduction. Also check MAI_STATUS
+            busy/done reporting.
 
-            Also check `MAI_STATUS` busy/done reporting, and that issuing a new operation or
-            accessing the result WSRs while the accelerator is still busy is correctly flagged as
-            an illegal SW interaction (`MAI_SOFTWARE_ERROR`).
-
-            Additionally, trigger a secure wipe while an operation of each type is in flight,
-            including B2A, whose rejection sampling normally makes its latency nondeterministic
-            but is disabled during a secure wipe to bound its duration. Check that the MAI is
-            allowed to finish dispatching its inputs into the accelerator, that the resulting
-            output is discarded rather than used, and that the wipe still completes within the
-            expected bound (23 cycles, the longest possible operation latency).
+            Test B2A rejection sampling, which makes latency data dependent. Hit the
+            no-rejection path, single rejections and multiple consecutive rejections.
+            Check that MAI_STATUS stays busy until an accepted sample
+            is produced, and that the result and random-value consumption match the model.
             '''
       stage: V2
-      tests: ["otbn_mai"]
+      tests: [""]
+    }
+    {
+      name: mai_errors
+      desc: '''
+            Trigger mai_software_error (issuing a new operation or accessing the result
+            WSRs while the accelerator is still busy, writing during a running op) and check
+            that it is flagged as an illegal SW interaction (MAI_ERROR in ERR_BITS) and the
+            recoverable/fatal behaviour with software_errs_fatal. Inject ISPR integrity errors
+            (mai_reg_intg_violation) and MAI FSM state errors (mai_state_err) and check the
+            fatal alert.
+            '''
+      stage: V2
+      tests: [""]
+    }
+    {
+      name: mai_secure_wipe
+      desc: '''
+            Secure wipe and escalation during active MAI operations: all MAI ISPRs must be
+            cleared, and a new run must start clean.
+
+            Trigger a secure wipe while an operation of each type is in flight, including B2A,
+            whose rejection sampling normally makes its latency nondeterministic but is disabled
+            during a secure wipe to bound its duration. Check that the MAI is allowed to finish
+            dispatching its inputs into the accelerator, that the resulting output is discarded
+            rather than used, and that the wipe still completes within the expected bound (23
+            cycles, the longest possible operation latency).
+            '''
+      stage: V2S
+      tests: [""]
+    }
+    {
+      name: mai_fpv
+      desc: '''
+            Dispatch/writeback sequencing, fixed
+            pipeline latency, sec_wipe clears every ISPR, and the error outputs for each error
+            condition.
+
+            Scope: protocol and timing only. Data-path correctness (shares combine to the
+            expected sum / A2B / B2A result) is not proved in FPV and is checked in simulation
+            against the model (mai_random_ops).
+            '''
+      stage: V2
+      tests: ["otbn_mai_fpv"]
     }
     {
       name: lc_escalation
@@ -214,9 +252,155 @@
           - sec_wipe_base in otbn_core
           - sec_wipe_wdr_q in otbn_core
           - sec_wipe_stack_reset_i in otbn_rf_base
+          - sec_wipe_mai_{in0,in1,res}_{s0,s1}_urnd in otbn_core (MAI ISPRs)
+          - sec_wipe_mac_urnd in otbn_core (MAC)
+          - sec_wipe_kmac_data_{s0,s1}_urnd in otbn_core (KMAC data ISPRs)
       '''
       stage: V2S
       tests: ["otbn_partial_wipe"]
+    }
+    {
+      name: kmac_app_random
+      desc: '''
+            Randomized test of the KMAC app interface. Run random OTBN programs against the
+            KMAC agent/model, and randomize the message length and contents, the gaps between
+            requests, whether and when the agent returns an error response, and the cycle at
+            which an escalation or reset is injected mid-transaction. Compare with the model's
+            kmac handling.
+            '''
+      stage: V2
+      tests: [""]
+    }
+    {
+      name: kmac_app_escalation_stall
+      desc: '''
+            Check that a KMAC session left open by an escalation is recovered before the next
+            program uses the interface. The KMAC agent stalls all requests during the test.
+
+              - OTBN software starts a KMAC session.
+              - OTBN escalates. The KMAC agent keeps stalling, so the session is still ongoing
+                when the escalation ends.
+              - The next OTBN program is started and wants to use the interface. It sees the
+                interface busy and waits.
+              - The KMAC agent stops stalling and the interface finishes the old session.
+              - The waiting program can then start a new session, which completes correctly.
+
+            Randomize the point at which the first session is interrupted, and the length of
+            the stall.
+            '''
+      stage: V2S
+      tests: [""]
+    }
+    {
+      name: kmac_if_fpv
+      desc: '''
+            [FPV] Handshake properties on the OTBN/KMAC app interface: payload stable until
+            accepted, no dropped or duplicated data, a single outstanding request, and recovery
+            after abort or error.
+            '''
+      stage: V2
+      tests: ["otbn_kmac_if_fpv"]
+    }
+    {
+      name: insn_cnt_csr_sw_read
+      desc: '''
+            Have the random instruction generator read the INSN_CNT CSR at random points, and
+            compare with the model. Check that the host-visible INSN_CNT register matches the
+            model after a run, that the count is cleared at start, that instructions triggering
+            an error are not counted.
+            '''
+      stage: V2
+      tests: ["otbn_single", "otbn_multi"]
+    }
+    {
+      name: urnd_ctrl_smoke
+      desc: '''
+            Randomize the CTRL bit value and the cycles at which it is toggled,
+            both before and during a run,
+            together with SecMuteUrnd and SecSkipUrndReseedAtStart. Check the effect on URND
+            advance and on values read by software against the model, and that the existing
+            CTRL behaviour is unchanged.
+            '''
+      stage: V2
+      tests: ["otbn_urnd_smoke"]
+    }
+  ]
+
+  covergroups: [
+    {
+      name: mai_b2a_rejection_cg
+      desc: '''
+            Covers the number of rejections per B2A operation (0, 1, 2, >2).
+            '''
+    }
+    {
+      name: mai_errors_cg
+      desc: '''
+            Covers the MAI error paths of mai_errors:
+              - each software error trigger (new operation while busy, result WSR access while
+                busy, write during a running operation), crossed with whether
+                software_errs_fatal is set (recoverable vs fatal);
+              - each injected fatal error (mai_reg_intg_violation per ISPR, mai_state_err).
+            '''
+    }
+    {
+      name: mai_secure_wipe_cg
+      desc: '''
+            Covers the MAI operation that was in flight when a secure wipe started
+            (mai_secure_wipe):
+              - the operation type (secAdd, secAddMod, A2B, B2A), with none in flight as the
+                baseline;
+              - the stage of the operation at wipe start (inputs still being dispatched,
+                accelerator running, result ready but unread);
+              - for B2A, whether the wipe landed during a rejection resample.
+            '''
+    }
+    {
+      name: urnd_ctrl_cg
+      desc: '''
+            Covers the new URND CTRL bit (urnd_ctrl_smoke):
+              - the bit value written, and whether it was written before the run starts or
+                during a run;
+              - the bit value crossed with SecMuteUrnd and SecSkipUrndReseedAtStart;
+              - whether URND was read by software while the bit was set and while it was clear.
+            '''
+    }
+    {
+      name: kmac_app_cg
+      desc: '''
+            Covers the KMAC app interface (kmac_app_random):
+              - the message length (including empty, a single word and the maximum);
+              - the gap between back-to-back requests;
+              - the KMAC response (success or error);
+              - the point in the transaction at which an escalation or reset was injected,
+                crossed with the error response.
+            '''
+    }
+    {
+      name: mai_ops_cg
+      desc: '''
+            Covers the MAI operations of mai_random_ops:
+              - the operation type (secAdd, secAddMod, A2B, B2A), crossed with back-to-back or
+                isolated operation;
+              - the delay between dispatch and readback;
+              - operand edge cases (zero, all-ones, secAddMod modulus reduction).
+            '''
+    }
+    {
+      name: wfi_cg
+      desc: '''
+            Covers the WFI instruction (wfi):
+              - WFI with an escalation while paused or about to pause;
+              - back-to-back WFIs.
+            '''
+    }
+    {
+      name: partial_wipe_cg
+      desc: '''
+            Covers the local wipe signals injected by otbn_non_sec_partial_wipe: each signal in
+            the testpoint list (including the MAC and KMAC data ones), crossed with whether the
+            fatal alert fired.
+            '''
     }
   ]
 }
