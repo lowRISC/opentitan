@@ -22,8 +22,8 @@ send the derived key back to the keymgr. It is controlled by CSRs and WSRs:
 A common usage case is to receive the binding values, compute the HKDF, and
 send the derived key back. This unfolds in the following chain of routines:
 
-  1. `keymgr_init`: Checks that the interface is ready a starts a session. The
-     interface now starts to receive the message beats.
+  1. `keymgr_init`: Checks that the interface is ready and starts a session.
+     The interface now starts to receive the message beats.
   2. `keymgr_rcv`: Receives message data.
   3. `keymgr_rsp`: Sends a response back to the keymgr.
 
