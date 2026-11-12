@@ -625,7 +625,10 @@
         { bits: "2"
           name: "aborted"
           resval: 0x0
-          desc: "Set once aborted operation drains."
+          desc: '''
+                Set once the abort takes effect.
+                A bus request of the aborted transfer may still be awaiting its response.
+                '''
         }
         { bits: "3"
           name: "error"

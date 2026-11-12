@@ -580,7 +580,7 @@ Status indication for DMA data movement.
 |   5    |  rw1c  |   0x0   | chunk_done        | Transfer of a single chunk is complete. Only raised for multi-chunk memory-to-memory transfers. Cleared automatically by the hardware when starting the transfer of a new chunk.   |
 |   4    |   ro   |   0x0   | sha2_digest_valid | Indicates whether the SHA2_DIGEST register contains a valid digest. This value is cleared on the initial transfer and set when the digest is written.                              |
 |   3    |  rw1c  |   0x0   | error             | Error occurred during the operation. ERROR_CODE register denotes the source of the error.                                                                                          |
-|   2    |  rw1c  |   0x0   | aborted           | Set once aborted operation drains.                                                                                                                                                 |
+|   2    |  rw1c  |   0x0   | aborted           | Set once the abort takes effect. A bus request of the aborted transfer may still be awaiting its response.                                                                         |
 |   1    |  rw1c  |   0x0   | done              | Configured DMA operation is complete. Cleared automatically by the hardware when starting a new transfer.                                                                          |
 |   0    |   ro   |   0x0   | busy              | DMA operation is active if this bit is set. DMA engine clears this bit when operation is complete. This bit may be set as long as hardware handshake mode is active and triggered. |
 
