@@ -254,8 +254,8 @@ interface chip_if;
 
   // CSB[0] is on SPI_HOST_CS_L, CSB[1] and CSB[2] on IOA pads. Undriven pads are inactive.
   assign spi_device0_if.csb = __enable_spi_device[0] ?
-      {{(spi_agent_pkg::CSB_WIDTH-3){1'b1}}, pulled_up(mios[top_earlgrey_pkg::MioPadIoa6]),
-       pulled_up(mios[top_earlgrey_pkg::MioPadIoa3]),
+      {{(spi_agent_pkg::CSB_WIDTH-3){1'b1}}, pulled_up(mios[top_earlgrey_pkg::MioPadIoa3]),
+       pulled_up(mios[top_earlgrey_pkg::MioPadIoa2]),
        mios[top_earlgrey_pkg::MioPadSpiHostCsL]} : '1;
 
   initial begin
@@ -270,19 +270,19 @@ interface chip_if;
   spi_if spi_device1_if(
     .rst_n(`SPI_HOST_HIER(1).rst_ni),
     .sio  ({mios[top_earlgrey_pkg::MioPadIob6],  // sio[3]
-            mios[top_earlgrey_pkg::MioPadIob5],  // sio[2]
-            mios[top_earlgrey_pkg::MioPadIob4],  // sio[1]
-            mios[top_earlgrey_pkg::MioPadIob3]}) // sio[0]
+            mios[top_earlgrey_pkg::MioPadIob4],  // sio[2]
+            mios[top_earlgrey_pkg::MioPadIob2],  // sio[1]
+            mios[top_earlgrey_pkg::MioPadIob1]}) // sio[0]
   );
 
   assign spi_device1_if.sck = __enable_spi_device[1] ?
-      mios[top_earlgrey_pkg::MioPadIob0] : 1'bz;
+      mios[top_earlgrey_pkg::MioPadIob3] : 1'bz;
 
   // All CSB lines are muxed.  Undriven pads are inactive.
   assign spi_device1_if.csb = __enable_spi_device[1] ?
-      {{(spi_agent_pkg::CSB_WIDTH-3){1'b1}}, pulled_up(mios[top_earlgrey_pkg::MioPadIoc10]),
-       pulled_up(mios[top_earlgrey_pkg::MioPadIob7]),
-       mios[top_earlgrey_pkg::MioPadIob1]} : '1;
+      {{(spi_agent_pkg::CSB_WIDTH-3){1'b1}}, pulled_up(mios[top_earlgrey_pkg::MioPadIob7]),
+       pulled_up(mios[top_earlgrey_pkg::MioPadIob5]),
+       mios[top_earlgrey_pkg::MioPadIob0]} : '1;
 
   initial begin
     uvm_config_db#(virtual spi_if)::set(null, "*.env.m_spi_device_agents1*", "vif", spi_device1_if);
