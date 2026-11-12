@@ -725,7 +725,7 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 
 #### Virtual open drain
 
-Pads of type **BidirStd** support **virtual open drain**.
+Pads of type **BidirStd** and **BidirStr** support **virtual open drain**.
 When virtual open drain is enabled in pinmux's attributes for such a pad, the PMOS transistor that would otherwise drive the output high for a logic 1 is disabled.
 Thus for a logic 1, the impedance of the pad is essentially the output impedance of the CMOS transistor pair (which is specified in the data sheet of the chip).
 

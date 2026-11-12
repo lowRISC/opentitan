@@ -214,7 +214,7 @@ Parameter      | Default    | Description
 `ScanRole`     | `NoScan`   | Scan role, can be `NoScan`, `ScanIn` or `ScanOut`
 
 Note that `PadType` is a technology-specific parameter.
-The generic pad wrapper only implements variant `BidirStd`, but for other target technologies, this parameter can be used to select among a variety of different pad flavors.
+The generic pad wrapper only distinguishes input-only, bidirectional (e.g. `BidirStd` and `BidirStr`) and analog variants, but for other target technologies, this parameter can be used to select among a variety of different pad flavors.
 
 The `ScanRole` parameter determines the behavior when scanmode is enabled.
 Depending on whether a given pad acts as a scan input or output, certain pad attributes and functionalities need to be bypassed.

@@ -295,8 +295,8 @@ module pinmux_assert_fpv
   assign mio_pad_attr = pinmux.mio_pad_attr_q[mio_sel_i];
 
   pad_attr_t mio_pad_attr_mask;
-  pad_type_e bid_pad_types[4];
-  assign bid_pad_types = {BidirStd, BidirTol, DualBidirTol, BidirOd};
+  pad_type_e bid_pad_types[5];
+  assign bid_pad_types = {BidirStd, BidirStr, BidirTol, DualBidirTol, BidirOd};
   assign mio_pad_attr_mask.invert = TargetCfg.mio_pad_type[mio_sel_i] != AnalogIn0;
   assign mio_pad_attr_mask.virt_od_en = TargetCfg.mio_pad_type[mio_sel_i] inside {bid_pad_types};
   assign mio_pad_attr_mask.pull_en = TargetCfg.mio_pad_type[mio_sel_i] != AnalogIn0;
