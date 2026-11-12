@@ -40,7 +40,7 @@ If cSHAKE mode is set, the padding logic also prepends the encoded function name
 
 Both the internal state width and the masking of the Keccak core are configurable via compile-time Verilog parameters.
 By default, 1600 bits of internal state are used and stored in two shares (1st order masking).
-The masked Keccak core takes 4 clock cycles per round if sufficient entropy is available.
+The masked Keccak core takes 4 clock cycles per round.
 If desired, the masking can be disabled and the internal state width can be reduced to 25, 50, or 100 bits at compile time.
 
 ## Design Details
@@ -52,11 +52,11 @@ If the `EnFullKmac` compile-time Verilog parameter is not set, the keyed MAC is 
 Masking must be disabled in this configuration, i.e., `EnMasking` must not be set either.
 
 Without the keyed MAC, the block never uses a secret key.
-The key registers, the sideloaded key from the key manager, and the entropy generator are unused.
+The key registers, the sideloaded key from the key manager, and the pseudo-random number generator (PRNG) are unused.
 The key manager application interface runs a cSHAKE operation instead of a keyed MAC.
 
 Software can still access the registers belonging to the removed functionality, but they do not affect the operation of the block.
-This applies to [`CFG_SHADOWED.kmac_en`](registers.md#cfg_shadowed), the `KEY_SHARE0_*` and `KEY_SHARE1_*` registers, and the entropy registers such as [`ENTROPY_REFRESH_THRESHOLD_SHADOWED`](registers.md#entropy_refresh_threshold_shadowed).
+This applies to [`CFG_SHADOWED.kmac_en`](registers.md#cfg_shadowed), the `KEY_SHARE0_*` and `KEY_SHARE1_*` registers, and the entropy registers such as [`ENTROPY_CFG_SHADOWED`](registers.md#entropy_cfg_shadowed).
 
 ### Keccak Round
 
@@ -87,7 +87,6 @@ At the same time, the first stage of Chi is computed for the second lane halves.
 In the third clock cycle, the new second lane halves are output and written to the state register.
 
 The 800 DOM multipliers need 800 bits of fresh entropy for remasking.
-If fresh entropy is not available, the DOM multipliers do not move forward and the 2nd phase will take more than three clock cycles.
 Processing a Keccak_f (1600 bit state) takes a total of 96 cycles (24 rounds X 4 cycles/round) including the 1st and 2nd phases.
 
 If the masking compile time option is enabled, Keccak round logic requires an additional 3200 flip flops to store the intermediate half state inside the 800 DOM multipliers.
@@ -202,24 +201,17 @@ Default design parameters assume the system characteristics as below:
 Under normal operating conditions, the SHA3 engine will process data a lot faster than software can push it to the Message FIFO.
 The Message FIFO depth observable from [`STATUS.fifo_depth`](registers.md#status--fifo_depth) will remain **0** while the [`STATUS.fifo_empty`](registers.md#status--fifo_empty) status bit is lowered for one clock cycle whenever software provides new data.
 
-However, if the SHA3 engine is currently busy or if the KMAC block is waiting for fresh entropy from EDN, the Message FIFO may actually run full (indicated by the `fifo_full` status bit).
-Resolving these conditions may take hundreds of cycles or more.
-After the SHA3 engine starts popping the data again, the Message FIFO will eventually run empty again and the `fifo_empty` status interrupt will fire.
-Note that the `fifo_empty` status interrupt will not fire if i) one of the hardware application interfaces is using the KMAC block, ii) the SHA3 core is not in the `Absorb` state, or iii) after software has written the `Process` command.
-
+However, if the SHA3 engine is currently busy, the Message FIFO may actually run full (indicated by the `fifo_full` status bit).
 If software pushes data to the Message FIFO while it is full, the write operation is blocked until there is again space in the FIFO.
 This means the processor is effectively stalled.
-If the SHA3 engine is currently running and software fills up the Message FIFO, the resulting stall won't take more than 100 clock cycles.
-The stall mechanism prevents data loss and the upper bound on the wait time avoids software needing to poll the [`STATUS.fifo_depth`](registers.md#status--fifo_depth) field before writing data.
+The stall condition lasts until the SHA3 engine finishes processing the current block and afterwards starts popping the data again.
+This will never take more than 100 clock cycles.
 
-However, the FIFO can also become full because the KMAC block is waiting for fresh entropy from EDN.
-Resolving this condition can take much longer, and it can even result in deadlocking the system if the following conditions are met:
-1. Software attempts to push data to the Message FIFO while it is full.
-1. The fresh entropy is not delivered and the value of the [`ENTROPY_PERIOD`](registers.md#entropy_period) register is 0, meaning the wait timer never expires.
+Once the Message FIFO eventually runs empty, the `fifo_empty` status interrupt will fire.
+Note that the `fifo_empty` status interrupt will not fire if i) one of the hardware application interfaces is using the KMAC block, ii) the SHA3 core is not in the `Absorb` state, or iii) after software has written the `Process` command.
 
-The entropy not getting delivered in time can in particular happen if the entropy complex or parts of it are disabled, e.g., [to save power](../../csrng/doc/programmers_guide.md#running-csrng-with-entropy_src-disabled).
-Refer to [Preventing potential deadlocks in EDN mode](programmers_guide.md#preventing-potential-deadlocks-in-edn-mode) for guidance on how to safely avoid this scenario.
-
+This stall mechanism prevents data loss and the upper bound on the wait time avoids software needing to poll the [`STATUS.fifo_depth`](registers.md#status--fifo_depth) field before writing data.
+It is crucial for optimizing the performance of software using the KMAC HWIP block.
 
 #### Masking
 
@@ -227,7 +219,7 @@ The hashing engine supports a fully masked operation if the `EnMasking` compile-
 The software, however, can only push unmasked messages into the hashing engine.
 The app interfaces operate on either unmasked or masked data, depending on their parameterization.
 
-For all cases, if `EnMasking` is set and [`CFG_SHADOWED.msg_mask`](registers.md#cfg_shadowed) is true, the message is masked (or re-masked) upon loading into the Keccak core using the internal entropy generator.
+For all cases, if `EnMasking` is set and [`CFG_SHADOWED.msg_mask`](registers.md#cfg_shadowed) is true, the message is masked (or re-masked) upon loading into the Keccak core using the internal pseudo-random number generator (PRNG).
 The secret key is always stored/used in masked form.
 
 If `EnMasking` is not set, masking is disabled and the software has to provide the key in unmasked form.
@@ -320,13 +312,13 @@ In addition to the static and session configuration, SW must configure the KMAC 
 The relevant CSRs / Fields are:
 - `Prefix`
   - See `prefix_mode` configuration for when this CSR is relevant.
-- `CFG_SHADOWED.entropy_ready`
-- `CFG_SHADOWED.entropy_mode`
 - `CFG_SHADOWED.entropy_fast_process`
 - `CFG_SHADOWED.sideload`
 - `CFG_SHADOWED.msg_mask`
   - Whether masking is performed or not.
     Must be set if `masked` is set in the configuration.
+- `ENTROPY_CFG_SHADOWED.entropy_boot_mode`
+- `ENTROPY_CFG_SHADOWED.entropy_mode`
 
 See the KMAC [register description](./registers.md) for more details.
 These configuration values are left to the SW as setting these requires system state knowledge, i.e., whether entropy is available or not.
@@ -377,7 +369,7 @@ The interface uses a fixed priority to arbitrate between multiple outstanding re
 The sequence of requests for a static app is just its sequence of message words.
 A dynamic app sends the message words after sending a request carrying its desired session configuration.
 When starting a session for a dynamic app, the interface checks the requested configuration.
-For both types of interfaces, if the hashing operation is KMAC, the interface also checks that the `entropy_ready` bit is 1.
+For both types of interfaces, if the hashing operation is KMAC, the interface also checks that the `STATUS.entropy_ready` bit is 1.
 
 If the configuration is not valid, a service rejected error is raised, see error handling section.
 If the configuration is valid, the message requests are forwarded to the hashing engine.
@@ -566,9 +558,6 @@ The following errors can occur when an app is active:
 
 The handling of these errors is described below.
 
-Note, the `WaitTimerExpired` error is not handled by an app interface.
-The reason is that it is planned to rework when the entropy engine places EDN requests such that this error cannot occur during a hashing operation.
-
 ##### Terminal state error
 This error occurs if an FSM in the interface entered its terminal error state because one of the following is true:
 - A life cycle escalation request was received, see [Reaction to Life Cycle Escalation Requests](#reaction-to-life-cycle-escalation-requests).
@@ -579,7 +568,7 @@ The terminal error state leads to a fatal alert which will result in a chip rese
 As such, this error case does not need to end the app session gracefully.
 
 ##### Service rejected error
-This error occurs when the configuration is invalid (only for a dynamic interface) or a KMAC operation is requested when the entropy is not ready.
+This error occurs when the configuration is invalid (only for a dynamic interface) or a KMAC operation is requested when the `STATUS.entropy_ready` bit is not 1.
 If the app interface rejects an application request, it enters `StErrorAwaitMsg` and the messages from the application are still accepted but directly discarded.
 After such an error, no data is sent to the hashing engine until the next session.
 After the last message request, the app interface then immediately sends a response with the error flag set.
@@ -695,19 +684,30 @@ Note, that this error is not treated as a fatal alert if KMAC HWIP is controlled
 If controlled by SW, it is not possible to distinguish between a wrong command sequence or a fault injection.
 The error is then only reported to SW via the register interface.
 
-### Entropy Generator
+### Entropy Generator / PRNG
 
-This section explains the entropy generator inside the KMAC HWIP.
+The KMAC HWIP block features an internal pseudo-random number generator (PRNG).
+This PRNG provides the design with fresh pseudo-random numbers for:
+- remasking the DOM multipliers inside the Chi function of the Keccak core if [`CFG_SHADOWED.entropy_fast_process`](registers.md#cfg_shadowed--entropy_fast_process) is disabled or while processing the secret key block of a KMAC operation, as well as for
+- masking the message if [`CFG_SHADOWED.msg_mask`](registers.md#cfg_shadowed--msg_mask) is enabled.
 
-KMAC has an entropy generator to provide the design with pseudo-random numbers while processing the secret key block.
-The entropy is used for both remasking the DOM multipliers inside the Chi function of the Keccak core as well as for masking the message if [`CFG_SHADOWED.msg_mask`](registers.md#cfg_shadowed) is enabled.
-
-The entropy generator is constructed using a [heavily unrolled Bivium stream cipher primitive](https://eprint.iacr.org/2023/1134).
+Internally, the PRNG leverages a [heavily unrolled Bivium stream cipher primitive](https://eprint.iacr.org/2023/1134).
 This allows the module to generate 800 bits of fresh, pseudo-random numbers required by the 800 DOM multipliers for remasking in every clock cycle.
 
-Depending on [`CFG_SHADOWED.entropy_mode`](registers.md#cfg_shadowed), the entropy generator fetches initial entropy from the [Entropy Distribution Network (EDN)][edn] module or software has to provide a seed by writing the [`ENTROPY_SEED`](registers.md#entropy_seed) register 9 times.
-The module periodically refreshes the PRNG seed with fresh entropy from EDN.
-Software can explicitly request a complete reseed of the PRNG state from EDN through [`CMD.entropy_req`](registers.md#cmd).
+Depending on the configuration of the PRNG (see [`ENTROPY_CFG_SHADOWED`](registers.md#entropy_cfg_shadowed)), the PRNG can be reseeded either using entropy from the [Entropy Distribution Network (EDN)][edn] module or from software via the [`ENTROPY_SEED`](registers.md#entropy_seed) register.
+Whether the PRNG is ready for providing fresh randomness to the module is indicated by the [`STATUS.entropy_ready`](registers.md#status--entropy_ready) bit.
+
+When coming out of reset, the PRNG is configured in Entropy Boot Mode (see [`ENTROPY_CFG_SHADOWED.entropy_boot_mode`](registers.md#entropy_cfg_shadowed--entropy_boot_mode)) meaning it uses a default seed equal to a secret netlist constant.
+As a consequence, the PRNG is not ready for providing fresh randomness required for processing the secret key block of KMAC operations which is indicated by [`STATUS.entropy_ready`](registers.md#status--entropy_ready) reading 0.
+The sole purpose of the Entropy Boot Mode is to enable the KMAC HWIP block to perform the [initial ROM integrity check](../../rom_ctrl/doc/theory_of_operation.md#the-startup-rom-check) directly after system reset.
+
+Before the module can operate in KMAC operation, software has to disable the Entropy Boot Mode and ensure that the PRNG is successfully reseeded indicated by [`STATUS.entropy_reseeded`](registers.md#status--entropy_reseeded) reading 0 and [`STATUS.entropy_ready`](registers.md#status--entropy_ready) reading 1.
+This also holds if the masking is switched of (i.e., if `EnMasking` is false).
+In this case, the [`STATUS.entropy_ready`](registers.md#status--entropy_ready) bit will immediately read 1 after disabling Entropy Boot Mode.
+
+Failing to do so, will cause the module to trigger a `SwHashingWithoutEntropyReady` error when software starts a KMAC operation or a service rejected error when an application interface request a KMAC operation.
+
+For details on the configuration of the PRNG, refer to [Entropy Configuration](programmers_guide.md#entropy-configuration).
 
 [edn]: ../../edn/README.md
 
@@ -724,12 +724,10 @@ Value | Error Code | Description
 0x01  | KeyNotValid | In KMAC mode with the sideloaded key, the IP raises an error if the sideloaded secret key is not ready.
 0x02  | SwPushedMsgFifo | MsgFifo is updated while not being in the Message Feed state.
 0x03  | SwIssuedCmdInAppActive | SW issued a command while the application interface is being used
-0x04  | WaitTimerExpired | EDN has not responded within the wait timer limit.
-0x05  | IncorrectEntropyMode | When SW sets `entropy_ready`, the `entropy_mode` is neither SW nor EDN.
 0x06  | UnexpectedModeStrength | SHA3 mode and Keccak Strength combination is not expected.
 0x07  | IncorrectFunctionName | In KMAC mode, the PREFIX has the value other than `encoded_string("KMAC")`
 0x08  | SwCmdSequence | SW does not follow the guided sequence, `start` -> `process` -> {`run` ->} `done`
-0x09  | SwHashingWithoutEntropyReady | SW starts (`start`) or resumes (`continue`) a KMAC op without proper config of Entropy in KMAC. This error occurs if KMAC IP masking feature is enabled.
+0x09  | SwHashingWithoutEntropyReady | SW starts (`start`) or resumes (`continue`) a KMAC op without the PRNG being ready.
 0x80  | Sha3Control | SW may receive Sha3Control error along with `SwCmdSequence` error. Can be ignored.
 
 #### KeyNotValid (0x01)
@@ -761,27 +759,6 @@ The request is dropped by the KMAC_APP module.
 
 The info field of [`ERR_CODE`](registers.md#err_code) contains the received command in bits [5:0].
 
-#### WaitTimerExpired (0x04)
-
-The timer values set by SW is internally used only when pending EDN request is completed.
-Therefore, dynamically changing wait timer cannot be used as a way to poke the timer out of a stalling EDN request.
-If a non-zero timer expires, the module cancels the transaction and reports the `WaitTimerExpired` error.
-
-When this error happens, the state machine in KMAC_ENTROPY module moves to Wait state.
-In that state, it keeps using the pre-generated entropy and asserting the entropy valid signal.
-It asserts the entropy valid signal to complete the current hashing operation.
-If the module does not complete, or flush the pending operation, it creates the back pressure to the message FIFO.
-Then, the SW may not be able to access the KMAC IP at all, as the crossbar is stuck.
-
-The SW may move the state machine to the reset state by issuing [`CMD.err_processed`](registers.md#cmd).
-
-#### IncorrectEntropyMode (0x05)
-
-If SW misconfigures the entropy mode and let the entropy module prepare the random data, the module reports `IncorrectEntropyMode` error.
-The state machine moves to Wait state after reporting the error.
-
-The SW may move the state machine to the reset state by issuing [`CMD.err_processed`](registers.md#cmd).
-
 #### UnexpectedModeStrength (0x06)
 
 When the SW issues `Start` command, the KMAC_ERRCHK module checks the [`CFG_SHADOWED.mode`](registers.md#cfg_shadowed) and [`CFG_SHADOWED.kstrength`](registers.md#cfg_shadowed).
@@ -807,6 +784,11 @@ The info field of [`ERR_CODE`](registers.md#err_code) contains the state of the 
 
 This error, however, does not stop the KMAC HWIP.
 The incorrect command is dropped at the following datapath, SHA3 core.
+
+#### SwHashingWithoutEntropyReady (0x09)
+
+The PRNG is not ready for providing randomness to the SHA3 engine but software wants to start or resume a KMAC op which requires fresh randomness.
+This can happen, if for example the [`ENTROPY_CFG_SHADOWED.entropy_boot_mode`](registers.md#entropy_cfg_shadowed) bit is still set or if the design hasn't finished the previous PRNG reseed operation indicated by [`STATUS.entropy_reseeding`](registers.md#status).
 
 #### SwStopNotBlockAligned (0x0A)
 

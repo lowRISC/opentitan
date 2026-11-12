@@ -307,10 +307,9 @@
     }
     {
       name: "KMAC.ENTROPY_MODES",
-      desc: '''Entropy required for countermeasures can be configured to be provided by software or
-            EDN. In EDN mode, KMAC can be configured to set an error flag if entropy is not
-            provided within a configurable time window. The cadence of entropy requested from EDN
-            is also configurable.
+      desc: '''
+            Entropy required for countermeasures can be configured to be provided by software or EDN.
+            In EDN Mode, the cadence of entropy requests from EDN is configurable.
             '''
     }
   ]
@@ -363,20 +362,18 @@
   regwidth: "32"
   registers: [
     { name: "CFG_REGWEN"
-      desc: '''Controls the configurability of !!CFG_SHADOWED register.
-
-            This register ensures the contents of !!CFG_SHADOWED register cannot be
-            changed by the software while the KMAC/SHA3 is in operation mode.
-            '''
+      desc: "Register write enable for !!CFG_SHADOWED register."
       swaccess: "ro"
       hwaccess: "hwo"
       hwext: "true"
       fields: [
         { bits: "0"
-          name: "en"
-          desc: "Configuration enable."
+          desc: '''
+                This bit indicates whether the !!CFG_SHADOWED register can be updated by software (1) or not (0).
+                This bit reads 0 if the Keccak core is operating as indicated in the !!STATUS register.
+                '''
           resval: "1"
-        } // f : en
+        }
       ]
       tags: [// This regwen is completely under HW management and thus cannot be manipulated
              // by software.
@@ -385,9 +382,9 @@
     { name: "CFG_SHADOWED"
       desc: '''KMAC Configuration register.
 
-            This register is  updated when the hashing engine is in Idle.
-            If the software updates the register while the engine computes, the
-            updated value will be discarded.
+            This register can only be updated when the Keccak core is idle.
+            This is indicated by !!CFG_REGWEN reading as 1.
+            If !!CFG_REGWEN reads as 0 (meaning the Keccak core is busy), writes to this register are ignored.
             '''
       regwen:   "CFG_REGWEN"
       swaccess: "rw"
@@ -506,70 +503,6 @@
                 '''
           tags: ["shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_sideload"]
         } // f: sideload
-        { bits: "17:16"
-          name: entropy_mode
-          desc: '''Entropy Mode
-
-          Using this field, software can configure mode of operation of the internal pseudo-random number generator (PRNG).
-
-          Note that once software has configured a value different from `idle_mode` after reset, and set the !!CFG_SHADOWED.entropy_ready bit afterwards, the PRNG configuration cannot be changed anymore (unless an EDN request timeout occurs when running in EDN mode).
-          Further writes to this field will change the value received upon reading the register, but they will be ignored by the internal hardware.
-          '''
-
-          enum: [
-            { value: "0"
-              name: "idle_mode"
-              desc: '''Default mode after reset.
-
-              The sole purpose of this mode is to enable ROM_CTRL operation right after coming out of reset.
-
-              The internal PRNG is not reseeded with fresh entropy, nor updated while the core operates.
-              It should therefore not be used after this very initial stage.
-              Software should setup a different mode and set !!CFG_SHADOWED.entropy_ready as early as possible.
-              '''
-            }
-            { value: "1"
-              name: "edn_mode"
-              desc: '''Receive fresh entropy from EDN for reseeding the internal PRNG.
-
-              This entropy mode is to be used for regular operation.
-
-              Once the !!CFG_SHADOWED.entropy_ready bit is set after reset, the module requests fresh entropy from EDN for reseeding the internal PRNG.
-              Only after that, the module can start processing commands.
-              Depending on !!CFG_SHADOWED, the internal PRNG is then used for (re-)masking inputs (prefix, key, message) and intermediate results of the Keccak core.
-
-              The module will then automatically reseed the internal PRNG with fresh entropy from EDN every !!ENTROPY_REFRESH_THRESHOLD_SHADOWED messages in KMAC mode.
-              More precisely, automatic reseed operations are always triggered directly after the key absorption phase.
-              How close the module is to automatically trigger a reseed operation can be inferred from !!ENTROPY_REFRESH_HASH_CNT.
-              Alternatively, software can manually initiate reseeding operations using !!CMD.entropy_req while the module is idle.
-              This will also clear !!ENTROPY_REFRESH_HASH_CNT.
-
-              Depending on the state of the system, it may take a very long or even indefinite time for the entropy to be delivered.
-              As such, the configuration values for the !!ENTROPY_REFRESH_THRESHOLD_SHADOWED and !!ENTROPY_PERIOD registers should be chosen carefully.
-              Also, if the entropy complex becomes unavailable, there is a way to leave this mode and enter the fall-back software mode.
-              For guidance, refer to [EDN Entropy Mode](programmers_guide.md#edn-entropy-mode).
-              '''
-            }
-            { value: "2"
-              name: "sw_mode"
-              desc: '''Receive initial entropy from software for reseeding the internal PRNG.
-
-              This entropy mode is a fall-back option to be used if the entropy complex is not available.
-
-              Once the !!CFG_SHADOWED.entropy_ready bit is set after reset, the module will wait for software to write the !!ENTROPY_SEED register 6 times.
-              Upon each write, the written value is loaded into the corresponding state chunk of the entropy generator.
-              Only after that, the module can start processing commands.
-              Depending on !!CFG_SHADOWED, the internal PRNG is then used for (re-)masking inputs (prefix, key, message) and intermediate results of the Keccak core.
-
-              After this point, the PRNG can no longer be reseeded by software.
-              Without a full reset of the KMAC block, there is no way to further change the configured mode.
-              Further writes to this field only change the value received upon reading the register.
-              The changes are ignored by the internal hardware.
-              '''
-            }
-          ]
-          tags: ["shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_entropy_mode"]
-        } // f: entropy_mode
         { bits: "19"
           name: entropy_fast_process
           desc: '''Entropy Fast process mode.
@@ -591,17 +524,6 @@
             when KMAC mode is on.
             '''
         } // f: msg_mask
-        { bits: "24"
-          name: entropy_ready
-          desc: '''Entropy Ready status.
-
-          Software sets this field to allow the entropy generator in KMAC to
-          fetch the entropy and run.
-          '''
-          tags: [// Randomly write mem will cause this reg updated by design
-                 "excl:CsrAllTests:CsrExclWrite",
-                 "shadowed_reg_path:u_cfg_reg_shadowed.u_cfg_reg_shadowed_entropy_ready"]
-        } // f: entropy_ready
         { bits: "26"
           name: en_unsupported_modestrength
           desc: '''Enable Unsupported Mode and Strength configs.
@@ -746,11 +668,12 @@
         { bits: "8"
           name: "entropy_req"
           desc: '''
-                Software can set this bit to 1 to manually trigger the reseeding of the internal PRNG when running in EDN mode.
+                Software can set this bit to 1 to manually trigger the reseeding of the internal PRNG when running in EDN Mode or in Software Mode.
                 This will also clear !!ENTROPY_REFRESH_HASH_CNT.
 
                 After setting this bit, the !!STATUS.entropy_ready bit should read as 0 and the !!STATUS.entropy_reseeding bit as 1 indicating that a reseed operation is ongoing.
 
+                If !!ENTROPY_CFG_SHADOWED.ignore_cmd_entropy_req is set, this bit is ignored.
                 If masking is disabled, this bit is ignored.
                 '''
         }
@@ -835,9 +758,12 @@
         { bits: "20"
           name: "entropy_ready"
           desc: '''If 1, the internal PRNG is ready.
-                If 0, the internal PRNG is either not configured in EDN mode or software mode, or currently performing a reseed operation via EDN or waiting for software to provide a new seed.
+                If 0, the internal PRNG is either not operating in EDN Mode or Software Mode (i.e., Entropy Boot Mode is active), or the PRNG is currently performing a reseed operation via EDN or waiting for software to provide a new seed via !!ENTROPY_SEED.
+                While this bit reads 0, the module will reject KMAC mode operation:
+                - If software tries to trigger a KMAC mode operation, a `ErrSwHashingWithoutEntropyReady` error is returned.
+                - If an application interface tries to trigger a KMAC mode operation, a `service rejected error` is returned.
 
-                If masking is disabled, this bit mirrors the !!CFG_SHADOWED.entropy_ready bit.
+                If masking is disabled, this bit matches the inverse of the !!ENTROPY_CFG_SHADOWED.entropy_boot_mode bit.
                 '''
           resval: "0"
         }
@@ -873,48 +799,175 @@
         }
       ]
     } // R: STATUS
-    { name: "ENTROPY_PERIOD"
-      desc: '''Entropy Timer Periods.
-      '''
-      swaccess: "rw"
+    { name: "ENTROPY_CFG_LOCK"
+      desc: '''
+            Software lock for the !!ENTROPY_CFG_SHADOWED register.
+
+            By setting this register to 1, software can lock the current content of the !!ENTROPY_CFG_SHADOWED register until the next reset.
+            '''
+      swaccess: "rw1s"
       hwaccess: "hro"
-      regwen: "CFG_REGWEN"
       fields: [
-        { bits: "9:0"
-          name: "prescaler"
-          desc: '''EDN Wait timer prescaler.
-
-          EDN Wait timer has 16 bit value. The timer value is increased when the timer pulse is generated. Timer pulse is raises when the number of the clock cycles hit this prescaler value.
-
-          The exact period of the timer pulse is unknown as the KMAC input clock may contain jitters.
-          '''
-        }
-        { bits: "31:16"
-          name: "wait_timer"
-          desc: '''EDN request wait timer.
-
-          The entropy module in KMAC waits up to this field in the timer pulse
-          after it sends request to EDN module. If the timer expires, the
-          entropy module moves to an error state and notifies to the system.
-
-          If there is a pending EDN request during wait timer update, then this update is delayed until the EDN request is complete.
-
-          If 0, the entropy module waits the EDN response always. If EDN does
-          not respond in this configuration, the software shall reset the IP.
-          '''
-          tags: [// Writing this timer may cause EDN wait timeout, which triggers a SVA error
-                 // We will do that in functional tests
-                 "excl:CsrNonInitTests:CsrExclWrite"]
+        { bits: "0"
+          desc: '''
+                This bit indicates whether software has locked the current content of the !!ENTROPY_CFG_SHADOWED register (1) or not (0).
+                Whether the !!ENTROPY_CFG_SHADOWED register can be updated, is indicated in !!ENTROPY_CFG_REGWEN.
+                Once this bit is set to 1, !!ENTROPY_CFG_REGWEN keeps reading as 0 until the next reset.
+                '''
+          resval: "0"
+          tags: [// Setting this bit permanently blocks updates to the ENTROPY_CFG_SHADOWED register.
+                 "excl:CsrAllTests:CsrExclWrite"]
         }
       ]
-    } // R: ENTROPY_PERIOD
+    } // R : ENTROPY_CFG_LOCK
+    { name: "ENTROPY_CFG_REGWEN"
+      desc: "Register write enable for !!ENTROPY_CFG_SHADOWED register."
+      swaccess: "ro"
+      hwaccess: "hwo"
+      fields: [
+        { bits: "0"
+          desc: '''
+                This bit indicates whether the !!ENTROPY_CFG_SHADOWED register can be updated by software (1) or not (0).
+                If !!ENTROPY_CFG_LOCK is 1, this bit reads as 0.
+                This bit also reads 0 if the internal PRNG is currently being reseeded or if the Keccak core is operating as indicated in the !!STATUS register.
+                '''
+          resval: "1"
+        }
+      ]
+    } // R : ENTROPY_CFG_REGWEN
+    { name: "ENTROPY_CFG_SHADOWED"
+      desc: '''Entropy Configuration register.
+
+            This register can only be updated when the Keccak core is idle and if write access has not yet been locked down.
+            This is indicated by !!ENTROPY_CFG_REGWEN reading as 1.
+            If !!ENTROPY_CFG_REGWEN reads as 0 (meaning the Keccak core is busy and/or write access has been locked down), writes to this register are ignored.
+
+            If masking is disabled, only the Entropy Boot Mode field of this register is relevant and the remaining fields are ignored.
+            '''
+      regwen:   "ENTROPY_CFG_REGWEN"
+      swaccess: "rw"
+      hwaccess: "hro"
+      shadowed: "true"
+      update_err_alert:  "recov_operation_err"
+      storage_err_alert: "fatal_fault_err"
+      fields: [
+        { bits: 0
+          name: entropy_boot_mode
+          swaccess: rw0c
+          resval: 1
+          desc: '''Entropy Boot Mode
+
+                If this field reads 1, the internal pseudo-random number generator (PRNG) is operating in boot mode irrespective of the value of !!ENTROPY_CFG.entropy_mode.
+                The sole purpose of the Entropy Boot Mode is to enable the initial ROM_CTRL operation right after coming out of reset.
+
+                In this mode, the internal PRNG is not reseeded with fresh entropy, nor updated while the Keccak core operates.
+                It should therefore not be used after this very initial boot phase and software should disable the Entropy Boot Mode and configure the desired !!ENTROPY_CFG.entropy_mode value as early as possible.
+                '''
+          tags: [// Clearing this bit temporarily blocks further updates to the register.
+                 "excl:CsrAllTests:CsrExclWrite"]
+        }
+        { bits: 1
+          name: entropy_mode
+          desc: '''Entropy Mode
+
+                Using this field, software can configure the non-boot mode of operation of the internal pseudo-random number generator (PRNG).
+
+                The value of this field is only relevant if !!ENTROPY_CFG.entropy_boot_mode reads as 0.
+                '''
+
+          enum: [
+            { value: "0"
+              name: "edn_mode"
+              desc: '''Receive fresh entropy from EDN for reseeding the internal PRNG.
+
+                    This entropy mode is to be used for regular operation.
+
+                    When this mode is activated first after reset, the !!STATUS.entropy_reseeding bit is set to 1 and the module requests fresh entropy from EDN for reseeding the internal PRNG.
+                    Once the reseed operation finishes, the !!STATUS.entropy_ready bit is set to 1 and the module can start processing commands.
+                    Depending on !!CFG_SHADOWED, the internal PRNG is then used for (re-)masking inputs (prefix, key, message) and intermediate results of the Keccak core.
+
+                    The module will then automatically reseed the internal PRNG with fresh entropy from EDN every !!ENTROPY_CFG_SHADOWED.edn_mode_refresh_threshold messages in KMAC mode.
+                    More precisely, automatic reseed operations are always triggered directly after the key absorption phase.
+                    How close the module is to automatically trigger a reseed operation can be inferred from !!ENTROPY_REFRESH_HASH_CNT.
+                    Alternatively, software can manually initiate reseeding operations using !!CMD.entropy_req while the module is idle.
+                    This will also clear !!ENTROPY_REFRESH_HASH_CNT.
+
+                    Depending on the state of the system, it may take a very long or even indefinite time for the entropy to be delivered.
+                    For guidance, refer to [EDN Entropy Mode](programmers_guide.md#edn-entropy-mode).
+
+                    To change from this mode to `sw_mode`, software has to first configure the mode and then trigger a reseed operation using !!CMD.entropy_req.
+                    '''
+            }
+            { value: "1"
+              name: "sw_mode"
+              desc: '''Receive entropy from software for reseeding the internal PRNG.
+
+                    This entropy mode is a fall-back option to be used if the entropy complex is not available.
+
+                    When this mode is activated first after reset, the !!STATUS.entropy_reseeding bit is set to 1 and the module waits for software to write the !!ENTROPY_SEED register 6 times.
+                    Upon each write, the written value is loaded into the corresponding state chunk of the PRNG.
+                    After the last write operation, the !!STATUS.entropy_ready bit is set to 1 and the module can start processing commands.
+                    Depending on !!CFG_SHADOWED, the internal PRNG is then used for (re-)masking inputs (prefix, key, message) and intermediate results of the Keccak core.
+
+                    After this point, software can manually initiate reseeding operations using !!CMD.entropy_req while the module is idle.
+                    This will also clear !!ENTROPY_REFRESH_HASH_CNT.
+
+                    To change from this mode to `edn_mode`, software has to first configure the mode and then trigger a reseed operation using !!CMD.entropy_req.
+                    '''
+            }
+          ]
+        }
+        { bits: "2"
+          name: ignore_cmd_entropy_req
+          desc: '''
+                If this bit is set, writes to !!CMD.entropy_req are ignored.
+                This can be useful for locking down the PRNG configuration and prevent further reseed operations, e.g., if later software stages aren't trusted.
+                '''
+        }
+        { bits: "16+HashCntW-1:16"
+          name: edn_mode_refresh_threshold
+          desc: '''EDN Mode Refresh Threshold
+
+                The number of KMAC messages after which the module automatically triggers a reseed operation when running in EDN Mode.
+                Note that the automatic reseed operation is not triggered when ending the message processing, but after processing the KMAC key block.
+                If an automatic reseed operation is triggered, the Keccak core can continue processing the message in parallel to the reseed operation.
+
+                If this field reads as 0, no automatic reseed operations are triggered in EDN Mode.
+                '''
+        }
+      ]
+      tags: ["shadowed_reg_path:u_entropy_cfg_reg_shadowed"]
+    } // R: ENTROPY_CFG_SHADOWED
+    {
+      name: "ENTROPY_SEED"
+      desc: '''Entropy Seed
+
+            Entropy seed register for the internal PRNG.
+
+            If !!ENTROPY_CFG_SHADOWED.entropy_boot_mode reads 0, if !!ENTROPY_CFG_SHADOWED.entropy_mode is set to `sw_mode`, and if !!STATUS.entropy_reseeding reads 1, software can write this register 6 times.
+            Upon each write, the written value is loaded into the corresponding state chunk of the internal PRNG.
+
+            After writing the register 6 times, the !!STATUS.entropy_reseeding bit drops to 0, the PRNG is ready to deliver randomness to the Keccak core which is indicated by the !!STATUS.entropy_ready bit being set.
+            After this point, another reseed operation can be initiated via !!CMD.entropy_req.
+            '''
+      hwext: "true"
+      hwqe : "true"
+      swaccess: "wo"
+      hwaccess: "hro"
+      fields: [
+        { bits: "31:0"
+          name: "seed"
+          desc: "32-bit chunk of the entropy generator seed"
+        }
+      ]
+    } // R: ENTROPY_SEED
     {
       name: "ENTROPY_REFRESH_HASH_CNT"
       desc: '''Entropy Refresh Counter
 
       KMAC entropy can be refreshed after the given threshold KMAC operations
       run. If the KMAC hash counter !!ENTROPY_REFRESH_HASH_CNT hits (GTE) the
-      configured threshold !!ENTROPY_REFRESH_THRESHOLD_SHADOWED, the entropy
+      configured threshold !!ENTROPY_CFG_SHADOWED.edn_mode_refresh_threshold, the entropy
       module in the KMAC IP requests new seed to EDN and reset the KMAC
       hash counter.
 
@@ -930,56 +983,6 @@
         }
       ]
     } // R: ENTROPY_REFRESH_HASH_CNT
-    {
-      name: "ENTROPY_REFRESH_THRESHOLD_SHADOWED"
-      desc: '''Entropy Refresh Threshold
-
-      KMAC entropy can be refreshed after the given threshold KMAC operations
-      run. If the KMAC hash counter !!ENTROPY_REFRESH_HASH_CNT hits (GTE) the
-      configured threshold !!ENTROPY_REFRESH_THRESHOLD_SHADOWED, the entropy
-      module in the KMAC IP requests new seed to EDN and reset the KMAC
-      hash counter.
-
-      If the threshold is 0, the refresh by the counter does not work. And the
-      counter is only reset by the CMD.hash_cnt_clr CSR bit.
-      '''
-      swaccess: "rw"
-      hwaccess: "hro"
-      regwen: "CFG_REGWEN"
-      shadowed: "true"
-      update_err_alert:  "recov_operation_err"
-      storage_err_alert: "fatal_fault_err"
-      fields: [
-        { bits: "HashCntW-1:0"
-          name: "threshold"
-          desc: "Hash Threshold"
-        }
-      ]
-    } // R: ENTROPY_REFRESH_THRESHOLD_SHADOWED
-    {
-      name: "ENTROPY_SEED"
-      desc: '''Entropy Seed
-
-            Entropy seed register for the integrated entropy generator.
-
-            If !!CFG_SHADOWED.entropy_mode is set to sw_mode, software first needs to set !!CFG_SHADOWED.entropy_ready.
-            Then, software needs to write the !!ENTROPY_SEED register 6 times.
-            Upon each write, the written value is loaded into the corresponding state chunk of the entropy generator.
-
-            After writing the !!ENTROPY_SEED register 6 times, the entropy generator will start its operation.
-            After this point, writing this register has no longer any effect.
-            '''
-      hwext: "true"
-      hwqe : "true"
-      swaccess: "wo"
-      hwaccess: "hro"
-      fields: [
-        { bits: "31:0"
-          name: "seed"
-          desc: "32-bit chunk of the entropy generator seed"
-        }
-      ]
-    } // R: ENTROPY_SEED
     { multireg: {
         name: "KEY_SHARE0"
         desc: '''KMAC Secret Key

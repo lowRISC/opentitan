@@ -12,7 +12,6 @@ class kmac_common_vseq extends kmac_base_vseq;
 
   virtual task pre_start();
     do_kmac_init = 1'b0;
-    entropy_mode_c.constraint_mode(0);
     super.pre_start();
 
     if (common_seq_type inside {"shadow_reg_errors", "shadow_reg_errors_with_csr_rw"}) begin
@@ -42,7 +41,7 @@ class kmac_common_vseq extends kmac_base_vseq;
       // cfg related CSRs. Because it is a `RO` register, the logic below manually locks the write
       // access for its lockable register fields. (If the regwen is `W0C` access policy, the
       // lockable fields will be updated automatically in `do_predict` function)
-      ral.cfg_regwen.en.set_lockable_flds_access(.lock(1));
+      ral.cfg_regwen.cfg_regwen.set_lockable_flds_access(.lock(1));
     end
   endfunction
 
@@ -51,7 +50,7 @@ class kmac_common_vseq extends kmac_base_vseq;
     // lock all cfg related CSRs. Because it is a `RO` register, the logic below manually locks the
     // write access for its lockable register fields. (If the regwen is `W0C` access policy, the
     // lockable fields will be updated automatically in `do_predict` function)
-    ral.cfg_regwen.en.set_lockable_flds_access(.lock(1));
+    ral.cfg_regwen.cfg_regwen.set_lockable_flds_access(.lock(1));
     super.check_tl_intg_error_response();
   endtask
 
@@ -79,7 +78,6 @@ class kmac_common_vseq extends kmac_base_vseq;
   virtual function void set_kmac_csr_assert_en(bit enable);
     if (!enable) begin
       $assertoff(0, "tb.dut.kmac_csr_assert.intr_enable_rd_A");
-      $assertoff(0, "tb.dut.kmac_csr_assert.entropy_period_rd_A");
       $assertoff(0, "tb.dut.kmac_csr_assert.prefix_0_rd_A");
       $assertoff(0, "tb.dut.kmac_csr_assert.prefix_1_rd_A");
       $assertoff(0, "tb.dut.kmac_csr_assert.prefix_2_rd_A");
@@ -93,7 +91,6 @@ class kmac_common_vseq extends kmac_base_vseq;
       $assertoff(0, "tb.dut.kmac_csr_assert.prefix_10_rd_A");
     end else begin
       $asserton(0, "tb.dut.kmac_csr_assert.intr_enable_rd_A");
-      $asserton(0, "tb.dut.kmac_csr_assert.entropy_period_rd_A");
       $asserton(0, "tb.dut.kmac_csr_assert.prefix_0_rd_A");
       $asserton(0, "tb.dut.kmac_csr_assert.prefix_1_rd_A");
       $asserton(0, "tb.dut.kmac_csr_assert.prefix_2_rd_A");

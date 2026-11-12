@@ -34,6 +34,7 @@
 #include "sw/device/tests/otbn_randomness_impl.h"
 
 #include "hw/top/entropy_src_regs.h"  // Generated.
+#include "hw/top/kmac_regs.h"         // Generated.
 
 OTTF_DEFINE_TEST_CONFIG();
 
@@ -451,18 +452,20 @@ status_t firmware_override_extract_insert(
 
   // Run KMAC
   dif_kmac_config_t config = {
-      .entropy_mode = kDifKmacEntropyModeEdn,
       .entropy_fast_process = false,
-      .entropy_seed = {0},
-      .entropy_hash_threshold = 1,
-      .entropy_wait_timer = 0,
-      .entropy_prescaler = 0,
       .message_big_endian = false,
       .output_big_endian = false,
       .sideload = false,
       .msg_mask = true,
   };
   TRY(dif_kmac_configure(&kmac, config));
+  dif_kmac_entropy_config_t entropy_config = (dif_kmac_entropy_config_t){
+      .entropy_mode = kDifKmacEntropyModeEdn,
+      .ignore_cmd_entropy_req = false,
+      .edn_mode_refresh_threshold = 1,
+  };
+  TRY(dif_kmac_configure_entropy(&kmac, entropy_config));
+  TRY(dif_kmac_poll_status(&kmac, KMAC_STATUS_ENTROPY_READY_BIT));
 
   dif_kmac_key_t software_key = {
       .share0 = {0x43424140, 0x47464544, 0x4B4A4948, 0x4F4E4D4C, 0x53525150,

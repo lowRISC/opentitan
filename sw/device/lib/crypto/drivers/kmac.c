@@ -202,8 +202,7 @@ static void kmac_err_clear(void) {
   abs_mmio_write32(kBase + KMAC_INTR_STATE_REG_OFFSET, UINT32_MAX);
 
   // Read the shadowed registers to clear their write phase trackers.
-  (void)abs_mmio_read32(kBase +
-                        KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_OFFSET);
+  (void)abs_mmio_read32(kBase + KMAC_ENTROPY_CFG_SHADOWED_REG_OFFSET);
   (void)abs_mmio_read32(kBase + KMAC_CFG_SHADOWED_REG_OFFSET);
 }
 
@@ -333,7 +332,14 @@ status_t kmac_hwip_default_configure(void) {
   // Check CFG.regwen
   uint32_t cfg_regwen =
       abs_mmio_read32(kmac_base() + KMAC_CFG_REGWEN_REG_OFFSET);
-  if (!bitfield_bit32_read(cfg_regwen, KMAC_CFG_REGWEN_EN_BIT)) {
+  if (!cfg_regwen) {
+    return OTCRYPTO_RECOV_ERR;
+  }
+
+  // Check ENTROPY_CFG.regwen
+  uint32_t entropy_cfg_regwen =
+      abs_mmio_read32(kmac_base() + KMAC_ENTROPY_CFG_REGWEN_REG_OFFSET);
+  if (!entropy_cfg_regwen) {
     return OTCRYPTO_RECOV_ERR;
   }
 
@@ -342,26 +348,32 @@ status_t kmac_hwip_default_configure(void) {
   intr_reg = bitfield_bit32_write(intr_reg, KMAC_INTR_ENABLE_KMAC_ERR_BIT, 0);
   abs_mmio_write32(kmac_base() + KMAC_INTR_ENABLE_REG_OFFSET, intr_reg);
 
-  // Configure max for entropy period (use UINT32_MAX and let bitfield clamp
-  // them to their bitfield)
-  uint32_t entropy_period = KMAC_ENTROPY_PERIOD_REG_RESVAL;
-  entropy_period = bitfield_field32_write(
-      entropy_period, KMAC_ENTROPY_PERIOD_PRESCALER_FIELD, UINT32_MAX);
-  entropy_period = bitfield_field32_write(
-      entropy_period, KMAC_ENTROPY_PERIOD_WAIT_TIMER_FIELD, UINT32_MAX);
-  abs_mmio_write32(kmac_base() + KMAC_ENTROPY_PERIOD_REG_OFFSET,
-                   entropy_period);
+  // Configure ENTROPY_CFG
+  uint32_t entropy_cfg_reg = KMAC_ENTROPY_CFG_SHADOWED_REG_RESVAL;
+  // Disable Entropy Boot Mode if not yet disabled.
+  entropy_cfg_reg = bitfield_bit32_write(
+      entropy_cfg_reg, KMAC_ENTROPY_CFG_SHADOWED_ENTROPY_BOOT_MODE_BIT, 0);
+  // Activate EDN Mode.
+  entropy_cfg_reg = bitfield_bit32_write(
+      entropy_cfg_reg, KMAC_ENTROPY_CFG_SHADOWED_ENTROPY_MODE_BIT,
+      KMAC_ENTROPY_CFG_SHADOWED_ENTROPY_MODE_VALUE_EDN_MODE);
+  // Handle manual reseed requests.
+  entropy_cfg_reg = bitfield_bit32_write(
+      entropy_cfg_reg, KMAC_ENTROPY_CFG_SHADOWED_IGNORE_CMD_ENTROPY_REQ_BIT, 0);
+  // Configure the refresh threshold to a reasonably high value. If software
+  // prefers to reseed earlier, it can request an EDN reseed operation manually
+  // at any point.
+  entropy_cfg_reg = bitfield_field32_write(
+      entropy_cfg_reg,
+      KMAC_ENTROPY_CFG_SHADOWED_EDN_MODE_REFRESH_THRESHOLD_FIELD, 128);
+  abs_mmio_write32_shadowed(kmac_base() + KMAC_ENTROPY_CFG_SHADOWED_REG_OFFSET,
+                            entropy_cfg_reg);
 
-  // Configure max for hash threshold (use UINT32_MAX and let bitfield clamp
-  // them to their bitfield)
-  uint32_t entropy_hash_threshold =
-      KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_RESVAL;
-  entropy_hash_threshold = bitfield_field32_write(
-      entropy_hash_threshold,
-      KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_THRESHOLD_FIELD, UINT32_MAX);
-  abs_mmio_write32_shadowed(
-      kmac_base() + KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_OFFSET,
-      entropy_hash_threshold);
+  abs_mmio_write32_shadowed(kmac_base() + KMAC_ENTROPY_CFG_SHADOWED_REG_OFFSET,
+                            entropy_cfg_reg);
+  HARDENED_CHECK_EQ(
+      abs_mmio_read32(kmac_base() + KMAC_ENTROPY_CFG_SHADOWED_REG_OFFSET),
+      launder32(entropy_cfg_reg));
 
   // Configure CFG
   uint32_t cfg_reg = KMAC_CFG_SHADOWED_REG_RESVAL;
@@ -374,20 +386,12 @@ status_t kmac_hwip_default_configure(void) {
   // Sideload: off, default key comes from SW
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT, 0);
 
-  // Entropy mode: EDN
-  cfg_reg =
-      bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_MODE_FIELD,
-                             KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_EDN_MODE);
-
   // Use quality randomness for message blocks too
   cfg_reg = bitfield_bit32_write(cfg_reg,
                                  KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, 0);
   // Remask message blocks
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT, 1);
 
-  // Mark entropy source as ready
-  cfg_reg =
-      bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_READY_BIT, 1);
   // Unsupported modes: disabled
   cfg_reg = bitfield_bit32_write(
       cfg_reg, KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT, 0);
@@ -568,14 +572,9 @@ static status_t kmac_init(kmac_operation_t operation,
       bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_ENDIANNESS_BIT, 0);
   cfg_reg =
       bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_STATE_ENDIANNESS_BIT, 0);
-  cfg_reg =
-      bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_MODE_FIELD,
-                             KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_EDN_MODE);
   cfg_reg = bitfield_bit32_write(cfg_reg,
                                  KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, 0);
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT, 1);
-  cfg_reg =
-      bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_READY_BIT, 1);
   cfg_reg = bitfield_bit32_write(
       cfg_reg, KMAC_CFG_SHADOWED_EN_UNSUPPORTED_MODESTRENGTH_BIT, 0);
 
@@ -1017,6 +1016,8 @@ status_t kmac_kmac_128(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
   HARDENED_TRY(
       kmac_init(kKmacOperationKmac, kKmacSecurityStrength128, key->hw_backed));
 
+  HARDENED_TRY(wait_status_bit(KMAC_STATUS_ENTROPY_READY_BIT, 1));
+
   HARDENED_TRY(kmac_write_key_block(key));
   // "KMAC" string in little endian
   const uint8_t kKmacFuncNameKMAC[] = {0x4b, 0x4d, 0x41, 0x43};
@@ -1033,6 +1034,8 @@ status_t kmac_kmac_256(kmac_blinded_key_t *key, hardened_bool_t masked_digest,
                        uint32_t *digest, size_t digest_len) {
   HARDENED_TRY(
       kmac_init(kKmacOperationKmac, kKmacSecurityStrength256, key->hw_backed));
+
+  HARDENED_TRY(wait_status_bit(KMAC_STATUS_ENTROPY_READY_BIT, 1));
 
   HARDENED_TRY(kmac_write_key_block(key));
   // "KMAC" string in little endian
@@ -1157,6 +1160,8 @@ static status_t stream_kmac_init(kmac_security_str_t security_str,
   barrier32(hw_cleanup_guard);
 
   HARDENED_TRY(kmac_init(kKmacOperationKmac, security_str, key->hw_backed));
+
+  HARDENED_TRY(wait_status_bit(KMAC_STATUS_ENTROPY_READY_BIT, 1));
 
   HARDENED_TRY(kmac_write_key_block(key));
   // "KMAC" string in little endian
