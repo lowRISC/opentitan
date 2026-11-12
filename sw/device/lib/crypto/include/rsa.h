@@ -268,8 +268,7 @@ otcrypto_status_t otcrypto_rsa_verify(
  *
  * @param private_key Pointer to blinded private key struct.
  * @param public_key Pointer to public key struct.
- * @param hash_mode Hash algorithm to use for message hashing.
- * @param message Message data to be hashed and signed.
+ * @param ctx Streaming hash context (finalized and shredded by this function).
  * @param padding_mode Padding scheme to be used for the data.
  * @param[out] signature Pointer to the generated signature struct.
  * @return The result of the RSA signature generation. Returns
@@ -279,18 +278,17 @@ otcrypto_status_t otcrypto_rsa_verify(
  * verification check fails.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_rsa_hash_sign_verify(
+otcrypto_status_t otcrypto_rsa_hash_sign_verify_final(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
-    const otcrypto_const_byte_buf_t *message,
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_context_t *ctx,
     otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t *signature);
 
 /**
- * Verifies the authenticity of the input signature by hashing first.
+ * Finalizes a streaming hash context and verifies the authenticity of the input
+ * RSA signature.
  *
  * @param public_key Pointer to public key struct.
- * @param hash_mode Hash algorithm to use for message hashing.
- * @param message Message data to be hashed and verified.
+ * @param ctx Streaming hash context (finalized and shredded by this function).
  * @param padding_mode Padding scheme to be used for the data.
  * @param signature Pointer to the input signature to be verified.
  * @param[out] verification_result Result of signature verification.
@@ -300,9 +298,8 @@ otcrypto_status_t otcrypto_rsa_hash_sign_verify(
  * integrity check fails.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_rsa_hash_verify(
-    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
-    const otcrypto_const_byte_buf_t *message,
+otcrypto_status_t otcrypto_rsa_hash_verify_final(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_context_t *ctx,
     otcrypto_rsa_padding_t padding_mode,
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result);

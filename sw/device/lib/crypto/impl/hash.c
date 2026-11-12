@@ -4,14 +4,29 @@
 
 #include "sw/device/lib/crypto/impl/hash.h"
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/config.h"
 #include "sw/device/lib/crypto/include/sha1.h"
 #include "sw/device/lib/crypto/include/sha2.h"
 #include "sw/device/lib/crypto/include/sha3.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('h', 's', 'h')
+
+// Ensure that `otcrypto_hash_context_t` can hold a mode word plus either a
+// SHA-2 or SHA-1 streaming context.
+static_assert(sizeof(otcrypto_hash_context_t) >=
+                  sizeof(uint32_t) + sizeof(otcrypto_sha2_context_t),
+              "`otcrypto_hash_context_t` must hold a mode word plus "
+              "`otcrypto_sha2_context_t`.");
+static_assert(sizeof(otcrypto_hash_context_t) >=
+                  sizeof(uint32_t) + sizeof(otcrypto_sha1_context_t),
+              "`otcrypto_hash_context_t` must hold a mode word plus "
+              "`otcrypto_sha1_context_t`.");
 
 /**
  * Digest identifiers for different hash functions (little-endian).
@@ -182,4 +197,133 @@ status_t hash_message(otcrypto_hash_mode_t hash_mode,
   digest->len = info.digest_wordlen;
   digest->data = digest_data;
   return info.compute(message, digest);
+}
+
+otcrypto_status_t otcrypto_hash_init(otcrypto_hash_context_t *ctx,
+                                     otcrypto_hash_mode_t hash_mode) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (ctx == NULL) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  switch (launder32(hash_mode)) {
+    case kOtcryptoHashModeSha256:
+    case kOtcryptoHashModeSha384:
+    case kOtcryptoHashModeSha512: {
+      ctx->data[0] = (uint32_t)hash_mode;
+      otcrypto_sha2_context_t *sha2_ctx =
+          (otcrypto_sha2_context_t *)&ctx->data[1];
+      return otcrypto_sha2_init(hash_mode, sha2_ctx);
+    }
+    case kOtcryptoHashModeSha1: {
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha1);
+      OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+      ctx->data[0] = (uint32_t)kOtcryptoHashModeSha1;
+      otcrypto_sha1_context_t *sha1_ctx =
+          (otcrypto_sha1_context_t *)&ctx->data[1];
+      return otcrypto_sha1_init(sha1_ctx);
+    }
+    default:
+      OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+      return OTCRYPTO_BAD_ARGS;
+  }
+}
+
+otcrypto_status_t otcrypto_hash_update(
+    otcrypto_hash_context_t *ctx,
+    const otcrypto_const_byte_buf_t *input_message) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (ctx == NULL || input_message == NULL) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  otcrypto_hash_mode_t hash_mode = (otcrypto_hash_mode_t)ctx->data[0];
+  switch (launder32(hash_mode)) {
+    case kOtcryptoHashModeSha256:
+    case kOtcryptoHashModeSha384:
+    case kOtcryptoHashModeSha512: {
+      OTCRYPTO_HEALTH_CHECK(hash_mode == kOtcryptoHashModeSha256
+                                ? kTestHashSha256Bit
+                                : kTestHashSha512Bit);
+      otcrypto_sha2_context_t *sha2_ctx =
+          (otcrypto_sha2_context_t *)&ctx->data[1];
+      return otcrypto_sha2_update(sha2_ctx, input_message);
+    }
+    case kOtcryptoHashModeSha1: {
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha1);
+      OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+      otcrypto_sha1_context_t *sha1_ctx =
+          (otcrypto_sha1_context_t *)&ctx->data[1];
+      return otcrypto_sha1_update(sha1_ctx, input_message);
+    }
+    default:
+      OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+      return OTCRYPTO_BAD_ARGS;
+  }
+}
+
+otcrypto_status_t otcrypto_hash_final(otcrypto_hash_context_t *ctx,
+                                      otcrypto_hash_digest_t *digest) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (ctx == NULL || digest == NULL || digest->data == NULL) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  otcrypto_hash_mode_t hash_mode = (otcrypto_hash_mode_t)ctx->data[0];
+  status_t status = OTCRYPTO_BAD_ARGS;
+  switch (launder32(hash_mode)) {
+    case kOtcryptoHashModeSha256:
+    case kOtcryptoHashModeSha384:
+    case kOtcryptoHashModeSha512: {
+      OTCRYPTO_HEALTH_CHECK(hash_mode == kOtcryptoHashModeSha256
+                                ? kTestHashSha256Bit
+                                : kTestHashSha512Bit);
+      otcrypto_sha2_context_t *sha2_ctx =
+          (otcrypto_sha2_context_t *)&ctx->data[1];
+      status = otcrypto_sha2_final(sha2_ctx, digest);
+      break;
+    }
+    case kOtcryptoHashModeSha1: {
+      HARDENED_CHECK_EQ(hash_mode, kOtcryptoHashModeSha1);
+      OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+      otcrypto_sha1_context_t *sha1_ctx =
+          (otcrypto_sha1_context_t *)&ctx->data[1];
+      status = otcrypto_sha1_final(sha1_ctx, digest);
+      break;
+    }
+    default:
+      OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+      return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY(hardened_memshred(ctx->data, ARRAYSIZE(ctx->data)));
+  return status;
+}
+
+status_t hash_context_final(otcrypto_hash_context_t *ctx, uint32_t *digest_data,
+                            otcrypto_hash_digest_t *digest) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (ctx == NULL || digest_data == NULL || digest == NULL) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  otcrypto_hash_mode_t hash_mode = (otcrypto_hash_mode_t)ctx->data[0];
+  hash_info_t info;
+  HARDENED_TRY(hash_info_get(hash_mode, &info));
+  digest->mode = hash_mode;
+  digest->len = info.digest_wordlen;
+  digest->data = digest_data;
+
+  return otcrypto_hash_final(ctx, digest);
 }

@@ -298,7 +298,8 @@ status_t pkcs1v15_verify_valid_test(void) {
   // Expect the signature to pass verification.
   TRY_CHECK(verification_result == kHardenedBoolTrue);
 
-  // Also test otcrypto_rsa_hash_sign_verify and otcrypto_rsa_hash_verify.
+  // Also test otcrypto_rsa_hash_sign_verify_final and
+  // otcrypto_rsa_hash_verify_final.
   otcrypto_const_word32_buf_t modulus = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, kTestModulus, ARRAYSIZE(kTestModulus));
   otcrypto_const_word32_buf_t d_share0 =
@@ -338,15 +339,19 @@ status_t pkcs1v15_verify_valid_test(void) {
   uint32_t sig[kRsa2048NumWords];
   otcrypto_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, kRsa2048NumWords);
-  TRY(otcrypto_rsa_hash_sign_verify(&private_key, &public_key,
-                                    kOtcryptoHashModeSha256, &msg_buf,
-                                    kOtcryptoRsaPaddingPkcs, &sig_buf));
+  otcrypto_hash_context_t hash_ctx;
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+  TRY(otcrypto_rsa_hash_sign_verify_final(&private_key, &public_key, &hash_ctx,
+                                          kOtcryptoRsaPaddingPkcs, &sig_buf));
   otcrypto_const_word32_buf_t const_sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, kRsa2048NumWords);
   verification_result = kHardenedBoolFalse;
-  TRY(otcrypto_rsa_hash_verify(&public_key, kOtcryptoHashModeSha256, &msg_buf,
-                               kOtcryptoRsaPaddingPkcs, &const_sig_buf,
-                               &verification_result));
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+  TRY(otcrypto_rsa_hash_verify_final(&public_key, &hash_ctx,
+                                     kOtcryptoRsaPaddingPkcs, &const_sig_buf,
+                                     &verification_result));
   TRY_CHECK(verification_result == kHardenedBoolTrue);
 
   return OK_STATUS();
@@ -852,10 +857,10 @@ static const uint32_t kTestModulusPrimeSquare[kRsa2048NumWords] = {
 };
 
 /**
- * Run `otcrypto_rsa_hash_verify` on a hand-built public key.
+ * Run `otcrypto_rsa_hash_verify_final` on a hand-built public key.
  *
  * The key is built without `otcrypto_rsa_public_key_construct`, so the
- * modulus checks in `otcrypto_rsa_hash_verify` are the only ones applied.
+ * modulus checks in `otcrypto_rsa_hash_verify_final` are the only ones applied.
  */
 static otcrypto_status_t hash_verify_with_modulus(
     const uint32_t *modulus, hardened_bool_t *verification_result) {
@@ -874,9 +879,12 @@ static otcrypto_status_t hash_verify_with_modulus(
   otcrypto_const_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, kValidSignaturePkcs1v15,
                         ARRAYSIZE(kValidSignaturePkcs1v15));
-  return otcrypto_rsa_hash_verify(&public_key, kOtcryptoHashModeSha256,
-                                  &msg_buf, kOtcryptoRsaPaddingPkcs, &sig_buf,
-                                  verification_result);
+  otcrypto_hash_context_t hash_ctx;
+  HARDENED_TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  HARDENED_TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+  return otcrypto_rsa_hash_verify_final(&public_key, &hash_ctx,
+                                        kOtcryptoRsaPaddingPkcs, &sig_buf,
+                                        verification_result);
 }
 
 status_t hash_verify_modulus_check_test(void) {

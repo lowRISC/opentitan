@@ -614,6 +614,9 @@ Streaming is supported for **SHA-1** (in plain software; not FI/SCA protected) a
 {{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_init }}
 {{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_update }}
 {{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_sha2_final }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_hash_init }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_hash_update }}
+{{#header-snippet sw/device/lib/crypto/include/sha2.h otcrypto_hash_final }}
 
 ## Message Authentication
 
@@ -697,8 +700,8 @@ Always ensure that you fully understand the security implications of the padding
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_private_key_from_exponents }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_sign }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_verify }}
-{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_hash_sign_verify }}
-{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_hash_verify }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_hash_sign_verify_final }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_hash_verify_final }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_encrypt }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_decrypt }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_keypair_from_cofactor }}
@@ -773,16 +776,16 @@ For ECDSA, the cryptography library supports keypair generation, signing, and si
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_sign_verify }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_verify }}
-{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_hash_sign_verify }}
-{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_hash_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_hash_sign_verify_final }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_hash_verify_final }}
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_keygen }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign_config_k }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_sign_verify }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_verify }}
-{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_hash_sign_verify }}
-{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_hash_verify }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_hash_sign_verify_final }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_hash_verify_final }}
 
 #### ECDH
 

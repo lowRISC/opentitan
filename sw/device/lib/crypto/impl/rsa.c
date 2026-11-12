@@ -801,23 +801,24 @@ otcrypto_status_t otcrypto_rsa_verify(
                                             verification_result);
 }
 
-otcrypto_status_t otcrypto_rsa_hash_sign_verify(
+otcrypto_status_t otcrypto_rsa_hash_sign_verify_final(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
-    const otcrypto_const_byte_buf_t *message,
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_context_t *ctx,
     otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t *signature) {
-  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_HASH_SIGN_VERIFY);
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_HASH_SIGN_VERIFY_FINAL);
   OTCRYPTO_HEALTH_CHECK(kTestRsa4096SignBit);
   if ((private_key != NULL &&
        private_key->config.key_length == kOtcryptoRsa2048PrivateKeyBytes) ||
-      hash_mode == kOtcryptoHashModeSha1 ||
       padding_mode == kOtcryptoRsaPaddingNull) {
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   }
   uint32_t digest_data[16];
   HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
   otcrypto_hash_digest_t digest;
-  HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
+  HARDENED_TRY(hash_context_final(ctx, digest_data, &digest));
+  if (digest.mode == kOtcryptoHashModeSha1) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
   HARDENED_TRY(otcrypto_rsa_sign(private_key, digest, padding_mode, signature));
   otcrypto_const_word32_buf_t signature_check = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, signature->data, signature->len);
@@ -838,16 +839,14 @@ otcrypto_status_t otcrypto_rsa_hash_sign_verify(
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
-otcrypto_status_t otcrypto_rsa_hash_verify(
-    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
-    const otcrypto_const_byte_buf_t *message,
+otcrypto_status_t otcrypto_rsa_hash_verify_final(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_context_t *ctx,
     otcrypto_rsa_padding_t padding_mode,
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
-  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_HASH_VERIFY);
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_HASH_VERIFY_FINAL);
   OTCRYPTO_LOCKED_STATE_CHECK();
-  if (hash_mode == kOtcryptoHashModeSha1 ||
-      padding_mode == kOtcryptoRsaPaddingNull) {
+  if (padding_mode == kOtcryptoRsaPaddingNull) {
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   }
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
@@ -861,9 +860,14 @@ otcrypto_status_t otcrypto_rsa_hash_verify(
   uint32_t digest_data[16];
   HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
   otcrypto_hash_digest_t digest;
-  HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
-  return otcrypto_eval_exit(otcrypto_rsa_verify(
-      public_key, digest, padding_mode, signature, verification_result));
+  HARDENED_TRY(hash_context_final(ctx, digest_data, &digest));
+  if (digest.mode == kOtcryptoHashModeSha1) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
+  status_t status = otcrypto_rsa_verify(public_key, digest, padding_mode,
+                                        signature, verification_result);
+  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  return otcrypto_eval_exit(status);
 }
 
 otcrypto_status_t otcrypto_rsa_encrypt(
@@ -916,9 +920,11 @@ static otcrypto_status_t rsa_pct_verify(
       otcrypto_integrity_blinded_checksum(&pct_private_key);
 
   otcrypto_word32_buf_t sig = otcrypto_make_word32_buf(sig_data, sig_words);
-  return otcrypto_rsa_hash_sign_verify(&pct_private_key, &pct_public_key,
-                                       kOtcryptoHashModeSha512, &msg,
-                                       kOtcryptoRsaPaddingPkcs, &sig);
+  otcrypto_hash_context_t ctx;
+  HARDENED_TRY(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha512));
+  HARDENED_TRY(otcrypto_hash_update(&ctx, &msg));
+  return otcrypto_rsa_hash_sign_verify_final(
+      &pct_private_key, &pct_public_key, &ctx, kOtcryptoRsaPaddingPkcs, &sig);
 }
 #endif
 

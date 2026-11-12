@@ -607,13 +607,23 @@ cc_library(
     name = "hash",
     srcs = ["hash.c"],
     hdrs = ["hash.h"],
+    local_defines = select({
+        "//sw/device/lib/crypto/configs:hashed": [
+            "FIPS_MODE",
+        ],
+        "//conditions:default": [],
+    }),
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":cmvp",
+        ":config",
         ":sha1",
         ":sha2",
         ":sha3",
+        ":state",
         ":status",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )

@@ -442,7 +442,7 @@ class DisParser:
                 "entropy_complex_health_test_config_check",
                 "otcrypto_entropy_health_test_config_check",
             }
-        elif "otcrypto_rsa_hash_sign_verify" in root_names or "otcrypto_rsa_sign" in root_names:
+        elif "otcrypto_rsa_hash_sign_verify_final" in root_names or "otcrypto_rsa_sign" in root_names:
             skip_names |= {
                 "rsa_padding_pss_encode", "rsa_padding_pss_verify",
                 "pss_construct_h", "mgf1",

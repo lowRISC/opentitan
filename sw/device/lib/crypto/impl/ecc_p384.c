@@ -282,27 +282,28 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify(
       signature, verification_result));
 }
 
-otcrypto_status_t otcrypto_ecdsa_p384_hash_sign_verify(
+otcrypto_status_t otcrypto_ecdsa_p384_hash_sign_verify_final(
     const otcrypto_blinded_key_t *private_key,
-    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
-    const otcrypto_const_byte_buf_t *message,
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_context_t *ctx,
     otcrypto_word32_buf_t *signature) {
-  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P384_HASH_SIGN_VERIFY);
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_ECDSA_P384_HASH_SIGN_VERIFY_FINAL);
   OTCRYPTO_HEALTH_CHECK(kTestP384SignBit);
   uint32_t digest_data[16];
   HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
   otcrypto_hash_digest_t digest;
-  HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
-  return otcrypto_eval_exit(otcrypto_ecdsa_p384_sign_verify(
-      private_key, public_key, digest, signature));
+  HARDENED_TRY(hash_context_final(ctx, digest_data, &digest));
+  status_t status = otcrypto_ecdsa_p384_sign_verify(private_key, public_key,
+                                                    digest, signature);
+  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  return otcrypto_eval_exit(status);
 }
 
-otcrypto_status_t otcrypto_ecdsa_p384_hash_verify(
-    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_mode_t hash_mode,
-    const otcrypto_const_byte_buf_t *message,
+otcrypto_status_t otcrypto_ecdsa_p384_hash_verify_final(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_context_t *ctx,
     const otcrypto_const_word32_buf_t *signature,
     hardened_bool_t *verification_result) {
-  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P384_HASH_VERIFY);
+  OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P384_HASH_VERIFY_FINAL);
   OTCRYPTO_HEALTH_CHECK(kTestP384VerifyBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (verification_result == NULL) {
@@ -313,9 +314,11 @@ otcrypto_status_t otcrypto_ecdsa_p384_hash_verify(
   uint32_t digest_data[16];
   HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
   otcrypto_hash_digest_t digest;
-  HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
-  return otcrypto_eval_exit(otcrypto_ecdsa_p384_verify(
-      public_key, digest, signature, verification_result));
+  HARDENED_TRY(hash_context_final(ctx, digest_data, &digest));
+  status_t status = otcrypto_ecdsa_p384_verify(public_key, digest, signature,
+                                               verification_result);
+  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  return otcrypto_eval_exit(status);
 }
 
 otcrypto_status_t otcrypto_ecdsa_p384_sign_verify(
@@ -369,8 +372,11 @@ static otcrypto_status_t ecdsa_p384_pct_verify(
   otcrypto_word32_buf_t sig =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_data, kEcdsaP384SigWords);
 
-  return otcrypto_ecdsa_p384_hash_sign_verify(
-      private_key, public_key, kOtcryptoHashModeSha384, &msg, &sig);
+  otcrypto_hash_context_t ctx;
+  HARDENED_TRY(otcrypto_hash_init(&ctx, kOtcryptoHashModeSha384));
+  HARDENED_TRY(otcrypto_hash_update(&ctx, &msg));
+  return otcrypto_ecdsa_p384_hash_sign_verify_final(private_key, public_key,
+                                                    &ctx, &sig);
 }
 #endif
 
