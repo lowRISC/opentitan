@@ -17,6 +17,8 @@ module tb;
   wire clk;
   wire rst_n;
   wire rst_shadowed_n;
+  wire edn_clk;
+  wire edn_rst_n;
 
   // KMAC app's req / rsp interface. The request carries the message utilized in the key derivation
   // function by KMAC. The response carries the derived child key.
@@ -29,7 +31,9 @@ module tb;
   wire kmac_pkg::app_rsp_t otbn_rsp;
 
   // Operation done interrupt from keymgr_dpe
-  wire intr_op_done;
+  wire                          intr_op_done;
+  wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
+  assign interrupts = NUM_MAX_INTERRUPTS'(intr_op_done);
 
   // Alert interface to keymgr_dpe
   prim_alert_pkg::alert_rx_t [NumAlerts-1:0] alert_rx;
@@ -42,11 +46,12 @@ module tb;
 
   // For now, instantiate KMAC interface as OTBN until we get a new HKDF agent. Tracked in #32188.
   kmac_app_if     otbn_if (.clk_i(clk), .rst_ni(rst_n), .req(otbn_req), .rsp(otbn_rsp));
-  pins_if         intr_if (intr_op_done);
+  pins_if #(NUM_MAX_INTERRUPTS) intr_if (interrupts);
   alert_if        alert_if[NumAlerts] (.clk(clk), .rst_n(rst_n));
   tl_if           tl_if (.clk(clk), .rst_n(rst_n));
 
-  push_pull_if #(.DeviceDataWidth(EDN_DATA_WIDTH)) edn_if (.clk(clk), .rst_n(rst_n));
+  clk_rst_if      edn_clk_rst_if (.clk(edn_clk), .rst_n(edn_rst_n));
+  push_pull_if #(.DeviceDataWidth(EDN_DATA_WIDTH)) edn_if (.clk(edn_clk), .rst_n(edn_rst_n));
 
   keymgr_dpe #(
     .NumInstHwSlot      (DvNumInstHwSlot),
@@ -93,6 +98,10 @@ module tb;
   assign keymgr_dpe_if.kmac_data_req = kmac_req;
   assign keymgr_dpe_if.kmac_data_rsp = kmac_rsp;
 
+  // No agent drives otbn_if yet, so otbn_rsp would float. Tie it to its default value until the
+  // HKDF agent exists (#32188).
+  assign otbn_rsp = kmac_pkg::APP_RSP_DEFAULT;
+
   // Connect keymgr_dpe and EDN interface.
   assign keymgr_dpe_if.edn_clk   = edn_if.clk;
   assign keymgr_dpe_if.edn_rst_n = edn_if.rst_n;
@@ -115,9 +124,11 @@ module tb;
   initial begin
     // Drive clk and rst_n from clk_rst_if.
     clk_rst_if.set_active();
+    edn_clk_rst_if.set_active();
 
     // Set all the interface handles in config_db for their respective agents.
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
+    uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "edn_clk_rst_vif", edn_clk_rst_if);
     uvm_config_db#(virtual rst_shadowed_if)::set(null,
                                                  "*.env",
                                                  "rst_shadowed_vif",
@@ -131,8 +142,8 @@ module tb;
     uvm_config_db#(virtual kmac_app_if)::set(null, "*env.m_otbn_agent", "vif", otbn_if);
     uvm_config_db#(virtual push_pull_if#(.DeviceDataWidth(EDN_DATA_WIDTH)))
                  ::set(null, "*.env.m_edn_pull_agent*", "vif", edn_if);
-    uvm_config_db#(virtual pins_if)::set(null, "*.env", "intr_vif", intr_if);
-    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agents*", "vif", tl_if);
+    uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
+    uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
 
     run_test();
   end
