@@ -6,6 +6,7 @@ r"""Given an ECC encoding matrix, this script generates random life cycle
 state encodings that can be incrementally written to a memory protected with
 the ECC code specified.
 """
+import os  # CI precheck test: do not merge.  
 import argparse
 import logging as log
 from pathlib import Path

@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+// CI precheck test: do not merge.   
 package lc_ctrl_env_pkg;
   // dep packages
   import uvm_pkg::*;
