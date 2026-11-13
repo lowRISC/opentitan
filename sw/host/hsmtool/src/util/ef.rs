@@ -114,6 +114,23 @@ impl ElementaryFile {
         Ok(value)
     }
 
+    pub fn delete(self, session: &Session) -> Result<()> {
+        let mut attr = AttributeMap::default();
+        attr.insert(
+            AttributeType::Class,
+            AttrData::ObjectClass(ObjectClass::Data),
+        );
+        attr.insert(AttributeType::Label, AttrData::Str(self.name.clone()));
+        if let Some(app) = &self.application {
+            attr.insert(AttributeType::Application, AttrData::Str(app.clone()));
+        }
+        let attr = attr.to_vec()?;
+
+        let object = helper::find_one_object(session, &attr)?;
+        session.destroy_object(object)?;
+        Ok(())
+    }
+
     pub fn write(self, session: &Session, data: &[u8]) -> Result<()> {
         let mut attr = AttributeMap::default();
         attr.insert(

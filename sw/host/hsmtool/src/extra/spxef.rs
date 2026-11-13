@@ -110,7 +110,9 @@ impl SpxInterface for SpxEf {
         let ef = ElementaryFile::find(&self.session, search)?;
         if flags.contains(GenerateFlags::OVERWRITE) {
             if ef.len() <= 1 {
-                // delete files
+                for file in ef {
+                    file.delete(&self.session)?;
+                }
             } else {
                 return Err(HsmError::TooManyObjects(ef.len(), alias.into()).into());
             }
@@ -158,7 +160,9 @@ impl SpxInterface for SpxEf {
         let ef = ElementaryFile::find(&self.session, search)?;
         if overwrite {
             if ef.len() <= 1 {
-                // delete files
+                for file in ef {
+                    file.delete(&self.session)?;
+                }
             } else {
                 return Err(HsmError::TooManyObjects(ef.len(), alias.into()).into());
             }
