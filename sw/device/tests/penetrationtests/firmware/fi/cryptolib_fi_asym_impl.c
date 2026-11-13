@@ -252,10 +252,7 @@ status_t cryptolib_fi_rsa_sign_impl(
   uint32_t sig[kPentestRsaMaxMsgWords] = {0};
   otcrypto_word32_buf_t sig_buf;
   memset(&sig_buf, 0, sizeof(sig_buf));
-  uj_output->cfg = 0;
-  memset(uj_output->sig, 0, RSA_CMD_MAX_SIGNATURE_BYTES);
-  memset(uj_output->n, 0, RSA_CMD_MAX_N_BYTES);
-  memset(uj_output->d, 0, RSA_CMD_MAX_N_BYTES);
+  memset(uj_output, 0, sizeof(*uj_output));
 
   size_t private_key_bytes;
   size_t private_key_blob_bytes;
