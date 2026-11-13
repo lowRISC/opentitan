@@ -263,6 +263,10 @@ module kmac_app
     end
   end
 
+  // Some tools reject assignment patterns in port connections.
+  logic arb_data [NumAppIntf];
+  assign arb_data = '{default: '0};
+
   prim_arbiter_fixed #(
     .N (NumAppIntf),
     .DW(1),
@@ -272,7 +276,7 @@ module kmac_app
     .rst_ni,
 
     .req_i  (app_req_valids),
-    .data_i ('{default:'0}),
+    .data_i (arb_data),
     .gnt_o  (), // not used
     .idx_o  (arb_idx),
 

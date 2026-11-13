@@ -358,6 +358,10 @@ module rram_phy_rd
   /////////////////
   // RRAM Access //
   /////////////////
+  // Some tools reject assignment patterns in port connections.
+  logic req_sel_data [2];
+  assign req_sel_data = '{default: '0};
+
   prim_arbiter_tree #(
     .N(2),
     .DW(1),
@@ -367,7 +371,7 @@ module rram_phy_rd
     .rst_ni,
     .req_chk_i(1'b0),
     .req_i    ({shadow_rd_req, rd_req}),
-    .data_i   ('{default: '0}),
+    .data_i   (req_sel_data),
     .gnt_o    ({shadow_rd_gnt, rd_gnt}),
     .idx_o    (),
     .valid_o  (rd_req_o),

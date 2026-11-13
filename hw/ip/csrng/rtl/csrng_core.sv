@@ -891,6 +891,10 @@ module csrng_core import csrng_pkg::*; #(
   assign acmd_eop = cmd_arb_eop[cmd_arb_idx_q]; // End-of-Packet
   assign acmd_bus = cmd_arb_bus[cmd_arb_idx_q]; // Actual bus data; content changes with s/m/eop
 
+  // Some tools reject assignment patterns in port connections.
+  logic cmd_arb_data [NumApps];
+  assign cmd_arb_data = '{default: 1'b0};
+
   prim_arbiter_ppc #(
     .EnDataPort(0),    // Ignore data port
     .N(NumApps),  // Number of request ports
@@ -900,7 +904,7 @@ module csrng_core import csrng_pkg::*; #(
     .rst_ni   (rst_ni),
     .req_chk_i(cs_enable_fo[4]),
     .req_i    (cmd_arb_req),
-    .data_i   ('{default: 1'b0}),
+    .data_i   (cmd_arb_data),
     .gnt_o    (cmd_arb_gnt),
     .idx_o    (cmd_arb_idx),
     .valid_o  (acmd_avail), // 1 req

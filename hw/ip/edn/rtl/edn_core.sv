@@ -857,6 +857,10 @@ module edn_core import edn_pkg::*;
   // packer arbitration
   //--------------------------------------------
 
+  // Some tools reject assignment patterns in port connections.
+  logic packer_arb_data [NumEndPoints];
+  assign packer_arb_data = '{default: 1'b0};
+
   prim_arbiter_ppc #(
     .EnDataPort(0),    // Ignore data port
     .N(NumEndPoints),  // Number of request ports
@@ -866,7 +870,7 @@ module edn_core import edn_pkg::*;
     .rst_ni(rst_ni),
     .req_chk_i(1'b1),
     .req_i(packer_arb_req), // N number of reqs
-    .data_i('{default: 1'b0}),
+    .data_i(packer_arb_data),
     .gnt_o(packer_arb_gnt), // N number of gnts
     .idx_o(), //NC
     .valid_o(packer_arb_valid),
