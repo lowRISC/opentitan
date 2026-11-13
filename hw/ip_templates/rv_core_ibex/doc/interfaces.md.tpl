@@ -37,8 +37,8 @@ Signal                  | Direction | Type                                      
 `cored_tl_h_o`          | `output`  | `tlul_pkg::tl_h2d_t`                                  | Outgoing data tlul request.
 `cored_tl_h_i`          | `input`   | `tlul_pkg::tl_d2h_t`                                  | Incoming data tlul response.
 % if cheriot_available:
-`cored_tag_h2d_o`       | `output`  | `logic`                                               | Outgoing CHERIoT capability tag of the data tlul request.
-`cored_tag_d2h_i`       | `input`   | `logic`                                               | Incoming CHERIoT capability tag of the data tlul response.
+`cored_tag_h2d_o`       | `output`  | `prim_mubi_pkg::mubi4_t`                              | Outgoing CHERIoT capability tag of the data tlul request.
+`cored_tag_d2h_i`       | `input`   | `prim_mubi_pkg::mubi4_t`                              | Incoming CHERIoT capability tag of the data tlul response.
 `corerevbm_tl_o`        | `output`  | `tlul_pkg::tl_h2d_t`                                  | Outgoing TRVK revocation bitmap tlul request.
 `corerevbm_tl_i`        | `input`   | `tlul_pkg::tl_d2h_t`                                  | Incoming TRVK revocation bitmap tlul response.
 `cheriot_ena_o`         | `output`  | `prim_mubi_pkg::mubi4_t`                              | CHERIoT execution mode enable from the execution mode switch.

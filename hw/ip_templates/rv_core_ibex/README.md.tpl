@@ -32,6 +32,7 @@ The Ibex RISC-V Core Wrapper instantiates an [Ibex RV32 CPU Core](https://github
 % if cheriot_available:
 All configuration parameters of Ibex are passed through, except `BaseIsa`, which is fixed to the CHERIoT-capable base ISA.
 The wrapper holds the [execution mode switch](doc/theory_of_operation.md#execution-mode-switch) that selects between ePMP and CHERIoT mode at runtime, and exposes the TRVK revocation bitmap interface of Ibex as the `corerevbm_tl` TL-UL host port.
+The capability tag of each data access travels as a [multi-bit encoded sideband](doc/theory_of_operation.md#capability-tag-sideband) next to the data port.
 % else:
 All configuration parameters of Ibex are passed through, except `BaseIsa`, which is fixed to RV32I, and the CHERIoT parameters, which are not available.
 The CHERIoT ports of Ibex are tied off and not exposed.

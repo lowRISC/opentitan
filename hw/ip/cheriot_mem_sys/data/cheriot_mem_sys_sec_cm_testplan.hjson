@@ -31,9 +31,24 @@
     }
     {
       name: sec_cm_logic_shadow
-      desc: "Verify the countermeasure(s) LOGIC.SHADOW."
+      desc: '''
+            Verify the countermeasure(s) LOGIC.SHADOW.
+
+            Corrupt an output of the main copy, or an input of the second copy while it is in use,
+            for one cycle, and check that the lockstep comparison raises the `fatal_fault` alert.
+            Assertions inside the second copy are disabled while it is corrupted. Without a
+            corruption, including the cycles after reset, the alert must not fire.
+            '''
       stage: V2S
+      // The chip-level testpoint chip_sw_cheriot_mem_sys_lockstep_glitch is to cover this with
+      // traffic on every port.
       tests: []
+    }
+    {
+      name: sec_cm_tbre_config_shadow
+      desc: "Verify the countermeasure(s) TBRE.CONFIG.SHADOW."
+      stage: V2S
+      tests: ["cheriot_mem_sys_shadow_reg_errors"]
     }
     {
       name: sec_cm_mem_sw_noaccess
@@ -49,8 +64,15 @@
     }
     {
       name: sec_cm_cored_tag_intersig_mubi
-      desc: "Verify the countermeasure(s) CORED_TAG.INTERSIG.MUBI."
+      desc: '''
+            Verify the countermeasure(s) CORED_TAG.INTERSIG.MUBI.
+
+            Corrupt the request tag of an untagged core data request to an invalid encoding, and
+            check that it reads as untagged and raises the `fatal_fault` alert.
+            '''
       stage: V2S
+      // The core data port is not driven in this testbench, so the chip-level testpoint
+      // chip_sw_cheriot_cored_tag_mubi is to cover this.
       tests: []
     }
   ]

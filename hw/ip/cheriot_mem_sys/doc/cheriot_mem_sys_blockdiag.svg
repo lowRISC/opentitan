@@ -29,6 +29,7 @@
       .wm    { fill: none; stroke: #b0127a; stroke-width: 1.6; marker-end: url(#am); }
       .wc    { fill: none; stroke: #7a7a7a; stroke-width: 1.2; stroke-dasharray: 4 3;
                marker-end: url(#ag); }
+      .wcb   { marker-start: url(#ag); }
       .t     { text-anchor: middle; }
       .b     { font-weight: bold; }
       .s     { font-size: 9.5px; fill: #5c5c5c; }
@@ -61,8 +62,8 @@
   <!-- cheriot_mem_sys                                                  -->
   <!-- ================================================================ -->
   <rect class="ip" x="110" y="270" width="900" height="440" rx="6"/>
-  <rect class="lock" x="122" y="282" width="876" height="400" rx="5"/>
-  <text class="lk" x="132" y="674">Lockstep</text>
+  <rect class="lock" x="122" y="282" width="876" height="330" rx="5"/>
+  <text class="lk" x="752" y="604" text-anchor="end">Lockstep</text>
   <text class="mono b" x="963" y="701" text-anchor="end">cheriot_mem_sys</text>
 
   <!-- Core tag filter with the WTRC on its host port -->
@@ -90,9 +91,13 @@
   <text class="t b" x="472" y="561">Tag Filter</text>
   <text class="t s" x="472" y="575">tag-only writes</text>
 
-  <!-- Registers -->
-  <rect class="blk" x="495" y="618" width="120" height="34" rx="4"/>
-  <text class="t b" x="555" y="639">CSRs</text>
+  <!-- Registers, outside the lockstep -->
+  <rect class="blk" x="495" y="640" width="120" height="34" rx="4"/>
+  <text class="t b" x="555" y="661">CSRs</text>
+
+  <!-- Alert sender and interrupt, outside the lockstep -->
+  <rect class="blk" x="650" y="640" width="100" height="34" rx="4"/>
+  <text class="t b" x="700" y="661">Alert &#183; Intr</text>
 
   <!-- Shared tag path: socket and RMW filter -->
   <path class="blk" d="M650,332 L668,346 V396 L650,410 Z"/>
@@ -177,9 +182,13 @@
   <path class="w" d="M600,473 H624 A6,6 0 0 1 636,473 H805"/>
 
   <!-- Registers -->
-  <path class="w" d="M575,760 V652"/>
-  <path class="wc" d="M555,618 V598"/>
-  <text class="s" x="561" y="612">start</text>
+  <path class="w" d="M575,760 V674"/>
+  <path class="wc wcb" d="M555,640 V598"/>
+  <text class="s" x="561" y="632">start &#183; status</text>
+
+  <!-- Alert and interrupt causes -->
+  <path class="wc" d="M700,612 V640"/>
+  <path class="wc" d="M700,674 V704"/>
 
   <!-- Shared tag path -->
   <path class="wm" d="M668,371 H690"/>
@@ -189,7 +198,7 @@
   <path class="w" d="M760,760 V545 H805"/>
 
   <!-- Mode enable -->
-  <path class="wc" d="M895,270 V290"/>
+  <path class="wc" d="M895,270 V282"/>
 
   <!-- Access checkers into the arbiter, arbiter to the meta SRAM -->
   <path class="w" d="M905,315 H935"/>
@@ -222,12 +231,15 @@
   <path class="port" d="M204,710 L210,704 L216,710 L210,716 Z"/>
   <path class="port" d="M466,710 L472,704 L478,710 L472,716 Z"/>
   <path class="port" d="M569,710 L575,704 L581,710 L575,716 Z"/>
+  <path class="port" d="M694,710 L700,704 L706,710 L700,716 Z"/>
   <path class="port" d="M754,710 L760,704 L766,710 L760,716 Z"/>
   <path class="port" d="M969,710 L975,704 L981,710 L975,716 Z"/>
   <text class="mono" x="218" y="728">cored_tl_h</text>
   <text class="mono" x="480" y="728">tbre_tl_h</text>
   <text class="s" x="480" y="741">read-only</text>
   <text class="mono" x="583" y="728">regs_tl_d</text>
+  <text class="mono" x="708" y="728">intr</text>
+  <text class="mono" x="708" y="741">alert</text>
   <text class="mono" x="768" y="728">revbm_tl_d</text>
   <text class="mono" x="967" y="728" text-anchor="end">meta_sram_tl</text>
 

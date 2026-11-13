@@ -16,7 +16,7 @@
  * `top_earlgrey_alert_peripheral_t`.
  */
 const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[69] = {
+    top_earlgrey_alert_for_peripheral[70] = {
   [kTopEarlgreyAlertIdUart0FatalFault] = kTopEarlgreyAlertPeripheralUart0,
   [kTopEarlgreyAlertIdUart1FatalFault] = kTopEarlgreyAlertPeripheralUart1,
   [kTopEarlgreyAlertIdUart2FatalFault] = kTopEarlgreyAlertPeripheralUart2,
@@ -85,6 +85,7 @@ const top_earlgrey_alert_peripheral_t
   [kTopEarlgreyAlertIdRvCoreIbexFatalHwErr] = kTopEarlgreyAlertPeripheralRvCoreIbex,
   [kTopEarlgreyAlertIdRvCoreIbexRecovHwErr] = kTopEarlgreyAlertPeripheralRvCoreIbex,
   [kTopEarlgreyAlertIdCheriotMemSysFatalFault] = kTopEarlgreyAlertPeripheralCheriotMemSys,
+  [kTopEarlgreyAlertIdCheriotMemSysRecovCtrlUpdateErr] = kTopEarlgreyAlertPeripheralCheriotMemSys,
   [kTopEarlgreyAlertIdSramCtrlMetaFatalError] = kTopEarlgreyAlertPeripheralSramCtrlMeta,
 };
 

@@ -1412,8 +1412,9 @@ typedef enum top_earlgrey_alert_id {
   kTopEarlgreyAlertIdRvCoreIbexFatalHwErr = 65, /**< rv_core_ibex_fatal_hw_err */
   kTopEarlgreyAlertIdRvCoreIbexRecovHwErr = 66, /**< rv_core_ibex_recov_hw_err */
   kTopEarlgreyAlertIdCheriotMemSysFatalFault = 67, /**< cheriot_mem_sys_fatal_fault */
-  kTopEarlgreyAlertIdSramCtrlMetaFatalError = 68, /**< sram_ctrl_meta_fatal_error */
-  kTopEarlgreyAlertIdLast = 68, /**< \internal The Last Valid Alert ID. */
+  kTopEarlgreyAlertIdCheriotMemSysRecovCtrlUpdateErr = 68, /**< cheriot_mem_sys_recov_ctrl_update_err */
+  kTopEarlgreyAlertIdSramCtrlMetaFatalError = 69, /**< sram_ctrl_meta_fatal_error */
+  kTopEarlgreyAlertIdLast = 69, /**< \internal The Last Valid Alert ID. */
 } top_earlgrey_alert_id_t;
 
 /**
@@ -1423,7 +1424,7 @@ typedef enum top_earlgrey_alert_id {
  * `top_earlgrey_alert_peripheral_t`.
  */
 extern const top_earlgrey_alert_peripheral_t
-    top_earlgrey_alert_for_peripheral[69];
+    top_earlgrey_alert_for_peripheral[70];
 
 #define PINMUX_MIO_PERIPH_INSEL_IDX_OFFSET 2
 

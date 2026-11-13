@@ -343,7 +343,7 @@ static void trigger_alert_test(void) {
   }
 
   // Write cheriot_mem_sys's alert_test reg and check alert_cause.
-  for (dif_cheriot_mem_sys_alert_t i = 0; i < 1; ++i) {
+  for (dif_cheriot_mem_sys_alert_t i = 0; i < 2; ++i) {
     CHECK_DIF_OK(dif_cheriot_mem_sys_alert_force(&cheriot_mem_sys, kDifCheriotMemSysAlertFatalFault + i));
 
     // Verify that alert handler received it.
