@@ -227,6 +227,40 @@
      bazel: []
     }
     {
+     name: chip_sw_cheriot_cored_tag_mubi
+     desc: '''Verify the multi-bit encoding of the capability tag sideband between rv_core_ibex and
+              cheriot_mem_sys (CORED_TAG.INTERSIG.MUBI).
+
+              While the CPU runs a CHERIoT test, corrupt the request tag into cheriot_mem_sys and
+              the response tag into rv_core_ibex to an invalid encoding for one untagged beat each.
+              Ensure that:
+              - The receiver reads the invalid encoding as untagged.
+              - The receiver raises its fatal alert: `fatal_fault` of cheriot_mem_sys, or
+                `fatal_hw_err` of rv_core_ibex with ERR_STATUS.FATAL_INTG_ERR set.
+              - The alert of the other side does not fire.
+           '''
+     stage: V2S
+     si_stage: NA
+     tests: []
+     bazel: []
+    }
+    {
+     name: chip_sw_cheriot_mem_sys_lockstep_glitch
+     desc: '''Verify lockstep checking of cheriot_mem_sys (LOGIC.SHADOW).
+
+              While the CPU runs a CHERIoT test that loads and stores capabilities and the
+              revocation engine sweeps, ensure the `fatal_fault` alert of cheriot_mem_sys is
+              triggered when:
+              - Outputs from the main or the second copy of its logic are corrupted.
+              - Inputs into the second copy are corrupted while they are in use.
+              Ensure that the alert does not fire without a corruption.
+           '''
+     stage: V2S
+     si_stage: NA
+     tests: []
+     bazel: []
+    }
+    {
       name: chip_sw_rv_core_ibex_mcounteren_writable
       desc: '''Verifies that the mcounteren_writable register is lockable.
             '''

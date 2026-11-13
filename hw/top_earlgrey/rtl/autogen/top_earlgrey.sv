@@ -194,6 +194,8 @@ module top_earlgrey #(
       tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST + tl_main_pkg::ADDR_MASK_RRAM_CTRL__HOST + 1,
   parameter logic [top_pkg::TL_AW-1:0] CheriotMemSysMetaSramBaseAddr =
       tl_main_pkg::ADDR_SPACE_CHERIOT_MEM_SYS__REVBM,
+  parameter bit SecCheriotMemSysLockstep = 1'b1,
+  parameter int unsigned CheriotMemSysLockstepOffset = 1,
   // parameters for sram_ctrl_meta
   parameter int SramCtrlMetaInstSize = 38912,
   parameter int SramCtrlMetaNumRamInst = 1,
@@ -570,6 +572,8 @@ module top_earlgrey #(
   .CheriotMemSysNvmBaseAddr(CheriotMemSysNvmBaseAddr),
   .CheriotMemSysNvmTopAddr(CheriotMemSysNvmTopAddr),
   .CheriotMemSysMetaSramBaseAddr(CheriotMemSysMetaSramBaseAddr),
+  .SecCheriotMemSysLockstep(SecCheriotMemSysLockstep),
+  .CheriotMemSysLockstepOffset(CheriotMemSysLockstepOffset),
   .SramCtrlMetaInstSize(SramCtrlMetaInstSize),
   .SramCtrlMetaNumRamInst(SramCtrlMetaNumRamInst),
   .SramCtrlMetaInstrExec(SramCtrlMetaInstrExec),

@@ -177,6 +177,8 @@ module earlgrey_pd_main #(
       tl_main_pkg::ADDR_SPACE_RRAM_CTRL__HOST + tl_main_pkg::ADDR_MASK_RRAM_CTRL__HOST + 1,
   parameter logic [top_pkg::TL_AW-1:0] CheriotMemSysMetaSramBaseAddr =
       tl_main_pkg::ADDR_SPACE_CHERIOT_MEM_SYS__REVBM,
+  parameter bit SecCheriotMemSysLockstep = 1'b1,
+  parameter int unsigned CheriotMemSysLockstepOffset = 1,
   // parameters for sram_ctrl_meta
   parameter int SramCtrlMetaInstSize = 38912,
   parameter int SramCtrlMetaNumRamInst = 1,
@@ -681,14 +683,14 @@ module earlgrey_pd_main #(
   tlul_pkg::tl_d2h_t       rv_core_ibex_cored_tl_h_rsp;
   tlul_pkg::tl_h2d_t       rv_core_ibex_corerevbm_tl_req;
   tlul_pkg::tl_d2h_t       rv_core_ibex_corerevbm_tl_rsp;
-  logic       rv_core_ibex_cored_tag_h2d;
+  prim_mubi_pkg::mubi4_t       rv_core_ibex_cored_tag_h2d;
   spi_device_pkg::passthrough_req_t       spi_device_passthrough_req;
   spi_device_pkg::passthrough_rsp_t       spi_device_passthrough_rsp;
   rram_ctrl_pkg::rram_macro_req_t       rram_ctrl_rram_macro_req;
   rram_ctrl_pkg::rram_macro_rsp_t       rram_ctrl_rram_macro_rsp;
   tlul_pkg::tl_h2d_t       cheriot_mem_sys_meta_sram_tl_req;
   tlul_pkg::tl_d2h_t       cheriot_mem_sys_meta_sram_tl_rsp;
-  logic       cheriot_mem_sys_cored_tag_d2h;
+  prim_mubi_pkg::mubi4_t       cheriot_mem_sys_cored_tag_d2h;
   prim_mubi_pkg::mubi4_t       rv_core_ibex_cheriot_ena;
   logic       i3c1_rstdet_enable;
   i3c_pkg::i3c_rstdet_req_t       i3c1_rstdet_req;
@@ -2822,11 +2824,17 @@ module earlgrey_pd_main #(
     .NvmBaseAddr(CheriotMemSysNvmBaseAddr),
     .NvmTopAddr(CheriotMemSysNvmTopAddr),
     .MetaSramBaseAddr(CheriotMemSysMetaSramBaseAddr),
-    .MemSizeRevbm(3072)
+    .MemSizeRevbm(3072),
+    .SecLockstep(SecCheriotMemSysLockstep),
+    .LockstepOffset(CheriotMemSysLockstepOffset)
   ) u_cheriot_mem_sys (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_infra),
     .rst_ni(rstmgr_resets_i.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+
+    // DFT/scan connections
+    .scanmode_i,
+    .scan_rst_ni,
 
     // Interrupts
     .intr_tbre_done_o(intr_cheriot_mem_sys_tbre_done),
