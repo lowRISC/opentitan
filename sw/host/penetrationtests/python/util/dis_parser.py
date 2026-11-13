@@ -8,6 +8,9 @@ import re
 
 
 class DisParser:
+    _instances = []
+    _call_return_map = {}
+
     def __init__(self, dis_file_path=None):
         self.dis_file_path = dis_file_path
         self._func_start_addrs = None
@@ -15,6 +18,7 @@ class DisParser:
         if not os.path.exists(self.dis_file_path):
             print(f"Error: File not found at path: {self.dis_file_path}")
             sys.exit(1)
+        DisParser._instances.append(self)
 
     def get_function_addresses(self, function_name):
         try:
@@ -270,267 +274,12 @@ class DisParser:
                 sorted_pcs[i]: sorted_pcs[i + 1]
                 for i in range(len(sorted_pcs) - 1)
             }
+            for pc, nxt in self._next_pc_map.items():
+                info = instructions[pc]
+                if info["mnemonic"] in ("jal", "jalr", "c.jal", "c.jalr") and not info[
+                    "operands"
+                ].startswith(("t0,", "zero,", "x0,")):
+                    DisParser._call_return_map[pc] = nxt
         except IOError as e:
             print(f"Error reading file: {e}")
         return instructions
-
-    def get_reachable_pcs(self, start_addr, end_addr, skip_addrs=None, max_skips_per_loop=3):
-        """Statically extracts reachable instruction PCs from start_addr..end_addr.
-
-        Repeated PCs (inside loops or functions called multiple times) are included
-        `max_skips_per_loop` times so `Counter(pc_list)` reflects loop multiplicity.
-        """
-        insns = self.parse_all_instructions()
-        sorted_pcs = sorted(insns.keys())
-        pc_to_idx = {p: i for i, p in enumerate(sorted_pcs)}
-
-        # Identify untaken HARDENED_TRY error-return instructions and kOtcryptoBadArgs error blocks
-        err_pcs = set()
-        for i, p in enumerate(sorted_pcs):
-            txt = insns[p]["text"]
-            if txt.startswith("addi a0,a0,1849") and i + 1 < len(sorted_pcs):
-                nxt_p = sorted_pcs[i + 1]
-                nxt_txt = insns[nxt_p]["text"]
-                if nxt_txt.startswith("bltz a0,"):
-                    err_pcs.add(p)
-                    err_pcs.add(nxt_p)
-                    m = re.search(r"bltz a0,([0-9a-fA-F]+)", nxt_txt)
-                    if m:
-                        t_pc = int(m.group(1), 16)
-                        if t_pc in pc_to_idx and "0x1f" in insns[t_pc]["text"]:
-                            err_pcs.add(t_pc)
-                            ti = pc_to_idx[t_pc]
-                            if (ti + 1 < len(sorted_pcs) and
-                                    insns[sorted_pcs[ti + 1]]["mnemonic"] in ("j", "jal")):
-                                err_pcs.add(sorted_pcs[ti + 1])
-            if txt.startswith("lui a0,0x80010") or txt.startswith("lui s0,0x80010"):
-                err_pcs.add(p)
-                for k in range(1, 4):
-                    if i + k < len(sorted_pcs):
-                        kp = sorted_pcs[i + k]
-                        err_pcs.add(kp)
-                        if insns[kp]["mnemonic"] in ("j", "ret", "jal"):
-                            break
-
-        func_header_re = re.compile(r"^([0-9a-fA-F]+)\s+<([^>]+)>:")
-        insn_re = re.compile(
-            r"^\s*([0-9a-fA-F]+):[\s|/\-\\>,+!.*xX'=]+([0-9a-fA-F]+)\s+"
-            r"([a-zA-Z0-9_.]+)(?:\s+(.*))?"
-        )
-        target_addr_re = re.compile(r"([0-9a-fA-F]+)\s+<([^+>]+)(\+0x[0-9a-fA-F]+)?>")
-        cond_branches = {
-            "beq", "bne", "blt", "bge", "bltu", "bgeu",
-            "beqz", "bnez", "bltz", "bgez", "blez", "bgtz",
-        }
-        call_mnems = cond_branches | {"jal", "j", "tail"}
-
-        funcs = {}
-        name_to_addrs = {}
-        pc_to_jal_callees = {}
-        cur_f_addr = None
-        with open(self.dis_file_path, "r", errors="replace") as f:
-            for line in f:
-                m = func_header_re.match(line)
-                if m:
-                    cur_f_addr = int(m.group(1), 16)
-                    f_name = m.group(2)
-                    name_to_addrs.setdefault(f_name, set()).add(cur_f_addr)
-                    funcs[cur_f_addr] = {
-                        "name": f_name,
-                        "pcs": [],
-                        "insns": {},
-                        "call_sites": [],
-                        "loop_pcs": set(),
-                    }
-                    continue
-                if cur_f_addr is None:
-                    continue
-                im = insn_re.match(line)
-                if im:
-                    pc = int(im.group(1), 16)
-                    mnem = im.group(3).strip()
-                    rest = im.group(4) or ""
-                    funcs[cur_f_addr]["insns"][pc] = (mnem, rest)
-                    if mnem != "unimp" and pc not in err_pcs:
-                        funcs[cur_f_addr]["pcs"].append(pc)
-                    if mnem in call_mnems:
-                        for tm in target_addr_re.finditer(rest):
-                            t_addr = int(tm.group(1), 16)
-                            t_name = tm.group(2)
-                            t_off = tm.group(3)
-                            if (
-                                t_off is None and
-                                t_addr != cur_f_addr and
-                                not t_name.startswith("PENTEST_MARKER_") and
-                                not t_name.startswith("_otbn_remote_") and
-                                "." not in t_name
-                            ):
-                                funcs[cur_f_addr]["call_sites"].append((pc, t_addr, t_name))
-                                if mnem in ("jal", "j", "tail"):
-                                    pc_to_jal_callees.setdefault(pc, set()).add(t_addr)
-
-        # Detect backward-branch loops within each function
-        for f_addr, info in funcs.items():
-            f_name = info["name"]
-            pcs_list = info["pcs"]
-            pcs_set = set(pcs_list)
-            pc_idx = {p: i for i, p in enumerate(pcs_list)}
-            for pc in pcs_list:
-                mnem, rest = info["insns"][pc]
-                if mnem in cond_branches:
-                    for tm in target_addr_re.finditer(rest):
-                        t_addr = int(tm.group(1), 16)
-                        t_name = tm.group(2)
-                        if t_name == f_name and t_addr in pcs_set and 4 <= (pc - t_addr) <= 160:
-                            ti = pc_idx[t_addr]
-                            is_cold = False
-                            if ti > 0:
-                                prev_p = pcs_list[ti - 1]
-                                _, prest = info["insns"][prev_p]
-                                for ptm in target_addr_re.finditer(prest):
-                                    pt_addr = int(ptm.group(1), 16)
-                                    if pc - 24 <= pt_addr <= pc:
-                                        is_cold = True
-                            if not is_cold:
-                                for lp in pcs_list[ti:pc_idx[pc] + 1]:
-                                    info["loop_pcs"].add(lp)
-
-        skip_names = {
-            "pentest_set_trigger_high",
-            "pentest_set_trigger_low",
-            "otbn_busy_wait_for_done",
-            "base_log_internal_dv",
-            "base_log_internal_core",
-            "status_create",
-            "ottf_exception_handler",
-            "keymgr_generate_key_aes",
-            "keymgr_sideload_clear_aes",
-            "keymgr_sideload_clear_kmac",
-            "keymgr_sideload_clear_otbn",
-            "keymgr_wait_until_done",
-            "keyblob_to_keymgr_diversification",
-            "keyblob_buffer_to_keymgr_diversification",
-            "load_key_if_sideloaded",
-        }
-        skip_f_addrs = set()
-        if skip_addrs:
-            for sa in skip_addrs:
-                if sa:
-                    sa_int = int(sa, 16) if isinstance(sa, str) else int(sa)
-                    if sa_int in funcs:
-                        skip_f_addrs.add(sa_int)
-
-        s_pc = int(start_addr, 16) if isinstance(start_addr, str) else int(start_addr)
-        e_pc = int(end_addr, 16) if isinstance(end_addr, str) else int(end_addr)
-        roots = set()
-        marker_pcs = [
-            pc for fn_info in funcs.values() for pc in fn_info["pcs"] if s_pc <= pc < e_pc
-        ]
-        for pc in range(s_pc, e_pc, 2):
-            roots |= {c for c in pc_to_jal_callees.get(pc, set()) if c in funcs}
-
-        root_names = {funcs[r]["name"] for r in roots}
-        argv_str = " ".join(sys.argv)
-        if "otcrypto_hmac" in root_names:
-            skip_names |= {
-                "hmac_hash_sha384_init", "hmac_hash_sha512_init",
-                "hmac_hash_sha384", "hmac_hash_sha512",
-                "hmac_hmac_sha384", "hmac_hmac_sha384_redundant",
-                "hmac_hmac_sha512", "hmac_hmac_sha512_redundant",
-                "hmac_hmac_sha256_redundant", "hmac_redundant_core",
-                "hardened_memeq_masked_rhs", "context_restore",
-                "entropy_complex_health_test_config_check",
-                "otcrypto_entropy_health_test_config_check",
-            }
-        elif "otcrypto_rsa_hash_sign_verify" in root_names or "otcrypto_rsa_sign" in root_names:
-            skip_names |= {
-                "rsa_padding_pss_encode", "rsa_padding_pss_verify",
-                "pss_construct_h", "mgf1",
-                "otcrypto_sha2_384", "otcrypto_sha2_512",
-                "otcrypto_sha3_224", "otcrypto_sha3_256", "otcrypto_sha3_384", "otcrypto_sha3_512",
-                "otcrypto_shake128", "otcrypto_shake256",
-                "hmac_hash_sha384", "hmac_hash_sha512",
-                "hmac_hash_sha384_init", "hmac_hash_sha512_init",
-                "kmac_sha3_224", "kmac_sha3_256", "kmac_sha3_384", "kmac_sha3_512",
-                "kmac_shake_128", "kmac_shake_256", "kmac_init", "kmac_process_msg_blocks",
-            }
-        elif "otcrypto_rsa_verify" in root_names:
-            skip_names |= {
-                "rsa_sign_exp_async_start", "rsa_modexp_consttime_start",
-                "rsa_signature_generate_start", "rsa_signature_generate_finalize",
-                "rsa_padding_pkcs1v15_encode", "rsa_padding_pss_encode",
-                "otcrypto_sha2_384", "otcrypto_sha2_512",
-                "otcrypto_sha3_224", "otcrypto_sha3_256", "otcrypto_sha3_384", "otcrypto_sha3_512",
-                "otcrypto_shake128", "otcrypto_shake256",
-                "hmac_hash_sha384", "hmac_hash_sha512",
-                "hmac_hash_sha384_init", "hmac_hash_sha512_init",
-                "kmac_sha3_224", "kmac_sha3_256", "kmac_sha3_384", "kmac_sha3_512",
-                "kmac_shake_128", "kmac_shake_256", "kmac_init", "kmac_process_msg_blocks",
-            }
-            if "rsa_pss_verify" in argv_str:
-                skip_names.add("rsa_padding_pkcs1v15_verify")
-            else:
-                skip_names |= {"rsa_padding_pss_verify", "pss_construct_h", "mgf1"}
-        elif "otcrypto_ed25519_sign" in root_names or "otcrypto_ed25519_verify" in root_names:
-            skip_names |= {
-                "kmac_process_msg_blocks", "hmac_hash_sha256", "hmac_hash_sha384",
-                "hmac_hash_sha256_init", "hmac_hash_sha384_init",
-            }
-
-        for sname in skip_names:
-            skip_f_addrs |= name_to_addrs.get(sname, set())
-
-        seen = set()
-        stack = list(roots - skip_f_addrs)
-        while stack:
-            fn_addr = stack.pop()
-            if fn_addr in seen or fn_addr in skip_f_addrs or fn_addr not in funcs:
-                continue
-            seen.add(fn_addr)
-            for _, callee_addr, _ in funcs[fn_addr]["call_sites"]:
-                if (callee_addr in funcs and callee_addr not in seen and
-                        callee_addr not in skip_f_addrs):
-                    stack.append(callee_addr)
-
-        # Determine which functions are called multiple times or called from inside a loop
-        call_counts = {fn_addr: 0 for fn_addr in seen}
-        for r in roots:
-            if r in call_counts:
-                call_counts[r] += 1
-        multi_called_funcs = set()
-        for fn_addr in seen:
-            loop_pcs = funcs[fn_addr]["loop_pcs"]
-            for call_pc, callee_addr, _ in funcs[fn_addr]["call_sites"]:
-                if callee_addr in call_counts:
-                    call_counts[callee_addr] += 1
-                    if call_pc in loop_pcs:
-                        multi_called_funcs.add(callee_addr)
-        for fn_addr, cnt in call_counts.items():
-            if cnt >= 2:
-                multi_called_funcs.add(fn_addr)
-
-        # Propagate multi_called_funcs down the call graph
-        m_stack = list(multi_called_funcs)
-        while m_stack:
-            fn_addr = m_stack.pop()
-            for _, callee_addr, _ in funcs[fn_addr]["call_sites"]:
-                if callee_addr in seen and callee_addr not in multi_called_funcs:
-                    multi_called_funcs.add(callee_addr)
-                    m_stack.append(callee_addr)
-
-        pc_mult = {}
-        for pc in marker_pcs:
-            pc_mult[pc] = 1
-        for fn_addr in seen:
-            is_multi_fn = fn_addr in multi_called_funcs
-            loop_pcs = funcs[fn_addr]["loop_pcs"]
-            for pc in funcs[fn_addr]["pcs"]:
-                mult = max_skips_per_loop if (is_multi_fn or pc in loop_pcs) else 1
-                if mult > pc_mult.get(pc, 0):
-                    pc_mult[pc] = mult
-
-        result = []
-        for pc in sorted(pc_mult.keys()):
-            hex_pc = f"0x{pc:x}"
-            result.extend([hex_pc] * pc_mult[pc])
-        return result
