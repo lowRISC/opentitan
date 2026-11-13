@@ -22,8 +22,8 @@ module pinmux_tb
   parameter int TdoPadIdx = 8,
 % endif
 % if enable_usb_wakeup:
-  parameter int DioUsbdevDp = 9,
-  parameter int DioUsbdevDn = 10,
+  parameter int DioUsbdevDp = 0,
+  parameter int DioUsbdevDn = 1,
 % endif
   parameter int MioInUsbdevSense = 11,
   parameter logic [NumAlerts-1:0] AlertAsyncOn = {NumAlerts{1'b1}},

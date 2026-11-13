@@ -381,25 +381,25 @@
     { name: "NMioPeriphIn",
       desc: "Number of muxed peripheral inputs",
       type: "int",
-      default: "94",
+      default: "106",
       local: "true"
     },
     { name: "NMioPeriphOut",
       desc: "Number of muxed peripheral outputs",
       type: "int",
-      default: "104",
+      default: "116",
       local: "true"
     },
     { name: "NMioPads",
       desc: "Number of muxed IO pads",
       type: "int",
-      default: "47",
+      default: "61",
       local: "true"
     },
     { name: "NDioPads",
       desc: "Number of dedicated IO pads",
       type: "int",
-      default: "16",
+      default: "2",
       local: "true"
     },
     { name: "NWkupDetect",
@@ -507,7 +507,7 @@
                       Selecting a pad that is not legal for this peripheral input ties it
                       constantly to zero.
                       '''
-                      resval: 0,
+                      resval: "[2, 3, 4, 5, 8, 9, 10, 11, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 57, 58, 0, 12, 13, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0][multireg_idx]",
                     }
                   ]
                 }
@@ -554,7 +554,7 @@
                       Selecting a peripheral output that is not legal for this pad puts the pad
                       into high-Z.
                       '''
-                      resval: 2,
+                      resval: "[3, 4, 5, 6, 91, 92, 7, 8, 9, 10, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 89, 90, 2, 2, 2, 2][multireg_idx]",
                     }
                   ]
                   // Random writes to this field may result in pad drive conflicts,
@@ -608,12 +608,12 @@
                     },
                     { bits: "1",
                       name: "virtual_od_en",
-                      resval: 0
+                      resval: "[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0][multireg_idx]"
                       desc: "Enable virtual open drain."
                     },
                     { bits: "2",
                       name: "pull_en",
-                      resval: "[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0][multireg_idx]"
+                      resval: "[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0][multireg_idx]"
                       desc: "Enable pull-up or pull-down resistor."
                     },
                     { bits: "3",
@@ -721,7 +721,7 @@
                     },
                     { bits: "1",
                       name: "virtual_od_en",
-                      resval: "[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0][multireg_idx]"
+                      resval: 0
                       desc: "Enable virtual open drain."
                     },
                     { bits: "2",

@@ -83,9 +83,6 @@ module padring_verilator
 
   always_comb begin : assign_dio_in
     dio_in_o = '0;
-    dio_in_o[DioSpiDeviceSck] = cio_spi_device_sck_p2d;
-    dio_in_o[DioSpiDeviceCsb] = cio_spi_device_csb_p2d;
-    dio_in_o[DioSpiDeviceSd0] = cio_spi_device_sdi_p2d;
     dio_in_o[DioUsbdevUsbDp]  = cio_usbdev_dp_p2d;
     dio_in_o[DioUsbdevUsbDn]  = cio_usbdev_dn_p2d;
   end
@@ -105,8 +102,9 @@ module padring_verilator
   assign cio_usbdev_dn_d2p    = dio_out_i[DioUsbdevUsbDn];
   assign cio_usbdev_dn_en_d2p = dio_oe_i[DioUsbdevUsbDn];
 
-  assign cio_spi_device_sdo_d2p    = dio_out_i[DioSpiDeviceSd1];
-  assign cio_spi_device_sdo_en_d2p = dio_oe_i[DioSpiDeviceSd1];
+  // The SPI device pads are muxed pads.
+  assign cio_spi_device_sdo_d2p    = mio_out_i[MioPadSpiDevD1];
+  assign cio_spi_device_sdo_en_d2p = mio_oe_i[MioPadSpiDevD1];
 
   //////////////////////////////////////////////////////////////////////////
   // Multiplexed I/O mapping                                              //
@@ -116,7 +114,8 @@ module padring_verilator
     mio_in_o = '0;
     // 14 generic GPIOs
     mio_in_o[MioPadIob12:MioPadIob6] = cio_gpio_p2d[6:0];
-    mio_in_o[MioPadIor13:MioPadIor5] = cio_gpio_p2d[13:7];
+    mio_in_o[MioPadIor7:MioPadIor5] = cio_gpio_p2d[9:7];
+    mio_in_o[MioPadIor13:MioPadIor10] = cio_gpio_p2d[13:10];
     // SW straps
     mio_in_o[MioPadIoc2:MioPadIoc0] = cio_gpio_p2d[24:22];
     // TAP straps
@@ -124,6 +123,10 @@ module padring_verilator
     mio_in_o[MioPadIoc8] = cio_gpio_p2d[30];
     // UART RX
     mio_in_o[MioPadIoc3] = cio_uart_rx_p2d;
+    // SPI device
+    mio_in_o[MioPadSpiDevClk] = cio_spi_device_sck_p2d;
+    mio_in_o[MioPadSpiDevCsL] = cio_spi_device_csb_p2d;
+    mio_in_o[MioPadSpiDevD0]  = cio_spi_device_sdi_p2d;
     // USB VBUS sense
     mio_in_o[MioPadIoc7] = cio_usbdev_sense_p2d;
   end
@@ -131,8 +134,10 @@ module padring_verilator
   // 14 generic GPIOs
   assign cio_gpio_d2p[6:0]        = mio_out_i[MioPadIob12:MioPadIob6];
   assign cio_gpio_en_d2p[6:0]     = mio_oe_i[MioPadIob12:MioPadIob6];
-  assign cio_gpio_d2p[13:7]       = mio_out_i[MioPadIor13:MioPadIor5];
-  assign cio_gpio_en_d2p[13:7]    = mio_oe_i[MioPadIor13:MioPadIor5];
+  assign cio_gpio_d2p[9:7]        = mio_out_i[MioPadIor7:MioPadIor5];
+  assign cio_gpio_en_d2p[9:7]     = mio_oe_i[MioPadIor7:MioPadIor5];
+  assign cio_gpio_d2p[13:10]      = mio_out_i[MioPadIor13:MioPadIor10];
+  assign cio_gpio_en_d2p[13:10]   = mio_oe_i[MioPadIor13:MioPadIor10];
   assign cio_gpio_d2p[21:14]      = '0;
   assign cio_gpio_en_d2p[21:14]   = '0;
   // SW straps

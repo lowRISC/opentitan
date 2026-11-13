@@ -72,15 +72,15 @@ module pinmux_chip_tb
 
   // Copied from chip_englishbreakfast_asic.sv
   // TODO: find a better way to automatically generate this FPV testbench via topgen/ipgen.
-  localparam int Tap0PadIdx = 30;
-  localparam int Tap1PadIdx = 27;
-  localparam int Dft0PadIdx = 25;
-  localparam int Dft1PadIdx = 26;
-  localparam int TckPadIdx = 38;
-  localparam int TmsPadIdx = 35;
-  localparam int TrstNPadIdx = 39;
-  localparam int TdiPadIdx = 37;
-  localparam int TdoPadIdx = 36;
+  localparam int Tap0PadIdx = 42;
+  localparam int Tap1PadIdx = 39;
+  localparam int Dft0PadIdx = 52;
+  localparam int Dft1PadIdx = 54;
+  localparam int TckPadIdx = 50;
+  localparam int TmsPadIdx = 47;
+  localparam int TrstNPadIdx = 51;
+  localparam int TdiPadIdx = 49;
+  localparam int TdoPadIdx = 48;
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
     tck_idx:           TckPadIdx,
@@ -98,24 +98,24 @@ module pinmux_chip_tb
     usb_sense_idx:     MioInUsbdevSense,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
-      BidirStr, // DIO spi_host0_csb
-      BidirStr, // DIO spi_host0_sck
-      BidirStd, // DIO spi_device_csb
-      BidirStd, // DIO spi_device_sck
-      BidirStd, // DIO sysrst_ctrl_flash_wp_l
-      BidirStd, // DIO sysrst_ctrl_ec_rst_l
-      BidirStr, // DIO spi_device_sd
-      BidirStr, // DIO spi_device_sd
-      BidirStr, // DIO spi_device_sd
-      BidirStr, // DIO spi_device_sd
-      BidirStr, // DIO spi_host0_sd
-      BidirStr, // DIO spi_host0_sd
-      BidirStr, // DIO spi_host0_sd
-      BidirStr, // DIO spi_host0_sd
       BidirStd, // DIO usbdev_usb_dn
       BidirStd  // DIO usbdev_usb_dp
     },
     mio_pad_type: {
+      BidirStd, // MIO Pad 60
+      BidirStd, // MIO Pad 59
+      BidirStd, // MIO Pad 58
+      BidirStd, // MIO Pad 57
+      BidirStd, // MIO Pad 56
+      BidirStd, // MIO Pad 55
+      BidirStd, // MIO Pad 54
+      BidirStd, // MIO Pad 53
+      BidirStd, // MIO Pad 52
+      BidirStd, // MIO Pad 51
+      BidirStd, // MIO Pad 50
+      BidirStd, // MIO Pad 49
+      BidirStd, // MIO Pad 48
+      BidirStd, // MIO Pad 47
       BidirStd, // MIO Pad 46
       BidirStd, // MIO Pad 45
       BidirStd, // MIO Pad 44
@@ -129,56 +129,42 @@ module pinmux_chip_tb
       BidirStd, // MIO Pad 36
       BidirStd, // MIO Pad 35
       BidirStd, // MIO Pad 34
-      BidirStd, // MIO Pad 33
-      BidirStd, // MIO Pad 32
-      BidirStd, // MIO Pad 31
-      BidirStd, // MIO Pad 30
+      BidirStr, // MIO Pad 33
+      BidirStr, // MIO Pad 32
+      BidirStr, // MIO Pad 31
+      BidirStr, // MIO Pad 30
       BidirStd, // MIO Pad 29
       BidirStd, // MIO Pad 28
-      BidirStd, // MIO Pad 27
-      BidirStd, // MIO Pad 26
-      BidirStd, // MIO Pad 25
-      BidirStd, // MIO Pad 24
-      BidirStd, // MIO Pad 23
-      BidirStd, // MIO Pad 22
+      BidirStr, // MIO Pad 27
+      BidirStr, // MIO Pad 26
+      BidirStr, // MIO Pad 25
+      BidirStr, // MIO Pad 24
+      BidirStr, // MIO Pad 23
+      BidirStr, // MIO Pad 22
       BidirStr, // MIO Pad 21
       BidirStr, // MIO Pad 20
       BidirStr, // MIO Pad 19
-      BidirStr, // MIO Pad 18
+      BidirStd, // MIO Pad 18
       BidirStd, // MIO Pad 17
       BidirStd, // MIO Pad 16
-      BidirStr, // MIO Pad 15
-      BidirStr, // MIO Pad 14
-      BidirStr, // MIO Pad 13
-      BidirStr, // MIO Pad 12
-      BidirStr, // MIO Pad 11
-      BidirStr, // MIO Pad 10
+      BidirStd, // MIO Pad 15
+      BidirStd, // MIO Pad 14
+      BidirStd, // MIO Pad 13
+      BidirStd, // MIO Pad 12
+      BidirStd, // MIO Pad 11
+      BidirStd, // MIO Pad 10
       BidirStr, // MIO Pad 9
       BidirStr, // MIO Pad 8
       BidirStr, // MIO Pad 7
-      BidirStd, // MIO Pad 6
-      BidirStd, // MIO Pad 5
-      BidirStd, // MIO Pad 4
-      BidirStd, // MIO Pad 3
-      BidirStd, // MIO Pad 2
-      BidirStd, // MIO Pad 1
-      BidirStd  // MIO Pad 0
+      BidirStr, // MIO Pad 6
+      BidirStr, // MIO Pad 5
+      BidirStr, // MIO Pad 4
+      BidirStr, // MIO Pad 3
+      BidirStr, // MIO Pad 2
+      BidirStr, // MIO Pad 1
+      BidirStr  // MIO Pad 0
     },
     dio_scan_role: {
-      scan_role_pkg::DioPadSpiHostCsLScanRole, // DIO spi_host0_csb
-      scan_role_pkg::DioPadSpiHostClkScanRole, // DIO spi_host0_sck
-      scan_role_pkg::DioPadSpiDevCsLScanRole, // DIO spi_device_csb
-      scan_role_pkg::DioPadSpiDevClkScanRole, // DIO spi_device_sck
-      scan_role_pkg::DioPadIor9ScanRole, // DIO sysrst_ctrl_flash_wp_l
-      scan_role_pkg::DioPadIor8ScanRole, // DIO sysrst_ctrl_ec_rst_l
-      scan_role_pkg::DioPadSpiDevD3ScanRole, // DIO spi_device_sd
-      scan_role_pkg::DioPadSpiDevD2ScanRole, // DIO spi_device_sd
-      scan_role_pkg::DioPadSpiDevD1ScanRole, // DIO spi_device_sd
-      scan_role_pkg::DioPadSpiDevD0ScanRole, // DIO spi_device_sd
-      scan_role_pkg::DioPadSpiHostD3ScanRole, // DIO spi_host0_sd
-      scan_role_pkg::DioPadSpiHostD2ScanRole, // DIO spi_host0_sd
-      scan_role_pkg::DioPadSpiHostD1ScanRole, // DIO spi_host0_sd
-      scan_role_pkg::DioPadSpiHostD0ScanRole, // DIO spi_host0_sd
       NoScan, // DIO usbdev_usb_dn
       NoScan // DIO usbdev_usb_dp
     },
@@ -187,6 +173,8 @@ module pinmux_chip_tb
       scan_role_pkg::MioPadIor12ScanRole,
       scan_role_pkg::MioPadIor11ScanRole,
       scan_role_pkg::MioPadIor10ScanRole,
+      scan_role_pkg::MioPadIor9ScanRole,
+      scan_role_pkg::MioPadIor8ScanRole,
       scan_role_pkg::MioPadIor7ScanRole,
       scan_role_pkg::MioPadIor6ScanRole,
       scan_role_pkg::MioPadIor5ScanRole,
@@ -229,7 +217,19 @@ module pinmux_chip_tb
       scan_role_pkg::MioPadIoa3ScanRole,
       scan_role_pkg::MioPadIoa2ScanRole,
       scan_role_pkg::MioPadIoa1ScanRole,
-      scan_role_pkg::MioPadIoa0ScanRole
+      scan_role_pkg::MioPadIoa0ScanRole,
+      scan_role_pkg::MioPadSpiDevCsLScanRole,
+      scan_role_pkg::MioPadSpiDevClkScanRole,
+      scan_role_pkg::MioPadSpiDevD3ScanRole,
+      scan_role_pkg::MioPadSpiDevD2ScanRole,
+      scan_role_pkg::MioPadSpiDevD1ScanRole,
+      scan_role_pkg::MioPadSpiDevD0ScanRole,
+      scan_role_pkg::MioPadSpiHostCsLScanRole,
+      scan_role_pkg::MioPadSpiHostClkScanRole,
+      scan_role_pkg::MioPadSpiHostD3ScanRole,
+      scan_role_pkg::MioPadSpiHostD2ScanRole,
+      scan_role_pkg::MioPadSpiHostD1ScanRole,
+      scan_role_pkg::MioPadSpiHostD0ScanRole
     }
   };
 

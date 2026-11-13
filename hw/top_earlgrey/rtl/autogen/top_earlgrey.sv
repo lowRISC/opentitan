@@ -214,14 +214,14 @@ module top_earlgrey #(
   output logic padring_scan_clk_o,
 
   // Multiplexed I/O
-  input  logic [46:0] mio_in_i,
-  output logic [46:0] mio_out_o,
-  output logic [46:0] mio_oe_o,
+  input  logic [60:0] mio_in_i,
+  output logic [60:0] mio_out_o,
+  output logic [60:0] mio_oe_o,
 
   // Dedicated I/O
-  input  logic [15:0] dio_in_i,
-  output logic [15:0] dio_out_o,
-  output logic [15:0] dio_oe_o,
+  input  logic [1:0]  dio_in_i,
+  output logic [1:0]  dio_out_o,
+  output logic [1:0]  dio_oe_o,
 
   // Pad attributes to padring
   output prim_pad_wrapper_pkg::pad_attr_t [pinmux_reg_pkg::NMioPads-1:0] mio_attr_o,

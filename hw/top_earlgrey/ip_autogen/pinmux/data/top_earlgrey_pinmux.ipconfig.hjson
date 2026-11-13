@@ -7,11 +7,75 @@
   {
     n_wkup_detect: 8
     wkup_cnt_width: 8
-    n_mio_pads: 47
-    n_mio_periph_in: 94
-    n_mio_periph_out: 104
+    n_mio_pads: 61
+    n_mio_periph_in: 106
+    n_mio_periph_out: 116
     mio_periph_ins:
     [
+      {
+        name: spi_host0_sd[0]
+        pads:
+        [
+          0
+        ]
+        default_pad: 0
+      }
+      {
+        name: spi_host0_sd[1]
+        pads:
+        [
+          1
+        ]
+        default_pad: 1
+      }
+      {
+        name: spi_host0_sd[2]
+        pads:
+        [
+          2
+        ]
+        default_pad: 2
+      }
+      {
+        name: spi_host0_sd[3]
+        pads:
+        [
+          3
+        ]
+        default_pad: 3
+      }
+      {
+        name: spi_device_sd[0]
+        pads:
+        [
+          6
+        ]
+        default_pad: 6
+      }
+      {
+        name: spi_device_sd[1]
+        pads:
+        [
+          7
+        ]
+        default_pad: 7
+      }
+      {
+        name: spi_device_sd[2]
+        pads:
+        [
+          8
+        ]
+        default_pad: 8
+      }
+      {
+        name: spi_device_sd[3]
+        pads:
+        [
+          9
+        ]
+        default_pad: 9
+      }
       {
         name: gpio0_gpio[0]
         pads: []
@@ -325,8 +389,40 @@
         pads: []
       }
       {
+        name: sysrst_ctrl_ec_rst_l
+        pads:
+        [
+          55
+        ]
+        default_pad: 55
+      }
+      {
+        name: sysrst_ctrl_flash_wp_l
+        pads:
+        [
+          56
+        ]
+        default_pad: 56
+      }
+      {
         name: usbdev_sense
         pads: []
+      }
+      {
+        name: spi_device_sck
+        pads:
+        [
+          10
+        ]
+        default_pad: 10
+      }
+      {
+        name: spi_device_csb
+        pads:
+        [
+          11
+        ]
+        default_pad: 11
       }
       {
         name: uart0_rx
@@ -392,6 +488,70 @@
     mio_periph_outs:
     [
       {
+        name: spi_host0_sd[0]
+        pads:
+        [
+          0
+        ]
+        default_pad: 0
+      }
+      {
+        name: spi_host0_sd[1]
+        pads:
+        [
+          1
+        ]
+        default_pad: 1
+      }
+      {
+        name: spi_host0_sd[2]
+        pads:
+        [
+          2
+        ]
+        default_pad: 2
+      }
+      {
+        name: spi_host0_sd[3]
+        pads:
+        [
+          3
+        ]
+        default_pad: 3
+      }
+      {
+        name: spi_device_sd[0]
+        pads:
+        [
+          6
+        ]
+        default_pad: 6
+      }
+      {
+        name: spi_device_sd[1]
+        pads:
+        [
+          7
+        ]
+        default_pad: 7
+      }
+      {
+        name: spi_device_sd[2]
+        pads:
+        [
+          8
+        ]
+        default_pad: 8
+      }
+      {
+        name: spi_device_sd[3]
+        pads:
+        [
+          9
+        ]
+        default_pad: 9
+      }
+      {
         name: gpio0_gpio[0]
         pads: []
       }
@@ -702,6 +862,38 @@
       {
         name: spi_host1_sd[3]
         pads: []
+      }
+      {
+        name: sysrst_ctrl_ec_rst_l
+        pads:
+        [
+          55
+        ]
+        default_pad: 55
+      }
+      {
+        name: sysrst_ctrl_flash_wp_l
+        pads:
+        [
+          56
+        ]
+        default_pad: 56
+      }
+      {
+        name: spi_host0_sck
+        pads:
+        [
+          4
+        ]
+        default_pad: 4
+      }
+      {
+        name: spi_host0_csb[0]
+        pads:
+        [
+          5
+        ]
+        default_pad: 5
       }
       {
         name: uart0_tx
@@ -810,6 +1002,54 @@
     ]
     mio_pad_attr_resvals:
     [
+      [
+        SPI_HOST_D0
+        {}
+      ]
+      [
+        SPI_HOST_D1
+        {}
+      ]
+      [
+        SPI_HOST_D2
+        {}
+      ]
+      [
+        SPI_HOST_D3
+        {}
+      ]
+      [
+        SPI_HOST_CLK
+        {}
+      ]
+      [
+        SPI_HOST_CS_L
+        {}
+      ]
+      [
+        SPI_DEV_D0
+        {}
+      ]
+      [
+        SPI_DEV_D1
+        {}
+      ]
+      [
+        SPI_DEV_D2
+        {}
+      ]
+      [
+        SPI_DEV_D3
+        {}
+      ]
+      [
+        SPI_DEV_CLK
+        {}
+      ]
+      [
+        SPI_DEV_CS_L
+        {}
+      ]
       [
         IOA0
         {}
@@ -986,6 +1226,18 @@
         {}
       ]
       [
+        IOR8
+        {
+          virtual_od_en: 1
+        }
+      ]
+      [
+        IOR9
+        {
+          virtual_od_en: 1
+        }
+      ]
+      [
         IOR10
         {}
       ]
@@ -1002,7 +1254,7 @@
         {}
       ]
     ]
-    n_dio_pads: 16
+    n_dio_pads: 2
     dio_pad_attr_resvals:
     [
       [
@@ -1013,69 +1265,9 @@
         usbdev_usb_dn
         {}
       ]
-      [
-        SPI_HOST_D0
-        {}
-      ]
-      [
-        SPI_HOST_D1
-        {}
-      ]
-      [
-        SPI_HOST_D2
-        {}
-      ]
-      [
-        SPI_HOST_D3
-        {}
-      ]
-      [
-        SPI_DEV_D0
-        {}
-      ]
-      [
-        SPI_DEV_D1
-        {}
-      ]
-      [
-        SPI_DEV_D2
-        {}
-      ]
-      [
-        SPI_DEV_D3
-        {}
-      ]
-      [
-        IOR8
-        {
-          virtual_od_en: 1
-        }
-      ]
-      [
-        IOR9
-        {
-          virtual_od_en: 1
-        }
-      ]
-      [
-        SPI_DEV_CLK
-        {}
-      ]
-      [
-        SPI_DEV_CS_L
-        {}
-      ]
-      [
-        SPI_HOST_CLK
-        {}
-      ]
-      [
-        SPI_HOST_CS_L
-        {}
-      ]
     ]
-    n_dio_periph_in: 14
-    n_dio_periph_out: 14
+    n_dio_periph_in: 2
+    n_dio_periph_out: 2
     enable_usb_wakeup: true
     enable_strap_sampling: true
     enable_rram_tap: true

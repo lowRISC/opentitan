@@ -651,76 +651,76 @@ The first EDN instance, `u_edn0` is intended to be configured to deliver entropy
 ### Pinout
 
 <!-- BEGIN CMDGEN util/design/gen-top-docs.py -t hw/top_earlgrey/data/autogen/top_earlgrey.gen.hjson -g pinout -->
-| ID   | Name          | Bank   | Type         | Connection Type   | Description                                |
-|:-----|:--------------|:-------|:-------------|:------------------|:-------------------------------------------|
-| 0    | POR_N         | VCC    | InputStd     | manual            | System reset based on VCC                  |
-| 1    | PORA_N        | VIOA   | InputStd     | manual            | System reset based on VIOA                 |
-| 2    | USB_P         | VCC    | DualBidirTol | manual            | USB P signal                               |
-| 3    | USB_N         | VCC    | DualBidirTol | manual            | USB N signal                               |
-| 4    | CC1           | AVCC   | BidirTol     | manual            | ADC input 1                                |
-| 5    | CC2           | AVCC   | BidirTol     | manual            | ADC input 2                                |
-| 6    | RRAM_ANALOG   | VCC    | AnalogIn0    | manual            | RRAM analog test signal                    |
-| 7    | SPI_HOST_D0   | VIOA   | BidirStr     | direct            | SPI host data                              |
-| 8    | SPI_HOST_D1   | VIOA   | BidirStr     | direct            | SPI host data                              |
-| 9    | SPI_HOST_D2   | VIOA   | BidirStr     | direct            | SPI host data                              |
-| 10   | SPI_HOST_D3   | VIOA   | BidirStr     | direct            | SPI host data                              |
-| 11   | SPI_HOST_CLK  | VIOA   | BidirStr     | direct            | SPI host clock                             |
-| 12   | SPI_HOST_CS_L | VIOA   | BidirStr     | direct            | SPI host chip select                       |
-| 13   | SPI_DEV_D0    | VIOA   | BidirStr     | direct            | SPI device data                            |
-| 14   | SPI_DEV_D1    | VIOA   | BidirStr     | direct            | SPI device data                            |
-| 15   | SPI_DEV_D2    | VIOA   | BidirStr     | direct            | SPI device data                            |
-| 16   | SPI_DEV_D3    | VIOA   | BidirStr     | direct            | SPI device data                            |
-| 17   | SPI_DEV_CLK   | VIOA   | BidirStd     | direct            | SPI device clock                           |
-| 18   | SPI_DEV_CS_L  | VIOA   | BidirStd     | direct            | SPI device chip select                     |
-| 0    | IOA0          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
-| 1    | IOA1          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
-| 2    | IOA2          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
-| 3    | IOA3          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
-| 4    | IOA4          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
-| 5    | IOA5          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
-| 6    | IOA6          | VIOA   | BidirStd     | muxed             | Muxed IO pad                               |
-| 7    | IOA7          | VIOA   | BidirStr     | muxed             | Muxed IO pad                               |
-| 8    | IOA8          | VIOA   | BidirStr     | muxed             | Muxed IO pad                               |
-| 9    | IOB0          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
-| 10   | IOB1          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
-| 11   | IOB2          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
-| 12   | IOB3          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
-| 13   | IOB4          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
-| 14   | IOB5          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
-| 15   | IOB6          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
-| 16   | IOB7          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 17   | IOB8          | VIOB   | BidirStd     | muxed             | Muxed IO pad                               |
-| 18   | IOB9          | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
-| 19   | IOB10         | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
-| 20   | IOB11         | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
-| 21   | IOB12         | VIOB   | BidirStr     | muxed             | Muxed IO pad                               |
-| 22   | IOC0          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 23   | IOC1          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 24   | IOC2          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 25   | IOC3          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 26   | IOC4          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 27   | IOC5          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 28   | IOC6          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 29   | IOC7          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 30   | IOC8          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 31   | IOC9          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 32   | IOC10         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 33   | IOC11         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 34   | IOC12         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 35   | IOR0          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 36   | IOR1          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 37   | IOR2          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 38   | IOR3          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 39   | IOR4          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 40   | IOR5          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 41   | IOR6          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 42   | IOR7          | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 19   | IOR8          | VCC    | BidirStd     | direct            | Dedicated sysrst_ctrl output (ec_rst_l)    |
-| 20   | IOR9          | VCC    | BidirStd     | direct            | Dedicated sysrst_ctrl output (flash_wp_l)) |
-| 43   | IOR10         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 44   | IOR11         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 45   | IOR12         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
-| 46   | IOR13         | VCC    | BidirStd     | muxed             | Muxed IO pad                               |
+| ID   | Name          | Bank   | Type         | Connection Type   | Description                |
+|:-----|:--------------|:-------|:-------------|:------------------|:---------------------------|
+| 0    | POR_N         | VCC    | InputStd     | manual            | System reset based on VCC  |
+| 1    | PORA_N        | VIOA   | InputStd     | manual            | System reset based on VIOA |
+| 2    | USB_P         | VCC    | DualBidirTol | manual            | USB P signal               |
+| 3    | USB_N         | VCC    | DualBidirTol | manual            | USB N signal               |
+| 4    | CC1           | AVCC   | BidirTol     | manual            | ADC input 1                |
+| 5    | CC2           | AVCC   | BidirTol     | manual            | ADC input 2                |
+| 6    | RRAM_ANALOG   | VCC    | AnalogIn0    | manual            | RRAM analog test signal    |
+| 0    | SPI_HOST_D0   | VIOA   | BidirStr     | muxed             | SPI host data              |
+| 1    | SPI_HOST_D1   | VIOA   | BidirStr     | muxed             | SPI host data              |
+| 2    | SPI_HOST_D2   | VIOA   | BidirStr     | muxed             | SPI host data              |
+| 3    | SPI_HOST_D3   | VIOA   | BidirStr     | muxed             | SPI host data              |
+| 4    | SPI_HOST_CLK  | VIOA   | BidirStr     | muxed             | SPI host clock             |
+| 5    | SPI_HOST_CS_L | VIOA   | BidirStr     | muxed             | SPI host chip select       |
+| 6    | SPI_DEV_D0    | VIOA   | BidirStr     | muxed             | SPI device data            |
+| 7    | SPI_DEV_D1    | VIOA   | BidirStr     | muxed             | SPI device data            |
+| 8    | SPI_DEV_D2    | VIOA   | BidirStr     | muxed             | SPI device data            |
+| 9    | SPI_DEV_D3    | VIOA   | BidirStr     | muxed             | SPI device data            |
+| 10   | SPI_DEV_CLK   | VIOA   | BidirStd     | muxed             | SPI device clock           |
+| 11   | SPI_DEV_CS_L  | VIOA   | BidirStd     | muxed             | SPI device chip select     |
+| 12   | IOA0          | VIOA   | BidirStd     | muxed             | Muxed IO pad               |
+| 13   | IOA1          | VIOA   | BidirStd     | muxed             | Muxed IO pad               |
+| 14   | IOA2          | VIOA   | BidirStd     | muxed             | Muxed IO pad               |
+| 15   | IOA3          | VIOA   | BidirStd     | muxed             | Muxed IO pad               |
+| 16   | IOA4          | VIOA   | BidirStd     | muxed             | Muxed IO pad               |
+| 17   | IOA5          | VIOA   | BidirStd     | muxed             | Muxed IO pad               |
+| 18   | IOA6          | VIOA   | BidirStd     | muxed             | Muxed IO pad               |
+| 19   | IOA7          | VIOA   | BidirStr     | muxed             | Muxed IO pad               |
+| 20   | IOA8          | VIOA   | BidirStr     | muxed             | Muxed IO pad               |
+| 21   | IOB0          | VIOB   | BidirStr     | muxed             | Muxed IO pad               |
+| 22   | IOB1          | VIOB   | BidirStr     | muxed             | Muxed IO pad               |
+| 23   | IOB2          | VIOB   | BidirStr     | muxed             | Muxed IO pad               |
+| 24   | IOB3          | VIOB   | BidirStr     | muxed             | Muxed IO pad               |
+| 25   | IOB4          | VIOB   | BidirStr     | muxed             | Muxed IO pad               |
+| 26   | IOB5          | VIOB   | BidirStr     | muxed             | Muxed IO pad               |
+| 27   | IOB6          | VIOB   | BidirStr     | muxed             | Muxed IO pad               |
+| 28   | IOB7          | VIOB   | BidirStd     | muxed             | Muxed IO pad               |
+| 29   | IOB8          | VIOB   | BidirStd     | muxed             | Muxed IO pad               |
+| 30   | IOB9          | VIOB   | BidirStr     | muxed             | Muxed IO pad               |
+| 31   | IOB10         | VIOB   | BidirStr     | muxed             | Muxed IO pad               |
+| 32   | IOB11         | VIOB   | BidirStr     | muxed             | Muxed IO pad               |
+| 33   | IOB12         | VIOB   | BidirStr     | muxed             | Muxed IO pad               |
+| 34   | IOC0          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 35   | IOC1          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 36   | IOC2          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 37   | IOC3          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 38   | IOC4          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 39   | IOC5          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 40   | IOC6          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 41   | IOC7          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 42   | IOC8          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 43   | IOC9          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 44   | IOC10         | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 45   | IOC11         | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 46   | IOC12         | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 47   | IOR0          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 48   | IOR1          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 49   | IOR2          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 50   | IOR3          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 51   | IOR4          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 52   | IOR5          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 53   | IOR6          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 54   | IOR7          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 55   | IOR8          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 56   | IOR9          | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 57   | IOR10         | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 58   | IOR11         | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 59   | IOR12         | VCC    | BidirStd     | muxed             | Muxed IO pad               |
+| 60   | IOR13         | VCC    | BidirStd     | muxed             | Muxed IO pad               |
 
 <!-- END CMDGEN -->
 
@@ -761,7 +761,7 @@ Where appropriate, including the block diagram below, notes will be provided whe
 
 The FPGA platform is the `chip_earlgrey_cw340` target for the ChipWhisperer CW340 board.
 Its pin assignment is listed in the [CW340 pinout table](../../ip_autogen/pinmux/doc/pinout_cw340.md).
-The SPI device uses dedicated pads, as on the ASIC target.
+The SPI device uses the SPI_DEV_* pads, as on the ASIC target.
 
 `chip_earlgrey_cw340` contains an FPGA-only memory backdoor loader (`bkdr_loader`, enabled by the `BkdrLoaderEn` parameter).
 It sits between the JTAG and reset pads and `top_earlgrey`.

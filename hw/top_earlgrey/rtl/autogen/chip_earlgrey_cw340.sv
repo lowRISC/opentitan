@@ -19,20 +19,6 @@ module chip_earlgrey_cw340 #(
 ) (
   // Dedicated Pads
   inout POR_N, // Manual Pad
-  inout SPI_HOST_D0, // Dedicated Pad for spi_host0_sd
-  inout SPI_HOST_D1, // Dedicated Pad for spi_host0_sd
-  inout SPI_HOST_D2, // Dedicated Pad for spi_host0_sd
-  inout SPI_HOST_D3, // Dedicated Pad for spi_host0_sd
-  inout SPI_HOST_CLK, // Dedicated Pad for spi_host0_sck
-  inout SPI_HOST_CS_L, // Dedicated Pad for spi_host0_csb
-  inout SPI_DEV_D0, // Dedicated Pad for spi_device_sd
-  inout SPI_DEV_D1, // Dedicated Pad for spi_device_sd
-  inout SPI_DEV_D2, // Dedicated Pad for spi_device_sd
-  inout SPI_DEV_D3, // Dedicated Pad for spi_device_sd
-  inout SPI_DEV_CLK, // Dedicated Pad for spi_device_sck
-  inout SPI_DEV_CS_L, // Dedicated Pad for spi_device_csb
-  inout IOR8, // Dedicated Pad for sysrst_ctrl_ec_rst_l
-  inout IOR9, // Dedicated Pad for sysrst_ctrl_flash_wp_l
   inout IO_CLK, // Manual Pad
   inout IO_USB_CONNECT, // Manual Pad
   inout IO_USB_DP_TX, // Manual Pad
@@ -47,53 +33,67 @@ module chip_earlgrey_cw340 #(
   inout IO_TRIGGER, // Manual Pad
 
   // Muxed Pads
-  inout IOA0, // MIO Pad 0
-  inout IOA1, // MIO Pad 1
-  `INOUT_AO IOA2, // MIO Pad 2
-  `INOUT_AO IOA3, // MIO Pad 3
-  inout IOA4, // MIO Pad 4
-  inout IOA5, // MIO Pad 5
-  inout IOA6, // MIO Pad 6
-  inout IOA7, // MIO Pad 7
-  inout IOA8, // MIO Pad 8
-  inout IOB0, // MIO Pad 9
-  inout IOB1, // MIO Pad 10
-  inout IOB2, // MIO Pad 11
-  inout IOB3, // MIO Pad 12
-  inout IOB4, // MIO Pad 13
-  inout IOB5, // MIO Pad 14
-  inout IOB6, // MIO Pad 15
-  inout IOB7, // MIO Pad 16
-  inout IOB8, // MIO Pad 17
-  inout IOB9, // MIO Pad 18
-  inout IOB10, // MIO Pad 19
-  inout IOB11, // MIO Pad 20
-  inout IOB12, // MIO Pad 21
-  inout IOC0, // MIO Pad 22
-  inout IOC1, // MIO Pad 23
-  inout IOC2, // MIO Pad 24
-  inout IOC3, // MIO Pad 25
-  inout IOC4, // MIO Pad 26
-  inout IOC5, // MIO Pad 27
-  inout IOC6, // MIO Pad 28
-  inout IOC7, // MIO Pad 29
-  inout IOC8, // MIO Pad 30
-  inout IOC9, // MIO Pad 31
-  inout IOC10, // MIO Pad 32
-  inout IOC11, // MIO Pad 33
-  inout IOC12, // MIO Pad 34
-  inout IOR0, // MIO Pad 35
-  inout IOR1, // MIO Pad 36
-  inout IOR2, // MIO Pad 37
-  inout IOR3, // MIO Pad 38
-  inout IOR4, // MIO Pad 39
-  inout IOR5, // MIO Pad 40
-  inout IOR6, // MIO Pad 41
-  inout IOR7, // MIO Pad 42
-  inout IOR10, // MIO Pad 43
-  inout IOR11, // MIO Pad 44
-  inout IOR12, // MIO Pad 45
-  inout IOR13  // MIO Pad 46
+  inout SPI_HOST_D0, // MIO Pad 0
+  inout SPI_HOST_D1, // MIO Pad 1
+  inout SPI_HOST_D2, // MIO Pad 2
+  inout SPI_HOST_D3, // MIO Pad 3
+  inout SPI_HOST_CLK, // MIO Pad 4
+  inout SPI_HOST_CS_L, // MIO Pad 5
+  inout SPI_DEV_D0, // MIO Pad 6
+  inout SPI_DEV_D1, // MIO Pad 7
+  inout SPI_DEV_D2, // MIO Pad 8
+  inout SPI_DEV_D3, // MIO Pad 9
+  inout SPI_DEV_CLK, // MIO Pad 10
+  inout SPI_DEV_CS_L, // MIO Pad 11
+  inout IOA0, // MIO Pad 12
+  inout IOA1, // MIO Pad 13
+  `INOUT_AO IOA2, // MIO Pad 14
+  `INOUT_AO IOA3, // MIO Pad 15
+  inout IOA4, // MIO Pad 16
+  inout IOA5, // MIO Pad 17
+  inout IOA6, // MIO Pad 18
+  inout IOA7, // MIO Pad 19
+  inout IOA8, // MIO Pad 20
+  inout IOB0, // MIO Pad 21
+  inout IOB1, // MIO Pad 22
+  inout IOB2, // MIO Pad 23
+  inout IOB3, // MIO Pad 24
+  inout IOB4, // MIO Pad 25
+  inout IOB5, // MIO Pad 26
+  inout IOB6, // MIO Pad 27
+  inout IOB7, // MIO Pad 28
+  inout IOB8, // MIO Pad 29
+  inout IOB9, // MIO Pad 30
+  inout IOB10, // MIO Pad 31
+  inout IOB11, // MIO Pad 32
+  inout IOB12, // MIO Pad 33
+  inout IOC0, // MIO Pad 34
+  inout IOC1, // MIO Pad 35
+  inout IOC2, // MIO Pad 36
+  inout IOC3, // MIO Pad 37
+  inout IOC4, // MIO Pad 38
+  inout IOC5, // MIO Pad 39
+  inout IOC6, // MIO Pad 40
+  inout IOC7, // MIO Pad 41
+  inout IOC8, // MIO Pad 42
+  inout IOC9, // MIO Pad 43
+  inout IOC10, // MIO Pad 44
+  inout IOC11, // MIO Pad 45
+  inout IOC12, // MIO Pad 46
+  inout IOR0, // MIO Pad 47
+  inout IOR1, // MIO Pad 48
+  inout IOR2, // MIO Pad 49
+  inout IOR3, // MIO Pad 50
+  inout IOR4, // MIO Pad 51
+  inout IOR5, // MIO Pad 52
+  inout IOR6, // MIO Pad 53
+  inout IOR7, // MIO Pad 54
+  inout IOR8, // MIO Pad 55
+  inout IOR9, // MIO Pad 56
+  inout IOR10, // MIO Pad 57
+  inout IOR11, // MIO Pad 58
+  inout IOR12, // MIO Pad 59
+  inout IOR13  // MIO Pad 60
 );
 
   import top_earlgrey_pkg::*;
@@ -103,15 +103,15 @@ module chip_earlgrey_cw340 #(
   // Special Signal Indices //
   ////////////////////////////
 
-  localparam int Tap0PadIdx = 30;
-  localparam int Tap1PadIdx = 27;
-  localparam int Dft0PadIdx = 40;
-  localparam int Dft1PadIdx = 42;
-  localparam int TckPadIdx = 38;
-  localparam int TmsPadIdx = 35;
-  localparam int TrstNPadIdx = 39;
-  localparam int TdiPadIdx = 37;
-  localparam int TdoPadIdx = 36;
+  localparam int Tap0PadIdx = 42;
+  localparam int Tap1PadIdx = 39;
+  localparam int Dft0PadIdx = 52;
+  localparam int Dft1PadIdx = 54;
+  localparam int TckPadIdx = 50;
+  localparam int TmsPadIdx = 47;
+  localparam int TrstNPadIdx = 51;
+  localparam int TdiPadIdx = 49;
+  localparam int TdoPadIdx = 48;
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{
@@ -130,24 +130,24 @@ module chip_earlgrey_cw340 #(
     usb_sense_idx:     MioInUsbdevSense,
     // Pad types for attribute WARL behavior
     dio_pad_type: {
-      BidirStr, // DIO spi_host0_csb
-      BidirStr, // DIO spi_host0_sck
-      BidirStd, // DIO spi_device_csb
-      BidirStd, // DIO spi_device_sck
-      BidirStd, // DIO sysrst_ctrl_flash_wp_l
-      BidirStd, // DIO sysrst_ctrl_ec_rst_l
-      BidirStr, // DIO spi_device_sd
-      BidirStr, // DIO spi_device_sd
-      BidirStr, // DIO spi_device_sd
-      BidirStr, // DIO spi_device_sd
-      BidirStr, // DIO spi_host0_sd
-      BidirStr, // DIO spi_host0_sd
-      BidirStr, // DIO spi_host0_sd
-      BidirStr, // DIO spi_host0_sd
       BidirStd, // DIO usbdev_usb_dn
       BidirStd  // DIO usbdev_usb_dp
     },
     mio_pad_type: {
+      BidirStd, // MIO Pad 60
+      BidirStd, // MIO Pad 59
+      BidirStd, // MIO Pad 58
+      BidirStd, // MIO Pad 57
+      BidirStd, // MIO Pad 56
+      BidirStd, // MIO Pad 55
+      BidirStd, // MIO Pad 54
+      BidirStd, // MIO Pad 53
+      BidirStd, // MIO Pad 52
+      BidirStd, // MIO Pad 51
+      BidirStd, // MIO Pad 50
+      BidirStd, // MIO Pad 49
+      BidirStd, // MIO Pad 48
+      BidirStd, // MIO Pad 47
       BidirStd, // MIO Pad 46
       BidirStd, // MIO Pad 45
       BidirStd, // MIO Pad 44
@@ -161,57 +161,43 @@ module chip_earlgrey_cw340 #(
       BidirStd, // MIO Pad 36
       BidirStd, // MIO Pad 35
       BidirStd, // MIO Pad 34
-      BidirStd, // MIO Pad 33
-      BidirStd, // MIO Pad 32
-      BidirStd, // MIO Pad 31
-      BidirStd, // MIO Pad 30
+      BidirStr, // MIO Pad 33
+      BidirStr, // MIO Pad 32
+      BidirStr, // MIO Pad 31
+      BidirStr, // MIO Pad 30
       BidirStd, // MIO Pad 29
       BidirStd, // MIO Pad 28
-      BidirStd, // MIO Pad 27
-      BidirStd, // MIO Pad 26
-      BidirStd, // MIO Pad 25
-      BidirStd, // MIO Pad 24
-      BidirStd, // MIO Pad 23
-      BidirStd, // MIO Pad 22
+      BidirStr, // MIO Pad 27
+      BidirStr, // MIO Pad 26
+      BidirStr, // MIO Pad 25
+      BidirStr, // MIO Pad 24
+      BidirStr, // MIO Pad 23
+      BidirStr, // MIO Pad 22
       BidirStr, // MIO Pad 21
       BidirStr, // MIO Pad 20
       BidirStr, // MIO Pad 19
-      BidirStr, // MIO Pad 18
+      BidirStd, // MIO Pad 18
       BidirStd, // MIO Pad 17
       BidirStd, // MIO Pad 16
-      BidirStr, // MIO Pad 15
-      BidirStr, // MIO Pad 14
-      BidirStr, // MIO Pad 13
-      BidirStr, // MIO Pad 12
-      BidirStr, // MIO Pad 11
-      BidirStr, // MIO Pad 10
+      BidirStd, // MIO Pad 15
+      BidirStd, // MIO Pad 14
+      BidirStd, // MIO Pad 13
+      BidirStd, // MIO Pad 12
+      BidirStd, // MIO Pad 11
+      BidirStd, // MIO Pad 10
       BidirStr, // MIO Pad 9
       BidirStr, // MIO Pad 8
       BidirStr, // MIO Pad 7
-      BidirStd, // MIO Pad 6
-      BidirStd, // MIO Pad 5
-      BidirStd, // MIO Pad 4
-      BidirStd, // MIO Pad 3
-      BidirStd, // MIO Pad 2
-      BidirStd, // MIO Pad 1
-      BidirStd  // MIO Pad 0
+      BidirStr, // MIO Pad 6
+      BidirStr, // MIO Pad 5
+      BidirStr, // MIO Pad 4
+      BidirStr, // MIO Pad 3
+      BidirStr, // MIO Pad 2
+      BidirStr, // MIO Pad 1
+      BidirStr  // MIO Pad 0
     },
     // Pad scan roles
     dio_scan_role: {
-      scan_role_pkg::DioPadSpiHostCsLScanRole, // DIO spi_host0_csb
-      scan_role_pkg::DioPadSpiHostClkScanRole, // DIO spi_host0_sck
-      scan_role_pkg::DioPadSpiDevCsLScanRole, // DIO spi_device_csb
-      scan_role_pkg::DioPadSpiDevClkScanRole, // DIO spi_device_sck
-      scan_role_pkg::DioPadIor9ScanRole, // DIO sysrst_ctrl_flash_wp_l
-      scan_role_pkg::DioPadIor8ScanRole, // DIO sysrst_ctrl_ec_rst_l
-      scan_role_pkg::DioPadSpiDevD3ScanRole, // DIO spi_device_sd
-      scan_role_pkg::DioPadSpiDevD2ScanRole, // DIO spi_device_sd
-      scan_role_pkg::DioPadSpiDevD1ScanRole, // DIO spi_device_sd
-      scan_role_pkg::DioPadSpiDevD0ScanRole, // DIO spi_device_sd
-      scan_role_pkg::DioPadSpiHostD3ScanRole, // DIO spi_host0_sd
-      scan_role_pkg::DioPadSpiHostD2ScanRole, // DIO spi_host0_sd
-      scan_role_pkg::DioPadSpiHostD1ScanRole, // DIO spi_host0_sd
-      scan_role_pkg::DioPadSpiHostD0ScanRole, // DIO spi_host0_sd
       NoScan, // DIO usbdev_usb_dn
       NoScan // DIO usbdev_usb_dp
     },
@@ -220,6 +206,8 @@ module chip_earlgrey_cw340 #(
       scan_role_pkg::MioPadIor12ScanRole,
       scan_role_pkg::MioPadIor11ScanRole,
       scan_role_pkg::MioPadIor10ScanRole,
+      scan_role_pkg::MioPadIor9ScanRole,
+      scan_role_pkg::MioPadIor8ScanRole,
       scan_role_pkg::MioPadIor7ScanRole,
       scan_role_pkg::MioPadIor6ScanRole,
       scan_role_pkg::MioPadIor5ScanRole,
@@ -262,7 +250,19 @@ module chip_earlgrey_cw340 #(
       scan_role_pkg::MioPadIoa3ScanRole,
       scan_role_pkg::MioPadIoa2ScanRole,
       scan_role_pkg::MioPadIoa1ScanRole,
-      scan_role_pkg::MioPadIoa0ScanRole
+      scan_role_pkg::MioPadIoa0ScanRole,
+      scan_role_pkg::MioPadSpiDevCsLScanRole,
+      scan_role_pkg::MioPadSpiDevClkScanRole,
+      scan_role_pkg::MioPadSpiDevD3ScanRole,
+      scan_role_pkg::MioPadSpiDevD2ScanRole,
+      scan_role_pkg::MioPadSpiDevD1ScanRole,
+      scan_role_pkg::MioPadSpiDevD0ScanRole,
+      scan_role_pkg::MioPadSpiHostCsLScanRole,
+      scan_role_pkg::MioPadSpiHostClkScanRole,
+      scan_role_pkg::MioPadSpiHostD3ScanRole,
+      scan_role_pkg::MioPadSpiHostD2ScanRole,
+      scan_role_pkg::MioPadSpiHostD1ScanRole,
+      scan_role_pkg::MioPadSpiHostD0ScanRole
     }
   };
 
@@ -282,7 +282,7 @@ module chip_earlgrey_cw340 #(
   logic [pinmux_reg_pkg::NDioPads-1:0] dio_in;
 
   logic [pinmux_reg_pkg::NMioPads-1:0] mio_in_raw;
-  logic                         [26:0] dio_in_raw;
+  logic                         [12:0] dio_in_raw;
 
   logic unused_mio_in_raw;
   logic unused_dio_in_raw;
@@ -347,8 +347,8 @@ module chip_earlgrey_cw340 #(
   padring #(
     // Padring specific counts may differ from pinmux config due
     // to custom, stubbed or added pads.
-    .NDioPads(27),
-    .NMioPads(47),
+    .NDioPads(13),
+    .NMioPads(61),
     .DioPadType ({
       BidirStd, // IO_TRIGGER
       BidirStd, // IO_CLKOUT
@@ -362,20 +362,6 @@ module chip_earlgrey_cw340 #(
       BidirStd, // IO_USB_DP_TX
       BidirStd, // IO_USB_CONNECT
       InputStd, // IO_CLK
-      BidirStd, // IOR9
-      BidirStd, // IOR8
-      BidirStd, // SPI_DEV_CS_L
-      BidirStd, // SPI_DEV_CLK
-      BidirStr, // SPI_DEV_D3
-      BidirStr, // SPI_DEV_D2
-      BidirStr, // SPI_DEV_D1
-      BidirStr, // SPI_DEV_D0
-      BidirStr, // SPI_HOST_CS_L
-      BidirStr, // SPI_HOST_CLK
-      BidirStr, // SPI_HOST_D3
-      BidirStr, // SPI_HOST_D2
-      BidirStr, // SPI_HOST_D1
-      BidirStr, // SPI_HOST_D0
       InputStd  // POR_N
     }),
     .MioPadType ({
@@ -383,6 +369,8 @@ module chip_earlgrey_cw340 #(
       BidirStd, // IOR12
       BidirStd, // IOR11
       BidirStd, // IOR10
+      BidirStd, // IOR9
+      BidirStd, // IOR8
       BidirStd, // IOR7
       BidirStd, // IOR6
       BidirStd, // IOR5
@@ -425,7 +413,19 @@ module chip_earlgrey_cw340 #(
       BidirStd, // IOA3
       BidirStd, // IOA2
       BidirStd, // IOA1
-      BidirStd  // IOA0
+      BidirStd, // IOA0
+      BidirStd, // SPI_DEV_CS_L
+      BidirStd, // SPI_DEV_CLK
+      BidirStr, // SPI_DEV_D3
+      BidirStr, // SPI_DEV_D2
+      BidirStr, // SPI_DEV_D1
+      BidirStr, // SPI_DEV_D0
+      BidirStr, // SPI_HOST_CS_L
+      BidirStr, // SPI_HOST_CLK
+      BidirStr, // SPI_HOST_D3
+      BidirStr, // SPI_HOST_D2
+      BidirStr, // SPI_HOST_D1
+      BidirStr  // SPI_HOST_D0
     })
   ) u_padring (
     // This is only used for scan and DFT purposes
@@ -448,20 +448,6 @@ module chip_earlgrey_cw340 #(
       IO_USB_DP_TX,
       IO_USB_CONNECT,
       IO_CLK,
-      IOR9,
-      IOR8,
-      SPI_DEV_CS_L,
-      SPI_DEV_CLK,
-      SPI_DEV_D3,
-      SPI_DEV_D2,
-      SPI_DEV_D1,
-      SPI_DEV_D0,
-      SPI_HOST_CS_L,
-      SPI_HOST_CLK,
-      SPI_HOST_D3,
-      SPI_HOST_D2,
-      SPI_HOST_D1,
-      SPI_HOST_D0,
       POR_N
     }),
 
@@ -470,6 +456,8 @@ module chip_earlgrey_cw340 #(
       IOR12,
       IOR11,
       IOR10,
+      IOR9,
+      IOR8,
       IOR7,
       IOR6,
       IOR5,
@@ -520,7 +508,19 @@ module chip_earlgrey_cw340 #(
       IOA2,
 `endif
       IOA1,
-      IOA0
+      IOA0,
+      SPI_DEV_CS_L,
+      SPI_DEV_CLK,
+      SPI_DEV_D3,
+      SPI_DEV_D2,
+      SPI_DEV_D1,
+      SPI_DEV_D0,
+      SPI_HOST_CS_L,
+      SPI_HOST_CLK,
+      SPI_HOST_D3,
+      SPI_HOST_D2,
+      SPI_HOST_D1,
+      SPI_HOST_D0
     }),
 
     // Core-facing
@@ -537,20 +537,6 @@ module chip_earlgrey_cw340 #(
         manual_in_io_usb_dp_tx,
         manual_in_io_usb_connect,
         manual_in_io_clk,
-        dio_in[DioSysrstCtrlFlashWpL],
-        dio_in[DioSysrstCtrlEcRstL],
-        dio_in[DioSpiDeviceCsb],
-        dio_in[DioSpiDeviceSck],
-        dio_in[DioSpiDeviceSd3],
-        dio_in[DioSpiDeviceSd2],
-        dio_in[DioSpiDeviceSd1],
-        dio_in[DioSpiDeviceSd0],
-        dio_in[DioSpiHost0Csb0],
-        dio_in[DioSpiHost0Sck],
-        dio_in[DioSpiHost0Sd3],
-        dio_in[DioSpiHost0Sd2],
-        dio_in[DioSpiHost0Sd1],
-        dio_in[DioSpiHost0Sd0],
         manual_in_por_n
       }),
     .dio_out_i ({
@@ -566,20 +552,6 @@ module chip_earlgrey_cw340 #(
         manual_out_io_usb_dp_tx,
         manual_out_io_usb_connect,
         manual_out_io_clk,
-        dio_out[DioSysrstCtrlFlashWpL],
-        dio_out[DioSysrstCtrlEcRstL],
-        dio_out[DioSpiDeviceCsb],
-        dio_out[DioSpiDeviceSck],
-        dio_out[DioSpiDeviceSd3],
-        dio_out[DioSpiDeviceSd2],
-        dio_out[DioSpiDeviceSd1],
-        dio_out[DioSpiDeviceSd0],
-        dio_out[DioSpiHost0Csb0],
-        dio_out[DioSpiHost0Sck],
-        dio_out[DioSpiHost0Sd3],
-        dio_out[DioSpiHost0Sd2],
-        dio_out[DioSpiHost0Sd1],
-        dio_out[DioSpiHost0Sd0],
         manual_out_por_n
       }),
     .dio_oe_i ({
@@ -595,20 +567,6 @@ module chip_earlgrey_cw340 #(
         manual_oe_io_usb_dp_tx,
         manual_oe_io_usb_connect,
         manual_oe_io_clk,
-        dio_oe[DioSysrstCtrlFlashWpL],
-        dio_oe[DioSysrstCtrlEcRstL],
-        dio_oe[DioSpiDeviceCsb],
-        dio_oe[DioSpiDeviceSck],
-        dio_oe[DioSpiDeviceSd3],
-        dio_oe[DioSpiDeviceSd2],
-        dio_oe[DioSpiDeviceSd1],
-        dio_oe[DioSpiDeviceSd0],
-        dio_oe[DioSpiHost0Csb0],
-        dio_oe[DioSpiHost0Sck],
-        dio_oe[DioSpiHost0Sd3],
-        dio_oe[DioSpiHost0Sd2],
-        dio_oe[DioSpiHost0Sd1],
-        dio_oe[DioSpiHost0Sd0],
         manual_oe_por_n
       }),
     .dio_attr_i ({
@@ -624,28 +582,14 @@ module chip_earlgrey_cw340 #(
         manual_attr_io_usb_dp_tx,
         manual_attr_io_usb_connect,
         manual_attr_io_clk,
-        dio_attr[DioSysrstCtrlFlashWpL],
-        dio_attr[DioSysrstCtrlEcRstL],
-        dio_attr[DioSpiDeviceCsb],
-        dio_attr[DioSpiDeviceSck],
-        dio_attr[DioSpiDeviceSd3],
-        dio_attr[DioSpiDeviceSd2],
-        dio_attr[DioSpiDeviceSd1],
-        dio_attr[DioSpiDeviceSd0],
-        dio_attr[DioSpiHost0Csb0],
-        dio_attr[DioSpiHost0Sck],
-        dio_attr[DioSpiHost0Sd3],
-        dio_attr[DioSpiHost0Sd2],
-        dio_attr[DioSpiHost0Sd1],
-        dio_attr[DioSpiHost0Sd0],
         manual_attr_por_n
       }),
 
-    .mio_in_o (mio_in[46:0]),
-    .mio_out_i (mio_out[46:0]),
-    .mio_oe_i (mio_oe[46:0]),
-    .mio_attr_i (mio_attr[46:0]),
-    .mio_in_raw_o (mio_in_raw[46:0])
+    .mio_in_o (mio_in[60:0]),
+    .mio_out_i (mio_out[60:0]),
+    .mio_oe_i (mio_oe[60:0]),
+    .mio_attr_i (mio_attr[60:0]),
+    .mio_in_raw_o (mio_in_raw[60:0])
   );
   // TODO: generalize this USB mux code and align with other tops.
 
