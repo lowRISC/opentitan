@@ -58,6 +58,28 @@ class QemuMonitor:
             except Exception:
                 pass
 
+    def start_pc_trace(self, log_path: str):
+        self._pc_tracing = True
+        abs_log = os.path.abspath(log_path)
+        if os.path.exists(abs_log):
+            os.remove(abs_log)
+        for cmd in (f"logfile {abs_log}", "one-insn-per-tb on", "log exec,nochain"):
+            self.cmd("human-monitor-command", {"command-line": cmd})
+
+    def stop_pc_trace(self):
+        self._pc_tracing = False
+        log_dir = os.environ.get("TEST_UNDECLARED_OUTPUTS_DIR")
+        default_log = os.path.join(log_dir, "qemu.log") if log_dir else "/dev/null"
+        try:
+            for cmd in (
+                "log guest_errors,unimp",
+                "one-insn-per-tb off",
+                f"logfile {default_log}",
+            ):
+                self.cmd("human-monitor-command", {"command-line": cmd})
+        except Exception:
+            pass
+
     def close(self):
         if self._sock_file:
             try:
@@ -217,7 +239,8 @@ class QemuMonitor:
 
     def reset(self, halt=False, rma_spin_delay=0.05):
         """Resets the OpenTitan Earlgrey machine via QMP."""
-        self._pc_tracing = False
+        if self._pc_tracing:
+            self.stop_pc_trace()
         for attempt in range(2):
             try:
                 if halt:
