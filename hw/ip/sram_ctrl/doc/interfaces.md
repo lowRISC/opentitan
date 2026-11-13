@@ -7,7 +7,7 @@ The following table lists the instantiation parameters of the SRAM controller.
 Parameter                   | Default               | Top Earlgrey      | Description
 ----------------------------|-----------------------|-------------------|---------------
 `AlertAsyncOn`              | 1'b1                  | 1'b1              |
-`InstrExec`                 | 1                     | 1                 | Enables the execute from SRAM feature.
+`InstrExec`                 | 1                     | (multiple values) | Enables the execute from SRAM feature.
 `MemSizeRam`                | 4096                  | (multiple values) | Number of bytes in the SRAM (can be overridden by `topgen`).
 `InstSize`                  | `MemSizeRam`          | (multiple values) | Size of a single RAM tile in bytes.
 `NumRamInst`                | 1                     | 1                 | Number of RAM tiles the memory is split into.

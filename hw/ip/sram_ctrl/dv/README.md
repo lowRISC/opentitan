@@ -31,6 +31,8 @@ This is because the "full" DUT consists of the actual SRAM memory controller (wh
 ### Block diagram
 ![Block diagram](./doc/tb.svg)
 
+The diagram is out of date: the DUT now has a single `fatal_error` alert interface.
+
 ### Top level testbench
 Top level testbench is located at `hw/ip/sram_ctrl/dv/tb/tb.sv`. It instantiates the SRAM_CTRL DUT module `hw/ip/sram_ctrl/rtl/sram_ctrl.sv`.
 In addition, it instantiates the following interfaces, connects them to the DUT and sets their handle into `uvm_config_db`:
@@ -93,12 +95,11 @@ typedef enum bit [2:0] {
 SRAM_CTRL testbench instantiates (already handled in CIP base env) [tl_agent](../../../dv/sv/tl_agent/README.md)
 which provides the ability to drive and independently monitor random traffic via TL host interface into SRAM_CTRL device.
 
-### Alert agents
-The SRAM_CTRL testbench instantiates 2 [alert agents](../../../dv/sv/alert_agent/README.md) for:
-* fatal_intg_error - signals a transmission integrity error
-* fatal_parity_error - signals an internal parity error in the memory primitive
+### Alert agent
+The SRAM_CTRL testbench instantiates 1 [alert agent](../../../dv/sv/alert_agent/README.md) for:
+* fatal_error - signals a fatal error, such as a bus integrity, initialization, readback or memory primitive error
 
-The alert agents provide the ability to independently drive and monitor both alert handshakes.
+The alert agent provides the ability to independently drive and monitor the alert handshake.
 
 ### SRAM_CTRL_LC_IF
 The SRAM_CTRL IP has a simple sideband interface to the LC_CTRL to receive escalation requests.
