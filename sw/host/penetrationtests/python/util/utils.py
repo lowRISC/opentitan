@@ -286,7 +286,7 @@ class _FICampaign:
             all_pcs = list(pc_count_dict.keys())
             random.shuffle(all_pcs)
             for pc in all_pcs:
-                max_occ = min(max(max_skips_per_loop, 3), pc_count_dict[pc])
+                max_occ = min(max_skips_per_loop, pc_count_dict[pc])
                 self.plan.append((pc, [random.randrange(max_occ)]))
         else:
             for pc, count in pc_count_dict.items():
@@ -294,7 +294,6 @@ class _FICampaign:
 
         self.current_point = None
         self._current_hit = False
-        self._partial_hits = 0
         self.attempts = 0
         self.executed_points = []
         self.results = {}
@@ -309,10 +308,6 @@ class _FICampaign:
             self.executed_points.append((pc_int, occ))
             self.results.setdefault(pc_int, {})[occ] = False
             self.outcomes.setdefault((pc_int, occ), "No fault")
-
-    def record_partial(self, hits):
-        if hits and hits > 0:
-            self._partial_hits = hits
 
     def items(self):
         for pc, occs in self.plan:
@@ -330,23 +325,7 @@ class _FICampaign:
             self.attempts += 1
             self.current_point = (pc_int, occ)
             self._current_hit = False
-            self._partial_hits = 0
-            if not (self.num_skips and self.num_skips > 0):
-                self.mark_hit()
             yield occ
-            if (
-                self.num_skips and
-                self.num_skips > 0 and
-                not self._current_hit and
-                self._partial_hits > 0
-            ):
-                max_fb = min(max(self.max_skips_per_loop, 3), self._partial_hits)
-                fallback_occ = random.randrange(max_fb)
-                self.attempts += 1
-                self.current_point = (pc_int, fallback_occ)
-                self._current_hit = False
-                self._partial_hits = 0
-                yield fallback_occ
 
     def observe_line(self, line):
         if self.current_point is None or not self._current_hit:
@@ -368,11 +347,6 @@ _active_campaign = None
 def mark_skip_hit():
     if _active_campaign is not None:
         _active_campaign.mark_hit()
-
-
-def record_partial_hits(hits):
-    if _active_campaign is not None:
-        _active_campaign.record_partial(hits)
 
 
 def select_fi_skips(pc_count_dict, max_skips_per_loop, num_skips=0):
