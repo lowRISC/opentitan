@@ -578,6 +578,39 @@ void flash_ctrl_data_region_protect(flash_ctrl_region_index_t region,
                                     flash_ctrl_cfg_t cfg, hardened_bool_t lock);
 
 /**
+ * Saved state of a data memory protection region.
+ */
+typedef struct flash_ctrl_data_region_state {
+  uint32_t mp_region;      // Raw MP_REGION_<n> value.
+  uint32_t mp_region_cfg;  // Raw MP_REGION_CFG_<n> value.
+} flash_ctrl_data_region_state_t;
+
+/**
+ * Saves the configuration of a data memory protection region.
+ *
+ * Reads the `MP_REGION_${region}` and `MP_REGION_CFG_${region}` registers into
+ * `state`.
+ *
+ * @param region The index of the region to save.
+ * @param[out] state Saved register values for the region.
+ */
+void flash_ctrl_data_region_save(flash_ctrl_region_index_t region,
+                                 flash_ctrl_data_region_state_t *state);
+
+/**
+ * Restores the configuration of a data memory protection region.
+ *
+ * Temporarily disables `MP_REGION_CFG_${region}` before writing `state` back to
+ * `MP_REGION_${region}` and `MP_REGION_CFG_${region}`.
+ *
+ * @param region The index of the region to restore.
+ * @param state Saved register values to restore.
+ */
+void flash_ctrl_data_region_restore(
+    flash_ctrl_region_index_t region,
+    const flash_ctrl_data_region_state_t *state);
+
+/**
  * Sets configuration settings for an info page.
  *
  * The caller is responsible for calling
