@@ -30,8 +30,8 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 |:--------------|:---------------------|:--------|:------|--------:|:----------------------------------------------------------------------|
 | cheriot_ena   | prim_mubi_pkg::mubi4 | uni     | rcv   |       1 | CHERIoT mode enable.                                                  |
 | cored_tl_d    | tlul_pkg::tl         | req_rsp | rsp   |       1 | Data port from the core.                                              |
-| cored_tag_h2d | logic                | uni     | rcv   |       1 | CHERIoT capability tag carried with the A-channel of cored_tl_h.      |
-| cored_tag_d2h | logic                | uni     | req   |       1 | Capability tag returned on the D-channel of cored_tl_h.               |
+| cored_tag_h2d | logic                | uni     | rcv   |       1 | CHERIoT capability tag carried with the A-channel of cored_tl_d.      |
+| cored_tag_d2h | logic                | uni     | req   |       1 | Capability tag returned on the D-channel of cored_tl_d.               |
 | corerevbm_tl  | tlul_pkg::tl         | req_rsp | rsp   |       1 | TRVK (tag revocation) revocation bitmap port from the core.           |
 | meta_sram_tl  | tlul_pkg::tl         | req_rsp | req   |       1 | Host TL-UL port to the external meta SRAM controller's RAM interface. |
 | cored_tl_h    | tlul_pkg::tl         | req_rsp | req   |       1 |                                                                       |

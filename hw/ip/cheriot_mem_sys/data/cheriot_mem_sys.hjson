@@ -245,7 +245,7 @@
       width:   "1",
       package: "",
       default: "1'b0",
-      desc:    "CHERIoT capability tag carried with the A-channel of cored_tl_h."
+      desc:    "CHERIoT capability tag carried with the A-channel of cored_tl_d."
     },
     // Capability tag sideband - read response direction (from subsystem to core)
     { struct:  "logic",
@@ -255,7 +255,7 @@
       width:   "1",
       package: "",
       default: "1'b0",
-      desc:    "Capability tag returned on the D-channel of cored_tl_h."
+      desc:    "Capability tag returned on the D-channel of cored_tl_d."
     },
     // TRVK revocation bitmap TL-UL host port
     { struct:  "tl",
