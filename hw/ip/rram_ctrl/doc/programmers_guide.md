@@ -163,6 +163,10 @@ A fatal FSM, count or a transmission-integrity error on the same interface is re
 
 ## Configuring Memory Protection
 
+All access attributes and enables of the memory protection registers are multibit encoded.
+Software must only write `MuBi4True` or `MuBi4False` to them.
+Any other value is treated as a fault: it raises [`STD_FAULT_STATUS.mp_cfg_err`](registers.md#std_fault_status), which triggers a fatal alert and disables RRAM access.
+
 ### Data Partition
 
 Configure up to 10 named protection regions via the [`MP_REGION_CFG_*`](registers.md#mp_region_cfg) and [`MP_REGION_*`](registers.md#mp_region) register pairs.
