@@ -663,7 +663,8 @@ void ottf_external_isr(uint32_t *exc_info) {
     // We should not get aon timer interrupts since escalation suppresses them.
     CHECK(false, "Unexpected aon timer interrupt %d", irq);
   } else if (peripheral_id == dt_alert_handler_instance_id(kAlertHandlerDt)) {
-    // Don't acknowledge the interrupt to alert_handler so it escalates.
+    // Don't acknowledge the interrupt to alert_handler. Escalation has already
+    // started, since the class threshold is 0.
     CHECK(fault_checker.function);
     CHECK(fault_checker.ip_inst);
     CHECK(fault_checker.type);
@@ -766,9 +767,9 @@ static void init_peripherals(void) {
 }
 
 /**
- * Program the alert handler to escalate on alerts and reset on phase 2,
- * and to start escalation after timing out due to an unacknowledged
- * interrupt.
+ * Program the alert handler to escalate on the first expected alert. Phase 0
+ * only waits, phase 1 raises an NMI, phase 2 lc_escalate_en and phase 3 a
+ * reset.
  */
 static void alert_handler_config(void) {
   alert_class_to_use = (dif_alert_handler_class_t)rand_testutils_gen32_range(
@@ -1079,7 +1080,7 @@ static void execute_test(const dif_aon_timer_t *aon_timer) {
     fault_checker = fc;
   }
 
-  // Save the fault_checker to flash.
+  // Save the fault_checker to retention SRAM.
   save_fault_checker(&fault_checker);
 
   // Make sure we can receive both the watchdog and alert NMIs.
