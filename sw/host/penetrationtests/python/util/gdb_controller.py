@@ -465,10 +465,13 @@ class GDBController:
         except Exception:
             return None
 
+    _active_marker_bounds = None
+
     def setup_pc_trace(
         self, file_name, trace_start_addr, trace_end_addr, skip_addrs=None
     ):
         """Configures GDB step-based instruction tracing (or static PC pool in Panopticon mode)."""
+        GDBController._active_marker_bounds = (trace_start_addr, trace_end_addr)
         self.n_brkp = 1
         if any(a == "--num-skips" or a.startswith("--num-skips=") for a in sys.argv):
             self._static_trace_info = (trace_start_addr, trace_end_addr, skip_addrs)
@@ -656,7 +659,7 @@ class GDBController:
         brk_num = int(m.group(1)) if m else self.n_brkp
 
         skip_commands = f"commands {brk_num}\n"
-        skip_commands += f"delete {brk_num}\n"
+        skip_commands += f"disable {brk_num}\n"
         skip_commands += f"set $pc={next_pc_address}\n"
         skip_commands += 'printf "instruction skip applied\\n"\n'
         skip_commands += "c\n"
@@ -669,6 +672,39 @@ class GDBController:
         self.last_bp_num = brk_num
         self.last_bp_pc = pc_address
         self.n_brkp = brk_num + 1
+
+        bounds = getattr(GDBController, "_active_marker_bounds", None)
+        if bounds and bounds[0]:
+            start_addr, end_addr = bounds
+            pc_int = int(pc_address, 16) if isinstance(pc_address, str) else int(pc_address)
+            start_int = int(start_addr, 16) if isinstance(start_addr, str) else int(start_addr)
+            if pc_int != start_int:
+                self.send_command(f"disable {brk_num}")
+                tb_cmd = "tb" if is_qemu_available() else "thbreak"
+                start_resp = self.send_command(f"{tb_cmd} *({start_addr})")
+                m_start = re.search(
+                    r"(?:Temporary breakpoint|Breakpoint|Hardware assisted breakpoint)\s+(\d+)",
+                    start_resp or "",
+                )
+                start_brk = int(m_start.group(1)) if m_start else self.n_brkp
+                self.send_command(
+                    f"commands {start_brk}\nsilent\nenable {brk_num}\nc\nend"
+                )
+                self.n_brkp = start_brk + 1
+                if end_addr and is_qemu_available():
+                    end_int = int(end_addr, 16) if isinstance(end_addr, str) else int(end_addr)
+                    if pc_int != end_int:
+                        end_resp = self.send_command(f"tb *({end_addr})")
+                        m_end = re.search(
+                            r"(?:Temporary breakpoint|Breakpoint|"
+                            r"Hardware assisted breakpoint)\s+(\d+)",
+                            end_resp or "",
+                        )
+                        end_brk = int(m_end.group(1)) if m_end else self.n_brkp
+                        self.send_command(
+                            f"commands {end_brk}\nsilent\ndisable {brk_num}\nc\nend"
+                        )
+                        self.n_brkp = end_brk + 1
 
     def add_observation(self, observations):
         """Registers observation breakpoints (e.g. exception handler detection)."""
