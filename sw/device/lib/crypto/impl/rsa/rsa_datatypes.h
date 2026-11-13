@@ -10,6 +10,7 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/impl/status.h"
+#include "sw/device/lib/crypto/include/datatypes.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -113,7 +114,9 @@ typedef struct rsa_4096_public_key_t {
  */
 typedef struct rsa_2048_private_key_t {
   rsa_2048_int_t d0;
+#ifndef OTCRYPTO_DISABLE_KEYBLOB_MASKING
   rsa_2048_int_t d1;
+#endif
   rsa_2048_int_t n;
   /**
    * Checksum over d0.
@@ -129,7 +132,9 @@ typedef struct rsa_2048_private_key_t {
  */
 typedef struct rsa_3072_private_key_t {
   rsa_3072_int_t d0;
+#ifndef OTCRYPTO_DISABLE_KEYBLOB_MASKING
   rsa_3072_int_t d1;
+#endif
   rsa_3072_int_t n;
   /**
    * Checksum over d0.
@@ -145,7 +150,9 @@ typedef struct rsa_3072_private_key_t {
  */
 typedef struct rsa_4096_private_key_t {
   rsa_4096_int_t d0;
+#ifndef OTCRYPTO_DISABLE_KEYBLOB_MASKING
   rsa_4096_int_t d1;
+#endif
   rsa_4096_int_t n;
   /**
    * Checksum over d0.

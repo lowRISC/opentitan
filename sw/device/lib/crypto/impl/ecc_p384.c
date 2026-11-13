@@ -59,11 +59,16 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t internal_p384_keygen_start(
 
 OT_NOINLINE static status_t load_private_scalar(
     const otcrypto_blinded_key_t *key, p384_masked_scalar_t *scalar) {
-  HARDENED_TRY(hardened_memcpy(scalar->share0, key->keyblob,
-                               kP384MaskedScalarTotalShareWords));
-  HARDENED_CHECK_EQ(hardened_memeq(key->keyblob, scalar->share0,
-                                   kP384MaskedScalarTotalShareWords),
-                    kHardenedBoolTrue);
+  uint32_t *share0;
+  uint32_t *share1;
+  HARDENED_TRY(keyblob_to_shares(key, &share0, &share1));
+  HARDENED_TRY(
+      hardened_memcpy(scalar->share0, share0, kP384MaskedScalarShareWords));
+  HARDENED_TRY(
+      hardened_memcpy(scalar->share1, share1, kP384MaskedScalarShareWords));
+  HARDENED_CHECK_EQ(
+      hardened_memeq(share0, scalar->share0, kP384MaskedScalarShareWords),
+      kHardenedBoolTrue);
   scalar->checksum = p384_masked_scalar_checksum(scalar);
   return OTCRYPTO_OK;
 }
@@ -126,12 +131,12 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p384_private_key_length_check(
   HARDENED_CHECK_EQ(private_key->config.key_length, kP384ScalarBytes);
 
   // Check the keyblob length.
-  if (launder32(private_key->keyblob_length) !=
-      kP384MaskedScalarTotalShareBytes) {
+  size_t keyblob_bytes =
+      keyblob_num_words(private_key->config) * sizeof(uint32_t);
+  if (launder32(private_key->keyblob_length) != keyblob_bytes) {
     return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(private_key->keyblob_length,
-                    kP384MaskedScalarTotalShareBytes);
+  HARDENED_CHECK_EQ(private_key->keyblob_length, keyblob_bytes);
 
   return OTCRYPTO_OK;
 }
@@ -202,12 +207,9 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t internal_p384_keygen_finalize(
     HARDENED_TRY(p384_keygen_finalize(&private_scalar, pk));
     HARDENED_CHECK_EQ(p384_masked_scalar_checksum_check(&private_scalar),
                       kHardenedBoolTrue);
-    HARDENED_TRY(hardened_memcpy(private_key->keyblob, private_scalar.share0,
-                                 kP384MaskedScalarTotalShareWords));
-    HARDENED_CHECK_EQ(
-        hardened_memeq(private_scalar.share0, private_key->keyblob,
-                       kP384MaskedScalarTotalShareWords),
-        kHardenedBoolTrue);
+    HARDENED_TRY(keyblob_from_shares(private_scalar.share0,
+                                     private_scalar.share1, private_key->config,
+                                     private_key->keyblob));
     hardened_memshred((uint32_t *)&private_scalar,
                       kP384MaskedScalarTotalShareWords);
   } else {
@@ -1079,17 +1081,8 @@ otcrypto_status_t otcrypto_ecc_p384_private_key_import(
   // Check that the caller-allocated keyblob matches the expected P-384 layout.
   HARDENED_TRY(p384_private_key_length_check(private_key));
 
-  // Randomize the keyblob before writing secret data.
-  HARDENED_TRY(hardened_memshred(private_key->keyblob,
-                                 kP384MaskedScalarTotalShareWords));
-
-  // Copy the caller-supplied shares into the keyblob as share0 || share1,
-  // matching the p384_masked_scalar_t layout.
-  HARDENED_TRY(hardened_memcpy(private_key->keyblob, share0.data,
-                               kP384MaskedScalarShareWords));
-  HARDENED_TRY(
-      hardened_memcpy(private_key->keyblob + kP384MaskedScalarShareWords,
-                      share1.data, kP384MaskedScalarShareWords));
+  HARDENED_TRY(keyblob_from_shares(share0.data, share1.data,
+                                   private_key->config, private_key->keyblob));
 
   // Set the blinded key checksum.
   private_key->checksum = otcrypto_integrity_blinded_checksum(private_key);
@@ -1152,11 +1145,14 @@ otcrypto_status_t otcrypto_ecc_p384_private_key_export(
   HARDENED_TRY(hardened_memshred(share1->data, kP384MaskedScalarShareWords));
 
   // Copy the keyblob shares into the caller-supplied output buffers.
-  HARDENED_TRY(hardened_memcpy(share0->data, private_key->keyblob,
+  uint32_t *keyblob_share0;
+  uint32_t *keyblob_share1;
+  HARDENED_TRY(
+      keyblob_to_shares(private_key, &keyblob_share0, &keyblob_share1));
+  HARDENED_TRY(hardened_memcpy(share0->data, keyblob_share0,
                                kP384MaskedScalarShareWords));
-  HARDENED_TRY(hardened_memcpy(
-      share1->data, private_key->keyblob + kP384MaskedScalarShareWords,
-      kP384MaskedScalarShareWords));
+  HARDENED_TRY(hardened_memcpy(share1->data, keyblob_share1,
+                               kP384MaskedScalarShareWords));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -1199,7 +1195,7 @@ otcrypto_status_t otcrypto_ecc_p384_arith_share_private_key(
 
   // Randomize the keyblob before writing secret data.
   HARDENED_TRY(hardened_memshred(arith_private_key->keyblob,
-                                 kP384MaskedScalarTotalShareWords));
+                                 keyblob_num_words(arith_private_key->config)));
 
   p384_masked_scalar_t boolean_private_scalar;
   p384_masked_scalar_t arith_private_scalar;
@@ -1220,9 +1216,9 @@ otcrypto_status_t otcrypto_ecc_p384_arith_share_private_key(
                     kP384MaskedScalarTotalShareWords);
 
   // Copy the two arithmetic shares into the output buffer.
-  HARDENED_TRY(hardened_memcpy(arith_private_key->keyblob,
-                               arith_private_scalar.share0,
-                               kP384MaskedScalarTotalShareWords));
+  HARDENED_TRY(keyblob_from_shares(
+      arith_private_scalar.share0, arith_private_scalar.share1,
+      arith_private_key->config, arith_private_key->keyblob));
 
   hardened_memshred((uint32_t *)&arith_private_scalar,
                     kP384MaskedScalarTotalShareWords);

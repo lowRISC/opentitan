@@ -70,16 +70,22 @@ enum {
   kOtcryptoRsa2048PrivateKeyBytes = 256,
   kOtcryptoRsa3072PrivateKeyBytes = 384,
   kOtcryptoRsa4096PrivateKeyBytes = 512,
-  /**
-   * Number of bytes needed for RSA private keyblobs.
-   *
-   * The exact representation is an implementation-specific detail and subject
-   * to change. This is the length that the caller should set in
-   * `keyblob_length` and allocate for the `keyblob` buffer in blinded keys.
-   */
+/**
+ * Number of bytes needed for RSA private keyblobs.
+ *
+ * The exact representation is an implementation-specific detail and subject
+ * to change. This is the length that the caller should set in
+ * `keyblob_length` and allocate for the `keyblob` buffer in blinded keys.
+ */
+#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
+  kOtcryptoRsa2048PrivateKeyblobBytes = 516,
+  kOtcryptoRsa3072PrivateKeyblobBytes = 772,
+  kOtcryptoRsa4096PrivateKeyblobBytes = 1028,
+#else
   kOtcryptoRsa2048PrivateKeyblobBytes = 772,
   kOtcryptoRsa3072PrivateKeyblobBytes = 1156,
   kOtcryptoRsa4096PrivateKeyblobBytes = 1540,
+#endif
 };
 
 /**

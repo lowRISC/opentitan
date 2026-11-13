@@ -157,9 +157,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
 
   // Setup
   uint8_t zero = 0x00;
-  size_t share_word_len = keyblob_share_num_words(output_key_material->config);
-  uint32_t *share0_ptr = output_key_material->keyblob;
-  uint32_t *share1_ptr = output_key_material->keyblob + share_word_len;
+  memset(output_key_material->keyblob, 0, output_key_material->keyblob_length);
   size_t words_written = 0;
 
   // Repeatedly call HMAC to generate the derived key based on input data:
@@ -199,22 +197,13 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
       words_to_copy = required_word_len - words_written;
     }
 
-    uint32_t mask_data[kHmacMaxDigestWords];
-    HARDENED_TRY(hardened_memshred(mask_data, words_to_copy));
-
-    uint32_t share0_data[kHmacMaxDigestWords];
-    HARDENED_TRY(hardened_xor(tag_data, mask_data, words_to_copy, share0_data));
-
-    HARDENED_TRY(hardened_memcpy(share0_ptr + words_written, share0_data,
-                                 words_to_copy));
-    HARDENED_TRY(
-        hardened_memcpy(share1_ptr + words_written, mask_data, words_to_copy));
+    HARDENED_TRY(hardened_memcpy(output_key_material->keyblob + words_written,
+                                 tag_data, words_to_copy));
 
     words_written += words_to_copy;
   }
 
-  output_key_material->checksum =
-      otcrypto_integrity_blinded_checksum(output_key_material);
+  HARDENED_TRY(keyblob_remask(output_key_material));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }

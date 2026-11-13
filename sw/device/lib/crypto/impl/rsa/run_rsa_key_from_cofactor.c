@@ -104,7 +104,6 @@ status_t rsa_keygen_from_cofactor_start(rsa_size_t size,
 
 status_t rsa_keygen_from_cofactor_finalize(rsa_size_t size,
                                            uint32_t *public_key_n,
-                                           uint32_t *private_key_n,
                                            uint32_t *private_key_d0,
                                            uint32_t *private_key_d1) {
   // Spin here waiting for OTBN to complete.
@@ -171,8 +170,7 @@ status_t rsa_keygen_from_cofactor_finalize(rsa_size_t size,
   // Read the public modulus (n) from OTBN dmem.
   const otbn_addr_t kOtbnVarRsaN =
       OTBN_ADDR_T_INIT(run_rsa_key_from_cofactor, rsa_n);
-  HARDENED_TRY_WIPE_DMEM(
-      otbn_dmem_read(num_words, kOtbnVarRsaN, private_key_n));
+  HARDENED_TRY_WIPE_DMEM(otbn_dmem_read(num_words, kOtbnVarRsaN, public_key_n));
 
   // Read the first share of the private exponent (d) from OTBN dmem.
   const otbn_addr_t kOtbnVarRsaD0 =
@@ -185,9 +183,6 @@ status_t rsa_keygen_from_cofactor_finalize(rsa_size_t size,
       OTBN_ADDR_T_INIT(run_rsa_key_from_cofactor, rsa_d1);
   HARDENED_TRY_WIPE_DMEM(
       otbn_dmem_read(num_words, kOtbnVarRsaD1, private_key_d1));
-
-  // Copy the modulus to the public key.
-  HARDENED_TRY(hardened_memcpy(public_key_n, private_key_n, num_words));
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();

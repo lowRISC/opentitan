@@ -151,10 +151,10 @@ TEST(KeyTransport, BlindedKeyImportExport) {
     unmasked_key[i] = share0[i] ^ share1[i];
   }
 
-  uint32_t keyblob[share0.size() * 2];
+  uint32_t keyblob[keyblob_num_words(kConfigExportableAesCtr128)];
   otcrypto_blinded_key_t blinded_key = {
       .config = kConfigExportableAesCtr128,
-      .keyblob_length = sizeof(keyblob),
+      .keyblob_length = static_cast<uint32_t>(sizeof(keyblob)),
       .keyblob = keyblob,
   };
 
@@ -193,10 +193,10 @@ TEST(KeyTransport, BlindedKeyImportBadLengths) {
                                     0xfcfdfeff};
 
   // Create destination struct.
-  uint32_t keyblob[share0.size() * 2];
+  uint32_t keyblob[keyblob_num_words(kConfigExportableAesCtr128)];
   otcrypto_blinded_key_t blinded_key = {
       .config = kConfigExportableAesCtr128,
-      .keyblob_length = sizeof(keyblob),
+      .keyblob_length = static_cast<uint32_t>(sizeof(keyblob)),
       .keyblob = keyblob,
   };
 
@@ -221,7 +221,7 @@ TEST(KeyTransport, BlindedKeyImportBadLengths) {
   // Set a bad length for the keyblob and expect the import to fail.
   otcrypto_blinded_key_t bad_blinded_key = {
       .config = kConfigExportableAesCtr128,
-      .keyblob_length = sizeof(keyblob) - 1,
+      .keyblob_length = static_cast<uint32_t>(sizeof(keyblob) - 1),
       .keyblob = keyblob,
   };
   EXPECT_EQ(status_ok(otcrypto_import_blinded_key(&share0_buf, &share1_buf,
@@ -236,10 +236,10 @@ TEST(KeyTransport, BlindedKeyExportBadLengths) {
                                     0xfcfdfeff};
 
   // Create destination struct.
-  uint32_t keyblob[share0.size() * 2];
+  uint32_t keyblob[keyblob_num_words(kConfigExportableAesCtr128)];
   otcrypto_blinded_key_t blinded_key = {
       .config = kConfigExportableAesCtr128,
-      .keyblob_length = sizeof(keyblob),
+      .keyblob_length = static_cast<uint32_t>(sizeof(keyblob)),
       .keyblob = keyblob,
   };
 
@@ -270,7 +270,7 @@ TEST(KeyTransport, BlindedKeyExportBadLengths) {
   // Set a bad length for the keyblob and expect the export to fail.
   otcrypto_blinded_key_t bad_blinded_key = {
       .config = kConfigExportableAesCtr128,
-      .keyblob_length = sizeof(keyblob) - 1,
+      .keyblob_length = static_cast<uint32_t>(sizeof(keyblob) - 1),
       .keyblob = keyblob,
   };
   EXPECT_EQ(
@@ -286,10 +286,10 @@ TEST(KeyTransport, BlindedKeyExportNotExportable) {
                                     0xfcfdfeff};
 
   // Create destination struct.
-  uint32_t keyblob[share0.size() * 2];
+  uint32_t keyblob[keyblob_num_words(kConfigNonExportableAesCtr128)];
   otcrypto_blinded_key_t blinded_key = {
       .config = kConfigNonExportableAesCtr128,
-      .keyblob_length = sizeof(keyblob),
+      .keyblob_length = static_cast<uint32_t>(sizeof(keyblob)),
       .keyblob = keyblob,
   };
 
@@ -508,18 +508,31 @@ TEST(KeyTransport, WrappedKeyLenRsa) {
 
   size_t wrapped_words_2048 = 0;
   EXPECT_OK(otcrypto_wrapped_key_len(kConfigRsa2048, &wrapped_words_2048));
+#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
+  EXPECT_EQ(wrapped_words_2048, 140);
+#else
   EXPECT_EQ(wrapped_words_2048, 204);
+#endif
   EXPECT_LE(wrapped_words_2048, kOtcryptoWrappedKeyMaxWords);
 
   size_t wrapped_words_3072 = 0;
   EXPECT_OK(otcrypto_wrapped_key_len(kConfigRsa3072, &wrapped_words_3072));
+#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
+  EXPECT_EQ(wrapped_words_3072, 204);
+#else
   EXPECT_EQ(wrapped_words_3072, 300);
+#endif
   EXPECT_LE(wrapped_words_3072, kOtcryptoWrappedKeyMaxWords);
 
   size_t wrapped_words_4096 = 0;
   EXPECT_OK(otcrypto_wrapped_key_len(kConfigRsa4096, &wrapped_words_4096));
+#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
+  EXPECT_EQ(wrapped_words_4096, 268);
+  EXPECT_LE(wrapped_words_4096, kOtcryptoWrappedKeyMaxWords);
+#else
   EXPECT_EQ(wrapped_words_4096, 396);
   EXPECT_EQ(wrapped_words_4096, kOtcryptoWrappedKeyMaxWords);
+#endif
 
   // Verify otcrypto_key_wrap rejects an RSA-4096 key with the old (2-share)
   // keyblob_length of 1024 bytes instead of 1540 bytes.
@@ -573,6 +586,7 @@ TEST(KeyTransport, HwBackedKeygenNegative) {
                                       0x04050607, 0x08090a0b, 0x0c0d0e0f,
                                       0x10111213, 0x14151617};
 
+#ifndef OTCRYPTO_DISABLE_KEYBLOB_MASKING
   // A 32-byte (8-word) sideload keyblob is too small for SW keygen (needs 64B).
   uint32_t small_sealing_keyblob[8] = {0};
   otcrypto_blinded_key_t small_sealing_key = {
@@ -584,6 +598,7 @@ TEST(KeyTransport, HwBackedKeygenNegative) {
                                    &small_sealing_key));
   EXPECT_NOT_OK(
       ot_crypto_hw_backed_keygen(kHardenedBoolFalse, &small_sealing_key));
+#endif
 
   // A 36-byte (9-word) attestation keyblob is too small for SW keygen (needs
   // 64B).
@@ -598,7 +613,7 @@ TEST(KeyTransport, HwBackedKeygenNegative) {
   EXPECT_NOT_OK(ot_crypto_hw_backed_keygen(kHardenedBoolTrue, &small_att_key));
 
   // A 128-bit key config does not match the 256-bit keymgr output share size.
-  uint32_t keyblob_64b[16] = {0};
+  uint32_t keyblob_64b[kSwKeyblobHwBackedWords] = {0};
   otcrypto_blinded_key_t wrong_key_len = {
       .config = kConfigHwBackedAesCtr128,
       .keyblob_length = sizeof(keyblob_64b),

@@ -40,6 +40,14 @@ def _cryptolib_api_config_header_impl(ctx):
         ]
     else:
         lines.append("#define OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS")
+    if ctx.attr.keyblob_masking:
+        lines += [
+            "#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING",
+            "#error \"This release has been built with keyblob masking, so this cannot be disabled.\"",
+            "#endif /* OTCRYPTO_DISABLE_KEYBLOB_MASKING */",
+        ]
+    else:
+        lines.append("#define OTCRYPTO_DISABLE_KEYBLOB_MASKING")
     defines = "\n{}\n".format("\n".join(lines)) if lines else ""
 
     content = CRYPTOLIB_API_CONFIG_HEADER.format(
@@ -56,5 +64,6 @@ cryptolib_api_config_header = rule(
     implementation = _cryptolib_api_config_header_impl,
     attrs = {
         "buffer_integrity_checks": attr.bool(default = True, doc = "Perform additional integrity checks of buffers, at some additional cost"),
+        "keyblob_masking": attr.bool(default = True, doc = "Store symmetric keyblobs in two XOR shares"),
     },
 )
