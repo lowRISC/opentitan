@@ -98,6 +98,14 @@ pkg_files(
     },
 )
 
+# Our version of softhsm includes some patches which are not upstreamed.
+pkg_files(
+    name = "softhsm2",
+    srcs = [
+        "@softhsm2//:gen_dir",
+    ],
+)
+
 build_with_flags(
     name = "opentitantool",
     flags = {
@@ -138,6 +146,7 @@ pkg_tar(
         ":opentitan_credits",
         ":ibex_credits",
         ":rust_openssl_credits",
+        ":softhsm2",
     ],
     extension = "tar.xz",
     tags = ["manual"],
