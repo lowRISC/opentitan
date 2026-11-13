@@ -145,6 +145,21 @@
 #define WITH_RESCUE_SIZE (256 - kRomExtSizeInPages)
 #endif
 
+// The following preprocessor symbols are only relevant when
+// WITH_FLASH_CONFIG is defined.
+#ifndef WITH_FLASH_START
+#define WITH_FLASH_START (kRomExtSizeInPages)
+#endif
+#ifndef WITH_FLASH_SIZE
+#define WITH_FLASH_SIZE (224 - kRomExtSizeInPages)
+#endif
+#ifndef WITH_FLASH_SCRAMBLE
+#define WITH_FLASH_SCRAMBLE kMultiBitBool4True
+#endif
+#ifndef WITH_FLASH_ECC
+#define WITH_FLASH_ECC kMultiBitBool4True
+#endif
+
 enum {
   kRomExtSizeInPages = CHIP_ROM_EXT_SIZE_MAX / FLASH_CTRL_PARAM_BYTES_PER_PAGE,
 };
@@ -285,9 +300,41 @@ rom_error_t sku_creator_owner_init(boot_data_t *bootdata) {
   };
 
   uintptr_t end = (uintptr_t)app + app->header.length;
+#ifdef WITH_FLASH_CONFIG
+  owner_flash_config_t *flash = (owner_flash_config_t *)end;
+  flash->header = (tlv_header_t){
+      .tag = kTlvTagFlashConfig,
+      .length = sizeof(owner_flash_config_t) + 2 * sizeof(owner_flash_region_t),
+  };
+  const uint32_t access =
+      bitfield_field32_write(0, FLASH_CONFIG_READ, kMultiBitBool4True) |
+      bitfield_field32_write(0, FLASH_CONFIG_PROGRAM, kMultiBitBool4True) |
+      bitfield_field32_write(0, FLASH_CONFIG_ERASE, kMultiBitBool4True) |
+      bitfield_field32_write(0, FLASH_CONFIG_PROTECT_WHEN_PRIMARY,
+                             kMultiBitBool4False) |
+      bitfield_field32_write(0, FLASH_CONFIG_LOCK, kMultiBitBool4False);
+  const uint32_t props =
+      bitfield_field32_write(0, FLASH_CONFIG_SCRAMBLE, WITH_FLASH_SCRAMBLE) |
+      bitfield_field32_write(0, FLASH_CONFIG_ECC, WITH_FLASH_ECC) |
+      bitfield_field32_write(0, FLASH_CONFIG_HIGH_ENDURANCE,
+                             kMultiBitBool4False);
+  // Entry i is XOR-masked with 0x11111111 * i; see owner_block_flash_apply().
+  flash->config[0] = (owner_flash_region_t){
+      .start = WITH_FLASH_START,
+      .size = WITH_FLASH_SIZE,
+      .access = access,
+      .properties = props,
+  };
+  flash->config[1] = (owner_flash_region_t){
+      .start = 256 + WITH_FLASH_START,
+      .size = WITH_FLASH_SIZE,
+      .access = access ^ 0x11111111,
+      .properties = props ^ 0x11111111,
+  };
+  end = (uintptr_t)flash + flash->header.length;
+#endif
 #ifdef WITH_RESCUE_PROTOCOL
-  owner_rescue_config_t *rescue =
-      (owner_rescue_config_t *)((uintptr_t)app + app->header.length);
+  owner_rescue_config_t *rescue = (owner_rescue_config_t *)end;
   *rescue = (owner_rescue_config_t){
       .header =
           {
