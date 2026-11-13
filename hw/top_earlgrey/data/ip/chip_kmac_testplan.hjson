@@ -73,35 +73,6 @@
       ]
     }
     {
-      name: chip_sw_kmac_entropy
-      desc: '''Verify the EDN interface to KMAC.
-
-            Requires `EnMasking` parameter to be enabled.
-            SW randomly configures the KMAC in any hashing mode/strength, and enable EDN mode.
-            Randomly enable/disable the `entropy_refresh`.
-            Randomly configure `wait_timer` values (zero for disable, non-zero for timer expire).
-              - Program `wait_timer` to a small value.
-                Check if EDN timeout error occurs after issuing the hashing op.
-              - Adjust `wait_timer` greater than expected EDN latency (with correct `prescaler`
-                too). Then check if Digest is correct.
-            KMAC should send EDN request after `entropy_ready` is set.
-            KMAC also should send out another request to EDN when either:
-              - kmac hash counter hits the configured threshold (assuming it is non-zero)
-              - Hash count exceeds the threshold.
-            SW verifies that KMAC produces the correct digest value.
-
-            TODO: This is pending security review discussion. It is unclear if this feature will be
-            implemented.
-
-            X-ref'ed with EDN test/env.
-            '''
-      stage: V2
-      si_stage: SV3
-      lc_states: ["PROD"]
-      tests: ["chip_sw_kmac_entropy"]
-      bazel: ["//sw/device/tests:kmac_entropy_test"]
-    }
-    {
       name: chip_sw_kmac_idle
       desc: '''Verify the KMAC idle signaling to clkmgr.
 
@@ -280,12 +251,9 @@
       name: chip_sw_kmac_entropy_stress
       desc: '''Verify all KMAC entropy configuration options.
 
-            Verify all entropy modes of operation (e.g. software, EDN). Depending on the mode of
-            operation, exercise relevant functionality, for example:
-
-            - Entropy period
-            - Entropy refresh hash count
-            - Entropy seed
+            Requires `EnMasking` parameter to be enabled.
+            Verify the EDN and Software entropy modes including the behavior of the entropy refresh
+            hash counter with different edn_mode_refresh_threshold configuration values.
 
             Process many message blocks in KMAC configuration for all entropy modes, and verify
             that there are no error conditions.
@@ -304,14 +272,13 @@
       name: chip_sw_kmac_error_conditions
       desc: '''Verify reporting of KMAC errors
 
+            Requires `EnMasking` parameter to be enabled.
             This is a negative test case covering the following error conditions:
 
             - ErrKeyNotValid: covers that secret key is invalid when keymgr dpe initiates App operation
             - ErrSwPushedMsgFifo: covers that SW writes the msgfifo while App interface is active
             - ErrSwIssuedCmdInAppActive: covers that SW writes all possible commands to the KMAC
                                          while App interface is active
-            - ErrWaitTimerExpired: covers that the KMAC timed out while waiting for EDN entropy
-            - ErrIncorrectEntropyMode: covers that incorrect entropy modes are detected by the KMAC
             - ErrUnexpectedModeStrength: covers that 128-bit strength is seen for SHA3, and all but
                                          128/256 bit strengths are seen for XOF functions
             - ErrIncorrectFunctionName: covers that the function name is configured incorrectly
@@ -319,8 +286,10 @@
             - ErrSwCmdSequence: covers that SW issues commands to the KMAC out of order
             - Shadow register update alert: covers that the an recoverable alert is triggered on active
                                             shadow register update error
-            - ErrSwHashingWithoutEntropyReady: covers that starting a hash operation when the entropy is
-                                               not ready triggers an error
+            - ErrSwHashingWithoutEntropyReady: covers that starting a KMAC operation when the entropy is
+                                               not ready triggers an error and similarly,
+                                               covers that starting a non-KMAC operation when the entropy
+                                               is not ready does run through without errors
 
             Some of the error conditions may be difficult to reproduce in silicon. In such cases,
             update the test description to capture any limitations.

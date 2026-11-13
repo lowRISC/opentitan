@@ -6,6 +6,7 @@
 #include "sw/device/lib/dif/dif_otbn.h"
 #include "sw/device/lib/dif/dif_rv_core_ibex.h"
 #include "sw/device/lib/runtime/log.h"
+#include "sw/device/lib/testing/entropy_testutils.h"
 #include "sw/device/lib/testing/otbn_testutils.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_alerts.h"
@@ -192,6 +193,9 @@ static void otbn_check_mem_words(const dif_otbn_t *otbn, const int num,
 }
 
 bool test_main(void) {
+  // Ensure the entropy complex is running in auto mode.
+  CHECK_STATUS_OK(entropy_testutils_auto_mode_init());
+
   // Init OTBN DIF.
   dif_otbn_t otbn;
   CHECK_DIF_OK(dif_otbn_init_from_dt(kTestOtbn, &otbn));

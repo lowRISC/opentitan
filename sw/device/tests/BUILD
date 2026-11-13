@@ -2844,51 +2844,15 @@ opentitan_test(
 )
 
 opentitan_test(
-    name = "kmac_entropy_test",
-    srcs = ["kmac_entropy_test.c"],
-    # TODO(#30949):
-    # The ROM configures the KMAC entropy in software mode for the
-    # keymgr_dpe operations. The KMAC entropy FSM latches the entropy
-    # mode only once, so KMAC can no longer be switched to EDN entropy
-    # afterwards which this test relies on.
-    broken = fpga_params(tags = ["broken"]),
-    exec_env = dicts.add(
-        EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
-        DARJEELING_TEST_ENVS,
-        {
-            "//hw/top_earlgrey:fpga_cw340_sival": "broken",
-            "//hw/top_earlgrey:sim_dv": None,
-            "//hw/top_earlgrey:sim_verilator": None,
-        },
-    ),
-    verilator = verilator_params(timeout = "long"),
-    deps = [
-        "//hw/top/dt",
-        "//sw/device/lib/base:mmio",
-        "//sw/device/lib/dif:kmac",
-        "//sw/device/lib/runtime:irq",
-        "//sw/device/lib/runtime:log",
-        "//sw/device/lib/testing:entropy_testutils",
-        "//sw/device/lib/testing/test_framework:ottf_main",
-    ],
-)
-
-opentitan_test(
     name = "kmac_error_conditions_test",
     srcs = ["kmac_error_conditions_test.c"],
-    # TODO(#30949):
-    # The ROM configures the KMAC entropy in software mode for the
-    # keymgr_dpe operations. The KMAC entropy FSM latches the entropy
-    # mode only once, so KMAC can no longer be switched to EDN entropy
-    # afterwards which this test relies on.
-    broken = fpga_params(tags = ["broken"]),
     exec_env = dicts.add(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         # TODO(#30919): Disable tests on darjeeling due to missing keymgr_dpe
         # testutils functions.
         #DARJEELING_TEST_ENVS,
         {
-            "//hw/top_earlgrey:fpga_cw340_sival": "broken",
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
@@ -2915,6 +2879,7 @@ opentitan_test(
         EARLGREY_SILICON_OWNER_ROM_EXT_ENVS,
         DARJEELING_TEST_ENVS,
         {
+            "//hw/top_earlgrey:fpga_cw340_sival": None,
             "//hw/top_earlgrey:sim_dv": None,
             "//hw/top_earlgrey:sim_verilator": None,
         },
@@ -3171,6 +3136,7 @@ opentitan_test(
         "//sw/device/lib/dif:otbn",
         "//sw/device/lib/dif:rv_core_ibex",
         "//sw/device/lib/runtime:log",
+        "//sw/device/lib/testing:entropy_testutils",
         "//sw/device/lib/testing:otbn_testutils",
         "//sw/device/lib/testing/test_framework:ottf_alerts",
         "//sw/device/lib/testing/test_framework:ottf_main",
@@ -7658,6 +7624,7 @@ opentitan_test(
     deps = [
         ":otbn_randomness_impl",
         "//hw/top:entropy_src_c_regs",
+        "//hw/top:kmac_c_regs",
         "//hw/top/dt",
         "//sw/device/lib/base:memory",
         "//sw/device/lib/base:mmio",

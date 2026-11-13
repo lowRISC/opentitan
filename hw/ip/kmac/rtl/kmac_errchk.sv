@@ -73,7 +73,7 @@ module kmac_errchk
   input        cfg_en_unsupported_modestrength_i,
 
   // Entropy Ready Status to check if SW initiated the hash without entropy cfg
-  input        entropy_ready_pulse_i,
+  input entropy_ready_i,
 
   // SW commands: Only valid command is sent out to the rest of the modules
   input  kmac_cmd_e sw_cmd_i,
@@ -92,8 +92,6 @@ module kmac_errchk
   input  lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
 
   // Error processed indicator
-  input err_processed_i,
-
   input prim_mubi_pkg::mubi4_t clear_after_error_i,
 
   output err_t error_o,
@@ -180,13 +178,10 @@ module kmac_errchk
   // KMAC operation.
   logic err_prefix;
 
-  // `err_entropy_ready` occurs when SW initiated (Start) or resumed (Continue)
-  // the hashing op. without configuring the entropy. This error may happen
+  // `err_entropy_ready` occurs when SW initiates (Start) or resumes (Continue)
+  // a KMAC hash opeartion without the entropy being ready. This error may happen
   // only when EnMasking is set.
   logic err_entropy_ready;
-
-  // entropy_ready is a pulse signal. Logic needs to store the state.
-  logic cfg_entropy_ready;
 
   // `err_sideload` occurs when SW requests a context switch while the
   // sideloaded key is selected. Saving the context would expose the
@@ -314,19 +309,11 @@ module kmac_errchk
 
   if (EnMasking) begin : g_entropy_chk
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni)              cfg_entropy_ready <= 1'b 0;
-      else if (err_processed_i) cfg_entropy_ready <= 1'b 0;
-      else if (entropy_ready_pulse_i && st inside {StIdle, StStateWrite}) begin
-        cfg_entropy_ready <= 1'b 1;
-      end
-    end
-
     always_comb begin : check_entropy_ready
       err_entropy_ready = 1'b 0;
 
       if (st inside {StIdle, StStateWrite} && st_d == StMsgFeed && kmac_en_i) begin
-        if (!cfg_entropy_ready) begin
+        if (!entropy_ready_i) begin
           err_entropy_ready = 1'b 1;
         end
       end
@@ -337,18 +324,6 @@ module kmac_errchk
     // If EnMasking is 0, entropy module is not generated.
     // tying the error signal to 0.
     assign err_entropy_ready = 1'b 0;
-
-    assign cfg_entropy_ready = 1'b 1;
-
-    logic unused_cfg_entropy_ready;
-    assign unused_cfg_entropy_ready = cfg_entropy_ready;
-
-    logic unused_err_processed;
-    assign unused_err_processed = err_processed_i;
-
-    logic unused_entropy_ready_puls;
-    assign unused_entropy_ready_puls = entropy_ready_pulse_i;
-
   end
 
   always_comb begin : recode_st
@@ -424,7 +399,7 @@ module kmac_errchk
                                err_swsequence,
                                err_modestrength,
                                err_prefix}),
-                          16'({kmac_en_i, cfg_entropy_ready})
+                          16'({kmac_en_i, entropy_ready_i})
                         }
                };
       end

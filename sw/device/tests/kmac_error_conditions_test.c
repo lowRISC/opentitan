@@ -82,6 +82,12 @@ static const kmac_test_t kKmacTestVector = {
 };
 
 /**
+ * A random software entropy seed.
+ */
+static const uint32_t sw_mode_entropy_seed[kDifKmacEntropySeedWords] = {
+    0xb153e3fe, 0x09596819, 0x3e85a6e8, 0xb6dcdaba, 0x50dc409c, 0x11e1ebd1};
+
+/**
  * Init key manager.
  *
  * @return OK or error.
@@ -168,178 +174,40 @@ status_t check_and_clear_error(const dif_kmac_t *kmac, dif_kmac_error_t exp_err,
 }
 
 /**
- * ErrWaitTimerExpired.
- *
- * This test checks whether the ErrWaitTimerExpired error code is
- * returned by the hardware when KMAC timed out while waiting for EDN entropy.
- * By configuring a small wait timer (=1), the timeout immediately will be
- * triggered and we should see the expected error code.
- *
- * @return OK or error.
- */
-status_t test_err_wait_timer_expired(void) {
-  LOG_INFO("Testing ErrWaitTimerExpired error.");
-
-  // Init the KMAC block.
-  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
-
-  const dif_kmac_config_t config = (dif_kmac_config_t){
-      .entropy_mode = kDifKmacEntropyModeEdn,
-      .entropy_wait_timer = 0x001,  // Small wait time out to trigger the error.
-      .entropy_prescaler = 0x000,
-      .entropy_fast_process = kDifToggleDisabled,
-      .entropy_seed = {0xaa25b4bf, 0x48ce8fff, 0x5a78282a, 0x48465647,
-                       0x70410fef},
-      .message_big_endian = kDifToggleDisabled,
-      .output_big_endian = kDifToggleDisabled,
-      .sideload = kDifToggleDisabled,
-      .msg_mask = kDifToggleEnabled,
-  };
-
-  TRY(dif_kmac_configure(&kmac, config));
-
-  dif_kmac_operation_state_t kmac_operation_state;
-  TRY(dif_kmac_mode_kmac_start(&kmac, &kmac_operation_state,
-                               kKmacTestVector.mode, 0, &kKmacTestVector.key,
-                               NULL));
-
-  TRY(dif_kmac_absorb(&kmac, &kmac_operation_state, kKmacTestVector.message,
-                      kKmacTestVector.message_len, NULL));
-
-  // This is where timeout might happen, so we handle dif return manually.
-  uint32_t digest[kKmacTestVector.digest_len];
-  dif_result_t res = dif_kmac_squeeze(&kmac, &kmac_operation_state, digest,
-                                      kKmacTestVector.digest_len,
-                                      /*processed=*/NULL, /*capacity=*/NULL);
-
-  // It is OK to get kDifError at this point because of possible timeout.
-  TRY_CHECK(res == kDifOk || res == kDifError);
-
-  // Check if there is a new error.
-  bool irq_err_pending;
-  TRY(dif_kmac_irq_is_pending(&kmac, kDifKmacIrqKmacErr, &irq_err_pending));
-  if (irq_err_pending) {
-    dif_kmac_error_t err_status;
-    uint32_t err_info;
-    TRY(dif_kmac_get_error(&kmac, &err_status, &err_info));
-    TRY_CHECK(err_status == kDifErrorEntropyWaitTimerExpired,
-              "Error other than EDN timeout occurred.");
-    LOG_INFO("EDN timed out.");
-  } else {
-    LOG_INFO("EDN seed received before timeout.");
-  }
-
-  // At this point, irq_err_pending says if timeout is observed
-  TRY_CHECK(irq_err_pending == true,
-            "EDN timeout expectation doesn't match observation.");
-
-  // Flush out the result and check correctness
-  TRY(dif_kmac_end(&kmac, &kmac_operation_state));
-
-  // If err interrupt is generated, we need clean-up
-  if (irq_err_pending) {
-    // Clean INTR_STATE
-    TRY(dif_kmac_irq_acknowledge_all(&kmac));
-
-    // Reset FSM by setting `err_processed` bit
-    TRY(dif_kmac_reset(&kmac, &kmac_operation_state));
-
-    // At this point, we expect that there are no remaining interrupts.
-    dif_kmac_irq_state_snapshot_t intr_snapshot;
-    TRY(dif_kmac_irq_get_state(&kmac, &intr_snapshot));
-    TRY_CHECK(intr_snapshot == 0,
-              "INTR_STATE is non-zero after timeout clean-up.");
-
-    bool is_kmac_locked;
-    TRY(dif_kmac_config_is_locked(&kmac, &is_kmac_locked));
-    TRY_CHECK(!is_kmac_locked, "KMAC still locked after timeout clean-up.");
-  }
-
-  return OK_STATUS();
-}
-
-/**
- * ErrIncorrectEntropyMode.
- *
- * This test checks whether the ErrIncorrectEntropyMode error code is
- * returned by the hardware when using a wrong entropy mode configuration.
- *
- * @return OK or error.
- */
-status_t test_err_incorrect_entropy_mode(void) {
-  LOG_INFO("Testing ErrIncorrectEntropyMode error.");
-
-  // Re-init KMAC for the test.
-  TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
-
-  // Write configuration register.
-  uint32_t cfg_reg = 0;
-  // Provide invalid entropy mode (other than kDifKmacEntropyModeSoftware or
-  // kDifKmacEntropyModeEdn)
-  cfg_reg = bitfield_field32_write(cfg_reg,
-                                   KMAC_CFG_SHADOWED_ENTROPY_MODE_FIELD, 0xf);
-  // Set remaining config to a valid one.
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_ENDIANNESS_BIT,
-                                 kDifToggleDisabled);
-  cfg_reg = bitfield_bit32_write(
-      cfg_reg, KMAC_CFG_SHADOWED_STATE_ENDIANNESS_BIT, kDifToggleDisabled);
-  cfg_reg = bitfield_bit32_write(
-      cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, kDifToggleDisabled);
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT,
-                                 kDifToggleDisabled);
-  cfg_reg =
-      bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_READY_BIT, true);
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT,
-                                 kDifToggleEnabled);
-  mmio_region_write32_shadowed(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET,
-                               cfg_reg);
-
-  // Check whether we got the expected error.
-  return check_and_clear_error(&kmac, kDifErrorEntropyModeIncorrect, false);
-}
-
-/**
  * ErrSwHashingWithoutEntropyReady.
  *
  * This test checks whether the ErrSwHashingWithoutEntropyReady error code is
  * returned by the hardware when the entropy is not ready within the KMAC IP
  * block.
  *
+ * @param kmac_en If `true` the KMAC IP is operated in KMAC mode where the error
+ * is expected to trigger. If `false` the KMAC IP is operated in cSHAKE mode
+ * where the error is not expected to trigger.
  * @return OK or error.
  */
-status_t test_err_sw_hashing_without_entropy_ready(void) {
+status_t test_err_sw_hashing_without_entropy_ready(dif_toggle_t kmac_en) {
   LOG_INFO("Testing ErrSwHashingWithoutEntropyReady error.");
 
   TRY(dif_kmac_init_from_dt(kDtKmac, &kmac));
+  // Configure the KMAC block to use Software Entropy Mode. This will also
+  // reseed the PRNG to complete a potential entropy mode switch.
+  TRY(kmac_testutils_config(&kmac, /*sideload=*/false));
 
-  // Manually init the KMAC block and do not set entropy_ready bit.
-  // Write entropy period register.
-  uint32_t entropy_period_reg = 0;
-  entropy_period_reg = bitfield_field32_write(
-      entropy_period_reg, KMAC_ENTROPY_PERIOD_WAIT_TIMER_FIELD, 0);
-  entropy_period_reg = bitfield_field32_write(
-      entropy_period_reg, KMAC_ENTROPY_PERIOD_PRESCALER_FIELD, 0);
-  mmio_region_write32(kmac.base_addr, KMAC_ENTROPY_PERIOD_REG_OFFSET,
-                      entropy_period_reg);
+  // Now trigger another reseed operation. The KMAC block lower the
+  // `entropy_ready` bit and expects to software to provide a new seed. We don't
+  // provide one to trigger the ErrSwHashingWithoutEntropyReady error.
+  uint32_t cmd_reg = bitfield_bit32_write(0, KMAC_CMD_ENTROPY_REQ_BIT, 1);
+  mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
 
-  // Write threshold register.
-  uint32_t entropy_threshold_reg =
-      KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_RESVAL;
-  entropy_threshold_reg = bitfield_field32_write(
-      entropy_threshold_reg,
-      KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_THRESHOLD_FIELD, 0);
-  mmio_region_write32_shadowed(
-      kmac.base_addr, KMAC_ENTROPY_REFRESH_THRESHOLD_SHADOWED_REG_OFFSET,
-      entropy_threshold_reg);
+  // Verify that the KMAC block is waiting for entropy and that the
+  // `entropy_ready` bit is low.
+  TRY(dif_kmac_poll_status(&kmac, KMAC_STATUS_ENTROPY_RESEEDING_BIT));
+  uint32_t status = mmio_region_read32(kmac.base_addr, KMAC_STATUS_REG_OFFSET);
+  TRY_CHECK(!bitfield_bit32_read(status, KMAC_STATUS_ENTROPY_READY_BIT),
+            "The `entropy_ready` bit is still high.");
+
   // Write configuration register.
   uint32_t cfg_reg = 0;
-  // Set entropy ready bit to false in order to trigger the error we want to
-  // see.
-  cfg_reg =
-      bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_READY_BIT, false);
-  cfg_reg =
-      bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_MODE_FIELD,
-                             KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_EDN_MODE);
   cfg_reg = bitfield_bit32_write(
       cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, kDifToggleDisabled);
   cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_SIDELOAD_BIT,
@@ -348,49 +216,106 @@ status_t test_err_sw_hashing_without_entropy_ready(void) {
                                  kDifToggleEnabled);
   mmio_region_write32_shadowed(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET,
                                cfg_reg);
-  // Write entropy seed registers.
-  mmio_region_write32(kmac.base_addr, KMAC_ENTROPY_SEED_REG_OFFSET, 0xaa25b4bf);
-  mmio_region_write32(kmac.base_addr, KMAC_ENTROPY_SEED_REG_OFFSET, 0x48ce8fff);
-  mmio_region_write32(kmac.base_addr, KMAC_ENTROPY_SEED_REG_OFFSET, 0x5a78282a);
-  mmio_region_write32(kmac.base_addr, KMAC_ENTROPY_SEED_REG_OFFSET, 0x48465647);
-  mmio_region_write32(kmac.base_addr, KMAC_ENTROPY_SEED_REG_OFFSET, 0x70410fef);
 
-  // Configure cSHAKE mode with the given strength and enable KMAC mode.
-  cfg_reg = mmio_region_read32(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET);
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT, true);
-  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_KSTRENGTH_FIELD,
-                                   KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256);
-  cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_MODE_FIELD,
-                                   KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE);
-  mmio_region_write32_shadowed(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET,
-                               cfg_reg);
+  if (kmac_en == kDifToggleEnabled) {
+    // In KMAC mode, it's sufficent to configure the block and issue the start
+    // command. This should already trigger the error.
 
-  // Write prefix to module.
-  uint32_t prefix_regs[11] = {
-      0x4D4B2001,  //  1  32  'K' 'M'
-      0x00014341,  // 'A' 'C'  1   0
-  };
-  mmio_region_write32(kmac.base_addr, KMAC_PREFIX_0_REG_OFFSET, prefix_regs[0]);
-  mmio_region_write32(kmac.base_addr, KMAC_PREFIX_1_REG_OFFSET, prefix_regs[1]);
-  mmio_region_write32(kmac.base_addr, KMAC_PREFIX_2_REG_OFFSET, prefix_regs[2]);
-  mmio_region_write32(kmac.base_addr, KMAC_PREFIX_3_REG_OFFSET, prefix_regs[3]);
-  mmio_region_write32(kmac.base_addr, KMAC_PREFIX_4_REG_OFFSET, prefix_regs[4]);
-  mmio_region_write32(kmac.base_addr, KMAC_PREFIX_5_REG_OFFSET, prefix_regs[5]);
-  mmio_region_write32(kmac.base_addr, KMAC_PREFIX_6_REG_OFFSET, prefix_regs[6]);
-  mmio_region_write32(kmac.base_addr, KMAC_PREFIX_7_REG_OFFSET, prefix_regs[7]);
-  mmio_region_write32(kmac.base_addr, KMAC_PREFIX_8_REG_OFFSET, prefix_regs[8]);
-  mmio_region_write32(kmac.base_addr, KMAC_PREFIX_9_REG_OFFSET, prefix_regs[9]);
-  mmio_region_write32(kmac.base_addr, KMAC_PREFIX_10_REG_OFFSET,
-                      prefix_regs[10]);
+    // Configure cSHAKE mode with the given strength and enable KMAC mode.
+    cfg_reg = mmio_region_read32(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET);
+    cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_KMAC_EN_BIT, 1);
+    cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_KSTRENGTH_FIELD,
+                                     KMAC_CFG_SHADOWED_KSTRENGTH_VALUE_L256);
+    cfg_reg = bitfield_field32_write(cfg_reg, KMAC_CFG_SHADOWED_MODE_FIELD,
+                                     KMAC_CFG_SHADOWED_MODE_VALUE_CSHAKE);
+    mmio_region_write32_shadowed(kmac.base_addr, KMAC_CFG_SHADOWED_REG_OFFSET,
+                                 cfg_reg);
 
-  // Issue START command.
-  uint32_t cmd_reg =
-      bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_START);
-  mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+    // Write prefix to module.
+    uint32_t prefix_regs[11] = {
+        0x4D4B2001,  //  1  32  'K' 'M'
+        0x00014341,  // 'A' 'C'  1   0
+    };
+    mmio_region_write32(kmac.base_addr, KMAC_PREFIX_0_REG_OFFSET,
+                        prefix_regs[0]);
+    mmio_region_write32(kmac.base_addr, KMAC_PREFIX_1_REG_OFFSET,
+                        prefix_regs[1]);
+    mmio_region_write32(kmac.base_addr, KMAC_PREFIX_2_REG_OFFSET,
+                        prefix_regs[2]);
+    mmio_region_write32(kmac.base_addr, KMAC_PREFIX_3_REG_OFFSET,
+                        prefix_regs[3]);
+    mmio_region_write32(kmac.base_addr, KMAC_PREFIX_4_REG_OFFSET,
+                        prefix_regs[4]);
+    mmio_region_write32(kmac.base_addr, KMAC_PREFIX_5_REG_OFFSET,
+                        prefix_regs[5]);
+    mmio_region_write32(kmac.base_addr, KMAC_PREFIX_6_REG_OFFSET,
+                        prefix_regs[6]);
+    mmio_region_write32(kmac.base_addr, KMAC_PREFIX_7_REG_OFFSET,
+                        prefix_regs[7]);
+    mmio_region_write32(kmac.base_addr, KMAC_PREFIX_8_REG_OFFSET,
+                        prefix_regs[8]);
+    mmio_region_write32(kmac.base_addr, KMAC_PREFIX_9_REG_OFFSET,
+                        prefix_regs[9]);
+    mmio_region_write32(kmac.base_addr, KMAC_PREFIX_10_REG_OFFSET,
+                        prefix_regs[10]);
 
-  // Check whether we got the expected error.
-  return check_and_clear_error(
-      &kmac, kDifErrorSoftwareHashingWithoutEntropyReady, false);
+    // Issue START command.
+    cmd_reg =
+        bitfield_field32_write(0, KMAC_CMD_CMD_FIELD, KMAC_CMD_CMD_VALUE_START);
+    mmio_region_write32(kmac.base_addr, KMAC_CMD_REG_OFFSET, cmd_reg);
+  } else {
+    // In other modes, we should be able to process a complete message, e.g. in
+    // cSHAKE mode, irrespective of whether the entropy is ready or not.
+    dif_kmac_operation_state_t kmac_operation_state;
+    dif_kmac_function_name_t n;
+    TRY(dif_kmac_function_name_init("", 0, &n));
+    dif_kmac_customization_string_t s;
+    TRY(dif_kmac_customization_string_init("Ibex", 4, &s));
+    dif_kmac_function_name_t *np = NULL;
+    dif_kmac_customization_string_t *sp = &s;
+
+    TRY(dif_kmac_mode_cshake_start(&kmac, &kmac_operation_state,
+                                   kDifKmacModeCshakeLen256, np, sp));
+    TRY(dif_kmac_absorb(&kmac, &kmac_operation_state, "OpenTitan", 9, NULL));
+    uint32_t out[4];
+    uint32_t expected_digest[4] = {0xcd582d56, 0x59e88860, 0xa4344c29,
+                                   0x5576778f};
+    TRY(dif_kmac_squeeze(&kmac, &kmac_operation_state, out, 4,
+                         /*processed=*/NULL,
+                         /*capacity=*/NULL));
+    TRY(dif_kmac_end(&kmac, &kmac_operation_state));
+
+    for (int i = 0; i < 4; ++i) {
+      CHECK(out[i] == expected_digest[i], "mismatch at %d got=0x%x want=0x%x",
+            i, out[i], expected_digest[i]);
+    }
+  }
+
+  // Now provide a seed to allow the hardware to finish the PRNG reseeding
+  // operation for the following tests.
+  for (int i = 0; i < kDifKmacEntropySeedWords; ++i) {
+    mmio_region_write32(kmac.base_addr, KMAC_ENTROPY_SEED_REG_OFFSET,
+                        sw_mode_entropy_seed[i]);
+  }
+
+  if (kmac_en == kDifToggleEnabled) {
+    // Check whether we got the expected error.
+    return check_and_clear_error(
+        &kmac, kDifErrorSoftwareHashingWithoutEntropyReady, false);
+  } else {
+    // Check that we did not get an error.
+    dif_kmac_error_t err;
+    uint32_t info;
+    bool error;
+
+    TRY(dif_kmac_has_error_occurred(&kmac, &error));
+    TRY_CHECK(!error, "An error was triggered.");
+
+    TRY(dif_kmac_get_error(&kmac, &err, &info));
+    TRY_CHECK(err == kDifErrorNone, "Unexpected error was triggered.");
+
+    return OK_STATUS();
+  }
 }
 
 /**
@@ -703,13 +628,10 @@ status_t test_err_sw_pushed_msg_fifo(void) {
 }
 
 bool test_main(void) {
-  // The first three tests don't run on CW310 (see lowRISC/opentitan#15530).
-  if (kDeviceType != kDeviceFpgaCw310) {
-    CHECK_STATUS_OK(test_err_wait_timer_expired());
-    CHECK_STATUS_OK(test_err_incorrect_entropy_mode());
-    CHECK_STATUS_OK(test_err_sw_hashing_without_entropy_ready());
-  }
-
+  CHECK_STATUS_OK(test_err_sw_hashing_without_entropy_ready(
+      /*kmac_en=*/kDifToggleDisabled));
+  CHECK_STATUS_OK(
+      test_err_sw_hashing_without_entropy_ready(/*kmac_en=*/kDifToggleEnabled));
   CHECK_STATUS_OK(test_err_incorrect_fnc_name());
   CHECK_STATUS_OK(test_err_key_not_valid());
   CHECK_STATUS_OK(test_err_shadow_reg_update());

@@ -57,7 +57,6 @@ module kmac_reduced
   output sha3_st_e              sha3_fsm_o,
 
   // Entropy interface
-  input  logic                    entropy_ready_i,       // drive to 1 once ready
   input  logic                    entropy_refresh_req_i, // one pulse at the beginning
   input  logic [EntropyWidth-1:0] entropy_i,
   output logic                    entropy_req_o,
@@ -80,6 +79,7 @@ module kmac_reduced
 
   // Entropy configuration
   input logic          msg_mask_en_i,          // drive to 1
+  input logic          entropy_boot_mode_i,    // drive to 0
   input entropy_mode_e entropy_mode_i,         // drive to kmac_pkg::EntropyModeEdn
   input logic          entropy_fast_process_i, // drive to 0
   input logic          entropy_in_keyblock_i,  // drive to 1
@@ -87,8 +87,6 @@ module kmac_reduced
   // Entropy reseed control
   input logic                       entropy_seed_update_i,  // drive to 0
   input logic [31:0]                entropy_seed_data_i,    // drive to 0
-  input logic [TimerPrescalerW-1:0] wait_timer_prescaler_i, // drive to 0
-  input logic [EdnWaitTimerW-1:0]   wait_timer_limit_i,     // drive to EdnWaitTimerW'1
 
   // Signals primarily kept to prevent them from being optimized away during synthesis.
   // State output
@@ -96,7 +94,6 @@ module kmac_reduced
   output logic              state_valid_o,
 
   // Entropy status signals
-  output prim_mubi_pkg::mubi4_t entropy_configured_o,
   output logic                  entropy_ready_o,
   output logic                  entropy_reseeding_o,
   input  logic [HashCntW-1:0]   entropy_hash_threshold_i, // drive to max
@@ -107,8 +104,7 @@ module kmac_reduced
   input lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
 
   // Error signaling
-  output logic err_o,
-  input  logic err_processed_i // drive 0
+  output logic err_o
 );
 
   ///////////////////////////////////
@@ -202,13 +198,13 @@ module kmac_reduced
   );
 
   // Error signals
-  sha3_pkg::err_t sha3_err, entropy_err;
+  sha3_pkg::err_t sha3_err;
   logic sha3_state_error, sha3_count_error, sha3_storage_rst_error;
   logic entropy_state_error, entropy_hash_counter_error;
 
   // Collect error signals.
   assign err_o = |{sha3_err, sha3_state_error, sha3_count_error, sha3_storage_rst_error,
-                   entropy_err, entropy_state_error, entropy_hash_counter_error};
+                   entropy_state_error, entropy_hash_counter_error};
 
   /////////////////
   // SHA3 engine //
@@ -310,24 +306,21 @@ module kmac_reduced
     .msg_mask_o   (msg_mask),
 
     // Configuration
-    .mode_i         (entropy_mode_i),
-    .entropy_ready_i(entropy_ready_i),
-    .fast_process_i (entropy_fast_process_i),
-    .in_keyblock_i  (entropy_in_keyblock_i),
+    .entropy_boot_mode_i(entropy_boot_mode_i),
+    .entropy_mode_i     (entropy_mode_i),
+    .fast_process_i     (entropy_fast_process_i),
+    .in_keyblock_i      (entropy_in_keyblock_i),
 
     // Reseed control
     .entropy_refresh_req_i (entropy_refresh_req_i),
     .seed_update_i         (entropy_seed_update_i),
     .seed_data_i           (entropy_seed_data_i),
-    .wait_timer_prescaler_i(wait_timer_prescaler_i),
-    .wait_timer_limit_i    (wait_timer_limit_i),
 
     // Status
     .hash_threshold_i(entropy_hash_threshold_i),
     .hash_cnt_clr_i  (entropy_hash_clr_i),
     .hash_cnt_o      (entropy_hash_cnt_o),
 
-    .entropy_configured_o(entropy_configured_o),
     .entropy_ready_o     (entropy_ready_o),
     .entropy_reseeding_o (entropy_reseeding_o),
 
@@ -335,10 +328,8 @@ module kmac_reduced
     .lc_escalate_en_i(lc_escalate_en[1]),
 
     // Error signals
-    .err_o             (entropy_err),
     .sparse_fsm_error_o(entropy_state_error),
-    .count_error_o     (entropy_hash_counter_error),
-    .err_processed_i   (err_processed_i)
+    .count_error_o     (entropy_hash_counter_error)
   );
 
 endmodule
