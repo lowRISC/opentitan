@@ -93,6 +93,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
 
     // Initialize the info and data partition of the RRAM to all 0s.
     cfg.mem_bkdr_util_h[RramInfo].clear_mem();
+    preload_rram_markers();
     cfg.mem_bkdr_util_h[RramData].clear_mem();
 
     // Randomize retention memory.  This is done intentionally with wrong integrity
@@ -1013,7 +1014,16 @@ class chip_sw_base_vseq extends chip_base_vseq;
     end
 
     begin
-      bit [TL_DW-1:0] token_csr_vals[4] = {<< 32 {{>> 8 {RndCnstRawUnlockTokenHashed}}}};
+      // The volatile RAW unlock hashes the token in KMAC, so it needs the unhashed RAW unlock token.
+      // If the mechanism is absent, this is a persistent RAW unlock.
+      // Then the hashed token is provided on purpose, so that the transition fails with a token
+      // error instead of programming OTP.
+      bit [TL_DW-1:0] token_csr_vals[4];
+      if (expect_success) begin
+        token_csr_vals = {<< 32 {{>> 8 {RndCnstRawUnlockToken}}}};
+      end else begin
+        token_csr_vals = {<< 32 {{>> 8 {RndCnstRawUnlockTokenHashed}}}};
+      end
       foreach (token_csr_vals[index]) begin
         jtag_riscv_agent_pkg::jtag_write_csr(ral.lc_ctrl_regs.transition_token[index].get_offset(),
                                              p_sequencer.jtag_sequencer_h,
@@ -1040,8 +1050,7 @@ class chip_sw_base_vseq extends chip_base_vseq;
                                              p_sequencer.jtag_sequencer_h,
                                              prim_mubi_pkg::MuBi8False);
       end else begin
-        // The hashed token should be invalid if volatile unlock is not supported, since the
-        // regular transition expects that the unhashed token is provided.
+        // The hashed token is invalid for the persistent RAW unlock.
         wait_lc_token_error(.max_attempt(max_attempt));
       end
     end else begin
@@ -1055,6 +1064,8 @@ class chip_sw_base_vseq extends chip_base_vseq;
   //     This transition will use default raw unlock token.
   // 2). Test lock state N -> test unlock state N+1
   //     This transition requires user to input the correct test unlock token.
+  // 3). Test unlock state N -> DEV, PROD or PROD_END
+  //     This transition requires user to input the correct test exit token.
   virtual task jtag_lc_state_transition(dec_lc_state_e src_state,
                                         dec_lc_state_e dest_state,
                                         bit [TokenWidthBit-1:0] test_unlock_token = 0);
@@ -1131,7 +1142,9 @@ class chip_sw_base_vseq extends chip_base_vseq;
       DecLcStTestUnlocked5,
       DecLcStTestUnlocked6,
       DecLcStTestUnlocked7: begin
-        if (dest_state inside {DecLcStProd, DecLcStScrap}) valid_transition = 1;
+        if (dest_state inside {DecLcStDev, DecLcStProd, DecLcStProdEnd, DecLcStScrap}) begin
+          valid_transition = 1;
+        end
       end
       DecLcStDev,
       DecLcStProd: begin
@@ -1315,16 +1328,16 @@ class chip_sw_base_vseq extends chip_base_vseq;
     string mypath;
     logic [1:0] rma_wipe_idx;
     logic [3:0] rma_ack;
-    // Wait for the data-partition entry -- the last of the 4 RmaWipeEntries (info pages are
-    // entries 0-2; the data partition, the big one, is entry 3 == MaxWipeEntry).
+    // Wait for the data-partition entry -- the last of the 3 RmaWipeEntries (info pages are
+    // entries 0-1; the data partition, the big one, is entry 2 == MaxWipeEntry).
     mypath = {path, ".rma_wipe_idx"};
 
     `DV_SPINWAIT(
       do begin
         @(cfg.clk_rst_vif.cb);
         `DV_CHECK_EQ(uvm_hdl_read(mypath, rma_wipe_idx), 1, "hdl read failure")
-      end while (rma_wipe_idx != 2'h3);,
-      "waiting for rma index = 3", 100_000_000
+      end while (rma_wipe_idx != 2'h2);,
+      "waiting for rma index = 2", 100_000_000
     )
 
     // Reduce page size to 'd2

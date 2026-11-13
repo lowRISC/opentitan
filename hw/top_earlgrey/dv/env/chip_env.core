@@ -23,6 +23,7 @@ filesets:
       - lowrisc:dv:jtag_dmi_agent
       - lowrisc:dv:lc_ctrl_dv_utils
       - lowrisc:virtual_dv:rram_ctrl_bkdr_util
+      - lowrisc:virtual_dv:rram_macro_forming
       - lowrisc:earlgrey_dv:otp_ctrl_mem_bkdr_util
       - lowrisc:dv:spi_agent
       - lowrisc:dv:spi_host_sva
@@ -96,6 +97,7 @@ filesets:
       - seq_lib/chip_sw_lc_walkthrough_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_raw_unlock_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_volatile_raw_unlock_vseq.sv: {is_include_file: true}
+      - seq_lib/chip_rram_cp_flow_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_walkthrough_testunlocks_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_lc_ctrl_program_error_vseq.sv: {is_include_file: true}
       - seq_lib/chip_sw_otp_ctrl_escalation_vseq.sv: {is_include_file: true}

@@ -188,20 +188,23 @@
             **Stimulus**:
             - Claim the mutex.
             - Set volatile_raw_unlock to 1.
+            - Drive the allow_vol_unlock input to True, False or an invalid MuBi8 value.
             - Trigger a lc_transition.
             - Trigger a second lc_transition without reset.
 
             **Checks if the feature is enabled in HW**:
             - If the current state is RawState, and transition state is TestUnlocked0, and if the
-              input token is correct, expect the transition to be successful.
+              hashed input token is correct, expect the transition to be successful.
+              Only while allow_vol_unlock is True, otherwise expect a transition error.
             - Check status and volatile_raw_unlock output.
             - If the raw unlock transition is successful, check the second lc_transition can be
               performed without any error.
+              Its token is hashed a second time.
 
             **Checks if the feature is disabled in HW**:
             - Check that the volatile_raw_unlock CSR stays at 0
             - Check that the transition command fails with a token error
-              (a real unlock transition expects the unhashed token instead of the hashed one).
+              (the KMAC model returns a digest that does not match the hashed RAW unlock token).
             '''
       stage: V2
       tests: ["lc_ctrl_volatile_unlock_smoke"]

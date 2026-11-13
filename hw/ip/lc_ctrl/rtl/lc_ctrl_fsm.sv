@@ -41,11 +41,16 @@ module lc_ctrl_fsm
   input                         use_ext_clock_i,
   output logic                  ext_clock_switched_o,
   // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
-  // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-  // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
-  // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+  // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+  // COMPILETIME.
+  // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+  // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+  // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+  // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
   // ---------------------------------------------------------------
   input  logic                  volatile_raw_unlock_i,
+  // Gate for the volatile RAW unlock (two synchronized copies).
+  input  prim_mubi_pkg::mubi8_t [1:0] allow_vol_unlock_i,
   output logic                  strap_en_override_o,
   // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
   // Token input from OTP (these are all hash post-images).
@@ -68,7 +73,6 @@ module lc_ctrl_fsm
   input                         token_hash_err_i,
   input                         token_if_fsm_err_i,
   input  lc_token_t             hashed_token_i,
-  input  lc_token_t             unhashed_token_i,
   // OTP programming interface
   output logic                  otp_prog_req_o,
   output lc_state_e             otp_prog_lc_state_o,
@@ -204,6 +208,10 @@ module lc_ctrl_fsm
   // Registers whether volatile unlock has been successful
   prim_mubi_pkg::mubi8_t volatile_raw_unlock_success_d, volatile_raw_unlock_success_q;
 
+  // Registers whether the ongoing transition is a volatile RAW unlock.
+  // It is latched when the transition starts and selects the end of the token check.
+  prim_mubi_pkg::mubi8_t vol_unlock_req_d, vol_unlock_req_q;
+
   // SEC_CM: MAIN.CTRL_FLOW.CONSISTENCY
   always_comb begin : p_fsm
     // FSM default state assignments.
@@ -230,12 +238,16 @@ module lc_ctrl_fsm
     idle_o      = 1'b0;
 
     // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
-    // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-    // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
-    // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+    // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+    // COMPILETIME.
+    // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+    // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+    // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+    // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
     // ---------------------------------------------------------------
     set_strap_en_override = 1'b0;
     volatile_raw_unlock_success_d = volatile_raw_unlock_success_q;
+    vol_unlock_req_d = vol_unlock_req_q;
     // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
 
     // These signals remain asserted once set to On.
@@ -269,9 +281,12 @@ module lc_ctrl_fsm
         idle_o = 1'b1;
 
         // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
-        // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-        // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
-        // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+        // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+        // COMPILETIME.
+        // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+        // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+        // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+        // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
         // ---------------------------------------------------------------
         // Note that if the volatile unlock mechanism is available,
         // we have to stop fetching the OTP value after a volatile unlock has succeeded.
@@ -291,9 +306,12 @@ module lc_ctrl_fsm
           fsm_state_d = ScrapSt;
 
         // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
-        // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-        // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
-        // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+        // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+        // COMPILETIME.
+        // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+        // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+        // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+        // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
         // ---------------------------------------------------------------
         // Only enter here if volatile RAW unlock is available and enabled.
         end else if (SecVolatileRawUnlockEn && volatile_raw_unlock_i && trans_cmd_i) begin
@@ -301,27 +319,11 @@ module lc_ctrl_fsm
           if (lc_state_q == LcStRaw &&
               trans_target_i == {DecLcStateNumRep{DecLcStTestUnlocked0}} &&
               !trans_invalid_error_o) begin
-            // 128bit token check (without passing it through the KMAC)
-            if (unhashed_token_i == RndCnstRawUnlockTokenHashed) begin
-              // We stay in Idle, but update the life cycle state register (volatile).
-              lc_state_d = LcStTestUnlocked0;
-              // If the count is 0, we set it to 1 - otherwise we just leave it as is so that the
-              // register value is in sync with what has been programmed to OTP already (there may
-              // have been unsuccessul raw unlock attempts before that already incremented it).
-              lc_cnt_d = (lc_cnt_q == LcCnt0) ? LcCnt1 : lc_cnt_q;
-              // Re-sample the DFT straps in the pinmux.
-              // This signal will be delayed by several cycles so that the LC_CTRL signals
-              // have time to propagate.
-              set_strap_en_override = 1'b1;
-              // We have to remember that the transition was successful in order to correctly
-              // disable the continuos sampling of the life cycle state vector coming from OTP.
-              volatile_raw_unlock_success_d = prim_mubi_pkg::MuBi8True;
-              // Indicate that the transition was successful.
-              trans_success_o = 1'b1;
-            end else begin
-              token_invalid_error_o = 1'b1;
-              fsm_state_d = PostTransSt;
-            end
+            // The token is hashed and checked like in a persistent transition.
+            // The clock mux and counter programming states are skipped, since a volatile
+            // RAW unlock does not program OTP.
+            vol_unlock_req_d = prim_mubi_pkg::MuBi8True;
+            fsm_state_d = TransCheckSt;
           end else begin
             // Transition invalid error is set by lc_ctrl_state_transition module.
             fsm_state_d = PostTransSt;
@@ -330,6 +332,7 @@ module lc_ctrl_fsm
         // Initiate a transition. This will first increment the
         // life cycle counter before hashing and checking the token.
         end else if (trans_cmd_i) begin
+          vol_unlock_req_d = prim_mubi_pkg::MuBi8False;
           fsm_state_d = ClkMuxSt;
         end
         // If we are in a non-PROD life cycle state, steer the clock mux if requested. This
@@ -500,9 +503,54 @@ module lc_ctrl_fsm
                 !token_hash_err_i &&
                 &hashed_token_valid_mux) begin
               if (fsm_state_q == TokenCheck1St) begin
-                // This is the only way we can get into the
-                // programming state.
-                fsm_state_d = TransProgSt;
+                // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
+                // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+                // COMPILETIME.
+                // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+                // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+                // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+                // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
+                // ---------------------------------------------------------------
+                if (prim_mubi_pkg::mubi8_test_true_strict(vol_unlock_req_q)) begin
+                  // Check the volatile RAW unlock conditions again.
+                  if (SecVolatileRawUnlockEn && volatile_raw_unlock_i &&
+                      prim_mubi_pkg::mubi8_test_true_strict(allow_vol_unlock_i[1]) &&
+                      lc_state_q == LcStRaw &&
+                      trans_target_i == {DecLcStateNumRep{DecLcStTestUnlocked0}}) begin
+                    // Go back to Idle and update the life cycle state register (volatile).
+                    fsm_state_d = IdleSt;
+                    lc_state_d = LcStTestUnlocked0;
+                    // If the count is 0, we set it to 1.
+                    // Otherwise we leave it as is, so that the register value is in sync with
+                    // what has been programmed to OTP already.
+                    // There may have been unsuccessful persistent raw unlock attempts before
+                    // that already incremented it.
+                    lc_cnt_d = (lc_cnt_q == LcCnt0) ? LcCnt1 : lc_cnt_q;
+                    // Re-sample the DFT straps in the pinmux.
+                    // This signal will be delayed by several cycles so that the LC_CTRL signals
+                    // have time to propagate.
+                    set_strap_en_override = 1'b1;
+                    // We have to remember that the transition was successful in order to
+                    // disable the continuous sampling of the life cycle state vector from OTP.
+                    volatile_raw_unlock_success_d = prim_mubi_pkg::MuBi8True;
+                    // Indicate that the transition was successful.
+                    trans_success_o = 1'b1;
+                    // The volatile RAW unlock is complete.
+                    vol_unlock_req_d = prim_mubi_pkg::MuBi8False;
+                  end else begin
+                    fsm_state_d = InvalidSt;
+                    state_invalid_error_o = 1'b1;
+                  end
+                // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
+                end else if (prim_mubi_pkg::mubi8_test_false_strict(
+                                 vol_unlock_req_q)) begin
+                  // This is the only way we can get into the
+                  // programming state.
+                  fsm_state_d = TransProgSt;
+                end else begin
+                  fsm_state_d = InvalidSt;
+                  state_invalid_error_o = 1'b1;
+                end
               end else begin
                 fsm_state_d = TokenCheck1St;
               end
@@ -600,9 +648,12 @@ module lc_ctrl_fsm
   end
 
   // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
-  // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-  // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
-  // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+  // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+  // COMPILETIME.
+  // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+  // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+  // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+  // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
   // ---------------------------------------------------------------
   if (SecVolatileRawUnlockEn) begin : gen_strap_delay_regs
     // The delay on the life cycle signals is 1 sender + 2 receiver domain
@@ -614,11 +665,13 @@ module lc_ctrl_fsm
       if(!rst_ni) begin
         strap_en_override_q <= '0;
         volatile_raw_unlock_success_q <= prim_mubi_pkg::MuBi8False;
+        vol_unlock_req_q <= prim_mubi_pkg::MuBi8False;
       end else begin
         strap_en_override_q <= {strap_en_override_q[NumStrapDelayRegs-2:0],
                                 // This is a set-reg that will stay high until the next reset.
                                 set_strap_en_override || strap_en_override_q[0]};
         volatile_raw_unlock_success_q <= volatile_raw_unlock_success_d;
+        vol_unlock_req_q <= vol_unlock_req_d;
       end
     end
 
@@ -627,9 +680,11 @@ module lc_ctrl_fsm
     // In this case we tie the strap sampling off.
     logic unused_sigs;
     assign unused_sigs = ^{set_strap_en_override,
-                           volatile_raw_unlock_success_d};
+                           volatile_raw_unlock_success_d,
+                           vol_unlock_req_d};
     assign strap_en_override_o = 1'b0;
     assign volatile_raw_unlock_success_q = prim_mubi_pkg::MuBi8False;
+    assign vol_unlock_req_q = prim_mubi_pkg::MuBi8False;
   end
   // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
 
@@ -777,17 +832,19 @@ module lc_ctrl_fsm
   lc_ctrl_state_transition #(
     .SecVolatileRawUnlockEn(SecVolatileRawUnlockEn)
   ) u_lc_ctrl_state_transition (
-    .lc_state_i            ( lc_state_q     ),
-    .lc_cnt_i              ( lc_cnt_q       ),
-    .dec_lc_state_i        ( dec_lc_state_o ),
-    .fsm_state_i           ( fsm_state_q    ),
+    .lc_state_i                ( lc_state_q                ),
+    .lc_cnt_i                  ( lc_cnt_q                  ),
+    .dec_lc_state_i            ( dec_lc_state_o            ),
+    .fsm_state_i               ( fsm_state_q               ),
     .trans_target_i,
     .volatile_raw_unlock_i,
+    .allow_vol_unlock_i        ( allow_vol_unlock_i[0]     ),
+    .vol_unlock_req_i          ( vol_unlock_req_q          ),
     .trans_cmd_i,
-    .next_lc_state_o       ( next_lc_state  ),
-    .next_lc_cnt_o         ( next_lc_cnt    ),
+    .next_lc_state_o           ( next_lc_state             ),
+    .next_lc_cnt_o             ( next_lc_cnt               ),
     .trans_cnt_oflw_error_o,
-    .trans_invalid_error_o ( trans_invalid_error )
+    .trans_invalid_error_o     ( trans_invalid_error       )
   );
 
   // LC signal decoder and broadcasting logic.
@@ -887,7 +944,18 @@ module lc_ctrl_fsm
       |=>
       fsm_state_q inside {InvalidSt, EscalateSt})
 
-  // Check that the FSM is linear and does not contain any loops
-  `ASSERT_FPV_LINEAR_FSM(SecCmCFILinear_A, fsm_state_q, fsm_state_e)
+  // Check that the FSM is linear and does not contain any loops.
+  // A volatile RAW unlock is the only exception, since it returns to IdleSt after the token check.
+  if (!SecVolatileRawUnlockEn) begin : gen_linear_fsm_assert
+    `ASSERT_FPV_LINEAR_FSM(SecCmCFILinear_A, fsm_state_q, fsm_state_e)
+  end
+
+  // IdleSt is only entered after ResetSt, or after the token check of a volatile RAW unlock.
+  `ASSERT(IdleStEntry_A,
+      fsm_state_q != IdleSt && fsm_state_d == IdleSt
+      |->
+      fsm_state_q == ResetSt ||
+      (fsm_state_q == TokenCheck1St && SecVolatileRawUnlockEn &&
+       prim_mubi_pkg::mubi8_test_true_strict(vol_unlock_req_q)))
 
 endmodule : lc_ctrl_fsm

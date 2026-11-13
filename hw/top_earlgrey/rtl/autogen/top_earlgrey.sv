@@ -86,6 +86,10 @@ module top_earlgrey #(
   parameter bit SecRramCtrlScrambleEn = 1,
   parameter int RramCtrlWrFifoDepth = 4,
   parameter int RramCtrlRdFifoDepth = 16,
+  parameter int RramCtrlRemapStart = otp_ctrl_reg_pkg::Secret0Offset,
+  parameter int RramCtrlRemapSize = otp_ctrl_reg_pkg::Secret0Size,
+  parameter int RramCtrlLcStart = otp_ctrl_reg_pkg::LifeCycleOffset,
+  parameter int RramCtrlLcSize = otp_ctrl_reg_pkg::LifeCycleSize,
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::RV_DM_JTAG_IDCODE,
   parameter bit RvDmUseDmiInterface = 0,
@@ -296,9 +300,12 @@ module top_earlgrey #(
   jtag_pkg::jtag_rsp_t       pinmux_lc_jtag_rsp;
   jtag_pkg::jtag_req_t       pinmux_rv_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_rv_jtag_rsp;
+  jtag_pkg::jtag_req_t       pinmux_rram_jtag_req;
+  jtag_pkg::jtag_rsp_t       pinmux_rram_jtag_rsp;
   lc_ctrl_pkg::lc_tx_t       pinmux_pinmux_hw_debug_en;
   logic       lc_ctrl_strap_en_override;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en;
+  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_nvm_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_clr;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en;
@@ -415,11 +422,6 @@ module top_earlgrey #(
   logic       cio_usbdev_usb_dn_en_d2p;
   logic       cio_usbdev_usb_dn_p2d;
   logic       cio_usbdev_sense_p2d;
-  logic       cio_rram_macro_tck_p2d;
-  logic       cio_rram_macro_tms_p2d;
-  logic       cio_rram_macro_tdi_p2d;
-  logic       cio_rram_macro_tdo_d2p;
-  logic       cio_rram_macro_tdo_en_d2p;
   logic       ast_clk_src_sys;
   logic       ast_clk_src_io;
   logic       ast_clk_src_usb;
@@ -485,6 +487,10 @@ module top_earlgrey #(
   .SecRramCtrlScrambleEn(SecRramCtrlScrambleEn),
   .RramCtrlWrFifoDepth(RramCtrlWrFifoDepth),
   .RramCtrlRdFifoDepth(RramCtrlRdFifoDepth),
+  .RramCtrlRemapStart(RramCtrlRemapStart),
+  .RramCtrlRemapSize(RramCtrlRemapSize),
+  .RramCtrlLcStart(RramCtrlLcStart),
+  .RramCtrlLcSize(RramCtrlLcSize),
   .RvDmIdcodeValue(RvDmIdcodeValue),
   .RvDmUseDmiInterface(RvDmUseDmiInterface),
   .RvDmCheriotSupport(RvDmCheriotSupport),
@@ -637,9 +643,12 @@ module top_earlgrey #(
     .pinmux_lc_jtag_rsp_o              (pinmux_lc_jtag_rsp       ),
     .pinmux_rv_jtag_req_i              (pinmux_rv_jtag_req       ),
     .pinmux_rv_jtag_rsp_o              (pinmux_rv_jtag_rsp       ),
+    .pinmux_rram_jtag_req_i            (pinmux_rram_jtag_req     ),
+    .pinmux_rram_jtag_rsp_o            (pinmux_rram_jtag_rsp     ),
     .pinmux_pinmux_hw_debug_en_i       (pinmux_pinmux_hw_debug_en),
     .lc_ctrl_strap_en_override_o       (lc_ctrl_strap_en_override),
     .lc_ctrl_lc_dft_en_o               (lc_ctrl_lc_dft_en        ),
+    .lc_ctrl_lc_nvm_debug_en_o         (lc_ctrl_lc_nvm_debug_en  ),
     .lc_ctrl_lc_hw_debug_clr_o         (lc_ctrl_lc_hw_debug_clr  ),
     .lc_ctrl_lc_hw_debug_en_o          (lc_ctrl_lc_hw_debug_en   ),
     .lc_ctrl_lc_escalate_en_o          (lc_ctrl_lc_escalate_en   ),
@@ -756,11 +765,6 @@ module top_earlgrey #(
     .cio_usbdev_usb_dn_en_d2p_o        (cio_usbdev_usb_dn_en_d2p ),
     .cio_usbdev_usb_dn_p2d_i           (cio_usbdev_usb_dn_p2d    ),
     .cio_usbdev_sense_p2d_i            (cio_usbdev_sense_p2d     ),
-    .cio_rram_macro_tck_p2d_i          (cio_rram_macro_tck_p2d   ),
-    .cio_rram_macro_tms_p2d_i          (cio_rram_macro_tms_p2d   ),
-    .cio_rram_macro_tdi_p2d_i          (cio_rram_macro_tdi_p2d   ),
-    .cio_rram_macro_tdo_d2p_o          (cio_rram_macro_tdo_d2p   ),
-    .cio_rram_macro_tdo_en_d2p_o       (cio_rram_macro_tdo_en_d2p),
     .ast_clk_src_sys_o                 (ast_clk_src_sys          ),
     .ast_clk_src_io_o                  (ast_clk_src_io           ),
     .ast_clk_src_usb_o                 (ast_clk_src_usb          ),
@@ -862,9 +866,12 @@ module top_earlgrey #(
     .pinmux_lc_jtag_rsp_i              (pinmux_lc_jtag_rsp       ),
     .pinmux_rv_jtag_req_o              (pinmux_rv_jtag_req       ),
     .pinmux_rv_jtag_rsp_i              (pinmux_rv_jtag_rsp       ),
+    .pinmux_rram_jtag_req_o            (pinmux_rram_jtag_req     ),
+    .pinmux_rram_jtag_rsp_i            (pinmux_rram_jtag_rsp     ),
     .pinmux_pinmux_hw_debug_en_o       (pinmux_pinmux_hw_debug_en),
     .lc_ctrl_strap_en_override_i       (lc_ctrl_strap_en_override),
     .lc_ctrl_lc_dft_en_i               (lc_ctrl_lc_dft_en        ),
+    .lc_ctrl_lc_nvm_debug_en_i         (lc_ctrl_lc_nvm_debug_en  ),
     .lc_ctrl_lc_hw_debug_clr_i         (lc_ctrl_lc_hw_debug_clr  ),
     .lc_ctrl_lc_hw_debug_en_i          (lc_ctrl_lc_hw_debug_en   ),
     .lc_ctrl_lc_escalate_en_i          (lc_ctrl_lc_escalate_en   ),
@@ -981,11 +988,6 @@ module top_earlgrey #(
     .cio_usbdev_usb_dn_en_d2p_i        (cio_usbdev_usb_dn_en_d2p ),
     .cio_usbdev_usb_dn_p2d_o           (cio_usbdev_usb_dn_p2d    ),
     .cio_usbdev_sense_p2d_o            (cio_usbdev_sense_p2d     ),
-    .cio_rram_macro_tck_p2d_o          (cio_rram_macro_tck_p2d   ),
-    .cio_rram_macro_tms_p2d_o          (cio_rram_macro_tms_p2d   ),
-    .cio_rram_macro_tdi_p2d_o          (cio_rram_macro_tdi_p2d   ),
-    .cio_rram_macro_tdo_d2p_i          (cio_rram_macro_tdo_d2p   ),
-    .cio_rram_macro_tdo_en_d2p_i       (cio_rram_macro_tdo_en_d2p),
     .ast_clk_src_sys_i                 (ast_clk_src_sys          ),
     .ast_clk_src_io_i                  (ast_clk_src_io           ),
     .ast_clk_src_usb_i                 (ast_clk_src_usb          ),

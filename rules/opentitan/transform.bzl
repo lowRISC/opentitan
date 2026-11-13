@@ -436,6 +436,60 @@ def rram_otp_image(ctx, exec_env, otp_attr):
     )
     return output
 
+def rram_info_image(ctx, exec_env, otp_attr):
+    """Returns the RRAM INFO array image of a formed part that belongs to an exec_env's `otp`
+    attribute.
+    It sets the DIS_VOL_RAW_UNLOCK marker, so that rram_macro turns off its zero view, and
+    holds the SECRET0 partition of the OTP image in the INFO page rram_ctrl_otp reads it from.
+
+    Like rram_otp_image(), this reuses the `rram_info` output group of an otp_image() target
+    (see rules/otp.bzl), and only falls back to running gen-rram-img.py itself otherwise.
+
+    Args:
+      ctx: The rule context.
+      exec_env: The ExecEnvInfo for this environment.
+      otp_attr: The unresolved `otp` attribute (a File, or a Target with DefaultInfo).
+    Returns:
+      File: the INFO array image, or None if there's nothing to generate (no `otp_attr`, or
+      this exec_env has no rram_scramble_tool configured).
+    """
+    if not otp_attr:
+        return None
+    if type(otp_attr) == "File":
+        otp_file = otp_attr
+    else:
+        if OutputGroupInfo in otp_attr and "rram_info" in otp_attr[OutputGroupInfo]:
+            existing = otp_attr[OutputGroupInfo].rram_info.to_list()
+            if existing:
+                return existing[0]
+        files = otp_attr[DefaultInfo].files.to_list()
+        if len(files) != 1:
+            fail("Expected exactly one file in", otp_attr, ", but got", files)
+        otp_file = files[0]
+
+    if not exec_env.rram_scramble_tool:
+        return None
+
+    output = ctx.actions.declare_file(ctx.attr.name + ".otp.info.vmem")
+    args = ctx.actions.args()
+    args.add("--in-otp-vmem", otp_file)
+    args.add("--out-info-vmem", output)
+    args.add("--top-secret-cfg", exec_env.top_secret_cfg)
+    # Images in TEST_LOCKED6 or later get CP_DONE, see gen-rram-img.py --lc-state-def.
+    inputs = [otp_file, exec_env.top_secret_cfg]
+    if exec_env.lc_state_def:
+        args.add("--lc-state-def", exec_env.lc_state_def)
+        inputs.append(exec_env.lc_state_def)
+    if exec_env.otp_data_perm:
+        args.add("--otp-data-perm", str(exec_env.otp_data_perm[BuildSettingInfo].value))
+    ctx.actions.run(
+        outputs = [output],
+        inputs = inputs,
+        arguments = [args],
+        executable = exec_env.rram_scramble_tool.files_to_run,
+    )
+    return output
+
 def extract_software_logs(ctx, **kwargs):
     """Extract the software logs database from an ELF file.
 

@@ -110,6 +110,8 @@ pinmux_required = {
     ['pb', 'Enable hardware strap sampling of pinmux']
 }
 pinmux_optional = {
+    'enable_rram_tap':
+    ['pb', 'Enable the RRAM TAP on the TAP strap value 0 through a pinmux register'],
     'num_wkup_detect': ['d', 'Number of wakeup detectors'],
     'wkup_cnt_width': ['d', 'Number of bits in wakeup detector counters'],
     'signals': ['l', 'List of Dedicated IOs.'],

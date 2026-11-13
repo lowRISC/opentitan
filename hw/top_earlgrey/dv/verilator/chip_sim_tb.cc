@@ -42,10 +42,22 @@ int main(int argc, char **argv) {
   // addresses (see gen-rram-img.py --out-otp-vmem).
   MemArea otp(top_scope + ".u_rram_macro.u_data_array", 0x200000 / 16, 16);
 
+  // The RRAM INFO array: 8 pages of 32 words.
+  // It starts all zero like a formed array, and --meminit=rram_info loads the
+  // markers and the relocated SECRET0 partition (see gen-rram-img.py
+  // --out-info-vmem). Without the DIS_VOL_RAW_UNLOCK marker, the zero view of
+  // rram_macro would hide the OTP content.
+  MemArea rram_info(top_scope + ".u_rram_macro.u_info_array", 8 * 32, 16);
+  std::vector<uint8_t> info_zeros(rram_info.GetSizeBytes());
+  std::fill(info_zeros.begin(), info_zeros.end(), 0x00u);
+  rram_info.Write(/*word_offset=*/0, info_zeros);
+
   memutil.RegisterMemoryArea("rom0", 0x40000, &rom0);
   memutil.RegisterMemoryArea("ram", 0x10000000u, &ram);
   memutil.RegisterMemoryArea("rram", 0x30000000u, &rram);
   memutil.RegisterMemoryArea("otp", 0x40000000u /* (bogus LMA) */, &otp);
+  memutil.RegisterMemoryArea("rram_info", 0x50000000u /* (bogus LMA) */,
+                             &rram_info);
   simctrl.RegisterExtension(&memutil);
 
   // The initial reset delay must be long enough such that pwr/rst/clkmgr will

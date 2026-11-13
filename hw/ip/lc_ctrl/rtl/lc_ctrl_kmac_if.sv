@@ -10,7 +10,19 @@
 module lc_ctrl_kmac_if
   import lc_ctrl_pkg::*;
   import lc_ctrl_state_pkg::*;
-(
+#(
+  // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
+  // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+  // COMPILETIME.
+  // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+  // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+  // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+  // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
+  // ---------------------------------------------------------------
+  // If enabled, a second token can be hashed after a successful volatile RAW unlock.
+  parameter bit SecVolatileRawUnlockEn = 0
+  // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
+) (
   // Life cycle controller clock
   input                         clk_i,
   input                         rst_ni,
@@ -156,11 +168,27 @@ module lc_ctrl_kmac_if
 
   state_e state_d, state_q;
 
+  // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
+  // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+  // COMPILETIME.
+  // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+  // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+  // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+  // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
+  // ---------------------------------------------------------------
+  // Registers whether the second token hashing operation has been started.
+  // A volatile RAW unlock hashes the token without ending the transition, so a successful
+  // volatile RAW unlock can be followed by one more transition that needs a second hash.
+  // A failed attempt ends the LC FSM in a terminal state, so it never requests a second hash.
+  prim_mubi_pkg::mubi4_t second_hash_d, second_hash_q;
+  // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
+
   // Serialize the 128bit token into two 64bit beats.
   always_comb begin : p_kmac
     state_d = state_q;
     kmac_ack = 1'b0;
     kmac_fsm_err_d = 1'b0;
+    second_hash_d = second_hash_q;
 
     // LC ctrl operates on unshared data and accepts digest responses immediately.
     kmac_data_o           = '0;
@@ -195,15 +223,35 @@ module lc_ctrl_kmac_if
         if (kmac_data_i.rsp_valid) begin
           kmac_ack = 1'b1;
           state_d = DoneSt;
+          // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
+          // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+          // COMPILETIME.
+          // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+          // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+          // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+          // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
+          // ---------------------------------------------------------------
+          // Accept a second token hashing operation.
+          if (SecVolatileRawUnlockEn &&
+              prim_mubi_pkg::mubi4_test_false_strict(second_hash_q)) begin
+            state_d = FirstSt;
+            second_hash_d = prim_mubi_pkg::MuBi4True;
+          end
+          // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
         end
       end
-      // Terminal state (by design we can only perform
-      // one token hashing operation per reset cycle).
+      // Terminal state (by design we can only perform one token hashing operation per reset
+      // cycle, or two if the volatile RAW unlock is enabled).
       DoneSt: ;
       default: begin
         kmac_fsm_err_d = 1'b1;
       end
     endcase // state_q
+
+    // The second hash flag must always be valid.
+    if (prim_mubi_pkg::mubi4_test_invalid(second_hash_q)) begin
+      kmac_fsm_err_d = 1'b1;
+    end
   end
 
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, FirstSt, clk_kmac_i, rst_kmac_ni)
@@ -215,5 +263,28 @@ module lc_ctrl_kmac_if
       kmac_fsm_err_q <= kmac_fsm_err_d;
     end
   end
+
+  // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
+  // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+  // COMPILETIME.
+  // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+  // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+  // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+  // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
+  // ---------------------------------------------------------------
+  if (SecVolatileRawUnlockEn) begin : gen_second_hash_reg
+    always_ff @(posedge clk_kmac_i or negedge rst_kmac_ni) begin : p_second_hash
+      if (!rst_kmac_ni) begin
+        second_hash_q <= prim_mubi_pkg::MuBi4False;
+      end else begin
+        second_hash_q <= second_hash_d;
+      end
+    end
+  end else begin : gen_no_second_hash_reg
+    logic unused_second_hash;
+    assign unused_second_hash = ^second_hash_d;
+    assign second_hash_q = prim_mubi_pkg::MuBi4False;
+  end
+  // ----------- VOLATILE_TEST_UNLOCKED CODE SECTION END -----------
 
 endmodule : lc_ctrl_kmac_if

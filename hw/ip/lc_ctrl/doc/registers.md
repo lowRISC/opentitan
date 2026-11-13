@@ -261,10 +261,14 @@ Control register for state transition requests.
 ### TRANSITION_CTRL . VOLATILE_RAW_UNLOCK
 When set to 1, LC_CTRL performs a volatile lifecycle transition from RAW -> TEST_UNLOCKED0.
 No state update will be written to OTP, and no reset will be needed after the transition has succeeded.
-Note that the token to be provided has to be the hashed unlock token, since in this case the token is NOT passed through KMAC before performing the comparison.
+The token to be provided is the unhashed RAW unlock token, the same as for a persistent RAW unlock.
+It is hashed in KMAC and compared against the hashed RAW unlock token, like in a persistent transition.
 
 After a successful VOLATILE_RAW_UNLOCK transition from RAW -> TEST_UNLOCKED0, the LC_CTRL FSM will go back to the IdleSt and set the STATUS.TRANSITION_SUCCESSFUL bit.
 The LC_CTRL accepts further transition commands in this state.
+A failed VOLATILE_RAW_UNLOCK transition ends in the POST_TRANSITION state, which requires a reset, like a failed persistent transition.
+A VOLATILE_RAW_UNLOCK transition is only accepted while the allow_vol_unlock input is MuBi8True.
+Otherwise it fails with STATUS.TRANSITION_ERROR.
 
 IMPORTANT NOTE: this feature is intended for test chips only in order to mitigate the risks of a malfunctioning
 OTP macro. Production devices will permanently disable this feature at compile time via the SecVolatileRawUnlockEn parameter.

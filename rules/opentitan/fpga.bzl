@@ -24,6 +24,7 @@ load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
+    "rram_info_image",
     "rram_otp_image",
 )
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
@@ -211,6 +212,10 @@ def _get_test_commands(ctx, param, exec_env):
     if "otp" in param:
         # OTP lives inside RRAM, so it's written into "RRDA".
         backdoor_writes += " --write RRDA={otp}"
+    if "rram_info" in param:
+        # The INFO array of a formed part: DIS_VOL_RAW_UNLOCK, so that the zero view is off, and
+        # the SECRET0 partition, which rram_ctrl_otp reads from an INFO page.
+        backdoor_writes += " --write RRIN={rram_info}"
     test_setup_cmd.append('--exec="fpga backdoor {{jtag_test_cmd}} batch {backdoor_writes} --start"'.format(backdoor_writes = backdoor_writes))
 
     if _get_bool(param, "testopt_bootstrap") and "firmware" in param:
@@ -253,6 +258,11 @@ def _test_dispatch(ctx, exec_env, firmware):
             data_files.append(rram_otp)
             param["otp"] = rram_otp.short_path
             action_param["otp"] = rram_otp.path
+        rram_info = rram_info_image(ctx, exec_env, otp_attr)
+        if rram_info:
+            data_files.append(rram_info)
+            param["rram_info"] = rram_info.short_path
+            action_param["rram_info"] = rram_info.path
 
     # If the test requested an assembled image, then use opentitantool to
     # assemble the image.  Replace the firmware param with the newly assembled

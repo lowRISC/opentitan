@@ -52,7 +52,8 @@ On production silicon this option will be disabled.
 5. If required, software can switch to the external clock via the [`TRANSITION_CTRL.EXT_CLK_EN`](registers.md#transition_ctrl--ext_clock_en) register.
 
 6. Write `TEST_UNLOCKED0` to [`TRANSITION_TARGET`](registers.md#transition_target).
-   The [`TRANSITION_TOKEN`](registers.md#transition_token) needs to be set to the **hashed** unlock token value, since the value written will not be passed through KMAC in this case.
+   The [`TRANSITION_TOKEN`](registers.md#transition_token) needs to be set to the unhashed RAW unlock token, the same as for a persistent `RAW` unlock.
+   It is hashed in KMAC and checked like in a persistent transition.
 
 7. An optional, but recommended step is to read back and verify the values written in steps 4. - 6. before proceeding with step 8.
 
@@ -65,7 +66,10 @@ On production silicon this option will be disabled.
    The [`TRANSITION_REGWEN`](registers.md#transition_regwen) register will be set to 0 while a transition is in progress in order to prevent any accidental modifications of the transition interface registers during this phase.
 
 Note that if a volatile `RAW` unlock operation has been performed, it is not necessary to reset the chip and the life cycle controller accepts further transition commands.
-The `LC_TRANSITION_CNT`  will not be incremented and the life cycle state will not be moved to the temporary POST_TRANSITION state.
+The `LC_TRANSITION_CNT` will not be incremented and the life cycle state will not be moved to the temporary POST_TRANSITION state.
+A failed volatile `RAW` unlock ends in the POST_TRANSITION state, like a failed persistent transition.
+The volatile `RAW` unlock is only accepted while the `allow_vol_unlock` input is `MuBi8True`.
+The NVM macro drives this input from the `DIS_VOL_RAW_UNLOCK` marker, so a part with the marker set rejects the volatile unlock with [`STATUS.TRANSITION_ERROR`](registers.md#status).
 
 ## Device Interface Functions (DIFs)
 

@@ -17,6 +17,16 @@ assign cio_tck = 1'b0;
 assign cio_tdi = 1'b0;
 assign cio_tms = 1'b0;
 
+// The emulated info array of the open-source model starts out uninitialized, unlike a formed RRAM
+// array.
+// Clear the marker page, so that the marker read at init returns defined values.
+// All-zero data with all-zero check bits is a valid codeword.
+initial begin
+  for (int unsigned k = 0; k < rram_ctrl_pkg::WordsPerPage; k++) begin
+    dut.u_info_array.mem[rram_ctrl_pkg::MarkerInfoPage * rram_ctrl_pkg::WordsPerPage + k] = '0;
+  end
+end
+
 task automatic run_vendor_tests();
 endtask
 

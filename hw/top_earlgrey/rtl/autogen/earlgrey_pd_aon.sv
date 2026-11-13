@@ -69,9 +69,12 @@ module earlgrey_pd_aon #(
   input  jtag_pkg::jtag_rsp_t       pinmux_lc_jtag_rsp_i,
   output jtag_pkg::jtag_req_t       pinmux_rv_jtag_req_o,
   input  jtag_pkg::jtag_rsp_t       pinmux_rv_jtag_rsp_i,
+  output jtag_pkg::jtag_req_t       pinmux_rram_jtag_req_o,
+  input  jtag_pkg::jtag_rsp_t       pinmux_rram_jtag_rsp_i,
   output lc_ctrl_pkg::lc_tx_t       pinmux_pinmux_hw_debug_en_o,
   input  logic       lc_ctrl_strap_en_override_i,
   input  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en_i,
+  input  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_nvm_debug_en_i,
   input  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_clr_i,
   input  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en_i,
   input  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en_i,
@@ -206,11 +209,6 @@ module earlgrey_pd_aon #(
   input  logic       cio_usbdev_usb_dn_en_d2p_i,
   output logic       cio_usbdev_usb_dn_p2d_o,
   output logic       cio_usbdev_sense_p2d_o,
-  output logic       cio_rram_macro_tck_p2d_o,
-  output logic       cio_rram_macro_tms_p2d_o,
-  output logic       cio_rram_macro_tdi_p2d_o,
-  input  logic       cio_rram_macro_tdo_d2p_i,
-  input  logic       cio_rram_macro_tdo_en_d2p_i,
   input  logic       ast_clk_src_sys_i,
   input  logic       ast_clk_src_io_i,
   input  logic       ast_clk_src_usb_i,
@@ -261,9 +259,9 @@ module earlgrey_pd_aon #(
   localparam int SramCtrlRetOutstanding = 2;
 
   // Signals
-  logic [96:0] mio_p2d;
-  logic [105:0] mio_d2p;
-  logic [105:0] mio_en_d2p;
+  logic [93:0] mio_p2d;
+  logic [104:0] mio_d2p;
+  logic [104:0] mio_en_d2p;
   logic [15:0] dio_p2d;
   logic [15:0] dio_d2p;
   logic [15:0] dio_en_d2p;
@@ -624,6 +622,7 @@ module earlgrey_pd_aon #(
     .lc_hw_debug_clr_i(lc_ctrl_lc_hw_debug_clr_i),
     .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en_i),
     .lc_dft_en_i(lc_ctrl_lc_dft_en_i),
+    .lc_nvm_debug_en_i(lc_ctrl_lc_nvm_debug_en_i),
     .lc_escalate_en_i(lc_ctrl_lc_escalate_en_i),
     .lc_check_byp_en_i(lc_ctrl_lc_check_byp_en_i),
     .pinmux_hw_debug_en_o(pinmux_pinmux_hw_debug_en_o),
@@ -633,6 +632,8 @@ module earlgrey_pd_aon #(
     .rv_jtag_i(pinmux_rv_jtag_rsp_i),
     .dft_jtag_o(pinmux_dft_jtag_req),
     .dft_jtag_i(pinmux_dft_jtag_rsp),
+    .rram_jtag_o(pinmux_rram_jtag_req_o),
+    .rram_jtag_i(pinmux_rram_jtag_rsp_i),
     .dft_strap_test_o(pinmux_dft_strap_test),
     .dft_hold_tap_sel_i(dft_hold_tap_sel_i),
     .sleep_en_i(pwrmgr_low_power),
@@ -940,9 +941,6 @@ module earlgrey_pd_aon #(
   assign cio_i3c1_rstdet_scl_p2d_o = mio_p2d[MioInI3c1RstdetScl];
   assign cio_i3c1_rstdet_sda_p2d_o = mio_p2d[MioInI3c1RstdetSda];
   assign cio_spi_device_tpm_csb_p2d_o = mio_p2d[MioInSpiDeviceTpmCsb];
-  assign cio_rram_macro_tck_p2d_o = mio_p2d[MioInRramMacroTck];
-  assign cio_rram_macro_tms_p2d_o = mio_p2d[MioInRramMacroTms];
-  assign cio_rram_macro_tdi_p2d_o = mio_p2d[MioInRramMacroTdi];
   assign cio_sysrst_ctrl_ac_present_p2d = mio_p2d[MioInSysrstCtrlAcPresent];
   assign cio_sysrst_ctrl_key0_in_p2d = mio_p2d[MioInSysrstCtrlKey0In];
   assign cio_sysrst_ctrl_key1_in_p2d = mio_p2d[MioInSysrstCtrlKey1In];
@@ -1042,7 +1040,6 @@ module earlgrey_pd_aon #(
   assign mio_d2p[MioOutSpiHost1Csb0] = cio_spi_host1_csb_d2p_i[0];
   assign mio_d2p[MioOutSpiHost1Csb1] = cio_spi_host1_csb_d2p_i[1];
   assign mio_d2p[MioOutSpiHost1Csb2] = cio_spi_host1_csb_d2p_i[2];
-  assign mio_d2p[MioOutRramMacroTdo] = cio_rram_macro_tdo_d2p_i;
   assign mio_d2p[MioOutSensorCtrlAstDebugOut0] = cio_sensor_ctrl_ast_debug_out_d2p[0];
   assign mio_d2p[MioOutSensorCtrlAstDebugOut1] = cio_sensor_ctrl_ast_debug_out_d2p[1];
   assign mio_d2p[MioOutSensorCtrlAstDebugOut2] = cio_sensor_ctrl_ast_debug_out_d2p[2];
@@ -1150,7 +1147,6 @@ module earlgrey_pd_aon #(
   assign mio_en_d2p[MioOutSpiHost1Csb0] = cio_spi_host1_csb_en_d2p_i[0];
   assign mio_en_d2p[MioOutSpiHost1Csb1] = cio_spi_host1_csb_en_d2p_i[1];
   assign mio_en_d2p[MioOutSpiHost1Csb2] = cio_spi_host1_csb_en_d2p_i[2];
-  assign mio_en_d2p[MioOutRramMacroTdo] = cio_rram_macro_tdo_en_d2p_i;
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut0] = cio_sensor_ctrl_ast_debug_out_en_d2p[0];
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut1] = cio_sensor_ctrl_ast_debug_out_en_d2p[1];
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut2] = cio_sensor_ctrl_ast_debug_out_en_d2p[2];

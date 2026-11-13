@@ -8,6 +8,7 @@
 // - translates all sw_region_rules into one array
 // - translates all sw_info_cfg rules into one array
 // - makes owner, creator, iso pages writeable depending on lc_configuration
+// - makes the marker page writeable only while lc_nvm_debug_en is On, and fixes its encoding
 
 
 module rram_ctrl_region_cfg
@@ -21,12 +22,15 @@ module rram_ctrl_region_cfg
   input lc_ctrl_pkg::lc_tx_t lc_owner_seed_sw_rw_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_rd_en_i,
+  // Marker page write enable, see below.
+  input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
 
-  // All page configurations
-  input sw_region_t [MpRegions-1:0]        region_i,
-  input sw_region_cfg_t [MpRegions-1:0]    region_cfg_i,
-  input sw_default_cfg_t                   default_cfg_i,
-  input sw_info_cfg_t [TotalInfoPages-1:0] info_page_cfg_i,
+  // All page configurations. Only pages below OtpRemapInfoPage have a backing
+  // INFO_PAGE_CFG/INFO_REGWEN register; the rest are hardware-only (see below).
+  input sw_region_t [MpRegions-1:0]           region_i,
+  input sw_region_cfg_t [MpRegions-1:0]       region_cfg_i,
+  input sw_default_cfg_t                      default_cfg_i,
+  input sw_info_cfg_t [OtpRemapInfoPage-1:0]  info_page_cfg_i,
 
   // Emulated info page region (window) and subregion configuration.
   input sw_emul_info_regwen_t [EmulInfoRegions-1:0]              emul_info_regwen_i,
@@ -92,15 +96,29 @@ module rram_ctrl_region_cfg
     .lc_en_o({lc_iso_part_sw_wr_en})
   );
 
+  lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en;
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_lc_nvm_debug_en_sync (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_nvm_debug_en_i),
+    .lc_en_o({lc_nvm_debug_en})
+  );
+
   mubi4_t mubi_owner_sw_rw_en;
   mubi4_t mubi_creator_sw_rw_en;
   mubi4_t mubi_iso_sw_rd_en;
   mubi4_t mubi_iso_sw_wr_en;
+  mubi4_t mubi_marker_wr_en;
 
   assign mubi_creator_sw_rw_en = lc_ctrl_pkg::lc_to_mubi4(lc_creator_seed_sw_rw_en);
   assign mubi_owner_sw_rw_en   = lc_ctrl_pkg::lc_to_mubi4(lc_owner_seed_sw_rw_en);
   assign mubi_iso_sw_rd_en     = lc_ctrl_pkg::lc_to_mubi4(lc_iso_part_sw_rd_en);
   assign mubi_iso_sw_wr_en     = lc_ctrl_pkg::lc_to_mubi4(lc_iso_part_sw_wr_en);
+
+  // The marker page is only writable in a state with lc_nvm_debug_en On.
+  assign mubi_marker_wr_en = lc_ctrl_pkg::lc_to_mubi4(lc_nvm_debug_en);
 
   //////////////////////////////////////
   // Data partition regions           //
@@ -267,7 +285,9 @@ module rram_ctrl_region_cfg
   /////////////////////////////////////////////
   // Info partition properties configuration //
   /////////////////////////////////////////////
-  for (genvar i = 0; i < TotalInfoPages; i++) begin : gen_info_page
+
+  // Pages below OtpRemapInfoPage have a real INFO_PAGE_CFG/INFO_REGWEN register.
+  for (genvar i = 0; i < OtpRemapInfoPage; i++) begin : gen_info_page
     mubi4_t reg_en;
     mubi4_t reg_wr_en;
     mubi4_t reg_rd_en;
@@ -282,9 +302,18 @@ module rram_ctrl_region_cfg
 
     assign info_page_cfgs_o[i].page            = InfoPageW'(unsigned'(i));
     assign info_page_cfgs_o[i].phase           = PhaseInvalid;
-    assign info_page_cfgs_o[i].cfg.scramble_en = reg_scramble_en;
-    assign info_page_cfgs_o[i].cfg.ecc_en      = reg_ecc_en;
-    assign info_page_cfgs_o[i].cfg.addr_xor_en = prim_mubi_pkg::MuBi4True;
+    // rram_macro reads the markers at init without scrambling and with ECC.
+    // So the marker page is never scrambled and always uses ECC, independent of the register.
+    // It uses the address infection like every other page, and rram_macro expects it.
+    if (i == MarkerInfoPage) begin : gen_marker_info_page_enc
+      assign info_page_cfgs_o[i].cfg.scramble_en = prim_mubi_pkg::MuBi4False;
+      assign info_page_cfgs_o[i].cfg.ecc_en      = prim_mubi_pkg::MuBi4True;
+      assign info_page_cfgs_o[i].cfg.addr_xor_en = prim_mubi_pkg::MuBi4True;
+    end else begin : gen_info_page_enc
+      assign info_page_cfgs_o[i].cfg.scramble_en = reg_scramble_en;
+      assign info_page_cfgs_o[i].cfg.ecc_en      = reg_ecc_en;
+      assign info_page_cfgs_o[i].cfg.addr_xor_en = prim_mubi_pkg::MuBi4True;
+    end
     assign info_page_cfgs_o[i].cfg.en          = reg_en;
 
     // Creator, owner, and isolated info page configuration can be overruled by the life-cycle
@@ -298,10 +327,19 @@ module rram_ctrl_region_cfg
     end else if (i == IsolatedInfoPage) begin : gen_isolated_info_page
       assign info_page_cfgs_o[i].cfg.rd_en = mubi4_and_hi(reg_rd_en, mubi_iso_sw_rd_en);
       assign info_page_cfgs_o[i].cfg.wr_en = mubi4_and_hi(reg_wr_en, mubi_iso_sw_wr_en);
+    end else if (i == MarkerInfoPage) begin : gen_marker_info_page
+      assign info_page_cfgs_o[i].cfg.rd_en = reg_rd_en;
+      assign info_page_cfgs_o[i].cfg.wr_en = mubi4_and_hi(reg_wr_en, mubi_marker_wr_en);
     end else begin : gen_generic_info_page
       assign info_page_cfgs_o[i].cfg.rd_en = reg_rd_en;
       assign info_page_cfgs_o[i].cfg.wr_en = reg_wr_en;
     end
   end
+
+  // OtpRemapInfoPage has no backing register at all. It is hardware-only, accessible solely to
+  // the OTP hardware interface.
+  assign info_page_cfgs_o[OtpRemapInfoPage].page  = OtpRemapInfoPage;
+  assign info_page_cfgs_o[OtpRemapInfoPage].phase = PhaseInvalid;
+  assign info_page_cfgs_o[OtpRemapInfoPage].cfg   = CfgDisable;
 
 endmodule // rram_ctrl_region_cfg

@@ -32,6 +32,11 @@ module pinmux_strap_sampling
   input  lc_tx_t                   lc_hw_debug_en_i,
   input  lc_tx_t                   lc_check_byp_en_i,
   input  lc_tx_t                   lc_escalate_en_i,
+% if enable_rram_tap:
+  input  lc_tx_t                   lc_nvm_debug_en_i,
+  // Selects the RRAM TAP on the FuncSel strap value (RRAM_JTAG_SEL register)
+  input  prim_mubi_pkg::mubi4_t    rram_jtag_sel_i,
+% endif
   output lc_tx_t                   pinmux_hw_debug_en_o,
   // Sampled values for DFT straps
   output dft_strap_test_req_t      dft_strap_test_o,
@@ -43,7 +48,13 @@ module pinmux_strap_sampling
   output jtag_pkg::jtag_req_t      rv_jtag_o,
   input  jtag_pkg::jtag_rsp_t      rv_jtag_i,
   output jtag_pkg::jtag_req_t      dft_jtag_o,
+% if enable_rram_tap:
+  input  jtag_pkg::jtag_rsp_t      dft_jtag_i,
+  output jtag_pkg::jtag_req_t      rram_jtag_o,
+  input  jtag_pkg::jtag_rsp_t      rram_jtag_i
+% else:
   input  jtag_pkg::jtag_rsp_t      dft_jtag_i
+% endif
 );
 
 
@@ -114,6 +125,17 @@ module pinmux_strap_sampling
     .lc_en_i(lc_escalate_en_i),
     .lc_en_o(lc_escalate_en)
   );
+% if enable_rram_tap:
+  lc_tx_t [0:0] lc_nvm_debug_en;
+  prim_lc_sync #(
+    .NumCopies(1)
+  ) u_prim_lc_sync_lc_nvm_debug_en (
+    .clk_i,
+    .rst_ni,
+    .lc_en_i(lc_nvm_debug_en_i),
+    .lc_en_o(lc_nvm_debug_en)
+  );
+% endif
 
 
   /////////////////////////////
@@ -324,6 +346,18 @@ module pinmux_strap_sampling
   tap_strap_t tap_strap;
   jtag_pkg::jtag_req_t jtag_req, lc_jtag_req, rv_jtag_req, dft_jtag_req;
   jtag_pkg::jtag_rsp_t jtag_rsp, lc_jtag_rsp, rv_jtag_rsp, dft_jtag_rsp;
+% if enable_rram_tap:
+  jtag_pkg::jtag_req_t rram_jtag_req;
+  jtag_pkg::jtag_rsp_t rram_jtag_rsp;
+
+  // The RRAM TAP uses the FuncSel strap value, which selects no TAP otherwise.
+  // It is only selected while RRAM_JTAG_SEL is True and lc_nvm_debug_en is On.
+  // The LC, RV and DFT TAPs are not affected, so a test can set RRAM_JTAG_SEL through RV_DM and
+  // then switch between the TAPs with the straps alone.
+  logic rram_tap_sel;
+  assign rram_tap_sel = prim_mubi_pkg::mubi4_test_true_strict(rram_jtag_sel_i) &&
+                        lc_tx_test_true_strict(lc_nvm_debug_en[0]);
+% endif
 
   // This muxes the JTAG signals to the correct TAP, based on the
   // sampled straps. Further, the individual JTAG signals are gated
@@ -341,16 +375,25 @@ module pinmux_strap_sampling
   logic lc_tap_en_d,  lc_tap_en_q;
   logic rv_tap_en_d,  rv_tap_en_q;
   logic dft_tap_en_d, dft_tap_en_q;
+% if enable_rram_tap:
+  logic rram_tap_en_d, rram_tap_en_q;
+% endif
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : p_tap_sel_reg
     if (!rst_ni) begin
       lc_tap_en_q  <= 1'b0;
       rv_tap_en_q  <= 1'b0;
       dft_tap_en_q <= 1'b0;
+% if enable_rram_tap:
+      rram_tap_en_q <= 1'b0;
+% endif
     end else begin
       lc_tap_en_q  <= lc_tap_en_d;
       rv_tap_en_q  <= rv_tap_en_d;
       dft_tap_en_q <= dft_tap_en_d;
+% if enable_rram_tap:
+      rram_tap_en_q <= rram_tap_en_d;
+% endif
     end
   end
 
@@ -363,6 +406,10 @@ module pinmux_strap_sampling
   assign rv_jtag_req.trst_n  = jtag_req.trst_n;
   assign dft_jtag_req.tck    = jtag_req.tck;
   assign dft_jtag_req.trst_n = jtag_req.trst_n;
+% if enable_rram_tap:
+  assign rram_jtag_req.tck    = jtag_req.tck;
+  assign rram_jtag_req.trst_n = jtag_req.trst_n;
+% endif
 
   // Drives the immediate (unregistered) jtag_rsp/jtag_en response mux used for the TDO override
   // and pad tie-offs further below, and in the same case statement decodes the per-TAP request
@@ -383,8 +430,25 @@ module pinmux_strap_sampling
     rv_jtag_req.tdi  = 1'b0;
     dft_jtag_req.tms = 1'b0;
     dft_jtag_req.tdi = 1'b0;
+% if enable_rram_tap:
+    rram_tap_en_d     = 1'b0;
+    rram_jtag_req.tms = 1'b0;
+    rram_jtag_req.tdi = 1'b0;
+% endif
 
     unique case (tap_strap)
+% if enable_rram_tap:
+      // RRAM_JTAG_SEL selects the RRAM TAP on the FuncSel strap value.
+      FuncSel: begin
+        if (rram_tap_sel) begin
+          jtag_rsp          = rram_jtag_rsp;
+          rram_tap_en_d     = 1'b1;
+          jtag_en           = 1'b1;
+          rram_jtag_req.tms = jtag_req.tms;
+          rram_jtag_req.tdi = jtag_req.tdi;
+        end
+      end
+% endif
       LcTapSel: begin
         jtag_rsp        = lc_jtag_rsp;
         lc_tap_en_d     = 1'b1;
@@ -437,6 +501,15 @@ module pinmux_strap_sampling
     .rsp_i(dft_jtag_i),
     .rsp_o(dft_jtag_rsp)
   );
+% if enable_rram_tap:
+  pinmux_jtag_buf u_pinmux_jtag_buf_rram (
+    .en_i(rram_tap_en_q),
+    .req_i(rram_jtag_req),
+    .req_o(rram_jtag_o),
+    .rsp_i(rram_jtag_i),
+    .rsp_o(rram_jtag_rsp)
+  );
+% endif
 
   //////////////////////
   // TAP Input Muxes  //
@@ -519,6 +592,15 @@ module pinmux_strap_sampling
       |=> rv_jtag_o == '0)
   `ASSERT(RvTapOff1_A, pinmux_hw_debug_en[0] == Off |-> rv_jtag_o == '0)
   `ASSERT(DftTapOff0_A, lc_dft_en_i == Off |-> ##2 dft_jtag_o == '0)
+% if enable_rram_tap:
+  // The RRAM TAP is off one cycle after the synchronized lc_nvm_debug_en is not On, or after
+  // RRAM_JTAG_SEL is not True, because its enable is registered.
+  `ASSERT(RramTapOff0_A, !lc_tx_test_true_strict(lc_nvm_debug_en[0]) |=> rram_jtag_o == '0)
+  `ASSERT(RramTapOff1_A, !prim_mubi_pkg::mubi4_test_true_strict(rram_jtag_sel_i) |=>
+      rram_jtag_o == '0)
+  // The RRAM TAP is never selected at the same time as another TAP.
+  `ASSERT(RramTapExclusive_A, rram_tap_en_q |-> !(lc_tap_en_q || rv_tap_en_q || dft_tap_en_q))
+% endif
 
   // These assumptions are only used in FPV. They will cause failures in simulations.
   `ASSUME_FPV(RvTapOff2_A, lc_hw_debug_en_i == Off ##2 strap_en_i && pinmux_hw_debug_en_q == Off

@@ -111,6 +111,19 @@
                Test enable qualifier coming from life cycle controller, used for HW strap qualification.
                '''
     }
+  % if enable_rram_tap:
+    { struct:  "lc_tx"
+      type:    "uni"
+      name:    "lc_nvm_debug_en"
+      act:     "rcv"
+      default: "lc_ctrl_pkg::Off"
+      package: "lc_ctrl_pkg",
+      desc:    '''
+               NVM debug enable coming from life cycle controller.
+               The RRAM TAP can only be selected while this signal is On.
+               '''
+    }
+  % endif
     { struct:  "lc_tx"
       type:    "uni"
       name:    "lc_escalate_en"
@@ -174,6 +187,17 @@
       desc:    '''
                Qualified JTAG signals for DFT TAP.
                ''',}
+  % if enable_rram_tap:
+
+    { struct:  "jtag"
+      type:    "req_rsp"
+      name:    "rram_jtag"
+      act:     "req"
+      package: "jtag_pkg"
+      desc:    '''
+               Qualified JTAG signals for the RRAM TAP.
+               ''',}
+  % endif
 
     // Testmode signals to AST
     { struct:  "dft_strap_test_req",
@@ -449,6 +473,11 @@
     { name: "LC_ESCALATE_EN.INTERSIG.MUBI",
       desc: "The life cycle check bypass signal is multibit encoded."
     }
+  % if enable_rram_tap:
+    { name: "LC_NVM_DEBUG_EN.INTERSIG.MUBI",
+      desc: "The life cycle NVM debug enable signal is multibit encoded."
+    }
+  % endif
     { name: "PINMUX_HW_DEBUG_EN.INTERSIG.MUBI",
       desc: '''In order to support the NDM reset feature in RV_DM,
                the pinmux latches the LC_HW_DEBUG_EN signal so that it can survive
@@ -461,6 +490,9 @@
                is gated by life cycle signals so that the RV_DM can only
                be selected during when LC_HW_DEBUG_EN is asserted, and
                the DFT TAP can only be selected when LC_DFT_EN is asserted.
+  % if enable_rram_tap:
+               The RRAM TAP can only be selected when LC_NVM_DEBUG_EN is asserted.
+  % endif
             '''
     }
   % endif
@@ -1199,5 +1231,28 @@
                 }
 
     },
+  % if enable_strap_sampling and enable_rram_tap:
+    { name: "RRAM_JTAG_SEL",
+      desc: '''
+            Enables the RRAM TAP on the TAP strap value 0, which selects no TAP otherwise.
+            While this register is set to kMultiBitBool4True and lc_nvm_debug_en is On, the TAP strap value 0 selects the RRAM TAP.
+            In all other cases, the TAP strap value 0 selects no TAP as usual.
+            The LC, RV and DFT TAPs are not affected, so this register can be written through RV_DM before the TAP straps switch to the RRAM TAP.
+            A reset clears this register.
+            ''',
+      swaccess: "rw",
+      hwaccess: "hro",
+      fields: [
+        { bits:   "3:0",
+          name:   "VAL",
+          mubi:   true,
+          resval: false,
+          desc:   '''
+                  Set to kMultiBitBool4True to enable the RRAM TAP on the TAP strap value 0.
+                  '''
+        }
+      ]
+    },
+  % endif
   ],
 }

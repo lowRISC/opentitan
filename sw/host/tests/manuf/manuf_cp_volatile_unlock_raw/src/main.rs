@@ -133,10 +133,15 @@ fn main() -> Result<()> {
     // silicon this should be disabled.
     let expect_raw_unlock_supported = false;
 
-    // Provide the hashed `RAW_UNLOCK` token. Note, it is important the hashed token is provided
-    // directly, as a volatile LC operation does not go through KMAC.
-    let token =
-        DifLcCtrlToken::from(lc_raw_unlock_token::RND_CNST_RAW_UNLOCK_TOKEN_HASHED.to_le_bytes());
+    // A volatile RAW unlock hashes the token in KMAC, so it needs the unhashed `RAW_UNLOCK` token.
+    // If the feature is absent, the transition is a persistent RAW unlock.
+    // Then the hashed token is provided on purpose, so that it fails with a token error instead
+    // of programming OTP.
+    let token = if expect_raw_unlock_supported {
+        DifLcCtrlToken::from(lc_raw_unlock_token::RND_CNST_RAW_UNLOCK_TOKEN.to_le_bytes())
+    } else {
+        DifLcCtrlToken::from(lc_raw_unlock_token::RND_CNST_RAW_UNLOCK_TOKEN_HASHED.to_le_bytes())
+    };
     let token_words = token.into_register_values();
 
     execute_test!(

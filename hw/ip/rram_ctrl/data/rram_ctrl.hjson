@@ -140,6 +140,25 @@
     },
     { struct:  "lc_tx"
       type:    "uni"
+      name:    "lc_nvm_debug_en"
+      act:     "rcv"
+      package: "lc_ctrl_pkg"
+      desc:    "Write enable of the marker page."
+      default: "lc_ctrl_pkg::Off"
+    },
+    { struct:  "mubi8"
+      type:    "uni"
+      name:    "cp_done"
+      act:     "rcv"
+      package: "prim_mubi_pkg"
+      desc:    '''
+        CP_DONE marker from the NVM macro.
+        Selects the life cycle partition copy, and locks the marker page once set.
+      '''
+      default: "prim_mubi_pkg::MuBi8False"
+    },
+    { struct:  "lc_tx"
+      type:    "uni"
       name:    "rma_req"
       act:     "rcv"
       package: "lc_ctrl_pkg"
@@ -410,6 +429,34 @@
       desc:      "Depth of read fifo",
       type:      "int"
       default:   "16",
+      local:     "false",
+      expose:    "true"
+    },
+    { name:      "RemapStart",
+      desc:      "Byte offset of the OTP partition relocated to OtpRemapInfoPage. 0 disables the relocation.",
+      type:      "int"
+      default:   "0",
+      local:     "false",
+      expose:    "true"
+    },
+    { name:      "RemapSize",
+      desc:      "Byte size of the OTP partition relocated to OtpRemapInfoPage. 0 disables the relocation.",
+      type:      "int"
+      default:   "0",
+      local:     "false",
+      expose:    "true"
+    },
+    { name:      "LcStart",
+      desc:      "Byte offset of the OTP LIFE_CYCLE partition. Only used together with LcSize.",
+      type:      "int"
+      default:   "0",
+      local:     "false",
+      expose:    "true"
+    },
+    { name:      "LcSize",
+      desc:      "Byte size of the OTP LIFE_CYCLE partition. 0 disables the life cycle copy selection.",
+      type:      "int"
+      default:   "0",
       local:     "false",
       expose:    "true"
     },
@@ -932,7 +979,7 @@
           cname: "RRAM_CTRL",
           name: "INFO_REGWEN"
           desc: "Memory region registers configuration enable.",
-          count: "NumInfoPages",
+          count: "NumInfoPages - 1",
           swaccess: "rw0c",
           hwaccess: "none",
           compact: false,
@@ -971,8 +1018,11 @@
                 Memory property configuration for info partition.
                 Unlike data partition, each page is individually configured.
                 All fields are MuBi4 values.
+                The last page is reserved for the relocated OTP partition and has no
+                corresponding register: it is hardware-only, accessible solely to the OTP
+                hardware interface.
                 '''
-          count: "NumInfoPages",
+          count: "NumInfoPages - 1",
           swaccess: "rw",
           hwaccess: "hro",
           regwen: "INFO_REGWEN",
