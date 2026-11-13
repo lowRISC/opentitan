@@ -17,6 +17,8 @@ filesets:
       - lowrisc:ip:rram_ctrl_pkg
       - lowrisc:ip:rram_macro_pkg
       - lowrisc:prim:ram_1p
+      # dmi_jtag_tap for the RRAM TAP.
+      - pulp-platform:riscv-dbg:0.1
     files:
       - rtl/rram_macro_prim_reg_top.sv
       - rtl/rram_macro.sv

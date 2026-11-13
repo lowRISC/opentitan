@@ -876,6 +876,10 @@
       param_decl: {
         WrFifoDepth: "4",
         RdFifoDepth: "16",
+        RemapStart: "otp_ctrl_reg_pkg::Secret0Offset",
+        RemapSize: "otp_ctrl_reg_pkg::Secret0Size",
+        LcStart: "otp_ctrl_reg_pkg::LifeCycleOffset",
+        LcSize: "otp_ctrl_reg_pkg::LifeCycleSize",
       },
       memory: {
         host: {
@@ -1382,6 +1386,7 @@
       // Pinmux JTAG signals
       'pinmux.lc_jtag' : ['lc_ctrl.jtag'],
       'pinmux.rv_jtag' : ['rv_dm.jtag'],
+      'pinmux.rram_jtag' : ['rram_macro.jtag'],
       // Latched HW debug life cycle signal that is forwarded to RV_DM
       'pinmux.pinmux_hw_debug_en' : ['rv_dm.pinmux_hw_debug_en'],
 
@@ -1401,7 +1406,8 @@
                                       'pwrmgr.lc_dft_en',
                                       'rv_dm.lc_dft_en'
                                      ],
-      'lc_ctrl.lc_nvm_debug_en'    : ['rram_macro.lc_nvm_debug_en'],
+      'lc_ctrl.lc_nvm_debug_en'    : ['rram_macro.lc_nvm_debug_en',
+                                      'pinmux.lc_nvm_debug_en'],
       'lc_ctrl.lc_hw_debug_clr'    : ['pinmux.lc_hw_debug_clr',
                                       'rv_dm.lc_hw_debug_clr'],
       'lc_ctrl.lc_init_done'       : ['rv_dm.lc_init_done'],
@@ -1783,7 +1789,6 @@
       { instance: "spi_host0",   port: 'csb[1]',         connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "spi_host0",   port: 'csb[2]',         connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "spi_host1",   port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "rram_macro",  port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sensor_ctrl", port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       // Sysrst ctrl has both muxed and dedicated IOs
       { instance: "sysrst_ctrl", port: 'ac_present',     connection: 'muxed' , pad: ''             , desc: ''},
@@ -1808,6 +1813,8 @@
     // Enable USB wakeup and hardware strap sampling for discrete OpenTitan
     enable_usb_wakeup: true
     enable_strap_sampling: true
+    // RRAM TAP, enabled on the TAP strap value 0 by the RRAM_JTAG_SEL register
+    enable_rram_tap: true
   },
 
   // Implementation targets.

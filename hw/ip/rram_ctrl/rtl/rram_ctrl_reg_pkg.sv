@@ -23,7 +23,7 @@ package rram_ctrl_reg_pkg;
   parameter int CoreAw = 10;
 
   // Number of registers for every interface
-  parameter int NumRegsCore = 173;
+  parameter int NumRegsCore = 171;
 
   // Alert indices
   typedef enum int {
@@ -675,19 +675,19 @@ package rram_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    rram_ctrl_reg2hw_intr_state_reg_t intr_state; // [1484:1478]
-    rram_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [1477:1471]
-    rram_ctrl_reg2hw_intr_test_reg_t intr_test; // [1470:1457]
-    rram_ctrl_reg2hw_alert_test_reg_t alert_test; // [1456:1447]
-    rram_ctrl_reg2hw_dis_reg_t dis; // [1446:1439]
-    rram_ctrl_reg2hw_exec_reg_t exec; // [1438:1407]
-    rram_ctrl_reg2hw_init_reg_t init; // [1406:1406]
-    rram_ctrl_reg2hw_control_reg_t control; // [1405:1392]
-    rram_ctrl_reg2hw_addr_reg_t addr; // [1391:1371]
-    rram_ctrl_reg2hw_mp_region_cfg_mreg_t [9:0] mp_region_cfg; // [1370:1171]
-    rram_ctrl_reg2hw_mp_region_mreg_t [9:0] mp_region; // [1170:931]
-    rram_ctrl_reg2hw_default_region_reg_t default_region; // [930:915]
-    rram_ctrl_reg2hw_info_page_cfg_mreg_t [7:0] info_page_cfg; // [914:755]
+    rram_ctrl_reg2hw_intr_state_reg_t intr_state; // [1464:1458]
+    rram_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [1457:1451]
+    rram_ctrl_reg2hw_intr_test_reg_t intr_test; // [1450:1437]
+    rram_ctrl_reg2hw_alert_test_reg_t alert_test; // [1436:1427]
+    rram_ctrl_reg2hw_dis_reg_t dis; // [1426:1419]
+    rram_ctrl_reg2hw_exec_reg_t exec; // [1418:1387]
+    rram_ctrl_reg2hw_init_reg_t init; // [1386:1386]
+    rram_ctrl_reg2hw_control_reg_t control; // [1385:1372]
+    rram_ctrl_reg2hw_addr_reg_t addr; // [1371:1351]
+    rram_ctrl_reg2hw_mp_region_cfg_mreg_t [9:0] mp_region_cfg; // [1350:1151]
+    rram_ctrl_reg2hw_mp_region_mreg_t [9:0] mp_region; // [1150:911]
+    rram_ctrl_reg2hw_default_region_reg_t default_region; // [910:895]
+    rram_ctrl_reg2hw_info_page_cfg_mreg_t [6:0] info_page_cfg; // [894:755]
     rram_ctrl_reg2hw_emul_info_regwen_mreg_t [1:0] emul_info_regwen; // [754:753]
     rram_ctrl_reg2hw_emul_info_region_mreg_t [1:0] emul_info_region; // [752:697]
     rram_ctrl_reg2hw_emul_info_subregion_regwen_mreg_t [23:0]
@@ -772,131 +772,129 @@ package rram_ctrl_reg_pkg;
   parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_REGWEN_4_OFFSET = 10'h b4;
   parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_REGWEN_5_OFFSET = 10'h b8;
   parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_REGWEN_6_OFFSET = 10'h bc;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_REGWEN_7_OFFSET = 10'h c0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_0_OFFSET = 10'h c4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_1_OFFSET = 10'h c8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_2_OFFSET = 10'h cc;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_3_OFFSET = 10'h d0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_4_OFFSET = 10'h d4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_5_OFFSET = 10'h d8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_6_OFFSET = 10'h dc;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_7_OFFSET = 10'h e0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_REGWEN_0_OFFSET = 10'h e4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_REGWEN_1_OFFSET = 10'h e8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_REGION_0_OFFSET = 10'h ec;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_REGION_1_OFFSET = 10'h f0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_0_OFFSET = 10'h f4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_1_OFFSET = 10'h f8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_2_OFFSET = 10'h fc;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_3_OFFSET = 10'h 100;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_4_OFFSET = 10'h 104;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_5_OFFSET = 10'h 108;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_6_OFFSET = 10'h 10c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_7_OFFSET = 10'h 110;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_8_OFFSET = 10'h 114;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_9_OFFSET = 10'h 118;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_10_OFFSET = 10'h 11c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_11_OFFSET = 10'h 120;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_12_OFFSET = 10'h 124;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_13_OFFSET = 10'h 128;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_14_OFFSET = 10'h 12c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_15_OFFSET = 10'h 130;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_16_OFFSET = 10'h 134;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_17_OFFSET = 10'h 138;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_18_OFFSET = 10'h 13c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_19_OFFSET = 10'h 140;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_20_OFFSET = 10'h 144;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_21_OFFSET = 10'h 148;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_22_OFFSET = 10'h 14c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_23_OFFSET = 10'h 150;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_0_OFFSET = 10'h 154;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_1_OFFSET = 10'h 158;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_2_OFFSET = 10'h 15c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_3_OFFSET = 10'h 160;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_4_OFFSET = 10'h 164;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_5_OFFSET = 10'h 168;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_6_OFFSET = 10'h 16c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_7_OFFSET = 10'h 170;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_8_OFFSET = 10'h 174;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_9_OFFSET = 10'h 178;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_10_OFFSET = 10'h 17c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_11_OFFSET = 10'h 180;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_12_OFFSET = 10'h 184;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_13_OFFSET = 10'h 188;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_14_OFFSET = 10'h 18c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_15_OFFSET = 10'h 190;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_16_OFFSET = 10'h 194;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_17_OFFSET = 10'h 198;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_18_OFFSET = 10'h 19c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_19_OFFSET = 10'h 1a0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_20_OFFSET = 10'h 1a4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_21_OFFSET = 10'h 1a8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_22_OFFSET = 10'h 1ac;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_23_OFFSET = 10'h 1b0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_0_OFFSET = 10'h 1b4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_1_OFFSET = 10'h 1b8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_2_OFFSET = 10'h 1bc;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_3_OFFSET = 10'h 1c0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_4_OFFSET = 10'h 1c4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_5_OFFSET = 10'h 1c8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_6_OFFSET = 10'h 1cc;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_7_OFFSET = 10'h 1d0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_8_OFFSET = 10'h 1d4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_9_OFFSET = 10'h 1d8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_10_OFFSET = 10'h 1dc;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_11_OFFSET = 10'h 1e0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_12_OFFSET = 10'h 1e4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_13_OFFSET = 10'h 1e8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_14_OFFSET = 10'h 1ec;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_15_OFFSET = 10'h 1f0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_16_OFFSET = 10'h 1f4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_17_OFFSET = 10'h 1f8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_18_OFFSET = 10'h 1fc;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_19_OFFSET = 10'h 200;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_20_OFFSET = 10'h 204;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_21_OFFSET = 10'h 208;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_22_OFFSET = 10'h 20c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_23_OFFSET = 10'h 210;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_0_OFFSET = 10'h 214;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_1_OFFSET = 10'h 218;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_2_OFFSET = 10'h 21c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_3_OFFSET = 10'h 220;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_4_OFFSET = 10'h 224;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_5_OFFSET = 10'h 228;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_6_OFFSET = 10'h 22c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_7_OFFSET = 10'h 230;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_8_OFFSET = 10'h 234;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_9_OFFSET = 10'h 238;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_10_OFFSET = 10'h 23c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_11_OFFSET = 10'h 240;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_12_OFFSET = 10'h 244;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_13_OFFSET = 10'h 248;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_14_OFFSET = 10'h 24c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_15_OFFSET = 10'h 250;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_16_OFFSET = 10'h 254;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_17_OFFSET = 10'h 258;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_18_OFFSET = 10'h 25c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_19_OFFSET = 10'h 260;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_20_OFFSET = 10'h 264;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_21_OFFSET = 10'h 268;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_22_OFFSET = 10'h 26c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_23_OFFSET = 10'h 270;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_HW_INFO_CFG_OVERRIDE_OFFSET = 10'h 274;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_OP_STATUS_OFFSET = 10'h 278;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_STATUS_OFFSET = 10'h 27c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_ERR_CODE_OFFSET = 10'h 280;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_STD_FAULT_STATUS_OFFSET = 10'h 284;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_FAULT_STATUS_OFFSET = 10'h 288;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_ERR_ADDR_OFFSET = 10'h 28c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR1_ERR_CNT_OFFSET = 10'h 290;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR2_ERR_CNT_OFFSET = 10'h 294;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR1_ERR_LOC_OFFSET = 10'h 298;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR2_ERR_LOC_OFFSET = 10'h 29c;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_PHY_STATUS_OFFSET = 10'h 2a0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_SCRATCH_OFFSET = 10'h 2a4;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_LVL_OFFSET = 10'h 2a8;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_CLR_OFFSET = 10'h 2ac;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_CURR_FIFO_LVL_OFFSET = 10'h 2b0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_0_OFFSET = 10'h c0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_1_OFFSET = 10'h c4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_2_OFFSET = 10'h c8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_3_OFFSET = 10'h cc;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_4_OFFSET = 10'h d0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_5_OFFSET = 10'h d4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_INFO_PAGE_CFG_6_OFFSET = 10'h d8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_REGWEN_0_OFFSET = 10'h dc;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_REGWEN_1_OFFSET = 10'h e0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_REGION_0_OFFSET = 10'h e4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_REGION_1_OFFSET = 10'h e8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_0_OFFSET = 10'h ec;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_1_OFFSET = 10'h f0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_2_OFFSET = 10'h f4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_3_OFFSET = 10'h f8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_4_OFFSET = 10'h fc;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_5_OFFSET = 10'h 100;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_6_OFFSET = 10'h 104;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_7_OFFSET = 10'h 108;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_8_OFFSET = 10'h 10c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_9_OFFSET = 10'h 110;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_10_OFFSET = 10'h 114;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_11_OFFSET = 10'h 118;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_12_OFFSET = 10'h 11c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_13_OFFSET = 10'h 120;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_14_OFFSET = 10'h 124;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_15_OFFSET = 10'h 128;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_16_OFFSET = 10'h 12c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_17_OFFSET = 10'h 130;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_18_OFFSET = 10'h 134;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_19_OFFSET = 10'h 138;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_20_OFFSET = 10'h 13c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_21_OFFSET = 10'h 140;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_22_OFFSET = 10'h 144;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_23_OFFSET = 10'h 148;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_0_OFFSET = 10'h 14c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_1_OFFSET = 10'h 150;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_2_OFFSET = 10'h 154;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_3_OFFSET = 10'h 158;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_4_OFFSET = 10'h 15c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_5_OFFSET = 10'h 160;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_6_OFFSET = 10'h 164;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_7_OFFSET = 10'h 168;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_8_OFFSET = 10'h 16c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_9_OFFSET = 10'h 170;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_10_OFFSET = 10'h 174;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_11_OFFSET = 10'h 178;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_12_OFFSET = 10'h 17c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_13_OFFSET = 10'h 180;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_14_OFFSET = 10'h 184;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_15_OFFSET = 10'h 188;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_16_OFFSET = 10'h 18c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_17_OFFSET = 10'h 190;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_18_OFFSET = 10'h 194;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_19_OFFSET = 10'h 198;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_20_OFFSET = 10'h 19c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_21_OFFSET = 10'h 1a0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_22_OFFSET = 10'h 1a4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_23_OFFSET = 10'h 1a8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_0_OFFSET = 10'h 1ac;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_1_OFFSET = 10'h 1b0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_2_OFFSET = 10'h 1b4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_3_OFFSET = 10'h 1b8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_4_OFFSET = 10'h 1bc;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_5_OFFSET = 10'h 1c0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_6_OFFSET = 10'h 1c4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_7_OFFSET = 10'h 1c8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_8_OFFSET = 10'h 1cc;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_9_OFFSET = 10'h 1d0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_10_OFFSET = 10'h 1d4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_11_OFFSET = 10'h 1d8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_12_OFFSET = 10'h 1dc;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_13_OFFSET = 10'h 1e0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_14_OFFSET = 10'h 1e4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_15_OFFSET = 10'h 1e8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_16_OFFSET = 10'h 1ec;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_17_OFFSET = 10'h 1f0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_18_OFFSET = 10'h 1f4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_19_OFFSET = 10'h 1f8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_20_OFFSET = 10'h 1fc;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_21_OFFSET = 10'h 200;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_22_OFFSET = 10'h 204;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_23_OFFSET = 10'h 208;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_0_OFFSET = 10'h 20c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_1_OFFSET = 10'h 210;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_2_OFFSET = 10'h 214;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_3_OFFSET = 10'h 218;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_4_OFFSET = 10'h 21c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_5_OFFSET = 10'h 220;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_6_OFFSET = 10'h 224;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_7_OFFSET = 10'h 228;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_8_OFFSET = 10'h 22c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_9_OFFSET = 10'h 230;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_10_OFFSET = 10'h 234;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_11_OFFSET = 10'h 238;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_12_OFFSET = 10'h 23c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_13_OFFSET = 10'h 240;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_14_OFFSET = 10'h 244;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_15_OFFSET = 10'h 248;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_16_OFFSET = 10'h 24c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_17_OFFSET = 10'h 250;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_18_OFFSET = 10'h 254;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_19_OFFSET = 10'h 258;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_20_OFFSET = 10'h 25c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_21_OFFSET = 10'h 260;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_22_OFFSET = 10'h 264;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_23_OFFSET = 10'h 268;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_HW_INFO_CFG_OVERRIDE_OFFSET = 10'h 26c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_OP_STATUS_OFFSET = 10'h 270;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_STATUS_OFFSET = 10'h 274;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_ERR_CODE_OFFSET = 10'h 278;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_STD_FAULT_STATUS_OFFSET = 10'h 27c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_FAULT_STATUS_OFFSET = 10'h 280;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_ERR_ADDR_OFFSET = 10'h 284;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR1_ERR_CNT_OFFSET = 10'h 288;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR2_ERR_CNT_OFFSET = 10'h 28c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR1_ERR_LOC_OFFSET = 10'h 290;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_CORR2_ERR_LOC_OFFSET = 10'h 294;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_PHY_STATUS_OFFSET = 10'h 298;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_SCRATCH_OFFSET = 10'h 29c;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_LVL_OFFSET = 10'h 2a0;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_FIFO_CLR_OFFSET = 10'h 2a4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_CURR_FIFO_LVL_OFFSET = 10'h 2a8;
 
   // Reset values for hwext registers and their fields for core interface
   parameter logic [6:0] RRAM_CTRL_INTR_TEST_RESVAL = 7'h 0;
@@ -924,10 +922,10 @@ package rram_ctrl_reg_pkg;
   parameter logic [4:0] RRAM_CTRL_CURR_FIFO_LVL_RD_RESVAL = 5'h 0;
 
   // Window parameters for core interface
-  parameter logic [CoreAw-1:0] RRAM_CTRL_WR_FIFO_OFFSET = 10'h 2b4;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_WR_FIFO_OFFSET = 10'h 2ac;
   parameter int unsigned       RRAM_CTRL_WR_FIFO_SIZE   = 'h 4;
   parameter int unsigned       RRAM_CTRL_WR_FIFO_IDX    = 0;
-  parameter logic [CoreAw-1:0] RRAM_CTRL_RD_FIFO_OFFSET = 10'h 2b8;
+  parameter logic [CoreAw-1:0] RRAM_CTRL_RD_FIFO_OFFSET = 10'h 2b0;
   parameter int unsigned       RRAM_CTRL_RD_FIFO_SIZE   = 'h 4;
   parameter int unsigned       RRAM_CTRL_RD_FIFO_IDX    = 1;
 
@@ -981,7 +979,6 @@ package rram_ctrl_reg_pkg;
     RRAM_CTRL_INFO_REGWEN_4,
     RRAM_CTRL_INFO_REGWEN_5,
     RRAM_CTRL_INFO_REGWEN_6,
-    RRAM_CTRL_INFO_REGWEN_7,
     RRAM_CTRL_INFO_PAGE_CFG_0,
     RRAM_CTRL_INFO_PAGE_CFG_1,
     RRAM_CTRL_INFO_PAGE_CFG_2,
@@ -989,7 +986,6 @@ package rram_ctrl_reg_pkg;
     RRAM_CTRL_INFO_PAGE_CFG_4,
     RRAM_CTRL_INFO_PAGE_CFG_5,
     RRAM_CTRL_INFO_PAGE_CFG_6,
-    RRAM_CTRL_INFO_PAGE_CFG_7,
     RRAM_CTRL_EMUL_INFO_REGWEN_0,
     RRAM_CTRL_EMUL_INFO_REGWEN_1,
     RRAM_CTRL_EMUL_INFO_REGION_0,
@@ -1109,7 +1105,7 @@ package rram_ctrl_reg_pkg;
   } rram_ctrl_core_id_e;
 
   // Register width information to check illegal writes for core interface
-  parameter logic [3:0] RRAM_CTRL_CORE_PERMIT [173] = '{
+  parameter logic [3:0] RRAM_CTRL_CORE_PERMIT [171] = '{
     4'b 0001, // index[  0] RRAM_CTRL_INTR_STATE
     4'b 0001, // index[  1] RRAM_CTRL_INTR_ENABLE
     4'b 0001, // index[  2] RRAM_CTRL_INTR_TEST
@@ -1158,131 +1154,129 @@ package rram_ctrl_reg_pkg;
     4'b 0001, // index[ 45] RRAM_CTRL_INFO_REGWEN_4
     4'b 0001, // index[ 46] RRAM_CTRL_INFO_REGWEN_5
     4'b 0001, // index[ 47] RRAM_CTRL_INFO_REGWEN_6
-    4'b 0001, // index[ 48] RRAM_CTRL_INFO_REGWEN_7
-    4'b 0111, // index[ 49] RRAM_CTRL_INFO_PAGE_CFG_0
-    4'b 0111, // index[ 50] RRAM_CTRL_INFO_PAGE_CFG_1
-    4'b 0111, // index[ 51] RRAM_CTRL_INFO_PAGE_CFG_2
-    4'b 0111, // index[ 52] RRAM_CTRL_INFO_PAGE_CFG_3
-    4'b 0111, // index[ 53] RRAM_CTRL_INFO_PAGE_CFG_4
-    4'b 0111, // index[ 54] RRAM_CTRL_INFO_PAGE_CFG_5
-    4'b 0111, // index[ 55] RRAM_CTRL_INFO_PAGE_CFG_6
-    4'b 0111, // index[ 56] RRAM_CTRL_INFO_PAGE_CFG_7
-    4'b 0001, // index[ 57] RRAM_CTRL_EMUL_INFO_REGWEN_0
-    4'b 0001, // index[ 58] RRAM_CTRL_EMUL_INFO_REGWEN_1
-    4'b 1111, // index[ 59] RRAM_CTRL_EMUL_INFO_REGION_0
-    4'b 1111, // index[ 60] RRAM_CTRL_EMUL_INFO_REGION_1
-    4'b 0001, // index[ 61] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_0
-    4'b 0001, // index[ 62] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_1
-    4'b 0001, // index[ 63] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_2
-    4'b 0001, // index[ 64] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_3
-    4'b 0001, // index[ 65] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_4
-    4'b 0001, // index[ 66] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_5
-    4'b 0001, // index[ 67] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_6
-    4'b 0001, // index[ 68] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_7
-    4'b 0001, // index[ 69] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_8
-    4'b 0001, // index[ 70] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_9
-    4'b 0001, // index[ 71] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_10
-    4'b 0001, // index[ 72] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_11
-    4'b 0001, // index[ 73] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_12
-    4'b 0001, // index[ 74] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_13
-    4'b 0001, // index[ 75] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_14
-    4'b 0001, // index[ 76] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_15
-    4'b 0001, // index[ 77] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_16
-    4'b 0001, // index[ 78] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_17
-    4'b 0001, // index[ 79] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_18
-    4'b 0001, // index[ 80] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_19
-    4'b 0001, // index[ 81] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_20
-    4'b 0001, // index[ 82] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_21
-    4'b 0001, // index[ 83] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_22
-    4'b 0001, // index[ 84] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_23
-    4'b 0001, // index[ 85] RRAM_CTRL_EMUL_INFO_SUBREGION_0
-    4'b 0001, // index[ 86] RRAM_CTRL_EMUL_INFO_SUBREGION_1
-    4'b 0001, // index[ 87] RRAM_CTRL_EMUL_INFO_SUBREGION_2
-    4'b 0001, // index[ 88] RRAM_CTRL_EMUL_INFO_SUBREGION_3
-    4'b 0001, // index[ 89] RRAM_CTRL_EMUL_INFO_SUBREGION_4
-    4'b 0001, // index[ 90] RRAM_CTRL_EMUL_INFO_SUBREGION_5
-    4'b 0001, // index[ 91] RRAM_CTRL_EMUL_INFO_SUBREGION_6
-    4'b 0001, // index[ 92] RRAM_CTRL_EMUL_INFO_SUBREGION_7
-    4'b 0001, // index[ 93] RRAM_CTRL_EMUL_INFO_SUBREGION_8
-    4'b 0001, // index[ 94] RRAM_CTRL_EMUL_INFO_SUBREGION_9
-    4'b 0001, // index[ 95] RRAM_CTRL_EMUL_INFO_SUBREGION_10
-    4'b 0001, // index[ 96] RRAM_CTRL_EMUL_INFO_SUBREGION_11
-    4'b 0001, // index[ 97] RRAM_CTRL_EMUL_INFO_SUBREGION_12
-    4'b 0001, // index[ 98] RRAM_CTRL_EMUL_INFO_SUBREGION_13
-    4'b 0001, // index[ 99] RRAM_CTRL_EMUL_INFO_SUBREGION_14
-    4'b 0001, // index[100] RRAM_CTRL_EMUL_INFO_SUBREGION_15
-    4'b 0001, // index[101] RRAM_CTRL_EMUL_INFO_SUBREGION_16
-    4'b 0001, // index[102] RRAM_CTRL_EMUL_INFO_SUBREGION_17
-    4'b 0001, // index[103] RRAM_CTRL_EMUL_INFO_SUBREGION_18
-    4'b 0001, // index[104] RRAM_CTRL_EMUL_INFO_SUBREGION_19
-    4'b 0001, // index[105] RRAM_CTRL_EMUL_INFO_SUBREGION_20
-    4'b 0001, // index[106] RRAM_CTRL_EMUL_INFO_SUBREGION_21
-    4'b 0001, // index[107] RRAM_CTRL_EMUL_INFO_SUBREGION_22
-    4'b 0001, // index[108] RRAM_CTRL_EMUL_INFO_SUBREGION_23
-    4'b 0001, // index[109] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_0
-    4'b 0001, // index[110] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_1
-    4'b 0001, // index[111] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_2
-    4'b 0001, // index[112] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_3
-    4'b 0001, // index[113] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_4
-    4'b 0001, // index[114] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_5
-    4'b 0001, // index[115] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_6
-    4'b 0001, // index[116] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_7
-    4'b 0001, // index[117] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_8
-    4'b 0001, // index[118] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_9
-    4'b 0001, // index[119] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_10
-    4'b 0001, // index[120] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_11
-    4'b 0001, // index[121] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_12
-    4'b 0001, // index[122] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_13
-    4'b 0001, // index[123] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_14
-    4'b 0001, // index[124] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_15
-    4'b 0001, // index[125] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_16
-    4'b 0001, // index[126] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_17
-    4'b 0001, // index[127] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_18
-    4'b 0001, // index[128] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_19
-    4'b 0001, // index[129] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_20
-    4'b 0001, // index[130] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_21
-    4'b 0001, // index[131] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_22
-    4'b 0001, // index[132] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_23
-    4'b 0111, // index[133] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_0
-    4'b 0111, // index[134] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_1
-    4'b 0111, // index[135] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_2
-    4'b 0111, // index[136] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_3
-    4'b 0111, // index[137] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_4
-    4'b 0111, // index[138] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_5
-    4'b 0111, // index[139] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_6
-    4'b 0111, // index[140] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_7
-    4'b 0111, // index[141] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_8
-    4'b 0111, // index[142] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_9
-    4'b 0111, // index[143] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_10
-    4'b 0111, // index[144] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_11
-    4'b 0111, // index[145] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_12
-    4'b 0111, // index[146] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_13
-    4'b 0111, // index[147] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_14
-    4'b 0111, // index[148] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_15
-    4'b 0111, // index[149] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_16
-    4'b 0111, // index[150] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_17
-    4'b 0111, // index[151] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_18
-    4'b 0111, // index[152] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_19
-    4'b 0111, // index[153] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_20
-    4'b 0111, // index[154] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_21
-    4'b 0111, // index[155] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_22
-    4'b 0111, // index[156] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_23
-    4'b 0001, // index[157] RRAM_CTRL_HW_INFO_CFG_OVERRIDE
-    4'b 0001, // index[158] RRAM_CTRL_OP_STATUS
-    4'b 0001, // index[159] RRAM_CTRL_STATUS
-    4'b 0001, // index[160] RRAM_CTRL_ERR_CODE
-    4'b 0011, // index[161] RRAM_CTRL_STD_FAULT_STATUS
-    4'b 0011, // index[162] RRAM_CTRL_FAULT_STATUS
-    4'b 0111, // index[163] RRAM_CTRL_ERR_ADDR
-    4'b 0001, // index[164] RRAM_CTRL_CORR1_ERR_CNT
-    4'b 0001, // index[165] RRAM_CTRL_CORR2_ERR_CNT
-    4'b 1111, // index[166] RRAM_CTRL_CORR1_ERR_LOC
-    4'b 1111, // index[167] RRAM_CTRL_CORR2_ERR_LOC
-    4'b 0001, // index[168] RRAM_CTRL_PHY_STATUS
-    4'b 1111, // index[169] RRAM_CTRL_SCRATCH
-    4'b 0011, // index[170] RRAM_CTRL_FIFO_LVL
-    4'b 0001, // index[171] RRAM_CTRL_FIFO_CLR
-    4'b 0011  // index[172] RRAM_CTRL_CURR_FIFO_LVL
+    4'b 0111, // index[ 48] RRAM_CTRL_INFO_PAGE_CFG_0
+    4'b 0111, // index[ 49] RRAM_CTRL_INFO_PAGE_CFG_1
+    4'b 0111, // index[ 50] RRAM_CTRL_INFO_PAGE_CFG_2
+    4'b 0111, // index[ 51] RRAM_CTRL_INFO_PAGE_CFG_3
+    4'b 0111, // index[ 52] RRAM_CTRL_INFO_PAGE_CFG_4
+    4'b 0111, // index[ 53] RRAM_CTRL_INFO_PAGE_CFG_5
+    4'b 0111, // index[ 54] RRAM_CTRL_INFO_PAGE_CFG_6
+    4'b 0001, // index[ 55] RRAM_CTRL_EMUL_INFO_REGWEN_0
+    4'b 0001, // index[ 56] RRAM_CTRL_EMUL_INFO_REGWEN_1
+    4'b 1111, // index[ 57] RRAM_CTRL_EMUL_INFO_REGION_0
+    4'b 1111, // index[ 58] RRAM_CTRL_EMUL_INFO_REGION_1
+    4'b 0001, // index[ 59] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_0
+    4'b 0001, // index[ 60] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_1
+    4'b 0001, // index[ 61] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_2
+    4'b 0001, // index[ 62] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_3
+    4'b 0001, // index[ 63] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_4
+    4'b 0001, // index[ 64] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_5
+    4'b 0001, // index[ 65] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_6
+    4'b 0001, // index[ 66] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_7
+    4'b 0001, // index[ 67] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_8
+    4'b 0001, // index[ 68] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_9
+    4'b 0001, // index[ 69] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_10
+    4'b 0001, // index[ 70] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_11
+    4'b 0001, // index[ 71] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_12
+    4'b 0001, // index[ 72] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_13
+    4'b 0001, // index[ 73] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_14
+    4'b 0001, // index[ 74] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_15
+    4'b 0001, // index[ 75] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_16
+    4'b 0001, // index[ 76] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_17
+    4'b 0001, // index[ 77] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_18
+    4'b 0001, // index[ 78] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_19
+    4'b 0001, // index[ 79] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_20
+    4'b 0001, // index[ 80] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_21
+    4'b 0001, // index[ 81] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_22
+    4'b 0001, // index[ 82] RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_23
+    4'b 0001, // index[ 83] RRAM_CTRL_EMUL_INFO_SUBREGION_0
+    4'b 0001, // index[ 84] RRAM_CTRL_EMUL_INFO_SUBREGION_1
+    4'b 0001, // index[ 85] RRAM_CTRL_EMUL_INFO_SUBREGION_2
+    4'b 0001, // index[ 86] RRAM_CTRL_EMUL_INFO_SUBREGION_3
+    4'b 0001, // index[ 87] RRAM_CTRL_EMUL_INFO_SUBREGION_4
+    4'b 0001, // index[ 88] RRAM_CTRL_EMUL_INFO_SUBREGION_5
+    4'b 0001, // index[ 89] RRAM_CTRL_EMUL_INFO_SUBREGION_6
+    4'b 0001, // index[ 90] RRAM_CTRL_EMUL_INFO_SUBREGION_7
+    4'b 0001, // index[ 91] RRAM_CTRL_EMUL_INFO_SUBREGION_8
+    4'b 0001, // index[ 92] RRAM_CTRL_EMUL_INFO_SUBREGION_9
+    4'b 0001, // index[ 93] RRAM_CTRL_EMUL_INFO_SUBREGION_10
+    4'b 0001, // index[ 94] RRAM_CTRL_EMUL_INFO_SUBREGION_11
+    4'b 0001, // index[ 95] RRAM_CTRL_EMUL_INFO_SUBREGION_12
+    4'b 0001, // index[ 96] RRAM_CTRL_EMUL_INFO_SUBREGION_13
+    4'b 0001, // index[ 97] RRAM_CTRL_EMUL_INFO_SUBREGION_14
+    4'b 0001, // index[ 98] RRAM_CTRL_EMUL_INFO_SUBREGION_15
+    4'b 0001, // index[ 99] RRAM_CTRL_EMUL_INFO_SUBREGION_16
+    4'b 0001, // index[100] RRAM_CTRL_EMUL_INFO_SUBREGION_17
+    4'b 0001, // index[101] RRAM_CTRL_EMUL_INFO_SUBREGION_18
+    4'b 0001, // index[102] RRAM_CTRL_EMUL_INFO_SUBREGION_19
+    4'b 0001, // index[103] RRAM_CTRL_EMUL_INFO_SUBREGION_20
+    4'b 0001, // index[104] RRAM_CTRL_EMUL_INFO_SUBREGION_21
+    4'b 0001, // index[105] RRAM_CTRL_EMUL_INFO_SUBREGION_22
+    4'b 0001, // index[106] RRAM_CTRL_EMUL_INFO_SUBREGION_23
+    4'b 0001, // index[107] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_0
+    4'b 0001, // index[108] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_1
+    4'b 0001, // index[109] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_2
+    4'b 0001, // index[110] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_3
+    4'b 0001, // index[111] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_4
+    4'b 0001, // index[112] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_5
+    4'b 0001, // index[113] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_6
+    4'b 0001, // index[114] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_7
+    4'b 0001, // index[115] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_8
+    4'b 0001, // index[116] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_9
+    4'b 0001, // index[117] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_10
+    4'b 0001, // index[118] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_11
+    4'b 0001, // index[119] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_12
+    4'b 0001, // index[120] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_13
+    4'b 0001, // index[121] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_14
+    4'b 0001, // index[122] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_15
+    4'b 0001, // index[123] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_16
+    4'b 0001, // index[124] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_17
+    4'b 0001, // index[125] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_18
+    4'b 0001, // index[126] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_19
+    4'b 0001, // index[127] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_20
+    4'b 0001, // index[128] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_21
+    4'b 0001, // index[129] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_22
+    4'b 0001, // index[130] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_23
+    4'b 0111, // index[131] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_0
+    4'b 0111, // index[132] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_1
+    4'b 0111, // index[133] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_2
+    4'b 0111, // index[134] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_3
+    4'b 0111, // index[135] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_4
+    4'b 0111, // index[136] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_5
+    4'b 0111, // index[137] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_6
+    4'b 0111, // index[138] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_7
+    4'b 0111, // index[139] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_8
+    4'b 0111, // index[140] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_9
+    4'b 0111, // index[141] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_10
+    4'b 0111, // index[142] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_11
+    4'b 0111, // index[143] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_12
+    4'b 0111, // index[144] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_13
+    4'b 0111, // index[145] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_14
+    4'b 0111, // index[146] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_15
+    4'b 0111, // index[147] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_16
+    4'b 0111, // index[148] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_17
+    4'b 0111, // index[149] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_18
+    4'b 0111, // index[150] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_19
+    4'b 0111, // index[151] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_20
+    4'b 0111, // index[152] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_21
+    4'b 0111, // index[153] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_22
+    4'b 0111, // index[154] RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_23
+    4'b 0001, // index[155] RRAM_CTRL_HW_INFO_CFG_OVERRIDE
+    4'b 0001, // index[156] RRAM_CTRL_OP_STATUS
+    4'b 0001, // index[157] RRAM_CTRL_STATUS
+    4'b 0001, // index[158] RRAM_CTRL_ERR_CODE
+    4'b 0011, // index[159] RRAM_CTRL_STD_FAULT_STATUS
+    4'b 0011, // index[160] RRAM_CTRL_FAULT_STATUS
+    4'b 0111, // index[161] RRAM_CTRL_ERR_ADDR
+    4'b 0001, // index[162] RRAM_CTRL_CORR1_ERR_CNT
+    4'b 0001, // index[163] RRAM_CTRL_CORR2_ERR_CNT
+    4'b 1111, // index[164] RRAM_CTRL_CORR1_ERR_LOC
+    4'b 1111, // index[165] RRAM_CTRL_CORR2_ERR_LOC
+    4'b 0001, // index[166] RRAM_CTRL_PHY_STATUS
+    4'b 1111, // index[167] RRAM_CTRL_SCRATCH
+    4'b 0011, // index[168] RRAM_CTRL_FIFO_LVL
+    4'b 0001, // index[169] RRAM_CTRL_FIFO_CLR
+    4'b 0011  // index[170] RRAM_CTRL_CURR_FIFO_LVL
   };
 
 endpackage

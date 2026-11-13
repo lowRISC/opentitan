@@ -3316,6 +3316,8 @@
           top_type: broadcast
           top_signame: lc_ctrl_lc_nvm_debug_en
           index: -1
+          external: true
+          conn_type: true
         }
         {
           name: lc_hw_debug_clr
@@ -5634,6 +5636,26 @@
           conn_type: false
         }
         {
+          name: lc_nvm_debug_en
+          desc:
+            '''
+            NVM debug enable coming from life cycle controller.
+            The RRAM TAP can only be selected while this signal is On.
+            '''
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: pinmux
+          domain: Aon
+          top_signame: lc_ctrl_lc_nvm_debug_en
+          index: -1
+          external: true
+          conn_type: false
+        }
+        {
           name: lc_escalate_en
           desc:
             '''
@@ -5743,6 +5765,23 @@
           default: ""
           top_signame: pinmux_dft_jtag
           index: -1
+        }
+        {
+          name: rram_jtag
+          desc: Qualified JTAG signals for the RRAM TAP.
+          struct: jtag
+          package: jtag_pkg
+          type: req_rsp
+          act: req
+          width: 1
+          inst_name: pinmux
+          default: ""
+          end_idx: -1
+          top_type: one-to-one
+          top_signame: pinmux_rram_jtag
+          index: -1
+          external: true
+          conn_type: false
         }
         {
           name: dft_strap_test
@@ -7726,6 +7765,10 @@
       {
         WrFifoDepth: "4"
         RdFifoDepth: "16"
+        RemapStart: otp_ctrl_reg_pkg::Secret0Offset
+        RemapSize: otp_ctrl_reg_pkg::Secret0Size
+        LcStart: otp_ctrl_reg_pkg::LifeCycleOffset
+        LcSize: otp_ctrl_reg_pkg::LifeCycleSize
       }
       memory:
       {
@@ -7773,6 +7816,42 @@
           local: "false"
           expose: "true"
           name_top: RramCtrlRdFifoDepth
+        }
+        {
+          name: RemapStart
+          desc: Byte offset of the OTP partition relocated to OtpRemapInfoPage. 0 disables the relocation.
+          type: int
+          default: otp_ctrl_reg_pkg::Secret0Offset
+          local: "false"
+          expose: "true"
+          name_top: RramCtrlRemapStart
+        }
+        {
+          name: RemapSize
+          desc: Byte size of the OTP partition relocated to OtpRemapInfoPage. 0 disables the relocation.
+          type: int
+          default: otp_ctrl_reg_pkg::Secret0Size
+          local: "false"
+          expose: "true"
+          name_top: RramCtrlRemapSize
+        }
+        {
+          name: LcStart
+          desc: Byte offset of the OTP LIFE_CYCLE partition. Only used together with LcSize.
+          type: int
+          default: otp_ctrl_reg_pkg::LifeCycleOffset
+          local: "false"
+          expose: "true"
+          name_top: RramCtrlLcStart
+        }
+        {
+          name: LcSize
+          desc: Byte size of the OTP LIFE_CYCLE partition. 0 disables the life cycle copy selection.
+          type: int
+          default: otp_ctrl_reg_pkg::LifeCycleSize
+          local: "false"
+          expose: "true"
+          name_top: RramCtrlLcSize
         }
       ]
       inter_signal_list:
@@ -7895,6 +7974,34 @@
           default: ""
           domain: Main
           top_signame: lc_ctrl_lc_escalate_en
+          index: -1
+        }
+        {
+          name: lc_nvm_debug_en
+          desc: Write enable of the marker page.
+          struct: lc_tx
+          package: lc_ctrl_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: lc_ctrl_pkg::Off
+          inst_name: rram_ctrl
+          index: -1
+        }
+        {
+          name: cp_done
+          desc:
+            '''
+            CP_DONE marker from the NVM macro.
+            Selects the life cycle partition copy, and locks the marker page once set.
+            '''
+          struct: mubi8
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi8False
+          inst_name: rram_ctrl
           index: -1
         }
         {
@@ -8113,6 +8220,37 @@
           index: -1
         }
         {
+          name: allow_vol_unlock
+          desc:
+            '''
+            True unless the DIS_VOL_RAW_UNLOCK marker is set.
+            Latched during init, an invalid MuBi8 value before.
+            '''
+          struct: mubi8
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: rram_macro
+          index: -1
+        }
+        {
+          name: cp_done
+          desc:
+            '''
+            True if the CP_DONE marker holds the magic value.
+            False if it is all zero, or if DIS_VOL_RAW_UNLOCK is not set.
+            An invalid MuBi8 value otherwise, and before the markers are latched during init.
+            '''
+          struct: mubi8
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          inst_name: rram_macro
+          index: -1
+        }
+        {
           name: lc_nvm_debug_en
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -8124,6 +8262,22 @@
           domain: Main
           top_signame: lc_ctrl_lc_nvm_debug_en
           index: -1
+        }
+        {
+          name: jtag
+          desc: JTAG signals for the RRAM TAP, from the pinmux TAP selection.
+          struct: jtag
+          package: jtag_pkg
+          type: req_rsp
+          act: rsp
+          width: 1
+          inst_name: rram_macro
+          default: ""
+          domain: Main
+          top_signame: pinmux_rram_jtag
+          index: -1
+          external: true
+          conn_type: false
         }
         {
           name: obs_ctrl
@@ -12992,6 +13146,10 @@
       [
         rv_dm.jtag
       ]
+      pinmux.rram_jtag:
+      [
+        rram_macro.jtag
+      ]
       pinmux.pinmux_hw_debug_en:
       [
         rv_dm.pinmux_hw_debug_en
@@ -13022,6 +13180,7 @@
       lc_ctrl.lc_nvm_debug_en:
       [
         rram_macro.lc_nvm_debug_en
+        pinmux.lc_nvm_debug_en
       ]
       lc_ctrl.lc_hw_debug_clr:
       [
@@ -16691,14 +16850,6 @@
         attr: ""
       }
       {
-        instance: rram_macro
-        port: ""
-        connection: muxed
-        pad: ""
-        desc: ""
-        attr: ""
-      }
-      {
         instance: sensor_ctrl
         port: ""
         connection: muxed
@@ -16831,6 +16982,7 @@
     wkup_cnt_width: 8
     enable_usb_wakeup: true
     enable_strap_sampling: true
+    enable_rram_tap: true
     ios:
     [
       {
@@ -18050,42 +18202,6 @@
         glob_idx: 86
       }
       {
-        name: rram_macro_tck
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 87
-      }
-      {
-        name: rram_macro_tms
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 88
-      }
-      {
-        name: rram_macro_tdi
-        width: 1
-        type: input
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 89
-      }
-      {
         name: sysrst_ctrl_ac_present
         width: 1
         type: input
@@ -18095,7 +18211,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 90
+        glob_idx: 87
       }
       {
         name: sysrst_ctrl_key0_in
@@ -18107,7 +18223,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 91
+        glob_idx: 88
       }
       {
         name: sysrst_ctrl_key1_in
@@ -18119,7 +18235,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 92
+        glob_idx: 89
       }
       {
         name: sysrst_ctrl_key2_in
@@ -18131,7 +18247,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 93
+        glob_idx: 90
       }
       {
         name: sysrst_ctrl_pwrb_in
@@ -18143,7 +18259,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 94
+        glob_idx: 91
       }
       {
         name: sysrst_ctrl_lid_open
@@ -18155,7 +18271,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 95
+        glob_idx: 92
       }
       {
         name: usbdev_sense
@@ -18167,7 +18283,7 @@
         connection: muxed
         desc: ""
         domain: Main
-        glob_idx: 96
+        glob_idx: 93
       }
       {
         name: spi_host0_sck
@@ -18338,18 +18454,6 @@
         glob_idx: 89
       }
       {
-        name: rram_macro_tdo
-        width: 1
-        type: output
-        idx: -1
-        pad: ""
-        attr: ""
-        connection: muxed
-        desc: ""
-        domain: Main
-        glob_idx: 90
-      }
-      {
         name: sensor_ctrl_ast_debug_out
         width: 9
         type: output
@@ -18359,7 +18463,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 91
+        glob_idx: 90
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -18371,7 +18475,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 92
+        glob_idx: 91
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -18383,7 +18487,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 93
+        glob_idx: 92
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -18395,7 +18499,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 94
+        glob_idx: 93
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -18407,7 +18511,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 95
+        glob_idx: 94
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -18419,7 +18523,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 96
+        glob_idx: 95
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -18431,7 +18535,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 97
+        glob_idx: 96
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -18443,7 +18547,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 98
+        glob_idx: 97
       }
       {
         name: sensor_ctrl_ast_debug_out
@@ -18455,7 +18559,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 99
+        glob_idx: 98
       }
       {
         name: sysrst_ctrl_bat_disable
@@ -18467,7 +18571,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 100
+        glob_idx: 99
       }
       {
         name: sysrst_ctrl_key0_out
@@ -18479,7 +18583,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 101
+        glob_idx: 100
       }
       {
         name: sysrst_ctrl_key1_out
@@ -18491,7 +18595,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 102
+        glob_idx: 101
       }
       {
         name: sysrst_ctrl_key2_out
@@ -18503,7 +18607,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 103
+        glob_idx: 102
       }
       {
         name: sysrst_ctrl_pwrb_out
@@ -18515,7 +18619,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 104
+        glob_idx: 103
       }
       {
         name: sysrst_ctrl_z3_wakeup
@@ -18527,7 +18631,7 @@
         connection: muxed
         desc: ""
         domain: Aon
-        glob_idx: 105
+        glob_idx: 104
       }
     ]
     io_counts:
@@ -18542,8 +18646,8 @@
       muxed:
       {
         inouts: 78
-        inputs: 19
-        outputs: 28
+        inputs: 16
+        outputs: 27
         pads: 47
       }
     }
@@ -22406,6 +22510,30 @@
         default: jtag_pkg::JTAG_RSP_DEFAULT
       }
       {
+        package: jtag_pkg
+        struct: jtag_req
+        domain: chip
+        signame: pinmux_rram_jtag_req
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: req
+        default: jtag_pkg::JTAG_REQ_DEFAULT
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_rsp
+        domain: chip
+        signame: pinmux_rram_jtag_rsp
+        width: 1
+        type: req_rsp
+        end_idx: -1
+        act: req
+        suffix: rsp
+        default: jtag_pkg::JTAG_RSP_DEFAULT
+      }
+      {
         package: lc_ctrl_pkg
         struct: lc_tx
         domain: chip
@@ -22434,6 +22562,18 @@
         struct: lc_tx
         domain: chip
         signame: lc_ctrl_lc_dft_en
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: lc_ctrl_pkg::Off
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        domain: chip
+        signame: lc_ctrl_lc_nvm_debug_en
         width: 1
         type: uni
         end_idx: -1
@@ -23826,66 +23966,6 @@
         struct: logic
         domain: chip
         signame: cio_usbdev_sense_p2d
-        width: 1
-        type: uni
-        end_idx: -1
-        act: ""
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        domain: chip
-        signame: cio_rram_macro_tck_p2d
-        width: 1
-        type: uni
-        end_idx: -1
-        act: ""
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        domain: chip
-        signame: cio_rram_macro_tms_p2d
-        width: 1
-        type: uni
-        end_idx: -1
-        act: ""
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        domain: chip
-        signame: cio_rram_macro_tdi_p2d
-        width: 1
-        type: uni
-        end_idx: -1
-        act: ""
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        domain: chip
-        signame: cio_rram_macro_tdo_d2p
-        width: 1
-        type: uni
-        end_idx: -1
-        act: ""
-        suffix: ""
-        default: "'0"
-      }
-      {
-        package: ""
-        struct: logic
-        domain: chip
-        signame: cio_rram_macro_tdo_en_d2p
         width: 1
         type: uni
         end_idx: -1
@@ -26856,6 +26936,8 @@
         top_type: broadcast
         top_signame: lc_ctrl_lc_nvm_debug_en
         index: -1
+        external: true
+        conn_type: true
       }
       {
         name: lc_hw_debug_clr
@@ -28492,6 +28574,26 @@
         conn_type: false
       }
       {
+        name: lc_nvm_debug_en
+        desc:
+          '''
+          NVM debug enable coming from life cycle controller.
+          The RRAM TAP can only be selected while this signal is On.
+          '''
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: pinmux
+        domain: Aon
+        top_signame: lc_ctrl_lc_nvm_debug_en
+        index: -1
+        external: true
+        conn_type: false
+      }
+      {
         name: lc_escalate_en
         desc:
           '''
@@ -28601,6 +28703,23 @@
         default: ""
         top_signame: pinmux_dft_jtag
         index: -1
+      }
+      {
+        name: rram_jtag
+        desc: Qualified JTAG signals for the RRAM TAP.
+        struct: jtag
+        package: jtag_pkg
+        type: req_rsp
+        act: req
+        width: 1
+        inst_name: pinmux
+        default: ""
+        end_idx: -1
+        top_type: one-to-one
+        top_signame: pinmux_rram_jtag
+        index: -1
+        external: true
+        conn_type: false
       }
       {
         name: dft_strap_test
@@ -30270,6 +30389,34 @@
         index: -1
       }
       {
+        name: lc_nvm_debug_en
+        desc: Write enable of the marker page.
+        struct: lc_tx
+        package: lc_ctrl_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: lc_ctrl_pkg::Off
+        inst_name: rram_ctrl
+        index: -1
+      }
+      {
+        name: cp_done
+        desc:
+          '''
+          CP_DONE marker from the NVM macro.
+          Selects the life cycle partition copy, and locks the marker page once set.
+          '''
+        struct: mubi8
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi8False
+        inst_name: rram_ctrl
+        index: -1
+      }
+      {
         name: rma_req
         struct: lc_tx
         package: lc_ctrl_pkg
@@ -30395,6 +30542,37 @@
         index: -1
       }
       {
+        name: allow_vol_unlock
+        desc:
+          '''
+          True unless the DIS_VOL_RAW_UNLOCK marker is set.
+          Latched during init, an invalid MuBi8 value before.
+          '''
+        struct: mubi8
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: rram_macro
+        index: -1
+      }
+      {
+        name: cp_done
+        desc:
+          '''
+          True if the CP_DONE marker holds the magic value.
+          False if it is all zero, or if DIS_VOL_RAW_UNLOCK is not set.
+          An invalid MuBi8 value otherwise, and before the markers are latched during init.
+          '''
+        struct: mubi8
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        inst_name: rram_macro
+        index: -1
+      }
+      {
         name: lc_nvm_debug_en
         struct: lc_tx
         package: lc_ctrl_pkg
@@ -30406,6 +30584,22 @@
         domain: Main
         top_signame: lc_ctrl_lc_nvm_debug_en
         index: -1
+      }
+      {
+        name: jtag
+        desc: JTAG signals for the RRAM TAP, from the pinmux TAP selection.
+        struct: jtag
+        package: jtag_pkg
+        type: req_rsp
+        act: rsp
+        width: 1
+        inst_name: rram_macro
+        default: ""
+        domain: Main
+        top_signame: pinmux_rram_jtag
+        index: -1
+        external: true
+        conn_type: false
       }
       {
         name: obs_ctrl
@@ -35127,6 +35321,86 @@
         netname: pinmux_rv_jtag_rsp
       }
       {
+        package: jtag_pkg
+        struct: jtag_req
+        domain: Aon
+        inter_pd: true
+        signame: pinmux_rram_jtag_req_o
+        signame_chip:
+        {
+          asic: pinmux_rram_jtag_req
+          verilator: pinmux_rram_jtag_req
+          cw340: pinmux_rram_jtag_req
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: pinmux_rram_jtag_req
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_rsp
+        domain: Aon
+        inter_pd: true
+        signame: pinmux_rram_jtag_rsp_i
+        signame_chip:
+        {
+          asic: pinmux_rram_jtag_rsp
+          verilator: pinmux_rram_jtag_rsp
+          cw340: pinmux_rram_jtag_rsp
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: pinmux_rram_jtag_rsp
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_req
+        domain: Main
+        inter_pd: true
+        signame: pinmux_rram_jtag_req_i
+        signame_chip:
+        {
+          asic: pinmux_rram_jtag_req
+          verilator: pinmux_rram_jtag_req
+          cw340: pinmux_rram_jtag_req
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: in
+        conn_type: false
+        index: -1
+        netname: pinmux_rram_jtag_req
+      }
+      {
+        package: jtag_pkg
+        struct: jtag_rsp
+        domain: Main
+        inter_pd: true
+        signame: pinmux_rram_jtag_rsp_o
+        signame_chip:
+        {
+          asic: pinmux_rram_jtag_rsp
+          verilator: pinmux_rram_jtag_rsp
+          cw340: pinmux_rram_jtag_rsp
+        }
+        width: 1
+        type: req_rsp
+        default: ""
+        direction: out
+        conn_type: false
+        index: -1
+        netname: pinmux_rram_jtag_rsp
+      }
+      {
         package: lc_ctrl_pkg
         struct: lc_tx
         domain: Aon
@@ -35245,6 +35519,46 @@
         conn_type: false
         index: -1
         netname: lc_ctrl_lc_dft_en
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        domain: Main
+        inter_pd: true
+        signame: lc_ctrl_lc_nvm_debug_en_o
+        signame_chip:
+        {
+          asic: lc_ctrl_lc_nvm_debug_en
+          verilator: lc_ctrl_lc_nvm_debug_en
+          cw340: lc_ctrl_lc_nvm_debug_en
+        }
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+        direction: out
+        conn_type: true
+        index: -1
+        netname: lc_ctrl_lc_nvm_debug_en
+      }
+      {
+        package: lc_ctrl_pkg
+        struct: lc_tx
+        domain: Aon
+        inter_pd: true
+        signame: lc_ctrl_lc_nvm_debug_en_i
+        signame_chip:
+        {
+          asic: lc_ctrl_lc_nvm_debug_en
+          verilator: lc_ctrl_lc_nvm_debug_en
+          cw340: lc_ctrl_lc_nvm_debug_en
+        }
+        width: 1
+        type: uni
+        default: lc_ctrl_pkg::Off
+        direction: in
+        conn_type: false
+        index: -1
+        netname: lc_ctrl_lc_nvm_debug_en
       }
       {
         package: lc_ctrl_pkg
@@ -40407,206 +40721,6 @@
         conn_type: false
         index: -1
         netname: cio_usbdev_sense_p2d
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: cio_rram_macro_tck_p2d_i
-        signame_chip:
-        {
-          asic: cio_rram_macro_tck_p2d
-          verilator: cio_rram_macro_tck_p2d
-          cw340: cio_rram_macro_tck_p2d
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: cio_rram_macro_tck_p2d
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_rram_macro_tck_p2d_o
-        signame_chip:
-        {
-          asic: cio_rram_macro_tck_p2d
-          verilator: cio_rram_macro_tck_p2d
-          cw340: cio_rram_macro_tck_p2d
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: out
-        conn_type: false
-        index: -1
-        netname: cio_rram_macro_tck_p2d
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: cio_rram_macro_tms_p2d_i
-        signame_chip:
-        {
-          asic: cio_rram_macro_tms_p2d
-          verilator: cio_rram_macro_tms_p2d
-          cw340: cio_rram_macro_tms_p2d
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: cio_rram_macro_tms_p2d
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_rram_macro_tms_p2d_o
-        signame_chip:
-        {
-          asic: cio_rram_macro_tms_p2d
-          verilator: cio_rram_macro_tms_p2d
-          cw340: cio_rram_macro_tms_p2d
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: out
-        conn_type: false
-        index: -1
-        netname: cio_rram_macro_tms_p2d
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: cio_rram_macro_tdi_p2d_i
-        signame_chip:
-        {
-          asic: cio_rram_macro_tdi_p2d
-          verilator: cio_rram_macro_tdi_p2d
-          cw340: cio_rram_macro_tdi_p2d
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: cio_rram_macro_tdi_p2d
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_rram_macro_tdi_p2d_o
-        signame_chip:
-        {
-          asic: cio_rram_macro_tdi_p2d
-          verilator: cio_rram_macro_tdi_p2d
-          cw340: cio_rram_macro_tdi_p2d
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: out
-        conn_type: false
-        index: -1
-        netname: cio_rram_macro_tdi_p2d
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: cio_rram_macro_tdo_d2p_o
-        signame_chip:
-        {
-          asic: cio_rram_macro_tdo_d2p
-          verilator: cio_rram_macro_tdo_d2p
-          cw340: cio_rram_macro_tdo_d2p
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: out
-        conn_type: false
-        index: -1
-        netname: cio_rram_macro_tdo_d2p
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_rram_macro_tdo_d2p_i
-        signame_chip:
-        {
-          asic: cio_rram_macro_tdo_d2p
-          verilator: cio_rram_macro_tdo_d2p
-          cw340: cio_rram_macro_tdo_d2p
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: cio_rram_macro_tdo_d2p
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Main
-        inter_pd: true
-        signame: cio_rram_macro_tdo_en_d2p_o
-        signame_chip:
-        {
-          asic: cio_rram_macro_tdo_en_d2p
-          verilator: cio_rram_macro_tdo_en_d2p
-          cw340: cio_rram_macro_tdo_en_d2p
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: out
-        conn_type: false
-        index: -1
-        netname: cio_rram_macro_tdo_en_d2p
-      }
-      {
-        package: ""
-        struct: logic
-        domain: Aon
-        inter_pd: true
-        signame: cio_rram_macro_tdo_en_d2p_i
-        signame_chip:
-        {
-          asic: cio_rram_macro_tdo_en_d2p
-          verilator: cio_rram_macro_tdo_en_d2p
-          cw340: cio_rram_macro_tdo_en_d2p
-        }
-        width: 1
-        type: uni
-        default: "'0"
-        direction: in
-        conn_type: false
-        index: -1
-        netname: cio_rram_macro_tdo_en_d2p
       }
       {
         package: ""

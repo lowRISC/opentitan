@@ -30,7 +30,15 @@ module rram_ctrl
   parameter lfsr_perm_t           RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter int unsigned          WrFifoDepth     = MaxFifoDepth,
   parameter int unsigned          RdFifoDepth     = MaxFifoDepth,
-  parameter bit                   SecScrambleEn   = 1'b1
+  parameter bit                   SecScrambleEn   = 1'b1,
+  // Byte offset and size of the OTP partition relocated to OtpRemapInfoPage. 0 disables the
+  // relocation. See rram_ctrl_otp's parameter doc for details.
+  parameter int unsigned          RemapStart      = 0,
+  parameter int unsigned          RemapSize       = 0,
+  // Byte offset and size of the LIFE_CYCLE partition. 0 disables the life cycle copy selection.
+  // See rram_ctrl_otp's parameter doc for details.
+  parameter int unsigned          LcStart         = 0,
+  parameter int unsigned          LcSize          = 0
 ) (
   input logic clk_i,
   input logic rst_ni,
@@ -46,6 +54,12 @@ module rram_ctrl
   input lc_ctrl_pkg::lc_tx_t lc_iso_part_sw_wr_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+  // Marker page write enable.
+  input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
+
+  // CP_DONE marker from rram_macro, latched during its init.
+  // Selects the life cycle partition copy, and locks the marker page once set.
+  input prim_mubi_pkg::mubi8_t cp_done_i,
 
   // TileLink connections from interconnect
   input  tlul_pkg::tl_h2d_t core_tl_i,
@@ -684,7 +698,12 @@ module rram_ctrl
   // OTP reads raw data without address infection
   assign hw_otp_rdata = phy_ctrl_rd_data;
 
-  rram_ctrl_otp u_rram_ctrl_otp (
+  rram_ctrl_otp #(
+    .RemapStart(RemapStart),
+    .RemapSize (RemapSize),
+    .LcStart   (LcStart),
+    .LcSize    (LcSize)
+  ) u_rram_ctrl_otp (
     .clk_i,
     .rst_ni,
     .clk_otp_i,
@@ -711,7 +730,8 @@ module rram_ctrl
     .intg_err_o      (otp_intg_err),
     .rram_init_done_i(phy_init_done),
     .rram_wr_busy_i  (phy_wr_busy),
-    .disable_i       (rram_disable[OtpDisableIdx])
+    .disable_i       (rram_disable[OtpDisableIdx]),
+    .cp_done_i
   );
 
   ///////////////////////
@@ -959,6 +979,7 @@ module rram_ctrl
     .lc_owner_seed_sw_rw_en_i,
     .lc_iso_part_sw_wr_en_i,
     .lc_iso_part_sw_rd_en_i,
+    .lc_nvm_debug_en_i,
     .region_i                     (reg2hw.mp_region),
     .region_cfg_i                 (reg2hw.mp_region_cfg),
     .default_cfg_i                (reg2hw.default_region),

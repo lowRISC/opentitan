@@ -270,14 +270,57 @@ package rram_ctrl_pkg;
   // One page for creator seeds
   // One page for owner seeds
   // One page for isolated rram page
-  parameter bit [InfoPageW-1:0] CreatorInfoPage  = 5;
-  parameter bit [InfoPageW-1:0] OwnerInfoPage    = 6;
-  parameter bit [InfoPageW-1:0] IsolatedInfoPage = 7;
+  parameter bit [InfoPageW-1:0] CreatorInfoPage  = 1;
+  parameter bit [InfoPageW-1:0] OwnerInfoPage    = 2;
+  parameter bit [InfoPageW-1:0] IsolatedInfoPage = 6;
+
+  // Info page used to relocate the OTP SECRET0 partition.
+  // Accessible only to the OTP hardware interface (HwOtpSel).
+  // software access is forced off in rram_ctrl_region_cfg.
+  parameter bit [InfoPageW-1:0] OtpRemapInfoPage = 7;
+
+  // Marker page for the RRAM forming and CP flow.
+  // rram_macro reads all marker copies once during its init, independent of the life cycle state.
+  // Each copy is a whole 128-bit word, all other bits of the word must be zero.
+  // The markers are not scrambled, and they are protected by ECC.
+  parameter bit [InfoPageW-1:0] MarkerInfoPage = 4;
+  // Each marker has one copy for now.
+  // The parameters allow more copies later.
+  parameter int unsigned NumMarkerCopies = 1;
+  // Word offsets of the DIS_VOL_RAW_UNLOCK and CP_DONE copies within the marker page.
+  parameter bit [WordW-1:0] DisVolRawUnlockWords [NumMarkerCopies] = '{0};
+  parameter bit [WordW-1:0] CpDoneWords [NumMarkerCopies] = '{1};
+  // A marker is set if a copy holds exactly its 16-bit magic value, zero-extended to the word.
+  // The magic values are netlist constants of rram_macro.
+  parameter int unsigned MarkerMagicW = 16;
+  typedef logic [MarkerMagicW-1:0] marker_magic_t;
+  parameter marker_magic_t RndCnstDisVolRawUnlockMagicDefault = 16'h3A6D;
+  parameter marker_magic_t RndCnstCpDoneMagicDefault          = 16'hC5A7;
+  // Minimum number of 1-bits in each magic value.
+  // A marker only falls back to "not written" if all its 1-bits decay to exactly zero.
+  parameter int unsigned MarkerMagicMinWeight = 8;
+
+  // rram_ctrl infects every bus word with its bus word address (addr_xor_en), also on the marker
+  // page.
+  // This returns a marker word as it is stored in the array: the magic value, zero-extended to the
+  // word, XORed with the bus word addresses of its bus words.
+  // rram_macro compares the marker words it reads at init against it.
+  function automatic logic [DataWidth-1:0] marker_word_value(marker_magic_t magic,
+                                                              logic [WordW-1:0] word);
+    logic [DataWidth-1:0] val;
+    val = DataWidth'(magic);
+    for (int unsigned i = 0; i < WidthMultiple; i++) begin
+      val[i * BusWidth +: BusWidth] ^=
+          BusWidth'((MarkerInfoPage * WordsPerPage + word) * WidthMultiple + i);
+    end
+    return val;
+  endfunction
 
   // hardware interface memory protection rules
   parameter int unsigned HwLcMgrInfoRules = 5;
   parameter int unsigned HwLcMgrDataRules = 1;
   parameter int unsigned HwOtpDataRules   = 1;
+  parameter int unsigned HwOtpInfoRules   = 1;
   parameter int unsigned HostDataRules    = 1;
 
   parameter page_cfg_t CfgAllowRd = '{
@@ -386,6 +429,15 @@ package rram_ctrl_pkg;
     }
   };
 
+  // RD/WR access to the relocated OTP SECRET0 info page, everything else is disabled
+  parameter mp_info_cfg_t HwOtpInfoPageCfg[HwOtpInfoRules] = '{
+    '{
+      page:  OtpRemapInfoPage,
+      phase: PhaseInvalid,
+      cfg:   CfgAllowRdWrOtp
+    }
+  };
+
   // RD/WR access to OTP space, everything else is disabled
   parameter mp_region_cfg_t SwInitDataCfg = '{
     phase: PhaseInvalid,
@@ -409,7 +461,7 @@ package rram_ctrl_pkg;
   } rma_wipe_entry_t;
 
   // entries to be wiped at RMA
-  parameter int unsigned     WipeEntries = 4;
+  parameter int unsigned     WipeEntries = 3;
   parameter rma_wipe_entry_t RmaWipeEntries[WipeEntries] = '{
     '{
        part: RramPartInfo,
@@ -419,11 +471,6 @@ package rram_ctrl_pkg;
     '{
        part: RramPartInfo,
        base: PageW'(OwnerInfoPage),
-       size: 0
-     },
-    '{
-       part: RramPartInfo,
-       base: PageW'(IsolatedInfoPage),
        size: 0
      },
     '{

@@ -69,6 +69,10 @@ module earlgrey_pd_main #(
   parameter bit SecRramCtrlScrambleEn = 1,
   parameter int RramCtrlWrFifoDepth = 4,
   parameter int RramCtrlRdFifoDepth = 16,
+  parameter int RramCtrlRemapStart = otp_ctrl_reg_pkg::Secret0Offset,
+  parameter int RramCtrlRemapSize = otp_ctrl_reg_pkg::Secret0Size,
+  parameter int RramCtrlLcStart = otp_ctrl_reg_pkg::LifeCycleOffset,
+  parameter int RramCtrlLcSize = otp_ctrl_reg_pkg::LifeCycleSize,
   // parameters for rv_dm
   parameter logic [31:0] RvDmIdcodeValue = jtag_id_pkg::RV_DM_JTAG_IDCODE,
   parameter bit RvDmUseDmiInterface = 0,
@@ -222,9 +226,12 @@ module earlgrey_pd_main #(
   output jtag_pkg::jtag_rsp_t       pinmux_lc_jtag_rsp_o,
   input  jtag_pkg::jtag_req_t       pinmux_rv_jtag_req_i,
   output jtag_pkg::jtag_rsp_t       pinmux_rv_jtag_rsp_o,
+  input  jtag_pkg::jtag_req_t       pinmux_rram_jtag_req_i,
+  output jtag_pkg::jtag_rsp_t       pinmux_rram_jtag_rsp_o,
   input  lc_ctrl_pkg::lc_tx_t       pinmux_pinmux_hw_debug_en_i,
   output logic       lc_ctrl_strap_en_override_o,
   output lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_dft_en_o,
+  output lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_nvm_debug_en_o,
   output lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_clr_o,
   output lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en_o,
   output lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en_o,
@@ -348,11 +355,6 @@ module earlgrey_pd_main #(
   output logic       cio_usbdev_usb_dn_en_d2p_o,
   input  logic       cio_usbdev_usb_dn_p2d_i,
   input  logic       cio_usbdev_sense_p2d_i,
-  input  logic       cio_rram_macro_tck_p2d_i,
-  input  logic       cio_rram_macro_tms_p2d_i,
-  input  logic       cio_rram_macro_tdi_p2d_i,
-  output logic       cio_rram_macro_tdo_d2p_o,
-  output logic       cio_rram_macro_tdo_en_d2p_o,
   output logic       ast_clk_src_sys_o,
   output logic       ast_clk_src_io_o,
   output logic       ast_clk_src_usb_o,
@@ -853,6 +855,7 @@ module earlgrey_pd_main #(
   assign otp_ctrl_sram_otp_key_req[2] = otp_ctrl_sram_otp_key_req_i;
   assign otp_ctrl_sram_otp_key_rsp_o = otp_ctrl_sram_otp_key_rsp[2];
   assign lc_ctrl_lc_dft_en_o = lc_ctrl_lc_dft_en;
+  assign lc_ctrl_lc_nvm_debug_en_o = lc_ctrl_lc_nvm_debug_en;
   assign lc_ctrl_lc_hw_debug_clr_o = lc_ctrl_lc_hw_debug_clr;
   assign lc_ctrl_lc_hw_debug_en_o = lc_ctrl_lc_hw_debug_en;
   assign lc_ctrl_lc_escalate_en_o = lc_ctrl_lc_escalate_en;
@@ -2066,7 +2069,11 @@ module earlgrey_pd_main #(
     .RndCnstLfsrPerm(RndCnstRramCtrlLfsrPerm),
     .SecScrambleEn(SecRramCtrlScrambleEn),
     .WrFifoDepth(RramCtrlWrFifoDepth),
-    .RdFifoDepth(RramCtrlRdFifoDepth)
+    .RdFifoDepth(RramCtrlRdFifoDepth),
+    .RemapStart(RramCtrlRemapStart),
+    .RemapSize(RramCtrlRemapSize),
+    .LcStart(RramCtrlLcStart),
+    .LcSize(RramCtrlLcSize)
   ) u_rram_ctrl (
     // Clock and reset connections
     .clk_i(clkmgr_clocks_i.clk_main_infra),
@@ -2104,6 +2111,8 @@ module earlgrey_pd_main #(
     .lc_iso_part_sw_wr_en_i(lc_ctrl_lc_iso_part_sw_wr_en),
     .lc_seed_hw_rd_en_i(lc_ctrl_lc_seed_hw_rd_en),
     .lc_escalate_en_i(lc_ctrl_lc_escalate_en),
+    .lc_nvm_debug_en_i(lc_ctrl_pkg::Off),
+    .cp_done_i(prim_mubi_pkg::MuBi8False),
     .rma_req_i(lc_ctrl_lc_nvm_rma_req),
     .rma_ack_o(lc_ctrl_lc_nvm_rma_ack[0]),
     .rma_seed_i(lc_ctrl_lc_nvm_rma_seed),
@@ -2133,19 +2142,14 @@ module earlgrey_pd_main #(
     .scan_en_i,
 
 
-    // CIO inputs
-    .cio_tck_i   (cio_rram_macro_tck_p2d_i),
-    .cio_tms_i   (cio_rram_macro_tms_p2d_i),
-    .cio_tdi_i   (cio_rram_macro_tdi_p2d_i),
-
-    // CIO outputs
-    .cio_tdo_o   (cio_rram_macro_tdo_d2p_o),
-    .cio_tdo_en_o(cio_rram_macro_tdo_en_d2p_o),
-
     // Inter-module signals
     .rram_macro_i(rram_ctrl_rram_macro_req),
     .rram_macro_o(rram_ctrl_rram_macro_rsp),
+    .allow_vol_unlock_o(),
+    .cp_done_o(),
     .lc_nvm_debug_en_i(lc_ctrl_lc_nvm_debug_en),
+    .jtag_i(pinmux_rram_jtag_req_i),
+    .jtag_o(pinmux_rram_jtag_rsp_o),
     .obs_ctrl_i(ast_obs_ctrl_i),
     .rram_obs_o(),
     .rram_test_analog_io(rram_test_analog_io),
