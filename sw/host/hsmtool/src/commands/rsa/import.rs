@@ -32,6 +32,10 @@ pub struct Import {
     /// Attributes to apply to the private key.
     #[arg(long)]
     private_attrs: Option<AttributeMap>,
+    /// Permit the imported private key to be extractable.
+    #[arg(long)]
+    #[serde(default)]
+    extractable: bool,
     /// Unwrap the imported key with a wrapping key.
     #[arg(long)]
     unwrap: Option<String>,
@@ -54,6 +58,7 @@ impl Import {
         "CKA_TOKEN": true,
         "CKA_PRIVATE": true,
         "CKA_SENSITIVE": true,
+        "CKA_EXTRACTABLE": false,
         "CKA_DECRYPT": true,
         "CKA_CLASS": "CKO_PRIVATE_KEY",
         "CKA_KEY_TYPE": "CKK_RSA",
@@ -106,6 +111,9 @@ impl Dispatch for Import {
         private_attrs.insert(AttributeType::Label, result.label.clone());
         if let Some(tpl) = &self.private_attrs {
             private_attrs.merge(tpl.clone());
+        }
+        if self.extractable {
+            private_attrs.insert(AttributeType::Extractable, AttrData::from(true));
         }
 
         if self.public {
