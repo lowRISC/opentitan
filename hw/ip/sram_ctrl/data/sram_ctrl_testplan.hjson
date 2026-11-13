@@ -179,11 +179,13 @@
             Verify that the SRAM controller works correctly if the memory size is not a power of 2.
 
             This is not a dedicated test sequence but a compile-time configuration: the
-            `sram_ctrl_exec_48kB` variant builds the DUT with a memory size of 48 KiB (see the
-            `SRAM_SIZE_BYTES` build option) and runs the test list. The tests listed below are
-            representative. Note that the memory size must be a multiple of 16 KiB when address
-            scrambling is enabled. See the "Compile-time configurations" section of the sram_ctrl
-            DV document for the full list of variants.
+            `sram_ctrl_exec_48kB` and `sram_ctrl_meta_38kB` variants build the DUT with a memory
+            size of 48 KiB and 38 KiB, respectively (see the `SRAM_SIZE_BYTES` build option), and
+            run the test list. The tests listed below are representative. Note that a
+            non-power-of-2 memory size must be a multiple of 2 KiB when address scrambling is
+            enabled. The 38 KiB variant covers address scrambling with 2 KiB chunks. See the
+            "Compile-time configurations" section of the sram_ctrl DV document for the full list of
+            variants.
 
             In this configuration, the address mask covers addresses up to the next power of 2, so
             the range [MemDepth*BYTES_PER_WORD, mask] is out of range. The sequences randomly
