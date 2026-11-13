@@ -991,12 +991,12 @@ module englishbreakfast_pd_main #(
     .alert_rx_i(outgoing_alert_englishbreakfast_rx_i[16]),
 
     // RACL policies
-    .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
+    .racl_policy_sel_ranges_ram_i(top_racl_pkg::RACL_RANGE_T_DEFAULT),
 
     // Inter-module signals
     .sram_otp_key_o(),
     .sram_otp_key_i(otp_ctrl_pkg::SRAM_OTP_KEY_RSP_DEFAULT),
-    .ram_cfg_i('{default: prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}),
+    .ram_cfg_i({SramCtrlMainNumRamInst{prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}}),
     .ram_cfg_o(),
     .lc_escalate_en_i(lc_ctrl_pkg::Off),
     .lc_hw_debug_en_i(lc_ctrl_pkg::Off),
@@ -1106,9 +1106,9 @@ module englishbreakfast_pd_main #(
 
     // Inter-module signals
     .rst_cpu_n_o(),
-    .ram_cfg_icache_tag_i('{default: prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}),
+    .ram_cfg_icache_tag_i({RvCoreIbexICacheNWays{prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}}),
     .ram_cfg_icache_tag_o(),
-    .ram_cfg_icache_data_i('{default: prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}),
+    .ram_cfg_icache_data_i({RvCoreIbexICacheNWays{prim_ram_1p_pkg::RAM_1P_CFG_REQ_DEFAULT}}),
     .ram_cfg_icache_data_o(),
     .hart_id_i(rv_core_ibex_hart_id),
     .boot_addr_i(rv_core_ibex_boot_addr),

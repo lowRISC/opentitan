@@ -2610,7 +2610,7 @@ module earlgrey_pd_main #(
     .alert_rx_i(alert_rx[60]),
 
     // RACL policies
-    .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
+    .racl_policy_sel_ranges_ram_i(top_racl_pkg::RACL_RANGE_T_DEFAULT),
 
     // Inter-module signals
     .sram_otp_key_o(otp_ctrl_sram_otp_key_req[0]),
@@ -2657,7 +2657,7 @@ module earlgrey_pd_main #(
     .alert_rx_i(alert_rx[61]),
 
     // RACL policies
-    .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
+    .racl_policy_sel_ranges_ram_i(top_racl_pkg::RACL_RANGE_T_DEFAULT),
 
     // Inter-module signals
     .sram_otp_key_o(otp_ctrl_sram_otp_key_req[1]),
@@ -2878,7 +2878,7 @@ module earlgrey_pd_main #(
     .alert_rx_i(alert_rx[68]),
 
     // RACL policies
-    .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
+    .racl_policy_sel_ranges_ram_i(top_racl_pkg::RACL_RANGE_T_DEFAULT),
 
     // Inter-module signals
     .sram_otp_key_o(otp_ctrl_sram_otp_key_req[3]),

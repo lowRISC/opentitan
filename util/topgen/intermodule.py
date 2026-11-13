@@ -290,11 +290,7 @@ def _get_default_name(sig, suffix):
     elif sig['package']:
         scalar = "{}::{}_DEFAULT".format(sig['package'],
                                          (sig["struct"] + suffix).upper())
-        if not isinstance(sig["width"], int):
-            # Return array-assign style for parametrized signal widths. Use a
-            # 'default:' pattern so it is valid regardless of the element count
-            return "'{{default: {}}}".format(scalar)
-        return scalar if sig["width"] == 1 else "'{{default: {}}}".format(scalar)
+        return _array_wrap_default(scalar, sig["width"])
     else:
         if sig["struct"] in ["logic", ""] and sig["width"] == 1:
             return "1'b0"
@@ -303,14 +299,25 @@ def _get_default_name(sig, suffix):
 
 
 def _array_wrap_default(scalar: str, width) -> str:
-    """Wrap a scalar struct default in a '{default: ...} assignment pattern when
-    the connecting port is an array (parametrized width, or an integer width > 1),
-    so the tie-off is valid regardless of the element count. Scalar signals
-    (integer width == 1) are returned unchanged.
+    """Replicate a scalar default across an array-typed signal (parametrized width,
+    or an integer width > 1). Scalar signals (integer width == 1) are returned
+    unchanged, and so are fill literals, which fit any width.
+
+    This avoids '{default: ...} assignment patterns, which some tools reject in
+    port connections.
     """
-    if isinstance(width, int) and width == 1:
+    if (isinstance(width, int) and width == 1) or scalar in ("'0", "'1"):
         return scalar
-    return "'{{default: {}}}".format(scalar)
+    if isinstance(width, Parameter):
+        count = width.name_top
+    elif isinstance(width, int):
+        count = str(width)
+    else:
+        raise ValueError(f"Cannot replicate {scalar} over a width of {width!r}")
+    # Do not replicate a default twice.
+    if scalar.startswith(f"{{{count}{{"):
+        return scalar
+    return f"{{{count}{{{scalar}}}}}"
 
 
 def _make_req_rsp(signal: OrderedDict, default_val: str) -> Tuple[OrderedDict, OrderedDict]:
