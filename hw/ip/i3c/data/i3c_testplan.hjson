@@ -1,6 +1,20 @@
 // Copyright lowRISC contributors (OpenTitan project).
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
+//
+// Citations: "I3C Basic" is the MIPI I3C Basic Specification v1.2 with Errata 01,
+// "HCI" is MIPI I3C HCI v1.2 and "TCRI" is MIPI I3C TCRI v1.0. The chip testplan
+// also cites OCP Recovery v1.2 (Caliptra advertises v1.1) and DMTF DSP0233 1.0.1.
+//
+// The `MIPI CTS v1.2:` lists name the procedures of the MIPI Conformance Test
+// Suite for I3C v1.2 and I3C Basic v1.2 (CTS v1.0, public edition) that a
+// testpoint covers; "v1.2" is the I3C version, not the CTS version. The lists are
+// informative. "Test Case" limits a reference to those cases; "partial" names
+// what the testpoint does not cover, and why, or where it is covered.
+//
+// The CTS covers SDR-only devices, error detection and recovery, and HDR entry,
+// Restart, Exit and tolerance. HDR-DDR is under consideration, so HDR-DDR
+// transfers have no CTS procedure.
 {
   name: "i3c"
   import_testplans: ["hw/dv/tools/dvsim/testplans/csr_testplan.hjson",
@@ -8,7 +22,2084 @@
                      "hw/dv/tools/dvsim/testplans/alert_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/intr_test_testplan.hjson",
                      "hw/dv/tools/dvsim/testplans/tl_device_access_types_testplan.hjson",
+                     "hw/dv/tools/dvsim/testplans/stress_all_with_reset_testplan.hjson",
                      "i3c_sec_cm_testplan.hjson"]
-  // Testpoints for the I3C functionality are yet to be added.
-  testpoints: []
+  testpoints: [
+    //-----------------------------------------------
+    // Smoke tests
+    //-----------------------------------------------
+    {
+      name: ctrl_smoke
+      desc: '''
+            Smoke test of the DUT as the Active Controller of a bus with I3C Target agents.
+
+            Stimulus:
+              - Reset the DUT and configure it as Controller through the HCI.
+              - Assign dynamic addresses to the Target agents with ENTDAA.
+              - Issue private SDR writes and reads of random length through the PIO queues.
+              - Enable the PIO interrupts and service the response queue on interrupt.
+              - Inject one recoverable fault (e.g. an address NACK) and follow it with a
+                valid transfer.
+
+            Checking:
+              - Decode the bus independently of the DUT and check address assignment,
+                framing and payloads.
+              - Check the response descriptors (transaction ID, data length, status) and
+                the read data against the bus.
+              - Check that the HCI interrupt asserts and clears as programmed.
+              - Check that the transfer after the fault succeeds.
+            '''
+      stage: V1
+      tests: []
+    }
+    {
+      name: tgt_smoke
+      desc: '''
+            Smoke test of the DUT as a Target on a bus driven by an I3C Controller agent.
+
+            Stimulus:
+              - Reset the DUT and configure it as Target through the TTI.
+              - Assign a dynamic address to the DUT from the Controller agent.
+              - Issue private SDR writes and reads of random length to the DUT.
+              - Provide the read data through the TTI and drain the received data and
+                descriptors on interrupt.
+
+            Checking:
+              - Check that the DUT acknowledges only its own address.
+              - Check that the data received through the TTI matches the bus writes, and
+                that the bus reads return the data provided through the TTI.
+              - Check that the Target interrupt asserts and clears as programmed.
+            '''
+      stage: V1
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // Reset and roles
+    //-----------------------------------------------
+    {
+      name: reset_config
+      desc: '''
+            Verify reset and configuration in each role, idle and during activity.
+
+            Stimulus:
+              - Apply the IP reset while idle, during host register activity and during
+                bus transfers, in each role.
+              - Apply `RESET_CONTROL.SOFT_RST` and each individual queue reset with data,
+                responses and IBIs pending.
+              - Apply `TARG_CONTROL.SW_RESET` with Target data and events pending.
+              - Apply each `TARG_PIO_CONTROL` buffer clear (`TXBUF_CLEAR`, `IBIBUF_CLEAR`,
+                `RXBUF_CLEAR`) with data and descriptors pending, in the conditions under
+                which the IP permits it.
+              - Reconfigure the DUT and issue a valid transfer after each reset.
+
+            Checking:
+              - `RESET_CONTROL` and `TARG_CONTROL.SW_RESET` are write-only and read as 0,
+                so a driver that polls for reset completion (HCI Section 7.4.5) sees it
+                complete at once; check the effect of each reset, not the register value.
+              - The HCI core reset disables the Controller, returns the HCI registers to
+                their reset values, empties every HCI queue and clears
+                `BUFFER_STATUS.HCIQ_ERR`.
+              - Each queue reset empties only its own queue.
+              - `TARG_CONTROL.SW_RESET` returns the Target-side registers of every Virtual
+                Target to their reset values, empties the TTI buffers and queues and clears
+                `BUFFER_STATUS.TTIQ_ERR`, without affecting the Controller side.
+              - Each `TARG_PIO_CONTROL` buffer clear empties only its own buffer and
+                descriptor queue.
+              - No stale completion, response, IBI or Target event appears after reset.
+              - The next valid transfer succeeds.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: role_select
+      desc: '''
+            Verify Controller and Target role selection on the shared SCL/SDA pins.
+
+            Stimulus:
+              - Enable the Controller (`HC_CONTROL.BUS_ENABLE`) and the Target
+                (`TARG_CONTROL.EN`) in turn, and switch between them while the bus is idle.
+              - Enable both roles at once, and enable the Standby Controller
+                (`STBY_CR_CONTROL.STBY_CR_ENABLE_INIT`), which the IP does not support.
+              - Drive bus traffic addressed to the DUT while the Target is disabled.
+              - Request the Secondary Controller role and Controller Role Handoff, which the
+                IP does not support.
+
+            Checking:
+              - Only the enabled role drives SCL and SDA, pull-ups and high-keepers.
+              - Neither illegal enable causes contention on SCL or SDA, and the DUT
+                works normally once a legal configuration is restored.
+              - The disabled role does not respond to bus traffic or change state.
+              - Unsupported roles are not advertised, and requests for them do not change
+                the role of the DUT.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // Addressing
+    //-----------------------------------------------
+    {
+      name: ctrl_daa
+      desc: '''
+            Verify dynamic and static address assignment by the Controller.
+
+            Stimulus:
+              - Run ENTDAA with 1, 2, 3 and the maximum supported number of Target agents,
+                with random Provisioned IDs, BCRs and DCRs.
+              - Make Target agents lose arbitration at each of the 64 bits of the
+                concatenated Provisioned ID, BCR and DCR (I3C Basic Section 4.3.4).
+              - Repeat DAA after RSTDAA; interrupt a DAA round.
+              - Run SETDASA and SETAASA where supported.
+              - Present more Targets than the `DEV_COUNT` of one Address Assignment
+                command, and continue DAA over several commands; start some commands at a
+                non-zero DCT `TABLE_INDEX`, so that the index wraps.
+              - Have a Target agent NACK its dynamic address in ENTDAA, and one NACK its
+                static address in a SETDASA command for several DAT entries.
+
+            Checking:
+              - An independent model of Target identities predicts the assignment order.
+              - Assigned addresses are unique and match the DAT entries.
+              - The DCT records the identities of the assigned Targets, and
+                `DCT_SECTION_OFFSET.TABLE_INDEX` advances by one for each assignment and
+                wraps after the last entry.
+              - ENTDAA responses follow HCI Section 8.4.1.1: SUCCESS with `DATA_LENGTH` 0
+                when no Target remains (also when none responded), SUCCESS with
+                `DATA_LENGTH` 1 when `DEV_COUNT` addresses were assigned and a Target still
+                remains, and NACK when a Target does not acknowledge its dynamic address.
+                HCI Section 6.4.1 describes the NACK case differently; Section 8.4.1.1 and
+                TCRI Section 6.4.1.5 agree, so they are followed.
+              - SETDASA responses follow HCI Section 8.4.1.2: `DATA_LENGTH` is the number
+                of DAT entries not assigned, the entry at `DEV_INDEX` + `DEV_COUNT` -
+                `DATA_LENGTH` is the one that was NACKed, and later entries are not
+                processed.
+
+            MIPI CTS v1.2:
+              - 1.2.4 Broadcast CCC: ENTDAA
+              - 1.2.5 Broadcast CCC: SETAASA
+              - 1.2.8 Direct CCC: SETDASA
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_reserved_addr
+      desc: '''
+            Verify Controller handling of reserved and prohibited addresses.
+
+            Stimulus:
+              - Driver: request each address that the I3C Basic Specification (Table 10)
+                prohibits for dynamic or group assignment, and each conditional address on
+                a bus on which it is not available.
+              - Legal DAT: program legal dynamic, static and group addresses, and issue
+                assignment, private and CCC commands that use them.
+              - Malformed DAT: program entries whose address Table 10 says shall not be
+                used (0x00, the Hot-Join address 0x02 and the Broadcast Address
+                single-bit-error addresses), and issue commands that use them.
+
+            Checking:
+              - Driver: the prohibited request is refused before the DAT is written, with
+                no bus traffic.
+              - Legal DAT: each command sends the address of its DAT entry in the address
+                header; check this with an independent bus monitor.
+              - Malformed DAT: the command completes with `NOT_SUPPORTED`, and the address
+                never appears in an address header on the bus.
+              - Subsequent valid traffic succeeds.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_blocked_addr
+      desc: '''
+            Verify Controller address blocking (`BLOCKED_ADDR`).
+
+            Stimulus:
+              - Program each of the two mask/address pairs with a single address and with
+                masks that block several addresses; also keep the reset values.
+              - Issue private I3C and legacy I2C transfers, Direct CCCs and SETDASA to
+                blocked and non-blocked addresses, including after a repeated START.
+              - Change `BLOCKED_ADDR` between commands.
+
+            Checking:
+              - A command whose Target address matches `(address & MASKn) == ADDRn` for
+                either pair completes with `NOT_SUPPORTED`, and the blocked address never
+                appears in an address header on the bus.
+              - The reset values block no address.
+              - The addresses that `ctrl_reserved_addr` rejects stay rejected whatever
+                `BLOCKED_ADDR` holds.
+              - Traffic to non-blocked addresses, before and after a blocked command,
+                succeeds.
+              - Blocking applies to the Controller only: the Target's IBI and Hot-Join
+                requests are not affected.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_addressing
+      desc: '''
+            Verify the Target static and dynamic address, and its identity.
+
+            Stimulus:
+              - Address the DUT at its static address after reset and before DAA.
+              - Assign a dynamic address with ENTDAA, SETDASA, SETAASA and SETNEWDA; reset it
+                with broadcast RSTDAA.
+              - Run ENTDAA with Target agents whose Provisioned ID, BCR and DCR make the DUT
+                lose arbitration at selected bits, and with several Virtual Targets enabled.
+              - Repeat SETDASA, SETAASA and ENTDAA after a dynamic address is assigned, and
+                end such an ENTDAA with STOP.
+              - Address the DUT at absent, reserved and duplicate addresses.
+              - Send an address header with each 7-bit address and each RnW value: with no
+                address, with only a static address and with a dynamic address. Headers
+                that are TE0 errors are tested in `tgt_errors`.
+              - After the DUT ACKs the Broadcast Address or its address for a write, end
+                with STOP without driving SDA, or take SDA back with a repeated START.
+              - Randomize the Provisioned ID, BCR and DCR.
+
+            Checking:
+              - The DUT ACKs only the Broadcast Address with RnW 0 (and 7'h7E/R in
+                ENTDAA), its current address and the group addresses it belongs to, and
+                returns at least one byte when read at its dynamic address with read data
+                queued.
+              - After ACKing a write header the DUT hands SDA over to the Controller
+                (I3C Basic Section 4.3.2.3.1); after ACKing a read header it keeps SDA
+                and drives the first data bit.
+              - The old address is retired after SETNEWDA and RSTDAA.
+              - The DUT reports its identity on the bus as configured.
+              - After losing arbitration the DUT stops driving SDA until the next round, and
+                takes part in that round (I3C Basic Section 4.3.4.2). The Virtual Targets
+                are assigned one per round, lowest identity first.
+              - Once it has a dynamic address, the DUT NACKs SETDASA, ignores SETAASA, does
+                not answer ENTDAA, and ACKs its address after the STOP (I3C Basic Sections
+                4.3.7.3.10 and 4.3.7.3.21).
+              - None of these requests changes the address.
+
+            MIPI CTS v1.2:
+              - 2.1.4 I3C Bus STOP - Target (Test Case 2)
+              - 2.1.5 I3C Bus ACK/NACK Behavior - Target (partial: the timing sweep is
+                in `tgt_bus_timing`)
+              - 2.1.9 Target Address Header Frame (partial: the timing sweep is in
+                `tgt_bus_timing`)
+              - 2.1.10 Target Dynamic Address Assignment (partial: the TE1 to TE4
+                cases are in `tgt_errors`)
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_virtual_targets
+      desc: '''
+            Verify the isolation of the Virtual Targets.
+
+            Stimulus:
+              - Program each Virtual Target with its own PID, BCR and DCR, assign each one
+                an address, and transfer data to and from each one.
+              - Enable and disable individual Virtual Targets (`TARG_ENABLE`).
+              - Interleave CCCs, IBIs and resets between Virtual Targets, including
+                `TARG_CONTROL.SW_RESET` and, while transmission is suspended, the
+                per-Virtual Target `TARG_PIO_CONTROL.TXBUF_CLEAR`.
+              - Have events pending on several Virtual Targets at the same time.
+
+            Checking:
+              - Each enabled Virtual Target takes part in ENTDAA with its own PID, BCR and
+                DCR, and returns them for GETPID, GETBCR and GETDCR. A disabled Virtual
+                Target takes no part in address assignment and does not respond.
+              - Only the addressed Virtual Target responds.
+              - Data and state of each Virtual Target are independent.
+              - `TARG_CONTROL.SW_RESET` resets every Virtual Target; `TXBUF_CLEAR` empties
+                only the transmit buffer and descriptor queue of the selected one.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_group_addressing
+      desc: '''
+            Verify group addressing of the Virtual Targets.
+
+            Stimulus:
+              - Set and reset group addresses with empty, single, overlapping and full
+                memberships of the Virtual Targets.
+              - Issue writes and Direct SET CCCs to each group address.
+              - Change the memberships between transfers.
+              - Address a group with no members, and attempt a private read and a Direct GET
+                CCC to a group address.
+              - Send SETDASA, SETNEWDA and SETGRPA to a group address.
+
+            Checking:
+              - Only the subscribed Virtual Targets act on group transfers.
+              - Direct GET CCCs to a group address are NACKed (I3C Basic Section 4.3.7.4).
+              - Private reads from a group address are NACKed; group addresses carry writes
+                only (an IP choice, see the TTI documentation).
+              - The Direct CCCs that I3C Basic Table 42 marks "Not supported" for groups are
+                NACKed, and no member changes its address or group membership. SETROUTE,
+                SETBRGTGT and D2DXFER, also in that set, are NACKed at any address
+                (`tgt_excluded_ccc`).
+              - A group address with no responding member is NACKed.
+              - An ACK does not imply that every member accepted the transfer; check the
+                received data of each member.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // SDR transfers
+    //-----------------------------------------------
+    {
+      name: ctrl_sdr_xfer
+      desc: '''
+            Verify Controller private SDR transfers.
+
+            Stimulus:
+              - Issue reads, writes and combined sequences with repeated START and STOP.
+              - Randomize the lengths, including 0 where legal, 1, word boundaries +/-1
+                and the selected limits +/-1, and randomize the payloads.
+              - Have the Target agent end reads early, and vary the Target speed.
+              - Inject address and data phase failures.
+
+            Checking:
+              - Check the START/STOP framing, ninth bit, T-bit and payload on the bus.
+              - Check the read data, actual lengths, status and order of the responses.
+              - Check all byte lanes of the data queues.
+              - The DUT recovers from each failure and the next transfer succeeds.
+
+            MIPI CTS v1.2:
+              - 1.1.7 I3C Bus ACK/NACK Behavior - Controller (Test Case 1)
+              - 1.1.8 I3C Bus Transition Bit (T-Bit) - Controller
+              - 1.1.10 Controller Read/Write Frame
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_clock_stall
+      desc: '''
+            Verify Controller clock stalling.
+
+            Controller Clock Stalling is optional feature F009 of I3C Basic (Section 6.10).
+            The IP holds SCL low when its next bus step is not ready, e.g. while it waits for
+            queue data or space.
+
+            Stimulus:
+              - Trigger a stall at each phase where the IP stalls, out of the ACK/NACK,
+                write parity, read T-bit and DAA first-assigned-address-bit phases.
+              - Vary the queue service delay so that the stall crosses the Table 112 values,
+                under queue and service pressure.
+
+            Checking:
+              - Measure SCL low and check SDA ownership and the next edge.
+              - Check data, status, and the STOP or repeated START timing after the stall.
+              - No stall exceeds 15 ms, the only hard limit (I3C Basic Section 6.10.3), while
+                software services the queues in time.
+              - Stalls longer than the Table 112 values (100 us for the first three phases)
+                are reported as warnings and covered, not failed: those values are guidance.
+              - An assertion detects stalls at forbidden phases.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_sdr_xfer
+      desc: '''
+            Verify Target private SDR transfers.
+
+            Stimulus:
+              - Issue private reads and writes of random length to the DUT.
+              - Delay the firmware service of the TTI queues.
+              - End reads both ways: the DUT ends with T-bit 0 after its last byte, and the
+                Controller agent aborts at a T-bit with a repeated START or STOP.
+              - Stop writes with a repeated START or STOP after any byte.
+              - Send a repeated START after 1 to 6 bits of an address header.
+
+            Checking:
+              - The accepted bytes and returned data agree with the TTI.
+              - The DUT accepts write bytes with correct parity, drives T-bit 1 while it has
+                data and 0 on its last byte, and hands SDA over at each T-bit.
+              - An early-ended write gives Rx descriptors whose lengths total the received
+                bytes, the last with Complete set.
+              - For an aborted read with WROC set, the transmission outcome event reports the
+                bytes not sent as Data left.
+              - After each early end the DUT ACKs its next address, and the next transfer
+                succeeds.
+
+            MIPI CTS v1.2:
+              - 2.1.2 I3C Bus START - Target (partial: START timing at the
+                specification limits is in `tgt_bus_timing`)
+              - 2.1.3 I3C Bus Repeated START - Target (partial: Repeated START
+                timing at the specification limits is in `tgt_bus_timing`)
+              - 2.1.6 I3C Bus Transition Bit (T-Bit) - Target
+              - 2.1.11 Target Read/Write Frame (partial: firmware, not the IP, defines
+                the register address of the optional Test Case 3; the timing sweep is
+                in `tgt_bus_timing`)
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_clock_stall_tolerance
+      desc: '''
+            Verify that the Target tolerates Controller clock stalls.
+
+            Stimulus:
+              - Have the Controller agent hold SCL low at each phase that I3C Basic Section
+                6.10.3 permits: the ACK/NACK of a Broadcast and a Dynamic Address, the parity
+                bit of written data, the T-bit of read data (1 and 0), and the first bit of
+                the assigned address in ENTDAA.
+              - Sweep the stall up to the Table 112 values, and up to 15 ms in ENTDAA.
+              - When HDR-DDR is enabled, stall at the HDR-DDR points of Section 6.2.3.4.7.
+              - Stall several phases in one transfer, with several Virtual Targets enabled.
+
+            Checking:
+              - The DUT holds its ACK or T-bit on SDA until the next SCL edge, and does not
+                drive SDA during a stalled parity or address bit.
+              - Data, the assigned address and the TTI descriptors are the same as without
+                the stall.
+              - A stall shorter than `INTERVAL_TIME0.READ_STALLED` never abandons the read;
+                the default interval covers every Table 112 value.
+              - A 15 ms stall in ENTDAA does not abort the address assignment.
+
+            MIPI CTS v1.2:
+              - 2.1.8 I3C Controller Clock Stalling Tolerance - Target
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_read_abandon
+      desc: '''
+            Verify that the Target releases SDA when the Controller abandons a read.
+
+            The read-stall detector is an IP choice; I3C Basic recommends it in a Note to
+            Section 4.3.2.3. Its interval is `INTERVAL_TIME0.READ_STALLED` (default 150 us).
+
+            Stimulus:
+              - During Target reads, hold SCL high and low at selected data and
+                termination phases.
+              - Program `INTERVAL_TIME0.READ_STALLED` to its default, extreme and random
+                values, and sweep the hold time just below, at and above the programmed
+                interval.
+              - Resume SCL before expiry, and hold SDA low in the data to expose release.
+              - Reset the DUT while the timer runs.
+
+            Checking:
+              - SDA is not released prematurely and is high-impedance after expiry.
+              - Expiry raises the ReadNoSCL bus event when
+                `TARG_ASYNC_EVT_CONTROL.BUS_EVENTS` is set, and no event otherwise.
+              - The timer re-arms when SCL resumes before expiry.
+              - After expiry the DUT waits for a repeated START or STOP, and the next
+                transfer succeeds.
+              - Other Virtual Targets are not affected.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_i2c_xfer
+      desc: '''
+            Verify Controller transfers to legacy I2C Targets.
+
+            Stimulus:
+              - Issue I2C reads and writes in Fast Mode and Fast Mode Plus on a mixed bus
+                with I3C Target agents.
+              - Make the I2C Target NACK the address and the data.
+              - Declare an I2C Target that would stretch the clock as a blocked address;
+                Target clock stretching is not allowed on an I3C Basic bus (I3C Basic
+                Table 47). The rejection is checked in `ctrl_blocked_addr`.
+
+            Checking:
+              - Check the I2C framing and timing on the bus.
+              - Check the responses for each NACK.
+              - I3C traffic does not cause spurious I2C actions.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // CCCs
+    //-----------------------------------------------
+    {
+      name: ctrl_ccc
+      desc: '''
+            Verify that the Controller generates each CCC that the application requests.
+
+            The CCCs under test are ENEC, DISEC, ENTAS0 to ENTAS3, RSTDAA (broadcast),
+            ENTDAA, SETDASA, SETAASA, SETNEWDA, SETMWL, SETMRL, GETMWL, GETMRL, GETPID,
+            GETBCR, GETDCR, GETSTATUS (Format 1), GETCAPS, GETMXDS, RSTACT, SETGRPA,
+            RSTGRPA, ENDXFER and SETROUTE, and SETBUSCON if selected. The application
+            cannot request ENTHDR0: TCRI Section 6.2 blocks ENTHDR0 to ENTHDR7, and the
+            Controller sends ENTHDR0 only to start an HDR-DDR transfer (`ctrl_hdr_ddr`).
+            `ctrl_excluded_ccc` covers the rest.
+
+            Stimulus:
+              - Issue each CCC in each form that I3C Basic Table 16 defines, with each
+                defining byte, to one and to several Targets. ENTDAA, SETAASA, SETBUSCON
+                and RSTDAA are broadcast only; SETDASA, SETNEWDA, SETGRPA, SETROUTE and
+                the GET CCCs are direct only; the others have both forms.
+              - Send SETROUTE to a Target agent that models a Routing Device. As a
+                negative test, send it to a Target agent that is not one and NACKs it.
+              - Have Target agents return short and long responses.
+
+            Checking:
+              - Check the opcode, defining byte, addressing and payload on the bus.
+              - Check the responses and the state changes recorded by the DUT.
+              - A NACKed SETROUTE is retried as in `ctrl_direct_ccc_retry` and ends with
+                an error response.
+              - Unaddressed Targets are not affected.
+
+            MIPI CTS v1.2:
+              - 1.2.1 Broadcast CCC: ENEC
+              - 1.2.2 Broadcast CCC: DISEC
+              - 1.2.6 Direct CCC: ENEC
+              - 1.2.7 Direct CCC: DISEC
+              - 1.2.9 Direct CCC: SETNEWDA
+              - 1.2.13 Direct CCC: GETSTATUS
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_ccc
+      desc: '''
+            Verify the Target response to each CCC.
+
+            ENTTM with the Test Mode bytes 0x00 and 0x01 is supported (see the TTI
+            documentation) and is tested here; `tgt_excluded_ccc` covers the other Test
+            Mode bytes.
+
+            Stimulus:
+              - Issue each supported CCC in each form that I3C Basic Table 16 defines,
+                with each defining byte, to one and to several Virtual Targets.
+              - Issue ENTTM with the Test Mode byte 0x01, then 0x00.
+              - End a Direct GET with a STOP, then address the DUT with a private write.
+              - Issue truncated and over-long payloads, and unknown CCCs.
+
+            Checking:
+              - Check the routing, responses and state changes of the DUT.
+              - ENTTM 0x01 sets `TARG_STATUS.VTM` and ENTTM 0x00 clears it. With broadcast
+                CCC notifications enabled, each is reported as a CCC activity event that
+                carries the Test Mode byte.
+              - After the STOP, the DUT has left the Direct CCC and ACKs the private write.
+              - Check that unsupported and malformed CCCs are ignored or rejected as
+                documented.
+              - Check the Asynchronous Events reported for CCC activity.
+              - Unaddressed Virtual Targets are not affected.
+
+            MIPI CTS v1.2:
+              - 2.1.4 I3C Bus STOP - Target (Test Case 1)
+              - 2.2.1 Broadcast CCC Tests
+              - 2.2.2 Direct CCC Tests
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_direct_ccc_retry
+      desc: '''
+            Verify Controller retries of Direct CCCs on an address NACK.
+
+            Stimulus:
+              - Issue Direct GET and Direct SET CCCs with the DAT retry count set to 0, 1, 2
+                and 3.
+              - Have the Target agent ACK at once, NACK and then ACK, or NACK every
+                address+RnW.
+              - Follow each command with a valid transfer.
+
+            Checking:
+              - An initial ACK causes no retry; a successful retry ends retrying.
+              - Every NACKed Direct CCC, GET or SET, is retried max(1, DAT count) times
+                (HCI Section 6.10.1, TCRI Section 6.3). With DAT=0 and DAT=1 this is the
+                single retry of I3C Basic Section 4.3.7.2.3.
+              - Check the repeated START and address framing of each retry, the data, and
+                the status and order of the responses. When the last retry is NACKed, the
+                command ends with an error response (HCI Section 6.10.3).
+              - An assertion detects missing and extra retries.
+              - For Direct GETs with DAT=2/3, the HCI count exceeds the single retry that
+                I3C Basic Section 4.3.7.2.3 allows. This plan follows HCI, which defines
+                the DAT count; software that needs the I3C Basic behaviour keeps the count
+                at 0 or 1. DMTF DSP0233 Section 5.2.1.2 relies on the single GETSTATUS
+                retry to detect an absent MCTP endpoint, so MCTP use needs DAT <= 1.
+
+            MIPI CTS v1.2:
+              - 1.2.14 Controller Retry Model Action
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ccc_capabilities_limits
+      desc: '''
+            Verify the capability and limit CCCs.
+
+            Stimulus:
+              - Issue GETPID, GETBCR, GETDCR, GETCAPS and GETMXDS to the DUT Target, and
+                generate them from the DUT Controller.
+              - Set and get the maximum read and write lengths with SETMRL, GETMRL, SETMWL
+                and GETMWL, including the optional IBI payload limit and limits of zero.
+              - Send SETMWL and SETMRL values that the DUT Target does not support.
+              - Issue transfers at the limits -1, at the limits and at the limits +1.
+
+            Checking:
+              - The reported capabilities match the configuration.
+              - Transfer lengths obey the limits.
+              - The IBI payload limit is independent of the read limit. An IBI payload
+                limit of zero means unlimited (I3C Basic Section 4.3.7.3.6), which the DUT
+                Target records as 255 (see the TTI documentation). A read or write limit of
+                zero does not mean unlimited.
+              - The DUT Target supports SETMRL and GETMRL, which I3C Basic Section
+                4.3.7.3.6 requires of it: its read limit is variable and can exceed 16
+                bytes, and with BCR[2] set it sends IBI payloads of more than one byte.
+              - A SETMWL or SETMRL value that the DUT Target does not support leaves the
+                old value in place, and the next GETMWL or GETMRL returns it (I3C Basic
+                Sections 4.3.7.3.5 and 4.3.7.3.6).
+
+            MIPI CTS v1.2:
+              - 1.2.10 Direct CCC: GETPID
+              - 1.2.11 Direct CCC: GETBCR
+              - 1.2.12 Direct CCC: GETDCR
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_getcaps
+      desc: '''
+            Verify the GETCAPS response formats and lengths of the Target.
+
+            Stimulus:
+              - Issue GETCAPS Format 1, and Format 2 with each defining byte that the IP
+                supports, including VTCAPS (0x93).
+              - Repeat with `TARG_CONTROL.EN_HDR_DDR` clear and set.
+              - Stop the read early, and use unsupported defining bytes.
+
+            Checking:
+              - Format 1 returns GETCAP1 to GETCAP4; I3C Basic Section 4.3.7.3.19 allows 2
+                to 4 bytes. Format 2 lengths follow I3C Basic Table 65, which also makes
+                VTCAPS required when BCR[4] declares Virtual Targets.
+              - Check the bus bytes and T-bit ending against these lengths.
+              - The declared capabilities match the configuration, and the GETCAP1 HDR-DDR
+                bit follows `TARG_CONTROL.EN_HDR_DDR`.
+              - GETCAP3 declares Format 2 support. I3C Basic gives this as bit 4 in
+                Section 5.4.1 and as bit 3 in Table 63; the IP sets both bits, so the
+                check does not depend on which reading is right.
+              - The DUT Target NACKs its address for an unsupported defining byte (I3C
+                Basic Section 4.3.7.2.2).
+              - After an early stop the DUT Target releases SDA and the next
+                transfer succeeds.
+
+            MIPI CTS v1.2:
+              - 2.2.2 Direct CCC Tests (Test Cases 3 and 4, for GETCAPS)
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_event_activity
+      desc: '''
+            Verify Target event enables and activity states.
+
+            Stimulus:
+              - Enable and disable each event with ENEC and DISEC, in broadcast and direct
+                forms, while events are pending.
+              - Change the activity state with ENTAS0 to ENTAS3.
+              - Issue SETBUSCON.
+
+            Checking:
+              - Each Virtual Target records its event enables and activity state.
+              - No disabled event is raised once the disable has taken effect.
+              - SETBUSCON has its selected effect, or is ignored if it is not supported.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // In-Band Interrupts and Hot-Join
+    //-----------------------------------------------
+    {
+      name: ctrl_ibi
+      desc: '''
+            Verify IBI reception by the Controller.
+
+            Stimulus:
+              - Have one and several Target agents raise IBIs with competing addresses.
+              - Configure the DAT to accept and reject IBIs, with and without payload.
+              - Vary the payload length up to and beyond the limits.
+              - Fill the IBI queue and delay its service.
+              - Have Target agents raise IBI, Hot-Join and Controller Role requests on the
+                same START as the DUT's own address header (the Broadcast Address, and an
+                I3C dynamic and an I2C static address, each with read and write), and by
+                driving a START on a Bus Available condition.
+              - Raise an IBI from a Target agent whose address is in no DAT entry.
+
+            Checking:
+              - Check arbitration, source address and payload on the bus.
+              - For each request the DUT completes the START and clocks the address
+                header, ACKs an accepted IBI and, when the DAT entry expects a Mandatory
+                Data Byte, hands SDA to the Target for the byte and its T-bit. It then
+                ends with STOP, or with a repeated START that cuts the payload short.
+              - Check the IBI descriptors, data, lengths and interrupts.
+              - No lost IBI is reported as successful.
+              - A Target agent that retries a NACKed IBI is handled as the DAT configures.
+              - The lower address wins arbitration: the DUT yields to a request against
+                the Broadcast Address and to a lower requesting address, handles the
+                request as configured and then carries out its own command; it wins
+                against a higher address, and the request is raised again later.
+              - An IBI from an address in no DAT entry is NACKed, and no IBI data is
+                queued for it.
+              - The next transfer succeeds.
+
+            MIPI CTS v1.2:
+              - 1.1.9 Controller SDA Arbitration Management
+              - 1.1.11 Controller IBI Handling
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_ibi
+      desc: '''
+            Verify IBI generation by the Target.
+
+            Stimulus:
+              - Raise IBIs from each Virtual Target with a random MDB and optional payload,
+                including payloads longer than the buffer.
+              - Use payload lengths below, at and above the limit in `TARG_IBI_LEN`, set by
+                software and by SETMRL, including the 255 that SETMRL's unlimited value
+                (0) gives.
+              - Raise Pending Read Notifications.
+              - Have the Controller agent NACK IBIs to exercise retries.
+              - Disable the IBI with DISEC while a request is pending.
+              - Suspend IBIs with `TARG_PIO_CONTROL.IBI_ABORT`, idle and during an IBI, with
+                more IBIs queued, then resume them by clearing `IBI_SUSPENDED`.
+
+            Checking:
+              - Check the address, MDB and payload on the bus.
+              - An IBI whose payload Length (the bytes after the MDB) is below `IBI_LEN` is
+                sent; one whose Length is `IBI_LEN` or more is rejected without bus traffic
+                (`tti.md`, In-Band Interrupts), and an IBI outcome event with its TID is
+                posted if `TARG_ASYNC_EVT_CONTROL.IBI_NOTIFY` is set.
+              - Check the retry behavior and the reported completion status: only a NACK
+                counts as a failed attempt, not a lost arbitration, and DISEC rejects the
+                pending IBI at once.
+              - While IBIs are suspended (by `IBI_ABORT`, or by the hardware after an error)
+                no IBI starts, `IBI_SUSPENDED` stays set, and a suspension event is posted
+                if `TARG_ASYNC_EVT_CONTROL.IBI_SUSPEND` is set. Clearing `IBI_SUSPENDED`
+                clears `IBI_ABORT`, and the queued IBIs are then sent in order.
+              - Firmware refills the IBI data as required.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: hot_join
+      desc: '''
+            Verify Hot-Join in both roles.
+
+            Stimulus:
+              - Controller: have a Target agent join an idle and a busy bus, with competing
+                requests, and with `HC_CONTROL.HOT_JOIN_CTRL` set to accept and reject.
+              - Controller: have passive Target agents join (I3C Basic Section 4.3.5.3 with
+                Errata 01 items 7 to 9): in Strict Mode they send 7'h02 after the next START
+                that follows a Broadcast Address frame; in Relaxed Mode they answer the
+                next ENTDAA without sending a Hot-Join Request.
+              - Target: request Hot-Join with `TARG_CONTROL.HJ_REQUEST` on idle and busy
+                buses, with bus idle times just below and above the Bus Idle interval
+                (`INTERVAL_TIME1.TARG_BUS_IDLE`, default 200 us), then disable and re-enable
+                Hot-Join with DISEC and ENEC.
+              - Target: have the Controller agent NACK the request, with and without a
+                following DISEC (DISHJ), then run ENTDAA.
+              - Target: run legacy I2C traffic only, with `HJ_REQUEST` clear and set.
+              - Interrupt a Hot-Join.
+
+            Checking:
+              - Check the timing of the request and the handling by the Controller.
+              - With `HOT_JOIN_CTRL` set to reject, the Controller NACKs the request and
+                then sends Broadcast DISEC with DISHJ (HCI Table 18); the rejected request
+                is queued as an IBI status only if `IBI_NOTIFY_CTRL.NOTIFY_HJ_REJECTED` is
+                set.
+              - The Controller accepts a Hot-Join in an Arbitrable Address Header of its own
+                START, and assigns an address to a Relaxed Mode Target that answers ENTDAA
+                without a request; neither is an error.
+              - The DUT Target becomes eligible as I3C Basic Section 4.3.5 requires: by the
+                standard method only after the bus has been idle for at least tIDLE (Table
+                49), by the passive method only on a START after a Broadcast Address frame.
+                It repeats the request after a NACK until it is ACKed or disabled by DISEC,
+                sends none after an ACK, and answers ENTDAA once it has sent a request,
+                also after a NACK and DISEC.
+              - With `HJ_REQUEST` clear, the DUT never Hot-Joins, which keeps it off a
+                legacy I2C bus (I3C Basic Section 4.3.5.2).
+              - Check the address assignment after Hot-Join and the following traffic.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // HDR-DDR
+    //-----------------------------------------------
+    {
+      name: ctrl_hdr_ddr
+      desc: '''
+            Verify Controller HDR-DDR transfers.
+
+            Stimulus:
+              - Issue HDR-DDR reads and writes of random length; the Controller enters
+                HDR-DDR with ENTHDR0 automatically.
+              - Follow transfers with HDR Restart to another HDR transaction and with HDR
+                Exit to SDR.
+              - Have the Target agent end reads before `DATA_LENGTH`, and offer more read
+                data than `DATA_LENGTH` so that the Controller ends the read.
+              - With flow control off, have the Target agent absorb every write Data Word.
+              - Enable flow control with ENDXFER (defining bytes 0xF7 then 0xAA, I3C Basic
+                Section 6.2.3.4.4) and the HCI configuration of HCI Section 6.8.6, with
+                write ACK/NACK, write early termination and the CRC Word after early
+                termination each on and off. Have the Target agent NACK writes and end
+                writes early where enabled.
+
+            Checking:
+              - Decode the HDR-DDR words independently, including data parity, CRC and
+                bit 0 of the Command Word, which is the Parity Adjustment bit (I3C Basic
+                Table 82; Table 81 and Figure 105 as corrected by Errata 01 items 13 and
+                14).
+              - Flow control follows I3C Basic Section 6.2.3.4 and Table 83A (Errata 01
+                item 17). A read may end early with no set-up. The Controller expects a
+                write NACK or a Target write end request only once ENDXFER has enabled it.
+              - After ending a read, the Controller expects a CRC Word only if ENDXFER
+                enabled one (Errata 01 item 18). After a Target write end request, it
+                sends the CRC Word only if ENDXFER enabled one (I3C Basic Section
+                6.2.3.4.6).
+              - Check the HDR Restart and Exit Patterns (I3C Basic Sections 6.1.2 and
+                4.3.10.2), with each edge at least tDIG_H after the previous one (Section
+                4.3.11.2), and the return to SDR.
+              - Check the response data, length and status after each early end and NACK.
+
+            MIPI CTS v1.2 lists HDR-DDR transfers as under consideration, so only the
+            HDR Exit and Restart Patterns have CTS procedures.
+
+            MIPI CTS v1.2:
+              - 1.1.12 Controller HDR Exit Pattern Generation
+              - 1.1.13 Controller HDR Restart Pattern Generation
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_hdr_ddr
+      desc: '''
+            Verify Target HDR-DDR transfers.
+
+            Stimulus:
+              - Issue HDR-DDR reads and writes of random length to the DUT, including
+                Command Codes that it does not support.
+              - Use HDR Restart and HDR Exit between transfers.
+              - End reads early from the Controller agent, with flow control off and on.
+              - Send ENDXFER (defining bytes 0xF7 then 0xAA) with each combination of
+                write ACK/NACK, write early termination and the CRC Word after early
+                termination, including the options GETCAP2 does not declare.
+              - Fill the Rx buffer so that the DUT has to NACK or end writes.
+
+            Checking:
+              - Check the data received through the TTI and the bus read data, including
+                data parity, CRC and the Parity Adjustment bit, bit 0 of the Command Word
+                (I3C Basic Table 82; Errata 01 items 13 and 14).
+              - With flow control off, the DUT absorbs every write Data Word, even for an
+                unsupported Command Code, and never NACKs or ends a write (I3C Basic
+                Section 6.2.3.4). A Controller-ended read gets no CRC Word (Errata 01
+                item 18).
+              - The DUT supports the flow control elements that Table 83A (Errata 01 item
+                17) requires: ENDXFER with defining bytes 0xF7 and 0xAA, write ACK/NACK
+                once enabled, and reads ended early by the Controller at any time.
+              - It ends a write early only if it declares Write Abort in GETCAP2 bit 6 and
+                ENDXFER enabled it, and then accepts the CRC Word that follows if enabled.
+                It sends a CRC Word after a Controller-ended read only if it declares
+                Abort CRC in GETCAP2 bit 7 and ENDXFER enabled it.
+              - Reading ENDXFER back with 0xF7 returns the candidate setting and with 0xAA
+                the setting in force; both match the ENDXFER fields of `TARG_INFO_*`, and
+                an option that GETCAP2 does not declare is never put in force.
+              - Check the termination, the Rx descriptor lengths and the return to SDR.
+
+            MIPI CTS v1.2 has no HDR-DDR transfer procedures (HDR-DDR is under
+            consideration). The Target HDR pattern procedures are in `tgt_hdr_disabled`.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: hdr_ccc_end
+      desc: '''
+            Verify that the Target tolerates the end of the HDR-DDR CCC modality.
+
+            The IP supports CCCs in HDR modes in neither role. The Target declares this in
+            GETCAP4. The Controller cannot send them, because HCI uses Command Descriptor
+            Format 1, which has no CCC flows in HDR modes (HCI Section 6.7, TCRI Section
+            7.1). Positive tests of either role apply only if HDR CCC support is selected.
+
+            Stimulus:
+              - Read GETCAPS Format 1 from the DUT Target.
+              - In HDR-DDR, send Broadcast and Direct CCC flows, then end the CCC
+                modality with HDR Restart, a broadcast write Command Word, Data Word
+                0x1F00 and its CRC (I3C Basic Section 6.2.3.3.1.7), followed by HDR
+                Restart to a generic HDR-DDR transfer to the DUT or by HDR Exit.
+              - Truncate the flow and corrupt its CRC.
+
+            Checking:
+              - GETCAP4 declares no HDR CCC support.
+              - The DUT does not ACK any word of the CCC flow or of its end, and does not
+                act on it: no state change, and no TTI descriptor or event.
+              - The DUT takes part in the generic HDR-DDR transfer that follows the end of
+                the modality, and responds to SDR traffic after HDR Exit, including after
+                a truncated or corrupted flow.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: hdr_fault_injection
+      desc: '''
+            Verify HDR-DDR error handling.
+
+            Stimulus:
+              - Corrupt the parity, CRC and framing of selected words in each role.
+              - Interrupt HDR entry, Restart and Exit.
+              - Enter unsupported HDR modes.
+
+            Checking:
+              - DUT Controller: a parity, CRC or framing error in read data ends the
+                command with the PARITY, CRC or FRAME status (TCRI Section 6.4.1). The
+                Controller first clocks SCL until SDA has been high for 19 clocks, then
+                sends HDR Restart or HDR Exit (I3C Basic Section 6.2.3.5).
+              - DUT Target: a parity or CRC error in write data ends the Rx descriptor
+                with the parity or CRC status (see the TTI documentation), and the DUT
+                waits for HDR Restart or HDR Exit (I3C Basic Section 6.2.3.5).
+              - A Command Descriptor for an HDR mode that the IP does not support ends
+                with NOT_SUPPORTED and no bus traffic (TCRI Section 6.4.1.10). The DUT
+                Target ignores the bus in such a mode until HDR Exit.
+              - No corrupted data is reported as valid.
+              - The next SDR and HDR transfers succeed.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_hdr_disabled
+      desc: '''
+            Verify that the Target tolerates HDR traffic it does not take part in.
+
+            Stimulus:
+              - Issue ENTHDR1 to ENTHDR7, which the IP does not support, with legal and
+                garbled traffic in each mode, and HDR-DDR traffic to other Targets.
+              - In HDR-DDR and in each unsupported mode, send HDR Restart Patterns, then an
+                HDR Restart Pattern followed by STOP and SDR headers before HDR Exit.
+              - Repeat with `TARG_CONTROL.EN_HDR_DDR` clear, which changes only the GETCAP1
+                declaration.
+              - Address the DUT in SDR after HDR Exit.
+
+            Checking:
+              - Until HDR Exit the DUT does not ACK, drive SDA, consume data or change
+                state. Only the HDR Exit Pattern returns the bus to SDR (I3C Basic Section
+                4.3.10), so an HDR Restart Pattern does not, even when a STOP follows it:
+                the DUT ACKs no SDR header sent before HDR Exit.
+              - The DUT responds to the SDR transfer after HDR Exit.
+
+            MIPI CTS v1.2:
+              - 2.1.12 Target Enter HDR Detection
+              - 2.1.13 Target HDR Exit Pattern Detection (partial: the TE0 and TE1
+                cases are in `tgt_errors` and `tgt_error_exits`)
+              - 2.1.14 Target HDR Tolerance
+              - 2.1.15 Target HDR Restart Pattern Tolerance
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // Errors and recovery
+    //-----------------------------------------------
+    {
+      name: tgt_errors
+      desc: '''
+            Verify Target error detection.
+
+            Stimulus:
+              - Inject each applicable Target error, including TE3 (DAA address parity),
+                TE4 (missing 7'h7E/R), TE5 (an illegally formatted CCC) and TE6 if
+                supported.
+              - Send unsupported CCCs as well. I3C Basic Section 4.3.7.2.2 does not make
+                them TE5, so they are checked as in `tgt_excluded_ccc`.
+              - Inject malformed addresses, data and terminations.
+              - Hold SCL and SDA stuck.
+              - After a private write and after a Direct GET CCC, send a repeated START
+                with the DUT's dynamic address with one bit flipped (not a TE0 header),
+                then the correct header (I3C Basic Section 4.3.7.2.3).
+              - Read GETSTATUS Format 1 after errors and after error-free traffic.
+
+            Checking:
+              - Each error is detected and reported in `TARG_ERROR` and the Asynchronous
+                Events.
+              - GETSTATUS Format 1 bit 5 (Protocol Error) reads 1 after a detected error,
+                and 0 once it has been read (I3C Basic Table 27).
+                `TARG_STATUS.PROTOCOL_ERROR` follows it.
+              - After each error the DUT applies the recovery of I3C Basic Table 43; for
+                TE5 it NACKs and then waits for a STOP or repeated START. It changes no
+                other state: an errored write ends its Rx descriptor with an error status
+                (see the TTI documentation), and its address, limits and configuration
+                are unchanged.
+              - The DUT NACKs each flipped address, then ACKs the correct header and
+                returns its read data or the CCC response.
+              - The DUT recovers and the next transfer succeeds.
+
+            MIPI CTS v1.2:
+              - 2.1.7 I3C Bus Parity Bit - Target
+              - 2.2.3 Target Retry Model Response (partial: the wrong RnW of Test Case 2
+                may be TE5, whose recovery at a repeated START or at STOP is the DUT's
+                choice)
+              - 2.3.1 Error Type TE0
+              - 2.3.2 Error Type TE1
+              - 2.3.3 Error Type TE2
+              - 2.3.4 Error Type TE3
+              - 2.3.5 Error Type TE4
+              - 2.3.6 Error Type TE5
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_error_exits
+      desc: '''
+            Verify each exit from the Target error states.
+
+            Stimulus:
+              - For each applicable TE error, inject the fault and apply each supported exit.
+              - Where timers are implemented, exit just before, at and after expiry, with
+                the timer disabled and with a racing reset.
+
+            Checking:
+              - Check bus release, status and the next valid transfer.
+
+            MIPI CTS v1.2:
+              - 2.1.7 I3C Bus Parity Bit - Target
+              - 2.3.1 Error Type TE0
+              - 2.3.2 Error Type TE1
+              - 2.3.3 Error Type TE2
+              - 2.3.4 Error Type TE3
+              - 2.3.5 Error Type TE4
+              - 2.3.6 Error Type TE5
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_errors
+      desc: '''
+            Verify Controller error detection.
+
+            Stimulus:
+              - Make Target agents NACK broadcast addresses, direct addresses and data,
+                including a 7'h7E/W that no Target agent ACKs, once and repeatedly.
+              - CE0: have the Target agent answer GETPID with fewer than 6 bytes, ending
+                with T=0, once and on every attempt.
+              - Make the bus differ from the transmitted value; drive malformed sequences;
+                stall the Target agent.
+
+            Checking:
+              - Each CE error is classified, reported in the response status and counted
+                in `CTRL_ERROR`.
+              - CE0: the Controller ends the transfer with STOP, and the GETPID is retried
+                at least once (I3C Basic Section 4.3.8.2.1).
+              - CE2: after the NACK of 7'h7E the Controller sends the HDR Exit Pattern,
+                then STOP (I3C Basic Section 4.3.8.2.3), and the command ends with the
+                ADDR_HEADER status (TCRI Section 6.4.1.4). A retry after HDR Exit and STOP
+                succeeds once a Target agent ACKs.
+              - For a bus that keeps NACKing 7'h7E, the escalation steps are repeated
+                START, then STOP and START, then HDR Exit (I3C Basic Section 4.3.8.2.5);
+                the Controller may go straight to the last step (CTS 1.1.14).
+              - Each transfer is accounted for.
+              - The Controller returns to service and the next command succeeds.
+
+            MIPI CTS v1.2:
+              - 1.1.7 I3C Bus ACK/NACK Behavior - Controller (Test Case 2)
+              - 1.1.14 Controller Target Error Detection and Escalation Handling
+              - 1.3.1 Error Type CE0
+              - 1.3.2 Error Type CE2
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_error_exits
+      desc: '''
+            Verify each exit from the Controller error states.
+
+            Stimulus:
+              - Inject each applicable CE fault.
+              - Recover by software and automatically, with timers just before, at and
+                after expiry, and with optional exits disabled.
+
+            Checking:
+              - Check command accounting, status, bus release and the queued traffic that
+                follows.
+
+            MIPI CTS v1.2:
+              - 1.1.14 Controller Target Error Detection and Escalation Handling
+                (partial: the escalation steps are checked in `ctrl_errors`)
+              - 1.3.1 Error Type CE0
+              - 1.3.2 Error Type CE2
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_reset_action
+      desc: '''
+            Verify Target Reset and RSTACT in the Target.
+
+            Stimulus:
+              - Issue RSTACT in broadcast and direct forms with defining bytes 0x00 and
+                0x01, which every Target supports, and with every other defining byte,
+                including the GET forms. Use complete and truncated packets.
+              - End the RSTACT frame with a repeated START, with STOP, and with STOP and a
+                new START, and drive the Target Reset Pattern after each.
+              - Drive interrupted and near-miss patterns, and a second pattern with no
+                RSTACT or GETSTATUS between to escalate the reset action.
+              - Enable and disable the reset requests in `RESET_DET_CTRL`.
+              - Apply the patterns with the IP clock running and stopped.
+
+            Checking:
+              - The DUT ACKs Direct RSTACT with 0x00 and 0x01 (I3C Basic Section
+                4.3.7.3.23); other defining bytes follow I3C Basic Table 38.
+              - The configured action survives a repeated START and a STOP, and is cleared
+                by the next START (I3C Basic Section 4.3.9.1): a pattern after a new
+                START gets the default action, Reset the I3C Basic Peripheral.
+              - Only the exact pattern triggers the action. A second pattern with no
+                RSTACT or GETSTATUS between escalates to the Whole Target reset (I3C Basic
+                Section 4.3.9.1); either CCC in between prevents it.
+              - Reset requests leave the IP only when `RESET_DET_CTRL` enables them.
+              - GET RSTACT returns the configured action, or 0x80 when none is set.
+              - Check the reset scope and the subsequent addressing and data traffic.
+
+            MIPI CTS v1.2:
+              - 2.4.1 No Reset On Target Reset Pattern
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_target_reset
+      desc: '''
+            Verify Target Reset generation by the Controller.
+
+            Stimulus:
+              - Send the Target Reset Pattern on its own with a Target Reset Internal
+                Control Command, RESET_OP_TYPE 0x0 (HCI Section 6.15.1.1).
+              - Send two such commands in succession, with no CCC between, to escalate to
+                the Whole Target reset.
+              - Configure RSTACT with the atomic sequence of HCI Section 6.15.1.2:
+                RESET_OP_TYPE 0x2, then Broadcast and Direct SET RSTACT Transfer Commands
+                with each defining byte, the last with TOC=1, then RESET_OP_TYPE 0x3.
+              - Within the sequence, send 0x3 with no RSTACT before it, have a Direct
+                RSTACT NACKed, enqueue other commands, and let the queue run empty.
+              - Interrupt the reset pattern.
+
+            Checking:
+              - Check the generated pattern independently: START, the pattern, repeated
+                START and STOP (I3C Basic Section 4.3.9.3), and that the DUT never
+                generates a near-miss pattern.
+              - In the RSTACT sequence the pattern follows the last RSTACT in the same
+                frame, so no START clears the action before it.
+              - Commands inside the sequence other than SDR RSTACT Transfer Commands and
+                RESET_OP_TYPE 0x3 are rejected.
+              - The 0x3 command gets a response (HCI Section 6.15.1.2) unless a transfer
+                in the sequence fails with NACK or ADDR_HEADER: SUCCESS; SEQ_CANCELLED
+                (0xD) with no pattern when no RSTACT came first; CMD_UNDERFLOW (0xC)
+                after a queue underflow with partial success, or OVL with no pattern,
+                with HC_ABORTED for the commands rejected after it. A NACKed RSTACT is
+                retried as in HCI Section 6.10 and gets no pattern, and the 0x3 command
+                then gets no response.
+              - Check the reset of the Target agent and the subsequent addressing and data
+                traffic.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_bus_recovery
+      desc: '''
+            Verify Controller SDA recovery and Bus Reset.
+
+            Stimulus:
+              - Hold SDA low or high from a Target agent during I2C, SDR and HDR-DDR
+                reads, and leave the bus in unknown states.
+              - Issue the Controller SDA Recovery or Bus Reset Internal Control Command
+                (HCI Section 8.4.2.5, sub-command 0x5) with each REC_RESET_PROC value:
+                0x0 (I2C SDA stuck low), 0x1 (SDR), 0x2 (HDR-DDR), 0x4 (force STOP),
+                0x5 (CE2 handling) and 0x7 (Bus Reset), at each SCL_SPEED, and with
+                reserved values.
+              - Separately hold SCL low.
+
+            Checking:
+              - Each procedure drives the sequence of the I3C Basic section it
+                implements (Sections 4.3.8.2.3, 4.3.8.2.6 and 4.3.8.2.7; 0x4 as HCI
+                Table 140 defines it), and the bus is free once the Target agent lets go.
+              - Reserved values complete with NOT_SUPPORTED.
+              - With SCL held low the command completes once SCL is released, and later
+                commands are unaffected.
+              - Sub-command 0x5 is accepted and runs the selected procedure (HCI Section
+                6.15.2).
+              - Check the subsequent addressing and data traffic.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // HCI
+    //-----------------------------------------------
+    {
+      name: hci_discovery
+      desc: '''
+            Verify the HCI register semantics and capability discovery beyond the common
+            CSR tests.
+
+            Stimulus:
+              - Walk the section offsets and extended capability headers.
+              - Access the registers with byte, half-word and word accesses; write the
+                reserved fields.
+              - Race register side effects with reset.
+
+            Checking:
+              - The capabilities, section offsets and identification fields match the
+                configuration.
+              - Reserved fields read as zero and ignore writes.
+              - Each `rw1c` field (e.g. `INTR_STATUS`, `PIO_INTR_STATUS`, `BUFFER_STATUS`,
+                `TARG_PIO_CONTROL.SUSPENDED`) clears only the bits written with 1, and a
+                `wo` field reads as 0. Fields that read back the Controller state rather
+                than the written value (`HC_CONTROL.BUS_ENABLE`, `RESUME` and `ABORT`)
+                follow HCI Section 7.4.2.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_dat_dct
+      desc: '''
+            Verify the DAT and DCT.
+
+            Stimulus:
+              - Use the first and last entries and fill the tables.
+              - Update entries from firmware between transfers.
+              - Run DAA over multiple operations.
+
+            Checking:
+              - The table size fields are read-only and match the parameters.
+              - The command uses the selected entry, and the DCT records the identities.
+              - Updates do not corrupt adjacent entries.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_cmd_desc
+      desc: '''
+            Verify the command descriptors.
+
+            Stimulus:
+              - Issue each supported command type: Immediate, Regular, Address Assignment
+                and Internal Control, with CCCs and private transfers.
+              - Issue Combo Transfer Commands (CMD_ATTR 0x3) with 8-bit and 16-bit
+                sub-offsets, with and without a Length, and with write and read second
+                phases, in each mode combination that the IP supports.
+              - Use the CMD_ATTR values that HCI Table 133 does not define (0x4 to 0x6), and
+                invalid field combinations (e.g. an Immediate read, which TCRI Table 7
+                forbids, or the HDR-Ternary or a reserved transfer mode).
+              - Request CCCs that the Controller blocks from applications.
+
+            Checking:
+              - Each accepted descriptor produces the expected bus sequence.
+              - Commands that the Controller issues itself are distinguished from blocked
+                application requests.
+              - `HC_CAPABILITIES.COMBO_COMMAND` reads 1. A Combo command drives the
+                framing of TCRI Section 7.1.2.3: the write phase with the sub-offset (and
+                Length, if any), then Repeated START (or HDR Restart) and the second phase.
+              - An undefined CMD_ATTR value and an invalid field combination each complete
+                with `NOT_SUPPORTED` and put nothing on the bus (TCRI Section 6.4.1.10). So
+                do ENTHDR0 to ENTHDR7 and GETACCCR (TCRI Sections 6.2 and 6.4.1.10).
+              - The following valid command succeeds.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_responses
+      desc: '''
+            Verify the response descriptors and error status codes.
+
+            Stimulus:
+              - Cause success and each error status that the IP reports, including short
+                reads, for each command type.
+              - Issue write-type transfers with `WROC` clear and set, read-type transfers,
+                Address Assignment and Internal Control Commands, each succeeding and
+                failing.
+              - Fill the response queue to apply backpressure, with more commands queued,
+                and drain it late.
+
+            Checking:
+              - A response exists exactly when HCI Sections 6.5 and 6.5.3 require one: a
+                successful write-type transfer responds only if `WROC` is set, a read-type
+                transfer always responds, and a failed command always responds. Address
+                Assignment follows its own `WROC` field (HCI Table 134).
+              - Internal Control Commands have no `WROC` field and are checked separately;
+                RESET_OP_TYPE 0x3 responds as in `ctrl_target_reset`.
+              - No response is missing, duplicated or extra, including while the response
+                queue is full: the Controller waits for space rather than drop a response.
+              - Check the transaction ID, data length, error status and order of every
+                response.
+              - No success is reported after a failed transfer.
+              - 0xB is never reported: TCRI Table 1 names it ABORTED_WITH_CRC, but TCRI
+                Table 11 and HCI Table 146 reserve it.
+              - A Combo command reports errors in its first phase with 0x5/0x9 and in its
+                second phase with 0xC/0xD (TCRI Section 6.4.1.12). Otherwise 0xC and 0xD
+                come only from the Target Reset sequence (CMD_UNDERFLOW, SEQ_CANCELLED; see
+                `ctrl_target_reset`); 0xC as CCC_FRAMING_NOT_ENDED, for CCCs in an HDR Mode
+                (TCRI Section 6.3.5), is never reported.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_pio_queues
+      desc: '''
+            Verify the PIO queues.
+
+            Stimulus:
+              - Fill and drain the command, response, IBI, Tx and Rx queues with random
+                thresholds, and wrap them.
+              - Access the queues from software while the Controller accesses them.
+              - Use every partial-word length.
+
+            Checking:
+              - A queue model predicts the data, occupancy and thresholds.
+              - No data is duplicated, lost or byte-swapped.
+              - `HC_CONTROL.DATA_BYTE_ORDER_MODE` is read-only and reads 0: PIO and IBI data
+                are little-endian on all byte lanes (HCI Section 6.8.3). Big-endian order
+                is not supported.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_abort_timeout
+      desc: '''
+            Verify command abort and timeouts.
+
+            Stimulus:
+              - Abort with `PIO_CONTROL.ABORT` and `HC_CONTROL.ABORT` before and during
+                transfers, with commands queued.
+              - Starve a command sequence (the last command has `TOC` clear) for short and
+                long periods, with `HC_CONTROL.HALT_ON_CMD_SEQ_TIMEOUT` clear and set.
+              - Resume after the abort.
+
+            Checking:
+              - A starved sequence is stalled and reported with
+                `INTR_STATUS.HC_WARN_CMD_SEQ_STALL_STAT`; if the stall turns into a
+                timeout, the sequence ends and `HC_ERR_CMD_SEQ_TIMEOUT_STAT` is set, with
+                `HC_SEQ_CANCEL_STAT` when enabled (HCI Section 6.13.2, TCRI Section 6.4.2).
+              - After a timeout, with `HC_CONTROL.HALT_ON_CMD_SEQ_TIMEOUT` set the
+                Controller halts until software recovers it; with it clear, the next
+                Transfer Command starts a new transaction, unless the last response
+                reported an error.
+              - Check which commands complete or abort, the bus ending, the queue cleanup
+                and the response status.
+              - Queued work restarts successfully.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_ext_caps
+      desc: '''
+            Verify the extended capabilities, and that the Controller issues no status
+            commands of its own after IBIs and errors.
+
+            Stimulus:
+              - Enumerate the extended capabilities and use the Hardware Identification
+                (0x01), Controller Config (0x02) and Debug (0x0C) capabilities.
+              - Program the Auto-Command fields of DAT entries (HCI Section 6.11.2),
+                including the zero defaults, and have Target agents raise matching and
+                non-matching IBIs, with `HC_CONTROL.AUTOCMD_DATA_RPT` clear and set.
+              - Cause errors in CCCs, private transfers and IBIs, then issue GETSTATUS from
+                the application.
+
+            Checking:
+              - Check the register effects and the status and interrupts of each capability.
+              - Auto-Command is a DAT feature, not an extended capability (HCI Table 82).
+                `HC_CAPABILITIES.AUTO_COMMAND` reads 1. An IBI whose Mandatory Byte,
+                masked with `AUTOCMD_MASK`, matches `AUTOCMD_VALUE` is followed at once by
+                a Read to that Target in `AUTOCMD_MODE` (HDR Command Code at least 0x80),
+                before any other IBI or command; a non-matching IBI gets no Read (HCI
+                Sections 6.11.1 and 6.11.2).
+              - The Read data is coalesced with the IBI payload when `AUTOCMD_DATA_RPT` is
+                clear, and reported in separate AUTOCMD_READ IBI Status Descriptors when
+                it is set (HCI Section 6.11.3).
+              - The Controller never issues GETSTATUS, or any other status command, on its
+                own, including after errors (HCI Section 6.13, TCRI Section 6.4). A
+                GETSTATUS that the application issues completes with the Target agent's
+                status.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // TTI
+    //-----------------------------------------------
+    {
+      name: tgt_tti_stream
+      desc: '''
+            Verify TTI transfers longer than the buffers, and invalid transmit descriptors.
+
+            Stimulus:
+              - Issue Target reads and writes longer than the Tx and Rx buffers.
+              - Fill and drain the buffers at staggered rates, with late firmware service,
+                until the Tx buffer runs dry during a read and the Rx buffer and descriptor
+                queue overflow during a write.
+              - Interleave transfers to several Virtual Targets.
+              - Queue invalid Tx descriptors: a length of zero, a length above the current
+                MRL (also by lowering the MRL with SETMRL after queueing), and a Pending
+                Read Notification from a Virtual Target whose BCR[2] is clear. Run with
+                `TARG_ASYNC_EVT_CONTROL.TX_NOTIFY` and `TX_SUSPEND` on and off.
+              - Write to a full TTI queue and read from an empty one.
+
+            Checking:
+              - The data is transferred end to end without loss, and each transfer is
+                attributed to its Virtual Target.
+              - An invalid descriptor is rejected when it is next to be sent (`tti.md`,
+                Transmission Descriptors and Maximum Read/Write Length): none of it is sent,
+                `TARG_PIO_CONTROL.SUSPENDED` is set for that Virtual Target, which then
+                NACKs Private Reads, and a transmission outcome event with the descriptor's
+                TID (and a suspension event) is posted if `TX_NOTIFY` (`TX_SUSPEND`) is
+                set. Other Virtual Targets are not affected.
+              - Once software discards the rejected transfer and clears `SUSPENDED`, the
+                next valid descriptor is sent.
+              - An Rx overflow sets `TARG_INTR_STATUS.RX_BUFFER_OVF_STAT` or
+                `RX_DESC_OVF_STAT`, and the write completes with status 3 (Rx buffer
+                overflowed). A Tx buffer that runs dry ends the read with T-bit 0, and the
+                transmission outcome event reports the bytes not sent.
+              - A write to a full TTI queue or a read from an empty one sets
+                `BUFFER_STATUS.TTIQ_ERR` and changes no queued data.
+              - The buffer clears of `TARG_PIO_CONTROL` are checked in `reset_config`.
+              - Valid transfers succeed afterwards.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_async_events
+      desc: '''
+            Verify the Asynchronous Event queue of the Target.
+
+            Stimulus:
+              - Generate bus events and errors while firmware reads the queue slowly.
+              - Enable each event type in `TARG_ASYNC_EVT_CONTROL`.
+              - Fill and wrap the queue, and reset it with events pending.
+
+            Checking:
+              - Check the content, order and source of each event.
+              - The overflow is reported.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // Message buffer
+    //-----------------------------------------------
+    {
+      name: msg_buffer_partition
+      desc: '''
+            Verify the partitioning of the message buffer into queues.
+
+            Stimulus:
+              - Program at least two legal queue partitions.
+              - Fill and drain each queue to its configured boundary.
+              - Reconfigure the partitions while idle.
+
+            Checking:
+              - A memory model predicts routing, capacity and isolation of the queues.
+              - The response to an invalid partition is checked once defined.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: msg_buffer_direct_access
+      desc: '''
+            Verify direct software access to the message buffer.
+
+            Stimulus:
+              - With the IP idle, write and read patterns across the whole buffer through
+                the `BUFFER` window.
+
+            Checking:
+              - Check the data and that no addresses alias.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // Interrupts
+    //-----------------------------------------------
+    {
+      name: interrupts
+      desc: '''
+            Verify the HCI, PIO and Target interrupt sources.
+
+            Stimulus:
+              - Cause each source in `INTR_STATUS`, `PIO_INTR_STATUS` and
+                `TARG_INTR_STATUS`, including each threshold.
+              - Enable, mask, force and clear each source, and raise an event while it is
+                being cleared.
+              - Raise several sources at once.
+
+            Checking:
+              - Each source sets its status bit only while its status enable is set (also
+                when forced), and drives the `hci` or `targ` output only while its signal
+                enable is set (HCI Section 6.14). A status bit clears when software writes
+                1 to it, or when software consumes the queue entries that caused it.
+              - The `hci` and `targ` outputs are status interrupts: each is asserted while
+                any of its enabled sources is pending, and deasserts when the last clears.
+              - No event is lost and no interrupt is spurious.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // Clocks, sleep and timing
+    //-----------------------------------------------
+    {
+      name: clk_crossings
+      desc: '''
+            Verify the crossings between the IP clock and the SCL-clocked logic.
+
+            Stimulus:
+              - Vary the phase and rate of the IP clock and SCL.
+              - Stop and restart the clocks with work pending.
+              - Reset either side of the crossings.
+
+            Checking:
+              - No handshake is lost or duplicated and no stale data is used.
+              - Operation resumes correctly.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_sleep_wake
+      desc: '''
+            Verify Target Deepest Sleep and wake-up by the Target Reset detector.
+
+            Stimulus:
+              - Enter sleep with `RESET_DET_CTRL` while idle and at permitted busy points.
+              - Stop the IP clock and drive valid and near-miss Target Reset Patterns.
+              - Restore the clocks.
+
+            Checking:
+              - The detector raises the configured wake or reset request.
+              - No false wake and no missed wake.
+              - I3C Basic Section 4.3.9.5 leaves the wake behaviour to the
+                implementation. With the IP clock stopped and power kept, the DUT keeps
+                its dynamic address and configuration: after wake it ACKs its address,
+                does not take part in a following ENTDAA (I3C Basic Section 4.3.9.1), and
+                traffic resumes.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_bus_timing
+      desc: '''
+            Verify the programmable bus timing of the Controller.
+
+            Stimulus:
+              - Sweep `CTRL_TIME_*` and `PHY_CONFIG` within their supported limits.
+              - Switch between open-drain and push-pull phases.
+              - Vary the propagation delay of the Target agents' responses.
+
+            Checking:
+              - Measure the bus timing and check it against the programmed values and
+                the I3C Basic limits.
+              - Check SDA ownership changes and the absence of contention.
+              - The DUT enables its SDA pullup (`ctrl_sda_pu`) in every open-drain phase,
+                such as an arbitrable address header, and only there; in those phases it
+                drives SDA only low (see the integration notes).
+
+            MIPI CTS v1.2:
+              - 1.1.1 Open Drain Pull-Up (partial: the open-drain rise time is
+                analog)
+              - 1.1.3 Bus Free
+              - 1.1.4 I3C Bus START - Controller (partial: voltages and rise/fall
+                times are analog)
+              - 1.1.5 I3C Bus Repeated START - Controller (partial: voltages and
+                rise/fall times are analog)
+              - 1.1.6 I3C Bus STOP - Controller (partial: voltages and rise/fall
+                times are analog)
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_bus_timing
+      desc: '''
+            Verify that the Target tolerates bus timing at the I3C Basic limits.
+
+            Stimulus:
+              - Drive START, repeated START, STOP and the open-drain and push-pull timing of
+                I3C Basic Tables 49 and 50 at their minimum and maximum values.
+              - Vary the time from STOP to the next START: the Bus Free minimum for a pure
+                and a mixed bus (Section 4.3.3.2.1), the Bus Available and Bus Idle times
+                (Section 4.3.3.2), and long idle periods.
+              - Make the first START after reset or Target enable use the minimum timing.
+              - Run at the lowest supported IP clock frequency.
+
+            Checking:
+              - The DUT ACKs the I3C Broadcast Address and its own address after every
+                condition, and the transfer completes.
+              - `TARG_STATE_DEBUG` reports Bus Available and Bus Idle, and the Bus Idle event
+                is raised, only after the intervals programmed in `INTERVAL_TIME0` and
+                `INTERVAL_TIME1`.
+
+            MIPI CTS v1.2:
+              - 2.1.1 Bus Condition Timing (partial: voltages are analog)
+              - 2.1.2 I3C Bus START - Target (partial: voltages are analog; START
+                framing is in `tgt_sdr_xfer`)
+              - 2.1.3 I3C Bus Repeated START - Target (partial: voltages are analog;
+                the misaligned START is in `tgt_sdr_xfer`)
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // Unsupported features
+    //-----------------------------------------------
+    {
+      name: unsupported_features
+      desc: '''
+            Verify the handling of unsupported features.
+
+            Stimulus:
+              - Read the capabilities.
+              - Issue unsupported descriptors, CCC forms and modes (e.g. HDR-BT, Scheduled
+                Commands, Controller Role Handoff), each followed by legal traffic.
+
+            Checking:
+              - Unsupported features are not advertised: `HC_CAPABILITIES` reports 0 for
+                Scheduled Commands, IBI Data Abort, IBI Credit Count,
+                HDR-Ternary and Scatter-Gather, and `HC_CONTROL.MODE_SELECTOR` and
+                `DATA_BYTE_ORDER_MODE` read as PIO and little-endian.
+              - A descriptor that requests an unsupported command type, transfer mode or
+                Internal Control sub-command completes with `NOT_SUPPORTED` and puts
+                nothing on the bus (TCRI Section 6.4.1.10). Unsupported CCC forms are
+                covered in `tgt_excluded_ccc` and `ctrl_excluded_ccc`.
+              - The DUT stays in SDR mode and its enables are unchanged, and the following
+                legal traffic succeeds.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_excluded_ccc
+      desc: '''
+            Verify the Target handling of excluded CCCs.
+
+            Stimulus:
+              - Issue the timing control CCCs (I3C Basic Table 16 and Section 6.6.3),
+                SETBRGTGT (Section 4.3.7.3.17), SETROUTE (Section 4.3.7.3.20), SETBUSCON,
+                MLANE and D2DXFER in each form they have, including count and payload
+                boundaries.
+              - Issue ENTTM with Test Mode bytes other than 0x00 and 0x01, DEFTGTS,
+                DEFGRPA, GETSTATUS Format 2 with the defining bytes 0x91 (PRECR), 0xD7 and
+                0xD8, and GETCAPS with the DBGCAPS defining byte (0xD7).
+
+            Checking:
+              - GETCAPS does not advertise these features.
+              - The DUT NACKs its address for each of these Direct CCCs, and for each
+                unsupported defining byte of GETSTATUS and GETCAPS (I3C Basic Sections
+                4.3.7.2.2 and 4.3.7.3.15.1). PRECR is NACKed because the Target is not
+                Controller-capable (Section 4.3.7.3.15.2).
+              - The DUT takes no action on these Broadcast CCCs: no timing, bridge,
+                routing, bus context or test mode state changes, and `TARG_STATUS.VTM`
+                is unchanged.
+              - The following valid traffic succeeds.
+
+            MIPI CTS v1.2:
+              - 2.2.2 Direct CCC Tests (Test Case 4, for GETSTATUS)
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_excluded_ccc
+      desc: '''
+            Verify the Controller handling of excluded CCCs.
+
+            Stimulus:
+              - Request through the command queue the CCCs that TCRI Section 6.2 blocks:
+                ENTHDR0 to ENTHDR7 (including those that I3C Basic Table 16 excludes from
+                I3C Basic) and GETACCCR.
+              - Request D2DXFER, which I3C Basic Table 16 excludes, and CCCs that the IP
+                does not use itself (the timing control CCCs, SETBRGTGT, ENTTM, DEFTGTS,
+                DEFGRPA and GETSTATUS Format 2 (PRECR)), in each form they have,
+                including count and payload boundaries.
+              - Follow each request with valid traffic.
+
+            Checking:
+              - A blocked CCC completes with a `NOT_SUPPORTED` response (TCRI Sections 6.2
+                and 6.4.1.10), and nothing appears on the bus.
+              - Any other CCC is sent as framed by the application (TCRI Section 6.3);
+                keeping CCCs that I3C Basic excludes, or that the system does not use,
+                off the bus is the driver's job.
+              - The Controller changes no state of its own.
+              - The following valid traffic succeeds.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_direct_rstdaa
+      desc: '''
+            Verify that the Controller does not emit the deprecated direct RSTDAA (0x86)
+            of its own accord. I3C Basic Table 16 forbids Controllers to use it.
+
+            Stimulus:
+              - Exercise each automatic command path: address assignment, internal
+                control commands, IBI handling and error recovery.
+              - Request 0x86 from the application.
+              - Issue broadcast RSTDAA (0x06) and a supported Direct CCC (e.g. GETBCR) as
+                positive controls.
+
+            Checking:
+              - No automatic path puts 0x86 on the bus.
+              - 0x86 is not in the TCRI Section 6.2 blocked list, so a requested 0x86 is
+                sent as framed (TCRI Section 6.3); keeping it off the bus is the driver's
+                job. The Target agent NACKs it, as I3C Basic Table 16 requires.
+              - Broadcast RSTDAA resets the dynamic addresses, and the Direct CCC
+                completes.
+              - The following valid traffic succeeds.
+
+            MIPI CTS v1.2:
+              - 1.2.3 Broadcast CCC: RSTDAA
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_direct_rstdaa
+      desc: '''
+            Verify that the Target rejects the deprecated direct RSTDAA (0x86).
+
+            Stimulus:
+              - Issue direct RSTDAA to each Virtual Target with an assigned dynamic address.
+              - Issue broadcast RSTDAA (0x06) for comparison.
+
+            Checking:
+              - Direct RSTDAA is NACKed and the addresses and state are unchanged.
+              - Broadcast RSTDAA resets the dynamic addresses.
+              - Subsequent private traffic succeeds.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // Stress and checker tests
+    //-----------------------------------------------
+    {
+      name: stress_all
+      desc: '''
+            Run the above sequences back to back with randomized configurations.
+
+            Stimulus:
+              - Run sustained mixed traffic with full queues, slow servicing, IBIs and
+                Hot-Join, and injected faults.
+
+            Checking:
+              - All checks of the individual sequences stay active.
+              - Software services the queues and buffers within the latency set for each
+                run. Under that assumption every command gets the response it requires,
+                every IBI and Target transfer completes or posts its outcome event, and
+                the run finishes within its timeout.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: multi_target_stress
+      desc: '''
+            Verify a Controller with many Targets under load.
+
+            Stimulus:
+              - Run 1, 2, 3 and the maximum supported number of Target agents with distinct
+                identities, contending IBIs, addressing and traffic.
+
+            Checking:
+              - Check the payloads and status against an independent model, including the
+                queue pressure and the DAT/DCT limits.
+            '''
+      stage: V3
+      tests: []
+    }
+    {
+      name: checker_mutation
+      desc: '''
+            Verify that the scoreboard and assertions detect errors.
+
+            Stimulus:
+              - Feed legal and illegal bus traces to the checkers.
+              - Inject dropped and duplicated bytes, wrong status and timing errors.
+              - Inject at least: a Controller stall at a forbidden phase, an early and a
+                missed SDA release after a read is abandoned, and a missing and an extra
+                Direct CCC retry.
+
+            Checking:
+              - Legal traces pass.
+              - Each injected error triggers the intended check.
+              - A disabled or missing check makes the test fail.
+            '''
+      stage: V3
+      tests: []
+    }
+  ]
+
+  covergroups: [
+    {
+      name: i3c_config_cg
+      desc: '''
+            Cover the IP configurations under test: each available role configuration
+            (`PrimaryCtrl`, `Target`), the number of Virtual Targets (`NumTargets`) from 1
+            to `MaxTargets`, the IP clock frequency (`ClkFreq`) at the limits of its
+            supported range, and each setting of `HalfCycleScl`, `SWDirectMsgBuf`,
+            `SWDirEnIFetch` and `TargetExt`. `SecondaryCtrl` stays 0 (the role is not
+            supported); `MaxGroups`, the DAT and DCT sizes and the message buffer size
+            are fixed by the design.
+            '''
+    }
+    {
+      name: i3c_reset_cg
+      desc: '''
+            Cover each reset type in each role, crossed with the protocol phase and the
+            occupancy of the queues.
+            '''
+    }
+    {
+      name: i3c_ctrl_daa_cg
+      desc: '''
+            Cover the number of Targets, the arbitration bit (each of the 64 bits of PID,
+            BCR and DCR), the address assignment method, `DEV_COUNT` against the number of
+            Targets, interrupted rounds and a wrapping DCT index.
+            '''
+    }
+    {
+      name: i3c_tgt_addr_cg
+      desc: '''
+            Cover the Target address state (static, dynamic, none) crossed with each
+            addressing command (including SETAASA) and reset, and the bit at which the
+            DUT loses DAA arbitration.
+            '''
+    }
+    {
+      name: i3c_virtual_target_cg
+      desc: '''
+            Cover each Virtual Target crossed with each operation, simultaneous pending
+            events and each reset scope.
+            '''
+    }
+    {
+      name: i3c_group_cg
+      desc: '''
+            Cover each group slot crossed with the membership pattern (empty, single,
+            overlapping, full) and the command.
+            '''
+    }
+    {
+      name: i3c_ctrl_sdr_xfer_cg
+      desc: '''
+            Cover the direction, length bins, transfer ending and Target speed of Controller
+            SDR transfers.
+            '''
+    }
+    {
+      name: i3c_ctrl_stall_cg
+      desc: "Cover each stall phase crossed with the stall duration bins."
+    }
+    {
+      name: i3c_tgt_stall_cg
+      desc: "Cover each Target-side stall phase crossed with the stall duration bins."
+    }
+    {
+      name: i3c_tgt_sdr_xfer_cg
+      desc: '''
+            Cover the direction, length bins, service delay and termination phase of Target
+            SDR transfers.
+            '''
+    }
+    {
+      name: i3c_i2c_xfer_cg
+      desc: "Cover the I2C speed, direction and NACK phase of legacy I2C transfers."
+    }
+    {
+      name: i3c_ccc_cg
+      desc: '''
+            Cover each CCC crossed with the role, the form (broadcast, direct), the defining
+            byte and the outcome.
+            '''
+    }
+    {
+      name: i3c_ccc_retry_cg
+      desc: '''
+            Cover Direct GET and SET CCCs crossed with the DAT retry count and the
+            ACK/NACK sequence.
+            '''
+    }
+    {
+      name: i3c_ccc_limits_cg
+      desc: '''
+            Cover the capability bits, response formats and transfers at the limits -1, at
+            the limits and at the limits +1.
+            '''
+    }
+    {
+      name: i3c_event_state_cg
+      desc: "Cover each event crossed with its enable state and activity state."
+    }
+    {
+      name: i3c_ctrl_ibi_cg
+      desc: '''
+            Cover the number of competing IBI sources, the payload size, the accept/reject
+            policy and the IBI queue state, requests raised against the DUT's own address
+            header (by header type), and IBIs from addresses in no DAT entry.
+            '''
+    }
+    {
+      name: i3c_tgt_ibi_cg
+      desc: '''
+            Cover the Virtual Target, MDB, payload length relative to `IBI_LEN`, retries,
+            suspension, service delay and enable state of Target IBIs.
+            '''
+    }
+    {
+      name: i3c_hot_join_cg
+      desc: '''
+            Cover the DUT role, the bus state, the Hot-Join method (standard, passive Strict
+            and Relaxed), the accept/reject policy and contention of Hot-Join.
+            '''
+    }
+    {
+      name: i3c_hdr_ddr_cg
+      desc: '''
+            Cover the role, direction, length bins, HDR entry, Restart and Exit, the ENDXFER
+            setting and the termination option of HDR-DDR transfers.
+            '''
+    }
+    {
+      name: i3c_hdr_fault_cg
+      desc: "Cover each HDR fault type crossed with the word or phase and the role."
+    }
+    {
+      name: i3c_tgt_error_cg
+      desc: "Cover each Target error crossed with the Virtual Target, the phase and the exit."
+    }
+    {
+      name: i3c_ctrl_error_cg
+      desc: '''
+            Cover each Controller error crossed with the phase, the transfer mode and the
+            outcome of the following command.
+            '''
+    }
+    {
+      name: i3c_reset_action_cg
+      desc: '''
+            Cover each RSTACT defining byte crossed with the packet ending, the reset pattern,
+            the escalation and the IP clock state.
+            '''
+    }
+    {
+      name: i3c_dat_dct_cg
+      desc: "Cover every DAT and DCT entry crossed with table updates during traffic."
+    }
+    {
+      name: i3c_cmd_desc_cg
+      desc: '''
+            Cover each command type, including Combo and the undefined
+            CMD_ATTR values, crossed with the CCC or transfer mode and the termination.
+            '''
+    }
+    {
+      name: i3c_resp_status_cg
+      desc: '''
+            Cover each response status code crossed with the command type, `WROC`,
+            success or failure, and a full response queue.
+            '''
+    }
+    {
+      name: i3c_pio_queue_cg
+      desc: '''
+            Cover each PIO queue crossed with its occupancy and threshold, and every
+            partial-word length.
+            '''
+    }
+    {
+      name: i3c_abort_timeout_cg
+      desc: '''
+            Cover each abort and timeout crossed with the transfer mode, the phase and the
+            queue state.
+            '''
+    }
+    {
+      name: i3c_tti_stream_cg
+      desc: '''
+            Cover the direction, the length relative to the buffer capacity, the service
+            latency, the Virtual Target and each invalid descriptor type of TTI transfers.
+            '''
+    }
+    {
+      name: i3c_async_event_cg
+      desc: "Cover each Asynchronous Event type crossed with its source and the queue occupancy."
+    }
+    {
+      name: i3c_msg_buffer_cg
+      desc: '''
+            Cover the queue partitions, partition edges, full and empty queues, and direct
+            software access.
+            '''
+    }
+    {
+      name: i3c_intr_cg
+      desc: '''
+            Cover each interrupt source crossed with its enable, force and a clear racing
+            with a new event.
+            '''
+    }
+    {
+      name: i3c_sleep_wake_cg
+      desc: '''
+            Cover the sleep entry point crossed with the Target Reset Pattern (valid,
+            near-miss) and the SCL history.
+            '''
+    }
+    {
+      name: i3c_bus_timing_cg
+      desc: '''
+            Cover each timing register at its minimum, maximum and intermediate values,
+            and, for the Target, the STOP-to-START time in bins around the Bus Free, Bus
+            Available and Bus Idle limits.
+            '''
+    }
+  ]
 }
