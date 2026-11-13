@@ -134,7 +134,7 @@ pub struct ManifestUpdateCommand {
     /// Filename for an external ML-DSA-87 signature file.
     ///
     /// The signature is over the signed region of the image (see `image message`)
-    /// with the context string "OT-MLDSA-IMAGE" (pure mode).
+    /// with an empty context string (pure mode).
     #[arg(long)]
     mldsa_signature: Option<PathBuf>,
     /// Filename for the ECDSA key corresponding to the signature.
