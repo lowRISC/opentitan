@@ -1190,6 +1190,10 @@ module chip_darjeeling_asic #(
   // assorted ast status
   ast_pkg::ast_pwst_t ast_pwst;
 
+  // alerts interface; some tools reject assignment patterns in port connections
+  ast_pkg::ast_alert_rsp_t ast_alert_rsp;
+  assign ast_alert_rsp = '{default: {ast_pkg::NumAlerts{2'b01}}};
+
   // TLUL interface
   tlul_pkg::tl_h2d_t ast_tl_req;
   tlul_pkg::tl_d2h_t ast_tl_rsp;
@@ -1383,8 +1387,8 @@ module chip_darjeeling_asic #(
     .rng_val_o             ( es_rng_valid  ),
     .rng_b_o               ( es_rng_bit    ),
     // alerts
-    .alert_rsp_i           ( '{default: {ast_pkg::NumAlerts{2'b01}}} ),
-    .alert_req_o           (                                         ),
+    .alert_rsp_i           ( ast_alert_rsp ),
+    .alert_req_o           (               ),
     // dft
     .lc_dft_en_i           ( lc_dft_en ),
     .otp_obs_i             ( otp_obs   ),

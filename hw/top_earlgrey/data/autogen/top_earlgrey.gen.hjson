@@ -22143,7 +22143,7 @@
         end_idx: -1
         act: rcv
         suffix: ""
-        default: "'{default: prim_esc_pkg::ESC_RX_DEFAULT}"
+        default: "{4{prim_esc_pkg::ESC_RX_DEFAULT}}"
       }
       {
         package: prim_esc_pkg
@@ -22155,7 +22155,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'{default: prim_esc_pkg::ESC_TX_DEFAULT}"
+        default: "{4{prim_esc_pkg::ESC_TX_DEFAULT}}"
       }
       {
         package: ""
@@ -22383,7 +22383,7 @@
         end_idx: -1
         act: rcv
         suffix: ""
-        default: "'{default: prim_mubi_pkg::MUBI4_DEFAULT}"
+        default: "{4{prim_mubi_pkg::MUBI4_DEFAULT}}"
       }
       {
         package: jtag_pkg
@@ -40940,7 +40940,7 @@
         end_idx: -1
         act: rcv
         suffix: ""
-        default: "'{default: prim_esc_pkg::ESC_RX_DEFAULT}"
+        default: "{4{prim_esc_pkg::ESC_RX_DEFAULT}}"
       }
       {
         package: prim_esc_pkg
@@ -40952,7 +40952,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: "'{default: prim_esc_pkg::ESC_TX_DEFAULT}"
+        default: "{4{prim_esc_pkg::ESC_TX_DEFAULT}}"
       }
       {
         package: csrng_pkg
@@ -40964,7 +40964,7 @@
         end_idx: -1
         act: rsp
         suffix: req
-        default: "'{default: csrng_pkg::CSRNG_REQ_DEFAULT}"
+        default: "{2{csrng_pkg::CSRNG_REQ_DEFAULT}}"
       }
       {
         package: csrng_pkg
