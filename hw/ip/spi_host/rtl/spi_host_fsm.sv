@@ -618,9 +618,8 @@ module spi_host_fsm
   //
 
   `ASSERT(BidirOnlyInStdMode_A,
-      cmd_speed_d == Standard || !(cmd_rd_en_d && cmd_wr_en_d),
-      clk_i, rst_ni)
-  `ASSERT(ValidSpeed_A, cmd_speed_d != RsvdSpd, clk_i, rst_ni)
-  `ASSERT(ValidCSID_A, csid < NumCS, clk_i, rst_ni)
+          cmd_speed_d == Standard || !(cmd_rd_en_d && cmd_wr_en_d))
+  `ASSERT(ValidSpeed_A, cmd_speed_d != RsvdSpd)
+  `ASSERT(ValidCSID_A, csid < NumCS)
 
 endmodule
