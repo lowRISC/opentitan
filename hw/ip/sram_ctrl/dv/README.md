@@ -46,7 +46,7 @@ The following utilities provide generic helper tasks and functions to perform ac
 * [csr_utils_pkg](../../../dv/sv/csr_utils/README.md)
 
 ### Compile-time configurations
-Five compile-time configurations can be tested:
+Six compile-time configurations can be tested:
 * `sram_ctrl_main` - this configuration uses a 128 KiB memory to emulate the main SRAM used in Earl Grey and enables parameter `INSTR_EXEC` to allow TLUL instruction fetching when some runtime conditions are met.
 * `sram_ctrl_ret` - this configuration uses an 8 KiB memory to emulate the retention SRAM used in Earl Grey and turns off parameter `INSTR_EXEC` to disable TLUL instruction fetching altogether.
 * `sram_ctrl_ret_4kB` - this configuration uses a 4 KiB memory to emulate the retention SRAM used in Darjeeling and turns off parameter `INSTR_EXEC` to disable TLUL instruction fetching altogether.
@@ -54,9 +54,13 @@ Five compile-time configurations can be tested:
   It enables the parameter `INSTR_EXEC` to allow TLUL instruction fetching when some runtime conditions are met.
 * `sram_ctrl_exec_48kB` - this is an example configuration for a memory with a non-power-of-2 size of 48 KiB.
   It enables the parameter `INSTR_EXEC` to allow TLUL instruction fetching when some runtime conditions are met.
+* `sram_ctrl_meta_38kB` - this configuration uses the 38 KiB size and the parameters of the CHERIoT meta SRAM used in Earl Grey, but with address scrambling enabled, and turns off parameter `INSTR_EXEC` to disable TLUL instruction fetching altogether.
+  Its size is not a multiple of 16 KiB, so address scrambling operates on 2 KiB chunks.
+  Parameter `SecZeroInit` of the meta SRAM is not covered.
 
-A macro-define `SRAM_SIZE_BYTES` is defined as a build option in the per-variant configuration files (`sram_ctrl_main_sim_cfg.hjson`, `sram_ctrl_ret_sim_cfg.hjson`, `sram_ctrl_ret_4kB_sim_cfg.hjson`, `sram_ctrl_exec_64kB_sim_cfg.hjson`, `sram_ctrl_exec_48kB_sim_cfg.hjson`).
-The memory size can be a non-power-of-2 value (e.g. for non-power-of-2 SRAM sizes) but must be a multiple of 16 KiB when address scrambling is enabled.
+A macro-define `SRAM_SIZE_BYTES` is defined as a build option in the per-variant configuration files (`sram_ctrl_main_sim_cfg.hjson`, `sram_ctrl_ret_sim_cfg.hjson`, `sram_ctrl_ret_4kB_sim_cfg.hjson`, `sram_ctrl_exec_64kB_sim_cfg.hjson`, `sram_ctrl_exec_48kB_sim_cfg.hjson`, `sram_ctrl_meta_38kB_sim_cfg.hjson`).
+The memory size can be a non-power-of-2 value (e.g. for non-power-of-2 SRAM sizes) but must then be a multiple of 2 KiB when address scrambling is enabled.
+With address scrambling enabled, such sizes that are not a multiple of 16 KiB also trigger a lint error.
 
 ### Global types & methods
 All common types and methods defined at the package level can be found in
@@ -193,7 +197,7 @@ Here's how to run a smoke test:
 ```console
 $ dvsim $REPO_TOP/hw/ip/sram_ctrl/dv/sram_ctrl_${VARIANT}_sim_cfg.hjson -i sram_ctrl_smoke
 ```
-In this run command, $VARIANT can be `main`, `ret`, `ret_4kB`, `exec_64kB` or `exec_48kB`.
+In this run command, $VARIANT can be `main`, `ret`, `ret_4kB`, `exec_64kB`, `exec_48kB` or `meta_38kB`.
 
 ## Testplan
 [Testplan](../data/sram_ctrl_testplan.hjson)
