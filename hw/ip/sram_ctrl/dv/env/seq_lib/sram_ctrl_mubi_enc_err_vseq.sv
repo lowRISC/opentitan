@@ -42,7 +42,11 @@ class sram_ctrl_mubi_enc_err_vseq extends sram_ctrl_base_vseq;
     logic [TL_DW-1:0] rdata;
     for (int iteration = 0; iteration < iterations; iteration++) begin
         bit [TL_AW-1:0] addr;
-        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr, (addr & sram_addr_mask) < max_offset;)
+        // Only use addresses inside the memory: out-of-range accesses never reach the memory
+        // primitive, so inject_fault() would wait for them forever.
+        `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(addr,
+                                           (addr & sram_addr_mask) < max_offset;
+                                           (addr & sram_addr_mask) < (MemDepth * BYTES_PER_WORD);)
         if (write) begin
           do_single_write(.addr(addr), .data(iteration), .mask('1), .blocking(0));
         end else begin
