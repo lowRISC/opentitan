@@ -32,6 +32,9 @@ module pinmux_chip_tb
   input lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_check_byp_en_i,
   input lc_ctrl_pkg::lc_tx_t lc_escalate_en_i,
+% if enable_rram_tap:
+  input lc_ctrl_pkg::lc_tx_t lc_nvm_debug_en_i,
+% endif
   output lc_ctrl_pkg::lc_tx_t pinmux_hw_debug_en_o,
   output dft_strap_test_req_t dft_strap_test_o,
   input  dft_hold_tap_sel_i,
@@ -41,6 +44,10 @@ module pinmux_chip_tb
   input jtag_pkg::jtag_rsp_t rv_jtag_i,
   output jtag_pkg::jtag_req_t dft_jtag_o,
   input jtag_pkg::jtag_rsp_t dft_jtag_i,
+% if enable_rram_tap:
+  output jtag_pkg::jtag_req_t rram_jtag_o,
+  input jtag_pkg::jtag_rsp_t rram_jtag_i,
+% endif
 % endif
 % if enable_usb_wakeup:
   input usbdev_dppullup_en_i,

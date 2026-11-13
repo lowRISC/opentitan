@@ -532,6 +532,7 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
         "n_dio_periph_out": n_dio_periph_out,
         "enable_usb_wakeup": pinmux['enable_usb_wakeup'],
         "enable_strap_sampling": pinmux['enable_strap_sampling'],
+        "enable_rram_tap": pinmux.get('enable_rram_tap', False),
     })
     return ipgen_params
 
