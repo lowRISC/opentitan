@@ -186,7 +186,10 @@ import math
         { bits: "9:2"
           name: "deny_cnt_threshold"
           resval: 0x0
-          desc: "An interrupt is raised (if enabled) when deny_cnt exceeds the configured deny_cnt_threshold."
+          desc: '''
+                An interrupt is raised (if enabled) when deny_cnt exceeds the configured deny_cnt_threshold.
+                Since deny_cnt saturates at its maximum value, setting deny_cnt_threshold to its maximum value disables the interrupt.
+                '''
         }
         { bits: "1"
           name: "log_clear"

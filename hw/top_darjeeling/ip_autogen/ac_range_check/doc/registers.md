@@ -276,12 +276,12 @@ Status of hardware alerts.
 {"reg": [{"name": "log_enable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "log_clear", "bits": 1, "attr": ["r0w1c"], "rotate": -90}, {"name": "deny_cnt_threshold", "bits": 8, "attr": ["rw"], "rotate": -90}, {"bits": 22}], "config": {"lanes": 1, "fontsize": 10, "vspace": 200}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name               | Description                                                                                   |
-|:------:|:------:|:-------:|:-------------------|:----------------------------------------------------------------------------------------------|
-| 31:10  |        |         |                    | Reserved                                                                                      |
-|  9:2   |   rw   |   0x0   | deny_cnt_threshold | An interrupt is raised (if enabled) when deny_cnt exceeds the configured deny_cnt_threshold.  |
-|   1    | r0w1c  |   0x0   | log_clear          | Clears all log information for the first denied access including: - LOG_STATUS - LOG_ADDRESS. |
-|   0    |   rw   |   0x0   | log_enable         | When set, blocked requests are logged by the deny counter.                                    |
+|  Bits  |  Type  |  Reset  | Name               | Description                                                                                                                                                                                                         |
+|:------:|:------:|:-------:|:-------------------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:10  |        |         |                    | Reserved                                                                                                                                                                                                            |
+|  9:2   |   rw   |   0x0   | deny_cnt_threshold | An interrupt is raised (if enabled) when deny_cnt exceeds the configured deny_cnt_threshold. Since deny_cnt saturates at its maximum value, setting deny_cnt_threshold to its maximum value disables the interrupt. |
+|   1    | r0w1c  |   0x0   | log_clear          | Clears all log information for the first denied access including: - LOG_STATUS - LOG_ADDRESS.                                                                                                                       |
+|   0    |   rw   |   0x0   | log_enable         | When set, blocked requests are logged by the deny counter.                                                                                                                                                          |
 
 ## LOG_STATUS
 The LOG_STATUS register stores the number of denied accesses and gives more detailed diagnostics to the first denied request.
