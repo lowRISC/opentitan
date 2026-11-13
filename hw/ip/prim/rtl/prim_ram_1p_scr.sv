@@ -286,6 +286,10 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
       // Stitch the scrambled address together.
       assign addr_scr = {chunk_idx_out, addr_scr_out};
+
+      // Callers only issue addresses within the memory, so the scrambled address must fall into
+      // the memory too.
+      `ASSERT(ScrAddrInRange_A, macro_req |-> addr_mux < Depth)
     end
 
     prim_subst_perm #(

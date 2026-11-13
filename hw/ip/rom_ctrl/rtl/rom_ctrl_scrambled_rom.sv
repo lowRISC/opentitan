@@ -163,6 +163,10 @@ module rom_ctrl_scrambled_rom
 
     // Stitch the scrambled address together.
     assign addr_scr = {chunk_idx_out, addr_scr_out};
+
+    // rom_ctrl only issues addresses within the ROM, so the scrambled address must fall into the
+    // ROM too.
+    `ASSERT(ScrAddrInRange_A, req_i |-> addr_scr < Depth)
   end
 
   prim_subst_perm #(
