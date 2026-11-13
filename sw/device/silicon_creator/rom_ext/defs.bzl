@@ -404,4 +404,25 @@ TEST_OWNER_CONFIGS = {
         ],
         "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_spidfu"],
     },
+    "owner_flash_ecc_off": {
+        # A scramble-off, ECC-off region at pages 224..255 of each slot, and a
+        # rescue range that targets that region.
+        "owner_defines": [
+            "WITH_FLASH_CONFIG=1",
+            "WITH_FLASH_START=224",
+            "WITH_FLASH_SIZE=32",
+            "WITH_FLASH_SCRAMBLE=kMultiBitBool4False",
+            "WITH_FLASH_ECC=kMultiBitBool4False",
+            # 0x58 is 'X'modem.
+            "WITH_RESCUE_PROTOCOL=0x58",
+            "WITH_RESCUE_START=224",
+            "WITH_RESCUE_SIZE=32",
+        ],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
+    "owner_flash_scr_ecc": {
+        # Scrambled, ECC-protected regions over the firmware area of each slot.
+        "owner_defines": ["WITH_FLASH_CONFIG=1"],
+        "rescue_module": ["//sw/device/silicon_creator/lib/rescue:rescue_xmodem"],
+    },
 }

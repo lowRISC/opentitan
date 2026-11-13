@@ -15,6 +15,7 @@ load(
 )
 load("//rules:const.bzl", "CONST", "hex")
 load("//rules:manifest.bzl", "manifest")
+load("//rules:otp.bzl", "STD_OTP_OVERLAYS", "otp_image")
 load("//rules:ownership.bzl", "owner_block_binary", "ownership_detached_signature")
 load("//sw/device/silicon_creator/rom_ext:defs.bzl", "ROM_EXT_VARIATIONS")
 
@@ -1151,6 +1152,91 @@ ownership_transfer_test(
         "binaries": {
             ":boot_test": "boot_test",
         },
+        "test_cmd": """
+            --unlock-mode=Any
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-key-alg=HybridSpxPure
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
+            --next-owner-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key_spx)
+            --next-unlock-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key_spx)
+            --next-activate-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key_spx)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/dummy/app_prod_ecdsa_p256.pub.der
+            --dual-owner-boot-check=false
+            --rescue-after-activate={boot_test}
+        """,
+        "test_harness": "//sw/host/tests/ownership:transfer_test",
+    },
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+otp_image(
+    name = "otp_img_default_scr_ecc_exc_handler_disabled",
+    src = "//hw/ip/otp_ctrl/data:otp_json_rma",
+    overlays = STD_OTP_OVERLAYS + [
+        "//sw/device/silicon_creator/rom_ext/e2e:otp_json_secret2_locked",
+        "//sw/device/silicon_creator/rom_ext/e2e/flash_ecc_error:otp_json_flash_data_cfg_default_scr_and_ecc_enabled",
+        "//sw/device/silicon_creator/rom_ext/e2e/flash_ecc_error:otp_json_flash_exc_handler_disabled",
+    ],
+)
+
+# Test A: worst case. The owner-page scan takes an ECC fault with the handler
+# disabled.
+ownership_transfer_test(
+    name = "detached_sig_scan_ecc_fault_test",
+    # Sign the firmware with the next owner's application key, so that the
+    # dual-owner boot succeeds only if ROM_EXT accepted owner page 1.
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/dummy:ecdsa_keyset": "app_prod_0"},
+    exec_env = {
+        "//hw/top_earlgrey:fpga_hyper310_rom_ext": None,
+        "//hw/top_earlgrey:fpga_cw340_rom_ext": None,
+    },
+    fpga = {
+        "otp": ":otp_img_default_scr_ecc_exc_handler_disabled",
+    },
+    shared_params = {
+        "binaries": {
+            ":boot_test": "boot_test",
+        },
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_flash_ecc_off",
+        "test_cmd": """
+            --unlock-mode=Any
+            --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-key-alg=HybridSpxPure
+            --next-owner-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key)
+            --next-unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
+            --next-activate-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key)
+            --next-owner-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:owner_key_spx)
+            --next-unlock-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key_spx)
+            --next-activate-key-spx=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:activate_key_spx)
+            --next-application-key=sw/device/silicon_creator/lib/ownership/keys/dummy/app_prod_ecdsa_p256.pub.der
+            --rescue-after-activate={boot_test}
+        """,
+        "test_harness": "//sw/host/tests/ownership:transfer_test",
+    },
+    deps = [
+        "//sw/device/lib/base:status",
+        "//sw/device/lib/testing/test_framework:ottf_main",
+        "//sw/device/silicon_creator/lib:boot_log",
+        "//sw/device/silicon_creator/lib/drivers:retention_sram",
+    ],
+)
+
+ownership_transfer_test(
+    name = "detached_sig_scan_scramble_mismatch_test",
+    ecdsa_key = {"//sw/device/silicon_creator/lib/ownership/keys/fake:ecdsa_keyset": "app_prod_0"},
+    qemu = {"timeout": "long"},
+    shared_params = {
+        "binaries": {
+            ":boot_test": "boot_test",
+        },
+        "rom_ext": "//sw/device/silicon_creator/rom_ext:rom_ext_owner_flash_scr_ecc",
         "test_cmd": """
             --unlock-mode=Any
             --unlock-key=$(location //sw/device/silicon_creator/lib/ownership/keys/fake:unlock_key)
