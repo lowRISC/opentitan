@@ -360,7 +360,8 @@ status_t curve25519_verify_finalize(hardened_bool_t *result) {
   }
   HARDENED_CHECK_NE(rhs_bits_or, 0);
 
-  *result = hardened_memeq(lhs, rhs, kCurve25519PointWords);
+  *result = (hardened_bool_t)0;
+  *result |= hardened_memeq(lhs, rhs, kCurve25519PointWords);
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();
