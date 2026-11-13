@@ -99,9 +99,6 @@ extern "C" {
     value(_, Uart2Rx, kTopEarlgreyPinmuxPeripheralInUart2Rx) \
     value(_, Uart3Rx, kTopEarlgreyPinmuxPeripheralInUart3Rx) \
     value(_, SpiDeviceTpmCsb, kTopEarlgreyPinmuxPeripheralInSpiDeviceTpmCsb) \
-    value(_, RramMacroTck, kTopEarlgreyPinmuxPeripheralInRramMacroTck) \
-    value(_, RramMacroTms, kTopEarlgreyPinmuxPeripheralInRramMacroTms) \
-    value(_, RramMacroTdi, kTopEarlgreyPinmuxPeripheralInRramMacroTdi) \
     value(_, SysrstCtrlAcPresent, kTopEarlgreyPinmuxPeripheralInSysrstCtrlAcPresent) \
     value(_, SysrstCtrlKey0In, kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey0In) \
     value(_, SysrstCtrlKey1In, kTopEarlgreyPinmuxPeripheralInSysrstCtrlKey1In) \
@@ -304,7 +301,6 @@ C_ONLY(UJSON_SERDE_ENUM(PinmuxMioOut, pinmux_mio_out_t, TOP_EARLGREY_PINMUX_MIO_
     value(_, SpiHost1Csb0, kTopEarlgreyPinmuxOutselSpiHost1Csb0) \
     value(_, SpiHost1Csb1, kTopEarlgreyPinmuxOutselSpiHost1Csb1) \
     value(_, SpiHost1Csb2, kTopEarlgreyPinmuxOutselSpiHost1Csb2) \
-    value(_, RramMacroTdo, kTopEarlgreyPinmuxOutselRramMacroTdo) \
     value(_, SensorCtrlAstDebugOut0, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut0) \
     value(_, SensorCtrlAstDebugOut1, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut1) \
     value(_, SensorCtrlAstDebugOut2, kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut2) \

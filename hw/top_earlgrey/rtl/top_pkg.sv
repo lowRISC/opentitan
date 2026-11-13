@@ -17,9 +17,11 @@ localparam int TL_SZW=$clog2($clog2(TL_DBW)+1);
 // Number of cycles a differential skew is tolerated on the alert signal
 localparam int unsigned AlertSkewCycles = 1;
 
-// NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-// THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED FOR
-// PRODUCTION DEVICES.
-localparam int SecVolatileRawUnlockEn = 0;
+// The volatile RAW unlock is needed on this top to reach the RRAM forming flow.
+// An unformed RRAM cannot hold a persistent life cycle state, so the part has to be unlocked
+// volatilely to form it.
+// lc_ctrl only accepts a volatile RAW unlock while rram_macro's allow_vol_unlock is True, which
+// is the case until the DIS_VOL_RAW_UNLOCK marker is written at the end of forming.
+localparam int SecVolatileRawUnlockEn = 1;
 
 endpackage

@@ -228,21 +228,21 @@ pub fn trigger_lc_transition(
 
 /// Perform a volatile raw unlock transition through the LC JTAG interface.
 ///
-/// Requires the `jtag` to be already connected to the LC TAP. Requires the pre-hashed token be
-/// provided (a pre-requisite of the volatile operation. The device will NOT be reset into the
+/// Requires the `jtag` to be already connected to the LC TAP. Requires the unhashed RAW unlock
+/// token, which is hashed in KMAC like for a persistent RAW unlock. The device will NOT be reset into the
 /// new lifecycle state as TAP straps are sampled again on a successfull transition. However,
 /// the TAP can be switched from LC to RISCV on a successfull transition.
 ///
-/// If the feature is not present in HW we expect the transition to fail with
-/// a token error since the token is invalid for a real RAW unlock
-/// transition. Use the expect_raw_unlock_supported argument to indicate
+/// If the feature is not present in HW, the transition is a persistent RAW unlock.
+/// To test this case, provide a token that is invalid for it, so that the transition fails
+/// with a token error instead of programming OTP. Use the expect_raw_unlock_supported argument to indicate
 /// whether we expect this transition to succeed or not.
 #[allow(clippy::too_many_arguments)]
 pub fn trigger_volatile_raw_unlock<'t>(
     transport: &'t TransportWrapper,
     mut jtag: Box<dyn Jtag + 't>,
     target_lc_state: DifLcCtrlState,
-    hashed_token: Option<[u32; 4]>,
+    token: Option<[u32; 4]>,
     use_external_clk: bool,
     post_transition_tap: JtagTap,
     jtag_params: &JtagParams,
@@ -250,7 +250,7 @@ pub fn trigger_volatile_raw_unlock<'t>(
 ) -> Result<Box<dyn Jtag + 't>> {
     // Wait for the lc_ctrl to become initialized, claim the mutex, and program the target state
     // and token CSRs.
-    setup_lc_transition(&mut *jtag, target_lc_state, hashed_token)?;
+    setup_lc_transition(&mut *jtag, target_lc_state, token)?;
 
     // Configure external clock and set volatile raw unlock bit.
     let mut ctrl = LcCtrlTransitionCtrl::VOLATILE_RAW_UNLOCK;
