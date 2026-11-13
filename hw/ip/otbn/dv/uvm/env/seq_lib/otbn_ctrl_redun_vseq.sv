@@ -46,17 +46,17 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
     end join
   endtask
 
-  // Wait until the value at path becomes nonzero
-  task wait_for_flag(string path);
-    // Initialise flag to zero. With some simulators (one version of Xcelium, at least), it seems
-    // that the call to uvm_hdl_read might leave its destination set to X. The HDL path exists and
-    // the signal is not X, so this is rather confusing. Initialising flag to zero before calling
-    // uvm_hdl_read seems to fix the behaviour.
+  // Wait until the value at path becomes nonzero. The signal at path is width bits wide.
+  task wait_for_flag(string path, int unsigned width = 1);
+    // Start from zero, as one version of Xcelium was seen to leave flag X after uvm_hdl_read.
+    // That is not enough on VCS, where uvm_hdl_read returns X above the 32-bit word that holds the
+    // signal. Those bits would end the loop at once, so only look at the low width bits.
     uvm_hdl_data_t flag = 0;
+    uvm_hdl_data_t mask = (uvm_hdl_data_t'(1) << width) - 1;
     `DV_SPINWAIT(do begin
                    @(cfg.clk_rst_vif.cb);
                    `DV_CHECK_FATAL(uvm_hdl_read(path, flag) == 1);
-                 end while(!flag);)
+                 end while(!(flag & mask));)
   endtask
 
   function void report_err_type(string desc);
@@ -275,7 +275,7 @@ class otbn_ctrl_redun_vseq extends otbn_single_vseq;
         case(choose_err)
           0: begin
             err_path = "tb.dut.u_otbn_core.u_otbn_rf_bignum.wr_addr_i[4:0]";
-            wait_for_flag("tb.dut.u_otbn_core.u_otbn_rf_bignum.wr_en_i[1:0]");
+            wait_for_flag("tb.dut.u_otbn_core.u_otbn_rf_bignum.wr_en_i[1:0]", 2);
             `DV_CHECK_FATAL(uvm_hdl_read(err_path, addr));
             `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(mask, $countones(mask) inside {[1:2]};)
             addr = addr ^ mask;
