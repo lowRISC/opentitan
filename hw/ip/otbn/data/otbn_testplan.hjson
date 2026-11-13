@@ -93,6 +93,24 @@
     }
 
     {
+      name: urnd_ctrl
+      desc: '''
+            Test the URND control interface
+
+            Check that it is possible to start and stop the URND as well as to save and restore the URND context.
+            Test also the behaviour of all status flags.
+            Edge cases to be tested:
+            - Start URND when it is already running.
+            - Stop URND when it is already stopped.
+            - Stop and immediately restart URND (back to back instructions).
+            - Check that when restoring the state, SW can read back the provided state before URND is started again.
+            - Check that URND_STATE reads '0 if URND control is disabled.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    {
       name: mem_integrity
       desc: '''
             Inject ECC errors into DMEM and IMEM and expect an alert
