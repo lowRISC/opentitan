@@ -42,6 +42,9 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
   typedef hw_key_t [keymgr_dpe_pkg::Shares-1:0]               hw_key_shares_t;
   typedef bit [keymgr_dpe_pkg::WideHwKeyWidth-1:0]            wide_hw_key_t;
   typedef wide_hw_key_t [keymgr_dpe_pkg::Shares-1:0]          wide_hw_key_shares_t;
+  localparam int SwOutputWidth = keymgr_dpe_reg_pkg::NumOutReg * TL_DW;
+  typedef bit [SwOutputWidth-1:0]                             sw_key_t;
+  typedef sw_key_t [keymgr_dpe_pkg::Shares-1:0]               sw_key_shares_t;
   typedef tl_data_t [keymgr_dpe_reg_pkg::NumSaltReg-1:0]      salt_t;
   typedef tl_data_t [keymgr_dpe_reg_pkg::NumSwBindingReg-1:0] sw_binding_t;
 
@@ -561,6 +564,11 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     return two_share_key[0] ^ two_share_key[1];
   endfunction
 
+  // Combine the two shares of a masked SW output to get an unmasked SW output.
+  virtual function sw_key_t get_unmasked_sw_key(sw_key_shares_t two_share_key);
+    return two_share_key[0] ^ two_share_key[1];
+  endfunction
+
   // Collect data used as 'message' to derive the CreatorRootKey (boot stage 1).
   virtual function adv_data_t get_creator_data();
     adv_creator_data_t creator_data;
@@ -813,6 +821,13 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     `DV_CHECK_EQ(wide_hw_key_t'(get_kmac_digest(kmac_key, data_arr)), act_digest)
   endfunction
 
+  // Same as `check_kmac_digest` but for the SW output
+  virtual function void check_kmac_sw_digest(key_t     kmac_key,
+                                             bit [7:0] data_arr[],
+                                             sw_key_t  act_digest);
+    `DV_CHECK_EQ(SwOutputWidth'(get_kmac_digest(kmac_key, data_arr)), act_digest)
+  endfunction
+
   // Compute KMAC digest (with a DPI call) for a given a key and data bytes.
   // KMAC uses only 256b for the KDF, hence truncate the key with `HwKeyWidth`.
   virtual function digest_t get_kmac_digest(key_t     kmac_key,
@@ -854,11 +869,15 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
                                                salt_t                        salt);
     bit [7:0] data_arr[];
     {<< byte {data_arr}} = get_gen_data(.key_version(version), .salt(salt), .dest(dest));
-    // Outputs generated for OTBN / HMAC have a different width.
+    // Outputs generated for OTBN / HMAC / SW have a different width.
     if (dest inside {keymgr_dpe_pkg::Otbn, keymgr_dpe_pkg::Hmac}) begin
       check_kmac_wide_digest(get_unmasked_key(key_shares),
                              data_arr,
                              get_unmasked_wide_key(get_wide_output(.dest(dest))));
+    end else if (dest == keymgr_dpe_pkg::None) begin
+      check_kmac_sw_digest(get_unmasked_key(key_shares),
+                           data_arr,
+                           get_unmasked_sw_key(get_sw_output()));
     end else begin
       check_kmac_hw_digest(get_unmasked_key(key_shares),
                            data_arr,
@@ -869,7 +888,8 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
   // Backdoor-read the output from keymgr_dpe to SW a given `dest`ination.
   virtual function hw_key_shares_t get_output(keymgr_dpe_pkg::keymgr_dpe_key_dest_e dest);
     unique case (dest)
-      keymgr_dpe_pkg::None: return get_sw_output();
+      keymgr_dpe_pkg::None:
+        `dv_fatal("Illegal use of this function; use `get_sw_output` instead!")
       keymgr_dpe_pkg::Aes:  return get_hw_output(
           "tb.dut.top_earlgrey.earlgrey_pd_main.u_keymgr_dpe.aes_key_o");
       keymgr_dpe_pkg::Kmac: return get_hw_output(
@@ -896,15 +916,15 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
   endfunction
 
   // Backdoor-read keymgr_dpe's SW output.
-  virtual function hw_key_shares_t get_sw_output();
-    hw_key_shares_t key_shares;
-    for (int i = 0; i < keymgr_dpe_pkg::HwKeyWidth / TL_DW; i++) begin
+  virtual function sw_key_shares_t get_sw_output();
+    sw_key_shares_t key_shares;
+    for (int i = 0; i < keymgr_dpe_reg_pkg::NumOutReg; i++) begin
       uvm_reg_data_t rdata = csr_peek(ral.keymgr_dpe.sw_share0_output[i]);
       key_shares[0][TL_DW * i +: TL_DW] = rdata;
       rdata = csr_peek(ral.keymgr_dpe.sw_share1_output[i]);
       key_shares[1][TL_DW * i +: TL_DW] = rdata;
     end
-    `uvm_info(`gfn, $sformatf("SW Output:\n%s", hw_key_shares_str(key_shares)), UVM_LOW)
+    `uvm_info(`gfn, $sformatf("SW Output:\n%s", sw_key_shares_str(key_shares)), UVM_LOW)
     return key_shares;
   endfunction
 
@@ -972,4 +992,9 @@ class chip_sw_keymgr_dpe_key_derivation_vseq extends chip_sw_base_vseq;
     return $sformatf("%s%s%s", wide_hw_key_str(shares[0]), separator, wide_hw_key_str(shares[1]));
   endfunction
 
+  // Format two shares of the SW output.
+  virtual function string sw_key_shares_str(sw_key_shares_t shares, string separator = "\n");
+    return $sformatf("%0d'h%h%s%0d'h%h", SwOutputWidth, shares[0], separator,
+                     SwOutputWidth, shares[1]);
+  endfunction
 endclass : chip_sw_keymgr_dpe_key_derivation_vseq
