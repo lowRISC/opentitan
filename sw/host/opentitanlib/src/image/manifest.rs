@@ -185,7 +185,7 @@ pub const MLDSA87_PUBLIC_KEY_BYTES: usize = 2592;
 pub const MLDSA87_SIGNATURE_BYTES: usize = 4627;
 /// Context string of the ML-DSA-87 image signature (FIPS-204). Must match
 /// `kSigverifyMldsa87ImageContext` in `sw/device/silicon_creator/lib/sigverify/mldsa87_key.c`.
-pub const MLDSA87_IMAGE_CONTEXT: &[u8] = b"OT-MLDSA-IMAGE";
+pub const MLDSA87_IMAGE_CONTEXT: &[u8] = b"";
 
 /// A type that holds an ML-DSA-87 signature, zero-padded to a whole number of 32-bit words.
 #[repr(C)]
