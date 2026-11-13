@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load("//rules/opentitan:defs.bzl", "OPENTITAN_CPU", "OPENTITAN_PLATFORM")
+load("//rules/opentitan:defs.bzl", "OPENTITAN_BASE_PLATFORM", "OPENTITAN_CPU")
 load("//hw/top:defs.bzl", "ALL_IP_NAMES", "ALL_TOP_NAMES", "opentitan_if_ip", "opentitan_require_top", "opentitan_select_top")
 load("//rules/opentitan:util.bzl", "flatten")
 load("//rules:doxygen.bzl", "doxygen_gather_cc")
@@ -700,7 +700,8 @@ TESTUTILS_EXCEPTIONS = [
 # testutils are not compatible with the host platform.
 doxygen_gather_cc(
     name = "doxy_target",
-    platform = OPENTITAN_PLATFORM,
+    # FIXME Check this
+    platform = OPENTITAN_BASE_PLATFORM,
     deps = [
         "isr_testutils",
     ] + flatten([

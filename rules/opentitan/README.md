@@ -22,6 +22,9 @@ In addition to the resources needed to build and dispatch binaries (e.g. the tes
 
 The exec\_envs are provided to the `opentitan_binary` and `opentitan_test` rules in order to allow them to perform their function.
 
+Each execution environment can optionally define a "platform key".
+This key refers to the `platforms` attribute of the top and means that the `opentitan_binary` and `opentitan_test` rules will transition to the requested platform when using this execution environment.
+
 ## The `opentitan_binary` rule
 
 The `opentitan_binary` rule is very similar to bazel's built-in `cc_binary` rule: it accepts a list of sources, dependencies and other compiler configuration parameters and produces a linked binary.
