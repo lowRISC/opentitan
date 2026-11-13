@@ -96,6 +96,26 @@ sh_test(
     ]
 ]
 
+# Legacy SPHINCS+ import-export round-trip testing are handled separately since its
+# commands use a different interface. Only tests the pkcs11-ef SPX module.
+sh_test(
+    name = "spx_import_export_test",
+    srcs = ["spx_import_export_test.sh"],
+    data = [
+        "//signing/softhsm",
+        "//signing/softhsm:conf",
+        "//sw/host/hsmtool",
+        "//sw/host/opentitantool",
+        "@softhsm2//:gen_dir",
+    ],
+    env = {
+        "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
+        "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
+        "HSMTOOL_SPX_MODULE": "pkcs11-ef",
+    },
+    deps = [":test_lib"],
+)
+
 sh_test(
     name = "token_exists_test",
     srcs = ["hsmtool_runner.sh"],
