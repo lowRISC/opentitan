@@ -235,10 +235,9 @@ module dmi_jtag #(
         error_dmi_busy = 1'b1;
       end
 
-      // if capture goes high while we are in the read state
-      // or in the corresponding wait state we are not giving back a valid word
-      // -> throw an error
-      if (capture && state_q inside {Read, WaitReadValid}) begin
+      // A pending read or write cannot return a valid result at Capture.
+      // Report a sticky busy status for either operation.
+      if (capture && state_q inside {Read, WaitReadValid, Write, WaitWriteValid}) begin
         error_dmi_busy = 1'b1;
       end
 
@@ -267,12 +266,7 @@ module dmi_jtag #(
     end else begin
       if (capture) begin
         if (dmi_select) begin
-          if (error_q == DMINoError && !error_dmi_busy) begin
-            dr_d = {address_q, data_q, DMINoError};
-            // DMI was busy, report an error
-          end else if (error_q == DMIBusy || error_dmi_busy) begin
-            dr_d = {address_q, data_q, DMIBusy};
-          end
+          dr_d = {address_q, data_q, error_d};
         end
       end
 
