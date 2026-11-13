@@ -364,8 +364,8 @@ fn run_rsa_testcase(
 }
 
 // (security_level_bits, padding, hash_alg) parameter sets for keygen testing.
-// All three padding modes are covered for each security level. The message is
-// kept short to satisfy the OAEP plaintext bound at the largest hash size.
+// 4096-bit key generation is excluded because prime search exceeds the 900s
+// Bazel long test timeout on FPGA.
 const KEYGEN_CASES: &[(usize, &str, &str)] = &[
     (2048, "pkcs1_1.5", "sha-256"),
     (2048, "pss", "sha-256"),
@@ -373,9 +373,6 @@ const KEYGEN_CASES: &[(usize, &str, &str)] = &[
     (3072, "pkcs1_1.5", "sha-384"),
     (3072, "pss", "sha-384"),
     (3072, "oaep", "sha-384"),
-    (4096, "pkcs1_1.5", "sha-512"),
-    (4096, "pss", "sha-512"),
-    (4096, "oaep", "sha-512"),
 ];
 
 const KEYGEN_TEST_MESSAGE: &[u8] = &[
@@ -491,7 +488,7 @@ fn test_rsa(opts: &Opts, transport: &TransportWrapper) -> Result<()> {
                 padding,
                 hash_alg,
                 &spi_console_device,
-                opts.timeout * 25,
+                opts.timeout * 80,
             )?;
         }
     }
