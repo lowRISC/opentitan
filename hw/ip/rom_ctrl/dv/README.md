@@ -72,9 +72,9 @@ The following covergroups have been developed to prove that the test intent has 
 ### Self-checking strategy
 #### Scoreboard
 The `rom_ctrl_scoreboard` is primarily used for end to end checking.
-It creates the following analysis ports to retrieve the data monitored by corresponding interface agents:
-* `kmac_req_fifo`
-* `kmac_resp_fifo`
+It creates the following analysis imports to retrieve the data monitored by corresponding interface agents:
+* `m_kmac_req_imp`
+* `m_kmac_txn_imp`
 
 The scoreboard monitors traffic sent to and from the KMAC interface.
 Data sent to KMAC during rom checking are compared against expected values from the memory model.

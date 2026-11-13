@@ -62,16 +62,16 @@ The [Application Interface](../../kmac/README.md#application-interface) section 
 
 The checker reads the ROM contents in address order, resulting in a scattered access pattern on the ROM itself because of the address scrambling.
 Each read produces 39 bits of data, which are padded with a zero to 40 bits to match the interface expected by the KMAC block.
-The checker FSM loops through almost all the words in ROM (from bottom to top), passing each to the KMAC block with the ready/valid interface and setting the `kmac_data_o.last` bit for the last word that is sent.
-Once the last word has been sent, the FSM releases the multiplexer; this now switches over permanently to allow access through the TL-UL SRAM adapter.
+The checker FSM loops through almost all the words in ROM (from bottom to top), passing each to the KMAC block with the ready/valid interface and setting the `kmac_data_o.req_last` bit for the last word that is sent.
+Once the digest has been compared with the expected hash (see below), the FSM enters its `Done` state and releases the multiplexer to allow access through the TL-UL SRAM adapter.
 
 The top eight words in ROM (by logical address) are interpreted as a 256-bit expected hash.
 This is taken by the checker FSM (ignoring ECC bits) and will be compared with the digest that is read back from the KMAC block.
 
-Once it comes back, the digest is forwarded directly to the [keymgr_dpe](../../keymgr_dpe/README.md).
+Once it comes back, the digest is stored in the `DIGEST` registers.
 It is also compared with the hash that was read from the top eight words of ROM.
 On a match, `pwrmgr_data_o.good` is signalled as `MuBi4True`.
-In either case, `pwrmgr_data_o.done` goes high when the calculation is complete.
+In either case, `pwrmgr_data_o.done` goes high when the comparison is complete, and the digest is passed to the [keymgr_dpe](../../keymgr_dpe/README.md) with `keymgr_data_o.valid`.
 
 The diagram below shows the operation of the simple FSM.
 
@@ -92,18 +92,18 @@ See \[SKO-05\][^SKO-05], section 2.1.1, for a description of ROMs and attacks on
 Since the code in ROM is the first thing to execute, an attacker that modifies it undetected can completely subvert the chain of trust.
 As such, OpenTitan needs some form of ROM integrity checking and the ROM checker is the module in charge of providing it.
 
-After bringing the ROM controller module out of reset, the power manager must wait until `pwrgr_data_o.done` is asserted before starting the host processor.
+After bringing the ROM controller module out of reset, the power manager must wait until `pwrmgr_data_o.done` is asserted before starting the host processor.
 The ROM controller also passes the `pwrmgr_data_o.good` signal.
 The power manager can use this to decide whether to boot (taking into account life cycle state).
 This provides an extra safety check, but the real security comes from key manager integration described below.
 
 The simple KMAC interface assumes that KMAC is pre-configured to run the cSHAKE algorithm with a prefix specific to the ROM checker.
-The ROM checker will not assert `kmac_data_o.valid` after finishing the one and only digest computation.
+The ROM checker will not assert `kmac_data_o.req_valid` after finishing the one and only digest computation.
 The KMAC module may choose to add a check for this, to detect reset glitches affecting the `rom_ctrl` block.
 
 The integration with the key manager is based on forwarding the digest data in `kmac_data_i` as `keymgr_data_o.data`.
 This 256-bit digest will be incorporated into the [`CreatorRootKey`](../../../../doc/security/specs/identities_and_root_keys/README.md#creator-root-key).
-The key manager should only allow one transaction (of 256 bits / 32 bits = 8 beats) after reset to pass this information across.
+The key manager should only allow one transaction after reset to pass this information across.
 On future messages, it should raise an alert, defeating an attacker that tries to trigger extra transactions before or after the real one.
 
 `CreatorRootKey` forms the first key in the chain described in [Identities and Root Keys](../../../../doc/security/specs/identities_and_root_keys/README.md).
