@@ -177,7 +177,7 @@ The signaling protocol remains the same in both cases, but the additional synchr
 
 <%text>### Ping Testing</%text>
 
-In order to ensure that the event sending modules have not been compromised, the alert receiver module `prim_alert_receiver` will "ping" or line-test the senders periodically every few microseconds.
+In order to ensure that the event sending modules have not been compromised, the alert receiver module `prim_alert_receiver` will "ping" or line-test the senders periodically.
 Pings timing is randomized so their appearance can not be predicted.
 
 
@@ -303,12 +303,13 @@ That should make it more difficult to predict the next ping occurrence based on 
 
 The ping timer is implemented using an [LFSR-based PRNG of Galois type](../../../../ip/prim/doc/prim_lfsr.md).
 This ping timer is reseeded with fresh entropy from EDN roughly every 500k cycles which corresponds to around 16 ping operations on average.
-The LFSR is 32bits wide, but only 24bits of its state are actually being used to generate the random timer count and select the alert line to be pinged.
-I.e., the 32bits first go through a fixed permutation function, and then bits `[23:16]` are used to determine which alert line to ping.
-The random cycle count is created by OR'ing bits `[15:0]` with the constant `3'b100` as follows:
+The LFSR is 32bits wide, but only ${int(ping_cnt_dw) + (n_alerts - 1).bit_length()}bits of its state are actually being used to generate the random timer count and select the alert line to be pinged.
+I.e., the 32bits first go through a fixed permutation function, and then bits `[${int(ping_cnt_dw) - 1 + (n_alerts - 1).bit_length()}:${ping_cnt_dw}]` are used to determine which alert line to ping.
+If `NAlerts` is not a power of two and these bits select an alert line that does not exist, their top bit is cleared, so some alert lines are selected twice as often as others.
+The random cycle count is created by OR'ing bits `[${int(ping_cnt_dw) - 1}:0]` with the constant `3'b100` as follows:
 
 ```
-cycle_cnt = permuted[15:0] | 3'b100;
+cycle_cnt = permuted[${int(ping_cnt_dw) - 1}:0] | 3'b100;
 ```
 
 This constant DC offset introduces a minimum ping spacing of 4 cycles (1 cycle + margin) to ensure that the handshake protocols of the sender/receiver pairs work.
@@ -374,7 +375,7 @@ protocol:
    This mechanism has two associated CSRs:
 
     - Accumulation max value.
-      This is the total number (sum of all alerts classified in this group) of alerts required to enter escalation phase (see below).
+      Once the count reaches this value, the next trigger for this class starts escalation (see below).
       Example register is [`CLASSA_ACCUM_THRESH_SHADOWED`](../data/alert_handler.hjson#classa_accum_thresh_shadowed).
     - Current accumulation register.
       This clearable register indicates how many alerts have been accumulated to date.
@@ -405,12 +406,12 @@ triggers.
 
 Each class can be programmed with its own escalation protocol.
 If one of the two mechanisms described above fires, a timer for that particular class is started.
-The timer can be programmed with up to 4 delays (e.g., [`CLASSA_PHASE0_CYC`](../data/alert_handler.hjson#classa_phase0_cyc)), each representing a distinct escalation phase (0 - 3).
+The timer can be programmed with up to 4 delays (e.g., [`CLASSA_PHASE0_CYC_SHADOWED`](../data/alert_handler.hjson#classa_phase0_cyc_shadowed)), each representing a distinct escalation phase (0 - 3).
 Each of the four escalation severity outputs (0 - 3) are by default configured to be asserted during the corresponding phase, e.g., severity 0 in phase 0,  severity 1 in phase 1, etc.
-However, this mapping can be freely reassigned by modifying the corresponding enable/phase mappings (e.g., [`CLASSA_CTRL_SHADOWED.E0_MAP`](../data/alert_handler.hjson#classa_ctrl_shadowed) for enable bit 0 of class A).
+However, this mapping can be freely reassigned by modifying the corresponding enable/phase mappings (e.g., [`CLASSA_CTRL_SHADOWED.MAP_E0`](../data/alert_handler.hjson#classa_ctrl_shadowed) for escalation signal 0 of class A).
 This mapping will be locked in together with the alert enable configuration after initial configuration.
 
-SW can stop a triggered escalation protocol by clearing the corresponding escalation counter (e.g., [`CLASSA_ESC_CNT`](../data/alert_handler.hjson#classa_esc_cnt)).
+SW can stop a triggered escalation protocol by writing the corresponding clear register (e.g., [`CLASSA_CLR_SHADOWED`](../data/alert_handler.hjson#classa_clr_shadowed)).
 Protection of this clearing is up to software, see the register control section that follows for [`CLASSA_CTRL_SHADOWED.LOCK`](../data/alert_handler.hjson#classa_ctrl_shadowed).
 
 It should be noted that each of the escalation phases have a duration of at least 1 clock cycle, even if the cycle count of a particular phase has been
@@ -721,8 +722,8 @@ To that end, two extra *init states* are added to the alert receiver FSMs to per
 
 ![Alert Handler Receiver FSM](alert_handler_receiver_fsm.svg)
 
-Whenever the `init_trig` multibit signal of an LPG is asserted, all corresponding sender FSMs are moved into the `InitReq` state.
-In that state, the alert receivers immediately acknowledge ping requests from the ping mechanism, and ignore alert events from the sender side.
+Whenever the `init_trig` multibit signal of an LPG is asserted, all corresponding receiver FSMs that are not already initializing are moved into the `InitReq` state.
+In that state, the alert receivers immediately acknowledge ping requests from the ping mechanism while `init_trig` remains asserted, and ignore alert events from the sender side.
 In addition to that, the receivers intentionally place a signal integrity error onto the `ping_p` / `ping_n`, `ack_p` / `ack_n` lines going from receivers to the senders.
 This causes the senders to 1) move into the signal integrity error state, and 2) respond by placing a signal integrity error onto the `alert_p` / `alert_n` lines, which serves as an initialization "acknowledge" signal in this case.
 Since the sender FSMs fall back into the `Idle` state once the signal integrity error disappears, this procedure essentially implements an in-band reset mechanism with an acknowledgement handshake that can be used to determine whether the reset has been successful.
@@ -749,7 +750,7 @@ Due to asynchronous transitions and different path latencies in the system, a ch
 It is consequently possible for a group of alert senders to already be in reset or clock gated state, while the corresponding LPG logic does not yet know about this state change - and vice versa.
 
 In practice, this means that ping requests may be pending for several cycles until the LPG logic detects a reset or clock-gated condition and disables the corresponding alert channel(s).
-Fortunately, such delay can be tolerated by setting the ping timeout to a sufficiently large value (see [`CLASSA_TIMEOUT_CYC_SHADOWED`](../data/alert_handler.hjson#classa_timeout_cyc_shadowed)).
+Fortunately, such delay can be tolerated by setting the ping timeout to a sufficiently large value (see [`PING_TIMEOUT_CYC_SHADOWED`](../data/alert_handler.hjson#ping_timeout_cyc_shadowed)).
 
 As for alert events, this latency difference should not pose a problem.
 Alert events may get stuck in the alert sender due to a reset or clock-gated condition - but this is to be expected.
