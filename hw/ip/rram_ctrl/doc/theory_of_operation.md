@@ -370,6 +370,11 @@ There are four possible requesters for controller-path accesses:
 | `HwLcMgrSel` | Life cycle manager (`rram_ctrl_lcmgr`) |
 | `HwLoopBack` | Internal loopback. Used for the `Rewrite` operation |
 
+`HwLoopBack` accesses bypass the software-configured regions and info page configurations and use a fixed read/write configuration with ECC enabled and scrambling disabled.
+They can be restricted with the `rw1s` mubi fields `DIS.DIS_ALL_REWRITE`, `DIS.DIS_OTP_REWRITE` and `DIS.DIS_INFO_REWRITE` (see [`DIS`](registers.md#dis)).
+`rram_ctrl_mp` applies these to every `HwLoopBack` access, read and write, based on the address and partition presented to the phy: a disabled access gets `CfgDisable` and is answered with an MP error.
+Because the check is done on every access and not only when the arbiter accepts the Rewrite, a fault that changes the Rewrite address or partition after acceptance cannot move the write into a disabled region.
+
 Host `host_tl` reads are checked separately, through their own dedicated region-select instance within `rram_ctrl_mp` (`host_sel_cfg`/`host_mp_err`), independent of the four requesters above, but against the same software-configured MP regions and `DEFAULT_REGION`.
 
 ### Data partition
