@@ -20364,45 +20364,45 @@
           }
           {
             name: dft0
-            pad: IOR5
+            pad: SPI_HOST_D2
             desc: DFT strap signal.
-            idx: 52
+            idx: 2
           }
           {
             name: dft1
-            pad: IOR7
+            pad: SPI_HOST_D3
             desc: DFT strap signal.
-            idx: 54
+            idx: 3
           }
           {
             name: tck
-            pad: IOR3
+            pad: IOA5
             desc: JTAG tck signal.
-            idx: 50
+            idx: 17
           }
           {
             name: tms
-            pad: IOR0
+            pad: IOA0
             desc: JTAG tms signal.
-            idx: 47
+            idx: 12
           }
           {
             name: trst_n
-            pad: IOR4
+            pad: IOA6
             desc: JTAG trst_n signal.
-            idx: 51
+            idx: 18
           }
           {
             name: tdi
-            pad: IOR2
+            pad: IOA4
             desc: JTAG tdi signal.
-            idx: 49
+            idx: 16
           }
           {
             name: tdo
-            pad: IOR1
+            pad: IOA1
             desc: JTAG tdo signal.
-            idx: 48
+            idx: 13
           }
         ]
       }
@@ -20500,45 +20500,45 @@
           }
           {
             name: dft0
-            pad: IOR5
+            pad: SPI_HOST_D2
             desc: DFT strap signal.
-            idx: 52
+            idx: 2
           }
           {
             name: dft1
-            pad: IOR7
+            pad: SPI_HOST_D3
             desc: DFT strap signal.
-            idx: 54
+            idx: 3
           }
           {
             name: tck
-            pad: IOR3
+            pad: IOA5
             desc: JTAG tck signal.
-            idx: 50
+            idx: 17
           }
           {
             name: tms
-            pad: IOR0
+            pad: IOA0
             desc: JTAG tms signal.
-            idx: 47
+            idx: 12
           }
           {
             name: trst_n
-            pad: IOR4
+            pad: IOA6
             desc: JTAG trst_n signal.
-            idx: 51
+            idx: 18
           }
           {
             name: tdi
-            pad: IOR2
+            pad: IOA4
             desc: JTAG tdi signal.
-            idx: 49
+            idx: 16
           }
           {
             name: tdo
-            pad: IOR1
+            pad: IOA1
             desc: JTAG tdo signal.
-            idx: 48
+            idx: 13
           }
         ]
       }
@@ -20741,45 +20741,45 @@
           }
           {
             name: dft0
-            pad: IOR5
+            pad: SPI_HOST_D2
             desc: DFT strap signal.
-            idx: 52
+            idx: 2
           }
           {
             name: dft1
-            pad: IOR7
+            pad: SPI_HOST_D3
             desc: DFT strap signal.
-            idx: 54
+            idx: 3
           }
           {
             name: tck
-            pad: IOR3
+            pad: IOA5
             desc: JTAG tck signal.
-            idx: 50
+            idx: 17
           }
           {
             name: tms
-            pad: IOR0
+            pad: IOA0
             desc: JTAG tms signal.
-            idx: 47
+            idx: 12
           }
           {
             name: trst_n
-            pad: IOR4
+            pad: IOA6
             desc: JTAG trst_n signal.
-            idx: 51
+            idx: 18
           }
           {
             name: tdi
-            pad: IOR2
+            pad: IOA4
             desc: JTAG tdi signal.
-            idx: 49
+            idx: 16
           }
           {
             name: tdo
-            pad: IOR1
+            pad: IOA1
             desc: JTAG tdo signal.
-            idx: 48
+            idx: 13
           }
         ]
       }

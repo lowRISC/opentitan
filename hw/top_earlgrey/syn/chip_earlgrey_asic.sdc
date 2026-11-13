@@ -230,7 +230,7 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks AON_CLK]
 #####################
 # JTAG clock        #
 #####################
-set JTAG_CLK_PIN IOR3
+set JTAG_CLK_PIN IOA5
 # target is 30MHz, overconstrain by factor
 set JTAG_TCK_TARGET_PERIOD 33.3
 set JTAG_TCK_PERIOD [expr $JTAG_TCK_TARGET_PERIOD*$CLK_PERIOD_FACTOR]
@@ -240,11 +240,11 @@ create_clock -name JTAG_TCK -period $JTAG_TCK_PERIOD [get_ports $JTAG_CLK_PIN] -
 set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks JTAG_TCK]
 set_propagated_clock JTAG_TCK
 
-create_generated_clock -name LC_JTAG_TCK -source [get_ports IOR3] -divide_by 1 \
+create_generated_clock -name LC_JTAG_TCK -source [get_ports IOA5] -divide_by 1 \
     [get_pins top_earlgrey/earlgrey_pd_aon/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_lc/prim_clock_buf_tck/clk_o] -master_clock JTAG_TCK -add
-create_generated_clock -name RV_JTAG_TCK -source [get_ports IOR3] -divide_by 1 \
+create_generated_clock -name RV_JTAG_TCK -source [get_ports IOA5] -divide_by 1 \
     [get_pins top_earlgrey/earlgrey_pd_aon/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rv/prim_clock_buf_tck/clk_o] -master_clock JTAG_TCK -add
-create_generated_clock -name RRAM_JTAG_TCK -source [get_ports IOR3] -divide_by 1 \
+create_generated_clock -name RRAM_JTAG_TCK -source [get_ports IOA5] -divide_by 1 \
     [get_pins top_earlgrey/earlgrey_pd_aon/u_pinmux/u_pinmux_strap_sampling/u_pinmux_jtag_buf_rram/prim_clock_buf_tck/clk_o] -master_clock JTAG_TCK -add
 
 set LC_JTAG_TCK_INV_PIN \
@@ -264,10 +264,10 @@ set RV_JTAG_TCK_INV_PIN \
 set_clock_sense -negative ${LC_JTAG_TCK_INV_PIN}
 set_clock_sense -negative ${RV_JTAG_TCK_INV_PIN}
 
-set_output_delay -add_delay             -clock JTAG_TCK -max  7.0 [get_ports IOR1]
-set_output_delay -add_delay             -clock JTAG_TCK -min -5.0 [get_ports IOR1]
-set_input_delay  -add_delay -clock_fall -clock JTAG_TCK -min  0.0 [get_ports {IOR0 IOR2}]
-set_input_delay  -add_delay -clock_fall -clock JTAG_TCK -max  8.0 [get_ports {IOR0 IOR2}]
+set_output_delay -add_delay             -clock JTAG_TCK -max  7.0 [get_ports IOA1]
+set_output_delay -add_delay             -clock JTAG_TCK -min -5.0 [get_ports IOA1]
+set_input_delay  -add_delay -clock_fall -clock JTAG_TCK -min  0.0 [get_ports {IOA0 IOA4}]
+set_input_delay  -add_delay -clock_fall -clock JTAG_TCK -max  8.0 [get_ports {IOA0 IOA4}]
 
 # Don't apply these constraints to the DFT TAP. Leave this to the
 # implementation.
@@ -290,12 +290,12 @@ set_clock_sense -logical_stop_propagation -clock JTAG_TCK \
 set_clock_sense -stop_propagation -clock JTAG_TCK \
   [get_pins -leaf -filter "@pin_direction == out" -of_objects \
     [get_nets -segments -of_objects \
-      [get_pins top_earlgrey/earlgrey_pd_aon/u_pinmux/u_pinmux_strap_sampling/in_core_o[38]] \
+      [get_pins top_earlgrey/earlgrey_pd_aon/u_pinmux/u_pinmux_strap_sampling/in_core_o[17]] \
     ] \
   ]
 set_false_path -hold -from [get_clocks JTAG_TCK] \
-  -to [get_ports IOR1] \
-  -through [get_ports "IOR0 IOR2 IOR3"]  \
+  -to [get_ports IOA1] \
+  -through [get_ports "IOA0 IOA4 IOA5"]  \
   -through [get_pins -leaf -filter "@pin_direction == out" -of_objects \
     [get_nets -segments -of_objects \
       [get_pins top_earlgrey/earlgrey_pd_aon/u_pinmux/u_pinmux_strap_sampling/in_core_o*] \

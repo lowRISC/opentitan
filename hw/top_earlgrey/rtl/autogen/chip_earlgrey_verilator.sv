@@ -25,13 +25,13 @@ module chip_earlgrey_verilator (
 
   localparam int Tap0PadIdx = 42;
   localparam int Tap1PadIdx = 39;
-  localparam int Dft0PadIdx = 52;
-  localparam int Dft1PadIdx = 54;
-  localparam int TckPadIdx = 50;
-  localparam int TmsPadIdx = 47;
-  localparam int TrstNPadIdx = 51;
-  localparam int TdiPadIdx = 49;
-  localparam int TdoPadIdx = 48;
+  localparam int Dft0PadIdx = 2;
+  localparam int Dft1PadIdx = 3;
+  localparam int TckPadIdx = 17;
+  localparam int TmsPadIdx = 12;
+  localparam int TrstNPadIdx = 18;
+  localparam int TdiPadIdx = 16;
+  localparam int TdoPadIdx = 13;
 
   // DFT and Debug signal positions in the pinout.
   localparam pinmux_pkg::target_cfg_t PinmuxTargetCfg = '{

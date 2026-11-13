@@ -2041,16 +2041,16 @@
         special_signals: [
           // Straps
           // Check pad attributes if strap pins change.
-          { name: 'tap0',   pad: 'IOC8', desc: 'TAP strap signal.'   },
-          { name: 'tap1',   pad: 'IOC5', desc: 'TAP strap signal.'   },
-          { name: 'dft0',   pad: 'IOR5', desc: 'DFT strap signal.'   },
-          { name: 'dft1',   pad: 'IOR7', desc: 'DFT strap signal.'   },
+          { name: 'tap0',   pad: 'IOC8',        desc: 'TAP strap signal.'   },
+          { name: 'tap1',   pad: 'IOC5',        desc: 'TAP strap signal.'   },
+          { name: 'dft0',   pad: 'SPI_HOST_D2', desc: 'DFT strap signal.'   },
+          { name: 'dft1',   pad: 'SPI_HOST_D3', desc: 'DFT strap signal.'   },
           // JTAG
-          { name: 'tck',    pad: 'IOR3', desc: 'JTAG tck signal.'    },
-          { name: 'tms',    pad: 'IOR0', desc: 'JTAG tms signal.'    },
-          { name: 'trst_n', pad: 'IOR4', desc: 'JTAG trst_n signal.' },
-          { name: 'tdi',    pad: 'IOR2', desc: 'JTAG tdi signal.'    },
-          { name: 'tdo',    pad: 'IOR1', desc: 'JTAG tdo signal.'    },
+          { name: 'tck',    pad: 'IOA5', desc: 'JTAG tck signal.'    },
+          { name: 'tms',    pad: 'IOA0', desc: 'JTAG tms signal.'    },
+          { name: 'trst_n', pad: 'IOA6', desc: 'JTAG trst_n signal.' },
+          { name: 'tdi',    pad: 'IOA4', desc: 'JTAG tdi signal.'    },
+          { name: 'tdo',    pad: 'IOA1', desc: 'JTAG tdo signal.'    },
         ],
       }
     },
@@ -2100,16 +2100,16 @@
         special_signals: [
           // Straps
           // Check pad attributes if strap pins change.
-          { name: 'tap0',   pad: 'IOC8', desc: 'TAP strap signal.'   },
-          { name: 'tap1',   pad: 'IOC5', desc: 'TAP strap signal.'   },
-          { name: 'dft0',   pad: 'IOR5', desc: 'DFT strap signal.'   },
-          { name: 'dft1',   pad: 'IOR7', desc: 'DFT strap signal.'   },
+          { name: 'tap0',   pad: 'IOC8',        desc: 'TAP strap signal.'   },
+          { name: 'tap1',   pad: 'IOC5',        desc: 'TAP strap signal.'   },
+          { name: 'dft0',   pad: 'SPI_HOST_D2', desc: 'DFT strap signal.'   },
+          { name: 'dft1',   pad: 'SPI_HOST_D3', desc: 'DFT strap signal.'   },
           // JTAG
-          { name: 'tck',    pad: 'IOR3', desc: 'JTAG tck signal.'    },
-          { name: 'tms',    pad: 'IOR0', desc: 'JTAG tms signal.'    },
-          { name: 'trst_n', pad: 'IOR4', desc: 'JTAG trst_n signal.' },
-          { name: 'tdi',    pad: 'IOR2', desc: 'JTAG tdi signal.'    },
-          { name: 'tdo',    pad: 'IOR1', desc: 'JTAG tdo signal.'    },
+          { name: 'tck',    pad: 'IOA5', desc: 'JTAG tck signal.'    },
+          { name: 'tms',    pad: 'IOA0', desc: 'JTAG tms signal.'    },
+          { name: 'trst_n', pad: 'IOA6', desc: 'JTAG trst_n signal.' },
+          { name: 'tdi',    pad: 'IOA4', desc: 'JTAG tdi signal.'    },
+          { name: 'tdo',    pad: 'IOA1', desc: 'JTAG tdo signal.'    },
         ],
       }
     },
@@ -2169,16 +2169,16 @@
         special_signals: [
           // Straps
           // Check pad attributes if strap pins change.
-          { name: 'tap0',   pad: 'IOC8', desc: 'TAP strap signal.'   },
-          { name: 'tap1',   pad: 'IOC5', desc: 'TAP strap signal.'   },
-          { name: 'dft0',   pad: 'IOR5', desc: 'DFT strap signal.'   },
-          { name: 'dft1',   pad: 'IOR7', desc: 'DFT strap signal.'   },
+          { name: 'tap0',   pad: 'IOC8',        desc: 'TAP strap signal.'   },
+          { name: 'tap1',   pad: 'IOC5',        desc: 'TAP strap signal.'   },
+          { name: 'dft0',   pad: 'SPI_HOST_D2', desc: 'DFT strap signal.'   },
+          { name: 'dft1',   pad: 'SPI_HOST_D3', desc: 'DFT strap signal.'   },
           // JTAG
-          { name: 'tck',    pad: 'IOR3', desc: 'JTAG tck signal.'    },
-          { name: 'tms',    pad: 'IOR0', desc: 'JTAG tms signal.'    },
-          { name: 'trst_n', pad: 'IOR4', desc: 'JTAG trst_n signal.' },
-          { name: 'tdi',    pad: 'IOR2', desc: 'JTAG tdi signal.'    },
-          { name: 'tdo',    pad: 'IOR1', desc: 'JTAG tdo signal.'    },
+          { name: 'tck',    pad: 'IOA5', desc: 'JTAG tck signal.'    },
+          { name: 'tms',    pad: 'IOA0', desc: 'JTAG tms signal.'    },
+          { name: 'trst_n', pad: 'IOA6', desc: 'JTAG trst_n signal.' },
+          { name: 'tdi',    pad: 'IOA4', desc: 'JTAG tdi signal.'    },
+          { name: 'tdo',    pad: 'IOA1', desc: 'JTAG tdo signal.'    },
         ],
       }
     }
