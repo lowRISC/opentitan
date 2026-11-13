@@ -69,6 +69,7 @@ filesets:
       - seq_lib/otbn_wfi_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_wfi_sec_wipe_vseq.sv: {is_include_file: true}
       - seq_lib/otbn_wfi_back_to_back_vseq.sv: {is_include_file: true}
+      - seq_lib/otbn_urnd_ctrl_vseq.sv: {is_include_file: true}
     file_type: systemVerilogSource
 
 generate:
