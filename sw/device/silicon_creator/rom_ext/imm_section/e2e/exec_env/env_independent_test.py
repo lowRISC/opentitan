@@ -7,7 +7,7 @@ from pathlib import Path
 
 binaries = list(Path('.').glob('**/*.bin'))
 print(binaries)
-assert len(binaries) == 2
+assert len(binaries) == 3
 
 contents = [path.read_bytes() for path in binaries]
 assert len(set(contents)) == 1, "Immutable ROM_EXT is not exec env independent"
