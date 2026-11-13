@@ -790,6 +790,7 @@ status_t custom_exp_sign_verify_test(void) {
   return OK_STATUS();
 }
 
+#ifdef FIPS_MODE
 // 2048-bit modulus n = 751 * q (q prime). 751 is the largest prime that must
 // be rejected by the small-factor check (NIST SP 800-89, Section 5.3.3).
 static const uint32_t kTestModulusFactor751[kRsa2048NumWords] = {
@@ -950,6 +951,7 @@ status_t hash_verify_modulus_check_test(void) {
 
   return OK_STATUS();
 }
+#endif  // FIPS_MODE
 
 status_t pkcs1v15_null_hash_and_raw_sign_verify_test(void) {
   // 1. Test PKCS#1 v1.5 signing & verification with kOtcryptoHashModeNull
@@ -1024,6 +1026,8 @@ bool test_main(void) {
   EXECUTE_TEST(test_result, pkcs1v15_null_hash_and_raw_sign_verify_test);
   EXECUTE_TEST(test_result, run_signature_negative_tests);
   EXECUTE_TEST(test_result, custom_exp_sign_verify_test);
+#ifdef FIPS_MODE
   EXECUTE_TEST(test_result, hash_verify_modulus_check_test);
+#endif  // FIPS_MODE
   return status_ok(test_result);
 }

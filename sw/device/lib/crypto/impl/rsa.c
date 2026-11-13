@@ -354,6 +354,7 @@ static status_t public_key_structural_check(
   return rsa_mode_check(public_key->key_mode);
 }
 
+#ifdef FIPS_MODE
 /**
  * The 132 odd primes smaller than 752.
  *
@@ -513,6 +514,7 @@ static status_t rsa_public_key_validate(
   // COVERAGE (FI CM) Unreachable code, checked against fault injections.
   return OTCRYPTO_FATAL_ERR;
 }
+#endif  // FIPS_MODE
 
 otcrypto_status_t otcrypto_rsa_keygen_async_start(otcrypto_rsa_size_t size) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_KEYGEN_ASYNC_START);
@@ -848,8 +850,10 @@ otcrypto_status_t otcrypto_rsa_hash_verify(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+#ifdef FIPS_MODE
   // Public key validation (NIST SP 800-89, Section 5.3.3).
   HARDENED_TRY(rsa_public_key_validate(public_key));
+#endif  // FIPS_MODE
 
   uint32_t digest_data[16];
   HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
