@@ -46,6 +46,8 @@ pub struct Import {
 
 impl Import {
     const PRIVATE_ATTRS: &str = r#"{
+        "CKA_CLASS": "CKO_PRIVATE_KEY",
+        "CKA_KEY_TYPE": "CKK_SLH_DSA",
         "CKA_TOKEN": true,
         "CKA_PRIVATE": true,
         "CKA_SENSITIVE": true,
