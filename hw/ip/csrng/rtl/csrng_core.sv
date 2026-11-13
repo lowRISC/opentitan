@@ -198,6 +198,7 @@ module csrng_core import csrng_pkg::*; #(
   logic [NumApps-1:0]                      state_db_inst_state;
   logic [NumApps-1:0][GenBitsCtrWidth-1:0] state_db_gen_cnt;
   logic [NumApps-1:0]                      state_db_gen_flag;
+  logic [NumApps-1:0]                      cmd_stage_gen_flag;
 
   prim_mubi_pkg::mubi4_t [CsEnableCopies-1:0] mubi_cs_enable_fanout;
   prim_mubi_pkg::mubi4_t    [Flag0Copies-1:0] mubi_flag0_fanout;
@@ -642,6 +643,7 @@ module csrng_core import csrng_pkg::*; #(
       .instantiated_i               (state_db_inst_state[ai]),
       .cmd_gen_cnt_i                (state_db_gen_cnt[ai]),
       .cmd_gen_flag_i               (state_db_gen_flag[ai]),
+      .cmd_gen_flag_o               (cmd_stage_gen_flag[ai]),
       .reseed_cnt_alert_o           (reseed_cnt_alert[ai]),
       .invalid_cmd_seq_alert_o      (invalid_cmd_seq_alert[ai]),
       .invalid_acmd_alert_o         (invalid_acmd_alert[ai]),
@@ -998,6 +1000,7 @@ module csrng_core import csrng_pkg::*; #(
     .reseed_counter_o(reseed_counter),
     .inst_state_o    (state_db_inst_state),
     .gen_cnt_o       (state_db_gen_cnt),
+    .gen_flag_i      (cmd_stage_gen_flag),
     .gen_flag_o      (state_db_gen_flag),
 
     .reg_ptr_err_o(state_db_reg_ptr_err)
@@ -1051,7 +1054,6 @@ module csrng_core import csrng_pkg::*; #(
     rs_ctr:        state_db_rd_data.rs_ctr,
     fips:          state_db_rd_data.fips,
     gen_ctr:       state_db_rd_data.gen_ctr,
-    gen_flag:      (ctr_drbg_cmd_q == GEN),
     gen_adata:     state_db_rd_data.gen_adata,
     gen_adata_vld: state_db_rd_data.gen_adata_vld
   };
