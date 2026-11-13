@@ -865,6 +865,10 @@ module otp_ctrl_dai
   `ASSERT(ScrmblBlockWidthGe8_A, ScrmblBlockWidth >= 8)
   `ASSERT(PartSelMustBeOnehot_A, $onehot0(part_sel_oh))
 
+  // Some tools reject assignment patterns in port connections.
+  logic [31:0] part_sel_data [NumPart]; // prim_arbiter_fixed's default DW
+  assign part_sel_data = '{default: '0};
+
   prim_arbiter_fixed #(
     .N(NumPart),
     .EnDataPort(0)
@@ -872,7 +876,7 @@ module otp_ctrl_dai
     .clk_i,
     .rst_ni,
     .req_i   ( part_sel_oh    ),
-    .data_i  ( '{default: '0} ),
+    .data_i  ( part_sel_data  ),
     .gnt_o   (                ), // unused
     .idx_o   ( part_idx       ),
     .valid_o ( part_sel_valid ), // used for detecting OOB addresses

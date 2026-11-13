@@ -7,3 +7,5 @@
 
 waive -rules {ONE_BIT_MEM_WIDTH} -location {prim_arbiter_ppc.sv} -regexp {.*has word width which is single bit wide.*} \
       -comment "Usage case specific to EDN and how the arbiter is used."
+waive -rules {ONE_BIT_MEM_WIDTH} -location {edn_core.sv} -regexp {Memory 'packer_arb_data' has word width which is single bit wide} \
+      -comment "Tie-off of the arbiter's unused, one bit wide data port."

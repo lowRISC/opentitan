@@ -767,11 +767,15 @@ module i3c_target_fsm
   logic              daa_targ_valid; // TODO: Currently unused.
   logic [Log2NT-1:0] daa_targ_id;    // TODO: Currently unused.
 
+  // Some tools reject assignment patterns in port connections.
+  logic daa_arb_data [NumTargets];
+  assign daa_arb_data = '{default: '0};
+
   prim_arbiter_fixed #(.N(NumTargets), .DW(1), .EnDataPort(0)) u_daa_arb (
     .clk_i  (clk_i),
     .rst_ni (rst_ni),
     .req_i  (daa_contenders),
-    .data_i ('{default:'0}),
+    .data_i (daa_arb_data),
     .gnt_o  (),  // Not used
     .idx_o  (daa_targ_id),
     .valid_o(daa_targ_valid),
