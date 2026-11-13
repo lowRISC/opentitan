@@ -158,12 +158,18 @@
 
             - request a LC state transition via the programming interface
             - enable the `lc_escalation_en` signal
+            - issue DAI `ZEROIZE` commands to zeroizable partitions while LC state transitions
+              are requested
 
             **Checks**:
             - if the LC program request has `AccessError`, check the LC program response sets
               the `error` bit to 1
             - if `lc_escalation_en` is enabled, verify that alert is triggered and OTP_CTRL entered
               terminal state
+            - if a `ZEROIZE` command and a LC program request overlap, the operation already in
+              progress completes first, and when both compete for the next OTP access, the LC
+              program request is served first; check the results of both operations and the
+              order in which they complete
             '''
       stage: V2
       tests: ["otp_ctrl_parallel_lc_req", "otp_ctrl_parallel_lc_esc"]
@@ -250,6 +256,259 @@
             '''
       stage: V3
       tests: ["otp_ctrl_low_freq_read"]
+    }
+    {
+      name: dai_zeroize
+      desc: '''
+            Verify zeroization of individual OTP words through the DAI `ZEROIZE` command.
+
+            **Stimulus**:
+            - Backdoor-load random data into a zeroizable partition, locked or unlocked.
+            - Issue `ZEROIZE` via `DIRECT_ACCESS_CMD` on randomly chosen 64-bit words covering:
+              - data words,
+              - the digest field,
+              - the zeroization marker field.
+            - Issue `ZEROIZE` directly after a completed `DIGEST` command, without an intervening
+              DAI `READ`, `WRITE` or reset, and after each of the other DAI commands.
+            - While a `ZEROIZE` command is in progress, attempt writes to the DAI registers
+              protected by `DIRECT_ACCESS_REGWEN`.
+            - Wait for `otp_operation_done`.
+
+            **Checks**:
+            - The addressed word is fully set in the OTP macro (data and ECC bits), checked via
+              backdoor.
+            - `DIRECT_ACCESS_RDATA` holds the population count of the 64 data bits of the
+              zeroized word, as read back from the OTP macro (64 for a fully zeroized word); it
+              does not contain the word contents and is not descrambled.
+            - The access is 64 bits wide, as all zeroizable partitions in the supported Earl Grey
+              and Darjeeling configurations are secret partitions with 64-bit words, and the low
+              address bits are ignored accordingly.
+            - `ZEROIZE` succeeds regardless of the preceding DAI command, including directly after
+              `DIGEST`, since every word in a zeroizable partition is always erasable.
+            - While `ZEROIZE` is in progress, `STATUS.DAI_IDLE` and `DIRECT_ACCESS_REGWEN` are
+              low, writes to `DIRECT_ACCESS_CMD`, `DIRECT_ACCESS_ADDRESS` and
+              `DIRECT_ACCESS_WDATA` are ignored, and `pwr_otp_o.otp_idle` is low. All are
+              restored once the command completes.
+            - `STATUS` and `ERR_CODE` report no error for the DAI.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: dai_zeroize_access_ctrl
+      desc: '''
+            Verify which addresses accept or reject a `ZEROIZE` command, and how the
+            zeroization marker is protected against other DAI commands.
+
+            **Stimulus**:
+            - Issue `ZEROIZE` on random addresses in non-zeroizable partitions, including
+              `LIFE_CYCLE`, and on out-of-range addresses.
+            - Issue `ZEROIZE` on zeroizable partitions that are write-locked (non-zero digest)
+              and/or read-locked.
+            - Issue `ZEROIZE` in random life cycle states.
+            - Issue DAI `WRITE` and `READ` commands to the zeroization marker.
+
+            **Checks**:
+            - Zeroize on a non-zeroizable partition or out-of-range address is rejected with
+              `AccessError` in the DAI `ERR_CODE`, the `otp_error` interrupt fires, the OTP
+              contents are unchanged and the DAI remains usable (no terminal error state).
+            - Zeroize on a zeroizable partition succeeds regardless of its write or read lock.
+            - Zeroize is not restricted by the life cycle state (see #32272).
+            - On a read-locked partition, `ZEROIZE` still releases the set-bit count, and only the
+              set-bit count, to `DIRECT_ACCESS_RDATA`.
+            - A DAI `WRITE` to the zeroization marker is always rejected with `AccessError`.
+            - A DAI `READ` of the marker always succeeds, even when the partition is read-locked,
+              returns the raw value without descrambling and does not raise ECC errors.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: dai_zeroize_idempotent
+      desc: '''
+            Verify that `ZEROIZE` can be repeated on the same word, including retries after an
+            incomplete zeroization.
+
+            **Stimulus**:
+            - Zeroize a random word, then issue `ZEROIZE` on the same address one or more times.
+            - Incomplete zeroization: during a `ZEROIZE` command, inject a fault between the
+              programming and the read-back of the word, or force a macro response with `NoError`
+              and a data value whose population count is below `ZeroizationValidBound`. Then
+              remove the fault and issue `ZEROIZE` on the same address again.
+
+            **Checks**:
+            - For a successfully zeroized word, every repetition completes without error, returns
+              the same set-bit count and leaves the OTP contents unchanged.
+            - For an incomplete zeroization, the command completes with `NoError` and returns the
+              reduced set-bit count; the retry returns 64 and the word is fully set.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: zeroize_check_disable
+      desc: '''
+            Verify how a successful zeroization affects background checks before the next reset.
+
+            **Stimulus**:
+            - Lock a zeroizable buffered partition, reset, and enable periodic integrity and
+              consistency checks with short periods.
+            - Zeroize one or more words of that partition, then keep running checks, and also
+              trigger them via `CHECK_TRIGGER`.
+            - Include zeroizations that complete with `NoError` but return a set-bit count below
+              `ZeroizationValidBound`.
+            - Zeroize the digest word of a partition while a consistency check of that partition
+              is in progress, and with the zeroization and the check's OTP read requested at the
+              same time, without zeroizing the marker first.
+
+            **Checks**:
+            - Check execution is observed on the OTP macro interface (read requests issued by the
+              partition for its checks) and via `STATUS.CHECK_PENDING`, not only through the
+              absence of alerts.
+            - After the first zeroization of a word in the partition that completes with
+              `NoError`, consistency checks for that partition are no longer executed, also if the
+              returned set-bit count is below `ZeroizationValidBound`, and no `fatal_check_error`
+              alert is raised even though the OTP contents now differ from the buffered copy.
+            - Integrity checks continue to run on the buffered data until reset.
+            - The buffered values of the partition, and the hardware outputs derived from them,
+              remain unchanged until reset.
+            - Checks on other, non-zeroized partitions are unaffected.
+            - A zeroization that completes with an error does not disable checks.
+            - A consistency check that overlaps with the zeroization of the digest word does not
+              raise a false `fatal_check_error`.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: zeroize_init
+      desc: '''
+            Verify partition initialization depending on the zeroization marker.
+
+            **Stimulus**:
+            - Backdoor-load the zeroization marker of zeroizable partitions with a random number
+              of set bits, including values just below, at and above `ZeroizationValidBound`
+              (58 of 64 bits), and with random partition contents including uncorrectable ECC
+              errors in zeroized partitions.
+            - Backdoor-load a marker with at least `ZeroizationValidBound` set bits while only
+              some of the data words and the digest are zeroized, the rest keeping its original
+              contents.
+            - Backdoor-load a marker with fewer than `ZeroizationValidBound` set bits, combined
+              with the following partition contents:
+              - a locked partition with valid ECC throughout and a nonzero digest that does not
+                match the partition contents,
+              - a partition containing a fully zeroized word, which results in an uncorrectable
+                ECC error when read with ECC enabled,
+              - an unlocked partition with a blank digest and valid ECC throughout.
+            - Trigger OTP initialization via the power manager interface.
+
+            **Checks**:
+            - Marker set-bit count >= `ZeroizationValidBound`: the partition is treated as
+              zeroized: initialization completes without integrity check and without ECC errors,
+              no periodic integrity or consistency checks run for it (observed on the OTP macro
+              interface and via `STATUS.CHECK_PENDING`, as in `zeroize_check_disable`), and
+              subsequent DAI reads of the partition use raw access without ECC checking.
+            - A partition with a zeroized marker but incompletely zeroized contents is detected as
+              zeroized and initializes without errors or alerts.
+            - Marker set-bit count < `ZeroizationValidBound`: the partition is initialized and
+              checked as a normal partition:
+              - valid ECC with a mismatching nonzero digest: `CheckFailError` and
+                `fatal_check_error`,
+              - uncorrectable ECC error: `MacroEccUncorrError` and `fatal_macro_error`,
+              - unlocked partition with a blank digest and valid ECC: successful initialization.
+            - Each zeroizable partition is zeroized independently: zeroizing one does not
+              affect initialization or checks of the others.
+            - The marker is read raw at initialization and is not covered by the digest; an OTP
+              error on that read moves the partition into its terminal error state with the
+              corresponding error code.
+            - The hardware outputs of a zeroized partition carry its buffered data, i.e. the
+              descrambled zeroized contents for secret partitions, and the associated valid
+              signals follow the nonzero digest as for non-zeroized partitions (see #32271).
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: zeroize_interrupted
+      desc: '''
+            Verify that an interrupted zeroization can be detected and resumed.
+
+            **Stimulus**:
+            - Zeroize the marker of a partition first, then part of its words.
+            - Assert reset or `lc_escalate_en` during a `ZEROIZE` command, while the word is being
+              programmed, while it is being read back, and while the response is returned to the
+              DAI.
+            - Assert reset while the zeroization marker itself is being zeroized.
+            - After reset, re-initialize and continue zeroizing the remaining words.
+
+            **Checks**:
+            - Escalation moves the DAI into its terminal error state and further DAI commands are
+              rejected.
+            - After reset, a partition whose marker was zeroized is detected as zeroized.
+            - After reset, a partially set marker (below `ZeroizationValidBound`) leaves the
+              partition non-zeroized; it initializes normally without alerts, since the marker
+              is not covered by the digest, and zeroizing the marker again completes
+              successfully.
+            - Resumed zeroization completes successfully on all remaining words.
+            - The scoreboard tolerates the unknown programming state of the interrupted word by
+              backdoor-reading it.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: zeroize_errors
+      desc: '''
+            Verify error handling during zeroization.
+
+            **Stimulus**:
+            - Force `MacroError` and `MacroWriteBlankError` onto the OTP macro response interface
+              during a `ZEROIZE` command, since the generic OTP macro model never returns an error
+              for `ZEROIZE`. ECC errors are not applicable, as ECC is disabled during
+              zeroization.
+            - After a recoverable error, issue `ZEROIZE` on the same address again.
+            - Issue `ZEROIZE` after a fatal alert has been raised.
+
+            **Checks**:
+            - On an error response, the error code is reported in the DAI `ERR_CODE`, no set-bit
+              count is released to `DIRECT_ACCESS_RDATA`, and checks for the partition stay
+              enabled.
+            - `MacroWriteBlankError` is recoverable: the DAI remains usable and a retry of the
+              command succeeds.
+            - `MacroError` raises `fatal_macro_error` and escalates locally, moving the DAI into
+              its terminal error state.
+            - After a fatal alert, `ZEROIZE` commands are not executed.
+
+            The DAI RTL comment stating that all zeroization errors are recoverable is incorrect
+            and tracked in #32270.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: zeroize_sec_cm
+      desc: '''
+            Verify the countermeasures protecting the zeroization state.
+
+            **Stimulus**:
+            - Force an invalid multi-bit value on the zeroization trigger that the DAI sends to a
+              partition.
+            - Force an invalid multi-bit value on a partition's zeroization indicator, or inject
+              an error into its zeroization marker register.
+
+            **Checks**:
+            - An invalid zeroization trigger moves the DAI into its terminal error state with
+              `FsmStateError`.
+            - An invalid zeroization indicator or a marker register error moves the partition
+              into its terminal error state with `FsmStateError` and raises `fatal_check_error`.
+            - OTP_CTRL is locked afterwards, as checked in `sec_cm_additional_check`.
+
+            Related countermeasures: `DAI.FSM.SPARSE`, `PART.FSM.SPARSE` and
+            `PART.DATA_REG.INTEGRITY`. The multi-bit encoded zeroization trigger and indicator
+            are not listed as a separate countermeasure.
+            '''
+      stage: V2S
+      tests: []
     }
   ]
 
@@ -399,6 +658,50 @@
             - whether DAI interface is busy
             - whether lc_esc_en is On
             '''
+    }
+    {
+      name: dai_zeroize_cg
+      desc: '''Covers DAI `ZEROIZE` commands crossed with partition (each zeroizable
+               partition and a non-zeroizable partition), word type (data, digest,
+               zeroization marker), write-lock state, read-lock state, the preceding DAI
+               command (`READ`, `WRITE`, `DIGEST`, `ZEROIZE`, none since reset) and result
+               (success, access error, macro error). Excluded: data, digest and marker word
+               types on non-zeroizable partitions, and macro errors on rejected commands.'''
+    }
+    {
+      name: dai_zeroize_count_cg
+      desc: '''Covers the set-bit count returned by `ZEROIZE` (64, at least
+               `ZeroizationValidBound` but below 64, below `ZeroizationValidBound`) crossed
+               with whether the command is a first attempt or a retry, and the outcome of the
+               retry.'''
+    }
+    {
+      name: zeroize_marker_cg
+      desc: '''Covers the set-bit count of the zeroization marker sampled at initialization
+               for each zeroizable partition, with bins below, at and above
+               `ZeroizationValidBound`, and the combination of zeroized partitions at
+               initialization (none, each single partition, several, all).'''
+    }
+    {
+      name: zeroize_check_cg
+      desc: '''Covers integrity and consistency check executions for zeroizable partitions in
+               each zeroization state: not zeroized, zeroized in the current power cycle,
+               zeroized at initialization. Also covers a consistency check that is in progress,
+               or requested at the same time, when the digest word of the same partition is
+               zeroized. Excluded: consistency checks on partitions zeroized in the current
+               power cycle, which must not occur.'''
+    }
+    {
+      name: zeroize_interrupt_cg
+      desc: '''Covers reset and `lc_escalate_en` assertion during a `ZEROIZE` command, crossed
+               with the phase of the command (programming, read-back, response to the DAI) and
+               the word type (data, digest, zeroization marker).'''
+    }
+    {
+      name: zeroize_lc_overlap_cg
+      desc: '''Covers a `ZEROIZE` command overlapping a life cycle programming request: the
+               zeroization in progress when the request arrives, the request in progress when
+               the zeroization is issued, and both requested at the same time.'''
     }
   ]
 }
