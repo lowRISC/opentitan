@@ -193,18 +193,13 @@ typedef enum dif_otp_ctrl_partition {
    * This contains RMA unlock token, creator root key, and creator seed.
    */
   kDifOtpCtrlPartitionSecret2,
-#if defined(OPENTITAN_IS_DARJEELING)
   /**
    * Secret partition 3.
    *
-   * This contains the owner seed.
+   * On Darjeeling, this contains the owner seed. On Earlgrey, this contains
+   * the field entropy.
    */
   kDifOtpCtrlPartitionSecret3,
-#elif defined(OPENTITAN_IS_EARLGREY)
-// Earlgrey only has 3 secret partitions.
-#else
-#error "dif_otp_ctrl does not support this top"
-#endif
   /**
    * Lifecycle partition.
    *

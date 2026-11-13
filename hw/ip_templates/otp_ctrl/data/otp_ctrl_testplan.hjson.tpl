@@ -287,6 +287,25 @@
             - whether `lc_seed_hw_rd_en_i` is On
             '''
     }
+  % if any(item["name"] == "FIELD_ENTROPY" for part in otp_mmap["partitions"] for item in part["items"]):
+    {
+      name: keymgr_field_entropy_o_cg
+      desc: '''Covers whether the partition holding FIELD_ENTROPY is locked when scoreboard
+            checks the `keymgr_field_entropy_o` value, crossed with
+            whether `lc_seed_hw_rd_en_i` is On.
+            '''
+    }
+  % endif
+  % if any(item["name"] == "SECONDARY_ROOT_KEY_SHARE0" for part in otp_mmap["partitions"] for item in part["items"]):
+    {
+      name: keymgr_secondary_root_key_o_cg
+      desc: '''Covers the following conditions when scoreboard checks the
+            `keymgr_secondary_root_key_o` value:
+            - whether the partition holding SECONDARY_ROOT_KEY_SHARE0/1 is locked
+            - whether `lc_seed_hw_rd_en_i` is On
+            '''
+    }
+  % endif
     {
       name: req_dai_access_after_alert_cg
       desc: '''Covers if sequence issued various DAI requests after any fatal alert is

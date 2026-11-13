@@ -16,6 +16,9 @@ for part in otp_mmap["partitions"]:
 num_part_buf = num_part - num_part_unbuf
 otp_size_as_bytes = 2 ** otp_mmap["otp"]["byte_addr_width"]
 otp_size_as_uint32 = otp_size_as_bytes // 4
+item_names = [item["name"] for part in otp_mmap["partitions"] for item in part["items"]]
+has_field_entropy = "FIELD_ENTROPY" in item_names
+has_secondary_root_key = "SECONDARY_ROOT_KEY_SHARE0" in item_names
 %>\
 {
   name:               "otp_ctrl",
@@ -359,7 +362,7 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       package: "lc_ctrl_pkg"
       desc:    '''
                Seed read enable coming from life cycle controller.
-               This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+               This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1${", FIELD_ENTROPY" if has_field_entropy else ""}${", SECONDARY_ROOT_KEY_SHARE0 and SECONDARY_ROOT_KEY_SHARE1" if has_secondary_root_key else ""}.
                '''
     }
     { struct:  "lc_tx"
@@ -409,6 +412,26 @@ otp_size_as_uint32 = otp_size_as_bytes // 4
       package: "keymgr_dpe_pkg"
       desc:    "Owner seed output to the key manager"
     }
+  % if has_field_entropy:
+    { struct:  "keymgr_dpe_field_entropy"
+      type:    "uni"
+      name:    "keymgr_field_entropy"
+      act:     "req"
+      default: "'0"
+      package: "keymgr_dpe_pkg"
+      desc:    "Field entropy output to the key manager holding FIELD_ENTROPY."
+    }
+  % endif
+  % if has_secondary_root_key:
+    { struct:  "keymgr_dpe_creator_root_key"
+      type:    "uni"
+      name:    "keymgr_secondary_root_key"
+      act:     "req"
+      default: "'0"
+      package: "keymgr_dpe_pkg"
+      desc:    "Key output to the key manager holding SECONDARY_ROOT_KEY_SHARE0 and SECONDARY_ROOT_KEY_SHARE1."
+    }
+  % endif
   % if enable_nvm_key:
     // Broadcast to Nvm Controller
     { struct:  "nvm_otp_key"

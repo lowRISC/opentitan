@@ -28,6 +28,7 @@ module otp_ctrl
   parameter key_t RndCnstScrmblKey0 = '0,
   parameter key_t RndCnstScrmblKey1 = '0,
   parameter key_t RndCnstScrmblKey2 = '0,
+  parameter key_t RndCnstScrmblKey3 = '0,
   parameter digest_const_t RndCnstDigestConst0 = '0,
   parameter digest_const_t RndCnstDigestConst1 = '0,
   parameter digest_const_t RndCnstDigestConst2 = '0,
@@ -36,7 +37,7 @@ module otp_ctrl
   parameter digest_iv_t RndCnstDigestIV1 = '0,
   parameter digest_iv_t RndCnstDigestIV2 = '0,
   parameter digest_iv_t RndCnstDigestIV3 = '0,
-  parameter logic [16511:0] RndCnstPartInvDefault = '0,
+  parameter logic [17407:0] RndCnstPartInvDefault = '0,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter scrmbl_key_init_t RndCnstScrmblKeyInit = RndCnstScrmblKeyInitDefault
@@ -79,6 +80,8 @@ module otp_ctrl
   output keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t keymgr_creator_root_key_o,
   output keymgr_dpe_pkg::keymgr_dpe_creator_seed_t     keymgr_creator_seed_o,
   output keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       keymgr_owner_seed_o,
+  output keymgr_dpe_pkg::keymgr_dpe_field_entropy_t    keymgr_field_entropy_o,
+  output keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t keymgr_secondary_root_key_o,
   // Scrambling key requests
   input  nvm_otp_key_req_t                           nvm_otp_key_i,
   output nvm_otp_key_rsp_t                           nvm_otp_key_o,
@@ -119,6 +122,7 @@ module otp_ctrl
   `ASSERT_INIT(ScrmblKeyNotAllZero_A0, RndCnstScrmblKey0 != 0)
   `ASSERT_INIT(ScrmblKeyNotAllZero_A1, RndCnstScrmblKey1 != 0)
   `ASSERT_INIT(ScrmblKeyNotAllZero_A2, RndCnstScrmblKey2 != 0)
+  `ASSERT_INIT(ScrmblKeyNotAllZero_A3, RndCnstScrmblKey3 != 0)
   `ASSERT_INIT(DigestConstNotAllZero_A0, RndCnstDigestConst0 != 0)
   `ASSERT_INIT(DigestIVNotAllZero_A0, RndCnstDigestIV0 != 0)
   `ASSERT_INIT(DigestConstNotAllZero_A1, RndCnstDigestConst1 != 0)
@@ -135,6 +139,7 @@ module otp_ctrl
   // Based on the flat random constant parameters, build up arrays
   // SEC_CM: SECRET.MEM.SCRAMBLE
   localparam key_array_t RndCnstKey = {
+    RndCnstScrmblKey3,
     RndCnstScrmblKey2,
     RndCnstScrmblKey1,
     RndCnstScrmblKey0
@@ -639,6 +644,7 @@ module otp_ctrl
     hw2reg.partition_status_0.secret0_error.d = part_errors_reduced[Secret0Idx];
     hw2reg.partition_status_0.secret1_error.d = part_errors_reduced[Secret1Idx];
     hw2reg.partition_status_0.secret2_error.d = part_errors_reduced[Secret2Idx];
+    hw2reg.partition_status_0.secret3_error.d = part_errors_reduced[Secret3Idx];
     hw2reg.partition_status_0.life_cycle_error.d = part_errors_reduced[LifeCycleIdx];
     // Error code registers.
     hw2reg.err_code = part_error;
@@ -1492,6 +1498,89 @@ end
     clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
   )
 
+  // Like the SECRET1 partition, SW access to the partition holding FIELD_ENTROPY is only
+  // restricted by the partition's own digest lock. The FIELD_ENTROPY is only output if the
+  // life cycle controller allows HW to consume the seeds.
+
+  // Set the valid signal only if the secret is provisioned (digest is nonzero), the partition
+  // has been successfully initialized, and the FIELD_ENTROPY is not all-zero.
+  logic field_entropy_valid_d, field_entropy_valid_q;
+  assign field_entropy_valid_d = part_init_done[Secret3Idx] &&
+                                 (part_digest[Secret3Idx] != '0) &&
+                                 (part_buf_data[FieldEntropyOffset +: FieldEntropySize] != '0);
+
+  prim_flop #(
+    .Width(1)
+  ) u_field_entropy_valid (
+    .clk_i,
+    .rst_ni,
+    .d_i (field_entropy_valid_d),
+    .q_o (field_entropy_valid_q)
+  );
+
+  assign keymgr_field_entropy_o.secret_valid = field_entropy_valid_q;
+  assign keymgr_field_entropy_o.secret =
+      lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en) ?
+      part_buf_data[FieldEntropyOffset +: FieldEntropySize] :
+      RndCnstPartInvDefault[FieldEntropyOffset*8 +: FieldEntropySize*8];
+
+  `ASSERT(LcSeedHwRdEnStable4_A,
+    $rose(field_entropy_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
+    clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
+  )
+
+  // A SECONDARY_ROOT_KEY share is valid once its partition has been successfully initialized and
+  // locked with a digest, the share is not all-zero, and the life cycle controller allows HW to
+  // consume the seeds.
+  logic secondary_root_key_share0_valid_d, secondary_root_key_share0_valid_q;
+  logic secondary_root_key_share1_valid_d, secondary_root_key_share1_valid_q;
+  assign secondary_root_key_share0_valid_d =
+      part_init_done[Secret3Idx] &&
+      (part_digest[Secret3Idx] != '0) &&
+      (part_buf_data[SecondaryRootKeyShare0Offset +: SecondaryRootKeyShare0Size] != '0) &&
+      lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en);
+  assign secondary_root_key_share1_valid_d =
+      part_init_done[Secret3Idx] &&
+      (part_digest[Secret3Idx] != '0) &&
+      (part_buf_data[SecondaryRootKeyShare1Offset +: SecondaryRootKeyShare1Size] != '0) &&
+      lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en);
+
+  prim_flop #(
+    .Width(2)
+  ) u_secondary_root_key_valid (
+    .clk_i,
+    .rst_ni,
+    .d_i ({secondary_root_key_share0_valid_d,
+           secondary_root_key_share1_valid_d}),
+    .q_o ({secondary_root_key_share0_valid_q,
+           secondary_root_key_share1_valid_q})
+  );
+
+  // The SECONDARY_ROOT_KEY shares are only output if the life cycle controller allows HW to
+  // consume the seeds. Otherwise, they are replaced by the random netlist constants.
+  assign keymgr_secondary_root_key_o = '{
+    share0:       lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en) ?
+                  part_buf_data[SecondaryRootKeyShare0Offset +: SecondaryRootKeyShare0Size] :
+                  RndCnstPartInvDefault[SecondaryRootKeyShare0Offset*8 +:
+                                        SecondaryRootKeyShare0Size*8],
+    share0_valid: secondary_root_key_share0_valid_q,
+    share1:       lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en) ?
+                  part_buf_data[SecondaryRootKeyShare1Offset +: SecondaryRootKeyShare1Size] :
+                  RndCnstPartInvDefault[SecondaryRootKeyShare1Offset*8 +:
+                                        SecondaryRootKeyShare1Size*8],
+    share1_valid: secondary_root_key_share1_valid_q
+  };
+
+  // Check that the lc_seed_hw_rd_en remains stable, once the key material is valid.
+  `ASSERT(LcSeedHwRdEnStable5_A,
+    $rose(secondary_root_key_share0_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
+    clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
+  )
+  `ASSERT(LcSeedHwRdEnStable6_A,
+    $rose(secondary_root_key_share1_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
+    clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
+  )
+
   // Scrambling Keys
   assign scrmbl_key_seed_valid = part_digest[Secret1Idx] != '0;
   assign sram_data_key_seed    = part_buf_data[SramDataKeySeedOffset +:
@@ -1571,6 +1660,12 @@ end
                keymgr_dpe_pkg::KeyWidth == CreatorRootKeyShare0Size * 8)
   `ASSERT_INIT(CreatorRootKeyShare1Size_A,
                keymgr_dpe_pkg::KeyWidth == CreatorRootKeyShare1Size * 8)
+  `ASSERT_INIT(FieldEntropySize_A,
+               keymgr_dpe_pkg::KeyWidth == FieldEntropySize * 8)
+  `ASSERT_INIT(SecondaryRootKeyShare0Size_A,
+               keymgr_dpe_pkg::KeyWidth == SecondaryRootKeyShare0Size * 8)
+  `ASSERT_INIT(SecondaryRootKeyShare1Size_A,
+               keymgr_dpe_pkg::KeyWidth == SecondaryRootKeyShare1Size * 8)
   `ASSERT_INIT(NvmDataKeySeedSize_A,       NvmKeySeedWidth == NvmDataKeySeedSize * 8)
   `ASSERT_INIT(NvmAddrKeySeedSize_A,       NvmKeySeedWidth == NvmAddrKeySeedSize * 8)
   `ASSERT_INIT(SramDataKeySeedSize_A,      SramKeySeedWidth == SramDataKeySeedSize * 8)
@@ -1591,6 +1686,8 @@ end
   `ASSERT_KNOWN(KeymgrCreatorRootKey_A,      keymgr_creator_root_key_o)
   `ASSERT_KNOWN(KeymgrCreatorSeed_A,         keymgr_creator_seed_o)
   `ASSERT_KNOWN(KeymgrOwnerSeed_A,           keymgr_owner_seed_o)
+  `ASSERT_KNOWN(KeymgrFieldEntropy_A,        keymgr_field_entropy_o)
+  `ASSERT_KNOWN(KeymgrSecondaryRootKey_A,    keymgr_secondary_root_key_o)
   `ASSERT_KNOWN(NvmOtpKeyRspKnown_A,         nvm_otp_key_o)
   `ASSERT_KNOWN(OtpSramKeyKnown_A,           sram_otp_key_o)
   `ASSERT_KNOWN(OtpOtgnKeyKnown_A,           otbn_otp_key_o)

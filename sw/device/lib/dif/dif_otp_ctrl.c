@@ -660,7 +660,6 @@ static const partition_info_t kPartitions[] = {
         .has_digest = true,
         .is_lifecycle = false,
         .is_zeroizable = true},
-#if defined(OPENTITAN_IS_DARJEELING)
     [kDifOtpCtrlPartitionSecret3] = {
         .start_addr = OTP_CTRL_PARAM_SECRET3_OFFSET,
         .len = OTP_CTRL_PARAM_SECRET3_SIZE,
@@ -669,11 +668,6 @@ static const partition_info_t kPartitions[] = {
         .has_digest = true,
         .is_lifecycle = false,
         .is_zeroizable = true},
-#elif defined(OPENTITAN_IS_EARLGREY)
-// Earlgrey only has 3 secret partitions.
-#else
-#error "dif_otp_ctrl does not support this top"
-#endif
     [kDifOtpCtrlPartitionLifeCycle] = {
         .start_addr = OTP_CTRL_PARAM_LIFE_CYCLE_OFFSET,
         .len = OTP_CTRL_PARAM_LIFE_CYCLE_SIZE,
@@ -979,16 +973,10 @@ static bool get_digest_regs(dif_otp_ctrl_partition_t partition, ptrdiff_t *reg0,
       *reg0 = OTP_CTRL_SECRET2_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_SECRET2_DIGEST_1_REG_OFFSET;
       break;
-#if defined(OPENTITAN_IS_DARJEELING)
     case kDifOtpCtrlPartitionSecret3:
       *reg0 = OTP_CTRL_SECRET3_DIGEST_0_REG_OFFSET;
       *reg1 = OTP_CTRL_SECRET3_DIGEST_1_REG_OFFSET;
       break;
-#elif defined(OPENTITAN_IS_EARLGREY)
-// Earlgrey only has 3 secret partitions.
-#else
-#error "dif_otp_ctrl does not support this top"
-#endif
     default:
       return false;
   }

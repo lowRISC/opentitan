@@ -47,6 +47,8 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
   keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t keymgr_creator_root_key_o;
   keymgr_dpe_pkg::keymgr_dpe_creator_seed_t     keymgr_creator_seed_o;
   keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       keymgr_owner_seed_o;
+  keymgr_dpe_pkg::keymgr_dpe_field_entropy_t    keymgr_field_entropy_o;
+  keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t keymgr_secondary_root_key_o;
   otp_lc_data_t      lc_data_o;
   logic              pwr_otp_done_o, pwr_otp_idle_o;
 
@@ -241,6 +243,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
       Secret0Idx: force `BUF_PART_OTP_CMD_PATH(Secret0Idx) = otp_ctrl_macro_pkg::cmd_e'(2'b10);
       Secret1Idx: force `BUF_PART_OTP_CMD_PATH(Secret1Idx) = otp_ctrl_macro_pkg::cmd_e'(2'b10);
       Secret2Idx: force `BUF_PART_OTP_CMD_PATH(Secret2Idx) = otp_ctrl_macro_pkg::cmd_e'(2'b10);
+      Secret3Idx: force `BUF_PART_OTP_CMD_PATH(Secret3Idx) = otp_ctrl_macro_pkg::cmd_e'(2'b10);
       LifeCycleIdx: force `LC_PART_OTP_CMD_PATH              = otp_ctrl_macro_pkg::cmd_e'(2'b10);
       default: begin
         `uvm_fatal("otp_ctrl_if",
@@ -257,6 +260,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
       Secret0Idx: release `BUF_PART_OTP_CMD_PATH(Secret0Idx);
       Secret1Idx: release `BUF_PART_OTP_CMD_PATH(Secret1Idx);
       Secret2Idx: release `BUF_PART_OTP_CMD_PATH(Secret2Idx);
+      Secret3Idx: release `BUF_PART_OTP_CMD_PATH(Secret3Idx);
       LifeCycleIdx: release `LC_PART_OTP_CMD_PATH;
       default: begin
         `uvm_fatal("otp_ctrl_if",
@@ -280,6 +284,7 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(Secret0Idx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(Secret1Idx)
     `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(Secret2Idx)
+    `FORCE_OTP_PART_LOCK_WITH_RAND_NON_MUBI_VAL(Secret3Idx)
   endtask
 
   task automatic release_part_access_mubi();
@@ -325,6 +330,12 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
                         $stable(keymgr_creator_seed_o.seed_valid))
   `OTP_ASSERT_WO_LC_ESC(OtpKeymgrValidStable3_A, pwr_otp_done_o |->
                         $stable(keymgr_owner_seed_o.seed_valid))
+  `OTP_ASSERT_WO_LC_ESC(OtpKeymgrValidStable4_A, pwr_otp_done_o |->
+                        $stable(keymgr_field_entropy_o.secret_valid))
+  `OTP_ASSERT_WO_LC_ESC(OtpKeymgrValidStable5_A, pwr_otp_done_o |->
+                        $stable(keymgr_secondary_root_key_o.share0_valid))
+  `OTP_ASSERT_WO_LC_ESC(OtpKeymgrValidStable6_A, pwr_otp_done_o |->
+                        $stable(keymgr_secondary_root_key_o.share1_valid))
 
   // During lc_prog_req, either otp_idle will be reset or lc_error is set
   `OTP_ASSERT_WO_LC_ESC(LcProgReq_A, $rose(lc_prog_req) |=>
@@ -351,6 +362,12 @@ interface otp_ctrl_if(input clk_i, input rst_ni);
     RndCnstOtpCtrlPartInvDefault[CreatorRootKeyShare0Offset*8+:CreatorRootKeyShare0Size*8] &&
     keymgr_creator_root_key_o.share1 ==
     RndCnstOtpCtrlPartInvDefault[CreatorRootKeyShare1Offset*8+:CreatorRootKeyShare1Size*8])
+  `OTP_FATAL_ERR_ASSERT(KeymgrFieldEntropyData_A, keymgr_field_entropy_o.secret ==
+    RndCnstOtpCtrlPartInvDefault[FieldEntropyOffset*8+:FieldEntropySize*8])
+  `OTP_FATAL_ERR_ASSERT(KeymgrSecondaryRootKeyData_A, keymgr_secondary_root_key_o.share0 ==
+    RndCnstOtpCtrlPartInvDefault[SecondaryRootKeyShare0Offset*8+:SecondaryRootKeyShare0Size*8] &&
+    keymgr_secondary_root_key_o.share1 ==
+    RndCnstOtpCtrlPartInvDefault[SecondaryRootKeyShare1Offset*8+:SecondaryRootKeyShare1Size*8])
 
   `OTP_FATAL_ERR_ASSERT(HwCfgOValid_A, otp_broadcast_o.valid == lc_ctrl_pkg::Off)
   `OTP_FATAL_ERR_ASSERT(HwCfg0OData_A, otp_broadcast_o.hw_cfg0_data ==

@@ -15,7 +15,7 @@ package otp_ctrl_part_pkg;
   // Scrambling Constants and Types //
   ////////////////////////////////////
 
-  parameter int NumScrmblKeys = 3;
+  parameter int NumScrmblKeys = 4;
   parameter int NumDigestSets = 4;
 
   parameter int ScrmblKeySelWidth = vbits(NumScrmblKeys);
@@ -36,7 +36,8 @@ package otp_ctrl_part_pkg;
   typedef enum logic [ConstSelWidth-1:0] {
     Secret0Key,
     Secret1Key,
-    Secret2Key
+    Secret2Key,
+    Secret3Key
   } key_sel_e;
 
   typedef enum logic [ConstSelWidth-1:0] {
@@ -268,10 +269,27 @@ package otp_ctrl_part_pkg;
       zeroizable:       1'b1,
       ignore_read_lock_in_rma: 1'b1
     },
+    // SECRET3
+    '{
+      variant:          Buffered,
+      offset:           12'd1976,
+      size:             112,
+      key_sel:          Secret3Key,
+      secret:           1'b1,
+      sw_digest:        1'b0,
+      hw_digest:        1'b1,
+      write_lock:       1'b1,
+      read_lock:        1'b1,
+      integrity:        1'b1,
+      iskeymgr_creator: 1'b0,
+      iskeymgr_owner:   1'b0,
+      zeroizable:       1'b1,
+      ignore_read_lock_in_rma: 1'b1
+    },
     // LIFE_CYCLE
     '{
       variant:          LifeCycle,
-      offset:           12'd1976,
+      offset:           12'd2088,
       size:             88,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -298,6 +316,7 @@ package otp_ctrl_part_pkg;
     Secret0Idx,
     Secret1Idx,
     Secret2Idx,
+    Secret3Idx,
     LifeCycleIdx,
     // These are not "real partitions", but in terms of implementation it is convenient to
     // add these at the end of certain arrays.
@@ -350,6 +369,7 @@ package otp_ctrl_part_pkg;
     hw2reg.secret0_digest = part_digest[Secret0Idx];
     hw2reg.secret1_digest = part_digest[Secret1Idx];
     hw2reg.secret2_digest = part_digest[Secret2Idx];
+    hw2reg.secret3_digest = part_digest[Secret3Idx];
     return hw2reg;
   endfunction : named_reg_assign
 
@@ -387,7 +407,7 @@ package otp_ctrl_part_pkg;
 
   function automatic otp_broadcast_t named_broadcast_assign(
       logic [NumPart-1:0] part_init_done,
-      logic [2063:0][7:0] part_buf_data);
+      logic [2175:0][7:0] part_buf_data);
     otp_broadcast_t otp_broadcast;
     logic valid, unused;
     unused = 1'b0;
@@ -422,6 +442,9 @@ package otp_ctrl_part_pkg;
     // SECRET2
     unused ^= ^{part_init_done[Secret2Idx],
                 part_buf_data[Secret2Offset +: Secret2Size]};
+    // SECRET3
+    unused ^= ^{part_init_done[Secret3Idx],
+                part_buf_data[Secret3Offset +: Secret3Size]};
     // LIFE_CYCLE
     unused ^= ^{part_init_done[LifeCycleIdx],
                 part_buf_data[LifeCycleOffset +: LifeCycleSize]};
@@ -431,8 +454,8 @@ package otp_ctrl_part_pkg;
 
   function automatic otp_keymgr_key_t named_keymgr_key_assign(
       logic [NumPart-1:0][ScrmblBlockWidth-1:0] part_digest,
-      logic [2063:0][7:0] part_buf_data,
-      logic [16511:0] part_inv_default,
+      logic [2175:0][7:0] part_buf_data,
+      logic [17407:0] part_inv_default,
       lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en);
     otp_keymgr_key_t otp_keymgr_key;
     logic valid, unused;
@@ -491,6 +514,9 @@ package otp_ctrl_part_pkg;
     // This is not used since we consume the
     // ungated digest values from the part_digest array.
     unused ^= ^part_buf_data[Secret2DigestOffset +: Secret2DigestSize];
+    // SECRET3
+    unused ^= ^{part_digest[Secret3Idx],
+                part_buf_data[Secret3Offset +: Secret3Size]};
     // LIFE_CYCLE
     unused ^= ^{part_digest[LifeCycleIdx],
                 part_buf_data[LifeCycleOffset +: LifeCycleSize]};

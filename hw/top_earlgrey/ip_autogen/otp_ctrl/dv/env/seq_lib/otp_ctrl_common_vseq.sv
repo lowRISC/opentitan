@@ -212,12 +212,14 @@ class otp_ctrl_common_vseq extends otp_ctrl_base_vseq;
           $assertoff(0, "tb.dut.gen_partitions[7].gen_buffered.u_part_buf.ScrmblDataKnown_A");
           $assertoff(0, "tb.dut.gen_partitions[8].gen_buffered.u_part_buf.ScrmblDataKnown_A");
           $assertoff(0, "tb.dut.gen_partitions[9].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $assertoff(0, "tb.dut.gen_partitions[10].gen_buffered.u_part_buf.ScrmblDataKnown_A");
         end else begin
           $asserton(0, "tb.dut.gen_partitions[5].gen_buffered.u_part_buf.ScrmblDataKnown_A");
           $asserton(0, "tb.dut.gen_partitions[6].gen_buffered.u_part_buf.ScrmblDataKnown_A");
           $asserton(0, "tb.dut.gen_partitions[7].gen_buffered.u_part_buf.ScrmblDataKnown_A");
           $asserton(0, "tb.dut.gen_partitions[8].gen_buffered.u_part_buf.ScrmblDataKnown_A");
           $asserton(0, "tb.dut.gen_partitions[9].gen_buffered.u_part_buf.ScrmblDataKnown_A");
+          $asserton(0, "tb.dut.gen_partitions[10].gen_buffered.u_part_buf.ScrmblDataKnown_A");
        end
       end
       SecCmPrimSparseFsmFlop, SecCmPrimDoubleLfsr, SecCmPrimOnehot: begin

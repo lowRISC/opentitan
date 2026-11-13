@@ -1355,6 +1355,8 @@
 
       // KeyMgr DPE Sideload & KDF function
       'otp_ctrl.keymgr_creator_root_key'  : ['keymgr_dpe.creator_root_key'],
+      'otp_ctrl.keymgr_field_entropy'     : ['keymgr_dpe.field_entropy'],
+      'otp_ctrl.keymgr_secondary_root_key': ['keymgr_dpe.secondary_root_key'],
       // The creator / owner seed is provided by the rram_ctrl.
       'rram_ctrl.keymgr_creator_seed'     : ['keymgr_dpe.creator_seed'],
       'rram_ctrl.keymgr_owner_seed'       : ['keymgr_dpe.owner_seed'],

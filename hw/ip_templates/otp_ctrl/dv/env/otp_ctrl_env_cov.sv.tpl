@@ -30,6 +30,10 @@ buffered_secret_parts_with_digest = [part for part in buffered_parts if
                                      part["secret"]]
 ## Partitions + LCI + DAI
 num_err_code = len(otp_mmap["partitions"]) + 2
+
+item_names = [item["name"] for part in otp_mmap["partitions"] for item in part["items"]]
+has_field_entropy = "FIELD_ENTROPY" in item_names
+has_secondary_root_key = "SECONDARY_ROOT_KEY_SHARE0" in item_names
 %>\
 class otp_ctrl_unbuf_err_code_cg_wrap;
   // Unbuffered partition can use TLUL interface to read out but cannot write, thus error_code does
@@ -203,6 +207,25 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
     secret2_lock: coverpoint locked;
     keymgr_output_conditions: cross keymgr_rd_en, secret2_lock;
   endgroup
+% if has_field_entropy:
+
+  // This covergroup is sampled only if the keymgr field entropy output passed scb check.
+  covergroup keymgr_field_entropy_o_cg with function sample (bit lc_seed_hw_rd_en, bit locked);
+    keymgr_rd_en: coverpoint lc_seed_hw_rd_en;
+    field_entropy_lock: coverpoint locked;
+    field_entropy_output_conditions: cross keymgr_rd_en, field_entropy_lock;
+  endgroup
+% endif
+% if has_secondary_root_key:
+
+  // This covergroup is sampled only if the keymgr secondary root key output passed scb check.
+  covergroup keymgr_secondary_root_key_o_cg with function sample (bit lc_seed_hw_rd_en,
+                                                                  bit locked);
+    keymgr_rd_en: coverpoint lc_seed_hw_rd_en;
+    secondary_root_key_lock: coverpoint locked;
+    keymgr_output_conditions: cross keymgr_rd_en, secondary_root_key_lock;
+  endgroup
+% endif
 
   // This covergroup samples dai request being issued after fatal alert is issued.
   covergroup req_dai_access_after_alert_cg with function sample(bit [TL_DW-1:0] val);
@@ -283,6 +306,12 @@ class otp_ctrl_env_cov extends cip_base_env_cov #(.CFG_T(otp_ctrl_env_cfg));
   % endif
     sram_req_cg                   = new();
     keymgr_o_cg                   = new();
+  % if has_field_entropy:
+    keymgr_field_entropy_o_cg     = new();
+  % endif
+  % if has_secondary_root_key:
+    keymgr_secondary_root_key_o_cg = new();
+  % endif
     req_dai_access_after_alert_cg = new();
     issue_checks_after_alert_cg   = new();
     dai_err_code_cg               = new();

@@ -2803,7 +2803,7 @@
           desc:
             '''
             Seed read enable coming from life cycle controller.
-            This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+            This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1, FIELD_ENTROPY, SECONDARY_ROOT_KEY_SHARE0 and SECONDARY_ROOT_KEY_SHARE1.
             '''
           struct: lc_tx
           package: lc_ctrl_pkg
@@ -2889,6 +2889,36 @@
           width: 1
           default: "'0"
           inst_name: otp_ctrl
+          index: -1
+        }
+        {
+          name: keymgr_field_entropy
+          desc: Field entropy output to the key manager holding FIELD_ENTROPY.
+          struct: keymgr_dpe_field_entropy
+          package: keymgr_dpe_pkg
+          type: uni
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: otp_ctrl
+          end_idx: -1
+          top_type: broadcast
+          top_signame: otp_ctrl_keymgr_field_entropy
+          index: -1
+        }
+        {
+          name: keymgr_secondary_root_key
+          desc: Key output to the key manager holding SECONDARY_ROOT_KEY_SHARE0 and SECONDARY_ROOT_KEY_SHARE1.
+          struct: keymgr_dpe_creator_root_key
+          package: keymgr_dpe_pkg
+          type: uni
+          act: req
+          width: 1
+          default: "'0"
+          inst_name: otp_ctrl
+          end_idx: -1
+          top_type: broadcast
+          top_signame: otp_ctrl_keymgr_secondary_root_key
           index: -1
         }
         {
@@ -9873,6 +9903,8 @@
           width: 1
           default: keymgr_dpe_pkg::KEYMGR_DPE_SECONDARY_ROOT_KEY_DEFAULT
           inst_name: keymgr_dpe
+          domain: Main
+          top_signame: otp_ctrl_keymgr_secondary_root_key
           index: -1
         }
         {
@@ -9921,6 +9953,9 @@
           act: rcv
           width: 1
           inst_name: keymgr_dpe
+          default: ""
+          domain: Main
+          top_signame: otp_ctrl_keymgr_field_entropy
           index: -1
         }
         {
@@ -12988,6 +13023,14 @@
       otp_ctrl.keymgr_creator_root_key:
       [
         keymgr_dpe.creator_root_key
+      ]
+      otp_ctrl.keymgr_field_entropy:
+      [
+        keymgr_dpe.field_entropy
+      ]
+      otp_ctrl.keymgr_secondary_root_key:
+      [
+        keymgr_dpe.secondary_root_key
       ]
       rram_ctrl.keymgr_creator_seed:
       [
@@ -26469,7 +26512,7 @@
         desc:
           '''
           Seed read enable coming from life cycle controller.
-          This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.
+          This signal enables HW read access to the CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1, FIELD_ENTROPY, SECONDARY_ROOT_KEY_SHARE0 and SECONDARY_ROOT_KEY_SHARE1.
           '''
         struct: lc_tx
         package: lc_ctrl_pkg
@@ -26555,6 +26598,36 @@
         width: 1
         default: "'0"
         inst_name: otp_ctrl
+        index: -1
+      }
+      {
+        name: keymgr_field_entropy
+        desc: Field entropy output to the key manager holding FIELD_ENTROPY.
+        struct: keymgr_dpe_field_entropy
+        package: keymgr_dpe_pkg
+        type: uni
+        act: req
+        width: 1
+        default: "'0"
+        inst_name: otp_ctrl
+        end_idx: -1
+        top_type: broadcast
+        top_signame: otp_ctrl_keymgr_field_entropy
+        index: -1
+      }
+      {
+        name: keymgr_secondary_root_key
+        desc: Key output to the key manager holding SECONDARY_ROOT_KEY_SHARE0 and SECONDARY_ROOT_KEY_SHARE1.
+        struct: keymgr_dpe_creator_root_key
+        package: keymgr_dpe_pkg
+        type: uni
+        act: req
+        width: 1
+        default: "'0"
+        inst_name: otp_ctrl
+        end_idx: -1
+        top_type: broadcast
+        top_signame: otp_ctrl_keymgr_secondary_root_key
         index: -1
       }
       {
@@ -31451,6 +31524,8 @@
         width: 1
         default: keymgr_dpe_pkg::KEYMGR_DPE_SECONDARY_ROOT_KEY_DEFAULT
         inst_name: keymgr_dpe
+        domain: Main
+        top_signame: otp_ctrl_keymgr_secondary_root_key
         index: -1
       }
       {
@@ -31499,6 +31574,9 @@
         act: rcv
         width: 1
         inst_name: keymgr_dpe
+        default: ""
+        domain: Main
+        top_signame: otp_ctrl_keymgr_field_entropy
         index: -1
       }
       {
@@ -41269,6 +41347,30 @@
         struct: keymgr_dpe_creator_root_key
         domain: Main
         signame: otp_ctrl_keymgr_creator_root_key
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: keymgr_dpe_pkg
+        struct: keymgr_dpe_field_entropy
+        domain: Main
+        signame: otp_ctrl_keymgr_field_entropy
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: "'0"
+      }
+      {
+        package: keymgr_dpe_pkg
+        struct: keymgr_dpe_creator_root_key
+        domain: Main
+        signame: otp_ctrl_keymgr_secondary_root_key
         width: 1
         type: uni
         end_idx: -1

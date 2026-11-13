@@ -11,8 +11,8 @@
       otp:
       {
         width: 2
-        depth: 1032
-        size: 2064
+        depth: 1088
+        size: 2176
         addr_width: 11
         byte_addr_width: 12
       }
@@ -33,6 +33,10 @@
           }
           {
             name: Secret2Key
+            value: <random>
+          }
+          {
+            name: Secret3Key
             value: <random>
           }
         ]
@@ -59,7 +63,7 @@
             cnst_value: <random>
           }
         ]
-        num_keys: 3
+        num_keys: 4
         num_digests: 4
       }
       partitions:
@@ -2160,6 +2164,89 @@
           offset: 1880
         }
         {
+          name: SECRET3
+          variant: Buffered
+          secret: true
+          sw_digest: false
+          hw_digest: true
+          write_lock: Digest
+          read_lock: Digest
+          ignore_read_lock_in_rma: true
+          key_sel: Secret3Key
+          integrity: true
+          bkout_type: false
+          skip_sw_header: true
+          zeroizable: true
+          items:
+          [
+            {
+              name: FIELD_ENTROPY
+              inv_default: <random>
+              size: 32
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 1976
+            }
+            {
+              name: SECONDARY_ROOT_KEY_SHARE0
+              inv_default: <random>
+              size: 32
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 2008
+            }
+            {
+              name: SECONDARY_ROOT_KEY_SHARE1
+              inv_default: <random>
+              size: 32
+              isdigest: false
+              iszer: false
+              ismubi: false
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+              offset: 2040
+            }
+            {
+              name: SECRET3_DIGEST
+              size: 8
+              offset: 2072
+              ismubi: false
+              isdigest: true
+              iszer: false
+              inv_default: <random>
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+            {
+              name: SECRET3_ZER
+              size: 8
+              offset: 2080
+              ismubi: false
+              isdigest: false
+              iszer: true
+              inv_default: 0
+              iskeymgr_creator: false
+              iskeymgr_owner: false
+            }
+          ]
+          desc:
+            '''
+            Secret partition 3.
+            This contains the field entropy and the secondary root key, both consumed by the keymgr_dpe.
+            '''
+          absorb: false
+          iskeymgr_creator: false
+          iskeymgr_owner: false
+          size: 112
+          offset: 1976
+        }
+        {
           name: LIFE_CYCLE
           variant: LifeCycle
           secret: false
@@ -2183,7 +2270,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 1976
+              offset: 2088
             }
             {
               name: LC_STATE
@@ -2194,7 +2281,7 @@
               ismubi: false
               iskeymgr_creator: false
               iskeymgr_owner: false
-              offset: 2024
+              offset: 2136
             }
           ]
           desc:
@@ -2214,7 +2301,7 @@
           iskeymgr_owner: false
           ignore_read_lock_in_rma: false
           size: 88
-          offset: 1976
+          offset: 2088
         }
       ]
     }
