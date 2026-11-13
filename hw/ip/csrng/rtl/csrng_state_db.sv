@@ -29,25 +29,27 @@ module csrng_state_db
   input  logic                   wr_vld_i,
   input  csrng_core_data_t       wr_data_i,
 
-  // State dump interface via register access
+  // State save/restore interface via register access
+  input  logic   [NumAppsLg-1:0] reg_inst_id_i,
+  input  logic                   reg_ptr_clr_i,
   input  logic                   reg_rd_en_i,
-  input  logic     [NumApps-1:0] reg_rd_regfile_en_i,
-
-  input  logic                   reg_rd_id_vld_i,
-  input  logic [InstIdWidth-1:0] reg_rd_id_i,
-  input  logic                   reg_rd_strb_i,
-  output logic    [RegWidth-1:0] reg_rd_val_o,
+  output logic    [RegWidth-1:0] reg_rd_data_o,
+  input  logic                   reg_wr_en_i,
+  input  logic    [RegWidth-1:0] reg_wr_data_i,
+  output logic                   reg_overwrite_alert_o,
+  output logic     [NumApps-1:0] reg_restored_o,
 
   output logic [NumApps-1:0][RsCtrWidth-1:0]      reseed_counter_o,
   output logic [NumApps-1:0]                      inst_state_o,
   output logic [NumApps-1:0][GenBitsCtrWidth-1:0] gen_cnt_o,
+  input  logic [NumApps-1:0]                      gen_flag_i,
   output logic [NumApps-1:0]                      gen_flag_o,
 
   output logic                                    reg_ptr_err_o
 );
 
   localparam int unsigned NumRegTotBits = StateDbNumRegState * RegWidth;
-  localparam int unsigned NumRegPadBits = NumRegTotBits - StateDbRegStateWidth;
+  localparam int unsigned NumRegPadBits = NumRegTotBits - StateWidth;
   localparam bit [StateDbRegPtrWidth-1:0] LastRegState =
       StateDbRegPtrWidth'(StateDbNumRegState - 1);
 
@@ -55,19 +57,20 @@ module csrng_state_db
   logic                          write_en;
   logic                          instance_state;
   logic      [NumRegTotBits-1:0] state_reg_readout;
-  logic [StateDbRegPtrWidth-1:0] reg_rd_ptr_q;
-  logic                          reg_rd_last;
-  logic                          reg_rd_ptr_clr;
-  logic                          reg_rd_ptr_incr_en;
+  logic      [NumRegTotBits-1:0] state_reg_restore;
+  logic                          reg_access;
+  logic [StateDbRegPtrWidth-1:0] reg_ptr_q;
+  logic                          reg_ptr_clr;
+  logic                          reg_ptr_incr_en;
 
   // Registers
-  logic     [NumAppsLg-1:0] reg_rd_id_q, reg_rd_id_d;
+  logic       [NumApps-1:0] reg_restored_q, reg_restored_d;
 
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      reg_rd_id_q  <= '0;
+      reg_restored_q <= '0;
     end else begin
-      reg_rd_id_q  <= reg_rd_id_d;
+      reg_restored_q <= reg_restored_d;
     end
   end
 
@@ -82,25 +85,15 @@ module csrng_state_db
   assign rd_state_o = (rd_inst_id_i < NumApps) ? state_q[rd_inst_id_i] : '0;
 
   //--------------------------------------------
-  // Regfile readout logic
+  // Regfile readout and restore logic
   //--------------------------------------------
 
-  always_comb begin
-    reg_rd_id_d = reg_rd_id_q;
-    if (!enable_i) begin
-      reg_rd_id_d = '0;
-    end else if (reg_rd_id_vld_i) begin
-      reg_rd_id_d = reg_rd_id_i[NumAppsLg-1:0];
-    end
-  end
+  assign reg_access = reg_rd_en_i || reg_wr_en_i;
 
-  // The last word of the selected state is being read.
-  assign reg_rd_last = reg_rd_strb_i && (reg_rd_ptr_q == LastRegState);
-
-  // Reset the regfile read pointer when a new instance is selected for readout. The pointer wraps
-  // around after the last word.
-  assign reg_rd_ptr_clr = !enable_i || !reg_rd_en_i || reg_rd_id_vld_i || reg_rd_last;
-  assign reg_rd_ptr_incr_en = reg_rd_strb_i && !reg_rd_last;
+  // The word pointer is shared by reads and writes. It advances on every access, wraps around after
+  // the last word and is reset when a new access sequence is started.
+  assign reg_ptr_clr = !enable_i || reg_ptr_clr_i || (reg_access && (reg_ptr_q == LastRegState));
+  assign reg_ptr_incr_en = reg_access && (reg_ptr_q != LastRegState);
 
   // SEC_CM: STATE_DB.CTR.REDUN
   prim_count #(
@@ -110,36 +103,42 @@ module csrng_state_db
     .clk_i,
     .rst_ni,
 
-    .clr_i    (reg_rd_ptr_clr),
+    .clr_i    (reg_ptr_clr),
     .set_i    (1'b0),
     .set_cnt_i('0),
 
-    .incr_en_i(reg_rd_ptr_incr_en),
+    .incr_en_i(reg_ptr_incr_en),
     .decr_en_i(1'b0),
     .step_i   (StateDbRegPtrWidth'(1)),
     .commit_i (1'b1),
 
-    .cnt_o             (reg_rd_ptr_q),
+    .cnt_o             (reg_ptr_q),
     .cnt_after_commit_o(),
     .err_o             (reg_ptr_err_o)
   );
 
-  // Pad the logic representation of the selected state with zeros to the next multiple of 32
-  assign state_reg_readout = (reg_rd_id_q < NumApps) ?
-                             {{NumRegPadBits{1'b0}},
-                              state_q[reg_rd_id_q].fips,
-                              state_q[reg_rd_id_q].inst_state,
-                              state_q[reg_rd_id_q].key_v,
-                              state_q[reg_rd_id_q].rs_ctr} :
-                             '0;
+  // Pad the logic representation of the selected state with zeros to the next multiple of 32.
+  // An invalid instance id reads as all zeros.
+  assign state_reg_readout = (reg_inst_id_i < NumApps) ?
+                             {{NumRegPadBits{1'b0}}, state_q[reg_inst_id_i]} : '0;
 
+  assign reg_rd_data_o = state_reg_readout[reg_ptr_q * RegWidth +: RegWidth];
+
+  // Splice the restored word into the selected state.
   always_comb begin
-    reg_rd_val_o = '0;
-    if (reg_rd_en_i && (reg_rd_id_q < NumApps ? reg_rd_regfile_en_i[reg_rd_id_q] : 1'b0) &&
-        (reg_rd_ptr_q < StateDbNumRegState)) begin
-      reg_rd_val_o = state_reg_readout[reg_rd_ptr_q * RegWidth +: RegWidth];
-    end
+    state_reg_restore = state_reg_readout;
+    state_reg_restore[reg_ptr_q * RegWidth +: RegWidth] = reg_wr_data_i;
   end
+
+  // Indicate a restore of the selected instance once the last word is in the state.
+  for (genvar i = 0; i < NumApps; i++) begin : gen_reg_restored
+    assign reg_restored_d[i] = reg_wr_en_i && (reg_ptr_q == LastRegState) && (reg_inst_id_i == i);
+  end
+  assign reg_restored_o = reg_restored_q;
+
+  // Flag an internal update of the selected state while an access sequence is in progress.
+  assign reg_overwrite_alert_o = write_en && (wr_data_i.inst_id == reg_inst_id_i) &&
+                                 ((reg_ptr_q != '0) || reg_access);
 
   // The reseed counters are always readable via register interface. The instantiated and generate
   // command state is used by the command stages.
@@ -162,31 +161,46 @@ module csrng_state_db
 
   always_comb begin
     state_d = state_q;
+    // The GEN flag is updated by the cmd stage unless it is restored.
+    for (int i = 0; i < NumApps; i++) begin
+      state_d[i].gen_flag = gen_flag_i[i];
+    end
 
     if (!enable_i) begin
       state_d = '0;
-    end else if (write_en && (wr_data_i.inst_id < NumApps)) begin
-      state_d[wr_data_i.inst_id] = '{
-        gen_adata_vld: wr_data_i.gen_adata_vld,
-        gen_adata:     wr_data_i.gen_adata,
-        gen_flag:      wr_data_i.gen_flag,
-        gen_ctr:       wr_data_i.gen_ctr,
-        fips:          wr_data_i.fips,
-        key_v:         wr_data_i.key_v,
-        rs_ctr:        wr_data_i.rs_ctr,
-        inst_state:    instance_state
-      };
+    end else begin
+      if (reg_wr_en_i) begin
+        state_d[reg_inst_id_i] = csrng_state_t'(state_reg_restore[StateWidth-1:0]);
+      end
+      if (write_en && (wr_data_i.inst_id < NumApps)) begin
+        state_d[wr_data_i.inst_id] = '{
+          gen_adata_vld: wr_data_i.gen_adata_vld,
+          gen_flag:      gen_flag_i[wr_data_i.inst_id],
+          gen_ctr:       wr_data_i.gen_ctr,
+          fips:          wr_data_i.fips,
+          inst_state:    instance_state,
+          gen_adata:     wr_data_i.gen_adata,
+          key_v:         wr_data_i.key_v,
+          rs_ctr:        wr_data_i.rs_ctr
+        };
+      end
     end
   end
 
   // Unused signals
   logic [SeedLen-1:0] unused_wdata_pdata;
-  logic [InstIdWidth-NumAppsLg-1:0] unused_reg_rd_id;
+  logic [NumRegPadBits-1:0] unused_restore_pad;
   assign unused_wdata_pdata = wr_data_i.pdata;
-  assign unused_reg_rd_id = reg_rd_id_i[InstIdWidth-1:NumAppsLg];
+  assign unused_restore_pad = state_reg_restore[NumRegTotBits-1:StateWidth];
 
   // Assertions
   // The current architecture assumes the reseed counter fits into a single register
   `ASSERT_INIT(CsrngRsCtrRegFit, RegWidth >= RsCtrWidth)
+  // Reads and writes via the register interface are mutually exclusive.
+  `ASSERT(CsrngStateDbRegRdWrExclusive_A, !(reg_rd_en_i && reg_wr_en_i))
+  // Restore writes only happen while the instance is halted, so they never coincide with an
+  // internal update of the same instance.
+  `ASSERT(CsrngStateDbRegWrNoInternalUpdate_A,
+      reg_wr_en_i |-> !(write_en && (wr_data_i.inst_id == reg_inst_id_i)))
 
 endmodule

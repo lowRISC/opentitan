@@ -21,27 +21,28 @@
 | csrng.[`GENBITS`](#genbits)                                             | 0x34     |        4 | Generate bits returned register                                            |
 | csrng.[`INT_STATE_READ_ENABLE_REGWEN`](#int_state_read_enable_regwen)   | 0x38     |        4 | Internal state read enable REGWEN register                                 |
 | csrng.[`INT_STATE_READ_ENABLE`](#int_state_read_enable)                 | 0x3c     |        4 | Internal state read enable register                                        |
-| csrng.[`INT_STATE_NUM`](#int_state_num)                                 | 0x40     |        4 | Internal state number register                                             |
-| csrng.[`INT_STATE_VAL`](#int_state_val)                                 | 0x44     |        4 | Internal state read/write access register                                  |
-| csrng.[`FIPS_FORCE`](#fips_force)                                       | 0x48     |        4 | FIPS/CC compliance flag forcing register                                   |
-| csrng.[`GEN_ABORT_REGWEN`](#gen_abort_regwen)                           | 0x4c     |        4 | Register write enable for [`GEN_ABORT`](#gen_abort)                        |
-| csrng.[`GEN_ABORT_0`](#gen_abort)                                       | 0x50     |        4 | Generate command abort request register                                    |
-| csrng.[`GEN_ABORT_1`](#gen_abort)                                       | 0x54     |        4 | Generate command abort request register                                    |
-| csrng.[`GEN_ABORT_2`](#gen_abort)                                       | 0x58     |        4 | Generate command abort request register                                    |
-| csrng.[`GEN_ABORT_STATUS_0`](#gen_abort_status)                         | 0x5c     |        4 | Generate command abort completion status register                          |
-| csrng.[`GEN_ABORT_STATUS_1`](#gen_abort_status)                         | 0x60     |        4 | Generate command abort completion status register                          |
-| csrng.[`GEN_ABORT_STATUS_2`](#gen_abort_status)                         | 0x64     |        4 | Generate command abort completion status register                          |
-| csrng.[`HW_EXC_STS`](#hw_exc_sts)                                       | 0x68     |        4 | Hardware instance exception status register                                |
-| csrng.[`RECOV_ALERT_STS`](#recov_alert_sts)                             | 0x6c     |        4 | Recoverable alert status register                                          |
-| csrng.[`ERR_CODE`](#err_code)                                           | 0x70     |        4 | Hardware detection of error conditions status register                     |
-| csrng.[`ERR_CODE_TEST`](#err_code_test)                                 | 0x74     |        4 | Test error conditions register                                             |
-| csrng.[`MAIN_SM_STATE`](#main_sm_state)                                 | 0x78     |        4 | Main state machine state debug register                                    |
-| csrng.[`INT_STATE_WRITE_ENABLE_REGWEN`](#int_state_write_enable_regwen) | 0x7c     |        4 | Internal state write enable REGWEN register                                |
-| csrng.[`INT_STATE_WRITE_ENABLE`](#int_state_write_enable)               | 0x80     |        4 | Internal state write enable register                                       |
-| csrng.[`INT_STATE_HALT_ENABLE_REGWEN`](#int_state_halt_enable_regwen)   | 0x84     |        4 | Internal state halt enable REGWEN register                                 |
-| csrng.[`INT_STATE_HALT_ENABLE`](#int_state_halt_enable)                 | 0x88     |        4 | Internal state halt enable register                                        |
-| csrng.[`INT_STATE_HALT`](#int_state_halt)                               | 0x8c     |        4 | Internal state halt register                                               |
-| csrng.[`INT_STATE_STS`](#int_state_sts)                                 | 0x90     |        4 | Internal state halt status register                                        |
+| csrng.[`INT_STATE_NUM_REGWEN`](#int_state_num_regwen)                   | 0x40     |        4 | Internal state instance index REGWEN register                              |
+| csrng.[`INT_STATE_NUM`](#int_state_num)                                 | 0x44     |        4 | Internal state instance index register                                     |
+| csrng.[`INT_STATE_VAL`](#int_state_val)                                 | 0x48     |        4 | Internal state read/write access register                                  |
+| csrng.[`FIPS_FORCE`](#fips_force)                                       | 0x4c     |        4 | FIPS/CC compliance flag forcing register                                   |
+| csrng.[`GEN_ABORT_REGWEN`](#gen_abort_regwen)                           | 0x50     |        4 | Register write enable for [`GEN_ABORT`](#gen_abort)                        |
+| csrng.[`GEN_ABORT_0`](#gen_abort)                                       | 0x54     |        4 | Generate command abort request register                                    |
+| csrng.[`GEN_ABORT_1`](#gen_abort)                                       | 0x58     |        4 | Generate command abort request register                                    |
+| csrng.[`GEN_ABORT_2`](#gen_abort)                                       | 0x5c     |        4 | Generate command abort request register                                    |
+| csrng.[`GEN_ABORT_STATUS_0`](#gen_abort_status)                         | 0x60     |        4 | Generate command abort completion status register                          |
+| csrng.[`GEN_ABORT_STATUS_1`](#gen_abort_status)                         | 0x64     |        4 | Generate command abort completion status register                          |
+| csrng.[`GEN_ABORT_STATUS_2`](#gen_abort_status)                         | 0x68     |        4 | Generate command abort completion status register                          |
+| csrng.[`HW_EXC_STS`](#hw_exc_sts)                                       | 0x6c     |        4 | Hardware instance exception status register                                |
+| csrng.[`RECOV_ALERT_STS`](#recov_alert_sts)                             | 0x70     |        4 | Recoverable alert status register                                          |
+| csrng.[`ERR_CODE`](#err_code)                                           | 0x74     |        4 | Hardware detection of error conditions status register                     |
+| csrng.[`ERR_CODE_TEST`](#err_code_test)                                 | 0x78     |        4 | Test error conditions register                                             |
+| csrng.[`MAIN_SM_STATE`](#main_sm_state)                                 | 0x7c     |        4 | Main state machine state debug register                                    |
+| csrng.[`INT_STATE_WRITE_ENABLE_REGWEN`](#int_state_write_enable_regwen) | 0x80     |        4 | Internal state write enable REGWEN register                                |
+| csrng.[`INT_STATE_WRITE_ENABLE`](#int_state_write_enable)               | 0x84     |        4 | Internal state write enable register                                       |
+| csrng.[`INT_STATE_HALT_ENABLE_REGWEN`](#int_state_halt_enable_regwen)   | 0x88     |        4 | Internal state halt enable REGWEN register                                 |
+| csrng.[`INT_STATE_HALT_ENABLE`](#int_state_halt_enable)                 | 0x8c     |        4 | Internal state halt enable register                                        |
+| csrng.[`INT_STATE_HALT`](#int_state_halt)                               | 0x90     |        4 | Internal state halt register                                               |
+| csrng.[`INT_STATE_STS`](#int_state_sts)                                 | 0x94     |        4 | Internal state halt status register                                        |
 
 ## INTR_STATE
 Interrupt State Register
@@ -370,14 +371,31 @@ Internal state read enable register
 Per-instance internal state read enable.
 Defines whether the internal state of the corresponding instance can be read via [`INT_STATE_VAL.`](#int_state_val)
 Reads for an instance whose bit is cleared return 0.
-Clearing the bit of the selected instance while reading it resets the [`INT_STATE_VAL`](#int_state_val) word pointer.
 Note that reading additionally requires [`CTRL.READ_INT_STATE`](#ctrl) to be set to `kMultiBitBool4True`.
 
-## INT_STATE_NUM
-Internal state number register
+## INT_STATE_NUM_REGWEN
+Internal state instance index REGWEN register
 - Offset: `0x40`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "INT_STATE_NUM_REGWEN", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 220}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                 | Description                                                                                                                                                                                                 |
+|:------:|:------:|:-------:|:---------------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |                      | Reserved                                                                                                                                                                                                    |
+|   0    |   ro   |   0x1   | INT_STATE_NUM_REGWEN | INT_STATE_NUM register configuration enable bit. This bit is cleared while [`INT_STATE_HALT`](#int_state_halt) is set to kMultiBitBool4True, so the selected instance cannot be changed while it is halted. |
+
+## INT_STATE_NUM
+Internal state instance index register
+- Offset: `0x44`
 - Reset default: `0x0`
 - Reset mask: `0xf`
+- Register enable: [`INT_STATE_NUM_REGWEN`](#int_state_num_regwen)
 
 ### Fields
 
@@ -388,18 +406,19 @@ Internal state number register
 |  Bits  |  Type  |  Reset  | Name                                           |
 |:------:|:------:|:-------:|:-----------------------------------------------|
 |  31:4  |        |         | Reserved                                       |
-|  3:0   |   rw   |   0x0   | [INT_STATE_NUM](#int_state_num--int_state_num) |
+|  3:0   |   rw   |    x    | [INT_STATE_NUM](#int_state_num--int_state_num) |
 
 ### INT_STATE_NUM . INT_STATE_NUM
 Index of the CSRNG instance whose internal state is targeted via [`INT_STATE_VAL.`](#int_state_val)
 Valid indices are 0 to NumApps-1 (number of HW interfaces plus one for the SW interface).
-Selecting a larger index makes [`INT_STATE_VAL`](#int_state_val) read as 0.
+Writes of a larger index are ignored and set [`RECOV_ALERT_STS.INT_STATE_NUM_INVALID_ALERT.`](#recov_alert_sts)
+This register cannot be written while [`INT_STATE_NUM_REGWEN`](#int_state_num_regwen) is cleared.
 Writing this register also resets the read/write pointer of [`INT_STATE_VAL`](#int_state_val) to the first word of the selected state.
 This field also selects the instance targeted by [`INT_STATE_HALT`](#int_state_halt) and [`INT_STATE_STS.`](#int_state_sts)
 
 ## INT_STATE_VAL
 Internal state read/write access register
-- Offset: `0x44`
+- Offset: `0x48`
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 
@@ -416,25 +435,27 @@ Internal state read/write access register
 ### INT_STATE_VAL . INT_STATE_VAL
 Reading this register will dump out the contents of the selected instance's internal state.
 Writing this register overwrites the state word by word as the writes arrive.
+Stopping before all 26 words have been written leaves the instance with a mix of restored and previous state words.
 The internal state comprises the CTR_DRBG state (key/V/reseed counter/fips/instantiated) as well as the state of a Generate command paused mid-sequence (remaining block count, Generate flag and additional data).
 Since this field is 816 bits wide, it will require 26 reads or writes of this register to access the entire field.
 Every read and every write advances the internal read/write pointer (selects 32 bits of the 816 bit field), which wraps around to zero after 26 accesses.
-Writing [`INT_STATE_NUM`](#int_state_num) resets the pointer to zero.
-A read following a write, or a write following a read, restarts the sequence at the first word.
-Disabling read access while reading, or write access while writing, also resets the pointer to zero.
+Reads and writes share this pointer.
+Writing [`INT_STATE_NUM`](#int_state_num) resets the pointer to zero, so every read or write sequence should be started by writing [`INT_STATE_NUM.`](#int_state_num)
 
 Reserved bits are ignored on writes and read as 0.
 
+Reads are accepted regardless of whether the instance is halted.
+Restoring the state is only possible while the instance is halted.
 If the state is internally updated while an access sequence is in progress, [`RECOV_ALERT_STS.INT_STATE_OVERWRITE_ALERT`](#recov_alert_sts) is raised.
 To get a consistent snapshot, halt the instance via [`INT_STATE_HALT`](#int_state_halt) first.
 
 Note that for [`INT_STATE_VAL`](#int_state_val) to provide read access to the internal state, [`CTRL.READ_INT_STATE`](#ctrl) needs to be set to `kMultiBitBool4True` and the [`INT_STATE_READ_ENABLE`](#int_state_read_enable) bit of the selected instance needs to be set.
-For write access, [`CTRL.WRITE_INT_STATE`](#ctrl) needs to be set to `kMultiBitBool4True` and the [`INT_STATE_WRITE_ENABLE`](#int_state_write_enable) bit of the selected instance needs to be set.
+For write access, [`CTRL.WRITE_INT_STATE`](#ctrl) needs to be set to `kMultiBitBool4True`, the [`INT_STATE_WRITE_ENABLE`](#int_state_write_enable) bit of the selected instance needs to be set and [`INT_STATE_STS.HALTED`](#int_state_sts) needs to be set.
 Otherwise, the register reads as 0, writes are dropped and the pointer does not advance.
 
 ## FIPS_FORCE
 FIPS/CC compliance flag forcing register
-- Offset: `0x48`
+- Offset: `0x4c`
 - Reset default: `0x0`
 - Reset mask: `0x7`
 - Register enable: [`REGWEN`](#regwen)
@@ -460,7 +481,7 @@ Note that for this to work, [`CTRL.FIPS_FORCE_ENABLE`](#ctrl) needs to be set to
 
 ## GEN_ABORT_REGWEN
 Register write enable for [`GEN_ABORT`](#gen_abort)
-- Offset: `0x4c`
+- Offset: `0x50`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -485,9 +506,9 @@ Generate command abort request register
 
 | Name        | Offset   |
 |:------------|:---------|
-| GEN_ABORT_0 | 0x50     |
-| GEN_ABORT_1 | 0x54     |
-| GEN_ABORT_2 | 0x58     |
+| GEN_ABORT_0 | 0x54     |
+| GEN_ABORT_1 | 0x58     |
+| GEN_ABORT_2 | 0x5c     |
 
 
 ### Fields
@@ -508,6 +529,7 @@ It must be instantiated again before further Reseed, Update, or Generate command
 
 This request is only accepted while a Generate command is actually in progress for this instance.
 If no Generate command is in progress, the write is ignored and [`RECOV_ALERT_STS.GEN_ABORT_INVALID_ALERT`](#recov_alert_sts) is set instead.
+If the instance is halted via [`INT_STATE_HALT`](#int_state_halt), the abort only takes effect once the instance is resumed.
 
 ## GEN_ABORT_STATUS
 Generate command abort completion status register
@@ -518,9 +540,9 @@ Generate command abort completion status register
 
 | Name               | Offset   |
 |:-------------------|:---------|
-| GEN_ABORT_STATUS_0 | 0x5c     |
-| GEN_ABORT_STATUS_1 | 0x60     |
-| GEN_ABORT_STATUS_2 | 0x64     |
+| GEN_ABORT_STATUS_0 | 0x60     |
+| GEN_ABORT_STATUS_1 | 0x64     |
+| GEN_ABORT_STATUS_2 | 0x68     |
 
 
 ### Fields
@@ -536,7 +558,7 @@ Generate command abort completion status register
 
 ## HW_EXC_STS
 Hardware instance exception status register
-- Offset: `0x68`
+- Offset: `0x6c`
 - Reset default: `0x0`
 - Reset mask: `0xffff`
 
@@ -561,14 +583,14 @@ resets the status bits.
 
 ## RECOV_ALERT_STS
 Recoverable alert status register
-- Offset: `0x6c`
+- Offset: `0x70`
 - Reset default: `0x0`
-- Reset mask: `0x1f3ff`
+- Reset mask: `0x1f7ff`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "WRITE_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FORCE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_INVALID_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INT_STATE_HALT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INT_STATE_OVERWRITE_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 2}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_ACMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_GEN_CMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_CMD_SEQ_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_RESEED_CNT_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 15}], "config": {"lanes": 1, "fontsize": 10, "vspace": 330}}
+{"reg": [{"name": "ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "SW_APP_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "READ_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "WRITE_INT_STATE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "FIPS_FORCE_ENABLE_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "ACMD_FLAG0_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_INVALID_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "GEN_ABORT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INT_STATE_HALT_FIELD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INT_STATE_OVERWRITE_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "INT_STATE_NUM_INVALID_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 1}, {"name": "CS_BUS_CMP_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_ACMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_GEN_CMD_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_INVALID_CMD_SEQ_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"name": "CMD_STAGE_RESEED_CNT_ALERT", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 15}], "config": {"lanes": 1, "fontsize": 10, "vspace": 330}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name                                                                                 |
@@ -579,7 +601,8 @@ Recoverable alert status register
 |   14   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_GEN_CMD_ALERT](#recov_alert_sts--cmd_stage_invalid_gen_cmd_alert) |
 |   13   |  rw0c  |   0x0   | [CMD_STAGE_INVALID_ACMD_ALERT](#recov_alert_sts--cmd_stage_invalid_acmd_alert)       |
 |   12   |  rw0c  |   0x0   | [CS_BUS_CMP_ALERT](#recov_alert_sts--cs_bus_cmp_alert)                               |
-| 11:10  |        |         | Reserved                                                                             |
+|   11   |        |         | Reserved                                                                             |
+|   10   |  rw0c  |   0x0   | [INT_STATE_NUM_INVALID_ALERT](#recov_alert_sts--int_state_num_invalid_alert)         |
 |   9    |  rw0c  |   0x0   | [INT_STATE_OVERWRITE_ALERT](#recov_alert_sts--int_state_overwrite_alert)             |
 |   8    |  rw0c  |   0x0   | [INT_STATE_HALT_FIELD_ALERT](#recov_alert_sts--int_state_halt_field_alert)           |
 |   7    |  rw0c  |   0x0   | [GEN_ABORT_FIELD_ALERT](#recov_alert_sts--gen_abort_field_alert)                     |
@@ -619,6 +642,12 @@ Writing a zero resets this status bit.
 ### RECOV_ALERT_STS . CS_BUS_CMP_ALERT
 This bit is set when the software application port genbits bus value is equal
 to the prior valid value on the bus, indicating a possible attack.
+Writing a zero resets this status bit.
+
+### RECOV_ALERT_STS . INT_STATE_NUM_INVALID_ALERT
+This bit is set when [`INT_STATE_NUM`](#int_state_num) is written with the index of a reserved instance.
+The write is ignored and CSRNG continues to operate.
+This bit is also set if the selected instance is invalid, which can only be caused by a fault.
 Writing a zero resets this status bit.
 
 ### RECOV_ALERT_STS . INT_STATE_OVERWRITE_ALERT
@@ -672,7 +701,7 @@ Writing a zero resets this status bit.
 
 ## ERR_CODE
 Hardware detection of error conditions status register
-- Offset: `0x70`
+- Offset: `0x74`
 - Reset default: `0x0`
 - Reset mask: `0x76700003`
 
@@ -762,7 +791,7 @@ This bit will stay set until the next reset.
 
 ## ERR_CODE_TEST
 Test error conditions register
-- Offset: `0x74`
+- Offset: `0x78`
 - Reset default: `0x0`
 - Reset mask: `0x1f`
 - Register enable: [`REGWEN`](#regwen)
@@ -788,7 +817,7 @@ an interrupt or an alert.
 
 ## MAIN_SM_STATE
 Main state machine state debug register
-- Offset: `0x78`
+- Offset: `0x7c`
 - Reset default: `0x37`
 - Reset mask: `0x3f`
 
@@ -805,7 +834,7 @@ Main state machine state debug register
 
 ## INT_STATE_WRITE_ENABLE_REGWEN
 Internal state write enable REGWEN register
-- Offset: `0x7c`
+- Offset: `0x80`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -822,7 +851,7 @@ Internal state write enable REGWEN register
 
 ## INT_STATE_WRITE_ENABLE
 Internal state write enable register
-- Offset: `0x80`
+- Offset: `0x84`
 - Reset default: `0x7`
 - Reset mask: `0x7`
 - Register enable: [`INT_STATE_WRITE_ENABLE_REGWEN`](#int_state_write_enable_regwen)
@@ -842,12 +871,11 @@ Internal state write enable register
 Per-instance internal state write enable.
 Defines whether the internal state of the corresponding instance can be written via [`INT_STATE_VAL.`](#int_state_val)
 Writes for an instance whose bit is cleared are dropped.
-Clearing the bit of the selected instance while writing it resets the [`INT_STATE_VAL`](#int_state_val) word pointer.
 Note that writing additionally requires [`CTRL.WRITE_INT_STATE`](#ctrl) to be set to `kMultiBitBool4True`.
 
 ## INT_STATE_HALT_ENABLE_REGWEN
 Internal state halt enable REGWEN register
-- Offset: `0x84`
+- Offset: `0x88`
 - Reset default: `0x1`
 - Reset mask: `0x1`
 
@@ -864,7 +892,7 @@ Internal state halt enable REGWEN register
 
 ## INT_STATE_HALT_ENABLE
 Internal state halt enable register
-- Offset: `0x88`
+- Offset: `0x8c`
 - Reset default: `0x7`
 - Reset mask: `0x7`
 - Register enable: [`INT_STATE_HALT_ENABLE_REGWEN`](#int_state_halt_enable_regwen)
@@ -882,7 +910,7 @@ Internal state halt enable register
 
 ## INT_STATE_HALT
 Internal state halt register
-- Offset: `0x8c`
+- Offset: `0x90`
 - Reset default: `0x9`
 - Reset mask: `0xf`
 
@@ -898,7 +926,7 @@ Internal state halt register
 |  3:0   |   rw   |   0x9   | [INT_STATE_HALT](#int_state_halt--int_state_halt) |
 
 ### INT_STATE_HALT . INT_STATE_HALT
-While this field is set to kMultiBitBool4True, the instance selected by [`INT_STATE_NUM`](#int_state_num) halts.
+While this field is set to kMultiBitBool4True, the instance selected by [`INT_STATE_NUM`](#int_state_num) halts and [`INT_STATE_NUM`](#int_state_num) cannot be written.
 The instance first completes the command in progress and any commands already queued for it.
 A Generate command is instead halted as soon as the block currently being generated is complete.
 If this is the final block, the command is acknowledged after resuming, once the block has been read out.
@@ -909,24 +937,29 @@ Setting this field to kMultiBitBool4False resumes the command processing of the 
 
 ## INT_STATE_STS
 Internal state halt status register
-- Offset: `0x90`
+- Offset: `0x94`
 - Reset default: `0x0`
-- Reset mask: `0x1`
+- Reset mask: `0x3`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "HALTED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "HALTED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "GENBITS_VLD", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                             |
-|:------:|:------:|:-------:|:---------------------------------|
-|  31:1  |        |         | Reserved                         |
-|   0    |   ro   |   0x0   | [HALTED](#int_state_sts--halted) |
+|  Bits  |  Type  |  Reset  | Name                                       |
+|:------:|:------:|:-------:|:-------------------------------------------|
+|  31:2  |        |         | Reserved                                   |
+|   1    |   ro   |   0x0   | [GENBITS_VLD](#int_state_sts--genbits_vld) |
+|   0    |   ro   |   0x0   | [HALTED](#int_state_sts--halted)           |
+
+### INT_STATE_STS . GENBITS_VLD
+Reflects whether generated bits of the instance selected by [`INT_STATE_NUM`](#int_state_num) are waiting to be read by the consumer.
+The consumer can still read these bits while the instance is halted.
+Restoring the internal state via [`INT_STATE_VAL`](#int_state_val) discards any generated bits that have not been read yet.
 
 ### INT_STATE_STS . HALTED
-Reflects whether the instance selected by [`INT_STATE_NUM`](#int_state_num) has quiesced following [`INT_STATE_HALT`](#int_state_halt), such that its internal state stays constant while it is read via [`INT_STATE_VAL.`](#int_state_val)
-Reads as 0 if [`INT_STATE_NUM`](#int_state_num) selects a reserved instance.
+Reflects whether the instance selected by [`INT_STATE_NUM`](#int_state_num) has quiesced following [`INT_STATE_HALT`](#int_state_halt), such that its internal state stays constant while it is read/written via [`INT_STATE_VAL.`](#int_state_val)
 Also see [`INTR_STATE.CS_CMD_REQ_DONE`](#intr_state), which fires when an instance has halted.
 
 
