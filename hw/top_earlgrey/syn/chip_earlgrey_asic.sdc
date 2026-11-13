@@ -726,7 +726,7 @@ set_output_delay -max $spi_tpm_out_val_max [get_ports SPI_DEV_D1] \
     -clock SPI_TPM_CLK -add_delay
 }
 # SPI TPM CSB, the chip-select for TPM mode.
-# Any muxed port could be a SPI TPM CSB, but:
+# The SPI TPM CSB can be muxed to IOA2, IOA4 and IOA7, but:
 # - IOA7 has been selected as the primary target and we guarantee it meets timing.
 # - IOA2 was selected as a secondary opportunistic target.
 set TPM_CSB_PORT [get_ports {IOA7 IOA2}]
@@ -1722,8 +1722,8 @@ set SPI_TPM_CLKS "SPI_TPM_CLK SPI_TPM_IN_CLK SPI_TPM_OUT_CLK"
 # are cut, see the header of i3c_constraints.tcl.
 #
 # Pads, used in both directions, may need to be changed:
-#   I3C0: SCL = IOB10 (MIO pad 31), SDA = IOB9  (MIO pad 30)
-#   I3C1: SCL = IOB11 (MIO pad 32), SDA = IOB12 (MIO pad 33)
+#   I3C0: SCL = IOB11 (MIO pad 32), SDA = IOB12 (MIO pad 33)
+#   I3C1: SCL = IOB9  (MIO pad 30), SDA = IOB10 (MIO pad 31)
 
 # Set these to the real numbers for the package and board this is taped out on.
 # The defaults assume the pad cells are timed by the library.
@@ -1737,23 +1737,23 @@ source [sdc_find_script i3c_constraints.tcl {.. .. ip i3c syn}]
 # the same pads through their own peripheral inputs and have no peripheral
 # output of their own (hence the dashes in the middle column).
 # Keep the list below as
-# {MioInI3c0Scl       MioOutI3c0Scl MioPadIob10}
-# {MioInI3c0Sda       MioOutI3c0Sda MioPadIob9 }
-# {MioInI3c1Scl       MioOutI3c1Scl MioPadIob11}
-# {MioInI3c1Sda       MioOutI3c1Sda MioPadIob12}
-# {MioInI3c0RstdetScl       -       MioPadIob10}
-# {MioInI3c0RstdetSda       -       MioPadIob9 }
-# {MioInI3c1RstdetScl       -       MioPadIob11}
-# {MioInI3c1RstdetSda       -       MioPadIob12}
+# {MioInI3c0Scl       MioOutI3c0Scl MioPadIob11}
+# {MioInI3c0Sda       MioOutI3c0Sda MioPadIob12}
+# {MioInI3c1Scl       MioOutI3c1Scl MioPadIob9 }
+# {MioInI3c1Sda       MioOutI3c1Sda MioPadIob10}
+# {MioInI3c0RstdetScl       -       MioPadIob11}
+# {MioInI3c0RstdetSda       -       MioPadIob12}
+# {MioInI3c1RstdetScl       -       MioPadIob9 }
+# {MioInI3c1RstdetSda       -       MioPadIob10}
 set I3C_PINMUX {
-    {82 82 31}
-    {83 83 30}
-    {84 84 32}
-    {85 85 33}
-    {96  - 31}
-    {97  - 30}
-    {98  - 32}
-    {99  - 33}
+    {82 82 32}
+    {83 83 33}
+    {84 84 30}
+    {85 85 31}
+    {96  - 32}
+    {97  - 33}
+    {98  - 30}
+    {99  - 31}
 }
 sdc_pinmux_case_analysis top_earlgrey/earlgrey_pd_aon/u_pinmux ${I3C_PINMUX}
 
@@ -1767,9 +1767,9 @@ foreach entry ${I3C_PINMUX} {
 # The IP runs on clk_io_peri, a gated copy of IO_CLK, so IO_CLK is both the
 # source of the generated SCL and the clock that captures the Controller's
 # received data.
-i3c_constrain top_earlgrey/earlgrey_pd_main/u_i3c0_part_primary IOB10 IOB9 \
+i3c_constrain top_earlgrey/earlgrey_pd_main/u_i3c0_part_primary IOB11 IOB12 \
     I3C0 ${IO_CLK_PIN} IO_CLK ${IO_TCK_PERIOD}
-i3c_constrain top_earlgrey/earlgrey_pd_main/u_i3c1_part_primary IOB11 IOB12 \
+i3c_constrain top_earlgrey/earlgrey_pd_main/u_i3c1_part_primary IOB9 IOB10 \
     I3C1 ${IO_CLK_PIN} IO_CLK ${IO_TCK_PERIOD}
 
 # The reset detectors are the secondary partitions. i3c0 can wake the chip from
@@ -1847,8 +1847,8 @@ set_false_path -to   ${I3C_BUS_CLKS} -through [get_pins top_earlgrey/earlgrey_pd
 # Since SPI_HOST1 and I3C*_SCL_INT are both derived from IO_CLK and are in the
 # same clock group, this leads to bogus timing checks between SPI_HOST1_CLKS and
 # the I3C clocks.
-# Note: This is not an issue for SPI_HOST0 as it is on DIO; the pinmux cannot
-# cross-contaminate the timing checks here.
+# Note: This is not an issue for SPI_HOST0, the pinmux matrix allows no I3C
+# output on the SPI pads.
 set SPI_HOST1_CLKS [get_clocks {SPI_HOST1_CLK SPI_HOST1_INTERNAL_CLK}]
 set_false_path -from ${I3C_BUS_CLKS}   -to ${SPI_HOST1_CLKS}
 set_false_path -from ${SPI_HOST1_CLKS} -to ${I3C_BUS_CLKS}

@@ -16623,7 +16623,12 @@
         instance: usbdev
         port: sense
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC7
+          IOC12
+          IOR11
+        ]
         desc: ""
         attr: ""
       }
@@ -16655,7 +16660,11 @@
         instance: spi_host0
         port: csb[1]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA2
+          IOA5
+        ]
         desc: ""
         attr: ""
       }
@@ -16663,7 +16672,11 @@
         instance: spi_host0
         port: csb[2]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA3
+          IOA4
+        ]
         desc: ""
         attr: ""
       }
@@ -16719,7 +16732,10 @@
         instance: spi_host1
         port: sck
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB3
+        ]
         desc: ""
         attr: ""
       }
@@ -16727,7 +16743,10 @@
         instance: spi_host1
         port: csb[0]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB0
+        ]
         desc: ""
         attr: ""
       }
@@ -16735,7 +16754,10 @@
         instance: spi_host1
         port: csb[1]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB5
+        ]
         desc: ""
         attr: ""
       }
@@ -16743,7 +16765,11 @@
         instance: spi_host1
         port: csb[2]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB7
+          IOB8
+        ]
         desc: ""
         attr: ""
       }
@@ -16751,7 +16777,10 @@
         instance: spi_host1
         port: sd[0]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB1
+        ]
         desc: ""
         attr: ""
       }
@@ -16759,7 +16788,10 @@
         instance: spi_host1
         port: sd[1]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB2
+        ]
         desc: ""
         attr: ""
       }
@@ -16767,7 +16799,10 @@
         instance: spi_host1
         port: sd[2]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB4
+        ]
         desc: ""
         attr: ""
       }
@@ -16775,7 +16810,10 @@
         instance: spi_host1
         port: sd[3]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB6
+        ]
         desc: ""
         attr: ""
       }
@@ -16807,7 +16845,12 @@
         instance: spi_device
         port: tpm_csb
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA2
+          IOA4
+          IOA7
+        ]
         desc: ""
         attr: ""
       }
@@ -16863,7 +16906,10 @@
         instance: gpio0
         port: gpio[0]
         connection: muxed
-        pads: []
+        pads:
+        [
+          SPI_HOST_D0
+        ]
         desc: ""
         attr: ""
       }
@@ -16871,7 +16917,10 @@
         instance: gpio0
         port: gpio[1]
         connection: muxed
-        pads: []
+        pads:
+        [
+          SPI_HOST_D1
+        ]
         desc: ""
         attr: ""
       }
@@ -16879,7 +16928,10 @@
         instance: gpio0
         port: gpio[2]
         connection: muxed
-        pads: []
+        pads:
+        [
+          SPI_HOST_D2
+        ]
         desc: ""
         attr: ""
       }
@@ -16887,7 +16939,10 @@
         instance: gpio0
         port: gpio[3]
         connection: muxed
-        pads: []
+        pads:
+        [
+          SPI_HOST_D3
+        ]
         desc: ""
         attr: ""
       }
@@ -16895,7 +16950,10 @@
         instance: gpio0
         port: gpio[4]
         connection: muxed
-        pads: []
+        pads:
+        [
+          SPI_HOST_CLK
+        ]
         desc: ""
         attr: ""
       }
@@ -16903,7 +16961,10 @@
         instance: gpio0
         port: gpio[5]
         connection: muxed
-        pads: []
+        pads:
+        [
+          SPI_HOST_CS_L
+        ]
         desc: ""
         attr: ""
       }
@@ -16911,7 +16972,10 @@
         instance: gpio0
         port: gpio[6]
         connection: muxed
-        pads: []
+        pads:
+        [
+          SPI_DEV_D0
+        ]
         desc: ""
         attr: ""
       }
@@ -16919,7 +16983,10 @@
         instance: gpio0
         port: gpio[7]
         connection: muxed
-        pads: []
+        pads:
+        [
+          SPI_DEV_D1
+        ]
         desc: ""
         attr: ""
       }
@@ -16927,7 +16994,10 @@
         instance: gpio0
         port: gpio[8]
         connection: muxed
-        pads: []
+        pads:
+        [
+          SPI_DEV_D2
+        ]
         desc: ""
         attr: ""
       }
@@ -16935,7 +17005,10 @@
         instance: gpio0
         port: gpio[9]
         connection: muxed
-        pads: []
+        pads:
+        [
+          SPI_DEV_D3
+        ]
         desc: ""
         attr: ""
       }
@@ -16943,7 +17016,10 @@
         instance: gpio0
         port: gpio[10]
         connection: muxed
-        pads: []
+        pads:
+        [
+          SPI_DEV_CLK
+        ]
         desc: ""
         attr: ""
       }
@@ -16951,7 +17027,10 @@
         instance: gpio0
         port: gpio[11]
         connection: muxed
-        pads: []
+        pads:
+        [
+          SPI_DEV_CS_L
+        ]
         desc: ""
         attr: ""
       }
@@ -16959,7 +17038,10 @@
         instance: gpio0
         port: gpio[12]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA0
+        ]
         desc: ""
         attr: ""
       }
@@ -16967,7 +17049,10 @@
         instance: gpio0
         port: gpio[13]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA1
+        ]
         desc: ""
         attr: ""
       }
@@ -16975,7 +17060,10 @@
         instance: gpio0
         port: gpio[14]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA2
+        ]
         desc: ""
         attr: ""
       }
@@ -16983,7 +17071,10 @@
         instance: gpio0
         port: gpio[15]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA3
+        ]
         desc: ""
         attr: ""
       }
@@ -16991,7 +17082,10 @@
         instance: gpio0
         port: gpio[16]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA4
+        ]
         desc: ""
         attr: ""
       }
@@ -16999,7 +17093,10 @@
         instance: gpio0
         port: gpio[17]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA5
+        ]
         desc: ""
         attr: ""
       }
@@ -17007,7 +17104,10 @@
         instance: gpio0
         port: gpio[18]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA6
+        ]
         desc: ""
         attr: ""
       }
@@ -17015,7 +17115,10 @@
         instance: gpio0
         port: gpio[19]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA7
+        ]
         desc: ""
         attr: ""
       }
@@ -17023,7 +17126,10 @@
         instance: gpio0
         port: gpio[20]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA8
+        ]
         desc: ""
         attr: ""
       }
@@ -17031,7 +17137,10 @@
         instance: gpio0
         port: gpio[21]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB0
+        ]
         desc: ""
         attr: ""
       }
@@ -17039,7 +17148,10 @@
         instance: gpio0
         port: gpio[22]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB1
+        ]
         desc: ""
         attr: ""
       }
@@ -17047,7 +17159,10 @@
         instance: gpio0
         port: gpio[23]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB2
+        ]
         desc: ""
         attr: ""
       }
@@ -17055,7 +17170,10 @@
         instance: gpio0
         port: gpio[24]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB3
+        ]
         desc: ""
         attr: ""
       }
@@ -17063,7 +17181,10 @@
         instance: gpio0
         port: gpio[25]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB4
+        ]
         desc: ""
         attr: ""
       }
@@ -17071,7 +17192,10 @@
         instance: gpio0
         port: gpio[26]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB5
+        ]
         desc: ""
         attr: ""
       }
@@ -17079,7 +17203,10 @@
         instance: gpio0
         port: gpio[27]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB6
+        ]
         desc: ""
         attr: ""
       }
@@ -17087,7 +17214,10 @@
         instance: gpio0
         port: gpio[28]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB7
+        ]
         desc: ""
         attr: ""
       }
@@ -17095,7 +17225,10 @@
         instance: gpio0
         port: gpio[29]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB8
+        ]
         desc: ""
         attr: ""
       }
@@ -17103,7 +17236,10 @@
         instance: gpio0
         port: gpio[30]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB9
+        ]
         desc: ""
         attr: ""
       }
@@ -17111,7 +17247,10 @@
         instance: gpio0
         port: gpio[31]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB10
+        ]
         desc: ""
         attr: ""
       }
@@ -17119,7 +17258,10 @@
         instance: gpio1
         port: gpio[0]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB11
+        ]
         desc: ""
         attr: ""
       }
@@ -17127,7 +17269,10 @@
         instance: gpio1
         port: gpio[1]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB12
+        ]
         desc: ""
         attr: ""
       }
@@ -17135,7 +17280,10 @@
         instance: gpio1
         port: gpio[2]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC0
+        ]
         desc: ""
         attr: ""
       }
@@ -17143,7 +17291,10 @@
         instance: gpio1
         port: gpio[3]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC1
+        ]
         desc: ""
         attr: ""
       }
@@ -17151,7 +17302,10 @@
         instance: gpio1
         port: gpio[4]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC2
+        ]
         desc: ""
         attr: ""
       }
@@ -17159,7 +17313,10 @@
         instance: gpio1
         port: gpio[5]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC3
+        ]
         desc: ""
         attr: ""
       }
@@ -17167,7 +17324,10 @@
         instance: gpio1
         port: gpio[6]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC4
+        ]
         desc: ""
         attr: ""
       }
@@ -17175,7 +17335,10 @@
         instance: gpio1
         port: gpio[7]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC5
+        ]
         desc: ""
         attr: ""
       }
@@ -17183,7 +17346,10 @@
         instance: gpio1
         port: gpio[8]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC6
+        ]
         desc: ""
         attr: ""
       }
@@ -17191,7 +17357,10 @@
         instance: gpio1
         port: gpio[9]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC7
+        ]
         desc: ""
         attr: ""
       }
@@ -17199,7 +17368,10 @@
         instance: gpio1
         port: gpio[10]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC8
+        ]
         desc: ""
         attr: ""
       }
@@ -17207,7 +17379,10 @@
         instance: gpio1
         port: gpio[11]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC9
+        ]
         desc: ""
         attr: ""
       }
@@ -17215,7 +17390,10 @@
         instance: gpio1
         port: gpio[12]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC10
+        ]
         desc: ""
         attr: ""
       }
@@ -17223,7 +17401,10 @@
         instance: gpio1
         port: gpio[13]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC11
+        ]
         desc: ""
         attr: ""
       }
@@ -17231,7 +17412,10 @@
         instance: gpio1
         port: gpio[14]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC12
+        ]
         desc: ""
         attr: ""
       }
@@ -17239,7 +17423,10 @@
         instance: gpio1
         port: gpio[15]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR0
+        ]
         desc: ""
         attr: ""
       }
@@ -17247,7 +17434,10 @@
         instance: gpio1
         port: gpio[16]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR1
+        ]
         desc: ""
         attr: ""
       }
@@ -17255,7 +17445,10 @@
         instance: gpio1
         port: gpio[17]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR2
+        ]
         desc: ""
         attr: ""
       }
@@ -17263,7 +17456,10 @@
         instance: gpio1
         port: gpio[18]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR3
+        ]
         desc: ""
         attr: ""
       }
@@ -17271,7 +17467,10 @@
         instance: gpio1
         port: gpio[19]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR4
+        ]
         desc: ""
         attr: ""
       }
@@ -17279,7 +17478,10 @@
         instance: gpio1
         port: gpio[20]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR5
+        ]
         desc: ""
         attr: ""
       }
@@ -17287,7 +17489,10 @@
         instance: gpio1
         port: gpio[21]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR6
+        ]
         desc: ""
         attr: ""
       }
@@ -17295,7 +17500,10 @@
         instance: gpio1
         port: gpio[22]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR7
+        ]
         desc: ""
         attr: ""
       }
@@ -17303,7 +17511,10 @@
         instance: gpio1
         port: gpio[23]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR8
+        ]
         desc: ""
         attr: ""
       }
@@ -17311,7 +17522,10 @@
         instance: gpio1
         port: gpio[24]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR9
+        ]
         desc: ""
         attr: ""
       }
@@ -17319,7 +17533,10 @@
         instance: gpio1
         port: gpio[25]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR10
+        ]
         desc: ""
         attr: ""
       }
@@ -17327,7 +17544,10 @@
         instance: gpio1
         port: gpio[26]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR11
+        ]
         desc: ""
         attr: ""
       }
@@ -17335,7 +17555,10 @@
         instance: gpio1
         port: gpio[27]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR12
+        ]
         desc: ""
         attr: ""
       }
@@ -17343,7 +17566,10 @@
         instance: gpio1
         port: gpio[28]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR13
+        ]
         desc: ""
         attr: ""
       }
@@ -17351,7 +17577,10 @@
         instance: gpio1
         port: gpio[29]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR10
+        ]
         desc: ""
         attr: ""
       }
@@ -17359,7 +17588,10 @@
         instance: gpio1
         port: gpio[30]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR11
+        ]
         desc: ""
         attr: ""
       }
@@ -17367,7 +17599,10 @@
         instance: gpio1
         port: gpio[31]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR12
+        ]
         desc: ""
         attr: ""
       }
@@ -17375,7 +17610,11 @@
         instance: uart0
         port: rx
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA2
+          IOC3
+        ]
         desc: ""
         attr: ""
       }
@@ -17383,7 +17622,11 @@
         instance: uart0
         port: tx
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA3
+          IOC4
+        ]
         desc: ""
         attr: ""
       }
@@ -17391,7 +17634,11 @@
         instance: uart1
         port: rx
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA0
+          IOR5
+        ]
         desc: ""
         attr: ""
       }
@@ -17399,7 +17646,11 @@
         instance: uart1
         port: tx
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA1
+          IOR6
+        ]
         desc: ""
         attr: ""
       }
@@ -17407,7 +17658,12 @@
         instance: uart2
         port: rx
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB4
+          IOB7
+          IOC10
+        ]
         desc: ""
         attr: ""
       }
@@ -17415,7 +17671,11 @@
         instance: uart2
         port: tx
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB5
+          IOC11
+        ]
         desc: ""
         attr: ""
       }
@@ -17423,7 +17683,11 @@
         instance: uart3
         port: rx
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA4
+          IOR3
+        ]
         desc: ""
         attr: ""
       }
@@ -17431,7 +17695,11 @@
         instance: uart3
         port: tx
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA5
+          IOR4
+        ]
         desc: ""
         attr: ""
       }
@@ -17439,7 +17707,12 @@
         instance: i2c0
         port: sda
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA7
+          IOB10
+          IOR13
+        ]
         desc: ""
         attr: ""
       }
@@ -17447,7 +17720,12 @@
         instance: i2c0
         port: scl
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA8
+          IOB9
+          IOR12
+        ]
         desc: ""
         attr: ""
       }
@@ -17455,7 +17733,12 @@
         instance: i2c1
         port: sda
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB11
+          IOB12
+          IOR11
+        ]
         desc: ""
         attr: ""
       }
@@ -17463,7 +17746,12 @@
         instance: i2c1
         port: scl
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB11
+          IOB12
+          IOR10
+        ]
         desc: ""
         attr: ""
       }
@@ -17471,7 +17759,13 @@
         instance: i2c2
         port: sda
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA7
+          IOB9
+          IOB10
+          IOC12
+        ]
         desc: ""
         attr: ""
       }
@@ -17479,7 +17773,13 @@
         instance: i2c2
         port: scl
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA8
+          IOB9
+          IOB10
+          IOC9
+        ]
         desc: ""
         attr: ""
       }
@@ -17487,7 +17787,12 @@
         instance: i3c0
         port: scl
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA8
+          IOB11
+          IOR12
+        ]
         desc: ""
         attr: ""
       }
@@ -17495,7 +17800,12 @@
         instance: i3c0
         port: sda
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA7
+          IOB12
+          IOR13
+        ]
         desc: ""
         attr: ""
       }
@@ -17503,7 +17813,12 @@
         instance: i3c0
         port: ctrl_sda_pu
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA2
+          IOB8
+          IOR7
+        ]
         desc: ""
         attr: ""
       }
@@ -17511,7 +17826,12 @@
         instance: i3c0
         port: rstdet_scl
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA8
+          IOB11
+          IOR12
+        ]
         desc: ""
         attr: ""
       }
@@ -17519,7 +17839,12 @@
         instance: i3c0
         port: rstdet_sda
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA7
+          IOB12
+          IOR13
+        ]
         desc: ""
         attr: ""
       }
@@ -17527,7 +17852,12 @@
         instance: i3c1
         port: scl
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB9
+          IOB11
+          IOR10
+        ]
         desc: ""
         attr: ""
       }
@@ -17535,7 +17865,12 @@
         instance: i3c1
         port: sda
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB10
+          IOB12
+          IOR11
+        ]
         desc: ""
         attr: ""
       }
@@ -17543,7 +17878,12 @@
         instance: i3c1
         port: ctrl_sda_pu
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB7
+          IOB10
+          IOR2
+        ]
         desc: ""
         attr: ""
       }
@@ -17551,7 +17891,12 @@
         instance: i3c1
         port: rstdet_scl
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB9
+          IOB11
+          IOR10
+        ]
         desc: ""
         attr: ""
       }
@@ -17559,7 +17904,12 @@
         instance: i3c1
         port: rstdet_sda
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOB10
+          IOB12
+          IOR11
+        ]
         desc: ""
         attr: ""
       }
@@ -17567,7 +17917,10 @@
         instance: sensor_ctrl
         port: ast_debug_out[0]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA7
+        ]
         desc: ""
         attr: ""
       }
@@ -17575,7 +17928,10 @@
         instance: sensor_ctrl
         port: ast_debug_out[1]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOA8
+        ]
         desc: ""
         attr: ""
       }
@@ -17583,7 +17939,10 @@
         instance: sensor_ctrl
         port: ast_debug_out[2]
         connection: muxed
-        pads: []
+        pads:
+        [
+          SPI_HOST_D3
+        ]
         desc: ""
         attr: ""
       }
@@ -17591,7 +17950,10 @@
         instance: sensor_ctrl
         port: ast_debug_out[3]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC1
+        ]
         desc: ""
         attr: ""
       }
@@ -17599,7 +17961,10 @@
         instance: sensor_ctrl
         port: ast_debug_out[4]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC2
+        ]
         desc: ""
         attr: ""
       }
@@ -17607,7 +17972,10 @@
         instance: sensor_ctrl
         port: ast_debug_out[5]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC0
+        ]
         desc: ""
         attr: ""
       }
@@ -17615,7 +17983,10 @@
         instance: sensor_ctrl
         port: ast_debug_out[6]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC4
+        ]
         desc: ""
         attr: ""
       }
@@ -17623,7 +17994,10 @@
         instance: sensor_ctrl
         port: ast_debug_out[7]
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOC3
+        ]
         desc: ""
         attr: ""
       }
@@ -17631,7 +18005,10 @@
         instance: sysrst_ctrl
         port: ac_present
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR2
+        ]
         desc: ""
         attr: ""
       }
@@ -17639,7 +18016,10 @@
         instance: sysrst_ctrl
         port: key0_in
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR1
+        ]
         desc: ""
         attr: ""
       }
@@ -17647,7 +18027,10 @@
         instance: sysrst_ctrl
         port: key1_in
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR3
+        ]
         desc: ""
         attr: ""
       }
@@ -17655,7 +18038,10 @@
         instance: sysrst_ctrl
         port: key2_in
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR5
+        ]
         desc: ""
         attr: ""
       }
@@ -17663,7 +18049,10 @@
         instance: sysrst_ctrl
         port: pwrb_in
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR0
+        ]
         desc: ""
         attr: ""
       }
@@ -17671,7 +18060,10 @@
         instance: sysrst_ctrl
         port: bat_disable
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR12
+        ]
         desc: ""
         attr: ""
       }
@@ -17703,7 +18095,10 @@
         instance: sysrst_ctrl
         port: key0_out
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR6
+        ]
         desc: ""
         attr: ""
       }
@@ -17711,7 +18106,10 @@
         instance: sysrst_ctrl
         port: key1_out
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR13
+        ]
         desc: ""
         attr: ""
       }
@@ -17719,7 +18117,10 @@
         instance: sysrst_ctrl
         port: key2_out
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR7
+        ]
         desc: ""
         attr: ""
       }
@@ -17727,7 +18128,10 @@
         instance: sysrst_ctrl
         port: pwrb_out
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR10
+        ]
         desc: ""
         attr: ""
       }
@@ -17735,7 +18139,10 @@
         instance: sysrst_ctrl
         port: lid_open
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR11
+        ]
         desc: ""
         attr: ""
       }
@@ -17743,7 +18150,10 @@
         instance: sysrst_ctrl
         port: z3_wakeup
         connection: muxed
-        pads: []
+        pads:
+        [
+          IOR4
+        ]
         desc: ""
         attr: ""
       }
@@ -17848,7 +18258,10 @@
         width: 4
         type: inout
         idx: 0
-        pads: []
+        pads:
+        [
+          IOB1
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -17860,7 +18273,10 @@
         width: 4
         type: inout
         idx: 1
-        pads: []
+        pads:
+        [
+          IOB2
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -17872,7 +18288,10 @@
         width: 4
         type: inout
         idx: 2
-        pads: []
+        pads:
+        [
+          IOB4
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -17884,7 +18303,10 @@
         width: 4
         type: inout
         idx: 3
-        pads: []
+        pads:
+        [
+          IOB6
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -17960,7 +18382,10 @@
         width: 32
         type: inout
         idx: 0
-        pads: []
+        pads:
+        [
+          SPI_HOST_D0
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -17972,7 +18397,10 @@
         width: 32
         type: inout
         idx: 1
-        pads: []
+        pads:
+        [
+          SPI_HOST_D1
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -17984,7 +18412,10 @@
         width: 32
         type: inout
         idx: 2
-        pads: []
+        pads:
+        [
+          SPI_HOST_D2
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -17996,7 +18427,10 @@
         width: 32
         type: inout
         idx: 3
-        pads: []
+        pads:
+        [
+          SPI_HOST_D3
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18008,7 +18442,10 @@
         width: 32
         type: inout
         idx: 4
-        pads: []
+        pads:
+        [
+          SPI_HOST_CLK
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18020,7 +18457,10 @@
         width: 32
         type: inout
         idx: 5
-        pads: []
+        pads:
+        [
+          SPI_HOST_CS_L
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18032,7 +18472,10 @@
         width: 32
         type: inout
         idx: 6
-        pads: []
+        pads:
+        [
+          SPI_DEV_D0
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18044,7 +18487,10 @@
         width: 32
         type: inout
         idx: 7
-        pads: []
+        pads:
+        [
+          SPI_DEV_D1
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18056,7 +18502,10 @@
         width: 32
         type: inout
         idx: 8
-        pads: []
+        pads:
+        [
+          SPI_DEV_D2
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18068,7 +18517,10 @@
         width: 32
         type: inout
         idx: 9
-        pads: []
+        pads:
+        [
+          SPI_DEV_D3
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18080,7 +18532,10 @@
         width: 32
         type: inout
         idx: 10
-        pads: []
+        pads:
+        [
+          SPI_DEV_CLK
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18092,7 +18547,10 @@
         width: 32
         type: inout
         idx: 11
-        pads: []
+        pads:
+        [
+          SPI_DEV_CS_L
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18104,7 +18562,10 @@
         width: 32
         type: inout
         idx: 12
-        pads: []
+        pads:
+        [
+          IOA0
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18116,7 +18577,10 @@
         width: 32
         type: inout
         idx: 13
-        pads: []
+        pads:
+        [
+          IOA1
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18128,7 +18592,10 @@
         width: 32
         type: inout
         idx: 14
-        pads: []
+        pads:
+        [
+          IOA2
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18140,7 +18607,10 @@
         width: 32
         type: inout
         idx: 15
-        pads: []
+        pads:
+        [
+          IOA3
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18152,7 +18622,10 @@
         width: 32
         type: inout
         idx: 16
-        pads: []
+        pads:
+        [
+          IOA4
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18164,7 +18637,10 @@
         width: 32
         type: inout
         idx: 17
-        pads: []
+        pads:
+        [
+          IOA5
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18176,7 +18652,10 @@
         width: 32
         type: inout
         idx: 18
-        pads: []
+        pads:
+        [
+          IOA6
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18188,7 +18667,10 @@
         width: 32
         type: inout
         idx: 19
-        pads: []
+        pads:
+        [
+          IOA7
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18200,7 +18682,10 @@
         width: 32
         type: inout
         idx: 20
-        pads: []
+        pads:
+        [
+          IOA8
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18212,7 +18697,10 @@
         width: 32
         type: inout
         idx: 21
-        pads: []
+        pads:
+        [
+          IOB0
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18224,7 +18712,10 @@
         width: 32
         type: inout
         idx: 22
-        pads: []
+        pads:
+        [
+          IOB1
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18236,7 +18727,10 @@
         width: 32
         type: inout
         idx: 23
-        pads: []
+        pads:
+        [
+          IOB2
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18248,7 +18742,10 @@
         width: 32
         type: inout
         idx: 24
-        pads: []
+        pads:
+        [
+          IOB3
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18260,7 +18757,10 @@
         width: 32
         type: inout
         idx: 25
-        pads: []
+        pads:
+        [
+          IOB4
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18272,7 +18772,10 @@
         width: 32
         type: inout
         idx: 26
-        pads: []
+        pads:
+        [
+          IOB5
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18284,7 +18787,10 @@
         width: 32
         type: inout
         idx: 27
-        pads: []
+        pads:
+        [
+          IOB6
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18296,7 +18802,10 @@
         width: 32
         type: inout
         idx: 28
-        pads: []
+        pads:
+        [
+          IOB7
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18308,7 +18817,10 @@
         width: 32
         type: inout
         idx: 29
-        pads: []
+        pads:
+        [
+          IOB8
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18320,7 +18832,10 @@
         width: 32
         type: inout
         idx: 30
-        pads: []
+        pads:
+        [
+          IOB9
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18332,7 +18847,10 @@
         width: 32
         type: inout
         idx: 31
-        pads: []
+        pads:
+        [
+          IOB10
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18344,7 +18862,10 @@
         width: 32
         type: inout
         idx: 0
-        pads: []
+        pads:
+        [
+          IOB11
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18356,7 +18877,10 @@
         width: 32
         type: inout
         idx: 1
-        pads: []
+        pads:
+        [
+          IOB12
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18368,7 +18892,10 @@
         width: 32
         type: inout
         idx: 2
-        pads: []
+        pads:
+        [
+          IOC0
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18380,7 +18907,10 @@
         width: 32
         type: inout
         idx: 3
-        pads: []
+        pads:
+        [
+          IOC1
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18392,7 +18922,10 @@
         width: 32
         type: inout
         idx: 4
-        pads: []
+        pads:
+        [
+          IOC2
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18404,7 +18937,10 @@
         width: 32
         type: inout
         idx: 5
-        pads: []
+        pads:
+        [
+          IOC3
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18416,7 +18952,10 @@
         width: 32
         type: inout
         idx: 6
-        pads: []
+        pads:
+        [
+          IOC4
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18428,7 +18967,10 @@
         width: 32
         type: inout
         idx: 7
-        pads: []
+        pads:
+        [
+          IOC5
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18440,7 +18982,10 @@
         width: 32
         type: inout
         idx: 8
-        pads: []
+        pads:
+        [
+          IOC6
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18452,7 +18997,10 @@
         width: 32
         type: inout
         idx: 9
-        pads: []
+        pads:
+        [
+          IOC7
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18464,7 +19012,10 @@
         width: 32
         type: inout
         idx: 10
-        pads: []
+        pads:
+        [
+          IOC8
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18476,7 +19027,10 @@
         width: 32
         type: inout
         idx: 11
-        pads: []
+        pads:
+        [
+          IOC9
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18488,7 +19042,10 @@
         width: 32
         type: inout
         idx: 12
-        pads: []
+        pads:
+        [
+          IOC10
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18500,7 +19057,10 @@
         width: 32
         type: inout
         idx: 13
-        pads: []
+        pads:
+        [
+          IOC11
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18512,7 +19072,10 @@
         width: 32
         type: inout
         idx: 14
-        pads: []
+        pads:
+        [
+          IOC12
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18524,7 +19087,10 @@
         width: 32
         type: inout
         idx: 15
-        pads: []
+        pads:
+        [
+          IOR0
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18536,7 +19102,10 @@
         width: 32
         type: inout
         idx: 16
-        pads: []
+        pads:
+        [
+          IOR1
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18548,7 +19117,10 @@
         width: 32
         type: inout
         idx: 17
-        pads: []
+        pads:
+        [
+          IOR2
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18560,7 +19132,10 @@
         width: 32
         type: inout
         idx: 18
-        pads: []
+        pads:
+        [
+          IOR3
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18572,7 +19147,10 @@
         width: 32
         type: inout
         idx: 19
-        pads: []
+        pads:
+        [
+          IOR4
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18584,7 +19162,10 @@
         width: 32
         type: inout
         idx: 20
-        pads: []
+        pads:
+        [
+          IOR5
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18596,7 +19177,10 @@
         width: 32
         type: inout
         idx: 21
-        pads: []
+        pads:
+        [
+          IOR6
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18608,7 +19192,10 @@
         width: 32
         type: inout
         idx: 22
-        pads: []
+        pads:
+        [
+          IOR7
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18620,7 +19207,10 @@
         width: 32
         type: inout
         idx: 23
-        pads: []
+        pads:
+        [
+          IOR8
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18632,7 +19222,10 @@
         width: 32
         type: inout
         idx: 24
-        pads: []
+        pads:
+        [
+          IOR9
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18644,7 +19237,10 @@
         width: 32
         type: inout
         idx: 25
-        pads: []
+        pads:
+        [
+          IOR10
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18656,7 +19252,10 @@
         width: 32
         type: inout
         idx: 26
-        pads: []
+        pads:
+        [
+          IOR11
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18668,7 +19267,10 @@
         width: 32
         type: inout
         idx: 27
-        pads: []
+        pads:
+        [
+          IOR12
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18680,7 +19282,10 @@
         width: 32
         type: inout
         idx: 28
-        pads: []
+        pads:
+        [
+          IOR13
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18692,7 +19297,10 @@
         width: 32
         type: inout
         idx: 29
-        pads: []
+        pads:
+        [
+          IOR10
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18704,7 +19312,10 @@
         width: 32
         type: inout
         idx: 30
-        pads: []
+        pads:
+        [
+          IOR11
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18716,7 +19327,10 @@
         width: 32
         type: inout
         idx: 31
-        pads: []
+        pads:
+        [
+          IOR12
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18728,7 +19342,12 @@
         width: 1
         type: inout
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA7
+          IOB10
+          IOR13
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18740,7 +19359,12 @@
         width: 1
         type: inout
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA8
+          IOB9
+          IOR12
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18752,7 +19376,12 @@
         width: 1
         type: inout
         idx: -1
-        pads: []
+        pads:
+        [
+          IOB11
+          IOB12
+          IOR11
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18764,7 +19393,12 @@
         width: 1
         type: inout
         idx: -1
-        pads: []
+        pads:
+        [
+          IOB11
+          IOB12
+          IOR10
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18776,7 +19410,13 @@
         width: 1
         type: inout
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA7
+          IOB9
+          IOB10
+          IOC12
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18788,7 +19428,13 @@
         width: 1
         type: inout
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA8
+          IOB9
+          IOB10
+          IOC9
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18800,7 +19446,12 @@
         width: 1
         type: inout
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA8
+          IOB11
+          IOR12
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18812,7 +19463,12 @@
         width: 1
         type: inout
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA7
+          IOB12
+          IOR13
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18824,7 +19480,12 @@
         width: 1
         type: inout
         idx: -1
-        pads: []
+        pads:
+        [
+          IOB9
+          IOB11
+          IOR10
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18836,7 +19497,12 @@
         width: 1
         type: inout
         idx: -1
-        pads: []
+        pads:
+        [
+          IOB10
+          IOB12
+          IOR11
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18880,7 +19546,12 @@
         width: 1
         type: input
         idx: -1
-        pads: []
+        pads:
+        [
+          IOC7
+          IOC12
+          IOR11
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18924,7 +19595,12 @@
         width: 1
         type: input
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA2
+          IOA4
+          IOA7
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18936,7 +19612,11 @@
         width: 1
         type: input
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA2
+          IOC3
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18948,7 +19628,11 @@
         width: 1
         type: input
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA0
+          IOR5
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18960,7 +19644,12 @@
         width: 1
         type: input
         idx: -1
-        pads: []
+        pads:
+        [
+          IOB4
+          IOB7
+          IOC10
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18972,7 +19661,11 @@
         width: 1
         type: input
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA4
+          IOR3
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18985,7 +19678,12 @@
         type: input
         partition: secondary
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA8
+          IOB11
+          IOR12
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -18998,7 +19696,12 @@
         type: input
         partition: secondary
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA7
+          IOB12
+          IOR13
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19011,7 +19714,12 @@
         type: input
         partition: secondary
         idx: -1
-        pads: []
+        pads:
+        [
+          IOB9
+          IOB11
+          IOR10
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19024,7 +19732,12 @@
         type: input
         partition: secondary
         idx: -1
-        pads: []
+        pads:
+        [
+          IOB10
+          IOB12
+          IOR11
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19036,7 +19749,10 @@
         width: 1
         type: input
         idx: -1
-        pads: []
+        pads:
+        [
+          IOR2
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19048,7 +19764,10 @@
         width: 1
         type: input
         idx: -1
-        pads: []
+        pads:
+        [
+          IOR1
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19060,7 +19779,10 @@
         width: 1
         type: input
         idx: -1
-        pads: []
+        pads:
+        [
+          IOR3
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19072,7 +19794,10 @@
         width: 1
         type: input
         idx: -1
-        pads: []
+        pads:
+        [
+          IOR5
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19084,7 +19809,10 @@
         width: 1
         type: input
         idx: -1
-        pads: []
+        pads:
+        [
+          IOR0
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19096,7 +19824,10 @@
         width: 1
         type: input
         idx: -1
-        pads: []
+        pads:
+        [
+          IOR11
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19140,7 +19871,11 @@
         width: 3
         type: output
         idx: 1
-        pads: []
+        pads:
+        [
+          IOA2
+          IOA5
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19152,7 +19887,11 @@
         width: 3
         type: output
         idx: 2
-        pads: []
+        pads:
+        [
+          IOA3
+          IOA4
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19164,7 +19903,10 @@
         width: 1
         type: output
         idx: -1
-        pads: []
+        pads:
+        [
+          IOB3
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19176,7 +19918,10 @@
         width: 3
         type: output
         idx: 0
-        pads: []
+        pads:
+        [
+          IOB0
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19188,7 +19933,10 @@
         width: 3
         type: output
         idx: 1
-        pads: []
+        pads:
+        [
+          IOB5
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19200,7 +19948,11 @@
         width: 3
         type: output
         idx: 2
-        pads: []
+        pads:
+        [
+          IOB7
+          IOB8
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19212,7 +19964,11 @@
         width: 1
         type: output
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA3
+          IOC4
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19224,7 +19980,11 @@
         width: 1
         type: output
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA1
+          IOR6
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19236,7 +19996,11 @@
         width: 1
         type: output
         idx: -1
-        pads: []
+        pads:
+        [
+          IOB5
+          IOC11
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19248,7 +20012,11 @@
         width: 1
         type: output
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA5
+          IOR4
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19260,7 +20028,12 @@
         width: 1
         type: output
         idx: -1
-        pads: []
+        pads:
+        [
+          IOA2
+          IOB8
+          IOR7
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19272,7 +20045,12 @@
         width: 1
         type: output
         idx: -1
-        pads: []
+        pads:
+        [
+          IOB7
+          IOB10
+          IOR2
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19284,7 +20062,10 @@
         width: 8
         type: output
         idx: 0
-        pads: []
+        pads:
+        [
+          IOA7
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19296,7 +20077,10 @@
         width: 8
         type: output
         idx: 1
-        pads: []
+        pads:
+        [
+          IOA8
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19308,7 +20092,10 @@
         width: 8
         type: output
         idx: 2
-        pads: []
+        pads:
+        [
+          SPI_HOST_D3
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19320,7 +20107,10 @@
         width: 8
         type: output
         idx: 3
-        pads: []
+        pads:
+        [
+          IOC1
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19332,7 +20122,10 @@
         width: 8
         type: output
         idx: 4
-        pads: []
+        pads:
+        [
+          IOC2
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19344,7 +20137,10 @@
         width: 8
         type: output
         idx: 5
-        pads: []
+        pads:
+        [
+          IOC0
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19356,7 +20152,10 @@
         width: 8
         type: output
         idx: 6
-        pads: []
+        pads:
+        [
+          IOC4
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19368,7 +20167,10 @@
         width: 8
         type: output
         idx: 7
-        pads: []
+        pads:
+        [
+          IOC3
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19380,7 +20182,10 @@
         width: 1
         type: output
         idx: -1
-        pads: []
+        pads:
+        [
+          IOR12
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19392,7 +20197,10 @@
         width: 1
         type: output
         idx: -1
-        pads: []
+        pads:
+        [
+          IOR6
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19404,7 +20212,10 @@
         width: 1
         type: output
         idx: -1
-        pads: []
+        pads:
+        [
+          IOR13
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19416,7 +20227,10 @@
         width: 1
         type: output
         idx: -1
-        pads: []
+        pads:
+        [
+          IOR7
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19428,7 +20242,10 @@
         width: 1
         type: output
         idx: -1
-        pads: []
+        pads:
+        [
+          IOR10
+        ]
         attr: ""
         connection: muxed
         desc: ""
@@ -19440,7 +20257,10 @@
         width: 1
         type: output
         idx: -1
-        pads: []
+        pads:
+        [
+          IOR4
+        ]
         attr: ""
         connection: muxed
         desc: ""
