@@ -14,26 +14,31 @@ use std::path::Path;
 
 use crate::error::HsmError;
 use crate::util::attribute::{AttrData, AttributeMap, AttributeType, KeyType, ObjectClass};
+use crate::util::helper;
 use crate::util::key::KeyEncoding;
 
 fn _load_private_key(path: &Path) -> Result<SlhDsaPrivateKey> {
-    let data = std::fs::read_to_string(path)?;
-    if let Ok(sk) = SlhDsaPrivateKey::from_pkcs8_pem(&data) {
+    let data = helper::read_file(path)?;
+    if let Ok(pem) = std::str::from_utf8(&data)
+        && let Ok(sk) = SlhDsaPrivateKey::from_pkcs8_pem(pem)
+    {
         return Ok(sk);
     }
-    if let Ok(sk) = SlhDsaPrivateKey::from_pkcs8_der(data.as_bytes()) {
+    if let Ok(sk) = SlhDsaPrivateKey::from_pkcs8_der(&data) {
         return Ok(sk);
     }
     Err(anyhow!("Invalid Private Key PEM/DER"))
 }
 
 fn _load_public_key(path: &Path) -> Result<SlhDsaPublicKey> {
-    let data = std::fs::read_to_string(path)?;
-    if let Ok(sk) = SlhDsaPublicKey::from_public_key_pem(&data) {
-        return Ok(sk);
+    let data = helper::read_file(path)?;
+    if let Ok(pem) = std::str::from_utf8(&data)
+        && let Ok(pk) = SlhDsaPublicKey::from_public_key_pem(pem)
+    {
+        return Ok(pk);
     }
-    if let Ok(sk) = SlhDsaPublicKey::from_public_key_der(data.as_bytes()) {
-        return Ok(sk);
+    if let Ok(pk) = SlhDsaPublicKey::from_public_key_der(&data) {
+        return Ok(pk);
     }
     Err(anyhow!("Invalid Public Key PEM/DER"))
 }
@@ -567,5 +572,60 @@ impl SlhDsaMechanism for SpxSignatureMode {
                 HashSignAdditionalContext::new(HedgeType::Preferred, None, MechanismType::SHA256),
             ),
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    // An SLH-DSA-SHA2-128s test key, generated with
+    // `openssl genpkey -algorithm SLH-DSA-SHA2-128s`.
+    const PRIVATE_KEY_PEM: &str = r#"-----BEGIN PRIVATE KEY-----
+MFICAQAwCwYJYIZIAWUDBAMUBEDwkdNrwHXCkX0NmTXu1oPlzPsmExresWZj+td5
+TBp+UJsAlBAQP66AE4Dzu22E8gzym9LX9X8TqXm7Ko/zavtS
+-----END PRIVATE KEY-----
+"#;
+    const PRIVATE_KEY_DER_HEX: &str = "3052020100300b060960864801650304031\
+        40440f091d36bc075c2917d0d9935eed683e5ccfb26131adeb16663fad7794c1a7\
+        e509b009410103fae801380f3bb6d84f20cf29bd2d7f57f13a979bb2a8ff36afb52";
+    const PUBLIC_KEY_PEM: &str = r#"-----BEGIN PUBLIC KEY-----
+MDAwCwYJYIZIAWUDBAMUAyEAmwCUEBA/roATgPO7bYTyDPKb0tf1fxOpebsqj/Nq
++1I=
+-----END PUBLIC KEY-----
+"#;
+    const PUBLIC_KEY_DER_HEX: &str = "3030300b06096086480165030403140321009\
+        b009410103fae801380f3bb6d84f20cf29bd2d7f57f13a979bb2a8ff36afb52";
+
+    // Check that we support both PEM and DER public keys
+    #[test]
+    fn test_load_public_keys() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let pem_path = dir.path().join("key.pub.pem");
+        let der_path = dir.path().join("key.pub.der");
+        std::fs::write(&pem_path, PUBLIC_KEY_PEM)?;
+        std::fs::write(&der_path, hex::decode(PUBLIC_KEY_DER_HEX)?)?;
+
+        let pem = load_public_key(&pem_path)?;
+        let der = load_public_key(&der_path)?;
+        assert!(matches!(pem, SlhDsaPublicKey::Sha2_128s(_)));
+        assert_eq!(pem.to_vec(), der.to_vec());
+        Ok(())
+    }
+
+    // Check that we support both PEM and DER private keys
+    #[test]
+    fn test_load_private_keys() -> Result<()> {
+        let dir = tempfile::tempdir()?;
+        let pem_path = dir.path().join("key.pem");
+        let der_path = dir.path().join("key.der");
+        std::fs::write(&pem_path, PRIVATE_KEY_PEM)?;
+        std::fs::write(&der_path, hex::decode(PRIVATE_KEY_DER_HEX)?)?;
+
+        let pem = load_private_key(&pem_path)?;
+        let der = load_private_key(&der_path)?;
+        assert!(matches!(pem, SlhDsaPrivateKey::Sha2_128s(_)));
+        assert_eq!(pem.to_vec(), der.to_vec());
+        Ok(())
     }
 }

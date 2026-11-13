@@ -61,14 +61,14 @@ impl Import {
     }"#;
 
     fn unwrap_key(&self, session: &Session, template: &AttributeMap) -> Result<()> {
-        let key = std::fs::read_to_string(&self.filename)?;
+        let key = helper::read_file(&self.filename)?;
         let wrapper: Wrap = self
             .unwrap_mechanism
             .ok_or(anyhow!(
                 "unwrap_mechanism is required when unwrap is specified"
             ))?
             .into();
-        let _key = wrapper.unwrap(session, key.as_bytes(), self.unwrap.as_deref(), template)?;
+        let _key = wrapper.unwrap(session, &key, self.unwrap.as_deref(), template)?;
         Ok(())
     }
 }
