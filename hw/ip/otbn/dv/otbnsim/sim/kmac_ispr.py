@@ -3,7 +3,7 @@
 # SPDX-License-Identifier: Apache-2.0
 
 from typing import List, Optional
-from .ispr import ISPR, DumbISPR, ISPRChange
+from .ispr import ISPR, CtrlCSR, DumbISPR, ISPRChange
 
 
 class KmacStatusCSR(DumbISPR):
@@ -106,7 +106,7 @@ class KmacStatusCSR(DumbISPR):
         self._end(commit=False)
 
 
-class KmacCtrlCSR(ISPR):
+class KmacCtrlCSR(CtrlCSR):
     '''Models the KMAC_CTRL CSR.
 
     Bit layout:
@@ -117,59 +117,6 @@ class KmacCtrlCSR(ISPR):
     '''
 
     CMD_MASK = 0x1f
-
-    def __init__(self, name: str):
-        super().__init__(name, 32)
-        self.on_start()
-
-    def on_start(self) -> None:
-        self._cmd = 0
-        self._cmd_next: Optional[int] = None
-        # Full 32-bit value of a SW write, required for tracing.
-        self._write_value = 0
-        self._pending_write = False
-
-    def read_unsigned(self) -> int:
-        # Cmd bits always read back as 0.
-        return 0
-
-    def write_unsigned(self, value: int) -> None:
-        # Keep the full written value for tracing.
-        self._write_value = value & ((1 << self.width) - 1)
-        self._cmd_next = value & self.CMD_MASK
-        self._pending_write = True
-
-    def take_cmd(self) -> int:
-        '''Read and clear the current command. Must be called before the next insn executes.'''
-        cmd = self._cmd
-        self._cmd = 0
-        return cmd
-
-    def peek_pending_cmd(self) -> int:
-        '''Return the command staged by the current insn (0 if none). To be used after the current
-        insn executed.'''
-        return self._cmd_next if self._cmd_next is not None else 0
-
-    def wipe(self) -> None:
-        self._cmd = 0
-        self._cmd_next = None
-        self._write_value = 0
-        self._pending_write = False
-
-    def commit(self) -> None:
-        if self._cmd_next is not None:
-            self._cmd = self._cmd_next
-            self._cmd_next = None
-        self._pending_write = False
-
-    def abort(self) -> None:
-        self._cmd_next = None
-        self._pending_write = False
-
-    def changes(self) -> List[ISPRChange]:
-        if self._pending_write:
-            return [ISPRChange(self.name, self.width, self._write_value)]
-        return []
 
 
 class KmacCfgCSR(ISPR):

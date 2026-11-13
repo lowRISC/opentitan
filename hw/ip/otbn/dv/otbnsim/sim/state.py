@@ -13,6 +13,7 @@ from .constants import ErrBits, LcTx, Status
 from .ext_regs import OTBNExtRegs
 from .flags import FlagReg
 from .gpr import GPRs
+from .keymgr import Keymgr
 from .kmac import Kmac
 from .loop import LoopStack
 from .mai import MaskingAcceleratorInterface
@@ -87,6 +88,7 @@ class OTBNState:
         # persistent across secure wipes. Ensure that the WSRFile is not recreated in these cases.
         self.wsrs = WSRFile(self.ext_regs)
         self.csrs = CSRFile(self.wsrs, self.ext_regs)
+        self.keymgr = Keymgr(self.csrs, self.wsrs)
         self.kmac = Kmac(self.csrs, self.wsrs)
 
         self.pc = 0
@@ -335,6 +337,7 @@ class OTBNState:
         self.ext_regs.step()
         self.kmac.step()
         self.mai.step()
+        self.keymgr.step()
 
     def commit(self, sim_stalled: bool) -> None:
         if self._time_to_imem_invalidation is not None:
@@ -420,8 +423,10 @@ class OTBNState:
         # operations.
         self.wsrs.on_start()
         self.csrs = CSRFile(self.wsrs, self.ext_regs)
-        # TODO: Figure out how to model the secure wipe persistent behaviour of the KMAC interface.
+        # TODO: Figure out how to model the secure wipe persistent behaviour of the KMAC and keymgr
+        # interface.
         self.kmac.on_start(self.csrs, self.wsrs)
+        self.keymgr.on_start(self.csrs, self.wsrs)
         self.mai.on_start(self.csrs, self.wsrs)
         self.loop_stack = LoopStack()
         self.gprs.empty_call_stack()

@@ -19,6 +19,7 @@ py_library(
         ":constants",
         ":flags",
         ":ispr",
+        ":keymgr_ispr",
         ":kmac_ispr",
         ":mai_ispr",
         ":trace",
@@ -142,6 +143,14 @@ py_library(
 py_library(
     name = "mai_ispr",
     srcs = ["mai_ispr.py"],
+    deps = [
+        ":ispr",
+    ],
+)
+
+py_library(
+    name = "keymgr_ispr",
+    srcs = ["keymgr_ispr.py"],
     deps = [
         ":ispr",
     ],
