@@ -9,7 +9,7 @@ class chip_sw_keymgr_dpe_sideload_otbn_vseq extends chip_sw_keymgr_dpe_key_deriv
 
 
   virtual task run_test_sequence(key_shares_t creator_key);
-    wide_key_t otbn_key;
+    wide_hw_key_t otbn_key;
 
     // Wait until the sideloaded key is generated
     cfg.sw_logger_vif.wait_for_log_message({"KeymgrDpe generated ",

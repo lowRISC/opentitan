@@ -255,7 +255,7 @@ package otp_ctrl_part_pkg;
     '{
       variant:          Buffered,
       offset:           12'd1880,
-      size:             96,
+      size:             128,
       key_sel:          Secret2Key,
       secret:           1'b1,
       sw_digest:        1'b0,
@@ -271,7 +271,7 @@ package otp_ctrl_part_pkg;
     // LIFE_CYCLE
     '{
       variant:          LifeCycle,
-      offset:           12'd1976,
+      offset:           12'd2008,
       size:             88,
       key_sel:          key_sel_e'('0),
       secret:           1'b0,
@@ -387,7 +387,7 @@ package otp_ctrl_part_pkg;
 
   function automatic otp_broadcast_t named_broadcast_assign(
       logic [NumPart-1:0] part_init_done,
-      logic [2063:0][7:0] part_buf_data);
+      logic [2095:0][7:0] part_buf_data);
     otp_broadcast_t otp_broadcast;
     logic valid, unused;
     unused = 1'b0;
@@ -431,8 +431,8 @@ package otp_ctrl_part_pkg;
 
   function automatic otp_keymgr_key_t named_keymgr_key_assign(
       logic [NumPart-1:0][ScrmblBlockWidth-1:0] part_digest,
-      logic [2063:0][7:0] part_buf_data,
-      logic [16511:0] part_inv_default,
+      logic [2095:0][7:0] part_buf_data,
+      logic [16767:0] part_inv_default,
       lc_ctrl_pkg::lc_tx_t lc_seed_hw_rd_en);
     otp_keymgr_key_t otp_keymgr_key;
     logic valid, unused;

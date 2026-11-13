@@ -9,7 +9,7 @@ interface keymgr_dpe_ctrl_if (input clk_i, input rst_ni);
 
   // Function to access the key of one slot via backdoor.
   // Required to load the UDS after XORing with generated randomness.
-  function automatic keymgr_dpe_env_pkg::key_shares_t get_key_of_slot(int unsigned slot);
+  function automatic keymgr_dpe_env_pkg::internal_key_shares_t get_key_of_slot(int unsigned slot);
     import keymgr_dpe_env_pkg::DvNumInstHwSlot;
 
     // Check that the slot index is in range. The key_slots_q array has length DvNumInstHwSlot,

@@ -564,9 +564,9 @@ class aes_scoreboard extends cip_base_scoreboard #(
       forever begin
         // Wait for a valid sideloaded key
         key_manager_fifo.get(sideload_item);
-        // Note: max size of sideloaded key is keymgr_dpe_pkg::KeyWidth
+        // Note: max size of sideloaded key is keymgr_dpe_pkg::HwKeyWidth
 
-        for (int i = 0; i < keymgr_dpe_pkg::KeyWidth / 32; i++) begin
+        for (int i = 0; i < keymgr_dpe_pkg::HwKeyWidth / 32; i++) begin
           key_item.key[0][i]     = sideload_item.key0[i*32 +: 32];
           key_item.key[1][i]     = sideload_item.key1[i*32 +: 32];
           key_item.key_vld[0][i] = sideload_item.valid;
