@@ -41,6 +41,12 @@ class MockFlashCtrl : public global_mock::GlobalMock<MockFlashCtrl> {
               (flash_ctrl_region_index_t region, uint32_t page_offset,
                uint32_t num_pages, flash_ctrl_perms_t perms,
                flash_ctrl_cfg_t cfg, hardened_bool_t));
+  MOCK_METHOD(void, DataRegionSave,
+              (flash_ctrl_region_index_t region,
+               flash_ctrl_data_region_state_t *state));
+  MOCK_METHOD(void, DataRegionRestore,
+              (flash_ctrl_region_index_t region,
+               const flash_ctrl_data_region_state_t *state));
   MOCK_METHOD(void, InfoCfgSet,
               (const flash_ctrl_info_page_t *, flash_ctrl_cfg_t));
   MOCK_METHOD(void, InfoCfgLock, (const flash_ctrl_info_page_t *));

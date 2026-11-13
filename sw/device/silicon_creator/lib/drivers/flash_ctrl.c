@@ -582,6 +582,37 @@ void flash_ctrl_data_region_protect(flash_ctrl_region_index_t region,
   }
 }
 
+void flash_ctrl_data_region_save(flash_ctrl_region_index_t region,
+                                 flash_ctrl_data_region_state_t *state) {
+  HARDENED_CHECK_GE(region, 0);
+  HARDENED_CHECK_LT(region, 8);
+  region *= sizeof(uint32_t);
+
+  state->mp_region =
+      sec_mmio_read32(kBase + FLASH_CTRL_MP_REGION_0_REG_OFFSET + region);
+  state->mp_region_cfg =
+      sec_mmio_read32(kBase + FLASH_CTRL_MP_REGION_CFG_0_REG_OFFSET + region);
+}
+
+void flash_ctrl_data_region_restore(
+    flash_ctrl_region_index_t region,
+    const flash_ctrl_data_region_state_t *state) {
+  HARDENED_CHECK_GE(region, 0);
+  HARDENED_CHECK_LT(region, 8);
+  region *= sizeof(uint32_t);
+
+  // Temporarily disable the region before rewriting its bounds and
+  // configuration. See `flash_ctrl_data_region_protect()` for why `abs_mmio` is
+  // used for the intermediate reset value.
+  abs_mmio_write32(kBase + FLASH_CTRL_MP_REGION_CFG_0_REG_OFFSET + region,
+                   FLASH_CTRL_MP_REGION_CFG_0_REG_RESVAL);
+
+  sec_mmio_write32(kBase + FLASH_CTRL_MP_REGION_0_REG_OFFSET + region,
+                   state->mp_region);
+  sec_mmio_write32(kBase + FLASH_CTRL_MP_REGION_CFG_0_REG_OFFSET + region,
+                   state->mp_region_cfg);
+}
+
 void flash_ctrl_info_cfg_set(const flash_ctrl_info_page_t *info_page,
                              flash_ctrl_cfg_t cfg) {
   SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioInfoCfgSet, 1);
