@@ -153,6 +153,9 @@ rust_test(
     env = {
         "TESTDATA": "$(rootpath testdata/key/test1_pkcs1.der)",
     },
+    deps = [
+        "@crate_index//:tempfile",
+    ],
 )
 
 rust_doc(
