@@ -66,20 +66,38 @@
       tests: []
     }
     {
-      name: sec_cm_enforce_sw_binding_ctrl_consistency
-      desc: "Verify the countermeasure(s) ENFORCE_SW_BINDING.CTRL.CONSISTENCY."
+      name: sec_cm_slot_policy_config_regwen
+      desc: "Verify the countermeasure(s) SLOT_POLICY.CONFIG.REGWEN."
       stage: V2S
       tests: []
     }
     {
-      name: sec_cm_enforce_sw_binding_ctrl_mubi
-      desc: "Verify the countermeasure(s) ENFORCE_SW_BINDING.CTRL.MUBI."
+      name: sec_cm_load_root_key_lock_ctrl_lock_mubi
+      desc: "Verify the countermeasure(s) LOAD_ROOT_KEY_LOCK.CTRL.LOCK_MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_load_secondary_root_key_lock_ctrl_lock_mubi
+      desc: "Verify the countermeasure(s) LOAD_SECONDARY_ROOT_KEY_LOCK.CTRL.LOCK_MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_enforce_sw_binding_ctrl_lock_mubi
+      desc: "Verify the countermeasure(s) ENFORCE_SW_BINDING.CTRL.LOCK_MUBI."
       stage: V2S
       tests: []
     }
     {
       name: sec_cm_kdf_engine_ctrl_mubi
       desc: "Verify the countermeasure(s) KDF_ENGINE.CTRL.MUBI."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_metadata_config_regren
+      desc: "Verify the countermeasure(s) METADATA.CONFIG.REGREN."
       stage: V2S
       tests: []
     }
@@ -104,6 +122,12 @@
     {
       name: sec_cm_hw_key_sw_noaccess
       desc: "Verify the countermeasure(s) HW.KEY.SW_NOACCESS."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_internal_key_sw_noaccess
+      desc: "Verify the countermeasure(s) INTERNAL.KEY.SW_NOACCESS."
       stage: V2S
       tests: []
     }

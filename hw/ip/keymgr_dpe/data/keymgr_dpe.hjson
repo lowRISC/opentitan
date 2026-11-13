@@ -355,14 +355,14 @@
     }
     { name: "CONFIG.SHADOW",
       desc: '''
-        Various critical registers are shadowed: including operation control, reseed interval,
-        kdf_engine and key max version (creator, owner intermediate, owner).
+        Various critical registers are shadowed: including operation !!CONTROL_SHADOWED,
+        !!RESEED_INTERVAL_SHADOWED, !!KDF_ENGINE_SHADOWED and !!MAX_KEY_VER_SHADOWED.
       '''
     }
     { name: "OP.CONFIG.REGWEN",
       desc: '''
-        Various controls locked during the duration of an operation: including operation start,
-        operation control, sideload clear, salt and key version.
+        Various control registers are locked during the duration of an operation:
+        !!START, !!CONTROL_SHADOWED, !!SIDELOAD_CLEAR, !!SALT and !!KEY_VERSION.
       '''
     }
     { name: "RESEED.CONFIG.REGWEN",
@@ -377,8 +377,8 @@
     }
     { name: "SW_BINDING.CONFIG.REGWEN",
       desc: '''
-        Software binding is lockable by software in each stage. When keymgr successfully advances,
-        the lock is released to allow the next stage the freedom to program.
+        Software binding is lockable by software in each stage. When keymgr_dpe successfully
+        advances, the lock is released to allow the next stage the freedom to program.
       '''
     }
     { name: "MAX_KEY_VER.CONFIG.REGWEN",
@@ -386,18 +386,32 @@
         Max key version is software lockable.
       '''
     }
-    { name: "ENFORCE_SW_BINDING.CTRL.CONSISTENCY",
+    { name: "SLOT_POLICY.CONFIG.REGWEN",
       desc: '''
-        Once ENFORCE_SW_BINDING is set, hardware checks that
-        CONTROL_SHADOWED.SW_BINDING_ONLY is consistently set on every subsequent advance
-        operation from a parent whose boot stage consumes HW binding values. In case the
-        SW_BINDING_ONLY is not set, an `invalid_op` error is raised and the operation is
-        rejected. The destination slot is not updated.
+        Slot policy is software lockable.
       '''
     }
-    { name: "ENFORCE_SW_BINDING.CTRL.MUBI",
+    { name: "LOAD_ROOT_KEY_LOCK.CTRL.LOCK_MUBI",
       desc: '''
-        Enforce sw binding register is multibit encoded.
+        The !!LOAD_ROOT_KEY_LOCK register is multibit encoded. If this register is set
+        then the `load root key` operation is disabled until the next reset. The operation
+        is rejected with !!ERR_CODE.INVALID_OP when invoked.
+      '''
+    }
+    { name: "LOAD_SECONDARY_ROOT_KEY_LOCK.CTRL.LOCK_MUBI",
+      desc: '''
+        The !!LOAD_SECONDARY_ROOT_KEY_LOCK register is multibit encoded. If this register is
+        set then the `load secondary root key` operation is disabled until the next reset. The
+        operation is rejected with !!ERR_CODE.INVALID_OP when invoked.
+      '''
+    }
+    { name: "ENFORCE_SW_BINDING.CTRL.LOCK_MUBI",
+      desc: '''
+        Once !!ENFORCE_SW_BINDING is set, hardware requires CONTROL_SHADOWED.SW_BINDING_ONLY
+        to be set on every subsequent advance operation from a parent whose boot stage
+        consumes HW binding values. Otherwise an `invalid_op` error is raised, the operation
+        is rejected, and the destination slot is not updated.
+        !!ENFORCE_SW_BINDING is multibit encoded.
       '''
     }
     { name: "KDF_ENGINE.CTRL.MUBI",
@@ -405,24 +419,35 @@
         Kdf engine selection register is multibit encoded.
       '''
     }
+    { name: "METADATA.CONFIG.REGREN",
+      desc: '''
+        Once !!METADATA_READ_LOCK is set, !!METADATA_LOW and !!METADATA_HIGH read as zero until
+        the next reset. !!METADATA_READ_LOCK is multibit encoded.
+      '''
+    }
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: '''
-        Life cycle control signal is multibit
+        Life cycle control signal is multibit.
       '''
     }
     { name: "CONSTANTS.CONSISTENCY",
       desc: '''
-        Basic consistency checks (all 0's or all 1's) for keymgr diversification constants
+        Basic consistency checks (all 0's or all 1's) for keymgr_dpe diversification constants.
       '''
     }
     { name: "INTERSIG.CONSISTENCY",
       desc: '''
-        Basic consistency checks (all 0's or all 1's) for otp diversification inputs
+        Basic consistency checks (all 0's or all 1's) for otp diversification inputs.
       '''
     }
     { name: "HW.KEY.SW_NOACCESS",
       desc: '''
         Sideload keys are not directly accessible by software.
+      '''
+    }
+    { name: "INTERNAL.KEY.SW_NOACCESS",
+      desc: '''
+        Internal keys are invisible to SW.
       '''
     }
     { name: "OUTPUT_KEYS.CTRL.REDUN",
@@ -443,29 +468,29 @@
     }
     { name: "CTRL.FSM.SPARSE",
       desc: '''
-        Main control fsm is sparsely encoded.
+        Main control FSM is sparsely encoded.
       '''
     }
     { name: "DATA.FSM.SPARSE",
       desc: '''
-        Control data fsm (for redundant data control) is sparsely encoded.
+        Control data FSM (for redundant data control) is sparsely encoded.
       '''
     }
     { name: "CTRL.FSM.LOCAL_ESC",
       desc: '''
-        Main control fsm locally escalates based on any detected fault in keymgr.
-        When a fault is detected (sync or async) the fsm transitions to invalid state to prevent
+        Main control FSM locally escalates based on any detected fault in keymgr_dpe.
+        When a fault is detected (sync or async) the FSM transitions to invalid state to prevent
         further legal operations from executing.
       '''
     }
     { name: "CTRL.FSM.CONSISTENCY",
       desc: '''
-        Main and operational fsm transitions are consistent with software commands.
+        Main and operational FSM transitions are consistent with software commands.
       '''
     }
     { name: "CTRL.FSM.GLOBAL_ESC",
       desc: '''
-        When the system globally escalates, the main control fsm also transitions to invalid state
+        When the system globally escalates, the main control FSM also transitions to invalid state
         to prevent further legal operations from executing.
       '''
     }
@@ -476,7 +501,7 @@
     }
     { name: "KMAC_IF.FSM.SPARSE",
       desc: '''
-        kmac interface fsm is sparsely encoded.
+        kmac interface FSM is sparsely encoded.
       '''
     }
     { name: "KMAC_IF.CTR.REDUN",
@@ -511,7 +536,7 @@
     }
     { name: "SIDELOAD_CTRL.FSM.SPARSE",
       desc: '''
-        Sideload control fsm is sparsely encoded.
+        Sideload control FSM is sparsely encoded.
       '''
     }
     { name: "CTRL.KEY.INTEGRITY",
@@ -781,7 +806,7 @@
           name: "EN",
           resval: "1"
           desc: '''
-            Configuration enable for reseed interval
+            Configuration enable for reseed interval.
           '''
         },
       ]
@@ -964,7 +989,7 @@
         name: "SALT",
         regwen: "CFG_REGWEN",
         desc: '''
-          Salt value used as part of output generation
+          Salt value used as part of output generation.
         ''',
         count: "NumSaltReg",
         swaccess: "rw",
@@ -986,7 +1011,7 @@
         name: "KEY_VERSION",
         regwen: "CFG_REGWEN",
         desc: '''
-          Version used as part of output generation
+          Version used as part of output generation.
         ''',
         count: "NumKeyVersion",
         swaccess: "rw",
@@ -1104,7 +1129,7 @@
       desc: '''
         Key manager working state.
 
-        This is a readout of the current key manager working state
+        This is a readout of the current key manager working state.
       ''',
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1173,13 +1198,13 @@
               name: "WIP",
               desc: '''
                 Work in progress.
-                A key manager operation has been started and is ongoing
+                A key manager operation has been started and is ongoing.
                 '''
             },
             { value: "2",
               name: "DONE_SUCCESS",
               desc: '''
-                Operation finished without errors
+                Operation finished without errors.
                 '''
             },
             { value: "3",
@@ -1201,6 +1226,7 @@
 
           Only the first `NumInstHwSlot` slots are instantiated.
           Entries at index `NumInstHwSlot` and above always read as 0.
+          All entries read as 0 once !!METADATA_READ_LOCK is set.
           Together with !!METADATA_HIGH, this register lets software inspect the non-secret
           metadata of the DPE context.
         ''',
@@ -1228,6 +1254,7 @@
 
           Only the first `NumInstHwSlot` slots are instantiated.
           Entries at index `NumInstHwSlot` and above always read as 0.
+          All entries read as 0 once !!METADATA_READ_LOCK is set.
           Together with !!METADATA_LOW, this register lets software inspect the non-secret
           metadata of the DPE context.
         ''',
@@ -1487,11 +1514,13 @@
       swaccess: "rw1s",
       hwaccess: "hro",
       fields: [
-        { bits: "0",
+        { bits: "3:0",
           name: "LOCK",
-          resval: "0"
+          mubi: true,
+          resval: false
           desc: '''
-            Write 1 to disable the `load root key` operation until the next reset.
+            Write `kMultiBitBool4True` to disable the `load root key` operation until the next reset.
+            However, all encodings except `kMultiBitBool4False` will be treated as locked.
           '''
         },
       ]
@@ -1505,11 +1534,13 @@
       swaccess: "rw1s",
       hwaccess: "hro",
       fields: [
-        { bits: "0",
+        { bits: "3:0",
           name: "LOCK",
-          resval: "0"
+          mubi: true,
+          resval: false
           desc: '''
-            Write 1 to disable the `load secondary root key` operation until the next reset.
+            Write `kMultiBitBool4True` to disable the `load secondary root key` operation until the next reset.
+            However, all encodings except `kMultiBitBool4False` will be treated as locked.
           '''
         },
       ]
@@ -1543,6 +1574,28 @@
       ]
       // Don't let automated CSR tests write random values to this register, as it could lock
       // writing to other registers, which the automated tests are not aware of.
+      tags: ["excl:CsrAllTests:CsrExclWrite"]
+    },
+
+    { name: "METADATA_READ_LOCK",
+      desc: "Disable software read access to the slot metadata until the next reset",
+      swaccess: "rw1s",
+      hwaccess: "hro",
+      fields: [
+        { bits: "3:0",
+          name: "LOCK",
+          mubi: true,
+          resval: false
+          desc: '''
+            Write `kMultiBitBool4True` to disable reading !!METADATA_LOW and !!METADATA_HIGH
+            until the next reset. Once locked, both registers read as zero.
+
+            Every encoding except `kMultiBitBool4False` will be treated as locked.
+          '''
+        },
+      ]
+      // Don't let automated CSR tests write random values to this register, as it would lock
+      // reading of the metadata registers, which the automated tests are not aware of.
       tags: ["excl:CsrAllTests:CsrExclWrite"]
     },
 

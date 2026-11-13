@@ -28,15 +28,15 @@
 | keymgr_dpe.[`SW_BINDING_5`](#sw_binding)                                   | 0x50     |        4 | Software binding input of the key manager.                                                                        |
 | keymgr_dpe.[`SW_BINDING_6`](#sw_binding)                                   | 0x54     |        4 | Software binding input of the key manager.                                                                        |
 | keymgr_dpe.[`SW_BINDING_7`](#sw_binding)                                   | 0x58     |        4 | Software binding input of the key manager.                                                                        |
-| keymgr_dpe.[`SALT_0`](#salt)                                               | 0x5c     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`SALT_1`](#salt)                                               | 0x60     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`SALT_2`](#salt)                                               | 0x64     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`SALT_3`](#salt)                                               | 0x68     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`SALT_4`](#salt)                                               | 0x6c     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`SALT_5`](#salt)                                               | 0x70     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`SALT_6`](#salt)                                               | 0x74     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`SALT_7`](#salt)                                               | 0x78     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`KEY_VERSION`](#key_version)                                   | 0x7c     |        4 | Version used as part of output generation                                                                         |
+| keymgr_dpe.[`SALT_0`](#salt)                                               | 0x5c     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`SALT_1`](#salt)                                               | 0x60     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`SALT_2`](#salt)                                               | 0x64     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`SALT_3`](#salt)                                               | 0x68     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`SALT_4`](#salt)                                               | 0x6c     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`SALT_5`](#salt)                                               | 0x70     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`SALT_6`](#salt)                                               | 0x74     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`SALT_7`](#salt)                                               | 0x78     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`KEY_VERSION`](#key_version)                                   | 0x7c     |        4 | Version used as part of output generation.                                                                        |
 | keymgr_dpe.[`MAX_KEY_VER_REGWEN`](#max_key_ver_regwen)                     | 0x80     |        4 | Register write enable for MAX_KEY_VERSION                                                                         |
 | keymgr_dpe.[`MAX_KEY_VER_SHADOWED`](#max_key_ver_shadowed)                 | 0x84     |        4 | Max key version                                                                                                   |
 | keymgr_dpe.[`SW_SHARE0_OUTPUT_0`](#sw_share0_output)                       | 0x88     |        4 | Key manager software output.                                                                                      |
@@ -79,6 +79,7 @@
 | keymgr_dpe.[`LOAD_ROOT_KEY_LOCK`](#load_root_key_lock)                     | 0x11c    |        4 | Register lock for the `load root key` operation, see [`CONTROL_SHADOWED.OPERATION.`](#control_shadowed)           |
 | keymgr_dpe.[`LOAD_SECONDARY_ROOT_KEY_LOCK`](#load_secondary_root_key_lock) | 0x120    |        4 | Register lock for the `load secondary root key` operation, see [`CONTROL_SHADOWED.OPERATION.`](#control_shadowed) |
 | keymgr_dpe.[`ENFORCE_SW_BINDING`](#enforce_sw_binding)                     | 0x124    |        4 | Enforce the software binding value as the only advance input message until the next reset                         |
+| keymgr_dpe.[`METADATA_READ_LOCK`](#metadata_read_lock)                     | 0x128    |        4 | Disable software read access to the slot metadata until the next reset                                            |
 
 ## INTR_STATE
 Interrupt State Register
@@ -321,10 +322,10 @@ regwen for reseed interval
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                              |
-|:------:|:------:|:-------:|:-------|:-----------------------------------------|
-|  31:1  |        |         |        | Reserved                                 |
-|   0    |  rw0c  |   0x1   | EN     | Configuration enable for reseed interval |
+|  Bits  |  Type  |  Reset  | Name   | Description                               |
+|:------:|:------:|:-------:|:-------|:------------------------------------------|
+|  31:1  |        |         |        | Reserved                                  |
+|   0    |  rw0c  |   0x1   | EN     | Configuration enable for reseed interval. |
 
 ## RESEED_INTERVAL_SHADOWED
 Reseed interval for key manager entropy reseed
@@ -469,7 +470,7 @@ The software binding is locked by software and unlocked by hardware upon a succe
 |  31:0  |   rw   |   0x0   | VAL    | Software binding value |
 
 ## SALT
-Salt value used as part of output generation
+Salt value used as part of output generation.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`CFG_REGWEN`](#cfg_regwen)
@@ -499,7 +500,7 @@ Salt value used as part of output generation
 |  31:0  |   rw   |   0x0   | VAL    | Salt value    |
 
 ## KEY_VERSION
-Version used as part of output generation
+Version used as part of output generation.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`CFG_REGWEN`](#cfg_regwen)
@@ -622,7 +623,7 @@ here.
 ## WORKING_STATE
 Key manager working state.
 
-This is a readout of the current key manager working state
+This is a readout of the current key manager working state.
 - Offset: `0xc8`
 - Reset default: `0x0`
 - Reset mask: `0x3`
@@ -673,12 +674,12 @@ Software clears by writing back whatever it reads.
 ### OP_STATUS . STATUS
 Operation status.
 
-| Value   | Name         | Description                                                               |
-|:--------|:-------------|:--------------------------------------------------------------------------|
-| 0x0     | Idle         | Key manager is idle                                                       |
-| 0x1     | WIP          | Work in progress. A key manager operation has been started and is ongoing |
-| 0x2     | DONE_SUCCESS | Operation finished without errors                                         |
-| 0x3     | DONE_ERROR   | Operation finished with errors, please see ERR_CODE register.             |
+| Value   | Name         | Description                                                                |
+|:--------|:-------------|:---------------------------------------------------------------------------|
+| 0x0     | Idle         | Key manager is idle                                                        |
+| 0x1     | WIP          | Work in progress. A key manager operation has been started and is ongoing. |
+| 0x2     | DONE_SUCCESS | Operation finished without errors.                                         |
+| 0x3     | DONE_ERROR   | Operation finished with errors, please see ERR_CODE register.              |
 
 
 ## METADATA_LOW
@@ -686,6 +687,7 @@ Read metadata (low word) for each HW slot.
 
 Only the first `NumInstHwSlot` slots are instantiated.
 Entries at index `NumInstHwSlot` and above always read as 0.
+All entries read as 0 once [`METADATA_READ_LOCK`](#metadata_read_lock) is set.
 Together with [`METADATA_HIGH`](#metadata_high), this register lets software inspect the non-secret
 metadata of the DPE context.
 - Reset default: `0x0`
@@ -720,6 +722,7 @@ Read metadata (high word) for each HW slot.
 
 Only the first `NumInstHwSlot` slots are instantiated.
 Entries at index `NumInstHwSlot` and above always read as 0.
+All entries read as 0 once [`METADATA_READ_LOCK`](#metadata_read_lock) is set.
 Together with [`METADATA_LOW`](#metadata_low), this register lets software inspect the non-secret
 metadata of the DPE context.
 - Reset default: `0x0`
@@ -879,36 +882,36 @@ misbehaves.
 ## LOAD_ROOT_KEY_LOCK
 Register lock for the `load root key` operation, see [`CONTROL_SHADOWED.OPERATION.`](#control_shadowed)
 - Offset: `0x11c`
-- Reset default: `0x0`
-- Reset mask: `0x1`
+- Reset default: `0x9`
+- Reset mask: `0xf`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "LOCK", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "LOCK", "bits": 4, "attr": ["rw1s"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                            |
-|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                               |
-|   0    |  rw1s  |   0x0   | LOCK   | Write 1 to disable the `load root key` operation until the next reset. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                              |
+|:------:|:------:|:-------:|:-------|:-------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |        | Reserved                                                                                                                                                                 |
+|  3:0   |  rw1s  |   0x9   | LOCK   | Write `kMultiBitBool4True` to disable the `load root key` operation until the next reset. However, all encodings except `kMultiBitBool4False` will be treated as locked. |
 
 ## LOAD_SECONDARY_ROOT_KEY_LOCK
 Register lock for the `load secondary root key` operation, see [`CONTROL_SHADOWED.OPERATION.`](#control_shadowed)
 - Offset: `0x120`
-- Reset default: `0x0`
-- Reset mask: `0x1`
+- Reset default: `0x9`
+- Reset mask: `0xf`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "LOCK", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+{"reg": [{"name": "LOCK", "bits": 4, "attr": ["rw1s"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                                                      |
-|:------:|:------:|:-------:|:-------|:---------------------------------------------------------------------------------|
-|  31:1  |        |         |        | Reserved                                                                         |
-|   0    |  rw1s  |   0x0   | LOCK   | Write 1 to disable the `load secondary root key` operation until the next reset. |
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                        |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |        | Reserved                                                                                                                                                                           |
+|  3:0   |  rw1s  |   0x9   | LOCK   | Write `kMultiBitBool4True` to disable the `load secondary root key` operation until the next reset. However, all encodings except `kMultiBitBool4False` will be treated as locked. |
 
 ## ENFORCE_SW_BINDING
 Enforce the software binding value as the only advance input message until the next reset
@@ -938,6 +941,23 @@ updating the destination slot.
 Advance operations from later boot stages are not affected.
 
 Every encoding except `kMultiBitBool4False` will be treated as locked.
+
+## METADATA_READ_LOCK
+Disable software read access to the slot metadata until the next reset
+- Offset: `0x128`
+- Reset default: `0x9`
+- Reset mask: `0xf`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "LOCK", "bits": 4, "attr": ["rw1s"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                                                                                |
+|:------:|:------:|:-------:|:-------|:-----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |        | Reserved                                                                                                                                                                                                                                                   |
+|  3:0   |  rw1s  |   0x9   | LOCK   | Write `kMultiBitBool4True` to disable reading [`METADATA_LOW`](#metadata_low) and [`METADATA_HIGH`](#metadata_high) until the next reset. Once locked, both registers read as zero. Every encoding except `kMultiBitBool4False` will be treated as locked. |
 
 
 <!-- END CMDGEN -->

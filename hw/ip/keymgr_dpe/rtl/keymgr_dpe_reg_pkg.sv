@@ -18,7 +18,7 @@ package keymgr_dpe_reg_pkg;
   parameter int BlockAw = 9;
 
   // Number of registers for every interface
-  parameter int NumRegs = 74;
+  parameter int NumRegs = 75;
 
   // Alert indices
   typedef enum int {
@@ -180,16 +180,20 @@ package keymgr_dpe_reg_pkg;
   } keymgr_dpe_reg2hw_fault_status_reg_t;
 
   typedef struct packed {
-    logic        q;
+    logic [3:0]  q;
   } keymgr_dpe_reg2hw_load_root_key_lock_reg_t;
 
   typedef struct packed {
-    logic        q;
+    logic [3:0]  q;
   } keymgr_dpe_reg2hw_load_secondary_root_key_lock_reg_t;
 
   typedef struct packed {
     logic [3:0]  q;
   } keymgr_dpe_reg2hw_enforce_sw_binding_reg_t;
+
+  typedef struct packed {
+    logic [3:0]  q;
+  } keymgr_dpe_reg2hw_metadata_read_lock_reg_t;
 
   typedef struct packed {
     logic        d;
@@ -385,27 +389,28 @@ package keymgr_dpe_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    keymgr_dpe_reg2hw_intr_state_reg_t intr_state; // [650:650]
-    keymgr_dpe_reg2hw_intr_enable_reg_t intr_enable; // [649:649]
-    keymgr_dpe_reg2hw_intr_test_reg_t intr_test; // [648:647]
-    keymgr_dpe_reg2hw_alert_test_reg_t alert_test; // [646:643]
-    keymgr_dpe_reg2hw_start_reg_t start; // [642:642]
-    keymgr_dpe_reg2hw_control_shadowed_reg_t control_shadowed; // [641:629]
-    keymgr_dpe_reg2hw_sideload_clear_reg_t sideload_clear; // [628:626]
-    keymgr_dpe_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [625:610]
-    keymgr_dpe_reg2hw_kdf_engine_shadowed_reg_t kdf_engine_shadowed; // [609:606]
-    keymgr_dpe_reg2hw_slot_policy_regwen_reg_t slot_policy_regwen; // [605:604]
-    keymgr_dpe_reg2hw_slot_policy_reg_t slot_policy; // [603:600]
-    keymgr_dpe_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [599:598]
-    keymgr_dpe_reg2hw_sw_binding_mreg_t [7:0] sw_binding; // [597:342]
-    keymgr_dpe_reg2hw_salt_mreg_t [7:0] salt; // [341:86]
-    keymgr_dpe_reg2hw_key_version_mreg_t [0:0] key_version; // [85:54]
-    keymgr_dpe_reg2hw_max_key_ver_regwen_reg_t max_key_ver_regwen; // [53:52]
-    keymgr_dpe_reg2hw_max_key_ver_shadowed_reg_t max_key_ver_shadowed; // [51:20]
-    keymgr_dpe_reg2hw_fault_status_reg_t fault_status; // [19:6]
-    keymgr_dpe_reg2hw_load_root_key_lock_reg_t load_root_key_lock; // [5:5]
-    keymgr_dpe_reg2hw_load_secondary_root_key_lock_reg_t load_secondary_root_key_lock; // [4:4]
-    keymgr_dpe_reg2hw_enforce_sw_binding_reg_t enforce_sw_binding; // [3:0]
+    keymgr_dpe_reg2hw_intr_state_reg_t intr_state; // [660:660]
+    keymgr_dpe_reg2hw_intr_enable_reg_t intr_enable; // [659:659]
+    keymgr_dpe_reg2hw_intr_test_reg_t intr_test; // [658:657]
+    keymgr_dpe_reg2hw_alert_test_reg_t alert_test; // [656:653]
+    keymgr_dpe_reg2hw_start_reg_t start; // [652:652]
+    keymgr_dpe_reg2hw_control_shadowed_reg_t control_shadowed; // [651:639]
+    keymgr_dpe_reg2hw_sideload_clear_reg_t sideload_clear; // [638:636]
+    keymgr_dpe_reg2hw_reseed_interval_shadowed_reg_t reseed_interval_shadowed; // [635:620]
+    keymgr_dpe_reg2hw_kdf_engine_shadowed_reg_t kdf_engine_shadowed; // [619:616]
+    keymgr_dpe_reg2hw_slot_policy_regwen_reg_t slot_policy_regwen; // [615:614]
+    keymgr_dpe_reg2hw_slot_policy_reg_t slot_policy; // [613:610]
+    keymgr_dpe_reg2hw_sw_binding_regwen_reg_t sw_binding_regwen; // [609:608]
+    keymgr_dpe_reg2hw_sw_binding_mreg_t [7:0] sw_binding; // [607:352]
+    keymgr_dpe_reg2hw_salt_mreg_t [7:0] salt; // [351:96]
+    keymgr_dpe_reg2hw_key_version_mreg_t [0:0] key_version; // [95:64]
+    keymgr_dpe_reg2hw_max_key_ver_regwen_reg_t max_key_ver_regwen; // [63:62]
+    keymgr_dpe_reg2hw_max_key_ver_shadowed_reg_t max_key_ver_shadowed; // [61:30]
+    keymgr_dpe_reg2hw_fault_status_reg_t fault_status; // [29:16]
+    keymgr_dpe_reg2hw_load_root_key_lock_reg_t load_root_key_lock; // [15:12]
+    keymgr_dpe_reg2hw_load_secondary_root_key_lock_reg_t load_secondary_root_key_lock; // [11:8]
+    keymgr_dpe_reg2hw_enforce_sw_binding_reg_t enforce_sw_binding; // [7:4]
+    keymgr_dpe_reg2hw_metadata_read_lock_reg_t metadata_read_lock; // [3:0]
   } keymgr_dpe_reg2hw_t;
 
   // HW -> register type
@@ -502,6 +507,7 @@ package keymgr_dpe_reg_pkg;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_OFFSET = 9'h 11c;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_LOAD_SECONDARY_ROOT_KEY_LOCK_OFFSET = 9'h 120;
   parameter logic [BlockAw-1:0] KEYMGR_DPE_ENFORCE_SW_BINDING_OFFSET = 9'h 124;
+  parameter logic [BlockAw-1:0] KEYMGR_DPE_METADATA_READ_LOCK_OFFSET = 9'h 128;
 
   // Reset values for hwext registers and their fields
   parameter logic [0:0] KEYMGR_DPE_INTR_TEST_RESVAL = 1'h 0;
@@ -666,11 +672,12 @@ package keymgr_dpe_reg_pkg;
     KEYMGR_DPE_DEBUG,
     KEYMGR_DPE_LOAD_ROOT_KEY_LOCK,
     KEYMGR_DPE_LOAD_SECONDARY_ROOT_KEY_LOCK,
-    KEYMGR_DPE_ENFORCE_SW_BINDING
+    KEYMGR_DPE_ENFORCE_SW_BINDING,
+    KEYMGR_DPE_METADATA_READ_LOCK
   } keymgr_dpe_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] KEYMGR_DPE_PERMIT [74] = '{
+  parameter logic [3:0] KEYMGR_DPE_PERMIT [75] = '{
     4'b 0001, // index[ 0] KEYMGR_DPE_INTR_STATE
     4'b 0001, // index[ 1] KEYMGR_DPE_INTR_ENABLE
     4'b 0001, // index[ 2] KEYMGR_DPE_INTR_TEST
@@ -744,7 +751,8 @@ package keymgr_dpe_reg_pkg;
     4'b 0011, // index[70] KEYMGR_DPE_DEBUG
     4'b 0001, // index[71] KEYMGR_DPE_LOAD_ROOT_KEY_LOCK
     4'b 0001, // index[72] KEYMGR_DPE_LOAD_SECONDARY_ROOT_KEY_LOCK
-    4'b 0001  // index[73] KEYMGR_DPE_ENFORCE_SW_BINDING
+    4'b 0001, // index[73] KEYMGR_DPE_ENFORCE_SW_BINDING
+    4'b 0001  // index[74] KEYMGR_DPE_METADATA_READ_LOCK
   };
 
 endpackage

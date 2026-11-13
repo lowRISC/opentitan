@@ -10,6 +10,7 @@
 module keymgr_dpe_ctrl
   import keymgr_dpe_pkg::*;
   import keymgr_dpe_reg_pkg::*;
+  import prim_mubi_pkg::mubi4_test_true_loose, prim_mubi_pkg::mubi4_t;
 // TODO(#384): Bring back KmacEnMasking parameter
 #(
   // Number of instantiated HW slots
@@ -37,12 +38,12 @@ module keymgr_dpe_ctrl
   // Software interface
   input op_start_i,
   input keymgr_dpe_ops_e op_i,
-  input load_root_key_lock_i,
-  input load_secondary_root_key_lock_i,
+  input mubi4_t load_root_key_lock_i,
+  input mubi4_t load_secondary_root_key_lock_i,
   input [NumInstHwSlotWidth-1:0] slot_src_sel_i,
   input [NumInstHwSlotWidth-1:0] slot_dst_sel_i,
   input keymgr_dpe_policy_t slot_policy_i,
-  input prim_mubi_pkg::mubi4_t enforce_sw_binding_err_i,
+  input mubi4_t enforce_sw_binding_err_i,
    // `max_key_version_i` is stored during advance to be compared with `key_version_i` during
    // generate calls
   input [KeyVersionWidth-1:0] max_key_version_i,
@@ -70,7 +71,7 @@ module keymgr_dpe_ctrl
   input hw_key_req_t secondary_root_key_i,
   // `hw_sel_o == 1` indicates whether the generated key output
   // goes to sideload port. The safe default here is software CSR key.
-  output prim_mubi_pkg::mubi4_t hw_sel_o,
+  output mubi4_t hw_sel_o,
 
   // KMAC ctrl interface
   output logic adv_en_o,
@@ -711,7 +712,7 @@ module keymgr_dpe_ctrl
 
   // Evaluate the mubi input of `enforce_sw_binding_err_i`
   logic enforce_sw_binding_err;
-  assign enforce_sw_binding_err = prim_mubi_pkg::mubi4_test_true_loose(enforce_sw_binding_err_i);
+  assign enforce_sw_binding_err = mubi4_test_true_loose(enforce_sw_binding_err_i);
 
   // key version must be smaller than or equal to max version
   assign key_version_vld_o = key_version_i <= active_key_slot_o.max_key_version;
@@ -752,15 +753,19 @@ module keymgr_dpe_ctrl
                                   dest_sel_oob_i                   |
                                   slot_src_sel_oob_i);
 
-  assign invalid_load = load_req & (~root_key_i.valid      |
-                                    destination_slot_valid |
-                                    load_root_key_lock_i   |
+  // SEC_CM: LOAD_ROOT_KEY_LOCK.CTRL.LOCK_MUBI
+  assign invalid_load = load_req & (~root_key_i.valid                           |
+                                    destination_slot_valid                      |
+                                    mubi4_test_true_loose(load_root_key_lock_i) |
                                     slot_dst_sel_oob_i);
 
-  assign invalid_secondary_load = load_secondary_req & (~secondary_root_key_i.valid    |
-                                                        destination_slot_valid         |
-                                                        load_secondary_root_key_lock_i |
-                                                        slot_dst_sel_oob_i);
+  // SEC_CM: LOAD_SECONDARY_ROOT_KEY_LOCK.CTRL.LOCK_MUBI
+  assign invalid_secondary_load = load_secondary_req & (
+      ~secondary_root_key_i.valid                           |
+      destination_slot_valid                                |
+      mubi4_test_true_loose(load_secondary_root_key_lock_i) |
+      slot_dst_sel_oob_i
+  );
 
   // Reject advance and generate if SW committed an invalid mubi value to KDF_ENGINE_SHADOWED.
   assign invalid_kdf_engine = (adv_req | gen_req) & kdf_engine_mubi_err_i;

@@ -42,6 +42,8 @@ CM_TYPES = [
     'REDUN',
     'REGWEN',
     'REGWEN_MUBI',
+    'LOCK',
+    'LOCK_MUBI',
     'REGREN',
     'SHADOW',
     'SCRAMBLE',
