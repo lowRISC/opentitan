@@ -352,12 +352,12 @@ While the internal key is valid (meaning either a derivation or generation is on
 #### Sensitive key indicator
 
 When OTBN is the KDF engine the internal key, which must never be visible to software, is handed to OTBN.
-To protect it, keymgr_dpe asserts `sensitive_key_o` (`mubi4`, `kMultiBitBool4True`) while both of the following hold:
+To protect it, keymgr_dpe asserts `otbn_sensitive_key_o` (`mubi4`, `kMultiBitBool4True`) while both of the following hold:
 * OTBN is the selected KDF engine.
 * The internal key is valid, i.e. it is being forwarded to the KDF engine.
 
 OTBN receives this signal as `keymgr_sensitive_key` and is required to ensure this key is never exposed to the host SW.
-If KMAC is the only engine (`KdfEngineKmac`), `sensitive_key_o` is constantly `kMultiBitBool4False`.
+If KMAC is the only engine (`KdfEngineKmac`), `otbn_sensitive_key_o` is constantly `kMultiBitBool4False`.
 
 ### KDF Details
 

@@ -6014,7 +6014,7 @@
           index: -1
         }
         {
-          name: sensitive_key
+          name: otbn_sensitive_key
           struct: mubi4
           package: prim_mubi_pkg
           type: uni
@@ -11536,7 +11536,7 @@
       ]
       otbn.keymgr_sensitive_key:
       [
-        keymgr_dpe.sensitive_key
+        keymgr_dpe.otbn_sensitive_key
       ]
       clkmgr.idle:
       [
@@ -26480,7 +26480,7 @@
         index: -1
       }
       {
-        name: sensitive_key
+        name: otbn_sensitive_key
         struct: mubi4
         package: prim_mubi_pkg
         type: uni

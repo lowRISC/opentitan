@@ -29,7 +29,7 @@ SW can recover by writing a valid value, unless `KDF_ENGINE_REGWEN.EN` has been 
 Operations that do not involve a KDF engine (the first advance call, erase, load and disable) are not affected.
 
 When OTBN is selected, the KDF requests are issued on the `otbn_app` interface (OTBN's `keymgr_app`) instead of the KMAC interface.
-The internal key is handed to OTBN through its sideload key interface and `sensitive_key_o` (OTBN's `keymgr_sensitive_key`) is asserted while it is in use.
+The internal key is handed to OTBN through its sideload key interface and `otbn_sensitive_key_o` (OTBN's `keymgr_sensitive_key`) is asserted while it is in use.
 If such a key is presented, OTBN is required to ensure (by HW) that this key is never exposed to host SW.
 
 ## Initialize (first advance call)

@@ -72,7 +72,7 @@ module tb;
     .kmac_app_i           (kmac_rsp),
     .otbn_app_o           (otbn_req),
     .otbn_app_i           (otbn_rsp),
-    .sensitive_key_o      (), // Connect to HKDF agent once it exists.
+    .otbn_sensitive_key_o (), // Connect to HKDF agent once it exists.
     .kmac_en_masking_i    (1'b1),
     .lc_keymgr_en_i       (keymgr_dpe_if.keymgr_dpe_en),
     .lc_keymgr_div_i      (keymgr_dpe_if.keymgr_dpe_div),

@@ -60,7 +60,7 @@ module keymgr_dpe
   // Application interface when OTBN is used as hashing engine
   output kmac_pkg::app_req_t otbn_app_o,
   input  kmac_pkg::app_rsp_t otbn_app_i,
-  output mubi4_t             sensitive_key_o,
+  output mubi4_t             otbn_sensitive_key_o,
 
   // whether kmac is masked
   // Note this input is not driving ANY logic directly.  Instead it is only used
@@ -903,10 +903,10 @@ module keymgr_dpe
   assign otbn_app_o   = mubi4_test_true_strict(locked_kdf_selection_q) ?
       kmac_app_req : kmac_pkg::APP_REQ_DEFAULT;
 
-  // The `sensitive_key_o` is true if:
+  // The `otbn_sensitive_key_o` is true if:
   // - `locked_kdf_selection_q` indicates OTBN as KDF
   // - The sideload interface provides an internal key to the KDF (kmac_key.valid)
-  assign sensitive_key_o = KdfEngineSel inside {KdfEngineOtbn, KdfEngineBoth} ?
+  assign otbn_sensitive_key_o = KdfEngineSel inside {KdfEngineOtbn, KdfEngineBoth} ?
       mubi4_and_hi(locked_kdf_selection_q, mubi4_bool_to_mubi(kmac_key.valid)) : MuBi4False;
 
   // Verify mubi signal is correctly encoded
@@ -1115,7 +1115,7 @@ module keymgr_dpe
   `ASSERT_KNOWN(OtbnKeyKnownO_A, otbn_key_o)
   `ASSERT_KNOWN(KmacAppKnownO_A, kmac_app_o)
   `ASSERT_KNOWN(OtbnAppKnownO_A, otbn_app_o)
-  `ASSERT_KNOWN(SensitiveKeyKnownO_A, sensitive_key_o)
+  `ASSERT_KNOWN(SensitiveKeyKnownO_A, otbn_sensitive_key_o)
 
 
   // kmac parameter consistency

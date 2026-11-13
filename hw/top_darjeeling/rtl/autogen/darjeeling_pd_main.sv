@@ -1738,7 +1738,7 @@ module darjeeling_pd_main #(
     .kmac_app_i(kmac_app_rsp[0]),
     .otbn_app_o(otbn_keymgr_app_req),
     .otbn_app_i(otbn_keymgr_app_rsp),
-    .sensitive_key_o(otbn_keymgr_sensitive_key),
+    .otbn_sensitive_key_o(otbn_keymgr_sensitive_key),
     .creator_root_key_i(otp_ctrl_keymgr_creator_root_key),
     .secondary_root_key_i(keymgr_dpe_pkg::KEYMGR_DPE_SECONDARY_ROOT_KEY_DEFAULT),
     .creator_seed_i(otp_ctrl_keymgr_creator_seed),
