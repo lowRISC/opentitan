@@ -24,7 +24,8 @@
 `include "prim_assert.sv"
 
 module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
-  // If NumAddrScrRounds > 0, this needs to be either a power of 2 or divisible by 4096.
+  // If NumAddrScrRounds > 0, this needs to be either a power of 2 or divisible by 512, and should
+  // be either a power of 2 or divisible by 4096 (see MinChunkDepth and LintMinChunkDepth below).
   parameter  int Depth               = 16*1024,
   parameter  int InstDepth           = Depth,
   parameter  int Width               = 32, // Needs to be byte aligned if byte parity is enabled.
@@ -109,9 +110,12 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4Width;
 
-  // The depth needs to be a power of 2 or divisible by 4096 if address scrambling is turned on.
+  // If address scrambling is turned on, the depth needs to be a power of 2 or divisible by
+  // MinChunkDepth. Smaller chunks weaken the address scrambling, hence a depth that is not a power
+  // of 2 should be divisible by LintMinChunkDepth.
   localparam bit DepthPow2 = 2**$clog2(Depth) == Depth;
-  localparam int MinChunkDepth = 4096;
+  localparam int MinChunkDepth = 512;
+  localparam int LintMinChunkDepth = 4096;
 
   //////////////////////
   // Parameter Checks //
@@ -120,12 +124,11 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   `ASSERT_INIT(DiffWidthMinimum_A, DiffWidth >= 4)
   `ASSERT_INIT(DiffWidthWithParity_A, EnableParity && (DiffWidth == 8) || !EnableParity)
 
-  // Trigger an SVA and further a lint error to reduce the risk of accidentally going below the
-  // minimum ChunkDepth.
+  // Trigger an SVA below the supported and a lint error below the recommended minimum ChunkDepth.
   `ASSERT_INIT(DepthPow2OrDivisibleByMinChunkDepthCheck_A,
       NumAddrScrRounds <= '0 || DepthPow2 || Depth % MinChunkDepth == 0)
-  `ASSERT_STATIC_LINT_ERROR(DepthPow2OrDivisibleByMinChunkDepthCheck_L,
-      NumAddrScrRounds <= '0 || DepthPow2 || Depth % MinChunkDepth == 0)
+  `ASSERT_STATIC_LINT_ERROR(DepthPow2OrDivisibleByLintMinChunkDepthCheck_L,
+      NumAddrScrRounds <= '0 || DepthPow2 || Depth % LintMinChunkDepth == 0)
 
   /////////////////////////////////////////
   // Pending Write and Address Registers //
