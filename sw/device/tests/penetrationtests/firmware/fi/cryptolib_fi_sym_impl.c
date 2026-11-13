@@ -434,7 +434,7 @@ status_t cryptolib_fi_hmac_impl(cryptolib_fi_sym_hmac_in_t uj_input,
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(&tag));
 
   // Return data back to host.
-  uj_output->data_len = tag_bytes;
+  uj_output->data_len = tag.len * sizeof(uint32_t);
   uj_output->cfg = 0;
   memset(uj_output->data, 0, HMAC_CMD_MAX_TAG_BYTES);
   memcpy(uj_output->data, tag_buf, uj_output->data_len);

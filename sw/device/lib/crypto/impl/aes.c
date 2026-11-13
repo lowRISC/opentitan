@@ -176,6 +176,7 @@ static status_t aes_padding_apply(otcrypto_aes_padding_t padding_mode,
     case kOtcryptoAesPaddingNull:
       // Zero-pad the remaining bytes (used for partial final blocks in CTR
       // mode).
+      HARDENED_CHECK_NE(launder32(partial_data_len), 0);
       memset(padding, 0x0, padding_len);
       padding_written = launder32(padding_written) | kOtcryptoAesPaddingNull;
       break;
@@ -254,10 +255,12 @@ static status_t num_padded_blocks_get(size_t plaintext_len,
  * @param padding Padding mode.
  * @returns Number of AES blocks required.
  */
+OT_ALWAYS_INLINE
 static status_t get_block(const otcrypto_const_byte_buf_t *input,
                           otcrypto_aes_padding_t padding, size_t index,
                           aes_block_t *block) {
   size_t num_full_blocks = input->len / kAesBlockNumBytes;
+  HARDENED_CHECK_EQ(num_full_blocks, launder32(input->len) / kAesBlockNumBytes);
 
   // The index should never be more than `num_full_blocks` + 1, even including
   // padding.
