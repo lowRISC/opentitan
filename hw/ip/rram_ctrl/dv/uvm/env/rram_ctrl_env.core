@@ -12,6 +12,8 @@ filesets:
       - lowrisc:dv:tl_agent
       - lowrisc:dv:dv_base_reg
       - lowrisc:dv:rram_macro_env
+      - lowrisc:dv:nvm_otp_key_agent
+      - lowrisc:dv:rram_ctrl_bkdr_util
     files:
       - rram_ctrl_host_ral_pkg.sv
       - rram_ctrl_env_pkg.sv
@@ -19,10 +21,19 @@ filesets:
       - rram_ctrl_env_cov.sv: {is_include_file: true}
       - rram_ctrl_virtual_sequencer.sv: {is_include_file: true}
       - rram_ctrl_scoreboard.sv: {is_include_file: true}
-      - rram_ctrl_otp_key_driver.sv: {is_include_file: true}
       - rram_ctrl_reg_predictor_filter.sv: {is_include_file: true}
       - rram_ctrl_env.sv: {is_include_file: true}
+      - seq_lib/region_cfg_setting_base.svh: {is_include_file: true}
+      - seq_lib/region_cfg_setting.svh: {is_include_file: true}
+      - seq_lib/region_setting.svh: {is_include_file: true}
       - seq_lib/rram_ctrl_vseq_list.sv: {is_include_file: true}
+      - seq_lib/rram_ctrl_randomize_vseq.svh: {is_include_file: true}
+      - seq_lib/rram_ctrl_fifo_read_vseq.svh: {is_include_file: true}
+      - seq_lib/rram_ctrl_fifo_write_vseq.svh: {is_include_file: true}
+      - seq_lib/rram_ctrl_sw_vseq.svh: {is_include_file: true}
+      - seq_lib/rram_ctrl_sw_burst_vseq.svh: {is_include_file: true}
+      - seq_lib/rram_ctrl_host_vseq.svh: {is_include_file: true}
+      - seq_lib/rram_ctrl_host_burst_vseq.svh: {is_include_file: true}
       - seq_lib/rram_ctrl_base_vseq.sv: {is_include_file: true}
       - seq_lib/rram_ctrl_common_vseq.sv: {is_include_file: true}
       - seq_lib/rram_ctrl_smoke_vseq.sv: {is_include_file: true}
@@ -33,7 +44,7 @@ generate:
     generator: ralgen
     parameters:
       name: rram_ctrl
-      ip_hjson: ../../data/rram_ctrl.hjson
+      ip_hjson: ../../../data/rram_ctrl.hjson
     position: prepend
 
 targets:

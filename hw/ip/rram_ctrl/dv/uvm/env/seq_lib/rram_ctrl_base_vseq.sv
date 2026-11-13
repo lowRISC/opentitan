@@ -27,7 +27,7 @@ class rram_ctrl_base_vseq extends cip_base_vseq #(
   extern virtual task apply_resets_concurrently(int reset_duration_ps = 0);
 
   // Resets the DUT and brings the RRAM controller out of reset.
-  extern task dut_init(string reset_kind = "HARD");
+  extern virtual task dut_init(string reset_kind = "HARD");
 
   // Initializes the RRAM controller. Starts its init sequence that reads the scrambling keys
   // from otp_ctrl. Without this initialization, no software/host access is granted.
