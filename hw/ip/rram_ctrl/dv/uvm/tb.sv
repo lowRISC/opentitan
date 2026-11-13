@@ -26,7 +26,7 @@ module tb;
   tl_if                         tl_core_if    (.clk(clk),     .rst_n(rst_n));
   tl_if                         tl_host_if    (.clk(clk),     .rst_n(rst_n));
   tl_if                         tl_prim_if    (.clk(clk),     .rst_n(rst_n));
-  rram_ctrl_otp_key_if          otp_key_if    (.clk(clk_otp), .rst_n(rst_otp_n));
+  nvm_otp_key_if                otp_key_if    (.clk_i(clk_otp), .rst_ni(rst_otp_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if       (interrupts);
 
   rram_ctrl_pkg::rram_macro_req_t rram_req;
@@ -66,8 +66,8 @@ module tb;
     // otp interface
     .otp_macro_i(otp_macro_req),
     .otp_macro_o(otp_macro_rsp),
-    .otp_key_i  (otp_key_if.otp_key_rsp),
-    .otp_key_o  (otp_key_if.otp_key_req),
+    .otp_key_i  (otp_key_if.rsp),
+    .otp_key_o  (otp_key_if.req),
 
     // various life cycle decode signals - fixed, not exercised by any test yet
     .lc_creator_seed_sw_rw_en_i(lc_ctrl_pkg::On),
@@ -135,6 +135,11 @@ module tb;
   assign (pull1, pull0) rram_test_analog = 1'b0;
 
   initial begin
+    static int unsigned data_nwords = u_rram_macro.TotalDataPages * u_rram_macro.WordsPerPage;
+    static int unsigned data_nbits = data_nwords * u_rram_macro.DataWidth;
+    static int unsigned info_nwords = u_rram_macro.TotalInfoPages * u_rram_macro.WordsPerPage;
+    static int unsigned info_nbits = info_nwords * u_rram_macro.DataWidth;
+
     otp_clk_rst_if.set_freq_mhz(OTP_CLK_FREQ_MHZ);
     clk_rst_if.set_active();
     otp_clk_rst_if.set_active();
@@ -148,8 +153,17 @@ module tb;
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_core*", "vif", tl_core_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_host*", "vif", tl_host_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent_*_prim*", "vif", tl_prim_if);
-    uvm_config_db#(otp_key_vif_t)::set(null, "*.env.m_otp_*_key_driver", "otp_key_vif",
-                                        otp_key_if);
+    uvm_config_db#(virtual nvm_otp_key_if)::set(null, "*.env", "otp_key_vif", otp_key_if);
+
+    uvm_config_db#(string)::set(null, "*.env", "data_bkdr_path",
+                                "tb.u_rram_macro.u_data_array.mem");
+    uvm_config_db#(int unsigned)::set(null, "*.env", "data_bkdr_depth", data_nwords);
+    uvm_config_db#(int unsigned)::set(null, "*.env", "data_bkdr_nbits", data_nbits);
+    uvm_config_db#(string)::set(null, "*.env", "info_bkdr_path",
+                                "tb.u_rram_macro.u_info_array.mem");
+    uvm_config_db#(int unsigned)::set(null, "*.env", "info_bkdr_depth", info_nwords);
+    uvm_config_db#(int unsigned)::set(null, "*.env", "info_bkdr_nbits", info_nbits);
+
     uvm_config_db#(int unsigned)::set(null, "*.env", "WrFifoDepth", WrFifoDepth);
     uvm_config_db#(int unsigned)::set(null, "*.env", "RdFifoDepth", RdFifoDepth);
     $timeformat(-12, 0, " ps", 12);
