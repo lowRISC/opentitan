@@ -129,6 +129,67 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p256_public_key_length_check(
   return OTCRYPTO_OK;
 }
 
+OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p256_public_key_coords_check(
+    const uint32_t *x_data, size_t x_len, const uint32_t *y_data, size_t y_len,
+    const otcrypto_unblinded_key_t *public_key) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (x_data == NULL || y_data == NULL || public_key == NULL ||
+      public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  // Check the lengths of the coordinate buffers.
+  if (launder32(x_len) != kP256CoordWords ||
+      launder32(y_len) != kP256CoordWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(x_len, kP256CoordWords);
+  HARDENED_CHECK_EQ(y_len, kP256CoordWords);
+
+  // Check the key mode; both ECDSA and ECDH P-256 public key modes are
+  // accepted since the underlying point representation is the same.
+  if (public_key->key_mode != kOtcryptoKeyModeEcdsaP256 &&
+      public_key->key_mode != kOtcryptoKeyModeEcdhP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  return p256_public_key_length_check(public_key);
+}
+
+OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p256_private_key_shares_check(
+    const uint32_t *s0_data, size_t s0_len, const uint32_t *s1_data,
+    size_t s1_len, const otcrypto_blinded_key_t *private_key) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (s0_data == NULL || s1_data == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  // Each share must be 320 bits (256-bit scalar + 64 redundant bits for
+  // side-channel protection).
+  if (launder32(s0_len) != kP256MaskedScalarShareWords ||
+      launder32(s1_len) != kP256MaskedScalarShareWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(s0_len, kP256MaskedScalarShareWords);
+  HARDENED_CHECK_EQ(s1_len, kP256MaskedScalarShareWords);
+
+  // Check the key mode; both ECDSA and ECDH P-256 modes are accepted since
+  // the private key representation is identical for both.
+  if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 &&
+      private_key->config.key_mode != kOtcryptoKeyModeEcdhP256) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Only supported for software-backed keys.
+  if (launder32(private_key->config.hw_backed) != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
+  return p256_private_key_length_check(private_key);
+}
+
 /**
  * Finalize a keypair generation operation for curve P-256.
  *
@@ -142,7 +203,27 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p256_public_key_length_check(
  * @return OK or error.
  */
 OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t internal_p256_keygen_finalize(
-    otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
+    otcrypto_key_mode_t key_mode, otcrypto_blinded_key_t *private_key,
+    otcrypto_unblinded_key_t *public_key) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
+  hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
+      kHardenedBoolTrue;
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  // Check for any NULL pointers.
+  if (private_key == NULL || public_key == NULL ||
+      private_key->keyblob == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  // Check the key modes.
+  if (launder32(private_key->config.key_mode) != key_mode ||
+      launder32(public_key->key_mode) != key_mode) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.key_mode, key_mode);
+  HARDENED_CHECK_EQ(public_key->key_mode, key_mode);
+
   // Check the lengths of caller-allocated buffers.
   HARDENED_TRY(p256_private_key_length_check(private_key));
   HARDENED_TRY(p256_public_key_length_check(public_key));
@@ -180,6 +261,8 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t internal_p256_keygen_finalize(
   } else {
     return OTCRYPTO_BAD_ARGS;
   }
+
+  should_wipe = kHardenedBoolFalse;
 
   // Set the key checksums.
   private_key->checksum = otcrypto_integrity_blinded_checksum(private_key);
@@ -220,7 +303,20 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p256_signature_length_check(
 OT_NOINLINE
 OT_WARN_UNUSED_RESULT
 static status_t internal_p256_keygen_start(
-    const otcrypto_blinded_key_t *private_key) {
+    otcrypto_key_mode_t key_mode, const otcrypto_blinded_key_t *private_key) {
+  OTCRYPTO_HEALTH_CHECK(kTestP256BasePointMulBit);
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (private_key == NULL || private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  // Check the key mode.
+  if (launder32(private_key->config.key_mode) != key_mode) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.key_mode, key_mode);
+
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolTrue);
     OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
@@ -543,21 +639,8 @@ status_t otcrypto_ecc_p256_base_point_mult(
 otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_start(
     const otcrypto_blinded_key_t *private_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P256_KEYGEN_ASYNC_START);
-  OTCRYPTO_HEALTH_CHECK(kTestP256BasePointMulBit);
-#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (private_key == NULL || private_key->keyblob == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-#endif
-
-  // Check the key mode.
-  if (launder32(private_key->config.key_mode) != kOtcryptoKeyModeEcdsaP256) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdsaP256);
-
-  HARDENED_TRY_WIPE_DMEM(internal_p256_keygen_start(private_key));
-
+  HARDENED_TRY_WIPE_DMEM(
+      internal_p256_keygen_start(kOtcryptoKeyModeEcdsaP256, private_key));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -565,28 +648,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(
       OTCRYPTO_FUNCTION_ECDSA_P256_KEYGEN_ASYNC_FINALIZE);
-  OTCRYPTO_LOCKED_STATE_CHECK();
-  hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
-      kHardenedBoolTrue;
-#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  // Check for any NULL pointers.
-  if (private_key == NULL || public_key == NULL ||
-      private_key->keyblob == NULL || public_key->key == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-#endif
-
-  // Check the key modes.
-  if (launder32(private_key->config.key_mode) != kOtcryptoKeyModeEcdsaP256 ||
-      launder32(public_key->key_mode) != kOtcryptoKeyModeEcdsaP256) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdsaP256);
-  HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeEcdsaP256);
-
-  HARDENED_TRY_WIPE_DMEM(
-      internal_p256_keygen_finalize(private_key, public_key));
-  should_wipe = kHardenedBoolFalse;
+  HARDENED_TRY_WIPE_DMEM(internal_p256_keygen_finalize(
+      kOtcryptoKeyModeEcdsaP256, private_key, public_key));
 
 #ifdef FIPS_MODE
   // Perform FIPS Pairwise Consistency Test (PCT).
@@ -872,20 +935,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_finalize(
 otcrypto_status_t otcrypto_ecdh_p256_keygen_async_start(
     const otcrypto_blinded_key_t *private_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDH_P256_KEYGEN_ASYNC_START);
-  OTCRYPTO_HEALTH_CHECK(kTestP256BasePointMulBit);
-#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (private_key == NULL || private_key->keyblob == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-#endif
-
-  if (launder32(private_key->config.key_mode) != kOtcryptoKeyModeEcdhP256) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdhP256);
-
-  HARDENED_TRY_WIPE_DMEM(internal_p256_keygen_start(private_key));
-
+  HARDENED_TRY_WIPE_DMEM(
+      internal_p256_keygen_start(kOtcryptoKeyModeEcdhP256, private_key));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -907,9 +958,10 @@ static otcrypto_status_t ecdh_p256_pct_verify(
   if (private_key->config.hw_backed == kHardenedBoolTrue) {
     // COVERAGE (MISSING) Hardware-backed ECDH P-256 PCT is not covered in FIPS
     // PCT tests.
-    HARDENED_TRY_WIPE_DMEM(internal_p256_keygen_start(private_key));
     HARDENED_TRY_WIPE_DMEM(
-        internal_p256_keygen_finalize(private_key, &check_pk));
+        internal_p256_keygen_start(kOtcryptoKeyModeEcdhP256, private_key));
+    HARDENED_TRY_WIPE_DMEM(internal_p256_keygen_finalize(
+        kOtcryptoKeyModeEcdhP256, private_key, &check_pk));
   } else {
     HARDENED_TRY(otcrypto_ecc_p256_base_point_mult(private_key, &check_pk));
   }
@@ -933,26 +985,8 @@ otcrypto_status_t otcrypto_ecdh_p256_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(
       OTCRYPTO_FUNCTION_ECDH_P256_KEYGEN_ASYNC_FINALIZE);
-  OTCRYPTO_LOCKED_STATE_CHECK();
-  hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
-      kHardenedBoolTrue;
-#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  // Check for any NULL pointers.
-  if (private_key == NULL || public_key == NULL ||
-      private_key->keyblob == NULL || public_key->key == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-#endif
-
-  if (launder32(public_key->key_mode) != kOtcryptoKeyModeEcdhP256 ||
-      launder32(private_key->config.key_mode) != kOtcryptoKeyModeEcdhP256) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeEcdhP256);
-  HARDENED_CHECK_EQ(private_key->config.key_mode, kOtcryptoKeyModeEcdhP256);
-  HARDENED_TRY_WIPE_DMEM(
-      internal_p256_keygen_finalize(private_key, public_key));
-  should_wipe = kHardenedBoolFalse;
+  HARDENED_TRY_WIPE_DMEM(internal_p256_keygen_finalize(
+      kOtcryptoKeyModeEcdhP256, private_key, public_key));
 
 #ifdef FIPS_MODE
   // Perform FIPS Pairwise Consistency Test (PCT).
@@ -1073,10 +1107,7 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   // occurs after this point then the keys would be unrecoverable. This should
   // be the last potentially error-causing line before returning to the caller.
   p256_ecdh_shared_key_t ss;
-  HARDENED_TRY(hardened_memshred(ss.x_share0, ARRAYSIZE(ss.x_share0)));
-  HARDENED_TRY(hardened_memshred(ss.x_share1, ARRAYSIZE(ss.x_share1)));
-  HARDENED_TRY(hardened_memshred(ss.y_share0, ARRAYSIZE(ss.y_share0)));
-  HARDENED_TRY(hardened_memshred(ss.y_share1, ARRAYSIZE(ss.y_share1)));
+  HARDENED_TRY(hardened_memshred((uint32_t *)&ss, 4 * kP256CoordWords));
   HARDENED_TRY_WIPE_DMEM(p256_ecdh_finalize(&ss));
   should_wipe = kHardenedBoolFalse;
   HARDENED_CHECK_EQ(p256_ecdh_shared_key_checksum_check(&ss),
@@ -1084,25 +1115,14 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
 
   // Assemble the two shares of the shared point. Each share holds the share
   // of the x-coordinate followed by the share of the y-coordinate.
-  uint32_t share0[kP256SharedSecretWords];
-  uint32_t share1[kP256SharedSecretWords];
-  HARDENED_TRY(hardened_memcpy(share0, ss.x_share0, kP256CoordWords));
-  HARDENED_TRY(
-      hardened_memcpy(share0 + kP256CoordWords, ss.y_share0, kP256CoordWords));
-  HARDENED_TRY(hardened_memcpy(share1, ss.x_share1, kP256CoordWords));
-  HARDENED_TRY(
-      hardened_memcpy(share1 + kP256CoordWords, ss.y_share1, kP256CoordWords));
-  HARDENED_TRY(keyblob_from_shares(share0, share1, shared_secret->config,
-                                   shared_secret->keyblob));
+  HARDENED_TRY(keyblob_from_shares(
+      ss.x_share0, ss.x_share1, shared_secret->config, shared_secret->keyblob));
 
   // Set the checksum.
   shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
 
   // Shred ss.
-  HARDENED_TRY(hardened_memshred(ss.x_share0, ARRAYSIZE(ss.x_share0)));
-  HARDENED_TRY(hardened_memshred(ss.x_share1, ARRAYSIZE(ss.x_share1)));
-  HARDENED_TRY(hardened_memshred(ss.y_share0, ARRAYSIZE(ss.y_share0)));
-  HARDENED_TRY(hardened_memshred(ss.y_share1, ARRAYSIZE(ss.y_share1)));
+  HARDENED_TRY(hardened_memshred((uint32_t *)&ss, 4 * kP256CoordWords));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -1110,31 +1130,8 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
 otcrypto_status_t otcrypto_ecc_p256_public_key_import(
     const otcrypto_const_word32_buf_t x, const otcrypto_const_word32_buf_t y,
     otcrypto_unblinded_key_t *public_key) {
-  OTCRYPTO_LOCKED_STATE_CHECK();
-#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (x.data == NULL || y.data == NULL || public_key == NULL ||
-      public_key->key == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-#endif
-
-  // Check the lengths of the input coordinate buffers.
-  if (launder32(x.len) != kP256CoordWords ||
-      launder32(y.len) != kP256CoordWords) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(x.len, kP256CoordWords);
-  HARDENED_CHECK_EQ(y.len, kP256CoordWords);
-
-  // Check the output key mode; both ECDSA and ECDH P-256 public key modes are
-  // accepted since the underlying point representation is the same.
-  if (public_key->key_mode != kOtcryptoKeyModeEcdsaP256 &&
-      public_key->key_mode != kOtcryptoKeyModeEcdhP256) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Check the output key length (must fit a p256_point_t).
-  HARDENED_TRY(p256_public_key_length_check(public_key));
+  HARDENED_TRY(
+      p256_public_key_coords_check(x.data, x.len, y.data, y.len, public_key));
 
   // Copy the coordinates into the output key buffer.
   p256_point_t *pt = (p256_point_t *)public_key->key;
@@ -1150,31 +1147,13 @@ otcrypto_status_t otcrypto_ecc_p256_public_key_import(
 otcrypto_status_t otcrypto_ecc_p256_public_key_export(
     const otcrypto_unblinded_key_t *public_key, otcrypto_word32_buf_t *x,
     otcrypto_word32_buf_t *y) {
-  OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (x == NULL || x->data == NULL || y == NULL || y->data == NULL ||
-      public_key == NULL || public_key->key == NULL) {
+  if (x == NULL || y == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
-
-  // Check the lengths of the output coordinate buffers.
-  if (launder32(x->len) != kP256CoordWords ||
-      launder32(y->len) != kP256CoordWords) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(x->len, kP256CoordWords);
-  HARDENED_CHECK_EQ(y->len, kP256CoordWords);
-
-  // Check the output key mode; both ECDSA and ECDH P-256 public key modes are
-  // accepted since the underlying point representation is the same.
-  if (public_key->key_mode != kOtcryptoKeyModeEcdsaP256 &&
-      public_key->key_mode != kOtcryptoKeyModeEcdhP256) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Check the key length.
-  HARDENED_TRY(p256_public_key_length_check(public_key));
+  HARDENED_TRY(p256_public_key_coords_check(x->data, x->len, y->data, y->len,
+                                            public_key));
 
   // Check the integrity of the public key.
   if (otcrypto_integrity_unblinded_key_check(public_key) != kHardenedBoolTrue) {
@@ -1192,38 +1171,8 @@ otcrypto_status_t otcrypto_ecc_p256_public_key_export(
 otcrypto_status_t otcrypto_ecc_p256_private_key_import(
     otcrypto_const_word32_buf_t share0, otcrypto_const_word32_buf_t share1,
     otcrypto_blinded_key_t *private_key) {
-  OTCRYPTO_LOCKED_STATE_CHECK();
-#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (share0.data == NULL || share1.data == NULL || private_key == NULL ||
-      private_key->keyblob == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-#endif
-
-  // Each share must be 320 bits (256-bit scalar + 64 redundant bits for
-  // side-channel protection).
-  if (launder32(share0.len) != kP256MaskedScalarShareWords ||
-      launder32(share1.len) != kP256MaskedScalarShareWords) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(share0.len, kP256MaskedScalarShareWords);
-  HARDENED_CHECK_EQ(share1.len, kP256MaskedScalarShareWords);
-
-  // Check the key mode; both ECDSA and ECDH P-256 modes are accepted since
-  // the private key representation is identical for both.
-  if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 &&
-      private_key->config.key_mode != kOtcryptoKeyModeEcdhP256) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Import is only supported for software-backed keys.
-  if (launder32(private_key->config.hw_backed) != kHardenedBoolFalse) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
-
-  // Check that the caller-allocated keyblob matches the expected P-256 layout.
-  HARDENED_TRY(p256_private_key_length_check(private_key));
+  HARDENED_TRY(p256_private_key_shares_check(
+      share0.data, share0.len, share1.data, share1.len, private_key));
 
   // Randomize the keyblob before writing secret data.
   HARDENED_TRY(hardened_memshred(private_key->keyblob,
@@ -1246,45 +1195,19 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_import(
 otcrypto_status_t otcrypto_ecc_p256_private_key_export(
     const otcrypto_blinded_key_t *private_key, otcrypto_word32_buf_t *share0,
     otcrypto_word32_buf_t *share1) {
-  OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (share0 == NULL || share0->data == NULL || share1 == NULL ||
-      share1->data == NULL || private_key == NULL ||
-      private_key->keyblob == NULL) {
+  if (share0 == NULL || share1 == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
-
-  // Check the output buffer lengths: each must be exactly 320 bits (256-bit
-  // scalar + 64 redundant bits for side-channel protection).
-  if (launder32(share0->len) != kP256MaskedScalarShareWords ||
-      launder32(share1->len) != kP256MaskedScalarShareWords) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(share0->len, kP256MaskedScalarShareWords);
-  HARDENED_CHECK_EQ(share1->len, kP256MaskedScalarShareWords);
-
-  // Check the key mode; both ECDSA and ECDH P-256 modes are accepted since
-  // the private key representation is identical for both.
-  if (private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 &&
-      private_key->config.key_mode != kOtcryptoKeyModeEcdhP256) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Export is only supported for software-backed keys.
-  if (launder32(private_key->config.hw_backed) != kHardenedBoolFalse) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
+  HARDENED_TRY(p256_private_key_shares_check(
+      share0->data, share0->len, share1->data, share1->len, private_key));
 
   // Check that the key is marked exportable.
   if (launder32(private_key->config.exportable) != kHardenedBoolTrue) {
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(private_key->config.exportable, kHardenedBoolTrue);
-
-  // Check that the private key length is correct.
-  HARDENED_TRY(p256_private_key_length_check(private_key));
 
   // Check the integrity of the provided private key.
   if (otcrypto_integrity_blinded_key_check(private_key) != kHardenedBoolTrue) {
@@ -1311,37 +1234,15 @@ otcrypto_status_t otcrypto_ecc_p256_arith_share_private_key(
     const otcrypto_const_word32_buf_t *bool_private_key_share0,
     const otcrypto_const_word32_buf_t *bool_private_key_share1,
     otcrypto_blinded_key_t *arith_private_key) {
-  OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (bool_private_key_share0 == NULL || bool_private_key_share1 == NULL ||
-      arith_private_key == NULL || arith_private_key->keyblob == NULL) {
+  if (bool_private_key_share0 == NULL || bool_private_key_share1 == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
-
-  // The key shares must resided in 320-bit buffers.
-  if (launder32(bool_private_key_share0->len) != kP256MaskedScalarShareWords ||
-      launder32(bool_private_key_share1->len) != kP256MaskedScalarShareWords) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(bool_private_key_share0->len, kP256MaskedScalarShareWords);
-  HARDENED_CHECK_EQ(bool_private_key_share1->len, kP256MaskedScalarShareWords);
-
-  // Check the key mode; both ECDSA and ECDH P-256 modes are accepted since
-  // the private key representation is identical for both.
-  if (arith_private_key->config.key_mode != kOtcryptoKeyModeEcdsaP256 &&
-      arith_private_key->config.key_mode != kOtcryptoKeyModeEcdhP256) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Import is only supported for software-backed keys.
-  if (launder32(arith_private_key->config.hw_backed) != kHardenedBoolFalse) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(arith_private_key->config.hw_backed, kHardenedBoolFalse);
-
-  // Check that the caller-allocated keyblob matches the expected P-256 layout.
-  HARDENED_TRY(p256_private_key_length_check(arith_private_key));
+  HARDENED_TRY(p256_private_key_shares_check(
+      bool_private_key_share0->data, bool_private_key_share0->len,
+      bool_private_key_share1->data, bool_private_key_share1->len,
+      arith_private_key));
 
   // Randomize the keyblob before writing secret data.
   HARDENED_TRY(hardened_memshred(arith_private_key->keyblob,
