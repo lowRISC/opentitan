@@ -24,6 +24,14 @@ enum {
    */
   kDiceMeasurementSizeInBits = 256,
   kDiceMeasurementSizeInBytes = kDiceMeasurementSizeInBits / 8,
+  /**
+   * Upper bounds on any UDS certificate that a UDS builder library
+   * might produce. These are the largest sizes that fit in the
+   * personalization blob (13 KiB) alongside other personalization
+   * data, and hence can likely be lowered if needed.
+   */
+  kDiceUdsMaxTbsSizeBytes = 4 * 1024,
+  kDiceUdsMaxCertSizeBytes = 8 * 1024,
 };
 
 // Algorithms used for keygen using UDS seed for certificate generation. See

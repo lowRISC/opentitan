@@ -15,23 +15,17 @@ load(
     "opentitan_test",
     "qemu_params",
 )
-load(
-    "//rules/opentitan:util.bzl",
-    "dict_from_pairs",
-)
+load("//rules/opentitan:util.bzl", "dict_from_pairs")
+load("//sw/device/silicon_creator/lib/cert:uds.bzl", "uds_cert_libs")
 load(
     "//sw/device/silicon_creator/manuf/base:provisioning_inputs.bzl",
     "EARLGREY_SKUS",
     "disqualified_for_signing",
+    "sku_dice_libs",
+    "uds_cert_libs_name",
 )
-load(
-    "//sw/device/silicon_creator/rom/e2e:defs.bzl",
-    "SLOTS",
-)
-load(
-    "//sw/device/silicon_creator/rom_ext/e2e:defs.bzl",
-    "OWNER_SLOTS",
-)
+load("//sw/device/silicon_creator/rom/e2e:defs.bzl", "SLOTS")
+load("//sw/device/silicon_creator/rom_ext/e2e:defs.bzl", "OWNER_SLOTS")
 
 package(default_visibility = ["//visibility:public"])
 
@@ -338,6 +332,22 @@ manifest(d = {
     "security_version": "0xFFFFFFFF",
 })
 
+# Deduplicate the list of UDS templates shared by SKUs
+_UDS_TEMPLATES = {
+    uds_cert_libs_name(config["uds_template"]): config["uds_template"]
+    for config in EARLGREY_SKUS.values()
+    if "uds_template" in config
+}
+
+# SKUs might specify custom UDS certificate templates, which need their own builder libs
+[
+    uds_cert_libs(
+        name = name,
+        template = template,
+    )
+    for name, template in _UDS_TEMPLATES.items()
+]
+
 [
     opentitan_binary(
         name = "ft_personalize_{}".format(sku),
@@ -383,7 +393,6 @@ manifest(d = {
             "//sw/device/silicon_creator/lib/cert",
             "//sw/device/silicon_creator/lib/cert:dice_mldsa_api",
             "//sw/device/silicon_creator/lib/cert:dice_storage",
-            "//sw/device/silicon_creator/lib/cert:uds_template_library",
             "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
             "//sw/device/silicon_creator/lib/drivers:hmac",
             "//sw/device/silicon_creator/lib/drivers:keymgr",
@@ -396,7 +405,7 @@ manifest(d = {
             "//sw/device/silicon_creator/manuf/lib:flash_info_fields",
             "//sw/device/silicon_creator/manuf/lib:individualize_sw_cfg_{}".format(config["otp"]),
             "//sw/device/silicon_creator/manuf/lib:personalize",
-        ] + config["dice_libs"] + config["device_ext_libs"] + config.get("ownership_libs", []),
+        ] + sku_dice_libs(sku, config) + config["device_ext_libs"] + config.get("ownership_libs", []),
     )
     for sku, config in EARLGREY_SKUS.items()
 ]

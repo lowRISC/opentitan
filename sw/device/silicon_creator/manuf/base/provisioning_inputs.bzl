@@ -2,11 +2,9 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-load(
-    "@provisioning_exts//:cfg.bzl",
-    "EXT_EARLGREY_OTP_CFGS",
-    "EXT_EARLGREY_SKUS",
-)
+load("@bazel_skylib//lib:paths.bzl", "paths")
+load("@provisioning_exts//:cfg.bzl", "EXT_EARLGREY_OTP_CFGS", "EXT_EARLGREY_SKUS")
+load("//sw/device/silicon_creator/lib/cert:dice.bzl", "DICE_FORMATS")
 
 # A list of OTP configurations that will be used to autogenerate FT
 # individualization binaries that configure OTP with the constants defined in
@@ -24,7 +22,7 @@ EARLGREY_SKUS = {
     "emulation": {
         "otp": "em00",
         "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/fake:ca_data",
-        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice", "//sw/device/silicon_creator/lib/cert:dice_mldsa_empty"],
+        "dice_format": "x509",
         "host_ext_libs": ["@lowrisc_opentitan//sw/host/provisioning/ft_ext_lib:default_ft_ext_lib"],
         "device_ext_libs": ["@lowrisc_opentitan//sw/device/silicon_creator/manuf/default:default_perso_fw_ext"],
         "ownership_libs": ["//sw/device/silicon_creator/lib/ownership:test_owner"],
@@ -39,7 +37,7 @@ EARLGREY_SKUS = {
     "emulation_dice_cwt": {
         "otp": "em00",
         "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/fake:ca_data",
-        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_cwt", "//sw/device/silicon_creator/lib/cert:dice_mldsa_empty"],
+        "dice_format": "cwt",
         "host_ext_libs": ["@lowrisc_opentitan//sw/host/provisioning/ft_ext_lib:default_ft_ext_lib"],
         "device_ext_libs": ["@lowrisc_opentitan//sw/device/silicon_creator/manuf/default:default_perso_fw_ext"],
         "ownership_libs": ["//sw/device/silicon_creator/lib/ownership:test_owner"],
@@ -54,7 +52,7 @@ EARLGREY_SKUS = {
     "emulation_dice_mldsa": {
         "otp": "em00",
         "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/fake:ca_data",
-        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice_mldsa", "//sw/device/silicon_creator/lib/cert:dice_cert_build"],
+        "dice_format": "mldsa",
         "host_ext_libs": ["@lowrisc_opentitan//sw/host/provisioning/ft_ext_lib:default_ft_ext_lib"],
         "device_ext_libs": ["@lowrisc_opentitan//sw/device/silicon_creator/manuf/default:default_dice_mldsa_perso_fw_ext"],
         "ownership_libs": ["//sw/device/silicon_creator/lib/ownership:test_owner"],
@@ -69,7 +67,7 @@ EARLGREY_SKUS = {
     "emulation_tpm": {
         "otp": "em00",
         "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/fake:ca_data",
-        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice", "//sw/device/silicon_creator/lib/cert:dice_mldsa_empty"],
+        "dice_format": "x509",
         "host_ext_libs": ["@lowrisc_opentitan//sw/host/provisioning/ft_ext_lib:default_ft_ext_lib"],
         "device_ext_libs": [
             "//sw/device/silicon_creator/lib/cert:tpm_ek_template_library",
@@ -86,7 +84,7 @@ EARLGREY_SKUS = {
     "sival": {
         "otp": "sv00",
         "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/sival:ca_data",
-        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice", "//sw/device/silicon_creator/lib/cert:dice_mldsa_empty"],
+        "dice_format": "x509",
         "host_ext_libs": ["@lowrisc_opentitan//sw/host/provisioning/ft_ext_lib:default_ft_ext_lib"],
         "device_ext_libs": ["@lowrisc_opentitan//sw/device/silicon_creator/manuf/default:default_perso_fw_ext"],
         "ownership_libs": ["//sw/device/silicon_creator/rom_ext/sival:sival_owner"],
@@ -102,7 +100,7 @@ EARLGREY_SKUS = {
     "sival_staging": {
         "otp": "sv00",
         "ca_data": "@lowrisc_opentitan//sw/device/silicon_creator/manuf/keys/fake:ca_data",
-        "dice_libs": ["//sw/device/silicon_creator/lib/cert:dice", "//sw/device/silicon_creator/lib/cert:dice_mldsa_empty"],
+        "dice_format": "x509",
         "host_ext_libs": ["@lowrisc_opentitan//sw/host/provisioning/ft_ext_lib:default_ft_ext_lib"],
         "device_ext_libs": ["@lowrisc_opentitan//sw/device/silicon_creator/manuf/default:default_perso_fw_ext"],
         "ownership_libs": ["//sw/device/silicon_creator/rom_ext/sival:sival_owner"],
@@ -115,6 +113,53 @@ EARLGREY_SKUS = {
         "orchestrator_cfg": "@lowrisc_opentitan//sw/host/provisioning/orchestrator/configs/skus:sival_staging",
     },
 } | EXT_EARLGREY_SKUS
+
+def uds_cert_libs_name(template):
+    """Get the name of the `uds_cert_libs` instance for this template."""
+    label = Label(template)
+    return paths.join(label.package, paths.replace_extension(label.name, ""))
+
+def sku_dice_libs(sku, config):
+    """Get the DICE libraries for a SKU's perso firmware. These are selected by the `dice_format`,
+    but can be overriden using `dice_libs`."""
+    dice_format = config.get("dice_format")
+    uds_template = config.get("uds_template")
+    if dice_format and dice_format not in DICE_FORMATS:
+        fail("SKU {} has dice_format: \"{}\" but it must be one of {}".format(sku, dice_format, DICE_FORMATS))
+
+    # TODO: This is primarily for backwards compatibility. If it is determined there are no
+    # downstream use cases and downstream users have migrated, consider removing `dice_libs`.
+    # For now we warn about the deprecation until "acknowledged" by adding `dice_format`.
+    if "dice_libs" in config:
+        if dice_format == None:
+            print("WARNING: SKU {} uses deprecated `dice_libs` without `dice_format`. Set `dice_format` instead.".format(sku))
+        if uds_template:
+            fail("SKU {} sets both `dice_libs` and `uds_template`. Only one should be used.".format(sku))
+        return config["dice_libs"]
+
+    if not dice_format:
+        fail("SKU {} has no defined `dice_format`.".format(sku))
+
+    if dice_format == "cwt":
+        if uds_template:
+            fail("SKU {} sets a `uds_template`, which is not used by the \"cwt\" DICE format.".format(sku))
+        return [
+            "//sw/device/silicon_creator/lib/cert:dice_cwt",
+            "//sw/device/silicon_creator/lib/cert:dice_mldsa_empty",
+        ]
+
+    # For x509 and ML-DSA, SKUs may override the UDS template
+    if uds_template:
+        name = uds_cert_libs_name(uds_template)
+        uds_x509 = Label(":{}_uds_cert_build".format(name))
+        uds_mldsa = Label(":{}_mldsa_uds_cert_build".format(name))
+    else:
+        uds_x509 = "//sw/device/silicon_creator/lib/cert:dice_uds_cert_build"
+        uds_mldsa = "//sw/device/silicon_creator/lib/cert:dice_mldsa_uds_cert_build"
+
+    if dice_format == "x509":
+        return [uds_x509, "//sw/device/silicon_creator/lib/cert:dice_mldsa_empty"]
+    return [uds_x509, uds_mldsa]
 
 # TODO(lowRISC#27275): Refactor build/signing rules for perso binaries.
 def disqualified_for_signing(name, data):
