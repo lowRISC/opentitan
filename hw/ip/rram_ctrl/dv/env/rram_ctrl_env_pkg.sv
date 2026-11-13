@@ -8,6 +8,7 @@ package rram_ctrl_env_pkg;
   import top_pkg::*;
   import dv_utils_pkg::*;
   import tl_agent_pkg::*;
+  import otp_macro_agent_pkg::*;
   import dv_lib_pkg::*;
   import cip_base_pkg::*;
   import dv_base_reg_pkg::*;
@@ -16,6 +17,10 @@ package rram_ctrl_env_pkg;
   import rram_ctrl_core_ral_pkg::*;
   import rram_ctrl_host_ral_pkg::*;
   import rram_macro_prim_ral_pkg::*;
+  import rram_ctrl_bkdr_util_pkg::rram_ctrl_otp_bkdr_util;
+  import otp_ctrl_macro_pkg::otp_macro_addr_t;
+  import otp_ctrl_macro_pkg::otp_macro_size_t;
+  import otp_ctrl_macro_pkg::otp_macro_data_t;
 
   // Macro includes
   `include "uvm_macros.svh"
@@ -34,6 +39,10 @@ package rram_ctrl_env_pkg;
   // Frequency of the OTP interface clock (clk_otp_i). The testbench uses this to configure
   // otp_clk_rst_if directly.
   parameter uint OTP_CLK_FREQ_MHZ = 24;
+
+  // Number of OTP words that share an integrity byte
+  parameter int unsigned OtpWordsPerChunk =
+      rram_ctrl_pkg::OtpIntgDataWidth / otp_ctrl_macro_pkg::OtpWidth;
 
   // Types
   typedef virtual rram_ctrl_otp_key_if otp_key_vif_t;
@@ -57,6 +66,14 @@ package rram_ctrl_env_pkg;
     Corr2Err        = 6,
     NumRramCtrlIntr = 7
   } rram_ctrl_intr_e;
+
+  // What an OTP write does to the words it targets, for coverage.
+  typedef enum int {
+    OtpWriteToBlank,    // The words were blank (all zero).
+    OtpWriteAddsBits,   // The words were already programmed, and the write sets more bits.
+    OtpWriteNoNewBits,  // The words were already programmed, and the write sets no new bits.
+    OtpWriteClearsBits  // The write tries to clear a set bit, so it fails with WriteBlankError.
+  } otp_write_kind_e;
 
   // Functions
 
