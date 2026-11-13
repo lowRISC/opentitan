@@ -20,9 +20,10 @@ class rram_ctrl_randomize_vseq extends uvm_sequence;
   // enabled_regions_c.
   local rand int unsigned m_num_enabled_regions;
 
-  // The "en" bits that will be used in m_region_cfgs (split out because it makes counting the
-  // number that are set much simpler)
+  // The "en" and "rd_en" bits that will be used in m_region_cfgs (split out because it makes
+  // reasoning about the fields in constraints much simpler)
   local rand bit [NumRegions-1:0] m_enabled_regions;
+  local rand bit [NumRegions-1:0] m_read_enabled_regions;
 
   // The NumRegions configurations that will be written to the MP_REGION_CFG_* registers.
   local rand region_cfg_setting m_region_cfgs[];
@@ -78,7 +79,9 @@ class rram_ctrl_randomize_vseq extends uvm_sequence;
   extern local task write_one_info_page_cfg(int unsigned idx, output uvm_status_e status);
 
   // There should be between 1 and NumRegions enabled regions (we want at least one to be enabled).
-  // A bit in m_enabled_regions must equal the en field in the respective element of m_region_cfgs.
+  // A bit in m_enabled_regions must be a boolean version of the en field in the respective element
+  // of m_region_cfgs. Similarly, a bit in m_read_enabled_regions must be a boolean version of the
+  // rd_en field in the respective element of m_region_cfgs.
   //
   // What's more, there are m_num_enabled_regions bits set in m_enabled_regions (which will cause
   // that many regions to be enabled).
@@ -92,6 +95,13 @@ class rram_ctrl_randomize_vseq extends uvm_sequence;
   // The values of m_reg_order_idx_map should be a permutation of 0..NumRegions-1 and should give
   // the order of m_regions.
   extern constraint regions_idx_map_c;
+
+  // There should be at least one way to read RRAM, either through an enabled region with rd_en
+  // enabled, or because default_region has rd_en enabled.
+  //
+  // This constraint allows downstream sequences to assume there will be *some* way to read from
+  // RRAM.
+  extern constraint something_readable_c;
 
   // The number of enabled info pages (m_num_enabled_info_pages) should be between 1 and
   // NumInfoPages (we want at least one to be enabled)
@@ -139,6 +149,7 @@ function void rram_ctrl_randomize_vseq::do_print(uvm_printer printer);
   super.do_print(printer);
   printer.print_field_int("m_num_enabled_regions", m_num_enabled_regions, 32);
   printer.print_field("m_enabled_regions", m_enabled_regions, NumRegions, UVM_BIN);
+  printer.print_field("m_read_enabled_regions", m_read_enabled_regions, NumRegions, UVM_BIN);
   foreach (m_region_cfgs[i]) begin
     // Only print out enabled regions unless printing at UVM_HIGH or greater.
     if (m_enabled_regions[i] || uvm_report_enabled(UVM_HIGH, UVM_INFO, "m_region_cfgs")) begin
@@ -298,8 +309,12 @@ constraint rram_ctrl_randomize_vseq::enabled_regions_c {
   1 <= m_num_enabled_regions;
   m_num_enabled_regions <= NumRegions;
 
-  foreach (m_region_cfgs[i]) { (m_region_cfgs[i].en == MuBi4True) == m_enabled_regions[i]; }
   $countones(m_enabled_regions) == m_num_enabled_regions;
+
+  foreach (m_region_cfgs[i]) {
+    (m_region_cfgs[i].en == MuBi4True) == m_enabled_regions[i];
+    (m_region_cfgs[i].rd_en == MuBi4True) == m_read_enabled_regions[i];
+  }
 }
 
 constraint rram_ctrl_randomize_vseq::increasing_regions_c {
@@ -325,6 +340,29 @@ constraint rram_ctrl_randomize_vseq::regions_idx_map_c {
   // are distinct and in the range 0..NumRegions-1.
   unique {m_reg_order_idx_map};
   foreach (m_reg_order_idx_map[i]) { m_reg_order_idx_map[i] < NumRegions; }
+}
+
+constraint rram_ctrl_randomize_vseq::something_readable_c {
+  // There must either be some enabled region with rd_en set or there must be a gap in between the
+  // regions and the default region must have rd_en set.
+  //
+  // For the latter case, we can reason about the fact that the regions are chosen to be disjoint
+  // (whether or not they are enabled). As such, there will be a gap between the enabled regions if
+  // some region is not enabled.
+  //
+  // There is still a gap in both cases: we have a region whose addresses have rd_en set (either
+  // because the region is enabled with that flag set or because it is disabled and default_region
+  // has the flag set). Unfortunately, it's possible for that "region of safety" to be completely
+  // contained in the OTP region, where SW and host_tl accesses would be denied.
+  //
+  // To avoid that problem, we cheat slightly and mandate that the highest region must start
+  // strictly before the first page of the OTP region. If we decide in future that a region
+  // contained in the OTP region is one we need to reason about, we'll have to generalise this
+  // slightly.
+  m_increasing_regions[NumRegions-1].base < OtpStartPage;
+
+  (|(m_enabled_regions & m_read_enabled_regions)) ||
+   (~&m_enabled_regions && (m_default_region_cfg.rd_en == MuBi4True));
 }
 
 constraint rram_ctrl_randomize_vseq::num_enabled_info_pages_c {
