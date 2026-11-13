@@ -127,7 +127,11 @@ class chip_base_vseq #(
     cfg.mem_bkdr_util_h[FlashBank0Info].set_mem();
     cfg.mem_bkdr_util_h[FlashBank1Info].set_mem();
     // Backdoor load the OTP image.
-    cfg.mem_bkdr_util_h[Otp].load_mem_from_file(cfg.otp_images[cfg.use_otp_image]);
+    if (cfg.use_otp_image != OtpNone) begin
+      `uvm_info(`gfn, "Initializing OTP.", UVM_MEDIUM)
+      cfg.mem_bkdr_util_h[Otp].load_mem_from_file(cfg.otp_images[cfg.use_otp_image]);
+    end
+
     // Plusargs to selectively clear the provisioning state of some of the OTP partitions.
     // This is useful in tests that make front-door accesses for provisioning purposes.
     void'($value$plusargs("otp_clear_hw_cfg0=%0d", otp_clear_hw_cfg0));
@@ -259,6 +263,36 @@ class chip_base_vseq #(
       p_sequencer.uart_tx_fifos[uart_idx].get(item);
       `uvm_info(`gfn, $sformatf("Received UART data over TX:\n%0h", item.data), UVM_HIGH)
       uart_tx_data_q.push_back(item.data);
+    end
+  endtask
+
+  // Monitor items received from the UART console, whenever a EOL-sequence is received (CR)LF, print
+  // all received bytes as a string and clear the item queue.
+  task print_uart_console_items(int uart_idx = 0);
+    byte byte_q[$];
+    bit [7:0] CR = 8'hd;
+    bit [7:0] LF = 8'ha;
+    `uvm_info(`gfn, $sformatf("Monitoring console messages on UART%0d...", uart_idx), UVM_LOW)
+    forever begin
+      uart_item item;
+      p_sequencer.uart_tx_fifos[uart_idx].get(item);
+      `uvm_info(`gfn, $sformatf("Agent received UART%0d byte: 8'h%0h / %0s",
+        uart_idx, item.data, item.data), UVM_FULL)
+      byte_q.push_back(item.data);
+      // If we're at the EOL, print
+      if (byte_q[$] == LF) begin
+        // Drop LF (and CR if present) before printing
+        byte_q.pop_back();
+        if (byte_q[$] == CR) byte_q.pop_back();
+        // Print the console message
+        begin
+          string str = "";
+          for (int i = 0; i < byte_q.size(); i++) $sformat(str, "%s%0s", str, byte_q[i]);
+          `uvm_info(`gfn, $sformatf("UART%0d sent console msg: %0s", uart_idx, str), UVM_MEDIUM);
+        end
+        // Clear the queue, ready for the next message
+        byte_q.delete();
+      end
     end
   endtask
 
