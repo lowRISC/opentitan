@@ -28,7 +28,7 @@ pub struct Generate {
     /// Permit the generated key to be used for wrapping other keys.
     #[arg(long)]
     wrapping: bool,
-    /// Permit the generated key to be extractable.
+    /// Permit the generated private key to be extractable.
     #[arg(long)]
     extractable: bool,
     /// Template for creating the public key.
@@ -102,7 +102,6 @@ impl Dispatch for Generate {
             private_template.insert(AttributeType::Unwrap, AttrData::from(true));
         }
         if self.extractable {
-            public_template.insert(AttributeType::Extractable, AttrData::from(true));
             private_template.insert(AttributeType::Extractable, AttrData::from(true));
         }
 
