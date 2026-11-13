@@ -40,6 +40,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | keymgr_creator_root_key  | keymgr_dpe_pkg::keymgr_dpe_creator_root_key | uni     | req   |       1 | Key output to the key manager holding CREATOR_ROOT_KEY_SHARE0 and CREATOR_ROOT_KEY_SHARE1.                                                                                                                      |
 | keymgr_creator_seed      | keymgr_dpe_pkg::keymgr_dpe_creator_seed     | uni     | req   |       1 | Creator seed output to the key manager                                                                                                                                                                          |
 | keymgr_owner_seed        | keymgr_dpe_pkg::keymgr_dpe_owner_seed       | uni     | req   |       1 | Owner seed output to the key manager                                                                                                                                                                            |
+| keymgr_field_entropy     | keymgr_dpe_pkg::keymgr_dpe_field_entropy    | uni     | req   |       1 | Field entropy output to the key manager holding FIELD_ENTROPY.                                                                                                                                                  |
 | nvm_otp_key              | otp_ctrl_pkg::nvm_otp_key                   | req_rsp | rsp   |       1 | Key derivation interface for NVM scrambling.                                                                                                                                                                    |
 | sram_otp_key             | otp_ctrl_pkg::sram_otp_key                  | req_rsp | rsp   |       5 | Array with key derivation interfaces for SRAM scrambling devices.                                                                                                                                               |
 | otbn_otp_key             | otp_ctrl_pkg::otbn_otp_key                  | req_rsp | rsp   |       1 | Key derivation interface for OTBN scrambling devices.                                                                                                                                                           |
@@ -214,7 +215,13 @@ In all other life cycle states this signal will be clamped to zero.
 Each individual secret key material (CREATOR_ROOT_KEY, OWNER_SEED, CREATOR_SEED) gets its own connection to the keymgr.
 These secrets are provided to the keymgr if they have been provisioned and locked (via CREATOR_KEY_LOCK), otherwise these signals are tied to random netlist constants.
 
-Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the `keymgr_creator_root_key_o`, `keymgr_creator_seed_o`, `keymgr_owner_seed_o` signals.
+The FIELD_ENTROPY in the `SECRET3` partition is provided to the key manager via the `keymgr_field_entropy_o` signal.
+`keymgr_field_entropy_o.secret_valid` is set once the `SECRET3` partition has been locked with a digest, has been successfully initialized, and the FIELD_ENTROPY is not all-zero.
+If the FIELD_ENTROPY is not valid, the key manager uses its own netlist constant instead.
+Like for the CREATOR_ROOT_KEY, the FIELD_ENTROPY value is only output if `lc_seed_hw_rd_en_i` is asserted, otherwise `keymgr_field_entropy_o.secret` is tied to a random netlist constant.
+Like for the `SECRET1` partition, SW access via the DAI is only restricted by the partition's own digest lock, and read access is re-enabled in RMA.
+
+Since the key manager may run in a different clock domain, key manager is responsible for synchronizing the `keymgr_creator_root_key_o`, `keymgr_creator_seed_o`, `keymgr_owner_seed_o`, `keymgr_field_entropy_o` signals.
 
 ### Interfaces to SRAM and OTBN Scramblers
 

@@ -7,6 +7,11 @@
 <%
   import math
   from topgen.lib import Name
+
+  # Map each item name to the camel-case name of the partition holding it.
+  item_part = {item["name"]: Name.to_camel_case(part["name"])
+               for part in otp_mmap["partitions"] for item in part["items"]}
+  has_field_entropy = "FIELD_ENTROPY" in item_part
 %>
 `include "prim_assert.sv"
 
@@ -81,6 +86,9 @@ module otp_ctrl
   output keymgr_dpe_pkg::keymgr_dpe_creator_root_key_t keymgr_creator_root_key_o,
   output keymgr_dpe_pkg::keymgr_dpe_creator_seed_t     keymgr_creator_seed_o,
   output keymgr_dpe_pkg::keymgr_dpe_owner_seed_t       keymgr_owner_seed_o,
+% if has_field_entropy:
+  output keymgr_dpe_pkg::keymgr_dpe_field_entropy_t    keymgr_field_entropy_o,
+% endif
   // Scrambling key requests
 % if enable_nvm_key:
   input  nvm_otp_key_req_t                           nvm_otp_key_i,
@@ -1497,6 +1505,39 @@ end
     $rose(owner_seed_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
     clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
   )
+% if has_field_entropy:
+
+  // Like the SECRET1 partition, SW access to the partition holding FIELD_ENTROPY is only
+  // restricted by the partition's own digest lock. The FIELD_ENTROPY is only output if the
+  // life cycle controller allows HW to consume the seeds.
+
+  // Set the valid signal only if the secret is provisioned (digest is nonzero), the partition
+  // has been successfully initialized, and the FIELD_ENTROPY is not all-zero.
+  logic field_entropy_valid_d, field_entropy_valid_q;
+  assign field_entropy_valid_d = part_init_done[${item_part["FIELD_ENTROPY"]}Idx] &&
+                                 (part_digest[${item_part["FIELD_ENTROPY"]}Idx] != '0) &&
+                                 (part_buf_data[FieldEntropyOffset +: FieldEntropySize] != '0);
+
+  prim_flop #(
+    .Width(1)
+  ) u_field_entropy_valid (
+    .clk_i,
+    .rst_ni,
+    .d_i (field_entropy_valid_d),
+    .q_o (field_entropy_valid_q)
+  );
+
+  assign keymgr_field_entropy_o.secret_valid = field_entropy_valid_q;
+  assign keymgr_field_entropy_o.secret =
+      lc_ctrl_pkg::lc_tx_test_true_strict(lc_seed_hw_rd_en) ?
+      part_buf_data[FieldEntropyOffset +: FieldEntropySize] :
+      RndCnstPartInvDefault[FieldEntropyOffset*8 +: FieldEntropySize*8];
+
+  `ASSERT(LcSeedHwRdEnStable4_A,
+    $rose(field_entropy_valid_q) |=> $stable(lc_seed_hw_rd_en) [*1:$],
+    clk_i, !rst_ni || lc_ctrl_pkg::lc_tx_test_true_loose(lc_escalate_en_i) // Disable if escalating
+  )
+% endif
 
   // Scrambling Keys
   assign scrmbl_key_seed_valid = part_digest[Secret1Idx] != '0;
@@ -1579,6 +1620,10 @@ end
                keymgr_dpe_pkg::KeyWidth == CreatorRootKeyShare0Size * 8)
   `ASSERT_INIT(CreatorRootKeyShare1Size_A,
                keymgr_dpe_pkg::KeyWidth == CreatorRootKeyShare1Size * 8)
+% if has_field_entropy:
+  `ASSERT_INIT(FieldEntropySize_A,
+               keymgr_dpe_pkg::KeyWidth == FieldEntropySize * 8)
+% endif
 % if enable_nvm_key:
   `ASSERT_INIT(NvmDataKeySeedSize_A,       NvmKeySeedWidth == NvmDataKeySeedSize * 8)
   `ASSERT_INIT(NvmAddrKeySeedSize_A,       NvmKeySeedWidth == NvmAddrKeySeedSize * 8)
@@ -1601,6 +1646,9 @@ end
   `ASSERT_KNOWN(KeymgrCreatorRootKey_A,      keymgr_creator_root_key_o)
   `ASSERT_KNOWN(KeymgrCreatorSeed_A,         keymgr_creator_seed_o)
   `ASSERT_KNOWN(KeymgrOwnerSeed_A,           keymgr_owner_seed_o)
+% if has_field_entropy:
+  `ASSERT_KNOWN(KeymgrFieldEntropy_A,        keymgr_field_entropy_o)
+% endif
 % if enable_nvm_key:
   `ASSERT_KNOWN(NvmOtpKeyRspKnown_A,         nvm_otp_key_o)
 % endif
