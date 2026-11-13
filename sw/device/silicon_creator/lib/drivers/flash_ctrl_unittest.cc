@@ -1063,6 +1063,44 @@ TEST_P(DataRegionProtectTestSuite, ProtectRegionReadWriteEraseEnabled) {
       kHardenedBoolFalse);
 }
 
+TEST_P(DataRegionProtectTestSuite, SaveAndRestoreRegion) {
+  const uint32_t kExpectedMpRegion =
+      static_cast<uint32_t>((GetParamNumPages() << 9) | GetParamPageOffset());
+  const uint32_t kExpectedMpRegionCfg = ConcatMultiBitBool4({
+      /*he=*/false,
+      /*ecc=*/true,
+      /*scrambling=*/true,
+      GetParamErase(),
+      GetParamWrite(),
+      GetParamRead(),
+      /*en=*/true,
+  });
+
+  EXPECT_CALL(sec_mmio_,
+              Read32(kBase + kFlashCtrlMpRegionRegOffset[GetParamRegion()]))
+      .WillOnce(testing::Return(kExpectedMpRegion));
+  EXPECT_CALL(sec_mmio_,
+              Read32(kBase + kFlashCtrlMpRegionCfgRegOffset[GetParamRegion()]))
+      .WillOnce(testing::Return(kExpectedMpRegionCfg));
+
+  flash_ctrl_data_region_state_t state{};
+  flash_ctrl_data_region_save(GetParamRegion(), &state);
+  EXPECT_EQ(state.mp_region, kExpectedMpRegion);
+  EXPECT_EQ(state.mp_region_cfg, kExpectedMpRegionCfg);
+
+  EXPECT_CALL(mmio_,
+              Write32(kBase + kFlashCtrlMpRegionCfgRegOffset[GetParamRegion()],
+                      kFlashCtrlMpRegionCfgRegResval[GetParamRegion()]));
+  EXPECT_CALL(sec_mmio_,
+              Write32(kBase + kFlashCtrlMpRegionRegOffset[GetParamRegion()],
+                      kExpectedMpRegion));
+  EXPECT_CALL(sec_mmio_,
+              Write32(kBase + kFlashCtrlMpRegionCfgRegOffset[GetParamRegion()],
+                      kExpectedMpRegionCfg));
+
+  flash_ctrl_data_region_restore(GetParamRegion(), &state);
+}
+
 TEST(FlashCtrl, FlashPermissionBits) {
   union Permissions {
     flash_ctrl_perms_t perms;
