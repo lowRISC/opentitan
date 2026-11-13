@@ -19,6 +19,12 @@
 
 OT_WEAK const owner_keydata_t *const kNoOwnerRecoveryKey;
 
+enum {
+  kScanRegion = 1,
+  kScanNumPages =
+      FLASH_CTRL_PARAM_REG_NUM_BANKS * FLASH_CTRL_PARAM_REG_PAGES_PER_BANK,
+};
+
 static bool is_signature_empty(const owner_signature_t *signature) {
   for (size_t i = 0; i < ARRAYSIZE(signature->raw); ++i) {
     if (signature->raw[i] != 0)
@@ -27,68 +33,27 @@ static bool is_signature_empty(const owner_signature_t *signature) {
   return true;
 }
 
-const owner_detached_signature_t *ownership_signature_scan(
-    uintptr_t start, size_t length, uint32_t command, const nonce_t *nonce) {
-  if (length < sizeof(owner_detached_signature_t))
-    return NULL;
-  length -= sizeof(owner_detached_signature_t);
-  uintptr_t end = start + length;
-  // The nonce in the detached signature is not cryptographically bound. It is
-  // merely a token to uniquely identify a detached signature block and not
-  // confuse it with any other block that may be left over in flash. We'll
-  // allow a nonce of zero as a wildcard to match any detached signature block.
-  const nonce_t zero = {0};
-  while (start < end) {
-    const owner_detached_signature_t *sig =
-        (const owner_detached_signature_t *)start;
-    if (sig->header.tag == kTlvTagDetachedSignature &&
-        sig->header.length == sizeof(owner_detached_signature_t) &&
-        sig->header.version.major == 0 && sig->command == command &&
-        (nonce_equal(&sig->nonce, &zero) || nonce_equal(&sig->nonce, nonce))) {
-      return sig;
-    }
-    start += FLASH_CTRL_PARAM_BYTES_PER_PAGE;
-  }
-  return NULL;
+static void scan_window_set(multi_bit_bool_t scrambling) {
+  flash_ctrl_perms_t perms = {
+      .read = kMultiBitBool4True,
+      .write = kMultiBitBool4False,
+      .erase = kMultiBitBool4False,
+  };
+  flash_ctrl_cfg_t cfg = {
+      .scrambling = (uint8_t)scrambling,
+      .ecc = kMultiBitBool4False,
+      .he = kMultiBitBool4False,
+  };
+  flash_ctrl_data_region_protect(kScanRegion, /*page_offset=*/0, kScanNumPages,
+                                 perms, cfg, kHardenedBoolFalse);
 }
 
-rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
-                                   uint32_t command, const nonce_t *nonce,
-                                   const owner_signature_t *signature,
-                                   const void *message, size_t len,
-                                   uint32_t *flash_exec) {
-  const ecdsa_p256_signature_t *ecdsa = NULL;
-  const sigverify_spx_signature_t *spx = NULL;
-  uint32_t key_alg = owner_page[page].ownership_key_alg;
-  if (!is_signature_empty(signature)) {
-    if (key_alg != kOwnershipKeyAlgEcdsaP256) {
-      return kErrorOwnershipInvalidAlgorithm;
-    }
-    ecdsa = &signature->ecdsa;
-  } else {
-    const owner_detached_signature_t *detached = ownership_signature_scan(
-        TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
-        TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES, command, nonce);
-    if (detached == NULL) {
-      return kErrorOwnershipSignatureNotFound;
-    }
-    uint32_t category =
-        owner_page[page].ownership_key_alg & kOwnershipKeyAlgCategoryMask;
-    switch (category) {
-      case kOwnershipKeyAlgCategoryEcdsa:
-        ecdsa = &detached->signature.ecdsa;
-        break;
-      case kOwnershipKeyAlgCategorySpx:
-        spx = &detached->signature.spx;
-        break;
-      case kOwnershipKeyAlgCategoryHybrid:
-        ecdsa = &detached->signature.hybrid.ecdsa;
-        spx = &detached->signature.hybrid.spx;
-        break;
-      default:
-        return kErrorOwnershipInvalidAlgorithm;
-    }
-  }
+static rom_error_t verify_signature(size_t page, ownership_key_t key,
+                                    uint32_t key_alg,
+                                    const ecdsa_p256_signature_t *ecdsa,
+                                    const sigverify_spx_signature_t *spx,
+                                    const void *message, size_t len,
+                                    uint32_t *flash_exec) {
   hmac_digest_t digest;
   hmac_sha256(message, len, &digest);
 
@@ -110,6 +75,104 @@ rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
     }
   }
   return kErrorOwnershipInvalidSignature;
+}
+
+static rom_error_t verify_detached(size_t page, ownership_key_t key,
+                                   uint32_t key_alg,
+                                   const owner_detached_signature_t *detached,
+                                   const void *message, size_t len,
+                                   uint32_t *flash_exec) {
+  const ecdsa_p256_signature_t *ecdsa = NULL;
+  const sigverify_spx_signature_t *spx = NULL;
+  uint32_t category = key_alg & kOwnershipKeyAlgCategoryMask;
+  switch (category) {
+    case kOwnershipKeyAlgCategoryEcdsa:
+      ecdsa = &detached->signature.ecdsa;
+      break;
+    case kOwnershipKeyAlgCategorySpx:
+      spx = &detached->signature.spx;
+      break;
+    case kOwnershipKeyAlgCategoryHybrid:
+      ecdsa = &detached->signature.hybrid.ecdsa;
+      spx = &detached->signature.hybrid.spx;
+      break;
+    default:
+      return kErrorOwnershipInvalidAlgorithm;
+  }
+  return verify_signature(page, key, key_alg, ecdsa, spx, message, len,
+                          flash_exec);
+}
+
+const owner_detached_signature_t *ownership_signature_scan(
+    uintptr_t start, size_t length, uint32_t command, const nonce_t *nonce) {
+  if (length < sizeof(owner_detached_signature_t))
+    return NULL;
+  length -= sizeof(owner_detached_signature_t);
+  uintptr_t end = start + length;
+  // The nonce in the detached signature is not cryptographically bound. It is
+  // merely a token to uniquely identify a detached signature block and not
+  // confuse it with any other block that may be left over in flash. We'll
+  // allow a nonce of zero as a wildcard to match any detached signature block.
+  const nonce_t zero = {0};
+  while (start <= end) {
+    const owner_detached_signature_t *sig =
+        (const owner_detached_signature_t *)start;
+    if (sig->header.tag == kTlvTagDetachedSignature &&
+        sig->header.length == sizeof(owner_detached_signature_t) &&
+        sig->header.version.major == 0 && sig->command == command &&
+        (nonce_equal(&sig->nonce, &zero) || nonce_equal(&sig->nonce, nonce))) {
+      return sig;
+    }
+    start += FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+  }
+  return NULL;
+}
+
+rom_error_t ownership_detached_signature_validate(
+    uintptr_t start, size_t length, size_t page, ownership_key_t key,
+    uint32_t command, const nonce_t *nonce, const void *message, size_t len,
+    uint32_t *flash_exec) {
+  flash_ctrl_data_region_state_t saved;
+  flash_ctrl_data_region_save(kScanRegion, &saved);
+
+  rom_error_t result = kErrorOwnershipSignatureNotFound;
+  scan_window_set(/*scrambling=*/kMultiBitBool4True);
+  const owner_detached_signature_t *detached =
+      ownership_signature_scan(start, length, command, nonce);
+  if (detached == NULL) {
+    scan_window_set(/*scrambling=*/kMultiBitBool4False);
+    detached = ownership_signature_scan(start, length, command, nonce);
+  }
+  if (detached != NULL) {
+    result = verify_detached(page, key, owner_page[page].ownership_key_alg,
+                             detached, message, len, flash_exec);
+  }
+
+  flash_ctrl_data_region_restore(kScanRegion, &saved);
+  flash_ctrl_data_region_state_t restored = {0};
+  flash_ctrl_data_region_save(kScanRegion, &restored);
+  HARDENED_CHECK_EQ(restored.mp_region, saved.mp_region);
+  HARDENED_CHECK_EQ(restored.mp_region_cfg, saved.mp_region_cfg);
+  return result;
+}
+
+rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
+                                   uint32_t command, const nonce_t *nonce,
+                                   const owner_signature_t *signature,
+                                   const void *message, size_t len,
+                                   uint32_t *flash_exec) {
+  uint32_t key_alg = owner_page[page].ownership_key_alg;
+  if (!is_signature_empty(signature)) {
+    if (key_alg != kOwnershipKeyAlgEcdsaP256) {
+      return kErrorOwnershipInvalidAlgorithm;
+    }
+    return verify_signature(page, key, key_alg, &signature->ecdsa, NULL,
+                            message, len, flash_exec);
+  }
+  return ownership_detached_signature_validate(
+      TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR,
+      TOP_EARLGREY_FLASH_CTRL_MEM_SIZE_BYTES, page, key, command, nonce,
+      message, len, flash_exec);
 }
 
 rom_error_t ownership_seal_init(void) {

@@ -4,6 +4,7 @@
 
 load(
     "//rules:cross_platform.bzl",
+    "dual_cc_device_library_of",
     "dual_cc_library",
     "dual_inputs",
 )
@@ -115,6 +116,26 @@ dual_cc_library(
             "//sw/device/silicon_creator/lib:error",
         ],
     ),
+)
+
+cc_test(
+    name = "ownership_key_unittest",
+    srcs = ["ownership_key_unittest.cc"],
+    deps = [
+        ":datatypes",
+        ":owner_block",
+        ":owner_verify",
+        dual_cc_device_library_of(":ownership_key"),
+        "//hw/top_earlgrey/ip_autogen/flash_ctrl:flash_ctrl_c_regs",
+        "//sw/device/lib/arch:sim_dv",
+        "//sw/device/lib/base:hardened",
+        "//sw/device/silicon_creator/lib:error",
+        "//sw/device/silicon_creator/lib:nonce",
+        "//sw/device/silicon_creator/lib/drivers:flash_ctrl",
+        "//sw/device/silicon_creator/lib/drivers:hmac",
+        "//sw/device/silicon_creator/testing:rom_test",
+        "@googletest//:gtest_main",
+    ],
 )
 
 cc_library(
