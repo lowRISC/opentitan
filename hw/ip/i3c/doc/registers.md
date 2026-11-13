@@ -1250,17 +1250,17 @@ In-Band Status Descriptor FIFO State.
 
 ## TARG_TXBUF_CONFIG
 Target TX Buffer Configuration.
-- Reset default: `0x20f01d0`
+- Reset default: see Instances
 - Reset mask: `0x3ff03ff`
 
 ### Instances
 
-| Name                | Offset   |
-|:--------------------|:---------|
-| TARG_TXBUF_CONFIG_0 | 0xa4     |
-| TARG_TXBUF_CONFIG_1 | 0xa8     |
-| TARG_TXBUF_CONFIG_2 | 0xac     |
-| TARG_TXBUF_CONFIG_3 | 0xb0     |
+| Name                | Offset   | Reset     | MIN_ADDR reset   | MAX_ADDR reset   |
+|:--------------------|:---------|:----------|:-----------------|:-----------------|
+| TARG_TXBUF_CONFIG_0 | 0xa4     | 0x20f01d0 | 0x1d0            | 0x20f            |
+| TARG_TXBUF_CONFIG_1 | 0xa8     | 0x24f0210 | 0x210            | 0x24f            |
+| TARG_TXBUF_CONFIG_2 | 0xac     | 0x28f0250 | 0x250            | 0x28f            |
+| TARG_TXBUF_CONFIG_3 | 0xb0     | 0x2cf0290 | 0x290            | 0x2cf            |
 
 
 ### Fields
@@ -1269,26 +1269,26 @@ Target TX Buffer Configuration.
 {"reg": [{"name": "MIN_ADDR", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}, {"name": "MAX_ADDR", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description                                                                                                                                                                                                                                             |
-|:------:|:------:|:-------:|:---------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| 31:26  |        |         |          | Reserved                                                                                                                                                                                                                                                |
-| 25:16  |   rw   |  0x20f  | MAX_ADDR | Maximum address for Target TX use (inclusive). The default addressing apportions the available storage space among the maximum number of Virtual Targets. For configurations employing fewer Virtual Targets, software should modify the configuration. |
-| 15:10  |        |         |          | Reserved                                                                                                                                                                                                                                                |
-|  9:0   |   rw   |  0x1d0  | MIN_ADDR | Minimum address for Target TX use. The default addressing apportions the available storage space among the maximum number of Virtual Targets. For configurations employing fewer Virtual Targets, software should modify the configuration.             |
+|  Bits  |  Type  |     Reset     | Name     | Description                                                                                                                                                                                                                                             |
+|:------:|:------:|:-------------:|:---------|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| 31:26  |        |               |          | Reserved                                                                                                                                                                                                                                                |
+| 25:16  |   rw   | see Instances | MAX_ADDR | Maximum address for Target TX use (inclusive). The default addressing apportions the available storage space among the maximum number of Virtual Targets. For configurations employing fewer Virtual Targets, software should modify the configuration. |
+| 15:10  |        |               |          | Reserved                                                                                                                                                                                                                                                |
+|  9:0   |   rw   | see Instances | MIN_ADDR | Minimum address for Target TX use. The default addressing apportions the available storage space among the maximum number of Virtual Targets. For configurations employing fewer Virtual Targets, software should modify the configuration.             |
 
 ## TARG_TXBUF_STATE
 Target 0 TX Buffer State.
-- Reset default: `0x1d001d0`
+- Reset default: see Instances
 - Reset mask: `0xc3ff03ff`
 
 ### Instances
 
-| Name               | Offset   |
-|:-------------------|:---------|
-| TARG_TXBUF_STATE_0 | 0xb4     |
-| TARG_TXBUF_STATE_1 | 0xb8     |
-| TARG_TXBUF_STATE_2 | 0xbc     |
-| TARG_TXBUF_STATE_3 | 0xc0     |
+| Name               | Offset   | Reset     | WPTR reset   | RPTR reset   |
+|:-------------------|:---------|:----------|:-------------|:-------------|
+| TARG_TXBUF_STATE_0 | 0xb4     | 0x1d001d0 | 0x1d0        | 0x1d0        |
+| TARG_TXBUF_STATE_1 | 0xb8     | 0x2100210 | 0x210        | 0x210        |
+| TARG_TXBUF_STATE_2 | 0xbc     | 0x2500250 | 0x250        | 0x250        |
+| TARG_TXBUF_STATE_3 | 0xc0     | 0x2900290 | 0x290        | 0x290        |
 
 
 ### Fields
@@ -1297,14 +1297,14 @@ Target 0 TX Buffer State.
 {"reg": [{"name": "WPTR", "bits": 10, "attr": ["ro"], "rotate": 0}, {"bits": 6}, {"name": "RPTR", "bits": 10, "attr": ["ro"], "rotate": 0}, {"bits": 4}, {"name": "PRE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FULL", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                |
-|:------:|:------:|:-------:|:-------|:-------------------------------------------|
-|   31   |   ro   |   0x0   | FULL   | Indicates if the buffer is full.           |
-|   30   |   ro   |   0x0   | PRE    | Indicates if prefetched data is available. |
-| 29:26  |        |         |        | Reserved                                   |
-| 25:16  |   ro   |  0x1d0  | RPTR   | Current read pointer.                      |
-| 15:10  |        |         |        | Reserved                                   |
-|  9:0   |   ro   |  0x1d0  | WPTR   | Current write pointer.                     |
+|  Bits  |  Type  |     Reset     | Name   | Description                                |
+|:------:|:------:|:-------------:|:-------|:-------------------------------------------|
+|   31   |   ro   |      0x0      | FULL   | Indicates if the buffer is full.           |
+|   30   |   ro   |      0x0      | PRE    | Indicates if prefetched data is available. |
+| 29:26  |        |               |        | Reserved                                   |
+| 25:16  |   ro   | see Instances | RPTR   | Current read pointer.                      |
+| 15:10  |        |               |        | Reserved                                   |
+|  9:0   |   ro   | see Instances | WPTR   | Current write pointer.                     |
 
 ## TARG_RXBUF_CONFIG
 Target RX Buffer Configuration
@@ -1388,17 +1388,17 @@ Target In-Band Interrupt Payload Queue State.
 
 ## TARG_TXDESC_CONFIG
 Target Transmission Descriptor Queue Configuration.
-- Reset default: `0x3b703b0`
+- Reset default: see Instances
 - Reset mask: `0x3ff03ff`
 
 ### Instances
 
-| Name                 | Offset   |
-|:---------------------|:---------|
-| TARG_TXDESC_CONFIG_0 | 0xd4     |
-| TARG_TXDESC_CONFIG_1 | 0xd8     |
-| TARG_TXDESC_CONFIG_2 | 0xdc     |
-| TARG_TXDESC_CONFIG_3 | 0xe0     |
+| Name                 | Offset   | Reset     | MIN_ADDR reset   | MAX_ADDR reset   |
+|:---------------------|:---------|:----------|:-----------------|:-----------------|
+| TARG_TXDESC_CONFIG_0 | 0xd4     | 0x3b703b0 | 0x3b0            | 0x3b7            |
+| TARG_TXDESC_CONFIG_1 | 0xd8     | 0x3bf03b8 | 0x3b8            | 0x3bf            |
+| TARG_TXDESC_CONFIG_2 | 0xdc     | 0x3c703c0 | 0x3c0            | 0x3c7            |
+| TARG_TXDESC_CONFIG_3 | 0xe0     | 0x3cf03c8 | 0x3c8            | 0x3cf            |
 
 
 ### Fields
@@ -1407,26 +1407,26 @@ Target Transmission Descriptor Queue Configuration.
 {"reg": [{"name": "MIN_ADDR", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}, {"name": "MAX_ADDR", "bits": 10, "attr": ["rw"], "rotate": 0}, {"bits": 6}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name     | Description                                                       |
-|:------:|:------:|:-------:|:---------|:------------------------------------------------------------------|
-| 31:26  |        |         |          | Reserved                                                          |
-| 25:16  |   rw   |  0x3b7  | MAX_ADDR | Maximum address for Target 0 Tx Descriptor Queue use (inclusive). |
-| 15:10  |        |         |          | Reserved                                                          |
-|  9:0   |   rw   |  0x3b0  | MIN_ADDR | Minimum address for Target 0 Tx Descriptor Queue use.             |
+|  Bits  |  Type  |     Reset     | Name     | Description                                                       |
+|:------:|:------:|:-------------:|:---------|:------------------------------------------------------------------|
+| 31:26  |        |               |          | Reserved                                                          |
+| 25:16  |   rw   | see Instances | MAX_ADDR | Maximum address for Target 0 Tx Descriptor Queue use (inclusive). |
+| 15:10  |        |               |          | Reserved                                                          |
+|  9:0   |   rw   | see Instances | MIN_ADDR | Minimum address for Target 0 Tx Descriptor Queue use.             |
 
 ## TARG_TXDESC_STATE
 Target Transmission Descriptor Queue State.
-- Reset default: `0x3b003b0`
+- Reset default: see Instances
 - Reset mask: `0xc3ff03ff`
 
 ### Instances
 
-| Name                | Offset   |
-|:--------------------|:---------|
-| TARG_TXDESC_STATE_0 | 0xe4     |
-| TARG_TXDESC_STATE_1 | 0xe8     |
-| TARG_TXDESC_STATE_2 | 0xec     |
-| TARG_TXDESC_STATE_3 | 0xf0     |
+| Name                | Offset   | Reset     | WPTR reset   | RPTR reset   |
+|:--------------------|:---------|:----------|:-------------|:-------------|
+| TARG_TXDESC_STATE_0 | 0xe4     | 0x3b003b0 | 0x3b0        | 0x3b0        |
+| TARG_TXDESC_STATE_1 | 0xe8     | 0x3b803b8 | 0x3b8        | 0x3b8        |
+| TARG_TXDESC_STATE_2 | 0xec     | 0x3c003c0 | 0x3c0        | 0x3c0        |
+| TARG_TXDESC_STATE_3 | 0xf0     | 0x3c803c8 | 0x3c8        | 0x3c8        |
 
 
 ### Fields
@@ -1435,14 +1435,14 @@ Target Transmission Descriptor Queue State.
 {"reg": [{"name": "WPTR", "bits": 10, "attr": ["ro"], "rotate": 0}, {"bits": 6}, {"name": "RPTR", "bits": 10, "attr": ["ro"], "rotate": 0}, {"bits": 4}, {"name": "PRE", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "FULL", "bits": 1, "attr": ["ro"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                                |
-|:------:|:------:|:-------:|:-------|:-------------------------------------------|
-|   31   |   ro   |   0x0   | FULL   | Indicates if the queue is full.            |
-|   30   |   ro   |   0x0   | PRE    | Indicates if prefetched data is available. |
-| 29:26  |        |         |        | Reserved                                   |
-| 25:16  |   ro   |  0x3b0  | RPTR   | Current read pointer.                      |
-| 15:10  |        |         |        | Reserved                                   |
-|  9:0   |   ro   |  0x3b0  | WPTR   | Current write pointer.                     |
+|  Bits  |  Type  |     Reset     | Name   | Description                                |
+|:------:|:------:|:-------------:|:-------|:-------------------------------------------|
+|   31   |   ro   |      0x0      | FULL   | Indicates if the queue is full.            |
+|   30   |   ro   |      0x0      | PRE    | Indicates if prefetched data is available. |
+| 29:26  |        |               |        | Reserved                                   |
+| 25:16  |   ro   | see Instances | RPTR   | Current read pointer.                      |
+| 15:10  |        |               |        | Reserved                                   |
+|  9:0   |   ro   | see Instances | WPTR   | Current write pointer.                     |
 
 ## TARG_RXDESC_CONFIG
 Target Reception Descriptor Queue Configuration.
