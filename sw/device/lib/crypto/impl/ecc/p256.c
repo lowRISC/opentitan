@@ -434,7 +434,8 @@ status_t p256_ecdsa_verify_finalize(const p256_ecdsa_signature_t *signature,
   const otbn_addr_t kOtbnVarXr = OTBN_ADDR_T_INIT(run_p256, x_r);
   HARDENED_TRY(otbn_dmem_read(kP256ScalarWords, kOtbnVarXr, x_r));
 
-  *result = hardened_memeq(x_r, signature->r, kP256ScalarWords);
+  *result = (hardened_bool_t)0;
+  *result |= hardened_memeq(x_r, signature->r, kP256ScalarWords);
 
   // Wipe DMEM.
   return otbn_dmem_sec_wipe();

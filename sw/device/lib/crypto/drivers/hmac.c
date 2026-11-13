@@ -521,6 +521,11 @@ static status_t oneshot(const uint32_t cfg, const hmac_key_t *key,
   HARDENED_TRY(hardened_memcpy(
       digest, (const uint32_t *)(hmac_base() + HMAC_DIGEST_0_REG_OFFSET),
       digest_wordlen));
+  HARDENED_CHECK_EQ(hardened_memeq(digest,
+                                   (const uint32_t *)(launderw(kHmacBaseAddr) +
+                                                      HMAC_DIGEST_0_REG_OFFSET),
+                                   digest_wordlen),
+                    kHardenedBoolTrue);
 
   // Verify the HMAC configuration, error code, status, and message length.
   hmac_verify(cfg, (uint64_t)msg->len << 3);
