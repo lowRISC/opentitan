@@ -107,7 +107,7 @@
             - Check that URND_STATE reads '0 if URND control is disabled.
             '''
       stage: V2
-      tests: []
+      tests: ["otbn_urnd_ctrl"]
     }
 
     {
