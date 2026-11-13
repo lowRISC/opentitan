@@ -70,6 +70,32 @@ sh_test(
     deps = [":test_lib"],
 )
 
+# Round-trip of generating, exporting and importing different keys (PEM, DER and
+# wrapped keys) through hsmtool's generate, export & import commands.
+[
+    sh_test(
+        name = "{}_import_export_test".format(keytype.replace("-", "_")),
+        srcs = ["import_export_test.sh"],
+        args = [keytype],
+        data = [
+            "//signing/softhsm",
+            "//signing/softhsm:conf",
+            "//sw/host/hsmtool",
+            "@softhsm2//:gen_dir",
+        ],
+        env = {
+            "SOFTHSM2_CONF": "$(rootpath //signing/softhsm:conf)",
+            "HSMTOOL_MODULE": "$(rootpath @softhsm2//:gen_dir)/lib/softhsm/libsofthsm2.so",
+        },
+        deps = [":test_lib"],
+    )
+    for keytype in [
+        "ecdsa",
+        "rsa",
+        "slh-dsa",
+    ]
+]
+
 sh_test(
     name = "token_exists_test",
     srcs = ["hsmtool_runner.sh"],
