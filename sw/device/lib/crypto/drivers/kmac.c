@@ -382,8 +382,8 @@ status_t kmac_hwip_default_configure(void) {
   // Use quality randomness for message blocks too
   cfg_reg = bitfield_bit32_write(cfg_reg,
                                  KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, 0);
-  // Do not remask message blocks
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT, 0);
+  // Remask message blocks
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT, 1);
 
   // Mark entropy source as ready
   cfg_reg =
@@ -573,7 +573,7 @@ static status_t kmac_init(kmac_operation_t operation,
                              KMAC_CFG_SHADOWED_ENTROPY_MODE_VALUE_EDN_MODE);
   cfg_reg = bitfield_bit32_write(cfg_reg,
                                  KMAC_CFG_SHADOWED_ENTROPY_FAST_PROCESS_BIT, 0);
-  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT, 0);
+  cfg_reg = bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_MSG_MASK_BIT, 1);
   cfg_reg =
       bitfield_bit32_write(cfg_reg, KMAC_CFG_SHADOWED_ENTROPY_READY_BIT, 1);
   cfg_reg = bitfield_bit32_write(
