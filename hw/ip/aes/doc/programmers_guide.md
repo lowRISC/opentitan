@@ -10,6 +10,30 @@ Only after this sequence has finished, the unit becomes idle (indicated in [`STA
 The AES unit is then ready for software initialization.
 Note that at this point, the key, IV and data registers' values can no longer be expected to match the reset values.
 
+## Initial Configuration
+
+Before starting the processing of messages, software must configure and lock the [`CTRL_AUX_SHADOWED`](registers.md#ctrl_aux_shadowed) register until the next reset as follows:
+```c
+  // Configure the shadowed CTRL_AUX_SHADOWED register.
+  uint32_t aes_ctrl_aux_shadowed_val =
+      (0x0 << AES_CTRL_AUX_SHADOWED_KEEP_START_TRIGGER_HIGH) | // De-assert the START trigger after execution in manual mode.
+      (0x0 << AES_CTRL_AUX_SHADOWED_FORCE_MASKS) |             // Always advance the internal masking PRNG during encryption/decryption.
+      (0x1 << AES_CTRL_AUX_SHADOWED_KEY_TOUCH_FORCES_RESEED);  // Trigger a PRNG reseed operation whenever a new key is provided.
+  REG32(AES_CTRL_AUX_SHADOWED(0)) = aes_ctrl_aux_shadowed_val;
+  REG32(AES_CTRL_AUX_SHADOWED(0)) = aes_ctrl_aux_shadowed_val;
+
+  // Lock the contents of the CTRL_AUX_SHADOWED register until the next reset.
+  REG32(AES_CTRL_AUX_REGWEN(0)) = 0;
+```
+
+As an alternative to setting the [`KEY_TOUCH_FORCES_RESEED`](registers.md#ctrl_aux_shadowed--key_touch_forces_reseed) bit, software must manually trigger a reseed operation of the internal PRNGs for register clearing and masking via EDN once the entropy complex is fully configured.
+This is required as the initial reseed operation automatically triggered after reset may consume boot-time entropy of lower quality.
+
+To this end, software must set the [`TRIGGER.PRNG_RESEED`](registers.md#trigger--prng_reseed) bit to `1` after the entropy complex is fully configured:
+```c
+  // Trigger a PRNG reseed operation.
+  REG32(AES_TRIGGER(0)) = (0x1 << AES_TRIGGER_PRNG_RESEED);
+```
 
 ## Initialization
 
@@ -27,12 +51,14 @@ The key length is configured using the KEY_LEN field of [`CTRL_SHADOWED`](regist
 Independent of the selected key length, software must always write all 8 32-bit registers of both shares.
 Each register must be written at least once.
 The order in which the key registers are written does not matter.
+But to avoid potential SCA leakage of the actual initial key, the two shares of the individual registers must not be written after another.
+Ideally, the order in which the 16 Initial Key registers are written is randomized.
 Anything can be written to the unused key registers of both shares, however, random data is preferred.
 For AES-128 ,the actual initial key used for encryption is formed by XORing [`KEY_SHARE0_0`](registers.md#key_share0) - [`KEY_SHARE0_3`](registers.md#key_share0) with [`KEY_SHARE1_0`](registers.md#key_share1) - [`KEY_SHARE1_3`](registers.md#key_share1).
 For AES-192, the actual initial key used for encryption is formed by XORing [`KEY_SHARE0_0`](registers.md#key_share0) - [`KEY_SHARE0_5`](registers.md#key_share0) with [`KEY_SHARE1_0`](registers.md#key_share1) - [`KEY_SHARE1_5`](registers.md#key_share1).
 
 If running in CBC, CFB, OFB or CTR mode, software must also write the IV registers [`IV_0`](registers.md#iv) - [`IV_3`](registers.md#iv).
-Since providing the initial key initiate the reseeding of the internal PRNGs, software must check that the AES unit is idle before writing the IV registers.
+Since providing the initial key may initiate the reseeding of the internal PRNGs, software must check that the AES unit is idle before writing the IV registers.
 These registers are little-endian, but the increment of the IV in CTR mode is big-endian (see [Recommendation for Block Cipher Modes of Operation](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38a.pdf)).
 Each IV register must be written at least once.
 The order in which these registers are written does not matter.
@@ -80,18 +106,33 @@ The code snippet below shows how to perform block operation.
       (op & AES_CTRL_SHADOWED_OPERATION_MASK) << AES_CTRL_SHADOWED_OPERATION_OFFSET |
       (mode & AES_CTRL_SHADOWED_MODE_MASK) << AES_CTRL_SHADOWED_MODE_OFFSET |
       (key_len & AES_CTRL_SHADOWED_KEY_LEN_MASK) << AES_CTRL_SHADOWED_KEY_LEN_OFFSET |
+      sideload << AES_CTRL_SHADOWED_SIDELOAD_OFFSET |
+      (prng_reseed_rate & AES_CTRL_SHADOWED_PRNG_RESEED_RATE_MASK) << AES_CTRL_SHADOWED_PRNG_RESEED_RATE_OFFSET |
       0x0 << AES_CTRL_SHADOWED_MANUAL_OPERATION_OFFSET;
   REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
   REG32(AES_CTRL_SHADOWED(0)) = aes_ctrl_val;
 
-  // Wait for IDLE bit.
-  while (!((REG32(AES_STATUS(0)) >> AES_STATUS_IDLE) & 0x1)) {
+  if (!sideload) {
+    // Wait for IDLE bit.
+    while (!((REG32(AES_STATUS(0)) >> AES_STATUS_IDLE) & 0x1)) {
+    }
+
+    // Write key
+    // Notes:
+    // - All registers are little-endian.
+    // - KEY_SHARE0_X and KEY_SHARE1_X registers must not be written after another to avoid
+    //   potential SCA leakage of KEY_X.
+    // - Ideally, the different write operations are done in random order.
+    for (int j = 0; j < 8; j++) {
+      REG32(AES_KEY_SHARE0_0(0) + j * 4) = key_share0[j];
+    }
+    for (int j = 0; j < 8; j++) {
+      REG32(AES_KEY_SHARE1_0(0) + j * 4) = key_share1[j];
+    }
   }
 
-  // Write key - Note: All registers are little-endian.
-  for (int j = 0; j < 8; j++) {
-    REG32(AES_KEY_SHARE0_0(0) + j * 4) = key_share0[j];
-    REG32(AES_KEY_SHARE1_0(0) + j * 4) = key_share1[j];
+  // Wait for IDLE bit.
+  while (!((REG32(AES_STATUS(0)) >> AES_STATUS_IDLE) & 0x1)) {
   }
 
   // Write IV.
@@ -141,7 +182,10 @@ GCM is a mode of Authenticated Encryption with Additional Data (AEAD) specified 
 At a high level, GCM builds on top of the ECB and CTR block cipher modes of operation as well as a Galois Field GF(2^128) multiplication for the integrity tag computation (GHASH).
 The AES unit follows a hybrid implementation approach where software cycles the AES hardware unit through the different phases of GCM.
 To support context switching similar to the other AES block cipher modes of operation which only require reading the IV registers [`IV_0`](registers.md#iv) - [`IV_3`](registers.md#iv), software can switch the AES unit into special phases for saving and restoring also GHASH contexts.
-How to cycle the hardware through the different GCM phases and how to save and restore full GCM contexts is explained in detail below.
+How to cycle the hardware through the different GCM phases and how to save and restore full GCM contexts via the [`CTRL_GCM_SHADOWED`](registers.md#ctrl_gcm_shadowed) register is explained in detail below.
+
+Note that, like the [`CTRL_SHADOWED`](registers.md#ctrl_shadowed) register, the Initial Key registers [`KEY_SHARE0_0`](registers.md#key_share0) - [`KEY_SHARE1_7`](registers.md#key_share1) and the IV registers [`IV_0`](registers.md#iv) - [`IV_3`](registers.md#iv), the [`CTRL_GCM_SHADOWED`](registers.md#ctrl_gcm_shadowed) register is only writable while the AES unit is idle.
+Before writing these registers, software must ensure that the AES unit is idle by checking [`STATUS.IDLE`](registers.md#status).
 
 Additional notes:
 - This implementation uses a fixed IV length of 96 bits, thereby following the recommendation of [NIST 800-38D (Section 5.2.1.1)](https://nvlpubs.nist.gov/nistpubs/Legacy/SP/nistspecialpublication800-38d.pdf).
