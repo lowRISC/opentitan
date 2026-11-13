@@ -355,14 +355,14 @@
     }
     { name: "CONFIG.SHADOW",
       desc: '''
-        Various critical registers are shadowed: including operation control, reseed interval,
-        kdf_engine and key max version.
+        Various critical registers are shadowed: including operation !!CONTROL_SHADOWED,
+        !!RESEED_INTERVAL_SHADOWED, !!KDF_ENGINE_SHADOWED and !!MAX_KEY_VER_SHADOWED.
       '''
     }
     { name: "OP.CONFIG.REGWEN",
       desc: '''
-        Various controls locked during the duration of an operation: including operation start,
-        operation control, sideload clear, salt and key version.
+        Various control registers are locked during the duration of an operation:
+        !!START, !!CONTROL_SHADOWED, !!SIDELOAD_CLEAR, !!SALT and !!KEY_VERSION.
       '''
     }
     { name: "RESEED.CONFIG.REGWEN",
@@ -427,17 +427,17 @@
     }
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: '''
-        Life cycle control signal is multibit
+        Life cycle control signal is multibit.
       '''
     }
     { name: "CONSTANTS.CONSISTENCY",
       desc: '''
-        Basic consistency checks (all 0's or all 1's) for keymgr dpe diversification constants
+        Basic consistency checks (all 0's or all 1's) for keymgr_dpe diversification constants.
       '''
     }
     { name: "INTERSIG.CONSISTENCY",
       desc: '''
-        Basic consistency checks (all 0's or all 1's) for otp diversification inputs
+        Basic consistency checks (all 0's or all 1's) for otp diversification inputs.
       '''
     }
     { name: "HW.KEY.SW_NOACCESS",
@@ -447,7 +447,7 @@
     }
     { name: "INTERNAL.KEY.SW_NOACCESS",
       desc: '''
-        Internal keys are not accessible by software.
+        Internal keys are invisible to SW.
       '''
     }
     { name: "OUTPUT_KEYS.CTRL.REDUN",
@@ -468,29 +468,29 @@
     }
     { name: "CTRL.FSM.SPARSE",
       desc: '''
-        Main control fsm is sparsely encoded.
+        Main control FSM is sparsely encoded.
       '''
     }
     { name: "DATA.FSM.SPARSE",
       desc: '''
-        Control data fsm (for redundant data control) is sparsely encoded.
+        Control data FSM (for redundant data control) is sparsely encoded.
       '''
     }
     { name: "CTRL.FSM.LOCAL_ESC",
       desc: '''
-        Main control fsm locally escalates based on any detected fault in keymgr dpe.
-        When a fault is detected (sync or async) the fsm transitions to invalid state to prevent
+        Main control FSM locally escalates based on any detected fault in keymgr_dpe.
+        When a fault is detected (sync or async) the FSM transitions to invalid state to prevent
         further legal operations from executing.
       '''
     }
     { name: "CTRL.FSM.CONSISTENCY",
       desc: '''
-        Main and operational fsm transitions are consistent with software commands.
+        Main and operational FSM transitions are consistent with software commands.
       '''
     }
     { name: "CTRL.FSM.GLOBAL_ESC",
       desc: '''
-        When the system globally escalates, the main control fsm also transitions to invalid state
+        When the system globally escalates, the main control FSM also transitions to invalid state
         to prevent further legal operations from executing.
       '''
     }
@@ -501,7 +501,7 @@
     }
     { name: "KMAC_IF.FSM.SPARSE",
       desc: '''
-        kmac interface fsm is sparsely encoded.
+        kmac interface FSM is sparsely encoded.
       '''
     }
     { name: "KMAC_IF.CTR.REDUN",
@@ -536,7 +536,7 @@
     }
     { name: "SIDELOAD_CTRL.FSM.SPARSE",
       desc: '''
-        Sideload control fsm is sparsely encoded.
+        Sideload control FSM is sparsely encoded.
       '''
     }
     { name: "CTRL.KEY.INTEGRITY",
@@ -806,7 +806,7 @@
           name: "EN",
           resval: "1"
           desc: '''
-            Configuration enable for reseed interval
+            Configuration enable for reseed interval.
           '''
         },
       ]
@@ -989,7 +989,7 @@
         name: "SALT",
         regwen: "CFG_REGWEN",
         desc: '''
-          Salt value used as part of output generation
+          Salt value used as part of output generation.
         ''',
         count: "NumSaltReg",
         swaccess: "rw",
@@ -1011,7 +1011,7 @@
         name: "KEY_VERSION",
         regwen: "CFG_REGWEN",
         desc: '''
-          Version used as part of output generation
+          Version used as part of output generation.
         ''',
         count: "NumKeyVersion",
         swaccess: "rw",
@@ -1129,7 +1129,7 @@
       desc: '''
         Key manager working state.
 
-        This is a readout of the current key manager working state
+        This is a readout of the current key manager working state.
       ''',
       swaccess: "ro",
       hwaccess: "hwo",
@@ -1198,13 +1198,13 @@
               name: "WIP",
               desc: '''
                 Work in progress.
-                A key manager operation has been started and is ongoing
+                A key manager operation has been started and is ongoing.
                 '''
             },
             { value: "2",
               name: "DONE_SUCCESS",
               desc: '''
-                Operation finished without errors
+                Operation finished without errors.
                 '''
             },
             { value: "3",
