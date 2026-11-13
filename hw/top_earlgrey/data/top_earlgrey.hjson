@@ -510,9 +510,8 @@
         regs: {hart: "0x40140000"},
       },
       param_decl: {
-        // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-        // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED FOR
-        // PRODUCTION DEVICES.
+        // The volatile RAW unlock is needed to reach the RRAM forming flow on a part without a
+        // persistent life cycle state. It is gated by rram_macro's allow_vol_unlock, see top_pkg.
         SecVolatileRawUnlockEn: "top_pkg::SecVolatileRawUnlockEn",
         // The following three values get exposed in the life cycle CSRs
         // that are also readable via the TAP.
@@ -734,9 +733,8 @@
       },
       attr: "ipgen",
       param_decl: {
-        // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-        // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED FOR
-        // PRODUCTION DEVICES.
+        // The volatile RAW unlock is needed to reach the RRAM forming flow on a part without a
+        // persistent life cycle state. It is gated by rram_macro's allow_vol_unlock, see top_pkg.
         SecVolatileRawUnlockEn: "top_pkg::SecVolatileRawUnlockEn",
       }
     },
@@ -876,6 +874,10 @@
       param_decl: {
         WrFifoDepth: "4",
         RdFifoDepth: "16",
+        RemapStart: "otp_ctrl_reg_pkg::Secret0Offset",
+        RemapSize: "otp_ctrl_reg_pkg::Secret0Size",
+        LcStart: "otp_ctrl_reg_pkg::LifeCycleOffset",
+        LcSize: "otp_ctrl_reg_pkg::LifeCycleSize",
       },
       memory: {
         host: {
@@ -1382,6 +1384,7 @@
       // Pinmux JTAG signals
       'pinmux.lc_jtag' : ['lc_ctrl.jtag'],
       'pinmux.rv_jtag' : ['rv_dm.jtag'],
+      'pinmux.rram_jtag' : ['rram_macro.jtag'],
       // Latched HW debug life cycle signal that is forwarded to RV_DM
       'pinmux.pinmux_hw_debug_en' : ['rv_dm.pinmux_hw_debug_en'],
 
@@ -1401,7 +1404,9 @@
                                       'pwrmgr.lc_dft_en',
                                       'rv_dm.lc_dft_en'
                                      ],
-      'lc_ctrl.lc_nvm_debug_en'    : ['rram_macro.lc_nvm_debug_en'],
+      'lc_ctrl.lc_nvm_debug_en'    : ['rram_macro.lc_nvm_debug_en',
+                                      'pinmux.lc_nvm_debug_en',
+                                      'rram_ctrl.lc_nvm_debug_en'],
       'lc_ctrl.lc_hw_debug_clr'    : ['pinmux.lc_hw_debug_clr',
                                       'rv_dm.lc_hw_debug_clr'],
       'lc_ctrl.lc_init_done'       : ['rv_dm.lc_init_done'],
@@ -1475,6 +1480,9 @@
 
       // connection between rram_macro and rram_ctrl
       'rram_ctrl.rram_macro' : ['rram_macro.rram_macro'],
+      // Markers read by rram_macro during its init, for the RRAM forming and CP flow.
+      'rram_macro.allow_vol_unlock' : ['lc_ctrl.allow_vol_unlock'],
+      'rram_macro.cp_done'          : ['rram_ctrl.cp_done'],
 
       // CHERIoT connections
       'cheriot_mem_sys.meta_sram_tl'  : ['sram_ctrl_meta.ram_tl'],
@@ -1783,7 +1791,6 @@
       { instance: "spi_host0",   port: 'csb[1]',         connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "spi_host0",   port: 'csb[2]',         connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "spi_host1",   port: '',               connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "rram_macro",  port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       { instance: "sensor_ctrl", port: '',               connection: 'muxed' , pad: ''             , desc: ''},
       // Sysrst ctrl has both muxed and dedicated IOs
       { instance: "sysrst_ctrl", port: 'ac_present',     connection: 'muxed' , pad: ''             , desc: ''},
@@ -1808,6 +1815,8 @@
     // Enable USB wakeup and hardware strap sampling for discrete OpenTitan
     enable_usb_wakeup: true
     enable_strap_sampling: true
+    // RRAM TAP, enabled on the TAP strap value 0 by the RRAM_JTAG_SEL register
+    enable_rram_tap: true
   },
 
   // Implementation targets.

@@ -7,6 +7,8 @@
 // This module emulates the real RRAM macro with a simple FSM and two prim_ram_1p for data and info
 // arrays.
 // Operations have random execution time which is achieved with a LFSR and a cycle counter.
+// After the init delay, the macro reads the marker copies from the marker info page and latches
+// the decoded DIS_VOL_RAW_UNLOCK and CP_DONE markers until the next reset.
 
 module rram_macro #(
   parameter int unsigned TotalDataPages = 4096, // Total number of data pages
@@ -20,14 +22,19 @@ module rram_macro #(
   // Functional connections
   input rram_ctrl_pkg::rram_macro_req_t  rram_macro_i,
   output rram_ctrl_pkg::rram_macro_rsp_t rram_macro_o,
+  // Decoded markers, latched during init.
+  // Both are an invalid MuBi8 value until the marker read has finished.
+  // allow_vol_unlock_o is True unless DIS_VOL_RAW_UNLOCK is set.
+  output prim_mubi_pkg::mubi8_t          allow_vol_unlock_o,
+  // cp_done_o is True if CP_DONE holds the magic value, False if it is all zero or if
+  // DIS_VOL_RAW_UNLOCK is not set, and an invalid MuBi8 value otherwise.
+  output prim_mubi_pkg::mubi8_t          cp_done_o,
   input tlul_pkg::tl_h2d_t               prim_tl_i,
   output tlul_pkg::tl_d2h_t              prim_tl_o,
   // Test connections
-  input logic                  cio_tck_i,
-  input logic                  cio_tdi_i,
-  input logic                  cio_tms_i,
-  output logic                 cio_tdo_o,
-  output logic                 cio_tdo_en_o,
+  // JTAG signals for the RRAM TAP, from the pinmux TAP selection
+  input jtag_pkg::jtag_req_t   jtag_i,
+  output jtag_pkg::jtag_rsp_t  jtag_o,
   input lc_ctrl_pkg::lc_tx_t   lc_nvm_debug_en_i,
   input prim_mubi_pkg::mubi4_t scanmode_i,
   input logic                  scan_en_i,
@@ -48,11 +55,6 @@ module rram_macro #(
   logic unused_scan_en;
   logic unused_scan_rst_n;
   logic unused_rram_test_analog;
-  logic unused_tck;
-  logic unused_tdi;
-  logic unused_tms;
-
-  lc_ctrl_pkg::lc_tx_t unused_lc_nvm_debug_en;
 
   assign unused_scanmode   = ^scanmode_i;
   assign unused_scan_en    = scan_en_i;
@@ -60,13 +62,48 @@ module rram_macro #(
 
   assign unused_rram_test_analog = rram_test_analog_io;
 
-  assign unused_lc_nvm_debug_en = lc_nvm_debug_en_i;
+  //////////////
+  // RRAM TAP //
+  //////////////
 
-  assign unused_tck   = cio_tck_i;
-  assign unused_tdi   = cio_tdi_i;
-  assign unused_tms   = cio_tms_i;
-  assign cio_tdo_o    = '0;
-  assign cio_tdo_en_o = '0;
+  // The open-source model has no BIST.
+  // A plain TAP with IDCODE and BYPASS lets DV shift through the RRAM TAP chain.
+  // The value must match the open-source chip DV check (rram_macro_forming.svh).
+  localparam logic [31:0] JtagIdcodeValue = 32'h5252_414D;
+
+  logic tap_trst_n, tap_tdo, tap_tdo_oe;
+  logic unused_tap_tck, unused_tap_dmi_clear, unused_tap_update, unused_tap_capture;
+  logic unused_tap_shift, unused_tap_tdi, unused_tap_dtmcs_select, unused_tap_dmi_select;
+
+  // The TAP is also held in reset with the macro, so that it starts from a known state.
+  assign tap_trst_n = jtag_i.trst_n & rst_ni;
+
+  dmi_jtag_tap #(
+    .IrLength   (5),
+    .IdcodeValue(JtagIdcodeValue)
+  ) u_tap (
+    .tck_i         (jtag_i.tck),
+    .tms_i         (jtag_i.tms),
+    .trst_ni       (tap_trst_n),
+    .td_i          (jtag_i.tdi),
+    .td_o          (tap_tdo),
+    .tdo_oe_o      (tap_tdo_oe),
+    .testmode_i    (1'b0),
+    .tck_o         (unused_tap_tck),
+    .dmi_clear_o   (unused_tap_dmi_clear),
+    .update_o      (unused_tap_update),
+    .capture_o     (unused_tap_capture),
+    .shift_o       (unused_tap_shift),
+    .tdi_o         (unused_tap_tdi),
+    .dtmcs_select_o(unused_tap_dtmcs_select),
+    .dtmcs_tdo_i   (1'b0),
+    .dmi_select_o  (unused_tap_dmi_select),
+    .dmi_tdo_i     (1'b0)
+  );
+
+  // Like the closed-source macro, the TAP only drives TDO while lc_nvm_debug_en is On.
+  assign jtag_o.tdo    = tap_tdo;
+  assign jtag_o.tdo_oe = tap_tdo_oe & lc_ctrl_pkg::lc_tx_test_true_strict(lc_nvm_debug_en_i);
 
   ////////////////////////////////////
   // TL-UL Test Interface Emulation //
@@ -119,9 +156,9 @@ module rram_macro #(
   localparam int WriteLatency    = 1000;
   localparam int StoreBufLatency = 2;
 
-  // Encoding generated at commit 0eeae81c80 using Python 3.12.13 with:
+  // Encoding generated at commit 4fbd2f8b6a using Python 3.12.13 with:
   // $ ./util/design/sparse-fsm-encode.py --language=sv \
-  //     --seed 450951119 --distance 5 --states 8 --bits 10
+  //     --seed 450951119 --distance 5 --states 9 --bits 10
   //
   // Hamming distance histogram:
   //
@@ -130,28 +167,29 @@ module rram_macro #(
   //  2: --
   //  3: --
   //  4: --
-  //  5: |||||||||||||||||||| (42.86%)
-  //  6: |||||||||||||||||||| (42.86%)
-  //  7: |||||| (14.29%)
-  //  8: --
+  //  5: |||||||||||||||||||| (52.78%)
+  //  6: ||||||||||||||| (41.67%)
+  //  7: | (2.78%)
+  //  8: | (2.78%)
   //  9: --
   // 10: --
   //
   // Minimum Hamming distance: 5
-  // Maximum Hamming distance: 7
-  // Minimum Hamming weight: 2
+  // Maximum Hamming distance: 8
+  // Minimum Hamming weight: 1
   // Maximum Hamming weight: 7
   //
   localparam int StateWidth = 10;
   typedef enum logic [StateWidth-1:0] {
-    StReset    = 10'b1001111000,
-    StInit     = 10'b0000111111,
-    StIdle     = 10'b0010001010,
-    StRead     = 10'b0100010000,
-    StStoreBuf = 10'b1110001101,
-    StWrite    = 10'b1101100011,
-    StRetErr   = 10'b1011010111,
-    StErr      = 10'b0111100100
+    StReset    = 10'b0000001000,
+    StInit     = 10'b0101101101,
+    StMarker   = 10'b0001010111,
+    StIdle     = 10'b0111011010,
+    StRead     = 10'b1010001111,
+    StStoreBuf = 10'b1110111001,
+    StWrite    = 10'b1001100010,
+    StRetErr   = 10'b0010110100,
+    StErr      = 10'b1111000100
   } state_e;
 
   state_e state_d, state_q;
@@ -267,6 +305,92 @@ module rram_macro #(
   assign rd_data_corr2_err = rd_err_lo[0] & rd_err_hi[0];
   assign rd_data_corr1_err = (rd_err_lo[0] ^ rd_err_hi[0]) & ~rd_data_fatal_err;
 
+  ////////////////////////////
+  // Marker read during init //
+  ////////////////////////////
+
+  // StMarker reads the DIS_VOL_RAW_UNLOCK word and then the CP_DONE word, once each.
+  // A marker is set if its word has clean ECC and holds exactly its magic value, XORed with the
+  // bus word addresses like rram_ctrl writes it (rram_ctrl_pkg::marker_word_value()).
+  // Anything else means "not set", including read errors and ECC errors, so a blank or garbage
+  // array reads as "not set".
+  // Each output keeps its invalid reset value until its word was read.
+  // A later version could confirm the result in a second state before StIdle.
+  // The open-source model always responds, so it needs no read timeout.
+  `ASSERT_INIT(MarkerMagicWeight_A, $countones(MarkerMagic) >= MarkerMagicMinWeight)
+  `ASSERT_INIT(OneMarkerCopy_A, NumMarkerCopies == 1)
+
+  // Selects the marker word that is read next: 0 for DIS_VOL_RAW_UNLOCK, 1 for CP_DONE.
+  logic                  marker_cp_d, marker_cp_q;
+  logic [WordW-1:0]      marker_word;
+  prim_mubi_pkg::mubi8_t allow_vol_unlock_d, allow_vol_unlock_q;
+  prim_mubi_pkg::mubi8_t cp_done_d, cp_done_q;
+
+  assign marker_word = marker_cp_q ? CpDoneWords[0] : DisVolRawUnlockWords[0];
+
+  // The word that was just read holds exactly its stored magic value, with clean ECC.
+  // The markers are always read with ECC.
+  logic marker_match;
+  assign marker_match = ~|{rd_err_lo, rd_err_hi} &&
+                        rd_data_dec == marker_word_value(MarkerMagic, marker_word);
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      marker_cp_q        <= 1'b0;
+      // Invalid MuBi8 values until the markers are read.
+      allow_vol_unlock_q <= prim_mubi_pkg::mubi8_t'('0);
+      cp_done_q          <= prim_mubi_pkg::mubi8_t'('0);
+    end else begin
+      marker_cp_q        <= marker_cp_d;
+      allow_vol_unlock_q <= allow_vol_unlock_d;
+      cp_done_q          <= cp_done_d;
+    end
+  end
+
+  assign allow_vol_unlock_o = allow_vol_unlock_q;
+  assign cp_done_o          = cp_done_q;
+
+  ///////////////
+  // Zero view //
+  ///////////////
+
+  // While DIS_VOL_RAW_UNLOCK is not set, rram_ctrl must not see the content of the array.
+  // So reads return 0 with clean ECC without accessing the array, and writes fail.
+  // The marker page is exempt, so the CP flow can write DIS_VOL_RAW_UNLOCK and read it back.
+  // The zero view is only off while allow_vol_unlock_q is strictly False.
+  // So it also stays on for an invalid value, for example before the markers are latched.
+  logic zero_view;
+  logic rd_marker_page, wr_marker_page;
+  logic zero_rd_d, zero_rd_q;
+  assign zero_view      = !prim_mubi_pkg::mubi8_test_false_strict(allow_vol_unlock_q);
+  assign rd_marker_page = rram_macro_i.part == RramPartInfo &&
+                          rram_macro_i.addr[InfoAddrW-1:WordW] == MarkerInfoPage;
+  assign wr_marker_page = current_part_q == RramPartInfo &&
+                          waddr_q[InfoAddrW-1:WordW] == MarkerInfoPage;
+
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      zero_rd_q <= 1'b0;
+    end else begin
+      zero_rd_q <= zero_rd_d;
+    end
+  end
+
+  // While the zero view is on, the words of a write outside of the marker page are dropped, and
+  // the write operation completes with err.
+  logic zero_view_wr_drop;
+  assign zero_view_wr_drop = zero_view && !wr_marker_page;
+
+  // Records a dropped word until the write operation completes with an error.
+  logic wr_blocked_d, wr_blocked_q;
+  always_ff @(posedge clk_i or negedge rst_ni) begin
+    if (!rst_ni) begin
+      wr_blocked_q <= 1'b0;
+    end else begin
+      wr_blocked_q <= wr_blocked_d;
+    end
+  end
+
   logic [11:0] rand_val;
   logic [1:0]  rand_val_read;
   logic [1:0]  rand_val_store;
@@ -371,6 +495,12 @@ module rram_macro #(
     cnt_clr = 1'b0;
     cnt_inc = 1'b0;
 
+    marker_cp_d           = marker_cp_q;
+    allow_vol_unlock_d    = allow_vol_unlock_q;
+    cp_done_d             = cp_done_q;
+    wr_blocked_d          = wr_blocked_q;
+    zero_rd_d             = zero_rd_q;
+
     lfsr_en_d = 1'b0;
     init_done = 1'b1;
     done      = 1'b0;
@@ -387,10 +517,28 @@ module rram_macro #(
       StInit: begin
         init_done = 1'b0;
         cnt_inc   = 1'b1;
-        // Go to idle state if counter >= InitLatency + random_delay
+        // Read the markers once counter >= InitLatency + random_delay
         if (cnt_q >= (InitLatency + rand_val)) begin
-          state_d = StIdle;
+          state_d = StMarker;
           cnt_clr = 1'b1;
+        end
+      end
+
+      // Read the DIS_VOL_RAW_UNLOCK word and then the CP_DONE word, and decode each one directly.
+      // A read is issued in one cycle, and its data is valid in the next one (mem_rvalid_q).
+      StMarker: begin
+        init_done = 1'b0;
+        if (!mem_rvalid_q) begin
+          current_part_d = RramPartInfo;
+          mem_req        = 1'b1;
+          mem_addr       = DataAddrW'({MarkerInfoPage, marker_word});
+          mem_rvalid_d   = 1'b1;
+        end else if (!marker_cp_q) begin
+          allow_vol_unlock_d = marker_match ? prim_mubi_pkg::MuBi8False : prim_mubi_pkg::MuBi8True;
+          marker_cp_d        = 1'b1;
+        end else begin
+          cp_done_d = marker_match ? prim_mubi_pkg::MuBi8True : prim_mubi_pkg::MuBi8False;
+          state_d   = StIdle;
         end
       end
 
@@ -407,11 +555,13 @@ module rram_macro #(
           ack            = 1'b1;
           current_part_d = rram_macro_i.part;
           ecc_en_d       = rram_macro_i.ecc_en;
-          mem_req        = 1'b1;
-          mem_addr       = rram_macro_i.addr;
           cnt_inc        = 1'b1;
           state_d        = StRead;
-          mem_rvalid_d   = 1'b1;
+          // The zero view does not access the array.
+          zero_rd_d      = zero_view && !rd_marker_page;
+          mem_req        = !zero_rd_d;
+          mem_addr       = rram_macro_i.addr;
+          mem_rvalid_d   = !zero_rd_d;
         // write request to RRAM (wr_last)
         end else if (rram_macro_i.wr_req & rram_macro_i.wr_last & rand_ack) begin
           ack = 1'b1;
@@ -450,10 +600,14 @@ module rram_macro #(
         // mem_rvalid_q is only true on the cycle mem_rdata is guaranteed valid (see above).
         // Use the registered copy on any other cycle.
         if (cnt_q >= (ReadLatency + rand_val_read)) begin
-          done    = 1'b1;
-          state_d = StIdle;
-          cnt_clr = 1'b1;
-          if (ecc_en_q) begin
+          done      = 1'b1;
+          state_d   = StIdle;
+          cnt_clr   = 1'b1;
+          zero_rd_d = 1'b0;
+          if (zero_rd_q) begin
+            // Zero view: 0 with clean ECC.
+            rdata = '0;
+          end else if (ecc_en_q) begin
             rdata   = rd_data_dec;
             ecc_err = {rd_data_fatal_err, rd_data_corr2_err, rd_data_corr1_err};
           end else begin
@@ -478,16 +632,23 @@ module rram_macro #(
         cnt_inc = 1'b1;
         if (store_buf_fifo_rvalid) begin
           store_buf_fifo_rready = 1'b1;
-          mem_req   = 1'b1;
-          mem_wr    = 1'b1;
-          mem_addr  = {waddr_q[DataAddrW-1:WordW], store_buf_fifo_offset};
-          mem_wdata = store_buf_fifo_data;
+          if (zero_view_wr_drop) begin
+            // Drop the word and report an error at the end of the write operation.
+            wr_blocked_d = 1'b1;
+          end else begin
+            mem_req   = 1'b1;
+            mem_wr    = 1'b1;
+            mem_addr  = {waddr_q[DataAddrW-1:WordW], store_buf_fifo_offset};
+            mem_wdata = store_buf_fifo_data;
+          end
         end else begin
           // return to idle if counter >= WriteLatency + random_delay
           if (cnt_q >= (WriteLatency + rand_val_write)) begin
-            done    = 1'b1;
-            cnt_clr = 1'b1;
-            state_d = StIdle;
+            done         = 1'b1;
+            err          = wr_blocked_q;
+            wr_blocked_d = 1'b0;
+            cnt_clr      = 1'b1;
+            state_d      = StIdle;
           end
         end
       end
@@ -572,10 +733,48 @@ module rram_macro #(
     .cfg_o    ()
   );
 
+`ifndef SYNTHESIS
+  // The emulated info array starts out uninitialized in simulation, unlike a formed RRAM array.
+  // Clear the marker page, so that the marker read at init returns defined values.
+  // DIS_VOL_RAW_UNLOCK is written as well, so that the zero view is off and the testbench sees
+  // the real array.
+  // Tests of the forming flow and the volatile RAW unlock skip it with
+  // +rram_dis_vol_raw_unlock=0.
+  // The chip testbench uses the same plusarg for its backdoor preload, which also covers a vendor
+  // rram_macro.
+  // A testbench can still load other marker values through the backdoor before the read.
+  function automatic logic [FullDataWidth-1:0] sim_encode_word(logic [DataWidth-1:0] data);
+    logic [EccCodeWidth-1:0] lo, hi;
+    lo = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[EccWordWidth-1:0]);
+    hi = prim_secded_pkg::prim_secded_hamming_72_64_enc(data[DataWidth-1:EccWordWidth]);
+    return {hi[EccCodeWidth-1:EccWordWidth], lo[EccCodeWidth-1:EccWordWidth],
+            hi[EccWordWidth-1:0], lo[EccWordWidth-1:0]};
+  endfunction
+
+  initial begin
+    bit dis_vol_raw_unlock;
+    dis_vol_raw_unlock = 1'b1;
+    void'($value$plusargs("rram_dis_vol_raw_unlock=%0d", dis_vol_raw_unlock));
+    for (int unsigned k = 0; k < WordsPerPage; k++) begin
+      u_info_array.mem[MarkerInfoPage * WordsPerPage + k] = '0;
+    end
+    if (dis_vol_raw_unlock) begin
+      for (int unsigned k = 0; k < NumMarkerCopies; k++) begin
+        u_info_array.mem[MarkerInfoPage * WordsPerPage + DisVolRawUnlockWords[k]] =
+            sim_encode_word(marker_word_value(MarkerMagic, DisVolRawUnlockWords[k]));
+      end
+    end
+  end
+`endif
+
   // output multiplexer
   assign mem_rdata = (current_part_q == RramPartData) ? data_mem_rdata : info_mem_rdata;
 
   `ASSERT(EccErrOnehot0_A, $onehot0(rram_macro_o.ecc_err))
+  `ASSERT_KNOWN_IF(AllowVolUnlockKnown_A, allow_vol_unlock_o, init_done)
+  `ASSERT_KNOWN_IF(CpDoneKnown_A, cp_done_o, init_done)
+  // The markers are latched once and never change afterwards.
+  `ASSERT(MarkersStable_A, init_done |=> $stable(allow_vol_unlock_o) && $stable(cp_done_o))
 
   // Alert assertions for reg_we onehot check
   `ASSERT_ERROR_TRIGGER_ERR(MacroFsmCheck_A, u_state_regs, rram_macro_o.fatal_err, 0,

@@ -36,7 +36,19 @@ module rram_ctrl_otp
   import otp_ctrl_macro_pkg::*;
   import rram_ctrl_pkg::*;
   import rram_ctrl_reg_pkg::rram_ctrl_reg2hw_control_reg_t;
-(
+#(
+  // Byte offset and size of the OTP partition relocated to OtpRemapInfoPage, within the OTP
+  // logical address space (should match OTP_CTRL_PARAM_<partition>_OFFSET/_SIZE in
+  // otp_ctrl_reg_pkg for whichever partition is relocated). RemapSize == 0 disables the
+  // relocation entirely, routing all OTP traffic to the data-array tail as before.
+  parameter int unsigned RemapStart = 0,
+  parameter int unsigned RemapSize  = 0,
+  // Byte offset and size of the LIFE_CYCLE partition within the OTP logical address space (should
+  // match OTP_CTRL_PARAM_LIFE_CYCLE_OFFSET/_SIZE). LcSize == 0 disables the life cycle copy
+  // selection by cp_done_i, routing all LIFE_CYCLE traffic to copy 0 as before.
+  parameter int unsigned LcStart = 0,
+  parameter int unsigned LcSize  = 0
+) (
   input logic                           clk_i,
   input logic                           rst_ni,
   input logic                           clk_otp_i,
@@ -64,7 +76,10 @@ module rram_ctrl_otp
   input  logic                          rram_init_done_i,
   input  logic                          rram_wr_busy_i,
   // RRAM access disabled
-  input  prim_mubi_pkg::mubi4_t         disable_i
+  input  prim_mubi_pkg::mubi4_t         disable_i,
+  // CP_DONE marker from rram_macro, latched during its init and stable afterwards.
+  // Selects the life cycle partition copy.
+  input  prim_mubi_pkg::mubi8_t         cp_done_i
 );
 
   import prim_mubi_pkg::*;
@@ -85,11 +100,49 @@ module rram_ctrl_otp
   localparam logic [BusAddrByteW-1:0] OtpStartAddr = (OtpStartPage+1) << (BusAddrByteW - PageW);
   localparam logic [BusAddrByteW-1:0] OtpIntgStartAddr = OtpStartPage << (BusAddrByteW - PageW);
 
+  // The relocated partition is placed at OtpRemapInfoPage: the first 8/9 of the page holds its
+  // data, the last 1/9 holds its integrity bytes, matching the 8-data-bytes-per-integrity-byte
+  // ratio (OtpIntgDataWidth/8) used throughout this module.
+  localparam int unsigned PageBytes = WordsPerPage * (DataWidth / 8);
+  localparam int unsigned IntgRatio = OtpIntgDataWidth / 8;
+  localparam int unsigned RemapIntgOffsetInPage = (PageBytes / (IntgRatio + 1)) * IntgRatio;
+
+  localparam logic [BusAddrByteW-1:0] RemapInfoStartAddr =
+      (BusAddrByteW'(OtpRemapInfoPage) << (BusAddrByteW - PageW));
+  localparam logic [BusAddrByteW-1:0] RemapIntgInfoStartAddr =
+      (BusAddrByteW'(OtpRemapInfoPage) << (BusAddrByteW - PageW)) + RemapIntgOffsetInPage;
+
   localparam int unsigned BusCntWidth = WordSelW + 1;
 
   logic     start;
   rram_op_e op;
   mubi4_t   zer_en_d, zer_en_q;
+
+  // Whether the current OTP transaction targets the relocated info page rather than the
+  // data-array OTP tail, and its byte address relative to the relocated partition's own start.
+  logic                    is_remap, is_remap_d, is_remap_q;
+  logic [BusAddrByteW-1:0] remap_rel_byte_addr;
+
+  // Life cycle partition copy selection.
+  // Copy 0 is otp_ctrl's normal LIFE_CYCLE partition.
+  // Copy 1 lives directly after it, in the unused tail of the OTP data region.
+  // While cp_done_i is True, LIFE_CYCLE accesses go to copy 1, and reads get the minimum state
+  // LcStTestLocked6 and count LcCnt16 ORed in.
+  // While cp_done_i is invalid, reads return the constants LcStScrap and LcCnt24, and writes fail.
+  // The images follow otp_ctrl's layout of the partition: LC_TRANSITION_CNT first, then LC_STATE.
+  localparam int unsigned LcBits  = lc_ctrl_state_pkg::LcCountWidth +
+                                    lc_ctrl_state_pkg::LcStateWidth;
+  localparam int unsigned LcWords = LcBits / OtpWidth;
+  localparam logic [LcBits-1:0] LcMinImage   = {lc_ctrl_state_pkg::LcStTestLocked6,
+                                                lc_ctrl_state_pkg::LcCnt16};
+  localparam logic [LcBits-1:0] LcScrapImage = {lc_ctrl_state_pkg::LcStScrap,
+                                                lc_ctrl_state_pkg::LcCnt24};
+
+  logic                     is_lc, is_lc_q;
+  logic                     lc_copy1, lc_invalid;
+  logic [BusAddrByteW-1:0]  lc_rel_byte_addr;
+  logic [vbits(LcWords)-1:0] lc_rel_word_q;
+  logic [BusAddrByteW-1:0]  otp_data_byte_addr;
 
   logic [BusAddrByteW-1:0]                  otp_byte_addr;
   logic [2**OtpSizeWidth-1:0][OtpWidth-1:0] otp_wdata_q;
@@ -262,6 +315,7 @@ module rram_ctrl_otp
   err_e                                     otp_rsp_err;
   logic [2**OtpSizeWidth-1:0][OtpWidth-1:0] otp_rsp_rdata;
   logic [2**OtpSizeWidth-1:0][OtpWidth-1:0] rdata;
+  logic [2**OtpSizeWidth-1:0][OtpWidth-1:0] rdata_rsp;
 
   prim_fifo_async #(
     .Width(RspDataWidth),
@@ -272,7 +326,7 @@ module rram_ctrl_otp
     .rst_wr_ni(rst_ni),
     .wvalid_i (valid_q),
     .wready_o (fifo_wready),
-    .wdata_i  ({err_q, rdata}),
+    .wdata_i  ({err_q, rdata_rsp}),
     .wdepth_o (),
     .clk_rd_i (clk_otp_i),
     .rst_rd_ni(rst_otp_ni),
@@ -315,13 +369,38 @@ module rram_ctrl_otp
   assign addr_o             = {addr[BusAddrByteW-1 : DataByteWidth], {DataByteWidth{1'b0}}};
   assign ctrl_o.start.q     = start;
   assign ctrl_o.op.q        = op;
-  assign ctrl_o.partition.q = RramPartData;
+  assign ctrl_o.partition.q = is_remap_q ? RramPartInfo : RramPartData;
   assign ctrl_o.num.q       = WidthMultiple - 1;
   assign rready_o           = 1'b1;
 
   assign otp_byte_addr = BusAddrByteW'(otp_req_addr) << OtpAddrShift;
 
   assign disabled = mubi4_test_true_loose(disable_i);
+
+  // RemapSize == 0 keeps is_remap unconditionally false (otp_byte_addr can never be < 0).
+  assign is_remap = (otp_byte_addr >= RemapStart) &&
+                     (otp_byte_addr < RemapStart + RemapSize);
+  assign remap_rel_byte_addr = otp_byte_addr - BusAddrByteW'(RemapStart);
+
+  // LcSize == 0 keeps is_lc unconditionally false.
+  assign is_lc = (LcSize != 0) &&
+                 (otp_byte_addr >= BusAddrByteW'(LcStart)) &&
+                 (otp_byte_addr < BusAddrByteW'(LcStart + LcSize));
+  assign lc_rel_byte_addr = otp_byte_addr - BusAddrByteW'(LcStart);
+  assign lc_copy1   = is_lc && mubi8_test_true_strict(cp_done_i);
+  assign lc_invalid = is_lc && !mubi8_test_true_strict(cp_done_i) &&
+                      !mubi8_test_false_strict(cp_done_i);
+  // Copy 1 directly follows copy 0.
+  assign otp_data_byte_addr = lc_copy1 ? otp_byte_addr + BusAddrByteW'(LcSize) : otp_byte_addr;
+
+  // RRAM byte address of the request, in the relocated info page or in the OTP data region.
+  // The OTP word offset within the RRAM word must come from this address, not from the OTP
+  // address.
+  // Neither the relocated partition nor the second life cycle copy needs to start at the same
+  // offset within a RRAM word as in the OTP address space.
+  logic [BusAddrByteW-1:0] req_byte_addr;
+  assign req_byte_addr = is_remap ? RemapInfoStartAddr + remap_rel_byte_addr :
+                                    OtpStartAddr + otp_data_byte_addr;
 
   // OTP-FSM
   always_comb begin : p_fsm
@@ -337,6 +416,7 @@ module rram_ctrl_otp
     fsm_err       = 1'b0;
     valid_d       = 1'b0;
     addr_d        = addr_q;
+    is_remap_d    = is_remap_q;
     start         = 1'b0;
     req_o         = 1'b0;
     op            = RramOpRead;
@@ -374,10 +454,19 @@ module rram_ctrl_otp
         err_d         = NoError;
         zer_en_d      = MuBi4False;
         if (otp_req_valid && otp_req_ready) begin
-          req_o       = 1'b1;
-          addr_d      = OtpStartAddr + otp_byte_addr;
-          intg_addr_d = OtpIntgStartAddr + (otp_byte_addr >> vbits(OtpIntgDataWidth/8));
-          intg_ind_d  = otp_byte_addr[vbits(OtpIntgDataWidth/8) +: OtpIntgIndWidth];
+          req_o        = 1'b1;
+          is_remap_d   = is_remap;
+          if (is_remap) begin
+            addr_d      = req_byte_addr;
+            intg_addr_d = RemapIntgInfoStartAddr +
+                          (remap_rel_byte_addr >> vbits(OtpIntgDataWidth/8));
+            intg_ind_d  = remap_rel_byte_addr[vbits(OtpIntgDataWidth/8) +: OtpIntgIndWidth];
+          end else begin
+            addr_d      = req_byte_addr;
+            intg_addr_d = OtpIntgStartAddr +
+                          (otp_data_byte_addr >> vbits(OtpIntgDataWidth/8));
+            intg_ind_d  = otp_data_byte_addr[vbits(OtpIntgDataWidth/8) +: OtpIntgIndWidth];
+          end
 
           err_d   = NoError;
           clr_buf = 1'b1;
@@ -408,6 +497,14 @@ module rram_ctrl_otp
               fsm_err = 1'b1;
             end
           endcase
+          // An invalid cp_done_i makes the life cycle partition read-only.
+          // Answer writes with an error right away, without accessing the RRAM.
+          if (lc_invalid && otp_req_cmd inside {Write, WriteRaw, Zeroize}) begin
+            req_o   = 1'b0;
+            state_d = StIdle;
+            valid_d = 1'b1;
+            err_d   = MacroError;
+          end
         end
       end
 
@@ -689,6 +786,27 @@ module rram_ctrl_otp
     end
   end
 
+  // Read response, with the life cycle minimum or constant applied (see above).
+  // The read-set-write path keeps using the raw rdata, so the RRAM only ever holds what otp_ctrl
+  // wrote.
+  always_comb begin
+    int unsigned lc_word;
+    lc_word   = 0;
+    rdata_rsp = rdata;
+    if (is_lc_q) begin
+      for (int unsigned k = 0; k <= otp_size_q; k++) begin
+        lc_word = 32'(lc_rel_word_q) + k;
+        if (lc_word < LcWords) begin
+          if (mubi8_test_true_strict(cp_done_i)) begin
+            rdata_rsp[k] = rdata[k] | LcMinImage[lc_word * OtpWidth +: OtpWidth];
+          end else if (!mubi8_test_false_strict(cp_done_i)) begin
+            rdata_rsp[k] = LcScrapImage[lc_word * OtpWidth +: OtpWidth];
+          end
+        end
+      end
+    end
+  end
+
   //////////////////////
   // Bus word counter //
   //////////////////////
@@ -721,6 +839,9 @@ module rram_ctrl_otp
       otp_off_q      <= '0;
       otp_size_q     <= '0;
       addr_q         <= '0;
+      is_remap_q     <= 1'b0;
+      is_lc_q        <= 1'b0;
+      lc_rel_word_q  <= '0;
       otp_wdata_q    <= '0;
       zer_en_q       <= MuBi4False;
       intg_q         <= '0;
@@ -733,6 +854,7 @@ module rram_ctrl_otp
     end else begin
       bus_wcnt_err_q <= bus_wcnt_err_q | bus_wcnt_err_d;
       addr_q         <= addr_d;
+      is_remap_q     <= is_remap_d;
       zer_en_q       <= zer_en_d;
       intg_q         <= intg_d;
       intg_addr_q    <= intg_addr_d;
@@ -742,7 +864,9 @@ module rram_ctrl_otp
       valid_q        <= valid_d;
       rsp_pending_q  <= rsp_pending_d;
       if (otp_req_ready && otp_req_valid) begin
-        otp_off_q   <= otp_req_addr[RramOtpSizeWidth-1:0];
+        otp_off_q   <= req_byte_addr[OtpAddrShift +: RramOtpSizeWidth];
+        is_lc_q       <= is_lc;
+        lc_rel_word_q <= lc_rel_byte_addr[vbits(OtpWidth/8) +: vbits(LcWords)];
         otp_size_q  <= otp_req_size;
         otp_wdata_q <= otp_req_wdata;
       end
@@ -777,5 +901,18 @@ module rram_ctrl_otp
                OtpDepth * OtpWidth <= (OtpPages - 1) * WordsPerPage * DataWidth)
   `ASSERT_INIT(OtpIntgFitsRramIntgPage_A,
                OtpDepth * OtpWidth / OtpIntgDataWidth * OtpIntgWidth <= WordsPerPage * DataWidth)
+
+  // Copy 1 of the life cycle partition must lie in the unused tail of the OTP data region.
+  // Its integrity bytes must also fit into the integrity page.
+  `ASSERT_INIT(LcSizeMatches_A, LcSize == 0 || LcSize * 8 == LcBits)
+  `ASSERT_INIT(LcCopyInTail_A, LcSize == 0 || LcStart + LcSize == OtpDepth * OtpWidth / 8)
+  `ASSERT_INIT(LcCopyFitsRramRegion_A,
+               (LcStart + 2 * LcSize) * 8 <= (OtpPages - 1) * WordsPerPage * DataWidth)
+  `ASSERT_INIT(LcCopyIntgFitsRramIntgPage_A,
+               (LcStart + 2 * LcSize) * 8 / OtpIntgDataWidth * OtpIntgWidth <=
+               WordsPerPage * DataWidth)
+  // An invalid cp_done_i never lets a write reach the RRAM.
+  `ASSERT(LcInvalidNoWrite_A, state_q == StIdle && otp_req_valid && otp_req_ready && lc_invalid &&
+          otp_req_cmd inside {Write, WriteRaw, Zeroize} |=> state_q == StIdle)
 
 endmodule : rram_ctrl_otp

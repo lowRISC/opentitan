@@ -56,6 +56,25 @@ class chip_base_vseq #(
     jtag_dmi_ral = cfg.jtag_dmi_ral;
   endfunction // set_handles
 
+  // Backdoor-writes DIS_VOL_RAW_UNLOCK into the RRAM marker page, after the info
+  // partition was cleared.
+  // Without this marker, rram_macro hides the array behind its zero view, and all OTP content reads
+  // as zero.
+  // Tests of the forming flow and the volatile RAW unlock skip it with +rram_dis_vol_raw_unlock=0.
+  virtual function void preload_rram_markers();
+    bit dis_vol_raw_unlock = 1'b1;
+    void'($value$plusargs("rram_dis_vol_raw_unlock=%0d", dis_vol_raw_unlock));
+    if (!dis_vol_raw_unlock) return;
+    for (int unsigned k = 0; k < rram_ctrl_pkg::NumMarkerCopies; k++) begin
+      int unsigned row = rram_ctrl_pkg::MarkerInfoPage * rram_ctrl_pkg::WordsPerPage +
+                         rram_ctrl_pkg::DisVolRawUnlockWords[k];
+      // rram_ctrl writes the marker with the address infection, see marker_word_value().
+      cfg.mem_bkdr_util_h[RramInfo].write(row * (rram_ctrl_pkg::DataWidth / 8),
+          rram_ctrl_pkg::marker_word_value(rram_ctrl_pkg::MarkerMagic,
+                                           rram_ctrl_pkg::DisVolRawUnlockWords[k]));
+    end
+  endfunction
+
   task post_start();
     do_clear_all_interrupts = 0;
 
@@ -174,6 +193,7 @@ class chip_base_vseq #(
 
     // Initialize all memories via backdoor.
     cfg.mem_bkdr_util_h[RramInfo].clear_mem();
+    preload_rram_markers();
     // Backdoor load the OTP image.
     cfg.mem_bkdr_util_h[Otp].load_mem_from_file(cfg.otp_images[cfg.use_otp_image]);
     // Plusargs to selectively clear the provisioning state of some of the OTP partitions.

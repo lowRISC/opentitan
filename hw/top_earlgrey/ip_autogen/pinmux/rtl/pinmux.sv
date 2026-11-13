@@ -36,9 +36,12 @@ module pinmux
   input                            sleep_en_i,
   input                            strap_en_i,
   // ---------- VOLATILE_TEST_UNLOCKED CODE SECTION START ----------
-  // NOTE THAT THIS IS A FEATURE FOR TEST CHIPS ONLY TO MITIGATE
-  // THE RISK OF A BROKEN OTP MACRO. THIS WILL BE DISABLED VIA
-  // SecVolatileRawUnlockEn AT COMPILETIME FOR PRODUCTION DEVICES.
+  // NOTE THAT THIS FEATURE IS ENABLED VIA SecVolatileRawUnlockEn AT
+  // COMPILETIME.
+  // TEST CHIPS USE IT TO MITIGATE THE RISK OF A BROKEN OTP MACRO.
+  // TOPS THAT EMULATE OTP IN RRAM USE IT TO ENTER THE FORMING FLOW.
+  // IT IS GATED BY A MUBI8 allow_vol_unlock_i OF lc_ctrl AT RUNTIME.
+  // ALL OTHER PRODUCTION DEVICES MUST DISABLE IT.
   // ---------------------------------------------------------------
   // Strap sampling override that is only used when SecVolatileRawUnlockEn = 1, Otherwise this input
   // is unused. This needs to be synchronized since it is coming from a different clock domain.
@@ -58,6 +61,8 @@ module pinmux
   input  lc_ctrl_pkg::lc_tx_t      lc_check_byp_en_i,
   // SEC_CM: LC_ESCALATE_EN.INTERSIG.MUBI
   input  lc_ctrl_pkg::lc_tx_t      lc_escalate_en_i,
+  // SEC_CM: LC_NVM_DEBUG_EN.INTERSIG.MUBI
+  input  lc_ctrl_pkg::lc_tx_t      lc_nvm_debug_en_i,
   // SEC_CM: PINMUX_HW_DEBUG_EN.INTERSIG.MUBI
   output lc_ctrl_pkg::lc_tx_t      pinmux_hw_debug_en_o,
   // Sampled values for DFT straps
@@ -71,6 +76,8 @@ module pinmux
   input  jtag_pkg::jtag_rsp_t      rv_jtag_i,
   output jtag_pkg::jtag_req_t      dft_jtag_o,
   input  jtag_pkg::jtag_rsp_t      dft_jtag_i,
+  output jtag_pkg::jtag_req_t      rram_jtag_o,
+  input  jtag_pkg::jtag_rsp_t      rram_jtag_i,
   // Direct USB connection
   input                            usbdev_dppullup_en_i,
   input                            usbdev_dnpullup_en_i,
@@ -373,6 +380,8 @@ module pinmux
     .lc_hw_debug_en_i,
     .lc_escalate_en_i,
     .lc_check_byp_en_i,
+    .lc_nvm_debug_en_i,
+    .rram_jtag_sel_i ( prim_mubi_pkg::mubi4_t'(reg2hw.rram_jtag_sel.q) ),
     // This is the latched version of lc_hw_debug_en_i. We use it exclusively to gate the JTAG
     // signals and TAP side of the RV_DM so that RV_DM can remain live during an NDM reset cycle.
     .pinmux_hw_debug_en_o,
@@ -383,7 +392,9 @@ module pinmux
     .rv_jtag_o,
     .rv_jtag_i,
     .dft_jtag_o,
-    .dft_jtag_i
+    .dft_jtag_i,
+    .rram_jtag_o,
+    .rram_jtag_i
   );
 
   ///////////////////////////////////////

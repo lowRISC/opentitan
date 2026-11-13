@@ -1007,9 +1007,10 @@
       en_run_modes: ["sw_test_mode_test_rom"]
       run_opts: [
         "+use_otp_image=OtpTypeLcStRaw",
-        // We set this to zero if the volatile RAW unlock mechanism is expected
-        // to be disabled (this should be the case in production silicon).
-        "+exp_volatile_raw_unlock_en=0"]
+        // Earl Grey enables the volatile RAW unlock for the RRAM forming flow.
+        // It runs without the DIS_VOL_RAW_UNLOCK marker, like a part before forming.
+        "+rram_dis_vol_raw_unlock=0",
+        "+exp_volatile_raw_unlock_en=1"]
       run_timeout_mins: 120
     }
     {
@@ -1020,9 +1021,10 @@
       run_opts: [
         "+use_otp_image=OtpTypeLcStRaw",
         "+chip_clock_source=ChipClockSourceExternal48Mhz",
-        // We set this to zero if the volatile RAW unlock mechanism is expected
-        // to be disabled (this should be the case in production silicon).
-        "+exp_volatile_raw_unlock_en=0"]
+        // Earl Grey enables the volatile RAW unlock for the RRAM forming flow.
+        // It runs without the DIS_VOL_RAW_UNLOCK marker, like a part before forming.
+        "+rram_dis_vol_raw_unlock=0",
+        "+exp_volatile_raw_unlock_en=1"]
       run_timeout_mins: 120
     }
     {
