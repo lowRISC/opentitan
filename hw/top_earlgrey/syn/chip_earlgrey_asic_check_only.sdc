@@ -41,6 +41,34 @@ foreach THIS_CLOCK $CDC_CONSTRAINT_CLOCKS {
     set_max_delay -from $OTHER_CLOCKS -to $THIS_CLOCK $CONSTRAINT
 }
 
+#####################
+# I3C               #
+#####################
+
+# The I3C bus-to-core crossings, and those of the reset detectors, are bounded
+# here.
+#
+# Note: To create the I3C clocks and clock periods, the respective routines in
+# the I3C-specific constraints (hw/ip/i3c/syn/i3c_constraints.tcl) must be called
+# before this sdc file is sourced, with ::i3c_cfg(bus_clock_groups) set to 0 to
+# avoid the set_clock_groups -async collision mentioned above.
+# With this done, i3c_set_cdc_bounds is known. Note that i3c_set_cdc_bounds
+# enforces that the clock groups have not been set.
+if {[llength [info procs i3c_set_cdc_bounds]] == 0} {
+    puts "ERROR: i3c_constraints.tcl has not been sourced"
+    error "i3c_constraints.tcl has not been sourced"
+}
+
+i3c_set_cdc_bounds top_earlgrey/earlgrey_pd_main/u_i3c0_part_primary \
+    I3C0 IO_CLK ${IO_TCK_PERIOD}
+i3c_set_cdc_bounds top_earlgrey/earlgrey_pd_main/u_i3c1_part_primary \
+    I3C1 IO_CLK ${IO_TCK_PERIOD}
+i3c_set_rstdet_cdc_bounds \
+    top_earlgrey/earlgrey_pd_aon/u_i3c0_part_secondary I3C0 ${AON_TCK_PERIOD}
+i3c_set_rstdet_cdc_bounds \
+    top_earlgrey/earlgrey_pd_main/u_i3c1_part_secondary I3C1 ${AON_TCK_PERIOD}
+i3c_summary
+
 # Although the alert channels should already be checked implicitly with the
 # constraints above, we also add an explicit, stricter check here.
 set MAX_DELAY [expr $MAIN_TCK_PERIOD * 0.9]

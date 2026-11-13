@@ -1616,6 +1616,12 @@ set_case_analysis 1 u_padring/gen_dio_pads_18__u_dio_pad/gen_techlib_u_impl_tech
 # Open drain pads have just one drive strength bit.
 set_case_analysis 1 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_od_compat_u_pad_macro_PI2C_33_50_T_DR/DS
 set_case_analysis 1 u_padring/gen_mio_pads_7__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_od_compat_u_pad_macro_PI2C_33_50_T_DR/IS
+#IOB9, IOB10, IOB11, IOB12 - the I3C pads, also open drain.
+foreach I3C_PAD {18 19 20 21} {
+  set I3C_PAD_MACRO u_padring/gen_mio_pads_${I3C_PAD}__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_od_compat_u_pad_macro_PI2C_33_50_T_DR
+  set_case_analysis 1 ${I3C_PAD_MACRO}/DS
+  set_case_analysis 1 ${I3C_PAD_MACRO}/IS
+}
 #IOB0
 set_case_analysis 0 u_padring/gen_mio_pads_9__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/SR
 set_case_analysis 1 u_padring/gen_mio_pads_9__u_mio_pad/gen_techlib_u_impl_techlib/gen_bidir_u_pad_macro_PBIDIR_33_33_FS_DR/DS0
@@ -1655,7 +1661,85 @@ set SPI_DEV_SLOW_PASS_CLKS "SPI_HOST_SLOW_PASS_CLK SPI_DEV_SLOW_PASS_CLK SPI_DEV
 set SPI_DEV_FAST_PASS_CLKS "SPI_HOST_FAST_PASS_CLK SPI_DEV_FAST_PASS_CLK SPI_DEV_FAST_PASS_IN_CLK SPI_DEV_FAST_PASS_OUT_CLK SPI_DEV_FAST_PASS_CSB_CLK"
 set SPI_TPM_CLKS "SPI_TPM_CLK SPI_TPM_IN_CLK SPI_TPM_OUT_CLK"
 
-# this may need some refinement (and max delay / skew needs to be constrained)
+#####################
+# I3C               #
+#####################
+# Both I3C instances are constrained by the shared procedures in
+# hw/ip/i3c/syn/i3c_constraints.tcl. See there for the clock structure and the
+# I3C v1.2 numbers; only the integration choices are made here.
+#
+# The Target half of each instance is clocked by the bus itself, and the
+# Controller half generates SCL out of clk_i onto the same pad. Each pad
+# therefore carries two mutually exclusive SCL sources. The Target is timed
+# against the external one; the paths the generated SCL clocks in the Target
+# are cut, see the header of i3c_constraints.tcl.
+#
+# Pads, used in both directions, may need to be changed:
+#   I3C0: SCL = IOB10 (MIO pad 19), SDA = IOB9  (MIO pad 18)
+#   I3C1: SCL = IOB11 (MIO pad 20), SDA = IOB12 (MIO pad 21)
+#
+# Look for the procedures next to this file first, so a flow that copies the
+# SDC into a build directory stays reproducible, then in the IP. `info script`
+# is not usable here because `read_sdc` (called on this file) does not set it.
+set I3C_CONSTRAINTS ""
+foreach I3C_CANDIDATE [list \
+    [file join [pwd] sdc i3c_constraints.tcl] \
+    [file join [pwd] .. .. ip i3c syn i3c_constraints.tcl]] {
+  if {[file exists ${I3C_CANDIDATE}]} {
+    set I3C_CONSTRAINTS [file normalize ${I3C_CANDIDATE}]
+    break
+  }
+}
+if {${I3C_CONSTRAINTS} eq ""} {
+  # read_sdc swallows a bare `error`, so report it where it will be seen.
+  puts "ERROR: cannot find the I3C constraint procedures (i3c_constraints.tcl)"
+  error "cannot find the I3C constraint procedures"
+}
+puts "INFO: sourcing the I3C constraint procedures from ${I3C_CONSTRAINTS}"
+
+# Set these to the real numbers for the package and board this is taped out on.
+# The defaults assume the pad cells are timed by the library.
+set ::i3c_cfg(board_dly_max) 2.0
+set ::i3c_cfg(board_dly_min) 0.1
+
+source ${I3C_CONSTRAINTS}
+
+# Entries are {peripheral_input peripheral_output mio_pad}. The reset detectors
+# observe the same pads through their own peripheral inputs (50-53) and have no
+# peripheral output of their own.
+i3c_pinmux_case_analysis top_earlgrey/earlgrey_pd_aon/u_pinmux {
+    {38 38 19}
+    {39 39 18}
+    {40 40 20}
+    {41 41 21}
+    {50  - 19}
+    {51  - 18}
+    {52  - 20}
+    {53  - 21}
+}
+
+# Call the constrain entry points for both instances.
+# The IP runs on clk_io_peri, a gated copy of IO_CLK, so IO_CLK is both the
+# source of the generated SCL and the clock that captures the Controller's
+# received data.
+i3c_constrain top_earlgrey/earlgrey_pd_main/u_i3c0_part_primary IOB10 IOB9 \
+    I3C0 ${IO_CLK_PIN} IO_CLK ${IO_TCK_PERIOD}
+i3c_constrain top_earlgrey/earlgrey_pd_main/u_i3c1_part_primary IOB11 IOB12 \
+    I3C1 ${IO_CLK_PIN} IO_CLK ${IO_TCK_PERIOD}
+
+# The reset detectors are the secondary partitions. i3c0 can wake the chip from
+# deep sleep, so its detector sits in the AON power domain while i3c1's stays
+# in the Main domain. Both run on the AON peripheral clock; their crossings are
+# bounded in chip_earlgrey_asic_check_only.sdc.
+i3c_constrain_rstdet top_earlgrey/earlgrey_pd_aon/u_i3c0_part_secondary \
+    I3C0 IO_CLK
+i3c_constrain_rstdet top_earlgrey/earlgrey_pd_main/u_i3c1_part_secondary \
+    I3C1 IO_CLK
+
+i3c_summary
+
+
+# This may need some refinement (and max delay / skew needs to be constrained)
 # note that internal CDCs that are not timed as a result of this set_clock_groups
 # directive are being checked post-route to make sure they are within spec.
 # see chip_earlgrey_asic_check_only.sdc.
@@ -1663,7 +1747,8 @@ set_clock_groups -name group1 -async                                  \
     -group [get_clocks MAIN_CLK                                     ] \
     -group [get_clocks USB_CLK                                      ] \
     -group [get_clocks "${SPI_DEV_CLKS} ${SPI_DEV_HC_CLKS} ${SPI_DEV_SLOW_PASS_CLKS} ${SPI_DEV_FAST_PASS_CLKS} ${SPI_TPM_CLKS}"] \
-    -group [get_clocks {IO_CLK SPI_HOST_CLK SPI_HOST1_CLK SPI_HOST1_INTERNAL_CLK}] \
+    -group [get_clocks {IO_CLK SPI_HOST_CLK SPI_HOST1_CLK SPI_HOST1_INTERNAL_CLK I3C0_SCL_INT I3C1_SCL_INT}] \
+    -group [get_clocks IO_DIV2_CLK                                  ] \
     -group [get_clocks IO_DIV4_CLK                                  ] \
     -group [get_clocks "JTAG_TCK RV_JTAG_TCK LC_JTAG_TCK"           ] \
     -group [get_clocks AON_CLK                                      ]
