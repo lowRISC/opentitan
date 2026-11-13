@@ -265,7 +265,7 @@ static status_t get_block(const otcrypto_const_byte_buf_t *input,
   HARDENED_CHECK_LE(index, num_full_blocks + 1);
 
   // Randomize the destination buffer.
-  HARDENED_TRY(hardened_memshred(block->data, ARRAYSIZE(block->data)));
+  hardened_memshred(block->data, ARRAYSIZE(block->data));
 
   if (index < num_full_blocks) {
     HARDENED_CHECK_LT(index, num_full_blocks);
@@ -502,7 +502,7 @@ static otcrypto_status_t otcrypto_aes_impl(
   for (i = block_offset; launder32(i) < input_nblocks; ++i) {
     HARDENED_TRY(get_block(cipher_input, aes_padding, i, &block_in));
     block_words_add(&local_checksum, &block_in);
-    HARDENED_TRY(hardened_memshred(block_out.data, ARRAYSIZE(block_out.data)));
+    hardened_memshred(block_out.data, ARRAYSIZE(block_out.data));
     HARDENED_TRY(aes_update(&block_out, &block_in));
     block_words_add(&local_checksum, &block_out);
     if (cipher_output != NULL) {

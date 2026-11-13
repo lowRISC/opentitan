@@ -344,9 +344,8 @@ status_t sha512_update(sha512_state_t *state, const uint8_t *msg,
  * @return OK or error.
  */
 static status_t state_shred(sha512_state_t *state) {
-  HARDENED_TRY(hardened_memshred(state->H, kSha512StateWords));
-  HARDENED_TRY(
-      hardened_memshred(state->partial_block, kSha512MessageBlockWords));
+  hardened_memshred(state->H, kSha512StateWords);
+  hardened_memshred(state->partial_block, kSha512MessageBlockWords);
   state->total_len.lower = 0;
   state->total_len.upper = 0;
 

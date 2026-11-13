@@ -165,9 +165,8 @@ otcrypto_status_t otcrypto_kmac_kdf(
   }
 
   // Randomize the keyblob memory.
-  HARDENED_TRY(
-      hardened_memshred(output_key_material->keyblob,
-                        keyblob_num_words(output_key_material->config)));
+  hardened_memshred(output_key_material->keyblob,
+                    keyblob_num_words(output_key_material->config));
 
   otcrypto_key_mode_t key_mode_used = launder32(0);
   switch (launder32(key_derivation_key->config.key_mode)) {

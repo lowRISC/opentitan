@@ -226,7 +226,7 @@ status_t rsa_signature_generate_start(
   // Allocate maximum possible size to avoid VLAs. We allocate enough for
   // 4096, but will only utilize `num_words`.
   uint32_t encoded_message[kRsa4096NumWords];
-  HARDENED_TRY(hardened_memshred(encoded_message, ARRAYSIZE(encoded_message)));
+  hardened_memshred(encoded_message, ARRAYSIZE(encoded_message));
 
   // Encode the message.
   HARDENED_TRY(

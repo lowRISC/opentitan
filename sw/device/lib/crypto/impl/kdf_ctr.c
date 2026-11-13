@@ -200,7 +200,7 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
     }
 
     uint32_t mask_data[kHmacMaxDigestWords];
-    HARDENED_TRY(hardened_memshred(mask_data, words_to_copy));
+    hardened_memshred(mask_data, words_to_copy);
 
     uint32_t share0_data[kHmacMaxDigestWords];
     HARDENED_TRY(hardened_xor(tag_data, mask_data, words_to_copy, share0_data));

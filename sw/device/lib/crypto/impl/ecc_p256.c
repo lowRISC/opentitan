@@ -161,8 +161,8 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t internal_p256_keygen_finalize(
     HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
 
     // Randomize the keyblob before writing secret data.
-    HARDENED_TRY(hardened_memshred(private_key->keyblob,
-                                   keyblob_num_words(private_key->config)));
+    hardened_memshred(private_key->keyblob,
+                      keyblob_num_words(private_key->config));
 
     p256_masked_scalar_t private_scalar;
     HARDENED_TRY(p256_keygen_finalize(&private_scalar, pk));
@@ -388,7 +388,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_hash_sign_verify(
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P256_HASH_SIGN_VERIFY);
   OTCRYPTO_HEALTH_CHECK(kTestP256SignBit);
   uint32_t digest_data[16];
-  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  hardened_memshred(digest_data, ARRAYSIZE(digest_data));
   otcrypto_hash_digest_t digest;
   HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
   return otcrypto_eval_exit(otcrypto_ecdsa_p256_sign_verify(
@@ -409,7 +409,7 @@ otcrypto_status_t otcrypto_ecdsa_p256_hash_verify(
 #endif
   *verification_result = kHardenedBoolFalse;
   uint32_t digest_data[16];
-  HARDENED_TRY(hardened_memshred(digest_data, ARRAYSIZE(digest_data)));
+  hardened_memshred(digest_data, ARRAYSIZE(digest_data));
   otcrypto_hash_digest_t digest;
   HARDENED_TRY(hash_message(hash_mode, message, digest_data, &digest));
   return otcrypto_eval_exit(otcrypto_ecdsa_p256_verify(
@@ -1066,17 +1066,17 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
       keyblob_num_words(shared_secret->config) * sizeof(uint32_t));
 
   // Randomize the output before computing it.
-  HARDENED_TRY(hardened_memshred(shared_secret->keyblob,
-                                 keyblob_num_words(shared_secret->config)));
+  hardened_memshred(shared_secret->keyblob,
+                    keyblob_num_words(shared_secret->config));
 
   // Note: This operation wipes DMEM after retrieving the keys, so if an error
   // occurs after this point then the keys would be unrecoverable. This should
   // be the last potentially error-causing line before returning to the caller.
   p256_ecdh_shared_key_t ss;
-  HARDENED_TRY(hardened_memshred(ss.x_share0, ARRAYSIZE(ss.x_share0)));
-  HARDENED_TRY(hardened_memshred(ss.x_share1, ARRAYSIZE(ss.x_share1)));
-  HARDENED_TRY(hardened_memshred(ss.y_share0, ARRAYSIZE(ss.y_share0)));
-  HARDENED_TRY(hardened_memshred(ss.y_share1, ARRAYSIZE(ss.y_share1)));
+  hardened_memshred(ss.x_share0, ARRAYSIZE(ss.x_share0));
+  hardened_memshred(ss.x_share1, ARRAYSIZE(ss.x_share1));
+  hardened_memshred(ss.y_share0, ARRAYSIZE(ss.y_share0));
+  hardened_memshred(ss.y_share1, ARRAYSIZE(ss.y_share1));
   HARDENED_TRY_WIPE_DMEM(p256_ecdh_finalize(&ss));
   should_wipe = kHardenedBoolFalse;
   HARDENED_CHECK_EQ(p256_ecdh_shared_key_checksum_check(&ss),
@@ -1099,10 +1099,10 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
   shared_secret->checksum = otcrypto_integrity_blinded_checksum(shared_secret);
 
   // Shred ss.
-  HARDENED_TRY(hardened_memshred(ss.x_share0, ARRAYSIZE(ss.x_share0)));
-  HARDENED_TRY(hardened_memshred(ss.x_share1, ARRAYSIZE(ss.x_share1)));
-  HARDENED_TRY(hardened_memshred(ss.y_share0, ARRAYSIZE(ss.y_share0)));
-  HARDENED_TRY(hardened_memshred(ss.y_share1, ARRAYSIZE(ss.y_share1)));
+  hardened_memshred(ss.x_share0, ARRAYSIZE(ss.x_share0));
+  hardened_memshred(ss.x_share1, ARRAYSIZE(ss.x_share1));
+  hardened_memshred(ss.y_share0, ARRAYSIZE(ss.y_share0));
+  hardened_memshred(ss.y_share1, ARRAYSIZE(ss.y_share1));
 
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
@@ -1226,8 +1226,7 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_import(
   HARDENED_TRY(p256_private_key_length_check(private_key));
 
   // Randomize the keyblob before writing secret data.
-  HARDENED_TRY(hardened_memshred(private_key->keyblob,
-                                 kP256MaskedScalarTotalShareWords));
+  hardened_memshred(private_key->keyblob, kP256MaskedScalarTotalShareWords);
 
   // Copy the caller-supplied shares into the keyblob as share0 || share1,
   // matching the p256_masked_scalar_t layout.
@@ -1294,8 +1293,8 @@ otcrypto_status_t otcrypto_ecc_p256_private_key_export(
   }
 
   // Randomize output buffers before writing secret data.
-  HARDENED_TRY(hardened_memshred(share0->data, kP256MaskedScalarShareWords));
-  HARDENED_TRY(hardened_memshred(share1->data, kP256MaskedScalarShareWords));
+  hardened_memshred(share0->data, kP256MaskedScalarShareWords);
+  hardened_memshred(share1->data, kP256MaskedScalarShareWords);
 
   // Copy the keyblob shares into the caller-supplied output buffers.
   HARDENED_TRY(hardened_memcpy(share0->data, private_key->keyblob,
@@ -1344,8 +1343,8 @@ otcrypto_status_t otcrypto_ecc_p256_arith_share_private_key(
   HARDENED_TRY(p256_private_key_length_check(arith_private_key));
 
   // Randomize the keyblob before writing secret data.
-  HARDENED_TRY(hardened_memshred(arith_private_key->keyblob,
-                                 kP256MaskedScalarTotalShareWords));
+  hardened_memshred(arith_private_key->keyblob,
+                    kP256MaskedScalarTotalShareWords);
 
   p256_masked_scalar_t boolean_private_scalar;
   p256_masked_scalar_t arith_private_scalar;

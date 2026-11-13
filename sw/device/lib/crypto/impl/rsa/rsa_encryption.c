@@ -37,7 +37,7 @@ status_t rsa_encrypt_start(rsa_size_t size, uint32_t e, const uint32_t *n,
   uint32_t encoded_message[kRsa4096NumWords];
 
   // Encode the message.
-  HARDENED_TRY(hardened_memshred(encoded_message, ARRAYSIZE(encoded_message)));
+  hardened_memshred(encoded_message, ARRAYSIZE(encoded_message));
   switch (launder32(key_mode)) {
     case kOtcryptoKeyModeRsaEncryptOaep:
       HARDENED_CHECK_EQ(key_mode, kOtcryptoKeyModeRsaEncryptOaep);
@@ -122,9 +122,8 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
   }
   size_t num_aligned_full_words =
       (plaintext_max_bytelen - aligned_offset) / sizeof(uint32_t);
-  HARDENED_TRY(
-      hardened_memshred((uint32_t *)((uintptr_t)plaintext + aligned_offset),
-                        num_aligned_full_words));
+  hardened_memshred((uint32_t *)((uintptr_t)plaintext + aligned_offset),
+                    num_aligned_full_words);
 
   // Finalize the modexp operation to get the recovered encoded message.
   HARDENED_CHECK_LE(num_words, kRsa4096NumWords);
@@ -179,7 +178,8 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
       HARDENED_CHECK_EQ(
           consttime_memeq_byte(recovered_message, plaintext, *plaintext_len),
           kHardenedBoolTrue);
-      return hardened_memshred(recovered_message, num_words);
+      hardened_memshred(recovered_message, num_words);
+      return OTCRYPTO_OK;
     default:
       return OTCRYPTO_BAD_ARGS;
   }

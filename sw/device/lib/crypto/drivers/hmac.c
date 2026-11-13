@@ -405,10 +405,10 @@ static status_t context_save(hmac_ctx_t *ctx) {
  */
 static status_t hmac_context_wipe(hmac_ctx_t *ctx) {
   // Randomize sensitive data.
-  HARDENED_TRY(hardened_memshred(ctx->key.key_block, kHmacMaxBlockWords));
-  HARDENED_TRY(hardened_memshred(ctx->H, kHmacMaxDigestWords));
-  HARDENED_TRY(hardened_memshred((uint32_t *)(ctx->partial_block),
-                                 kHmacMaxBlockBytes / sizeof(uint32_t)));
+  hardened_memshred(ctx->key.key_block, kHmacMaxBlockWords);
+  hardened_memshred(ctx->H, kHmacMaxDigestWords);
+  hardened_memshred((uint32_t *)(ctx->partial_block),
+                    kHmacMaxBlockBytes / sizeof(uint32_t));
   // Zero the remaining ctx fields.
   ctx->cfg_reg = 0;
   ctx->key.key_len = 0;
@@ -640,9 +640,9 @@ static status_t hmac_redundant_core(const hmac_key_t *key,
   HARDENED_TRY(hmac_update(&ctx, &h_i_key_pad_msg_buf));
 
   HARDENED_TRY(hmac_final(&ctx, tag));
-  HARDENED_TRY(hardened_memshred(o_key_pad, kHmacMaxBlockWords));
-  HARDENED_TRY(hardened_memshred(i_key_pad, kHmacMaxBlockWords));
-  HARDENED_TRY(hardened_memshred(h_i_key_pad_msg, kHmacMaxDigestWords));
+  hardened_memshred(o_key_pad, kHmacMaxBlockWords);
+  hardened_memshred(i_key_pad, kHmacMaxBlockWords);
+  hardened_memshred(h_i_key_pad_msg, kHmacMaxDigestWords);
   return OTCRYPTO_OK;
 }
 
@@ -671,7 +671,7 @@ static status_t hmac_init_redundant_core(const hmac_key_t *key, hmac_ctx_t *ctx,
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, (const uint8_t *)i_key_pad,
                         block_words * sizeof(uint32_t));
   HARDENED_TRY(hmac_update(ctx, &i_key_pad_buf));
-  HARDENED_TRY(hardened_memshred(i_key_pad, kHmacMaxBlockWords));
+  hardened_memshred(i_key_pad, kHmacMaxBlockWords);
   return OTCRYPTO_OK;
 }
 
@@ -708,9 +708,9 @@ static status_t hmac_final_redundant_core(
       digest_words * sizeof(uint32_t));
   HARDENED_TRY(hmac_update(ctx, &inner_buf));
   HARDENED_TRY(hmac_final(ctx, tag));
-  HARDENED_TRY(hardened_memshred(saved_key.key_block, kHmacMaxBlockWords));
-  HARDENED_TRY(hardened_memshred(o_key_pad, kHmacMaxBlockWords));
-  HARDENED_TRY(hardened_memshred(inner_digest_data, kHmacMaxDigestWords));
+  hardened_memshred(saved_key.key_block, kHmacMaxBlockWords);
+  hardened_memshred(o_key_pad, kHmacMaxBlockWords);
+  hardened_memshred(inner_digest_data, kHmacMaxDigestWords);
   return OTCRYPTO_OK;
 }
 
