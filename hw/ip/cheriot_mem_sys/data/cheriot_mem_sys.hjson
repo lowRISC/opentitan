@@ -44,10 +44,11 @@
   alert_list: [
     { name: "fatal_fault",
       desc: '''
-            This fatal alert is triggered when an integrity fault is detected, when the meta
-            SRAM path returns a device error, when the revocation engine reports a fault, when a
-            capability store to the NVM is partial, or when a request breaks the core's capability
-            store sequence.
+            This fatal alert is triggered when an integrity fault is detected, when a core data
+            request carries an invalid encoding of the capability tag, when the meta SRAM path
+            returns a device error, when the revocation engine reports a fault, when a capability
+            store to the NVM is partial, or when a request breaks the core's capability store
+            sequence.
             '''
     }
   ],
@@ -237,25 +238,23 @@
       package: "tlul_pkg",
       desc:    "Data port from the core."
     },
-    // Capability tag sideband - write direction (from core to subsystem)
-    { struct:  "logic",
+    // Capability tag sideband - request direction (from core to subsystem)
+    { struct:  "mubi4",
       type:    "uni",
       name:    "cored_tag_h2d",
       act:     "rcv",
-      width:   "1",
-      package: "",
-      default: "1'b0",
-      desc:    "CHERIoT capability tag carried with the A-channel of cored_tl_h."
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "CHERIoT capability tag carried with the A-channel of cored_tl_d."
     },
-    // Capability tag sideband - read response direction (from subsystem to core)
-    { struct:  "logic",
+    // Capability tag sideband - response direction (from subsystem to core)
+    { struct:  "mubi4",
       type:    "uni",
       name:    "cored_tag_d2h",
       act:     "req",
-      width:   "1",
-      package: "",
-      default: "1'b0",
-      desc:    "Capability tag returned on the D-channel of cored_tl_h."
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "Capability tag returned on the D-channel of cored_tl_d."
     },
     // TRVK revocation bitmap TL-UL host port
     { struct:  "tl",
@@ -306,8 +305,9 @@
     },
     { name: "CORED_TAG.INTERSIG.MUBI",
       desc: '''
-        The capability tag is multi-bit encoded between the Ibex lockstep domain and the
-        lockstep domain of the CHERIoT memory subsystem. Not implemented yet.
+        The capability tags of the core data port are multi-bit encoded between Ibex and the
+        CHERIoT memory subsystem. Only MuBi4True reads as tagged, and a core data request with an
+        invalid encoding raises the fatal_fault alert.
       '''
     },
   ],

@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:all
+      - lowrisc:prim:mubi
       - lowrisc:ip:tlul
       - lowrisc:ibex:ibex_pkg
       - pulp-platform:common_cells:common_cells

@@ -104,8 +104,8 @@ module ${module_instance_name}
 
 % if cheriot_available:
   // CHERIoT capability tags
-  output logic cored_tag_h2d_o,
-  input  logic cored_tag_d2h_i,
+  output prim_mubi_pkg::mubi4_t cored_tag_h2d_o,
+  input  prim_mubi_pkg::mubi4_t cored_tag_d2h_i,
 
   // CHERIoT TRVK revocation bitmap (revbm) memory interface
   output tlul_pkg::tl_h2d_t     corerevbm_tl_o,
@@ -236,9 +236,13 @@ module ${module_instance_name}
   tl_h2d_t tl_revbm_ibex2fifo;
   tl_d2h_t tl_revbm_fifo2ibex;
 
-  // Pipeline interfaces for capability tags
-  logic main_core_data_tag_h2d;
-  logic main_core_data_tag_d2h;
+  // Capability tags: a single bit towards Ibex, MuBi4 towards the CHERIoT memory subsystem. The
+  // FIFO spare ports are plain vectors.
+  logic                                 main_core_data_tag_h2d;
+  logic                                 main_core_data_tag_d2h;
+  prim_mubi_pkg::mubi4_t                tag_d_ibex2fifo;
+  logic [prim_mubi_pkg::MuBi4Width-1:0] tag_d_fifo2out;
+  logic [prim_mubi_pkg::MuBi4Width-1:0] tag_d_fifo2ibex;
 % endif
 
   // TLUL LC Gate interfaces
@@ -314,6 +318,7 @@ module ${module_instance_name}
   logic ibus_intg_err, dbus_intg_err;
 % if cheriot_available:
   logic revbmbus_intg_err;
+  logic dbus_tag_intg_err;
 % endif
   logic alert_minor, alert_major_internal, alert_major_bus;
   logic double_fault;
@@ -327,7 +332,10 @@ module ${module_instance_name}
   logic recov_core_event;
   // SEC_CM: BUS.INTEGRITY
 % if cheriot_available:
-  assign fatal_intg_event = ibus_intg_err | dbus_intg_err | revbmbus_intg_err | alert_major_bus;
+  // An invalid encoding of a response's capability tag (CORED_TAG.INTERSIG.MUBI) counts as an
+  // integrity error, too.
+  assign fatal_intg_event = ibus_intg_err | dbus_intg_err | dbus_tag_intg_err | revbmbus_intg_err |
+                            alert_major_bus;
 % else:
   assign fatal_intg_event = ibus_intg_err | dbus_intg_err | alert_major_bus;
 % endif
@@ -894,12 +902,45 @@ module ${module_instance_name}
     .tl_o         (tl_d_ibex2fifo_main_core),
     .tl_i         (tl_d_fifo2ibex)
   );
+% if cheriot_available:
+
+  // SEC_CM: CORED_TAG.INTERSIG.MUBI
+  // The capability tags of the data interface are multi-bit encoded between Ibex and the CHERIoT
+  // memory subsystem, including inside the data FIFO. Only MuBi4True reads as tagged, and an
+  // invalid tag on a response is a fatal integrity error.
+  prim_mubi4_sender #(
+    .AsyncOn (1'b0),
+    .EnSecBuf(1'b1)
+  ) u_prim_mubi4_sender_cored_tag (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(prim_mubi_pkg::mubi4_bool_to_mubi(main_core_data_tag_h2d)),
+    .mubi_o(tag_d_ibex2fifo)
+  );
+
+  prim_mubi4_dec u_prim_mubi4_dec_cored_tag (
+    .mubi_i    (prim_mubi_pkg::mubi4_t'(tag_d_fifo2ibex)),
+    .mubi_dec_o(main_core_data_tag_d2h)
+  );
+
+  // The tag only carries a value with a response: between responses, the empty data FIFO drives
+  // it to zero if PipeLine is set. So only a response with an invalid encoding is a fault.
+  assign dbus_tag_intg_err =
+      tl_d_fifo2ibex.d_valid &&
+      prim_mubi_pkg::mubi4_test_invalid(prim_mubi_pkg::mubi4_t'(tag_d_fifo2ibex));
+% endif
 
   tlul_fifo_sync #(
     .ReqPass(FifoPass),
     .RspPass(FifoPass),
     .ReqDepth(FifoDepth),
+% if cheriot_available:
+    .RspDepth(FifoDepth),
+    .SpareReqW(prim_mubi_pkg::MuBi4Width),
+    .SpareRspW(prim_mubi_pkg::MuBi4Width)
+% else:
     .RspDepth(FifoDepth)
+% endif
   ) fifo_d (
     .clk_i,
     .rst_ni,
@@ -908,10 +949,12 @@ module ${module_instance_name}
     .tl_d_o      (tl_d_fifo2gate),
     .tl_d_i      (tl_d_gate2fifo),
 % if cheriot_available:
-    .spare_req_i (main_core_data_tag_h2d),
-    .spare_req_o (cored_tag_h2d_o),
-    .spare_rsp_i (cored_tag_d2h_i),
-    .spare_rsp_o (main_core_data_tag_d2h));
+    .spare_req_i (prim_mubi_pkg::MuBi4Width'(tag_d_ibex2fifo)),
+    .spare_req_o (tag_d_fifo2out),
+    .spare_rsp_i (prim_mubi_pkg::MuBi4Width'(cored_tag_d2h_i)),
+    .spare_rsp_o (tag_d_fifo2ibex));
+
+  assign cored_tag_h2d_o = prim_mubi_pkg::mubi4_t'(tag_d_fifo2out);
 % else:
     .spare_req_i (1'b0),
     .spare_req_o (),

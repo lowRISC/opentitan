@@ -11814,13 +11814,13 @@
         {
           name: cored_tag_h2d
           desc: CHERIoT capability tag carried with the A-channel of cored_tl_h.
-          struct: logic
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: req
           width: 1
-          default: 1'b0
+          default: prim_mubi_pkg::MuBi4False
           inst_name: rv_core_ibex
-          package: ""
           end_idx: -1
           top_type: broadcast
           top_signame: rv_core_ibex_cored_tag_h2d
@@ -11829,13 +11829,13 @@
         {
           name: cored_tag_d2h
           desc: Capability tag returned on the D-channel of cored_tl_h.
-          struct: logic
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: rcv
           width: 1
-          default: 1'b0
+          default: prim_mubi_pkg::MuBi4False
           inst_name: rv_core_ibex
-          package: ""
           domain: Main
           top_signame: cheriot_mem_sys_cored_tag_d2h
           index: -1
@@ -12282,28 +12282,28 @@
         }
         {
           name: cored_tag_h2d
-          desc: CHERIoT capability tag carried with the A-channel of cored_tl_h.
-          struct: logic
+          desc: CHERIoT capability tag carried with the A-channel of cored_tl_d.
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: rcv
           width: 1
-          default: 1'b0
+          default: prim_mubi_pkg::MuBi4False
           inst_name: cheriot_mem_sys
-          package: ""
           domain: Main
           top_signame: rv_core_ibex_cored_tag_h2d
           index: -1
         }
         {
           name: cored_tag_d2h
-          desc: Capability tag returned on the D-channel of cored_tl_h.
-          struct: logic
+          desc: Capability tag returned on the D-channel of cored_tl_d.
+          struct: mubi4
+          package: prim_mubi_pkg
           type: uni
           act: req
           width: 1
-          default: 1'b0
+          default: prim_mubi_pkg::MuBi4False
           inst_name: cheriot_mem_sys
-          package: ""
           end_idx: -1
           top_type: broadcast
           top_signame: cheriot_mem_sys_cored_tag_d2h
@@ -32315,13 +32315,13 @@
       {
         name: cored_tag_h2d
         desc: CHERIoT capability tag carried with the A-channel of cored_tl_h.
-        struct: logic
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: req
         width: 1
-        default: 1'b0
+        default: prim_mubi_pkg::MuBi4False
         inst_name: rv_core_ibex
-        package: ""
         end_idx: -1
         top_type: broadcast
         top_signame: rv_core_ibex_cored_tag_h2d
@@ -32330,13 +32330,13 @@
       {
         name: cored_tag_d2h
         desc: Capability tag returned on the D-channel of cored_tl_h.
-        struct: logic
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: rcv
         width: 1
-        default: 1'b0
+        default: prim_mubi_pkg::MuBi4False
         inst_name: rv_core_ibex
-        package: ""
         domain: Main
         top_signame: cheriot_mem_sys_cored_tag_d2h
         index: -1
@@ -32659,28 +32659,28 @@
       }
       {
         name: cored_tag_h2d
-        desc: CHERIoT capability tag carried with the A-channel of cored_tl_h.
-        struct: logic
+        desc: CHERIoT capability tag carried with the A-channel of cored_tl_d.
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: rcv
         width: 1
-        default: 1'b0
+        default: prim_mubi_pkg::MuBi4False
         inst_name: cheriot_mem_sys
-        package: ""
         domain: Main
         top_signame: rv_core_ibex_cored_tag_h2d
         index: -1
       }
       {
         name: cored_tag_d2h
-        desc: Capability tag returned on the D-channel of cored_tl_h.
-        struct: logic
+        desc: Capability tag returned on the D-channel of cored_tl_d.
+        struct: mubi4
+        package: prim_mubi_pkg
         type: uni
         act: req
         width: 1
-        default: 1'b0
+        default: prim_mubi_pkg::MuBi4False
         inst_name: cheriot_mem_sys
-        package: ""
         end_idx: -1
         top_type: broadcast
         top_signame: cheriot_mem_sys_cored_tag_d2h
@@ -41821,8 +41821,8 @@
         default: tlul_pkg::TL_D2H_DEFAULT
       }
       {
-        package: ""
-        struct: logic
+        package: prim_mubi_pkg
+        struct: mubi4
         domain: Main
         signame: rv_core_ibex_cored_tag_h2d
         width: 1
@@ -41830,7 +41830,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: 1'b0
+        default: prim_mubi_pkg::MuBi4False
       }
       {
         package: spi_device_pkg
@@ -41929,8 +41929,8 @@
         default: tlul_pkg::TL_D2H_DEFAULT
       }
       {
-        package: ""
-        struct: logic
+        package: prim_mubi_pkg
+        struct: mubi4
         domain: Main
         signame: cheriot_mem_sys_cored_tag_d2h
         width: 1
@@ -41938,7 +41938,7 @@
         end_idx: -1
         act: req
         suffix: ""
-        default: 1'b0
+        default: prim_mubi_pkg::MuBi4False
       }
       {
         package: prim_mubi_pkg

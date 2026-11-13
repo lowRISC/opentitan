@@ -17,6 +17,16 @@
 `cheriot_ena_i` selects the execution mode. It is a `mubi4_t` driven by the write-once mode switch in
 `rv_core_ibex`.
 
+`cored_tag_h2d_i` and `cored_tag_d2h_o` carry the capability validity tag next to `cored_tl_d`: the
+request tag is the tag of a store, or on a load the hint that it loads a capability, and the
+response tag is the tag of the loaded capability. Both are `mubi4_t`, encoded and decoded in
+`rv_core_ibex` right at the data interface of Ibex. The subsystem decodes the request tag at its
+port and encodes the response tag there, without a flop, so the tag stays in the cycle of its TL-UL
+beat. Decoding is strict: only `MuBi4True` reads as tagged, so an invalid encoding reads as
+untagged. A request with an invalid encoding also raises the `fatal_fault` alert. Inside the
+subsystem the tag is a single bit, whose protection relies on the lockstep operation of the subsystem,
+which is not implemented yet.
+
 ## Metadata Encoding
 
 Two kinds of metadata are stored, both at bit granularity, both packed into 32-bit words:
@@ -262,6 +272,7 @@ The subsystem distinguishes a denied access from a fault:
 | Device error on the tag path | Read-modify-write aborted, `d_error` towards the core, and `fatal_fault` alert |
 | Integrity fault on a meta SRAM response (`rsp_intg` or `data_intg`) | `fatal_fault` alert |
 | Integrity fault on the CSR interface | `fatal_fault` alert |
+| Core data request with an invalid encoding of the capability tag (`cored_tag_h2d_i`) | Tag read as clear (a store clears the tag, a load returns untagged), and `fatal_fault` alert |
 | Capability store to the NVM that does not match the NVM contents, or whose NVM read fails | `d_error` towards the core, tag unchanged |
 | Capability store to the NVM with a bad command or data integrity, a bad NVM response integrity, not a full-word `PutFullData`, or out of the W0-W1 sequence | `d_error` towards the core, tag unchanged, and `fatal_fault` alert |
 | Any other request out of the W0-W1 sequence of a capability store to the NVM | `fatal_fault` alert |
