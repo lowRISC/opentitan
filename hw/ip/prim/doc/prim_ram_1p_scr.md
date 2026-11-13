@@ -130,4 +130,6 @@ Note that if the `Depth` parameter is a power of 2, the S&P network operates on 
 If the `Depth` parameter is NOT a power of 2, the address scrambling works as follows: The address space is internally split into a number of equally sized chunks with a power-of-2 depth `ChunkDepth`.
 The S&P network then scrambles the LSBs of the address, i.e., it non-linearly re-maps the addresses within these chunks.
 The MSBs of the address are linearly re-mapped based on the MSBs of the nonce, i.e., the individual chunks get shifted within the actual memory using a single, random, `ChunkDepth`-sized offset.
+This offset is the value of the nonce MSBs modulo the number of chunks.
+Since the number of chunks is odd, the offsets are not uniformly distributed (e.g., with 3 chunks, offset 0 occurs with probability 1/2).
 While `ChunkDepth` is determined automatically based on the `Depth` parameter, it is selected as big as possible and values below 4096 trigger SystemVerilog assertions and lint errors.

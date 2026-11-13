@@ -254,15 +254,23 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       // Take care of the MSBs
       localparam int unsigned ChunkIdxWidth = AddrWidth - ChunkAddrWidth;
       logic [ChunkIdxWidth-1:0] chunk_idx_in;
+      logic [ChunkIdxWidth-1:0] chunk_offset_raw;
       logic [ChunkIdxWidth-1:0] chunk_offset;
       logic [ChunkIdxWidth-1:0] chunk_idx_out;
 
       assign chunk_idx_in = addr_i[AddrWidth-1:ChunkAddrWidth];
-      assign chunk_offset = addr_scr_nonce[AddrWidth-1:ChunkAddrWidth];
 
-      // We use the MSBs of the nonce as a static offset and have to wrap around the computed index
-      // to fall back into the range of chunks actually implemented. Since we know that the sum will
-      // be less than 2*NumChunks, we can do this wrap around with a conditional subtraction.
+      // We use the MSBs of the nonce as a static offset. Since NumChunks > 2**(ChunkIdxWidth-1),
+      // the raw offset is less than 2*NumChunks and a conditional subtraction maps it into the
+      // range of chunks actually implemented.
+      assign chunk_offset_raw = addr_scr_nonce[AddrWidth-1:ChunkAddrWidth];
+      assign chunk_offset = (chunk_offset_raw >= NumChunks[ChunkIdxWidth-1:0]) ?
+                            chunk_offset_raw - NumChunks[ChunkIdxWidth-1:0] : chunk_offset_raw;
+
+      // We have to wrap around the computed index to fall back into the range of chunks actually
+      // implemented. Since both chunk_offset and, for an address within the memory, chunk_idx_in
+      // are less than NumChunks, the sum is less than 2*NumChunks and we can do this wrap around
+      // with a conditional subtraction.
       always_comb begin
         logic [ChunkIdxWidth:0] chunk_idx;
         chunk_idx = chunk_offset + chunk_idx_in;
