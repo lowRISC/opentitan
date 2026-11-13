@@ -1576,9 +1576,17 @@ end
   ////////////////
 
   `ASSERT_INIT(CreatorRootKeyShare0Size_A,
-               keymgr_dpe_pkg::KeyWidth == CreatorRootKeyShare0Size * 8)
+               keymgr_dpe_pkg::InternalKeyWidth == CreatorRootKeyShare0Size * 8)
   `ASSERT_INIT(CreatorRootKeyShare1Size_A,
-               keymgr_dpe_pkg::KeyWidth == CreatorRootKeyShare1Size * 8)
+               keymgr_dpe_pkg::InternalKeyWidth == CreatorRootKeyShare1Size * 8)
+% for part in otp_mmap["partitions"]:
+  % for item in part["items"]:
+    % if item["name"] in ("CREATOR_SEED", "OWNER_SEED"):
+  `ASSERT_INIT(${Name.to_camel_case(item["name"])}Size_A,
+               keymgr_dpe_pkg::SeedWidth == ${Name.to_camel_case(item["name"])}Size * 8)
+    % endif
+  % endfor
+% endfor
 % if enable_nvm_key:
   `ASSERT_INIT(NvmDataKeySeedSize_A,       NvmKeySeedWidth == NvmDataKeySeedSize * 8)
   `ASSERT_INIT(NvmAddrKeySeedSize_A,       NvmKeySeedWidth == NvmAddrKeySeedSize * 8)

@@ -77,7 +77,8 @@ At the end of a successful operation, the slot selected by `SLOT_DST_SEL` is loa
 *  `max_key_version` is updated with `MAX_KEY_VERSION`.
 *  `boot_stage` is set to the parent’s next boot stage (i.e. `boot_stage + 1`, skipping the omitted stages in the two-stage configuration).
    Once `boot_stage` reaches `Runtime`, it saturates.
-*  `key` is updated from the digest received from KMAC (after truncating to 256-bit).
+*  `key` is updated from the digest received from the KDF engine (after truncating the 512-bit KDF digest to the 384-bit slot key size).
+   Note that the slot key is 384-bit wide, but if KMAC is the KDF engine, only its lower 256 bits are used as the KMAC key in following operations.
 
 The slot `SLOT_SRC_SEL` remains unmodified (unless `SLOT_SRC_SEL = SLOT_DST_SEL` required by `retain_parent = false`).
 
@@ -102,6 +103,7 @@ SW needs to configure the following registers:
 *  Trigger the operation by setting `START`.
 
 If SW key is requested, then it becomes available at `SW_SHARE0_OUTPUT`, `SW_SHARE1_OUTPUT` registers in two shares.
+Each share is 384 bits wide (`NumOutReg` 32-bit registers).
 If HW key is requested then it becomes available in the configured sideload port.
 The key on the slot remains valid unless:
 *  It is explicitly cleared by SW.

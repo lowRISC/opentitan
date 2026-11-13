@@ -187,7 +187,7 @@ The [memory map](../memory_map.md) gives their base addresses.
 |-------------------|---------|-----------------------------------------------------|--------------|-----------------------------------------------|
 | ROM               | 192 KiB | [`rom_ctrl`](../../../ip/rom_ctrl/README.md)        | `Main`       | Boot code                                     |
 | RRAM              | 2 MiB   | [`rram_ctrl`](../../../ip/rram_ctrl/README.md)      | `Main`       | Non-volatile code and data storage            |
-| OTP               | 2 KiB   | [`otp_ctrl`](../../ip_autogen/otp_ctrl/README.md)   | `Main`       | One-time programmable data                    |
+| OTP               | 2096 B  | [`otp_ctrl`](../../ip_autogen/otp_ctrl/README.md)   | `Main`       | One-time programmable data                    |
 | Main SRAM         | 128 KiB | [`sram_ctrl_main`](../../../ip/sram_ctrl/README.md) | `Main`       | General-purpose data (e.g., heap, stack)      |
 | Secondary SRAM    | 64 KiB  | [`sram_ctrl_sec`](../../../ip/sram_ctrl/README.md)  | `Main`       | General-purpose data (e.g., heap, stack)      |
 | Retention SRAM    | 8 KiB   | [`sram_ctrl_ret`](../../../ip/sram_ctrl/README.md)  | `Aon`        | Data that must be retained during deep sleep  |
@@ -223,7 +223,7 @@ See those specifications for more details.
 #### OTP
 
 Earl Grey has no OTP macro.
-Instead, the [OTP controller](../../ip_autogen/otp_ctrl/README.md) stores its 2 KiB of one-time programmable memory (1032 words of 16 bit) in the OTP region of the RRAM.
+Instead, the [OTP controller](../../ip_autogen/otp_ctrl/README.md) stores its 2096 bytes of one-time programmable memory (1048 words of 16 bit) in the OTP region of the RRAM.
 The RRAM controller implements OTP semantics on that region: bits can only be set, never cleared.
 
 #### SRAMs

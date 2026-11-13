@@ -14,22 +14,27 @@ package keymgr_dpe_pkg;
   // Chip Device ID
   parameter int DeviceIdWidth         = 256;
   typedef logic [DeviceIdWidth-1:0]   keymgr_dpe_device_id_t;
-  // Width and number of shares for the keymgr_dpe key
-  parameter int KeyWidth              = 256;
+  // Number of shares for all keys
   parameter int Shares                = 2;
-  // Key version length
-  parameter int KeyVersionWidth       = 32;
+  // Width of internal keys inside the keymgr dpe
+  parameter int InternalKeyWidth      = 384;
+  // Width of sideload key (consumed by AES / KMAC)
+  parameter int HwKeyWidth            = 256;
   // Width of wide sideload key (consumed by OTBN / HMAC)
   parameter int WideHwKeyWidth        = 512;
+  // Width of the different input seeds (creator seed, owner seed)
+  parameter int SeedWidth             = 256;
+  // Key version length
+  parameter int KeyVersionWidth       = 32;
   // Data width of KMAC interface
   parameter int KmacDataIfWidth       = 64;
   // Width of SW binding value
   parameter int SwBindingWidth        = 32 * keymgr_dpe_reg_pkg::NumSwBindingReg;
   // Width calculations
   // These are the largest calculations in use across all stages
-  parameter int IdDataWidth           = KeyWidth;
+  parameter int IdDataWidth           = SeedWidth;
   // key version + salt + key ID + constant
-  parameter int GenDataWidth          = 32 + 32 * keymgr_dpe_reg_pkg::NumSaltReg + KeyWidth*2;
+  parameter int GenDataWidth          = 32 + 32 * keymgr_dpe_reg_pkg::NumSaltReg + SeedWidth*2;
   // Max Payload Width to derivation function
   // see security strength description https://keccak.team/keccak.html
   // The max width here is chosen arbitrarily to ensure we do not get out of hand.
@@ -162,7 +167,7 @@ package keymgr_dpe_pkg;
   // These have been generated with the following command by incrementing the --seed argument
   // for every seed.
   // util/design/gen-lfsr-seed.py --width 256 --seed 7535190 --prefix ""
-  typedef logic [KeyWidth-1:0] seed_t;
+  typedef logic [SeedWidth-1:0] seed_t;
   // seed argument: --seed 7535190
   parameter seed_t RndCnstRevisionSeedDefault =
     256'h69802e51_bacf8874_e650d692_e3d8a646_2d3f158f_0bf7961d_d346f880_b4d52170;
@@ -194,45 +199,69 @@ package keymgr_dpe_pkg;
   parameter seed_t RndCnstFieldEntropySeedDefault =
     256'h19669f9d_6d107781_779533fd_58546820_b8339f55_694f5a36_ee23e819_00f8fc6b;
 
+  //////////////////////////////////
+  // Keymgr_dpe: Internal Secrets //
+  //////////////////////////////////
 
-  //////////////////////////////////////
-  // Keymgr_dpe: Secret & Seed Inputs //
-  //////////////////////////////////////
+  // Internal key struct
+  typedef struct packed {
+    logic valid;
+    logic [Shares-1:0][InternalKeyWidth-1:0] key;
+  } internal_key_t;
+
+
+  /////////////////////////////
+  // Keymgr_dpe: Seed Inputs //
+  /////////////////////////////
 
   // Input struct for secrets required by the keymgr dpe.
   typedef struct packed {
-    logic [KeyWidth-1:0]  share0;
-    logic                 share0_valid;
-    logic [KeyWidth-1:0]  share1;
-    logic                 share1_valid;
+    logic [InternalKeyWidth-1:0] share0;
+    logic                        share0_valid;
+    logic [InternalKeyWidth-1:0] share1;
+    logic                        share1_valid;
   } keymgr_dpe_creator_root_key_t;
 
   typedef struct packed {
-    logic [KeyWidth-1:0]  secret;
+    logic [SeedWidth-1:0] secret;
     logic                 secret_valid;
   } keymgr_dpe_field_entropy_t;
 
   typedef struct packed {
-    logic [KeyWidth-1:0]  seed;
+    logic [SeedWidth-1:0] seed;
     logic                 seed_valid;
   } keymgr_dpe_creator_seed_t;
 
   typedef struct packed {
-    logic [KeyWidth-1:0]  seed;
+    logic [SeedWidth-1:0] seed;
     logic                 seed_valid;
   } keymgr_dpe_owner_seed_t;
 
+  // Split due to linter limitation
   parameter keymgr_dpe_creator_root_key_t KEYMGR_DPE_CREATOR_ROOT_KEY_DEFAULT = '{
-    share0       : 256'hefb7ea7ee90093cf4affd9aaa2d6c0ec446cfdf5f2d5a0bfd7e2d93edc63a102,
+    share0       : {
+      192'h63285532c486da16c9f1331285040771502fc6acf34bc6a1,
+      192'h7ab36a50bdb230e94c461620e8d4097ee7caeac893cabaed
+    },
     share0_valid : 1'b1,
-    share1       : 256'h56d24a00181de99e0f690b447a8dde2a1ffb8bc306707107aa6e2410f15cfc37,
+    share1       : {
+      192'hf1cff3d4e029b6138242e1bae0b706e55bd6e5f1951fa6ce,
+      192'h0b925a8453a4e8685a5757fd9f7e6ee2195e629f3d349ce9
+    },
     share1_valid : 1'b1
   };
 
+  // Split due to linter limitation
   parameter keymgr_dpe_creator_root_key_t KEYMGR_DPE_SECONDARY_ROOT_KEY_DEFAULT = '{
-    share0       : 256'h77f2d6be9a72d1a59d5cecdb8642890fed982af1a627140616036d0f146e4d9d,
+    share0       : {
+      192'h45fc42b413291167f4e21848cdd1616079d6b79ec9abd881,
+      192'h39e935084268b9afa1d9e08035ab2e1187cf0365e84e4aa4
+    },
     share0_valid : 1'b0,
-    share1       : 256'h258cb510c30b142de90df495810d0a62bd679b7961061a9b7273b5215c010058,
+    share1       : {
+      192'hc235623f320ee6474698c1223f39128ba79bd6b9a8220a19,
+      192'he07d7dce2462cda2ff73c5a6ff10da115158467909389c4a
+    },
     share1_valid : 1'b0
   };
 
@@ -256,13 +285,13 @@ package keymgr_dpe_pkg;
   // Keymgr_dpe: Key Connections //
   /////////////////////////////////
 
-  // Key connection to various symmetric modules
+  // Key connection to modules consuming narrow hw keys
   typedef struct packed {
     logic valid;
-    logic [Shares-1:0][KeyWidth-1:0] key;
+    logic [Shares-1:0][HwKeyWidth-1:0] key;
   } hw_key_req_t;
 
-  // Key connection to modules consuming wide keys
+  // Key connection to modules consuming wide hw keys
   typedef struct packed {
     logic valid;
     logic [Shares-1:0][WideHwKeyWidth-1:0] key;
@@ -270,7 +299,7 @@ package keymgr_dpe_pkg;
 
   parameter hw_key_req_t HW_KEY_REQ_DEFAULT = '{
     valid : 1'b0,
-    key   : {Shares{KeyWidth'(32'hDEADBEEF)}}
+    key   : {Shares{HwKeyWidth'(32'hDEADBEEF)}}
   };
 
   parameter wide_hw_key_req_t WIDE_HW_KEY_REQ_DEFAULT = '{
@@ -298,7 +327,7 @@ package keymgr_dpe_pkg;
   typedef struct packed {
     logic valid;
     keymgr_dpe_boot_stage_e boot_stage;
-    logic [Shares-1:0][KeyWidth-1:0] key;
+    logic [Shares-1:0][InternalKeyWidth-1:0] key;
     logic [KeyVersionWidth-1:0] max_key_version;
     keymgr_dpe_policy_t key_policy;
   } keymgr_dpe_slot_t;
@@ -455,14 +484,14 @@ package keymgr_dpe_pkg;
   endfunction
 
   // checks for all 0's or all 1's of value
-  function automatic logic valid_data_chk (logic [KeyWidth-1:0] value);
+  function automatic logic valid_key_chk (logic [InternalKeyWidth-1:0] value);
     return |value & ~&value;
   endfunction
 
   // extract all metadata from a slot
   function automatic keymgr_dpe_metadata_slot_t extract_metadata_from_slot (keymgr_dpe_slot_t slot);
     // read unused signal to avoid linter warnings
-    logic [Shares-1:0][KeyWidth-1:0] unused_key = slot.key;
+    logic [Shares-1:0][InternalKeyWidth-1:0] unused_key = slot.key;
     return keymgr_dpe_metadata_slot_t'{
       slot.key_policy,
       slot.boot_stage,

@@ -1121,6 +1121,7 @@ module aes_core
 
   // Check parameters
   `ASSERT_INIT(AesNumSlicesCtr, NumSlicesCtr == 8)
+  `ASSERT_INIT(KeymgrKeyWidthMatchesAes_A, $bits(keymgr_key_i.key[0]) == NumRegsKey * 32)
 
   // Signals used for assertions only.
   logic [3:0][31:0] state_done_transposed, unused_state_done_transposed;

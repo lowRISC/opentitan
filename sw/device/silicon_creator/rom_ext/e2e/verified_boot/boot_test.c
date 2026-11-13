@@ -79,12 +79,14 @@ status_t keymgr_dpe_print(void) {
 
   dif_keymgr_dpe_output_t out;
   TRY(dif_keymgr_dpe_read_output(&km, &out));
-  LOG_INFO("keymgr dpe sw_key = %08x%08x%08x%08x%08x%08x%08x%08x",
-           out.value[0][0] ^ out.value[1][0], out.value[0][1] ^ out.value[1][1],
-           out.value[0][2] ^ out.value[1][2], out.value[0][3] ^ out.value[1][3],
-           out.value[0][4] ^ out.value[1][4], out.value[0][5] ^ out.value[1][5],
-           out.value[0][6] ^ out.value[1][6],
-           out.value[0][7] ^ out.value[1][7]);
+  LOG_INFO(
+      "keymgr dpe sw_key = %08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x%08x",
+      out.value[0][0] ^ out.value[1][0], out.value[0][1] ^ out.value[1][1],
+      out.value[0][2] ^ out.value[1][2], out.value[0][3] ^ out.value[1][3],
+      out.value[0][4] ^ out.value[1][4], out.value[0][5] ^ out.value[1][5],
+      out.value[0][6] ^ out.value[1][6], out.value[0][7] ^ out.value[1][7],
+      out.value[0][8] ^ out.value[1][8], out.value[0][9] ^ out.value[1][9],
+      out.value[0][10] ^ out.value[1][10], out.value[0][11] ^ out.value[1][11]);
 
   return OK_STATUS();
 }

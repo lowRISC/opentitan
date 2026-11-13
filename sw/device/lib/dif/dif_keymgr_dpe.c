@@ -74,6 +74,18 @@ static_assert(KEYMGR_DPE_SW_SHARE0_OUTPUT_6_REG_OFFSET ==
 static_assert(KEYMGR_DPE_SW_SHARE0_OUTPUT_7_REG_OFFSET ==
                   KEYMGR_DPE_SW_SHARE0_OUTPUT_0_REG_OFFSET + 28,
               "SW_SHARE0_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE0_OUTPUT_8_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE0_OUTPUT_0_REG_OFFSET + 32,
+              "SW_SHARE0_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE0_OUTPUT_9_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE0_OUTPUT_0_REG_OFFSET + 36,
+              "SW_SHARE0_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE0_OUTPUT_10_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE0_OUTPUT_0_REG_OFFSET + 40,
+              "SW_SHARE0_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE0_OUTPUT_11_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE0_OUTPUT_0_REG_OFFSET + 44,
+              "SW_SHARE0_OUTPUT_N registers must be contiguous.");
 
 static_assert(KEYMGR_DPE_SW_SHARE1_OUTPUT_1_REG_OFFSET ==
                   KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET + 4,
@@ -96,6 +108,25 @@ static_assert(KEYMGR_DPE_SW_SHARE1_OUTPUT_6_REG_OFFSET ==
 static_assert(KEYMGR_DPE_SW_SHARE1_OUTPUT_7_REG_OFFSET ==
                   KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET + 28,
               "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE1_OUTPUT_8_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET + 32,
+              "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE1_OUTPUT_9_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET + 36,
+              "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE1_OUTPUT_10_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET + 40,
+              "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+static_assert(KEYMGR_DPE_SW_SHARE1_OUTPUT_11_REG_OFFSET ==
+                  KEYMGR_DPE_SW_SHARE1_OUTPUT_0_REG_OFFSET + 44,
+              "SW_SHARE1_OUTPUT_N registers must be contiguous.");
+
+static_assert(sizeof(((dif_keymgr_dpe_output_t *)0)->value[0]) ==
+                  KEYMGR_DPE_SW_SHARE0_OUTPUT_MULTIREG_COUNT * sizeof(uint32_t),
+              "dif_keymgr_dpe_output_t share 0 size must match the HW.");
+static_assert(sizeof(((dif_keymgr_dpe_output_t *)0)->value[1]) ==
+                  KEYMGR_DPE_SW_SHARE1_OUTPUT_MULTIREG_COUNT * sizeof(uint32_t),
+              "dif_keymgr_dpe_output_t share 1 size must match the HW.");
 
 static_assert(KEYMGR_DPE_METADATA_LOW_1_REG_OFFSET ==
                   KEYMGR_DPE_METADATA_LOW_0_REG_OFFSET + 4,

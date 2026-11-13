@@ -2486,8 +2486,8 @@ otp_json(
             name = "SECRET2",
             items = {
                 "RMA_TOKEN": "6ef5b95acb3ded39bed4fd235f6b24d4",
-                "CREATOR_ROOT_KEY_SHARE0": "f915734729d70391ea9f54f370a2fdf8196906bfe0051fa8a9398fab0bba1e23",
-                "CREATOR_ROOT_KEY_SHARE1": "e889c1ccf0f57d6ddda3ceb51b6cbc3bbaa7bc074a97c885d3bd2ecfc0fc7581",
+                "CREATOR_ROOT_KEY_SHARE0": "9daa9628b943bf1efa51de2bdcd18fc4f915734729d70391ea9f54f370a2fdf8196906bfe0051fa8a9398fab0bba1e23",
+                "CREATOR_ROOT_KEY_SHARE1": "958a2b5c833e516c3f4e6580cbdeec50e889c1ccf0f57d6ddda3ceb51b6cbc3bbaa7bc074a97c885d3bd2ecfc0fc7581",
             },
             lock = False,
         ),

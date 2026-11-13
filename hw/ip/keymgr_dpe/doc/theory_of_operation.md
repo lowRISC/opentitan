@@ -34,7 +34,19 @@ In order to address the relationships among keymgr_dpe slots and their stored DP
 
 +Keymgr_dpe consists of `NumInstHwSlot` slots, which is a top-level parameter (instantiated up to `NumMaxHwSlot`).
 Each of these key manager slots can store a DPE context, i.e. all DICE-related information for a particular boot stage. That includes a secret key along with additional context information described below.
-The secret key size is fixed to 256-bit.
+The secret key size is fixed to 384-bit.
+However, the KDF engine does not necessarily consume all 384 bits:
+
+* If KMAC is the KDF engine, only the lower 256 bits of the secret key are used as the KMAC key.
+  The remaining upper bits are stored but do not influence the derived keys.
+* If OTBN is the KDF engine, the full 384 bits of the secret key are consumed.
+
+If the `KdfEngineSel` parameter is set to `KdfEngineBoth`, software selects the KDF engine through `KDF_ENGINE_SHADOWED`.
+In that configuration the same secret key can be consumed by both engines (the lower 256 bits by KMAC, all 384 bits by OTBN), i.e. the same secret is used as key for two different kdf.
+The kdf_engine must be selected before the first derivation.
+If desired, the selection can be locked with `KDF_ENGINE_REGWEN`.
+
+The sideload keys are derived from the KDF digest and have a different size than the secret key: the keys for AES and KMAC use the lower 256 bits of the digest, the keys for OTBN and HMAC use the full 512-bit digest.
 
 Each slot data consists of the following fields:
 * `valid` bit that tells whether the slot is occupied.
@@ -213,6 +225,7 @@ A versioned key generation operation uses the following registers:
 During the generate operation, a versioned key is generated from the secret of the source slot selected by `SLOT_SRC_SEL`.
 After a successful key generation operation, if the generated key is requested for HW use, then the generated key is loaded into the sideload slot that drives the specified target peripheral port (`DST_SEL` being either one of {`AES`, `KMAC`, `OTBN`, `HMAC`}).
 In the case of SW key, the generated key is loaded into a CSR (see `SW_SHARE0_OUTPUT` and `SW_SHARE1_OUTPUT` registers).
+The SW output is the lower 384 bits (`NumOutReg` 32-bit registers per share) of the 512-bit KDF output, whereas the HW keys use the lower 256 bits (`AES`, `KMAC`) or the full 512 bits (`OTBN`, `HMAC`).
 
 The key is generated with a KDF call, where the secret key is read from source slot.
 Then, `generated_key = KDF(parent_key, KEY_VERSION || SALT || dest_seed || output_key)` where `dest_seed` and `output_key` are domain separators (i.e. diversification values from netlist) to distinguish SW/HW outputs as well as the target HWIP peripheral {`AES`, `KMAC`, `OTBN`, `HMAC`}.
@@ -287,10 +300,14 @@ Disable operation simply moves the keymgr_DPE's FSM into `Disabled` state. This 
 
 ### Root Keys
 
-keymgr_dpe receives two 256-bit root secrets, each provided in two shares with a valid bit per share:
+keymgr_dpe receives two 384-bit root secrets, each provided in two shares with a valid bit per share:
 * `creator_root_key` is the creator root key received from OTP.
 * `secondary_root_key` is the (optional) secondary root key.
   Its source depends on the integration, for example OTP on Earl Grey.
+
+Each root key share is 384 bits wide, matching the size of the slot secret key.
+When KMAC is the KDF engine, only the lower 256 bits of the (unmasked) root key are effectively used as the KMAC key in the first derivation, even though the OTP provides 384 bits per share.
+Only OTBN as KDF engine consumes all 384 bits.
 
 The valid bits of both root keys are synchronized into the keymgr_dpe clock domain before use.
 
@@ -327,7 +344,7 @@ The key of the KDF is the internal key of the source slot.
 It is forwarded to the selected engine only:
 * If KMAC is selected, the internal key drives `kmac_key_o` while it is valid.
 * If OTBN is selected, the internal key drives `otbn_key_o` while it is valid.
-  OTBN expects a 512-bit key on its sideload interface while the internal key is 256 bits wide, so the key is zero-extended to the OTBN key width.
+  OTBN expects a 512-bit key on its sideload interface while the internal key is 384 bits wide, so the key is zero-extended to the OTBN key width.
 While the internal key is valid (meaning either a derivation or generation is ongoing), it takes precedence over the applied sideload key, i.e. a previously generated sideload key is not visible during the operation.
 
 #### Sensitive key indicator

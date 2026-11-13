@@ -48,10 +48,10 @@ module keymgr_dpe
   output tlul_pkg::tl_d2h_t tl_o,
 
   // key interface to crypto modules
-  output hw_key_req_t aes_key_o,
-  output hw_key_req_t kmac_key_o,
-  output wide_hw_key_req_t hmac_key_o,
-  output wide_hw_key_req_t otbn_key_o,
+  output hw_key_req_t        aes_key_o,
+  output hw_key_req_t        kmac_key_o,
+  output wide_hw_key_req_t   hmac_key_o,
+  output wide_hw_key_req_t   otbn_key_o,
 
   // Application interface when KMAC is used as hashing engine
   output kmac_pkg::app_req_t kmac_app_o,
@@ -100,9 +100,9 @@ module keymgr_dpe
   //   - LC keymgr diversification value
   //   - ROM digests
   //   - Creator seed (only if NumBootStages == 2)
-  localparam int DpeAdvDataWidth = SwBindingWidth + KeyWidth + DeviceIdWidth +
-      lc_ctrl_pkg::LcKeymgrDivWidth + KeyWidth * NumRomDigestInputs +
-      KeyWidth * (NumBootStages == 2);
+  localparam int DpeAdvDataWidth = SwBindingWidth + SeedWidth + DeviceIdWidth +
+      lc_ctrl_pkg::LcKeymgrDivWidth + SeedWidth * NumRomDigestInputs +
+      SeedWidth * (NumBootStages == 2);
 
   // Determine the width of the data consumed by the KMAC IF during the inital
   // derivation of the CreatorRootKey.
@@ -121,7 +121,7 @@ module keymgr_dpe
   /////////////////////////////////////
   // Anchor incoming seeds and constants
   /////////////////////////////////////
-  localparam int TotalSeedWidth = KeyWidth * 9;
+  localparam int TotalSeedWidth = SeedWidth * 9;
   seed_t revision_seed;
   seed_t soft_output_seed;
   seed_t hard_output_seed;
@@ -274,7 +274,7 @@ module keymgr_dpe
   mubi4_t hw_key_sel;
   logic adv_en, id_en, gen_en;
   logic wipe_key;
-  hw_key_req_t kmac_key;
+  internal_key_t kmac_key;
   logic op_done;
   logic init;
   logic data_valid;
@@ -287,7 +287,7 @@ module keymgr_dpe
   logic kmac_op_err;
   logic kmac_done_err;
   logic [Shares-1:0][kmac_pkg::AppDigestW-1:0] kmac_data;
-  logic [Shares-1:0][KeyWidth-1:0] kmac_data_truncated;
+  logic [Shares-1:0][InternalKeyWidth-1:0] kmac_data_truncated;
   logic [ErrLastPos-1:0] err_code;
   logic [FaultLastPos-1:0] fault_code;
   logic unlock_after_advance;
@@ -321,17 +321,17 @@ module keymgr_dpe
   end
 
   for (genvar i = 0; i < Shares; i++) begin : gen_truncate_data
-    assign kmac_data_truncated[i] = kmac_data[i][KeyWidth-1:0];
+    assign kmac_data_truncated[i] = kmac_data[i][InternalKeyWidth-1:0];
   end
 
-  hw_key_req_t root_key;
+  internal_key_t root_key;
   assign root_key.key = '{creator_root_key_i.share1,
                           creator_root_key_i.share0};
 
   keymgr_dpe_field_entropy_t field_entropy;
   assign field_entropy.secret = field_entropy_i.secret;
 
-  hw_key_req_t secondary_root_key;
+  internal_key_t secondary_root_key;
   assign secondary_root_key.key = '{secondary_root_key_i.share1,
                                     secondary_root_key_i.share0};
 
@@ -557,29 +557,29 @@ module keymgr_dpe
   assign sw_binding = reg2hw.sw_binding;
 
   // ROM_CTRL digests.
-  logic [KeyWidth*NumRomDigestInputs-1:0] rom_digests;
+  logic [SeedWidth*NumRomDigestInputs-1:0] rom_digests;
   always_comb begin
     rom_digests = '0;
     for (int k = 0; k < NumRomDigestInputs; k++) begin
-      rom_digests[KeyWidth*k +: KeyWidth] = rom_digest_i[k].data;
+      rom_digests[SeedWidth*k +: SeedWidth] = rom_digest_i[k].data;
     end
   end
 
   // Consumed during the CreatorIntKey derivation
   // If the field entropy is provisioned then the secret is selected automatically.
   // Otherwise use the netlist constant `field_entropy_seed`.
-  logic [KeyWidth-1:0] field_entropy_binding;
+  logic [SeedWidth-1:0] field_entropy_binding;
   assign field_entropy_binding = (field_entropy.secret_valid) ?
       field_entropy.secret : field_entropy_seed;
 
   // Consumed during the OwnerIntKey derivation
   // The values coming from the seed provider (otp_ctrl / rram_ctrl) / lc_ctrl are treated as
   // quasi-static for CDC purposes
-  logic [KeyWidth-1:0] creator_seed;
+  logic [SeedWidth-1:0] creator_seed;
   assign creator_seed = creator_seed_i.seed;
 
   // Consumed during the OwnerKey derivation
-  logic [KeyWidth-1:0] owner_seed;
+  logic [SeedWidth-1:0] owner_seed;
   assign owner_seed = owner_seed_i.seed;
 
   // A seed is only valid if its provider marks it as valid and it passes the input checks.
@@ -677,9 +677,9 @@ module keymgr_dpe
       mubi4_t'(reg2hw.enforce_sw_binding.q), adv_consumes_hw_binding);
 
   // Generate output operation input construction
-  logic [KeyWidth-1:0] output_key;
+  logic [SeedWidth-1:0] output_key;
   keymgr_dpe_key_dest_e dest_sel;
-  logic [KeyWidth-1:0] dest_seed;
+  logic [SeedWidth-1:0] dest_seed;
 
   assign dest_sel = keymgr_dpe_key_dest_e'(reg2hw.control_shadowed.dest_sel.q);
 
@@ -707,7 +707,7 @@ module keymgr_dpe
                                            Otbn,
                                            Hmac});
 
-  hw_key_req_t curr_active_key;
+  internal_key_t curr_active_key;
   assign curr_active_key = '{
     valid: active_key_slot.valid,
     key: active_key_slot.key
@@ -934,7 +934,7 @@ module keymgr_dpe
     .fsm_err_o(sideload_fsm_err)
   );
 
-  for (genvar i = 0; i < 8; i++) begin : gen_sw_assigns
+  for (genvar i = 0; i < NumOutReg; i++) begin : gen_sw_assigns
 
     mubi4_t [1:0] hw_key_sel_buf;
     prim_mubi4_sync #(
@@ -949,16 +949,18 @@ module keymgr_dpe
 
     // SEC_CM: OUTPUT_KEYS.CTRL.REDUN
     prim_sec_anchor_buf #(
-     .Width(32)
+     .Width(top_pkg::TL_DW)
     ) u_prim_buf_share0_d (
-      .in_i(~data_sw_en | wipe_key ? data_rand[0] : kmac_data[0][i*32 +: 32]),
+      .in_i(~data_sw_en | wipe_key ? data_rand[0] :
+                                     kmac_data[0][i*top_pkg::TL_DW +: top_pkg::TL_DW]),
       .out_o(hw2reg.sw_share0_output[i].d)
     );
 
     prim_sec_anchor_buf #(
-     .Width(32)
+     .Width(top_pkg::TL_DW)
     ) u_prim_buf_share1_d (
-      .in_i(~data_sw_en | wipe_key ? data_rand[1] : kmac_data[1][i*32 +: 32]),
+      .in_i(~data_sw_en | wipe_key ? data_rand[1] :
+                                     kmac_data[1][i*top_pkg::TL_DW +: top_pkg::TL_DW]),
       .out_o(hw2reg.sw_share1_output[i].d)
     );
 
@@ -1130,6 +1132,9 @@ module keymgr_dpe
 
   // Verify the metadata do not exceed the width of the sw registers
   `ASSERT_INIT(MetadataExceedSwReg_A, $bits(keymgr_dpe_metadata_slot_t) <= 2*top_pkg::TL_DW)
+
+  // Verify the SW output registers do not exceed the width of the KDF digest
+  `ASSERT_INIT(SwOutFitsInDigest_A, NumOutReg * top_pkg::TL_DW <= kmac_pkg::AppDigestW)
 
   // Verify the number of instanciated HW slots
   `ASSERT_INIT(InvalidNumHwSlot_A, NumInstHwSlot <= NumMaxHwSlot)

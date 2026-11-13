@@ -69,11 +69,11 @@ interface keymgr_dpe_if(input clk, input rst_n);
   // Once the operation is done, `kmac_key` is expected to switch automatically to the previous KMAC
   // sideload key.
   keymgr_dpe_sideload_status_e kmac_sideload_status;
-  keymgr_dpe_env_pkg::key_shares_t kmac_sideload_key_shares;
+  keymgr_dpe_env_pkg::hw_key_shares_t kmac_sideload_key_shares;
 
   // use `string` here is to combine both internal key and sideload keys, so it could be "internal"
   // or any name at keymgr_dpe_key_dest_e
-  keymgr_dpe_env_pkg::key_shares_t keys_a_array[
+  keymgr_dpe_env_pkg::kmac_digests_t keys_a_array[
     keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e][string];
 
   // set this flag when design enters init state, edn req will start periodically
@@ -297,23 +297,33 @@ interface keymgr_dpe_if(input clk, input rst_n);
               msg_id)
   endfunction
 
-  // update kmac key for comparison during KDF
-  function automatic void update_kdf_key(keymgr_dpe_env_pkg::key_shares_t key_shares,
+  // Update kmac key for comparison during KDF. The internal key is wider than the KMAC key,
+  // so only the lower `HwKeyWidth` bits are forwarded to KMAC.
+  function automatic void update_kdf_key(keymgr_dpe_env_pkg::internal_key_shares_t key_shares,
                                          keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state,
                                          bit good_key, bit good_data);
+    keymgr_dpe_env_pkg::hw_key_shares_t trunc_key_shares = {
+        key_shares[1][keymgr_dpe_pkg::HwKeyWidth-1:0],
+        key_shares[0][keymgr_dpe_pkg::HwKeyWidth-1:0]
+      };
 
-    kmac_key_exp <= '{1'b1, key_shares};
+    kmac_key_exp <= '{1'b1, trunc_key_shares};
     is_kmac_key_good <= good_key;
     is_kmac_data_good <= good_data;
   endfunction
 
   // store internal key once it's available and use to compare if future OP is invalid
   function automatic void store_internal_key(
-      keymgr_dpe_env_pkg::key_shares_t key_shares,
+      keymgr_dpe_env_pkg::internal_key_shares_t key_shares,
       keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state
     );
+    // Zero extend each share to the digest width, `keys_a_array` also holds the sideload keys.
+    keymgr_dpe_env_pkg::kmac_digests_t ext_key_shares = {
+        kmac_pkg::AppDigestW'(key_shares[1]),
+        kmac_pkg::AppDigestW'(key_shares[0])
+      };
 
-    keys_a_array[state]["Internal"] = key_shares;
+    keys_a_array[state]["Internal"] = ext_key_shares;
   endfunction
 
   // update sideload key for comparison
@@ -323,11 +333,13 @@ interface keymgr_dpe_if(input clk, input rst_n);
       keymgr_dpe_pkg::keymgr_dpe_exposed_working_state_e state,
       keymgr_dpe_pkg::keymgr_dpe_key_dest_e dest = keymgr_dpe_pkg::Kmac
   );
-    keymgr_dpe_env_pkg::key_shares_t trun_key_shares = {
-        key_shares[1][keymgr_dpe_pkg::KeyWidth-1:0],
-        key_shares[0][keymgr_dpe_pkg::KeyWidth-1:0]
+    // KMAC and AES consume the lower `HwKeyWidth` bits of the digest
+    keymgr_dpe_env_pkg::hw_key_shares_t hw_key_shares = {
+        key_shares[1][keymgr_dpe_pkg::HwKeyWidth-1:0],
+        key_shares[0][keymgr_dpe_pkg::HwKeyWidth-1:0]
       };
-    keymgr_dpe_env_pkg::wide_key_shares_t wide_key_shares = {
+    // OTBN and HMAC consume the lower `WideHwKeyWidth` bits of the digest
+    keymgr_dpe_env_pkg::wide_hw_key_shares_t wide_key_shares = {
         key_shares[1][keymgr_dpe_pkg::WideHwKeyWidth-1:0],
         key_shares[0][keymgr_dpe_pkg::WideHwKeyWidth-1:0]
       };
@@ -335,27 +347,25 @@ interface keymgr_dpe_if(input clk, input rst_n);
       keymgr_dpe_pkg::Kmac: begin
         if (kmac_sideload_status != SideLoadClear) begin
           kmac_sideload_status     <= SideLoadAvail;
-          kmac_key_exp             <= '{1'b1, trun_key_shares};
+          kmac_key_exp             <= '{1'b1, hw_key_shares};
           is_kmac_key_good         <= 1;
-          kmac_sideload_key_shares <= trun_key_shares;
+          kmac_sideload_key_shares <= hw_key_shares;
         end
       end
       keymgr_dpe_pkg::Aes: begin
         if (aes_sideload_status != SideLoadClear) begin
-          aes_key_exp         <= '{1'b1, trun_key_shares};
+          aes_key_exp         <= '{1'b1, hw_key_shares};
           aes_sideload_status <= SideLoadAvail;
         end
       end
       keymgr_dpe_pkg::Otbn: begin
         if (otbn_sideload_status != SideLoadClear) begin
-          // otbn uses full 512 bits digest data
           otbn_key_exp         <= '{1'b1, wide_key_shares};
           otbn_sideload_status <= SideLoadAvail;
         end
       end
       keymgr_dpe_pkg::Hmac: begin
         if (hmac_sideload_status != SideLoadClear) begin
-          // hmac uses full 512 bits digest data
           hmac_key_exp         <= '{1'b1, wide_key_shares};
           hmac_sideload_status <= SideLoadAvail;
         end
@@ -363,7 +373,8 @@ interface keymgr_dpe_if(input clk, input rst_n);
       default: `uvm_fatal("keymgr_dpe_if", $sformatf("Unexpect dest type %0s", dest.name))
     endcase
 
-    keys_a_array[state][dest.name] = trun_key_shares;
+    // Store the full digest, the invalid key check truncates it to the width of the checked key.
+    keys_a_array[state][dest.name] = key_shares;
   endfunction
 
   function automatic void clear_sideload_key(keymgr_dpe_pkg::keymgr_dpe_sideload_clr_e clear_dest);
@@ -589,7 +600,7 @@ interface keymgr_dpe_if(input clk, input rst_n);
   endtask
 
   bit trigger_force_hw_key_sel;
-  for (genvar i = 0; i < 8; i++) begin : gen_force_hw_key_sel
+  for (genvar i = 0; i < keymgr_dpe_reg_pkg::NumOutReg; i++) begin : gen_force_hw_key_sel
     always @(trigger_force_hw_key_sel) begin
       if (trigger_force_hw_key_sel) begin
         // force to false, in order to try to move HW key to SW output
@@ -652,37 +663,66 @@ interface keymgr_dpe_if(input clk, input rst_n);
         @(kmac_key or is_kmac_key_good);
         // one cycle to sync with clock, one cycle to allow design to clear the key
         repeat (2) @(posedge clk);
-        if (!is_kmac_key_good) check_invalid_key(kmac_key, "KMAC");
+        if (!is_kmac_key_good) begin
+          check_invalid_key(kmac_key.valid, hw_shares_to_digests(kmac_key.key),
+                            keymgr_dpe_pkg::HwKeyWidth, "KMAC");
+        end
       end
       forever begin
         @(aes_key or aes_sideload_status);
         // one cycle to sync with clock, one cycle to allow design to clear the key
         repeat (2) @(posedge clk);
-        if (aes_sideload_status != SideLoadAvail) check_invalid_key(aes_key, "AES");
+        if (aes_sideload_status != SideLoadAvail) begin
+          check_invalid_key(aes_key.valid, hw_shares_to_digests(aes_key.key),
+                            keymgr_dpe_pkg::HwKeyWidth, "AES");
+        end
       end
       forever begin
         @(otbn_key or otbn_sideload_status);
         // one cycle to sync with clock, one cycle to allow design to clear the key
         repeat (2) @(posedge clk);
-        if (otbn_sideload_status != SideLoadAvail) check_invalid_key(otbn_key, "OTBN");
+        if (otbn_sideload_status != SideLoadAvail) begin
+          check_invalid_key(otbn_key.valid, otbn_key.key, keymgr_dpe_pkg::WideHwKeyWidth, "OTBN");
+        end
       end
       forever begin
         @(hmac_key or hmac_sideload_status);
         // one cycle to sync with clock, one cycle to allow design to clear the key
         repeat (2) @(posedge clk);
-        if (hmac_sideload_status != SideLoadAvail) check_invalid_key(hmac_key, "HMAC");
+        if (hmac_sideload_status != SideLoadAvail) begin
+          check_invalid_key(hmac_key.valid, hmac_key.key, keymgr_dpe_pkg::WideHwKeyWidth, "HMAC");
+        end
       end
     join
   end
 
-  function automatic void check_invalid_key(keymgr_dpe_pkg::hw_key_req_t act_key, string key_name);
-    if (rst_n && act_key.valid && en_chk) begin
+  // Zero extend the shares of a `HwKeyWidth` wide key to the digest width.
+  function automatic keymgr_dpe_env_pkg::kmac_digests_t hw_shares_to_digests(
+      keymgr_dpe_env_pkg::hw_key_shares_t key_shares
+  );
+    return {kmac_pkg::AppDigestW'(key_shares[1]), kmac_pkg::AppDigestW'(key_shares[0])};
+  endfunction
+
+  // Check that an invalid key does not match any of the meaningful keys. `act_shares` holds the
+  // shares of the checked key zero extended to the digest width. Only the lower `width` bits of
+  // the stored keys are compared.
+  function automatic void check_invalid_key(
+      logic valid,
+      keymgr_dpe_env_pkg::kmac_digests_t act_shares,
+      int unsigned width,
+      string key_name
+  );
+    if (rst_n && valid && en_chk) begin
+      keymgr_dpe_env_pkg::kmac_digests_t mask =
+          {2{kmac_pkg::AppDigestW'((kmac_pkg::AppDigestW'(1) << width) - 1)}};
       foreach (keys_a_array[state, dest]) begin
-        `DV_CHECK_CASE_NE({act_key.key[1], act_key.key[0]}, keys_a_array[state][dest],
+        keymgr_dpe_env_pkg::kmac_digests_t exp_shares = keys_a_array[state][dest];
+
+        `DV_CHECK_CASE_NE(act_shares & mask, exp_shares & mask,
             $sformatf("%s key at state %s for %s", key_name, state.name, dest), ,
             msg_id)
         // once key is wiped, 2 shares will be wiped to different values
-        `DV_CHECK_CASE_NE(act_key.key[1], act_key.key[0],
+        `DV_CHECK_CASE_NE(act_shares[1], act_shares[0],
             $sformatf("%s key at state %s for %s", key_name, state.name, dest), ,
             msg_id)
       end

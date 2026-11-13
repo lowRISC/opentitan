@@ -56,9 +56,9 @@ module keymgr_dpe_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [73:0] reg_we_check;
+  logic [81:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(74)
+    .OneHotWidth(82)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -288,6 +288,18 @@ module keymgr_dpe_reg_top (
   logic sw_share0_output_7_re;
   logic [31:0] sw_share0_output_7_qs;
   logic [31:0] sw_share0_output_7_wd;
+  logic sw_share0_output_8_re;
+  logic [31:0] sw_share0_output_8_qs;
+  logic [31:0] sw_share0_output_8_wd;
+  logic sw_share0_output_9_re;
+  logic [31:0] sw_share0_output_9_qs;
+  logic [31:0] sw_share0_output_9_wd;
+  logic sw_share0_output_10_re;
+  logic [31:0] sw_share0_output_10_qs;
+  logic [31:0] sw_share0_output_10_wd;
+  logic sw_share0_output_11_re;
+  logic [31:0] sw_share0_output_11_qs;
+  logic [31:0] sw_share0_output_11_wd;
   logic sw_share1_output_0_re;
   logic [31:0] sw_share1_output_0_qs;
   logic [31:0] sw_share1_output_0_wd;
@@ -312,6 +324,18 @@ module keymgr_dpe_reg_top (
   logic sw_share1_output_7_re;
   logic [31:0] sw_share1_output_7_qs;
   logic [31:0] sw_share1_output_7_wd;
+  logic sw_share1_output_8_re;
+  logic [31:0] sw_share1_output_8_qs;
+  logic [31:0] sw_share1_output_8_wd;
+  logic sw_share1_output_9_re;
+  logic [31:0] sw_share1_output_9_qs;
+  logic [31:0] sw_share1_output_9_wd;
+  logic sw_share1_output_10_re;
+  logic [31:0] sw_share1_output_10_qs;
+  logic [31:0] sw_share1_output_10_wd;
+  logic sw_share1_output_11_re;
+  logic [31:0] sw_share1_output_11_qs;
+  logic [31:0] sw_share1_output_11_wd;
   logic [1:0] working_state_qs;
   logic op_status_we;
   logic [1:0] op_status_qs;
@@ -2011,6 +2035,126 @@ module keymgr_dpe_reg_top (
   );
 
 
+  // Subregister 8 of Multireg sw_share0_output
+  // R[sw_share0_output_8]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_sw_share0_output_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (sw_share0_output_8_re),
+    .wd     (sw_share0_output_8_wd),
+
+    // from internal hardware
+    .de     (hw2reg.sw_share0_output[8].de),
+    .d      (hw2reg.sw_share0_output[8].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (sw_share0_output_8_qs)
+  );
+
+
+  // Subregister 9 of Multireg sw_share0_output
+  // R[sw_share0_output_9]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_sw_share0_output_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (sw_share0_output_9_re),
+    .wd     (sw_share0_output_9_wd),
+
+    // from internal hardware
+    .de     (hw2reg.sw_share0_output[9].de),
+    .d      (hw2reg.sw_share0_output[9].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (sw_share0_output_9_qs)
+  );
+
+
+  // Subregister 10 of Multireg sw_share0_output
+  // R[sw_share0_output_10]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_sw_share0_output_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (sw_share0_output_10_re),
+    .wd     (sw_share0_output_10_wd),
+
+    // from internal hardware
+    .de     (hw2reg.sw_share0_output[10].de),
+    .d      (hw2reg.sw_share0_output[10].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (sw_share0_output_10_qs)
+  );
+
+
+  // Subregister 11 of Multireg sw_share0_output
+  // R[sw_share0_output_11]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_sw_share0_output_11 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (sw_share0_output_11_re),
+    .wd     (sw_share0_output_11_wd),
+
+    // from internal hardware
+    .de     (hw2reg.sw_share0_output[11].de),
+    .d      (hw2reg.sw_share0_output[11].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (sw_share0_output_11_qs)
+  );
+
+
   // Subregister 0 of Multireg sw_share1_output
   // R[sw_share1_output_0]: V(False)
   prim_subreg #(
@@ -2248,6 +2392,126 @@ module keymgr_dpe_reg_top (
 
     // to register interface (read)
     .qs     (sw_share1_output_7_qs)
+  );
+
+
+  // Subregister 8 of Multireg sw_share1_output
+  // R[sw_share1_output_8]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_sw_share1_output_8 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (sw_share1_output_8_re),
+    .wd     (sw_share1_output_8_wd),
+
+    // from internal hardware
+    .de     (hw2reg.sw_share1_output[8].de),
+    .d      (hw2reg.sw_share1_output[8].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (sw_share1_output_8_qs)
+  );
+
+
+  // Subregister 9 of Multireg sw_share1_output
+  // R[sw_share1_output_9]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_sw_share1_output_9 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (sw_share1_output_9_re),
+    .wd     (sw_share1_output_9_wd),
+
+    // from internal hardware
+    .de     (hw2reg.sw_share1_output[9].de),
+    .d      (hw2reg.sw_share1_output[9].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (sw_share1_output_9_qs)
+  );
+
+
+  // Subregister 10 of Multireg sw_share1_output
+  // R[sw_share1_output_10]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_sw_share1_output_10 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (sw_share1_output_10_re),
+    .wd     (sw_share1_output_10_wd),
+
+    // from internal hardware
+    .de     (hw2reg.sw_share1_output[10].de),
+    .d      (hw2reg.sw_share1_output[10].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (sw_share1_output_10_qs)
+  );
+
+
+  // Subregister 11 of Multireg sw_share1_output
+  // R[sw_share1_output_11]: V(False)
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRC),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_sw_share1_output_11 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (sw_share1_output_11_re),
+    .wd     (sw_share1_output_11_wd),
+
+    // from internal hardware
+    .de     (hw2reg.sw_share1_output[11].de),
+    .d      (hw2reg.sw_share1_output[11].d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (sw_share1_output_11_qs)
   );
 
 
@@ -4067,7 +4331,7 @@ module keymgr_dpe_reg_top (
 
 
 
-  logic [73:0] addr_hit;
+  logic [81:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == KEYMGR_DPE_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == KEYMGR_DPE_INTR_ENABLE_OFFSET);
@@ -4111,38 +4375,46 @@ module keymgr_dpe_reg_top (
     addr_hit[39] = (reg_addr == KEYMGR_DPE_SW_SHARE0_OUTPUT_5_OFFSET);
     addr_hit[40] = (reg_addr == KEYMGR_DPE_SW_SHARE0_OUTPUT_6_OFFSET);
     addr_hit[41] = (reg_addr == KEYMGR_DPE_SW_SHARE0_OUTPUT_7_OFFSET);
-    addr_hit[42] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_0_OFFSET);
-    addr_hit[43] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_1_OFFSET);
-    addr_hit[44] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_2_OFFSET);
-    addr_hit[45] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_3_OFFSET);
-    addr_hit[46] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_4_OFFSET);
-    addr_hit[47] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_5_OFFSET);
-    addr_hit[48] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_6_OFFSET);
-    addr_hit[49] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_7_OFFSET);
-    addr_hit[50] = (reg_addr == KEYMGR_DPE_WORKING_STATE_OFFSET);
-    addr_hit[51] = (reg_addr == KEYMGR_DPE_OP_STATUS_OFFSET);
-    addr_hit[52] = (reg_addr == KEYMGR_DPE_METADATA_LOW_0_OFFSET);
-    addr_hit[53] = (reg_addr == KEYMGR_DPE_METADATA_LOW_1_OFFSET);
-    addr_hit[54] = (reg_addr == KEYMGR_DPE_METADATA_LOW_2_OFFSET);
-    addr_hit[55] = (reg_addr == KEYMGR_DPE_METADATA_LOW_3_OFFSET);
-    addr_hit[56] = (reg_addr == KEYMGR_DPE_METADATA_LOW_4_OFFSET);
-    addr_hit[57] = (reg_addr == KEYMGR_DPE_METADATA_LOW_5_OFFSET);
-    addr_hit[58] = (reg_addr == KEYMGR_DPE_METADATA_LOW_6_OFFSET);
-    addr_hit[59] = (reg_addr == KEYMGR_DPE_METADATA_LOW_7_OFFSET);
-    addr_hit[60] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_0_OFFSET);
-    addr_hit[61] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_1_OFFSET);
-    addr_hit[62] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_2_OFFSET);
-    addr_hit[63] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_3_OFFSET);
-    addr_hit[64] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_4_OFFSET);
-    addr_hit[65] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_5_OFFSET);
-    addr_hit[66] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_6_OFFSET);
-    addr_hit[67] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_7_OFFSET);
-    addr_hit[68] = (reg_addr == KEYMGR_DPE_ERR_CODE_OFFSET);
-    addr_hit[69] = (reg_addr == KEYMGR_DPE_FAULT_STATUS_OFFSET);
-    addr_hit[70] = (reg_addr == KEYMGR_DPE_DEBUG_OFFSET);
-    addr_hit[71] = (reg_addr == KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_OFFSET);
-    addr_hit[72] = (reg_addr == KEYMGR_DPE_LOAD_SECONDARY_ROOT_KEY_LOCK_OFFSET);
-    addr_hit[73] = (reg_addr == KEYMGR_DPE_ENFORCE_SW_BINDING_OFFSET);
+    addr_hit[42] = (reg_addr == KEYMGR_DPE_SW_SHARE0_OUTPUT_8_OFFSET);
+    addr_hit[43] = (reg_addr == KEYMGR_DPE_SW_SHARE0_OUTPUT_9_OFFSET);
+    addr_hit[44] = (reg_addr == KEYMGR_DPE_SW_SHARE0_OUTPUT_10_OFFSET);
+    addr_hit[45] = (reg_addr == KEYMGR_DPE_SW_SHARE0_OUTPUT_11_OFFSET);
+    addr_hit[46] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_0_OFFSET);
+    addr_hit[47] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_1_OFFSET);
+    addr_hit[48] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_2_OFFSET);
+    addr_hit[49] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_3_OFFSET);
+    addr_hit[50] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_4_OFFSET);
+    addr_hit[51] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_5_OFFSET);
+    addr_hit[52] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_6_OFFSET);
+    addr_hit[53] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_7_OFFSET);
+    addr_hit[54] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_8_OFFSET);
+    addr_hit[55] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_9_OFFSET);
+    addr_hit[56] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_10_OFFSET);
+    addr_hit[57] = (reg_addr == KEYMGR_DPE_SW_SHARE1_OUTPUT_11_OFFSET);
+    addr_hit[58] = (reg_addr == KEYMGR_DPE_WORKING_STATE_OFFSET);
+    addr_hit[59] = (reg_addr == KEYMGR_DPE_OP_STATUS_OFFSET);
+    addr_hit[60] = (reg_addr == KEYMGR_DPE_METADATA_LOW_0_OFFSET);
+    addr_hit[61] = (reg_addr == KEYMGR_DPE_METADATA_LOW_1_OFFSET);
+    addr_hit[62] = (reg_addr == KEYMGR_DPE_METADATA_LOW_2_OFFSET);
+    addr_hit[63] = (reg_addr == KEYMGR_DPE_METADATA_LOW_3_OFFSET);
+    addr_hit[64] = (reg_addr == KEYMGR_DPE_METADATA_LOW_4_OFFSET);
+    addr_hit[65] = (reg_addr == KEYMGR_DPE_METADATA_LOW_5_OFFSET);
+    addr_hit[66] = (reg_addr == KEYMGR_DPE_METADATA_LOW_6_OFFSET);
+    addr_hit[67] = (reg_addr == KEYMGR_DPE_METADATA_LOW_7_OFFSET);
+    addr_hit[68] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_0_OFFSET);
+    addr_hit[69] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_1_OFFSET);
+    addr_hit[70] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_2_OFFSET);
+    addr_hit[71] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_3_OFFSET);
+    addr_hit[72] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_4_OFFSET);
+    addr_hit[73] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_5_OFFSET);
+    addr_hit[74] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_6_OFFSET);
+    addr_hit[75] = (reg_addr == KEYMGR_DPE_METADATA_HIGH_7_OFFSET);
+    addr_hit[76] = (reg_addr == KEYMGR_DPE_ERR_CODE_OFFSET);
+    addr_hit[77] = (reg_addr == KEYMGR_DPE_FAULT_STATUS_OFFSET);
+    addr_hit[78] = (reg_addr == KEYMGR_DPE_DEBUG_OFFSET);
+    addr_hit[79] = (reg_addr == KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_OFFSET);
+    addr_hit[80] = (reg_addr == KEYMGR_DPE_LOAD_SECONDARY_ROOT_KEY_LOCK_OFFSET);
+    addr_hit[81] = (reg_addr == KEYMGR_DPE_ENFORCE_SW_BINDING_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -4223,7 +4495,15 @@ module keymgr_dpe_reg_top (
                (addr_hit[70] & (|(KEYMGR_DPE_PERMIT[70] & ~reg_be))) |
                (addr_hit[71] & (|(KEYMGR_DPE_PERMIT[71] & ~reg_be))) |
                (addr_hit[72] & (|(KEYMGR_DPE_PERMIT[72] & ~reg_be))) |
-               (addr_hit[73] & (|(KEYMGR_DPE_PERMIT[73] & ~reg_be)))));
+               (addr_hit[73] & (|(KEYMGR_DPE_PERMIT[73] & ~reg_be))) |
+               (addr_hit[74] & (|(KEYMGR_DPE_PERMIT[74] & ~reg_be))) |
+               (addr_hit[75] & (|(KEYMGR_DPE_PERMIT[75] & ~reg_be))) |
+               (addr_hit[76] & (|(KEYMGR_DPE_PERMIT[76] & ~reg_be))) |
+               (addr_hit[77] & (|(KEYMGR_DPE_PERMIT[77] & ~reg_be))) |
+               (addr_hit[78] & (|(KEYMGR_DPE_PERMIT[78] & ~reg_be))) |
+               (addr_hit[79] & (|(KEYMGR_DPE_PERMIT[79] & ~reg_be))) |
+               (addr_hit[80] & (|(KEYMGR_DPE_PERMIT[80] & ~reg_be))) |
+               (addr_hit[81] & (|(KEYMGR_DPE_PERMIT[81] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -4376,57 +4656,81 @@ module keymgr_dpe_reg_top (
   assign sw_share0_output_7_re = addr_hit[41] & reg_re & !reg_error;
 
   assign sw_share0_output_7_wd = '1;
-  assign sw_share1_output_0_re = addr_hit[42] & reg_re & !reg_error;
+  assign sw_share0_output_8_re = addr_hit[42] & reg_re & !reg_error;
+
+  assign sw_share0_output_8_wd = '1;
+  assign sw_share0_output_9_re = addr_hit[43] & reg_re & !reg_error;
+
+  assign sw_share0_output_9_wd = '1;
+  assign sw_share0_output_10_re = addr_hit[44] & reg_re & !reg_error;
+
+  assign sw_share0_output_10_wd = '1;
+  assign sw_share0_output_11_re = addr_hit[45] & reg_re & !reg_error;
+
+  assign sw_share0_output_11_wd = '1;
+  assign sw_share1_output_0_re = addr_hit[46] & reg_re & !reg_error;
 
   assign sw_share1_output_0_wd = '1;
-  assign sw_share1_output_1_re = addr_hit[43] & reg_re & !reg_error;
+  assign sw_share1_output_1_re = addr_hit[47] & reg_re & !reg_error;
 
   assign sw_share1_output_1_wd = '1;
-  assign sw_share1_output_2_re = addr_hit[44] & reg_re & !reg_error;
+  assign sw_share1_output_2_re = addr_hit[48] & reg_re & !reg_error;
 
   assign sw_share1_output_2_wd = '1;
-  assign sw_share1_output_3_re = addr_hit[45] & reg_re & !reg_error;
+  assign sw_share1_output_3_re = addr_hit[49] & reg_re & !reg_error;
 
   assign sw_share1_output_3_wd = '1;
-  assign sw_share1_output_4_re = addr_hit[46] & reg_re & !reg_error;
+  assign sw_share1_output_4_re = addr_hit[50] & reg_re & !reg_error;
 
   assign sw_share1_output_4_wd = '1;
-  assign sw_share1_output_5_re = addr_hit[47] & reg_re & !reg_error;
+  assign sw_share1_output_5_re = addr_hit[51] & reg_re & !reg_error;
 
   assign sw_share1_output_5_wd = '1;
-  assign sw_share1_output_6_re = addr_hit[48] & reg_re & !reg_error;
+  assign sw_share1_output_6_re = addr_hit[52] & reg_re & !reg_error;
 
   assign sw_share1_output_6_wd = '1;
-  assign sw_share1_output_7_re = addr_hit[49] & reg_re & !reg_error;
+  assign sw_share1_output_7_re = addr_hit[53] & reg_re & !reg_error;
 
   assign sw_share1_output_7_wd = '1;
-  assign op_status_we = addr_hit[51] & reg_we & !reg_error;
+  assign sw_share1_output_8_re = addr_hit[54] & reg_re & !reg_error;
+
+  assign sw_share1_output_8_wd = '1;
+  assign sw_share1_output_9_re = addr_hit[55] & reg_re & !reg_error;
+
+  assign sw_share1_output_9_wd = '1;
+  assign sw_share1_output_10_re = addr_hit[56] & reg_re & !reg_error;
+
+  assign sw_share1_output_10_wd = '1;
+  assign sw_share1_output_11_re = addr_hit[57] & reg_re & !reg_error;
+
+  assign sw_share1_output_11_wd = '1;
+  assign op_status_we = addr_hit[59] & reg_we & !reg_error;
 
   assign op_status_wd = reg_wdata[1:0];
-  assign metadata_low_0_re = addr_hit[52] & reg_re & !reg_error;
-  assign metadata_low_1_re = addr_hit[53] & reg_re & !reg_error;
-  assign metadata_low_2_re = addr_hit[54] & reg_re & !reg_error;
-  assign metadata_low_3_re = addr_hit[55] & reg_re & !reg_error;
-  assign metadata_low_4_re = addr_hit[56] & reg_re & !reg_error;
-  assign metadata_low_5_re = addr_hit[57] & reg_re & !reg_error;
-  assign metadata_low_6_re = addr_hit[58] & reg_re & !reg_error;
-  assign metadata_low_7_re = addr_hit[59] & reg_re & !reg_error;
-  assign metadata_high_0_re = addr_hit[60] & reg_re & !reg_error;
-  assign metadata_high_1_re = addr_hit[61] & reg_re & !reg_error;
-  assign metadata_high_2_re = addr_hit[62] & reg_re & !reg_error;
-  assign metadata_high_3_re = addr_hit[63] & reg_re & !reg_error;
-  assign metadata_high_4_re = addr_hit[64] & reg_re & !reg_error;
-  assign metadata_high_5_re = addr_hit[65] & reg_re & !reg_error;
-  assign metadata_high_6_re = addr_hit[66] & reg_re & !reg_error;
-  assign metadata_high_7_re = addr_hit[67] & reg_re & !reg_error;
-  assign err_code_we = addr_hit[68] & reg_we & !reg_error;
+  assign metadata_low_0_re = addr_hit[60] & reg_re & !reg_error;
+  assign metadata_low_1_re = addr_hit[61] & reg_re & !reg_error;
+  assign metadata_low_2_re = addr_hit[62] & reg_re & !reg_error;
+  assign metadata_low_3_re = addr_hit[63] & reg_re & !reg_error;
+  assign metadata_low_4_re = addr_hit[64] & reg_re & !reg_error;
+  assign metadata_low_5_re = addr_hit[65] & reg_re & !reg_error;
+  assign metadata_low_6_re = addr_hit[66] & reg_re & !reg_error;
+  assign metadata_low_7_re = addr_hit[67] & reg_re & !reg_error;
+  assign metadata_high_0_re = addr_hit[68] & reg_re & !reg_error;
+  assign metadata_high_1_re = addr_hit[69] & reg_re & !reg_error;
+  assign metadata_high_2_re = addr_hit[70] & reg_re & !reg_error;
+  assign metadata_high_3_re = addr_hit[71] & reg_re & !reg_error;
+  assign metadata_high_4_re = addr_hit[72] & reg_re & !reg_error;
+  assign metadata_high_5_re = addr_hit[73] & reg_re & !reg_error;
+  assign metadata_high_6_re = addr_hit[74] & reg_re & !reg_error;
+  assign metadata_high_7_re = addr_hit[75] & reg_re & !reg_error;
+  assign err_code_we = addr_hit[76] & reg_we & !reg_error;
 
   assign err_code_invalid_op_wd = reg_wdata[0];
 
   assign err_code_invalid_kmac_input_wd = reg_wdata[1];
 
   assign err_code_invalid_shadow_update_wd = reg_wdata[2];
-  assign debug_we = addr_hit[70] & reg_we & !reg_error;
+  assign debug_we = addr_hit[78] & reg_we & !reg_error;
 
   assign debug_invalid_creator_seed_wd = reg_wdata[0];
 
@@ -4449,13 +4753,13 @@ module keymgr_dpe_reg_top (
   assign debug_invalid_secondary_root_key_wd = reg_wdata[9];
 
   assign debug_invalid_field_entropy_wd = reg_wdata[10];
-  assign load_root_key_lock_we = addr_hit[71] & reg_we & !reg_error;
+  assign load_root_key_lock_we = addr_hit[79] & reg_we & !reg_error;
 
   assign load_root_key_lock_wd = reg_wdata[0];
-  assign load_secondary_root_key_lock_we = addr_hit[72] & reg_we & !reg_error;
+  assign load_secondary_root_key_lock_we = addr_hit[80] & reg_we & !reg_error;
 
   assign load_secondary_root_key_lock_wd = reg_wdata[0];
-  assign enforce_sw_binding_we = addr_hit[73] & reg_we & !reg_error;
+  assign enforce_sw_binding_we = addr_hit[81] & reg_we & !reg_error;
 
   assign enforce_sw_binding_wd = reg_wdata[3:0];
 
@@ -4512,7 +4816,7 @@ module keymgr_dpe_reg_top (
     reg_we_check[48] = 1'b0;
     reg_we_check[49] = 1'b0;
     reg_we_check[50] = 1'b0;
-    reg_we_check[51] = op_status_we;
+    reg_we_check[51] = 1'b0;
     reg_we_check[52] = 1'b0;
     reg_we_check[53] = 1'b0;
     reg_we_check[54] = 1'b0;
@@ -4520,7 +4824,7 @@ module keymgr_dpe_reg_top (
     reg_we_check[56] = 1'b0;
     reg_we_check[57] = 1'b0;
     reg_we_check[58] = 1'b0;
-    reg_we_check[59] = 1'b0;
+    reg_we_check[59] = op_status_we;
     reg_we_check[60] = 1'b0;
     reg_we_check[61] = 1'b0;
     reg_we_check[62] = 1'b0;
@@ -4529,12 +4833,20 @@ module keymgr_dpe_reg_top (
     reg_we_check[65] = 1'b0;
     reg_we_check[66] = 1'b0;
     reg_we_check[67] = 1'b0;
-    reg_we_check[68] = err_code_we;
+    reg_we_check[68] = 1'b0;
     reg_we_check[69] = 1'b0;
-    reg_we_check[70] = debug_we;
-    reg_we_check[71] = load_root_key_lock_we;
-    reg_we_check[72] = load_secondary_root_key_lock_we;
-    reg_we_check[73] = enforce_sw_binding_we;
+    reg_we_check[70] = 1'b0;
+    reg_we_check[71] = 1'b0;
+    reg_we_check[72] = 1'b0;
+    reg_we_check[73] = 1'b0;
+    reg_we_check[74] = 1'b0;
+    reg_we_check[75] = 1'b0;
+    reg_we_check[76] = err_code_we;
+    reg_we_check[77] = 1'b0;
+    reg_we_check[78] = debug_we;
+    reg_we_check[79] = load_root_key_lock_we;
+    reg_we_check[80] = load_secondary_root_key_lock_we;
+    reg_we_check[81] = enforce_sw_binding_we;
   end
 
   // Read data return
@@ -4719,78 +5031,110 @@ module keymgr_dpe_reg_top (
       end
 
       addr_hit[42]: begin
-        reg_rdata_next[31:0] = sw_share1_output_0_qs;
+        reg_rdata_next[31:0] = sw_share0_output_8_qs;
       end
 
       addr_hit[43]: begin
-        reg_rdata_next[31:0] = sw_share1_output_1_qs;
+        reg_rdata_next[31:0] = sw_share0_output_9_qs;
       end
 
       addr_hit[44]: begin
-        reg_rdata_next[31:0] = sw_share1_output_2_qs;
+        reg_rdata_next[31:0] = sw_share0_output_10_qs;
       end
 
       addr_hit[45]: begin
-        reg_rdata_next[31:0] = sw_share1_output_3_qs;
+        reg_rdata_next[31:0] = sw_share0_output_11_qs;
       end
 
       addr_hit[46]: begin
-        reg_rdata_next[31:0] = sw_share1_output_4_qs;
+        reg_rdata_next[31:0] = sw_share1_output_0_qs;
       end
 
       addr_hit[47]: begin
-        reg_rdata_next[31:0] = sw_share1_output_5_qs;
+        reg_rdata_next[31:0] = sw_share1_output_1_qs;
       end
 
       addr_hit[48]: begin
-        reg_rdata_next[31:0] = sw_share1_output_6_qs;
+        reg_rdata_next[31:0] = sw_share1_output_2_qs;
       end
 
       addr_hit[49]: begin
-        reg_rdata_next[31:0] = sw_share1_output_7_qs;
+        reg_rdata_next[31:0] = sw_share1_output_3_qs;
       end
 
       addr_hit[50]: begin
-        reg_rdata_next[1:0] = working_state_qs;
+        reg_rdata_next[31:0] = sw_share1_output_4_qs;
       end
 
       addr_hit[51]: begin
-        reg_rdata_next[1:0] = op_status_qs;
+        reg_rdata_next[31:0] = sw_share1_output_5_qs;
       end
 
       addr_hit[52]: begin
-        reg_rdata_next[31:0] = metadata_low_0_qs;
+        reg_rdata_next[31:0] = sw_share1_output_6_qs;
       end
 
       addr_hit[53]: begin
-        reg_rdata_next[31:0] = metadata_low_1_qs;
+        reg_rdata_next[31:0] = sw_share1_output_7_qs;
       end
 
       addr_hit[54]: begin
-        reg_rdata_next[31:0] = metadata_low_2_qs;
+        reg_rdata_next[31:0] = sw_share1_output_8_qs;
       end
 
       addr_hit[55]: begin
-        reg_rdata_next[31:0] = metadata_low_3_qs;
+        reg_rdata_next[31:0] = sw_share1_output_9_qs;
       end
 
       addr_hit[56]: begin
-        reg_rdata_next[31:0] = metadata_low_4_qs;
+        reg_rdata_next[31:0] = sw_share1_output_10_qs;
       end
 
       addr_hit[57]: begin
-        reg_rdata_next[31:0] = metadata_low_5_qs;
+        reg_rdata_next[31:0] = sw_share1_output_11_qs;
       end
 
       addr_hit[58]: begin
-        reg_rdata_next[31:0] = metadata_low_6_qs;
+        reg_rdata_next[1:0] = working_state_qs;
       end
 
       addr_hit[59]: begin
-        reg_rdata_next[31:0] = metadata_low_7_qs;
+        reg_rdata_next[1:0] = op_status_qs;
       end
 
       addr_hit[60]: begin
+        reg_rdata_next[31:0] = metadata_low_0_qs;
+      end
+
+      addr_hit[61]: begin
+        reg_rdata_next[31:0] = metadata_low_1_qs;
+      end
+
+      addr_hit[62]: begin
+        reg_rdata_next[31:0] = metadata_low_2_qs;
+      end
+
+      addr_hit[63]: begin
+        reg_rdata_next[31:0] = metadata_low_3_qs;
+      end
+
+      addr_hit[64]: begin
+        reg_rdata_next[31:0] = metadata_low_4_qs;
+      end
+
+      addr_hit[65]: begin
+        reg_rdata_next[31:0] = metadata_low_5_qs;
+      end
+
+      addr_hit[66]: begin
+        reg_rdata_next[31:0] = metadata_low_6_qs;
+      end
+
+      addr_hit[67]: begin
+        reg_rdata_next[31:0] = metadata_low_7_qs;
+      end
+
+      addr_hit[68]: begin
         reg_rdata_next[0] = metadata_high_0_valid_0_qs;
         reg_rdata_next[3:1] = metadata_high_0_boot_stage_0_qs;
         reg_rdata_next[4] = metadata_high_0_allow_child_policy_0_qs;
@@ -4799,7 +5143,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[7] = metadata_high_0_allow_keygen_policy_0_qs;
       end
 
-      addr_hit[61]: begin
+      addr_hit[69]: begin
         reg_rdata_next[0] = metadata_high_1_valid_1_qs;
         reg_rdata_next[3:1] = metadata_high_1_boot_stage_1_qs;
         reg_rdata_next[4] = metadata_high_1_allow_child_policy_1_qs;
@@ -4808,7 +5152,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[7] = metadata_high_1_allow_keygen_policy_1_qs;
       end
 
-      addr_hit[62]: begin
+      addr_hit[70]: begin
         reg_rdata_next[0] = metadata_high_2_valid_2_qs;
         reg_rdata_next[3:1] = metadata_high_2_boot_stage_2_qs;
         reg_rdata_next[4] = metadata_high_2_allow_child_policy_2_qs;
@@ -4817,7 +5161,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[7] = metadata_high_2_allow_keygen_policy_2_qs;
       end
 
-      addr_hit[63]: begin
+      addr_hit[71]: begin
         reg_rdata_next[0] = metadata_high_3_valid_3_qs;
         reg_rdata_next[3:1] = metadata_high_3_boot_stage_3_qs;
         reg_rdata_next[4] = metadata_high_3_allow_child_policy_3_qs;
@@ -4826,7 +5170,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[7] = metadata_high_3_allow_keygen_policy_3_qs;
       end
 
-      addr_hit[64]: begin
+      addr_hit[72]: begin
         reg_rdata_next[0] = metadata_high_4_valid_4_qs;
         reg_rdata_next[3:1] = metadata_high_4_boot_stage_4_qs;
         reg_rdata_next[4] = metadata_high_4_allow_child_policy_4_qs;
@@ -4835,7 +5179,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[7] = metadata_high_4_allow_keygen_policy_4_qs;
       end
 
-      addr_hit[65]: begin
+      addr_hit[73]: begin
         reg_rdata_next[0] = metadata_high_5_valid_5_qs;
         reg_rdata_next[3:1] = metadata_high_5_boot_stage_5_qs;
         reg_rdata_next[4] = metadata_high_5_allow_child_policy_5_qs;
@@ -4844,7 +5188,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[7] = metadata_high_5_allow_keygen_policy_5_qs;
       end
 
-      addr_hit[66]: begin
+      addr_hit[74]: begin
         reg_rdata_next[0] = metadata_high_6_valid_6_qs;
         reg_rdata_next[3:1] = metadata_high_6_boot_stage_6_qs;
         reg_rdata_next[4] = metadata_high_6_allow_child_policy_6_qs;
@@ -4853,7 +5197,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[7] = metadata_high_6_allow_keygen_policy_6_qs;
       end
 
-      addr_hit[67]: begin
+      addr_hit[75]: begin
         reg_rdata_next[0] = metadata_high_7_valid_7_qs;
         reg_rdata_next[3:1] = metadata_high_7_boot_stage_7_qs;
         reg_rdata_next[4] = metadata_high_7_allow_child_policy_7_qs;
@@ -4862,13 +5206,13 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[7] = metadata_high_7_allow_keygen_policy_7_qs;
       end
 
-      addr_hit[68]: begin
+      addr_hit[76]: begin
         reg_rdata_next[0] = err_code_invalid_op_qs;
         reg_rdata_next[1] = err_code_invalid_kmac_input_qs;
         reg_rdata_next[2] = err_code_invalid_shadow_update_qs;
       end
 
-      addr_hit[69]: begin
+      addr_hit[77]: begin
         reg_rdata_next[0] = fault_status_cmd_qs;
         reg_rdata_next[1] = fault_status_kmac_fsm_qs;
         reg_rdata_next[2] = fault_status_kmac_done_qs;
@@ -4885,7 +5229,7 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[13] = fault_status_key_ecc_qs;
       end
 
-      addr_hit[70]: begin
+      addr_hit[78]: begin
         reg_rdata_next[0] = debug_invalid_creator_seed_qs;
         reg_rdata_next[1] = debug_invalid_owner_seed_qs;
         reg_rdata_next[2] = debug_invalid_dev_id_qs;
@@ -4899,15 +5243,15 @@ module keymgr_dpe_reg_top (
         reg_rdata_next[10] = debug_invalid_field_entropy_qs;
       end
 
-      addr_hit[71]: begin
+      addr_hit[79]: begin
         reg_rdata_next[0] = load_root_key_lock_qs;
       end
 
-      addr_hit[72]: begin
+      addr_hit[80]: begin
         reg_rdata_next[0] = load_secondary_root_key_lock_qs;
       end
 
-      addr_hit[73]: begin
+      addr_hit[81]: begin
         reg_rdata_next[3:0] = enforce_sw_binding_qs;
       end
 
