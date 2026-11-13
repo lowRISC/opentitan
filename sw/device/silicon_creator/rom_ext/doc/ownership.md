@@ -141,8 +141,8 @@ A detached signature is a signature that is stored separately from the data it s
 
 Detached signatures have the following properties:
 - They are necessary when using PQC (Post-Quantum Cryptography) algorithms, either on their own or in a hybrid mode alongside ECDSA. This is because PQC signatures are typically too large to fit within the designated signature area of the original data structure.
-- They may be located anywhere in flash, as long as flash page alignment constraints are met.
-- They only need to be stored in flash temporarily. Once the device verifies the signature against its corresponding data structure or command, the flash space occupied by the detached signature may be reclaimed for other purposes.
+- They may be located anywhere in flash, as long as flash page alignment constraints are met. The ROM_EXT finds a detached signature regardless of the scramble and ECC settings of its pages.
+- They only need to be stored in flash temporarily. For a signed boot services command, the flash space occupied by the detached signature may be reclaimed once the command is processed. For an owner block, because the ROM_EXT re-verifies an unsealed owner page on every boot, the detached signature must remain in flash until ownership activation seals the page.
 
 ## Ownership Transfer Operations
 
@@ -891,7 +891,12 @@ orginal buffer's signature field will be all zeros and the verification
 function will scan through the flash data pages to find the detached
 signature.
 
-The detached signature must be aligned on a flash page boundary.
+The detached signature must be aligned on a flash page boundary. The ROM_EXT
+scans data flash in both unscrambled and scrambled modes with ECC disabled, so
+it finds a detached signature regardless of the scramble and ECC settings of
+the pages where it is stored. A detached signature for an owner block must
+remain in flash until ownership activation seals the owner page, because the
+ROM_EXT verifies an unsealed owner page again on every boot.
 
 ```c
 typedef struct owner_detached_signature {
