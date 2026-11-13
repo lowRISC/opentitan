@@ -28,15 +28,15 @@
 | keymgr_dpe.[`SW_BINDING_5`](#sw_binding)                                   | 0x50     |        4 | Software binding input of the key manager.                                                                        |
 | keymgr_dpe.[`SW_BINDING_6`](#sw_binding)                                   | 0x54     |        4 | Software binding input of the key manager.                                                                        |
 | keymgr_dpe.[`SW_BINDING_7`](#sw_binding)                                   | 0x58     |        4 | Software binding input of the key manager.                                                                        |
-| keymgr_dpe.[`SALT_0`](#salt)                                               | 0x5c     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`SALT_1`](#salt)                                               | 0x60     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`SALT_2`](#salt)                                               | 0x64     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`SALT_3`](#salt)                                               | 0x68     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`SALT_4`](#salt)                                               | 0x6c     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`SALT_5`](#salt)                                               | 0x70     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`SALT_6`](#salt)                                               | 0x74     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`SALT_7`](#salt)                                               | 0x78     |        4 | Salt value used as part of output generation                                                                      |
-| keymgr_dpe.[`KEY_VERSION`](#key_version)                                   | 0x7c     |        4 | Version used as part of output generation                                                                         |
+| keymgr_dpe.[`SALT_0`](#salt)                                               | 0x5c     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`SALT_1`](#salt)                                               | 0x60     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`SALT_2`](#salt)                                               | 0x64     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`SALT_3`](#salt)                                               | 0x68     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`SALT_4`](#salt)                                               | 0x6c     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`SALT_5`](#salt)                                               | 0x70     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`SALT_6`](#salt)                                               | 0x74     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`SALT_7`](#salt)                                               | 0x78     |        4 | Salt value used as part of output generation.                                                                     |
+| keymgr_dpe.[`KEY_VERSION`](#key_version)                                   | 0x7c     |        4 | Version used as part of output generation.                                                                        |
 | keymgr_dpe.[`MAX_KEY_VER_REGWEN`](#max_key_ver_regwen)                     | 0x80     |        4 | Register write enable for MAX_KEY_VERSION                                                                         |
 | keymgr_dpe.[`MAX_KEY_VER_SHADOWED`](#max_key_ver_shadowed)                 | 0x84     |        4 | Max key version                                                                                                   |
 | keymgr_dpe.[`SW_SHARE0_OUTPUT_0`](#sw_share0_output)                       | 0x88     |        4 | Key manager software output.                                                                                      |
@@ -322,10 +322,10 @@ regwen for reseed interval
 {"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name   | Description                              |
-|:------:|:------:|:-------:|:-------|:-----------------------------------------|
-|  31:1  |        |         |        | Reserved                                 |
-|   0    |  rw0c  |   0x1   | EN     | Configuration enable for reseed interval |
+|  Bits  |  Type  |  Reset  | Name   | Description                               |
+|:------:|:------:|:-------:|:-------|:------------------------------------------|
+|  31:1  |        |         |        | Reserved                                  |
+|   0    |  rw0c  |   0x1   | EN     | Configuration enable for reseed interval. |
 
 ## RESEED_INTERVAL_SHADOWED
 Reseed interval for key manager entropy reseed
@@ -470,7 +470,7 @@ The software binding is locked by software and unlocked by hardware upon a succe
 |  31:0  |   rw   |   0x0   | VAL    | Software binding value |
 
 ## SALT
-Salt value used as part of output generation
+Salt value used as part of output generation.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`CFG_REGWEN`](#cfg_regwen)
@@ -500,7 +500,7 @@ Salt value used as part of output generation
 |  31:0  |   rw   |   0x0   | VAL    | Salt value    |
 
 ## KEY_VERSION
-Version used as part of output generation
+Version used as part of output generation.
 - Reset default: `0x0`
 - Reset mask: `0xffffffff`
 - Register enable: [`CFG_REGWEN`](#cfg_regwen)
@@ -623,7 +623,7 @@ here.
 ## WORKING_STATE
 Key manager working state.
 
-This is a readout of the current key manager working state
+This is a readout of the current key manager working state.
 - Offset: `0xc8`
 - Reset default: `0x0`
 - Reset mask: `0x3`
@@ -674,12 +674,12 @@ Software clears by writing back whatever it reads.
 ### OP_STATUS . STATUS
 Operation status.
 
-| Value   | Name         | Description                                                               |
-|:--------|:-------------|:--------------------------------------------------------------------------|
-| 0x0     | Idle         | Key manager is idle                                                       |
-| 0x1     | WIP          | Work in progress. A key manager operation has been started and is ongoing |
-| 0x2     | DONE_SUCCESS | Operation finished without errors                                         |
-| 0x3     | DONE_ERROR   | Operation finished with errors, please see ERR_CODE register.             |
+| Value   | Name         | Description                                                                |
+|:--------|:-------------|:---------------------------------------------------------------------------|
+| 0x0     | Idle         | Key manager is idle                                                        |
+| 0x1     | WIP          | Work in progress. A key manager operation has been started and is ongoing. |
+| 0x2     | DONE_SUCCESS | Operation finished without errors.                                         |
+| 0x3     | DONE_ERROR   | Operation finished with errors, please see ERR_CODE register.              |
 
 
 ## METADATA_LOW
