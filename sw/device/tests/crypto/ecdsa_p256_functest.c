@@ -124,23 +124,45 @@ static status_t sign_then_verify_test(void) {
       &public_key, msg_digest, &const_sig_buf, &verificationResult));
   TRY_CHECK(verificationResult == kHardenedBoolTrue);
 
-  // Test hash_sign_verify and hash_verify (including SHAKE modes for
-  // hash_get_info coverage).
-  CHECK_STATUS_OK(otcrypto_ecdsa_p256_hash_sign_verify(
-      &private_key, &public_key, kOtcryptoHashModeSha256, &msg, &sig_buf));
+  // Test streaming hash_sign_verify_final and hash_verify_final (including
+  // multi-chunk updates and SHA-1 / unsupported mode coverage).
+  otcrypto_hash_context_t hash_ctx;
+  CHECK_STATUS_OK(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  CHECK_STATUS_OK(otcrypto_hash_update(&hash_ctx, &msg));
+  CHECK_STATUS_OK(otcrypto_ecdsa_p256_hash_sign_verify_final(
+      &private_key, &public_key, &hash_ctx, &sig_buf));
   verificationResult = kHardenedBoolFalse;
-  CHECK_STATUS_OK(otcrypto_ecdsa_p256_hash_verify(
-      &public_key, kOtcryptoHashModeSha256, &msg, &const_sig_buf,
-      &verificationResult));
+  CHECK_STATUS_OK(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  otcrypto_const_byte_buf_t msg_part1 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const unsigned char *)&kMessage, 5);
+  otcrypto_const_byte_buf_t msg_part2 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                        (const unsigned char *)&kMessage + 5, msg.len - 5);
+  CHECK_STATUS_OK(otcrypto_hash_update(&hash_ctx, &msg_part1));
+  CHECK_STATUS_OK(otcrypto_hash_update(&hash_ctx, &msg_part2));
+  CHECK_STATUS_OK(otcrypto_ecdsa_p256_hash_verify_final(
+      &public_key, &hash_ctx, &const_sig_buf, &verificationResult));
   TRY_CHECK(verificationResult == kHardenedBoolTrue);
 
-  CHECK_STATUS_OK(otcrypto_ecdsa_p256_hash_verify(
-      &public_key, kOtcryptoHashXofModeShake128, &msg, &const_sig_buf,
-      &verificationResult));
-  CHECK(otcrypto_ecdsa_p256_hash_verify(&public_key,
-                                        kOtcryptoHashXofModeShake256, &msg,
-                                        &const_sig_buf, &verificationResult)
+  // Also test otcrypto_hash_final directly.
+  uint32_t streamed_digest_data[kP256DigestWords] = {0};
+  otcrypto_hash_digest_t streamed_digest = {
+      .data = streamed_digest_data,
+      .len = ARRAYSIZE(streamed_digest_data),
+  };
+  CHECK_STATUS_OK(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  CHECK_STATUS_OK(otcrypto_hash_update(&hash_ctx, &msg_part1));
+  CHECK_STATUS_OK(otcrypto_hash_update(&hash_ctx, &msg_part2));
+  CHECK_STATUS_OK(otcrypto_hash_final(&hash_ctx, &streamed_digest));
+  CHECK_ARRAYS_EQ(streamed_digest_data, msg_digest_data, kP256DigestWords);
+
+  CHECK_STATUS_OK(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha1));
+  CHECK_STATUS_OK(otcrypto_hash_update(&hash_ctx, &msg));
+  CHECK(otcrypto_ecdsa_p256_hash_verify_final(
+            &public_key, &hash_ctx, &const_sig_buf, &verificationResult)
             .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_hash_init(&hash_ctx, kOtcryptoHashXofModeShake256).value ==
+        OTCRYPTO_BAD_ARGS.value);
 
   return OK_STATUS();
 }

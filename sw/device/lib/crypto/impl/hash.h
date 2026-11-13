@@ -10,6 +10,7 @@
 
 #include "sw/device/lib/base/hardened.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
+#include "sw/device/lib/crypto/include/sha2.h"
 
 #ifdef __cplusplus
 extern "C" {
@@ -62,6 +63,20 @@ OT_WARN_UNUSED_RESULT
 status_t hash_message(otcrypto_hash_mode_t hash_mode,
                       const otcrypto_const_byte_buf_t *message,
                       uint32_t *digest_data, otcrypto_hash_digest_t *digest);
+
+/**
+ * Finalizes a streaming hash context into `digest_data` and `digest`, and
+ * shreds `ctx`.
+ *
+ * @param ctx Initialized streaming hash context (shredded on exit).
+ * @param[out] digest_data Buffer to hold output digest words (at least 16
+ * words).
+ * @param[out] digest Output digest struct.
+ * @return OTCRYPTO_OK or error status.
+ */
+OT_WARN_UNUSED_RESULT
+status_t hash_context_final(otcrypto_hash_context_t *ctx, uint32_t *digest_data,
+                            otcrypto_hash_digest_t *digest);
 
 #ifdef __cplusplus
 }  // extern "C"

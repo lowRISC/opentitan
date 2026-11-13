@@ -387,8 +387,11 @@ status_t cryptolib_fi_rsa_sign_impl(
     PENTEST_MARKER_LABEL(PENTEST_MARKER_RSA_SIGN_START);
     pentest_set_trigger_high();
   }
-  HARDENED_TRY(otcrypto_rsa_hash_sign_verify(
-      &private_key, &public_key, hash_mode, &msg_buf, padding_mode, &sig_buf));
+  otcrypto_hash_context_t hash_ctx;
+  HARDENED_TRY(otcrypto_hash_init(&hash_ctx, hash_mode));
+  HARDENED_TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+  HARDENED_TRY(otcrypto_rsa_hash_sign_verify_final(
+      &private_key, &public_key, &hash_ctx, padding_mode, &sig_buf));
   // Trigger window.
   if (uj_input.trigger & kPentestTrigger3) {
     pentest_set_trigger_low();
