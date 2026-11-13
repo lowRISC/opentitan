@@ -140,11 +140,14 @@ impl Dispatch for Generate {
         private_template.insert(AttributeType::Id, id);
         private_template.insert(AttributeType::Label, result.label.clone());
         private_template.insert(AttributeType::KeyType, KeyType::SlhDsa.into());
+        private_template.insert(AttributeType::Extractable, AttrData::from(false));
         if let Some(tpl) = &self.private_template {
             private_template.merge(tpl.clone());
         }
 
-        private_template.insert(AttributeType::Extractable, AttrData::from(self.extractable));
+        if self.extractable {
+            private_template.insert(AttributeType::Extractable, AttrData::from(true));
+        }
 
         log::debug!(
             "public_template = {}",
