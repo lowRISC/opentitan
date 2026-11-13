@@ -12,6 +12,10 @@
 #include "sw/device/silicon_creator/lib/error.h"
 #include "sw/device/silicon_creator/lib/ownership/datatypes.h"
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 /**
  * The OwnershipNoOwnerRecoveryKey is a silicon_creator key that allows
  * recovery of a device should it get into the Recovery state (ie:
@@ -61,6 +65,45 @@ rom_error_t ownership_key_validate(size_t page, ownership_key_t key,
                                    const owner_signature_t *signature,
                                    const void *message, size_t len,
                                    uint32_t *flash_exec);
+
+/**
+ * Scans a flash range for a detached signature block matching `command` and
+ * `nonce`.
+ *
+ * @param start Start address of the range to scan.
+ * @param length Size in bytes of the range to scan.
+ * @param command The command or TLV tag the signature is for.
+ * @param nonce The current ROM_EXT nonce.
+ * @return Pointer to the matching detached signature block, or NULL if none.
+ */
+const owner_detached_signature_t *ownership_signature_scan(
+    uintptr_t start, size_t length, uint32_t command, const nonce_t *nonce);
+
+/**
+ * Validates that a message was signed with a detached signature stored in the
+ * given flash range.
+ *
+ * Temporarily configures MP region 1 over all data flash pages with ECC and
+ * high endurance disabled and no write/erase permissions, scans the range
+ * in two passes (scrambled, then unscrambled), verifies the signature while
+ * the window remains open, and restores MP region 1 before returning.
+ *
+ * @param start Start address of the range to scan.
+ * @param length Size in bytes of the range to scan.
+ * @param page Owner-page on which the key resides.
+ * @param key Which key (or keys) to use to validate the message.
+ * @param command The bootsvc command or entity this validate is for.
+ * @param nonce The current ROM_EXT nonce.
+ * @param message Pointer to the message.
+ * @param len Size of the message.
+ * @param flash_exec The magic value signifying whether the signature was
+ * verified.
+ * @return kErrorOk if the message is valid.
+ */
+rom_error_t ownership_detached_signature_validate(
+    uintptr_t start, size_t length, size_t page, ownership_key_t key,
+    uint32_t command, const nonce_t *nonce, const void *message, size_t len,
+    uint32_t *flash_exec);
 
 /**
  * Initialize sealing.
@@ -121,5 +164,9 @@ rom_error_t ownership_history_get(hmac_digest_t *history);
  * @return Success or error code.
  */
 rom_error_t ownership_secret_update(boot_data_t *bootdata);
+
+#ifdef __cplusplus
+}  // extern "C"
+#endif
 
 #endif  // OPENTITAN_SW_DEVICE_SILICON_CREATOR_LIB_OWNERSHIP_OWNERSHIP_KEY_H_
