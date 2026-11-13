@@ -257,8 +257,9 @@ typedef struct sc_keymgr_dpe_ecc_key {
  * operation, reads and clears the error code and returns
  * `kErrorKeymgrInternal`.
  *
- * @return `kErrorOk` if the status is either "idle" or the operation
- * finished with "done_successfully", `kErrorKeymgrInternal` otherwise.
+ * @return `kErrorOk` if the operation finished with "done_successfully",
+ * `kErrorKeymgrInternal` if it finished with "done_error". Any other status,
+ * including "idle", traps, as the caller must have started an operation.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_wait_until_done(void);
@@ -447,15 +448,16 @@ rom_error_t sc_keymgr_dpe_enforce_sw_binding(void);
 /**
  * Load the UDS into an empty hw slot.
  *
- * Verifies that the selected hw slot is empty (not valid) before the load
- * operation. After the UDS is loaded the slot metadata is read back and
- * compared against the boot stage `kScKeymgrDPEBootStageCreator`, the default
- * UDS max key version (all-ones) and the default UDS policy.
+ * Waits for any previous operation to finish, and fails if keymgr_dpe is not
+ * available. Then verifies that the selected hw slot is empty (not valid)
+ * before the load operation. After the UDS is loaded the slot metadata is read
+ * back and compared against the boot stage `kScKeymgrDPEBootStageCreator`, the
+ * default UDS max key version (all-ones) and the default UDS policy.
  *
  * @param sel_dst_slot empty destination slot for the UDS.
- * @return `kErrorOk` on success. `kErrorKeymgrInternal` if the destination slot
- * is not empty, the load operation failed or the resulting slot metadata does
- * not match.
+ * @return `kErrorOk` on success. `kErrorKeymgrInternal` if keymgr_dpe is not
+ * available, the destination slot is not empty, the load operation failed or
+ * the resulting slot metadata does not match.
  */
 OT_WARN_UNUSED_RESULT
 rom_error_t sc_keymgr_dpe_load_uds(uint32_t sel_dst_slot);
@@ -584,8 +586,10 @@ rom_error_t sc_keymgr_dpe_advance_owner(
 /**
  * Erase the DPE context of any slot
  *
- * This function blocks until the erase operation has finished and then reads
- * back the slot metadata to verify the `valid` bit is cleared.
+ * This function waits for any previous operation to finish, and fails if
+ * keymgr_dpe is not available. It then blocks until the erase operation has
+ * finished and reads back the slot metadata to verify the `valid` bit is
+ * cleared.
  *
  * @param sel_dst_slot selected DPE context to erase.
  * @return The result of the erase call. `kErrorKeymgrInternal` if the
@@ -631,6 +635,7 @@ rom_error_t sc_keymgr_dpe_check_metadata(
  * Advances the keymgr dpe into the disable state.
  *
  * All keys stored in the sideloaded interface are continuously scrambled.
+ * This happens even if keymgr_dpe reports an error before the disable.
  *
  * @return OK or error.
  */
