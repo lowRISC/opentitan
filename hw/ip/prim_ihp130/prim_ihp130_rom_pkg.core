@@ -1,0 +1,20 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim_ihp130:rom_pkg"
+description: "IHP130 ROM package"
+virtual:
+  - "lowrisc:prim:rom_pkg"
+
+filesets:
+  files_rtl:
+    files:
+      - rtl/prim_rom_pkg.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl

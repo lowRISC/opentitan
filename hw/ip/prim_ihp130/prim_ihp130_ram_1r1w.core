@@ -1,0 +1,23 @@
+CAPI=2:
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+
+name: "lowrisc:prim_ihp130:ram_1r1w"
+description: "IHP130 1-read 1-write SRAM using 2P macros (A=write, B=read)"
+virtual:
+  - lowrisc:prim:ram_1r1w
+
+filesets:
+  files_rtl:
+    depend:
+      - lowrisc:prim:assert
+      - lowrisc:prim_ihp130:ram_1r1w_pkg
+    files:
+      - rtl/prim_ram_1r1w.sv
+    file_type: systemVerilogSource
+
+targets:
+  default:
+    filesets:
+      - files_rtl
