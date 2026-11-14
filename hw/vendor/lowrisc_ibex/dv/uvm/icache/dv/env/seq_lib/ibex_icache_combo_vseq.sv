@@ -23,6 +23,7 @@ class ibex_icache_combo_vseq
                         "ibex_icache_base_vseq", // for smoke test
                         "ibex_icache_caching_vseq",
                         "ibex_icache_ecc_vseq",
+                        "ibex_icache_ecc_back_line_vseq",
                         "ibex_icache_invalidation_vseq",
                         "ibex_icache_many_errors_vseq",
                         "ibex_icache_passthru_vseq"};

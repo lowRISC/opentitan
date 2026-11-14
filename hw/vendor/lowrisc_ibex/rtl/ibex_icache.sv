@@ -113,6 +113,7 @@ module ibex_icache import ibex_pkg::*; #(
   logic                                   lookup_valid_ic1;
   logic [ADDR_W-1:IC_INDEX_HI+1]          lookup_addr_ic1;
   logic [IC_NUM_WAYS-1:0]                 tag_match_ic1;
+  logic [IC_NUM_WAYS-1:0]                 hit_way_ic1;
   logic                                   tag_hit_ic1;
   logic [IC_NUM_WAYS-1:0]                 tag_invalid_ic1;
   logic [IC_NUM_WAYS-1:0]                 lowest_invalid_way_ic1;
@@ -503,11 +504,18 @@ module ibex_icache import ibex_pkg::*; #(
 
   assign tag_hit_ic1 = |tag_match_ic1;
 
-  // Hit data mux. Un-XOR the tweak only for the matching way.
+  // A line can be held in more than one way. Read only the lowest matching way so that data from
+  // two ways is never merged before the ECC check.
+  assign hit_way_ic1[0] = tag_match_ic1[0];
+  for (genvar way = 1; way < IC_NUM_WAYS; way++) begin : gen_hit_way
+    assign hit_way_ic1[way] = tag_match_ic1[way] & ~|tag_match_ic1[way-1:0];
+  end
+
+  // Hit data mux. Un-XOR the tweak only for the selected way.
   always_comb begin
     hit_data_ecc_ic1 = 'b0;
     for (int way = 0; way < IC_NUM_WAYS; way++) begin
-      if (tag_match_ic1[way]) begin
+      if (hit_way_ic1[way]) begin
         hit_data_ecc_ic1 |= ic_data_rdata_i[way] ^ data_tweak_lw_ic1;
       end
     end
@@ -563,7 +571,6 @@ module ibex_icache import ibex_pkg::*; #(
     end
 
     // Data ECC checking
-    // Note - could generate for all ways and mux after
     for (genvar bank = 0; bank < IC_LINE_BEATS; bank++) begin : gen_ecc_banks
       prim_secded_inv_39_32_dec data_ecc_dec (
         .data_i     (hit_data_ecc_ic1[bank*BusSizeECC+:BusSizeECC]),

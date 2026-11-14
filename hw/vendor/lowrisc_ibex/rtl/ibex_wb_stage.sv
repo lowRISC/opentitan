@@ -68,6 +68,7 @@ module ibex_wb_stage import ibex_cheriot_pkg::*; #(
 
   input logic                      lsu_resp_valid_i,
   input logic                      lsu_resp_err_i,
+  input logic                      cheriot_wb_err_i,
 
   output logic                     instr_done_wb_o
 );
@@ -199,7 +200,8 @@ module ibex_wb_stage import ibex_cheriot_pkg::*; #(
 
     assign instr_done_wb_o = wb_valid_q & wb_done;
 
-    // Increment instruction retire counters for valid instructions which are not lsu errors.
+    // Increment instruction retire counters for valid instructions which are not lsu errors or
+    // CHERIoT faults.
     // Speculative versions of the signals do not factor in exceptions and whether the instruction
     // is done yet. These are used to get correct values for instructions reading the relevant
     // performance counters in the ID stage.
@@ -207,7 +209,7 @@ module ibex_wb_stage import ibex_cheriot_pkg::*; #(
     assign perf_instr_ret_wb_spec_o            = wb_count_q & wb_valid_q & ~dummy_instr_wb_o;
     assign perf_instr_ret_compressed_wb_spec_o = perf_instr_ret_wb_spec_o & wb_compressed_q;
     assign perf_instr_ret_wb_o                 = instr_done_wb_o & wb_count_q &
-                                                 ~dummy_instr_wb_o &
+                                                 ~dummy_instr_wb_o & ~cheriot_wb_err_i &
                                                  ~(lsu_resp_valid_i & lsu_resp_err_i);
     assign perf_instr_ret_compressed_wb_o      = perf_instr_ret_wb_o & wb_compressed_q;
 
@@ -281,6 +283,7 @@ module ibex_wb_stage import ibex_cheriot_pkg::*; #(
     logic [31:0]    unused_pc_id;
     logic           unused_dummy_instr_id;
     logic           unused_cheriot_store;
+    logic           unused_cheriot_wb_err;
 
     assign unused_clk            = clk_i;
     assign unused_rst            = rst_ni;
@@ -288,6 +291,7 @@ module ibex_wb_stage import ibex_cheriot_pkg::*; #(
     assign unused_pc_id          = pc_id_i;
     assign unused_dummy_instr_id = dummy_instr_id_i;
     assign unused_cheriot_store  = cheriot_store_i;
+    assign unused_cheriot_wb_err = cheriot_wb_err_i;
 
     assign outstanding_load_wb_o  = 1'b0;
     assign outstanding_store_wb_o = 1'b0;

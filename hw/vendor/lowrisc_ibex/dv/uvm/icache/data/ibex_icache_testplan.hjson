@@ -111,14 +111,31 @@
 
     {
       name: ecc
-      desc: '''Insert single-bit errors into cached data
+      desc: '''Insert one- or two-bit errors into cached data
 
             With the cache (as in the caching test), interpose a fake
-            memory for the cache RAMs, which occasionally inserts a single
-            bit error. Check that the invalid cached data is correctly
-            ignored.'''
+            memory for the cache RAMs, which occasionally flips one or two
+            bits. Check that the invalid cached data is correctly ignored.
+
+            On a valid lookup, check that ecc_error_o is raised for an
+            injected tag error, or for corrupted data in the way the cache
+            reads from: the lowest way that hit. Check that it is raised for
+            no other reason and is known outside reset.'''
       stage: V2
       tests: ["ibex_icache_ecc"]
+    }
+
+    {
+      name: ecc_back_line
+      desc: '''Insert ECC errors into lines held in two ways
+
+            Run the back_line test with ECC errors enabled. Branching back
+            into a line that is still being fetched can allocate it in a
+            second way. Check that an error in the way the cache reads from
+            is reported, and that a corrupted copy in another matching way,
+            which the cache doesn't read, causes no error.'''
+      stage: V2
+      tests: ["ibex_icache_ecc_back_line"]
     }
 
     {

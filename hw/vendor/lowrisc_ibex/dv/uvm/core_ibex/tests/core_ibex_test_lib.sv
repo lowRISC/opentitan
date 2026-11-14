@@ -214,9 +214,37 @@ class core_ibex_rf_addr_intg_test extends core_ibex_base_test;
 
   uvm_report_server rs;
 
+  // RF arrays holding the upper and lower half of the registers and the mask applied to the
+  // address to index them.
+  protected string      rf_arrays[2];
+  protected logic [4:0] rf_idx_mask;
+
+  // Read the RF entry that a read port returns for address `addr`.
+  protected function logic [31:0] read_rf_entry(string rf_path, logic [4:0] addr);
+    logic [31:0] val = '0;
+    string       path = $sformatf("%s.%s[%0d]", rf_path, rf_arrays[addr[4]], addr & rf_idx_mask);
+    `DV_CHECK_FATAL(uvm_hdl_read(path, val))
+    return val;
+  endfunction
+
+  // Return the ECC bits of the glitched core's RF to avoid mismatches due to the lockstep delay.
+  // Comparing ECC bits rather than data rules out different data that have the same check bits.
+  protected function logic [6:0] rf_check_bits(int unsigned trgt_core_idx, string ibex_rf_path,
+                                               string shdw_rf_path, logic [4:0] addr);
+    logic [38:0] data_ecc;
+    if (trgt_core_idx == 0) begin
+      data_ecc = prim_secded_pkg::prim_secded_inv_39_32_enc(read_rf_entry(ibex_rf_path, addr));
+      return data_ecc[38:32];
+    end
+    return 7'(read_rf_entry(shdw_rf_path, addr));
+  endfunction
+
   virtual task send_stimulus();
     int          rnd_delay;
-    int unsigned bit_idx;
+    int unsigned bit_idxs[5] = '{0, 1, 2, 3, 4};
+    bit          found = 1'b0;
+    int unsigned num_tries;
+    int unsigned max_tries = 20;
     logic [31:0] orig_val, glitch_val;
     logic [1:0]  ecc_err;
     string       glitch_path, ecc_alert_path, lockstep_delay_path;
@@ -260,17 +288,42 @@ class core_ibex_rf_addr_intg_test extends core_ibex_base_test;
     lockstep_delay_path = $sformatf("%s.%s", lockstep_path, "LockstepOffset");
     `DV_CHECK_FATAL(uvm_hdl_read(lockstep_delay_path, lockstep_delay));
 
+    // Find the register paths:
+    // The CHERIoT RF splits the registers into two arrays. The plain RF uses a single array, which
+    // only has 16 entries with RV32E, in which case the address MSB is ignored.
+    if (uvm_hdl_check_path({ibex_rf_path, ".g_cheriot_rf.rf_data[0]"})) begin
+      rf_arrays   = '{"g_cheriot_rf.rf_data", "g_cheriot_rf.rf_shared"};
+      rf_idx_mask = 5'h0f;
+    end else begin
+      rf_arrays   = '{"g_plain_rf.rf_reg", "g_plain_rf.rf_reg"};
+      rf_idx_mask = uvm_hdl_check_path({ibex_rf_path, ".g_plain_rf.g_rf_flops[16].rf_reg_q"}) ?
+                    5'h1f : 5'h0f;
+    end
+
     vseq.start(env.vseqr);
     clk_vif.wait_n_clks(rnd_delay);
 
-    `uvm_info(`gfn, $sformatf("Reading value of %s", glitch_path), UVM_LOW)
-    `DV_CHECK_FATAL(uvm_hdl_read(glitch_path, orig_val));
-    `uvm_info(`gfn, $sformatf("Read %x", orig_val), UVM_LOW)
+    // The ECC check only fails if the original and glitched registers have different check bits.
+    // Try all single-bit flips of the current address, otherwise let the CPU advance and retry.
+    for (num_tries = 0; num_tries < max_tries; num_tries++) begin
+      `uvm_info(`gfn, $sformatf("Reading value of %s", glitch_path), UVM_LOW)
+      `DV_CHECK_FATAL(uvm_hdl_read(glitch_path, orig_val));
+      `uvm_info(`gfn, $sformatf("Read %x", orig_val), UVM_LOW)
 
-    `DV_CHECK_STD_RANDOMIZE_WITH_FATAL(bit_idx, bit_idx < 5;)
-
-    glitch_val = orig_val;
-    glitch_val[bit_idx] = ~glitch_val[bit_idx];
+      bit_idxs.shuffle();
+      foreach (bit_idxs[i]) begin
+        glitch_val = orig_val;
+        glitch_val[bit_idxs[i]] = ~glitch_val[bit_idxs[i]];
+        if (rf_check_bits(trgt_core_idx, ibex_rf_path, shdw_rf_path, orig_val[4:0]) !=
+            rf_check_bits(trgt_core_idx, ibex_rf_path, shdw_rf_path, glitch_val[4:0])) begin
+          found = 1'b1;
+          break;
+        end
+      end
+      if (found) break;
+      clk_vif.wait_n_clks(100);
+    end
+    `DV_CHECK_FATAL(found, "Could not find a register pair with different check bits")
 
     // Disable TB assertion for alerts.
     `DV_ASSERT_CTRL_REQ("tb_no_alerts_triggered", 1'b0)
@@ -1660,6 +1713,28 @@ class core_ibex_debug_wfi_test extends core_ibex_directed_test;
 
 endclass
 
+// Sends a halt request each time the core sleeps in WFI.
+class core_ibex_debug_halt_wfi_test extends core_ibex_base_test;
+
+  `uvm_component_utils(core_ibex_debug_halt_wfi_test)
+  `uvm_component_new
+
+  virtual task send_stimulus();
+    `DV_CHECK_FATAL(cfg.enable_debug_seq, "Needs +enable_debug_seq=1")
+    fork
+      super.send_stimulus();
+      forever begin
+        wait (dut_vif.dut_cb.wfi === 1'b1);
+        wait (dut_vif.dut_cb.core_sleep === 1'b1);
+        // No extra hold: the request still waits for debug mode and RVFI, then drops before DRET
+        vseq.debug_seq_single_h.drop_delay = 0;
+        vseq.start_debug_single_seq();
+      end
+    join_none
+  endtask
+
+endclass
+
 // Debug CSR entry test
 class core_ibex_debug_csr_test extends core_ibex_directed_test;
 
@@ -2089,6 +2164,27 @@ class core_ibex_directed_stress_test extends core_ibex_base_test;
           clk_vif.wait_clks($urandom_range(5, 50));
           vseq.start_irq_drop_seq();
         end
+      end
+    join_none
+  endtask
+
+endclass
+
+// Sends one halt request once the program reports INITIALIZED.
+class core_ibex_debug_halt_once_test extends core_ibex_base_test;
+
+  `uvm_component_utils(core_ibex_debug_halt_once_test)
+  `uvm_component_new
+
+  virtual task send_stimulus();
+    `DV_CHECK_FATAL(cfg.enable_debug_seq, "Needs +enable_debug_seq=1")
+    fork
+      super.send_stimulus();
+      begin
+        check_next_core_status(INITIALIZED, "Program did not report INITIALIZED", 10000);
+        // No extra hold: the request still waits for debug mode and RVFI, then drops before DRET
+        vseq.debug_seq_single_h.drop_delay = 0;
+        vseq.start_debug_single_seq();
       end
     join_none
   endtask

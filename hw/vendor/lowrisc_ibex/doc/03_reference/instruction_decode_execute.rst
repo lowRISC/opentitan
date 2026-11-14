@@ -143,6 +143,14 @@ Divider
 
 By setting the ``RV32M`` parameter to "ibex_pkg::RV32MNone", the M-extension can be disabled completely.
 
+CHERIoT Execute Block (CHERIoT EX)
+----------------------------------
+Source File: :file:`rtl/ibex_cheriot_ex.sv`
+
+The CHERIoT execute block is only present when ``BaseIsa`` is ``ibex_pkg::BaseIsaRV32IorCHERIoT``, and it is only used in CHERIoT mode (see :ref:`cheriot`).
+It computes capability results for the register file, checks the bounds and permissions of loads and stores and drives their address and capability data to the LSU.
+It also accesses the special capability registers and executes capability jumps, which update the PCC.
+
 Control and Status Register Block (CSR)
 ---------------------------------------
 Source File: :file:`rtl/ibex_cs_registers.sv`

@@ -16,6 +16,7 @@ module tb #(
   // macro includes
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
+  `include "prim_assert.sv"
 
   wire clk, rst_n;
 
@@ -47,6 +48,7 @@ module tb #(
   logic [SCRAMBLE_NONCE_W-1:0]    scramble_nonce_q, scramble_nonce_d;
   logic                           scramble_key_valid_d, scramble_key_valid_q;
   logic                           scramble_req_d, scramble_req_q;
+  logic                           ic_scr_key_req;
 
   // DUT
   ibex_icache #(
@@ -92,17 +94,20 @@ module tb #(
       .ic_data_wdata_o     ( ram_if.ic_data_wdata       ),
       .ic_data_rdata_i     ( ram_if.ic_data_rdata_o     ),
       .ic_scr_key_valid_i  ( scramble_key_valid_q       ),
-      // TODO: Hook up to monitor and appropriate checking
-      .ic_scr_key_req_o    (                            ),
+      .ic_scr_key_req_o    ( ic_scr_key_req             ),
 
-      // TODO: Probe this and verify functionality
       .ecc_error_o         ( ram_if.ecc_err             )
   );
+
+  // Lookup state used by the ECC checks in ram_if
+  assign ram_if.lookup_valid = dut.lookup_valid_ic1;
+  assign ram_if.lookup_addr  = dut.lookup_addr_ic1;
+  assign ram_if.tag_tweak    = dut.tag_tweak_lw_ic1;
 
   // Scramble key valid starts with OTP returning new valid key and stays high
   // until we request a new valid key.
   assign scramble_key_valid_d = scramble_req_q ? scramble_key_valid :
-                                core_if.invalidate ? 1'b0           :
+                                ic_scr_key_req ? 1'b0               :
                                                  scramble_key_valid_q;
 
   always_ff @(posedge clk or negedge rst_n) begin
@@ -125,10 +130,29 @@ module tb #(
     end
   end
 
-  // Scramble key request starts with invalidate signal from ICache and stays high
+  // Scramble key request starts with the key request from ICache and stays high
   // until we got a valid key.
-  assign scramble_req_d = scramble_req_q ? ~scramble_key_valid : core_if.invalidate;
+  assign scramble_req_d = scramble_req_q ? ~scramble_key_valid : ic_scr_key_req;
   assign scramble_req   = scramble_req_q;
+
+  // The icache waits for a key out of reset and after each key request, until it sees a valid key.
+  // It must request a new key exactly when an invalidation arrives outside that wait.
+  logic out_of_reset_q, await_key_q;
+  always_ff @(posedge clk or negedge rst_n) begin
+    if (!rst_n) begin
+      out_of_reset_q <= 1'b1;
+      await_key_q    <= 1'b1;
+    end else begin
+      out_of_reset_q <= 1'b0;
+      if (ic_scr_key_req) begin
+        await_key_q <= 1'b1;
+      end else if (!out_of_reset_q && scramble_key_valid_q) begin
+        await_key_q <= 1'b0;
+      end
+    end
+  end
+
+  `ASSERT(ScrKeyReqChk_A, ic_scr_key_req == (core_if.invalidate && !await_key_q), clk, !rst_n)
 
   // RAMs
   for (genvar way = 0; way < IC_NUM_WAYS; way++) begin : gen_rams
