@@ -22,6 +22,8 @@ use thiserror::Error;
 use ot_hal::dif::lc_ctrl::LcCtrlReg;
 
 use crate::impl_serializable_error;
+use crate::io::fpga_backdoor::consts::BACKDOOR_JTAG_IDCODE;
+use crate::io::fpga_backdoor::release_stuck_backdoor;
 use crate::io::jtag::{Jtag, JtagChain, JtagError, JtagParams, JtagTap, RiscvReg};
 use crate::regex;
 use crate::util::parse_int::ParseInt;
@@ -318,6 +320,14 @@ impl OpenOcd {
 pub struct OpenOcdJtagChain {
     /// OpenOCD server instance.
     openocd: OpenOcd,
+
+    // FIXME: below attributes are only used to workaround a stuck FPGA backdoor
+    // loader, and so these can be removed when problems have been root-caused,
+    // along with the code that uses them.
+    adapter_command: String,
+    opts: JtagParams,
+    /// Whether to release a stuck FPGA backdoor loader and retry, or just fail.
+    release_stuck_backdoor: bool,
 }
 
 /// Errors related to the OpenOCD server.
@@ -325,6 +335,11 @@ pub struct OpenOcdJtagChain {
 pub enum OpenOcdError {
     #[error("OpenOCD initialization failed: {0}")]
     InitializeFailure(String),
+    #[error(
+        "expected the {0:?} TAP but found the FPGA bkdr_loader. It may not have \
+         been released after the last reset: {1}"
+    )]
+    BackdoorTapFound(JtagTap, String),
     #[error("OpenOCD server exited prematurely: {0}")]
     PrematureExit(String),
     #[error("Generic error {0}")]
@@ -342,7 +357,12 @@ impl OpenOcdJtagChain {
         openocd.execute("transport select jtag")?;
         openocd.execute("scan_chain")?;
 
-        Ok(OpenOcdJtagChain { openocd })
+        Ok(OpenOcdJtagChain {
+            openocd,
+            adapter_command: adapter_command.to_string(),
+            opts: opts.clone(),
+            release_stuck_backdoor: true,
+        })
     }
 }
 
@@ -360,6 +380,26 @@ impl JtagChain for OpenOcdJtagChain {
         let resp = self.openocd.execute("capture init")?;
         if resp.contains("JTAG scan chain interrogation failed") {
             bail!(OpenOcdError::InitializeFailure(resp));
+        }
+        // Check that we are not unintentionally stuck trying to talk to the Backdoor Loader tap
+        let backdoor_tap_found = format!("tap/device found: {BACKDOOR_JTAG_IDCODE:#010x}");
+        if tap != JtagTap::BackdoorTap && resp.contains(&backdoor_tap_found) {
+            if !self.release_stuck_backdoor {
+                bail!(OpenOcdError::BackdoorTapFound(tap, resp));
+            }
+            log::warn!("Found the FPGA backdoor loader TAP instead of the {tap:?} TAP.");
+            log::warn!("Attempting to release that TAP and recover.");
+            // Close OpenOCD so the adapter can temporarily be used by the Backdoor loader
+            let adapter_command = self.adapter_command.clone();
+            let opts = self.opts.clone();
+            drop(self);
+            // Try to release the stuck backdoor loader, with a conservative wait.
+            release_stuck_backdoor(&adapter_command, &opts)?;
+            std::thread::sleep(Duration::from_millis(200));
+            // Connect again, but if it fails this time then just error.
+            let mut retry = Box::new(Self::new(&adapter_command, &opts)?);
+            retry.release_stuck_backdoor = false;
+            return retry.connect(tap);
         }
         // OpenOCD carries on with a target it could not examine (e.g. "Hart 0 failed
         // to halt during examine()"), and later commands then fail in confusing ways.
