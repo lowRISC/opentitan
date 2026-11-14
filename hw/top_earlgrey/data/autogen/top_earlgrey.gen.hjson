@@ -12442,7 +12442,6 @@
       param_decl:
       {
         InstrExec: "0"
-        NumAddrScrRounds: "0"
         NumPrinceRoundsHalf: "2"
         InstSize: "38912"
         SecZeroInit: "1"
@@ -12532,7 +12531,7 @@
           name: NumAddrScrRounds
           desc: Number of address scrambling rounds. 0 disables address scrambling.
           type: int
-          default: "0"
+          default: "2"
           local: "false"
           expose: "true"
           name_top: SramCtrlMetaNumAddrScrRounds
