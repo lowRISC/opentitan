@@ -24,7 +24,8 @@
 `include "prim_assert.sv"
 
 module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
-  // If NumAddrScrRounds > 0, this needs to be either a power of 2 or divisible by 4096.
+  // If NumAddrScrRounds > 0, this needs to be either a power of 2 or divisible by 512, and should
+  // be either a power of 2 or divisible by 4096 (see MinChunkDepth and LintMinChunkDepth below).
   parameter  int Depth               = 16*1024,
   parameter  int InstDepth           = Depth,
   parameter  int Width               = 32, // Needs to be byte aligned if byte parity is enabled.
@@ -109,9 +110,12 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4Width;
 
-  // The depth needs to be a power of 2 or divisible by 4096 if address scrambling is turned on.
+  // If address scrambling is turned on, the depth needs to be a power of 2 or divisible by
+  // MinChunkDepth. Smaller chunks weaken the address scrambling, hence a depth that is not a power
+  // of 2 should be divisible by LintMinChunkDepth.
   localparam bit DepthPow2 = 2**$clog2(Depth) == Depth;
-  localparam int MinChunkDepth = 4096;
+  localparam int MinChunkDepth = 512;
+  localparam int LintMinChunkDepth = 4096;
 
   //////////////////////
   // Parameter Checks //
@@ -120,12 +124,11 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
   `ASSERT_INIT(DiffWidthMinimum_A, DiffWidth >= 4)
   `ASSERT_INIT(DiffWidthWithParity_A, EnableParity && (DiffWidth == 8) || !EnableParity)
 
-  // Trigger an SVA and further a lint error to reduce the risk of accidentally going below the
-  // minimum ChunkDepth.
+  // Trigger an SVA below the supported and a lint error below the recommended minimum ChunkDepth.
   `ASSERT_INIT(DepthPow2OrDivisibleByMinChunkDepthCheck_A,
       NumAddrScrRounds <= '0 || DepthPow2 || Depth % MinChunkDepth == 0)
-  `ASSERT_STATIC_LINT_ERROR(DepthPow2OrDivisibleByMinChunkDepthCheck_L,
-      NumAddrScrRounds <= '0 || DepthPow2 || Depth % MinChunkDepth == 0)
+  `ASSERT_STATIC_LINT_ERROR(DepthPow2OrDivisibleByLintMinChunkDepthCheck_L,
+      NumAddrScrRounds <= '0 || DepthPow2 || Depth % LintMinChunkDepth == 0)
 
   /////////////////////////////////////////
   // Pending Write and Address Registers //
@@ -254,15 +257,23 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
       // Take care of the MSBs
       localparam int unsigned ChunkIdxWidth = AddrWidth - ChunkAddrWidth;
       logic [ChunkIdxWidth-1:0] chunk_idx_in;
+      logic [ChunkIdxWidth-1:0] chunk_offset_raw;
       logic [ChunkIdxWidth-1:0] chunk_offset;
       logic [ChunkIdxWidth-1:0] chunk_idx_out;
 
       assign chunk_idx_in = addr_i[AddrWidth-1:ChunkAddrWidth];
-      assign chunk_offset = addr_scr_nonce[AddrWidth-1:ChunkAddrWidth];
 
-      // We use the MSBs of the nonce as a static offset and have to wrap around the computed index
-      // to fall back into the range of chunks actually implemented. Since we know that the sum will
-      // be less than 2*NumChunks, we can do this wrap around with a conditional subtraction.
+      // We use the MSBs of the nonce as a static offset. Since NumChunks > 2**(ChunkIdxWidth-1),
+      // the raw offset is less than 2*NumChunks and a conditional subtraction maps it into the
+      // range of chunks actually implemented.
+      assign chunk_offset_raw = addr_scr_nonce[AddrWidth-1:ChunkAddrWidth];
+      assign chunk_offset = (chunk_offset_raw >= NumChunks[ChunkIdxWidth-1:0]) ?
+                            chunk_offset_raw - NumChunks[ChunkIdxWidth-1:0] : chunk_offset_raw;
+
+      // We have to wrap around the computed index to fall back into the range of chunks actually
+      // implemented. Since both chunk_offset and, for an address within the memory, chunk_idx_in
+      // are less than NumChunks, the sum is less than 2*NumChunks and we can do this wrap around
+      // with a conditional subtraction.
       always_comb begin
         logic [ChunkIdxWidth:0] chunk_idx;
         chunk_idx = chunk_offset + chunk_idx_in;
@@ -278,6 +289,10 @@ module prim_ram_1p_scr import prim_ram_1p_pkg::*; #(
 
       // Stitch the scrambled address together.
       assign addr_scr = {chunk_idx_out, addr_scr_out};
+
+      // Callers only issue addresses within the memory, so the scrambled address must fall into
+      // the memory too.
+      `ASSERT(ScrAddrInRange_A, macro_req |-> addr_mux < Depth)
     end
 
     prim_subst_perm #(

@@ -266,11 +266,9 @@ package sram_scrambler_pkg;
         off_nonce[i] = full_nonce[SRAM_BLOCK_WIDTH - addr_width + sp_width + i];
       end
 
-      // Compute the offset and wrap around if necessary.
-      off_encrypted = off_addr + off_nonce;
-      if (off_encrypted >= num_chunks) begin
-        off_encrypted -= num_chunks;
-      end
+      // Compute the offset and wrap around. As off_nonce can exceed num_chunks, this needs a
+      // modulo operation.
+      off_encrypted = (off_addr + off_nonce) % num_chunks;
 
       // Stitch the encrypted address together.
       for (int i = 0; i < addr_width; i++) begin
