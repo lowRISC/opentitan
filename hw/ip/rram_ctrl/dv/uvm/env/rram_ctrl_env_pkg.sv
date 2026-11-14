@@ -12,7 +12,6 @@ package rram_ctrl_env_pkg;
   import cip_base_pkg::*;
   import dv_base_reg_pkg::*;
   import csr_utils_pkg::*;
-  import rram_ctrl_pkg::*;
   import rram_ctrl_core_ral_pkg::*;
   import rram_ctrl_host_ral_pkg::*;
   import rram_macro_prim_ral_pkg::*;
@@ -23,6 +22,10 @@ package rram_ctrl_env_pkg;
 
   import otp_ctrl_pkg::NvmKeyWidth;
 
+  import rram_ctrl_pkg::DataWidth;
+  import rram_ctrl_pkg::OtpStartPage;
+  import rram_ctrl_pkg::NumOutstandingRdReq;
+
   import nvm_otp_key_agent_pkg::nvm_otp_key_agent_cfg;
   import nvm_otp_key_agent_pkg::nvm_otp_key_rsp_seq_item;
   import nvm_otp_key_agent_pkg::nvm_otp_key_agent;
@@ -30,7 +33,9 @@ package rram_ctrl_env_pkg;
   import rram_ctrl_reg_pkg::NumRegions;
   import rram_ctrl_reg_pkg::NumDataPages;
   import rram_ctrl_reg_pkg::NumInfoPages;
+  import rram_ctrl_reg_pkg::WordsPerPage;
 
+  import mem_bkdr_util_pkg::mem_bkdr_util;
   import rram_ctrl_bkdr_util_pkg::rram_ctrl_bkdr_util;
 
   // Macro includes
@@ -79,6 +84,7 @@ package rram_ctrl_env_pkg;
   `include "rram_ctrl_env_cov.sv"
   `include "rram_ctrl_virtual_sequencer.sv"
   `include "rram_ctrl_reg_predictor_filter.sv"
+  `include "rram_partition_model.svh"
   `include "rram_ctrl_scoreboard.sv"
   `include "rram_ctrl_reg_cbs.svh"
   `include "rram_ctrl_env.sv"

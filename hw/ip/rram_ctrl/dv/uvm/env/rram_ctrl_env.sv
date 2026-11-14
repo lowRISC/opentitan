@@ -79,6 +79,8 @@ function void rram_ctrl_env::build_phase(uvm_phase phase);
                          mem_bkdr_util_pkg::ErrDetectionNone);
   m_info_bkdr_util = new("m_info_bkdr_util", info_bkdr_path, info_depth, info_nbits,
                          mem_bkdr_util_pkg::ErrDetectionNone);
+
+  scoreboard.set_backdoors(m_data_bkdr_util, m_info_bkdr_util);
 endfunction : build_phase
 
 function void rram_ctrl_env::connect_phase(uvm_phase phase);

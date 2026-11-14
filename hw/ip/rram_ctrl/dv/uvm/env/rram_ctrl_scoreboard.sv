@@ -52,13 +52,32 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   // this window allows the scoreboard to represent a "might be disabled" period.
   local int unsigned m_dis_sw_window_counter;
 
+  // Backdoor utilities for the data and info partitions. Set these with set_backdoors().
+  local rram_ctrl_bkdr_util m_data_bkdr_util;
+  local rram_ctrl_bkdr_util m_info_bkdr_util;
+
+  // True if we have taken memory snapshots through both backdoor utilities
+  local bit m_have_bkdr_snapshot;
+
+  // A model of the data partition in RRAM
+  local rram_partition_model m_data_partition;
+
+  // A model of the info partition in RRAM
+  local rram_partition_model m_info_partition;
+
   // Standard SV/UVM methods
   extern function new(string name = "", uvm_component parent = null);
   extern function void build_phase(uvm_phase phase);
   extern function void connect_phase(uvm_phase phase);
+  extern task run_phase(uvm_phase phase);
   extern function void check_phase(uvm_phase phase);
 
-  // Class specific methods
+  // Provide backdoor utilities for the two different partitions. This should be called before
+  // build_phase.
+  extern function void set_backdoors(rram_ctrl_bkdr_util data_bkdr,
+                                     rram_ctrl_bkdr_util info_bkdr);
+
+  // Other class-specific methods
   extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
   extern task process_tl_core_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
                                      tl_phase_e tl_phase);
@@ -116,6 +135,12 @@ function void rram_ctrl_scoreboard::build_phase(uvm_phase phase);
   m_cbs.set_scb(this);
 
   m_reg_item_imp = new("m_reg_item_imp", this);
+
+  m_data_partition = rram_partition_model::type_id::create("m_data_partition", this);
+  m_data_partition.set_size_words(NumDataPages * WordsPerPage);
+
+  m_info_partition = rram_partition_model::type_id::create("m_info_partition", this);
+  m_info_partition.set_size_words(NumInfoPages * WordsPerPage);
 endfunction : build_phase
 
 function void rram_ctrl_scoreboard::connect_phase(uvm_phase phase);
@@ -152,28 +177,24 @@ function void rram_ctrl_scoreboard::connect_phase(uvm_phase phase);
   add_cbs_for_reg(ral.curr_fifo_lvl);
 endfunction : connect_phase
 
-function void rram_ctrl_scoreboard::configure_csr_check_exclusions();
-  uvm_reg regs[$];
-
-  // uvm_reg_predictor::write() checks read data against the mirror before do_predict()
-  // overwrites it, so this catches real mismatches unlike a scoreboard-side check. Suppress
-  // the compare wherever a CsrExclCheck exclusion applies (fields the RAL can never predict).
-  ral.default_map.set_check_on_read(1);
-  ral.get_registers(regs);
-  foreach (regs[i]) begin
-    uvm_reg_field flds[$];
-    csr_excl_item reg_excl = csr_utils_pkg::get_excl_item(regs[i]);
-    bit reg_excluded = (reg_excl != null) && reg_excl.is_excl(regs[i], CsrExclCheck,
-                                                               CsrAllTests);
-    regs[i].get_fields(flds);
-    foreach (flds[j]) begin
-      csr_excl_item fld_excl = csr_utils_pkg::get_excl_item(flds[j]);
-      bit fld_excluded = reg_excluded || ((fld_excl != null) &&
-          fld_excl.is_excl(flds[j], CsrExclCheck, CsrAllTests));
-      if (fld_excluded) flds[j].set_compare(UVM_NO_CHECK);
-    end
+task rram_ctrl_scoreboard::run_phase(uvm_phase phase);
+  // Check thet we really have got backdoor utilities. Although the utilities must exist now, we
+  // won't actually snapshot the contents of the memory until the end of reset. This avoids a race
+  // between the snapshot and randomisation that happens at the start of rram_ctrl_base_test.
+  if (m_data_bkdr_util == null || m_info_bkdr_util == null) begin
+    `uvm_fatal("missing_bkdr",
+               {"The data and info backdoors have not both been set. ",
+                "Call set_backdoors before start of run_phase."})
   end
-endfunction : configure_csr_check_exclusions
+
+  super.run_phase(phase);
+endtask
+
+function void rram_ctrl_scoreboard::set_backdoors(rram_ctrl_bkdr_util data_bkdr,
+                                                  rram_ctrl_bkdr_util info_bkdr);
+  m_data_bkdr_util = data_bkdr;
+  m_info_bkdr_util = info_bkdr;
+endfunction
 
 task rram_ctrl_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
                                              string ral_name);
@@ -240,6 +261,29 @@ task rram_ctrl_scoreboard::process_tl_prim_access(tl_seq_item item, uvm_reg_addr
   // TODO(#31292): generate traffic for this tlul interface and test it here.
 endtask : process_tl_prim_access
 
+function void rram_ctrl_scoreboard::configure_csr_check_exclusions();
+  uvm_reg regs[$];
+
+  // uvm_reg_predictor::write() checks read data against the mirror before do_predict()
+  // overwrites it, so this catches real mismatches unlike a scoreboard-side check. Suppress
+  // the compare wherever a CsrExclCheck exclusion applies (fields the RAL can never predict).
+  ral.default_map.set_check_on_read(1);
+  ral.get_registers(regs);
+  foreach (regs[i]) begin
+    uvm_reg_field flds[$];
+    csr_excl_item reg_excl = csr_utils_pkg::get_excl_item(regs[i]);
+    bit reg_excluded = (reg_excl != null) && reg_excl.is_excl(regs[i], CsrExclCheck,
+                                                               CsrAllTests);
+    regs[i].get_fields(flds);
+    foreach (flds[j]) begin
+      csr_excl_item fld_excl = csr_utils_pkg::get_excl_item(flds[j]);
+      bit fld_excluded = reg_excluded || ((fld_excl != null) &&
+          fld_excl.is_excl(flds[j], CsrExclCheck, CsrAllTests));
+      if (fld_excluded) flds[j].set_compare(UVM_NO_CHECK);
+    end
+  end
+endfunction : configure_csr_check_exclusions
+
 function void rram_ctrl_scoreboard::reset(string kind = "HARD");
   super.reset(kind);
 
@@ -249,6 +293,20 @@ function void rram_ctrl_scoreboard::reset(string kind = "HARD");
   m_seen_otp_addr_key = 0;
   m_seen_init_done = 0;
   m_dis_sw_window_counter = 0;
+
+  // This function is called (by dv_base_scoreboard::monitor_reset) at the end of reset. Clear any
+  // write transaction count on the partition models. Also, do backdoor reads of the underlying
+  // macro if we can.
+  m_data_partition.end_of_reset();
+  m_info_partition.end_of_reset();
+
+  // If this is the first time we have ended a reset then take a snapshot of the contents of the
+  // partitions through the backdoor utilities.
+  if (!m_have_bkdr_snapshot) begin
+    m_data_partition.take_backdoor_snapshot(m_data_bkdr_util);
+    m_info_partition.take_backdoor_snapshot(m_info_bkdr_util);
+    m_have_bkdr_snapshot = 1;
+  end
 endfunction : reset
 
 function void rram_ctrl_scoreboard::check_phase(uvm_phase phase);
