@@ -1110,64 +1110,62 @@ Register write enable for MIO PAD attributes.
 
 ## MIO_PAD_ATTR
 Muxed pad attributes.
-This register has WARL behavior since not each pad type may support
-all attributes.
-The muxed pad that is used for TAP strap 0 has a different reset value, with `pull_en` set to 1.
-- Reset default: `0x0`
+This register has WARL behavior since not each pad type may support all attributes.
+- Reset default: see Instances
 - Reset mask: `0xf300ff`
 - Register enable: [`MIO_PAD_ATTR_REGWEN`](#mio_pad_attr_regwen)
 
 ### Instances
 
-| Name            | Offset   |
-|:----------------|:---------|
-| MIO_PAD_ATTR_0  | 0x528    |
-| MIO_PAD_ATTR_1  | 0x52c    |
-| MIO_PAD_ATTR_2  | 0x530    |
-| MIO_PAD_ATTR_3  | 0x534    |
-| MIO_PAD_ATTR_4  | 0x538    |
-| MIO_PAD_ATTR_5  | 0x53c    |
-| MIO_PAD_ATTR_6  | 0x540    |
-| MIO_PAD_ATTR_7  | 0x544    |
-| MIO_PAD_ATTR_8  | 0x548    |
-| MIO_PAD_ATTR_9  | 0x54c    |
-| MIO_PAD_ATTR_10 | 0x550    |
-| MIO_PAD_ATTR_11 | 0x554    |
-| MIO_PAD_ATTR_12 | 0x558    |
-| MIO_PAD_ATTR_13 | 0x55c    |
-| MIO_PAD_ATTR_14 | 0x560    |
-| MIO_PAD_ATTR_15 | 0x564    |
-| MIO_PAD_ATTR_16 | 0x568    |
-| MIO_PAD_ATTR_17 | 0x56c    |
-| MIO_PAD_ATTR_18 | 0x570    |
-| MIO_PAD_ATTR_19 | 0x574    |
-| MIO_PAD_ATTR_20 | 0x578    |
-| MIO_PAD_ATTR_21 | 0x57c    |
-| MIO_PAD_ATTR_22 | 0x580    |
-| MIO_PAD_ATTR_23 | 0x584    |
-| MIO_PAD_ATTR_24 | 0x588    |
-| MIO_PAD_ATTR_25 | 0x58c    |
-| MIO_PAD_ATTR_26 | 0x590    |
-| MIO_PAD_ATTR_27 | 0x594    |
-| MIO_PAD_ATTR_28 | 0x598    |
-| MIO_PAD_ATTR_29 | 0x59c    |
-| MIO_PAD_ATTR_30 | 0x5a0    |
-| MIO_PAD_ATTR_31 | 0x5a4    |
-| MIO_PAD_ATTR_32 | 0x5a8    |
-| MIO_PAD_ATTR_33 | 0x5ac    |
-| MIO_PAD_ATTR_34 | 0x5b0    |
-| MIO_PAD_ATTR_35 | 0x5b4    |
-| MIO_PAD_ATTR_36 | 0x5b8    |
-| MIO_PAD_ATTR_37 | 0x5bc    |
-| MIO_PAD_ATTR_38 | 0x5c0    |
-| MIO_PAD_ATTR_39 | 0x5c4    |
-| MIO_PAD_ATTR_40 | 0x5c8    |
-| MIO_PAD_ATTR_41 | 0x5cc    |
-| MIO_PAD_ATTR_42 | 0x5d0    |
-| MIO_PAD_ATTR_43 | 0x5d4    |
-| MIO_PAD_ATTR_44 | 0x5d8    |
-| MIO_PAD_ATTR_45 | 0x5dc    |
-| MIO_PAD_ATTR_46 | 0x5e0    |
+| Name            | Offset   | Reset   | pull_en reset   |
+|:----------------|:---------|:--------|:----------------|
+| MIO_PAD_ATTR_0  | 0x528    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_1  | 0x52c    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_2  | 0x530    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_3  | 0x534    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_4  | 0x538    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_5  | 0x53c    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_6  | 0x540    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_7  | 0x544    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_8  | 0x548    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_9  | 0x54c    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_10 | 0x550    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_11 | 0x554    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_12 | 0x558    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_13 | 0x55c    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_14 | 0x560    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_15 | 0x564    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_16 | 0x568    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_17 | 0x56c    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_18 | 0x570    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_19 | 0x574    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_20 | 0x578    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_21 | 0x57c    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_22 | 0x580    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_23 | 0x584    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_24 | 0x588    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_25 | 0x58c    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_26 | 0x590    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_27 | 0x594    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_28 | 0x598    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_29 | 0x59c    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_30 | 0x5a0    | 0x4     | 0x1             |
+| MIO_PAD_ATTR_31 | 0x5a4    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_32 | 0x5a8    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_33 | 0x5ac    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_34 | 0x5b0    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_35 | 0x5b4    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_36 | 0x5b8    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_37 | 0x5bc    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_38 | 0x5c0    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_39 | 0x5c4    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_40 | 0x5c8    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_41 | 0x5cc    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_42 | 0x5d0    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_43 | 0x5d4    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_44 | 0x5d8    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_45 | 0x5dc    | 0x0     | 0x0             |
+| MIO_PAD_ATTR_46 | 0x5e0    | 0x0     | 0x0             |
 
 
 ### Fields
@@ -1176,21 +1174,21 @@ The muxed pad that is used for TAP strap 0 has a different reset value, with `pu
 {"reg": [{"name": "invert", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "virtual_od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "pull_select", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "keeper_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "schmitt_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "od_en", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "input_disable", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 8}, {"name": "slew_rate", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 2}, {"name": "drive_strength", "bits": 4, "attr": ["rw"], "rotate": -90}, {"bits": 8}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                            |
-|:------:|:------:|:-------:|:------------------------------------------------|
-| 31:24  |        |         | Reserved                                        |
-| 23:20  |   rw   |   0x0   | [drive_strength](#mio_pad_attr--drive_strength) |
-| 19:18  |        |         | Reserved                                        |
-| 17:16  |   rw   |   0x0   | [slew_rate](#mio_pad_attr--slew_rate)           |
-|  15:8  |        |         | Reserved                                        |
-|   7    |   rw   |   0x0   | [input_disable](#mio_pad_attr--input_disable)   |
-|   6    |   rw   |   0x0   | [od_en](#mio_pad_attr--od_en)                   |
-|   5    |   rw   |   0x0   | [schmitt_en](#mio_pad_attr--schmitt_en)         |
-|   4    |   rw   |   0x0   | [keeper_en](#mio_pad_attr--keeper_en)           |
-|   3    |   rw   |   0x0   | [pull_select](#mio_pad_attr--pull_select)       |
-|   2    |   rw   |   0x0   | [pull_en](#mio_pad_attr--pull_en)               |
-|   1    |   rw   |   0x0   | [virtual_od_en](#mio_pad_attr--virtual_od_en)   |
-|   0    |   rw   |   0x0   | [invert](#mio_pad_attr--invert)                 |
+|  Bits  |  Type  |     Reset     | Name                                            |
+|:------:|:------:|:-------------:|:------------------------------------------------|
+| 31:24  |        |               | Reserved                                        |
+| 23:20  |   rw   |      0x0      | [drive_strength](#mio_pad_attr--drive_strength) |
+| 19:18  |        |               | Reserved                                        |
+| 17:16  |   rw   |      0x0      | [slew_rate](#mio_pad_attr--slew_rate)           |
+|  15:8  |        |               | Reserved                                        |
+|   7    |   rw   |      0x0      | [input_disable](#mio_pad_attr--input_disable)   |
+|   6    |   rw   |      0x0      | [od_en](#mio_pad_attr--od_en)                   |
+|   5    |   rw   |      0x0      | [schmitt_en](#mio_pad_attr--schmitt_en)         |
+|   4    |   rw   |      0x0      | [keeper_en](#mio_pad_attr--keeper_en)           |
+|   3    |   rw   |      0x0      | [pull_select](#mio_pad_attr--pull_select)       |
+|   2    |   rw   | see Instances | [pull_en](#mio_pad_attr--pull_en)               |
+|   1    |   rw   |      0x0      | [virtual_od_en](#mio_pad_attr--virtual_od_en)   |
+|   0    |   rw   |      0x0      | [invert](#mio_pad_attr--invert)                 |
 
 ### MIO_PAD_ATTR . drive_strength
 Drive strength (0x0: weakest, 0xf: strongest)

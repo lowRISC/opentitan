@@ -2,6 +2,9 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+<%!
+  from ipgen.pinmux_gen import check_params, pad_attr_sv
+%>\
 package pinmux_pkg;
 
   import pinmux_reg_pkg::*;
@@ -59,6 +62,23 @@ package pinmux_pkg;
     mio_pad_type:      {NMioPads{BidirStd}},
     dio_scan_role:     {NDioPads{NoScan}},
     mio_scan_role:     {NMioPads{NoScan}}
+  };
+
+<%
+  check_params(n_mio_pads, n_dio_pads, mio_pad_attr_resvals, dio_pad_attr_resvals)
+%>\
+  // Reset values of the MIO_PAD_ATTR CSRs defined by the top. LSB corresponds to lowest index.
+  parameter pad_attr_t [NMioPads-1:0] MioPadAttrResval = {
+% for name, attrs in mio_pad_attr_resvals[::-1]:
+    ${pad_attr_sv(attrs)}${f"  // {name}" if loop.last else f", // {name}"}
+% endfor
+  };
+
+  // Reset values of the DIO_PAD_ATTR CSRs defined by the top. LSB corresponds to lowest index.
+  parameter pad_attr_t [NDioPads-1:0] DioPadAttrResval = {
+% for name, attrs in dio_pad_attr_resvals[::-1]:
+    ${pad_attr_sv(attrs)}${f"  // {name}" if loop.last else f", // {name}"}
+% endfor
   };
 
   // Wakeup Detector Modes

@@ -459,6 +459,30 @@ def generate_regfile_from_path(hjson_path: Path,
         sys.exit(1)
 
 
+def _gen_pad_attr_resvals(
+        top: ConfigT) -> Tuple[List[Tuple[str, Dict]], List[Tuple[str, Dict]]]:
+    """Get the reset values of the pad attributes defined by the pinout of the top.
+
+    Returns a list of (name, attrs) tuples for the MIO pads and one for the DIOs, ordered by their
+    PAD_ATTR CSR index. The attrs are passed as defined in the hjson. Pads without attrs get an
+    empty dict.
+    """
+    mio_attrs = [(pad['name'], pad.get('attrs', {}))
+                 for pad in top['pinout']['pads'] if pad['connection'] == 'muxed']
+
+    # We do not support default attrs for manual signals because it is not clear to which pad they
+    # are connected to.
+    dios = sorted((io for io in top['pinmux']['ios'] if io['connection'] != 'muxed'),
+                  key=lambda io: io['glob_idx'])
+    dio_attrs = []
+    pads = {pad['name']: pad for pad in top['pinout']['pads']}
+    for io in dios:
+        pad = pads.get(io['pad']) if io['connection'] == 'direct' else None
+        dio_attrs.append((pad['name'], pad.get('attrs', {})) if pad else (io['name'], {}))
+
+    return mio_attrs, dio_attrs
+
+
 def _get_pinmux_params(top: ConfigT) -> ParamsT:
     """Gets parameters for pinmux ipgen from top config."""
     # Generation without pinmux and pinout configuration is not supported.
@@ -509,6 +533,9 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
     assert (n_mio_pads > 0)
     assert (n_dio_pads > 0)
 
+    # Determine the reset values of the pad attribute CSRs.
+    mio_pad_attr_resvals, dio_pad_attr_resvals = _gen_pad_attr_resvals(top)
+
     log.info("Generating pinmux with following info from hjson:")
     log.info("num_wkup_detect: %d" % num_wkup_detect)
     log.info("wkup_cnt_width:  %d" % wkup_cnt_width)
@@ -527,7 +554,9 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
         "n_mio_pads": n_mio_pads,
         "n_mio_periph_in": n_mio_periph_in,
         "n_mio_periph_out": n_mio_periph_out,
+        "mio_pad_attr_resvals": mio_pad_attr_resvals,
         "n_dio_pads": n_dio_pads,
+        "dio_pad_attr_resvals": dio_pad_attr_resvals,
         "n_dio_periph_in": n_dio_periph_in,
         "n_dio_periph_out": n_dio_periph_out,
         "enable_usb_wakeup": pinmux['enable_usb_wakeup'],

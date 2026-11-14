@@ -862,7 +862,22 @@
     //
     //               3) 'muxed': This is a muxed IO pad that will be connected to the pinmux.
     //
-    // Optionally, each pad can also have a 'desc' field for further description.
+    // Optionally, each pad can also have the following keys:
+    //
+    // - desc: A field for further description.
+    //
+    // - port_type: A field to override the default 'inout wire' type (this is currently only used
+    //              for simulating ADC connections where the ports have to be switched to a real
+    //              type when the ANALOGSIM macro is defined).
+    //
+    // Muxed and direct pads may also have:
+    //
+    // - attrs: This field allows to define the reset values of the MIO/DIO_PAD_ATTR CSR of direct
+    //          or muxed pads. It is a dict mapping CSR field names to integer reset values. An
+    //          example is: `attrs: {virtual_od_en: 1, drive_strength: 3}`
+    //
+    //          Fields not specified keep the default reset value of the pinmux. Whether a pad
+    //          supports an attribute depends on its type and technology (WARL).
     pads: [
       // Special manually connected pads
       { name: 'POR_N'           , type: 'InputStd', bank: 'VCC' , connection: 'manual', desc: 'System reset'},
@@ -919,7 +934,9 @@
       { name: 'IOC5'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOC6'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOC7'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
-      { name: 'IOC8'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
+      // Enable pull-down to ensure TAP strap 0 gets sampled as 0 unless driven to 1 from an external source
+      // (and specifically that it gets sampled as 0 when left floating / not connected).
+      { name: 'IOC8'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad', attrs: {pull_en: 1}},
       { name: 'IOC9'            , type: 'BidirStd', bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOC10'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
       { name: 'IOC11'           , type: 'BidirOd' , bank: 'VCC' , connection: 'muxed' , desc: 'Muxed IO pad'},
@@ -976,6 +993,7 @@
     // - attr: Manual direct IOs may specify an additional pad attr field.
     //         This is used to create the correct pad attribute CSR for that DIO channel (since the
     //         DIO is manual, there is no way to automatically infer the corresponding pad type).
+    //         Not to be confused with the 'attrs' key of a pad.
     //
     signals: [
       // SPI Host0
@@ -1078,6 +1096,7 @@
       pinmux: {
         special_signals: [
           // Straps
+          // Check pad attributes if strap pins change.
           { name: 'tap0',   pad: 'IOC8',         desc: 'TAP strap signal.'                       },
           { name: 'tap1',   pad: 'IOC5',         desc: 'TAP strap signal.'                       },
           { name: 'dft0',   pad: 'IOR5',         desc: 'DFT strap signal.'                       },
@@ -1129,6 +1148,7 @@
         // Same special signal (JTAG / strap) positions as the cw305 target.
         special_signals: [
           // Straps
+          // Check pad attributes if strap pins change.
           { name: 'tap0',   pad: 'IOC8',         desc: 'TAP strap signal.'                       },
           { name: 'tap1',   pad: 'IOC5',         desc: 'TAP strap signal.'                       },
           { name: 'dft0',   pad: 'IOR5',         desc: 'DFT strap signal.'                       },
