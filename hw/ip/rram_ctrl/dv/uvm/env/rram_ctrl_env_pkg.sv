@@ -20,6 +20,8 @@ package rram_ctrl_env_pkg;
   import prim_mubi_pkg::MuBi4False;
   import prim_mubi_pkg::MuBi4True;
 
+  import otp_ctrl_pkg::NvmKeyWidth;
+
   import rram_ctrl_pkg::DataWidth;
   import rram_ctrl_pkg::WordsPerPage;
   import rram_ctrl_pkg::OtpStartPage;
@@ -28,6 +30,9 @@ package rram_ctrl_env_pkg;
   import nvm_otp_key_agent_pkg::nvm_otp_key_agent_cfg;
   import nvm_otp_key_agent_pkg::nvm_otp_key_rsp_seq_item;
   import nvm_otp_key_agent_pkg::nvm_otp_key_agent;
+
+  import mem_bkdr_util_pkg::mem_bkdr_util;
+  import rram_ctrl_bkdr_util_pkg::rram_ctrl_bkdr_util;
 
   import rram_ctrl_reg_pkg::NumRegions;
   import rram_ctrl_reg_pkg::NumDataPages;
@@ -77,6 +82,7 @@ package rram_ctrl_env_pkg;
   `include "rram_ctrl_env_cov.sv"
   `include "rram_ctrl_virtual_sequencer.sv"
   `include "rram_ctrl_reg_predictor_filter.sv"
+  `include "rram_partition_model.svh"
   `include "rram_ctrl_reg_cbs.svh"
   `include "rram_ctrl_scoreboard.sv"
   `include "rram_ctrl_env.sv"
