@@ -1067,11 +1067,12 @@ module i3c_core
 
   // FIFO software reset signals.
   // - when first enabling one or more FIFO use cases, `i3c_buffer` needs to initialize pointers.
-  // - there is also a global reset (`BUFFER_CTRL.CLEAR`) for software use _when the IP block is
+  // - there is also a global reset (`BUFFER_CONTROL.CLEAR`) for software use _when the IP block is
   //   disabled_.
   // - both the HCI and the TTI require that their associated FIFOs be cleared when the software
   //   reset is asserted (`RESET_CONTROL.SOFT_RST` and `TARG_CONTROL.SW_RESET`).
-  wire buffer_clear  = (reg2hw_i.buffer_ctrl.clear.qe & reg2hw_i.buffer_ctrl.clear.q) | enabling;
+  wire buffer_clear  = (reg2hw_i.buffer_control.clear.qe & reg2hw_i.buffer_control.clear.q) |
+                       enabling;
   wire hci_buf_clear = ctrl_sw_reset | buffer_clear;
   wire tti_buf_clear = targ_sw_reset | buffer_clear;
 
@@ -1427,10 +1428,12 @@ module i3c_core
   logic [BufAddrW-1:0] sw_buf_addr;
   logic [1:0] sw_addr_hi_q;
   always_ff @(posedge clk_i or negedge rst_ni) begin
-    if (!rst_ni) sw_addr_hi_q <= I3C_BUFFER_CTRL_SW_ADDR_HI_RESVAL;
-    else if (reg2hw_i.buffer_ctrl.sw_addr_hi.qe) sw_addr_hi_q <= reg2hw_i.buffer_ctrl.sw_addr_hi.q;
+    if (!rst_ni) sw_addr_hi_q <= I3C_BUFFER_CONTROL_SW_ADDR_HI_RESVAL;
+    else if (reg2hw_i.buffer_control.sw_addr_hi.qe) begin
+      sw_addr_hi_q <= reg2hw_i.buffer_control.sw_addr_hi.q;
+    end
   end
-  assign hw2reg_o.buffer_ctrl.sw_addr_hi.d = sw_addr_hi_q;
+  assign hw2reg_o.buffer_control.sw_addr_hi.d = sw_addr_hi_q;
   assign sw_buf_addr = BufAddrW'({sw_addr_hi_q, sw_buf_addr_i});
 
   // Presenting the default FIFO configuration permits the message buffer to initialize the write

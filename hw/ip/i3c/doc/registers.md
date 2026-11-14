@@ -17,7 +17,7 @@
 | i3c.[`TARG_EXT_STATUS`](#targ_ext_status)                                   | 0x24     |        4 | Target Extension Status.                                                            |
 | i3c.[`TARG_SINK_CONTROL`](#targ_sink_control)                               | 0x28     |        4 | Target data sink control.                                                           |
 | i3c.[`TARG_SINK_STATUS`](#targ_sink_status)                                 | 0x2c     |        4 | Target data sink status.                                                            |
-| i3c.[`RESET_DET_CTRL`](#reset_det_ctrl)                                     | 0x30     |        4 | Reset detector control.                                                             |
+| i3c.[`RESET_DET_CONTROL`](#reset_det_control)                               | 0x30     |        4 | Reset detector control.                                                             |
 | i3c.[`RESET_DET_STATUS`](#reset_det_status)                                 | 0x34     |        4 | Reset detector status.                                                              |
 | i3c.[`CTRL_TIME_SP`](#ctrl_time_sp)                                         | 0x38     |        4 | Controller Timing Parameters for Start and stoP.                                    |
 | i3c.[`CTRL_TIME_OD`](#ctrl_time_od)                                         | 0x3c     |        4 | Controller Timing Parameters for Open Drain signaling.                              |
@@ -35,7 +35,7 @@
 | i3c.[`BUS_CONTROL`](#bus_control)                                           | 0x6c     |        4 | Controller Bus Control Register.                                                    |
 | i3c.[`PHY_CONFIG`](#phy_config)                                             | 0x70     |        4 | PHY configuration                                                                   |
 | i3c.[`BLOCKED_ADDR`](#blocked_addr)                                         | 0x74     |        4 | Blocked target addresses.                                                           |
-| i3c.[`BUFFER_CTRL`](#buffer_ctrl)                                           | 0x78     |        4 | Buffer control                                                                      |
+| i3c.[`BUFFER_CONTROL`](#buffer_control)                                     | 0x78     |        4 | Buffer control                                                                      |
 | i3c.[`BUFFER_STATUS`](#buffer_status)                                       | 0x7c     |        4 | Buffer status                                                                       |
 | i3c.[`CTRL_TXBUF_CONFIG`](#ctrl_txbuf_config)                               | 0x80     |        4 | Controller TX Buffer Configuration                                                  |
 | i3c.[`CTRL_TXBUF_STATE`](#ctrl_txbuf_state)                                 | 0x84     |        4 | Controller TX Buffer State.                                                         |
@@ -576,7 +576,7 @@ If the specified buffer did not contain sufficient data for the logic to remove 
 Indicates whether the data sink logic is active.
 This bit becomes set when the operation is started and will be cleared at most a few tens of microseconds later when the operation is complete.
 
-## RESET_DET_CTRL
+## RESET_DET_CONTROL
 Reset detector control.
 - Offset: `0x30`
 - Reset default: `0x0`
@@ -636,17 +636,17 @@ Indicates that a Wake Up request was received.
 
 ### RESET_DET_STATUS . RST_TARGET_EN
 Response to a Whole Target reset request enabled, when RSTACT has been set accordingly.
-This field echoes the field `RESET_DET_CTRL.RST_TARGET_EN`, indicating that the requested configuration has been set.
+This field echoes the field `RESET_DET_CONTROL.RST_TARGET_EN`, indicating that the requested configuration has been set.
 Since the Reset Detector resides within a low power domain on a slow clock, this update can take up to 15 us.
 
 ### RESET_DET_STATUS . RST_PERIPH_EN
 Response to a Peripheral reset request enabled, when RSTACT has been set accordingly.
-This field echoes the field `RESET_DET_CTRL.RST_PERIPH_EN`, indicating that the requested configuration has been set.
+This field echoes the field `RESET_DET_CONTROL.RST_PERIPH_EN`, indicating that the requested configuration has been set.
 Since the Reset Detector resides within a low power domain on a slow clock, this update can take up to 15 us.
 
 ### RESET_DET_STATUS . SLEEP_REQ_EN
 Wake up signaling enabled.
-This field echoes the field `RESET_DET_CTRL.SLEEP_REQ_EN`, indicating that the requested configuration has been set.
+This field echoes the field `RESET_DET_CONTROL.SLEEP_REQ_EN`, indicating that the requested configuration has been set.
 Since the Reset Detector resides within a low power domain on a slow clock, this update can take up to 15 us.
 
 ### RESET_DET_STATUS . ACTIVE
@@ -1085,7 +1085,7 @@ Accesses to the target address (`TARG_ADDR`) will be blocked if the following ex
   `(TARG_ADDR & MASK0) == ADDR0`
 The reset values of `MASK0` and `ADDR0` cannot yield a match, deactivating this check.
 
-## BUFFER_CTRL
+## BUFFER_CONTROL
 Buffer control
 - Offset: `0x78`
 - Reset default: `0x0`
@@ -1097,19 +1097,19 @@ Buffer control
 {"reg": [{"bits": 28}, {"name": "SW_ADDR_HI", "bits": 2, "attr": ["rw"], "rotate": -90}, {"bits": 1}, {"name": "CLEAR", "bits": 1, "attr": ["wo"], "rotate": -90}], "config": {"lanes": 1, "fontsize": 10, "vspace": 120}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                   |
-|:------:|:------:|:-------:|:---------------------------------------|
-|   31   |   wo   |   0x0   | [CLEAR](#buffer_ctrl--clear)           |
-|   30   |        |         | Reserved                               |
-| 29:28  |   rw   |   0x0   | [SW_ADDR_HI](#buffer_ctrl--sw_addr_hi) |
-|  27:0  |        |         | Reserved                               |
+|  Bits  |  Type  |  Reset  | Name                                      |
+|:------:|:------:|:-------:|:------------------------------------------|
+|   31   |   wo   |   0x0   | [CLEAR](#buffer_control--clear)           |
+|   30   |        |         | Reserved                                  |
+| 29:28  |   rw   |   0x0   | [SW_ADDR_HI](#buffer_control--sw_addr_hi) |
+|  27:0  |        |         | Reserved                                  |
 
-### BUFFER_CTRL . CLEAR
+### BUFFER_CONTROL . CLEAR
 Software clear of buffer state including the following:
 All `WPTR` and `RPTR` values are set to the corresponding `MIN` values, emptying all circular buffers.
 This shall only be used when both the Controller- and the Target-side functionality are disabled.
 
-### BUFFER_CTRL . SW_ADDR_HI
+### BUFFER_CONTROL . SW_ADDR_HI
 Supplies the high address bits when software performs direct accesses to the internal message buffer.
 The IP may be configured to map part of its internal message buffer into the upper half of the IP address space.
 This provides more RAM to a memory-limited system when the I3C is not being used, and may be diagnostically useful when it is used.

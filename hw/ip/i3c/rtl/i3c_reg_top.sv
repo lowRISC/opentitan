@@ -273,9 +273,9 @@ module i3c_reg_top
   logic targ_sink_status_active_qs;
   logic targ_sink_status_error_qs;
   logic [10:0] targ_sink_status_length_qs;
-  logic reset_det_ctrl_we;
-  logic [21:0] reset_det_ctrl_qs;
-  logic reset_det_ctrl_busy;
+  logic reset_det_control_we;
+  logic [21:0] reset_det_control_qs;
+  logic reset_det_control_busy;
   logic [29:0] reset_det_status_qs;
   logic reset_det_status_busy;
   logic ctrl_time_sp_we;
@@ -390,11 +390,11 @@ module i3c_reg_top
   logic [6:0] blocked_addr_addr1_wd;
   logic [6:0] blocked_addr_mask1_qs;
   logic [6:0] blocked_addr_mask1_wd;
-  logic buffer_ctrl_re;
-  logic buffer_ctrl_we;
-  logic [1:0] buffer_ctrl_sw_addr_hi_qs;
-  logic [1:0] buffer_ctrl_sw_addr_hi_wd;
-  logic buffer_ctrl_clear_wd;
+  logic buffer_control_re;
+  logic buffer_control_we;
+  logic [1:0] buffer_control_sw_addr_hi_qs;
+  logic [1:0] buffer_control_sw_addr_hi_wd;
+  logic buffer_control_clear_wd;
   logic buffer_status_we;
   logic buffer_status_ttiq_err_qs;
   logic buffer_status_ttiq_err_wd;
@@ -1519,13 +1519,13 @@ module i3c_reg_top
   // Define register CDC handling.
   // CDC handling is done on a per-reg instead of per-field boundary.
 
-  logic [21:0] aon_reset_det_ctrl_qs;
-  logic [21:0] aon_reset_det_ctrl_wdata;
-  logic aon_reset_det_ctrl_we;
-  logic unused_aon_reset_det_ctrl_wdata;
+  logic [21:0] aon_reset_det_control_qs;
+  logic [21:0] aon_reset_det_control_wdata;
+  logic aon_reset_det_control_we;
+  logic unused_aon_reset_det_control_wdata;
 
   always_comb begin
-    aon_reset_det_ctrl_qs = 22'h0;
+    aon_reset_det_control_qs = 22'h0;
   end
 
   prim_reg_cdc #(
@@ -1533,27 +1533,27 @@ module i3c_reg_top
     .ResetVal(22'h0),
     .BitMask(22'h310001),
     .DstWrReq(0)
-  ) u_reset_det_ctrl_cdc (
+  ) u_reset_det_control_cdc (
     .clk_src_i    (clk_i),
     .rst_src_ni   (rst_ni),
     .clk_dst_i    (clk_aon_i),
     .rst_dst_ni   (rst_aon_ni),
     .src_regwen_i ('0),
-    .src_we_i     (reset_det_ctrl_we),
+    .src_we_i     (reset_det_control_we),
     .src_re_i     ('0),
     .src_wd_i     (reg_wdata[21:0]),
-    .src_busy_o   (reset_det_ctrl_busy),
-    .src_qs_o     (reset_det_ctrl_qs), // for software read back
+    .src_busy_o   (reset_det_control_busy),
+    .src_qs_o     (reset_det_control_qs), // for software read back
     .dst_update_i ('0),
     .dst_ds_i     ('0),
-    .dst_qs_i     (aon_reset_det_ctrl_qs),
-    .dst_we_o     (aon_reset_det_ctrl_we),
+    .dst_qs_i     (aon_reset_det_control_qs),
+    .dst_we_o     (aon_reset_det_control_we),
     .dst_re_o     (),
     .dst_regwen_o (),
-    .dst_wd_o     (aon_reset_det_ctrl_wdata)
+    .dst_wd_o     (aon_reset_det_control_wdata)
   );
-  assign unused_aon_reset_det_ctrl_wdata =
-      ^aon_reset_det_ctrl_wdata;
+  assign unused_aon_reset_det_control_wdata =
+      ^aon_reset_det_control_wdata;
 
   logic  aon_reset_det_status_active_ds_int;
   logic  aon_reset_det_status_active_qs_int;
@@ -2604,21 +2604,21 @@ module i3c_reg_top
   );
 
 
-  // R[reset_det_ctrl]: V(False)
+  // R[reset_det_control]: V(False)
   //   F[activate]: 0:0
   prim_subreg #(
     .DW      (1),
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_reset_det_ctrl_activate (
+  ) u_reset_det_control_activate (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
     .reinit_i(1'b0),
 
     // from register interface
-    .we     (aon_reset_det_ctrl_we),
-    .wd     (aon_reset_det_ctrl_wdata[0]),
+    .we     (aon_reset_det_control_we),
+    .wd     (aon_reset_det_control_wdata[0]),
 
     // from internal hardware
     .de     (1'b0),
@@ -2626,7 +2626,7 @@ module i3c_reg_top
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reset_det_ctrl.activate.q),
+    .q      (reg2hw.reset_det_control.activate.q),
     .ds     (),
 
     // to register interface (read)
@@ -2639,14 +2639,14 @@ module i3c_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_reset_det_ctrl_sleep_req (
+  ) u_reset_det_control_sleep_req (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
     .reinit_i(1'b0),
 
     // from register interface
-    .we     (aon_reset_det_ctrl_we),
-    .wd     (aon_reset_det_ctrl_wdata[16]),
+    .we     (aon_reset_det_control_we),
+    .wd     (aon_reset_det_control_wdata[16]),
 
     // from internal hardware
     .de     (1'b0),
@@ -2654,7 +2654,7 @@ module i3c_reg_top
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reset_det_ctrl.sleep_req.q),
+    .q      (reg2hw.reset_det_control.sleep_req.q),
     .ds     (),
 
     // to register interface (read)
@@ -2667,14 +2667,14 @@ module i3c_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_reset_det_ctrl_rst_periph_en (
+  ) u_reset_det_control_rst_periph_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
     .reinit_i(1'b0),
 
     // from register interface
-    .we     (aon_reset_det_ctrl_we),
-    .wd     (aon_reset_det_ctrl_wdata[20]),
+    .we     (aon_reset_det_control_we),
+    .wd     (aon_reset_det_control_wdata[20]),
 
     // from internal hardware
     .de     (1'b0),
@@ -2682,7 +2682,7 @@ module i3c_reg_top
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reset_det_ctrl.rst_periph_en.q),
+    .q      (reg2hw.reset_det_control.rst_periph_en.q),
     .ds     (),
 
     // to register interface (read)
@@ -2695,14 +2695,14 @@ module i3c_reg_top
     .SwAccess(prim_subreg_pkg::SwAccessWO),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
-  ) u_reset_det_ctrl_rst_target_en (
+  ) u_reset_det_control_rst_target_en (
     .clk_i   (clk_aon_i),
     .rst_ni  (rst_aon_ni),
     .reinit_i(1'b0),
 
     // from register interface
-    .we     (aon_reset_det_ctrl_we),
-    .wd     (aon_reset_det_ctrl_wdata[21]),
+    .we     (aon_reset_det_control_we),
+    .wd     (aon_reset_det_control_wdata[21]),
 
     // from internal hardware
     .de     (1'b0),
@@ -2710,7 +2710,7 @@ module i3c_reg_top
 
     // to internal hardware
     .qe     (),
-    .q      (reg2hw.reset_det_ctrl.rst_target_en.q),
+    .q      (reg2hw.reset_det_control.rst_target_en.q),
     .ds     (),
 
     // to register interface (read)
@@ -4299,41 +4299,41 @@ module i3c_reg_top
   );
 
 
-  // R[buffer_ctrl]: V(True)
-  logic buffer_ctrl_qe;
-  logic [1:0] buffer_ctrl_flds_we;
-  assign buffer_ctrl_qe = &buffer_ctrl_flds_we;
+  // R[buffer_control]: V(True)
+  logic buffer_control_qe;
+  logic [1:0] buffer_control_flds_we;
+  assign buffer_control_qe = &buffer_control_flds_we;
   //   F[sw_addr_hi]: 29:28
   prim_subreg_ext #(
     .DW    (2)
-  ) u_buffer_ctrl_sw_addr_hi (
-    .re     (buffer_ctrl_re),
-    .we     (buffer_ctrl_we),
-    .wd     (buffer_ctrl_sw_addr_hi_wd),
-    .d      (hw2reg.buffer_ctrl.sw_addr_hi.d),
+  ) u_buffer_control_sw_addr_hi (
+    .re     (buffer_control_re),
+    .we     (buffer_control_we),
+    .wd     (buffer_control_sw_addr_hi_wd),
+    .d      (hw2reg.buffer_control.sw_addr_hi.d),
     .qre    (),
-    .qe     (buffer_ctrl_flds_we[0]),
-    .q      (reg2hw.buffer_ctrl.sw_addr_hi.q),
+    .qe     (buffer_control_flds_we[0]),
+    .q      (reg2hw.buffer_control.sw_addr_hi.q),
     .ds     (),
-    .qs     (buffer_ctrl_sw_addr_hi_qs)
+    .qs     (buffer_control_sw_addr_hi_qs)
   );
-  assign reg2hw.buffer_ctrl.sw_addr_hi.qe = buffer_ctrl_qe;
+  assign reg2hw.buffer_control.sw_addr_hi.qe = buffer_control_qe;
 
   //   F[clear]: 31:31
   prim_subreg_ext #(
     .DW    (1)
-  ) u_buffer_ctrl_clear (
+  ) u_buffer_control_clear (
     .re     (1'b0),
-    .we     (buffer_ctrl_we),
-    .wd     (buffer_ctrl_clear_wd),
+    .we     (buffer_control_we),
+    .wd     (buffer_control_clear_wd),
     .d      ('0),
     .qre    (),
-    .qe     (buffer_ctrl_flds_we[1]),
-    .q      (reg2hw.buffer_ctrl.clear.q),
+    .qe     (buffer_control_flds_we[1]),
+    .q      (reg2hw.buffer_control.clear.q),
     .ds     (),
     .qs     ()
   );
-  assign reg2hw.buffer_ctrl.clear.qe = buffer_ctrl_qe;
+  assign reg2hw.buffer_control.clear.qe = buffer_control_qe;
 
 
   // R[buffer_status]: V(False)
@@ -19704,7 +19704,7 @@ module i3c_reg_top
     addr_hit[  9] = (reg_addr == I3C_TARG_EXT_STATUS_OFFSET);
     addr_hit[ 10] = (reg_addr == I3C_TARG_SINK_CONTROL_OFFSET);
     addr_hit[ 11] = (reg_addr == I3C_TARG_SINK_STATUS_OFFSET);
-    addr_hit[ 12] = (reg_addr == I3C_RESET_DET_CTRL_OFFSET);
+    addr_hit[ 12] = (reg_addr == I3C_RESET_DET_CONTROL_OFFSET);
     addr_hit[ 13] = (reg_addr == I3C_RESET_DET_STATUS_OFFSET);
     addr_hit[ 14] = (reg_addr == I3C_CTRL_TIME_SP_OFFSET);
     addr_hit[ 15] = (reg_addr == I3C_CTRL_TIME_OD_OFFSET);
@@ -19722,7 +19722,7 @@ module i3c_reg_top
     addr_hit[ 27] = (reg_addr == I3C_BUS_CONTROL_OFFSET);
     addr_hit[ 28] = (reg_addr == I3C_PHY_CONFIG_OFFSET);
     addr_hit[ 29] = (reg_addr == I3C_BLOCKED_ADDR_OFFSET);
-    addr_hit[ 30] = (reg_addr == I3C_BUFFER_CTRL_OFFSET);
+    addr_hit[ 30] = (reg_addr == I3C_BUFFER_CONTROL_OFFSET);
     addr_hit[ 31] = (reg_addr == I3C_BUFFER_STATUS_OFFSET);
     addr_hit[ 32] = (reg_addr == I3C_CTRL_TXBUF_CONFIG_OFFSET);
     addr_hit[ 33] = (reg_addr == I3C_CTRL_TXBUF_STATE_OFFSET);
@@ -20168,7 +20168,7 @@ module i3c_reg_top
 
   assign targ_sink_control_start_wd = reg_wdata[31];
   assign targ_sink_status_re = racl_addr_hit_read[11] & reg_re & !reg_error;
-  assign reset_det_ctrl_we = racl_addr_hit_write[12] & reg_we & !reg_error;
+  assign reset_det_control_we = racl_addr_hit_write[12] & reg_we & !reg_error;
 
 
 
@@ -20285,12 +20285,12 @@ module i3c_reg_top
   assign blocked_addr_addr1_wd = reg_wdata[22:16];
 
   assign blocked_addr_mask1_wd = reg_wdata[30:24];
-  assign buffer_ctrl_re = racl_addr_hit_read[30] & reg_re & !reg_error;
-  assign buffer_ctrl_we = racl_addr_hit_write[30] & reg_we & !reg_error;
+  assign buffer_control_re = racl_addr_hit_read[30] & reg_re & !reg_error;
+  assign buffer_control_we = racl_addr_hit_write[30] & reg_we & !reg_error;
 
-  assign buffer_ctrl_sw_addr_hi_wd = reg_wdata[29:28];
+  assign buffer_control_sw_addr_hi_wd = reg_wdata[29:28];
 
-  assign buffer_ctrl_clear_wd = reg_wdata[31];
+  assign buffer_control_clear_wd = reg_wdata[31];
   assign buffer_status_we = racl_addr_hit_write[31] & reg_we & !reg_error;
 
   assign buffer_status_ttiq_err_wd = reg_wdata[30];
@@ -21236,7 +21236,7 @@ module i3c_reg_top
     reg_we_check[9] = targ_ext_status_we;
     reg_we_check[10] = targ_sink_control_we;
     reg_we_check[11] = 1'b0;
-    reg_we_check[12] = reset_det_ctrl_we;
+    reg_we_check[12] = reset_det_control_we;
     reg_we_check[13] = 1'b0;
     reg_we_check[14] = ctrl_time_sp_we;
     reg_we_check[15] = ctrl_time_od_we;
@@ -21254,7 +21254,7 @@ module i3c_reg_top
     reg_we_check[27] = bus_control_we;
     reg_we_check[28] = phy_config_we;
     reg_we_check[29] = blocked_addr_we;
-    reg_we_check[30] = buffer_ctrl_we;
+    reg_we_check[30] = buffer_control_we;
     reg_we_check[31] = buffer_status_we;
     reg_we_check[32] = ctrl_txbuf_config_we;
     reg_we_check[33] = 1'b0;
@@ -21501,7 +21501,7 @@ module i3c_reg_top
       end
 
       racl_addr_hit_read[12]: begin
-        reg_rdata_next = DW'(reset_det_ctrl_qs);
+        reg_rdata_next = DW'(reset_det_control_qs);
       end
       racl_addr_hit_read[13]: begin
         reg_rdata_next = DW'(reset_det_status_qs);
@@ -21603,7 +21603,7 @@ module i3c_reg_top
       end
 
       racl_addr_hit_read[30]: begin
-        reg_rdata_next[29:28] = buffer_ctrl_sw_addr_hi_qs;
+        reg_rdata_next[29:28] = buffer_control_sw_addr_hi_qs;
         reg_rdata_next[31] = '0;
       end
 
@@ -22736,7 +22736,7 @@ module i3c_reg_top
     reg_busy_sel = '0;
     unique case (1'b1)
       addr_hit[12]: begin
-        reg_busy_sel = reset_det_ctrl_busy;
+        reg_busy_sel = reset_det_control_busy;
       end
       addr_hit[13]: begin
         reg_busy_sel = reset_det_status_busy;
