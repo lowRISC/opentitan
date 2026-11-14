@@ -738,7 +738,7 @@
     // even though the reset detector logic itself operates on the SCL signal this cannot be used
     // for the register interface because doing so could stall the CPU indefinitely.
     // Therefore `clk_aon_i` for this purpose.
-    { name:     "RESET_DET_CTRL",
+    { name:     "RESET_DET_CONTROL",
       desc:     "Reset detector control.",
       swaccess: "wo",
       hwaccess: "hro",
@@ -794,7 +794,7 @@
         { bits:   "21",
           name:   "RST_TARGET_EN",
           desc:   '''Response to a Whole Target reset request enabled, when RSTACT has been set accordingly.
-                  This field echoes the field `RESET_DET_CTRL.RST_TARGET_EN`, indicating that the requested configuration has been set.
+                  This field echoes the field `RESET_DET_CONTROL.RST_TARGET_EN`, indicating that the requested configuration has been set.
                   Since the Reset Detector resides within a low power domain on a slow clock, this update can take up to 15 us.
                   ''',
           resval: "0"
@@ -802,7 +802,7 @@
         { bits:   "20",
           name:   "RST_PERIPH_EN",
           desc:   '''Response to a Peripheral reset request enabled, when RSTACT has been set accordingly.
-                  This field echoes the field `RESET_DET_CTRL.RST_PERIPH_EN`, indicating that the requested configuration has been set.
+                  This field echoes the field `RESET_DET_CONTROL.RST_PERIPH_EN`, indicating that the requested configuration has been set.
                   Since the Reset Detector resides within a low power domain on a slow clock, this update can take up to 15 us.
                   ''',
           resval: "0"
@@ -1392,7 +1392,7 @@
         }
       ]
     }
-    { name:     "BUFFER_CTRL",
+    { name:     "BUFFER_CONTROL",
       desc:     "Buffer control",
       hwext:    "true",
       hwqe:     "true",
@@ -5220,7 +5220,7 @@
     }
     // This window onto the entire message buffer is optionally included based on 'SWDirectMsgBuf'.
     // - Up to 1024 words of the message buffer may be accessed at a time, with any additional upper
-    //   address bits being specified by the `BUFFER_CTRL.SW_ADDR_HI` register field.
+    //   address bits being specified by the `BUFFER_CONTROL.SW_ADDR_HI` register field.
     { skipto: "0x1000" },
     { window: {
         name:       "BUFFER",
