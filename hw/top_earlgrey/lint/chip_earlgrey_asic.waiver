@@ -48,6 +48,11 @@ waive -rules {LHS_TOO_SHORT} -location {sram_ctrl.sv} \
       -regexp {Bitlength mismatch between 'unused_assert_static_lint_error' length 1 and 'SramCtrlSecZeroInitNonDefault'\(1'b1\)' length 2} \
       -comment "SecZeroInit is intentionally enabled for the CHERIoT meta SRAM to ensure capabilities are cleared on initialization."
 
+# See https://github.com/lowRISC/opentitan/issues/31066
+waive -rules {LHS_TOO_SHORT} -location {prim_ram_1p_scr.sv} \
+      -regexp {Bitlength mismatch between 'unused_assert_static_lint_error' length 1 and 'DepthPow2OrDivisibleByLintMinChunkDepthCheck_L'\(1'b1\)' length 2, instance '.*\.u_sram_ctrl_meta\.u_prim_ram_1p_scr'} \
+      -comment "The 38 KiB CHERIoT meta SRAM uses address scrambling with 2 KiB chunks: 9 of its 14 address bits pass through the S&P network and the 5 MSBs are rotated by one of 19 chunk offsets. This is weaker than for a power-of-2 depth, but better than no address scrambling and avoids growing the SRAM to 48 KiB."
+
 # Temporary generic waiver for ast until the proper split into sub-IPs in the Main and Aon toplevels is done.
 waive -location {ast*.sv} \
       -regexp {.*} \
