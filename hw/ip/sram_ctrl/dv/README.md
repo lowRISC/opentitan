@@ -54,7 +54,7 @@ Six compile-time configurations can be tested:
   It enables the parameter `INSTR_EXEC` to allow TLUL instruction fetching when some runtime conditions are met.
 * `sram_ctrl_exec_48kB` - this is an example configuration for a memory with a non-power-of-2 size of 48 KiB.
   It enables the parameter `INSTR_EXEC` to allow TLUL instruction fetching when some runtime conditions are met.
-* `sram_ctrl_meta_38kB` - this configuration uses the 38 KiB size and the parameters of the CHERIoT meta SRAM used in Earl Grey, but with address scrambling enabled, and turns off parameter `INSTR_EXEC` to disable TLUL instruction fetching altogether.
+* `sram_ctrl_meta_38kB` - this configuration uses the 38 KiB size and the parameters of the CHERIoT meta SRAM used in Earl Grey, and turns off parameter `INSTR_EXEC` to disable TLUL instruction fetching altogether.
   Its size is not a multiple of 16 KiB, so address scrambling operates on 2 KiB chunks.
   Parameter `SecZeroInit` of the meta SRAM is not covered.
 

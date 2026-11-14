@@ -1222,9 +1222,6 @@
       reset_connections: {rst_ni: "lc", rst_otp_ni: "lc_io_div4"},
       param_decl: {
         InstrExec: "0",
-        // Set back to the default of 2 once address scrambling supports the
-        // 38 KiB meta SRAM depth.
-        NumAddrScrRounds: "0",
         NumPrinceRoundsHalf: "2",
         InstSize: "38912",
         // The CHERIoT revocation bitmap and validity tags must read back as zero initially, to
