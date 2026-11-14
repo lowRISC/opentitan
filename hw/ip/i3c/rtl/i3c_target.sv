@@ -329,13 +329,13 @@ module i3c_target
   // Target Reset Detector request.
   // TODO(#31128): Needs to interact with the RSTACT CCC handling when that exists; this logic is
   // enough to provide a basic initial configuration for the detector.
-  // TODO(#31337): Note: `RESET_DET_CTRL` register is in the AON clock domain, whereas `enable_i`
+  // TODO(#31337): Note: `RESET_DET_CONTROL` register is in the AON clock domain, whereas `enable_i`
   // and `rstact_i` are on the IP clock.
   assign rstdet_req_o = '{
-    activate:   enable_i & reg2hw_i.reset_det_ctrl.activate.q,
-    wake_up:    reg2hw_i.reset_det_ctrl.wake_up_en.q,
-    rst_periph: reg2hw_i.reset_det_ctrl.rst_periph_en.q && (rstact_i == RstAct_ResetPeripheral),
-    rst_target: reg2hw_i.reset_det_ctrl.rst_target_en.q && (rstact_i == RstAct_ResetTarget)
+    activate:   enable_i & reg2hw_i.reset_det_control.activate.q,
+    wake_up:    reg2hw_i.reset_det_control.wake_up_en.q,
+    rst_periph: reg2hw_i.reset_det_control.rst_periph_en.q && (rstact_i == RstAct_ResetPeripheral),
+    rst_target: reg2hw_i.reset_det_control.rst_target_en.q && (rstact_i == RstAct_ResetTarget)
   };
 
   // Present read data and status information to the transceiver logic for each Target in turn.

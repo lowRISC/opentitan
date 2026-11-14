@@ -151,7 +151,7 @@ package i3c_reg_pkg;
     struct packed {
       logic        q;
     } activate;
-  } i3c_reg2hw_reset_det_ctrl_reg_t;
+  } i3c_reg2hw_reset_det_control_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -359,7 +359,7 @@ package i3c_reg_pkg;
       logic [1:0]  q;
       logic        qe;
     } sw_addr_hi;
-  } i3c_reg2hw_buffer_ctrl_reg_t;
+  } i3c_reg2hw_buffer_control_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -1761,7 +1761,7 @@ package i3c_reg_pkg;
     struct packed {
       logic [1:0]  d;
     } sw_addr_hi;
-  } i3c_hw2reg_buffer_ctrl_reg_t;
+  } i3c_hw2reg_buffer_control_reg_t;
 
   typedef struct packed {
     struct packed {
@@ -2822,7 +2822,7 @@ package i3c_reg_pkg;
     i3c_reg2hw_targ_status_reg_t targ_status; // [2299:2298]
     i3c_reg2hw_targ_ext_status_reg_t targ_ext_status; // [2297:2281]
     i3c_reg2hw_targ_sink_control_reg_t targ_sink_control; // [2280:2263]
-    i3c_reg2hw_reset_det_ctrl_reg_t reset_det_ctrl; // [2262:2259]
+    i3c_reg2hw_reset_det_control_reg_t reset_det_control; // [2262:2259]
     i3c_reg2hw_ctrl_time_sp_reg_t ctrl_time_sp; // [2258:2239]
     i3c_reg2hw_ctrl_time_od_reg_t ctrl_time_od; // [2238:2219]
     i3c_reg2hw_ctrl_time_pp_reg_t ctrl_time_pp; // [2218:2198]
@@ -2839,7 +2839,7 @@ package i3c_reg_pkg;
     i3c_reg2hw_bus_control_reg_t bus_control; // [1961:1959]
     i3c_reg2hw_phy_config_reg_t phy_config; // [1958:1948]
     i3c_reg2hw_blocked_addr_reg_t blocked_addr; // [1947:1920]
-    i3c_reg2hw_buffer_ctrl_reg_t buffer_ctrl; // [1919:1915]
+    i3c_reg2hw_buffer_control_reg_t buffer_control; // [1919:1915]
     i3c_reg2hw_ctrl_txbuf_config_reg_t ctrl_txbuf_config; // [1914:1892]
     i3c_reg2hw_ctrl_rxbuf_config_reg_t ctrl_rxbuf_config; // [1891:1869]
     i3c_reg2hw_command_queue_config_reg_t command_queue_config; // [1868:1841]
@@ -2916,7 +2916,7 @@ package i3c_reg_pkg;
     i3c_hw2reg_targ_ext_status_reg_t targ_ext_status; // [1978:1962]
     i3c_hw2reg_targ_sink_status_reg_t targ_sink_status; // [1961:1949]
     i3c_hw2reg_reset_det_status_reg_t reset_det_status; // [1948:1935]
-    i3c_hw2reg_buffer_ctrl_reg_t buffer_ctrl; // [1934:1933]
+    i3c_hw2reg_buffer_control_reg_t buffer_control; // [1934:1933]
     i3c_hw2reg_buffer_status_reg_t buffer_status; // [1932:1929]
     i3c_hw2reg_ctrl_txbuf_state_reg_t ctrl_txbuf_state; // [1928:1907]
     i3c_hw2reg_ctrl_rxbuf_state_reg_t ctrl_rxbuf_state; // [1906:1885]
@@ -3003,7 +3003,7 @@ package i3c_reg_pkg;
   parameter logic [BlockAw-1:0] I3C_TARG_EXT_STATUS_OFFSET = 13'h 24;
   parameter logic [BlockAw-1:0] I3C_TARG_SINK_CONTROL_OFFSET = 13'h 28;
   parameter logic [BlockAw-1:0] I3C_TARG_SINK_STATUS_OFFSET = 13'h 2c;
-  parameter logic [BlockAw-1:0] I3C_RESET_DET_CTRL_OFFSET = 13'h 30;
+  parameter logic [BlockAw-1:0] I3C_RESET_DET_CONTROL_OFFSET = 13'h 30;
   parameter logic [BlockAw-1:0] I3C_RESET_DET_STATUS_OFFSET = 13'h 34;
   parameter logic [BlockAw-1:0] I3C_CTRL_TIME_SP_OFFSET = 13'h 38;
   parameter logic [BlockAw-1:0] I3C_CTRL_TIME_OD_OFFSET = 13'h 3c;
@@ -3021,7 +3021,7 @@ package i3c_reg_pkg;
   parameter logic [BlockAw-1:0] I3C_BUS_CONTROL_OFFSET = 13'h 6c;
   parameter logic [BlockAw-1:0] I3C_PHY_CONFIG_OFFSET = 13'h 70;
   parameter logic [BlockAw-1:0] I3C_BLOCKED_ADDR_OFFSET = 13'h 74;
-  parameter logic [BlockAw-1:0] I3C_BUFFER_CTRL_OFFSET = 13'h 78;
+  parameter logic [BlockAw-1:0] I3C_BUFFER_CONTROL_OFFSET = 13'h 78;
   parameter logic [BlockAw-1:0] I3C_BUFFER_STATUS_OFFSET = 13'h 7c;
   parameter logic [BlockAw-1:0] I3C_CTRL_TXBUF_CONFIG_OFFSET = 13'h 80;
   parameter logic [BlockAw-1:0] I3C_CTRL_TXBUF_STATE_OFFSET = 13'h 84;
@@ -3216,9 +3216,9 @@ package i3c_reg_pkg;
   parameter logic [0:0] I3C_TARG_SINK_STATUS_ACTIVE_RESVAL = 1'h 0;
   parameter logic [0:0] I3C_TARG_SINK_STATUS_ERROR_RESVAL = 1'h 0;
   parameter logic [10:0] I3C_TARG_SINK_STATUS_LENGTH_RESVAL = 11'h 0;
-  parameter logic [31:0] I3C_BUFFER_CTRL_RESVAL = 32'h 0;
-  parameter logic [1:0] I3C_BUFFER_CTRL_SW_ADDR_HI_RESVAL = 2'h 0;
-  parameter logic [0:0] I3C_BUFFER_CTRL_CLEAR_RESVAL = 1'h 0;
+  parameter logic [31:0] I3C_BUFFER_CONTROL_RESVAL = 32'h 0;
+  parameter logic [1:0] I3C_BUFFER_CONTROL_SW_ADDR_HI_RESVAL = 2'h 0;
+  parameter logic [0:0] I3C_BUFFER_CONTROL_CLEAR_RESVAL = 1'h 0;
   parameter logic [31:0] I3C_CTRL_TXBUF_STATE_RESVAL = 32'h 0;
   parameter logic [9:0] I3C_CTRL_TXBUF_STATE_WPTR_RESVAL = 10'h 0;
   parameter logic [9:0] I3C_CTRL_TXBUF_STATE_RPTR_RESVAL = 10'h 0;
@@ -3564,7 +3564,7 @@ package i3c_reg_pkg;
     I3C_TARG_EXT_STATUS,
     I3C_TARG_SINK_CONTROL,
     I3C_TARG_SINK_STATUS,
-    I3C_RESET_DET_CTRL,
+    I3C_RESET_DET_CONTROL,
     I3C_RESET_DET_STATUS,
     I3C_CTRL_TIME_SP,
     I3C_CTRL_TIME_OD,
@@ -3582,7 +3582,7 @@ package i3c_reg_pkg;
     I3C_BUS_CONTROL,
     I3C_PHY_CONFIG,
     I3C_BLOCKED_ADDR,
-    I3C_BUFFER_CTRL,
+    I3C_BUFFER_CONTROL,
     I3C_BUFFER_STATUS,
     I3C_CTRL_TXBUF_CONFIG,
     I3C_CTRL_TXBUF_STATE,
@@ -3759,7 +3759,7 @@ package i3c_reg_pkg;
     4'b 1111, // index[  9] I3C_TARG_EXT_STATUS
     4'b 1111, // index[ 10] I3C_TARG_SINK_CONTROL
     4'b 1111, // index[ 11] I3C_TARG_SINK_STATUS
-    4'b 0111, // index[ 12] I3C_RESET_DET_CTRL
+    4'b 0111, // index[ 12] I3C_RESET_DET_CONTROL
     4'b 1111, // index[ 13] I3C_RESET_DET_STATUS
     4'b 1111, // index[ 14] I3C_CTRL_TIME_SP
     4'b 1111, // index[ 15] I3C_CTRL_TIME_OD
@@ -3777,7 +3777,7 @@ package i3c_reg_pkg;
     4'b 1111, // index[ 27] I3C_BUS_CONTROL
     4'b 1111, // index[ 28] I3C_PHY_CONFIG
     4'b 1111, // index[ 29] I3C_BLOCKED_ADDR
-    4'b 1111, // index[ 30] I3C_BUFFER_CTRL
+    4'b 1111, // index[ 30] I3C_BUFFER_CONTROL
     4'b 1111, // index[ 31] I3C_BUFFER_STATUS
     4'b 1111, // index[ 32] I3C_CTRL_TXBUF_CONFIG
     4'b 1111, // index[ 33] I3C_CTRL_TXBUF_STATE
