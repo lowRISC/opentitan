@@ -177,7 +177,7 @@ class app_cg_wrap;
 
   function new(string name = "app_cg");
     app_cg = new(name);
-    app_cfg_reg_cg = new(name);
+    app_cfg_reg_cg = new({name,"_data"});
   endfunction
 
   function void app_sample(bit single_beat,

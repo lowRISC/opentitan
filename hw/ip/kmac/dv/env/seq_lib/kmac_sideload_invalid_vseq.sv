@@ -123,6 +123,9 @@ class kmac_sideload_invalid_vseq extends kmac_long_msg_and_output_vseq;
           cfg.clk_rst_vif.wait_n_clks(1);
           `DV_CHECK(uvm_hdl_read(app_fsm_path, curr_state))
         end
+        `uvm_info(`gfn,
+                  $sformatf("Reached injection target: rtl_app_state=0x%0h target=0x%0h en_app=%0b app_mode=%0s",
+                            curr_state, target_state, en_app, app_mode.name()), UVM_HIGH)
         // Wait until the sideload key gets valid.
         wait(cfg.keymgr_sideload_agent_cfg.vif.sideload_key.valid);
         invalidate_key = 1;
@@ -139,15 +142,29 @@ class kmac_sideload_invalid_vseq extends kmac_long_msg_and_output_vseq;
         (!en_app || !cfg.m_kmac_app_agent_cfg[app_mode].vif.mon_cb.req_last)) begin
       // We got the FSM state, the key is valid, and the operation is not yet done.
       // Invalidate the key and wait for the expected error code.
-      `uvm_info(`gfn, $sformatf("invalidated key in state %0b", curr_state), UVM_LOW)
+      `uvm_info(`gfn, $sformatf("invalidated key in state %0b", curr_state), UVM_HIGH)
       cfg.key_invalidated = 1;
       `DV_CHECK(uvm_hdl_force(key_valid_path, 0))
+      `uvm_info(`gfn,
+            $sformatf("Key invalidation forced: cfg.key_invalidated=%0b en_scb=%0b req_valid/ready/last=%0b/%0b/%0b",
+              cfg.key_invalidated, cfg.en_scb,
+              cfg.m_kmac_app_agent_cfg[app_mode].vif.mon_cb.req_valid,
+              cfg.m_kmac_app_agent_cfg[app_mode].vif.mon_cb.req_ready,
+              cfg.m_kmac_app_agent_cfg[app_mode].vif.mon_cb.req_last), UVM_HIGH)
       cfg.skip_read_check = 1;
+      // Suppress scoreboard RAL prediction only during the error-code poll, where this sequence
+      // owns an active ERR_CODE access. Keep it enabled before and after the poll so it observes
+      // the SW Start/Process commands and the later err_processed recovery trigger.
+      cfg.en_scb = 0;
+      `uvm_info(`gfn, "Disabling scoreboard only for ERR_CODE polling", UVM_HIGH)
       csr_spinwait(.ptr(ral.err_code), .exp_data(exp_kmac_err));
-      `uvm_info(`gfn, "received the expected error code", UVM_LOW)
+      `uvm_info(`gfn, "received the expected error code", UVM_HIGH)
+      cfg.en_scb = 1;
       cfg.skip_read_check = 0;
       `DV_CHECK(uvm_hdl_release(key_valid_path))
+      `uvm_info(`gfn, "Scoreboard reenabled; acknowledging error via CMD.err_processed", UVM_HIGH)
       csr_wr(.ptr(ral.cmd.err_processed), .value(1));
+      `uvm_info(`gfn, "CMD.err_processed write completed", UVM_HIGH)
     end else begin
       // Normal operation, wait until KMAC operation has finished.
       wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.mon_cb.rsp_valid);
@@ -216,16 +233,12 @@ class kmac_sideload_invalid_vseq extends kmac_long_msg_and_output_vseq;
       // Wait a few cycles to let the internal state settle in.
       cfg.clk_rst_vif.wait_clks($urandom_range(5, 10));
 
-
-      // Disable the scoreboard for the error injection test.
-      cfg.en_scb = 0;
       // Trigger KMAC operation and invalidate the sideloading key in a parallel
       // thread.
       fork
           send_kmac_req();
           inject_error(app_fsm_path, key_valid_path, exp_kmac_err);
       join
-      cfg.en_scb = 1;
 
       // Read out the digest and wait until sha3_idle is asserted.
       read_digest_chunk(KMAC_STATE_SHARE0_BASE, keccak_block_size, share0);
@@ -236,7 +249,11 @@ class kmac_sideload_invalid_vseq extends kmac_long_msg_and_output_vseq;
       end
 
       csr_spinwait(.ptr(ral.status.sha3_idle), .exp_data(1'b1), .backdoor(1));
-      csr_rd_check(.ptr(ral.status), .compare_value(ral.status.get_reset()));
+        // TODO: Add dedicated checks for entropy_ready/reseeding status transitions. In masked
+        // configurations, entropy_ready reports the PRNG state and can remain high after hashing,
+        // so it is not expected to return to its reset value here.
+        csr_rd_check(.ptr(ral.status), .compare_value(ral.status.get_reset()),
+               .compare_mask(~(32'h1 << KmacStatusEntropyReady)));
 
       // Disable the sideload key.
       cfg.clk_rst_vif.wait_clks($urandom_range(5, 10));
