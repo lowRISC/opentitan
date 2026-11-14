@@ -75,12 +75,13 @@ To ensure proper tracking and response to unauthorized access attempts, the syst
 
 * A **global counter** shall be maintained to track the total number of denied access requests across all enabled range registers in the system.
 * The counter increments by one each time a request is denied, regardless of whether the denial results from a READ or WRITE operation.
-* The counter saturates once it reaches the programmed threshold.
+* The counter saturates once it reaches its maximum value.
 
 ### Programmable Denied Access Threshold
 
 * The system shall support a programmable threshold that specifies the maximum number of denied access requests before triggering a further action.
-* Once the number of denied accesses reaches or exceeds this threshold, the system shall raise an interrupt to the RoT.
+* Once the number of denied accesses exceeds this threshold, the system shall raise an interrupt to the RoT.
+* Setting the threshold to its maximum value disables the interrupt, since the counter saturates at that value.
 * Acknowledging the interrupt automatically clears the denied access counter.
 
 To facilitate detailed diagnostics, the system shall implement a logging mechanism for the first denied access request.
