@@ -35,15 +35,7 @@ module earlgrey_pd_aon #(
 ) (
   // Inter-module Signal External type
   output ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl_o,
-  output prim_mubi_pkg::mubi4_t       ast_clk_src_sys_jen_o,
   input  prim_mubi_pkg::mubi4_t       ast_init_done_i,
-  output prim_mubi_pkg::mubi4_t       clkmgr_all_clk_byp_req_o,
-  input  prim_mubi_pkg::mubi4_t       clkmgr_all_clk_byp_ack_i,
-  output prim_mubi_pkg::mubi4_t       clkmgr_io_clk_byp_req_o,
-  input  prim_mubi_pkg::mubi4_t       clkmgr_io_clk_byp_ack_i,
-  output prim_mubi_pkg::mubi4_t       clkmgr_hi_speed_sel_o,
-  input  prim_mubi_pkg::mubi4_t       clkmgr_div_step_down_req_i,
-  input  alert_handler_pkg::alert_crashdump_t       alert_handler_crashdump_i,
   output prim_esc_pkg::esc_rx_t       alert_handler_esc_rx_o,
   input  prim_esc_pkg::esc_tx_t       alert_handler_esc_tx_i,
   output logic       aon_timer_nmi_wdog_timer_bark_o,
@@ -64,7 +56,6 @@ module earlgrey_pd_aon #(
   output logic       usbdev_usb_aon_bus_reset_o,
   output logic       usbdev_usb_aon_sense_lost_o,
   output logic       pinmux_usbdev_wake_detect_active_o,
-  input  prim_mubi_pkg::mubi4_t [3:0] clkmgr_idle_i,
   output jtag_pkg::jtag_req_t       pinmux_lc_jtag_req_o,
   input  jtag_pkg::jtag_rsp_t       pinmux_lc_jtag_rsp_i,
   output jtag_pkg::jtag_req_t       pinmux_rv_jtag_req_o,
@@ -79,23 +70,21 @@ module earlgrey_pd_aon #(
   input  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en_i,
   input  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en_i,
   input  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_check_byp_en_i,
-  input  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_req_i,
-  output lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_ack_o,
-  input  rv_core_ibex_pkg::cpu_crash_dump_t       rv_core_ibex_crash_dump_i,
   input  rv_core_ibex_pkg::cpu_pwrmgr_t       rv_core_ibex_pwrmgr_i,
   input  logic       rv_dm_ndmreset_req_i,
+  input  prim_mubi_pkg::mubi4_t       rstmgr_sw_rst_req_i,
   input  logic       pwrmgr_wakeups_i,
   input  logic       i3c0_rstdet_enable_i,
   input  i3c_pkg::i3c_rstdet_req_t       i3c0_rstdet_req_i,
   output i3c_pkg::i3c_rstdet_rsp_t       i3c0_rstdet_rsp_o,
+  output rstmgr_pkg::intraip_s2p_t       rstmgr_intraip_s2p_o,
+  input  rstmgr_pkg::intraip_p2s_t       rstmgr_intraip_p2s_i,
+  output clkmgr_pkg::intraip_s2p_t       clkmgr_intraip_s2p_o,
+  input  clkmgr_pkg::intraip_p2s_t       clkmgr_intraip_p2s_i,
   output ast_intraip_pkg::s2p_t       ast_intraip_s2p_o,
   input  ast_intraip_pkg::p2s_t       ast_intraip_p2s_i,
   input  tlul_pkg::tl_h2d_t       pwrmgr_tl_req_i,
   output tlul_pkg::tl_d2h_t       pwrmgr_tl_rsp_o,
-  input  tlul_pkg::tl_h2d_t       rstmgr_tl_req_i,
-  output tlul_pkg::tl_d2h_t       rstmgr_tl_rsp_o,
-  input  tlul_pkg::tl_h2d_t       clkmgr_tl_req_i,
-  output tlul_pkg::tl_d2h_t       clkmgr_tl_rsp_o,
   input  tlul_pkg::tl_h2d_t       pinmux_tl_req_i,
   output tlul_pkg::tl_d2h_t       pinmux_tl_rsp_o,
   input  tlul_pkg::tl_h2d_t       sensor_ctrl_tl_req_i,
@@ -209,9 +198,6 @@ module earlgrey_pd_aon #(
   input  logic       cio_usbdev_usb_dn_en_d2p_i,
   output logic       cio_usbdev_usb_dn_p2d_o,
   output logic       cio_usbdev_sense_p2d_o,
-  input  logic       ast_clk_src_sys_i,
-  input  logic       ast_clk_src_io_i,
-  input  logic       ast_clk_src_usb_i,
 
   // Multiplexed I/O
   input  logic [46:0] mio_in_i,
@@ -231,16 +217,10 @@ module earlgrey_pd_aon #(
   output logic [6:0] intr_vector_o,
 
   // Alerts to power domain Main
-  input  prim_alert_pkg::alert_rx_t [11:0] alert_rx_i,
-  output prim_alert_pkg::alert_tx_t [11:0] alert_tx_o,
+  input  prim_alert_pkg::alert_rx_t [7:0] alert_rx_i,
+  output prim_alert_pkg::alert_tx_t [7:0] alert_tx_o,
 
-  // Clocks from clkmgr to other domains
-  output clkmgr_pkg::clkmgr_out_t    clkmgr_clocks_o,
-  output clkmgr_pkg::clkmgr_cg_en_t  clkmgr_cg_en_o,
 
-  // Resets from rstmgr to other domains
-  output rstmgr_pkg::rstmgr_out_t    rstmgr_resets_o,
-  output rstmgr_pkg::rstmgr_rst_en_t rstmgr_rst_en_o,
 
   // Unmanaged external clocks
   input                        clk_ast_ext_i,
@@ -321,8 +301,8 @@ module earlgrey_pd_aon #(
   // Define inter-module signals
   ast_pkg::adc_ast_req_t       ast_adc_req;
   ast_pkg::adc_ast_rsp_t       ast_adc_rsp;
-  clkmgr_pkg::clkmgr_out_t       ast_sns_clks;
-  rstmgr_pkg::rstmgr_out_t       ast_sns_rsts;
+  clkmgr_pkg::clkmgr_out_secondary_t       ast_sns_clks;
+  rstmgr_pkg::rstmgr_out_secondary_t       ast_sns_rsts;
   logic [AstAst2PadOutWidth-1:0] ast_ast2padmux;
   ast_pkg::ast_status_t       ast_io_pwr_st;
   pinmux_pkg::dft_strap_test_req_t       pinmux_dft_strap_test;
@@ -334,21 +314,19 @@ module earlgrey_pd_aon #(
   pwrmgr_pkg::pwr_rst_rsp_t       pwrmgr_pwr_rst_rsp;
   pwrmgr_pkg::pwr_clk_req_t       pwrmgr_pwr_clk_req;
   pwrmgr_pkg::pwr_clk_rsp_t       pwrmgr_pwr_clk_rsp;
+  logic       pwrmgr_main_pd_aon_clk_en;
   logic       pwrmgr_strap;
   logic       pwrmgr_low_power;
-  prim_mubi_pkg::mubi4_t       rstmgr_sw_rst_req;
   logic [1:0] rstmgr_por_n;
   logic [7:0] pwrmgr_wakeups;
   logic [1:0] pwrmgr_rstreqs;
-  clkmgr_pkg::clkmgr_out_t       clkmgr_clocks;
+  clkmgr_pkg::clkmgr_out_secondary_t       clkmgr_clocks_secondary;
   logic       ast_clk_src_aon;
   ast_pkg::ast_mem_cfg_secondary_req_t       ast_mem_cfg_req;
   ast_pkg::ast_mem_cfg_secondary_rsp_t       ast_mem_cfg_rsp;
   prim_ram_1p_pkg::ram_1p_cfg_req_t [SramCtrlRetNumRamInst-1:0] sram_ctrl_ret_ram_cfg_req;
   prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlRetNumRamInst-1:0] sram_ctrl_ret_ram_cfg_rsp;
-  clkmgr_pkg::clkmgr_cg_en_t       clkmgr_cg_en;
-  rstmgr_pkg::rstmgr_out_t       rstmgr_resets;
-  rstmgr_pkg::rstmgr_rst_en_t       rstmgr_rst_en;
+  rstmgr_pkg::rstmgr_out_secondary_t       rstmgr_resets_secondary;
   jtag_pkg::jtag_req_t       pinmux_dft_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_dft_jtag_rsp;
 
@@ -356,13 +334,20 @@ module earlgrey_pd_aon #(
   assign pwrmgr_wakeups[1] = pwrmgr_wakeups_i;
 
 
+// Tie off unused clock- and reset enables
+//VCS coverage off
+// pragma coverage off
+
+
+// pragma coverage on
+//VCS coverage on
 
 
   // Instantiation of IPs
   i3c_part_secondary u_i3c0_part_secondary (
     // Clock and reset connections
-    .clk_aon_i(clkmgr_clocks.clk_aon_peri),
-    .rst_aon_ni(rstmgr_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
+    .clk_aon_i(clkmgr_clocks_secondary.clk_aon_peri),
+    .rst_aon_ni(rstmgr_resets_secondary.rst_lc_aon_n),
 
 
     // CIO inputs
@@ -384,15 +369,15 @@ module earlgrey_pd_aon #(
     .EscPingCountWidth(AlertHandlerEscPingCountWidth)
   ) u_pwrmgr (
     // Clock and reset connections
-    .clk_i(clkmgr_clocks.clk_io_div4_powerup),
-    .clk_slow_i(clkmgr_clocks.clk_aon_powerup),
-    .clk_lc_i(clkmgr_clocks.clk_io_div4_powerup),
-    .clk_esc_i(clkmgr_clocks.clk_io_div4_secure),
-    .rst_ni(rstmgr_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .rst_main_ni(rstmgr_resets.rst_por_aon_n[rstmgr_pkg::DomainMainSel]),
-    .rst_lc_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .rst_esc_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .rst_slow_ni(rstmgr_resets.rst_por_aon_n[rstmgr_pkg::DomainAonSel]),
+    .clk_i(clkmgr_clocks_secondary.clk_io_div4_powerup),
+    .clk_slow_i(clkmgr_clocks_secondary.clk_aon_powerup),
+    .clk_lc_i(clkmgr_clocks_secondary.clk_io_div4_powerup),
+    .clk_esc_i(clkmgr_clocks_secondary.clk_io_div4_secure),
+    .rst_ni(rstmgr_resets_secondary.rst_por_io_div4_n),
+    .rst_main_ni(rstmgr_resets_secondary.rst_por_aon_n[rstmgr_pkg::DomainMainSel]),
+    .rst_lc_ni(rstmgr_resets_secondary.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .rst_esc_ni(rstmgr_resets_secondary.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .rst_slow_ni(rstmgr_resets_secondary.rst_por_aon_n[rstmgr_pkg::DomainAonSel]),
 
     // Interrupts
     .intr_wakeup_o(intr_pwrmgr_wakeup),
@@ -421,104 +406,55 @@ module earlgrey_pd_aon #(
     .ndmreset_req_i(rv_dm_ndmreset_req_i),
     .strap_o(pwrmgr_strap),
     .low_power_o(pwrmgr_low_power),
+    .main_pd_aon_clk_en_o(pwrmgr_main_pd_aon_clk_en),
     .rom_ctrl_i(rom_ctrl_pwrmgr_data_i),
     .fetch_en_o(pwrmgr_fetch_en_o),
     .lc_dft_en_i(lc_ctrl_lc_dft_en_i),
     .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en_i),
-    .sw_rst_req_i(rstmgr_sw_rst_req),
+    .sw_rst_req_i(rstmgr_sw_rst_req_i),
     .tl_i(pwrmgr_tl_req_i),
     .tl_o(pwrmgr_tl_rsp_o)
   );
 
-  rstmgr #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[26:25]),
-    .AlertSkewCycles(top_pkg::AlertSkewCycles),
+  rstmgr_part_secondary #(
     .SecCheck(SecRstmgrCheck),
     .SecMaxSyncDelay(SecRstmgrMaxSyncDelay)
-  ) u_rstmgr (
+  ) u_rstmgr_part_secondary (
     // Clock and reset connections
-    .clk_i(clkmgr_clocks.clk_io_div4_powerup),
-    .clk_por_i(clkmgr_clocks.clk_io_div4_powerup),
-    .clk_aon_i(clkmgr_clocks.clk_aon_powerup),
-    .clk_main_i(clkmgr_clocks.clk_main_powerup),
-    .clk_io_i(clkmgr_clocks.clk_io_powerup),
-    .clk_usb_i(clkmgr_clocks.clk_usb_powerup),
-    .clk_io_div4_i(clkmgr_clocks.clk_io_div4_powerup),
-    .rst_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .rst_por_ni(rstmgr_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .clk_aon_i(clkmgr_clocks_secondary.clk_aon_powerup),
+    .rst_ni(rstmgr_resets_secondary.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .rst_por_ni(rstmgr_resets_secondary.rst_por_io_div4_n),
 
     // DFT/scan connections
     .scanmode_i(scanmode_o),
     .scan_rst_ni(scan_rst_n_o),
 
-    // alert_handler[25]: fatal_fault
-    // alert_handler[26]: fatal_cnsty_fault
-    .alert_tx_o(alert_tx_o[2:1]),
-    .alert_rx_i(alert_rx_i[2:1]),
 
     // Inter-module signals
     .por_n_i(rstmgr_por_n),
     .pwr_i(pwrmgr_pwr_rst_req),
     .pwr_o(pwrmgr_pwr_rst_rsp),
-    .resets_o(rstmgr_resets),
-    .rst_en_o(rstmgr_rst_en),
-    .alert_dump_i(alert_handler_crashdump_i),
-    .cpu_dump_i(rv_core_ibex_crash_dump_i),
-    .sw_rst_req_o(rstmgr_sw_rst_req),
-    .tl_i(rstmgr_tl_req_i),
-    .tl_o(rstmgr_tl_rsp_o)
+    .resets_secondary_o(rstmgr_resets_secondary),
+    .intraip_s2p_o(rstmgr_intraip_s2p_o),
+    .intraip_p2s_i(rstmgr_intraip_p2s_i)
   );
 
-  clkmgr #(
-    .AlertAsyncOn(alert_handler_reg_pkg::AsyncOn[28:27]),
-    .AlertSkewCycles(top_pkg::AlertSkewCycles)
-  ) u_clkmgr (
+  clkmgr_part_secondary u_clkmgr_part_secondary (
     // Clock and reset connections
-    .clk_i(clkmgr_clocks.clk_io_div4_powerup),
-    .clk_main_i(ast_clk_src_sys_i),
-    .clk_io_i(ast_clk_src_io_i),
-    .clk_usb_i(ast_clk_src_usb_i),
     .clk_aon_i(ast_clk_src_aon),
-    .rst_shadowed_ni(rstmgr_resets.rst_lc_io_div4_shadowed_n[rstmgr_pkg::DomainAonSel]),
-    .rst_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .rst_aon_ni(rstmgr_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
-    .rst_io_ni(rstmgr_resets.rst_lc_io_n[rstmgr_pkg::DomainAonSel]),
-    .rst_io_div4_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .rst_main_ni(rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainAonSel]),
-    .rst_usb_ni(rstmgr_resets.rst_lc_usb_n[rstmgr_pkg::DomainAonSel]),
-    .rst_root_ni(rstmgr_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .rst_root_io_ni(rstmgr_resets.rst_por_io_n[rstmgr_pkg::DomainAonSel]),
-    .rst_root_io_div4_ni(rstmgr_resets.rst_por_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .rst_root_main_ni(rstmgr_resets.rst_por_n[rstmgr_pkg::DomainAonSel]),
-    .rst_root_usb_ni(rstmgr_resets.rst_por_usb_n[rstmgr_pkg::DomainAonSel]),
+    .rst_aon_ni(rstmgr_resets_secondary.rst_lc_aon_n),
 
     // DFT/scan connections
     .scanmode_i(scanmode_o),
 
-    // alert_handler[27]: recov_fault
-    // alert_handler[28]: fatal_fault
-    .alert_tx_o(alert_tx_o[4:3]),
-    .alert_rx_i(alert_rx_i[4:3]),
 
     // Inter-module signals
-    .clocks_o(clkmgr_clocks),
-    .cg_en_o(clkmgr_cg_en),
-    .lc_hw_debug_en_i(lc_ctrl_lc_hw_debug_en_i),
-    .io_clk_byp_req_o(clkmgr_io_clk_byp_req_o),
-    .io_clk_byp_ack_i(clkmgr_io_clk_byp_ack_i),
-    .all_clk_byp_req_o(clkmgr_all_clk_byp_req_o),
-    .all_clk_byp_ack_i(clkmgr_all_clk_byp_ack_i),
-    .hi_speed_sel_o(clkmgr_hi_speed_sel_o),
-    .div_step_down_req_i(clkmgr_div_step_down_req_i),
-    .lc_clk_byp_req_i(lc_ctrl_lc_clk_byp_req_i),
-    .lc_clk_byp_ack_o(lc_ctrl_lc_clk_byp_ack_o),
-    .jitter_en_o(ast_clk_src_sys_jen_o),
+    .clocks_secondary_o(clkmgr_clocks_secondary),
+    .main_pd_aon_clk_en_i(pwrmgr_main_pd_aon_clk_en),
+    .intraip_s2p_o(clkmgr_intraip_s2p_o),
+    .intraip_p2s_i(clkmgr_intraip_p2s_i),
     .pwr_i(pwrmgr_pwr_clk_req),
-    .pwr_o(pwrmgr_pwr_clk_rsp),
-    .idle_i(clkmgr_idle_i),
-    .calib_rdy_i(ast_init_done_i),
-    .tl_i(clkmgr_tl_req_i),
-    .tl_o(clkmgr_tl_rsp_o)
+    .pwr_o(pwrmgr_pwr_clk_rsp)
   );
 
   sysrst_ctrl #(
@@ -526,17 +462,17 @@ module earlgrey_pd_aon #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_sysrst_ctrl (
     // Clock and reset connections
-    .clk_i(clkmgr_clocks.clk_io_div4_secure),
-    .clk_aon_i(clkmgr_clocks.clk_aon_secure),
-    .rst_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .rst_aon_ni(rstmgr_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
+    .clk_i(clkmgr_clocks_secondary.clk_io_div4_secure),
+    .clk_aon_i(clkmgr_clocks_secondary.clk_aon_secure),
+    .rst_ni(rstmgr_resets_secondary.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .rst_aon_ni(rstmgr_resets_secondary.rst_lc_aon_n),
 
     // Interrupts
     .intr_event_detected_o(intr_sysrst_ctrl_event_detected),
 
     // alert_handler[29]: fatal_fault
-    .alert_tx_o(alert_tx_o[5]),
-    .alert_rx_i(alert_rx_i[5]),
+    .alert_tx_o(alert_tx_o[1]),
+    .alert_rx_i(alert_rx_i[1]),
 
     // CIO inputs
     .cio_ac_present_i    (cio_sysrst_ctrl_ac_present_p2d),
@@ -578,17 +514,17 @@ module earlgrey_pd_aon #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_adc_ctrl (
     // Clock and reset connections
-    .clk_i(clkmgr_clocks.clk_io_div4_peri),
-    .clk_aon_i(clkmgr_clocks.clk_aon_peri),
-    .rst_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .rst_aon_ni(rstmgr_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
+    .clk_i(clkmgr_clocks_secondary.clk_io_div4_peri),
+    .clk_aon_i(clkmgr_clocks_secondary.clk_aon_peri),
+    .rst_ni(rstmgr_resets_secondary.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .rst_aon_ni(rstmgr_resets_secondary.rst_lc_aon_n),
 
     // Interrupts
     .intr_match_pending_o(intr_adc_ctrl_match_pending),
 
     // alert_handler[30]: fatal_fault
-    .alert_tx_o(alert_tx_o[6]),
-    .alert_rx_i(alert_rx_i[6]),
+    .alert_tx_o(alert_tx_o[2]),
+    .alert_rx_i(alert_rx_i[2]),
 
     // Inter-module signals
     .adc_o(ast_adc_req),
@@ -605,18 +541,18 @@ module earlgrey_pd_aon #(
     .TargetCfg(PinmuxTargetCfg)
   ) u_pinmux (
     // Clock and reset connections
-    .clk_i(clkmgr_clocks.clk_io_div4_powerup),
-    .clk_aon_i(clkmgr_clocks.clk_aon_powerup),
-    .rst_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .rst_aon_ni(rstmgr_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
-    .rst_sys_ni(rstmgr_resets.rst_sys_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .clk_i(clkmgr_clocks_secondary.clk_io_div4_powerup),
+    .clk_aon_i(clkmgr_clocks_secondary.clk_aon_powerup),
+    .rst_ni(rstmgr_resets_secondary.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .rst_aon_ni(rstmgr_resets_secondary.rst_lc_aon_n),
+    .rst_sys_ni(rstmgr_resets_secondary.rst_sys_io_div4_n),
 
     // DFT/scan connections
     .scanmode_i(scanmode_o),
 
     // alert_handler[31]: fatal_fault
-    .alert_tx_o(alert_tx_o[7]),
-    .alert_rx_i(alert_rx_i[7]),
+    .alert_tx_o(alert_tx_o[3]),
+    .alert_rx_i(alert_rx_i[3]),
 
     // Inter-module signals
     .lc_hw_debug_clr_i(lc_ctrl_lc_hw_debug_clr_i),
@@ -678,18 +614,18 @@ module earlgrey_pd_aon #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_aon_timer (
     // Clock and reset connections
-    .clk_i(clkmgr_clocks.clk_io_div4_timers),
-    .clk_aon_i(clkmgr_clocks.clk_aon_timers),
-    .rst_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .rst_aon_ni(rstmgr_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
+    .clk_i(clkmgr_clocks_secondary.clk_io_div4_timers),
+    .clk_aon_i(clkmgr_clocks_secondary.clk_aon_timers),
+    .rst_ni(rstmgr_resets_secondary.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .rst_aon_ni(rstmgr_resets_secondary.rst_lc_aon_n),
 
     // Interrupts
     .intr_wkup_timer_expired_o(intr_aon_timer_wkup_timer_expired),
     .intr_wdog_timer_bark_o   (intr_aon_timer_wdog_timer_bark),
 
     // alert_handler[32]: fatal_fault
-    .alert_tx_o(alert_tx_o[8]),
-    .alert_rx_i(alert_rx_i[8]),
+    .alert_tx_o(alert_tx_o[4]),
+    .alert_rx_i(alert_rx_i[4]),
 
     // Inter-module signals
     .nmi_wdog_timer_bark_o(aon_timer_nmi_wdog_timer_bark_o),
@@ -709,11 +645,11 @@ module earlgrey_pd_aon #(
     .Ast2PadOutWidth(AstAst2PadOutWidth)
   ) u_ast_part_secondary (
     // Clock and reset connections
-    .clk_ast_adc_i(clkmgr_clocks.clk_aon_peri),
-    .clk_ast_alert_i(clkmgr_clocks.clk_io_div4_secure),
+    .clk_ast_adc_i(clkmgr_clocks_secondary.clk_aon_peri),
+    .clk_ast_alert_i(clkmgr_clocks_secondary.clk_io_div4_secure),
     .clk_ast_ext_i(clk_ast_ext_i),
-    .rst_ast_adc_ni(rstmgr_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
-    .rst_ast_alert_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ast_adc_ni(rstmgr_resets_secondary.rst_lc_aon_n),
+    .rst_ast_alert_ni(rstmgr_resets_secondary.rst_lc_io_div4_n[rstmgr_pkg::DomainMainSel]),
 
 
     // Inter-module signals
@@ -762,10 +698,10 @@ module earlgrey_pd_aon #(
     .AlertSkewCycles(top_pkg::AlertSkewCycles)
   ) u_sensor_ctrl (
     // Clock and reset connections
-    .clk_i(clkmgr_clocks.clk_io_div4_secure),
-    .clk_aon_i(clkmgr_clocks.clk_aon_secure),
-    .rst_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .rst_aon_ni(rstmgr_resets.rst_lc_aon_n[rstmgr_pkg::DomainAonSel]),
+    .clk_i(clkmgr_clocks_secondary.clk_io_div4_secure),
+    .clk_aon_i(clkmgr_clocks_secondary.clk_aon_secure),
+    .rst_ni(rstmgr_resets_secondary.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .rst_aon_ni(rstmgr_resets_secondary.rst_lc_aon_n),
 
     // Interrupts
     .intr_io_status_change_o  (intr_sensor_ctrl_io_status_change),
@@ -773,8 +709,8 @@ module earlgrey_pd_aon #(
 
     // alert_handler[33]: recov_alert
     // alert_handler[34]: fatal_alert
-    .alert_tx_o(alert_tx_o[10:9]),
-    .alert_rx_i(alert_rx_i[10:9]),
+    .alert_tx_o(alert_tx_o[6:5]),
+    .alert_rx_i(alert_rx_i[6:5]),
 
     // CIO outputs
     .cio_ast_debug_out_o   (cio_sensor_ctrl_ast_debug_out_d2p),
@@ -810,14 +746,14 @@ module earlgrey_pd_aon #(
     .SecZeroInit(SecSramCtrlRetZeroInit)
   ) u_sram_ctrl_ret (
     // Clock and reset connections
-    .clk_i(clkmgr_clocks.clk_io_div4_infra),
-    .clk_otp_i(clkmgr_clocks.clk_io_div4_infra),
-    .rst_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
-    .rst_otp_ni(rstmgr_resets.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .clk_i(clkmgr_clocks_secondary.clk_io_div4_infra),
+    .clk_otp_i(clkmgr_clocks_secondary.clk_io_div4_infra),
+    .rst_ni(rstmgr_resets_secondary.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
+    .rst_otp_ni(rstmgr_resets_secondary.rst_lc_io_div4_n[rstmgr_pkg::DomainAonSel]),
 
     // alert_handler[35]: fatal_error
-    .alert_tx_o(alert_tx_o[11]),
-    .alert_rx_i(alert_rx_i[11]),
+    .alert_tx_o(alert_tx_o[7]),
+    .alert_rx_i(alert_rx_i[7]),
 
     // RACL policies
     .racl_policy_sel_ranges_ram_i('{top_racl_pkg::RACL_RANGE_T_DEFAULT}),
@@ -1217,17 +1153,12 @@ module earlgrey_pd_aon #(
   assign dio_en_d2p[DioSpiHost0Sck] = cio_spi_host0_sck_en_d2p_i;
   assign dio_en_d2p[DioSpiHost0Csb0] = cio_spi_host0_csb_en_d2p_i[0];
 
-  // Connect clkmgr to top-level signals for other power domains
-  assign clkmgr_clocks_o = clkmgr_clocks;
-  assign clkmgr_cg_en_o  = clkmgr_cg_en;
 
-  // Connect rstmgr to top-level signals for other power domains
-  assign rstmgr_resets_o = rstmgr_resets;
-  assign rstmgr_rst_en_o = rstmgr_rst_en;
 
-  // Connect AST senses to clocks and resets
-  assign ast_sns_clks = clkmgr_clocks;
-  assign ast_sns_rsts = rstmgr_resets;
+  // Connect the sense inputs of the AST to the clocks and resets of the secondary partitions of the
+  // clkmgr and the rstmgr.
+  assign ast_sns_clks = clkmgr_clocks_secondary;
+  assign ast_sns_rsts = rstmgr_resets_secondary;
 
   // Tie-off unused clock gate signal
   logic unused_cg_en_ast_ext;
@@ -1250,6 +1181,6 @@ module earlgrey_pd_aon #(
   );
 
   // Make sure scanmode is never X (including during reset)
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_o, ast_clk_src_sys_i, 0)
+  `ASSERT_KNOWN(scanmodeKnown, scanmode_o, ast_clk_src_aon, 0)
 
 endmodule

@@ -25,7 +25,7 @@
   domain: Main
   clock_connections:
   {
-    clk_peri_i: clkmgr_clocks_i.clk_io_div4_infra
+    clk_peri_i: clkmgr_clocks.clk_io_div4_infra
   }
   connections:
   {
@@ -790,8 +790,6 @@
       domain: Main
       top_signame: rstmgr_tl
       index: -1
-      external: true
-      conn_type: false
     }
     {
       name: tl_clkmgr
@@ -805,8 +803,6 @@
       domain: Main
       top_signame: clkmgr_tl
       index: -1
-      external: true
-      conn_type: false
     }
     {
       name: tl_pinmux

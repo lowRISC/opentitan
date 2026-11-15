@@ -204,8 +204,9 @@ module top_darjeeling #(
   output prim_ram_1p_pkg::ram_1p_cfg_rsp_t [SramCtrlMboxNumRamInst-1:0] sram_ctrl_mbox_ram_cfg_rsp_o,
   output pwrmgr_pkg::pwr_boot_status_t       pwrmgr_boot_status_obs_o,
   input  logic       pwrmgr_ext_rst_ack_i,
-  output clkmgr_pkg::clkmgr_out_t       clkmgr_clocks_o,
-  output clkmgr_pkg::clkmgr_cg_en_t       clkmgr_cg_en_o,
+  output clkmgr_pkg::clkmgr_out_primary_t       clkmgr_clocks_o,
+  output clkmgr_pkg::clkmgr_out_secondary_t       clkmgr_clocks_secondary_o,
+  output clkmgr_pkg::clkmgr_cg_en_primary_t       clkmgr_cg_en_o,
   output prim_mubi_pkg::mubi4_t       clk_main_jitter_en_o,
   output dma_pkg::sys_req_t       dma_sys_req_o,
   input  dma_pkg::sys_rsp_t       dma_sys_rsp_i,
@@ -268,8 +269,9 @@ module top_darjeeling #(
   output logic [7:0] otp_obs_o,
   input  otp_macro_pkg::otp_cfg_t       otp_cfg_i,
   input  logic [1:0] por_n_i,
-  output rstmgr_pkg::rstmgr_out_t       rstmgr_resets_o,
-  output rstmgr_pkg::rstmgr_rst_en_t       rstmgr_rst_en_o,
+  output rstmgr_pkg::rstmgr_out_primary_t       rstmgr_resets_o,
+  output rstmgr_pkg::rstmgr_out_secondary_t       rstmgr_resets_secondary_o,
+  output rstmgr_pkg::rstmgr_rst_en_primary_t       rstmgr_rst_en_o,
   input  tlul_pkg::tl_h2d_t       ctn_misc_tl_h2d_i,
   output tlul_pkg::tl_d2h_t       ctn_misc_tl_d2h_o,
   input  logic       soc_wkup_async_i,
@@ -454,11 +456,11 @@ module top_darjeeling #(
   .RvCoreIbexCsrMvendorId(RvCoreIbexCsrMvendorId),
   .RvCoreIbexCsrMimpId(RvCoreIbexCsrMimpId)
   ) darjeeling_pd_main (
-    // Clocks and clock gating control from clkmgr
+    // Clocks and clock gating control from the primary partition of the clkmgr
     .clkmgr_clocks_i(clkmgr_clocks_o),
     .clkmgr_cg_en_i (clkmgr_cg_en_o),
 
-    // Resets and reset assert info from rstmgr
+    // Resets and reset asserted information from the primary partition of the rstmgr
     .rstmgr_resets_i(rstmgr_resets_o),
     .rstmgr_rst_en_i(rstmgr_rst_en_o),
 
@@ -648,9 +650,10 @@ module top_darjeeling #(
   .SramCtrlRetEccCorrection(SramCtrlRetEccCorrection),
   .SecSramCtrlRetZeroInit(SecSramCtrlRetZeroInit)
   ) darjeeling_pd_aon (
-    // All externally supplied clocks
+    // All externally supplied clocks of the primary partition
     .clk_main_i(ast_base_clks_i.clk_sys),
     .clk_io_i  (ast_base_clks_i.clk_io ),
+    // All externally supplied clocks of the secondary partition
     .clk_aon_i (ast_base_clks_i.clk_aon),
 
     // Manual DFT signals
@@ -721,12 +724,14 @@ module top_darjeeling #(
     .pwrmgr_boot_status_obs_o,
     .pwrmgr_ext_rst_ack_i,
     .clkmgr_clocks_o,
+    .clkmgr_clocks_secondary_o,
     .clkmgr_cg_en_o,
     .clk_main_jitter_en_o,
     .pwrmgr_ast_req_o,
     .pwrmgr_ast_rsp_i,
     .por_n_i,
     .rstmgr_resets_o,
+    .rstmgr_resets_secondary_o,
     .rstmgr_rst_en_o,
     .ctn_misc_tl_h2d_i,
     .ctn_misc_tl_d2h_o,

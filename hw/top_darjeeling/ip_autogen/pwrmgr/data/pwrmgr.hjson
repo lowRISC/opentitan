@@ -254,6 +254,21 @@
       package: "",
     },
 
+    { struct:  "logic",
+      type:    "uni",
+      name:    "main_pd_aon_clk_en",
+      act:     "req",
+      package: "",
+      desc:    '''The clkmgr uses this signal to gate clk_aon to the Main power domain. The clock is
+               passed from the Aon power domain, where it is free-running, to the Main power domain.
+               To prevent glitches, the clock is enabled after the isolation (pwr_clamp) is released
+               and gated before the isolation is asserted. In the slow FSM's terminal state, the
+               clock is gated in the same cycle as the isolation is asserted. This signal is
+               synchronous to the always-on clock (clk_slow_i/clk_aon) and is the inverse of the
+               pwr_clamp_env signal.
+               ''',
+    },
+
     { struct:  "pwrmgr_data",
       type:    "uni",
       name:    "rom_ctrl",

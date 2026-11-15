@@ -259,18 +259,10 @@ module top_earlgrey #(
 
   // Inter-Power Domain signals
   logic [6:0] intr_vector_pd_aon;
-  prim_alert_pkg::alert_tx_t [11:0] alert_tx_pd_aon;
-  prim_alert_pkg::alert_rx_t [11:0] alert_rx_pd_aon;
+  prim_alert_pkg::alert_tx_t [7:0] alert_tx_pd_aon;
+  prim_alert_pkg::alert_rx_t [7:0] alert_rx_pd_aon;
   ast_pkg::ast_obs_ctrl_t       ast_obs_ctrl;
-  prim_mubi_pkg::mubi4_t       ast_clk_src_sys_jen;
   prim_mubi_pkg::mubi4_t       ast_init_done;
-  prim_mubi_pkg::mubi4_t       clkmgr_all_clk_byp_req;
-  prim_mubi_pkg::mubi4_t       clkmgr_all_clk_byp_ack;
-  prim_mubi_pkg::mubi4_t       clkmgr_io_clk_byp_req;
-  prim_mubi_pkg::mubi4_t       clkmgr_io_clk_byp_ack;
-  prim_mubi_pkg::mubi4_t       clkmgr_hi_speed_sel;
-  prim_mubi_pkg::mubi4_t       clkmgr_div_step_down_req;
-  alert_handler_pkg::alert_crashdump_t       alert_handler_crashdump;
   prim_esc_pkg::esc_rx_t       alert_handler_esc_rx;
   prim_esc_pkg::esc_tx_t       alert_handler_esc_tx;
   logic       aon_timer_nmi_wdog_timer_bark;
@@ -291,7 +283,6 @@ module top_earlgrey #(
   logic       usbdev_usb_aon_bus_reset;
   logic       usbdev_usb_aon_sense_lost;
   logic       pinmux_usbdev_wake_detect_active;
-  prim_mubi_pkg::mubi4_t [3:0] clkmgr_idle;
   jtag_pkg::jtag_req_t       pinmux_lc_jtag_req;
   jtag_pkg::jtag_rsp_t       pinmux_lc_jtag_rsp;
   jtag_pkg::jtag_req_t       pinmux_rv_jtag_req;
@@ -306,23 +297,21 @@ module top_earlgrey #(
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_hw_debug_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_escalate_en;
   lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_check_byp_en;
-  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_req;
-  lc_ctrl_pkg::lc_tx_t       lc_ctrl_lc_clk_byp_ack;
-  rv_core_ibex_pkg::cpu_crash_dump_t       rv_core_ibex_crash_dump;
   rv_core_ibex_pkg::cpu_pwrmgr_t       rv_core_ibex_pwrmgr;
   logic       rv_dm_ndmreset_req;
+  prim_mubi_pkg::mubi4_t       rstmgr_sw_rst_req;
   logic       pwrmgr_wakeups;
   logic       i3c0_rstdet_enable;
   i3c_pkg::i3c_rstdet_req_t       i3c0_rstdet_req;
   i3c_pkg::i3c_rstdet_rsp_t       i3c0_rstdet_rsp;
+  rstmgr_pkg::intraip_s2p_t       rstmgr_intraip_s2p;
+  rstmgr_pkg::intraip_p2s_t       rstmgr_intraip_p2s;
+  clkmgr_pkg::intraip_s2p_t       clkmgr_intraip_s2p;
+  clkmgr_pkg::intraip_p2s_t       clkmgr_intraip_p2s;
   ast_intraip_pkg::s2p_t       ast_intraip_s2p;
   ast_intraip_pkg::p2s_t       ast_intraip_p2s;
   tlul_pkg::tl_h2d_t       pwrmgr_tl_req;
   tlul_pkg::tl_d2h_t       pwrmgr_tl_rsp;
-  tlul_pkg::tl_h2d_t       rstmgr_tl_req;
-  tlul_pkg::tl_d2h_t       rstmgr_tl_rsp;
-  tlul_pkg::tl_h2d_t       clkmgr_tl_req;
-  tlul_pkg::tl_d2h_t       clkmgr_tl_rsp;
   tlul_pkg::tl_h2d_t       pinmux_tl_req;
   tlul_pkg::tl_d2h_t       pinmux_tl_rsp;
   tlul_pkg::tl_h2d_t       sensor_ctrl_tl_req;
@@ -418,20 +407,10 @@ module top_earlgrey #(
   logic       cio_usbdev_usb_dn_en_d2p;
   logic       cio_usbdev_usb_dn_p2d;
   logic       cio_usbdev_sense_p2d;
-  logic       ast_clk_src_sys;
-  logic       ast_clk_src_io;
-  logic       ast_clk_src_usb;
 
-  // Clockmgr and rstmgr info from AON to MAIN
+  // The clkmgr and rstmgr structs that cross between the power domains, one net for each partition
   // TODO: Manual wiring due to topgen limitation that signals defined as 'top' in the hjson are
   //       local to the PD the IP is in.
-  clkmgr_pkg::clkmgr_out_t    clkmgr_clocks;
-  clkmgr_pkg::clkmgr_cg_en_t  clkmgr_cg_en;
-  rstmgr_pkg::rstmgr_out_t    rstmgr_resets;
-  rstmgr_pkg::rstmgr_rst_en_t rstmgr_rst_en;
-
-  // Expose scan clock to padring
-  assign padring_scan_clk_o = ast_clk_src_sys;
 
   ///////////////////////////
   // Top-level Main Domain //
@@ -480,6 +459,8 @@ module top_earlgrey #(
   .AlertHandlerEscPingCountWidth(AlertHandlerEscPingCountWidth),
   .UsbdevStub(UsbdevStub),
   .UsbdevRcvrWakeTimeUs(UsbdevRcvrWakeTimeUs),
+  .SecRstmgrCheck(SecRstmgrCheck),
+  .SecRstmgrMaxSyncDelay(SecRstmgrMaxSyncDelay),
   .SecRramCtrlScrambleEn(SecRramCtrlScrambleEn),
   .RramCtrlWrFifoDepth(RramCtrlWrFifoDepth),
   .RramCtrlRdFifoDepth(RramCtrlRdFifoDepth),
@@ -576,17 +557,12 @@ module top_earlgrey #(
   .SramCtrlMetaEccCorrection(SramCtrlMetaEccCorrection),
   .SecSramCtrlMetaZeroInit(SecSramCtrlMetaZeroInit)
   ) earlgrey_pd_main (
-    // Clocks and clock gating control from clkmgr
-    .clkmgr_clocks_i(clkmgr_clocks),
-    .clkmgr_cg_en_i (clkmgr_cg_en),
+    // Raw system clock of the AST as scan clock for the padring
+    .padring_scan_clk_o(padring_scan_clk_o),
 
     // Unmanaged external clocks
     .clk_ast_ext_i,
     .cg_en_ast_ext_i,
-
-    // Resets and reset assert info from rstmgr
-    .rstmgr_resets_i(rstmgr_resets),
-    .rstmgr_rst_en_i(rstmgr_rst_en),
 
     // Manual DFT signals
     .scan_rst_ni(scan_rst_n_o),
@@ -601,15 +577,7 @@ module top_earlgrey #(
 
     // Ports to and from other power domains (auto-generated)
     .ast_obs_ctrl_i                    (ast_obs_ctrl             ),
-    .ast_clk_src_sys_jen_i             (ast_clk_src_sys_jen      ),
     .ast_init_done_o                   (ast_init_done            ),
-    .clkmgr_all_clk_byp_req_i          (clkmgr_all_clk_byp_req   ),
-    .clkmgr_all_clk_byp_ack_o          (clkmgr_all_clk_byp_ack   ),
-    .clkmgr_io_clk_byp_req_i           (clkmgr_io_clk_byp_req    ),
-    .clkmgr_io_clk_byp_ack_o           (clkmgr_io_clk_byp_ack    ),
-    .clkmgr_hi_speed_sel_i             (clkmgr_hi_speed_sel      ),
-    .clkmgr_div_step_down_req_o        (clkmgr_div_step_down_req ),
-    .alert_handler_crashdump_o         (alert_handler_crashdump  ),
     .alert_handler_esc_rx_i            (alert_handler_esc_rx     ),
     .alert_handler_esc_tx_o            (alert_handler_esc_tx     ),
     .aon_timer_nmi_wdog_timer_bark_i   (aon_timer_nmi_wdog_timer_bark),
@@ -630,7 +598,6 @@ module top_earlgrey #(
     .usbdev_usb_aon_bus_reset_i        (usbdev_usb_aon_bus_reset ),
     .usbdev_usb_aon_sense_lost_i       (usbdev_usb_aon_sense_lost),
     .pinmux_usbdev_wake_detect_active_i(pinmux_usbdev_wake_detect_active),
-    .clkmgr_idle_o                     (clkmgr_idle              ),
     .pinmux_lc_jtag_req_i              (pinmux_lc_jtag_req       ),
     .pinmux_lc_jtag_rsp_o              (pinmux_lc_jtag_rsp       ),
     .pinmux_rv_jtag_req_i              (pinmux_rv_jtag_req       ),
@@ -645,23 +612,21 @@ module top_earlgrey #(
     .lc_ctrl_lc_hw_debug_en_o          (lc_ctrl_lc_hw_debug_en   ),
     .lc_ctrl_lc_escalate_en_o          (lc_ctrl_lc_escalate_en   ),
     .lc_ctrl_lc_check_byp_en_o         (lc_ctrl_lc_check_byp_en  ),
-    .lc_ctrl_lc_clk_byp_req_o          (lc_ctrl_lc_clk_byp_req   ),
-    .lc_ctrl_lc_clk_byp_ack_i          (lc_ctrl_lc_clk_byp_ack   ),
-    .rv_core_ibex_crash_dump_o         (rv_core_ibex_crash_dump  ),
     .rv_core_ibex_pwrmgr_o             (rv_core_ibex_pwrmgr      ),
     .rv_dm_ndmreset_req_o              (rv_dm_ndmreset_req       ),
+    .rstmgr_sw_rst_req_o               (rstmgr_sw_rst_req        ),
     .pwrmgr_wakeups_o                  (pwrmgr_wakeups           ),
     .i3c0_rstdet_enable_o              (i3c0_rstdet_enable       ),
     .i3c0_rstdet_req_o                 (i3c0_rstdet_req          ),
     .i3c0_rstdet_rsp_i                 (i3c0_rstdet_rsp          ),
+    .rstmgr_intraip_s2p_i              (rstmgr_intraip_s2p       ),
+    .rstmgr_intraip_p2s_o              (rstmgr_intraip_p2s       ),
+    .clkmgr_intraip_s2p_i              (clkmgr_intraip_s2p       ),
+    .clkmgr_intraip_p2s_o              (clkmgr_intraip_p2s       ),
     .ast_intraip_s2p_i                 (ast_intraip_s2p          ),
     .ast_intraip_p2s_o                 (ast_intraip_p2s          ),
     .pwrmgr_tl_req_o                   (pwrmgr_tl_req            ),
     .pwrmgr_tl_rsp_i                   (pwrmgr_tl_rsp            ),
-    .rstmgr_tl_req_o                   (rstmgr_tl_req            ),
-    .rstmgr_tl_rsp_i                   (rstmgr_tl_rsp            ),
-    .clkmgr_tl_req_o                   (clkmgr_tl_req            ),
-    .clkmgr_tl_rsp_i                   (clkmgr_tl_rsp            ),
     .pinmux_tl_req_o                   (pinmux_tl_req            ),
     .pinmux_tl_rsp_i                   (pinmux_tl_rsp            ),
     .sensor_ctrl_tl_req_o              (sensor_ctrl_tl_req       ),
@@ -757,9 +722,6 @@ module top_earlgrey #(
     .cio_usbdev_usb_dn_en_d2p_o        (cio_usbdev_usb_dn_en_d2p ),
     .cio_usbdev_usb_dn_p2d_i           (cio_usbdev_usb_dn_p2d    ),
     .cio_usbdev_sense_p2d_i            (cio_usbdev_sense_p2d     ),
-    .ast_clk_src_sys_o                 (ast_clk_src_sys          ),
-    .ast_clk_src_io_o                  (ast_clk_src_io           ),
-    .ast_clk_src_usb_o                 (ast_clk_src_usb          ),
 
     // Regular ports (auto-generated)
     .clks_osc_byp_i,
@@ -790,17 +752,11 @@ module top_earlgrey #(
   .SramCtrlRetEccCorrection(SramCtrlRetEccCorrection),
   .SecSramCtrlRetZeroInit(SecSramCtrlRetZeroInit)
   ) earlgrey_pd_aon (
-    // Clocks and clock gating control from clkmgr
-    .clkmgr_clocks_o(clkmgr_clocks),
-    .clkmgr_cg_en_o (clkmgr_cg_en),
 
     // Unmanaged external clocks
     .clk_ast_ext_i,
     .cg_en_ast_ext_i,
 
-    // Resets and reset assert info from rstmgr
-    .rstmgr_resets_o(rstmgr_resets),
-    .rstmgr_rst_en_o(rstmgr_rst_en),
 
     // Multiplexed I/O
     .mio_in_i,
@@ -824,15 +780,7 @@ module top_earlgrey #(
 
     // Ports to and from other power domains (auto-generated)
     .ast_obs_ctrl_o                    (ast_obs_ctrl             ),
-    .ast_clk_src_sys_jen_o             (ast_clk_src_sys_jen      ),
     .ast_init_done_i                   (ast_init_done            ),
-    .clkmgr_all_clk_byp_req_o          (clkmgr_all_clk_byp_req   ),
-    .clkmgr_all_clk_byp_ack_i          (clkmgr_all_clk_byp_ack   ),
-    .clkmgr_io_clk_byp_req_o           (clkmgr_io_clk_byp_req    ),
-    .clkmgr_io_clk_byp_ack_i           (clkmgr_io_clk_byp_ack    ),
-    .clkmgr_hi_speed_sel_o             (clkmgr_hi_speed_sel      ),
-    .clkmgr_div_step_down_req_i        (clkmgr_div_step_down_req ),
-    .alert_handler_crashdump_i         (alert_handler_crashdump  ),
     .alert_handler_esc_rx_o            (alert_handler_esc_rx     ),
     .alert_handler_esc_tx_i            (alert_handler_esc_tx     ),
     .aon_timer_nmi_wdog_timer_bark_o   (aon_timer_nmi_wdog_timer_bark),
@@ -853,7 +801,6 @@ module top_earlgrey #(
     .usbdev_usb_aon_bus_reset_o        (usbdev_usb_aon_bus_reset ),
     .usbdev_usb_aon_sense_lost_o       (usbdev_usb_aon_sense_lost),
     .pinmux_usbdev_wake_detect_active_o(pinmux_usbdev_wake_detect_active),
-    .clkmgr_idle_i                     (clkmgr_idle              ),
     .pinmux_lc_jtag_req_o              (pinmux_lc_jtag_req       ),
     .pinmux_lc_jtag_rsp_i              (pinmux_lc_jtag_rsp       ),
     .pinmux_rv_jtag_req_o              (pinmux_rv_jtag_req       ),
@@ -868,23 +815,21 @@ module top_earlgrey #(
     .lc_ctrl_lc_hw_debug_en_i          (lc_ctrl_lc_hw_debug_en   ),
     .lc_ctrl_lc_escalate_en_i          (lc_ctrl_lc_escalate_en   ),
     .lc_ctrl_lc_check_byp_en_i         (lc_ctrl_lc_check_byp_en  ),
-    .lc_ctrl_lc_clk_byp_req_i          (lc_ctrl_lc_clk_byp_req   ),
-    .lc_ctrl_lc_clk_byp_ack_o          (lc_ctrl_lc_clk_byp_ack   ),
-    .rv_core_ibex_crash_dump_i         (rv_core_ibex_crash_dump  ),
     .rv_core_ibex_pwrmgr_i             (rv_core_ibex_pwrmgr      ),
     .rv_dm_ndmreset_req_i              (rv_dm_ndmreset_req       ),
+    .rstmgr_sw_rst_req_i               (rstmgr_sw_rst_req        ),
     .pwrmgr_wakeups_i                  (pwrmgr_wakeups           ),
     .i3c0_rstdet_enable_i              (i3c0_rstdet_enable       ),
     .i3c0_rstdet_req_i                 (i3c0_rstdet_req          ),
     .i3c0_rstdet_rsp_o                 (i3c0_rstdet_rsp          ),
+    .rstmgr_intraip_s2p_o              (rstmgr_intraip_s2p       ),
+    .rstmgr_intraip_p2s_i              (rstmgr_intraip_p2s       ),
+    .clkmgr_intraip_s2p_o              (clkmgr_intraip_s2p       ),
+    .clkmgr_intraip_p2s_i              (clkmgr_intraip_p2s       ),
     .ast_intraip_s2p_o                 (ast_intraip_s2p          ),
     .ast_intraip_p2s_i                 (ast_intraip_p2s          ),
     .pwrmgr_tl_req_i                   (pwrmgr_tl_req            ),
     .pwrmgr_tl_rsp_o                   (pwrmgr_tl_rsp            ),
-    .rstmgr_tl_req_i                   (rstmgr_tl_req            ),
-    .rstmgr_tl_rsp_o                   (rstmgr_tl_rsp            ),
-    .clkmgr_tl_req_i                   (clkmgr_tl_req            ),
-    .clkmgr_tl_rsp_o                   (clkmgr_tl_rsp            ),
     .pinmux_tl_req_i                   (pinmux_tl_req            ),
     .pinmux_tl_rsp_o                   (pinmux_tl_rsp            ),
     .sensor_ctrl_tl_req_i              (sensor_ctrl_tl_req       ),
@@ -980,9 +925,6 @@ module top_earlgrey #(
     .cio_usbdev_usb_dn_en_d2p_i        (cio_usbdev_usb_dn_en_d2p ),
     .cio_usbdev_usb_dn_p2d_o           (cio_usbdev_usb_dn_p2d    ),
     .cio_usbdev_sense_p2d_o            (cio_usbdev_sense_p2d     ),
-    .ast_clk_src_sys_i                 (ast_clk_src_sys          ),
-    .ast_clk_src_io_i                  (ast_clk_src_io           ),
-    .ast_clk_src_usb_i                 (ast_clk_src_usb          ),
 
     // Regular ports (auto-generated)
     .manual_in_por_n_i,

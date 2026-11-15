@@ -624,25 +624,43 @@
       type: "rstmgr",
       template_type: "rstmgr",
       clock_srcs: {
-        clk_i: {
-          clock: "io_div4",
-          group: "powerup"
+        primary: {
+          clk_i: {
+            clock: "io_div4",
+            group: "powerup"
+          },
+          clk_por_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
+          clk_io_div4_i: "io_div4"
         },
-        clk_por_i: "io_div4", clk_aon_i: "aon", clk_main_i: "main", clk_io_i: "io", clk_usb_i: "usb",
-        clk_io_div4_i: "io_div4"
+        secondary: {
+          clk_aon_i: "aon"
+        },
       },
-      clock_group: "powerup",
+      clock_group: {primary: "powerup", secondary: "powerup"},
       reset_connections: {
-        rst_ni: {
-          name: "lc_io_div4",
-          domain: "Aon"
+        primary: {
+          rst_ni: {
+            name: "lc_io_div4",
+            domain: "Main"
+          },
+          rst_por_ni: {
+            name: "por_io_div4",
+            domain: "Main"
+          },
         },
-        rst_por_ni: {
-          name: "por_io_div4",
-          domain: "Aon"
+        secondary: {
+          rst_ni: {
+            name: "lc_io_div4",
+            domain: "Aon"
+          },
+          rst_por_ni: {
+            name: "por_io_div4",
+            domain: "Aon"
+          },
         },
       },
-      domain: "Aon",
+      domain: "Main",
+      domain_secondary: "Aon",
       base_addr: {
         hart: "0x40410000",
       },
@@ -651,39 +669,43 @@
     { name: "clkmgr",
       type: "clkmgr",
       template_type: "clkmgr",
+      // A partition hosts the clocks of the source clocks that it receives here. No source clock
+      // can go to both partitions.
       clock_srcs: {
-        clk_i: "io_div4",
-        clk_main_i: {
-          group: "ast",
-          clock: "main"
+        primary: {
+          clk_i: "io_div4",
+          clk_main_i: {group: "ast", clock: "main"},
+          clk_io_i: {group: "ast", clock: "io"},
+          clk_usb_i: {group: "ast", clock: "usb"},
         },
-        clk_io_i: {
-          group: "ast",
-          clock: "io"
+        secondary: {
+          clk_aon_i: {group: "ast", clock: "aon"},
         },
-        clk_usb_i: {
-          group: "ast",
-          clock: "usb"
-        },
-        clk_aon_i: {
-          group: "ast",
-          clock: "aon"
-        }
       },
-      clock_group: "powerup",
-      reset_connections: {rst_ni: "lc_io_div4",
-                          rst_aon_ni: "lc_aon",
-                          rst_io_ni: "lc_io",
-                          rst_io_div4_ni: "lc_io_div4",
-                          rst_main_ni: "lc",
-                          rst_usb_ni: "lc_usb",
-                          rst_root_ni: "por_io_div4",
-                          rst_root_io_ni: "por_io",
-                          rst_root_io_div4_ni: "por_io_div4",
-                          rst_root_main_ni: "por",
-                          rst_root_usb_ni: "por_usb",
-                         },
-      domain: "Aon",
+      clock_group: {primary: "powerup", secondary: "powerup"},
+      reset_connections: {
+        // The primary partition is in the Main power domain, so it takes the Main variants of its
+        // resets. They assert when Main powers down, so its state is reset when Main comes back.
+        // Its root resets are the POR or a power-up of Main (the Main variants of the por resets).
+        primary: {
+          rst_ni: {name: "lc_io_div4", domain: "Main"},
+          rst_aon_ni: {name: "lc_aon", domain: "Main"},
+          rst_io_ni: {name: "lc_io", domain: "Main"},
+          rst_io_div4_ni: {name: "lc_io_div4", domain: "Main"},
+          rst_main_ni: {name: "lc", domain: "Main"},
+          rst_usb_ni: {name: "lc_usb", domain: "Main"},
+          rst_root_ni: {name: "por_io_div4", domain: "Main"},
+          rst_root_io_ni: {name: "por_io", domain: "Main"},
+          rst_root_io_div4_ni: {name: "por_io_div4", domain: "Main"},
+          rst_root_main_ni: {name: "por", domain: "Main"},
+          rst_root_usb_ni: {name: "por_usb", domain: "Main"},
+        },
+        secondary: {
+          rst_aon_ni: "lc_aon",
+        },
+      },
+      domain: "Main",
+      domain_secondary: "Aon",
       base_addr: {
         hart: "0x40420000",
       },
@@ -1274,8 +1296,10 @@
       'ast.obs_ctrl'            : ['rram_macro.obs_ctrl'],
       'ast.adc'                 : ['adc_ctrl.adc'],
       // Requires a manual connection of sense signals as clks/rsts are also defined as external.
-      'ast.sns_clks'            : ['clkmgr.clocks'],
-      'ast.sns_rsts'            : ['rstmgr.resets'],
+      'ast.sns_clks.primary'    : ['clkmgr.clocks'],
+      'ast.sns_clks.secondary'  : ['clkmgr.clocks_secondary'],
+      'ast.sns_rsts.primary'    : ['rstmgr.resets'],
+      'ast.sns_rsts.secondary'  : ['rstmgr.resets_secondary'],
       'ast.clk_src_sys_jen'     : ['clkmgr.jitter_en'],
       'ast.rng_b'               : ['entropy_src.entropy_src_rng_bits'],
       'entropy_src.entropy_src_rng_enable' : ['ast.rng_en'],
@@ -1319,6 +1343,7 @@
       'pwrmgr.pwr_nvm'          : ['rram_ctrl.pwrmgr'],
       'pwrmgr.pwr_rst'          : ['rstmgr.pwr'],
       'pwrmgr.pwr_clk'          : ['clkmgr.pwr'],
+      'pwrmgr.main_pd_aon_clk_en' : ['clkmgr.main_pd_aon_clk_en'],
       'pwrmgr.pwr_otp'          : ['otp_ctrl.pwr_otp'],
       'pwrmgr.pwr_lc'           : ['lc_ctrl.pwr_lc'],
       'pwrmgr.strap'            : ['pinmux.strap_en'],
@@ -1488,8 +1513,14 @@
     // It defines the signal in the top and connect from the module,
     // use of the signal is up to top template
     'top': [
+        // The raw source clocks below go to the primary partition of the clkmgr, in its own power
+        // domain.
+        'ast.clk_src_sys',
+        'ast.clk_src_io',
+        'ast.clk_src_usb',
         // top level net for clocks
         'clkmgr.clocks',
+        'clkmgr.clocks_secondary',
 
         // Net for raw aon clock from AST
         'ast.clk_src_aon',
@@ -1529,6 +1560,7 @@
 
         // top level net for reset
         'rstmgr.resets',
+        'rstmgr.resets_secondary',
 
         // top level reset asserted indications for alert subsystem
         'rstmgr.rst_en',

@@ -79,6 +79,22 @@
         sw: false
         path: rst_por_aon_n
         clock: aon
+        partition:
+        {
+          Main: secondary
+          Aon: secondary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            secondary
+          ]
+          Aon:
+          [
+            secondary
+          ]
+        }
       }
       {
         name: por
@@ -86,13 +102,24 @@
         type: top
         domains:
         [
-          Aon
+          Main
         ]
         shadowed: false
         sw: false
         path: rst_por_n
         parent: por_aon
         clock: main
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: por_io
@@ -101,12 +128,29 @@
         domains:
         [
           Aon
+          Main
         ]
         shadowed: false
         sw: false
         path: rst_por_io_n
         parent: por_aon
         clock: io
+        partition:
+        {
+          Aon: secondary
+          Main: primary
+        }
+        out_partitions:
+        {
+          Aon:
+          [
+            secondary
+          ]
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: lc
@@ -115,13 +159,30 @@
         domains:
         [
           Main
-          Aon
         ]
         shadowed: true
         sw: false
         path: rst_lc_n
         parent: lc_src
         clock: main
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
+        out_partitions_shadowed:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: lc_aon
@@ -129,6 +190,7 @@
         type: top
         domains:
         [
+          Main
           Aon
         ]
         shadowed: false
@@ -136,6 +198,22 @@
         path: rst_lc_aon_n
         parent: lc_src
         clock: aon
+        partition:
+        {
+          Main: primary
+          Aon: secondary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+          Aon:
+          [
+            secondary
+          ]
+        }
       }
       {
         name: lc_io
@@ -151,6 +229,33 @@
         path: rst_lc_io_n
         parent: lc_src
         clock: io
+        partition:
+        {
+          Main: primary
+          Aon: secondary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+          Aon:
+          [
+            secondary
+          ]
+        }
+        out_partitions_shadowed:
+        {
+          Main:
+          [
+            primary
+          ]
+          Aon:
+          [
+            secondary
+          ]
+        }
       }
       {
         name: sys
@@ -165,6 +270,17 @@
         path: rst_sys_n
         parent: sys_src
         clock: main
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: spi_device
@@ -179,6 +295,17 @@
         path: rst_spi_device_n
         parent: lc_src
         clock: io
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: spi_host0
@@ -193,6 +320,17 @@
         path: rst_spi_host0_n
         parent: lc_src
         clock: io
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: i2c0
@@ -207,6 +345,17 @@
         path: rst_i2c0_n
         parent: lc_src
         clock: io
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
     ]
     leaf_rsts:
@@ -217,13 +366,24 @@
         type: top
         domains:
         [
-          Aon
+          Main
         ]
         shadowed: false
         sw: false
         path: rst_por_n
         parent: por_aon
         clock: main
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: por_io
@@ -232,12 +392,29 @@
         domains:
         [
           Aon
+          Main
         ]
         shadowed: false
         sw: false
         path: rst_por_io_n
         parent: por_aon
         clock: io
+        partition:
+        {
+          Aon: secondary
+          Main: primary
+        }
+        out_partitions:
+        {
+          Aon:
+          [
+            secondary
+          ]
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: lc
@@ -246,13 +423,30 @@
         domains:
         [
           Main
-          Aon
         ]
         shadowed: true
         sw: false
         path: rst_lc_n
         parent: lc_src
         clock: main
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
+        out_partitions_shadowed:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: lc_aon
@@ -260,6 +454,7 @@
         type: top
         domains:
         [
+          Main
           Aon
         ]
         shadowed: false
@@ -267,6 +462,22 @@
         path: rst_lc_aon_n
         parent: lc_src
         clock: aon
+        partition:
+        {
+          Main: primary
+          Aon: secondary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+          Aon:
+          [
+            secondary
+          ]
+        }
       }
       {
         name: lc_io
@@ -282,6 +493,33 @@
         path: rst_lc_io_n
         parent: lc_src
         clock: io
+        partition:
+        {
+          Main: primary
+          Aon: secondary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+          Aon:
+          [
+            secondary
+          ]
+        }
+        out_partitions_shadowed:
+        {
+          Main:
+          [
+            primary
+          ]
+          Aon:
+          [
+            secondary
+          ]
+        }
       }
       {
         name: sys
@@ -296,6 +534,17 @@
         path: rst_sys_n
         parent: sys_src
         clock: main
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: spi_device
@@ -310,6 +559,17 @@
         path: rst_spi_device_n
         parent: lc_src
         clock: io
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: spi_host0
@@ -324,6 +584,17 @@
         path: rst_spi_host0_n
         parent: lc_src
         clock: io
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
       {
         name: i2c0
@@ -338,11 +609,24 @@
         path: rst_i2c0_n
         parent: lc_src
         clock: io
+        partition:
+        {
+          Main: primary
+        }
+        out_partitions:
+        {
+          Main:
+          [
+            primary
+          ]
+        }
       }
     ]
     rst_ni: lc_io
     export_rsts: {}
     with_alert_handler: true
+    bus_clk: io
+    por_clk: io
     topname: darjeeling
     uniquified_modules: {}
     module_instance_name: rstmgr

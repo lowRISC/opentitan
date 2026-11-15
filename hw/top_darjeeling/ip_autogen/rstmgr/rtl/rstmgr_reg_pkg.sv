@@ -13,6 +13,8 @@ package rstmgr_reg_pkg;
   parameter int NumSwResets = 3;
   parameter int NumTotalResets = 8;
   parameter int NumAlerts = 2;
+  parameter int NumAlertsPrimary = 2;
+  parameter int NumAlertsSecondary = 0;
 
   // Address widths within the block
   parameter int BlockAw = 7;
@@ -48,10 +50,20 @@ package rstmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [4:0]  q;
+      logic        qe;
     } hw_req;
     struct packed {
       logic        q;
+      logic        qe;
     } sw_reset;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } low_power_exit;
+    struct packed {
+      logic        q;
+      logic        qe;
+    } por;
   } rstmgr_reg2hw_reset_info_reg_t;
 
   typedef struct packed {
@@ -77,18 +89,6 @@ package rstmgr_reg_pkg;
   } rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t;
 
   typedef struct packed {
-    struct packed {
-      logic        q;
-    } fsm_err;
-    struct packed {
-      logic        q;
-    } reset_consistency_err;
-    struct packed {
-      logic        q;
-    } reg_intg_err;
-  } rstmgr_reg2hw_err_code_reg_t;
-
-  typedef struct packed {
     logic [3:0]  d;
     logic        de;
   } rstmgr_hw2reg_reset_req_reg_t;
@@ -96,16 +96,16 @@ package rstmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic [4:0]  d;
-      logic        de;
     } hw_req;
     struct packed {
       logic        d;
-      logic        de;
     } sw_reset;
     struct packed {
       logic        d;
-      logic        de;
     } low_power_exit;
+    struct packed {
+      logic        d;
+    } por;
   } rstmgr_hw2reg_reset_info_reg_t;
 
   typedef struct packed {
@@ -141,40 +141,36 @@ package rstmgr_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        d;
-      logic        de;
     } fsm_err;
     struct packed {
       logic        d;
-      logic        de;
     } reset_consistency_err;
     struct packed {
       logic        d;
-      logic        de;
     } reg_intg_err;
   } rstmgr_hw2reg_err_code_reg_t;
 
   // Register -> HW type
   typedef struct packed {
-    rstmgr_reg2hw_alert_test_reg_t alert_test; // [29:26]
-    rstmgr_reg2hw_reset_req_reg_t reset_req; // [25:22]
-    rstmgr_reg2hw_reset_info_reg_t reset_info; // [21:16]
-    rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [15:11]
-    rstmgr_reg2hw_cpu_info_ctrl_reg_t cpu_info_ctrl; // [10:6]
-    rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [2:0] sw_rst_ctrl_n; // [5:3]
-    rstmgr_reg2hw_err_code_reg_t err_code; // [2:0]
+    rstmgr_reg2hw_alert_test_reg_t alert_test; // [32:29]
+    rstmgr_reg2hw_reset_req_reg_t reset_req; // [28:25]
+    rstmgr_reg2hw_reset_info_reg_t reset_info; // [24:13]
+    rstmgr_reg2hw_alert_info_ctrl_reg_t alert_info_ctrl; // [12:8]
+    rstmgr_reg2hw_cpu_info_ctrl_reg_t cpu_info_ctrl; // [7:3]
+    rstmgr_reg2hw_sw_rst_ctrl_n_mreg_t [2:0] sw_rst_ctrl_n; // [2:0]
   } rstmgr_reg2hw_t;
 
   // HW -> register type
   typedef struct packed {
-    rstmgr_hw2reg_reset_req_reg_t reset_req; // [96:92]
-    rstmgr_hw2reg_reset_info_reg_t reset_info; // [91:82]
-    rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [81:80]
-    rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [79:76]
-    rstmgr_hw2reg_alert_info_reg_t alert_info; // [75:44]
-    rstmgr_hw2reg_cpu_info_ctrl_reg_t cpu_info_ctrl; // [43:42]
-    rstmgr_hw2reg_cpu_info_attr_reg_t cpu_info_attr; // [41:38]
-    rstmgr_hw2reg_cpu_info_reg_t cpu_info; // [37:6]
-    rstmgr_hw2reg_err_code_reg_t err_code; // [5:0]
+    rstmgr_hw2reg_reset_req_reg_t reset_req; // [91:87]
+    rstmgr_hw2reg_reset_info_reg_t reset_info; // [86:79]
+    rstmgr_hw2reg_alert_info_ctrl_reg_t alert_info_ctrl; // [78:77]
+    rstmgr_hw2reg_alert_info_attr_reg_t alert_info_attr; // [76:73]
+    rstmgr_hw2reg_alert_info_reg_t alert_info; // [72:41]
+    rstmgr_hw2reg_cpu_info_ctrl_reg_t cpu_info_ctrl; // [40:39]
+    rstmgr_hw2reg_cpu_info_attr_reg_t cpu_info_attr; // [38:35]
+    rstmgr_hw2reg_cpu_info_reg_t cpu_info; // [34:3]
+    rstmgr_hw2reg_err_code_reg_t err_code; // [2:0]
   } rstmgr_hw2reg_t;
 
   // Register offsets
@@ -202,6 +198,11 @@ package rstmgr_reg_pkg;
   parameter logic [0:0] RSTMGR_ALERT_TEST_FATAL_FAULT_RESVAL = 1'h 0;
   parameter logic [0:0] RSTMGR_ALERT_TEST_FATAL_CNSTY_FAULT_RESVAL = 1'h 0;
   parameter logic [0:0] RSTMGR_ALERT_TEST_REGWEN_RESVAL = 1'h 1;
+  parameter logic [7:0] RSTMGR_RESET_INFO_RESVAL = 8'h 1;
+  parameter logic [0:0] RSTMGR_RESET_INFO_POR_RESVAL = 1'h 1;
+  parameter logic [0:0] RSTMGR_RESET_INFO_LOW_POWER_EXIT_RESVAL = 1'h 0;
+  parameter logic [0:0] RSTMGR_RESET_INFO_SW_RESET_RESVAL = 1'h 0;
+  parameter logic [4:0] RSTMGR_RESET_INFO_HW_REQ_RESVAL = 5'h 0;
   parameter logic [3:0] RSTMGR_ALERT_INFO_ATTR_RESVAL = 4'h 0;
   parameter logic [3:0] RSTMGR_ALERT_INFO_ATTR_CNT_AVAIL_RESVAL = 4'h 0;
   parameter logic [31:0] RSTMGR_ALERT_INFO_RESVAL = 32'h 0;
@@ -210,6 +211,10 @@ package rstmgr_reg_pkg;
   parameter logic [3:0] RSTMGR_CPU_INFO_ATTR_CNT_AVAIL_RESVAL = 4'h 0;
   parameter logic [31:0] RSTMGR_CPU_INFO_RESVAL = 32'h 0;
   parameter logic [31:0] RSTMGR_CPU_INFO_VALUE_RESVAL = 32'h 0;
+  parameter logic [2:0] RSTMGR_ERR_CODE_RESVAL = 3'h 0;
+  parameter logic [0:0] RSTMGR_ERR_CODE_REG_INTG_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] RSTMGR_ERR_CODE_RESET_CONSISTENCY_ERR_RESVAL = 1'h 0;
+  parameter logic [0:0] RSTMGR_ERR_CODE_FSM_ERR_RESVAL = 1'h 0;
 
   // Register index
   typedef enum int {

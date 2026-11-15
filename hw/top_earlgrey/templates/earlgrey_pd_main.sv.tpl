@@ -16,6 +16,10 @@ cio_info = {}
 module ${top["name"]}_pd_${domain.lower()} #(
 <%include file="/toplevel_snippets/header_parameters.tpl" args="top=top, domain=domain, feedthrough=False" />\
 ) (
+% if feature_info["ast_is_internal"]:
+  // Raw system clock of the AST as scan clock for the padring
+  output logic padring_scan_clk_o,
+% endif
 <%include file="/toplevel_snippets/port_intermodule_signals.tpl" args="top=top, domain=domain, last_snippet=False" />\
 <%include file="/toplevel_snippets/port_special_signals.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, domain=domain" />\
 );
@@ -130,8 +134,59 @@ module ${top["name"]}_pd_${domain.lower()} #(
 <%include file="/toplevel_snippets/mem_cfg_wiring.tpl" args="mem_cfg_consumers=mem_cfg_consumers" />\
 
 % if lib.find_module(top["module"], "clkmgr").get("domain") == domain:
-  // Make sure scanmode_i is never X (including during reset)
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_main_i, 0)
+  // Make sure that scanmode_i is never X, including during reset. The check uses the raw main clock
+  // of this domain.
+  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, ast_clk_src_sys, 0)
 % endif\
+
+<%
+  clkmgr = lib.find_module(top['module'], 'clkmgr')
+  rstmgr = lib.find_module(top['module'], 'rstmgr')
+  clkmgr_domains = {part: dom for part, dom, _, _ in lib.get_clkmgr_partitions(top)}
+  rstmgr_domains = {part: dom for part, dom, _, _ in lib.get_rstmgr_partitions(top)}
+%>\
+% for part, dom, sfx, _ in lib.get_clkmgr_partitions(top):
+<%
+  out_clk = lib.clkmgr_struct_crosses(top, 'clocks', part)
+  out_cg = lib.clkmgr_struct_crosses(top, 'cg_en', part)
+%>\
+  % if dom == domain and (out_clk or out_cg):
+  // Connect the ${part} partition of the clkmgr to the top-level signals of the power domains that
+  // need them.
+    % if out_clk:
+  assign ${clkmgr['name']}_clocks${sfx}_o = ${clkmgr['name']}_clocks${sfx};
+    % endif
+    % if out_cg:
+  assign ${clkmgr['name']}_cg_en${sfx}_o  = ${clkmgr['name']}_cg_en${sfx};
+    % endif
+  % endif
+% endfor
+
+% for part, dom, sfx, _ in lib.get_rstmgr_partitions(top):
+<%
+  out_rst = lib.rstmgr_struct_crosses(top, 'resets', part)
+  out_en = lib.rstmgr_struct_crosses(top, 'rst_en', part)
+%>\
+  % if dom == domain and (out_rst or out_en):
+  // Connect the ${part} partition of the rstmgr to the top-level signals of the power domains that
+  // need them.
+    % if out_rst:
+  assign ${rstmgr['name']}_resets${sfx}_o = ${rstmgr['name']}_resets${sfx};
+    % endif
+    % if out_en:
+  assign ${rstmgr['name']}_rst_en${sfx}_o = ${rstmgr['name']}_rst_en${sfx};
+    % endif
+  % endif
+% endfor
+
+  // Connect the sense inputs of the AST to the clocks and resets of the primary partitions of the
+  // clkmgr and the rstmgr.
+  assign ast_sns_clks = clkmgr_clocks${"" if clkmgr_domains[lib.PART_PRIMARY] == domain else "_i"};
+  assign ast_sns_rsts = rstmgr_resets${"" if rstmgr_domains[lib.PART_PRIMARY] == domain else "_i"};
+
+% if feature_info["ast_is_internal"]:
+  // Expose the raw system clock of the AST as scan clock to the padring
+  assign padring_scan_clk_o = ast_clk_src_sys;
+% endif
 
 endmodule
