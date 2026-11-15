@@ -129,6 +129,7 @@ reset_request_list | optional | list | list of signals requesting reset
 scan | optional | python Bool | Indicates the module have `scanmode_i`
 scan_reset | optional | python Bool | Indicates the module have `scan_rst_ni`
 scan_en | optional | python Bool | Indicates the module has `scan_en_i`
+scan_partition | optional | string | the partition of a split IP that has the scan ports (`scan`, `scan_reset`, `scan_en`): primary or secondary, never both. Defaults to primary.
 SPDX-License-Identifier | optional | string | License identifier (if using pure json) Only use this if unable to put this information in a comment at the top of the file.
 wakeup_list | optional | name list+ | list of peripheral wakeups
 countermeasures | optional | name list | list of countermeasures in this block

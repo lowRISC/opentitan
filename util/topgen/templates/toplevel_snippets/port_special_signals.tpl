@@ -115,6 +115,8 @@
   domain_rstmgr = rstmgr.get('domain')
 
   has_clkmgr = domain_clkmgr == domain
+  clkmgr_parts = lib.get_clkmgr_partitions(top)
+  rstmgr_parts = lib.get_rstmgr_partitions(top)
   has_rstmgr_section = domain_rstmgr != domain
   has_ext_clks = len(top['unmanaged_clocks']._asdict().values()) > 0
   has_ext_rsts = len(top['unmanaged_resets']._asdict().values()) > 0
@@ -131,34 +133,77 @@
   ext_clks_last = has_ext_clks and not (has_ext_rsts or has_dft_section)
   ext_rsts_last = has_ext_rsts and not has_dft_section
 %>\
-% if has_clkmgr:
-  % if ext_clk_ports:
+## Declare the ports of each clkmgr partition. In its own domain, these are its external clocks
+## and the structs that leave the domain. In the other domain, these are the structs that enter.
+% for part, dom, sfx, tinfix in clkmgr_parts:
+<%
+  who = f"the {part} partition of the clkmgr"
+  part_ext_clks = [clk for clk in ext_clk_ports
+                   if lib.get_clkmgr_clock_partition(top, top['clocks'].typed_clocks().ast_clks[clk].src) == part]
+%>\
+<%
+  # Find whether this partition's clock and indication structs cross out of this domain or into it.
+  # A struct of a split clkmgr only crosses into the power domains that need it.
+  out_clk = lib.clkmgr_struct_crosses(top, 'clocks', part)
+  out_cg = lib.clkmgr_struct_crosses(top, 'cg_en', part)
+  in_clk = lib.clkmgr_struct_crosses(top, 'clocks', part, domain)
+  in_cg = lib.clkmgr_struct_crosses(top, 'cg_en', part, domain)
+%>\
+  % if dom == domain:
+    % if part_ext_clks:
   // Externally supplied clocks
-  % for clk in ext_clk_ports:
+      % for clk in part_ext_clks:
   input ${clk},
-  % endfor
-  % endif\
-
-  % if feature_info["ast_is_internal"]:
-  // Clocks from clkmgr to other domains
-  output clkmgr_pkg::clkmgr_out_t    ${clkmgr['name']}_clocks_o,
-  output clkmgr_pkg::clkmgr_cg_en_t  ${clkmgr['name']}_cg_en_o,
+      % endfor
+    % endif
+    % if feature_info["ast_is_internal"] and (out_clk or out_cg):
+  // Clocks from ${who} to other domains
+      % if out_clk:
+  output clkmgr_pkg::clkmgr_out${tinfix}_t    ${clkmgr['name']}_clocks${sfx}_o,
+      % endif
+      % if out_cg:
+  output clkmgr_pkg::clkmgr_cg_en${tinfix}_t  ${clkmgr['name']}_cg_en${sfx}_o,
+      % endif
+    % endif
+  % elif in_clk or in_cg:
+  // Clocks from ${who} in power domain ${dom}
+    % if in_clk:
+  input clkmgr_pkg::clkmgr_out${tinfix}_t    ${clkmgr['name']}_clocks${sfx}_i,
+    % endif
+    % if in_cg:
+  input clkmgr_pkg::clkmgr_cg_en${tinfix}_t  ${clkmgr['name']}_cg_en${sfx}_i,
+    % endif
   % endif
-% else:
-  // Clocks from clkmgr in power domain ${domain_clkmgr}
-  input clkmgr_pkg::clkmgr_out_t    ${clkmgr['name']}_clocks_i,
-  input clkmgr_pkg::clkmgr_cg_en_t  ${clkmgr['name']}_cg_en_i,
-% endif
+% endfor
 
-% if has_rstmgr_section:
-  // Resets from rstmgr in power domain ${domain_rstmgr}
-  input rstmgr_pkg::rstmgr_out_t    ${rstmgr['name']}_resets_i,
-  input rstmgr_pkg::rstmgr_rst_en_t ${rstmgr['name']}_rst_en_i${"" if rstmgr_last else ","}
-% elif feature_info["ast_is_internal"]:
-  // Resets from rstmgr to other domains
-  output rstmgr_pkg::rstmgr_out_t    ${rstmgr['name']}_resets_o,
-  output rstmgr_pkg::rstmgr_rst_en_t ${rstmgr['name']}_rst_en_o${"" if rstmgr_last else ","}
-% endif
+<%
+  ## Find the rstmgr structs that cross, as for the clkmgr. The last struct ends the port list when
+  ## the rstmgr section is the last section.
+  rst_ports = [(part, kind) for part, dom, _, _ in rstmgr_parts for kind in ('resets', 'rst_en')
+               if (dom != domain and lib.rstmgr_struct_crosses(top, kind, part, domain)) or
+                  (dom == domain and feature_info["ast_is_internal"] and
+                   lib.rstmgr_struct_crosses(top, kind, part))]
+  last_rst_port = rst_ports[-1] if (rstmgr_last and rst_ports) else None
+%>\
+## Declare the struct ports of each rstmgr partition. They are outputs in the partition's domain,
+## and inputs in the other domain.
+% for part, dom, sfx, tinfix in rstmgr_parts:
+<%
+  who = f"the {part} partition of the rstmgr"
+  kinds = [k for p, k in rst_ports if p == part]
+  end = {k: "" if (part, k) == last_rst_port else "," for k in kinds}
+  io = "o" if dom == domain else "i"
+%>\
+  % if kinds:
+  // Resets from ${who} ${"to other domains" if dom == domain else f"in power domain {dom}"}
+    % if 'resets' in kinds:
+  ${"output" if dom == domain else "input"} rstmgr_pkg::rstmgr_out${tinfix}_t    ${rstmgr['name']}_resets${sfx}_${io}${end['resets']}
+    % endif
+    % if 'rst_en' in kinds:
+  ${"output" if dom == domain else "input"} rstmgr_pkg::rstmgr_rst_en${tinfix}_t ${rstmgr['name']}_rst_en${sfx}_${io}${end['rst_en']}
+    % endif
+  % endif
+% endfor
 
 % if has_ext_clks:
   // Unmanaged external clocks
