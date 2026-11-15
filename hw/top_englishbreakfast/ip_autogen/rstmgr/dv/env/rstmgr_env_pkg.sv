@@ -35,32 +35,32 @@ package rstmgr_env_pkg;
 
   // Sorted instances of rstmgr_leaf_rst instances with security checks enabled.
   parameter string LIST_OF_LEAFS[] = {
-    "u_daon_por_io_div4",
-    "u_daon_por_io_div4_shadowed",
-    "u_daon_sys_aon",
-    "u_daon_sys_io_div4",
-    "u_dmain_lc",
-    "u_dmain_lc_shadowed",
-    "u_dmain_por",
-    "u_dmain_por_io",
-    "u_dmain_por_io_div4",
-    "u_dmain_por_io_div4_shadowed",
-    "u_dmain_por_usb",
-    "u_dmain_spi_device",
-    "u_dmain_spi_host0",
-    "u_dmain_sys",
-    "u_dmain_sys_aon",
-    "u_dmain_sys_io_div4",
-    "u_dmain_sys_shadowed",
-    "u_dmain_usb"
+    "dut_primary.u_dmain_lc",
+    "dut_primary.u_dmain_lc_shadowed",
+    "dut_primary.u_dmain_por",
+    "dut_primary.u_dmain_por_io",
+    "dut_primary.u_dmain_por_io_div4",
+    "dut_primary.u_dmain_por_io_div4_shadowed",
+    "dut_primary.u_dmain_por_usb",
+    "dut_primary.u_dmain_spi_device",
+    "dut_primary.u_dmain_spi_host0",
+    "dut_primary.u_dmain_sys",
+    "dut_primary.u_dmain_sys_aon",
+    "dut_primary.u_dmain_sys_io_div4",
+    "dut_primary.u_dmain_sys_shadowed",
+    "dut_primary.u_dmain_usb",
+    "dut_secondary.u_daon_por_io_div4",
+    "dut_secondary.u_daon_por_io_div4_shadowed",
+    "dut_secondary.u_daon_sys_aon",
+    "dut_secondary.u_daon_sys_io_div4"
   };
 
   // Instances of rstmgr_leaf_rst modules which have a shadow pair.
   parameter string LIST_OF_SHADOW_LEAFS[] = {
-    "u_daon_por_io_div4",
-    "u_dmain_lc",
-    "u_dmain_por_io_div4",
-    "u_dmain_sys"
+    "dut_primary.u_dmain_lc",
+    "dut_primary.u_dmain_por_io_div4",
+    "dut_primary.u_dmain_sys",
+    "dut_secondary.u_daon_por_io_div4"
   };
 
   // types

@@ -32,4 +32,4 @@ targets:
     <<: *default_target
     filesets:
       - files_dv
-    toplevel: rstmgr
+    toplevel: rstmgr_part_primary

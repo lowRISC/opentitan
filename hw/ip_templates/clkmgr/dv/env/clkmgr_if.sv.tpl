@@ -4,10 +4,17 @@
 <%
 from ipgen.clkmgr_gen import (get_all_srcs, get_hint_targets, get_rg_srcs,
                                get_sw_clk_keys)
+from collections import OrderedDict
+from ipgen.manager_split import clkmgr_out_clks
 from topgen.lib import Name
 rg_srcs = get_rg_srcs(typed_clocks)
 hint_targets = get_hint_targets(typed_clocks)
 sw_clk_keys = get_sw_clk_keys(typed_clocks)
+all_clocks = OrderedDict({clk: None for clk in typed_clocks['ft_clks'].keys()})
+all_clocks.update({clk: None for clk in typed_clocks['hint_clks'].keys()})
+all_clocks.update({clk: None for clk in typed_clocks['rg_clks'].keys()})
+all_clocks.update({clk: None for clk in typed_clocks['sw_clks'].keys()})
+primary_out = clkmgr_out_clks(typed_clocks, 'primary')
 %>\
 //
 // clkmgr interface.
@@ -40,6 +47,15 @@ interface clkmgr_if (
   // scanmode_i == MuBi4True defeats all clock gating.
   prim_mubi_pkg::mubi4_t scanmode_i;
 
+  // The power manager's enable of the gated copy of the always-on clock, which the secondary
+  // partition gives the primary partition. Nothing powers the primary partition's domain down here,
+  // so it starts open, as the power manager keeps it while that domain is up.
+  logic main_pd_aon_clk_en = 1'b1;
+
+  function automatic void update_main_pd_aon_clk_en(bit value);
+    main_pd_aon_clk_en = value;
+  endfunction
+
 % if ext_clk_bypass:
   // Life cycle enables clock bypass functionality.
   lc_ctrl_pkg::lc_tx_t lc_hw_debug_en_i;
@@ -60,14 +76,30 @@ interface clkmgr_if (
 
 % endif
   prim_mubi_pkg::mubi4_t jitter_en_o;
-  clkmgr_pkg::clkmgr_out_t clocks_o;
+
+  // The clocks that the two partitions output, from the testbench.
+  clkmgr_pkg::clkmgr_out_primary_t clocks_primary;
+  clkmgr_pkg::clkmgr_out_secondary_t clocks_secondary;
+
+  // Every clock of the clock manager, as the single power-domain clock manager output them. Each
+  // clock comes from a partition that outputs it, the primary if both do.
+  typedef struct packed {
+% for clk in all_clocks:
+    logic ${clk};
+% endfor
+  } clkmgr_out_t;
+  clkmgr_out_t clocks_o;
+% for clk in all_clocks:
+  assign clocks_o.${clk} = ${'clocks_primary' if clk in primary_out else 'clocks_secondary'}.${clk};
+% endfor
 
   // Internal DUT signals.
   // ICEBOX(lowrisc/opentitan#18379): This is a core env component (i.e. reusable entity) that
   // makes hierarchical references into the DUT. A better strategy would be to bind this interface
   // to the DUT in tb.sv and use relative paths instead.
 `ifndef CLKMGR_HIER
-  `define CLKMGR_HIER tb.dut
+  // The registers and the measurements are in the primary partition of the clkmgr.
+  `define CLKMGR_HIER tb.dut_primary
 `endif
 
   // The CSR values from the testbench side.

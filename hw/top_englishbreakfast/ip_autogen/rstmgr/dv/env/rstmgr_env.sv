@@ -45,10 +45,15 @@ class rstmgr_env extends cip_base_env #(
         )) begin
       `uvm_fatal(`gfn, "failed to get pwrmgr_rstmgr_sva_vif from uvm_config_db")
     end
-    if (!uvm_config_db#(virtual rstmgr_cascading_sva_if)::get(
-            this, "", "rstmgr_cascading_sva_vif", cfg.rstmgr_cascading_sva_vif
+    if (!uvm_config_db#(virtual rstmgr_cascading_primary_sva_if)::get(
+            this, "", "rstmgr_cascading_primary_sva_vif", cfg.rstmgr_cascading_primary_sva_vif
         )) begin
-      `uvm_fatal(`gfn, "failed to get rstmgr_cascading_sva_vif from uvm_config_db")
+      `uvm_fatal(`gfn, "failed to get rstmgr_cascading_primary_sva_vif from uvm_config_db")
+    end
+    if (!uvm_config_db#(virtual rstmgr_cascading_secondary_sva_if)::get(
+            this, "", "rstmgr_cascading_secondary_sva_vif", cfg.rstmgr_cascading_secondary_sva_vif
+        )) begin
+      `uvm_fatal(`gfn, "failed to get rstmgr_cascading_secondary_sva_vif from uvm_config_db")
     end
     if (!uvm_config_db#(virtual rstmgr_if)::get(this, "", "rstmgr_vif", cfg.rstmgr_vif)) begin
       `uvm_fatal(`gfn, "failed to get rstmgr_vif from uvm_config_db")
