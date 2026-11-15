@@ -34,6 +34,9 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   // Has a data / addr key been read from otp_ctrl since the last reset?
   local bit m_seen_otp_data_key, m_seen_otp_addr_key;
 
+  // The data / addr key itself (valid if m_seen_otp_data_key / m_seen_otp_addr_key is true)
+  local bit [NvmKeyWidth-1:0] m_otp_data_key, m_otp_addr_key;
+
   // True if we have read the STATUS register with init_done=1 since the last reset
   local bit m_seen_init_done;
 
@@ -65,6 +68,11 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   // A model of the info partition in RRAM
   local rram_partition_model m_info_partition;
 
+  // An associative array of generations in m_data_partition that have been taken at the start of
+  // host_tl read operations. These are keyed by the TL sequence item's a_source value, which can be
+  // used to look up the generation when the response comes back.
+  local int unsigned m_host_start_gens[int unsigned];
+
   // Standard SV/UVM methods
   extern function new(string name = "", uvm_component parent = null);
   extern function void build_phase(uvm_phase phase);
@@ -77,6 +85,18 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   extern function void set_backdoors(rram_ctrl_bkdr_util data_bkdr,
                                      rram_ctrl_bkdr_util info_bkdr);
 
+  // Check whether a memory access is allowed, or whether it should trigger a TL error.
+  //
+  // This extends cip_base_scoreboard::is_tl_mem_access_allowed, teaching it about disallowed
+  // host_tl accesses.
+  extern protected virtual
+  function bit is_tl_mem_access_allowed(tl_seq_item       item,
+                                        dv_base_reg_block block,
+                                        output bit        mem_byte_access_err,
+                                        output bit        mem_wo_err,
+                                        output bit        mem_ro_err,
+                                        output bit        custom_err);
+
   // Other class-specific methods
   extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
   extern task process_tl_core_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
@@ -85,6 +105,11 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   extern function void on_mem_access(tl_seq_item item, tl_phase_e tl_phase, uvm_mem memory);
   extern task process_tl_prim_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
                                      tl_phase_e tl_phase);
+
+  // Called when monitor sees an A- or D-channel item on the host_tl interface which wasn't expected
+  // to cause d_error=1 in the D-channel response.
+  extern local function void on_allowed_host_item(cip_tl_seq_item item, tl_channels_e channel);
+
   extern function void configure_csr_check_exclusions();
   extern function void reset(string kind = "HARD");
 
@@ -144,6 +169,21 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
                                                         string status_fld_name,
                                                         bit    otp_key_flag,
                                                         string otp_key_desc);
+
+  // Return true if the given page is in a region that is enabled
+  //
+  // If so, writes the index of the first enabled region containing the page to the region_idx
+  // output variable.
+  extern local function bit page_in_enabled_region(int unsigned        page_idx,
+                                                   output int unsigned region_idx);
+
+  // Return true if the given RRAM word in the data partition is scrambled (either by an enabled
+  // region or by default_region).
+  extern local function bit data_word_scrambled(int unsigned word_idx);
+
+  // Return the modelled value of the given word in the data partition, unscrambling if
+  // data_word_scrambled() is true.
+  extern local function bit [DataWidth-1:0] get_data_value(int unsigned word_idx);
 endclass : rram_ctrl_scoreboard
 
 
@@ -238,11 +278,104 @@ function void rram_ctrl_scoreboard::set_backdoors(rram_ctrl_bkdr_util data_bkdr,
   m_info_bkdr_util = info_bkdr;
 endfunction
 
+function bit rram_ctrl_scoreboard::is_tl_mem_access_allowed(tl_seq_item       item,
+                                                            dv_base_reg_block block,
+                                                            output bit        mem_byte_access_err,
+                                                            output bit        mem_wo_err,
+                                                            output bit        mem_ro_err,
+                                                            output bit        custom_err);
+  bit allowed;
+  cip_tl_seq_item cip_item;
+
+  allowed = super.is_tl_mem_access_allowed(item, block,
+                                           mem_byte_access_err, mem_wo_err, mem_ro_err, custom_err);
+
+  if (!$cast(cip_item, item)) begin
+    `uvm_fatal("not_cip_item", "Sequence item can't be cast to a cip_tl_seq_item")
+  end
+
+  if (block == cfg.ral_models[cfg.host_ral_name]) begin
+    // This memory access is on the host_tl interface.
+
+    string error_reasons[$];
+
+    if (item.is_write()) begin
+      // Writes should always be rejected with an error.
+      error_reasons.push_back("write to tl_host interface");
+    end else begin
+      // Reasons that a read might be blocked:
+      //
+      //  - The page touched by the read might be in the OTP region
+      //
+      //  - The page touched by the read is included in one or more enabled regions and the first
+      //    one of those regions has rd_en != MuBi4True.
+      //
+      //  - The page touched by the read is not included in any enabled region and the default
+      //    region has rd_en != MuBi4True
+      //
+      //  - TODO: Emulated info pages
+      //
+      //  - The instr_type field is MuBi4True but the EXEC register isn't ExecEn
+      //
+      //  - TileLink protocol problem (integrity, alignment), but this has already been checked by
+      //  the base class version of this function.
+      uvm_reg_map host_map = cfg.ral_models[cfg.host_ral_name].get_default_map();
+      uvm_reg_addr_t host_base_addr = host_map.get_base_addr();
+      int unsigned page_idx = (item.a_addr - host_base_addr) / rram_ctrl_reg_pkg::BytesPerPage;
+      int unsigned region_idx;
+
+      if (page_idx >= OtpStartPage) begin
+        error_reasons.push_back("addressed page in OTP region");
+      end
+
+      if (page_in_enabled_region(page_idx, region_idx)) begin
+        // The first enabled region in the data partition that includes page is the one at position
+        // region_idx. The read will be blocked if that region's rd_en is not MuBi4True.
+        if (ral.mp_region_cfg[region_idx].rd_en.get_mirrored_value() != MuBi4True) begin
+          error_reasons.push_back($sformatf("region %0d has rd_en != MuBi4True", region_idx));
+        end
+      end else begin
+        // There is no enabled region in the data that includes page. The read will be blocked if
+        // default_region.rd_en is not MuBi4True.
+        if (ral.default_region.rd_en.get_mirrored_value() != MuBi4True) begin
+          error_reasons.push_back("default_region has rd_en != MuBi4True");
+        end
+      end
+
+      if (cip_item.get_instr_type() == MuBi4True &&
+          ral.exec.get_mirrored_value() != rram_ctrl_reg_pkg::ExecEn) begin
+        error_reasons.push_back("fetch and EXEC is not ExecEn");
+      end
+    end
+
+    if (error_reasons.size()) begin
+      // There is at least one reason that the access should have been blocked. Set custom_err=1
+      // and allowed=0.
+      //
+      // As a debugging aid, print the list of error reasons at UVM_HIGH (the same verbosity as an
+      // equivalent print in cip_base_scoreboard::is_tl_mem_access_allowed).
+      custom_err = 1;
+      allowed = 0;
+
+      `uvm_info("host_tl_pred_err",
+                $sformatf("Predicted d_error for host_tl access. Reasons: %0p.", error_reasons),
+                UVM_HIGH)
+    end
+  end
+
+  return allowed;
+endfunction
+
 task rram_ctrl_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e channel,
                                              string ral_name);
-  bit            write = item.is_write();
-  uvm_reg_addr_t csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
-  tl_phase_e     tl_phase;
+  bit             write = item.is_write();
+  uvm_reg_addr_t  csr_addr = cfg.ral_models[ral_name].get_word_aligned_addr(item.a_addr);
+  tl_phase_e      tl_phase;
+  cip_tl_seq_item cip_item;
+
+  if (!$cast(cip_item, item)) begin
+    `uvm_fatal("not_cip_item", "Sequence item can't be cast to a cip_tl_seq_item")
+  end
 
   if (!write && channel == AddrChannel) begin
     tl_phase = AddrRead;
@@ -262,7 +395,7 @@ task rram_ctrl_scoreboard::process_tl_access(tl_seq_item item, tl_channels_e cha
   end else if (ral_name == cfg.prim_ral_name) begin
     process_tl_prim_access(item, csr_addr, tl_phase);
   end else if (ral_name == cfg.host_ral_name) begin
-    // TODO(#31289): predict tl errors based on mp configuration.
+    on_allowed_host_item(cip_item, channel);
   end else begin
     `uvm_fatal(`gfn, $sformatf("Specified RAL name %0s doesn't exist!", ral_name))
   end
@@ -302,6 +435,95 @@ task rram_ctrl_scoreboard::process_tl_prim_access(tl_seq_item item, uvm_reg_addr
                                                   tl_phase_e tl_phase);
   // TODO(#31292): generate traffic for this tlul interface and test it here.
 endtask : process_tl_prim_access
+
+function void rram_ctrl_scoreboard::on_allowed_host_item(cip_tl_seq_item item,
+                                                         tl_channels_e channel);
+  // This is an access on the host_tl interface that isn't expected to cause an error (otherwise
+  // is_tl_mem_access_allowed would have returned false, causing cip_base_scoreboard::predict_tl_err
+  // to return true which, in turn, would cause cip_base_scoreboard::process_tl_*_item to return
+  // before calling process_tl_access.
+  //
+  // As such, it's definitely a read. Snapshot a generation in the A channel request transaction,
+  // then check that rdata matches any model that we have when there is a D channel response.
+
+  uvm_reg_addr_t base_addr = cfg.ral_models[cfg.host_ral_name].get_default_map().get_base_addr();
+  uvm_reg_addr_t byte_offset = item.a_addr - base_addr;
+  int unsigned   word_idx = byte_offset / (DataWidth / 8);
+  int unsigned   subword8 = byte_offset - word_idx * (DataWidth / 8);
+  int unsigned   subword32 = subword8 / 4;
+
+  if (channel == AddrChannel) begin
+    // Get the current generation for the word that is being addressed and store it under a_source
+    // (so that we can look it up for the response)
+    m_host_start_gens[item.a_source] = m_data_partition.get_generation(word_idx);
+  end else begin
+    int unsigned        gen_a, gen_d;
+    bit [DataWidth-1:0] exp_word;
+    bit [31:0]          exp_word32, lane_mask;
+
+    bit [31:0]   exp_word_value, rdata_mask, exp_rdata;
+
+    // When the A channel item for this transaction came through, we should have got the generation
+    // for the word being addressed. Look it up here.
+    if (!m_host_start_gens.exists(item.a_source)) begin
+      `uvm_fatal("missing_start_gen",
+                 $sformatf({"D chanel host_tl item with a_source %0d has ",
+                            "no matching entry in m_host_start_gens."},
+                           item.a_source))
+    end
+    gen_a = m_host_start_gens[item.a_source];
+
+    // Look up the current generation
+    gen_d = m_data_partition.get_generation(word_idx);
+
+    // Do the generations match? If not, the value might have changed while this read was in
+    // progress, so we don't have any way to check the result. Print a debug message at UVM_HIGH and
+    // return.
+    if (gen_a != gen_d) begin
+      `uvm_info("gen_change",
+                $sformatf({"The host_tl read of address 0x%0h has word index 0x%0h. ",
+                           "When the A channel transaction was seen, that word had generation %0d ",
+                           "but now it has generation %0d. Cannot predict rdata."},
+                          item.a_addr, word_idx, gen_a, gen_d),
+                UVM_HIGH)
+      return;
+    end
+
+    // Have we got a model of the value of this word? If not, we have no way to check whether rdata
+    // is correct. Print a debug message at UVM_HIGH and return.
+    if (!m_data_partition.get_known(word_idx)) begin
+      `uvm_info("word_unknown",
+                $sformatf({"The host_tl read of address 0x%0h has word index 0x%0h but we ",
+                           "have no model for that value in the memory. Cannot predict rdata."},
+                          item.a_addr, word_idx),
+                UVM_HIGH)
+      return;
+    end
+
+    // The generation is unchanged and we have a model for the value of the word. Get that.
+    exp_word = get_data_value(word_idx);
+
+    // Extract the 32-bit word that is being addressed by the bus transaction
+    exp_word32 = exp_word[subword32 * 32 +: 32];
+
+    // Extract a mask based on a_size and the address mod 4 (for the relevant byte lanes in the
+    // transaction)
+    lane_mask = ((1 << (8 << item.a_size)) - 1) << (8 * (byte_offset % 4));
+
+    if (lane_mask & (item.d_data ^ exp_word32)) begin
+      `uvm_error("rdata_mismatch",
+                 $sformatf({"Read from address 0x%0h (word 0x%0d) with size %0d returned 0x%0h, ",
+                            "which masks down to 0x%0h. This word is%0s scrambled. ",
+                            "The expected result was 0x%0h (the 32-bit word with index %0d ",
+                            "from 0x%0h, masked with 0x%0h)."},
+                           item.a_addr, word_idx, item.a_size,
+                           item.d_data, item.d_data & lane_mask,
+                           data_word_scrambled(word_idx) ? "" : " not",
+                           exp_word32 & lane_mask,
+                           subword32, exp_word, lane_mask))
+    end
+  end
+endfunction
 
 function void rram_ctrl_scoreboard::configure_csr_check_exclusions();
   uvm_reg regs[$];
@@ -354,8 +576,13 @@ function void rram_ctrl_scoreboard::write_key_txn(nvm_otp_key_rsp_seq_item item)
                          item.m_req.m_is_data_req ? "data" : "addr"))
   end
 
-  if (item.m_req.m_is_data_req) m_seen_otp_data_key = 1;
-  else                          m_seen_otp_addr_key = 1;
+  if (item.m_req.m_is_data_req) begin
+    m_seen_otp_data_key = 1;
+    m_otp_data_key = item.m_key;
+  end else begin
+    m_seen_otp_addr_key = 1;
+    m_otp_addr_key = item.m_key;
+  end
 endfunction
 
 function void rram_ctrl_scoreboard::write_reg_item(uvm_reg_item item);
@@ -472,4 +699,56 @@ function void rram_ctrl_scoreboard::check_status_fld_needs_key(bit    status_fld
                $sformatf("Read STATUS.%0s = 1 but have not seen %0s.",
                          status_fld_name, otp_key_desc))
   end
+endfunction
+
+function bit rram_ctrl_scoreboard::page_in_enabled_region(int unsigned        page_idx,
+                                                          output int unsigned region_idx);
+  for (int unsigned i = 0; i < NumRegions; i++) begin
+    uvm_reg_data_t base, size;
+
+    if (ral.mp_region_cfg[i].en.get_mirrored_value() != MuBi4True) continue;
+
+    base = ral.mp_region[i].base.get_mirrored_value();
+    size = ral.mp_region[i].size.get_mirrored_value();
+
+    if ((base <= page_idx) && (page_idx - base <= size)) begin
+      region_idx = i;
+      return 1;
+    end
+  end
+  return 0;
+endfunction
+
+function bit rram_ctrl_scoreboard::data_word_scrambled(int unsigned word_idx);
+  int unsigned page_idx = word_idx / WordsPerPage;
+  int unsigned region_idx;
+  bit          is_scrambled;
+
+  if (page_in_enabled_region(page_idx, region_idx)) begin
+    return (ral.mp_region_cfg[region_idx].scramble_en.get_mirrored_value() == MuBi4True);
+  end else begin
+    return (ral.default_region.scramble_en.get_mirrored_value() == MuBi4True);
+  end
+endfunction
+
+function bit [DataWidth-1:0] rram_ctrl_scoreboard::get_data_value(int unsigned word_idx);
+  bit [DataWidth-1:0] infected, disinfected;
+  int unsigned        word_start_addr32 = word_idx * (DataWidth / 8) / 4;
+
+  // Get our model of the data that was stored into the data partition. This value has been XORed
+  // with the lower bits of the bus address that was used when writing it.
+  if (data_word_scrambled(word_idx)) begin
+    infected = m_data_bkdr_util.rram_descramble_data(m_data_partition.get_value(word_idx),
+                                                     word_idx, m_otp_addr_key, m_otp_data_key);
+  end else begin
+    infected = m_data_partition.get_value(word_idx);
+  end
+
+  // Undo the address infection for each bus word
+  for (int unsigned i = 0; i < DataWidth / 32; i++) begin
+    int unsigned bus_word_start_addr32 = word_start_addr32 + i;
+    disinfected[32 * i +: 32] = infected[32 * i +: 32] ^ bus_word_start_addr32;
+  end
+
+  return disinfected;
 endfunction
