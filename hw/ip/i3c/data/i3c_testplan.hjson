@@ -1436,6 +1436,7 @@
 
             Checking:
               - Check the register effects and the status and interrupts of each capability.
+                The Debug capability registers are checked in `ctrl_debug_status`.
               - Auto-Command is a DAT feature, not an extended capability (HCI Table 82).
                 `HC_CAPABILITIES.AUTO_COMMAND` reads 1. An IBI whose Mandatory Byte,
                 masked with `AUTOCMD_MASK`, matches `AUTOCMD_VALUE` is followed at once by
@@ -1542,10 +1543,58 @@
 
             Stimulus:
               - With the IP idle, write and read patterns across the whole buffer through
-                the `BUFFER` window.
+                the `BUFFER` window, with byte, half-word and word accesses, paging with
+                `BUFFER_CTRL.SW_ADDR_HI`.
+              - Issue instruction fetches (TL-UL `instr_type` true) to the window, in
+                builds with `SWDirEnIFetch` clear and set.
+              - In a build with `SWDirectMsgBuf` clear, read and write the window.
+              - With either role enabled and transfers running, access the part of the
+                buffer that no queue uses.
 
             Checking:
               - Check the data and that no addresses alias.
+              - With `SWDirEnIFetch` clear, every instruction fetch completes with a TL-UL
+                error and returns no buffer data (design parameters documentation); with
+                it set, the fetch returns the data.
+              - With `SWDirectMsgBuf` clear, every access to the window completes with a
+                TL-UL error, and writes leave the buffer unchanged.
+              - Software accesses outside the queues neither corrupt nor stall the
+                transfers, and the transfers do not change the data that software owns.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: msg_buffer_data_leakage
+      desc: '''
+            Verify that data does not leak between transfers, Virtual Targets and roles
+            through the message buffer.
+
+            No reset and no `BUFFER_CTRL.CLEAR` clears the contents of the message buffer:
+            they reset the queue pointers. The checks are therefore on what leaves the IP,
+            on the bus and through the registers.
+
+            Stimulus:
+              - Fill the Tx queues and buffers of each role and of each Virtual Target with
+                marker data, then apply each reset and buffer clear of `reset_config`,
+                `BUFFER_CTRL.CLEAR`, a change of the queue partitions and a role switch.
+              - After each, read from the DUT as Target with its Tx buffer empty and partly
+                refilled, through private reads and Direct GET CCCs, and have the DUT as
+                Controller issue reads that the Target agent ends early and writes with
+                its Tx queue partly refilled.
+              - Read the data ports of empty queues.
+              - Queue Tx data for one Virtual Target while the Controller reads another.
+              - Keep marker data in the part of the buffer that software owns while
+                transfers run.
+
+            Checking:
+              - No marker byte appears on the bus, in a response, IBI or Target descriptor,
+                or in a read of a queue port, unless software queued it for that transfer
+                after the reset or clear.
+              - A Target read whose Tx buffer runs dry ends with T-bit 0; the DUT sends no
+                byte that software did not queue for it.
+              - A read of an empty queue port returns no data from an earlier transfer.
+              - One Virtual Target's Tx data is never sent for another.
             '''
       stage: V2
       tests: []
@@ -1608,6 +1657,12 @@
               - Enter sleep with `RESET_DET_CTRL` while idle and at permitted busy points.
               - Stop the IP clock and drive valid and near-miss Target Reset Patterns.
               - Restore the clocks.
+              - Power the primary partition down with the detector active, its inputs
+                isolated to the wake-up values of the integration notes
+                (`rstdet_enable_i`, `rstdet_i.activate` and `rstdet_i.deep_sleep` set,
+                the other request bits clear), then power it up and reset it.
+              - Enable and disable the detector with the AON clock at its slowest ratio to
+                the IP clock.
 
             Checking:
               - The detector raises the configured wake or reset request.
@@ -1617,6 +1672,43 @@
                 its dynamic address and configuration: after wake it ACKs its address,
                 does not take part in a following ENTDAA (I3C Basic Section 4.3.9.1), and
                 traffic resumes.
+              - With the primary partition powered down, the detector still wakes on a
+                valid pattern only. After power-up the DUT is at its reset values, and
+                takes part in ENTDAA once software enables the Target again.
+              - The detector takes each enable and disable, however slow the AON clock.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: ctrl_sleep
+      desc: '''
+            Verify Controller behaviour around sleep entry and exit.
+
+            The IP may enter a low power state only as a Target, with its Controller
+            disabled (theory of operation, sleep states). Software disables the Controller
+            by clearing `HC_CONTROL.BUS_ENABLE`, which reads 1 until the Controller is idle
+            (HCI Section 7.4.2).
+
+            Stimulus:
+              - Clear `HC_CONTROL.BUS_ENABLE` while idle, during a transfer, with commands
+                queued up to one with `TOC` set, and during IBI reception; then stop the IP
+                clock, restart it and enable the Controller again.
+              - Stop and restart the IP clock with the Controller enabled, while idle and
+                during a transfer.
+              - Power the primary partition down and up with the Controller enabled.
+
+            Checking:
+              - `BUS_ENABLE` reads 0 only after the IBI in reception and the queued commands
+                up to the one with `TOC` set have completed, with their responses; the bus
+                then ends with STOP and the Controller generates no SCL for a new IBI.
+              - While the Controller is disabled and the clock stopped, SCL and SDA are not
+                driven low.
+              - A clock stop with the Controller enabled loses or duplicates no command or
+                response, and once the clock restarts the transfer completes, or fails with
+                an error and `ctrl_bus_recovery` frees the bus.
+              - After power-up the IP is at its reset values; after initialisation and DAA
+                the next command succeeds.
             '''
       stage: V2
       tests: []
@@ -1680,6 +1772,142 @@
                 framing is in `tgt_sdr_xfer`)
               - 2.1.3 I3C Bus Repeated START - Target (partial: voltages are analog;
                 the misaligned START is in `tgt_sdr_xfer`)
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // Performance
+    //-----------------------------------------------
+    {
+      name: ctrl_throughput
+      desc: '''
+            Verify that the Controller sustains the data rate its programmed timing allows.
+
+            Stimulus:
+              - At the maximum SCL rate for each tested `ClkFreq`, including the lowest
+                supported, issue long private writes and reads, back-to-back commands with
+                `TOC` clear and set, and HDR-DDR transfers.
+              - Keep the queues above their thresholds, and separately service them only
+                on threshold interrupts.
+              - Have Target agents raise IBIs during the traffic.
+
+            Checking:
+              - While the queues hold data, SCL runs at the programmed rate: between bytes,
+                words and frames of a transfer, and between commands joined by a repeated
+                START, the Controller adds no idle SCL periods beyond those its programmed
+                timing and the protocol require.
+              - Measure and report the effective data rate, the gap between commands, and
+                the IBI service latency (from the IBI on the bus to its status in the IBI
+                queue and the interrupt).
+              - Measure and report the slowest software service of the threshold interrupts
+                that still keeps SCL running.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_throughput
+      desc: '''
+            Verify that the Target keeps up with an Active Controller at the maximum data
+            rate.
+
+            Stimulus:
+              - At 12.5 MHz SDR and in HDR-DDR, and at the lowest supported `ClkFreq`, run
+                long private writes and reads to each Virtual Target, back-to-back with
+                repeated STARTs.
+              - Service the TTI queues only on threshold interrupts, at a range of
+                software latencies.
+              - Request IBIs while the bus is busy and while it is Available.
+
+            Checking:
+              - When software refills the Tx buffer within the latency its threshold
+                allows, a read never ends early with T-bit 0, and no Rx data is lost (no
+                `TARG_INTR_STATUS.RX_BUFFER_OVF_STAT`).
+              - Measure and report the slowest software service that sustains each rate,
+                and the delay from an IBI request to its START on an Available bus.
+            '''
+      stage: V2
+      tests: []
+    }
+
+    //-----------------------------------------------
+    // Debug
+    //-----------------------------------------------
+    {
+      name: ctrl_debug_status
+      desc: '''
+            Verify the Controller debug and status registers.
+
+            Stimulus:
+              - Run traffic with the queues at every occupancy, IBIs, errors, halts and
+                aborts.
+              - Read, during the traffic, the Debug extended capability
+                (`DEBUG_EXTCAP_HEADER`, `QUEUE_STATUS_LEVEL`, `DATA_BUFFER_STATUS_LEVEL`,
+                `PRESENT_STATE_DEBUG`, `MX_ERROR_COUNTERS`, `SCHED_CMDS_DEBUG`), the queue
+                state registers (`COMMAND_QUEUE_STATE`, `RESPONSE_QUEUE_STATE`,
+                `IBI_STATE`, `IBI_STAT_STATE`, `CTRL_TXBUF_STATE`, `CTRL_RXBUF_STATE`) and
+                `PRESENT_STATE`.
+              - With the Controller disabled, drive SCL and SDA through the direct drive
+                fields of `PHY_CONFIG`, in each push-pull, open-drain and pull-up mode.
+
+            Checking:
+              - A queue model predicts each level, pointer, full and prefetch field, and
+                the registers agree with each other and with the HCI interrupt status.
+              - `PRESENT_STATE_DEBUG` reports the Transaction ID of the command in progress,
+                the Idle and Halt states, and the SCL and SDA levels on the bus.
+              - `MX_ERROR_COUNTERS.CE2_ERROR_COUNT` counts each CE2 error and reads 0 after
+                it has been read.
+              - `SCHED_CMDS_DEBUG` reads 0: Scheduled Commands are not supported
+                (`unsupported_features`).
+              - Reading a debug register has no side effect except where documented.
+              - Direct drive puts the programmed levels and driver enables on SCL and SDA,
+                and the Controller logic does not drive them meanwhile.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_debug_status
+      desc: '''
+            Verify the Target debug and status registers.
+
+            Stimulus:
+              - Run traffic to each Virtual Target with the buffers and descriptor queues
+                at every occupancy, IBIs, errors and Asynchronous Events.
+              - Read, during the traffic, `TARG_STATE_DEBUG`, `TARG_TXBUF_STATE` and
+                `TARG_TXDESC_STATE` of each Virtual Target, `TARG_RXBUF_STATE`,
+                `TARG_IBI_STATE`, `TARG_RXDESC_STATE`, `TARG_IBIDESC_STATE` and
+                `TARG_ASYNC_STATE`.
+
+            Checking:
+              - A queue model predicts each pointer, full and prefetch field.
+              - `TARG_STATE_DEBUG` reports the bus mode (SDR, HDR-DDR) and the SCL and SDA
+                levels on the bus. Its Bus Available and Bus Idle fields are checked in
+                `tgt_bus_timing`.
+              - Reading a debug register has no side effect.
+            '''
+      stage: V2
+      tests: []
+    }
+    {
+      name: tgt_bus_monitor
+      desc: '''
+            Verify the Target bus monitoring mode (TTI documentation, Bus Monitoring).
+
+            Stimulus:
+              - Program a `TARG_GROUP` entry with group address 0 and one or more
+                subscribed Virtual Targets.
+              - Drive private writes and reads, broadcast and Direct CCCs, and transfers to
+                other Targets, the DUT's own addresses and unassigned addresses.
+              - Change and remove the subscription between transfers.
+
+            Checking:
+              - The subscribed Virtual Targets capture all the traffic and present it as
+                for Private Write Transfers to a valid group address.
+              - The monitoring Virtual Targets never ACK, drive data or otherwise change the
+                bus; the DUT's other Virtual Targets behave as without monitoring.
             '''
       stage: V2
       tests: []
@@ -2090,7 +2318,19 @@
       name: i3c_sleep_wake_cg
       desc: '''
             Cover the sleep entry point crossed with the Target Reset Pattern (valid,
-            near-miss) and the SCL history.
+            near-miss), the SCL history and the low power state (IP clock stopped, primary
+            partition powered down). For the Controller, cover the state when
+            `HC_CONTROL.BUS_ENABLE` is cleared (idle, transfer, queued commands, IBI
+            reception) crossed with the clock stop and power-down.
+            '''
+    }
+    {
+      name: i3c_throughput_cg
+      desc: '''
+            Cover each role and transfer type (SDR write and read, HDR-DDR, back-to-back
+            commands) at the maximum SCL rate, crossed with `ClkFreq` at the limits of its
+            supported range and the software service latency in bins up to the slowest
+            that sustains the rate.
             '''
     }
     {
