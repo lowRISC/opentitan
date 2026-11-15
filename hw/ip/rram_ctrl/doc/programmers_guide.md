@@ -190,7 +190,7 @@ On reset, each info page is disabled (`en = MuBi4False`).
 A page can only be accessed after software has explicitly programmed the page's `INFO_PAGE_CFG_*` register.
 Individual pages' configuration can be locked via [`INFO_REGWEN_*`](registers.md#info_regwen).
 
-Pages 5 (creator seed), 6 (owner seed), and 7 (isolated partition) additionally have a life-cycle-controlled signal ANDed with their `rd_en`/`wr_en`.
+Pages 1 (creator seed), 2 (owner seed), and 6 (isolated partition) additionally have a life-cycle-controlled signal ANDed with their `rd_en`/`wr_en`.
 Both `INFO_PAGE_CFG_*` and the life cycle signal must permit the access, so life cycle can only further restrict access, never grant it beyond what `INFO_PAGE_CFG_*` allows.
 See [Memory Protection for LCMGR Hardware Plug](theory_of_operation.md#memory-protection-for-lcmgr-hardware-plug) in the theory of operation for details.
 

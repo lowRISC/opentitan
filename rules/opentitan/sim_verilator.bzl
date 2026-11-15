@@ -15,6 +15,7 @@ load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
+    "rram_info_image",
     "rram_otp_image",
     "scramble_rram",
 )
@@ -153,6 +154,18 @@ def _test_dispatch(ctx, exec_env, firmware):
             data_files.append(rram_otp)
             param["otp"] = rram_otp.short_path
             action_param["otp"] = rram_otp.path
+        # --verilator-rram-info={rram_info} loads the INFO array image into
+        # chip_sim_tb.cc's `rram_info` MemArea.
+        rram_info = rram_info_image(ctx, exec_env, otp_attr)
+        if rram_info:
+            data_files.append(rram_info)
+            param["rram_info"] = rram_info.short_path
+            action_param["rram_info"] = rram_info.path
+
+    # Without an OTP image, there is no INFO array image either.
+    if "rram_info" not in param:
+        param["rram_info"] = ""
+        action_param["rram_info"] = ""
 
     # Perform all relevant substitutions on the test_cmd.
     test_cmd = get_fallback(ctx, "attr.test_cmd", exec_env)

@@ -77,6 +77,17 @@ OTP_WORDS_PER_RRAM_WORD = RRAM_WORD_SIZE // OTP_WORD_SIZE  # 8
 INTG_CHUNK_SIZE = 64  # bits covered by one integrity byte
 INTG_BYTES_PER_RRAM_WORD = RRAM_WORD_SIZE // 8  # 16
 
+# RRAM INFO array content for --out-info-vmem, see rram_ctrl_pkg.sv.
+RRAM_WORD_BYTES = RRAM_WORD_SIZE // 8
+# rram_ctrl_pkg::OtpRemapInfoPage holds the relocated OTP partition (rram_ctrl RemapStart and
+# RemapSize, which top_earlgrey sets to SECRET0).
+RRAM_OTP_REMAP_INFO_PAGE = 7
+RRAM_REMAP_PARTITION = "SECRET0"
+# The first 8/9 of the page hold the data, the last 1/9 the integrity bytes.
+# See RemapIntgInfoStartAddr in rram_ctrl_otp.sv.
+RRAM_REMAP_INTG_BYTE_OFFSET = ((RRAM_WORDS_PER_PAGE * RRAM_WORD_BYTES) //
+                               (INTG_CHUNK_SIZE // 8 + 1)) * (INTG_CHUNK_SIZE // 8)
+
 # ------------------------------------------------------------------------------
 # DO NOT EDIT: edit fixed parameters above instead.
 # ------------------------------------------------------------------------------
@@ -196,18 +207,11 @@ def _group_otp_field_labels(labels: List[str]) -> str:
         for partition, fields in fields_by_partition.items())
 
 
-def _gen_otp_rram_vmem_lines(otp_vmem_file: str,
-                             otp_data_perm: list) -> List[str]:
-    """Reads an OTP VMEM image (gen-otp-img.py's native 16b-word format, with the old
-    otp_macro-specific Hamming(22,16) ECC) and returns VMEM lines placing its content the way
-    rram_ctrl_otp.sv expects: 128b data rows plus a separate Hamming(72,64) integrity byte per
-    64b chunk in its own page.
+def _read_otp_native_words(otp_vmem_file: str, otp_data_perm: list):
+    """Reads an OTP VMEM image in gen-otp-img.py's native 16b-word format.
 
-    Every emitted row (data and integrity alike) additionally carries rram_macro.sv's own 16-bit
-    physical ECC (see _rram_ecc()), making each row a full 144-bit physical codeword instead of a
-    bare 128-bit logical word.
-    This matches the open-source rram_macro's own physical storage format, so this output can be
-    backdoor-loaded directly wherever that format is expected.
+    Returns two dicts keyed by native word address: the 16 data bits of each word (without the
+    old otp_macro-specific Hamming(22,16) ECC bits), and the "PARTITION: FIELD" label of each word.
     """
     # Open (native-format) OTP VMEM file and read into memory, skipping comment lines.
     try:
@@ -215,8 +219,6 @@ def _gen_otp_rram_vmem_lines(otp_vmem_file: str,
     except IOError:
         raise Exception(f"Unable to open {otp_vmem_file}")
 
-    # Read every native 16b OTP word into a dict keyed by its native word address, dropping the
-    # old otp_macro-specific Hamming(22,16) ECC bits. Also keep the field names.
     data_words = {}
     data_word_labels = {}
     for line in re.findall(r"^@.*$", otp_vmem, flags=re.MULTILINE):
@@ -232,7 +234,75 @@ def _gen_otp_rram_vmem_lines(otp_vmem_file: str,
         label_match = re.search(r"//\s*(.*\S)\s*$", line)
         if label_match:
             data_word_labels[word_addr] = label_match.group(1)
+    return data_words, data_word_labels
 
+
+def _gen_info_rram_vmem_lines(data_words: dict, data_word_labels: dict) -> List[str]:
+    """Returns VMEM lines for the RRAM INFO array, addressed by INFO word address
+    (page * RRAM_WORDS_PER_PAGE + word).
+
+    The image is sparse and only holds the OTP relocation page: the SECRET0 partition of the OTP
+    image.
+    Its data fills the page from the start, and the Hamming(72,64) integrity byte of each 64b
+    chunk follows at the integrity offset, like rram_ctrl_otp.sv and rram_ctrl_otp_bkdr_util.sv.
+
+    Every row carries rram_macro.sv's own physical ECC (see _rram_ecc()).
+    """
+    rows = {}
+    comments = {}
+
+    # SECRET0, found through the field labels of the native OTP image.
+    secret0_addrs = sorted(addr for addr, label in data_word_labels.items()
+                           if label.startswith(RRAM_REMAP_PARTITION + ":"))
+    if not secret0_addrs:
+        raise ValueError(f"The OTP image has no {RRAM_REMAP_PARTITION} partition labels.")
+    word_bytes = OTP_WORD_SIZE // 8
+    remap_start = secret0_addrs[0] * word_bytes
+    remap_size = len(secret0_addrs) * word_bytes
+    chunk_bytes = INTG_CHUNK_SIZE // 8
+    if (secret0_addrs[-1] - secret0_addrs[0] + 1 != len(secret0_addrs) or
+            remap_start % chunk_bytes or remap_size % chunk_bytes):
+        raise ValueError(f"{RRAM_REMAP_PARTITION} must be contiguous and 64-bit aligned.")
+    if remap_size > RRAM_REMAP_INTG_BYTE_OFFSET:
+        raise ValueError(f"{RRAM_REMAP_PARTITION} does not fit into the relocation page.")
+
+    page_byte_base = RRAM_OTP_REMAP_INFO_PAGE * RRAM_WORDS_PER_PAGE * RRAM_WORD_BYTES
+    for rel in range(0, remap_size, chunk_bytes):
+        chunk = 0
+        for k in range(chunk_bytes // word_bytes):
+            native_addr = (remap_start + rel) // word_bytes + k
+            chunk |= data_words.get(native_addr, 0) << (k * OTP_WORD_SIZE)
+        codeword, _ = secded_gen.ecc_encode("hamming", INTG_CHUNK_SIZE, chunk, cache=False)
+        intg = (codeword >> INTG_CHUNK_SIZE) & 0xFF
+        for byte_addr, val, size in ((page_byte_base + rel, chunk, chunk_bytes),
+                                     (page_byte_base + RRAM_REMAP_INTG_BYTE_OFFSET +
+                                      rel // chunk_bytes, intg, 1)):
+            row = byte_addr // RRAM_WORD_BYTES
+            shift = (byte_addr % RRAM_WORD_BYTES) * 8
+            rows[row] = rows.get(row, 0) | (val << shift)
+            comments[row] = (f"{RRAM_REMAP_PARTITION}" if size == chunk_bytes else
+                             f"{RRAM_REMAP_PARTITION} integrity")
+
+    fmt = _vmem_format_str(RRAM_WORD_SIZE + RRAM_PHYS_ECC_SIZE)
+    lines = []
+    for addr, val in sorted(rows.items()):
+        val |= _rram_ecc(val) << RRAM_WORD_SIZE
+        lines.append(f"@{addr:06x}" + str.format(fmt, val) + f"  // {comments[addr]}")
+    return lines
+
+
+def _gen_otp_rram_vmem_lines(data_words: dict, data_word_labels: dict) -> List[str]:
+    """Reads an OTP VMEM image (gen-otp-img.py's native 16b-word format, with the old
+    otp_macro-specific Hamming(22,16) ECC) and returns VMEM lines placing its content the way
+    rram_ctrl_otp.sv expects: 128b data rows plus a separate Hamming(72,64) integrity byte per
+    64b chunk in its own page.
+
+    Every emitted row (data and integrity alike) additionally carries rram_macro.sv's own 16-bit
+    physical ECC (see _rram_ecc()), making each row a full 144-bit physical codeword instead of a
+    bare 128-bit logical word.
+    This matches the open-source rram_macro's own physical storage format, so this output can be
+    backdoor-loaded directly wherever that format is expected.
+    """
     # One RRAM row holds OTP_WORDS_PER_RRAM_WORD native OTP words.
     num_rows = (max(data_words, default=-1) + OTP_WORDS_PER_RRAM_WORD) // OTP_WORDS_PER_RRAM_WORD
 
@@ -420,6 +490,13 @@ def main(argv: List[str]):
                         image a given test actually selects at runtime - it is only meant to
                         supply scrambling-key seeds for the firmware image.
                         """)
+    parser.add_argument("--out-info-vmem",
+                        type=str,
+                        help="""
+                        Optional output VMEM file for the RRAM INFO array, addressed by INFO word
+                        address. Requires --in-otp-vmem. It places the relocated SECRET0 partition
+                        of the OTP image in its INFO page, where rram_ctrl_otp.sv reads it.
+                        """)
     parser.add_argument("--slot",
                         type=str,
                         choices=["a", "b"],
@@ -488,13 +565,26 @@ def main(argv: List[str]):
         with open(args.out_rram_vmem, "wb", buffering=2097152) as of:
             of.write(("\n".join(reformatted_vmem_lines) + "\n").encode('utf-8'))
 
+    # Parse the native OTP image once, for --out-otp-vmem and --out-info-vmem.
+    if args.in_otp_vmem and (args.out_otp_vmem or args.out_info_vmem):
+        data_words, data_word_labels = _read_otp_native_words(args.in_otp_vmem,
+                                                              args.otp_data_perm)
+
     # Separately, generate OTP's own image (data + integrity page) if requested.
     if args.out_otp_vmem:
         if not args.in_otp_vmem:
             raise ValueError("--out-otp-vmem requires --in-otp-vmem.")
-        otp_vmem_lines = _gen_otp_rram_vmem_lines(args.in_otp_vmem, args.otp_data_perm)
+        otp_vmem_lines = _gen_otp_rram_vmem_lines(data_words, data_word_labels)
         with open(args.out_otp_vmem, "wb", buffering=2097152) as of:
             of.write(("\n".join(otp_vmem_lines) + "\n").encode('utf-8'))
+
+    # Separately, generate the INFO array image (relocated SECRET0) if requested.
+    if args.out_info_vmem:
+        if not args.in_otp_vmem:
+            raise ValueError("--out-info-vmem requires --in-otp-vmem.")
+        info_vmem_lines = _gen_info_rram_vmem_lines(data_words, data_word_labels)
+        with open(args.out_info_vmem, "w") as of:
+            of.write("\n".join(info_vmem_lines) + "\n")
 
 
 if __name__ == "__main__":

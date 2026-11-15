@@ -674,6 +674,9 @@ module tb;
           .n_bits($bits(`RRAM_DATA_MEM_HIER)),
           .err_detection_scheme(mem_bkdr_util_pkg::ErrDetectionNone),
           .system_base_addr(top_earlgrey_pkg::TOP_EARLGREY_RRAM_CTRL_HOST_BASE_ADDR));
+      // SECRET0 is relocated onto an INFO page, see rram_ctrl's RemapStart and RemapSize.
+      otp.set_remap(`DV_STRINGIFY(`RRAM_INFO_MEM_HIER), otp_ctrl_reg_pkg::Secret0Offset,
+                    otp_ctrl_reg_pkg::Secret0Size);
       m_mem_bkdr_util[Otp] = otp;
       `MEM_BKDR_UTIL_FILE_OP(m_mem_bkdr_util[Otp], `RRAM_DATA_MEM_HIER)
 

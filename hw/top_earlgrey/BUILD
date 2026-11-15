@@ -379,6 +379,7 @@ sim_verilator(
         "--verilator-bin=$(rootpath //hw:verilator)",
         "--verilator-rom={rom}",
         "--verilator-otp={otp}",
+        "--verilator-rram-info={rram_info}",
         "--verilator-nvm={firmware}",
     ],
     base = ":sim_verilator_base",

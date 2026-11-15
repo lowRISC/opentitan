@@ -57,9 +57,9 @@ module rram_ctrl_core_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [172:0] reg_we_check;
+  logic [170:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(173)
+    .OneHotWidth(171)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -130,8 +130,8 @@ module rram_ctrl_core_reg_top (
   // Create steering logic
   always_comb begin
     reg_steer =
-        tl_i.a_address[AW-1:0] inside {[692:695]} ? 2'd0 :
-        tl_i.a_address[AW-1:0] inside {[696:699]} ? 2'd1 :
+        tl_i.a_address[AW-1:0] inside {[684:687]} ? 2'd0 :
+        tl_i.a_address[AW-1:0] inside {[688:691]} ? 2'd1 :
         // Default set to register
         2'd2;
 
@@ -460,9 +460,6 @@ module rram_ctrl_core_reg_top (
   logic info_regwen_6_we;
   logic info_regwen_6_qs;
   logic info_regwen_6_wd;
-  logic info_regwen_7_we;
-  logic info_regwen_7_qs;
-  logic info_regwen_7_wd;
   logic info_page_cfg_0_we;
   logic [3:0] info_page_cfg_0_en_0_qs;
   logic [3:0] info_page_cfg_0_en_0_wd;
@@ -540,17 +537,6 @@ module rram_ctrl_core_reg_top (
   logic [3:0] info_page_cfg_6_scramble_en_6_wd;
   logic [3:0] info_page_cfg_6_ecc_en_6_qs;
   logic [3:0] info_page_cfg_6_ecc_en_6_wd;
-  logic info_page_cfg_7_we;
-  logic [3:0] info_page_cfg_7_en_7_qs;
-  logic [3:0] info_page_cfg_7_en_7_wd;
-  logic [3:0] info_page_cfg_7_rd_en_7_qs;
-  logic [3:0] info_page_cfg_7_rd_en_7_wd;
-  logic [3:0] info_page_cfg_7_wr_en_7_qs;
-  logic [3:0] info_page_cfg_7_wr_en_7_wd;
-  logic [3:0] info_page_cfg_7_scramble_en_7_qs;
-  logic [3:0] info_page_cfg_7_scramble_en_7_wd;
-  logic [3:0] info_page_cfg_7_ecc_en_7_qs;
-  logic [3:0] info_page_cfg_7_ecc_en_7_wd;
   logic emul_info_regwen_0_we;
   logic emul_info_regwen_0_qs;
   logic emul_info_regwen_0_wd;
@@ -4700,36 +4686,6 @@ module rram_ctrl_core_reg_top (
   );
 
 
-  // Subregister 7 of Multireg info_regwen
-  // R[info_regwen_7]: V(False)
-  prim_subreg #(
-    .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW0C),
-    .RESVAL  (1'h1),
-    .Mubi    (1'b0)
-  ) u_info_regwen_7 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
-    .we     (info_regwen_7_we),
-    .wd     (info_regwen_7_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (info_regwen_7_qs)
-  );
-
-
   // Subregister 0 of Multireg info_page_cfg
   // R[info_page_cfg_0]: V(False)
   // Create REGWEN-gated WE signal
@@ -5749,152 +5705,6 @@ module rram_ctrl_core_reg_top (
 
     // to register interface (read)
     .qs     (info_page_cfg_6_ecc_en_6_qs)
-  );
-
-
-  // Subregister 7 of Multireg info_page_cfg
-  // R[info_page_cfg_7]: V(False)
-  // Create REGWEN-gated WE signal
-  logic info_page_cfg_7_gated_we;
-  assign info_page_cfg_7_gated_we = info_page_cfg_7_we & info_regwen_7_qs;
-  //   F[en_7]: 3:0
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
-    .Mubi    (1'b1)
-  ) u_info_page_cfg_7_en_7 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
-    .we     (info_page_cfg_7_gated_we),
-    .wd     (info_page_cfg_7_en_7_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.info_page_cfg[7].en.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (info_page_cfg_7_en_7_qs)
-  );
-
-  //   F[rd_en_7]: 7:4
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
-    .Mubi    (1'b1)
-  ) u_info_page_cfg_7_rd_en_7 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
-    .we     (info_page_cfg_7_gated_we),
-    .wd     (info_page_cfg_7_rd_en_7_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.info_page_cfg[7].rd_en.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (info_page_cfg_7_rd_en_7_qs)
-  );
-
-  //   F[wr_en_7]: 11:8
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
-    .Mubi    (1'b1)
-  ) u_info_page_cfg_7_wr_en_7 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
-    .we     (info_page_cfg_7_gated_we),
-    .wd     (info_page_cfg_7_wr_en_7_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.info_page_cfg[7].wr_en.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (info_page_cfg_7_wr_en_7_qs)
-  );
-
-  //   F[scramble_en_7]: 15:12
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
-    .Mubi    (1'b1)
-  ) u_info_page_cfg_7_scramble_en_7 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
-    .we     (info_page_cfg_7_gated_we),
-    .wd     (info_page_cfg_7_scramble_en_7_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.info_page_cfg[7].scramble_en.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (info_page_cfg_7_scramble_en_7_qs)
-  );
-
-  //   F[ecc_en_7]: 19:16
-  prim_subreg #(
-    .DW      (4),
-    .SwAccess(prim_subreg_pkg::SwAccessRW),
-    .RESVAL  (4'h9),
-    .Mubi    (1'b1)
-  ) u_info_page_cfg_7_ecc_en_7 (
-    .clk_i   (clk_i),
-    .rst_ni  (rst_ni),
-    .reinit_i(1'b0),
-
-    // from register interface
-    .we     (info_page_cfg_7_gated_we),
-    .wd     (info_page_cfg_7_ecc_en_7_wd),
-
-    // from internal hardware
-    .de     (1'b0),
-    .d      ('0),
-
-    // to internal hardware
-    .qe     (),
-    .q      (reg2hw.info_page_cfg[7].ecc_en.q),
-    .ds     (),
-
-    // to register interface (read)
-    .qs     (info_page_cfg_7_ecc_en_7_qs)
   );
 
 
@@ -12828,7 +12638,7 @@ module rram_ctrl_core_reg_top (
 
 
 
-  logic [172:0] addr_hit;
+  logic [170:0] addr_hit;
   always_comb begin
     addr_hit[  0] = (reg_addr == RRAM_CTRL_INTR_STATE_OFFSET);
     addr_hit[  1] = (reg_addr == RRAM_CTRL_INTR_ENABLE_OFFSET);
@@ -12878,131 +12688,129 @@ module rram_ctrl_core_reg_top (
     addr_hit[ 45] = (reg_addr == RRAM_CTRL_INFO_REGWEN_4_OFFSET);
     addr_hit[ 46] = (reg_addr == RRAM_CTRL_INFO_REGWEN_5_OFFSET);
     addr_hit[ 47] = (reg_addr == RRAM_CTRL_INFO_REGWEN_6_OFFSET);
-    addr_hit[ 48] = (reg_addr == RRAM_CTRL_INFO_REGWEN_7_OFFSET);
-    addr_hit[ 49] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_0_OFFSET);
-    addr_hit[ 50] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_1_OFFSET);
-    addr_hit[ 51] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_2_OFFSET);
-    addr_hit[ 52] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_3_OFFSET);
-    addr_hit[ 53] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_4_OFFSET);
-    addr_hit[ 54] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_5_OFFSET);
-    addr_hit[ 55] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_6_OFFSET);
-    addr_hit[ 56] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_7_OFFSET);
-    addr_hit[ 57] = (reg_addr == RRAM_CTRL_EMUL_INFO_REGWEN_0_OFFSET);
-    addr_hit[ 58] = (reg_addr == RRAM_CTRL_EMUL_INFO_REGWEN_1_OFFSET);
-    addr_hit[ 59] = (reg_addr == RRAM_CTRL_EMUL_INFO_REGION_0_OFFSET);
-    addr_hit[ 60] = (reg_addr == RRAM_CTRL_EMUL_INFO_REGION_1_OFFSET);
-    addr_hit[ 61] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_0_OFFSET);
-    addr_hit[ 62] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_1_OFFSET);
-    addr_hit[ 63] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_2_OFFSET);
-    addr_hit[ 64] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_3_OFFSET);
-    addr_hit[ 65] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_4_OFFSET);
-    addr_hit[ 66] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_5_OFFSET);
-    addr_hit[ 67] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_6_OFFSET);
-    addr_hit[ 68] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_7_OFFSET);
-    addr_hit[ 69] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_8_OFFSET);
-    addr_hit[ 70] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_9_OFFSET);
-    addr_hit[ 71] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_10_OFFSET);
-    addr_hit[ 72] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_11_OFFSET);
-    addr_hit[ 73] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_12_OFFSET);
-    addr_hit[ 74] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_13_OFFSET);
-    addr_hit[ 75] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_14_OFFSET);
-    addr_hit[ 76] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_15_OFFSET);
-    addr_hit[ 77] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_16_OFFSET);
-    addr_hit[ 78] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_17_OFFSET);
-    addr_hit[ 79] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_18_OFFSET);
-    addr_hit[ 80] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_19_OFFSET);
-    addr_hit[ 81] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_20_OFFSET);
-    addr_hit[ 82] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_21_OFFSET);
-    addr_hit[ 83] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_22_OFFSET);
-    addr_hit[ 84] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_23_OFFSET);
-    addr_hit[ 85] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_0_OFFSET);
-    addr_hit[ 86] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_1_OFFSET);
-    addr_hit[ 87] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_2_OFFSET);
-    addr_hit[ 88] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_3_OFFSET);
-    addr_hit[ 89] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_4_OFFSET);
-    addr_hit[ 90] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_5_OFFSET);
-    addr_hit[ 91] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_6_OFFSET);
-    addr_hit[ 92] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_7_OFFSET);
-    addr_hit[ 93] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_8_OFFSET);
-    addr_hit[ 94] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_9_OFFSET);
-    addr_hit[ 95] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_10_OFFSET);
-    addr_hit[ 96] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_11_OFFSET);
-    addr_hit[ 97] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_12_OFFSET);
-    addr_hit[ 98] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_13_OFFSET);
-    addr_hit[ 99] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_14_OFFSET);
-    addr_hit[100] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_15_OFFSET);
-    addr_hit[101] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_16_OFFSET);
-    addr_hit[102] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_17_OFFSET);
-    addr_hit[103] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_18_OFFSET);
-    addr_hit[104] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_19_OFFSET);
-    addr_hit[105] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_20_OFFSET);
-    addr_hit[106] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_21_OFFSET);
-    addr_hit[107] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_22_OFFSET);
-    addr_hit[108] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_23_OFFSET);
-    addr_hit[109] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_0_OFFSET);
-    addr_hit[110] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_1_OFFSET);
-    addr_hit[111] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_2_OFFSET);
-    addr_hit[112] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_3_OFFSET);
-    addr_hit[113] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_4_OFFSET);
-    addr_hit[114] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_5_OFFSET);
-    addr_hit[115] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_6_OFFSET);
-    addr_hit[116] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_7_OFFSET);
-    addr_hit[117] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_8_OFFSET);
-    addr_hit[118] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_9_OFFSET);
-    addr_hit[119] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_10_OFFSET);
-    addr_hit[120] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_11_OFFSET);
-    addr_hit[121] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_12_OFFSET);
-    addr_hit[122] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_13_OFFSET);
-    addr_hit[123] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_14_OFFSET);
-    addr_hit[124] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_15_OFFSET);
-    addr_hit[125] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_16_OFFSET);
-    addr_hit[126] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_17_OFFSET);
-    addr_hit[127] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_18_OFFSET);
-    addr_hit[128] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_19_OFFSET);
-    addr_hit[129] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_20_OFFSET);
-    addr_hit[130] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_21_OFFSET);
-    addr_hit[131] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_22_OFFSET);
-    addr_hit[132] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_23_OFFSET);
-    addr_hit[133] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_0_OFFSET);
-    addr_hit[134] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_1_OFFSET);
-    addr_hit[135] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_2_OFFSET);
-    addr_hit[136] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_3_OFFSET);
-    addr_hit[137] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_4_OFFSET);
-    addr_hit[138] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_5_OFFSET);
-    addr_hit[139] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_6_OFFSET);
-    addr_hit[140] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_7_OFFSET);
-    addr_hit[141] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_8_OFFSET);
-    addr_hit[142] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_9_OFFSET);
-    addr_hit[143] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_10_OFFSET);
-    addr_hit[144] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_11_OFFSET);
-    addr_hit[145] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_12_OFFSET);
-    addr_hit[146] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_13_OFFSET);
-    addr_hit[147] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_14_OFFSET);
-    addr_hit[148] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_15_OFFSET);
-    addr_hit[149] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_16_OFFSET);
-    addr_hit[150] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_17_OFFSET);
-    addr_hit[151] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_18_OFFSET);
-    addr_hit[152] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_19_OFFSET);
-    addr_hit[153] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_20_OFFSET);
-    addr_hit[154] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_21_OFFSET);
-    addr_hit[155] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_22_OFFSET);
-    addr_hit[156] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_23_OFFSET);
-    addr_hit[157] = (reg_addr == RRAM_CTRL_HW_INFO_CFG_OVERRIDE_OFFSET);
-    addr_hit[158] = (reg_addr == RRAM_CTRL_OP_STATUS_OFFSET);
-    addr_hit[159] = (reg_addr == RRAM_CTRL_STATUS_OFFSET);
-    addr_hit[160] = (reg_addr == RRAM_CTRL_ERR_CODE_OFFSET);
-    addr_hit[161] = (reg_addr == RRAM_CTRL_STD_FAULT_STATUS_OFFSET);
-    addr_hit[162] = (reg_addr == RRAM_CTRL_FAULT_STATUS_OFFSET);
-    addr_hit[163] = (reg_addr == RRAM_CTRL_ERR_ADDR_OFFSET);
-    addr_hit[164] = (reg_addr == RRAM_CTRL_CORR1_ERR_CNT_OFFSET);
-    addr_hit[165] = (reg_addr == RRAM_CTRL_CORR2_ERR_CNT_OFFSET);
-    addr_hit[166] = (reg_addr == RRAM_CTRL_CORR1_ERR_LOC_OFFSET);
-    addr_hit[167] = (reg_addr == RRAM_CTRL_CORR2_ERR_LOC_OFFSET);
-    addr_hit[168] = (reg_addr == RRAM_CTRL_PHY_STATUS_OFFSET);
-    addr_hit[169] = (reg_addr == RRAM_CTRL_SCRATCH_OFFSET);
-    addr_hit[170] = (reg_addr == RRAM_CTRL_FIFO_LVL_OFFSET);
-    addr_hit[171] = (reg_addr == RRAM_CTRL_FIFO_CLR_OFFSET);
-    addr_hit[172] = (reg_addr == RRAM_CTRL_CURR_FIFO_LVL_OFFSET);
+    addr_hit[ 48] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_0_OFFSET);
+    addr_hit[ 49] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_1_OFFSET);
+    addr_hit[ 50] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_2_OFFSET);
+    addr_hit[ 51] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_3_OFFSET);
+    addr_hit[ 52] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_4_OFFSET);
+    addr_hit[ 53] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_5_OFFSET);
+    addr_hit[ 54] = (reg_addr == RRAM_CTRL_INFO_PAGE_CFG_6_OFFSET);
+    addr_hit[ 55] = (reg_addr == RRAM_CTRL_EMUL_INFO_REGWEN_0_OFFSET);
+    addr_hit[ 56] = (reg_addr == RRAM_CTRL_EMUL_INFO_REGWEN_1_OFFSET);
+    addr_hit[ 57] = (reg_addr == RRAM_CTRL_EMUL_INFO_REGION_0_OFFSET);
+    addr_hit[ 58] = (reg_addr == RRAM_CTRL_EMUL_INFO_REGION_1_OFFSET);
+    addr_hit[ 59] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_0_OFFSET);
+    addr_hit[ 60] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_1_OFFSET);
+    addr_hit[ 61] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_2_OFFSET);
+    addr_hit[ 62] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_3_OFFSET);
+    addr_hit[ 63] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_4_OFFSET);
+    addr_hit[ 64] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_5_OFFSET);
+    addr_hit[ 65] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_6_OFFSET);
+    addr_hit[ 66] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_7_OFFSET);
+    addr_hit[ 67] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_8_OFFSET);
+    addr_hit[ 68] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_9_OFFSET);
+    addr_hit[ 69] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_10_OFFSET);
+    addr_hit[ 70] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_11_OFFSET);
+    addr_hit[ 71] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_12_OFFSET);
+    addr_hit[ 72] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_13_OFFSET);
+    addr_hit[ 73] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_14_OFFSET);
+    addr_hit[ 74] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_15_OFFSET);
+    addr_hit[ 75] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_16_OFFSET);
+    addr_hit[ 76] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_17_OFFSET);
+    addr_hit[ 77] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_18_OFFSET);
+    addr_hit[ 78] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_19_OFFSET);
+    addr_hit[ 79] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_20_OFFSET);
+    addr_hit[ 80] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_21_OFFSET);
+    addr_hit[ 81] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_22_OFFSET);
+    addr_hit[ 82] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_REGWEN_23_OFFSET);
+    addr_hit[ 83] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_0_OFFSET);
+    addr_hit[ 84] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_1_OFFSET);
+    addr_hit[ 85] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_2_OFFSET);
+    addr_hit[ 86] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_3_OFFSET);
+    addr_hit[ 87] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_4_OFFSET);
+    addr_hit[ 88] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_5_OFFSET);
+    addr_hit[ 89] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_6_OFFSET);
+    addr_hit[ 90] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_7_OFFSET);
+    addr_hit[ 91] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_8_OFFSET);
+    addr_hit[ 92] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_9_OFFSET);
+    addr_hit[ 93] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_10_OFFSET);
+    addr_hit[ 94] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_11_OFFSET);
+    addr_hit[ 95] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_12_OFFSET);
+    addr_hit[ 96] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_13_OFFSET);
+    addr_hit[ 97] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_14_OFFSET);
+    addr_hit[ 98] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_15_OFFSET);
+    addr_hit[ 99] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_16_OFFSET);
+    addr_hit[100] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_17_OFFSET);
+    addr_hit[101] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_18_OFFSET);
+    addr_hit[102] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_19_OFFSET);
+    addr_hit[103] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_20_OFFSET);
+    addr_hit[104] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_21_OFFSET);
+    addr_hit[105] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_22_OFFSET);
+    addr_hit[106] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_23_OFFSET);
+    addr_hit[107] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_0_OFFSET);
+    addr_hit[108] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_1_OFFSET);
+    addr_hit[109] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_2_OFFSET);
+    addr_hit[110] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_3_OFFSET);
+    addr_hit[111] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_4_OFFSET);
+    addr_hit[112] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_5_OFFSET);
+    addr_hit[113] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_6_OFFSET);
+    addr_hit[114] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_7_OFFSET);
+    addr_hit[115] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_8_OFFSET);
+    addr_hit[116] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_9_OFFSET);
+    addr_hit[117] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_10_OFFSET);
+    addr_hit[118] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_11_OFFSET);
+    addr_hit[119] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_12_OFFSET);
+    addr_hit[120] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_13_OFFSET);
+    addr_hit[121] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_14_OFFSET);
+    addr_hit[122] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_15_OFFSET);
+    addr_hit[123] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_16_OFFSET);
+    addr_hit[124] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_17_OFFSET);
+    addr_hit[125] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_18_OFFSET);
+    addr_hit[126] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_19_OFFSET);
+    addr_hit[127] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_20_OFFSET);
+    addr_hit[128] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_21_OFFSET);
+    addr_hit[129] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_22_OFFSET);
+    addr_hit[130] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_REGWEN_23_OFFSET);
+    addr_hit[131] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_0_OFFSET);
+    addr_hit[132] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_1_OFFSET);
+    addr_hit[133] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_2_OFFSET);
+    addr_hit[134] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_3_OFFSET);
+    addr_hit[135] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_4_OFFSET);
+    addr_hit[136] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_5_OFFSET);
+    addr_hit[137] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_6_OFFSET);
+    addr_hit[138] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_7_OFFSET);
+    addr_hit[139] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_8_OFFSET);
+    addr_hit[140] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_9_OFFSET);
+    addr_hit[141] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_10_OFFSET);
+    addr_hit[142] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_11_OFFSET);
+    addr_hit[143] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_12_OFFSET);
+    addr_hit[144] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_13_OFFSET);
+    addr_hit[145] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_14_OFFSET);
+    addr_hit[146] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_15_OFFSET);
+    addr_hit[147] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_16_OFFSET);
+    addr_hit[148] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_17_OFFSET);
+    addr_hit[149] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_18_OFFSET);
+    addr_hit[150] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_19_OFFSET);
+    addr_hit[151] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_20_OFFSET);
+    addr_hit[152] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_21_OFFSET);
+    addr_hit[153] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_22_OFFSET);
+    addr_hit[154] = (reg_addr == RRAM_CTRL_EMUL_INFO_SUBREGION_CFG_23_OFFSET);
+    addr_hit[155] = (reg_addr == RRAM_CTRL_HW_INFO_CFG_OVERRIDE_OFFSET);
+    addr_hit[156] = (reg_addr == RRAM_CTRL_OP_STATUS_OFFSET);
+    addr_hit[157] = (reg_addr == RRAM_CTRL_STATUS_OFFSET);
+    addr_hit[158] = (reg_addr == RRAM_CTRL_ERR_CODE_OFFSET);
+    addr_hit[159] = (reg_addr == RRAM_CTRL_STD_FAULT_STATUS_OFFSET);
+    addr_hit[160] = (reg_addr == RRAM_CTRL_FAULT_STATUS_OFFSET);
+    addr_hit[161] = (reg_addr == RRAM_CTRL_ERR_ADDR_OFFSET);
+    addr_hit[162] = (reg_addr == RRAM_CTRL_CORR1_ERR_CNT_OFFSET);
+    addr_hit[163] = (reg_addr == RRAM_CTRL_CORR2_ERR_CNT_OFFSET);
+    addr_hit[164] = (reg_addr == RRAM_CTRL_CORR1_ERR_LOC_OFFSET);
+    addr_hit[165] = (reg_addr == RRAM_CTRL_CORR2_ERR_LOC_OFFSET);
+    addr_hit[166] = (reg_addr == RRAM_CTRL_PHY_STATUS_OFFSET);
+    addr_hit[167] = (reg_addr == RRAM_CTRL_SCRATCH_OFFSET);
+    addr_hit[168] = (reg_addr == RRAM_CTRL_FIFO_LVL_OFFSET);
+    addr_hit[169] = (reg_addr == RRAM_CTRL_FIFO_CLR_OFFSET);
+    addr_hit[170] = (reg_addr == RRAM_CTRL_CURR_FIFO_LVL_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -13180,9 +12988,7 @@ module rram_ctrl_core_reg_top (
                (addr_hit[167] & (|(RRAM_CTRL_CORE_PERMIT[167] & ~reg_be))) |
                (addr_hit[168] & (|(RRAM_CTRL_CORE_PERMIT[168] & ~reg_be))) |
                (addr_hit[169] & (|(RRAM_CTRL_CORE_PERMIT[169] & ~reg_be))) |
-               (addr_hit[170] & (|(RRAM_CTRL_CORE_PERMIT[170] & ~reg_be))) |
-               (addr_hit[171] & (|(RRAM_CTRL_CORE_PERMIT[171] & ~reg_be))) |
-               (addr_hit[172] & (|(RRAM_CTRL_CORE_PERMIT[172] & ~reg_be)))));
+               (addr_hit[170] & (|(RRAM_CTRL_CORE_PERMIT[170] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -13480,10 +13286,7 @@ module rram_ctrl_core_reg_top (
   assign info_regwen_6_we = addr_hit[47] & reg_we & !reg_error;
 
   assign info_regwen_6_wd = reg_wdata[0];
-  assign info_regwen_7_we = addr_hit[48] & reg_we & !reg_error;
-
-  assign info_regwen_7_wd = reg_wdata[0];
-  assign info_page_cfg_0_we = addr_hit[49] & reg_we & !reg_error;
+  assign info_page_cfg_0_we = addr_hit[48] & reg_we & !reg_error;
 
   assign info_page_cfg_0_en_0_wd = reg_wdata[3:0];
 
@@ -13494,7 +13297,7 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_0_scramble_en_0_wd = reg_wdata[15:12];
 
   assign info_page_cfg_0_ecc_en_0_wd = reg_wdata[19:16];
-  assign info_page_cfg_1_we = addr_hit[50] & reg_we & !reg_error;
+  assign info_page_cfg_1_we = addr_hit[49] & reg_we & !reg_error;
 
   assign info_page_cfg_1_en_1_wd = reg_wdata[3:0];
 
@@ -13505,7 +13308,7 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_1_scramble_en_1_wd = reg_wdata[15:12];
 
   assign info_page_cfg_1_ecc_en_1_wd = reg_wdata[19:16];
-  assign info_page_cfg_2_we = addr_hit[51] & reg_we & !reg_error;
+  assign info_page_cfg_2_we = addr_hit[50] & reg_we & !reg_error;
 
   assign info_page_cfg_2_en_2_wd = reg_wdata[3:0];
 
@@ -13516,7 +13319,7 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_2_scramble_en_2_wd = reg_wdata[15:12];
 
   assign info_page_cfg_2_ecc_en_2_wd = reg_wdata[19:16];
-  assign info_page_cfg_3_we = addr_hit[52] & reg_we & !reg_error;
+  assign info_page_cfg_3_we = addr_hit[51] & reg_we & !reg_error;
 
   assign info_page_cfg_3_en_3_wd = reg_wdata[3:0];
 
@@ -13527,7 +13330,7 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_3_scramble_en_3_wd = reg_wdata[15:12];
 
   assign info_page_cfg_3_ecc_en_3_wd = reg_wdata[19:16];
-  assign info_page_cfg_4_we = addr_hit[53] & reg_we & !reg_error;
+  assign info_page_cfg_4_we = addr_hit[52] & reg_we & !reg_error;
 
   assign info_page_cfg_4_en_4_wd = reg_wdata[3:0];
 
@@ -13538,7 +13341,7 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_4_scramble_en_4_wd = reg_wdata[15:12];
 
   assign info_page_cfg_4_ecc_en_4_wd = reg_wdata[19:16];
-  assign info_page_cfg_5_we = addr_hit[54] & reg_we & !reg_error;
+  assign info_page_cfg_5_we = addr_hit[53] & reg_we & !reg_error;
 
   assign info_page_cfg_5_en_5_wd = reg_wdata[3:0];
 
@@ -13549,7 +13352,7 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_5_scramble_en_5_wd = reg_wdata[15:12];
 
   assign info_page_cfg_5_ecc_en_5_wd = reg_wdata[19:16];
-  assign info_page_cfg_6_we = addr_hit[55] & reg_we & !reg_error;
+  assign info_page_cfg_6_we = addr_hit[54] & reg_we & !reg_error;
 
   assign info_page_cfg_6_en_6_wd = reg_wdata[3:0];
 
@@ -13560,254 +13363,243 @@ module rram_ctrl_core_reg_top (
   assign info_page_cfg_6_scramble_en_6_wd = reg_wdata[15:12];
 
   assign info_page_cfg_6_ecc_en_6_wd = reg_wdata[19:16];
-  assign info_page_cfg_7_we = addr_hit[56] & reg_we & !reg_error;
-
-  assign info_page_cfg_7_en_7_wd = reg_wdata[3:0];
-
-  assign info_page_cfg_7_rd_en_7_wd = reg_wdata[7:4];
-
-  assign info_page_cfg_7_wr_en_7_wd = reg_wdata[11:8];
-
-  assign info_page_cfg_7_scramble_en_7_wd = reg_wdata[15:12];
-
-  assign info_page_cfg_7_ecc_en_7_wd = reg_wdata[19:16];
-  assign emul_info_regwen_0_we = addr_hit[57] & reg_we & !reg_error;
+  assign emul_info_regwen_0_we = addr_hit[55] & reg_we & !reg_error;
 
   assign emul_info_regwen_0_wd = reg_wdata[0];
-  assign emul_info_regwen_1_we = addr_hit[58] & reg_we & !reg_error;
+  assign emul_info_regwen_1_we = addr_hit[56] & reg_we & !reg_error;
 
   assign emul_info_regwen_1_wd = reg_wdata[0];
-  assign emul_info_region_0_we = addr_hit[59] & reg_we & !reg_error;
+  assign emul_info_region_0_we = addr_hit[57] & reg_we & !reg_error;
 
   assign emul_info_region_0_base_0_wd = reg_wdata[11:0];
 
   assign emul_info_region_0_size_0_wd = reg_wdata[23:12];
 
   assign emul_info_region_0_en_0_wd = reg_wdata[27:24];
-  assign emul_info_region_1_we = addr_hit[60] & reg_we & !reg_error;
+  assign emul_info_region_1_we = addr_hit[58] & reg_we & !reg_error;
 
   assign emul_info_region_1_base_1_wd = reg_wdata[11:0];
 
   assign emul_info_region_1_size_1_wd = reg_wdata[23:12];
 
   assign emul_info_region_1_en_1_wd = reg_wdata[27:24];
-  assign emul_info_subregion_regwen_0_we = addr_hit[61] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_0_we = addr_hit[59] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_0_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_1_we = addr_hit[62] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_1_we = addr_hit[60] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_1_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_2_we = addr_hit[63] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_2_we = addr_hit[61] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_2_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_3_we = addr_hit[64] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_3_we = addr_hit[62] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_3_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_4_we = addr_hit[65] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_4_we = addr_hit[63] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_4_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_5_we = addr_hit[66] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_5_we = addr_hit[64] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_5_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_6_we = addr_hit[67] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_6_we = addr_hit[65] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_6_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_7_we = addr_hit[68] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_7_we = addr_hit[66] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_7_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_8_we = addr_hit[69] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_8_we = addr_hit[67] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_8_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_9_we = addr_hit[70] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_9_we = addr_hit[68] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_9_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_10_we = addr_hit[71] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_10_we = addr_hit[69] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_10_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_11_we = addr_hit[72] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_11_we = addr_hit[70] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_11_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_12_we = addr_hit[73] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_12_we = addr_hit[71] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_12_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_13_we = addr_hit[74] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_13_we = addr_hit[72] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_13_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_14_we = addr_hit[75] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_14_we = addr_hit[73] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_14_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_15_we = addr_hit[76] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_15_we = addr_hit[74] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_15_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_16_we = addr_hit[77] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_16_we = addr_hit[75] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_16_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_17_we = addr_hit[78] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_17_we = addr_hit[76] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_17_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_18_we = addr_hit[79] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_18_we = addr_hit[77] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_18_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_19_we = addr_hit[80] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_19_we = addr_hit[78] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_19_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_20_we = addr_hit[81] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_20_we = addr_hit[79] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_20_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_21_we = addr_hit[82] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_21_we = addr_hit[80] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_21_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_22_we = addr_hit[83] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_22_we = addr_hit[81] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_22_wd = reg_wdata[0];
-  assign emul_info_subregion_regwen_23_we = addr_hit[84] & reg_we & !reg_error;
+  assign emul_info_subregion_regwen_23_we = addr_hit[82] & reg_we & !reg_error;
 
   assign emul_info_subregion_regwen_23_wd = reg_wdata[0];
-  assign emul_info_subregion_0_we = addr_hit[85] & reg_we & !reg_error;
+  assign emul_info_subregion_0_we = addr_hit[83] & reg_we & !reg_error;
 
   assign emul_info_subregion_0_wd = reg_wdata[7:0];
-  assign emul_info_subregion_1_we = addr_hit[86] & reg_we & !reg_error;
+  assign emul_info_subregion_1_we = addr_hit[84] & reg_we & !reg_error;
 
   assign emul_info_subregion_1_wd = reg_wdata[7:0];
-  assign emul_info_subregion_2_we = addr_hit[87] & reg_we & !reg_error;
+  assign emul_info_subregion_2_we = addr_hit[85] & reg_we & !reg_error;
 
   assign emul_info_subregion_2_wd = reg_wdata[7:0];
-  assign emul_info_subregion_3_we = addr_hit[88] & reg_we & !reg_error;
+  assign emul_info_subregion_3_we = addr_hit[86] & reg_we & !reg_error;
 
   assign emul_info_subregion_3_wd = reg_wdata[7:0];
-  assign emul_info_subregion_4_we = addr_hit[89] & reg_we & !reg_error;
+  assign emul_info_subregion_4_we = addr_hit[87] & reg_we & !reg_error;
 
   assign emul_info_subregion_4_wd = reg_wdata[7:0];
-  assign emul_info_subregion_5_we = addr_hit[90] & reg_we & !reg_error;
+  assign emul_info_subregion_5_we = addr_hit[88] & reg_we & !reg_error;
 
   assign emul_info_subregion_5_wd = reg_wdata[7:0];
-  assign emul_info_subregion_6_we = addr_hit[91] & reg_we & !reg_error;
+  assign emul_info_subregion_6_we = addr_hit[89] & reg_we & !reg_error;
 
   assign emul_info_subregion_6_wd = reg_wdata[7:0];
-  assign emul_info_subregion_7_we = addr_hit[92] & reg_we & !reg_error;
+  assign emul_info_subregion_7_we = addr_hit[90] & reg_we & !reg_error;
 
   assign emul_info_subregion_7_wd = reg_wdata[7:0];
-  assign emul_info_subregion_8_we = addr_hit[93] & reg_we & !reg_error;
+  assign emul_info_subregion_8_we = addr_hit[91] & reg_we & !reg_error;
 
   assign emul_info_subregion_8_wd = reg_wdata[7:0];
-  assign emul_info_subregion_9_we = addr_hit[94] & reg_we & !reg_error;
+  assign emul_info_subregion_9_we = addr_hit[92] & reg_we & !reg_error;
 
   assign emul_info_subregion_9_wd = reg_wdata[7:0];
-  assign emul_info_subregion_10_we = addr_hit[95] & reg_we & !reg_error;
+  assign emul_info_subregion_10_we = addr_hit[93] & reg_we & !reg_error;
 
   assign emul_info_subregion_10_wd = reg_wdata[7:0];
-  assign emul_info_subregion_11_we = addr_hit[96] & reg_we & !reg_error;
+  assign emul_info_subregion_11_we = addr_hit[94] & reg_we & !reg_error;
 
   assign emul_info_subregion_11_wd = reg_wdata[7:0];
-  assign emul_info_subregion_12_we = addr_hit[97] & reg_we & !reg_error;
+  assign emul_info_subregion_12_we = addr_hit[95] & reg_we & !reg_error;
 
   assign emul_info_subregion_12_wd = reg_wdata[7:0];
-  assign emul_info_subregion_13_we = addr_hit[98] & reg_we & !reg_error;
+  assign emul_info_subregion_13_we = addr_hit[96] & reg_we & !reg_error;
 
   assign emul_info_subregion_13_wd = reg_wdata[7:0];
-  assign emul_info_subregion_14_we = addr_hit[99] & reg_we & !reg_error;
+  assign emul_info_subregion_14_we = addr_hit[97] & reg_we & !reg_error;
 
   assign emul_info_subregion_14_wd = reg_wdata[7:0];
-  assign emul_info_subregion_15_we = addr_hit[100] & reg_we & !reg_error;
+  assign emul_info_subregion_15_we = addr_hit[98] & reg_we & !reg_error;
 
   assign emul_info_subregion_15_wd = reg_wdata[7:0];
-  assign emul_info_subregion_16_we = addr_hit[101] & reg_we & !reg_error;
+  assign emul_info_subregion_16_we = addr_hit[99] & reg_we & !reg_error;
 
   assign emul_info_subregion_16_wd = reg_wdata[7:0];
-  assign emul_info_subregion_17_we = addr_hit[102] & reg_we & !reg_error;
+  assign emul_info_subregion_17_we = addr_hit[100] & reg_we & !reg_error;
 
   assign emul_info_subregion_17_wd = reg_wdata[7:0];
-  assign emul_info_subregion_18_we = addr_hit[103] & reg_we & !reg_error;
+  assign emul_info_subregion_18_we = addr_hit[101] & reg_we & !reg_error;
 
   assign emul_info_subregion_18_wd = reg_wdata[7:0];
-  assign emul_info_subregion_19_we = addr_hit[104] & reg_we & !reg_error;
+  assign emul_info_subregion_19_we = addr_hit[102] & reg_we & !reg_error;
 
   assign emul_info_subregion_19_wd = reg_wdata[7:0];
-  assign emul_info_subregion_20_we = addr_hit[105] & reg_we & !reg_error;
+  assign emul_info_subregion_20_we = addr_hit[103] & reg_we & !reg_error;
 
   assign emul_info_subregion_20_wd = reg_wdata[7:0];
-  assign emul_info_subregion_21_we = addr_hit[106] & reg_we & !reg_error;
+  assign emul_info_subregion_21_we = addr_hit[104] & reg_we & !reg_error;
 
   assign emul_info_subregion_21_wd = reg_wdata[7:0];
-  assign emul_info_subregion_22_we = addr_hit[107] & reg_we & !reg_error;
+  assign emul_info_subregion_22_we = addr_hit[105] & reg_we & !reg_error;
 
   assign emul_info_subregion_22_wd = reg_wdata[7:0];
-  assign emul_info_subregion_23_we = addr_hit[108] & reg_we & !reg_error;
+  assign emul_info_subregion_23_we = addr_hit[106] & reg_we & !reg_error;
 
   assign emul_info_subregion_23_wd = reg_wdata[7:0];
-  assign emul_info_subregion_cfg_regwen_0_we = addr_hit[109] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_0_we = addr_hit[107] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_0_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_1_we = addr_hit[110] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_1_we = addr_hit[108] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_1_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_2_we = addr_hit[111] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_2_we = addr_hit[109] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_2_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_3_we = addr_hit[112] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_3_we = addr_hit[110] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_3_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_4_we = addr_hit[113] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_4_we = addr_hit[111] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_4_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_5_we = addr_hit[114] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_5_we = addr_hit[112] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_5_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_6_we = addr_hit[115] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_6_we = addr_hit[113] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_6_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_7_we = addr_hit[116] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_7_we = addr_hit[114] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_7_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_8_we = addr_hit[117] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_8_we = addr_hit[115] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_8_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_9_we = addr_hit[118] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_9_we = addr_hit[116] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_9_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_10_we = addr_hit[119] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_10_we = addr_hit[117] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_10_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_11_we = addr_hit[120] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_11_we = addr_hit[118] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_11_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_12_we = addr_hit[121] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_12_we = addr_hit[119] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_12_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_13_we = addr_hit[122] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_13_we = addr_hit[120] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_13_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_14_we = addr_hit[123] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_14_we = addr_hit[121] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_14_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_15_we = addr_hit[124] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_15_we = addr_hit[122] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_15_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_16_we = addr_hit[125] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_16_we = addr_hit[123] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_16_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_17_we = addr_hit[126] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_17_we = addr_hit[124] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_17_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_18_we = addr_hit[127] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_18_we = addr_hit[125] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_18_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_19_we = addr_hit[128] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_19_we = addr_hit[126] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_19_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_20_we = addr_hit[129] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_20_we = addr_hit[127] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_20_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_21_we = addr_hit[130] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_21_we = addr_hit[128] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_21_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_22_we = addr_hit[131] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_22_we = addr_hit[129] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_22_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_regwen_23_we = addr_hit[132] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_regwen_23_we = addr_hit[130] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_regwen_23_wd = reg_wdata[0];
-  assign emul_info_subregion_cfg_0_we = addr_hit[133] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_0_we = addr_hit[131] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_0_rd_en_0_wd = reg_wdata[7:4];
 
@@ -13816,7 +13608,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_0_scramble_en_0_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_0_ecc_en_0_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_1_we = addr_hit[134] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_1_we = addr_hit[132] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_1_rd_en_1_wd = reg_wdata[7:4];
 
@@ -13825,7 +13617,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_1_scramble_en_1_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_1_ecc_en_1_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_2_we = addr_hit[135] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_2_we = addr_hit[133] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_2_rd_en_2_wd = reg_wdata[7:4];
 
@@ -13834,7 +13626,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_2_scramble_en_2_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_2_ecc_en_2_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_3_we = addr_hit[136] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_3_we = addr_hit[134] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_3_rd_en_3_wd = reg_wdata[7:4];
 
@@ -13843,7 +13635,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_3_scramble_en_3_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_3_ecc_en_3_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_4_we = addr_hit[137] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_4_we = addr_hit[135] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_4_rd_en_4_wd = reg_wdata[7:4];
 
@@ -13852,7 +13644,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_4_scramble_en_4_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_4_ecc_en_4_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_5_we = addr_hit[138] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_5_we = addr_hit[136] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_5_rd_en_5_wd = reg_wdata[7:4];
 
@@ -13861,7 +13653,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_5_scramble_en_5_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_5_ecc_en_5_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_6_we = addr_hit[139] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_6_we = addr_hit[137] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_6_rd_en_6_wd = reg_wdata[7:4];
 
@@ -13870,7 +13662,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_6_scramble_en_6_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_6_ecc_en_6_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_7_we = addr_hit[140] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_7_we = addr_hit[138] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_7_rd_en_7_wd = reg_wdata[7:4];
 
@@ -13879,7 +13671,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_7_scramble_en_7_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_7_ecc_en_7_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_8_we = addr_hit[141] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_8_we = addr_hit[139] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_8_rd_en_8_wd = reg_wdata[7:4];
 
@@ -13888,7 +13680,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_8_scramble_en_8_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_8_ecc_en_8_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_9_we = addr_hit[142] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_9_we = addr_hit[140] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_9_rd_en_9_wd = reg_wdata[7:4];
 
@@ -13897,7 +13689,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_9_scramble_en_9_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_9_ecc_en_9_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_10_we = addr_hit[143] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_10_we = addr_hit[141] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_10_rd_en_10_wd = reg_wdata[7:4];
 
@@ -13906,7 +13698,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_10_scramble_en_10_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_10_ecc_en_10_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_11_we = addr_hit[144] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_11_we = addr_hit[142] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_11_rd_en_11_wd = reg_wdata[7:4];
 
@@ -13915,7 +13707,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_11_scramble_en_11_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_11_ecc_en_11_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_12_we = addr_hit[145] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_12_we = addr_hit[143] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_12_rd_en_12_wd = reg_wdata[7:4];
 
@@ -13924,7 +13716,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_12_scramble_en_12_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_12_ecc_en_12_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_13_we = addr_hit[146] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_13_we = addr_hit[144] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_13_rd_en_13_wd = reg_wdata[7:4];
 
@@ -13933,7 +13725,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_13_scramble_en_13_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_13_ecc_en_13_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_14_we = addr_hit[147] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_14_we = addr_hit[145] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_14_rd_en_14_wd = reg_wdata[7:4];
 
@@ -13942,7 +13734,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_14_scramble_en_14_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_14_ecc_en_14_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_15_we = addr_hit[148] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_15_we = addr_hit[146] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_15_rd_en_15_wd = reg_wdata[7:4];
 
@@ -13951,7 +13743,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_15_scramble_en_15_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_15_ecc_en_15_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_16_we = addr_hit[149] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_16_we = addr_hit[147] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_16_rd_en_16_wd = reg_wdata[7:4];
 
@@ -13960,7 +13752,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_16_scramble_en_16_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_16_ecc_en_16_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_17_we = addr_hit[150] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_17_we = addr_hit[148] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_17_rd_en_17_wd = reg_wdata[7:4];
 
@@ -13969,7 +13761,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_17_scramble_en_17_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_17_ecc_en_17_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_18_we = addr_hit[151] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_18_we = addr_hit[149] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_18_rd_en_18_wd = reg_wdata[7:4];
 
@@ -13978,7 +13770,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_18_scramble_en_18_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_18_ecc_en_18_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_19_we = addr_hit[152] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_19_we = addr_hit[150] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_19_rd_en_19_wd = reg_wdata[7:4];
 
@@ -13987,7 +13779,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_19_scramble_en_19_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_19_ecc_en_19_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_20_we = addr_hit[153] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_20_we = addr_hit[151] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_20_rd_en_20_wd = reg_wdata[7:4];
 
@@ -13996,7 +13788,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_20_scramble_en_20_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_20_ecc_en_20_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_21_we = addr_hit[154] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_21_we = addr_hit[152] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_21_rd_en_21_wd = reg_wdata[7:4];
 
@@ -14005,7 +13797,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_21_scramble_en_21_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_21_ecc_en_21_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_22_we = addr_hit[155] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_22_we = addr_hit[153] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_22_rd_en_22_wd = reg_wdata[7:4];
 
@@ -14014,7 +13806,7 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_22_scramble_en_22_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_22_ecc_en_22_wd = reg_wdata[19:16];
-  assign emul_info_subregion_cfg_23_we = addr_hit[156] & reg_we & !reg_error;
+  assign emul_info_subregion_cfg_23_we = addr_hit[154] & reg_we & !reg_error;
 
   assign emul_info_subregion_cfg_23_rd_en_23_wd = reg_wdata[7:4];
 
@@ -14023,17 +13815,17 @@ module rram_ctrl_core_reg_top (
   assign emul_info_subregion_cfg_23_scramble_en_23_wd = reg_wdata[15:12];
 
   assign emul_info_subregion_cfg_23_ecc_en_23_wd = reg_wdata[19:16];
-  assign hw_info_cfg_override_we = addr_hit[157] & reg_we & !reg_error;
+  assign hw_info_cfg_override_we = addr_hit[155] & reg_we & !reg_error;
 
   assign hw_info_cfg_override_scramble_dis_wd = reg_wdata[3:0];
 
   assign hw_info_cfg_override_ecc_dis_wd = reg_wdata[7:4];
-  assign op_status_we = addr_hit[158] & reg_we & !reg_error;
+  assign op_status_we = addr_hit[156] & reg_we & !reg_error;
 
   assign op_status_done_wd = reg_wdata[0];
 
   assign op_status_err_wd = reg_wdata[1];
-  assign err_code_we = addr_hit[160] & reg_we & !reg_error;
+  assign err_code_we = addr_hit[158] & reg_we & !reg_error;
 
   assign err_code_op_err_wd = reg_wdata[0];
 
@@ -14042,29 +13834,29 @@ module rram_ctrl_core_reg_top (
   assign err_code_rd_err_wd = reg_wdata[2];
 
   assign err_code_wr_err_wd = reg_wdata[3];
-  assign fault_status_we = addr_hit[162] & reg_we & !reg_error;
+  assign fault_status_we = addr_hit[160] & reg_we & !reg_error;
 
   assign fault_status_phy_relbl_err_wd = reg_wdata[9];
-  assign corr1_err_cnt_we = addr_hit[164] & reg_we & !reg_error;
+  assign corr1_err_cnt_we = addr_hit[162] & reg_we & !reg_error;
 
   assign corr1_err_cnt_wd = reg_wdata[7:0];
-  assign corr2_err_cnt_we = addr_hit[165] & reg_we & !reg_error;
+  assign corr2_err_cnt_we = addr_hit[163] & reg_we & !reg_error;
 
   assign corr2_err_cnt_wd = reg_wdata[7:0];
-  assign scratch_we = addr_hit[169] & reg_we & !reg_error;
+  assign scratch_we = addr_hit[167] & reg_we & !reg_error;
 
   assign scratch_wd = reg_wdata[31:0];
-  assign fifo_lvl_we = addr_hit[170] & reg_we & !reg_error;
+  assign fifo_lvl_we = addr_hit[168] & reg_we & !reg_error;
 
   assign fifo_lvl_wr_wd = reg_wdata[4:0];
 
   assign fifo_lvl_rd_wd = reg_wdata[12:8];
-  assign fifo_clr_we = addr_hit[171] & reg_we & !reg_error;
+  assign fifo_clr_we = addr_hit[169] & reg_we & !reg_error;
 
   assign fifo_clr_wr_wd = reg_wdata[0];
 
   assign fifo_clr_rd_wd = reg_wdata[1];
-  assign curr_fifo_lvl_re = addr_hit[172] & reg_re & !reg_error;
+  assign curr_fifo_lvl_re = addr_hit[170] & reg_re & !reg_error;
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -14116,131 +13908,129 @@ module rram_ctrl_core_reg_top (
     reg_we_check[45] = info_regwen_4_we;
     reg_we_check[46] = info_regwen_5_we;
     reg_we_check[47] = info_regwen_6_we;
-    reg_we_check[48] = info_regwen_7_we;
-    reg_we_check[49] = info_page_cfg_0_gated_we;
-    reg_we_check[50] = info_page_cfg_1_gated_we;
-    reg_we_check[51] = info_page_cfg_2_gated_we;
-    reg_we_check[52] = info_page_cfg_3_gated_we;
-    reg_we_check[53] = info_page_cfg_4_gated_we;
-    reg_we_check[54] = info_page_cfg_5_gated_we;
-    reg_we_check[55] = info_page_cfg_6_gated_we;
-    reg_we_check[56] = info_page_cfg_7_gated_we;
-    reg_we_check[57] = emul_info_regwen_0_we;
-    reg_we_check[58] = emul_info_regwen_1_we;
-    reg_we_check[59] = emul_info_region_0_gated_we;
-    reg_we_check[60] = emul_info_region_1_gated_we;
-    reg_we_check[61] = emul_info_subregion_regwen_0_we;
-    reg_we_check[62] = emul_info_subregion_regwen_1_we;
-    reg_we_check[63] = emul_info_subregion_regwen_2_we;
-    reg_we_check[64] = emul_info_subregion_regwen_3_we;
-    reg_we_check[65] = emul_info_subregion_regwen_4_we;
-    reg_we_check[66] = emul_info_subregion_regwen_5_we;
-    reg_we_check[67] = emul_info_subregion_regwen_6_we;
-    reg_we_check[68] = emul_info_subregion_regwen_7_we;
-    reg_we_check[69] = emul_info_subregion_regwen_8_we;
-    reg_we_check[70] = emul_info_subregion_regwen_9_we;
-    reg_we_check[71] = emul_info_subregion_regwen_10_we;
-    reg_we_check[72] = emul_info_subregion_regwen_11_we;
-    reg_we_check[73] = emul_info_subregion_regwen_12_we;
-    reg_we_check[74] = emul_info_subregion_regwen_13_we;
-    reg_we_check[75] = emul_info_subregion_regwen_14_we;
-    reg_we_check[76] = emul_info_subregion_regwen_15_we;
-    reg_we_check[77] = emul_info_subregion_regwen_16_we;
-    reg_we_check[78] = emul_info_subregion_regwen_17_we;
-    reg_we_check[79] = emul_info_subregion_regwen_18_we;
-    reg_we_check[80] = emul_info_subregion_regwen_19_we;
-    reg_we_check[81] = emul_info_subregion_regwen_20_we;
-    reg_we_check[82] = emul_info_subregion_regwen_21_we;
-    reg_we_check[83] = emul_info_subregion_regwen_22_we;
-    reg_we_check[84] = emul_info_subregion_regwen_23_we;
-    reg_we_check[85] = emul_info_subregion_0_gated_we;
-    reg_we_check[86] = emul_info_subregion_1_gated_we;
-    reg_we_check[87] = emul_info_subregion_2_gated_we;
-    reg_we_check[88] = emul_info_subregion_3_gated_we;
-    reg_we_check[89] = emul_info_subregion_4_gated_we;
-    reg_we_check[90] = emul_info_subregion_5_gated_we;
-    reg_we_check[91] = emul_info_subregion_6_gated_we;
-    reg_we_check[92] = emul_info_subregion_7_gated_we;
-    reg_we_check[93] = emul_info_subregion_8_gated_we;
-    reg_we_check[94] = emul_info_subregion_9_gated_we;
-    reg_we_check[95] = emul_info_subregion_10_gated_we;
-    reg_we_check[96] = emul_info_subregion_11_gated_we;
-    reg_we_check[97] = emul_info_subregion_12_gated_we;
-    reg_we_check[98] = emul_info_subregion_13_gated_we;
-    reg_we_check[99] = emul_info_subregion_14_gated_we;
-    reg_we_check[100] = emul_info_subregion_15_gated_we;
-    reg_we_check[101] = emul_info_subregion_16_gated_we;
-    reg_we_check[102] = emul_info_subregion_17_gated_we;
-    reg_we_check[103] = emul_info_subregion_18_gated_we;
-    reg_we_check[104] = emul_info_subregion_19_gated_we;
-    reg_we_check[105] = emul_info_subregion_20_gated_we;
-    reg_we_check[106] = emul_info_subregion_21_gated_we;
-    reg_we_check[107] = emul_info_subregion_22_gated_we;
-    reg_we_check[108] = emul_info_subregion_23_gated_we;
-    reg_we_check[109] = emul_info_subregion_cfg_regwen_0_we;
-    reg_we_check[110] = emul_info_subregion_cfg_regwen_1_we;
-    reg_we_check[111] = emul_info_subregion_cfg_regwen_2_we;
-    reg_we_check[112] = emul_info_subregion_cfg_regwen_3_we;
-    reg_we_check[113] = emul_info_subregion_cfg_regwen_4_we;
-    reg_we_check[114] = emul_info_subregion_cfg_regwen_5_we;
-    reg_we_check[115] = emul_info_subregion_cfg_regwen_6_we;
-    reg_we_check[116] = emul_info_subregion_cfg_regwen_7_we;
-    reg_we_check[117] = emul_info_subregion_cfg_regwen_8_we;
-    reg_we_check[118] = emul_info_subregion_cfg_regwen_9_we;
-    reg_we_check[119] = emul_info_subregion_cfg_regwen_10_we;
-    reg_we_check[120] = emul_info_subregion_cfg_regwen_11_we;
-    reg_we_check[121] = emul_info_subregion_cfg_regwen_12_we;
-    reg_we_check[122] = emul_info_subregion_cfg_regwen_13_we;
-    reg_we_check[123] = emul_info_subregion_cfg_regwen_14_we;
-    reg_we_check[124] = emul_info_subregion_cfg_regwen_15_we;
-    reg_we_check[125] = emul_info_subregion_cfg_regwen_16_we;
-    reg_we_check[126] = emul_info_subregion_cfg_regwen_17_we;
-    reg_we_check[127] = emul_info_subregion_cfg_regwen_18_we;
-    reg_we_check[128] = emul_info_subregion_cfg_regwen_19_we;
-    reg_we_check[129] = emul_info_subregion_cfg_regwen_20_we;
-    reg_we_check[130] = emul_info_subregion_cfg_regwen_21_we;
-    reg_we_check[131] = emul_info_subregion_cfg_regwen_22_we;
-    reg_we_check[132] = emul_info_subregion_cfg_regwen_23_we;
-    reg_we_check[133] = emul_info_subregion_cfg_0_gated_we;
-    reg_we_check[134] = emul_info_subregion_cfg_1_gated_we;
-    reg_we_check[135] = emul_info_subregion_cfg_2_gated_we;
-    reg_we_check[136] = emul_info_subregion_cfg_3_gated_we;
-    reg_we_check[137] = emul_info_subregion_cfg_4_gated_we;
-    reg_we_check[138] = emul_info_subregion_cfg_5_gated_we;
-    reg_we_check[139] = emul_info_subregion_cfg_6_gated_we;
-    reg_we_check[140] = emul_info_subregion_cfg_7_gated_we;
-    reg_we_check[141] = emul_info_subregion_cfg_8_gated_we;
-    reg_we_check[142] = emul_info_subregion_cfg_9_gated_we;
-    reg_we_check[143] = emul_info_subregion_cfg_10_gated_we;
-    reg_we_check[144] = emul_info_subregion_cfg_11_gated_we;
-    reg_we_check[145] = emul_info_subregion_cfg_12_gated_we;
-    reg_we_check[146] = emul_info_subregion_cfg_13_gated_we;
-    reg_we_check[147] = emul_info_subregion_cfg_14_gated_we;
-    reg_we_check[148] = emul_info_subregion_cfg_15_gated_we;
-    reg_we_check[149] = emul_info_subregion_cfg_16_gated_we;
-    reg_we_check[150] = emul_info_subregion_cfg_17_gated_we;
-    reg_we_check[151] = emul_info_subregion_cfg_18_gated_we;
-    reg_we_check[152] = emul_info_subregion_cfg_19_gated_we;
-    reg_we_check[153] = emul_info_subregion_cfg_20_gated_we;
-    reg_we_check[154] = emul_info_subregion_cfg_21_gated_we;
-    reg_we_check[155] = emul_info_subregion_cfg_22_gated_we;
-    reg_we_check[156] = emul_info_subregion_cfg_23_gated_we;
-    reg_we_check[157] = hw_info_cfg_override_we;
-    reg_we_check[158] = op_status_we;
+    reg_we_check[48] = info_page_cfg_0_gated_we;
+    reg_we_check[49] = info_page_cfg_1_gated_we;
+    reg_we_check[50] = info_page_cfg_2_gated_we;
+    reg_we_check[51] = info_page_cfg_3_gated_we;
+    reg_we_check[52] = info_page_cfg_4_gated_we;
+    reg_we_check[53] = info_page_cfg_5_gated_we;
+    reg_we_check[54] = info_page_cfg_6_gated_we;
+    reg_we_check[55] = emul_info_regwen_0_we;
+    reg_we_check[56] = emul_info_regwen_1_we;
+    reg_we_check[57] = emul_info_region_0_gated_we;
+    reg_we_check[58] = emul_info_region_1_gated_we;
+    reg_we_check[59] = emul_info_subregion_regwen_0_we;
+    reg_we_check[60] = emul_info_subregion_regwen_1_we;
+    reg_we_check[61] = emul_info_subregion_regwen_2_we;
+    reg_we_check[62] = emul_info_subregion_regwen_3_we;
+    reg_we_check[63] = emul_info_subregion_regwen_4_we;
+    reg_we_check[64] = emul_info_subregion_regwen_5_we;
+    reg_we_check[65] = emul_info_subregion_regwen_6_we;
+    reg_we_check[66] = emul_info_subregion_regwen_7_we;
+    reg_we_check[67] = emul_info_subregion_regwen_8_we;
+    reg_we_check[68] = emul_info_subregion_regwen_9_we;
+    reg_we_check[69] = emul_info_subregion_regwen_10_we;
+    reg_we_check[70] = emul_info_subregion_regwen_11_we;
+    reg_we_check[71] = emul_info_subregion_regwen_12_we;
+    reg_we_check[72] = emul_info_subregion_regwen_13_we;
+    reg_we_check[73] = emul_info_subregion_regwen_14_we;
+    reg_we_check[74] = emul_info_subregion_regwen_15_we;
+    reg_we_check[75] = emul_info_subregion_regwen_16_we;
+    reg_we_check[76] = emul_info_subregion_regwen_17_we;
+    reg_we_check[77] = emul_info_subregion_regwen_18_we;
+    reg_we_check[78] = emul_info_subregion_regwen_19_we;
+    reg_we_check[79] = emul_info_subregion_regwen_20_we;
+    reg_we_check[80] = emul_info_subregion_regwen_21_we;
+    reg_we_check[81] = emul_info_subregion_regwen_22_we;
+    reg_we_check[82] = emul_info_subregion_regwen_23_we;
+    reg_we_check[83] = emul_info_subregion_0_gated_we;
+    reg_we_check[84] = emul_info_subregion_1_gated_we;
+    reg_we_check[85] = emul_info_subregion_2_gated_we;
+    reg_we_check[86] = emul_info_subregion_3_gated_we;
+    reg_we_check[87] = emul_info_subregion_4_gated_we;
+    reg_we_check[88] = emul_info_subregion_5_gated_we;
+    reg_we_check[89] = emul_info_subregion_6_gated_we;
+    reg_we_check[90] = emul_info_subregion_7_gated_we;
+    reg_we_check[91] = emul_info_subregion_8_gated_we;
+    reg_we_check[92] = emul_info_subregion_9_gated_we;
+    reg_we_check[93] = emul_info_subregion_10_gated_we;
+    reg_we_check[94] = emul_info_subregion_11_gated_we;
+    reg_we_check[95] = emul_info_subregion_12_gated_we;
+    reg_we_check[96] = emul_info_subregion_13_gated_we;
+    reg_we_check[97] = emul_info_subregion_14_gated_we;
+    reg_we_check[98] = emul_info_subregion_15_gated_we;
+    reg_we_check[99] = emul_info_subregion_16_gated_we;
+    reg_we_check[100] = emul_info_subregion_17_gated_we;
+    reg_we_check[101] = emul_info_subregion_18_gated_we;
+    reg_we_check[102] = emul_info_subregion_19_gated_we;
+    reg_we_check[103] = emul_info_subregion_20_gated_we;
+    reg_we_check[104] = emul_info_subregion_21_gated_we;
+    reg_we_check[105] = emul_info_subregion_22_gated_we;
+    reg_we_check[106] = emul_info_subregion_23_gated_we;
+    reg_we_check[107] = emul_info_subregion_cfg_regwen_0_we;
+    reg_we_check[108] = emul_info_subregion_cfg_regwen_1_we;
+    reg_we_check[109] = emul_info_subregion_cfg_regwen_2_we;
+    reg_we_check[110] = emul_info_subregion_cfg_regwen_3_we;
+    reg_we_check[111] = emul_info_subregion_cfg_regwen_4_we;
+    reg_we_check[112] = emul_info_subregion_cfg_regwen_5_we;
+    reg_we_check[113] = emul_info_subregion_cfg_regwen_6_we;
+    reg_we_check[114] = emul_info_subregion_cfg_regwen_7_we;
+    reg_we_check[115] = emul_info_subregion_cfg_regwen_8_we;
+    reg_we_check[116] = emul_info_subregion_cfg_regwen_9_we;
+    reg_we_check[117] = emul_info_subregion_cfg_regwen_10_we;
+    reg_we_check[118] = emul_info_subregion_cfg_regwen_11_we;
+    reg_we_check[119] = emul_info_subregion_cfg_regwen_12_we;
+    reg_we_check[120] = emul_info_subregion_cfg_regwen_13_we;
+    reg_we_check[121] = emul_info_subregion_cfg_regwen_14_we;
+    reg_we_check[122] = emul_info_subregion_cfg_regwen_15_we;
+    reg_we_check[123] = emul_info_subregion_cfg_regwen_16_we;
+    reg_we_check[124] = emul_info_subregion_cfg_regwen_17_we;
+    reg_we_check[125] = emul_info_subregion_cfg_regwen_18_we;
+    reg_we_check[126] = emul_info_subregion_cfg_regwen_19_we;
+    reg_we_check[127] = emul_info_subregion_cfg_regwen_20_we;
+    reg_we_check[128] = emul_info_subregion_cfg_regwen_21_we;
+    reg_we_check[129] = emul_info_subregion_cfg_regwen_22_we;
+    reg_we_check[130] = emul_info_subregion_cfg_regwen_23_we;
+    reg_we_check[131] = emul_info_subregion_cfg_0_gated_we;
+    reg_we_check[132] = emul_info_subregion_cfg_1_gated_we;
+    reg_we_check[133] = emul_info_subregion_cfg_2_gated_we;
+    reg_we_check[134] = emul_info_subregion_cfg_3_gated_we;
+    reg_we_check[135] = emul_info_subregion_cfg_4_gated_we;
+    reg_we_check[136] = emul_info_subregion_cfg_5_gated_we;
+    reg_we_check[137] = emul_info_subregion_cfg_6_gated_we;
+    reg_we_check[138] = emul_info_subregion_cfg_7_gated_we;
+    reg_we_check[139] = emul_info_subregion_cfg_8_gated_we;
+    reg_we_check[140] = emul_info_subregion_cfg_9_gated_we;
+    reg_we_check[141] = emul_info_subregion_cfg_10_gated_we;
+    reg_we_check[142] = emul_info_subregion_cfg_11_gated_we;
+    reg_we_check[143] = emul_info_subregion_cfg_12_gated_we;
+    reg_we_check[144] = emul_info_subregion_cfg_13_gated_we;
+    reg_we_check[145] = emul_info_subregion_cfg_14_gated_we;
+    reg_we_check[146] = emul_info_subregion_cfg_15_gated_we;
+    reg_we_check[147] = emul_info_subregion_cfg_16_gated_we;
+    reg_we_check[148] = emul_info_subregion_cfg_17_gated_we;
+    reg_we_check[149] = emul_info_subregion_cfg_18_gated_we;
+    reg_we_check[150] = emul_info_subregion_cfg_19_gated_we;
+    reg_we_check[151] = emul_info_subregion_cfg_20_gated_we;
+    reg_we_check[152] = emul_info_subregion_cfg_21_gated_we;
+    reg_we_check[153] = emul_info_subregion_cfg_22_gated_we;
+    reg_we_check[154] = emul_info_subregion_cfg_23_gated_we;
+    reg_we_check[155] = hw_info_cfg_override_we;
+    reg_we_check[156] = op_status_we;
+    reg_we_check[157] = 1'b0;
+    reg_we_check[158] = err_code_we;
     reg_we_check[159] = 1'b0;
-    reg_we_check[160] = err_code_we;
+    reg_we_check[160] = fault_status_we;
     reg_we_check[161] = 1'b0;
-    reg_we_check[162] = fault_status_we;
-    reg_we_check[163] = 1'b0;
-    reg_we_check[164] = corr1_err_cnt_we;
-    reg_we_check[165] = corr2_err_cnt_we;
+    reg_we_check[162] = corr1_err_cnt_we;
+    reg_we_check[163] = corr2_err_cnt_we;
+    reg_we_check[164] = 1'b0;
+    reg_we_check[165] = 1'b0;
     reg_we_check[166] = 1'b0;
-    reg_we_check[167] = 1'b0;
-    reg_we_check[168] = 1'b0;
-    reg_we_check[169] = scratch_we;
-    reg_we_check[170] = fifo_lvl_we;
-    reg_we_check[171] = fifo_clr_we;
-    reg_we_check[172] = 1'b0;
+    reg_we_check[167] = scratch_we;
+    reg_we_check[168] = fifo_lvl_we;
+    reg_we_check[169] = fifo_clr_we;
+    reg_we_check[170] = 1'b0;
   end
 
   // Read data return
@@ -14520,10 +14310,6 @@ module rram_ctrl_core_reg_top (
       end
 
       addr_hit[48]: begin
-        reg_rdata_next[0] = info_regwen_7_qs;
-      end
-
-      addr_hit[49]: begin
         reg_rdata_next[3:0] = info_page_cfg_0_en_0_qs;
         reg_rdata_next[7:4] = info_page_cfg_0_rd_en_0_qs;
         reg_rdata_next[11:8] = info_page_cfg_0_wr_en_0_qs;
@@ -14531,7 +14317,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = info_page_cfg_0_ecc_en_0_qs;
       end
 
-      addr_hit[50]: begin
+      addr_hit[49]: begin
         reg_rdata_next[3:0] = info_page_cfg_1_en_1_qs;
         reg_rdata_next[7:4] = info_page_cfg_1_rd_en_1_qs;
         reg_rdata_next[11:8] = info_page_cfg_1_wr_en_1_qs;
@@ -14539,7 +14325,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = info_page_cfg_1_ecc_en_1_qs;
       end
 
-      addr_hit[51]: begin
+      addr_hit[50]: begin
         reg_rdata_next[3:0] = info_page_cfg_2_en_2_qs;
         reg_rdata_next[7:4] = info_page_cfg_2_rd_en_2_qs;
         reg_rdata_next[11:8] = info_page_cfg_2_wr_en_2_qs;
@@ -14547,7 +14333,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = info_page_cfg_2_ecc_en_2_qs;
       end
 
-      addr_hit[52]: begin
+      addr_hit[51]: begin
         reg_rdata_next[3:0] = info_page_cfg_3_en_3_qs;
         reg_rdata_next[7:4] = info_page_cfg_3_rd_en_3_qs;
         reg_rdata_next[11:8] = info_page_cfg_3_wr_en_3_qs;
@@ -14555,7 +14341,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = info_page_cfg_3_ecc_en_3_qs;
       end
 
-      addr_hit[53]: begin
+      addr_hit[52]: begin
         reg_rdata_next[3:0] = info_page_cfg_4_en_4_qs;
         reg_rdata_next[7:4] = info_page_cfg_4_rd_en_4_qs;
         reg_rdata_next[11:8] = info_page_cfg_4_wr_en_4_qs;
@@ -14563,7 +14349,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = info_page_cfg_4_ecc_en_4_qs;
       end
 
-      addr_hit[54]: begin
+      addr_hit[53]: begin
         reg_rdata_next[3:0] = info_page_cfg_5_en_5_qs;
         reg_rdata_next[7:4] = info_page_cfg_5_rd_en_5_qs;
         reg_rdata_next[11:8] = info_page_cfg_5_wr_en_5_qs;
@@ -14571,7 +14357,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = info_page_cfg_5_ecc_en_5_qs;
       end
 
-      addr_hit[55]: begin
+      addr_hit[54]: begin
         reg_rdata_next[3:0] = info_page_cfg_6_en_6_qs;
         reg_rdata_next[7:4] = info_page_cfg_6_rd_en_6_qs;
         reg_rdata_next[11:8] = info_page_cfg_6_wr_en_6_qs;
@@ -14579,501 +14365,493 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[19:16] = info_page_cfg_6_ecc_en_6_qs;
       end
 
-      addr_hit[56]: begin
-        reg_rdata_next[3:0] = info_page_cfg_7_en_7_qs;
-        reg_rdata_next[7:4] = info_page_cfg_7_rd_en_7_qs;
-        reg_rdata_next[11:8] = info_page_cfg_7_wr_en_7_qs;
-        reg_rdata_next[15:12] = info_page_cfg_7_scramble_en_7_qs;
-        reg_rdata_next[19:16] = info_page_cfg_7_ecc_en_7_qs;
-      end
-
-      addr_hit[57]: begin
+      addr_hit[55]: begin
         reg_rdata_next[0] = emul_info_regwen_0_qs;
       end
 
-      addr_hit[58]: begin
+      addr_hit[56]: begin
         reg_rdata_next[0] = emul_info_regwen_1_qs;
       end
 
-      addr_hit[59]: begin
+      addr_hit[57]: begin
         reg_rdata_next[11:0] = emul_info_region_0_base_0_qs;
         reg_rdata_next[23:12] = emul_info_region_0_size_0_qs;
         reg_rdata_next[27:24] = emul_info_region_0_en_0_qs;
       end
 
-      addr_hit[60]: begin
+      addr_hit[58]: begin
         reg_rdata_next[11:0] = emul_info_region_1_base_1_qs;
         reg_rdata_next[23:12] = emul_info_region_1_size_1_qs;
         reg_rdata_next[27:24] = emul_info_region_1_en_1_qs;
       end
 
-      addr_hit[61]: begin
+      addr_hit[59]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_0_qs;
       end
 
-      addr_hit[62]: begin
+      addr_hit[60]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_1_qs;
       end
 
-      addr_hit[63]: begin
+      addr_hit[61]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_2_qs;
       end
 
-      addr_hit[64]: begin
+      addr_hit[62]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_3_qs;
       end
 
-      addr_hit[65]: begin
+      addr_hit[63]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_4_qs;
       end
 
-      addr_hit[66]: begin
+      addr_hit[64]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_5_qs;
       end
 
-      addr_hit[67]: begin
+      addr_hit[65]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_6_qs;
       end
 
-      addr_hit[68]: begin
+      addr_hit[66]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_7_qs;
       end
 
-      addr_hit[69]: begin
+      addr_hit[67]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_8_qs;
       end
 
-      addr_hit[70]: begin
+      addr_hit[68]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_9_qs;
       end
 
-      addr_hit[71]: begin
+      addr_hit[69]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_10_qs;
       end
 
-      addr_hit[72]: begin
+      addr_hit[70]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_11_qs;
       end
 
-      addr_hit[73]: begin
+      addr_hit[71]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_12_qs;
       end
 
-      addr_hit[74]: begin
+      addr_hit[72]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_13_qs;
       end
 
-      addr_hit[75]: begin
+      addr_hit[73]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_14_qs;
       end
 
-      addr_hit[76]: begin
+      addr_hit[74]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_15_qs;
       end
 
-      addr_hit[77]: begin
+      addr_hit[75]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_16_qs;
       end
 
-      addr_hit[78]: begin
+      addr_hit[76]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_17_qs;
       end
 
-      addr_hit[79]: begin
+      addr_hit[77]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_18_qs;
       end
 
-      addr_hit[80]: begin
+      addr_hit[78]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_19_qs;
       end
 
-      addr_hit[81]: begin
+      addr_hit[79]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_20_qs;
       end
 
-      addr_hit[82]: begin
+      addr_hit[80]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_21_qs;
       end
 
-      addr_hit[83]: begin
+      addr_hit[81]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_22_qs;
       end
 
-      addr_hit[84]: begin
+      addr_hit[82]: begin
         reg_rdata_next[0] = emul_info_subregion_regwen_23_qs;
       end
 
-      addr_hit[85]: begin
+      addr_hit[83]: begin
         reg_rdata_next[7:0] = emul_info_subregion_0_qs;
       end
 
-      addr_hit[86]: begin
+      addr_hit[84]: begin
         reg_rdata_next[7:0] = emul_info_subregion_1_qs;
       end
 
-      addr_hit[87]: begin
+      addr_hit[85]: begin
         reg_rdata_next[7:0] = emul_info_subregion_2_qs;
       end
 
-      addr_hit[88]: begin
+      addr_hit[86]: begin
         reg_rdata_next[7:0] = emul_info_subregion_3_qs;
       end
 
-      addr_hit[89]: begin
+      addr_hit[87]: begin
         reg_rdata_next[7:0] = emul_info_subregion_4_qs;
       end
 
-      addr_hit[90]: begin
+      addr_hit[88]: begin
         reg_rdata_next[7:0] = emul_info_subregion_5_qs;
       end
 
-      addr_hit[91]: begin
+      addr_hit[89]: begin
         reg_rdata_next[7:0] = emul_info_subregion_6_qs;
       end
 
-      addr_hit[92]: begin
+      addr_hit[90]: begin
         reg_rdata_next[7:0] = emul_info_subregion_7_qs;
       end
 
-      addr_hit[93]: begin
+      addr_hit[91]: begin
         reg_rdata_next[7:0] = emul_info_subregion_8_qs;
       end
 
-      addr_hit[94]: begin
+      addr_hit[92]: begin
         reg_rdata_next[7:0] = emul_info_subregion_9_qs;
       end
 
-      addr_hit[95]: begin
+      addr_hit[93]: begin
         reg_rdata_next[7:0] = emul_info_subregion_10_qs;
       end
 
-      addr_hit[96]: begin
+      addr_hit[94]: begin
         reg_rdata_next[7:0] = emul_info_subregion_11_qs;
       end
 
-      addr_hit[97]: begin
+      addr_hit[95]: begin
         reg_rdata_next[7:0] = emul_info_subregion_12_qs;
       end
 
-      addr_hit[98]: begin
+      addr_hit[96]: begin
         reg_rdata_next[7:0] = emul_info_subregion_13_qs;
       end
 
-      addr_hit[99]: begin
+      addr_hit[97]: begin
         reg_rdata_next[7:0] = emul_info_subregion_14_qs;
       end
 
-      addr_hit[100]: begin
+      addr_hit[98]: begin
         reg_rdata_next[7:0] = emul_info_subregion_15_qs;
       end
 
-      addr_hit[101]: begin
+      addr_hit[99]: begin
         reg_rdata_next[7:0] = emul_info_subregion_16_qs;
       end
 
-      addr_hit[102]: begin
+      addr_hit[100]: begin
         reg_rdata_next[7:0] = emul_info_subregion_17_qs;
       end
 
-      addr_hit[103]: begin
+      addr_hit[101]: begin
         reg_rdata_next[7:0] = emul_info_subregion_18_qs;
       end
 
-      addr_hit[104]: begin
+      addr_hit[102]: begin
         reg_rdata_next[7:0] = emul_info_subregion_19_qs;
       end
 
-      addr_hit[105]: begin
+      addr_hit[103]: begin
         reg_rdata_next[7:0] = emul_info_subregion_20_qs;
       end
 
-      addr_hit[106]: begin
+      addr_hit[104]: begin
         reg_rdata_next[7:0] = emul_info_subregion_21_qs;
       end
 
-      addr_hit[107]: begin
+      addr_hit[105]: begin
         reg_rdata_next[7:0] = emul_info_subregion_22_qs;
       end
 
-      addr_hit[108]: begin
+      addr_hit[106]: begin
         reg_rdata_next[7:0] = emul_info_subregion_23_qs;
       end
 
-      addr_hit[109]: begin
+      addr_hit[107]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_0_qs;
       end
 
-      addr_hit[110]: begin
+      addr_hit[108]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_1_qs;
       end
 
-      addr_hit[111]: begin
+      addr_hit[109]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_2_qs;
       end
 
-      addr_hit[112]: begin
+      addr_hit[110]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_3_qs;
       end
 
-      addr_hit[113]: begin
+      addr_hit[111]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_4_qs;
       end
 
-      addr_hit[114]: begin
+      addr_hit[112]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_5_qs;
       end
 
-      addr_hit[115]: begin
+      addr_hit[113]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_6_qs;
       end
 
-      addr_hit[116]: begin
+      addr_hit[114]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_7_qs;
       end
 
-      addr_hit[117]: begin
+      addr_hit[115]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_8_qs;
       end
 
-      addr_hit[118]: begin
+      addr_hit[116]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_9_qs;
       end
 
-      addr_hit[119]: begin
+      addr_hit[117]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_10_qs;
       end
 
-      addr_hit[120]: begin
+      addr_hit[118]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_11_qs;
       end
 
-      addr_hit[121]: begin
+      addr_hit[119]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_12_qs;
       end
 
-      addr_hit[122]: begin
+      addr_hit[120]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_13_qs;
       end
 
-      addr_hit[123]: begin
+      addr_hit[121]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_14_qs;
       end
 
-      addr_hit[124]: begin
+      addr_hit[122]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_15_qs;
       end
 
-      addr_hit[125]: begin
+      addr_hit[123]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_16_qs;
       end
 
-      addr_hit[126]: begin
+      addr_hit[124]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_17_qs;
       end
 
-      addr_hit[127]: begin
+      addr_hit[125]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_18_qs;
       end
 
-      addr_hit[128]: begin
+      addr_hit[126]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_19_qs;
       end
 
-      addr_hit[129]: begin
+      addr_hit[127]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_20_qs;
       end
 
-      addr_hit[130]: begin
+      addr_hit[128]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_21_qs;
       end
 
-      addr_hit[131]: begin
+      addr_hit[129]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_22_qs;
       end
 
-      addr_hit[132]: begin
+      addr_hit[130]: begin
         reg_rdata_next[0] = emul_info_subregion_cfg_regwen_23_qs;
       end
 
-      addr_hit[133]: begin
+      addr_hit[131]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_0_rd_en_0_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_0_wr_en_0_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_0_scramble_en_0_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_0_ecc_en_0_qs;
       end
 
-      addr_hit[134]: begin
+      addr_hit[132]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_1_rd_en_1_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_1_wr_en_1_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_1_scramble_en_1_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_1_ecc_en_1_qs;
       end
 
-      addr_hit[135]: begin
+      addr_hit[133]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_2_rd_en_2_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_2_wr_en_2_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_2_scramble_en_2_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_2_ecc_en_2_qs;
       end
 
-      addr_hit[136]: begin
+      addr_hit[134]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_3_rd_en_3_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_3_wr_en_3_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_3_scramble_en_3_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_3_ecc_en_3_qs;
       end
 
-      addr_hit[137]: begin
+      addr_hit[135]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_4_rd_en_4_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_4_wr_en_4_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_4_scramble_en_4_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_4_ecc_en_4_qs;
       end
 
-      addr_hit[138]: begin
+      addr_hit[136]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_5_rd_en_5_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_5_wr_en_5_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_5_scramble_en_5_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_5_ecc_en_5_qs;
       end
 
-      addr_hit[139]: begin
+      addr_hit[137]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_6_rd_en_6_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_6_wr_en_6_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_6_scramble_en_6_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_6_ecc_en_6_qs;
       end
 
-      addr_hit[140]: begin
+      addr_hit[138]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_7_rd_en_7_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_7_wr_en_7_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_7_scramble_en_7_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_7_ecc_en_7_qs;
       end
 
-      addr_hit[141]: begin
+      addr_hit[139]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_8_rd_en_8_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_8_wr_en_8_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_8_scramble_en_8_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_8_ecc_en_8_qs;
       end
 
-      addr_hit[142]: begin
+      addr_hit[140]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_9_rd_en_9_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_9_wr_en_9_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_9_scramble_en_9_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_9_ecc_en_9_qs;
       end
 
-      addr_hit[143]: begin
+      addr_hit[141]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_10_rd_en_10_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_10_wr_en_10_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_10_scramble_en_10_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_10_ecc_en_10_qs;
       end
 
-      addr_hit[144]: begin
+      addr_hit[142]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_11_rd_en_11_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_11_wr_en_11_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_11_scramble_en_11_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_11_ecc_en_11_qs;
       end
 
-      addr_hit[145]: begin
+      addr_hit[143]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_12_rd_en_12_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_12_wr_en_12_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_12_scramble_en_12_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_12_ecc_en_12_qs;
       end
 
-      addr_hit[146]: begin
+      addr_hit[144]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_13_rd_en_13_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_13_wr_en_13_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_13_scramble_en_13_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_13_ecc_en_13_qs;
       end
 
-      addr_hit[147]: begin
+      addr_hit[145]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_14_rd_en_14_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_14_wr_en_14_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_14_scramble_en_14_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_14_ecc_en_14_qs;
       end
 
-      addr_hit[148]: begin
+      addr_hit[146]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_15_rd_en_15_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_15_wr_en_15_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_15_scramble_en_15_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_15_ecc_en_15_qs;
       end
 
-      addr_hit[149]: begin
+      addr_hit[147]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_16_rd_en_16_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_16_wr_en_16_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_16_scramble_en_16_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_16_ecc_en_16_qs;
       end
 
-      addr_hit[150]: begin
+      addr_hit[148]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_17_rd_en_17_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_17_wr_en_17_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_17_scramble_en_17_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_17_ecc_en_17_qs;
       end
 
-      addr_hit[151]: begin
+      addr_hit[149]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_18_rd_en_18_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_18_wr_en_18_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_18_scramble_en_18_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_18_ecc_en_18_qs;
       end
 
-      addr_hit[152]: begin
+      addr_hit[150]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_19_rd_en_19_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_19_wr_en_19_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_19_scramble_en_19_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_19_ecc_en_19_qs;
       end
 
-      addr_hit[153]: begin
+      addr_hit[151]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_20_rd_en_20_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_20_wr_en_20_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_20_scramble_en_20_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_20_ecc_en_20_qs;
       end
 
-      addr_hit[154]: begin
+      addr_hit[152]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_21_rd_en_21_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_21_wr_en_21_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_21_scramble_en_21_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_21_ecc_en_21_qs;
       end
 
-      addr_hit[155]: begin
+      addr_hit[153]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_22_rd_en_22_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_22_wr_en_22_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_22_scramble_en_22_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_22_ecc_en_22_qs;
       end
 
-      addr_hit[156]: begin
+      addr_hit[154]: begin
         reg_rdata_next[7:4] = emul_info_subregion_cfg_23_rd_en_23_qs;
         reg_rdata_next[11:8] = emul_info_subregion_cfg_23_wr_en_23_qs;
         reg_rdata_next[15:12] = emul_info_subregion_cfg_23_scramble_en_23_qs;
         reg_rdata_next[19:16] = emul_info_subregion_cfg_23_ecc_en_23_qs;
       end
 
-      addr_hit[157]: begin
+      addr_hit[155]: begin
         reg_rdata_next[3:0] = hw_info_cfg_override_scramble_dis_qs;
         reg_rdata_next[7:4] = hw_info_cfg_override_ecc_dis_qs;
       end
 
-      addr_hit[158]: begin
+      addr_hit[156]: begin
         reg_rdata_next[0] = op_status_done_qs;
         reg_rdata_next[1] = op_status_err_qs;
       end
 
-      addr_hit[159]: begin
+      addr_hit[157]: begin
         reg_rdata_next[0] = status_rd_full_qs;
         reg_rdata_next[1] = status_rd_empty_qs;
         reg_rdata_next[2] = status_wr_full_qs;
@@ -15082,14 +14860,14 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[5] = status_keys_valid_qs;
       end
 
-      addr_hit[160]: begin
+      addr_hit[158]: begin
         reg_rdata_next[0] = err_code_op_err_qs;
         reg_rdata_next[1] = err_code_mp_err_qs;
         reg_rdata_next[2] = err_code_rd_err_qs;
         reg_rdata_next[3] = err_code_wr_err_qs;
       end
 
-      addr_hit[161]: begin
+      addr_hit[159]: begin
         reg_rdata_next[0] = std_fault_status_reg_intg_err_qs;
         reg_rdata_next[1] = std_fault_status_lcmgr_err_qs;
         reg_rdata_next[2] = std_fault_status_lcmgr_intg_err_qs;
@@ -15105,7 +14883,7 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[12] = std_fault_status_ctrl_fifo_err_qs;
       end
 
-      addr_hit[162]: begin
+      addr_hit[160]: begin
         reg_rdata_next[0] = fault_status_lcmgr_op_err_qs;
         reg_rdata_next[1] = fault_status_lcmgr_mp_err_qs;
         reg_rdata_next[2] = fault_status_lcmgr_rd_err_qs;
@@ -15122,48 +14900,48 @@ module rram_ctrl_core_reg_top (
         reg_rdata_next[13] = fault_status_host_gnt_err_qs;
       end
 
-      addr_hit[163]: begin
+      addr_hit[161]: begin
         reg_rdata_next[20:0] = err_addr_qs;
       end
 
-      addr_hit[164]: begin
+      addr_hit[162]: begin
         reg_rdata_next[7:0] = corr1_err_cnt_qs;
       end
 
-      addr_hit[165]: begin
+      addr_hit[163]: begin
         reg_rdata_next[7:0] = corr2_err_cnt_qs;
       end
 
-      addr_hit[166]: begin
+      addr_hit[164]: begin
         reg_rdata_next[20:0] = corr1_err_loc_addr_qs;
         reg_rdata_next[24] = corr1_err_loc_part_qs;
       end
 
-      addr_hit[167]: begin
+      addr_hit[165]: begin
         reg_rdata_next[20:0] = corr2_err_loc_addr_qs;
         reg_rdata_next[24] = corr2_err_loc_part_qs;
       end
 
-      addr_hit[168]: begin
+      addr_hit[166]: begin
         reg_rdata_next[0] = phy_status_wr_busy_qs;
         reg_rdata_next[1] = phy_status_init_done_qs;
       end
 
-      addr_hit[169]: begin
+      addr_hit[167]: begin
         reg_rdata_next[31:0] = scratch_qs;
       end
 
-      addr_hit[170]: begin
+      addr_hit[168]: begin
         reg_rdata_next[4:0] = fifo_lvl_wr_qs;
         reg_rdata_next[12:8] = fifo_lvl_rd_qs;
       end
 
-      addr_hit[171]: begin
+      addr_hit[169]: begin
         reg_rdata_next[0] = '0;
         reg_rdata_next[1] = '0;
       end
 
-      addr_hit[172]: begin
+      addr_hit[170]: begin
         reg_rdata_next[4:0] = curr_fifo_lvl_wr_qs;
         reg_rdata_next[12:8] = curr_fifo_lvl_rd_qs;
       end

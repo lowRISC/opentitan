@@ -32,6 +32,8 @@ pub struct Options {
     pub ctn_ram_image: String,
     /// The OTP settings.
     pub otp_image: String,
+    /// The image to load into the RRAM INFO array.
+    pub rram_info_image: String,
     /// Any extra arguments to verilator.
     pub extra_args: Vec<String>,
     /// Timeout for starting verilator.
@@ -91,6 +93,9 @@ impl Subprocess {
         }
         if !options.otp_image.is_empty() {
             args.push(format!("--meminit=otp,{}", options.otp_image));
+        }
+        if !options.rram_info_image.is_empty() {
+            args.push(format!("--meminit=rram_info,{}", options.rram_info_image));
         }
         args.extend_from_slice(&options.extra_args);
         command.args(&args[..]);
@@ -166,6 +171,7 @@ mod test {
             flash_images: vec!["/dev/null:1".to_owned()],
             rram_image: "".to_owned(),
             otp_image: "".to_owned(),
+            rram_info_image: "".to_owned(),
             ctn_ram_image: "".to_owned(),
             extra_args: vec!["abc 123 def 456".to_owned()],
             timeout: Duration::from_secs(5),

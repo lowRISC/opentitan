@@ -25,6 +25,20 @@ class rram_ctrl_otp_bkdr_util extends mem_bkdr_util;
   // Lets load_mem_from_file() skip verifying unused padding rows it never computed.
   protected bit touched_intg_row[bit [bus_params_pkg::BUS_AW-1:0]];
 
+  // Relocation of one OTP partition (SECRET0) onto OtpRemapInfoPage in the INFO array.
+  // Mirrors RemapStart/RemapSize and RemapInfoStartAddr/RemapIntgInfoStartAddr in rram_ctrl_otp.sv:
+  // the first 8/9 of the page holds the partition's data, the last 1/9 its integrity bytes.
+  // Disabled while remap_size is 0, see set_remap().
+  localparam int unsigned PageBytes = rram_ctrl_pkg::WordsPerPage * (rram_ctrl_pkg::DataWidth / 8);
+  localparam int unsigned IntgRatio = rram_ctrl_pkg::OtpIntgDataWidth / 8;
+  localparam int unsigned RemapDataByteOffset = rram_ctrl_pkg::OtpRemapInfoPage * PageBytes;
+  localparam int unsigned RemapIntgByteOffset =
+      RemapDataByteOffset + (PageBytes / (IntgRatio + 1)) * IntgRatio;
+
+  protected string       remap_path;
+  protected int unsigned remap_start;
+  protected int unsigned remap_size;
+
   // path/depth/n_bits cover the whole RRAM data array, same as RramData/RramInfo.
   // This shares the same physical array as RramData, and so the same rram_macro inline ECC,
   // handled explicitly by this class's own read()/write() below.
@@ -58,21 +72,86 @@ class rram_ctrl_otp_bkdr_util extends mem_bkdr_util;
     this.max_errors            = EmulDataWidth;
   endfunction
 
+  // Enables the relocation of the OTP partition at byte offset `start` with `size` bytes onto
+  // OtpRemapInfoPage of the INFO array at `info_path`.
+  // `start` and `size` must match rram_ctrl's RemapStart and RemapSize parameters.
+  // Accesses to the partition then go to the INFO page, like rram_ctrl_otp's.
+  // Writes still also update the data array, so load_mem_from_file() can verify the image's
+  // integrity page unchanged.
+  function void set_remap(string info_path, int unsigned start, int unsigned size);
+    `DV_CHECK_EQ_FATAL(start % (rram_ctrl_pkg::OtpIntgDataWidth / 8), 0,
+                       "The relocated partition must be aligned to 64 bits")
+    `DV_CHECK_EQ_FATAL(size % (rram_ctrl_pkg::OtpIntgDataWidth / 8), 0,
+                       "The relocated partition must be a multiple of 64 bits")
+    remap_path  = info_path;
+    remap_start = start;
+    remap_size  = size;
+  endfunction
+
+  protected function bit is_remap(int unsigned otp_byte_addr);
+    return remap_size != 0 && otp_byte_addr >= remap_start &&
+           otp_byte_addr < remap_start + remap_size;
+  endfunction
+
+  // Replaces `num_bytes` bytes at byte address `byte_addr` of the INFO array.
+  protected function void remap_write_bytes(int unsigned byte_addr, bit [63:0] val,
+                                            int unsigned num_bytes);
+    int unsigned row_addr = (byte_addr / this.bytes_per_word) * this.bytes_per_word;
+    string row_path = $sformatf("%0s[%0d]", remap_path, row_addr >> this.addr_lsb);
+    bit [EmulDataWidth-1:0] row = rram_row_read(row_path);
+    for (int unsigned i = 0; i < num_bytes; i++) begin
+      row[(byte_addr - row_addr + i) * 8 +: 8] = val[i * 8 +: 8];
+    end
+    rram_row_write(row_path, row);
+  endfunction
+
+  // Writes a 64-bit chunk of the relocated partition and its integrity byte into the INFO page.
+  protected function void remap_write_chunk(int unsigned otp_byte_addr, bit [63:0] chunk);
+    int unsigned rel = otp_byte_addr - remap_start;
+    bit [71:0] enc = prim_secded_pkg::prim_secded_hamming_72_64_enc(chunk);
+    remap_write_bytes(RemapDataByteOffset + rel, chunk, IntgRatio);
+    remap_write_bytes(RemapIntgByteOffset + rel / IntgRatio, 64'(enc[71:64]), 1);
+  endfunction
+
+  protected function bit [63:0] remap_read_chunk(int unsigned otp_byte_addr);
+    int unsigned byte_addr = RemapDataByteOffset + (otp_byte_addr - remap_start);
+    int unsigned row_addr = (byte_addr / this.bytes_per_word) * this.bytes_per_word;
+    bit [EmulDataWidth-1:0] row = rram_row_read($sformatf("%0s[%0d]", remap_path,
+                                                           row_addr >> this.addr_lsb));
+    return row[(byte_addr - row_addr) * 8 +: 64];
+  endfunction
+
   // read8/16/32/64/128 all funnel through here.
+  // The chunks of the relocated partition come from the INFO page, which rram_ctrl_otp uses.
   virtual function row_data_t read(bit [bus_params_pkg::BUS_AW-1:0] addr);
+    localparam int unsigned ChunkBits = rram_ctrl_pkg::OtpIntgDataWidth;
     bit [bus_params_pkg::BUS_AW-1:0] abs_addr = addr + OtpDataByteOffset;
-    return row_data_t'(rram_row_read($sformatf("%0s[%0d]", get_full_path(0),
-                                                abs_addr >> this.addr_lsb)));
+    int unsigned row_start = (addr / this.bytes_per_word) * this.bytes_per_word;
+    row_data_t data = row_data_t'(rram_row_read($sformatf("%0s[%0d]", get_full_path(0),
+                                                           abs_addr >> this.addr_lsb)));
+    for (int unsigned lsb = 0; lsb < this.width; lsb += ChunkBits) begin
+      if (is_remap(row_start + lsb / 8)) begin
+        data[lsb +: ChunkBits] = remap_read_chunk(row_start + lsb / 8);
+      end
+    end
+    return data;
   endfunction
 
   // write8/16/32/64/128 funnel through here.
   virtual function void write(bit [bus_params_pkg::BUS_AW-1:0] addr, row_data_t data);
+    localparam int unsigned ChunkBits = rram_ctrl_pkg::OtpIntgDataWidth;
     bit [bus_params_pkg::BUS_AW-1:0] abs_addr  = addr + OtpDataByteOffset;
     int unsigned                     row_index = abs_addr >> this.addr_lsb;
+    int unsigned                     row_start = (addr / this.bytes_per_word) * this.bytes_per_word;
     string                           row_path  = $sformatf("%0s[%0d]", get_full_path(0),
                                                              row_index);
     rram_row_write(row_path, data[EmulDataWidth-1:0]);
     update_integrity(addr, data);
+    for (int unsigned lsb = 0; lsb < this.width; lsb += ChunkBits) begin
+      if (is_remap(row_start + lsb / 8)) begin
+        remap_write_chunk(row_start + lsb / 8, data[lsb +: ChunkBits]);
+      end
+    end
   endfunction
 
   // Corrupts the data word or its integrity byte, chosen at random. See inject_intg_error().
