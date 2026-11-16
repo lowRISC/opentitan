@@ -371,6 +371,7 @@ static status_t aes_gcm_counter(const otcrypto_const_word32_buf_t *iv,
  * @param[out] tag Buffer for output tag (len is used as input).
  */
 OT_WARN_UNUSED_RESULT
+OT_NOINLINE
 static status_t aes_gcm_get_tag(aes_gcm_context_t *ctx,
                                 otcrypto_word32_buf_t *tag) {
   // Compute len64(A) and len64(C) by computing the length in *bits* (shift by
