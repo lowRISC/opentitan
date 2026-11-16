@@ -281,14 +281,14 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
   ASSERT_NE(table, nullptr);
   EXPECT_EQ(table->magic, kFipsKatDescriptorMagic);
   EXPECT_EQ(table->version, kFipsKatDescriptorVersion1);
-  EXPECT_EQ(table->entry_count, 24u);
+  EXPECT_EQ(table->entry_count, 25u);
   EXPECT_LE(table->total_size, kFipsKatRegionSize);
   EXPECT_EQ(table->total_size % 4u, 0u);
 
   std::set<uint32_t> seen_ids;
   std::vector<std::pair<uint32_t, uint32_t>> intervals;
 
-  for (uint32_t id : std::vector<uint32_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24}) {
+  for (uint32_t id : std::vector<uint32_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 28}) {
     const auto alg_id = static_cast<fips_kat_alg_id_t>(id);
     const fips_kat_entry_t *entry =
         find_fips_entry(table, kFipsKatRegionSize, alg_id);
@@ -334,7 +334,8 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
       }
       case kFipsKatAlgAesEcb256Decrypt:
       case kFipsKatAlgAesCbc256Decrypt:
-      case kFipsKatAlgAesKwp256Wrap: {
+      case kFipsKatAlgAesKwp256Wrap:
+      case kFipsKatAlgAesGcm256Encrypt: {
 
         const auto *kat = static_cast<const aes_kat_data_t *>(payload);
         EXPECT_EQ(entry->size, fips_kat_aes_expected_size(kat))

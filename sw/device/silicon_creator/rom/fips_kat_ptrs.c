@@ -369,7 +369,23 @@ typedef struct fips_kat_mldsa87 {
   fips_kat_mldsa87_case_t cases[5];
 } fips_kat_mldsa87_t;
 
-#define FIPS_KAT_NUM_ENTRIES 24
+/**
+ * Algorithm ID 28: AES-256-GCM
+ * Schema: `aes_kat_data_t`
+ * Vector: NIST CAVP Count=0 (impl/kats.c): key=32B, iv=12B, aad=16B, pt=51B
+ * (pad4=52), ct=51B (pad4=52), tag=16B
+ */
+typedef struct fips_kat_aes_gcm256 {
+  uint32_t key_len;
+  uint32_t iv_len;
+  uint32_t aad_len;
+  uint32_t pt_len;
+  uint32_t ct_len;
+  uint32_t tag_len;
+  uint8_t data[180];
+} fips_kat_aes_gcm256_t;
+
+#define FIPS_KAT_NUM_ENTRIES 25
 
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -404,6 +420,7 @@ typedef struct fips_kat_data_store {
   fips_kat_ecdh_p384_t ecdh_p384;
   fips_kat_x25519_t x25519;
   fips_kat_mldsa87_t mldsa87;
+  fips_kat_aes_gcm256_t aes_gcm256;
 } fips_kat_data_store_t;
 
 /**
@@ -556,6 +573,11 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                         .algorithm_id = (uint32_t)kFipsKatAlgMldsa87,
                         .offset = FIPS_KAT_OFFSET(mldsa87),
                         .size = sizeof(fips_kat_mldsa87_t),
+                    },
+                    {
+                        .algorithm_id = (uint32_t)kFipsKatAlgAesGcm256Encrypt,
+                        .offset = FIPS_KAT_OFFSET(aes_gcm256),
+                        .size = sizeof(fips_kat_aes_gcm256_t),
                     },
                 },
         },
@@ -1692,6 +1714,46 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                             0x55, 0xdd, 0x52, 0x5a, 0x44, 0x5f, 0x08, 0xda,
                         },
                     },
+                },
+            },
+            .aes_gcm256 = {
+                .key_len = 32,
+                .iv_len = 12,
+                .aad_len = 16,
+                .pt_len = 51,
+                .ct_len = 51,
+                .tag_len = 16,
+                .data = {
+                    // Key (NIST CAVP Count=0) (32 bytes)
+                    0x5f, 0xe0, 0x1c, 0x4b, 0xaf, 0x01, 0xcb, 0xe0,
+                    0x77, 0x96, 0xd5, 0xaa, 0xef, 0x6e, 0xc1, 0xf4,
+                    0x51, 0x93, 0xa9, 0x8a, 0x22, 0x35, 0x94, 0xae,
+                    0x4f, 0x0e, 0xf4, 0x95, 0x2e, 0x82, 0xe3, 0x30,
+                    // IV (12 bytes)
+                    0xbd, 0x58, 0x73, 0x21, 0x56, 0x6c, 0x7f, 0x1a,
+                    0x5d, 0xd8, 0x65, 0x2d,
+                    // AAD (16 bytes)
+                    0x90, 0x13, 0x61, 0x78, 0x17, 0xdd, 0xa9, 0x47,
+                    0xe1, 0x35, 0xee, 0x6d, 0xd3, 0x65, 0x33, 0x82,
+                    // Plaintext (51 bytes + 1B pad)
+                    0x88, 0x1d, 0xc6, 0xc7, 0xa5, 0xd4, 0x50, 0x9f,
+                    0x3c, 0x4b, 0xd2, 0xda, 0xab, 0x08, 0xf1, 0x65,
+                    0xdd, 0xc2, 0x04, 0x48, 0x9a, 0xa8, 0x13, 0x45,
+                    0x62, 0xa4, 0xea, 0xc3, 0xd0, 0xbc, 0xad, 0x79,
+                    0x65, 0x84, 0x7b, 0x10, 0x27, 0x33, 0xbb, 0x63,
+                    0xd1, 0xe5, 0xc5, 0x98, 0xec, 0xe0, 0xc3, 0xe5,
+                    0xda, 0xdd, 0xdd, 0x00,
+                    // Expected Ciphertext (51 bytes + 1B pad)
+                    0x16, 0xe3, 0x75, 0xb4, 0x97, 0x3b, 0x33, 0x9d,
+                    0x3f, 0x74, 0x6c, 0x1c, 0x5a, 0x56, 0x8b, 0xc7,
+                    0x52, 0x6e, 0x90, 0x9d, 0xdf, 0xf1, 0xe1, 0x9c,
+                    0x95, 0xc9, 0x4a, 0x6c, 0xcf, 0xf2, 0x10, 0xc9,
+                    0xa4, 0xa4, 0x06, 0x79, 0xde, 0x57, 0x60, 0xc3,
+                    0x96, 0xac, 0x0e, 0x2c, 0xeb, 0x12, 0x34, 0xf9,
+                    0xf5, 0xfe, 0x26, 0x00,
+                    // Expected Tag (16 bytes)
+                    0xab, 0xd3, 0xd2, 0x6d, 0x65, 0xa6, 0x27, 0x5f,
+                    0x7a, 0x4f, 0x56, 0xb4, 0x22, 0xac, 0xab, 0x49,
                 },
             },
         },
