@@ -80,6 +80,11 @@ typedef enum fips_kat_alg_id {
   // Key Derivation (SP 800-108r1 KDF)
   kFipsKatAlgKdfHmacSha2_256 = 10,
   kFipsKatAlgKdfKmac256 = 11,
+
+  // RSA Asymmetric (2048 & 4096, PKCS#1 v1.5)
+  kFipsKatAlgRsa2048Verify = 12,
+  kFipsKatAlgRsa4096Sign = 13,
+  kFipsKatAlgRsa4096Verify = 14,
 } fips_kat_alg_id_t;
 
 /**
@@ -162,6 +167,49 @@ typedef struct aes_kat_data {
 
 OT_ASSERT_SIZE(aes_kat_data_t, 24);
 OT_ASSERT_MEMBER_OFFSET(aes_kat_data_t, data, 24);
+
+// 4. Asymmetric Verification (RSA, ECDSA, Ed25519, Round 3 SPHINCS+)
+// Endianness conventions (matching OpenTitan cryptolib / OTBN / sigverify):
+// - RSA-2048/4096: pub_key1 = N (LE words), pub_key2 = e (LE u32), msg = raw,
+//   sig1 = S (LE words), sig2 = empty.
+// - ECDSA P-256/P-384: pub_key1 = Qx (LE), pub_key2 = Qy (LE), msg = raw CAVP
+//   message (hashed with SHA-256 for P-256, SHA-384 for P-384),
+//   sig1 = R (LE), sig2 = S (LE).
+// - Ed25519: pub_key1 = pk (RFC 8032), pub_key2 = empty, msg = raw,
+//   sig1 = R (RFC 8032), sig2 = S (RFC 8032).
+// - SPHINCS+-SHA2-128s-simple (NIST Round 3): pub_key1 = pk (32 B),
+//   pub_key2 = empty, msg = raw (33 B), sig1 = sig (7856 B), sig2 = empty.
+typedef struct asymmetric_verify_kat_data {
+  uint32_t pub_key_len1;
+  uint32_t pub_key_len2;
+  uint32_t msg_len;
+  uint32_t sig_len1;
+  uint32_t sig_len2;
+  uint8_t data[];  // pad4(pk1)||pad4(pk2)||pad4(msg)||pad4(sig1)||pad4(sig2)
+} asymmetric_verify_kat_data_t;
+
+OT_ASSERT_SIZE(asymmetric_verify_kat_data_t, 20);
+OT_ASSERT_MEMBER_OFFSET(asymmetric_verify_kat_data_t, data, 20);
+
+// 5. Asymmetric Signing (RSA-4096, ECDSA P-256/P-384, Ed25519)
+// Endianness conventions:
+// - RSA-4096: priv_key = N || D (LE words), ephemeral = empty, msg = raw,
+//   sig1 = S (LE words), sig2 = empty.
+// - ECDSA P-256/P-384: priv_key = d (LE), ephemeral = k (LE), msg = raw CAVP
+//   message (hashed with SHA-256 / SHA-384), sig1 = R (LE), sig2 = S (LE).
+// - Ed25519: priv_key = seed (RFC 8032), ephemeral = empty, msg = raw,
+//   sig1 = R (RFC 8032), sig2 = S (RFC 8032).
+typedef struct asymmetric_sign_kat_data {
+  uint32_t priv_key_len;
+  uint32_t ephemeral_len;
+  uint32_t msg_len;
+  uint32_t sig_len1;
+  uint32_t sig_len2;
+  uint8_t data[];  // pad4(priv)||pad4(eph)||pad4(msg)||pad4(sig1)||pad4(sig2)
+} asymmetric_sign_kat_data_t;
+
+OT_ASSERT_SIZE(asymmetric_sign_kat_data_t, 20);
+OT_ASSERT_MEMBER_OFFSET(asymmetric_sign_kat_data_t, data, 20);
 
 /**
  * ============================================================================
@@ -364,6 +412,72 @@ static inline size_t fips_kat_aes_expected_size(const aes_kat_data_t *kat) {
          FIPS_KAT_ALIGN4(kat->iv_len) + FIPS_KAT_ALIGN4(kat->aad_len) +
          FIPS_KAT_ALIGN4(kat->pt_len) + FIPS_KAT_ALIGN4(kat->ct_len) +
          FIPS_KAT_ALIGN4(kat->tag_len);
+}
+
+// --- asymmetric_verify_kat_data_t ---
+static inline const uint8_t *fips_kat_asym_verify_pub_key1(
+    const asymmetric_verify_kat_data_t *kat) {
+  return kat->data;
+}
+static inline const uint8_t *fips_kat_asym_verify_pub_key2(
+    const asymmetric_verify_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->pub_key_len1);
+}
+static inline const uint8_t *fips_kat_asym_verify_msg(
+    const asymmetric_verify_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->pub_key_len1) +
+         FIPS_KAT_ALIGN4(kat->pub_key_len2);
+}
+static inline const uint8_t *fips_kat_asym_verify_sig1(
+    const asymmetric_verify_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->pub_key_len1) +
+         FIPS_KAT_ALIGN4(kat->pub_key_len2) + FIPS_KAT_ALIGN4(kat->msg_len);
+}
+static inline const uint8_t *fips_kat_asym_verify_sig2(
+    const asymmetric_verify_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->pub_key_len1) +
+         FIPS_KAT_ALIGN4(kat->pub_key_len2) + FIPS_KAT_ALIGN4(kat->msg_len) +
+         FIPS_KAT_ALIGN4(kat->sig_len1);
+}
+static inline size_t fips_kat_asym_verify_expected_size(
+    const asymmetric_verify_kat_data_t *kat) {
+  return sizeof(asymmetric_verify_kat_data_t) +
+         FIPS_KAT_ALIGN4(kat->pub_key_len1) +
+         FIPS_KAT_ALIGN4(kat->pub_key_len2) + FIPS_KAT_ALIGN4(kat->msg_len) +
+         FIPS_KAT_ALIGN4(kat->sig_len1) + FIPS_KAT_ALIGN4(kat->sig_len2);
+}
+
+// --- asymmetric_sign_kat_data_t ---
+static inline const uint8_t *fips_kat_asym_sign_priv_key(
+    const asymmetric_sign_kat_data_t *kat) {
+  return kat->data;
+}
+static inline const uint8_t *fips_kat_asym_sign_ephemeral(
+    const asymmetric_sign_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->priv_key_len);
+}
+static inline const uint8_t *fips_kat_asym_sign_msg(
+    const asymmetric_sign_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->priv_key_len) +
+         FIPS_KAT_ALIGN4(kat->ephemeral_len);
+}
+static inline const uint8_t *fips_kat_asym_sign_sig1(
+    const asymmetric_sign_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->priv_key_len) +
+         FIPS_KAT_ALIGN4(kat->ephemeral_len) + FIPS_KAT_ALIGN4(kat->msg_len);
+}
+static inline const uint8_t *fips_kat_asym_sign_sig2(
+    const asymmetric_sign_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->priv_key_len) +
+         FIPS_KAT_ALIGN4(kat->ephemeral_len) + FIPS_KAT_ALIGN4(kat->msg_len) +
+         FIPS_KAT_ALIGN4(kat->sig_len1);
+}
+static inline size_t fips_kat_asym_sign_expected_size(
+    const asymmetric_sign_kat_data_t *kat) {
+  return sizeof(asymmetric_sign_kat_data_t) +
+         FIPS_KAT_ALIGN4(kat->priv_key_len) +
+         FIPS_KAT_ALIGN4(kat->ephemeral_len) + FIPS_KAT_ALIGN4(kat->msg_len) +
+         FIPS_KAT_ALIGN4(kat->sig_len1) + FIPS_KAT_ALIGN4(kat->sig_len2);
 }
 
 
