@@ -227,6 +227,7 @@ otcrypto_status_t otcrypto_drbg_manual_reseed(
  * @param[out] drbg_output Buffer for output
  * @return Result status; OK or error
  */
+OT_ALWAYS_INLINE
 static otcrypto_status_t generate(
     hardened_bool_t fips_check,
     const otcrypto_const_byte_buf_t *additional_input,
