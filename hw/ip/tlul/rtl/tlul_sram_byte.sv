@@ -105,13 +105,8 @@ module tlul_sram_byte import tlul_pkg::*; #(
     logic tl_i_fifo_intg_err, tl_intg_err;
     state_e state_d, state_q;
 
-    always_ff @(posedge clk_i or negedge rst_ni) begin
-      if (!rst_ni) begin
-        state_q <= StPassThru;
-      end else begin
-        state_q <= state_d;
-      end
-    end
+    `PRIM_FLOP_SPARSE_FSM(u_state_regs, state_d, state_q, state_e, StPassThru,
+                          clk_i, rst_ni, EnableReadback)
 
     // transaction qualifying signals
     logic a_ack;  // upstream a channel acknowledgement
