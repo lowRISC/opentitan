@@ -59,6 +59,13 @@
 // (e.g., from rom_ctrl ECC digest exposure or entropy misconfiguration) fire.
 OTTF_DEFINE_TEST_CONFIG();
 
+// Non-zero mask words used when constructing blinded keys for KATs.
+static const uint32_t kTestMask[16] = {
+    0x8cb847c3, 0xc6d34f36, 0x72edbf7b, 0x9bc0317f, 0x8f003c7f, 0x1d7ba049,
+    0xfd463b63, 0xbb720c44, 0x784c215e, 0xeb101d65, 0x35beb911, 0xab481345,
+    0xa7ebc3e3, 0x04b2a1b9, 0x764a9630, 0x78b8f9c5,
+};
+
 // -----------------------------------------------------------------------------
 // Option B ePMP Negative Access-Fault Probing
 // -----------------------------------------------------------------------------
@@ -150,6 +157,176 @@ static void unmap_rom_kat_slot0(void) {
 }
 
 // -----------------------------------------------------------------------------
+// Lookup Helper
+// -----------------------------------------------------------------------------
+
+static const void *resolve_entry(const fips_kat_descriptor_table_t *table,
+                                 fips_kat_alg_id_t alg_id,
+                                 const fips_kat_entry_t **out_entry) {
+  const fips_kat_entry_t *entry =
+      find_fips_entry(table, kFipsKatRegionSize, alg_id);
+  CHECK(entry != NULL, "Missing KAT entry for alg_id=%u", (uint32_t)alg_id);
+  const void *data = get_fips_data(table, kFipsKatRegionSize, entry);
+  CHECK(data != NULL, "Invalid KAT payload bounds for alg_id=%u",
+        (uint32_t)alg_id);
+  if (out_entry != NULL) {
+    *out_entry = entry;
+  }
+  return data;
+}
+
+// -----------------------------------------------------------------------------
+// Hash & MAC KATs (SHA2-256/384/512, HMAC-SHA2-256/512, SHAKE-256, KMAC-256)
+// -----------------------------------------------------------------------------
+
+static status_t test_sha256_kat(const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const hmac_kat_data_t *kat = (const hmac_kat_data_t *)resolve_entry(
+      table, kFipsKatAlgSha2_256, &entry);
+  CHECK(entry->size == fips_kat_hmac_expected_size(kat));
+  CHECK(kat->key_len == 0 && kat->digest_len == 32);
+
+  const uint8_t *msg = fips_kat_hmac_msg(kat);
+  const uint8_t *exp = fips_kat_hmac_digest(kat);
+
+  // Verify via cryptolib FIPS API.
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, kat->msg_len);
+  uint32_t digest_words[8] = {0};
+  otcrypto_hash_digest_t digest = {
+      .mode = kOtcryptoHashModeSha256,
+      .len = ARRAYSIZE(digest_words),
+      .data = digest_words,
+  };
+  CHECK_STATUS_OK(otcrypto_sha2_256(&msg_buf, &digest));
+  CHECK_ARRAYS_EQ((const uint8_t *)digest_words, exp, 32);
+
+  // Cross-check ROM/ROM_EXT silicon_creator driver compatibility.
+  hmac_digest_t sc_digest;
+  hmac_sha256(msg, kat->msg_len, &sc_digest);
+  uint8_t sc_be[32];
+  for (size_t i = 0; i < 8; ++i) {
+    uint32_t w = sc_digest.digest[7 - i];
+    sc_be[4 * i] = (uint8_t)(w >> 24);
+    sc_be[4 * i + 1] = (uint8_t)(w >> 16);
+    sc_be[4 * i + 2] = (uint8_t)(w >> 8);
+    sc_be[4 * i + 3] = (uint8_t)(w);
+  }
+  CHECK_ARRAYS_EQ(sc_be, exp, 32);
+  return OK_STATUS();
+}
+
+static status_t test_sha512_kat(const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const hmac_kat_data_t *kat = (const hmac_kat_data_t *)resolve_entry(
+      table, kFipsKatAlgSha2_512, &entry);
+  CHECK(entry->size == fips_kat_hmac_expected_size(kat));
+  CHECK(kat->key_len == 0 && kat->digest_len == 64);
+
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_hmac_msg(kat), kat->msg_len);
+  uint32_t digest_words[16] = {0};
+  otcrypto_hash_digest_t digest = {
+      .mode = kOtcryptoHashModeSha512,
+      .len = ARRAYSIZE(digest_words),
+      .data = digest_words,
+  };
+  CHECK_STATUS_OK(otcrypto_sha2_512(&msg_buf, &digest));
+  CHECK_ARRAYS_EQ((const uint8_t *)digest_words, fips_kat_hmac_digest(kat), 64);
+  return OK_STATUS();
+}
+
+static status_t test_hmac_sha256_kat(const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const hmac_kat_data_t *kat = (const hmac_kat_data_t *)resolve_entry(
+      table, kFipsKatAlgHmacSha2_256, &entry);
+  CHECK(entry->size == fips_kat_hmac_expected_size(kat));
+  CHECK(kat->key_len == 32 && kat->digest_len == 32);
+
+  const uint8_t *key_bytes = fips_kat_hmac_key(kat);
+  const uint8_t *msg = fips_kat_hmac_msg(kat);
+  const uint8_t *exp = fips_kat_hmac_digest(kat);
+
+  // Verify via cryptolib FIPS API.
+  const otcrypto_key_config_t kConfig = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeHmacSha256,
+      .key_length = kat->key_len,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t keyblob[keyblob_num_words(kConfig)];
+  CHECK_STATUS_OK(keyblob_from_key_and_mask((const uint32_t *)key_bytes,
+                                            kTestMask, kConfig, keyblob));
+  otcrypto_blinded_key_t key = {
+      .config = kConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
+
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, msg, kat->msg_len);
+  uint32_t tag_words[8] = {0};
+  otcrypto_word32_buf_t tag_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_words, ARRAYSIZE(tag_words));
+  CHECK_STATUS_OK(otcrypto_hmac(&key, &msg_buf, &tag_buf));
+  CHECK_ARRAYS_EQ((const uint8_t *)tag_words, exp, 32);
+
+  // Cross-check ROM/ROM_EXT silicon_creator HMAC driver compatibility (32B
+  // key). Note: `sc_hmac_hmac_sha256` configures `KEY_SWAP = false`, so key
+  // words must be packed big-endian.
+  hmac_key_t sc_key;
+  for (size_t i = 0; i < 8; ++i) {
+    sc_key.key[i] = ((uint32_t)key_bytes[4 * i] << 24) |
+                    ((uint32_t)key_bytes[4 * i + 1] << 16) |
+                    ((uint32_t)key_bytes[4 * i + 2] << 8) |
+                    (uint32_t)key_bytes[4 * i + 3];
+  }
+  hmac_digest_t sc_digest;
+  sc_hmac_hmac_sha256(msg, kat->msg_len, sc_key, /*big_endian_digest=*/true,
+                      &sc_digest);
+  CHECK_ARRAYS_EQ((const uint8_t *)sc_digest.digest, exp, 32);
+  return OK_STATUS();
+}
+
+static status_t test_hmac_sha512_kat(const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const hmac_kat_data_t *kat = (const hmac_kat_data_t *)resolve_entry(
+      table, kFipsKatAlgHmacSha2_512, &entry);
+  CHECK(entry->size == fips_kat_hmac_expected_size(kat));
+  CHECK(kat->key_len == 64 && kat->digest_len == 64);
+
+  const otcrypto_key_config_t kConfig = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeHmacSha512,
+      .key_length = kat->key_len,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t keyblob[keyblob_num_words(kConfig)];
+  CHECK_STATUS_OK(keyblob_from_key_and_mask(
+      (const uint32_t *)fips_kat_hmac_key(kat), kTestMask, kConfig, keyblob));
+  otcrypto_blinded_key_t key = {
+      .config = kConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
+
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_hmac_msg(kat), kat->msg_len);
+  uint32_t tag_words[16] = {0};
+  otcrypto_word32_buf_t tag_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_words, ARRAYSIZE(tag_words));
+  CHECK_STATUS_OK(otcrypto_hmac(&key, &msg_buf, &tag_buf));
+  CHECK_ARRAYS_EQ((const uint8_t *)tag_words, fips_kat_hmac_digest(kat), 64);
+  return OK_STATUS();
+}
+
+// -----------------------------------------------------------------------------
 // Main Test Entry Point
 // -----------------------------------------------------------------------------
 
@@ -184,7 +361,7 @@ static status_t test_fips_kat_rom(void) {
       get_fips_descriptor_table_from_region((const void *)kat_base,
                                             kFipsKatRegionSize);
   CHECK(table != NULL, "Invalid ROM FIPS KAT descriptor table");
-  CHECK(table->entry_count == 0u, "Expected 0 entries, got %u",
+  CHECK(table->entry_count == 4u, "Expected 4 entries, got %u",
         table->entry_count);
   LOG_INFO("FIPS KAT table @ 0x%08x: %u entries, %u bytes (ePMP RO verified)",
            (uint32_t)kat_base, table->entry_count, table->total_size);
@@ -193,11 +370,19 @@ static status_t test_fips_kat_rom(void) {
   CHECK_STATUS_OK(kmac_hwip_default_configure());
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelHigh));
 
+  // Symmetric, Hash, MAC, KDF, and DRBG KATs.
+  TRY(test_sha256_kat(table));
+  TRY(test_sha512_kat(table));
+  TRY(test_hmac_sha256_kat(table));
+  TRY(test_hmac_sha512_kat(table));
+  LOG_INFO("[1/6] SHA2 + HMAC ok");
+  CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
+
   // 4. Immediately revoke transient ePMP mapping and verify ROM denies loads.
   unmap_rom_kat_slot0();
   assert_load_faults(kat_base);
 
-  LOG_INFO("All 0 ROM FIPS KATs passed and transient ePMP revoked.");
+  LOG_INFO("All 4 ROM FIPS KATs passed and transient ePMP revoked.");
   return OK_STATUS();
 }
 

@@ -61,6 +61,12 @@ enum {
 typedef enum fips_kat_alg_id {
   kFipsKatAlgNone = 0,
 
+
+  // SHA-2 & HMAC (256 & 512)
+  kFipsKatAlgSha2_256 = 1,
+  kFipsKatAlgSha2_512 = 2,
+  kFipsKatAlgHmacSha2_256 = 3,
+  kFipsKatAlgHmacSha2_512 = 4,
 } fips_kat_alg_id_t;
 
 /**
@@ -95,6 +101,27 @@ OT_ASSERT_MEMBER_OFFSET(fips_kat_descriptor_table_t, version, 4);
 OT_ASSERT_MEMBER_OFFSET(fips_kat_descriptor_table_t, entry_count, 8);
 OT_ASSERT_MEMBER_OFFSET(fips_kat_descriptor_table_t, total_size, 12);
 OT_ASSERT_MEMBER_OFFSET(fips_kat_descriptor_table_t, entries, 16);
+
+
+/**
+ * ============================================================================
+ * Vector Payload Schemas (Uniform 4-byte Sub-Field Alignment)
+ * ============================================================================
+ * All variable-length byte slices inside `data[]` are individually padded to
+ * `FIPS_KAT_ALIGN4(len)`. Use the inline accessors below to resolve sub-fields
+ * and verify `entry->size`.
+ */
+
+// 1. Hash / HMAC / SHAKE / Entropy Conditioning
+typedef struct hmac_kat_data {
+  uint32_t key_len;
+  uint32_t msg_len;
+  uint32_t digest_len;
+  uint8_t data[];  // pad4(key) || pad4(msg) || pad4(expected_digest)
+} hmac_kat_data_t;
+
+OT_ASSERT_SIZE(hmac_kat_data_t, 12);
+OT_ASSERT_MEMBER_OFFSET(hmac_kat_data_t, data, 12);
 
 /**
  * ============================================================================
@@ -221,6 +248,29 @@ static inline const void *get_fips_data(
     return NULL;
   }
   return (const void *)((const uint8_t *)table + offset);
+}
+
+
+/**
+ * ============================================================================
+ * Uniform 4-Byte Aligned Sub-Field Accessors
+ * ============================================================================
+ */
+
+// --- hmac_kat_data_t ---
+static inline const uint8_t *fips_kat_hmac_key(const hmac_kat_data_t *kat) {
+  return kat->data;
+}
+static inline const uint8_t *fips_kat_hmac_msg(const hmac_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->key_len);
+}
+static inline const uint8_t *fips_kat_hmac_digest(const hmac_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->key_len) +
+         FIPS_KAT_ALIGN4(kat->msg_len);
+}
+static inline size_t fips_kat_hmac_expected_size(const hmac_kat_data_t *kat) {
+  return sizeof(hmac_kat_data_t) + FIPS_KAT_ALIGN4(kat->key_len) +
+         FIPS_KAT_ALIGN4(kat->msg_len) + FIPS_KAT_ALIGN4(kat->digest_len);
 }
 
 
