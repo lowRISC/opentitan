@@ -127,11 +127,46 @@ status_t keyblob_to_shares(const otcrypto_blinded_key_t *key, uint32_t **share0,
   return OTCRYPTO_OK;
 }
 
+status_t keyblob_write_shares(const uint32_t *share0, const uint32_t *share1,
+                              size_t word_offset, size_t num_words,
+                              const otcrypto_key_config_t config,
+                              uint32_t *keyblob) {
+  if (launder32(config.hw_backed) != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(config.hw_backed, kHardenedBoolFalse);
+
+  size_t share_words = keyblob_share_num_words(config);
+  if (launder32(num_words) == 0 || launder32(word_offset) > share_words ||
+      launder32(num_words) > share_words - word_offset) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_GT(num_words, 0);
+  HARDENED_CHECK_LE(word_offset, share_words);
+  HARDENED_CHECK_LE(num_words, share_words - word_offset);
+
+  uint32_t *dest0 = keyblob + word_offset;
+  uint32_t *dest1 = keyblob + share_words + word_offset;
+
+  // Randomize the destination slices before writing shares.
+  hardened_memshred(dest0, num_words);
+  hardened_memshred(dest1, num_words);
+
+  HARDENED_TRY(hardened_memcpy(dest0, share0, num_words));
+  HARDENED_TRY(hardened_memcpy(dest1, share1, num_words));
+  HARDENED_CHECK_EQ(hardened_memeq(share0, dest0, num_words),
+                    kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(hardened_memeq(share1, dest1, num_words),
+                    kHardenedBoolTrue);
+  return OTCRYPTO_OK;
+}
+
 status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
                              const otcrypto_key_config_t config,
                              uint32_t *keyblob) {
-  // Randomize the keyblob contents before writing shares.
-  hardened_memshred(keyblob, keyblob_num_words(config));
+  // Ensure the keyblob is cleared before attempting to write any shares.
+  size_t keyblob_words = keyblob_num_words(config);
+  hardened_memshred(keyblob, keyblob_words);
 
   size_t share_words = keyblob_share_num_words(config);
   HARDENED_TRY(hardened_memcpy(keyblob, share0, share_words));

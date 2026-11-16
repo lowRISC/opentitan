@@ -587,5 +587,66 @@ TEST(Keyblob, KeyUnmaskNegative) {
   EXPECT_NOT_OK(keyblob_to_shares(&huge_key, &share0, &share1));
 }
 
+TEST(Keyblob, WriteSharesChunked) {
+  std::array<uint32_t, 8> test_share0 = {0x01234567, 0x89abcdef, 0x00010203,
+                                         0x04050607, 0x11223344, 0x55667788,
+                                         0x99aabbcc, 0xddeeff00};
+  std::array<uint32_t, 8> test_share1 = {0x08090a0b, 0x0c0d0e0f, 0x10111213,
+                                         0x14151617, 0xa1b2c3d4, 0xe5f60718,
+                                         0x293a4b5c, 0x6d7e8f90};
+
+  ASSERT_EQ(test_share0.size(), keyblob_share_num_words(kConfigOddBytes));
+  size_t keyblob_words = keyblob_num_words(kConfigOddBytes);
+  std::vector<uint32_t> expected_keyblob(keyblob_words, 0);
+  std::vector<uint32_t> chunked_keyblob(keyblob_words, 0);
+
+  EXPECT_OK(keyblob_from_shares(test_share0.data(), test_share1.data(),
+                                kConfigOddBytes, expected_keyblob.data()));
+
+  // Write the shares in three chunks: 3 words, 3 words, and 2 words.
+  EXPECT_OK(keyblob_write_shares(test_share0.data(), test_share1.data(),
+                                 /*word_offset=*/0, /*num_words=*/3,
+                                 kConfigOddBytes, chunked_keyblob.data()));
+  EXPECT_OK(keyblob_write_shares(test_share0.data() + 3, test_share1.data() + 3,
+                                 /*word_offset=*/3, /*num_words=*/3,
+                                 kConfigOddBytes, chunked_keyblob.data()));
+  EXPECT_OK(keyblob_write_shares(test_share0.data() + 6, test_share1.data() + 6,
+                                 /*word_offset=*/6, /*num_words=*/2,
+                                 kConfigOddBytes, chunked_keyblob.data()));
+
+  EXPECT_THAT(chunked_keyblob, ElementsAreArray(expected_keyblob));
+}
+
+TEST(Keyblob, WriteSharesNegative) {
+  std::array<uint32_t, 4> test_share0 = {0};
+  std::array<uint32_t, 4> test_share1 = {0};
+  std::vector<uint32_t> keyblob(keyblob_num_words(kConfigCtr128), 0);
+
+  // Hardware-backed key configuration is rejected.
+  EXPECT_NOT_OK(keyblob_write_shares(
+      test_share0.data(), test_share1.data(), /*word_offset=*/0,
+      /*num_words=*/4, kConfigCtrSideloaded, keyblob.data()));
+
+  // Zero words is rejected.
+  EXPECT_NOT_OK(keyblob_write_shares(
+      test_share0.data(), test_share1.data(), /*word_offset=*/0,
+      /*num_words=*/0, kConfigCtr128, keyblob.data()));
+
+  // Offset exceeds share_words (4).
+  EXPECT_NOT_OK(keyblob_write_shares(
+      test_share0.data(), test_share1.data(), /*word_offset=*/5,
+      /*num_words=*/1, kConfigCtr128, keyblob.data()));
+
+  // Offset + num_words exceeds share_words (4).
+  EXPECT_NOT_OK(keyblob_write_shares(
+      test_share0.data(), test_share1.data(), /*word_offset=*/2,
+      /*num_words=*/3, kConfigCtr128, keyblob.data()));
+
+  // Overflow check on num_words.
+  EXPECT_NOT_OK(keyblob_write_shares(
+      test_share0.data(), test_share1.data(), /*word_offset=*/2,
+      /*num_words=*/SIZE_MAX, kConfigCtr128, keyblob.data()));
+}
+
 }  // namespace
 }  // namespace keyblob_unittest
