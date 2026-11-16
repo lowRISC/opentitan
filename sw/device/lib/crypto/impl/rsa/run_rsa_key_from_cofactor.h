@@ -49,14 +49,12 @@ status_t rsa_keygen_from_cofactor_start(rsa_size_t size,
  *
  * @param size RSA size parameter (e.g., 2048, 3072, 4096).
  * @param[out] public_key_n Generated public key modulus (n).
- * @param[out] private_key_n Generated private key modulus (n).
  * @param[out] private_key_d0 Generated private key exponent share 0 (d0).
  * @param[out] private_key_d1 Generated private key exponent share 1 (d1).
  * @return Result of the operation (OK or error).
  */
 status_t rsa_keygen_from_cofactor_finalize(rsa_size_t size,
                                            uint32_t *public_key_n,
-                                           uint32_t *private_key_n,
                                            uint32_t *private_key_d0,
                                            uint32_t *private_key_d1);
 
