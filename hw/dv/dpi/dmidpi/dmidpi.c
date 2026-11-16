@@ -205,7 +205,9 @@ static bool process_jtag_cmd(struct dmidpi_ctx *ctx, bool tdi, bool tms,
       }
       return false;
     case UpdateDr:
-      ctx->jtag.dr_captured = ctx->jtag.dr_shift_reg;
+      if (ctx->jtag.ir_captured == DMIAccess) {
+        ctx->jtag.dr_captured = ctx->jtag.dr_shift_reg;
+      }
       if (tms) {
         ctx->jtag.jtag_state = SelectDrScan;
       } else {
