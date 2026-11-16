@@ -14,6 +14,7 @@ import serial
 from sw.host.penetrationtests.python.util import targets, utils
 from sw.host.penetrationtests.python.util.dis_parser import DisParser
 from sw.host.penetrationtests.python.util.gdb_controller import GDBController
+from sw.host.penetrationtests.python.util.qemu import is_qemu_available
 
 from python.runfiles import Runfiles
 
@@ -22,6 +23,11 @@ original_stdout = sys.stdout
 
 # How many times we want to skip an instruction inside a loop
 MAX_SKIPS_PER_LOOP = 1
+
+# From hw/top_earlgrey/sw/autogen/top_earlgrey.h and rstmgr_regs.h
+TOP_EARLGREY_RSTMGR_AON_BASE_ADDR = 0x40410000
+RSTMGR_RESET_INFO_REG_OFFSET = 0x8
+RSTMGR_RESET_INFO_POR_BIT = 0
 
 # Read in the extra arguments from the opentitan_test.
 parser = argparse.ArgumentParser()
@@ -61,6 +67,19 @@ def read_uart_output():
     return response
 
 
+def reset_preserving_retram(gdb, jump_address, clear_por=True):
+    gdb.reset_target()
+    if clear_por and is_qemu_available():
+        # Clear POR bit (RW1C) in RSTMGR.RESET_INFO so QEMU system_reset
+        # preserves Retention SRAM boot_svc_msg across resets.
+        reset_info_addr = (
+            TOP_EARLGREY_RSTMGR_AON_BASE_ADDR + RSTMGR_RESET_INFO_REG_OFFSET
+        )
+        por_mask = 1 << RSTMGR_RESET_INFO_POR_BIT
+        gdb.send_command(f"set *(unsigned int *){reset_info_addr:#x} = {por_mask:#x}")
+    gdb.send_command(f"set $pc={jump_address}")
+
+
 def reset_target_and_gdb(gdb, jump_address, print_output=False):
     # Close GDB and restart OpenOCD if needed
     if gdb:
@@ -69,8 +88,7 @@ def reset_target_and_gdb(gdb, jump_address, print_output=False):
     gdb = GDBController(
         gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_ext_elf_path
     )
-    gdb.reset_target()
-    gdb.send_command(f"set $pc={jump_address}")
+    reset_preserving_retram(gdb, jump_address)
     target.dump_all()
     return gdb
 
@@ -87,8 +105,7 @@ def re_initialize(gdb, jump_address, print_output=False):
         gdb = GDBController(
             gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=rom_ext_elf_path
         )
-        gdb.reset_target()
-        gdb.send_command(f"set $pc={jump_address}")
+        reset_preserving_retram(gdb, jump_address, clear_por=(timeout > 2))
         gdb.send_command("c", check_response=False)
         time.sleep(timeout)
         timeout += 1
@@ -101,8 +118,7 @@ def re_initialize(gdb, jump_address, print_output=False):
     )
 
     # Reset the device and halt it immediately
-    gdb.reset_target()
-    gdb.send_command(f"set $pc={jump_address}")
+    reset_preserving_retram(gdb, jump_address)
     target.dump_all()
     return gdb
 
@@ -154,8 +170,9 @@ class FiSimRomExtFlashRollback(unittest.TestCase):
                         gdb_port=GDB_PORT,
                         elf_file=rom_ext_elf_path,
                     )
-                    gdb.reset_target()
-                    gdb.send_command(f"set $pc={jump_address}")
+                    reset_preserving_retram(
+                        gdb, jump_address, clear_por=(timeout > 2)
+                    )
                     gdb.send_command("c", check_response=False)
                     time.sleep(timeout)
                     timeout += 1
@@ -170,8 +187,7 @@ class FiSimRomExtFlashRollback(unittest.TestCase):
                 )
 
                 # Reset the device and halt it immediately
-                gdb.reset_target()
-                gdb.send_command(f"set $pc={jump_address}")
+                reset_preserving_retram(gdb, jump_address)
 
                 # Perform PC tracing over boot_svc_handler and BL0 slot rollback verification
                 trace_start_address = (

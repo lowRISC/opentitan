@@ -11,7 +11,7 @@
 #include "sw/device/silicon_creator/lib/drivers/retention_sram.h"
 #include "sw/device/silicon_creator/lib/drivers/rstmgr.h"
 #include "sw/device/silicon_creator/lib/ownership/owner_block.h"
-#include "sw/device/tests/penetrationtests/firmware/testdata/self_signed_owner_config.bin.h"
+#include "sw/device/tests/penetrationtests/firmware/testdata/self_signed_owner_config_bin.h"
 
 OTTF_DEFINE_TEST_CONFIG();
 
