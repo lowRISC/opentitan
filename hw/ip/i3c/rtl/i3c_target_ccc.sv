@@ -17,6 +17,8 @@ module i3c_target_ccc
   // - this may be used to suppress any internal activity and gate off any output control signals
   //   when not processing CCCs.
   input                         enable_i, // TODO(#31337): May be factored into write strobes?
+  // Whether one or more Virtual Targets wishes to participate in Dynamic Address Assignment.
+  input                         daa_valid_i,  // TODO(#31337): Determines ACK/NACK to ENTDAA IBA.
 
   // Configuration.
   input  i3c_reg2hw_t           reg2hw_i,
@@ -579,6 +581,6 @@ module i3c_target_ccc
   // Signals that the logic does not use (yet).
   logic unused_ccc_inputs;
   assign unused_ccc_inputs = ^{enable_i, r_i[TargCR_Status][7:1], ccc_req_i.re,
-                               r_i[TargCR_Targets][TargCRWidth-1:NumTargets]};
+                               r_i[TargCR_Targets][TargCRWidth-1:NumTargets], daa_valid_i};
 
 endmodule

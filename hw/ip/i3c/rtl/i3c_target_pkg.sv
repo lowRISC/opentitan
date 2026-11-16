@@ -22,7 +22,8 @@ package i3c_target_pkg;
     CCC_Setup,    // Set up, including CCC and optional Defining Byte.
     CCC_SegAddr,  // Address at the start of a Read/Write Segment.
     CCC_SegData,
-    CCC_Private   // Private Read/Write transfer, not CCC framing.
+    CCC_Private,  // Private Read/Write transfer, not CCC framing.
+    CCC_IBI       // In-Band Interrupt transmission, not CCC framing.
   } i3c_targ_ccc_state_e;
 
   // Target device description.
@@ -121,8 +122,8 @@ package i3c_target_pkg;
   // - In-Band Interrupt or Controller-Role Request.
   typedef struct packed {
     logic [TargIDW-1:0] targ_id;   // ID of Target. TODO: Required only if _trx signals back to core
-    logic         [6:0] addr;      // Address to be used in arbitration request.
-    logic               ibi;       // 1 for true IBI, 0 for Controller-Role request.
+    logic         [6:0] addr;      // Address to be used in arbitration request, or ensuing data.
+    logic               ibi;       // 1 for true IBI, 0 for Controller-Role or Hot-Join Request.
     logic         [8:0] rdata_nq;  // SDR word for transmission, including 'last' bit.
   } i3c_targ_trx_arb_t;
 
