@@ -134,7 +134,7 @@ Attached to the Ibex core are a debug module (DM) and interrupt module (PLIC).
 Ibex is built with a base ISA that can switch from RV32I to [CHERIoT](https://github.com/microsoft/cheriot-sail/releases/) version 1.0.
 CHERIoT is a capability-based ISA that provides hardware-enforced memory safety.
 After reset, Ibex executes RV32I and uses the ePMP for memory protection.
-Software can switch to CHERIoT, or lock the RV32I mode, once through the [`CHERIOT_ENA`](../../ip_autogen/rv_core_ibex/doc/registers.md#cheriot_ena) and [`CHERIOT_LOCK`](../../ip_autogen/rv_core_ibex/doc/registers.md#cheriot_lock) registers of `rv_core_ibex`.
+Software can switch to CHERIoT, or lock the RV32I mode, once through the [`CHERIOT_ENA`](../../ip_autogen/rv_core_ibex/doc/registers.md#cheriot_ena), [`CHERIOT_ENA_BAR`](../../ip_autogen/rv_core_ibex/doc/registers.md#cheriot_ena_bar) and [`CHERIOT_LOCK`](../../ip_autogen/rv_core_ibex/doc/registers.md#cheriot_lock) registers of `rv_core_ibex`.
 The selected mode stays locked until the next reset.
 See [execution mode switch](../../ip_autogen/rv_core_ibex/doc/theory_of_operation.md#execution-mode-switch) for details.
 

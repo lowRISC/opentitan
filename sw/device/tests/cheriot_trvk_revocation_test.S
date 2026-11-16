@@ -46,10 +46,16 @@ cheriot_header:
 
   li a0, TOP_RV_CORE_IBEX_CFG_BASE_ADDR
   li a1, MULTIBIT_ASM_BOOL4_TRUE
+  li a2, MULTIBIT_ASM_BOOL4_FALSE
   sw a1, RV_CORE_IBEX_CHERIOT_ENA_REG_OFFSET(a0)
+  sw a2, RV_CORE_IBEX_CHERIOT_ENA_BAR_REG_OFFSET(a0)
   sw a1, RV_CORE_IBEX_CHERIOT_LOCK_REG_OFFSET(a0)
-  fence
-  fence.i
+  // The mode changes some cycles after the write. CHERIoT mode runs RV32E and
+  // ePMP mode RV32I, so `misa.E` tells them apart.
+cheriot_switch_wait:
+  csrr a1, misa
+  andi a1, a1, (1 << 4)
+  beqz a1, cheriot_switch_wait
 
   .option pop
 cheriot_start:
