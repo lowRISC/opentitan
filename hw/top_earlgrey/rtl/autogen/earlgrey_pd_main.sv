@@ -652,6 +652,7 @@ module earlgrey_pd_main #(
   kmac_pkg::app_req_t [KmacNumAppIntf-1:0] kmac_app_req;
   kmac_pkg::app_rsp_t [KmacNumAppIntf-1:0] kmac_app_rsp;
   logic       kmac_en_masking;
+  prim_mubi_pkg::mubi4_t       kmac_keymgr_sensitive_key;
   kmac_pkg::app_req_t       otbn_keymgr_app_req;
   kmac_pkg::app_rsp_t       otbn_keymgr_app_rsp;
   prim_mubi_pkg::mubi4_t       otbn_keymgr_sensitive_key;
@@ -2330,6 +2331,7 @@ module earlgrey_pd_main #(
     .keymgr_key_i(keymgr_dpe_kmac_key),
     .app_i(kmac_app_req),
     .app_o(kmac_app_rsp),
+    .keymgr_sensitive_key_i(kmac_keymgr_sensitive_key),
     .entropy_o(edn0_edn_req[3]),
     .entropy_i(edn0_edn_rsp[3]),
     .idle_o(clkmgr_idle_o[2]),
@@ -2441,6 +2443,7 @@ module earlgrey_pd_main #(
     .otbn_key_o(keymgr_dpe_otbn_key),
     .kmac_app_o(kmac_app_req[0]),
     .kmac_app_i(kmac_app_rsp[0]),
+    .kmac_sensitive_key_o(kmac_keymgr_sensitive_key),
     .otbn_app_o(otbn_keymgr_app_req),
     .otbn_app_i(otbn_keymgr_app_rsp),
     .otbn_sensitive_key_o(otbn_keymgr_sensitive_key),

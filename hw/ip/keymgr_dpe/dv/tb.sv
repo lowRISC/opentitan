@@ -70,6 +70,7 @@ module tb;
     .kmac_key_o           (keymgr_dpe_if.kmac_key),
     .kmac_app_o           (kmac_req),
     .kmac_app_i           (kmac_rsp),
+    .kmac_sensitive_key_o (),
     .otbn_app_o           (otbn_req),
     .otbn_app_i           (otbn_rsp),
     .otbn_sensitive_key_o (), // Connect to HKDF agent once it exists.

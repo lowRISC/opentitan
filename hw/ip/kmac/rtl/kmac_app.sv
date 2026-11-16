@@ -53,6 +53,7 @@ module kmac_app
   // Application Message in/ Digest out interface + control signals
   input  app_req_t [NumAppIntf-1:0] app_i,
   output app_rsp_t [NumAppIntf-1:0] app_o,
+  input  prim_mubi_pkg::mubi4_t     keymgr_sensitive_key_i,
 
   // to KMAC Core: Secret key
   output logic [MaxKeyLen-1:0] key_data_o[Share],
@@ -236,6 +237,10 @@ module kmac_app
 
   // Error signals
   kmac_pkg::err_t fsm_err, mux_err;
+
+  // TODO: unused signal
+  prim_mubi_pkg::mubi4_t unused_keymgr_sensitive_key;
+  assign unused_keymgr_sensitive_key = keymgr_sensitive_key_i;
 
   /////////////////////////////
   // Application arbitration //

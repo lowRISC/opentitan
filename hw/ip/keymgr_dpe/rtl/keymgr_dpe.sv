@@ -56,6 +56,7 @@ module keymgr_dpe
   // Application interface when KMAC is used as hashing engine
   output kmac_pkg::app_req_t kmac_app_o,
   input  kmac_pkg::app_rsp_t kmac_app_i,
+  output mubi4_t             kmac_sensitive_key_o,
 
   // Application interface when OTBN is used as hashing engine
   output kmac_pkg::app_req_t otbn_app_o,
@@ -906,8 +907,18 @@ module keymgr_dpe
   // The `otbn_sensitive_key_o` is true if:
   // - `locked_kdf_selection_q` indicates OTBN as KDF
   // - The sideload interface provides an internal key to the KDF (kmac_key.valid)
+  // SEC_CM: INTERNAL.KEY.SW_NOACCESS
   assign otbn_sensitive_key_o = KdfEngineSel inside {KdfEngineOtbn, KdfEngineBoth} ?
       mubi4_and_hi(locked_kdf_selection_q, mubi4_bool_to_mubi(kmac_key.valid)) : MuBi4False;
+
+  // The `kmac_sensitive_key_o` is true if:
+  // - `locked_kdf_selection_q` indicates KMAC as KDF
+  // - The sideload interface provides an internal key to the KDF (kmac_key.valid)
+  // SEC_CM: INTERNAL.KEY.SW_NOACCESS
+  mubi4_t locked_kdf_selection_nq;
+  assign locked_kdf_selection_nq = mubi4_t'(~locked_kdf_selection_q);
+  assign kmac_sensitive_key_o = KdfEngineSel inside {KdfEngineKmac, KdfEngineBoth} ?
+      mubi4_and_hi(locked_kdf_selection_nq, mubi4_bool_to_mubi(kmac_key.valid)) : MuBi4False;
 
   // Verify mubi signal is correctly encoded
   // SEC_CM: KDF_ENGINE.CTRL.MUBI
@@ -1115,8 +1126,22 @@ module keymgr_dpe
   `ASSERT_KNOWN(OtbnKeyKnownO_A, otbn_key_o)
   `ASSERT_KNOWN(KmacAppKnownO_A, kmac_app_o)
   `ASSERT_KNOWN(OtbnAppKnownO_A, otbn_app_o)
-  `ASSERT_KNOWN(SensitiveKeyKnownO_A, otbn_sensitive_key_o)
+  `ASSERT_KNOWN(OtbnSensitiveKeyKnownO_A, otbn_sensitive_key_o)
+  `ASSERT_KNOWN(KmacSensitiveKeyKnownO_A, kmac_sensitive_key_o)
 
+  // Verify the sensitive key indicator for both KMAC and OTBN
+  `ASSERT(KmacSensitiveKeyWhenInternalKey_A,
+          kmac_key.valid && mubi4_test_false_strict(locked_kdf_selection_q) |->
+          kmac_sensitive_key_o == MuBi4True)
+  `ASSERT(KmacSensitiveKeyFalseWhenNoInternalKey_A,
+          !kmac_key.valid || mubi4_test_true_loose(locked_kdf_selection_q) |->
+          kmac_sensitive_key_o == MuBi4False)
+  `ASSERT(OtbnSensitiveKeyWhenInternalKey_A,
+          kmac_key.valid && mubi4_test_true_strict(locked_kdf_selection_q) |->
+          otbn_sensitive_key_o == MuBi4True)
+  `ASSERT(OtbnSensitiveKeyFalseWhenNoInternalKey_A,
+          !kmac_key.valid || mubi4_test_false_loose(locked_kdf_selection_q) |->
+          otbn_sensitive_key_o == MuBi4False)
 
   // kmac parameter consistency
   // Both modules must be consistent with regards to masking assumptions

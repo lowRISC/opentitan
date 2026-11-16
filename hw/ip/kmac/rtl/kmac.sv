@@ -67,6 +67,7 @@ module kmac
   // KeyMgr KDF data path
   input  app_req_t [NumAppIntf-1:0] app_i,
   output app_rsp_t [NumAppIntf-1:0] app_o,
+  input  prim_mubi_pkg::mubi4_t     keymgr_sensitive_key_i,
 
   // EDN interface
   output edn_pkg::edn_req_t entropy_o,
@@ -1245,6 +1246,7 @@ module kmac
     // Application data in / digest out interface
     .app_i,
     .app_o,
+    .keymgr_sensitive_key_i,
 
     // Secret Key output to KMAC Core
     .key_data_o  (key_data),
