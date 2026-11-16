@@ -157,7 +157,35 @@ typedef struct fips_kat_aes_kwp256 {
   uint8_t data[68];
 } fips_kat_aes_kwp256_t;
 
-#define FIPS_KAT_NUM_ENTRIES 9
+/**
+ * Algorithm ID 10: KDF-CTR-HMAC-SHA2-256
+ * Schema: `kdf_kat_data_t`
+ * Vector: NIST SP 800-108r1 ACVP vsId=4098935 tcId=1 (2 iterations): key=32B,
+ * label=8B, context=12B, out=48B
+ */
+typedef struct fips_kat_kdf_hmac_sha256 {
+  uint32_t key_len;
+  uint32_t label_len;
+  uint32_t context_len;
+  uint32_t out_len;
+  uint8_t data[100];
+} fips_kat_kdf_hmac_sha256_t;
+
+/**
+ * Algorithm ID 11: KDF-KMAC-256
+ * Schema: `kdf_kat_data_t`
+ * Vector: NIST SP 800-108r1 ACVP vsId=4098936 tcId=1: key=32B, label=16B,
+ * context=16B, out=48B
+ */
+typedef struct fips_kat_kdf_kmac256 {
+  uint32_t key_len;
+  uint32_t label_len;
+  uint32_t context_len;
+  uint32_t out_len;
+  uint8_t data[112];
+} fips_kat_kdf_kmac256_t;
+
+#define FIPS_KAT_NUM_ENTRIES 11
 
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -177,6 +205,8 @@ typedef struct fips_kat_data_store {
   fips_kat_aes_ecb256_t aes_ecb256;
   fips_kat_aes_cbc256_t aes_cbc256;
   fips_kat_aes_kwp256_t aes_kwp256;
+  fips_kat_kdf_hmac_sha256_t kdf_hmac_sha256;
+  fips_kat_kdf_kmac256_t kdf_kmac256;
 } fips_kat_data_store_t;
 
 /**
@@ -254,6 +284,16 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                         .algorithm_id = (uint32_t)kFipsKatAlgAesKwp256Wrap,
                         .offset = FIPS_KAT_OFFSET(aes_kwp256),
                         .size = sizeof(fips_kat_aes_kwp256_t),
+                    },
+                    {
+                        .algorithm_id = (uint32_t)kFipsKatAlgKdfHmacSha2_256,
+                        .offset = FIPS_KAT_OFFSET(kdf_hmac_sha256),
+                        .size = sizeof(fips_kat_kdf_hmac_sha256_t),
+                    },
+                    {
+                        .algorithm_id = (uint32_t)kFipsKatAlgKdfKmac256,
+                        .offset = FIPS_KAT_OFFSET(kdf_kmac256),
+                        .size = sizeof(fips_kat_kdf_kmac256_t),
                     },
                 },
         },
@@ -460,6 +500,57 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                     0x29, 0x99, 0xdd, 0xfe, 0x8d, 0x9b, 0x85, 0x63,
                     0x06, 0x46, 0x22, 0x06, 0xd7, 0x27, 0x36, 0x2a,
                     0x8f, 0xc7, 0xcd, 0xb1, 0xac, 0x95, 0xca, 0xf8,
+                },
+            },
+            .kdf_hmac_sha256 = {
+                .key_len = 32,
+                .label_len = 8,
+                .context_len = 12,
+                .out_len = 48,
+                .data = {
+                    // KDK (ACVP vsId=4098935) (32 bytes)
+                    0x89, 0x91, 0x31, 0x4c, 0x82, 0x9a, 0x04, 0x99,
+                    0xd7, 0x43, 0x54, 0x5e, 0x6f, 0xaf, 0x97, 0x0f,
+                    0x5f, 0x99, 0x3f, 0xef, 0xf5, 0x1a, 0xb1, 0x70,
+                    0xc9, 0xae, 0x97, 0x4e, 0x59, 0xef, 0x30, 0xac,
+                    // Label "KDFLabel" (8 bytes)
+                    0x4b, 0x44, 0x46, 0x4c, 0x61, 0x62, 0x65, 0x6c,
+                    // Context (12 bytes)
+                    0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07, 0x08,
+                    0x09, 0x0a, 0x0b, 0x0c,
+                    // Expected OKM (2 iterations) (48 bytes)
+                    0x38, 0x8b, 0x24, 0xc8, 0x38, 0x34, 0x33, 0x2d,
+                    0x21, 0xa0, 0x3f, 0xb6, 0x01, 0x72, 0xb2, 0x71,
+                    0xfd, 0x5e, 0x66, 0x89, 0xec, 0x71, 0x2e, 0xc1,
+                    0xc0, 0xdc, 0x53, 0xb1, 0x40, 0x48, 0x0b, 0x13,
+                    0x6a, 0x54, 0x29, 0xfd, 0x6f, 0x45, 0x5c, 0xde,
+                    0xb4, 0x7b, 0xc4, 0x8c, 0xc5, 0xa8, 0xad, 0x6e,
+                },
+            },
+            .kdf_kmac256 = {
+                .key_len = 32,
+                .label_len = 16,
+                .context_len = 16,
+                .out_len = 48,
+                .data = {
+                    // KDK (ACVP vsId=4098936) (32 bytes)
+                    0xf5, 0xfe, 0x08, 0x47, 0x08, 0x57, 0x42, 0xc8,
+                    0xeb, 0xb4, 0x38, 0xb1, 0x2f, 0xac, 0xce, 0xa9,
+                    0xe9, 0x75, 0x00, 0x84, 0xd4, 0xef, 0x8f, 0x7d,
+                    0x24, 0x2f, 0x5d, 0x34, 0xef, 0xf0, 0x09, 0xbc,
+                    // Label (16 bytes)
+                    0x75, 0xdd, 0x26, 0x06, 0xf1, 0x27, 0x04, 0x55,
+                    0x83, 0xc5, 0x29, 0x36, 0x1f, 0x44, 0xfc, 0x50,
+                    // Context (16 bytes)
+                    0xac, 0xfd, 0xab, 0xb6, 0x18, 0xf6, 0xed, 0xb5,
+                    0x90, 0xc2, 0xa7, 0x4f, 0x55, 0x94, 0x1d, 0x9b,
+                    // Expected OKM (48 bytes)
+                    0xbf, 0x8a, 0x4a, 0x29, 0x50, 0x20, 0x30, 0xde,
+                    0x8b, 0xa9, 0xbd, 0xe2, 0x3d, 0x27, 0x67, 0xbc,
+                    0x73, 0x2a, 0x2c, 0x8d, 0xa4, 0x79, 0xc2, 0xae,
+                    0x17, 0xf5, 0xfa, 0x42, 0xf0, 0xb3, 0xa9, 0xf2,
+                    0x05, 0x52, 0x64, 0xdc, 0x16, 0xa3, 0x07, 0x8d,
+                    0x62, 0xd0, 0xb8, 0xb9, 0x23, 0xf6, 0xf7, 0xad,
                 },
             },
         },
