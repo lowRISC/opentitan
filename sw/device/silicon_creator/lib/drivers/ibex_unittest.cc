@@ -73,15 +73,18 @@ class NmiEnableTest : public IbexTest {};
 
 TEST_F(NmiEnableTest, AllNmis) {
   // Enable alert NMIs.
-  EXPECT_ABS_WRITE32(base_ + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, 1);
+  EXPECT_ABS_READ32(base_ + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, 0);
+  EXPECT_SEC_WRITE32(base_ + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, 1);
   ibex_enable_nmi(kIbexNmiSourceAlert);
 
-  // Enable watchdog NMIs.
-  EXPECT_ABS_WRITE32(base_ + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, 2);
+  // Enable watchdog NMIs, alert NMIs stay enabled.
+  EXPECT_ABS_READ32(base_ + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, 1);
+  EXPECT_SEC_WRITE32(base_ + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, 3);
   ibex_enable_nmi(kIbexNmiSourceWdog);
 
   // Enable all NMIs.
-  EXPECT_ABS_WRITE32(base_ + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, 3);
+  EXPECT_ABS_READ32(base_ + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, 3);
+  EXPECT_SEC_WRITE32(base_ + RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, 3);
   ibex_enable_nmi(kIbexNmiSourceAll);
 }
 

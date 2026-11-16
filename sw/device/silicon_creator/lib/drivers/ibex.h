@@ -181,6 +181,9 @@ typedef enum ibex_nmi_source {
 /**
  * Enables the specified NMI sources.
  *
+ * Sources that are already enabled stay enabled. The write is checked with
+ * `sec_mmio_write32()`, so a locked `NMI_ENABLE` fails a hardened check.
+ *
  * @param nmi_src The NMI source(s) to enable.
  */
 void ibex_enable_nmi(ibex_nmi_source_t nmi_src);
