@@ -141,15 +141,26 @@ The selected mode gates the CHERIoT memory subsystem and Ibex.
 
 <%text>### Write Sequence</%text>
 
-The switch is programmed through two registers:
+The switch is programmed through three registers:
 
 1. Write the desired mode to [`CHERIOT_ENA`](registers.md#cheriot_ena): `MuBi4True` selects CHERIoT mode, `MuBi4False` keeps the system in ePMP mode.
-2. Write `MuBi4True` to [`CHERIOT_LOCK`](registers.md#cheriot_lock).
+2. Write its complement to [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar).
+3. With interrupts disabled, write `MuBi4True` to [`CHERIOT_LOCK`](registers.md#cheriot_lock).
+4. Poll until the core runs in the selected mode, before the first instruction that depends on it, and only then enable interrupts again.
 
-The `MuBi4True` write to [`CHERIOT_LOCK`](registers.md#cheriot_lock) is what advances the switch: it samples [`CHERIOT_ENA`](registers.md#cheriot_ena) and latches the selected mode.
-Both values are decoded strictly: [`CHERIOT_ENA`](registers.md#cheriot_ena) must be exactly `MuBi4True` or `MuBi4False`, and [`CHERIOT_LOCK`](registers.md#cheriot_lock) exactly `MuBi4True`.
+The `MuBi4True` write to [`CHERIOT_LOCK`](registers.md#cheriot_lock) is what advances the switch: it samples [`CHERIOT_ENA`](registers.md#cheriot_ena) and [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) and latches the selected mode.
+All values are decoded strictly: [`CHERIOT_ENA`](registers.md#cheriot_ena) must be exactly `MuBi4True` or `MuBi4False`, [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) exactly its complement, and [`CHERIOT_LOCK`](registers.md#cheriot_lock) exactly `MuBi4True`.
 From then on the mode is fixed until `rv_core_ibex` is reset.
-Further writes to either register have no effect.
+The lock also clears [`CHERIOT_ENA_REGWEN`](registers.md#cheriot_ena_regwen), so later writes to [`CHERIOT_ENA`](registers.md#cheriot_ena) and [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) are ignored, and further writes to [`CHERIOT_LOCK`](registers.md#cheriot_lock) have no effect.
+A change of [`CHERIOT_ENA`](registers.md#cheriot_ena) or [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) in the staging cycles after the lock fails the re-check and moves the switch into the error state.
+
+<%text>### Enable Distribution</%text>
+
+The switch resets with a compare enable on and all other enables off.
+After the lock, it raises the other enables one per cycle: the core's, the lockstep shadow core's, the CHERIoT memory subsystem's and the memory subsystem shadow's.
+For CHERIoT mode, it turns the compare enable off together with the core's enable, and on again one cycle after the last one; for ePMP mode, no enable changes and the compare enable stays on.
+In every staging cycle it checks [`CHERIOT_ENA`](registers.md#cheriot_ena) and [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) again.
+Each enable comes from its own flop, which the switch writes only on the step that changes it, or with an invalid value on a step into the error state, and otherwise holds, so a fault on the switch state alone cannot set the enables of the other mode.
 
 <%text>### Switching to CHERIoT Mode at Runtime</%text>
 
@@ -163,7 +174,7 @@ On Earl Grey, it consists of the following steps, which `sw/device/tests/cheriot
    As an NMI is fatal, the handler can raise a fatal alert and stop.
 2. Zero-initialize the meta SRAM, which holds the capability tags and the revocation bitmap.
 3. Save `cpuctrlsts`, clear `cpuctrlsts.dummy_instr_en` and write zero to `x16`-`x31`.
-4. Write `MuBi4True` to [`CHERIOT_ENA`](registers.md#cheriot_ena).
+4. Write `MuBi4True` to [`CHERIOT_ENA`](registers.md#cheriot_ena) and `MuBi4False` to [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar).
 5. Write `MuBi4True` to [`CHERIOT_LOCK`](registers.md#cheriot_lock) and poll `misa` until `misa.E` is set.
    In CHERIoT mode, Ibex is set to RV32E, and in ePMP mode on Earl Grey to RV32I, so `misa.E` tells the two modes apart.
    Until then, only use 32-bit instructions that behave the same in both modes.
@@ -180,11 +191,12 @@ The boot stage that configures the ePMP should therefore make the mode decision,
 <%text>### Error State</%text>
 
 The switch has a terminal error state.
-It is entered when [`CHERIOT_LOCK`](registers.md#cheriot_lock) is written with a value other than `MuBi4True`, when [`CHERIOT_ENA`](registers.md#cheriot_ena) holds an invalid multi-bit value at that moment, or when the switch state is corrupted.
+It is entered when [`CHERIOT_LOCK`](registers.md#cheriot_lock) is written with a value other than `MuBi4True`, when [`CHERIOT_ENA`](registers.md#cheriot_ena) holds an invalid multi-bit value or [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) does not hold its complement at that moment or in any staging cycle after it, or when the switch state is corrupted.
 
-In the error state, the `fatal_hw_err` alert is raised, and the switch's mode output is driven to an invalid multi-bit value.
+In the error state, the `fatal_hw_err` alert is raised, and every step into it writes an invalid multi-bit value into all enables of the switch.
+For an invalid state encoding, the enables become invalid one cycle after the alert, with the step into the error state.
 
-Consumers of the mode signal are expected to escalate invalid values. Ibex does so by detecting this invalid multi-bit mode (`cheriot_ena` routed to `cheriot_enable_i` in Ibex) and raising an internal major alert. This sets [`FATAL_CORE_ERR`](registers.md#err_status) and halts instruction fetch.
+Consumers of the enables are expected to escalate invalid values. Ibex does so by detecting the invalid multi-bit mode on its CHERIoT enable and raising an internal major alert. This sets [`FATAL_CORE_ERR`](registers.md#err_status) and halts instruction fetch.
 
 Both the error status bit and the disabled fetch state are sticky.
 Ibex will not resume execution, and the switch error state cannot be cleared, until `rv_core_ibex` is reset.

@@ -244,23 +244,28 @@ _ottf_start:
 #endif
 
   // Select the mode. The switch FSM accepts only the strict MuBi4 encodings of
-  // `CHERIOT_ENA`; on anything else the `CHERIOT_LOCK` write parks it in a
-  // terminal error state, where CHERIoT mode stays unavailable until reset and
-  // the fatal alert is raised. Read `CHERIOT_ENA` back first so a value that
-  // did not land fails the test here rather than taking the chip down.
+  // `CHERIOT_ENA` with their complement in `CHERIOT_ENA_BAR`; on anything else
+  // the `CHERIOT_LOCK` write parks it in a terminal error state, where CHERIoT
+  // mode stays unavailable until reset and the fatal alert is raised. Read both
+  // back first so a value that did not land fails the test here rather than
+  // taking the chip down.
   addi t0, x0, ENA_SELECTED
   sw   t0, RV_CORE_IBEX_CHERIOT_ENA_REG_OFFSET(s1)
   lw   t1, RV_CORE_IBEX_CHERIOT_ENA_REG_OFFSET(s1)
+  bne  t0, t1, _fail_ena
+  addi t0, x0, ENA_REJECTED
+  sw   t0, RV_CORE_IBEX_CHERIOT_ENA_BAR_REG_OFFSET(s1)
+  lw   t1, RV_CORE_IBEX_CHERIOT_ENA_BAR_REG_OFFSET(s1)
   bne  t0, t1, _fail_ena
 
 #if CHERIOT_MODE
   li   a3, SWITCH_POLL_LIMIT
 #endif
 
-  // Commit. `CHERIOT_ENA` is only sampled here, and this write is once-only.
+  // Commit. `CHERIOT_ENA` and `CHERIOT_ENA_BAR` are sampled here, and this
+  // write is once-only.
   addi t0, x0, MULTIBIT_ASM_BOOL4_TRUE
   sw   t0, RV_CORE_IBEX_CHERIOT_LOCK_REG_OFFSET(s1)
-  fence.i
 
 #if CHERIOT_MODE
   // The mode changes some cycles after the write. Until it does, only use
@@ -360,24 +365,34 @@ _ottf_start:
   sw   t0, RV_CORE_IBEX_DV_SIM_WINDOW_REG_OFFSET(s1)
 #endif
 
-  // The mode is locked, but `CHERIOT_ENA` stays writable: the FSM samples it
-  // only on the first `CHERIOT_LOCK` write. Ask for the other mode, write
-  // `CHERIOT_LOCK` again, and check the core did not follow. The read-back
-  // stops the check being vacuous: if the write never landed, an unchanged
-  // mode would prove nothing.
+  // The lock cleared `CHERIOT_ENA_REGWEN`. Ask for the other mode with a valid
+  // pair, write `CHERIOT_LOCK` again, and check that neither `CHERIOT_ENA` and
+  // `CHERIOT_ENA_BAR` nor the core followed.
+  lw   t1, RV_CORE_IBEX_CHERIOT_ENA_REGWEN_REG_OFFSET(s1)
+  bnez t1, _fail_regwen
   addi t0, x0, ENA_REJECTED
   sw   t0, RV_CORE_IBEX_CHERIOT_ENA_REG_OFFSET(s1)
   lw   t1, RV_CORE_IBEX_CHERIOT_ENA_REG_OFFSET(s1)
-  bne  t0, t1, _fail_ena_stuck
+  addi t0, x0, ENA_SELECTED
+  bne  t0, t1, _fail_regwen
+  sw   t0, RV_CORE_IBEX_CHERIOT_ENA_BAR_REG_OFFSET(s1)
+  lw   t1, RV_CORE_IBEX_CHERIOT_ENA_BAR_REG_OFFSET(s1)
+  addi t0, x0, ENA_REJECTED
+  bne  t0, t1, _fail_regwen
 
   addi t0, x0, MULTIBIT_ASM_BOOL4_TRUE
   sw   t0, RV_CORE_IBEX_CHERIOT_LOCK_REG_OFFSET(s1)
-  fence.i
 
+  // The mode would change some cycles after the write, so check it for as long
+  // as a switch may take.
+  li   a3, SWITCH_POLL_LIMIT
+  addi t1, x0, MISA_MODE_EXPECTED
+.L_lock_check:
   csrr t0, misa
   andi t0, t0, MISA_MODE
-  addi t1, x0, MISA_MODE_EXPECTED
   bne  t0, t1, _fail_lock
+  addi a3, a3, -1
+  bnez a3, .L_lock_check
 
   // Walk the null-terminated marker string.
 #if CHERIOT_MODE
@@ -421,11 +436,12 @@ _ottf_start:
  *
  * Emits `FAIL <letter>`, where the letter names the check that failed:
  *
- *   E    `CHERIOT_ENA` did not read back as written, before locking
+ *   E    `CHERIOT_ENA` or `CHERIOT_ENA_BAR` did not read back as written,
+ *        before locking
  *   M    the core came out of the switch in the wrong mode
- *   S    `CHERIOT_ENA` did not read back as written, after locking, so the
- *        revocation attempt below it would not have proved anything
- *   L    the mode followed a post-lock `CHERIOT_ENA` change
+ *   R    `CHERIOT_ENA_REGWEN` did not read 0 after locking, or a write to
+ *        `CHERIOT_ENA` or `CHERIOT_ENA_BAR` after locking landed
+ *   L    the mode followed a post-lock request for the other mode
  *   I    the meta SRAM initialization reported an error
  *   W    the core did not reach CHERIoT mode after the `CHERIOT_LOCK` write
  *   G    a register held a tagged capability right after the switch
@@ -444,8 +460,8 @@ _fail_ena:
 _fail_mode:
   addi a0, x0, 'M'
   j    _fail
-_fail_ena_stuck:
-  addi a0, x0, 'S'
+_fail_regwen:
+  addi a0, x0, 'R'
   j    _fail
 _fail_lock:
   addi a0, x0, 'L'
