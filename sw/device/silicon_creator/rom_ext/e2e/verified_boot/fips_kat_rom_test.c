@@ -783,6 +783,189 @@ static status_t test_rsa4096_verify_kat(
   return OK_STATUS();
 }
 
+static status_t test_ecdsa_p256_sign_kat(
+    const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const asymmetric_sign_kat_data_t *kat =
+      (const asymmetric_sign_kat_data_t *)resolve_entry(
+          table, kFipsKatAlgEcdsaP256Sign, &entry);
+  CHECK(entry->size == fips_kat_asym_sign_expected_size(kat));
+  CHECK(kat->priv_key_len == 32 && kat->ephemeral_len == 32 &&
+        kat->msg_len == 128 && kat->sig_len1 == 32 && kat->sig_len2 == 32);
+
+  const otcrypto_key_config_t kP256Config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t keyblob_sk[20] = {0};
+  memcpy(keyblob_sk, fips_kat_asym_sign_priv_key(kat), 32);
+  otcrypto_blinded_key_t private_key = {
+      .config = kP256Config,
+      .keyblob_length = sizeof(keyblob_sk),
+      .keyblob = keyblob_sk,
+  };
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  uint32_t keyblob_k[20] = {0};
+  memcpy(keyblob_k, fips_kat_asym_sign_ephemeral(kat), 32);
+  otcrypto_blinded_key_t secret_scalar = {
+      .config = kP256Config,
+      .keyblob_length = sizeof(keyblob_k),
+      .keyblob = keyblob_k,
+  };
+  secret_scalar.checksum = otcrypto_integrity_blinded_checksum(&secret_scalar);
+
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_asym_sign_msg(kat), kat->msg_len);
+  uint32_t digest_words[8] = {0};
+  otcrypto_hash_digest_t digest = {
+      .mode = kOtcryptoHashModeSha256,
+      .len = ARRAYSIZE(digest_words),
+      .data = digest_words,
+  };
+  CHECK_STATUS_OK(otcrypto_sha2_256(&msg_buf, &digest));
+
+  uint32_t sig[16] = {0};
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
+  CHECK_STATUS_OK(otcrypto_ecdsa_p256_sign_config_k(
+      &private_key, &secret_scalar, digest, &sig_buf));
+  CHECK_ARRAYS_EQ((const uint8_t *)sig, fips_kat_asym_sign_sig1(kat), 32);
+  CHECK_ARRAYS_EQ((const uint8_t *)(sig + 8), fips_kat_asym_sign_sig2(kat), 32);
+  return OK_STATUS();
+}
+
+static status_t test_ecdsa_p256_verify_kat(
+    const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const asymmetric_verify_kat_data_t *kat =
+      (const asymmetric_verify_kat_data_t *)resolve_entry(
+          table, kFipsKatAlgEcdsaP256Verify, &entry);
+  CHECK(entry->size == fips_kat_asym_verify_expected_size(kat));
+  CHECK(kat->pub_key_len1 == 32 && kat->pub_key_len2 == 32 &&
+        kat->msg_len == 128 && kat->sig_len1 == 32 && kat->sig_len2 == 32);
+
+  uint32_t pk_words[16];
+  memcpy(pk_words, fips_kat_asym_verify_pub_key1(kat), 32);
+  memcpy(pk_words + 8, fips_kat_asym_verify_pub_key2(kat), 32);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = sizeof(pk_words),
+      .key = pk_words,
+  };
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_asym_verify_msg(kat), kat->msg_len);
+  uint32_t sig_words[16];
+  memcpy(sig_words, fips_kat_asym_verify_sig1(kat), 32);
+  memcpy(sig_words + 8, fips_kat_asym_verify_sig2(kat), 32);
+  otcrypto_const_word32_buf_t sig_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, sig_words, ARRAYSIZE(sig_words));
+
+  hardened_bool_t result = kHardenedBoolFalse;
+  CHECK_STATUS_OK(otcrypto_ecdsa_p256_hash_verify(
+      &public_key, kOtcryptoHashModeSha256, &msg_buf, &sig_buf, &result));
+  CHECK(result == kHardenedBoolTrue);
+  return OK_STATUS();
+}
+
+static status_t test_ecdsa_p384_sign_kat(
+    const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const asymmetric_sign_kat_data_t *kat =
+      (const asymmetric_sign_kat_data_t *)resolve_entry(
+          table, kFipsKatAlgEcdsaP384Sign, &entry);
+  CHECK(entry->size == fips_kat_asym_sign_expected_size(kat));
+  CHECK(kat->priv_key_len == 48 && kat->ephemeral_len == 48 &&
+        kat->msg_len == 128 && kat->sig_len1 == 48 && kat->sig_len2 == 48);
+
+  const otcrypto_key_config_t kP384Config = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = 48,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t keyblob_sk[28] = {0};
+  memcpy(keyblob_sk, fips_kat_asym_sign_priv_key(kat), 48);
+  otcrypto_blinded_key_t private_key = {
+      .config = kP384Config,
+      .keyblob_length = sizeof(keyblob_sk),
+      .keyblob = keyblob_sk,
+  };
+  private_key.checksum = otcrypto_integrity_blinded_checksum(&private_key);
+
+  uint32_t keyblob_k[28] = {0};
+  memcpy(keyblob_k, fips_kat_asym_sign_ephemeral(kat), 48);
+  otcrypto_blinded_key_t secret_scalar = {
+      .config = kP384Config,
+      .keyblob_length = sizeof(keyblob_k),
+      .keyblob = keyblob_k,
+  };
+  secret_scalar.checksum = otcrypto_integrity_blinded_checksum(&secret_scalar);
+
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_asym_sign_msg(kat), kat->msg_len);
+  uint32_t digest_words[12] = {0};
+  otcrypto_hash_digest_t digest = {
+      .mode = kOtcryptoHashModeSha384,
+      .len = ARRAYSIZE(digest_words),
+      .data = digest_words,
+  };
+  CHECK_STATUS_OK(otcrypto_sha2_384(&msg_buf, &digest));
+
+  uint32_t sig[24] = {0};
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
+  CHECK_STATUS_OK(otcrypto_ecdsa_p384_sign_config_k(
+      &private_key, &secret_scalar, digest, &sig_buf));
+  CHECK_ARRAYS_EQ((const uint8_t *)sig, fips_kat_asym_sign_sig1(kat), 48);
+  CHECK_ARRAYS_EQ((const uint8_t *)(sig + 12), fips_kat_asym_sign_sig2(kat),
+                  48);
+  return OK_STATUS();
+}
+
+static status_t test_ecdsa_p384_verify_kat(
+    const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const asymmetric_verify_kat_data_t *kat =
+      (const asymmetric_verify_kat_data_t *)resolve_entry(
+          table, kFipsKatAlgEcdsaP384Verify, &entry);
+  CHECK(entry->size == fips_kat_asym_verify_expected_size(kat));
+  CHECK(kat->pub_key_len1 == 48 && kat->pub_key_len2 == 48 &&
+        kat->msg_len == 128 && kat->sig_len1 == 48 && kat->sig_len2 == 48);
+
+  uint32_t pk_words[24];
+  memcpy(pk_words, fips_kat_asym_verify_pub_key1(kat), 48);
+  memcpy(pk_words + 12, fips_kat_asym_verify_pub_key2(kat), 48);
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = sizeof(pk_words),
+      .key = pk_words,
+  };
+  public_key.checksum = otcrypto_integrity_unblinded_checksum(&public_key);
+
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_asym_verify_msg(kat), kat->msg_len);
+  uint32_t sig_words[24];
+  memcpy(sig_words, fips_kat_asym_verify_sig1(kat), 48);
+  memcpy(sig_words + 12, fips_kat_asym_verify_sig2(kat), 48);
+  otcrypto_const_word32_buf_t sig_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, sig_words, ARRAYSIZE(sig_words));
+
+  hardened_bool_t result = kHardenedBoolFalse;
+  CHECK_STATUS_OK(otcrypto_ecdsa_p384_hash_verify(
+      &public_key, kOtcryptoHashModeSha384, &msg_buf, &sig_buf, &result));
+  CHECK(result == kHardenedBoolTrue);
+  return OK_STATUS();
+}
+
 // -----------------------------------------------------------------------------
 // Main Test Entry Point
 // -----------------------------------------------------------------------------
@@ -818,7 +1001,7 @@ static status_t test_fips_kat_rom(void) {
       get_fips_descriptor_table_from_region((const void *)kat_base,
                                             kFipsKatRegionSize);
   CHECK(table != NULL, "Invalid ROM FIPS KAT descriptor table");
-  CHECK(table->entry_count == 14u, "Expected 14 entries, got %u",
+  CHECK(table->entry_count == 18u, "Expected 18 entries, got %u",
         table->entry_count);
   LOG_INFO("FIPS KAT table @ 0x%08x: %u entries, %u bytes (ePMP RO verified)",
            (uint32_t)kat_base, table->entry_count, table->total_size);
@@ -849,6 +1032,10 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_rsa4096_sign_kat(table));
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
   TRY(test_rsa4096_verify_kat(table));
+  TRY(test_ecdsa_p256_sign_kat(table));
+  TRY(test_ecdsa_p256_verify_kat(table));
+  TRY(test_ecdsa_p384_sign_kat(table));
+  TRY(test_ecdsa_p384_verify_kat(table));
   LOG_INFO("[4/6] RSA + ECC ok");
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
 
@@ -856,7 +1043,7 @@ static status_t test_fips_kat_rom(void) {
   unmap_rom_kat_slot0();
   assert_load_faults(kat_base);
 
-  LOG_INFO("All 14 ROM FIPS KATs passed and transient ePMP revoked.");
+  LOG_INFO("All 18 ROM FIPS KATs passed and transient ePMP revoked.");
   return OK_STATUS();
 }
 
