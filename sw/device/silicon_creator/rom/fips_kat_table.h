@@ -67,6 +67,10 @@ typedef enum fips_kat_alg_id {
   kFipsKatAlgSha2_512 = 2,
   kFipsKatAlgHmacSha2_256 = 3,
   kFipsKatAlgHmacSha2_512 = 4,
+
+  // SHA-3 / Keccak
+  kFipsKatAlgShake256 = 5,
+  kFipsKatAlgKmac256 = 6,
 } fips_kat_alg_id_t;
 
 /**
@@ -122,6 +126,18 @@ typedef struct hmac_kat_data {
 
 OT_ASSERT_SIZE(hmac_kat_data_t, 12);
 OT_ASSERT_MEMBER_OFFSET(hmac_kat_data_t, data, 12);
+
+// 2. KMAC / SP 800-108r1 KDF (KMAC-256, KDF-CTR-HMAC-SHA256, KDF-KMAC-256)
+typedef struct kdf_kat_data {
+  uint32_t key_len;
+  uint32_t label_len;    // KMAC customization string S or SP 800-108r1 Label
+  uint32_t context_len;  // KMAC input message or SP 800-108r1 Context
+  uint32_t out_len;      // Expected MAC tag or derived keying material
+  uint8_t data[];  // pad4(key) || pad4(label) || pad4(context) || pad4(out)
+} kdf_kat_data_t;
+
+OT_ASSERT_SIZE(kdf_kat_data_t, 16);
+OT_ASSERT_MEMBER_OFFSET(kdf_kat_data_t, data, 16);
 
 /**
  * ============================================================================
@@ -271,6 +287,27 @@ static inline const uint8_t *fips_kat_hmac_digest(const hmac_kat_data_t *kat) {
 static inline size_t fips_kat_hmac_expected_size(const hmac_kat_data_t *kat) {
   return sizeof(hmac_kat_data_t) + FIPS_KAT_ALIGN4(kat->key_len) +
          FIPS_KAT_ALIGN4(kat->msg_len) + FIPS_KAT_ALIGN4(kat->digest_len);
+}
+
+// --- kdf_kat_data_t ---
+static inline const uint8_t *fips_kat_kdf_key(const kdf_kat_data_t *kat) {
+  return kat->data;
+}
+static inline const uint8_t *fips_kat_kdf_label(const kdf_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->key_len);
+}
+static inline const uint8_t *fips_kat_kdf_context(const kdf_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->key_len) +
+         FIPS_KAT_ALIGN4(kat->label_len);
+}
+static inline const uint8_t *fips_kat_kdf_out(const kdf_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->key_len) +
+         FIPS_KAT_ALIGN4(kat->label_len) + FIPS_KAT_ALIGN4(kat->context_len);
+}
+static inline size_t fips_kat_kdf_expected_size(const kdf_kat_data_t *kat) {
+  return sizeof(kdf_kat_data_t) + FIPS_KAT_ALIGN4(kat->key_len) +
+         FIPS_KAT_ALIGN4(kat->label_len) + FIPS_KAT_ALIGN4(kat->context_len) +
+         FIPS_KAT_ALIGN4(kat->out_len);
 }
 
 
