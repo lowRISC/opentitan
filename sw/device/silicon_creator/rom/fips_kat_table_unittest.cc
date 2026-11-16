@@ -281,14 +281,14 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
   ASSERT_NE(table, nullptr);
   EXPECT_EQ(table->magic, kFipsKatDescriptorMagic);
   EXPECT_EQ(table->version, kFipsKatDescriptorVersion1);
-  EXPECT_EQ(table->entry_count, 25u);
+  EXPECT_EQ(table->entry_count, 26u);
   EXPECT_LE(table->total_size, kFipsKatRegionSize);
   EXPECT_EQ(table->total_size % 4u, 0u);
 
   std::set<uint32_t> seen_ids;
   std::vector<std::pair<uint32_t, uint32_t>> intervals;
 
-  for (uint32_t id : std::vector<uint32_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 28}) {
+  for (uint32_t id : std::vector<uint32_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 26, 28}) {
     const auto alg_id = static_cast<fips_kat_alg_id_t>(id);
     const fips_kat_entry_t *entry =
         find_fips_entry(table, kFipsKatRegionSize, alg_id);
@@ -423,6 +423,17 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
         const auto *kat = static_cast<const mldsa_kat_data_t *>(payload);
         EXPECT_EQ(kat->num_cases, 5u);
         EXPECT_EQ(entry->size, fips_kat_mldsa_expected_size(kat));
+        break;
+      }
+      case kFipsKatAlgDrbgAes256: {
+
+        const auto *kat = static_cast<const drbg_kat_data_t *>(payload);
+        EXPECT_EQ(entry->size, sizeof(drbg_kat_data_t));
+        EXPECT_EQ(kat->seed_len, 48u);
+        EXPECT_EQ(kat->expected_output_len, 64u);
+        EXPECT_EQ(kat->state_instantiate.reseed_counter, 0u);
+        EXPECT_EQ(kat->state_generate1.reseed_counter, 1u);
+        EXPECT_EQ(kat->state_generate2.reseed_counter, 1u);
         break;
       }
       default:
