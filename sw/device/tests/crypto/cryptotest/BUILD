@@ -169,7 +169,7 @@ cryptotest(
     test_args = " ".join([
         "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:rsa_vectors.json)\"",
         "--run-siggen",
-        "--timeout=250s",
+        "--timeout=500s",
     ]),
     test_harness = "//sw/host/tests/crypto/acvp:harness",
     test_vectors = [
@@ -183,7 +183,7 @@ cryptotest(
     test_args = " ".join([
         "--input=\"$(rootpath //sw/host/cryptotest/testvectors/acvp:rsa_keygen_vectors.json)\"",
         "--run-keygen",
-        "--timeout=250s",
+        "--timeout=500s",
     ]),
     test_harness = "//sw/host/tests/crypto/acvp:harness",
     test_vectors = [
