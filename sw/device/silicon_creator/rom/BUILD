@@ -81,6 +81,17 @@ cc_test(
     ],
 )
 
+cc_test(
+    name = "fips_kat_table_unittest",
+    srcs = ["fips_kat_table_unittest.cc"],
+    deps = [
+        ":fips_kat_data",
+        ":fips_kat_table",
+        "@googletest//:gtest",
+        "@googletest//:gtest_main",
+    ],
+)
+
 ld_library(
     name = "linker_script",
     script = "rom.ld",
@@ -120,10 +131,33 @@ cc_library(
 )
 
 cc_library(
+    name = "fips_kat_table",
+    hdrs = ["fips_kat_table.h"],
+    visibility = ["//visibility:public"],
+    deps = [
+        "//sw/device/lib/base:macros",
+    ],
+)
+
+cc_library(
+    name = "fips_kat_data",
+    srcs = ["fips_kat_ptrs.c"],
+    deps = [
+        ":fips_kat_table",
+        "//sw/device/lib/base:macros",
+    ],
+    alwayslink = True,
+)
+
+cc_library(
     name = "mask_rom_lib",
-    srcs = ["rom_start.S"],
+    srcs = [
+        "rom_start.S",
+    ],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
+        ":fips_kat_data",
+        ":fips_kat_table",
         ":rom_common",
         ":rom_epmp",
         "//hw/top:aon_timer_c_regs",
@@ -143,6 +177,7 @@ cc_library(
         "//hw/top:sram_ctrl_c_regs",
         "//hw/top:top_lib",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:macros",
         "//sw/device/lib/base:multibits",
         "//sw/device/silicon_creator/lib/base:chip",
     ],
