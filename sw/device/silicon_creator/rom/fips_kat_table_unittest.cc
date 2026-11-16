@@ -246,9 +246,52 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
   ASSERT_NE(table, nullptr);
   EXPECT_EQ(table->magic, kFipsKatDescriptorMagic);
   EXPECT_EQ(table->version, kFipsKatDescriptorVersion1);
-  EXPECT_EQ(table->entry_count, 0u);
+  EXPECT_EQ(table->entry_count, 4u);
   EXPECT_LE(table->total_size, kFipsKatRegionSize);
   EXPECT_EQ(table->total_size % 4u, 0u);
+
+  std::set<uint32_t> seen_ids;
+  std::vector<std::pair<uint32_t, uint32_t>> intervals;
+
+  for (uint32_t id : std::vector<uint32_t>{1, 2, 3, 4}) {
+    const auto alg_id = static_cast<fips_kat_alg_id_t>(id);
+    const fips_kat_entry_t *entry =
+        find_fips_entry(table, kFipsKatRegionSize, alg_id);
+    ASSERT_NE(entry, nullptr) << "Missing algorithm_id " << id;
+    EXPECT_TRUE(seen_ids.insert(entry->algorithm_id).second)
+        << "Duplicate algorithm_id " << id;
+
+    const void *payload = get_fips_data(table, kFipsKatRegionSize, entry);
+    ASSERT_NE(payload, nullptr) << "Invalid payload for algorithm_id " << id;
+    EXPECT_EQ(reinterpret_cast<uintptr_t>(payload) & 3u, 0u);
+    intervals.emplace_back(entry->offset, entry->offset + entry->size);
+
+    switch (alg_id) {
+      case kFipsKatAlgSha2_256:
+      case kFipsKatAlgSha2_512:
+      case kFipsKatAlgHmacSha2_256:
+      case kFipsKatAlgHmacSha2_512: {
+
+        const auto *kat = static_cast<const hmac_kat_data_t *>(payload);
+        EXPECT_EQ(entry->size, fips_kat_hmac_expected_size(kat))
+            << "alg_id=" << id;
+        EXPECT_EQ(reinterpret_cast<uintptr_t>(fips_kat_hmac_key(kat)) & 3u, 0u);
+        EXPECT_EQ(reinterpret_cast<uintptr_t>(fips_kat_hmac_msg(kat)) & 3u, 0u);
+        EXPECT_EQ(reinterpret_cast<uintptr_t>(fips_kat_hmac_digest(kat)) & 3u,
+                  0u);
+        break;
+      }
+      default:
+        FAIL() << "Unhandled algorithm_id " << id;
+    }
+  }
+
+  // Confirm all payload intervals are strictly non-overlapping.
+  std::sort(intervals.begin(), intervals.end());
+  for (size_t i = 1; i < intervals.size(); ++i) {
+    EXPECT_LE(intervals[i - 1].second, intervals[i].first)
+        << "Overlapping payloads at sorted index " << i;
+  }
 }
 
 }  // namespace
