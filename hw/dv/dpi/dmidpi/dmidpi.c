@@ -340,7 +340,8 @@ static void process_dmi_inputs(struct dmidpi_ctx *ctx) {
   // Always ready for a resp
   ctx->sig.dmi_rsp_ready = 1;
   if (ctx->sig.dmi_rsp_valid) {
-    ctx->jtag.dr_captured = (uint64_t)ctx->sig.dmi_rsp_data << 2;
+    ctx->jtag.dr_captured = (uint64_t)(ctx->sig.dmi_req_addr & 0x7f) << 34;
+    ctx->jtag.dr_captured |= (uint64_t)ctx->sig.dmi_rsp_data << 2;
     ctx->jtag.dr_captured |= (uint64_t)ctx->sig.dmi_rsp_resp & 0x3;
     // Clear req outstanding flag
     ctx->jtag.dmi_outstanding = 0;
