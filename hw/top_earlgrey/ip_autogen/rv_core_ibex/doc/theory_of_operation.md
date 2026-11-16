@@ -128,24 +128,33 @@ The selected mode gates the CHERIoT memory subsystem and Ibex.
 
 ### Write Sequence
 
-The switch is programmed through two registers:
+The switch is programmed through three registers:
 
 1. Write the desired mode to [`CHERIOT_ENA`](registers.md#cheriot_ena): `MuBi4True` selects CHERIoT mode, `MuBi4False` keeps the system in ePMP mode.
-2. Write `MuBi4True` to [`CHERIOT_LOCK`](registers.md#cheriot_lock).
+2. Write its complement to [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar).
+3. With interrupts disabled, write `MuBi4True` to [`CHERIOT_LOCK`](registers.md#cheriot_lock).
+4. Execute `fence.i` before the first instruction that depends on the selected mode, and only then enable interrupts again.
 
-The `MuBi4True` write to [`CHERIOT_LOCK`](registers.md#cheriot_lock) is what advances the switch: it samples [`CHERIOT_ENA`](registers.md#cheriot_ena) and latches the selected mode.
-Both values are decoded strictly: [`CHERIOT_ENA`](registers.md#cheriot_ena) must be exactly `MuBi4True` or `MuBi4False`, and [`CHERIOT_LOCK`](registers.md#cheriot_lock) exactly `MuBi4True`.
+The `MuBi4True` write to [`CHERIOT_LOCK`](registers.md#cheriot_lock) is what advances the switch: it samples [`CHERIOT_ENA`](registers.md#cheriot_ena) and [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) and latches the selected mode.
+All values are decoded strictly: [`CHERIOT_ENA`](registers.md#cheriot_ena) must be exactly `MuBi4True` or `MuBi4False`, [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) exactly its complement, and [`CHERIOT_LOCK`](registers.md#cheriot_lock) exactly `MuBi4True`.
 From then on the mode is fixed until `rv_core_ibex` is reset.
-Further writes to either register have no effect.
+A change of [`CHERIOT_ENA`](registers.md#cheriot_ena) or [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) in the staging cycles after the lock fails the re-check and moves the switch into the error state; later changes, and further writes to [`CHERIOT_LOCK`](registers.md#cheriot_lock), have no effect.
+
+`fence.i` flushes the pipeline, invalidates the instruction cache and refetches the following instructions from memory, which takes longer than the switch needs, and it discards instructions that were fetched and decoded for the previous mode.
+
+### Enable Distribution
+
+After the lock, the switch raises its enables one per cycle: the core's, the lockstep shadow core's, the CHERIoT memory subsystem's and the memory subsystem shadow's, and finally a compare enable.
+In every staging cycle it checks [`CHERIOT_ENA`](registers.md#cheriot_ena) and [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) again.
 
 ### Error State
 
 The switch has a terminal error state.
-It is entered when [`CHERIOT_LOCK`](registers.md#cheriot_lock) is written with a value other than `MuBi4True`, when [`CHERIOT_ENA`](registers.md#cheriot_ena) holds an invalid multi-bit value at that moment, or when the switch state is corrupted.
+It is entered when [`CHERIOT_LOCK`](registers.md#cheriot_lock) is written with a value other than `MuBi4True`, when [`CHERIOT_ENA`](registers.md#cheriot_ena) holds an invalid multi-bit value or [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) does not hold its complement at that moment or in any staging cycle after it, or when the switch state is corrupted.
 
-In the error state, the `fatal_hw_err` alert is raised, and the switch's mode output is driven to an invalid multi-bit value.
+In the error state, the `fatal_hw_err` alert is raised, and all enables of the switch are driven to an invalid multi-bit value.
 
-Consumers of the mode signal are expected to escalate invalid values. Ibex does so by detecting this invalid multi-bit mode (`cheriot_ena` routed to `cheriot_enable_i` in Ibex) and raising an internal major alert. This sets [`FATAL_CORE_ERR`](registers.md#err_status) and halts instruction fetch.
+Consumers of the enables are expected to escalate invalid values. Ibex does so by detecting the invalid multi-bit mode on its CHERIoT enable and raising an internal major alert. This sets [`FATAL_CORE_ERR`](registers.md#err_status) and halts instruction fetch.
 
 Both the error status bit and the disabled fetch state are sticky.
 Ibex will not resume execution, and the switch error state cannot be cleared, until `rv_core_ibex` is reset.

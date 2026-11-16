@@ -1194,15 +1194,20 @@ module rv_core_ibex
   // CHERIoT switch
   ////////////////////
 
-  // SEC_CM: CHERIOT_SWITCH.FSM.SPARSE
+  // SEC_CM: CHERIOT_SWITCH.FSM.SPARSE, CHERIOT_SWITCH.CONFIG.REDUN
   rv_core_ibex_cheriot_switch u_cheriot_switch (
     .clk_i,
     .rst_ni,
     .ena_i        (mubi4_t'(reg2hw.cheriot_ena.q)),
+    .ena_ni       (mubi4_t'(reg2hw.cheriot_ena_bar.q)),
     .lock_i       (mubi4_t'(reg2hw.cheriot_lock.q)),
     .lock_access_i(reg2hw.cheriot_lock.qe),
-    .ena_o        (cheriot_ena_o),
-    .error_o      (cheriot_switch_error)
+    .ena_core_o         (cheriot_ena_o),
+    .ena_core_shadow_o  (),
+    .ena_memsys_o       (),
+    .ena_memsys_shadow_o(),
+    .ena_compare_o      (),
+    .error_o            (cheriot_switch_error)
   );
 
   logic unused_reg2hw;
@@ -1293,7 +1298,8 @@ module rv_core_ibex
                                     reg2hw_shadow.nmi_state, reg2hw_shadow.rnd_data,
                                     reg2hw_shadow.sw_fatal_err, reg2hw_shadow.sw_recov_err,
                                     reg2hw_shadow.mcounteren_writable,
-                                    reg2hw_shadow.cheriot_ena, reg2hw_shadow.cheriot_lock};
+                                    reg2hw_shadow.cheriot_ena, reg2hw_shadow.cheriot_ena_bar,
+                                    reg2hw_shadow.cheriot_lock};
 
     /////////////////////////////////////////////////////////////////
     // Shadow Core Data Address Translation Unit and TL-UL Adapter //

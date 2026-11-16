@@ -30,6 +30,12 @@
       stage: V2S
       tests: []
     }
+    {
+      name: sec_cm_cheriot_switch_config_redun
+      desc: "Verify the countermeasure(s) CHERIOT_SWITCH.CONFIG.REDUN."
+      stage: V2S
+      tests: []
+    }
 % endif
     {
       name: sec_cm_bus_integrity
