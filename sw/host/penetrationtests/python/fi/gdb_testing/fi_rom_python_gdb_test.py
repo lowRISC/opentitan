@@ -152,7 +152,10 @@ class RomFiSim(unittest.TestCase):
                 )
 
                 # We stop tracing when we execute the p256 verify in the otbn
-                trace_end_address = rom_parser.get_function_start_address("sc_otbn_cmd_run")
+                trace_end_address = (
+                    rom_parser.get_function_start_address("sc_otbn_cmd_run") or
+                    rom_parser.get_function_start_address("sc_otbn_execute_finish")
+                )
 
                 print(
                     "Start and stop addresses for the rom for trace 1: ",
