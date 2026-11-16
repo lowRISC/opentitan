@@ -281,14 +281,14 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
   ASSERT_NE(table, nullptr);
   EXPECT_EQ(table->magic, kFipsKatDescriptorMagic);
   EXPECT_EQ(table->version, kFipsKatDescriptorVersion1);
-  EXPECT_EQ(table->entry_count, 14u);
+  EXPECT_EQ(table->entry_count, 18u);
   EXPECT_LE(table->total_size, kFipsKatRegionSize);
   EXPECT_EQ(table->total_size % 4u, 0u);
 
   std::set<uint32_t> seen_ids;
   std::vector<std::pair<uint32_t, uint32_t>> intervals;
 
-  for (uint32_t id : std::vector<uint32_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}) {
+  for (uint32_t id : std::vector<uint32_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18}) {
     const auto alg_id = static_cast<fips_kat_alg_id_t>(id);
     const fips_kat_entry_t *entry =
         find_fips_entry(table, kFipsKatRegionSize, alg_id);
@@ -348,7 +348,9 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
         break;
       }
       case kFipsKatAlgRsa2048Verify:
-      case kFipsKatAlgRsa4096Verify: {
+      case kFipsKatAlgRsa4096Verify:
+      case kFipsKatAlgEcdsaP256Verify:
+      case kFipsKatAlgEcdsaP384Verify: {
 
         const auto *kat =
             static_cast<const asymmetric_verify_kat_data_t *>(payload);
@@ -373,7 +375,9 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
             0u);
         break;
       }
-      case kFipsKatAlgRsa4096Sign: {
+      case kFipsKatAlgRsa4096Sign:
+      case kFipsKatAlgEcdsaP256Sign:
+      case kFipsKatAlgEcdsaP384Sign: {
 
         const auto *kat =
             static_cast<const asymmetric_sign_kat_data_t *>(payload);
