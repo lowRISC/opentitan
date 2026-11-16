@@ -30,6 +30,30 @@
       tests: []
     }
     {
+      name: sec_cm_cheriot_switch_config_redun
+      desc: '''
+            Verify the countermeasure(s) CHERIOT_SWITCH.CONFIG.REDUN.
+
+            The mode switch (`rv_core_ibex_cheriot_switch`) samples the mode selection, CHERIOT_ENA
+            and CHERIOT_ENA_BAR on its `ena_i` and `ena_ni` inputs, in the cycle CHERIOT_LOCK is
+            written (`lock_access_i`) and checks it again in each of the four staging cycles that
+            follow. From the lock on, CHERIOT_ENA_REGWEN blocks software writes to both registers,
+            so only a fault can change the selection in these cycles.
+
+            Select either mode with a valid pair and write CHERIOT_LOCK. In the lock cycle or in a
+            randomly chosen staging cycle, force `ena_i`, `ena_ni` or both for one cycle to other
+            values, valid or invalid, including the pair that selects the other mode. Check that
+            the switch enters its error state and drives all its enables invalid, that the
+            `fatal_hw_err` alert is raised, that Ibex sets ERR_STATUS.FATAL_CORE_ERR and stops
+            fetching, and that the CHERIoT memory subsystem raises its `fatal_fault` alert.
+
+            Force the same values once the switch has reached its final state, and check that the
+            enables stay unchanged and no alert is raised.
+            '''
+      stage: V2S
+      tests: []
+    }
+    {
       name: sec_cm_bus_integrity
       desc: "Verify the countermeasure(s) BUS.INTEGRITY."
       stage: V2S

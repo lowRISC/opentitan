@@ -693,6 +693,13 @@
     { name: "CHERIOT_SWITCH.FSM.SPARSE",
       desc: "The write-once ePMP/CHERIoT execution mode switch FSM is sparsely encoded."
     }
+    { name: "CHERIOT_SWITCH.CONFIG.REDUN",
+      desc: '''
+        The mode selection is held twice, in CHERIOT_ENA and its complement CHERIOT_ENA_BAR. The
+        switch checks both when CHERIOT_LOCK is written and again in every staging cycle, and
+        enters its terminal error state otherwise.
+      '''
+    }
 % endif
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
@@ -1215,14 +1222,34 @@
       },
 % if cheriot_available:
 
+      { name: "CHERIOT_ENA_REGWEN",
+        desc: "Register write enable for !!CHERIOT_ENA and !!CHERIOT_ENA_BAR.",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        hwext: "true",
+        fields: [
+          { bits: "0",
+            name: "EN",
+            resval: "1",
+            desc: '''
+              Whether !!CHERIOT_ENA and !!CHERIOT_ENA_BAR can be written (1) or not (0).
+              Reads as 0 once !!CHERIOT_LOCK has been written, until reset.
+            '''
+          },
+        ]
+      },
+
       { name: "CHERIOT_ENA",
         desc: '''
           Whether to enable (MuBi4True) CHERIoT mode or remain in ePMP mode (MuBi4False).
-          This field is only sampled when !!CHERIOT_LOCK is written; changing it afterwards has
-          no effect.
+          This field is sampled when !!CHERIOT_LOCK is written and checked again in each cycle of
+          the staged transition that follows; a change in these cycles moves the switch into its
+          terminal error state.
+          Writes are ignored once !!CHERIOT_LOCK has been written (see !!CHERIOT_ENA_REGWEN).
         ''',
         swaccess: "rw",
         hwaccess: "hro",
+        regwen: "CHERIOT_ENA_REGWEN",
         fields: [
           { bits: "3:0",
             name: "VAL",
@@ -1235,10 +1262,41 @@
         ]
       },
 
+      { name: "CHERIOT_ENA_BAR",
+        desc: '''
+          Complement of !!CHERIOT_ENA, a redundant copy of the mode selection.
+          Write MuBi4False to enable CHERIoT mode or MuBi4True to remain in ePMP mode.
+          This field is sampled when !!CHERIOT_LOCK is written and checked again in each cycle of
+          the staged transition that follows; a change in these cycles moves the switch into its
+          terminal error state.
+          Writes are ignored once !!CHERIOT_LOCK has been written (see !!CHERIOT_ENA_REGWEN).
+        ''',
+        swaccess: "rw",
+        hwaccess: "hro",
+        regwen: "CHERIOT_ENA_REGWEN",
+        fields: [
+          { bits: "3:0",
+            name: "VAL",
+            mubi: true,
+            resval: false,
+            desc: '''
+              Complement of !!CHERIOT_ENA.VAL, MuBi4 encoded.
+              If it is not the bitwise inverse of !!CHERIOT_ENA.VAL when !!CHERIOT_LOCK is written
+              or in a staging cycle after it, the switch moves into a terminal error state, in
+              which CHERIoT mode stays unavailable until reset and the fatal alert is raised.
+            '''
+          },
+        ]
+      },
+
       { name: "CHERIOT_LOCK",
         desc: '''
-          Locks the CHERIoT/ePMP mode.
-          If !!CHERIOT_ENA is set to MuBi4True, CHERIoT mode is enabled on write to this register.
+          Locks the CHERIoT/ePMP mode selected by !!CHERIOT_ENA and !!CHERIOT_ENA_BAR.
+          If !!CHERIOT_ENA is MuBi4True and !!CHERIOT_ENA_BAR MuBi4False, CHERIoT mode is enabled on
+          write to this register.
+          Software must write this register with interrupts disabled, and execute fence.i after
+          it, before any instruction that depends on the selected mode and before enabling
+          interrupts again.
         ''',
         swaccess: "wo",
         hwaccess: "hro",
@@ -1248,7 +1306,7 @@
           { bits: "3:0",
             name: "VAL",
             desc: '''
-              Write MuBi4True to lock the mode selected by !!CHERIOT_ENA.
+              Write MuBi4True to lock the mode selected by !!CHERIOT_ENA and !!CHERIOT_ENA_BAR.
               Any other value moves the switch into a terminal error state, in which CHERIoT mode
               stays unavailable until reset and the fatal alert is raised.
             '''
