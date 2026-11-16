@@ -159,6 +159,13 @@
       local:               "false"
       expose:              "true"
     }
+    { name:    "AppIdxKeyMgr"
+      type:    "int"
+      default: "0"
+      desc:    "Index of the keymgr app interface"
+      local:   "false"
+      expose:  "true"
+    }
     { name:    "NumWordsKey"
       type:    "int"
       default: "16"

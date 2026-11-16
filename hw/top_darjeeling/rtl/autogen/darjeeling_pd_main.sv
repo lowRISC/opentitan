@@ -58,6 +58,7 @@ module darjeeling_pd_main #(
         kmac_pkg::AppCfgLcCtrl,
         kmac_pkg::AppCfgRomCtrl,
         kmac_pkg::AppCfgRomCtrl},
+  parameter int KmacAppIdxKeyMgr = 0,
   // parameters for otbn
   parameter bit OtbnStub = 0,
   parameter otbn_pkg::regfile_e OtbnRegFile = otbn_pkg::RegFileFF,
@@ -1600,6 +1601,7 @@ module darjeeling_pd_main #(
     .SecIdleAcceptSwMsg(SecKmacIdleAcceptSwMsg),
     .NumAppIntf(KmacNumAppIntf),
     .AppCfg(KmacAppCfg),
+    .AppIdxKeyMgr(KmacAppIdxKeyMgr),
     .RndCnstLfsrSeed(RndCnstKmacLfsrSeed),
     .RndCnstLfsrPerm(RndCnstKmacLfsrPerm),
     .RndCnstBufferLfsrSeed(RndCnstKmacBufferLfsrSeed),

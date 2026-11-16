@@ -36,6 +36,7 @@ module kmac
   parameter int unsigned NumAppIntf         = 4,
   parameter app_config_t AppCfg[NumAppIntf] = '{EnFullKmac ? AppCfgKeyMgr : AppCfgKeyMgrStripped,
                                                 AppCfgLcCtrl, AppCfgRomCtrl, AppCfgOtbn},
+  parameter int unsigned AppIdxKeyMgr       = 0,
 
   parameter lfsr_perm_t RndCnstLfsrPerm = RndCnstLfsrPermDefault,
   parameter lfsr_seed_t RndCnstLfsrSeed = RndCnstLfsrSeedDefault,
@@ -1220,7 +1221,8 @@ module kmac
     .EnFullKmac(EnFullKmac),
     .SecIdleAcceptSwMsg(SecIdleAcceptSwMsg),
     .NumAppIntf(NumAppIntf),
-    .AppCfg(AppCfg)
+    .AppCfg(AppCfg),
+    .AppIdxKeyMgr(AppIdxKeyMgr)
   ) u_app_intf (
     .clk_i,
     .rst_ni,

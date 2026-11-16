@@ -100,7 +100,8 @@ module tb;
     .EnMasking(`EN_MASKING),
     .EnFullKmac(`EN_FULL_KMAC),
     .SwKeyMasked(`SW_KEY_MASKED),
-    .NumAppIntf(NUM_APP_INTF)
+    .NumAppIntf(NUM_APP_INTF),
+    .AppIdxKeyMgr(AppKeymgr)
   ) dut (
     .clk_i              (clk            ),
     .rst_ni             (rst_n          ),

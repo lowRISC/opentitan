@@ -24,7 +24,8 @@ module kmac_app
   parameter  bit          SecIdleAcceptSwMsg = 1'b0,
   parameter  int unsigned NumAppIntf         = 4,
   parameter  app_config_t AppCfg[NumAppIntf] = '{AppCfgKeyMgr, AppCfgLcCtrl,
-                                                 AppCfgRomCtrl, AppCfgOtbn}
+                                                 AppCfgRomCtrl, AppCfgOtbn},
+  parameter  int unsigned AppIdxKeyMgr       = 0
 ) (
   input clk_i,
   input rst_ni,
@@ -155,6 +156,8 @@ module kmac_app
   import sha3_pkg::L256;
   import sha3_pkg::L384;
   import sha3_pkg::L512;
+  import prim_mubi_pkg::mubi4_test_false_strict;
+  import prim_mubi_pkg::mubi4_test_true_loose;
 
   /////////////////
   // Definitions //
@@ -237,10 +240,6 @@ module kmac_app
 
   // Error signals
   kmac_pkg::err_t fsm_err, mux_err;
-
-  // TODO: unused signal
-  prim_mubi_pkg::mubi4_t unused_keymgr_sensitive_key;
-  assign unused_keymgr_sensitive_key = keymgr_sensitive_key_i;
 
   /////////////////////////////
   // Application arbitration //
@@ -1348,11 +1347,25 @@ module kmac_app
   end
 
   // Sideloaded key expose control
-  assign err_key_used_but_invalid_set = keymgr_key_used && !keymgr_key_i.valid;
+  logic err_sensitive_key_used;
+  assign err_key_used_but_invalid_set = (keymgr_key_used && !keymgr_key_i.valid) ||
+                                        err_sensitive_key_used;
 
   if (EnFullKmac) begin : gen_keymgr_side_load
+    // Enforce the MuBi encoding
+    prim_mubi_pkg::mubi4_t keymgr_sensitive_key;
+    prim_mubi4_sync #(
+      .AsyncOn(0)
+    ) u_anchor_keymgr_sensitive_key (
+      .clk_i,
+      .rst_ni,
+      .mubi_i(keymgr_sensitive_key_i),
+      .mubi_o({keymgr_sensitive_key})
+    );
+
     always_comb begin
       keymgr_key_used = 1'b0;
+      err_sensitive_key_used = 1'b0;
       key_len_o = reg_key_len_i;
       for (int i = 0; i < Share; i++) begin
         key_data_o[i] = reg_key_data_i[i];
@@ -1372,12 +1385,19 @@ module kmac_app
           // don't know here when the hashing engine starts the processing.
           keymgr_key_used = app_cfg.session_cfg.mode == AppKMAC;
           key_len_o       = SideloadedKey;
+          // Release a sensitive key only to the keymgr app
           for (int i = 0; i < Share; i++) begin
-            key_data_o[i] = keymgr_key[i];
+            key_data_o[i] = (app_id == AppIdxW'(AppIdxKeyMgr) ||
+                             mubi4_test_false_strict(keymgr_sensitive_key)) ? keymgr_key[i] : '0;
           end
           // Key is valid if the current HW app interface does *keyed* MAC and the key provided by
-          // KeyMgr is valid.
-          key_valid_o = keymgr_key_used && keymgr_key_i.valid;
+          // KeyMgr is valid. Only make a sensitive key available if the keymgr app is selected.
+          key_valid_o = keymgr_key_used && keymgr_key_i.valid &&
+                        ((app_id == AppIdxW'(AppIdxKeyMgr)) ||
+                         mubi4_test_false_strict(keymgr_sensitive_key));
+          // Flag an error if a sensitive sideloaded key is used by a non-KeyMgr app interface
+          err_sensitive_key_used = keymgr_key_used && (app_id != AppIdxW'(AppIdxKeyMgr)) &&
+                                   mubi4_test_true_loose(keymgr_sensitive_key);
         end
 
         StSw: begin
@@ -1386,7 +1406,7 @@ module kmac_app
             keymgr_key_used = kmac_en_q;
             key_len_o       = SideloadedKey;
             for (int i = 0; i < Share; i++) begin
-              key_data_o[i] = keymgr_key[i];
+              key_data_o[i] = mubi4_test_false_strict(keymgr_sensitive_key) ? keymgr_key[i] : '0;
             end
           end
           // Key is valid if SW does *keyed* MAC and ...
@@ -1395,10 +1415,13 @@ module kmac_app
               // ... it uses the key from kmac's CSR, or ...
               key_valid_o = 1'b1;
             end else begin
-              // ... it uses the key provided by KeyMgr and that one is valid.
-              key_valid_o = keymgr_key_i.valid;
+              // ... it uses the key provided by KeyMgr, which is valid and not sensitive.
+              key_valid_o = keymgr_key_i.valid && mubi4_test_false_strict(keymgr_sensitive_key);
             end
           end
+          // Flag an error if a sensitive sideloaded key is used in the SW state
+          err_sensitive_key_used = keymgr_key_used &&
+                                   mubi4_test_true_loose(keymgr_sensitive_key);
         end
 
         default: ;
@@ -1406,8 +1429,9 @@ module kmac_app
     end
   end else begin : gen_no_keymgr_side_load
     // If KMAC is disabled, the key is not needed.
-    assign keymgr_key_used = 1'b0;
-    assign key_len_o       = reg_key_len_i;
+    assign keymgr_key_used        = 1'b0;
+    assign err_sensitive_key_used = 1'b0;
+    assign key_len_o              = reg_key_len_i;
     always_comb begin
       for (int i = 0; i < Share; i++) begin
         key_data_o[i] = reg_key_data_i[i];
@@ -1425,6 +1449,8 @@ module kmac_app
                                    keymgr_key_i.valid, keymgr_key_en_i,
                                    keymgr_key[0]};
     end
+    prim_mubi_pkg::mubi4_t unused_keymgr_sensitive_key;
+    assign unused_keymgr_sensitive_key = keymgr_sensitive_key_i;
   end
 
   // Prefix Demux
@@ -1487,6 +1513,14 @@ module kmac_app
     for (genvar i = 0; i < NumAppIntf; i++) begin : gen_app_cfg_mode
       `ASSERT_INIT(StrippedKmacAppCfgNotKmac_A, AppCfg[i].session_cfg.mode != AppKMAC)
     end
+  end
+
+  // The keymgr app index must address an existing app interface that is configured as the keymgr
+  // interface. Otherwise, the sensitive key would be released to the wrong app interface.
+  `ASSERT_INIT(AppIdxKeyMgrInRange_A, AppIdxKeyMgr < NumAppIntf)
+  if (AppIdxKeyMgr < NumAppIntf) begin : gen_app_idx_keymgr_cfg_assert
+    `ASSERT_INIT(AppIdxKeyMgrCfg_A,
+                 AppCfg[AppIdxKeyMgr] inside {AppCfgKeyMgr, AppCfgKeyMgrStripped})
   end
 
 endmodule

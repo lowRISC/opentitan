@@ -9244,6 +9244,15 @@
           expose: "true"
           name_top: KmacAppCfg
         }
+        {
+          name: AppIdxKeyMgr
+          desc: Index of the keymgr app interface
+          type: int
+          default: "0"
+          local: "false"
+          expose: "true"
+          name_top: KmacAppIdxKeyMgr
+        }
       ]
       inter_signal_list:
       [
