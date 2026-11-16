@@ -22,8 +22,10 @@ load(
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "DISPATCH_KIND_TRANSFORM_ATTR",
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
+    "dispatch_transform",
     "rram_otp_image",
 )
 load("//rules/opentitan:toolchain.bzl", "LOCALTOOLS_TOOLCHAIN")
@@ -314,13 +316,13 @@ def _fpga_cw305(ctx):
     return ExecEnvInfo(
         provider = Cw305BinaryInfo,
         test_dispatch = _test_dispatch,
-        transform = _transform,
+        transform = dispatch_transform,
         **fields
     )
 
 fpga_cw305 = rule(
     implementation = _fpga_cw305,
-    attrs = exec_env_common_attrs(),
+    attrs = exec_env_common_attrs() | DISPATCH_KIND_TRANSFORM_ATTR,
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 
@@ -329,13 +331,13 @@ def _fpga_cw340(ctx):
     return ExecEnvInfo(
         provider = Cw340BinaryInfo,
         test_dispatch = _test_dispatch,
-        transform = _transform,
+        transform = dispatch_transform,
         **fields
     )
 
 fpga_cw340 = rule(
     implementation = _fpga_cw340,
-    attrs = exec_env_common_attrs(),
+    attrs = exec_env_common_attrs() | DISPATCH_KIND_TRANSFORM_ATTR,
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 

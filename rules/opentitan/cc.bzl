@@ -509,6 +509,12 @@ def _opentitan_binary_blob(ctx):
         ),
     ]
 
+def _maybe_list(input):
+    if type(input) == "list":
+        return input
+    else:
+        return [input]
+
 def _opentitan_binary(ctx):
     tc = ctx.toolchains[LOCALTOOLS_TOOLCHAIN]
 
@@ -528,7 +534,12 @@ def _opentitan_binary(ctx):
         kind = ctx.attr.kind
         provides, signed = _build_binary(ctx, exec_env, name, deps, kind)
         providers.append(exec_env.provider(kind = kind, **provides))
-        default_info.append(provides["default"])
+        default_info.extend(_maybe_list(provides["default"]))
+
+        # Currently, the code expects those to be just files, not lists.
+        for entry in ["elf", "disassembly", "mapfile"]:
+            if type(provides[entry]) == "list":
+                fail("In {}: output {} of transform needs to be a file, not a list".format(ctx.label, entry))
         default_info.append(provides["elf"])
         default_info.append(provides["disassembly"])
         default_info.append(provides["mapfile"])
@@ -536,28 +547,7 @@ def _opentitan_binary(ctx):
         # FIXME(cfrantz): logs are a special case and get added into
         # the DefaultInfo provider.
         if "logs" in provides:
-            default_info.extend(provides["logs"])
-
-        # FIXME: vmem is a special case for ram targets used in ROM e2e test
-        # cases. Some tops like Darjeeling expect a different word size than
-        # Earlgrey.
-        if provides.get("vmem"):
-            default_info.append(provides["vmem"])
-        if provides.get("vmem32"):
-            default_info.append(provides["vmem32"])
-
-        # FIXME(cfrantz): Special case: The englishbreakfast verilator model
-        # requires a non-scrambled ROM image.
-        #
-        # DV simulation might also need non-scrambled ROM to reduce simulation
-        # run times.
-        if provides.get("rom32"):
-            default_info.append(provides["rom32"])
-
-        # RRAM address-infection & scrambling depends on the physical slot,
-        # so we map slot A and slot B separately (see `scramble_rram()`).
-        if provides.get("vmem_slot_b"):
-            default_info.append(provides["vmem_slot_b"])
+            default_info.extend(_maybe_list(provides["logs"]))
 
         groups.update(_as_group_info(exec_env.exec_env, signed))
         groups.update(_as_group_info(exec_env.exec_env, provides))

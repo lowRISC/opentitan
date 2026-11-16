@@ -13,8 +13,10 @@ load(
 )
 load(
     "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "DISPATCH_KIND_TRANSFORM_ATTR",
     "convert_to_scrambled_rom_vmem",
     "convert_to_vmem",
+    "dispatch_transform",
     "extract_software_logs",
     "scramble_nvm",
 )
@@ -192,13 +194,13 @@ def _sim_dv(ctx):
     return ExecEnvInfo(
         provider = SimDvBinaryInfo,
         test_dispatch = _test_dispatch,
-        transform = _transform,
+        transform = dispatch_transform,
         **fields
     )
 
 sim_dv = rule(
     implementation = _sim_dv,
-    attrs = exec_env_common_attrs(),
+    attrs = exec_env_common_attrs() | DISPATCH_KIND_TRANSFORM_ATTR,
     toolchains = [LOCALTOOLS_TOOLCHAIN],
 )
 

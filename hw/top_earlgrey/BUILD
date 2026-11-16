@@ -20,6 +20,14 @@ load(
     "sim_verilator",
 )
 load("//rules/opentitan:qemu.bzl", "qemu_cfg", "qemu_flash", "qemu_otp")
+load(
+    "@lowrisc_opentitan//rules/opentitan:transform.bzl",
+    "transform_copy",
+    "transform_extract_logs",
+    "transform_merge",
+    "transform_to_scrambled_rom_vmem",
+    "transform_to_vmem",
+)
 
 package(default_visibility = ["//visibility:public"])
 
@@ -94,10 +102,40 @@ sim_qemu(
 # should become a more generic `fpga_chipwhisperer` infrastruture able to
 # handle multiple CW-type boards.
 ###########################################################################
+transform_to_vmem(
+    name = "vmem_rom_transform",
+    outputs = [
+        "rom32",
+        "default",
+    ],
+    word_size = 32,
+)
+
+transform_copy(
+    name = "elf_copy_transform",
+    input = "elf",
+    outputs = ["default"],
+)
+
+transform_copy(
+    name = "unsigned_binary_copy_transform",
+    input = "signed_bin",
+    outputs = ["default"],
+)
+
+transform_copy(
+    name = "signed_binary_copy_transform",
+    input = "signed_bin",
+    outputs = ["default"],
+)
+
 fpga_cw305(
     name = "fpga_cw305",
     design = "earlgrey",
     exec_env = "fpga_cw305",
+    kind_transform = {
+        "rom": ":vmem_rom_transform",
+    },
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:fpga_cw305",
@@ -115,6 +153,10 @@ fpga_cw305(
 # should become a more generic `fpga_chipwhisperer` infrastruture able to
 # handle multiple CW-type boards.
 ###########################################################################
+transform_to_scrambled_rom_vmem(
+    name = "scrambled_rom_transform",
+)
+
 fpga_cw340(
     name = "fpga_cw340",
     args = [
@@ -135,6 +177,16 @@ fpga_cw340(
     }),
     design = "earlgrey",
     exec_env = "fpga_cw340",
+    kind_transform = {
+        # ROM requires a scrambled VMEM which is loaded by the backdoor loader.
+        "rom": ":scrambled_rom_transform",
+        # RAM images are just plain ELF dynamically loaded to RAM by opentitanlib.
+        "ram": ":elf_copy_transform",
+        # RRAM images are signed binaries loaded via bootstrap.
+        "rram": ":signed_binary_copy_transform",
+        # The default kind is RRAM
+        "default": ":signed_binary_copy_transform",
+    },
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:fpga_cw340",
@@ -412,12 +464,38 @@ sim_verilator(
 # The sim_dv_base target is only meant to be used for building ROMs and
 # other items without `testonly=True`.
 ###########################################################################
+# Some DV tests may use either the scrambled or unscrambled image.
+transform_merge(
+    name = "vmem_and_scrambled_rom_transform",
+    transforms = [
+        ":vmem_rom_transform",
+        ":scrambled_rom_transform",
+    ],
+)
+
+transform_to_vmem(
+    name = "vmem_ram_transform",
+    outputs = [
+        "default",
+        "vmem",
+    ],
+    word_size = 32,
+)
+
+transform_extract_logs(
+    name = "extract_logs_transform",
+)
+
 sim_dv(
     name = "sim_dv_base",
     design = "earlgrey",
     exec_env = "sim_dv",
     extract_sw_logs = "//util/device_sw_utils:extract_sw_logs_db",
     flash_scramble_tool = "//util/design:gen-flash-img",
+    kind_transform = {
+        "rom": ":vmem_and_scrambled_rom_transform",
+        "ram": ":vmem_ram_transform",
+    },
     libs = [
         "//sw/device/lib/arch:boot_stage_rom_ext",
         "//sw/device/lib/arch:sim_dv",
@@ -432,6 +510,7 @@ sim_dv(
     otp_mmap = "//hw/top_earlgrey/data/otp:otp_ctrl_mmap.hjson",
     rram_scramble_tool = "//util/design:gen-rram-img",
     slot_spec = EARLGREY_SLOTS,
+    transform_hook = ":extract_logs_transform",
 )
 
 sim_dv(
