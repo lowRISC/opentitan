@@ -711,6 +711,90 @@ static status_t test_kdf_kmac256_kat(const fips_kat_descriptor_table_t *table) {
   return OK_STATUS();
 }
 
+static status_t test_hkdf_sha384_kat(const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const hkdf_kat_data_t *kat = (const hkdf_kat_data_t *)resolve_entry(
+      table, kFipsKatAlgHkdfSha2_384, &entry);
+  CHECK(entry->size == fips_kat_hkdf_expected_size(kat));
+  CHECK(kat->ikm_len == 48 && kat->prk_len == 48 && kat->okm_len == 64);
+
+  const otcrypto_key_config_t kIkmConfig = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeHmacSha384,
+      .key_length = kat->ikm_len,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t ikm_blob[keyblob_num_words(kIkmConfig)];
+  CHECK_STATUS_OK(
+      keyblob_from_key_and_mask((const uint32_t *)fips_kat_hkdf_ikm(kat),
+                                kTestMask, kIkmConfig, ikm_blob));
+  otcrypto_blinded_key_t ikm_key = {
+      .config = kIkmConfig,
+      .keyblob_length = sizeof(ikm_blob),
+      .keyblob = ikm_blob,
+  };
+  ikm_key.checksum = otcrypto_integrity_blinded_checksum(&ikm_key);
+
+  const otcrypto_key_config_t kPrkConfig = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeHmacSha384,
+      .key_length = kat->prk_len,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t prk_blob[keyblob_num_words(kPrkConfig)];
+  memset(prk_blob, 0, sizeof(prk_blob));
+  otcrypto_blinded_key_t prk_key = {
+      .config = kPrkConfig,
+      .keyblob_length = sizeof(prk_blob),
+      .keyblob = prk_blob,
+  };
+
+  const otcrypto_key_config_t kOkmConfig = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeHmacSha384,
+      .key_length = kat->okm_len,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t okm_blob[keyblob_num_words(kOkmConfig)];
+  memset(okm_blob, 0, sizeof(okm_blob));
+  otcrypto_blinded_key_t okm_key = {
+      .config = kOkmConfig,
+      .keyblob_length = sizeof(okm_blob),
+      .keyblob = okm_blob,
+  };
+
+  otcrypto_const_byte_buf_t salt_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_hkdf_salt(kat), kat->salt_len);
+  otcrypto_const_byte_buf_t info_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_hkdf_info(kat), kat->info_len);
+
+  // 1. Verify HKDF-Extract (PRK = HMAC-SHA-384(salt, IKM)).
+  CHECK_STATUS_OK(otcrypto_hkdf_extract(&ikm_key, &salt_buf, &prk_key));
+  uint32_t act_prk[12] = {0};
+  CHECK_STATUS_OK(keyblob_key_unmask(&prk_key, ARRAYSIZE(act_prk), act_prk));
+  CHECK_ARRAYS_EQ((const uint8_t *)act_prk, fips_kat_hkdf_prk(kat), 48);
+
+  // 2. Verify HKDF-Expand (64 bytes -> 2 iterations).
+  CHECK_STATUS_OK(otcrypto_hkdf_expand(&prk_key, &info_buf, &okm_key));
+  uint32_t act_okm[16] = {0};
+  CHECK_STATUS_OK(keyblob_key_unmask(&okm_key, ARRAYSIZE(act_okm), act_okm));
+  CHECK_ARRAYS_EQ((const uint8_t *)act_okm, fips_kat_hkdf_okm(kat), 64);
+
+  // 3. Verify one-shot HKDF.
+  memset(okm_blob, 0, sizeof(okm_blob));
+  memset(act_okm, 0, sizeof(act_okm));
+  CHECK_STATUS_OK(otcrypto_hkdf(&ikm_key, &salt_buf, &info_buf, &okm_key));
+  CHECK_STATUS_OK(keyblob_key_unmask(&okm_key, ARRAYSIZE(act_okm), act_okm));
+  CHECK_ARRAYS_EQ((const uint8_t *)act_okm, fips_kat_hkdf_okm(kat), 64);
+  return OK_STATUS();
+}
+
 // -----------------------------------------------------------------------------
 // Asymmetric KATs (RSA-2048/4096, ECDSA P-256/P-384, Ed25519, ECDH, X25519)
 // -----------------------------------------------------------------------------
@@ -1762,7 +1846,7 @@ static status_t test_fips_kat_rom(void) {
       get_fips_descriptor_table_from_region((const void *)kat_base,
                                             kFipsKatRegionSize);
   CHECK(table != NULL, "Invalid ROM FIPS KAT descriptor table");
-  CHECK(table->entry_count == 29u, "Expected 29 entries, got %u",
+  CHECK(table->entry_count == 30u, "Expected 30 entries, got %u",
         table->entry_count);
   LOG_INFO("FIPS KAT table @ 0x%08x: %u entries, %u bytes (ePMP RO verified)",
            (uint32_t)kat_base, table->entry_count, table->total_size);
@@ -1786,6 +1870,7 @@ static status_t test_fips_kat_rom(void) {
   LOG_INFO("[2/6] SHA3/KMAC + AES ok");
   TRY(test_kdf_hmac_sha256_kat(table));
   TRY(test_kdf_kmac256_kat(table));
+  TRY(test_hkdf_sha384_kat(table));
   TRY(test_drbg_aes256_kat(table));
   LOG_INFO("[3/6] KDF + HKDF + DRBG ok");
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
@@ -1824,7 +1909,7 @@ static status_t test_fips_kat_rom(void) {
   unmap_rom_kat_slot0();
   assert_load_faults(kat_base);
 
-  LOG_INFO("All 29 ROM FIPS KATs passed and transient ePMP revoked.");
+  LOG_INFO("All 30 ROM FIPS KATs passed and transient ePMP revoked.");
   return OK_STATUS();
 }
 

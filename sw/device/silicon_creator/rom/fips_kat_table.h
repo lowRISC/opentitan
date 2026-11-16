@@ -112,6 +112,9 @@ typedef enum fips_kat_alg_id {
 
   // NIST Round 3 SPHINCS+-SHA2-128s-simple Verification (pre-FIPS 205)
   kFipsKatAlgSphincsPlusSha2_128sVerify = 29,
+
+  // Key Derivation (HKDF-SHA2-384 - RFC 5869 / SP 800-56Cr2)
+  kFipsKatAlgHkdfSha2_384 = 30,
 } fips_kat_alg_id_t;
 
 /**
@@ -317,6 +320,19 @@ typedef struct kem_kat_data {
 
 OT_ASSERT_SIZE(kem_kat_data_t, 24);
 OT_ASSERT_MEMBER_OFFSET(kem_kat_data_t, data, 24);
+
+// 10. Key Derivation (HKDF - RFC 5869 / SP 800-56Cr2)
+typedef struct hkdf_kat_data {
+  uint32_t ikm_len;
+  uint32_t salt_len;
+  uint32_t info_len;
+  uint32_t prk_len;
+  uint32_t okm_len;
+  uint8_t data[];  // pad4(ikm)||pad4(salt)||pad4(info)||pad4(prk)||pad4(okm)
+} hkdf_kat_data_t;
+
+OT_ASSERT_SIZE(hkdf_kat_data_t, 20);
+OT_ASSERT_MEMBER_OFFSET(hkdf_kat_data_t, data, 20);
 
 /**
  * ============================================================================
@@ -654,6 +670,32 @@ static inline size_t fips_kat_kem_expected_size(const kem_kat_data_t *kat) {
          FIPS_KAT_ALIGN4(kat->exp_pk_hash_len) +
          FIPS_KAT_ALIGN4(kat->exp_ct_hash_len) +
          FIPS_KAT_ALIGN4(kat->exp_ss_len);
+}
+
+// --- hkdf_kat_data_t ---
+static inline const uint8_t *fips_kat_hkdf_ikm(const hkdf_kat_data_t *kat) {
+  return kat->data;
+}
+static inline const uint8_t *fips_kat_hkdf_salt(const hkdf_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->ikm_len);
+}
+static inline const uint8_t *fips_kat_hkdf_info(const hkdf_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->ikm_len) +
+         FIPS_KAT_ALIGN4(kat->salt_len);
+}
+static inline const uint8_t *fips_kat_hkdf_prk(const hkdf_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->ikm_len) +
+         FIPS_KAT_ALIGN4(kat->salt_len) + FIPS_KAT_ALIGN4(kat->info_len);
+}
+static inline const uint8_t *fips_kat_hkdf_okm(const hkdf_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->ikm_len) +
+         FIPS_KAT_ALIGN4(kat->salt_len) + FIPS_KAT_ALIGN4(kat->info_len) +
+         FIPS_KAT_ALIGN4(kat->prk_len);
+}
+static inline size_t fips_kat_hkdf_expected_size(const hkdf_kat_data_t *kat) {
+  return sizeof(hkdf_kat_data_t) + FIPS_KAT_ALIGN4(kat->ikm_len) +
+         FIPS_KAT_ALIGN4(kat->salt_len) + FIPS_KAT_ALIGN4(kat->info_len) +
+         FIPS_KAT_ALIGN4(kat->prk_len) + FIPS_KAT_ALIGN4(kat->okm_len);
 }
 
 
