@@ -1411,6 +1411,145 @@ static status_t test_mldsa87_kat(const fips_kat_descriptor_table_t *table,
   return OK_STATUS();
 }
 
+static status_t test_mlkem1024_kat(const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const kem_kat_data_t *kat = (const kem_kat_data_t *)resolve_entry(
+      table, kFipsKatAlgMlkem1024, &entry);
+  CHECK(entry->size == fips_kat_kem_expected_size(kat));
+  CHECK(kat->seed_d_len == 32 && kat->seed_z_len == 32 &&
+        kat->seed_m_len == 32 && kat->exp_pk_hash_len == 32 &&
+        kat->exp_ct_hash_len == 32 && kat->exp_ss_len == 32);
+
+  // Use non-zero Boolean mask on seed d to verify masking path post-fix.
+  uint32_t d_blob[16] = {0};
+  const uint32_t *seed_d_words = (const uint32_t *)fips_kat_kem_seed_d(kat);
+  for (size_t i = 0; i < 8; ++i) {
+    d_blob[i] = seed_d_words[i] ^ kTestMask[i];
+    d_blob[8 + i] = kTestMask[i];
+  }
+  otcrypto_blinded_key_t d = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModePqcMlkem1024,
+              .key_length = 64,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = sizeof(d_blob),
+      .keyblob = d_blob,
+  };
+  d.checksum = otcrypto_integrity_blinded_checksum(&d);
+
+  otcrypto_const_word32_buf_t z = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, (const uint32_t *)fips_kat_kem_seed_z(kat),
+      kMlkem1024SharedSecretWords);
+
+  static uint32_t pk_data[kMlkem1024PublicKeyWords];
+  otcrypto_unblinded_key_t pk = {
+      .key_mode = kOtcryptoKeyModePqcMlkem1024,
+      .key_length = kMlkem1024PublicKeyBytes,
+      .key = pk_data,
+  };
+
+  static uint32_t sk_data[kMlkem1024SecretKeyWords];
+  otcrypto_blinded_key_t sk = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModePqcMlkem1024,
+              .key_length = kMlkem1024SecretKeyBytes / 2,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = kMlkem1024SecretKeyBytes,
+      .keyblob = sk_data,
+  };
+  sk.checksum = otcrypto_integrity_blinded_checksum(&sk);
+
+  // 1. Deterministic KeyGen (FIPS 203 ACVP tcId=51) and verify SHA2-256(pk).
+  CHECK_STATUS_OK(mlkem1024_det_keygen_internal_start(&d, &z));
+  CHECK_STATUS_OK(mlkem1024_keygen_internal_finalize(&pk, &sk));
+  pk.checksum = otcrypto_integrity_unblinded_checksum(&pk);
+
+  uint32_t act_pk_hash[8] = {0};
+  otcrypto_hash_digest_t pk_hash_digest = {
+      .mode = kOtcryptoHashModeSha256,
+      .len = ARRAYSIZE(act_pk_hash),
+      .data = act_pk_hash,
+  };
+  otcrypto_const_byte_buf_t pk_bytes_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const unsigned char *)pk_data,
+      kMlkem1024PublicKeyBytes);
+  CHECK_STATUS_OK(otcrypto_sha2_256(&pk_bytes_buf, &pk_hash_digest));
+  CHECK_ARRAYS_EQ((const uint8_t *)act_pk_hash, fips_kat_kem_exp_pk_hash(kat),
+                  32);
+
+  // 2. Encapsulation and verify SHA2-256(ct).
+  otcrypto_const_word32_buf_t m = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, (const uint32_t *)fips_kat_kem_seed_m(kat),
+      kMlkem1024SharedSecretWords);
+  static uint32_t ct_data[kMlkem1024CiphertextWords];
+  otcrypto_word32_buf_t ct =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ct_data, ARRAYSIZE(ct_data));
+
+  uint32_t ss1_data[kMlkem1024SharedSecretWords] = {0};
+  otcrypto_blinded_key_t ss1 = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModePqcMlkem1024,
+              .key_length = kMlkem1024SharedSecretBytes / 2,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = kMlkem1024SharedSecretBytes,
+      .keyblob = ss1_data,
+  };
+  ss1.checksum = otcrypto_integrity_blinded_checksum(&ss1);
+  CHECK_STATUS_OK(otcrypto_mlkem1024_encaps(&pk, &m, &ct, &ss1));
+
+  uint32_t act_ct_hash[8] = {0};
+  otcrypto_hash_digest_t ct_hash_digest = {
+      .mode = kOtcryptoHashModeSha256,
+      .len = ARRAYSIZE(act_ct_hash),
+      .data = act_ct_hash,
+  };
+  otcrypto_const_byte_buf_t ct_bytes_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, (const unsigned char *)ct_data,
+      kMlkem1024CiphertextBytes);
+  CHECK_STATUS_OK(otcrypto_sha2_256(&ct_bytes_buf, &ct_hash_digest));
+  CHECK_ARRAYS_EQ((const uint8_t *)act_ct_hash, fips_kat_kem_exp_ct_hash(kat),
+                  32);
+
+  // 3. Decapsulation and verify ss1 == ss2 == exp_ss.
+  uint32_t ss2_data[kMlkem1024SharedSecretWords] = {0};
+  otcrypto_blinded_key_t ss2 = {
+      .config =
+          {
+              .version = kOtcryptoLibVersion1,
+              .key_mode = kOtcryptoKeyModePqcMlkem1024,
+              .key_length = kMlkem1024SharedSecretBytes / 2,
+              .hw_backed = kHardenedBoolFalse,
+              .exportable = kHardenedBoolFalse,
+              .security_level = kOtcryptoKeySecurityLevelLow,
+          },
+      .keyblob_length = kMlkem1024SharedSecretBytes,
+      .keyblob = ss2_data,
+  };
+  ss2.checksum = otcrypto_integrity_blinded_checksum(&ss2);
+  otcrypto_const_word32_buf_t ct_const = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, ct_data, ARRAYSIZE(ct_data));
+  CHECK_STATUS_OK(otcrypto_mlkem1024_decaps(&sk, &ct_const, &ss2));
+
+  CHECK_ARRAYS_EQ(ss1_data, ss2_data, kMlkem1024SharedSecretWords);
+  CHECK_ARRAYS_EQ((const uint8_t *)ss1_data, fips_kat_kem_exp_ss(kat), 32);
+  return OK_STATUS();
+}
+
 // -----------------------------------------------------------------------------
 // DRBG (SP 800-90A Section 11.3) & Entropy Source SHA3 Conditioning KATs
 // -----------------------------------------------------------------------------
@@ -1510,7 +1649,7 @@ static status_t test_fips_kat_rom(void) {
       get_fips_descriptor_table_from_region((const void *)kat_base,
                                             kFipsKatRegionSize);
   CHECK(table != NULL, "Invalid ROM FIPS KAT descriptor table");
-  CHECK(table->entry_count == 27u, "Expected 27 entries, got %u",
+  CHECK(table->entry_count == 28u, "Expected 28 entries, got %u",
         table->entry_count);
   LOG_INFO("FIPS KAT table @ 0x%08x: %u entries, %u bytes (ePMP RO verified)",
            (uint32_t)kat_base, table->entry_count, table->total_size);
@@ -1560,6 +1699,7 @@ static status_t test_fips_kat_rom(void) {
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
   TRY(test_mldsa87_kat(table, &aon_timer));
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
+  TRY(test_mlkem1024_kat(table));
   LOG_INFO("[5/6] PQC (SPHINCS+/ML-DSA/ML-KEM) ok");
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
 
@@ -1567,7 +1707,7 @@ static status_t test_fips_kat_rom(void) {
   unmap_rom_kat_slot0();
   assert_load_faults(kat_base);
 
-  LOG_INFO("All 27 ROM FIPS KATs passed and transient ePMP revoked.");
+  LOG_INFO("All 28 ROM FIPS KATs passed and transient ePMP revoked.");
   return OK_STATUS();
 }
 

@@ -370,6 +370,22 @@ typedef struct fips_kat_mldsa87 {
 } fips_kat_mldsa87_t;
 
 /**
+ * Algorithm ID 25: ML-KEM-1024
+ * Schema: `kem_kat_data_t`
+ * Vector: FIPS 203 / NIST ACVP tcId=51 seeds (d, z, m) + SHA2-256(pk) +
+ * SHA2-256(ct) + ss
+ */
+typedef struct fips_kat_mlkem1024 {
+  uint32_t seed_d_len;
+  uint32_t seed_z_len;
+  uint32_t seed_m_len;
+  uint32_t exp_pk_hash_len;
+  uint32_t exp_ct_hash_len;
+  uint32_t exp_ss_len;
+  uint8_t data[192];
+} fips_kat_mlkem1024_t;
+
+/**
  * Algorithm ID 26: CTR_DRBG AES-256
  * Schema: `drbg_kat_data_t`
  * Vector: NIST CAVP SP 800-90A Section 11.3 (no df, PR=True, COUNT=0 from
@@ -408,7 +424,7 @@ typedef struct fips_kat_sphincsplus_sha2_128s_verify {
   uint8_t data[7924];
 } fips_kat_sphincsplus_sha2_128s_verify_t;
 
-#define FIPS_KAT_NUM_ENTRIES 27
+#define FIPS_KAT_NUM_ENTRIES 28
 
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -443,6 +459,7 @@ typedef struct fips_kat_data_store {
   fips_kat_ecdh_p384_t ecdh_p384;
   fips_kat_x25519_t x25519;
   fips_kat_mldsa87_t mldsa87;
+  fips_kat_mlkem1024_t mlkem1024;
   drbg_kat_data_t drbg_aes256;
   fips_kat_aes_gcm256_t aes_gcm256;
   fips_kat_sphincsplus_sha2_128s_verify_t sphincsplus_sha2_128s;
@@ -598,6 +615,11 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                         .algorithm_id = (uint32_t)kFipsKatAlgMldsa87,
                         .offset = FIPS_KAT_OFFSET(mldsa87),
                         .size = sizeof(fips_kat_mldsa87_t),
+                    },
+                    {
+                        .algorithm_id = (uint32_t)kFipsKatAlgMlkem1024,
+                        .offset = FIPS_KAT_OFFSET(mlkem1024),
+                        .size = sizeof(fips_kat_mlkem1024_t),
                     },
                     {
                         .algorithm_id = (uint32_t)kFipsKatAlgDrbgAes256,
@@ -1749,6 +1771,46 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                             0x55, 0xdd, 0x52, 0x5a, 0x44, 0x5f, 0x08, 0xda,
                         },
                     },
+                },
+            },
+            .mlkem1024 = {
+                .seed_d_len = 32,
+                .seed_z_len = 32,
+                .seed_m_len = 32,
+                .exp_pk_hash_len = 32,
+                .exp_ct_hash_len = 32,
+                .exp_ss_len = 32,
+                .data = {
+                    // seed_d (NIST ACVP FIPS 203 tcId=51) (32 bytes)
+                    0xf3, 0xa7, 0x06, 0xfa, 0xf0, 0x90, 0xc0, 0x3d,
+                    0xb5, 0x06, 0x86, 0x3a, 0xb0, 0xb2, 0x0b, 0xd8,
+                    0xa1, 0x62, 0x79, 0x56, 0x31, 0x8e, 0x88, 0xc6,
+                    0x7e, 0xb8, 0x75, 0xe8, 0xe7, 0x26, 0x60, 0x09,
+                    // seed_z (NIST ACVP FIPS 203 tcId=51) (32 bytes)
+                    0x35, 0xd2, 0xbc, 0x43, 0xdd, 0x1c, 0xc8, 0x79,
+                    0xf7, 0x65, 0xbf, 0x2a, 0x0c, 0x5e, 0x29, 0x78,
+                    0x89, 0xdd, 0xe9, 0x10, 0xe5, 0x7e, 0x2b, 0xb0,
+                    0xea, 0xe4, 0x17, 0xb9, 0x0a, 0xb7, 0xa2, 0x75,
+                    // seed_m (NIST ACVP FIPS 203 tcId=51) (32 bytes)
+                    0xbf, 0x23, 0x3c, 0xf6, 0x12, 0x1d, 0x41, 0x58,
+                    0x5b, 0x4a, 0xf0, 0xea, 0x74, 0xb3, 0x5d, 0xf7,
+                    0xed, 0x52, 0xbb, 0x57, 0x82, 0x10, 0x7a, 0x82,
+                    0x59, 0xcd, 0x4a, 0xec, 0xc3, 0x58, 0x7e, 0x61,
+                    // Expected SHA2-256(pk) (32 bytes)
+                    0xb7, 0x86, 0x19, 0xe4, 0xfc, 0xee, 0xeb, 0x86,
+                    0xde, 0xe3, 0xfe, 0xdb, 0x94, 0x5e, 0xca, 0x6d,
+                    0xa6, 0x1d, 0xae, 0x31, 0x27, 0x71, 0xef, 0x8f,
+                    0xa8, 0x71, 0x95, 0x1d, 0x39, 0x1b, 0xd7, 0xb6,
+                    // Expected SHA2-256(ct) (32 bytes)
+                    0x35, 0x16, 0x33, 0x9c, 0x87, 0xae, 0xaa, 0x12,
+                    0x8e, 0x78, 0xdf, 0xd8, 0x0d, 0x05, 0x45, 0xda,
+                    0x1a, 0xad, 0xcd, 0x47, 0x11, 0x42, 0xf2, 0xde,
+                    0x32, 0xc3, 0x98, 0x02, 0xbc, 0x22, 0xae, 0xa5,
+                    // Expected Shared Secret ss (32 bytes)
+                    0x8e, 0x78, 0xaf, 0x70, 0x8c, 0xb5, 0xc5, 0x89,
+                    0x1b, 0xd8, 0xfa, 0x70, 0x16, 0xd6, 0xc6, 0x5e,
+                    0xc6, 0xcb, 0x74, 0xf5, 0x59, 0x66, 0x2d, 0x75,
+                    0x2d, 0x62, 0x3a, 0x98, 0x1e, 0xf6, 0x80, 0x59,
                 },
             },
             .drbg_aes256 = {

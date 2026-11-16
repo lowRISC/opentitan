@@ -101,6 +101,7 @@ typedef enum fips_kat_alg_id {
 
   // Post-Quantum Cryptography (FIPS 204 ML-DSA & FIPS 203 ML-KEM)
   kFipsKatAlgMldsa87 = 24,
+  kFipsKatAlgMlkem1024 = 25,
 
   // DRBG & Entropy Source Conditioning (SP 800-90A & SP 800-90B)
   kFipsKatAlgDrbgAes256 = 26,
@@ -300,6 +301,21 @@ typedef struct drbg_kat_data {
 } drbg_kat_data_t;
 
 OT_ASSERT_SIZE(drbg_kat_data_t, 476);
+
+// 9. Key Encapsulation (FIPS 203 ML-KEM-1024 DKG + DED + OH)
+typedef struct kem_kat_data {
+  uint32_t seed_d_len;
+  uint32_t seed_z_len;
+  uint32_t seed_m_len;
+  uint32_t exp_pk_hash_len;
+  uint32_t exp_ct_hash_len;
+  uint32_t exp_ss_len;
+  uint8_t
+      data[];  // pad4(d)||pad4(z)||pad4(m)||pad4(pk_h)||pad4(ct_h)||pad4(ss)
+} kem_kat_data_t;
+
+OT_ASSERT_SIZE(kem_kat_data_t, 24);
+OT_ASSERT_MEMBER_OFFSET(kem_kat_data_t, data, 24);
 
 /**
  * ============================================================================
@@ -601,6 +617,42 @@ static inline size_t fips_kat_ecdh_expected_size(const ecdh_kat_data_t *kat) {
 static inline size_t fips_kat_mldsa_expected_size(const mldsa_kat_data_t *kat) {
   return sizeof(mldsa_kat_data_t) +
          (size_t)kat->num_cases * sizeof(fips_kat_mldsa87_case_t);
+}
+
+// --- kem_kat_data_t ---
+static inline const uint8_t *fips_kat_kem_seed_d(const kem_kat_data_t *kat) {
+  return kat->data;
+}
+static inline const uint8_t *fips_kat_kem_seed_z(const kem_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->seed_d_len);
+}
+static inline const uint8_t *fips_kat_kem_seed_m(const kem_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->seed_d_len) +
+         FIPS_KAT_ALIGN4(kat->seed_z_len);
+}
+static inline const uint8_t *fips_kat_kem_exp_pk_hash(
+    const kem_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->seed_d_len) +
+         FIPS_KAT_ALIGN4(kat->seed_z_len) + FIPS_KAT_ALIGN4(kat->seed_m_len);
+}
+static inline const uint8_t *fips_kat_kem_exp_ct_hash(
+    const kem_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->seed_d_len) +
+         FIPS_KAT_ALIGN4(kat->seed_z_len) + FIPS_KAT_ALIGN4(kat->seed_m_len) +
+         FIPS_KAT_ALIGN4(kat->exp_pk_hash_len);
+}
+static inline const uint8_t *fips_kat_kem_exp_ss(const kem_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->seed_d_len) +
+         FIPS_KAT_ALIGN4(kat->seed_z_len) + FIPS_KAT_ALIGN4(kat->seed_m_len) +
+         FIPS_KAT_ALIGN4(kat->exp_pk_hash_len) +
+         FIPS_KAT_ALIGN4(kat->exp_ct_hash_len);
+}
+static inline size_t fips_kat_kem_expected_size(const kem_kat_data_t *kat) {
+  return sizeof(kem_kat_data_t) + FIPS_KAT_ALIGN4(kat->seed_d_len) +
+         FIPS_KAT_ALIGN4(kat->seed_z_len) + FIPS_KAT_ALIGN4(kat->seed_m_len) +
+         FIPS_KAT_ALIGN4(kat->exp_pk_hash_len) +
+         FIPS_KAT_ALIGN4(kat->exp_ct_hash_len) +
+         FIPS_KAT_ALIGN4(kat->exp_ss_len);
 }
 
 
