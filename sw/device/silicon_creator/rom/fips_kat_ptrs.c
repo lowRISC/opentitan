@@ -34,7 +34,6 @@
  * =============================================================================
  */
 
-
 /**
  * Algorithm ID 1: SHA2-256
  * Schema: `hmac_kat_data_t`
@@ -452,7 +451,19 @@ typedef struct fips_kat_hkdf_sha384 {
   uint8_t data[188];
 } fips_kat_hkdf_sha384_t;
 
-#define FIPS_KAT_NUM_ENTRIES 30
+/**
+ * Algorithm ID 31: SHA2-384
+ * Schema: `hmac_kat_data_t`
+ * Vector: FIPS 180-4: key_len=0, msg_len=3 ("abc", pad4=4), digest_len=48
+ */
+typedef struct fips_kat_sha384 {
+  uint32_t key_len;
+  uint32_t msg_len;
+  uint32_t digest_len;
+  uint8_t data[52];
+} fips_kat_sha384_t;
+
+#define FIPS_KAT_NUM_ENTRIES 31
 
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -493,6 +504,7 @@ typedef struct fips_kat_data_store {
   fips_kat_aes_gcm256_t aes_gcm256;
   fips_kat_sphincsplus_sha2_128s_verify_t sphincsplus_sha2_128s;
   fips_kat_hkdf_sha384_t hkdf_sha384;
+  fips_kat_sha384_t sha384;
 } fips_kat_data_store_t;
 
 /**
@@ -657,9 +669,11 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                         .size = sizeof(drbg_kat_data_t),
                     },
                     {
-                        .algorithm_id = (uint32_t)kFipsKatAlgEntropySrcSha3Conditioning,
+                        .algorithm_id =
+                            (uint32_t)kFipsKatAlgEntropySrcSha3Conditioning,
                         .offset = FIPS_KAT_OFFSET(entropy_src),
-                        .size = sizeof(fips_kat_entropy_src_sha3_conditioning_t),
+                        .size =
+                            sizeof(fips_kat_entropy_src_sha3_conditioning_t),
                     },
                     {
                         .algorithm_id = (uint32_t)kFipsKatAlgAesGcm256Encrypt,
@@ -667,7 +681,8 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                         .size = sizeof(fips_kat_aes_gcm256_t),
                     },
                     {
-                        .algorithm_id = (uint32_t)kFipsKatAlgSphincsPlusSha2_128sVerify,
+                        .algorithm_id =
+                            (uint32_t)kFipsKatAlgSphincsPlusSha2_128sVerify,
                         .offset = FIPS_KAT_OFFSET(sphincsplus_sha2_128s),
                         .size = sizeof(fips_kat_sphincsplus_sha2_128s_verify_t),
                     },
@@ -675,6 +690,11 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                         .algorithm_id = (uint32_t)kFipsKatAlgHkdfSha2_384,
                         .offset = FIPS_KAT_OFFSET(hkdf_sha384),
                         .size = sizeof(fips_kat_hkdf_sha384_t),
+                    },
+                    {
+                        .algorithm_id = (uint32_t)kFipsKatAlgSha2_384,
+                        .offset = FIPS_KAT_OFFSET(sha384),
+                        .size = sizeof(fips_kat_sha384_t),
                     },
                 },
         },
@@ -3028,6 +3048,22 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                     0x18, 0xe4, 0x38, 0x92, 0xbb, 0x78, 0xcb, 0x34,
                     0x2c, 0x55, 0x29, 0xda, 0x4e, 0x80, 0x7e, 0xf4,
                     0xe6, 0xb1, 0x98, 0x2b, 0xd3, 0xa8, 0x5c, 0x29,
+                },
+            },
+            .sha384 = {
+                .key_len = 0,
+                .msg_len = 3,
+                .digest_len = 48,
+                .data = {
+                    // Message "abc" (3 bytes + 1B pad)
+                    0x61, 0x62, 0x63, 0x00,
+                    // Expected SHA2-384 Digest (48 bytes)
+                    0xcb, 0x00, 0x75, 0x3f, 0x45, 0xa3, 0x5e, 0x8b,
+                    0xb5, 0xa0, 0x3d, 0x69, 0x9a, 0xc6, 0x50, 0x07,
+                    0x27, 0x2c, 0x32, 0xab, 0x0e, 0xde, 0xd1, 0x63,
+                    0x1a, 0x8b, 0x60, 0x5a, 0x43, 0xff, 0x5b, 0xed,
+                    0x80, 0x86, 0x07, 0x2b, 0xa1, 0xe7, 0xcc, 0x23,
+                    0x58, 0xba, 0xec, 0xa1, 0x34, 0xc8, 0x25, 0xa7,
                 },
             },
         },
