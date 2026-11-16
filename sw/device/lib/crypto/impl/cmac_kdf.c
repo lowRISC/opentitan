@@ -115,8 +115,6 @@ otcrypto_status_t otcrypto_cmac_kdf(
   size_t share_word_len = keyblob_share_num_words(output_key_material->config);
   HARDENED_CHECK_EQ(required_word_len, share_word_len);
   HARDENED_CHECK_GT(required_word_len, 0);
-  uint32_t *share0_ptr = output_key_material->keyblob;
-  uint32_t *share1_ptr = output_key_material->keyblob + share_word_len;
   size_t words_written = 0;
 
   // Repeatedly call CMAC to generate the derived key based on input data:
@@ -161,10 +159,9 @@ otcrypto_status_t otcrypto_cmac_kdf(
     uint32_t share0_data[kAesBlockNumWords];
     HARDENED_TRY(hardened_xor(tag_data, mask_data, words_to_copy, share0_data));
 
-    HARDENED_TRY(hardened_memcpy(share0_ptr + words_written, share0_data,
-                                 words_to_copy));
-    HARDENED_TRY(
-        hardened_memcpy(share1_ptr + words_written, mask_data, words_to_copy));
+    HARDENED_TRY(keyblob_write_shares(
+        share0_data, mask_data, words_written, words_to_copy,
+        output_key_material->config, output_key_material->keyblob));
 
     words_written += words_to_copy;
   }

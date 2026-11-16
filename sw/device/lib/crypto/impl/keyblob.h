@@ -96,6 +96,31 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
                              uint32_t *keyblob);
 
 /**
+ * Write a chunk of shares into a blinded keyblob at a given word offset.
+ *
+ * Copies `num_words` words of `share0` and `share1` into the corresponding
+ * share positions at `word_offset` within `keyblob`. Randomizes the target
+ * keyblob slices before writing and verifies the written words.
+ *
+ * Returns `OTCRYPTO_BAD_ARGS` if `config.hw_backed` is not
+ * `kHardenedBoolFalse`, `num_words` is zero, or `word_offset + num_words`
+ * exceeds the share length implied by `config`.
+ *
+ * @param share0 First share chunk (`num_words` words).
+ * @param share1 Second share chunk (`num_words` words).
+ * @param word_offset Offset in 32-bit words within each share.
+ * @param num_words Number of 32-bit words to write per share.
+ * @param config Key configuration.
+ * @param[out] keyblob Destination buffer.
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t keyblob_write_shares(const uint32_t *share0, const uint32_t *share1,
+                              size_t word_offset, size_t num_words,
+                              const otcrypto_key_config_t config,
+                              uint32_t *keyblob);
+
+/**
  * Construct key manager diversification data from a raw keyblob.
  *
  * The keyblob must be exactly 8 32-bit words long. The first word is the
