@@ -77,7 +77,6 @@ class csrng_agent extends dv_reactive_agent #(
     m_cmd_push_agent.monitor.analysis_port.connect(monitor.csrng_cmd_fifo.analysis_export);
 
     if (cfg.if_mode == dv_utils_pkg::Device) begin
-      monitor.req_analysis_port.connect(sequencer.req_analysis_fifo.analysis_export);
       sequencer.m_genbits_push_sequencer = m_genbits_push_agent.sequencer;
     end else if (cfg.if_mode == dv_utils_pkg::Host) begin
       sequencer.m_cmd_push_sequencer = m_cmd_push_agent.sequencer;
