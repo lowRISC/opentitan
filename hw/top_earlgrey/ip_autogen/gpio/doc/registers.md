@@ -439,6 +439,8 @@ must be stable for 16 cycles before transitioning.
 
 ## HW_STRAPS_DATA_IN_VALID
 Indicates whether the data in [`HW_STRAPS_DATA_IN`](#hw_straps_data_in) is valid.
+
+If the `GpioAsHwStrapsEn` synthesis parameter is false then the register reads as zero.
 - Offset: `0x40`
 - Reset default: `0x0`
 - Reset mask: `0x1`
@@ -458,7 +460,7 @@ Indicates whether the data in [`HW_STRAPS_DATA_IN`](#hw_straps_data_in) is valid
 GPIO input data that was sampled as straps at most once after the block
 came out of reset.
 
-The behavior of this register depends on the GpioAsHwStrapsEn parameter.
+The behavior of this register depends on the GpioAsHwStrapsEn synthesis parameter.
 - If the parameter is false then the register reads as zero.
 - If the parameter is true then GPIO input data is sampled after reset
 on the first cycle where the strap_en_i input is high. The
