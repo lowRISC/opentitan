@@ -67,13 +67,12 @@ If the output enable is true (and the GPIO is connected to a chip-level pad), th
 
 #### GPIO Inputs as HW Straps
 
-The GPIO controller provides an optional feature to sample GPIO input values as hardware configuration straps.
+If the `GpioAsHwStrapsEn` synthesis parameter is set, the GPIO module can sample GPIO input values as hardware configuration straps.
 After each reset, on the first cycle when the `strap_en_i` signal is asserted, the GPIO detects its transition from low to high.
 One clock cycle later, it samples the GPIO input values and stores them in the `HW_STRAPS_DATA_IN` register.
 The `strap_en_i` signal transition from low to high is expected only once after the reset process.
 Sampling occurs exclusively at this time, and any subsequent changes to the GPIO input configuration will not be captured.
 This mechanism samples all 32 bits of the GPIO input data, regardless of the GPIO output enable status, providing a reliable snapshot of the input values for firmware access.
-
 
 ### Interrupts
 
@@ -100,3 +99,36 @@ assistance to indicate which edge caused the output interrupt.
 **Note #2:** All inputs are sent through optional noise filtering before being sent into interrupt detection.
 **Note #3:** All interrupts to the processor are level interrupts as per the Comportability Specification guidelines.
 The GPIO module, if configured, converts an edge detection into a level interrupt to the processor core.
+
+
+## Integration Guidance
+
+In accordance with the [comportability specification](../../../../../doc/contributing/hw/comportability/README.md) the GPIO module offers the following interfaces:
+
+- TileLink-UL interface to registers
+- 32-wide chip IO ports
+- Interrupts from input level/edge
+- Alerts
+- Inter-module signals for straps
+  - Only if the `GpioAsHwStrapsEn` synthesis parameter is set
+- [RACL](../../../../../doc/contributing/hw/racl)
+  - Only if the `EnableRacl` synthesis parameter is set
+
+If the `GpioAsyncOn` synthesis parameter is set, the inputs from chip IO are passed through a 2-flop CDC synchroniser stage within the GPIO module to mitigate metastability issues from asynchronous inputs.
+This also relaxes the timing requirements for the `cio_gpio_i[*]` ports, though application-dependent constraints on aspects such as skew between input signals and maximum input delay are likely still desirable.
+Disabling `GpioAsyncOn` could save 64 flops (or equivalent in sync cells) should sufficient CDC synchronisation already be provided to the same clock domain as the GPIO module, but take care.
+Note that the purpose of CDC synchronisation is to reduce the probability of metastable input signals affecting the logical operation of the module, not to debounce or otherwise filter external transients (see the input noise filter).
+
+The interrupt logic is based on synchronous sampling, making it immune to logic glitches but dependent on the internal clock provided.
+The benefits of this simplicity is that the interrupt logic is not susceptible to sub-cycle glitches from internal combinatorial logic, allowing for the fan-in to be implemented as normal data paths and digital logic to be used for optional noise filtering.
+However, it also means events can be missed if they happen between clock edges, such as pulses from higher-speed systems or events that occur while the chip is in a low-power state.
+Potential methods for mitigating the latter include adding minimal always-on interrupt detection outside of the GPIO module (i.e. for waking the chip), or keeping the clock running to the whole GPIO module and relevant chip IO logic even when in a low-power state.
+
+The width of the GPIO module has only been verified as 32, and it is not recommended that it be changed.
+Surplus outputs can be left unused so some logic might be optimised away.
+Surplus inputs should be tied low so some flops backing the DATA_IN register (which resets to zero) can be optimised away.
+Two modules can be used if a greater width is required.
+
+If the `GpioAsHwStrapsEn` synthesis parameter is set, the inter-module strap signals consist of an enable input and broadcast output, which may need special treatment depending on the destination.
+The broadcast output consists of a validity flag and 32 bits of data, and could be used in the wider SoC to set various functions.
+Care should be taken if the broadcast output crosses clock and/or reset domain boundaries as although these signals should be constant after the valid flag is set, a local reset could change that.

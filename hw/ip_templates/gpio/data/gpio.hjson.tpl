@@ -130,9 +130,11 @@
       act:     "rcv",
       package: "",
       desc:    '''
-               The strap enable signal tells gpio to take a snapshot of the input pins.
-               The behaviour of this signal after that event will have no effect.
-               ''',
+        The strap enable signal tells gpio to take a snapshot of the input pins.
+        The behaviour of this signal after that event will have no effect.
+
+        If the `GpioAsHwStrapsEn` synthesis parameter is false this interface is unused.
+        ''',
       default: "1'b0"
     },
     { struct:  "gpio_straps",
@@ -141,8 +143,10 @@
       act:     "req",
       package: "${module_instance_name}_pkg",
       desc:    '''
-               This vector contains the sampled strap values.
-               ''',
+        This vector contains the sampled strap values.
+
+        If the `GpioAsHwStrapsEn` synthesis parameter is false this interface is unused.
+        ''',
       default: "'0"
     },
     { struct:  "racl_policy_vec",
@@ -153,6 +157,8 @@
       desc:    '''
         Incoming RACL policy vector from a racl_ctrl instance.
         The policy selection vector (parameter) selects the policy for each register.
+
+        If the `EnableRacl` synthesis parameter is false this interface is unused.
       '''
     }
     { struct:  "racl_error_log",
@@ -163,6 +169,8 @@
       package: "top_racl_pkg",
       desc:    '''
         RACL error log information of this module.
+
+        If the `EnableRacl` synthesis parameter is false this interface is unused.
       '''
     }
   ]
@@ -447,7 +455,11 @@
       ],
     },
     { name: "HW_STRAPS_DATA_IN_VALID",
-      desc: "Indicates whether the data in !!HW_STRAPS_DATA_IN is valid.",
+      desc: '''
+        Indicates whether the data in !!HW_STRAPS_DATA_IN is valid.
+
+        If the `GpioAsHwStrapsEn` synthesis parameter is false then the register reads as zero.
+      ''',
       swaccess: "ro",
       hwaccess: "hrw",
       tags: [// Value in the register is determined by GPIO pin values that are sampled
@@ -465,7 +477,7 @@
         GPIO input data that was sampled as straps at most once after the block
         came out of reset.
 
-        The behavior of this register depends on the GpioAsHwStrapsEn parameter.
+        The behavior of this register depends on the GpioAsHwStrapsEn synthesis parameter.
         - If the parameter is false then the register reads as zero.
         - If the parameter is true then GPIO input data is sampled after reset
           on the first cycle where the strap_en_i input is high. The
