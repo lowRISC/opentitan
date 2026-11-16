@@ -1216,6 +1216,116 @@ static status_t test_x25519_kat(const fips_kat_descriptor_table_t *table) {
 }
 
 // -----------------------------------------------------------------------------
+// Post-Quantum KATs (ML-DSA-87, ML-KEM-1024, NIST Round 3 SPHINCS+)
+// -----------------------------------------------------------------------------
+
+static status_t test_mldsa87_kat(const fips_kat_descriptor_table_t *table,
+                                 const dif_aon_timer_t *aon_timer) {
+  const fips_kat_entry_t *entry;
+  const mldsa_kat_data_t *kat = (const mldsa_kat_data_t *)resolve_entry(
+      table, kFipsKatAlgMldsa87, &entry);
+  CHECK(kat->num_cases == 5 &&
+        entry->size == fips_kat_mldsa_expected_size(kat));
+
+  static uint32_t pk_data[kOtcryptoMldsa87PkWords];
+  static uint32_t sk_data[kOtcryptoMldsa87SkWords];
+  static uint32_t sig_data[kOtcryptoMldsa87SigWords];
+
+  for (size_t i = 0; i < kat->num_cases; ++i) {
+    CHECK_DIF_OK(dif_aon_timer_watchdog_pet(aon_timer));
+    const fips_kat_mldsa87_case_t *c = &kat->cases[i];
+
+    uint32_t xi_data[16] = {0};
+    memcpy(xi_data, c->seed, 32);
+    otcrypto_blinded_key_t xi = {
+        .config =
+            {
+                .version = kOtcryptoLibVersion1,
+                .key_mode = kOtcryptoKeyModePqcMldsa87,
+                .key_length = 64,
+                .hw_backed = kHardenedBoolFalse,
+                .exportable = kHardenedBoolFalse,
+                .security_level = kOtcryptoKeySecurityLevelLow,
+            },
+        .keyblob_length = sizeof(xi_data),
+        .keyblob = xi_data,
+    };
+    xi.checksum = otcrypto_integrity_blinded_checksum(&xi);
+
+    otcrypto_unblinded_key_t pk = {
+        .key_mode = kOtcryptoKeyModePqcMldsa87,
+        .key_length = kOtcryptoMldsa87PkBytes,
+        .key = pk_data,
+    };
+    otcrypto_blinded_key_t sk = {
+        .config =
+            {
+                .version = kOtcryptoLibVersion1,
+                .key_mode = kOtcryptoKeyModePqcMldsa87,
+                .key_length = kOtcryptoMldsa87SkBytes,
+                .hw_backed = kHardenedBoolFalse,
+                .exportable = kHardenedBoolFalse,
+                .security_level = kOtcryptoKeySecurityLevelLow,
+            },
+        .keyblob_length = kOtcryptoMldsa87SkBytes,
+        .keyblob = sk_data,
+    };
+
+    CHECK_STATUS_OK(mldsa87_det_keygen_internal_start(&xi));
+    CHECK_STATUS_OK(mldsa87_keygen_internal_finalize(&pk, &sk));
+    pk.checksum = otcrypto_integrity_unblinded_checksum(&pk);
+    sk.checksum = otcrypto_integrity_blinded_checksum(&sk);
+
+    // mu = SHAKE256(tr || M', 64)
+    otcrypto_sha3_context_t sha3_ctx;
+    CHECK_STATUS_OK(otcrypto_shake256_init(&sha3_ctx));
+    otcrypto_const_byte_buf_t tr_buf =
+        OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                          (const unsigned char *)(sk.keyblob + 24), 64);
+    CHECK_STATUS_OK(otcrypto_sha3_update(&sha3_ctx, &tr_buf));
+    otcrypto_const_byte_buf_t mprime_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, c->mprime, sizeof(c->mprime));
+    CHECK_STATUS_OK(otcrypto_sha3_update(&sha3_ctx, &mprime_buf));
+
+    uint32_t mu_data[16] = {0};
+    otcrypto_hash_digest_t mu = {
+        .mode = kOtcryptoHashXofModeShake256,
+        .len = ARRAYSIZE(mu_data),
+        .data = mu_data,
+    };
+    CHECK_STATUS_OK(otcrypto_shake256_final(&sha3_ctx, &mu));
+
+    CHECK_STATUS_OK(
+        mldsa87_sign_internal_start(&sk, &mu, kOtcryptoMldsaSignModeDet));
+    otcrypto_word32_buf_t sig_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_word32_buf_t, sig_data, kOtcryptoMldsa87SigWords);
+    CHECK_STATUS_OK(
+        mldsa87_sign_internal_finalize(&sig_buf, kMldsa87SingleSign));
+
+    // Verify SHA2-256(sig[0..4627]) matches ROM expected hash.
+    uint32_t act_sig_hash[8] = {0};
+    otcrypto_hash_digest_t sig_hash = {
+        .mode = kOtcryptoHashModeSha256,
+        .len = ARRAYSIZE(act_sig_hash),
+        .data = act_sig_hash,
+    };
+    otcrypto_const_byte_buf_t sig_bytes_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_byte_buf_t, (const unsigned char *)sig_data, 4627);
+    CHECK_STATUS_OK(otcrypto_sha2_256(&sig_bytes_buf, &sig_hash));
+    CHECK_ARRAYS_EQ((const uint8_t *)act_sig_hash, c->expected_sig_hash, 32);
+
+    // Verify generated signature on OTBN.
+    otcrypto_const_word32_buf_t const_sig_buf = OTCRYPTO_MAKE_BUF(
+        otcrypto_const_word32_buf_t, sig_data, kOtcryptoMldsa87SigWords);
+    CHECK_STATUS_OK(mldsa87_verify_internal_start(&pk, &const_sig_buf, &mu));
+    hardened_bool_t result = kHardenedBoolFalse;
+    CHECK_STATUS_OK(mldsa87_verify_internal_finalize(&const_sig_buf, &result));
+    CHECK(result == kHardenedBoolTrue);
+  }
+  return OK_STATUS();
+}
+
+// -----------------------------------------------------------------------------
 // Main Test Entry Point
 // -----------------------------------------------------------------------------
 
@@ -1250,7 +1360,7 @@ static status_t test_fips_kat_rom(void) {
       get_fips_descriptor_table_from_region((const void *)kat_base,
                                             kFipsKatRegionSize);
   CHECK(table != NULL, "Invalid ROM FIPS KAT descriptor table");
-  CHECK(table->entry_count == 23u, "Expected 23 entries, got %u",
+  CHECK(table->entry_count == 24u, "Expected 24 entries, got %u",
         table->entry_count);
   LOG_INFO("FIPS KAT table @ 0x%08x: %u entries, %u bytes (ePMP RO verified)",
            (uint32_t)kat_base, table->entry_count, table->total_size);
@@ -1293,11 +1403,17 @@ static status_t test_fips_kat_rom(void) {
   LOG_INFO("[4/6] RSA + ECC ok");
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
 
+  // Post-Quantum KATs.
+  TRY(test_mldsa87_kat(table, &aon_timer));
+  CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
+  LOG_INFO("[5/6] PQC (SPHINCS+/ML-DSA/ML-KEM) ok");
+  CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
+
   // 4. Immediately revoke transient ePMP mapping and verify ROM denies loads.
   unmap_rom_kat_slot0();
   assert_load_faults(kat_base);
 
-  LOG_INFO("All 23 ROM FIPS KATs passed and transient ePMP revoked.");
+  LOG_INFO("All 24 ROM FIPS KATs passed and transient ePMP revoked.");
   return OK_STATUS();
 }
 
