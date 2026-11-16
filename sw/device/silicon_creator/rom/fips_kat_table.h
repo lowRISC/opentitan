@@ -93,6 +93,11 @@ typedef enum fips_kat_alg_id {
   kFipsKatAlgEcdsaP384Verify = 18,
   kFipsKatAlgEd25519Sign = 19,
   kFipsKatAlgEd25519Verify = 20,
+
+  // Key Agreement / ECDH (P-256, P-384, X25519)
+  kFipsKatAlgEcdhP256 = 21,
+  kFipsKatAlgEcdhP384 = 22,
+  kFipsKatAlgX25519 = 23,
 } fips_kat_alg_id_t;
 
 /**
@@ -218,6 +223,24 @@ typedef struct asymmetric_sign_kat_data {
 
 OT_ASSERT_SIZE(asymmetric_sign_kat_data_t, 20);
 OT_ASSERT_MEMBER_OFFSET(asymmetric_sign_kat_data_t, data, 20);
+
+// 6. Key Agreement (ECDH P-256/P-384, X25519)
+// Endianness conventions:
+// - ECDH P-256/P-384: priv_key = d (LE), pub_key1 = Qx (LE), pub_key2 = Qy
+// (LE),
+//   shared_secret = Zx (LE).
+// - X25519: priv_key = sk (RFC 7748), pub_key1 = peer_pk, pub_key2 = empty,
+//   shared_secret = ss (RFC 7748).
+typedef struct ecdh_kat_data {
+  uint32_t priv_key_len;
+  uint32_t pub_key_len1;
+  uint32_t pub_key_len2;
+  uint32_t shared_secret_len;
+  uint8_t data[];  // pad4(priv)||pad4(pk1)||pad4(pk2)||pad4(shared_secret)
+} ecdh_kat_data_t;
+
+OT_ASSERT_SIZE(ecdh_kat_data_t, 16);
+OT_ASSERT_MEMBER_OFFSET(ecdh_kat_data_t, data, 16);
 
 /**
  * ============================================================================
@@ -486,6 +509,33 @@ static inline size_t fips_kat_asym_sign_expected_size(
          FIPS_KAT_ALIGN4(kat->priv_key_len) +
          FIPS_KAT_ALIGN4(kat->ephemeral_len) + FIPS_KAT_ALIGN4(kat->msg_len) +
          FIPS_KAT_ALIGN4(kat->sig_len1) + FIPS_KAT_ALIGN4(kat->sig_len2);
+}
+
+// --- ecdh_kat_data_t ---
+static inline const uint8_t *fips_kat_ecdh_priv_key(
+    const ecdh_kat_data_t *kat) {
+  return kat->data;
+}
+static inline const uint8_t *fips_kat_ecdh_pub_key1(
+    const ecdh_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->priv_key_len);
+}
+static inline const uint8_t *fips_kat_ecdh_pub_key2(
+    const ecdh_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->priv_key_len) +
+         FIPS_KAT_ALIGN4(kat->pub_key_len1);
+}
+static inline const uint8_t *fips_kat_ecdh_shared_secret(
+    const ecdh_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->priv_key_len) +
+         FIPS_KAT_ALIGN4(kat->pub_key_len1) +
+         FIPS_KAT_ALIGN4(kat->pub_key_len2);
+}
+static inline size_t fips_kat_ecdh_expected_size(const ecdh_kat_data_t *kat) {
+  return sizeof(ecdh_kat_data_t) + FIPS_KAT_ALIGN4(kat->priv_key_len) +
+         FIPS_KAT_ALIGN4(kat->pub_key_len1) +
+         FIPS_KAT_ALIGN4(kat->pub_key_len2) +
+         FIPS_KAT_ALIGN4(kat->shared_secret_len);
 }
 
 
