@@ -246,14 +246,14 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
   ASSERT_NE(table, nullptr);
   EXPECT_EQ(table->magic, kFipsKatDescriptorMagic);
   EXPECT_EQ(table->version, kFipsKatDescriptorVersion1);
-  EXPECT_EQ(table->entry_count, 4u);
+  EXPECT_EQ(table->entry_count, 6u);
   EXPECT_LE(table->total_size, kFipsKatRegionSize);
   EXPECT_EQ(table->total_size % 4u, 0u);
 
   std::set<uint32_t> seen_ids;
   std::vector<std::pair<uint32_t, uint32_t>> intervals;
 
-  for (uint32_t id : std::vector<uint32_t>{1, 2, 3, 4}) {
+  for (uint32_t id : std::vector<uint32_t>{1, 2, 3, 4, 5, 6}) {
     const auto alg_id = static_cast<fips_kat_alg_id_t>(id);
     const fips_kat_entry_t *entry =
         find_fips_entry(table, kFipsKatRegionSize, alg_id);
@@ -270,7 +270,8 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
       case kFipsKatAlgSha2_256:
       case kFipsKatAlgSha2_512:
       case kFipsKatAlgHmacSha2_256:
-      case kFipsKatAlgHmacSha2_512: {
+      case kFipsKatAlgHmacSha2_512:
+      case kFipsKatAlgShake256: {
 
         const auto *kat = static_cast<const hmac_kat_data_t *>(payload);
         EXPECT_EQ(entry->size, fips_kat_hmac_expected_size(kat))
@@ -279,6 +280,19 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
         EXPECT_EQ(reinterpret_cast<uintptr_t>(fips_kat_hmac_msg(kat)) & 3u, 0u);
         EXPECT_EQ(reinterpret_cast<uintptr_t>(fips_kat_hmac_digest(kat)) & 3u,
                   0u);
+        break;
+      }
+      case kFipsKatAlgKmac256: {
+
+        const auto *kat = static_cast<const kdf_kat_data_t *>(payload);
+        EXPECT_EQ(entry->size, fips_kat_kdf_expected_size(kat))
+            << "alg_id=" << id;
+        EXPECT_EQ(reinterpret_cast<uintptr_t>(fips_kat_kdf_key(kat)) & 3u, 0u);
+        EXPECT_EQ(reinterpret_cast<uintptr_t>(fips_kat_kdf_label(kat)) & 3u,
+                  0u);
+        EXPECT_EQ(reinterpret_cast<uintptr_t>(fips_kat_kdf_context(kat)) & 3u,
+                  0u);
+        EXPECT_EQ(reinterpret_cast<uintptr_t>(fips_kat_kdf_out(kat)) & 3u, 0u);
         break;
       }
       default:

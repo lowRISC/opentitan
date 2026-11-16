@@ -326,6 +326,64 @@ static status_t test_hmac_sha512_kat(const fips_kat_descriptor_table_t *table) {
   return OK_STATUS();
 }
 
+static status_t test_shake256_kat(const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const hmac_kat_data_t *kat = (const hmac_kat_data_t *)resolve_entry(
+      table, kFipsKatAlgShake256, &entry);
+  CHECK(entry->size == fips_kat_hmac_expected_size(kat));
+  CHECK(kat->key_len == 0 && kat->digest_len == 32);
+
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_hmac_msg(kat), kat->msg_len);
+  uint32_t digest_words[8] = {0};
+  otcrypto_hash_digest_t digest = {
+      .mode = kOtcryptoHashXofModeShake256,
+      .len = ARRAYSIZE(digest_words),
+      .data = digest_words,
+  };
+  CHECK_STATUS_OK(otcrypto_shake256(&msg_buf, &digest));
+  CHECK_ARRAYS_EQ((const uint8_t *)digest_words, fips_kat_hmac_digest(kat), 32);
+  return OK_STATUS();
+}
+
+static status_t test_kmac256_kat(const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const kdf_kat_data_t *kat =
+      (const kdf_kat_data_t *)resolve_entry(table, kFipsKatAlgKmac256, &entry);
+  CHECK(entry->size == fips_kat_kdf_expected_size(kat));
+  CHECK(kat->key_len == 32 && kat->out_len == 64);
+
+  const otcrypto_key_config_t kConfig = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeKmac256,
+      .key_length = kat->key_len,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t keyblob[keyblob_num_words(kConfig)];
+  CHECK_STATUS_OK(keyblob_from_key_and_mask(
+      (const uint32_t *)fips_kat_kdf_key(kat), kTestMask, kConfig, keyblob));
+  otcrypto_blinded_key_t key = {
+      .config = kConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
+
+  otcrypto_const_byte_buf_t custom_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_kdf_label(kat), kat->label_len);
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_kdf_context(kat), kat->context_len);
+  uint32_t tag_words[16] = {0};
+  otcrypto_word32_buf_t tag_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, tag_words, ARRAYSIZE(tag_words));
+  CHECK_STATUS_OK(
+      otcrypto_kmac(&key, &msg_buf, &custom_buf, kat->out_len, &tag_buf));
+  CHECK_ARRAYS_EQ((const uint8_t *)tag_words, fips_kat_kdf_out(kat), 64);
+  return OK_STATUS();
+}
+
 // -----------------------------------------------------------------------------
 // Main Test Entry Point
 // -----------------------------------------------------------------------------
@@ -361,7 +419,7 @@ static status_t test_fips_kat_rom(void) {
       get_fips_descriptor_table_from_region((const void *)kat_base,
                                             kFipsKatRegionSize);
   CHECK(table != NULL, "Invalid ROM FIPS KAT descriptor table");
-  CHECK(table->entry_count == 4u, "Expected 4 entries, got %u",
+  CHECK(table->entry_count == 6u, "Expected 6 entries, got %u",
         table->entry_count);
   LOG_INFO("FIPS KAT table @ 0x%08x: %u entries, %u bytes (ePMP RO verified)",
            (uint32_t)kat_base, table->entry_count, table->total_size);
@@ -376,13 +434,16 @@ static status_t test_fips_kat_rom(void) {
   TRY(test_hmac_sha256_kat(table));
   TRY(test_hmac_sha512_kat(table));
   LOG_INFO("[1/6] SHA2 + HMAC ok");
+  TRY(test_shake256_kat(table));
+  TRY(test_kmac256_kat(table));
+  LOG_INFO("[2/6] SHA3/KMAC + AES ok");
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
 
   // 4. Immediately revoke transient ePMP mapping and verify ROM denies loads.
   unmap_rom_kat_slot0();
   assert_load_faults(kat_base);
 
-  LOG_INFO("All 4 ROM FIPS KATs passed and transient ePMP revoked.");
+  LOG_INFO("All 6 ROM FIPS KATs passed and transient ePMP revoked.");
   return OK_STATUS();
 }
 

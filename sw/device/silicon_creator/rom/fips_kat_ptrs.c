@@ -85,7 +85,33 @@ typedef struct fips_kat_hmac_sha512 {
   uint8_t data[180];
 } fips_kat_hmac_sha512_t;
 
-#define FIPS_KAT_NUM_ENTRIES 4
+/**
+ * Algorithm ID 5: SHAKE-256
+ * Schema: `hmac_kat_data_t`
+ * Vector: CAVP: msg_len=1 (0x0f, pad4=4), digest_len=32
+ */
+typedef struct fips_kat_shake256 {
+  uint32_t key_len;
+  uint32_t msg_len;
+  uint32_t digest_len;
+  uint8_t data[36];
+} fips_kat_shake256_t;
+
+/**
+ * Algorithm ID 6: KMAC-256
+ * Schema: `kdf_kat_data_t`
+ * Vector: NIST SP 800-185 Sample #4: key=32B, label=21B ("My Tagged
+ * Application", pad4=24), msg=4B, out=64B
+ */
+typedef struct fips_kat_kmac256 {
+  uint32_t key_len;
+  uint32_t label_len;
+  uint32_t context_len;
+  uint32_t out_len;
+  uint8_t data[124];
+} fips_kat_kmac256_t;
+
+#define FIPS_KAT_NUM_ENTRIES 6
 
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -100,6 +126,8 @@ typedef struct fips_kat_data_store {
   fips_kat_sha512_t sha512;
   fips_kat_hmac_sha256_t hmac_sha256;
   fips_kat_hmac_sha512_t hmac_sha512;
+  fips_kat_shake256_t shake256;
+  fips_kat_kmac256_t kmac256;
 } fips_kat_data_store_t;
 
 /**
@@ -152,6 +180,16 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                         .algorithm_id = (uint32_t)kFipsKatAlgHmacSha2_512,
                         .offset = FIPS_KAT_OFFSET(hmac_sha512),
                         .size = sizeof(fips_kat_hmac_sha512_t),
+                    },
+                    {
+                        .algorithm_id = (uint32_t)kFipsKatAlgShake256,
+                        .offset = FIPS_KAT_OFFSET(shake256),
+                        .size = sizeof(fips_kat_shake256_t),
+                    },
+                    {
+                        .algorithm_id = (uint32_t)kFipsKatAlgKmac256,
+                        .offset = FIPS_KAT_OFFSET(kmac256),
+                        .size = sizeof(fips_kat_kmac256_t),
                     },
                 },
         },
@@ -245,6 +283,48 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                     0xb0, 0x8e, 0x5e, 0x7b, 0x6b, 0x8a, 0x2a, 0x3e,
                     0x0c, 0xda, 0x68, 0xeb, 0xb3, 0xb8, 0xd7, 0x45,
                     0xed, 0xd3, 0xae, 0xe4, 0xc2, 0x4a, 0xdd, 0x1c,
+                },
+            },
+            .shake256 = {
+                .key_len = 0,
+                .msg_len = 1,
+                .digest_len = 32,
+                .data = {
+                    // Message (1 bytes + 3B pad)
+                    0x0f, 0x00, 0x00, 0x00,
+                    // Expected SHAKE-256 Output (32 bytes)
+                    0xaa, 0xbb, 0x07, 0x48, 0x8f, 0xf9, 0xed, 0xd0,
+                    0x5d, 0x6a, 0x60, 0x3b, 0x77, 0x91, 0xb6, 0x0a,
+                    0x16, 0xd4, 0x50, 0x93, 0x60, 0x8f, 0x1b, 0xad,
+                    0xc0, 0xc9, 0xcc, 0x9a, 0x91, 0x54, 0xf2, 0x15,
+                },
+            },
+            .kmac256 = {
+                .key_len = 32,
+                .label_len = 21,
+                .context_len = 4,
+                .out_len = 64,
+                .data = {
+                    // Key (32 bytes)
+                    0x40, 0x41, 0x42, 0x43, 0x44, 0x45, 0x46, 0x47,
+                    0x48, 0x49, 0x4a, 0x4b, 0x4c, 0x4d, 0x4e, 0x4f,
+                    0x50, 0x51, 0x52, 0x53, 0x54, 0x55, 0x56, 0x57,
+                    0x58, 0x59, 0x5a, 0x5b, 0x5c, 0x5d, 0x5e, 0x5f,
+                    // Customization string S "My Tagged Application" (21 bytes + 3B pad)
+                    0x4d, 0x79, 0x20, 0x54, 0x61, 0x67, 0x67, 0x65,
+                    0x64, 0x20, 0x41, 0x70, 0x70, 0x6c, 0x69, 0x63,
+                    0x61, 0x74, 0x69, 0x6f, 0x6e, 0x00, 0x00, 0x00,
+                    // Message (4 bytes)
+                    0x00, 0x01, 0x02, 0x03,
+                    // Expected KMAC-256 Output (64 bytes)
+                    0x20, 0xc5, 0x70, 0xc3, 0x13, 0x46, 0xf7, 0x03,
+                    0xc9, 0xac, 0x36, 0xc6, 0x1c, 0x03, 0xcb, 0x64,
+                    0xc3, 0x97, 0x0d, 0x0c, 0xfc, 0x78, 0x7e, 0x9b,
+                    0x79, 0x59, 0x9d, 0x27, 0x3a, 0x68, 0xd2, 0xf7,
+                    0xf6, 0x9d, 0x4c, 0xc3, 0xde, 0x9d, 0x10, 0x4a,
+                    0x35, 0x16, 0x89, 0xf2, 0x7c, 0xf6, 0xf5, 0x95,
+                    0x1f, 0x01, 0x03, 0xf3, 0x3f, 0x4f, 0x24, 0x87,
+                    0x10, 0x24, 0xd9, 0xc2, 0x77, 0x73, 0xa8, 0xdd,
                 },
             },
         },
