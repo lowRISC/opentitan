@@ -71,6 +71,11 @@ typedef enum fips_kat_alg_id {
   // SHA-3 / Keccak
   kFipsKatAlgShake256 = 5,
   kFipsKatAlgKmac256 = 6,
+
+  // AES Block Cipher & Key Wrap (256-bit)
+  kFipsKatAlgAesEcb256Decrypt = 7,
+  kFipsKatAlgAesCbc256Decrypt = 8,
+  kFipsKatAlgAesKwp256Wrap = 9,
 } fips_kat_alg_id_t;
 
 /**
@@ -138,6 +143,21 @@ typedef struct kdf_kat_data {
 
 OT_ASSERT_SIZE(kdf_kat_data_t, 16);
 OT_ASSERT_MEMBER_OFFSET(kdf_kat_data_t, data, 16);
+
+// 3. Symmetric Block Cipher / AEAD / Key Wrap (AES-256 ECB, CBC, KWP, GCM)
+typedef struct aes_kat_data {
+  uint32_t key_len;
+  uint32_t iv_len;
+  uint32_t aad_len;
+  uint32_t pt_len;
+  uint32_t ct_len;
+  uint32_t tag_len;
+  uint8_t
+      data[];  // pad4(key)||pad4(iv)||pad4(aad)||pad4(pt)||pad4(ct)||pad4(tag)
+} aes_kat_data_t;
+
+OT_ASSERT_SIZE(aes_kat_data_t, 24);
+OT_ASSERT_MEMBER_OFFSET(aes_kat_data_t, data, 24);
 
 /**
  * ============================================================================
@@ -308,6 +328,38 @@ static inline size_t fips_kat_kdf_expected_size(const kdf_kat_data_t *kat) {
   return sizeof(kdf_kat_data_t) + FIPS_KAT_ALIGN4(kat->key_len) +
          FIPS_KAT_ALIGN4(kat->label_len) + FIPS_KAT_ALIGN4(kat->context_len) +
          FIPS_KAT_ALIGN4(kat->out_len);
+}
+
+// --- aes_kat_data_t ---
+static inline const uint8_t *fips_kat_aes_key(const aes_kat_data_t *kat) {
+  return kat->data;
+}
+static inline const uint8_t *fips_kat_aes_iv(const aes_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->key_len);
+}
+static inline const uint8_t *fips_kat_aes_aad(const aes_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->key_len) +
+         FIPS_KAT_ALIGN4(kat->iv_len);
+}
+static inline const uint8_t *fips_kat_aes_pt(const aes_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->key_len) +
+         FIPS_KAT_ALIGN4(kat->iv_len) + FIPS_KAT_ALIGN4(kat->aad_len);
+}
+static inline const uint8_t *fips_kat_aes_ct(const aes_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->key_len) +
+         FIPS_KAT_ALIGN4(kat->iv_len) + FIPS_KAT_ALIGN4(kat->aad_len) +
+         FIPS_KAT_ALIGN4(kat->pt_len);
+}
+static inline const uint8_t *fips_kat_aes_tag(const aes_kat_data_t *kat) {
+  return kat->data + FIPS_KAT_ALIGN4(kat->key_len) +
+         FIPS_KAT_ALIGN4(kat->iv_len) + FIPS_KAT_ALIGN4(kat->aad_len) +
+         FIPS_KAT_ALIGN4(kat->pt_len) + FIPS_KAT_ALIGN4(kat->ct_len);
+}
+static inline size_t fips_kat_aes_expected_size(const aes_kat_data_t *kat) {
+  return sizeof(aes_kat_data_t) + FIPS_KAT_ALIGN4(kat->key_len) +
+         FIPS_KAT_ALIGN4(kat->iv_len) + FIPS_KAT_ALIGN4(kat->aad_len) +
+         FIPS_KAT_ALIGN4(kat->pt_len) + FIPS_KAT_ALIGN4(kat->ct_len) +
+         FIPS_KAT_ALIGN4(kat->tag_len);
 }
 
 

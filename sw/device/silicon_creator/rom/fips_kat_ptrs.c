@@ -111,7 +111,53 @@ typedef struct fips_kat_kmac256 {
   uint8_t data[124];
 } fips_kat_kmac256_t;
 
-#define FIPS_KAT_NUM_ENTRIES 6
+/**
+ * Algorithm ID 7: AES-256-ECB
+ * Schema: `aes_kat_data_t`
+ * Vector: NIST SP 800-38A Section F.1.5/F.1.6: key=32B, pt=16B, ct=16B
+ */
+typedef struct fips_kat_aes_ecb256 {
+  uint32_t key_len;
+  uint32_t iv_len;
+  uint32_t aad_len;
+  uint32_t pt_len;
+  uint32_t ct_len;
+  uint32_t tag_len;
+  uint8_t data[64];
+} fips_kat_aes_ecb256_t;
+
+/**
+ * Algorithm ID 8: AES-256-CBC (2 blocks)
+ * Schema: `aes_kat_data_t`
+ * Vector: NIST SP 800-38A Section F.2.5/F.2.6 blocks 1-2: key=32B, iv=16B,
+ * pt=32B, ct=32B
+ */
+typedef struct fips_kat_aes_cbc256 {
+  uint32_t key_len;
+  uint32_t iv_len;
+  uint32_t aad_len;
+  uint32_t pt_len;
+  uint32_t ct_len;
+  uint32_t tag_len;
+  uint8_t data[112];
+} fips_kat_aes_cbc256_t;
+
+/**
+ * Algorithm ID 9: AES-256-KWP (9-byte padded)
+ * Schema: `aes_kat_data_t`
+ * Vector: RFC 5649 / NIST SP 800-38F: key=32B, pt=9B (pad4=12), ct=24B
+ */
+typedef struct fips_kat_aes_kwp256 {
+  uint32_t key_len;
+  uint32_t iv_len;
+  uint32_t aad_len;
+  uint32_t pt_len;
+  uint32_t ct_len;
+  uint32_t tag_len;
+  uint8_t data[68];
+} fips_kat_aes_kwp256_t;
+
+#define FIPS_KAT_NUM_ENTRIES 9
 
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -128,6 +174,9 @@ typedef struct fips_kat_data_store {
   fips_kat_hmac_sha512_t hmac_sha512;
   fips_kat_shake256_t shake256;
   fips_kat_kmac256_t kmac256;
+  fips_kat_aes_ecb256_t aes_ecb256;
+  fips_kat_aes_cbc256_t aes_cbc256;
+  fips_kat_aes_kwp256_t aes_kwp256;
 } fips_kat_data_store_t;
 
 /**
@@ -190,6 +239,21 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                         .algorithm_id = (uint32_t)kFipsKatAlgKmac256,
                         .offset = FIPS_KAT_OFFSET(kmac256),
                         .size = sizeof(fips_kat_kmac256_t),
+                    },
+                    {
+                        .algorithm_id = (uint32_t)kFipsKatAlgAesEcb256Decrypt,
+                        .offset = FIPS_KAT_OFFSET(aes_ecb256),
+                        .size = sizeof(fips_kat_aes_ecb256_t),
+                    },
+                    {
+                        .algorithm_id = (uint32_t)kFipsKatAlgAesCbc256Decrypt,
+                        .offset = FIPS_KAT_OFFSET(aes_cbc256),
+                        .size = sizeof(fips_kat_aes_cbc256_t),
+                    },
+                    {
+                        .algorithm_id = (uint32_t)kFipsKatAlgAesKwp256Wrap,
+                        .offset = FIPS_KAT_OFFSET(aes_kwp256),
+                        .size = sizeof(fips_kat_aes_kwp256_t),
                     },
                 },
         },
@@ -325,6 +389,77 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                     0x35, 0x16, 0x89, 0xf2, 0x7c, 0xf6, 0xf5, 0x95,
                     0x1f, 0x01, 0x03, 0xf3, 0x3f, 0x4f, 0x24, 0x87,
                     0x10, 0x24, 0xd9, 0xc2, 0x77, 0x73, 0xa8, 0xdd,
+                },
+            },
+            .aes_ecb256 = {
+                .key_len = 32,
+                .iv_len = 0,
+                .aad_len = 0,
+                .pt_len = 16,
+                .ct_len = 16,
+                .tag_len = 0,
+                .data = {
+                    // Key (SP 800-38A F.1.5) (32 bytes)
+                    0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe,
+                    0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
+                    0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7,
+                    0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4,
+                    // Plaintext (16 bytes)
+                    0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
+                    0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a,
+                    // Ciphertext (16 bytes)
+                    0xf3, 0xee, 0xd1, 0xbd, 0xb5, 0xd2, 0xa0, 0x3c,
+                    0x06, 0x4b, 0x5a, 0x7e, 0x3d, 0xb1, 0x81, 0xf8,
+                },
+            },
+            .aes_cbc256 = {
+                .key_len = 32,
+                .iv_len = 16,
+                .aad_len = 0,
+                .pt_len = 32,
+                .ct_len = 32,
+                .tag_len = 0,
+                .data = {
+                    // Key (SP 800-38A F.2.5) (32 bytes)
+                    0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe,
+                    0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
+                    0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7,
+                    0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4,
+                    // IV (16 bytes)
+                    0x00, 0x01, 0x02, 0x03, 0x04, 0x05, 0x06, 0x07,
+                    0x08, 0x09, 0x0a, 0x0b, 0x0c, 0x0d, 0x0e, 0x0f,
+                    // Plaintext (2 blocks) (32 bytes)
+                    0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
+                    0xe9, 0x3d, 0x7e, 0x11, 0x73, 0x93, 0x17, 0x2a,
+                    0xae, 0x2d, 0x8a, 0x57, 0x1e, 0x03, 0xac, 0x9c,
+                    0x9e, 0xb7, 0x6f, 0xac, 0x45, 0xaf, 0x8e, 0x51,
+                    // Ciphertext (2 blocks) (32 bytes)
+                    0xf5, 0x8c, 0x4c, 0x04, 0xd6, 0xe5, 0xf1, 0xba,
+                    0x77, 0x9e, 0xab, 0xfb, 0x5f, 0x7b, 0xfb, 0xd6,
+                    0x9c, 0xfc, 0x4e, 0x96, 0x7e, 0xdb, 0x80, 0x8d,
+                    0x67, 0x9f, 0x77, 0x7b, 0xc6, 0x70, 0x2c, 0x7d,
+                },
+            },
+            .aes_kwp256 = {
+                .key_len = 32,
+                .iv_len = 0,
+                .aad_len = 0,
+                .pt_len = 9,
+                .ct_len = 24,
+                .tag_len = 0,
+                .data = {
+                    // KEK (32 bytes)
+                    0x60, 0x3d, 0xeb, 0x10, 0x15, 0xca, 0x71, 0xbe,
+                    0x2b, 0x73, 0xae, 0xf0, 0x85, 0x7d, 0x77, 0x81,
+                    0x1f, 0x35, 0x2c, 0x07, 0x3b, 0x61, 0x08, 0xd7,
+                    0x2d, 0x98, 0x10, 0xa3, 0x09, 0x14, 0xdf, 0xf4,
+                    // Plaintext (9B, exercises RFC 5649 padding) (9 bytes + 3B pad)
+                    0x6b, 0xc1, 0xbe, 0xe2, 0x2e, 0x40, 0x9f, 0x96,
+                    0xe9, 0x00, 0x00, 0x00,
+                    // Expected Wrapped Ciphertext (24 bytes)
+                    0x29, 0x99, 0xdd, 0xfe, 0x8d, 0x9b, 0x85, 0x63,
+                    0x06, 0x46, 0x22, 0x06, 0xd7, 0x27, 0x36, 0x2a,
+                    0x8f, 0xc7, 0xcd, 0xb1, 0xac, 0x95, 0xca, 0xf8,
                 },
             },
         },
