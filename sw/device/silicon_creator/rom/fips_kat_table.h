@@ -98,6 +98,9 @@ typedef enum fips_kat_alg_id {
   kFipsKatAlgEcdhP256 = 21,
   kFipsKatAlgEcdhP384 = 22,
   kFipsKatAlgX25519 = 23,
+
+  // Post-Quantum Cryptography (FIPS 204 ML-DSA & FIPS 203 ML-KEM)
+  kFipsKatAlgMldsa87 = 24,
 } fips_kat_alg_id_t;
 
 /**
@@ -241,6 +244,23 @@ typedef struct ecdh_kat_data {
 
 OT_ASSERT_SIZE(ecdh_kat_data_t, 16);
 OT_ASSERT_MEMBER_OFFSET(ecdh_kat_data_t, data, 16);
+
+// 7. Post-Quantum Signatures (ML-DSA-87 ACVP Dynamic Rejection Cases)
+typedef struct fips_kat_mldsa87_case {
+  uint8_t seed[32];   /**< 32-byte seed xi for deterministic keygen */
+  uint8_t mprime[32]; /**< 32-byte M' message */
+  uint8_t expected_sig_hash[32]; /**< SHA2-256(sig[0..4627]) */
+} fips_kat_mldsa87_case_t;
+
+OT_ASSERT_SIZE(fips_kat_mldsa87_case_t, 96);
+
+typedef struct mldsa_kat_data {
+  uint32_t num_cases; /**< Number of test cases in `cases[]` */
+  fips_kat_mldsa87_case_t cases[];
+} mldsa_kat_data_t;
+
+OT_ASSERT_SIZE(mldsa_kat_data_t, 4);
+OT_ASSERT_MEMBER_OFFSET(mldsa_kat_data_t, cases, 4);
 
 /**
  * ============================================================================
@@ -536,6 +556,12 @@ static inline size_t fips_kat_ecdh_expected_size(const ecdh_kat_data_t *kat) {
          FIPS_KAT_ALIGN4(kat->pub_key_len1) +
          FIPS_KAT_ALIGN4(kat->pub_key_len2) +
          FIPS_KAT_ALIGN4(kat->shared_secret_len);
+}
+
+// --- mldsa_kat_data_t ---
+static inline size_t fips_kat_mldsa_expected_size(const mldsa_kat_data_t *kat) {
+  return sizeof(mldsa_kat_data_t) +
+         (size_t)kat->num_cases * sizeof(fips_kat_mldsa87_case_t);
 }
 
 
