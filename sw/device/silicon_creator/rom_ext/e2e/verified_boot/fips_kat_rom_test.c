@@ -1387,6 +1387,70 @@ static status_t test_mldsa87_kat(const fips_kat_descriptor_table_t *table,
 }
 
 // -----------------------------------------------------------------------------
+// DRBG (SP 800-90A Section 11.3) & Entropy Source SHA3 Conditioning KATs
+// -----------------------------------------------------------------------------
+
+static void check_csrng_sw_state(const drbg_kat_state_t *expected) {
+  const uint32_t kBase = dt_csrng_primary_reg_block(kDtCsrng);
+  uint32_t reg = bitfield_field32_write(
+      0, CSRNG_INT_STATE_NUM_INT_STATE_NUM_FIELD, /*SwInstance=*/2u);
+  abs_mmio_write32(kBase + CSRNG_INT_STATE_NUM_REG_OFFSET, reg);
+
+  drbg_kat_state_t got = {0};
+  got.reseed_counter = abs_mmio_read32(kBase + CSRNG_INT_STATE_VAL_REG_OFFSET);
+  for (size_t i = 0; i < ARRAYSIZE(got.v); ++i) {
+    got.v[i] = abs_mmio_read32(kBase + CSRNG_INT_STATE_VAL_REG_OFFSET);
+  }
+  for (size_t i = 0; i < ARRAYSIZE(got.key); ++i) {
+    got.key[i] = abs_mmio_read32(kBase + CSRNG_INT_STATE_VAL_REG_OFFSET);
+  }
+  uint32_t flags = abs_mmio_read32(kBase + CSRNG_INT_STATE_VAL_REG_OFFSET);
+  bool instantiated = bitfield_bit32_read(flags, 0u);
+  bool fips = bitfield_bit32_read(flags, 1u);
+
+  CHECK(instantiated && !fips, "Unexpected CSRNG flags: 0x%08x", flags);
+  CHECK(got.reseed_counter == expected->reseed_counter);
+  CHECK_ARRAYS_EQ(got.v, expected->v, ARRAYSIZE(got.v));
+  CHECK_ARRAYS_EQ(got.key, expected->key, ARRAYSIZE(got.key));
+}
+
+static status_t test_drbg_aes256_kat(const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const drbg_kat_data_t *kat = (const drbg_kat_data_t *)resolve_entry(
+      table, kFipsKatAlgDrbgAes256, &entry);
+  CHECK(entry->size == sizeof(drbg_kat_data_t));
+  CHECK(kat->seed_len == 48 && kat->expected_output_len == 64);
+
+  CHECK_STATUS_OK(entropy_csrng_uninstantiate());
+
+  entropy_seed_material_t seed = {.len = 12};
+  memcpy(seed.data, kat->seed_instantiate, sizeof(seed.data));
+  CHECK_STATUS_OK(entropy_csrng_instantiate(kHardenedBoolTrue, &seed));
+  check_csrng_sw_state(&kat->state_instantiate);
+
+  memcpy(seed.data, kat->seed_reseed1, sizeof(seed.data));
+  CHECK_STATUS_OK(entropy_csrng_reseed(kHardenedBoolTrue, &seed));
+  check_csrng_sw_state(&kat->state_reseed1);
+
+  uint32_t got[16] = {0};
+  CHECK_STATUS_OK(
+      entropy_csrng_generate(NULL, got, ARRAYSIZE(got), kHardenedBoolFalse));
+  check_csrng_sw_state(&kat->state_generate1);
+
+  memcpy(seed.data, kat->seed_reseed2, sizeof(seed.data));
+  CHECK_STATUS_OK(entropy_csrng_reseed(kHardenedBoolTrue, &seed));
+  check_csrng_sw_state(&kat->state_reseed2);
+
+  CHECK_STATUS_OK(
+      entropy_csrng_generate(NULL, got, ARRAYSIZE(got), kHardenedBoolFalse));
+  check_csrng_sw_state(&kat->state_generate2);
+  CHECK_ARRAYS_EQ(got, kat->expected_output, ARRAYSIZE(got));
+
+  CHECK_STATUS_OK(entropy_csrng_uninstantiate());
+  return OK_STATUS();
+}
+
+// -----------------------------------------------------------------------------
 // Main Test Entry Point
 // -----------------------------------------------------------------------------
 
@@ -1421,7 +1485,7 @@ static status_t test_fips_kat_rom(void) {
       get_fips_descriptor_table_from_region((const void *)kat_base,
                                             kFipsKatRegionSize);
   CHECK(table != NULL, "Invalid ROM FIPS KAT descriptor table");
-  CHECK(table->entry_count == 25u, "Expected 25 entries, got %u",
+  CHECK(table->entry_count == 26u, "Expected 26 entries, got %u",
         table->entry_count);
   LOG_INFO("FIPS KAT table @ 0x%08x: %u entries, %u bytes (ePMP RO verified)",
            (uint32_t)kat_base, table->entry_count, table->total_size);
@@ -1445,6 +1509,7 @@ static status_t test_fips_kat_rom(void) {
   LOG_INFO("[2/6] SHA3/KMAC + AES ok");
   TRY(test_kdf_hmac_sha256_kat(table));
   TRY(test_kdf_kmac256_kat(table));
+  TRY(test_drbg_aes256_kat(table));
   LOG_INFO("[3/6] KDF + HKDF + DRBG ok");
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
 
@@ -1475,7 +1540,7 @@ static status_t test_fips_kat_rom(void) {
   unmap_rom_kat_slot0();
   assert_load_faults(kat_base);
 
-  LOG_INFO("All 25 ROM FIPS KATs passed and transient ePMP revoked.");
+  LOG_INFO("All 26 ROM FIPS KATs passed and transient ePMP revoked.");
   return OK_STATUS();
 }
 

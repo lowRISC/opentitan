@@ -370,6 +370,14 @@ typedef struct fips_kat_mldsa87 {
 } fips_kat_mldsa87_t;
 
 /**
+ * Algorithm ID 26: CTR_DRBG AES-256
+ * Schema: `drbg_kat_data_t`
+ * Vector: NIST CAVP SP 800-90A Section 11.3 (no df, PR=True, COUNT=0 from
+ * entropy_kat.c)
+ */
+// Uses `drbg_kat_data_t` directly from `fips_kat_table.h` (476 bytes).
+
+/**
  * Algorithm ID 28: AES-256-GCM
  * Schema: `aes_kat_data_t`
  * Vector: NIST CAVP Count=0 (impl/kats.c): key=32B, iv=12B, aad=16B, pt=51B
@@ -385,7 +393,7 @@ typedef struct fips_kat_aes_gcm256 {
   uint8_t data[180];
 } fips_kat_aes_gcm256_t;
 
-#define FIPS_KAT_NUM_ENTRIES 25
+#define FIPS_KAT_NUM_ENTRIES 26
 
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -420,6 +428,7 @@ typedef struct fips_kat_data_store {
   fips_kat_ecdh_p384_t ecdh_p384;
   fips_kat_x25519_t x25519;
   fips_kat_mldsa87_t mldsa87;
+  drbg_kat_data_t drbg_aes256;
   fips_kat_aes_gcm256_t aes_gcm256;
 } fips_kat_data_store_t;
 
@@ -573,6 +582,11 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                         .algorithm_id = (uint32_t)kFipsKatAlgMldsa87,
                         .offset = FIPS_KAT_OFFSET(mldsa87),
                         .size = sizeof(fips_kat_mldsa87_t),
+                    },
+                    {
+                        .algorithm_id = (uint32_t)kFipsKatAlgDrbgAes256,
+                        .offset = FIPS_KAT_OFFSET(drbg_aes256),
+                        .size = sizeof(drbg_kat_data_t),
                     },
                     {
                         .algorithm_id = (uint32_t)kFipsKatAlgAesGcm256Encrypt,
@@ -1714,6 +1728,81 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                             0x55, 0xdd, 0x52, 0x5a, 0x44, 0x5f, 0x08, 0xda,
                         },
                     },
+                },
+            },
+            .drbg_aes256 = {
+                .seed_len = 48,
+                .expected_output_len = 64,
+                .seed_instantiate = {
+                    0xbac7d8e5, 0x5b74e091, 0xb5623381, 0x0e41c6af,
+                    0x3ddf56c9, 0x587a4256, 0x4297557f, 0x6db9a7ba,
+                    0x92247fac, 0xb6e33ce4, 0xc8afbc5a, 0xfaf346c9,
+                },
+                .seed_reseed1 = {
+                    0x08011f2c, 0x15022610, 0x4c6faecd, 0x94828db8,
+                    0x6cc4a61c, 0xe8592f6f, 0x238fefb4, 0x7ae403b5,
+                    0xe1e348a0, 0x2713720a, 0x2d714692, 0xdfc11125,
+                },
+                .seed_reseed2 = {
+                    0x5d328a90, 0xddabab04, 0xa8a9a6a9, 0x1aec7ada,
+                    0x77069dad, 0x5040c02f, 0x9483fa5f, 0x1ca8ebea,
+                    0xce79bc81, 0x47d44f4e, 0xb99c7723, 0x4528bac5,
+                },
+                .state_instantiate = {
+                    .reseed_counter = 0u,
+                    .v = {
+                        0xcfc1ed6b, 0x8ad6151f, 0x82c419f5, 0x7c21c565,
+                    },
+                    .key = {
+                        0x872ccbd1, 0x5f348785, 0x0ff73e11, 0xa31ee787,
+                        0x56ef0c27, 0x1f808815, 0x0fea8ae3, 0xa9fccc32,
+                    },
+                },
+                .state_reseed1 = {
+                    .reseed_counter = 0u,
+                    .v = {
+                        0x72488149, 0xe0c7a002, 0x061a7547, 0x7759eaf5,
+                    },
+                    .key = {
+                        0xc2d77b37, 0x1d37a9ad, 0xcc781d26, 0x5632585a,
+                        0xe86aa79d, 0x8d164cd0, 0x345d4ab7, 0x3e5aac1e,
+                    },
+                },
+                .state_generate1 = {
+                    .reseed_counter = 1u,
+                    .v = {
+                        0x36e00b39, 0xbaf64294, 0x805dab58, 0x9ac50e38,
+                    },
+                    .key = {
+                        0xe23b54b0, 0x6176b445, 0x7109c439, 0x96d717cd,
+                        0xd905aa43, 0xcf5b633a, 0x29c17b2c, 0x59ab2aa2,
+                    },
+                },
+                .state_reseed2 = {
+                    .reseed_counter = 0u,
+                    .v = {
+                        0x2389b4ba, 0x99e18aa2, 0x04acd7ac, 0xcc911b3b,
+                    },
+                    .key = {
+                        0xe7f57744, 0xe1fa401c, 0x5148c995, 0xd334b7d1,
+                        0xe9da54ff, 0x65a10e16, 0xf87af334, 0xb71fc243,
+                    },
+                },
+                .state_generate2 = {
+                    .reseed_counter = 1u,
+                    .v = {
+                        0x2ffc73ce, 0x9b8c226c, 0x5e3baf89, 0x24f48520,
+                    },
+                    .key = {
+                        0xf9dd8a6b, 0xe2715cd8, 0xa3b25b8b, 0xdccc84f2,
+                        0xa5395afc, 0xe48a8588, 0xbc79c4bd, 0x48f4632b,
+                    },
+                },
+                .expected_output = {
+                    0xbc013dc8, 0x91db12c3, 0x4ad11944, 0x805bf13d,
+                    0xfd67ff2c, 0x23176d83, 0xf5b396b6, 0x9e400042,
+                    0x252e1181, 0x6c309542, 0x1137181a, 0x5d0ee37c,
+                    0x83a339c5, 0x8d080946, 0xca90aa43, 0x7d50d9cf,
                 },
             },
             .aes_gcm256 = {

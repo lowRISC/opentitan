@@ -102,6 +102,9 @@ typedef enum fips_kat_alg_id {
   // Post-Quantum Cryptography (FIPS 204 ML-DSA & FIPS 203 ML-KEM)
   kFipsKatAlgMldsa87 = 24,
 
+  // DRBG & Entropy Source Conditioning (SP 800-90A & SP 800-90B)
+  kFipsKatAlgDrbgAes256 = 26,
+
   // Authenticated Encryption (AES-256-GCM)
   kFipsKatAlgAesGcm256Encrypt = 28,
 } fips_kat_alg_id_t;
@@ -264,6 +267,36 @@ typedef struct mldsa_kat_data {
 
 OT_ASSERT_SIZE(mldsa_kat_data_t, 4);
 OT_ASSERT_MEMBER_OFFSET(mldsa_kat_data_t, cases, 4);
+
+// 8. CTR_DRBG AES-256 (NIST SP 800-90A Section 11.3, no df, PR=True)
+// Matches `sw/device/lib/crypto/drivers/entropy_kat.c`:
+// - Seeds and internal-state `(reseed_counter, V, Key)` 32-bit words are in
+//   CSRNG reversed word order relative to NIST CAVP hex strings.
+// - `expected_output` is in forward word order matching
+//   `entropy_csrng_generate_data_get()`.
+typedef struct drbg_kat_state {
+  uint32_t reseed_counter;
+  uint32_t v[4];
+  uint32_t key[8];
+} drbg_kat_state_t;
+
+OT_ASSERT_SIZE(drbg_kat_state_t, 52);
+
+typedef struct drbg_kat_data {
+  uint32_t seed_len;             // 48 bytes (12 words) per seed
+  uint32_t expected_output_len;  // 64 bytes (16 words)
+  uint32_t seed_instantiate[12];
+  uint32_t seed_reseed1[12];
+  uint32_t seed_reseed2[12];
+  drbg_kat_state_t state_instantiate;
+  drbg_kat_state_t state_reseed1;
+  drbg_kat_state_t state_generate1;
+  drbg_kat_state_t state_reseed2;
+  drbg_kat_state_t state_generate2;
+  uint32_t expected_output[16];
+} drbg_kat_data_t;
+
+OT_ASSERT_SIZE(drbg_kat_data_t, 476);
 
 /**
  * ============================================================================
