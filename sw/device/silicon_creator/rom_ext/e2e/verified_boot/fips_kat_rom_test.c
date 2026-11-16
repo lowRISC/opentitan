@@ -1280,6 +1280,31 @@ static status_t test_x25519_kat(const fips_kat_descriptor_table_t *table) {
 // Post-Quantum KATs (ML-DSA-87, ML-KEM-1024, NIST Round 3 SPHINCS+)
 // -----------------------------------------------------------------------------
 
+static status_t test_sphincsplus_sha2_128s_verify_kat(
+    const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const asymmetric_verify_kat_data_t *kat =
+      (const asymmetric_verify_kat_data_t *)resolve_entry(
+          table, kFipsKatAlgSphincsPlusSha2_128sVerify, &entry);
+  CHECK(entry->size == fips_kat_asym_verify_expected_size(kat));
+  CHECK(kat->pub_key_len1 == 32 && kat->msg_len == 33 && kat->sig_len1 == 7856);
+
+  const uint32_t *pk_words =
+      (const uint32_t *)fips_kat_asym_verify_pub_key1(kat);
+  const uint8_t *msg_bytes = fips_kat_asym_verify_msg(kat);
+  const uint32_t *sig_words = (const uint32_t *)fips_kat_asym_verify_sig1(kat);
+
+  uint32_t exp_root[kSpxVerifyRootNumWords];
+  spx_public_key_root(pk_words, exp_root);
+
+  uint32_t act_root[kSpxVerifyRootNumWords];
+  rom_error_t err = spx_verify(sig_words, NULL, 0, NULL, 0, NULL, 0, msg_bytes,
+                               kat->msg_len, pk_words, act_root);
+  CHECK(err == kErrorOk, "spx_verify failed: 0x%08x", err);
+  CHECK_ARRAYS_EQ(act_root, exp_root, kSpxVerifyRootNumWords);
+  return OK_STATUS();
+}
+
 static status_t test_mldsa87_kat(const fips_kat_descriptor_table_t *table,
                                  const dif_aon_timer_t *aon_timer) {
   const fips_kat_entry_t *entry;
@@ -1485,7 +1510,7 @@ static status_t test_fips_kat_rom(void) {
       get_fips_descriptor_table_from_region((const void *)kat_base,
                                             kFipsKatRegionSize);
   CHECK(table != NULL, "Invalid ROM FIPS KAT descriptor table");
-  CHECK(table->entry_count == 26u, "Expected 26 entries, got %u",
+  CHECK(table->entry_count == 27u, "Expected 27 entries, got %u",
         table->entry_count);
   LOG_INFO("FIPS KAT table @ 0x%08x: %u entries, %u bytes (ePMP RO verified)",
            (uint32_t)kat_base, table->entry_count, table->total_size);
@@ -1531,6 +1556,8 @@ static status_t test_fips_kat_rom(void) {
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
 
   // Post-Quantum KATs.
+  TRY(test_sphincsplus_sha2_128s_verify_kat(table));
+  CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
   TRY(test_mldsa87_kat(table, &aon_timer));
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
   LOG_INFO("[5/6] PQC (SPHINCS+/ML-DSA/ML-KEM) ok");
@@ -1540,7 +1567,7 @@ static status_t test_fips_kat_rom(void) {
   unmap_rom_kat_slot0();
   assert_load_faults(kat_base);
 
-  LOG_INFO("All 26 ROM FIPS KATs passed and transient ePMP revoked.");
+  LOG_INFO("All 27 ROM FIPS KATs passed and transient ePMP revoked.");
   return OK_STATUS();
 }
 

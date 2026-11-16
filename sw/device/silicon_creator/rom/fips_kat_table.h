@@ -107,6 +107,9 @@ typedef enum fips_kat_alg_id {
 
   // Authenticated Encryption (AES-256-GCM)
   kFipsKatAlgAesGcm256Encrypt = 28,
+
+  // NIST Round 3 SPHINCS+-SHA2-128s-simple Verification (pre-FIPS 205)
+  kFipsKatAlgSphincsPlusSha2_128sVerify = 29,
 } fips_kat_alg_id_t;
 
 /**
