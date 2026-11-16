@@ -290,7 +290,37 @@ typedef struct fips_kat_ecdsa_p384_verify {
   uint8_t data[320];
 } fips_kat_ecdsa_p384_verify_t;
 
-#define FIPS_KAT_NUM_ENTRIES 18
+/**
+ * Algorithm ID 19: Ed25519 Sign
+ * Schema: `asymmetric_sign_kat_data_t`
+ * Vector: IETF RFC 8032 Section 7.1 Test 2 (impl/kats.c): seed=32B, msg=1B
+ * (0x72, pad4=4), R||S=64B
+ */
+typedef struct fips_kat_ed25519_sign {
+  uint32_t priv_key_len;
+  uint32_t ephemeral_len;
+  uint32_t msg_len;
+  uint32_t sig_len1;
+  uint32_t sig_len2;
+  uint8_t data[100];
+} fips_kat_ed25519_sign_t;
+
+/**
+ * Algorithm ID 20: Ed25519 Verify
+ * Schema: `asymmetric_verify_kat_data_t`
+ * Vector: IETF RFC 8032 Section 7.1 Test 2 (impl/kats.c): pk=32B, msg=1B (0x72,
+ * pad4=4), R||S=64B
+ */
+typedef struct fips_kat_ed25519_verify {
+  uint32_t pub_key_len1;
+  uint32_t pub_key_len2;
+  uint32_t msg_len;
+  uint32_t sig_len1;
+  uint32_t sig_len2;
+  uint8_t data[100];
+} fips_kat_ed25519_verify_t;
+
+#define FIPS_KAT_NUM_ENTRIES 20
 
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -319,6 +349,8 @@ typedef struct fips_kat_data_store {
   fips_kat_ecdsa_p256_verify_t ecdsa_p256_verify;
   fips_kat_ecdsa_p384_sign_t ecdsa_p384_sign;
   fips_kat_ecdsa_p384_verify_t ecdsa_p384_verify;
+  fips_kat_ed25519_sign_t ed25519_sign;
+  fips_kat_ed25519_verify_t ed25519_verify;
 } fips_kat_data_store_t;
 
 /**
@@ -441,6 +473,16 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                         .algorithm_id = (uint32_t)kFipsKatAlgEcdsaP384Verify,
                         .offset = FIPS_KAT_OFFSET(ecdsa_p384_verify),
                         .size = sizeof(fips_kat_ecdsa_p384_verify_t),
+                    },
+                    {
+                        .algorithm_id = (uint32_t)kFipsKatAlgEd25519Sign,
+                        .offset = FIPS_KAT_OFFSET(ed25519_sign),
+                        .size = sizeof(fips_kat_ed25519_sign_t),
+                    },
+                    {
+                        .algorithm_id = (uint32_t)kFipsKatAlgEd25519Verify,
+                        .offset = FIPS_KAT_OFFSET(ed25519_verify),
+                        .size = sizeof(fips_kat_ed25519_verify_t),
                     },
                 },
         },
@@ -1328,6 +1370,58 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                     0x51, 0xbe, 0x04, 0xe4, 0xbd, 0x1c, 0x61, 0x14,
                     0x03, 0x83, 0x55, 0x24, 0xbf, 0xd3, 0xe8, 0x46,
                     0xb6, 0x63, 0x64, 0x0c, 0xd3, 0xf3, 0x75, 0x04,
+                },
+            },
+            .ed25519_sign = {
+                .priv_key_len = 32,
+                .ephemeral_len = 0,
+                .msg_len = 1,
+                .sig_len1 = 32,
+                .sig_len2 = 32,
+                .data = {
+                    // Private Key Seed (RFC 8032) (32 bytes)
+                    0x4c, 0xcd, 0x08, 0x9b, 0x28, 0xff, 0x96, 0xda,
+                    0x9d, 0xb6, 0xc3, 0x46, 0xec, 0x11, 0x4e, 0x0f,
+                    0x5b, 0x8a, 0x31, 0x9f, 0x35, 0xab, 0xa6, 0x24,
+                    0xda, 0x8c, 0xf6, 0xed, 0x4f, 0xb8, 0xa6, 0xfb,
+                    // Message (1 bytes + 3B pad)
+                    0x72, 0x00, 0x00, 0x00,
+                    // Expected Signature R (RFC 8032) (32 bytes)
+                    0x92, 0xa0, 0x09, 0xa9, 0xf0, 0xd4, 0xca, 0xb8,
+                    0x72, 0x0e, 0x82, 0x0b, 0x5f, 0x64, 0x25, 0x40,
+                    0xa2, 0xb2, 0x7b, 0x54, 0x16, 0x50, 0x3f, 0x8f,
+                    0xb3, 0x76, 0x22, 0x23, 0xeb, 0xdb, 0x69, 0xda,
+                    // Expected Signature S (RFC 8032) (32 bytes)
+                    0x08, 0x5a, 0xc1, 0xe4, 0x3e, 0x15, 0x99, 0x6e,
+                    0x45, 0x8f, 0x36, 0x13, 0xd0, 0xf1, 0x1d, 0x8c,
+                    0x38, 0x7b, 0x2e, 0xae, 0xb4, 0x30, 0x2a, 0xee,
+                    0xb0, 0x0d, 0x29, 0x16, 0x12, 0xbb, 0x0c, 0x00,
+                },
+            },
+            .ed25519_verify = {
+                .pub_key_len1 = 32,
+                .pub_key_len2 = 0,
+                .msg_len = 1,
+                .sig_len1 = 32,
+                .sig_len2 = 32,
+                .data = {
+                    // Public Key (RFC 8032) (32 bytes)
+                    0x3d, 0x40, 0x17, 0xc3, 0xe8, 0x43, 0x89, 0x5a,
+                    0x92, 0xb7, 0x0a, 0xa7, 0x4d, 0x1b, 0x7e, 0xbc,
+                    0x9c, 0x98, 0x2c, 0xcf, 0x2e, 0xc4, 0x96, 0x8c,
+                    0xc0, 0xcd, 0x55, 0xf1, 0x2a, 0xf4, 0x66, 0x0c,
+                    // Message (1 bytes + 3B pad)
+                    0x72, 0x00, 0x00, 0x00,
+                    // Signature R (RFC 8032) (32 bytes)
+                    0x92, 0xa0, 0x09, 0xa9, 0xf0, 0xd4, 0xca, 0xb8,
+                    0x72, 0x0e, 0x82, 0x0b, 0x5f, 0x64, 0x25, 0x40,
+                    0xa2, 0xb2, 0x7b, 0x54, 0x16, 0x50, 0x3f, 0x8f,
+                    0xb3, 0x76, 0x22, 0x23, 0xeb, 0xdb, 0x69, 0xda,
+                    // Signature S (RFC 8032) (32 bytes)
+                    0x08, 0x5a, 0xc1, 0xe4, 0x3e, 0x15, 0x99, 0x6e,
+                    0x45, 0x8f, 0x36, 0x13, 0xd0, 0xf1, 0x1d, 0x8c,
+                    0x38, 0x7b, 0x2e, 0xae, 0xb4, 0x30, 0x2a, 0xee,
+                    0xb0, 0x0d, 0x29, 0x16, 0x12, 0xbb, 0x0c, 0x00,
                 },
             },
         },
