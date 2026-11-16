@@ -55,12 +55,12 @@ TestTableLayout MakeValidLayout() {
   layout.table.total_size = sizeof(layout);
 
   layout.table.entries[0] = {
-      .algorithm_id = 1u,
+      .algorithm_id = kFipsKatAlgSha2_256,
       .offset = static_cast<uint32_t>(offsetof(TestTableLayout, sha256)),
       .size = sizeof(layout.sha256),
   };
   layout.table.entries[1] = {
-      .algorithm_id = 7u,
+      .algorithm_id = kFipsKatAlgAesEcb256Decrypt,
       .offset = static_cast<uint32_t>(offsetof(TestTableLayout, aes)),
       .size = sizeof(layout.aes),
   };
@@ -163,6 +163,41 @@ TEST(FipsKatTableValidationTest, RejectNullAndUnalignedRegionBase) {
   }
 }
 
+TEST(FipsKatTableLookupTest, FindEntryAndResolveData) {
+  TestTableLayout layout = MakeValidLayout();
+  const auto *table =
+      get_fips_descriptor_table_from_region(&layout, sizeof(layout));
+  ASSERT_NE(table, nullptr);
+
+  const fips_kat_entry_t *sha_entry =
+      find_fips_entry(table, sizeof(layout), kFipsKatAlgSha2_256);
+  ASSERT_NE(sha_entry, nullptr);
+  EXPECT_EQ(sha_entry->algorithm_id, kFipsKatAlgSha2_256);
+
+  const void *sha_ptr = get_fips_data(table, sizeof(layout), sha_entry);
+  ASSERT_NE(sha_ptr, nullptr);
+  const auto *sha = static_cast<const hmac_kat_data_t *>(sha_ptr);
+  EXPECT_EQ(sha_entry->size, fips_kat_hmac_expected_size(sha));
+  EXPECT_EQ(fips_kat_hmac_msg(sha)[0], 'a');
+  EXPECT_EQ(fips_kat_hmac_digest(sha)[0], 0xba);
+  EXPECT_EQ(reinterpret_cast<uintptr_t>(fips_kat_hmac_digest(sha)) & 3u, 0u);
+
+  const fips_kat_entry_t *aes_entry =
+      find_fips_entry(table, sizeof(layout), kFipsKatAlgAesEcb256Decrypt);
+  ASSERT_NE(aes_entry, nullptr);
+  const void *aes_ptr = get_fips_data(table, sizeof(layout), aes_entry);
+  ASSERT_NE(aes_ptr, nullptr);
+  const auto *aes = static_cast<const aes_kat_data_t *>(aes_ptr);
+  EXPECT_EQ(aes_entry->size, fips_kat_aes_expected_size(aes));
+  EXPECT_EQ(fips_kat_aes_key(aes)[0], 0x60);
+  EXPECT_EQ(fips_kat_aes_pt(aes)[0], 0x6b);
+  EXPECT_EQ(fips_kat_aes_ct(aes)[0], 0xf3);
+
+  // Missing entry.
+  EXPECT_EQ(find_fips_entry(table, sizeof(layout), kFipsKatAlgRsa4096Sign),
+            nullptr);
+}
+
 TEST(FipsKatTableSecurityTest, RejectCorruptEntryBoundsAliasingAndWraparound) {
   TestTableLayout layout = MakeValidLayout();
   const auto *table =
@@ -246,14 +281,14 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
   ASSERT_NE(table, nullptr);
   EXPECT_EQ(table->magic, kFipsKatDescriptorMagic);
   EXPECT_EQ(table->version, kFipsKatDescriptorVersion1);
-  EXPECT_EQ(table->entry_count, 11u);
+  EXPECT_EQ(table->entry_count, 14u);
   EXPECT_LE(table->total_size, kFipsKatRegionSize);
   EXPECT_EQ(table->total_size % 4u, 0u);
 
   std::set<uint32_t> seen_ids;
   std::vector<std::pair<uint32_t, uint32_t>> intervals;
 
-  for (uint32_t id : std::vector<uint32_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11}) {
+  for (uint32_t id : std::vector<uint32_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}) {
     const auto alg_id = static_cast<fips_kat_alg_id_t>(id);
     const fips_kat_entry_t *entry =
         find_fips_entry(table, kFipsKatRegionSize, alg_id);
@@ -310,6 +345,52 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
         EXPECT_EQ(reinterpret_cast<uintptr_t>(fips_kat_aes_pt(kat)) & 3u, 0u);
         EXPECT_EQ(reinterpret_cast<uintptr_t>(fips_kat_aes_ct(kat)) & 3u, 0u);
         EXPECT_EQ(reinterpret_cast<uintptr_t>(fips_kat_aes_tag(kat)) & 3u, 0u);
+        break;
+      }
+      case kFipsKatAlgRsa2048Verify:
+      case kFipsKatAlgRsa4096Verify: {
+
+        const auto *kat =
+            static_cast<const asymmetric_verify_kat_data_t *>(payload);
+        EXPECT_EQ(entry->size, fips_kat_asym_verify_expected_size(kat))
+            << "alg_id=" << id;
+        EXPECT_EQ(
+            reinterpret_cast<uintptr_t>(fips_kat_asym_verify_pub_key1(kat)) &
+                3u,
+            0u);
+        EXPECT_EQ(
+            reinterpret_cast<uintptr_t>(fips_kat_asym_verify_pub_key2(kat)) &
+                3u,
+            0u);
+        EXPECT_EQ(
+            reinterpret_cast<uintptr_t>(fips_kat_asym_verify_msg(kat)) & 3u,
+            0u);
+        EXPECT_EQ(
+            reinterpret_cast<uintptr_t>(fips_kat_asym_verify_sig1(kat)) & 3u,
+            0u);
+        EXPECT_EQ(
+            reinterpret_cast<uintptr_t>(fips_kat_asym_verify_sig2(kat)) & 3u,
+            0u);
+        break;
+      }
+      case kFipsKatAlgRsa4096Sign: {
+
+        const auto *kat =
+            static_cast<const asymmetric_sign_kat_data_t *>(payload);
+        EXPECT_EQ(entry->size, fips_kat_asym_sign_expected_size(kat))
+            << "alg_id=" << id;
+        EXPECT_EQ(
+            reinterpret_cast<uintptr_t>(fips_kat_asym_sign_priv_key(kat)) & 3u,
+            0u);
+        EXPECT_EQ(
+            reinterpret_cast<uintptr_t>(fips_kat_asym_sign_ephemeral(kat)) & 3u,
+            0u);
+        EXPECT_EQ(reinterpret_cast<uintptr_t>(fips_kat_asym_sign_msg(kat)) & 3u,
+                  0u);
+        EXPECT_EQ(
+            reinterpret_cast<uintptr_t>(fips_kat_asym_sign_sig1(kat)) & 3u, 0u);
+        EXPECT_EQ(
+            reinterpret_cast<uintptr_t>(fips_kat_asym_sign_sig2(kat)) & 3u, 0u);
         break;
       }
       default:
