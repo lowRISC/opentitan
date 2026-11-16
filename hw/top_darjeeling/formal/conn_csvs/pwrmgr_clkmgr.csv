@@ -1,0 +1,11 @@
+# Copyright lowRISC contributors (OpenTitan project).
+# Licensed under the Apache License, Version 2.0, see LICENSE for details.
+# SPDX-License-Identifier: Apache-2.0
+#
+# Run these checks with:
+#  dvsim hw/top_earlgrey/formal/chip_conn_cfg.hjson
+
+,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
+
+# pwrmgr rstmgr connections
+CONNECTION, PWRMGR_MAIN_PD_AON_CLK_EN, top_darjeeling.darjeeling_pd_aon.u_pwrmgr, main_pd_aon_clk_en_o, top_darjeeling.darjeeling_pd_aon.u_clkmgr_part_secondary, main_pd_aon_clk_en_i

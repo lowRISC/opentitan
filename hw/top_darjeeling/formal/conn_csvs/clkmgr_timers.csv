@@ -8,6 +8,6 @@
 ,NAME,SRC BLOCK,SRC SIGNAL,DEST BLOCK,DEST SIGNAL,,,,,,
 
 # clkmgr timers clock connectivity
-CONNECTION, CLKMGR_TIMERS_CLK_AON_TIMER_CLK,     top_darjeeling.darjeeling_pd_aon.u_clkmgr, clocks_o.clk_io_timers,  top_darjeeling.darjeeling_pd_aon.u_aon_timer, clk_i
-CONNECTION, CLKMGR_TIMERS_CLK_AON_TIMER_CLK, top_darjeeling.darjeeling_pd_aon.u_clkmgr, clocks_o.clk_aon_timers, top_darjeeling.darjeeling_pd_aon.u_aon_timer, clk_aon_i
-CONNECTION, CLKMGR_TIMERS_CLK_RV_TIMER_CLK,      top_darjeeling.darjeeling_pd_aon.u_clkmgr, clocks_o.clk_io_timers,  top_darjeeling.darjeeling_pd_main.u_rv_timer,      clk_i
+CONNECTION, CLKMGR_TIMERS_CLK_AON_TIMER_CLK, top_darjeeling.darjeeling_pd_aon.u_clkmgr_part_primary, clocks_o.clk_io_timers, top_darjeeling.darjeeling_pd_aon.u_aon_timer, clk_i
+CONNECTION, CLKMGR_TIMERS_CLK_AON_TIMER_CLK_AON, top_darjeeling.darjeeling_pd_aon.u_clkmgr_part_secondary, clocks_secondary_o.clk_aon_timers, top_darjeeling.darjeeling_pd_aon.u_aon_timer, clk_aon_i
+CONNECTION, CLKMGR_TIMERS_CLK_RV_TIMER_CLK,      top_darjeeling.darjeeling_pd_aon.u_clkmgr_part_primary, clocks_o.clk_io_timers,  top_darjeeling.darjeeling_pd_main.u_rv_timer,      clk_i
