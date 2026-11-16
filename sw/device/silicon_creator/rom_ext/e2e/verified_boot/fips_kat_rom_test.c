@@ -385,6 +385,157 @@ static status_t test_kmac256_kat(const fips_kat_descriptor_table_t *table) {
 }
 
 // -----------------------------------------------------------------------------
+// AES KATs (ECB-256, CBC-256 2-block, KWP-256 9B padded, GCM-256 CAVP)
+// -----------------------------------------------------------------------------
+
+static status_t test_aes_ecb256_kat(const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const aes_kat_data_t *kat = (const aes_kat_data_t *)resolve_entry(
+      table, kFipsKatAlgAesEcb256Decrypt, &entry);
+  CHECK(entry->size == fips_kat_aes_expected_size(kat));
+  CHECK(kat->key_len == 32 && kat->pt_len == 16 && kat->ct_len == 16);
+
+  const otcrypto_key_config_t kConfig = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeAesEcb,
+      .key_length = kat->key_len,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t keyblob[keyblob_num_words(kConfig)];
+  CHECK_STATUS_OK(keyblob_from_key_and_mask(
+      (const uint32_t *)fips_kat_aes_key(kat), kTestMask, kConfig, keyblob));
+  otcrypto_blinded_key_t key = {
+      .config = kConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
+
+  uint32_t dummy_iv_words[4] = {0};
+  otcrypto_word32_buf_t iv = OTCRYPTO_MAKE_BUF(
+      otcrypto_word32_buf_t, dummy_iv_words, ARRAYSIZE(dummy_iv_words));
+
+  // Decrypt KAT.
+  uint32_t pt_out[4] = {0};
+  otcrypto_const_byte_buf_t ct_in = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_aes_ct(kat), kat->ct_len);
+  otcrypto_byte_buf_t pt_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, (uint8_t *)pt_out, kat->pt_len);
+  CHECK_STATUS_OK(otcrypto_aes(&key, &iv, kOtcryptoAesModeEcb,
+                               kOtcryptoAesOperationDecrypt, &ct_in,
+                               kOtcryptoAesPaddingNull, &pt_buf));
+  CHECK_ARRAYS_EQ((const uint8_t *)pt_out, fips_kat_aes_pt(kat), 16);
+
+  // Encrypt KAT.
+  uint32_t ct_out[4] = {0};
+  otcrypto_const_byte_buf_t pt_in = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_aes_pt(kat), kat->pt_len);
+  otcrypto_byte_buf_t ct_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, (uint8_t *)ct_out, kat->ct_len);
+  CHECK_STATUS_OK(otcrypto_aes(&key, &iv, kOtcryptoAesModeEcb,
+                               kOtcryptoAesOperationEncrypt, &pt_in,
+                               kOtcryptoAesPaddingNull, &ct_buf));
+  CHECK_ARRAYS_EQ((const uint8_t *)ct_out, fips_kat_aes_ct(kat), 16);
+  return OK_STATUS();
+}
+
+static status_t test_aes_cbc256_kat(const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const aes_kat_data_t *kat = (const aes_kat_data_t *)resolve_entry(
+      table, kFipsKatAlgAesCbc256Decrypt, &entry);
+  CHECK(entry->size == fips_kat_aes_expected_size(kat));
+  CHECK(kat->key_len == 32 && kat->iv_len == 16 && kat->pt_len == 32 &&
+        kat->ct_len == 32);
+
+  const otcrypto_key_config_t kConfig = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeAesCbc,
+      .key_length = kat->key_len,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  uint32_t keyblob[keyblob_num_words(kConfig)];
+  CHECK_STATUS_OK(keyblob_from_key_and_mask(
+      (const uint32_t *)fips_kat_aes_key(kat), kTestMask, kConfig, keyblob));
+  otcrypto_blinded_key_t key = {
+      .config = kConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  key.checksum = otcrypto_integrity_blinded_checksum(&key);
+
+  // Decrypt 2-block CBC KAT.
+  uint32_t iv_words[4];
+  memcpy(iv_words, fips_kat_aes_iv(kat), 16);
+  otcrypto_word32_buf_t iv =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, iv_words, ARRAYSIZE(iv_words));
+  uint32_t pt_out[8] = {0};
+  otcrypto_const_byte_buf_t ct_in = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_aes_ct(kat), kat->ct_len);
+  otcrypto_byte_buf_t pt_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, (uint8_t *)pt_out, kat->pt_len);
+  CHECK_STATUS_OK(otcrypto_aes(&key, &iv, kOtcryptoAesModeCbc,
+                               kOtcryptoAesOperationDecrypt, &ct_in,
+                               kOtcryptoAesPaddingNull, &pt_buf));
+  CHECK_ARRAYS_EQ((const uint8_t *)pt_out, fips_kat_aes_pt(kat), 32);
+
+  // Encrypt 2-block CBC KAT.
+  memcpy(iv_words, fips_kat_aes_iv(kat), 16);
+  uint32_t ct_out[8] = {0};
+  otcrypto_const_byte_buf_t pt_in = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_aes_pt(kat), kat->pt_len);
+  otcrypto_byte_buf_t ct_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, (uint8_t *)ct_out, kat->ct_len);
+  CHECK_STATUS_OK(otcrypto_aes(&key, &iv, kOtcryptoAesModeCbc,
+                               kOtcryptoAesOperationEncrypt, &pt_in,
+                               kOtcryptoAesPaddingNull, &ct_buf));
+  CHECK_ARRAYS_EQ((const uint8_t *)ct_out, fips_kat_aes_ct(kat), 32);
+  return OK_STATUS();
+}
+
+static status_t test_aes_kwp256_kat(const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const aes_kat_data_t *kat = (const aes_kat_data_t *)resolve_entry(
+      table, kFipsKatAlgAesKwp256Wrap, &entry);
+  CHECK(entry->size == fips_kat_aes_expected_size(kat));
+  CHECK(kat->key_len == 32 && kat->pt_len == 9 && kat->ct_len == 24);
+
+  uint32_t kek_share0[8];
+  const uint32_t *raw_kek = (const uint32_t *)fips_kat_aes_key(kat);
+  for (size_t i = 0; i < 8; ++i) {
+    kek_share0[i] = raw_kek[i] ^ kTestMask[i];
+  }
+  aes_key_t aes_kek = {
+      .mode = kAesCipherModeEcb,
+      .sideload = kHardenedBoolFalse,
+      .key_len = 8,
+      .key_shares = {kek_share0, kTestMask},
+  };
+  aes_kek.checksum = aes_key_integrity_checksum(&aes_kek);
+
+  // Wrap 9-byte plaintext (exercises RFC 5649 non-multiple-of-8 padding).
+  uint32_t act_ct[6] = {0};
+  CHECK_STATUS_OK(aes_kwp_wrap(aes_kek, (const uint32_t *)fips_kat_aes_pt(kat),
+                               kat->pt_len, act_ct));
+  CHECK_ARRAYS_EQ((const uint8_t *)act_ct, fips_kat_aes_ct(kat), 24);
+
+  // Unwrap and verify recovered length and bytes.
+  uint32_t act_pt[3] = {0};
+  hardened_bool_t success = kHardenedBoolFalse;
+  size_t act_pt_len = 0;
+  CHECK_STATUS_OK(aes_kwp_unwrap(aes_kek,
+                                 (const uint32_t *)fips_kat_aes_ct(kat),
+                                 kat->ct_len, &success, act_pt, &act_pt_len));
+  CHECK(success == kHardenedBoolTrue);
+  CHECK(act_pt_len == kat->pt_len);
+  CHECK_ARRAYS_EQ((const uint8_t *)act_pt, fips_kat_aes_pt(kat), kat->pt_len);
+  return OK_STATUS();
+}
+
+// -----------------------------------------------------------------------------
 // Main Test Entry Point
 // -----------------------------------------------------------------------------
 
@@ -419,7 +570,7 @@ static status_t test_fips_kat_rom(void) {
       get_fips_descriptor_table_from_region((const void *)kat_base,
                                             kFipsKatRegionSize);
   CHECK(table != NULL, "Invalid ROM FIPS KAT descriptor table");
-  CHECK(table->entry_count == 6u, "Expected 6 entries, got %u",
+  CHECK(table->entry_count == 9u, "Expected 9 entries, got %u",
         table->entry_count);
   LOG_INFO("FIPS KAT table @ 0x%08x: %u entries, %u bytes (ePMP RO verified)",
            (uint32_t)kat_base, table->entry_count, table->total_size);
@@ -436,6 +587,9 @@ static status_t test_fips_kat_rom(void) {
   LOG_INFO("[1/6] SHA2 + HMAC ok");
   TRY(test_shake256_kat(table));
   TRY(test_kmac256_kat(table));
+  TRY(test_aes_ecb256_kat(table));
+  TRY(test_aes_cbc256_kat(table));
+  TRY(test_aes_kwp256_kat(table));
   LOG_INFO("[2/6] SHA3/KMAC + AES ok");
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
 
@@ -443,7 +597,7 @@ static status_t test_fips_kat_rom(void) {
   unmap_rom_kat_slot0();
   assert_load_faults(kat_base);
 
-  LOG_INFO("All 6 ROM FIPS KATs passed and transient ePMP revoked.");
+  LOG_INFO("All 9 ROM FIPS KATs passed and transient ePMP revoked.");
   return OK_STATUS();
 }
 
