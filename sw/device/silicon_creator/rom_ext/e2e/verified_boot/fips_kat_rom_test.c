@@ -216,6 +216,26 @@ static status_t test_sha256_kat(const fips_kat_descriptor_table_t *table) {
   return OK_STATUS();
 }
 
+static status_t test_sha384_kat(const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const hmac_kat_data_t *kat = (const hmac_kat_data_t *)resolve_entry(
+      table, kFipsKatAlgSha2_384, &entry);
+  CHECK(entry->size == fips_kat_hmac_expected_size(kat));
+  CHECK(kat->key_len == 0 && kat->digest_len == 48);
+
+  otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, fips_kat_hmac_msg(kat), kat->msg_len);
+  uint32_t digest_words[12] = {0};
+  otcrypto_hash_digest_t digest = {
+      .mode = kOtcryptoHashModeSha384,
+      .len = ARRAYSIZE(digest_words),
+      .data = digest_words,
+  };
+  CHECK_STATUS_OK(otcrypto_sha2_384(&msg_buf, &digest));
+  CHECK_ARRAYS_EQ((const uint8_t *)digest_words, fips_kat_hmac_digest(kat), 48);
+  return OK_STATUS();
+}
+
 static status_t test_sha512_kat(const fips_kat_descriptor_table_t *table) {
   const fips_kat_entry_t *entry;
   const hmac_kat_data_t *kat = (const hmac_kat_data_t *)resolve_entry(
@@ -1846,7 +1866,7 @@ static status_t test_fips_kat_rom(void) {
       get_fips_descriptor_table_from_region((const void *)kat_base,
                                             kFipsKatRegionSize);
   CHECK(table != NULL, "Invalid ROM FIPS KAT descriptor table");
-  CHECK(table->entry_count == 30u, "Expected 30 entries, got %u",
+  CHECK(table->entry_count == 31u, "Expected 31 entries, got %u",
         table->entry_count);
   LOG_INFO("FIPS KAT table @ 0x%08x: %u entries, %u bytes (ePMP RO verified)",
            (uint32_t)kat_base, table->entry_count, table->total_size);
@@ -1857,6 +1877,7 @@ static status_t test_fips_kat_rom(void) {
 
   // Symmetric, Hash, MAC, KDF, and DRBG KATs.
   TRY(test_sha256_kat(table));
+  TRY(test_sha384_kat(table));
   TRY(test_sha512_kat(table));
   TRY(test_hmac_sha256_kat(table));
   TRY(test_hmac_sha512_kat(table));
@@ -1909,7 +1930,7 @@ static status_t test_fips_kat_rom(void) {
   unmap_rom_kat_slot0();
   assert_load_faults(kat_base);
 
-  LOG_INFO("All 30 ROM FIPS KATs passed and transient ePMP revoked.");
+  LOG_INFO("All 31 ROM FIPS KATs passed and transient ePMP revoked.");
   return OK_STATUS();
 }
 

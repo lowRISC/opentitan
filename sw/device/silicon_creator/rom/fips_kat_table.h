@@ -61,7 +61,6 @@ enum {
 typedef enum fips_kat_alg_id {
   kFipsKatAlgNone = 0,
 
-
   // SHA-2 & HMAC (256 & 512)
   kFipsKatAlgSha2_256 = 1,
   kFipsKatAlgSha2_512 = 2,
@@ -115,6 +114,9 @@ typedef enum fips_kat_alg_id {
 
   // Key Derivation (HKDF-SHA2-384 - RFC 5869 / SP 800-56Cr2)
   kFipsKatAlgHkdfSha2_384 = 30,
+
+  // SHA-2 (384-bit for CNSA 2.0)
+  kFipsKatAlgSha2_384 = 31,
 } fips_kat_alg_id_t;
 
 /**
@@ -149,7 +151,6 @@ OT_ASSERT_MEMBER_OFFSET(fips_kat_descriptor_table_t, version, 4);
 OT_ASSERT_MEMBER_OFFSET(fips_kat_descriptor_table_t, entry_count, 8);
 OT_ASSERT_MEMBER_OFFSET(fips_kat_descriptor_table_t, total_size, 12);
 OT_ASSERT_MEMBER_OFFSET(fips_kat_descriptor_table_t, entries, 16);
-
 
 /**
  * ============================================================================
@@ -461,7 +462,6 @@ static inline const void *get_fips_data(
   return (const void *)((const uint8_t *)table + offset);
 }
 
-
 /**
  * ============================================================================
  * Uniform 4-Byte Aligned Sub-Field Accessors
@@ -697,7 +697,6 @@ static inline size_t fips_kat_hkdf_expected_size(const hkdf_kat_data_t *kat) {
          FIPS_KAT_ALIGN4(kat->salt_len) + FIPS_KAT_ALIGN4(kat->info_len) +
          FIPS_KAT_ALIGN4(kat->prk_len) + FIPS_KAT_ALIGN4(kat->okm_len);
 }
-
 
 #ifdef __cplusplus
 }

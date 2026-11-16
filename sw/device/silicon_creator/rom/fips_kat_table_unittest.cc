@@ -281,14 +281,14 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
   ASSERT_NE(table, nullptr);
   EXPECT_EQ(table->magic, kFipsKatDescriptorMagic);
   EXPECT_EQ(table->version, kFipsKatDescriptorVersion1);
-  EXPECT_EQ(table->entry_count, 30u);
+  EXPECT_EQ(table->entry_count, 31u);
   EXPECT_LE(table->total_size, kFipsKatRegionSize);
   EXPECT_EQ(table->total_size % 4u, 0u);
 
   std::set<uint32_t> seen_ids;
   std::vector<std::pair<uint32_t, uint32_t>> intervals;
 
-  for (uint32_t id : std::vector<uint32_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30}) {
+  for (uint32_t id = 1; id <= 31; ++id) {
     const auto alg_id = static_cast<fips_kat_alg_id_t>(id);
     const fips_kat_entry_t *entry =
         find_fips_entry(table, kFipsKatRegionSize, alg_id);
@@ -307,8 +307,8 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
       case kFipsKatAlgHmacSha2_256:
       case kFipsKatAlgHmacSha2_512:
       case kFipsKatAlgShake256:
-      case kFipsKatAlgEntropySrcSha3Conditioning: {
-
+      case kFipsKatAlgEntropySrcSha3Conditioning:
+      case kFipsKatAlgSha2_384: {
         const auto *kat = static_cast<const hmac_kat_data_t *>(payload);
         EXPECT_EQ(entry->size, fips_kat_hmac_expected_size(kat))
             << "alg_id=" << id;
@@ -321,7 +321,6 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
       case kFipsKatAlgKmac256:
       case kFipsKatAlgKdfHmacSha2_256:
       case kFipsKatAlgKdfKmac256: {
-
         const auto *kat = static_cast<const kdf_kat_data_t *>(payload);
         EXPECT_EQ(entry->size, fips_kat_kdf_expected_size(kat))
             << "alg_id=" << id;
@@ -337,7 +336,6 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
       case kFipsKatAlgAesCbc256Decrypt:
       case kFipsKatAlgAesKwp256Wrap:
       case kFipsKatAlgAesGcm256Encrypt: {
-
         const auto *kat = static_cast<const aes_kat_data_t *>(payload);
         EXPECT_EQ(entry->size, fips_kat_aes_expected_size(kat))
             << "alg_id=" << id;
@@ -355,7 +353,6 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
       case kFipsKatAlgEcdsaP384Verify:
       case kFipsKatAlgEd25519Verify:
       case kFipsKatAlgSphincsPlusSha2_128sVerify: {
-
         const auto *kat =
             static_cast<const asymmetric_verify_kat_data_t *>(payload);
         EXPECT_EQ(entry->size, fips_kat_asym_verify_expected_size(kat))
@@ -383,7 +380,6 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
       case kFipsKatAlgEcdsaP256Sign:
       case kFipsKatAlgEcdsaP384Sign:
       case kFipsKatAlgEd25519Sign: {
-
         const auto *kat =
             static_cast<const asymmetric_sign_kat_data_t *>(payload);
         EXPECT_EQ(entry->size, fips_kat_asym_sign_expected_size(kat))
@@ -405,7 +401,6 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
       case kFipsKatAlgEcdhP256:
       case kFipsKatAlgEcdhP384:
       case kFipsKatAlgX25519: {
-
         const auto *kat = static_cast<const ecdh_kat_data_t *>(payload);
         EXPECT_EQ(entry->size, fips_kat_ecdh_expected_size(kat))
             << "alg_id=" << id;
@@ -421,14 +416,12 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
         break;
       }
       case kFipsKatAlgMldsa87: {
-
         const auto *kat = static_cast<const mldsa_kat_data_t *>(payload);
         EXPECT_EQ(kat->num_cases, 5u);
         EXPECT_EQ(entry->size, fips_kat_mldsa_expected_size(kat));
         break;
       }
       case kFipsKatAlgMlkem1024: {
-
         const auto *kat = static_cast<const kem_kat_data_t *>(payload);
         EXPECT_EQ(entry->size, fips_kat_kem_expected_size(kat));
         EXPECT_EQ(kat->exp_pk_hash_len, 32u);
@@ -440,7 +433,6 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
         break;
       }
       case kFipsKatAlgDrbgAes256: {
-
         const auto *kat = static_cast<const drbg_kat_data_t *>(payload);
         EXPECT_EQ(entry->size, sizeof(drbg_kat_data_t));
         EXPECT_EQ(kat->seed_len, 48u);
@@ -451,7 +443,6 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
         break;
       }
       case kFipsKatAlgHkdfSha2_384: {
-
         const auto *kat = static_cast<const hkdf_kat_data_t *>(payload);
         EXPECT_EQ(entry->size, fips_kat_hkdf_expected_size(kat));
         EXPECT_EQ(kat->ikm_len, 48u);
@@ -468,7 +459,7 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
     }
   }
 
-  // Confirm all payload intervals are strictly non-overlapping.
+  // Confirm all 31 payload intervals are strictly non-overlapping.
   std::sort(intervals.begin(), intervals.end());
   for (size_t i = 1; i < intervals.size(); ++i) {
     EXPECT_LE(intervals[i - 1].second, intervals[i].first)
