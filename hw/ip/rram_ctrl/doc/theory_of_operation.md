@@ -426,6 +426,11 @@ Each region or page carries the following access attributes:
 Any access that does not satisfy `rd_en` or `wr_en` for the requested operation is blocked.
 `ctrl_mp_err` is asserted and the transaction is rejected.
 
+All software-configurable attributes are multibit encoded and are only considered set if they equal `MuBi4True`.
+A fault that turns an attribute into an invalid encoding would therefore silently clear it, or, for `en`, make accesses fall back to a lower-priority region.
+Hence, an invalid encoding in any multibit field of [`MP_REGION_CFG`](registers.md#mp_region_cfg), [`DEFAULT_REGION`](registers.md#default_region), [`INFO_PAGE_CFG`](registers.md#info_page_cfg), [`EMUL_INFO_REGION`](registers.md#emul_info_region) or [`EMUL_INFO_SUBREGION_CFG`](registers.md#emul_info_subregion_cfg) raises [`STD_FAULT_STATUS.MP_CFG_ERR`](registers.md#std_fault_status), a fatal error.
+Software must therefore only write `MuBi4True` or `MuBi4False` to these fields.
+
 Each region/page config also carries an `addr_xor_en` field, but unlike the attributes above it is not software-configurable.
 It is hardwired to `MuBi4True` for software-configurable data regions and info pages, and to a fixed value per hardware-access table otherwise (e.g. `MuBi4False` for the OTP region, see [Memory Protection for OTP Hardware Plug](#memory-protection-for-otp-hardware-plug)).
 
@@ -693,6 +698,11 @@ The scrambler holds a latched copy of `addr_key` and `data_key`.
 On reset, before initialization completes, these registers hold fixed netlist-constant values (`RndCnstAddrKey`, `RndCnstDataKey`), not the real sideloaded keys.
 Once `keys_valid` is asserted, the real sideloaded keys are latched in.
 If RRAM access is later disabled (`keys_disable` is any value other than `MuBi4False`), the scrambler switches to a separate pair of random keys (`rand_addr_key`, `rand_data_key`), also supplied by `otp_ctrl` as part of the scrambling-key response, preventing the real sideloaded keys from being used or observed after disable.
+
+The life cycle management interface captures `addr_key` and `data_key` once from `otp_ctrl` and keeps them until reset, while the scrambler reloads its copy from them in every cycle.
+A fault on these stored keys would therefore silently corrupt all subsequent scrambling and descrambling operations, which the shadow-read verify pass cannot detect as both reads use the same key.
+Hence, each key is stored together with SECDED check bits (`prim_secded_inv_137_128`), which are computed when the key is captured and continuously checked.
+An integrity error raises [`STD_FAULT_STATUS.LCMGR_ERR`](registers.md#std_fault_status), a fatal error.
 
 Scrambling is per-page configurable via the `scramble_en` attribute in each protection region or info-page configuration.
 Pages with `scramble_en = MuBi4False` are stored unscrambled.

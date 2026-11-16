@@ -394,23 +394,64 @@ module rram_ctrl_lcmgr
     .dst_ack_i (otp_key_rsp_i.data_ack)
   );
 
+  // SEC_CM: SCRAMBLE.KEY.INTEGRITY
+  // The scrambling keys are captured once and then used until reset. As a single fault would
+  // silently corrupt all subsequent scrambling operations, the keys are stored together with
+  // SECDED check bits, which are continuously checked.
+  localparam int unsigned KeyEccWidth = 9;
+  localparam logic [KeyEccWidth-1:0] RndCnstAddrKeyEcc =
+      KeyEccWidth'(prim_secded_pkg::prim_secded_inv_137_128_enc(RndCnstAddrKey) >> KeyWidth);
+  localparam logic [KeyEccWidth-1:0] RndCnstDataKeyEcc =
+      KeyEccWidth'(prim_secded_pkg::prim_secded_inv_137_128_enc(RndCnstDataKey) >> KeyWidth);
+
+  logic [KeyWidth+KeyEccWidth-1:0] otp_key_enc;
+  logic [KeyEccWidth-1:0]          addr_key_ecc_q, data_key_ecc_q;
+
+  prim_secded_inv_137_128_enc u_otp_key_enc (
+    .data_i(rram_key_t'(otp_key_rsp_i.key)),
+    .data_o(otp_key_enc)
+  );
+
   // capture addr/data keys when valid is synchronized from otp_clk to clk
   always_ff @(posedge clk_i or negedge rst_ni) begin
     if (!rst_ni) begin
-      addr_key_o <= RndCnstAddrKey;
-      data_key_o <= RndCnstDataKey;
+      addr_key_o     <= RndCnstAddrKey;
+      data_key_o     <= RndCnstDataKey;
+      addr_key_ecc_q <= RndCnstAddrKeyEcc;
+      data_key_ecc_q <= RndCnstDataKeyEcc;
     end else begin
       if (addr_key_req_d && addr_key_ack_q) begin
         addr_key_o      <= rram_key_t'(otp_key_rsp_i.key);
+        addr_key_ecc_q  <= otp_key_enc[KeyWidth +: KeyEccWidth];
         rand_addr_key_o <= rram_key_t'(otp_key_rsp_i.rand_key);
       end
 
       if (data_key_req_d && data_key_ack_q) begin
         data_key_o      <= rram_key_t'(otp_key_rsp_i.key);
+        data_key_ecc_q  <= otp_key_enc[KeyWidth +: KeyEccWidth];
         rand_data_key_o <= rram_key_t'(otp_key_rsp_i.rand_key);
       end
     end
   end
+
+  logic [1:0] addr_key_err, data_key_err;
+
+  prim_secded_inv_137_128_dec u_addr_key_dec (
+    .data_i    ({addr_key_ecc_q, addr_key_o}),
+    .data_o    (),
+    .syndrome_o(),
+    .err_o     (addr_key_err)
+  );
+
+  prim_secded_inv_137_128_dec u_data_key_dec (
+    .data_i    ({data_key_ecc_q, data_key_o}),
+    .data_o    (),
+    .syndrome_o(),
+    .err_o     (data_key_err)
+  );
+
+  logic key_intg_err;
+  assign key_intg_err = |{addr_key_err, data_key_err};
 
   ///////////////////////////////
   // Init state machine        //
@@ -1025,7 +1066,7 @@ module rram_ctrl_lcmgr
 
   // all of these are considered fatal errors
   assign fatal_err_o = page_err_q | word_err_q | fsm_err | state_err | rma_idx_err_q |
-                       addr_cnt_err_q | seed_cnt_err_q;
+                       addr_cnt_err_q | seed_cnt_err_q | key_intg_err;
 
   // integrity error is its own category
   assign intg_err_o = data_invalid_q;

@@ -213,6 +213,12 @@
     { name: "SCRAMBLE.KEY.SIDELOAD",
       desc: "The scrambling key is sideloaded from OTP and thus unreadable by SW."
     }
+    { name: "SCRAMBLE.KEY.INTEGRITY",
+      desc: '''
+            The scrambling keys are stored together with SECDED check bits, which are continuously checked.
+            An integrity error is reported in !!STD_FAULT_STATUS.LCMGR_ERR and is a fatal error.
+            '''
+    }
     { name: "LC_CTRL.INTERSIG.MUBI",
       desc: '''
             Life cycle control signals are used to control information partition access
@@ -228,6 +234,18 @@
     }
     { name: "INFO_PAGE.CONFIG.REGWEN",
       desc: "Each info page has a configurable REGWEN."
+    }
+    { name: "DATA_REGIONS.CONFIG.MUBI",
+      desc: '''
+            The data region configurations are multibit encoded.
+            An invalid encoding in !!MP_REGION_CFG or !!DEFAULT_REGION is a fatal error.
+            '''
+    }
+    { name: "INFO_PAGE.CONFIG.MUBI",
+      desc: '''
+            The info page and emulated info region configurations are multibit encoded.
+            An invalid encoding in !!INFO_PAGE_CFG, !!EMUL_INFO_REGION or !!EMUL_INFO_SUBREGION_CFG is a fatal error.
+            '''
     }
     { name: "MEM.CTRL.GLOBAL_ESC",
       desc: "Global escalation causes memory to no longer be accessible."
@@ -802,6 +820,8 @@
           count: "NumRegions",
           swaccess: "rw",
           hwaccess: "hro",
+          tags: [// Random writes create invalid multibit encodings, which raise STD_FAULT_STATUS.MP_CFG_ERR
+                 "excl:CsrNonInitTests:CsrExclWrite"],
           regwen: "REGION_CFG_REGWEN",
           regwen_multi: true,
           fields: [
@@ -890,6 +910,8 @@
               ''',
         swaccess: "rw",
         hwaccess: "hro",
+        tags: [// Random writes create invalid multibit encodings, which raise STD_FAULT_STATUS.MP_CFG_ERR
+               "excl:CsrNonInitTests:CsrExclWrite"],
         fields: [
           { bits: "3:0",
             name: "RD_EN",
@@ -975,6 +997,8 @@
           count: "NumInfoPages",
           swaccess: "rw",
           hwaccess: "hro",
+          tags: [// Random writes create invalid multibit encodings, which raise STD_FAULT_STATUS.MP_CFG_ERR
+                 "excl:CsrNonInitTests:CsrExclWrite"],
           regwen: "INFO_REGWEN",
           regwen_multi: true,
           fields: [
@@ -1102,6 +1126,8 @@
                     If disabled, neither the window nor any of its subregions is matched against any incoming transaction.
                     ''',
               resval: false
+              tags: [// Random writes create invalid multibit encodings, which raise STD_FAULT_STATUS.MP_CFG_ERR
+                     "excl:CsrNonInitTests:CsrExclWrite"]
             },
           ],
         },
@@ -1225,6 +1251,8 @@
           count: "NumEmulInfoSubregions",
           swaccess: "rw",
           hwaccess: "hro",
+          tags: [// Random writes create invalid multibit encodings, which raise STD_FAULT_STATUS.MP_CFG_ERR
+                 "excl:CsrNonInitTests:CsrExclWrite"],
           regwen: "EMUL_INFO_SUBREGION_CFG_REGWEN",
           regwen_multi: true,
           fields: [
@@ -1405,7 +1433,7 @@
             name: "lcmgr_err",
             desc: '''
                   The life cycle management interface has encountered a fatal error.
-                  The error is either an FSM sparse encoding error or a count error.
+                  The error is either an FSM sparse encoding error, a count error or an integrity error of the stored scrambling keys.
                   '''
           },
           { bits: "2",
@@ -1475,6 +1503,14 @@
             name: "ctrl_fifo_err",
             desc: '''
                   RRAM controller write fifo has encountered an error.
+                  '''
+          },
+          { bits: "13",
+            name: "mp_cfg_err",
+            desc: '''
+                  A memory protection configuration register holds an invalid multibit encoding.
+                  This applies to all multibit fields of !!MP_REGION_CFG, !!DEFAULT_REGION, !!INFO_PAGE_CFG, !!EMUL_INFO_REGION and !!EMUL_INFO_SUBREGION_CFG.
+                  Software must only write the multibit encodings of true or false to these fields.
                   '''
           },
         ]

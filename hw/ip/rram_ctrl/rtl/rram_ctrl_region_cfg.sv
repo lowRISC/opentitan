@@ -39,13 +39,16 @@ module rram_ctrl_region_cfg
   output mp_region_cfg_t region_cfgs_o[TotalMpRegions],
   // Combined page configurations for host (No access to emulated regions)
   output mp_region_cfg_t host_region_cfgs_o[HostMpRegions],
-  output mp_info_cfg_t   info_page_cfgs_o[TotalInfoPages]
+  output mp_info_cfg_t   info_page_cfgs_o[TotalInfoPages],
+
+  output logic           cfg_err_o
 );
 
   import prim_mubi_pkg::mubi4_t;
   import prim_mubi_pkg::mubi4_and_hi;
   import prim_mubi_pkg::mubi4_bool_to_mubi;
   import prim_mubi_pkg::mubi4_test_true_strict;
+  import prim_mubi_pkg::mubi4_test_invalid;
 
   //////////////////////////////////////
   // Life cycle synchronizer          //
@@ -303,5 +306,57 @@ module rram_ctrl_region_cfg
       assign info_page_cfgs_o[i].cfg.wr_en = reg_wr_en;
     end
   end
+
+  //////////////////////////////////////////////
+  // Invalid multibit configuration detection //
+  //////////////////////////////////////////////
+  // SEC_CM: DATA_REGIONS.CONFIG.MUBI
+  // SEC_CM: INFO_PAGE.CONFIG.MUBI
+  // All configuration fields are evaluated with mubi4_test_true_strict, so a fault that turns a
+  // field into an invalid encoding would silently disable it.
+  logic [MpRegions-1:0]          mp_region_cfg_err;
+  logic                          default_region_cfg_err;
+  logic [TotalInfoPages-1:0]     info_page_cfg_err;
+  logic [EmulInfoRegions-1:0]    emul_info_region_cfg_err;
+  logic [EmulInfoSubregions-1:0] emul_info_subregion_cfg_err;
+
+  for (genvar i = 0; i < MpRegions; i++) begin : gen_mp_region_cfg_err
+    assign mp_region_cfg_err[i] = mubi4_test_invalid(mubi4_t'(region_cfg_i[i].en.q))          |
+                                  mubi4_test_invalid(mubi4_t'(region_cfg_i[i].rd_en.q))       |
+                                  mubi4_test_invalid(mubi4_t'(region_cfg_i[i].wr_en.q))       |
+                                  mubi4_test_invalid(mubi4_t'(region_cfg_i[i].scramble_en.q)) |
+                                  mubi4_test_invalid(mubi4_t'(region_cfg_i[i].ecc_en.q));
+  end
+
+  assign default_region_cfg_err = mubi4_test_invalid(mubi4_t'(default_cfg_i.rd_en.q))       |
+                                  mubi4_test_invalid(mubi4_t'(default_cfg_i.wr_en.q))       |
+                                  mubi4_test_invalid(mubi4_t'(default_cfg_i.scramble_en.q)) |
+                                  mubi4_test_invalid(mubi4_t'(default_cfg_i.ecc_en.q));
+
+  for (genvar i = 0; i < TotalInfoPages; i++) begin : gen_info_page_cfg_err
+    assign info_page_cfg_err[i] = mubi4_test_invalid(mubi4_t'(info_page_cfg_i[i].en.q))          |
+                                  mubi4_test_invalid(mubi4_t'(info_page_cfg_i[i].rd_en.q))       |
+                                  mubi4_test_invalid(mubi4_t'(info_page_cfg_i[i].wr_en.q))       |
+                                  mubi4_test_invalid(mubi4_t'(info_page_cfg_i[i].scramble_en.q)) |
+                                  mubi4_test_invalid(mubi4_t'(info_page_cfg_i[i].ecc_en.q));
+  end
+
+  for (genvar w = 0; w < EmulInfoRegions; w++) begin : gen_emul_info_region_cfg_err
+    assign emul_info_region_cfg_err[w] = mubi4_test_invalid(mubi4_t'(emul_info_region_i[w].en.q));
+  end
+
+  for (genvar i = 0; i < EmulInfoSubregions; i++) begin : gen_emul_info_subregion_cfg_err
+    assign emul_info_subregion_cfg_err[i] =
+        mubi4_test_invalid(mubi4_t'(emul_info_subregion_cfg_i[i].rd_en.q))       |
+        mubi4_test_invalid(mubi4_t'(emul_info_subregion_cfg_i[i].wr_en.q))       |
+        mubi4_test_invalid(mubi4_t'(emul_info_subregion_cfg_i[i].scramble_en.q)) |
+        mubi4_test_invalid(mubi4_t'(emul_info_subregion_cfg_i[i].ecc_en.q));
+  end
+
+  assign cfg_err_o = |{mp_region_cfg_err,
+                       default_region_cfg_err,
+                       info_page_cfg_err,
+                       emul_info_region_cfg_err,
+                       emul_info_subregion_cfg_err};
 
 endmodule // rram_ctrl_region_cfg

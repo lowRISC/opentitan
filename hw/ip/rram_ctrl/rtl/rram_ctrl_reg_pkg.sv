@@ -287,6 +287,9 @@ package rram_ctrl_reg_pkg;
   typedef struct packed {
     struct packed {
       logic        q;
+    } mp_cfg_err;
+    struct packed {
+      logic        q;
     } ctrl_fifo_err;
     struct packed {
       logic        q;
@@ -506,6 +509,10 @@ package rram_ctrl_reg_pkg;
     struct packed {
       logic        d;
       logic        de;
+    } mp_cfg_err;
+    struct packed {
+      logic        d;
+      logic        de;
     } ctrl_fifo_err;
     struct packed {
       logic        d;
@@ -675,27 +682,27 @@ package rram_ctrl_reg_pkg;
 
   // Register -> HW type for core interface
   typedef struct packed {
-    rram_ctrl_reg2hw_intr_state_reg_t intr_state; // [1484:1478]
-    rram_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [1477:1471]
-    rram_ctrl_reg2hw_intr_test_reg_t intr_test; // [1470:1457]
-    rram_ctrl_reg2hw_alert_test_reg_t alert_test; // [1456:1447]
-    rram_ctrl_reg2hw_dis_reg_t dis; // [1446:1439]
-    rram_ctrl_reg2hw_exec_reg_t exec; // [1438:1407]
-    rram_ctrl_reg2hw_init_reg_t init; // [1406:1406]
-    rram_ctrl_reg2hw_control_reg_t control; // [1405:1392]
-    rram_ctrl_reg2hw_addr_reg_t addr; // [1391:1371]
-    rram_ctrl_reg2hw_mp_region_cfg_mreg_t [9:0] mp_region_cfg; // [1370:1171]
-    rram_ctrl_reg2hw_mp_region_mreg_t [9:0] mp_region; // [1170:931]
-    rram_ctrl_reg2hw_default_region_reg_t default_region; // [930:915]
-    rram_ctrl_reg2hw_info_page_cfg_mreg_t [7:0] info_page_cfg; // [914:755]
-    rram_ctrl_reg2hw_emul_info_regwen_mreg_t [1:0] emul_info_regwen; // [754:753]
-    rram_ctrl_reg2hw_emul_info_region_mreg_t [1:0] emul_info_region; // [752:697]
+    rram_ctrl_reg2hw_intr_state_reg_t intr_state; // [1485:1479]
+    rram_ctrl_reg2hw_intr_enable_reg_t intr_enable; // [1478:1472]
+    rram_ctrl_reg2hw_intr_test_reg_t intr_test; // [1471:1458]
+    rram_ctrl_reg2hw_alert_test_reg_t alert_test; // [1457:1448]
+    rram_ctrl_reg2hw_dis_reg_t dis; // [1447:1440]
+    rram_ctrl_reg2hw_exec_reg_t exec; // [1439:1408]
+    rram_ctrl_reg2hw_init_reg_t init; // [1407:1407]
+    rram_ctrl_reg2hw_control_reg_t control; // [1406:1393]
+    rram_ctrl_reg2hw_addr_reg_t addr; // [1392:1372]
+    rram_ctrl_reg2hw_mp_region_cfg_mreg_t [9:0] mp_region_cfg; // [1371:1172]
+    rram_ctrl_reg2hw_mp_region_mreg_t [9:0] mp_region; // [1171:932]
+    rram_ctrl_reg2hw_default_region_reg_t default_region; // [931:916]
+    rram_ctrl_reg2hw_info_page_cfg_mreg_t [7:0] info_page_cfg; // [915:756]
+    rram_ctrl_reg2hw_emul_info_regwen_mreg_t [1:0] emul_info_regwen; // [755:754]
+    rram_ctrl_reg2hw_emul_info_region_mreg_t [1:0] emul_info_region; // [753:698]
     rram_ctrl_reg2hw_emul_info_subregion_regwen_mreg_t [23:0]
-        emul_info_subregion_regwen; // [696:673]
-    rram_ctrl_reg2hw_emul_info_subregion_mreg_t [23:0] emul_info_subregion; // [672:481]
-    rram_ctrl_reg2hw_emul_info_subregion_cfg_mreg_t [23:0] emul_info_subregion_cfg; // [480:97]
-    rram_ctrl_reg2hw_hw_info_cfg_override_reg_t hw_info_cfg_override; // [96:89]
-    rram_ctrl_reg2hw_std_fault_status_reg_t std_fault_status; // [88:76]
+        emul_info_subregion_regwen; // [697:674]
+    rram_ctrl_reg2hw_emul_info_subregion_mreg_t [23:0] emul_info_subregion; // [673:482]
+    rram_ctrl_reg2hw_emul_info_subregion_cfg_mreg_t [23:0] emul_info_subregion_cfg; // [481:98]
+    rram_ctrl_reg2hw_hw_info_cfg_override_reg_t hw_info_cfg_override; // [97:90]
+    rram_ctrl_reg2hw_std_fault_status_reg_t std_fault_status; // [89:76]
     rram_ctrl_reg2hw_fault_status_reg_t fault_status; // [75:62]
     rram_ctrl_reg2hw_corr1_err_cnt_reg_t corr1_err_cnt; // [61:54]
     rram_ctrl_reg2hw_corr2_err_cnt_reg_t corr2_err_cnt; // [53:46]
@@ -706,13 +713,13 @@ package rram_ctrl_reg_pkg;
 
   // HW -> register type for core interface
   typedef struct packed {
-    rram_ctrl_hw2reg_intr_state_reg_t intr_state; // [196:183]
-    rram_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [182:182]
-    rram_ctrl_hw2reg_control_reg_t control; // [181:180]
-    rram_ctrl_hw2reg_op_status_reg_t op_status; // [179:176]
-    rram_ctrl_hw2reg_status_reg_t status; // [175:164]
-    rram_ctrl_hw2reg_err_code_reg_t err_code; // [163:156]
-    rram_ctrl_hw2reg_std_fault_status_reg_t std_fault_status; // [155:130]
+    rram_ctrl_hw2reg_intr_state_reg_t intr_state; // [198:185]
+    rram_ctrl_hw2reg_ctrl_regwen_reg_t ctrl_regwen; // [184:184]
+    rram_ctrl_hw2reg_control_reg_t control; // [183:182]
+    rram_ctrl_hw2reg_op_status_reg_t op_status; // [181:178]
+    rram_ctrl_hw2reg_status_reg_t status; // [177:166]
+    rram_ctrl_hw2reg_err_code_reg_t err_code; // [165:158]
+    rram_ctrl_hw2reg_std_fault_status_reg_t std_fault_status; // [157:130]
     rram_ctrl_hw2reg_fault_status_reg_t fault_status; // [129:102]
     rram_ctrl_hw2reg_err_addr_reg_t err_addr; // [101:80]
     rram_ctrl_hw2reg_corr1_err_cnt_reg_t corr1_err_cnt; // [79:71]
