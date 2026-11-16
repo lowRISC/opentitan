@@ -134,10 +134,6 @@ module gpio
     assign hw2reg.per_pin_io[i].data_in.d  = data_in_d[i];
   end
 
-  if (NumIOs != 32) begin : gen_per_pin_view_num_ios_check
-    $error("The per-pin register view requires NumIOs == 32.");
-  end
-
   // The interleaved PER_PIN_OE and PER_PIN_INTR_CTRL registers are not multiregs. All fields of a
   // register are written together, so the qe of its first field is used for the whole register.
   logic [NumIOs-1:0] unused_per_pin_intr_ctrl_qe;
@@ -1017,7 +1013,17 @@ module gpio
     .intg_err_o (alerts[0])
   );
 
+  // The per-pin register view requires NumIOs == 32
+  `ASSERT_INIT(NumIOsPerPinView_A, NumIOs == 32)
+
+  // No valid strap values are to be reported without the strap enable having
+  // been high in the previous cycle.
+  `ASSERT(NoStrapValidWithoutEnable_A, sampled_straps_o.valid |-> $past(strap_en_i))
+
   // Assert Known: Outputs
+  `ASSERT_KNOWN(TlODValidKnown_A, tl_o.d_valid)
+  `ASSERT_KNOWN(TlOAReadyKnown_A, tl_o.a_ready)
+  `ASSERT_KNOWN(SampledStrapsOKnown_A,  sampled_straps_o)
   `ASSERT_KNOWN(IntrGpioKnown, intr_gpio_o)
   `ASSERT_KNOWN(CioGpioEnOKnown, cio_gpio_en_o)
   `ASSERT_KNOWN(CioGpioOKnown, cio_gpio_o)
