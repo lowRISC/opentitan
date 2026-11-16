@@ -394,6 +394,19 @@ typedef struct fips_kat_mlkem1024 {
 // Uses `drbg_kat_data_t` directly from `fips_kat_table.h` (476 bytes).
 
 /**
+ * Algorithm ID 27: Entropy Source SHA3 Conditioning
+ * Schema: `hmac_kat_data_t`
+ * Vector: NIST SP 800-90B SHA3-384 conditioner KAT (entropy_kat.c): in=48B,
+ * out=48B
+ */
+typedef struct fips_kat_entropy_src_sha3_conditioning {
+  uint32_t key_len;
+  uint32_t msg_len;
+  uint32_t digest_len;
+  uint8_t data[96];
+} fips_kat_entropy_src_sha3_conditioning_t;
+
+/**
  * Algorithm ID 28: AES-256-GCM
  * Schema: `aes_kat_data_t`
  * Vector: NIST CAVP Count=0 (impl/kats.c): key=32B, iv=12B, aad=16B, pt=51B
@@ -424,7 +437,7 @@ typedef struct fips_kat_sphincsplus_sha2_128s_verify {
   uint8_t data[7924];
 } fips_kat_sphincsplus_sha2_128s_verify_t;
 
-#define FIPS_KAT_NUM_ENTRIES 28
+#define FIPS_KAT_NUM_ENTRIES 29
 
 typedef struct fips_kat_rom_table {
   uint32_t magic;
@@ -461,6 +474,7 @@ typedef struct fips_kat_data_store {
   fips_kat_mldsa87_t mldsa87;
   fips_kat_mlkem1024_t mlkem1024;
   drbg_kat_data_t drbg_aes256;
+  fips_kat_entropy_src_sha3_conditioning_t entropy_src;
   fips_kat_aes_gcm256_t aes_gcm256;
   fips_kat_sphincsplus_sha2_128s_verify_t sphincsplus_sha2_128s;
 } fips_kat_data_store_t;
@@ -625,6 +639,11 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                         .algorithm_id = (uint32_t)kFipsKatAlgDrbgAes256,
                         .offset = FIPS_KAT_OFFSET(drbg_aes256),
                         .size = sizeof(drbg_kat_data_t),
+                    },
+                    {
+                        .algorithm_id = (uint32_t)kFipsKatAlgEntropySrcSha3Conditioning,
+                        .offset = FIPS_KAT_OFFSET(entropy_src),
+                        .size = sizeof(fips_kat_entropy_src_sha3_conditioning_t),
                     },
                     {
                         .algorithm_id = (uint32_t)kFipsKatAlgAesGcm256Encrypt,
@@ -1886,6 +1905,27 @@ alignas(uint32_t) static const fips_kat_rom_blob_t kFipsKatRomBlob = {
                     0xfd67ff2c, 0x23176d83, 0xf5b396b6, 0x9e400042,
                     0x252e1181, 0x6c309542, 0x1137181a, 0x5d0ee37c,
                     0x83a339c5, 0x8d080946, 0xca90aa43, 0x7d50d9cf,
+                },
+            },
+            .entropy_src = {
+                .key_len = 0,
+                .msg_len = 48,
+                .digest_len = 48,
+                .data = {
+                    // Input Seed (48B, entropy_kat.c) (48 bytes)
+                    0xa9, 0x0d, 0x2a, 0xa5, 0xb2, 0x41, 0xe1, 0xca,
+                    0x9d, 0xab, 0x5b, 0x6d, 0xc0, 0x5c, 0x3e, 0x2c,
+                    0x93, 0xfc, 0x5a, 0x22, 0x10, 0xa6, 0x31, 0x5d,
+                    0x60, 0xf9, 0xb7, 0x91, 0xb3, 0x6b, 0x56, 0x0d,
+                    0x70, 0xe1, 0x35, 0xef, 0x8e, 0x7d, 0xba, 0x94,
+                    0x41, 0xb7, 0x4e, 0x53, 0xda, 0xb0, 0x60, 0x6b,
+                    // Expected SHA3-384 Conditioned Digest (48 bytes)
+                    0x4a, 0x16, 0x88, 0x1c, 0xe1, 0x56, 0xf4, 0x5f,
+                    0xdf, 0xdb, 0x45, 0x08, 0x8e, 0x3f, 0x23, 0xbe,
+                    0x1b, 0x4c, 0x5a, 0x7a, 0x6a, 0x35, 0x31, 0x5d,
+                    0x36, 0xc5, 0x1c, 0x75, 0xf2, 0x75, 0x73, 0x33,
+                    0x19, 0xac, 0xa1, 0x85, 0xd4, 0xab, 0x33, 0x13,
+                    0x0f, 0xfe, 0x45, 0xf7, 0x51, 0xf1, 0xbb, 0xc5,
                 },
             },
             .aes_gcm256 = {

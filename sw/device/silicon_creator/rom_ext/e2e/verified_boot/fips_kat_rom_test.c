@@ -1614,6 +1614,119 @@ static status_t test_drbg_aes256_kat(const fips_kat_descriptor_table_t *table) {
   return OK_STATUS();
 }
 
+static void stop_sha3_conditioner(dif_entropy_src_t *entropy_src) {
+  uint32_t fail_count = 0;
+  dif_result_t op_result;
+  do {
+    op_result = dif_entropy_src_conditioner_stop(entropy_src);
+    if (op_result == kDifIpFifoFull) {
+      CHECK(++fail_count < 256);
+    } else {
+      CHECK_DIF_OK(op_result);
+    }
+  } while (op_result == kDifIpFifoFull);
+}
+
+static void flush_sha3_conditioner(dif_entropy_src_t *entropy_src) {
+  CHECK_DIF_OK(dif_entropy_src_conditioner_start(entropy_src));
+  stop_sha3_conditioner(entropy_src);
+
+  uint32_t fail_count = 0;
+  uint32_t got[12];
+  size_t total = 0;
+  do {
+    dif_result_t op_result =
+        dif_entropy_src_non_blocking_read(entropy_src, &got[total]);
+    if (op_result == kDifUnavailable) {
+      CHECK(++fail_count < 256);
+    } else {
+      CHECK_DIF_OK(op_result);
+      total++;
+    }
+  } while (total < ARRAYSIZE(got));
+}
+
+static status_t test_entropy_src_kat(const fips_kat_descriptor_table_t *table) {
+  const fips_kat_entry_t *entry;
+  const hmac_kat_data_t *kat = (const hmac_kat_data_t *)resolve_entry(
+      table, kFipsKatAlgEntropySrcSha3Conditioning, &entry);
+  CHECK(entry->size == fips_kat_hmac_expected_size(kat));
+  CHECK(kat->key_len == 0 && kat->msg_len == 48 && kat->digest_len == 48);
+
+  const uint32_t *input_msg = (const uint32_t *)fips_kat_hmac_msg(kat);
+  const uint32_t *expected_digest = (const uint32_t *)fips_kat_hmac_digest(kat);
+
+  dif_entropy_src_t entropy_src;
+  CHECK_DIF_OK(dif_entropy_src_init_from_dt(kDtEntropySrc, &entropy_src));
+
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
+  CHECK_STATUS_OK(entropy_src_testutils_fw_override_enable(
+      &entropy_src, /*buffer_threshold=*/12, /*route_to_firmware=*/true,
+      /*bypass_conditioner=*/false));
+  flush_sha3_conditioner(&entropy_src);
+
+  CHECK_DIF_OK(dif_entropy_src_conditioner_start(&entropy_src));
+  uint32_t fail_count = 0;
+  uint32_t count = 0;
+  uint32_t total = 0;
+  do {
+    dif_result_t op_result = dif_entropy_src_fw_ov_data_write(
+        &entropy_src, input_msg + total, 12 - total, &count);
+    if (op_result == kDifIpFifoFull) {
+      CHECK(++fail_count < 256);
+    } else {
+      fail_count = 0;
+      CHECK_DIF_OK(op_result);
+      total += count;
+    }
+  } while (total < 12);
+
+  stop_sha3_conditioner(&entropy_src);
+
+  fail_count = 0;
+  uint32_t got[12];
+  total = 0;
+  do {
+    dif_result_t op_result =
+        dif_entropy_src_non_blocking_read(&entropy_src, &got[total]);
+    if (op_result == kDifUnavailable) {
+      CHECK(++fail_count < 256);
+    } else {
+      CHECK_DIF_OK(op_result);
+      total++;
+    }
+  } while (total < ARRAYSIZE(got));
+
+  CHECK_ARRAYS_EQ(got, expected_digest, 12);
+
+  // Stop entropy_src, wait for idle, and disable firmware override before
+  // restoring FIPS continuous auto mode (dif_entropy_src_stop does not clear
+  // FW_OV_CONTROL).
+  const uint32_t kEsBase = dt_entropy_src_primary_reg_block(kDtEntropySrc);
+  CHECK_STATUS_OK(entropy_testutils_stop_all());
+  uint32_t idle_wait = 100000;
+  while (!bitfield_bit32_read(
+             abs_mmio_read32(kEsBase + ENTROPY_SRC_DEBUG_STATUS_REG_OFFSET),
+             ENTROPY_SRC_DEBUG_STATUS_MAIN_SM_IDLE_BIT) &&
+         --idle_wait > 0) {
+  }
+  CHECK(idle_wait > 0, "entropy_src did not reach idle");
+  CHECK_DIF_OK(dif_entropy_src_fw_override_configure(
+      &entropy_src,
+      (dif_entropy_src_fw_override_config_t){
+          .entropy_insert_enable = false,
+          .buffer_threshold = 12,
+      },
+      kDifToggleDisabled));
+
+  // Restore cryptolib FIPS continuous mode and confirm zero recoverable alerts.
+  CHECK_STATUS_OK(entropy_complex_init(kHardenedBoolTrue));
+  uint32_t recov_sts =
+      abs_mmio_read32(kEsBase + ENTROPY_SRC_RECOV_ALERT_STS_REG_OFFSET);
+  CHECK(recov_sts == 0u, "ENTROPY_SRC_RECOV_ALERT_STS=0x%08x", recov_sts);
+  return OK_STATUS();
+}
+
 // -----------------------------------------------------------------------------
 // Main Test Entry Point
 // -----------------------------------------------------------------------------
@@ -1649,7 +1762,7 @@ static status_t test_fips_kat_rom(void) {
       get_fips_descriptor_table_from_region((const void *)kat_base,
                                             kFipsKatRegionSize);
   CHECK(table != NULL, "Invalid ROM FIPS KAT descriptor table");
-  CHECK(table->entry_count == 28u, "Expected 28 entries, got %u",
+  CHECK(table->entry_count == 29u, "Expected 29 entries, got %u",
         table->entry_count);
   LOG_INFO("FIPS KAT table @ 0x%08x: %u entries, %u bytes (ePMP RO verified)",
            (uint32_t)kat_base, table->entry_count, table->total_size);
@@ -1703,11 +1816,15 @@ static status_t test_fips_kat_rom(void) {
   LOG_INFO("[5/6] PQC (SPHINCS+/ML-DSA/ML-KEM) ok");
   CHECK_DIF_OK(dif_aon_timer_watchdog_pet(&aon_timer));
 
+  // Entropy Source SHA3 Conditioning KAT (restores auto mode afterward).
+  TRY(test_entropy_src_kat(table));
+  LOG_INFO("[6/6] Entropy Src SHA3 ok");
+
   // 4. Immediately revoke transient ePMP mapping and verify ROM denies loads.
   unmap_rom_kat_slot0();
   assert_load_faults(kat_base);
 
-  LOG_INFO("All 28 ROM FIPS KATs passed and transient ePMP revoked.");
+  LOG_INFO("All 29 ROM FIPS KATs passed and transient ePMP revoked.");
   return OK_STATUS();
 }
 

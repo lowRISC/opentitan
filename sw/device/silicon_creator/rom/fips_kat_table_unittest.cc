@@ -281,14 +281,14 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
   ASSERT_NE(table, nullptr);
   EXPECT_EQ(table->magic, kFipsKatDescriptorMagic);
   EXPECT_EQ(table->version, kFipsKatDescriptorVersion1);
-  EXPECT_EQ(table->entry_count, 28u);
+  EXPECT_EQ(table->entry_count, 29u);
   EXPECT_LE(table->total_size, kFipsKatRegionSize);
   EXPECT_EQ(table->total_size % 4u, 0u);
 
   std::set<uint32_t> seen_ids;
   std::vector<std::pair<uint32_t, uint32_t>> intervals;
 
-  for (uint32_t id : std::vector<uint32_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 28, 29}) {
+  for (uint32_t id : std::vector<uint32_t>{1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29}) {
     const auto alg_id = static_cast<fips_kat_alg_id_t>(id);
     const fips_kat_entry_t *entry =
         find_fips_entry(table, kFipsKatRegionSize, alg_id);
@@ -306,7 +306,8 @@ TEST(FipsKatRealRomBlobTest, ValidateAll31EmbeddedRomEntries) {
       case kFipsKatAlgSha2_512:
       case kFipsKatAlgHmacSha2_256:
       case kFipsKatAlgHmacSha2_512:
-      case kFipsKatAlgShake256: {
+      case kFipsKatAlgShake256:
+      case kFipsKatAlgEntropySrcSha3Conditioning: {
 
         const auto *kat = static_cast<const hmac_kat_data_t *>(payload);
         EXPECT_EQ(entry->size, fips_kat_hmac_expected_size(kat))
