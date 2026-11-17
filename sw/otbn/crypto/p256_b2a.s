@@ -109,8 +109,8 @@ boolean_to_arithmetic:
   bn.rshi   w21, w31, w21 >> 191
 
   /* apply fresh mask to w20 and w21 before xoring with w3 and w4 */
-  bn.wsrr   w28, RND
-  bn.wsrr   w29, RND
+  bn.wsrr   w28, URND
+  bn.wsrr   w29, URND
   bn.xor    w20, w28, w20
   bn.xor    w21, w29, w21
 
