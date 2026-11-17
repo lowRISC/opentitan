@@ -3,25 +3,35 @@
 <!-- BEGIN CMDGEN util/regtool.py -d ./hw/ip/otbn/data/otbn.hjson -->
 ## Summary
 
-| Name                                           | Offset   |   Length | Description                                               |
-|:-----------------------------------------------|:---------|---------:|:----------------------------------------------------------|
-| otbn.[`INTR_STATE`](#intr_state)               | 0x0      |        4 | Interrupt State Register                                  |
-| otbn.[`INTR_ENABLE`](#intr_enable)             | 0x4      |        4 | Interrupt Enable Register                                 |
-| otbn.[`INTR_TEST`](#intr_test)                 | 0x8      |        4 | Interrupt Test Register                                   |
-| otbn.[`ALERT_TEST`](#alert_test)               | 0xc      |        4 | Alert Test Register                                       |
-| otbn.[`CMD`](#cmd)                             | 0x10     |        4 | Command Register                                          |
-| otbn.[`CTRL`](#ctrl)                           | 0x14     |        4 | Control Register                                          |
-| otbn.[`STATUS`](#status)                       | 0x18     |        4 | Status Register                                           |
-| otbn.[`ERR_BITS`](#err_bits)                   | 0x1c     |        4 | Operation Result Register                                 |
-| otbn.[`FATAL_ALERT_CAUSE`](#fatal_alert_cause) | 0x20     |        4 | Fatal Alert Cause Register                                |
-| otbn.[`INSN_CNT`](#insn_cnt)                   | 0x24     |        4 | Instruction Count Register                                |
-| otbn.[`LOAD_CHECKSUM`](#load_checksum)         | 0x28     |        4 | A 32-bit CRC checksum of data written to memory           |
-| otbn.[`SCRATCH_0`](#scratch)                   | 0x2000   |        4 | General-purpose 128-bit scratch storage for software use. |
-| otbn.[`SCRATCH_1`](#scratch)                   | 0x2004   |        4 | General-purpose 128-bit scratch storage for software use. |
-| otbn.[`SCRATCH_2`](#scratch)                   | 0x2008   |        4 | General-purpose 128-bit scratch storage for software use. |
-| otbn.[`SCRATCH_3`](#scratch)                   | 0x200c   |        4 | General-purpose 128-bit scratch storage for software use. |
-| otbn.[`IMEM`](#imem)                           | 0x4000   |    16384 | Instruction Memory Access                                 |
-| otbn.[`DMEM`](#dmem)                           | 0x8000   |    16384 | Data Memory Access                                        |
+| Name                                                       | Offset   |   Length | Description                                                                                                              |
+|:-----------------------------------------------------------|:---------|---------:|:-------------------------------------------------------------------------------------------------------------------------|
+| otbn.[`INTR_STATE`](#intr_state)                           | 0x0      |        4 | Interrupt State Register                                                                                                 |
+| otbn.[`INTR_ENABLE`](#intr_enable)                         | 0x4      |        4 | Interrupt Enable Register                                                                                                |
+| otbn.[`INTR_TEST`](#intr_test)                             | 0x8      |        4 | Interrupt Test Register                                                                                                  |
+| otbn.[`ALERT_TEST`](#alert_test)                           | 0xc      |        4 | Alert Test Register                                                                                                      |
+| otbn.[`CMD`](#cmd)                                         | 0x10     |        4 | Command Register                                                                                                         |
+| otbn.[`CTRL`](#ctrl)                                       | 0x14     |        4 | Control Register                                                                                                         |
+| otbn.[`STATUS`](#status)                                   | 0x18     |        4 | Status Register                                                                                                          |
+| otbn.[`ERR_BITS`](#err_bits)                               | 0x1c     |        4 | Operation Result Register                                                                                                |
+| otbn.[`FATAL_ALERT_CAUSE`](#fatal_alert_cause)             | 0x20     |        4 | Fatal Alert Cause Register                                                                                               |
+| otbn.[`INSN_CNT`](#insn_cnt)                               | 0x24     |        4 | Instruction Count Register                                                                                               |
+| otbn.[`LOAD_CHECKSUM`](#load_checksum)                     | 0x28     |        4 | A 32-bit CRC checksum of data written to memory                                                                          |
+| otbn.[`SENS_IMEM_DIGEST_REGWEN`](#sens_imem_digest_regwen) | 0x2c     |        4 | Register write enable for [`SENS_IMEM_DIGEST`](#sens_imem_digest) and [`SENS_IMEM_DIGEST_SKIP.`](#sens_imem_digest_skip) |
+| otbn.[`SENS_IMEM_DIGEST_0`](#sens_imem_digest)             | 0x30     |        4 | Golden SHA3-256 digest of the IMEM contents that may execute while keymgr provides a sensitive key.                      |
+| otbn.[`SENS_IMEM_DIGEST_1`](#sens_imem_digest)             | 0x34     |        4 | Golden SHA3-256 digest of the IMEM contents that may execute while keymgr provides a sensitive key.                      |
+| otbn.[`SENS_IMEM_DIGEST_2`](#sens_imem_digest)             | 0x38     |        4 | Golden SHA3-256 digest of the IMEM contents that may execute while keymgr provides a sensitive key.                      |
+| otbn.[`SENS_IMEM_DIGEST_3`](#sens_imem_digest)             | 0x3c     |        4 | Golden SHA3-256 digest of the IMEM contents that may execute while keymgr provides a sensitive key.                      |
+| otbn.[`SENS_IMEM_DIGEST_4`](#sens_imem_digest)             | 0x40     |        4 | Golden SHA3-256 digest of the IMEM contents that may execute while keymgr provides a sensitive key.                      |
+| otbn.[`SENS_IMEM_DIGEST_5`](#sens_imem_digest)             | 0x44     |        4 | Golden SHA3-256 digest of the IMEM contents that may execute while keymgr provides a sensitive key.                      |
+| otbn.[`SENS_IMEM_DIGEST_6`](#sens_imem_digest)             | 0x48     |        4 | Golden SHA3-256 digest of the IMEM contents that may execute while keymgr provides a sensitive key.                      |
+| otbn.[`SENS_IMEM_DIGEST_7`](#sens_imem_digest)             | 0x4c     |        4 | Golden SHA3-256 digest of the IMEM contents that may execute while keymgr provides a sensitive key.                      |
+| otbn.[`SENS_IMEM_DIGEST_SKIP`](#sens_imem_digest_skip)     | 0x50     |        4 | Disable the IMEM digest check against [`SENS_IMEM_DIGEST.`](#sens_imem_digest)                                           |
+| otbn.[`SCRATCH_0`](#scratch)                               | 0x2000   |        4 | General-purpose 128-bit scratch storage for software use.                                                                |
+| otbn.[`SCRATCH_1`](#scratch)                               | 0x2004   |        4 | General-purpose 128-bit scratch storage for software use.                                                                |
+| otbn.[`SCRATCH_2`](#scratch)                               | 0x2008   |        4 | General-purpose 128-bit scratch storage for software use.                                                                |
+| otbn.[`SCRATCH_3`](#scratch)                               | 0x200c   |        4 | General-purpose 128-bit scratch storage for software use.                                                                |
+| otbn.[`IMEM`](#imem)                                       | 0x4000   |    16384 | Instruction Memory Access                                                                                                |
+| otbn.[`DMEM`](#dmem)                                       | 0x8000   |    16384 | Data Memory Access                                                                                                       |
 
 ## INTR_STATE
 Interrupt State Register
@@ -302,6 +312,74 @@ See the "Memory Load Integrity" section of the manual for full details.
 |  Bits  |  Type  |  Reset  | Name     | Description          |
 |:------:|:------:|:-------:|:---------|:---------------------|
 |  31:0  |   rw   |   0x0   | checksum | Checksum accumulator |
+
+## SENS_IMEM_DIGEST_REGWEN
+Register write enable for [`SENS_IMEM_DIGEST`](#sens_imem_digest) and [`SENS_IMEM_DIGEST_SKIP.`](#sens_imem_digest_skip)
+- Offset: `0x2c`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "en", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                       |
+|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:1  |        |         |        | Reserved                                                                                                                                                                          |
+|   0    |  rw0c  |   0x1   | en     | When true, [`SENS_IMEM_DIGEST`](#sens_imem_digest) and [`SENS_IMEM_DIGEST_SKIP`](#sens_imem_digest_skip) can be written. When false, they cannot be written until the next reset. |
+
+## SENS_IMEM_DIGEST
+Golden SHA3-256 digest of the IMEM contents that may execute while keymgr provides a sensitive key.
+
+If keymgr provides a sensitive key at the start of execution and [`SENS_IMEM_DIGEST_SKIP`](#sens_imem_digest_skip) is not kMultiBitBool4True, OTBN computes the SHA3-256 hash of the IMEM using KMAC and compares the result against this digest.
+[`SENS_IMEM_DIGEST_0`](#sens_imem_digest_0) holds digest bytes 0 to 3 with byte 0 in bits 7:0, [`SENS_IMEM_DIGEST_1`](#sens_imem_digest_1) holds bytes 4 to 7, and so on.
+- Reset default: `0x0`
+- Reset mask: `0xffffffff`
+- Register enable: [`SENS_IMEM_DIGEST_REGWEN`](#sens_imem_digest_regwen)
+
+### Instances
+
+| Name               | Offset   |
+|:-------------------|:---------|
+| SENS_IMEM_DIGEST_0 | 0x30     |
+| SENS_IMEM_DIGEST_1 | 0x34     |
+| SENS_IMEM_DIGEST_2 | 0x38     |
+| SENS_IMEM_DIGEST_3 | 0x3c     |
+| SENS_IMEM_DIGEST_4 | 0x40     |
+| SENS_IMEM_DIGEST_5 | 0x44     |
+| SENS_IMEM_DIGEST_6 | 0x48     |
+| SENS_IMEM_DIGEST_7 | 0x4c     |
+
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "digest", "bits": 32, "attr": ["rw"], "rotate": 0}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                               |
+|:------:|:------:|:-------:|:-------|:------------------------------------------|
+|  31:0  |   rw   |   0x0   | digest | One 32-bit word of the golden IMEM digest |
+
+## SENS_IMEM_DIGEST_SKIP
+Disable the IMEM digest check against [`SENS_IMEM_DIGEST.`](#sens_imem_digest)
+- Offset: `0x50`
+- Reset default: `0x9`
+- Reset mask: `0xf`
+- Register enable: [`SENS_IMEM_DIGEST_REGWEN`](#sens_imem_digest_regwen)
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "skip", "bits": 4, "attr": ["rw"], "rotate": 0}, {"bits": 28}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name   | Description                                                                                                                                                                                   |
+|:------:|:------:|:-------:|:-------|:----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+|  31:4  |        |         |        | Reserved                                                                                                                                                                                      |
+|  3:0   |   rw   |   0x9   | skip   | When kMultiBitBool4True, OTBN does not check the IMEM digest before an execution that starts while keymgr provides a sensitive key. Otherwise, every such execution is preceded by the check. |
 
 ## SCRATCH
 General-purpose 128-bit scratch storage for software use.

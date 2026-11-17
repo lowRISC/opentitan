@@ -13,7 +13,7 @@ package otbn_reg_pkg;
   parameter int BlockAw = 16;
 
   // Number of registers for every interface
-  parameter int NumRegs = 15;
+  parameter int NumRegs = 25;
 
   // Alert indices
   typedef enum int {
@@ -151,6 +151,14 @@ package otbn_reg_pkg;
   } otbn_reg2hw_load_checksum_reg_t;
 
   typedef struct packed {
+    logic [31:0] q;
+  } otbn_reg2hw_sens_imem_digest_mreg_t;
+
+  typedef struct packed {
+    logic [3:0]  q;
+  } otbn_reg2hw_sens_imem_digest_skip_reg_t;
+
+  typedef struct packed {
     logic        d;
     logic        de;
   } otbn_hw2reg_intr_state_reg_t;
@@ -271,15 +279,17 @@ package otbn_reg_pkg;
 
   // Register -> HW type
   typedef struct packed {
-    otbn_reg2hw_intr_state_reg_t intr_state; // [122:122]
-    otbn_reg2hw_intr_enable_reg_t intr_enable; // [121:121]
-    otbn_reg2hw_intr_test_reg_t intr_test; // [120:119]
-    otbn_reg2hw_alert_test_reg_t alert_test; // [118:115]
-    otbn_reg2hw_cmd_reg_t cmd; // [114:106]
-    otbn_reg2hw_ctrl_reg_t ctrl; // [105:100]
-    otbn_reg2hw_err_bits_reg_t err_bits; // [99:66]
-    otbn_reg2hw_insn_cnt_reg_t insn_cnt; // [65:33]
-    otbn_reg2hw_load_checksum_reg_t load_checksum; // [32:0]
+    otbn_reg2hw_intr_state_reg_t intr_state; // [382:382]
+    otbn_reg2hw_intr_enable_reg_t intr_enable; // [381:381]
+    otbn_reg2hw_intr_test_reg_t intr_test; // [380:379]
+    otbn_reg2hw_alert_test_reg_t alert_test; // [378:375]
+    otbn_reg2hw_cmd_reg_t cmd; // [374:366]
+    otbn_reg2hw_ctrl_reg_t ctrl; // [365:360]
+    otbn_reg2hw_err_bits_reg_t err_bits; // [359:326]
+    otbn_reg2hw_insn_cnt_reg_t insn_cnt; // [325:293]
+    otbn_reg2hw_load_checksum_reg_t load_checksum; // [292:260]
+    otbn_reg2hw_sens_imem_digest_mreg_t [7:0] sens_imem_digest; // [259:4]
+    otbn_reg2hw_sens_imem_digest_skip_reg_t sens_imem_digest_skip; // [3:0]
   } otbn_reg2hw_t;
 
   // HW -> register type
@@ -305,6 +315,16 @@ package otbn_reg_pkg;
   parameter logic [BlockAw-1:0] OTBN_FATAL_ALERT_CAUSE_OFFSET = 16'h 20;
   parameter logic [BlockAw-1:0] OTBN_INSN_CNT_OFFSET = 16'h 24;
   parameter logic [BlockAw-1:0] OTBN_LOAD_CHECKSUM_OFFSET = 16'h 28;
+  parameter logic [BlockAw-1:0] OTBN_SENS_IMEM_DIGEST_REGWEN_OFFSET = 16'h 2c;
+  parameter logic [BlockAw-1:0] OTBN_SENS_IMEM_DIGEST_0_OFFSET = 16'h 30;
+  parameter logic [BlockAw-1:0] OTBN_SENS_IMEM_DIGEST_1_OFFSET = 16'h 34;
+  parameter logic [BlockAw-1:0] OTBN_SENS_IMEM_DIGEST_2_OFFSET = 16'h 38;
+  parameter logic [BlockAw-1:0] OTBN_SENS_IMEM_DIGEST_3_OFFSET = 16'h 3c;
+  parameter logic [BlockAw-1:0] OTBN_SENS_IMEM_DIGEST_4_OFFSET = 16'h 40;
+  parameter logic [BlockAw-1:0] OTBN_SENS_IMEM_DIGEST_5_OFFSET = 16'h 44;
+  parameter logic [BlockAw-1:0] OTBN_SENS_IMEM_DIGEST_6_OFFSET = 16'h 48;
+  parameter logic [BlockAw-1:0] OTBN_SENS_IMEM_DIGEST_7_OFFSET = 16'h 4c;
+  parameter logic [BlockAw-1:0] OTBN_SENS_IMEM_DIGEST_SKIP_OFFSET = 16'h 50;
   parameter logic [BlockAw-1:0] OTBN_SCRATCH_0_OFFSET = 16'h 2000;
   parameter logic [BlockAw-1:0] OTBN_SCRATCH_1_OFFSET = 16'h 2004;
   parameter logic [BlockAw-1:0] OTBN_SCRATCH_2_OFFSET = 16'h 2008;
@@ -367,6 +387,16 @@ package otbn_reg_pkg;
     OTBN_FATAL_ALERT_CAUSE,
     OTBN_INSN_CNT,
     OTBN_LOAD_CHECKSUM,
+    OTBN_SENS_IMEM_DIGEST_REGWEN,
+    OTBN_SENS_IMEM_DIGEST_0,
+    OTBN_SENS_IMEM_DIGEST_1,
+    OTBN_SENS_IMEM_DIGEST_2,
+    OTBN_SENS_IMEM_DIGEST_3,
+    OTBN_SENS_IMEM_DIGEST_4,
+    OTBN_SENS_IMEM_DIGEST_5,
+    OTBN_SENS_IMEM_DIGEST_6,
+    OTBN_SENS_IMEM_DIGEST_7,
+    OTBN_SENS_IMEM_DIGEST_SKIP,
     OTBN_SCRATCH_0,
     OTBN_SCRATCH_1,
     OTBN_SCRATCH_2,
@@ -374,7 +404,7 @@ package otbn_reg_pkg;
   } otbn_id_e;
 
   // Register width information to check illegal writes
-  parameter logic [3:0] OTBN_PERMIT [15] = '{
+  parameter logic [3:0] OTBN_PERMIT [25] = '{
     4'b 0001, // index[ 0] OTBN_INTR_STATE
     4'b 0001, // index[ 1] OTBN_INTR_ENABLE
     4'b 0001, // index[ 2] OTBN_INTR_TEST
@@ -386,10 +416,20 @@ package otbn_reg_pkg;
     4'b 0001, // index[ 8] OTBN_FATAL_ALERT_CAUSE
     4'b 1111, // index[ 9] OTBN_INSN_CNT
     4'b 1111, // index[10] OTBN_LOAD_CHECKSUM
-    4'b 1111, // index[11] OTBN_SCRATCH_0
-    4'b 1111, // index[12] OTBN_SCRATCH_1
-    4'b 1111, // index[13] OTBN_SCRATCH_2
-    4'b 1111  // index[14] OTBN_SCRATCH_3
+    4'b 0001, // index[11] OTBN_SENS_IMEM_DIGEST_REGWEN
+    4'b 1111, // index[12] OTBN_SENS_IMEM_DIGEST_0
+    4'b 1111, // index[13] OTBN_SENS_IMEM_DIGEST_1
+    4'b 1111, // index[14] OTBN_SENS_IMEM_DIGEST_2
+    4'b 1111, // index[15] OTBN_SENS_IMEM_DIGEST_3
+    4'b 1111, // index[16] OTBN_SENS_IMEM_DIGEST_4
+    4'b 1111, // index[17] OTBN_SENS_IMEM_DIGEST_5
+    4'b 1111, // index[18] OTBN_SENS_IMEM_DIGEST_6
+    4'b 1111, // index[19] OTBN_SENS_IMEM_DIGEST_7
+    4'b 0001, // index[20] OTBN_SENS_IMEM_DIGEST_SKIP
+    4'b 1111, // index[21] OTBN_SCRATCH_0
+    4'b 1111, // index[22] OTBN_SCRATCH_1
+    4'b 1111, // index[23] OTBN_SCRATCH_2
+    4'b 1111  // index[24] OTBN_SCRATCH_3
   };
 
 endpackage

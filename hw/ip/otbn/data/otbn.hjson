@@ -466,6 +466,9 @@
     { name: "TLUL_FIFO.CTR.REDUN",
       desc: "The TL-UL response FIFO pointers are implemented with duplicate counters."
     }
+    { name: "SENS_IMEM_DIGEST.CONFIG.REGWEN",
+      desc: "The golden IMEM digest and its skip register are write-protected by SENS_IMEM_DIGEST_REGWEN."
+    }
   ]
 
   regwidth: "32"
@@ -834,6 +837,60 @@
         // will predict the value wrongly because they don't know that it
         // updates on memory writes).
         "excl:CsrAllTests:CsrExclAll"
+      ]
+    }
+    { name: "SENS_IMEM_DIGEST_REGWEN",
+      desc: "Register write enable for !!SENS_IMEM_DIGEST and !!SENS_IMEM_DIGEST_SKIP.",
+      swaccess: "rw0c",
+      hwaccess: "none",
+      fields: [
+        { bits: "0",
+          name: "en",
+          resval: "1",
+          desc: '''
+            When true, !!SENS_IMEM_DIGEST and !!SENS_IMEM_DIGEST_SKIP can be written.
+            When false, they cannot be written until the next reset.
+          '''
+        }
+      ]
+    }
+    { multireg: {
+      name: "SENS_IMEM_DIGEST",
+      desc: '''
+        Golden SHA3-256 digest of the IMEM contents that may execute while keymgr provides a sensitive key.
+
+        If keymgr provides a sensitive key at the start of execution and !!SENS_IMEM_DIGEST_SKIP is not kMultiBitBool4True, OTBN computes the SHA3-256 hash of the IMEM using KMAC and compares the result against this digest.
+        !!SENS_IMEM_DIGEST_0 holds digest bytes 0 to 3 with byte 0 in bits 7:0, !!SENS_IMEM_DIGEST_1 holds bytes 4 to 7, and so on.
+      '''
+      count: "8",
+      cname: "SENS_IMEM_DIGEST",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "SENS_IMEM_DIGEST_REGWEN",
+      fields: [
+        { bits: "31:0",
+          name: "digest",
+          resval: "0",
+          desc: "One 32-bit word of the golden IMEM digest"
+        }
+      ]
+      }
+    }
+    { name: "SENS_IMEM_DIGEST_SKIP",
+      desc: "Disable the IMEM digest check against !!SENS_IMEM_DIGEST.",
+      swaccess: "rw",
+      hwaccess: "hro",
+      regwen: "SENS_IMEM_DIGEST_REGWEN",
+      fields: [
+        { bits: "3:0",
+          name: "skip",
+          mubi: true,
+          resval: false,
+          desc: '''
+            When kMultiBitBool4True, OTBN does not check the IMEM digest before an execution that starts while keymgr provides a sensitive key.
+            Otherwise, every such execution is preceded by the check.
+          '''
+        }
       ]
     }
 
