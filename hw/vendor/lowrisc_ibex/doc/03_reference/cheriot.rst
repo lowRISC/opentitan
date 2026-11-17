@@ -34,6 +34,8 @@ CHERIoT support requires two conditions to be met:
 
 2. **Runtime**: set ``cheriot_enable_i`` to ``ibex_pkg::IbexMuBiOn``.
    When de-asserted (``ibex_pkg::IbexMuBiOff``) the core runs as a standard RV32I processor.
+   With the :ref:`dual core lockstep<lockstep>`, ``cheriot_enable_shadow_i`` must follow ``cheriot_enable_i`` one cycle later, and ``cheriot_enable_cmp_i``, raised after the last switch, enables the comparison of the two.
+   After switching, software must execute ``fence.i`` before any instruction that depends on the mode: the fetch stage may already have expanded the following instruction for the previous mode.
 
 .. important::
    **Security Constraint:** The ``cheriot_enable_i`` signal acts as a one-way switch. To ensure security and prevent arbitrary switching between memory protection modes, the mode must either be configured at reset and kept constant, or switched exactly once from off to on during runtime.
@@ -47,7 +49,7 @@ CHERIoT support requires two conditions to be met:
   The no-writeback path is not implemented for CHERIoT capability accesses.
 
 * Zcmp instructions (``RV32Zcmp``) are not supported in CHERIoT mode.
-  They may be included at elaboration time when Ibex runs in Rv32I mode ()``cheriot_enable_i``==0), but once ``cheriot_enable_i`` is asserted Zcmp instructions decode as illegal.
+  They may be included at elaboration time when Ibex runs in Rv32I mode (``cheriot_enable_i == 0``), but once ``cheriot_enable_i`` is asserted Zcmp instructions decode as illegal.
 
 When CHERIoT is enabled, ``misa`` reflects the CHERIoT base ISA (bits X=1, I=0, E=1), and ``marchid`` reads as 0xCE1 instead of the standard Ibex value of 0x16 (22).
 CHERIoT mode implies RV32E and uses only 16 registers (x0–x15).
@@ -79,11 +81,14 @@ The data memory interface gains two tag signals:
 Since Ibex only has a 32-bit interface, it reads and writes capabilities in two consecutive transactions.
 The tag bits must be set for both transactions for the capability to be considered a valid one.
 
+.. _cheriot-trvk:
+
 TRVK Revocation Bitmap Interface (``trvk_revbm_*``)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 The TRVK (Temporal Revocation) filter is positioned just outside the LSU.
 It intercepts capability loads and checks whether the loaded capability has been revoked by checking the revocation bitmap.
+With the SecureIbex parameter, the shadow core of the :ref:`dual core lockstep<lockstep>` has its own TRVK.
 
 The revocation bitmap interface is an OBI compliant memory-mapped port.
 Because this port is strictly used for bitmap lookups, it only implements the read channels of the OBI standard, sharing identical handshaking semantics with the instruction and data interfaces:
@@ -262,3 +267,9 @@ They are accessible only in CHERIoT mode.
   Stores to addresses below ``mshwmb`` do not update ``mshwm``.
 
 The CHERIoT SCRs (Special Capability Registers) are described in :ref:`cheriot-scrs`.
+
+Debug Mode
+----------
+
+Ibex does not enforce the CHERIoT protections in Debug Mode, so code running in Debug Mode can access all memory.
+See :ref:`debug-cheriot` for details.

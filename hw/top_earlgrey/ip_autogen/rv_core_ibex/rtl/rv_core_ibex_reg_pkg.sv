@@ -16,7 +16,7 @@ package rv_core_ibex_reg_pkg;
   parameter int CfgAw = 8;
 
   // Number of registers for every interface
-  parameter int NumRegsCfg = 28;
+  parameter int NumRegsCfg = 29;
 
   // Alert indices
   typedef enum int {
@@ -116,6 +116,10 @@ package rv_core_ibex_reg_pkg;
 
   typedef struct packed {
     logic [3:0]  q;
+  } rv_core_ibex_reg2hw_cheriot_ena_bar_reg_t;
+
+  typedef struct packed {
+    logic [3:0]  q;
     logic        qe;
   } rv_core_ibex_reg2hw_cheriot_lock_reg_t;
 
@@ -173,19 +177,20 @@ package rv_core_ibex_reg_pkg;
 
   // Register -> HW type for cfg interface
   typedef struct packed {
-    rv_core_ibex_reg2hw_alert_test_reg_t alert_test; // [337:330]
-    rv_core_ibex_reg2hw_sw_recov_err_reg_t sw_recov_err; // [329:326]
-    rv_core_ibex_reg2hw_sw_fatal_err_reg_t sw_fatal_err; // [325:322]
-    rv_core_ibex_reg2hw_ibus_addr_en_mreg_t [1:0] ibus_addr_en; // [321:318]
-    rv_core_ibex_reg2hw_ibus_addr_matching_mreg_t [1:0] ibus_addr_matching; // [317:252]
-    rv_core_ibex_reg2hw_ibus_remap_addr_mreg_t [1:0] ibus_remap_addr; // [251:186]
-    rv_core_ibex_reg2hw_dbus_addr_en_mreg_t [1:0] dbus_addr_en; // [185:182]
-    rv_core_ibex_reg2hw_dbus_addr_matching_mreg_t [1:0] dbus_addr_matching; // [181:116]
-    rv_core_ibex_reg2hw_dbus_remap_addr_mreg_t [1:0] dbus_remap_addr; // [115:50]
-    rv_core_ibex_reg2hw_nmi_enable_reg_t nmi_enable; // [49:48]
-    rv_core_ibex_reg2hw_nmi_state_reg_t nmi_state; // [47:46]
-    rv_core_ibex_reg2hw_rnd_data_reg_t rnd_data; // [45:13]
-    rv_core_ibex_reg2hw_cheriot_ena_reg_t cheriot_ena; // [12:9]
+    rv_core_ibex_reg2hw_alert_test_reg_t alert_test; // [341:334]
+    rv_core_ibex_reg2hw_sw_recov_err_reg_t sw_recov_err; // [333:330]
+    rv_core_ibex_reg2hw_sw_fatal_err_reg_t sw_fatal_err; // [329:326]
+    rv_core_ibex_reg2hw_ibus_addr_en_mreg_t [1:0] ibus_addr_en; // [325:322]
+    rv_core_ibex_reg2hw_ibus_addr_matching_mreg_t [1:0] ibus_addr_matching; // [321:256]
+    rv_core_ibex_reg2hw_ibus_remap_addr_mreg_t [1:0] ibus_remap_addr; // [255:190]
+    rv_core_ibex_reg2hw_dbus_addr_en_mreg_t [1:0] dbus_addr_en; // [189:186]
+    rv_core_ibex_reg2hw_dbus_addr_matching_mreg_t [1:0] dbus_addr_matching; // [185:120]
+    rv_core_ibex_reg2hw_dbus_remap_addr_mreg_t [1:0] dbus_remap_addr; // [119:54]
+    rv_core_ibex_reg2hw_nmi_enable_reg_t nmi_enable; // [53:52]
+    rv_core_ibex_reg2hw_nmi_state_reg_t nmi_state; // [51:50]
+    rv_core_ibex_reg2hw_rnd_data_reg_t rnd_data; // [49:17]
+    rv_core_ibex_reg2hw_cheriot_ena_reg_t cheriot_ena; // [16:13]
+    rv_core_ibex_reg2hw_cheriot_ena_bar_reg_t cheriot_ena_bar; // [12:9]
     rv_core_ibex_reg2hw_cheriot_lock_reg_t cheriot_lock; // [8:4]
     rv_core_ibex_reg2hw_mcounteren_writable_reg_t mcounteren_writable; // [3:0]
   } rv_core_ibex_cfg_reg2hw_t;
@@ -225,9 +230,10 @@ package rv_core_ibex_reg_pkg;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_RND_DATA_OFFSET = 8'h 58;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_RND_STATUS_OFFSET = 8'h 5c;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_CHERIOT_ENA_OFFSET = 8'h 60;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_CHERIOT_LOCK_OFFSET = 8'h 64;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN_OFFSET = 8'h 68;
-  parameter logic [CfgAw-1:0] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_OFFSET = 8'h 6c;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_CHERIOT_ENA_BAR_OFFSET = 8'h 64;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_CHERIOT_LOCK_OFFSET = 8'h 68;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN_OFFSET = 8'h 6c;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_OFFSET = 8'h 70;
 
   // Reset values for hwext registers and their fields for cfg interface
   parameter logic [31:0] RV_CORE_IBEX_ALERT_TEST_RESVAL = 32'h 80000000;
@@ -275,13 +281,14 @@ package rv_core_ibex_reg_pkg;
     RV_CORE_IBEX_RND_DATA,
     RV_CORE_IBEX_RND_STATUS,
     RV_CORE_IBEX_CHERIOT_ENA,
+    RV_CORE_IBEX_CHERIOT_ENA_BAR,
     RV_CORE_IBEX_CHERIOT_LOCK,
     RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN,
     RV_CORE_IBEX_MCOUNTEREN_WRITABLE
   } rv_core_ibex_cfg_id_e;
 
   // Register width information to check illegal writes for cfg interface
-  parameter logic [3:0] RV_CORE_IBEX_CFG_PERMIT [28] = '{
+  parameter logic [3:0] RV_CORE_IBEX_CFG_PERMIT [29] = '{
     4'b 1111, // index[ 0] RV_CORE_IBEX_ALERT_TEST
     4'b 0001, // index[ 1] RV_CORE_IBEX_SW_RECOV_ERR
     4'b 0001, // index[ 2] RV_CORE_IBEX_SW_FATAL_ERR
@@ -307,9 +314,10 @@ package rv_core_ibex_reg_pkg;
     4'b 1111, // index[22] RV_CORE_IBEX_RND_DATA
     4'b 0001, // index[23] RV_CORE_IBEX_RND_STATUS
     4'b 0001, // index[24] RV_CORE_IBEX_CHERIOT_ENA
-    4'b 0001, // index[25] RV_CORE_IBEX_CHERIOT_LOCK
-    4'b 0001, // index[26] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN
-    4'b 0001  // index[27] RV_CORE_IBEX_MCOUNTEREN_WRITABLE
+    4'b 0001, // index[25] RV_CORE_IBEX_CHERIOT_ENA_BAR
+    4'b 0001, // index[26] RV_CORE_IBEX_CHERIOT_LOCK
+    4'b 0001, // index[27] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN
+    4'b 0001  // index[28] RV_CORE_IBEX_MCOUNTEREN_WRITABLE
   };
 
 endpackage

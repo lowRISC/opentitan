@@ -98,12 +98,25 @@ When Ibex fetch is disabled it will cease to execute, but will complete instruct
 Ibex fetch is enabled when all of the following conditions are met:
   - The lifecycle controller has enabled it
   - The power manager has enabled it
-  - A ``fatal_hw_err`` alert hasn't been raised
+  - No fatal internal error has been seen ([`FATAL_CORE_ERR`](registers.md#err_status))
 
 <%text>### Local Escalation Path</%text>
 
-When the ``fatal_hw_err`` alert is raised Ibex fetch is disabled and will remain disabled until ``rv_core_ibex`` is reset.
+When a fatal internal error sets [`FATAL_CORE_ERR`](registers.md#err_status), which also raises the ``fatal_hw_err`` alert, Ibex fetch is disabled and will remain disabled until ``rv_core_ibex`` is reset.
+The other causes of the ``fatal_hw_err`` alert, such as integrity errors, do not disable fetch locally; their escalation is left to the alert handler.
+
+<%text>## Lockstep</%text>
+
+When `SecureIbex` is set, Ibex runs a shadow core in lockstep with the main core, `LockstepOffset` cycles behind, and compares their outputs (see the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/security.html#dual-core-lockstep)).
+The wrapper extends this comparison to its bus logic.
+The requests of the shadow core go through a second copy of the address translation and of the TL-UL adapters, which see the responses of the main core delayed by `LockstepOffset` cycles.
+Their TL-UL requests are compared with the ones of the main core, delayed alike.
+A mismatch is a fatal core error and raises the ``fatal_hw_err`` alert.
+The comparison of the data and instruction interfaces pauses for `LockstepOffset` + 1 cycles from a write to the address translation registers.
 % if cheriot_available:
+
+The core and its TRVK filter form one unit, so the shadow core has its own TRVK filter.
+The capability tag is compared with the data interface, and the revocation bitmap interface has its own shadow TL-UL adapter.
 
 <%text>## Execution Mode Switch</%text>
 
@@ -116,25 +129,58 @@ The selected mode gates the CHERIoT memory subsystem and Ibex.
 
 <%text>### Write Sequence</%text>
 
-The switch is programmed through two registers:
+The switch is programmed through three registers:
 
 1. Write the desired mode to [`CHERIOT_ENA`](registers.md#cheriot_ena): `MuBi4True` selects CHERIoT mode, `MuBi4False` keeps the system in ePMP mode.
-2. Write `MuBi4True` to [`CHERIOT_LOCK`](registers.md#cheriot_lock).
+2. Write its complement to [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar).
+3. With interrupts disabled, write `MuBi4True` to [`CHERIOT_LOCK`](registers.md#cheriot_lock) from Ibex.
+4. Execute `fence.i` before the first instruction that depends on the selected mode, and only then enable interrupts again.
 
-The `MuBi4True` write to [`CHERIOT_LOCK`](registers.md#cheriot_lock) is what advances the switch: it samples [`CHERIOT_ENA`](registers.md#cheriot_ena) and latches the selected mode.
-Both values are decoded strictly: [`CHERIOT_ENA`](registers.md#cheriot_ena) must be exactly `MuBi4True` or `MuBi4False`, and [`CHERIOT_LOCK`](registers.md#cheriot_lock) exactly `MuBi4True`.
+The `MuBi4True` write to [`CHERIOT_LOCK`](registers.md#cheriot_lock) is what advances the switch: it samples [`CHERIOT_ENA`](registers.md#cheriot_ena) and [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) and latches the selected mode.
+All values are decoded strictly: [`CHERIOT_ENA`](registers.md#cheriot_ena) must be exactly `MuBi4True` or `MuBi4False`, [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) exactly its complement, and [`CHERIOT_LOCK`](registers.md#cheriot_lock) exactly `MuBi4True`.
 From then on the mode is fixed until `rv_core_ibex` is reset.
-Further writes to either register have no effect.
+A change of [`CHERIOT_ENA`](registers.md#cheriot_ena) or [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) in the staging cycles after the lock fails the re-check and moves the switch into the error state; later changes, and further writes to [`CHERIOT_LOCK`](registers.md#cheriot_lock), have no effect.
+
+The switch raises the core's enable two cycles before the CHERIoT memory subsystem's (see [Enable Distribution](#enable-distribution)).
+`fence.i` flushes the pipeline, invalidates the instruction cache and refetches the following instructions from memory, which takes longer than the switch needs, and it discards instructions that were fetched and decoded for the previous mode.
+Without it, a capability access could reach the memory subsystem before the memory subsystem's enable: a capability store would lose its tag, and a capability load would return an untagged capability.
+
+<%text>### Enable Distribution</%text>
+
+After the lock, the switch raises its enables one per cycle: the core's, the lockstep shadow core's, the CHERIoT memory subsystem's and the memory subsystem shadow's, and finally a compare enable.
+In every staging cycle it checks [`CHERIOT_ENA`](registers.md#cheriot_ena) and [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) again.
+Each enable passes one layer of buffers that synthesis keeps, so its multi-bit encoding survives up to the receivers, and none of them adds a flop, so the receivers see the enables in the switch's order.
+The core's enable goes to Ibex and to the debug module, and the compare enable to both comparisons, through a `prim_mubi4_sync` with one copy each; the other enables go through a `prim_mubi4_sender` without a flop.
+
+Ibex receives the core's and the shadow core's enable on separate inputs and, once the compare enable is given, checks that both are valid and equal; the memory subsystem does the same with the enables of its two lockstep copies.
+A mismatch or an invalid enable raises a fatal alert: in Ibex an internal major alert, which sets [`FATAL_CORE_ERR`](registers.md#err_status), in the memory subsystem its `fatal_fault` alert.
+The shadow core's enable trails the core's by one cycle only while Ibex's clock runs, so Ibex writes [`CHERIOT_LOCK`](registers.md#cheriot_lock) itself: a write over the debug module's system bus while Ibex sleeps with its clock gated can raise a lockstep alert.
 
 <%text>### Error State</%text>
 
 The switch has a terminal error state.
-It is entered when [`CHERIOT_LOCK`](registers.md#cheriot_lock) is written with a value other than `MuBi4True`, when [`CHERIOT_ENA`](registers.md#cheriot_ena) holds an invalid multi-bit value at that moment, or when the switch state is corrupted.
+It is entered when [`CHERIOT_LOCK`](registers.md#cheriot_lock) is written with a value other than `MuBi4True`, when [`CHERIOT_ENA`](registers.md#cheriot_ena) holds an invalid multi-bit value or [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) does not hold its complement at that moment or in any staging cycle after it, or when the switch state is corrupted.
 
-In the error state, the `fatal_hw_err` alert is raised, and the switch's mode output is driven to an invalid multi-bit value.
+In the error state, the `fatal_hw_err` alert is raised, and all enables of the switch are driven to an invalid multi-bit value.
 
-Consumers of the mode signal are expected to escalate invalid values. Ibex does so by detecting this invalid multi-bit mode (`cheriot_ena` routed to `cheriot_enable_i` in Ibex) and raising an internal major alert. This sets [`FATAL_CORE_ERR`](registers.md#err_status) and halts instruction fetch.
+Consumers of the enables are expected to escalate invalid values. Ibex does so by detecting the invalid multi-bit mode on its CHERIoT enables and raising an internal major alert. This sets [`FATAL_CORE_ERR`](registers.md#err_status) and halts instruction fetch.
+The CHERIoT memory subsystem raises its `fatal_fault` alert: the invalid compare enable turns its enable comparison on, which flags the invalid enables.
 
 Both the error status bit and the disabled fetch state are sticky.
 Ibex will not resume execution, and the switch error state cannot be cleared, until `rv_core_ibex` is reset.
+
+<%text>## Capability Tag Sideband</%text>
+
+Every data access of Ibex carries a capability validity tag next to the TL-UL structs of the data port.
+`cored_tag_h2d_o` goes with the request: it is the tag of a store, or on a load the hint that it loads a capability.
+`cored_tag_d2h_i` comes with the response: it is the tag of the loaded capability.
+Both are `mubi4_t` towards the CHERIoT memory subsystem (`cheriot_mem_sys`).
+The wrapper encodes the request tag right at the data interface of Ibex and decodes the response tag right in front of it, so the tag also stays multi-bit encoded inside the data FIFO.
+The encoder has no flop, so the tag stays in the cycle of its TL-UL beat.
+Between the lockstep comparison of Ibex and the wrapper, the tag is a single bit that the lockstep does not cover: the TRVK filter of Ibex passes it on, and the shadow core receives the same response tag as the main core.
+
+Decoding is strict: only `MuBi4True` reads as tagged.
+An invalid encoding therefore reads as untagged.
+A data response with an invalid encoding also sets [`FATAL_INTG_ERR`](registers.md#err_status) and raises the `fatal_hw_err` alert.
+Like other integrity errors, it does not disable fetch locally (see [Local Escalation Path](#local-escalation-path)); its escalation is left to the alert handler.
 % endif

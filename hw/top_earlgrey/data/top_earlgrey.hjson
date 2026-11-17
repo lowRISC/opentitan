@@ -1480,9 +1480,12 @@
       'rram_ctrl.rram_macro' : ['rram_macro.rram_macro'],
 
       // CHERIoT connections
-      'cheriot_mem_sys.meta_sram_tl'  : ['sram_ctrl_meta.ram_tl'],
-      'cheriot_mem_sys.cored_tag_d2h' : ['rv_core_ibex.cored_tag_d2h'],
-      'rv_core_ibex.cheriot_ena'      : ['cheriot_mem_sys.cheriot_ena', 'rv_dm.cheriot_ena'],
+      'cheriot_mem_sys.meta_sram_tl'           : ['sram_ctrl_meta.ram_tl'],
+      'cheriot_mem_sys.cored_tag_d2h'          : ['rv_core_ibex.cored_tag_d2h'],
+      'rv_core_ibex.cheriot_ena'               : ['rv_dm.cheriot_ena'],
+      'rv_core_ibex.cheriot_ena_memsys'        : ['cheriot_mem_sys.cheriot_ena'],
+      'rv_core_ibex.cheriot_ena_memsys_shadow' : ['cheriot_mem_sys.cheriot_ena_shadow'],
+      'rv_core_ibex.cheriot_ena_cmp'           : ['cheriot_mem_sys.cheriot_ena_cmp'],
     },
 
     // top is to connect to top net/struct.

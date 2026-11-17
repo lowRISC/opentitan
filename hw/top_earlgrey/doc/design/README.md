@@ -134,7 +134,7 @@ Attached to the Ibex core are a debug module (DM) and interrupt module (PLIC).
 Ibex is built with a base ISA that can switch from RV32I to [CHERIoT](https://github.com/microsoft/cheriot-sail/releases/) version 1.0.
 CHERIoT is a capability-based ISA that provides hardware-enforced memory safety.
 After reset, Ibex executes RV32I and uses the ePMP for memory protection.
-Software can switch to CHERIoT, or lock the RV32I mode, once through the [`CHERIOT_ENA`](../../ip_autogen/rv_core_ibex/doc/registers.md#cheriot_ena) and [`CHERIOT_LOCK`](../../ip_autogen/rv_core_ibex/doc/registers.md#cheriot_lock) registers of `rv_core_ibex`.
+Software can switch to CHERIoT, or lock the RV32I mode, once through the [`CHERIOT_ENA`](../../ip_autogen/rv_core_ibex/doc/registers.md#cheriot_ena), [`CHERIOT_ENA_BAR`](../../ip_autogen/rv_core_ibex/doc/registers.md#cheriot_ena_bar) and [`CHERIOT_LOCK`](../../ip_autogen/rv_core_ibex/doc/registers.md#cheriot_lock) registers of `rv_core_ibex`.
 The selected mode stays locked until the next reset.
 See [execution mode switch](../../ip_autogen/rv_core_ibex/doc/theory_of_operation.md#execution-mode-switch) for details.
 
@@ -143,6 +143,7 @@ The [CHERIoT memory subsystem](../../../ip/cheriot_mem_sys/README.md) (`cheriot_
 It stores the validity tags and the revocation bitmap in the [CHERIoT meta SRAM](#srams), which is separate from the memories that hold the capabilities.
 It splits each data access into an access to the memory and an access to the tag.
 A non-capability store clears the tag of the location it writes.
+Like Ibex, the memory subsystem runs in lockstep with a delayed second copy of its logic.
 
 The memory subsystem also contains a background revocation engine.
 The engine sweeps a range of capabilities in the Main SRAM, the Secondary SRAM or the RRAM.

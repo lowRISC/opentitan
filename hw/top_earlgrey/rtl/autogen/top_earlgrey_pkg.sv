@@ -690,7 +690,8 @@ package top_earlgrey_pkg;
     TopEarlgreyAlertIdRvCoreIbexFatalHwErr = 65,
     TopEarlgreyAlertIdRvCoreIbexRecovHwErr = 66,
     TopEarlgreyAlertIdCheriotMemSysFatalFault = 67,
-    TopEarlgreyAlertIdSramCtrlMetaFatalError = 68,
+    TopEarlgreyAlertIdCheriotMemSysRecovCtrlUpdateErr = 68,
+    TopEarlgreyAlertIdSramCtrlMetaFatalError = 69,
     TopEarlgreyAlertIdCount
   } alert_id_e;
 

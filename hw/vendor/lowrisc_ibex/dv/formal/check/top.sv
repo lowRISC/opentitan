@@ -122,10 +122,15 @@ module top import ibex_pkg::*; #(
   output logic [31:0]                                                 data_addr_shadow_o,
   output logic [31:0]                                                 data_wdata_shadow_o,
   output logic [6:0]                                                  data_wdata_intg_shadow_o,
+  output logic                                                        data_tag_shadow_o,
 
   // Shadow core instruction interface outputs
   output logic                                                        instr_req_shadow_o,
-  output logic [31:0]                                                 instr_addr_shadow_o
+  output logic [31:0]                                                 instr_addr_shadow_o,
+
+  // Shadow TRVK revocation bitmap interface outputs
+  output logic                                                        trvk_revbm_req_shadow_o,
+  output logic [31:0]                                                 trvk_revbm_addr_shadow_o
 );
 
 // Yosys based tools have no inherent understanding of a reset signal (unlike jasper, which has the
@@ -148,6 +153,8 @@ default clocking @(posedge clk_i); endclocking
 // exist on ibex_top, so provide nets for the `.*` connection below: drive the
 // inputs to their inactive values and leave the outputs as sinks.
 ibex_mubi_t  cheriot_enable_i;
+ibex_mubi_t  cheriot_enable_shadow_i;
+ibex_mubi_t  cheriot_enable_cmp_i;
 logic [31:0] trvk_heap_base_addr_i;
 logic        data_tag_o;
 logic        data_tag_i;
@@ -160,6 +167,8 @@ logic [ 6:0] trvk_revbm_rdata_intg_i;
 logic        trvk_revbm_err_i;
 
 assign cheriot_enable_i        = IbexMuBiOff;
+assign cheriot_enable_shadow_i = IbexMuBiOff;
+assign cheriot_enable_cmp_i    = IbexMuBiOff;
 assign trvk_heap_base_addr_i   = 32'b0;
 assign data_tag_i              = 1'b0;
 assign trvk_revbm_gnt_i        = 1'b0;

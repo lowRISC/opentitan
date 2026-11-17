@@ -57,9 +57,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [27:0] reg_we_check;
+  logic [28:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(28)
+    .OneHotWidth(29)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -258,6 +258,9 @@ module rv_core_ibex_cfg_reg_top (
   logic cheriot_ena_we;
   logic [3:0] cheriot_ena_qs;
   logic [3:0] cheriot_ena_wd;
+  logic cheriot_ena_bar_we;
+  logic [3:0] cheriot_ena_bar_qs;
+  logic [3:0] cheriot_ena_bar_wd;
   logic cheriot_lock_we;
   logic [3:0] cheriot_lock_wd;
   logic mcounteren_writable_regwen_we;
@@ -1393,6 +1396,35 @@ module rv_core_ibex_cfg_reg_top (
   );
 
 
+  // R[cheriot_ena_bar]: V(False)
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h9),
+    .Mubi    (1'b1)
+  ) u_cheriot_ena_bar (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (cheriot_ena_bar_we),
+    .wd     (cheriot_ena_bar_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.cheriot_ena_bar.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (cheriot_ena_bar_qs)
+  );
+
+
   // R[cheriot_lock]: V(True)
   logic cheriot_lock_qe;
   logic [0:0] cheriot_lock_flds_we;
@@ -1475,7 +1507,7 @@ module rv_core_ibex_cfg_reg_top (
 
 
 
-  logic [27:0] addr_hit;
+  logic [28:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == RV_CORE_IBEX_ALERT_TEST_OFFSET);
     addr_hit[ 1] = (reg_addr == RV_CORE_IBEX_SW_RECOV_ERR_OFFSET);
@@ -1502,9 +1534,10 @@ module rv_core_ibex_cfg_reg_top (
     addr_hit[22] = (reg_addr == RV_CORE_IBEX_RND_DATA_OFFSET);
     addr_hit[23] = (reg_addr == RV_CORE_IBEX_RND_STATUS_OFFSET);
     addr_hit[24] = (reg_addr == RV_CORE_IBEX_CHERIOT_ENA_OFFSET);
-    addr_hit[25] = (reg_addr == RV_CORE_IBEX_CHERIOT_LOCK_OFFSET);
-    addr_hit[26] = (reg_addr == RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN_OFFSET);
-    addr_hit[27] = (reg_addr == RV_CORE_IBEX_MCOUNTEREN_WRITABLE_OFFSET);
+    addr_hit[25] = (reg_addr == RV_CORE_IBEX_CHERIOT_ENA_BAR_OFFSET);
+    addr_hit[26] = (reg_addr == RV_CORE_IBEX_CHERIOT_LOCK_OFFSET);
+    addr_hit[27] = (reg_addr == RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN_OFFSET);
+    addr_hit[28] = (reg_addr == RV_CORE_IBEX_MCOUNTEREN_WRITABLE_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1539,7 +1572,8 @@ module rv_core_ibex_cfg_reg_top (
                (addr_hit[24] & (|(RV_CORE_IBEX_CFG_PERMIT[24] & ~reg_be))) |
                (addr_hit[25] & (|(RV_CORE_IBEX_CFG_PERMIT[25] & ~reg_be))) |
                (addr_hit[26] & (|(RV_CORE_IBEX_CFG_PERMIT[26] & ~reg_be))) |
-               (addr_hit[27] & (|(RV_CORE_IBEX_CFG_PERMIT[27] & ~reg_be)))));
+               (addr_hit[27] & (|(RV_CORE_IBEX_CFG_PERMIT[27] & ~reg_be))) |
+               (addr_hit[28] & (|(RV_CORE_IBEX_CFG_PERMIT[28] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -1632,13 +1666,16 @@ module rv_core_ibex_cfg_reg_top (
   assign cheriot_ena_we = addr_hit[24] & reg_we & !reg_error;
 
   assign cheriot_ena_wd = reg_wdata[3:0];
-  assign cheriot_lock_we = addr_hit[25] & reg_we & !reg_error;
+  assign cheriot_ena_bar_we = addr_hit[25] & reg_we & !reg_error;
+
+  assign cheriot_ena_bar_wd = reg_wdata[3:0];
+  assign cheriot_lock_we = addr_hit[26] & reg_we & !reg_error;
 
   assign cheriot_lock_wd = reg_wdata[3:0];
-  assign mcounteren_writable_regwen_we = addr_hit[26] & reg_we & !reg_error;
+  assign mcounteren_writable_regwen_we = addr_hit[27] & reg_we & !reg_error;
 
   assign mcounteren_writable_regwen_wd = reg_wdata[0];
-  assign mcounteren_writable_we = addr_hit[27] & reg_we & !reg_error;
+  assign mcounteren_writable_we = addr_hit[28] & reg_we & !reg_error;
 
   assign mcounteren_writable_wd = reg_wdata[3:0];
 
@@ -1669,9 +1706,10 @@ module rv_core_ibex_cfg_reg_top (
     reg_we_check[22] = 1'b0;
     reg_we_check[23] = 1'b0;
     reg_we_check[24] = cheriot_ena_we;
-    reg_we_check[25] = cheriot_lock_we;
-    reg_we_check[26] = mcounteren_writable_regwen_we;
-    reg_we_check[27] = mcounteren_writable_gated_we;
+    reg_we_check[25] = cheriot_ena_bar_we;
+    reg_we_check[26] = cheriot_lock_we;
+    reg_we_check[27] = mcounteren_writable_regwen_we;
+    reg_we_check[28] = mcounteren_writable_gated_we;
   end
 
   // Read data return
@@ -1789,14 +1827,18 @@ module rv_core_ibex_cfg_reg_top (
       end
 
       addr_hit[25]: begin
-        reg_rdata_next[3:0] = '0;
+        reg_rdata_next[3:0] = cheriot_ena_bar_qs;
       end
 
       addr_hit[26]: begin
-        reg_rdata_next[0] = mcounteren_writable_regwen_qs;
+        reg_rdata_next[3:0] = '0;
       end
 
       addr_hit[27]: begin
+        reg_rdata_next[0] = mcounteren_writable_regwen_qs;
+      end
+
+      addr_hit[28]: begin
         reg_rdata_next[3:0] = mcounteren_writable_qs;
       end
 

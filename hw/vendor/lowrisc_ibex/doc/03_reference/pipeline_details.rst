@@ -23,6 +23,12 @@ Not all instructions can complete in the ID/EX stage in one cycle so will stall 
 This means the maximum IPC (Instructions per Cycle) Ibex can achieve is 1 when multi-cycle instructions aren't used.
 See Multi- and Single-Cycle Instructions below for the details.
 
+With the CHERIoT base ISA (see :ref:`cheriot`), :numref:`ibex-pipeline` also shows the CHERIoT blocks as optional features.
+The CHERIoT EX block executes the capability instructions next to the ALU.
+The TRVK (temporal revocation) filter sits on the data memory interface, at the boundary between Ibex and the memory system.
+On a capability load, it looks up the capability in the revocation bitmap through its own memory interface and clears the tag of a revoked capability.
+See :ref:`cheriot-trvk` for details.
+
 Third Pipeline Stage
 --------------------
 Ibex can be configured to have a third pipeline stage (Writeback) which has major effects on performance and instruction behaviour.

@@ -91,7 +91,12 @@ module ${module_instance_name}
   input  logic [31:0] boot_addr_i,
 
 % if cheriot_available:
+  // CHERIoT mode enables: the core's (for the debug module) and the memory subsystem's main and
+  // shadow enables, plus the compare enable of the subsystem's enable comparison.
   output prim_mubi_pkg::mubi4_t cheriot_ena_o,
+  output prim_mubi_pkg::mubi4_t cheriot_ena_memsys_o,
+  output prim_mubi_pkg::mubi4_t cheriot_ena_memsys_shadow_o,
+  output prim_mubi_pkg::mubi4_t cheriot_ena_cmp_o,
 
 % endif
   // Instruction memory interface
@@ -104,8 +109,8 @@ module ${module_instance_name}
 
 % if cheriot_available:
   // CHERIoT capability tags
-  output logic cored_tag_h2d_o,
-  input  logic cored_tag_d2h_i,
+  output prim_mubi_pkg::mubi4_t cored_tag_h2d_o,
+  input  prim_mubi_pkg::mubi4_t cored_tag_d2h_i,
 
   // CHERIoT TRVK revocation bitmap (revbm) memory interface
   output tlul_pkg::tl_h2d_t     corerevbm_tl_o,
@@ -212,6 +217,9 @@ module ${module_instance_name}
   logic [31:0] shadow_core_data_addr;
   logic [31:0] shadow_core_data_wdata;
   logic [6:0]  shadow_core_data_wdata_intg;
+% if cheriot_available:
+  logic        shadow_core_data_tag_h2d;
+% endif
 
 % if cheriot_available:
   // Main core CHERIoT TRVK revocation bitmap (revbm) interface (internal)
@@ -222,6 +230,10 @@ module ${module_instance_name}
   logic [31:0] main_core_revbm_rdata;
   logic [6:0]  main_core_revbm_rdata_intg;
   logic        main_core_revbm_err;
+
+  // Shadow core CHERIoT TRVK revocation bitmap (revbm) interface (internal)
+  logic        shadow_core_revbm_req;
+  logic [31:0] shadow_core_revbm_addr;
 
 % endif
   // Lockstep interface
@@ -236,9 +248,13 @@ module ${module_instance_name}
   tl_h2d_t tl_revbm_ibex2fifo;
   tl_d2h_t tl_revbm_fifo2ibex;
 
-  // Pipeline interfaces for capability tags
-  logic main_core_data_tag_h2d;
-  logic main_core_data_tag_d2h;
+  // Capability tags: a single bit towards Ibex, MuBi4 towards the CHERIoT memory subsystem. The
+  // FIFO spare ports are plain vectors.
+  logic                                 main_core_data_tag_h2d;
+  logic                                 main_core_data_tag_d2h;
+  prim_mubi_pkg::mubi4_t                tag_d_ibex2fifo;
+  logic [prim_mubi_pkg::MuBi4Width-1:0] tag_d_fifo2out;
+  logic [prim_mubi_pkg::MuBi4Width-1:0] tag_d_fifo2ibex;
 % endif
 
   // TLUL LC Gate interfaces
@@ -291,8 +307,29 @@ module ${module_instance_name}
 
 % if cheriot_available:
   // CHERIoT signals
-  logic                  cheriot_switch_error;
-  ibex_pkg::ibex_mubi_t  cheriot_enable_ibex;
+  logic                         cheriot_switch_error;
+  prim_mubi_pkg::mubi4_t        cheriot_ena_core, cheriot_ena_core_shadow;
+  prim_mubi_pkg::mubi4_t        cheriot_ena_memsys, cheriot_ena_memsys_shadow;
+  prim_mubi_pkg::mubi4_t        cheriot_ena_compare;
+  prim_mubi_pkg::mubi4_t        cheriot_ena_core_shadow_buf;
+  ibex_pkg::ibex_mubi_t         cheriot_enable_ibex, cheriot_enable_shadow_ibex;
+  ibex_pkg::ibex_mubi_t         cheriot_enable_cmp_ibex;
+
+  // Destinations of the buffered copies of the core enable and of the compare enable
+  typedef enum logic [1:0] {
+    CoreEnaIbexIdx,
+    CoreEnaRvDmIdx,
+    CoreEnaLast
+  } cheriot_ena_core_pos_e;
+
+  typedef enum logic [1:0] {
+    CmpEnaIbexIdx,
+    CmpEnaMemsysIdx,
+    CmpEnaLast
+  } cheriot_ena_cmp_pos_e;
+
+  prim_mubi_pkg::mubi4_t [CoreEnaLast-1:0] cheriot_ena_core_buf;
+  prim_mubi_pkg::mubi4_t [CmpEnaLast-1:0]  cheriot_ena_cmp_buf;
 
 % endif
   // The following intermediate signals are created to aid in simulations.
@@ -314,12 +351,16 @@ module ${module_instance_name}
   logic ibus_intg_err, dbus_intg_err;
 % if cheriot_available:
   logic revbmbus_intg_err;
+  logic dbus_tag_intg_err;
 % endif
   logic alert_minor, alert_major_internal, alert_major_bus;
   logic double_fault;
   logic fatal_intg_err, fatal_core_err, recov_core_err;
   logic alert_rv_d_tlul_comparison;
   logic alert_rv_i_tlul_comparison;
+% if cheriot_available:
+  logic alert_rv_revbm_tlul_comparison;
+% endif
 
   // alert events to peripheral module
   logic fatal_intg_event;
@@ -327,7 +368,10 @@ module ${module_instance_name}
   logic recov_core_event;
   // SEC_CM: BUS.INTEGRITY
 % if cheriot_available:
-  assign fatal_intg_event = ibus_intg_err | dbus_intg_err | revbmbus_intg_err | alert_major_bus;
+  // An invalid encoding of a response's capability tag (CORED_TAG.INTERSIG.MUBI) counts as an
+  // integrity error, too.
+  assign fatal_intg_event = ibus_intg_err | dbus_intg_err | dbus_tag_intg_err | revbmbus_intg_err |
+                            alert_major_bus;
 % else:
   assign fatal_intg_event = ibus_intg_err | dbus_intg_err | alert_major_bus;
 % endif
@@ -335,7 +379,12 @@ module ${module_instance_name}
                             double_fault                |
                             tlul_lc_gate_core_d_error   |
                             alert_rv_d_tlul_comparison  |
+% if cheriot_available:
+                            alert_rv_i_tlul_comparison  |
+                            alert_rv_revbm_tlul_comparison;
+% else:
                             alert_rv_i_tlul_comparison;
+% endif
   assign recov_core_event = alert_minor;
 
   // configurations for address translation
@@ -496,17 +545,21 @@ module ${module_instance_name}
   assign mcounteren_writable_ibex = mcounteren_writable_mubi4 == prim_mubi_pkg::MuBi4True ?
                                     ibex_pkg::IbexMuBiOn : ibex_pkg::IbexMuBiOff;
 % if cheriot_available:
-  // Convert the mubi4 to ibex_mubi for the cheriot_enable signal. Invalid mubi inputs must not
-  // accidentally map to a valid ibex_mubi value and switch modes, so the default arm produces an
-  // invalid ibex_mubi value that the core can detect and escalate.
+  // Convert the mubi4 CHERIoT enables to ibex_mubi. Invalid mubi inputs must not accidentally map
+  // to a valid ibex_mubi value and switch modes, so they map to an invalid ibex_mubi value that the
+  // core can detect and escalate (and that turns the compare in Ibex on).
   // SEC_CM: CHERIOT_ENABLE.CTRL.MUBI
-  always_comb begin
-    unique case (cheriot_ena_o)
-      prim_mubi_pkg::MuBi4True:  cheriot_enable_ibex = ibex_pkg::IbexMuBiOn;
-      prim_mubi_pkg::MuBi4False: cheriot_enable_ibex = ibex_pkg::IbexMuBiOff;
-      default:                   cheriot_enable_ibex = ibex_pkg::ibex_mubi_t'('0);
+  function automatic ibex_pkg::ibex_mubi_t mubi4_to_ibex_mubi(prim_mubi_pkg::mubi4_t mubi);
+    unique case (mubi)
+      prim_mubi_pkg::MuBi4True:  return ibex_pkg::IbexMuBiOn;
+      prim_mubi_pkg::MuBi4False: return ibex_pkg::IbexMuBiOff;
+      default:                   return ibex_pkg::ibex_mubi_t'('0);
     endcase
-  end
+  endfunction
+
+  assign cheriot_enable_ibex        = mubi4_to_ibex_mubi(cheriot_ena_core_buf[CoreEnaIbexIdx]);
+  assign cheriot_enable_shadow_ibex = mubi4_to_ibex_mubi(cheriot_ena_core_shadow_buf);
+  assign cheriot_enable_cmp_ibex    = mubi4_to_ibex_mubi(cheriot_ena_cmp_buf[CmpEnaIbexIdx]);
 % endif
 
   ibex_pkg::crash_dump_t crash_dump;
@@ -555,6 +608,9 @@ module ${module_instance_name}
     // SEC_CM: EXCEPTION.CTRL_FLOW.GLOBAL_ESC, EXCEPTION.CTRL_FLOW.LOCAL_ESC
     // SEC_CM: DATA_REG_SW.INTEGRITY, DATA_REG_SW.GLITCH_DETECT
     // SEC_CM: ICACHE.MEM.ADDR_INFECTION
+% if cheriot_available:
+    // SEC_CM: CHERIOT_ENABLE.CTRL.REDUN
+% endif
     .SecureIbex                  ( SecureIbex               ),
     .LockstepOffset              ( LockstepOffset           ),
     .RndCnstLfsrSeed             ( RndCnstLfsrSeed          ),
@@ -584,11 +640,15 @@ module ${module_instance_name}
     .boot_addr_i,
 
 % if cheriot_available:
-    .cheriot_enable_i     (cheriot_enable_ibex),
-    .trvk_heap_base_addr_i(CheriotTrvkHeapBaseAddr), // SRAM base address
+    .cheriot_enable_i       (cheriot_enable_ibex),
+    .cheriot_enable_shadow_i(cheriot_enable_shadow_ibex),
+    .cheriot_enable_cmp_i   (cheriot_enable_cmp_ibex),
+    .trvk_heap_base_addr_i  (CheriotTrvkHeapBaseAddr), // SRAM base address
 % else:
-    .cheriot_enable_i     (ibex_pkg::IbexMuBiOff),
-    .trvk_heap_base_addr_i('0), // Unused, CHERIoT not available
+    .cheriot_enable_i       (ibex_pkg::IbexMuBiOff),
+    .cheriot_enable_shadow_i(ibex_pkg::IbexMuBiOff),
+    .cheriot_enable_cmp_i   (ibex_pkg::IbexMuBiOff),
+    .trvk_heap_base_addr_i  ('0), // Unused, CHERIoT not available
 % endif
 
     .instr_req_o        (main_core_instr_req),
@@ -724,10 +784,24 @@ module ${module_instance_name}
     .data_addr_shadow_o       (shadow_core_data_addr),
     .data_wdata_shadow_o      (shadow_core_data_wdata),
     .data_wdata_intg_shadow_o (shadow_core_data_wdata_intg),
+% if cheriot_available:
+    .data_tag_shadow_o        (shadow_core_data_tag_h2d),
+% else:
+    .data_tag_shadow_o        (),
+% endif
 
     // Shadow core instruction interface outputs.
     .instr_req_shadow_o       (shadow_core_instr_req),
-    .instr_addr_shadow_o      (shadow_core_instr_addr)
+    .instr_addr_shadow_o      (shadow_core_instr_addr),
+
+    // Shadow core TRVK revocation bitmap interface outputs.
+% if cheriot_available:
+    .trvk_revbm_req_shadow_o  (shadow_core_revbm_req),
+    .trvk_revbm_addr_shadow_o (shadow_core_revbm_addr)
+% else:
+    .trvk_revbm_req_shadow_o  (),
+    .trvk_revbm_addr_shadow_o ()
+% endif
   );
 
   logic core_sleep_q;
@@ -894,12 +968,45 @@ module ${module_instance_name}
     .tl_o         (tl_d_ibex2fifo_main_core),
     .tl_i         (tl_d_fifo2ibex)
   );
+% if cheriot_available:
+
+  // SEC_CM: CORED_TAG.INTERSIG.MUBI
+  // The capability tags of the data interface are multi-bit encoded between Ibex and the CHERIoT
+  // memory subsystem, including inside the data FIFO. Only MuBi4True reads as tagged, and an
+  // invalid tag on a response is a fatal integrity error.
+  prim_mubi4_sender #(
+    .AsyncOn (1'b0),
+    .EnSecBuf(1'b1)
+  ) u_prim_mubi4_sender_cored_tag (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(prim_mubi_pkg::mubi4_bool_to_mubi(main_core_data_tag_h2d)),
+    .mubi_o(tag_d_ibex2fifo)
+  );
+
+  prim_mubi4_dec u_prim_mubi4_dec_cored_tag (
+    .mubi_i    (prim_mubi_pkg::mubi4_t'(tag_d_fifo2ibex)),
+    .mubi_dec_o(main_core_data_tag_d2h)
+  );
+
+  // The tag only carries a value with a response: between responses, the empty data FIFO drives
+  // it to zero if PipeLine is set. So only a response with an invalid encoding is a fault.
+  assign dbus_tag_intg_err =
+      tl_d_fifo2ibex.d_valid &&
+      prim_mubi_pkg::mubi4_test_invalid(prim_mubi_pkg::mubi4_t'(tag_d_fifo2ibex));
+% endif
 
   tlul_fifo_sync #(
     .ReqPass(FifoPass),
     .RspPass(FifoPass),
     .ReqDepth(FifoDepth),
+% if cheriot_available:
+    .RspDepth(FifoDepth),
+    .SpareReqW(prim_mubi_pkg::MuBi4Width),
+    .SpareRspW(prim_mubi_pkg::MuBi4Width)
+% else:
     .RspDepth(FifoDepth)
+% endif
   ) fifo_d (
     .clk_i,
     .rst_ni,
@@ -908,10 +1015,12 @@ module ${module_instance_name}
     .tl_d_o      (tl_d_fifo2gate),
     .tl_d_i      (tl_d_gate2fifo),
 % if cheriot_available:
-    .spare_req_i (main_core_data_tag_h2d),
-    .spare_req_o (cored_tag_h2d_o),
-    .spare_rsp_i (cored_tag_d2h_i),
-    .spare_rsp_o (main_core_data_tag_d2h));
+    .spare_req_i (prim_mubi_pkg::MuBi4Width'(tag_d_ibex2fifo)),
+    .spare_req_o (tag_d_fifo2out),
+    .spare_rsp_i (prim_mubi_pkg::MuBi4Width'(cored_tag_d2h_i)),
+    .spare_rsp_o (tag_d_fifo2ibex));
+
+  assign cored_tag_h2d_o = prim_mubi_pkg::mubi4_t'(tag_d_fifo2out);
 % else:
     .spare_req_i (1'b0),
     .spare_req_o (),
@@ -1238,16 +1347,79 @@ module ${module_instance_name}
   // CHERIoT switch
   ////////////////////
 
-  // SEC_CM: CHERIOT_SWITCH.FSM.SPARSE
+  // SEC_CM: CHERIOT_SWITCH.FSM.SPARSE, CHERIOT_SWITCH.CONFIG.REDUN
   rv_core_ibex_cheriot_switch u_cheriot_switch (
     .clk_i,
     .rst_ni,
-    .ena_i        (mubi4_t'(reg2hw.cheriot_ena.q)),
-    .lock_i       (mubi4_t'(reg2hw.cheriot_lock.q)),
-    .lock_access_i(reg2hw.cheriot_lock.qe),
-    .ena_o        (cheriot_ena_o),
-    .error_o      (cheriot_switch_error)
+    .ena_i              (mubi4_t'(reg2hw.cheriot_ena.q)),
+    .ena_ni             (mubi4_t'(reg2hw.cheriot_ena_bar.q)),
+    .lock_i             (mubi4_t'(reg2hw.cheriot_lock.q)),
+    .lock_access_i      (reg2hw.cheriot_lock.qe),
+    .ena_core_o         (cheriot_ena_core),
+    .ena_core_shadow_o  (cheriot_ena_core_shadow),
+    .ena_memsys_o       (cheriot_ena_memsys),
+    .ena_memsys_shadow_o(cheriot_ena_memsys_shadow),
+    .ena_compare_o      (cheriot_ena_compare),
+    .error_o            (cheriot_switch_error)
   );
+
+  // The switch decodes its enables from its state register. Each enable passes one layer of buffers
+  // that synthesis keeps, so its multi-bit encoding survives up to the receivers in Ibex, the debug
+  // module and the memory subsystem. None of them adds a flop, so the switch's staging order
+  // reaches the receivers unchanged. The core and the compare enable go to two places each and get
+  // one buffered copy per place, the other enables a sender without a flop.
+  prim_mubi4_sync #(
+    .NumCopies(int'(CoreEnaLast)),
+    .AsyncOn  (1'b0)
+  ) u_cheriot_ena_core_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cheriot_ena_core),
+    .mubi_o(cheriot_ena_core_buf)
+  );
+
+  // The debug module follows the core's enable.
+  assign cheriot_ena_o = cheriot_ena_core_buf[CoreEnaRvDmIdx];
+
+  prim_mubi4_sender #(
+    .AsyncOn(1'b0)
+  ) u_cheriot_ena_core_shadow_sender (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cheriot_ena_core_shadow),
+    .mubi_o(cheriot_ena_core_shadow_buf)
+  );
+
+  prim_mubi4_sender #(
+    .AsyncOn(1'b0)
+  ) u_cheriot_ena_memsys_sender (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cheriot_ena_memsys),
+    .mubi_o(cheriot_ena_memsys_o)
+  );
+
+  prim_mubi4_sender #(
+    .AsyncOn(1'b0)
+  ) u_cheriot_ena_memsys_shadow_sender (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cheriot_ena_memsys_shadow),
+    .mubi_o(cheriot_ena_memsys_shadow_o)
+  );
+
+  // The compare enable goes to the comparison in Ibex and the one in the memory subsystem.
+  prim_mubi4_sync #(
+    .NumCopies(int'(CmpEnaLast)),
+    .AsyncOn  (1'b0)
+  ) u_cheriot_ena_cmp_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cheriot_ena_compare),
+    .mubi_o(cheriot_ena_cmp_buf)
+  );
+
+  assign cheriot_ena_cmp_o = cheriot_ena_cmp_buf[CmpEnaMemsysIdx];
 
 % endif
   logic unused_reg2hw;
@@ -1255,6 +1427,11 @@ module ${module_instance_name}
 
   // SEC_CM: TLUL_ADAPTER.LOGIC.SHADOW
   if (SecureIbex) begin : gen_tlul_lockstep
+    // The lockstep shadow core runs at least one cycle behind the main core; neither Ibex nor the
+    // lockstep logic below has a zero-offset mode.
+    `ASSERT_INIT(LockstepOffsetMin_A, LockstepOffset > 0)
+    `ASSERT_STATIC_LINT_ERROR(LockstepOffsetMin_L, LockstepOffset > 0)
+
     /////////////////////////////////////////////////////
     // Shadow Core instruction and data region config. //
     /////////////////////////////////////////////////////
@@ -1339,7 +1516,8 @@ module ${module_instance_name}
                                     reg2hw_shadow.sw_fatal_err, reg2hw_shadow.sw_recov_err,
 % if cheriot_available:
                                     reg2hw_shadow.mcounteren_writable,
-                                    reg2hw_shadow.cheriot_ena, reg2hw_shadow.cheriot_lock};
+                                    reg2hw_shadow.cheriot_ena, reg2hw_shadow.cheriot_ena_bar,
+                                    reg2hw_shadow.cheriot_lock};
 % else:
                                     reg2hw_shadow.mcounteren_writable};
 % endif
@@ -1448,11 +1626,51 @@ module ${module_instance_name}
       .tl_i         (tl_d_fifo2ibex_delayed)
     );
 
+% if cheriot_available:
+    // The capability tag travels beside the data interface request, so delay and compare it alike.
+    logic main_core_data_tag_h2d_delayed;
+
+    if (LockstepOffset > 1) begin : gen_tag_h2d_multi_cycle_delay
+      logic [LockstepOffset-1:0] main_core_data_tag_h2d_q;
+
+      assign main_core_data_tag_h2d_delayed = main_core_data_tag_h2d_q[0];
+
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          main_core_data_tag_h2d_q <= '0;
+        end else begin
+          main_core_data_tag_h2d_q <= {main_core_data_tag_h2d,
+                                       main_core_data_tag_h2d_q[LockstepOffset-1:1]};
+        end
+      end
+    end else begin : gen_tag_h2d_single_cycle_delay
+      logic main_core_data_tag_h2d_q;
+
+      assign main_core_data_tag_h2d_delayed = main_core_data_tag_h2d_q;
+
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          main_core_data_tag_h2d_q <= 1'b0;
+        end else begin
+          main_core_data_tag_h2d_q <= main_core_data_tag_h2d;
+        end
+      end
+    end
+
+    // Compare the main and shadow core TL-UL outputs, including the capability tag. Ibex already
+    // compares the tag; this check only pays off once it compares the MuBi4-encoded tag (#32285).
+    assign alert_rv_d_tlul_comparison =
+      ((core_lockstep_cmp_en != ibex_pkg::IbexMuBiOff) &
+       (tlul_lockstep_cmp_en == 1'b1) &
+       ((tl_d_main_core_delayed != tl_d_shadow_core) |
+        (main_core_data_tag_h2d_delayed != shadow_core_data_tag_h2d)));
+% else:
     // Compare the main and shadow core TL-UL outputs.
     assign alert_rv_d_tlul_comparison =
       ((core_lockstep_cmp_en != ibex_pkg::IbexMuBiOff) &
        (tlul_lockstep_cmp_en == 1'b1) &
        (tl_d_main_core_delayed != tl_d_shadow_core));
+% endif
 
     // Tie off unused signals.
     logic unused_tlul_d_signals;
@@ -1612,9 +1830,122 @@ module ${module_instance_name}
                                      unused_shadow_core_instr_rdata_intg,
                                      unused_shadow_core_instr_err,
                                      unused_shadow_core_ibus_intg_err};
+% if cheriot_available:
+
+    /////////////////////////////////////////////////////////
+    // Shadow Core Revocation Bitmap (revbm) TL-UL Adapter //
+    /////////////////////////////////////////////////////////
+
+    // TL-UL output signals
+    tl_h2d_t tl_revbm_shadow_core;
+
+    // Buffer the incoming TL-UL response from the main core to avoid synthesis optimizations.
+    tl_d2h_t tl_revbm_fifo2ibex_buf;
+
+    // Delayed signals.
+    tl_d2h_t tl_revbm_fifo2ibex_delayed;
+    tl_h2d_t tl_revbm_main_core_delayed;
+
+    prim_buf #(
+      .Width(TlD2HWidth)
+    ) u_tl_revbm_fifo2ibex_buf (
+      .in_i(tl_revbm_fifo2ibex),
+      .out_o(tl_revbm_fifo2ibex_buf)
+    );
+
+    // Delay the main core TL-UL input and outputs.
+    if (LockstepOffset > 1) begin : gen_tl_revbm_multi_cycle_delay
+      tl_h2d_t tl_revbm_main_core_q [LockstepOffset];
+      tl_d2h_t tl_revbm_fifo2ibex_q [LockstepOffset];
+
+      assign tl_revbm_main_core_delayed = tl_revbm_main_core_q[0];
+      assign tl_revbm_fifo2ibex_delayed = tl_revbm_fifo2ibex_q[0];
+
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          for (int unsigned i = 0; i < LockstepOffset; i++) begin
+            tl_revbm_main_core_q[i] <= tl_h2d_t'('0);
+            tl_revbm_fifo2ibex_q[i] <= tl_d2h_t'('0);
+          end
+        end else begin
+          for (int unsigned i = 0; i < LockstepOffset - 1; i++) begin
+            tl_revbm_main_core_q[i] <= tl_revbm_main_core_q[i+1];
+            tl_revbm_fifo2ibex_q[i] <= tl_revbm_fifo2ibex_q[i+1];
+          end
+          tl_revbm_main_core_q[LockstepOffset-1] <= tl_revbm_ibex2fifo;
+          tl_revbm_fifo2ibex_q[LockstepOffset-1] <= tl_revbm_fifo2ibex_buf;
+        end
+      end
+    end else begin : gen_tl_revbm_single_cycle_delay
+      tl_h2d_t tl_revbm_main_core_q;
+      tl_d2h_t tl_revbm_fifo2ibex_q;
+
+      assign tl_revbm_main_core_delayed = tl_revbm_main_core_q;
+      assign tl_revbm_fifo2ibex_delayed = tl_revbm_fifo2ibex_q;
+
+      always_ff @(posedge clk_i or negedge rst_ni) begin
+        if (!rst_ni) begin
+          tl_revbm_main_core_q <= tl_h2d_t'('0);
+          tl_revbm_fifo2ibex_q <= tl_d2h_t'('0);
+        end else begin
+          tl_revbm_main_core_q <= tl_revbm_ibex2fifo;
+          tl_revbm_fifo2ibex_q <= tl_revbm_fifo2ibex_buf;
+        end
+      end
+    end
+
+    logic unused_shadow_core_revbm_rvalid, unused_shadow_core_revbm_gnt;
+    logic unused_shadow_core_revbm_err, unused_shadow_core_revbmbus_intg_err;
+    logic [31:0] unused_shadow_core_revbm_rdata;
+    logic [6:0]  unused_shadow_core_revbm_rdata_intg;
+
+    tlul_adapter_host #(
+      .MAX_REQS(NumOutstandingReqs),
+      // if secure ibex is not set, data integrity is not generated
+      // from ibex, therefore generate it in the gasket instead.
+      .EnableDataIntgGen(~SecureIbex)
+    ) tl_adapter_host_revbm_ibex_shadow_core (
+      .clk_i,
+      .rst_ni,
+      .req_i        (shadow_core_revbm_req),
+      .instr_type_i (prim_mubi_pkg::MuBi4False),
+      .gnt_o        (unused_shadow_core_revbm_gnt),
+      .addr_i       (shadow_core_revbm_addr),
+      .we_i         (1'b0),
+      .wdata_i      (32'b0),
+      .wdata_intg_i (revbm_wdata_intg),
+      .be_i         (4'hF),
+      .user_rsvd_i  (TlulHostUserRsvdBits),
+      .valid_o      (unused_shadow_core_revbm_rvalid),
+      .rdata_o      (unused_shadow_core_revbm_rdata),
+      .rdata_intg_o (unused_shadow_core_revbm_rdata_intg),
+      .err_o        (unused_shadow_core_revbm_err),
+      .intg_err_o   (unused_shadow_core_revbmbus_intg_err),
+      .tl_o         (tl_revbm_shadow_core),
+      .tl_i         (tl_revbm_fifo2ibex_delayed)
+    );
+
+    // Compare the main and shadow core TL-UL outputs. The revocation bitmap interface has no
+    // address translation, so the comparison does not pause on region configuration updates.
+    assign alert_rv_revbm_tlul_comparison =
+      ((core_lockstep_cmp_en != ibex_pkg::IbexMuBiOff) &
+       (tl_revbm_main_core_delayed != tl_revbm_shadow_core));
+
+    // Tie off unused signals.
+    logic unused_tlul_revbm_signals;
+    assign unused_tlul_revbm_signals = ^{unused_shadow_core_revbm_rvalid,
+                                         unused_shadow_core_revbm_gnt,
+                                         unused_shadow_core_revbm_rdata,
+                                         unused_shadow_core_revbm_rdata_intg,
+                                         unused_shadow_core_revbm_err,
+                                         unused_shadow_core_revbmbus_intg_err};
+% endif
   end else begin : gen_no_tlul_lockstep
     assign alert_rv_d_tlul_comparison = 1'b0;
     assign alert_rv_i_tlul_comparison = 1'b0;
+% if cheriot_available:
+    assign alert_rv_revbm_tlul_comparison = 1'b0;
+% endif
     assign cfg_reg_intg_err_shadow = 1'b0;
   end
 
@@ -1668,6 +1999,9 @@ module ${module_instance_name}
   `ASSERT_KNOWN(RamCfgIcacheDataOKnown_A, ram_cfg_icache_data_o)
 % if cheriot_available:
   `ASSERT_KNOWN(CheriotEnaOKnown_A, cheriot_ena_o)
+  `ASSERT_KNOWN(CheriotEnaMemsysOKnown_A, cheriot_ena_memsys_o)
+  `ASSERT_KNOWN(CheriotEnaMemsysShadowOKnown_A, cheriot_ena_memsys_shadow_o)
+  `ASSERT_KNOWN(CheriotEnaCmpOKnown_A, cheriot_ena_cmp_o)
 % endif
   `ASSERT_KNOWN(CoreiTlHAValidKnown_A, corei_tl_h_o.a_valid)
   `ASSERT_KNOWN(CoreiTlHDReadyKnown_A, corei_tl_h_o.d_ready)

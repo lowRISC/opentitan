@@ -56,6 +56,8 @@ module ibex_top_tracing import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   input  logic [31:0]                                                  trvk_heap_base_addr_i,
 
   input  ibex_mubi_t                                                   cheriot_enable_i,
+  input  ibex_mubi_t                                                   cheriot_enable_shadow_i,
+  input  ibex_mubi_t                                                   cheriot_enable_cmp_i,
   input  logic [31:0]                                                  hart_id_i,
   input  logic [31:0]                                                  boot_addr_i,
 
@@ -129,10 +131,15 @@ module ibex_top_tracing import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   output logic [31:0]                                                 data_addr_shadow_o,
   output logic [31:0]                                                 data_wdata_shadow_o,
   output logic [6:0]                                                  data_wdata_intg_shadow_o,
+  output logic                                                        data_tag_shadow_o,
 
   // Shadow core instruction interface outputs
   output logic                                                        instr_req_shadow_o,
-  output logic [31:0]                                                 instr_addr_shadow_o
+  output logic [31:0]                                                 instr_addr_shadow_o,
+
+  // Shadow TRVK revocation bitmap interface outputs
+  output logic                                                        trvk_revbm_req_shadow_o,
+  output logic [31:0]                                                 trvk_revbm_addr_shadow_o
 );
 
   // ibex_tracer relies on the signals from the RISC-V Formal Interface
@@ -156,9 +163,7 @@ module ibex_top_tracing import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   cap_t        rvfi_rs2_rcap;
   logic [31:0] rvfi_rs2_rdata;
   logic [31:0] rvfi_rs3_rdata;
-  // verilator lint_off UNOPTFLAT
   logic [ 4:0] rvfi_rd_addr;
-  // verilator lint_on UNOPTFLAT
   logic [31:0] rvfi_rd_wdata;
   cap_t        rvfi_rd_wcap;
   logic [31:0] rvfi_pc_rdata;
@@ -265,6 +270,8 @@ module ibex_top_tracing import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     .ram_cfg_icache_data_o,
 
     .cheriot_enable_i,
+    .cheriot_enable_shadow_i,
+    .cheriot_enable_cmp_i,
     .hart_id_i,
     .boot_addr_i,
 
@@ -376,9 +383,13 @@ module ibex_top_tracing import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     .data_addr_shadow_o,
     .data_wdata_shadow_o,
     .data_wdata_intg_shadow_o,
+    .data_tag_shadow_o,
 
     .instr_req_shadow_o,
-    .instr_addr_shadow_o
+    .instr_addr_shadow_o,
+
+    .trvk_revbm_req_shadow_o,
+    .trvk_revbm_addr_shadow_o
   );
 
 `ifdef RVFI

@@ -152,5 +152,6 @@ EARLGREY_ALERTS = [
     "rv_core_ibex_fatal_hw_err",
     "rv_core_ibex_recov_hw_err",
     "cheriot_mem_sys_fatal_fault",
+    "cheriot_mem_sys_recov_ctrl_update_err",
     "sram_ctrl_meta_fatal_error",
 ]

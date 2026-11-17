@@ -46,7 +46,9 @@ cheriot_header:
 
   li a0, TOP_RV_CORE_IBEX_CFG_BASE_ADDR
   li a1, MULTIBIT_ASM_BOOL4_TRUE
+  li a2, MULTIBIT_ASM_BOOL4_FALSE
   sw a1, RV_CORE_IBEX_CHERIOT_ENA_REG_OFFSET(a0)
+  sw a2, RV_CORE_IBEX_CHERIOT_ENA_BAR_REG_OFFSET(a0)
   sw a1, RV_CORE_IBEX_CHERIOT_LOCK_REG_OFFSET(a0)
   fence
   fence.i
@@ -274,9 +276,12 @@ test_run_revocation_engine:
   // Now use the TBRE to revoke capabilities in region A.
   li       t0, TOP_CHERIOT_MEM_SYS_REGS_BASE_ADDR
   csetaddr ct0, s0, t0
-  sw       a3, CHERIOT_MEM_SYS_TBRE_BASE_ADDR_REG_OFFSET(t0)
+  // Shadow registers take a value written twice.
+  sw       a3, CHERIOT_MEM_SYS_TBRE_BASE_ADDR_SHADOWED_REG_OFFSET(t0)
+  sw       a3, CHERIOT_MEM_SYS_TBRE_BASE_ADDR_SHADOWED_REG_OFFSET(t0)
   li       t1, CAPABILITIES_PER_REGION
-  sw       t1, CHERIOT_MEM_SYS_TBRE_NUM_CAPS_REG_OFFSET(t0)
+  sw       t1, CHERIOT_MEM_SYS_TBRE_NUM_CAPS_SHADOWED_REG_OFFSET(t0)
+  sw       t1, CHERIOT_MEM_SYS_TBRE_NUM_CAPS_SHADOWED_REG_OFFSET(t0)
   li       t1, (1 << CHERIOT_MEM_SYS_TBRE_START_START_BIT)
   sw       t1, CHERIOT_MEM_SYS_TBRE_START_REG_OFFSET(t0)
   li       t1, (1 << CHERIOT_MEM_SYS_TBRE_STATUS_BUSY_BIT)
