@@ -137,9 +137,10 @@ status_t mlkem1024_det_keygen_internal_start(
   // Write seed d shares
   uint32_t d_share0[16] = {0};
   uint32_t d_share1[16] = {0};
-  HARDENED_TRY(hardened_memcpy(d_share0, d->keyblob, 32));
+  HARDENED_TRY(hardened_memcpy(d_share0, d->keyblob, kMlkem1024SeedWords));
   HARDENED_TRY(hardened_memcpy(
-      d_share1, (const uint32_t *)d->keyblob + kMlkem1024SeedWords, 32));
+      d_share1, (const uint32_t *)d->keyblob + kMlkem1024SeedWords,
+      kMlkem1024SeedWords));
 
   const otbn_addr_t kOtbnDShare0 =
       OTBN_ADDR_T_INIT(mlkem1024_keygen, mlkem1024_keygen_seed_d_share0);
