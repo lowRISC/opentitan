@@ -330,6 +330,8 @@ dif_result_t dif_rv_core_ibex_clear_error_status(
 /**
  * Enables NMI support for security alert events and watchdog bark.
  *
+ * Sources that are already enabled stay enabled.
+ *
  * @param rv_core_ibex Handle.
  * @param nmi A bitmask with nmi sources to be enabled.
  * @return The result of the operation.

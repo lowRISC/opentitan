@@ -246,6 +246,9 @@ dif_result_t dif_rv_core_ibex_enable_nmi(const dif_rv_core_ibex_t *rv_core_ibex,
       reg, RV_CORE_IBEX_NMI_ENABLE_WDOG_EN_BIT,
       (nmi & kDifRvCoreIbexNmiSourceWdog) == kDifRvCoreIbexNmiSourceWdog);
 
+  // Keep the sources that are already enabled.
+  reg |= mmio_region_read32(rv_core_ibex->base_addr,
+                            RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET);
   mmio_region_write32(rv_core_ibex->base_addr,
                       RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, reg);
 
