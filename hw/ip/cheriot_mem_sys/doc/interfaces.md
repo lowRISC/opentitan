@@ -7,7 +7,6 @@ The following table lists the instantiation parameters of the CHERIoT memory sub
 
 Parameter          | Default        | Top Earlgrey   | Description
 -------------------|----------------|----------------|---------------
-`addr_t`           | `logic [top_pkg::TL_AW-1:0]` | `logic [31:0]` | TL-UL address type.
 `MainSramBaseAddr` | `0x1000_0000`  | `0x1000_0000`  | Base address of the main SRAM region, inclusive.
 `MainSramTopAddr`  | `0x1003_0000`  | `0x1003_0000`  | Top address of the main SRAM region, exclusive.
 `NvmBaseAddr`      | `0x3000_0000`  | `0x3000_0000`  | Base address of the NVM region, inclusive.

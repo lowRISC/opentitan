@@ -9,12 +9,10 @@
 // word it targets, and succeeds if the NVM already holds its data and data integrity.
 module cheriot_wtrc #(
   // The number of requests the tag filter takes before it answers the first
-  parameter int unsigned NumOutstanding = 32'd2,
-  // TL-UL address type
-  parameter type   addr_t               = logic [top_pkg::TL_AW-1:0],
+  parameter int unsigned               NumOutstanding = 32'd2,
   // The NVM, and the base address of its tag region in the meta SRAM
-  parameter addr_t NvmBaseAddr          = 'h3000_0000,
-  parameter addr_t MetaNvmTagBase       = 'h1100_0C00
+  parameter logic [top_pkg::TL_AW-1:0] NvmBaseAddr    = 'h3000_0000,
+  parameter logic [top_pkg::TL_AW-1:0] MetaNvmTagBase = 'h1100_0C00
 )(
   input  logic clk_i,
   input  logic rst_ni,
@@ -44,6 +42,9 @@ module cheriot_wtrc #(
   ///////////
   // Types //
   ///////////
+
+  // TL-UL address type
+  typedef logic [top_pkg::TL_AW-1:0] addr_t;
 
   localparam int unsigned AddrWidth = $bits(addr_t);
 

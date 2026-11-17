@@ -4,10 +4,7 @@
 
 `include "prim_assert.sv"
 
-module cheriot_rmw_filter #(
-  // TL-UL address type
-  parameter type addr_t = logic [top_pkg::TL_AW-1:0]
-) (
+module cheriot_rmw_filter (
   input  logic clk_i,
   input  logic rst_ni,
 
@@ -31,6 +28,9 @@ module cheriot_rmw_filter #(
   ///////////
   // Types //
   ///////////
+
+  // TL-UL address type
+  typedef logic [top_pkg::TL_AW-1:0] addr_t;
 
   // The padding to 57 bit of the BM response fields subject to ECC
   localparam int unsigned RspIntgPadding = tlul_pkg::D2HRspMaxWidth -
