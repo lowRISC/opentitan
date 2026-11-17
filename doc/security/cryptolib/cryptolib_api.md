@@ -1079,11 +1079,11 @@ To use hardware-backed keys, the caller first sets up an `otcrypto_blinded_key_t
 
 ### Generate hardware-backed keys for software
 
-To generate a hardware-backed key whose shares are retrieved into Ibex software memory, use `ot_crypto_hw_backed_keygen`.
+To generate a hardware-backed key whose shares are retrieved into Ibex software memory, use `otcrypto_hw_backed_keygen`.
 The key struct must first be initialized with `otcrypto_hw_backed_key` or `otcrypto_hw_backed_attestation_key`.
-When `ot_crypto_hw_backed_keygen` runs, it calls Key Manager to derive the software shares, writes the shares into the keyblob, and morphs the key configuration `hw_backed` flag to `kHardenedBoolFalse`.
+When `otcrypto_hw_backed_keygen` runs, it calls Key Manager to derive the software shares, writes the shares into the keyblob, and morphs the key configuration `hw_backed` flag to `kHardenedBoolFalse`.
 
-{{#header-snippet sw/device/lib/crypto/include/key_transport.h ot_crypto_hw_backed_keygen }}
+{{#header-snippet sw/device/lib/crypto/include/key_transport.h otcrypto_hw_backed_keygen }}
 
 ### Wrap and unwrap keys
 
