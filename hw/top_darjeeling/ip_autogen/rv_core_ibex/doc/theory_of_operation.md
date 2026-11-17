@@ -90,6 +90,18 @@ Upon reset release, software can check the last PC and data access address to ge
 
 If the software has some kind of error and encounters two exceptions in a row, the previous exception PC and address show the location of the first exception, while the current exception address and PC show the location of the most recent exception.
 
+## Non-Maskable Interrupts
+
+The wrapper raises the non-maskable interrupt (NMI) of Ibex for two sources:
+* The escalation signal from the alert handler on ``esc_tx_i``.
+* The watchdog bark from the AON timer on ``nmi_wdog_i``.
+
+An NMI is raised while a source is set in both [`NMI_STATE`](registers.md#nmi_state) and [`NMI_ENABLE`](registers.md#nmi_enable).
+
+Software can both set and clear the bits of [`NMI_ENABLE`](registers.md#nmi_enable).
+An enabled source is therefore only truly non-maskable once software also clears [`NMI_ENABLE_REGWEN`](registers.md#nmi_enable_regwen), which locks [`NMI_ENABLE`](registers.md#nmi_enable) until the next reset.
+A boot stage that enables NMIs can leave the lock to a later stage, so that the owner of that stage decides which sources stay enabled.
+
 
 ## Fetch Enable
 
