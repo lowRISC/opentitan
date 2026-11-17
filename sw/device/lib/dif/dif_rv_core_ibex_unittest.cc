@@ -367,6 +367,7 @@ class NMITest
       public testing::WithParamInterface<dif_rv_core_ibex_nmi_state_t> {};
 
 TEST_F(NMITest, EnableAlertSuccess) {
+  EXPECT_READ32(RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, 0);
   EXPECT_WRITE32(RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET,
                  {{RV_CORE_IBEX_NMI_ENABLE_ALERT_EN_BIT, 1}});
   EXPECT_DIF_OK(
@@ -374,6 +375,7 @@ TEST_F(NMITest, EnableAlertSuccess) {
 }
 
 TEST_F(NMITest, EnableWdogSuccess) {
+  EXPECT_READ32(RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, 0);
   EXPECT_WRITE32(RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET,
                  {{RV_CORE_IBEX_NMI_ENABLE_WDOG_EN_BIT, 1}});
   EXPECT_DIF_OK(
@@ -381,11 +383,22 @@ TEST_F(NMITest, EnableWdogSuccess) {
 }
 
 TEST_F(NMITest, EnableAllSuccess) {
+  EXPECT_READ32(RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET, 0);
   EXPECT_WRITE32(RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET,
                  {{RV_CORE_IBEX_NMI_ENABLE_WDOG_EN_BIT, 1},
                   {RV_CORE_IBEX_NMI_ENABLE_ALERT_EN_BIT, 1}});
   EXPECT_DIF_OK(
       dif_rv_core_ibex_enable_nmi(&ibex_, kDifRvCoreIbexNmiSourceAll));
+}
+
+TEST_F(NMITest, EnableKeepsEnabledSources) {
+  EXPECT_READ32(RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET,
+                {{RV_CORE_IBEX_NMI_ENABLE_WDOG_EN_BIT, 1}});
+  EXPECT_WRITE32(RV_CORE_IBEX_NMI_ENABLE_REG_OFFSET,
+                 {{RV_CORE_IBEX_NMI_ENABLE_WDOG_EN_BIT, 1},
+                  {RV_CORE_IBEX_NMI_ENABLE_ALERT_EN_BIT, 1}});
+  EXPECT_DIF_OK(
+      dif_rv_core_ibex_enable_nmi(&ibex_, kDifRvCoreIbexNmiSourceAlert));
 }
 
 TEST_F(NMITest, EnableBadArg) {
