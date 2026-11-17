@@ -6,23 +6,21 @@
 
 module cheriot_tag_filter #(
   // The number of outstanding TL transaction the IP supports
-  parameter int unsigned NumOutstanding      = 32'd4,
-  // TL-UL address type
-  parameter type   addr_t                    = logic [top_pkg::TL_AW-1:0],
+  parameter int unsigned               NumOutstanding      = 32'd4,
   // Memory regions that have a capability tag store
-  parameter addr_t MainSramBaseAddr          = 'h1000_0000,
-  parameter addr_t MainSramTopAddr           = 'h1003_0000,
-  parameter addr_t NvmBaseAddr               = 'h3000_0000,
-  parameter addr_t NvmTopAddr                = 'h3020_0000,
+  parameter logic [top_pkg::TL_AW-1:0] MainSramBaseAddr    = 'h1000_0000,
+  parameter logic [top_pkg::TL_AW-1:0] MainSramTopAddr     = 'h1003_0000,
+  parameter logic [top_pkg::TL_AW-1:0] NvmBaseAddr         = 'h3000_0000,
+  parameter logic [top_pkg::TL_AW-1:0] NvmTopAddr          = 'h3020_0000,
   // Base addresses of the corresponding tag regions in the meta SRAM
-  parameter addr_t MetaMainSramTagBase       = 'h1100_8C00,
-  parameter addr_t MetaNvmTagBase            = 'h1100_0C00,
+  parameter logic [top_pkg::TL_AW-1:0] MetaMainSramTagBase = 'h1100_8C00,
+  parameter logic [top_pkg::TL_AW-1:0] MetaNvmTagBase      = 'h1100_0C00,
   // Writes only update the capability tag and are never forwarded to the host port; the filter
   // answers them itself. A write that does not update a tag is answered with an error.
-  parameter bit    TagOnlyWrites             = 1'b0,
+  parameter bit                        TagOnlyWrites       = 1'b0,
   // A capability store to the NVM is verified against the NVM contents instead of written, and sets
   // the tag if they match (cheriot_wtrc).
-  parameter bit    NvmCapStores              = 1'b0
+  parameter bit                        NvmCapStores        = 1'b0
 )(
   input clk_i,
   input rst_ni,
@@ -54,6 +52,9 @@ module cheriot_tag_filter #(
   ///////////
   // Types //
   ///////////
+
+  // TL-UL address type
+  typedef logic [top_pkg::TL_AW-1:0] addr_t;
 
   // The meta data type handed between the host's request and response channel
   typedef struct packed {
@@ -439,7 +440,6 @@ module cheriot_tag_filter #(
 
     cheriot_wtrc #(
       .NumOutstanding(NumOutstanding),
-      .addr_t        (addr_t),
       .NvmBaseAddr   (NvmBaseAddr),
       .MetaNvmTagBase(MetaNvmTagBase)
     ) u_cheriot_wtrc (

@@ -3,18 +3,17 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module cheriot_tbre #(
-  parameter type         addr_t              = logic [top_pkg::TL_AW-1:0],
-  parameter addr_t       MainSramBaseAddr    = 32'h1000_0000,
-  parameter addr_t       MainSramTopAddr     = 32'h1003_0000,
-  parameter addr_t       NvmBaseAddr         = 32'h3000_0000,
-  parameter addr_t       NvmTopAddr          = 32'h3020_0000,
-  parameter addr_t       MetaMainSramTagBase = 32'h1100_8C00,
-  parameter addr_t       MetaNvmTagBase      = 32'h1100_0C00,
-  parameter int unsigned RevBitmapSizeBytes  = 32'd3072,
-  parameter addr_t       RevBitmapBaseAddr   = 32'h1100_0000,
+  parameter logic [top_pkg::TL_AW-1:0] MainSramBaseAddr    = 32'h1000_0000,
+  parameter logic [top_pkg::TL_AW-1:0] MainSramTopAddr     = 32'h1003_0000,
+  parameter logic [top_pkg::TL_AW-1:0] NvmBaseAddr         = 32'h3000_0000,
+  parameter logic [top_pkg::TL_AW-1:0] NvmTopAddr          = 32'h3020_0000,
+  parameter logic [top_pkg::TL_AW-1:0] MetaMainSramTagBase = 32'h1100_8C00,
+  parameter logic [top_pkg::TL_AW-1:0] MetaNvmTagBase      = 32'h1100_0C00,
+  parameter int unsigned               RevBitmapSizeBytes  = 32'd3072,
+  parameter logic [top_pkg::TL_AW-1:0] RevBitmapBaseAddr   = 32'h1100_0000,
   // Words in flight and core writes watched at once, see cheriot_tbre_mover
-  parameter int unsigned MaxInflight         = 32'd2,
-  parameter int unsigned NumSnoop            = 32'd1
+  parameter int unsigned               MaxInflight         = 32'd2,
+  parameter int unsigned               NumSnoop            = 32'd1
 ) (
   input  logic clk_i,
   input  logic rst_ni,
@@ -22,20 +21,20 @@ module cheriot_tbre #(
   input  prim_mubi_pkg::mubi4_t cheriot_ena_i,
 
   // Sweep request
-  input  addr_t start_addr_i,
-  input  addr_t num_words_i,
-  input  logic  valid_i,
-  output logic  ready_o,
-  output logic  busy_o,
+  input  logic [top_pkg::TL_AW-1:0] start_addr_i,
+  input  logic [top_pkg::TL_AW-1:0] num_words_i,
+  input  logic                      valid_i,
+  output logic                      ready_o,
+  output logic                      busy_o,
 
   // Core writes the engine watches
-  input  logic  [NumSnoop-1:0] snoop_valid_i,
-  input  addr_t [NumSnoop-1:0] snoop_addr_i,
+  input  logic [NumSnoop-1:0]                     snoop_valid_i,
+  input  logic [NumSnoop-1:0][top_pkg::TL_AW-1:0] snoop_addr_i,
 
   // Tag clear presented towards the tag filter, until its handshake
-  output logic  clear_valid_o,
-  output logic  clear_done_o,
-  output addr_t clear_addr_o,
+  output logic                      clear_valid_o,
+  output logic                      clear_done_o,
+  output logic [top_pkg::TL_AW-1:0] clear_addr_o,
 
   // Revocation bitmap port
   output tlul_pkg::tl_h2d_t revbm_tl_o,
@@ -59,6 +58,13 @@ module cheriot_tbre #(
   output logic revbm_rsp_intg_error_o,
   output logic revbm_device_error_o
 );
+
+  ///////////
+  // Types //
+  ///////////
+
+  // TL-UL address type
+  typedef logic [top_pkg::TL_AW-1:0] addr_t;
 
   /////////////
   // Signals //
@@ -89,7 +95,6 @@ module cheriot_tbre #(
   ///////////
 
   cheriot_tbre_mover #(
-    .addr_t     (addr_t),
     .MaxInflight(MaxInflight),
     .NumSnoop   (NumSnoop)
   ) u_cheriot_tbre_mover (
@@ -183,7 +188,6 @@ module cheriot_tbre #(
 
   cheriot_tag_filter #(
     .NumOutstanding     (MaxInflight),
-    .addr_t             (addr_t),
     .MainSramBaseAddr   (MainSramBaseAddr),
     .MainSramTopAddr    (MainSramTopAddr),
     .NvmBaseAddr        (NvmBaseAddr),

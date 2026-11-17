@@ -5,8 +5,6 @@
 `include "prim_assert.sv"
 
 module cheriot_tbre_mover #(
-  // TL-UL address type
-  parameter type addr_t = logic [top_pkg::TL_AW-1:0],
   // Words in flight before new reads are held back: unresolved reads plus tag clears waiting for
   // their acknowledgement. Every outstanding read and every outstanding clear carries a source ID
   // of its own.
@@ -18,11 +16,11 @@ module cheriot_tbre_mover #(
   input  logic rst_ni,
 
   // Sweep request
-  input  addr_t start_addr_i,
-  input  addr_t num_words_i,
-  input  logic  valid_i,
-  output logic  ready_o,
-  output logic  busy_o,
+  input  logic [top_pkg::TL_AW-1:0] start_addr_i,
+  input  logic [top_pkg::TL_AW-1:0] num_words_i,
+  input  logic                      valid_i,
+  output logic                      ready_o,
+  output logic                      busy_o,
 
   // TL read port
   output tlul_pkg::tl_h2d_t tl_r_o,
@@ -35,13 +33,13 @@ module cheriot_tbre_mover #(
   input  tlul_pkg::tl_d2h_t tl_w_i,
 
   // Core writes. A capability the core writes after its lower word was read is not cleared.
-  input  logic  [NumSnoop-1:0] snoop_valid_i,
-  input  addr_t [NumSnoop-1:0] snoop_addr_i,
+  input  logic [NumSnoop-1:0]                     snoop_valid_i,
+  input  logic [NumSnoop-1:0][top_pkg::TL_AW-1:0] snoop_addr_i,
 
   // Tag clear presented on the write port, until its handshake
-  output logic              clear_valid_o,
-  output logic              clear_done_o,
-  output addr_t             clear_addr_o,
+  output logic                      clear_valid_o,
+  output logic                      clear_done_o,
+  output logic [top_pkg::TL_AW-1:0] clear_addr_o,
 
   // Errors: a read answered with an error, whose word is not cleared, and a fault (a write answered
   // with an error, a malformed response or an integrity fault)
@@ -53,6 +51,9 @@ module cheriot_tbre_mover #(
   ///////////
   // Types //
   ///////////
+
+  // TL-UL address type
+  typedef logic [top_pkg::TL_AW-1:0] addr_t;
 
   // Byte offset bits of a bus word.
   localparam int unsigned WordOffsetW = $clog2(top_pkg::TL_DBW);

@@ -3,12 +3,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 module cheriot_access_check #(
-  // TL-UL address type
-  parameter type   addr_t                = logic [top_pkg::TL_AW-1:0],
   // Start address (inclusive)
-  parameter addr_t CheriotBaseAddr       = 'h0,
+  parameter logic [top_pkg::TL_AW-1:0] CheriotBaseAddr = 'h0,
   // End address (non-inclusive)
-  parameter addr_t CheriotTopAddr        = 'h1
+  parameter logic [top_pkg::TL_AW-1:0] CheriotTopAddr  = 'h1
 ) (
   input  logic clk_i,
   input  logic rst_ni,
