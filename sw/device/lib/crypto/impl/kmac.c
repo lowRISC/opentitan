@@ -100,7 +100,8 @@ static status_t kmac_key_construct(otcrypto_blinded_key_t *key,
     HARDENED_TRY(keymgr_dpe_generate_key_kmac(diversification));
   } else if (key->config.hw_backed == kHardenedBoolFalse) {
     // Check `key_len` matches `keyblob_length`.
-    if (key->keyblob_length != 2 * key->config.key_length) {
+    if (key->keyblob_length !=
+        keyblob_num_words(key->config) * sizeof(uint32_t)) {
       return OTCRYPTO_BAD_ARGS;
     }
 

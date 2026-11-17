@@ -14,6 +14,13 @@ config_setting(
     },
 )
 
+config_setting(
+    name = "disable_keyblob_masking",
+    define_values = {
+        "disable_keyblob_masking": "true",
+    },
+)
+
 # Export all headers.
 exports_files(glob(["*.h"]))
 
@@ -22,6 +29,10 @@ cryptolib_api_config_header(
     name = "api_config.h",
     buffer_integrity_checks = select({
         ":disable_buf_integrity_checks": False,
+        "//conditions:default": True,
+    }),
+    keyblob_masking = select({
+        ":disable_keyblob_masking": False,
         "//conditions:default": True,
     }),
 )

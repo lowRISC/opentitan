@@ -48,6 +48,32 @@ static_assert(kOtcryptoRsa3072PrivateKeyblobBytes ==
 static_assert(kOtcryptoRsa4096PrivateKeyblobBytes ==
                   sizeof(rsa_4096_private_key_t),
               "RSA-4096 keyblob size mismatch.");
+#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
+static_assert(kOtcryptoWrappedKeyMaxWords >=
+                  sizeof(otcrypto_key_config_t) / sizeof(uint32_t) + 2 +
+                      kOtcryptoRsa4096PrivateKeyblobBytes / sizeof(uint32_t) +
+                      1 + 2,
+              "kOtcryptoWrappedKeyMaxWords is smaller than wrapped RSA-4096 "
+              "private key size.");
+static_assert(offsetof(rsa_2048_private_key_t, d0) == 0 &&
+                  offsetof(rsa_2048_private_key_t, n) ==
+                      kRsa2048NumWords * sizeof(uint32_t) &&
+                  offsetof(rsa_2048_private_key_t, checksum) ==
+                      2 * kRsa2048NumWords * sizeof(uint32_t),
+              "RSA-2048 private key layout mismatch.");
+static_assert(offsetof(rsa_3072_private_key_t, d0) == 0 &&
+                  offsetof(rsa_3072_private_key_t, n) ==
+                      kRsa3072NumWords * sizeof(uint32_t) &&
+                  offsetof(rsa_3072_private_key_t, checksum) ==
+                      2 * kRsa3072NumWords * sizeof(uint32_t),
+              "RSA-3072 private key layout mismatch.");
+static_assert(offsetof(rsa_4096_private_key_t, d0) == 0 &&
+                  offsetof(rsa_4096_private_key_t, n) ==
+                      kRsa4096NumWords * sizeof(uint32_t) &&
+                  offsetof(rsa_4096_private_key_t, checksum) ==
+                      2 * kRsa4096NumWords * sizeof(uint32_t),
+              "RSA-4096 private key layout mismatch.");
+#else
 static_assert(kOtcryptoWrappedKeyMaxWords ==
                   sizeof(otcrypto_key_config_t) / sizeof(uint32_t) + 2 +
                       kOtcryptoRsa4096PrivateKeyblobBytes / sizeof(uint32_t) +
@@ -80,6 +106,7 @@ static_assert(offsetof(rsa_4096_private_key_t, d0) == 0 &&
                   offsetof(rsa_4096_private_key_t, checksum) ==
                       3 * kRsa4096NumWords * sizeof(uint32_t),
               "RSA-4096 private key layout mismatch.");
+#endif
 
 /**
  * Convert a top-level `otcrypto_rsa_size_t` to the internal `rsa_size_t` and
@@ -322,7 +349,7 @@ static status_t rsa_private_key_pack(const uint32_t *d0, const uint32_t *d1,
   uint32_t *n = &private_key->keyblob[keyblob_words - num_words - 1];
   uint32_t *checksum = &private_key->keyblob[keyblob_words - 1];
   HARDENED_TRY(hardened_memcpy(n, modulus, num_words));
-  *checksum = crc32(d0, num_words * sizeof(uint32_t));
+  *checksum = crc32(private_key->keyblob, num_words * sizeof(uint32_t));
   private_key->checksum = otcrypto_integrity_blinded_checksum(private_key);
   return OTCRYPTO_OK;
 }
@@ -1126,11 +1153,23 @@ static otcrypto_status_t rsa_sign_exp_async_start(
   size_t num_words = 0;
   HARDENED_TRY(rsa_size_to_params(size, &rsa_size, &num_words));
   size_t keyblob_words = keyblob_num_words(private_key->config);
+#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
+  if (launder32(private_key->keyblob[keyblob_words - 1]) !=
+      crc32(private_key->keyblob, num_words * sizeof(uint32_t))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->keyblob[keyblob_words - 1],
+                    crc32(private_key->keyblob, num_words * sizeof(uint32_t)));
+#endif
   uint32_t *d0;
   uint32_t *d1;
   HARDENED_TRY(keyblob_to_shares(private_key, &d0, &d1));
   const uint32_t *n = &private_key->keyblob[keyblob_words - num_words - 1];
+#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
+  uint32_t checksum = crc32(d0, num_words * sizeof(uint32_t));
+#else
   uint32_t checksum = private_key->keyblob[keyblob_words - 1];
+#endif
   if (launder32(padding_mode) == kOtcryptoRsaPaddingNull) {
     HARDENED_CHECK_EQ(padding_mode, kOtcryptoRsaPaddingNull);
     if (message_digest.len != num_words * sizeof(uint32_t) ||
@@ -1386,11 +1425,23 @@ static otcrypto_status_t rsa_decrypt_exp_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
   HARDENED_CHECK_EQ(ciphertext->len, num_words);
+#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
+  if (launder32(private_key->keyblob[keyblob_words - 1]) !=
+      crc32(private_key->keyblob, num_words * sizeof(uint32_t))) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->keyblob[keyblob_words - 1],
+                    crc32(private_key->keyblob, num_words * sizeof(uint32_t)));
+#endif
   uint32_t *d0;
   uint32_t *d1;
   HARDENED_TRY(keyblob_to_shares(private_key, &d0, &d1));
   const uint32_t *n = &private_key->keyblob[keyblob_words - num_words - 1];
+#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
+  uint32_t checksum = crc32(d0, num_words * sizeof(uint32_t));
+#else
   uint32_t checksum = private_key->keyblob[keyblob_words - 1];
+#endif
 
   // Check that ciphertext is < n.
   if (bignum_lt(ciphertext->data, n, num_words) == kHardenedBoolFalse) {
