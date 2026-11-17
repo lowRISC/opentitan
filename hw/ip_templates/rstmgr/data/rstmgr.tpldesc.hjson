@@ -49,6 +49,22 @@
       default: ["Aon", "0"]
     }
     {
+      name: "bus_clk"
+      desc: '''The source of the bus clock, clk_i. The rstmgr resets its own state with the leaf
+            resets that it generates on this clock.
+            '''
+      type: "string"
+      default: "io_div4"
+    }
+    {
+      name: "por_clk"
+      desc: '''The source of the POR clock, clk_por_i. The rstmgr resets its POR-domain state with
+            the POR leaf that it generates on this clock.
+            '''
+      type: "string"
+      default: "io_div4"
+    }
+    {
       name: "num_rstreqs"
       desc: "The number of peripheral requests"
       type: "int"

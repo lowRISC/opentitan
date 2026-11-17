@@ -82,7 +82,7 @@
             This is triggered by common cm primitives
             '''
       stage: V2S
-      tests: ["rstmgr_sec_cm"]
+      tests: ["rstmgr_primary_sec_cm", "rstmgr_secondary_sec_cm"]
     }
     {
       name: sec_cm_sw_rst_config_regwen

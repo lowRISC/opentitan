@@ -52,16 +52,25 @@ module top_${top["name"]} #(
 % endif\
 
 % if feature_info["ast_is_internal"]:
-  // Clockmgr and rstmgr info from AON to MAIN
+  // The clkmgr and rstmgr structs that cross between the power domains, one net for each partition
   // TODO: Manual wiring due to topgen limitation that signals defined as 'top' in the hjson are
   //       local to the PD the IP is in.
-  clkmgr_pkg::clkmgr_out_t    clkmgr_clocks;
-  clkmgr_pkg::clkmgr_cg_en_t  clkmgr_cg_en;
-  rstmgr_pkg::rstmgr_out_t    rstmgr_resets;
-  rstmgr_pkg::rstmgr_rst_en_t rstmgr_rst_en;
-
-  // Expose scan clock to padring
-  assign padring_scan_clk_o = ast_clk_src_sys;
+% for part, dom, sfx, tinfix in lib.get_clkmgr_partitions(top):
+  % if lib.clkmgr_struct_crosses(top, 'clocks', part):
+  clkmgr_pkg::clkmgr_out${tinfix}_t clkmgr_clocks${sfx};
+  % endif
+  % if lib.clkmgr_struct_crosses(top, 'cg_en', part):
+  clkmgr_pkg::clkmgr_cg_en${tinfix}_t clkmgr_cg_en${sfx};
+  % endif
+% endfor
+% for part, dom, sfx, tinfix in lib.get_rstmgr_partitions(top):
+  % if lib.rstmgr_struct_crosses(top, 'resets', part):
+  rstmgr_pkg::rstmgr_out${tinfix}_t rstmgr_resets${sfx};
+  % endif
+  % if lib.rstmgr_struct_crosses(top, 'rst_en', part):
+  rstmgr_pkg::rstmgr_rst_en${tinfix}_t rstmgr_rst_en${sfx};
+  % endif
+% endfor
 % endif
 
 % for pd in reversed(top["power"]["domains"]):
@@ -75,6 +84,10 @@ module top_${top["name"]} #(
   ${top["name"]}_pd_${pd.lower()} #(
 <%include file="/toplevel_snippets/header_parameters.tpl" args="top=top, domain=pd, feedthrough=True" />\
   ) ${top["name"]}_pd_${pd.lower()} (
+% if pd == "Main" and feature_info["ast_is_internal"]:
+    // Raw system clock of the AST as scan clock for the padring
+    .padring_scan_clk_o(padring_scan_clk_o),
+% endif
 <%include file="/toplevel_snippets/special_signals_portmap.tpl" args="top=top, feature_info=feature_info, cio_info=cio_info, domain=pd" />\
 
 <%include file="/chiplevel_snippets/intermodule_portmap.tpl" args="top=top, target='', domain=pd, inter_pd=True, feedthrough=False, last_snippet=False" />\

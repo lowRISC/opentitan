@@ -9,10 +9,12 @@ set_reset_drivers prim_clock_mux2 prim_flop_2sync prim_flop
 set_clock_drivers prim_clock_buf prim_clock_mux2
 
 # All leaf resets have a reset multiplex
-waive -rules RESET_MUX -location {top_darjeeling.sv darjeeling_pd_main.sv darjeeling_pd_aon.sv} -regexp {Asynchronous reset .*rstmgr_resets(_i|_o)?\.rst.* is driven by a multiplexer} \
+waive -rules RESET_MUX -location {top_darjeeling.sv darjeeling_pd_main.sv darjeeling_pd_aon.sv} -regexp {Asynchronous reset .*rstmgr_resets(_secondary)?(_i|_o)?\.rst.* is driven by a multiplexer} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
+waive -rules RESET_MUX -location {top_darjeeling.sv darjeeling_pd_main.sv darjeeling_pd_aon.sv} -regexp {Asynchronous reset .*rstmgr_intraip_(s2p|p2s)(_i|_o)?\.rst.* is driven by a multiplexer} \
+      -comment "The resets that cross between the partitions of the rstmgr. This is dedicated reset infrastructure, and hence permissible"
 
-waive -rules RESET_MUX -location {rstmgr.sv} -msg {Asynchronous reset 'scan_rst_ni' reaches a multiplexer here, used as a reset 'rst_dst_ni' at} \
+waive -rules RESET_MUX -location {rstmgr_part_primary.sv rstmgr_part_secondary.sv} -msg {Asynchronous reset 'scan_rst_ni' reaches a multiplexer here, used as a reset 'rst_dst_ni' at} \
       -comment "This is dedicated reset infrastructure, and hence permissible"
 
 # Scan reset is a legal asynchronous reset.
@@ -40,6 +42,8 @@ waive -rules {CLOCK_USE} -location {top_darjeeling.sv} -regexp {'clkmgr_clocks..
 
 waive -rules {RESET_USE} -location {top_darjeeling.sv} -regexp {'rstmgr_resets..*' is connected to '(ast|darjeeling_pd_main|darjeeling_pd_aon)' port '(sns_rsts_i..*|rstmgr_resets_(i|o)..*)', and used as an asynchronous reset or set} \
       -comment "Reset struct feedthrough across the wrapper into AST and the power domains."
+waive -rules {RESET_USE} -location {darjeeling_pd_main.sv darjeeling_pd_aon.sv} -regexp {'rstmgr_resets(_secondary)?\..*' is connected to 'clkmgr_part_(primary|secondary)' port 'rst_.*_ni', and used as an asynchronous reset or set} \
+      -comment "Reset struct distribution to the partitions of the clkmgr inside the power domain."
 
 waive -rules {CLOCK_MUX} -location {top_darjeeling.sv} -regexp {Clock 'ast_base_clks\.clk_io' reaches a multiplexer here, used as a clock 'clk_i' at} \
       -comment "ast_base_clks.clk_io is fed into the clkmgr's clock dividers / scan bypass mux."

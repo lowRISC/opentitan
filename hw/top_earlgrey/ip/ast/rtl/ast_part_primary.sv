@@ -35,6 +35,10 @@ module ast_part_primary #(
   input logic clk_ast_rng_i,
   input logic rst_ast_rng_ni,
   input prim_mubi_pkg::mubi4_t clk_src_sys_jen_i,
+  // Sensed clocks of the primary partition of the clkmgr
+  input clkmgr_pkg::clkmgr_out_primary_t sns_clks_i,
+  // Sensed resets of the primary partition of the rstmgr
+  input rstmgr_pkg::rstmgr_out_primary_t sns_rsts_i,
   // Inter-domain communication
   input ast_intraip_pkg::s2p_t intraip_s2p_i,
   output ast_intraip_pkg::p2s_t intraip_p2s_o,
@@ -439,7 +443,9 @@ assign intraip_p2s_o.ot0_alert_src = '{p: intg_err, n: ~intg_err};
 /////////////////////
 logic unused_sigs;
 
-assign unused_sigs = ^{ intraip_s2p_i.clk_rst.clk_aon,
+assign unused_sigs = ^{ sns_clks_i,
+                        sns_rsts_i,
+                        intraip_s2p_i.clk_rst.clk_aon,
                         intraip_s2p_i.pwr.vcaon_pok,
                         intraip_s2p_i.pwr.vcc_pok_str,
                         reg2hw.rega0,

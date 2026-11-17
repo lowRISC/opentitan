@@ -399,8 +399,15 @@ module chip_${top["name"]}_${target["name"]} #(
   tlul_pkg::tl_d2h_t ast_tl_rsp;
 
   // Generated clocks and resets
-  clkmgr_pkg::clkmgr_out_t clkmgr_clocks;
-  rstmgr_pkg::rstmgr_out_t rstmgr_resets;
+  // The top outputs the clocks and resets of the primary partitions of the clkmgr and the rstmgr.
+  clkmgr_pkg::clkmgr_out_primary_t clkmgr_clocks;
+  rstmgr_pkg::rstmgr_out_primary_t rstmgr_resets;
+<%
+  # Select the resets used below, following the shape of the primary partition's output struct.
+  def rst_sel(name, domain):
+    idx = lib.get_rstmgr_output_index(top, name, domain, lib.PART_PRIMARY)
+    return f"[rstmgr_pkg::Domain{idx}Sel]" if idx else ""
+%>\
 
   // monitored clock
   logic sck_monitor;
@@ -579,7 +586,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .ast_init_done_o       ( ),
     // buffered clocks & resets
     % for port, clk in ast["clock_srcs"].items():
-    .${port} (${lib.get_clock_prefixes(top)["top"]}clk_${clk["clock"]}_${clk["group"]}),
+    .${port} (${lib.get_clock_path(top, ast["clock_connections"][port])}),
     % endfor
     % for port, reset in ast["reset_connections"].items():
     .${port} (${lib.get_reset_path(top, reset)}),
@@ -697,7 +704,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .NumDmiByteAbits(18)
   ) u_tlul_jtag_dtm (
     .clk_i      (clkmgr_clocks.clk_main_infra),
-    .rst_ni     (rstmgr_resets.rst_sys_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ni     (rstmgr_resets.rst_sys_n${rst_sel('sys', 'Main')}),
     .jtag_i     (jtag_req),
     .jtag_o     (jtag_rsp),
     .scan_rst_ni(scan_rst_n),
@@ -743,7 +750,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .DRspDepth (4'd0)
   ) u_ctn_sm1 (
     .clk_i  (clkmgr_clocks.clk_main_infra),
-    .rst_ni (rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ni (rstmgr_resets.rst_lc_n${rst_sel('lc', 'Main')}),
     .tl_h_i (ctn_tl_h2d),
     .tl_h_o (ctn_tl_d2h),
     .tl_d_o (ctn_sm1_to_s1n_tl_h2d),
@@ -789,7 +796,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .N         (1)
   ) u_ctn_s1n (
     .clk_i        (clkmgr_clocks.clk_main_infra),
-    .rst_ni       (rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ni       (rstmgr_resets.rst_lc_n${rst_sel('lc', 'Main')}),
     .tl_h_i       (ctn_sm1_to_s1n_tl_h2d),
     .tl_h_o       (ctn_sm1_to_s1n_tl_d2h),
     .tl_d_o       (ctn_s1n_tl_h2d),
@@ -809,7 +816,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .SecFifoPtr      (0)
   ) u_tlul_adapter_sram_ctn (
     .clk_i       (clkmgr_clocks.clk_main_infra),
-    .rst_ni      (rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ni      (rstmgr_resets.rst_lc_n${rst_sel('lc', 'Main')}),
     .tl_i        (ctn_s1n_tl_h2d[0]),
     .tl_o        (ctn_s1n_tl_d2h[0]),
     // Ifetch is explicitly allowed
@@ -844,7 +851,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .EnableOutputPipeline(1)
   ) u_prim_ram_1p_adv_ctn (
     .clk_i    (clkmgr_clocks.clk_main_infra),
-    .rst_ni   (rstmgr_resets.rst_lc_n[rstmgr_pkg::DomainMainSel]),
+    .rst_ni   (rstmgr_resets.rst_lc_n${rst_sel('lc', 'Main')}),
     .req_i    (sram_req),
     .write_i  (sram_we),
     .addr_i   (sram_addr),

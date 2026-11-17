@@ -9,7 +9,8 @@ from typing import Dict, List, NamedTuple
 
 from basegen.typing import ConfigT, ParamsT
 from topgen.clocks import Clocks, ClockSignal
-from topgen.lib import find_module, get_ipgen_params
+from topgen.lib import (find_module, get_clkmgr_clock_out_partitions, get_clkmgr_src_partitions,
+                        get_ipgen_params, validate_split_clkmgr)
 
 
 class ClockMeasureConfig(NamedTuple):
@@ -93,6 +94,18 @@ def get_clkmgr_params(top: ConfigT) -> ParamsT:
         "primary_clk":
         primary_clk,
     })
+    # Tell the templates which partition receives or outputs each clock.
+    # Check that the clkmgr is split, and that exactly one partition receives each source clock.
+    validate_split_clkmgr(top)
+    # Record the partition that receives each source clock.
+    partitions = get_clkmgr_src_partitions(top)
+    for name, src in ipgen_params["src_clks"].items():
+        src["clkmgr_partition"] = partitions[name]
+    # Record the partitions that output each clock.
+    outputs = get_clkmgr_clock_out_partitions(top)
+    for clks in ipgen_params["typed_clocks"].values():
+        for name, clk in clks.items():
+            clk["out_partitions"] = outputs[name]
     return ipgen_params
 
 

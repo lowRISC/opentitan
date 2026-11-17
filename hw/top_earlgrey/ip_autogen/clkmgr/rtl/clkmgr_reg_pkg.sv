@@ -11,6 +11,8 @@ package clkmgr_reg_pkg;
   parameter int NumSwGateableClocks = 4;
   parameter int NumHintableClocks = 4;
   parameter int NumAlerts = 2;
+  parameter int NumAlertsPrimary = 2;
+  parameter int NumAlertsSecondary = 0;
 
   // Address widths within the block
   parameter int BlockAw = 7;

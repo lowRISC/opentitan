@@ -31,15 +31,66 @@ interface clkmgr_if (
   // scanmode_i == MuBi4True defeats all clock gating.
   prim_mubi_pkg::mubi4_t scanmode_i;
 
+  // The power manager's enable of the gated copy of the always-on clock, which the secondary
+  // partition gives the primary partition. Nothing powers the primary partition's domain down here,
+  // so it starts open, as the power manager keeps it while that domain is up.
+  logic main_pd_aon_clk_en = 1'b1;
+
+  function automatic void update_main_pd_aon_clk_en(bit value);
+    main_pd_aon_clk_en = value;
+  endfunction
+
   prim_mubi_pkg::mubi4_t jitter_en_o;
-  clkmgr_pkg::clkmgr_out_t clocks_o;
+
+  // The clocks that the two partitions output, from the testbench.
+  clkmgr_pkg::clkmgr_out_primary_t clocks_primary;
+  clkmgr_pkg::clkmgr_out_secondary_t clocks_secondary;
+
+  // Every clock of the clock manager, as the single power-domain clock manager output them. Each
+  // clock comes from a partition that outputs it, the primary if both do.
+  typedef struct packed {
+    logic clk_io_powerup;
+    logic clk_aon_powerup;
+    logic clk_aon_gated_powerup;
+    logic clk_main_powerup;
+    logic clk_aon_infra;
+    logic clk_aon_timers;
+    logic clk_main_aes;
+    logic clk_main_hmac;
+    logic clk_main_kmac;
+    logic clk_main_otbn;
+    logic clk_io_infra;
+    logic clk_main_infra;
+    logic clk_io_secure;
+    logic clk_main_secure;
+    logic clk_io_timers;
+    logic clk_io_peri;
+  } clkmgr_out_t;
+  clkmgr_out_t clocks_o;
+  assign clocks_o.clk_io_powerup = clocks_primary.clk_io_powerup;
+  assign clocks_o.clk_aon_powerup = clocks_secondary.clk_aon_powerup;
+  assign clocks_o.clk_aon_gated_powerup = clocks_primary.clk_aon_gated_powerup;
+  assign clocks_o.clk_main_powerup = clocks_primary.clk_main_powerup;
+  assign clocks_o.clk_aon_infra = clocks_secondary.clk_aon_infra;
+  assign clocks_o.clk_aon_timers = clocks_secondary.clk_aon_timers;
+  assign clocks_o.clk_main_aes = clocks_primary.clk_main_aes;
+  assign clocks_o.clk_main_hmac = clocks_primary.clk_main_hmac;
+  assign clocks_o.clk_main_kmac = clocks_primary.clk_main_kmac;
+  assign clocks_o.clk_main_otbn = clocks_primary.clk_main_otbn;
+  assign clocks_o.clk_io_infra = clocks_primary.clk_io_infra;
+  assign clocks_o.clk_main_infra = clocks_primary.clk_main_infra;
+  assign clocks_o.clk_io_secure = clocks_primary.clk_io_secure;
+  assign clocks_o.clk_main_secure = clocks_primary.clk_main_secure;
+  assign clocks_o.clk_io_timers = clocks_primary.clk_io_timers;
+  assign clocks_o.clk_io_peri = clocks_primary.clk_io_peri;
 
   // Internal DUT signals.
   // ICEBOX(lowrisc/opentitan#18379): This is a core env component (i.e. reusable entity) that
   // makes hierarchical references into the DUT. A better strategy would be to bind this interface
   // to the DUT in tb.sv and use relative paths instead.
 `ifndef CLKMGR_HIER
-  `define CLKMGR_HIER tb.dut
+  // The registers and the measurements are in the primary partition of the clkmgr.
+  `define CLKMGR_HIER tb.dut_primary
 `endif
 
   // The CSR values from the testbench side.

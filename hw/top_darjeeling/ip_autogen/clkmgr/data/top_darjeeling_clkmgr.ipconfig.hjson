@@ -14,6 +14,7 @@
         aon: false
         freq: 1000000000
         ref: false
+        clkmgr_partition: primary
       }
       io:
       {
@@ -21,6 +22,7 @@
         aon: false
         freq: 250000000
         ref: false
+        clkmgr_partition: primary
       }
       aon:
       {
@@ -28,6 +30,7 @@
         aon: true
         freq: 62500000
         ref: true
+        clkmgr_partition: secondary
       }
     }
     derived_clks: {}
@@ -39,16 +42,28 @@
         {
           src_name: main
           endpoint_ip: clkmgr
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_io_i:
         {
           src_name: io
           endpoint_ip: clkmgr
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_aon_i:
         {
           src_name: aon
           endpoint_ip: clkmgr
+          out_partitions:
+          [
+            secondary
+          ]
         }
       }
       ft_clks:
@@ -57,26 +72,55 @@
         {
           src_name: io
           endpoint_ip: pwrmgr
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_aon_powerup:
         {
           src_name: aon
           endpoint_ip: pwrmgr
+          out_partitions:
+          [
+            secondary
+          ]
+        }
+        clk_aon_gated_powerup:
+        {
+          src_name: aon
+          endpoint_ip: rstmgr
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_main_powerup:
         {
           src_name: main
           endpoint_ip: rstmgr
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_aon_infra:
         {
           src_name: aon
           endpoint_ip: soc_proxy
+          out_partitions:
+          [
+            secondary
+          ]
         }
         clk_aon_timers:
         {
           src_name: aon
           endpoint_ip: aon_timer
+          out_partitions:
+          [
+            secondary
+          ]
         }
       }
       rg_clks:
@@ -85,26 +129,46 @@
         {
           src_name: io
           endpoint_ip: ast
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_main_infra:
         {
           src_name: main
           endpoint_ip: soc_proxy
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_io_secure:
         {
           src_name: io
           endpoint_ip: otp_ctrl
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_main_secure:
         {
           src_name: main
           endpoint_ip: otp_ctrl
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_io_timers:
         {
           src_name: io
           endpoint_ip: rv_timer
+          out_partitions:
+          [
+            primary
+          ]
         }
       }
       sw_clks:
@@ -113,6 +177,10 @@
         {
           src_name: io
           endpoint_ip: uart0
+          out_partitions:
+          [
+            primary
+          ]
         }
       }
       hint_clks:
@@ -121,21 +189,37 @@
         {
           src_name: main
           endpoint_ip: aes
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_main_hmac:
         {
           src_name: main
           endpoint_ip: hmac
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_main_kmac:
         {
           src_name: main
           endpoint_ip: kmac
+          out_partitions:
+          [
+            primary
+          ]
         }
         clk_main_otbn:
         {
           src_name: main
           endpoint_ip: otbn
+          out_partitions:
+          [
+            primary
+          ]
         }
       }
     }

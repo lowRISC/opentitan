@@ -9,7 +9,7 @@ import sys
 from collections import OrderedDict, defaultdict
 from copy import deepcopy
 from pathlib import Path
-from typing import Dict, List, Optional, Tuple, Union
+from typing import Dict, List, Optional, Sequence, Set, Tuple, Union
 
 import hjson
 from basegen.lib import Name
@@ -783,24 +783,322 @@ def shadow_name(name: str) -> str:
         return 'rst_shadowed_ni'
 
 
-def get_clock_prefixes(top, domain_mod: str = None) -> dict:
+def _partition_suffix(partition: str) -> str:
+    '''Return the suffix that a split manager adds to the names of a partition's output signals.
+
+    topgen names a net after the instance and the signal ({inst_name}_{name}), and both partitions
+    share the instance. So the secondary partition's clocks and resets carry its name, as in
+    clocks_secondary, in every top. The primary partition keeps the names of a manager that is not
+    split. The type names of both partitions carry the partition's name (see
+    _get_manager_partitions).
+
+    The names come from this rule, not from the description of the IP, because topgen builds the
+    clock connections (extract_clocks) before it generates the clkmgr. The templates of both
+    managers follow the same rule.
+    '''
+    return f'_{partition}' if partition == PART_SECONDARY else ''
+
+
+def declares_secondary(module) -> bool:
+    '''Return whether the top configuration gives a module a secondary partition.
+
+    Unlike is_split_ip, which topgen only sets once it has generated the IP, this works while topgen
+    creates the parameters of the IP.
+    '''
+    return module is not None and module.get('domain_secondary') is not None
+
+
+def _clock_src_name(net) -> str:
+    '''Return the clock name of a clock source, which is a clock name, or a dict with the clock name
+    and, optionally, its group.'''
+    return net['clock'] if isinstance(net, dict) else net
+
+
+def get_clkmgr_src_partitions(top) -> Dict[str, str]:
+    '''Return, by name, the clkmgr partition that receives each source clock.
+
+    The clock_srcs of the partitions say which partition receives a source. A derived source, such
+    as io_div4, has the partition of the source it is divided from. A partition generates the clocks
+    of the sources that it receives. Raise a ValueError if more than one partition receives a
+    source.
+    '''
     clkmgr = find_module(top['module'], 'clkmgr')
-    domain_clkmgr = clkmgr.get('domain')
+    clocks = top['clocks']
+    received: Dict[str, Set[str]] = {}
+    for partition, srcs in get_conns_for(clkmgr, 'clock_srcs'):
+        for net in srcs.values():
+            name = _clock_src_name(net)
+            if name in clocks.derived_srcs:
+                name = clocks.derived_srcs[name].src.name
+            if name in clocks.srcs:
+                received.setdefault(name, set()).add(partition)
+    shared = {name: sorted(parts) for name, parts in received.items() if len(parts) > 1}
+    if shared:
+        raise ValueError(f"Source clocks received by more than one partition of the "
+                         f"{clkmgr['name']}: {shared}")
+    return {name: next(iter(parts)) for name, parts in received.items()}
 
-    if domain_clkmgr == domain_mod or domain_mod is None:
-        prefixes = {
-            'top': f"{clkmgr['name']}_clocks.",
-            'ext': '',
-            'lpg': f"{clkmgr['name']}_cg_en.",
-        }
-    else:
-        prefixes = {
-            'top': f"{clkmgr['name']}_clocks_i.",
-            'ext': '',
-            'lpg': f"{clkmgr['name']}_cg_en_i.",
-        }
 
-    return prefixes
+def get_clkmgr_clock_partition(top, src=None) -> str:
+    '''Return the clkmgr partition that hosts the clocks of a clock source.
+
+    The partition that receives the source hosts its clocks (see get_clkmgr_src_partitions). Without
+    a source, the primary partition hosts the clocks. Raise a ValueError if no partition receives
+    the source.
+    '''
+    clkmgr = find_module(top['module'], 'clkmgr')
+    if src is None:
+        return PART_PRIMARY
+    clocks = top['clocks']
+    name = src.name
+    if name in clocks.derived_srcs:
+        name = clocks.derived_srcs[name].src.name
+    partitions = get_clkmgr_src_partitions(top)
+    if name not in partitions:
+        raise ValueError(f"The source clock {name!r} is not received by any partition of the "
+                         f"{clkmgr['name']}")
+    return partitions[name]
+
+
+def validate_split_clkmgr(top) -> None:
+    '''Check that the clkmgr is split, and that exactly one partition receives each source clock.
+
+    Raise a ValueError if the clkmgr has no domain_secondary, or if no partition receives a source.
+    get_clkmgr_src_partitions raises one if two partitions receive a source.
+    '''
+    clkmgr = find_module(top['module'], 'clkmgr')
+    if clkmgr is None or not declares_secondary(clkmgr):
+        raise ValueError("The clkmgr must be split into two partitions: give it a "
+                         "domain_secondary in the configuration of the top")
+    partitions = get_clkmgr_src_partitions(top)
+    missing = [name for name in top['clocks'].srcs if name not in partitions]
+    if missing:
+        raise ValueError(f"The source clocks {missing} are not received by any partition of the "
+                         f"{clkmgr['name']}. Add them to the clock_srcs of one partition.")
+
+
+def _get_manager_partitions(top, ip_type: str) -> list:
+    '''Return (partition, power domain, signal suffix, type infix) for each partition of a manager.
+
+    The IP adds the signal suffix to the names of its output signals (see _partition_suffix), and
+    the type infix to the names of their struct types.
+    '''
+    mod = find_module(top['module'], ip_type)
+    return [(part, get_domain_of_partition(mod, part), _partition_suffix(part), f'_{part}')
+            for part in (PART_PRIMARY, PART_SECONDARY)]
+
+
+def _in_partition_order(parts) -> List[str]:
+    '''Return the given partitions as a list in a fixed order, primary first.'''
+    return [p for p in (PART_PRIMARY, PART_SECONDARY) if p in parts]
+
+
+def _out_partition(top, ip_type: str, generated: str, domain: Optional[str]) -> str:
+    '''Return the partition of a split manager that outputs a signal to a power domain.
+
+    `generated` is the partition that generates the signal. It also outputs the signal when there is
+    no power domain, or when it is in that power domain. Otherwise the partition in that power
+    domain outputs the signal, and the signal crosses to it inside the manager. If no partition is
+    in that power domain, the generating partition outputs the signal.
+    '''
+    module = find_module(top['module'], ip_type)
+    if domain is None or get_domain_of_partition(module, generated) == domain:
+        return generated
+    for part, dom, _, _ in _get_manager_partitions(top, ip_type):
+        if dom == domain:
+            return part
+    return generated
+
+
+def _indication_crossings(top, primary_domain: str, kind: str, skip) -> Set[Tuple[str, str, str]]:
+    '''Return the crossings of the indication struct `kind` (cg_en or rst_en) of a split manager.
+
+    The primary partition outputs all the indications. So the struct crosses from the primary into
+    the other domain when that domain reads an indication.
+    '''
+    return {(kind, PART_PRIMARY, d) for d in _indication_reader_domains(top, primary_domain, skip)
+            if d != primary_domain}
+
+
+def get_clkmgr_partitions(top) -> list:
+    '''Return (partition, power domain, signal suffix, type infix) for each partition of the clkmgr.
+    '''
+    return _get_manager_partitions(top, 'clkmgr')
+
+
+def rstmgr_is_array(hosted: Sequence[str], power_domains: Sequence[str]) -> bool:
+    """Return whether an output reset is an array over the power domains in a partition's output
+    struct.
+
+    A reset that a partition hosts for every power domain is an array. A reset that it hosts for a
+    single power domain is a single bit. With two power domains, every case is one of these two. Any
+    other case has no defined shape, so raise a ValueError.
+    """
+    if len(hosted) == 1:
+        return False
+    if len(hosted) == len(power_domains):
+        return True
+    raise ValueError(f'a partition hosts {len(hosted)} of {len(power_domains)} power domains of '
+                     'one reset, which has no defined shape')
+
+
+def get_rstmgr_partitions(top) -> list:
+    '''Return (partition, power domain, signal suffix, type infix) for each partition of the rstmgr.
+    '''
+    return _get_manager_partitions(top, 'rstmgr')
+
+
+def get_clock_src(top, clk_name: str):
+    '''Return the source clock of a managed clock signal, or None if the clock is not known.'''
+    group = top['clocks'].make_clock_to_group().get(clk_name)
+    if group is None:
+        return None
+    sig = group.clocks.get(clk_name)
+    return sig.src if sig is not None else None
+
+
+def get_clkmgr_out_partition(top, src, domain: Optional[str], primary_side: bool = False) -> str:
+    '''Return the clkmgr partition that outputs the clocks of a source to a power domain.
+
+    The partition that receives a source generates and gates its clocks. _out_partition gives the
+    partition that outputs them.
+
+    The always-on clock is different. The secondary partition generates it, and gates the copy that
+    it gives the primary partition, around the clamp of the power domain that powers down. Modules
+    of the always-on power domain take the secondary partition's clock. Every other module, and the
+    primary partition of the rstmgr (`primary_side`), takes the primary partition's, whatever the
+    power domains of the partitions: the same rule in one power domain or two.
+    '''
+    generated = get_clkmgr_clock_partition(top, src)
+    if generated == PART_SECONDARY and primary_side:
+        # The primary side's gated copy, whatever the power domain (or none).
+        return PART_PRIMARY
+    if generated == PART_SECONDARY and domain is not None:
+        clkmgr = find_module(top['module'], 'clkmgr')
+        aon_domain = get_domain_of_partition(clkmgr, PART_SECONDARY)
+        return PART_PRIMARY if domain != aon_domain else PART_SECONDARY
+    return _out_partition(top, 'clkmgr', generated, domain)
+
+
+def get_clock_prefixes(top, domain_mod: str = None, src=None, primary_side: bool = False) -> dict:
+    '''Return the hierarchical prefixes to the clock, the external clock and the clock gating
+    signals.
+
+    The clock comes from the clkmgr partition that outputs it to the power domain `domain_mod` of
+    the consumer (see get_clkmgr_out_partition). The clock gating indications all come from the
+    primary partition. Each prefix is a local net if that partition is in the power domain of the
+    consumer, and the input port of the domain otherwise. Without a source, the prefixes are those
+    of the primary partition.
+    '''
+    clkmgr = find_module(top['module'], 'clkmgr')
+
+    def prefix(kind: str, partition: str) -> str:
+        '''Return the prefix to a struct of `partition`, which is a local net or the input port.'''
+        sfx = _partition_suffix(partition)
+        local = domain_mod is None or get_domain_of_partition(clkmgr, partition) == domain_mod
+        return f"{clkmgr['name']}_{kind}{sfx}{'' if local else '_i'}."
+
+    return {
+        'top': prefix('clocks', get_clkmgr_out_partition(top, src, domain_mod, primary_side)),
+        'ext': '',
+        'lpg': prefix('cg_en', PART_PRIMARY),
+    }
+
+
+def _clock_name(clk_name: str) -> str:
+    '''Return the name of a clock signal, also from a connection such as clkmgr_clocks.clk_x.'''
+    return clk_name.rsplit('.', 1)[-1]
+
+
+def _is_gated_copy(clk_name: str) -> bool:
+    '''Return whether a clock is the primary side's gated copy of a secondary partition's clock.
+
+    Such a clock is named clk_<source>_gated_<group> (see merge), and only the clkmgr's primary
+    partition outputs it.
+    '''
+    return '_gated_' in _clock_name(clk_name)
+
+
+def get_clkmgr_clock_out_partitions(top) -> Dict[str, List[str]]:
+    '''Return, for every managed clock, the partitions of the clkmgr that output the clock.
+
+    Each endpoint gets the clock from the partition in the endpoint's power domain (see
+    get_clkmgr_out_partition). An exported clock counts as used in the power domain of the primary
+    partition. Raise a ValueError for a clock that no endpoint uses.
+    '''
+    clkmgr = find_module(top['module'], 'clkmgr')
+    primary_domain = get_domain_of_partition(clkmgr, PART_PRIMARY)
+    exported = {'clk_' + name for eps in top.get('exported_clks', {}).values()
+                for names in eps.values() for name in names}
+    result = {}
+    for group in top['clocks'].groups.values():
+        for name, sig in group.clocks.items():
+            keys = set(sig.consumer_keys)
+            if name in exported:
+                keys.add((primary_domain, False))
+            parts = {get_clkmgr_out_partition(top, sig.src, d, ps) for d, ps in keys}
+            if not parts:
+                raise ValueError(f"No endpoint uses the clock {name}. Remove the clock from the "
+                                 "configuration of the top, or connect it.")
+            result[name] = _in_partition_order(parts)
+    return result
+
+
+def _indication_reader_domains(top, primary_domain: str, skip) -> Set[str]:
+    '''Return the power domains of the low-power groups (LPGs) that read clock gating or reset
+    asserted indications.
+
+    These are the LPGs of the alert handlers, and the outgoing LPGs, which are in the power domain
+    of the primary partition. The result leaves out the LPGs for which skip(lpg) is true.
+    '''
+    domains = set()
+    for ah in find_modules(top['module'], 'alert_handler'):
+        ah_domain = get_domain_of_partition(ah, PART_PRIMARY)
+        domains |= {ah_domain for lpg in top.get('alert_lpgs', []) if not skip(lpg)}
+    for lpgs in top.get('outgoing_alert_lpgs', {}).values():
+        domains |= {primary_domain for lpg in lpgs if not skip(lpg)}
+    return domains
+
+
+def _struct_crosses(crossings: Set[Tuple[str, str, str]], kind: str, partition: str,
+                    domain: Optional[str]) -> bool:
+    '''Return whether a struct of the given kind crosses from `partition` into `domain`, for
+    clkmgr_struct_crosses and rstmgr_struct_crosses.
+
+    A domain of None means any domain.
+    '''
+    return any(k == kind and p == partition and (domain is None or d == domain)
+               for k, p, d in crossings)
+
+
+def get_clkmgr_crossings(top) -> Set[Tuple[str, str, str]]:
+    '''Return the structs of the clkmgr that must enter a power domain through an input port.
+
+    Each entry is (kind, partition, power domain), with kind 'clocks' or 'cg_en'. A domain needs a
+    clock struct if a consumer there uses a clock that only the partition in the other domain
+    outputs. A domain other than the primary partition's needs the clock gating struct where an LPG
+    of the alert handler, or an outgoing LPG, reads an indication.
+    '''
+    dom = {part: d for part, d, _, _ in get_clkmgr_partitions(top)}
+    crossings = set()
+    for group in top['clocks'].groups.values():
+        # Only the groups with src 'top' come from the clkmgr. An 'ext' group holds raw clocks.
+        if group.src != 'top':
+            continue
+        for sig in group.clocks.values():
+            for d, ps in sig.consumer_keys:
+                part = get_clkmgr_out_partition(top, sig.src, d, ps)
+                if dom[part] != d:
+                    crossings.add(('clocks', part, d))
+    crossings |= _indication_crossings(top, dom[PART_PRIMARY], 'cg_en',
+                                       lambda lpg: lpg.get('unmanaged_clock'))
+    return crossings
+
+
+def clkmgr_struct_crosses(top, kind: str, partition: str, domain: Optional[str] = None) -> bool:
+    '''Return whether a struct of the clkmgr crosses into a power domain, or into any domain if
+    `domain` is None.'''
+    return _struct_crosses(get_clkmgr_crossings(top), kind, partition, domain)
 
 
 def get_clock_path(top: object,
@@ -809,12 +1107,12 @@ def get_clock_path(top: object,
                    unmanaged_clock: bool = False) -> str:
     """Return the appropriate clock path given the clock name
     """
-    prefixes = get_clock_prefixes(top, domain_mod)
     if unmanaged_clock:
         return top['unmanaged_clocks'].get_clock_by_signal_name(
             clk_name).signal_name
-    else:
-        return prefixes['top'] + clk_name
+    prefixes = get_clock_prefixes(top, domain_mod, get_clock_src(top, _clock_name(clk_name)),
+                                  _is_gated_copy(clk_name))
+    return prefixes['top'] + _clock_name(clk_name)
 
 
 def get_clock_lpg_path(top: object,
@@ -823,33 +1121,328 @@ def get_clock_lpg_path(top: object,
                        unmanaged_clock: bool = False) -> str:
     """Return the appropriate LPG clock path given name
     """
-    prefixes = get_clock_prefixes(top, domain_mod)
     if unmanaged_clock:
         return top['unmanaged_clocks'].get_clock_by_signal_name(
             clk_name).cg_en_signal
-    else:
-        clk_name = clk_name.split('clk_')[-1]
-        return prefixes['lpg'] + clk_name
+    prefixes = get_clock_prefixes(top, domain_mod, get_clock_src(top, _clock_name(clk_name)),
+                                  _is_gated_copy(clk_name))
+    clk_name = clk_name.split('clk_')[-1]
+    return prefixes['lpg'] + clk_name
 
 
-def get_reset_prefixes(top, domain_mod) -> dict:
+# The name of the always-on clock, which the secondary partition of the clkmgr generates.
+AON_CLOCK = 'aon'
+
+
+def rstmgr_clock_entry_partitions(clock: str, uses: Set[str]) -> Set[str]:
+    '''Return the rstmgr partitions that the clock `clock` enters, of those in `uses`.
+
+    A signal enters an IP once, in the partition of the power domain that generates it, and crosses
+    between power domains inside the IP. The primary partition of the clkmgr generates every clock
+    but the always-on one, so each of those clocks enters the primary partition of the rstmgr only,
+    and the secondary partition gets it from there, in intraip_p2s.
+
+    The always-on clock is different: the clkmgr provides one per power domain. Its secondary
+    partition's runs always; its primary partition's is gated around the clamp of the power domain
+    that powers down. They are two different clocks, so each partition of the rstmgr that uses the
+    always-on clock receives the one of its own power domain, and the rstmgr forwards none.
+    validate_split_rstmgr checks that the clkmgr generates the clocks this way.
+    '''
+    if clock == AON_CLOCK:
+        return set(uses)
+    return {PART_PRIMARY} & set(uses) or {PART_PRIMARY}
+
+
+def get_rstmgr_partition_clocks(top) -> Dict[str, List[str]]:
+    '''Return, by partition, the clocks that each partition of the rstmgr receives (its clock_srcs).
+    '''
     rstmgr = find_module(top['module'], 'rstmgr')
-    domain_rstmgr = rstmgr.get('domain')
+    received: Dict[str, List[str]] = {}
+    for partition, srcs in get_conns_for(rstmgr, 'clock_srcs'):
+        names = received.setdefault(partition, [])
+        for net in srcs.values():
+            name = _clock_src_name(net)
+            if name not in names:
+                names.append(name)
+    return received
+
+
+def get_rstmgr_reset_partition(top, name: str, domain: Optional[str]) -> str:
+    '''Return the rstmgr partition that generates a reset for a power domain.
+
+    The rstmgr generates a reset in a partition that has the clock of the reset: the partition that
+    receives it (see get_rstmgr_partition_clocks), or the other one, which gets it forwarded
+    (rstmgr_clock_entry_partitions). It chooses the partition by these rules, in order:
+
+     1. The roots of the reset tree, which no leaf generates, are in the secondary partition. The
+        secondary partition handles the POR, as the primary partition of the clkmgr makes the
+        derived clocks.
+     2. Otherwise, the partition in the power domain of the reset. If both partitions are in that
+        power domain, the secondary partition. So the partitions host the same resets whether they
+        are in one power domain or in two.
+     3. Otherwise, the primary partition.
+
+    Raise a ValueError if neither partition receives the clock of a reset.
+    '''
+    rstmgr = find_module(top['module'], 'rstmgr')
+    rst = top['resets'].get_reset_by_name(name)
+    if not rst.gen:
+        return PART_SECONDARY
+    received = get_rstmgr_partition_clocks(top)
+    if not any(rst.clock.name in names for names in received.values()):
+        raise ValueError(f"No partition of the {rstmgr['name']} receives the clock "
+                         f"{rst.clock.name!r} of the reset {name}")
+    # A partition that does not receive the clock gets it from the other partition
+    # (rstmgr_clock_entry_partition), so either partition can generate the reset.
+    parts = _in_partition_order({PART_PRIMARY, PART_SECONDARY})
+    # Try the secondary partition first, so that it wins when both partitions are in that power
+    # domain.
+    for part in sorted(parts, key=lambda p: p != PART_SECONDARY):
+        if get_domain_of_partition(rstmgr, part) == domain:
+            return part
+    return parts[0]
+
+
+def validate_split_rstmgr(top) -> None:
+    '''Check that the rstmgr is split, and that it can generate each of its resets, as
+    validate_split_clkmgr does for the clocks.
+
+    It checks four things:
+
+     - The rstmgr has a domain_secondary. This function raises a ValueError otherwise.
+     - Each clock but the always-on one enters only the primary partition of the rstmgr, as the
+       primary partition of the clkmgr generates it (rstmgr_clock_entry_partitions). This function
+       raises a ValueError otherwise.
+     - A partition receives the clock of each reset. get_rstmgr_reset_partition raises a ValueError
+       otherwise.
+     - For each reset, a partition generates the reset for every power domain or for a single one.
+       rstmgr_is_array raises a ValueError otherwise.
+    '''
+    rstmgr = find_module(top['module'], 'rstmgr')
+    if rstmgr is None or not declares_secondary(rstmgr):
+        raise ValueError("The rstmgr must be split into two partitions: give it a "
+                         "domain_secondary in the configuration of the top")
+    for partition, clocks in get_rstmgr_partition_clocks(top).items():
+        for clock in clocks:
+            generated = get_clkmgr_clock_partition(top, top['clocks'].get_clock_by_name(clock))
+            if clock == AON_CLOCK:
+                continue
+            enters = PART_PRIMARY
+            if partition != enters:
+                log.warning(f"The {partition} partition of the {rstmgr['name']} receives the "
+                            f"clock {clock!r}, which enters its {enters} partition: the "
+                            f"{partition} partition gets it from there, in intraip")
+            if generated != enters:
+                log.warning(f"The clock {clock!r} enters the {enters} partition of the "
+                            f"{rstmgr['name']}, but the clkmgr generates it in its "
+                            f"{generated} partition")
+    for rst in top['resets'].get_top_resets():
+        parts = {d: get_rstmgr_reset_partition(top, rst.name, d) for d in rst.domains}
+        for part in set(parts.values()):
+            rstmgr_is_array([d for d, p in parts.items() if p == part], top['power']['domains'])
+
+    # The clkmgr gates the always-on clock that its primary partition gets from its secondary
+    # partition, around the clamp of the power domain that powers down. That gated clock is the
+    # always-on clock of the primary partitions of the managers, and of the modules that the
+    # clkmgr's primary partition serves outside the always-on power domain. A module of the
+    # always-on power domain on it would lose its clock in every deep sleep.
+    #
+    # These checks only warn, because the rules of the split managers are still evolving, and topgen
+    # should not get in the way of that (follow-up). They also check how other modules use the
+    # clocks of the managers, which the managers cannot see.
+    default_domain = top.get('power', {}).get('default')
+    clkmgr = find_module(top['module'], 'clkmgr')
+    aon_domain = get_domain_of_partition(clkmgr, PART_SECONDARY, default_domain)
+    aon_src = top['clocks'].get_clock_by_name(AON_CLOCK)
+    for module in top['module']:
+        if module['type'] in ('clkmgr', 'rstmgr'):
+            continue
+        for partition, srcs in get_conns_for(module, 'clock_srcs'):
+            domain = get_domain_of_partition(module, partition, default_domain)
+            if domain != aon_domain:
+                continue
+            for port, src in srcs.items():
+                name = src if isinstance(src, str) else src.get('clock')
+                if name != AON_CLOCK:
+                    continue
+                if get_clkmgr_out_partition(top, aon_src, domain) == PART_PRIMARY:
+                    log.warning(f"{module['name']}.{port} ({partition} partition, power domain "
+                                f"{domain}) gets the always-on clock from the primary partition "
+                                f"of the clkmgr, which gates it in every deep sleep")
+
+
+def get_rstmgr_out_partition(top, name: str, rst_domain: str,
+                             consumer_domain: Optional[str]) -> str:
+    '''Return the rstmgr partition that outputs a reset of a power domain to a consumer.
+
+    The partition that get_rstmgr_reset_partition chooses generates the reset. _out_partition gives
+    the partition that outputs the reset.
+    '''
+    generated = get_rstmgr_reset_partition(top, name, rst_domain)
+    return _out_partition(top, 'rstmgr', generated, consumer_domain)
+
+
+def _rstmgr_consumers(top):
+    '''Yield (reset name, power domain of the reset, power domain of the consumer) for every use of
+    a reset by a module or a crossbar.
+
+    An exported reset counts as used in the power domain of the primary partition. The function
+    skips reset connections without a power domain, and names that are not top-level resets.
+    '''
+    resets = top['resets']
+    # The crossbars are in top['xbar'], not in top['module'], so the loop scans both, as
+    # extract_clocks does for the clocks. This is a workaround until topgen has one helper for every
+    # instance with connections.
+    for module in top['module'] + top['xbar']:
+        for partition, conns in get_conns_for(module, 'reset_connections'):
+            consumer_domain = get_domain_of_partition(module, partition)
+            for conn in conns.values():
+                if not isinstance(conn, dict) or not conn.get('domain'):
+                    continue
+                # get_reset_by_name raises a ValueError for a reset name that it does not know.
+                try:
+                    rst = resets.get_reset_by_name(conn['name'])
+                except ValueError:
+                    continue
+                if rst.rst_type == 'top':
+                    yield conn['name'], conn['domain'], consumer_domain
+    rstmgr = find_module(top['module'], 'rstmgr')
+    primary_domain = get_domain_of_partition(rstmgr, PART_PRIMARY)
+    for eps in top.get('exported_rsts', {}).values():
+        for rsts in eps.values():
+            for name in rsts:
+                # An exported reset is a name, or a dict that holds its name.
+                name = name['name'] if isinstance(name, dict) else name
+                for dom in resets.get_reset_by_name(name).domains:
+                    yield name, dom, primary_domain
+
+
+def get_rstmgr_reset_out_partitions(top) -> Dict[Tuple[str, str], List[str]]:
+    '''Return, for each reset and power domain, the partitions of the rstmgr that output the reset.
+
+    Each consumer gets the reset from the partition in the consumer's power domain (see
+    get_rstmgr_out_partition). Raise a ValueError for a reset that no consumer uses in one of its
+    power domains.
+    '''
+    result: Dict[Tuple[str, str], Set[str]] = {}
+    for name, dom, consumer_domain in _rstmgr_consumers(top):
+        result.setdefault((name, dom), set()).add(
+            get_rstmgr_out_partition(top, name, dom, consumer_domain))
+    unused = [f'{rst.name}[{dom}]' for rst in top['resets'].get_top_resets() for dom in rst.domains
+              if (rst.name, dom) not in result]
+    if unused:
+        raise ValueError(f"No consumer uses these resets: {', '.join(unused)}. Remove them from "
+                         "the configuration of the top, or connect them.")
+    return {k: _in_partition_order(v) for k, v in result.items()}
+
+
+def get_rstmgr_shadowed_out_partitions(top) -> Dict[Tuple[str, str], List[str]]:
+    '''Return, for each shadowed reset and power domain, the partitions of the rstmgr that output
+    the shadowed copy.
+
+    A reset, or the shadowed copy of a reset, crosses to the other partition only if a module in
+    that partition's power domain uses it. The partition that generates the shadowed copy outputs it
+    wherever it outputs the reset, even if no module in its own power domain uses the shadowed copy.
+    '''
+    outs = get_rstmgr_reset_out_partitions(top)
+    result = {}
+    for rst in top['resets'].get_top_resets():
+        if not rst.shadowed:
+            continue
+        for dom in rst.domains:
+            used = {get_rstmgr_out_partition(top, rst.name, d, consumer_domain)
+                    for d, consumer_domain in rst.shadowed_users if d == dom}
+            generated = get_rstmgr_reset_partition(top, rst.name, dom)
+            result[(rst.name, dom)] = [p for p in outs.get((rst.name, dom), [])
+                                       if p == generated or p in used]
+    return result
+
+
+def get_rstmgr_crossings(top) -> Set[Tuple[str, str, str]]:
+    '''Return the structs of the rstmgr that must enter a power domain through an input port.
+
+    Each entry is (kind, partition, power domain), with kind 'resets' or 'rst_en'. A domain needs a
+    reset struct if a consumer there uses a reset that only the partition in the other domain
+    outputs. A domain other than the primary partition's needs the reset enable struct where an LPG
+    of the alert handler, or an outgoing LPG, reads an indication.
+    '''
+    dom = {part: d for part, d, _, _ in get_rstmgr_partitions(top)}
+    crossings = set()
+    for name, rst_domain, consumer_domain in _rstmgr_consumers(top):
+        part = get_rstmgr_out_partition(top, name, rst_domain, consumer_domain)
+        if dom[part] != consumer_domain:
+            crossings.add(('resets', part, consumer_domain))
+
+    def skip(lpg):
+        '''Return whether the reset connection of an LPG is unmanaged or has no power domain.'''
+        conn = lpg.get('reset_connection')
+        return lpg.get('unmanaged_reset') or not isinstance(conn, dict) or not conn.get('domain')
+    crossings |= _indication_crossings(top, dom[PART_PRIMARY], 'rst_en', skip)
+    return crossings
+
+
+def rstmgr_struct_crosses(top, kind: str, partition: str, domain: Optional[str] = None) -> bool:
+    '''Return whether a struct of the rstmgr crosses into a power domain, or into any domain if
+    `domain` is None.'''
+    return _struct_crosses(get_rstmgr_crossings(top), kind, partition, domain)
+
+
+def get_rstmgr_output_index(top, name: str, rst_domain: str, partition: str,
+                            shadowed: bool = False) -> str:
+    '''Return the power domain to index the field of a reset, or of its shadowed copy, with, in the
+    output struct of a partition.
+
+    Return None if the field is a single bit.
+    '''
+    rst = top['resets'].get_reset_by_name(name)
+    outs = (get_rstmgr_shadowed_out_partitions(top) if shadowed
+            else get_rstmgr_reset_out_partitions(top))
+    out_doms = [d for d in rst.domains if partition in outs.get((name, d), [])]
+    indexed = rstmgr_is_array(out_doms, top['power']['domains'])
+    return (rst_domain if indexed else None)
+
+
+def get_reset_prefixes(top, domain_mod, partition: str = PART_PRIMARY) -> dict:
+    '''Return the hierarchical prefixes to the resets, the external resets and the reset enables.
+
+    The prefix is the one of the rstmgr partition that drives the reset, or of the primary partition
+    if the caller gives no `partition`. It is a local net if that partition is in the power domain
+    `domain_mod` of the consumer, and the input port of the domain otherwise.
+    '''
+    rstmgr = find_module(top['module'], 'rstmgr')
+    domain_rstmgr = get_domain_of_partition(rstmgr, partition)
+    sfx = _partition_suffix(partition)
 
     if domain_rstmgr == domain_mod or domain_mod is None:
         prefixes = {
-            'top': f"{rstmgr['name']}_resets.",
+            'top': f"{rstmgr['name']}_resets{sfx}.",
             'ext': '',
-            'lpg': f"{rstmgr['name']}_rst_en.",
+            'lpg': f"{rstmgr['name']}_rst_en{sfx}.",
         }
     else:
         prefixes = {
-            'top': f"{rstmgr['name']}_resets_i.",
+            'top': f"{rstmgr['name']}_resets{sfx}_i.",
             'ext': '',
-            'lpg': f"{rstmgr['name']}_rst_en_i.",
+            'lpg': f"{rstmgr['name']}_rst_en{sfx}_i.",
         }
 
     return prefixes
+
+
+def _get_reset_location(top, name: str, domain: Optional[str]) -> Tuple[str, Optional[str]]:
+    '''Return the partition that generates a reset, and the power domain to index its field with.
+
+    The power domain is None if the field has no index. The shape of a field follows the convention
+    of the output structs of the rstmgr templates.
+    '''
+    rst = top['resets'].get_reset_by_name(name)
+    if rst.rst_type != 'top':
+        return PART_PRIMARY, domain
+    if not domain:
+        return get_rstmgr_reset_partition(top, name, rst.domains[0]), None
+    partition = get_rstmgr_reset_partition(top, name, domain)
+    hosted = [d for d in rst.domains if get_rstmgr_reset_partition(top, name, d) == partition]
+    return partition, (domain if rstmgr_is_array(hosted, top['power']['domains']) else None)
 
 
 def get_reset_path(top: object,
@@ -859,12 +1452,19 @@ def get_reset_path(top: object,
                    unmanaged_reset: bool = False) -> str:
     """Return the appropriate reset path given name
     """
-    prefixes = get_reset_prefixes(top, domain_mod)
     if unmanaged_reset:
         return top['unmanaged_resets'].get(reset['name']).signal_name
+    rst = top['resets'].get_reset_by_name(reset['name'])
+    if rst.rst_type != 'top' or not reset['domain']:
+        # The reset comes from the partition that generates it.
+        partition, index_domain = _get_reset_location(top, reset['name'], reset['domain'])
     else:
-        return top['resets'].get_path(reset['name'], prefixes, reset['domain'],
-                                      shadow_sel)
+        # The reset comes from the partition that outputs it in the consumer's power domain.
+        partition = get_rstmgr_out_partition(top, reset['name'], reset['domain'], domain_mod)
+        index_domain = get_rstmgr_output_index(top, reset['name'], reset['domain'], partition,
+                                               shadow_sel)
+    prefixes = get_reset_prefixes(top, domain_mod, partition)
+    return top['resets'].get_path(reset['name'], prefixes, index_domain, shadow_sel)
 
 
 def get_reset_lpg_path(top: object,
@@ -875,22 +1475,28 @@ def get_reset_lpg_path(top: object,
                        unmanaged_reset: bool = False) -> str:
     """Return the appropriate LPG reset path given name
     """
-    prefixes = get_reset_prefixes(top, domain_mod)
     if unmanaged_reset:
         return top['unmanaged_resets'].get(reset['name']).rst_en_signal_name
+    domain = reset_domain if reset_domain is not None else reset['domain']
+    rst = top['resets'].get_reset_by_name(reset['name'])
+    if rst.rst_type == 'top' and domain:
+        # The rstmgr outputs all the reset asserted indications from its primary partition, for the
+        # alert handlers.
+        partition = PART_PRIMARY
+        index_domain = domain if rstmgr_is_array(rst.domains, top['power']['domains']) else None
     else:
-        if reset_domain is not None:
-            return top['resets'].get_lpg_path(reset['name'], prefixes, reset_domain,
-                                              shadow_sel)
-        else:
-            return top['resets'].get_lpg_path(reset['name'], prefixes, reset['domain'],
-                                              shadow_sel)
+        # The indication comes from the partition that generates the reset.
+        partition, index_domain = _get_reset_location(top, reset['name'], domain)
+    prefixes = get_reset_prefixes(top, domain_mod, partition)
+    return top['resets'].get_lpg_path(reset['name'], prefixes, index_domain, shadow_sel)
 
 
 def get_unused_resets(top: ConfigT) -> Dict:
     """Return dict of unused resets and associated domain
     """
-    return top['resets'].get_unused_resets(top['power']['domains'])
+    # The rstmgr outputs each reset only in the domains that use it. So there are no unused resets.
+    # The function stays for its callers, rstmgr_tgl_excl.cfg.tpl and intermodule_signals.tpl.
+    return {}
 
 
 def get_ipgen_modules(top: ConfigT) -> List[ConfigT]:

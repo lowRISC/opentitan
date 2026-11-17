@@ -2,7 +2,7 @@
 # Licensed under the Apache License, Version 2.0, see LICENSE for details.
 # SPDX-License-Identifier: Apache-2.0
 
-from typing import Dict, List, NamedTuple, Tuple
+from typing import Dict, List, NamedTuple, Set, Tuple
 
 from basegen.lib import Name
 
@@ -122,9 +122,19 @@ class ClockSignal:
         self.name = name
         self.src = src
         self.endpoints: List[Tuple[str, str]] = []
+        # This field records the power domains of the clock's endpoints. A split clkmgr outputs
+        # the clock from the partition in each of these power domains.
+        self.consumer_domains: Set[str] = set()
+        # The same, with whether the endpoint is on the primary side (see
+        # lib.get_clkmgr_out_partition), which decides the partition for the always-on clock.
+        self.consumer_keys: Set[Tuple[str, bool]] = set()
 
-    def add_endpoint(self, ep_name: str, ep_port: str) -> None:
+    def add_endpoint(self, ep_name: str, ep_port: str, ep_domain: str,
+                     primary_side: bool = False) -> None:
+        '''Record an endpoint of the clock, and the power domain that the endpoint is in.'''
         self.endpoints.append((ep_name, ep_port))
+        self.consumer_domains.add(ep_domain)
+        self.consumer_keys.add((ep_domain, primary_side))
 
 
 class Group:

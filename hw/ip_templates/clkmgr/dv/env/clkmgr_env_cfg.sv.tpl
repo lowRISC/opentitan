@@ -53,6 +53,10 @@ class clkmgr_env_cfg extends cip_base_env_cfg #(
     list_of_alerts = clkmgr_env_pkg::LIST_OF_ALERTS;
     super.initialize(inherit_ral_models);
 
+    // The register block is in the primary partition of the clkmgr.
+    ral.set_hdl_path_root("tb.dut_primary", "BkdrRegPathRtl");
+    ral.set_hdl_path_root("tb.dut_primary", "BkdrRegPathRtlShadow");
+
     // This is for the integrity error test.
     tl_intg_alert_name = "fatal_fault";
     tl_intg_alert_fields[ral.fatal_err_code.reg_intg] = 1;

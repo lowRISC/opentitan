@@ -555,8 +555,12 @@ module chip_${top["name"]}_${target["name"]} #(
   tlul_pkg::tl_d2h_t ast_tl_rsp;
 
   // Generated clocks and resets
-  clkmgr_pkg::clkmgr_out_t clkmgr_clocks;
-  rstmgr_pkg::rstmgr_out_t rstmgr_resets;
+  // The top outputs the clocks and resets of the primary partitions of the clkmgr and the rstmgr.
+  clkmgr_pkg::clkmgr_out_primary_t clkmgr_clocks;
+  // The AST also needs the always-on clocks, which only the secondary partition of the clkmgr
+  // outputs.
+  clkmgr_pkg::clkmgr_out_secondary_t clkmgr_clocks_secondary;
+  rstmgr_pkg::rstmgr_out_primary_t rstmgr_resets;
 
   // external clock
   logic ext_clk;
@@ -875,7 +879,7 @@ module chip_${top["name"]}_${target["name"]} #(
     .ast_init_done_o       ( ast_init_done ),
     // buffered clocks & resets
     % for port, clk in ast["clock_srcs"].items():
-    .${port} (${lib.get_clock_prefixes(top)["top"]}clk_${clk["clock"]}_${clk["group"]}),
+    .${port} (${lib.get_clock_path(top, ast["clock_connections"][port])}),
     % endfor
     % for port, reset in ast["reset_connections"].items():
     .${port} (${lib.get_reset_path(top, reset)}),
@@ -1325,7 +1329,7 @@ module chip_${top["name"]}_${target["name"]} #(
   prim_mubi_pkg::mubi4_t clk_trans_idle, manual_in_io_clk_idle;
 
   % if target["name"] == "cw305":
-  assign clk_trans_idle = top_${top["name"]}.${top["name"]}_pd_aon.u_clkmgr.idle_i;
+  assign clk_trans_idle = top_${top["name"]}.${top["name"]}_pd_aon.u_clkmgr_part_primary.idle_i;
   % else:
   clkmgr_pkg::hint_names_e trigger_sel;
   always_comb begin : trigger_sel_mux
@@ -1337,7 +1341,7 @@ module chip_${top["name"]}_${target["name"]} #(
       default: trigger_sel = clkmgr_pkg::HintMainAes;
     endcase;
   end
-  assign clk_trans_idle = top_${top["name"]}.${top["name"]}_pd_aon.u_clkmgr.idle_i[trigger_sel];
+  assign clk_trans_idle = top_${top["name"]}.${top["name"]}_pd_aon.u_clkmgr_part_primary.idle_i[trigger_sel];
   % endif
 
   logic clk_io_div4_trigger_hw_en, manual_in_io_clk_trigger_hw_en;

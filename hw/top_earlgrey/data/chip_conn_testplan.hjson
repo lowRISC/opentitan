@@ -211,8 +211,8 @@
             '''
       stage: V2
       tests: ["ast_scanmode_padring", "ast_scanmode_clkmgr",
-              "ast_scanmode_lc_ctrl", "ast_scanmode_pinmux",
-              "ast_scanmode_rstmgr", "ast_scanmode_rv_core_ibex", "ast_scanmode_rv_dm",
+              "ast_scanmode_lc_ctrl", "ast_scanmode_pinmux", "ast_scanmode_rstmgr_secondary",
+              "ast_scanmode_rv_core_ibex", "ast_scanmode_rv_dm",
               "ast_scanmode_spi_device", "ast_scanmode_xbar_main", "ast_scanmode_xbar_peri"]
       si_stage: NA
       tags: ["conn"]
@@ -536,8 +536,9 @@
               "clkmgr_powerup_clk_pinmux_clk",
               "clkmgr_powerup_clk_pwrmgr_clk",
               "clkmgr_powerup_clk_pwrmgr_lc_clk",
-              "clkmgr_powerup_clk_rstmgr_por_clk",
-              "clkmgr_powerup_clk_rstmgr_io4_clk"]
+              "clkmgr_powerup_clk_rstmgr_por_clk_primary",
+              "clkmgr_powerup_clk_rstmgr_bus_clk_primary",
+              "clkmgr_powerup_clk_rstmgr_io4_clk_primary"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -551,7 +552,7 @@
       stage: V2
       tests: ["clkmgr_powerup_clk_pinmux_clk",
               "clkmgr_powerup_clk_pwrmgr_slow_clk",
-              "clkmgr_powerup_clk_rstmgr_clk"]
+              "clkmgr_powerup_clk_rstmgr_clk_primary", "clkmgr_powerup_clk_rstmgr_clk_secondary"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -847,6 +848,19 @@
       tags: ["conn"]
     }
     /////////////////////////
+    // pwrmgr_clkmgr.csv   //
+    /////////////////////////
+    {
+      name: pwrmgr_main_pd_aon_clk_en
+      desc: '''Verify pwrmgr's `main_pd_aon_clk_en_o` is connected to the clkmgr secondary
+            partition's `main_pd_aon_clk_en_i`, the enable of the gated always-on clock that enters
+            the power domain that powers down.'''
+      stage: V2
+      tests: ["pwrmgr_main_pd_aon_clk_en"]
+      si_stage: NA
+      tags: ["conn"]
+    }
+    /////////////////////////
     // pwrmgr_rstmgr.sv    //
     /////////////////////////
     {
@@ -932,8 +946,8 @@
             - i3c1's rst_aon_ni
             '''
       stage: V2
-      tests: ["rstmgr_lc_aon_d0_i3c0_rst_aon_ni",
-              "rstmgr_lc_aon_d0_i3c1_rst_aon_ni"]
+      tests: ["rstmgr_lc_d0_d0_i3c0_rst_aon_ni",
+              "rstmgr_lc_d0_d0_i3c1_rst_aon_ni", "rstmgr_lc_d0_d0_i3c1_rstdet_rst_aon_ni"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -946,7 +960,8 @@
             '''
       stage: V2
       tests: ["rstmgr_lc_aon_aon_aon_timer_rst_aon_ni",
-              "rstmgr_lc_aon_aon_clkmgr_rst_aon_ni",
+              "rstmgr_lc_d0_aon_clkmgr_rst_aon_ni_primary",
+              "rstmgr_lc_aon_aon_clkmgr_rst_aon_ni_secondary",
               "rstmgr_lc_aon_aon_pinmux_rst_aon_ni"]
       si_stage: NA
       tags: ["conn"]
@@ -964,12 +979,13 @@
             '''
       stage: V2
       tests: ["rstmgr_lc_io_div4_aon_aon_timer_rst_ni",
-              "rstmgr_lc_io_div4_aon_clkmgr_rst_ni",
-              "rstmgr_lc_io_div4_aon_clkmgr_rst_io_div4_ni",
+              "rstmgr_lc_io_div4_d0_clkmgr_rst_ni",
+              "rstmgr_lc_io_div4_d0_clkmgr_rst_io_div4_ni",
               "rstmgr_lc_io_div4_aon_pwrmgr_rst_lc_ni",
               "rstmgr_lc_io_div4_aon_pinmux_rst_ni",
               "rstmgr_lc_io_div4_aon_sram_ctrl_ret_rst_otp_ni",
-              "rstmgr_lc_io_div4_aon_rstmgr_rst_ni"]
+              "rstmgr_lc_io_div4_d0_rstmgr_rst_ni_primary",
+              "rstmgr_lc_io_div4_aon_rstmgr_rst_ni_secondary"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -1000,7 +1016,7 @@
       name: rst_lc_io_div4_shadowed_aon
       desc: '''Verify rstmgr's rst_lc_io_div4_shadowed_n[0] is connected to clkmgr's rst_shadowed_ni.'''
       stage: V2
-      tests: ["rstmgr_lc_io_div4_shadowed_aon_clkmgr_rst_shadowed_ni"]
+      tests: ["rstmgr_lc_io_div4_shadowed_d0_clkmgr_rst_shadowed_ni"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -1016,7 +1032,7 @@
       name: rst_lc_aon
       desc: '''Verify rstmgr's rst_lc_n[0] is connected to clkmgr's rst_main_ni.'''
       stage: V2
-      tests: ["rstmgr_lc_aon_clkmgr_rst_main_ni"]
+      tests: ["rstmgr_lc_d0_clkmgr_rst_main_ni"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -1024,7 +1040,7 @@
       name: rst_lc_io_aon
       desc: '''Verify rstmgr's rst_lc_io_n[0] is connected to clkmgr's rst_io_ni.'''
       stage: V2
-      tests: ["rstmgr_lc_io_aon_clkmgr_rst_io_ni"]
+      tests: ["rstmgr_lc_io_d0_clkmgr_rst_io_ni"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -1032,7 +1048,7 @@
       name: rst_lc_usb_aon
       desc: '''Verify rstmgr's rst_lc_usb_n[0] is connected to clkmgr's rst_usb_ni.'''
       stage: V2
-      tests: ["rstmgr_lc_usb_aon_clkmgr_rst_usb_ni"]
+      tests: ["rstmgr_lc_usb_d0_clkmgr_rst_usb_ni"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -1077,10 +1093,11 @@
             - rstmgr's rst_por_ni
             '''
       stage: V2
-      tests: ["rstmgr_por_io_div4_aon_clkmgr_rst_root_io_div4_ni",
-              "rstmgr_por_io_div4_aon_clkmgr_rst_root_ni",
+      tests: ["rstmgr_por_io_div4_d0_clkmgr_rst_root_io_div4_ni",
+              "rstmgr_por_io_div4_d0_clkmgr_rst_root_ni",
               "rstmgr_por_io_div4_aon_pwrmgr_rst_ni",
-              "rstmgr_por_io_div4_aon_rstmgr_rst_ni"]
+              "rstmgr_por_io_div4_d0_rstmgr_rst_ni_primary",
+              "rstmgr_por_io_div4_aon_rstmgr_rst_ni_secondary"]
       si_stage: NA
       tags: ["conn"]
     }
@@ -1332,7 +1349,7 @@
       name: rst_en_por_io_div4_d0
       desc: '''Verify rstmgr's rst_en_o.por_io_div4[1] connects to alert_handler's lpg_rst_en[10].'''
       stage: V2
-      tests: ["rstmgr_por_io_div4_d0_alert_10_rst_en"]
+      tests: ["rstmgr_por_io_div4_aon_alert_10_rst_en"]
       si_stage: NA
       tags: ["conn"]
     }

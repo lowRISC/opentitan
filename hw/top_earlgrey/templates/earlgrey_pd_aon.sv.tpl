@@ -56,23 +56,48 @@ module ${top["name"]}_pd_${domain.lower()} #(
   domain_rstmgr = rstmgr.get('domain')
   has_clkmgr = domain_clkmgr == domain
   has_rstmgr = domain_rstmgr == domain
+  clkmgr_domains = {part: dom for part, dom, _, _ in lib.get_clkmgr_partitions(top)}
+  rstmgr_domains = {part: dom for part, dom, _, _ in lib.get_rstmgr_partitions(top)}
 %>\
-% if has_clkmgr:
-  // Connect clkmgr to top-level signals for other power domains
-  assign ${clkmgr['name']}_clocks_o = ${clkmgr['name']}_clocks;
-  assign ${clkmgr['name']}_cg_en_o  = ${clkmgr['name']}_cg_en;
-% endif
+% for part, dom, sfx, _ in lib.get_clkmgr_partitions(top):
+<%
+  out_clk = lib.clkmgr_struct_crosses(top, 'clocks', part)
+  out_cg = lib.clkmgr_struct_crosses(top, 'cg_en', part)
+%>\
+  % if dom == domain and (out_clk or out_cg):
+  // Connect the ${part} partition of the clkmgr to the top-level signals of the power domains that
+  // need them.
+    % if out_clk:
+  assign ${clkmgr['name']}_clocks${sfx}_o = ${clkmgr['name']}_clocks${sfx};
+    % endif
+    % if out_cg:
+  assign ${clkmgr['name']}_cg_en${sfx}_o  = ${clkmgr['name']}_cg_en${sfx};
+    % endif
+  % endif
+% endfor
 
-% if has_rstmgr:
-  // Connect rstmgr to top-level signals for other power domains
-  assign ${rstmgr['name']}_resets_o = ${rstmgr['name']}_resets;
-  assign ${rstmgr['name']}_rst_en_o = ${rstmgr['name']}_rst_en;
-% endif
+% for part, dom, sfx, _ in lib.get_rstmgr_partitions(top):
+<%
+  out_rst = lib.rstmgr_struct_crosses(top, 'resets', part)
+  out_en = lib.rstmgr_struct_crosses(top, 'rst_en', part)
+%>\
+  % if dom == domain and (out_rst or out_en):
+  // Connect the ${part} partition of the rstmgr to the top-level signals of the power domains that
+  // need them.
+    % if out_rst:
+  assign ${rstmgr['name']}_resets${sfx}_o = ${rstmgr['name']}_resets${sfx};
+    % endif
+    % if out_en:
+  assign ${rstmgr['name']}_rst_en${sfx}_o = ${rstmgr['name']}_rst_en${sfx};
+    % endif
+  % endif
+% endfor
 
 % if feature_info["ast_is_internal"]:
-  // Connect AST senses to clocks and resets
-  assign ast_sns_clks = clkmgr_clocks${"" if has_clkmgr else "_i"};
-  assign ast_sns_rsts = rstmgr_resets${"" if has_rstmgr else "_i"};
+  // Connect the sense inputs of the AST to the clocks and resets of the secondary partitions of the
+  // clkmgr and the rstmgr.
+  assign ast_sns_clks = clkmgr_clocks_secondary${"" if clkmgr_domains[lib.PART_SECONDARY] == domain else "_i"};
+  assign ast_sns_rsts = rstmgr_resets_secondary${"" if rstmgr_domains[lib.PART_SECONDARY] == domain else "_i"};
 
   // Tie-off unused clock gate signal
   logic unused_cg_en_ast_ext;
@@ -94,9 +119,9 @@ module ${top["name"]}_pd_${domain.lower()} #(
 
   // Make sure scanmode is never X (including during reset)
 % if feature_info["dft_source_in_domain"][domain]:
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_o, ast_clk_src_sys_i, 0)
+  `ASSERT_KNOWN(scanmodeKnown, scanmode_o, ast_clk_src_aon, 0)
 % else:
-  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, clk_main_i, 0)
+  `ASSERT_KNOWN(scanmodeKnown, scanmode_i, ast_clk_src_aon, 0)
 % endif
 
 endmodule

@@ -44,7 +44,10 @@ interface chip_if;
 `define AES_CONTROL_HIER    `AES_HIER.u_aes_core.u_aes_control
 `define ALERT_HANDLER_HIER  `PD_MAIN_HIER.u_alert_handler
 `define AON_TIMER_HIER      `PD_AON_HIER.u_aon_timer
-`define CLKMGR_HIER         `PD_AON_HIER.u_clkmgr
+// The CSRs and most clocks are in the primary partition of the clkmgr. Its secondary partition
+// outputs the always-on clocks.
+`define CLKMGR_HIER           `PD_MAIN_HIER.u_clkmgr_part_primary
+`define CLKMGR_SECONDARY_HIER `PD_AON_HIER.u_clkmgr_part_secondary
 `define CPU_HIER            `PD_MAIN_HIER.u_rv_core_ibex
 `define CPU_CORE_HIER       `CPU_HIER.u_core
 `define CPU_TL_ADAPT_D_HIER `CPU_HIER.tl_adapter_host_d_ibex
@@ -66,7 +69,10 @@ interface chip_if;
 `define PINMUX_HIER         `PD_AON_HIER.u_pinmux
 `define PWRMGR_HIER         `PD_AON_HIER.u_pwrmgr
 `define ROM_CTRL_HIER       `PD_MAIN_HIER.u_rom_ctrl
-`define RSTMGR_HIER         `PD_AON_HIER.u_rstmgr
+// The CSRs are in the primary partition of the rstmgr. Its secondary partition outputs the resets
+// of the Aon power domain.
+`define RSTMGR_HIER           `PD_MAIN_HIER.u_rstmgr_part_primary
+`define RSTMGR_SECONDARY_HIER `PD_AON_HIER.u_rstmgr_part_secondary
 `define RV_CORE_IBEX_HIER   `PD_MAIN_HIER.u_rv_core_ibex
 `define RV_PLIC_HIER        `PD_MAIN_HIER.u_rv_plic
 `define RV_TIMER_HIER       `PD_MAIN_HIER.u_rv_timer
@@ -578,7 +584,8 @@ interface chip_if;
   wire sys_rst_n = 1'b1;
 `else
   wire sys_clk = `CLKMGR_HIER.clocks_o.clk_main_powerup;
-  wire sys_rst_n = `RSTMGR_HIER.resets_o.rst_sys_n[0];
+  // The sys reset has no Aon variant, so this interface holds it in reset.
+  wire sys_rst_n = 1'b0;
 `endif
   clk_rst_if sys_clk_rst_if(.clk(sys_clk), .rst_n(sys_rst_n));
 
@@ -591,11 +598,11 @@ interface chip_if;
   clk_rst_if cpu_clk_rst_if(.clk(cpu_clk), .rst_n(cpu_rst_n));
 
 `ifdef GATE_LEVEL
-  wire aon_clk = `CLKMGR_HIER.clocks_o_clk_aon_powerup;
-  wire aon_rst_n = `RSTMGR_HIER.resets_o_rst_por_aon_n_0_;
+  wire aon_clk = `CLKMGR_SECONDARY_HIER.clocks_secondary_o_clk_aon_powerup;
+  wire aon_rst_n = `RSTMGR_SECONDARY_HIER.resets_secondary_o_rst_por_aon_n_0_;
 `else
-  wire aon_clk = `CLKMGR_HIER.clocks_o.clk_aon_powerup;
-  wire aon_rst_n = `RSTMGR_HIER.resets_o.rst_por_aon_n[0];
+  wire aon_clk = `CLKMGR_SECONDARY_HIER.clocks_secondary_o.clk_aon_powerup;
+  wire aon_rst_n = `RSTMGR_SECONDARY_HIER.resets_secondary_o.rst_por_aon_n[0];
 `endif
   clk_rst_if aon_clk_por_rst_if(.clk(aon_clk), .rst_n(aon_rst_n));
 
@@ -608,7 +615,7 @@ interface chip_if;
   wire io_div4_rst_n = 1'b1;
 `else
   wire io_div4_clk = `CLKMGR_HIER.clocks_o.clk_io_div4_powerup;
-  wire io_div4_rst_n = `RSTMGR_HIER.resets_o.rst_por_io_div4_n[0];
+  wire io_div4_rst_n = `RSTMGR_SECONDARY_HIER.resets_secondary_o.rst_por_io_div4_n;
 `endif
   clk_rst_if io_div4_clk_rst_if(.clk(io_div4_clk), .rst_n(io_div4_rst_n));
 
@@ -698,9 +705,9 @@ interface chip_if;
                                           .fast_clk(0),
                                           .rst_n   (1)
 `else
-                                          .clk     (`CLKMGR_HIER.clocks_o.clk_aon_powerup),
+                                          .clk     (aon_clk),
                                           .fast_clk(`CLKMGR_HIER.clocks_o.clk_io_div4_powerup),
-                                          .rst_n   (`RSTMGR_HIER.resets_o.rst_por_io_div4_n[0])
+                                          .rst_n   (io_div4_rst_n)
 `endif
                                           );
   assign pwrmgr_low_power_if.low_power      = `PWRMGR_HIER.low_power_o;
@@ -1300,6 +1307,7 @@ assign spi_host_1_state = {tb.dut.top_earlgrey.earlgrey_pd_main.u_spi_host1.u_sp
 `undef PWRMGR_HIER
 `undef ROM_CTRL_HIER
 `undef RSTMGR_HIER
+`undef RSTMGR_SECONDARY_HIER
 `undef RV_CORE_IBEX_HIER
 `undef RV_PLIC_HIER
 `undef RV_TIMER_HIER

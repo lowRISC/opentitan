@@ -94,10 +94,11 @@ bool test_main(void) {
 
     // Set wakeup timer to 100 us to have enough down time, and also wait before
     // entering deep sleep to have a chance to measure before sleeping.
-    // As a side-effect of deep sleep the clock measurements are disabled, but
-    // recoverable errors are not cleared.
+    // A deep sleep resets the clkmgr's CSRs, so it disables the clock
+    // measurements and clears the recoverable errors. So the test checks for
+    // the errors before the deep sleep.
     //
-    // Set the counters so we should get an error unless they are cleared.
+    // Set the counters so we should get an error.
     uint64_t wakeup_threshold = kDeviceType == kDeviceSimVerilator ? 1000 : 100;
     CHECK_STATUS_OK(
         aon_timer_testutils_wakeup_config(&aon_timer, wakeup_threshold));
@@ -111,6 +112,15 @@ bool test_main(void) {
     CHECK_DIF_OK(dif_clkmgr_measure_ctrl_disable(&clkmgr));
 
     busy_spin_micros(delay_micros);
+
+    // Check we have measurement errors for the main and io clocks.
+    dif_clkmgr_recov_err_codes_t expected_err_codes =
+        kDifClkmgrRecovErrTypeMainMeas | kDifClkmgrRecovErrTypeIoMeas;
+    dif_clkmgr_recov_err_codes_t err_codes;
+    CHECK_DIF_OK(dif_clkmgr_recov_err_code_get_codes(&clkmgr, &err_codes));
+    CHECK(err_codes == expected_err_codes,
+          "expected main and io clk measurement error 0x%x, but got 0x%x",
+          expected_err_codes, err_codes);
 
     CHECK_STATUS_OK(pwrmgr_testutils_enable_low_power(
         &pwrmgr, wakeup_sources, kDifPwrmgrDomainOptionUsbClockInActivePower));
@@ -130,14 +140,13 @@ bool test_main(void) {
     CHECK(state == kDifToggleEnabled);
     LOG_INFO("Check for all clock measurements disabled done");
 
-    // Check we have a measurement error for the main clock.
-    dif_clkmgr_recov_err_codes_t expected_err_codes =
-        kDifClkmgrRecovErrTypeMainMeas | kDifClkmgrRecovErrTypeIoMeas;
+    // Check the deep sleep cleared the recoverable errors.
     dif_clkmgr_recov_err_codes_t err_codes;
     CHECK_DIF_OK(dif_clkmgr_recov_err_code_get_codes(&clkmgr, &err_codes));
-    CHECK(err_codes == expected_err_codes,
-          "expected main and io clk measurement error 0x%x, but got 0x%x",
-          expected_err_codes, err_codes);
+    CHECK(err_codes == 0,
+          "expected the deep sleep to clear the recoverable errors, "
+          "but got 0x%x",
+          err_codes);
 
     // Clear measurement errors.
     CHECK_DIF_OK(dif_clkmgr_recov_err_code_clear_codes(&clkmgr, UINT32_MAX));

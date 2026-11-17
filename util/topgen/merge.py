@@ -746,7 +746,8 @@ def _elaborate_clock_srcs(top: ConfigT,
                           ep_grp: str,
                           ep_domain: str,
                           export_if: List[str],
-                          exported_clks: ConfigT) -> ConfigT:
+                          exported_clks: ConfigT,
+                          primary_side: bool = False) -> ConfigT:
     '''Build the clock connections for one partition of an endpoint.
 
     Adds the endpoint's clocks to their groups, records exported clocks in
@@ -754,9 +755,6 @@ def _elaborate_clock_srcs(top: ConfigT,
     '''
     clocks = top['clocks']
     clock_connections = OrderedDict()
-
-    # prefixes for all clocks of this endpoint partition
-    prefixes = lib.get_clock_prefixes(top, ep_domain)
 
     for port, clk in clock_srcs.items():
         group_name, src_name = _get_clock_group_name(clk, ep_grp)
@@ -774,6 +772,9 @@ def _elaborate_clock_srcs(top: ConfigT,
             group = clocks.groups[group_name]
 
             name = ''
+            # The prefix depends on the clkmgr partition that hosts the clocks of this source.
+            prefixes = lib.get_clock_prefixes(top, ep_domain, clocks.all_srcs.get(src_name),
+                                              primary_side)
             hier_name = prefixes[group.src]
 
             if group.src == 'ext':
@@ -783,6 +784,17 @@ def _elaborate_clock_srcs(top: ConfigT,
                 # new unique clock name
                 name = "{}_{}".format(src_name, ep_name)
 
+            elif (src_name in clocks.all_srcs and
+                  lib.get_clkmgr_clock_partition(top, clocks.all_srcs[src_name]) ==
+                  PART_SECONDARY and
+                  lib.get_clkmgr_out_partition(top, clocks.all_srcs[src_name], ep_domain,
+                                               primary_side) == PART_PRIMARY):
+                # The copy of a clock that the secondary partition generates for the primary
+                # partitions. It is the always-on clock, gated around the clamp of the power domain
+                # that powers down. It is a different signal from the ungated copy of the secondary
+                # partition, so it has a name of its own.
+                name = "{}_gated_{}".format(src_name, group_name)
+
             else:
                 # new group clock name
                 name = "{}_{}".format(src_name, group_name)
@@ -791,7 +803,7 @@ def _elaborate_clock_srcs(top: ConfigT,
 
             # add clock to a particular group
             clk_sig = clocks.add_clock_to_group(group, clk_name, src_name)
-            clk_sig.add_endpoint(ep_name, port)
+            clk_sig.add_endpoint(ep_name, port, ep_domain, primary_side)
 
             src_clk = clocks.all_srcs.get(src_name)
             if group.src == 'ext' and src_clk is not None and src_clk.module is not None:
@@ -861,9 +873,12 @@ def extract_clocks(top: ConfigT):
         # end point names and clocks
         ep_name = ep['name']
 
+        # The primary partition of the rstmgr takes the always-on clock of the primary side (see
+        # lib.get_clkmgr_out_partition), wherever it is.
         ep['clock_connections'] = _elaborate_clock_srcs(
             top, ep_name, ep['clock_srcs'], ep['clock_group'],
-            ep.get('domain', default_domain), export_if, exported_clks)
+            ep.get('domain', default_domain), export_if, exported_clks,
+            primary_side=ep.get('type') == 'rstmgr')
 
         # A split instance's secondary partition is elaborated on its own, in
         # its own clock group and power domain. Its clocking is validated
@@ -1019,7 +1034,8 @@ def amend_resets(top: ConfigT,
             # is stable and free from glitches. Here, don't mark the reset
             # as shadowed to avoid generating a second reset signal.
             if not is_unmanaged_reset(top, primary_reset['name']):
-                top_resets.mark_reset_shadowed(primary_reset['name'])
+                top_resets.mark_reset_shadowed(primary_reset['name'], primary_reset.get('domain'),
+                                               lib.get_domain_of_partition(module))
 
         log.info("in module {}".format(module["name"]))
         # Register the reset domains of every partition.
@@ -1164,6 +1180,18 @@ def _make_lpg_entry(top: ConfigT,
     }
 
 
+def _partition_has_alerts(top: ConfigT, module: ConfigT, partition: str) -> bool:
+    '''Return whether the given partition of a module owns any alert.
+
+    An alert without a partition belongs to the primary partition.
+    '''
+    alerts = list(top['alert'])
+    for group_alerts in top['outgoing_alert'].values():
+        alerts.extend(group_alerts)
+    return any(a['module_name'] == module['name'] and
+               a.get('partition', PART_PRIMARY) == partition for a in alerts)
+
+
 def create_alert_lpgs(top: ConfigT, name_to_block: IpBlocksT):
     '''Loop over modules and determine number of unique LPGs'''
     lpg_dict = {}
@@ -1192,8 +1220,21 @@ def create_alert_lpgs(top: ConfigT, name_to_block: IpBlocksT):
                     not block.clocking.has_partition(partition)):
                 continue
 
+            # A raw clock is a clock that the clkmgr does not manage. It comes from a module of the
+            # top or from outside the top. A partition without alerts that runs on a raw clock
+            # cannot have a low-power group (LPG). It does not need one either. The always-on
+            # partition of a split clkmgr is such a partition.
+            block_clock = block.get_primary_clock(partition)
+            clk = clock_connections[block_clock.clock]
+            # A clock from a module of the top is a ModuleClockRef. A clock from outside the top is
+            # in a clock group whose src is 'ext'. A clock in no group is not a raw clock.
+            raw_clock = (isinstance(clk, ModuleClockRef) or
+                         getattr(clock_groups.get(clk.split('.')[-1]), 'src', None) == 'ext')
+            if raw_clock and not _partition_has_alerts(top, module, partition):
+                continue
+
             lpg_entry = _make_lpg_entry(top, clock_groups, module,
-                                        block.get_primary_clock(partition),
+                                        block_clock,
                                         clock_connections, reset_connections)
             lpg_name = lpg_entry['name']
             lpg_names[partition] = lpg_name

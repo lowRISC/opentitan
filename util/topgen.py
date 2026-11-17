@@ -113,6 +113,11 @@ class IpAttrs(NamedTuple):
     instances: List[object]
 
 
+def _clock_src_of(clk) -> str:
+    """Return the clock source of a clock_srcs entry, which is a source name or {clock, group}."""
+    return clk if isinstance(clk, str) else clk["clock"]
+
+
 def _ipgen_render_prelude(template_name: str, topname: str,
                           params: ParamsT) -> (str, IpTemplate, IpConfig):
     module_name = (params.get("module_instance_name", template_name)
@@ -621,6 +626,27 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
     with_alert_handler = lib.find_module(top['module'],
                                          'alert_handler') is not None
 
+    # Tell the templates which partition generates each reset and which partitions output it.
+    # Check that the rstmgr is split, and that it can generate each of its resets.
+    lib.validate_split_rstmgr(top)
+    # Record the partitions that output each reset.
+    outs = lib.get_rstmgr_reset_out_partitions(top)
+    shadowed_outs = lib.get_rstmgr_shadowed_out_partitions(top)
+
+    def with_outputs(rst):
+        """Return a reset as a dict, with the partition that generates it and the partitions
+        that output it, by power domain."""
+        ret = rst._asdict()
+        ret["partition"] = {d: lib.get_rstmgr_reset_partition(top, rst.name, d)
+                            for d in rst.domains}
+        ret["out_partitions"] = {d: outs[(rst.name, d)] for d in rst.domains}
+        if rst.shadowed:
+            ret["out_partitions_shadowed"] = {d: shadowed_outs[(rst.name, d)] for d in rst.domains}
+        return ret
+    # Record both for the output resets and the leaf resets.
+    output_rsts = [with_outputs(r) for r in output_rsts]
+    leaf_rsts = [with_outputs(r) for r in leaf_rsts]
+
     ipgen_params = get_ipgen_params(rstmgr)
     ipgen_params.update({
         "clk_freqs": clk_freqs,
@@ -633,6 +659,14 @@ def _get_rstmgr_params(top: ConfigT) -> ParamsT:
         "rst_ni": rst_ni['rst_ni']['name'],
         "export_rsts": top["exported_rsts"],
         "with_alert_handler": with_alert_handler,
+        # The source of the bus clock, clk_i. The secondary partition of the rstmgr resets the
+        # record of ERR_CODE with the lc leaf reset that it generates on this clock.
+        "bus_clk": _clock_src_of(rstmgr["clock_srcs"]["clk_i"]),
+        # The source of the POR clock, clk_por_i. The secondary partition of the rstmgr resets
+        # RESET_INFO with the POR leaf reset that it generates on this clock. The rstmgr requires
+        # the same source as the bus clock, because some signals pass between the two clocks without
+        # synchronization.
+        "por_clk": _clock_src_of(rstmgr["clock_srcs"]["clk_por_i"]),
     })
     return ipgen_params
 

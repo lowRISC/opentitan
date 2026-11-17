@@ -11,8 +11,8 @@ class chip_sw_ast_clk_outputs_vseq extends chip_sw_base_vseq;
      // These assertions are invalid with multiple power up / down with
      // frequency measurement, because rise and fall times are
      // severely distorted by clock on / off event.
-     $assertoff(0, "tb.dut.top_earlgrey.earlgrey_pd_aon.u_clkmgr.clkmgr_pwrmgr_usb_sva_if.StatusFall_A");
-     $assertoff(0, "tb.dut.top_earlgrey.earlgrey_pd_aon.u_clkmgr.clkmgr_pwrmgr_usb_sva_if.StatusRise_A");
+     $assertoff(0, "tb.dut.top_earlgrey.earlgrey_pd_main.u_clkmgr_part_primary.clkmgr_pwrmgr_usb_sva_if.StatusFall_A");
+     $assertoff(0, "tb.dut.top_earlgrey.earlgrey_pd_main.u_clkmgr_part_primary.clkmgr_pwrmgr_usb_sva_if.StatusRise_A");
      $assertoff(0, "tb.dut.top_earlgrey.earlgrey_pd_aon.u_pwrmgr.clkmgr_pwrmgr_usb_sva_if.StatusFall_A");
      $assertoff(0, "tb.dut.top_earlgrey.earlgrey_pd_aon.u_pwrmgr.clkmgr_pwrmgr_usb_sva_if.StatusRise_A");
      super.body();

@@ -143,7 +143,7 @@ set_clock_uncertainty ${SETUP_CLOCK_UNCERTAINTY} [get_clocks IO_CLK]
 set CLK_DST_NAME $CLK_DST_PIN
 
 # generated clocks (div4)
-set CLK_PATH top_earlgrey/earlgrey_pd_aon/u_clkmgr/u_no_scan_io_div4_div
+set CLK_PATH top_earlgrey/earlgrey_pd_main/u_clkmgr_part_primary/u_no_scan_io_div4_div
 create_generated_clock -name IO_DIV4_CLK  \
     -source [get_pins ${IO_CLK_PIN}] -divide_by 4 [get_pins ${CLK_PATH}/${CLK_DST_NAME}] -master IO_CLK -add
 

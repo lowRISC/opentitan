@@ -77,6 +77,8 @@ module pwrmgr
   // pinmux and other peripherals
   output logic strap_o,
   output logic low_power_o,
+  // The always-on clock may enter the power domain that powers down (see the description).
+  output logic main_pd_aon_clk_en_o,
 
   // rom_ctrl interface
   // SEC_CM: ROM_CTRL.INTERSIG.MUBI
@@ -760,4 +762,15 @@ module pwrmgr
 
   // Alert assertions for reg_we onehot check
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegWeOnehotCheck_A, u_reg, alert_tx_o[0])
+  // The clkmgr gates the always-on clock that enters the power domain that powers down with
+  // main_pd_aon_clk_en_o. The early clamp brackets the clamp, with one slow clock cycle on each
+  // side. The gate closes before the clamp asserts and before the power of the domain is requested
+  // off. The gate opens only when the power of the domain is good again, one cycle before the clamp
+  // releases. Thus the gate is closed while the power of that domain is requested off. The slow
+  // FSM's terminal state is the one exception to that order. It asserts both clamps at once, so the
+  // gate closes in the same cycle as the clamp.
+  assign main_pd_aon_clk_en_o = ~pwr_ast_o.pwr_clamp_env;
+  `ASSERT(MainPdAonClkEnOffWhenMainPd_A, !pwr_ast_o.main_pd_n |-> !main_pd_aon_clk_en_o,
+          clk_slow_i, !rst_slow_ni)
+
 endmodule // pwrmgr

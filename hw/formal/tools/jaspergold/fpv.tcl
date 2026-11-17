@@ -179,23 +179,38 @@ if {($env(DUT_TOP) == "pinmux_tb") || ($env(DUT_TOP) == "pinmux_chip_tb")} {
   clock -rate {tl_i, cio_d_i, cio_dp_i, cio_dn_i, cio_sense_i} clk_i
   reset -expr {!rst_ni !rst_aon_ni}
 
-} elseif {$env(DUT_TOP) == "clkmgr"} {
+} elseif {$env(DUT_TOP) == "clkmgr_part_primary"} {
+  # The always-on clock comes from the secondary partition, through intraip_s2p_i.
   clock clk_main_i
   clock clk_i -both_edges
   clock clk_io_i -factor 1
   clock clk_usb_i -factor 1
-  clock clk_aon_i -factor 2
+  clock intraip_s2p_i.clk_aon -factor 2
   clock -rate -default clk_i
   reset -expr {!rst_ni !rst_main_ni}
 
-} elseif {$env(DUT_TOP) == "rstmgr"} {
+} elseif {$env(DUT_TOP) == "rstmgr_part_primary"} {
   clock clk_main_i
   clock clk_i -both_edges
+  clock clk_por_i -factor 1
   clock clk_io_i -factor 1
   clock clk_io_div4_i -factor 1
   clock clk_usb_i -factor 1
   clock clk_aon_i -factor 2
   clock -rate -default clk_i
+  reset -expr {!rst_ni !rst_por_ni}
+
+} elseif {$env(DUT_TOP) == "rstmgr_part_secondary"} {
+  # The always-on clock is the only clock port of this partition. The other clocks come from the
+  # primary partition, through intraip_p2s_i. They are the bus clock, the POR clock and the leaf
+  # clocks. The leaf clocks differ between tops, and a top without one of them skips it.
+  clock intraip_p2s_i.clk -both_edges
+  clock intraip_p2s_i.clk_por -factor 1
+  foreach leaf_clk {main io io_div4 usb} {
+    catch {clock intraip_p2s_i.clk_${leaf_clk} -factor 1}
+  }
+  clock clk_aon_i -factor 2
+  clock -rate -default intraip_p2s_i.clk
   reset -expr {!rst_ni !rst_por_ni}
 
 } else {
