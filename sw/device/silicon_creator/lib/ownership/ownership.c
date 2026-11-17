@@ -74,14 +74,18 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
   if (owner_page_valid[0] == kOwnerPageStatusSealed &&
       launder32(owner_page_valid[1]) == kOwnerPageStatusSigned &&
       launder32(owner_block_newversion_mode()) == kHardenedBoolTrue) {
+    const owner_block_t *page0 =
+        (const owner_block_t *)launderw((uintptr_t)&owner_page[0]);
+    const owner_block_t *page1 =
+        (const owner_block_t *)launderw((uintptr_t)&owner_page[1]);
     hardened_bool_t update_valid = kHardenedBoolFalse;
 
     if (launder32(owner_block_owner_key_equal()) == kHardenedBoolTrue) {
-      if (launder32(owner_page[1].config_version) >
-          launder32(owner_page[0].config_version)) {
+      if (launder32(page1->config_version) > launder32(page0->config_version)) {
         update_valid = kHardenedBoolTrue;
       }
-    } else if (owner_page[0].update_mode == kOwnershipUpdateModeAnyVersion) {
+    } else if (launder32(page0->update_mode) ==
+               kOwnershipUpdateModeAnyVersion) {
       update_valid = kHardenedBoolTrue;
     }
 
@@ -90,12 +94,13 @@ static rom_error_t locked_owner_init(boot_data_t *bootdata,
       HARDENED_CHECK_EQ(owner_page_valid[1], kOwnerPageStatusSigned);
       if (launder32(owner_block_owner_key_equal()) == kHardenedBoolTrue) {
         HARDENED_CHECK_EQ(owner_block_owner_key_equal(), kHardenedBoolTrue);
-        HARDENED_CHECK_GT(owner_page[1].config_version,
-                          owner_page[0].config_version);
+        HARDENED_CHECK_GT(page1->config_version, page0->config_version);
       } else {
-        HARDENED_CHECK_EQ(owner_page[0].update_mode,
-                          kOwnershipUpdateModeAnyVersion);
+        HARDENED_CHECK_EQ(page0->update_mode, kOwnershipUpdateModeAnyVersion);
       }
+      // Check that the pages have the expected owner header tag.
+      HARDENED_CHECK_EQ(page0->header.tag, kTlvTagOwner);
+      HARDENED_CHECK_EQ(page1->header.tag, kTlvTagOwner);
 
       rom_error_t error =
           ownership_activate(bootdata, /*write_both_pages=*/kHardenedBoolFalse);
