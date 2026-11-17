@@ -138,6 +138,25 @@ static otcrypto_status_t check_mu(const otcrypto_hash_digest_t *mu) {
   return OTCRYPTO_OK;
 }
 
+// Check that the hash mode is one of the supported modes.
+static otcrypto_status_t check_hash_mode(otcrypto_mldsa_hash_mode_t hash_mode) {
+  switch (launder32(hash_mode)) {
+    case kOtcryptoMldsaHashModePure:
+    case kOtcryptoMldsaHashModeSha2_256:
+    case kOtcryptoMldsaHashModeSha2_384:
+    case kOtcryptoMldsaHashModeSha2_512:
+    case kOtcryptoMldsaHashModeSha3_224:
+    case kOtcryptoMldsaHashModeSha3_256:
+    case kOtcryptoMldsaHashModeSha3_384:
+    case kOtcryptoMldsaHashModeSha3_512:
+    case kOtcryptoMldsaHashModeShake128:
+    case kOtcryptoMldsaHashModeShake256:
+      return OTCRYPTO_OK;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+}
+
 /**
  * Compute the message hash mu.
  *
@@ -334,6 +353,7 @@ otcrypto_status_t otcrypto_mldsa87_sign_async_start(
   HARDENED_TRY(check_blinded_key(private_key));
   HARDENED_TRY(check_byte_buf(context, kOtcryptoMldsa87CtxMaxBytes));
   HARDENED_TRY(check_byte_buf(message, SIZE_MAX));
+  HARDENED_TRY(check_hash_mode(hash_mode));
 
   // Allocate the 64-byte mu digest.
   uint32_t mu_data[kOtcryptoMldsa87MuWords] = {0};
@@ -431,6 +451,7 @@ otcrypto_status_t otcrypto_mldsa87_verify_async_start(
   HARDENED_TRY(check_byte_buf(context, kOtcryptoMldsa87CtxMaxBytes));
   HARDENED_TRY(check_byte_buf(message, SIZE_MAX));
   HARDENED_TRY(check_word32_buf(signature, kOtcryptoMldsa87SigWords));
+  HARDENED_TRY(check_hash_mode(hash_mode));
 
   // Compute the public key hash tr = SHAKE256(pk, 64).
 
