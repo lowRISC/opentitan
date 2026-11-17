@@ -164,6 +164,7 @@ module hmac
   logic hash_running;
   logic idle;
   logic fsm_err;
+  logic fatal_err;
 
   ///////////////////////
   // Connect registers //
@@ -365,6 +366,11 @@ module hmac
     if (sideload_en && cfg_block) begin
       hw2reg.digest = '0;
     end
+
+    // Don't expose the digest on a fatal fault.
+    if (fatal_err) begin
+      hw2reg.digest = '0;
+    end
   end
 
   logic unused_cfg_qe;
@@ -374,9 +380,10 @@ module hmac
                            cfg_reg.key_length.qe,  cfg_reg.sideload.qe };
 
 
-  // Abort the operation when the keymgr key gets invalid.
+  // Abort the operation when the keymgr key gets invalid. After a fatal fault, permanently disable
+  // the engine: this blocks message writes, stops the SHA-2 core and clears its digest.
   assign sha_en_engine        = prim_mubi_pkg::mubi4_test_true_strict(sha_en) &
-                                ~sideload_key_invalid;
+                                ~sideload_key_invalid & ~fatal_err;
 
   assign digest_size_supplied = digest_mode_e'(cfg_reg.digest_size.q);
   always_comb begin : cast_digest_size
@@ -934,8 +941,26 @@ module hmac
   logic sha_en_err;
   assign sha_en_err = prim_mubi_pkg::mubi4_test_invalid(sha_en);
 
+  // Latch fatal faults detected inside HMAC.
+  prim_mubi_pkg::mubi4_t fatal_err_d, fatal_err_q;
+  assign fatal_err_d = (hmac_core_err | fsm_err | sha_en_err) ? prim_mubi_pkg::MuBi4True :
+                                                                fatal_err_q;
+
+  prim_flop #(
+    .Width(prim_mubi_pkg::MuBi4Width),
+    .ResetValue(prim_mubi_pkg::MuBi4Width'(prim_mubi_pkg::MuBi4False))
+  ) u_fatal_err_flop (
+    .clk_i,
+    .rst_ni,
+    .d_i(prim_mubi_pkg::MuBi4Width'(fatal_err_d)),
+    .q_o({fatal_err_q})
+  );
+
+  assign fatal_err = ~prim_mubi_pkg::mubi4_test_false_strict(fatal_err_q);
+
+  // Use the latch input such that newly detected faults raise the alert in the same cycle.
   logic alert_req;
-  assign alert_req = alerts[0] | hmac_core_err | fsm_err | sha_en_err;
+  assign alert_req = alerts[0] | ~prim_mubi_pkg::mubi4_test_false_strict(fatal_err_d);
 
   localparam logic [NumAlerts-1:0] AlertIsFatal = {1'b1};
   for (genvar i = 0; i < NumAlerts; i++) begin : gen_alert_tx

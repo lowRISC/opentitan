@@ -547,7 +547,8 @@ typedef enum logic [StateWidth-1:0] {
       end
 
       StError: begin
-        st_d = StIdle;
+        // Terminal state.
+        st_d = StError;
         err_o = 1'b1;
       end
 
@@ -558,9 +559,15 @@ typedef enum logic [StateWidth-1:0] {
 
     endcase
 
-    if (abort_i) begin
+    if (abort_i && (st_d != StError)) begin
       hmac_hash_done = 1'b0;
       st_d           = StIdle;
+    end
+
+    // MuBi4 encoding corruption moves the FSM into the terminal error state.
+    if (hmac_en_err) begin
+      hmac_hash_done = 1'b0;
+      st_d           = StError;
     end
   end
 
