@@ -597,7 +597,7 @@ TEST(KeyTransport, HwBackedKeygenNegative) {
   EXPECT_OK(otcrypto_hw_backed_key(test_version, test_salt.data(),
                                    &small_sealing_key));
   EXPECT_NOT_OK(
-      ot_crypto_hw_backed_keygen(kHardenedBoolFalse, &small_sealing_key));
+      otcrypto_hw_backed_keygen(kHardenedBoolFalse, &small_sealing_key));
 #endif
 
   // A 36-byte (9-word) attestation keyblob is too small for SW keygen (needs
@@ -610,7 +610,7 @@ TEST(KeyTransport, HwBackedKeygenNegative) {
   };
   EXPECT_OK(otcrypto_hw_backed_attestation_key(test_version, att_salt.data(),
                                                &small_att_key));
-  EXPECT_NOT_OK(ot_crypto_hw_backed_keygen(kHardenedBoolTrue, &small_att_key));
+  EXPECT_NOT_OK(otcrypto_hw_backed_keygen(kHardenedBoolTrue, &small_att_key));
 
   // A 128-bit key config does not match the 256-bit keymgr output share size.
   uint32_t keyblob_64b[kSwKeyblobHwBackedWords] = {0};
@@ -621,7 +621,7 @@ TEST(KeyTransport, HwBackedKeygenNegative) {
   };
   EXPECT_OK(
       otcrypto_hw_backed_key(test_version, test_salt.data(), &wrong_key_len));
-  EXPECT_NOT_OK(ot_crypto_hw_backed_keygen(kHardenedBoolFalse, &wrong_key_len));
+  EXPECT_NOT_OK(otcrypto_hw_backed_keygen(kHardenedBoolFalse, &wrong_key_len));
 
   // A 31-byte key config rounds up to 8 words in keyblob_share_num_words, but
   // is not 32 bytes and must be rejected.
@@ -635,7 +635,7 @@ TEST(KeyTransport, HwBackedKeygenNegative) {
   EXPECT_OK(
       otcrypto_hw_backed_key(test_version, test_salt.data(), &non_aligned_key));
   EXPECT_NOT_OK(
-      ot_crypto_hw_backed_keygen(kHardenedBoolFalse, &non_aligned_key));
+      otcrypto_hw_backed_keygen(kHardenedBoolFalse, &non_aligned_key));
 
   // Corrupted checksum should be rejected before keygen.
   otcrypto_blinded_key_t bad_checksum_key = {
@@ -647,7 +647,7 @@ TEST(KeyTransport, HwBackedKeygenNegative) {
                                    &bad_checksum_key));
   bad_checksum_key.checksum ^= 0xffffffff;
   EXPECT_NOT_OK(
-      ot_crypto_hw_backed_keygen(kHardenedBoolFalse, &bad_checksum_key));
+      otcrypto_hw_backed_keygen(kHardenedBoolFalse, &bad_checksum_key));
 }
 
 TEST(KeyTransport, AesKwpNegative) {

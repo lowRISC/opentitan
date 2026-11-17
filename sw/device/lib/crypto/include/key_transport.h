@@ -64,7 +64,7 @@ otcrypto_status_t otcrypto_symmetric_keygen(
  *
  * The caller should partially populate the blinded key struct; they should set
  * the full key configuration and the keyblob length (32 bytes for sideloaded
- * keys, or 64 bytes if the key will be passed to `ot_crypto_hw_backed_keygen`),
+ * keys, or 64 bytes if the key will be passed to `otcrypto_hw_backed_keygen`),
  * and then allocate that amount of space for the keyblob and set the keyblob
  * pointer.
  *
@@ -122,8 +122,8 @@ otcrypto_status_t otcrypto_hw_backed_attestation_key(
  * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
  */
 OT_WARN_UNUSED_RESULT
-otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
-                                             otcrypto_blinded_key_t *key);
+otcrypto_status_t otcrypto_hw_backed_keygen(hardened_bool_t attestation,
+                                            otcrypto_blinded_key_t *key);
 
 /**
  * Returns the length that the blinded key will have once wrapped.

@@ -139,8 +139,8 @@ otcrypto_status_t otcrypto_hw_backed_attestation_key(
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
-otcrypto_status_t ot_crypto_hw_backed_keygen(hardened_bool_t attestation,
-                                             otcrypto_blinded_key_t *key) {
+otcrypto_status_t otcrypto_hw_backed_keygen(hardened_bool_t attestation,
+                                            otcrypto_blinded_key_t *key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_HW_BACKED_KEYGEN);
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS

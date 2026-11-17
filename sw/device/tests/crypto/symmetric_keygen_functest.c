@@ -223,7 +223,7 @@ static status_t hw_backed_keygen_test(void) {
   TRY_CHECK(key.checksum == otcrypto_integrity_blinded_checksum(&key));
 
   // Generate the SW-visible key from the hardware-backed preset.
-  TRY(ot_crypto_hw_backed_keygen(kHardenedBoolFalse, &key));
+  TRY(otcrypto_hw_backed_keygen(kHardenedBoolFalse, &key));
 
   // Verify the key struct was morphed correctly.
   TRY_CHECK(key.config.hw_backed == kHardenedBoolFalse);
@@ -250,7 +250,7 @@ static status_t hw_backed_keygen_test(void) {
             otcrypto_integrity_blinded_checksum(&attestation_key));
 
   // Generate the SW-visible key from the hardware-backed preset.
-  TRY(ot_crypto_hw_backed_keygen(kHardenedBoolTrue, &attestation_key));
+  TRY(otcrypto_hw_backed_keygen(kHardenedBoolTrue, &attestation_key));
 
   // Verify the key struct was morphed correctly.
   TRY_CHECK(attestation_key.config.hw_backed == kHardenedBoolFalse);
