@@ -121,8 +121,9 @@ module tb;
     .keymgr_key_i       (kmac_sideload_key),
 
     // KeyMgr KDF datapath
-    .app_i              (app_req ),
-    .app_o              (app_rsp ),
+    .app_i                  (app_req ),
+    .app_o                  (app_rsp ),
+    .keymgr_sensitive_key_i (kmac_if.keymgr_sensitive_key_i),
 
     // Interrupts
     .intr_kmac_done_o   (interrupts[KmacDone]      ),

@@ -9,9 +9,14 @@ interface kmac_if(input clk_i, input rst_ni);
   logic                                          en_masking_o;
   lc_ctrl_pkg::lc_tx_t                           lc_escalate_en_i;
   prim_mubi_pkg::mubi4_t                         idle_o;
+  prim_mubi_pkg::mubi4_t                         keymgr_sensitive_key_i;
 
   function automatic void drive_lc_escalate(lc_ctrl_pkg::lc_tx_t val);
     lc_escalate_en_i = val;
+  endfunction
+
+  function automatic void drive_keymgr_sensitive_key(prim_mubi_pkg::mubi4_t val);
+    keymgr_sensitive_key_i = val;
   endfunction
 
   `ASSERT(KmacMaskingO_A, `EN_MASKING == en_masking_o)
