@@ -45,7 +45,7 @@
       name: sec_cm_fsm_local_esc
       desc: "Verify the countermeasure(s) FSM.LOCAL_ESC."
       stage: V2S
-      tests: ["N/A"]
+      tests: ["hmac_sec_cm"]
     }
     {
       name: sec_cm_config_mubi
