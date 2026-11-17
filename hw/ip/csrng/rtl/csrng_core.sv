@@ -96,20 +96,19 @@ module csrng_core import csrng_pkg::*; #(
   logic                        cmd_entropy_req;
   logic                        cmd_entropy_avail;
 
-  logic                        ctr_drbg_req_vld;
-  logic                        ctr_drbg_req_rdy;
-  csrng_core_data_t            ctr_drbg_req_data;
+  logic                        ctr_drbg_cmd_req;
+  csrng_core_data_t            ctr_drbg_cmd_req_data;
 
-  logic                        ctr_drbg_rsp_vld;
-  csrng_core_data_t            ctr_drbg_rsp_data;
-  csrng_cmd_sts_e              ctr_drbg_rsp_sts;
+  logic                        ctr_drbg_cmd_ack;
+  csrng_core_data_t            ctr_drbg_cmd_ack_data;
+  csrng_cmd_sts_e              ctr_drbg_cmd_ack_sts;
 
   logic                        ctr_drbg_bits_vld;
   logic [BlkLen-1:0]           ctr_drbg_bits_data;
   logic                        ctr_drbg_bits_fips;
 
   logic                        acmd_accept;
-  logic                        main_sm_cmd_vld;
+  logic                        main_sm_cmd_req;
   logic                        clr_adata_packer;
 
   logic                        fifo_write_err_sum;
@@ -975,10 +974,9 @@ module csrng_core import csrng_pkg::*; #(
     .flag0_i               (flag0_fo[0]),
     .cmd_entropy_req_o     (cmd_entropy_req),
     .cmd_entropy_avail_i   (cmd_entropy_avail),
-    .cmd_vld_o             (main_sm_cmd_vld),
-    .cmd_rdy_i             (ctr_drbg_req_rdy),
+    .cmd_req_o             (main_sm_cmd_req),
+    .cmd_ack_i             (ctr_drbg_cmd_ack),
     .clr_adata_packer_o    (clr_adata_packer),
-    .cmd_complete_i        (ctr_drbg_rsp_vld),
     .local_escalate_i      (fatal_loc_events),
     .main_sm_state_o       (cs_main_sm_state),
     .main_sm_err_o         (cs_main_sm_err)
@@ -988,9 +986,9 @@ module csrng_core import csrng_pkg::*; #(
   assign cmd_entropy_avail = entropy_src_hw_if_i.es_ack;
 
   for (genvar csi = 0; csi < NumApps; csi = csi+1) begin : gen_cmd_ack
-    assign cmd_core_ack[csi] = ctr_drbg_rsp_vld && (ctr_drbg_rsp_data.inst_id == csi);
-    assign cmd_core_ack_sts[csi] = ctr_drbg_rsp_sts;
-    assign genbits_core_vld[csi] = ctr_drbg_bits_vld && (ctr_drbg_rsp_data.inst_id == csi);
+    assign cmd_core_ack[csi] = ctr_drbg_cmd_ack && (ctr_drbg_cmd_ack_data.inst_id == csi);
+    assign cmd_core_ack_sts[csi] = ctr_drbg_cmd_ack_sts;
+    assign genbits_core_vld[csi] = ctr_drbg_bits_vld && (ctr_drbg_cmd_ack_data.inst_id == csi);
     assign genbits_core_bus[csi] = ctr_drbg_bits_data;
     assign genbits_core_fips[csi] = ctr_drbg_bits_fips;
   end : gen_cmd_ack
@@ -1036,7 +1034,7 @@ module csrng_core import csrng_pkg::*; #(
     .rd_state_o  (state_db_rd_data),
 
     .wr_vld_i   (state_db_wr_vld),
-    .wr_data_i  (ctr_drbg_rsp_data),
+    .wr_data_i  (ctr_drbg_cmd_ack_data),
 
     .reg_inst_id_i        (int_state_num_q),
     .reg_ptr_clr_i        (int_state_num_wr),
@@ -1096,10 +1094,10 @@ module csrng_core import csrng_pkg::*; #(
   // CTR DRBG instantiation
   //-------------------------------------
 
-  assign ctr_drbg_req_vld = !cs_enable_fo[45] ? 1'b0 : main_sm_cmd_vld;
+  assign ctr_drbg_cmd_req = !cs_enable_fo[45] ? 1'b0 : main_sm_cmd_req;
   assign ctr_drbg_cmd_d   = !cs_enable_fo[44] ?  INV : acmd_hold;
 
-  assign ctr_drbg_req_data = '{
+  assign ctr_drbg_cmd_req_data = '{
     inst_id:       inst_id_q,
     cmd:           ctr_drbg_cmd_q,
     key_v:         state_db_rd_data.key_v,
@@ -1116,18 +1114,17 @@ module csrng_core import csrng_pkg::*; #(
     .rst_ni  (rst_ni),
     .enable_i(cs_enable_fo[49]),
 
-    .req_vld_i         (ctr_drbg_req_vld),
-    .req_rdy_o         (ctr_drbg_req_rdy),
-    .req_data_i        (ctr_drbg_req_data),
-    .req_entropy_i     (entropy_src_seed_q),
-    .req_entropy_fips_i(entropy_src_fips_q),
-    .req_glast_i       (gen_last_q),
-    .req_gen_first_i   (gen_first_q),
-    .req_glen_i        (gen_len_q),
+    .cmd_req_i             (ctr_drbg_cmd_req),
+    .cmd_req_data_i        (ctr_drbg_cmd_req_data),
+    .cmd_req_entropy_i     (entropy_src_seed_q),
+    .cmd_req_entropy_fips_i(entropy_src_fips_q),
+    .cmd_req_glast_i       (gen_last_q),
+    .cmd_req_gen_first_i   (gen_first_q),
+    .cmd_req_glen_i        (gen_len_q),
 
-    .rsp_vld_o (ctr_drbg_rsp_vld),
-    .rsp_data_o(ctr_drbg_rsp_data),
-    .rsp_sts_o (ctr_drbg_rsp_sts),
+    .cmd_ack_o     (ctr_drbg_cmd_ack),
+    .cmd_ack_data_o(ctr_drbg_cmd_ack_data),
+    .cmd_ack_sts_o (ctr_drbg_cmd_ack_sts),
 
     .bits_vld_o (ctr_drbg_bits_vld),
     .bits_data_o(ctr_drbg_bits_data),
@@ -1221,7 +1218,7 @@ module csrng_core import csrng_pkg::*; #(
                             cs_enable_fo[40];
   assign unused_reg2hw_genbits = (|reg2hw.genbits.q);
   assign unused_reseed_interval = reg2hw.reseed_interval.qe;
-  assign unused_gen_rsp_pdata = ctr_drbg_rsp_data.pdata;
+  assign unused_gen_rsp_pdata = ctr_drbg_cmd_ack_data.pdata;
   assign unused_state_db_inst_state = state_db_rd_data.inst_state;
   assign unused_state_db_gen_flag = state_db_rd_data.gen_flag;
 
@@ -1230,12 +1227,12 @@ module csrng_core import csrng_pkg::*; #(
   //--------------------------------------------
 `ifdef INC_ASSERT
   logic state_db_zeroize;
-  assign state_db_zeroize = state_db_wr_vld && (ctr_drbg_rsp_data.cmd == UNI);
-  `ASSERT(CsrngUniZeroizeFips_A, state_db_zeroize -> (ctr_drbg_rsp_data.fips      == '0))
-  `ASSERT(CsrngUniZeroizeKey_A,  state_db_zeroize -> (ctr_drbg_rsp_data.key_v.key == '0))
-  `ASSERT(CsrngUniZeroizeV_A,    state_db_zeroize -> (ctr_drbg_rsp_data.key_v.v   == '0))
-  `ASSERT(CsrngUniZeroizeRc_A,   state_db_zeroize -> (ctr_drbg_rsp_data.rs_ctr    == '0))
-  `ASSERT(CsrngUniZeroizeSts_A,  state_db_zeroize -> (ctr_drbg_rsp_sts == CMD_STS_SUCCESS))
+  assign state_db_zeroize = state_db_wr_vld && (ctr_drbg_cmd_ack_data.cmd == UNI);
+  `ASSERT(CsrngUniZeroizeFips_A, state_db_zeroize -> (ctr_drbg_cmd_ack_data.fips      == '0))
+  `ASSERT(CsrngUniZeroizeKey_A,  state_db_zeroize -> (ctr_drbg_cmd_ack_data.key_v.key == '0))
+  `ASSERT(CsrngUniZeroizeV_A,    state_db_zeroize -> (ctr_drbg_cmd_ack_data.key_v.v   == '0))
+  `ASSERT(CsrngUniZeroizeRc_A,   state_db_zeroize -> (ctr_drbg_cmd_ack_data.rs_ctr    == '0))
+  `ASSERT(CsrngUniZeroizeSts_A,  state_db_zeroize -> (ctr_drbg_cmd_ack_sts == CMD_STS_SUCCESS))
 `endif
 
 endmodule // csrng_core

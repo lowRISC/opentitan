@@ -148,7 +148,7 @@ package csrng_pkg;
   parameter int unsigned MainSmStateWidth = 6;
 
   // Encoding generated with:
-  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 8 -n 6 \
+  // $ ./util/design/sparse-fsm-encode.py -d 3 -m 6 -n 6 \
   //     -s 137328258 --language=sv
   //
   // Hamming distance histogram:
@@ -156,25 +156,23 @@ package csrng_pkg;
   //  0: --
   //  1: --
   //  2: --
-  //  3: |||||||||||||||||||| (57.14%)
-  //  4: ||||||||||||||| (42.86%)
-  //  5: --
+  //  3: |||||||||||||||||||| (53.33%)
+  //  4: ||||||||||||||| (40.00%)
+  //  5: || (6.67%)
   //  6: --
   //
   // Minimum Hamming distance: 3
-  // Maximum Hamming distance: 4
+  // Maximum Hamming distance: 5
   // Minimum Hamming weight: 1
   // Maximum Hamming weight: 5
   //
   typedef enum logic [MainSmStateWidth-1:0] {
-    MainSmIdle        = 6'b110111, // idle
-    MainSmParseCmd    = 6'b011101, // parse the cmd
-    MainSmEntropyReq  = 6'b001110, // request entropy if necessary
-    MainSmCmdPrep     = 6'b000011, // delay cycle for command request (?)
-    MainSmCmdVld      = 6'b010000, // command request to core data path
-    MainSmClrAData    = 6'b111010, // clear out the additional data packer fifo
-    MainSmCmdCompWait = 6'b100100, // wait for command to complete
-    MainSmError       = 6'b101001  // error state, results in fatal alert
+    MainSmIdle        = 6'b010111, // idle
+    MainSmParseCmd    = 6'b100001, // parse the cmd
+    MainSmEntropyReq  = 6'b001000, // request entropy if necessary
+    MainSmCmdPrep     = 6'b111011, // delay cycle for command request (?)
+    MainSmCmdReq      = 6'b110100, // command request to core data path
+    MainSmError       = 6'b101110  // error state, results in fatal alert
   } main_sm_state_e;
 
   parameter int CsKeymgrDivWidth = 384;

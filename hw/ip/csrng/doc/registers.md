@@ -818,7 +818,7 @@ an interrupt or an alert.
 ## MAIN_SM_STATE
 Main state machine state debug register
 - Offset: `0x7c`
-- Reset default: `0x37`
+- Reset default: `0x17`
 - Reset mask: `0x3f`
 
 ### Fields
@@ -830,7 +830,7 @@ Main state machine state debug register
 |  Bits  |  Type  |  Reset  | Name          | Description                                                                                                        |
 |:------:|:------:|:-------:|:--------------|:-------------------------------------------------------------------------------------------------------------------|
 |  31:6  |        |         |               | Reserved                                                                                                           |
-|  5:0   |   ro   |  0x37   | MAIN_SM_STATE | This is the state of the CSRNG main state machine. See the RTL file `csrng_main_sm` for the meaning of the values. |
+|  5:0   |   ro   |  0x17   | MAIN_SM_STATE | This is the state of the CSRNG main state machine. See the RTL file `csrng_main_sm` for the meaning of the values. |
 
 ## INT_STATE_WRITE_ENABLE_REGWEN
 Internal state write enable REGWEN register
