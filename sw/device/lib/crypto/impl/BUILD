@@ -18,27 +18,6 @@ load(
 )
 load("//rules:cross_platform.bzl", "dual_cc_library", "dual_inputs")
 
-config_setting(
-    name = "crypto_status_debug",
-    define_values = {
-        "crypto_status_debug": "true",
-    },
-)
-
-config_setting(
-    name = "disable_null_checks",
-    define_values = {
-        "disable_null_checks": "true",
-    },
-)
-
-config_setting(
-    name = "disable_hardening",
-    define_values = {
-        "disable_hardening": "true",
-    },
-)
-
 cc_library(
     name = "tdes",
     srcs = ["tdes.c"],
@@ -686,21 +665,21 @@ cc_library(
         "status.h",
     ],
     defines = select({
-        # Turn debugging on only if the `crypto_status_debug` command-line option
+        # Turn debugging on only if the `--crypto_status_debug` command-line option
         # is set.
-        ":crypto_status_debug": ["OTCRYPTO_STATUS_DEBUG"],
+        "//sw/device/lib/crypto/configs:crypto_status_debug": ["OTCRYPTO_STATUS_DEBUG"],
         "//conditions:default": [],
     }) + select({
-        # This disables NULL checks on API input to save code size
-        # Activate it by building the library with `--define=disable_null_checks=true`
-        # The status header is used in all API functions to pass a bad status hence it propagates to where the flag is needed
-        ":disable_null_checks": ["OTCRYPTO_DISABLE_NULL_CHECKS"],
+        # This disables NULL checks on API input to save code size.
+        # Activate it by building the library with `--disable_null_checks=true`.
+        # The status header is used in all API functions to pass a bad status hence it propagates to where the flag is needed.
+        "//sw/device/lib/crypto/configs:disable_null_checks": ["OTCRYPTO_DISABLE_NULL_CHECKS"],
         "//conditions:default": [],
     }) + select({
         # This replaces the redundant branch sequences in HARDENED_TRY and
         # HARDENED_CHECK_* with a single check to save code size.
-        # Activate it by building the library with `--define=disable_hardening=true`
-        ":disable_hardening": ["OT_DISABLE_HARDENING"],
+        # Activate it by building the library with `--disable_hardening=true`.
+        "//sw/device/lib/crypto/configs:disable_hardening": ["OT_DISABLE_HARDENING"],
         "//conditions:default": [],
     }),
     deps = [
