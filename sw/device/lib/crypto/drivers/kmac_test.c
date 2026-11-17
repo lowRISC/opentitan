@@ -43,6 +43,62 @@ static status_t run_kmac_test(void) {
   return OTCRYPTO_OK;
 }
 
+static status_t run_empty_prefix_test(void) {
+  LOG_INFO("Running zero-length NULL prefix tests for cSHAKE and KMAC.");
+
+  TRY(kmac_hwip_default_configure());
+
+  const uint8_t kMsg[] = "abc";
+  const uint8_t kFuncName[] = "Email Signature";
+  const uint8_t kCustStr[] = "My Tagged Application";
+  const uint8_t kNonNullDummy = 0;
+  otcrypto_const_byte_buf_t msg_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kMsg, sizeof(kMsg) - 1);
+
+  uint32_t digest_null[8] = {0};
+  uint32_t digest_ref[8] = {0};
+
+  // cSHAKE128 with NULL empty func_name and non-empty cust_str.
+  TRY(kmac_cshake_128(&msg_buf, NULL, 0, kCustStr, sizeof(kCustStr) - 1,
+                      digest_null, ARRAYSIZE(digest_null)));
+  TRY(kmac_cshake_128(&msg_buf, &kNonNullDummy, 0, kCustStr,
+                      sizeof(kCustStr) - 1, digest_ref, ARRAYSIZE(digest_ref)));
+  CHECK_ARRAYS_EQ(digest_null, digest_ref, ARRAYSIZE(digest_null));
+
+  // cSHAKE256 with non-empty func_name and NULL empty cust_str.
+  TRY(kmac_cshake_256(&msg_buf, kFuncName, sizeof(kFuncName) - 1, NULL, 0,
+                      digest_null, ARRAYSIZE(digest_null)));
+  TRY(kmac_cshake_256(&msg_buf, kFuncName, sizeof(kFuncName) - 1,
+                      &kNonNullDummy, 0, digest_ref, ARRAYSIZE(digest_ref)));
+  CHECK_ARRAYS_EQ(digest_null, digest_ref, ARRAYSIZE(digest_null));
+
+  // KMAC128 and KMAC256 with NULL empty cust_str.
+  uint32_t share0[8] = {0x43424140, 0x47464544, 0x4b4a4948, 0x4f4e4d4c,
+                        0x53525150, 0x57565554, 0x5b5a5958, 0x5f5e5d5c};
+  uint32_t share1[8] = {0};
+  kmac_blinded_key_t key = {
+      .share0 = share0,
+      .share1 = share1,
+      .len = sizeof(share0),
+      .hw_backed = kHardenedBoolFalse,
+  };
+  key.checksum = kmac_key_integrity_checksum(&key);
+
+  TRY(kmac_kmac_128(&key, kHardenedBoolFalse, &msg_buf, NULL, 0, digest_null,
+                    sizeof(digest_null)));
+  TRY(kmac_kmac_128(&key, kHardenedBoolFalse, &msg_buf, &kNonNullDummy, 0,
+                    digest_ref, sizeof(digest_ref)));
+  CHECK_ARRAYS_EQ(digest_null, digest_ref, ARRAYSIZE(digest_null));
+
+  TRY(kmac_kmac_256(&key, kHardenedBoolFalse, &msg_buf, NULL, 0, digest_null,
+                    sizeof(digest_null)));
+  TRY(kmac_kmac_256(&key, kHardenedBoolFalse, &msg_buf, &kNonNullDummy, 0,
+                    digest_ref, sizeof(digest_ref)));
+  CHECK_ARRAYS_EQ(digest_null, digest_ref, ARRAYSIZE(digest_null));
+
+  return OTCRYPTO_OK;
+}
+
 static status_t run_negative_test(void) {
   LOG_INFO("Running negative tests.");
 
@@ -100,6 +156,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(entropy_complex_init(kHardenedBoolFalse));
 
   EXECUTE_TEST(result, run_kmac_test);
+  EXECUTE_TEST(result, run_empty_prefix_test);
   EXECUTE_TEST(result, run_negative_test);
   EXECUTE_TEST(result, run_kmac_test);
 
