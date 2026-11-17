@@ -9,6 +9,7 @@
     The CHERIoT memory subsystem sits between a CHERIoT-capable Ibex core and the system
     interconnect.  It enforces capability tag semantics on data-memory accesses, transparently
     remapping capability accesses and revocation bitmap reads into a dedicated meta SRAM.
+    By default, its logic runs in lockstep with a delayed second copy.
   '''
   // Unique comportable IP identifier defined under KNOWN_CIP_IDS in the regtool.
   cip_id:             "48",
@@ -31,6 +32,9 @@
     {protocol: "tlul", direction: "host", name: "tbre"}
   ],
 
+  scan: "true",       // Enable `scanmode_i` port
+  scan_reset: "true", // Enable `scan_rst_ni` port
+
   ///////////////////////////
   // Interrupts and Alerts //
   ///////////////////////////
@@ -44,10 +48,18 @@
   alert_list: [
     { name: "fatal_fault",
       desc: '''
-            This fatal alert is triggered when an integrity fault is detected, when the meta
-            SRAM path returns a device error, when the revocation engine reports a fault, when a
-            capability store to the NVM is partial, or when a request breaks the core's capability
-            store sequence.
+            This fatal alert is triggered when the two copies of the lockstep disagree, when an
+            integrity fault is detected, when a core data request carries an invalid encoding of
+            the capability tag, when the meta SRAM path returns a device error, when the revocation
+            engine reports a fault, when a capability store to the NVM is partial, when a request
+            breaks the core's capability store sequence, or when a shadow register has a storage
+            error.
+            '''
+    }
+    { name: "recov_ctrl_update_err",
+      desc: '''
+            This recoverable alert is triggered when the two writes of an update to a shadow
+            register disagree. The register keeps its previous value.
             '''
     }
   ],
@@ -111,13 +123,34 @@
     },
 
     /////////////////////
+    // Lockstep        //
+    /////////////////////
+
+    { name:    "SecLockstep",
+      desc:    '''
+               Run a second copy of the logic in lockstep with the main copy (LOGIC.SHADOW).
+               ''',
+      type:    "bit",
+      default: "1'b1",
+      local:   "false",
+      expose:  "true"
+    },
+    { name:    "LockstepOffset",
+      desc:    "Cycles the second copy of the logic runs behind the main copy, at least 1.",
+      type:    "int unsigned",
+      default: "1",
+      local:   "false",
+      expose:  "true"
+    },
+
+    /////////////////////
     // Register widths //
     /////////////////////
 
     { name:    "TbreNumCapsW",
       desc:    '''
-               Width of TBRE_NUM_CAPS. A sweep reads two words per capability, and that word count
-               fits the TL-UL address width.
+               Width of TBRE_NUM_CAPS_SHADOWED. A sweep reads two words per capability, and that
+               word count fits the TL-UL address width.
                ''',
       type:    "int unsigned",
       default: "31",
@@ -237,25 +270,23 @@
       package: "tlul_pkg",
       desc:    "Data port from the core."
     },
-    // Capability tag sideband - write direction (from core to subsystem)
-    { struct:  "logic",
+    // Capability tag sideband - request direction (from core to subsystem)
+    { struct:  "mubi4",
       type:    "uni",
       name:    "cored_tag_h2d",
       act:     "rcv",
-      width:   "1",
-      package: "",
-      default: "1'b0",
-      desc:    "CHERIoT capability tag carried with the A-channel of cored_tl_h."
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "CHERIoT capability tag carried with the A-channel of cored_tl_d."
     },
-    // Capability tag sideband - read response direction (from subsystem to core)
-    { struct:  "logic",
+    // Capability tag sideband - response direction (from subsystem to core)
+    { struct:  "mubi4",
       type:    "uni",
       name:    "cored_tag_d2h",
       act:     "req",
-      width:   "1",
-      package: "",
-      default: "1'b0",
-      desc:    "Capability tag returned on the D-channel of cored_tl_h."
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "Capability tag returned on the D-channel of cored_tl_d."
     },
     // TRVK revocation bitmap TL-UL host port
     { struct:  "tl",
@@ -283,15 +314,26 @@
     { name: "BUS.INTEGRITY",
       desc: '''
         End-to-end bus integrity between the Ibex lockstep and the storage cells.
-        Relies on LOGIC.SHADOW, which is not implemented yet.
+        Relies on LOGIC.SHADOW.
       '''
     },
     { name: "LOGIC.SHADOW",
       desc: '''
         The CHERIoT memory subsystem, including the background revocation engine, is
-        instantiated in lockstep. Not implemented yet.
-        This also covers the pointers of the subsystem's FIFOs, which therefore are not
-        redundantly encoded (CTR.REDUN).
+        instantiated in lockstep: with the SecLockstep parameter set (the default), a second copy
+        of its logic runs LockstepOffset cycles behind the main copy, and a difference in their
+        outputs other than the alert, or a fatal error of the second copy, raises the fatal_fault
+        alert. This also covers the pointers of the subsystem's FIFOs, which therefore are not
+        redundantly encoded (CTR.REDUN). The registers, the interrupt and the alert senders are
+        not duplicated, so the register values are common to both lockstep copies:
+        TBRE.CONFIG.SHADOW protects the stored sweep configuration, and each lockstep copy
+        captures it when a sweep starts. With SecLockstep set to 0, neither the lockstep nor its
+        coverage of the FIFO pointers holds.
+      '''
+    },
+    { name: "TBRE.CONFIG.SHADOW",
+      desc: '''
+        The sweep configuration registers of the revocation engine are shadowed.
       '''
     },
     { name: "MEM.SW_NOACCESS",
@@ -306,8 +348,9 @@
     },
     { name: "CORED_TAG.INTERSIG.MUBI",
       desc: '''
-        The capability tag is multi-bit encoded between the Ibex lockstep domain and the
-        lockstep domain of the CHERIoT memory subsystem. Not implemented yet.
+        The capability tags of the core data port are multi-bit encoded between Ibex and the
+        CHERIoT memory subsystem. Only MuBi4True reads as tagged, and a core data request with an
+        invalid encoding raises the fatal_fault alert.
       '''
     },
   ],
@@ -327,6 +370,42 @@
   regwidth: "32",
   registers: {
     regs: [
+      { name: "RECOV_ERR_CODE",
+        desc: "Recoverable error code.",
+        swaccess: "rw1c",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "0",
+            name: "shadow_update_err",
+            desc: '''
+              The second write of a shadow register update did not match the first. Stays set until
+              software writes 1 to it.
+            ''',
+            resval: "0"
+          }
+        ]
+      },
+      { name: "FATAL_ERR_CODE",
+        desc: "Fatal error code.",
+        swaccess: "ro",
+        hwaccess: "hwo",
+        fields: [
+          { bits: "0",
+            name: "reg_intg",
+            desc: '''
+              A request to the register interface failed its integrity check. Stays set until reset.
+            ''',
+            resval: "0"
+          },
+          { bits: "1",
+            name: "shadow_storage_err",
+            desc: '''
+              The two stored copies of a shadow register differed. Stays set until reset.
+            ''',
+            resval: "0"
+          }
+        ]
+      },
       { name: "TBRE_REGWEN",
         desc: "Write enable for the revocation engine registers.",
         swaccess: "ro",
@@ -336,18 +415,22 @@
           { bits: "0",
             name: "en",
             desc: '''
-              Low while the revocation engine is active, locking !!TBRE_BASE_ADDR, !!TBRE_NUM_CAPS
-              and !!TBRE_START. !!TBRE_STATUS.busy follows the same state one cycle later.
+              Low while the revocation engine is active, locking !!TBRE_BASE_ADDR_SHADOWED,
+              !!TBRE_NUM_CAPS_SHADOWED and !!TBRE_START. !!TBRE_STATUS.busy follows the same state
+              one cycle later.
             ''',
             resval: "1"
           }
         ]
       },
-      { name: "TBRE_BASE_ADDR",
+      { name: "TBRE_BASE_ADDR_SHADOWED",
         desc: "Address of the first capability the revocation engine sweeps.",
         regwen: "TBRE_REGWEN",
         swaccess: "rw",
         hwaccess: "hro",
+        shadowed: "true",
+        update_err_alert: "recov_ctrl_update_err",
+        storage_err_alert: "fatal_fault",
         fields: [
           { bits: "31:3",
             name: "addr",
@@ -360,11 +443,14 @@
           }
         ]
       },
-      { name: "TBRE_NUM_CAPS",
+      { name: "TBRE_NUM_CAPS_SHADOWED",
         desc: "Number of capabilities the revocation engine sweeps, each of them two 32-bit words.",
         regwen: "TBRE_REGWEN",
         swaccess: "rw",
         hwaccess: "hro",
+        shadowed: "true",
+        update_err_alert: "recov_ctrl_update_err",
+        storage_err_alert: "fatal_fault",
         fields: [
           { bits: "TbreNumCapsW-1:0",
             name: "num",
@@ -378,10 +464,11 @@
       },
       { name: "TBRE_START",
         desc: '''
-          Starts a sweep over the capabilities !!TBRE_BASE_ADDR and !!TBRE_NUM_CAPS describe.
-          !!TBRE_STATUS.busy reflects the sweep in progress. A start outside CHERIoT mode, with
-          !!TBRE_NUM_CAPS zero, or with !!TBRE_BASE_ADDR outside the tagged regions, is ignored and
-          sets !!TBRE_STATUS.start_err.
+          Starts a sweep over the capabilities !!TBRE_BASE_ADDR_SHADOWED and
+          !!TBRE_NUM_CAPS_SHADOWED describe. !!TBRE_STATUS.busy reflects the sweep in progress. A
+          start outside CHERIoT mode, with !!TBRE_NUM_CAPS_SHADOWED zero, or with
+          !!TBRE_BASE_ADDR_SHADOWED outside the tagged regions, is ignored and sets
+          !!TBRE_STATUS.start_err.
         ''',
         regwen: "TBRE_REGWEN",
         swaccess: "wo",
@@ -415,9 +502,9 @@
             name: "start_err",
             swaccess: "rw1c",
             desc: '''
-              A start was ignored because the subsystem was not in CHERIoT mode, !!TBRE_NUM_CAPS was
-              zero or !!TBRE_BASE_ADDR was outside the tagged regions. Stays set until software
-              writes 1 to it.
+              A start was ignored because the subsystem was not in CHERIoT mode,
+              !!TBRE_NUM_CAPS_SHADOWED was zero or !!TBRE_BASE_ADDR_SHADOWED was outside the tagged
+              regions. Stays set until software writes 1 to it.
             ''',
             resval: "0"
           },

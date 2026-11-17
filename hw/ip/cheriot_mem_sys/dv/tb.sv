@@ -13,11 +13,12 @@ module tb;
   `include "uvm_macros.svh"
   `include "dv_macros.svh"
 
-  wire clk, rst_n;
+  wire clk, rst_n, rst_shadowed_n;
   wire [NUM_MAX_INTERRUPTS-1:0] interrupts;
 
   // interfaces
   clk_rst_if clk_rst_if(.clk(clk), .rst_n(rst_n));
+  rst_shadowed_if rst_shad_if(.rst_n(rst_n), .rst_shadowed_n(rst_shadowed_n));
   tl_if tl_if(.clk(clk), .rst_n(rst_n));
   pins_if #(NUM_MAX_INTERRUPTS) intr_if(.pins(interrupts));
 
@@ -27,6 +28,11 @@ module tb;
   cheriot_mem_sys dut (
     .clk_i                (clk      ),
     .rst_ni               (rst_n    ),
+    .rst_shadowed_ni      (rst_shadowed_n),
+
+    // Scan mode off
+    .scanmode_i           (prim_mubi_pkg::MuBi4False),
+    .scan_rst_ni          (1'b1),
 
     // Bus interface (device) for CSRs
     .regs_tl_d_i          (tl_if.h2d),
@@ -44,7 +50,7 @@ module tb;
 
     // Core data port with its capability tag sideband
     .cored_tl_d_i         (tlul_pkg::TL_H2D_DEFAULT),
-    .cored_tag_h2d_i      (1'b0),
+    .cored_tag_h2d_i      (prim_mubi_pkg::MuBi4False),
     .cored_tl_d_o         (),
     .cored_tag_d2h_o      (),
 
@@ -72,6 +78,7 @@ module tb;
     // drive clk and rst_n from clk_if
     clk_rst_if.set_active();
     uvm_config_db#(virtual clk_rst_if)::set(null, "*.env", "clk_rst_vif", clk_rst_if);
+    uvm_config_db#(virtual rst_shadowed_if)::set(null, "*.env", "rst_shadowed_vif", rst_shad_if);
     uvm_config_db#(virtual tl_if)::set(null, "*.env.m_tl_agent*", "vif", tl_if);
     uvm_config_db#(intr_vif)::set(null, "*.env", "intr_vif", intr_if);
     $timeformat(-12, 0, " ps", 12);

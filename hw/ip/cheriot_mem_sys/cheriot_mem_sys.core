@@ -9,6 +9,7 @@ filesets:
   files_rtl:
     depend:
       - lowrisc:prim:all
+      - lowrisc:prim:mubi
       - lowrisc:ip:tlul
       - lowrisc:ibex:ibex_pkg
       - pulp-platform:common_cells:common_cells
@@ -24,6 +25,8 @@ filesets:
       - rtl/cheriot_trvk_core.sv
       - rtl/cheriot_trvk_tlul.sv
       - rtl/cheriot_tbre.sv
+      - rtl/cheriot_mem_sys_core.sv
+      - rtl/cheriot_mem_sys_lockstep.sv
       - rtl/cheriot_mem_sys.sv
     file_type: systemVerilogSource
 

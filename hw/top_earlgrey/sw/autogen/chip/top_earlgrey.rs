@@ -2259,8 +2259,10 @@ pub enum AlertId {
     RvCoreIbexRecovHwErr = 66,
     /// cheriot_mem_sys_fatal_fault
     CheriotMemSysFatalFault = 67,
+    /// cheriot_mem_sys_recov_ctrl_update_err
+    CheriotMemSysRecovCtrlUpdateErr = 68,
     /// sram_ctrl_meta_fatal_error
-    SramCtrlMetaFatalError = 68,
+    SramCtrlMetaFatalError = 69,
 }
 
 impl TryFrom<u32> for AlertId {
@@ -2335,7 +2337,8 @@ impl TryFrom<u32> for AlertId {
             65 => Ok(Self::RvCoreIbexFatalHwErr),
             66 => Ok(Self::RvCoreIbexRecovHwErr),
             67 => Ok(Self::CheriotMemSysFatalFault),
-            68 => Ok(Self::SramCtrlMetaFatalError),
+            68 => Ok(Self::CheriotMemSysRecovCtrlUpdateErr),
+            69 => Ok(Self::SramCtrlMetaFatalError),
             _ => Err(val),
         }
     }
@@ -2345,7 +2348,7 @@ impl TryFrom<u32> for AlertId {
 ///
 /// This array is a mapping from `AlertId` to
 /// `AlertPeripheral`.
-pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 69] = [
+pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 70] = [
     // Uart0FatalFault -> AlertPeripheral::Uart0
     AlertPeripheral::Uart0,
     // Uart1FatalFault -> AlertPeripheral::Uart1
@@ -2481,6 +2484,8 @@ pub const ALERT_FOR_PERIPHERAL: [AlertPeripheral; 69] = [
     // RvCoreIbexRecovHwErr -> AlertPeripheral::RvCoreIbex
     AlertPeripheral::RvCoreIbex,
     // CheriotMemSysFatalFault -> AlertPeripheral::CheriotMemSys
+    AlertPeripheral::CheriotMemSys,
+    // CheriotMemSysRecovCtrlUpdateErr -> AlertPeripheral::CheriotMemSys
     AlertPeripheral::CheriotMemSys,
     // SramCtrlMetaFatalError -> AlertPeripheral::SramCtrlMeta
     AlertPeripheral::SramCtrlMeta,

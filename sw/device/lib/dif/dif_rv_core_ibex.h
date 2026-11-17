@@ -85,7 +85,8 @@ typedef enum dif_rv_core_ibex_error_status {
   kDifRvCoreIbexErrorStatusRegisterTransmissionIntegrity = 1 << 0,
 
   /**
-   * Response integrity error.
+   * Response integrity error. With CHERIoT, this includes a data response with
+   * an invalid encoding of the capability tag.
    */
   kDifRvCoreIbexErrorStatusFatalResponseIntegrity = 1 << 8,
 
