@@ -35,6 +35,7 @@ A number of memory-mapped registers are available to control Ibex-related functi
 | rv_core_ibex.[`CHERIOT_LOCK`](#cheriot_lock)                             | 0x64     |        4 | Locks the CHERIoT/ePMP mode.                                                    |
 | rv_core_ibex.[`MCOUNTEREN_WRITABLE_REGWEN`](#mcounteren_writable_regwen) | 0x68     |        4 | Register write-enable for [`MCOUNTEREN_WRITABLE.`](#mcounteren_writable)        |
 | rv_core_ibex.[`MCOUNTEREN_WRITABLE`](#mcounteren_writable)               | 0x6c     |        4 | Controls whether Ibex mcounteren CSR is writable by software.                   |
+| rv_core_ibex.[`NMI_ENABLE_REGWEN`](#nmi_enable_regwen)                   | 0x70     |        4 | Register write-enable for [`NMI_ENABLE.`](#nmi_enable)                          |
 | rv_core_ibex.[`DV_SIM_WINDOW`](#dv_sim_window)                           | 0x80     |       32 | Exposed tlul window for DV only purposes.                                       |
 
 ## ALERT_TEST
@@ -324,22 +325,22 @@ See [`IBUS_REMAP_ADDR_0`](#ibus_remap_addr_0) for a detailed description.
 
 ## NMI_ENABLE
 Enable mask for NMI.
-Once an enable mask is set, it cannot be disabled.
 - Offset: `0x4c`
 - Reset default: `0x0`
 - Reset mask: `0x3`
+- Register enable: [`NMI_ENABLE_REGWEN`](#nmi_enable_regwen)
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "ALERT_EN", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"name": "WDOG_EN", "bits": 1, "attr": ["rw1s"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
+{"reg": [{"name": "ALERT_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"name": "WDOG_EN", "bits": 1, "attr": ["rw"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 100}}
 ```
 
 |  Bits  |  Type  |  Reset  | Name     | Description                  |
 |:------:|:------:|:-------:|:---------|:-----------------------------|
 |  31:2  |        |         |          | Reserved                     |
-|   1    |  rw1s  |   0x0   | WDOG_EN  | Enable mask for watchdog NMI |
-|   0    |  rw1s  |   0x0   | ALERT_EN | Enable mask for alert NMI    |
+|   1    |   rw   |   0x0   | WDOG_EN  | Enable mask for watchdog NMI |
+|   0    |   rw   |   0x0   | ALERT_EN | Enable mask for alert NMI    |
 
 ## NMI_STATE
 Current NMI state
@@ -503,6 +504,32 @@ Controls whether Ibex mcounteren CSR is writable by software.
 |:------:|:------:|:-------:|:-------|:--------------------------------------------------------------------------------------------------------------------------------|
 |  31:4  |        |         |        | Reserved                                                                                                                        |
 |  3:0   |   rw   |   0x6   | EN     | When set to kMultiBitBool4True, the mcounteren CSR is writable by software. Drives the mcounteren_writable_i input on ibex_top. |
+
+## NMI_ENABLE_REGWEN
+Register write-enable for [`NMI_ENABLE.`](#nmi_enable)
+- Offset: `0x70`
+- Reset default: `0x1`
+- Reset mask: `0x1`
+
+### Fields
+
+```wavejson
+{"reg": [{"name": "EN", "bits": 1, "attr": ["rw0c"], "rotate": -90}, {"bits": 31}], "config": {"lanes": 1, "fontsize": 10, "vspace": 80}}
+```
+
+|  Bits  |  Type  |  Reset  | Name                         |
+|:------:|:------:|:-------:|:-----------------------------|
+|  31:1  |        |         | Reserved                     |
+|   0    |  rw0c  |   0x1   | [EN](#nmi_enable_regwen--en) |
+
+### NMI_ENABLE_REGWEN . EN
+Write enable for [`NMI_ENABLE.`](#nmi_enable) Once set to 0, it can no longer be configured to 1.
+
+| Value   | Name    | Description                                              |
+|:--------|:--------|:---------------------------------------------------------|
+| 0x0     | locked  | NMI_ENABLE can no longer be configured until next reset. |
+| 0x1     | enabled | NMI_ENABLE can still be configured.                      |
+
 
 ## DV_SIM_WINDOW
 Exposed tlul window for DV only purposes.

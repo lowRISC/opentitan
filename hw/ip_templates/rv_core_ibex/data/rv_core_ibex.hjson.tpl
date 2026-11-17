@@ -1126,10 +1126,10 @@
       { name: "NMI_ENABLE",
         desc: '''
           Enable mask for NMI.
-          Once an enable mask is set, it cannot be disabled.
         ''',
-        swaccess: "rw1s",
+        swaccess: "rw",
         hwaccess: "hro",
+        regwen: "NMI_ENABLE_REGWEN",
         fields: [
           { bits: "0",
             name: "ALERT_EN",
@@ -1342,6 +1342,29 @@
               When set to kMultiBitBool4True, the mcounteren CSR is writable by software.
               Drives the mcounteren_writable_i input on ibex_top.
             '''
+          },
+        ],
+      },
+
+      { name: "NMI_ENABLE_REGWEN",
+        desc: "Register write-enable for !!NMI_ENABLE.",
+        swaccess: "rw0c",
+        hwaccess: "none",
+        fields: [
+          { bits: "0",
+            name: "EN",
+            resval: "1",
+            desc: "Write enable for !!NMI_ENABLE. Once set to 0, it can no longer be configured to 1.",
+            enum: [
+              { value: "0",
+                name: "locked",
+                desc: "NMI_ENABLE can no longer be configured until next reset."
+              },
+              { value: "1",
+                name: "enabled",
+                desc: "NMI_ENABLE can still be configured."
+              },
+            ]
           },
         ],
       },

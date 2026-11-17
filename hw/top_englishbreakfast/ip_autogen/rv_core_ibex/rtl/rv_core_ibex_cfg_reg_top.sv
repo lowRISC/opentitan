@@ -57,9 +57,9 @@ module rv_core_ibex_cfg_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [25:0] reg_we_check;
+  logic [26:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(26)
+    .OneHotWidth(27)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -261,6 +261,9 @@ module rv_core_ibex_cfg_reg_top (
   logic mcounteren_writable_we;
   logic [3:0] mcounteren_writable_qs;
   logic [3:0] mcounteren_writable_wd;
+  logic nmi_enable_regwen_we;
+  logic nmi_enable_regwen_qs;
+  logic nmi_enable_regwen_wd;
 
   // Register instances
   // R[alert_test]: V(True)
@@ -1082,10 +1085,13 @@ module rv_core_ibex_cfg_reg_top (
 
 
   // R[nmi_enable]: V(False)
+  // Create REGWEN-gated WE signal
+  logic nmi_enable_gated_we;
+  assign nmi_enable_gated_we = nmi_enable_we & nmi_enable_regwen_qs;
   //   F[alert_en]: 0:0
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_nmi_enable_alert_en (
@@ -1094,7 +1100,7 @@ module rv_core_ibex_cfg_reg_top (
     .reinit_i(1'b0),
 
     // from register interface
-    .we     (nmi_enable_we),
+    .we     (nmi_enable_gated_we),
     .wd     (nmi_enable_alert_en_wd),
 
     // from internal hardware
@@ -1113,7 +1119,7 @@ module rv_core_ibex_cfg_reg_top (
   //   F[wdog_en]: 1:1
   prim_subreg #(
     .DW      (1),
-    .SwAccess(prim_subreg_pkg::SwAccessW1S),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
     .RESVAL  (1'h0),
     .Mubi    (1'b0)
   ) u_nmi_enable_wdog_en (
@@ -1122,7 +1128,7 @@ module rv_core_ibex_cfg_reg_top (
     .reinit_i(1'b0),
 
     // from register interface
-    .we     (nmi_enable_we),
+    .we     (nmi_enable_gated_we),
     .wd     (nmi_enable_wdog_en_wd),
 
     // from internal hardware
@@ -1420,8 +1426,37 @@ module rv_core_ibex_cfg_reg_top (
   );
 
 
+  // R[nmi_enable_regwen]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_nmi_enable_regwen (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
 
-  logic [25:0] addr_hit;
+    // from register interface
+    .we     (nmi_enable_regwen_we),
+    .wd     (nmi_enable_regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (nmi_enable_regwen_qs)
+  );
+
+
+
+  logic [26:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == RV_CORE_IBEX_ALERT_TEST_OFFSET);
     addr_hit[ 1] = (reg_addr == RV_CORE_IBEX_SW_RECOV_ERR_OFFSET);
@@ -1449,6 +1484,7 @@ module rv_core_ibex_cfg_reg_top (
     addr_hit[23] = (reg_addr == RV_CORE_IBEX_RND_STATUS_OFFSET);
     addr_hit[24] = (reg_addr == RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN_OFFSET);
     addr_hit[25] = (reg_addr == RV_CORE_IBEX_MCOUNTEREN_WRITABLE_OFFSET);
+    addr_hit[26] = (reg_addr == RV_CORE_IBEX_NMI_ENABLE_REGWEN_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1481,7 +1517,8 @@ module rv_core_ibex_cfg_reg_top (
                (addr_hit[22] & (|(RV_CORE_IBEX_CFG_PERMIT[22] & ~reg_be))) |
                (addr_hit[23] & (|(RV_CORE_IBEX_CFG_PERMIT[23] & ~reg_be))) |
                (addr_hit[24] & (|(RV_CORE_IBEX_CFG_PERMIT[24] & ~reg_be))) |
-               (addr_hit[25] & (|(RV_CORE_IBEX_CFG_PERMIT[25] & ~reg_be)))));
+               (addr_hit[25] & (|(RV_CORE_IBEX_CFG_PERMIT[25] & ~reg_be))) |
+               (addr_hit[26] & (|(RV_CORE_IBEX_CFG_PERMIT[26] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -1577,6 +1614,9 @@ module rv_core_ibex_cfg_reg_top (
   assign mcounteren_writable_we = addr_hit[25] & reg_we & !reg_error;
 
   assign mcounteren_writable_wd = reg_wdata[3:0];
+  assign nmi_enable_regwen_we = addr_hit[26] & reg_we & !reg_error;
+
+  assign nmi_enable_regwen_wd = reg_wdata[0];
 
   // Assign write-enables to checker logic vector.
   always_comb begin
@@ -1599,13 +1639,14 @@ module rv_core_ibex_cfg_reg_top (
     reg_we_check[16] = dbus_addr_matching_1_gated_we;
     reg_we_check[17] = dbus_remap_addr_0_gated_we;
     reg_we_check[18] = dbus_remap_addr_1_gated_we;
-    reg_we_check[19] = nmi_enable_we;
+    reg_we_check[19] = nmi_enable_gated_we;
     reg_we_check[20] = nmi_state_we;
     reg_we_check[21] = err_status_we;
     reg_we_check[22] = 1'b0;
     reg_we_check[23] = 1'b0;
     reg_we_check[24] = mcounteren_writable_regwen_we;
     reg_we_check[25] = mcounteren_writable_gated_we;
+    reg_we_check[26] = nmi_enable_regwen_we;
   end
 
   // Read data return
@@ -1724,6 +1765,10 @@ module rv_core_ibex_cfg_reg_top (
 
       addr_hit[25]: begin
         reg_rdata_next[3:0] = mcounteren_writable_qs;
+      end
+
+      addr_hit[26]: begin
+        reg_rdata_next[0] = nmi_enable_regwen_qs;
       end
 
       default: begin

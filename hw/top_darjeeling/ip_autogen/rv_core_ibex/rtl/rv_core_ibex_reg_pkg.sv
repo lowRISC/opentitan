@@ -16,7 +16,7 @@ package rv_core_ibex_reg_pkg;
   parameter int CfgAw = 11;
 
   // Number of registers for every interface
-  parameter int NumRegsCfg = 266;
+  parameter int NumRegsCfg = 267;
 
   // Alert indices
   typedef enum int {
@@ -455,6 +455,7 @@ package rv_core_ibex_reg_pkg;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_RND_STATUS_OFFSET = 11'h 41c;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN_OFFSET = 11'h 420;
   parameter logic [CfgAw-1:0] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_OFFSET = 11'h 424;
+  parameter logic [CfgAw-1:0] RV_CORE_IBEX_NMI_ENABLE_REGWEN_OFFSET = 11'h 428;
 
   // Reset values for hwext registers and their fields for cfg interface
   parameter logic [31:0] RV_CORE_IBEX_ALERT_TEST_RESVAL = 32'h 80000000;
@@ -741,11 +742,12 @@ package rv_core_ibex_reg_pkg;
     RV_CORE_IBEX_RND_DATA,
     RV_CORE_IBEX_RND_STATUS,
     RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN,
-    RV_CORE_IBEX_MCOUNTEREN_WRITABLE
+    RV_CORE_IBEX_MCOUNTEREN_WRITABLE,
+    RV_CORE_IBEX_NMI_ENABLE_REGWEN
   } rv_core_ibex_cfg_id_e;
 
   // Register width information to check illegal writes for cfg interface
-  parameter logic [3:0] RV_CORE_IBEX_CFG_PERMIT [266] = '{
+  parameter logic [3:0] RV_CORE_IBEX_CFG_PERMIT [267] = '{
     4'b 1111, // index[  0] RV_CORE_IBEX_ALERT_TEST
     4'b 0001, // index[  1] RV_CORE_IBEX_SW_RECOV_ERR
     4'b 0001, // index[  2] RV_CORE_IBEX_SW_FATAL_ERR
@@ -1011,7 +1013,8 @@ package rv_core_ibex_reg_pkg;
     4'b 1111, // index[262] RV_CORE_IBEX_RND_DATA
     4'b 0001, // index[263] RV_CORE_IBEX_RND_STATUS
     4'b 0001, // index[264] RV_CORE_IBEX_MCOUNTEREN_WRITABLE_REGWEN
-    4'b 0001  // index[265] RV_CORE_IBEX_MCOUNTEREN_WRITABLE
+    4'b 0001, // index[265] RV_CORE_IBEX_MCOUNTEREN_WRITABLE
+    4'b 0001  // index[266] RV_CORE_IBEX_NMI_ENABLE_REGWEN
   };
 
 endpackage

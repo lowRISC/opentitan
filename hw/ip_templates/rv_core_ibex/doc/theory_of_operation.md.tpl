@@ -90,6 +90,18 @@ Upon reset release, software can check the last PC and data access address to ge
 
 If the software has some kind of error and encounters two exceptions in a row, the previous exception PC and address show the location of the first exception, while the current exception address and PC show the location of the most recent exception.
 
+<%text>## Non-Maskable Interrupts</%text>
+
+The wrapper raises the non-maskable interrupt (NMI) of Ibex for two sources:
+* The escalation signal from the alert handler on ``esc_tx_i``.
+* The watchdog bark from the AON timer on ``nmi_wdog_i``.
+
+An NMI is raised while a source is set in both [`NMI_STATE`](registers.md#nmi_state) and [`NMI_ENABLE`](registers.md#nmi_enable).
+
+Software can both set and clear the bits of [`NMI_ENABLE`](registers.md#nmi_enable).
+An enabled source is therefore only truly non-maskable once software also clears [`NMI_ENABLE_REGWEN`](registers.md#nmi_enable_regwen), which locks [`NMI_ENABLE`](registers.md#nmi_enable) until the next reset.
+A boot stage that enables NMIs can leave the lock to a later stage, so that the owner of that stage decides which sources stay enabled.
+
 
 <%text>## Fetch Enable</%text>
 
@@ -145,7 +157,9 @@ Switching from RV32I to CHERIoT mode at runtime needs the software sequence desc
 On Earl Grey, it consists of the following steps, which `sw/device/tests/cheriot_smoketest.S` implements:
 
 1. Disable interrupts until `mtcc` is set up in CHERIoT mode.
-   NMIs cannot be disabled, so until then the `mtvec` handler must work in both modes, including a mode change while it runs.
+   NMIs are not masked by this.
+   Unless [`NMI_ENABLE`](registers.md#nmi_enable) is already locked, software can disable them during the switch and only lock them afterwards.
+   Otherwise the `mtvec` handler must work in both modes, including a mode change while it runs.
    As an NMI is fatal, the handler can raise a fatal alert and stop.
 2. Zero-initialize the meta SRAM, which holds the capability tags and the revocation bitmap.
 3. Save `cpuctrlsts`, clear `cpuctrlsts.dummy_instr_en` and write zero to `x16`-`x31`.
