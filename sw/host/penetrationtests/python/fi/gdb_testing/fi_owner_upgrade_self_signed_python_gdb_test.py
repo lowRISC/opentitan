@@ -314,7 +314,8 @@ class FiSimOwnerUpgradeSelfSigned(unittest.TestCase):
 
                                     print("Output:", response, flush=True)
 
-                                    if "owner_page_0: 2" in response:
+                                    _, sep, after = response.partition("owner_page_0: 2")
+                                    if sep and not after[:1].isdigit():
                                         successful_faults += 1
                                         print("-" * 80)
                                         print("Successful FI attack!")

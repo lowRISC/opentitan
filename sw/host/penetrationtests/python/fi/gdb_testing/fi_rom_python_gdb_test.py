@@ -434,9 +434,8 @@ if __name__ == "__main__":
         print(f"Error: Could not read source firmware: {e}")
         sys.exit(1)
 
-    # TODO: Make this adaptable to the shape of the manifest
-    # Currently the corruption can be in any of the 384 bytes after 384 first ones.
-    offset = 387
+    # Corrupt a byte inside manifest_t.ecdsa_signature (bytes 0..63).
+    offset = 3
     data[offset] ^= 0xFF
 
     try:
