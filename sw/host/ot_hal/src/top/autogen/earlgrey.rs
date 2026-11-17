@@ -316,14 +316,13 @@ with_unknown! {
         SensorCtrlAstDebugOut5 = 98,
         SensorCtrlAstDebugOut6 = 99,
         SensorCtrlAstDebugOut7 = 100,
-        SensorCtrlAstDebugOut8 = 101,
-        SysrstCtrlBatDisable = 102,
-        SysrstCtrlKey0Out = 103,
-        SysrstCtrlKey1Out = 104,
-        SysrstCtrlKey2Out = 105,
-        SysrstCtrlPwrbOut = 106,
-        SysrstCtrlZ3Wakeup = 107,
-        End = 108,
+        SysrstCtrlBatDisable = 101,
+        SysrstCtrlKey0Out = 102,
+        SysrstCtrlKey1Out = 103,
+        SysrstCtrlKey2Out = 104,
+        SysrstCtrlPwrbOut = 105,
+        SysrstCtrlZ3Wakeup = 106,
+        End = 107,
     }
 
     pub enum DirectPads: u32 [default = Self::End] {

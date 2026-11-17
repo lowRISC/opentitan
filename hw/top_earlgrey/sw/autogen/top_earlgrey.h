@@ -1750,14 +1750,13 @@ typedef enum top_earlgrey_pinmux_outsel {
   kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut5 = 98, /**< Peripheral Output 95 */
   kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut6 = 99, /**< Peripheral Output 96 */
   kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut7 = 100, /**< Peripheral Output 97 */
-  kTopEarlgreyPinmuxOutselSensorCtrlAstDebugOut8 = 101, /**< Peripheral Output 98 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlBatDisable = 102, /**< Peripheral Output 99 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlKey0Out = 103, /**< Peripheral Output 100 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlKey1Out = 104, /**< Peripheral Output 101 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlKey2Out = 105, /**< Peripheral Output 102 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlPwrbOut = 106, /**< Peripheral Output 103 */
-  kTopEarlgreyPinmuxOutselSysrstCtrlZ3Wakeup = 107, /**< Peripheral Output 104 */
-  kTopEarlgreyPinmuxOutselLast = 107, /**< \internal Last valid outsel value */
+  kTopEarlgreyPinmuxOutselSysrstCtrlBatDisable = 101, /**< Peripheral Output 98 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlKey0Out = 102, /**< Peripheral Output 99 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlKey1Out = 103, /**< Peripheral Output 100 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlKey2Out = 104, /**< Peripheral Output 101 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlPwrbOut = 105, /**< Peripheral Output 102 */
+  kTopEarlgreyPinmuxOutselSysrstCtrlZ3Wakeup = 106, /**< Peripheral Output 103 */
+  kTopEarlgreyPinmuxOutselLast = 106, /**< \internal Last valid outsel value */
 } top_earlgrey_pinmux_outsel_t;
 
 /**

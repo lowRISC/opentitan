@@ -12,7 +12,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 | Pin name           | Direction   | Description                 |
 |:-------------------|:------------|:----------------------------|
-| ast_debug_out[8:0] | output      | ast debug outputs to pinmux |
+| ast_debug_out[7:0] | output      | ast debug outputs to pinmux |
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
@@ -21,7 +21,7 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 | ast_alert       | ast_pkg::ast_alert             | req_rsp | rsp   |       1 |               |
 | ast_status      | ast_pkg::ast_status            | uni     | rcv   |       1 |               |
 | ast_init_done   | prim_mubi_pkg::mubi4           | uni     | rcv   |       1 |               |
-| ast2pinmux      | logic                          | uni     | rcv   |       9 |               |
+| ast2pinmux      | logic                          | uni     | rcv   |       8 |               |
 | wkup_req        | logic                          | uni     | req   |       1 |               |
 | manual_pad_attr | prim_pad_wrapper_pkg::pad_attr | uni     | req   |       4 |               |
 | tl              | tlul_pkg::tl                   | req_rsp | rsp   |       1 |               |

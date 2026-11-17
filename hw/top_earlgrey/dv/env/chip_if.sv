@@ -463,12 +463,11 @@ interface chip_if;
   endfunction
 
   // Functional (muxed) interface: AST2PAD.
-  pins_if #(.Width(9), .PullStrength("Weak")) ast2pad_if(
-    .pins({mios[top_earlgrey_pkg::MioPadIoa0], mios[top_earlgrey_pkg::MioPadIoa1],
-           mios[top_earlgrey_pkg::MioPadIob3], mios[top_earlgrey_pkg::MioPadIob4],
-           mios[top_earlgrey_pkg::MioPadIob5], mios[top_earlgrey_pkg::MioPadIoc0],
-           mios[top_earlgrey_pkg::MioPadIoc4], mios[top_earlgrey_pkg::MioPadIoc7],
-           mios[top_earlgrey_pkg::MioPadIoc9]})
+  pins_if #(.Width(8), .PullStrength("Weak")) ast2pad_if(
+    .pins({mios[top_earlgrey_pkg::MioPadIoa1], mios[top_earlgrey_pkg::MioPadIob3],
+           mios[top_earlgrey_pkg::MioPadIob4], mios[top_earlgrey_pkg::MioPadIob5],
+           mios[top_earlgrey_pkg::MioPadIoc0], mios[top_earlgrey_pkg::MioPadIoc4],
+           mios[top_earlgrey_pkg::MioPadIoc7], mios[top_earlgrey_pkg::MioPadIoc9]})
   );
 
   // Functional (muxed) interface: PAD2AST.
