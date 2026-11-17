@@ -413,6 +413,10 @@ otcrypto_status_t otcrypto_mldsa87_sign_async_finalize(
   }
 #endif
 
+  if (signature->len != kOtcryptoMldsa87SigWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   HARDENED_TRY_WIPE_DMEM(
       mldsa87_sign_internal_finalize(signature, kMldsa87SingleSign));
 
@@ -426,6 +430,10 @@ otcrypto_status_t otcrypto_mldsa87_double_sign_async_finalize(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+
+  if (signature->len != kOtcryptoMldsa87SigWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
 
   HARDENED_TRY_WIPE_DMEM(
       mldsa87_sign_internal_finalize(signature, kMldsa87DoubleSign));
