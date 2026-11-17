@@ -2277,7 +2277,7 @@ module csrng_reg_top (
   prim_subreg #(
     .DW      (6),
     .SwAccess(prim_subreg_pkg::SwAccessRO),
-    .RESVAL  (6'h37),
+    .RESVAL  (6'h17),
     .Mubi    (1'b0)
   ) u_main_sm_state (
     .clk_i   (clk_i),

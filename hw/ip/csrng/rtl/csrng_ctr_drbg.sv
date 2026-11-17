@@ -13,21 +13,23 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   // Global enable
   input  logic               enable_i,
 
-  // Command interface request, arbitrated from command stages
-  input  logic                       req_vld_i,
-  output logic                       req_rdy_o,
-  input  csrng_core_data_t           req_data_i,
-  input  logic [SeedLen-1:0]         req_entropy_i,
-  input  logic                       req_entropy_fips_i,
-  input  logic                       req_glast_i,
-  input  logic                       req_gen_first_i,
-  input  logic [GenBitsCtrWidth-1:0] req_glen_i,
+  // Command interface request, arbitrated from command stages. The request must be held stable
+  // until it is acknowledged, which also signals the completion of the command.
+  input  logic                       cmd_req_i,
+  input  csrng_core_data_t           cmd_req_data_i,
+  input  logic         [SeedLen-1:0] cmd_req_entropy_i,
+  input  logic                       cmd_req_entropy_fips_i,
+  input  logic                       cmd_req_glast_i,
+  input  logic                       cmd_req_gen_first_i,
+  input  logic [GenBitsCtrWidth-1:0] cmd_req_glen_i,
 
-  // Command interface response to state db and command stages
+  // Command interface acknowledgement to the main FSM and command stages
+  output logic               cmd_ack_o,
+  output csrng_core_data_t   cmd_ack_data_o,
+  output csrng_cmd_sts_e     cmd_ack_sts_o,
+
+  // Command interface response to state db
   output logic               state_db_wr_o,
-  output logic               rsp_vld_o,
-  output csrng_core_data_t   rsp_data_o,
-  output csrng_cmd_sts_e     rsp_sts_o,
 
   // Generated bits output to command stages
   output logic               bits_vld_o,
@@ -146,34 +148,34 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   //--------------------------------------------
 
   always_comb begin
-    core_data = req_data_i;
+    core_data = cmd_req_data_i;
 
-    unique case (req_data_i.cmd)
+    unique case (cmd_req_data_i.cmd)
       INS: begin
         // Reset key, v, and reseed counter; inject entropy and FIPS status
         core_data.key_v   = '0;
         core_data.rs_ctr  = '0;
         core_data.gen_ctr = '0;
-        core_data.pdata   = req_data_i.pdata ^ req_entropy_i;
-        core_data.fips    = req_entropy_fips_i;
+        core_data.pdata   = cmd_req_data_i.pdata ^ cmd_req_entropy_i;
+        core_data.fips    = cmd_req_entropy_fips_i;
       end
       RES: begin
         // Reset reseed counter; inject entropy and FIPS status
         core_data.rs_ctr = '0;
-        core_data.pdata  = req_data_i.pdata ^ req_entropy_i;
-        core_data.fips   = req_entropy_fips_i;
+        core_data.pdata  = cmd_req_data_i.pdata ^ cmd_req_entropy_i;
+        core_data.fips   = cmd_req_entropy_fips_i;
       end
       UPD: begin
         /* leave everything as-is */
       end
       GEN: begin
         // The first request of a GEN command starts the count of remaining requests
-        if (req_gen_first_i) begin
-          core_data.gen_ctr = req_glen_i;
+        if (cmd_req_gen_first_i) begin
+          core_data.gen_ctr = cmd_req_glen_i;
         end
         // Capture adata for the final update() step if not already done
-        if (!req_data_i.gen_adata_vld) begin
-          core_data.gen_adata     = req_data_i.pdata;
+        if (!cmd_req_data_i.gen_adata_vld) begin
+          core_data.gen_adata     = cmd_req_data_i.pdata;
           core_data.gen_adata_vld = 1'b1;
         end
       end
@@ -272,8 +274,7 @@ module csrng_ctr_drbg import csrng_pkg::*; (
     gen_subcmd_d = gen_subcmd_q;
 
     // Handshake and data validity
-    req_rdy_o  = 1'b0;
-    rsp_vld_o  = 1'b0;
+    cmd_ack_o  = 1'b0;
     bits_vld_o = 1'b0;
     state_db_wr_o = 1'b0;
 
@@ -290,12 +291,11 @@ module csrng_ctr_drbg import csrng_pkg::*; (
 
     unique case (state_q)
       Idle: begin
-        if (enable_i && req_vld_i) begin
+        if (enable_i && cmd_req_i) begin
           unique case (core_data.cmd)
             UNI: begin
               // No further action needed, write to state db and flag response valid
-              req_rdy_o = 1'b1;
-              rsp_vld_o = 1'b1;
+              cmd_ack_o = 1'b1;
               state_db_wr_o = 1'b1;
             end
             INS, RES, UPD: begin
@@ -356,8 +356,7 @@ module csrng_ctr_drbg import csrng_pkg::*; (
       Hndshk: begin
         if (concat_ctr_done) begin
           // Enough data has been received to make up the new {key,v}; command is completed
-          req_rdy_o = 1'b1;
-          rsp_vld_o = 1'b1;
+          cmd_ack_o = 1'b1;
           state_db_wr_o = 1'b1;
           state_d = Idle;
         end else begin
@@ -379,15 +378,14 @@ module csrng_ctr_drbg import csrng_pkg::*; (
             end
           end
           GEN_LOOP: begin
-            if (req_glast_i) begin
+            if (cmd_req_glast_i) begin
               // Do the initial v increment for the UPD_FINAL step that follows
               v_ctr_inc = 1'b1;
               gen_subcmd_d = UPD_FINAL;
               state_d = ReqSend;
             end else begin
               // This was not the last beat of the generate loop; signal the command as completed
-              req_rdy_o = 1'b1;
-              rsp_vld_o = 1'b1;
+              cmd_ack_o = 1'b1;
               state_db_wr_o = 1'b1;
               state_d = Idle;
             end
@@ -395,8 +393,7 @@ module csrng_ctr_drbg import csrng_pkg::*; (
           UPD_FINAL: begin
             if (concat_ctr_done) begin
               // Enough data has been received to make up the new {key,v}; command is completed
-              req_rdy_o = 1'b1;
-              rsp_vld_o = 1'b1;
+              cmd_ack_o = 1'b1;
               state_db_wr_o = 1'b1;
               state_d = Idle;
             end else begin
@@ -451,33 +448,33 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   //--------------------------------------------
 
   // Make sure the command stages get an error response in case we received an invalid command
-  assign rsp_sts_o = (core_data.cmd == INV) ? CMD_STS_INVALID_ACMD : CMD_STS_SUCCESS;
+  assign cmd_ack_sts_o = (core_data.cmd == INV) ? CMD_STS_INVALID_ACMD : CMD_STS_SUCCESS;
 
   always_comb begin
     // Default case only relevant for UNInstantiate and invalid commands
-    rsp_data_o = core_data;
+    cmd_ack_data_o = core_data;
 
     // For all commands that update the internal state, send new {key,v} to state db
     // For GENerate commands, we need a more involved handling of the three sub commands
     if (core_data.cmd inside {INS, RES, UPD}) begin
-      rsp_data_o.key_v = csrng_key_v_t'(concat_key_v ^ core_data.pdata);
+      cmd_ack_data_o.key_v = csrng_key_v_t'(concat_key_v ^ core_data.pdata);
     end else if (core_data.cmd == GEN) begin
       unique case (gen_subcmd_q)
         UPD_BEGIN: begin
-          rsp_data_o.key_v = csrng_key_v_t'(concat_key_v ^ core_data.pdata);
+          cmd_ack_data_o.key_v = csrng_key_v_t'(concat_key_v ^ core_data.pdata);
         end
         GEN_LOOP: begin
-          rsp_data_o.key_v.v = v_ctr_sized;           // Old value + 1, key unchanged
-          rsp_data_o.gen_ctr = core_data.gen_ctr - 1; // One less request remaining
+          cmd_ack_data_o.key_v.v = v_ctr_sized;           // Old value + 1, key unchanged
+          cmd_ack_data_o.gen_ctr = core_data.gen_ctr - 1; // One less request remaining
         end
         UPD_FINAL: begin
-          rsp_data_o.key_v = csrng_key_v_t'(concat_key_v ^ core_data.gen_adata);
+          cmd_ack_data_o.key_v = csrng_key_v_t'(concat_key_v ^ core_data.gen_adata);
           // Increase the reseed counter on the last beat of every GENerate
-          rsp_data_o.rs_ctr  = core_data.rs_ctr + 1;
-          rsp_data_o.gen_ctr = core_data.gen_ctr - 1;
+          cmd_ack_data_o.rs_ctr  = core_data.rs_ctr + 1;
+          cmd_ack_data_o.gen_ctr = core_data.gen_ctr - 1;
           // The adata is no longer needed once the GENerate has completed
-          rsp_data_o.gen_adata     = '0;
-          rsp_data_o.gen_adata_vld = 1'b0;
+          cmd_ack_data_o.gen_adata     = '0;
+          cmd_ack_data_o.gen_adata_vld = 1'b0;
         end
         default: /* We should never get here */ ;
       endcase

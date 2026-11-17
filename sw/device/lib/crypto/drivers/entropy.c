@@ -66,7 +66,7 @@ enum {
   /**
    * Sparse FSM encoding for MainSmIdle in csrng_pkg.sv.
    */
-  kCsrngMainSmStateIdle = 0x37,
+  kCsrngMainSmStateIdle = 0x17,
 };
 
 /**
