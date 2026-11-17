@@ -692,6 +692,9 @@ module earlgrey_pd_main #(
   tlul_pkg::tl_d2h_t       cheriot_mem_sys_meta_sram_tl_rsp;
   prim_mubi_pkg::mubi4_t       cheriot_mem_sys_cored_tag_d2h;
   prim_mubi_pkg::mubi4_t       rv_core_ibex_cheriot_ena;
+  prim_mubi_pkg::mubi4_t       rv_core_ibex_cheriot_ena_memsys;
+  prim_mubi_pkg::mubi4_t       rv_core_ibex_cheriot_ena_memsys_shadow;
+  prim_mubi_pkg::mubi4_t       rv_core_ibex_cheriot_ena_cmp;
   logic       i3c1_rstdet_enable;
   i3c_pkg::i3c_rstdet_req_t       i3c1_rstdet_req;
   i3c_pkg::i3c_rstdet_rsp_t       i3c1_rstdet_rsp;
@@ -2780,6 +2783,9 @@ module earlgrey_pd_main #(
     // Inter-module signals
     .rst_cpu_n_o(),
     .cheriot_ena_o(rv_core_ibex_cheriot_ena),
+    .cheriot_ena_memsys_o(rv_core_ibex_cheriot_ena_memsys),
+    .cheriot_ena_memsys_shadow_o(rv_core_ibex_cheriot_ena_memsys_shadow),
+    .cheriot_ena_cmp_o(rv_core_ibex_cheriot_ena_cmp),
     .cored_tl_h_o(rv_core_ibex_cored_tl_h_req),
     .cored_tl_h_i(rv_core_ibex_cored_tl_h_rsp),
     .cored_tag_h2d_o(rv_core_ibex_cored_tag_h2d),
@@ -2843,7 +2849,9 @@ module earlgrey_pd_main #(
     .alert_rx_i(alert_rx[68:67]),
 
     // Inter-module signals
-    .cheriot_ena_i(rv_core_ibex_cheriot_ena),
+    .cheriot_ena_i(rv_core_ibex_cheriot_ena_memsys),
+    .cheriot_ena_shadow_i(rv_core_ibex_cheriot_ena_memsys_shadow),
+    .cheriot_ena_cmp_i(rv_core_ibex_cheriot_ena_cmp),
     .cored_tl_d_i(rv_core_ibex_cored_tl_h_req),
     .cored_tl_d_o(rv_core_ibex_cored_tl_h_rsp),
     .cored_tag_h2d_i(rv_core_ibex_cored_tag_h2d),

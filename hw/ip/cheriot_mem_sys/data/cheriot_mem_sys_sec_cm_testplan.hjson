@@ -75,5 +75,22 @@
       // chip_sw_cheriot_cored_tag_mubi is to cover this.
       tests: []
     }
+    {
+      name: sec_cm_cheriot_enable_ctrl_redun
+      desc: '''
+            Verify the countermeasure(s) CHERIOT_ENABLE.CTRL.REDUN.
+
+            With SecLockstep set, drive `cheriot_ena_i` and `cheriot_ena_shadow_i` with different
+            values, or one of them with an invalid value, while `cheriot_ena_cmp_i` is not
+            MuBi4False, and check that the `fatal_fault` alert is raised. Also check that the
+            enables as the mode switch in rv_core_ibex drives them raise no alert:
+            `cheriot_ena_cmp_i` on from reset and off two cycles before `cheriot_ena_i` changes,
+            the second copy's enable raised one cycle after the first copy's, and
+            `cheriot_ena_cmp_i` on again after it.
+            '''
+      stage: V2S
+      // The testbench ties the three enables to MuBi4False; this needs them driven.
+      tests: []
+    }
   ]
 }

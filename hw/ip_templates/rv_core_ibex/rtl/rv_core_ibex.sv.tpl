@@ -91,7 +91,12 @@ module ${module_instance_name}
   input  logic [31:0] boot_addr_i,
 
 % if cheriot_available:
+  // CHERIoT mode enables: the core's (for the debug module) and the memory subsystem's main and
+  // shadow enables, plus the compare enable of the subsystem's enable comparison.
   output prim_mubi_pkg::mubi4_t cheriot_ena_o,
+  output prim_mubi_pkg::mubi4_t cheriot_ena_memsys_o,
+  output prim_mubi_pkg::mubi4_t cheriot_ena_memsys_shadow_o,
+  output prim_mubi_pkg::mubi4_t cheriot_ena_cmp_o,
 
 % endif
   // Instruction memory interface
@@ -301,6 +306,7 @@ module ${module_instance_name}
   logic                         cheriot_switch_unlocked;
   logic                         cheriot_switch_error;
   prim_mubi_pkg::mubi4_t        cheriot_ena_core, cheriot_ena_core_shadow;
+  prim_mubi_pkg::mubi4_t        cheriot_ena_memsys, cheriot_ena_memsys_shadow;
   prim_mubi_pkg::mubi4_t        cheriot_ena_compare;
   prim_mubi_pkg::mubi4_t        cheriot_ena_core_shadow_buf;
   ibex_pkg::ibex_mubi_t         cheriot_enable_ibex, cheriot_enable_shadow_ibex;
@@ -315,6 +321,7 @@ module ${module_instance_name}
 
   typedef enum logic [1:0] {
     CmpEnaIbexIdx,
+    CmpEnaMemsysIdx,
     CmpEnaLast
   } cheriot_ena_cmp_pos_e;
 
@@ -1401,8 +1408,8 @@ module ${module_instance_name}
     .lock_access_i      (reg2hw.cheriot_lock.qe),
     .ena_core_o         (cheriot_ena_core),
     .ena_core_shadow_o  (cheriot_ena_core_shadow),
-    .ena_memsys_o       (),
-    .ena_memsys_shadow_o(),
+    .ena_memsys_o       (cheriot_ena_memsys),
+    .ena_memsys_shadow_o(cheriot_ena_memsys_shadow),
     .ena_compare_o      (cheriot_ena_compare),
     .unlocked_o         (cheriot_switch_unlocked),
     .error_o            (cheriot_switch_error)
@@ -1412,10 +1419,10 @@ module ${module_instance_name}
   assign hw2reg.cheriot_ena_regwen.d = cheriot_switch_unlocked;
 
   // The switch drives each enable from its own flop. Each enable passes one layer of buffers that
-  // synthesis keeps, so its multi-bit encoding survives up to the receivers in Ibex and the debug
-  // module. None of these buffers adds a flop, so the switch's staging order reaches Ibex
-  // unchanged. The core enable goes to two places and gets one buffered copy per place, the shadow
-  // core's enable a sender without a flop.
+  // synthesis keeps, so its multi-bit encoding survives up to the receivers in Ibex, the debug
+  // module and the memory subsystem. None of these buffers adds a flop, so the switch's staging
+  // order reaches Ibex and the memory subsystem unchanged. The core and the compare enable go to
+  // two places each and get one buffered copy per place, the other enables a sender without a flop.
   prim_mubi4_sync #(
     .NumCopies(int'(CoreEnaLast)),
     .AsyncOn  (1'b0)
@@ -1438,7 +1445,25 @@ module ${module_instance_name}
     .mubi_o(cheriot_ena_core_shadow_buf)
   );
 
-  // The compare enable goes to the comparison in Ibex.
+  prim_mubi4_sender #(
+    .AsyncOn(1'b0)
+  ) u_cheriot_ena_memsys_sender (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cheriot_ena_memsys),
+    .mubi_o(cheriot_ena_memsys_o)
+  );
+
+  prim_mubi4_sender #(
+    .AsyncOn(1'b0)
+  ) u_cheriot_ena_memsys_shadow_sender (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cheriot_ena_memsys_shadow),
+    .mubi_o(cheriot_ena_memsys_shadow_o)
+  );
+
+  // The compare enable goes to the comparison in Ibex and the one in the memory subsystem.
   prim_mubi4_sync #(
     .NumCopies(int'(CmpEnaLast)),
     .AsyncOn  (1'b0)
@@ -1448,6 +1473,8 @@ module ${module_instance_name}
     .mubi_i(cheriot_ena_compare),
     .mubi_o(cheriot_ena_cmp_buf)
   );
+
+  assign cheriot_ena_cmp_o = cheriot_ena_cmp_buf[CmpEnaMemsysIdx];
 
   // Ibex delays the compare enable by LockstepOffset - 1 cycles, but the switch turns it off in the
   // cycle the core's enable changes, so with a larger offset every switch to CHERIoT mode would be
@@ -1995,6 +2022,9 @@ module ${module_instance_name}
   `ASSERT_KNOWN(RamCfgIcacheDataOKnown_A, ram_cfg_icache_data_o)
 % if cheriot_available:
   `ASSERT_KNOWN(CheriotEnaOKnown_A, cheriot_ena_o)
+  `ASSERT_KNOWN(CheriotEnaMemsysOKnown_A, cheriot_ena_memsys_o)
+  `ASSERT_KNOWN(CheriotEnaMemsysShadowOKnown_A, cheriot_ena_memsys_shadow_o)
+  `ASSERT_KNOWN(CheriotEnaCmpOKnown_A, cheriot_ena_cmp_o)
 % endif
   `ASSERT_KNOWN(CoreiTlHAValidKnown_A, corei_tl_h_o.a_valid)
   `ASSERT_KNOWN(CoreiTlHDReadyKnown_A, corei_tl_h_o.d_ready)

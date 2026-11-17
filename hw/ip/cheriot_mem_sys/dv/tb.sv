@@ -47,6 +47,8 @@ module tb;
 
     // Execution mode
     .cheriot_ena_i        (prim_mubi_pkg::MuBi4False),
+    .cheriot_ena_shadow_i (prim_mubi_pkg::MuBi4False),
+    .cheriot_ena_cmp_i    (prim_mubi_pkg::MuBi4False),
 
     // Core data port with its capability tag sideband
     .cored_tl_d_i         (tlul_pkg::TL_H2D_DEFAULT),

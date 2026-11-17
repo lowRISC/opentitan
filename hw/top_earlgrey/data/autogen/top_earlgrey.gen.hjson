@@ -11911,7 +11911,7 @@
         }
         {
           name: cheriot_ena
-          desc: CHERIoT mode enable.
+          desc: CHERIoT mode enable of the core, for the debug module.
           struct: mubi4
           package: prim_mubi_pkg
           type: uni
@@ -11922,6 +11922,51 @@
           end_idx: -1
           top_type: broadcast
           top_signame: rv_core_ibex_cheriot_ena
+          index: -1
+        }
+        {
+          name: cheriot_ena_memsys
+          desc: CHERIoT mode enable of the memory subsystem.
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          default: prim_mubi_pkg::MuBi4False
+          inst_name: rv_core_ibex
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rv_core_ibex_cheriot_ena_memsys
+          index: -1
+        }
+        {
+          name: cheriot_ena_memsys_shadow
+          desc: CHERIoT mode enable of the memory subsystem's second lockstep copy.
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          default: prim_mubi_pkg::MuBi4False
+          inst_name: rv_core_ibex
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rv_core_ibex_cheriot_ena_memsys_shadow
+          index: -1
+        }
+        {
+          name: cheriot_ena_cmp
+          desc: Compare enable for the memory subsystem's CHERIoT enable comparison.
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: req
+          width: 1
+          default: prim_mubi_pkg::MuBi4False
+          inst_name: rv_core_ibex
+          end_idx: -1
+          top_type: broadcast
+          top_signame: rv_core_ibex_cheriot_ena_cmp
           index: -1
         }
         {
@@ -12388,7 +12433,7 @@
         }
         {
           name: LockstepOffset
-          desc: Cycles the second copy of the logic runs behind the main copy, at least 1.
+          desc: Cycles the second copy of the logic runs behind the main copy, from 1 to 3.
           type: int unsigned
           default: "1"
           local: "false"
@@ -12409,7 +12454,35 @@
           default: prim_mubi_pkg::MuBi4False
           inst_name: cheriot_mem_sys
           domain: Main
-          top_signame: rv_core_ibex_cheriot_ena
+          top_signame: rv_core_ibex_cheriot_ena_memsys
+          index: -1
+        }
+        {
+          name: cheriot_ena_shadow
+          desc: CHERIoT mode enable of the second lockstep copy, one cycle after cheriot_ena.
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi4False
+          inst_name: cheriot_mem_sys
+          domain: Main
+          top_signame: rv_core_ibex_cheriot_ena_memsys_shadow
+          index: -1
+        }
+        {
+          name: cheriot_ena_cmp
+          desc: Any value except MuBi4False compares the enables of the two lockstep copies.
+          struct: mubi4
+          package: prim_mubi_pkg
+          type: uni
+          act: rcv
+          width: 1
+          default: prim_mubi_pkg::MuBi4True
+          inst_name: cheriot_mem_sys
+          domain: Main
+          top_signame: rv_core_ibex_cheriot_ena_cmp
           index: -1
         }
         {
@@ -13330,8 +13403,19 @@
       ]
       rv_core_ibex.cheriot_ena:
       [
-        cheriot_mem_sys.cheriot_ena
         rv_dm.cheriot_ena
+      ]
+      rv_core_ibex.cheriot_ena_memsys:
+      [
+        cheriot_mem_sys.cheriot_ena
+      ]
+      rv_core_ibex.cheriot_ena_memsys_shadow:
+      [
+        cheriot_mem_sys.cheriot_ena_shadow
+      ]
+      rv_core_ibex.cheriot_ena_cmp:
+      [
+        cheriot_mem_sys.cheriot_ena_cmp
       ]
       pwrmgr.wakeups:
       [
@@ -33312,7 +33396,7 @@
       }
       {
         name: cheriot_ena
-        desc: CHERIoT mode enable.
+        desc: CHERIoT mode enable of the core, for the debug module.
         struct: mubi4
         package: prim_mubi_pkg
         type: uni
@@ -33323,6 +33407,51 @@
         end_idx: -1
         top_type: broadcast
         top_signame: rv_core_ibex_cheriot_ena
+        index: -1
+      }
+      {
+        name: cheriot_ena_memsys
+        desc: CHERIoT mode enable of the memory subsystem.
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        default: prim_mubi_pkg::MuBi4False
+        inst_name: rv_core_ibex
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rv_core_ibex_cheriot_ena_memsys
+        index: -1
+      }
+      {
+        name: cheriot_ena_memsys_shadow
+        desc: CHERIoT mode enable of the memory subsystem's second lockstep copy.
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        default: prim_mubi_pkg::MuBi4False
+        inst_name: rv_core_ibex
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rv_core_ibex_cheriot_ena_memsys_shadow
+        index: -1
+      }
+      {
+        name: cheriot_ena_cmp
+        desc: Compare enable for the memory subsystem's CHERIoT enable comparison.
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: req
+        width: 1
+        default: prim_mubi_pkg::MuBi4False
+        inst_name: rv_core_ibex
+        end_idx: -1
+        top_type: broadcast
+        top_signame: rv_core_ibex_cheriot_ena_cmp
         index: -1
       }
       {
@@ -33668,7 +33797,35 @@
         default: prim_mubi_pkg::MuBi4False
         inst_name: cheriot_mem_sys
         domain: Main
-        top_signame: rv_core_ibex_cheriot_ena
+        top_signame: rv_core_ibex_cheriot_ena_memsys
+        index: -1
+      }
+      {
+        name: cheriot_ena_shadow
+        desc: CHERIoT mode enable of the second lockstep copy, one cycle after cheriot_ena.
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi4False
+        inst_name: cheriot_mem_sys
+        domain: Main
+        top_signame: rv_core_ibex_cheriot_ena_memsys_shadow
+        index: -1
+      }
+      {
+        name: cheriot_ena_cmp
+        desc: Any value except MuBi4False compares the enables of the two lockstep copies.
+        struct: mubi4
+        package: prim_mubi_pkg
+        type: uni
+        act: rcv
+        width: 1
+        default: prim_mubi_pkg::MuBi4True
+        inst_name: cheriot_mem_sys
+        domain: Main
+        top_signame: rv_core_ibex_cheriot_ena_cmp
         index: -1
       }
       {
@@ -42917,6 +43074,42 @@
         struct: mubi4
         domain: Main
         signame: rv_core_ibex_cheriot_ena
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: prim_mubi_pkg::MuBi4False
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        domain: Main
+        signame: rv_core_ibex_cheriot_ena_memsys
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: prim_mubi_pkg::MuBi4False
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        domain: Main
+        signame: rv_core_ibex_cheriot_ena_memsys_shadow
+        width: 1
+        type: uni
+        end_idx: -1
+        act: req
+        suffix: ""
+        default: prim_mubi_pkg::MuBi4False
+      }
+      {
+        package: prim_mubi_pkg
+        struct: mubi4
+        domain: Main
+        signame: rv_core_ibex_cheriot_ena_cmp
         width: 1
         type: uni
         end_idx: -1

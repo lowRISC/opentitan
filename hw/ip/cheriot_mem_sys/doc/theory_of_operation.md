@@ -18,7 +18,9 @@ The host on `cored_tl_d` (`rv_core_ibex` in Earl Grey) must hold a request and i
 OpenTitan does not require this of TL-UL hosts in general, but the [tag filter](#tag-filter) forks a request into streams that may each take it in a different cycle, and the [revocation engine](#revocation-engine) watches a core write on this port from the moment it is presented.
 
 `cheriot_ena_i` selects the execution mode. It is a `mubi4_t` driven by the write-once mode switch in
-`rv_core_ibex`.
+`rv_core_ibex`. The switch also drives `cheriot_ena_shadow_i`, the enable of the second copy of the
+[lockstep](#lockstep), one cycle after `cheriot_ena_i`, and `cheriot_ena_cmp_i`, which turns on the
+comparison of the two enables and which the switch turns off while it changes them.
 
 `scanmode_i` and `scan_rst_ni` only bypass the reset of the second copy of the
 [lockstep](#lockstep).
@@ -284,18 +286,27 @@ Debug accesses in CHERIoT-mode ***MUST*** therefore be performed through Ibex an
 `cheriot_mem_sys_lockstep` runs a second copy of `cheriot_mem_sys_core` `LockstepOffset` cycles (one
 by default) behind the main copy, the same scheme as the Ibex lockstep:
 
-- The inputs of the main copy reach the second copy through `LockstepOffset` flops, except the
-  sweep configuration (`TBRE_BASE_ADDR_SHADOWED`, `TBRE_NUM_CAPS_SHADOWED`). The second copy reads
-  it from the registers when its delayed start arrives, so each copy samples it on a different
-  clock edge and a transient on these nets reaches only one copy. `TBRE_REGWEN` keeps the registers
-  unchanged in between.
+- The inputs of the main copy reach the second copy through `LockstepOffset` flops, except the sweep
+  configuration (`TBRE_BASE_ADDR_SHADOWED`, `TBRE_NUM_CAPS_SHADOWED`) and the CHERIoT mode enable.
+  The second copy reads the sweep configuration from the registers when its delayed start arrives,
+  so each copy samples it on a different clock edge and a transient on these nets reaches only one
+  copy. `TBRE_REGWEN` keeps the registers unchanged in between.
+- The second copy has its own CHERIoT mode enable, `cheriot_ena_shadow_i`, which arrives one cycle
+  after `cheriot_ena_i` and passes `LockstepOffset - 1` flops. Each copy of `cheriot_mem_sys_core`
+  receives its enable itself, with one buffered copy for each of its seven consumers.
+- While `cheriot_ena_cmp_i` is any value other than `MuBi4False`, the enables of the main and the
+  second copy must be valid and equal. `cheriot_ena_cmp_i` passes `LockstepOffset - 1` flops as
+  well, so it turns the comparison on only after the second copy's enable has settled. It also turns
+  the comparison off only `LockstepOffset - 1` cycles after it changes, so it must turn off at least
+  that long before `cheriot_ena_i` changes; the mode switch turns it off two cycles before, which
+  limits `LockstepOffset` to 3.
 - The outputs of the main copy other than its alert are delayed by `LockstepOffset + 1` cycles and
   compared with the registered outputs of the second copy. All bits of these outputs are compared,
   including the payload of TL-UL channels that are not valid.
 - After reset, the second copy leaves reset `LockstepOffset` cycles after the main copy, and the
   comparison starts one cycle later. In scan mode, `scan_rst_ni` resets the second copy.
-- An output mismatch, a fatal error of the second copy, or a fault of the reset counter (for
-  `LockstepOffset > 1`) raises `fatal_fault`.
+- An output mismatch, an enable mismatch, a fatal error of the second copy, or a fault of the
+  reset counter (for `LockstepOffset > 1`) raises `fatal_fault`.
 
 Only the main copy drives the ports, so the lockstep adds no latency.
 
@@ -303,16 +314,17 @@ The lockstep detects faults; it does not correct them:
 
 - A fault is flagged `LockstepOffset + 1` cycles after the main copy produced the wrong output,
   which has left the subsystem by then.
-- What both copies share is not covered: the CSRs, `cheriot_ena_i`, the clock, the reset, the
-  comparator, the interrupt and the alert senders. For the sweep configuration, `TBRE.CONFIG.SHADOW`
+- What both copies share is not covered: the CSRs, the clock, the reset, the comparators, the
+  interrupt and the alert senders. For the sweep configuration, `TBRE.CONFIG.SHADOW`
   protects the stored registers, and each copy reads them only in the cycle a start is taken, into
   its own copy for the sweep; the read-out in that cycle and `TBRE_START` remain shared.
 - A fault that changes no output raises no alert, and no output is compared before the comparison
   starts after reset.
 
-Setting `SecLockstep` to 0 removes the second copy, and with it `LOGIC.SHADOW` and the protection
-that `BUS.INTEGRITY` and the unencoded FIFO pointers rely on. `SecLockstep` and `LockstepOffset` are
-top-level parameters.
+Setting `SecLockstep` to 0 removes the second copy and the enable comparison, and with them
+`LOGIC.SHADOW` and the protection that `BUS.INTEGRITY` and the unencoded FIFO pointers rely on;
+`cheriot_ena_shadow_i` and `cheriot_ena_cmp_i` are then unused. `SecLockstep` and `LockstepOffset`
+are top-level parameters.
 
 ## Error Handling
 
@@ -326,6 +338,7 @@ The subsystem distinguishes a denied access from a fault:
 | Device error on the tag path | Read-modify-write aborted, `d_error` towards the core, and `fatal_fault` alert |
 | Integrity fault on a meta SRAM response (`rsp_intg` or `data_intg`) | `fatal_fault` alert |
 | Integrity fault on the CSR interface | `FATAL_ERR_CODE.reg_intg` and `fatal_fault` alert |
+| The enables of the main and the second copy differ, or one is not a valid `mubi4_t` value, while `cheriot_ena_cmp_i` is not `MuBi4False` | `fatal_fault` alert |
 | Second write of a shadow register update that does not match the first | Register unchanged, `RECOV_ERR_CODE.shadow_update_err`, and `recov_ctrl_update_err` alert |
 | Storage error of a shadow register (its two copies differ) | `FATAL_ERR_CODE.shadow_storage_err` and `fatal_fault` alert |
 | Core data request with an invalid encoding of the capability tag (`cored_tag_h2d_i`) | Tag read as clear (a store clears the tag, a load returns untagged), and `fatal_fault` alert |
