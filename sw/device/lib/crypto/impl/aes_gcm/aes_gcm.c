@@ -504,6 +504,8 @@ static status_t aes_gcm_init(const aes_key_t key,
   ctx->sideload = key.sideload;
   ctx->key_len = (uint32_t)key.key_len;
   ctx->key_checksum = key.checksum;
+  hardened_memshred(ctx->key_shares[0], ARRAYSIZE(ctx->key_shares[0]));
+  hardened_memshred(ctx->key_shares[1], ARRAYSIZE(ctx->key_shares[1]));
   if (launder32(key.sideload) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(key.sideload, kHardenedBoolFalse);
     HARDENED_TRY(
@@ -512,8 +514,10 @@ static status_t aes_gcm_init(const aes_key_t key,
         hardened_memcpy(ctx->key_shares[1], key.key_shares[1], key.key_len));
   } else {
     HARDENED_CHECK_EQ(key.sideload, kHardenedBoolTrue);
+    static_assert(kKeyblobHwBackedWords <= ARRAYSIZE(ctx->key_shares[0]),
+                  "key_shares[0] must fit a hardware-backed keyblob");
     HARDENED_TRY(hardened_memcpy(ctx->key_shares[0], key.key_shares[0],
-                                 ARRAYSIZE(ctx->key_shares[0])));
+                                 kKeyblobHwBackedWords));
   }
   ctx->aad_len = 0;
   ctx->input_len = 0;
