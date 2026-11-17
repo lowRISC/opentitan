@@ -221,7 +221,11 @@ def main() -> int:
                 print(f'{change} blocked by pattern(s): {patterns_str}')
 
         if not args.plain_block_msg:
-            print('UNAUTHORIZED CHANGES PRESENT, PR cannot be merged!')
+            print('UNAUTHORIZED CHANGES PRESENT, PR cannot be merged!\n')
+            print(f'To authorize, {NUM_AUTHS_REQD} committers must each post '
+                  'a PR comment containing:\n')
+            for change in blocked_changes:
+                print(f'CHANGE AUTHORIZED: {change}')
 
         return 1
 
