@@ -73,6 +73,7 @@
           - A double fault is seen (Ibex raises `double_fault_seen_o`)
           - A bus integrity error is seen
 % if cheriot_available:
+          - A data response carries an invalid encoding of the capability tag
           - The ePMP/CHERIoT execution mode switch enters its error state
 % endif
       '''
@@ -108,23 +109,21 @@
       desc:    "Core data host port to the CHERIoT memory subsystem."
     },
 
-    { struct:  "logic",
+    { struct:  "mubi4",
       type:    "uni",
       name:    "cored_tag_h2d",
       act:     "req",
-      width:   "1",
-      package: "",
-      default: "1'b0",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
       desc:    "CHERIoT capability tag carried with the A-channel of cored_tl_h."
     },
 
-    { struct:  "logic",
+    { struct:  "mubi4",
       type:    "uni",
       name:    "cored_tag_d2h",
       act:     "rcv",
-      width:   "1",
-      package: "",
-      default: "1'b0",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
       desc:    "Capability tag returned on the D-channel of cored_tl_h."
     },
 
@@ -781,6 +780,13 @@
         The cheriot_enable input is MuBi and checked for a valid MuBi encoding in Ibex.
       '''
     }
+    { name: "CORED_TAG.INTERSIG.MUBI"
+      desc: '''
+        The capability tags of the data interface are multi-bit encoded between Ibex and the
+        CHERIoT memory subsystem, including inside the data FIFO. Only MuBi4True reads as tagged,
+        and a data response with an invalid encoding raises the fatal_hw_err alert.
+      '''
+    }
 % endif
   ]
 
@@ -1122,7 +1128,12 @@
             name: "FATAL_INTG_ERR",
             resval: "0x0"
             desc: '''
+% if cheriot_available:
+              rv_core_ibex detected a response integrity error, or a data response with an invalid
+              encoding of the capability tag
+% else:
               rv_core_ibex detected a response integrity error
+% endif
             '''
           },
           { bits: "9",

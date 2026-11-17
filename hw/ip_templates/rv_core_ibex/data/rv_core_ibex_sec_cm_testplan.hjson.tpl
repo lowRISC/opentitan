@@ -109,5 +109,20 @@
       stage: V2S
       tests: []
     }
+% if cheriot_available:
+    {
+      name: sec_cm_cored_tag_intersig_mubi
+      desc: '''
+            Verify the countermeasure(s) CORED_TAG.INTERSIG.MUBI.
+
+            Corrupt the response tag of an untagged data response to an invalid encoding, and
+            check that it reads as untagged, sets ERR_STATUS.FATAL_INTG_ERR and raises the
+            `fatal_hw_err` alert.
+            '''
+      stage: V2S
+      // To be covered by the chip-level testpoint chip_sw_cheriot_cored_tag_mubi.
+      tests: []
+    }
+% endif
   ]
 }

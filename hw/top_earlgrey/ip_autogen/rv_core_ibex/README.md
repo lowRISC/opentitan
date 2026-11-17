@@ -33,6 +33,7 @@ This document specifies Ibex CPU core wrapper functionality.
 The Ibex RISC-V Core Wrapper instantiates an [Ibex RV32 CPU Core](https://github.com/lowRISC/ibex), and wraps its data and instruction memory interfaces to TileLink Uncached Light (TL-UL).
 All configuration parameters of Ibex are passed through, except `BaseIsa`, which is fixed to the CHERIoT-capable base ISA.
 The wrapper holds the [execution mode switch](doc/theory_of_operation.md#execution-mode-switch) that selects between ePMP and CHERIoT mode at runtime, and exposes the TRVK revocation bitmap interface of Ibex as the `corerevbm_tl` TL-UL host port.
+The capability tag of each data access travels as a [multi-bit encoded sideband](doc/theory_of_operation.md#capability-tag-sideband) next to the data port.
 The pipelining of the bus adapters is configurable.
 
 ## Compatibility

@@ -371,14 +371,14 @@ error status
 {"reg": [{"name": "REG_INTG_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 7}, {"name": "FATAL_INTG_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "FATAL_CORE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"name": "RECOV_CORE_ERR", "bits": 1, "attr": ["rw1c"], "rotate": -90}, {"bits": 21}], "config": {"lanes": 1, "fontsize": 10, "vspace": 160}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name           | Description                                                                              |
-|:------:|:------:|:-------:|:---------------|:-----------------------------------------------------------------------------------------|
-| 31:11  |        |         |                | Reserved                                                                                 |
-|   10   |  rw1c  |   0x0   | RECOV_CORE_ERR | rv_core_ibex detected a recoverable internal error (``alert_minor`` from Ibex seen)      |
-|   9    |  rw1c  |   0x0   | FATAL_CORE_ERR | rv_core_ibex detected a fatal internal error (``alert_major_internal_o`` from Ibex seen) |
-|   8    |  rw1c  |   0x0   | FATAL_INTG_ERR | rv_core_ibex detected a response integrity error                                         |
-|  7:1   |        |         |                | Reserved                                                                                 |
-|   0    |  rw1c  |   0x0   | REG_INTG_ERR   | rv_core_ibex_peri detected a register transmission integrity error                       |
+|  Bits  |  Type  |  Reset  | Name           | Description                                                                                                         |
+|:------:|:------:|:-------:|:---------------|:--------------------------------------------------------------------------------------------------------------------|
+| 31:11  |        |         |                | Reserved                                                                                                            |
+|   10   |  rw1c  |   0x0   | RECOV_CORE_ERR | rv_core_ibex detected a recoverable internal error (``alert_minor`` from Ibex seen)                                 |
+|   9    |  rw1c  |   0x0   | FATAL_CORE_ERR | rv_core_ibex detected a fatal internal error (``alert_major_internal_o`` from Ibex seen)                            |
+|   8    |  rw1c  |   0x0   | FATAL_INTG_ERR | rv_core_ibex detected a response integrity error, or a data response with an invalid encoding of the capability tag |
+|  7:1   |        |         |                | Reserved                                                                                                            |
+|   0    |  rw1c  |   0x0   | REG_INTG_ERR   | rv_core_ibex_peri detected a register transmission integrity error                                                  |
 
 ## RND_DATA
 Random data from EDN

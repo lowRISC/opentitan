@@ -98,11 +98,12 @@ When Ibex fetch is disabled it will cease to execute, but will complete instruct
 Ibex fetch is enabled when all of the following conditions are met:
   - The lifecycle controller has enabled it
   - The power manager has enabled it
-  - A ``fatal_hw_err`` alert hasn't been raised
+  - No fatal internal error has been seen ([`FATAL_CORE_ERR`](registers.md#err_status))
 
 ### Local Escalation Path
 
-When the ``fatal_hw_err`` alert is raised Ibex fetch is disabled and will remain disabled until ``rv_core_ibex`` is reset.
+When a fatal internal error sets [`FATAL_CORE_ERR`](registers.md#err_status), which also raises the ``fatal_hw_err`` alert, Ibex fetch is disabled and will remain disabled until ``rv_core_ibex`` is reset.
+The other causes of the ``fatal_hw_err`` alert, such as integrity errors, do not disable fetch locally; their escalation is left to the alert handler.
 
 ## Execution Mode Switch
 
@@ -136,3 +137,18 @@ Consumers of the mode signal are expected to escalate invalid values. Ibex does 
 
 Both the error status bit and the disabled fetch state are sticky.
 Ibex will not resume execution, and the switch error state cannot be cleared, until `rv_core_ibex` is reset.
+
+## Capability Tag Sideband
+
+Every data access of Ibex carries a capability validity tag next to the TL-UL structs of the data port.
+`cored_tag_h2d_o` goes with the request: it is the tag of a store, or on a load the hint that it loads a capability.
+`cored_tag_d2h_i` comes with the response: it is the tag of the loaded capability.
+Both are `mubi4_t` towards the CHERIoT memory subsystem (`cheriot_mem_sys`).
+The wrapper encodes the request tag right at the data interface of Ibex and decodes the response tag right in front of it, so the tag also stays multi-bit encoded inside the data FIFO.
+The encoder has no flop, so the tag stays in the cycle of its TL-UL beat.
+Between the lockstep comparison of Ibex and the wrapper, the tag is a single bit that the lockstep does not cover: the TRVK filter of Ibex passes it on, and the shadow core receives the same response tag as the main core.
+
+Decoding is strict: only `MuBi4True` reads as tagged.
+An invalid encoding therefore reads as untagged.
+A data response with an invalid encoding also sets [`FATAL_INTG_ERR`](registers.md#err_status) and raises the `fatal_hw_err` alert.
+Like other integrity errors, it does not disable fetch locally (see [Local Escalation Path](#local-escalation-path)); its escalation is left to the alert handler.
