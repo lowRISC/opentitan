@@ -254,14 +254,14 @@ module earlgrey_pd_aon #(
 
   // Local Parameters
   // local parameters for ast
-  localparam int unsigned AstAst2PadOutWidth = 9;
+  localparam int unsigned AstAst2PadOutWidth = 8;
   // local parameters for sram_ctrl_ret
   localparam int SramCtrlRetOutstanding = 2;
 
   // Signals
   logic [93:0] mio_p2d;
-  logic [104:0] mio_d2p;
-  logic [104:0] mio_en_d2p;
+  logic [103:0] mio_d2p;
+  logic [103:0] mio_en_d2p;
   logic [15:0] dio_p2d;
   logic [15:0] dio_d2p;
   logic [15:0] dio_en_d2p;
@@ -301,8 +301,8 @@ module earlgrey_pd_aon #(
   // aon_timer
   // ast
   // sensor_ctrl
-  logic [8:0]  cio_sensor_ctrl_ast_debug_out_d2p;
-  logic [8:0]  cio_sensor_ctrl_ast_debug_out_en_d2p;
+  logic [7:0]  cio_sensor_ctrl_ast_debug_out_d2p;
+  logic [7:0]  cio_sensor_ctrl_ast_debug_out_en_d2p;
   // sram_ctrl_ret
 
 
@@ -1048,7 +1048,6 @@ module earlgrey_pd_aon #(
   assign mio_d2p[MioOutSensorCtrlAstDebugOut5] = cio_sensor_ctrl_ast_debug_out_d2p[5];
   assign mio_d2p[MioOutSensorCtrlAstDebugOut6] = cio_sensor_ctrl_ast_debug_out_d2p[6];
   assign mio_d2p[MioOutSensorCtrlAstDebugOut7] = cio_sensor_ctrl_ast_debug_out_d2p[7];
-  assign mio_d2p[MioOutSensorCtrlAstDebugOut8] = cio_sensor_ctrl_ast_debug_out_d2p[8];
   assign mio_d2p[MioOutSysrstCtrlBatDisable] = cio_sysrst_ctrl_bat_disable_d2p;
   assign mio_d2p[MioOutSysrstCtrlKey0Out] = cio_sysrst_ctrl_key0_out_d2p;
   assign mio_d2p[MioOutSysrstCtrlKey1Out] = cio_sysrst_ctrl_key1_out_d2p;
@@ -1155,7 +1154,6 @@ module earlgrey_pd_aon #(
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut5] = cio_sensor_ctrl_ast_debug_out_en_d2p[5];
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut6] = cio_sensor_ctrl_ast_debug_out_en_d2p[6];
   assign mio_en_d2p[MioOutSensorCtrlAstDebugOut7] = cio_sensor_ctrl_ast_debug_out_en_d2p[7];
-  assign mio_en_d2p[MioOutSensorCtrlAstDebugOut8] = cio_sensor_ctrl_ast_debug_out_en_d2p[8];
   assign mio_en_d2p[MioOutSysrstCtrlBatDisable] = cio_sysrst_ctrl_bat_disable_en_d2p;
   assign mio_en_d2p[MioOutSysrstCtrlKey0Out] = cio_sysrst_ctrl_key0_out_en_d2p;
   assign mio_en_d2p[MioOutSysrstCtrlKey1Out] = cio_sysrst_ctrl_key1_out_en_d2p;

@@ -77,7 +77,7 @@
     { name:      "Ast2PadOutWidth",
       desc:      "Width of the DFT AST-to-pad output signal bus",
       type:      "int unsigned",
-      default:   "9",
+      default:   "8",
       expose:    "true",
       partition: "secondary",
     },

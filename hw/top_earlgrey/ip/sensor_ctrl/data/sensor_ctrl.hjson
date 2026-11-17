@@ -39,7 +39,7 @@
   available_output_list: [
     { name: "ast_debug_out",
       desc: "ast debug outputs to pinmux",
-      width: "9"
+      width: "8"
     }
   ],
   interrupt_list: [
@@ -128,7 +128,7 @@
       type:    "uni",
       name:    "ast2pinmux",
       act:     "rcv",
-      width:   9,
+      width:   8,
       package: ""
     },
 

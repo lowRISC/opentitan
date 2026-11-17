@@ -1130,14 +1130,13 @@ package top_earlgrey_pkg;
     MioOutSensorCtrlAstDebugOut5 = 95,
     MioOutSensorCtrlAstDebugOut6 = 96,
     MioOutSensorCtrlAstDebugOut7 = 97,
-    MioOutSensorCtrlAstDebugOut8 = 98,
-    MioOutSysrstCtrlBatDisable = 99,
-    MioOutSysrstCtrlKey0Out = 100,
-    MioOutSysrstCtrlKey1Out = 101,
-    MioOutSysrstCtrlKey2Out = 102,
-    MioOutSysrstCtrlPwrbOut = 103,
-    MioOutSysrstCtrlZ3Wakeup = 104,
-    MioOutCount = 105
+    MioOutSysrstCtrlBatDisable = 98,
+    MioOutSysrstCtrlKey0Out = 99,
+    MioOutSysrstCtrlKey1Out = 100,
+    MioOutSysrstCtrlKey2Out = 101,
+    MioOutSysrstCtrlPwrbOut = 102,
+    MioOutSysrstCtrlZ3Wakeup = 103,
+    MioOutCount = 104
   } mio_out_e;
 
   // Enumeration for DIO signals, used on both the top and chip-levels.

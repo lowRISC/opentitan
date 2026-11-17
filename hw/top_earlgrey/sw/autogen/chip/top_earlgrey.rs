@@ -3316,19 +3316,17 @@ pub enum PinmuxOutsel {
     /// Peripheral Output 97
     SensorCtrlAstDebugOut7 = 100,
     /// Peripheral Output 98
-    SensorCtrlAstDebugOut8 = 101,
+    SysrstCtrlBatDisable = 101,
     /// Peripheral Output 99
-    SysrstCtrlBatDisable = 102,
+    SysrstCtrlKey0Out = 102,
     /// Peripheral Output 100
-    SysrstCtrlKey0Out = 103,
+    SysrstCtrlKey1Out = 103,
     /// Peripheral Output 101
-    SysrstCtrlKey1Out = 104,
+    SysrstCtrlKey2Out = 104,
     /// Peripheral Output 102
-    SysrstCtrlKey2Out = 105,
+    SysrstCtrlPwrbOut = 105,
     /// Peripheral Output 103
-    SysrstCtrlPwrbOut = 106,
-    /// Peripheral Output 104
-    SysrstCtrlZ3Wakeup = 107,
+    SysrstCtrlZ3Wakeup = 106,
 }
 
 impl TryFrom<u32> for PinmuxOutsel {
@@ -3436,13 +3434,12 @@ impl TryFrom<u32> for PinmuxOutsel {
             98 => Ok(Self::SensorCtrlAstDebugOut5),
             99 => Ok(Self::SensorCtrlAstDebugOut6),
             100 => Ok(Self::SensorCtrlAstDebugOut7),
-            101 => Ok(Self::SensorCtrlAstDebugOut8),
-            102 => Ok(Self::SysrstCtrlBatDisable),
-            103 => Ok(Self::SysrstCtrlKey0Out),
-            104 => Ok(Self::SysrstCtrlKey1Out),
-            105 => Ok(Self::SysrstCtrlKey2Out),
-            106 => Ok(Self::SysrstCtrlPwrbOut),
-            107 => Ok(Self::SysrstCtrlZ3Wakeup),
+            101 => Ok(Self::SysrstCtrlBatDisable),
+            102 => Ok(Self::SysrstCtrlKey0Out),
+            103 => Ok(Self::SysrstCtrlKey1Out),
+            104 => Ok(Self::SysrstCtrlKey2Out),
+            105 => Ok(Self::SysrstCtrlPwrbOut),
+            106 => Ok(Self::SysrstCtrlZ3Wakeup),
             _ => Err(val),
         }
     }
