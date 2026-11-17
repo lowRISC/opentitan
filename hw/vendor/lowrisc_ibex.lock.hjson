@@ -9,6 +9,6 @@
   upstream:
   {
     url: https://github.com/thommythomaso/ibex-tbenz-pub.git
-    rev: fcac210c26f1c8b27b969cc69f8755478ca00229
+    rev: c9a03ef43f62abedad56b341788656f4dc227211
   }
 }

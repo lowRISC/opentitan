@@ -23,6 +23,7 @@ ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_hamming_39_32_enc.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_hamming_72_64_dec.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_secded_hamming_72_64_enc.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_mubi_pkg.sv
+${LOWRISC_IP_DIR}/ip/prim/rtl/prim_mubi4_sync.sv
 ${LOWRISC_IP_DIR}/ip/prim_generic/rtl/prim_ram_1p_pkg.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_ram_1p_adv.sv
 ${LOWRISC_IP_DIR}/ip/prim/rtl/prim_ram_1p_scr.sv

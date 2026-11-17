@@ -64,7 +64,7 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
 
   input  logic [31:0]                  hart_id_i,
   input  logic [31:0]                  boot_addr_i,
-  input  ibex_mubi_t                   cheriot_enable_i,
+  input  ibex_mubi_t                   cheriot_enable_shadow_i,
   input  logic [31:0]                  trvk_heap_base_addr_i,
 
   input  logic                         instr_req_i,
@@ -141,6 +141,7 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   input  logic                         scan_rst_ni,
 
   output ibex_mubi_t                   lockstep_cmp_en_o,
+  output ibex_mubi_t                   cheriot_enable_shadow_o,
   output logic                         data_req_shadow_o,
   output logic                         data_we_shadow_o,
   output logic [3:0]                   data_be_shadow_o,
@@ -289,7 +290,6 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     ibex_mubi_t                  fetch_enable;
     ibex_mubi_t                  mcounteren_writable;
     logic                        ic_scr_key_valid;
-    ibex_mubi_t                  cheriot_enable;
     cap_t                        rf_rcap_a;
     cap_t                        rf_rcap_b;
   } delayed_inputs_t;
@@ -380,9 +380,76 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   assign shadow_inputs_in.fetch_enable          = fetch_enable_i;
   assign shadow_inputs_in.mcounteren_writable   = mcounteren_writable_i;
   assign shadow_inputs_in.ic_scr_key_valid      = ic_scr_key_valid_i;
-  assign shadow_inputs_in.cheriot_enable        = cheriot_enable_i;
   assign shadow_inputs_in.rf_rcap_a             = rf_rcap_a_i;
   assign shadow_inputs_in.rf_rcap_b             = rf_rcap_b_i;
+
+  // With CHERIoT, the shadow core has its own CHERIoT enable. Its source drives it one cycle after
+  // the main core's enable, so LockstepOffset - 1 more cycles on the core clock line it up with the
+  // shadow core while that clock runs; a change while the core sleeps with its clock gated reaches
+  // the shadow core one core clock edge early. ibex_top compares a separate copy of the delayed
+  // enable against the main core's. Without CHERIoT the shadow core runs with IbexMuBiOff.
+  ibex_mubi_t cheriot_enable_shadow_core;
+  ibex_mubi_t cheriot_enable_shadow_rf;
+
+  if (BaseIsa == BaseIsaRV32IorCHERIoT) begin : gen_cheriot_enable_shadow
+    ibex_mubi_t cheriot_enable_shadow;
+
+    if (LockstepOffset > 1) begin : gen_cheriot_enable_shadow_delay
+      // Stage LockstepOffset - 1 is the input, stage 0 feeds the shadow core.
+      ibex_mubi_t [LockstepOffset-1:0] cheriot_enable_shadow_q;
+
+      assign cheriot_enable_shadow_q[LockstepOffset-1] = cheriot_enable_shadow_i;
+
+      for (genvar i = 0; i < LockstepOffset - 1; i++) begin : gen_stages
+        prim_flop #(
+          .Width     ($bits(ibex_mubi_t)),
+          .ResetValue(IbexMuBiOff)
+        ) u_prim_cheriot_enable_shadow_flop (
+          .clk_i (clk_i),
+          .rst_ni(rst_ni),
+          .d_i   (cheriot_enable_shadow_q[i+1]),
+          .q_o   (cheriot_enable_shadow_q[i])
+        );
+      end
+
+      assign cheriot_enable_shadow = cheriot_enable_shadow_q[0];
+    end else begin : gen_no_cheriot_enable_shadow_delay
+      assign cheriot_enable_shadow = cheriot_enable_shadow_i;
+    end
+
+    // Receiver of the shadow CHERIoT enable, one buffered copy each for the shadow core, the
+    // shadow register file and the enable comparison in ibex_top. With AsyncOn(0) the primitive
+    // only buffers, so the ibex_mubi_t encoding passes through unchanged.
+    typedef enum logic [1:0] {
+      ShadowCoreIdx,
+      ShadowRfIdx,
+      ShadowCompareIdx,
+      ShadowLast
+    } cheriot_enable_shadow_pos_e;
+
+    prim_mubi_pkg::mubi4_t [ShadowLast-1:0] cheriot_enable_shadow_buf;
+
+    prim_mubi4_sync #(
+      .NumCopies(int'(ShadowLast)),
+      .AsyncOn  (1'b0)
+    ) u_cheriot_enable_shadow_sync (
+      .clk_i,
+      .rst_ni,
+      .mubi_i(prim_mubi_pkg::mubi4_t'(cheriot_enable_shadow)),
+      .mubi_o(cheriot_enable_shadow_buf)
+    );
+
+    assign cheriot_enable_shadow_core = ibex_mubi_t'(cheriot_enable_shadow_buf[ShadowCoreIdx]);
+    assign cheriot_enable_shadow_rf   = ibex_mubi_t'(cheriot_enable_shadow_buf[ShadowRfIdx]);
+    assign cheriot_enable_shadow_o    = ibex_mubi_t'(cheriot_enable_shadow_buf[ShadowCompareIdx]);
+  end else begin : gen_no_cheriot_enable_shadow
+    assign cheriot_enable_shadow_core = IbexMuBiOff;
+    assign cheriot_enable_shadow_rf   = IbexMuBiOff;
+    assign cheriot_enable_shadow_o    = IbexMuBiOff;
+
+    logic unused_cheriot_enable_shadow;
+    assign unused_cheriot_enable_shadow = ^cheriot_enable_shadow_i;
+  end
 
   ///////////////////
   // Output delays //
@@ -565,7 +632,7 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     .hart_id_i           (hart_id_i),
     .boot_addr_i         (boot_addr_i),
 
-    .cheriot_enable_i    (shadow_inputs_q[0].cheriot_enable),
+    .cheriot_enable_i    (cheriot_enable_shadow_core),
 
     .instr_req_o         (shadow_outputs_d.instr_req),
     .instr_gnt_i         (shadow_inputs_q[0].instr_gnt),
@@ -822,7 +889,7 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .test_en_i        (test_en_i),
       .dummy_instr_id_i (shadow_dummy_instr_id),
       .dummy_instr_wb_i (shadow_dummy_instr_wb),
-      .cheriot_enable_i (shadow_inputs_q[0].cheriot_enable),
+      .cheriot_enable_i (cheriot_enable_shadow_rf),
 
       .raddr_a_i        (shadow_rf_raddr_a),
       .rdata_a_o        (shadow_rf_rdata_a_intg),
@@ -851,7 +918,7 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .test_en_i        (test_en_i),
       .dummy_instr_id_i (shadow_dummy_instr_id),
       .dummy_instr_wb_i (shadow_dummy_instr_wb),
-      .cheriot_enable_i (shadow_inputs_q[0].cheriot_enable),
+      .cheriot_enable_i (cheriot_enable_shadow_rf),
 
       .raddr_a_i        (shadow_rf_raddr_a),
       .rdata_a_o        (shadow_rf_rdata_a_intg),
@@ -880,7 +947,7 @@ module ibex_lockstep import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
       .test_en_i        (test_en_i),
       .dummy_instr_id_i (shadow_dummy_instr_id),
       .dummy_instr_wb_i (shadow_dummy_instr_wb),
-      .cheriot_enable_i (shadow_inputs_q[0].cheriot_enable),
+      .cheriot_enable_i (cheriot_enable_shadow_rf),
 
       .raddr_a_i        (shadow_rf_raddr_a),
       .rdata_a_o        (shadow_rf_rdata_a_intg),

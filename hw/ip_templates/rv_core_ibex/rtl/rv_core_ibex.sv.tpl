@@ -302,9 +302,28 @@ module ${module_instance_name}
 
 % if cheriot_available:
   // CHERIoT signals
-  logic                  cheriot_switch_unlocked;
-  logic                  cheriot_switch_error;
-  ibex_pkg::ibex_mubi_t  cheriot_enable_ibex;
+  logic                         cheriot_switch_unlocked;
+  logic                         cheriot_switch_error;
+  prim_mubi_pkg::mubi4_t        cheriot_ena_core, cheriot_ena_core_shadow;
+  prim_mubi_pkg::mubi4_t        cheriot_ena_compare;
+  prim_mubi_pkg::mubi4_t        cheriot_ena_core_shadow_buf;
+  ibex_pkg::ibex_mubi_t         cheriot_enable_ibex, cheriot_enable_shadow_ibex;
+  ibex_pkg::ibex_mubi_t         cheriot_enable_cmp_ibex;
+
+  // Destinations of the buffered copies of the core enable and of the compare enable
+  typedef enum logic [1:0] {
+    CoreEnaIbexIdx,
+    CoreEnaRvDmIdx,
+    CoreEnaLast
+  } cheriot_ena_core_pos_e;
+
+  typedef enum logic [1:0] {
+    CmpEnaIbexIdx,
+    CmpEnaLast
+  } cheriot_ena_cmp_pos_e;
+
+  prim_mubi_pkg::mubi4_t [CoreEnaLast-1:0] cheriot_ena_core_buf;
+  prim_mubi_pkg::mubi4_t [CmpEnaLast-1:0]  cheriot_ena_cmp_buf;
 
 % endif
   // The following intermediate signals are created to aid in simulations.
@@ -520,17 +539,21 @@ module ${module_instance_name}
   assign mcounteren_writable_ibex = mcounteren_writable_mubi4 == prim_mubi_pkg::MuBi4True ?
                                     ibex_pkg::IbexMuBiOn : ibex_pkg::IbexMuBiOff;
 % if cheriot_available:
-  // Convert the mubi4 to ibex_mubi for the cheriot_enable signal. Invalid mubi inputs must not
-  // accidentally map to a valid ibex_mubi value and switch modes, so the default arm produces an
-  // invalid ibex_mubi value that the core can detect and escalate.
+  // Convert the mubi4 CHERIoT enables to ibex_mubi. Invalid mubi inputs must not accidentally map
+  // to a valid ibex_mubi value and switch modes, so they map to an invalid ibex_mubi value that the
+  // core can detect and escalate (and that turns the compare in Ibex on).
   // SEC_CM: CHERIOT_ENABLE.CTRL.MUBI
-  always_comb begin
-    unique case (cheriot_ena_o)
-      prim_mubi_pkg::MuBi4True:  cheriot_enable_ibex = ibex_pkg::IbexMuBiOn;
-      prim_mubi_pkg::MuBi4False: cheriot_enable_ibex = ibex_pkg::IbexMuBiOff;
-      default:                   cheriot_enable_ibex = ibex_pkg::ibex_mubi_t'('0);
+  function automatic ibex_pkg::ibex_mubi_t mubi4_to_ibex_mubi(prim_mubi_pkg::mubi4_t mubi);
+    unique case (mubi)
+      prim_mubi_pkg::MuBi4True:  return ibex_pkg::IbexMuBiOn;
+      prim_mubi_pkg::MuBi4False: return ibex_pkg::IbexMuBiOff;
+      default:                   return ibex_pkg::ibex_mubi_t'('0);
     endcase
-  end
+  endfunction
+
+  assign cheriot_enable_ibex        = mubi4_to_ibex_mubi(cheriot_ena_core_buf[CoreEnaIbexIdx]);
+  assign cheriot_enable_shadow_ibex = mubi4_to_ibex_mubi(cheriot_ena_core_shadow_buf);
+  assign cheriot_enable_cmp_ibex    = mubi4_to_ibex_mubi(cheriot_ena_cmp_buf[CmpEnaIbexIdx]);
 % endif
 
   ibex_pkg::crash_dump_t crash_dump;
@@ -579,6 +602,9 @@ module ${module_instance_name}
     // SEC_CM: EXCEPTION.CTRL_FLOW.GLOBAL_ESC, EXCEPTION.CTRL_FLOW.LOCAL_ESC
     // SEC_CM: DATA_REG_SW.INTEGRITY, DATA_REG_SW.GLITCH_DETECT
     // SEC_CM: ICACHE.MEM.ADDR_INFECTION
+% if cheriot_available:
+    // SEC_CM: CHERIOT_ENABLE.CTRL.REDUN
+% endif
     .SecureIbex                  ( SecureIbex               ),
     .LockstepOffset              ( LockstepOffset           ),
     .RndCnstLfsrSeed             ( RndCnstLfsrSeed          ),
@@ -608,11 +634,15 @@ module ${module_instance_name}
     .boot_addr_i,
 
 % if cheriot_available:
-    .cheriot_enable_i     (cheriot_enable_ibex),
-    .trvk_heap_base_addr_i(CheriotTrvkHeapBaseAddr), // SRAM base address
+    .cheriot_enable_i       (cheriot_enable_ibex),
+    .cheriot_enable_shadow_i(cheriot_enable_shadow_ibex),
+    .cheriot_enable_cmp_i   (cheriot_enable_cmp_ibex),
+    .trvk_heap_base_addr_i  (CheriotTrvkHeapBaseAddr), // SRAM base address
 % else:
-    .cheriot_enable_i     (ibex_pkg::IbexMuBiOff),
-    .trvk_heap_base_addr_i('0), // Unused, CHERIoT not available
+    .cheriot_enable_i       (ibex_pkg::IbexMuBiOff),
+    .cheriot_enable_shadow_i(ibex_pkg::IbexMuBiOff),
+    .cheriot_enable_cmp_i   (ibex_pkg::IbexMuBiOff),
+    .trvk_heap_base_addr_i  ('0), // Unused, CHERIoT not available
 % endif
 
     .instr_req_o        (main_core_instr_req),
@@ -1315,15 +1345,15 @@ module ${module_instance_name}
   rv_core_ibex_cheriot_switch u_cheriot_switch (
     .clk_i,
     .rst_ni,
-    .ena_i        (mubi4_t'(reg2hw.cheriot_ena.q)),
-    .ena_ni       (mubi4_t'(reg2hw.cheriot_ena_bar.q)),
-    .lock_i       (mubi4_t'(reg2hw.cheriot_lock.q)),
-    .lock_access_i(reg2hw.cheriot_lock.qe),
-    .ena_core_o         (cheriot_ena_o),
-    .ena_core_shadow_o  (),
+    .ena_i              (mubi4_t'(reg2hw.cheriot_ena.q)),
+    .ena_ni             (mubi4_t'(reg2hw.cheriot_ena_bar.q)),
+    .lock_i             (mubi4_t'(reg2hw.cheriot_lock.q)),
+    .lock_access_i      (reg2hw.cheriot_lock.qe),
+    .ena_core_o         (cheriot_ena_core),
+    .ena_core_shadow_o  (cheriot_ena_core_shadow),
     .ena_memsys_o       (),
     .ena_memsys_shadow_o(),
-    .ena_compare_o      (),
+    .ena_compare_o      (cheriot_ena_compare),
     .unlocked_o         (cheriot_switch_unlocked),
     .error_o            (cheriot_switch_error)
   );
@@ -1331,12 +1361,55 @@ module ${module_instance_name}
   // The mode selection can be written only until the lock.
   assign hw2reg.cheriot_ena_regwen.d = cheriot_switch_unlocked;
 
+  // The switch drives each enable from its own flop. Each enable passes one layer of buffers that
+  // synthesis keeps, so its multi-bit encoding survives up to the receivers in Ibex and the debug
+  // module. None of them adds a flop, so the switch's staging order reaches the receivers
+  // unchanged. The core enable goes to two places and gets one buffered copy per place, the shadow
+  // core's enable a sender without a flop.
+  prim_mubi4_sync #(
+    .NumCopies(int'(CoreEnaLast)),
+    .AsyncOn  (1'b0)
+  ) u_cheriot_ena_core_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cheriot_ena_core),
+    .mubi_o(cheriot_ena_core_buf)
+  );
+
+  // The debug module follows the core's enable.
+  assign cheriot_ena_o = cheriot_ena_core_buf[CoreEnaRvDmIdx];
+
+  prim_mubi4_sender #(
+    .AsyncOn(1'b0)
+  ) u_cheriot_ena_core_shadow_sender (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cheriot_ena_core_shadow),
+    .mubi_o(cheriot_ena_core_shadow_buf)
+  );
+
+  // The compare enable goes to the comparison in Ibex.
+  prim_mubi4_sync #(
+    .NumCopies(int'(CmpEnaLast)),
+    .AsyncOn  (1'b0)
+  ) u_cheriot_ena_cmp_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cheriot_ena_compare),
+    .mubi_o(cheriot_ena_cmp_buf)
+  );
+
 % endif
   logic unused_reg2hw;
   assign unused_reg2hw = |reg2hw.rnd_data.q;
 
   // SEC_CM: TLUL_ADAPTER.LOGIC.SHADOW
   if (SecureIbex) begin : gen_tlul_lockstep
+    // The lockstep shadow core runs at least one cycle behind the main core; neither Ibex nor the
+    // lockstep logic below has a zero-offset mode.
+    `ASSERT_INIT(LockstepOffsetMin_A, LockstepOffset > 0)
+    `ASSERT_STATIC_LINT_ERROR(LockstepOffsetMin_L, LockstepOffset > 0)
+
     /////////////////////////////////////////////////////
     // Shadow Core instruction and data region config. //
     /////////////////////////////////////////////////////
