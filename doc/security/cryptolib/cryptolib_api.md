@@ -76,17 +76,18 @@ Moreover, the function also checks the entropy complex health test and alert con
 The OpenTitan cryptography library provides several compile-time configuration settings via Bazel.
 These flags allow you to optimize code size or enable deep debugging.
 
-You can activate these settings during the build process by passing `--define=<setting>=true` to Bazel.
+Each setting is defined as a Bazel `bool_flag` (`//sw/device/lib/crypto/configs:<setting>_flag`) with a `.bazelrc` alias (`--<setting>`).
+You can activate these settings during the build process by passing `--<setting>=true` (or `--//sw/device/lib/crypto/configs:<setting>_flag=true` when building from an external workspace or transition) to Bazel.
 
 Additionally, building with the Bazel `--stamp` option is required to include the actual Git commit hash in the build info.
 Building with `--stamp` also automatically marks the build as a release build (setting `released` to `true`).
 
-| Configuration Setting | Internal Define | Description |
-|---|---|---|
-| `crypto_status_debug` | `OTCRYPTO_STATUS_DEBUG` | Embeds the module ID and line number directly into `otcrypto_status_t` error codes. This significantly aids debugging but increases the footprint and alters standard error structures. |
-| `disable_null_checks` | `OTCRYPTO_DISABLE_NULL_CHECKS` | Removes `NULL` pointer checks on API inputs throughout the library (e.g., AES-GCM operations). This saves code size, but strictly requires the caller to guarantee no `NULL` pointers are passed. |
-| `disable_buf_integrity_checks` | `OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS` | Disables runtime integrity verification for data buffers. This bypasses `verify_buf_integrity`, removing the check that compares `ptr_checksum` against the data's calculated checksum. |
-| `disable_hardening` | `OT_DISABLE_HARDENING` | Replaces the fault-hardened double-branch assembly sequences in `HARDENED_TRY` and `HARDENED_CHECK_*` with a single non-redundant check in the cryptolib to reduce code size. When enabled, `otcrypto_security_config_check` only permits `kOtcryptoKeySecurityLevelLow`. |
+| Flag Alias | Build Setting | Internal Define | Description |
+|---|---|---|---|
+| `--crypto_status_debug` | `//sw/device/lib/crypto/configs:crypto_status_debug_flag` | `OTCRYPTO_STATUS_DEBUG` | Embeds the module ID and line number directly into `otcrypto_status_t` error codes. This significantly aids debugging but increases the footprint and alters standard error structures. |
+| `--disable_null_checks` | `//sw/device/lib/crypto/configs:disable_null_checks_flag` | `OTCRYPTO_DISABLE_NULL_CHECKS` | Removes `NULL` pointer checks on API inputs throughout the library (e.g., AES-GCM operations). This saves code size, but strictly requires the caller to guarantee no `NULL` pointers are passed. |
+| `--disable_buf_integrity_checks` | `//sw/device/lib/crypto/configs:disable_buf_integrity_checks_flag` | `OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS` | Disables runtime integrity verification for data buffers. This bypasses `verify_buf_integrity`, removing the check that compares `ptr_checksum` against the data's calculated checksum. |
+| `--disable_hardening` | `//sw/device/lib/crypto/configs:disable_hardening_flag` | `OT_DISABLE_HARDENING` | Replaces the fault-hardened double-branch assembly sequences in `HARDENED_TRY` and `HARDENED_CHECK_*` with a single non-redundant check in the cryptolib to reduce code size. When enabled, `otcrypto_security_config_check` only permits `kOtcryptoKeySecurityLevelLow`. |
 
 ## Build Information and Versioning
 
