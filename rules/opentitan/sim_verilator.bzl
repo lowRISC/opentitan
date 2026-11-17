@@ -206,6 +206,7 @@ def verilator_params(
         rom = None,
         rom_ext = None,
         otp = None,
+        needs_jtag = False,
         test_cmd = "",
         data = [],
         defines = [],
@@ -220,6 +221,7 @@ def verilator_params(
       rom: Use an alternate ROM for this test.
       rom_ext: Use an alternate ROM_EXT for this test.
       otp: Use an alternate OTP configuration for this test.
+      needs_jtag: If this test requires JTAG access, set this to True.
       test_cmd: Use an alternate test_cmd for this test.
       data: Additional files needed by this test.
       kwargs: Additional key-value pairs to override in the test `param` dict.
@@ -227,7 +229,7 @@ def verilator_params(
       struct of test parameters.
     """
     return struct(
-        tags = ["verilator", "cpu:5"] + tags,
+        tags = ["verilator", "cpu:5"] + (["exclusive"] if needs_jtag else []) + tags,
         timeout = timeout,
         test_harness = test_harness,
         binaries = binaries,
@@ -235,7 +237,10 @@ def verilator_params(
         rom_ext = rom_ext,
         otp = otp,
         bitstream = None,
-        test_cmd = test_cmd,
+        needs_jtag = needs_jtag,
+        test_cmd = ("""
+            {jtag_test_cmd}
+        """ if needs_jtag else "") + test_cmd,
         data = data,
         param = kwargs,
         defines = defines,
