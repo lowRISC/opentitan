@@ -37,19 +37,12 @@ pub mod consts {
 
     // Debug module registers.
     pub const DATA0: u32 = 0x04;
-    pub const DATA1: u32 = 0x05;
     pub const DMCONTROL: u32 = 0x10;
     pub const DMSTATUS: u32 = 0x11;
     pub const HARTINFO: u32 = 0x12;
     pub const ABSTRACTCS: u32 = 0x16;
-
-    pub const DMSTATUS_ANYHALTED_MASK: u32 = 1 << 8;
-    pub const DMSTATUS_ANYRUNNING_MASK: u32 = 1 << 10;
-    pub const DMSTATUS_ANYUNAVAIL_MASK: u32 = 1 << 12;
-    pub const DMSTATUS_ANYNONEXISTENT_MASK: u32 = 1 << 14;
-    pub const DMSTATUS_ANYRESUMEACK_MASK: u32 = 1 << 16;
-    pub const DMSTATUS_ANYHAVERESET_MASK: u32 = 1 << 18;
-    pub const DMSTATUS_ALLHAVERESET_MASK: u32 = 1 << 19;
+    pub const COMMAND: u32 = 0x17;
+    pub const PROGBUF0: u32 = 0x20;
 
     pub const DMCONTROL_HASEL_SHIFT: u32 = 26;
     pub const DMCONTROL_HARTSELHI_SHIFT: u32 = 6;
@@ -61,15 +54,30 @@ pub mod consts {
     pub const DMCONTROL_RESUMEREQ_MASK: u32 = 1 << 30;
     pub const DMCONTROL_HALTREQ_MASK: u32 = 1 << 31;
 
+    pub const DMSTATUS_ANYHALTED_MASK: u32 = 1 << 8;
+    pub const DMSTATUS_ANYRUNNING_MASK: u32 = 1 << 10;
+    pub const DMSTATUS_ANYUNAVAIL_MASK: u32 = 1 << 12;
+    pub const DMSTATUS_ANYNONEXISTENT_MASK: u32 = 1 << 14;
+    pub const DMSTATUS_ANYRESUMEACK_MASK: u32 = 1 << 16;
+    pub const DMSTATUS_ANYHAVERESET_MASK: u32 = 1 << 18;
+    pub const DMSTATUS_ALLHAVERESET_MASK: u32 = 1 << 19;
+    pub const DMSTATUS_IMPEBREAK_MASK: u32 = 1 << 22;
+
     pub const ABSTRACTCS_CMDERR_MASK: u32 = (1 << 11) - (1 << 8);
     pub const ABSTRACTCS_BUSY_MASK: u32 = 1 << 12;
 
     pub const ABSTRACTCS_CMDERR_SHIFT: u32 = 8;
+    pub const ABSTRACTCS_PROGBUFSIZE_SHIFT: u32 = 24;
 
     pub const ABSTRACTCS_CMDERR_NONE: u32 = 0;
+
+    pub const COMMAND_POSTEXEC_MASK: u32 = 1 << 18;
 }
 
 use consts::*;
+
+// Encoding of the `ebreak` instruction.
+const EBREAK: u32 = 0x00100073;
 
 /// Debug module interface (DMI) abstraction.
 pub trait Dmi {
@@ -374,12 +382,27 @@ pub enum DmiError {
     Unavailable,
     #[error("Timeout waiting for hart to halt")]
     WaitTimeout,
+    #[error("Debug Module does not support Program Buffer")]
+    ProgbufUnsupported,
+    #[error("Debug Module Program Buffer is too small for the provided program")]
+    ProgbufTooSmall,
+}
+
+#[derive(Debug, Clone)]
+pub enum ProgBufConfig {
+    /// The DM does not have a Program Buffer.
+    Unsupported,
+    /// The DM supports a Program Buffer that is
+    /// at least one instruction long, and may
+    /// or may not implement implicit `ebreak`s.
+    Supported((u32, bool)),
 }
 
 /// A debugger that communicates with the target via RISC-V Debug Module Interface (DMI).
 pub struct DmiDebugger<D> {
     dmi: D,
     hartsel_mask: Option<u32>,
+    progbuf_config: Option<ProgBufConfig>,
 }
 
 impl<D> Deref for DmiDebugger<D> {
@@ -401,6 +424,48 @@ impl<D: Dmi> DmiDebugger<D> {
         Self {
             dmi,
             hartsel_mask: None,
+            progbuf_config: None,
+        }
+    }
+
+    fn progbuf_config(&mut self) -> Result<ProgBufConfig> {
+        if self.progbuf_config.is_none() {
+            let abstractcs = self.dmi.dmi_read(ABSTRACTCS)?;
+            let dmstatus = self.dmi.dmi_read(DMSTATUS)?;
+
+            let progbufsize = (abstractcs >> ABSTRACTCS_PROGBUFSIZE_SHIFT) & 0x1f;
+            let impebreak = (dmstatus & DMSTATUS_IMPEBREAK_MASK) != 0;
+
+            if progbufsize > 16 {
+                bail!("progbufsize must be at most 16");
+            }
+
+            let progbuf_config = match (progbufsize, impebreak) {
+                (0, _) => ProgBufConfig::Unsupported,
+                (1, false) => bail!("impebreak must be set if progbufsize is 1"),
+                (progbufsize, impebreak) => ProgBufConfig::Supported((progbufsize, impebreak)),
+            };
+
+            self.progbuf_config = Some(progbuf_config);
+        }
+
+        Ok(self.progbuf_config.clone().unwrap())
+    }
+
+    /// Obtain the usable length of the Program Buffer in the Debug Module.
+    pub fn progbuf_len(&mut self) -> Result<usize> {
+        match self.progbuf_config()? {
+            ProgBufConfig::Unsupported => bail!(DmiError::ProgbufUnsupported),
+            ProgBufConfig::Supported((0, _)) | ProgBufConfig::Supported((1, false)) => {
+                unreachable!("invalid progbufsize and impebreak")
+            }
+            ProgBufConfig::Supported((progbufsize, impebreak)) => Ok({
+                if !impebreak {
+                    progbufsize - 1
+                } else {
+                    progbufsize
+                }
+            } as usize),
         }
     }
 
@@ -461,6 +526,63 @@ impl<D: Dmi> DmiDebugger<D> {
         }
 
         Ok(hart)
+    }
+
+    fn poll_for_command_completion(&mut self) -> Result<u32> {
+        let mut abstractcs = self.dmi_read(ABSTRACTCS)?;
+        for _ in 0..100 {
+            if abstractcs & ABSTRACTCS_BUSY_MASK == 0 {
+                break;
+            }
+            abstractcs = self.dmi_read(ABSTRACTCS)?;
+        }
+        if abstractcs & ABSTRACTCS_BUSY_MASK != 0 {
+            bail!(DmiError::WaitTimeout)
+        }
+
+        let cmderr = (abstractcs & ABSTRACTCS_CMDERR_MASK) >> ABSTRACTCS_CMDERR_SHIFT;
+        if cmderr != consts::ABSTRACTCS_CMDERR_NONE {
+            // cmderr is write-1-to-clear.
+            self.dmi_write(ABSTRACTCS, ABSTRACTCS_CMDERR_MASK)?;
+        }
+        Ok(cmderr)
+    }
+
+    pub fn progbuf_execute(&mut self, insts: &[u32]) -> Result<u32> {
+        match self.progbuf_config()? {
+            ProgBufConfig::Unsupported => bail!(DmiError::ProgbufUnsupported),
+            ProgBufConfig::Supported((0, _)) | ProgBufConfig::Supported((1, false)) => {
+                unreachable!("invalid progbufsize and impebreak")
+            }
+            ProgBufConfig::Supported((progbufsize, impebreak)) => {
+                let user_len = if !impebreak {
+                    progbufsize - 1
+                } else {
+                    progbufsize
+                };
+
+                if insts.len() > user_len as usize {
+                    bail!(DmiError::ProgbufTooSmall)
+                }
+
+                for (idx, inst) in insts.iter().enumerate() {
+                    self.dmi_write(PROGBUF0 + (idx as u32), *inst)?;
+                }
+
+                // Write an explicit final `ebreak` if `impebreak` is not
+                // supported, or it is but the user-provided program does
+                // not fully fill the Program Buffer.
+                if !impebreak || insts.len() < progbufsize as usize {
+                    self.dmi_write(PROGBUF0 + (insts.len() as u32), EBREAK)?;
+                }
+
+                // Execute the Program Buffer by issuing a Read Register
+                // abstract command (command 0) with only the `postexec` bit set.
+                self.dmi_write(COMMAND, COMMAND_POSTEXEC_MASK)?;
+
+                self.poll_for_command_completion()
+            }
+        }
     }
 
     /// Read a data register from DMI.
