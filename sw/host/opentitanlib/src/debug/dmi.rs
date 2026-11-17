@@ -382,7 +382,7 @@ impl<D: Dmi> DmiHart<'_, D> {
     pub fn wait_resume(&mut self) -> Result<()> {
         // Per RISC-V debug specification, harts must respond within 1 second of receiving a halt or
         // resume request.
-        poll_until(Duration::from_secs(1), Duration::from_secs(1), || {
+        poll_until(Duration::from_secs(1), Duration::from_millis(50), || {
             Ok(self.state()?.running)
         })
     }
