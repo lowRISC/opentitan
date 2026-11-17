@@ -376,8 +376,7 @@ shared_key:
  *
  * Returns public key Q = d*G in affine coordinates (x, y).
  *
- * This routine runs in constant time (except potentially waiting for entropy
- * from RND).
+ * This routine runs in constant time.
  *
  * @param[in]       w31: all-zero
  * @param[out] dmem[d0]: 1st private key share d0
