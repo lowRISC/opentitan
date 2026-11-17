@@ -122,7 +122,7 @@ We are using our in-house developed [regression tool]({{< relref "hw/dv/tools/do
 Please take a look at the link for detailed information on the usage, capabilities, features and known issues.
 Here's how to run a smoke test:
 ```console
-$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/rram_ctrl/dv/rram_ctrl_sim_cfg.hjson -i rram_ctrl_smoke
+$ $REPO_TOP/util/dvsim/dvsim.py $REPO_TOP/hw/ip/rram_ctrl/dv/uvm/rram_ctrl_sim_cfg.hjson -i rram_ctrl_smoke
 ```
 
 ## Testplan
