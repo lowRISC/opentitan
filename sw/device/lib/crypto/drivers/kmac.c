@@ -509,8 +509,12 @@ static status_t kmac_set_prefix_regs(const unsigned char *func_name,
   prefix_buf_ptr += bytes_written + 1;
 
   // copy `func_name`
-  memcpy(prefix_buf_ptr, func_name, func_name_len);
-  prefix_buf_ptr += func_name_len;
+  if (launder32(func_name_len) > 0) {
+    memcpy(prefix_buf_ptr, func_name, func_name_len);
+    prefix_buf_ptr += func_name_len;
+  } else {
+    HARDENED_CHECK_EQ(func_name_len, 0);
+  }
 
   // left_encode(`cust_str_len_bits`) below
   HARDENED_TRY(little_endian_encode(cust_str_len << 3, prefix_buf_ptr + 1,
@@ -519,7 +523,11 @@ static status_t kmac_set_prefix_regs(const unsigned char *func_name,
   prefix_buf_ptr += bytes_written + 1;
 
   // copy `cust_str`
-  memcpy(prefix_buf_ptr, cust_str, cust_str_len);
+  if (launder32(cust_str_len) > 0) {
+    memcpy(prefix_buf_ptr, cust_str, cust_str_len);
+  } else {
+    HARDENED_CHECK_EQ(cust_str_len, 0);
+  }
 
   // Copy from `prefix_buffer` to PREFIX_REGS
   for (size_t i = 0; i < KMAC_PREFIX_MULTIREG_COUNT; i++) {
