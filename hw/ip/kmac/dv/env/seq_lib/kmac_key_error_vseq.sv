@@ -67,8 +67,11 @@ class kmac_key_error_vseq extends kmac_app_vseq;
       // Wait for the SHA3 core to become idle again (having processed all data items that got
       // flushed).
       csr_spinwait(.ptr(ral.status.sha3_idle), .exp_data(1'b1));
-      // Check that the `STATUS` CSR is back at its reset value.
-      csr_rd_check(.ptr(ral.status), .compare_value(ral.status.get_reset()));
+      // TODO: Add dedicated checks for entropy_ready/reseeding status transitions. In masked
+      // configurations, entropy_ready reports the PRNG state and can remain high after hashing,
+      // so it is not expected to return to its reset value here.
+      csr_rd_check(.ptr(ral.status), .compare_value(ral.status.get_reset()),
+                   .compare_mask(~(32'h1 << KmacStatusEntropyReady)));
     end
 
     // ICEBOX: enable scb and run normal sequence, then add this sequence to stress_all sequence.

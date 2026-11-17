@@ -47,11 +47,32 @@
 
   run_opts: ["+test_timeout_ns=4_000_000_000"]
 
-  // Need to override the default output directory
+  // Response-ready policy sweeps. Select one mode per dvsim invocation with -rm so every
+  // selected test runs under the same policy; invoke all four modes for full policy coverage.
+  run_modes: [
+    {
+      name: rsp_ready_always
+      run_opts: ["+kmac_app_rsp_ready_policy=always"]
+    }
+    {
+      name: rsp_ready_always_with_dip
+      run_opts: ["+kmac_app_rsp_ready_policy=always_with_dip"]
+    }
+    {
+      name: rsp_ready_random
+      run_opts: ["+kmac_app_rsp_ready_policy=random"]
+    }
+    {
+      name: rsp_ready_when_valid
+      run_opts: ["+kmac_app_rsp_ready_policy=when_valid"]
+    }
+  ]
+
+// Need to override the default output directory
   overrides: [
     {
       name: scratch_path
-      value: "{scratch_base_path}/{name}_{variant}-{flow}-{tool}"
+      value: "{scratch_base_path}/{name}_{variant}-{flow}-{tool}/{en_run_modes}"
     }
     {
       name: rel_path

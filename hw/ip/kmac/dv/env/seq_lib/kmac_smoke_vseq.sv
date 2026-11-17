@@ -182,7 +182,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
         bit error_injected = 0;
 
         `uvm_info(`gfn, $sformatf("process_key_err_before_app_done: %0b",
-                  process_key_err_before_app_done), UVM_HIGH)
+            process_key_err_before_app_done), UVM_HIGH)
         fork
           // This thread carries out the "normal" functionality by initiating data transfer
           // over the application interface to the KMAC.
@@ -247,7 +247,7 @@ class kmac_smoke_vseq extends kmac_base_vseq;
         end else begin
           // Wait until the KMAC engine has completely finished
           `uvm_info(`gfn, "waiting for kmac_app operation to finish", UVM_HIGH)
-          wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.mon_cb.rsp_valid);
+          wait (cfg.m_kmac_app_agent_cfg[app_mode].vif.mon_cb.rsp_valid && cfg.m_kmac_app_agent_cfg[app_mode].vif.mon_cb.rsp_ready);
           `uvm_info(`gfn, "finished waiting for kmac_app operation", UVM_HIGH)
 
           if (kmac_err_type inside
@@ -347,16 +347,19 @@ class kmac_smoke_vseq extends kmac_base_vseq;
       end
 
       // randomly read out both digests after issuing Done cmd.
-      if ($urandom_range(0, 1)) begin
-        read_digest_chunk(KMAC_STATE_SHARE0_BASE, keccak_block_size, share0);
-        read_digest_chunk(KMAC_STATE_SHARE1_BASE, keccak_block_size, share1);
-      end else begin
-        // If we don't read out the state window again, wait a few clocks before dropping the
-        // sideload key (if applicable).
-        // TODO: This delay must be at least the rsp_delay_max from the app agent config. Otherwise
-        // the key can get invalidated before the response arrives which results in an error. We
-        // should change this that we wait until the response actually has arrived.
-        cfg.clk_rst_vif.wait_clks(10);
+      begin
+        bit read_state_after_done = $urandom_range(0, 1);
+        if (read_state_after_done) begin
+          read_digest_chunk(KMAC_STATE_SHARE0_BASE, keccak_block_size, share0);
+          read_digest_chunk(KMAC_STATE_SHARE1_BASE, keccak_block_size, share1);
+        end else begin
+          // If we don't read out the state window again, wait a few clocks before dropping the
+          // sideload key (if applicable).
+          // TODO: This delay must be at least the rsp_delay_max from the app agent config. Otherwise
+          // the key can get invalidated before the response arrives which results in an error. We
+          // should change this that we wait until the response actually has arrived.
+          cfg.clk_rst_vif.wait_clks(10);
+        end
       end
 
       // Drop the sideloaded key if it was provided to the DUT.
