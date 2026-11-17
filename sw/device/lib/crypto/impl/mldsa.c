@@ -330,6 +330,11 @@ otcrypto_status_t otcrypto_mldsa87_keygen_async_finalize(
   }
 #endif
 
+  if (public_key->key_length != kOtcryptoMldsa87PkBytes ||
+      private_key->keyblob_length != kOtcryptoMldsa87SkBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   HARDENED_TRY_WIPE_DMEM(
       mldsa87_keygen_internal_finalize(public_key, private_key));
 
