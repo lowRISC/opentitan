@@ -10,6 +10,7 @@ volatile otcrypto_interface_t otcrypto = {
     .set_security_config = &otcrypto_set_security_config,
     .disable_icache = &otcrypto_disable_icache,
     .restore_icache = &otcrypto_restore_icache,
+    .clear_alerts = &otcrypto_clear_alerts,
     .init = &otcrypto_init,
     .eval_exit = &otcrypto_eval_exit,
     .show_status = &otcrypto_show_status,
@@ -30,7 +31,10 @@ volatile otcrypto_interface_t otcrypto = {
     .entropy_health_test_config_check =
         &otcrypto_entropy_health_test_config_check,
 
-    // Integrity.
+// Integrity.
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
+    .verify_buf_integrity = &verify_buf_integrity,
+#endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
     .make_byte_buf = &otcrypto_make_byte_buf,
     .make_const_byte_buf = &otcrypto_make_const_byte_buf,
     .make_word32_buf = &otcrypto_make_word32_buf,
@@ -51,10 +55,12 @@ volatile otcrypto_interface_t otcrypto = {
     .symmetric_keygen = &otcrypto_symmetric_keygen,
     .hw_backed_key = &otcrypto_hw_backed_key,
     .hw_backed_attestation_key = &otcrypto_hw_backed_attestation_key,
+    .hw_backed_keygen = &otcrypto_hw_backed_keygen,
 
     // Secret key import/export.
     .import_blinded_key = &otcrypto_import_blinded_key,
     .export_blinded_key = &otcrypto_export_blinded_key,
+    .blinded_key_migrate = &otcrypto_blinded_key_migrate,
 
     // Key wrapping.
     .wrapped_key_len = &otcrypto_wrapped_key_len,
@@ -64,6 +70,7 @@ volatile otcrypto_interface_t otcrypto = {
     // AES
     .aes = &otcrypto_aes,
     .aes_padded_plaintext_length = &otcrypto_aes_padded_plaintext_length,
+    .aes_padding_strip = &otcrypto_aes_padding_strip,
 
     // TDES
     .tdes = &otcrypto_tdes,

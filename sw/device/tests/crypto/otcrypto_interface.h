@@ -20,6 +20,7 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*set_security_config)(otcrypto_key_security_level_t);
   otcrypto_status_t (*disable_icache)(hardened_bool_t *);
   otcrypto_status_t (*restore_icache)(hardened_bool_t);
+  otcrypto_status_t (*clear_alerts)(void);
   otcrypto_status_t (*init)(otcrypto_key_security_level_t, otcrypto_state_t *);
   otcrypto_status_t (*eval_exit)(otcrypto_status_t);
   uint8_t (*show_status)(const otcrypto_state_t *);
@@ -41,6 +42,9 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*entropy_health_test_config_check)(void);
 
   // Integrity
+#ifndef OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
+  hardened_bool_t (*verify_buf_integrity)(const otcrypto_generic_buf_t *);
+#endif  // OTCRYPTO_DISABLE_BUF_INTEGRITY_CHECKS
   otcrypto_byte_buf_t (*make_byte_buf)(uint8_t *, size_t);
   otcrypto_const_byte_buf_t (*make_const_byte_buf)(const uint8_t *, size_t);
   otcrypto_word32_buf_t (*make_word32_buf)(uint32_t *, size_t);
@@ -69,6 +73,8 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*hw_backed_attestation_key)(uint32_t,
                                                  const uint32_t salt[8],
                                                  otcrypto_blinded_key_t *);
+  otcrypto_status_t (*hw_backed_keygen)(hardened_bool_t,
+                                        otcrypto_blinded_key_t *);
   otcrypto_status_t (*wrapped_key_len)(const otcrypto_key_config_t, size_t *);
   otcrypto_status_t (*key_wrap)(const otcrypto_blinded_key_t *,
                                 const otcrypto_blinded_key_t *,
@@ -82,6 +88,8 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*export_blinded_key)(const otcrypto_blinded_key_t *,
                                           otcrypto_word32_buf_t *key_share0,
                                           otcrypto_word32_buf_t *key_share1);
+  otcrypto_status_t (*blinded_key_migrate)(const otcrypto_blinded_key_t *,
+                                           otcrypto_blinded_key_t *);
 
   // AES
   otcrypto_status_t (*aes)(otcrypto_blinded_key_t *, otcrypto_word32_buf_t *,
@@ -91,6 +99,8 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*aes_padded_plaintext_length)(size_t,
                                                    otcrypto_aes_padding_t,
                                                    size_t *);
+  otcrypto_status_t (*aes_padding_strip)(otcrypto_byte_buf_t *,
+                                         otcrypto_aes_padding_t, size_t *);
 
   // TDES
   otcrypto_status_t (*tdes)(otcrypto_blinded_key_t *, otcrypto_word32_buf_t *,
