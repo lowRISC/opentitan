@@ -16,6 +16,7 @@ filesets:
       - lowrisc:prim:clock_mux2
       - lowrisc:prim:count
       - lowrisc:prim:flop
+      - lowrisc:prim:mubi
       - lowrisc:prim:ram_1p_scr
       - lowrisc:prim:onehot
       - lowrisc:prim:util

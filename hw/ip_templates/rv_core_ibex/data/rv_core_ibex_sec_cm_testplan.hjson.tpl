@@ -36,6 +36,12 @@
       stage: V2S
       tests: []
     }
+    {
+      name: sec_cm_cheriot_enable_ctrl_redun
+      desc: "Verify the countermeasure(s) CHERIOT_ENABLE.CTRL.REDUN."
+      stage: V2S
+      tests: []
+    }
 % endif
     {
       name: sec_cm_bus_integrity

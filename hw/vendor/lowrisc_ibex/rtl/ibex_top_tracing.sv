@@ -56,6 +56,8 @@ module ibex_top_tracing import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
   input  logic [31:0]                                                  trvk_heap_base_addr_i,
 
   input  ibex_mubi_t                                                   cheriot_enable_i,
+  input  ibex_mubi_t                                                   cheriot_enable_shadow_i,
+  input  ibex_mubi_t                                                   cheriot_enable_cmp_i,
   input  logic [31:0]                                                  hart_id_i,
   input  logic [31:0]                                                  boot_addr_i,
 
@@ -268,6 +270,8 @@ module ibex_top_tracing import ibex_pkg::*; import ibex_cheriot_pkg::*; #(
     .ram_cfg_icache_data_o,
 
     .cheriot_enable_i,
+    .cheriot_enable_shadow_i,
+    .cheriot_enable_cmp_i,
     .hart_id_i,
     .boot_addr_i,
 

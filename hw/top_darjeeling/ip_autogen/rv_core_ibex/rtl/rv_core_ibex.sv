@@ -498,8 +498,10 @@ module rv_core_ibex
     .hart_id_i,
     .boot_addr_i,
 
-    .cheriot_enable_i     (ibex_pkg::IbexMuBiOff),
-    .trvk_heap_base_addr_i('0), // Unused, CHERIoT not available
+    .cheriot_enable_i       (ibex_pkg::IbexMuBiOff),
+    .cheriot_enable_shadow_i(ibex_pkg::IbexMuBiOff),
+    .cheriot_enable_cmp_i   (ibex_pkg::IbexMuBiOff),
+    .trvk_heap_base_addr_i  ('0), // Unused, CHERIoT not available
 
     .instr_req_o        (main_core_instr_req),
     .instr_gnt_i        (main_core_instr_gnt_ibex),
@@ -1056,6 +1058,11 @@ module rv_core_ibex
 
   // SEC_CM: TLUL_ADAPTER.LOGIC.SHADOW
   if (SecureIbex) begin : gen_tlul_lockstep
+    // The lockstep shadow core runs at least one cycle behind the main core; neither Ibex nor the
+    // lockstep logic below has a zero-offset mode.
+    `ASSERT_INIT(LockstepOffsetMin_A, LockstepOffset > 0)
+    `ASSERT_STATIC_LINT_ERROR(LockstepOffsetMin_L, LockstepOffset > 0)
+
     /////////////////////////////////////////////////////
     // Shadow Core instruction and data region config. //
     /////////////////////////////////////////////////////

@@ -8,10 +8,11 @@
 All ports and parameters of Ibex are exposed through this wrapper module, except for the instruction and data memory interfaces (signals starting with `instr_` and `data_`).
 % if cheriot_available:
 `BaseIsa` is not exposed: it is fixed to the CHERIoT-capable base ISA, and the mode is selected at runtime by the [execution mode switch](theory_of_operation.md#execution-mode-switch).
+The CHERIoT enables of Ibex (`cheriot_enable_i`, `cheriot_enable_shadow_i` and `cheriot_enable_cmp_i`) are driven by the switch and not exposed either.
 The TRVK revocation bitmap interface (signals starting with `trvk_revbm_`) is exposed as the `corerevbm_tl` TL-UL host port.
 The TRVK heap base address (`trvk_heap_base_addr_i`) is set with the `CheriotTrvkHeapBaseAddr` parameter.
 % else:
-`BaseIsa` is fixed to RV32I, and the CHERIoT ports of Ibex (`cheriot_enable_i`, the capability tag and the signals starting with `trvk_`) are tied off and not exposed.
+`BaseIsa` is fixed to RV32I, and the CHERIoT ports of Ibex (`cheriot_enable_i`, `cheriot_enable_shadow_i`, `cheriot_enable_cmp_i`, the capability tag and the signals starting with `trvk_`) are tied off and not exposed.
 The CHERIoT parameters of Ibex are not available.
 % endif
 Refer to the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/02_user/integration.html) for a detailed description of these signals and parameters.

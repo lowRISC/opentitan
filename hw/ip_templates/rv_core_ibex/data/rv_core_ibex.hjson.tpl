@@ -700,6 +700,16 @@
         enters its terminal error state otherwise.
       '''
     }
+    { name: "CHERIOT_ENABLE.CTRL.REDUN",
+      desc: '''
+        The main core and the lockstep shadow core have separate CHERIoT enables, raised one cycle
+        apart by the mode switch. Once the compare enable is given, Ibex requires both to be valid
+        and equal, and raises an internal major alert otherwise. This covers the enables from the
+        switch's output buffers to Ibex's receivers, from when the switch raises the compare
+        enable, its last staging step after the lock; the switch itself is covered by
+        CHERIOT_SWITCH.FSM.SPARSE and CHERIOT_SWITCH.CONFIG.REDUN.
+      '''
+    }
 % endif
     { name: "BUS.INTEGRITY",
       desc: "End-to-end bus integrity scheme."
@@ -793,7 +803,8 @@
 % if cheriot_available:
     { name: "CHERIOT_ENABLE.CTRL.MUBI"
       desc: '''
-        The cheriot_enable input is MuBi and checked for a valid MuBi encoding in Ibex.
+        The CHERIoT enables of Ibex are MuBi, and each core checks its own enable for a valid
+        MuBi encoding.
       '''
     }
     { name: "CORED_TAG.INTERSIG.MUBI"
@@ -1273,8 +1284,8 @@
           Locks the CHERIoT/ePMP mode selected by !!CHERIOT_ENA and !!CHERIOT_ENA_BAR.
           If !!CHERIOT_ENA is MuBi4True and !!CHERIOT_ENA_BAR MuBi4False, CHERIoT mode is enabled on
           write to this register.
-          Software must write this register with interrupts disabled, and execute fence.i after
-          it, before any instruction that depends on the selected mode and before enabling
+          Software must write this register from Ibex with interrupts disabled, and execute fence.i
+          after it, before any instruction that depends on the selected mode and before enabling
           interrupts again.
         ''',
         swaccess: "wo",

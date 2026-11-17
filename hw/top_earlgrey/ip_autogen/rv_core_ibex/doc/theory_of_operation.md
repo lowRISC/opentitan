@@ -132,7 +132,7 @@ The switch is programmed through three registers:
 
 1. Write the desired mode to [`CHERIOT_ENA`](registers.md#cheriot_ena): `MuBi4True` selects CHERIoT mode, `MuBi4False` keeps the system in ePMP mode.
 2. Write its complement to [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar).
-3. With interrupts disabled, write `MuBi4True` to [`CHERIOT_LOCK`](registers.md#cheriot_lock).
+3. With interrupts disabled, write `MuBi4True` to [`CHERIOT_LOCK`](registers.md#cheriot_lock) from Ibex.
 4. Execute `fence.i` before the first instruction that depends on the selected mode, and only then enable interrupts again.
 
 The `MuBi4True` write to [`CHERIOT_LOCK`](registers.md#cheriot_lock) is what advances the switch: it samples [`CHERIOT_ENA`](registers.md#cheriot_ena) and [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) and latches the selected mode.
@@ -146,6 +146,12 @@ A change of [`CHERIOT_ENA`](registers.md#cheriot_ena) or [`CHERIOT_ENA_BAR`](reg
 
 After the lock, the switch raises its enables one per cycle: the core's, the lockstep shadow core's, the CHERIoT memory subsystem's and the memory subsystem shadow's, and finally a compare enable.
 In every staging cycle it checks [`CHERIOT_ENA`](registers.md#cheriot_ena) and [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) again.
+Each enable passes one layer of buffers that synthesis keeps, so its multi-bit encoding survives up to the receivers, and none of them adds a flop, so the receivers see the enables in the switch's order.
+The core's enable goes to Ibex and to the debug module through a `prim_mubi4_sync` with one copy each, the shadow core's enable through a `prim_mubi4_sender` without a flop, and the compare enable through a `prim_mubi4_sync`.
+
+Ibex receives the core's and the shadow core's enable on separate inputs and, once the compare enable is given, checks that both are valid and equal.
+A mismatch or an invalid enable raises an internal major alert, which sets [`FATAL_CORE_ERR`](registers.md#err_status).
+The shadow core's enable trails the core's by one cycle only while Ibex's clock runs, so Ibex writes [`CHERIOT_LOCK`](registers.md#cheriot_lock) itself: a write over the debug module's system bus while Ibex sleeps with its clock gated can raise a lockstep alert.
 
 ### Error State
 
@@ -154,7 +160,7 @@ It is entered when [`CHERIOT_LOCK`](registers.md#cheriot_lock) is written with a
 
 In the error state, the `fatal_hw_err` alert is raised, and all enables of the switch are driven to an invalid multi-bit value.
 
-Consumers of the enables are expected to escalate invalid values. Ibex does so by detecting the invalid multi-bit mode on its CHERIoT enable and raising an internal major alert. This sets [`FATAL_CORE_ERR`](registers.md#err_status) and halts instruction fetch.
+Consumers of the enables are expected to escalate invalid values. Ibex does so by detecting the invalid multi-bit mode on its CHERIoT enables and raising an internal major alert. This sets [`FATAL_CORE_ERR`](registers.md#err_status) and halts instruction fetch.
 
 Both the error status bit and the disabled fetch state are sticky.
 Ibex will not resume execution, and the switch error state cannot be cleared, until `rv_core_ibex` is reset.

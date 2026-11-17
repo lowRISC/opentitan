@@ -475,8 +475,8 @@ which CHERIoT mode stays unavailable until reset and the fatal alert is raised.
 Locks the CHERIoT/ePMP mode selected by [`CHERIOT_ENA`](#cheriot_ena) and [`CHERIOT_ENA_BAR.`](#cheriot_ena_bar)
 If [`CHERIOT_ENA`](#cheriot_ena) is MuBi4True and [`CHERIOT_ENA_BAR`](#cheriot_ena_bar) MuBi4False, CHERIoT mode is enabled on
 write to this register.
-Software must write this register with interrupts disabled, and execute fence.i after
-it, before any instruction that depends on the selected mode and before enabling
+Software must write this register from Ibex with interrupts disabled, and execute fence.i
+after it, before any instruction that depends on the selected mode and before enabling
 interrupts again.
 - Offset: `0x68`
 - Reset default: `0x0`
