@@ -40,7 +40,8 @@ typedef struct hmac_drbg_ctx {
    */
   uint32_t v[kHmacMaxDigestWords];
   /**
-   * Current reseed counter.
+   * Number of generate calls since init or last reseed (0-based, i.e., NIST
+   * `reseed_counter - 1`, so `reseed_interval == UINT32_MAX` cannot wrap).
    */
   uint32_t reseed_counter;
   /**
@@ -355,7 +356,7 @@ otcrypto_status_t otcrypto_hmac_drbg_init(
   hmac_drbg_ctx_t internal_ctx;
   hardened_memshred((uint32_t *)&internal_ctx, kHmacDrbgCtxNumWords);
 
-  internal_ctx.reseed_counter = 1;
+  internal_ctx.reseed_counter = 0;
   internal_ctx.hash_mode = hash_mode;
   // V = 0x01 0x01 0x01 ... 0x01
   memset(internal_ctx.v, 0x01, digest_words * sizeof(uint32_t));
@@ -420,7 +421,7 @@ otcrypto_status_t otcrypto_hmac_drbg_reseed(
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
   HARDENED_TRY(
       hmac_drbg_update(&internal_ctx, entropy, &empty, additional_input));
-  internal_ctx.reseed_counter = 1;
+  internal_ctx.reseed_counter = 0;
 
   HARDENED_TRY(hmac_drbg_context_save(&internal_ctx, ctx));
   hardened_memshred((uint32_t *)&internal_ctx, kHmacDrbgCtxNumWords);
@@ -488,7 +489,7 @@ otcrypto_status_t otcrypto_hmac_drbg_generate(
 
   otcrypto_const_byte_buf_t empty =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, NULL, 0);
-  if (launder32(internal_ctx.reseed_counter) >
+  if (launder32(internal_ctx.reseed_counter) >=
       launder32(internal_ctx.reseed_interval)) {
     if (launder32(internal_ctx.auto_reseed) == kHardenedBoolFalse) {
       hardened_memshred((uint32_t *)&internal_ctx, kHmacDrbgCtxNumWords);
@@ -508,11 +509,11 @@ otcrypto_status_t otcrypto_hmac_drbg_generate(
     // string for the subsequent generate steps.
     HARDENED_TRY(
         hmac_drbg_update(&internal_ctx, &seed_bytes, &empty, additional_input));
-    internal_ctx.reseed_counter = 1;
+    internal_ctx.reseed_counter = 0;
     additional_input = &empty;
     hardened_memshred(seed, ARRAYSIZE(seed));
   } else {
-    HARDENED_CHECK_LE(internal_ctx.reseed_counter,
+    HARDENED_CHECK_LT(internal_ctx.reseed_counter,
                       internal_ctx.reseed_interval);
   }
 
