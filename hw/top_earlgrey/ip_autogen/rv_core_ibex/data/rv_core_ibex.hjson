@@ -88,7 +88,31 @@
       act:     "req",
       package: "prim_mubi_pkg",
       default: "prim_mubi_pkg::MuBi4False",
-      desc:    "CHERIoT mode enable."
+      desc:    "CHERIoT mode enable of the core, for the debug module."
+    },
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "cheriot_ena_memsys",
+      act:     "req",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "CHERIoT mode enable of the memory subsystem."
+    },
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "cheriot_ena_memsys_shadow",
+      act:     "req",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "CHERIoT mode enable of the memory subsystem's second lockstep copy."
+    },
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "cheriot_ena_cmp",
+      act:     "req",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "Compare enable for the memory subsystem's CHERIoT enable comparison."
     },
 
     { struct:  "tl",

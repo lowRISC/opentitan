@@ -142,7 +142,9 @@ From then on the mode is fixed until `rv_core_ibex` is reset.
 The lock also clears [`CHERIOT_ENA_REGWEN`](registers.md#cheriot_ena_regwen), so later writes to [`CHERIOT_ENA`](registers.md#cheriot_ena) and [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) are ignored, and further writes to [`CHERIOT_LOCK`](registers.md#cheriot_lock) have no effect.
 A change of [`CHERIOT_ENA`](registers.md#cheriot_ena) or [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) in the staging cycles after the lock fails the re-check and moves the switch into the error state.
 
+The switch raises the core's enable two cycles before the CHERIoT memory subsystem's (see [Enable Distribution](#enable-distribution)).
 `fence.i` flushes the pipeline, invalidates the instruction cache and refetches the following instructions from memory, which takes longer than the switch needs, and it discards instructions that were fetched and decoded for the previous mode.
+Without it, a capability access could reach the memory subsystem before the memory subsystem's enable: a capability store would lose its tag, and a capability load would return an untagged capability.
 
 <%text>### Enable Distribution</%text>
 
@@ -150,10 +152,10 @@ After the lock, the switch raises its enables one per cycle: the core's, the loc
 In every staging cycle it checks [`CHERIOT_ENA`](registers.md#cheriot_ena) and [`CHERIOT_ENA_BAR`](registers.md#cheriot_ena_bar) again.
 Each enable comes from its own flop, which the switch writes only on the step that raises it, or with an invalid value on a step into the error state, and otherwise holds, so a fault on the switch state alone cannot set the enables of the other mode.
 Each enable passes one layer of buffers that synthesis keeps, so its multi-bit encoding survives up to the receivers, and none of them adds a flop, so the receivers see the enables in the switch's order.
-The core's enable goes to Ibex and to the debug module through a `prim_mubi4_sync` with one copy each, the shadow core's enable through a `prim_mubi4_sender` without a flop, and the compare enable through a `prim_mubi4_sync`.
+The core's enable goes to Ibex and to the debug module, and the compare enable to both comparisons, through a `prim_mubi4_sync` with one copy each; the other enables go through a `prim_mubi4_sender` without a flop.
 
-Ibex receives the core's and the shadow core's enable on separate inputs and, once the compare enable is given, checks that both are valid and equal.
-A mismatch or an invalid enable raises an internal major alert, which sets [`FATAL_CORE_ERR`](registers.md#err_status).
+Ibex receives the core's and the shadow core's enable on separate inputs and, once the compare enable is given, checks that both are valid and equal; the memory subsystem does the same with the enables of its two lockstep copies.
+A mismatch or an invalid enable raises a fatal alert: in Ibex an internal major alert, which sets [`FATAL_CORE_ERR`](registers.md#err_status), in the memory subsystem its `fatal_fault` alert.
 The shadow core's enable trails the core's by one cycle only while Ibex's clock runs, so Ibex writes [`CHERIOT_LOCK`](registers.md#cheriot_lock) itself: a write over the debug module's system bus while Ibex sleeps with its clock gated can raise a lockstep alert.
 
 <%text>### Error State</%text>
@@ -165,6 +167,7 @@ In the error state, the `fatal_hw_err` alert is raised, and every step into it w
 For an invalid state encoding, the enables become invalid one cycle after the alert, with the step into the error state.
 
 Consumers of the enables are expected to escalate invalid values. Ibex does so by detecting the invalid multi-bit mode on its CHERIoT enables and raising an internal major alert. This sets [`FATAL_CORE_ERR`](registers.md#err_status) and halts instruction fetch.
+The CHERIoT memory subsystem raises its `fatal_fault` alert: the invalid compare enable turns its enable comparison on, which flags the invalid enables.
 
 Both the error status bit and the disabled fetch state are sticky.
 Ibex will not resume execution, and the switch error state cannot be cleared, until `rv_core_ibex` is reset.

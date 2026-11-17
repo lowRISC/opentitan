@@ -42,7 +42,10 @@ Signal                  | Direction | Type                                      
 `cored_tag_d2h_i`       | `input`   | `prim_mubi_pkg::mubi4_t`                              | Incoming CHERIoT capability tag of the data tlul response.
 `corerevbm_tl_o`        | `output`  | `tlul_pkg::tl_h2d_t`                                  | Outgoing TRVK revocation bitmap tlul request.
 `corerevbm_tl_i`        | `input`   | `tlul_pkg::tl_d2h_t`                                  | Incoming TRVK revocation bitmap tlul response.
-`cheriot_ena_o`         | `output`  | `prim_mubi_pkg::mubi4_t`                              | CHERIoT execution mode enable from the execution mode switch.
+`cheriot_ena_o`         | `output`  | `prim_mubi_pkg::mubi4_t`                              | CHERIoT mode enable of the core, for the debug module.
+`cheriot_ena_memsys_o`  | `output`  | `prim_mubi_pkg::mubi4_t`                              | CHERIoT mode enable of the memory subsystem.
+`cheriot_ena_memsys_shadow_o` | `output` | `prim_mubi_pkg::mubi4_t`                         | CHERIoT mode enable of the memory subsystem's second lockstep copy.
+`cheriot_ena_cmp_o`     | `output`  | `prim_mubi_pkg::mubi4_t`                              | Turns on the memory subsystem's comparison of its two enables.
 % endif
 `cfg_tl_d_i`            | `output`  | `tlul_pkg::tl_h2d_t`                                  | Outgoing data tlul request for peripheral registers.
 `cfg_tl_d_o`            | `input`   | `tlul_pkg::tl_d2h_t`                                  | Incoming data tlul response for peripheral registers.

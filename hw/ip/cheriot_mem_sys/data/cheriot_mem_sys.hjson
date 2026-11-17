@@ -52,8 +52,9 @@
             integrity fault is detected, when a core data request carries an invalid encoding of
             the capability tag, when the meta SRAM path returns a device error, when the revocation
             engine reports a fault, when a capability store to the NVM is partial, when a request
-            breaks the core's capability store sequence, or when a shadow register has a storage
-            error.
+            breaks the core's capability store sequence, when a shadow register has a storage
+            error, or when the enables of the two lockstep copies differ or one is not valid while
+            their comparison is on.
             '''
     }
     { name: "recov_ctrl_update_err",
@@ -241,8 +242,9 @@
     },
     { name: "CHERIOT_MEM_SYS.FATAL_ALERT",
       desc: '''
-        The subsystem raises the fatal_fault alert on an integrity fault, a meta SRAM device error,
-        a fault the revocation engine reports, a partial capability store to the NVM, or a request
+        The subsystem raises the fatal_fault alert on a mismatch between the two lockstep copies,
+        in their outputs or in their mode enables, an integrity fault, a meta SRAM device error, a
+        fault the revocation engine reports, a partial capability store to the NVM, or a request
         that breaks the core's capability store sequence.
       '''
     },
@@ -261,6 +263,22 @@
       package: "prim_mubi_pkg",
       default: "prim_mubi_pkg::MuBi4False",
       desc:    "CHERIoT mode enable."
+    },
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "cheriot_ena_shadow",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "CHERIoT mode enable of the second lockstep copy, one cycle after cheriot_ena."
+    },
+    { struct:  "mubi4",
+      type:    "uni",
+      name:    "cheriot_ena_cmp",
+      act:     "rcv",
+      package: "prim_mubi_pkg",
+      default: "prim_mubi_pkg::MuBi4False",
+      desc:    "Any value except MuBi4False compares the enables of the two lockstep copies."
     },
     // Data TL-UL interface from the core
     { struct:  "tl",
@@ -343,7 +361,18 @@
     },
     { name: "INTERSIG.MUBI",
       desc: '''
-        The CHERIoT mode enable is multi-bit encoded.
+        The CHERIoT mode enables and the compare enable are multi-bit encoded.
+      '''
+    },
+    { name: "CHERIOT_ENABLE.CTRL.REDUN",
+      desc: '''
+        With SecLockstep set, the two lockstep copies have separate CHERIoT mode enables, raised
+        one cycle apart by the mode switch in rv_core_ibex. Once cheriot_ena_cmp_i is not
+        MuBi4False, both enables must be valid and equal, else the fatal_fault alert is raised.
+        This covers the enables from the mode switch's enable flops in rv_core_ibex to the
+        subsystem's receivers, from when the mode switch raises the compare enable, its last
+        staging step after the lock; the mode switch's state and checks are covered by its
+        countermeasures in rv_core_ibex.
       '''
     },
     { name: "CORED_TAG.INTERSIG.MUBI",

@@ -197,8 +197,10 @@
   <!-- Software view of the revocation bitmap -->
   <path class="w" d="M760,760 V545 H805"/>
 
-  <!-- Mode enable -->
-  <path class="wc" d="M895,270 V282"/>
+  <!-- Mode enables: main copy, second copy, compare -->
+  <path class="wc" d="M935,270 V282"/>
+  <path class="wc" d="M905,270 V282"/>
+  <path class="wc" d="M875,270 V282"/>
 
   <!-- Access checkers into the arbiter, arbiter to the meta SRAM -->
   <path class="w" d="M905,315 H935"/>
@@ -223,10 +225,15 @@
 
   <path class="port" d="M204,270 L210,264 L216,270 L210,276 Z"/>
   <path class="port" d="M849,270 L855,264 L861,270 L855,276 Z"/>
-  <path class="port" d="M889,270 L895,264 L901,270 L895,276 Z"/>
+  <path class="port" d="M929,270 L935,264 L941,270 L935,276 Z"/>
+  <path class="port" d="M899,270 L905,264 L911,270 L905,276 Z"/>
+  <path class="port" d="M869,270 L875,264 L881,270 L875,276 Z"/>
+  <path d="M905,264 V245 M875,264 V231" fill="none" stroke="#9a9a9a" stroke-width="1"/>
   <text class="mono" x="220" y="262">cored_tl_d</text>
   <text class="mono" x="845" y="262" text-anchor="end">corerevbm_tl</text>
-  <text class="mono" x="905" y="262">cheriot_ena_i</text>
+  <text class="mono" x="943" y="262">cheriot_ena_i</text>
+  <text class="mono" x="913" y="248">cheriot_ena_shadow_i</text>
+  <text class="mono" x="883" y="234">cheriot_ena_cmp_i</text>
 
   <path class="port" d="M204,710 L210,704 L216,710 L210,716 Z"/>
   <path class="port" d="M466,710 L472,704 L478,710 L472,716 Z"/>

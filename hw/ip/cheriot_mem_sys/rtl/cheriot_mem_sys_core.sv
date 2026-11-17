@@ -214,6 +214,36 @@ module cheriot_mem_sys_core
   cheriot_fatal_error_t cheriot_fatal_error;
 
 
+  /////////////////////////
+  // CHERIoT Mode Enable //
+  /////////////////////////
+
+  // Receiver of the CHERIoT mode enable, one buffered copy per consumer. With AsyncOn(0) the
+  // primitive only buffers.
+  typedef enum logic [2:0] {
+    EnaTrvkCheckIdx,
+    EnaTagFilterIdx,
+    EnaTagsCheckIdx,
+    EnaSysCheckIdx,
+    EnaTbreCheckIdx,
+    EnaTbreIdx,
+    EnaTbreStartIdx,
+    EnaLast
+  } cheriot_ena_pos_e;
+
+  prim_mubi_pkg::mubi4_t [EnaLast-1:0] cheriot_ena;
+
+  prim_mubi4_sync #(
+    .NumCopies(int'(EnaLast)),
+    .AsyncOn  (1'b0)
+  ) u_cheriot_ena_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cheriot_ena_i),
+    .mubi_o(cheriot_ena)
+  );
+
+
   ////////////
   // Filter //
   ////////////
@@ -225,7 +255,7 @@ module cheriot_mem_sys_core
   ) u_cheriot_access_check_trvk (
     .clk_i,
     .rst_ni,
-    .cheriot_ena_i,
+    .cheriot_ena_i(cheriot_ena[EnaTrvkCheckIdx]),
     .tl_h_i(corerevbm_tl_i),
     .tl_h_o(corerevbm_tl_o),
     .tl_d_o(meta_mux_in_tl_h2d[32'd0]),
@@ -268,7 +298,7 @@ module cheriot_mem_sys_core
   ) u_cheriot_tag_filter (
     .clk_i,
     .rst_ni,
-    .cheriot_ena_i,
+    .cheriot_ena_i(cheriot_ena[EnaTagFilterIdx]),
     .tl_d_i     (cored_tl_d_i),
     .tag_d_i    (cored_tag_h2d),
     .tl_d_o     (cored_tl_d_o),
@@ -478,7 +508,7 @@ module cheriot_mem_sys_core
   ) u_cheriot_access_check_tags (
     .clk_i,
     .rst_ni,
-    .cheriot_ena_i,
+    .cheriot_ena_i(cheriot_ena[EnaTagsCheckIdx]),
     .tl_h_i(tags_tl_h2d),
     .tl_h_o(tags_tl_d2h),
     .tl_d_o(meta_mux_in_tl_h2d[32'd1]),
@@ -492,7 +522,7 @@ module cheriot_mem_sys_core
   ) u_cheriot_access_check_sys (
     .clk_i,
     .rst_ni,
-    .cheriot_ena_i,
+    .cheriot_ena_i(cheriot_ena[EnaSysCheckIdx]),
     .tl_h_i(revbm_tl_d_i),
     .tl_h_o(revbm_tl_d_o),
     .tl_d_o(meta_mux_in_tl_h2d[32'd2]),
@@ -506,7 +536,7 @@ module cheriot_mem_sys_core
   ) u_cheriot_access_check_tbre (
     .clk_i,
     .rst_ni,
-    .cheriot_ena_i,
+    .cheriot_ena_i(cheriot_ena[EnaTbreCheckIdx]),
     .tl_h_i(tbre_revbm_tl_h2d),
     .tl_h_o(tbre_revbm_tl_d2h),
     .tl_d_o(meta_mux_in_tl_h2d[32'd3]),
@@ -559,7 +589,8 @@ module cheriot_mem_sys_core
   assign tbre_valid_d = tbre_valid_q ? !tbre_ready :
                         tbre_start_i.qe && tbre_start_i.q &&
                         (tbre_num_caps_i.q != '0) &&
-                        tbre_in_range && prim_mubi_pkg::mubi4_test_true_strict(cheriot_ena_i);
+                        tbre_in_range &&
+                        prim_mubi_pkg::mubi4_test_true_strict(cheriot_ena[EnaTbreStartIdx]);
 
   always_ff @(posedge clk_i or negedge rst_ni) begin : proc_tbre_valid_store
     if (!rst_ni) begin
@@ -591,7 +622,7 @@ module cheriot_mem_sys_core
   // A start that is ignored is flagged until software clears the flag.
   assign tbre_start_err = tbre_start_i.qe && tbre_start_i.q &&
                           ((tbre_num_caps_i.q == '0) || !tbre_in_range ||
-                           !prim_mubi_pkg::mubi4_test_true_strict(cheriot_ena_i));
+                           !prim_mubi_pkg::mubi4_test_true_strict(cheriot_ena[EnaTbreStartIdx]));
 
   assign tbre_active                = tbre_valid_q || tbre_busy;
   assign tbre_status_o.busy.de      = 1'b1;
@@ -672,7 +703,7 @@ module cheriot_mem_sys_core
   ) u_cheriot_tbre (
     .clk_i,
     .rst_ni,
-    .cheriot_ena_i,
+    .cheriot_ena_i          (cheriot_ena[EnaTbreIdx]),
     .start_addr_i           (tbre_start_addr),
     .num_words_i            (tbre_num_words),
     .valid_i                (tbre_valid_q),
