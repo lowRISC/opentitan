@@ -281,10 +281,11 @@ static status_t get_block(const otcrypto_const_byte_buf_t *input,
                                      kAesBlockNumBytes));
 
     // Verify that the plaintext block was copied correctly.
-    HARDENED_CHECK_EQ(consttime_memeq_byte(
-                          block->data, &input->data[index * kAesBlockNumBytes],
-                          kAesBlockNumBytes),
-                      kHardenedBoolTrue);
+    HARDENED_CHECK_EQ(
+        consttime_memeq_byte(block->data,
+                             &input->data[launderw(index) * kAesBlockNumBytes],
+                             kAesBlockNumBytes),
+        kHardenedBoolTrue);
 
     // Verify input buffer
     HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(input));
@@ -297,6 +298,11 @@ static status_t get_block(const otcrypto_const_byte_buf_t *input,
   size_t partial_data_len = input->len % kAesBlockNumBytes;
   HARDENED_TRY(randomized_bytecopy(
       block->data, &input->data[index * kAesBlockNumBytes], partial_data_len));
+  HARDENED_CHECK_EQ(
+      consttime_memeq_byte(block->data,
+                           &input->data[launderw(index) * kAesBlockNumBytes],
+                           partial_data_len),
+      kHardenedBoolTrue);
 
   // Apply padding.
   HARDENED_TRY(aes_padding_apply(padding, partial_data_len, block));
