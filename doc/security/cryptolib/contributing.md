@@ -36,7 +36,7 @@ See `sw/device/lib/base/hardened.h` for more details about how to use hardening 
 - Pay attention to any pattern for module IDs in a given directory and try to be consistent. For example, some directories have module IDs that all begin with the same leter.
 - Test `.c` files that will never be imported by anything else can have the module ID "tst".
 
-Module IDs will show up in error codes when you run tests with `--define crypto_status_debug=true`.
+Module IDs will show up in error codes when you run tests with `--crypto_status_debug=true` (or `--//sw/device/lib/crypto/configs:crypto_status_debug_flag=true`).
 See the [status codes](#status-codes) section for more details.
 
 ## Status Codes
@@ -60,7 +60,7 @@ These macros are defined differently depending on the `OTCRYPTO_STATUS_DEBUG` de
 - if `OTCRYPTO_STATUS_DEBUG` is defined, the error codes behave like `status_t` and provide module IDs and line numbers
 - if `OTCRYPTO_STATUS_DEBUG` is not defined, the error codes are simply a few constant values as defined by the `otcrypto_status_value_t` enum.
 
-You can pass `--define crypto_status_debug=true` to set the `OTCRYPTO_STATUS_DEBUG` flag via Bazel.
+You can pass `--crypto_status_debug=true` (or `--//sw/device/lib/crypto/configs:crypto_status_debug_flag=true`) to set the `OTCRYPTO_STATUS_DEBUG` flag via Bazel.
 See `sw/device/lib/crypto/impl/status.h` for more details, and see [opentitan#17803](https://github.com/lowRISC/opentitan/issues/17803) for the historical discussion.
 
 #### Using `HARDENED_TRY`

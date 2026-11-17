@@ -100,6 +100,12 @@ build:clang_tidy_fix --spawn_strategy=local
 common:crypto_dev --//sw/device/lib/crypto/configs:hashed_flag=False --//sw/device/lib/crypto/configs:type_flag="static"  --//sw/device/lib/crypto/configs:cryptolib_config_flag="crypto_dev"
 common:crypto_fips_all --//sw/device/lib/crypto/configs:hashed_flag=True --//sw/device/lib/crypto/configs:type_flag="binary_blob" --//sw/device/lib/crypto/configs:cryptolib_config_flag="crypto_fips_all"
 
+# Shortcuts for cryptolib compile-time configuration flags.
+build --flag_alias=crypto_status_debug=//sw/device/lib/crypto/configs:crypto_status_debug_flag
+build --flag_alias=disable_null_checks=//sw/device/lib/crypto/configs:disable_null_checks_flag
+build --flag_alias=disable_buf_integrity_checks=//sw/device/lib/crypto/configs:disable_buf_integrity_checks_flag
+build --flag_alias=disable_hardening=//sw/device/lib/crypto/configs:disable_hardening_flag
+
 # AddressSanitizer (ASan) catches runtime out-of-bounds accesses to globals, the
 # stack, and (less importantly for OpenTitan) the heap. ASan instruments
 # programs at compile time and also requires a runtime library.
