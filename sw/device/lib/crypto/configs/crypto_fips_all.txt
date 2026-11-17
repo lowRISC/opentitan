@@ -2,6 +2,7 @@ otcrypto_security_config_check
 otcrypto_set_security_config
 otcrypto_disable_icache
 otcrypto_restore_icache
+otcrypto_clear_alerts
 otcrypto_init
 otcrypto_eval_exit
 otcrypto_show_status
@@ -13,6 +14,7 @@ otcrypto_rom_version
 otcrypto_entropy_init
 otcrypto_entropy_check
 otcrypto_entropy_health_test_config_check
+verify_buf_integrity
 otcrypto_make_byte_buf
 otcrypto_make_const_byte_buf
 otcrypto_make_word32_buf
@@ -25,13 +27,16 @@ otcrypto_integrity_check
 otcrypto_symmetric_keygen
 otcrypto_hw_backed_key
 otcrypto_hw_backed_attestation_key
+otcrypto_hw_backed_keygen
 otcrypto_import_blinded_key
 otcrypto_export_blinded_key
+otcrypto_blinded_key_migrate
 otcrypto_wrapped_key_len
 otcrypto_key_wrap
 otcrypto_key_unwrap
 otcrypto_aes
 otcrypto_aes_padded_plaintext_length
+otcrypto_aes_padding_strip
 otcrypto_tdes
 otcrypto_tdes_padded_plaintext_length
 otcrypto_tdes_padding_strip
