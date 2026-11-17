@@ -338,6 +338,10 @@ otcrypto_status_t otcrypto_mldsa87_keygen_async_finalize(
   HARDENED_TRY_WIPE_DMEM(
       mldsa87_keygen_internal_finalize(public_key, private_key));
 
+  // Compute the checksums of the generated keys.
+  private_key->checksum = otcrypto_integrity_blinded_checksum(private_key);
+  public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
+
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
