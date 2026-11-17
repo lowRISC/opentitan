@@ -11,33 +11,36 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## [Inter-Module Signals](https://opentitan.org/book/doc/contributing/hw/comportability/index.html#inter-signal-handling)
 
-| Port Name           | Package::Struct                  | Type    | Act   | Width       | Description                                                      |
-|:--------------------|:---------------------------------|:--------|:------|:------------|:-----------------------------------------------------------------|
-| rst_cpu_n           | logic                            | uni     | req   | 1           |                                                                  |
-| cheriot_ena         | prim_mubi_pkg::mubi4             | uni     | req   | 1           | CHERIoT mode enable.                                             |
-| cored_tl_h          | tlul_pkg::tl                     | req_rsp | req   | 1           | Core data host port to the CHERIoT memory subsystem.             |
-| cored_tag_h2d       | prim_mubi_pkg::mubi4             | uni     | req   | 1           | CHERIoT capability tag carried with the A-channel of cored_tl_h. |
-| cored_tag_d2h       | prim_mubi_pkg::mubi4             | uni     | rcv   | 1           | Capability tag returned on the D-channel of cored_tl_h.          |
-| corerevbm_tl        | tlul_pkg::tl                     | req_rsp | req   | 1           | Core revocation bitmap host port.                                |
-| ram_cfg_icache_tag  | prim_ram_1p_pkg::ram_1p_cfg      | req_rsp | rsp   | ICacheNWays |                                                                  |
-| ram_cfg_icache_data | prim_ram_1p_pkg::ram_1p_cfg      | req_rsp | rsp   | ICacheNWays |                                                                  |
-| hart_id             | logic                            | uni     | rcv   | 32          |                                                                  |
-| boot_addr           | logic                            | uni     | rcv   | 32          |                                                                  |
-| irq_software        | logic                            | uni     | rcv   | 1           |                                                                  |
-| irq_timer           | logic                            | uni     | rcv   | 1           |                                                                  |
-| irq_external        | logic                            | uni     | rcv   | 1           |                                                                  |
-| esc_tx              | prim_esc_pkg::esc_tx             | uni     | rcv   | 1           |                                                                  |
-| esc_rx              | prim_esc_pkg::esc_rx             | uni     | req   | 1           |                                                                  |
-| debug_req           | logic                            | uni     | rcv   | 1           |                                                                  |
-| crash_dump          | rv_core_ibex_pkg::cpu_crash_dump | uni     | req   | 1           |                                                                  |
-| lc_cpu_en           | lc_ctrl_pkg::lc_tx               | uni     | rcv   | 1           |                                                                  |
-| pwrmgr_cpu_en       | lc_ctrl_pkg::lc_tx               | uni     | rcv   | 1           |                                                                  |
-| pwrmgr              | rv_core_ibex_pkg::cpu_pwrmgr     | uni     | req   | 1           |                                                                  |
-| nmi_wdog            | logic                            | uni     | rcv   | 1           |                                                                  |
-| edn                 | edn_pkg::edn                     | req_rsp | req   | 1           |                                                                  |
-| icache_otp_key      | otp_ctrl_pkg::sram_otp_key       | req_rsp | req   | 1           |                                                                  |
-| corei_tl_h          | tlul_pkg::tl                     | req_rsp | req   | 1           |                                                                  |
-| cfg_tl_d            | tlul_pkg::tl                     | req_rsp | rsp   | 1           |                                                                  |
+| Port Name                 | Package::Struct                  | Type    | Act   | Width       | Description                                                          |
+|:--------------------------|:---------------------------------|:--------|:------|:------------|:---------------------------------------------------------------------|
+| rst_cpu_n                 | logic                            | uni     | req   | 1           |                                                                      |
+| cheriot_ena               | prim_mubi_pkg::mubi4             | uni     | req   | 1           | CHERIoT mode enable of the core, for the debug module.               |
+| cheriot_ena_memsys        | prim_mubi_pkg::mubi4             | uni     | req   | 1           | CHERIoT mode enable of the memory subsystem.                         |
+| cheriot_ena_memsys_shadow | prim_mubi_pkg::mubi4             | uni     | req   | 1           | CHERIoT mode enable of the memory subsystem's second lockstep copy.  |
+| cheriot_ena_cmp           | prim_mubi_pkg::mubi4             | uni     | req   | 1           | Compare enable for the memory subsystem's CHERIoT enable comparison. |
+| cored_tl_h                | tlul_pkg::tl                     | req_rsp | req   | 1           | Core data host port to the CHERIoT memory subsystem.                 |
+| cored_tag_h2d             | prim_mubi_pkg::mubi4             | uni     | req   | 1           | CHERIoT capability tag carried with the A-channel of cored_tl_h.     |
+| cored_tag_d2h             | prim_mubi_pkg::mubi4             | uni     | rcv   | 1           | Capability tag returned on the D-channel of cored_tl_h.              |
+| corerevbm_tl              | tlul_pkg::tl                     | req_rsp | req   | 1           | Core revocation bitmap host port.                                    |
+| ram_cfg_icache_tag        | prim_ram_1p_pkg::ram_1p_cfg      | req_rsp | rsp   | ICacheNWays |                                                                      |
+| ram_cfg_icache_data       | prim_ram_1p_pkg::ram_1p_cfg      | req_rsp | rsp   | ICacheNWays |                                                                      |
+| hart_id                   | logic                            | uni     | rcv   | 32          |                                                                      |
+| boot_addr                 | logic                            | uni     | rcv   | 32          |                                                                      |
+| irq_software              | logic                            | uni     | rcv   | 1           |                                                                      |
+| irq_timer                 | logic                            | uni     | rcv   | 1           |                                                                      |
+| irq_external              | logic                            | uni     | rcv   | 1           |                                                                      |
+| esc_tx                    | prim_esc_pkg::esc_tx             | uni     | rcv   | 1           |                                                                      |
+| esc_rx                    | prim_esc_pkg::esc_rx             | uni     | req   | 1           |                                                                      |
+| debug_req                 | logic                            | uni     | rcv   | 1           |                                                                      |
+| crash_dump                | rv_core_ibex_pkg::cpu_crash_dump | uni     | req   | 1           |                                                                      |
+| lc_cpu_en                 | lc_ctrl_pkg::lc_tx               | uni     | rcv   | 1           |                                                                      |
+| pwrmgr_cpu_en             | lc_ctrl_pkg::lc_tx               | uni     | rcv   | 1           |                                                                      |
+| pwrmgr                    | rv_core_ibex_pkg::cpu_pwrmgr     | uni     | req   | 1           |                                                                      |
+| nmi_wdog                  | logic                            | uni     | rcv   | 1           |                                                                      |
+| edn                       | edn_pkg::edn                     | req_rsp | req   | 1           |                                                                      |
+| icache_otp_key            | otp_ctrl_pkg::sram_otp_key       | req_rsp | req   | 1           |                                                                      |
+| corei_tl_h                | tlul_pkg::tl                     | req_rsp | req   | 1           |                                                                      |
+| cfg_tl_d                  | tlul_pkg::tl                     | req_rsp | rsp   | 1           |                                                                      |
 
 ## Security Alerts
 
@@ -111,7 +114,10 @@ Signal                  | Direction | Type                                      
 `cored_tag_d2h_i`       | `input`   | `prim_mubi_pkg::mubi4_t`                              | Incoming CHERIoT capability tag of the data tlul response.
 `corerevbm_tl_o`        | `output`  | `tlul_pkg::tl_h2d_t`                                  | Outgoing TRVK revocation bitmap tlul request.
 `corerevbm_tl_i`        | `input`   | `tlul_pkg::tl_d2h_t`                                  | Incoming TRVK revocation bitmap tlul response.
-`cheriot_ena_o`         | `output`  | `prim_mubi_pkg::mubi4_t`                              | CHERIoT execution mode enable from the execution mode switch.
+`cheriot_ena_o`         | `output`  | `prim_mubi_pkg::mubi4_t`                              | CHERIoT mode enable of the core, for the debug module.
+`cheriot_ena_memsys_o`  | `output`  | `prim_mubi_pkg::mubi4_t`                              | CHERIoT mode enable of the memory subsystem.
+`cheriot_ena_memsys_shadow_o` | `output` | `prim_mubi_pkg::mubi4_t`                         | CHERIoT mode enable of the memory subsystem's second lockstep copy.
+`cheriot_ena_cmp_o`     | `output`  | `prim_mubi_pkg::mubi4_t`                              | Turns on the memory subsystem's comparison of its two enables.
 `cfg_tl_d_i`            | `output`  | `tlul_pkg::tl_h2d_t`                                  | Outgoing data tlul request for peripheral registers.
 `cfg_tl_d_o`            | `input`   | `tlul_pkg::tl_d2h_t`                                  | Incoming data tlul response for peripheral registers.
 `alert_rx_i`            | `input`   | `prim_alert_pkg::alert_rx_t`                          | Incoming alert response / ping.

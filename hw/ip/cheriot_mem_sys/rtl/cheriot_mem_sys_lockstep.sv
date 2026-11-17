@@ -8,7 +8,8 @@
 // This module instantiates a second copy of cheriot_mem_sys_core, and compares its outputs against
 // those from the main copy. The second copy runs synchronously with the main copy, delayed by
 // LockstepOffset cycles. Every port of the main copy is an input here: its inputs are delayed into
-// the second copy, its outputs are compared.
+// the second copy, its outputs are compared. The CHERIoT mode enable is the exception: the second
+// copy has an enable of its own.
 
 // SEC_CM: LOGIC.SHADOW
 module cheriot_mem_sys_lockstep
@@ -33,8 +34,10 @@ module cheriot_mem_sys_lockstep
   input  prim_mubi_pkg::mubi4_t scanmode_i,
   input  logic                  scan_rst_ni,
 
-  // CHERIoT mode enabled
-  input  prim_mubi_pkg::mubi4_t cheriot_ena_i,
+  // CHERIoT mode enable of the second copy, raised one cycle after the main copy's enable, and its
+  // copy for the enable comparison in cheriot_mem_sys
+  input  prim_mubi_pkg::mubi4_t cheriot_ena_shadow_i,
+  output prim_mubi_pkg::mubi4_t cheriot_ena_shadow_o,
 
   // Revocation engine registers
   input  cheriot_mem_sys_reg2hw_tbre_base_addr_shadowed_reg_t tbre_base_addr_i,
@@ -186,7 +189,6 @@ module cheriot_mem_sys_lockstep
   //////////////////
 
   typedef struct packed {
-    prim_mubi_pkg::mubi4_t                               cheriot_ena;
     cheriot_mem_sys_reg2hw_tbre_base_addr_shadowed_reg_t tbre_base_addr;
     cheriot_mem_sys_reg2hw_tbre_num_caps_shadowed_reg_t  tbre_num_caps;
     cheriot_mem_sys_reg2hw_tbre_start_reg_t              tbre_start;
@@ -218,7 +220,6 @@ module cheriot_mem_sys_lockstep
   end
 
   // Assign the inputs to the delay structure
-  assign shadow_inputs_in.cheriot_ena    = cheriot_ena_i;
   assign shadow_inputs_in.tbre_base_addr = tbre_base_addr_i;
   assign shadow_inputs_in.tbre_num_caps  = tbre_num_caps_i;
   assign shadow_inputs_in.tbre_start     = tbre_start_i;
@@ -229,6 +230,59 @@ module cheriot_mem_sys_lockstep
   assign shadow_inputs_in.cored_tl_h     = cored_tl_h_d2h_i;
   assign shadow_inputs_in.tbre_tl_h      = tbre_tl_h_d2h_i;
   assign shadow_inputs_in.meta_sram_tl   = meta_sram_tl_d2h_i;
+
+  /////////////////////////
+  // CHERIoT Mode Enable //
+  /////////////////////////
+
+  // The second copy's enable arrives one cycle after the main copy's, so LockstepOffset - 1 more
+  // cycles align it with the delayed inputs.
+  prim_mubi_pkg::mubi4_t cheriot_ena_shadow;
+
+  if (LockstepOffset > 1) begin : gen_cheriot_ena_shadow_delay
+    // Stage LockstepOffset - 1 is the input, stage 0 feeds the receiver.
+    logic [LockstepOffset-1:0][prim_mubi_pkg::MuBi4Width-1:0] cheriot_ena_shadow_q;
+
+    assign cheriot_ena_shadow_q[LockstepOffset-1] = cheriot_ena_shadow_i;
+
+    for (genvar i = 0; i < LockstepOffset - 1; i++) begin : gen_stages
+      prim_flop #(
+        .Width     (prim_mubi_pkg::MuBi4Width),
+        .ResetValue(prim_mubi_pkg::MuBi4Width'(prim_mubi_pkg::MuBi4False))
+      ) u_prim_cheriot_ena_shadow_flop (
+        .clk_i,
+        .rst_ni,
+        .d_i(cheriot_ena_shadow_q[i+1]),
+        .q_o(cheriot_ena_shadow_q[i])
+      );
+    end
+
+    assign cheriot_ena_shadow = prim_mubi_pkg::mubi4_t'(cheriot_ena_shadow_q[0]);
+  end else begin : gen_no_cheriot_ena_shadow_delay
+    assign cheriot_ena_shadow = cheriot_ena_shadow_i;
+  end
+
+  // Receiver of the second copy's enable, one buffered copy for the second copy and one for the
+  // enable comparison. With AsyncOn(0) the primitive only buffers.
+  typedef enum logic [1:0] {
+    EnaSecondCopyIdx,
+    EnaCompareIdx,
+    EnaLast
+  } cheriot_ena_shadow_pos_e;
+
+  prim_mubi_pkg::mubi4_t [EnaLast-1:0] cheriot_ena_shadow_buf;
+
+  prim_mubi4_sync #(
+    .NumCopies(int'(EnaLast)),
+    .AsyncOn  (1'b0)
+  ) u_cheriot_ena_shadow_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cheriot_ena_shadow),
+    .mubi_o(cheriot_ena_shadow_buf)
+  );
+
+  assign cheriot_ena_shadow_o = cheriot_ena_shadow_buf[EnaCompareIdx];
 
   ///////////////////
   // Output delays //
@@ -296,7 +350,7 @@ module cheriot_mem_sys_lockstep
   ) u_cheriot_mem_sys_core_shadow (
     .clk_i,
     .rst_ni             (rst_shadow_n),
-    .cheriot_ena_i      (shadow_inputs_q[0].cheriot_ena),
+    .cheriot_ena_i      (cheriot_ena_shadow_buf[EnaSecondCopyIdx]),
     .tbre_base_addr_i   (shadow_inputs_q[0].tbre_base_addr),
     .tbre_num_caps_i    (shadow_inputs_q[0].tbre_num_caps),
     .tbre_start_i       (shadow_inputs_q[0].tbre_start),
