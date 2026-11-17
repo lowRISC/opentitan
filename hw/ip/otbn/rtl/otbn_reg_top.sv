@@ -57,9 +57,9 @@ module otbn_reg_top (
 
   // also check for spurious write enables
   logic reg_we_err;
-  logic [14:0] reg_we_check;
+  logic [25:0] reg_we_check;
   prim_reg_we_check #(
-    .OneHotWidth(15)
+    .OneHotWidth(26)
   ) u_prim_reg_we_check (
     .clk_i(clk_i),
     .rst_ni(rst_ni),
@@ -249,6 +249,39 @@ module otbn_reg_top (
   logic load_checksum_we;
   logic [31:0] load_checksum_qs;
   logic [31:0] load_checksum_wd;
+  logic exp_imem_digest_regwen_we;
+  logic exp_imem_digest_regwen_qs;
+  logic exp_imem_digest_regwen_wd;
+  logic exp_imem_digest_0_we;
+  logic [31:0] exp_imem_digest_0_qs;
+  logic [31:0] exp_imem_digest_0_wd;
+  logic exp_imem_digest_1_we;
+  logic [31:0] exp_imem_digest_1_qs;
+  logic [31:0] exp_imem_digest_1_wd;
+  logic exp_imem_digest_2_we;
+  logic [31:0] exp_imem_digest_2_qs;
+  logic [31:0] exp_imem_digest_2_wd;
+  logic exp_imem_digest_3_we;
+  logic [31:0] exp_imem_digest_3_qs;
+  logic [31:0] exp_imem_digest_3_wd;
+  logic exp_imem_digest_4_we;
+  logic [31:0] exp_imem_digest_4_qs;
+  logic [31:0] exp_imem_digest_4_wd;
+  logic exp_imem_digest_5_we;
+  logic [31:0] exp_imem_digest_5_qs;
+  logic [31:0] exp_imem_digest_5_wd;
+  logic exp_imem_digest_6_we;
+  logic [31:0] exp_imem_digest_6_qs;
+  logic [31:0] exp_imem_digest_6_wd;
+  logic exp_imem_digest_7_we;
+  logic [31:0] exp_imem_digest_7_qs;
+  logic [31:0] exp_imem_digest_7_wd;
+  logic exp_imem_digest_len_we;
+  logic [12:0] exp_imem_digest_len_qs;
+  logic [12:0] exp_imem_digest_len_wd;
+  logic exp_imem_digest_skip_we;
+  logic [3:0] exp_imem_digest_skip_qs;
+  logic [3:0] exp_imem_digest_skip_wd;
   logic scratch_0_we;
   logic [31:0] scratch_0_qs;
   logic [31:0] scratch_0_wd;
@@ -1054,6 +1087,363 @@ module otbn_reg_top (
   assign reg2hw.load_checksum.qe = load_checksum_qe;
 
 
+  // R[exp_imem_digest_regwen]: V(False)
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessW0C),
+    .RESVAL  (1'h1),
+    .Mubi    (1'b0)
+  ) u_exp_imem_digest_regwen (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (exp_imem_digest_regwen_we),
+    .wd     (exp_imem_digest_regwen_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (exp_imem_digest_regwen_qs)
+  );
+
+
+  // Subregister 0 of Multireg exp_imem_digest
+  // R[exp_imem_digest_0]: V(False)
+  // Create REGWEN-gated WE signal
+  logic exp_imem_digest_0_gated_we;
+  assign exp_imem_digest_0_gated_we = exp_imem_digest_0_we & exp_imem_digest_regwen_qs;
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_exp_imem_digest_0 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (exp_imem_digest_0_gated_we),
+    .wd     (exp_imem_digest_0_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_imem_digest[0].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (exp_imem_digest_0_qs)
+  );
+
+
+  // Subregister 1 of Multireg exp_imem_digest
+  // R[exp_imem_digest_1]: V(False)
+  // Create REGWEN-gated WE signal
+  logic exp_imem_digest_1_gated_we;
+  assign exp_imem_digest_1_gated_we = exp_imem_digest_1_we & exp_imem_digest_regwen_qs;
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_exp_imem_digest_1 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (exp_imem_digest_1_gated_we),
+    .wd     (exp_imem_digest_1_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_imem_digest[1].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (exp_imem_digest_1_qs)
+  );
+
+
+  // Subregister 2 of Multireg exp_imem_digest
+  // R[exp_imem_digest_2]: V(False)
+  // Create REGWEN-gated WE signal
+  logic exp_imem_digest_2_gated_we;
+  assign exp_imem_digest_2_gated_we = exp_imem_digest_2_we & exp_imem_digest_regwen_qs;
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_exp_imem_digest_2 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (exp_imem_digest_2_gated_we),
+    .wd     (exp_imem_digest_2_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_imem_digest[2].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (exp_imem_digest_2_qs)
+  );
+
+
+  // Subregister 3 of Multireg exp_imem_digest
+  // R[exp_imem_digest_3]: V(False)
+  // Create REGWEN-gated WE signal
+  logic exp_imem_digest_3_gated_we;
+  assign exp_imem_digest_3_gated_we = exp_imem_digest_3_we & exp_imem_digest_regwen_qs;
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_exp_imem_digest_3 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (exp_imem_digest_3_gated_we),
+    .wd     (exp_imem_digest_3_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_imem_digest[3].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (exp_imem_digest_3_qs)
+  );
+
+
+  // Subregister 4 of Multireg exp_imem_digest
+  // R[exp_imem_digest_4]: V(False)
+  // Create REGWEN-gated WE signal
+  logic exp_imem_digest_4_gated_we;
+  assign exp_imem_digest_4_gated_we = exp_imem_digest_4_we & exp_imem_digest_regwen_qs;
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_exp_imem_digest_4 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (exp_imem_digest_4_gated_we),
+    .wd     (exp_imem_digest_4_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_imem_digest[4].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (exp_imem_digest_4_qs)
+  );
+
+
+  // Subregister 5 of Multireg exp_imem_digest
+  // R[exp_imem_digest_5]: V(False)
+  // Create REGWEN-gated WE signal
+  logic exp_imem_digest_5_gated_we;
+  assign exp_imem_digest_5_gated_we = exp_imem_digest_5_we & exp_imem_digest_regwen_qs;
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_exp_imem_digest_5 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (exp_imem_digest_5_gated_we),
+    .wd     (exp_imem_digest_5_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_imem_digest[5].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (exp_imem_digest_5_qs)
+  );
+
+
+  // Subregister 6 of Multireg exp_imem_digest
+  // R[exp_imem_digest_6]: V(False)
+  // Create REGWEN-gated WE signal
+  logic exp_imem_digest_6_gated_we;
+  assign exp_imem_digest_6_gated_we = exp_imem_digest_6_we & exp_imem_digest_regwen_qs;
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_exp_imem_digest_6 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (exp_imem_digest_6_gated_we),
+    .wd     (exp_imem_digest_6_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_imem_digest[6].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (exp_imem_digest_6_qs)
+  );
+
+
+  // Subregister 7 of Multireg exp_imem_digest
+  // R[exp_imem_digest_7]: V(False)
+  // Create REGWEN-gated WE signal
+  logic exp_imem_digest_7_gated_we;
+  assign exp_imem_digest_7_gated_we = exp_imem_digest_7_we & exp_imem_digest_regwen_qs;
+  prim_subreg #(
+    .DW      (32),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (32'h0),
+    .Mubi    (1'b0)
+  ) u_exp_imem_digest_7 (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (exp_imem_digest_7_gated_we),
+    .wd     (exp_imem_digest_7_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_imem_digest[7].q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (exp_imem_digest_7_qs)
+  );
+
+
+  // R[exp_imem_digest_len]: V(False)
+  // Create REGWEN-gated WE signal
+  logic exp_imem_digest_len_gated_we;
+  assign exp_imem_digest_len_gated_we = exp_imem_digest_len_we & exp_imem_digest_regwen_qs;
+  prim_subreg #(
+    .DW      (13),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (13'h0),
+    .Mubi    (1'b0)
+  ) u_exp_imem_digest_len (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (exp_imem_digest_len_gated_we),
+    .wd     (exp_imem_digest_len_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_imem_digest_len.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (exp_imem_digest_len_qs)
+  );
+
+
+  // R[exp_imem_digest_skip]: V(False)
+  // Create REGWEN-gated WE signal
+  logic exp_imem_digest_skip_gated_we;
+  assign exp_imem_digest_skip_gated_we = exp_imem_digest_skip_we & exp_imem_digest_regwen_qs;
+  prim_subreg #(
+    .DW      (4),
+    .SwAccess(prim_subreg_pkg::SwAccessRW),
+    .RESVAL  (4'h6),
+    .Mubi    (1'b1)
+  ) u_exp_imem_digest_skip (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (exp_imem_digest_skip_gated_we),
+    .wd     (exp_imem_digest_skip_wd),
+
+    // from internal hardware
+    .de     (1'b0),
+    .d      ('0),
+
+    // to internal hardware
+    .qe     (),
+    .q      (reg2hw.exp_imem_digest_skip.q),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (exp_imem_digest_skip_qs)
+  );
+
+
   // Subregister 0 of Multireg scratch
   // R[scratch_0]: V(False)
   prim_subreg #(
@@ -1175,7 +1565,7 @@ module otbn_reg_top (
 
 
 
-  logic [14:0] addr_hit;
+  logic [25:0] addr_hit;
   always_comb begin
     addr_hit[ 0] = (reg_addr == OTBN_INTR_STATE_OFFSET);
     addr_hit[ 1] = (reg_addr == OTBN_INTR_ENABLE_OFFSET);
@@ -1188,10 +1578,21 @@ module otbn_reg_top (
     addr_hit[ 8] = (reg_addr == OTBN_FATAL_ALERT_CAUSE_OFFSET);
     addr_hit[ 9] = (reg_addr == OTBN_INSN_CNT_OFFSET);
     addr_hit[10] = (reg_addr == OTBN_LOAD_CHECKSUM_OFFSET);
-    addr_hit[11] = (reg_addr == OTBN_SCRATCH_0_OFFSET);
-    addr_hit[12] = (reg_addr == OTBN_SCRATCH_1_OFFSET);
-    addr_hit[13] = (reg_addr == OTBN_SCRATCH_2_OFFSET);
-    addr_hit[14] = (reg_addr == OTBN_SCRATCH_3_OFFSET);
+    addr_hit[11] = (reg_addr == OTBN_EXP_IMEM_DIGEST_REGWEN_OFFSET);
+    addr_hit[12] = (reg_addr == OTBN_EXP_IMEM_DIGEST_0_OFFSET);
+    addr_hit[13] = (reg_addr == OTBN_EXP_IMEM_DIGEST_1_OFFSET);
+    addr_hit[14] = (reg_addr == OTBN_EXP_IMEM_DIGEST_2_OFFSET);
+    addr_hit[15] = (reg_addr == OTBN_EXP_IMEM_DIGEST_3_OFFSET);
+    addr_hit[16] = (reg_addr == OTBN_EXP_IMEM_DIGEST_4_OFFSET);
+    addr_hit[17] = (reg_addr == OTBN_EXP_IMEM_DIGEST_5_OFFSET);
+    addr_hit[18] = (reg_addr == OTBN_EXP_IMEM_DIGEST_6_OFFSET);
+    addr_hit[19] = (reg_addr == OTBN_EXP_IMEM_DIGEST_7_OFFSET);
+    addr_hit[20] = (reg_addr == OTBN_EXP_IMEM_DIGEST_LEN_OFFSET);
+    addr_hit[21] = (reg_addr == OTBN_EXP_IMEM_DIGEST_SKIP_OFFSET);
+    addr_hit[22] = (reg_addr == OTBN_SCRATCH_0_OFFSET);
+    addr_hit[23] = (reg_addr == OTBN_SCRATCH_1_OFFSET);
+    addr_hit[24] = (reg_addr == OTBN_SCRATCH_2_OFFSET);
+    addr_hit[25] = (reg_addr == OTBN_SCRATCH_3_OFFSET);
   end
 
   assign addrmiss = (reg_re || reg_we) ? ~|addr_hit : 1'b0 ;
@@ -1213,7 +1614,18 @@ module otbn_reg_top (
                (addr_hit[11] & (|(OTBN_PERMIT[11] & ~reg_be))) |
                (addr_hit[12] & (|(OTBN_PERMIT[12] & ~reg_be))) |
                (addr_hit[13] & (|(OTBN_PERMIT[13] & ~reg_be))) |
-               (addr_hit[14] & (|(OTBN_PERMIT[14] & ~reg_be)))));
+               (addr_hit[14] & (|(OTBN_PERMIT[14] & ~reg_be))) |
+               (addr_hit[15] & (|(OTBN_PERMIT[15] & ~reg_be))) |
+               (addr_hit[16] & (|(OTBN_PERMIT[16] & ~reg_be))) |
+               (addr_hit[17] & (|(OTBN_PERMIT[17] & ~reg_be))) |
+               (addr_hit[18] & (|(OTBN_PERMIT[18] & ~reg_be))) |
+               (addr_hit[19] & (|(OTBN_PERMIT[19] & ~reg_be))) |
+               (addr_hit[20] & (|(OTBN_PERMIT[20] & ~reg_be))) |
+               (addr_hit[21] & (|(OTBN_PERMIT[21] & ~reg_be))) |
+               (addr_hit[22] & (|(OTBN_PERMIT[22] & ~reg_be))) |
+               (addr_hit[23] & (|(OTBN_PERMIT[23] & ~reg_be))) |
+               (addr_hit[24] & (|(OTBN_PERMIT[24] & ~reg_be))) |
+               (addr_hit[25] & (|(OTBN_PERMIT[25] & ~reg_be)))));
   end
 
   // Generate write-enables
@@ -1288,16 +1700,49 @@ module otbn_reg_top (
   assign load_checksum_we = addr_hit[10] & reg_we & !reg_error;
 
   assign load_checksum_wd = reg_wdata[31:0];
-  assign scratch_0_we = addr_hit[11] & reg_we & !reg_error;
+  assign exp_imem_digest_regwen_we = addr_hit[11] & reg_we & !reg_error;
+
+  assign exp_imem_digest_regwen_wd = reg_wdata[0];
+  assign exp_imem_digest_0_we = addr_hit[12] & reg_we & !reg_error;
+
+  assign exp_imem_digest_0_wd = reg_wdata[31:0];
+  assign exp_imem_digest_1_we = addr_hit[13] & reg_we & !reg_error;
+
+  assign exp_imem_digest_1_wd = reg_wdata[31:0];
+  assign exp_imem_digest_2_we = addr_hit[14] & reg_we & !reg_error;
+
+  assign exp_imem_digest_2_wd = reg_wdata[31:0];
+  assign exp_imem_digest_3_we = addr_hit[15] & reg_we & !reg_error;
+
+  assign exp_imem_digest_3_wd = reg_wdata[31:0];
+  assign exp_imem_digest_4_we = addr_hit[16] & reg_we & !reg_error;
+
+  assign exp_imem_digest_4_wd = reg_wdata[31:0];
+  assign exp_imem_digest_5_we = addr_hit[17] & reg_we & !reg_error;
+
+  assign exp_imem_digest_5_wd = reg_wdata[31:0];
+  assign exp_imem_digest_6_we = addr_hit[18] & reg_we & !reg_error;
+
+  assign exp_imem_digest_6_wd = reg_wdata[31:0];
+  assign exp_imem_digest_7_we = addr_hit[19] & reg_we & !reg_error;
+
+  assign exp_imem_digest_7_wd = reg_wdata[31:0];
+  assign exp_imem_digest_len_we = addr_hit[20] & reg_we & !reg_error;
+
+  assign exp_imem_digest_len_wd = reg_wdata[12:0];
+  assign exp_imem_digest_skip_we = addr_hit[21] & reg_we & !reg_error;
+
+  assign exp_imem_digest_skip_wd = reg_wdata[3:0];
+  assign scratch_0_we = addr_hit[22] & reg_we & !reg_error;
 
   assign scratch_0_wd = reg_wdata[31:0];
-  assign scratch_1_we = addr_hit[12] & reg_we & !reg_error;
+  assign scratch_1_we = addr_hit[23] & reg_we & !reg_error;
 
   assign scratch_1_wd = reg_wdata[31:0];
-  assign scratch_2_we = addr_hit[13] & reg_we & !reg_error;
+  assign scratch_2_we = addr_hit[24] & reg_we & !reg_error;
 
   assign scratch_2_wd = reg_wdata[31:0];
-  assign scratch_3_we = addr_hit[14] & reg_we & !reg_error;
+  assign scratch_3_we = addr_hit[25] & reg_we & !reg_error;
 
   assign scratch_3_wd = reg_wdata[31:0];
 
@@ -1314,10 +1759,21 @@ module otbn_reg_top (
     reg_we_check[8] = 1'b0;
     reg_we_check[9] = insn_cnt_we;
     reg_we_check[10] = load_checksum_we;
-    reg_we_check[11] = scratch_0_we;
-    reg_we_check[12] = scratch_1_we;
-    reg_we_check[13] = scratch_2_we;
-    reg_we_check[14] = scratch_3_we;
+    reg_we_check[11] = exp_imem_digest_regwen_we;
+    reg_we_check[12] = exp_imem_digest_0_gated_we;
+    reg_we_check[13] = exp_imem_digest_1_gated_we;
+    reg_we_check[14] = exp_imem_digest_2_gated_we;
+    reg_we_check[15] = exp_imem_digest_3_gated_we;
+    reg_we_check[16] = exp_imem_digest_4_gated_we;
+    reg_we_check[17] = exp_imem_digest_5_gated_we;
+    reg_we_check[18] = exp_imem_digest_6_gated_we;
+    reg_we_check[19] = exp_imem_digest_7_gated_we;
+    reg_we_check[20] = exp_imem_digest_len_gated_we;
+    reg_we_check[21] = exp_imem_digest_skip_gated_we;
+    reg_we_check[22] = scratch_0_we;
+    reg_we_check[23] = scratch_1_we;
+    reg_we_check[24] = scratch_2_we;
+    reg_we_check[25] = scratch_3_we;
   end
 
   // Read data return
@@ -1396,18 +1852,62 @@ module otbn_reg_top (
       end
 
       addr_hit[11]: begin
-        reg_rdata_next[31:0] = scratch_0_qs;
+        reg_rdata_next[0] = exp_imem_digest_regwen_qs;
       end
 
       addr_hit[12]: begin
-        reg_rdata_next[31:0] = scratch_1_qs;
+        reg_rdata_next[31:0] = exp_imem_digest_0_qs;
       end
 
       addr_hit[13]: begin
-        reg_rdata_next[31:0] = scratch_2_qs;
+        reg_rdata_next[31:0] = exp_imem_digest_1_qs;
       end
 
       addr_hit[14]: begin
+        reg_rdata_next[31:0] = exp_imem_digest_2_qs;
+      end
+
+      addr_hit[15]: begin
+        reg_rdata_next[31:0] = exp_imem_digest_3_qs;
+      end
+
+      addr_hit[16]: begin
+        reg_rdata_next[31:0] = exp_imem_digest_4_qs;
+      end
+
+      addr_hit[17]: begin
+        reg_rdata_next[31:0] = exp_imem_digest_5_qs;
+      end
+
+      addr_hit[18]: begin
+        reg_rdata_next[31:0] = exp_imem_digest_6_qs;
+      end
+
+      addr_hit[19]: begin
+        reg_rdata_next[31:0] = exp_imem_digest_7_qs;
+      end
+
+      addr_hit[20]: begin
+        reg_rdata_next[12:0] = exp_imem_digest_len_qs;
+      end
+
+      addr_hit[21]: begin
+        reg_rdata_next[3:0] = exp_imem_digest_skip_qs;
+      end
+
+      addr_hit[22]: begin
+        reg_rdata_next[31:0] = scratch_0_qs;
+      end
+
+      addr_hit[23]: begin
+        reg_rdata_next[31:0] = scratch_1_qs;
+      end
+
+      addr_hit[24]: begin
+        reg_rdata_next[31:0] = scratch_2_qs;
+      end
+
+      addr_hit[25]: begin
         reg_rdata_next[31:0] = scratch_3_qs;
       end
 
