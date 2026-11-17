@@ -104,6 +104,7 @@ module hmac_core import prim_sha2_pkg::*; (
   logic update_round ;
   round_t round_q, round_d;
 
+  // SEC_CM: CTR.REDUN
   // Secondary round counter for FI protection.
   // This counter only advances when sha_hash_done_i for the inner and outer hash has been seen.
   // At StDone it must match the primary round tracking (round_q).
@@ -174,6 +175,7 @@ typedef enum logic [StateWidth-1:0] {
 
   logic reg_hash_process_flag;
 
+  // SEC_CM: CONFIG.MUBI
   logic hmac_en_err;
   assign hmac_en_err = prim_mubi_pkg::mubi4_test_invalid(hmac_en_i);
 
@@ -384,6 +386,7 @@ typedef enum logic [StateWidth-1:0] {
 
   assign sel_msglen = (round_q == Inner) ? SelIPadMsg : SelOPadMsg ;
 
+  // SEC_CM: FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, st_d, st_q, state_e, StIdle)
 
   always_comb begin : next_state
@@ -535,6 +538,7 @@ typedef enum logic [StateWidth-1:0] {
 
       StDone: begin
         st_d = StIdle;
+        // SEC_CM: CTR.REDUN
         // Check primary (round_q) and secondary (rnd_ctr_q) counter.
         //   Normal HMAC completion  : round_q == Outer, rnd_ctr_q == RndOuterDone
         //   Stopped after inner hash: round_q == Inner, rnd_ctr_q == RndInnerStopped
@@ -546,6 +550,7 @@ typedef enum logic [StateWidth-1:0] {
         end
       end
 
+      // SEC_CM: FSM.LOCAL_ESC
       StError: begin
         // Terminal state.
         st_d = StError;

@@ -253,6 +253,7 @@ module hmac
     end
   end
 
+  // SEC_CM: FSM.SPARSE
   `PRIM_FLOP_SPARSE_FSM(u_state_regs, done_state_d, done_state_q, done_state_e, DoneAwaitCmd)
 
   assign wipe_secret = reg2hw.wipe_secret.qe;
@@ -367,6 +368,7 @@ module hmac
       hw2reg.digest = '0;
     end
 
+    // SEC_CM: FSM.LOCAL_ESC
     // Don't expose the digest on a fatal fault.
     if (fatal_err) begin
       hw2reg.digest = '0;
@@ -380,6 +382,7 @@ module hmac
                            cfg_reg.key_length.qe,  cfg_reg.sideload.qe };
 
 
+  // SEC_CM: FSM.LOCAL_ESC
   // Abort the operation when the keymgr key gets invalid. After a fatal fault, permanently disable
   // the engine: this blocks message writes, stops the SHA-2 core and clears its digest.
   assign sha_en_engine        = prim_mubi_pkg::mubi4_test_true_strict(sha_en) &
@@ -475,6 +478,7 @@ module hmac
       cfg_block <= 1'b 0;
     end
   end
+  // SEC_CM: CONFIG.MUBI
   // Hold the configuration during the process
   logic cfg_update;
   assign cfg_update = !cfg_block && reg2hw.cfg.hmac_en.qe;
@@ -935,12 +939,14 @@ module hmac
     reg2hw.alert_test.qe
   };
 
+  // SEC_CM: CONFIG.MUBI
   // Raise a fatal alert if the MuBi4-encoded `sha_en` carries an invalid codeword, i.e. a fault on
   // the config flop or its distribution path. (`hmac_en` is checked the same way inside `hmac_core`
   // and surfaces via `hmac_core_err`.)
   logic sha_en_err;
   assign sha_en_err = prim_mubi_pkg::mubi4_test_invalid(sha_en);
 
+  // SEC_CM: FSM.LOCAL_ESC
   // Latch fatal faults detected inside HMAC.
   prim_mubi_pkg::mubi4_t fatal_err_d, fatal_err_q;
   assign fatal_err_d = (hmac_core_err | fsm_err | sha_en_err) ? prim_mubi_pkg::MuBi4True :
