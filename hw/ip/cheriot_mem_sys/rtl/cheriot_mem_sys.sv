@@ -30,8 +30,11 @@ module cheriot_mem_sys
   input  prim_mubi_pkg::mubi4_t scanmode_i,
   input  logic                  scan_rst_ni,
 
-  // CHERIoT mode enabled
+  // CHERIoT mode enables: the main copy's, the second copy's (raised one cycle later) and the one
+  // that turns on their comparison
   input  prim_mubi_pkg::mubi4_t cheriot_ena_i,
+  input  prim_mubi_pkg::mubi4_t cheriot_ena_shadow_i,
+  input  prim_mubi_pkg::mubi4_t cheriot_ena_cmp_i,
 
   // Interrupts
   output logic intr_tbre_done_o,
@@ -84,6 +87,7 @@ module cheriot_mem_sys
   logic tbre_done;
   logic core_alert_fatal_fault;
   logic lockstep_alert_fatal_fault;
+  logic cheriot_ena_mismatch;
 
   logic [NumAlerts-1:0] alert;
   logic [NumAlerts-1:0] alert_test;
@@ -114,6 +118,31 @@ module cheriot_mem_sys
   assign hw2reg.fatal_err_code.reg_intg.de           = reg_intg_err;
   assign hw2reg.fatal_err_code.shadow_storage_err.d  = 1'b1;
   assign hw2reg.fatal_err_code.shadow_storage_err.de = shadowed_storage_err;
+
+
+  /////////////////////////
+  // CHERIoT Mode Enable //
+  /////////////////////////
+
+  // Receiver of the main copy's enable, one buffered copy for the main copy and one for the enable
+  // comparison. With AsyncOn(0) the primitive only buffers.
+  typedef enum logic [1:0] {
+    EnaCoreIdx,
+    EnaCompareIdx,
+    EnaLast
+  } cheriot_ena_pos_e;
+
+  prim_mubi_pkg::mubi4_t [EnaLast-1:0] cheriot_ena;
+
+  prim_mubi4_sync #(
+    .NumCopies(int'(EnaLast)),
+    .AsyncOn  (1'b0)
+  ) u_cheriot_ena_sync (
+    .clk_i,
+    .rst_ni,
+    .mubi_i(cheriot_ena_i),
+    .mubi_o(cheriot_ena)
+  );
 
 
   /////////////////////
@@ -170,7 +199,7 @@ module cheriot_mem_sys
   ) u_cheriot_mem_sys_core (
     .clk_i,
     .rst_ni,
-    .cheriot_ena_i,
+    .cheriot_ena_i      (cheriot_ena[EnaCoreIdx]),
     .tbre_base_addr_i   (reg2hw.tbre_base_addr_shadowed),
     .tbre_num_caps_i    (reg2hw.tbre_num_caps_shadowed),
     .tbre_start_i       (reg2hw.tbre_start),
@@ -202,6 +231,8 @@ module cheriot_mem_sys
 
   // SEC_CM: LOGIC.SHADOW
   if (SecLockstep) begin : gen_lockstep
+    prim_mubi_pkg::mubi4_t cheriot_ena_shadow;
+
     cheriot_mem_sys_lockstep #(
       .LockstepOffset  (LockstepOffset),
       .MainSramBaseAddr(MainSramBaseAddr),
@@ -215,7 +246,8 @@ module cheriot_mem_sys
       .rst_ni,
       .scanmode_i,
       .scan_rst_ni,
-      .cheriot_ena_i,
+      .cheriot_ena_shadow_i,
+      .cheriot_ena_shadow_o(cheriot_ena_shadow),
       .tbre_base_addr_i   (reg2hw.tbre_base_addr_shadowed),
       .tbre_num_caps_i    (reg2hw.tbre_num_caps_shadowed),
       .tbre_start_i       (reg2hw.tbre_start),
@@ -239,13 +271,70 @@ module cheriot_mem_sys
       .meta_sram_tl_h2d_i (meta_sram_tl_o),
       .meta_sram_tl_d2h_i (meta_sram_tl_i)
     );
+
+    // Receiver of the compare enable
+    prim_mubi_pkg::mubi4_t [0:0] cheriot_ena_cmp;
+
+    prim_mubi4_sync #(
+      .NumCopies(1),
+      .AsyncOn  (1'b0)
+    ) u_cheriot_ena_cmp_sync (
+      .clk_i,
+      .rst_ni,
+      .mubi_i(cheriot_ena_cmp_i),
+      .mubi_o(cheriot_ena_cmp)
+    );
+
+    // SEC_CM: CHERIOT_ENABLE.CTRL.REDUN, INTERSIG.MUBI
+    // Any compare enable other than MuBi4False turns the comparison on, so a corrupted compare
+    // enable keeps comparing. It passes the same LockstepOffset - 1 flops as the second copy's
+    // enable, so it turns the comparison on only after that enable has settled, and it must turn
+    // off at least LockstepOffset - 1 cycles before cheriot_ena_i changes.
+    prim_mubi_pkg::mubi4_t cheriot_ena_cmp_delayed;
+
+    // The mode switch in rv_core_ibex turns the compare enable off two cycles before
+    // cheriot_ena_i changes.
+    `ASSERT_INIT(LockstepOffsetMax_A, LockstepOffset <= 3)
+    `ASSERT_STATIC_LINT_ERROR(LockstepOffsetMax_L, LockstepOffset <= 3)
+
+    if (LockstepOffset > 1) begin : gen_cheriot_ena_cmp_delay
+      // Stage LockstepOffset - 1 is the input, stage 0 feeds the comparison.
+      logic [LockstepOffset-1:0][prim_mubi_pkg::MuBi4Width-1:0] cheriot_ena_cmp_q;
+
+      assign cheriot_ena_cmp_q[LockstepOffset-1] = cheriot_ena_cmp[0];
+
+      for (genvar i = 0; i < LockstepOffset - 1; i++) begin : gen_stages
+        prim_flop #(
+          .Width     (prim_mubi_pkg::MuBi4Width),
+          .ResetValue(prim_mubi_pkg::MuBi4False)
+        ) u_prim_cheriot_ena_cmp_flop (
+          .clk_i,
+          .rst_ni,
+          .d_i(cheriot_ena_cmp_q[i+1]),
+          .q_o(cheriot_ena_cmp_q[i])
+        );
+      end
+
+      assign cheriot_ena_cmp_delayed = prim_mubi_pkg::mubi4_t'(cheriot_ena_cmp_q[0]);
+    end else begin : gen_no_cheriot_ena_cmp_delay
+      assign cheriot_ena_cmp_delayed = cheriot_ena_cmp[0];
+    end
+
+    assign cheriot_ena_mismatch =
+        !prim_mubi_pkg::mubi4_test_false_strict(cheriot_ena_cmp_delayed) &&
+        (prim_mubi_pkg::mubi4_test_invalid(cheriot_ena[EnaCompareIdx]) ||
+         prim_mubi_pkg::mubi4_test_invalid(cheriot_ena_shadow) ||
+         (cheriot_ena[EnaCompareIdx] != cheriot_ena_shadow));
   end else begin : gen_no_lockstep
     assign lockstep_alert_fatal_fault = 1'b0;
+    assign cheriot_ena_mismatch       = 1'b0;
 
-    // The scan inputs only bypass the reset of the second copy, and the tag copies only serve
-    // the lockstep.
+    // The scan inputs only bypass the reset of the second copy; the second copy's enable, the
+    // compare enable and the tag copies for the lockstep only serve the second copy.
     logic unused_lockstep_inputs;
-    assign unused_lockstep_inputs = ^{scanmode_i, scan_rst_ni, cored_tag_h2d_buf[TagLockstepIdx],
+    assign unused_lockstep_inputs = ^{scanmode_i, scan_rst_ni, cheriot_ena[EnaCompareIdx],
+                                      cheriot_ena_shadow_i, cheriot_ena_cmp_i,
+                                      cored_tag_h2d_buf[TagLockstepIdx],
                                       cored_tag_d2h_buf[TagLockstepIdx]};
   end
 
@@ -275,7 +364,8 @@ module cheriot_mem_sys
   ///////////////////
 
   assign alert[AlertFatalFaultIdx]         = reg_intg_err | shadowed_storage_err |
-                                             core_alert_fatal_fault | lockstep_alert_fatal_fault;
+                                             core_alert_fatal_fault | lockstep_alert_fatal_fault |
+                                             cheriot_ena_mismatch;
   assign alert[AlertRecovCtrlUpdateErrIdx] = shadowed_update_err;
 
   assign alert_test[AlertFatalFaultIdx]         = reg2hw.alert_test.fatal_fault.q &
@@ -338,6 +428,9 @@ module cheriot_mem_sys
 
   `ASSERT_KNOWN(AlertsKnown_A, alert_tx_o)
   `ASSERT_KNOWN(LockstepAlertKnown_A, lockstep_alert_fatal_fault)
+  `ASSERT_KNOWN(CheriotEnaKnown_A, cheriot_ena_i)
+  `ASSERT_KNOWN(CheriotEnaShadowKnown_A, cheriot_ena_shadow_i)
+  `ASSERT_KNOWN(CheriotEnaCmpKnown_A, cheriot_ena_cmp_i)
   `ASSERT_KNOWN(IntrTbreDoneKnown_A, intr_tbre_done_o)
 
   `ASSERT_PRIM_REG_WE_ONEHOT_ERROR_TRIGGER_ALERT(RegsWeOnehotCheck_A,
