@@ -87,6 +87,8 @@ ID labels are assigned to each step for reference.
 
 *   Clear all machine defined interrupts.
 *   Zero all cpu registers.
+*   Enable the watchdog bark NMI in `rv_core_ibex`.
+    The ROM does not lock `NMI_ENABLE_REGWEN` and leaves that to later boot stages.
 
 See the [[startup]]() specification for details.
 
