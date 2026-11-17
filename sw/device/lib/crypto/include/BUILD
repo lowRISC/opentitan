@@ -7,20 +7,6 @@ package(default_visibility = ["//visibility:public"])
 load("@rules_pkg//pkg:mappings.bzl", "pkg_files")
 load("//sw/device/lib/crypto/include:api_config.bzl", "cryptolib_api_config_header")
 
-config_setting(
-    name = "disable_buf_integrity_checks",
-    define_values = {
-        "disable_buf_integrity_checks": "true",
-    },
-)
-
-config_setting(
-    name = "disable_keyblob_masking",
-    define_values = {
-        "disable_keyblob_masking": "true",
-    },
-)
-
 # Export all headers.
 exports_files(glob(["*.h"]))
 
@@ -28,11 +14,11 @@ exports_files(glob(["*.h"]))
 cryptolib_api_config_header(
     name = "api_config.h",
     buffer_integrity_checks = select({
-        ":disable_buf_integrity_checks": False,
+        "//sw/device/lib/crypto/configs:disable_buf_integrity_checks": False,
         "//conditions:default": True,
     }),
     keyblob_masking = select({
-        ":disable_keyblob_masking": False,
+        "//sw/device/lib/crypto/configs:disable_keyblob_masking": False,
         "//conditions:default": True,
     }),
 )
