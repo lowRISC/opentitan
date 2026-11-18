@@ -25,6 +25,18 @@ Parameter                   | Default               | Top Earlgrey      | Descri
 `RndCnstLfsrSeed`           | (see RTL)             | (see RTL)         | Compile-time random default constant for LFSR seed.
 `RndCnstLfsrPerm`           | (see RTL)             | (see RTL)         | Compile-time random default constant for LFSR permutation.
 
+### Supported Parameter Sets
+
+Only the following parameter sets, as used by the SRAM controller instances in Earl Grey, are planned to be verified and signed off.
+All of them use `NumRamInst` = 1, `Outstanding` = 2, `EccCorrection` = 0 and `EnableRacl` = 0.
+
+Instance         | `MemSizeRam` | `InstrExec` | `NumPrinceRoundsHalf` | `NumAddrScrRounds` | `SecZeroInit`
+-----------------|--------------|-------------|-----------------------|--------------------|--------------
+`sram_ctrl_ret`  | 8192         | 0           | 3                     | 2                  | 0
+`sram_ctrl_main` | 131072       | 1           | 2                     | 2                  | 0
+`sram_ctrl_sec`  | 65536        | 1           | 2                     | 2                  | 0
+`sram_ctrl_meta` | 38912        | 0           | 2                     | 0                  | 1
+
 ## Signals
 
 <!-- BEGIN CMDGEN util/regtool.py --interfaces ./hw/ip/sram_ctrl/data/sram_ctrl.hjson -->
