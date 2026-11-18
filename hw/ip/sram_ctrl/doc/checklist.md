@@ -52,7 +52,7 @@ Code Quality  | [CDC_SETUP][]             | Waived      | No block-level flow av
 Code Quality  | [RDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
 Code Quality  | [AREA_CHECK][]            | Done        |
 Code Quality  | [TIMING_CHECK][]          | Done        |
-Security      | [SEC_CM_DOCUMENTED][]     | Not Started |
+Security      | [SEC_CM_DOCUMENTED][]     | Done        |
 
 [NEW_FEATURES]:          ../../../../doc/project_governance/checklist/README.md#new_features
 [BLOCK_DIAGRAM]:         ../../../../doc/project_governance/checklist/README.md#block_diagram
