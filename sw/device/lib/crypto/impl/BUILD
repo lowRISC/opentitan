@@ -165,6 +165,7 @@ cc_library(
     deps = [
         ":cmvp",
         ":config",
+        ":hash",
         ":hmac",
         ":integrity",
         ":keyblob",
@@ -628,11 +629,13 @@ cc_library(
     hdrs = ["hash.h"],
     target_compatible_with = [OPENTITAN_CPU],
     deps = [
-        ":sha1",
+        ":integrity",
         ":sha2",
-        ":sha3",
+        ":state",
         ":status",
         "//sw/device/lib/base:hardened",
+        "//sw/device/lib/base:hardened_memory",
+        "//sw/device/lib/crypto/drivers:hmac",
         "//sw/device/lib/crypto/include:datatypes",
     ],
 )
@@ -757,6 +760,7 @@ cc_library(
     deps = [
         ":cmvp",
         ":config",
+        ":hash",
         ":integrity",
         ":keyblob",
         ":sha2",
