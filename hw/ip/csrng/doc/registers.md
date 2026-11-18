@@ -285,7 +285,8 @@ In case of a generate command the acknowledgement goes high after all of the req
 ### SW_CMD_STS . CMD_RDY
 This bit indicates when the command interface is ready to accept the next command word.
 Before writing each word of a command to [`CMD_REQ`](#cmd_req), this field needs to be polled.
-Words written while this field is low are dropped.
+Words written while this field is low are dropped, set [`ERR_CODE.SFIFO_CMD_ERR`](#err_code) and
+[`ERR_CODE.FIFO_WRITE_ERR`](#err_code), and trigger a fatal alert.
 0b0: CSRNG is not ready to accept the next command word or the last command hasn't been acked yet.
 0b1: CSRNG is ready to accept the next command word.
 

@@ -78,7 +78,8 @@
       desc: '''
             This alert triggers (i) if an illegal state machine state is reached, or
             (ii) if an AES fatal alert condition occurs, or (iii) if a fatal integrity
-            failure is detected on the TL-UL bus.
+            failure is detected on the TL-UL bus, or (iv) if a FIFO error is detected while
+            CSRNG is enabled.
             '''
     }
   ],
@@ -370,7 +371,8 @@
           desc: '''
                 This bit indicates when the command interface is ready to accept the next command word.
                 Before writing each word of a command to !!CMD_REQ, this field needs to be polled.
-                Words written while this field is low are dropped.
+                Words written while this field is low are dropped, set !!ERR_CODE.SFIFO_CMD_ERR and
+                !!ERR_CODE.FIFO_WRITE_ERR, and trigger a fatal alert.
                 0b0: CSRNG is not ready to accept the next command word or the last command hasn't been acked yet.
                 0b1: CSRNG is ready to accept the next command word.
                 '''

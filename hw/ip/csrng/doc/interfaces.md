@@ -28,10 +28,10 @@ Referring to the [Comportable guideline for peripheral device functionality](htt
 
 ## Security Alerts
 
-| Alert Name   | Description                                                                                                                                                                               |
-|:-------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
-| recov_alert  | This alert is triggered when a recoverable alert occurs.  Check the [`RECOV_ALERT_STS`](registers.md#recov_alert_sts) register to get more information.                                   |
-| fatal_alert  | This alert triggers (i) if an illegal state machine state is reached, or (ii) if an AES fatal alert condition occurs, or (iii) if a fatal integrity failure is detected on the TL-UL bus. |
+| Alert Name   | Description                                                                                                                                                                                                                                           |
+|:-------------|:------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+| recov_alert  | This alert is triggered when a recoverable alert occurs.  Check the [`RECOV_ALERT_STS`](registers.md#recov_alert_sts) register to get more information.                                                                                               |
+| fatal_alert  | This alert triggers (i) if an illegal state machine state is reached, or (ii) if an AES fatal alert condition occurs, or (iii) if a fatal integrity failure is detected on the TL-UL bus, or (iv) if a FIFO error is detected while CSRNG is enabled. |
 
 ## Security Countermeasures
 
