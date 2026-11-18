@@ -46,15 +46,15 @@ static void aes_ctrl_reset(void) {
  */
 static status_t aes_ensure_idle(void) {
   uint32_t reg = abs_mmio_read32(kBase + AES_STATUS_REG_OFFSET);
-  if (bitfield_bit32_read(reg, AES_STATUS_STALL_BIT)) {
-    for (size_t i = 0; i < AES_PARAM_NUM_REGS_DATA; ++i) {
-      (void)abs_mmio_read32(kBase + AES_DATA_OUT_0_REG_OFFSET +
-                            i * sizeof(uint32_t));
-    }
-  }
   while (!bitfield_bit32_read(reg, AES_STATUS_IDLE_BIT)) {
     if (bitfield_bit32_read(reg, AES_STATUS_ALERT_FATAL_FAULT_BIT)) {
       return OTCRYPTO_RECOV_ERR;
+    }
+    if (bitfield_bit32_read(reg, AES_STATUS_STALL_BIT)) {
+      for (size_t i = 0; i < AES_PARAM_NUM_REGS_DATA; ++i) {
+        (void)abs_mmio_read32(kBase + AES_DATA_OUT_0_REG_OFFSET +
+                              i * sizeof(uint32_t));
+      }
     }
     reg = abs_mmio_read32(kBase + AES_STATUS_REG_OFFSET);
   }
