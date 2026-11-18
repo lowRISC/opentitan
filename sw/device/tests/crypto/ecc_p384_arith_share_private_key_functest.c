@@ -231,6 +231,16 @@ static status_t run_arith_share_negative_tests(void) {
   CHECK(
       otcrypto_ecc_p384_arith_share_private_key(&share0, &share1, NULL).value !=
       OTCRYPTO_OK.value);
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  otcrypto_const_word32_buf_t null_data_share =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, NULL, 14);
+  CHECK(otcrypto_ecc_p384_arith_share_private_key(&null_data_share, &share1,
+                                                  &priv_key)
+            .value != OTCRYPTO_OK.value);
+  CHECK(otcrypto_ecc_p384_arith_share_private_key(&share0, &null_data_share,
+                                                  &priv_key)
+            .value != OTCRYPTO_OK.value);
+#endif
 
   // Bad length inputs
   otcrypto_const_word32_buf_t bad_len_share = {.data = share_data, .len = 13};

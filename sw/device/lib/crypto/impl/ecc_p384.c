@@ -250,6 +250,12 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_config_k(
     const otcrypto_blinded_key_t *secret_scalar,
     const otcrypto_hash_digest_t message_digest,
     otcrypto_word32_buf_t *signature) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (signature == NULL || signature->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  HARDENED_TRY(p384_signature_length_check(signature->len));
   HARDENED_TRY(otcrypto_ecdsa_p384_sign_config_k_async_start(
       private_key, secret_scalar, message_digest));
   return otcrypto_ecdsa_p384_sign_async_finalize(signature);
@@ -259,6 +265,12 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign(
     const otcrypto_blinded_key_t *private_key,
     const otcrypto_hash_digest_t message_digest,
     otcrypto_word32_buf_t *signature) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (signature == NULL || signature->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  HARDENED_TRY(p384_signature_length_check(signature->len));
   HARDENED_TRY(
       otcrypto_ecdsa_p384_sign_async_start(private_key, message_digest));
   return otcrypto_ecdsa_p384_sign_async_finalize(signature);
@@ -631,7 +643,7 @@ otcrypto_status_t otcrypto_ecdsa_p384_sign_async_finalize(
   hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolTrue;
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (signature->data == NULL) {
+  if (signature == NULL || signature->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
@@ -657,8 +669,8 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_start(
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ECDSA_P384_VERIFY_ASYNC_START);
   OTCRYPTO_HEALTH_CHECK(kTestP384VerifyBit);
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (public_key == NULL || signature->data == NULL ||
-      message_digest.data == NULL || public_key->key == NULL) {
+  if (public_key == NULL || public_key->key == NULL || signature == NULL ||
+      signature->data == NULL || message_digest.data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
@@ -719,6 +731,11 @@ otcrypto_status_t otcrypto_ecdsa_p384_verify_async_finalize(
   }
 #endif
   *verification_result = kHardenedBoolFalse;
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (signature == NULL || signature->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
 
   // Verify the input buffer
   HARDENED_CHECK_EQ(kHardenedBoolTrue, OTCRYPTO_CHECK_BUF(signature));
@@ -1172,8 +1189,11 @@ otcrypto_status_t otcrypto_ecc_p384_arith_share_private_key(
     otcrypto_blinded_key_t *arith_private_key) {
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (bool_private_key_share0 == NULL || bool_private_key_share1 == NULL ||
-      arith_private_key == NULL || arith_private_key->keyblob == NULL) {
+  if (bool_private_key_share0 == NULL ||
+      bool_private_key_share0->data == NULL ||
+      bool_private_key_share1 == NULL ||
+      bool_private_key_share1->data == NULL || arith_private_key == NULL ||
+      arith_private_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
