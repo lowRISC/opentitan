@@ -84,38 +84,33 @@ static const uint32_t kSharedSecret[] = {
   })
 
 /**
- * Helper function to securely populate the keyblob array with two shares.
+ * Helper function to import a raw 256-bit X25519 scalar as two additive shares.
  */
-static status_t create_blinded_kat_keyblob(uint32_t *keyblob,
-                                           const uint32_t *key) {
-  // Zero out the entire blob to avoid checksumming uninitialized padding
-  memset(keyblob, 0, keyblob_num_words(kPrivateKeyConfig) * sizeof(uint32_t));
+static status_t import_kat_private_key(const uint32_t *key,
+                                       otcrypto_blinded_key_t *private_key) {
+  uint32_t share0_data[kX25519PrivateKeyWords + 2] = {0};
+  uint32_t share1_data[kX25519PrivateKeyWords + 2] = {0};
+  hardened_memshred(share0_data, ARRAYSIZE(share0_data));
+  HARDENED_TRY(
+      hardened_sub(key, share0_data, kX25519PrivateKeyWords, share1_data));
 
-  uint32_t *share0 = keyblob;
-  uint32_t *share1 = keyblob + keyblob_share_num_words(kPrivateKeyConfig);
-
-  // Generate a random mask for share0 (only need 8 words for the seed)
-  hardened_memshred(share0, kX25519PrivateKeyWords);
-
-  // Calculate share1 = key - share0 (implicitly modulo 2^256)
-  HARDENED_TRY(hardened_sub(key, share0, kX25519PrivateKeyWords, share1));
-
-  return OTCRYPTO_OK;
+  otcrypto_const_word32_buf_t share0 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share0_data, ARRAYSIZE(share0_data));
+  otcrypto_const_word32_buf_t share1 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, share1_data, ARRAYSIZE(share1_data));
+  return otcrypto_curve25519_private_key_import(share0, share1, private_key);
 }
 
 status_t x25519_kat_test(void) {
   LOG_INFO("Running X25519 KAT Test");
 
   uint32_t keyblob_alice[keyblob_num_words(kPrivateKeyConfig)];
-  CHECK_STATUS_OK(create_blinded_kat_keyblob(keyblob_alice, kPrivateKeyAlice));
-
   otcrypto_blinded_key_t private_key_alice = {
       .config = kPrivateKeyConfig,
       .keyblob_length = sizeof(keyblob_alice),
       .keyblob = keyblob_alice,
   };
-  private_key_alice.checksum =
-      otcrypto_integrity_blinded_checksum(&private_key_alice);
+  CHECK_STATUS_OK(import_kat_private_key(kPrivateKeyAlice, &private_key_alice));
 
   // Set up public_key struct for bob.
   uint32_t public_key_buf_bob[kX25519PublicKeyWords];
@@ -161,15 +156,12 @@ status_t x25519_public_key_from_private_test(void) {
   LOG_INFO("Running X25519 public_key_from_private Test");
 
   uint32_t keyblob_alice[keyblob_num_words(kPrivateKeyConfig)];
-  CHECK_STATUS_OK(create_blinded_kat_keyblob(keyblob_alice, kPrivateKeyAlice));
-
   otcrypto_blinded_key_t private_key_alice = {
       .config = kPrivateKeyConfig,
       .keyblob_length = sizeof(keyblob_alice),
       .keyblob = keyblob_alice,
   };
-  private_key_alice.checksum =
-      otcrypto_integrity_blinded_checksum(&private_key_alice);
+  CHECK_STATUS_OK(import_kat_private_key(kPrivateKeyAlice, &private_key_alice));
 
   // Set up public_key struct for alice.
   uint32_t public_key_buf_alice[kX25519PublicKeyWords];
@@ -193,14 +185,12 @@ status_t x25519_public_key_from_private_test(void) {
 
   // Also test Bob's RFC 7748 test vector.
   uint32_t keyblob_bob[keyblob_num_words(kPrivateKeyConfig)];
-  CHECK_STATUS_OK(create_blinded_kat_keyblob(keyblob_bob, kPrivateKeyBob));
   otcrypto_blinded_key_t private_key_bob = {
       .config = kPrivateKeyConfig,
       .keyblob_length = sizeof(keyblob_bob),
       .keyblob = keyblob_bob,
   };
-  private_key_bob.checksum =
-      otcrypto_integrity_blinded_checksum(&private_key_bob);
+  CHECK_STATUS_OK(import_kat_private_key(kPrivateKeyBob, &private_key_bob));
 
   uint32_t public_key_buf_bob[kX25519PublicKeyWords];
   otcrypto_unblinded_key_t public_key_bob = {
@@ -288,6 +278,65 @@ status_t x25519_keygen_test(void) {
   return OTCRYPTO_OK;
 }
 
+static status_t x25519_key_import_export_test(void) {
+  LOG_INFO("Running X25519 key import/export Test");
+
+  otcrypto_key_config_t exportable_cfg = kPrivateKeyConfig;
+  exportable_cfg.exportable = kHardenedBoolTrue;
+
+  uint32_t keyblob_orig[keyblob_num_words(exportable_cfg)];
+  otcrypto_blinded_key_t priv_orig = {
+      .config = exportable_cfg,
+      .keyblob_length = sizeof(keyblob_orig),
+      .keyblob = keyblob_orig,
+  };
+  uint32_t pub_orig_buf[kX25519PublicKeyWords];
+  otcrypto_unblinded_key_t pub_orig = {
+      .key_mode = kOtcryptoKeyModeX25519,
+      .key_length = kX25519PublicKeyBytes,
+      .key = pub_orig_buf,
+  };
+  CHECK_STATUS_OK(otcrypto_x25519_keygen(&priv_orig, &pub_orig));
+
+  uint32_t s0_data[kX25519PrivateKeyWords + 2];
+  uint32_t s1_data[kX25519PrivateKeyWords + 2];
+  otcrypto_word32_buf_t s0_out =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, s0_data, ARRAYSIZE(s0_data));
+  otcrypto_word32_buf_t s1_out =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, s1_data, ARRAYSIZE(s1_data));
+  CHECK_STATUS_OK(
+      otcrypto_curve25519_private_key_export(&priv_orig, &s0_out, &s1_out));
+
+  uint32_t keyblob_reimp[keyblob_num_words(kPrivateKeyConfig)];
+  otcrypto_blinded_key_t priv_reimp = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob_reimp),
+      .keyblob = keyblob_reimp,
+  };
+  otcrypto_const_word32_buf_t s0_in = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, s0_data, ARRAYSIZE(s0_data));
+  otcrypto_const_word32_buf_t s1_in = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, s1_data, ARRAYSIZE(s1_data));
+  CHECK_STATUS_OK(
+      otcrypto_curve25519_private_key_import(s0_in, s1_in, &priv_reimp));
+
+  uint32_t pub_reimp_buf[kX25519PublicKeyWords];
+  otcrypto_unblinded_key_t pub_reimp = {
+      .key_mode = kOtcryptoKeyModeX25519,
+      .key_length = kX25519PublicKeyBytes,
+      .key = pub_reimp_buf,
+  };
+  CHECK_STATUS_OK(
+      otcrypto_x25519_public_key_from_private(&priv_reimp, &pub_reimp));
+  TRY_CHECK_ARRAYS_EQ(pub_reimp.key, pub_orig.key, kX25519PublicKeyWords);
+
+  // Non-exportable key must fail export.
+  CHECK(otcrypto_curve25519_private_key_export(&priv_reimp, &s0_out, &s1_out)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  return OTCRYPTO_OK;
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -298,6 +347,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, x25519_kat_test);
   EXECUTE_TEST(result, x25519_public_key_from_private_test);
   EXECUTE_TEST(result, x25519_keygen_test);
+  EXECUTE_TEST(result, x25519_key_import_export_test);
 
   return status_ok(result);
 }

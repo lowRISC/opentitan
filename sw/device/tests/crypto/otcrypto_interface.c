@@ -215,6 +215,10 @@ volatile otcrypto_interface_t otcrypto = {
     .x25519_async_start = &otcrypto_x25519_async_start,
     .x25519_async_finalize = &otcrypto_x25519_async_finalize,
 
+    // Curve25519 utility.
+    .curve25519_private_key_import = &otcrypto_curve25519_private_key_import,
+    .curve25519_private_key_export = &otcrypto_curve25519_private_key_export,
+
     // RSA key construction.
     .rsa_public_key_construct = &otcrypto_rsa_public_key_construct,
     .rsa_private_key_from_exponents = &otcrypto_rsa_private_key_from_exponents,
