@@ -34,6 +34,8 @@
 # 1024-bit exponentiation: 2'770'580 cycles -> ~0.028s
 # RSA-2048 key generation: 10-60s (extrapolated from a CW340 at 24MHz).
 
+.equ HARDENED_BOOL_FALSE, 0x1d4
+
 .text
 .globl rsa_keygen
 .globl gen_d
@@ -697,8 +699,11 @@ _det_mul_pq:
   jal  x0, bignum_mul
 
 _rsa_keygen_fail:
-  la x16, mode
-  la x17, mode_tmp
-  lw x18, 0(x17)
-  sw x18, 0(x16)
+  la   x16, mode
+  la   x17, mode_tmp
+  lw   x18, 0(x17)
+  sw   x18, 0(x16)
+  la   x16, ok
+  addi x17, x0, HARDENED_BOOL_FALSE
+  sw   x17, 0(x16)
   ecall
