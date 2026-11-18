@@ -42,13 +42,16 @@ the following responsibilities:
 
 ### 3. Hashed vs. Unhashed ECDSA & RSA Signing/Verification (`ecdsa_p256_hash_null_mode_test`, `rsa_vts_signing_no_digest_and_raw_test`)
 - **File**: `ecc_mac_vts_cts_test.c`, `rsa_vts_cts_test.c` (active in `test_main()`)
-- **Requirement**: Both ECDSA and RSA use `otcrypto_ecdsa_p256_sign_verify` /
-  `otcrypto_ecdsa_p256_verify` and `otcrypto_rsa_sign` / `otcrypto_rsa_verify`
-  with an `otcrypto_hash_digest_t`:
-  - **Hashed modes (e.g., `Digest::SHA_2_256`)**: The wrapper hashes the message
-    first via `otcrypto_sha2_256` (or `otcrypto_sha2_init` / `update` / `final`
-    for streaming `update()` calls) and passes the resulting digest with
-    `digest.mode = kOtcryptoHashModeSha256`.
+- **Requirement**: Hashed modes map directly to the streaming `otcrypto_hash_*`
+  and `*_final` APIs, while unhashed `Digest::NONE` modes pass an
+  `otcrypto_hash_digest_t` with `kOtcryptoHashModeNull`:
+  - **Hashed modes (e.g., `Digest::SHA_2_256`)**: The wrapper initializes an
+    `otcrypto_hash_context_t` via `otcrypto_hash_init` (`begin()`), streams
+    message chunks via `otcrypto_hash_update` (`update()`), and finalizes with
+    `otcrypto_ecdsa_p256_hash_sign_verify_final` /
+    `otcrypto_ecdsa_p256_hash_verify_final` or
+    `otcrypto_rsa_hash_sign_verify_final` / `otcrypto_rsa_hash_verify_final`
+    (`finish()`). Standalone streaming digests use `otcrypto_hash_final`.
   - **Unhashed ECDSA (`Digest::NONE` / `NONEwithECDSA`)**: The wrapper formats
     the raw big-endian message into a `kP256CoordWords` (32-byte) buffer
     (truncating inputs longer than 32 bytes to the leftmost 32 bytes, or
