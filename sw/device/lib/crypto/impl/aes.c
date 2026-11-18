@@ -384,10 +384,18 @@ static otcrypto_status_t otcrypto_aes_impl(
 
   // Calculate the number of blocks for the input, including the padding for
   // encryption.
+  if (aes_operation != kOtcryptoAesOperationEncrypt &&
+      aes_operation != kOtcryptoAesOperationDecrypt) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   bool ctr_stream = (launder32(aes_mode) == kOtcryptoAesModeCtr &&
                      launder32(aes_padding) == kOtcryptoAesPaddingNull);
   size_t input_nblocks = 0;
   if (ctr_stream) {
+    if (cipher_input->len > UINT32_MAX - (kAesBlockNumBytes - 1)) {
+      return OTCRYPTO_BAD_ARGS;
+    }
     input_nblocks = ceil_div(cipher_input->len, kAesBlockNumBytes);
   } else if (aes_operation == kOtcryptoAesOperationEncrypt) {
     HARDENED_TRY(
