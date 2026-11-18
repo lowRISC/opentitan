@@ -9,6 +9,7 @@
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
 #include "sw/device/lib/crypto/impl/cmvp.h"
+#include "sw/device/lib/crypto/impl/hash.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -103,18 +104,18 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
   if (launder32(key->config.key_length) >
       key_block_wordlen * sizeof(uint32_t)) {
     otcrypto_hmac_key_mode_t used_key_mode = launder32(0);
-    status_t (*hash_fn)(const otcrypto_const_byte_buf_t *, uint32_t *) = NULL;
+    otcrypto_hash_mode_t hash_mode = launder32(0);
     switch (key->config.key_mode) {
       case kOtcryptoKeyModeHmacSha256:
-        hash_fn = hmac_hash_sha256;
+        hash_mode = kOtcryptoHashModeSha256;
         used_key_mode = launder32(used_key_mode) | kOtcryptoKeyModeHmacSha256;
         break;
       case kOtcryptoKeyModeHmacSha384:
-        hash_fn = hmac_hash_sha384;
+        hash_mode = kOtcryptoHashModeSha384;
         used_key_mode = launder32(used_key_mode) | kOtcryptoKeyModeHmacSha384;
         break;
       case kOtcryptoKeyModeHmacSha512:
-        hash_fn = hmac_hash_sha512;
+        hash_mode = kOtcryptoHashModeSha512;
         used_key_mode = launder32(used_key_mode) | kOtcryptoKeyModeHmacSha512;
         break;
       default:
@@ -123,7 +124,8 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
     HARDENED_CHECK_EQ(used_key_mode, key->config.key_mode);
 
     if (key->config.security_level != kOtcryptoKeySecurityLevelHigh) {
-      HARDENED_TRY(hash_fn(&unmasked_key_buf, hmac_key->key_block));
+      HARDENED_TRY(
+          sha2_message(hash_mode, &unmasked_key_buf, hmac_key->key_block));
     } else {
       // Create an inverted copy of the input key and run the real sha and
       // inverted one in a random order.
@@ -136,11 +138,15 @@ static status_t hmac_key_construct(const otcrypto_blinded_key_t *key,
 
       bool swap = ibex_rnd32_read() & 0x1;
       if (swap) {
-        HARDENED_TRY(hash_fn(&random_unmasked_key_buf, key_copy));
-        HARDENED_TRY(hash_fn(&unmasked_key_buf, hmac_key->key_block));
+        HARDENED_TRY(
+            sha2_message(hash_mode, &random_unmasked_key_buf, key_copy));
+        HARDENED_TRY(
+            sha2_message(hash_mode, &unmasked_key_buf, hmac_key->key_block));
       } else {
-        HARDENED_TRY(hash_fn(&unmasked_key_buf, hmac_key->key_block));
-        HARDENED_TRY(hash_fn(&random_unmasked_key_buf, key_copy));
+        HARDENED_TRY(
+            sha2_message(hash_mode, &unmasked_key_buf, hmac_key->key_block));
+        HARDENED_TRY(
+            sha2_message(hash_mode, &random_unmasked_key_buf, key_copy));
       }
       hardened_memshred(key_copy, key_block_wordlen);
     }

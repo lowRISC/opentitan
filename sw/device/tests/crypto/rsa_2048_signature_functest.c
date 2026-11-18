@@ -585,7 +585,7 @@ status_t all_hashes_sign_verify_test(void) {
     uint32_t sig[kRsa2048NumWords];
     hardened_bool_t verification_result;
 
-    // Test PKCS#1 v1.5 dynamically
+    // Test PKCS#1 v1.5 dynamically (supports SHA-1, SHA-2, and SHA-3 via OID).
     TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen,
                           kOtcryptoRsaPaddingPkcs, hash_mode, sig));
     TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, sig,
@@ -593,13 +593,22 @@ status_t all_hashes_sign_verify_test(void) {
                             &verification_result));
     TRY_CHECK(verification_result == kHardenedBoolTrue);
 
-    // Test PSS dynamically
-    TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen, kOtcryptoRsaPaddingPss,
-                          hash_mode, sig));
-    TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, sig,
-                            kOtcryptoRsaPaddingPss, hash_mode,
-                            &verification_result));
-    TRY_CHECK(verification_result == kHardenedBoolTrue);
+    // PSS MGF1 / H construction uses the streaming SHA-1/SHA-2 hash interface.
+    if (hash_mode == kOtcryptoHashModeSha1 ||
+        hash_mode == kOtcryptoHashModeSha256 ||
+        hash_mode == kOtcryptoHashModeSha384 ||
+        hash_mode == kOtcryptoHashModeSha512) {
+      TRY(run_rsa_2048_sign(kTestMessage, kTestMessageLen,
+                            kOtcryptoRsaPaddingPss, hash_mode, sig));
+      TRY(run_rsa_2048_verify(kTestMessage, kTestMessageLen, sig,
+                              kOtcryptoRsaPaddingPss, hash_mode,
+                              &verification_result));
+      TRY_CHECK(verification_result == kHardenedBoolTrue);
+    } else {
+      TRY_CHECK(run_rsa_2048_sign(kTestMessage, kTestMessageLen,
+                                  kOtcryptoRsaPaddingPss, hash_mode, sig)
+                    .value == OTCRYPTO_BAD_ARGS.value);
+    }
   }
 
   // Encrypt Finalize: Bad Ciphertext Length

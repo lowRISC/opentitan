@@ -26,7 +26,7 @@ typedef enum otcrypto_rsa_padding {
   kOtcryptoRsaPaddingPkcs = 0x94e,
   // Pads input data according to the PKCS#1-PSS scheme. The mask generation
   // function is MGF1 with the same hash function as the input message
-  // (supported SHA1, SHA2, or SHA3 hash functions).
+  // (supported SHA1 or SHA2 hash functions).
   kOtcryptoRsaPaddingPss = 0x6b1,
   // No padding (raw modular exponentiation; requires `kOtcryptoKeyModeRsaRaw`
   // and `kOtcryptoHashModeNull`). When `kOtcryptoHashModeNull` is used with
@@ -310,7 +310,7 @@ otcrypto_status_t otcrypto_rsa_hash_verify_final(
  * Encrypts a message with RSA.
  *
  * The only padding scheme available is OAEP, where the hash function is a
- * member of the SHA-2 or SHA-3 family and the mask generation function is
+ * member of the SHA-1 or SHA-2 family and the mask generation function is
  * MGF1 with the same hash function.
  *
  * OAEP imposes strict limits on the length of the message (see IETF RFC 8017
@@ -350,7 +350,7 @@ otcrypto_status_t otcrypto_rsa_encrypt(
  * Decrypts a message with RSA.
  *
  * The only padding scheme available is OAEP, where the hash function is a
- * member of the SHA-2 or SHA-3 family and the mask generation function is
+ * member of the SHA-1 or SHA-2 family and the mask generation function is
  * MGF1 with the same hash function.
  *
  * The caller should allocate space for the `plaintext` buffer and set the

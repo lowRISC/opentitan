@@ -23,12 +23,9 @@ extern "C" {
  * Schemes are defined in IETF RFC 8017:
  *   https://www.rfc-editor.org/rfc/rfc8017
  *
- * In PSS padding mode, the mask generation function (MGF) is determined by the
- * hash function used for the message:
- * - If the message is hashed with a SHA-2 or SHA-3 hash function, PSS padding
- *   will use MGF1 with the same hash function.
- * - If the message is hashed with a SHAKE128 or SHAKE256 XOF, PSS padding will
- *   use the same XOF as the MGF, as described in FIPS 186-5.
+ * In PSS padding mode, the mask generation function (MGF) is MGF1 with the
+ * same SHA-1 or SHA-2 hash function used for the message (SHA-3 and XOFs are
+ * not supported in PSS mode).
  *
  * Values in this enum should match the top-level `otcrypto_rsa_padding` enum
  * from `sw/device/lib/crypto/include/rsa.h`.
