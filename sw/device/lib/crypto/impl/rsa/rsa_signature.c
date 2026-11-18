@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/math.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/crypto/drivers/rv_core_ibex.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/hash.h"
 #include "sw/device/lib/crypto/impl/rsa/rsa_padding.h"
 #include "sw/device/lib/crypto/impl/rsa/run_rsa.h"
@@ -63,6 +64,11 @@ OT_WARN_UNUSED_RESULT
 static status_t rsa_digest_check_fips(
     const otcrypto_hash_digest_t message_digest,
     const rsa_signature_padding_t padding_mode, size_t encoded_message_len) {
+  if (launder32(message_digest.mode) == kOtcryptoHashModeNull) {
+    HARDENED_CHECK_EQ(message_digest.mode, kOtcryptoHashModeNull);
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+    return OTCRYPTO_OK;
+  }
   // Per NIST SP 800-57 Part 1 Table 3, the security strength of a hash function
   // for digital signatures (collision resistance) is half its output size (N/2
   // bits):
