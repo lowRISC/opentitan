@@ -192,6 +192,13 @@ otcrypto_status_t otcrypto_rsa_private_key_from_exponents(
  * should allocate space for the public key and set the `key` and `key_length`
  * fields.
  *
+ * The public key returned from this function is recomputed assuming two
+ * distinct prime factors; we recommend that the caller compare it to the
+ * originally passed `modulus` value to ensure that everything went as
+ * expected. If the key is invalid in certain ways (such as `modulus` not being
+ * divisible by the cofactor), then the recomputed modulus will not match the
+ * original input.
+ *
  * @param size RSA size parameter.
  * @param modulus RSA modulus (n).
  * @param cofactor_share0 First share of the prime cofactor (p or q).
