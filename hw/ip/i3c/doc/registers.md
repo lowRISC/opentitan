@@ -1715,7 +1715,7 @@ HCI Version.
 ## HC_CONTROL
 Host Controller Control.
 - Offset: `0x184`
-- Reset default: `0x48`
+- Reset default: `0x40`
 - Reset mask: `0xe00011d9`
 
 ### Fields
@@ -1737,7 +1737,7 @@ Host Controller Control.
 |   6    |   ro   |   0x1   | MODE_SELECTOR           | DMA/PIO Mode Selector.            |
 |   5    |        |         |                         | Reserved                          |
 |   4    |   ro   |   0x0   | DATA_BYTE_ORDER_MODE    | Data Byte Ordering Mode.          |
-|   3    |   rw   |   0x1   | AUTOCMD_DATA_RPT        | Auto-Command Data Report.         |
+|   3    |   rw   |   0x0   | AUTOCMD_DATA_RPT        | Auto-Command Data Report.         |
 |  2:1   |        |         |                         | Reserved                          |
 |   0    |   rw   |   0x0   | IBA_INCLUDE             | Include I3C Broadcast Address.    |
 
