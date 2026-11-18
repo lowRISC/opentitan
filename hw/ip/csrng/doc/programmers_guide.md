@@ -67,7 +67,7 @@ Providing this sequence as additional data to CSRNG requires software to write t
 
 When reading the internal state of an instance from [`INT_STATE_VAL`](registers.md#int_state_val) (see [Internal-State Save and Restore](#internal-state-save-and-restore) below), CSRNG returns 26 words: the reseed counter, the bytes of V and Key, the additional data of a Generate command halted mid-sequence, and finally the status and Generate command state, in the following order:
 <table>
-<caption>Byte order when reading from [`INT_STATE_VAL`](data/csrng.hjson#int_state_val)</caption>
+<caption>Byte order when reading from or writing to [`INT_STATE_VAL`](registers.md#int_state_val)</caption>
 <thead>
   <tr>
     <th>Word Index</th>
@@ -134,7 +134,7 @@ CSRNG supports pausing a single instance via [`INT_STATE_HALT`](registers.md#int
 1. Set [`INT_STATE_HALT`](registers.md#int_state_halt) to `kMultiBitBool4True`.
    The halt applies to the instance selected by [`INT_STATE_NUM`](registers.md#int_state_num), so only one instance can be halted at a time.
    While [`INT_STATE_HALT`](registers.md#int_state_halt) is set, [`INT_STATE_NUM_REGWEN`](registers.md#int_state_num_regwen) is cleared and [`INT_STATE_NUM`](registers.md#int_state_num) cannot be written.
-1. Wait for the instance to quiesce, either by polling [`INT_STATE_STS`](registers.md#int_state_sts) or by waiting for the `cs_cmd_req_done` interrupt.
+1. Wait for the instance to quiesce, either by polling [`INT_STATE_STS.HALTED`](registers.md#int_state_sts) or by waiting for the `cs_cmd_req_done` interrupt.
 1. Read all 26 words of the internal state through [`INT_STATE_VAL`](registers.md#int_state_val) to save it, or write all 26 words to restore it.
    Reserved bits are ignored on writes and read as 0.
    The internal state includes the state of a Generate command halted mid-sequence, which continues once the instance is resumed.
