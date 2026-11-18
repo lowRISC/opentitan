@@ -1057,6 +1057,7 @@ otcrypto_status_t otcrypto_ecdh_p256_async_finalize(
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
+  HARDENED_TRY(keyblob_ensure_xor_masked(shared_secret->config));
 
   // Shared keys cannot be sideloaded because they are software-generated.
   if (launder32(shared_secret->config.hw_backed) != kHardenedBoolFalse) {

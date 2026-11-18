@@ -74,6 +74,15 @@ static const uint32_t kSharedSecret[] = {
       .security_level = kOtcryptoKeySecurityLevelLow, \
   })
 
+#define kSharedSecretConfig                           \
+  ((otcrypto_key_config_t){                           \
+      .version = otcrypto_lib_version(),              \
+      .key_mode = kOtcryptoKeyModeAesCtr,             \
+      .key_length = kX25519SharedSecretBytes,         \
+      .hw_backed = kHardenedBoolFalse,                \
+      .security_level = kOtcryptoKeySecurityLevelLow, \
+  })
+
 /**
  * Helper function to securely populate the keyblob array with two shares.
  */
@@ -120,9 +129,9 @@ status_t x25519_kat_test(void) {
       otcrypto_integrity_unblinded_checksum(&public_key_bob);
 
   // Set up shared secret struct.
-  uint32_t shared_secret_keyblob[keyblob_num_words(kPrivateKeyConfig)];
+  uint32_t shared_secret_keyblob[keyblob_num_words(kSharedSecretConfig)];
   otcrypto_blinded_key_t shared_secret = {
-      .config = kPrivateKeyConfig,
+      .config = kSharedSecretConfig,
       .keyblob_length = sizeof(shared_secret_keyblob),
       .keyblob = shared_secret_keyblob,
   };
@@ -242,15 +251,15 @@ status_t x25519_keygen_test(void) {
   TRY_CHECK_ARRAYS_NE(public_key_a.key, public_key_b.key,
                       kX25519PublicKeyWords);
 
-  uint32_t shared_secret_blob_a[keyblob_num_words(kPrivateKeyConfig)];
+  uint32_t shared_secret_blob_a[keyblob_num_words(kSharedSecretConfig)];
   otcrypto_blinded_key_t shared_secret_a = {
-      .config = kPrivateKeyConfig,
+      .config = kSharedSecretConfig,
       .keyblob_length = sizeof(shared_secret_blob_a),
       .keyblob = shared_secret_blob_a,
   };
-  uint32_t shared_secret_blob_b[keyblob_num_words(kPrivateKeyConfig)];
+  uint32_t shared_secret_blob_b[keyblob_num_words(kSharedSecretConfig)];
   otcrypto_blinded_key_t shared_secret_b = {
-      .config = kPrivateKeyConfig,
+      .config = kSharedSecretConfig,
       .keyblob_length = sizeof(shared_secret_blob_b),
       .keyblob = shared_secret_blob_b,
   };
