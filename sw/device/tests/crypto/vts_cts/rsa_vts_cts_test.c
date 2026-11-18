@@ -490,21 +490,21 @@ static status_t rsa_vts_signing_pkcs1_and_pss_hashes_test(void) {
   otcrypto_unblinded_key_t public_key;
   otcrypto_blinded_key_t private_key;
 
+  const size_t kSplit = kTestMessageLen / 2;
   otcrypto_const_byte_buf_t msg_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, kTestMessage, kTestMessageLen);
-  uint32_t sha256_words[256 / 32];
-  otcrypto_hash_digest_t sha256_digest = {
-      .mode = kOtcryptoHashModeSha256,
-      .data = sha256_words,
-      .len = ARRAYSIZE(sha256_words),
-  };
-  TRY(otcrypto_sha2_256(&msg_buf, &sha256_digest));
+  otcrypto_const_byte_buf_t msg_part0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kTestMessage, kSplit);
+  otcrypto_const_byte_buf_t msg_part1 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kTestMessage + kSplit,
+                        kTestMessageLen - kSplit);
 
   const otcrypto_rsa_padding_t kPaddings[2] = {kOtcryptoRsaPaddingPkcs,
                                                kOtcryptoRsaPaddingPss};
   const otcrypto_key_mode_t kKeyModes[2] = {kOtcryptoKeyModeRsaSignPkcs,
                                             kOtcryptoKeyModeRsaSignPss};
 
+  otcrypto_hash_context_t hash_ctx;
   for (size_t p = 0; p < ARRAYSIZE(kPaddings); ++p) {
     TRY(construct_rsa2048_keypair(kKeyModes[p], pub_data, &public_key,
                                   priv_blob, &private_key));
@@ -514,18 +514,28 @@ static status_t rsa_vts_signing_pkcs1_and_pss_hashes_test(void) {
     otcrypto_const_word32_buf_t const_sig_buf =
         OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, ARRAYSIZE(sig));
 
-    TRY(otcrypto_rsa_sign(&private_key, sha256_digest, kPaddings[p], &sig_buf));
+    // Sign across two streaming `update` chunks (`begin` -> `update` ->
+    // `finish`).
+    TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+    TRY(otcrypto_hash_update(&hash_ctx, &msg_part0));
+    TRY(otcrypto_hash_update(&hash_ctx, &msg_part1));
+    TRY(otcrypto_rsa_hash_sign_verify_final(&private_key, &public_key,
+                                            &hash_ctx, kPaddings[p], &sig_buf));
     hardened_bool_t verif_ok = kHardenedBoolFalse;
-    TRY(otcrypto_rsa_verify(&public_key, sha256_digest, kPaddings[p],
-                            &const_sig_buf, &verif_ok));
+    TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+    TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+    TRY(otcrypto_rsa_hash_verify_final(&public_key, &hash_ctx, kPaddings[p],
+                                       &const_sig_buf, &verif_ok));
     TRY_CHECK(verif_ok == kHardenedBoolTrue);
 
     // KeyMintTest.cpp:2998: Corrupt middle word of signature and verify
     // verification fails (`verif_ok == kHardenedBoolFalse`).
     sig[kRsa2048NumWords / 2] ^= 1u;
     verif_ok = kHardenedBoolTrue;
-    TRY(otcrypto_rsa_verify(&public_key, sha256_digest, kPaddings[p],
-                            &const_sig_buf, &verif_ok));
+    TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+    TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+    TRY(otcrypto_rsa_hash_verify_final(&public_key, &hash_ctx, kPaddings[p],
+                                       &const_sig_buf, &verif_ok));
     TRY_CHECK(verif_ok == kHardenedBoolFalse);
   }
 
@@ -563,7 +573,6 @@ static status_t rsa_vts_signing_pkcs1_and_pss_hashes_test(void) {
   };
   otcrypto_const_byte_buf_t cts_msg_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_byte_buf_t, kCtsSigMsg, sizeof(kCtsSigMsg));
-  TRY(otcrypto_sha2_256(&cts_msg_buf, &sha256_digest));
 
   otcrypto_const_word32_buf_t key1_mod = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, kCtsRsaKey1Modulus, kRsa2048NumWords);
@@ -598,15 +607,20 @@ static status_t rsa_vts_signing_pkcs1_and_pss_hashes_test(void) {
   uint32_t sig[kRsa2048NumWords];
   otcrypto_word32_buf_t sig_buf =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
-  TRY(otcrypto_rsa_sign(&private_key, sha256_digest, kOtcryptoRsaPaddingPkcs,
-                        &sig_buf));
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &cts_msg_buf));
+  TRY(otcrypto_rsa_hash_sign_verify_final(&private_key, &public_key, &hash_ctx,
+                                          kOtcryptoRsaPaddingPkcs, &sig_buf));
   TRY_CHECK_ARRAYS_EQ(sig, kCtsRsaPkcs1Sha256Sig, kRsa2048NumWords);
 
   otcrypto_const_word32_buf_t kat_sig_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, kCtsRsaPkcs1Sha256Sig, kRsa2048NumWords);
   hardened_bool_t verif_ok = kHardenedBoolFalse;
-  TRY(otcrypto_rsa_verify(&public_key, sha256_digest, kOtcryptoRsaPaddingPkcs,
-                          &kat_sig_buf, &verif_ok));
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &cts_msg_buf));
+  TRY(otcrypto_rsa_hash_verify_final(&public_key, &hash_ctx,
+                                     kOtcryptoRsaPaddingPkcs, &kat_sig_buf,
+                                     &verif_ok));
   TRY_CHECK(verif_ok == kHardenedBoolTrue);
 
   public_key.key_mode = kOtcryptoKeyModeRsaSignPss;
@@ -615,8 +629,10 @@ static status_t rsa_vts_signing_pkcs1_and_pss_hashes_test(void) {
   otcrypto_const_word32_buf_t kat_pss_buf = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, kCtsRsaPssSha256Sig, kRsa2048NumWords);
   verif_ok = kHardenedBoolFalse;
-  TRY(otcrypto_rsa_verify(&public_key, sha256_digest, kOtcryptoRsaPaddingPss,
-                          &kat_pss_buf, &verif_ok));
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &cts_msg_buf));
+  TRY(otcrypto_rsa_hash_verify_final(
+      &public_key, &hash_ctx, kOtcryptoRsaPaddingPss, &kat_pss_buf, &verif_ok));
   TRY_CHECK(verif_ok == kHardenedBoolTrue);
 
   // Android CTS `SignatureTest.java:288-330, 756` (`LONG_MSG_KAT_SIGNATURES` /

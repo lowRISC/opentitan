@@ -103,7 +103,6 @@
 
 enum {
   kP256CoordWords = 256 / 32,
-  kSha256DigestWords = 256 / 32,
   kP256PointWords = 2 * kP256CoordWords,
   kP256MaskedScalarShareWords = 10,
   kP256KeyblobBytes = 80,
@@ -251,9 +250,10 @@ static status_t ecc_p256_point_on_curve_test(void) {
  *     `TEST_P(SigningOperationsTest, EcdsaAllCurves)`
  *   - `SignatureTest.java:114-119` (`SHA256withECDSA` KAT signature)
  *
- * Verifies StrongBox P-256 ECDSA keygen, sign_verify, verify with `SHA-256`,
- * rejection of tampered or zero `(r, s)` signatures, and the Android CTS
- * `SHA256withECDSA` KAT vector.
+ * Verifies StrongBox P-256 ECDSA keygen, streaming `hash_sign_verify_final` and
+ * `hash_verify_final` with `SHA-256` (including multi-chunk updates), rejection
+ * of tampered or zero `(r, s)` signatures, and the Android CTS
+ * `SHA256withECDSA` KAT vectors.
  */
 static status_t ecdsa_p256_sign_verify_and_invalid_sig_test(void) {
   LOG_INFO(
@@ -281,27 +281,35 @@ static status_t ecdsa_p256_sign_verify_and_invalid_sig_test(void) {
   TRY(otcrypto_ecdsa_p256_keygen(&priv_key, &pub_key));
 
   const uint8_t kMsg[] = "KeyMint VTS ECDSA P-256 test payload";
+  const size_t kMsgLen = sizeof(kMsg) - 1;
+  const size_t kSplit = kMsgLen / 2;
   otcrypto_const_byte_buf_t msg_buf =
-      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kMsg, sizeof(kMsg) - 1);
-  uint32_t msg_digest_words[kSha256DigestWords];
-  otcrypto_hash_digest_t msg_digest = {
-      .mode = kOtcryptoHashModeSha256,
-      .data = msg_digest_words,
-      .len = ARRAYSIZE(msg_digest_words),
-  };
-  TRY(otcrypto_sha2_256(&msg_buf, &msg_digest));
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kMsg, kMsgLen);
+  otcrypto_const_byte_buf_t msg_part0 =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kMsg, kSplit);
+  otcrypto_const_byte_buf_t msg_part1 = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_byte_buf_t, kMsg + kSplit, kMsgLen - kSplit);
 
   uint32_t sig_words[kP256PointWords];
   otcrypto_word32_buf_t sig_out =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig_words, ARRAYSIZE(sig_words));
 
-  TRY(otcrypto_ecdsa_p256_sign_verify(&priv_key, &pub_key, msg_digest,
-                                      &sig_out));
+  // Sign across two streaming `update` chunks (`begin` -> `update` ->
+  // `finish`).
+  otcrypto_hash_context_t hash_ctx;
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &msg_part0));
+  TRY(otcrypto_hash_update(&hash_ctx, &msg_part1));
+  TRY(otcrypto_ecdsa_p256_hash_sign_verify_final(&priv_key, &pub_key, &hash_ctx,
+                                                 &sig_out));
 
   otcrypto_const_word32_buf_t sig_in = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, sig_words, ARRAYSIZE(sig_words));
   hardened_bool_t verif_ok = kHardenedBoolFalse;
-  TRY(otcrypto_ecdsa_p256_verify(&pub_key, msg_digest, &sig_in, &verif_ok));
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+  TRY(otcrypto_ecdsa_p256_hash_verify_final(&pub_key, &hash_ctx, &sig_in,
+                                            &verif_ok));
   TRY_CHECK(verif_ok == kHardenedBoolTrue);
 
   // Flip a bit in s and verify signature is rejected.
@@ -309,8 +317,10 @@ static status_t ecdsa_p256_sign_verify_and_invalid_sig_test(void) {
   otcrypto_const_word32_buf_t tampered_sig_in = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, sig_words, ARRAYSIZE(sig_words));
   verif_ok = kHardenedBoolTrue;
-  TRY(otcrypto_ecdsa_p256_verify(&pub_key, msg_digest, &tampered_sig_in,
-                                 &verif_ok));
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+  TRY(otcrypto_ecdsa_p256_hash_verify_final(&pub_key, &hash_ctx,
+                                            &tampered_sig_in, &verif_ok));
   TRY_CHECK(verif_ok == kHardenedBoolFalse);
 
   // Zero signature (r = 0, s = 0) must be rejected (either via
@@ -319,8 +329,10 @@ static status_t ecdsa_p256_sign_verify_and_invalid_sig_test(void) {
   otcrypto_const_word32_buf_t zero_sig_in = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, sig_words, ARRAYSIZE(sig_words));
   verif_ok = kHardenedBoolTrue;
-  otcrypto_status_t zero_status =
-      otcrypto_ecdsa_p256_verify(&pub_key, msg_digest, &zero_sig_in, &verif_ok);
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+  otcrypto_status_t zero_status = otcrypto_ecdsa_p256_hash_verify_final(
+      &pub_key, &hash_ctx, &zero_sig_in, &verif_ok);
   TRY_CHECK(zero_status.value == OTCRYPTO_BAD_ARGS.value ||
             (zero_status.value == OTCRYPTO_OK.value &&
              verif_ok == kHardenedBoolFalse));
@@ -351,16 +363,11 @@ static status_t ecdsa_p256_sign_verify_and_invalid_sig_test(void) {
       otcrypto_const_byte_buf_t, kCtsEcdsaMsg, sizeof(kCtsEcdsaMsg));
   otcrypto_const_word32_buf_t cts_sha256_sig_in = OTCRYPTO_MAKE_BUF(
       otcrypto_const_word32_buf_t, kCtsEcdsaSha256Sig, kP256PointWords);
-  uint32_t cts_msg_digest_words[kSha256DigestWords];
-  otcrypto_hash_digest_t cts_msg_digest = {
-      .mode = kOtcryptoHashModeSha256,
-      .data = cts_msg_digest_words,
-      .len = ARRAYSIZE(cts_msg_digest_words),
-  };
-  TRY(otcrypto_sha2_256(&cts_ecdsa_msg_buf, &cts_msg_digest));
   verif_ok = kHardenedBoolFalse;
-  TRY(otcrypto_ecdsa_p256_verify(&cts_ec_pub, cts_msg_digest,
-                                 &cts_sha256_sig_in, &verif_ok));
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &cts_ecdsa_msg_buf));
+  TRY(otcrypto_ecdsa_p256_hash_verify_final(&cts_ec_pub, &hash_ctx,
+                                            &cts_sha256_sig_in, &verif_ok));
   TRY_CHECK(verif_ok == kHardenedBoolTrue);
 
   // Android CTS `SignatureTest.java:242-248, 756`
@@ -371,11 +378,12 @@ static status_t ecdsa_p256_sign_verify_and_invalid_sig_test(void) {
   // message digest `kCtsSigLongMsgSha256Digest`.
   uint32_t sha512_words[512 / 32];
   otcrypto_hash_digest_t sha512_digest = {
-      .mode = kOtcryptoHashModeSha512,
       .data = sha512_words,
       .len = ARRAYSIZE(sha512_words),
   };
-  TRY(otcrypto_sha2_512(&cts_ecdsa_msg_buf, &sha512_digest));
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha512));
+  TRY(otcrypto_hash_update(&hash_ctx, &cts_ecdsa_msg_buf));
+  TRY(otcrypto_hash_final(&hash_ctx, &sha512_digest));
   TRY_CHECK_ARRAYS_EQ((const uint8_t *)sha512_words, kCtsSigLongMsgPrefix32,
                       sizeof(kCtsSigLongMsgPrefix32));
 
@@ -427,10 +435,15 @@ static status_t ecdsa_p256_sign_verify_and_invalid_sig_test(void) {
     TRY(otcrypto_ecc_p256_point_on_curve(&pub_key, &on_curve));
     TRY_CHECK(on_curve == kHardenedBoolTrue);
 
-    TRY(otcrypto_ecdsa_p256_sign_verify(&priv_key, &pub_key, msg_digest,
-                                        &sig_out));
+    TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+    TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+    TRY(otcrypto_ecdsa_p256_hash_sign_verify_final(&priv_key, &pub_key,
+                                                   &hash_ctx, &sig_out));
     verif_ok = kHardenedBoolFalse;
-    TRY(otcrypto_ecdsa_p256_verify(&pub_key, msg_digest, &sig_in, &verif_ok));
+    TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+    TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+    TRY(otcrypto_ecdsa_p256_hash_verify_final(&pub_key, &hash_ctx, &sig_in,
+                                              &verif_ok));
     TRY_CHECK(verif_ok == kHardenedBoolTrue);
   }
 
@@ -726,22 +739,24 @@ static status_t hmac_vts_test(void) {
   TRY(otcrypto_hmac_init(&hmac_ctx, &cts_def64_key));
   uint32_t prng_seed_words[512 / 32];
   otcrypto_hash_digest_t prng_digest = {
-      .mode = kOtcryptoHashModeSha512,
       .data = prng_seed_words,
       .len = ARRAYSIZE(prng_seed_words),
   };
   size_t remaining = 1024 + 149;
   bool first_chunk = true;
   while (remaining > 0) {
+    otcrypto_hash_context_t hash_ctx;
+    TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha512));
     if (first_chunk) {
-      TRY(otcrypto_sha2_512(&cts_mac_msg_in, &prng_digest));
+      TRY(otcrypto_hash_update(&hash_ctx, &cts_mac_msg_in));
       first_chunk = false;
     } else {
       otcrypto_const_byte_buf_t prev_seed = OTCRYPTO_MAKE_BUF(
           otcrypto_const_byte_buf_t, (const uint8_t *)prng_seed_words,
           sizeof(prng_seed_words));
-      TRY(otcrypto_sha2_512(&prev_seed, &prng_digest));
+      TRY(otcrypto_hash_update(&hash_ctx, &prev_seed));
     }
+    TRY(otcrypto_hash_final(&hash_ctx, &prng_digest));
     size_t chunk_len = remaining < sizeof(prng_seed_words)
                            ? remaining
                            : sizeof(prng_seed_words);
@@ -977,18 +992,15 @@ static status_t ecdsa_all_digests_and_curves_vts_test(void) {
   const uint8_t kMsg[] = "KeyMint VTS EcdsaAllDigestsAndCurves";
   otcrypto_const_byte_buf_t msg_in =
       OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t, kMsg, sizeof(kMsg) - 1);
-  uint32_t msg_digest_words[kSha256DigestWords];
-  otcrypto_hash_digest_t msg_digest = {
-      .mode = kOtcryptoHashModeSha256,
-      .data = msg_digest_words,
-      .len = ARRAYSIZE(msg_digest_words),
-  };
-  TRY(otcrypto_sha2_256(&msg_in, &msg_digest));
 
   uint32_t ecdsa_sig[kP256PointWords];
   otcrypto_word32_buf_t ecdsa_sig_out =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, ecdsa_sig, ARRAYSIZE(ecdsa_sig));
-  TRY(otcrypto_ecdsa_p256_sign_verify(&priv, &pub, msg_digest, &ecdsa_sig_out));
+  otcrypto_hash_context_t hash_ctx;
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &msg_in));
+  TRY(otcrypto_ecdsa_p256_hash_sign_verify_final(&priv, &pub, &hash_ctx,
+                                                 &ecdsa_sig_out));
 
   // `ECDSASignatureTest.testECDSANonceReuse` (`ECDSASignatureTest.java:142`):
   // Signing the same message twice must produce distinct `(r, s)` signatures,
@@ -996,9 +1008,28 @@ static status_t ecdsa_all_digests_and_curves_vts_test(void) {
   uint32_t ecdsa_sig2[kP256PointWords];
   otcrypto_word32_buf_t ecdsa_sig2_out = OTCRYPTO_MAKE_BUF(
       otcrypto_word32_buf_t, ecdsa_sig2, ARRAYSIZE(ecdsa_sig2));
-  TRY(otcrypto_ecdsa_p256_sign_verify(&priv, &pub, msg_digest,
-                                      &ecdsa_sig2_out));
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &msg_in));
+  TRY(otcrypto_ecdsa_p256_hash_sign_verify_final(&priv, &pub, &hash_ctx,
+                                                 &ecdsa_sig2_out));
   TRY_CHECK(memcmp(ecdsa_sig, ecdsa_sig2, sizeof(ecdsa_sig)) != 0);
+
+  otcrypto_const_word32_buf_t ecdsa_sig1_in = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, ecdsa_sig, ARRAYSIZE(ecdsa_sig));
+  otcrypto_const_word32_buf_t ecdsa_sig2_in = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, ecdsa_sig2, ARRAYSIZE(ecdsa_sig2));
+  hardened_bool_t nonce_verif_ok = kHardenedBoolFalse;
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &msg_in));
+  TRY(otcrypto_ecdsa_p256_hash_verify_final(&pub, &hash_ctx, &ecdsa_sig1_in,
+                                            &nonce_verif_ok));
+  TRY_CHECK(nonce_verif_ok == kHardenedBoolTrue);
+  nonce_verif_ok = kHardenedBoolFalse;
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &msg_in));
+  TRY(otcrypto_ecdsa_p256_hash_verify_final(&pub, &hash_ctx, &ecdsa_sig2_in,
+                                            &nonce_verif_ok));
+  TRY_CHECK(nonce_verif_ok == kHardenedBoolTrue);
 
   // 1. Android CTS `SignatureTest.java:103-107` (`NONEwithECDSA` short-message
   // KAT over 23-byte `kCtsEcdsaMsg`) and `SignatureTest.java:236-241, 756`
