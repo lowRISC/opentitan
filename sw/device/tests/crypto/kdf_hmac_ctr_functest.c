@@ -1216,6 +1216,21 @@ static status_t run_hmac_kdf_negative_tests(void) {
   CHECK(otcrypto_kdf_ctr_hmac(&valid_kdk, &valid_buf, &buf_with_zero, &valid_km)
             .value == OTCRYPTO_OK.value);
 
+  // Hardware-backed input key derivation key must be rejected.
+  uint32_t hw_kdk_blob[kKeyblobHwBackedWords] = {0};
+  otcrypto_key_config_t hw_kdk_cfg = valid_kdk.config;
+  hw_kdk_cfg.key_length = 32;
+  hw_kdk_cfg.hw_backed = kHardenedBoolTrue;
+  otcrypto_blinded_key_t hw_kdk = {
+      .config = hw_kdk_cfg,
+      .keyblob_length = sizeof(hw_kdk_blob),
+      .keyblob = hw_kdk_blob,
+  };
+  hw_kdk.checksum = otcrypto_integrity_blinded_checksum(&hw_kdk);
+  CHECK(
+      otcrypto_kdf_ctr_hmac(&hw_kdk, &valid_buf, &valid_buf, &valid_km).value ==
+      OTCRYPTO_BAD_ARGS.value);
+
   return OTCRYPTO_OK;
 }
 

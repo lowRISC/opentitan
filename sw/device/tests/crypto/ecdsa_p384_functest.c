@@ -566,6 +566,28 @@ static status_t run_ecdsa_negative_tests(void) {
                                                       &valid_priv, valid_digest)
             .value != OTCRYPTO_OK.value);
 
+  // Hardware-backed keys must return BAD_ARGS (not trap) in sign_config_k.
+  otcrypto_key_config_t hw_priv_cfg = kPrivateKeyConfig;
+  hw_priv_cfg.hw_backed = kHardenedBoolTrue;
+  otcrypto_blinded_key_t hw_priv = {
+      .config = hw_priv_cfg,
+      .keyblob_length = 32,
+      .keyblob = priv_keyblob,
+  };
+  hw_priv.checksum = otcrypto_integrity_blinded_checksum(&hw_priv);
+  CHECK(otcrypto_ecdsa_p384_sign_config_k(&hw_priv, &valid_priv, valid_digest,
+                                          &valid_sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdsa_p384_sign_config_k(&valid_priv, &hw_priv, valid_digest,
+                                          &valid_sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdsa_p384_sign_config_k_async_start(&hw_priv, &valid_priv,
+                                                      valid_digest)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ecdsa_p384_sign_config_k_async_start(&valid_priv, &hw_priv,
+                                                      valid_digest)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
   return OTCRYPTO_OK;
 }
 

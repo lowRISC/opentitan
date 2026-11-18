@@ -39,11 +39,19 @@ OT_USED static void sideload_wipe_guard(hardened_bool_t *should_wipe) {
  */
 OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t load_private_scalar(
     const otcrypto_blinded_key_t *key, p256_masked_scalar_t *scalar) {
-  HARDENED_TRY(hardened_memcpy(scalar->share0, key->keyblob,
-                               kP256MaskedScalarTotalShareWords));
-  HARDENED_CHECK_EQ(hardened_memeq(key->keyblob, scalar->share0,
-                                   kP256MaskedScalarTotalShareWords),
-                    kHardenedBoolTrue);
+  uint32_t *share0;
+  uint32_t *share1;
+  HARDENED_TRY(keyblob_to_shares(key, &share0, &share1));
+  HARDENED_TRY(
+      hardened_memcpy(scalar->share0, share0, kP256MaskedScalarShareWords));
+  HARDENED_TRY(
+      hardened_memcpy(scalar->share1, share1, kP256MaskedScalarShareWords));
+  HARDENED_CHECK_EQ(
+      hardened_memeq(share0, scalar->share0, kP256MaskedScalarShareWords),
+      kHardenedBoolTrue);
+  HARDENED_CHECK_EQ(
+      hardened_memeq(share1, scalar->share1, kP256MaskedScalarShareWords),
+      kHardenedBoolTrue);
   scalar->checksum = p256_masked_scalar_checksum(scalar);
   return OTCRYPTO_OK;
 }
@@ -649,18 +657,18 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k_async_start(
   HARDENED_TRY(otcrypto_ecdsa_p256_sign_async_start_setup(secret_scalar,
                                                           message_digest));
 
-  // Load the secret key d.
-  HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
-                    kHardenedBoolFalse);
+  // Load the secret key d (rejects hw_backed keys with BAD_ARGS).
   p256_masked_scalar_t private_scalar;
   HARDENED_TRY(load_private_scalar(private_key, &private_scalar));
+  HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
+                    kHardenedBoolFalse);
 
   // Load the secret scalar k.
   // The use of fixed scalars should be limited to KATs.
-  HARDENED_CHECK_EQ(launder32(secret_scalar->config.hw_backed),
-                    kHardenedBoolFalse);
   p256_masked_scalar_t config_k_scalar;
   HARDENED_TRY(load_private_scalar(secret_scalar, &config_k_scalar));
+  HARDENED_CHECK_EQ(launder32(secret_scalar->config.hw_backed),
+                    kHardenedBoolFalse);
 
   HARDENED_TRY_WIPE_DMEM(p256_ecdsa_sign_config_k_start(
       message_digest.data, &private_scalar, &config_k_scalar));

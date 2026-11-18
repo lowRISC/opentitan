@@ -115,6 +115,8 @@ otcrypto_status_t otcrypto_kdf_ctr_hmac(
   HARDENED_TRY(digest_num_words_from_key_mode(
       key_derivation_key->config.key_mode, &digest_word_len));
 
+  HARDENED_TRY(keyblob_ensure_xor_masked(key_derivation_key->config));
+
   // Ensure that the derived key is a symmetric key masked with XOR and is not
   // supposed to be hardware-backed.
   HARDENED_TRY(keyblob_ensure_xor_masked(output_key_material->config));
