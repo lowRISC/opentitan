@@ -9,6 +9,7 @@
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/keymgr.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
+#include "sw/device/lib/crypto/impl/cmvp.h"
 
 #include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
 
@@ -355,8 +356,10 @@ status_t p384_ecdsa_sign_finalize(p384_ecdsa_signature_t *result) {
   ins_cnt = otbn_instruction_count_get();
   if (launder32(ins_cnt) == kModeEcdsaSignSideloadInsCnt) {
     HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignSideloadInsCnt);
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   } else if (launder32(ins_cnt) == kModeEcdsaSignConfigKInsCnt) {
     HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignConfigKInsCnt);
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
   } else {
     HARDENED_CHECK_EQ(ins_cnt, kModeEcdsaSignInsCnt);
   }

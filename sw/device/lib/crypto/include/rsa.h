@@ -671,6 +671,74 @@ otcrypto_status_t otcrypto_rsa_verify_async_finalize(
     otcrypto_rsa_padding_t padding_mode, hardened_bool_t *verification_result);
 
 /**
+ * Starts asynchronous streaming RSA digital signature generation with
+ * verification.
+ *
+ * See `otcrypto_rsa_hash_sign_verify_final` for requirements on input values.
+ * `ctx` is not modified by this call; pass the same `ctx` to
+ * `otcrypto_rsa_hash_sign_verify_final_async_finalize`, which finalizes and
+ * shreds it.
+ *
+ * @param private_key Pointer to blinded private key struct.
+ * @param ctx Streaming hash context.
+ * @param padding_mode Padding scheme to be used for the data.
+ * @return Result of async RSA sign-verify start operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_rsa_hash_sign_verify_final_async_start(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_hash_context_t *ctx, otcrypto_rsa_padding_t padding_mode);
+
+/**
+ * Finalizes asynchronous streaming RSA signature generation with verification.
+ *
+ * See `otcrypto_rsa_hash_sign_verify_final` for requirements on input values.
+ *
+ * @param public_key Pointer to public key struct.
+ * @param ctx Streaming hash context (finalized and shredded by this function).
+ * @param padding_mode Padding scheme to be used for the data.
+ * @param[out] signature Pointer to the generated signature struct.
+ * @return Result of async RSA sign-verify finalize operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_rsa_hash_sign_verify_final_async_finalize(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_context_t *ctx,
+    otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t *signature);
+
+/**
+ * Validates the public key and starts asynchronous streaming RSA signature
+ * verification.
+ *
+ * See `otcrypto_rsa_hash_verify_final` for requirements on input values.
+ *
+ * @param public_key Pointer to public key struct.
+ * @param padding_mode Padding scheme to be used for the data.
+ * @param signature Pointer to the input signature to be verified.
+ * @return Result of async RSA verify start operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_rsa_hash_verify_final_async_start(
+    const otcrypto_unblinded_key_t *public_key,
+    otcrypto_rsa_padding_t padding_mode,
+    const otcrypto_const_word32_buf_t *signature);
+
+/**
+ * Finalizes a streaming hash context and completes asynchronous RSA signature
+ * verification.
+ *
+ * See `otcrypto_rsa_hash_verify_final` for requirements on input values.
+ *
+ * @param ctx Streaming hash context (finalized and shredded by this function).
+ * @param padding_mode Padding scheme to be used for the data.
+ * @param[out] verification_result Result of signature verification.
+ * @return Result of async RSA verify finalize operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_rsa_hash_verify_final_async_finalize(
+    otcrypto_hash_context_t *ctx, otcrypto_rsa_padding_t padding_mode,
+    hardened_bool_t *verification_result);
+
+/**
  * Starts the asynchronous encryption function.
  *
  * See `otcrypto_rsa_encrypt` for details on the length requirements for

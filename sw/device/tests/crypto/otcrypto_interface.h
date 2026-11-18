@@ -427,6 +427,17 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*rsa_verify_async_finalize)(const otcrypto_hash_digest_t,
                                                  otcrypto_rsa_padding_t,
                                                  hardened_bool_t *);
+  otcrypto_status_t (*rsa_hash_sign_verify_final_async_start)(
+      const otcrypto_blinded_key_t *, const otcrypto_hash_context_t *,
+      otcrypto_rsa_padding_t);
+  otcrypto_status_t (*rsa_hash_sign_verify_final_async_finalize)(
+      const otcrypto_unblinded_key_t *, otcrypto_hash_context_t *,
+      otcrypto_rsa_padding_t, otcrypto_word32_buf_t *);
+  otcrypto_status_t (*rsa_hash_verify_final_async_start)(
+      const otcrypto_unblinded_key_t *, otcrypto_rsa_padding_t,
+      const otcrypto_const_word32_buf_t *);
+  otcrypto_status_t (*rsa_hash_verify_final_async_finalize)(
+      otcrypto_hash_context_t *, otcrypto_rsa_padding_t, hardened_bool_t *);
   otcrypto_status_t (*rsa_encrypt_async_start)(
       const otcrypto_unblinded_key_t *, const otcrypto_hash_mode_t,
       const otcrypto_const_byte_buf_t *, const otcrypto_const_byte_buf_t *);
@@ -511,6 +522,16 @@ typedef struct otcrypto_interface_t {
       const otcrypto_const_word32_buf_t *);
   otcrypto_status_t (*ecdsa_p256_verify_async_finalize)(
       const otcrypto_const_word32_buf_t *, hardened_bool_t *);
+  otcrypto_status_t (*ecdsa_p256_hash_sign_verify_final_async_start)(
+      const otcrypto_blinded_key_t *, const otcrypto_hash_context_t *);
+  otcrypto_status_t (*ecdsa_p256_hash_sign_verify_final_async_finalize)(
+      const otcrypto_unblinded_key_t *, otcrypto_hash_context_t *,
+      otcrypto_word32_buf_t *);
+  otcrypto_status_t (*ecdsa_p256_hash_verify_final_async_start)(
+      const otcrypto_unblinded_key_t *, otcrypto_hash_context_t *,
+      const otcrypto_const_word32_buf_t *);
+  otcrypto_status_t (*ecdsa_p256_hash_verify_final_async_finalize)(
+      const otcrypto_const_word32_buf_t *, hardened_bool_t *);
   otcrypto_status_t (*ecdh_p256_keygen_async_start)(
       const otcrypto_blinded_key_t *);
   otcrypto_status_t (*ecdh_p256_keygen_async_finalize)(
@@ -581,6 +602,16 @@ typedef struct otcrypto_interface_t {
       const otcrypto_unblinded_key_t *, const otcrypto_hash_digest_t,
       const otcrypto_const_word32_buf_t *);
   otcrypto_status_t (*ecdsa_p384_verify_async_finalize)(
+      const otcrypto_const_word32_buf_t *, hardened_bool_t *);
+  otcrypto_status_t (*ecdsa_p384_hash_sign_verify_final_async_start)(
+      const otcrypto_blinded_key_t *, const otcrypto_hash_context_t *);
+  otcrypto_status_t (*ecdsa_p384_hash_sign_verify_final_async_finalize)(
+      const otcrypto_unblinded_key_t *, otcrypto_hash_context_t *,
+      otcrypto_word32_buf_t *);
+  otcrypto_status_t (*ecdsa_p384_hash_verify_final_async_start)(
+      const otcrypto_unblinded_key_t *, otcrypto_hash_context_t *,
+      const otcrypto_const_word32_buf_t *);
+  otcrypto_status_t (*ecdsa_p384_hash_verify_final_async_finalize)(
       const otcrypto_const_word32_buf_t *, hardened_bool_t *);
   otcrypto_status_t (*ecdh_p384_keygen_async_start)(
       const otcrypto_blinded_key_t *);

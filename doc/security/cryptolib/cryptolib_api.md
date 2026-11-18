@@ -716,6 +716,10 @@ Always ensure that you fully understand the security implications of the padding
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_sign_async_finalize }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_verify_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_verify_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_hash_sign_verify_final_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_hash_sign_verify_final_async_finalize }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_hash_verify_final_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_hash_verify_final_async_finalize }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_encrypt_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_encrypt_async_finalize }}
 {{#header-snippet sw/device/lib/crypto/include/rsa.h otcrypto_rsa_decrypt_async_start }}
@@ -839,6 +843,12 @@ Each party should generate a key pair, exchange public keys, and then generate t
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_verify_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_verify_async_finalize }}
 
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_hash_sign_verify_final_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_hash_sign_verify_final_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_hash_verify_final_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecdsa_p256_hash_verify_final_async_finalize }}
+
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_keygen_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_keygen_async_finalize }}
 
@@ -848,6 +858,12 @@ Each party should generate a key pair, exchange public keys, and then generate t
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_verify_async_start }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_verify_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_hash_sign_verify_final_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_hash_sign_verify_final_async_finalize }}
+
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_hash_verify_final_async_start }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecdsa_p384_hash_verify_final_async_finalize }}
 
 #### ECDH
 

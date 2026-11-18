@@ -858,35 +858,17 @@ otcrypto_status_t otcrypto_rsa_hash_sign_verify_final(
     const otcrypto_unblinded_key_t *public_key, otcrypto_hash_context_t *ctx,
     otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t *signature) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_HASH_SIGN_VERIFY_FINAL);
-  OTCRYPTO_HEALTH_CHECK(kTestRsa4096SignBit);
-  if ((private_key != NULL &&
-       private_key->config.key_length == kOtcryptoRsa2048PrivateKeyBytes) ||
-      padding_mode == kOtcryptoRsaPaddingNull) {
-    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (public_key == NULL || public_key->key == NULL || signature == NULL ||
+      signature->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
   }
-  uint32_t digest_data[16];
-  otcrypto_hash_digest_t digest;
-  HARDENED_TRY(hash_context_final(ctx, digest_data, &digest));
-  if (digest.mode == kOtcryptoHashModeSha1) {
-    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
-  }
-  HARDENED_TRY(otcrypto_rsa_sign(private_key, digest, padding_mode, signature));
-  otcrypto_const_word32_buf_t signature_check = OTCRYPTO_MAKE_BUF(
-      otcrypto_const_word32_buf_t, signature->data, signature->len);
-  hardened_bool_t verification_result = kHardenedBoolFalse;
-  HARDENED_TRY(otcrypto_rsa_verify(public_key, digest, padding_mode,
-                                   &signature_check, &verification_result));
-  if (verification_result != kHardenedBoolTrue) {
-    // COVERAGE (FI CM) This check only fails if the signature generation was
-    // faulted.
-    crypto_state_t *state = NULL;
-    if (status_ok(read_state_pointer(&state)) && state != NULL) {
-      state->locked_state = kHardenedByteBoolTrue;
-    }
-    return OTCRYPTO_FATAL_ERR;
-  }
-  HARDENED_CHECK_EQ(verification_result, kHardenedBoolTrue);
-  return otcrypto_eval_exit(OTCRYPTO_OK);
+#endif
+  HARDENED_TRY(otcrypto_rsa_hash_sign_verify_final_async_start(private_key, ctx,
+                                                               padding_mode));
+  return otcrypto_eval_exit(otcrypto_rsa_hash_sign_verify_final_async_finalize(
+      public_key, ctx, padding_mode, signature));
 }
 
 otcrypto_status_t otcrypto_rsa_hash_verify_final(
@@ -896,30 +878,16 @@ otcrypto_status_t otcrypto_rsa_hash_verify_final(
     hardened_bool_t *verification_result) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_HASH_VERIFY_FINAL);
   OTCRYPTO_LOCKED_STATE_CHECK();
-  if (padding_mode == kOtcryptoRsaPaddingNull) {
-    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
-  }
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (public_key == NULL || public_key->key == NULL) {
+  if (ctx == NULL || verification_result == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
-#ifdef FIPS_MODE
-  // Public key validation (NIST SP 800-89, Section 5.3.3).
-  HARDENED_TRY(rsa_public_key_validate(public_key));
-#endif  // FIPS_MODE
-
-  uint32_t digest_data[16];
-  hardened_memshred(digest_data, ARRAYSIZE(digest_data));
-  otcrypto_hash_digest_t digest;
-  HARDENED_TRY(hash_context_final(ctx, digest_data, &digest));
-  if (digest.mode == kOtcryptoHashModeSha1) {
-    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
-  }
-  status_t status = otcrypto_rsa_verify(public_key, digest, padding_mode,
-                                        signature, verification_result);
-  hardened_memshred(digest_data, ARRAYSIZE(digest_data));
-  return otcrypto_eval_exit(status);
+  *verification_result = kHardenedBoolFalse;
+  HARDENED_TRY(otcrypto_rsa_hash_verify_final_async_start(
+      public_key, padding_mode, signature));
+  return otcrypto_eval_exit(otcrypto_rsa_hash_verify_final_async_finalize(
+      ctx, padding_mode, verification_result));
 }
 
 otcrypto_status_t otcrypto_rsa_encrypt(
@@ -1300,6 +1268,151 @@ otcrypto_status_t otcrypto_rsa_verify_async_finalize(
       message_digest, (rsa_signature_padding_t)padding_mode,
       verification_result));
   return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
+otcrypto_status_t otcrypto_rsa_hash_sign_verify_final_async_start(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_hash_context_t *ctx, otcrypto_rsa_padding_t padding_mode) {
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_RSA_HASH_SIGN_VERIFY_FINAL_ASYNC_START);
+  OTCRYPTO_HEALTH_CHECK(kTestRsa4096SignBit);
+  if ((private_key != NULL &&
+       private_key->config.key_length == kOtcryptoRsa2048PrivateKeyBytes) ||
+      padding_mode == kOtcryptoRsaPaddingNull) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (ctx == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  otcrypto_hash_context_t ctx_copy;
+  HARDENED_TRY(
+      hardened_memcpy(ctx_copy.data, ctx->data, ARRAYSIZE(ctx_copy.data)));
+  uint32_t digest_data[16];
+  hardened_memshred(digest_data, ARRAYSIZE(digest_data));
+  otcrypto_hash_digest_t digest;
+  status_t status = hash_context_final(&ctx_copy, digest_data, &digest);
+  hardened_memshred(ctx_copy.data, ARRAYSIZE(ctx_copy.data));
+  if (!status_ok(status)) {
+    hardened_memshred(digest_data, ARRAYSIZE(digest_data));
+    return status;
+  }
+  if (digest.mode == kOtcryptoHashModeSha1) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
+  status = otcrypto_rsa_sign_async_start(private_key, digest, padding_mode);
+  hardened_memshred(digest_data, ARRAYSIZE(digest_data));
+  return otcrypto_eval_exit(status);
+}
+
+otcrypto_status_t otcrypto_rsa_hash_sign_verify_final_async_finalize(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_context_t *ctx,
+    otcrypto_rsa_padding_t padding_mode, otcrypto_word32_buf_t *signature) {
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_RSA_HASH_SIGN_VERIFY_FINAL_ASYNC_FINALIZE);
+  OTCRYPTO_LOCKED_STATE_CHECK();
+  if ((public_key != NULL &&
+       public_key->key_length == kOtcryptoRsa2048PublicKeyBytes) ||
+      (signature != NULL && signature->len == kRsa2048NumWords) ||
+      padding_mode == kOtcryptoRsaPaddingNull) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
+  HARDENED_TRY(otcrypto_rsa_sign_async_finalize(signature));
+  uint32_t digest_data[16];
+  hardened_memshred(digest_data, ARRAYSIZE(digest_data));
+  otcrypto_hash_digest_t digest;
+  status_t status = hash_context_final(ctx, digest_data, &digest);
+  if (!status_ok(status)) {
+    hardened_memshred(digest_data, ARRAYSIZE(digest_data));
+    hardened_memshred(signature->data, signature->len);
+    return status;
+  }
+  if (digest.mode == kOtcryptoHashModeSha1) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
+  otcrypto_const_word32_buf_t signature_check = OTCRYPTO_MAKE_BUF(
+      otcrypto_const_word32_buf_t, signature->data, signature->len);
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  status = otcrypto_rsa_verify(public_key, digest, padding_mode,
+                               &signature_check, &verification_result);
+  hardened_memshred(digest_data, ARRAYSIZE(digest_data));
+  if (!status_ok(status)) {
+    hardened_memshred(signature->data, signature->len);
+    return status;
+  }
+  if (launder32(verification_result) != kHardenedBoolTrue) {
+    // COVERAGE (FI CM) This check only fails if the signature generation was
+    // faulted.
+    hardened_memshred(signature->data, signature->len);
+    crypto_state_t *state = NULL;
+    if (status_ok(read_state_pointer(&state)) && state != NULL) {
+      state->locked_state = kHardenedByteBoolTrue;
+    }
+    return OTCRYPTO_FATAL_ERR;
+  }
+  HARDENED_CHECK_EQ(verification_result, kHardenedBoolTrue);
+  return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
+otcrypto_status_t otcrypto_rsa_hash_verify_final_async_start(
+    const otcrypto_unblinded_key_t *public_key,
+    otcrypto_rsa_padding_t padding_mode,
+    const otcrypto_const_word32_buf_t *signature) {
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_RSA_HASH_VERIFY_FINAL_ASYNC_START);
+  OTCRYPTO_LOCKED_STATE_CHECK();
+  if (padding_mode == kOtcryptoRsaPaddingNull) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (public_key == NULL || public_key->key == NULL || signature == NULL ||
+      signature->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  HARDENED_TRY(key_mode_padding_check(public_key->key_mode, padding_mode));
+#ifdef FIPS_MODE
+  // Public key validation (NIST SP 800-89, Section 5.3.3).
+  HARDENED_TRY(rsa_public_key_validate(public_key));
+#endif  // FIPS_MODE
+  return otcrypto_eval_exit(
+      otcrypto_rsa_verify_async_start(public_key, signature));
+}
+
+otcrypto_status_t otcrypto_rsa_hash_verify_final_async_finalize(
+    otcrypto_hash_context_t *ctx, otcrypto_rsa_padding_t padding_mode,
+    hardened_bool_t *verification_result) {
+  OTCRYPTO_SET_CMVP_INDICATOR(
+      OTCRYPTO_FUNCTION_RSA_HASH_VERIFY_FINAL_ASYNC_FINALIZE);
+  OTCRYPTO_LOCKED_STATE_CHECK();
+  if (padding_mode == kOtcryptoRsaPaddingNull) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (verification_result == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  *verification_result = kHardenedBoolFalse;
+  uint32_t digest_data[16];
+  hardened_memshred(digest_data, ARRAYSIZE(digest_data));
+  otcrypto_hash_digest_t digest;
+  status_t status = hash_context_final(ctx, digest_data, &digest);
+  if (!status_ok(status)) {
+    if (status_ok(otbn_busy_wait_for_done())) {
+      (void)otbn_dmem_sec_wipe();
+    }
+    hardened_memshred(digest_data, ARRAYSIZE(digest_data));
+    return status;
+  }
+  if (digest.mode == kOtcryptoHashModeSha1) {
+    OTCRYPTO_CMVP_OVERRIDE_NOT_APPROVED();
+  }
+  status = otcrypto_rsa_verify_async_finalize(digest, padding_mode,
+                                              verification_result);
+  hardened_memshred(digest_data, ARRAYSIZE(digest_data));
+  return otcrypto_eval_exit(status);
 }
 
 static otcrypto_status_t rsa_encrypt_exp_async_start(

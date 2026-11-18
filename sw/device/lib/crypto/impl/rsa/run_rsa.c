@@ -645,8 +645,7 @@ status_t rsa_modulus_composite_check(rsa_size_t size, const uint32_t *modulus,
   HARDENED_TRY(otbn_dmem_write(1, &mode, kOtbnVarRsaMode));
   const otbn_addr_t kOtbnVarRsaN = OTBN_ADDR_T_INIT(run_rsa, rsa_n);
   HARDENED_TRY(otbn_dmem_write(num_words, modulus, kOtbnVarRsaN));
-  HARDENED_TRY(otbn_execute());
-  HARDENED_TRY(otbn_busy_wait_for_done());
+  HARDENED_TRY(otbn_execute_sync());
 
   // The test is variable time, so there is no instruction count check. Check
   // that the expected mode ran instead.

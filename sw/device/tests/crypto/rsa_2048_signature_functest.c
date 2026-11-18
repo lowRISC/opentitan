@@ -355,6 +355,24 @@ status_t pkcs1v15_verify_valid_test(void) {
                                      &verification_result));
   TRY_CHECK(verification_result == kHardenedBoolTrue);
 
+  memset(sig, 0, sizeof(sig));
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+  TRY(otcrypto_rsa_hash_sign_verify_final_async_start(&private_key, &hash_ctx,
+                                                      kOtcryptoRsaPaddingPkcs));
+  TRY(otcrypto_rsa_hash_sign_verify_final_async_finalize(
+      &public_key, &hash_ctx, kOtcryptoRsaPaddingPkcs, &sig_buf));
+  TRY_CHECK_ARRAYS_EQ(sig, kValidSignaturePkcs1v15,
+                      ARRAYSIZE(kValidSignaturePkcs1v15));
+  verification_result = kHardenedBoolFalse;
+  TRY(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  TRY(otcrypto_hash_update(&hash_ctx, &msg_buf));
+  TRY(otcrypto_rsa_hash_verify_final_async_start(
+      &public_key, kOtcryptoRsaPaddingPkcs, &const_sig_buf));
+  TRY(otcrypto_rsa_hash_verify_final_async_finalize(
+      &hash_ctx, kOtcryptoRsaPaddingPkcs, &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolTrue);
+
   return OK_STATUS();
 }
 

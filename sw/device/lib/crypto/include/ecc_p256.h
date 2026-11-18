@@ -498,6 +498,71 @@ otcrypto_status_t otcrypto_ecdsa_p256_verify_async_finalize(
     hardened_bool_t *verification_result);
 
 /**
+ * Starts asynchronous streaming signature generation with verification for
+ * ECDSA/P-256.
+ *
+ * See `otcrypto_ecdsa_p256_hash_sign_verify_final` for requirements on input
+ * values. `ctx` is not modified by this call; pass the same `ctx` to
+ * `otcrypto_ecdsa_p256_hash_sign_verify_final_async_finalize`, which finalizes
+ * and shreds it.
+ *
+ * @param private_key Pointer to the blinded private key (d) struct.
+ * @param ctx Streaming hash context.
+ * @return Result of async ECDSA sign-verify start operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p256_hash_sign_verify_final_async_start(
+    const otcrypto_blinded_key_t *private_key,
+    const otcrypto_hash_context_t *ctx);
+
+/**
+ * Finalizes asynchronous streaming signature generation with verification for
+ * ECDSA/P-256.
+ *
+ * See `otcrypto_ecdsa_p256_hash_sign_verify_final` for requirements on input
+ * values.
+ *
+ * @param public_key Pointer to the unblinded public key (Q) struct.
+ * @param ctx Streaming hash context (finalized and shredded by this function).
+ * @param[out] signature Pointer to the signature struct with (r,s) values.
+ * @return Result of async ECDSA sign-verify finalize operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p256_hash_sign_verify_final_async_finalize(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_context_t *ctx,
+    otcrypto_word32_buf_t *signature);
+
+/**
+ * Finalizes a streaming hash context and starts asynchronous signature
+ * verification for ECDSA/P-256.
+ *
+ * See `otcrypto_ecdsa_p256_hash_verify_final` for requirements on input values.
+ *
+ * @param public_key Pointer to the unblinded public key (Q) struct.
+ * @param ctx Streaming hash context (finalized and shredded by this function).
+ * @param signature Pointer to the signature to be verified.
+ * @return Result of async ECDSA verify start operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p256_hash_verify_final_async_start(
+    const otcrypto_unblinded_key_t *public_key, otcrypto_hash_context_t *ctx,
+    const otcrypto_const_word32_buf_t *signature);
+
+/**
+ * Finalizes asynchronous streaming signature verification for ECDSA/P-256.
+ *
+ * See `otcrypto_ecdsa_p256_hash_verify_final` for requirements on input values.
+ *
+ * @param signature Pointer to the signature being verified.
+ * @param[out] verification_result Whether the signature passed verification.
+ * @return Result of async ECDSA verify finalize operation.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_ecdsa_p256_hash_verify_final_async_finalize(
+    const otcrypto_const_word32_buf_t *signature,
+    hardened_bool_t *verification_result);
+
+/**
  * Starts asynchronous key generation for ECDH/P-256.
  *
  * See `otcrypto_ecdh_p256_keygen` for requirements on input values.

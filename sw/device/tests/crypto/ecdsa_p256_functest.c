@@ -144,6 +144,25 @@ static status_t sign_then_verify_test(void) {
       &public_key, &hash_ctx, &const_sig_buf, &verificationResult));
   TRY_CHECK(verificationResult == kHardenedBoolTrue);
 
+  // Test asynchronous streaming hash_sign_verify_final and hash_verify_final.
+  memset(sig, 0, sizeof(sig));
+  CHECK_STATUS_OK(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  CHECK_STATUS_OK(otcrypto_hash_update(&hash_ctx, &msg_part1));
+  CHECK_STATUS_OK(otcrypto_hash_update(&hash_ctx, &msg_part2));
+  CHECK_STATUS_OK(otcrypto_ecdsa_p256_hash_sign_verify_final_async_start(
+      &private_key, &hash_ctx));
+  CHECK_STATUS_OK(otcrypto_ecdsa_p256_hash_sign_verify_final_async_finalize(
+      &public_key, &hash_ctx, &sig_buf));
+  verificationResult = kHardenedBoolFalse;
+  CHECK_STATUS_OK(otcrypto_hash_init(&hash_ctx, kOtcryptoHashModeSha256));
+  CHECK_STATUS_OK(otcrypto_hash_update(&hash_ctx, &msg_part1));
+  CHECK_STATUS_OK(otcrypto_hash_update(&hash_ctx, &msg_part2));
+  CHECK_STATUS_OK(otcrypto_ecdsa_p256_hash_verify_final_async_start(
+      &public_key, &hash_ctx, &const_sig_buf));
+  CHECK_STATUS_OK(otcrypto_ecdsa_p256_hash_verify_final_async_finalize(
+      &const_sig_buf, &verificationResult));
+  TRY_CHECK(verificationResult == kHardenedBoolTrue);
+
   // Also test otcrypto_hash_final directly.
   uint32_t streamed_digest_data[kP256DigestWords] = {0};
   otcrypto_hash_digest_t streamed_digest = {

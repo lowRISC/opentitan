@@ -248,6 +248,14 @@ volatile otcrypto_interface_t otcrypto = {
     .rsa_sign_async_finalize = &otcrypto_rsa_sign_async_finalize,
     .rsa_verify_async_start = &otcrypto_rsa_verify_async_start,
     .rsa_verify_async_finalize = &otcrypto_rsa_verify_async_finalize,
+    .rsa_hash_sign_verify_final_async_start =
+        &otcrypto_rsa_hash_sign_verify_final_async_start,
+    .rsa_hash_sign_verify_final_async_finalize =
+        &otcrypto_rsa_hash_sign_verify_final_async_finalize,
+    .rsa_hash_verify_final_async_start =
+        &otcrypto_rsa_hash_verify_final_async_start,
+    .rsa_hash_verify_final_async_finalize =
+        &otcrypto_rsa_hash_verify_final_async_finalize,
 
     // RSA encryption (async).
     .rsa_encrypt_async_start = &otcrypto_rsa_encrypt_async_start,
@@ -295,6 +303,14 @@ volatile otcrypto_interface_t otcrypto = {
     .ecdsa_p256_verify_async_start = &otcrypto_ecdsa_p256_verify_async_start,
     .ecdsa_p256_verify_async_finalize =
         &otcrypto_ecdsa_p256_verify_async_finalize,
+    .ecdsa_p256_hash_sign_verify_final_async_start =
+        &otcrypto_ecdsa_p256_hash_sign_verify_final_async_start,
+    .ecdsa_p256_hash_sign_verify_final_async_finalize =
+        &otcrypto_ecdsa_p256_hash_sign_verify_final_async_finalize,
+    .ecdsa_p256_hash_verify_final_async_start =
+        &otcrypto_ecdsa_p256_hash_verify_final_async_start,
+    .ecdsa_p256_hash_verify_final_async_finalize =
+        &otcrypto_ecdsa_p256_hash_verify_final_async_finalize,
 
     // ECDH P-256 (async).
     .ecdh_p256_keygen_async_start = &otcrypto_ecdh_p256_keygen_async_start,
@@ -338,6 +354,14 @@ volatile otcrypto_interface_t otcrypto = {
     .ecdsa_p384_verify_async_start = &otcrypto_ecdsa_p384_verify_async_start,
     .ecdsa_p384_verify_async_finalize =
         &otcrypto_ecdsa_p384_verify_async_finalize,
+    .ecdsa_p384_hash_sign_verify_final_async_start =
+        &otcrypto_ecdsa_p384_hash_sign_verify_final_async_start,
+    .ecdsa_p384_hash_sign_verify_final_async_finalize =
+        &otcrypto_ecdsa_p384_hash_sign_verify_final_async_finalize,
+    .ecdsa_p384_hash_verify_final_async_start =
+        &otcrypto_ecdsa_p384_hash_verify_final_async_start,
+    .ecdsa_p384_hash_verify_final_async_finalize =
+        &otcrypto_ecdsa_p384_hash_verify_final_async_finalize,
 
     // ECDH P-384 (async).
     .ecdh_p384_keygen_async_start = &otcrypto_ecdh_p384_keygen_async_start,
