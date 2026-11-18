@@ -50,8 +50,8 @@ RTL           | [CDC_SYNCMACRO][]         | Done        |
 Code Quality  | [LINT_PASS][]             | Done        |
 Code Quality  | [CDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
 Code Quality  | [RDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
-Code Quality  | [AREA_CHECK][]            | Not Started |
-Code Quality  | [TIMING_CHECK][]          | Not Started |
+Code Quality  | [AREA_CHECK][]            | Done        |
+Code Quality  | [TIMING_CHECK][]          | Done        |
 Security      | [SEC_CM_DOCUMENTED][]     | Not Started |
 
 [NEW_FEATURES]:          ../../../../doc/project_governance/checklist/README.md#new_features
