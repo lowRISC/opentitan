@@ -653,18 +653,18 @@ otcrypto_status_t otcrypto_ecdsa_p256_sign_config_k_async_start(
   HARDENED_TRY(otcrypto_ecdsa_p256_sign_async_start_setup(secret_scalar,
                                                           message_digest));
 
-  // Load the secret key d.
-  HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
-                    kHardenedBoolFalse);
+  // Load the secret key d (rejects hw_backed keys with BAD_ARGS).
   p256_masked_scalar_t private_scalar;
   HARDENED_TRY(load_private_scalar(private_key, &private_scalar));
+  HARDENED_CHECK_EQ(launder32(private_key->config.hw_backed),
+                    kHardenedBoolFalse);
 
   // Load the secret scalar k.
   // The use of fixed scalars should be limited to KATs.
-  HARDENED_CHECK_EQ(launder32(secret_scalar->config.hw_backed),
-                    kHardenedBoolFalse);
   p256_masked_scalar_t config_k_scalar;
   HARDENED_TRY(load_private_scalar(secret_scalar, &config_k_scalar));
+  HARDENED_CHECK_EQ(launder32(secret_scalar->config.hw_backed),
+                    kHardenedBoolFalse);
 
   HARDENED_TRY_WIPE_DMEM(p256_ecdsa_sign_config_k_start(
       message_digest.data, &private_scalar, &config_k_scalar));
