@@ -46,6 +46,17 @@ Notes:
     Once all entropy is consumed, the program doesn't finish anymore and the [`STATUS` register](../../otbn/doc/registers.md#status) remains at `BUSY_EXECUTE`.
 
   Future versions of EDN will likely support an automated way for consuming any remaining entropy, see also [Issue #22850](https://github.com/lowRISC/opentitan/issues/22850).
+  Alternatively, firmware can abort the `generate` command, see [Aborting Generate Commands](#aborting-generate-commands).
+
+## Aborting Generate Commands
+
+The `generate` command of EDN can be aborted through CSRNG as described in the [CSRNG Programmer's Guide](../../csrng/doc/programmers_guide.md#aborting-generate-commands).
+
+EDN treats the status of an aborted command like any other non-`SUCCESS` status.
+If EDN is enabled when receiving it, EDN stops serving entropy and raises [`RECOV_ALERT_STS.CSRNG_ACK_ERR`](registers.md#recov_alert_sts).
+Firmware then has to disable and re-enable EDN.
+If EDN is disabled when receiving it, EDN ignores the status and raises no alert.
+In both cases, the first command after re-enabling EDN must be an `instantiate` command.
 
 ## Running EDN in Auto Request Mode with ENTROPY_SRC disabled
 

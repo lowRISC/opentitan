@@ -295,6 +295,17 @@ A number of exception cases to be considered are enumerated in NIST SP 800-90A, 
 * Attempts to generate data when an instance has exceeded its maximum seed life.
 In such cases, a 32-bit exception message will be propagated to firmware via the `hw_exc_sts` register, and a `cs_hw_inst_exc` interrupt will be raised.
 
+#### Aborting Generate Commands
+
+Software can abort a Generate command in progress via [`GEN_ABORT`](registers.md#gen_abort).
+If no Generate command is in progress, the request is ignored and a recoverable alert is raised with [`RECOV_ALERT_STS.GEN_ABORT_INVALID_ALERT`](registers.md#recov_alert_sts) set.
+
+Once the current block is complete, the instance is uninstantiated instead of generating the next block, and unread blocks are discarded.
+A halted instance only aborts once resumed, and restoring its internal state clears a pending abort.
+
+The Generate command is then acknowledged with the `GEN_ABORTED` status, reported in [`HW_EXC_STS`](registers.md#hw_exc_sts) for hardware instances and in [`SW_CMD_STS`](registers.md#sw_cmd_sts) for the software instance, and [`GEN_ABORT_STATUS`](registers.md#gen_abort_status) is set.
+The instance must be instantiated again before further commands succeed.
+
 #### Generated Bits (`genbits`) Interface
 
 In addition to the command response signals there is a bus for returning the generated bits.
