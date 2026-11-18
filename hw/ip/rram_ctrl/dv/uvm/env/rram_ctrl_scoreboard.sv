@@ -46,6 +46,13 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   // True if we have seen DIS.SW_DIS written with a value other than MuBi4False.
   local bit m_seen_sw_dis;
 
+  // An associative array that tracks which registers need special handling in on_reg_access. This
+  // array is populated in build_phase by make_reg_access_tracks_reg() and is used in on_reg_access.
+  //
+  // Having an explicit array like this allows on_reg_access to fail with an error if there is an
+  // access to a register that the DV team forgot to model in the scoreboard.
+  local bit m_explicitly_track_reg[uvm_reg];
+
   // A window of time (counting register accesses) that counts down from when DIS.SW_DIS is first
   // predicted not to be MuBi4False.
   //
@@ -104,7 +111,25 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   extern task process_tl_access(tl_seq_item item, tl_channels_e channel, string ral_name);
   extern task process_tl_core_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
                                      tl_phase_e tl_phase);
-  extern function void on_reg_access(tl_seq_item item, tl_phase_e tl_phase, uvm_reg csr);
+
+  // A call-back run by process_tl_core_access when it sees a read to or write from a register.
+  //
+  // This function checks rdata for reads from registers and reacts to writes to control registers.
+  //
+  // * The rdata check:
+  //
+  //     For most registers, prediction and the read-value check are run by m_tl_core_reg_predictor.
+  //     Some fields are excluded for that check (see configure_csr_check_exclusions()) because
+  //     their value can be changed by the hardware.
+  //
+  //     Reads of those fields get checked in this function.
+  //
+  // * Writes to control registers:
+  //
+  //     This function also reacts to writes to registers that cause the block to take a specific
+  //     action. For example, writing to the CONTROL register (to configure or start on operation).
+  extern local function void on_reg_access(tl_seq_item item, tl_phase_e tl_phase, uvm_reg csr);
+
   extern function void on_mem_access(tl_seq_item item, tl_phase_e tl_phase, uvm_mem memory);
   extern task process_tl_prim_access(tl_seq_item item, uvm_reg_addr_t csr_addr,
                                      tl_phase_e tl_phase);
@@ -187,6 +212,10 @@ class rram_ctrl_scoreboard extends cip_base_scoreboard #(
   // Return the modelled value of the given word in the data partition, unscrambling if
   // data_word_scrambled() is true.
   extern local function bit [DataWidth-1:0] get_data_value(int unsigned word_idx);
+
+  // Populate the m_explicitly_track_reg associative array, which on_reg_access will use to track
+  // whether it needs to directly reason about access to a given register.
+  extern local function void make_explicitly_track_reg();
 endclass : rram_ctrl_scoreboard
 
 
@@ -217,6 +246,8 @@ function void rram_ctrl_scoreboard::build_phase(uvm_phase phase);
 
   m_info_partition = rram_partition_model::type_id::create("m_info_partition", this);
   m_info_partition.set_size_words(NumInfoPages * WordsPerPage);
+
+  make_explicitly_track_reg();
 endfunction : build_phase
 
 function void rram_ctrl_scoreboard::connect_phase(uvm_phase phase);
@@ -421,10 +452,63 @@ endtask : process_tl_core_access
 
 function void rram_ctrl_scoreboard::on_reg_access(tl_seq_item item, tl_phase_e tl_phase,
                                                   uvm_reg csr);
-  // Prediction and the read-value check both happen automatically via
-  // m_tl_core_reg_predictor (see configure_csr_check_exclusions()). Fields excluded from that
-  // check (tagged CsrExclCheck, e.g. PHY_STATUS.init_done) get no check at all today.
-  // TODO(#31290): add targeted checks here for those excluded fields.
+  // Figure out whether this register is known to be tracked outside fully by
+  // m_tl_core_reg_predictor (see comments in make_explicitly_track_reg for careful reasoning about
+  // the different registers' values in m_explicitly_track_reg).
+  if (!m_explicitly_track_reg.exists(csr)) begin
+    `uvm_fatal("unknown_reg",
+               $sformatf({"Access to register %0s, which is known to the register model but was ",
+                          "not added to m_explicitly_track_reg by make_explicitly_track_reg."},
+                         csr.get_name()))
+  end
+  if (!m_explicitly_track_reg[csr]) begin
+    // This register is known to be tracked appropriately by standard register prediction and rdata
+    // checks in m_tl_core_reg_predictor. Nothing to do here.
+    return;
+  end
+
+  if (csr == ral.init) begin
+    // TODO(#31290): The action of writing to INIT.VAL is not currently modelled in the scoreboard.
+  end else if (csr == ral.ctrl_regwen) begin
+    // TODO(#31290): rdata is not currently predicted for CTRL_REGWEN.
+  end else if (csr == ral.control) begin
+    // TODO(#31290): The action of writing to CONTROL is not currently modelled in the scoreboard.
+  end else if (csr == ral.op_status) begin
+    // TODO(#31290): rdata is not currently predicted for OP_STATUS.
+  end else if (csr == ral.status) begin
+    // TODO(#31290): rdata is not currently predicted for STATUS.
+  end else if (csr == ral.err_code) begin
+    // TODO(#31290): rdata is not currently predicted for ERR_CODE.
+  end else if (csr == ral.std_fault_status) begin
+    // TODO(#31290): rdata is not currently predicted for STD_FAULT_STATUS.
+  end else if (csr == ral.fault_status) begin
+    // TODO(#31290): rdata is not currently predicted for FAULT_STATUS.
+  end else if (csr == ral.err_addr) begin
+    // TODO(#31290): rdata is not currently predicted for ERR_ADDR.
+  end else if (csr == ral.corr1_err_cnt) begin
+    // TODO(#31290): rdata is not currently predicted for CORR1_ERR_CNT.
+  end else if (csr == ral.corr2_err_cnt) begin
+    // TODO(#31290): rdata is not currently predicted for CORR2_ERR_CNT.
+  end else if (csr == ral.corr1_err_loc) begin
+    // TODO(#31290): rdata is not currently predicted for CORR1_ERR_LOC.
+  end else if (csr == ral.corr2_err_loc) begin
+    // TODO(#31290): rdata is not currently predicted for CORR2_ERR_LOC.
+  end else if (csr == ral.phy_status) begin
+    // TODO(#31290): rdata is not currently predicted for PHY_STATUS.
+  end else if (csr == ral.fifo_lvl) begin
+    // TODO(#31290): rdata is not currently predicted for FIFO_LVL.
+  end else if (csr == ral.fifo_clr) begin
+    // TODO(#31290): Side effects of writing FIFO_CLR are not currently modelled.
+  end else if (csr == ral.curr_fifo_lvl) begin
+    // TODO(#31290): rdata is not currently predicted for CURR_FIFO_LVL.
+  end else begin
+    // If we get here then a register has been added to the m_explicitly_track_reg array with a
+    // value of 1, but was not added to this function. Oops...
+    `uvm_fatal("unknown_reg",
+               $sformatf({"m_explicitly_track_reg[%0s] = 1 but the register ",
+                          "is not known to on_reg_access."},
+                         csr.get_name()))
+  end
 endfunction : on_reg_access
 
 function void rram_ctrl_scoreboard::on_mem_access(tl_seq_item item, tl_phase_e tl_phase,
@@ -766,4 +850,107 @@ function bit [DataWidth-1:0] rram_ctrl_scoreboard::get_data_value(int unsigned w
   end
 
   return disinfected;
+endfunction
+
+function void rram_ctrl_scoreboard::make_explicitly_track_reg();
+  m_explicitly_track_reg.delete();
+
+  // This function works through the list of registers from the hjson block description in order,
+  // except for the multi-registers. Those come first so that they can share for loops.
+
+  for (int unsigned i = 0; i < NumRegions; i++) begin
+    // Nothing to do for one of REGION_CFG_REGWEN_*, MP_REGION_CFG_*, MP_REGION_*. These registers'
+    // action is modelled through mirrored values and reads are already checked in
+    // m_tl_core_reg_predictor.
+    m_explicitly_track_reg[ral.region_cfg_regwen[i]] = 0;
+    m_explicitly_track_reg[ral.mp_region_cfg[i]] = 0;
+    m_explicitly_track_reg[ral.mp_region[i]] = 0;
+  end
+
+  for (int unsigned i = 0; i < NumInfoPages; i++) begin
+    // Nothing to do for one of INFO_REGWEN_*, INFO_PAGE_CFG_*. These registers' action is modelled
+    // through mirrored values and reads are already checked in m_tl_core_reg_predictor.
+    m_explicitly_track_reg[ral.info_regwen[i]] = 0;
+    m_explicitly_track_reg[ral.info_page_cfg[i]] = 0;
+  end
+
+  for (int unsigned i = 0; i < NumEmulInfoRegions; i++) begin
+    // Nothing to do for one of EMUL_INFO_REGWEN_*, EMUL_INFO_REGION_*. These registers' action is
+    // modelled through mirrored values and reads are already checked in m_tl_core_reg_predictor.
+    m_explicitly_track_reg[ral.emul_info_regwen[i]] = 0;
+    m_explicitly_track_reg[ral.emul_info_region[i]] = 0;
+  end
+
+  for (int unsigned i = 0; i < NumEmulInfoSubregions; i++) begin
+    // Nothing to do for one of EMUL_INFO_SUBREGION_REGWEN_*, EMUL_INFO_SUBREGION_*,
+    // EMUL_INFO_SUBREGION_CFG_REGWEN_*, EMUL_INFO_SUBREGION_CFG_*. These registers' action is
+    // modelled through mirrored values and reads are already checked in m_tl_core_reg_predictor.
+    m_explicitly_track_reg[ral.emul_info_subregion_regwen[i]] = 0;
+    m_explicitly_track_reg[ral.emul_info_subregion[i]] = 0;
+    m_explicitly_track_reg[ral.emul_info_subregion_cfg_regwen[i]] = 0;
+    m_explicitly_track_reg[ral.emul_info_subregion_cfg[i]] = 0;
+  end
+
+  // Nothing to do for INTR_STATE, INTR_ENABLE, INTR_TEST, ALERT_TEST. These registers are tracked
+  // in the underlying cip_base_scoreboard.
+  m_explicitly_track_reg[ral.intr_state] = 0;
+  m_explicitly_track_reg[ral.intr_enable] = 0;
+  m_explicitly_track_reg[ral.intr_test] = 0;
+  m_explicitly_track_reg[ral.alert_test] = 0;
+
+  // Nothing to do for DIS: its action is modelled through the mirrored value and reads are already
+  // checked in m_tl_core_reg_predictor.
+  m_explicitly_track_reg[ral.dis] = 0;
+
+  // Nothing to do for EXEC: its action is modelled through the mirrored value and reads are already
+  // checked in m_tl_core_reg_predictor.
+  m_explicitly_track_reg[ral.exec] = 0;
+
+  // The INIT register does need tracking (because writing to INIT.VAL causes a side-effect)
+  m_explicitly_track_reg[ral.init] = 1;
+
+  // The CTRL_REGWEN register needs tracking (it is updated by hardware).
+  m_explicitly_track_reg[ral.ctrl_regwen] = 1;
+
+  // The CONTROL register does need tracking (because writing to it causes a side-effect)
+  m_explicitly_track_reg[ral.control] = 1;
+
+  // Nothing to do for ADDR: its action is modelled through the mirrored value and reads are already
+  // checked in m_tl_core_reg_predictor.
+  m_explicitly_track_reg[ral.addr] = 0;
+
+  // Nothing to do for DEFAULT_REGION: its action is modelled through the mirrored value and reads
+  // are already checked in m_tl_core_reg_predictor.
+  m_explicitly_track_reg[ral.default_region] = 0;
+
+  // Nothing to do for HW_INFO_CFG_OVERRIDE: its action is modelled through the mirrored value and
+  // reads are already checked in m_tl_core_reg_predictor.
+  m_explicitly_track_reg[ral.hw_info_cfg_override] = 0;
+
+  // The following registers do need tracking directly in on_reg_access. These are all updated by
+  // the hardware to reflect current status.
+  m_explicitly_track_reg[ral.op_status] = 1;
+  m_explicitly_track_reg[ral.status] = 1;
+  m_explicitly_track_reg[ral.err_code] = 1;
+  m_explicitly_track_reg[ral.std_fault_status] = 1;
+  m_explicitly_track_reg[ral.fault_status] = 1;
+  m_explicitly_track_reg[ral.err_addr] = 1;
+  m_explicitly_track_reg[ral.corr1_err_cnt] = 1;
+  m_explicitly_track_reg[ral.corr2_err_cnt] = 1;
+  m_explicitly_track_reg[ral.corr1_err_loc] = 1;
+  m_explicitly_track_reg[ral.corr2_err_loc] = 1;
+  m_explicitly_track_reg[ral.phy_status] = 1;
+
+  // Nothing to do for SCRATCH. This register has no specified behaviour other than to be a 32-bit
+  // register that can be read and written. That basic requirement is checked by
+  // m_tl_core_reg_predictor.
+  m_explicitly_track_reg[ral.scratch] = 0;
+
+  // Nothing to do for FIFO_LVL: tis is a config register whose action is modelled through the
+  // mirrored value and reads are already checked in m_tl_core_reg_predictor.
+  m_explicitly_track_reg[ral.fifo_lvl] = 0;
+
+  // More status registers that need tracking directly in on_reg_access.
+  m_explicitly_track_reg[ral.fifo_clr] = 1;
+  m_explicitly_track_reg[ral.curr_fifo_lvl] = 1;
 endfunction
