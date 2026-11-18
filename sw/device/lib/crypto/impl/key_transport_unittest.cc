@@ -356,11 +356,13 @@ TEST(KeyTransport, KeyWrapUnwrapNegative) {
   hardened_bool_t success;
 
   // Wrap negative tests
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   EXPECT_NOT_OK(otcrypto_key_wrap(nullptr, &kek_key, &wrapped_buf));
   EXPECT_NOT_OK(otcrypto_key_wrap(&target_key, nullptr, &wrapped_buf));
 
   otcrypto_word32_buf_t wrapped_buf_null = {.data = nullptr, .len = 64};
   EXPECT_NOT_OK(otcrypto_key_wrap(&target_key, &kek_key, &wrapped_buf_null));
+#endif
 
   // Bad KEK mode
   otcrypto_blinded_key_t bad_kek_mode = {
@@ -378,6 +380,7 @@ TEST(KeyTransport, KeyWrapUnwrapNegative) {
   EXPECT_NOT_OK(otcrypto_key_wrap(&bad_target_chk, &kek_key, &wrapped_buf));
 
   // Unwrap negative tests
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   EXPECT_NOT_OK(otcrypto_key_unwrap(nullptr, &kek_key, &success, &target_key));
   EXPECT_NOT_OK(
       otcrypto_key_unwrap(&const_wrapped_buf, nullptr, &success, &target_key));
@@ -385,6 +388,7 @@ TEST(KeyTransport, KeyWrapUnwrapNegative) {
       otcrypto_key_unwrap(&const_wrapped_buf, &kek_key, nullptr, &target_key));
   EXPECT_NOT_OK(
       otcrypto_key_unwrap(&const_wrapped_buf, &kek_key, &success, nullptr));
+#endif
 
   // Bad KEK mode
   EXPECT_NOT_OK(otcrypto_key_unwrap(&const_wrapped_buf, &bad_kek_mode, &success,
@@ -409,7 +413,9 @@ TEST(KeyTransport, KeyWrapUnwrapNegative) {
   EXPECT_NOT_OK(otcrypto_key_unwrap(&const_wrapped_buf, &bad_kek_hw, &success,
                                     &target_key));
 
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   EXPECT_NOT_OK(otcrypto_wrapped_key_len(target_key.config, nullptr));
+#endif
 
   // Mismatched key_to_wrap->keyblob_length when wrapped_buf.len == exp_len
   size_t exp_wrapped_words = 0;
@@ -474,6 +480,15 @@ TEST(KeyTransport, BlindedKeyMigrate) {
   otcrypto_blinded_key_t new_key = old_key;
 
   EXPECT_OK(otcrypto_blinded_key_migrate(&old_key, &new_key));
+
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  EXPECT_NOT_OK(otcrypto_blinded_key_migrate(nullptr, &new_key));
+  EXPECT_NOT_OK(otcrypto_blinded_key_migrate(&old_key, nullptr));
+  otcrypto_blinded_key_t null_blob_key = old_key;
+  null_blob_key.keyblob = nullptr;
+  EXPECT_NOT_OK(otcrypto_blinded_key_migrate(&null_blob_key, &new_key));
+  EXPECT_NOT_OK(otcrypto_blinded_key_migrate(&old_key, &null_blob_key));
+#endif
 
   // Modify version to something other than Version1.
   otcrypto_blinded_key_t bad_version_key = old_key;
@@ -635,6 +650,10 @@ TEST(KeyTransport, WrappedKeyLenRsa) {
       .exportable = kHardenedBoolFalse,
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
+
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  EXPECT_NOT_OK(otcrypto_wrapped_key_len(kConfigRsa2048, nullptr));
+#endif
 
   size_t wrapped_words_2048 = 0;
   EXPECT_OK(otcrypto_wrapped_key_len(kConfigRsa2048, &wrapped_words_2048));

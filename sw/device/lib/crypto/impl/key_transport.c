@@ -27,9 +27,11 @@ otcrypto_status_t otcrypto_symmetric_keygen(
     otcrypto_blinded_key_t *key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_SYMMETRIC_KEYGEN);
   OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key == NULL || key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Ensure that the key lengths are >= 112 bits.
   if (key->config.key_length < 14) {
@@ -312,11 +314,13 @@ otcrypto_status_t otcrypto_key_wrap(const otcrypto_blinded_key_t *key_to_wrap,
   OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
   OTCRYPTO_HEALTH_CHECK(kTestAesGcm256EncryptBit);
   OTCRYPTO_HEALTH_CHECK(kTestAesGcm256DecryptBit);
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (key_to_wrap == NULL || key_to_wrap->keyblob == NULL || key_kek == NULL ||
       key_kek->keyblob == NULL || wrapped_key == NULL ||
       wrapped_key->data == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   // Guarantees hw_wipe_guard() is called on exit.
   uint32_t hw_cleanup_guard __attribute__((cleanup(hw_wipe_guard))) = 1;
@@ -383,11 +387,13 @@ otcrypto_status_t otcrypto_key_unwrap(
   OTCRYPTO_HEALTH_CHECK(kTestAesEcb256DecryptBit);
   OTCRYPTO_HEALTH_CHECK(kTestAesGcm256EncryptBit);
   OTCRYPTO_HEALTH_CHECK(kTestAesGcm256DecryptBit);
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   if (wrapped_key == NULL || wrapped_key->data == NULL || key_kek == NULL ||
       key_kek->keyblob == NULL || success == NULL || unwrapped_key == NULL ||
       unwrapped_key->keyblob == NULL) {
     return OTCRYPTO_BAD_ARGS;
   }
+#endif
 
   *success = kHardenedBoolFalse;
 
@@ -582,6 +588,12 @@ otcrypto_status_t otcrypto_blinded_key_migrate(
     const otcrypto_blinded_key_t *old_key, otcrypto_blinded_key_t *new_key) {
   (void)new_key;
   OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (old_key == NULL || old_key->keyblob == NULL || new_key == NULL ||
+      new_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
   if (launder32((uint32_t)old_key->config.version) !=
       (uint32_t)kCryptoLibVersion) {
     return OTCRYPTO_BAD_ARGS;
