@@ -26,3 +26,16 @@ The SRAM controller contains the SRAM data and address scrambling device and pro
 - Access controls to allow / disallow code execution from SRAM.
 - Security hardening when integrity error has been detected.
 - Optional memory readback mode for detecting memory integrity errors.
+
+## Supported Parameter Sets
+
+Only the following parameter sets, as used by the SRAM controller instances in Earl Grey, are planned to be verified and signed off.
+All of them use `NumRamInst` = 1, `Outstanding` = 2, `EccCorrection` = 0 and `EnableRacl` = 0.
+See [Parameters](doc/interfaces.md#parameters) for a description of each parameter.
+
+Instance         | `MemSizeRam` | `InstrExec` | `NumPrinceRoundsHalf` | `NumAddrScrRounds` | `SecZeroInit`
+-----------------|--------------|-------------|-----------------------|--------------------|--------------
+`sram_ctrl_ret`  | 8192         | 0           | 3                     | 2                  | 0
+`sram_ctrl_main` | 131072       | 1           | 2                     | 2                  | 0
+`sram_ctrl_sec`  | 65536        | 1           | 2                     | 2                  | 0
+`sram_ctrl_meta` | 38912        | 0           | 2                     | 0                  | 1
