@@ -1140,6 +1140,7 @@ otcrypto_status_t otcrypto_x25519_async_finalize(
       shared_secret->config.key_length != kCurve25519KeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
+  HARDENED_TRY(keyblob_ensure_xor_masked(shared_secret->config));
 
   uint32_t *share0;
   uint32_t *share1;
