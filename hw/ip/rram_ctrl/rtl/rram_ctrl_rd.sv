@@ -7,6 +7,8 @@
 // Transactions are then issued to rram_ctrl_mp
 //
 
+`include "prim_assert.sv"
+
 module rram_ctrl_rd import rram_ctrl_pkg::*; (
   input logic clk_i,
   input logic rst_ni,

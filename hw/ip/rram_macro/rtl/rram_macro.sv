@@ -8,6 +8,8 @@
 // arrays.
 // Operations have random execution time which is achieved with a LFSR and a cycle counter.
 
+`include "prim_assert.sv"
+
 module rram_macro #(
   parameter int unsigned TotalDataPages = 4096, // Total number of data pages
   parameter int unsigned DataWidth      = 128,  // RRAM word data width

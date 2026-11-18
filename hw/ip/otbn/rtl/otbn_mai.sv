@@ -4,6 +4,8 @@
 
 // OTBN mask accelerator interface
 
+`include "prim_assert.sv"
+
 module otbn_mai
   import otbn_pkg::*;
 #(
