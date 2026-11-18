@@ -1148,6 +1148,7 @@ otcrypto_status_t otcrypto_x25519_async_finalize(
       shared_secret->config.key_length != kCurve25519KeyBytes) {
     return OTCRYPTO_BAD_ARGS;
   }
+  HARDENED_TRY(keyblob_ensure_xor_masked(shared_secret->config));
 
   if (launder32(shared_secret->keyblob_length) !=
       keyblob_num_words(shared_secret->config) * sizeof(uint32_t)) {
@@ -1157,8 +1158,8 @@ otcrypto_status_t otcrypto_x25519_async_finalize(
       shared_secret->keyblob_length,
       keyblob_num_words(shared_secret->config) * sizeof(uint32_t));
 
-  uint32_t share0[kCurve25519PointWords + 2] = {0};
-  uint32_t share1[kCurve25519PointWords + 2] = {0};
+  uint32_t share0[kCurve25519PointWords];
+  uint32_t share1[kCurve25519PointWords];
   hardened_memshred(share0, kCurve25519PointWords);
   hardened_memshred(share1, kCurve25519PointWords);
   HARDENED_TRY_WIPE_DMEM(curve25519_x25519_finalize(share0, share1));

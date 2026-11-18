@@ -417,8 +417,7 @@ TEST(Keyblob, RemaskDoesNotChangeKey) {
 
 #ifndef OTCRYPTO_DISABLE_KEYBLOB_MASKING
   // Copy the keyblob for later comparison.
-  uint32_t keyblob_copy[ARRAYSIZE(keyblob)];
-  memcpy(keyblob_copy, keyblob.data(), sizeof(keyblob));
+  std::vector<uint32_t> keyblob_copy = keyblob;
 #endif
 
   // Remask the key.
@@ -426,7 +425,7 @@ TEST(Keyblob, RemaskDoesNotChangeKey) {
 
 #ifndef OTCRYPTO_DISABLE_KEYBLOB_MASKING
   // Check that every word of the keyblob changed.
-  for (size_t i = 0; i < ARRAYSIZE(keyblob); i++) {
+  for (size_t i = 0; i < keyblob.size(); i++) {
     EXPECT_NE(keyblob[i], keyblob_copy[i]);
   }
 #endif
@@ -461,10 +460,6 @@ TEST(Keyblob, RemaskPassesIntegrity) {
       .keyblob = keyblob.data(),
       .checksum = 0,
   };
-
-  // Copy the keyblob for later comparison.
-  uint32_t keyblob_copy[ARRAYSIZE(keyblob)];
-  memcpy(keyblob_copy, keyblob.data(), sizeof(keyblob));
 
   // Remask the key.
   EXPECT_OK(keyblob_remask(&key));
@@ -777,6 +772,43 @@ TEST(Keyblob, WriteSharesNegative) {
   EXPECT_NOT_OK(keyblob_write_shares(
       test_share0.data(), test_share1.data(), /*word_offset=*/2,
       /*num_words=*/SIZE_MAX, kConfigCtr128, keyblob.data()));
+}
+
+TEST(Keyblob, EccMismatchedKeyLengthRejected) {
+  uint32_t share0[32] = {0};
+  uint32_t share1[32] = {0};
+  uint32_t keyblob_buf[64] = {0};
+  uint32_t *out0 = nullptr;
+  uint32_t *out1 = nullptr;
+
+  otcrypto_key_config_t bad_p256 = kConfigEcdsaP256;
+  bad_p256.key_length = 64;
+  EXPECT_EQ(keyblob_share_num_words(bad_p256), 0);
+  EXPECT_NOT_OK(keyblob_from_shares(share0, share1, bad_p256, keyblob_buf));
+
+  otcrypto_blinded_key_t bad_key = {
+      .config = bad_p256,
+      .keyblob_length = 0,
+      .keyblob = keyblob_buf,
+      .checksum = 0,
+  };
+  EXPECT_NOT_OK(keyblob_to_shares(&bad_key, &out0, &out1));
+
+  otcrypto_key_config_t p256_48 = kConfigEcdsaP256;
+  p256_48.key_length = 48;
+  EXPECT_EQ(keyblob_share_num_words(p256_48), 0);
+  EXPECT_NOT_OK(keyblob_from_shares(share0, share1, p256_48, keyblob_buf));
+
+  otcrypto_key_config_t bad_p384 = {
+      .version = kOtcryptoLibVersion1,
+      .key_mode = kOtcryptoKeyModeEcdsaP384,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .exportable = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  EXPECT_EQ(keyblob_share_num_words(bad_p384), 0);
+  EXPECT_NOT_OK(keyblob_from_shares(share0, share1, bad_p384, keyblob_buf));
 }
 
 }  // namespace

@@ -35,8 +35,23 @@ static size_t keyblob_share_num_bytes(const otcrypto_key_config_t config) {
     case kOtcryptoKeyTypeEcc:
       // ECC keys have 64 extra redundant bits per share.
       HARDENED_CHECK_EQ(config.key_mode >> 16, kOtcryptoKeyTypeEcc);
-      if (launder32(config.key_length) > UINT32_MAX - (64 / 8)) {
-        return 0;
+      switch (launder32(config.key_mode)) {
+        case kOtcryptoKeyModeEcdsaP256:
+        case kOtcryptoKeyModeEcdhP256:
+        case kOtcryptoKeyModeEd25519:
+        case kOtcryptoKeyModeX25519:
+          if (launder32(config.key_length) != 32) {
+            return 0;
+          }
+          break;
+        case kOtcryptoKeyModeEcdsaP384:
+        case kOtcryptoKeyModeEcdhP384:
+          if (launder32(config.key_length) != 48) {
+            return 0;
+          }
+          break;
+        default:
+          return 0;
       }
       return config.key_length + (64 / 8);
     case kOtcryptoKeyTypeRsa:
@@ -231,11 +246,17 @@ status_t keyblob_write_shares(const uint32_t *share0, const uint32_t *share1,
 status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
                              const otcrypto_key_config_t config,
                              uint32_t *keyblob) {
+  size_t share_words = keyblob_share_num_words(config);
+  if (launder32(config.hw_backed) != kHardenedBoolFalse ||
+      launder32(config.key_length) >
+          kOtcryptoWrappedKeyMaxWords * sizeof(uint32_t) ||
+      launder32(share_words) == 0) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   // Ensure the keyblob is cleared before attempting to write any shares.
   size_t keyblob_words = keyblob_num_words(config);
   hardened_memshred(keyblob, keyblob_words);
-
-  size_t share_words = keyblob_share_num_words(config);
 #ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
   const uint32_t *order = ecc_order_get(config.key_mode);
   if (order != NULL) {

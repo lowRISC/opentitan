@@ -416,7 +416,8 @@ otcrypto_status_t otcrypto_x25519_public_key_from_private(
  * @param private_key Pointer to the blinded private key struct.
  * @param public_key Pointer to the unblinded public key struct from the other
  * party.
- * @param[out] shared_secret Pointer to the blinded shared secret struct.
+ * @param[out] shared_secret Pointer to the blinded shared secret struct
+ *                           (must use a symmetric key mode).
  * @return Result of the X25519 key exchange. Returns `kOtcryptoStatusValueOk`
  * on success, `kOtcryptoStatusValueBadArgs` if arguments, key configuration, or
  * buffer lengths are invalid, or `kOtcryptoStatusValueFatalError` if an
@@ -526,7 +527,8 @@ otcrypto_status_t otcrypto_x25519_async_start(
  *
  * May block until the operation is complete.
  *
- * @param[out] shared_secret Pointer to the blinded shared secret struct.
+ * @param[out] shared_secret Pointer to the blinded shared secret struct
+ *                           (must use a symmetric key mode).
  * @return Result of asynchronous X25519 finalize operation. Returns
  * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
  * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if arguments, key
