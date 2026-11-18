@@ -179,6 +179,8 @@ otcrypto_status_t otcrypto_hkdf_extract(const otcrypto_blinded_key_t *ikm,
   HARDENED_TRY(
       digest_num_words_from_key_mode(ikm->config.key_mode, &digest_words));
 
+  HARDENED_TRY(keyblob_ensure_xor_masked(ikm->config));
+
   // Validate the PRK configuration.
   HARDENED_TRY(hkdf_check_prk(digest_words, prk));
 

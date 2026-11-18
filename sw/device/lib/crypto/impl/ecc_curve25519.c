@@ -107,6 +107,9 @@ static status_t curve25519_private_key_length_check(
       kHardenedBoolTrue);
 
   if (private_key->config.hw_backed == kHardenedBoolTrue) {
+    if (expected_mode != kOtcryptoKeyModeX25519) {
+      return OTCRYPTO_BAD_ARGS;
+    }
     // Skip the length check in this case; if the salt is the wrong length, the
     // keyblob library will catch it before we sideload the key.
     return OTCRYPTO_OK;
