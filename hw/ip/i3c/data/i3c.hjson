@@ -2241,7 +2241,7 @@
           name:     "AUTOCMD_DATA_RPT",
           desc:     "Auto-Command Data Report.",
           hwqe:     "true",
-          resval:   "1"
+          resval:   "0"
         },
         { bits:     "0",
           name:     "IBA_INCLUDE",
