@@ -624,6 +624,26 @@ static status_t run_negative_tests(void) {
   CHECK(otcrypto_hkdf_expand(&valid_prk, &valid_buf, &huge_okm).value ==
         OTCRYPTO_BAD_ARGS.value);
 
+  // Hardware-backed IKM, PRK, and OKM must all be rejected.
+  uint32_t hw_blob[kKeyblobHwBackedWords] = {0};
+  otcrypto_key_config_t hw_ikm_cfg = valid_ikm.config;
+  hw_ikm_cfg.key_length = 32;
+  hw_ikm_cfg.hw_backed = kHardenedBoolTrue;
+  otcrypto_blinded_key_t hw_ikm = {
+      .config = hw_ikm_cfg,
+      .keyblob_length = sizeof(hw_blob),
+      .keyblob = hw_blob,
+  };
+  hw_ikm.checksum = otcrypto_integrity_blinded_checksum(&hw_ikm);
+  CHECK(otcrypto_hkdf_extract(&hw_ikm, &valid_buf, &valid_prk).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_hkdf(&hw_ikm, &valid_buf, &valid_buf, &valid_okm).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t hw_prk = hw_ikm;
+  CHECK(otcrypto_hkdf_expand(&hw_prk, &valid_buf, &valid_okm).value ==
+        OTCRYPTO_BAD_ARGS.value);
+
   return OTCRYPTO_OK;
 }
 

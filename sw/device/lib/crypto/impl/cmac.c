@@ -149,7 +149,8 @@ static status_t cmac_key_construct(const otcrypto_blinded_key_t *key,
                                    cmac_ctx_t *ctx) {
   ctx->sideload = key->config.hw_backed;
   ctx->key_len_words = keyblob_share_num_words(key->config);
-  if (ctx->key_len_words > ARRAYSIZE(ctx->key_share0)) {
+  if (ctx->key_len_words == 0 ||
+      ctx->key_len_words > ARRAYSIZE(ctx->key_share0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 

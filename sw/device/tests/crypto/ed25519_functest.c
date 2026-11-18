@@ -659,6 +659,46 @@ status_t ed25519_out_of_order_test(void) {
   // Finally finalize correctly
   CHECK_STATUS_OK(otcrypto_ed25519_sign_async_finalize(&sig));
 
+  // Hardware-backed Ed25519 keys must be rejected across all entry points,
+  // including sign_part2_async_start even after a valid part1_async_start.
+  uint32_t hw_blob[kKeyblobHwBackedWords] = {0};
+  otcrypto_key_config_t hw_cfg = kPrivateKeyConfig;
+  hw_cfg.hw_backed = kHardenedBoolTrue;
+  otcrypto_blinded_key_t hw_priv = {
+      .config = hw_cfg,
+      .keyblob_length = sizeof(hw_blob),
+      .keyblob = hw_blob,
+  };
+  hw_priv.checksum = otcrypto_integrity_blinded_checksum(&hw_priv);
+  uint32_t pk_buf[kEd25519PublicKeyWords] = {0};
+  otcrypto_unblinded_key_t pub_key = {
+      .key_mode = kOtcryptoKeyModeEd25519,
+      .key_length = kEd25519PublicKeyBytes,
+      .key = pk_buf,
+  };
+  CHECK(otcrypto_ed25519_keygen(&hw_priv, &pub_key).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ed25519_keygen_async_finalize(&hw_priv, &pub_key).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ed25519_public_key_from_private(&hw_priv, &pub_key).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ed25519_sign(&hw_priv, &msg, kOtcryptoEddsaSignModeEddsa, &sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ed25519_sign_part1_async_start(
+            &hw_priv, &msg, kOtcryptoEddsaSignModeEddsa, &s0, &s1, &r0, &r1)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK_STATUS_OK(otcrypto_ed25519_sign_part1_async_start(
+      &private_key, &msg, kOtcryptoEddsaSignModeEddsa, &s0, &s1, &r0, &r1));
+  CHECK(otcrypto_ed25519_sign_part2_async_start(&hw_priv, &msg,
+                                                kOtcryptoEddsaSignModeEddsa,
+                                                &sig, &s0, &s1, &r0, &r1)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  // Drain OTBN stage 1 before returning.
+  CHECK_STATUS_OK(otcrypto_ed25519_sign_part2_async_start(
+      &private_key, &msg, kOtcryptoEddsaSignModeEddsa, &sig, &s0, &s1, &r0,
+      &r1));
+  CHECK_STATUS_OK(otcrypto_ed25519_sign_async_finalize(&sig));
+
   return OTCRYPTO_OK;
 }
 

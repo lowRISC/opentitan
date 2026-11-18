@@ -414,6 +414,38 @@ static status_t negative_test(void) {
       otcrypto_cmac_kdf(&valid_kdk, &msg_buf, &zero_byte_buf, &km).value ==
       OTCRYPTO_OK.value);
 
+  // Hardware-backed CMAC / CMAC-KDF negative checks: non-256-bit hw_backed key
+  // and hw_backed output key material.
+  uint32_t hw_blob[8] = {0};
+  otcrypto_key_config_t cmac128_hw_cfg = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeAesCmac,
+      .key_length = 16,
+      .hw_backed = kHardenedBoolTrue,
+      .exportable = kHardenedBoolFalse,
+      .security_level = current_sec_level,
+  };
+  otcrypto_blinded_key_t cmac128_hw = {
+      .config = cmac128_hw_cfg,
+      .keyblob = hw_blob,
+      .keyblob_length = sizeof(hw_blob),
+  };
+  cmac128_hw.checksum = otcrypto_integrity_blinded_checksum(&cmac128_hw);
+  TRY_CHECK(otcrypto_cmac(&cmac128_hw, &msg_buf, &tag_buf).value ==
+            OTCRYPTO_BAD_ARGS.value);
+  TRY_CHECK(otcrypto_cmac_init(&ctx, &cmac128_hw).value ==
+            OTCRYPTO_BAD_ARGS.value);
+  TRY_CHECK(otcrypto_cmac_kdf(&cmac128_hw, &msg_buf, &msg_buf, &km).value ==
+            OTCRYPTO_BAD_ARGS.value);
+
+  otcrypto_blinded_key_t hw_km = km;
+  hw_km.config.key_length = 32;
+  hw_km.config.hw_backed = kHardenedBoolTrue;
+  hw_km.keyblob_length = sizeof(hw_blob);
+  hw_km.keyblob = hw_blob;
+  TRY_CHECK(otcrypto_cmac_kdf(&valid_kdk, &msg_buf, &msg_buf, &hw_km).value ==
+            OTCRYPTO_BAD_ARGS.value);
+
   return OK_STATUS();
 }
 
