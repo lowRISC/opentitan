@@ -1097,6 +1097,14 @@
                 '''
           resval: 0
         }
+        { bits: "2",
+          name: "GEN_IN_PROGRESS",
+          desc: '''
+                Reflects whether a Generate command is in progress for the instance selected by !!INT_STATE_NUM.
+                While the instance is halted, this bit stays constant and indicates whether a Generate command can be aborted via !!GEN_ABORT.
+                '''
+          resval: 0
+        }
       ]
     },
   ]

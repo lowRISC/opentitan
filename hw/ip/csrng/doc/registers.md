@@ -940,19 +940,24 @@ Setting this field to kMultiBitBool4False resumes the command processing of the 
 Internal state halt status register
 - Offset: `0x94`
 - Reset default: `0x0`
-- Reset mask: `0x3`
+- Reset mask: `0x7`
 
 ### Fields
 
 ```wavejson
-{"reg": [{"name": "HALTED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "GENBITS_VLD", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 30}], "config": {"lanes": 1, "fontsize": 10, "vspace": 130}}
+{"reg": [{"name": "HALTED", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "GENBITS_VLD", "bits": 1, "attr": ["ro"], "rotate": -90}, {"name": "GEN_IN_PROGRESS", "bits": 1, "attr": ["ro"], "rotate": -90}, {"bits": 29}], "config": {"lanes": 1, "fontsize": 10, "vspace": 170}}
 ```
 
-|  Bits  |  Type  |  Reset  | Name                                       |
-|:------:|:------:|:-------:|:-------------------------------------------|
-|  31:2  |        |         | Reserved                                   |
-|   1    |   ro   |   0x0   | [GENBITS_VLD](#int_state_sts--genbits_vld) |
-|   0    |   ro   |   0x0   | [HALTED](#int_state_sts--halted)           |
+|  Bits  |  Type  |  Reset  | Name                                               |
+|:------:|:------:|:-------:|:---------------------------------------------------|
+|  31:3  |        |         | Reserved                                           |
+|   2    |   ro   |   0x0   | [GEN_IN_PROGRESS](#int_state_sts--gen_in_progress) |
+|   1    |   ro   |   0x0   | [GENBITS_VLD](#int_state_sts--genbits_vld)         |
+|   0    |   ro   |   0x0   | [HALTED](#int_state_sts--halted)                   |
+
+### INT_STATE_STS . GEN_IN_PROGRESS
+Reflects whether a Generate command is in progress for the instance selected by [`INT_STATE_NUM.`](#int_state_num)
+While the instance is halted, this bit stays constant and indicates whether a Generate command can be aborted via [`GEN_ABORT.`](#gen_abort)
 
 ### INT_STATE_STS . GENBITS_VLD
 Reflects whether generated bits of the instance selected by [`INT_STATE_NUM`](#int_state_num) are waiting to be read by the consumer.

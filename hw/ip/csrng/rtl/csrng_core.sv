@@ -635,6 +635,8 @@ module csrng_core import csrng_pkg::*; #(
   assign hw2reg.int_state_sts.halted.d  = cmd_stage_halted[int_state_num_q];
   assign hw2reg.int_state_sts.genbits_vld.de = 1'b1;
   assign hw2reg.int_state_sts.genbits_vld.d  = genbits_pending[int_state_num_q];
+  assign hw2reg.int_state_sts.gen_in_progress.de = 1'b1;
+  assign hw2reg.int_state_sts.gen_in_progress.d  = state_db_gen_flag[int_state_num_q];
 
   //------------------------------------------
   // application interface
