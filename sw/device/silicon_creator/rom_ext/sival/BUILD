@@ -204,6 +204,9 @@ offline_signature_attach(
     spx_signatures = [
         "//sw/device/silicon_creator/rom_ext/sival/signatures:spx_signatures",
     ],
+    # If new SKUs are added, the binaries and signatures may not be immediately added to the repository
+    # so avoid failing if that's the case.
+    strict = False,
     tags = ["manual"],
 )
 

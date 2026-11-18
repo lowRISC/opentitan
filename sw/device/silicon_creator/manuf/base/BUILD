@@ -592,5 +592,8 @@ offline_signature_attach(
         for sku, data in EARLGREY_SKUS.items()
         if data["signature_prefix"] and not disqualified_for_signing(sku, data)
     ]).to_list(),
+    # If new SKUs are added, the binaries and signatures may not be immediately added to the repository
+    # so avoid failing if that's the case.
+    strict = False,
     tags = ["manual"],
 )
