@@ -561,6 +561,68 @@ static status_t run_negative_tests(void) {
                                 &bad_const_sig, &verify_res)
             .value == OTCRYPTO_BAD_ARGS.value);
 
+  // Negative tests for otcrypto_ed25519_public_key_from_private_async_finalize
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  CHECK(otcrypto_ed25519_public_key_from_private_async_finalize(NULL).value ==
+        OTCRYPTO_BAD_ARGS.value);
+  otcrypto_unblinded_key_t null_pub_buf = valid_pub;
+  null_pub_buf.key = NULL;
+  CHECK(otcrypto_ed25519_public_key_from_private_async_finalize(&null_pub_buf)
+            .value == OTCRYPTO_BAD_ARGS.value);
+#endif
+  otcrypto_unblinded_key_t wrong_mode_pub = valid_pub;
+  wrong_mode_pub.key_mode = kOtcryptoKeyModeX25519;
+  CHECK(otcrypto_ed25519_public_key_from_private_async_finalize(&wrong_mode_pub)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  otcrypto_unblinded_key_t wrong_len_pub = valid_pub;
+  wrong_len_pub.key_length = kEd25519PublicKeyBytes - 1;
+  CHECK(otcrypto_ed25519_public_key_from_private_async_finalize(&wrong_len_pub)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
+  // Negative tests for NULL message and async sign part1/part2 buffers
+  uint32_t s_buf[12] = {0};
+  uint32_t r_buf[20] = {0};
+  otcrypto_word32_buf_t s_ok =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, s_buf, 12);
+  otcrypto_word32_buf_t r_ok =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, r_buf, 20);
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  CHECK(otcrypto_ed25519_sign(&valid_priv, NULL, kOtcryptoEddsaSignModeEddsa,
+                              &sig)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ed25519_verify(&valid_pub, NULL, kOtcryptoEddsaSignModeEddsa,
+                                &bad_const_sig, &verify_res)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ed25519_sign_part1_async_start(&valid_priv, NULL,
+                                                kOtcryptoEddsaSignModeEddsa,
+                                                &s_ok, &s_ok, &r_ok, &r_ok)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ed25519_sign_part1_async_start(&valid_priv, &msg,
+                                                kOtcryptoEddsaSignModeEddsa,
+                                                NULL, &s_ok, &r_ok, &r_ok)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ed25519_sign_part2_async_start(
+            &valid_priv, NULL, kOtcryptoEddsaSignModeEddsa, &sig, &s_ok, &s_ok,
+            &r_ok, &r_ok)
+            .value == OTCRYPTO_BAD_ARGS.value);
+#endif
+  otcrypto_word32_buf_t s_short =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, s_buf, 11);
+  otcrypto_word32_buf_t r_short =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, r_buf, 19);
+  CHECK(otcrypto_ed25519_sign_part1_async_start(&valid_priv, &msg,
+                                                kOtcryptoEddsaSignModeEddsa,
+                                                &s_short, &s_ok, &r_ok, &r_ok)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ed25519_sign_part1_async_start(&valid_priv, &msg,
+                                                kOtcryptoEddsaSignModeEddsa,
+                                                &s_ok, &s_ok, &r_short, &r_ok)
+            .value == OTCRYPTO_BAD_ARGS.value);
+  CHECK(otcrypto_ed25519_sign_part2_async_start(
+            &valid_priv, &msg, kOtcryptoEddsaSignModeEddsa, &sig, &s_short,
+            &s_ok, &r_ok, &r_ok)
+            .value == OTCRYPTO_BAD_ARGS.value);
+
   // Negative tests for otcrypto_ed25519_point_on_curve
   CHECK(otcrypto_ed25519_point_on_curve(NULL, &verify_res).value ==
         OTCRYPTO_BAD_ARGS.value);

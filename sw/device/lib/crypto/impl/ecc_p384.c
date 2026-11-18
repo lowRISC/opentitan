@@ -933,11 +933,24 @@ otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
   }
   HARDENED_CHECK_EQ(shared_secret->config.hw_backed, kHardenedBoolFalse);
 
-  // Check shared secret length (affine point x-coordinate || y-coordinate).
-  if (launder32(shared_secret->config.key_length) != kP384SharedSecretBytes) {
-    return OTCRYPTO_BAD_ARGS;
+  // Check shared secret length (either 96-byte full affine point x || y or
+  // 48-byte x-coordinate only).
+  uint32_t expected_len = launder32(0);
+  switch (launder32(shared_secret->config.key_length)) {
+    case kP384SharedSecretBytes:
+      HARDENED_CHECK_EQ(shared_secret->config.key_length,
+                        kP384SharedSecretBytes);
+      expected_len = launder32(expected_len) | kP384SharedSecretBytes;
+      break;
+    case kP384CoordBytes:
+      HARDENED_CHECK_EQ(shared_secret->config.key_length, kP384CoordBytes);
+      expected_len = launder32(expected_len) | kP384CoordBytes;
+      break;
+    default:
+      return OTCRYPTO_BAD_ARGS;
   }
-  HARDENED_CHECK_EQ(shared_secret->config.key_length, kP384SharedSecretBytes);
+  HARDENED_CHECK_NE(expected_len, 0);
+  HARDENED_CHECK_EQ(launder32(expected_len), shared_secret->config.key_length);
   if (launder32(shared_secret->keyblob_length) !=
       keyblob_num_words(shared_secret->config) * sizeof(uint32_t)) {
     return OTCRYPTO_BAD_ARGS;
@@ -973,6 +986,8 @@ otcrypto_status_t otcrypto_ecdh_p384_async_finalize(
   HARDENED_TRY(hardened_memcpy(share1, ss.x_share1, kP384CoordWords));
   HARDENED_TRY(
       hardened_memcpy(share1 + kP384CoordWords, ss.y_share1, kP384CoordWords));
+  HARDENED_CHECK_LE(keyblob_share_num_words(shared_secret->config),
+                    ARRAYSIZE(share0));
   HARDENED_TRY(keyblob_from_shares(share0, share1, shared_secret->config,
                                    shared_secret->keyblob));
 
