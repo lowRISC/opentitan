@@ -5,6 +5,8 @@
 // RRAM Controller for life cycle / key management / RMA handling
 //
 
+`include "prim_assert.sv"
+
 module rram_ctrl_lcmgr
   import rram_ctrl_pkg::*;
   import lc_ctrl_pkg::lc_tx_t;

@@ -5,6 +5,7 @@
 // Description: csrng core module
 //
 
+`include "prim_assert.sv"
 
 module csrng_core import csrng_pkg::*; #(
   parameter aes_pkg::sbox_impl_e SBoxImpl = aes_pkg::SBoxImplLut,
