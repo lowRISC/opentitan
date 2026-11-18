@@ -141,8 +141,8 @@ typedef struct p256_ecdsa_signature_t {
  */
 typedef struct p256_ecdh_shared_key {
   uint32_t x_share0[kP256CoordWords];
-  uint32_t x_share1[kP256CoordWords];
   uint32_t y_share0[kP256CoordWords];
+  uint32_t x_share1[kP256CoordWords];
   uint32_t y_share1[kP256CoordWords];
   // Checksum over x_share0 and y_share0.
   uint32_t checksum;
