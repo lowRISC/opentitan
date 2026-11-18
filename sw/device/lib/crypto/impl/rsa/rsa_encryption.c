@@ -87,11 +87,13 @@ status_t rsa_encrypt_finalize(rsa_size_t size, uint32_t *ciphertext) {
   return rsa_modexp_finalize_size(size, ciphertext);
 }
 
-status_t rsa_decrypt_start(rsa_size_t size, const uint32_t *d0,
-                           const uint32_t *d1, uint32_t e, const uint32_t *n,
-                           const uint32_t *ciphertext, uint32_t checksum) {
+status_t rsa_decrypt_start(rsa_size_t size, otcrypto_key_mode_t key_mode,
+                           const uint32_t *d0, const uint32_t *d1, uint32_t e,
+                           const uint32_t *n, const uint32_t *ciphertext,
+                           uint32_t checksum) {
   // Start computing (ciphertext ^ d) mod n.
-  return rsa_modexp_consttime_start(size, ciphertext, d0, d1, e, n, checksum);
+  return rsa_modexp_consttime_start(size, ciphertext, d0, d1, e, n, checksum,
+                                    (uint32_t)key_mode);
 }
 
 status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
@@ -102,6 +104,11 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
   // Wait for OTBN to complete and get the size for the last RSA operation.
   size_t num_words;
   HARDENED_TRY(rsa_modexp_wait(&num_words));
+  if (launder32((uint32_t)key_mode) == 0) {
+    uint32_t raw_key_mode = 0;
+    HARDENED_TRY(rsa_modexp_key_mode(&raw_key_mode));
+    key_mode = (otcrypto_key_mode_t)raw_key_mode;
+  }
 
   if (launder32(key_mode) != kOtcryptoKeyModeRsaEncryptOaep &&
       launder32(key_mode) != kOtcryptoKeyModeRsaEncryptOaepMgfSha1 &&
