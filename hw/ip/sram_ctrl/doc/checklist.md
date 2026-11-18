@@ -39,11 +39,11 @@ Documentation | [NEW_FEATURES][]          | Done        | New features used in E
 Documentation | [BLOCK_DIAGRAM][]         | Done        |
 Documentation | [DOC_INTERFACE][]         | Done        |
 Documentation | [DOC_INTEGRATION_D2][]    | Not Started |
-Documentation | [MISSING_FUNC][]          | Not Started |
-Documentation | [FEATURE_FROZEN][]        | Not Started |
-RTL           | [FEATURE_COMPLETE][]      | Not Started |
-RTL           | [PORT_FROZEN][]           | Not Started |
-RTL           | [ARCHITECTURE_FROZEN][]   | Not Started |
+Documentation | [MISSING_FUNC][]          | Done        |
+Documentation | [FEATURE_FROZEN][]        | Done        |
+RTL           | [FEATURE_COMPLETE][]      | Done        |
+RTL           | [PORT_FROZEN][]           | Done        |
+RTL           | [ARCHITECTURE_FROZEN][]   | Done        |
 RTL           | [REVIEW_TODO][]           | Not Started |
 RTL           | [STYLE_X][]               | Not Started |
 RTL           | [CDC_SYNCMACRO][]         | Not Started |
