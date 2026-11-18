@@ -44,9 +44,9 @@ Documentation | [FEATURE_FROZEN][]        | Done        |
 RTL           | [FEATURE_COMPLETE][]      | Not Started | Pending [#32371](https://github.com/lowRISC/opentitan/pull/32371).
 RTL           | [PORT_FROZEN][]           | Done        |
 RTL           | [ARCHITECTURE_FROZEN][]   | Done        |
-RTL           | [REVIEW_TODO][]           | Not Started |
-RTL           | [STYLE_X][]               | Not Started |
-RTL           | [CDC_SYNCMACRO][]         | Not Started |
+RTL           | [REVIEW_TODO][]           | Done        |
+RTL           | [STYLE_X][]               | Done        |
+RTL           | [CDC_SYNCMACRO][]         | Done        |
 Code Quality  | [LINT_PASS][]             | Not Started |
 Code Quality  | [CDC_SETUP][]             | Not Started |
 Code Quality  | [RDC_SETUP][]             | Not Started |
