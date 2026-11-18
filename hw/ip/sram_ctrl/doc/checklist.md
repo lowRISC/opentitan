@@ -47,9 +47,9 @@ RTL           | [ARCHITECTURE_FROZEN][]   | Done        |
 RTL           | [REVIEW_TODO][]           | Done        |
 RTL           | [STYLE_X][]               | Done        |
 RTL           | [CDC_SYNCMACRO][]         | Done        |
-Code Quality  | [LINT_PASS][]             | Not Started |
-Code Quality  | [CDC_SETUP][]             | Not Started |
-Code Quality  | [RDC_SETUP][]             | Not Started |
+Code Quality  | [LINT_PASS][]             | Done        |
+Code Quality  | [CDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
+Code Quality  | [RDC_SETUP][]             | Waived      | No block-level flow available - waived to top-level signoff.
 Code Quality  | [AREA_CHECK][]            | Not Started |
 Code Quality  | [TIMING_CHECK][]          | Not Started |
 Security      | [SEC_CM_DOCUMENTED][]     | Not Started |
