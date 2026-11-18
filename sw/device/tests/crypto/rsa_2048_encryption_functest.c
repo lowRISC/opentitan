@@ -869,8 +869,9 @@ status_t pkcs1v15_and_raw_encrypt_decrypt_test(void) {
   TRY(otcrypto_rsa_encrypt(&public_key, kOtcryptoHashModeNull, &max_msg_buf,
                            &empty_label, &ciphertext_buf));
   actual_msg_len = 0;
-  TRY(otcrypto_rsa_decrypt(&private_key, kOtcryptoHashModeNull, &const_ct_buf,
-                           &empty_label, &pkcs_pt_buf, &actual_msg_len));
+  TRY(otcrypto_rsa_decrypt_async_start(&private_key, &const_ct_buf));
+  TRY(otcrypto_rsa_decrypt_async_finalize(kOtcryptoHashModeNull, &empty_label,
+                                          &pkcs_pt_buf, &actual_msg_len));
   TRY_CHECK(actual_msg_len == sizeof(max_msg));
   TRY_CHECK_ARRAYS_EQ(actual_msg, max_msg, actual_msg_len);
 
@@ -913,8 +914,9 @@ status_t pkcs1v15_and_raw_encrypt_decrypt_test(void) {
   TRY(otcrypto_rsa_encrypt(&public_key, kOtcryptoHashModeNull, &raw_pt_buf,
                            &empty_label, &ciphertext_buf));
   actual_msg_len = 0;
-  TRY(otcrypto_rsa_decrypt(&private_key, kOtcryptoHashModeNull, &const_ct_buf,
-                           &empty_label, &raw_out_buf, &actual_msg_len));
+  TRY(otcrypto_rsa_decrypt_async_start(&private_key, &const_ct_buf));
+  TRY(otcrypto_rsa_decrypt_async_finalize(kOtcryptoHashModeNull, &empty_label,
+                                          &raw_out_buf, &actual_msg_len));
   TRY_CHECK(actual_msg_len == kRsa2048NumBytes);
   TRY_CHECK_ARRAYS_EQ(actual_msg, raw_pt, kRsa2048NumBytes);
 
@@ -937,10 +939,18 @@ status_t pkcs1v15_and_raw_encrypt_decrypt_test(void) {
   TRY(otcrypto_rsa_encrypt(&public_key, kOtcryptoHashModeSha1, &msg_buf,
                            &non_empty_label, &ciphertext_buf));
   actual_msg_len = 0;
-  TRY(otcrypto_rsa_decrypt(&private_key, kOtcryptoHashModeSha1, &const_ct_buf,
-                           &non_empty_label, &raw_out_buf, &actual_msg_len));
+  TRY(otcrypto_rsa_decrypt_async_start(&private_key, &const_ct_buf));
+  TRY(otcrypto_rsa_decrypt_async_finalize(
+      kOtcryptoHashModeSha1, &non_empty_label, &raw_out_buf, &actual_msg_len));
   TRY_CHECK(actual_msg_len == kTestMessageLen);
   TRY_CHECK_ARRAYS_EQ(actual_msg, kTestMessage, actual_msg_len);
+
+  // Cross-mode negative check: finalizing an OAEP key with HashModeNull must
+  // fail rather than falling back to PKCS#1 v1.5 or raw decoding.
+  TRY(otcrypto_rsa_decrypt_async_start(&private_key, &const_ct_buf));
+  CHECK(otcrypto_rsa_decrypt_async_finalize(kOtcryptoHashModeNull, &empty_label,
+                                            &raw_out_buf, &actual_msg_len)
+            .value == OTCRYPTO_BAD_ARGS.value);
 
   return OK_STATUS();
 }

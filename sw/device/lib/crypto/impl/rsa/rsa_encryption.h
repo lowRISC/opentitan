@@ -81,9 +81,10 @@ status_t rsa_encrypt_finalize(rsa_size_t size, uint32_t *ciphertext);
  * @return Result of the operation (OK or error).
  */
 OT_WARN_UNUSED_RESULT
-status_t rsa_decrypt_start(rsa_size_t size, const uint32_t *d0,
-                           const uint32_t *d1, uint32_t e, const uint32_t *n,
-                           const uint32_t *ciphertext, uint32_t checksum);
+status_t rsa_decrypt_start(rsa_size_t size, otcrypto_key_mode_t key_mode,
+                           const uint32_t *d0, const uint32_t *d1, uint32_t e,
+                           const uint32_t *n, const uint32_t *ciphertext,
+                           uint32_t checksum);
 
 /**
  * Waits for an RSA decryption to complete.

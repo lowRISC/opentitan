@@ -240,7 +240,7 @@ status_t rsa_signature_generate_start(
 
   // Start computing (encoded_message ^ d) mod n.
   return rsa_modexp_consttime_start(size, encoded_message, d0, d1, e, n,
-                                    checksum);
+                                    checksum, /*key_mode=*/0);
 }
 
 status_t rsa_signature_generate_finalize(rsa_size_t size, uint32_t *signature) {
