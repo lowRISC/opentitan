@@ -203,13 +203,14 @@ module prim_fifo_sync #(
     end
 
     if (OutputZeroIfEmpty == 1'b1) begin : gen_output_zero
-      assign rdata_o = empty ? Width'(0) : rdata_int;
+      assign rdata_o = rvalid_o ? rdata_int : Width'(0);
     end else begin : gen_no_output_zero
       assign rdata_o = rdata_int;
     end
 
     `ASSERT(depthShallNotExceedParamDepth, !empty |-> depth_o <= DepthW'(Depth))
     `ASSERT(OnlyRvalidWhenNotUnderRst_A, rvalid_o -> ~under_rst)
+    `ASSERT(OutputZeroWhenNotRvalid_A, OutputZeroIfEmpty && !rvalid_o |-> rdata_o == '0)
   end // block: gen_normal_fifo
 
 
