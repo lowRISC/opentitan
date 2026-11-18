@@ -81,6 +81,12 @@ otcrypto_status_t otcrypto_hmac(const otcrypto_blinded_key_t *key,
  * key mode. Only SHA-2 hash functions are supported. Other modes (e.g. SHA-3)
  * are not supported and will result in errors.
  *
+ * Keys shorter than 14 bytes (112 bits) are not FIPS-approved per NIST SP
+ * 800-131Ar2 and cause this call to set the CMVP service indicator to
+ * `kOtcryptoCmvpNotApprovedService`. To verify that the operation is
+ * FIPS-approved, the user must check #otcrypto_cmvp_service_indicator when
+ * using this function.
+ *
  * @param[out] ctx Pointer to the generic HMAC context struct.
  * @param key Pointer to the blinded HMAC key struct.
  * @return Result of the HMAC init operation. Returns `kOtcryptoStatusValueOk`
