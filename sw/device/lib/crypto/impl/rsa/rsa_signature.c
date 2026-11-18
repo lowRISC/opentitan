@@ -26,6 +26,7 @@
  * @param digest Message digest to check.
  * @return Result of the operation (OK or BAD_ARGS).
  */
+OT_NOINLINE
 OT_WARN_UNUSED_RESULT
 static status_t digest_check(const otcrypto_hash_digest_t digest,
                              const rsa_signature_padding_t padding_mode,
@@ -59,6 +60,7 @@ static status_t digest_check(const otcrypto_hash_digest_t digest,
 }
 
 #ifdef FIPS_MODE
+OT_NOINLINE
 OT_WARN_UNUSED_RESULT
 static status_t rsa_digest_check_fips(
     const otcrypto_hash_digest_t message_digest,
@@ -235,17 +237,6 @@ status_t rsa_signature_generate_start(
   // Start computing (encoded_message ^ d) mod n.
   return rsa_modexp_consttime_start(size, encoded_message, d0, d1, e, n,
                                     checksum);
-}
-
-status_t rsa_signature_generate_finalize(rsa_size_t size, uint32_t *signature) {
-  return rsa_modexp_finalize_size(size, signature);
-}
-
-status_t rsa_signature_verify_start(rsa_size_t size, uint32_t e,
-                                    const uint32_t *n,
-                                    const uint32_t *signature) {
-  // Start computing (sig ^ e) mod n with a variable-time exponentiation.
-  return rsa_modexp_vartime_start(size, signature, e, n);
 }
 
 status_t rsa_signature_verify_finalize(
