@@ -422,11 +422,7 @@ static status_t kat_sha256_hash(void) {
       otcrypto_make_const_byte_buf(sha256_in, sizeof(sha256_in));
 
   uint32_t act_digest[256 / 32];
-  otcrypto_hash_digest_t digest_buf = {
-      .data = act_digest,
-      .len = 256 / 32,
-  };
-  HARDENED_TRY(otcrypto_sha2_256(&msg_buf, &digest_buf));
+  HARDENED_TRY(sha2_message(kOtcryptoHashModeSha256, &msg_buf, act_digest));
 
   if (memcmp(act_digest, sha256_ans, 256 / 8)) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or
@@ -446,11 +442,7 @@ static status_t kat_sha512_hash(void) {
       otcrypto_const_byte_buf_t, sha512_in, sizeof(sha512_in));
 
   uint32_t act_digest[512 / 32];
-  otcrypto_hash_digest_t digest_buf = {
-      .data = act_digest,
-      .len = 512 / 32,
-  };
-  HARDENED_TRY(otcrypto_sha2_512(&msg_buf, &digest_buf));
+  HARDENED_TRY(sha2_message(kOtcryptoHashModeSha512, &msg_buf, act_digest));
 
   if (memcmp(act_digest, sha512_ans, 512 / 8)) {
     // COVERAGE (HW ERR) KAT output mismatch only occurs on hardware fault or

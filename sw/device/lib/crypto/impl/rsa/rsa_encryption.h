@@ -93,9 +93,8 @@ status_t rsa_decrypt_start(rsa_size_t size, const uint32_t *d0,
  * from the OTBN application mode.
  *
  * The only supported padding mode is OAEP (see IETF RFC 8017, section 7.1.2).
- * Only fixed-length hash functions (i.e. the SHA-2 or SHA-3 families) are
- * supported. The mask generation function (MGF) is MGF1 with the hash function
- * indicated by `hash_mode`.
+ * Only SHA-1 and SHA-2 hash functions are supported. The mask generation
+ * function (MGF) is MGF1 with the hash function indicated by `hash_mode`.
  *
  * The caller must ensure that enough space is allocated at `plaintext` to hold
  * the largest possible plaintext, which is (as described in IETF RFC 8017,

@@ -143,7 +143,7 @@ status_t rsa_padding_oaep_max_message_bytelen(
  * where k is the RSA size and hLen is the length of the hash digest. This
  * function will return an error if the message is too long.
  *
- * The hash function must be a fixed-length (SHA-2 or SHA-3) hash function. The
+ * The hash function must be a SHA-1 or SHA-2 hash function. The
  * MGF will always be MGF1 with the same hash function.
  *
  * We encode the message in reversed byte-order from the RFC because OTBN
@@ -175,7 +175,7 @@ status_t rsa_padding_oaep_encode(const otcrypto_hash_mode_t hash_mode,
  * `message`; they can call `rsa_padding_oaep_max_message_bytelen` to get the
  * exact value for a given hash mode and RSA size.
  *
- * The hash function must be a fixed-length (SHA-2 or SHA-3) hash function. The
+ * The hash function must be a SHA-1 or SHA-2 hash function. The
  * MGF will always be MGF1 with the same hash function.
  *
  * Note that this function expects the encoded message in reversed byte-order

@@ -491,8 +491,7 @@ RSA_TESTVECTOR_TARGETS = [
         "pss",
     ]
 ] + [
-    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_{}_{}_{}_sign.json".format(
-        padding_mode,
+    "//sw/host/cryptotest/testvectors/data:wycheproof_rsa_pkcs1_1.5_{}_{}_sign.json".format(
         security_level,
         hash_suffix,
     )
@@ -505,10 +504,6 @@ RSA_TESTVECTOR_TARGETS = [
         "sha3_256",
         "sha3_384",
         "sha3_512",
-    ]
-    for padding_mode in [
-        "pkcs1_1.5",
-        "pss",
     ]
 ]
 
@@ -545,6 +540,18 @@ RSA_RANDOM_TESTVECTOR_TARGETS = [
         "sha256",
         "sha384",
         "sha512",
+    ]
+] + [
+    "//sw/host/cryptotest/testvectors/data:random_rsa_pkcs1_1.5_{}_{}.json".format(
+        security_level,
+        hash_suffix,
+    )
+    for security_level in [
+        2048,
+        3072,
+        4096,
+    ]
+    for hash_suffix in [
         "sha3_256",
         "sha3_384",
         "sha3_512",

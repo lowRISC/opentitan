@@ -175,9 +175,9 @@ static status_t digest_wordlen_get(otcrypto_hash_mode_t hash_mode,
 }
 
 /**
- * Run an iteration of a hash function using the HMAC or KMAC driver.
+ * Run an iteration of a hash function using the streaming hash interface.
  *
- * Only supports fixed-length hash functions (SHA2 or SHA3), not XOFs.
+ * Only supports SHA-1 and SHA-2 hash functions, not SHA-3 or XOFs.
  *
  * It is the caller's responsibility to ensure there is enough space allocated
  * at `digest` to hold the result.
