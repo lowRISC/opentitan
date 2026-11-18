@@ -234,7 +234,8 @@ otcrypto_status_t otcrypto_ecdh_p384_keygen(
  *
  * @param private_key Pointer to the blinded private key (d) struct.
  * @param public_key Pointer to the unblinded public key (Q) struct.
- * @param[out] shared_secret Pointer to generated blinded shared key struct.
+ * @param[out] shared_secret Pointer to generated blinded shared key struct
+ *                           (must use a symmetric key mode).
  * @return Result of ECDH shared secret generation. Returns
  * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
  * arguments, key configuration, or buffer lengths are invalid, or
@@ -451,7 +452,8 @@ otcrypto_status_t otcrypto_ecdh_p384_async_start(
  *
  * May block until the operation is complete.
  *
- * @param[out] shared_secret Pointer to generated blinded shared key struct.
+ * @param[out] shared_secret Pointer to generated blinded shared key struct
+ *                           (must use a symmetric key mode).
  * @return Result of async ECDH finalize operation. Returns
  * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueAsyncIncomplete` if
  * OTBN is still processing, `kOtcryptoStatusValueBadArgs` if arguments, key
