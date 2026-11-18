@@ -218,7 +218,8 @@ static status_t ed25519_message_prehash(
     otcrypto_byte_buf_t *message_ph, uint32_t *prehash_buffer) {
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
   // Only a message of length zero can have NULL as data.
-  if (input_message->data == NULL && input_message->len != 0) {
+  if (input_message == NULL ||
+      (input_message->data == NULL && input_message->len != 0)) {
     return OTCRYPTO_BAD_ARGS;
   }
 #endif
@@ -670,18 +671,6 @@ otcrypto_status_t otcrypto_ed25519_keygen_async_finalize(
     otcrypto_blinded_key_t *private_key, otcrypto_unblinded_key_t *public_key) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_KEYGEN_ASYNC_FINALIZE);
   OTCRYPTO_LOCKED_STATE_CHECK();
-#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (private_key == NULL || private_key->keyblob == NULL ||
-      public_key == NULL || public_key->key == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-#endif
-  if (launder32(public_key->key_mode) != kOtcryptoKeyModeEd25519 ||
-      public_key->key_length != kCurve25519KeyBytes) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeEd25519);
-
   HARDENED_TRY(curve25519_private_key_length_check(private_key,
                                                    kOtcryptoKeyModeEd25519));
   HARDENED_TRY(
@@ -727,11 +716,43 @@ otcrypto_status_t otcrypto_ed25519_public_key_from_private_async_finalize(
   OTCRYPTO_SET_CMVP_INDICATOR(
       OTCRYPTO_FUNCTION_ED25519_PUBLIC_KEY_FROM_PRIVATE_ASYNC_FINALIZE);
   OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (public_key == NULL || public_key->key == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  if (launder32(public_key->key_mode) != kOtcryptoKeyModeEd25519 ||
+      public_key->key_length != kCurve25519KeyBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(public_key->key_mode, kOtcryptoKeyModeEd25519);
   // Finalize the keygen operation and retrieve the public key.
   HARDENED_TRY_WIPE_DMEM(curve25519_keygen_finalize(public_key->key));
   // Calculate the public key checksum.
   public_key->checksum = otcrypto_integrity_unblinded_checksum(public_key);
   return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
+OT_WARN_UNUSED_RESULT
+static status_t ed25519_async_sign_args_check(
+    const otcrypto_const_byte_buf_t *input_message_ph,
+    const otcrypto_word32_buf_t *s0, const otcrypto_word32_buf_t *s1,
+    const otcrypto_word32_buf_t *r0, const otcrypto_word32_buf_t *r1) {
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (input_message_ph == NULL ||
+      (input_message_ph->data == NULL && input_message_ph->len != 0) ||
+      s0 == NULL || s0->data == NULL || s1 == NULL || s1->data == NULL ||
+      r0 == NULL || r0->data == NULL || r1 == NULL || r1->data == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+  if (s0->len != kCurve25519MaskedScalarSWords ||
+      s1->len != kCurve25519MaskedScalarSWords ||
+      r0->len != kCurve25519MaskedScalarRWords ||
+      r1->len != kCurve25519MaskedScalarRWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  return OTCRYPTO_OK;
 }
 
 otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
@@ -742,6 +763,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part1_async_start(
     otcrypto_word32_buf_t *r1) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_SIGN_PART1_ASYNC_START);
   OTCRYPTO_HEALTH_CHECK(kTestEd25519SignBit);
+  HARDENED_TRY(ed25519_async_sign_args_check(input_message_ph, s0, s1, r0, r1));
   // Check the private key.
   HARDENED_TRY(curve25519_private_key_length_check(private_key,
                                                    kOtcryptoKeyModeEd25519));
@@ -814,6 +836,7 @@ otcrypto_status_t otcrypto_ed25519_sign_part2_async_start(
     otcrypto_word32_buf_t *r0, otcrypto_word32_buf_t *r1) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_ED25519_SIGN_PART2_ASYNC_START);
   OTCRYPTO_LOCKED_STATE_CHECK();
+  HARDENED_TRY(ed25519_async_sign_args_check(input_message_ph, s0, s1, r0, r1));
   // Check the signature.
   HARDENED_TRY(ed25519_signature_check(signature));
 

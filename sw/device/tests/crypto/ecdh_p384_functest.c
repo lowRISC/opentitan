@@ -154,6 +154,21 @@ status_t key_exchange_test(void) {
   TRY(otcrypto_ecc_p384_point_on_curve(&shared_point, &on_curve));
   CHECK(on_curve == kHardenedBoolTrue);
 
+  // 48-byte (x-coordinate only) shared secret must succeed and match the
+  // x-coordinate of the 96-byte shared secret.
+  otcrypto_key_config_t x_only_cfg = kEcdhSharedKeyConfig;
+  x_only_cfg.key_length = 48;
+  uint32_t x_only_blob[keyblob_num_words(x_only_cfg)];
+  otcrypto_blinded_key_t x_only_shared = {
+      .config = x_only_cfg,
+      .keyblob_length = sizeof(x_only_blob),
+      .keyblob = x_only_blob,
+  };
+  TRY(otcrypto_ecdh_p384(&private_keyA, &public_keyB, &x_only_shared));
+  uint32_t unmasked_x[12];
+  TRY(keyblob_key_unmask(&x_only_shared, ARRAYSIZE(unmasked_x), unmasked_x));
+  CHECK_ARRAYS_EQ(unmasked_x, keyA, ARRAYSIZE(unmasked_x));
+
   return OTCRYPTO_OK;
 }
 
