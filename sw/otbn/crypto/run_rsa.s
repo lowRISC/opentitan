@@ -102,9 +102,11 @@ start:
   addi    x3, x0, HARDENED_BOOL_FALSE
   sw      x3, 0(x2)
 
-  /* Read the mode and tail-call the requested operation. */
+  /* Read the mode (ignoring any upper 16-bit key_mode tag) and tail-call. */
   la      x2, mode
   lw      x2, 0(x2)
+  slli    x2, x2, 16
+  srli    x2, x2, 16
 
   add     x3, x0, MODE_RSA_1024_KEYGEN
   beq     x2, x3, rsa_1024_keygen
@@ -467,6 +469,15 @@ _do_check_n_done:
  * @param[out] dmem[inout]: result, a^d mod n
  */
 do_modexp:
+  /* Preserve upper 16-bit key_mode tag of `mode` in w21 across modexp. */
+  la     x2, r1
+  lw     x4, 0(x2)
+  li     x3, 31
+  bn.sid x3, 0(x2)
+  sw     x4, 0(x2)
+  li     x3, 21
+  bn.lid x3, 0(x2)
+
   /* Load pointers to modulus and Montgomery constant buffers. */
   la    x16, rsa_n
   la    x17, RR
@@ -505,8 +516,14 @@ _restore_mode_de:
   addi x17, x0, MODE_RSA_4096_MODEXP_DE
 
 _restore_mode:
-  la   x16, mode
-  sw   x17, 0(x16)
+  la     x16, r1
+  li     x3, 21
+  bn.sid x3, 0(x16)
+  lw     x4, 0(x16)
+  srli   x4, x4, 16
+  slli   x4, x4, 16
+  or     x17, x17, x4
+  sw     x17, 0(x16)
 
   /* Write success. */
   la       x2, ok

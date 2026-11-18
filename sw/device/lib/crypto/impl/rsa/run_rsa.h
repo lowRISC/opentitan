@@ -54,7 +54,16 @@ status_t rsa_modexp_wait(size_t *num_words);
 status_t rsa_modexp_consttime_start(rsa_size_t size, const uint32_t *base,
                                     const uint32_t *exp0, const uint32_t *exp1,
                                     uint32_t pub_exp, const uint32_t *modulus,
-                                    uint32_t checksum);
+                                    uint32_t checksum, uint32_t key_mode);
+
+/**
+ * Reads the RSA `key_mode` preserved in OTBN's `mode` word after modexp.
+ *
+ * @param[out] key_mode Reconstructed `otcrypto_key_mode_t` value.
+ * @return Status of the operation (OK or error).
+ */
+OT_WARN_UNUSED_RESULT
+status_t rsa_modexp_key_mode(uint32_t *key_mode);
 
 /**
  * Start a variable-time RSA modular exponentiation.

@@ -1405,8 +1405,9 @@ static otcrypto_status_t rsa_decrypt_exp_async_start(
     return OTCRYPTO_BAD_ARGS;
   }
 
-  HARDENED_TRY_WIPE_DMEM(rsa_decrypt_start(rsa_size, d0, d1, exponent, n,
-                                           ciphertext->data, checksum));
+  HARDENED_TRY_WIPE_DMEM(
+      rsa_decrypt_start(rsa_size, private_key->config.key_mode, d0, d1,
+                        exponent, n, ciphertext->data, checksum));
   return otcrypto_eval_exit(OTCRYPTO_OK);
 }
 
@@ -1449,11 +1450,8 @@ otcrypto_status_t otcrypto_rsa_decrypt_async_finalize(
     const otcrypto_const_byte_buf_t *label, otcrypto_byte_buf_t *plaintext,
     size_t *plaintext_bytelen) {
   OTCRYPTO_SET_CMVP_INDICATOR(OTCRYPTO_FUNCTION_RSA_DECRYPT_ASYNC_FINALIZE);
-  otcrypto_key_mode_t key_mode = (launder32(hash_mode) == kOtcryptoHashModeNull)
-                                     ? kOtcryptoKeyModeRsaEncryptPkcs
-                                     : kOtcryptoKeyModeRsaEncryptOaep;
-  return rsa_decrypt_finalize_with_mode(key_mode, hash_mode, label, plaintext,
-                                        plaintext_bytelen);
+  return rsa_decrypt_finalize_with_mode((otcrypto_key_mode_t)0, hash_mode,
+                                        label, plaintext, plaintext_bytelen);
 }
 
 static status_t public_exponent_check(uint32_t exponent) {
