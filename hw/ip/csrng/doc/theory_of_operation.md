@@ -440,7 +440,7 @@ The following waveform shows an example of how the entropy source hardware inter
 
 ### Interrupts
 
-The `cs_cmd_req_done` interrupt will assert when a CSRNG command has been completed.
+The `cs_cmd_req_done` interrupt will assert when a CSRNG command has been completed, or when an instance halted via [`INT_STATE_HALT`](registers.md#int_state_halt) has quiesced.
 
 The `cs_entropy_req` interrupt will assert when CSRNG requests entropy from ENTROPY_SRC.
 
