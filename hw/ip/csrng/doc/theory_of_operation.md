@@ -301,6 +301,19 @@ A Generate command halts after processing the current block and continues once r
 Any other command completes before halting.
 Once halted, [`INT_STATE_STS.HALTED`](registers.md#int_state_sts) is set, the `cs_cmd_req_done` interrupt is raised, and the instance accepts no new commands until resumed.
 
+#### Saving and Restoring the Internal State
+
+Software can read and write the [internal state](programmers_guide.md#internal-state-save-and-restore) of the instance selected by [`INT_STATE_NUM`](registers.md#int_state_num) via [`INT_STATE_VAL`](registers.md#int_state_val).
+Reading requires both [`CTRL.READ_INT_STATE`](registers.md#ctrl), which enables reading for all instances, and the instance's bit in [`INT_STATE_READ_ENABLE`](registers.md#int_state_read_enable), which enables it per instance.
+Writing likewise requires both [`CTRL.WRITE_INT_STATE`](registers.md#ctrl) for all instances and the instance's bit in [`INT_STATE_WRITE_ENABLE`](registers.md#int_state_write_enable).
+The internal state comprises the CTR_DRBG state and the state of a Generate command in progress.
+Each access advances a word pointer, which wraps around after the last word.
+The pointer is reset by any valid write to [`INT_STATE_NUM`](registers.md#int_state_num), even if the value doesn't change, and by disabling CSRNG.
+Writes are only accepted while the instance is halted and take effect word by word.
+Restoring the state discards generated blocks that have not been read yet.
+If the instance updates its state during a read sequence, the words read may be inconsistent.
+In this case, [`RECOV_ALERT_STS.INT_STATE_OVERWRITE_ALERT`](registers.md#recov_alert_sts) is set and a [`recov_alert`](interfaces.md#security-alerts) is raised.
+
 #### Aborting Generate Commands
 
 Software can abort a Generate command in progress via [`GEN_ABORT`](registers.md#gen_abort).
