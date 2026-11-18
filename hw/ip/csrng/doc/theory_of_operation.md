@@ -294,6 +294,13 @@ A number of exception cases to be considered are enumerated in NIST SP 800-90A, 
 * Attempts to generate data when an instance has exceeded its maximum seed life.
 In such cases, a 32-bit exception message will be propagated to firmware via the `hw_exc_sts` register, and a `cs_hw_inst_exc` interrupt will be raised.
 
+#### Halting Instances
+
+Software can halt the instance selected by [`INT_STATE_NUM`](registers.md#int_state_num) via [`INT_STATE_HALT`](registers.md#int_state_halt) if enabled in [`INT_STATE_HALT_ENABLE`](registers.md#int_state_halt_enable).
+A Generate command halts after processing the current block and continues once resumed.
+Any other command completes before halting.
+Once halted, [`INT_STATE_STS.HALTED`](registers.md#int_state_sts) is set, the `cs_cmd_req_done` interrupt is raised, and the instance accepts no new commands until resumed.
+
 #### Aborting Generate Commands
 
 Software can abort a Generate command in progress via [`GEN_ABORT`](registers.md#gen_abort).
