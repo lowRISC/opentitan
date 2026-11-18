@@ -168,9 +168,7 @@ status_t keyblob_to_shares(const otcrypto_blinded_key_t *key, uint32_t **share0,
   } else if (key->config.key_mode == kOtcryptoKeyModeEd25519 ||
              key->config.key_mode == kOtcryptoKeyModeX25519) {
     hardened_memshred(s_share1, key_words);
-    memset(&s_share1[key_words - 2], 0, 2 * sizeof(uint32_t));
-    HARDENED_TRY(hardened_sub(key->keyblob, s_share1, key_words - 2, s_share0));
-    memset(&s_share0[key_words - 2], 0, 2 * sizeof(uint32_t));
+    HARDENED_TRY(hardened_sub(key->keyblob, s_share1, key_words, s_share0));
   } else {
     hardened_memshred(s_share1, key_words);
     HARDENED_TRY(hardened_xor(key->keyblob, s_share1, key_words, s_share0));
@@ -242,6 +240,9 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
     HARDENED_TRY(hardened_mod_reduce(share0, order, share_words, s_share0));
     HARDENED_TRY(hardened_mod_reduce(share1, order, share_words, s_share1));
     return hardened_add_mod(s_share0, s_share1, order, share_words, keyblob);
+  } else if (config.key_mode == kOtcryptoKeyModeEd25519 ||
+             config.key_mode == kOtcryptoKeyModeX25519) {
+    return hardened_add(share0, share1, share_words, keyblob);
   }
   HARDENED_TRY(hardened_memcpy(keyblob, share0, share_words));
   HARDENED_CHECK_EQ(hardened_memeq(share0, keyblob, share_words),

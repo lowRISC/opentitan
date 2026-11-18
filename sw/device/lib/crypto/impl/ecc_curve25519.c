@@ -1175,3 +1175,97 @@ otcrypto_status_t otcrypto_x25519_async_finalize(
   // Clear the OTBN sideload slot (in case the seed was sideloaded).
   return otcrypto_eval_exit(keymgr_sideload_clear_otbn());
 }
+
+enum {
+  // ECC keyblobs allocate 64 extra bits (2 words) per share.
+  kCurve25519KeyblobShareWords = kCurve25519MaskedScalarShareWords + 2,
+};
+
+otcrypto_status_t otcrypto_curve25519_private_key_import(
+    otcrypto_const_word32_buf_t share0, otcrypto_const_word32_buf_t share1,
+    otcrypto_blinded_key_t *private_key) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (share0.data == NULL || share1.data == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  if (share0.len != kCurve25519KeyblobShareWords ||
+      share1.len != kCurve25519KeyblobShareWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  if (private_key->config.key_mode != kOtcryptoKeyModeEd25519 &&
+      private_key->config.key_mode != kOtcryptoKeyModeX25519) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  if (launder32(private_key->config.hw_backed) != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
+
+  if (private_key->config.key_length != kCurve25519KeyBytes ||
+      private_key->keyblob_length !=
+          keyblob_num_words(private_key->config) * sizeof(uint32_t)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  HARDENED_TRY(keyblob_from_shares(share0.data, share1.data,
+                                   private_key->config, private_key->keyblob));
+
+  private_key->checksum = otcrypto_integrity_blinded_checksum(private_key);
+  return otcrypto_eval_exit(OTCRYPTO_OK);
+}
+
+otcrypto_status_t otcrypto_curve25519_private_key_export(
+    const otcrypto_blinded_key_t *private_key, otcrypto_word32_buf_t *share0,
+    otcrypto_word32_buf_t *share1) {
+  OTCRYPTO_LOCKED_STATE_CHECK();
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (share0 == NULL || share0->data == NULL || share1 == NULL ||
+      share1->data == NULL || private_key == NULL ||
+      private_key->keyblob == NULL) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  if (share0->len != kCurve25519KeyblobShareWords ||
+      share1->len != kCurve25519KeyblobShareWords) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  if (private_key->config.key_mode != kOtcryptoKeyModeEd25519 &&
+      private_key->config.key_mode != kOtcryptoKeyModeX25519) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  if (launder32(private_key->config.hw_backed) != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.hw_backed, kHardenedBoolFalse);
+
+  if (launder32(private_key->config.exportable) != kHardenedBoolTrue) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(private_key->config.exportable, kHardenedBoolTrue);
+
+  HARDENED_TRY(curve25519_private_key_length_check(
+      private_key, private_key->config.key_mode));
+
+  hardened_memshred(share0->data, kCurve25519KeyblobShareWords);
+  hardened_memshred(share1->data, kCurve25519KeyblobShareWords);
+
+  uint32_t *keyblob_share0;
+  uint32_t *keyblob_share1;
+  HARDENED_TRY(
+      keyblob_to_shares(private_key, &keyblob_share0, &keyblob_share1));
+  HARDENED_TRY(hardened_memcpy(share0->data, keyblob_share0,
+                               kCurve25519KeyblobShareWords));
+  HARDENED_TRY(hardened_memcpy(share1->data, keyblob_share1,
+                               kCurve25519KeyblobShareWords));
+
+  return otcrypto_eval_exit(OTCRYPTO_OK);
+}

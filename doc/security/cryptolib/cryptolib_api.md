@@ -907,6 +907,9 @@ The following key import, export, and sharing functions are available.
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecc_p384_public_key_export }}
 {{#header-snippet sw/device/lib/crypto/include/ecc_p384.h otcrypto_ecc_p384_arith_share_private_key }}
 
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_curve25519_private_key_import }}
+{{#header-snippet sw/device/lib/crypto/include/ecc_curve25519.h otcrypto_curve25519_private_key_export }}
+
 Cryptolib also offers helper functions to check a given point as well as perform a base point multiplication.
 
 {{#header-snippet sw/device/lib/crypto/include/ecc_p256.h otcrypto_ecc_p256_point_on_curve }}

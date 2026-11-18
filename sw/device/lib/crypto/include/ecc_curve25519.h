@@ -58,7 +58,8 @@ otcrypto_status_t otcrypto_ed25519_keygen(otcrypto_blinded_key_t *private_key,
  * Derives the Ed25519 public key corresponding to a given private key.
  *
  * The private key must be a pre-existing 32-byte Ed25519 seed with a valid
- * checksum (e.g. as returned by an import function). The public key is
+ * checksum (e.g. as returned by `otcrypto_curve25519_private_key_import`). The
+ * public key is
  * derived by SHA-512-hashing the seed, clamping the result to obtain the
  * secret scalar, and multiplying the Ed25519 base point by that scalar.
  *
@@ -537,6 +538,74 @@ otcrypto_status_t otcrypto_x25519_async_start(
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_x25519_async_finalize(
     otcrypto_blinded_key_t *shared_secret);
+
+/**
+ * Imports an externally-generated Curve25519 private key from two additive
+ * shares.
+ *
+ * The caller supplies the private key material (a 32-byte RFC 8032 seed for
+ * Ed25519 or a 32-byte scalar for X25519) as two 320-bit (10-word) additive
+ * shares (`share0`, `share1`). Curve25519 uses the lower 256 bits (8 words):
+ *   d = (share0 + share1) mod 2^256
+ * while the upper 64 bits (2 words) per share match the ECC keyblob layout and
+ * are ignored by Curve25519 operations. Callers importing from an unmasked
+ * 256-bit value may set the upper 2 words to zero and split via `hardened_sub`
+ * (or set `share1` to all-zero words).
+ *
+ * The caller must allocate and partially populate the blinded key struct
+ * before calling this function:
+ *   - `config.key_mode` must be `kOtcryptoKeyModeEd25519` or
+ *     `kOtcryptoKeyModeX25519`.
+ *   - `config.key_length` must be 32 bytes.
+ *   - `config.hw_backed` must be `kHardenedBoolFalse`.
+ *   - `keyblob` must point to a caller-allocated 20-word (80-byte) buffer (or
+ *     10-word / 40-byte buffer when `OTCRYPTO_DISABLE_KEYBLOB_MASKING` is
+ *     enabled), and `keyblob_length` must match.
+ *
+ * The `checksum` field of the blinded key struct is populated by this
+ * function.
+ *
+ * @param share0 First share of the private key (must be 10 words / 320 bits).
+ * @param share1 Second share of the private key (must be 10 words / 320 bits).
+ * @param[out] private_key Blinded private key struct, partially populated by
+ *             the caller as described above.
+ * @return Result of the Curve25519 private key import operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, or share lengths are invalid, or
+ * `kOtcryptoStatusValueFatalError` if an internal integrity check fails.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_curve25519_private_key_import(
+    otcrypto_const_word32_buf_t share0, otcrypto_const_word32_buf_t share1,
+    otcrypto_blinded_key_t *private_key);
+
+/**
+ * Exports a Curve25519 private key as two additive shares.
+ *
+ * Extracts the two 320-bit (10-word) additive shares (`share0`, `share1`) from
+ * the blinded private key struct, where the 256-bit key material is recovered
+ * from the lower 8 words as:
+ *   d = (share0 + share1) mod 2^256
+ * This is the inverse of `otcrypto_curve25519_private_key_import`.
+ *
+ * Hardware-backed keys and keys without `config.exportable` set to
+ * `kHardenedBoolTrue` cannot be exported and will return
+ * `kOtcryptoStatusValueBadArgs`.
+ *
+ * @param private_key Blinded private key struct (`kOtcryptoKeyModeEd25519` or
+ *                    `kOtcryptoKeyModeX25519`) to export.
+ * @param[out] share0 Buffer to receive the first 10-word (320-bit) share.
+ * @param[out] share1 Buffer to receive the second 10-word (320-bit) share.
+ * @return Result of the Curve25519 private key export operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueBadArgs` if
+ * arguments, key configuration, exportability, integrity checksum, or share
+ * lengths are invalid, or `kOtcryptoStatusValueFatalError` if an internal
+ * check fails.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_curve25519_private_key_export(
+    const otcrypto_blinded_key_t *private_key, otcrypto_word32_buf_t *share0,
+    otcrypto_word32_buf_t *share1);
 
 #ifdef __cplusplus
 }  // extern "C"

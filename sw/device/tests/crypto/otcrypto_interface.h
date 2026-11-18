@@ -360,6 +360,12 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*x25519_async_start)(const otcrypto_blinded_key_t *,
                                           const otcrypto_unblinded_key_t *);
   otcrypto_status_t (*x25519_async_finalize)(otcrypto_blinded_key_t *);
+  otcrypto_status_t (*curve25519_private_key_import)(
+      const otcrypto_const_word32_buf_t, const otcrypto_const_word32_buf_t,
+      otcrypto_blinded_key_t *);
+  otcrypto_status_t (*curve25519_private_key_export)(
+      const otcrypto_blinded_key_t *, otcrypto_word32_buf_t *,
+      otcrypto_word32_buf_t *);
 
   // RSA
   otcrypto_status_t (*rsa_keygen)(otcrypto_rsa_size_t,
