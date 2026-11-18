@@ -1,0 +1,1335 @@
+/********************************************************************
+Copyright lowRISC contributors (OpenTitan project).
+Copyright (c) 2026 ETH Zurich and University of Bologna.
+Licensed under the Apache License, Version 2.0, see LICENSE for details.
+SPDX-License-Identifier: Apache-2.0
+
+Minimal synthetic library designed to quickly estimate
+area and relative timing of digital circuits.
+
+The area is derived from transistor sizing and topology of each cell.
+Area is scaled to directly report NAND2 gate-equivalent.
+An extra 0.1GE offset is applied to punish using more cells,
+this can be intepreted as extra area for aligning to site multiples.
+Do not normalize to the effective NAND2 size of 1.1 for GE!
+
+Timing uses a topology-informed, linear capacitive-load model
+for each pin-to-output arc and rise/fall direction:
+t=\tau\left[\max(p-1,0)+k,\frac{C_\text{load}}{C_\text{unit}}\right]
+Where:
+- tau is an arbitrary time scale (10ps)
+- p is an arc-specific topology proxy for the transistor stack-depth.
+- k is a shared linear loading coefficient (1)
+- C_{load} is the total connected load capacitance
+- C_{unit} is the normalized load (1fF)
+
+Input capacitance approximate the topology-dependent loading.
+The model ignores slew and explicit drive strengths.
+********************************************************************/
+library (synthetic_compound_caps_unlimited) {
+  delay_model : table_lookup;
+  time_unit : "1ns";
+  voltage_unit : "1V";
+  current_unit : "1mA";
+  pulling_resistance_unit : "1kohm";
+  capacitive_load_unit (1, pf);
+  default_input_pin_cap : 0.001;
+  default_output_pin_cap : 0;
+  default_inout_pin_cap : 0.001;
+  default_fanout_load : 1;
+  input_threshold_pct_rise : 50;
+  output_threshold_pct_rise : 50;
+  input_threshold_pct_fall : 50;
+  output_threshold_pct_fall : 50;
+  slew_lower_threshold_pct_rise : 20;
+  slew_upper_threshold_pct_rise : 80;
+  slew_lower_threshold_pct_fall : 20;
+  slew_upper_threshold_pct_fall : 80;
+  nom_process : 1;
+  nom_temperature : 25;
+  nom_voltage : 1;
+  operating_conditions (analytical) {
+    process : 1; temperature : 25; voltage : 1; tree_type : balanced_tree;
+  }
+  default_operating_conditions : analytical;
+  lu_table_template (analytical_delay) {
+    variable_1 : input_net_transition;
+    variable_2 : total_output_net_capacitance;
+    index_1 ("0.002, 0.01, 0.05, 0.2");
+    index_2 ("0.00025, 0.001, 0.004, 0.016, 0.032");
+  }
+
+  cell (buf) {
+    area : 1.1;
+    pin (a_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (y_o) {
+      direction : output;
+      function : "a_i";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : positive_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (inv) {
+    area : 0.6;
+    pin (a_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (y_o) {
+      direction : output;
+      function : "a_i'";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (nand) {
+    area : 1.1;
+    pin (a_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (b_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (y_o) {
+      direction : output;
+      function : "(a_i*b_i)'";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "b_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (nor) {
+    area : 1.1;
+    pin (a_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (b_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (y_o) {
+      direction : output;
+      function : "(a_i+b_i)'";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "b_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (and) {
+    area : 1.4;
+    pin (a_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (b_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (y_o) {
+      direction : output;
+      function : "a_i*b_i";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : positive_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "b_i";
+        timing_sense : positive_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (or) {
+    area : 1.4;
+    pin (a_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (b_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (y_o) {
+      direction : output;
+      function : "a_i+b_i";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : positive_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "b_i";
+        timing_sense : positive_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (xor) {
+    area : 2.1;
+    pin (a_i) {
+      direction : input;
+      capacitance : 0.002;
+      rise_capacitance : 0.002;
+      fall_capacitance : 0.002;
+      fanout_load : 2;
+    }
+    pin (b_i) {
+      direction : input;
+      capacitance : 0.002;
+      rise_capacitance : 0.002;
+      fall_capacitance : 0.002;
+      fanout_load : 2;
+    }
+    pin (y_o) {
+      direction : output;
+      function : "a_i^b_i";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : non_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "b_i";
+        timing_sense : non_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (fa) {
+    area : 5.1;
+    pin (a_i) {
+      direction : input;
+      capacitance : 0.0025;
+      rise_capacitance : 0.0025;
+      fall_capacitance : 0.0025;
+      fanout_load : 2.5;
+    }
+    pin (b_i) {
+      direction : input;
+      capacitance : 0.0025;
+      rise_capacitance : 0.0025;
+      fall_capacitance : 0.0025;
+      fanout_load : 2.5;
+    }
+    pin (ci_i) {
+      direction : input;
+      capacitance : 0.0025;
+      rise_capacitance : 0.0025;
+      fall_capacitance : 0.0025;
+      fanout_load : 2.5;
+    }
+    pin (sum_o) {
+      direction : output;
+      function : "(a_i*b_i*ci_i)+(a_i*b_i'*ci_i')+(a_i'*b_i*ci_i')+(a_i'*b_i'*ci_i)";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : non_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "b_i";
+        timing_sense : non_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "ci_i";
+        timing_sense : non_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35", "0.0325, 0.04, 0.07, 0.19, 0.35");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+    pin (carry_o) {
+      direction : output;
+      function : "(a_i*b_i)+(a_i*ci_i)+(b_i*ci_i)";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : positive_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "b_i";
+        timing_sense : positive_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "ci_i";
+        timing_sense : positive_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (aoi21) {
+    area : 1.35;
+    pin (a_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (b_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (c_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (y_o) {
+      direction : output;
+      function : "((a_i*b_i)+c_i)'";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "b_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "c_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (oai21) {
+    area : 1.35;
+    pin (a_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (b_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (c_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (y_o) {
+      direction : output;
+      function : "((a_i+b_i)*c_i)'";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "b_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "c_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (aoi22) {
+    area : 1.85;
+    pin (a_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (b_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (c_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (d_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (y_o) {
+      direction : output;
+      function : "((a_i*b_i)+(c_i*d_i))'";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "b_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "c_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "d_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (oai22) {
+    area : 1.85;
+    pin (a_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (b_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (c_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (d_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (y_o) {
+      direction : output;
+      function : "((a_i+b_i)*(c_i+d_i))'";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "b_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "c_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "d_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (aoi31) {
+    area : 1.6;
+    pin (a_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (b_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (c_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (d_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (y_o) {
+      direction : output;
+      function : "((a_i*b_i*c_i)+d_i)'";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "b_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "c_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "d_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (oai31) {
+    area : 1.85;
+    pin (a_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (b_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (c_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (d_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (y_o) {
+      direction : output;
+      function : "((a_i+b_i+c_i)*d_i)'";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "b_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "c_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "d_i";
+        timing_sense : negative_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32", "0.0025, 0.01, 0.04, 0.16, 0.32");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (mux) {
+    area : 2.6;
+    pin (a_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (b_i) {
+      direction : input;
+      capacitance : 0.001;
+      rise_capacitance : 0.001;
+      fall_capacitance : 0.001;
+      fanout_load : 1;
+    }
+    pin (s_i) {
+      direction : input;
+      capacitance : 0.002;
+      rise_capacitance : 0.002;
+      fall_capacitance : 0.002;
+      fanout_load : 2;
+    }
+    pin (y_o) {
+      direction : output;
+      function : "(a_i*(s_i'))+(b_i*s_i)";
+      timing () {
+        related_pin : "a_i";
+        timing_sense : positive_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "b_i";
+        timing_sense : positive_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "s_i";
+        timing_sense : non_unate;
+        cell_rise (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (tiehi) {
+    area : 0.1;
+    pin (y_o) {
+      direction : output;
+      function : "1";
+    }
+  }
+
+  cell (tielow) {
+    area : 0.1;
+    pin (y_o) {
+      direction : output;
+      function : "0";
+    }
+  }
+
+  cell (dffq) {
+    area : 5.6;
+    ff (IQ, IQN) {
+      clocked_on : "clk_i";
+      next_state : "d_i";
+    }
+    pin (clk_i) { direction : input; capacitance : 0.002; clock : true; }
+    pin (d_i) {
+      direction : input; capacitance : 0.0015;
+      timing () {
+        related_pin : "clk_i";
+        timing_type : setup_rising;
+        rise_constraint (scalar) { values ("0.015"); }
+        fall_constraint (scalar) { values ("0.015"); }
+      }
+      timing () {
+        related_pin : "clk_i";
+        timing_type : hold_rising;
+        rise_constraint (scalar) { values ("0.0025"); }
+        fall_constraint (scalar) { values ("0.0025"); }
+      }
+    }
+    pin (q_o) {
+      direction : output;
+      function : "IQ";
+      timing () {
+        related_pin : "clk_i";
+        timing_sense : non_unate;
+        timing_type : rising_edge;
+        cell_rise (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34", "0.0225, 0.03, 0.06, 0.18, 0.34");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (dffr) {
+    area : 6.1;
+    ff (IQ, IQN) {
+      clocked_on : "clk_i";
+      next_state : "d_i";
+      clear : "!r_ni";
+    }
+    pin (clk_i) { direction : input; capacitance : 0.002; clock : true; }
+    pin (d_i) {
+      direction : input; capacitance : 0.0015;
+      timing () {
+        related_pin : "clk_i";
+        timing_type : setup_rising;
+        rise_constraint (scalar) { values ("0.015"); }
+        fall_constraint (scalar) { values ("0.015"); }
+      }
+      timing () {
+        related_pin : "clk_i";
+        timing_type : hold_rising;
+        rise_constraint (scalar) { values ("0.0025"); }
+        fall_constraint (scalar) { values ("0.0025"); }
+      }
+    }
+    pin (r_ni) {
+      direction : input; capacitance : 0.0015;
+      timing () {
+        related_pin : "clk_i";
+        timing_type : recovery_rising;
+        rise_constraint (scalar) { values ("0.02"); }
+      }
+      timing () {
+        related_pin : "clk_i";
+        timing_type : removal_rising;
+        rise_constraint (scalar) { values ("0.005"); }
+      }
+    }
+    pin (q_o) {
+      direction : output;
+      function : "IQ";
+      timing () {
+        related_pin : "clk_i";
+        timing_sense : non_unate;
+        timing_type : rising_edge;
+        cell_rise (analytical_delay) {
+          values ("0.0275, 0.035, 0.065, 0.185, 0.345", "0.0275, 0.035, 0.065, 0.185, 0.345", "0.0275, 0.035, 0.065, 0.185, 0.345", "0.0275, 0.035, 0.065, 0.185, 0.345");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0275, 0.035, 0.065, 0.185, 0.345", "0.0275, 0.035, 0.065, 0.185, 0.345", "0.0275, 0.035, 0.065, 0.185, 0.345", "0.0275, 0.035, 0.065, 0.185, 0.345");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "r_ni";
+        timing_sense : positive_unate;
+        timing_type : clear;
+        cell_rise (analytical_delay) {
+          values ("0.0175, 0.025, 0.055, 0.175, 0.335", "0.0175, 0.025, 0.055, 0.175, 0.335", "0.0175, 0.025, 0.055, 0.175, 0.335", "0.0175, 0.025, 0.055, 0.175, 0.335");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0175, 0.025, 0.055, 0.175, 0.335", "0.0175, 0.025, 0.055, 0.175, 0.335", "0.0175, 0.025, 0.055, 0.175, 0.335", "0.0175, 0.025, 0.055, 0.175, 0.335");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+  cell (latch) {
+    area : 3.6;
+    latch (IQ, IQN) { enable : "clk_i"; data_in : "d_i"; }
+    pin (clk_i) { direction : input; capacitance : 0.0015; clock : true; }
+    pin (d_i) { direction : input; capacitance : 0.001; }
+    pin (q_o) {
+      direction : output; function : "IQ";
+      timing () {
+        related_pin : "d_i";
+        timing_sense : positive_unate;
+        timing_type : combinational;
+        cell_rise (analytical_delay) {
+          values ("0.0075, 0.015, 0.045, 0.165, 0.325", "0.0075, 0.015, 0.045, 0.165, 0.325", "0.0075, 0.015, 0.045, 0.165, 0.325", "0.0075, 0.015, 0.045, 0.165, 0.325");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0075, 0.015, 0.045, 0.165, 0.325", "0.0075, 0.015, 0.045, 0.165, 0.325", "0.0075, 0.015, 0.045, 0.165, 0.325", "0.0075, 0.015, 0.045, 0.165, 0.325");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+      timing () {
+        related_pin : "clk_i";
+        timing_sense : non_unate;
+        timing_type : rising_edge;
+        cell_rise (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        rise_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+        cell_fall (analytical_delay) {
+          values ("0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33", "0.0125, 0.02, 0.05, 0.17, 0.33");
+        }
+        fall_transition (analytical_delay) {
+          values ("0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01", "0.01, 0.01, 0.01, 0.01, 0.01");
+        }
+      }
+    }
+  }
+
+}
