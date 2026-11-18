@@ -585,6 +585,33 @@ TEST(Keyblob, ToFromSharesEcc) {
   for (size_t i = 0; i < 10; i++) {
     EXPECT_EQ(actual_d[i], expected_d[i]);
   }
+
+  // Curve25519 (Ed25519 / X25519): additive mod 2^256 in lower 8 words,
+  // upper 2 words ignored.
+  const otcrypto_key_config_t kConfigEd25519 = {
+      .version = otcrypto_lib_version(),
+      .key_mode = kOtcryptoKeyModeEd25519,
+      .key_length = 32,
+      .hw_backed = kHardenedBoolFalse,
+      .security_level = kOtcryptoKeySecurityLevelLow,
+  };
+  size_t ed_words = keyblob_num_words(kConfigEd25519);
+  std::vector<uint32_t> ed_keyblob(ed_words, 0);
+  EXPECT_OK(keyblob_from_shares(in_share0.data(), in_share1.data(),
+                                kConfigEd25519, ed_keyblob.data()));
+  otcrypto_blinded_key_t ed_key = {
+      .config = kConfigEd25519,
+      .keyblob_length = static_cast<uint32_t>(ed_words * sizeof(uint32_t)),
+      .keyblob = ed_keyblob.data(),
+      .checksum = 0,
+  };
+  EXPECT_OK(keyblob_to_shares(&ed_key, &out_share0, &out_share1));
+  uint32_t expected_ed[8], actual_ed[8];
+  EXPECT_OK(hardened_add(in_share0.data(), in_share1.data(), 8, expected_ed));
+  EXPECT_OK(hardened_add(out_share0, out_share1, 8, actual_ed));
+  for (size_t i = 0; i < 8; i++) {
+    EXPECT_EQ(actual_ed[i], expected_ed[i]);
+  }
 }
 
 TEST(Keyblob, ToSharesRsa) {
