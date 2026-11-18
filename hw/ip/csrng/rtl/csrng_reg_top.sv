@@ -289,6 +289,7 @@ module csrng_reg_top (
   logic [3:0] int_state_halt_wd;
   logic int_state_sts_halted_qs;
   logic int_state_sts_genbits_vld_qs;
+  logic int_state_sts_gen_in_progress_qs;
 
   // Register instances
   // R[intr_state]: V(False)
@@ -2512,6 +2513,34 @@ module csrng_reg_top (
     .qs     (int_state_sts_genbits_vld_qs)
   );
 
+  //   F[gen_in_progress]: 2:2
+  prim_subreg #(
+    .DW      (1),
+    .SwAccess(prim_subreg_pkg::SwAccessRO),
+    .RESVAL  (1'h0),
+    .Mubi    (1'b0)
+  ) u_int_state_sts_gen_in_progress (
+    .clk_i   (clk_i),
+    .rst_ni  (rst_ni),
+    .reinit_i(1'b0),
+
+    // from register interface
+    .we     (1'b0),
+    .wd     ('0),
+
+    // from internal hardware
+    .de     (hw2reg.int_state_sts.gen_in_progress.de),
+    .d      (hw2reg.int_state_sts.gen_in_progress.d),
+
+    // to internal hardware
+    .qe     (),
+    .q      (),
+    .ds     (),
+
+    // to register interface (read)
+    .qs     (int_state_sts_gen_in_progress_qs)
+  );
+
 
 
   logic [37:0] addr_hit;
@@ -2994,6 +3023,7 @@ module csrng_reg_top (
       addr_hit[37]: begin
         reg_rdata_next[0] = int_state_sts_halted_qs;
         reg_rdata_next[1] = int_state_sts_genbits_vld_qs;
+        reg_rdata_next[2] = int_state_sts_gen_in_progress_qs;
       end
 
       default: begin
