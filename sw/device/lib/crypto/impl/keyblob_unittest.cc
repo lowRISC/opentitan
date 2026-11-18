@@ -657,23 +657,46 @@ TEST(Keyblob, EccMismatchedKeyLengthRejected) {
   uint32_t *out0 = nullptr;
   uint32_t *out1 = nullptr;
 
+#ifdef OTCRYPTO_DISABLE_KEYBLOB_MASKING
+  constexpr uint32_t kNumShares = 1;
+#else
+  constexpr uint32_t kNumShares = 2;
+#endif
+
   otcrypto_key_config_t bad_p256 = kConfigEcdsaP256;
   bad_p256.key_length = 64;
   EXPECT_EQ(keyblob_share_num_words(bad_p256), 0);
   EXPECT_NOT_OK(keyblob_from_shares(share0, share1, bad_p256, keyblob_buf));
 
-  otcrypto_blinded_key_t bad_key = {
-      .config = bad_p256,
-      .keyblob_length = 0,
-      .keyblob = keyblob_buf,
-      .checksum = 0,
-  };
-  EXPECT_NOT_OK(keyblob_to_shares(&bad_key, &out0, &out1));
+  // Verify keyblob_to_shares rejects `bad_p256` both with the non-zero keyblob
+  // byte length an unvalidated 64-byte ECC config would have used
+  // ((64 + 8) * kNumShares), with a valid P-256 keyblob length, and with 0.
+  for (uint32_t blob_len : {
+           kNumShares * (64u + 8u),
+           static_cast<uint32_t>(keyblob_num_words(kConfigEcdsaP256) *
+                                 sizeof(uint32_t)),
+           0u,
+       }) {
+    otcrypto_blinded_key_t bad_key = {
+        .config = bad_p256,
+        .keyblob_length = blob_len,
+        .keyblob = keyblob_buf,
+        .checksum = 0,
+    };
+    EXPECT_NOT_OK(keyblob_to_shares(&bad_key, &out0, &out1));
+  }
 
   otcrypto_key_config_t p256_48 = kConfigEcdsaP256;
   p256_48.key_length = 48;
   EXPECT_EQ(keyblob_share_num_words(p256_48), 0);
   EXPECT_NOT_OK(keyblob_from_shares(share0, share1, p256_48, keyblob_buf));
+  otcrypto_blinded_key_t p256_48_key = {
+      .config = p256_48,
+      .keyblob_length = kNumShares * (48u + 8u),
+      .keyblob = keyblob_buf,
+      .checksum = 0,
+  };
+  EXPECT_NOT_OK(keyblob_to_shares(&p256_48_key, &out0, &out1));
 
   otcrypto_key_config_t bad_p384 = {
       .version = kOtcryptoLibVersion1,
@@ -685,6 +708,13 @@ TEST(Keyblob, EccMismatchedKeyLengthRejected) {
   };
   EXPECT_EQ(keyblob_share_num_words(bad_p384), 0);
   EXPECT_NOT_OK(keyblob_from_shares(share0, share1, bad_p384, keyblob_buf));
+  otcrypto_blinded_key_t bad_p384_key = {
+      .config = bad_p384,
+      .keyblob_length = kNumShares * (32u + 8u),
+      .keyblob = keyblob_buf,
+      .checksum = 0,
+  };
+  EXPECT_NOT_OK(keyblob_to_shares(&bad_p384_key, &out0, &out1));
 }
 
 }  // namespace
