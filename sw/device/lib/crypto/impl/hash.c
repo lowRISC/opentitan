@@ -4,11 +4,13 @@
 
 #include "sw/device/lib/crypto/impl/hash.h"
 
+#include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/base/macros.h"
+#include "sw/device/lib/crypto/drivers/hmac.h"
+#include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
-#include "sw/device/lib/crypto/include/sha1.h"
+#include "sw/device/lib/crypto/include/integrity.h"
 #include "sw/device/lib/crypto/include/sha2.h"
-#include "sw/device/lib/crypto/include/sha3.h"
 
 // Module ID for status codes.
 #define MODULE_ID MAKE_MODULE_ID('h', 's', 'h')
@@ -64,7 +66,6 @@ status_t hash_info_get(otcrypto_hash_mode_t hash_mode, hash_info_t *info) {
           .digest_wordlen = 0,
           .der_oid = kSha1DigestIdentifier,
           .der_oid_len = 0,
-          .compute = NULL,
       };
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha1:
@@ -73,7 +74,6 @@ status_t hash_info_get(otcrypto_hash_mode_t hash_mode, hash_info_t *info) {
           .digest_wordlen = 160 / 32,
           .der_oid = kSha1DigestIdentifier,
           .der_oid_len = sizeof(kSha1DigestIdentifier),
-          .compute = otcrypto_sha1,
       };
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha256:
@@ -82,7 +82,6 @@ status_t hash_info_get(otcrypto_hash_mode_t hash_mode, hash_info_t *info) {
           .digest_wordlen = 256 / 32,
           .der_oid = kSha256DigestIdentifier,
           .der_oid_len = sizeof(kSha256DigestIdentifier),
-          .compute = otcrypto_sha2_256,
       };
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha384:
@@ -91,7 +90,6 @@ status_t hash_info_get(otcrypto_hash_mode_t hash_mode, hash_info_t *info) {
           .digest_wordlen = 384 / 32,
           .der_oid = kSha384DigestIdentifier,
           .der_oid_len = sizeof(kSha384DigestIdentifier),
-          .compute = otcrypto_sha2_384,
       };
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha512:
@@ -100,7 +98,6 @@ status_t hash_info_get(otcrypto_hash_mode_t hash_mode, hash_info_t *info) {
           .digest_wordlen = 512 / 32,
           .der_oid = kSha512DigestIdentifier,
           .der_oid_len = sizeof(kSha512DigestIdentifier),
-          .compute = otcrypto_sha2_512,
       };
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha3_224:
@@ -109,7 +106,6 @@ status_t hash_info_get(otcrypto_hash_mode_t hash_mode, hash_info_t *info) {
           .digest_wordlen = 224 / 32,
           .der_oid = kSha3_224DigestIdentifier,
           .der_oid_len = sizeof(kSha3_224DigestIdentifier),
-          .compute = otcrypto_sha3_224,
       };
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha3_256:
@@ -118,7 +114,6 @@ status_t hash_info_get(otcrypto_hash_mode_t hash_mode, hash_info_t *info) {
           .digest_wordlen = 256 / 32,
           .der_oid = kSha3_256DigestIdentifier,
           .der_oid_len = sizeof(kSha3_256DigestIdentifier),
-          .compute = otcrypto_sha3_256,
       };
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha3_384:
@@ -127,7 +122,6 @@ status_t hash_info_get(otcrypto_hash_mode_t hash_mode, hash_info_t *info) {
           .digest_wordlen = 384 / 32,
           .der_oid = kSha3_384DigestIdentifier,
           .der_oid_len = sizeof(kSha3_384DigestIdentifier),
-          .compute = otcrypto_sha3_384,
       };
       return OTCRYPTO_OK;
     case kOtcryptoHashModeSha3_512:
@@ -136,7 +130,6 @@ status_t hash_info_get(otcrypto_hash_mode_t hash_mode, hash_info_t *info) {
           .digest_wordlen = 512 / 32,
           .der_oid = kSha3_512DigestIdentifier,
           .der_oid_len = sizeof(kSha3_512DigestIdentifier),
-          .compute = otcrypto_sha3_512,
       };
       return OTCRYPTO_OK;
     case kOtcryptoHashXofModeShake128:
@@ -145,7 +138,6 @@ status_t hash_info_get(otcrypto_hash_mode_t hash_mode, hash_info_t *info) {
           .digest_wordlen = 256 / 32,
           .der_oid = NULL,
           .der_oid_len = 0,
-          .compute = otcrypto_shake128,
       };
       return OTCRYPTO_OK;
     case kOtcryptoHashXofModeShake256:
@@ -154,7 +146,6 @@ status_t hash_info_get(otcrypto_hash_mode_t hash_mode, hash_info_t *info) {
           .digest_wordlen = 512 / 32,
           .der_oid = NULL,
           .der_oid_len = 0,
-          .compute = otcrypto_shake256,
       };
       return OTCRYPTO_OK;
     default:
@@ -170,18 +161,65 @@ status_t hash_info_get(otcrypto_hash_mode_t hash_mode, hash_info_t *info) {
   return OTCRYPTO_FATAL_ERR;
 }
 
+status_t sha2_message(otcrypto_hash_mode_t hash_mode,
+                      const otcrypto_const_byte_buf_t *message,
+                      uint32_t *digest) {
+  OTCRYPTO_HEALTH_CHECK(hash_mode == kOtcryptoHashModeSha256
+                            ? kTestHashSha256Bit
+                            : kTestHashSha512Bit);
+#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
+  if (message == NULL || digest == NULL ||
+      (message->data == NULL && message->len != 0)) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+#endif
+
+  hmac_ctx_t ctx;
+  otcrypto_hash_mode_t hash_mode_used = launder32(0);
+  switch (launder32(hash_mode)) {
+    case kOtcryptoHashModeSha256:
+      hmac_hash_sha256_init(&ctx);
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha256;
+      break;
+    case kOtcryptoHashModeSha384:
+      hmac_hash_sha384_init(&ctx);
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha384;
+      break;
+    case kOtcryptoHashModeSha512:
+      hmac_hash_sha512_init(&ctx);
+      hash_mode_used = launder32(hash_mode_used) | kOtcryptoHashModeSha512;
+      break;
+    default:
+      return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(launder32(hash_mode_used), hash_mode);
+
+  status_t status = OTCRYPTO_OK;
+  if (message->len > 0) {
+    status = hmac_update(&ctx, message);
+  }
+  if (status_ok(status)) {
+    otcrypto_word32_buf_t digest_buf =
+        OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, digest, ctx.digest_wordlen);
+    status = hmac_final(&ctx, &digest_buf);
+  }
+  if (!status_ok(status)) {
+    hardened_memshred((uint32_t *)&ctx, sizeof(ctx) / sizeof(uint32_t));
+  }
+  return status;
+}
+
 status_t hash_message(otcrypto_hash_mode_t hash_mode,
                       const otcrypto_const_byte_buf_t *message,
                       uint32_t *digest_data, otcrypto_hash_digest_t *digest) {
-  hash_info_t info;
-  HARDENED_TRY(hash_info_get(hash_mode, &info));
-  if (info.compute == NULL) {
-    return OTCRYPTO_BAD_ARGS;
+  otcrypto_hash_context_t ctx;
+  HARDENED_TRY(otcrypto_hash_init(&ctx, hash_mode));
+  status_t status = otcrypto_hash_update(&ctx, message);
+  if (!status_ok(status)) {
+    hardened_memshred(ctx.data, ARRAYSIZE(ctx.data));
+    return status;
   }
-  digest->mode = hash_mode;
-  digest->len = info.digest_wordlen;
-  digest->data = digest_data;
-  return info.compute(message, digest);
+  return hash_context_final(&ctx, digest_data, digest);
 }
 
 status_t hash_context_final(otcrypto_hash_context_t *ctx, uint32_t *digest_data,
@@ -193,10 +231,24 @@ status_t hash_context_final(otcrypto_hash_context_t *ctx, uint32_t *digest_data,
 #endif
 
   otcrypto_hash_mode_t hash_mode = (otcrypto_hash_mode_t)ctx->data[0];
-  hash_info_t info;
-  HARDENED_TRY(hash_info_get(hash_mode, &info));
+  switch (launder32(hash_mode)) {
+    case kOtcryptoHashModeSha1:
+      digest->len = 160 / 32;
+      break;
+    case kOtcryptoHashModeSha256:
+      digest->len = 256 / 32;
+      break;
+    case kOtcryptoHashModeSha384:
+      digest->len = 384 / 32;
+      break;
+    case kOtcryptoHashModeSha512:
+      digest->len = 512 / 32;
+      break;
+    default:
+      digest->len = 0;
+      break;
+  }
   digest->mode = hash_mode;
-  digest->len = info.digest_wordlen;
   digest->data = digest_data;
 
   return otcrypto_hash_final(ctx, digest);

@@ -9,6 +9,7 @@
 #include "sw/device/lib/crypto/drivers/hmac.h"
 #include "sw/device/lib/crypto/impl/cmvp.h"
 #include "sw/device/lib/crypto/impl/ecc/curve25519.h"
+#include "sw/device/lib/crypto/impl/hash.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
 #include "sw/device/lib/crypto/impl/state.h"
 #include "sw/device/lib/crypto/impl/status.h"
@@ -230,17 +231,12 @@ static status_t ed25519_message_prehash(
     sign_mode_used =
         launder32(sign_mode_used) | kOtcryptoEddsaSignModeHashEddsa;
 
-    otcrypto_hash_digest_t input_digest = {
-        .data = prehash_buffer,
-        .len = kCurve25519HashWords,
-    };
-
-    HARDENED_TRY(otcrypto_sha2_512(input_message, &input_digest));
-    *message_ph =
-        OTCRYPTO_MAKE_BUF(otcrypto_byte_buf_t, (uint8_t *)input_digest.data,
-                          input_digest.len * sizeof(uint32_t));
-    message_ph->data = (uint8_t *)input_digest.data;
-    message_ph->len = input_digest.len * sizeof(uint32_t);
+    HARDENED_TRY(
+        sha2_message(kOtcryptoHashModeSha512, input_message, prehash_buffer));
+    *message_ph = OTCRYPTO_MAKE_BUF(
+        otcrypto_byte_buf_t, (uint8_t *)prehash_buffer, kCurve25519HashBytes);
+    message_ph->data = (uint8_t *)prehash_buffer;
+    message_ph->len = kCurve25519HashBytes;
 
     // Use the unity function if the sign mode is kOtcryptoEddsaSignModeEddsa.
   } else if (sign_mode == launder32(kOtcryptoEddsaSignModeEddsa)) {
@@ -357,7 +353,8 @@ static otcrypto_status_t ed25519_compute_scalar_and_prefix(
     otcrypto_const_byte_buf_t key_buf =
         OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
                           (const uint8_t *const)seed_data, kCurve25519KeyBytes);
-    HARDENED_TRY(otcrypto_sha2_512(&key_buf, key_digest));
+    HARDENED_TRY(
+        sha2_message(kOtcryptoHashModeSha512, &key_buf, key_digest->data));
 
     // Memshred the unmasked seed.
     hardened_memshred(seed_data, ARRAYSIZE(seed_data));
