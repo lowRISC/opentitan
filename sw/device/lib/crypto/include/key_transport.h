@@ -63,17 +63,19 @@ otcrypto_status_t otcrypto_symmetric_keygen(
  * some choices of algorithm may result in errors.
  *
  * The caller should partially populate the blinded key struct; they should set
- * the full key configuration and the keyblob length (32 bytes for sideloaded
+ * the full key configuration and the keyblob length (36 bytes for sideloaded
  * keys, or 64 bytes if the key will be passed to `otcrypto_hw_backed_keygen`),
  * and then allocate that amount of space for the keyblob and set the keyblob
  * pointer.
  *
- * This function will populate the `checksum` field and copy the salt/version
- * data into the keyblob buffer in the specific order that the rest of
- * cryptolib expects.
+ * This function will populate the `checksum` field and copy the version and
+ * full 8-word (256-bit) salt into the keyblob buffer in the specific order that
+ * the rest of cryptolib expects. All 8 salt words are passed directly to the
+ * key manager without injecting `key_mode`; callers are responsible for domain
+ * separation if reusing a key version across different key modes.
  *
  * @param version Key version.
- * @param salt Key salt (diversification data for KDF).
+ * @param salt Key salt (256-bit diversification data for KDF).
  * @param[out] key Destination blinded key struct.
  * @return Result of the operation. Returns `kOtcryptoStatusValueOk` on success,
  * `kOtcryptoStatusValueBadArgs` if key configuration or salt is invalid, or
@@ -81,25 +83,8 @@ otcrypto_status_t otcrypto_symmetric_keygen(
  */
 OT_WARN_UNUSED_RESULT
 otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
-                                         const uint32_t salt[7],
+                                         const uint32_t salt[8],
                                          otcrypto_blinded_key_t *key);
-
-/**
- * Creates a handle for a hardware-backed key for attestation.
- *
- * Similar to otcrypto_hw_backed_key, however, the salt is one word longer
- * specifically for the CDI key derivation.
- *
- * @param version Key version.
- * @param salt Key salt (diversification data for KDF).
- * @param[out] key Destination blinded key struct.
- * @return Result of the operation. Returns `kOtcryptoStatusValueOk` on success,
- * `kOtcryptoStatusValueBadArgs` if key configuration or salt is invalid, or
- * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.
- */
-OT_WARN_UNUSED_RESULT
-otcrypto_status_t otcrypto_hw_backed_attestation_key(
-    uint32_t version, const uint32_t salt[8], otcrypto_blinded_key_t *key);
 
 /**
  * Generate a HW-backed key from key manager that is returned to SW. The
@@ -109,14 +94,11 @@ otcrypto_status_t otcrypto_hw_backed_attestation_key(
  *
  * The caller must allocate 64 bytes (16 words) of space for the keyblob and
  * set `key->keyblob_length` to 64 bytes before initializing the key handle
- * with `otcrypto_hw_backed_key` (when `attestation` is `kHardenedBoolFalse`)
- * or `otcrypto_hw_backed_attestation_key` (when `attestation` is
- * `kHardenedBoolTrue`).
+ * with `otcrypto_hw_backed_key`.
  *
  * @param attestation To either use the sealing ladder (kHardenedBoolFalse) or
  * the attestation ladder (kHardenedBoolTrue).
- * @param[out] key Destination blinded key preset by otcrypto_hw_backed_key or
- * otcrypto_hw_backed_attestation_key.
+ * @param[out] key Destination blinded key preset by `otcrypto_hw_backed_key`.
  * @return Result of the operation. Returns `kOtcryptoStatusValueOk` on success,
  * `kOtcryptoStatusValueBadArgs` if key configuration is invalid, or
  * `kOtcryptoStatusValueFatalError` if an internal hardware check fails.

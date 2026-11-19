@@ -91,8 +91,8 @@ static status_t load_key_if_sideloaded(const aes_key_t key) {
   }
   HARDENED_CHECK_EQ(key.sideload, launder32(kHardenedBoolTrue));
   keymgr_diversification_t diversification;
-  HARDENED_TRY(keyblob_buffer_to_keymgr_diversification(
-      key.key_shares[0], kOtcryptoKeyModeAesGcm, &diversification));
+  HARDENED_TRY(keyblob_buffer_to_keymgr_diversification(key.key_shares[0],
+                                                        &diversification));
   HARDENED_TRY(keymgr_sideload_clear_aes());
   return keymgr_generate_key_aes(diversification);
 }
@@ -499,24 +499,23 @@ static status_t aes_gcm_init(const aes_key_t key,
   HARDENED_TRY(ghash_init(&ctx->ghash_ctx));
 
   // Initialize the key and lengths.
-  HARDENED_CHECK_LE(key.key_len, ARRAYSIZE(ctx->key_shares[0]));
+  HARDENED_CHECK_LE(key.key_len, kAesGcmMaxKeyWords);
   ctx->key_mode = key.mode;
   ctx->sideload = key.sideload;
   ctx->key_len = (uint32_t)key.key_len;
   ctx->key_checksum = key.checksum;
-  hardened_memshred(ctx->key_shares[0], ARRAYSIZE(ctx->key_shares[0]));
-  hardened_memshred(ctx->key_shares[1], ARRAYSIZE(ctx->key_shares[1]));
+  hardened_memshred(ctx->key_shares, ARRAYSIZE(ctx->key_shares));
   if (launder32(key.sideload) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(key.sideload, kHardenedBoolFalse);
     HARDENED_TRY(
-        hardened_memcpy(ctx->key_shares[0], key.key_shares[0], key.key_len));
-    HARDENED_TRY(
-        hardened_memcpy(ctx->key_shares[1], key.key_shares[1], key.key_len));
+        hardened_memcpy(&ctx->key_shares[0], key.key_shares[0], key.key_len));
+    HARDENED_TRY(hardened_memcpy(&ctx->key_shares[kAesGcmMaxKeyWords],
+                                 key.key_shares[1], key.key_len));
   } else {
     HARDENED_CHECK_EQ(key.sideload, kHardenedBoolTrue);
-    static_assert(kKeyblobHwBackedWords <= ARRAYSIZE(ctx->key_shares[0]),
-                  "key_shares[0] must fit a hardware-backed keyblob");
-    HARDENED_TRY(hardened_memcpy(ctx->key_shares[0], key.key_shares[0],
+    static_assert(kKeyblobHwBackedWords <= ARRAYSIZE(ctx->key_shares),
+                  "key_shares must fit a hardware-backed keyblob");
+    HARDENED_TRY(hardened_memcpy(ctx->key_shares, key.key_shares[0],
                                  kKeyblobHwBackedWords));
   }
   ctx->aad_len = 0;

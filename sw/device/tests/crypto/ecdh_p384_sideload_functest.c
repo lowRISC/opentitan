@@ -33,12 +33,12 @@ static const uint32_t kPrivateKeyAVersion = 0;
 static const uint32_t kPrivateKeyBVersion = 0;
 
 // Salt for private keys A and B.
-static const uint32_t kPrivateKeyASalt[7] = {0xdeadbeef, 0xdeadbeef, 0xdeadbeef,
+static const uint32_t kPrivateKeyASalt[8] = {0xdeadbeef, 0xdeadbeef, 0xdeadbeef,
                                              0xdeadbeef, 0xdeadbeef, 0xdeadbeef,
-                                             0xdeadbeef};
-static const uint32_t kPrivateKeyBSalt[7] = {0xa0a1a2a3, 0xa4a5a6a7, 0xa8a9aaab,
+                                             0xdeadbeef, 0xdeadbeef};
+static const uint32_t kPrivateKeyBSalt[8] = {0xa0a1a2a3, 0xa4a5a6a7, 0xa8a9aaab,
                                              0xacadaeaf, 0xb0b1b2b3, 0xb4b5b6b7,
-                                             0xb8b9babb};
+                                             0xb8b9babb, 0xbcbdbebf};
 
 // Configuration for the private key.
 #define kEcdhPrivateKeyConfig                         \

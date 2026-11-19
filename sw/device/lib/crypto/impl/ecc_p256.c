@@ -66,8 +66,8 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t load_private_scalar(
 OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t
 load_attestation_diversification(const otcrypto_blinded_key_t *private_key) {
   keymgr_diversification_t diversification;
-  HARDENED_TRY(keyblob_to_keymgr_attestation_diversification(private_key,
-                                                             &diversification));
+  HARDENED_TRY(
+      keyblob_to_keymgr_diversification(private_key, &diversification));
   return keymgr_generate_key_otbn(diversification, kHardenedBoolTrue);
 }
 
@@ -780,8 +780,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
 #endif
 
   keymgr_diversification_t diversification;
-  HARDENED_TRY(keyblob_to_keymgr_attestation_diversification(private_key,
-                                                             &diversification));
+  HARDENED_TRY(
+      keyblob_to_keymgr_diversification(private_key, &diversification));
   hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolTrue;
   HARDENED_TRY(keymgr_generate_key_otbn(diversification, kHardenedBoolTrue));

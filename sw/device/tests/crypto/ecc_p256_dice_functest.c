@@ -138,9 +138,9 @@ status_t dice_test(void) {
   };
 
   // CDI_1 (Owner) attestation key diversifier salt and version from dice_keys.h
-  TRY(otcrypto_hw_backed_attestation_key(
-      kDiceKeyCdi1.keymgr_diversifier->version,
-      kDiceKeyCdi1.keymgr_diversifier->salt, &private_key));
+  TRY(otcrypto_hw_backed_key(kDiceKeyCdi1.keymgr_diversifier->version,
+                             kDiceKeyCdi1.keymgr_diversifier->salt,
+                             &private_key));
 
   // Read the attestation seed from flash.
   uint32_t kAttestationSeedWords = 10;
