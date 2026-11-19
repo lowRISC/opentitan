@@ -66,5 +66,5 @@ Signal                       | Direction        | Type                        | 
 `lc_hw_debug_en_i`           | `input`          | `lc_tx_t `                  | A life-cycle that will select which diversification value is used for xoring with the seed from ENTROPY_SRC.
 `entropy_src_hw_if_o`        | `output`         | `entropy_src_hw_if_req_t`   | Seed request made to the ENTROPY_SRC module.
 `entropy_src_hw_if_i`        | `input`          | `entropy_src_hw_if_rsp_t`   | Seed response from the ENTROPY_SRC module.
-`csrng_cmd_i`                | `input`          | `csrng_req_t`               | Application interface request to CSRNG from an EDN block.
-`csrng_cmd_o`                | `output`         | `csrng_rsp_t`               | Application interface response from CSRNG to an EDN block.
+`csrng_cmd_i`                | `input`          | `csrng_req_t`               | Application interface request to CSRNG from a hardware instance, e.g., an EDN block.
+`csrng_cmd_o`                | `output`         | `csrng_rsp_t`               | Application interface response from CSRNG to a hardware instance, e.g., an EDN block.

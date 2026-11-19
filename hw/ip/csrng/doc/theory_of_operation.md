@@ -116,16 +116,15 @@ Each CSRNG instance corresponds to a unique application interface port, which im
 Any hardware peripherals which require complete control of an instance may connect directly to a dedicated interface port.
 Meanwhile peripherals without any special requirements (i.e. personalization strings or non-FIPS-approved, fully-deterministic number sequences) may share access to an instance via the entropy distribution network (EDN) IP.
 The EDNs manage the instantiation and reseeding of CSRNG instances for general use-cases, providing either on-demand or timed-delivery entropy streams to hardware peripherals.
-Firmware applications can obtain access to random bit sequences directly through application interface port 0, which is directly mapped to a set of TL-UL registers.
+Firmware applications can obtain access to random bit sequences directly through the last application interface port, which is directly mapped to a set of TL-UL registers.
 
-The total number of application interface ports (for TL-UL, directly attached peripherals or EDN instances) is determined by the `NHwApp` parameter.
+The total number of application interface ports (for TL-UL, directly attached peripherals or EDN instances) is determined by the `NumApps` parameter.
 
 The command bus operates like a FIFO, in which a command is pushed into the interface.
 An optional stream of additional data may follow, such as seed material for an `instantiate` application command.
 For the `generate` application command, the obfuscated entropy will be returned on the `genbits` bus.
 This bus also operates like a FIFO, and the receiving module can provide back pressure to the `genbits` bus.
 There is one instance of a firmware application interface, and it uses the TL-UL registers.
-For more details on how the application interface works, see the Theory of Operations section above.
 
 In general, users of the application interface are either firmware or some hardware module entity.
 For hardware, a module can either directly control the application interface, or it can connect to an EDN module.
@@ -416,6 +415,8 @@ For details on how to accelerate this process, refer to [Uninstantiating CSRNG t
 
 
 ##### Entropy Source Hardware Interface
+For `instantiate` and `reseed` commands with `flag0` not set, CSRNG asserts `es_req` and keeps it asserted until ENTROPY_SRC returns a 384-bit seed on `es_bits` with a single cycle pulse on `es_ack`.
+The `es_fips` signal indicates whether the seed is FIPS/CC compliant.
 The following waveform shows an example of how the entropy source hardware interface works.
 
 
@@ -424,7 +425,7 @@ The following waveform shows an example of how the entropy source hardware inter
    {name: 'clk'           , wave: 'p...|.........|.......'},
    {name: 'es_req'        , wave: '0..1|..01.0..1|.....0.'},
    {name: 'es_ack'        , wave: '0...|.10.10...|....10.'},
-   {name: 'es_bus[383:0]' , wave: '0...|.30.30...|....30.', data: ['es0','es1','es2']},
+   {name: 'es_bits[383:0]', wave: '0...|.30.30...|....30.', data: ['es0','es1','es2']},
    {name: 'es_fips'       , wave: '0...|....10...|....10.'},
  {},
 ]}
