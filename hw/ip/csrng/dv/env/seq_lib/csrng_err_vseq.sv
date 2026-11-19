@@ -222,7 +222,7 @@ class csrng_err_vseq extends csrng_base_vseq;
         value1 = fifo_err_value[0][path_key];
         value2 = fifo_err_value[1][path_key];
 
-        if (cfg.which_err_code == fifo_write_error || cfg.which_err_code == fifo_read_err) begin
+        if (cfg.which_err_code inside {fifo_write_err, fifo_read_err}) begin
           force_fifo_readwrite_err(path1, path2, path3, value1, value2, 8'b0, fld, 1'b1);
         end else begin
           force_fifo_err(path1, path2, value1, value2, fld, 1'b1);
