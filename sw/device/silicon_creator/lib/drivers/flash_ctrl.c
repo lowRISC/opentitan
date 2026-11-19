@@ -698,6 +698,13 @@ void flash_ctrl_cert_info_page_owner_restrict(
   sec_mmio_write32(info_page->cfg_wen_addr, 0);
 }
 
+void flash_ctrl_cert_info_page_ro_lockdown(
+    const flash_ctrl_info_page_t *info_page) {
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPageRoLockdown, 3);
+  flash_ctrl_info_cfg_set(info_page, kCertificateInfoPageCfg);
+  flash_ctrl_cert_info_page_owner_restrict(info_page);
+}
+
 rom_error_t flash_ctrl_info_type0_params_build(
     uint8_t bank, uint8_t page, flash_ctrl_info_page_t *info_page) {
   HARDENED_CHECK_LT(bank, FLASH_CTRL_PARAM_REG_NUM_BANKS);
