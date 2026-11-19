@@ -501,9 +501,10 @@ rom_error_t sc_keymgr_dpe_advance_dpe_context(
  * Write into the lock register for the UDS.
  */
 void sc_keymgr_dpe_lock_uds(void) {
-  abs_mmio_write32(
+  SEC_MMIO_ASSERT_WRITE_INCREMENT(kScKeymgrDPESecMmioLockUds, 1);
+  sec_mmio_write32(
       sc_keymgr_dpe_base() + KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_REG_OFFSET,
-      kMultiBitBool4True);
+      kMultiBitBool4True << KEYMGR_DPE_LOAD_ROOT_KEY_LOCK_LOCK_OFFSET);
 }
 
 /**
