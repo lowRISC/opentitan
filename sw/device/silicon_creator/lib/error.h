@@ -294,6 +294,12 @@ typedef enum rom_error { DEFINE_ERRORS(ERROR_ENUM_INIT) } rom_error_t;
   } while (false)
 
 /**
+ * Reconstructs a `rom_error_t` from `error_ - kErrorOk` after verifying it is
+ * non-zero (trapping if `kErrorOk` was glitched into an error path).
+ */
+rom_error_t rom_error_from_shifted_(uint32_t shifted_err);
+
+/**
  * Hardened version of `RETURN_IF_ERROR()`.
  *
  * See `launder32()` and `HARDENED_CHECK_EQ()` in
@@ -301,6 +307,41 @@ typedef enum rom_error { DEFINE_ERRORS(ERROR_ENUM_INIT) } rom_error_t;
  *
  * @param expr_ An expression which results in a `rom_error_t`.
  */
+#if defined(OT_PLATFORM_RV32) && !defined(OT_DISABLE_HARDENING)
+#define HARDENED_RETURN_IF_ERROR(expr_)          \
+  do {                                           \
+    asm volatile("li a0, -22;" ::: "a0");        \
+    uint32_t error_ = (uint32_t)(expr_);         \
+    asm volatile("addi %[err], %[err], -%[kOk];" \
+                 : [err] "+r"(error_)            \
+                 : [kOk] "i"(kErrorOk));         \
+    if (launder32(error_)) {                     \
+      return rom_error_from_shifted_(error_);    \
+    }                                            \
+    HARDENED_CHECK_EQ(error_, 0);                \
+  } while (false)
+
+/**
+ * Macro with behavior similar to `HARDENED_RETURN_IF_ERROR`, but with
+ * additional logic to attempt a cleanup operation in case of error. Any return
+ * value from the cleanup procedure is ignored
+ */
+#define HARDENED_RETURN_IF_ERROR_WITH_CLEANUP_ATTEMPT(expr_,             \
+                                                      try_cleanup_expr_) \
+  do {                                                                   \
+    asm volatile("li a0, -22;" ::: "a0");                                \
+    uint32_t error_ = (uint32_t)(expr_);                                 \
+    asm volatile("addi %[err], %[err], -%[kOk];"                         \
+                 : [err] "+r"(error_)                                    \
+                 : [kOk] "i"(kErrorOk));                                 \
+    if (launder32(error_)) {                                             \
+      rom_error_t orig_ = rom_error_from_shifted_(error_);               \
+      try_cleanup_expr_;                                                 \
+      return orig_;                                                      \
+    }                                                                    \
+    HARDENED_CHECK_EQ(error_, 0);                                        \
+  } while (false)
+#else
 #define HARDENED_RETURN_IF_ERROR(expr_)  \
   do {                                   \
     rom_error_t error_ = expr_;          \
@@ -325,6 +366,7 @@ typedef enum rom_error { DEFINE_ERRORS(ERROR_ENUM_INIT) } rom_error_t;
     }                                                                    \
     HARDENED_CHECK_EQ(error_, kErrorOk);                                 \
   } while (false)
+#endif
 
 #ifdef __cplusplus
 }
