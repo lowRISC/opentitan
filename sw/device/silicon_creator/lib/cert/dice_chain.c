@@ -223,9 +223,12 @@ rom_error_t dice_chain_attestation_owner(
 rom_error_t dice_chain_init(void) {
   // Configure DICE certificate flash info page and buffer it into RAM.
   flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageDiceCerts);
+  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPageCreatorCfg);
   // Configure factory certs page.
   flash_ctrl_info_cfg_set(&kFlashCtrlInfoPageFactoryCerts,
                           kCertificateInfoPageCfg);
+  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInfoCfgSet);
   flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageFactoryCerts);
+  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPageOwnerRestrict);
   return kErrorOk;
 }

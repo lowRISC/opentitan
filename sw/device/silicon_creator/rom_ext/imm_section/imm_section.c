@@ -43,10 +43,14 @@ static rom_error_t imm_section_start(void) {
   // Lockdown the attestation seed to readonly as soon as possible to prevent
   // key tampering and exfiltration.
   flash_ctrl_cert_info_page_creator_cfg(&kFlashCtrlInfoPageAttestationKeySeeds);
+  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPageCreatorCfg);
   flash_ctrl_cert_info_page_owner_restrict(
       &kFlashCtrlInfoPageAttestationKeySeeds);
+  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioCertInfoPageOwnerRestrict);
   flash_ctrl_info_cfg_lock(&kFlashCtrlInfoPageAttestationKeySeeds);
+  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioInfoCfgLock);
   flash_ctrl_prim_lockdown();
+  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioPrimLockdown);
 
   // Establish our identity.
   const manifest_t *rom_ext = rom_ext_manifest();

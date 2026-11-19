@@ -9,6 +9,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/memory.h"
+#include "sw/device/silicon_creator/lib/base/sec_mmio.h"
 #include "sw/device/silicon_creator/lib/drivers/flash_ctrl.h"
 #include "sw/device/silicon_creator/lib/drivers/hmac.h"
 #include "sw/device/silicon_creator/lib/error.h"
@@ -109,6 +110,7 @@ rom_error_t dice_storage_digest_slot_v1(const dice_storage_slot_v1_t *slot) {
   };
   flash_ctrl_data_region_protect(1, page_offset, (uint32_t)num_pages,
                                  read_perms, cfg, kHardenedBoolFalse);
+  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtect);
 
   hmac_sha256_update(
       (const void *)((uintptr_t)TOP_EARLGREY_FLASH_CTRL_MEM_BASE_ADDR +
@@ -138,6 +140,7 @@ rom_error_t dice_storage_write_cert_tlv_v1(const dice_storage_slot_v1_t *slot,
   };
   flash_ctrl_data_region_protect(1, page_offset, (uint32_t)num_pages,
                                  write_perms, cfg, kHardenedBoolFalse);
+  SEC_MMIO_WRITE_INCREMENT(kFlashCtrlSecMmioDataRegionProtect);
 
   dice_storage_header_v1_t hdr = slot->header;
   PERSO_TLV_SET_FIELD_V1(Crth, Size, hdr.cert_header,
