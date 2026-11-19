@@ -338,6 +338,7 @@ class TransferTest : public FlashCtrlTest {
   void ExpectTransferStart(uint8_t part_sel, uint8_t info_sel,
                            uint8_t erase_sel, uint32_t op, uint32_t addr,
                            uint32_t word_count) {
+    EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_ERR_CODE_REG_OFFSET, UINT32_MAX);
     EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_ADDR_REG_OFFSET, addr);
     EXPECT_ABS_WRITE32(base_ + FLASH_CTRL_CONTROL_REG_OFFSET,
                        {
@@ -387,6 +388,40 @@ TEST_F(TransferTest, ReadInfoOk) {
                                  words_.size(), &words_out.front()),
             kErrorOk);
   EXPECT_EQ(words_out, words_);
+}
+
+TEST_F(TransferTest, ReadInfoZerosOnReadErrorOnly) {
+  const uint32_t addr =
+      1 * FLASH_CTRL_PARAM_BYTES_PER_BANK + 2 * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+  ExpectTransferStart(1, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_READ,
+                      addr + 0x01234567, words_.size());
+  ExpectReadData(words_);
+  ExpectWaitForDone(true, true);
+  EXPECT_ABS_READ32(base_ + FLASH_CTRL_ERR_CODE_REG_OFFSET,
+                    1u << FLASH_CTRL_ERR_CODE_RD_ERR_BIT);
+  std::vector<uint32_t> words_out(words_.size(), 0xffffffff);
+  EXPECT_EQ(flash_ctrl_info_read_zeros_on_read_error(
+                &kFlashCtrlInfoPageOwnerSlot0, 0x01234567, words_.size(),
+                &words_out.front()),
+            kErrorOk);
+  EXPECT_THAT(words_out, Each(0));
+}
+
+TEST_F(TransferTest, ReadInfoZerosOnReadErrorRejectsOtherErrors) {
+  const uint32_t addr =
+      1 * FLASH_CTRL_PARAM_BYTES_PER_BANK + 2 * FLASH_CTRL_PARAM_BYTES_PER_PAGE;
+  ExpectTransferStart(1, 0, 0, FLASH_CTRL_CONTROL_OP_VALUE_READ,
+                      addr + 0x01234567, words_.size());
+  ExpectReadData(words_);
+  ExpectWaitForDone(true, true);
+  EXPECT_ABS_READ32(base_ + FLASH_CTRL_ERR_CODE_REG_OFFSET,
+                    (1u << FLASH_CTRL_ERR_CODE_RD_ERR_BIT) |
+                        (1u << FLASH_CTRL_ERR_CODE_MP_ERR_BIT));
+  std::vector<uint32_t> words_out(words_.size(), 0xffffffff);
+  EXPECT_EQ(flash_ctrl_info_read_zeros_on_read_error(
+                &kFlashCtrlInfoPageOwnerSlot0, 0x01234567, words_.size(),
+                &words_out.front()),
+            kErrorFlashCtrlInfoRead);
 }
 
 TEST_F(TransferTest, ProgDataOk) {
