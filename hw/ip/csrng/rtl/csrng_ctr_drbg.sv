@@ -22,6 +22,7 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   input  logic                       cmd_req_glast_i,
   input  logic                       cmd_req_gen_first_i,
   input  logic [GenBitsCtrWidth-1:0] cmd_req_glen_i,
+  input  logic                 [3:0] cmd_req_clen_i,
 
   // Command interface acknowledgement to the main FSM and command stages
   output logic               cmd_ack_o,
@@ -305,11 +306,8 @@ module csrng_ctr_drbg import csrng_pkg::*; (
             end
             GEN: begin
               v_ctr_load = 1'b1;
-              // Decide which GENerate sub command to execute
-              // TODO(#28153) Clarify what the exact condition for skipping the initial UPDate()
-              // call on GENerate commands is (pdata/adata being an all-zero vector or pdata/adata
-              // LENGTH being zero).
-              if (core_data.pdata != '0) begin
+              // Only the first beat of a GENerate with additional data starts with an UPDate.
+              if (cmd_req_gen_first_i && (cmd_req_clen_i != '0)) begin
                 gen_subcmd_d = UPD_BEGIN;
               end else begin
                 gen_subcmd_d = GEN_LOOP;
