@@ -463,9 +463,10 @@ def _gen_mio_periphs(top: ConfigT) -> Tuple[List[Dict], List[Dict]]:
     """Get the connectivity of the muxed peripheral inputs and outputs.
 
     Returns two lists of dicts, one entry per MIO peripheral input and output ordered by its
-    INSEL/OUTSEL index. Each dict has the keys name and pads. pads lists the indices of the MIO
-    pads the signal can be muxed to. An empty list means all MIO pads. The pinmux template derives
-    the legal select masks from them."""
+    INSEL/OUTSEL index. Each dict has the keys name and pads and optionally default_pad (pad index)
+    or default_const (raw value) if the top defines a default muxing option. pads lists the indices
+    of the MIO pads the signal can be muxed to. An empty list means all MIO pads. The pinmux
+    template checks the values."""
 
     pinmux = top["pinmux"]
     mio_pad_idx = {pad['name']: pad['idx'] for pad in top['pinout']['pads']
@@ -482,11 +483,26 @@ def _gen_mio_periphs(top: ConfigT) -> Tuple[List[Dict], List[Dict]]:
         pads = [mio_pad_idx[pad] for pad in io['pads'] if pad in mio_pad_idx]
 
         name = io['name'] + (f"[{io['idx']}]" if io['idx'] >= 0 else '')
+        periph_in = {'name': name, 'pads': pads}
+        periph_out = {'name': name, 'pads': pads}
+
+        default = io.get('default')
+        if isinstance(default, str):
+            # Unknown pads are reported by validate, skip them here.
+            if default in mio_pad_idx:
+                periph_in['default_pad'] = periph_out['default_pad'] = mio_pad_idx[default]
+        elif default is not None:
+            # A constant only defines the INSEL reset value. Pass it for pure outputs too, the
+            # template rejects it.
+            periph_in['default_const'] = default
+            if io['type'] == 'output':
+                periph_out['default_const'] = default
+
         # io type is view from peripheral (hjson).
         if io['type'] in ['input', 'inout']:
-            mio_periph_ins.append({'name': name, 'pads': pads})
+            mio_periph_ins.append(periph_in)
         if io['type'] in ['output', 'inout']:
-            mio_periph_outs.append({'name': name, 'pads': pads})
+            mio_periph_outs.append(periph_out)
 
     return mio_periph_ins, mio_periph_outs
 

@@ -2052,7 +2052,15 @@ def amend_pinmux_io(top: ConfigT,
         block = name_to_block.get(m['type'])
         if block is None and allow_missing_blocks:
             continue
-        sig_attr = sig.get('attr', 'BidirStd')
+        # Fields of the pinmux signal entry added to each of its IOs.
+        sig_fields = {
+            'pads': get_pinmux_sig_pads(sig),
+            'attr': sig.get('attr', 'BidirStd'),
+            'connection': sig['connection'],
+            'desc': sig['desc']
+        }
+        if 'default' in sig:
+            sig_fields['default'] = sig['default']
         # If the signal is explicitly named.
         if sig['port'] != '':
 
@@ -2079,13 +2087,7 @@ def amend_pinmux_io(top: ConfigT,
 
             # If we got this far we know that the signal is valid and exists.
             # Augment this signal instance with additional information.
-            sig_inst.update({
-                'idx': idx,
-                'pads': get_pinmux_sig_pads(sig),
-                'attr': sig_attr,
-                'connection': sig['connection'],
-                'desc': sig['desc']
-            })
+            sig_inst.update({'idx': idx, **sig_fields})
             sig_inst['name'] = mod_name + '_' + sig_inst['name']
             sig_inst['domain'] = lib.get_domain_of_partition(
                 m, sig_inst.get('partition', PART_PRIMARY), pd_default)
@@ -2105,25 +2107,13 @@ def amend_pinmux_io(top: ConfigT,
                 if sig_inst['width'] > 1:
                     for idx in range(sig_inst['width']):
                         sig_inst_copy = deepcopy(sig_inst)
-                        sig_inst_copy.update({
-                            'idx': idx,
-                            'pads': get_pinmux_sig_pads(sig),
-                            'attr': sig_attr,
-                            'connection': sig['connection'],
-                            'desc': sig['desc']
-                        })
+                        sig_inst_copy.update({'idx': idx, **sig_fields})
                         sig_inst_copy['name'] = sig[
                             'instance'] + '_' + sig_inst_copy['name']
                         sig_inst_copy['domain'] = pd_sig
                         append_io_signal(temp, sig_inst_copy)
                 else:
-                    sig_inst.update({
-                        'idx': -1,
-                        'pads': get_pinmux_sig_pads(sig),
-                        'attr': sig_attr,
-                        'connection': sig['connection'],
-                        'desc': sig['desc']
-                    })
+                    sig_inst.update({'idx': -1, **sig_fields})
                     sig_inst['name'] = sig['instance'] + '_' + sig_inst['name']
                     sig_inst['domain'] = pd_sig
                     append_io_signal(temp, sig_inst)
