@@ -459,6 +459,35 @@ def generate_regfile_from_path(hjson_path: Path,
         sys.exit(1)
 
 
+def _gen_mio_periphs(top: ConfigT) -> Tuple[List[Dict], List[Dict]]:
+    """Get the connectivity of the muxed peripheral inputs and outputs.
+
+    Returns two lists of dicts, one entry per MIO peripheral input and output ordered by its
+    INSEL/OUTSEL index. Each dict has the keys name and pads. pads lists the indices of the MIO
+    pads the signal can be muxed to. An empty list means all MIO pads. The pinmux template derives
+    the legal select masks from them."""
+
+    pinmux = top["pinmux"]
+
+    mio_periph_ins = []
+    mio_periph_outs = []
+    for io in sorted(pinmux['ios'], key=lambda io: io['glob_idx']):
+        if io['connection'] != 'muxed':
+            continue
+
+        # Only the full muxing is supported for now, an empty list means all MIO pads.
+        pads = []
+
+        name = io['name'] + (f"[{io['idx']}]" if io['idx'] >= 0 else '')
+        # io type is view from peripheral (hjson).
+        if io['type'] in ['input', 'inout']:
+            mio_periph_ins.append({'name': name, 'pads': pads})
+        if io['type'] in ['output', 'inout']:
+            mio_periph_outs.append({'name': name, 'pads': pads})
+
+    return mio_periph_ins, mio_periph_outs
+
+
 def _gen_pad_attr_resvals(
         top: ConfigT) -> Tuple[List[Tuple[str, Dict]], List[Tuple[str, Dict]]]:
     """Get the reset values of the pad attributes defined by the pinout of the top.
@@ -534,12 +563,16 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
     assert (n_mio_pads > 0)
     assert (n_dio_pads > 0)
 
+    # Determine the MIO muxing connectivity
+    mio_periph_ins, mio_periph_outs = _gen_mio_periphs(top)
+
     # Determine the reset values of the pad attribute CSRs.
     mio_pad_attr_resvals, dio_pad_attr_resvals = _gen_pad_attr_resvals(top)
 
     log.info("Generating pinmux with following info from hjson:")
-    log.info("num_wkup_detect: %d" % num_wkup_detect)
-    log.info("wkup_cnt_width:  %d" % wkup_cnt_width)
+    log.info("num_wkup_detect:  %d" % num_wkup_detect)
+    log.info("wkup_cnt_width:   %d" % wkup_cnt_width)
+    log.info("n_mio_pads:       %d" % n_mio_pads)
     log.info("n_mio_periph_in:  %d" % n_mio_periph_in)
     log.info("n_mio_periph_out: %d" % n_mio_periph_out)
     log.info("n_dio_periph_in:  %d" % n_dio_periph_in)
@@ -555,6 +588,8 @@ def _get_pinmux_params(top: ConfigT) -> ParamsT:
         "n_mio_pads": n_mio_pads,
         "n_mio_periph_in": n_mio_periph_in,
         "n_mio_periph_out": n_mio_periph_out,
+        "mio_periph_ins": mio_periph_ins,
+        "mio_periph_outs": mio_periph_outs,
         "mio_pad_attr_resvals": mio_pad_attr_resvals,
         "n_dio_pads": n_dio_pads,
         "dio_pad_attr_resvals": dio_pad_attr_resvals,

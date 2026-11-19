@@ -474,8 +474,12 @@ module pinmux
   assign mio_mux = AlignedMuxSize'({mio_in, 1'b1, 1'b0});
 
   for (genvar k = 0; k < NMioPeriphIn; k++) begin : gen_mio_periph_in
-    // index using configured insel
-    assign mio_to_periph_o[k] = mio_mux[reg2hw.mio_periph_insel[k].q];
+    // Illegal selections are masked to constant 0.
+    logic [AlignedMuxSize-1:0] mio_mux_legal;
+    assign mio_mux_legal = mio_mux & AlignedMuxSize'(MioPeriphInselLegal[k]);
+
+    // Index using configured insel.
+    assign mio_to_periph_o[k] = mio_mux_legal[reg2hw.mio_periph_insel[k].q];
   end
 
   //////////////////////
@@ -485,18 +489,23 @@ module pinmux
   // stack output data/enable and default signals for convenient indexing below
   // possible defaults: 0, 1 or 2 (high-Z). make sure mux is aligned to a power of 2 to avoid Xes.
   logic [2**$clog2(NMioPeriphOut+3)-1:0] periph_data_mux, periph_oe_mux;
-  assign periph_data_mux  = $bits(periph_data_mux)'({periph_to_mio_i, 1'b0, 1'b1, 1'b0});
-  assign periph_oe_mux    = $bits(periph_oe_mux)'({periph_to_mio_oe_i,  1'b0, 1'b1, 1'b1});
+  assign periph_data_mux = $bits(periph_data_mux)'({periph_to_mio_i, 1'b0, 1'b1, 1'b0});
+  assign periph_oe_mux   = $bits(periph_oe_mux)'({periph_to_mio_oe_i,  1'b0, 1'b1, 1'b1});
 
   for (genvar k = 0; k < NMioPads; k++) begin : gen_mio_out
+    // Illegal selections are masked to high-Z (data and enable 0)
+    logic [$bits(periph_data_mux)-1:0] periph_data_mux_legal, periph_oe_mux_legal;
+    assign periph_data_mux_legal = periph_data_mux & $bits(periph_data_mux)'(MioOutselLegal[k]);
+    assign periph_oe_mux_legal   = periph_oe_mux & $bits(periph_oe_mux)'(MioOutselLegal[k]);
+
     // Check individual sleep enable status bits
     assign mio_out[k] = reg2hw.mio_pad_sleep_status[k].q ?
                         mio_out_retreg_q[k]              :
-                        periph_data_mux[reg2hw.mio_outsel[k].q];
+                        periph_data_mux_legal[reg2hw.mio_outsel[k].q];
 
     assign mio_oe[k]  = reg2hw.mio_pad_sleep_status[k].q ?
                         mio_oe_retreg_q[k]               :
-                        periph_oe_mux[reg2hw.mio_outsel[k].q];
+                        periph_oe_mux_legal[reg2hw.mio_outsel[k].q];
 
     // latch state when going to sleep
     // 0: drive low

@@ -52,6 +52,9 @@ The global default at reset is `0`, but the default of individual signals can be
 
 The global default at reset is `2`, but the default of individual signals can be overridden at design time, if needed.
 
+If the top-level defines a sparse muxing matrix, select values that are not legal for a peripheral input or pad can still be written.
+An illegal `periph_insel` value ties the peripheral input to zero, and an illegal `mio_outsel` value puts the pad into high-Z state.
+
 Note that the `pinmux` configuration should be sequenced after any IO attribute-specific configuration in the [`MIO_PAD_ATTR_0`](registers.md#mio_pad_attr) and [`DIO_PAD_ATTR_0`](registers.md#dio_pad_attr) registers to avoid any unwanted electric behavior and/or contention.
 If needed, each select signal can be individually locked down via [`MIO_PERIPH_INSEL_REGWEN_0`](registers.md#mio_periph_insel_regwen) or [`MIO_OUTSEL_REGWEN_0`](registers.md#mio_outsel_regwen).
 The configuration can then not be altered anymore until the next system reset.

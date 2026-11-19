@@ -504,6 +504,8 @@
                       desc: '''
                       0: tie constantly to zero, 1: tie constantly to 1,
                       >=2: MIO pads (i.e., add 2 to the native MIO pad index).
+                      Selecting a pad that is not legal for this peripheral input ties it
+                      constantly to zero.
                       '''
                       resval: 0,
                     }
@@ -549,6 +551,8 @@
                       desc: '''
                       0: tie constantly to zero, 1: tie constantly to 1, 2: high-Z,
                       >=3: peripheral outputs (i.e., add 3 to the native peripheral pad index).
+                      Selecting a peripheral output that is not legal for this pad puts the pad
+                      into high-Z.
                       '''
                       resval: 2,
                     }

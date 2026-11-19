@@ -62,6 +62,9 @@ Note that apart from selecting a specific input pad, the `periph_insel[*]` signa
 Likewise, the output select signals `mio_outsel[*]` can also be used to constantly drive an output pin to 0/1 or to put it into high-Z state (default).
 The output enable and the associated data signal (i.e. `periph_to_mio` and `periph_to_mio_oe`) are indexed with the same select signal to allow the peripheral hardware to determine the pad direction instead of demoting that control to SW.
 
+The muxing matrix can be sparse, i.e., the top-level configuration can restrict which pads a peripheral input can select and which peripheral outputs a pad can select.
+Selecting a pad that is not legal for a peripheral input ties that input to 0, and selecting a peripheral output that is not legal for a pad puts that pad into high-Z state.
+
 ## Retention Logic
 
 As illustrated in the picture above, all muxing matrix and DIO outputs are routed through the retention logic, which essentially consists of a set of multiplexors and two retention registers per output (one register is for the output data and one for the output enable).

@@ -10,6 +10,804 @@
     n_mio_pads: 47
     n_mio_periph_in: 94
     n_mio_periph_out: 104
+    mio_periph_ins:
+    [
+      {
+        name: gpio0_gpio[0]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[1]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[2]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[3]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[4]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[5]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[6]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[7]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[8]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[9]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[10]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[11]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[12]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[13]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[14]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[15]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[16]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[17]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[18]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[19]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[20]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[21]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[22]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[23]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[24]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[25]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[26]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[27]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[28]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[29]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[30]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[31]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[0]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[1]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[2]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[3]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[4]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[5]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[6]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[7]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[8]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[9]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[10]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[11]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[12]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[13]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[14]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[15]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[16]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[17]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[18]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[19]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[20]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[21]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[22]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[23]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[24]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[25]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[26]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[27]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[28]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[29]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[30]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[31]
+        pads: []
+      }
+      {
+        name: i2c0_sda
+        pads: []
+      }
+      {
+        name: i2c0_scl
+        pads: []
+      }
+      {
+        name: i2c1_sda
+        pads: []
+      }
+      {
+        name: i2c1_scl
+        pads: []
+      }
+      {
+        name: i2c2_sda
+        pads: []
+      }
+      {
+        name: i2c2_scl
+        pads: []
+      }
+      {
+        name: i3c0_scl
+        pads: []
+      }
+      {
+        name: i3c0_sda
+        pads: []
+      }
+      {
+        name: i3c1_scl
+        pads: []
+      }
+      {
+        name: i3c1_sda
+        pads: []
+      }
+      {
+        name: spi_host1_sd[0]
+        pads: []
+      }
+      {
+        name: spi_host1_sd[1]
+        pads: []
+      }
+      {
+        name: spi_host1_sd[2]
+        pads: []
+      }
+      {
+        name: spi_host1_sd[3]
+        pads: []
+      }
+      {
+        name: uart0_rx
+        pads: []
+      }
+      {
+        name: uart1_rx
+        pads: []
+      }
+      {
+        name: uart2_rx
+        pads: []
+      }
+      {
+        name: uart3_rx
+        pads: []
+      }
+      {
+        name: i3c0_rstdet_scl
+        pads: []
+      }
+      {
+        name: i3c0_rstdet_sda
+        pads: []
+      }
+      {
+        name: i3c1_rstdet_scl
+        pads: []
+      }
+      {
+        name: i3c1_rstdet_sda
+        pads: []
+      }
+      {
+        name: spi_device_tpm_csb
+        pads: []
+      }
+      {
+        name: sysrst_ctrl_ac_present
+        pads: []
+      }
+      {
+        name: sysrst_ctrl_key0_in
+        pads: []
+      }
+      {
+        name: sysrst_ctrl_key1_in
+        pads: []
+      }
+      {
+        name: sysrst_ctrl_key2_in
+        pads: []
+      }
+      {
+        name: sysrst_ctrl_pwrb_in
+        pads: []
+      }
+      {
+        name: sysrst_ctrl_lid_open
+        pads: []
+      }
+      {
+        name: usbdev_sense
+        pads: []
+      }
+    ]
+    mio_periph_outs:
+    [
+      {
+        name: gpio0_gpio[0]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[1]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[2]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[3]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[4]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[5]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[6]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[7]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[8]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[9]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[10]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[11]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[12]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[13]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[14]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[15]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[16]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[17]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[18]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[19]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[20]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[21]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[22]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[23]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[24]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[25]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[26]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[27]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[28]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[29]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[30]
+        pads: []
+      }
+      {
+        name: gpio0_gpio[31]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[0]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[1]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[2]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[3]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[4]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[5]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[6]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[7]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[8]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[9]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[10]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[11]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[12]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[13]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[14]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[15]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[16]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[17]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[18]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[19]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[20]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[21]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[22]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[23]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[24]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[25]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[26]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[27]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[28]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[29]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[30]
+        pads: []
+      }
+      {
+        name: gpio1_gpio[31]
+        pads: []
+      }
+      {
+        name: i2c0_sda
+        pads: []
+      }
+      {
+        name: i2c0_scl
+        pads: []
+      }
+      {
+        name: i2c1_sda
+        pads: []
+      }
+      {
+        name: i2c1_scl
+        pads: []
+      }
+      {
+        name: i2c2_sda
+        pads: []
+      }
+      {
+        name: i2c2_scl
+        pads: []
+      }
+      {
+        name: i3c0_scl
+        pads: []
+      }
+      {
+        name: i3c0_sda
+        pads: []
+      }
+      {
+        name: i3c1_scl
+        pads: []
+      }
+      {
+        name: i3c1_sda
+        pads: []
+      }
+      {
+        name: spi_host1_sd[0]
+        pads: []
+      }
+      {
+        name: spi_host1_sd[1]
+        pads: []
+      }
+      {
+        name: spi_host1_sd[2]
+        pads: []
+      }
+      {
+        name: spi_host1_sd[3]
+        pads: []
+      }
+      {
+        name: uart0_tx
+        pads: []
+      }
+      {
+        name: uart1_tx
+        pads: []
+      }
+      {
+        name: uart2_tx
+        pads: []
+      }
+      {
+        name: uart3_tx
+        pads: []
+      }
+      {
+        name: i3c0_ctrl_sda_pu
+        pads: []
+      }
+      {
+        name: i3c1_ctrl_sda_pu
+        pads: []
+      }
+      {
+        name: spi_host0_csb[1]
+        pads: []
+      }
+      {
+        name: spi_host0_csb[2]
+        pads: []
+      }
+      {
+        name: spi_host1_sck
+        pads: []
+      }
+      {
+        name: spi_host1_csb[0]
+        pads: []
+      }
+      {
+        name: spi_host1_csb[1]
+        pads: []
+      }
+      {
+        name: spi_host1_csb[2]
+        pads: []
+      }
+      {
+        name: sensor_ctrl_ast_debug_out[0]
+        pads: []
+      }
+      {
+        name: sensor_ctrl_ast_debug_out[1]
+        pads: []
+      }
+      {
+        name: sensor_ctrl_ast_debug_out[2]
+        pads: []
+      }
+      {
+        name: sensor_ctrl_ast_debug_out[3]
+        pads: []
+      }
+      {
+        name: sensor_ctrl_ast_debug_out[4]
+        pads: []
+      }
+      {
+        name: sensor_ctrl_ast_debug_out[5]
+        pads: []
+      }
+      {
+        name: sensor_ctrl_ast_debug_out[6]
+        pads: []
+      }
+      {
+        name: sensor_ctrl_ast_debug_out[7]
+        pads: []
+      }
+      {
+        name: sysrst_ctrl_bat_disable
+        pads: []
+      }
+      {
+        name: sysrst_ctrl_key0_out
+        pads: []
+      }
+      {
+        name: sysrst_ctrl_key1_out
+        pads: []
+      }
+      {
+        name: sysrst_ctrl_key2_out
+        pads: []
+      }
+      {
+        name: sysrst_ctrl_pwrb_out
+        pads: []
+      }
+      {
+        name: sysrst_ctrl_z3_wakeup
+        pads: []
+      }
+    ]
     mio_pad_attr_resvals:
     [
       [
