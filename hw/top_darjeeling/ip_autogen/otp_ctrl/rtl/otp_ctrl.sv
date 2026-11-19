@@ -283,11 +283,16 @@ module otp_ctrl
     .write_pending_i            ( 1'b0               )
   );
 
+  // Only the unbuffered partitions are reachable through the window.
+  // An address in any other partition selects no partition, and the read gets an error response
+  // like an address past the last partition.
   logic [NumPart-1:0] tlul_part_sel_oh;
   for (genvar k = 0; k < NumPart; k++) begin : gen_part_sel
     localparam logic [OtpByteAddrWidth:0] PartEnd = (OtpByteAddrWidth+1)'(PartInfo[k].offset) +
                                                     (OtpByteAddrWidth+1)'(PartInfo[k].size);
-    if (PartInfo[k].offset == 0) begin : gen_zero_offset
+    if (PartInfo[k].variant != Unbuffered) begin : gen_not_mapped
+      assign tlul_part_sel_oh[k] = 1'b0;
+    end else if (PartInfo[k].offset == 0) begin : gen_zero_offset
       assign tlul_part_sel_oh[k] = ({1'b0, {tlul_addr, 2'b00}} < PartEnd);
     end else begin : gen_nonzero_offset
       assign tlul_part_sel_oh[k] = ({tlul_addr, 2'b00} >= PartInfo[k].offset) &
@@ -331,15 +336,17 @@ module otp_ctrl
       if (tlul_part_sel_oh != '0) begin
         part_tlul_req[tlul_part_idx] = 1'b1;
       end else begin
-        // Error out in the next cycle if address was out of bounds.
+        // Grant a request that maps to no partition right away and return a bus error in the next
+        // cycle, as an unbuffered partition does for a request it rejects.
         tlul_oob_err_d = 1'b1;
       end
     end
 
     // aggregate TL-UL responses
-    tlul_gnt         = |part_tlul_gnt    | tlul_oob_err_q;
+    tlul_gnt         = |part_tlul_gnt    | tlul_oob_err_d;
     tlul_rvalid      = |part_tlul_rvalid | tlul_oob_err_q;
-    tlul_rerror      = '0;
+    // This causes the TL-UL adapter to return a bus error.
+    tlul_rerror      = tlul_oob_err_q ? 2'b11 : '0;
     tlul_rdata       = '0;
     for (int k = 0; k < NumPart; k++) begin
       tlul_rerror |= part_tlul_rerror[k];
