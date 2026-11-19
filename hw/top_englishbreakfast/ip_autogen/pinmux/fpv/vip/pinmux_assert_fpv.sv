@@ -102,24 +102,30 @@ module pinmux_assert_fpv
   pinmux_reg_pkg::pinmux_reg2hw_mio_periph_insel_mreg_t periph_insel;
   assign periph_insel = pinmux.reg2hw.mio_periph_insel[periph_sel_i];
 
+  // Out of range selections are illegal as well.
+  logic [2**$bits(periph_insel.q)-1:0] periph_insel_legal_vec;
+  assign periph_insel_legal_vec = $bits(periph_insel_legal_vec)'(
+                                    MioPeriphInselLegal[periph_sel_i]);
+  logic periph_insel_legal;
+  assign periph_insel_legal = periph_insel_legal_vec[periph_insel.q];
+
   `ASSERT(InSel0_A, periph_insel.q == 0 |-> mio_to_periph_o[periph_sel_i] == 1'b0)
   `ASSERT(InSel1_A, periph_insel.q == 1 |-> mio_to_periph_o[periph_sel_i] == 1'b1)
-  `ASSERT(InSelN_A, periph_insel.q > 1 && periph_insel.q < (pinmux_reg_pkg::NMioPads + 2) &&
+  `ASSERT(InSelN_A, periph_insel.q > 1 && periph_insel_legal &&
           !((periph_insel.q - 2) inside {TargetCfg.tck_idx, TargetCfg.tms_idx, TargetCfg.trst_idx,
                                          TargetCfg.tdi_idx, TargetCfg.tdo_idx}) |->
           mio_to_periph_o[periph_sel_i] == mio_in_i[periph_insel.q - 2])
-  `ASSERT(InSelOOB_A, periph_insel.q >= (pinmux_reg_pkg::NMioPads + 2) |->
-          mio_to_periph_o[periph_sel_i] == 0)
+  `ASSERT(InSelIllegal_A, !periph_insel_legal |-> mio_to_periph_o[periph_sel_i] == 0)
 
   `ASSERT(MioToPeriph0Backward_A, mio_to_periph_o[periph_sel_i] == 0 |->
           (periph_insel.q == 0) ||
-          ((periph_insel.q > 1 && periph_insel.q < (pinmux_reg_pkg::NMioPads + 2) &&
+          ((periph_insel.q > 1 && periph_insel_legal &&
            (pinmux.u_pinmux_strap_sampling.jtag_en || mio_in_i[periph_insel.q - 2] == 0)) ||
-           periph_insel.q >= (pinmux_reg_pkg::NMioPads + 2)))
+           !periph_insel_legal))
 
   `ASSERT(MioToPeriph1Backward_A, mio_to_periph_o[periph_sel_i] == 1 |->
           (periph_insel.q == 1) ||
-          (periph_insel.q > 1 && periph_insel.q < (pinmux_reg_pkg::NMioPads + 2) &&
+          (periph_insel.q > 1 && periph_insel_legal &&
           (mio_in_i[periph_insel.q - 2] == 1 || pinmux.u_pinmux_strap_sampling.jtag_en)))
 
   `ASSERT(DioInSelN_A, dio_to_periph_o == dio_in_i)
@@ -128,6 +134,12 @@ module pinmux_assert_fpv
   pinmux_reg_pkg::pinmux_reg2hw_mio_outsel_mreg_t mio_outsel;
   assign mio_outsel = pinmux.reg2hw.mio_outsel[mio_sel_i];
 
+  // Out of range selections are illegal as well.
+  logic [2**$bits(mio_outsel.q)-1:0] mio_outsel_legal_vec;
+  assign mio_outsel_legal_vec = $bits(mio_outsel_legal_vec)'(MioOutselLegal[mio_sel_i]);
+  logic mio_outsel_legal;
+  assign mio_outsel_legal = mio_outsel_legal_vec[mio_outsel.q];
+
   pinmux_reg_pkg::pinmux_reg2hw_mio_pad_sleep_status_mreg_t mio_pad_sleep_status;
   assign mio_pad_sleep_status = pinmux.reg2hw.mio_pad_sleep_status[mio_sel_i];
 
@@ -135,23 +147,22 @@ module pinmux_assert_fpv
   `ASSERT(OutSel0_A, mio_outsel.q == 0 && !mio_pad_sleep_status.q |-> mio_out_o[mio_sel_i] == 1'b0)
   `ASSERT(OutSel1_A, mio_outsel.q == 1 && !mio_pad_sleep_status.q |-> mio_out_o[mio_sel_i] == 1'b1)
   `ASSERT(OutSel2_A, mio_outsel.q == 2 && !mio_pad_sleep_status.q |-> mio_out_o[mio_sel_i] == 1'b0)
-  `ASSERT(OutSelN_A, mio_outsel.q > 2 && mio_outsel.q < (pinmux_reg_pkg::NMioPeriphOut + 3) &&
+  `ASSERT(OutSelN_A, mio_outsel.q > 2 && mio_outsel_legal &&
           !mio_pad_sleep_status.q |-> mio_out_o[mio_sel_i] == periph_to_mio_i[mio_outsel.q - 3])
-  `ASSERT(OutSelOOB_A, mio_outsel.q >= (pinmux_reg_pkg::NMioPeriphOut + 3) &&
-          !mio_pad_sleep_status.q |-> mio_out_o[mio_sel_i] == 0)
+  `ASSERT(OutSelIllegal_A, !mio_outsel_legal && !mio_pad_sleep_status.q |->
+          mio_out_o[mio_sel_i] == 0)
 
   `ASSERT(MioOut0Backward_A, mio_out_o[mio_sel_i] == 0 |->
           mio_pad_sleep_status.q ||
           mio_outsel.q inside {0, 2} ||
-          mio_outsel.q >= (pinmux_reg_pkg::NMioPeriphOut + 3) ||
-          (mio_outsel.q > 2 && mio_outsel.q < (pinmux_reg_pkg::NMioPeriphOut + 3) &&
+          !mio_outsel_legal ||
+          (mio_outsel.q > 2 && mio_outsel_legal &&
            periph_to_mio_i[mio_outsel.q - 3] == 0))
 
   `ASSERT(MioOut1Backward_A, mio_out_o[mio_sel_i] == 1 |->
           mio_pad_sleep_status.q ||
           mio_outsel.q == 1 ||
-          mio_outsel.q > (pinmux_reg_pkg::NMioPeriphOut + 3) ||
-          (mio_outsel.q > 2 && mio_outsel.q < (pinmux_reg_pkg::NMioPeriphOut + 3) &&
+          (mio_outsel.q > 2 && mio_outsel_legal &&
            periph_to_mio_i[mio_outsel.q - 3] == 1))
 
   `ASSERT(OutSelOe0_A, mio_outsel.q == 0 && !mio_pad_sleep_status.q |->
@@ -160,23 +171,22 @@ module pinmux_assert_fpv
           mio_oe_o[mio_sel_i] == 1'b1)
   `ASSERT(OutSelOe2_A, mio_outsel.q == 2 && !mio_pad_sleep_status.q |->
           mio_oe_o[mio_sel_i] == 1'b0)
-  `ASSERT(OutSelOeN_A, mio_outsel.q > 2 && mio_outsel.q < (pinmux_reg_pkg::NMioPeriphOut + 3) &&
+  `ASSERT(OutSelOeN_A, mio_outsel.q > 2 && mio_outsel_legal &&
           !mio_pad_sleep_status.q |-> mio_oe_o[mio_sel_i] == periph_to_mio_oe_i[mio_outsel.q - 3])
-  `ASSERT(OutSelOeOOB_A, mio_outsel.q >= (pinmux_reg_pkg::NMioPeriphOut + 3) &&
-          !mio_pad_sleep_status.q |-> mio_oe_o[mio_sel_i] == 0)
+  `ASSERT(OutSelOeIllegal_A, !mio_outsel_legal && !mio_pad_sleep_status.q |->
+          mio_oe_o[mio_sel_i] == 0)
 
   `ASSERT(MioOe0Backward_A, mio_oe_o[mio_sel_i] == 0 |->
           mio_pad_sleep_status.q ||
           mio_outsel.q == 2 ||
-          mio_outsel.q >= (pinmux_reg_pkg::NMioPeriphOut + 3) ||
-          (mio_outsel.q > 2 && mio_outsel.q < (pinmux_reg_pkg::NMioPeriphOut + 3) &&
+          !mio_outsel_legal ||
+          (mio_outsel.q > 2 && mio_outsel_legal &&
            periph_to_mio_oe_i[mio_outsel.q - 3] == 0))
 
   `ASSERT(MioOe1Backward_A, mio_oe_o[mio_sel_i] == 1 |->
           mio_pad_sleep_status.q ||
           mio_outsel.q inside {0, 1} ||
-          mio_outsel.q > (pinmux_reg_pkg::NMioPeriphOut + 3) ||
-          (mio_outsel.q > 2 && mio_outsel.q < (pinmux_reg_pkg::NMioPeriphOut + 3) &&
+          (mio_outsel.q > 2 && mio_outsel_legal &&
            periph_to_mio_oe_i[mio_outsel.q - 3] == 1))
 
   // ------ Mio sleep behavior assertions ------

@@ -10,6 +10,48 @@
     n_mio_pads: 12
     n_mio_periph_in: 4
     n_mio_periph_out: 5
+    mio_periph_ins:
+    [
+      {
+        name: soc_proxy_soc_gpi[12]
+        pads: []
+      }
+      {
+        name: soc_proxy_soc_gpi[13]
+        pads: []
+      }
+      {
+        name: soc_proxy_soc_gpi[14]
+        pads: []
+      }
+      {
+        name: soc_proxy_soc_gpi[15]
+        pads: []
+      }
+    ]
+    mio_periph_outs:
+    [
+      {
+        name: soc_proxy_soc_gpo[12]
+        pads: []
+      }
+      {
+        name: soc_proxy_soc_gpo[13]
+        pads: []
+      }
+      {
+        name: soc_proxy_soc_gpo[14]
+        pads: []
+      }
+      {
+        name: soc_proxy_soc_gpo[15]
+        pads: []
+      }
+      {
+        name: otp_macro_test[0]
+        pads: []
+      }
+    ]
     mio_pad_attr_resvals:
     [
       [
