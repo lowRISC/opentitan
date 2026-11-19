@@ -94,7 +94,7 @@ class csrng_intr_vseq extends csrng_base_vseq;
 
   task trigger_invalid_acmd_sts_err(uint app);
     // Write an invalid command and expect the corresponding status response.
-    cs_item.randomize();
+    `DV_CHECK_RANDOMIZE_FATAL(cs_item)
     cs_item.clen  = 'h0;
     cs_item.acmd  = cfg.which_invalid_acmd;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
@@ -115,13 +115,13 @@ class csrng_intr_vseq extends csrng_base_vseq;
   task trigger_invalid_seq_sts_err(uint app);
     // Write an invalid sequence of commands and expect the corresponding status response.
     if (cfg.which_cmd_inv_seq == INS) begin
-      cs_item.randomize();
+      `DV_CHECK_RANDOMIZE_FATAL(cs_item)
       cs_item.acmd  = cfg.which_cmd_inv_seq;
       `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
       send_cmd_req(app, cs_item);
     end
 
-    cs_item.randomize();
+    `DV_CHECK_RANDOMIZE_FATAL(cs_item)
     cs_item.acmd  = cfg.which_cmd_inv_seq;
     cs_item.clen  = 'h0;
     `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
@@ -144,20 +144,20 @@ class csrng_intr_vseq extends csrng_base_vseq;
     csr_wr(.ptr(ral.reseed_interval), .value(cfg.reseed_interval));
 
     if (cfg.which_cmd_inv_seq != INS) begin
-      cs_item.randomize();
+      `DV_CHECK_RANDOMIZE_FATAL(cs_item)
       cs_item.acmd  = INS;
       `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
       send_cmd_req(app, cs_item);
     end
     `uvm_info(`gfn, $sformatf("Setting the reseed interval to %d", cfg.reseed_interval), UVM_DEBUG)
     for (int i = 0; i < cfg.reseed_interval; i++) begin
-      cs_item.randomize();
+      `DV_CHECK_RANDOMIZE_FATAL(cs_item)
       cs_item.acmd  = GEN;
       cs_item.glen  = 'h1;
       `uvm_info(`gfn, $sformatf("%s", cs_item.convert2string()), UVM_DEBUG)
       send_cmd_req(app, cs_item);
     end
-    cs_item.randomize();
+    `DV_CHECK_RANDOMIZE_FATAL(cs_item)
     cs_item.acmd  = GEN;
     cs_item.glen  = 'h1;
     cs_item.clen  = 'h0;
@@ -364,8 +364,8 @@ class csrng_intr_vseq extends csrng_base_vseq;
     csr_wr(.ptr(ral.intr_state), .value(32'd15));
     cfg.clk_rst_vif.wait_clks(100);
 
-    if (cfg.which_fatal_err inside {cmd_stage_sm_err, main_sm_err, ctr_drbg_sm_err,
-                                    aes_cipher_sm_err, ctr_err, ctr_err_test}) begin
+    if (cfg.which_fatal_err inside {cmd_stage_sm_error, main_sm_error, ctr_drbg_sm_error,
+                                    aes_cipher_sm_error, ctr_error}) begin
       // These errors are either not gated with the module enable or they cause the main FSM to
       // escalate of which the alert output itself isn't gated with the module enable. After
       // clearing the interrupt state register, the cs_fatal_err interrupt bit again gets asserted.
