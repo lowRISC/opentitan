@@ -1329,6 +1329,7 @@ opentitan_test(
         "//sw/device/lib/crypto/impl:config",
         "//sw/device/lib/crypto/impl:entropy_src",
         "//sw/device/lib/crypto/impl:integrity",
+        "//sw/device/lib/crypto/impl:key_transport",
         "//sw/device/lib/crypto/impl:kmac",
         "//sw/device/lib/crypto/impl:sha3",
         "//sw/device/lib/dif:keymgr_dpe",

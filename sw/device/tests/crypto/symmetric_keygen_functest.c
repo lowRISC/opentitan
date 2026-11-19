@@ -218,8 +218,8 @@ static status_t hw_backed_keygen_test(void) {
   // Version allowed by the key manager.
   uint32_t version = 0;
   // Example salt.
-  const uint32_t salt[7] = {0x11111111, 0x22222222, 0x33333333, 0x44444444,
-                            0x55555555, 0x66666666, 0x77777777};
+  const uint32_t salt[8] = {0x11111111, 0x22222222, 0x33333333, 0x44444444,
+                            0x55555555, 0x66666666, 0x77777777, 0x88888888};
 
   // Initialize the hardware-backed keyblob preset.
   TRY(otcrypto_hw_backed_key(version, salt, &key));
@@ -247,8 +247,8 @@ static status_t hw_backed_keygen_test(void) {
                                         0xf8f9fafb, 0xfcfdfeff};
   const uint32_t attestation_version = 0x0;
   // Initialize the hardware-backed keyblob preset.
-  TRY(otcrypto_hw_backed_attestation_key(attestation_version, attestation_salt,
-                                         &attestation_key));
+  TRY(otcrypto_hw_backed_key(attestation_version, attestation_salt,
+                             &attestation_key));
   TRY_CHECK(attestation_key.checksum ==
             otcrypto_integrity_blinded_checksum(&attestation_key));
 

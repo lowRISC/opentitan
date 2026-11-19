@@ -21,6 +21,11 @@ extern "C" {
 /**
  * AES-GCM context object for streaming operations.
  */
+enum {
+  /** Maximum number of 32-bit words in one AES-GCM key share (AES-256). */
+  kAesGcmMaxKeyWords = 8,
+};
+
 typedef struct aes_gcm_context {
   /**
    * Whether this is an encryption operation (false indicates decryption).
@@ -43,9 +48,11 @@ typedef struct aes_gcm_context {
    */
   uint32_t key_len;
   /**
-   * Key shares owned by value so the streaming context contains no pointers.
+   * Key shares owned by value so the streaming context contains no pointers:
+   * share 0 at [0..7], share 1 at [8..15], or a hardware-backed keyblob at
+   * [0..kKeyblobHwBackedWords - 1] when sideloaded.
    */
-  uint32_t key_shares[2][8];
+  uint32_t key_shares[2 * kAesGcmMaxKeyWords];
   /**
    * Checksum of the underlying AES key.
    */
@@ -101,7 +108,13 @@ static inline aes_key_t aes_gcm_context_key(const aes_gcm_context_t *ctx) {
       .sideload = ctx->sideload,
       .keymgr_dpe_slot_idx = ctx->keymgr_dpe_slot_idx,
       .key_len = ctx->key_len,
-      .key_shares = {ctx->key_shares[0], ctx->key_shares[1]},
+      .key_shares =
+          {
+              &ctx->key_shares[0],
+              ctx->sideload == kHardenedBoolTrue
+                  ? NULL
+                  : &ctx->key_shares[kAesGcmMaxKeyWords],
+          },
       .checksum = ctx->key_checksum,
   };
 }

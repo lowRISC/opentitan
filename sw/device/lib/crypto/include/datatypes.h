@@ -539,8 +539,9 @@ typedef struct otcrypto_key_config {
   /// Length in bytes of the unblinded form of this key.
   uint32_t key_length;
   /// Whether the hardware key manager should produce this key.
-  /// If this is set to `true`, the keyblob must be exactly 8 words long, where
-  /// the first word is the version and the remaining 7 words are the salt.
+  /// If this is set to `true`, the keyblob must be 9 words (36 bytes) long for
+  /// sideloaded keys (or 16 words / 64 bytes for `otcrypto_hw_backed_keygen`),
+  /// initialized via `otcrypto_hw_backed_key`.
   hardened_bool_t hw_backed;
   /// Determines which keymgr DPE slot (see `slot_src_sel` in
   /// `keymgr_dpe_diversification_t`) is used as the parent for key generation.

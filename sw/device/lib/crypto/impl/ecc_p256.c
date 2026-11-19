@@ -70,8 +70,8 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t load_private_scalar(
 OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t
 load_attestation_diversification(const otcrypto_blinded_key_t *private_key) {
   keymgr_dpe_diversification_t diversification;
-  HARDENED_TRY(keyblob_to_keymgr_dpe_attestation_diversification(
-      private_key, &diversification));
+  HARDENED_TRY(
+      keyblob_to_keymgr_dpe_diversification(private_key, &diversification));
   return keymgr_dpe_generate_key_otbn(diversification);
 }
 
@@ -97,8 +97,7 @@ OT_NOINLINE OT_WARN_UNUSED_RESULT static status_t p256_private_key_length_check(
   HARDENED_CHECK_EQ(private_key->config.key_length, kP256ScalarBytes);
 
   if (launder32(private_key->config.hw_backed) == kHardenedBoolTrue) {
-    if (private_key->keyblob_length != kKeyblobHwBackedBytes &&
-        private_key->keyblob_length != kCdiKeyblobHwBackedBytes) {
+    if (private_key->keyblob_length != kKeyblobHwBackedBytes) {
       return OTCRYPTO_BAD_ARGS;
     }
     return OTCRYPTO_OK;
@@ -792,8 +791,8 @@ otcrypto_status_t otcrypto_ecdsa_p256_dice_sign_async_start(
 #endif
 
   keymgr_dpe_diversification_t diversification;
-  HARDENED_TRY(keyblob_to_keymgr_dpe_attestation_diversification(
-      private_key, &diversification));
+  HARDENED_TRY(
+      keyblob_to_keymgr_dpe_diversification(private_key, &diversification));
   hardened_bool_t should_wipe __attribute__((cleanup(sideload_wipe_guard))) =
       kHardenedBoolTrue;
   HARDENED_TRY(keymgr_dpe_generate_key_otbn(diversification));
