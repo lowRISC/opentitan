@@ -84,6 +84,8 @@ typedef struct transaction_params {
  * @return The result of the operation.
  */
 static void transaction_start(transaction_params_t params) {
+  // Clear any sticky error bits from previous transactions.
+  abs_mmio_write32(kBase + FLASH_CTRL_ERR_CODE_REG_OFFSET, UINT32_MAX);
   // Set the address.
   abs_mmio_write32(kBase + FLASH_CTRL_ADDR_REG_OFFSET, params.addr);
   // Configure flash_ctrl and start the transaction.
@@ -354,10 +356,10 @@ rom_error_t flash_ctrl_info_read_zeros_on_read_error(
     uint32_t word_count, void *data) {
   rom_error_t err = flash_ctrl_info_read(info_page, offset, word_count, data);
   if (err != kErrorOk) {
-    flash_ctrl_error_code_t flash_ctrl_err_code;
-    flash_ctrl_error_code_get(&flash_ctrl_err_code);
-    if (flash_ctrl_err_code.rd_err) {
-      // If we encountered a read error, return all 0s.
+    uint32_t code = abs_mmio_read32(kBase + FLASH_CTRL_ERR_CODE_REG_OFFSET);
+    if (launder32(code) == (1u << FLASH_CTRL_ERR_CODE_RD_ERR_BIT)) {
+      HARDENED_CHECK_EQ(code, 1u << FLASH_CTRL_ERR_CODE_RD_ERR_BIT);
+      // If we encountered only a read error, return all 0s.
       memset(data, 0, word_count * sizeof(uint32_t));
       return kErrorOk;
     }
