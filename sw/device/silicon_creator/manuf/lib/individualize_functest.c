@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/coverage/api.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_lc_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -65,9 +66,11 @@ static status_t peripheral_handles_init(void) {
 }
 
 /**
- * Perform software reset.
+ * Perform software reset. Coverage is reported before resetting, as resets
+ * wipe the counters that live in SRAM.
  */
 void sw_reset(void) {
+  coverage_report();
   rstmgr_testutils_reason_clear();
   CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
   wait_for_interrupt();

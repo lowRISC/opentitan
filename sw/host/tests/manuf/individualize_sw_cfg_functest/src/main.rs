@@ -33,6 +33,12 @@ fn individualize_sw_cfg(opts: &Opts, transport: &TransportWrapper) -> Result<()>
         opts.timeout,
     )?;
 
+    // Collect the first boot's coverage before the RX buffer is cleared.
+    #[cfg(feature = "ot_coverage_enabled")]
+    if let Err(e) = UartConsole::wait_for_coverage(&*uart, Duration::from_secs(10)) {
+        log::warn!("Failed to collect 1st boot coverage: {e:?}");
+    }
+
     // Bootstrap test program into flash again, since we have since enabled flash scrambling.
     uart.clear_rx_buffer()?;
     opts.init.bootstrap.init(transport)?;
