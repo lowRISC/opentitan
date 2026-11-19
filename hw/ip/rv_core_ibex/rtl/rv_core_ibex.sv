@@ -424,6 +424,7 @@ module rv_core_ibex
     // SEC_CM: PC.CTRL_FLOW.CONSISTENCY, CTRL_FLOW.UNPREDICTABLE, CORE.DATA_REG_SW.SCA
     // SEC_CM: EXCEPTION.CTRL_FLOW.GLOBAL_ESC, EXCEPTION.CTRL_FLOW.LOCAL_ESC
     // SEC_CM: DATA_REG_SW.INTEGRITY, DATA_REG_SW.GLITCH_DETECT
+    // SEC_CM: ICACHE.MEM.ADDR_INFECTION
     .SecureIbex                  ( SecureIbex               ),
     .RndCnstLfsrSeed             ( RndCnstLfsrSeed          ),
     .RndCnstLfsrPerm             ( RndCnstLfsrPerm          ),
@@ -909,6 +910,7 @@ module rv_core_ibex
   // fpga build info hook-up
   assign hw2reg.fpga_info.d = fpga_info_i;
 
+  // SEC_CM: TLUL_ADAPTER.LOGIC.SHADOW
   if (SecureIbex) begin : gen_tlul_lockstep
     /////////////////////////////////////////////////////
     // Shadow Core instruction and data region config. //

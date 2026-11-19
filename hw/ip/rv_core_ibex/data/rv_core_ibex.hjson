@@ -486,16 +486,20 @@
     }
     { name: "DATA_REG_SW.INTEGRITY"
       desc: '''
-        Register file integrity checking. Note that whilst the core itself is
-        duplicated (see LOGIC.SHADOW) the register file is not. Protection is
-        provided by an ECC.
+        Register file integrity checking via ECC. The register file is split across two instances:
+        the main core's register file stores data bits only, while the shadow core's register file
+        (see LOGIC.SHADOW) stores the corresponding ECC bits only. ECC checking is performed inside
+        the shadow core.
       '''
     }
     { name: "DATA_REG_SW.GLITCH_DETECT"
       desc: '''
-        This countermeasure augments DATA_REG_SW.INTEGRITY and checks for spurious
-        write-enable signals on the register file by monitoring the one-hot0 property
-        of the individual write-enable strobes.
+        This countermeasure augments DATA_REG_SW.INTEGRITY. The split register file architecture
+        provides implicit glitch detection: a physical fault that modifies data in the main register
+        file will be caught by the shadow core's ECC check. In addition, the register file read
+        addresses and write port (write address, write enable, and write data) of the main core are
+        compared against the ones of the shadow core in the dual core lockstep. This detects faults
+        whose check bits happen to match those of the correct value, e.g., a bitwise inverted value.
       '''
     }
     { name: "LOGIC.SHADOW"
@@ -524,6 +528,18 @@
     }
     { name: "ICACHE.MEM.INTEGRITY"
       desc: "ICache memory integrity checking."
+    }
+    { name: "ICACHE.MEM.ADDR_INFECTION"
+      desc: '''
+        ICache data and tag words are XORed with a tweak derived from their cache-line address. A
+        fault causing data to land in the wrong cache index produces a tweak mismatch on read-back.
+      '''
+    }
+    { name: "TLUL_ADAPTER.LOGIC.SHADOW"
+      desc: '''
+        Address translation and TL-UL adapters (data and instruction interface) run in lockstep with
+        shadow logic protecting both interfaces against faults.
+      '''
     }
   ]
 

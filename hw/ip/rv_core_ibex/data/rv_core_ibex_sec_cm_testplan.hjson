@@ -101,5 +101,17 @@
       stage: V2S
       tests: []
     }
+    {
+      name: sec_cm_icache_mem_addr_infection
+      desc: "Verify the countermeasure(s) ICACHE.MEM.ADDR_INFECTION."
+      stage: V2S
+      tests: []
+    }
+    {
+      name: sec_cm_tlul_adapter_logic_shadow
+      desc: "Verify the countermeasure(s) TLUL_ADAPTER.LOGIC.SHADOW."
+      stage: V2S
+      tests: []
+    }
   ]
 }
