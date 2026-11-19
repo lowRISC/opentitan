@@ -816,6 +816,18 @@ TEST_F(FlashCtrlTest, CertInfoOwnerRestrict) {
   flash_ctrl_cert_info_page_owner_restrict(&kFlashCtrlInfoPageDiceCerts);
 }
 
+TEST_F(FlashCtrlTest, CertInfoPageRoLockdown) {
+  auto info_page = InfoPages().at(&kFlashCtrlInfoPageAttestationKeySeeds);
+  EXPECT_SEC_READ32(base_ + info_page.cfg_offset,
+                    FLASH_CTRL_BANK0_INFO0_PAGE_CFG_0_REG_RESVAL);
+  EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, 0x9669996);
+  EXPECT_SEC_READ32(base_ + info_page.cfg_offset, 0x9669996);
+  EXPECT_SEC_WRITE32(base_ + info_page.cfg_offset, 0x9669966);
+  EXPECT_SEC_WRITE32(base_ + info_page.cfg_wen_offset, 0);
+
+  flash_ctrl_cert_info_page_ro_lockdown(&kFlashCtrlInfoPageAttestationKeySeeds);
+}
+
 struct EraseVerifyCase {
   /**
    * Address.
