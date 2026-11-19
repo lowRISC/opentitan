@@ -123,8 +123,10 @@ jobs:
       tag_filters: "cw310_sival_rom_ext,-coverage_broken"
       mode: coverage
 
-  # FIXME: Only provisioning e2e tests are enabled now. Most manuf tests use
-  # SRAM binaries which are not supported in coverage mode yet.
+  # FIXME: Most `manuf` tests use SRAM binaries which do not support coverage
+  # mode due to limited space in SRAM. Currently, the E2E orchestrator
+  # provisioning tests are supported, as are the flash-based individualization
+  # functests.
   execute_manuf_fpga_tests_cw310:
     name: CW310 Manufacturing Tests
     needs: chip_earlgrey_cw310_hyperdebug
@@ -218,8 +220,10 @@ jobs:
       tag_filters: "cw340_sival_rom_ext,-coverage_broken"
       mode: coverage
 
-  # FIXME: Only provisioning e2e tests are enabled now. Most manuf tests use
-  # SRAM binaries which are not supported in coverage mode yet.
+  # FIXME: Most `manuf` tests use SRAM binaries which do not support coverage
+  # mode due to limited space in SRAM. Currently, the E2E orchestrator
+  # provisioning tests are supported, as are the flash-based individualization
+  # functests.
   execute_manuf_fpga_tests_cw340:
     name: CW340 Manufacturing Tests
     needs: chip_earlgrey_cw340

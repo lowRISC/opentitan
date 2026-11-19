@@ -151,7 +151,11 @@ opentitan_test(
     fpga = fpga_params(
         changes_otp = True,
         otp = "//hw/ip/otp_ctrl/data:img_test_unlocked1",
-        tags = ["manuf"],
+        tags = [
+            "manuf",
+            # Coverage can't fit with the SRAM programs, so we test this instead
+            "provisioning",
+        ],
     ),
     qemu = qemu_params(
         otp = "//hw/ip/otp_ctrl/data:img_test_unlocked1",
@@ -223,7 +227,11 @@ opentitan_test(
     fpga = fpga_params(
         changes_otp = True,
         otp = "//hw/ip/otp_ctrl/data:img_test_unlocked1",
-        tags = ["manuf"],
+        tags = [
+            "manuf",
+            # Coverage can't fit with the SRAM programs, so we test this instead
+            "provisioning",
+        ],
         test_cmd = """
             --bootstrap={firmware}
         """,
