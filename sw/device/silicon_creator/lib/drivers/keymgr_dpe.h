@@ -324,6 +324,19 @@ void sc_keymgr_dpe_entropy_reseed_interval_set(uint16_t reseed_interval);
 void sc_keymgr_dpe_kdf_engine_set(sc_keymgr_dpe_kdf_engine_t engine);
 
 /**
+ * Verifies the KDF engine selection.
+ *
+ * Reads back `KDF_ENGINE_SHADOWED` and compares it with `expected_engine`.
+ *
+ * @param expected_engine Expected KDF engine.
+ * @return `kErrorOk` if the selection matches `expected_engine`,
+ * `kErrorKeymgrInternal` otherwise.
+ */
+OT_WARN_UNUSED_RESULT
+rom_error_t sc_keymgr_dpe_kdf_engine_check(
+    sc_keymgr_dpe_kdf_engine_t expected_engine);
+
+/**
  * Locks the KDF engine selection until the next reset.
  *
  */

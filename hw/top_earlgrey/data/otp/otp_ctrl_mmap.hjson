@@ -700,6 +700,26 @@
                     '''
                 }
                 {
+                    name: "OWNER_SW_CFG_ROM_KEYMGR_KDF_ENGINE_SELECTION",
+                    size: "4",
+                    desc: '''
+                    KDF engine written by the ROM to the keymgr_dpe
+                    KDF_ENGINE_SHADOWED CSR. Only effective if keymgr_dpe is
+                    instantiated with `KdfEngineSel = KdfEngineBoth`. A value of
+                    kHardenedBoolTrue selects OTBN (HKDF), all other values
+                    select KMAC.
+                    '''
+                }
+                {
+                    name: "OWNER_SW_CFG_ROM_KEYMGR_KDF_ENGINE_SELECTION_REGWEN",
+                    size: "4",
+                    desc: '''
+                    Whether or not the ROM locks the keymgr_dpe
+                    KDF_ENGINE_SHADOWED CSR until the next reset. A value of
+                    kHardenedBoolFalse leaves it writable, all other values lock.
+                    '''
+                }
+                {
                     name: "OWNER_SW_CFG_MANUF_STATE",
                     size: "4",
                     desc: '''
@@ -831,7 +851,7 @@
                 }
                 {
                     name: "OWNER_SW_CFG_RESERVED",
-                    size: "96",
+                    size: "88",
                     desc: '''
                     Unused bits in the OWNER_SW_CFG OTP partition. These can be
                     claimed by software as needed.

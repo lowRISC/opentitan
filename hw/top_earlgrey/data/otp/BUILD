@@ -126,6 +126,12 @@ otp_json(
                 # readable OTP partitions as the key manager attestation binding
                 # value.
                 "OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN": otp_hex(0x0),
+                # Set to `CONST.HARDENED_TRUE` to select OTBN (HKDF) instead of
+                # KMAC as keymgr_dpe KDF engine.
+                "OWNER_SW_CFG_ROM_KEYMGR_KDF_ENGINE_SELECTION": otp_hex(CONST.HARDENED_FALSE),
+                # Leave the keymgr_dpe KDF engine selection unlocked. Any other
+                # value locks it in the ROM.
+                "OWNER_SW_CFG_ROM_KEYMGR_KDF_ENGINE_SELECTION_REGWEN": otp_hex(CONST.HARDENED_FALSE),
                 # Report errors without any redaction.
                 "OWNER_SW_CFG_ROM_ERROR_REPORTING": otp_hex(CONST.SHUTDOWN.REDACT.NONE),
                 # Set the enables to kAlertEnableNone.

@@ -250,6 +250,38 @@ TEST_F(KeymgrDpeTest, KdfEngineSetOtbn) {
   sc_keymgr_dpe_kdf_engine_set(kScKeymgrDPEKdfEngineOtbn);
 }
 
+TEST_F(KeymgrDpeTest, KdfEngineCheckKmac) {
+  EXPECT_ABS_READ32(
+      base_ + KEYMGR_DPE_KDF_ENGINE_SHADOWED_REG_OFFSET,
+      {{KEYMGR_DPE_KDF_ENGINE_SHADOWED_SEL_OFFSET, kMultiBitBool4False}});
+  EXPECT_EQ(sc_keymgr_dpe_kdf_engine_check(kScKeymgrDPEKdfEngineKmac),
+            kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, KdfEngineCheckOtbn) {
+  EXPECT_ABS_READ32(
+      base_ + KEYMGR_DPE_KDF_ENGINE_SHADOWED_REG_OFFSET,
+      {{KEYMGR_DPE_KDF_ENGINE_SHADOWED_SEL_OFFSET, kMultiBitBool4True}});
+  EXPECT_EQ(sc_keymgr_dpe_kdf_engine_check(kScKeymgrDPEKdfEngineOtbn),
+            kErrorOk);
+}
+
+TEST_F(KeymgrDpeTest, KdfEngineCheckMismatch) {
+  // The selection still holds KMAC although OTBN is expected.
+  EXPECT_ABS_READ32(
+      base_ + KEYMGR_DPE_KDF_ENGINE_SHADOWED_REG_OFFSET,
+      {{KEYMGR_DPE_KDF_ENGINE_SHADOWED_SEL_OFFSET, kMultiBitBool4False}});
+  EXPECT_EQ(sc_keymgr_dpe_kdf_engine_check(kScKeymgrDPEKdfEngineOtbn),
+            kErrorKeymgrInternal);
+}
+
+TEST_F(KeymgrDpeTest, KdfEngineCheckInvalidEncoding) {
+  EXPECT_ABS_READ32(base_ + KEYMGR_DPE_KDF_ENGINE_SHADOWED_REG_OFFSET,
+                    {{KEYMGR_DPE_KDF_ENGINE_SHADOWED_SEL_OFFSET, 0x1}});
+  EXPECT_EQ(sc_keymgr_dpe_kdf_engine_check(kScKeymgrDPEKdfEngineKmac),
+            kErrorKeymgrInternal);
+}
+
 TEST_F(KeymgrDpeTest, KdfEngineLock) {
   EXPECT_SEC_WRITE32(base_ + KEYMGR_DPE_KDF_ENGINE_REGWEN_REG_OFFSET, 0);
   sc_keymgr_dpe_kdf_engine_lock();
