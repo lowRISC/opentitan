@@ -229,6 +229,7 @@ enum {
   kScKeymgrDPESecMmioSlotPolicy = 1,
   kScKeymgrDPESecMmioKdfEngineSet = 1,
   kScKeymgrDPESecMmioKdfEngineLock = 1,
+  kScKeymgrDPESecMmioLockUds = 1,
 };
 
 /**
@@ -324,6 +325,7 @@ void sc_keymgr_dpe_kdf_engine_set(sc_keymgr_dpe_kdf_engine_t engine);
 
 /**
  * Locks the KDF engine selection until the next reset.
+ *
  */
 void sc_keymgr_dpe_kdf_engine_lock(void);
 
