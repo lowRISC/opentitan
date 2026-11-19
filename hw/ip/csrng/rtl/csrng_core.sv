@@ -598,9 +598,9 @@ module csrng_core import csrng_pkg::*; #(
 
   // Only writes selecting a valid instance are accepted, others are ignored and raise an alert.
   // The selected instance cannot be changed while INT_STATE_HALT is set.
-  assign int_state_num_wr = reg2hw.int_state_num.qe && (reg2hw.int_state_num.q < NumApps);
+  assign int_state_num_wr = reg2hw.int_state_num.qe && (32'(reg2hw.int_state_num.q) < NumApps);
   assign int_state_num_invalid_alert = (reg2hw.int_state_num.qe && !int_state_num_wr) ||
-                                       (int_state_num_q >= NumApps);
+                                       (32'(int_state_num_q) >= NumApps);
   assign int_state_num_d = int_state_num_wr ? reg2hw.int_state_num.q[NumAppsLg-1:0] :
                                               int_state_num_q;
   assign hw2reg.int_state_num.d = 4'(int_state_num_q);
@@ -609,10 +609,10 @@ module csrng_core import csrng_pkg::*; #(
   // Permission gates for reading and writing the internal state of the selected instance.
   // Writing is only allowed while the selected instance is halted.
   assign int_state_rd_allowed = cs_enable_fo[46] && read_int_state &&
-                                (int_state_num_q < NumApps) &&
+                                (32'(int_state_num_q) < NumApps) &&
                                 reg2hw.int_state_read_enable.q[int_state_num_q];
   assign int_state_wr_allowed = cs_enable_fo[47] && write_int_state &&
-                                (int_state_num_q < NumApps) &&
+                                (32'(int_state_num_q) < NumApps) &&
                                 reg2hw.int_state_write_enable.q[int_state_num_q] &&
                                 cmd_stage_halted[int_state_num_q];
 
