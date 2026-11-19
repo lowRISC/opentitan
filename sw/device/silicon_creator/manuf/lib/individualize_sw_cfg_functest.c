@@ -3,6 +3,7 @@
 // SPDX-License-Identifier: Apache-2.0
 
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/coverage/api.h"
 #include "sw/device/lib/crypto/drivers/entropy.h"
 #include "sw/device/lib/dif/dif_flash_ctrl.h"
 #include "sw/device/lib/dif/dif_otp_ctrl.h"
@@ -163,9 +164,11 @@ static status_t check_otp_sw_cfg_digest(dif_otp_ctrl_partition_t partition) {
 }
 
 /**
- * Perform software reset.
+ * Perform software reset. Coverage is reported before resetting, as resets
+ * wipe the counters that live in SRAM.
  */
 static void sw_reset(void) {
+  coverage_report();
   rstmgr_testutils_reason_clear();
   CHECK_DIF_OK(dif_rstmgr_software_device_reset(&rstmgr));
   wait_for_interrupt();
@@ -192,6 +195,7 @@ bool test_main(void) {
     // Halt the CPU here to enable host to perform POR and bootstrap again since
     // flash scrambling enablement has changed. Bootstrap resets the chip as
     // well, which completes the locking of this partition.
+    coverage_report();
     abort();
   }
   bool perform_reset = false;
