@@ -83,13 +83,13 @@ Security      | [SEC_CM_DOCUMENTED][]     | Done        |
 
  Type         | Item                         | Resolution  | Note/Collaterals
 --------------|------------------------------|-------------|------------------
-Security      | [SEC_CM_ASSETS_LISTED][]     | Not Started |
-Security      | [SEC_CM_IMPLEMENTED][]       | Not Started |
-Security      | [SEC_CM_RND_CNST][]          | Not Started |
-Security      | [SEC_CM_NON_RESET_FLOPS][]   | Not Started |
-Security      | [SEC_CM_SHADOW_REGS][]       | Not Started |
-Security      | [SEC_CM_RTL_REVIEWED][]      | Not Started |
-Security      | [SEC_CM_COUNCIL_REVIEWED][]  | Not Started |
+Security      | [SEC_CM_ASSETS_LISTED][]     | Done        |
+Security      | [SEC_CM_IMPLEMENTED][]       | Done        |
+Security      | [SEC_CM_RND_CNST][]          | Done        |
+Security      | [SEC_CM_NON_RESET_FLOPS][]   | Done        |
+Security      | [SEC_CM_SHADOW_REGS][]       | Done        |
+Security      | [SEC_CM_RTL_REVIEWED][]      | N/A         |
+Security      | [SEC_CM_COUNCIL_REVIEWED][]  | N/A         |
 
 [SEC_CM_ASSETS_LISTED]:    ../../../../doc/project_governance/checklist/README.md#sec_cm_assets_listed
 [SEC_CM_IMPLEMENTED]:      ../../../../doc/project_governance/checklist/README.md#sec_cm_implemented
