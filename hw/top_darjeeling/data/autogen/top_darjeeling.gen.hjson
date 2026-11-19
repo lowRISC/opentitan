@@ -16223,7 +16223,10 @@
         instance: spi_host0
         port: sck
         connection: direct
-        pad: SPI_HOST_CLK
+        pads:
+        [
+          SPI_HOST_CLK
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16231,7 +16234,10 @@
         instance: spi_host0
         port: csb
         connection: direct
-        pad: SPI_HOST_CS_L
+        pads:
+        [
+          SPI_HOST_CS_L
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16239,7 +16245,10 @@
         instance: spi_host0
         port: sd[0]
         connection: direct
-        pad: SPI_HOST_D0
+        pads:
+        [
+          SPI_HOST_D0
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16247,7 +16256,10 @@
         instance: spi_host0
         port: sd[1]
         connection: direct
-        pad: SPI_HOST_D1
+        pads:
+        [
+          SPI_HOST_D1
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16255,7 +16267,10 @@
         instance: spi_host0
         port: sd[2]
         connection: direct
-        pad: SPI_HOST_D2
+        pads:
+        [
+          SPI_HOST_D2
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16263,7 +16278,10 @@
         instance: spi_host0
         port: sd[3]
         connection: direct
-        pad: SPI_HOST_D3
+        pads:
+        [
+          SPI_HOST_D3
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16271,7 +16289,10 @@
         instance: spi_device
         port: sck
         connection: direct
-        pad: SPI_DEV_CLK
+        pads:
+        [
+          SPI_DEV_CLK
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16279,7 +16300,10 @@
         instance: spi_device
         port: csb
         connection: direct
-        pad: SPI_DEV_CS_L
+        pads:
+        [
+          SPI_DEV_CS_L
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16287,7 +16311,10 @@
         instance: spi_device
         port: sd[0]
         connection: direct
-        pad: SPI_DEV_D0
+        pads:
+        [
+          SPI_DEV_D0
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16295,7 +16322,10 @@
         instance: spi_device
         port: sd[1]
         connection: direct
-        pad: SPI_DEV_D1
+        pads:
+        [
+          SPI_DEV_D1
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16303,7 +16333,10 @@
         instance: spi_device
         port: sd[2]
         connection: direct
-        pad: SPI_DEV_D2
+        pads:
+        [
+          SPI_DEV_D2
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16311,7 +16344,10 @@
         instance: spi_device
         port: sd[3]
         connection: direct
-        pad: SPI_DEV_D3
+        pads:
+        [
+          SPI_DEV_D3
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16319,7 +16355,10 @@
         instance: spi_device
         port: tpm_csb
         connection: direct
-        pad: SPI_DEV_TPM_CS_L
+        pads:
+        [
+          SPI_DEV_TPM_CS_L
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16327,7 +16366,10 @@
         instance: uart0
         port: rx
         connection: direct
-        pad: UART_RX
+        pads:
+        [
+          UART_RX
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16335,7 +16377,10 @@
         instance: uart0
         port: tx
         connection: direct
-        pad: UART_TX
+        pads:
+        [
+          UART_TX
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16343,7 +16388,10 @@
         instance: i2c0
         port: scl
         connection: direct
-        pad: I2C_SCL
+        pads:
+        [
+          I2C_SCL
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16351,7 +16399,10 @@
         instance: i2c0
         port: sda
         connection: direct
-        pad: I2C_SDA
+        pads:
+        [
+          I2C_SDA
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16359,7 +16410,10 @@
         instance: gpio0
         port: gpio[0]
         connection: direct
-        pad: GPIO0
+        pads:
+        [
+          GPIO0
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16367,7 +16421,10 @@
         instance: gpio0
         port: gpio[1]
         connection: direct
-        pad: GPIO1
+        pads:
+        [
+          GPIO1
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16375,7 +16432,10 @@
         instance: gpio0
         port: gpio[2]
         connection: direct
-        pad: GPIO2
+        pads:
+        [
+          GPIO2
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16383,7 +16443,10 @@
         instance: gpio0
         port: gpio[3]
         connection: direct
-        pad: GPIO3
+        pads:
+        [
+          GPIO3
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16391,7 +16454,10 @@
         instance: gpio0
         port: gpio[4]
         connection: direct
-        pad: GPIO4
+        pads:
+        [
+          GPIO4
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16399,7 +16465,10 @@
         instance: gpio0
         port: gpio[5]
         connection: direct
-        pad: GPIO5
+        pads:
+        [
+          GPIO5
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16407,7 +16476,10 @@
         instance: gpio0
         port: gpio[6]
         connection: direct
-        pad: GPIO6
+        pads:
+        [
+          GPIO6
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16415,7 +16487,10 @@
         instance: gpio0
         port: gpio[7]
         connection: direct
-        pad: GPIO7
+        pads:
+        [
+          GPIO7
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16423,7 +16498,10 @@
         instance: gpio0
         port: gpio[8]
         connection: direct
-        pad: GPIO8
+        pads:
+        [
+          GPIO8
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16431,7 +16509,10 @@
         instance: gpio0
         port: gpio[9]
         connection: direct
-        pad: GPIO9
+        pads:
+        [
+          GPIO9
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16439,7 +16520,10 @@
         instance: gpio0
         port: gpio[10]
         connection: direct
-        pad: GPIO10
+        pads:
+        [
+          GPIO10
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16447,7 +16531,10 @@
         instance: gpio0
         port: gpio[11]
         connection: direct
-        pad: GPIO11
+        pads:
+        [
+          GPIO11
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16455,7 +16542,10 @@
         instance: gpio0
         port: gpio[12]
         connection: direct
-        pad: GPIO12
+        pads:
+        [
+          GPIO12
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16463,7 +16553,10 @@
         instance: gpio0
         port: gpio[13]
         connection: direct
-        pad: GPIO13
+        pads:
+        [
+          GPIO13
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16471,7 +16564,10 @@
         instance: gpio0
         port: gpio[14]
         connection: direct
-        pad: GPIO14
+        pads:
+        [
+          GPIO14
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16479,7 +16575,10 @@
         instance: gpio0
         port: gpio[15]
         connection: direct
-        pad: GPIO15
+        pads:
+        [
+          GPIO15
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16487,7 +16586,10 @@
         instance: gpio0
         port: gpio[16]
         connection: direct
-        pad: GPIO16
+        pads:
+        [
+          GPIO16
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16495,7 +16597,10 @@
         instance: gpio0
         port: gpio[17]
         connection: direct
-        pad: GPIO17
+        pads:
+        [
+          GPIO17
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16503,7 +16608,10 @@
         instance: gpio0
         port: gpio[18]
         connection: direct
-        pad: GPIO18
+        pads:
+        [
+          GPIO18
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16511,7 +16619,10 @@
         instance: gpio0
         port: gpio[19]
         connection: direct
-        pad: GPIO19
+        pads:
+        [
+          GPIO19
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16519,7 +16630,10 @@
         instance: gpio0
         port: gpio[20]
         connection: direct
-        pad: GPIO20
+        pads:
+        [
+          GPIO20
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16527,7 +16641,10 @@
         instance: gpio0
         port: gpio[21]
         connection: direct
-        pad: GPIO21
+        pads:
+        [
+          GPIO21
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16535,7 +16652,10 @@
         instance: gpio0
         port: gpio[22]
         connection: direct
-        pad: GPIO22
+        pads:
+        [
+          GPIO22
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16543,7 +16663,10 @@
         instance: gpio0
         port: gpio[23]
         connection: direct
-        pad: GPIO23
+        pads:
+        [
+          GPIO23
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16551,7 +16674,10 @@
         instance: gpio0
         port: gpio[24]
         connection: direct
-        pad: GPIO24
+        pads:
+        [
+          GPIO24
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16559,7 +16685,10 @@
         instance: gpio0
         port: gpio[25]
         connection: direct
-        pad: GPIO25
+        pads:
+        [
+          GPIO25
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16567,7 +16696,10 @@
         instance: gpio0
         port: gpio[26]
         connection: direct
-        pad: GPIO26
+        pads:
+        [
+          GPIO26
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16575,7 +16707,10 @@
         instance: gpio0
         port: gpio[27]
         connection: direct
-        pad: GPIO27
+        pads:
+        [
+          GPIO27
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16583,7 +16718,10 @@
         instance: gpio0
         port: gpio[28]
         connection: direct
-        pad: GPIO28
+        pads:
+        [
+          GPIO28
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16591,7 +16729,10 @@
         instance: gpio0
         port: gpio[29]
         connection: direct
-        pad: GPIO29
+        pads:
+        [
+          GPIO29
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16599,7 +16740,10 @@
         instance: gpio0
         port: gpio[30]
         connection: direct
-        pad: GPIO30
+        pads:
+        [
+          GPIO30
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16607,7 +16751,10 @@
         instance: gpio0
         port: gpio[31]
         connection: direct
-        pad: GPIO31
+        pads:
+        [
+          GPIO31
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16615,7 +16762,10 @@
         instance: soc_proxy
         port: soc_gpi[0]
         connection: direct
-        pad: SOC_GPI0
+        pads:
+        [
+          SOC_GPI0
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16623,7 +16773,10 @@
         instance: soc_proxy
         port: soc_gpi[1]
         connection: direct
-        pad: SOC_GPI1
+        pads:
+        [
+          SOC_GPI1
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16631,7 +16784,10 @@
         instance: soc_proxy
         port: soc_gpi[2]
         connection: direct
-        pad: SOC_GPI2
+        pads:
+        [
+          SOC_GPI2
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16639,7 +16795,10 @@
         instance: soc_proxy
         port: soc_gpi[3]
         connection: direct
-        pad: SOC_GPI3
+        pads:
+        [
+          SOC_GPI3
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16647,7 +16806,10 @@
         instance: soc_proxy
         port: soc_gpi[4]
         connection: direct
-        pad: SOC_GPI4
+        pads:
+        [
+          SOC_GPI4
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16655,7 +16817,10 @@
         instance: soc_proxy
         port: soc_gpi[5]
         connection: direct
-        pad: SOC_GPI5
+        pads:
+        [
+          SOC_GPI5
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16663,7 +16828,10 @@
         instance: soc_proxy
         port: soc_gpi[6]
         connection: direct
-        pad: SOC_GPI6
+        pads:
+        [
+          SOC_GPI6
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16671,7 +16839,10 @@
         instance: soc_proxy
         port: soc_gpi[7]
         connection: direct
-        pad: SOC_GPI7
+        pads:
+        [
+          SOC_GPI7
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16679,7 +16850,10 @@
         instance: soc_proxy
         port: soc_gpi[8]
         connection: direct
-        pad: SOC_GPI8
+        pads:
+        [
+          SOC_GPI8
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16687,7 +16861,10 @@
         instance: soc_proxy
         port: soc_gpi[9]
         connection: direct
-        pad: SOC_GPI9
+        pads:
+        [
+          SOC_GPI9
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16695,7 +16872,10 @@
         instance: soc_proxy
         port: soc_gpi[10]
         connection: direct
-        pad: SOC_GPI10
+        pads:
+        [
+          SOC_GPI10
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16703,7 +16883,10 @@
         instance: soc_proxy
         port: soc_gpi[11]
         connection: direct
-        pad: SOC_GPI11
+        pads:
+        [
+          SOC_GPI11
+        ]
         desc: ""
         attr: InputStd
       }
@@ -16711,7 +16894,7 @@
         instance: soc_proxy
         port: soc_gpi[12]
         connection: muxed
-        pad: ""
+        pads: []
         desc: ""
         attr: ""
       }
@@ -16719,7 +16902,7 @@
         instance: soc_proxy
         port: soc_gpi[13]
         connection: muxed
-        pad: ""
+        pads: []
         desc: ""
         attr: ""
       }
@@ -16727,7 +16910,7 @@
         instance: soc_proxy
         port: soc_gpi[14]
         connection: muxed
-        pad: ""
+        pads: []
         desc: ""
         attr: ""
       }
@@ -16735,7 +16918,7 @@
         instance: soc_proxy
         port: soc_gpi[15]
         connection: muxed
-        pad: ""
+        pads: []
         desc: ""
         attr: ""
       }
@@ -16743,7 +16926,10 @@
         instance: soc_proxy
         port: soc_gpo[0]
         connection: direct
-        pad: SOC_GPO0
+        pads:
+        [
+          SOC_GPO0
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16751,7 +16937,10 @@
         instance: soc_proxy
         port: soc_gpo[1]
         connection: direct
-        pad: SOC_GPO1
+        pads:
+        [
+          SOC_GPO1
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16759,7 +16948,10 @@
         instance: soc_proxy
         port: soc_gpo[2]
         connection: direct
-        pad: SOC_GPO2
+        pads:
+        [
+          SOC_GPO2
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16767,7 +16959,10 @@
         instance: soc_proxy
         port: soc_gpo[3]
         connection: direct
-        pad: SOC_GPO3
+        pads:
+        [
+          SOC_GPO3
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16775,7 +16970,10 @@
         instance: soc_proxy
         port: soc_gpo[4]
         connection: direct
-        pad: SOC_GPO4
+        pads:
+        [
+          SOC_GPO4
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16783,7 +16981,10 @@
         instance: soc_proxy
         port: soc_gpo[5]
         connection: direct
-        pad: SOC_GPO5
+        pads:
+        [
+          SOC_GPO5
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16791,7 +16992,10 @@
         instance: soc_proxy
         port: soc_gpo[6]
         connection: direct
-        pad: SOC_GPO6
+        pads:
+        [
+          SOC_GPO6
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16799,7 +17003,10 @@
         instance: soc_proxy
         port: soc_gpo[7]
         connection: direct
-        pad: SOC_GPO7
+        pads:
+        [
+          SOC_GPO7
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16807,7 +17014,10 @@
         instance: soc_proxy
         port: soc_gpo[8]
         connection: direct
-        pad: SOC_GPO8
+        pads:
+        [
+          SOC_GPO8
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16815,7 +17025,10 @@
         instance: soc_proxy
         port: soc_gpo[9]
         connection: direct
-        pad: SOC_GPO9
+        pads:
+        [
+          SOC_GPO9
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16823,7 +17036,10 @@
         instance: soc_proxy
         port: soc_gpo[10]
         connection: direct
-        pad: SOC_GPO10
+        pads:
+        [
+          SOC_GPO10
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16831,7 +17047,10 @@
         instance: soc_proxy
         port: soc_gpo[11]
         connection: direct
-        pad: SOC_GPO11
+        pads:
+        [
+          SOC_GPO11
+        ]
         desc: ""
         attr: BidirStd
       }
@@ -16839,7 +17058,7 @@
         instance: soc_proxy
         port: soc_gpo[12]
         connection: muxed
-        pad: ""
+        pads: []
         desc: ""
         attr: ""
       }
@@ -16847,7 +17066,7 @@
         instance: soc_proxy
         port: soc_gpo[13]
         connection: muxed
-        pad: ""
+        pads: []
         desc: ""
         attr: ""
       }
@@ -16855,7 +17074,7 @@
         instance: soc_proxy
         port: soc_gpo[14]
         connection: muxed
-        pad: ""
+        pads: []
         desc: ""
         attr: ""
       }
@@ -16863,7 +17082,7 @@
         instance: soc_proxy
         port: soc_gpo[15]
         connection: muxed
-        pad: ""
+        pads: []
         desc: ""
         attr: ""
       }
@@ -16871,7 +17090,7 @@
         instance: otp_macro
         port: test[0]
         connection: muxed
-        pad: ""
+        pads: []
         desc: ""
         attr: ""
       }
@@ -16887,7 +17106,10 @@
         width: 4
         type: inout
         idx: 0
-        pad: SPI_HOST_D0
+        pads:
+        [
+          SPI_HOST_D0
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -16899,7 +17121,10 @@
         width: 4
         type: inout
         idx: 1
-        pad: SPI_HOST_D1
+        pads:
+        [
+          SPI_HOST_D1
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -16911,7 +17136,10 @@
         width: 4
         type: inout
         idx: 2
-        pad: SPI_HOST_D2
+        pads:
+        [
+          SPI_HOST_D2
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -16923,7 +17151,10 @@
         width: 4
         type: inout
         idx: 3
-        pad: SPI_HOST_D3
+        pads:
+        [
+          SPI_HOST_D3
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -16935,7 +17166,10 @@
         width: 4
         type: inout
         idx: 0
-        pad: SPI_DEV_D0
+        pads:
+        [
+          SPI_DEV_D0
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -16947,7 +17181,10 @@
         width: 4
         type: inout
         idx: 1
-        pad: SPI_DEV_D1
+        pads:
+        [
+          SPI_DEV_D1
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -16959,7 +17196,10 @@
         width: 4
         type: inout
         idx: 2
-        pad: SPI_DEV_D2
+        pads:
+        [
+          SPI_DEV_D2
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -16971,7 +17211,10 @@
         width: 4
         type: inout
         idx: 3
-        pad: SPI_DEV_D3
+        pads:
+        [
+          SPI_DEV_D3
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -16983,7 +17226,10 @@
         width: 1
         type: inout
         idx: -1
-        pad: I2C_SCL
+        pads:
+        [
+          I2C_SCL
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -16995,7 +17241,10 @@
         width: 1
         type: inout
         idx: -1
-        pad: I2C_SDA
+        pads:
+        [
+          I2C_SDA
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17007,7 +17256,10 @@
         width: 32
         type: inout
         idx: 0
-        pad: GPIO0
+        pads:
+        [
+          GPIO0
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17019,7 +17271,10 @@
         width: 32
         type: inout
         idx: 1
-        pad: GPIO1
+        pads:
+        [
+          GPIO1
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17031,7 +17286,10 @@
         width: 32
         type: inout
         idx: 2
-        pad: GPIO2
+        pads:
+        [
+          GPIO2
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17043,7 +17301,10 @@
         width: 32
         type: inout
         idx: 3
-        pad: GPIO3
+        pads:
+        [
+          GPIO3
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17055,7 +17316,10 @@
         width: 32
         type: inout
         idx: 4
-        pad: GPIO4
+        pads:
+        [
+          GPIO4
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17067,7 +17331,10 @@
         width: 32
         type: inout
         idx: 5
-        pad: GPIO5
+        pads:
+        [
+          GPIO5
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17079,7 +17346,10 @@
         width: 32
         type: inout
         idx: 6
-        pad: GPIO6
+        pads:
+        [
+          GPIO6
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17091,7 +17361,10 @@
         width: 32
         type: inout
         idx: 7
-        pad: GPIO7
+        pads:
+        [
+          GPIO7
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17103,7 +17376,10 @@
         width: 32
         type: inout
         idx: 8
-        pad: GPIO8
+        pads:
+        [
+          GPIO8
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17115,7 +17391,10 @@
         width: 32
         type: inout
         idx: 9
-        pad: GPIO9
+        pads:
+        [
+          GPIO9
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17127,7 +17406,10 @@
         width: 32
         type: inout
         idx: 10
-        pad: GPIO10
+        pads:
+        [
+          GPIO10
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17139,7 +17421,10 @@
         width: 32
         type: inout
         idx: 11
-        pad: GPIO11
+        pads:
+        [
+          GPIO11
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17151,7 +17436,10 @@
         width: 32
         type: inout
         idx: 12
-        pad: GPIO12
+        pads:
+        [
+          GPIO12
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17163,7 +17451,10 @@
         width: 32
         type: inout
         idx: 13
-        pad: GPIO13
+        pads:
+        [
+          GPIO13
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17175,7 +17466,10 @@
         width: 32
         type: inout
         idx: 14
-        pad: GPIO14
+        pads:
+        [
+          GPIO14
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17187,7 +17481,10 @@
         width: 32
         type: inout
         idx: 15
-        pad: GPIO15
+        pads:
+        [
+          GPIO15
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17199,7 +17496,10 @@
         width: 32
         type: inout
         idx: 16
-        pad: GPIO16
+        pads:
+        [
+          GPIO16
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17211,7 +17511,10 @@
         width: 32
         type: inout
         idx: 17
-        pad: GPIO17
+        pads:
+        [
+          GPIO17
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17223,7 +17526,10 @@
         width: 32
         type: inout
         idx: 18
-        pad: GPIO18
+        pads:
+        [
+          GPIO18
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17235,7 +17541,10 @@
         width: 32
         type: inout
         idx: 19
-        pad: GPIO19
+        pads:
+        [
+          GPIO19
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17247,7 +17556,10 @@
         width: 32
         type: inout
         idx: 20
-        pad: GPIO20
+        pads:
+        [
+          GPIO20
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17259,7 +17571,10 @@
         width: 32
         type: inout
         idx: 21
-        pad: GPIO21
+        pads:
+        [
+          GPIO21
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17271,7 +17586,10 @@
         width: 32
         type: inout
         idx: 22
-        pad: GPIO22
+        pads:
+        [
+          GPIO22
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17283,7 +17601,10 @@
         width: 32
         type: inout
         idx: 23
-        pad: GPIO23
+        pads:
+        [
+          GPIO23
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17295,7 +17616,10 @@
         width: 32
         type: inout
         idx: 24
-        pad: GPIO24
+        pads:
+        [
+          GPIO24
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17307,7 +17631,10 @@
         width: 32
         type: inout
         idx: 25
-        pad: GPIO25
+        pads:
+        [
+          GPIO25
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17319,7 +17646,10 @@
         width: 32
         type: inout
         idx: 26
-        pad: GPIO26
+        pads:
+        [
+          GPIO26
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17331,7 +17661,10 @@
         width: 32
         type: inout
         idx: 27
-        pad: GPIO27
+        pads:
+        [
+          GPIO27
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17343,7 +17676,10 @@
         width: 32
         type: inout
         idx: 28
-        pad: GPIO28
+        pads:
+        [
+          GPIO28
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17355,7 +17691,10 @@
         width: 32
         type: inout
         idx: 29
-        pad: GPIO29
+        pads:
+        [
+          GPIO29
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17367,7 +17706,10 @@
         width: 32
         type: inout
         idx: 30
-        pad: GPIO30
+        pads:
+        [
+          GPIO30
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17379,7 +17721,10 @@
         width: 32
         type: inout
         idx: 31
-        pad: GPIO31
+        pads:
+        [
+          GPIO31
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17391,7 +17736,10 @@
         width: 1
         type: input
         idx: -1
-        pad: SPI_DEV_CLK
+        pads:
+        [
+          SPI_DEV_CLK
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17403,7 +17751,10 @@
         width: 1
         type: input
         idx: -1
-        pad: SPI_DEV_CS_L
+        pads:
+        [
+          SPI_DEV_CS_L
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17415,7 +17766,10 @@
         width: 1
         type: input
         idx: -1
-        pad: SPI_DEV_TPM_CS_L
+        pads:
+        [
+          SPI_DEV_TPM_CS_L
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17427,7 +17781,10 @@
         width: 1
         type: input
         idx: -1
-        pad: UART_RX
+        pads:
+        [
+          UART_RX
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17439,7 +17796,10 @@
         width: 16
         type: input
         idx: 0
-        pad: SOC_GPI0
+        pads:
+        [
+          SOC_GPI0
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17451,7 +17811,10 @@
         width: 16
         type: input
         idx: 1
-        pad: SOC_GPI1
+        pads:
+        [
+          SOC_GPI1
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17463,7 +17826,10 @@
         width: 16
         type: input
         idx: 2
-        pad: SOC_GPI2
+        pads:
+        [
+          SOC_GPI2
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17475,7 +17841,10 @@
         width: 16
         type: input
         idx: 3
-        pad: SOC_GPI3
+        pads:
+        [
+          SOC_GPI3
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17487,7 +17856,10 @@
         width: 16
         type: input
         idx: 4
-        pad: SOC_GPI4
+        pads:
+        [
+          SOC_GPI4
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17499,7 +17871,10 @@
         width: 16
         type: input
         idx: 5
-        pad: SOC_GPI5
+        pads:
+        [
+          SOC_GPI5
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17511,7 +17886,10 @@
         width: 16
         type: input
         idx: 6
-        pad: SOC_GPI6
+        pads:
+        [
+          SOC_GPI6
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17523,7 +17901,10 @@
         width: 16
         type: input
         idx: 7
-        pad: SOC_GPI7
+        pads:
+        [
+          SOC_GPI7
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17535,7 +17916,10 @@
         width: 16
         type: input
         idx: 8
-        pad: SOC_GPI8
+        pads:
+        [
+          SOC_GPI8
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17547,7 +17931,10 @@
         width: 16
         type: input
         idx: 9
-        pad: SOC_GPI9
+        pads:
+        [
+          SOC_GPI9
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17559,7 +17946,10 @@
         width: 16
         type: input
         idx: 10
-        pad: SOC_GPI10
+        pads:
+        [
+          SOC_GPI10
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17571,7 +17961,10 @@
         width: 16
         type: input
         idx: 11
-        pad: SOC_GPI11
+        pads:
+        [
+          SOC_GPI11
+        ]
         attr: InputStd
         connection: direct
         desc: ""
@@ -17583,7 +17976,7 @@
         width: 16
         type: input
         idx: 12
-        pad: ""
+        pads: []
         attr: ""
         connection: muxed
         desc: ""
@@ -17595,7 +17988,7 @@
         width: 16
         type: input
         idx: 13
-        pad: ""
+        pads: []
         attr: ""
         connection: muxed
         desc: ""
@@ -17607,7 +18000,7 @@
         width: 16
         type: input
         idx: 14
-        pad: ""
+        pads: []
         attr: ""
         connection: muxed
         desc: ""
@@ -17619,7 +18012,7 @@
         width: 16
         type: input
         idx: 15
-        pad: ""
+        pads: []
         attr: ""
         connection: muxed
         desc: ""
@@ -17631,7 +18024,10 @@
         width: 1
         type: output
         idx: -1
-        pad: SPI_HOST_CLK
+        pads:
+        [
+          SPI_HOST_CLK
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17643,7 +18039,10 @@
         width: 1
         type: output
         idx: -1
-        pad: SPI_HOST_CS_L
+        pads:
+        [
+          SPI_HOST_CS_L
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17655,7 +18054,10 @@
         width: 1
         type: output
         idx: -1
-        pad: UART_TX
+        pads:
+        [
+          UART_TX
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17667,7 +18069,10 @@
         width: 16
         type: output
         idx: 0
-        pad: SOC_GPO0
+        pads:
+        [
+          SOC_GPO0
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17679,7 +18084,10 @@
         width: 16
         type: output
         idx: 1
-        pad: SOC_GPO1
+        pads:
+        [
+          SOC_GPO1
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17691,7 +18099,10 @@
         width: 16
         type: output
         idx: 2
-        pad: SOC_GPO2
+        pads:
+        [
+          SOC_GPO2
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17703,7 +18114,10 @@
         width: 16
         type: output
         idx: 3
-        pad: SOC_GPO3
+        pads:
+        [
+          SOC_GPO3
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17715,7 +18129,10 @@
         width: 16
         type: output
         idx: 4
-        pad: SOC_GPO4
+        pads:
+        [
+          SOC_GPO4
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17727,7 +18144,10 @@
         width: 16
         type: output
         idx: 5
-        pad: SOC_GPO5
+        pads:
+        [
+          SOC_GPO5
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17739,7 +18159,10 @@
         width: 16
         type: output
         idx: 6
-        pad: SOC_GPO6
+        pads:
+        [
+          SOC_GPO6
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17751,7 +18174,10 @@
         width: 16
         type: output
         idx: 7
-        pad: SOC_GPO7
+        pads:
+        [
+          SOC_GPO7
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17763,7 +18189,10 @@
         width: 16
         type: output
         idx: 8
-        pad: SOC_GPO8
+        pads:
+        [
+          SOC_GPO8
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17775,7 +18204,10 @@
         width: 16
         type: output
         idx: 9
-        pad: SOC_GPO9
+        pads:
+        [
+          SOC_GPO9
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17787,7 +18219,10 @@
         width: 16
         type: output
         idx: 10
-        pad: SOC_GPO10
+        pads:
+        [
+          SOC_GPO10
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17799,7 +18234,10 @@
         width: 16
         type: output
         idx: 11
-        pad: SOC_GPO11
+        pads:
+        [
+          SOC_GPO11
+        ]
         attr: BidirStd
         connection: direct
         desc: ""
@@ -17811,7 +18249,7 @@
         width: 16
         type: output
         idx: 12
-        pad: ""
+        pads: []
         attr: ""
         connection: muxed
         desc: ""
@@ -17823,7 +18261,7 @@
         width: 16
         type: output
         idx: 13
-        pad: ""
+        pads: []
         attr: ""
         connection: muxed
         desc: ""
@@ -17835,7 +18273,7 @@
         width: 16
         type: output
         idx: 14
-        pad: ""
+        pads: []
         attr: ""
         connection: muxed
         desc: ""
@@ -17847,7 +18285,7 @@
         width: 16
         type: output
         idx: 15
-        pad: ""
+        pads: []
         attr: ""
         connection: muxed
         desc: ""
@@ -17859,7 +18297,7 @@
         width: 8
         type: output
         idx: 0
-        pad: ""
+        pads: []
         attr: ""
         connection: muxed
         desc: ""

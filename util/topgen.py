@@ -477,7 +477,8 @@ def _gen_pad_attr_resvals(
     dio_attrs = []
     pads = {pad['name']: pad for pad in top['pinout']['pads']}
     for io in dios:
-        pad = pads.get(io['pad']) if io['connection'] == 'direct' else None
+        # Invalid pads lists are reported by validate.
+        pad = pads.get(io['pads'][0]) if io['connection'] == 'direct' and io['pads'] else None
         dio_attrs.append((pad['name'], pad.get('attrs', {})) if pad else (io['name'], {}))
 
     return mio_attrs, dio_attrs

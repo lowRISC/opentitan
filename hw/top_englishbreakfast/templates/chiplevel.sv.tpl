@@ -25,7 +25,7 @@ ast = lib.get_module_by_name(top, "ast")
 def get_dio_sig(pinmux: {}, pad: {}):
   '''Get DIO signal associated with this pad or return None'''
   for sig in pinmux["ios"]:
-    if sig["connection"] == "direct" and pad["name"] == sig["pad"]:
+    if sig["connection"] == "direct" and pad["name"] in sig["pads"]:
       return sig
   else:
     return None
@@ -182,8 +182,8 @@ module chip_${top["name"]}_${target["name"]} #(
   scan_roles = []
   for sig in list(reversed(top["pinmux"]["ios"])):
     if sig["connection"] != "muxed":
-      if (len(sig['pad']) > 0) and (target["name"] != "cw305"):
-        scan_string = lib.Name.from_snake_case('dio_pad_' + sig['pad'] + '_scan_role')
+      if (len(sig['pads']) > 0) and (target["name"] != "cw305"):
+        scan_string = lib.Name.from_snake_case('dio_pad_' + sig['pads'][0] + '_scan_role')
         scan_roles.append((f'scan_role_pkg::{scan_string.as_camel_case()}', sig['name']))
       else:
         scan_roles.append(('NoScan', sig['name']))
