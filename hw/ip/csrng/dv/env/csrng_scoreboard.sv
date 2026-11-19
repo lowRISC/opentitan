@@ -550,6 +550,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
 
   function void ctr_drbg_generate(uint app,
                                   bit [11:0] glen,
+                                  bit [3:0] clen,
                                   bit [CSRNG_BUS_WIDTH-1:0] additional_input = 'h0);
 
     bit [GENBITS_BUS_WIDTH-1:0]   genbits, hw_genbits;
@@ -568,7 +569,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
     end else if (cfg.reseed_counter[app] == `gmv(ral.reseed_interval)) begin
       cmd_sts[app] = CMD_STS_RESEED_CNT_EXCEEDED;
     end
-    if (additional_input) begin
+    if (clen != 0) begin
       ctr_drbg_update(app, additional_input);
     end
     for (int i = 0; i < glen; i++) begin
@@ -672,7 +673,7 @@ class csrng_scoreboard extends cip_base_scoreboard #(
           end
         end
         GEN: begin
-          ctr_drbg_generate(app, cs_item[app].glen, cs_data[app]);
+          ctr_drbg_generate(app, cs_item[app].glen, cs_item[app].clen, cs_data[app]);
           for (int i = 0; i < cs_item[app].glen; i++) begin
             `DV_CHECK_EQ_FATAL(cs_item[app].genbits_q[i], prd_genbits_q[app][i])
             // Check if the FIPS compliance bit is set correctly.
