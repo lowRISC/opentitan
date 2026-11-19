@@ -1,0 +1,36 @@
+diff --git a/03_reference/security.rst b/03_reference/security.rst
+index d74d4aafa2..68a23aebf9 100644
+--- a/03_reference/security.rst
++++ b/03_reference/security.rst
+@@ -75,7 +75,7 @@ The shadow core executes using a delayed version of all inputs supplied to the m
+ All outputs of the shadow core are compared against a delayed version of the outputs of the main core.
+ Any mismatch between the two sets of outputs will trigger an internal major alert.
+ 
+-Note that the register file and icache RAMs are not duplicated since these units are covered by ECC protection.
++Note that the register file and icache RAMs are not duplicated since these units are covered by other countermeasures.
+ 
+ Bus integrity checking
+ ----------------------
+@@ -100,10 +100,21 @@ No attempt is made to correct detected errors, but an internal major alert is si
+ ICache ECC
+ ----------
+ 
+-The ICache can be configured with ECC protection.
++When Ibex is configured with the SecureIbex parameter, the data and tag banks are not duplicated in the dual core lockstep to save area.
++Instead, ECC protection is added to the ICache.
+ When an ECC error is detected a minor alert is signaled.
+ See :ref:`icache-ecc` for more information.
+ 
++ICache Tweak Infection
++----------
++
++In addition to the ICache ECC, SecureIbex also uses a tweak infection based countermeasure.
++After computing the ECC and before writing to the data or tag banks, the ICache XORs a tweak to the data.
++When reading back from those banks, the tweak is un-XORed before checking the ECC.
++The tweak for the data bank consists of the data address without the `IC_LINE_W` LSBs.
++For the tag tweak, the tag index is used.
++This technique establishes a link in the bank memories between data and address.
++
+ Hardened PC
+ -----------
+ 

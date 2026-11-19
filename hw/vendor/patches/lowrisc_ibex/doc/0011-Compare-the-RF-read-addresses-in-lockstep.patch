@@ -1,11 +1,11 @@
 diff --git a/03_reference/security.rst b/03_reference/security.rst
-index d2d07efc9c..ef9496bc95 100644
+index 64f5e710fc..776fd6efd4 100644
 --- a/03_reference/security.rst
 +++ b/03_reference/security.rst
-@@ -80,8 +80,8 @@ Register file ECC
- -----------------
- 
- When Ibex is configured with the SecureIbex parameter, ECC checking is added to all reads of the register file.
+@@ -94,8 +94,8 @@ Instead, two instances of the register file are used.
+ The first instance is driven by the main core and holds the data itself.
+ The second instance is driven by the shadow core and holds the corresponding ECC.
+ ECC checking is conducted inside the shadow core.
 -In addition, the register file write port (write address, write enable, and write data) of the main core is compared against the one of the shadow core in the dual core lockstep.
 -Relying on the ECC check alone would miss a faulty result whose check bits happen to match those of the correct result, e.g., a bitwise inverted result.
 +In addition, the register file read addresses and write port (write address, write enable, and write data) of the main core are compared against the ones of the shadow core in the dual core lockstep.
