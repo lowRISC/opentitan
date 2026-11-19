@@ -68,11 +68,8 @@ typedef struct otcrypto_interface_t {
   // Key utilities
   otcrypto_status_t (*symmetric_keygen)(const otcrypto_const_byte_buf_t *,
                                         otcrypto_blinded_key_t *);
-  otcrypto_status_t (*hw_backed_key)(uint32_t, const uint32_t salt[7],
+  otcrypto_status_t (*hw_backed_key)(uint32_t, const uint32_t salt[8],
                                      otcrypto_blinded_key_t *);
-  otcrypto_status_t (*hw_backed_attestation_key)(uint32_t,
-                                                 const uint32_t salt[8],
-                                                 otcrypto_blinded_key_t *);
   otcrypto_status_t (*hw_backed_keygen)(hardened_bool_t,
                                         otcrypto_blinded_key_t *);
   otcrypto_status_t (*wrapped_key_len)(const otcrypto_key_config_t, size_t *);

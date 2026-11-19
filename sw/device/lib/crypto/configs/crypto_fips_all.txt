@@ -26,7 +26,6 @@ otcrypto_check_const_word32_buf
 otcrypto_integrity_check
 otcrypto_symmetric_keygen
 otcrypto_hw_backed_key
-otcrypto_hw_backed_attestation_key
 otcrypto_hw_backed_keygen
 otcrypto_import_blinded_key
 otcrypto_export_blinded_key

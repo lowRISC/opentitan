@@ -97,8 +97,7 @@ static inline status_t gcm_context_restore(otcrypto_aes_gcm_context_t *api_ctx,
  * @return Result of the operation.
  */
 status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
-  HARDENED_CHECK_LE(internal_ctx->key_len,
-                    ARRAYSIZE(internal_ctx->key_shares[0]));
+  HARDENED_CHECK_LE(internal_ctx->key_len, kAesGcmMaxKeyWords);
   aes_key_t key = aes_gcm_context_key(internal_ctx);
   HARDENED_CHECK_EQ(aes_key_integrity_checksum_check(&key), kHardenedBoolTrue);
 
@@ -106,13 +105,13 @@ status_t gcm_remask_key(aes_gcm_context_t *internal_ctx) {
     HARDENED_CHECK_EQ(internal_ctx->sideload, kHardenedBoolFalse);
 
     // Generate a fresh mask the size of one share.
-    uint32_t mask[ARRAYSIZE(internal_ctx->key_shares[0])];
+    uint32_t mask[kAesGcmMaxKeyWords];
     hardened_memshred(mask, internal_ctx->key_len);
 
     // XOR each share with the mask.
-    hardened_xor_in_place(internal_ctx->key_shares[0], mask,
+    hardened_xor_in_place(&internal_ctx->key_shares[0], mask,
                           internal_ctx->key_len);
-    hardened_xor_in_place(internal_ctx->key_shares[1], mask,
+    hardened_xor_in_place(&internal_ctx->key_shares[kAesGcmMaxKeyWords], mask,
                           internal_ctx->key_len);
     // Update the checksum.
     key = aes_gcm_context_key(internal_ctx);

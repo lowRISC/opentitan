@@ -8,6 +8,7 @@
 #include "sw/device/lib/crypto/include/datatypes.h"
 #include "sw/device/lib/crypto/include/entropy_src.h"
 #include "sw/device/lib/crypto/include/integrity.h"
+#include "sw/device/lib/crypto/include/key_transport.h"
 #include "sw/device/lib/crypto/include/kmac.h"
 #include "sw/device/lib/crypto/include/sha3.h"
 #include "sw/device/lib/runtime/log.h"
@@ -39,6 +40,8 @@ typedef struct kmac_test_vector {
   kmac_test_operation_t test_operation;
   size_t security_strength;
   otcrypto_blinded_key_t key;
+  uint32_t key_version;
+  uint32_t key_salt[8];
   otcrypto_const_byte_buf_t input_msg;
   otcrypto_const_byte_buf_t func_name;
   otcrypto_const_byte_buf_t cust_str;
@@ -61,18 +64,20 @@ static kmac_test_vector_t kKmacTestVectors[] = {
                         .exportable = kHardenedBoolFalse,
                         .security_level = kOtcryptoKeySecurityLevelLow,
                     },
-                .keyblob_length = 32,
-                .keyblob =
-                    (uint32_t[]){
-                        0x00000000,
-                        0x47464544,
-                        0x4b4a4948,
-                        0x4f4e4d4c,
-                        0x53525150,
-                        0x57565554,
-                        0x5b5a5958,
-                        0x5f5e5d5c,
-                    },
+                .keyblob_length = 36,
+                .keyblob = (uint32_t[9]){0},
+            },
+        .key_version = 0x00000000,
+        .key_salt =
+            {
+                0x47464544,
+                0x4b4a4948,
+                0x4f4e4d4c,
+                0x53525150,
+                0x57565554,
+                0x5b5a5958,
+                0x5f5e5d5c,
+                0x63626160,
             },
         .input_msg =
             {
@@ -116,18 +121,20 @@ static kmac_test_vector_t kKmacTestVectors[] = {
                         .exportable = kHardenedBoolFalse,
                         .security_level = kOtcryptoKeySecurityLevelMedium,
                     },
-                .keyblob_length = 32,
-                .keyblob =
-                    (uint32_t[]){
-                        0x00000000,
-                        0x11111111,
-                        0x4b4a4948,
-                        0x4f4e4d4c,
-                        0x53525150,
-                        0x57565554,
-                        0x5b5a5958,
-                        0xffffffff,
-                    },
+                .keyblob_length = 36,
+                .keyblob = (uint32_t[9]){0},
+            },
+        .key_version = 0x00000000,
+        .key_salt =
+            {
+                0x11111111,
+                0x4b4a4948,
+                0x4f4e4d4c,
+                0x53525150,
+                0x57565554,
+                0x5b5a5958,
+                0xffffffff,
+                0x63626160,
             },
         .input_msg =
             {
@@ -195,18 +202,20 @@ static kmac_test_vector_t kKmacTestVectors[] = {
                         .exportable = kHardenedBoolFalse,
                         .security_level = kOtcryptoKeySecurityLevelHigh,
                     },
-                .keyblob_length = 32,
-                .keyblob =
-                    (uint32_t[]){
-                        0x00000000,
-                        0x00000000,
-                        0x00000000,
-                        0x00000000,
-                        0x00000000,
-                        0x00000000,
-                        0x00000000,
-                        0x0000000f,
-                    },
+                .keyblob_length = 36,
+                .keyblob = (uint32_t[9]){0},
+            },
+        .key_version = 0x00000000,
+        .key_salt =
+            {
+                0x00000000,
+                0x00000000,
+                0x00000000,
+                0x00000000,
+                0x00000000,
+                0x00000000,
+                0x0000000f,
+                0x000000f0,
             },
         .input_msg =
             {
@@ -280,8 +289,9 @@ static status_t run_test_vector(void) {
 
   *(otcrypto_lib_version_t *)&current_test_vector->key.config.version =
       otcrypto_lib_version();
-  current_test_vector->key.checksum =
-      otcrypto_integrity_blinded_checksum(&current_test_vector->key);
+  TRY(otcrypto_hw_backed_key(current_test_vector->key_version,
+                             current_test_vector->key_salt,
+                             &current_test_vector->key));
 
   otcrypto_word32_buf_t tag_buf1 =
       OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, digest1, ARRAYSIZE(digest1));
