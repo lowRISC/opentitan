@@ -710,6 +710,7 @@ rom_error_t dice_mldsa_uds_pubkey_populate_impl(
 rom_error_t dice_attest_cdi_0(keymgr_binding_value_t *rom_ext_measurement,
                               const manifest_t *rom_ext_manifest) {
   watchdog_bite_threshold_set(kWdogMinBiteThreshold);
+  SEC_MMIO_WRITE_INCREMENT(kWatchdogSecMmioSetBiteThreshold);
   retention_sram_t *retram = retention_sram_get();
   dice_cert_gen_msg_t *msg = &retram->creator.dice_cert_gen;
   HARDENED_RETURN_IF_ERROR(dice_chain_init());
