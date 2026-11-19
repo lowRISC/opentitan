@@ -98,4 +98,10 @@ _imm_section_start_boot:
    */
   tail imm_section_main
 
+  unimp
+  unimp
+  unimp
+  unimp
+  unimp
+
   .size _imm_section_start_boot, .-_imm_section_start_boot
