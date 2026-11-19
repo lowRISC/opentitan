@@ -179,6 +179,12 @@ otp_json(
                 # value. Since our attestation scheme is not finalized, we keep
                 # this unprovisioned (disabled).
                 "OWNER_SW_CFG_ROM_KEYMGR_OTP_MEAS_EN": otp_hex(0x0),
+                # Set to `CONST.HARDENED_TRUE` to select OTBN (HKDF) instead of
+                # KMAC as keymgr_dpe KDF engine.
+                "OWNER_SW_CFG_ROM_KEYMGR_KDF_ENGINE_SELECTION": otp_hex(CONST.HARDENED_FALSE),
+                # Leave the keymgr_dpe KDF engine selection unlocked. Any other
+                # value locks it in the ROM.
+                "OWNER_SW_CFG_ROM_KEYMGR_KDF_ENGINE_SELECTION_REGWEN": otp_hex(CONST.HARDENED_FALSE),
                 "OWNER_SW_CFG_MANUF_STATE": otp_hex(0x0),
                 "OWNER_SW_CFG_ROM_RSTMGR_INFO_EN": otp_hex(0x0),
                 # Disable ROM_EXT recovery feature.

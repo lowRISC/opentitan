@@ -292,6 +292,22 @@ void sc_keymgr_dpe_kdf_engine_set(sc_keymgr_dpe_kdf_engine_t engine) {
 }
 
 /**
+ * Verifies the KDF engine selection of the key manager dpe.
+ */
+rom_error_t sc_keymgr_dpe_kdf_engine_check(
+    sc_keymgr_dpe_kdf_engine_t expected_engine) {
+  uint32_t engine = bitfield_field32_read(
+      abs_mmio_read32(sc_keymgr_dpe_base() +
+                      KEYMGR_DPE_KDF_ENGINE_SHADOWED_REG_OFFSET),
+      KEYMGR_DPE_KDF_ENGINE_SHADOWED_SEL_FIELD);
+  if (launder32(engine) != expected_engine) {
+    return kErrorKeymgrInternal;
+  }
+  HARDENED_CHECK_EQ(engine, expected_engine);
+  return kErrorOk;
+}
+
+/**
  * Locks the KDF engine selection until the next reset.
  */
 void sc_keymgr_dpe_kdf_engine_lock(void) {

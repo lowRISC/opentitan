@@ -30,6 +30,16 @@
                     value: "0x0",
                 },
                 {
+                    name: "OWNER_SW_CFG_ROM_KEYMGR_KDF_ENGINE_SELECTION",
+                    // Select KMAC as keymgr_dpe KDF engine (kHardenedBoolFalse).
+                    value: "0x1d4",
+                },
+                {
+                    name: "OWNER_SW_CFG_ROM_KEYMGR_KDF_ENGINE_SELECTION_REGWEN",
+                    // Leave the KDF engine selection unlocked (kHardenedBoolFalse).
+                    value: "0x1d4",
+                },
+                {
                     name: "OWNER_SW_CFG_ROM_ALERT_CLASS_EN"
                     // Set the enables to kAlertEnableNone.
                     // See `alert_enable_t`
