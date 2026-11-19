@@ -27,13 +27,16 @@ static const uint32_t kKeyVersion = 0x0;
 static const uint32_t kKeymgrDpeSrcSlot = kCreatorRootKeyParams.slot_dst_sel;
 
 // Two distinct key salts for testing.
-static const uint32_t kKeySalt1[7] = {
+// Callers migrating from the previous 7-word `otcrypto_hw_backed_key` API can
+// preserve previously derived keys by setting `salt[7]` to `0` (since
+// `key.config.key_mode` is XORed into `salt[7]`), as shown in `kKeySalt1`.
+static const uint32_t kKeySalt1[8] = {
     0x00112233, 0x44556677, 0x8899aabb, 0xccddeeff,
-    0x00010203, 0x04050607, 0x08090a0b,
+    0x00010203, 0x04050607, 0x08090a0b, 0x00000000,
 };
-static const uint32_t kKeySalt2[7] = {
+static const uint32_t kKeySalt2[8] = {
     0x00010203, 0x04050607, 0x08090a0b, 0x0c0d0e0f,
-    0x00112233, 0x44556677, 0x8899aabb,
+    0x00112233, 0x44556677, 0x8899aabb, 0xccddeeff,
 };
 
 // Indicates a sideloaded 256-bit AES-CTR key.
@@ -71,10 +74,10 @@ static const uint32_t kAesPlaintextBlock[4] = {0};
  * @return OK or error.
  */
 static status_t run_aes(otcrypto_aes_operation_t operation,
-                        const uint32_t salt[7], const uint32_t *input,
+                        const uint32_t salt[8], const uint32_t *input,
                         uint32_t *output) {
   // Construct the key.
-  uint32_t keyblob[8];
+  uint32_t keyblob[9];
   otcrypto_blinded_key_t key = {
       .config = kAesKeyConfig,
       .keyblob_length = sizeof(keyblob),

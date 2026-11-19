@@ -272,6 +272,7 @@ status_t test_fips_state_and_param_checks(void) {
             "Expected 64-bit AES-GCM tag length to be rejected in FIPS mode.");
 
   // 4b. ECDSA P-256 DICE sign with non-approved hash mode (SHAKE128).
+  uint32_t p256_keyblob[9] = {0};
   otcrypto_blinded_key_t p256_key = {
       .config =
           {
@@ -281,10 +282,10 @@ status_t test_fips_state_and_param_checks(void) {
               .hw_backed = kHardenedBoolTrue,
               .security_level = kOtcryptoKeySecurityLevelLow,
           },
-      .keyblob_length = 32,
-      .keyblob = dummy_words,
+      .keyblob_length = sizeof(p256_keyblob),
+      .keyblob = p256_keyblob,
   };
-  p256_key.checksum = otcrypto_integrity_blinded_checksum(&p256_key);
+  TRY(otcrypto_hw_backed_key(0, dummy_words, &p256_key));
   otcrypto_hash_digest_t bad_p256_digest = {
       .mode = kOtcryptoHashXofModeShake128,
       .data = dummy_words,

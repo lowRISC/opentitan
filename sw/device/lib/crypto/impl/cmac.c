@@ -21,9 +21,14 @@
 /**
  * Internal CMAC context.
  */
+enum {
+  kCmacMaxKeyWords = 8,
+};
+
 typedef struct {
-  uint32_t key_share0[8];
-  uint32_t key_share1[8];
+  // Share 0 at [0..7], share 1 at [8..15], or a hardware-backed keyblob at
+  // [0..kKeyblobHwBackedWords - 1] when sideloaded.
+  uint32_t key_shares[2 * kCmacMaxKeyWords];
   uint32_t key_len_words;
   hardened_bool_t sideload;
   uint32_t keymgr_dpe_slot_idx;
@@ -130,7 +135,7 @@ static status_t build_aes_key(const cmac_ctx_t *ctx, aes_key_t *aes_key) {
     HARDENED_CHECK_EQ(ctx->sideload, kHardenedBoolTrue);
     keymgr_dpe_diversification_t diversification;
     HARDENED_TRY(keyblob_buffer_to_keymgr_dpe_diversification(
-        ctx->key_share0, ctx->keymgr_dpe_slot_idx, kOtcryptoKeyModeAesCmac,
+        ctx->key_shares, ctx->keymgr_dpe_slot_idx, kOtcryptoKeyModeAesCmac,
         &diversification));
     HARDENED_TRY(keymgr_dpe_sideload_clear_aes());
     HARDENED_TRY(keymgr_dpe_generate_key_aes(diversification));
@@ -138,8 +143,8 @@ static status_t build_aes_key(const cmac_ctx_t *ctx, aes_key_t *aes_key) {
     aes_key->key_shares[1] = NULL;
   } else if (launder32(ctx->sideload) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(ctx->sideload, kHardenedBoolFalse);
-    aes_key->key_shares[0] = (uint32_t *)ctx->key_share0;
-    aes_key->key_shares[1] = (uint32_t *)ctx->key_share1;
+    aes_key->key_shares[0] = (uint32_t *)&ctx->key_shares[0];
+    aes_key->key_shares[1] = (uint32_t *)&ctx->key_shares[kCmacMaxKeyWords];
   } else {
     // COVERAGE (FI CM) Unreachable unless ctx->sideload was corrupted after
     // cmac_key_construct.
@@ -157,13 +162,11 @@ static status_t cmac_key_construct(const otcrypto_blinded_key_t *key,
   ctx->sideload = key->config.hw_backed;
   ctx->key_len_words = keyblob_share_num_words(key->config);
   ctx->keymgr_dpe_slot_idx = key->config.keymgr_dpe_slot_idx;
-  if (ctx->key_len_words == 0 ||
-      ctx->key_len_words > ARRAYSIZE(ctx->key_share0)) {
+  if (ctx->key_len_words == 0 || ctx->key_len_words > kCmacMaxKeyWords) {
     return OTCRYPTO_BAD_ARGS;
   }
 
-  hardened_memshred(ctx->key_share0, ARRAYSIZE(ctx->key_share0));
-  hardened_memshred(ctx->key_share1, ARRAYSIZE(ctx->key_share1));
+  hardened_memshred(ctx->key_shares, ARRAYSIZE(ctx->key_shares));
 
   if (launder32(ctx->sideload) == kHardenedBoolTrue) {
     // COVERAGE (MISSING) Sideloaded keys for CMAC are not covered.
@@ -172,15 +175,19 @@ static status_t cmac_key_construct(const otcrypto_blinded_key_t *key,
     if (key->keyblob_length != kKeyblobHwBackedBytes) {
       return OTCRYPTO_BAD_ARGS;
     }
+    static_assert(kKeyblobHwBackedWords <= ARRAYSIZE(ctx->key_shares),
+                  "key_shares must fit a hardware-backed keyblob");
     HARDENED_TRY(
-        hardened_memcpy(ctx->key_share0, key->keyblob, kKeyblobHwBackedWords));
+        hardened_memcpy(ctx->key_shares, key->keyblob, kKeyblobHwBackedWords));
   } else if (launder32(ctx->sideload) == kHardenedBoolFalse) {
     HARDENED_CHECK_EQ(ctx->sideload, kHardenedBoolFalse);
     uint32_t *share0;
     uint32_t *share1;
     HARDENED_TRY(keyblob_to_shares(key, &share0, &share1));
-    HARDENED_TRY(hardened_memcpy(ctx->key_share0, share0, ctx->key_len_words));
-    HARDENED_TRY(hardened_memcpy(ctx->key_share1, share1, ctx->key_len_words));
+    HARDENED_TRY(
+        hardened_memcpy(&ctx->key_shares[0], share0, ctx->key_len_words));
+    HARDENED_TRY(hardened_memcpy(&ctx->key_shares[kCmacMaxKeyWords], share1,
+                                 ctx->key_len_words));
   } else {
     // COVERAGE (MISSING) Invalid hw_backed value in CMAC key is not covered.
     return OTCRYPTO_BAD_ARGS;
