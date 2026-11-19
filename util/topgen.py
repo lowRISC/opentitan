@@ -468,6 +468,8 @@ def _gen_mio_periphs(top: ConfigT) -> Tuple[List[Dict], List[Dict]]:
     the legal select masks from them."""
 
     pinmux = top["pinmux"]
+    mio_pad_idx = {pad['name']: pad['idx'] for pad in top['pinout']['pads']
+                   if pad['connection'] == 'muxed'}
 
     mio_periph_ins = []
     mio_periph_outs = []
@@ -475,8 +477,9 @@ def _gen_mio_periphs(top: ConfigT) -> Tuple[List[Dict], List[Dict]]:
         if io['connection'] != 'muxed':
             continue
 
-        # Only the full muxing is supported for now, an empty list means all MIO pads.
-        pads = []
+        # An empty list means all MIO pads. Non-muxable pads are not supported. Such a
+        # misconfiguration is reported by validate, skip them here.
+        pads = [mio_pad_idx[pad] for pad in io['pads'] if pad in mio_pad_idx]
 
         name = io['name'] + (f"[{io['idx']}]" if io['idx'] >= 0 else '')
         # io type is view from peripheral (hjson).

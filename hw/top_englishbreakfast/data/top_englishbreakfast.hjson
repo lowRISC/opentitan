@@ -980,8 +980,15 @@
     //
     // - pads: Required list of pad names. The content depends on the connection type:
     //         direct: Exactly one entry, the direct pad this signal is connected to.
-    //         manual: Must be an empty list.
-    //         muxed:  Must be an empty list. The signal can be muxed to all muxed pads.
+    //         manual: No meaning. Must be an empty list.
+    //         muxed:  Restricts the muxing to the listed muxed pads. An empty list means that the
+    //                 signal can be muxed to all muxed pads and all pads can be muxed to this
+    //                 signal. The muxing constraint also depends on the direction of the signal:
+    //                 - Input:  defines the pads this signal can select (INSEL).
+    //                 - Output: defines the pads that can select this signal (OUTSEL).
+    //                 - Inout:  defines both directions at once.
+    //
+    //                 If 'port' is empty, the list applies to all ports of the instance.
     //
     // Depending on the connection type specified, each entry may have the following optional keys:
     //
