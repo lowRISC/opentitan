@@ -959,7 +959,7 @@
 
   pinmux: {
     // Signal to pinmux/pad mapping.
-    // Each entry in the list below must have the following two mandatory keys:
+    // Each entry in the list below must have the following three mandatory keys:
     //
     // - instance: This is the comportable IO instance name where the IO signal comes from.
     //
@@ -967,15 +967,21 @@
     //               can have either of the following values:
     //
     //               1) 'direct': This is a dedicated IO signal that is directly connected to a pad.
-    //                            Such an IO signal must also specify the 'port' and 'pad' keys
-    //                            (see further below).
+    //                            Such an IO signal must also specify the 'port' key and exactly
+    //                            one pad in 'pads' (see further below).
     //
     //               2) 'manual': This is a dedicated IO signal that is not directly connected to a pad.
     //                            It needs to be manually wired up in the template.
-    //                            Such an IO signal may have a 'port' key, but no 'pad' key.
+    //                            Such an IO signal may have a 'port' key and must have an empty
+    //                            'pads'.
     //
     //               3) 'muxed': This is a muxed IO signal that will be connected to the pinmux.
-    //                           Such an IO signal may have a 'port' key, but no 'pad' key.
+    //                           Such an IO signal may have a 'port' key.
+    //
+    // - pads: Required list of pad names. The content depends on the connection type:
+    //         direct: Exactly one entry, the direct pad this signal is connected to.
+    //         manual: Must be an empty list.
+    //         muxed:  Must be an empty list. The signal can be muxed to all muxed pads.
     //
     // Depending on the connection type specified, each entry may have the following optional keys:
     //
@@ -984,9 +990,6 @@
     //         Individual signals of a bus IO signal must be indexed with square brackets, e.g. mybus[1].
     //         Not specifying this key or setting it to an empty string acts as a wild card
     //         and includes all available IOs of this instance.
-    //
-    // - pad: Name of the pad the 'direct' connection should connect to.
-    //        This is not required for 'muxed' and 'manual' connections.
     //
     // - desc: Optional description field.
     //
@@ -997,28 +1000,28 @@
     //
     signals: [
       // SPI Host0
-      { instance: 'spi_host0',       port: 'sck',   connection: 'direct', pad: 'SPI_HOST_CLK' , desc: ''},
-      { instance: 'spi_host0',       port: 'csb',   connection: 'direct', pad: 'SPI_HOST_CS_L', desc: ''},
-      { instance: 'spi_host0',       port: 'sd[0]', connection: 'direct', pad: 'SPI_HOST_D0'  , desc: ''},
-      { instance: 'spi_host0',       port: 'sd[1]', connection: 'direct', pad: 'SPI_HOST_D1'  , desc: ''},
-      { instance: 'spi_host0',       port: 'sd[2]', connection: 'direct', pad: 'SPI_HOST_D2'  , desc: ''},
-      { instance: 'spi_host0',       port: 'sd[3]', connection: 'direct', pad: 'SPI_HOST_D3'  , desc: ''},
+      { instance: 'spi_host0',       port: 'sck',   connection: 'direct', pads: ['SPI_HOST_CLK']  , desc: ''},
+      { instance: 'spi_host0',       port: 'csb',   connection: 'direct', pads: ['SPI_HOST_CS_L'] , desc: ''},
+      { instance: 'spi_host0',       port: 'sd[0]', connection: 'direct', pads: ['SPI_HOST_D0']   , desc: ''},
+      { instance: 'spi_host0',       port: 'sd[1]', connection: 'direct', pads: ['SPI_HOST_D1']   , desc: ''},
+      { instance: 'spi_host0',       port: 'sd[2]', connection: 'direct', pads: ['SPI_HOST_D2']   , desc: ''},
+      { instance: 'spi_host0',       port: 'sd[3]', connection: 'direct', pads: ['SPI_HOST_D3']   , desc: ''},
       // SPI Device
-      { instance: 'spi_device',      port: 'sck',   connection: 'direct', pad: 'SPI_DEV_CLK'  , desc: ''},
-      { instance: 'spi_device',      port: 'csb',   connection: 'direct', pad: 'SPI_DEV_CS_L' , desc: ''},
-      { instance: 'spi_device',      port: 'sd[0]', connection: 'direct', pad: 'SPI_DEV_D0'   , desc: ''},
-      { instance: 'spi_device',      port: 'sd[1]', connection: 'direct', pad: 'SPI_DEV_D1'   , desc: ''},
-      { instance: 'spi_device',      port: 'sd[2]', connection: 'direct', pad: 'SPI_DEV_D2'   , desc: ''},
-      { instance: 'spi_device',      port: 'sd[3]', connection: 'direct', pad: 'SPI_DEV_D3'   , desc: ''},
+      { instance: 'spi_device',      port: 'sck',   connection: 'direct', pads: ['SPI_DEV_CLK']   , desc: ''},
+      { instance: 'spi_device',      port: 'csb',   connection: 'direct', pads: ['SPI_DEV_CS_L']  , desc: ''},
+      { instance: 'spi_device',      port: 'sd[0]', connection: 'direct', pads: ['SPI_DEV_D0']    , desc: ''},
+      { instance: 'spi_device',      port: 'sd[1]', connection: 'direct', pads: ['SPI_DEV_D1']    , desc: ''},
+      { instance: 'spi_device',      port: 'sd[2]', connection: 'direct', pads: ['SPI_DEV_D2']    , desc: ''},
+      { instance: 'spi_device',      port: 'sd[3]', connection: 'direct', pads: ['SPI_DEV_D3']    , desc: ''},
       // USBDEV
-      { instance: 'usbdev',          port: 'usb_dp', connection: 'manual', pad: ''             , desc: ''},
-      { instance: 'usbdev',          port: 'usb_dn', connection: 'manual', pad: ''             , desc: ''},
+      { instance: 'usbdev',          port: 'usb_dp', connection: 'manual', pads: []               , desc: ''},
+      { instance: 'usbdev',          port: 'usb_dn', connection: 'manual', pads: []               , desc: ''},
       // MIOs
-      { instance: "gpio0",           port: '',      connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "uart0",           port: '',      connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "uart1",           port: '',      connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: "flash_ctrl",      port: '',      connection: 'muxed' , pad: ''             , desc: ''},
-      { instance: 'usbdev',          port: 'sense', connection: 'muxed' , pad: ''             , desc: ''},
+      { instance: "gpio0",           port: '',      connection: 'muxed' , pads: []                , desc: ''},
+      { instance: "uart0",           port: '',      connection: 'muxed' , pads: []                , desc: ''},
+      { instance: "uart1",           port: '',      connection: 'muxed' , pads: []                , desc: ''},
+      { instance: "flash_ctrl",      port: '',      connection: 'muxed' , pads: []                , desc: ''},
+      { instance: 'usbdev',          port: 'sense', connection: 'muxed' , pads: []                , desc: ''},
     ],
 
     // Number of wakeup detectors to instantiate, and bitwidth for the wakeup counters.
