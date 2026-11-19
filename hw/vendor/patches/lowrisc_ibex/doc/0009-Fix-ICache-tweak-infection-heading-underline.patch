@@ -1,0 +1,13 @@
+diff --git a/03_reference/security.rst b/03_reference/security.rst
+index 68a23aebf9..9645807355 100644
+--- a/03_reference/security.rst
++++ b/03_reference/security.rst
+@@ -106,7 +106,7 @@ When an ECC error is detected a minor alert is signaled.
+ See :ref:`icache-ecc` for more information.
+ 
+ ICache Tweak Infection
+-----------
++----------------------
+ 
+ In addition to the ICache ECC, SecureIbex also uses a tweak infection based countermeasure.
+ After computing the ECC and before writing to the data or tag banks, the ICache XORs a tweak to the data.
