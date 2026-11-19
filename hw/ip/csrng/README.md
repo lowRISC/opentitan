@@ -35,7 +35,7 @@ This interface allows peripherals to manage CSRNG instances, and request the CSR
     - Operates at 256 bit security strength.
 - Support for multiple separate CSRNG instances per IP block.
     - Each instance has its own internal state, control, reseed counters and IO pins.
-    - The number of CSRNG instances is set via a module parameter.
+    - The number of CSRNG instances is fixed at 3.
 - Software access to a dedicated CSRNG instance.
     - One instance, Instance N-1, is always accessible from the bus through device registers,
     - All other instances route to other hardware peripherals (e.g. the key manager, obfuscation engines, etc.) and in normal operation these other instances are inaccessible from software.
