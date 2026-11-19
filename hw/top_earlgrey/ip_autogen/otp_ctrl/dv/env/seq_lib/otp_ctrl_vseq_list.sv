@@ -9,6 +9,7 @@
 `include "otp_ctrl_common_vseq.sv"
 `include "otp_ctrl_partition_walk_vseq.sv"
 `include "otp_ctrl_low_freq_read_vseq.sv"
+`include "otp_ctrl_sw_window_access_vseq.sv"
 `include "otp_ctrl_init_fail_vseq.sv"
 `include "otp_ctrl_dai_lock_vseq.sv"
 `include "otp_ctrl_dai_errs_vseq.sv"
