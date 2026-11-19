@@ -19,10 +19,10 @@
   hw_checklist:       "../doc/checklist",
   sw_checklist:       "/sw/device/lib/dif/dif_rv_core_ibex",
   dv_doc:             "../doc/dv",
-  version:            "2.0.0",
+  version:            "2.0.1",
   life_stage:         "L1",
-  design_stage:       "D2S",
-  verification_stage: "V2S",
+  design_stage:       "D2",
+  verification_stage: "V2",
   dif_stage:          "S2",
   notes:              "Ibex Verification is tracked in the [Ibex documentation](https://ibex-core.readthedocs.io/en/latest/03_reference/verification_stages.html)."
   clocking: [{clock: "clk_i", reset: "rst_ni", primary: true},
