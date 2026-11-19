@@ -2,6 +2,7 @@
 // Licensed under the Apache License, Version 2.0, see LICENSE for details.
 // SPDX-License-Identifier: Apache-2.0
 
+#include "sw/device/lib/base/abs_mmio.h"
 #include "sw/device/lib/base/hardened_memory.h"
 #include "sw/device/lib/crypto/drivers/otbn.h"
 #include "sw/device/lib/crypto/impl/keyblob.h"
@@ -15,6 +16,9 @@
 #include "sw/device/lib/runtime/log.h"
 #include "sw/device/lib/testing/test_framework/check.h"
 #include "sw/device/lib/testing/test_framework/ottf_main.h"
+
+#include "hw/top_earlgrey/sw/autogen/top_earlgrey.h"
+#include "otbn_regs.h"  // Generated.
 
 enum {
   /* Number of 32-bit words in a P-256 public key. */
@@ -584,6 +588,75 @@ static status_t run_ecdsa_negative_tests(void) {
   return OTCRYPTO_OK;
 }
 
+static void check_otbn_clean_state(uint32_t expected_intr_enable) {
+  const uint32_t kBase = TOP_EARLGREY_OTBN_BASE_ADDR;
+  CHECK(abs_mmio_read32(kBase + OTBN_STATUS_REG_OFFSET) == 0);
+  CHECK(abs_mmio_read32(kBase + OTBN_ERR_BITS_REG_OFFSET) == 0);
+  CHECK(abs_mmio_read32(kBase + OTBN_INTR_STATE_REG_OFFSET) == 0);
+  CHECK(abs_mmio_read32(kBase + OTBN_INTR_ENABLE_REG_OFFSET) ==
+        expected_intr_enable);
+}
+
+static status_t async_cancel_test(void) {
+  const uint32_t kBase = TOP_EARLGREY_OTBN_BASE_ADDR;
+  const uint32_t kDoneBit = 1u << OTBN_INTR_STATE_DONE_BIT;
+
+  // Idle cancellation must be safe and idempotent while preserving INTR_ENABLE.
+  abs_mmio_write32(kBase + OTBN_INTR_ENABLE_REG_OFFSET, kDoneBit);
+  abs_mmio_write32(kBase + OTBN_INTR_STATE_REG_OFFSET, kDoneBit);
+  TRY(otcrypto_async_cancel());
+  check_otbn_clean_state(kDoneBit);
+
+  // Generate a P-256 keypair and digest for async sign cancellation.
+  uint32_t keyblob[keyblob_num_words(kPrivateKeyConfig)];
+  otcrypto_blinded_key_t private_key = {
+      .config = kPrivateKeyConfig,
+      .keyblob_length = sizeof(keyblob),
+      .keyblob = keyblob,
+  };
+  uint32_t pk[kP256PublicKeyWords] = {0};
+  otcrypto_unblinded_key_t public_key = {
+      .key_mode = kOtcryptoKeyModeEcdsaP256,
+      .key_length = sizeof(pk),
+      .key = pk,
+  };
+  TRY(otcrypto_ecdsa_p256_keygen(&private_key, &public_key));
+
+  otcrypto_const_byte_buf_t msg =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_byte_buf_t,
+                        (const unsigned char *)kMessage, sizeof(kMessage) - 1);
+  uint32_t msg_digest_data[kP256DigestWords] = {0};
+  otcrypto_hash_digest_t msg_digest = {
+      .data = msg_digest_data,
+      .len = ARRAYSIZE(msg_digest_data),
+  };
+  TRY(otcrypto_sha2_256(&msg, &msg_digest));
+
+  // Start an async ECDSA P-256 sign, verify OTBN is busy (competing start
+  // fails), then cancel to wait until idle and wipe OTBN state.
+  TRY(otcrypto_ecdsa_p256_sign_async_start(&private_key, msg_digest));
+  CHECK(status_err(otcrypto_ecdsa_p256_sign_async_start(
+            &private_key, msg_digest)) == kUnavailable);
+  TRY(otcrypto_async_cancel());
+  check_otbn_clean_state(kDoneBit);
+
+  // Run a fresh async sign + finalize + verify immediately after cancel.
+  uint32_t sig[kP256SignatureWords] = {0};
+  otcrypto_word32_buf_t sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_word32_buf_t, sig, ARRAYSIZE(sig));
+  otcrypto_const_word32_buf_t const_sig_buf =
+      OTCRYPTO_MAKE_BUF(otcrypto_const_word32_buf_t, sig, ARRAYSIZE(sig));
+  hardened_bool_t verification_result = kHardenedBoolFalse;
+  TRY(otcrypto_ecdsa_p256_sign_async_start(&private_key, msg_digest));
+  TRY(otcrypto_ecdsa_p256_sign_async_finalize(&sig_buf));
+  TRY(otcrypto_ecdsa_p256_verify(&public_key, msg_digest, &const_sig_buf,
+                                 &verification_result));
+  TRY_CHECK(verification_result == kHardenedBoolTrue);
+
+  abs_mmio_write32(kBase + OTBN_INTR_ENABLE_REG_OFFSET, 0);
+  return OK_STATUS();
+}
+
 OTTF_DEFINE_TEST_CONFIG();
 
 bool test_main(void) {
@@ -593,6 +666,7 @@ bool test_main(void) {
   CHECK_STATUS_OK(otcrypto_init(kOtcryptoKeySecurityLevelLow, &state));
   EXECUTE_TEST(result, sign_then_verify_test);
   EXECUTE_TEST(result, sign_kat);
+  EXECUTE_TEST(result, async_cancel_test);
   EXECUTE_TEST(result, run_ecdsa_negative_tests);
 
   return status_ok(result);

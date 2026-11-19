@@ -6,6 +6,7 @@ otcrypto_clear_alerts
 otcrypto_init
 otcrypto_eval_exit
 otcrypto_show_status
+otcrypto_async_cancel
 otcrypto_module_name
 otcrypto_build_info
 otcrypto_lib_version

@@ -155,6 +155,41 @@ static status_t run_irq_state_test(void) {
   return OTCRYPTO_OK;
 }
 
+static status_t run_cancel_test(void) {
+  LOG_INFO("Running async cancel tests.");
+
+  const uint32_t kBase = TOP_EARLGREY_OTBN_BASE_ADDR;
+  const uint32_t kDoneBit = 1u << OTBN_INTR_STATE_DONE_BIT;
+
+  // Enable OTBN done interrupt in OTBN_INTR_ENABLE (PLIC remains disabled).
+  abs_mmio_write32(kBase + OTBN_INTR_ENABLE_REG_OFFSET, kDoneBit);
+  abs_mmio_write32(kBase + OTBN_INTR_STATE_REG_OFFSET, kDoneBit);
+
+  // Cancelling while already idle must be safe and idempotent.
+  CHECK(otbn_cancel_async().value == OTCRYPTO_OK.value);
+  CHECK(abs_mmio_read32(kBase + OTBN_INTR_ENABLE_REG_OFFSET) == kDoneBit);
+  CHECK(abs_mmio_read32(kBase + OTBN_INTR_STATE_REG_OFFSET) == 0);
+
+  // Cancel an in-flight OTBN execution: waits until idle, clears
+  // INTR_STATE.done, wipes DMEM, and preserves INTR_ENABLE.
+  const otbn_app_t app = OTBN_APP_T_INIT(randomness);
+  CHECK(otbn_load_app(app).value == OTCRYPTO_OK.value);
+  CHECK(otbn_execute().value == OTCRYPTO_OK.value);
+  CHECK(otbn_cancel_async().value == OTCRYPTO_OK.value);
+  CHECK(abs_mmio_read32(kBase + OTBN_INTR_ENABLE_REG_OFFSET) == kDoneBit);
+  CHECK(abs_mmio_read32(kBase + OTBN_INTR_STATE_REG_OFFSET) == 0);
+  CHECK(otbn_err_bits_get() == 0);
+
+  // Fresh execution after cancel must succeed cleanly.
+  CHECK(otbn_load_app(app).value == OTCRYPTO_OK.value);
+  CHECK(otbn_execute_sync().value == OTCRYPTO_OK.value);
+  CHECK(abs_mmio_read32(kBase + OTBN_INTR_ENABLE_REG_OFFSET) == kDoneBit);
+  CHECK(abs_mmio_read32(kBase + OTBN_INTR_STATE_REG_OFFSET) == 0);
+
+  abs_mmio_write32(kBase + OTBN_INTR_ENABLE_REG_OFFSET, 0);
+  return OTCRYPTO_OK;
+}
+
 bool test_main(void) {
   status_t result = OK_STATUS();
 
@@ -164,6 +199,7 @@ bool test_main(void) {
   EXECUTE_TEST(result, run_negative_test);
   EXECUTE_TEST(result, run_cache_test);
   EXECUTE_TEST(result, run_irq_state_test);
+  EXECUTE_TEST(result, run_cancel_test);
 
   return status_ok(result);
 }

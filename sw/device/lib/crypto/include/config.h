@@ -157,6 +157,32 @@ otcrypto_status_t otcrypto_eval_exit(otcrypto_status_t status);
 OT_WARN_UNUSED_RESULT
 uint8_t otcrypto_show_status(const otcrypto_state_t *state);
 
+/**
+ * Cancels an in-flight asynchronous OTBN operation by waiting for OTBN to
+ * become idle and securely wiping OTBN state.
+ *
+ * Because Earl Grey OTBN hardware ignores `CMD` writes while busy and locks
+ * (`ILLEGAL_BUS_ACCESS`) if DMEM or IMEM is accessed mid-execution, an active
+ * OTBN program cannot be halted mid-instruction. Matching `*_async_finalize`,
+ * this function masks `OTBN_INTR_ENABLE`, waits until OTBN reaches `IDLE` or
+ * `LOCKED`, discards any output, clears `INTR_STATE.done`, checks and clears
+ * any stale `ERR_BITS`, securely wipes OTBN DMEM (`SEC_WIPE_DMEM`), clears any
+ * sideloaded OTBN key from `keymgr`, and restores `OTBN_INTR_ENABLE`.
+ *
+ * Interrupt-driven callers that wait for the `otbn_done` interrupt before
+ * calling this function will not spin waiting on OTBN. Calling this function
+ * when OTBN is already idle is safe and idempotent.
+ *
+ * @return Result of the cancellation and wipe operation. Returns
+ * `kOtcryptoStatusValueOk` on success, `kOtcryptoStatusValueInternalError` if
+ * the cancelled OTBN operation ended with a recoverable error (DMEM and
+ * sideload state are still wiped) or if `keymgr` is not idle, or
+ * `kOtcryptoStatusValueFatalError` if OTBN is locked or a FIPS
+ * illegal-instruction/PCT failure occurred.
+ */
+OT_WARN_UNUSED_RESULT
+otcrypto_status_t otcrypto_async_cancel(void);
+
 #ifdef __cplusplus
 }  // extern "C"
 #endif  // __cplusplus

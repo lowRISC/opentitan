@@ -342,6 +342,22 @@ status_t otbn_execute_sync(void);
 status_t otbn_busy_wait_for_done(void);
 
 /**
+ * Waits for any in-flight asynchronous OTBN operation to finish and securely
+ * wipes OTBN DMEM.
+ *
+ * Because Earl Grey OTBN ignores CMD writes while busy and locks on mid-run
+ * DMEM/IMEM bus accesses, an active OTBN program cannot be halted mid-run.
+ * This function masks `OTBN_INTR_ENABLE`, blocks until OTBN reaches `IDLE` or
+ * `LOCKED`, clears `INTR_STATE.done`, checks `ERR_BITS`, clears any stale
+ * `ERR_BITS`, securely wipes DMEM (if OTBN is not locked), and restores
+ * `OTBN_INTR_ENABLE`.
+ *
+ * @return Result of the operation.
+ */
+OT_WARN_UNUSED_RESULT
+status_t otbn_cancel_async(void);
+
+/**
  * Get the error bits set by the device if the operation failed.
  *
  * @return The contents of OTBN's ERR_BITS register.

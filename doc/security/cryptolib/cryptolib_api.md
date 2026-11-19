@@ -55,6 +55,7 @@ Please note that this function only can be called from the machine (M) mode priv
 {{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_disable_icache }}
 {{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_restore_icache }}
 {{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_clear_alerts }}
+{{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_async_cancel }}
 {{#header-snippet sw/device/lib/crypto/include/entropy_src.h otcrypto_entropy_init }}
 {{#header-snippet sw/device/lib/crypto/include/entropy_src.h otcrypto_entropy_check }}
 {{#header-snippet sw/device/lib/crypto/include/entropy_src.h otcrypto_entropy_health_test_config_check }}
@@ -1071,6 +1072,7 @@ Consequently:
 
 - **DRBG Uninstantiation:** To destroy and zeroize the internal state of the Deterministic Random Bit Generator, callers can invoke `otcrypto_drbg_uninstantiate()`, which clears the internal DRBG context. For software HMAC-DRBG contexts (`otcrypto_hmac_drbg_context_t`), callers can invoke `otcrypto_hmac_drbg_deinit()` to shred the context.
 - **Streaming Contexts:** Intermediate states and keys held in streaming operation contexts (such as `otcrypto_hmac_context_t`, `otcrypto_cmac_context_t`, and `otcrypto_aes_gcm_context_t`) are randomized automatically when finalization routines (`*_final`) finish.
+- **Cancelled Asynchronous OTBN Operations:** If an in-flight asynchronous OTBN operation is abandoned before calling `*_async_finalize`, callers should invoke `otcrypto_async_cancel()` to wait for OTBN to reach `IDLE`, clear `OTBN_INTR_STATE.done` and any stale `ERR_BITS`, clear any sideloaded OTBN key from `keymgr`, and securely wipe OTBN DMEM (`SEC_WIPE_DMEM`).
 
 ## Asynchronous operations
 
@@ -1166,6 +1168,18 @@ otcrypto_status_t sign_with_irq(const otcrypto_blinded_key_t *private_key,
   return otcrypto_ecdsa_p256_sign_async_finalize(signature);
 }
 ```
+
+### Cancelling an Asynchronous Operation
+
+On Earl Grey, OTBN hardware ignores writes to `CMD` while busy and locks (`ILLEGAL_BUS_ACCESS`) if DMEM or IMEM is accessed while an operation is in progress.
+Consequently, an active OTBN program cannot be halted mid-instruction.
+Instead, callers that wish to abandon an in-flight asynchronous OTBN operation without invoking `*_async_finalize` should call `otcrypto_async_cancel`:
+
+{{#header-snippet sw/device/lib/crypto/include/config.h otcrypto_async_cancel }}
+
+Matching `*_async_finalize`, `otcrypto_async_cancel` masks `OTBN_INTR_ENABLE`, waits until OTBN reaches `IDLE` (or `LOCKED`), clears `OTBN_INTR_STATE.done`, checks and clears any stale `ERR_BITS`, securely wipes OTBN DMEM (`SEC_WIPE_DMEM`), clears any sideloaded OTBN key from `keymgr`, and restores `OTBN_INTR_ENABLE`.
+Interrupt-driven callers can defer calling `otcrypto_async_cancel` until the `otbn_done` interrupt fires so it does not spin waiting on OTBN.
+Calling `otcrypto_async_cancel` when OTBN is already idle is safe and idempotent.
 
 
 ## Security Strength
