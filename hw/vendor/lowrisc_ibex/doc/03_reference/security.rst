@@ -125,6 +125,15 @@ A check is asserted that the current IF stage PC equals the previous PC plus the
 The check is disabled after branches and after reset.
 If a mismatch is detected, an internal major alert is signaled.
 
+Clock gate check
+----------------
+
+When Ibex is configured with the SecureIbex parameter, the core clock gate is checked.
+A fault on the clock enable logic or on the clock gate could stop the core clock while the core should be running.
+As both cores of the dual core lockstep and the lockstep comparison are clocked by the gated clock, the lockstep cannot detect this.
+To mitigate this threat, the clock enable is recomputed from an independent copy of the core busy register and the gated clock is observed using a toggle flop that is sampled in the ungated clock domain.
+If the gated clock did not toggle although it was enabled, an internal major alert is signaled.
+
 Shadow CSRs
 -----------
 
