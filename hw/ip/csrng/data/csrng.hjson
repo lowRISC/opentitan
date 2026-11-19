@@ -132,6 +132,20 @@
       desc: "CSRNG can be set up to generate non-deterministic random values by using a random seed from the entropy source."
     }
     {
+      name: "CSRNG.HALT",
+      desc: '''
+            CSRNG allows software to halt a selected instance via !!INT_STATE_HALT without affecting other instances.
+            Halting can be enabled per instance via !!INT_STATE_HALT_ENABLE.
+            '''
+    }
+    {
+      name: "CSRNG.GENERATE_ABORT",
+      desc: '''
+            CSRNG allows software to abort a Generate command in progress via !!GEN_ABORT.
+            The aborted instance is uninstantiated.
+            '''
+    }
+    {
       name: "CSRNG.SAVE_AND_RESTORE",
       desc: '''
             CSRNG allows the internal state of a selected instance to be read out or overwritten via !!INT_STATE_VAL.

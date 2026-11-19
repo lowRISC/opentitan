@@ -35,12 +35,14 @@ This interface allows peripherals to manage CSRNG instances, and request the CSR
     - Operates at 256 bit security strength.
 - Support for multiple separate CSRNG instances per IP block.
     - Each instance has its own internal state, control, reseed counters and IO pins.
-    - The number of CSRNG instances is fixed at 3.
+    - The number of CSRNG instances is currently fixed at 3.
 - Software access to a dedicated CSRNG instance.
     - One instance, Instance N-1, is always accessible from the bus through device registers,
     - All other instances route to other hardware peripherals (e.g. the key manager, obfuscation engines, etc.) and in normal operation these other instances are inaccessible from software.
-    - The IP may be configured to support "debug mode" wherein all instances can be accessed by software.
-      For security reasons this mode may be permanently disabled using one-time programmable (OTP) memory.
+- Software can halt individual instances, without affecting other instances.
+- Software can save and restore the internal state of individual instances, including a Generate command in progress.
+    - Reading, writing and halting can be enabled per instance and locked until the next reset.
+- Software can abort Generate commands in progress, e.g., to quickly reconfigure an EDN without affecting other instances.
 - The IP interfaces with external entropy sources to obtain any required non-deterministic seed material (entropy) and nonces.
     - Requires an external entropy source which is compliant with NIST SP 800-90B, and which also satisfies the requirements for a PTG.2 class physical non-deterministic random number generator as defined in AIS31.
     - Dedicated hardware interface with external entropy source satisfies requirements for `get_entropy_input()` interface as defined in SP 800-90A.
@@ -59,7 +61,7 @@ Thus the interface and implementation are largely driven by these explicit const
 
 The CSRNG IP consists of four main components:
 1. An AES primitive
-2. The CTR_DRBG state-machine (`ctr_drbg_fsm`) which drives the AES primitive, performing the various encryption sequences prescribed for approved DRBGs in SP 800-90A.
+2. The CTR_DRBG block (`csrng_ctr_drbg`), whose state machine drives the AES primitive, performing the various encryption sequences prescribed for approved DRBGs in SP 800-90A.
 These include:
 
     1. **The Instantiation Routine:**
