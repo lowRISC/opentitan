@@ -1,0 +1,8 @@
+// Copyright lowRISC contributors (OpenTitan project).
+// Licensed under the Apache License, Version 2.0, see LICENSE for details.
+// SPDX-License-Identifier: Apache-2.0
+
+`verilator_config
+
+// Each bit of ppc_out only reads the lower bit assigned before it, so there is no stale read.
+lint_off -rule ALWCOMBORDER -file "*/rtl/prim_leading_one_ppc.sv" -match "*'ppc_out'"
