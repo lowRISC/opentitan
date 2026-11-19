@@ -18,7 +18,8 @@
  */
 __llvm_prf_data 0x0 (INFO) : ALIGN(8) {
   __llvm_prf_data_start = .;
-  KEEP(*(__llvm_prf_data))
+  /* Unused profile data is dropped with its function's section group */
+  *(__llvm_prf_data)
   __llvm_prf_data_end = .;
 
   ASSERT(
