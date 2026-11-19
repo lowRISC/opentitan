@@ -34,6 +34,7 @@ filesets:
       - seq_lib/otp_ctrl_smoke_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_partition_walk_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_low_freq_read_vseq.sv: {is_include_file: true}
+      - seq_lib/otp_ctrl_sw_window_access_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_init_fail_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_dai_lock_vseq.sv: {is_include_file: true}
       - seq_lib/otp_ctrl_dai_errs_vseq.sv: {is_include_file: true}
