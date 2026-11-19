@@ -752,7 +752,9 @@ pub fn run_ft_personalize(
         .log_elapsed_time("second-bootstrap-done", second_t0);
 
     #[cfg(feature = "ot_coverage_enabled")]
-    let _ = UartConsole::wait_for_coverage(spi_console, Duration::from_secs(10));
+    if let Err(e) = UartConsole::wait_for_coverage(spi_console, Duration::from_secs(10)) {
+        log::warn!("Failed to collect perso firmware coverage profile: {e:?}");
+    }
 
     Ok(())
 }
