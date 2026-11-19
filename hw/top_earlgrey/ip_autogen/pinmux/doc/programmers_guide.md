@@ -31,7 +31,7 @@ The unsupported drive-strength bits in the corresponding CSRs would then always 
 
 ## Pinmux Configuration
 
-Upon POR, the `pinmux` state is such that all MIO outputs are high-Z, and all MIO peripheral inputs are tied off to 0.
+Upon POR, the `pinmux` state is such that all MIO pads are high-Z, and all MIO peripheral inputs are tied off to 0, unless the top-level defines a different reset muxing for a pad / signal.
 Software should determine and program the `pinmux` mapping at startup, or reprogram it when the functionality requirements change at runtime.
 This can be achieved by writing the following values to the [`MIO_PERIPH_INSEL_0`](registers.md#mio_periph_insel) and [`MIO_OUTSEL_0`](registers.md#mio_outsel) registers.
 

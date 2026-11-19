@@ -9,9 +9,9 @@
 ##  - n_mio_periph_out:     Number of muxed peripheral outputs
 ##  - n_mio_pads:           Number of muxed IO pads
 ##  - mio_periph_ins:       A list of dicts for each muxed peripheral input defining the possible
-##                          muxing.
+##                          muxing and reset INSEL selection.
 ##  - mio_periph_outs:      A list of dicts for each muxed peripheral output defining the possible
-##                          muxing.
+##                          muxing and reset OUTSEL selection.
 ##  - mio_pad_attr_resvals: A list of (name, attrs) tuples for each MIO pad. attrs can map
 ##                          MIO_PAD_ATTR fields to non-default reset values.
 ##  - n_dio_periph_in:      Number of dedicated peripheral inputs
@@ -22,7 +22,8 @@
 ##  - n_wkup_detect:        Number of wakeup condition detectors
 ##  - wkup_cnt_width:       Width of wakeup counters
 <%!
-  from ipgen.pinmux_gen import check_params, render_attr_resval
+  from ipgen.pinmux_gen import (check_params, mio_insel_resvals, mio_outsel_resvals,
+                                render_attr_resval, render_resval)
 %>\
 <%
   check_params(n_mio_pads, n_dio_pads, n_mio_periph_in, n_mio_periph_out, mio_periph_ins,
@@ -555,7 +556,7 @@
                       Selecting a pad that is not legal for this peripheral input ties it
                       constantly to zero.
                       '''
-                      resval: 0,
+                      resval: ${render_resval(mio_insel_resvals(mio_periph_ins))},
                     }
                   ]
                 }
@@ -602,7 +603,7 @@
                       Selecting a peripheral output that is not legal for this pad puts the pad
                       into high-Z.
                       '''
-                      resval: 2,
+                      resval: ${render_resval(mio_outsel_resvals(n_mio_pads, mio_periph_outs))},
                     }
                   ]
                   // Random writes to this field may result in pad drive conflicts,

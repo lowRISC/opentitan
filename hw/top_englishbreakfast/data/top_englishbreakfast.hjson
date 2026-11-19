@@ -998,6 +998,34 @@
     //         Not specifying this key or setting it to an empty string acts as a wild card
     //         and includes all available IOs of this instance.
     //
+    // - default: Defines the muxing at reset of a muxed signal, i.e., the reset values of the INSEL
+    //            and OUTSEL registers. Only muxed connections may have this key. The possible
+    //            values depend on the signal direction:
+    //
+    //            If input:  Defines the INSEL reset value for this signal. Possible defaults are:
+    //                       - a pad name (string): Signal is connected to this pad at reset.
+    //                       - 0 or 1 (int):        Signal is driven to '0 or '1 at reset.
+    //
+    //                       If default is not specified, the signal is driven to '0.
+    //
+    //            If output: The value must be a pad name. If given, this pad is then driven by
+    //                       this signal after reset (defines the OUTSEL reset value for this pad).
+    //                       Each pad may only be referenced once in the complete 'signals' list as
+    //                       a default pad.
+    //
+    //                       If a pad is never specified as a default, the pad is set to high-Z at
+    //                       reset.
+    //
+    //            If inout:  Defines the INSEL and OUTSEL reset values for this signal and pad.
+    //                       Possible defaults are:
+    //                       - a pad name (string): Signal is connected to this pad at reset and the
+    //                                              pad's default output is this signal.
+    //                       - 0 or 1 (int):        Signal is driven to '0 or '1 at reset. Imposes
+    //                                              no default source for any pad.
+    //
+    //                       If this default is not specified, the signal is driven to '0 and no pad
+    //                       default is derived.
+    //
     // - desc: Optional description field.
     //
     // - attr: Manual direct IOs may specify an additional pad attr field.

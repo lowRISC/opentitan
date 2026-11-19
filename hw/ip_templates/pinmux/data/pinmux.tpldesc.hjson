@@ -49,8 +49,11 @@
       name: "mio_periph_ins"
       desc: '''
             List of dicts, one per MIO peripheral input, ordered ascending by the peripheral input
-            index. Each dict has the keys name and pads. pads lists the indices of the MIO pads the
-            input can be muxed to. An empty list means all MIO pads.
+            index. Each dict has the keys name and pads and optionally default_pad or
+            default_const. pads lists the indices of the MIO pads the input can be muxed to. An
+            empty list means all MIO pads. default_pad (a pad index of pads) or default_const (0 or
+            1) defines the MIO_PERIPH_INSEL reset value. Without either, the input is tied to 0 at
+            reset.
             '''
       type: "object"
       default: [
@@ -68,8 +71,11 @@
       name: "mio_periph_outs"
       desc: '''
             List of dicts, one per MIO peripheral output, ordered ascending by the peripheral
-            output index. Each dict has the keys name and pads. pads lists the indices of the MIO
-            pads the output can be muxed to. An empty list means all MIO pads.
+            output index. Each dict has the keys name and pads and optionally default_pad. pads
+            lists the indices of the MIO pads the output can be muxed to. An empty list means all
+            MIO pads. default_pad (a pad index) selects the output as the MIO_OUTSEL reset value of
+            that pad. Each pad can only be the default of one output. Pads without a default are
+            high-Z at reset.
             '''
       type: "object"
       default: [
