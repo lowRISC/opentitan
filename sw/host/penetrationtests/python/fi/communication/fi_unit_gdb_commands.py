@@ -63,6 +63,11 @@ class OTFIUnitGdb:
     ) -> None:
         self.target.write(json.dumps("Try").encode("ascii"))
 
+    def handle_gdb_try_err(
+        self,
+    ) -> None:
+        self.target.write(json.dumps("TryErr").encode("ascii"))
+
     def handle_gdb_switch(
         self,
     ) -> None:

@@ -282,6 +282,167 @@ class UnitFiSim(unittest.TestCase):
             self.assertEqual(successful_faults, 0)
             self.assertEqual(started, True)
 
+    def test_gdb_try_err(self):
+        # Directory for the trace log files
+        pc_trace_file = os.path.join(log_dir, "gdb_try_err_pc_trace.log")
+
+        successful_faults = 0
+        total_attacks = 0
+
+        gdb = None
+        started = False
+        try:
+            # Program the bitstream, flash the target, and set up OpenOCD
+            target.initialize_target(print_output=False)
+
+            # Initialize the testOS
+            trigger_testos_init()
+
+            # Connect to GDB
+            gdb = GDBController(gdb_path=GDB_PATH, gdb_port=GDB_PORT, elf_file=elf_path)
+
+            # We provide the name of the unique marker in the pentest framework
+            function_name = "PENTEST_MARKER_GDB_TRY_ERR"
+            # Gives back an array of hits where the function is called
+            trace_address = parser.get_marker_addresses(function_name)
+
+            crash_observation_address = parser.get_function_start_address("ottf_exception_handler")
+
+            # Start the tracing
+            initial_timeout = 10
+            total_timeout = 60 * 60 * 5
+
+            gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+            gdb.send_command("c", check_response=False)
+            time.sleep(0.1)
+            target.dump_all()
+
+            gdbfi.handle_gdb_try_err()
+
+            start_time = time.time()
+            initial_timeout_stopped = False
+            total_timeout_stopped = False
+
+            while time.time() - start_time < initial_timeout:
+                output = gdb.read_output()
+                if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                    initial_timeout_stopped = True
+                    break
+            if not initial_timeout_stopped:
+                print(
+                    "Initial break point not hit on first attempt, retrying with reset...",
+                    flush=True,
+                )
+                print("Target UART:", repr(target.read_all()), flush=True)
+                gdb = reset_target_and_gdb(gdb)
+                gdb.setup_pc_trace(pc_trace_file, trace_address[0], trace_address[1])
+                gdb.send_command("c", check_response=False)
+                time.sleep(0.1)
+                target.dump_all()
+                gdbfi.handle_gdb_try_err()
+                start_time = time.time()
+                while time.time() - start_time < initial_timeout:
+                    output = gdb.read_output()
+                    if "breakpoint 1, " in output or "Breakpoint 1" in output:
+                        initial_timeout_stopped = True
+                        break
+            if not initial_timeout_stopped:
+                print("Initial break point not hit, something went wrong", flush=True)
+                print("Target UART:", repr(target.read_all()), flush=True)
+                if gdb:
+                    gdb.interrupt(timeout=1.0)
+                    print("GDB PC:", gdb.get_program_counter(), flush=True)
+                    print("GDB Backtrace:", gdb.send_command("bt"), flush=True)
+                sys.exit(1)
+            while time.time() - start_time < total_timeout:
+                output = gdb.read_output()
+                if "PC trace complete" in output:
+                    total_timeout_stopped = True
+                    break
+            if not total_timeout_stopped:
+                print("Final tracing timeout reached")
+                sys.exit(1)
+
+            # Parse and truncate the trace log to get all PCs in a list
+            pc_list = gdb.parse_pc_trace_file(pc_trace_file)
+            # Get the unique PCs and annotate their occurrence count
+            pc_count_dict = Counter(pc_list)
+            if len(pc_count_dict) <= 0:
+                print("Found no tracing, stopping")
+                sys.exit(1)
+
+            # Reset the target, flush the output, and close gdb
+            gdb = reset_target_and_gdb(gdb)
+
+            started = True
+            for pc, count in pc_count_dict.items():
+                for i_count in range(min(MAX_SKIPS_PER_LOOP, count)):
+                    crash_observation = "crash detected"
+
+                    try:
+                        observations = {
+                            crash_observation_address: f"{crash_observation}",
+                        }
+                        gdb.add_observation(observations)
+
+                        gdb.apply_instruction_skip(pc, parser.parse_next_instruction(pc), i_count)
+                        gdb.send_command("c", check_response=False)
+
+                        gdbfi.handle_gdb_try_err()
+                        testos_response = read_testos_output()
+
+                        gdb_response = gdb.read_output()
+                        if "instruction skip applied" in gdb_response:
+                            i_count += 1
+                            total_attacks += 1
+
+                            if crash_observation in gdb_response:
+                                gdb = reset_target_and_gdb(gdb)
+                            else:
+                                testos_response_json = json.loads(testos_response)
+                                # Attack succeeds if the failing HARDENED_TRY is
+                                # bypassed (result becomes True or status is
+                                # OTCRYPTO_OK / kHardenedBoolTrue). Skipping the
+                                # raw outer `jal try_err_inner` leaves `a0` as
+                                # `0` or `&result`, which a real HARDENED_TRY
+                                # caller traps on, so only `0x739` is OK here.
+                                if testos_response_json["result"] or (
+                                    testos_response_json["status"] == 0x739
+                                ):
+                                    successful_faults += 1
+                                    print("-" * 80)
+                                    print("Successful FI attack!")
+                                    print("Location:", pc, "iteration", i_count - 1)
+                                    print(gdb_response)
+                                    print("Response:", testos_response_json)
+                                    print("-" * 80)
+                                gdb = reset_gdb(gdb)
+                        else:
+                            if not testos_response:
+                                print("Target did not respond, resetting target", flush=True)
+                                gdb = reset_target_and_gdb(gdb)
+                            else:
+                                gdb = reset_gdb(gdb)
+
+                    except json.JSONDecodeError:
+                        try:
+                            gdb = reset_target_and_gdb(gdb)
+                        except TimeoutError:
+                            gdb = re_initialize(gdb)
+
+                    except TimeoutError:
+                        try:
+                            gdb = reset_target_and_gdb(gdb)
+                        except TimeoutError:
+                            gdb = re_initialize(gdb)
+
+        finally:
+            if gdb:
+                gdb.close_gdb()
+            target.close_openocd()
+            self.assertEqual(successful_faults, 0)
+            self.assertEqual(started, True)
+
     def test_gdb_switch(self):
         # Directory for the trace log files
         pc_trace_file = os.path.join(log_dir, "gdb_switch_pc_trace.log")
