@@ -154,13 +154,29 @@ _rom_ext_start_boot:
   // PRAGMA_COVERAGE: autogen start
 
   /**
+   * Verify that the immutable section ran to completion by checking that ePMP
+   * entry 8 was configured by `imm_section_epmp_mutable_rx()`.
+   *
+   * ROM leaves `pmpaddr8` unused (0) and `imm_section_epmp_reconfigure()`
+   * explicitly clears entries 8 and 9 before attestation; `pmpaddr8` is only
+   * configured by `imm_section_epmp_mutable_rx()` after `dice_attest_cdi_0()`
+   * completes.
+   */
+  COVERAGE_ASM_AUTOGEN_MARK(t6,2)
+  csrr t0, pmpaddr8
+  bnez t0, .L_imm_section_verified
+  COVERAGE_ASM_AUTOGEN_MARK(t6,3)
+  unimp
+.L_imm_section_verified:
+
+  /**
    * Setup C Runtime
    */
 
   /**
    * Initialize the `.data` section in RAM from ROM.
    */
-  COVERAGE_ASM_AUTOGEN_MARK(t6,2)
+  COVERAGE_ASM_AUTOGEN_MARK(t6,4)
   la   a0, _data_start
   la   a1, _data_end
   la   a2, _data_init_start
@@ -172,13 +188,13 @@ _rom_ext_start_boot:
    * We do this despite zeroing all of SRAM above, so that we still zero `.bss`
    * once we've enabled SRAM scrambling.
    */
-  COVERAGE_ASM_AUTOGEN_MARK(t6,3)
+  COVERAGE_ASM_AUTOGEN_MARK(t6,5)
   la   a0, _bss_start
   la   a1, _bss_end
   call crt_section_clear
 
   // Re-clobber all of the temporary registers.
-  COVERAGE_ASM_AUTOGEN_MARK(t6,4)
+  COVERAGE_ASM_AUTOGEN_MARK(t6,6)
   li t0, 0x0
   li t1, 0x0
   li t2, 0x0
