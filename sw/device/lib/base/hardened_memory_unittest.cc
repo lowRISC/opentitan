@@ -40,8 +40,9 @@ extern "C" uint32_t random_order_random_word() { return kRandomWord; }
 
 TEST(HardenedMemory, MemShred) {
   std::vector<uint32_t> xs = {1, 2, 3, 4, 5, 6, 7, 8};
-  hardened_memshred(xs.data(), xs.size());
+  size_t shredded = hardened_memshred(xs.data(), xs.size());
 
+  EXPECT_EQ(shredded, xs.size());
   EXPECT_THAT(xs, Each(kRandomWord));
 }
 
