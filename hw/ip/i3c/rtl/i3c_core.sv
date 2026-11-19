@@ -1203,19 +1203,19 @@ module i3c_core
   assign hw2reg_o.buffer_status.ttiq_err.de = ttiq_access_err | targ_sw_reset;
   assign hw2reg_o.buffer_status.ttiq_err.d  = ~targ_sw_reset;
 
-  logic hci_wvalid[HCI_Count], tti_wvalid[TTI_Count];
-  logic hci_rready[HCI_Count], tti_rready[TTI_Count];
+  logic [HCI_Count-1:0] hci_wvalid, hci_rready;
+  logic [TTI_Count-1:0] tti_wvalid, tti_rready;
   logic [DataWidth-1:0] hci_wdata, tti_wdata;
   always_comb begin
     // Writing to the message buffer via HCI ports.
-    fifo_in[FIFO_CmdQ].wvalid      = hci_wvalid[HCI_Command];
-    fifo_in[FIFO_CmdQ].wdata       = hci_wdata;
-    fifo_in[FIFO_TxBuf].wvalid     = hci_wvalid[HCI_XferData];
-    fifo_in[FIFO_TxBuf].wdata      = hci_wdata;
-    fifo_in[FIFO_IBIDTarg].wvalid  = tti_wvalid[TTI_IBIDesc];
-    fifo_in[FIFO_IBIDTarg].wdata   = tti_wdata;
-    fifo_in[FIFO_IBITarg].wvalid   = tti_wvalid[TTI_IBIData];
-    fifo_in[FIFO_IBITarg].wdata    = tti_wdata;
+    fifo_in[FIFO_CmdQ].wvalid     = hci_wvalid[HCI_Command];
+    fifo_in[FIFO_CmdQ].wdata      = hci_wdata;
+    fifo_in[FIFO_TxBuf].wvalid    = hci_wvalid[HCI_XferData];
+    fifo_in[FIFO_TxBuf].wdata     = hci_wdata;
+    fifo_in[FIFO_IBIDTarg].wvalid = tti_wvalid[TTI_IBIDesc];
+    fifo_in[FIFO_IBIDTarg].wdata  = tti_wdata;
+    fifo_in[FIFO_IBITarg].wvalid  = tti_wvalid[TTI_IBIData];
+    fifo_in[FIFO_IBITarg].wdata   = tti_wdata;
 
     // Writing to the message buffer via TTI ports.
     for (int unsigned t = 0; t < NumTargets; t++) begin
@@ -1245,31 +1245,13 @@ module i3c_core
     fifo_in[FIFO_AsyncTarg].rready = tti_rready[TTI_AsyncEvt];
   end
 
-  // Status of the Host Controller Interface queues. Some tools reject assignment patterns in port
-  // connections, so the status of the logical queues is gathered into arrays first.
-  logic hci_wready[HCI_Count], hci_full[HCI_Count];
-  logic hci_rvalid[HCI_Count], hci_empty[HCI_Count];
+  // Read data from the Host Controller Interface queues. Some tools reject assignment patterns in
+  // port connections, so the read data from the logical queues is gathered into an array first.
   logic [DataWidth-1:0] hci_rdata[HCI_Count];
-  assign hci_wready = '{fifo_out[FIFO_CmdQ].wready,
-                        fifo_out[FIFO_RspQ].wready,
-                        fifo_out[FIFO_TxBuf].wready,
-                        fifo_out[FIFO_IBIQ].wready};
-  assign hci_full   = '{fifo_state[FIFO_CmdQ].full,
-                        fifo_state[FIFO_RspQ].full,
-                        fifo_state[FIFO_TxBuf].full,
-                        fifo_state[FIFO_IBIQ].full};
-  assign hci_rvalid = '{fifo_out[FIFO_CmdQ].rvalid,
-                        fifo_out[FIFO_RspQ].rvalid,
-                        fifo_out[FIFO_RxBuf].rvalid,
-                        ibi_avail};
-  assign hci_rdata  = '{fifo_out[FIFO_CmdQ].rdata,
-                        fifo_out[FIFO_RspQ].rdata,
-                        fifo_out[FIFO_RxBuf].rdata,
-                        ibi_rdata};
-  assign hci_empty  = '{fifo_state[FIFO_CmdQ].empty,
-                        fifo_state[FIFO_RspQ].empty,
-                        fifo_state[FIFO_RxBuf].empty,
-                        ibi_empty};
+  assign hci_rdata = '{fifo_out[FIFO_CmdQ].rdata,
+                       fifo_out[FIFO_RspQ].rdata,
+                       fifo_out[FIFO_RxBuf].rdata,
+                       ibi_rdata};
 
   // Host Controller Interface queues.
   i3c_queues #(
@@ -1292,96 +1274,49 @@ module i3c_core
     .rdata_o     (bufq_rdata_o[TL_HCI]),
 
     // Writes to logical queues.
-    .buf_wready_i(hci_wready),
-    .buf_full_i  (hci_full),
+    .buf_wready_i({fifo_out[FIFO_IBIQ].wready,
+                   fifo_out[FIFO_TxBuf].wready,
+                   fifo_out[FIFO_RspQ].wready,
+                   fifo_out[FIFO_CmdQ].wready}),
+    .buf_full_i  ({fifo_state[FIFO_IBIQ].full,
+                   fifo_state[FIFO_TxBuf].full,
+                   fifo_state[FIFO_RspQ].full,
+                   fifo_state[FIFO_CmdQ].full}),
     .buf_wvalid_o(hci_wvalid),
     .buf_wdata_o (hci_wdata),
 
     // Reads from logical queues.
-    .buf_rvalid_i(hci_rvalid),
+    .buf_rvalid_i({ibi_avail,
+                   fifo_out[FIFO_RxBuf].rvalid,
+                   fifo_out[FIFO_RspQ].rvalid,
+                   fifo_out[FIFO_CmdQ].rvalid}),
     .buf_rdata_i (hci_rdata),
-    .buf_empty_i (hci_empty),
+    .buf_empty_i ({ibi_empty,
+                   fifo_state[FIFO_RxBuf].empty,
+                   fifo_state[FIFO_RspQ].empty,
+                   fifo_state[FIFO_CmdQ].empty}),
     .buf_rready_o(hci_rready),
 
     // Diagnostic error indicator.
     .err_o       (hciq_access_err)
   );
 
-  // Status of the Target Transaction Interface queues.
-  logic tti_wready[TTI_Count], tti_full[TTI_Count];
-  logic tti_rvalid[TTI_Count], tti_empty[TTI_Count];
+  // Read data from the Target Transaction Interface queues. Some tools reject assignment patterns
+  // in port connections, so the read data from the logical queues is gathered into an array first.
   logic [DataWidth-1:0] tti_rdata[TTI_Count];
-  assign tti_wready = '{fifo_out[FIFO_RxDTarg].wready,
-                        fifo_out[FIFO_RxTarg].wready,
-                        fifo_out[FIFO_IBIDTarg].wready,
-                        fifo_out[FIFO_IBITarg].wready,
-                        fifo_out[FIFO_AsyncTarg].wready,
-                        fifo_out[FIFO_TxDTarg0].wready,
-                        fifo_out[FIFO_TxDTarg1].wready,
-                        fifo_out[FIFO_TxDTarg2].wready,
-                        fifo_out[FIFO_TxDTarg3].wready,
-                        fifo_out[FIFO_TxTarg0].wready,
-                        fifo_out[FIFO_TxTarg1].wready,
-                        fifo_out[FIFO_TxTarg2].wready,
-                        fifo_out[FIFO_TxTarg3].wready};
-  assign tti_full   = '{fifo_state[FIFO_RxDTarg].full,
-                        fifo_state[FIFO_RxTarg].full,
-                        fifo_state[FIFO_IBIDTarg].full,
-                        fifo_state[FIFO_IBITarg].full,
-                        fifo_state[FIFO_AsyncTarg].full,
-                        // Qualifying the `full` signals for the Virtual Targets both allows
-                        // synthesis to strip out unused logic and prevents system-side bus accesses
-                        // from locking up; writes will complete immediately.
-                        fifo_state[FIFO_TxDTarg0].full | (NumTargets < 1),
-                        fifo_state[FIFO_TxDTarg1].full | (NumTargets < 2),
-                        fifo_state[FIFO_TxDTarg2].full | (NumTargets < 3),
-                        fifo_state[FIFO_TxDTarg3].full | (NumTargets < 4),
-                        fifo_state[FIFO_TxTarg0].full  | (NumTargets < 1),
-                        fifo_state[FIFO_TxTarg1].full  | (NumTargets < 2),
-                        fifo_state[FIFO_TxTarg2].full  | (NumTargets < 3),
-                        fifo_state[FIFO_TxTarg3].full  | (NumTargets < 4)};
-  assign tti_rvalid = '{fifo_out[FIFO_RxDTarg].rvalid,
-                        fifo_out[FIFO_RxTarg].rvalid,
-                        fifo_out[FIFO_IBIDTarg].rvalid,
-                        fifo_out[FIFO_IBITarg].rvalid,
-                        fifo_out[FIFO_AsyncTarg].rvalid,
-                        fifo_out[FIFO_TxDTarg0].rvalid,
-                        fifo_out[FIFO_TxDTarg1].rvalid,
-                        fifo_out[FIFO_TxDTarg2].rvalid,
-                        fifo_out[FIFO_TxDTarg3].rvalid,
-                        fifo_out[FIFO_TxTarg0].rvalid,
-                        fifo_out[FIFO_TxTarg1].rvalid,
-                        fifo_out[FIFO_TxTarg2].rvalid,
-                        fifo_out[FIFO_TxTarg3].rvalid};
-  assign tti_rdata  = '{fifo_out[FIFO_RxDTarg].rdata,
-                        fifo_out[FIFO_RxTarg].rdata,
-                        fifo_out[FIFO_IBIDTarg].rdata,
-                        fifo_out[FIFO_IBITarg].rdata,
-                        fifo_out[FIFO_AsyncTarg].rdata,
-                        fifo_out[FIFO_TxDTarg0].rdata,
-                        fifo_out[FIFO_TxDTarg1].rdata,
-                        fifo_out[FIFO_TxDTarg2].rdata,
-                        fifo_out[FIFO_TxDTarg3].rdata,
-                        fifo_out[FIFO_TxTarg0].rdata,
-                        fifo_out[FIFO_TxTarg1].rdata,
-                        fifo_out[FIFO_TxTarg2].rdata,
-                        fifo_out[FIFO_TxTarg3].rdata};
-  assign tti_empty  = '{fifo_state[FIFO_RxDTarg].empty,
-                        fifo_state[FIFO_RxTarg].empty,
-                        fifo_state[FIFO_IBIDTarg].empty,
-                        fifo_state[FIFO_IBITarg].empty,
-                        fifo_state[FIFO_AsyncTarg].empty,
-                        // Qualifying the `empty` signals for the Virtual Targets both allows
-                        // synthesis to strip out unused logic and prevents system-side bus accesses
-                        // from locking up; writes will complete immediately.
-                        fifo_state[FIFO_TxDTarg0].empty | (NumTargets < 1),
-                        fifo_state[FIFO_TxDTarg1].empty | (NumTargets < 2),
-                        fifo_state[FIFO_TxDTarg2].empty | (NumTargets < 3),
-                        fifo_state[FIFO_TxDTarg3].empty | (NumTargets < 4),
-                        fifo_state[FIFO_TxTarg0].empty  | (NumTargets < 1),
-                        fifo_state[FIFO_TxTarg1].empty  | (NumTargets < 2),
-                        fifo_state[FIFO_TxTarg2].empty  | (NumTargets < 3),
-                        fifo_state[FIFO_TxTarg3].empty  | (NumTargets < 4)};
+  assign tti_rdata = '{fifo_out[FIFO_RxDTarg].rdata,
+                       fifo_out[FIFO_RxTarg].rdata,
+                       fifo_out[FIFO_IBIDTarg].rdata,
+                       fifo_out[FIFO_IBITarg].rdata,
+                       fifo_out[FIFO_AsyncTarg].rdata,
+                       fifo_out[FIFO_TxDTarg0].rdata,
+                       fifo_out[FIFO_TxDTarg1].rdata,
+                       fifo_out[FIFO_TxDTarg2].rdata,
+                       fifo_out[FIFO_TxDTarg3].rdata,
+                       fifo_out[FIFO_TxTarg0].rdata,
+                       fifo_out[FIFO_TxTarg1].rdata,
+                       fifo_out[FIFO_TxTarg2].rdata,
+                       fifo_out[FIFO_TxTarg3].rdata};
 
   // Target Transaction Interface queues.
   i3c_queues #(
@@ -1404,15 +1339,69 @@ module i3c_core
     .rdata_o     (bufq_rdata_o[TL_TTI]),
 
     // Writes to logical queues.
-    .buf_wready_i(tti_wready),
-    .buf_full_i  (tti_full),
+    .buf_wready_i({fifo_out[FIFO_TxTarg3].wready,
+                   fifo_out[FIFO_TxTarg2].wready,
+                   fifo_out[FIFO_TxTarg1].wready,
+                   fifo_out[FIFO_TxTarg0].wready,
+                   fifo_out[FIFO_TxDTarg3].wready,
+                   fifo_out[FIFO_TxDTarg2].wready,
+                   fifo_out[FIFO_TxDTarg1].wready,
+                   fifo_out[FIFO_TxDTarg0].wready,
+                   fifo_out[FIFO_AsyncTarg].wready,
+                   fifo_out[FIFO_IBITarg].wready,
+                   fifo_out[FIFO_IBIDTarg].wready,
+                   fifo_out[FIFO_RxTarg].wready,
+                   fifo_out[FIFO_RxDTarg].wready}),
+    .buf_full_i  ({// Qualifying the `full` signals for the Virtual Targets both allows
+                   // synthesis to strip out unused logic and prevents system-side bus accesses
+                   // from locking up; writes will complete immediately.
+                   fifo_state[FIFO_TxTarg3].full  | (NumTargets < 4),
+                   fifo_state[FIFO_TxTarg2].full  | (NumTargets < 3),
+                   fifo_state[FIFO_TxTarg1].full  | (NumTargets < 2),
+                   fifo_state[FIFO_TxTarg0].full  | (NumTargets < 1),
+                   fifo_state[FIFO_TxDTarg3].full | (NumTargets < 4),
+                   fifo_state[FIFO_TxDTarg2].full | (NumTargets < 3),
+                   fifo_state[FIFO_TxDTarg1].full | (NumTargets < 2),
+                   fifo_state[FIFO_TxDTarg0].full | (NumTargets < 1),
+                   fifo_state[FIFO_AsyncTarg].full,
+                   fifo_state[FIFO_IBITarg].full,
+                   fifo_state[FIFO_IBIDTarg].full,
+                   fifo_state[FIFO_RxTarg].full,
+                   fifo_state[FIFO_RxDTarg].full}),
     .buf_wvalid_o(tti_wvalid),
     .buf_wdata_o (tti_wdata),
 
     // Reads from logical queues.
-    .buf_rvalid_i(tti_rvalid),
+    .buf_rvalid_i({fifo_out[FIFO_TxTarg3].rvalid,
+                   fifo_out[FIFO_TxTarg2].rvalid,
+                   fifo_out[FIFO_TxTarg1].rvalid,
+                   fifo_out[FIFO_TxTarg0].rvalid,
+                   fifo_out[FIFO_TxDTarg3].rvalid,
+                   fifo_out[FIFO_TxDTarg2].rvalid,
+                   fifo_out[FIFO_TxDTarg1].rvalid,
+                   fifo_out[FIFO_TxDTarg0].rvalid,
+                   fifo_out[FIFO_AsyncTarg].rvalid,
+                   fifo_out[FIFO_IBITarg].rvalid,
+                   fifo_out[FIFO_IBIDTarg].rvalid,
+                   fifo_out[FIFO_RxTarg].rvalid,
+                   fifo_out[FIFO_RxDTarg].rvalid}),
     .buf_rdata_i (tti_rdata),
-    .buf_empty_i (tti_empty),
+    .buf_empty_i ({// Qualifying the `empty` signals for the Virtual Targets both allows
+                   // synthesis to strip out unused logic and prevents system-side bus accesses
+                   // from locking up; writes will complete immediately.
+                   fifo_state[FIFO_TxTarg3].empty  | (NumTargets < 4),
+                   fifo_state[FIFO_TxTarg2].empty  | (NumTargets < 3),
+                   fifo_state[FIFO_TxTarg1].empty  | (NumTargets < 2),
+                   fifo_state[FIFO_TxTarg0].empty  | (NumTargets < 1),
+                   fifo_state[FIFO_TxDTarg3].empty | (NumTargets < 4),
+                   fifo_state[FIFO_TxDTarg2].empty | (NumTargets < 3),
+                   fifo_state[FIFO_TxDTarg1].empty | (NumTargets < 2),
+                   fifo_state[FIFO_TxDTarg0].empty | (NumTargets < 1),
+                   fifo_state[FIFO_AsyncTarg].empty,
+                   fifo_state[FIFO_IBITarg].empty,
+                   fifo_state[FIFO_IBIDTarg].empty,
+                   fifo_state[FIFO_RxTarg].empty,
+                   fifo_state[FIFO_RxDTarg].empty}),
     .buf_rready_o(tti_rready),
 
     // Diagnostic error indicator.
