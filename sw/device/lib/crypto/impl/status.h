@@ -7,6 +7,7 @@
 
 #include "sw/device/lib/base/macros.h"
 #include "sw/device/lib/base/status.h"
+#include "sw/device/lib/base/stdasm.h"
 #include "sw/device/lib/crypto/include/datatypes.h"
 
 #ifdef __cplusplus
@@ -69,50 +70,64 @@ extern "C" {
 
 #if !defined(OT_DISABLE_HARDENING) && defined(OT_PLATFORM_RV32)
 /**
+ * Compiler optimization barrier for `HARDENED_TRY`.
+ *
+ * Placed in a `static OT_ALWAYS_INLINE` helper without `volatile` so LLVM
+ * preserves identical source-location metadata and allows tail-merging of error
+ * return blocks, while still preventing correlated-value propagation from
+ * narrowing the `orig_ >= 0` sign check to `status_ == -1`.
+ */
+static OT_ALWAYS_INLINE uint32_t hardened_try_barrier_(uint32_t val) {
+  asm("" : "+r"(val));
+  return val;
+}
+
+/**
  * Hardened version of the `TRY` macro from `status.h`.
  *
- * Returns an error if either expr_ represents an error, or if the OK code does
- * not match the expected hardened value.
+ * Returns an error if `expr_` represents an error status (negative `int32_t`),
+ * continues if `expr_` equals `OTCRYPTO_OK` (`kHardenedBoolTrue`), and traps on
+ * any other value (including non-hardened `0` or corrupted positive values).
  *
- * To optimize code size this macro uses 16b branch on zero instructions with
- * respective arithmetic for comparisons. In both the case where the status is
- * OK or not, an additional check is performed to stop potential fault attacks
- * by doubling the branch. More specifically, in both the case where the status
- * is OK or not an additional check is performed to stop potential fault
- * attacks.
- *
- * This macro specifically uses the fact that error statuses are negative
- * values.
+ * To resist both single-instruction skips and wider instruction-fetch skips
+ * (up to 8 bytes / two fetch words on Ibex) without bloating call sites, the
+ * error and trap guards are split across an 8-byte distance:
+ *   1. `addi rd, rd, -1` (2B compressed, in-place): maps all valid error codes
+ *      (bit 31 set, non-zero lower bits) to negative values, `0` to `-1`,
+ *      `INT32_MIN` (`0x80000000`) to `0x7fffffff` (traps fail-closed), and
+ *      `kHardenedBoolTrue` (1849) to `1848`.
+ *   2. `bltz rd, .L_err` (4B): branches to the tail-merged error epilogue,
+ *      which restores `rd + 1`, traps if the restored value is non-negative
+ *      (`bgez rd, .L_trap`, catching both `0` and any faulted branch from the
+ *      OK path), and returns the original error status.
+ *   3. `xori rd, rd, (kHardenedBoolTrue - 1)` (4B, in-place): maps `1848` to
+ *      `0`, leaving any skipped error status (bit 31 set) non-zero.
+ *   4. `bnez rd, .L_trap` (2B compressed): traps if non-zero. Because `bltz`
+ *      and `xori` span 8 bytes, no 4B or 8B instruction-fetch skip can cover
+ *      both `bltz` and `bnez`, so skipping the error branch always falls into
+ *      the trap.
  *
  * @param expr_ An expression that evaluates to a `status_t`.
  * @return The enclosed OK value.
  */
-#define HARDENED_TRY(expr_)                                              \
-  do {                                                                   \
-    uint32_t status_ = OT_UNSIGNED(expr_.value);                         \
-    asm volatile(                                                        \
-        "xori %[status_], %[status_], (%[kHardenedBoolTrue] - 1); "      \
-        "addi %[status_], %[status_], -1;"                               \
-        : [status_] "+r"(status_)                                        \
-        : [kHardenedBoolTrue] "i"(kHardenedBoolTrue)                     \
-        :);                                                              \
-    if (status_) {                                                       \
-      int32_t orig_ =                                                    \
-          (int32_t)((status_ + 1) ^ OT_UNSIGNED(kHardenedBoolTrue - 1)); \
-      if (orig_ < 0) {                                                   \
-        return (status_t){.value = orig_};                               \
-      }                                                                  \
-      __builtin_trap();                                                  \
-    }                                                                    \
-    status_ = launder32(status_);                                        \
-    if (status_) {                                                       \
-      int32_t orig_ =                                                    \
-          (int32_t)((status_ + 1) ^ OT_UNSIGNED(kHardenedBoolTrue - 1)); \
-      if (orig_ < 0) {                                                   \
-        return (status_t){.value = orig_};                               \
-      }                                                                  \
-      __builtin_trap();                                                  \
-    }                                                                    \
+#define HARDENED_TRY(expr_)                                            \
+  do {                                                                 \
+    int32_t status_ = (expr_).value;                                   \
+    asm volatile("addi %0, %0, -1" : "+r"(status_));                   \
+    if (status_ < 0) {                                                 \
+      int32_t orig_ =                                                  \
+          (int32_t)(hardened_try_barrier_(OT_UNSIGNED(status_)) + 1u); \
+      if (orig_ >= 0) {                                                \
+        __builtin_trap();                                              \
+      }                                                                \
+      return (status_t){.value = orig_};                               \
+    }                                                                  \
+    asm volatile("xori %0, %0, %1"                                     \
+                 : "+r"(status_)                                       \
+                 : "i"(kHardenedBoolTrue - 1));                        \
+    if (status_ != 0) {                                                \
+      __builtin_trap();                                                \
+    }                                                                  \
   } while (false)
 // COVERAGE (FI CM) We do not cover the redundant checks of the HARDENED_TRY as
 // they serve as redundant encoding against fault attacks.
