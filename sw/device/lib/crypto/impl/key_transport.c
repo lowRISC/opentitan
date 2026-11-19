@@ -71,7 +71,7 @@ otcrypto_status_t otcrypto_symmetric_keygen(
 }
 
 otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
-                                         const uint32_t salt[7],
+                                         const uint32_t salt[8],
                                          otcrypto_blinded_key_t *key) {
   OTCRYPTO_LOCKED_STATE_CHECK();
 #ifndef OTCRYPTO_DISABLE_NULL_CHECKS
@@ -95,45 +95,15 @@ otcrypto_status_t otcrypto_hw_backed_key(uint32_t version,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Copy the version and salt into the keyblob.
+  // Store the diversification struct directly in the opaque keyblob buffer.
+  static_assert(
+      kSwKeyblobHwBackedBytes >= sizeof(keymgr_diversification_t),
+      "SW HW-backed keyblob must fit the incoming diversification struct");
+  keymgr_diversification_t diversification;
+  memcpy(diversification.salt, salt, sizeof(diversification.salt));
+  diversification.version = version;
   memset(key->keyblob, 0, key->keyblob_length);
-  key->keyblob[0] = version;
-  memcpy(&key->keyblob[1], salt, 7 * sizeof(uint32_t));
-
-  // Set the checksum.
-  key->checksum = otcrypto_integrity_blinded_checksum(key);
-
-  return otcrypto_eval_exit(OTCRYPTO_OK);
-}
-
-otcrypto_status_t otcrypto_hw_backed_attestation_key(
-    uint32_t version, const uint32_t salt[8], otcrypto_blinded_key_t *key) {
-  OTCRYPTO_LOCKED_STATE_CHECK();
-#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (key == NULL || key->keyblob == NULL || salt == NULL) {
-    // COVERAGE (MISSING) We do not cover null inputs
-    return OTCRYPTO_BAD_ARGS;
-  }
-#endif
-
-  if ((key->keyblob_length != kCdiKeyblobHwBackedBytes &&
-       key->keyblob_length != kSwKeyblobHwBackedBytes) ||
-      key->config.hw_backed != kHardenedBoolTrue) {
-    // COVERAGE (MISSING) We do not cover bad length/hw_backed inputs
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  // Get the key type from the top 16 bits of the full mode and ensure that it
-  // is not RSA. All other key types are acceptable for hardware-backed keys.
-  otcrypto_key_type_t key_type =
-      (otcrypto_key_type_t)(key->config.key_mode >> 16);
-  if (key_type == kOtcryptoKeyTypeRsa) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  memset(key->keyblob, 0, key->keyblob_length);
-  key->keyblob[0] = version;
-  memcpy(&key->keyblob[1], salt, 8 * sizeof(uint32_t));
+  memcpy(key->keyblob, &diversification, sizeof(diversification));
 
   // Set the checksum.
   key->checksum = otcrypto_integrity_blinded_checksum(key);
@@ -155,24 +125,30 @@ otcrypto_status_t otcrypto_hw_backed_keygen(hardened_bool_t attestation,
     return OTCRYPTO_BAD_ARGS;
   }
 
-  // Ensure the allocated share size and keyblob length match the key manager
-  // output.
-  size_t share_words = launder32(keyblob_share_num_words(key->config));
-  if (share_words != kKeymgrOutputShareNumWords ||
-      key->keyblob_length != kSwKeyblobHwBackedBytes) {
+  if (launder32(attestation) != kHardenedBoolTrue &&
+      launder32(attestation) != kHardenedBoolFalse) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
+  // Ensure the allocated share size, keyblob length, and post-morph software
+  // keyblob size fit within the key manager output buffer.
+  size_t share_words = keyblob_share_num_words(key->config);
+  if (launder32(share_words) != kKeymgrOutputShareNumWords ||
+      launder32(key->keyblob_length) != kSwKeyblobHwBackedBytes) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+  HARDENED_CHECK_EQ(key->keyblob_length, kSwKeyblobHwBackedBytes);
+
+  otcrypto_key_config_t morphed_cfg = key->config;
+  morphed_cfg.hw_backed = kHardenedBoolFalse;
+  size_t morphed_words = keyblob_num_words(morphed_cfg);
+  if (morphed_words == 0 || morphed_words > kSwKeyblobHwBackedWords) {
     return OTCRYPTO_BAD_ARGS;
   }
 
   // Extract the diversification data.
   keymgr_diversification_t diversification;
-  if (attestation == kHardenedBoolTrue) {
-    HARDENED_TRY(
-        keyblob_to_keymgr_attestation_diversification(key, &diversification));
-  } else if (attestation == kHardenedBoolFalse) {
-    HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
-  } else {
-    return OTCRYPTO_BAD_ARGS;
-  }
+  HARDENED_TRY(keyblob_to_keymgr_diversification(key, &diversification));
 
   // Generate the key.
   keymgr_output_t output;
@@ -194,8 +170,8 @@ otcrypto_status_t otcrypto_hw_backed_keygen(hardened_bool_t attestation,
   HARDENED_TRY(hardened_memcpy(share1, output.share1, share_words));
 
   // Wipe the sensitive key material.
-  hardened_memshred(output.share0, share_words);
-  hardened_memshred(output.share1, share_words);
+  hardened_memshred(output.share0, kKeymgrOutputShareNumWords);
+  hardened_memshred(output.share1, kKeymgrOutputShareNumWords);
 
   key->checksum = otcrypto_integrity_blinded_checksum(key);
 

@@ -203,21 +203,27 @@ status_t keyblob_from_shares(const uint32_t *share0, const uint32_t *share1,
 status_t keyblob_buffer_to_keymgr_diversification(
     const uint32_t *keyblob, otcrypto_key_mode_t mode,
     keymgr_diversification_t *diversification) {
-  // Set the version to the first word of the keyblob.
-  diversification->version = launder32(keyblob[0]);
+  static_assert(sizeof(keymgr_diversification_t) ==
+                    (kKeymgrSaltNumWords + 1) * sizeof(uint32_t),
+                "keymgr_diversification_t must have no padding");
+  static_assert(sizeof(keymgr_diversification_t) == kKeyblobHwBackedBytes,
+                "HW-backed keyblob size must match keymgr_diversification_t");
+  static_assert(offsetof(keymgr_diversification_t, salt) == 0,
+                "keymgr_diversification_t salt must be at offset 0");
 
-  // Copy the remainder of the keyblob into the salt.
-  HARDENED_TRY(hardened_memcpy(diversification->salt, &keyblob[1],
-                               kKeymgrSaltNumWords - 1));
-
-  // Set the key mode as the last word of the salt.
-  diversification->salt[kKeymgrSaltNumWords - 1] = launder32(mode);
-
-  HARDENED_CHECK_EQ(diversification->version, keyblob[0]);
-  HARDENED_CHECK_EQ(hardened_memeq(diversification->salt, &keyblob[1],
-                                   kKeymgrSaltNumWords - 1),
+  // Copy the diversification struct out of the opaque keyblob buffer.
+  HARDENED_TRY(hardened_memcpy((uint32_t *)diversification, keyblob,
+                               kKeyblobHwBackedWords));
+  HARDENED_CHECK_EQ(hardened_memeq((const uint32_t *)diversification, keyblob,
+                                   kKeyblobHwBackedWords),
                     kHardenedBoolTrue);
-  HARDENED_CHECK_EQ(diversification->salt[kKeymgrSaltNumWords - 1], mode);
+
+  // XOR the key mode into the last word of the salt for domain separation
+  // across key modes while preserving full 256-bit salt entropy.
+  diversification->salt[kKeymgrSaltNumWords - 1] ^= launder32(mode);
+  HARDENED_CHECK_EQ(*(const volatile uint32_t *)&diversification
+                         ->salt[kKeymgrSaltNumWords - 1],
+                    keyblob[kKeymgrSaltNumWords - 1] ^ mode);
   return OTCRYPTO_OK;
 }
 
@@ -234,6 +240,13 @@ status_t keyblob_to_keymgr_diversification(
   }
   HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
 
+  // RSA keys are never hardware-backed.
+  otcrypto_key_type_t key_type =
+      (otcrypto_key_type_t)(key->config.key_mode >> 16);
+  if (key_type == kOtcryptoKeyTypeRsa) {
+    return OTCRYPTO_BAD_ARGS;
+  }
+
   if (launder32(keyblob_share_num_words(key->config)) == 0 ||
       (key->keyblob_length != kKeyblobHwBackedBytes &&
        key->keyblob_length != kSwKeyblobHwBackedBytes)) {
@@ -242,38 +255,6 @@ status_t keyblob_to_keymgr_diversification(
 
   return keyblob_buffer_to_keymgr_diversification(
       key->keyblob, key->config.key_mode, diversification);
-}
-
-status_t keyblob_to_keymgr_attestation_diversification(
-    const otcrypto_blinded_key_t *key,
-    keymgr_diversification_t *diversification) {
-#ifndef OTCRYPTO_DISABLE_NULL_CHECKS
-  if (key->keyblob == NULL) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-#endif
-  if (launder32(key->config.hw_backed) != kHardenedBoolTrue) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-  HARDENED_CHECK_EQ(key->config.hw_backed, kHardenedBoolTrue);
-
-  if (launder32(keyblob_share_num_words(key->config)) == 0 ||
-      (key->keyblob_length != kCdiKeyblobHwBackedBytes &&
-       key->keyblob_length != kSwKeyblobHwBackedBytes)) {
-    return OTCRYPTO_BAD_ARGS;
-  }
-
-  diversification->version = launder32(key->keyblob[0]);
-
-  HARDENED_TRY(hardened_memcpy(diversification->salt, &key->keyblob[1],
-                               kKeymgrSaltNumWords));
-
-  HARDENED_CHECK_EQ(diversification->version, key->keyblob[0]);
-  HARDENED_CHECK_EQ(hardened_memeq(diversification->salt, &key->keyblob[1],
-                                   kKeymgrSaltNumWords),
-                    kHardenedBoolTrue);
-
-  return OTCRYPTO_OK;
 }
 
 status_t keyblob_ensure_xor_masked(const otcrypto_key_config_t config) {

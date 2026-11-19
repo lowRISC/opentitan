@@ -137,10 +137,16 @@ status_t dice_test(void) {
       .keyblob = keyblob,
   };
 
-  // CDI_1 (Owner) attestation key diversifier salt and version from dice_keys.h
-  TRY(otcrypto_hw_backed_attestation_key(
-      kDiceKeyCdi1.keymgr_diversifier->version,
-      kDiceKeyCdi1.keymgr_diversifier->salt, &private_key));
+  // CDI_1 (Owner) attestation key diversifier salt and version from
+  // dice_keys.h. ROM_EXT derives the stored CDI_1 certificate using the raw
+  // 8-word salt directly in keymgr (without cryptolib's `key_mode` XOR), so
+  // pre-XOR `kOtcryptoKeyModeEcdsaP256` into `salt[7]` to match the certificate
+  // key.
+  uint32_t cdi1_salt[8];
+  memcpy(cdi1_salt, kDiceKeyCdi1.keymgr_diversifier->salt, sizeof(cdi1_salt));
+  cdi1_salt[7] ^= kOtcryptoKeyModeEcdsaP256;
+  TRY(otcrypto_hw_backed_key(kDiceKeyCdi1.keymgr_diversifier->version,
+                             cdi1_salt, &private_key));
 
   // Read the attestation seed from flash.
   uint32_t kAttestationSeedWords = 10;

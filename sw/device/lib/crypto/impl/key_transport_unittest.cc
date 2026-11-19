@@ -79,17 +79,17 @@ const otcrypto_key_config_t kConfigAesKwp256 = {
 
 TEST(KeyTransport, HwBackedKeyToDiversificationData) {
   uint32_t test_version = 0xf0f1f2f3;
-  std::array<uint32_t, 7> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
+  std::array<uint32_t, 8> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
                                        0x04050607, 0x08090a0b, 0x0c0d0e0f,
-                                       0x10111213};
+                                       0x10111213, 0x14151617};
 
   // Create a key handle from the test data.
   otcrypto_key_config_t hw_cfg = kConfigHwBackedAesCtr128;
   hw_cfg.key_length = 256 / 8;
-  uint32_t keyblob[32] = {0};
+  uint32_t keyblob[kKeyblobHwBackedWords] = {0};
   otcrypto_blinded_key_t key = {
       .config = hw_cfg,
-      .keyblob_length = 32,
+      .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
   EXPECT_EQ(
@@ -97,7 +97,7 @@ TEST(KeyTransport, HwBackedKeyToDiversificationData) {
       true);
 
   // Expect that converting to keymgr diversification data generates the same
-  // version and salt.
+  // version and 8-word salt with `key_mode` XORed into the last word.
   keymgr_diversification_t diversification;
   EXPECT_EQ(
       status_ok(keyblob_to_keymgr_diversification(&key, &diversification)),
@@ -107,20 +107,27 @@ TEST(KeyTransport, HwBackedKeyToDiversificationData) {
     EXPECT_EQ(diversification.salt[i], test_salt[i]);
   }
   EXPECT_EQ(diversification.salt[kKeymgrSaltNumWords - 1],
-            kConfigHwBackedAesCtr128.key_mode);
+            test_salt[kKeymgrSaltNumWords - 1] ^ hw_cfg.key_mode);
+
+  // Setting salt[7] to 0 reproduces the legacy 7-word salt behavior
+  // (`0 ^ key_mode == key_mode`).
+  test_salt[kKeymgrSaltNumWords - 1] = 0;
+  EXPECT_OK(otcrypto_hw_backed_key(test_version, test_salt.data(), &key));
+  EXPECT_OK(keyblob_to_keymgr_diversification(&key, &diversification));
+  EXPECT_EQ(diversification.salt[kKeymgrSaltNumWords - 1], hw_cfg.key_mode);
 }
 
 TEST(KeyTransport, HwBackedRsaKeyFails) {
   uint32_t test_version = 0xf0f1f2f3;
-  std::array<uint32_t, 7> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
+  std::array<uint32_t, 8> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
                                        0x04050607, 0x08090a0b, 0x0c0d0e0f,
-                                       0x10111213};
+                                       0x10111213, 0x14151617};
 
   // Create a key handle from the test data.
-  uint32_t keyblob[32] = {0};
+  uint32_t keyblob[kKeyblobHwBackedWords] = {0};
   otcrypto_blinded_key_t key = {
       .config = kConfigRsaInvalid,
-      .keyblob_length = 32,
+      .keyblob_length = sizeof(keyblob),
       .keyblob = keyblob,
   };
 
@@ -128,15 +135,6 @@ TEST(KeyTransport, HwBackedRsaKeyFails) {
   EXPECT_EQ(
       status_ok(otcrypto_hw_backed_key(test_version, test_salt.data(), &key)),
       false);
-
-  std::array<uint32_t, 8> att_salt = {0};
-  otcrypto_blinded_key_t att_key = {
-      .config = kConfigRsaInvalid,
-      .keyblob_length = 36,
-      .keyblob = keyblob,
-  };
-  EXPECT_NOT_OK(otcrypto_hw_backed_attestation_key(test_version,
-                                                   att_salt.data(), &att_key));
 }
 
 TEST(KeyTransport, BlindedKeyImportExport) {
@@ -638,36 +636,30 @@ TEST(KeyTransport, HwBackedKeygenNegative) {
       .security_level = kOtcryptoKeySecurityLevelLow,
   };
   uint32_t test_version = 0;
-  std::array<uint32_t, 7> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
+  std::array<uint32_t, 8> test_salt = {0x01234567, 0x89abcdef, 0x00010203,
                                        0x04050607, 0x08090a0b, 0x0c0d0e0f,
-                                       0x10111213};
-  std::array<uint32_t, 8> att_salt = {0x01234567, 0x89abcdef, 0x00010203,
-                                      0x04050607, 0x08090a0b, 0x0c0d0e0f,
-                                      0x10111213, 0x14151617};
+                                       0x10111213, 0x14151617};
 
-  // A 32-byte (8-word) sideload keyblob is too small for SW keygen (needs 64B).
-  uint32_t small_sealing_keyblob[8] = {0};
-  otcrypto_blinded_key_t small_sealing_key = {
+  // A 32-byte (8-word) keyblob is too small for the 9-word handle.
+  uint32_t too_small_keyblob[8] = {0};
+  otcrypto_blinded_key_t too_small_key = {
       .config = kConfigHwBackedAesCtr256,
-      .keyblob_length = sizeof(small_sealing_keyblob),
-      .keyblob = small_sealing_keyblob,
+      .keyblob_length = sizeof(too_small_keyblob),
+      .keyblob = too_small_keyblob,
   };
-  EXPECT_OK(otcrypto_hw_backed_key(test_version, test_salt.data(),
-                                   &small_sealing_key));
   EXPECT_NOT_OK(
-      otcrypto_hw_backed_keygen(kHardenedBoolFalse, &small_sealing_key));
+      otcrypto_hw_backed_key(test_version, test_salt.data(), &too_small_key));
 
-  // A 36-byte (9-word) attestation keyblob is too small for SW keygen (needs
-  // 64B).
-  uint32_t small_att_keyblob[9] = {0};
-  otcrypto_blinded_key_t small_att_key = {
+  // A 36-byte (9-word) sideload keyblob is too small for SW keygen (needs 64B).
+  uint32_t small_keyblob[kKeyblobHwBackedWords] = {0};
+  otcrypto_blinded_key_t small_key = {
       .config = kConfigHwBackedAesCtr256,
-      .keyblob_length = sizeof(small_att_keyblob),
-      .keyblob = small_att_keyblob,
+      .keyblob_length = sizeof(small_keyblob),
+      .keyblob = small_keyblob,
   };
-  EXPECT_OK(otcrypto_hw_backed_attestation_key(test_version, att_salt.data(),
-                                               &small_att_key));
-  EXPECT_NOT_OK(otcrypto_hw_backed_keygen(kHardenedBoolTrue, &small_att_key));
+  EXPECT_OK(otcrypto_hw_backed_key(test_version, test_salt.data(), &small_key));
+  EXPECT_NOT_OK(otcrypto_hw_backed_keygen(kHardenedBoolFalse, &small_key));
+  EXPECT_NOT_OK(otcrypto_hw_backed_keygen(kHardenedBoolTrue, &small_key));
 
   // A 128-bit key config does not match the 256-bit keymgr output share size.
   uint32_t keyblob_64b[16] = {0};
@@ -705,6 +697,22 @@ TEST(KeyTransport, HwBackedKeygenNegative) {
   bad_checksum_key.checksum ^= 0xffffffff;
   EXPECT_NOT_OK(
       otcrypto_hw_backed_keygen(kHardenedBoolFalse, &bad_checksum_key));
+
+  // Hand-crafted RSA hw_backed key with valid checksum must be rejected so
+  // morphing cannot overflow the 64B keyblob.
+  otcrypto_key_config_t forged_rsa_cfg = kConfigRsaInvalid;
+  forged_rsa_cfg.key_length = 32;
+  uint32_t forged_rsa_blob[kSwKeyblobHwBackedWords] = {0};
+  otcrypto_blinded_key_t forged_rsa_key = {
+      .config = forged_rsa_cfg,
+      .keyblob_length = sizeof(forged_rsa_blob),
+      .keyblob = forged_rsa_blob,
+  };
+  forged_rsa_key.checksum =
+      otcrypto_integrity_blinded_checksum(&forged_rsa_key);
+  keymgr_diversification_t div;
+  EXPECT_NOT_OK(keyblob_to_keymgr_diversification(&forged_rsa_key, &div));
+  EXPECT_NOT_OK(otcrypto_hw_backed_keygen(kHardenedBoolFalse, &forged_rsa_key));
 }
 
 TEST(KeyTransport, AesKwpNegative) {

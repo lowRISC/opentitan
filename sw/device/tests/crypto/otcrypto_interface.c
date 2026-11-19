@@ -54,7 +54,6 @@ volatile otcrypto_interface_t otcrypto = {
     // Symmetric key generation.
     .symmetric_keygen = &otcrypto_symmetric_keygen,
     .hw_backed_key = &otcrypto_hw_backed_key,
-    .hw_backed_attestation_key = &otcrypto_hw_backed_attestation_key,
     .hw_backed_keygen = &otcrypto_hw_backed_keygen,
 
     // Secret key import/export.

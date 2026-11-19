@@ -15,23 +15,18 @@ extern "C" {
 
 enum {
   /**
-   * Number of 32-bit words in a hardware-backed key's keyblob.
+   * Number of 32-bit words in a hardware-backed key's keyblob
+   * (`keymgr_diversification_t`).
    */
-  kKeyblobHwBackedWords = kKeymgrSaltNumWords,
+  kKeyblobHwBackedWords = sizeof(keymgr_diversification_t) / sizeof(uint32_t),
   /**
    * Number of bytes in a hardware-backed key's keyblob.
    */
-  kKeyblobHwBackedBytes = kKeyblobHwBackedWords * sizeof(uint32_t),
-  /**
-   * Number of 32-bit words in an attestation key's keyblob.
-   */
-  kCdiKeyblobHwBackedWords = kKeymgrSaltNumWords + 1,
-  /**
-   * Number of bytes in an attestation key's keyblob.
-   */
-  kCdiKeyblobHwBackedBytes = kCdiKeyblobHwBackedWords * sizeof(uint32_t),
+  kKeyblobHwBackedBytes = sizeof(keymgr_diversification_t),
   /**
    * Number of 32-bit words in a software-visible hardware-backed key's keyblob.
+   * Must be large enough to hold both the incoming diversification handle
+   * (`kKeyblobHwBackedWords`) and the outgoing software key shares.
    */
   kSwKeyblobHwBackedWords = 2 * kKeymgrOutputShareNumWords,
   /**
@@ -123,13 +118,15 @@ status_t keyblob_write_shares(const uint32_t *share0, const uint32_t *share1,
 /**
  * Construct key manager diversification data from a raw keyblob.
  *
- * The keyblob must be exactly 8 32-bit words long. The first word is the
- * version and subsequent words are the salt. The key mode is appended to the
- * salt to prevent key manager keys being used for different modes.
+ * The keyblob must be at least `kKeyblobHwBackedWords` (9) 32-bit words long
+ * and hold a serialized `keymgr_diversification_t` populated by
+ * `otcrypto_hw_backed_key`. The key mode is XORed into the last word of the
+ * salt (`salt[kKeymgrSaltNumWords - 1]`) for domain separation across key
+ * modes while preserving full 256-bit salt entropy.
  *
  * @param keyblob Pointer to the keyblob.
- * @param mode Key mode to use in the diversification.
- * @param[out] Destination key manager diversification struct.
+ * @param mode Key mode to XOR into the last salt word.
+ * @param[out] diversification Destination key manager diversification struct.
  */
 OT_WARN_UNUSED_RESULT
 status_t keyblob_buffer_to_keymgr_diversification(
@@ -139,33 +136,20 @@ status_t keyblob_buffer_to_keymgr_diversification(
 /**
  * Construct key manager diversification data from a blinded key.
  *
- * The keyblob for a hardware-backed key must be exactly 8 32-bit words long.
- * The first word is the version and subsequent words are the salt. The key
- * mode is appended to the salt to prevent key manager keys being used for
- * different modes.
+ * The keyblob for a hardware-backed key must be `kKeyblobHwBackedBytes` (36
+ * bytes) or `kSwKeyblobHwBackedBytes` long and hold a
+ * `keymgr_diversification_t` populated by `otcrypto_hw_backed_key`.
+ * `key->config.key_mode` is XORed into the last word of the salt
+ * (`salt[kKeymgrSaltNumWords - 1]`) for domain separation across key modes.
  *
  * If the key configuration states that the key is not hardware-backed, or if
  * the keyblob is the wrong length, this function will return an error.
  *
  * @param key Blinded key to use.
- * @param[out] Destination key manager diversification struct.
+ * @param[out] diversification Destination key manager diversification struct.
  */
 OT_WARN_UNUSED_RESULT
 status_t keyblob_to_keymgr_diversification(
-    const otcrypto_blinded_key_t *key,
-    keymgr_diversification_t *diversification);
-
-/**
- * Construct key manager diversification data from a blinded key.
- *
- * Similar to keyblob_to_keymgr_diversification but using the specific salt for
- * attestation keys.
- *
- * @param key Blinded key to use.
- * @param[out] Destination key manager diversification struct.
- */
-OT_WARN_UNUSED_RESULT
-status_t keyblob_to_keymgr_attestation_diversification(
     const otcrypto_blinded_key_t *key,
     keymgr_diversification_t *diversification);
 

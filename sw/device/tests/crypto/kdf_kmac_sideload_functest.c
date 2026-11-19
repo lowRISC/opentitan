@@ -33,6 +33,8 @@ typedef struct kdf_test_vector {
   char *vector_identifier;
   kdf_test_operation_t test_operation;
   otcrypto_blinded_key_t key_derivation_key;
+  uint32_t key_version;
+  uint32_t key_salt[8];
   otcrypto_const_byte_buf_t label;
   otcrypto_const_byte_buf_t context;
   otcrypto_blinded_key_t keying_material;
@@ -77,18 +79,20 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
                         .security_level = kOtcryptoKeySecurityLevelLow,
                         .exportable = kHardenedBoolFalse,
                     },
-                .keyblob_length = 32,
-                .keyblob =
-                    (uint32_t[]){
-                        0x00000000,
-                        0xa0d0e9b4,
-                        0x7e790e8b,
-                        0x2ed764b2,
-                        0x7ad25f92,
-                        0x4ba41700,
-                        0x75553000,
-                        0xe3089c7a,
-                    },
+                .keyblob_length = 36,
+                .keyblob = (uint32_t[9]){0},
+            },
+        .key_version = 0x00000000,
+        .key_salt =
+            {
+                0xa0d0e9b4,
+                0x7e790e8b,
+                0x2ed764b2,
+                0x7ad25f92,
+                0x4ba41700,
+                0x75553000,
+                0xe3089c7a,
+                0x14151617,
             },
         .context =
             {
@@ -135,18 +139,20 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
                         .security_level = kOtcryptoKeySecurityLevelHigh,
                         .exportable = kHardenedBoolFalse,
                     },
-                .keyblob_length = 32,
-                .keyblob =
-                    (uint32_t[]){
-                        0x00000000,
-                        0x1600a35a,
-                        0x6f03675a,
-                        0x6b0d549b,
-                        0x11e20b8f,
-                        0x3d9c1724,
-                        0x1738f7d9,
-                        0x8d116ece,
-                    },
+                .keyblob_length = 36,
+                .keyblob = (uint32_t[9]){0},
+            },
+        .key_version = 0x00000000,
+        .key_salt =
+            {
+                0x1600a35a,
+                0x6f03675a,
+                0x6b0d549b,
+                0x11e20b8f,
+                0x3d9c1724,
+                0x1738f7d9,
+                0x8d116ece,
+                0x24252627,
             },
         .context =
             {
@@ -217,18 +223,20 @@ static kdf_kmac_test_vector_t kKdfTestVectors[] = {
                         .security_level = kOtcryptoKeySecurityLevelHigh,
                         .exportable = kHardenedBoolFalse,
                     },
-                .keyblob_length = 32,
-                .keyblob =
-                    (uint32_t[]){
-                        0x00000000,
-                        0xe5f6db1d,
-                        0x9acd8acd,
-                        0x14b044d7,
-                        0x558298e2,
-                        0x8de4ab47,
-                        0xefb6fbfe,
-                        0x9ddcc6f8,
-                    },
+                .keyblob_length = 36,
+                .keyblob = (uint32_t[9]){0},
+            },
+        .key_version = 0x00000000,
+        .key_salt =
+            {
+                0xe5f6db1d,
+                0x9acd8acd,
+                0x14b044d7,
+                0x558298e2,
+                0x8de4ab47,
+                0xefb6fbfe,
+                0x9ddcc6f8,
+                0x34353637,
             },
         .context =
             {
@@ -319,9 +327,9 @@ static status_t run_test_vector(void) {
 
   *(otcrypto_lib_version_t *)&current_test_vector->key_derivation_key.config
        .version = otcrypto_lib_version();
-  current_test_vector->key_derivation_key.checksum =
-      otcrypto_integrity_blinded_checksum(
-          &current_test_vector->key_derivation_key);
+  TRY(otcrypto_hw_backed_key(current_test_vector->key_version,
+                             current_test_vector->key_salt,
+                             &current_test_vector->key_derivation_key));
 
   otcrypto_key_config_t km_config = {
       .version = otcrypto_lib_version(),
