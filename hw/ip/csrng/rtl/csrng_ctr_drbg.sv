@@ -54,8 +54,8 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   import csrng_reg_pkg::NumApps;
 
   // Number of calls to the block cipher required for each call of UPDate()
-  localparam int unsigned NumBlkPerUpd   = SeedLen/BlkLen;
-  localparam int unsigned NumBlkPerUpdLg = $clog2(NumBlkPerUpd);
+  localparam int unsigned NumBlkPerUpd = SeedLen/BlkLen;
+  localparam int unsigned ConcatCtrW   = $clog2(NumBlkPerUpd + 1);
 
   // The GENerate command consists of up to three sub commands
   typedef enum logic [1:0] {
@@ -87,8 +87,8 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   // Minimum Hamming weight: 1
   // Maximum Hamming weight: 5
   //
-  localparam int StateWidth = 6;
-  typedef enum logic [StateWidth-1:0] {
+  localparam int CtrDrbgStateWidth = 6;
+  typedef enum logic [CtrDrbgStateWidth-1:0] {
     Idle       = 6'b101110,
     CtrInc     = 6'b100001,
     ReqSend    = 6'b110100,
@@ -125,8 +125,8 @@ module csrng_ctr_drbg import csrng_pkg::*; (
   //--------------------------------------------
 
   // Scratch register for commands that call block_encrypt more than once and pointer into it
-  logic        [SeedLen-1:0] concat_key_v_q, concat_key_v_d;
-  logic [NumBlkPerUpdLg-1:0] concat_ctr_q, concat_ctr_d;
+  logic    [SeedLen-1:0] concat_key_v_q, concat_key_v_d;
+  logic [ConcatCtrW-1:0] concat_ctr_q, concat_ctr_d;
 
   // Keep track of current sub command for GENerates
   gen_subcmd_e gen_subcmd_q, gen_subcmd_d;
@@ -243,7 +243,7 @@ module csrng_ctr_drbg import csrng_pkg::*; (
 
   // Count the number of blocks that have been received back from block_encrypt until we have enough
   // blocks for at least SeedLen bits in total.
-  assign concat_ctr_done = (concat_ctr_q >= NumBlkPerUpd);
+  assign concat_ctr_done = (concat_ctr_q >= ConcatCtrW'(NumBlkPerUpd));
 
   // Type conversion for easier usage
   assign concat_key_v = csrng_key_v_t'(concat_key_v_q);
@@ -260,7 +260,7 @@ module csrng_ctr_drbg import csrng_pkg::*; (
       // Steer the v-response from block encrypt to the correct lane, MSB down.
       // concat_ctr_q must be lower than NumBlkPerUpd, otherwise concat_ctr_done is set and we end
       // up in the if branch above, i.e., the index into concat_key_v_d is always valid.
-      concat_key_v_d[(NumBlkPerUpd - 1 - concat_ctr_q) * BlkLen +: BlkLen]
+      concat_key_v_d[(NumBlkPerUpd - 1 - 32'(concat_ctr_q)) * BlkLen +: BlkLen]
         = block_encrypt_rsp_data_i;
     end
   end

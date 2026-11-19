@@ -11,3 +11,8 @@ lint_off -rule WIDTH -file "*/rtl/aes_cipher_control_fsm.sv" -match "Operator AS
 lint_off -rule WIDTH -file "*/rtl/aes_sbox.sv"               -match "Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's EXTEND generates 2 bits."
 lint_off -rule WIDTH -file "*/rtl/aes_key_expand.sv"         -match "Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's EXTEND generates 2 bits."
 lint_off -rule WIDTH -file "*/rtl/aes_cipher_core.sv"        -match "Operator ASSIGN expects 1 bits on the Assign RHS, but Assign RHS's EXTEND generates 2 bits."
+
+// The FSM drives these outputs from its state only, not from the handshake inputs read in the same block.
+isolate_assignments -module "csrng_ctr_drbg" -var "block_encrypt_req_vld_o"
+isolate_assignments -module "csrng_ctr_drbg" -var "block_encrypt_rsp_rdy_o"
+isolate_assignments -module "csrng_ctr_drbg" -var "sm_err_o"
