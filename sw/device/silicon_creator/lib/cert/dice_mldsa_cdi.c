@@ -646,8 +646,14 @@ rom_error_t dice_attest_next_cdi(const attest_params_t *params,
   rom_error_t err = dice_attest_next_cdi_impl_with_stack(
       params, sealing_binding, max_key_version, exts, exts_size, stack_top);
   rom_error_t err2 = otbn_boot_attestation_key_clear();
-  hardened_memshred((uint32_t *)params->scratch_buf,
+  size_t shredded_words =
+      hardened_memshred((uint32_t *)params->scratch_buf,
+                        params->scratch_buf_size / sizeof(uint32_t));
+  HARDENED_CHECK_EQ(shredded_words,
                     params->scratch_buf_size / sizeof(uint32_t));
+  HARDENED_CHECK_GE(
+      shredded_words,
+      kDiceMldsaRomExtAttestationScratchBufferSize / sizeof(uint32_t));
   HARDENED_RETURN_IF_ERROR(err2);
   return err;
 }
@@ -676,8 +682,10 @@ static rom_error_t dice_mldsa_uds_pubkey_populate(
                              sizeof(dice_mldsa_rom_ext_scratch_stack));
   rom_error_t err = dice_mldsa_uds_pubkey_populate_impl_with_stack(
       mldsa_param_set, stack_top);
-  hardened_memshred(
-      (uint32_t *)dice_mldsa_rom_ext_scratch_stack,
+  HARDENED_CHECK_EQ(
+      hardened_memshred(
+          (uint32_t *)dice_mldsa_rom_ext_scratch_stack,
+          sizeof(dice_mldsa_rom_ext_scratch_stack) / sizeof(uint32_t)),
       sizeof(dice_mldsa_rom_ext_scratch_stack) / sizeof(uint32_t));
   return err;
 }
