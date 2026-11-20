@@ -161,3 +161,18 @@ uint8_t otcrypto_show_status(const otcrypto_state_t *state) {
   const crypto_state_t *internal_state = (const crypto_state_t *)state;
   return internal_state->locked_state;
 }
+
+otcrypto_status_t otcrypto_async_cancel(void) {
+  status_t otbn_status = otbn_cancel_async();
+  // Clear any sideloaded OTBN key from keymgr once OTBN is no longer running.
+  status_t keymgr_status = keymgr_sideload_clear_otbn();
+
+  if (status_err(otbn_status) == kFailedPrecondition ||
+      status_err(keymgr_status) == kFailedPrecondition) {
+    return OTCRYPTO_FATAL_ERR;
+  }
+  if (!status_ok(otbn_status)) {
+    return otbn_status;
+  }
+  return keymgr_status;
+}

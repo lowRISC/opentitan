@@ -24,6 +24,7 @@ typedef struct otcrypto_interface_t {
   otcrypto_status_t (*init)(otcrypto_key_security_level_t, otcrypto_state_t *);
   otcrypto_status_t (*eval_exit)(otcrypto_status_t);
   uint8_t (*show_status)(const otcrypto_state_t *);
+  otcrypto_status_t (*async_cancel)(void);
 
   // Build info
   otcrypto_status_t (*module_name)(otcrypto_byte_buf_t *);
