@@ -629,14 +629,21 @@ class i2c_reference_model extends uvm_component;
 
   // Convert DUT-target monitor observations of write transfers into expectations for checking.
   //
-  // While less of the DUT is comprehensively modelled here, it makes sense to start
-  // with the monitor observation, then to add in data to this item based on our predictions.
-  // This also makes sense as a baseline comparison for mis-addressed transfers, as we can also
-  // make comparisons based on the same transaction item format, except with explicitly-captured
-  // fields to represent NACK-ing the address byte, and NACK-ing any further bytes in the transfer.
+  // Previously a function, which prevented blocking until ACQFIFO data was available.
+  // Converted to a task so we can wait for SW to drain the ACQFIFO, then decode the
+  // captured entries and populate exp_wr_xfer.data_q with the actual DUT-received bytes.
   //
-  virtual function void create_target_wr_exp(i2c_item obs_xfer);
+  // Each addressed write transfer produces the following ACQFIFO entries (in order):
+  //   [0]          : SIGNAL=start/rstart (bits[10:9] != 2'b00), ABYTE=addr+dir (bits[7:0])
+  //   [1..num_data]: SIGNAL=none  (bits[10:9] == 2'b00),        ABYTE=data byte (bits[7:0])
+  //   [num_data+1] : SIGNAL=stop  (bits[10:9] == 2'b10),        ABYTE=don't care  (if stop=1)
+  //
+  // Mis-addressed transfers bypass this logic and pass the monitor observation through
+  // unmodified, as before.
+  //
+  virtual task create_target_wr_exp(i2c_item obs_xfer);
     i2c_item exp_wr_xfer;
+    int unsigned total_acq_entries;
 
     // To begin with, we start with the monitor's observation as our prediction.
     exp_wr_xfer = obs_xfer;
@@ -644,26 +651,41 @@ class i2c_reference_model extends uvm_component;
     // If the address of the transfer did not match the DUT, we don't expect to see any DUT
     // interaction with the remainder of the transfer. In this case, we can pass the i2c monitor
     // observation straight through without modification as the expectation.
-
     if (is_target_addr(obs_xfer.addr)) begin
       // The address of the transfer matched what is configured into the DUT, so we expect the
-      // the transfer to be accepted, and to become visible at the ACQFIFO.
+      // transfer to be accepted and to become visible at the ACQFIFO.
 
-      // Count the number of ACQFIFO items we expect to read to completely observe the transfer.
-      cfg.exp_num_acqfifo_reads += 1 /*signal=start/rstart, abyte=addr+dir*/ +
+      // Total ACQFIFO entries = start/addr entry + data bytes + optional stop entry.
+      total_acq_entries = 1 /*signal=start/rstart, abyte=addr+dir*/ +
                           obs_xfer.num_data /*signal=none, abyte=data*/ +
                           (obs_xfer.stop ? 1 /*signal=stop, abyte=xx*/ : 0);
+      cfg.exp_num_acqfifo_reads += total_acq_entries;
 
-      // #TODO Add the captured ACQFIFO write data into the sequence item we got from the monitor
-      // exp_wr_xfer.data_q = '{};
-      // if (acqdata_rd.size() < exp_wr_xfer.num_data) begin
-      //   `uvm_fatal("Too few ACQFIFO reads to complete the expected item!")
-      // end
-      // repeat (exp_wr_xfer.num_data) exp_wr_xfer.data_q.push_back(acqdata_rd.pop_front());
+      // Block until the SW has drained all ACQFIFO entries for this transfer.
+      // Guard against on-the-fly resets to avoid deadlocking.
+      wait(acqdata_rd.size() >= total_acq_entries || cfg.under_reset);
+      if (cfg.under_reset) return;
+
+      // Discard the start/rstart entry (ACQDATA.SIGNAL != 2'b00, ACQDATA.ABYTE = addr+dir).
+      void'(acqdata_rd.pop_front());
+
+      // Decode and populate data_q from the data entries (ACQDATA.SIGNAL == 2'b00).
+      exp_wr_xfer.data_q = '{};
+      repeat (obs_xfer.num_data) begin
+        bit [10:0] acq_entry = acqdata_rd.pop_front();
+        // Bits [10:9] are the SIGNAL field; bits [7:0] are the data byte.
+        `DV_CHECK_EQ(acq_entry[10:9], 2'b00,
+          $sformatf("Expected ACQFIFO data entry (SIGNAL=2'b00) but got SIGNAL=2'b%02b",
+                    acq_entry[10:9]))
+        exp_wr_xfer.data_q.push_back(acq_entry[7:0]);
+      end
+
+      // Discard the stop entry (ACQDATA.SIGNAL == 2'b10) if this transfer ended with STOP.
+      if (obs_xfer.stop) void'(acqdata_rd.pop_front());
     end
 
     target_mode_wr_port.write(exp_wr_xfer);
-  endfunction: create_target_wr_exp
+  endtask: create_target_wr_exp
 
   // Convert DUT-target monitor observations of read transfers into expectations for checking.
   //
