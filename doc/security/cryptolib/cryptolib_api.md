@@ -925,6 +925,8 @@ OpenTitan's random bit generator, [CSRNG][csrng] (Cryptographically Secure Rando
 OpenTitan's RNG targets compliance with both [BSI AIS31 recommendations for Common Criteria][bsi-ais31], as well as [NIST SP800-90A][nist-drbg-spec] and [NIST SP800-90C (second draft)][nist-rng-spec].
 The CSRNG operates at a 256-bit security strength.
 
+> **Note:** CSRNG (AES-CTR-DRBG) operations (`otcrypto_drbg_*`) are not claimed to be protected against fault injection (FI) attacks.
+
 ### Seeding the DRBG
 
 The DRBG can be seeded with new entropy from OpenTitan's hardware [entropy source][entropy-src], mixed with additional caller-provided entropy if desired.
