@@ -17,8 +17,10 @@ namespace internal {
  */
 class MockBootPolicyPtrs : public global_mock::GlobalMock<MockBootPolicyPtrs> {
  public:
-  MOCK_METHOD(const manifest_t *, ManifestA, ());
-  MOCK_METHOD(const manifest_t *, ManifestB, ());
+  MOCK_METHOD(const manifest_t *, LoadManifestA, ());
+  MOCK_METHOD(const manifest_t *, LoadManifestB, ());
+  MOCK_METHOD(void, UnloadManifestA, ());
+  MOCK_METHOD(void, UnloadManifestB, ());
 };
 
 }  // namespace internal
