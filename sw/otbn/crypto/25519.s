@@ -1508,7 +1508,7 @@ ext_scmul_sca:
     bn.sel w13, w27, w23, FG1.M
 
     /* Clear the flag. */
-    bn.sub w31, w31, w31, FG0
+    bn.sub w31, w31, w31, FG1
 
     /* Point re-randomization of Q */
     jal x1, ext_randomize_point
