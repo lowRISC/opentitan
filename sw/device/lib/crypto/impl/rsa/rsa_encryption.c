@@ -101,6 +101,8 @@ status_t rsa_decrypt_finalize(otcrypto_key_mode_t key_mode,
                               const uint8_t *label, size_t label_bytelen,
                               size_t plaintext_max_bytelen, uint8_t *plaintext,
                               size_t *plaintext_len) {
+  *plaintext_len = 0;
+
   // Wait for OTBN to complete and get the size for the last RSA operation.
   size_t num_words;
   HARDENED_TRY(rsa_modexp_wait(&num_words));
