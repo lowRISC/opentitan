@@ -773,9 +773,9 @@
       desc: '''Verify that the system can run at a reduced, calibrated clock frequency.
 
             This test should check that the system can run at a reduced, calibrated clock frequency
-            (70MHz) with jitter enabled (which can lower the frequency down to ~55 MHz
-            momentarily). This option is intended as a fall-back in case there are issues running
-            the system with at 100MHz (calibrated).
+            (700MHz, 70% of the 1GHz nominal frequency) with jitter enabled (which can lower the
+            frequency down to ~560MHz momentarily). This option is intended as a fall-back in case
+            there are issues running the system at the nominal calibrated frequency.
 
             This testpoint can be covered by extending the DV environment to support the extended
             range clock option via a flag, and running several existing chip-level tests with that
