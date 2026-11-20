@@ -225,12 +225,14 @@ status_t rsa_padding_pkcs1v15_encrypt_encode(const uint8_t *message,
  * section 7.2.2, step 3).
  *
  * Expects the encoded message in reversed byte-order from the RFC because OTBN
- * interprets the message as a fully little-endian integer. The caller must
- * ensure that at least `encoded_message_len * sizeof(uint32_t) - 11` bytes are
- * allocated at `message`.
+ * interprets the message as a fully little-endian integer. Returns
+ * `OTCRYPTO_BAD_ARGS` with `*message_bytelen = 0` (and shreds
+ * `encoded_message`) if the padding is invalid or if the decoded message does
+ * not fit in `max_message_bytelen` bytes.
  *
  * @param encoded_message Encoded message (modified in-place and shredded).
  * @param encoded_message_len Encoded message length in 32-bit words.
+ * @param max_message_bytelen Capacity of `message` in bytes.
  * @param[out] message Decoded message.
  * @param[out] message_bytelen Length of the decoded message in bytes.
  * @return Result of the operation (OK or error).
