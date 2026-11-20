@@ -94,6 +94,25 @@
       tests: ["csrng_cmds"]
     }
     {
+      name: gen_glen_zero
+      desc: '''
+            Verify that a Generate command with glen = 0 is rejected.
+
+            **Stimulus**:
+            - Send a Generate command with glen = 0 to each instance after instantiating it,
+              with and without additional data, followed by further commands.
+
+            **Checks**:
+            - The command is acknowledged with the INVALID_GEN_CMD status, no genbits are
+              returned and RECOV_ALERT_STS.CMD_STAGE_INVALID_GEN_CMD_ALERT is set.
+            - For a HW instance, HW_EXC_STS and cs_hw_inst_exc report the error.
+            - The command is ignored: the internal state is unchanged and later commands
+              complete as normal.
+            '''
+      stage: V2
+      tests: ["csrng_alert"]
+    }
+    {
       name: stress_all
       desc: '''
             Combine the other individual testpoints while injecting TL errors and running CSR tests in parallel.
