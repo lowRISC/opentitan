@@ -24,6 +24,9 @@ def _host_tools_transition_impl(settings, attr):
         "//hw/bitstream/universal:rom": "//hw/bitstream/universal:none",
         "//hw/bitstream/universal:otp": "//hw/bitstream/universal:none",
         "//hw/bitstream/universal:env": "//hw/bitstream/universal:none",
+        "@rules_rust//rust/settings:lto": "unspecified",
+        "@rules_rust//rust/settings:no_std": "off",
+        "@rules_rust//rust/settings:extra_rustc_flag": [],
     }
     return ret
 
@@ -41,5 +44,8 @@ host_tools_transition = transition(
         "//hw/bitstream/universal:rom",
         "//hw/bitstream/universal:otp",
         "//hw/bitstream/universal:env",
+        "@rules_rust//rust/settings:lto",
+        "@rules_rust//rust/settings:no_std",
+        "@rules_rust//rust/settings:extra_rustc_flag",
     ],
 )
