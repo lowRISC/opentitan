@@ -4,26 +4,39 @@
 
 """Helpers for transitioning to the RISC-V target."""
 
-OPENTITAN_CPU = "@platforms//cpu:riscv32"
-OPENTITAN_PLATFORM = "//toolchain:opentitan_platform"
-CHERIOT_PLATFORM = "//toolchain:cheriot_platform"
-
-# This constant holds a dictionary of per-device dependencies which are used to
-# generate slightly different binaries for each hardware target, including two
-# simulation platforms (DV and Verilator), and two FPGA platforms (CW305
-# and CW310).
-PER_DEVICE_DEPS = {
-    "sim_verilator": ["//sw/device/lib/arch:sim_verilator"],
-    "sim_dv": ["//sw/device/lib/arch:sim_dv"],
-    "fpga_cw305": ["//sw/device/lib/arch:fpga_cw305"],
-}
+load("//hw/top:defs.bzl", "ALL_TOPS")
+load("//rules/opentitan:hw.bzl", "get_top_attr")
+load("//rules/opentitan:exec_env.bzl", "DEFAULT_PLATFORM_KEY")
 
 def _opentitan_transition_impl(settings, attr):
+    # FIXME This should really be expressed as the composition of two transitions
+    # using `and_then`, but this only available in Bazel 9.
+
+    # Use the requested platform if specified.
+    if attr.platform:
+        platform = attr.platform
+    else:
+        # Otherwise use the top's default platform.
+        platform = None
+        for top in ALL_TOPS:
+            if settings["//hw/top"] == top.name:
+                platforms = get_top_attr(top, "platforms", required = True)
+                if attr.platform_key not in platforms:
+                    # If the requested platform key cannot be found, fallback to the default key.
+                    # We want to avoid turning this into an error because some queries could hit
+                    # in this transition in unexpected configurations.
+                    print("WARNING: In transition from {}: top `{}` does not have a platform with key `{}`, falling back to default platform key".format(attr.name, top.name, attr.platform_key))
+                    platform = platforms[DEFAULT_PLATFORM_KEY]
+                else:
+                    platform = platforms[attr.platform_key]
+        if platform == None:
+            fail("The requested top is not listed in ALL_TOPS")
+
     coverage = settings["//command_line_option:collect_code_coverage"]
     if attr.collect_code_coverage != -1:
         coverage = bool(attr.collect_code_coverage)
     return {
-        "//command_line_option:platforms": attr.platform,
+        "//command_line_option:platforms": platform,
         "//command_line_option:copt": settings["//command_line_option:copt"],
         "//command_line_option:collect_code_coverage": coverage,
     }
@@ -38,6 +51,7 @@ opentitan_transition = transition(
     inputs = [
         "//command_line_option:copt",
         "//command_line_option:collect_code_coverage",
+        "//hw/top",
     ],
     outputs = [
         "//command_line_option:platforms",
@@ -54,7 +68,14 @@ def rv_rule(**kwargs):
 
     attrs = kwargs.pop("attrs", {})
     if "platform" not in attrs:
-        attrs["platform"] = attr.string(default = OPENTITAN_PLATFORM)
+        attrs["platform"] = attr.string(
+            doc = "If set, the platform will be transitioned to the label specified in this attribute",
+        )
+    if "platform_key" not in attrs:
+        attrs["platform_key"] = attr.string(
+            default = DEFAULT_PLATFORM_KEY,
+            doc = "If `platform` is not set, the platform will be derived from the selected top using its `platforms` attribute, using this attribute as the key",
+        )
     if "collect_code_coverage" not in attrs:
         attrs["collect_code_coverage"] = attr.int(
             default = -1,
