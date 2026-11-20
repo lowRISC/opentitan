@@ -91,6 +91,17 @@ void flash_ctrl_data_region_protect(flash_ctrl_region_index_t region,
                                               perms, cfg, lock);
 }
 
+void flash_ctrl_data_region_save(flash_ctrl_region_index_t region,
+                                 flash_ctrl_data_region_state_t *state) {
+  MockFlashCtrl::Instance().DataRegionSave(region, state);
+}
+
+void flash_ctrl_data_region_restore(
+    flash_ctrl_region_index_t region,
+    const flash_ctrl_data_region_state_t *state) {
+  MockFlashCtrl::Instance().DataRegionRestore(region, state);
+}
+
 void flash_ctrl_bank_erase_perms_set(hardened_bool_t enable) {
   MockFlashCtrl::Instance().BankErasePermsSet(enable);
 }
